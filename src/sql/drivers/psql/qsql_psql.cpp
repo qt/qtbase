@@ -222,8 +222,9 @@ class QPSQLResultPrivate : public QSqlResultPrivate
 {
     Q_DECLARE_PUBLIC(QPSQLResult)
 public:
-    QPSQLResultPrivate()
-      : QSqlResultPrivate(),
+    Q_DECLARE_SQLDRIVER_PRIVATE(QPSQLDriver);
+    QPSQLResultPrivate(QPSQLResult *q, const QPSQLDriver *drv)
+      : QSqlResultPrivate(q, drv),
         result(0),
         currentSize(-1),
         preparedQueriesEnabled(false)
@@ -231,11 +232,6 @@ public:
 
     QString fieldSerial(int i) const Q_DECL_OVERRIDE { return QLatin1Char('$') + QString::number(i + 1); }
     void deallocatePreparedStmt();
-    const QPSQLDriverPrivate * privDriver() const
-    {
-        Q_Q(const QPSQLResult);
-        return reinterpret_cast<const QPSQLDriver *>(q->driver())->d_func();
-    }
 
     PGresult *result;
     int currentSize;
@@ -277,7 +273,7 @@ bool QPSQLResultPrivate::processResults()
         return true;
     }
     q->setLastError(qMakeError(QCoreApplication::translate("QPSQLResult",
-                    "Unable to create query"), QSqlError::StatementError, privDriver(), result));
+                    "Unable to create query"), QSqlError::StatementError, drv_d_func(), result));
     return false;
 }
 
@@ -330,16 +326,16 @@ static QVariant::Type qDecodePSQLType(int t)
 void QPSQLResultPrivate::deallocatePreparedStmt()
 {
     const QString stmt = QLatin1String("DEALLOCATE ") + preparedStmtId;
-    PGresult *result = privDriver()->exec(stmt);
+    PGresult *result = drv_d_func()->exec(stmt);
 
     if (PQresultStatus(result) != PGRES_COMMAND_OK)
-        qWarning("Unable to free statement: %s", PQerrorMessage(privDriver()->connection));
+        qWarning("Unable to free statement: %s", PQerrorMessage(drv_d_func()->connection));
     PQclear(result);
     preparedStmtId.clear();
 }
 
 QPSQLResult::QPSQLResult(const QPSQLDriver* db)
-    : QSqlResult(*new QPSQLResultPrivate, db)
+    : QSqlResult(*new QPSQLResultPrivate(this, db))
 {
     Q_D(QPSQLResult);
     d->preparedQueriesEnabled = db->hasFeature(QSqlDriver::PreparedQueries);
@@ -413,7 +409,7 @@ QVariant QPSQLResult::data(int i)
     case QVariant::Bool:
         return QVariant((bool)(val[0] == 't'));
     case QVariant::String:
-        return d->privDriver()->isUtf8 ? QString::fromUtf8(val) : QString::fromLatin1(val);
+        return d->drv_d_func()->isUtf8 ? QString::fromUtf8(val) : QString::fromLatin1(val);
     case QVariant::LongLong:
         if (val[0] == '-')
             return QString::fromLatin1(val).toLongLong();
@@ -504,7 +500,7 @@ bool QPSQLResult::reset (const QString& query)
         return false;
     if (!driver()->isOpen() || driver()->isOpenError())
         return false;
-    d->result = d->privDriver()->exec(query);
+    d->result = d->drv_d_func()->exec(query);
     return d->processResults();
 }
 
@@ -523,7 +519,7 @@ int QPSQLResult::numRowsAffected()
 QVariant QPSQLResult::lastInsertId() const
 {
     Q_D(const QPSQLResult);
-    if (d->privDriver()->pro >= QPSQLDriver::Version81) {
+    if (d->drv_d_func()->pro >= QPSQLDriver::Version81) {
         QSqlQuery qry(driver()->createResult());
         // Most recent sequence value obtained from nextval
         if (qry.exec(QLatin1String("SELECT lastval();")) && qry.next())
@@ -546,7 +542,7 @@ QSqlRecord QPSQLResult::record() const
     int count = PQnfields(d->result);
     for (int i = 0; i < count; ++i) {
         QSqlField f;
-        if (d->privDriver()->isUtf8)
+        if (d->drv_d_func()->isUtf8)
             f.setName(QString::fromUtf8(PQfname(d->result, i)));
         else
             f.setName(QString::fromLocal8Bit(PQfname(d->result, i)));
@@ -640,11 +636,11 @@ bool QPSQLResult::prepare(const QString &query)
     const QString stmtId = qMakePreparedStmtId();
     const QString stmt = QString::fromLatin1("PREPARE %1 AS ").arg(stmtId).append(d->positionalToNamedBinding(query));
 
-    PGresult *result = d->privDriver()->exec(stmt);
+    PGresult *result = d->drv_d_func()->exec(stmt);
 
     if (PQresultStatus(result) != PGRES_COMMAND_OK) {
         setLastError(qMakeError(QCoreApplication::translate("QPSQLResult",
-                                "Unable to prepare statement"), QSqlError::StatementError, d->privDriver(), result));
+                                "Unable to prepare statement"), QSqlError::StatementError, d->drv_d_func(), result));
         PQclear(result);
         d->preparedStmtId.clear();
         return false;
@@ -670,7 +666,7 @@ bool QPSQLResult::exec()
     else
         stmt = QString::fromLatin1("EXECUTE %1 (%2)").arg(d->preparedStmtId).arg(params);
 
-    d->result = d->privDriver()->exec(stmt);
+    d->result = d->drv_d_func()->exec(stmt);
 
     return d->processResults();
 }

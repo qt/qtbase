@@ -66,7 +66,7 @@ class QSQLite2DriverPrivate;
 
 class Q_EXPORT_SQLDRIVER_SQLITE2 QSQLite2Driver : public QSqlDriver
 {
-    friend class QSQLite2Result;
+    friend class QSQLite2ResultPrivate;
     Q_DECLARE_PRIVATE(QSQLite2Driver)
     Q_OBJECT
 public:

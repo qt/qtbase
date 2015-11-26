@@ -131,6 +131,8 @@ QSqlError qMakeError(const QString& err, QSqlError::ErrorType type, int errNo = 
 
 class QTDSDriverPrivate : public QSqlDriverPrivate
 {
+    Q_DECLARE_PUBLIC(QTDSDriver)
+
 public:
     QTDSDriverPrivate() : QSqlDriverPrivate(), login(0), initialized(false) { dbmsType = QSqlDriver::Sybase; }
     LOGINREC* login;  // login information
@@ -150,6 +152,8 @@ class QTDSResultPrivate;
 
 class QTDSResult : public QSqlCachedResult
 {
+    Q_DECLARE_PRIVATE(QTDSResult)
+
 public:
     explicit QTDSResult(const QTDSDriver* db);
     ~QTDSResult();
@@ -162,15 +166,18 @@ protected:
     int numRowsAffected() Q_DECL_OVERRIDE;
     bool gotoNext(QSqlCachedResult::ValueCache &values, int index) Q_DECL_OVERRIDE;
     QSqlRecord record() const Q_DECL_OVERRIDE;
-
-private:
-    QTDSResultPrivate* d;
 };
 
-class QTDSResultPrivate
+class QTDSResultPrivate: public QSqlCachedResultPrivate
 {
+    Q_DECLARE_PUBLIC(QTDSResult)
+
 public:
-    QTDSResultPrivate():login(0), dbproc(0) {}
+    Q_DECLARE_SQLDRIVER_PRIVATE(QTDSDriver)
+    QTDSResultPrivate(QTDSResult *q, const QTDSDriver *drv)
+        : QSqlCachedResultPrivate(q, drv),
+          login(0),
+          dbproc(0) {}
     LOGINREC* login;  // login information
     DBPROCESS* dbproc; // connection from app to server
     QSqlError lastError;
@@ -316,15 +323,15 @@ QVariant::Type qFieldType(QTDSResultPrivate* d, int i)
 
 
 QTDSResult::QTDSResult(const QTDSDriver* db)
-    : QSqlCachedResult(db)
+    : QSqlCachedResult(*new QTDSResultPrivate(this, db))
 {
-    d = new QTDSResultPrivate();
-    d->login = db->d_func()->login;
+    Q_D(QTDSResult);
+    d->login = d->drv_d_func()->login;
 
-    d->dbproc = dbopen(d->login, const_cast<char*>(db->d_func()->hostName.toLatin1().constData()));
+    d->dbproc = dbopen(d->login, const_cast<char*>(d->drv_d_func()->hostName.toLatin1().constData()));
     if (!d->dbproc)
         return;
-    if (dbuse(d->dbproc, const_cast<char*>(db->d_func()->db.toLatin1().constData())) == FAIL)
+    if (dbuse(d->dbproc, const_cast<char*>(d->drv_d_func()->db.toLatin1().constData())) == FAIL)
         return;
 
     // insert d in error handler dict
@@ -335,15 +342,16 @@ QTDSResult::QTDSResult(const QTDSDriver* db)
 
 QTDSResult::~QTDSResult()
 {
+    Q_D(QTDSResult);
     cleanup();
     if (d->dbproc)
         dbclose(d->dbproc);
     errs()->remove(d->dbproc);
-    delete d;
 }
 
 void QTDSResult::cleanup()
 {
+    Q_D(QTDSResult);
     d->clearErrorMsgs();
     d->rec.clear();
     for (int i = 0; i < d->buffer.size(); ++i)
@@ -358,6 +366,7 @@ void QTDSResult::cleanup()
 
 QVariant QTDSResult::handle() const
 {
+    Q_D(const QTDSResult);
     return QVariant(qRegisterMetaType<DBPROCESS *>("DBPROCESS*"), &d->dbproc);
 }
 
@@ -368,6 +377,7 @@ static inline bool qIsNull(const QTDSColumnData &p)
 
 bool QTDSResult::gotoNext(QSqlCachedResult::ValueCache &values, int index)
 {
+    Q_D(QTDSResult);
     STATUS stat = dbnextrow(d->dbproc);
     if (stat == NO_MORE_ROWS) {
         setAt(QSql::AfterLastRow);
@@ -427,6 +437,7 @@ bool QTDSResult::gotoNext(QSqlCachedResult::ValueCache &values, int index)
 
 bool QTDSResult::reset (const QString& query)
 {
+    Q_D(QTDSResult);
     cleanup();
     if (!driver() || !driver()-> isOpen() || driver()->isOpenError())
         return false;
@@ -515,6 +526,7 @@ int QTDSResult::size()
 
 int QTDSResult::numRowsAffected()
 {
+    Q_D(const QTDSResult);
 #ifdef DBNTWIN32
     if (dbiscount(d->dbproc)) {
         return DBCOUNT(d->dbproc);
@@ -527,6 +539,7 @@ int QTDSResult::numRowsAffected()
 
 QSqlRecord QTDSResult::record() const
 {
+    Q_D(const QTDSResult);
     return d->rec;
 }
 

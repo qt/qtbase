@@ -66,6 +66,8 @@ static const SQLSMALLINT qParamType[4] = { SQL_PARAM_INPUT, SQL_PARAM_INPUT, SQL
 
 class QDB2DriverPrivate : public QSqlDriverPrivate
 {
+    Q_DECLARE_PUBLIC(QDB2Driver)
+
 public:
     QDB2DriverPrivate() : QSqlDriverPrivate(), hEnv(0), hDbc(0) { dbmsType = QSqlDriver::DB2; }
     SQLHANDLE hEnv;
@@ -77,8 +79,10 @@ class QDB2ResultPrivate;
 
 class QDB2Result: public QSqlResult
 {
+    Q_DECLARE_PRIVATE(QDB2Result)
+
 public:
-    QDB2Result(const QDB2Driver *dr, const QDB2DriverPrivate *dp);
+    QDB2Result(const QDB2Driver *drv);
     ~QDB2Result();
     bool prepare(const QString &query) Q_DECL_OVERRIDE;
     bool exec() Q_DECL_OVERRIDE;
@@ -98,15 +102,17 @@ protected:
     void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
     void detachFromResultSet() Q_DECL_OVERRIDE;
     bool nextResult() Q_DECL_OVERRIDE;
-
-private:
-    QDB2ResultPrivate *d;
 };
 
-class QDB2ResultPrivate
+class QDB2ResultPrivate: public QSqlResultPrivate
 {
+    Q_DECLARE_PUBLIC(QDB2Result)
+
 public:
-    QDB2ResultPrivate(const QDB2DriverPrivate* d): dp(d), hStmt(0)
+    Q_DECLARE_SQLDRIVER_PRIVATE(QDB2Driver)
+    QDB2ResultPrivate(QDB2Result *q, const QDB2Driver *drv)
+        : QSqlResultPrivate(q, drv),
+          hStmt(0)
     {}
     ~QDB2ResultPrivate()
     {
@@ -125,7 +131,6 @@ public:
         valueCache.clear();
     }
 
-    const QDB2DriverPrivate* dp;
     SQLHANDLE hStmt;
     QSqlRecord recInf;
     QVector<QVariant*> valueCache;
@@ -171,8 +176,8 @@ static QString qDB2Warn(const QDB2DriverPrivate* d)
 
 static QString qDB2Warn(const QDB2ResultPrivate* d)
 {
-    return (qWarnDB2Handle(SQL_HANDLE_ENV, d->dp->hEnv) + QLatin1Char(' ')
-             + qWarnDB2Handle(SQL_HANDLE_DBC, d->dp->hDbc)
+    return (qWarnDB2Handle(SQL_HANDLE_ENV, d->drv_d_func()->hEnv) + QLatin1Char(' ')
+             + qWarnDB2Handle(SQL_HANDLE_DBC, d->drv_d_func()->hDbc)
              + qWarnDB2Handle(SQL_HANDLE_STMT, d->hStmt));
 }
 
@@ -497,7 +502,7 @@ static bool qMakeStatement(QDB2ResultPrivate* d, bool forwardOnly, bool setForwa
     SQLRETURN r;
     if (!d->hStmt) {
         r = SQLAllocHandle(SQL_HANDLE_STMT,
-                            d->dp->hDbc,
+                            d->drv_d_func()->hDbc,
                             &d->hStmt);
         if (r != SQL_SUCCESS) {
             qSqlWarning(QLatin1String("QDB2Result::reset: Unable to allocate statement handle"), d);
@@ -536,30 +541,31 @@ static bool qMakeStatement(QDB2ResultPrivate* d, bool forwardOnly, bool setForwa
 
 QVariant QDB2Result::handle() const
 {
+    Q_D(const QDB2Result);
     return QVariant(qRegisterMetaType<SQLHANDLE>("SQLHANDLE"), &d->hStmt);
 }
 
 /************************************/
 
-QDB2Result::QDB2Result(const QDB2Driver* dr, const QDB2DriverPrivate* dp)
-    : QSqlResult(dr)
+QDB2Result::QDB2Result(const QDB2Driver *drv)
+    : QSqlResult(*new QDB2ResultPrivate(this, drv))
 {
-    d = new QDB2ResultPrivate(dp);
 }
 
 QDB2Result::~QDB2Result()
 {
+    Q_D(const QDB2Result);
     if (d->hStmt) {
         SQLRETURN r = SQLFreeHandle(SQL_HANDLE_STMT, d->hStmt);
         if (r != SQL_SUCCESS)
             qSqlWarning(QLatin1String("QDB2Driver: Unable to free statement handle ")
                         + QString::number(r), d);
     }
-    delete d;
 }
 
 bool QDB2Result::reset (const QString& query)
 {
+    Q_D(QDB2Result);
     setActive(false);
     setAt(QSql::BeforeFirstRow);
     SQLRETURN r;
@@ -596,6 +602,7 @@ bool QDB2Result::reset (const QString& query)
 
 bool QDB2Result::prepare(const QString& query)
 {
+    Q_D(QDB2Result);
     setActive(false);
     setAt(QSql::BeforeFirstRow);
     SQLRETURN r;
@@ -620,6 +627,7 @@ bool QDB2Result::prepare(const QString& query)
 
 bool QDB2Result::exec()
 {
+    Q_D(QDB2Result);
     QList<QByteArray> tmpStorage; // holds temporary ptrs
     QVarLengthArray<SQLINTEGER, 32> indicators(boundValues().count());
 
@@ -871,6 +879,7 @@ bool QDB2Result::exec()
 
 bool QDB2Result::fetch(int i)
 {
+    Q_D(QDB2Result);
     if (isForwardOnly() && i < at())
         return false;
     if (i == at())
@@ -905,6 +914,7 @@ bool QDB2Result::fetch(int i)
 
 bool QDB2Result::fetchNext()
 {
+    Q_D(QDB2Result);
     SQLRETURN r;
     d->clearValueCache();
     r = SQLFetchScroll(d->hStmt,
@@ -922,6 +932,7 @@ bool QDB2Result::fetchNext()
 
 bool QDB2Result::fetchFirst()
 {
+    Q_D(QDB2Result);
     if (isForwardOnly() && at() != QSql::BeforeFirstRow)
         return false;
     if (isForwardOnly())
@@ -943,6 +954,7 @@ bool QDB2Result::fetchFirst()
 
 bool QDB2Result::fetchLast()
 {
+    Q_D(QDB2Result);
     d->clearValueCache();
 
     int i = at();
@@ -974,6 +986,7 @@ bool QDB2Result::fetchLast()
 
 QVariant QDB2Result::data(int field)
 {
+    Q_D(QDB2Result);
     if (field >= d->recInf.count()) {
         qWarning("QDB2Result::data: column %d out of range", field);
         return QVariant();
@@ -1080,6 +1093,7 @@ QVariant QDB2Result::data(int field)
 
 bool QDB2Result::isNull(int i)
 {
+    Q_D(const QDB2Result);
     if (i >= d->valueCache.size())
         return true;
 
@@ -1090,6 +1104,7 @@ bool QDB2Result::isNull(int i)
 
 int QDB2Result::numRowsAffected()
 {
+    Q_D(const QDB2Result);
     SQLINTEGER affectedRowCount = 0;
     SQLRETURN r = SQLRowCount(d->hStmt, &affectedRowCount);
     if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
@@ -1106,6 +1121,7 @@ int QDB2Result::size()
 
 QSqlRecord QDB2Result::record() const
 {
+    Q_D(const QDB2Result);
     if (isActive())
         return d->recInf;
     return QSqlRecord();
@@ -1113,6 +1129,7 @@ QSqlRecord QDB2Result::record() const
 
 bool QDB2Result::nextResult()
 {
+    Q_D(QDB2Result);
     setActive(false);
     setAt(QSql::BeforeFirstRow);
     d->recInf.clear();
@@ -1148,6 +1165,7 @@ void QDB2Result::virtual_hook(int id, void *data)
 
 void QDB2Result::detachFromResultSet()
 {
+    Q_D(QDB2Result);
     if (d->hStmt)
         SQLCloseCursor(d->hStmt);
 }
@@ -1309,8 +1327,7 @@ void QDB2Driver::close()
 
 QSqlResult *QDB2Driver::createResult() const
 {
-    Q_D(const QDB2Driver);
-    return new QDB2Result(this, d);
+    return new QDB2Result(this);
 }
 
 QSqlRecord QDB2Driver::record(const QString& tableName) const

@@ -77,6 +77,8 @@ static QVariant::Type nameToType(const QString& typeName)
 
 class QSQLite2DriverPrivate : public QSqlDriverPrivate
 {
+    Q_DECLARE_PUBLIC(QSQLite2Driver)
+
 public:
     QSQLite2DriverPrivate();
     sqlite *access;
@@ -93,8 +95,9 @@ class QSQLite2ResultPrivate;
 
 class QSQLite2Result : public QSqlCachedResult
 {
+    Q_DECLARE_PRIVATE(QSQLite2Result)
     friend class QSQLite2Driver;
-    friend class QSQLite2ResultPrivate;
+
 public:
     explicit QSQLite2Result(const QSQLite2Driver* db);
     ~QSQLite2Result();
@@ -108,15 +111,15 @@ protected:
     QSqlRecord record() const Q_DECL_OVERRIDE;
     void detachFromResultSet() Q_DECL_OVERRIDE;
     void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
-
-private:
-    QSQLite2ResultPrivate* d;
 };
 
-class QSQLite2ResultPrivate
+class QSQLite2ResultPrivate: public QSqlCachedResultPrivate
 {
+    Q_DECLARE_PUBLIC(QSQLite2Result)
+
 public:
-    QSQLite2ResultPrivate(QSQLite2Result *res);
+    Q_DECLARE_SQLDRIVER_PRIVATE(QSQLite2Driver);
+    QSQLite2ResultPrivate(QSQLite2Result *q, const QSQLite2Driver *drv);
     void cleanup();
     bool fetchNext(QSqlCachedResult::ValueCache &values, int idx, bool initialFetch);
     bool isSelect();
@@ -124,7 +127,6 @@ public:
     void init(const char **cnames, int numCols);
     void finalize();
 
-    QSQLite2Result* q;
     sqlite *access;
 
     // and we have too keep our own struct for the data (sqlite works via
@@ -141,13 +143,19 @@ public:
 
 static const uint initial_cache_size = 128;
 
-QSQLite2ResultPrivate::QSQLite2ResultPrivate(QSQLite2Result* res) : q(res), access(0), currentTail(0),
-    currentMachine(0), skippedStatus(false), skipRow(false), utf8(false)
+QSQLite2ResultPrivate::QSQLite2ResultPrivate(QSQLite2Result *q, const QSQLite2Driver *drv)
+    : QSqlCachedResultPrivate(q, drv),
+      currentTail(0),
+      currentMachine(0),
+      skippedStatus(false),
+      skipRow(false),
+      utf8(false)
 {
 }
 
 void QSQLite2ResultPrivate::cleanup()
 {
+    Q_Q(QSQLite2Result);
     finalize();
     rInf.clear();
     currentTail = 0;
@@ -161,6 +169,7 @@ void QSQLite2ResultPrivate::cleanup()
 
 void QSQLite2ResultPrivate::finalize()
 {
+    Q_Q(QSQLite2Result);
     if (!currentMachine)
         return;
 
@@ -178,6 +187,7 @@ void QSQLite2ResultPrivate::finalize()
 // called on first fetch
 void QSQLite2ResultPrivate::init(const char **cnames, int numCols)
 {
+    Q_Q(QSQLite2Result);
     if (!cnames)
         return;
 
@@ -204,6 +214,7 @@ void QSQLite2ResultPrivate::init(const char **cnames, int numCols)
 
 bool QSQLite2ResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int idx, bool initialFetch)
 {
+    Q_Q(QSQLite2Result);
     // may be caching.
     const char **fvals;
     const char **cnames;
@@ -270,17 +281,17 @@ bool QSQLite2ResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int 
 }
 
 QSQLite2Result::QSQLite2Result(const QSQLite2Driver* db)
-: QSqlCachedResult(db)
+    : QSqlCachedResult(*new QSQLite2ResultPrivate(this, db))
 {
-    d = new QSQLite2ResultPrivate(this);
-    d->access = db->d_func()->access;
-    d->utf8 = db->d_func()->utf8;
+    Q_D(QSQLite2Result);
+    d->access = d->drv_d_func()->access;
+    d->utf8 = d->drv_d_func()->utf8;
 }
 
 QSQLite2Result::~QSQLite2Result()
 {
+    Q_D(QSQLite2Result);
     d->cleanup();
-    delete d;
 }
 
 void QSQLite2Result::virtual_hook(int id, void *data)
@@ -293,6 +304,7 @@ void QSQLite2Result::virtual_hook(int id, void *data)
 */
 bool QSQLite2Result::reset (const QString& query)
 {
+    Q_D(QSQLite2Result);
     // this is where we build a query.
     if (!driver())
         return false;
@@ -336,6 +348,7 @@ bool QSQLite2Result::reset (const QString& query)
 
 bool QSQLite2Result::gotoNext(QSqlCachedResult::ValueCache& row, int idx)
 {
+    Q_D(QSQLite2Result);
     return d->fetchNext(row, idx, false);
 }
 
@@ -346,11 +359,13 @@ int QSQLite2Result::size()
 
 int QSQLite2Result::numRowsAffected()
 {
+    Q_D(const QSQLite2Result);
     return sqlite_changes(d->access);
 }
 
 QSqlRecord QSQLite2Result::record() const
 {
+    Q_D(const QSQLite2Result);
     if (!isActive() || !isSelect())
         return QSqlRecord();
     return d->rInf;
@@ -358,11 +373,13 @@ QSqlRecord QSQLite2Result::record() const
 
 void QSQLite2Result::detachFromResultSet()
 {
+    Q_D(QSQLite2Result);
     d->finalize();
 }
 
 QVariant QSQLite2Result::handle() const
 {
+    Q_D(const QSQLite2Result);
     return QVariant::fromValue(d->currentMachine);
 }
 

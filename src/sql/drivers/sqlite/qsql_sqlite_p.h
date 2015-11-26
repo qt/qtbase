@@ -64,7 +64,7 @@ class Q_EXPORT_SQLDRIVER_SQLITE QSQLiteDriver : public QSqlDriver
 {
     Q_DECLARE_PRIVATE(QSQLiteDriver)
     Q_OBJECT
-    friend class QSQLiteResult;
+    friend class QSQLiteResultPrivate;
 public:
     explicit QSQLiteDriver(QObject *parent = 0);
     explicit QSQLiteDriver(sqlite3 *connection, QObject *parent = 0);

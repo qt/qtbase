@@ -46,6 +46,7 @@
 //
 
 #include "QtSql/qsqlresult.h"
+#include "QtSql/private/qsqlresult_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -56,13 +57,15 @@ class QSqlCachedResultPrivate;
 
 class Q_SQL_EXPORT QSqlCachedResult: public QSqlResult
 {
+    Q_DECLARE_PRIVATE(QSqlCachedResult)
+
 public:
     virtual ~QSqlCachedResult();
 
     typedef QVector<QVariant> ValueCache;
 
 protected:
-    QSqlCachedResult(const QSqlDriver * db);
+    QSqlCachedResult(QSqlCachedResultPrivate &d);
 
     void init(int colCount);
     void cleanup();
@@ -86,13 +89,14 @@ protected:
     void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy policy) Q_DECL_OVERRIDE;
 private:
     bool cacheNext();
-    QSqlCachedResultPrivate *d;
 };
 
-class QSqlCachedResultPrivate
+class Q_SQL_EXPORT QSqlCachedResultPrivate: public QSqlResultPrivate
 {
+    Q_DECLARE_PUBLIC(QSqlCachedResult)
+
 public:
-    QSqlCachedResultPrivate();
+    QSqlCachedResultPrivate(QSqlCachedResult *q, const QSqlDriver *drv);
     bool canSeek(int i) const;
     inline int cacheCount() const;
     void init(int count, bool fo);

@@ -155,16 +155,37 @@ QT_BEGIN_INCLUDE_NAMESPACE
 Q_DECLARE_METATYPE(QOCIRowIdPointer)
 QT_END_INCLUDE_NAMESPACE
 
+class QOCIDriverPrivate : public QSqlDriverPrivate
+{
+    Q_DECLARE_PUBLIC(QOCIDriver)
+
+public:
+    QOCIDriverPrivate();
+
+    OCIEnv *env;
+    OCISvcCtx *svc;
+    OCIServer *srvhp;
+    OCISession *authp;
+    OCIError *err;
+    bool transaction;
+    int serverVersion;
+    int prefetchRows;
+    int prefetchMem;
+    QString user;
+
+    void allocErrorHandle();
+};
+
 class QOCICols;
-struct QOCIResultPrivate;
+class QOCIResultPrivate;
 
 class QOCIResult: public QSqlCachedResult
 {
+    Q_DECLARE_PRIVATE(QOCIResult)
     friend class QOCIDriver;
-    friend struct QOCIResultPrivate;
     friend class QOCICols;
 public:
-    QOCIResult(const QOCIDriver * db, const QOCIDriverPrivate* p);
+    QOCIResult(const QOCIDriver *db);
     ~QOCIResult();
     bool prepare(const QString &query) Q_DECL_OVERRIDE;
     bool exec() Q_DECL_OVERRIDE;
@@ -179,18 +200,17 @@ protected:
     QVariant lastInsertId() const Q_DECL_OVERRIDE;
     bool execBatch(bool arrayBind = false) Q_DECL_OVERRIDE;
     void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
-
-private:
-    QOCIResultPrivate *d;
 };
 
-struct QOCIResultPrivate
+class QOCIResultPrivate: public QSqlCachedResultPrivate
 {
-    QOCIResultPrivate(QOCIResult *result, const QOCIDriverPrivate *driver);
+public:
+    Q_DECLARE_PUBLIC(QOCIResult)
+    Q_DECLARE_SQLDRIVER_PRIVATE(QOCIDriver)
+    QOCIResultPrivate(QOCIResult *q, const QOCIDriver *drv);
     ~QOCIResultPrivate();
 
     QOCICols *cols;
-    QOCIResult *q;
     OCIEnv *env;
     OCIError *err;
     OCISvcCtx *&svc;
@@ -207,9 +227,9 @@ struct QOCIResultPrivate
     void outValues(QVector<QVariant> &values, IndicatorArray &indicators,
                    QList<QByteArray> &tmpStorage);
     inline bool isOutValue(int i) const
-    { return q->bindValueType(i) & QSql::Out; }
+    { Q_Q(const QOCIResult); return q->bindValueType(i) & QSql::Out; }
     inline bool isBinaryValue(int i) const
-    { return q->bindValueType(i) & QSql::Binary; }
+    { Q_Q(const QOCIResult); return q->bindValueType(i) & QSql::Binary; }
 
     void setCharset(dvoid* handle, ub4 type) const
     {
@@ -484,25 +504,6 @@ void QOCIResultPrivate::outValues(QVector<QVariant> &values, IndicatorArray &ind
     }
 }
 
-
-class QOCIDriverPrivate : public QSqlDriverPrivate
-{
-public:
-    QOCIDriverPrivate();
-
-    OCIEnv *env;
-    OCISvcCtx *svc;
-    OCIServer *srvhp;
-    OCISession *authp;
-    OCIError *err;
-    bool transaction;
-    int serverVersion;
-    int prefetchRows;
-    int prefetchMem;
-    QString user;
-
-    void allocErrorHandle();
-};
 
 QOCIDriverPrivate::QOCIDriverPrivate()
     : QSqlDriverPrivate(), env(0), svc(0), srvhp(0), authp(0), err(0), transaction(false),
@@ -1221,7 +1222,7 @@ OraFieldInfo QOCICols::qMakeOraField(const QOCIResultPrivate* p, OCIParam* param
     if (r != 0)
         qOraWarning("qMakeOraField:", p->err);
 
-    type = qDecodeOCIType(colType, p->q->numericalPrecisionPolicy());
+    type = qDecodeOCIType(colType, p->q_func()->numericalPrecisionPolicy());
 
     if (type == QVariant::Int) {
         if (colLength == 22 && colPrecision == 0 && colScale == 0)
@@ -1232,16 +1233,16 @@ OraFieldInfo QOCICols::qMakeOraField(const QOCIResultPrivate* p, OCIParam* param
 
     // bind as double if the precision policy asks for it
     if (((colType == SQLT_FLT) || (colType == SQLT_NUM))
-            && (p->q->numericalPrecisionPolicy() == QSql::LowPrecisionDouble)) {
+            && (p->q_func()->numericalPrecisionPolicy() == QSql::LowPrecisionDouble)) {
         type = QVariant::Double;
     }
 
     // bind as int32 or int64 if the precision policy asks for it
     if ((colType == SQLT_NUM) || (colType == SQLT_VNU) || (colType == SQLT_UIN)
             || (colType == SQLT_INT)) {
-        if (p->q->numericalPrecisionPolicy() == QSql::LowPrecisionInt64)
+        if (p->q_func()->numericalPrecisionPolicy() == QSql::LowPrecisionInt64)
             type = QVariant::LongLong;
-        else if (p->q->numericalPrecisionPolicy() == QSql::LowPrecisionInt32)
+        else if (p->q_func()->numericalPrecisionPolicy() == QSql::LowPrecisionInt32)
             type = QVariant::Int;
     }
 
@@ -1336,7 +1337,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
 
             if (r != OCI_SUCCESS && r != OCI_SUCCESS_WITH_INFO) {
                 qOraWarning("QOCIPrivate::execBatch: unable to bind column:", d->err);
-                d->q->setLastError(qMakeError(QCoreApplication::translate("QOCIResult",
+                d->q_func()->setLastError(qMakeError(QCoreApplication::translate("QOCIResult",
                          "Unable to bind column for batch execute"),
                          QSqlError::StatementError, d->err));
                 return false;
@@ -1530,7 +1531,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
 
         if (r != OCI_SUCCESS && r != OCI_SUCCESS_WITH_INFO) {
             qOraWarning("QOCIPrivate::execBatch: unable to bind column:", d->err);
-            d->q->setLastError(qMakeError(QCoreApplication::translate("QOCIResult",
+            d->q_func()->setLastError(qMakeError(QCoreApplication::translate("QOCIResult",
                      "Unable to bind column for batch execute"),
                      QSqlError::StatementError, d->err));
             return false;
@@ -1545,7 +1546,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
 
         if (r != OCI_SUCCESS && r != OCI_SUCCESS_WITH_INFO) {
             qOraWarning("QOCIPrivate::execBatch: unable to bind column:", d->err);
-            d->q->setLastError(qMakeError(QCoreApplication::translate("QOCIResult",
+            d->q_func()->setLastError(qMakeError(QCoreApplication::translate("QOCIResult",
                      "Unable to bind column for batch execute"),
                      QSqlError::StatementError, d->err));
             return false;
@@ -1560,7 +1561,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
 
     if (r != OCI_SUCCESS && r != OCI_SUCCESS_WITH_INFO) {
         qOraWarning("QOCIPrivate::execBatch: unable to execute batch statement:", d->err);
-        d->q->setLastError(qMakeError(QCoreApplication::translate("QOCIResult",
+        d->q_func()->setLastError(qMakeError(QCoreApplication::translate("QOCIResult",
                         "Unable to execute batch statement"),
                         QSqlError::StatementError, d->err));
         return false;
@@ -1635,9 +1636,9 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
         }
     }
 
-    d->q->setSelect(false);
-    d->q->setAt(QSql::BeforeFirstRow);
-    d->q->setActive(true);
+    d->q_func()->setSelect(false);
+    d->q_func()->setAt(QSql::BeforeFirstRow);
+    d->q_func()->setActive(true);
 
     return true;
 }
@@ -1752,12 +1753,12 @@ void QOCICols::getValues(QVector<QVariant> &v, int index)
         case QVariant::Double:
         case QVariant::Int:
         case QVariant::LongLong:
-            if (d->q->numericalPrecisionPolicy() != QSql::HighPrecision) {
-                if ((d->q->numericalPrecisionPolicy() == QSql::LowPrecisionDouble)
+            if (d->q_func()->numericalPrecisionPolicy() != QSql::HighPrecision) {
+                if ((d->q_func()->numericalPrecisionPolicy() == QSql::LowPrecisionDouble)
                         && (fld.typ == QVariant::Double)) {
                     v[index + i] = *reinterpret_cast<double *>(fld.data);
                     break;
-                } else if ((d->q->numericalPrecisionPolicy() == QSql::LowPrecisionInt64)
+                } else if ((d->q_func()->numericalPrecisionPolicy() == QSql::LowPrecisionInt64)
                         && (fld.typ == QVariant::LongLong)) {
                     qint64 qll = 0;
                     int r = OCINumberToInt(d->err, reinterpret_cast<OCINumber *>(fld.data), sizeof(qint64),
@@ -1767,7 +1768,7 @@ void QOCICols::getValues(QVector<QVariant> &v, int index)
                     else
                         v[index + i] = QVariant();
                     break;
-                } else if ((d->q->numericalPrecisionPolicy() == QSql::LowPrecisionInt32)
+                } else if ((d->q_func()->numericalPrecisionPolicy() == QSql::LowPrecisionInt32)
                         && (fld.typ == QVariant::Int)) {
                     v[index + i] = *reinterpret_cast<int *>(fld.data);
                     break;
@@ -1790,10 +1791,17 @@ void QOCICols::getValues(QVector<QVariant> &v, int index)
     }
 }
 
-QOCIResultPrivate::QOCIResultPrivate(QOCIResult *result, const QOCIDriverPrivate *driver)
-    : cols(0), q(result), env(driver->env), err(0), svc(const_cast<OCISvcCtx*&>(driver->svc)),
-      sql(0), transaction(driver->transaction), serverVersion(driver->serverVersion),
-      prefetchRows(driver->prefetchRows), prefetchMem(driver->prefetchMem)
+QOCIResultPrivate::QOCIResultPrivate(QOCIResult *q, const QOCIDriver *drv)
+    : QSqlCachedResultPrivate(q, drv),
+      cols(0),
+      env(drv_d_func()->env),
+      err(0),
+      svc(const_cast<OCISvcCtx*&>(drv_d_func()->svc)),
+      sql(0),
+      transaction(drv_d_func()->transaction),
+      serverVersion(drv_d_func()->serverVersion),
+      prefetchRows(drv_d_func()->prefetchRows),
+      prefetchMem(drv_d_func()->prefetchMem)
 {
     int r = OCIHandleAlloc(env,
                            reinterpret_cast<void **>(&err),
@@ -1816,24 +1824,24 @@ QOCIResultPrivate::~QOCIResultPrivate()
 
 ////////////////////////////////////////////////////////////////////////////
 
-QOCIResult::QOCIResult(const QOCIDriver * db, const QOCIDriverPrivate* p)
-    : QSqlCachedResult(db)
+QOCIResult::QOCIResult(const QOCIDriver *db)
+    : QSqlCachedResult(*new QOCIResultPrivate(this, db))
 {
-    d = new QOCIResultPrivate(this, p);
 }
 
 QOCIResult::~QOCIResult()
 {
+    Q_D(QOCIResult);
     if (d->sql) {
         int r = OCIHandleFree(d->sql, OCI_HTYPE_STMT);
         if (r != 0)
             qWarning("~QOCIResult: unable to free statement handle");
     }
-    delete d;
 }
 
 QVariant QOCIResult::handle() const
 {
+    Q_D(const QOCIResult);
     return QVariant::fromValue(d->sql);
 }
 
@@ -1846,6 +1854,7 @@ bool QOCIResult::reset (const QString& query)
 
 bool QOCIResult::gotoNext(QSqlCachedResult::ValueCache &values, int index)
 {
+    Q_D(QOCIResult);
     if (at() == QSql::AfterLastRow)
         return false;
 
@@ -1905,6 +1914,7 @@ int QOCIResult::size()
 
 int QOCIResult::numRowsAffected()
 {
+    Q_D(QOCIResult);
     int rowCount;
     OCIAttrGet(d->sql,
                 OCI_HTYPE_STMT,
@@ -1917,6 +1927,7 @@ int QOCIResult::numRowsAffected()
 
 bool QOCIResult::prepare(const QString& query)
 {
+    Q_D(QOCIResult);
     int r = 0;
     QSqlResult::prepare(query);
 
@@ -1962,6 +1973,7 @@ bool QOCIResult::prepare(const QString& query)
 
 bool QOCIResult::exec()
 {
+    Q_D(QOCIResult);
     int r = 0;
     ub2 stmtType=0;
     ub4 iters;
@@ -2043,6 +2055,7 @@ bool QOCIResult::exec()
 
 QSqlRecord QOCIResult::record() const
 {
+    Q_D(const QOCIResult);
     QSqlRecord inf;
     if (!isActive() || !isSelect() || !d->cols)
         return inf;
@@ -2051,6 +2064,7 @@ QSqlRecord QOCIResult::record() const
 
 QVariant QOCIResult::lastInsertId() const
 {
+    Q_D(const QOCIResult);
     if (isActive()) {
         QOCIRowIdPointer ptr(new QOCIRowId(d->env));
 
@@ -2064,6 +2078,7 @@ QVariant QOCIResult::lastInsertId() const
 
 bool QOCIResult::execBatch(bool arrayBind)
 {
+    Q_D(QOCIResult);
     QOCICols::execBatch(d, boundValues(), arrayBind);
     resetBindCount();
     return lastError().type() == QSqlError::NoError;
@@ -2301,8 +2316,7 @@ void QOCIDriver::close()
 
 QSqlResult *QOCIDriver::createResult() const
 {
-    Q_D(const QOCIDriver);
-    return new QOCIResult(this, d);
+    return new QOCIResult(this);
 }
 
 bool QOCIDriver::beginTransaction()

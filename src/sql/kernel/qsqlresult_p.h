@@ -48,8 +48,14 @@
 #include <QtCore/qpointer.h>
 #include "qsqlerror.h"
 #include "qsqlresult.h"
+#include "qsqldriver.h"
 
 QT_BEGIN_NAMESPACE
+
+// convenience method Q*ResultPrivate::drv_d_func() returns pointer to private driver. Compare to Q_DECLARE_PRIVATE in qglobal.h.
+#define Q_DECLARE_SQLDRIVER_PRIVATE(Class) \
+    inline const Class##Private* drv_d_func() const { return !sqldriver ? nullptr : reinterpret_cast<const Class *>(static_cast<const QSqlDriver*>(sqldriver))->d_func(); } \
+    inline Class##Private* drv_d_func()  { return !sqldriver ? nullptr : reinterpret_cast<Class *>(static_cast<QSqlDriver*>(sqldriver))->d_func(); }
 
 struct QHolder {
     QHolder(const QString &hldr = QString(), int index = -1): holderName(hldr), holderPos(index) { }
@@ -59,14 +65,14 @@ struct QHolder {
     int holderPos;
 };
 
-class QSqlDriver;
-
 class Q_SQL_EXPORT QSqlResultPrivate
 {
+    Q_DECLARE_PUBLIC(QSqlResult)
 
 public:
-    QSqlResultPrivate()
-      : q_ptr(0),
+    QSqlResultPrivate(QSqlResult *q, const QSqlDriver *drv)
+      : q_ptr(q),
+        sqldriver(const_cast<QSqlDriver*>(drv)),
         idx(QSql::BeforeFirstRow),
         active(false),
         isSel(false),
@@ -107,7 +113,7 @@ public:
     QString holderAt(int index) const;
 
     QSqlResult *q_ptr;
-    QPointer<const QSqlDriver> sqldriver;
+    QPointer<QSqlDriver> sqldriver;
     int idx;
     QString sql;
     bool active;

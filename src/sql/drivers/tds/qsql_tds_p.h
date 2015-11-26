@@ -77,7 +77,7 @@ class Q_EXPORT_SQLDRIVER_TDS QTDSDriver : public QSqlDriver
 {
     Q_DECLARE_PRIVATE(QTDSDriver)
     Q_OBJECT
-    friend class QTDSResult;
+    friend class QTDSResultPrivate;
 public:
     explicit QTDSDriver(QObject* parent = 0);
     QTDSDriver(LOGINREC* rec, const QString& host, const QString &db, QObject* parent = 0);

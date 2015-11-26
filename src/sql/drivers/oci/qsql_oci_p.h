@@ -65,8 +65,9 @@ class Q_EXPORT_SQLDRIVER_OCI QOCIDriver : public QSqlDriver
 {
     Q_DECLARE_PRIVATE(QOCIDriver)
     Q_OBJECT
-    friend struct QOCIResultPrivate;
-    friend class QOCIPrivate;
+    friend class QOCICols;
+    friend class QOCIResultPrivate;
+
 public:
     explicit QOCIDriver(QObject* parent = 0);
     QOCIDriver(OCIEnv* env, OCISvcCtx* ctx, QObject* parent = 0);

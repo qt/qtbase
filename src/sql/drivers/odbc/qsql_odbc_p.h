@@ -80,6 +80,8 @@ class Q_EXPORT_SQLDRIVER_ODBC QODBCDriver : public QSqlDriver
 {
     Q_DECLARE_PRIVATE(QODBCDriver)
     Q_OBJECT
+    friend class QODBCResultPrivate;
+
 public:
     explicit QODBCDriver(QObject *parent=0);
     QODBCDriver(SQLHANDLE env, SQLHANDLE con, QObject * parent=0);
@@ -112,7 +114,6 @@ protected:
 private:
     bool endTrans();
     void cleanup();
-    friend class QODBCResultPrivate;
 };
 
 QT_END_NAMESPACE

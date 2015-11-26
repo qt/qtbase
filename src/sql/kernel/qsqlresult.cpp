@@ -87,7 +87,7 @@ QString QSqlResultPrivate::positionalToNamedBinding(const QString &query) const
     result.reserve(n * 5 / 4);
     QChar closingQuote;
     int count = 0;
-    bool ignoreBraces = (sqldriver->d_func()->dbmsType == QSqlDriver::PostgreSQL);
+    bool ignoreBraces = (sqldriver->dbmsType() == QSqlDriver::PostgreSQL);
 
     for (int i = 0; i < n; ++i) {
         QChar ch = query.at(i);
@@ -128,7 +128,7 @@ QString QSqlResultPrivate::namedToPositionalBinding(const QString &query)
     QChar closingQuote;
     int count = 0;
     int i = 0;
-    bool ignoreBraces = (sqldriver->d_func()->dbmsType == QSqlDriver::PostgreSQL);
+    bool ignoreBraces = (sqldriver->dbmsType() == QSqlDriver::PostgreSQL);
 
     while (i < n) {
         QChar ch = query.at(i);
@@ -218,22 +218,18 @@ QString QSqlResultPrivate::namedToPositionalBinding(const QString &query)
 
 QSqlResult::QSqlResult(const QSqlDriver *db)
 {
-    d_ptr = new QSqlResultPrivate;
+    d_ptr = new QSqlResultPrivate(this, db);
     Q_D(QSqlResult);
-    d->q_ptr = this;
-    d->sqldriver = db;
     if (d->sqldriver)
         setNumericalPrecisionPolicy(d->sqldriver->numericalPrecisionPolicy());
 }
 
 /*!  \internal
 */
-QSqlResult::QSqlResult(QSqlResultPrivate &dd, const QSqlDriver *db)
+QSqlResult::QSqlResult(QSqlResultPrivate &dd)
+    : d_ptr(&dd)
 {
-    d_ptr = &dd;
     Q_D(QSqlResult);
-    d->q_ptr = this;
-    d->sqldriver = db;
     if (d->sqldriver)
         setNumericalPrecisionPolicy(d->sqldriver->numericalPrecisionPolicy());
 }

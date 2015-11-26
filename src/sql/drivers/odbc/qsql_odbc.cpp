@@ -107,6 +107,8 @@ inline static QVarLengthArray<SQLTCHAR> toSQLTCHAR(const QString &input)
 
 class QODBCDriverPrivate : public QSqlDriverPrivate
 {
+    Q_DECLARE_PUBLIC(QODBCDriver)
+
 public:
     enum DefaultCase{Lower, Mixed, Upper, Sensitive};
     QODBCDriverPrivate()
@@ -148,8 +150,10 @@ class QODBCResultPrivate;
 
 class QODBCResult: public QSqlResult
 {
+    Q_DECLARE_PRIVATE(QODBCResult)
+
 public:
-    QODBCResult(const QODBCDriver *db, QODBCDriverPrivate *p);
+    QODBCResult(const QODBCDriver *db);
     virtual ~QODBCResult();
 
     bool prepare(const QString &query) Q_DECL_OVERRIDE;
@@ -174,28 +178,32 @@ protected:
     void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
     void detachFromResultSet() Q_DECL_OVERRIDE;
     bool nextResult() Q_DECL_OVERRIDE;
-
-private:
-    QODBCResultPrivate *d;
 };
 
-class QODBCResultPrivate
+class QODBCResultPrivate: public QSqlResultPrivate
 {
+    Q_DECLARE_PUBLIC(QODBCResult)
+
 public:
-    QODBCResultPrivate(QODBCDriverPrivate *dpp)
-    : hStmt(0), useSchema(false), hasSQLFetchScroll(true), driverPrivate(dpp), userForwardOnly(false)
+    Q_DECLARE_SQLDRIVER_PRIVATE(QODBCDriver)
+    QODBCResultPrivate(QODBCResult *q, const QODBCDriver *db)
+        : QSqlResultPrivate(q, db),
+          hStmt(0),
+          useSchema(false),
+          hasSQLFetchScroll(true),
+          userForwardOnly(false)
     {
-        unicode = dpp->unicode;
-        useSchema = dpp->useSchema;
-        disconnectCount = dpp->disconnectCount;
-        hasSQLFetchScroll = dpp->hasSQLFetchScroll;
+        unicode = drv_d_func()->unicode;
+        useSchema = drv_d_func()->useSchema;
+        disconnectCount = drv_d_func()->disconnectCount;
+        hasSQLFetchScroll = drv_d_func()->hasSQLFetchScroll;
     }
 
     inline void clearValues()
     { fieldCache.fill(QVariant()); fieldCacheIdx = 0; }
 
-    SQLHANDLE dpEnv() const { return driverPrivate ? driverPrivate->hEnv : 0;}
-    SQLHANDLE dpDbc() const { return driverPrivate ? driverPrivate->hDbc : 0;}
+    SQLHANDLE dpEnv() const { return drv_d_func() ? drv_d_func()->hEnv : 0;}
+    SQLHANDLE dpDbc() const { return drv_d_func() ? drv_d_func()->hDbc : 0;}
     SQLHANDLE hStmt;
 
     bool unicode;
@@ -206,23 +214,20 @@ public:
     int fieldCacheIdx;
     int disconnectCount;
     bool hasSQLFetchScroll;
-    QODBCDriverPrivate *driverPrivate;
     bool userForwardOnly;
 
-    bool isStmtHandleValid(const QSqlDriver *driver);
-    void updateStmtHandleState(const QSqlDriver *driver);
+    bool isStmtHandleValid();
+    void updateStmtHandleState();
 };
 
-bool QODBCResultPrivate::isStmtHandleValid(const QSqlDriver *driver)
+bool QODBCResultPrivate::isStmtHandleValid()
 {
-    const QODBCDriver *odbcdriver = static_cast<const QODBCDriver*> (driver);
-    return disconnectCount == odbcdriver->d_func()->disconnectCount;
+    return disconnectCount == drv_d_func()->disconnectCount;
 }
 
-void QODBCResultPrivate::updateStmtHandleState(const QSqlDriver *driver)
+void QODBCResultPrivate::updateStmtHandleState()
 {
-    const QODBCDriver *odbcdriver = static_cast<const QODBCDriver*> (driver);
-    disconnectCount = odbcdriver->d_func()->disconnectCount;
+    disconnectCount = drv_d_func()->disconnectCount;
 }
 
 static QString qWarnODBCHandle(int handleType, SQLHANDLE handle, int *nativeCode = 0)
@@ -947,26 +952,25 @@ QString QODBCDriverPrivate::adjustCase(const QString &identifier) const
 
 ////////////////////////////////////////////////////////////////////////////
 
-QODBCResult::QODBCResult(const QODBCDriver * db, QODBCDriverPrivate* p)
-: QSqlResult(db)
+QODBCResult::QODBCResult(const QODBCDriver *db)
+    : QSqlResult(*new QODBCResultPrivate(this, db))
 {
-    d = new QODBCResultPrivate(p);
 }
 
 QODBCResult::~QODBCResult()
 {
-    if (d->hStmt && d->isStmtHandleValid(driver()) && driver()->isOpen()) {
+    Q_D(QODBCResult);
+    if (d->hStmt && d->isStmtHandleValid() && driver()->isOpen()) {
         SQLRETURN r = SQLFreeHandle(SQL_HANDLE_STMT, d->hStmt);
         if (r != SQL_SUCCESS)
             qSqlWarning(QLatin1String("QODBCDriver: Unable to free statement handle ")
                          + QString::number(r), d);
     }
-
-    delete d;
 }
 
 bool QODBCResult::reset (const QString& query)
 {
+    Q_D(QODBCResult);
     setActive(false);
     setAt(QSql::BeforeFirstRow);
     d->rInf.clear();
@@ -976,7 +980,7 @@ bool QODBCResult::reset (const QString& query)
     // Always reallocate the statement handle - the statement attributes
     // are not reset if SQLFreeStmt() is called which causes some problems.
     SQLRETURN r;
-    if (d->hStmt && d->isStmtHandleValid(driver())) {
+    if (d->hStmt && d->isStmtHandleValid()) {
         r = SQLFreeHandle(SQL_HANDLE_STMT, d->hStmt);
         if (r != SQL_SUCCESS) {
             qSqlWarning(QLatin1String("QODBCResult::reset: Unable to free statement handle"), d);
@@ -991,7 +995,7 @@ bool QODBCResult::reset (const QString& query)
         return false;
     }
 
-    d->updateStmtHandleState(driver());
+    d->updateStmtHandleState();
 
     if (d->userForwardOnly) {
         r = SQLSetStmtAttr(d->hStmt,
@@ -1043,6 +1047,7 @@ bool QODBCResult::reset (const QString& query)
 
 bool QODBCResult::fetch(int i)
 {
+    Q_D(QODBCResult);
     if (!driver()->isOpen())
         return false;
 
@@ -1079,6 +1084,7 @@ bool QODBCResult::fetch(int i)
 
 bool QODBCResult::fetchNext()
 {
+    Q_D(QODBCResult);
     SQLRETURN r;
     d->clearValues();
 
@@ -1101,6 +1107,7 @@ bool QODBCResult::fetchNext()
 
 bool QODBCResult::fetchFirst()
 {
+    Q_D(QODBCResult);
     if (isForwardOnly() && at() != QSql::BeforeFirstRow)
         return false;
     SQLRETURN r;
@@ -1123,6 +1130,7 @@ bool QODBCResult::fetchFirst()
 
 bool QODBCResult::fetchPrevious()
 {
+    Q_D(QODBCResult);
     if (isForwardOnly())
         return false;
     SQLRETURN r;
@@ -1142,6 +1150,7 @@ bool QODBCResult::fetchPrevious()
 
 bool QODBCResult::fetchLast()
 {
+    Q_D(QODBCResult);
     SQLRETURN r;
     d->clearValues();
 
@@ -1181,6 +1190,7 @@ bool QODBCResult::fetchLast()
 
 QVariant QODBCResult::data(int field)
 {
+    Q_D(QODBCResult);
     if (field >= d->rInf.count() || field < 0) {
         qWarning() << "QODBCResult::data: column" << field << "out of range";
         return QVariant();
@@ -1281,6 +1291,7 @@ QVariant QODBCResult::data(int field)
 
 bool QODBCResult::isNull(int field)
 {
+    Q_D(const QODBCResult);
     if (field < 0 || field > d->fieldCache.size())
         return true;
     if (field <= d->fieldCacheIdx) {
@@ -1299,6 +1310,7 @@ int QODBCResult::size()
 
 int QODBCResult::numRowsAffected()
 {
+    Q_D(QODBCResult);
     SQLLEN affectedRowCount = 0;
     SQLRETURN r = SQLRowCount(d->hStmt, &affectedRowCount);
     if (r == SQL_SUCCESS)
@@ -1310,12 +1322,13 @@ int QODBCResult::numRowsAffected()
 
 bool QODBCResult::prepare(const QString& query)
 {
+    Q_D(QODBCResult);
     setActive(false);
     setAt(QSql::BeforeFirstRow);
     SQLRETURN r;
 
     d->rInf.clear();
-    if (d->hStmt && d->isStmtHandleValid(driver())) {
+    if (d->hStmt && d->isStmtHandleValid()) {
         r = SQLFreeHandle(SQL_HANDLE_STMT, d->hStmt);
         if (r != SQL_SUCCESS) {
             qSqlWarning(QLatin1String("QODBCResult::prepare: Unable to close statement"), d);
@@ -1330,7 +1343,7 @@ bool QODBCResult::prepare(const QString& query)
         return false;
     }
 
-    d->updateStmtHandleState(driver());
+    d->updateStmtHandleState();
 
     if (d->userForwardOnly) {
         r = SQLSetStmtAttr(d->hStmt,
@@ -1364,6 +1377,7 @@ bool QODBCResult::prepare(const QString& query)
 
 bool QODBCResult::exec()
 {
+    Q_D(QODBCResult);
     setActive(false);
     setAt(QSql::BeforeFirstRow);
     d->rInf.clear();
@@ -1444,7 +1458,7 @@ bool QODBCResult::exec()
                 dt->minute = qdt.time().minute();
                 dt->second = qdt.time().second();
 
-                int precision = d->driverPrivate->datetime_precision - 20; // (20 includes a separating period)
+                int precision = d->drv_d_func()->datetime_precision - 20; // (20 includes a separating period)
                 if (precision <= 0) {
                     dt->fraction = 0;
                 } else {
@@ -1460,7 +1474,7 @@ bool QODBCResult::exec()
                                       qParamType[bindValueType(i) & QSql::InOut],
                                       SQL_C_TIMESTAMP,
                                       SQL_TIMESTAMP,
-                                      d->driverPrivate->datetime_precision,
+                                      d->drv_d_func()->datetime_precision,
                                       precision,
                                       (void *) dt,
                                       0,
@@ -1713,6 +1727,7 @@ bool QODBCResult::exec()
 
 QSqlRecord QODBCResult::record() const
 {
+    Q_D(const QODBCResult);
     if (!isActive() || !isSelect())
         return QSqlRecord();
     return d->rInf;
@@ -1720,9 +1735,10 @@ QSqlRecord QODBCResult::record() const
 
 QVariant QODBCResult::lastInsertId() const
 {
+    Q_D(const QODBCResult);
     QString sql;
 
-    switch (d->driverPrivate->dbmsType) {
+    switch (driver()->dbmsType()) {
     case QSqlDriver::MSSqlServer:
     case QSqlDriver::Sybase:
         sql = QLatin1String("SELECT @@IDENTITY;");
@@ -1752,11 +1768,13 @@ QVariant QODBCResult::lastInsertId() const
 
 QVariant QODBCResult::handle() const
 {
+    Q_D(const QODBCResult);
     return QVariant(qRegisterMetaType<SQLHANDLE>("SQLHANDLE"), &d->hStmt);
 }
 
 bool QODBCResult::nextResult()
 {
+    Q_D(QODBCResult);
     setActive(false);
     setAt(QSql::BeforeFirstRow);
     d->rInf.clear();
@@ -1801,12 +1819,14 @@ void QODBCResult::virtual_hook(int id, void *data)
 
 void QODBCResult::detachFromResultSet()
 {
+    Q_D(QODBCResult);
     if (d->hStmt)
         SQLCloseCursor(d->hStmt);
 }
 
 void QODBCResult::setForwardOnly(bool forward)
 {
+    Q_D(QODBCResult);
     d->userForwardOnly = forward;
     QSqlResult::setForwardOnly(forward);
 }
@@ -2221,8 +2241,7 @@ void QODBCDriverPrivate::checkDateTimePrecision()
 
 QSqlResult *QODBCDriver::createResult() const
 {
-    Q_D(const QODBCDriver);
-    return new QODBCResult(this, const_cast<QODBCDriverPrivate*>(d));
+    return new QODBCResult(this);
 }
 
 bool QODBCDriver::beginTransaction()

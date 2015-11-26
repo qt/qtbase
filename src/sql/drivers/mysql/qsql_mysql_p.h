@@ -65,7 +65,7 @@ class QMYSQLDriverPrivate;
 
 class Q_EXPORT_SQLDRIVER_MYSQL QMYSQLDriver : public QSqlDriver
 {
-    friend class QMYSQLResult;
+    friend class QMYSQLResultPrivate;
     Q_DECLARE_PRIVATE(QMYSQLDriver)
     Q_OBJECT
 public:
