@@ -81,6 +81,8 @@ our @qpa_headers = ();
 
 # will be derived from sync.profile
 our %reverse_classnames = ();
+my %ignore_for_include_check = ();
+my %ignore_for_qt_begin_namespace_check = ();
 
 # global variables (modified by options)
 my $isunix = 0;
@@ -801,6 +803,8 @@ loadSyncProfile(\$basedir, \$out_basedir);
 @modules_to_sync = keys(%modules) if($#modules_to_sync == -1);
 
 my %allmoduleheadersprivate = map { $_ => 1 } @allmoduleheadersprivate;
+%ignore_for_include_check = map { $_ => 1 } @ignore_for_include_check;
+%ignore_for_qt_begin_namespace_check = map { $_ => 1 } @ignore_for_qt_begin_namespace_check;
 
 $isunix = checkUnix; #cache checkUnix
 
@@ -1157,12 +1161,8 @@ if($check_includes) {
                                 $public_header = 0 if($header eq $_);
                             }
                             if($public_header) {
-                                foreach (@ignore_for_include_check) {
-                                    $public_header = 0 if($header eq $_);
-                                }
-                                foreach(@ignore_for_qt_begin_namespace_check) {
-                                    $header_skip_qt_begin_namespace_test = 1 if ($header eq $_);
-                                }
+                                $public_header = 0 if ($ignore_for_include_check{$header});
+                                $header_skip_qt_begin_namespace_test = 1 if ($ignore_for_qt_begin_namespace_check{$header});
                             }
                         }
 
