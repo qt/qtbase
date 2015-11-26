@@ -213,8 +213,6 @@ struct Operator
     };
 };
 
-void qInitDrawhelperAsm();
-
 class QRasterPaintEngine;
 
 struct QSolidData
