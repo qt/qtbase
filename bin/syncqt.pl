@@ -321,6 +321,75 @@ sub classNames {
     return @ret;
 }
 
+sub check_header {
+    my ($lib, $header, $iheader, $public_header, $private_header) = @_;
+    my $header_skip_qt_begin_namespace_test = 0;
+
+    if ($public_header) {
+        return if ($ignore_for_include_check{$header});
+        $header_skip_qt_begin_namespace_test = 1 if ($ignore_for_qt_begin_namespace_check{$header});
+    }
+
+    open(F, "<$iheader") or return;
+    my $qt_begin_namespace_found = 0;
+    my $qt_end_namespace_found = 0;
+    my $qt_namespace_suffix = "";
+    my $line;
+    my $stop_processing = 0;
+    my $we_mean_it = 0;
+    while ($line = <F>) {
+        chomp $line;
+        my $output_line = 1;
+        if ($line =~ /^ *\# *pragma (qt_no_included_check|qt_sync_stop_processing)/) {
+            $stop_processing = 1;
+            last;
+        }
+        if ($line =~ /^ *\# *include/) {
+            my $include = $line;
+            if ($line =~ /<.*>/) {
+                $include =~ s,.*<(.*)>.*,$1,;
+            } elsif ($line =~ /".*"/) {
+                $include =~ s,.*"(.*)".*,$1,;
+            } else {
+                $include = 0;
+            }
+            if ($include && $public_header) {
+                print STDERR "$lib: ERROR: $iheader includes private header $include\n" if ($include =~ /_p.h$/);
+                for my $trylib (keys(%modules)) {
+                    if (-e "$out_basedir/include/$trylib/$include") {
+                        print "$lib: WARNING: $iheader includes $include when it should include $trylib/$include\n";
+                    }
+                }
+            }
+        } elsif (!$private_header) {
+            if ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_BEGIN_NAMESPACE(_[A-Z_]+)?\s*$/) {
+                $qt_namespace_suffix = defined($1) ? $1 : "";
+                $qt_begin_namespace_found = 1;
+            } elsif ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_END_NAMESPACE$qt_namespace_suffix\s*$/) {
+                $qt_end_namespace_found = 1;
+            }
+        } elsif ($line =~ "^// We mean it.") {
+            ++$we_mean_it;
+        }
+    }
+
+    if ($public_header) {
+        if ($header_skip_qt_begin_namespace_test == 0 and $stop_processing == 0) {
+            if ($qt_begin_namespace_found == 0) {
+                print "$lib: WARNING: $iheader does not include QT_BEGIN_NAMESPACE\n";
+            }
+
+            if ($qt_begin_namespace_found && $qt_end_namespace_found == 0) {
+                print "$lib: WARNING: $iheader has QT_BEGIN_NAMESPACE$qt_namespace_suffix but no QT_END_NAMESPACE$qt_namespace_suffix\n";
+            }
+        }
+    } elsif ($private_header) {
+        print "$lib: WARNING: $iheader does not have the \"We mean it.\" warning\n" if (!$we_mean_it);
+    }
+
+    close(F);
+}
+
 sub make_path {
     my ($dir, $lib, $be_verbose) = @_;
     unless(-e $dir) {
@@ -1141,7 +1210,6 @@ if($check_includes) {
             foreach my $subdir (@subdirs) {
                 my @headers = findFiles($subdir, "^[-a-z0-9_]*\\.h\$" , 0);
                 foreach my $header (@headers) {
-                    my $header_skip_qt_begin_namespace_test = 0;
                     $header = 0 if($header =~ /^ui_.*.h/);
                     $header = 0 if ($header eq lc($lib)."version.h");
                     foreach (@ignore_headers) {
@@ -1160,73 +1228,10 @@ if($check_includes) {
                             foreach (@ignore_for_master_contents) {
                                 $public_header = 0 if($header eq $_);
                             }
-                            if($public_header) {
-                                $public_header = 0 if ($ignore_for_include_check{$header});
-                                $header_skip_qt_begin_namespace_test = 1 if ($ignore_for_qt_begin_namespace_check{$header});
-                            }
                         }
 
                         my $iheader = $subdir . "/" . $header;
-                        if (open(F, "<$iheader")) {
-                            my $qt_begin_namespace_found = 0;
-                            my $qt_end_namespace_found = 0;
-                            my $qt_namespace_suffix = "";
-                            my $line;
-                            my $stop_processing = 0;
-                            my $we_mean_it = 0;
-                            while ($line = <F>) {
-                                chomp $line;
-                                my $output_line = 1;
-                                if ($line =~ /^ *\# *pragma (qt_no_included_check|qt_sync_stop_processing)/) {
-                                    $stop_processing = 1;
-                                    last;
-                                } elsif ($line =~ /^ *\# *include/) {
-                                    my $include = $line;
-                                    if ($line =~ /<.*>/) {
-                                        $include =~ s,.*<(.*)>.*,$1,;
-                                    } elsif ($line =~ /".*"/) {
-                                        $include =~ s,.*"(.*)".*,$1,;
-                                    } else {
-                                        $include = 0;
-                                    }
-                                    if ($include) {
-                                        if ($public_header) {
-                                            print STDERR "$lib: ERROR: $iheader includes private header $include\n" if ($include =~ /_p.h$/);
-                                            for my $trylib (keys(%modules)) {
-                                                if(-e "$out_basedir/include/$trylib/$include") {
-                                                    print "$lib: WARNING: $iheader includes $include when it should include $trylib/$include\n";
-                                                }
-                                            }
-                                        }
-                                    }
-                                } elsif (!$private_header) {
-                                    if ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_BEGIN_NAMESPACE(_[A-Z_]+)?\s*$/) {
-                                        $qt_namespace_suffix = defined($1) ? $1 : "";
-                                        $qt_begin_namespace_found = 1;
-                                    } elsif ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_END_NAMESPACE$qt_namespace_suffix\s*$/) {
-                                        $qt_end_namespace_found = 1;
-                                    }
-                                } elsif ($line =~ "^// We mean it.") {
-                                    ++$we_mean_it;
-                                }
-                            }
-
-                            if ($public_header) {
-                                if ($header_skip_qt_begin_namespace_test == 0 and $stop_processing  == 0) {
-                                    if ($qt_begin_namespace_found == 0) {
-                                        print "$lib: WARNING: $iheader does not include QT_BEGIN_NAMESPACE\n";
-                                    }
-
-                                    if ($qt_begin_namespace_found && $qt_end_namespace_found == 0) {
-                                        print "$lib: WARNING: $iheader has QT_BEGIN_NAMESPACE$qt_namespace_suffix but no QT_END_NAMESPACE$qt_namespace_suffix\n";
-                                    }
-                                }
-                            } elsif ($private_header) {
-                                print "$lib: WARNING: $iheader does not have the \"We mean it.\" warning\n" if (!$we_mean_it);
-                            }
-
-                            close(F);
-                        }
+                        check_header($lib, $header, $iheader, $public_header, $private_header);
                     }
                 }
             }
