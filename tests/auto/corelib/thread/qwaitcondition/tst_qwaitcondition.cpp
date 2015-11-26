@@ -453,6 +453,9 @@ public:
 
 void tst_QWaitCondition::wakeOne()
 {
+    static const int firstWaitInterval = 1000;
+    static const int waitInterval = 30;
+
     int x;
     QAtomicInt count;
     // wake up threads, one at a time
@@ -497,7 +500,7 @@ void tst_QWaitCondition::wakeOne()
             for (int y = 0; y < ThreadCount; ++y) {
                 if (thread_exited[y])
                     continue;
-                if (thread[y].wait(exited > 0 ? 10 : 1000)) {
+                if (thread[y].wait(exited > 0 ? waitInterval : firstWaitInterval)) {
                     thread_exited[y] = true;
                     ++exited;
                 }
@@ -546,7 +549,7 @@ void tst_QWaitCondition::wakeOne()
             for (int y = 0; y < ThreadCount; ++y) {
                 if (thread_exited[y])
                     continue;
-                if (rwthread[y].wait(exited > 0 ? 10 : 1000)) {
+                if (rwthread[y].wait(exited > 0 ? waitInterval : firstWaitInterval)) {
                     thread_exited[y] = true;
                     ++exited;
                 }
@@ -603,7 +606,7 @@ void tst_QWaitCondition::wakeOne()
             for (int y = 0; y < ThreadCount; ++y) {
                 if (thread_exited[y])
                     continue;
-                if (thread[y].wait(exited > 0 ? 10 : 1000)) {
+                if (thread[y].wait(exited > 0 ? waitInterval : firstWaitInterval)) {
                     thread_exited[y] = true;
                     ++exited;
                 }
@@ -654,7 +657,7 @@ void tst_QWaitCondition::wakeOne()
             for (int y = 0; y < ThreadCount; ++y) {
                 if (thread_exited[y])
                     continue;
-                if (rwthread[y].wait(exited > 0 ? 10 : 1000)) {
+                if (rwthread[y].wait(exited > 0 ? waitInterval : firstWaitInterval)) {
                     thread_exited[y] = true;
                     ++exited;
                 }
