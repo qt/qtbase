@@ -43,6 +43,8 @@
 #include "private/qkeymapper_p.h"
 #include <qpa/qplatforminputcontext_p.h>
 
+#include <QtGui/qtransform.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -267,5 +269,30 @@ void QPlatformInputContextPrivate::setInputMethodAccepted(bool accepted)
     QPlatformInputContextPrivate::s_inputMethodAccepted = accepted;
 }
 
+/*!
+ * \brief QPlatformInputContext::setSelectionOnFocusObject
+ * \param anchorPos Beginning of selection in currently active window coordinates
+ * \param cursorPos End of selection in currently active window coordinates
+ */
+void QPlatformInputContext::setSelectionOnFocusObject(const QPointF &anchorPos, const QPointF &cursorPos)
+{
+    QObject *focus = qApp->focusObject();
+    if (!focus)
+        return;
+
+    QInputMethod *im = QGuiApplication::inputMethod();
+    const QTransform mapToLocal = im->inputItemTransform().inverted();
+    bool success;
+    int anchor = QInputMethod::queryFocusObject(Qt::ImCursorPosition, anchorPos * mapToLocal).toInt(&success);
+    if (success) {
+        int cursor = QInputMethod::queryFocusObject(Qt::ImCursorPosition, cursorPos * mapToLocal).toInt(&success);
+        if (success) {
+            QList<QInputMethodEvent::Attribute> imAttributes;
+            imAttributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Selection, anchor, cursor - anchor, QVariant()));
+            QInputMethodEvent event(QString(), imAttributes);
+            QGuiApplication::sendEvent(focus, &event);
+        }
+    }
+}
 
 QT_END_NAMESPACE

@@ -55,6 +55,7 @@ class Q_GUI_EXPORT QInputMethod : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QInputMethod)
     Q_PROPERTY(QRectF cursorRectangle READ cursorRectangle NOTIFY cursorRectangleChanged)
+    Q_PROPERTY(QRectF anchorRectangle READ anchorRectangle NOTIFY anchorRectangleChanged)
     Q_PROPERTY(QRectF keyboardRectangle READ keyboardRectangle NOTIFY keyboardRectangleChanged)
     Q_PROPERTY(bool visible READ isVisible NOTIFY visibleChanged)
     Q_PROPERTY(bool animating READ isAnimating NOTIFY animatingChanged)
@@ -70,6 +71,7 @@ public:
 
     // in window coordinates
     QRectF cursorRectangle() const; // ### what if we have rotations for the item?
+    QRectF anchorRectangle() const; // ### ditto
 
     // keyboard geometry in window coords
     QRectF keyboardRectangle() const;
@@ -102,6 +104,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void cursorRectangleChanged();
+    void anchorRectangleChanged();
     void keyboardRectangleChanged();
     void visibleChanged();
     void animatingChanged();

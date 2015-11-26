@@ -97,6 +97,7 @@ void QInputMethod::setInputItemTransform(const QTransform &transform)
 
     d->inputItemTransform = transform;
     emit cursorRectangleChanged();
+    emit anchorRectangleChanged();
 }
 
 
@@ -126,6 +127,19 @@ void QInputMethod::setInputItemRectangle(const QRectF &rect)
     d->inputRectangle = rect;
 }
 
+static QRectF inputMethodQueryRectangle_helper(Qt::InputMethodQuery imquery, const QTransform &xform)
+{
+    QRectF r;
+    if (QObject *focusObject = qGuiApp->focusObject()) {
+        QInputMethodQueryEvent query(imquery);
+        QGuiApplication::sendEvent(focusObject, &query);
+        r = query.value(imquery).toRectF();
+        if (r.isValid())
+            r = xform.mapRect(r);
+    }
+    return r;
+}
+
 /*!
     \property QInputMethod::cursorRectangle
     \brief Input item's cursor rectangle in window coordinates.
@@ -136,18 +150,20 @@ void QInputMethod::setInputItemRectangle(const QRectF &rect)
 QRectF QInputMethod::cursorRectangle() const
 {
     Q_D(const QInputMethod);
+    return inputMethodQueryRectangle_helper(Qt::ImCursorRectangle, d->inputItemTransform);
+}
 
-    QObject *focusObject = qGuiApp->focusObject();
-    if (!focusObject)
-        return QRectF();
+/*!
+    \property QInputMethod::anchorRectangle
+    \brief Input item's anchor rectangle in window coordinates.
 
-    QInputMethodQueryEvent query(Qt::ImCursorRectangle);
-    QGuiApplication::sendEvent(focusObject, &query);
-    QRectF r = query.value(Qt::ImCursorRectangle).toRectF();
-    if (!r.isValid())
-        return QRectF();
-
-    return d->inputItemTransform.mapRect(r);
+    Anchor rectangle is often used by various text editing controls
+    like text prediction popups for following the text selection.
+*/
+QRectF QInputMethod::anchorRectangle() const
+{
+    Q_D(const QInputMethod);
+    return inputMethodQueryRectangle_helper(Qt::ImAnchorRectangle, d->inputItemTransform);
 }
 
 /*!
@@ -300,6 +316,10 @@ void QInputMethod::update(Qt::InputMethodQueries queries)
 
     if (queries & Qt::ImCursorRectangle)
         emit cursorRectangleChanged();
+
+    if (queries & (Qt::ImAnchorRectangle))
+        emit anchorRectangleChanged();
+
 }
 
 /*!
