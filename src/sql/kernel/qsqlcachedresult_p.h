@@ -89,6 +89,24 @@ private:
     QSqlCachedResultPrivate *d;
 };
 
+class QSqlCachedResultPrivate
+{
+public:
+    QSqlCachedResultPrivate();
+    bool canSeek(int i) const;
+    inline int cacheCount() const;
+    void init(int count, bool fo);
+    void cleanup();
+    int nextIndex();
+    void revertLast();
+
+    QSqlCachedResult::ValueCache cache;
+    int rowCacheEnd;
+    int colCount;
+    bool forwardOnly;
+    bool atEnd;
+};
+
 QT_END_NAMESPACE
 
 #endif // QSQLCACHEDRESULT_P_H

@@ -53,24 +53,6 @@ QT_BEGIN_NAMESPACE
 
 static const uint initial_cache_size = 128;
 
-class QSqlCachedResultPrivate
-{
-public:
-    QSqlCachedResultPrivate();
-    bool canSeek(int i) const;
-    inline int cacheCount() const;
-    void init(int count, bool fo);
-    void cleanup();
-    int nextIndex();
-    void revertLast();
-
-    QSqlCachedResult::ValueCache cache;
-    int rowCacheEnd;
-    int colCount;
-    bool forwardOnly;
-    bool atEnd;
-};
-
 QSqlCachedResultPrivate::QSqlCachedResultPrivate():
     rowCacheEnd(0), colCount(0), forwardOnly(false), atEnd(false)
 {
