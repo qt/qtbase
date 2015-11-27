@@ -232,7 +232,7 @@ QFile::QFile(QFilePrivate &dd)
 }
 #else
 /*!
-    \internal
+    Constructs a QFile object.
 */
 QFile::QFile()
     : QFileDevice(*new QFilePrivate, 0)
