@@ -443,50 +443,47 @@ Qt::DropActions qt_mac_mapNSDragOperations(NSDragOperation nsActions)
 // Misc
 //
 
-// Changes the process type for this process to kProcessTransformToForegroundApplication,
+// Sets the activation policy for this process to NSApplicationActivationPolicyRegular,
 // unless either LSUIElement or LSBackgroundOnly is set in the Info.plist.
 void qt_mac_transformProccessToForegroundApplication()
 {
-    ProcessSerialNumber psn;
-    if (GetCurrentProcess(&psn) == noErr) {
-        bool forceTransform = true;
-        CFTypeRef value = CFBundleGetValueForInfoDictionaryKey(CFBundleGetMainBundle(),
-                                                               CFSTR("LSUIElement"));
+    bool forceTransform = true;
+    CFTypeRef value = CFBundleGetValueForInfoDictionaryKey(CFBundleGetMainBundle(),
+                                                           CFSTR("LSUIElement"));
+    if (value) {
+        CFTypeID valueType = CFGetTypeID(value);
+        // Officially it's supposed to be a string, a boolean makes sense, so we'll check.
+        // A number less so, but OK.
+        if (valueType == CFStringGetTypeID())
+            forceTransform = !(QCFString::toQString(static_cast<CFStringRef>(value)).toInt());
+        else if (valueType == CFBooleanGetTypeID())
+            forceTransform = !CFBooleanGetValue(static_cast<CFBooleanRef>(value));
+        else if (valueType == CFNumberGetTypeID()) {
+            int valueAsInt;
+            CFNumberGetValue(static_cast<CFNumberRef>(value), kCFNumberIntType, &valueAsInt);
+            forceTransform = !valueAsInt;
+        }
+    }
+
+    if (forceTransform) {
+        value = CFBundleGetValueForInfoDictionaryKey(CFBundleGetMainBundle(),
+                                                     CFSTR("LSBackgroundOnly"));
         if (value) {
             CFTypeID valueType = CFGetTypeID(value);
-            // Officially it's supposed to be a string, a boolean makes sense, so we'll check.
-            // A number less so, but OK.
-            if (valueType == CFStringGetTypeID())
-                forceTransform = !(QCFString::toQString(static_cast<CFStringRef>(value)).toInt());
-            else if (valueType == CFBooleanGetTypeID())
+            if (valueType == CFBooleanGetTypeID())
                 forceTransform = !CFBooleanGetValue(static_cast<CFBooleanRef>(value));
+            else if (valueType == CFStringGetTypeID())
+                forceTransform = !(QCFString::toQString(static_cast<CFStringRef>(value)).toInt());
             else if (valueType == CFNumberGetTypeID()) {
                 int valueAsInt;
                 CFNumberGetValue(static_cast<CFNumberRef>(value), kCFNumberIntType, &valueAsInt);
                 forceTransform = !valueAsInt;
             }
         }
+    }
 
-        if (forceTransform) {
-            value = CFBundleGetValueForInfoDictionaryKey(CFBundleGetMainBundle(),
-                                                         CFSTR("LSBackgroundOnly"));
-            if (value) {
-                CFTypeID valueType = CFGetTypeID(value);
-                if (valueType == CFBooleanGetTypeID())
-                    forceTransform = !CFBooleanGetValue(static_cast<CFBooleanRef>(value));
-                else if (valueType == CFStringGetTypeID())
-                    forceTransform = !(QCFString::toQString(static_cast<CFStringRef>(value)).toInt());
-                else if (valueType == CFNumberGetTypeID()) {
-                    int valueAsInt;
-                    CFNumberGetValue(static_cast<CFNumberRef>(value), kCFNumberIntType, &valueAsInt);
-                    forceTransform = !valueAsInt;
-                }
-            }
-        }
-
-        if (forceTransform) {
-            TransformProcessType(&psn, kProcessTransformToForegroundApplication);
-        }
+    if (forceTransform) {
+        [[NSApplication sharedApplication] setActivationPolicy:NSApplicationActivationPolicyRegular];
     }
 }
 static CGColorSpaceRef m_genericColorSpace = 0;
