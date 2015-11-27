@@ -157,7 +157,8 @@ QSqlDriver::~QSqlDriver()
 
 bool QSqlDriver::isOpen() const
 {
-    return d_func()->isOpen;
+    Q_D(const QSqlDriver);
+    return d->isOpen;
 }
 
 /*!
@@ -167,7 +168,8 @@ bool QSqlDriver::isOpen() const
 
 bool QSqlDriver::isOpenError() const
 {
-    return d_func()->isOpenError;
+    Q_D(const QSqlDriver);
+    return d->isOpenError;
 }
 
 /*!
@@ -274,7 +276,8 @@ bool QSqlDriver::isOpenError() const
 
 void QSqlDriver::setOpen(bool open)
 {
-    d_func()->isOpen = open;
+    Q_D(QSqlDriver);
+    d->isOpen = open;
 }
 
 /*!
@@ -288,9 +291,10 @@ void QSqlDriver::setOpen(bool open)
 
 void QSqlDriver::setOpenError(bool error)
 {
-    d_func()->isOpenError = error;
+    Q_D(QSqlDriver);
+    d->isOpenError = error;
     if (error)
-        d_func()->isOpen = false;
+        d->isOpen = false;
 }
 
 /*!
@@ -341,7 +345,8 @@ bool QSqlDriver::rollbackTransaction()
 
 void QSqlDriver::setLastError(const QSqlError &error)
 {
-    d_func()->error = error;
+    Q_D(QSqlDriver);
+    d->error = error;
 }
 
 /*!
@@ -351,7 +356,8 @@ void QSqlDriver::setLastError(const QSqlError &error)
 
 QSqlError QSqlDriver::lastError() const
 {
-    return d_func()->error;
+    Q_D(const QSqlDriver);
+    return d->error;
 }
 
 /*!
@@ -766,7 +772,8 @@ QStringList QSqlDriver::subscribedToNotifications() const
 */
 void QSqlDriver::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy)
 {
-    d_func()->precisionPolicy = precisionPolicy;
+    Q_D(QSqlDriver);
+    d->precisionPolicy = precisionPolicy;
 }
 
 /*!
@@ -779,7 +786,8 @@ void QSqlDriver::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy prec
 */
 QSql::NumericalPrecisionPolicy QSqlDriver::numericalPrecisionPolicy() const
 {
-    return d_func()->precisionPolicy;
+    Q_D(const QSqlDriver);
+    return d->precisionPolicy;
 }
 
 /*!
@@ -789,7 +797,8 @@ QSql::NumericalPrecisionPolicy QSqlDriver::numericalPrecisionPolicy() const
 */
 QSqlDriver::DbmsType QSqlDriver::dbmsType() const
 {
-    return d_func()->dbmsType;
+    Q_D(const QSqlDriver);
+    return d->dbmsType;
 }
 
 /*!
