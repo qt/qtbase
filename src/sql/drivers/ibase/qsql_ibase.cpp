@@ -351,16 +351,16 @@ public:
     explicit QIBaseResult(const QIBaseDriver* db);
     virtual ~QIBaseResult();
 
-    bool prepare(const QString& query);
-    bool exec();
-    QVariant handle() const;
+    bool prepare(const QString &query) Q_DECL_OVERRIDE;
+    bool exec() Q_DECL_OVERRIDE;
+    QVariant handle() const Q_DECL_OVERRIDE;
 
 protected:
-    bool gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx);
-    bool reset (const QString& query);
-    int size();
-    int numRowsAffected();
-    QSqlRecord record() const;
+    bool gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx) Q_DECL_OVERRIDE;
+    bool reset (const QString &query) Q_DECL_OVERRIDE;
+    int size() Q_DECL_OVERRIDE;
+    int numRowsAffected() Q_DECL_OVERRIDE;
+    QSqlRecord record() const Q_DECL_OVERRIDE;
 
 private:
     QIBaseResultPrivate* d;

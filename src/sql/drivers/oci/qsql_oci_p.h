@@ -72,26 +72,26 @@ public:
     QOCIDriver(OCIEnv* env, OCISvcCtx* ctx, QObject* parent = 0);
     ~QOCIDriver();
     bool hasFeature(DriverFeature f) const;
-    bool open(const QString & db,
-              const QString & user,
-              const QString & password,
-              const QString & host,
+    bool open(const QString &db,
+              const QString &user,
+              const QString &password,
+              const QString &host,
               int port,
-              const QString& connOpts);
-    void close();
-    QSqlResult *createResult() const;
-    QStringList tables(QSql::TableType) const;
-    QSqlRecord record(const QString& tablename) const;
-    QSqlIndex primaryIndex(const QString& tablename) const;
+              const QString &connOpts) Q_DECL_OVERRIDE;
+    void close() Q_DECL_OVERRIDE;
+    QSqlResult *createResult() const Q_DECL_OVERRIDE;
+    QStringList tables(QSql::TableType) const Q_DECL_OVERRIDE;
+    QSqlRecord record(const QString &tablename) const Q_DECL_OVERRIDE;
+    QSqlIndex primaryIndex(const QString& tablename) const Q_DECL_OVERRIDE;
     QString formatValue(const QSqlField &field,
-                        bool trimStrings) const;
-    QVariant handle() const;
-    QString escapeIdentifier(const QString &identifier, IdentifierType) const;
+                        bool trimStrings) const Q_DECL_OVERRIDE;
+    QVariant handle() const Q_DECL_OVERRIDE;
+    QString escapeIdentifier(const QString &identifier, IdentifierType) const Q_DECL_OVERRIDE;
 
 protected:
-    bool                beginTransaction();
-    bool                commitTransaction();
-    bool                rollbackTransaction();
+    bool                beginTransaction() Q_DECL_OVERRIDE;
+    bool                commitTransaction() Q_DECL_OVERRIDE;
+    bool                rollbackTransaction() Q_DECL_OVERRIDE;
 };
 
 QT_END_NAMESPACE

@@ -73,29 +73,29 @@ public:
     explicit QSQLite2Driver(QObject *parent = 0);
     explicit QSQLite2Driver(sqlite *connection, QObject *parent = 0);
     ~QSQLite2Driver();
-    bool hasFeature(DriverFeature f) const;
-    bool open(const QString & db,
-                   const QString & user,
-                   const QString & password,
-                   const QString & host,
+    bool hasFeature(DriverFeature f) const Q_DECL_OVERRIDE;
+    bool open(const QString &db,
+                   const QString &user,
+                   const QString &password,
+                   const QString &host,
                    int port,
-                   const QString & connOpts);
-    bool open(const QString & db,
-            const QString & user,
-            const QString & password,
-            const QString & host,
-            int port) { return open (db, user, password, host, port, QString()); }
-    void close();
-    QSqlResult *createResult() const;
-    bool beginTransaction();
-    bool commitTransaction();
-    bool rollbackTransaction();
-    QStringList tables(QSql::TableType) const;
+                   const QString &connOpts) Q_DECL_OVERRIDE;
+    bool open(const QString &db,
+            const QString &user,
+            const QString &password,
+            const QString &host,
+            int port) { return open(db, user, password, host, port, QString()); }
+    void close() Q_DECL_OVERRIDE;
+    QSqlResult *createResult() const Q_DECL_OVERRIDE;
+    bool beginTransaction() Q_DECL_OVERRIDE;
+    bool commitTransaction() Q_DECL_OVERRIDE;
+    bool rollbackTransaction() Q_DECL_OVERRIDE;
+    QStringList tables(QSql::TableType) const Q_DECL_OVERRIDE;
 
-    QSqlRecord record(const QString& tablename) const;
-    QSqlIndex primaryIndex(const QString &table) const;
-    QVariant handle() const;
-    QString escapeIdentifier(const QString &identifier, IdentifierType) const;
+    QSqlRecord record(const QString &tablename) const Q_DECL_OVERRIDE;
+    QSqlIndex primaryIndex(const QString &table) const Q_DECL_OVERRIDE;
+    QVariant handle() const Q_DECL_OVERRIDE;
+    QString escapeIdentifier(const QString &identifier, IdentifierType) const Q_DECL_OVERRIDE;
 };
 
 QT_END_NAMESPACE

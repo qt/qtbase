@@ -59,27 +59,27 @@ public:
     { QSqlResult::setLastError(
             QSqlError(QLatin1String("Driver not loaded"), QLatin1String("Driver not loaded"), QSqlError::ConnectionError)); }
 protected:
-    inline QVariant data(int) { return QVariant(); }
-    inline bool reset (const QString&) { return false; }
-    inline bool fetch(int) { return false; }
-    inline bool fetchFirst() { return false; }
-    inline bool fetchLast() { return false; }
-    inline bool isNull(int) { return false; }
-    inline int size()  { return -1; }
-    inline int numRowsAffected() { return 0; }
+    inline QVariant data(int) Q_DECL_OVERRIDE { return QVariant(); }
+    inline bool reset (const QString&) Q_DECL_OVERRIDE { return false; }
+    inline bool fetch(int) Q_DECL_OVERRIDE { return false; }
+    inline bool fetchFirst() Q_DECL_OVERRIDE { return false; }
+    inline bool fetchLast() Q_DECL_OVERRIDE { return false; }
+    inline bool isNull(int) Q_DECL_OVERRIDE { return false; }
+    inline int size() Q_DECL_OVERRIDE { return -1; }
+    inline int numRowsAffected() Q_DECL_OVERRIDE { return 0; }
 
-    inline void setAt(int) {}
-    inline void setActive(bool) {}
-    inline void setLastError(const QSqlError&) {}
-    inline void setQuery(const QString&) {}
-    inline void setSelect(bool) {}
-    inline void setForwardOnly(bool) {}
+    inline void setAt(int) Q_DECL_OVERRIDE {}
+    inline void setActive(bool) Q_DECL_OVERRIDE {}
+    inline void setLastError(const QSqlError&) Q_DECL_OVERRIDE {}
+    inline void setQuery(const QString&) Q_DECL_OVERRIDE {}
+    inline void setSelect(bool) Q_DECL_OVERRIDE {}
+    inline void setForwardOnly(bool) Q_DECL_OVERRIDE {}
 
-    inline bool exec() { return false; }
-    inline bool prepare(const QString&) { return false; }
-    inline bool savePrepare(const QString&) { return false; }
-    inline void bindValue(int, const QVariant&, QSql::ParamType) {}
-    inline void bindValue(const QString&, const QVariant&, QSql::ParamType) {}
+    inline bool exec() Q_DECL_OVERRIDE { return false; }
+    inline bool prepare(const QString&) Q_DECL_OVERRIDE { return false; }
+    inline bool savePrepare(const QString&) Q_DECL_OVERRIDE { return false; }
+    inline void bindValue(int, const QVariant&, QSql::ParamType) Q_DECL_OVERRIDE {}
+    inline void bindValue(const QString&, const QVariant&, QSql::ParamType) Q_DECL_OVERRIDE {}
 };
 
 class QSqlNullDriver : public QSqlDriver
@@ -88,17 +88,16 @@ public:
     inline QSqlNullDriver(): QSqlDriver()
     { QSqlDriver::setLastError(
             QSqlError(QLatin1String("Driver not loaded"), QLatin1String("Driver not loaded"), QSqlError::ConnectionError)); }
-    inline bool hasFeature(DriverFeature) const { return false; }
-    inline bool open(const QString &, const QString & , const QString & ,
-              const QString &, int, const QString&)
+    inline bool hasFeature(DriverFeature) const Q_DECL_OVERRIDE { return false; }
+    inline bool open(const QString &, const QString &, const QString &, const QString &, int, const QString&) Q_DECL_OVERRIDE
     { return false; }
-    inline void close() {}
-    inline QSqlResult *createResult() const { return new QSqlNullResult(this); }
+    inline void close() Q_DECL_OVERRIDE {}
+    inline QSqlResult *createResult() const Q_DECL_OVERRIDE { return new QSqlNullResult(this); }
 
 protected:
-    inline void setOpen(bool) {}
-    inline void setOpenError(bool) {}
-    inline void setLastError(const QSqlError&) {}
+    inline void setOpen(bool) Q_DECL_OVERRIDE {}
+    inline void setOpenError(bool) Q_DECL_OVERRIDE {}
+    inline void setLastError(const QSqlError&) Q_DECL_OVERRIDE {}
 };
 
 QT_END_NAMESPACE

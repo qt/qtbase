@@ -98,16 +98,16 @@ class QSQLite2Result : public QSqlCachedResult
 public:
     explicit QSQLite2Result(const QSQLite2Driver* db);
     ~QSQLite2Result();
-    QVariant handle() const;
+    QVariant handle() const Q_DECL_OVERRIDE;
 
 protected:
-    bool gotoNext(QSqlCachedResult::ValueCache& row, int idx);
-    bool reset (const QString& query);
-    int size();
-    int numRowsAffected();
-    QSqlRecord record() const;
-    void detachFromResultSet();
-    void virtual_hook(int id, void *data);
+    bool gotoNext(QSqlCachedResult::ValueCache &row, int idx) Q_DECL_OVERRIDE;
+    bool reset(const QString &query) Q_DECL_OVERRIDE;
+    int size() Q_DECL_OVERRIDE;
+    int numRowsAffected() Q_DECL_OVERRIDE;
+    QSqlRecord record() const Q_DECL_OVERRIDE;
+    void detachFromResultSet() Q_DECL_OVERRIDE;
+    void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
 
 private:
     QSQLite2ResultPrivate* d;

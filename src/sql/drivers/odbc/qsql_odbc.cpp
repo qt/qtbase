@@ -152,28 +152,28 @@ public:
     QODBCResult(const QODBCDriver *db, QODBCDriverPrivate *p);
     virtual ~QODBCResult();
 
-    bool prepare(const QString &query);
-    bool exec();
+    bool prepare(const QString &query) Q_DECL_OVERRIDE;
+    bool exec() Q_DECL_OVERRIDE;
 
-    QVariant lastInsertId() const;
-    QVariant handle() const;
-    virtual void setForwardOnly(bool forward);
+    QVariant lastInsertId() const Q_DECL_OVERRIDE;
+    QVariant handle() const Q_DECL_OVERRIDE;
+    void setForwardOnly(bool forward) Q_DECL_OVERRIDE;
 
 protected:
-    bool fetchNext();
-    bool fetchFirst();
-    bool fetchLast();
-    bool fetchPrevious();
-    bool fetch(int i);
-    bool reset (const QString &query);
-    QVariant data(int field);
-    bool isNull(int field);
-    int size();
-    int numRowsAffected();
-    QSqlRecord record() const;
-    void virtual_hook(int id, void *data);
-    void detachFromResultSet();
-    bool nextResult();
+    bool fetchNext() Q_DECL_OVERRIDE;
+    bool fetchFirst() Q_DECL_OVERRIDE;
+    bool fetchLast() Q_DECL_OVERRIDE;
+    bool fetchPrevious() Q_DECL_OVERRIDE;
+    bool fetch(int i) Q_DECL_OVERRIDE;
+    bool reset(const QString &query) Q_DECL_OVERRIDE;
+    QVariant data(int field) Q_DECL_OVERRIDE;
+    bool isNull(int field) Q_DECL_OVERRIDE;
+    int size() Q_DECL_OVERRIDE;
+    int numRowsAffected() Q_DECL_OVERRIDE;
+    QSqlRecord record() const Q_DECL_OVERRIDE;
+    void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
+    void detachFromResultSet() Q_DECL_OVERRIDE;
+    bool nextResult() Q_DECL_OVERRIDE;
 
 private:
     QODBCResultPrivate *d;

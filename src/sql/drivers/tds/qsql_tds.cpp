@@ -157,11 +157,11 @@ public:
 
 protected:
     void cleanup();
-    bool reset (const QString& query);
-    int size();
-    int numRowsAffected();
-    bool gotoNext(QSqlCachedResult::ValueCache &values, int index);
-    QSqlRecord record() const;
+    bool reset(const QString &query) Q_DECL_OVERRIDE;
+    int size() Q_DECL_OVERRIDE;
+    int numRowsAffected() Q_DECL_OVERRIDE;
+    bool gotoNext(QSqlCachedResult::ValueCache &values, int index) Q_DECL_OVERRIDE;
+    QSqlRecord record() const Q_DECL_OVERRIDE;
 
 private:
     QTDSResultPrivate* d;

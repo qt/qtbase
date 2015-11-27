@@ -82,29 +82,29 @@ public:
     explicit QTDSDriver(QObject* parent = 0);
     QTDSDriver(LOGINREC* rec, const QString& host, const QString &db, QObject* parent = 0);
     ~QTDSDriver();
-    bool hasFeature(DriverFeature f) const;
-    bool open(const QString & db,
-               const QString & user,
-               const QString & password,
-               const QString & host,
+    bool hasFeature(DriverFeature f) const Q_DECL_OVERRIDE;
+    bool open(const QString &db,
+               const QString &user,
+               const QString &password,
+               const QString &host,
                int port,
-               const QString& connOpts);
-    void close();
-    QStringList tables(QSql::TableType) const;
-    QSqlResult *createResult() const;
-    QSqlRecord record(const QString& tablename) const;
-    QSqlIndex primaryIndex(const QString& tablename) const;
+               const QString &connOpts) Q_DECL_OVERRIDE;
+    void close() Q_DECL_OVERRIDE;
+    QStringList tables(QSql::TableType) const Q_DECL_OVERRIDE;
+    QSqlResult *createResult() const Q_DECL_OVERRIDE;
+    QSqlRecord record(const QString &tablename) const Q_DECL_OVERRIDE;
+    QSqlIndex primaryIndex(const QString &tablename) const Q_DECL_OVERRIDE;
 
     QString formatValue(const QSqlField &field,
-                         bool trimStrings) const;
-    QVariant handle() const;
+                         bool trimStrings) const Q_DECL_OVERRIDE;
+    QVariant handle() const Q_DECL_OVERRIDE;
 
-    QString escapeIdentifier(const QString &identifier, IdentifierType type) const;
+    QString escapeIdentifier(const QString &identifier, IdentifierType type) const Q_DECL_OVERRIDE;
 
 protected:
-    bool beginTransaction();
-    bool commitTransaction();
-    bool rollbackTransaction();
+    bool beginTransaction() Q_DECL_OVERRIDE;
+    bool commitTransaction() Q_DECL_OVERRIDE;
+    bool rollbackTransaction() Q_DECL_OVERRIDE;
 private:
     void init();
 };

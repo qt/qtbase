@@ -67,24 +67,24 @@ public:
     explicit QDB2Driver(QObject* parent = 0);
     QDB2Driver(Qt::HANDLE env, Qt::HANDLE con, QObject* parent = 0);
     ~QDB2Driver();
-    bool hasFeature(DriverFeature) const;
-    void close();
-    QSqlRecord record(const QString& tableName) const;
-    QStringList tables(QSql::TableType type) const;
-    QSqlResult *createResult() const;
-    QSqlIndex primaryIndex(const QString& tablename) const;
-    bool beginTransaction();
-    bool commitTransaction();
-    bool rollbackTransaction();
-    QString formatValue(const QSqlField &field, bool trimStrings) const;
-    QVariant handle() const;
-    bool open(const QString& db,
-               const QString& user,
-               const QString& password,
-               const QString& host,
+    bool hasFeature(DriverFeature) const Q_DECL_OVERRIDE;
+    void close() Q_DECL_OVERRIDE;
+    QSqlRecord record(const QString &tableName) const Q_DECL_OVERRIDE;
+    QStringList tables(QSql::TableType type) const Q_DECL_OVERRIDE;
+    QSqlResult *createResult() const Q_DECL_OVERRIDE;
+    QSqlIndex primaryIndex(const QString &tablename) const Q_DECL_OVERRIDE;
+    bool beginTransaction() Q_DECL_OVERRIDE;
+    bool commitTransaction() Q_DECL_OVERRIDE;
+    bool rollbackTransaction() Q_DECL_OVERRIDE;
+    QString formatValue(const QSqlField &field, bool trimStrings) const Q_DECL_OVERRIDE;
+    QVariant handle() const Q_DECL_OVERRIDE;
+    bool open(const QString &db,
+               const QString &user,
+               const QString &password,
+               const QString &host,
                int port,
-               const QString& connOpts);
-    QString escapeIdentifier(const QString &identifier, IdentifierType type) const;
+               const QString& connOpts) Q_DECL_OVERRIDE;
+    QString escapeIdentifier(const QString &identifier, IdentifierType type) const Q_DECL_OVERRIDE;
 
 private:
     bool setAutoCommit(bool autoCommit);
