@@ -1004,6 +1004,9 @@ foreach my $lib (@modules_to_sync) {
                         my $clean_header;
                         my $iheader = $subdir . "/" . $header;
                         $iheader =~ s/^\Q$basedir\E/$out_basedir/ if ($shadow);
+                        if ($check_includes) {
+                            check_header($lib, $header, $iheader, $public_header, !$public_header && !$qpa_header);
+                        }
                         my @classes = $public_header && (!$minimal && $is_qt) ? classNames($iheader, \$clean_header) : ();
                         if($showonly) {
                             print "$header [$lib]\n";
@@ -1198,43 +1201,6 @@ foreach my $lib (@modules_to_sync) {
         $headers_pri_contents .= "SYNCQT.INJECTIONS = $pri_injections\n";
         my $headers_pri_file = "$out_basedir/include/$lib/headers.pri";
         writeFile($headers_pri_file, $headers_pri_contents, $lib, "headers.pri file");
-    }
-}
-
-if($check_includes) {
-    foreach my $lib (@modules_to_sync) {
-        next if ($modules{$lib} =~ /^!/);
-            #calc subdirs
-            my @subdirs = listSubdirs(map { s/^\^//; $_ } split(/;/, $modules{$lib}));
-
-            foreach my $subdir (@subdirs) {
-                my @headers = findFiles($subdir, "^[-a-z0-9_]*\\.h\$" , 0);
-                foreach my $header (@headers) {
-                    $header = 0 if($header =~ /^ui_.*.h/);
-                    $header = 0 if ($header eq lc($lib)."version.h");
-                    foreach (@ignore_headers) {
-                        $header = 0 if($header eq $_);
-                    }
-                    if($header) {
-                        # We need both $public_header and $private_header because QPA headers count as neither
-                        my $public_header = $header;
-                        my $private_header = 0;
-                        if($public_header =~ /_p.h$/ || $public_header =~ /_pch.h$/) {
-                            $public_header = 0;
-                            $private_header = $header =~ /_p.h$/ && $subdir !~ /3rdparty/
-                        } elsif (isQpaHeader($public_header)) {
-                            $public_header = 0;
-                        } else {
-                            foreach (@ignore_for_master_contents) {
-                                $public_header = 0 if($header eq $_);
-                            }
-                        }
-
-                        my $iheader = $subdir . "/" . $header;
-                        check_header($lib, $header, $iheader, $public_header, $private_header);
-                    }
-                }
-            }
     }
 }
 
