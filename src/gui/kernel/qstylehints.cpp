@@ -305,11 +305,27 @@ int QStyleHints::cursorFlashTime() const
     \note The platform may still choose to show certain windows non-fullscreen,
     such as popups or dialogs. This property only reports the default behavior.
 
-    \sa QWindow::show()
+    \sa QWindow::show(), showIsMaximized()
 */
 bool QStyleHints::showIsFullScreen() const
 {
     return hint(QPlatformIntegration::ShowIsFullScreen).toBool();
+}
+
+/*!
+    \property QStyleHints::showIsMaximized
+    \brief \c true if the platform defaults to windows being maximized,
+    otherwise \c false.
+
+    \note The platform may still choose to show certain windows non-maximized,
+    such as popups or dialogs. This property only reports the default behavior.
+
+    \sa QWindow::show(), showIsFullScreen()
+    \since 5.6
+*/
+bool QStyleHints::showIsMaximized() const
+{
+    return hint(QPlatformIntegration::ShowIsMaximized).toBool();
 }
 
 /*!

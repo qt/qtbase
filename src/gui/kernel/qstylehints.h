@@ -56,6 +56,7 @@ class Q_GUI_EXPORT QStyleHints : public QObject
     Q_PROPERTY(int passwordMaskDelay READ passwordMaskDelay STORED false CONSTANT FINAL)
     Q_PROPERTY(bool setFocusOnTouchRelease READ setFocusOnTouchRelease STORED false CONSTANT FINAL)
     Q_PROPERTY(bool showIsFullScreen READ showIsFullScreen STORED false CONSTANT FINAL)
+    Q_PROPERTY(bool showIsMaximized READ showIsMaximized STORED false CONSTANT FINAL)
     Q_PROPERTY(int startDragDistance READ startDragDistance NOTIFY startDragDistanceChanged FINAL)
     Q_PROPERTY(int startDragTime READ startDragTime NOTIFY startDragTimeChanged FINAL)
     Q_PROPERTY(int startDragVelocity READ startDragVelocity STORED false CONSTANT FINAL)
@@ -78,6 +79,7 @@ public:
     void setCursorFlashTime(int cursorFlashTime);
     int cursorFlashTime() const;
     bool showIsFullScreen() const;
+    bool showIsMaximized() const;
     int passwordMaskDelay() const;
     QChar passwordMaskCharacter() const;
     qreal fontSmoothingGamma() const;
