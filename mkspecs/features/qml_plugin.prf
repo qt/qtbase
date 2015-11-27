@@ -19,6 +19,8 @@ if(win32|mac):!macx-xcode {
     contains(QT_CONFIG, build_all):CONFIG += build_all
 }
 
+CONFIG += relative_qt_rpath  # Qt's QML plugins should be relocatable
+
 !no_cxx_module:isEmpty(CXX_MODULE) {
     CXX_MODULE = $$TARGET
     TARGET = declarative_$${TARGET}

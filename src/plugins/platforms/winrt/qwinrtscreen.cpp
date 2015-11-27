@@ -507,6 +507,8 @@ QWinRTScreen::QWinRTScreen()
     hr = d->displayInformation->get_NativeOrientation(&displayOrientation);
     Q_ASSERT_SUCCEEDED(hr);
     d->nativeOrientation = static_cast<Qt::ScreenOrientation>(static_cast<int>(qtOrientationsFromNative(displayOrientation)));
+    // Set initial pixel density
+    onDpiChanged(Q_NULLPTR, Q_NULLPTR);
     d->orientation = d->nativeOrientation;
 
     ComPtr<IApplicationViewStatics2> applicationViewStatics;
@@ -753,7 +755,6 @@ void QWinRTScreen::initialize()
     Q_ASSERT_SUCCEEDED(hr);
     hr = d->displayInformation->add_DpiChanged(Callback<DisplayInformationHandler>(this, &QWinRTScreen::onDpiChanged).Get(), &d->displayTokens[&IDisplayInformation::remove_DpiChanged]);
     Q_ASSERT_SUCCEEDED(hr);
-    onDpiChanged(Q_NULLPTR, Q_NULLPTR);
     onOrientationChanged(Q_NULLPTR, Q_NULLPTR);
     onVisibilityChanged(nullptr, nullptr);
 }

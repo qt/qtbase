@@ -1086,8 +1086,12 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         case XCB_FOCUS_OUT:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_out_event_t, event, handleFocusOutEvent);
         case XCB_KEY_PRESS:
-            m_keyboard->updateXKBStateFromCore(((xcb_key_press_event_t *)event)->state);
+        {
+            xcb_key_press_event_t *kp = (xcb_key_press_event_t *)event;
+            m_keyboard->updateXKBStateFromCore(kp->state);
+            setTime(kp->time);
             HANDLE_KEYBOARD_EVENT(xcb_key_press_event_t, handleKeyPressEvent);
+        }
         case XCB_KEY_RELEASE:
             m_keyboard->updateXKBStateFromCore(((xcb_key_release_event_t *)event)->state);
             HANDLE_KEYBOARD_EVENT(xcb_key_release_event_t, handleKeyReleaseEvent);

@@ -237,7 +237,7 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 #endif
 
 // -- ARM --
-#ifdef __ARM_NEON__
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
 " neon"
 #endif
 #ifdef __IWMMXT__

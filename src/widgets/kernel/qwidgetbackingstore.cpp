@@ -1000,6 +1000,16 @@ void QPlatformTextureListWatcher::onLockStatusChanged(bool locked)
     if (!isLocked())
         m_backingStore->sync();
 }
+
+#else
+
+static QPlatformTextureList *widgetTexturesFor(QWidget *tlw, QWidget *widget)
+{
+    Q_UNUSED(tlw);
+    Q_UNUSED(widget);
+    return Q_NULLPTR;
+}
+
 #endif // QT_NO_OPENGL
 
 static inline bool discardSyncRequest(QWidget *tlw, QTLWExtra *tlwExtra)
@@ -1220,6 +1230,9 @@ void QWidgetBackingStore::doSync()
             QWidget *w = static_cast<QWidget *>(tl->source(i));
             if (dirtyRenderToTextureWidgets.contains(w)) {
                 const QRect rect = tl->geometry(i); // mapped to the tlw already
+                // Set a flag to indicate that the paint event for this
+                // render-to-texture widget must not to be optimized away.
+                w->d_func()->renderToTextureReallyDirty = 1;
                 dirty += rect;
                 toClean += rect;
             }

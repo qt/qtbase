@@ -251,9 +251,13 @@
 
 // NEON intrinsics
 // note: as of GCC 4.9, does not support function targets for ARM
-#if defined __ARM_NEON__
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
 #include <arm_neon.h>
 #define QT_FUNCTION_TARGET_STRING_ARM_NEON      "neon"
+#ifndef __ARM_NEON__
+// __ARM_NEON__ is not defined on AArch64, but we need it in our NEON detection.
+#define __ARM_NEON__
+#endif
 #endif
 
 #undef QT_COMPILER_SUPPORTS_SIMD_ALWAYS

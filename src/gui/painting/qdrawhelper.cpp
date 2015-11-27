@@ -6309,7 +6309,7 @@ void qt_memfill16(quint16 *dest, quint16 color, int count)
     qt_memfill_template<quint16>(dest, color, count);
 }
 #endif
-#if !defined(__SSE2__) && !defined(__ARM_NEON__)
+#if !defined(__SSE2__) && (!defined(__ARM_NEON__) || defined(Q_PROCESSOR_ARM_64))
 #  ifdef QT_COMPILER_SUPPORTS_MIPS_DSP
 extern "C" void qt_memfill32_asm_mips_dsp(quint32 *, quint32, int);
 #  endif
@@ -6425,7 +6425,7 @@ void qInitDrawhelperAsm()
 
 #endif // SSE2
 
-#if defined(__ARM_NEON__) && !defined(Q_OS_IOS)
+#if defined(__ARM_NEON__) && !defined(Q_OS_IOS) && !defined(Q_PROCESSOR_ARM_64)
     qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
     qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
     qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;

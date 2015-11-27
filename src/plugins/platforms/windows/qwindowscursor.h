@@ -96,29 +96,37 @@ public:
         QPoint hotSpot;
     };
 
-    QWindowsCursor();
+    explicit QWindowsCursor(const QPlatformScreen *screen);
 
     void changeCursor(QCursor * widgetCursor, QWindow * widget) Q_DECL_OVERRIDE;
     QPoint pos() const Q_DECL_OVERRIDE;
     void setPos(const QPoint &pos) Q_DECL_OVERRIDE;
 
-    static HCURSOR createPixmapCursor(const QPixmap &pixmap, const QPoint &hotSpot);
-    static HCURSOR createPixmapCursor(const PixmapCursor &pc) { return createPixmapCursor(pc.pixmap, pc.hotSpot); }
-    static PixmapCursor customCursor(Qt::CursorShape cursorShape);
+    static HCURSOR createPixmapCursor(QPixmap pixmap, const QPoint &hotSpot, qreal scaleFactor = 1);
+    static HCURSOR createPixmapCursor(const PixmapCursor &pc, qreal scaleFactor = 1) { return createPixmapCursor(pc.pixmap, pc.hotSpot, scaleFactor); }
+    static PixmapCursor customCursor(Qt::CursorShape cursorShape, const QPlatformScreen *screen = Q_NULLPTR);
 
-    static HCURSOR createCursorFromShape(Qt::CursorShape cursorShape);
+    static HCURSOR createCursorFromShape(Qt::CursorShape cursorShape, const QPlatformScreen *screen = Q_NULLPTR);
     static QPoint mousePosition();
     static CursorState cursorState();
 
     CursorHandlePtr standardWindowCursor(Qt::CursorShape s = Qt::ArrowCursor);
     CursorHandlePtr pixmapWindowCursor(const QCursor &c);
 
+    QPixmap dragDefaultCursor(Qt::DropAction action) const;
+
 private:
     typedef QHash<Qt::CursorShape, CursorHandlePtr> StandardCursorCache;
     typedef QHash<QWindowsPixmapCursorCacheKey, CursorHandlePtr> PixmapCursorCache;
 
+    const QPlatformScreen *const m_screen;
     StandardCursorCache m_standardCursorCache;
     PixmapCursorCache m_pixmapCursorCache;
+
+    mutable QPixmap m_copyDragCursor;
+    mutable QPixmap m_moveDragCursor;
+    mutable QPixmap m_linkDragCursor;
+    mutable QPixmap m_ignoreDragCursor;
 };
 
 QT_END_NAMESPACE

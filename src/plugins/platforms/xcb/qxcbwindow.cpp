@@ -314,8 +314,6 @@ void QXcbWindow::create()
 
     destroy();
 
-    m_deferredExpose = false;
-    m_configureNotifyPending = true;
     m_windowState = Qt::WindowNoState;
 
     Qt::WindowType type = window()->type();
@@ -2032,12 +2030,8 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     if (newScreen != currentScreen)
         QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
 
-    m_configureNotifyPending = false;
-
-    if (m_deferredExpose) {
-        m_deferredExpose = false;
+    if (m_mapped)
         QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size()));
-    }
 
     if (m_usingSyncProtocol && m_syncState == SyncReceived)
         m_syncState = SyncAndConfigureReceived;
@@ -2104,10 +2098,8 @@ void QXcbWindow::handleMapNotifyEvent(const xcb_map_notify_event_t *event)
         m_mapped = true;
         if (m_deferredActivation)
             requestActivateWindow();
-        if (m_configureNotifyPending)
-            m_deferredExpose = true;
-        else
-            QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size()));
+
+        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size()));
     }
 }
 

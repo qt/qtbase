@@ -101,7 +101,7 @@ SSE4_1_SOURCES += painting/qdrawhelper_sse4.cpp \
                   painting/qimagescale_sse4.cpp
 AVX2_SOURCES += painting/qdrawhelper_avx2.cpp
 
-!ios {
+!ios:!contains(QT_ARCH, "arm64")  {
     CONFIG += no_clang_integrated_as
     NEON_SOURCES += painting/qdrawhelper_neon.cpp
     NEON_HEADERS += painting/qdrawhelper_neon_p.h

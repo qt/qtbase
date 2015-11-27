@@ -43,15 +43,17 @@
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
 #include <QtGui/private/qguiapplication_p.h> // getPixmapCursor()
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <QtCore/QDebug>
 #include <QtCore/QScopedArrayPointer>
 
-static void initResources()
+static bool initResources()
 {
 #if !defined (Q_OS_WINCE) && !defined (QT_NO_IMAGEFORMAT_PNG)
     Q_INIT_RESOURCE(cursors);
 #endif
+    return true;
 }
 
 QT_BEGIN_NAMESPACE
@@ -92,9 +94,14 @@ QWindowsPixmapCursorCacheKey::QWindowsPixmapCursorCacheKey(const QCursor &c)
     \sa QWindowsWindowCursor
 */
 
-HCURSOR QWindowsCursor::createPixmapCursor(const QPixmap &pixmap, const QPoint &hotSpot)
+HCURSOR QWindowsCursor::createPixmapCursor(QPixmap pixmap, const QPoint &hotSpot, qreal scaleFactor)
 {
     HCURSOR cur = 0;
+    scaleFactor /= pixmap.devicePixelRatioF();
+    if (!qFuzzyCompare(scaleFactor, 1)) {
+        pixmap = pixmap.scaled((scaleFactor * QSizeF(pixmap.size())).toSize(),
+                               Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    }
     QBitmap mask = pixmap.mask();
     if (mask.isNull()) {
         mask = QBitmap(pixmap.size());
@@ -202,17 +209,43 @@ static HCURSOR createBitmapCursor(const QImage &bbits, const QImage &mbits,
 }
 
 // Create a cursor from image and mask of the format QImage::Format_Mono.
-static HCURSOR createBitmapCursor(const QCursor &cursor)
+static HCURSOR createBitmapCursor(const QCursor &cursor, qreal scaleFactor = 1)
 {
     Q_ASSERT(cursor.shape() == Qt::BitmapCursor && cursor.bitmap());
-    const QImage bbits = cursor.bitmap()->toImage().convertToFormat(QImage::Format_Mono);
-    const QImage mbits = cursor.mask()->toImage().convertToFormat(QImage::Format_Mono);
+    QImage bbits = cursor.bitmap()->toImage();
+    QImage mbits = cursor.mask()->toImage();
+    scaleFactor /= bbits.devicePixelRatioF();
+    if (!qFuzzyCompare(scaleFactor, 1)) {
+        const QSize scaledSize = (QSizeF(bbits.size()) * scaleFactor).toSize();
+        bbits = bbits.scaled(scaledSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        mbits = mbits.scaled(scaledSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    }
+    bbits = bbits.convertToFormat(QImage::Format_Mono);
+    mbits = mbits.convertToFormat(QImage::Format_Mono);
     const bool invb = bbits.colorCount() > 1 && qGray(bbits.color(0)) < qGray(bbits.color(1));
     const bool invm = mbits.colorCount() > 1 && qGray(mbits.color(0)) < qGray(mbits.color(1));
     return createBitmapCursor(bbits, mbits, cursor.hotSpot(), invb, invm);
 }
 
-static inline QSize systemCursorSize() { return QSize(GetSystemMetrics(SM_CXCURSOR), GetSystemMetrics(SM_CYCURSOR)); }
+static QSize systemCursorSize(const QPlatformScreen *screen = Q_NULLPTR)
+{
+    const QSize primaryScreenCursorSize(GetSystemMetrics(SM_CXCURSOR), GetSystemMetrics(SM_CYCURSOR));
+    if (screen) {
+        // Correct the size if the DPI value of the screen differs from
+        // that of the primary screen.
+        if (const QScreen *primaryQScreen = QGuiApplication::primaryScreen()) {
+            const QPlatformScreen *primaryScreen = primaryQScreen->handle();
+            if (screen != primaryScreen) {
+                const qreal logicalDpi = screen->logicalDpi().first;
+                const qreal primaryScreenLogicalDpi = primaryScreen->logicalDpi().first;
+                if (!qFuzzyCompare(logicalDpi, primaryScreenLogicalDpi))
+                    return (QSizeF(primaryScreenCursorSize) * logicalDpi / primaryScreenLogicalDpi).toSize();
+            }
+        }
+    }
+    return primaryScreenCursorSize;
+}
+
 static inline QSize standardCursorSize() { return QSize(32, 32); }
 
 #if defined (Q_OS_WINCE) || defined (QT_NO_IMAGEFORMAT_PNG)
@@ -242,7 +275,8 @@ static QWindowsCursor::PixmapCursor createPixmapCursorFromData(const QSize &syst
     return QWindowsCursor::PixmapCursor(rawImage, hotSpot);
 }
 
-QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursorShape)
+QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursorShape,
+                                                          const QPlatformScreen *screen)
 {
     // Non-standard Windows cursors are created from bitmaps
     static const uchar vsplit_bits[] = {
@@ -410,13 +444,13 @@ QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursor
 
     switch (cursorShape) {
     case Qt::SplitVCursor:
-        return createPixmapCursorFromData(systemCursorSize(), standardCursorSize(), 32, vsplit_bits, vsplitm_bits);
+        return createPixmapCursorFromData(systemCursorSize(screen), standardCursorSize(), 32, vsplit_bits, vsplitm_bits);
     case Qt::SplitHCursor:
-        return createPixmapCursorFromData(systemCursorSize(), standardCursorSize(), 32, hsplit_bits, hsplitm_bits);
+        return createPixmapCursorFromData(systemCursorSize(screen), standardCursorSize(), 32, hsplit_bits, hsplitm_bits);
     case Qt::OpenHandCursor:
-        return createPixmapCursorFromData(systemCursorSize(), standardCursorSize(), 16, openhand_bits, openhandm_bits);
+        return createPixmapCursorFromData(systemCursorSize(screen), standardCursorSize(), 16, openhand_bits, openhandm_bits);
     case Qt::ClosedHandCursor:
-        return createPixmapCursorFromData(systemCursorSize(), standardCursorSize(), 16, closedhand_bits, closedhandm_bits);
+        return createPixmapCursorFromData(systemCursorSize(screen), standardCursorSize(), 16, closedhand_bits, closedhandm_bits);
     case Qt::DragCopyCursor:
         return QWindowsCursor::PixmapCursor(QPixmap(copyDragCursorXpmC), QPoint(0, 0));
     case Qt::DragMoveCursor:
@@ -436,7 +470,7 @@ struct QWindowsCustomPngCursor {
     int hotSpotY;
 };
 
-QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursorShape)
+QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursorShape, const QPlatformScreen *screen)
 {
     static const QWindowsCustomPngCursor pngCursors[] = {
         { Qt::SplitVCursor, 32, "splitvcursor_32.png", 11, 11 },
@@ -462,14 +496,14 @@ QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursor
         { Qt::DragLinkCursor, 64, "draglinkcursor_64.png", 0, 0 }
     };
 
-    const int cursorSize = GetSystemMetrics(SM_CXCURSOR);
+    const QSize cursorSize = systemCursorSize(screen);
     const QWindowsCustomPngCursor *sEnd = pngCursors + sizeof(pngCursors) / sizeof(pngCursors[0]);
     const QWindowsCustomPngCursor *bestFit = 0;
     int sizeDelta = INT_MAX;
     for (const QWindowsCustomPngCursor *s = pngCursors; s < sEnd; ++s) {
         if (s->shape != cursorShape)
             continue;
-        const int currentSizeDelta = qMax(s->size, cursorSize) - qMin(s->size, cursorSize);
+        const int currentSizeDelta = qMax(s->size, cursorSize.width()) - qMin(s->size, cursorSize.width());
         if (currentSizeDelta < sizeDelta) {
             bestFit = s;
             if (currentSizeDelta == 0)
@@ -492,7 +526,7 @@ struct QWindowsStandardCursorMapping {
     LPCWSTR resource;
 };
 
-HCURSOR QWindowsCursor::createCursorFromShape(Qt::CursorShape cursorShape)
+HCURSOR QWindowsCursor::createCursorFromShape(Qt::CursorShape cursorShape, const QPlatformScreen *screen)
 {
     Q_ASSERT(cursorShape != Qt::BitmapCursor);
 
@@ -515,7 +549,7 @@ HCURSOR QWindowsCursor::createCursorFromShape(Qt::CursorShape cursorShape)
 
     switch (cursorShape) {
     case Qt::BlankCursor: {
-        QImage blank = QImage(systemCursorSize(), QImage::Format_Mono);
+        QImage blank = QImage(systemCursorSize(screen), QImage::Format_Mono);
         blank.fill(0); // ignore color table
         return createBitmapCursor(blank, blank);
     }
@@ -526,7 +560,7 @@ HCURSOR QWindowsCursor::createCursorFromShape(Qt::CursorShape cursorShape)
     case Qt::DragCopyCursor:
     case Qt::DragMoveCursor:
     case Qt::DragLinkCursor:
-        return QWindowsCursor::createPixmapCursor(customCursor(cursorShape));
+        return QWindowsCursor::createPixmapCursor(customCursor(cursorShape, screen));
     default:
         break;
     }
@@ -555,7 +589,7 @@ CursorHandlePtr QWindowsCursor::standardWindowCursor(Qt::CursorShape shape)
 {
     StandardCursorCache::Iterator it = m_standardCursorCache.find(shape);
     if (it == m_standardCursorCache.end()) {
-        if (const HCURSOR hc = QWindowsCursor::createCursorFromShape(shape))
+        if (const HCURSOR hc = QWindowsCursor::createCursorFromShape(shape, m_screen))
             it = m_standardCursorCache.insert(shape, CursorHandlePtr(new CursorHandle(hc)));
     }
     return it != m_standardCursorCache.end() ? it.value() : CursorHandlePtr(new CursorHandle);
@@ -582,17 +616,21 @@ CursorHandlePtr QWindowsCursor::pixmapWindowCursor(const QCursor &c)
                     ++it;
             }
         }
+        const qreal scaleFactor = QHighDpiScaling::factor(m_screen);
         const QPixmap pixmap = c.pixmap();
         const HCURSOR hc = pixmap.isNull()
-            ? createBitmapCursor(c) : QWindowsCursor::createPixmapCursor(pixmap, c.hotSpot());
+            ? createBitmapCursor(c, scaleFactor)
+            : QWindowsCursor::createPixmapCursor(pixmap, c.hotSpot(), scaleFactor);
         it = m_pixmapCursorCache.insert(cacheKey, CursorHandlePtr(new CursorHandle(hc)));
     }
     return it.value();
 }
 
-QWindowsCursor::QWindowsCursor()
+QWindowsCursor::QWindowsCursor(const QPlatformScreen *screen)
+    : m_screen(screen)
 {
-    initResources();
+    static const bool dummy = initResources();
+    Q_UNUSED(dummy)
 }
 
 /*!
@@ -652,6 +690,94 @@ QPoint QWindowsCursor::pos() const
 void QWindowsCursor::setPos(const QPoint &pos)
 {
     SetCursorPos(pos.x() , pos.y());
+}
+
+QPixmap QWindowsCursor::dragDefaultCursor(Qt::DropAction action) const
+{
+    switch (action) {
+    case Qt::CopyAction:
+        if (m_copyDragCursor.isNull())
+            m_copyDragCursor = QWindowsCursor::customCursor(Qt::DragCopyCursor, m_screen).pixmap;
+        return m_copyDragCursor;
+    case Qt::TargetMoveAction:
+    case Qt::MoveAction:
+        if (m_moveDragCursor.isNull())
+            m_moveDragCursor = QWindowsCursor::customCursor(Qt::DragMoveCursor, m_screen).pixmap;
+        return m_moveDragCursor;
+    case Qt::LinkAction:
+        if (m_linkDragCursor.isNull())
+            m_linkDragCursor = QWindowsCursor::customCursor(Qt::DragLinkCursor, m_screen).pixmap;
+        return m_linkDragCursor;
+    default:
+        break;
+    }
+
+    static const char * const ignoreDragCursorXpmC[] = {
+    "24 30 3 1",
+    ".        c None",
+    "a        c #000000",
+    "X        c #FFFFFF",
+    "aa......................",
+    "aXa.....................",
+    "aXXa....................",
+    "aXXXa...................",
+    "aXXXXa..................",
+    "aXXXXXa.................",
+    "aXXXXXXa................",
+    "aXXXXXXXa...............",
+    "aXXXXXXXXa..............",
+    "aXXXXXXXXXa.............",
+    "aXXXXXXaaaa.............",
+    "aXXXaXXa................",
+    "aXXaaXXa................",
+    "aXa..aXXa...............",
+    "aa...aXXa...............",
+    "a.....aXXa..............",
+    "......aXXa.....XXXX.....",
+    ".......aXXa..XXaaaaXX...",
+    ".......aXXa.XaaaaaaaaX..",
+    "........aa.XaaaXXXXaaaX.",
+    "...........XaaaaX..XaaX.",
+    "..........XaaXaaaX..XaaX",
+    "..........XaaXXaaaX.XaaX",
+    "..........XaaX.XaaaXXaaX",
+    "..........XaaX..XaaaXaaX",
+    "...........XaaX..XaaaaX.",
+    "...........XaaaXXXXaaaX.",
+    "............XaaaaaaaaX..",
+    ".............XXaaaaXX...",
+    "...............XXXX....."};
+
+    if (m_ignoreDragCursor.isNull()) {
+#if !defined (Q_OS_WINCE)
+        HCURSOR cursor = LoadCursor(NULL, IDC_NO);
+        ICONINFO iconInfo = {0, 0, 0, 0, 0};
+        GetIconInfo(cursor, &iconInfo);
+        BITMAP bmColor = {0, 0, 0, 0, 0, 0, 0};
+
+        if (iconInfo.hbmColor
+            && GetObject(iconInfo.hbmColor, sizeof(BITMAP), &bmColor)
+            && bmColor.bmWidth == bmColor.bmWidthBytes / 4) {
+            const int colorBitsLength = bmColor.bmHeight * bmColor.bmWidthBytes;
+            uchar *colorBits = new uchar[colorBitsLength];
+            GetBitmapBits(iconInfo.hbmColor, colorBitsLength, colorBits);
+            const QImage colorImage(colorBits, bmColor.bmWidth, bmColor.bmHeight,
+                                    bmColor.bmWidthBytes, QImage::Format_ARGB32);
+
+            m_ignoreDragCursor = QPixmap::fromImage(colorImage);
+            delete [] colorBits;
+        } else {
+            m_ignoreDragCursor = QPixmap(ignoreDragCursorXpmC);
+        }
+
+        DeleteObject(iconInfo.hbmMask);
+        DeleteObject(iconInfo.hbmColor);
+        DestroyCursor(cursor);
+#else // !Q_OS_WINCE
+        m_ignoreDragCursor = QPixmap(ignoreDragCursorXpmC);
+#endif // !Q_OS_WINCE
+    }
+    return m_ignoreDragCursor;
 }
 
 /*!

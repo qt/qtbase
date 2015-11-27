@@ -1172,8 +1172,7 @@ void QOpenGLWidget::resizeEvent(QResizeEvent *e)
 
     d->recreateFbo();
     resizeGL(width(), height());
-    d->invokeUserPaint();
-    d->resolveSamples();
+    d->sendPaintEvent(QRect(QPoint(0, 0), size()));
 }
 
 /*!
