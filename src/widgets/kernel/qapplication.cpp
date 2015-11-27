@@ -2241,8 +2241,10 @@ void QApplicationPrivate::notifyActiveWindowChange(QWindow *previous)
     QApplication::setActiveWindow(tlw);
     // QTBUG-37126, Active X controls may set the focus on native child widgets.
     if (wnd && tlw && wnd != tlw->windowHandle()) {
-        if (QWidgetWindow *widgetWindow = qobject_cast<QWidgetWindow *>(wnd))
-            widgetWindow->widget()->setFocus(Qt::ActiveWindowFocusReason);
+        if (QWidgetWindow *widgetWindow = qobject_cast<QWidgetWindow *>(wnd)) {
+            if (widgetWindow->widget()->inherits("QAxHostWidget"))
+                widgetWindow->widget()->setFocus(Qt::ActiveWindowFocusReason);
+        }
     }
 }
 

@@ -1,0 +1,36 @@
+From 00f0a46199b622b05619f56e29f172fb61fe6e82 Mon Sep 17 00:00:00 2001
+From: Friedemann Kleint <Friedemann.Kleint@theqtcompany.com>
+Date: Mon, 23 Nov 2015 14:00:02 +0100
+Subject: [PATCH] ANGLE/D3D11: Suppress keyboard handling of DXGI.
+
+Set the DXGI_MWA_NO_ALT_ENTER to suppress the Alt-Enter shortcut
+causing the window to become full screen.
+
+Task-number: QTBUG-44904
+Change-Id: Ia4156ddee37a8a3da6e9e3130022c63a674f4429
+---
+ .../angle/src/libANGLE/renderer/d3d/d3d11/win32/NativeWindow.cpp  | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/win32/NativeWindow.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/win32/NativeWindow.cpp
+index 0a4f45b..696dfd7 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/win32/NativeWindow.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/win32/NativeWindow.cpp
+@@ -64,7 +64,13 @@ HRESULT NativeWindow::createSwapChain(ID3D11Device* device, DXGIFactory* factory
+     swapChainDesc.Windowed = TRUE;
+     swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+ 
+-    return factory->CreateSwapChain(device, &swapChainDesc, swapChain);
++    const HRESULT result = factory->CreateSwapChain(device, &swapChainDesc, swapChain);
++    if (SUCCEEDED(result))
++    {
++        const HRESULT makeWindowAssociationResult = factory->MakeWindowAssociation(mWindow, DXGI_MWA_NO_ALT_ENTER);
++        UNUSED_TRACE_VARIABLE(makeWindowAssociationResult);
++    }
++    return result;
+ }
+ #endif
+ }
+-- 
+2.5.0.windows.1
+

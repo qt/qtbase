@@ -165,6 +165,7 @@ private slots:
 #endif // QT_BUILD_INTERNAL
 #endif
     void rejectModalDialogs();
+    void QTBUG49600_nativeIconProviderCrash();
 
 private:
     void cleanupSettingsFile();
@@ -1485,6 +1486,14 @@ void tst_QFiledialog::rejectModalDialogs()
     file = QFileDialog::getSaveFileName(0, QStringLiteral("getSaveFileName"),
                                              QString(), QString(), Q_NULLPTR, options);
     QVERIFY(file.isEmpty());
+}
+
+void tst_QFiledialog::QTBUG49600_nativeIconProviderCrash()
+{
+    if (!QGuiApplicationPrivate::platformTheme()->usePlatformNativeDialog(QPlatformTheme::FileDialog))
+        QSKIP("This platform always uses widgets to realize its QFileDialog, instead of the native file dialog.");
+    QFileDialog fd;
+    fd.iconProvider();
 }
 
 QTEST_MAIN(tst_QFiledialog)
