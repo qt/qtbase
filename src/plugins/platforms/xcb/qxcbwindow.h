@@ -232,8 +232,6 @@ protected:
     bool m_transparent;
     bool m_usingSyncProtocol;
     bool m_deferredActivation;
-    bool m_deferredExpose;
-    bool m_configureNotifyPending;
     bool m_embedded;
     bool m_alertState;
     xcb_window_t m_netWmUserTimeWindow;

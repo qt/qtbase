@@ -38,6 +38,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QThread>
+#include <QtCore/QTemporaryDir>
 #include <QtCore/QRegExp>
 #include <QtCore/QDebug>
 #include <QtCore/QMetaType>
@@ -53,14 +54,6 @@
 Q_DECLARE_METATYPE(QProcess::ExitStatus);
 Q_DECLARE_METATYPE(QProcess::ProcessState);
 #endif
-
-#define QPROCESS_VERIFY(Process, Fn) \
-{ \
-const bool ret = Process.Fn; \
-if (ret == false) \
-    qWarning("QProcess error: %d: %s", Process.error(), qPrintable(Process.errorString())); \
-QVERIFY(ret); \
-}
 
 typedef void (QProcess::*QProcessFinishedSignal1)(int);
 typedef void (QProcess::*QProcessFinishedSignal2)(int, QProcess::ExitStatus);
@@ -180,6 +173,7 @@ protected slots:
 
 private:
     qint64 bytesAvailable;
+    QTemporaryDir m_temporaryDir;
 #endif //QT_NO_PROCESS
 };
 
@@ -188,6 +182,7 @@ void tst_QProcess::initTestCase()
 #ifdef QT_NO_PROCESS
     QSKIP("This test requires QProcess support");
 #else
+    QVERIFY2(m_temporaryDir.isValid(), qPrintable(m_temporaryDir.errorString()));
     // chdir to our testdata path and execute helper apps relative to that.
     QString testdata_dir = QFileInfo(QFINDTESTDATA("testProcessNormal")).absolutePath();
     QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
@@ -1717,7 +1712,7 @@ void tst_QProcess::failToStartEmptyArgs()
 // Reading and writing to a process is not supported on Qt/CE
 void tst_QProcess::removeFileWhileProcessIsRunning()
 {
-    QFile file("removeFile.txt");
+    QFile file(m_temporaryDir.path() + QLatin1String("/removeFile.txt"));
     QVERIFY(file.open(QFile::WriteOnly));
 
     QProcess process;
@@ -1948,16 +1943,16 @@ void tst_QProcess::setStandardInputFile()
 {
     static const char data[] = "A bunch\1of\2data\3\4\5\6\7...";
     QProcess process;
-    QFile file("data");
+    QFile file(m_temporaryDir.path() + QLatin1String("/data-sif"));
 
     QVERIFY(file.open(QIODevice::WriteOnly));
     file.write(data, sizeof data);
     file.close();
 
-    process.setStandardInputFile("data");
+    process.setStandardInputFile(file.fileName());
     process.start("testProcessEcho/testProcessEcho");
 
-    QPROCESS_VERIFY(process, waitForFinished());
+    QVERIFY(process.waitForFinished());
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);
         QByteArray all = process.readAll();
@@ -1967,7 +1962,7 @@ void tst_QProcess::setStandardInputFile()
     QProcess process2;
     process2.setStandardInputFile(QProcess::nullDevice());
     process2.start("testProcessEcho/testProcessEcho");
-    QPROCESS_VERIFY(process2, waitForFinished());
+    QVERIFY(process2.waitForFinished());
     all = process2.readAll();
     QCOMPARE(all.size(), 0);
 }
@@ -2016,7 +2011,7 @@ void tst_QProcess::setStandardOutputFile()
     QIODevice::OpenMode mode = append ? QIODevice::Append : QIODevice::Truncate;
 
     // create the destination file with data
-    QFile file("data");
+    QFile file(m_temporaryDir.path() + QLatin1String("/data-stdof-") + QLatin1String(QTest::currentDataTag()));
     QVERIFY(file.open(QIODevice::WriteOnly));
     file.write(data, sizeof data - 1);
     file.close();
@@ -2025,13 +2020,13 @@ void tst_QProcess::setStandardOutputFile()
     QProcess process;
     process.setReadChannelMode(channelMode);
     if (channelToTest == QProcess::StandardOutput)
-        process.setStandardOutputFile("data", mode);
+        process.setStandardOutputFile(file.fileName(), mode);
     else
-        process.setStandardErrorFile("data", mode);
+        process.setStandardErrorFile(file.fileName(), mode);
 
     process.start("testProcessEcho2/testProcessEcho2");
     process.write(testdata, sizeof testdata);
-    QPROCESS_VERIFY(process,waitForFinished());
+    QVERIFY(process.waitForFinished());
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);
 
@@ -2062,7 +2057,7 @@ void tst_QProcess::setStandardOutputFileNullDevice()
     process.setStandardOutputFile(QProcess::nullDevice());
     process.start("testProcessEcho2/testProcessEcho2");
     process.write(testdata, sizeof testdata);
-    QPROCESS_VERIFY(process,waitForFinished());
+    QVERIFY(process.waitForFinished());
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);
     QCOMPARE(process.bytesAvailable(), Q_INT64_C(0));
@@ -2074,13 +2069,14 @@ void tst_QProcess::setStandardOutputFileAndWaitForBytesWritten()
 {
     static const char testdata[] = "Test data.";
 
-    QFile file("data");
+    QFile file(m_temporaryDir.path() + QLatin1String("/data-stdofawfbw"));
     QProcess process;
     process.setStandardOutputFile(file.fileName());
     process.start("testProcessEcho2/testProcessEcho2");
+    QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
     process.write(testdata, sizeof testdata);
     process.waitForBytesWritten();
-    QPROCESS_VERIFY(process, waitForFinished());
+    QVERIFY(process.waitForFinished());
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);
 
@@ -2122,10 +2118,10 @@ void tst_QProcess::setStandardOutputProcess()
     if (waitForBytesWritten)
         source.waitForBytesWritten();
     source.closeWriteChannel();
-    QPROCESS_VERIFY(source, waitForFinished());
+    QVERIFY(source.waitForFinished());
     QCOMPARE(source.exitStatus(), QProcess::NormalExit);
     QCOMPARE(source.exitCode(), 0);
-    QPROCESS_VERIFY(sink, waitForFinished());
+    QVERIFY(sink.waitForFinished());
     QCOMPARE(sink.exitStatus(), QProcess::NormalExit);
     QCOMPARE(sink.exitCode(), 0);
     QByteArray all = sink.readAll();
@@ -2151,14 +2147,15 @@ void tst_QProcess::fileWriterProcess()
 
     QTime stopWatch;
     stopWatch.start();
-    const QString fileName = QLatin1String("fileWriterProcess.txt");
+    const QString fileName = m_temporaryDir.path() + QLatin1String("/fileWriterProcess.txt");
+    const QString binary = QDir::currentPath() + QLatin1String("/fileWriterProcess/fileWriterProcess");
 
     do {
         if (QFile::exists(fileName))
             QVERIFY(QFile::remove(fileName));
         QProcess process;
-        process.start("fileWriterProcess/fileWriterProcess",
-                      QIODevice::ReadWrite | QIODevice::Text);
+        process.setWorkingDirectory(m_temporaryDir.path());
+        process.start(binary, QIODevice::ReadWrite | QIODevice::Text);
         process.write(stdinStr);
         process.closeWriteChannel();
         while (process.bytesToWrite()) {
@@ -2181,8 +2178,9 @@ void tst_QProcess::detachedWorkingDirectoryAndPid()
     QTest::qSleep(1000);
 #endif
 
-    QFile infoFile(QDir::currentPath() + QLatin1String("/detachedinfo.txt"));
-    infoFile.remove();
+    QFile infoFile(m_temporaryDir.path() + QLatin1String("/detachedinfo.txt"));
+    if (infoFile.exists())
+        QVERIFY(infoFile.remove());
 
     QString workingDir = QDir::currentPath() + "/testDetached";
 

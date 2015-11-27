@@ -40,6 +40,10 @@ $(EXPORT_SUBTARGETS): % : %-build
 %-install: ACTION = install
 %-install: xcodebuild-% ;
 
+# iOS Simulator doesn't support archiving
+%-iphonesimulator-install: ACTION = build
+iphonesimulator-install: ACTION = build
+
 # Limit check to a single configuration
 %-iphoneos-check: check-iphoneos ;
 %-iphonesimulator-check: check-iphonesimulator ;

@@ -106,6 +106,10 @@
     \title Qt Creator: Creating a Qt Quick Application
 */
 /*!
+    \externalpage http://doc.qt.io/qtcreator/qtquick-iso-icon-browser.html
+    \title Qt Creator: Browsing ISO 7000 Icons
+*/
+/*!
     \externalpage http://doc.qt.io/qtcreator/quick-export-to-qml.html
     \title Qt Creator: Exporting Designs from Graphics Software
 */
@@ -208,6 +212,10 @@
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-mime-types.html
     \title Qt Creator: Editing MIME Types
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-modeling.html
+    \title Qt Creator: Modeling
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-qml-debugging-example.html

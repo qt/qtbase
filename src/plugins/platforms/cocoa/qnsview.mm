@@ -497,6 +497,12 @@ QT_WARNING_POP
     m_platformWindow->exposeWindow();
 }
 
+- (void)removeFromSuperview
+{
+    QMacAutoReleasePool pool;
+    [super removeFromSuperview];
+}
+
 - (void) flushBackingStore:(QCocoaBackingStore *)backingStore region:(const QRegion &)region offset:(QPoint)offset
 {
     m_backingStore = backingStore;

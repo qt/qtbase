@@ -195,16 +195,6 @@ static QDebug operator<<(QDebug dbg, const QWindowsScreenData &d)
 }
 #endif // !QT_NO_DEBUG_STREAM
 
-// Return the cursor to be shared by all screens (virtual desktop).
-static inline QSharedPointer<QPlatformCursor> sharedCursor()
-{
-#ifndef QT_NO_CURSOR
-    if (const QScreen *primaryScreen = QGuiApplication::primaryScreen())
-        return static_cast<const QWindowsScreen *>(primaryScreen->handle())->cursorPtr();
-#endif
-    return QSharedPointer<QPlatformCursor>(new QWindowsCursor);
-}
-
 /*!
     \class QWindowsScreen
     \brief Windows screen.
@@ -216,7 +206,7 @@ static inline QSharedPointer<QPlatformCursor> sharedCursor()
 QWindowsScreen::QWindowsScreen(const QWindowsScreenData &data) :
     m_data(data)
 #ifndef QT_NO_CURSOR
-    ,m_cursor(sharedCursor())
+    , m_cursor(new QWindowsCursor(this))
 #endif
 {
 }

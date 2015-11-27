@@ -202,8 +202,7 @@ protected Q_SLOTS:
     void notEnoughData();
 
 private Q_SLOTS:
-    void init();
-    void cleanup();
+    void cleanup() { cleanupTestData(); }
     void initTestCase();
     void cleanupTestCase();
 
@@ -487,6 +486,8 @@ private Q_SLOTS:
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 private:
+    void cleanupTestData();
+
     QString testDataDir;
     bool notEnoughDataForFastSender;
 };
@@ -1499,6 +1500,8 @@ void tst_QNetworkReply::initTestCase()
     echoProcessDir = QFINDTESTDATA("echo");
     QVERIFY2(!echoProcessDir.isEmpty(), qPrintable(
         QString::fromLatin1("Couldn't find echo dir starting from %1.").arg(QDir::currentPath())));
+
+    cleanupTestData();
 }
 
 void tst_QNetworkReply::cleanupTestCase()
@@ -1514,12 +1517,7 @@ void tst_QNetworkReply::cleanupTestCase()
 #endif
 }
 
-void tst_QNetworkReply::init()
-{
-    cleanup();
-}
-
-void tst_QNetworkReply::cleanup()
+void tst_QNetworkReply::cleanupTestData()
 {
     QFile file(testFileName);
     QVERIFY(!file.exists() || file.remove());

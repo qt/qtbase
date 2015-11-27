@@ -596,14 +596,11 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                     continue;
                 }
                 x++;
-
-                int inc_len;
-                for (inc_len = 0;
-                     buffer[x + inc_len] != term && !qmake_endOfLine(buffer[x + inc_len]);
-                     ++inc_len) {} // skip until end of include name
-                buffer[x + inc_len] = '\0';
                 inc = buffer + x;
-                x += inc_len;
+                for (;
+                     buffer[x] != term && !qmake_endOfLine(buffer[x]);
+                     ++x) {} // skip until end of include name
+                buffer[x] = '\0';
             } else if (buffer[x] == '\'' || buffer[x] == '"') {
                 const char term = buffer[x++];
                 while(x < buffer_len) {

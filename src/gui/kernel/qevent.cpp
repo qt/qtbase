@@ -3418,6 +3418,21 @@ QShowEvent::~QShowEvent()
     It may be safely ignored.
 
     \note This class is currently supported for OS X only.
+
+    \section1 OS X Example
+
+    In order to trigger the event on OS X, the application must be configured
+    to let the OS know what kind of file(s) it should react on.
+
+    For example, the following \c Info.plist file declares that the application
+    can act as a viewer for files with a PNG extension:
+
+    \snippet qfileopenevent/Info.plist Custom Info.plist
+
+    The following implementation of a QApplication subclass prints the path to
+    the file that was, for example, dropped on the Dock icon of the application.
+
+    \snippet qfileopenevent/main.cpp QApplication subclass
 */
 
 /*!
