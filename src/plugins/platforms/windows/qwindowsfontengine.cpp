@@ -1357,6 +1357,11 @@ QFontEngine *QWindowsMultiFontEngine::loadEngine(int at)
                 QWindowsFontEngineDirectWrite *fedw = new QWindowsFontEngineDirectWrite(directWriteFontFace,
                                                                                         fontEngine->fontDef.pixelSize,
                                                                                         data);
+                if (fontEngine->fontDef.weight > QFont::Normal)
+                    fedw->fontDef.weight = fontEngine->fontDef.weight;
+                if (fontEngine->fontDef.style > QFont::StyleNormal)
+                    fedw->fontDef.style = fontEngine->fontDef.style;
+                fedw->fontDef.family = fam;
                 return fedw;
             } else {
                 qErrnoWarning("%s: CreateFontFace failed", __FUNCTION__);
@@ -1368,7 +1373,13 @@ QFontEngine *QWindowsMultiFontEngine::loadEngine(int at)
     // Get here if original font is not DirectWrite or DirectWrite creation failed for some
     // reason
 
-    return new QWindowsFontEngine(fam, lf, data);
+    QFontEngine *fe = new QWindowsFontEngine(fam, lf, data);
+    if (fontEngine->fontDef.weight > QFont::Normal)
+        fe->fontDef.weight = fontEngine->fontDef.weight;
+    if (fontEngine->fontDef.style > QFont::StyleNormal)
+        fe->fontDef.style = fontEngine->fontDef.style;
+    fe->fontDef.family = fam;
+    return fe;
 }
 
 bool QWindowsFontEngine::supportsTransformation(const QTransform &transform) const
