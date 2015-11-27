@@ -2186,6 +2186,54 @@
            \snippet code/doc_src_stylesheet.qdoc 68
 
     \row
+        \li \b outline
+        \li
+        \li The outline drawn around the object's border.
+
+    \row
+        \li \b outline-color
+        \li \l{#Color}{Color}
+        \li The color of the outline.
+            See also \l{Qt Style Sheets Reference#border-color-prop}{border-color}
+
+    \row
+        \li \b outline-offset
+        \li \l{#Length}{Length}
+        \li The outline's offset from the border of the widget.
+
+    \row
+        \li \b outline-style
+        \li
+        \li Specifies the pattern used to draw the outline.
+            See also \l{Qt Style Sheets Reference#border-style-prop}{border-style}
+
+    \row
+        \li \b outline-radius
+        \li
+        \li Adds rounded corners to the outline
+
+    \row
+        \li \b outline-bottom-left-radius
+        \li \l{#Radius}{Radius}
+        \li The radius for the bottom-left rounded corner of the outline.
+
+    \row
+        \li \b outline-bottom-right-radius
+        \li \l{#Radius}{Radius}
+        \li The radius for the bottom-right rounded corner of the outline.
+
+    \row
+        \li \b outline-top-left-radius
+        \li \l{#Radius}{Radius}
+        \li The radius for the top-left corner of the outline.
+
+    \row
+        \li \b outline-top-right-radius
+        \li \l{#Radius}{Radius}
+        \li The radius for the top-right rounded corner of the outline.
+
+
+    \row
         \li \b{\c padding} \target padding-prop
         \li \l{#Box Lengths}{Box Lengths}
         \li The widget's padding. Equivalent to specifying \c
