@@ -48,6 +48,8 @@
 
 #include <algorithm>
 
+#include <Carbon/Carbon.h>
+
 QT_BEGIN_NAMESPACE
 
 //

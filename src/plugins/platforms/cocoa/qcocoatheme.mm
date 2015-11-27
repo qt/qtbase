@@ -55,6 +55,8 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>
 
+#include <Carbon/Carbon.h>
+
 QT_BEGIN_NAMESPACE
 
 const char *QCocoaTheme::name = "cocoa";

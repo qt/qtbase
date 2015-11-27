@@ -60,18 +60,6 @@
 #include "qdockarealayout_p.h"
 #include "qtoolbararealayout_p.h"
 
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
-// Forward defs to make avoid including Carbon.h (faster compile you know ;).
-struct OpaqueHIObjectRef;
-typedef struct OpaqueHIObjectRef*       HIObjectRef;
-typedef HIObjectRef                     HIToolbarItemRef;
-typedef const void * CFTypeRef;
-typedef const struct __CFString * CFStringRef;
-
-#include <private/qunifiedtoolbarsurface_mac_p.h>
-
-#endif // Q_DEAD_CODE_FROM_QT4_MAC
-
 QT_BEGIN_NAMESPACE
 
 class QToolBar;

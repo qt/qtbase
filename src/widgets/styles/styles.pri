@@ -49,7 +49,8 @@ contains( styles, mac ) {
     HEADERS += \
         styles/qmacstyle_mac_p.h \
         styles/qmacstyle_mac_p_p.h
-        OBJECTIVE_SOURCES += styles/qmacstyle_mac.mm
+    OBJECTIVE_SOURCES += styles/qmacstyle_mac.mm
+    LIBS_PRIVATE += -framework Carbon
 } else {
     DEFINES += QT_NO_STYLE_MAC
 }

@@ -31,8 +31,6 @@
 **
 ****************************************************************************/
 
-#include <Carbon/Carbon.h>
-
 #include "qnsview.h"
 #include "qcocoahelpers.h"
 #include "qcocoaaccessibility.h"

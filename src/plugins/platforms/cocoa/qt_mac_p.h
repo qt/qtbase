@@ -63,29 +63,9 @@
 
 #include "QtGui/qpainter.h"
 
-#include <Carbon/Carbon.h>
-
 QT_BEGIN_NAMESPACE
 class QWidget;
 class QDragMoveEvent;
-
-/* Event masks */
-// internal Qt types
-
-enum {
-    //AE types
-    typeAEClipboardChanged = 1,
-    //types
-    typeQWidget = 1,  /* QWidget *  */
-    //params
-    kEventParamQWidget = 'qwid',   /* typeQWidget */
-    //events
-    kEventQtRequestContext = 13,
-    kEventQtRequestMenubarUpdate = 14,
-    kEventQtRequestShowSheet = 17,
-    kEventQtRequestActivate = 18,
-    kEventQtRequestWindowChange = 20
-};
 
 // Simple class to manage short-lived regions
 class QMacSmartQuickDrawRegion
@@ -170,10 +150,6 @@ extern QPoint qt_mac_nativeMapFromParent(const QWidget *child, const QPoint &pt)
 #ifdef check
 # undef check
 #endif
-
-QFont qfontForThemeFont(ThemeFontID themeID);
-
-QColor qcolorForThemeTextColor(ThemeTextColor themeColor);
 
 struct QMacDndAnswerRecord {
     QRect rect;

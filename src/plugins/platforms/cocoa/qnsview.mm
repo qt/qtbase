@@ -33,7 +33,6 @@
 
 #include <QtCore/qglobal.h>
 
-#include <Carbon/Carbon.h>
 #include <dlfcn.h>
 
 #include "qnsview.h"
