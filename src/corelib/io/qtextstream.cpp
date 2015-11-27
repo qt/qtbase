@@ -449,6 +449,10 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
             bytesRead = device->read(buf, sizeof(buf));
     }
 
+    // reset the Text flag.
+    if (textModeEnabled)
+        device->setTextModeEnabled(true);
+
     if (bytesRead <= 0)
         return false;
 
@@ -483,10 +487,6 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
 #else
     readBuffer += QString::fromLatin1(buf, bytesRead);
 #endif
-
-    // reset the Text flag.
-    if (textModeEnabled)
-        device->setTextModeEnabled(true);
 
     // remove all '\r\n' in the string.
     if (readBuffer.size() > oldReadBufferSize && textModeEnabled) {
@@ -586,16 +586,17 @@ void QTextStreamPrivate::flushWriteBuffer()
     qDebug("QTextStreamPrivate::flushWriteBuffer(), device->write(\"%s\") == %d",
            qt_prettyDebug(data.constData(), qMin(data.size(),32), data.size()).constData(), int(bytesWritten));
 #endif
+
+#if defined (Q_OS_WIN)
+    // reset the text flag
+    if (textModeEnabled)
+        device->setTextModeEnabled(true);
+#endif
+
     if (bytesWritten <= 0) {
         status = QTextStream::WriteFailed;
         return;
     }
-
-#if defined (Q_OS_WIN)
-    // replace the text flag
-    if (textModeEnabled)
-        device->setTextModeEnabled(true);
-#endif
 
     // flush the file
 #ifndef QT_NO_QOBJECT
