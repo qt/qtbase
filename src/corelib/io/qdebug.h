@@ -323,6 +323,27 @@ inline QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache)
     return debug.maybeSpace();
 }
 
+Q_CORE_EXPORT void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, int value);
+
+template <typename Int>
+void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, Int value)
+{
+    const QDebugStateSaver saver(debug);
+    debug.resetFormat();
+    debug.nospace() << "QFlags(" << hex << showbase;
+    bool needSeparator = false;
+    for (uint i = 0; i < sizeofT * 8; ++i) {
+        if (value & (Int(1) << i)) {
+            if (needSeparator)
+                debug << '|';
+            else
+                needSeparator = true;
+            debug << (Int(1) << i);
+        }
+    }
+    debug << ')';
+}
+
 #if !defined(QT_NO_QOBJECT) && !defined(Q_QDOC)
 Q_CORE_EXPORT QDebug qt_QMetaEnum_debugOperator(QDebug&, int value, const QMetaObject *meta, const char *name);
 Q_CORE_EXPORT QDebug qt_QMetaEnum_flagDebugOperator(QDebug &dbg, quint64 value, const QMetaObject *meta, const char *name);
@@ -357,20 +378,7 @@ template <class T>
 inline QDebug qt_QMetaEnum_flagDebugOperator_helper(QDebug debug, const QFlags<T> &flags)
 #endif
 {
-    QDebugStateSaver saver(debug);
-    debug.resetFormat();
-    debug.nospace() << "QFlags(" << hex << showbase;
-    bool needSeparator = false;
-    for (uint i = 0; i < sizeof(T) * 8; ++i) {
-        if (flags.testFlag(T(1 << i))) {
-            if (needSeparator)
-                debug << '|';
-            else
-                needSeparator = true;
-            debug << (typename QFlags<T>::Int(1) << i);
-        }
-    }
-    debug << ')';
+    qt_QMetaEnum_flagDebugOperator(debug, sizeof(T), typename QFlags<T>::Int(flags));
     return debug;
 }
 

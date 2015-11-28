@@ -867,6 +867,19 @@ QDebugStateSaver::~QDebugStateSaver()
     d->restoreState();
 }
 
+/*!
+    \internal
+
+    Specialization of the primary template in qdebug.h to out-of-line
+    the common case of QFlags<T>::Int being int.
+
+    Just call the generic version so the two don't get out of sync.
+*/
+void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, int value)
+{
+    qt_QMetaEnum_flagDebugOperator<int>(debug, sizeofT, value);
+}
+
 #ifndef QT_NO_QOBJECT
 /*!
     \internal
