@@ -41,6 +41,7 @@ import java.util.concurrent.Semaphore;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -53,6 +54,7 @@ import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.lang.reflect.Method;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
@@ -81,6 +83,7 @@ public class QtNative
     private static int m_oldx, m_oldy;
     private static final int m_moveThreshold = 0;
     private static ClipboardManager m_clipboardManager = null;
+    private static Method m_checkSelfPermissionMethod = null;
 
     private static ClassLoader m_classLoader = null;
     public static ClassLoader classLoader()
@@ -391,6 +394,29 @@ public class QtNative
                 }
                 break;
         }
+    }
+
+    public static int checkSelfPermission(final String permission)
+    {
+        int perm = PackageManager.PERMISSION_DENIED;
+        synchronized (m_mainActivityMutex) {
+            if (m_activity == null)
+                return perm;
+            try {
+                if (Build.VERSION.SDK_INT >= 23) {
+                    if (m_checkSelfPermissionMethod == null)
+                        m_checkSelfPermissionMethod = Context.class.getMethod("checkSelfPermission", String.class);
+                    perm = (Integer)m_checkSelfPermissionMethod.invoke(m_activity, permission);
+                } else {
+                    final PackageManager pm = m_activity.getPackageManager();
+                    perm = pm.checkPermission(permission, m_activity.getPackageName());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return perm;
     }
 
     private static void updateSelection(final int selStart,
