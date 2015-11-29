@@ -1041,7 +1041,7 @@ QSharedPointer<QWindowsFontEngineData> sharedFontData()
 {
     FontEngineThreadLocalData *data = fontEngineThreadLocalData();
     if (!data->hasLocalData())
-        data->setLocalData(QSharedPointer<QWindowsFontEngineData>(new QWindowsFontEngineData));
+        data->setLocalData(QSharedPointer<QWindowsFontEngineData>::create());
     return data->localData();
 }
 #else // !QT_NO_THREAD
@@ -1051,7 +1051,7 @@ QWindowsFontEngineDataPtr sharedFontData()
 {
     QWindowsFontEngineDataPtr *data = fontEngineData();
     if (data->isNull())
-        *data = QWindowsFontEngineDataPtr(new QWindowsFontEngineData);
+        *data = QWindowsFontEngineDataPtr::create();
     return *data;
 }
 #endif // QT_NO_THREAD
