@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -1400,15 +1401,15 @@ QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRati
     if (disableNxImageLoading)
         return baseFileName;
 
-    QString atNx = QLatin1String("@%1x");
     int dotIndex = baseFileName.lastIndexOf(QLatin1Char('.'));
     if (dotIndex == -1) /* no dot */
         dotIndex = baseFileName.size(); /* append */
 
+    QString atNxfileName = baseFileName;
+    atNxfileName.insert(dotIndex, QLatin1String("@2x"));
     // Check for @Nx, ..., @3x, @2x file versions,
-    for (int n = qCeil(targetDevicePixelRatio); n > 1; --n) {
-        QString atNxfileName = baseFileName;
-        atNxfileName.insert(dotIndex, atNx.arg(n));
+    for (int n = qMin(qCeil(targetDevicePixelRatio), 9); n > 1; --n) {
+        atNxfileName[dotIndex + 1] = QLatin1Char('0' + n);
         if (QFile::exists(atNxfileName)) {
             if (sourceDevicePixelRatio)
                 *sourceDevicePixelRatio = n;
