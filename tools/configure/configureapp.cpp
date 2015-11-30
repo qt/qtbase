@@ -1923,9 +1923,6 @@ bool Configure::displayHelp()
 
         desc("LARGE_FILE",  "yes",     "-largefile",    "Enables Qt to access files larger than 4 GB.\n");
 
-        desc("FONT_CONFIG", "yes",     "-fontconfig",   "Build with FontConfig support.");
-        desc("FONT_CONFIG", "no",      "-no-fontconfig", "Do not build with FontConfig support.\n");
-
         desc("POSIX_IPC",   "yes",     "-posix-ipc",    "Enable POSIX IPC.\n");
 
         desc("QT_GLIB",     "yes",     "-glib",         "Compile Glib support.\n");
@@ -1972,6 +1969,9 @@ bool Configure::displayHelp()
         desc("FREETYPE", "no",   "-no-freetype",        "Do not compile in Freetype2 support.");
         desc("FREETYPE", "yes",  "-qt-freetype",        "Use the libfreetype bundled with Qt.");
         desc("FREETYPE", "system","-system-freetype",   "Use the libfreetype provided by the system.\n");
+
+        desc("FONT_CONFIG", "yes",     "-fontconfig",   "Build with FontConfig support.");
+        desc("FONT_CONFIG", "no",      "-no-fontconfig", "Do not build with FontConfig support.\n");
 
         desc("HARFBUZZ", "no",   "-no-harfbuzz",        "Do not compile in HarfBuzz-NG support.");
         desc("HARFBUZZ", "qt",   "-qt-harfbuzz",        "Use HarfBuzz-NG bundled with Qt to do text shaping.\n"
