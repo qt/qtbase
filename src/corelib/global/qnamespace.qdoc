@@ -137,7 +137,7 @@
            attribute is true, Qt will not do the flip. \l QKeySequence::StandardKey
            will also flip accordingly (i.e., QKeySequence::Copy will be
            Command+C on the keyboard regardless of the value set, though what is output for
-           QKeySequence::toString(QKeySequence::PortableText) will be different).
+           QKeySequence::toString() will be different).
 
     \value AA_Use96Dpi Assume the screen has a resolution of 96 DPI rather
            than using the OS-provided resolution. This will cause font rendering
