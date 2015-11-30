@@ -87,7 +87,7 @@
 
     \snippet fortuneserver/server.cpp 7
 
-    We then call QTcpServer::newPendingConnection(), which returns the
+    We then call QTcpServer::nextPendingConnection(), which returns the
     QTcpSocket representing the server side of the connection. By connecting
     QTcpSocket::disconnected() to QObject::deleteLater(), we ensure that the
     socket will be deleted after disconnecting.
