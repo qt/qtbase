@@ -6,5 +6,4 @@ CONFIG += testcase
 TARGET = tst_qabstracttextdocumentlayout
 QT += testlib
 SOURCES += tst_qabstracttextdocumentlayout.cpp
-linux: CONFIG += insignificant_test
 
