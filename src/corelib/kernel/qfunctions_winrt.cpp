@@ -35,58 +35,9 @@
 
 #ifdef Q_OS_WINRT
 
-#include "qstring.h"
-#include "qbytearray.h"
-#include "qhash.h"
+#include "qfunctions_fake_env_p.h"
 
 QT_BEGIN_NAMESPACE
-
-// Environment ------------------------------------------------------
-inline QHash<QByteArray, QByteArray> &qt_app_environment()
-{
-    static QHash<QByteArray, QByteArray> internalEnvironment;
-    return internalEnvironment;
-}
-
-errno_t qt_winrt_getenv_s(size_t* sizeNeeded, char* buffer, size_t bufferSize, const char* varName)
-{
-    if (!sizeNeeded)
-        return EINVAL;
-
-    if (!qt_app_environment().contains(varName)) {
-        if (buffer)
-            buffer[0] = '\0';
-        return ENOENT;
-    }
-
-    QByteArray value = qt_app_environment().value(varName);
-    if (!value.endsWith('\0')) // win32 guarantees terminated string
-        value.append('\0');
-
-    if (bufferSize < (size_t)value.size()) {
-        *sizeNeeded = value.size();
-        return ERANGE;
-    }
-
-    strcpy(buffer, value.constData());
-    return 0;
-}
-
-errno_t qt_winrt__putenv_s(const char* varName, const char* value)
-{
-    QByteArray input = value;
-    if (input.isEmpty()) {
-        if (qt_app_environment().contains(varName))
-            qt_app_environment().remove(varName);
-    } else {
-        // win32 on winrt guarantees terminated string
-        if (!input.endsWith('\0'))
-            input.append('\0');
-        qt_app_environment()[varName] = input;
-    }
-
-    return 0;
-}
 
 void qt_winrt_tzset()
 {
