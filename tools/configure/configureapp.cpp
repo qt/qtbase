@@ -1819,8 +1819,8 @@ bool Configure::displayHelp()
 
         desc("BUILDDEV", "yes", "-developer-build",      "Compile and link Qt with Qt developer options (including auto-tests exporting)\n");
 
-        desc("RELEASE_TOOLS", "yes", "-optimized-tools", "Do not build optimized host tools even in debug build.");
-        desc("RELEASE_TOOLS", "no", "-no-optimized-tools", "Build optimized host tools even in debug build.\n");
+        desc("RELEASE_TOOLS", "yes", "-optimized-tools", "Build optimized host tools even in debug build.");
+        desc("RELEASE_TOOLS", "no", "-no-optimized-tools", "Do not build optimized host tools even in debug build.\n");
 
         desc("OPENSOURCE", "opensource", "-opensource",   "Compile and link the Open-Source Edition of Qt.");
         desc("COMMERCIAL", "commercial", "-commercial",   "Compile and link the Commercial Edition of Qt.\n");
