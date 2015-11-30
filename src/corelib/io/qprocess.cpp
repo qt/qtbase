@@ -2098,7 +2098,9 @@ QByteArray QProcess::readAllStandardError()
     \b{Windows:} The arguments are quoted and joined into a command line
     that is compatible with the \c CommandLineToArgvW() Windows function.
     For programs that have different command line quoting requirements,
-    you need to use setNativeArguments().
+    you need to use setNativeArguments(). One notable program that does
+    not follow the \c CommandLineToArgvW() rules is cmd.exe and, by
+    consequence, all batch scripts.
 
     The OpenMode is set to \a mode.
 
