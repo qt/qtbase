@@ -1562,10 +1562,9 @@ void QFileSystemModel::setNameFilters(const QStringList &filters)
         d->bypassFilters.clear();
         // We guarantee that rootPath will stick around
         QPersistentModelIndex root(index(rootPath()));
-        QModelIndexList persistantList = persistentIndexList();
-        for (int i = 0; i < persistantList.count(); ++i) {
-            QFileSystemModelPrivate::QFileSystemNode *node;
-            node = d->node(persistantList.at(i));
+        const QModelIndexList persistentList = persistentIndexList();
+        for (const auto &persistentIndex : persistentList) {
+            QFileSystemModelPrivate::QFileSystemNode *node = d->node(persistentIndex);
             while (node) {
                 if (d->bypassFilters.contains(node))
                     break;
@@ -1579,9 +1578,8 @@ void QFileSystemModel::setNameFilters(const QStringList &filters)
     d->nameFilters.clear();
     const Qt::CaseSensitivity caseSensitive =
         (filter() & QDir::CaseSensitive) ? Qt::CaseSensitive : Qt::CaseInsensitive;
-    for (int i = 0; i < filters.size(); ++i) {
-        d->nameFilters << QRegExp(filters.at(i), caseSensitive, QRegExp::Wildcard);
-    }
+    for (const auto &filter : filters)
+        d->nameFilters << QRegExp(filter, caseSensitive, QRegExp::Wildcard);
     d->forceSort = true;
     d->delayedSort();
 #endif
@@ -1734,9 +1732,9 @@ void QFileSystemModelPrivate::addVisibleFiles(QFileSystemNode *parentNode, const
     if (parentNode->dirtyChildrenIndex == -1)
         parentNode->dirtyChildrenIndex = parentNode->visibleChildren.count();
 
-    for (int i = 0; i < newFiles.count(); ++i) {
-        parentNode->visibleChildren.append(newFiles.at(i));
-        parentNode->children.value(newFiles.at(i))->isVisible = true;
+    for (const auto &newFile : newFiles) {
+        parentNode->visibleChildren.append(newFile);
+        parentNode->children.value(newFile)->isVisible = true;
     }
     if (!indexHidden)
       q->endInsertRows();
@@ -1779,10 +1777,10 @@ void QFileSystemModelPrivate::_q_fileSystemChanged(const QString &path, const QV
     QStringList newFiles;
     QFileSystemModelPrivate::QFileSystemNode *parentNode = node(path, false);
     QModelIndex parentIndex = index(parentNode);
-    for (int i = 0; i < updates.count(); ++i) {
-        QString fileName = updates.at(i).first;
+    for (const auto &update : updates) {
+        QString fileName = update.first;
         Q_ASSERT(!fileName.isEmpty());
-        QExtendedInformation info = fileInfoGatherer.getInfo(updates.at(i).second);
+        QExtendedInformation info = fileInfoGatherer.getInfo(update.second);
         bool previouslyHere = parentNode->children.contains(fileName);
         if (!previouslyHere) {
             addNode(parentNode, fileName, info.fileInfo());
@@ -1971,8 +1969,8 @@ bool QFileSystemModelPrivate::passNameFilters(const QFileSystemNode *node) const
 
     // Check the name regularexpression filters
     if (!(node->isDir() && (filters & QDir::AllDirs))) {
-        for (int i = 0; i < nameFilters.size(); ++i) {
-            QRegExp copy = nameFilters.at(i);
+        for (const auto &nameFilter : nameFilters) {
+            QRegExp copy = nameFilter;
             if (copy.exactMatch(node->fileName))
                 return true;
         }

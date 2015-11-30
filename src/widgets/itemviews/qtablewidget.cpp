@@ -1388,9 +1388,10 @@ void QTableWidgetItem::setData(int role, const QVariant &value)
 QVariant QTableWidgetItem::data(int role) const
 {
     role = (role == Qt::EditRole ? Qt::DisplayRole : role);
-    for (int i = 0; i < values.count(); ++i)
-        if (values.at(i).role == role)
-            return values.at(i).value;
+    for (const auto &value : values) {
+        if (value.role == role)
+            return value.value;
+    }
     return QVariant();
 }
 
@@ -2359,10 +2360,9 @@ QList<QTableWidgetSelectionRange> QTableWidget::selectedRanges() const
 QList<QTableWidgetItem*> QTableWidget::selectedItems() const
 {
     Q_D(const QTableWidget);
-    QModelIndexList indexes = selectionModel()->selectedIndexes();
+    const QModelIndexList indexes = selectionModel()->selectedIndexes();
     QList<QTableWidgetItem*> items;
-    for (int i = 0; i < indexes.count(); ++i) {
-        QModelIndex index = indexes.at(i);
+    for (const auto &index : indexes) {
         if (isIndexHidden(index))
             continue;
         QTableWidgetItem *item = d->tableModel()->item(index);
@@ -2682,22 +2682,21 @@ void QTableWidget::dropEvent(QDropEvent *event) {
         int col = -1;
         int row = -1;
         if (d->dropOn(event, &row, &col, &topIndex)) {
-            QModelIndexList indexes = selectedIndexes();
+            const QModelIndexList indexes = selectedIndexes();
             int top = INT_MAX;
             int left = INT_MAX;
-            for (int i = 0; i < indexes.count(); ++i) {
-                top = qMin(indexes.at(i).row(), top);
-                left = qMin(indexes.at(i).column(), left);
+            for (const auto &index : indexes) {
+                top = qMin(index.row(), top);
+                left = qMin(index.column(), left);
             }
 
             QList<QTableWidgetItem *> taken;
             const int indexesCount = indexes.count();
             taken.reserve(indexesCount);
-            for (int i = 0; i < indexesCount; ++i)
-                taken.append(takeItem(indexes.at(i).row(), indexes.at(i).column()));
+            for (const auto &index : indexes)
+                taken.append(takeItem(index.row(), index.column()));
 
-            for (int i = 0; i < indexes.count(); ++i) {
-                QModelIndex index = indexes.at(i);
+            for (const auto &index : indexes) {
                 int r = index.row() - top + topIndex.row();
                 int c = index.column() - left + topIndex.column();
                 setItem(r, c, taken.takeFirst());

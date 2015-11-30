@@ -3622,9 +3622,8 @@ void QWizardPage::cleanupPage()
 {
     Q_D(QWizardPage);
     if (d->wizard) {
-        QVector<QWizardField> &fields = d->wizard->d_func()->fields;
-        for (int i = 0; i < fields.count(); ++i) {
-            const QWizardField &field = fields.at(i);
+        const QVector<QWizardField> &fields = d->wizard->d_func()->fields;
+        for (const auto &field : fields) {
             if (field.page == this)
                 field.object->setProperty(field.property, field.initialValue);
         }

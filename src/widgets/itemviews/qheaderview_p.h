@@ -327,8 +327,8 @@ public:
 
     inline int headerLength() const { // for debugging
         int len = 0;
-        for (int i = 0; i < sectionItems.count(); ++i)
-            len += sectionItems.at(i).size;
+        for (const auto &section : sectionItems)
+            len += section.size;
         return len;
     }
 

@@ -570,8 +570,8 @@ QAccessibleGroupBox::relations(QAccessible::Relation match /* = QAccessible::All
 
     if ((match & QAccessible::Labelled) && (!groupBox()->title().isEmpty())) {
         const QList<QWidget*> kids = childWidgets(widget());
-        for (int i = 0; i < kids.count(); ++i) {
-            QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(kids.at(i));
+        for (QWidget *kid : kids) {
+            QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(kid);
             if (iface)
                 rels.append(qMakePair(iface, QAccessible::Relation(QAccessible::Labelled)));
         }

@@ -2393,8 +2393,7 @@ QRegion QTreeView::visualRegionForSelection(const QItemSelection &selection) con
 
     QRegion selectionRegion;
     const QRect &viewportRect = d->viewport->rect();
-    for (int i = 0; i < selection.count(); ++i) {
-        QItemSelectionRange range = selection.at(i);
+    for (const auto &range : selection) {
         if (!range.isValid())
             continue;
         QModelIndex parent = range.parent();

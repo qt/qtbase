@@ -1370,9 +1370,6 @@ void QTableView::paintEvent(QPaintEvent *event)
     uint x = horizontalHeader->length() - horizontalHeader->offset() - (rightToLeft ? 0 : 1);
     uint y = verticalHeader->length() - verticalHeader->offset() - 1;
 
-    const QRegion region = event->region().translated(offset);
-    const QVector<QRect> rects = region.rects();
-
     //firstVisualRow is the visual index of the first visible row.  lastVisualRow is the visual index of the last visible Row.
     //same goes for ...VisualColumn
     int firstVisualRow = qMax(verticalHeader->visualIndexAt(0),0);
@@ -1391,13 +1388,15 @@ void QTableView::paintEvent(QPaintEvent *event)
 
     QBitArray drawn((lastVisualRow - firstVisualRow + 1) * (lastVisualColumn - firstVisualColumn + 1));
 
+    const QRegion region = event->region().translated(offset);
+
     if (d->hasSpans()) {
         d->drawAndClipSpans(region, &painter, option, &drawn,
                              firstVisualRow, lastVisualRow, firstVisualColumn, lastVisualColumn);
     }
 
-    for (int i = 0; i < rects.size(); ++i) {
-        QRect dirtyArea = rects.at(i);
+    const QVector<QRect> rects = region.rects();
+    for (auto dirtyArea : rects) {
         dirtyArea.setBottom(qMin(dirtyArea.bottom(), int(y)));
         if (rightToLeft) {
             dirtyArea.setLeft(qMax(dirtyArea.left(), d->viewport->width() - int(x)));
@@ -1952,8 +1951,7 @@ QRegion QTableView::visualRegionForSelection(const QItemSelection &selection) co
     bool horizontalMoved = horizontalHeader()->sectionsMoved();
 
     if ((verticalMoved && horizontalMoved) || (d->hasSpans() && (verticalMoved || horizontalMoved))) {
-        for (int i = 0; i < selection.count(); ++i) {
-            QItemSelectionRange range = selection.at(i);
+        for (const auto &range : selection) {
             if (range.parent() != d->root || !range.isValid())
                 continue;
             for (int r = range.top(); r <= range.bottom(); ++r)
@@ -1964,8 +1962,7 @@ QRegion QTableView::visualRegionForSelection(const QItemSelection &selection) co
                 }
         }
     } else if (horizontalMoved) {
-        for (int i = 0; i < selection.count(); ++i) {
-            QItemSelectionRange range = selection.at(i);
+        for (const auto &range : selection) {
             if (range.parent() != d->root || !range.isValid())
                 continue;
             int top = rowViewportPosition(range.top());
@@ -1980,8 +1977,7 @@ QRegion QTableView::visualRegionForSelection(const QItemSelection &selection) co
             }
         }
     } else if (verticalMoved) {
-        for (int i = 0; i < selection.count(); ++i) {
-            QItemSelectionRange range = selection.at(i);
+        for (const auto &range : selection) {
             if (range.parent() != d->root || !range.isValid())
                 continue;
             int left = columnViewportPosition(range.left());
@@ -1997,8 +1993,7 @@ QRegion QTableView::visualRegionForSelection(const QItemSelection &selection) co
         }
     } else { // nothing moved
         const int gridAdjust = showGrid() ? 1 : 0;
-        for (int i = 0; i < selection.count(); ++i) {
-            QItemSelectionRange range = selection.at(i);
+        for (auto range : selection) {
             if (range.parent() != d->root || !range.isValid())
                 continue;
             d->trimHiddenSelections(&range);

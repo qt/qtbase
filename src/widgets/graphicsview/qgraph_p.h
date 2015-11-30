@@ -222,9 +222,8 @@ public:
         QSet<Vertex *> setOfVertices = vertices();
         for (typename QSet<Vertex*>::const_iterator it = setOfVertices.begin(); it != setOfVertices.end(); ++it) {
             Vertex *v = *it;
-            QList<Vertex*> adjacents = adjacentVertices(v);
-            for (int i = 0; i < adjacents.count(); ++i) {
-                Vertex *v1 = adjacents.at(i);
+            const QList<Vertex*> adjacents = adjacentVertices(v);
+            for (auto *v1 : adjacents) {
                 EdgeData *data = edgeData(v, v1);
                 bool forward = data->from == v;
                 if (forward) {

@@ -1047,26 +1047,26 @@ void QMessageBoxPrivate::detectEscapeButton()
     }
 
     // if the message box has one RejectRole button, make it the escape button
-    for (int i = 0; i < buttons.count(); i++) {
-        if (buttonBox->buttonRole(buttons.at(i)) == QDialogButtonBox::RejectRole) {
+    for (auto *button : buttons) {
+        if (buttonBox->buttonRole(button) == QDialogButtonBox::RejectRole) {
             if (detectedEscapeButton) { // already detected!
                 detectedEscapeButton = 0;
                 break;
             }
-            detectedEscapeButton = buttons.at(i);
+            detectedEscapeButton = button;
         }
     }
     if (detectedEscapeButton)
         return;
 
     // if the message box has one NoRole button, make it the escape button
-    for (int i = 0; i < buttons.count(); i++) {
-        if (buttonBox->buttonRole(buttons.at(i)) == QDialogButtonBox::NoRole) {
+    for (auto *button : buttons) {
+        if (buttonBox->buttonRole(button) == QDialogButtonBox::NoRole) {
             if (detectedEscapeButton) { // already detected!
                 detectedEscapeButton = 0;
                 break;
             }
-            detectedEscapeButton = buttons.at(i);
+            detectedEscapeButton = button;
         }
     }
 }
@@ -1506,8 +1506,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
         int key = e->key() & ~Qt::MODIFIER_MASK;
         if (key) {
             const QList<QAbstractButton *> buttons = d->buttonBox->buttons();
-            for (int i = 0; i < buttons.count(); ++i) {
-                QAbstractButton *pb = buttons.at(i);
+            for (auto *pb : buttons) {
                 QKeySequence shortcut = pb->shortcut();
                 if (!shortcut.isEmpty() && key == int(shortcut[0] & ~Qt::MODIFIER_MASK)) {
                     pb->animateClick();

@@ -177,9 +177,10 @@ public:
         // Whether the data can actually be dropped will be checked in drag move.
         if (event->type() == QEvent::DragEnter && (event->dropAction() & model->supportedDropActions())) {
             const QStringList modelTypes = model->mimeTypes();
-            for (int i = 0; i < modelTypes.count(); ++i)
-                if (mime->hasFormat(modelTypes.at(i)))
+            for (const auto &modelType : modelTypes) {
+                if (mime->hasFormat(modelType))
                     return true;
+            }
         }
 
         QModelIndex index;

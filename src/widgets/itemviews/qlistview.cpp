@@ -651,8 +651,7 @@ QItemViewPaintPairs QListViewPrivate::draggablePaintPairs(const QModelIndexList 
     const QRect viewportRect = viewport->rect();
     QItemViewPaintPairs ret;
     const QSet<QModelIndex> visibleIndexes = intersectingSet(viewportRect.translated(q->horizontalOffset(), q->verticalOffset())).toList().toSet();
-    for (int i = 0; i < indexes.count(); ++i) {
-        const QModelIndex &index = indexes.at(i);
+    for (const auto &index : indexes) {
         if (visibleIndexes.contains(index)) {
             const QRect current = q->visualRect(index);
             QItemViewPaintPair p = { current, index };
@@ -1398,16 +1397,16 @@ QRegion QListView::visualRegionForSelection(const QItemSelection &selection) con
     int c = d->column;
     QRegion selectionRegion;
     const QRect &viewportRect = d->viewport->rect();
-    for (int i = 0; i < selection.count(); ++i) {
-        if (!selection.at(i).isValid())
+    for (const auto &elem : selection) {
+        if (!elem.isValid())
             continue;
-        QModelIndex parent = selection.at(i).topLeft().parent();
+        QModelIndex parent = elem.topLeft().parent();
         //we only display the children of the root in a listview
         //we're not interested in the other model indexes
         if (parent != d->root)
             continue;
-        int t = selection.at(i).topLeft().row();
-        int b = selection.at(i).bottomRight().row();
+        int t = elem.topLeft().row();
+        int b = elem.bottomRight().row();
         if (d->viewMode == IconMode || d->isWrapping()) { // in non-static mode, we have to go through all selected items
             for (int r = t; r <= b; ++r) {
                 const QRect &rect = visualRect(d->model->index(r, c, parent));
@@ -2771,9 +2770,8 @@ bool QIconModeViewBase::filterDropEvent(QDropEvent *e)
     }
     QPoint start = dd->pressedPosition;
     QPoint delta = (dd->movement == QListView::Snap ? snapToGrid(end) - snapToGrid(start) : end - start);
-    QList<QModelIndex> indexes = dd->selectionModel->selectedIndexes();
-    for (int i = 0; i < indexes.count(); ++i) {
-        QModelIndex index = indexes.at(i);
+    const QList<QModelIndex> indexes = dd->selectionModel->selectedIndexes();
+    for (const auto &index : indexes) {
         QRect rect = dd->rectForIndex(index);
         viewport()->update(dd->mapToViewport(rect, false));
         QPoint dest = rect.topLeft() + delta;

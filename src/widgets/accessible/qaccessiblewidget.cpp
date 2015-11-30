@@ -53,10 +53,9 @@ QT_BEGIN_NAMESPACE
 
 static QList<QWidget*> childWidgets(const QWidget *widget)
 {
-    QList<QObject*> list = widget->children();
     QList<QWidget*> widgets;
-    for (int i = 0; i < list.size(); ++i) {
-        QWidget *w = qobject_cast<QWidget *>(list.at(i));
+    for (QObject *o : widget->children()) {
+        QWidget *w = qobject_cast<QWidget *>(o);
         if (w && !w->isWindow()
             && !qobject_cast<QFocusFrame*>(w)
 #if !defined(QT_NO_MENU)
@@ -77,9 +76,8 @@ static QString buddyString(const QWidget *widget)
     if (!parent)
         return QString();
 #ifndef QT_NO_SHORTCUT
-    QObjectList ol = parent->children();
-    for (int i = 0; i < ol.size(); ++i) {
-        QLabel *label = qobject_cast<QLabel*>(ol.at(i));
+    for (QObject *o : parent->children()) {
+        QLabel *label = qobject_cast<QLabel*>(o);
         if (label && label->buddy() == widget)
             return label->text();
     }
@@ -302,8 +300,8 @@ QAccessibleWidget::relations(QAccessible::Relation match /*= QAccessible::AllRel
             // ideally we would go through all objects and check, but that
             // will be too expensive
             const QList<QWidget*> kids = childWidgets(parent);
-            for (int i = 0; i < kids.count(); ++i) {
-                if (QLabel *labelSibling = qobject_cast<QLabel*>(kids.at(i))) {
+            for (QWidget *kid : kids) {
+                if (QLabel *labelSibling = qobject_cast<QLabel*>(kid)) {
                     if (labelSibling->buddy() == widget()) {
                         QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(labelSibling);
                         rels.append(qMakePair(iface, rel));

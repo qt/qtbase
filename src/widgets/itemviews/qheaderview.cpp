@@ -2958,8 +2958,7 @@ QRegion QHeaderView::visualRegionForSelection(const QItemSelection &selection) c
         int right = 0;
         int rangeLeft, rangeRight;
 
-        for (int i = 0; i < selection.count(); ++i) {
-            QItemSelectionRange r = selection.at(i);
+        for (const auto &r : selection) {
             if (r.parent().isValid() || !r.isValid())
                 continue; // we only know about toplevel items and we don't want invalid ranges
             // FIXME an item inside the range may be the leftmost or rightmost
@@ -2992,8 +2991,7 @@ QRegion QHeaderView::visualRegionForSelection(const QItemSelection &selection) c
     int bottom = 0;
     int rangeTop, rangeBottom;
 
-    for (int i = 0; i < selection.count(); ++i) {
-        QItemSelectionRange r = selection.at(i);
+    for (const auto &r : selection) {
         if (r.parent().isValid() || !r.isValid())
             continue; // we only know about toplevel items
         // FIXME an item inside the range may be the leftmost or rightmost

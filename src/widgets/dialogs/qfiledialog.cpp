@@ -2587,7 +2587,7 @@ void QFileDialog::accept()
         return;
     }
 
-    QStringList files = selectedFiles();
+    const QStringList files = selectedFiles();
     if (files.isEmpty())
         return;
     QString lineEditText = d->lineEdit()->text();
@@ -2657,10 +2657,10 @@ void QFileDialog::accept()
 
     case ExistingFile:
     case ExistingFiles:
-        for (int i = 0; i < files.count(); ++i) {
-            QFileInfo info(files.at(i));
+        for (const auto &file : files) {
+            QFileInfo info(file);
             if (!info.exists())
-                info = QFileInfo(d->getEnvironmentVariable(files.at(i)));
+                info = QFileInfo(d->getEnvironmentVariable(file));
             if (!info.exists()) {
 #ifndef QT_NO_MESSAGEBOX
                 QString message = tr("%1\nFile not found.\nPlease verify the "
@@ -3444,15 +3444,13 @@ void QFileDialogPrivate::_q_autoCompleteFileName(const QString &text)
         return;
     }
 
-    QStringList multipleFiles = typedFiles();
+    const QStringList multipleFiles = typedFiles();
     if (multipleFiles.count() > 0) {
         QModelIndexList oldFiles = qFileDialogUi->listView->selectionModel()->selectedRows();
         QModelIndexList newFiles;
-        for (int i = 0; i < multipleFiles.count(); ++i) {
-            QModelIndex idx = model->index(multipleFiles.at(i));
-            if (oldFiles.contains(idx))
-                oldFiles.removeAll(idx);
-            else
+        for (const auto &file : multipleFiles) {
+            QModelIndex idx = model->index(file);
+            if (oldFiles.removeAll(idx) == 0)
                 newFiles.append(idx);
         }
         for (int i = 0; i < newFiles.count(); ++i)
@@ -3479,7 +3477,7 @@ void QFileDialogPrivate::_q_updateOkButton()
     bool enableButton = true;
     bool isOpenDirectory = false;
 
-    QStringList files = q->selectedFiles();
+    const QStringList files = q->selectedFiles();
     QString lineEditText = lineEdit()->text();
 
     if (lineEditText.startsWith(QLatin1String("//")) || lineEditText.startsWith(QLatin1Char('\\'))) {
@@ -3538,10 +3536,10 @@ void QFileDialogPrivate::_q_updateOkButton()
         }
         case QFileDialog::ExistingFile:
         case QFileDialog::ExistingFiles:
-            for (int i = 0; i < files.count(); ++i) {
-                QModelIndex idx = model->index(files.at(i));
+            for (const auto &file : files) {
+                QModelIndex idx = model->index(file);
                 if (!idx.isValid())
-                    idx = model->index(getEnvironmentVariable(files.at(i)));
+                    idx = model->index(getEnvironmentVariable(file));
                 if (!idx.isValid()) {
                     enableButton = false;
                     break;
@@ -3682,14 +3680,14 @@ void QFileDialogPrivate::_q_useNameFilter(int index)
 void QFileDialogPrivate::_q_selectionChanged()
 {
     const QFileDialog::FileMode fileMode = q_func()->fileMode();
-    QModelIndexList indexes = qFileDialogUi->listView->selectionModel()->selectedRows();
+    const QModelIndexList indexes = qFileDialogUi->listView->selectionModel()->selectedRows();
     bool stripDirs = (fileMode != QFileDialog::DirectoryOnly && fileMode != QFileDialog::Directory);
 
     QStringList allFiles;
-    for (int i = 0; i < indexes.count(); ++i) {
-        if (stripDirs && model->isDir(mapToSource(indexes.at(i))))
+    for (const auto &index : indexes) {
+        if (stripDirs && model->isDir(mapToSource(index)))
             continue;
-        allFiles.append(indexes.at(i).data().toString());
+        allFiles.append(index.data().toString());
     }
     if (allFiles.count() > 1)
         for (int i = 0; i < allFiles.count(); ++i) {

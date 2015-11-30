@@ -653,9 +653,7 @@ void QGroupBox::setChecked(bool b)
 void QGroupBoxPrivate::_q_setChildrenEnabled(bool b)
 {
     Q_Q(QGroupBox);
-    QObjectList childList = q->children();
-    for (int i = 0; i < childList.size(); ++i) {
-        QObject *o = childList.at(i);
+    for (QObject *o : q->children()) {
         if (o->isWidgetType()) {
             QWidget *w = static_cast<QWidget *>(o);
             if (b) {

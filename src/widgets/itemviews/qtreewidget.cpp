@@ -725,9 +725,9 @@ QMimeData *QTreeModel::internalMimeData()  const
 QMimeData *QTreeModel::mimeData(const QModelIndexList &indexes) const
 {
     QList<QTreeWidgetItem*> items;
-    for (int i = 0; i < indexes.count(); ++i) {
-        if (indexes.at(i).column() == 0) // only one item per row
-            items << item(indexes.at(i));
+    for (const auto &index : indexes) {
+        if (index.column() == 0) // only one item per row
+            items << item(index);
     }
 
     // cachedIndexes is a little hack to avoid copying from QModelIndexList to
@@ -1735,7 +1735,7 @@ void QTreeWidgetItem::setData(int column, int role, const QVariant &value)
     default:
         if (column < values.count()) {
             bool found = false;
-            QVector<QWidgetItemData> column_values = values.at(column);
+            const QVector<QWidgetItemData> column_values = values.at(column);
             for (int i = 0; i < column_values.count(); ++i) {
                 if (column_values.at(i).role == role) {
                     if (column_values.at(i).value == value)
@@ -1785,9 +1785,10 @@ QVariant QTreeWidgetItem::data(int column, int role) const
    default:
         if (column >= 0 && column < values.size()) {
             const QVector<QWidgetItemData> &column_values = values.at(column);
-            for (int i = 0; i < column_values.count(); ++i)
-                if (column_values.at(i).role == role)
-                    return column_values.at(i).value;
+            for (const auto &column_value : column_values) {
+                if (column_value.role == role)
+                    return column_value.value;
+            }
         }
     }
     return QVariant();
@@ -2136,8 +2137,8 @@ QVariant QTreeWidgetItem::childrenCheckState(int column) const
         return QVariant();
     bool checkedChildren = false;
     bool uncheckedChildren = false;
-    for (int i = 0; i < children.count(); ++i) {
-        QVariant value = children.at(i)->data(column, Qt::CheckStateRole);
+    for (const auto *child : children) {
+        QVariant value = child->data(column, Qt::CheckStateRole);
         if (!value.isValid())
             return QVariant();
 
@@ -3018,13 +3019,13 @@ void QTreeWidget::setItemSelected(const QTreeWidgetItem *item, bool select)
 QList<QTreeWidgetItem*> QTreeWidget::selectedItems() const
 {
     Q_D(const QTreeWidget);
-    QModelIndexList indexes = selectionModel()->selectedIndexes();
+    const QModelIndexList indexes = selectionModel()->selectedIndexes();
     QList<QTreeWidgetItem*> items;
     items.reserve(indexes.count());
     QSet<QTreeWidgetItem *> seen;
     seen.reserve(indexes.count());
-    for (int i = 0; i < indexes.count(); ++i) {
-        QTreeWidgetItem *item = d->item(indexes.at(i));
+    for (const auto &index : indexes) {
+        QTreeWidgetItem *item = d->item(index);
         if (isItemHidden(item) || seen.contains(item))
             continue;
         seen.insert(item);
@@ -3278,8 +3279,7 @@ QMimeData *QTreeWidget::mimeData(const QList<QTreeWidgetItem*> items) const
     Q_D(const QTreeWidget);
     if (d->treeModel()->cachedIndexes.isEmpty()) {
         QList<QModelIndex> indexes;
-        for (int i = 0; i < items.count(); ++i) {
-            QTreeWidgetItem *item = items.at(i);
+        for (const auto *item : items) {
             if (Q_UNLIKELY(!item)) {
                 qWarning("QTreeWidget::mimeData: Null-item passed");
                 return 0;
@@ -3382,12 +3382,12 @@ void QTreeWidget::dropEvent(QDropEvent *event) {
         int col = -1;
         int row = -1;
         if (d->dropOn(event, &row, &col, &topIndex)) {
-            QList<QModelIndex> idxs = selectedIndexes();
+            const QList<QModelIndex> idxs = selectedIndexes();
             QList<QPersistentModelIndex> indexes;
             const int indexesCount = idxs.count();
             indexes.reserve(indexesCount);
-            for (int i = 0; i < indexesCount; i++)
-                indexes.append(idxs.at(i));
+            for (const auto &idx : idxs)
+                indexes.append(idx);
 
             if (indexes.contains(topIndex))
                 return;
@@ -3397,12 +3397,12 @@ void QTreeWidget::dropEvent(QDropEvent *event) {
 
             // Remove the items
             QList<QTreeWidgetItem *> taken;
-            for (int i = 0; i < indexes.count(); ++i) {
-                QTreeWidgetItem *parent = itemFromIndex(indexes.at(i));
+            for (const auto &index : indexes) {
+                QTreeWidgetItem *parent = itemFromIndex(index);
                 if (!parent || !parent->parent()) {
-                    taken.append(takeTopLevelItem(indexes.at(i).row()));
+                    taken.append(takeTopLevelItem(index.row()));
                 } else {
-                    taken.append(parent->parent()->takeChild(indexes.at(i).row()));
+                    taken.append(parent->parent()->takeChild(index.row()));
                 }
             }
 

@@ -1125,9 +1125,9 @@ QStyle *QApplication::style()
         QStyle *&app_style = QApplicationPrivate::app_style;
         app_style = QStyleFactory::create(style);
         if (!app_style) {
-            QStringList styles = QStyleFactory::keys();
-            for (int i = 0; i < styles.size(); ++i) {
-                if ((app_style = QStyleFactory::create(styles.at(i))))
+            const QStringList styles = QStyleFactory::keys();
+            for (const auto &style : styles) {
+                if ((app_style = QStyleFactory::create(style)))
                     break;
             }
         }
@@ -1742,8 +1742,7 @@ void QApplicationPrivate::notifyWindowIconChanged()
     QWindowList windowList = QGuiApplication::topLevelWindows();
 
     // send to all top-level QWidgets
-    for (int i = 0; i < list.size(); ++i) {
-        QWidget *w = list.at(i);
+    for (auto *w : list) {
         windowList.removeOne(w->windowHandle());
         QCoreApplication::sendEvent(w, &ev);
     }
@@ -1906,9 +1905,8 @@ bool QApplicationPrivate::tryCloseAllWidgetWindows(QWindowList *processedWindows
     }
 
 retry:
-    QWidgetList list = QApplication::topLevelWidgets();
-    for (int i = 0; i < list.size(); ++i) {
-        QWidget *w = list.at(i);
+    const QWidgetList list = QApplication::topLevelWidgets();
+    for (auto *w : list) {
         if (w->isVisible() && w->windowType() != Qt::Desktop &&
                 !w->testAttribute(Qt::WA_DontShowOnScreen) && !w->data->is_closing) {
             QWindow *window = w->windowHandle();
@@ -1995,9 +1993,8 @@ bool QApplication::event(QEvent *e)
         ce->accept();
         closeAllWindows();
 
-        QWidgetList list = topLevelWidgets();
-        for (int i = 0; i < list.size(); ++i) {
-            QWidget *w = list.at(i);
+        const QWidgetList list = topLevelWidgets();
+        for (auto *w : list) {
             if (w->isVisible() && !(w->windowType() == Qt::Desktop) && !(w->windowType() == Qt::Popup) &&
                  (!(w->windowType() == Qt::Dialog) || !w->parentWidget())) {
                 ce->ignore();
@@ -2011,9 +2008,8 @@ bool QApplication::event(QEvent *e)
     } else if (e->type() == QEvent::LocaleChange) {
         // on Windows the event propagation is taken care by the
         // WM_SETTINGCHANGE event handler.
-        QWidgetList list = topLevelWidgets();
-        for (int i = 0; i < list.size(); ++i) {
-            QWidget *w = list.at(i);
+        const QWidgetList list = topLevelWidgets();
+        for (auto *w : list) {
             if (!(w->windowType() == Qt::Desktop)) {
                 if (!w->testAttribute(Qt::WA_SetLocale))
                     w->d_func()->setLocale_helper(QLocale(), true);
@@ -2057,9 +2053,8 @@ bool QApplication::event(QEvent *e)
     }
 
     if(e->type() == QEvent::LanguageChange) {
-        QWidgetList list = topLevelWidgets();
-        for (int i = 0; i < list.size(); ++i) {
-            QWidget *w = list.at(i);
+        const QWidgetList list = topLevelWidgets();
+        for (auto *w : list) {
             if (!(w->windowType() == Qt::Desktop))
                 postEvent(w, new QEvent(QEvent::LanguageChange));
         }
@@ -2085,8 +2080,7 @@ void QApplicationPrivate::notifyLayoutDirectionChange()
     QWindowList windowList = QGuiApplication::topLevelWindows();
 
     // send to all top-level QWidgets
-    for (int i = 0; i < list.size(); ++i) {
-        QWidget *w = list.at(i);
+    for (auto *w : list) {
         windowList.removeAll(w->windowHandle());
         QEvent ev(QEvent::ApplicationLayoutDirectionChange);
         QCoreApplication::sendEvent(w, &ev);
@@ -2137,9 +2131,8 @@ void QApplication::setActiveWindow(QWidget* act)
 
     if (QApplicationPrivate::active_window) {
         if (style()->styleHint(QStyle::SH_Widget_ShareActivation, 0, QApplicationPrivate::active_window)) {
-            QWidgetList list = topLevelWidgets();
-            for (int i = 0; i < list.size(); ++i) {
-                QWidget *w = list.at(i);
+            const QWidgetList list = topLevelWidgets();
+            for (auto *w : list) {
                 if (w->isVisible() && w->isActiveWindow())
                     toBeDeactivated.append(w);
             }
@@ -2160,9 +2153,8 @@ void QApplication::setActiveWindow(QWidget* act)
 
     if (QApplicationPrivate::active_window) {
         if (style()->styleHint(QStyle::SH_Widget_ShareActivation, 0, QApplicationPrivate::active_window)) {
-            QWidgetList list = topLevelWidgets();
-            for (int i = 0; i < list.size(); ++i) {
-                QWidget *w = list.at(i);
+            const QWidgetList list = topLevelWidgets();
+            for (auto *w : list) {
                 if (w->isVisible() && w->isActiveWindow())
                     toBeActivated.append(w);
             }

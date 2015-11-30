@@ -103,9 +103,9 @@ Qt::ItemFlags QUrlModel::flags(const QModelIndex &index) const
 QMimeData *QUrlModel::mimeData(const QModelIndexList &indexes) const
 {
     QList<QUrl> list;
-    for (int i = 0; i < indexes.count(); ++i) {
-        if (indexes.at(i).column() == 0)
-           list.append(indexes.at(i).data(UrlRole).toUrl());
+    for (const auto &index : indexes) {
+        if (index.column() == 0)
+           list.append(index.data(UrlRole).toUrl());
     }
     QMimeData *data = new QMimeData();
     data->setUrls(list);
@@ -125,8 +125,8 @@ bool QUrlModel::canDrop(QDragEnterEvent *event)
         return false;
 
     const QList<QUrl> list = event->mimeData()->urls();
-    for (int i = 0; i < list.count(); ++i) {
-        QModelIndex idx = fileSystemModel->index(list.at(0).toLocalFile());
+    for (const auto &url : list) {
+        const QModelIndex idx = fileSystemModel->index(url.toLocalFile());
         if (!fileSystemModel->isDir(idx))
             return false;
     }

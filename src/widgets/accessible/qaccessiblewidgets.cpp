@@ -71,10 +71,9 @@ QList<QWidget*> childWidgets(const QWidget *widget)
 {
     if (widget == 0)
         return QList<QWidget*>();
-    QList<QObject*> list = widget->children();
     QList<QWidget*> widgets;
-    for (int i = 0; i < list.size(); ++i) {
-        QWidget *w = qobject_cast<QWidget *>(list.at(i));
+    for (QObject *o : widget->children()) {
+        QWidget *w = qobject_cast<QWidget *>(o);
         if (!w)
             continue;
         QString objectName = w->objectName();
@@ -1056,10 +1055,9 @@ QAccessibleInterface *QAccessibleMainWindow::childAt(int x, int y) const
     if (!QRect(gp.x(), gp.y(), w->width(), w->height()).contains(x, y))
         return 0;
 
-    QWidgetList kids = childWidgets(mainWindow());
+    const QWidgetList kids = childWidgets(mainWindow());
     QPoint rp = mainWindow()->mapFromGlobal(QPoint(x, y));
-    for (int i = 0; i < kids.size(); ++i) {
-        QWidget *child = kids.at(i);
+    for (QWidget *child : kids) {
         if (!child->isWindow() && !child->isHidden() && child->geometry().contains(rp)) {
             return QAccessible::queryAccessibleInterface(child);
         }

@@ -282,8 +282,8 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
             infoList = QDir::drives();
         } else {
             infoList.reserve(files.count());
-            for (int i = 0; i < files.count(); ++i)
-                infoList << QFileInfo(files.at(i));
+            for (const auto &file : files)
+                infoList << QFileInfo(file);
         }
         for (int i = infoList.count() - 1; i >= 0; --i) {
             QString driveName = translateDriveName(infoList.at(i));
