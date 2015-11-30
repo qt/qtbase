@@ -602,10 +602,10 @@ QSimplexConstraint *GraphPath::constraint(const GraphPath &path) const
 QString GraphPath::toString() const
 {
     QString string(QLatin1String("Path: "));
-    foreach(AnchorData *edge, positives)
+    for (AnchorData *edge : positives)
         string += QString::fromLatin1(" (+++) %1").arg(edge->toString());
 
-    foreach(AnchorData *edge, negatives)
+    for (AnchorData *edge : negatives)
         string += QString::fromLatin1(" (---) %1").arg(edge->toString());
 
     return string;
@@ -1932,8 +1932,7 @@ void QGraphicsAnchorLayoutPrivate::removeVertex(QGraphicsLayoutItem *item, Qt::A
     if (AnchorVertex *v = internalVertex(item, edge)) {
         Graph<AnchorVertex, AnchorData> &g = graph[edgeOrientation(edge)];
         const QList<AnchorVertex *> allVertices = graph[edgeOrientation(edge)].adjacentVertices(v);
-        AnchorVertex *v2;
-        foreach (v2, allVertices) {
+        for (auto *v2 : allVertices) {
             g.removeEdge(v, v2);
             removeInternalVertex(item, edge);
             removeInternalVertex(v2->m_item, v2->m_edge);
@@ -2223,12 +2222,10 @@ bool QGraphicsAnchorLayoutPrivate::calculateTrunk(Orientation orientation, const
             // Calculate and set the preferred size for the layout,
             // from the edge sizes that were calculated above.
             qreal pref(0.0);
-            foreach (const AnchorData *ad, path.positives) {
+            for (const AnchorData *ad : path.positives)
                 pref += ad->sizeAtPreferred;
-            }
-            foreach (const AnchorData *ad, path.negatives) {
+            for (const AnchorData *ad : path.negatives)
                 pref -= ad->sizeAtPreferred;
-            }
 
             sizeHints[orientation][Qt::MinimumSize] = min;
             sizeHints[orientation][Qt::PreferredSize] = pref;
@@ -2368,8 +2365,8 @@ void QGraphicsAnchorLayoutPrivate::findPaths(Orientation orientation)
 */
 void QGraphicsAnchorLayoutPrivate::constraintsFromPaths(Orientation orientation)
 {
-    foreach (AnchorVertex *vertex, graphPaths[orientation].uniqueKeys())
-    {
+    const auto vertices = graphPaths[orientation].uniqueKeys();
+    for (AnchorVertex *vertex : vertices) {
         int valueCount = graphPaths[orientation].count(vertex);
         if (valueCount == 1)
             continue;

@@ -1187,13 +1187,13 @@ QList<QUrl> QFileDialogPrivate::userSelectedFiles() const
 
     const QModelIndexList selectedRows = qFileDialogUi->listView->selectionModel()->selectedRows();
     files.reserve(selectedRows.size());
-    foreach (const QModelIndex &index, selectedRows)
+    for (const QModelIndex &index : selectedRows)
         files.append(QUrl::fromLocalFile(index.data(QFileSystemModel::FilePathRole).toString()));
 
     if (files.isEmpty() && !lineEdit()->text().isEmpty()) {
         const QStringList typedFilesList = typedFiles();
         files.reserve(typedFilesList.size());
-        foreach (const QString &path, typedFilesList)
+        for (const QString &path : typedFilesList)
             files.append(QUrl::fromLocalFile(path));
     }
 
@@ -1257,7 +1257,7 @@ QStringList QFileDialog::selectedFiles() const
     QStringList files;
     const QList<QUrl> userSelectedFiles = d->userSelectedFiles();
     files.reserve(userSelectedFiles.size());
-    foreach (const QUrl &file, userSelectedFiles)
+    for (const QUrl &file : userSelectedFiles)
         files.append(file.toLocalFile());
     if (files.isEmpty() && d->usingWidgets()) {
         const FileMode fm = fileMode();
@@ -1284,7 +1284,7 @@ QList<QUrl> QFileDialog::selectedUrls() const
         QList<QUrl> urls;
         const QStringList selectedFileList = selectedFiles();
         urls.reserve(selectedFileList.size());
-        foreach (const QString &file, selectedFileList)
+        for (const QString &file : selectedFileList)
             urls.append(QUrl::fromLocalFile(file));
         return urls;
     }
@@ -1554,7 +1554,7 @@ void QFileDialog::setMimeTypeFilters(const QStringList &filters)
 {
     Q_D(QFileDialog);
     QStringList nameFilters;
-    foreach (const QString &mimeType, filters) {
+    for (const QString &mimeType : filters) {
         const QString text = nameFilterForMime(mimeType);
         if (!text.isEmpty())
             nameFilters.append(text);
@@ -2218,7 +2218,7 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
     const QList<QUrl> selectedUrls = getOpenFileUrls(parent, caption, QUrl::fromLocalFile(dir), filter, selectedFilter, options, schemes);
     QStringList fileNames;
     fileNames.reserve(selectedUrls.size());
-    foreach (const QUrl &url, selectedUrls)
+    for (const QUrl &url : selectedUrls)
         fileNames << url.toLocalFile();
     return fileNames;
 }
@@ -2696,7 +2696,7 @@ void QFileDialogPrivate::saveSettings()
     QStringList historyUrls;
     const QStringList history = q->history();
     historyUrls.reserve(history.size());
-    foreach (const QString &path, history)
+    for (const QString &path : history)
         historyUrls << QUrl::fromLocalFile(path).toString();
     settings.setValue(QLatin1String("history"), historyUrls);
     settings.setValue(QLatin1String("lastVisited"), lastVisitedDir()->toString());
@@ -2730,7 +2730,8 @@ bool QFileDialogPrivate::restoreFromSettings()
         return true;
 
     QStringList history;
-    foreach (const QString &urlStr, settings.value(QLatin1String("history")).toStringList()) {
+    const auto urlStrings = settings.value(QLatin1String("history")).toStringList();
+    for (const QString &urlStr : urlStrings) {
         QUrl url(urlStr);
         if (url.isLocalFile())
             history << url.toLocalFile();
@@ -2998,7 +2999,8 @@ void QFileDialogPrivate::createWidgets()
     q->setHistory(options->history());
     if (options->initiallySelectedFiles().count() == 1)
         q->selectFile(options->initiallySelectedFiles().first().fileName());
-    foreach (const QUrl &url, options->initiallySelectedFiles())
+    const auto initiallySelectedFiles = options->initiallySelectedFiles();
+    for (const QUrl &url : initiallySelectedFiles)
         q->selectUrl(url);
     lineEdit()->selectAll();
     _q_updateOkButton();
@@ -3755,7 +3757,7 @@ void QFileDialogPrivate::_q_emitUrlsSelected(const QList<QUrl> &files)
     Q_Q(QFileDialog);
     emit q->urlsSelected(files);
     QStringList localFiles;
-    foreach (const QUrl &file, files)
+    for (const QUrl &file : files)
         if (file.isLocalFile())
             localFiles.append(file.toLocalFile());
     if (!localFiles.isEmpty())

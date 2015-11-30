@@ -2206,8 +2206,8 @@ void QMdiSubWindowPrivate::setSizeGrip(QSizeGrip *newSizeGrip)
 void QMdiSubWindowPrivate::setSizeGripVisible(bool visible) const
 {
     // See if we can find any size grips
-    QList<QSizeGrip *> sizeGrips = q_func()->findChildren<QSizeGrip *>();
-    foreach (QSizeGrip *grip, sizeGrips)
+    const QList<QSizeGrip *> sizeGrips = q_func()->findChildren<QSizeGrip *>();
+    for (QSizeGrip *grip : sizeGrips)
         grip->setVisible(visible);
 }
 

@@ -408,7 +408,7 @@ void IconTiler::rearrange(QList<QWidget *> &widgets, const QRect &domain) const
 int MinOverlapPlacer::accumulatedOverlap(const QRect &source, const QVector<QRect> &rects)
 {
     int accOverlap = 0;
-    foreach (const QRect &rect, rects) {
+    for (const QRect &rect : rects) {
         QRect intersection = source.intersected(rect);
         accOverlap += intersection.width() * intersection.height();
     }
@@ -425,7 +425,7 @@ QRect MinOverlapPlacer::findMinOverlapRect(const QVector<QRect> &source, const Q
 {
     int minAccOverlap = -1;
     QRect minAccOverlapRect;
-    foreach (const QRect &srcRect, source) {
+    for (const QRect &srcRect : source) {
         const int accOverlap = accumulatedOverlap(srcRect, rects);
         if (accOverlap < minAccOverlap || minAccOverlap == -1) {
             minAccOverlap = accOverlap;
@@ -454,7 +454,7 @@ QVector<QRect> MinOverlapPlacer::getCandidatePlacements(const QSize &size, const
     if (domain.bottom() - size.height() + 1 >= 0)
         ylist << domain.bottom() - size.height() + 1;
 
-    foreach (const QRect &rect, rects) {
+    for (const QRect &rect : rects) {
         xlist << rect.right() + 1;
         ylist << rect.bottom() + 1;
     }
@@ -504,7 +504,7 @@ QVector<QRect> MinOverlapPlacer::findMaxOverlappers(const QRect &domain, const Q
     result.reserve(source.size());
 
     int maxOverlap = -1;
-    foreach (const QRect &srcRect, source) {
+    for (const QRect &srcRect : source) {
         QRect intersection = domain.intersected(srcRect);
         const int overlap = intersection.width() * intersection.height();
         if (overlap >= maxOverlap || maxOverlap == -1) {
@@ -549,7 +549,7 @@ QPoint MinOverlapPlacer::place(const QSize &size, const QVector<QRect> &rects,
 {
     if (size.isEmpty() || !domain.isValid())
         return QPoint();
-    foreach (const QRect &rect, rects) {
+    for (const QRect &rect : rects) {
         if (!rect.isValid())
             return QPoint();
     }
@@ -1237,7 +1237,8 @@ void QMdiAreaPrivate::internalRaise(QMdiSubWindow *mdiChild) const
 
     QMdiSubWindow *stackUnderChild = 0;
     if (!windowStaysOnTop(mdiChild)) {
-        foreach (QObject *object, viewport->children()) {
+        const auto children = viewport->children(); // take a copy, as raising/stacking under changes the order
+        for (QObject *object : children) {
             QMdiSubWindow *child = qobject_cast<QMdiSubWindow *>(object);
             if (!child || !childWindows.contains(child))
                 continue;
@@ -1392,7 +1393,7 @@ QMdiAreaPrivate::subWindowList(QMdiArea::WindowOrder order, bool reversed) const
                 list.prepend(child);
         }
     } else if (order == QMdiArea::StackingOrder) {
-        foreach (QObject *object, viewport->children()) {
+        for (QObject *object : viewport->children()) {
             QMdiSubWindow *child = qobject_cast<QMdiSubWindow *>(object);
             if (!child || !childWindows.contains(child))
                 continue;
@@ -1741,7 +1742,7 @@ QSize QMdiArea::sizeHint() const
 
     QSize desktopSize = QApplication::desktop()->size();
     QSize size(desktopSize.width() * 2 / scaleFactor, desktopSize.height() * 2 / scaleFactor);
-    foreach (QMdiSubWindow *child, d_func()->childWindows) {
+    for (QMdiSubWindow *child : d_func()->childWindows) {
         if (!sanityCheck(child, "QMdiArea::sizeHint"))
             continue;
         size = size.expandedTo(child->sizeHint());
@@ -1759,7 +1760,7 @@ QSize QMdiArea::minimumSizeHint() const
                style()->pixelMetric(QStyle::PM_TitleBarHeight, 0, this));
     size = size.expandedTo(QAbstractScrollArea::minimumSizeHint());
     if (!d->scrollBarsEnabled()) {
-        foreach (QMdiSubWindow *child, d->childWindows) {
+        for (QMdiSubWindow *child : d->childWindows) {
             if (!sanityCheck(child, "QMdiArea::sizeHint"))
                 continue;
             size = size.expandedTo(child->minimumSizeHint());

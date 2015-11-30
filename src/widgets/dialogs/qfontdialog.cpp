@@ -481,7 +481,8 @@ void QFontDialogPrivate::updateFamilies()
     QFontDatabase fdb;
 
     QStringList familyNames;
-    foreach (const QString &family, fdb.families(writingSystem)) {
+    const auto families = fdb.families(writingSystem);
+    for (const QString &family : families) {
         if (fdb.isPrivateFamily(family))
             continue;
 

@@ -469,7 +469,7 @@ void QAbstractScrollAreaPrivate::layoutChildren()
     if ((vscrollOverlap > 0 && needv) || (hscrollOverlap > 0 && needh)) {
         const QList<QHeaderView *> headers = q->findChildren<QHeaderView*>();
         if (headers.count() <= 2) {
-            Q_FOREACH (const QHeaderView *header, headers) {
+            for (const QHeaderView *header : headers) {
                 const QRect geo = header->geometry();
                 if (header->orientation() == Qt::Vertical && header->isVisible() && QStyle::visualRect(opt.direction, opt.rect, geo).left() <= opt.rect.width() / 2)
                     vHeaderRight = QStyle::visualRect(opt.direction, opt.rect, geo).right();
