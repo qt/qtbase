@@ -2318,7 +2318,6 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
     return;
 #endif
 
-    QWidget* w ;
     if ((!enter && !leave) || (enter == leave))
         return;
 #ifdef ALIEN_DEBUG
@@ -2329,13 +2328,13 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
 
     bool sameWindow = leave && enter && leave->window() == enter->window();
     if (leave && !sameWindow) {
-        w = leave;
+        auto *w = leave;
         do {
             leaveList.append(w);
         } while (!w->isWindow() && (w = w->parentWidget()));
     }
     if (enter && !sameWindow) {
-        w = enter;
+        auto *w = enter;
         do {
             enterList.prepend(w);
         } while (!w->isWindow() && (w = w->parentWidget()));
@@ -2343,11 +2342,11 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
     if (sameWindow) {
         int enterDepth = 0;
         int leaveDepth = 0;
-        w = enter;
-        while (!w->isWindow() && (w = w->parentWidget()))
+        auto *e = enter;
+        while (!e->isWindow() && (e = e->parentWidget()))
             enterDepth++;
-        w = leave;
-        while (!w->isWindow() && (w = w->parentWidget()))
+        auto *l = leave;
+        while (!l->isWindow() && (l = l->parentWidget()))
             leaveDepth++;
         QWidget* wenter = enter;
         QWidget* wleave = leave;
@@ -2364,21 +2363,16 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
             wleave = wleave->parentWidget();
         }
 
-        w = leave;
-        while (w != wleave) {
+        for (auto *w = leave; w != wleave; w = w->parentWidget())
             leaveList.append(w);
-            w = w->parentWidget();
-        }
-        w = enter;
-        while (w != wenter) {
+
+        for (auto *w = enter; w != wenter; w = w->parentWidget())
             enterList.prepend(w);
-            w = w->parentWidget();
-        }
     }
 
     QEvent leaveEvent(QEvent::Leave);
     for (int i = 0; i < leaveList.size(); ++i) {
-        w = leaveList.at(i);
+        auto *w = leaveList.at(i);
         if (!QApplication::activeModalWidget() || QApplicationPrivate::tryModalHelper(w, 0)) {
             QApplication::sendEvent(w, &leaveEvent);
             if (w->testAttribute(Qt::WA_Hover) &&
@@ -2397,7 +2391,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
             : globalPosF.toPoint();
         const QPoint windowPos = enterList.front()->window()->mapFromGlobal(globalPos);
         for (int i = 0; i < enterList.size(); ++i) {
-            w = enterList.at(i);
+            auto *w = enterList.at(i);
             if (!QApplication::activeModalWidget() || QApplicationPrivate::tryModalHelper(w, 0)) {
                 const QPointF localPos = w->mapFromGlobal(globalPos);
                 QEnterEvent enterEvent(localPos, windowPos, globalPosF);
@@ -2420,7 +2414,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
     // This is not required on Windows as the cursor is reset on every single mouse move.
     QWidget *parentOfLeavingCursor = 0;
     for (int i = 0; i < leaveList.size(); ++i) {
-        w = leaveList.at(i);
+        auto *w = leaveList.at(i);
         if (!isAlien(w))
             break;
         if (w->testAttribute(Qt::WA_SetCursor)) {
