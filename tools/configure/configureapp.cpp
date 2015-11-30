@@ -1971,7 +1971,7 @@ bool Configure::displayHelp()
 
         desc("FREETYPE", "no",   "-no-freetype",        "Do not compile in Freetype2 support.");
         desc("FREETYPE", "yes",  "-qt-freetype",        "Use the libfreetype bundled with Qt.");
-        desc("FREETYPE", "system","-system-freetype",   "Use the libfreetype provided by the system.");
+        desc("FREETYPE", "system","-system-freetype",   "Use the libfreetype provided by the system.\n");
 
         desc("HARFBUZZ", "no",   "-no-harfbuzz",        "Do not compile in HarfBuzz-NG support.");
         desc("HARFBUZZ", "qt",   "-qt-harfbuzz",        "Use HarfBuzz-NG bundled with Qt to do text shaping.\n"
