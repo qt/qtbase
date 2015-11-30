@@ -2588,7 +2588,7 @@ void QGraphicsAnchorLayoutPrivate::identifyFloatItems(const QSet<AnchorData *> &
 {
     QSet<QGraphicsLayoutItem *> nonFloating;
 
-    foreach (const AnchorData *ad, visited)
+    for (const AnchorData *ad : visited)
         identifyNonFloatItems_helper(ad, &nonFloating);
 
     QSet<QGraphicsLayoutItem *> allItems;

@@ -2467,7 +2467,7 @@ QPolygonF QGraphicsView::mapToScene(const QPolygon &polygon) const
 {
     QPolygonF poly;
     poly.reserve(polygon.count());
-    foreach (const QPoint &point, polygon)
+    for (const QPoint &point : polygon)
         poly << mapToScene(point);
     return poly;
 }
@@ -2563,7 +2563,7 @@ QPolygon QGraphicsView::mapFromScene(const QPolygonF &polygon) const
 {
     QPolygon poly;
     poly.reserve(polygon.count());
-    foreach (const QPointF &point, polygon)
+    for (const QPointF &point : polygon)
         poly << mapFromScene(point);
     return poly;
 }
@@ -2696,7 +2696,7 @@ void QGraphicsView::updateScene(const QList<QRectF> &rects)
     QTransform transform = viewportTransform();
 
     // Convert scene rects to viewport rects.
-    foreach (const QRectF &rect, rects) {
+    for (const QRectF &rect : rects) {
         QRect xrect = transform.mapRect(rect).toAlignedRect();
         if (!(d->optimizationFlags & DontAdjustForAntialiasing))
             xrect.adjust(-2, -2, 2, 2);

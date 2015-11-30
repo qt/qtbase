@@ -2437,7 +2437,7 @@ QGraphicsItemGroup *QGraphicsScene::createItemGroup(const QList<QGraphicsItem *>
     QGraphicsItemGroup *group = new QGraphicsItemGroup(commonAncestor);
     if (!commonAncestor)
         addItem(group);
-    foreach (QGraphicsItem *item, items)
+    for (QGraphicsItem *item : items)
         group->addToGroup(item);
     return group;
 }
@@ -4149,9 +4149,9 @@ void QGraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
 void QGraphicsScene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent)
 {
     Q_D(QGraphicsScene);
-    QList<QGraphicsItem *> wheelCandidates = d->itemsAtPosition(wheelEvent->screenPos(),
-                                                                wheelEvent->scenePos(),
-                                                                wheelEvent->widget());
+    const QList<QGraphicsItem *> wheelCandidates = d->itemsAtPosition(wheelEvent->screenPos(),
+                                                                      wheelEvent->scenePos(),
+                                                                      wheelEvent->widget());
 
 #ifdef Q_DEAD_CODE_FROM_QT4_MAC
     // On Mac, ignore the event if the first item under the mouse is not the last opened
@@ -4173,7 +4173,7 @@ void QGraphicsScene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent)
 #endif
 
     bool hasSetFocus = false;
-    foreach (QGraphicsItem *item, wheelCandidates) {
+    for (QGraphicsItem *item : wheelCandidates) {
         if (!hasSetFocus && item->isEnabled()
             && ((item->flags() & QGraphicsItem::ItemIsFocusable) && item->d_ptr->mouseSetsFocus)) {
             if (item->isWidget() && static_cast<QGraphicsWidget *>(item)->focusPolicy() == Qt::WheelFocus) {
@@ -6181,7 +6181,7 @@ void QGraphicsScenePrivate::gestureTargetsAtHotSpots(const QSet<QGesture *> &ges
                                               QSet<QGesture *> *conflicts)
 {
     QSet<QGesture *> normalGestures; // that are not in conflicted state.
-    foreach (QGesture *gesture, gestures) {
+    for (QGesture *gesture : gestures) {
         if (!gesture->hasHotSpot())
             continue;
         const Qt::GestureType gestureType = gesture->gestureType();
@@ -6229,7 +6229,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
     if (!graphicsView)
         return;
 
-    QList<QGesture *> allGestures = event->gestures();
+    const QList<QGesture *> allGestures = event->gestures();
     DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
             << "Gestures:" <<  allGestures;
 
@@ -6237,7 +6237,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
     QPoint delta = viewport->mapFromGlobal(QPoint());
     QTransform toScene = QTransform::fromTranslate(delta.x(), delta.y())
                          * graphicsView->viewportTransform().inverted();
-    foreach (QGesture *gesture, allGestures) {
+    for (QGesture *gesture : allGestures) {
         // cache scene coordinates of the hot spot
         if (gesture->hasHotSpot()) {
             gesture->d_func()->sceneHotSpot = toScene.map(gesture->hotSpot());
@@ -6272,7 +6272,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
                 QPointer<QGraphicsObject> item = cachedTargetItems.at(i);
 
                 // get gestures to deliver to the current item
-                QSet<QGesture *> gestures = conflictedGestures & cachedItemGestures.value(item.data());
+                const QSet<QGesture *> gestures = conflictedGestures & cachedItemGestures.value(item.data());
                 if (gestures.isEmpty())
                     continue;
 
@@ -6285,11 +6285,11 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
                 ev.setWidget(event->widget());
                 // mark event and individual gestures as ignored
                 ev.ignore();
-                foreach(QGesture *g, gestures)
+                for (QGesture *g : gestures)
                     ev.setAccepted(g, false);
                 sendEvent(item.data(), &ev);
                 // mark all accepted gestures to deliver them as normal gesture events
-                foreach (QGesture *g, gestures) {
+                for (QGesture *g : gestures) {
                     if (ev.isAccepted() || ev.isAccepted(g)) {
                         conflictedGestures.remove(g);
                         // mark the item as a gesture target
@@ -6339,7 +6339,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
     // deliver all gesture events
     QSet<QGesture *> undeliveredGestures;
     QSet<QGesture *> parentPropagatedGestures;
-    foreach (QGesture *gesture, allGestures) {
+    for (QGesture *gesture : allGestures) {
         if (QGraphicsObject *target = gestureTargets.value(gesture, 0)) {
             cachedItemGestures[target].insert(gesture);
             cachedTargetItems.append(target);
@@ -6451,7 +6451,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
     }
 
     // forget about targets for gestures that have ended
-    foreach (QGesture *g, allGestures) {
+    for (QGesture *g : allGestures) {
         switch (g->state()) {
         case Qt::GestureFinished:
         case Qt::GestureCanceled:
@@ -6511,12 +6511,12 @@ void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original)
         }
         Q_ASSERT(target);
 
-        QList<QGesture *> list = gestures.toList();
+        const QList<QGesture *> list = gestures.toList();
         QGestureEvent ev(list);
         sendEvent(target, &ev);
 
         if (!ev.isAccepted()) {
-            foreach (QGesture *g, list) {
+            for (QGesture *g : list) {
 
                 if (ev.isAccepted(g))
                     continue;
