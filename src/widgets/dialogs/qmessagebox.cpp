@@ -1478,24 +1478,21 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
 
 #if defined(Q_OS_WIN)
         if (e == QKeySequence::Copy) {
-            QString separator = QString::fromLatin1("---------------------------\n");
-            QString textToCopy = separator;
-            separator.prepend(QLatin1Char('\n'));
-            textToCopy += windowTitle() + separator; // title
-            textToCopy += d->label->text() + separator; // text
+            const QLatin1String separator("---------------------------\n");
+            QString textToCopy;
+            textToCopy += separator + windowTitle() + QLatin1Char('\n') + separator // title
+                          + d->label->text() + QLatin1Char('\n') + separator;       // text
 
             if (d->informativeLabel)
-                textToCopy += d->informativeLabel->text() + separator;
+                textToCopy += d->informativeLabel->text() + QLatin1Char('\n') + separator;
 
-            QString buttonTexts;
-            QList<QAbstractButton *> buttons = d->buttonBox->buttons();
-            for (int i = 0; i < buttons.count(); i++) {
-                buttonTexts += buttons[i]->text() + QLatin1String("   ");
-            }
-            textToCopy += buttonTexts + separator;
+            const QList<QAbstractButton *> buttons = d->buttonBox->buttons();
+            for (const auto *button : buttons)
+                textToCopy += button->text() + QLatin1String("   ");
+            textToCopy += QLatin1Char('\n') + separator;
 #ifndef QT_NO_TEXTEDIT
             if (d->detailsText)
-                textToCopy += d->detailsText->text() + separator;
+                textToCopy += d->detailsText->text() + QLatin1Char('\n') + separator;
 #endif
             QApplication::clipboard()->setText(textToCopy);
             return;
