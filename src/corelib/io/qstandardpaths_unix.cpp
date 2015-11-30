@@ -113,21 +113,33 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     {
         const uid_t myUid = geteuid();
         // http://standards.freedesktop.org/basedir-spec/latest/
+        QFileInfo fileInfo;
         QString xdgRuntimeDir = QFile::decodeName(qgetenv("XDG_RUNTIME_DIR"));
         if (xdgRuntimeDir.isEmpty()) {
             const QString userName = QFileSystemEngine::resolveUserName(myUid);
             xdgRuntimeDir = QDir::tempPath() + QLatin1String("/runtime-") + userName;
-            QDir dir(xdgRuntimeDir);
-            if (!dir.exists()) {
+            fileInfo.setFile(xdgRuntimeDir);
+            if (!fileInfo.isDir()) {
                 if (!QDir().mkdir(xdgRuntimeDir)) {
                     qWarning("QStandardPaths: error creating runtime directory %s: %s", qPrintable(xdgRuntimeDir), qPrintable(qt_error_string(errno)));
                     return QString();
                 }
             }
             qWarning("QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '%s'", qPrintable(xdgRuntimeDir));
+        } else {
+            fileInfo.setFile(xdgRuntimeDir);
+            if (!fileInfo.exists()) {
+                qWarning("QStandardPaths: XDG_RUNTIME_DIR points to non-existing path '%s', "
+                         "please create it with 0700 permissions.", qPrintable(xdgRuntimeDir));
+                return QString();
+            }
+            if (!fileInfo.isDir()) {
+                qWarning("QStandardPaths: XDG_RUNTIME_DIR points to '%s' which is not a directory",
+                         qPrintable(xdgRuntimeDir));
+                return QString();
+            }
         }
         // "The directory MUST be owned by the user"
-        QFileInfo fileInfo(xdgRuntimeDir);
         if (fileInfo.ownerId() != myUid) {
             qWarning("QStandardPaths: wrong ownership on runtime directory %s, %d instead of %d", qPrintable(xdgRuntimeDir),
                      fileInfo.ownerId(), myUid);
@@ -135,13 +147,15 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         }
         // "and he MUST be the only one having read and write access to it. Its Unix access mode MUST be 0700."
         // since the current user is the owner, set both xxxUser and xxxOwner
-        QFile file(xdgRuntimeDir);
         const QFile::Permissions wantedPerms = QFile::ReadUser | QFile::WriteUser | QFile::ExeUser
                                                | QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner;
-        if (file.permissions() != wantedPerms && !file.setPermissions(wantedPerms)) {
-            qWarning("QStandardPaths: could not set correct permissions on runtime directory %s: %s",
-                     qPrintable(xdgRuntimeDir), qPrintable(file.errorString()));
-            return QString();
+        if (fileInfo.permissions() != wantedPerms) {
+            QFile file(xdgRuntimeDir);
+            if (!file.setPermissions(wantedPerms)) {
+                qWarning("QStandardPaths: could not set correct permissions on runtime directory %s: %s",
+                         qPrintable(xdgRuntimeDir), qPrintable(file.errorString()));
+                return QString();
+            }
         }
         return xdgRuntimeDir;
     }
