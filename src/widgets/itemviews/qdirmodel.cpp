@@ -168,7 +168,7 @@ void QDirModelPrivate::invalidate()
     while (!nodes.empty()) {
         const QDirNode *current = nodes.pop();
         current->stat = false;
-        const QVector<QDirNode> children = current->children;
+        const QVector<QDirNode> &children = current->children;
         for (int i = 0; i < children.count(); ++i)
             nodes.push(&children.at(i));
     }
