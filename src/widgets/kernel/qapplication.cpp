@@ -1905,6 +1905,7 @@ bool QApplicationPrivate::tryCloseAllWidgetWindows(QWindowList *processedWindows
             processedWindows->append(window);
     }
 
+retry:
     QWidgetList list = QApplication::topLevelWidgets();
     for (int i = 0; i < list.size(); ++i) {
         QWidget *w = list.at(i);
@@ -1915,8 +1916,7 @@ bool QApplicationPrivate::tryCloseAllWidgetWindows(QWindowList *processedWindows
                 return false;
             if (window)
                 processedWindows->append(window);
-            list = QApplication::topLevelWidgets();
-            i = -1;
+            goto retry;
         }
     }
     return true;
