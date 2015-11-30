@@ -165,21 +165,20 @@ public:
     virtual QAbstractItemView::DropIndicatorPosition position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const;
 
     inline bool canDrop(QDropEvent *event) {
-        QModelIndex index;
-        int col = -1;
-        int row = -1;
         const QMimeData *mime = event->mimeData();
 
         // Drag enter event shall always be accepted, if mime type and action match.
         // Whether the data can actually be dropped will be checked in drag move.
-        if (event->type() == QEvent::DragEnter) {
+        if (event->type() == QEvent::DragEnter && (event->dropAction() & model->supportedDropActions())) {
             const QStringList modelTypes = model->mimeTypes();
             for (int i = 0; i < modelTypes.count(); ++i)
-                if (mime->hasFormat(modelTypes.at(i))
-                    && (event->dropAction() & model->supportedDropActions()))
+                if (mime->hasFormat(modelTypes.at(i)))
                     return true;
         }
 
+        QModelIndex index;
+        int col = -1;
+        int row = -1;
         if (dropOn(event, &row, &col, &index)) {
             return model->canDropMimeData(mime,
                                           dragDropMode == QAbstractItemView::InternalMove ? Qt::MoveAction : event->dropAction(),
