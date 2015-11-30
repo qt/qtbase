@@ -91,7 +91,8 @@ public:
         SyncState,
         RasterGLSurface,
         AllGLFunctionsQueryable,
-        ApplicationIcon
+        ApplicationIcon,
+        SwitchableWidgetComposition
     };
 
     virtual ~QPlatformIntegration() { }
