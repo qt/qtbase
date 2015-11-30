@@ -34,7 +34,6 @@
 #include "qdirmodel.h"
 
 #ifndef QT_NO_DIRMODEL
-#include <qstack.h>
 #include <qfile.h>
 #include <qfilesystemmodel.h>
 #include <qurl.h>
@@ -48,6 +47,9 @@
 #include <qapplication.h>
 #include <private/qabstractitemmodel_p.h>
 #include <qdebug.h>
+
+#include <stack>
+#include <vector>
 
 /*!
     \enum QDirModel::Roles
@@ -163,10 +165,11 @@ void QDirModelPrivate::clear(QDirNode *parent) const
 
 void QDirModelPrivate::invalidate()
 {
-    QStack<const QDirNode*> nodes;
+    std::stack<const QDirNode*, std::vector<const QDirNode*> > nodes;
     nodes.push(&root);
     while (!nodes.empty()) {
-        const QDirNode *current = nodes.pop();
+        const QDirNode *current = nodes.top();
+        nodes.pop();
         current->stat = false;
         const QVector<QDirNode> &children = current->children;
         for (const auto &child : children)
