@@ -2318,9 +2318,9 @@ void QGraphicsAnchorLayoutPrivate::findPaths(Orientation orientation)
 
     graphPaths[orientation].insert(root, GraphPath());
 
-    foreach (AnchorVertex *v, graph[orientation].adjacentVertices(root)) {
+    const auto adjacentVertices = graph[orientation].adjacentVertices(root);
+    for (AnchorVertex *v : adjacentVertices)
         queue.enqueue(qMakePair(root, v));
-    }
 
     while(!queue.isEmpty()) {
         QPair<AnchorVertex *, AnchorVertex *>  pair = queue.dequeue();
@@ -2339,10 +2339,9 @@ void QGraphicsAnchorLayoutPrivate::findPaths(Orientation orientation)
 
         graphPaths[orientation].insert(pair.second, current);
 
-        foreach (AnchorVertex *v,
-                graph[orientation].adjacentVertices(pair.second)) {
+        const auto adjacentVertices = graph[orientation].adjacentVertices(pair.second);
+        for (AnchorVertex *v : adjacentVertices)
             queue.enqueue(qMakePair(pair.second, v));
-        }
     }
 
     // We will walk through every reachable items (non-float) store them in a temporary set.
@@ -2703,9 +2702,9 @@ void QGraphicsAnchorLayoutPrivate::calculateVertexPositions(
     visited.insert(root);
 
     // Add initial edges to the queue
-    foreach (AnchorVertex *v, graph[orientation].adjacentVertices(root)) {
+    const auto adjacentVertices = graph[orientation].adjacentVertices(root);
+    for (AnchorVertex *v : adjacentVertices)
         queue.enqueue(qMakePair(root, v));
-    }
 
     // Do initial calculation required by "interpolateEdge()"
     setupEdgesInterpolation(orientation);

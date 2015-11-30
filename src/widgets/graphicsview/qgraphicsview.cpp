@@ -799,7 +799,8 @@ void QGraphicsViewPrivate::_q_setViewportCursor(const QCursor &cursor)
 void QGraphicsViewPrivate::_q_unsetViewportCursor()
 {
     Q_Q(QGraphicsView);
-    foreach (QGraphicsItem *item, q->items(lastMouseEvent.pos())) {
+    const auto items = q->items(lastMouseEvent.pos());
+    for (QGraphicsItem *item : items) {
         if (item->hasCursor()) {
             _q_setViewportCursor(item->cursor());
             return;
@@ -1139,7 +1140,8 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
     // the expose region, convert it to a path, and then search for items
     // using QGraphicsScene::items(QPainterPath);
     QRegion adjustedRegion;
-    foreach (const QRect &r, exposedRegion.rects())
+    const auto rects = exposedRegion.rects();
+    for (const QRect &r : rects)
         adjustedRegion += r.adjusted(-1, -1, 1, 1);
 
     const QPainterPath exposedScenePath(q->mapToScene(qt_regionToPath(adjustedRegion)));
@@ -2791,7 +2793,8 @@ void QGraphicsView::setupViewport(QWidget *widget)
 
 #ifndef QT_NO_GESTURES
     if (d->scene) {
-        foreach (Qt::GestureType gesture, d->scene->d_func()->grabbedGestures.keys())
+        const auto gestures = d->scene->d_func()->grabbedGestures.keys();
+        for (Qt::GestureType gesture : gestures)
             widget->grabGesture(gesture);
     }
 #endif

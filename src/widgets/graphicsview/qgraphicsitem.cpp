@@ -1519,7 +1519,8 @@ QGraphicsItem::~QGraphicsItem()
     if (d_ptr->isObject && !d_ptr->gestureContext.isEmpty()) {
         QGraphicsObject *o = static_cast<QGraphicsObject *>(this);
         if (QGestureManager *manager = QGestureManager::instance()) {
-            foreach (Qt::GestureType type, d_ptr->gestureContext.keys())
+            const auto types  = d_ptr->gestureContext.keys(); // FIXME: iterate over the map directly?
+            for (Qt::GestureType type : types)
                 manager->cleanupCachedGestures(o, type);
         }
     }
@@ -2243,11 +2244,13 @@ void QGraphicsItem::setCursor(const QCursor &cursor)
     d_ptr->hasCursor = 1;
     if (d_ptr->scene) {
         d_ptr->scene->d_func()->allItemsUseDefaultCursor = false;
-        foreach (QGraphicsView *view, d_ptr->scene->views()) {
+        const auto views = d_ptr->scene->views();
+        for (QGraphicsView *view : views) {
             view->viewport()->setMouseTracking(true);
             // Note: Some of this logic is duplicated in QGraphicsView's mouse events.
             if (view->underMouse()) {
-                foreach (QGraphicsItem *itemUnderCursor, view->items(view->mapFromGlobal(QCursor::pos()))) {
+                const auto itemsUnderCursor = view->items(view->mapFromGlobal(QCursor::pos()));
+                for (QGraphicsItem *itemUnderCursor : itemsUnderCursor) {
                     if (itemUnderCursor->hasCursor()) {
                         QMetaObject::invokeMethod(view, "_q_setViewportCursor",
                                                   Q_ARG(QCursor, itemUnderCursor->cursor()));
@@ -2286,7 +2289,8 @@ void QGraphicsItem::unsetCursor()
     d_ptr->unsetExtra(QGraphicsItemPrivate::ExtraCursor);
     d_ptr->hasCursor = 0;
     if (d_ptr->scene) {
-        foreach (QGraphicsView *view, d_ptr->scene->views()) {
+        const auto views = d_ptr->scene->views();
+        for (QGraphicsView *view : views) {
             if (view->underMouse() && view->itemAt(view->mapFromGlobal(QCursor::pos())) == this) {
                 QMetaObject::invokeMethod(view, "_q_unsetViewportCursor");
                 break;
@@ -2922,7 +2926,8 @@ QRectF QGraphicsItemPrivate::effectiveBoundingRect(const QRectF &rect) const
             return effect->boundingRectFor(rect);
         QRectF sceneRect = q->mapRectToScene(rect);
         QRectF sceneEffectRect;
-        foreach (QGraphicsView *view, scene->views()) {
+        const auto views = scene->views();
+        for (QGraphicsView *view : views) {
             QRectF deviceRect = view->d_func()->mapRectFromScene(sceneRect);
             QRect deviceEffectRect = effect->boundingRectFor(deviceRect).toAlignedRect();
             sceneEffectRect |= view->d_func()->mapRectToScene(deviceEffectRect);
@@ -5216,7 +5221,8 @@ bool QGraphicsItem::isObscured(const QRectF &rect) const
     QRectF br = boundingRect();
     QRectF testRect = rect.isNull() ? br : rect;
 
-    foreach (QGraphicsItem *item, d->scene->items(mapToScene(br), Qt::IntersectsItemBoundingRect)) {
+    const auto items = d->scene->items(mapToScene(br), Qt::IntersectsItemBoundingRect);
+    for (QGraphicsItem *item : items) {
         if (item == this)
             break;
         if (qt_QGraphicsItem_isObscured(this, item, testRect))
@@ -5338,7 +5344,8 @@ QRegion QGraphicsItem::boundingRegion(const QTransform &itemToDeviceTransform) c
     QTransform unscale = QTransform::fromScale(1 / granularity, 1 / granularity);
     QRegion r;
     QBitmap colorMask = QBitmap::fromImage(mask.createMaskFromColor(0));
-    foreach (const QRect &rect, QRegion( colorMask ).rects()) {
+    const auto rects = QRegion(colorMask).rects();
+    for (const QRect &rect : rects) {
         QRect xrect = unscale.mapRect(rect).translated(deviceRect.topLeft() - QPoint(pad, pad));
         r += xrect.adjusted(-1, -1, 1, 1) & deviceRect;
     }
@@ -6599,7 +6606,8 @@ bool QGraphicsItem::isUnderMouse() const
         return false;
 
     QPoint cursorPos = QCursor::pos();
-    foreach (QGraphicsView *view, d->scene->views()) {
+    const auto views = d->scene->views();
+    for (QGraphicsView *view : views) {
         if (contains(mapFromScene(view->mapToScene(view->mapFromGlobal(cursorPos)))))
             return true;
     }

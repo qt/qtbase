@@ -251,7 +251,8 @@ QGraphicsWidget::~QGraphicsWidget()
     //we check if we have a layout previously
     if (d->layout) {
         QGraphicsLayout *temp = d->layout;
-        foreach (QGraphicsItem * item, childItems()) {
+        const auto items = childItems();
+        for (QGraphicsItem *item : items) {
             // In case of a custom layout which doesn't remove and delete items, we ensure that
             // the parent layout item does not point to the deleted layout. This code is here to
             // avoid regression from 4.4 to 4.5, because according to 4.5 docs it is not really needed.

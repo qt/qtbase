@@ -756,8 +756,9 @@ void QGraphicsScenePrivate::setActivePanelHelper(QGraphicsItem *item, bool durin
         q->sendEvent(activePanel, &event);
     } else if (panel && !duringActivationEvent) {
         // Deactivate the scene if changing activation to a panel.
+        const auto items = q->items();
         QEvent event(QEvent::WindowDeactivate);
-        foreach (QGraphicsItem *item, q->items()) {
+        for (QGraphicsItem *item : items) {
             if (item->isVisible() && !item->isPanel() && !item->parentItem())
                 q->sendEvent(item, &event);
         }
@@ -791,9 +792,10 @@ void QGraphicsScenePrivate::setActivePanelHelper(QGraphicsItem *item, bool durin
             } while (fw != panel);
         }
     } else if (q->isActive()) {
+        const auto items = q->items();
         // Activate the scene
         QEvent event(QEvent::WindowActivate);
-        foreach (QGraphicsItem *item, q->items()) {
+        for (QGraphicsItem *item : items) {
             if (item->isVisible() && !item->isPanel() && !item->parentItem())
                 q->sendEvent(item, &event);
         }
@@ -1545,7 +1547,8 @@ void QGraphicsScenePrivate::updateFont(const QFont &font)
 
     // Resolve the fonts of all top-level widget items, or widget items
     // whose parent is not a widget.
-    foreach (QGraphicsItem *item, q->items()) {
+    const auto items = q->items();
+    for (QGraphicsItem *item : items) {
         if (!item->parentItem()) {
             // Resolvefont for an item is a noop operation, but
             // every item can be a widget, or can have a widget
@@ -1601,7 +1604,8 @@ void QGraphicsScenePrivate::updatePalette(const QPalette &palette)
 
     // Resolve the palettes of all top-level widget items, or widget items
     // whose parent is not a widget.
-    foreach (QGraphicsItem *item, q->items()) {
+    const auto items = q->items();
+    for (QGraphicsItem *item : items) {
         if (!item->parentItem()) {
             // ResolvePalette for an item is a noop operation, but
             // every item can be a widget, or can have a widget
@@ -1947,7 +1951,8 @@ QRectF QGraphicsScene::itemsBoundingRect() const
 {
     // Does not take untransformable items into account.
     QRectF boundingRect;
-    foreach (QGraphicsItem *item, items())
+    const auto items_ = items();
+    for (QGraphicsItem *item : items_)
         boundingRect |= item->sceneBoundingRect();
     return boundingRect;
 }
@@ -2116,7 +2121,8 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
 
     // Does not support ItemIgnoresTransformations.
     QList<QGraphicsItem *> tmp;
-    foreach (QGraphicsItem *itemInVicinity, d->index->estimateItems(item->sceneBoundingRect(), Qt::DescendingOrder)) {
+    const auto itemsInVicinity = d->index->estimateItems(item->sceneBoundingRect(), Qt::DescendingOrder);
+    for (QGraphicsItem *itemInVicinity : itemsInVicinity) {
         if (item != itemInVicinity && item->collidesWithItem(itemInVicinity, mode))
             tmp << itemInVicinity;
     }
@@ -2303,7 +2309,8 @@ void QGraphicsScene::setSelectionArea(const QPainterPath &path,
     bool changed = false;
 
     // Set all items in path to selected.
-    foreach (QGraphicsItem *item, items(path, mode, Qt::DescendingOrder, deviceTransform)) {
+    const auto items = this->items(path, mode, Qt::DescendingOrder, deviceTransform);
+    for (QGraphicsItem *item : items) {
         if (item->flags() & QGraphicsItem::ItemIsSelectable) {
             if (!item->isSelected())
                 changed = true;
@@ -2444,7 +2451,8 @@ QGraphicsItemGroup *QGraphicsScene::createItemGroup(const QList<QGraphicsItem *>
 */
 void QGraphicsScene::destroyItemGroup(QGraphicsItemGroup *group)
 {
-    foreach (QGraphicsItem *item, group->childItems())
+    const auto items = group->childItems();
+    for (QGraphicsItem *item : items)
         group->removeFromGroup(item);
     removeItem(group);
     delete group;
@@ -2559,7 +2567,8 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     }
 
 #ifndef QT_NO_GESTURES
-    foreach (Qt::GestureType gesture, item->d_ptr->gestureContext.keys())
+    const auto gestures = item->d_ptr->gestureContext.keys(); // FIXME: iterate over hash directly?
+    for (Qt::GestureType gesture : gestures)
         d->grabGesture(item, gesture);
 #endif
 
@@ -3130,7 +3139,8 @@ void QGraphicsScene::setForegroundBrush(const QBrush &brush)
 {
     Q_D(QGraphicsScene);
     d->foregroundBrush = brush;
-    foreach (QGraphicsView *view, views())
+    const auto views_ = views();
+    for (QGraphicsView *view : views_)
         view->viewport()->update();
     update();
 }
@@ -3238,7 +3248,8 @@ void QGraphicsScene::update(const QRectF &rect)
 */
 void QGraphicsScene::invalidate(const QRectF &rect, SceneLayers layers)
 {
-    foreach (QGraphicsView *view, views())
+    const auto views_ = views();
+    for (QGraphicsView *view : views_)
         view->invalidateScene(rect, layers);
     update(rect);
 }
@@ -3279,7 +3290,8 @@ QList <QGraphicsView *> QGraphicsScene::views() const
 void QGraphicsScene::advance()
 {
     for (int i = 0; i < 2; ++i) {
-        foreach (QGraphicsItem *item, items())
+        const auto items_ = items();
+        for (QGraphicsItem *item : items_)
             item->advance(i);
     }
 }
@@ -3434,7 +3446,8 @@ bool QGraphicsScene::event(QEvent *event)
             } else {
                 // Activate all toplevel items.
                 QEvent event(QEvent::WindowActivate);
-                foreach (QGraphicsItem *item, items()) {
+                const auto items_ = items();
+                for (QGraphicsItem *item : items_) {
                     if (item->isVisible() && !item->isPanel() && !item->parentItem())
                         sendEvent(item, &event);
                 }
@@ -3452,7 +3465,8 @@ bool QGraphicsScene::event(QEvent *event)
             } else {
                 // Activate all toplevel items.
                 QEvent event(QEvent::WindowDeactivate);
-                foreach (QGraphicsItem *item, items()) {
+                const auto items_ = items();
+                for (QGraphicsItem *item : items_) {
                     if (item->isVisible() && !item->isPanel() && !item->parentItem())
                         sendEvent(item, &event);
                 }
@@ -3547,9 +3561,10 @@ void QGraphicsScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *contextMen
 
     // Send the event to all items at this position until one item accepts the
     // event.
-    foreach (QGraphicsItem *item, d->itemsAtPosition(contextMenuEvent->screenPos(),
-                                                     contextMenuEvent->scenePos(),
-                                                     contextMenuEvent->widget())) {
+    const auto items = d->itemsAtPosition(contextMenuEvent->screenPos(),
+                                          contextMenuEvent->scenePos(),
+                                          contextMenuEvent->widget());
+    for (QGraphicsItem *item : items) {
         contextMenuEvent->setPos(item->d_ptr->genericMapFromScene(contextMenuEvent->scenePos(),
                                                                   contextMenuEvent->widget()));
         contextMenuEvent->accept();
@@ -3605,9 +3620,10 @@ void QGraphicsScene::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
 
     // Find the topmost enabled items under the cursor. They are all
     // candidates for accepting drag & drop events.
-    foreach (QGraphicsItem *item, d->itemsAtPosition(event->screenPos(),
-                                                     event->scenePos(),
-                                                     event->widget())) {
+    const auto items = d->itemsAtPosition(event->screenPos(),
+                                          event->scenePos(),
+                                          event->widget());
+    for (QGraphicsItem *item : items) {
         if (!item->isEnabled() || !item->acceptDrops())
             continue;
 
@@ -4635,7 +4651,8 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
                 for (int i = 0; i < exposed.size(); ++i)
                     br |= exposed.at(i);
                 QTransform pixmapToItem = itemToPixmap.inverted();
-                foreach (const QRect &r, scrollExposure.rects())
+                const auto rects = scrollExposure.rects();
+                for (const QRect &r : rects)
                     br |= pixmapToItem.mapRect(r);
             }
             styleOptionTmp = *option;
@@ -5564,7 +5581,8 @@ void QGraphicsScene::setStyle(QStyle *style)
     QApplication::sendEvent(this, &event);
 
     // Notify all widgets that don't have a style explicitly set.
-    foreach (QGraphicsItem *item, items()) {
+    const auto items_ = items();
+    for (QGraphicsItem *item : items_) {
         if (item->isWidget()) {
             QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
             if (!widget->testAttribute(Qt::WA_SetStyle))
@@ -5733,7 +5751,8 @@ void QGraphicsScene::setActiveWindow(QGraphicsWidget *widget)
 
         // Find the highest z value.
         qreal z = panel->zValue();
-        foreach (QGraphicsItem *sibling, parent ? parent->childItems() : items()) {
+        const auto siblings = parent ? parent->childItems() : items();
+        for (QGraphicsItem *sibling : siblings) {
             if (sibling != panel && sibling->isWindow())
                 z = qMax(z, sibling->zValue());
         }
@@ -5819,7 +5838,8 @@ void QGraphicsScenePrivate::addView(QGraphicsView *view)
 {
     views << view;
 #ifndef QT_NO_GESTURES
-    foreach (Qt::GestureType gesture, grabbedGestures.keys())
+    const auto gestures = grabbedGestures.keys();
+    for (Qt::GestureType gesture : gestures)
         view->viewport()->grabGesture(gesture);
 #endif
 }
@@ -6304,7 +6324,8 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
                 QGraphicsObject *item = cachedTargetItems.at(i);
 
                 // get gestures to deliver to the current item
-                foreach (QGesture *g, cachedItemGestures.value(item)) {
+                const auto gestures = cachedItemGestures.value(item);
+                for (QGesture *g : gestures) {
                     if (!gestureTargets.contains(g)) {
                         gestureTargets.insert(g, item);
                         normalGestures.remove(g);

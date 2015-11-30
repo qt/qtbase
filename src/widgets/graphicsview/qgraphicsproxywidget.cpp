@@ -595,7 +595,8 @@ void QGraphicsProxyWidgetPrivate::setWidget_helper(QWidget *newWidget, bool auto
         resolvePalette(inheritedPaletteResolveMask);
         widget->update();
 
-        foreach (QGraphicsItem *child, q->childItems()) {
+        const auto childItems = q->childItems();
+        for (QGraphicsItem *child : childItems) {
             if (child->d_ptr->isProxyWidget()) {
                 QGraphicsProxyWidget *childProxy = static_cast<QGraphicsProxyWidget *>(child);
                 QWidget * parent = childProxy->widget();
