@@ -3342,12 +3342,23 @@ QList<QTreeWidgetItem*> QTreeWidget::items(const QMimeData *data) const
 /*!
     Returns the QModelIndex assocated with the given \a item in the given \a column.
 
+    \note In Qt versions prior to 5.7, this function took a non-\c{const} \a item.
+
     \sa itemFromIndex(), topLevelItem()
 */
-QModelIndex QTreeWidget::indexFromItem(QTreeWidgetItem *item, int column) const
+QModelIndex QTreeWidget::indexFromItem(const QTreeWidgetItem *item, int column) const
 {
     Q_D(const QTreeWidget);
     return d->index(item, column);
+}
+
+/*!
+    \overload
+    \internal
+*/
+QModelIndex QTreeWidget::indexFromItem(QTreeWidgetItem *item, int column) const
+{
+    return indexFromItem(const_cast<const QTreeWidgetItem *>(item), column);
 }
 
 /*!
