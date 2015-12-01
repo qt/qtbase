@@ -46,6 +46,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QtEndian>
 #include <QtCore/QThreadStorage>
+#include <QtCore/private/qsystemlibrary_p.h>
 
 #include <wchar.h>
 
@@ -59,6 +60,38 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+#ifndef QT_NO_DIRECTWRITE
+// ### fixme: Consider direct linking of dwrite.dll once Windows Vista pre SP2 is dropped (QTBUG-49711)
+
+typedef HRESULT (WINAPI *DWriteCreateFactoryType)(DWRITE_FACTORY_TYPE, const IID &, IUnknown **);
+
+static inline DWriteCreateFactoryType resolveDWriteCreateFactory()
+{
+    if (QSysInfo::windowsVersion() < QSysInfo::WV_VISTA)
+        return Q_NULLPTR;
+    QSystemLibrary library(QStringLiteral("dwrite"));
+    QFunctionPointer result = library.resolve("DWriteCreateFactory");
+    if (Q_UNLIKELY(!result)) {
+        qWarning("Unable to load dwrite.dll");
+        return Q_NULLPTR;
+    }
+    return reinterpret_cast<DWriteCreateFactoryType>(result);
+}
+
+static IDWriteFactory *createDirectWriteFactory()
+{
+    static const DWriteCreateFactoryType dWriteCreateFactory = resolveDWriteCreateFactory();
+    if (!dWriteCreateFactory)
+        return Q_NULLPTR;
+    IUnknown *result = Q_NULLPTR;
+    if (FAILED(dWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &result))) {
+        qErrnoWarning("DWriteCreateFactory failed");
+        return Q_NULLPTR;
+    }
+    return reinterpret_cast<IDWriteFactory *>(result);
+}
+#endif // !QT_NO_DIRECTWRITE
 
 // Helper classes for creating font engines directly from font data
 namespace {
@@ -466,14 +499,9 @@ namespace {
     class CustomFontFileLoader
     {
     public:
-        CustomFontFileLoader() : m_directWriteFactory(0), m_directWriteFontFileLoader(0)
+        CustomFontFileLoader() : m_directWriteFactory(createDirectWriteFactory()), m_directWriteFontFileLoader(0)
         {
-            HRESULT hres = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
-                                               __uuidof(IDWriteFactory),
-                                               reinterpret_cast<IUnknown **>(&m_directWriteFactory));
-            if (FAILED(hres)) {
-                qErrnoWarning(hres, "%s: DWriteCreateFactory failed.", __FUNCTION__);
-            } else {
+            if (m_directWriteFactory) {
                 m_directWriteFontFileLoader = new DirectWriteFontFileLoader();
                 m_directWriteFactory->RegisterFontFileLoader(m_directWriteFontFileLoader);
             }
@@ -571,15 +599,9 @@ qreal QWindowsFontDatabase::fontSmoothingGamma()
 static inline bool initDirectWrite(QWindowsFontEngineData *d)
 {
     if (!d->directWriteFactory) {
-        const HRESULT hr = DWriteCreateFactory(
-                    DWRITE_FACTORY_TYPE_SHARED,
-                    __uuidof(IDWriteFactory),
-                    reinterpret_cast<IUnknown **>(&d->directWriteFactory)
-                    );
-        if (FAILED(hr)) {
-            qErrnoWarning("%s: DWriteCreateFactory failed", __FUNCTION__);
+        d->directWriteFactory = createDirectWriteFactory();
+        if (!d->directWriteFactory)
             return false;
-        }
     }
     if (!d->directWriteGdiInterop) {
         const HRESULT  hr = d->directWriteFactory->GetGdiInterop(&d->directWriteGdiInterop);
