@@ -1416,8 +1416,8 @@ void Configure::parseCmdLine()
             cout << "QMAKESPEC environment variable is set to \"" << dictionary["QMAKESPEC"]
                  << "\" which is not a supported platform" << endl;
         } else { // was autodetected from environment
-            cout << "Unable to detect the platform from environment. Use -platform command line"
-                    "argument or set the QMAKESPEC environment variable and run configure again" << endl;
+            cout << "Unable to detect the platform from environment. Use -platform command line" << endl
+                 << "argument or set the QMAKESPEC environment variable and run configure again." << endl;
         }
         cout << "See the README file for a list of supported operating systems and compilers." << endl;
     } else {
