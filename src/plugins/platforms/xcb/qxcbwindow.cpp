@@ -2007,21 +2007,42 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
         }
     }
 
-    const QRect rect = QRect(pos, QSize(event->width, event->height));
-    QPlatformScreen *newScreen = parent() ? parent()->screen() : screenForGeometry(rect);
+    // The original geometry requested by setGeometry() might be different
+    // from what we end up with after applying window constraints.
+    QRect requestedGeometry = geometry();
+
+    const QRect actualGeometry = QRect(pos, QSize(event->width, event->height));
+    QPlatformScreen *newScreen = parent() ? parent()->screen() : screenForGeometry(actualGeometry);
 
     QXcbScreen *currentScreen = m_xcbScreen;
     m_xcbScreen = static_cast<QXcbScreen*>(newScreen);
     if (!newScreen)
         return;
 
-    QPlatformWindow::setGeometry(rect);
-    QWindowSystemInterface::handleGeometryChange(window(), rect);
+    // Persist the actual geometry so that QWindow::geometry() can
+    // be queried in the resize event.
+    QPlatformWindow::setGeometry(actualGeometry);
+
+    // As we're delivering the geometry change through QPA in n async fashion we can't
+    // pass on the current geometry of the QWindowPrivate, as that may have not been
+    // updated yet by a geometry change that's still in the QPA event queue. Instead
+    // we fall back to the default argument value of QRect(), which will result in
+    // QGuiApplication looking up the previous geometry from QWindowPrivate, but this
+    // time in sync with the even delivery/processing.
+    QWindowSystemInterface::handleGeometryChange(window(), actualGeometry,
+        requestedGeometry != actualGeometry ? requestedGeometry : QRect());
+
     if (newScreen != currentScreen)
         QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
 
-    if (m_mapped)
-        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size()));
+    // For expose events we have no way of telling QGuiApplication to used the locally
+    // cached version of the previous state, so we may in some situations end up with
+    // an additional expose event.
+    QRect previousGeometry = requestedGeometry != actualGeometry ?
+        requestedGeometry : qt_window_private(window())->geometry;
+
+    if (m_mapped && actualGeometry.size() != previousGeometry.size())
+        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), actualGeometry.size()));
 
     if (m_usingSyncProtocol && m_syncState == SyncReceived)
         m_syncState = SyncAndConfigureReceived;
