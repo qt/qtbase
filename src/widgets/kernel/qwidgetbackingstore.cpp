@@ -448,6 +448,26 @@ void QWidgetBackingStore::sendUpdateRequest(QWidget *widget, UpdateTime updateTi
     if (!widget)
         return;
 
+#ifndef QT_NO_OPENGL
+    // Having every repaint() leading to a sync/flush is bad as it causes
+    // compositing and waiting for vsync each and every time. Change to
+    // UpdateLater, except for approx. once per frame to prevent starvation in
+    // case the control does not get back to the event loop.
+    QWidget *w = widget->window();
+    if (updateTime == UpdateNow && w && w->windowHandle() && QWindowPrivate::get(w->windowHandle())->compositing) {
+        int refresh = 60;
+        QScreen *ws = w->windowHandle()->screen();
+        if (ws)
+            refresh = ws->refreshRate();
+        QWindowPrivate *wd = QWindowPrivate::get(w->windowHandle());
+        if (wd->lastComposeTime.isValid()) {
+            const qint64 elapsed = wd->lastComposeTime.elapsed();
+            if (elapsed <= qint64(1000.0f / refresh))
+                updateTime = UpdateLater;
+       }
+    }
+#endif
+
     switch (updateTime) {
     case UpdateLater:
         updateRequestSent = true;
