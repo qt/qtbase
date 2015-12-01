@@ -1400,8 +1400,9 @@ void QComboBox::setMaxCount(int max)
         return;
     }
 
-    if (max < count())
-        d->model->removeRows(max, count() - max, d->root);
+    const int rowCount = count();
+    if (rowCount > max)
+        d->model->removeRows(max, rowCount - max, d->root);
 
     d->maxCount = max;
 }
@@ -2585,7 +2586,7 @@ void QComboBox::showPopup()
 #endif
         while (!toCheck.isEmpty()) {
             QModelIndex parent = toCheck.pop();
-            for (int i = 0; i < d->model->rowCount(parent); ++i) {
+            for (int i = 0, end = d->model->rowCount(parent); i < end; ++i) {
                 QModelIndex idx = d->model->index(i, d->modelColumn, parent);
                 if (!idx.isValid())
                     continue;
@@ -3194,6 +3195,8 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
         }
     }
 
+    const int rowCount = count();
+
     if (move != NoMove) {
         e->accept();
         switch (move) {
@@ -3201,11 +3204,11 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
             newIndex = -1;
         case MoveDown:
             newIndex++;
-            while ((newIndex < count()) && !(d->model->flags(d->model->index(newIndex,d->modelColumn,d->root)) & Qt::ItemIsEnabled))
+            while (newIndex < rowCount && !(d->model->index(newIndex, d->modelColumn, d->root).flags() & Qt::ItemIsEnabled))
                 newIndex++;
             break;
         case MoveLast:
-            newIndex = count();
+            newIndex = rowCount;
         case MoveUp:
             newIndex--;
             while ((newIndex >= 0) && !(d->model->flags(d->model->index(newIndex,d->modelColumn,d->root)) & Qt::ItemIsEnabled))
@@ -3216,7 +3219,7 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
             break;
         }
 
-        if (newIndex >= 0 && newIndex < count() && newIndex != currentIndex()) {
+        if (newIndex >= 0 && newIndex < rowCount && newIndex != currentIndex()) {
             setCurrentIndex(newIndex);
             d->emitActivated(d->currentIndex);
         }
@@ -3249,6 +3252,7 @@ void QComboBox::wheelEvent(QWheelEvent *e)
 #else
     Q_D(QComboBox);
     if (!d->viewContainer()->isVisible()) {
+        const int rowCount = count();
         int newIndex = currentIndex();
 
         if (e->delta() > 0) {
@@ -3257,11 +3261,11 @@ void QComboBox::wheelEvent(QWheelEvent *e)
                 newIndex--;
         } else if (e->delta() < 0) {
             newIndex++;
-            while ((newIndex < count()) && !(d->model->flags(d->model->index(newIndex,d->modelColumn,d->root)) & Qt::ItemIsEnabled))
+            while (newIndex < rowCount && !(d->model->index(newIndex, d->modelColumn, d->root).flags() & Qt::ItemIsEnabled))
                 newIndex++;
         }
 
-        if (newIndex >= 0 && newIndex < count() && newIndex != currentIndex()) {
+        if (newIndex >= 0 && newIndex < rowCount && newIndex != currentIndex()) {
             setCurrentIndex(newIndex);
             d->emitActivated(d->currentIndex);
         }
