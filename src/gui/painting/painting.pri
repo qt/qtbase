@@ -103,7 +103,7 @@ AVX2_SOURCES += painting/qdrawhelper_avx2.cpp
 
 !ios {
     CONFIG += no_clang_integrated_as
-    NEON_SOURCES += painting/qdrawhelper_neon.cpp
+    NEON_SOURCES += painting/qdrawhelper_neon.cpp painting/qimagescale_neon.cpp
     NEON_HEADERS += painting/qdrawhelper_neon_p.h
     !contains(QT_ARCH, "arm64"): NEON_ASM += ../3rdparty/pixman/pixman-arm-neon-asm.S painting/qdrawhelper_neon_asm.S
 }
