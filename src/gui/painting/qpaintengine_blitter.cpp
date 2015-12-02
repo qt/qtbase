@@ -312,7 +312,7 @@ void QBlitterPaintEnginePrivate::updateBrushState(QPainterState *s)
 {
     Qt::BrushStyle style = qbrush_style(s->brush);
 
-    caps.updateState(STATE_BRUSH_PATTERN, style > Qt::SolidPattern);
+    caps.updateState(STATE_BRUSH_PATTERN, style != Qt::SolidPattern);
     caps.updateState(STATE_BRUSH_ALPHA,
                         qbrush_color(s->brush).alpha() < 255);
 }
