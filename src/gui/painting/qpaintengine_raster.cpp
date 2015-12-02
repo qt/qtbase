@@ -1338,9 +1338,9 @@ void QRasterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
 */
 
 
-/*!
-    \internal
-*/
+///*!
+//    \internal
+//*/
 void QRasterPaintEngine::fillPath(const QPainterPath &path, QSpanData *fillData)
 {
 #ifdef QT_DEBUG_DRAW
