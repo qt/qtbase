@@ -340,8 +340,8 @@ void QAbstractItemViewPrivate::_q_scrollerStateChanged()
     This enum indicates how the view responds to user selections:
 
     \value SingleSelection  When the user selects an item, any already-selected
-    item becomes unselected, and the user cannot unselect the selected item by
-    clicking on it.
+    item becomes unselected. It is possible for the user to deselect the selected
+    item.
 
     \value ContiguousSelection When the user selects an item in the usual way,
     the selection is cleared and the new item selected. However, if the user
