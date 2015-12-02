@@ -177,7 +177,8 @@ QWindowsUser32DLL::QWindowsUser32DLL() :
     isHungAppWindow(0), isTouchWindow(0),
     registerTouchWindow(0), unregisterTouchWindow(0),
     getTouchInputInfo(0), closeTouchInputHandle(0), setProcessDPIAware(0),
-    addClipboardFormatListener(0), removeClipboardFormatListener(0)
+    addClipboardFormatListener(0), removeClipboardFormatListener(0),
+    getDisplayAutoRotationPreferences(0), setDisplayAutoRotationPreferences(0)
 {
 }
 
@@ -198,6 +199,8 @@ void QWindowsUser32DLL::init()
         addClipboardFormatListener = (AddClipboardFormatListener)library.resolve("AddClipboardFormatListener");
         removeClipboardFormatListener = (RemoveClipboardFormatListener)library.resolve("RemoveClipboardFormatListener");
     }
+    getDisplayAutoRotationPreferences = (GetDisplayAutoRotationPreferences)library.resolve("GetDisplayAutoRotationPreferences");
+    setDisplayAutoRotationPreferences = (SetDisplayAutoRotationPreferences)library.resolve("SetDisplayAutoRotationPreferences");
 }
 
 bool QWindowsUser32DLL::initTouch()

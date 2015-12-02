@@ -74,7 +74,7 @@ QNetworkManagerInterface::QNetworkManagerInterface(QObject *parent)
     if (!propsReply.isError()) {
         propertyMap = propsReply.value();
     } else {
-        qWarning() << Q_FUNC_INFO << "propsReply"<<propsReply.error().message();
+        qWarning() << "propsReply" << propsReply.error().message();
     }
 
     QDBusPendingReply<QList <QDBusObjectPath> > nmReply
@@ -83,7 +83,7 @@ QNetworkManagerInterface::QNetworkManagerInterface(QObject *parent)
     if (!nmReply.isError()) {
         devicesPathList = nmReply.value();
     } else {
-        qWarning() << Q_FUNC_INFO <<"nmReply"<<nmReply.error().message();
+        qWarning() << "nmReply" << nmReply.error().message();
     }
 
     QDBusConnection::systemBus().connect(QLatin1String(NM_DBUS_SERVICE),
@@ -789,7 +789,7 @@ bool QNetworkManagerSettings::setConnections()
                                              QLatin1String("NewConnection"),
                                              this, SIGNAL(newConnection(QDBusObjectPath)))) {
         allOk = false;
-        qWarning() << Q_FUNC_INFO << "NewConnection could not be connected";
+        qWarning("NewConnection could not be connected");
     }
 
     return allOk;

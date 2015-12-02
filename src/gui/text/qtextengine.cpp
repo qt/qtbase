@@ -1277,13 +1277,13 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
                 for (uint i = 0; i < num_glyphs; ++i)
                     g.advances[i] *= stretch;
             }
-
-            if (actualFontEngine->fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
-                for (uint i = 0; i < num_glyphs; ++i)
-                    g.advances[i] = g.advances[i].round();
-            }
         }
 #endif
+
+        if (!actualFontEngine->supportsSubPixelPositions() || (actualFontEngine->fontDef.styleStrategy & QFont::ForceIntegerMetrics)) {
+            for (uint i = 0; i < num_glyphs; ++i)
+                g.advances[i] = g.advances[i].round();
+        }
 
         glyphs_shaped += num_glyphs;
     }

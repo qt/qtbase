@@ -285,7 +285,7 @@ bool QOpenGLTextureBlitterPrivate::buildProgram(ProgramIndex idx, const char *vs
     p->glProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fs);
     p->glProgram->link();
     if (!p->glProgram->isLinked()) {
-        qWarning() << Q_FUNC_INFO << "Could not link shader program:\n" << p->glProgram->log();
+        qWarning() << "Could not link shader program:\n" << p->glProgram->log();
         return false;
     }
 

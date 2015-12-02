@@ -97,6 +97,9 @@ public:
     QPixmap grabWindow(WId window, int qX, int qY, int qWidth, int qHeight) const Q_DECL_OVERRIDE;
     QPlatformScreen::SubpixelAntialiasingType subpixelAntialiasingTypeHint() const Q_DECL_OVERRIDE;
 
+    static Qt::ScreenOrientation orientationPreference();
+    static bool setOrientationPreference(Qt::ScreenOrientation o);
+
     inline void handleChanges(const QWindowsScreenData &newData);
 
 #ifndef QT_NO_CURSOR

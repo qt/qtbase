@@ -165,7 +165,7 @@ int QGuiApplicationPrivate::mouse_double_click_distance = -1;
 
 QWindow *QGuiApplicationPrivate::currentMousePressWindow = 0;
 
-static Qt::LayoutDirection layout_direction = Qt::LeftToRight;
+static Qt::LayoutDirection layout_direction = Qt::LayoutDirectionAuto;
 static bool force_reverse = false;
 
 QGuiApplicationPrivate *QGuiApplicationPrivate::self = 0;
@@ -1305,7 +1305,6 @@ void QGuiApplicationPrivate::init()
                 pluginList << argv[i];
         } else if (arg == "-reverse") {
             force_reverse = true;
-            QGuiApplication::setLayoutDirection(Qt::RightToLeft);
 #ifdef Q_OS_MAC
         } else if (arg.startsWith("-psn_")) {
             // eat "-psn_xxxx" on Mac, which is passed when starting an app from Finder.
@@ -1429,6 +1428,9 @@ void QGuiApplicationPrivate::init()
 #else
     Q_UNUSED(loadTestability);
 #endif // QT_NO_LIBRARY
+
+    if (layout_direction == Qt::LayoutDirectionAuto || force_reverse)
+        QGuiApplication::setLayoutDirection(qt_detectRTLLanguage() ? Qt::RightToLeft : Qt::LeftToRight);
 }
 
 extern void qt_cleanupFontDatabase();
@@ -3300,7 +3302,10 @@ void QGuiApplication::setLayoutDirection(Qt::LayoutDirection direction)
 
 Qt::LayoutDirection QGuiApplication::layoutDirection()
 {
-    return layout_direction;
+    // layout_direction is only ever Qt::LayoutDirectionAuto if setLayoutDirection
+    // was never called, or called with Qt::LayoutDirectionAuto (which is a no-op).
+    // In that case we return the default LeftToRight.
+    return layout_direction == Qt::LayoutDirectionAuto ? Qt::LeftToRight : layout_direction;
 }
 
 /*!

@@ -246,8 +246,7 @@ bool QGLShaderPrivate::create()
         else
             shader = glfuncs->glCreateShader(GL_FRAGMENT_SHADER);
         if (!shader) {
-            qWarning("%s: Could not create shader of type %d.",
-                     Q_FUNC_INFO, int(shaderType));
+            qWarning("Could not create shader of type %d.", int(shaderType));
             return false;
         }
         shaderGuard = createSharedResourceGuard(context, shader, freeShaderFunc);

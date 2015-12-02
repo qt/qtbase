@@ -53,6 +53,7 @@ private slots:
     void actualSize2_data(); // test with 2 pixmaps with different aspect ratio
     void actualSize2();
     void isNull();
+    void isMask();
     void swap();
     void bestMatch();
     void cacheKey();
@@ -217,6 +218,20 @@ void tst_QIcon::isNull() {
     QIcon iconSupportedFormat = QIcon(m_pngImageFileName);
     QVERIFY(!iconSupportedFormat.isNull());
     QVERIFY(iconSupportedFormat.actualSize(QSize(32, 32)).isValid());
+}
+
+void tst_QIcon::isMask()
+{
+    QIcon icon;
+    icon.setIsMask(true);
+    icon.addPixmap(QPixmap());
+    QVERIFY(icon.isMask());
+
+    QIcon icon2;
+    icon2.setIsMask(true);
+    QVERIFY(icon2.isMask());
+    icon2.setIsMask(false);
+    QVERIFY(!icon2.isMask());
 }
 
 void tst_QIcon::swap()

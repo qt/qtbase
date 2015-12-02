@@ -125,6 +125,12 @@ public:
     int accept() Q_DECL_OVERRIDE;
     void close() Q_DECL_OVERRIDE;
 
+    qint64 bytesAvailable() const Q_DECL_OVERRIDE;
+
+    qint64 read(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
+    qint64 write(const char *data, qint64 len) Q_DECL_OVERRIDE;
+
+#ifndef QT_NO_UDPSOCKET
 #ifndef QT_NO_NETWORKINTERFACE
     bool joinMulticastGroup(const QHostAddress &groupAddress,
                             const QNetworkInterface &iface) Q_DECL_OVERRIDE;
@@ -134,16 +140,12 @@ public:
     bool setMulticastInterface(const QNetworkInterface &iface) Q_DECL_OVERRIDE;
 #endif
 
-    qint64 bytesAvailable() const Q_DECL_OVERRIDE;
-
-    qint64 read(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
-    qint64 write(const char *data, qint64 len) Q_DECL_OVERRIDE;
-
     qint64 readDatagram(char *data, qint64 maxlen, QIpPacketHeader * = 0,
                         PacketHeaderOptions = WantNone) Q_DECL_OVERRIDE;
     qint64 writeDatagram(const char *data, qint64 len, const QIpPacketHeader &) Q_DECL_OVERRIDE;
     bool hasPendingDatagrams() const Q_DECL_OVERRIDE;
     qint64 pendingDatagramSize() const Q_DECL_OVERRIDE;
+#endif // QT_NO_UDPSOCKET
 
     qint64 bytesToWrite() const Q_DECL_OVERRIDE;
 

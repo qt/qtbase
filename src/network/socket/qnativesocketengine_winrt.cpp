@@ -78,6 +78,21 @@ typedef IAsyncOperationWithProgress<IBuffer *, UINT32> IAsyncBufferOperation;
 
 QT_BEGIN_NAMESPACE
 
+static QByteArray socketDescription(const QAbstractSocketEngine *s)
+{
+    QByteArray result;
+    if (const QObject *o = s->parent()) {
+        const QString name = o->objectName();
+        if (!name.isEmpty()) {
+            result += '"';
+            result += name.toLocal8Bit();
+            result += "\"/";
+        }
+        result += o->metaObject()->className();
+    }
+    return result;
+}
+
 // Common constructs
 #define Q_CHECK_VALID_SOCKETLAYER(function, returnValue) do { \
     if (!isValid()) { \
@@ -275,8 +290,9 @@ bool QNativeSocketEngine::connectToHostByName(const QString &name, quint16 port)
     else if (d->socketType == QAbstractSocket::UdpSocket)
         hr = d->udpSocket()->ConnectAsync(remoteHost.Get(), portReference.Get(), &d->connectOp);
     if (hr == E_ACCESSDENIED) {
-        qErrnoWarning(hr, "QNativeSocketEngine::connectToHostByName: Unable to connect to host. \
-                          Please check your manifest capabilities.");
+        qErrnoWarning(hr, "QNativeSocketEngine::connectToHostByName: Unable to connect to host (%s:%hu/%s). "
+                          "Please check your manifest capabilities.",
+                      qPrintable(name), port, socketDescription(this).constData());
         return false;
     }
     Q_ASSERT_SUCCEEDED(hr);
@@ -328,7 +344,8 @@ bool QNativeSocketEngine::bind(const QHostAddress &address, quint16 port)
         hr = d->udpSocket()->BindEndpointAsync(hostAddress.Get(), portString.Get(), &op);
     }
     if (hr == E_ACCESSDENIED) {
-        qErrnoWarning(hr, "Unable to bind socket. Please check your manifest capabilities.");
+        qErrnoWarning(hr, "Unable to bind socket (%s:%hu/%s). Please check your manifest capabilities.",
+                      qPrintable(address.toString()), port, socketDescription(this).constData());
         return false;
     }
     Q_ASSERT_SUCCEEDED(hr);
@@ -381,12 +398,14 @@ int QNativeSocketEngine::accept()
         ComPtr<IAsyncBufferOperation> op;
         hr = stream->ReadAsync(buffer.Get(), READ_BUFFER_SIZE, InputStreamOptions_Partial, &op);
         if (FAILED(hr)) {
-            qErrnoWarning(hr, "Faild to read from the socket buffer.");
+            qErrnoWarning(hr, "accept(): Failed to read from the socket buffer (%s).",
+                          socketDescription(this).constData());
             return -1;
         }
         hr = op->put_Completed(Callback<SocketReadCompletedHandler>(d, &QNativeSocketEnginePrivate::handleReadyRead).Get());
         if (FAILED(hr)) {
-            qErrnoWarning(hr, "Failed to set socket read callback.");
+            qErrnoWarning(hr, "accept(): Failed to set socket read callback (%s).",
+                          socketDescription(this).constData());
             return -1;
         }
         d->currentConnections.append(socket);
@@ -1272,12 +1291,14 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
     ComPtr<IAsyncBufferOperation> op;
     hr = stream->ReadAsync(buffer.Get(), bufferLength, InputStreamOptions_Partial, &op);
     if (FAILED(hr)) {
-        qErrnoWarning(hr, "Could not read into socket stream buffer.");
+        qErrnoWarning(hr, "handleReadyRead(): Could not read into socket stream buffer (%s).",
+                      socketDescription(q).constData());
         return S_OK;
     }
     hr = op->put_Completed(Callback<SocketReadCompletedHandler>(this, &QNativeSocketEnginePrivate::handleReadyRead).Get());
     if (FAILED(hr)) {
-        qErrnoWarning(hr, "Failed to set socket read callback.");
+        qErrnoWarning(hr, "handleReadyRead(): Failed to set socket read callback (%s).",
+                      socketDescription(q).constData());
         return S_OK;
     }
     return S_OK;

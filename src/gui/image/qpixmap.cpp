@@ -907,7 +907,7 @@ void QPixmap::fill(const QPaintDevice *device, const QPoint &p)
 {
     Q_UNUSED(device)
     Q_UNUSED(p)
-    qWarning("%s is deprecated, ignored", Q_FUNC_INFO);
+    qWarning("this function is deprecated, ignored");
 }
 
 
@@ -1703,8 +1703,8 @@ QPixmap QPixmap::fromImageReader(QImageReader *imageReader, Qt::ImageConversionF
 
 QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
 {
-    qWarning("%s is deprecated, use QScreen::grabWindow() instead."
-             " Defaulting to primary screen.", Q_FUNC_INFO);
+    qWarning("this function is deprecated, use QScreen::grabWindow() instead."
+             " Defaulting to primary screen.");
     return QGuiApplication::primaryScreen()->grabWindow(window, x, y, w, h);
 }
 

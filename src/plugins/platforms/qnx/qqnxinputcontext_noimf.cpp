@@ -88,13 +88,13 @@ bool QQnxInputContext::filterEvent( const QEvent *event )
 
     if (event->type() == QEvent::CloseSoftwareInputPanel) {
         m_virtualKeyboard.hideKeyboard();
-        qInputContextDebug() << Q_FUNC_INFO << "hiding virtual keyboard";
+        qInputContextDebug("hiding virtual keyboard");
         return false;
     }
 
     if (event->type() == QEvent::RequestSoftwareInputPanel) {
         m_virtualKeyboard.showKeyboard();
-        qInputContextDebug() << Q_FUNC_INFO << "requesting virtual keyboard";
+        qInputContextDebug("requesting virtual keyboard");
         return false;
     }
 
@@ -121,13 +121,13 @@ bool QQnxInputContext::handleKeyboardEvent(int flags, int sym, int mod, int scan
 
 void QQnxInputContext::showInputPanel()
 {
-    qInputContextDebug() << Q_FUNC_INFO;
+    qInputContextDebug();
     m_virtualKeyboard.showKeyboard();
 }
 
 void QQnxInputContext::hideInputPanel()
 {
-    qInputContextDebug() << Q_FUNC_INFO;
+    qInputContextDebug();
     m_virtualKeyboard.hideKeyboard();
 }
 
@@ -148,7 +148,7 @@ void QQnxInputContext::keyboardHeightChanged()
 
 void QQnxInputContext::keyboardVisibilityChanged(bool visible)
 {
-    qInputContextDebug() << Q_FUNC_INFO << "visible=" << visible;
+    qInputContextDebug() << "visible=" << visible;
     if (m_inputPanelVisible != visible) {
         m_inputPanelVisible = visible;
         emitInputPanelVisibleChanged();
@@ -157,7 +157,7 @@ void QQnxInputContext::keyboardVisibilityChanged(bool visible)
 
 void QQnxInputContext::keyboardLocaleChanged(const QLocale &locale)
 {
-    qInputContextDebug() << Q_FUNC_INFO << "locale=" << locale;
+    qInputContextDebug() << "locale=" << locale;
     if (m_inputPanelLocale != locale) {
         m_inputPanelLocale = locale;
         emitLocaleChanged();
@@ -166,7 +166,7 @@ void QQnxInputContext::keyboardLocaleChanged(const QLocale &locale)
 
 void QQnxInputContext::setFocusObject(QObject *object)
 {
-    qInputContextDebug() << Q_FUNC_INFO << "input item=" << object;
+    qInputContextDebug() << "input item=" << object;
 
     if (!inputMethodAccepted()) {
         if (m_inputPanelVisible)

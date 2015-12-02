@@ -1779,7 +1779,7 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
     if ((oldState == Qt::WindowMinimized) != (newState == Qt::WindowMinimized)) {
         if (visible)
             ShowWindow(m_data.hwnd, (newState == Qt::WindowMinimized) ? SW_MINIMIZE :
-                       (newState == Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNOACTIVATE);
+                       (newState == Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNORMAL);
     }
     qCDebug(lcQpaWindows) << '<' << __FUNCTION__ << this << window() << newState;
 }

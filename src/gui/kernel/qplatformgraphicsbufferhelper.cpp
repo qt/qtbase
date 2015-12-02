@@ -69,18 +69,18 @@ bool QPlatformGraphicsBufferHelper::lockAndBindToTexture(QPlatformGraphicsBuffer
 {
     if (graphicsBuffer->lock(QPlatformGraphicsBuffer::TextureAccess)) {
         if (!graphicsBuffer->bindToTexture(rect)) {
-            qWarning() << Q_FUNC_INFO << "Failed to bind graphicsbuffer to texture";
+            qWarning("Failed to bind %sgraphicsbuffer to texture", "");
             return false;
         }
         if (swizzle)
             *swizzle = false;
     } else if (graphicsBuffer->lock(QPlatformGraphicsBuffer::SWReadAccess)) {
         if (!bindSWToTexture(graphicsBuffer, swizzle, rect)) {
-            qWarning() << Q_FUNC_INFO << "Failed to bind SW graphcisbuffer to texture";
+            qWarning("Failed to bind %sgraphicsbuffer to texture", "SW ");
             return false;
         }
     } else {
-        qWarning() << Q_FUNC_INFO << "Failed to lock";
+        qWarning("Failed to lock");
         return false;
     }
     return true;

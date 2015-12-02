@@ -127,8 +127,10 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         return;
     } else {
 #ifndef QT_NO_BEARERMANAGEMENT
-        QObject::connect(session.data(), SIGNAL(stateChanged(QNetworkSession::State)),
-                         q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)), Qt::QueuedConnection);
+        if (session) {
+            QObject::connect(session.data(), SIGNAL(stateChanged(QNetworkSession::State)),
+                             q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)), Qt::QueuedConnection);
+        }
 #endif
     }
 

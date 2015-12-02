@@ -820,8 +820,8 @@ void **QListData::erase(void **xi)
 
 /*! \fn void QList::insert(int i, const T &value)
 
-    Inserts \a value at index position \a i in the list. If \a i
-    is 0, the value is prepended to the list. If \a i is size(), the
+    Inserts \a value at index position \a i in the list. If \a i <= 0,
+    the value is prepended to the list. If \a i >= size(), the
     value is appended to the list.
 
     Example:

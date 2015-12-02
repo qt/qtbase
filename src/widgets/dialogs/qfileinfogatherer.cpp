@@ -287,7 +287,7 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
         }
         for (int i = infoList.count() - 1; i >= 0; --i) {
             QString driveName = translateDriveName(infoList.at(i));
-            QList<QPair<QString,QFileInfo> > updatedFiles;
+            QVector<QPair<QString,QFileInfo> > updatedFiles;
             updatedFiles.append(QPair<QString,QFileInfo>(driveName, infoList.at(i)));
             emit updates(path, updatedFiles);
         }
@@ -298,7 +298,7 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
     base.start();
     QFileInfo fileInfo;
     bool firstTime = true;
-    QList<QPair<QString, QFileInfo> > updatedFiles;
+    QVector<QPair<QString, QFileInfo> > updatedFiles;
     QStringList filesToCheck = files;
 
     QString itPath = QDir::fromNativeSeparators(files.isEmpty() ? path : QLatin1String(""));
@@ -324,7 +324,7 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
     emit directoryLoaded(path);
 }
 
-void QFileInfoGatherer::fetch(const QFileInfo &fileInfo, QElapsedTimer &base, bool &firstTime, QList<QPair<QString, QFileInfo> > &updatedFiles, const QString &path) {
+void QFileInfoGatherer::fetch(const QFileInfo &fileInfo, QElapsedTimer &base, bool &firstTime, QVector<QPair<QString, QFileInfo> > &updatedFiles, const QString &path) {
     updatedFiles.append(QPair<QString, QFileInfo>(fileInfo.fileName(), fileInfo));
     QElapsedTimer current;
     current.start();

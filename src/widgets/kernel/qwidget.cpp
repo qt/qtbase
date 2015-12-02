@@ -73,6 +73,7 @@
 #include <QtGui/qinputmethod.h>
 #include <QtGui/qopenglcontext.h>
 #include <QtGui/private/qopenglcontext_p.h>
+#include <QtGui/qoffscreensurface.h>
 
 #include <private/qgraphicseffect_p.h>
 #include <qbackingstore.h>
@@ -1822,26 +1823,49 @@ void QWidgetPrivate::deleteSysExtra()
 {
 }
 
+static void deleteBackingStore(QWidgetPrivate *d)
+{
+    QTLWExtra *topData = d->topData();
+
+    // The context must be current when destroying the backing store as it may attempt to
+    // release resources like textures and shader programs. The window may not be suitable
+    // anymore as there will often not be a platform window underneath at this stage. Fall
+    // back to a QOffscreenSurface in this case.
+    QScopedPointer<QOffscreenSurface> tempSurface;
+#ifndef QT_NO_OPENGL
+    if (d->textureChildSeen && topData->shareContext) {
+        if (topData->window->handle()) {
+            topData->shareContext->makeCurrent(topData->window);
+        } else {
+            tempSurface.reset(new QOffscreenSurface);
+            tempSurface->setFormat(topData->shareContext->format());
+            tempSurface->create();
+            topData->shareContext->makeCurrent(tempSurface.data());
+        }
+    }
+#endif
+
+    delete topData->backingStore;
+    topData->backingStore = 0;
+
+#ifndef QT_NO_OPENGL
+    if (d->textureChildSeen && topData->shareContext)
+        topData->shareContext->doneCurrent();
+#endif
+}
+
 void QWidgetPrivate::deleteTLSysExtra()
 {
     if (extra && extra->topextra) {
         //the qplatformbackingstore may hold a reference to the window, so the backingstore
         //needs to be deleted first. If the backingstore holds GL resources, we need to
-        // make the context current here, since the platform bs does not have a reference
-        // to the widget.
+        // make the context current here. This is taken care of by deleteBackingStore().
 
-#ifndef QT_NO_OPENGL
-        if (textureChildSeen && extra->topextra->shareContext)
-            extra->topextra->shareContext->makeCurrent(extra->topextra->window);
-#endif
         extra->topextra->backingStoreTracker.destroy();
-        delete extra->topextra->backingStore;
-        extra->topextra->backingStore = 0;
+        deleteBackingStore(this);
 #ifndef QT_NO_OPENGL
         qDeleteAll(extra->topextra->widgetTextures);
         extra->topextra->widgetTextures.clear();
-        if (textureChildSeen && extra->topextra->shareContext)
-            extra->topextra->shareContext->doneCurrent();
         delete extra->topextra->shareContext;
         extra->topextra->shareContext = 0;
 #endif
@@ -12030,7 +12054,7 @@ void QWidget::setBackingStore(QBackingStore *store)
         return;
 
     QBackingStore *oldStore = topData->backingStore;
-    delete topData->backingStore;
+    deleteBackingStore(d);
     topData->backingStore = store;
 
     QWidgetBackingStore *bs = d->maybeBackingStore();
@@ -12320,6 +12344,12 @@ QPaintEngine *QWidget::paintEngine() const
     return 0; //##### @@@
 }
 
+// Do not call QWindow::mapToGlobal() until QPlatformWindow is properly showing.
+static inline bool canMapPosition(QWindow *window)
+{
+    return window->handle() && !qt_window_private(window)->resizeEventPending;
+}
+
 /*!
     \fn QPoint QWidget::mapToGlobal(const QPoint &pos) const
 
@@ -12347,7 +12377,7 @@ QPoint QWidget::mapToGlobal(const QPoint &pos) const
 #endif // !QT_NO_GRAPHICSVIEW
 
         QWindow *window = w->windowHandle();
-        if (window && window->handle())
+        if (window && canMapPosition(window))
             return window->mapToGlobal(QPoint(x, y));
 
         x += w->data->crect.x();
@@ -12383,7 +12413,7 @@ QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 #endif // !QT_NO_GRAPHICSVIEW
 
         QWindow *window = w->windowHandle();
-        if (window && window->handle())
+        if (window && canMapPosition(window))
             return window->mapFromGlobal(QPoint(x, y));
 
         x -= w->data->crect.x();

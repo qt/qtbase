@@ -196,8 +196,8 @@ namespace {
 */
 
 QWindowsFontEngineDirectWrite::QWindowsFontEngineDirectWrite(IDWriteFontFace *directWriteFontFace,
-                                               qreal pixelSize,
-                                               const QSharedPointer<QWindowsFontEngineData> &d)
+                                                             qreal pixelSize,
+                                                             const QSharedPointer<QWindowsFontEngineData> &d)
     : QFontEngine(DirectWrite)
     , m_fontEngineData(d)
     , m_directWriteFontFace(directWriteFontFace)
@@ -547,12 +547,17 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
     transform.m21 = xform.m21();
     transform.m22 = xform.m22();
 
+    DWRITE_RENDERING_MODE renderMode =
+             fontDef.hintingPreference == QFont::PreferNoHinting
+                ? DWRITE_RENDERING_MODE_CLEARTYPE_NATURAL_SYMMETRIC
+                : DWRITE_RENDERING_MODE_CLEARTYPE_NATURAL;
+
     IDWriteGlyphRunAnalysis *glyphAnalysis = NULL;
     HRESULT hr = m_fontEngineData->directWriteFactory->CreateGlyphRunAnalysis(
                 &glyphRun,
                 1.0f,
                 &transform,
-                DWRITE_RENDERING_MODE_CLEARTYPE_NATURAL_SYMMETRIC,
+                renderMode,
                 DWRITE_MEASURING_MODE_NATURAL,
                 0.0, 0.0,
                 &glyphAnalysis
@@ -626,7 +631,8 @@ QImage QWindowsFontEngineDirectWrite::alphaRGBMapForGlyph(glyph_t t,
 QFontEngine *QWindowsFontEngineDirectWrite::cloneWithSize(qreal pixelSize) const
 {
     QFontEngine *fontEngine = new QWindowsFontEngineDirectWrite(m_directWriteFontFace,
-                                                                pixelSize, m_fontEngineData);
+                                                                pixelSize,
+                                                                m_fontEngineData);
 
     fontEngine->fontDef = fontDef;
     fontEngine->fontDef.pixelSize = pixelSize;

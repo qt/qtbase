@@ -107,6 +107,7 @@ public:
                 return true;
             return false;
         }
+        inline QFileInfo fileInfo() const { if (info) return info->fileInfo(); return QFileInfo(); }
         inline bool isFile() const { if (info) return info->isFile(); return true; }
         inline bool isSystem() const { if (info) return info->isSystem(); return true; }
         inline bool isHidden() const { if (info) return info->isHidden(); return false; }
@@ -282,7 +283,7 @@ public:
 
     void _q_directoryChanged(const QString &directory, const QStringList &list);
     void _q_performDelayedSort();
-    void _q_fileSystemChanged(const QString &path, const QList<QPair<QString, QFileInfo> > &);
+    void _q_fileSystemChanged(const QString &path, const QVector<QPair<QString, QFileInfo> > &);
     void _q_resolvedName(const QString &fileName, const QString &resolvedName);
 
     static int naturalCompare(const QString &s1, const QString &s2, Qt::CaseSensitivity cs);
