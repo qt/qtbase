@@ -1005,7 +1005,10 @@ foreach my $lib (@modules_to_sync) {
                         my $iheader = $subdir . "/" . $header;
                         $iheader =~ s/^\Q$basedir\E/$out_basedir/ if ($shadow);
                         if ($check_includes) {
-                            check_header($lib, $header, $iheader, $public_header, !$public_header && !$qpa_header);
+                            # We need both $public_header and $private_header because QPA headers count as neither
+                            my $private_header = !$public_header && !$qpa_header
+                                && $header =~ /_p\.h$/ && $subdir !~ /3rdparty/;
+                            check_header($lib, $header, $iheader, $public_header, $private_header);
                         }
                         my @classes = $public_header && (!$minimal && $is_qt) ? classNames($iheader, \$clean_header) : ();
                         if($showonly) {
