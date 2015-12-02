@@ -212,11 +212,14 @@ QSize QEGLDeviceIntegration::screenSize() const
 
 QDpi QEGLDeviceIntegration::logicalDpi() const
 {
-    QSizeF ps = physicalScreenSize();
-    QSize s = screenSize();
+    const QSizeF ps = physicalScreenSize();
+    const QSize s = screenSize();
 
-    return QDpi(25.4 * s.width() / ps.width(),
-                25.4 * s.height() / ps.height());
+    if (!ps.isEmpty() && !s.isEmpty())
+        return QDpi(25.4 * s.width() / ps.width(),
+                    25.4 * s.height() / ps.height());
+    else
+        return QDpi(100, 100);
 }
 
 qreal QEGLDeviceIntegration::pixelDensity() const

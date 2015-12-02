@@ -160,10 +160,10 @@ QSizeF QEglFSKmsScreen::physicalSize() const
 
 QDpi QEglFSKmsScreen::logicalDpi() const
 {
-    QSizeF ps = physicalSize();
-    QSize s = geometry().size();
+    const QSizeF ps = physicalSize();
+    const QSize s = geometry().size();
 
-    if (ps.isValid() && s.isValid())
+    if (!ps.isEmpty() && !s.isEmpty())
         return QDpi(25.4 * s.width() / ps.width(),
                     25.4 * s.height() / ps.height());
     else
