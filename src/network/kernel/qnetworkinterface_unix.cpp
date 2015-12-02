@@ -343,7 +343,7 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
     // - virtual interfaces with no HW address have no AF_PACKET
     // - interface labels have no AF_PACKET, but shouldn't be shown as a new interface
     for (ifaddrs *ptr = rawList; ptr; ptr = ptr->ifa_next) {
-        if (ptr->ifa_addr && ptr->ifa_addr->sa_family != AF_PACKET) {
+        if (!ptr->ifa_addr || ptr->ifa_addr->sa_family != AF_PACKET) {
             QString name = QString::fromLatin1(ptr->ifa_name);
             if (seenInterfaces.contains(name))
                 continue;
