@@ -215,11 +215,12 @@ android: CONFIG += qt_android_deps no_linker_version_script
         }
 
         # Add a post-processing step to replace the @CLASSLIST@
-        verscriptprocess.commands = perl $${PWD}/data/unix/findclasslist.pl < $^ > $@
+        verscriptprocess.commands = perl $${PWD}/data/unix/findclasslist.pl < $${verscript}.in $${verscript}.in.args > $@
         verscriptprocess.target = $$verscript
-        verscriptprocess.depends = $${verscript}.in
         for(header, SYNCQT.PRIVATE_HEADER_FILES): \
             verscriptprocess.depends += $${_PRO_FILE_PWD_}/$$header
+        write_file($${verscript}.in.args, verscriptprocess.depends)|error("Aborting.")
+        verscriptprocess.depends += $${verscript}.in $${verscript}.in.args
         QMAKE_EXTRA_TARGETS += verscriptprocess
         PRE_TARGETDEPS += $$verscript
         verscript = $${verscript}.in
