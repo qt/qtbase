@@ -2572,7 +2572,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 
                 QColor subtleEdge = alphaOutline;
                 subtleEdge.setAlpha(40);
-                painter->setPen(Qt::NoPen);
+                painter->setPen(subtleEdge);
                 painter->setBrush(Qt::NoBrush);
                 painter->setClipRect(scrollBarGroove.adjusted(1, 0, -1, -3));
                 painter->drawRect(scrollBarGroove.adjusted(1, 0, -1, -1));
