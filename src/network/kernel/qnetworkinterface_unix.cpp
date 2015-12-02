@@ -268,29 +268,29 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
         }
 #endif
 
-        // Get the interface broadcast address
-        QNetworkAddressEntry entry;
-        if (iface->flags & QNetworkInterface::CanBroadcast) {
-            if (qt_safe_ioctl(socket, SIOCGIFBRDADDR, &req) >= 0) {
-                sockaddr *sa = &req.ifr_addr;
-                if (sa->sa_family == AF_INET)
-                    entry.setBroadcast(addressFromSockaddr(sa));
-            }
-        }
-
         // Get the address of the interface
+        QNetworkAddressEntry entry;
         if (qt_safe_ioctl(socket, SIOCGIFADDR, &req) >= 0) {
             sockaddr *sa = &req.ifr_addr;
             entry.setIp(addressFromSockaddr(sa));
-        }
 
-        // Get the interface netmask
-        if (qt_safe_ioctl(socket, SIOCGIFNETMASK, &req) >= 0) {
-            sockaddr *sa = &req.ifr_addr;
-            entry.setNetmask(addressFromSockaddr(sa));
-        }
+            // Get the interface broadcast address
+            if (iface->flags & QNetworkInterface::CanBroadcast) {
+                if (qt_safe_ioctl(socket, SIOCGIFBRDADDR, &req) >= 0) {
+                    sockaddr *sa = &req.ifr_addr;
+                    if (sa->sa_family == AF_INET)
+                        entry.setBroadcast(addressFromSockaddr(sa));
+                }
+            }
 
-        iface->addressEntries << entry;
+            // Get the interface netmask
+            if (qt_safe_ioctl(socket, SIOCGIFNETMASK, &req) >= 0) {
+                sockaddr *sa = &req.ifr_addr;
+                entry.setNetmask(addressFromSockaddr(sa));
+            }
+
+            iface->addressEntries << entry;
+        }
     }
 
     ::close(socket);
