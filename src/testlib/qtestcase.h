@@ -238,7 +238,7 @@ namespace QTest
     inline typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value, char*>::Type toString(T e)
     {
         QMetaEnum me = QMetaEnum::fromType<T>();
-        return qstrdup(me.key(int(e))); // int cast is necessary to support enum classes
+        return qstrdup(me.valueToKey(int(e))); // int cast is necessary to support enum classes
     }
 
     template <typename T> // Fallback

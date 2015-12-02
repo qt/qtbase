@@ -4,8 +4,8 @@ PASS   : tst_Cmptest::initTestCase()
 FAIL!  : tst_Cmptest::compare_unregistered_enums() Compared values are not the same
    Loc: [tst_cmptest.cpp(154)]
 FAIL!  : tst_Cmptest::compare_registered_enums() Compared values are not the same
-   Actual   (Qt::ArrowCursor): ArrowCursor
-   Expected (Qt::BusyCursor) : BusyCursor
+   Actual   (Qt::Monday): Monday
+   Expected (Qt::Sunday): Sunday
    Loc: [tst_cmptest.cpp(160)]
 PASS   : tst_Cmptest::compare_boolfuncs()
 PASS   : tst_Cmptest::compare_pointerfuncs()
