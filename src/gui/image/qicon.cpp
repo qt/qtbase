@@ -1208,6 +1208,12 @@ bool QIcon::hasThemeIcon(const QString &name)
 */
 void QIcon::setIsMask(bool isMask)
 {
+    if (!d) {
+        d = new QIconPrivate;
+        d->engine = new QPixmapIconEngine;
+    } else {
+        detach();
+    }
     d->is_mask = isMask;
 }
 
@@ -1222,6 +1228,8 @@ void QIcon::setIsMask(bool isMask)
 */
 bool QIcon::isMask() const
 {
+    if (!d)
+        return false;
     return d->is_mask;
 }
 
