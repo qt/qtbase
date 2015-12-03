@@ -122,11 +122,52 @@ QT_BEGIN_NAMESPACE
 // so we will use 512
 static const int errorBufferMax = 512;
 
-static inline void add_fd(int &nfds, int fd, fd_set *fdset)
+namespace {
+struct QProcessPoller
 {
-    FD_SET(fd, fdset);
-    if ((fd) > nfds)
-        nfds = fd;
+    QProcessPoller(const QProcessPrivate &proc);
+
+    int poll(int timeout);
+
+    pollfd &stdinPipe() { return pfds[0]; }
+    pollfd &stdoutPipe() { return pfds[1]; }
+    pollfd &stderrPipe() { return pfds[2]; }
+    pollfd &forkfd() { return pfds[3]; }
+    pollfd &childStartedPipe() { return pfds[4]; }
+
+    enum { n_pfds = 5 };
+    pollfd pfds[n_pfds];
+};
+
+QProcessPoller::QProcessPoller(const QProcessPrivate &proc)
+{
+    for (int i = 0; i < n_pfds; i++)
+        pfds[i] = { -1, POLLIN, 0 };
+
+    stdoutPipe().fd = proc.stdoutChannel.pipe[0];
+    stderrPipe().fd = proc.stderrChannel.pipe[0];
+
+    if (!proc.writeBuffer.isEmpty()) {
+        stdinPipe().fd = proc.stdinChannel.pipe[1];
+        stdinPipe().events = POLLOUT;
+    }
+
+    forkfd().fd = proc.forkfd;
+
+    if (proc.processState == QProcess::Starting)
+        childStartedPipe().fd = proc.childStartedPipe[0];
+}
+
+int QProcessPoller::poll(int timeout)
+{
+    const nfds_t nfds = (childStartedPipe().fd == -1) ? 4 : 5;
+    return qt_poll_msecs(pfds, nfds, timeout);
+}
+} // anonymous namespace
+
+static bool qt_pollfd_check(const pollfd &pfd, short revents)
+{
+    return pfd.fd >= 0 && (pfd.revents & (revents | POLLHUP | POLLERR | POLLNVAL)) != 0;
 }
 
 static int qt_create_pipe(int *pipe)
@@ -832,10 +873,9 @@ bool QProcessPrivate::waitForStarted(int msecs)
            childStartedPipe[0]);
 #endif
 
-    fd_set fds;
-    FD_ZERO(&fds);
-    FD_SET(childStartedPipe[0], &fds);
-    if (qt_select_msecs(childStartedPipe[0] + 1, &fds, 0, msecs) == 0) {
+    pollfd pfd = { childStartedPipe[0], POLLIN, 0 };
+
+    if (qt_poll_msecs(&pfd, 1, msecs) == 0) {
         setError(QProcess::Timedout);
 #if defined (QPROCESS_DEBUG)
         qDebug("QProcessPrivate::waitForStarted(%d) == false (timed out)", msecs);
@@ -860,28 +900,10 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
     stopWatch.start();
 
     forever {
-        fd_set fdread;
-        fd_set fdwrite;
-
-        FD_ZERO(&fdread);
-        FD_ZERO(&fdwrite);
-
-        int nfds = forkfd;
-        FD_SET(forkfd, &fdread);
-
-        if (processState == QProcess::Starting)
-            add_fd(nfds, childStartedPipe[0], &fdread);
-
-        if (stdoutChannel.pipe[0] != -1)
-            add_fd(nfds, stdoutChannel.pipe[0], &fdread);
-        if (stderrChannel.pipe[0] != -1)
-            add_fd(nfds, stderrChannel.pipe[0], &fdread);
-
-        if (!writeBuffer.isEmpty() && stdinChannel.pipe[1] != -1)
-            add_fd(nfds, stdinChannel.pipe[1], &fdwrite);
+        QProcessPoller poller(*this);
 
         int timeout = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
-        int ret = qt_select_msecs(nfds + 1, &fdread, &fdwrite, timeout);
+        int ret = poller.poll(timeout);
 
         if (ret < 0) {
             break;
@@ -891,18 +913,18 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
             return false;
         }
 
-        if (childStartedPipe[0] != -1 && FD_ISSET(childStartedPipe[0], &fdread)) {
+        if (qt_pollfd_check(poller.childStartedPipe(), POLLIN)) {
             if (!_q_startupNotification())
                 return false;
         }
 
         bool readyReadEmitted = false;
-        if (stdoutChannel.pipe[0] != -1 && FD_ISSET(stdoutChannel.pipe[0], &fdread)) {
+        if (qt_pollfd_check(poller.stdoutPipe(), POLLIN)) {
             bool canRead = _q_canReadStandardOutput();
             if (currentReadChannel == QProcess::StandardOutput && canRead)
                 readyReadEmitted = true;
         }
-        if (stderrChannel.pipe[0] != -1 && FD_ISSET(stderrChannel.pipe[0], &fdread)) {
+        if (qt_pollfd_check(poller.stderrPipe(), POLLIN)) {
             bool canRead = _q_canReadStandardError();
             if (currentReadChannel == QProcess::StandardError && canRead)
                 readyReadEmitted = true;
@@ -910,10 +932,10 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
         if (readyReadEmitted)
             return true;
 
-        if (stdinChannel.pipe[1] != -1 && FD_ISSET(stdinChannel.pipe[1], &fdwrite))
+        if (qt_pollfd_check(poller.stdinPipe(), POLLOUT))
             _q_canWrite();
 
-        if (forkfd == -1 || FD_ISSET(forkfd, &fdread)) {
+        if (qt_pollfd_check(poller.forkfd(), POLLIN)) {
             if (_q_processDied())
                 return false;
         }
@@ -931,29 +953,10 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
     stopWatch.start();
 
     while (!writeBuffer.isEmpty()) {
-        fd_set fdread;
-        fd_set fdwrite;
-
-        FD_ZERO(&fdread);
-        FD_ZERO(&fdwrite);
-
-        int nfds = forkfd;
-        FD_SET(forkfd, &fdread);
-
-        if (processState == QProcess::Starting)
-            add_fd(nfds, childStartedPipe[0], &fdread);
-
-        if (stdoutChannel.pipe[0] != -1)
-            add_fd(nfds, stdoutChannel.pipe[0], &fdread);
-        if (stderrChannel.pipe[0] != -1)
-            add_fd(nfds, stderrChannel.pipe[0], &fdread);
-
-
-        if (!writeBuffer.isEmpty() && stdinChannel.pipe[1] != -1)
-            add_fd(nfds, stdinChannel.pipe[1], &fdwrite);
+        QProcessPoller poller(*this);
 
         int timeout = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
-        int ret = qt_select_msecs(nfds + 1, &fdread, &fdwrite, timeout);
+        int ret = poller.poll(timeout);
 
         if (ret < 0) {
             break;
@@ -964,21 +967,21 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
             return false;
         }
 
-        if (childStartedPipe[0] != -1 && FD_ISSET(childStartedPipe[0], &fdread)) {
+        if (qt_pollfd_check(poller.childStartedPipe(), POLLIN)) {
             if (!_q_startupNotification())
                 return false;
         }
 
-        if (stdinChannel.pipe[1] != -1 && FD_ISSET(stdinChannel.pipe[1], &fdwrite))
+        if (qt_pollfd_check(poller.stdinPipe(), POLLOUT))
             return _q_canWrite();
 
-        if (stdoutChannel.pipe[0] != -1 && FD_ISSET(stdoutChannel.pipe[0], &fdread))
+        if (qt_pollfd_check(poller.stdoutPipe(), POLLIN))
             _q_canReadStandardOutput();
 
-        if (stderrChannel.pipe[0] != -1 && FD_ISSET(stderrChannel.pipe[0], &fdread))
+        if (qt_pollfd_check(poller.stderrPipe(), POLLIN))
             _q_canReadStandardError();
 
-        if (forkfd == -1 || FD_ISSET(forkfd, &fdread)) {
+        if (qt_pollfd_check(poller.forkfd(), POLLIN)) {
             if (_q_processDied())
                 return false;
         }
@@ -997,29 +1000,10 @@ bool QProcessPrivate::waitForFinished(int msecs)
     stopWatch.start();
 
     forever {
-        fd_set fdread;
-        fd_set fdwrite;
-        int nfds = -1;
-
-        FD_ZERO(&fdread);
-        FD_ZERO(&fdwrite);
-
-        if (processState == QProcess::Starting)
-            add_fd(nfds, childStartedPipe[0], &fdread);
-
-        if (stdoutChannel.pipe[0] != -1)
-            add_fd(nfds, stdoutChannel.pipe[0], &fdread);
-        if (stderrChannel.pipe[0] != -1)
-            add_fd(nfds, stderrChannel.pipe[0], &fdread);
-
-        if (processState == QProcess::Running && forkfd != -1)
-            add_fd(nfds, forkfd, &fdread);
-
-        if (!writeBuffer.isEmpty() && stdinChannel.pipe[1] != -1)
-            add_fd(nfds, stdinChannel.pipe[1], &fdwrite);
+        QProcessPoller poller(*this);
 
         int timeout = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
-        int ret = qt_select_msecs(nfds + 1, &fdread, &fdwrite, timeout);
+        int ret = poller.poll(timeout);
 
         if (ret < 0) {
             break;
@@ -1029,20 +1013,20 @@ bool QProcessPrivate::waitForFinished(int msecs)
             return false;
         }
 
-        if (childStartedPipe[0] != -1 && FD_ISSET(childStartedPipe[0], &fdread)) {
+        if (qt_pollfd_check(poller.childStartedPipe(), POLLIN)) {
             if (!_q_startupNotification())
                 return false;
         }
-        if (stdinChannel.pipe[1] != -1 && FD_ISSET(stdinChannel.pipe[1], &fdwrite))
+        if (qt_pollfd_check(poller.stdinPipe(), POLLOUT))
             _q_canWrite();
 
-        if (stdoutChannel.pipe[0] != -1 && FD_ISSET(stdoutChannel.pipe[0], &fdread))
+        if (qt_pollfd_check(poller.stdoutPipe(), POLLIN))
             _q_canReadStandardOutput();
 
-        if (stderrChannel.pipe[0] != -1 && FD_ISSET(stderrChannel.pipe[0], &fdread))
+        if (qt_pollfd_check(poller.stderrPipe(), POLLIN))
             _q_canReadStandardError();
 
-        if (forkfd == -1 || FD_ISSET(forkfd, &fdread)) {
+        if (qt_pollfd_check(poller.forkfd(), POLLIN)) {
             if (_q_processDied())
                 return true;
         }
@@ -1052,10 +1036,8 @@ bool QProcessPrivate::waitForFinished(int msecs)
 
 bool QProcessPrivate::waitForWrite(int msecs)
 {
-    fd_set fdwrite;
-    FD_ZERO(&fdwrite);
-    FD_SET(stdinChannel.pipe[1], &fdwrite);
-    return qt_select_msecs(stdinChannel.pipe[1] + 1, 0, &fdwrite, msecs < 0 ? 0 : msecs) == 1;
+    pollfd pfd = { stdinChannel.pipe[1], POLLOUT, 0 };
+    return qt_poll_msecs(&pfd, 1, msecs < 0 ? 0 : msecs) == 1;
 }
 
 void QProcessPrivate::findExitCode()
