@@ -68,7 +68,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_INTEGRITY) || defined(Q_OS_VXWORKS)
+#if defined(Q_OS_VXWORKS)
 static void initThreadPipeFD(int fd)
 {
     int ret = fcntl(fd, F_SETFD, FD_CLOEXEC);
@@ -94,15 +94,6 @@ QEventDispatcherUNIXPrivate::QEventDispatcherUNIXPrivate()
     // initialize the common parts of the event loop
 #if defined(Q_OS_NACL)
    // do nothing.
-#elif defined(Q_OS_INTEGRITY)
-    // INTEGRITY doesn't like a "select" on pipes, so use socketpair instead
-    if (socketpair(AF_INET, SOCK_STREAM, 0, thread_pipe) == -1) {
-        perror("QEventDispatcherUNIXPrivate(): Unable to create socket pair");
-        pipefail = true;
-    } else {
-        initThreadPipeFD(thread_pipe[0]);
-        initThreadPipeFD(thread_pipe[1]);
-    }
 #elif defined(Q_OS_VXWORKS)
     char name[20];
     qsnprintf(name, sizeof(name), "/pipe/qt_%08x", int(taskIdSelf()));
