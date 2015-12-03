@@ -66,26 +66,10 @@
 #  include <ioLib.h>
 #endif
 
-#ifndef QT_NO_NATIVE_POLL
-# include <poll.h>
+#ifdef QT_NO_NATIVE_POLL
+#  include "qpoll_p.h"
 #else
-struct pollfd {
-   int   fd;
-   short events, revents;
-};
-
-typedef unsigned long int nfds_t;
-
-# define POLLIN      0x001
-# define POLLPRI     0x002
-# define POLLOUT     0x004
-# define POLLERR     0x008
-# define POLLHUP     0x010
-# define POLLNVAL    0x020
-# define POLLRDNORM  0x040
-# define POLLRDBAND  0x080
-# define POLLWRNORM  0x100
-# define POLLWRBAND  0x200
+#  include <poll.h>
 #endif
 
 struct sockaddr;
@@ -143,6 +127,14 @@ inline timespec operator*(const timespec &t1, int mul)
     tmp.tv_nsec = t1.tv_nsec * mul;
     return normalizedTimespec(tmp);
 }
+inline timeval timespecToTimeval(const timespec &ts)
+{
+    timeval tv;
+    tv.tv_sec = ts.tv_sec;
+    tv.tv_usec = ts.tv_nsec / 1000;
+    return tv;
+}
+
 
 inline void qt_ignore_sigpipe()
 {

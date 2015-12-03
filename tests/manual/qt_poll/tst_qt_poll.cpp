@@ -31,33 +31,31 @@
 **
 ****************************************************************************/
 
+#ifndef QT_NO_NATIVE_POLL
+#define QT_NO_NATIVE_POLL
+#endif
+
 #include <QtTest/QtTest>
 #include <QtNetwork>
 
 #include <private/qcore_unix_p.h>
 
-#ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
-Q_AUTOTEST_EXPORT int qt_poll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout_ts);
+// defined in qpoll.cpp
+int qt_poll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout_ts);
 QT_END_NAMESPACE
-#endif // QT_BUILD_INTERNAL
-
-QT_USE_NAMESPACE
 
 class tst_qt_poll : public QObject
 {
     Q_OBJECT
 
-#ifdef QT_BUILD_INTERNAL
 private slots:
     void pollout();
     void pollin();
     void pollnval();
     void pollprihup();
-#endif // QT_BUILD_INTERNAL
 };
 
-#ifdef QT_BUILD_INTERNAL
 void tst_qt_poll::pollout()
 {
     int fds[2];
@@ -152,7 +150,6 @@ void tst_qt_poll::pollprihup()
     QCOMPARE(res, 1);
     QCOMPARE(pfd.revents, short(POLLHUP));
 }
-#endif // QT_BUILD_INTERNAL
 
 QTEST_APPLESS_MAIN(tst_qt_poll)
 #include "tst_qt_poll.moc"
