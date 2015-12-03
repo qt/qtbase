@@ -66,6 +66,8 @@ void invalidateCache(QAccessibleInterface *iface)
 
 void QIOSPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
+    if (!isActive() || !event->accessibleInterface())
+        return;
     switch (event->type()) {
     case QAccessible::ObjectCreated:
     case QAccessible::ObjectShow:

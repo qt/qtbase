@@ -51,6 +51,8 @@ QCocoaAccessibility::~QCocoaAccessibility()
 
 void QCocoaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
+    if (!isActive() || !event->accessibleInterface())
+        return;
     QMacAccessibilityElement *element = [QMacAccessibilityElement elementWithId: event->uniqueId()];
     if (!element) {
         qWarning() << "QCocoaAccessibility::notifyAccessibilityUpdate: invalid element";
