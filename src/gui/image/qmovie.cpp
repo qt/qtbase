@@ -965,14 +965,16 @@ void QMovie::setScaledSize(const QSize &size)
 QList<QByteArray> QMovie::supportedFormats()
 {
     QList<QByteArray> list = QImageReader::supportedImageFormats();
-    QMutableListIterator<QByteArray> it(list);
+
     QBuffer buffer;
     buffer.open(QIODevice::ReadOnly);
-    while (it.hasNext()) {
-        QImageReader reader(&buffer, it.next());
-        if (!reader.supportsAnimation())
-            it.remove();
-    }
+
+    const auto doesntSupportAnimation =
+            [&buffer](const QByteArray &format) {
+                return !QImageReader(&buffer, format).supportsAnimation();
+            };
+
+    list.erase(std::remove_if(list.begin(), list.end(), doesntSupportAnimation), list.end());
     return list;
 }
 
