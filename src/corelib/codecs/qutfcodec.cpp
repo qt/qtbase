@@ -53,6 +53,16 @@ enum { Endian = 0, Data = 1 };
 static const uchar utf8bom[] = { 0xef, 0xbb, 0xbf };
 
 #if defined(__SSE2__) && defined(QT_COMPILER_SUPPORTS_SSE2)
+static Q_ALWAYS_INLINE uint qBitScanReverse(unsigned v) Q_DECL_NOTHROW
+{
+    uint result = qCountLeadingZeroBits(v);
+    // Now Invert the result: clz will count *down* from the msb to the lsb, so the msb index is 31
+    // and the lsb index is 0. The result for _bit_scan_reverse is expected to be the index when
+    // counting up: msb index is 0 (because it starts there), and the lsb index is 31.
+    result ^= sizeof(unsigned) * 8 - 1;
+    return result;
+}
+
 static inline bool simdEncodeAscii(uchar *&dst, const ushort *&nextAscii, const ushort *&src, const ushort *end)
 {
     // do sixteen characters at a time
@@ -81,9 +91,9 @@ static inline bool simdEncodeAscii(uchar *&dst, const ushort *&nextAscii, const 
             // find the next probable ASCII character
             // we don't want to load 32 bytes again in this loop if we know there are non-ASCII
             // characters still coming
-            nextAscii = src + _bit_scan_reverse(n) + 1;
+            nextAscii = src + qBitScanReverse(n) + 1;
 
-            n = _bit_scan_forward(n);
+            n = qCountTrailingZeroBits(n);
             dst += n;
             src += n;
             return false;
@@ -132,7 +142,7 @@ static inline bool simdDecodeAscii(ushort *&dst, const uchar *&nextAscii, const 
         // find the next probable ASCII character
         // we don't want to load 16 bytes again in this loop if we know there are non-ASCII
         // characters still coming
-        n = _bit_scan_reverse(n);
+        n = qBitScanReverse(n);
         nextAscii = src + (n / BitSpacing) + 1;
         return false;
 

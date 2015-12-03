@@ -468,7 +468,7 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
         uint mask = ~_mm_movemask_epi8(result);
         if (ushort(mask)) {
             // found a different byte
-            uint idx = uint(_bit_scan_forward(mask));
+            uint idx = qCountTrailingZeroBits(mask);
             return reinterpret_cast<const QChar *>(ptr + idx)->unicode()
                     - reinterpret_cast<const QChar *>(ptr + distance + idx)->unicode();
         }
@@ -571,7 +571,7 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
 #  endif
         if (mask) {
             // found a different character
-            uint idx = uint(_bit_scan_forward(mask));
+            uint idx = qCountTrailingZeroBits(mask);
             return uc[offset + idx / 2] - c[offset + idx / 2];
         }
     }
@@ -589,7 +589,7 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
         uint mask = ~_mm_movemask_epi8(result);
         if (ushort(mask)) {
             // found a different character
-            uint idx = uint(_bit_scan_forward(mask));
+            uint idx = qCountTrailingZeroBits(mask);
             return uc[offset + idx / 2] - c[offset + idx / 2];
         }
 
@@ -683,7 +683,7 @@ static int findChar(const QChar *str, int len, QChar ch, int from,
                     // found a match
                     // same as: return n - s + _bit_scan_forward(mask) / 2
                     return (reinterpret_cast<const char *>(n) - reinterpret_cast<const char *>(s)
-                            + _bit_scan_forward(mask)) >> 1;
+                            + qCountTrailingZeroBits(mask)) >> 1;
                 }
             }
 

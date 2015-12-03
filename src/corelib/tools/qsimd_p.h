@@ -465,59 +465,6 @@ static inline quint64 qCpuFeatures()
 #define qCpuHasFeature(feature)     ((qCompilerCpuFeatures & (Q_UINT64_C(1) << CpuFeature ## feature)) \
                                      || (qCpuFeatures() & (Q_UINT64_C(1) << CpuFeature ## feature)))
 
-#if QT_HAS_BUILTIN(__builtin_clz) && QT_HAS_BUILTIN(__builtin_ctz) && defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
-static Q_ALWAYS_INLINE unsigned _bit_scan_reverse(unsigned val)
-{
-    Q_ASSERT(val != 0); // if val==0, the result is undefined.
-    unsigned result = static_cast<unsigned>(__builtin_clz(val)); // Count Leading Zeros
-    // Now Invert the result: clz will count *down* from the msb to the lsb, so the msb index is 31
-    // and the lsb inde is 0. The result for _bit_scan_reverse is expected to be the index when
-    // counting up: msb index is 0 (because it starts there), and the lsb index is 31.
-    result ^= sizeof(unsigned) * 8 - 1;
-    return result;
-}
-static Q_ALWAYS_INLINE unsigned _bit_scan_forward(unsigned val)
-{
-    Q_ASSERT(val != 0); // if val==0, the result is undefined.
-    return static_cast<unsigned>(__builtin_ctz(val)); // Count Trailing Zeros
-}
-#elif defined(Q_PROCESSOR_X86)
-// Bit scan functions for x86
-#  if defined(Q_CC_MSVC)
-// MSVC calls it _BitScanReverse and returns the carry flag, which we don't need
-static __forceinline unsigned long _bit_scan_reverse(uint val)
-{
-    unsigned long result;
-    _BitScanReverse(&result, val);
-    return result;
-}
-static __forceinline unsigned long _bit_scan_forward(uint val)
-{
-    unsigned long result;
-    _BitScanForward(&result, val);
-    return result;
-}
-#  elif (defined(Q_CC_CLANG) || (defined(Q_CC_GNU) && Q_CC_GNU < 405)) \
-    && !defined(Q_CC_INTEL)
-// Clang is missing the intrinsic for _bit_scan_reverse
-// GCC only added it in version 4.5
-static inline __attribute__((always_inline))
-unsigned _bit_scan_reverse(unsigned val)
-{
-    unsigned result;
-    asm("bsr %1, %0" : "=r" (result) : "r" (val));
-    return result;
-}
-static inline __attribute__((always_inline))
-unsigned _bit_scan_forward(unsigned val)
-{
-    unsigned result;
-    asm("bsf %1, %0" : "=r" (result) : "r" (val));
-    return result;
-}
-#  endif
-#endif // Q_PROCESSOR_X86
-
 #define ALIGNMENT_PROLOGUE_16BYTES(ptr, i, length) \
     for (; i < static_cast<int>(qMin(static_cast<quintptr>(length), ((4 - ((reinterpret_cast<quintptr>(ptr) >> 2) & 0x3)) & 0x3))); ++i)
 

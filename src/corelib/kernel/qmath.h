@@ -45,6 +45,7 @@
 #endif
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qalgorithms.h>
 
 #ifndef _USE_MATH_DEFINES
 #  define _USE_MATH_DEFINES
@@ -241,20 +242,12 @@ Q_DECL_CONSTEXPR inline double qRadiansToDegrees(double radians)
 }
 
 
-#if defined(Q_CC_GNU)
-// clz instructions exist in at least MIPS, ARM, PowerPC and X86, so we can assume this builtin always maps to an efficient instruction.
+#if defined(QT_HAS_BUILTIN_CLZ)
 inline quint32 qNextPowerOfTwo(quint32 v)
 {
     if (v == 0)
         return 1;
-    return 2U << (31 ^ __builtin_clz(v));
-}
-
-inline quint64 qNextPowerOfTwo(quint64 v)
-{
-    if (v == 0)
-        return 1;
-    return Q_UINT64_C(2) << (63 ^ __builtin_clzll(v));
+    return 2U << (31 ^ QAlgorithmsPrivate::qt_builtin_clz(v));
 }
 #else
 inline quint32 qNextPowerOfTwo(quint32 v)
@@ -267,7 +260,16 @@ inline quint32 qNextPowerOfTwo(quint32 v)
     ++v;
     return v;
 }
+#endif
 
+#if defined(QT_HAS_BUILTIN_CLZLL)
+inline quint64 qNextPowerOfTwo(quint64 v)
+{
+    if (v == 0)
+        return 1;
+    return Q_UINT64_C(2) << (63 ^ QAlgorithmsPrivate::qt_builtin_clzll(v));
+}
+#else
 inline quint64 qNextPowerOfTwo(quint64 v)
 {
     v |= v >> 1;
