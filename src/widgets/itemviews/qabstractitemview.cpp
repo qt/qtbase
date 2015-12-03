@@ -4290,9 +4290,8 @@ QModelIndex QAbstractItemViewPrivate::indexForEditor(QWidget *editor) const
 
 void QAbstractItemViewPrivate::removeEditor(QWidget *editor)
 {
-   QEditorIndexHash::iterator it = editorIndexHash.find(editor);
-    if (it != editorIndexHash.end())
-    {
+    const auto it = editorIndexHash.constFind(editor);
+    if (it != editorIndexHash.cend()) {
         indexEditorHash.remove(it.value());
         editorIndexHash.erase(it);
     }

@@ -198,8 +198,8 @@ QItemEditorFactory::~QItemEditorFactory()
 */
 void QItemEditorFactory::registerEditor(int userType, QItemEditorCreatorBase *creator)
 {
-    QHash<int, QItemEditorCreatorBase *>::iterator it = creatorMap.find(userType);
-    if (it != creatorMap.end()) {
+    const auto it = creatorMap.constFind(userType);
+    if (it != creatorMap.cend()) {
         QItemEditorCreatorBase *oldCreator = it.value();
         Q_ASSERT(oldCreator);
         creatorMap.erase(it);

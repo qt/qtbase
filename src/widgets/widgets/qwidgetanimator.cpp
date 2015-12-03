@@ -47,8 +47,8 @@ QWidgetAnimator::QWidgetAnimator(QMainWindowLayout *layout) : m_mainWindowLayout
 void QWidgetAnimator::abort(QWidget *w)
 {
 #ifndef QT_NO_ANIMATION
-    AnimationMap::iterator it = m_animation_map.find(w);
-    if (it == m_animation_map.end())
+    const auto it = m_animation_map.constFind(w);
+    if (it == m_animation_map.cend())
         return;
     QPropertyAnimation *anim = *it;
     m_animation_map.erase(it);

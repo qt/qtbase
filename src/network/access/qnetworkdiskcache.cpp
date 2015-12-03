@@ -231,8 +231,8 @@ void QNetworkDiskCache::insert(QIODevice *device)
     qDebug() << "QNetworkDiskCache::insert()" << device;
 #endif
     Q_D(QNetworkDiskCache);
-    QHash<QIODevice*, QCacheItem*>::iterator it = d->inserting.find(device);
-    if (it == d->inserting.end()) {
+    const auto it = d->inserting.constFind(device);
+    if (Q_UNLIKELY(it == d->inserting.cend())) {
         qWarning() << "QNetworkDiskCache::insert() called on a device we don't know about" << device;
         return;
     }

@@ -117,8 +117,8 @@ public:
       To be used before an index is invalided
       */
     inline void invalidatePersistentIndex(const QModelIndex &index) {
-        QHash<QModelIndex, QPersistentModelIndexData *>::iterator it = persistent.indexes.find(index);
-        if(it != persistent.indexes.end()) {
+        const auto it = persistent.indexes.constFind(index);
+        if (it != persistent.indexes.cend()) {
             QPersistentModelIndexData *data = *it;
             persistent.indexes.erase(it);
             data->index = QModelIndex();

@@ -447,8 +447,8 @@ void QAbstractTextDocumentLayout::unregisterHandler(int objectType, QObject *com
 {
     Q_D(QAbstractTextDocumentLayout);
 
-    HandlerHash::iterator it = d->handlers.find(objectType);
-    if (it != d->handlers.end() && (!component || component == it->component)) {
+    const auto it = d->handlers.constFind(objectType);
+    if (it != d->handlers.cend() && (!component || component == it->component)) {
         if (component)
             disconnect(component, SIGNAL(destroyed(QObject*)), this, SLOT(_q_handlerDestroyed(QObject*)));
         d->handlers.erase(it);

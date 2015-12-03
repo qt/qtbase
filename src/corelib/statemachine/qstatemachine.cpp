@@ -1341,9 +1341,8 @@ void QStateMachinePrivate::unregisterRestorables(const QList<QAbstractState *> &
         if (it == registeredRestorablesForState.end())
             continue;
         QHash<RestorableId, QVariant> &restorables = it.value();
-        QHash<RestorableId, QVariant>::iterator it2;
-        it2 = restorables.find(id);
-        if (it2 == restorables.end())
+        const auto it2 = restorables.constFind(id);
+        if (it2 == restorables.cend())
             continue;
 #ifdef QSTATEMACHINE_RESTORE_PROPERTIES_DEBUG
         qDebug() << q_func() << ":   unregistered for" << s;

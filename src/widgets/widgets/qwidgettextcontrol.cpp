@@ -2401,8 +2401,8 @@ void QWidgetTextControl::setExtraSelections(const QList<QTextEdit::ExtraSelectio
 
     for (int i = 0; i < selections.count(); ++i) {
         const QTextEdit::ExtraSelection &sel = selections.at(i);
-        QHash<int, int>::iterator it = hash.find(sel.cursor.anchor());
-        if (it != hash.end()) {
+        const auto it = hash.constFind(sel.cursor.anchor());
+        if (it != hash.cend()) {
             const QAbstractTextDocumentLayout::Selection &esel = d->extraSelections.at(it.value());
             if (esel.cursor.position() == sel.cursor.position()
                 && esel.format == sel.format) {
