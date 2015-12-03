@@ -118,14 +118,13 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(NotificationReceiver);
 - (void)scrollBarStyleDidChange:(NSNotification *)notification
 {
     Q_UNUSED(notification);
+
+    // purge destroyed scroll bars:
+    QMacStylePrivate::scrollBars.removeAll(QPointer<QObject>());
+
     QEvent event(QEvent::StyleChange);
-    QMutableVectorIterator<QPointer<QObject> > it(QMacStylePrivate::scrollBars);
-    while (it.hasNext()) {
-        if (!it.next())
-            it.remove();
-        else
-            QCoreApplication::sendEvent(it.value(), &event);
-    }
+    for (const auto &o : QMacStylePrivate::scrollBars)
+        QCoreApplication::sendEvent(o, &event);
 }
 @end
 
