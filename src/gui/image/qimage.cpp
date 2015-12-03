@@ -2380,17 +2380,25 @@ QColor QImage::pixelColor(int x, int y) const
         return QColor();
     }
 
+    QRgba64 c;
     const uchar * s = constScanLine(y);
     switch (d->format) {
     case Format_BGR30:
     case Format_A2BGR30_Premultiplied:
-        return QColor(qConvertA2rgb30ToRgb64<PixelOrderBGR>(reinterpret_cast<const quint32 *>(s)[x]));
+        c = qConvertA2rgb30ToRgb64<PixelOrderBGR>(reinterpret_cast<const quint32 *>(s)[x]);
+        break;
     case Format_RGB30:
     case Format_A2RGB30_Premultiplied:
-        return QColor(qConvertA2rgb30ToRgb64<PixelOrderRGB>(reinterpret_cast<const quint32 *>(s)[x]));
+        c = qConvertA2rgb30ToRgb64<PixelOrderRGB>(reinterpret_cast<const quint32 *>(s)[x]);
+        break;
     default:
-        return QColor(pixel(x, y));
+        c = QRgba64::fromArgb32(pixel(x, y));
+        break;
     }
+    // QColor is always unpremultiplied
+    if (hasAlphaChannel() && qPixelLayouts[d->format].premultiplied)
+        c = c.unpremultiplied();
+    return QColor(c);
 }
 
 /*!
@@ -2421,6 +2429,12 @@ void QImage::setPixelColor(int x, int y, const QColor &color)
         qWarning("QImage::setPixelColor: coordinate (%d,%d) out of range", x, y);
         return;
     }
+    // QColor is always unpremultiplied
+    QRgba64 c = color.rgba64();
+    if (!hasAlphaChannel())
+        c.setAlpha(65535);
+    else if (qPixelLayouts[d->format].premultiplied)
+        c = c.premultiplied();
     // detach is called from within scanLine
     uchar * s = scanLine(y);
     switch (d->format) {
@@ -2430,19 +2444,19 @@ void QImage::setPixelColor(int x, int y, const QColor &color)
         qWarning("QImage::setPixelColor: called on monochrome or indexed format");
         return;
     case Format_BGR30:
-        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderBGR>(color.rgba64()) | 0xc0000000;
+        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderBGR>(c) | 0xc0000000;
         return;
     case Format_A2BGR30_Premultiplied:
-        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderBGR>(color.rgba64());
+        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderBGR>(c);
         return;
     case Format_RGB30:
-        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderRGB>(color.rgba64()) | 0xc0000000;
+        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderRGB>(c) | 0xc0000000;
         return;
     case Format_A2RGB30_Premultiplied:
-        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderRGB>(color.rgba64());
+        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderRGB>(c);
         return;
     default:
-        setPixel(x, y, color.rgba());
+        setPixel(x, y, c.toArgb32());
         return;
     }
 }
