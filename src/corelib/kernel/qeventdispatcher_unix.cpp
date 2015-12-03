@@ -95,6 +95,28 @@ static pollfd make_pollfd(int fd, short events)
     return pfd;
 }
 
+QThreadPipe::QThreadPipe()
+{
+    fds[0] = -1;
+    fds[1] = -1;
+#if defined(Q_OS_VXWORKS)
+    name[0] = '\0';
+#endif
+}
+
+QThreadPipe::~QThreadPipe()
+{
+    if (fds[0] >= 0)
+        close(fds[0]);
+
+    if (fds[1] >= 0)
+        close(fds[1]);
+
+#if defined(Q_OS_VXWORKS)
+    pipeDevDelete(name, true);
+#endif
+}
+
 #if defined(Q_OS_VXWORKS)
 static void initThreadPipeFD(int fd)
 {
@@ -112,103 +134,110 @@ static void initThreadPipeFD(int fd)
 }
 #endif
 
-QEventDispatcherUNIXPrivate::QEventDispatcherUNIXPrivate()
+bool QThreadPipe::init()
 {
-    bool pipefail = false;
-
-    // initialize the common parts of the event loop
 #if defined(Q_OS_NACL)
    // do nothing.
 #elif defined(Q_OS_VXWORKS)
-    char name[20];
     qsnprintf(name, sizeof(name), "/pipe/qt_%08x", int(taskIdSelf()));
 
     // make sure there is no pipe with this name
     pipeDevDelete(name, true);
+
     // create the pipe
     if (pipeDevCreate(name, 128 /*maxMsg*/, 1 /*maxLength*/) != OK) {
-        perror("QEventDispatcherUNIXPrivate(): Unable to create thread pipe device");
-        pipefail = true;
-    } else {
-        if ((thread_pipe[0] = open(name, O_RDWR, 0)) < 0) {
-            perror("QEventDispatcherUNIXPrivate(): Unable to create thread pipe");
-            pipefail = true;
-        } else {
-            initThreadPipeFD(thread_pipe[0]);
-            thread_pipe[1] = thread_pipe[0];
-        }
+        perror("QThreadPipe: Unable to create thread pipe device %s", name);
+        return false;
     }
+
+    if ((fds[0] = open(name, O_RDWR, 0)) < 0) {
+        perror("QThreadPipe: Unable to open pipe device %s", name);
+        return false;
+    }
+
+    initThreadPipeFD(fds[0]);
+    fds[1] = fds[0];
 #else
 #  ifndef QT_NO_EVENTFD
-    thread_pipe[0] = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
-    if (thread_pipe[0] != -1)
-        thread_pipe[1] = -1;
-    else // fall through the next "if"
+    if ((fds[0] = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC)) >= 0)
+        return true;
 #  endif
-    if (qt_safe_pipe(thread_pipe, O_NONBLOCK) == -1) {
-        perror("QEventDispatcherUNIXPrivate(): Unable to create thread pipe");
-        pipefail = true;
+    if (qt_safe_pipe(fds, O_NONBLOCK) == -1) {
+        perror("QThreadPipe: Unable to create pipe");
+        return false;
     }
 #endif
 
-    if (Q_UNLIKELY(pipefail))
+    return true;
+}
+
+pollfd QThreadPipe::prepare() const
+{
+    return make_pollfd(fds[0], POLLIN);
+}
+
+void QThreadPipe::wakeUp()
+{
+    if (wakeUps.testAndSetAcquire(0, 1)) {
+#ifndef QT_NO_EVENTFD
+        if (fds[1] == -1) {
+            // eventfd
+            eventfd_t value = 1;
+            int ret;
+            EINTR_LOOP(ret, eventfd_write(fds[0], value));
+            return;
+        }
+#endif
+        char c = 0;
+        qt_safe_write(fds[1], &c, 1);
+    }
+}
+
+int QThreadPipe::check(const pollfd &pfd)
+{
+    Q_ASSERT(pfd.fd == fds[0]);
+
+    char c[16];
+    const int readyread = pfd.revents & POLLIN;
+
+    if (readyread) {
+        // consume the data on the thread pipe so that
+        // poll doesn't immediately return next time
+#if defined(Q_OS_VXWORKS)
+        ::read(fds[0], c, sizeof(c));
+        ::ioctl(fds[0], FIOFLUSH, 0);
+#else
+#  ifndef QT_NO_EVENTFD
+        if (fds[1] == -1) {
+            // eventfd
+            eventfd_t value;
+            eventfd_read(fds[0], &value);
+        } else
+#  endif
+        {
+            while (::read(fds[0], c, sizeof(c)) > 0) {}
+        }
+#endif
+
+        if (!wakeUps.testAndSetRelease(1, 0)) {
+            // hopefully, this is dead code
+            qWarning("QThreadPipe: internal error, wakeUps.testAndSetRelease(1, 0) failed!");
+        }
+    }
+
+    return readyread;
+}
+
+QEventDispatcherUNIXPrivate::QEventDispatcherUNIXPrivate()
+{
+    if (Q_UNLIKELY(threadPipe.init() == false))
         qFatal("QEventDispatcherUNIXPrivate(): Can not continue without a thread pipe");
 }
 
 QEventDispatcherUNIXPrivate::~QEventDispatcherUNIXPrivate()
 {
-#if defined(Q_OS_NACL)
-   // do nothing.
-#elif defined(Q_OS_VXWORKS)
-    close(thread_pipe[0]);
-
-    char name[20];
-    qsnprintf(name, sizeof(name), "/pipe/qt_%08x", int(taskIdSelf()));
-
-    pipeDevDelete(name, true);
-#else
-    // cleanup the common parts of the event loop
-    close(thread_pipe[0]);
-    if (thread_pipe[1] != -1)
-        close(thread_pipe[1]);
-#endif
-
     // cleanup timers
     qDeleteAll(timerList);
-}
-
-int QEventDispatcherUNIXPrivate::processThreadWakeUp(const pollfd &pfd)
-{
-    Q_ASSERT(pfd.fd == thread_pipe[0]);
-
-    if (pfd.revents & POLLIN) {
-        // some other thread woke us up... consume the data on the thread pipe so that
-        // select doesn't immediately return next time
-#if defined(Q_OS_VXWORKS)
-        char c[16];
-        ::read(thread_pipe[0], c, sizeof(c));
-        ::ioctl(thread_pipe[0], FIOFLUSH, 0);
-#else
-#  ifndef QT_NO_EVENTFD
-        if (thread_pipe[1] == -1) {
-            // eventfd
-            eventfd_t value;
-            eventfd_read(thread_pipe[0], &value);
-        } else
-#  endif
-        {
-            char c[16];
-            while (::read(thread_pipe[0], c, sizeof(c)) > 0) {
-            }
-        }
-#endif
-        if (!wakeUps.testAndSetRelease(1, 0)) {
-            // hopefully, this is dead code
-            qWarning("QEventDispatcherUNIX: internal error, wakeUps.testAndSetRelease(1, 0) failed!");
-        }
-        return 1;
-    }
-    return 0;
 }
 
 void QEventDispatcherUNIXPrivate::setSocketNotifierPending(QSocketNotifier *notifier)
@@ -465,7 +494,7 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
             d->pollfds.append(make_pollfd(it.key(), it.value().events()));
 
     // This must be last, as it's popped off the end below
-    d->pollfds.append(make_pollfd(d->thread_pipe[0], POLLIN));
+    d->pollfds.append(d->threadPipe.prepare());
 
     int nevents = 0;
 
@@ -476,7 +505,7 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
     case 0:
         break;
     default:
-        nevents += d->processThreadWakeUp(d->pollfds.takeLast());
+        nevents += d->threadPipe.check(d->pollfds.takeLast());
         if (include_notifiers)
             nevents += d->activateSocketNotifiers();
         break;
@@ -511,19 +540,7 @@ int QEventDispatcherUNIX::remainingTime(int timerId)
 void QEventDispatcherUNIX::wakeUp()
 {
     Q_D(QEventDispatcherUNIX);
-    if (d->wakeUps.testAndSetAcquire(0, 1)) {
-#ifndef QT_NO_EVENTFD
-        if (d->thread_pipe[1] == -1) {
-            // eventfd
-            eventfd_t value = 1;
-            int ret;
-            EINTR_LOOP(ret, eventfd_write(d->thread_pipe[0], value));
-            return;
-        }
-#endif
-        char c = 0;
-        qt_safe_write( d->thread_pipe[1], &c, 1 );
-    }
+    d->threadPipe.wakeUp();
 }
 
 void QEventDispatcherUNIX::interrupt()

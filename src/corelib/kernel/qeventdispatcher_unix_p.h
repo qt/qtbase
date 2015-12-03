@@ -75,6 +75,27 @@ struct Q_CORE_EXPORT QSocketNotifierSetUNIX Q_DECL_FINAL
 
 Q_DECLARE_TYPEINFO(QSocketNotifierSetUNIX, Q_PRIMITIVE_TYPE);
 
+struct QThreadPipe
+{
+    QThreadPipe();
+    ~QThreadPipe();
+
+    bool init();
+    pollfd prepare() const;
+
+    void wakeUp();
+    int check(const pollfd &pfd);
+
+    // note for eventfd(7) support:
+    // if fds[1] is -1, then eventfd(7) is in use and is stored in fds[0]
+    int fds[2];
+    QAtomicInt wakeUps;
+
+#if defined(Q_OS_VXWORKS)
+    static const int len_name = 20;
+    char name[len_name];
+#endif
+};
 
 class Q_CORE_EXPORT QEventDispatcherUNIX : public QAbstractEventDispatcher
 {
@@ -114,26 +135,19 @@ public:
     QEventDispatcherUNIXPrivate();
     ~QEventDispatcherUNIXPrivate();
 
-    int processThreadWakeUp(const pollfd &pfd);
-
     int activateTimers();
 
     void markPendingSocketNotifiers();
     int activateSocketNotifiers();
     void setSocketNotifierPending(QSocketNotifier *notifier);
 
-    // note for eventfd(7) support:
-    // if thread_pipe[1] is -1, then eventfd(7) is in use and is stored in thread_pipe[0]
-    int thread_pipe[2];
-
+    QThreadPipe threadPipe;
     QVector<pollfd> pollfds;
 
     QHash<int, QSocketNotifierSetUNIX> socketNotifiers;
     QVector<QSocketNotifier *> pendingNotifiers;
 
     QTimerInfoList timerList;
-
-    QAtomicInt wakeUps;
     QAtomicInt interrupt; // bool
 };
 
