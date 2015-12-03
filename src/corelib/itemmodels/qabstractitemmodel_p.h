@@ -126,9 +126,9 @@ public:
     }
 
     struct Change {
-        Change() : first(-1), last(-1) {}
-        Change(const Change &c) : parent(c.parent), first(c.first), last(c.last), needsAdjust(c.needsAdjust) {}
-        Change(const QModelIndex &p, int f, int l) : parent(p), first(f), last(l), needsAdjust(false) {}
+        Q_DECL_CONSTEXPR Change() : parent(), first(-1), last(-1), needsAdjust(false) {}
+        Q_DECL_CONSTEXPR Change(const QModelIndex &p, int f, int l) : parent(p), first(f), last(l), needsAdjust(false) {}
+
         QModelIndex parent;
         int first, last;
 
@@ -147,7 +147,7 @@ public:
         // rowsMoved signal.
         bool needsAdjust;
 
-        bool isValid() { return first >= 0 && last >= 0; }
+        Q_DECL_CONSTEXPR bool isValid() const { return first >= 0 && last >= 0; }
     };
     QStack<Change> changes;
 
