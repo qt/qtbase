@@ -87,8 +87,6 @@ static void initThreadPipeFD(int fd)
 
 QEventDispatcherUNIXPrivate::QEventDispatcherUNIXPrivate()
 {
-    extern Qt::HANDLE qt_application_thread_id;
-    mainThread = (QThread::currentThreadId() == qt_application_thread_id);
     bool pipefail = false;
 
     // initialize the common parts of the event loop

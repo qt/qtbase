@@ -137,8 +137,6 @@ public:
     virtual int initThreadWakeUp() Q_DECL_FINAL;
     virtual int processThreadWakeUp(int nsel) Q_DECL_FINAL;
 
-    bool mainThread;
-
     // note for eventfd(7) support:
     // if thread_pipe[1] is -1, then eventfd(7) is in use and is stored in thread_pipe[0]
     int thread_pipe[2];
