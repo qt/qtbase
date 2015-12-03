@@ -161,7 +161,6 @@
 #include <QResizeEvent>
 #include <QScrollBar>
 #include <QtAlgorithms>
-#include <QMutableVectorIterator>
 #include <QPainter>
 #include <QFontMetrics>
 #include <QStyleOption>
@@ -480,17 +479,16 @@ QVector<QRect> MinOverlapPlacer::getCandidatePlacements(const QSize &size, const
 */
 QVector<QRect> MinOverlapPlacer::findNonInsiders(const QRect &domain, QVector<QRect> &source)
 {
-    QVector<QRect> result;
-    result.reserve(source.size());
+    const auto containedInDomain =
+            [domain](const QRect &srcRect) { return domain.contains(srcRect); };
 
-    QMutableVectorIterator<QRect> it(source);
-    while (it.hasNext()) {
-        const QRect srcRect = it.next();
-        if (!domain.contains(srcRect)) {
-            result << srcRect;
-            it.remove();
-        }
-    }
+    const auto firstOut = std::stable_partition(source.begin(), source.end(), containedInDomain);
+
+    QVector<QRect> result;
+    result.reserve(source.end() - firstOut);
+    std::copy(firstOut, source.end(), std::back_inserter(result));
+
+    source.erase(firstOut, source.end());
 
     return result;
 }
