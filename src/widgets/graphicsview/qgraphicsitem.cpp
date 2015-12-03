@@ -1373,12 +1373,9 @@ void QGraphicsItemCache::purge()
 {
     QPixmapCache::remove(key);
     key = QPixmapCache::Key();
-    QMutableHashIterator<QPaintDevice *, DeviceData> it(deviceData);
-    while (it.hasNext()) {
-        DeviceData &data = it.next().value();
+    const auto &constDeviceData = deviceData; // avoid detach
+    for (const auto &data : constDeviceData)
         QPixmapCache::remove(data.key);
-        data.cacheIndent = QPoint();
-    }
     deviceData.clear();
     allExposed = true;
     exposed.clear();
