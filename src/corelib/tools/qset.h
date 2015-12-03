@@ -98,6 +98,7 @@ public:
         typedef QHash<T, QHashDummyValue> Hash;
         typename Hash::iterator i;
         friend class const_iterator;
+        friend class QSet<T>;
 
     public:
         typedef std::bidirectional_iterator_tag iterator_category;
@@ -183,9 +184,11 @@ public:
     const_reverse_iterator crend() const Q_DECL_NOTHROW { return const_reverse_iterator(begin()); }
 
     iterator erase(iterator i)
+    { return erase(m2c(i)); }
+    iterator erase(const_iterator i)
     {
         Q_ASSERT_X(isValidIterator(i), "QSet::erase", "The specified const_iterator argument 'i' is invalid");
-        return q_hash.erase(reinterpret_cast<typename Hash::iterator &>(i));
+        return q_hash.erase(reinterpret_cast<typename Hash::const_iterator &>(i));
     }
 
     // more Qt
@@ -240,9 +243,17 @@ public:
 
 private:
     Hash q_hash;
+
+    static const_iterator m2c(iterator it) Q_DECL_NOTHROW
+    { return const_iterator(typename Hash::const_iterator(it.i.i)); }
+
     bool isValidIterator(const iterator &i) const
     {
         return q_hash.isValidIterator(reinterpret_cast<const typename Hash::iterator&>(i));
+    }
+    bool isValidIterator(const const_iterator &i) const Q_DECL_NOTHROW
+    {
+        return q_hash.isValidIterator(reinterpret_cast<const typename Hash::const_iterator&>(i));
     }
 };
 

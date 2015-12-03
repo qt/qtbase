@@ -297,6 +297,7 @@ public:
     {
         friend class const_iterator;
         friend class QHash<Key, T>;
+        friend class QSet<Key>;
         QHashData::Node *i;
 
     public:
@@ -353,6 +354,7 @@ public:
     class const_iterator
     {
         friend class iterator;
+        friend class QHash<Key, T>;
         friend class QSet<Key>;
         QHashData::Node *i;
 
@@ -450,7 +452,8 @@ public:
     inline key_iterator keyBegin() const { return key_iterator(begin()); }
     inline key_iterator keyEnd() const { return key_iterator(end()); }
 
-    iterator erase(iterator it);
+    iterator erase(iterator it) { return erase(const_iterator(it.i)); }
+    iterator erase(const_iterator it);
 
     // more Qt
     typedef iterator Iterator;
@@ -487,15 +490,18 @@ private:
 
     static void duplicateNode(QHashData::Node *originalNode, void *newNode);
 
-    bool isValidIterator(const iterator &it) const
+    bool isValidIterator(const iterator &it) const Q_DECL_NOTHROW
+    { return isValidNode(it.i); }
+    bool isValidIterator(const const_iterator &it) const Q_DECL_NOTHROW
+    { return isValidNode(it.i); }
+    bool isValidNode(QHashData::Node *node) const Q_DECL_NOTHROW
     {
 #if defined(QT_DEBUG) && !defined(Q_HASH_NO_ITERATOR_DEBUG)
-        QHashData::Node *node = it.i;
         while (node->next)
             node = node->next;
         return (static_cast<void *>(node) == d);
 #else
-        Q_UNUSED(it);
+        Q_UNUSED(node);
         return true;
 #endif
     }
@@ -807,30 +813,31 @@ Q_OUTOFLINE_TEMPLATE T QHash<Key, T>::take(const Key &akey)
 }
 
 template <class Key, class T>
-Q_OUTOFLINE_TEMPLATE typename QHash<Key, T>::iterator QHash<Key, T>::erase(iterator it)
+Q_OUTOFLINE_TEMPLATE typename QHash<Key, T>::iterator QHash<Key, T>::erase(const_iterator it)
 {
     Q_ASSERT_X(isValidIterator(it), "QHash::erase", "The specified iterator argument 'it' is invalid");
 
-    if (it == iterator(e))
-        return it;
+    if (it == const_iterator(e))
+        return iterator(it.i);
 
     if (d->ref.isShared()) {
+        // save 'it' across the detach:
         int bucketNum = (it.i->h % d->numBuckets);
-        iterator bucketIterator(*(d->buckets + bucketNum));
+        const_iterator bucketIterator(*(d->buckets + bucketNum));
         int stepsFromBucketStartToIte = 0;
         while (bucketIterator != it) {
             ++stepsFromBucketStartToIte;
             ++bucketIterator;
         }
         detach();
-        it = iterator(*(d->buckets + bucketNum));
+        it = const_iterator(*(d->buckets + bucketNum));
         while (stepsFromBucketStartToIte > 0) {
             --stepsFromBucketStartToIte;
             ++it;
         }
     }
 
-    iterator ret = it;
+    iterator ret(it.i);
     ++ret;
 
     Node *node = concrete(it.i);

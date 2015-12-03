@@ -1632,7 +1632,8 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     \sa keyBegin()
 */
 
-/*! \fn QHash::iterator QHash::erase(iterator pos)
+/*! \fn QHash::iterator QHash::erase(const_iterator pos)
+    \since 5.7
 
     Removes the (key, value) pair associated with the iterator \a pos
     from the hash, and returns an iterator to the next item in the
@@ -1646,6 +1647,10 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     \snippet code/src_corelib_tools_qhash.cpp 15
 
     \sa remove(), take(), find()
+*/
+
+/*! \fn QHash::iterator QHash::erase(iterator pos)
+    \overload
 */
 
 /*! \fn QHash::iterator QHash::find(const Key &key)

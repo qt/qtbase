@@ -257,8 +257,8 @@
 */
 
 /*!
-    \fn QSet::iterator QSet::erase(iterator pos)
-    \since 4.2
+    \fn QSet::iterator QSet::erase(const_iterator pos)
+    \since 5.7
 
     Removes the item at the iterator position \a pos from the set, and
     returns an iterator positioned at the next item in the set.
@@ -268,6 +268,12 @@
     while iterating, and won't affect the order of items in the set.
 
     \sa remove(), find()
+*/
+
+/*!
+    \fn QSet::iterator QSet::erase(iterator pos)
+    \since 4.2
+    \overload
 */
 
 /*! \fn QSet::const_iterator QSet::find(const T &value) const
