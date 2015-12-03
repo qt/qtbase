@@ -512,7 +512,7 @@ QVector<QRect> MinOverlapPlacer::findMaxOverlappers(const QRect &domain, const Q
         if (overlap >= maxOverlap || maxOverlap == -1) {
             if (overlap > maxOverlap) {
                 maxOverlap = overlap;
-                result.clear();
+                result.resize(0);
             }
             result << srcRect;
         }
