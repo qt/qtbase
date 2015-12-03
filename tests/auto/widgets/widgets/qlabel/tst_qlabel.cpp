@@ -47,13 +47,12 @@
 
 class Widget : public QWidget
 {
+    Q_OBJECT
 public:
-    Widget() { }
-
     QList<QEvent::Type> events;
 
 protected:
-    bool event(QEvent *ev) {
+    bool event(QEvent *ev) Q_DECL_OVERRIDE {
         events.append(ev->type());
         return QWidget::event(ev);
     }
@@ -62,19 +61,14 @@ protected:
 
 class tst_QLabel : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 
-public:
-    tst_QLabel();
-    virtual ~tst_QLabel();
-
-
-public slots:
+private Q_SLOTS:
     void initTestCase();
     void cleanupTestCase();
     void init();
     void cleanup();
-private slots:
+
     void getSetCheck();
     void setText_data();
     void setText();
@@ -143,15 +137,6 @@ void tst_QLabel::getSetCheck()
     delete var3;
 }
 
-
-tst_QLabel::tst_QLabel(): test_box(0)
-{
-}
-
-tst_QLabel::~tst_QLabel()
-{
-}
-
 void tst_QLabel::initTestCase()
 {
     // Create the test class
@@ -164,8 +149,7 @@ void tst_QLabel::cleanupTestCase()
 {
     delete testWidget;
     testWidget = 0;
-    if (test_box)
-        delete test_box;
+    delete test_box;
 }
 
 void tst_QLabel::init()

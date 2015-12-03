@@ -975,9 +975,23 @@ ol,ul {
   margin-top:0.75em;
   margin-left:20px
 }
-.mainContent ol>li {
-  list-style-type:decimal
+
+.context ol > li {
+  margin-left: 20px
 }
+
+.mainContent ol>li {
+  list-style-type: decimal;
+}
+
+.mainContent ol.a >li {
+  list-style-type: lower-alpha;
+}
+
+.mainContent ol.A >li {
+  list-style-type: upper-alpha;
+}
+
 blockquote,q {
   quotes:none
 }

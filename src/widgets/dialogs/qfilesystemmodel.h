@@ -133,7 +133,7 @@ public:
     inline QString fileName(const QModelIndex &index) const;
     inline QIcon fileIcon(const QModelIndex &index) const;
     QFile::Permissions permissions(const QModelIndex &index) const;
-    inline QFileInfo fileInfo(const QModelIndex &index) const;
+    QFileInfo fileInfo(const QModelIndex &index) const;
     bool remove(const QModelIndex &index);
 
 protected:
@@ -147,7 +147,7 @@ private:
 
     Q_PRIVATE_SLOT(d_func(), void _q_directoryChanged(const QString &directory, const QStringList &list))
     Q_PRIVATE_SLOT(d_func(), void _q_performDelayedSort())
-    Q_PRIVATE_SLOT(d_func(), void _q_fileSystemChanged(const QString &path, const QList<QPair<QString, QFileInfo> > &))
+    Q_PRIVATE_SLOT(d_func(), void _q_fileSystemChanged(const QString &path, const QVector<QPair<QString, QFileInfo> > &))
     Q_PRIVATE_SLOT(d_func(), void _q_resolvedName(const QString &fileName, const QString &resolvedName))
 
     friend class QFileDialogPrivate;
@@ -157,8 +157,6 @@ inline QString QFileSystemModel::fileName(const QModelIndex &aindex) const
 { return aindex.data(Qt::DisplayRole).toString(); }
 inline QIcon QFileSystemModel::fileIcon(const QModelIndex &aindex) const
 { return qvariant_cast<QIcon>(aindex.data(Qt::DecorationRole)); }
-inline QFileInfo QFileSystemModel::fileInfo(const QModelIndex &aindex) const
-{ return QFileInfo(filePath(aindex)); }
 
 #endif // QT_NO_FILESYSTEMMODEL
 

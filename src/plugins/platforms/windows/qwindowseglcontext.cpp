@@ -118,11 +118,11 @@ void *QWindowsLibEGL::resolve(const char *name)
 
 bool QWindowsLibEGL::init()
 {
-#ifdef QT_DEBUG
-    const char dllName[] = "libEGLd.dll";
-#else
-    const char dllName[] = "libEGL.dll";
+    const char dllName[] = QT_STRINGIFY(LIBEGL_NAME)
+#if defined(QT_DEBUG) && !defined(Q_OS_WINCE)
+    "d"
 #endif
+    "";
 
     qCDebug(lcQpaGl) << "Qt: Using EGL from" << dllName;
 
@@ -178,11 +178,12 @@ void *QWindowsLibGLESv2::resolve(const char *name)
 
 bool QWindowsLibGLESv2::init()
 {
-#ifdef QT_DEBUG
-    const char dllName[] = "libGLESv2d.dll";
-#else
-    const char dllName[] = "libGLESv2.dll";
+
+    const char dllName[] = QT_STRINGIFY(LIBGLESV2_NAME)
+#if defined(QT_DEBUG) && !defined(Q_OS_WINCE)
+    "d"
 #endif
+    "";
 
     qCDebug(lcQpaGl) << "Qt: Using OpenGL ES 2.0 from" << dllName;
 #if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)

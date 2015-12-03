@@ -546,7 +546,7 @@ QPlatformTheme *QKdeTheme::createKdeTheme()
 
     kdeDirs.removeDuplicates();
     if (kdeDirs.isEmpty()) {
-        qWarning("%s: Unable to determine KDE dirs", Q_FUNC_INFO);
+        qWarning("Unable to determine KDE dirs");
         return 0;
     }
 

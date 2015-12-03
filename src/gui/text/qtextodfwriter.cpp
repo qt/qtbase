@@ -279,6 +279,12 @@ void QTextOdfWriter::writeBlock(QXmlStreamWriter &writer, const QTextBlock &bloc
     writer.writeAttribute(textNS, QString::fromLatin1("style-name"), QString::fromLatin1("p%1")
         .arg(block.blockFormatIndex()));
     for (QTextBlock::Iterator frag = block.begin(); !frag.atEnd(); ++frag) {
+        bool isHyperlink = frag.fragment().charFormat().hasProperty(QTextFormat::AnchorHref);
+        if (isHyperlink) {
+            QString value = frag.fragment().charFormat().property(QTextFormat::AnchorHref).toString();
+            writer.writeStartElement(textNS, QString::fromLatin1("a"));
+            writer.writeAttribute(xlinkNS, QString::fromLatin1("href"), value);
+        }
         writer.writeCharacters(QString()); // Trick to make sure that the span gets no linefeed in front of it.
         writer.writeStartElement(textNS, QString::fromLatin1("span"));
 
@@ -335,6 +341,9 @@ void QTextOdfWriter::writeBlock(QXmlStreamWriter &writer, const QTextBlock &bloc
 
         writer.writeCharacters(fragmentText.mid(exportedIndex));
         writer.writeEndElement(); // span
+        writer.writeCharacters(QString()); // Trick to make sure that the span gets no linefeed behind it.
+        if (isHyperlink)
+            writer.writeEndElement(); // a
     }
     writer.writeCharacters(QString()); // Trick to make sure that the span gets no linefeed behind it.
     writer.writeEndElement(); // p

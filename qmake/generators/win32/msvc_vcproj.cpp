@@ -532,31 +532,13 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
 
                     // We assume project filename is [QMAKE_PROJECT_NAME].vcproj
                     QString vcproj = tmp_vcproj.project->first("QMAKE_PROJECT_NAME") + project->first("VCPROJ_EXTENSION");
-                    QString vcprojDir = qmake_getpwd();
+                    QString vcprojDir = Option::output_dir;
 
                     // If file doesn't exsist, then maybe the users configuration
                     // doesn't allow it to be created. Skip to next...
                     if (!exists(vcprojDir + Option::dir_sep + vcproj)) {
-                        // Try to find the directory which fits relative
-                        // to the output path, which represents the shadow
-                        // path in case we are shadow building
-                        QStringList list = fi.path().split(QLatin1Char('/'));
-                        QString tmpDir = QFileInfo(Option::output).path() + Option::dir_sep;
-                        bool found = false;
-                        for (int i = list.size() - 1; i >= 0; --i) {
-                            QString curr;
-                            for (int j = i; j < list.size(); ++j)
-                                curr += list.at(j) + Option::dir_sep;
-                            if (exists(tmpDir + curr + vcproj)) {
-                                vcprojDir = QDir::cleanPath(tmpDir + curr);
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            warn_msg(WarnLogic, "Ignored (not found) '%s'", QString(vcprojDir + Option::dir_sep + vcproj).toLatin1().constData());
-                            goto nextfile; // # Dirty!
-                        }
+                        warn_msg(WarnLogic, "Ignored (not found) '%s'", QString(vcprojDir + Option::dir_sep + vcproj).toLatin1().constData());
+                        goto nextfile; // # Dirty!
                     }
 
                     VcsolutionDepend *newDep = new VcsolutionDepend;

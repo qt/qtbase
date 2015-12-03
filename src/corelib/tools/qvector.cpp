@@ -384,6 +384,9 @@
     initialized with a \l{default-constructed value}. If \a size is less
     than the current size, elements are removed from the end.
 
+    Since Qt 5.6, resize() doesn't shrink the capacity anymore.
+    To shed excess capacity, use squeeze().
+
     \sa size()
 */
 

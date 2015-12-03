@@ -236,7 +236,7 @@ void QWindowsClipboard::propagateClipboardMessage(UINT message, WPARAM wParam, L
     // suspended by a shell prompt 'Select' or debugger).
     if (QWindowsContext::user32dll.isHungAppWindow
         && QWindowsContext::user32dll.isHungAppWindow(m_nextClipboardViewer)) {
-        qWarning("%s: Cowardly refusing to send clipboard message to hung application...", Q_FUNC_INFO);
+        qWarning("Cowardly refusing to send clipboard message to hung application...");
         return;
     }
     // Do not block if the process is being debugged, specifically, if it is

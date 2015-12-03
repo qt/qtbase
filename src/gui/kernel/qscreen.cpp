@@ -680,7 +680,7 @@ QPixmap QScreen::grabWindow(WId window, int x, int y, int width, int height)
 {
     const QPlatformScreen *platformScreen = handle();
     if (!platformScreen) {
-        qWarning("%s invoked with handle==0", Q_FUNC_INFO);
+        qWarning("invoked with handle==0");
         return QPixmap();
     }
     return platformScreen->grabWindow(window, x, y, width, height);

@@ -406,9 +406,6 @@ void QVector<T>::resize(int asize)
     if (asize > oldAlloc) { // there is not enough space
         newAlloc = asize;
         opt = QArrayData::Grow;
-    } else if (!d->capacityReserved && asize < d->size && asize < (oldAlloc >> 1)) { // we want to shrink
-        newAlloc = asize;
-        opt = QArrayData::Grow;
     } else {
         newAlloc = oldAlloc;
     }

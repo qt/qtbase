@@ -2472,12 +2472,12 @@ bool QWindowsVistaStylePrivate::initTreeViewTheming()
 
     m_treeViewHelper = createTreeViewHelperWindow();
     if (Q_UNLIKELY(!m_treeViewHelper)) {
-        qWarning("%s: Unable to create the treeview helper window.", Q_FUNC_INFO);
+        qWarning("Unable to create the treeview helper window.");
         return false;
     }
     const HRESULT hr = QWindowsXPStylePrivate::pSetWindowTheme(m_treeViewHelper, L"explorer", NULL);
     if (Q_UNLIKELY(hr != S_OK)) {
-        qErrnoWarning("%s: SetWindowTheme() failed.", Q_FUNC_INFO);
+        qErrnoWarning("SetWindowTheme() failed.");
         return false;
     }
     return QWindowsXPStylePrivate::createTheme(QWindowsXPStylePrivate::TreeViewTheme, m_treeViewHelper);

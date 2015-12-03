@@ -166,7 +166,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
                 ns->sin6_addr.s6_addr[i] = ipv6Address[i];
             }
 #else
-            qWarning() << Q_FUNC_INFO << "IPv6 addresses for nameservers is currently not supported";
+            qWarning("IPv6 addresses for nameservers is currently not supported");
             reply->error = QDnsLookup::ResolverError;
             reply->errorString = tr("IPv6 addresses for nameservers is currently not supported");
             return;

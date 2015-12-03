@@ -104,7 +104,6 @@ void QWidgetBackingStore::qt_flush(QWidget *widget, const QRegion &region, QBack
 
 #ifndef QT_NO_OPENGL
     if (widgetTextures) {
-        Q_ASSERT(!widgetTextures->isEmpty());
         qt_window_private(tlw->windowHandle())->compositing = true;
         widget->window()->d_func()->sendComposeStatus(widget->window(), false);
         // A window may have alpha even when the app did not request
@@ -955,6 +954,8 @@ static void findAllTextureWidgetsRecursively(QWidget *tlw, QWidget *widget)
     }
 }
 
+Q_GLOBAL_STATIC(QPlatformTextureList, qt_dummy_platformTextureList)
+
 static QPlatformTextureList *widgetTexturesFor(QWidget *tlw, QWidget *widget)
 {
     foreach (QPlatformTextureList *tl, QWidgetPrivate::get(tlw)->topData()->widgetTextures) {
@@ -965,6 +966,20 @@ static QPlatformTextureList *widgetTexturesFor(QWidget *tlw, QWidget *widget)
                 return tl;
         }
     }
+
+    if (QWidgetPrivate::get(tlw)->textureChildSeen) {
+        // No render-to-texture widgets in the (sub-)tree due to hidden or native
+        // children. Returning null results in using the normal backingstore flush path
+        // without OpenGL-based compositing. This is very desirable normally. However,
+        // some platforms cannot handle switching between the non-GL and GL paths for
+        // their windows so it has to be opt-in.
+        static bool switchableWidgetComposition =
+            QGuiApplicationPrivate::instance()->platformIntegration()
+                ->hasCapability(QPlatformIntegration::SwitchableWidgetComposition);
+        if (!switchableWidgetComposition)
+            return qt_dummy_platformTextureList();
+    }
+
     return 0;
 }
 

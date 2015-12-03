@@ -134,7 +134,7 @@ bool QGenericUnixServices::openUrl(const QUrl &url)
         return openDocument(url);
 
     if (m_webBrowser.isEmpty() && !detectWebBrowser(desktopEnvironment(), true, &m_webBrowser)) {
-        qWarning("%s: Unable to detect a web browser to launch '%s'", Q_FUNC_INFO, qPrintable(url.toString()));
+        qWarning("Unable to detect a web browser to launch '%s'", qPrintable(url.toString()));
         return false;
     }
     return launch(m_webBrowser, url);
@@ -143,7 +143,7 @@ bool QGenericUnixServices::openUrl(const QUrl &url)
 bool QGenericUnixServices::openDocument(const QUrl &url)
 {
     if (m_documentLauncher.isEmpty() && !detectWebBrowser(desktopEnvironment(), false, &m_documentLauncher)) {
-        qWarning("%s: Unable to detect a launcher for '%s'", Q_FUNC_INFO, qPrintable(url.toString()));
+        qWarning("Unable to detect a launcher for '%s'", qPrintable(url.toString()));
         return false;
     }
     return launch(m_documentLauncher, url);

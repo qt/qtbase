@@ -285,6 +285,8 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
         return true;
     case AllGLFunctionsQueryable:
         return true;
+    case SwitchableWidgetComposition:
+        return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
     }
@@ -341,11 +343,18 @@ QWindowsWindow *QWindowsIntegration::createPlatformWindowHelper(QWindow *window,
 QWindowsStaticOpenGLContext *QWindowsStaticOpenGLContext::doCreate()
 {
 #if defined(QT_OPENGL_DYNAMIC)
+    const QWindowsOpenGLTester::Renderers supportedRenderers = QWindowsOpenGLTester::supportedRenderers();
+
     QWindowsOpenGLTester::Renderer requestedRenderer = QWindowsOpenGLTester::requestedRenderer();
     switch (requestedRenderer) {
     case QWindowsOpenGLTester::DesktopGl:
-        if (QWindowsStaticOpenGLContext *glCtx = QOpenGLStaticContext::create())
+        if (QWindowsStaticOpenGLContext *glCtx = QOpenGLStaticContext::create()) {
+            if ((supportedRenderers & QWindowsOpenGLTester::DisableRotationFlag)
+                && !QWindowsScreen::setOrientationPreference(Qt::LandscapeOrientation)) {
+                qCWarning(lcQpaGl, "Unable to disable rotation.");
+            }
             return glCtx;
+        }
         qCWarning(lcQpaGl, "System OpenGL failed. Falling back to Software OpenGL.");
         return QOpenGLStaticContext::create(true);
     // If ANGLE is requested, use it, don't try anything else.
@@ -366,10 +375,14 @@ QWindowsStaticOpenGLContext *QWindowsStaticOpenGLContext::doCreate()
         break;
     }
 
-    const QWindowsOpenGLTester::Renderers supportedRenderers = QWindowsOpenGLTester::supportedRenderers();
     if (supportedRenderers & QWindowsOpenGLTester::DesktopGl) {
-        if (QWindowsStaticOpenGLContext *glCtx = QOpenGLStaticContext::create())
+        if (QWindowsStaticOpenGLContext *glCtx = QOpenGLStaticContext::create()) {
+            if ((supportedRenderers & QWindowsOpenGLTester::DisableRotationFlag)
+                && !QWindowsScreen::setOrientationPreference(Qt::LandscapeOrientation)) {
+                qCWarning(lcQpaGl, "Unable to disable rotation.");
+            }
             return glCtx;
+        }
     }
     if (QWindowsOpenGLTester::Renderers glesRenderers = supportedRenderers & QWindowsOpenGLTester::GlesMask) {
         if (QWindowsEGLStaticContext *eglCtx = QWindowsEGLStaticContext::create(glesRenderers))

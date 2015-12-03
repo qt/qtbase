@@ -13,7 +13,6 @@ wince: DEFINES *= QT_LIBINFIX=L"\"\\\"$${QT_LIBINFIX}\\\"\""
 DEFINES *= QT_NO_CAST_FROM_ASCII
 
 contains(QT_CONFIG, directwrite) {
-    LIBS *= -ldwrite
     SOURCES += $$PWD/qwindowsfontenginedirectwrite.cpp
     HEADERS += $$PWD/qwindowsfontenginedirectwrite.h
 } else {
@@ -132,3 +131,6 @@ contains(QT_CONFIG, freetype) {
 }
 
 contains(QT_CONFIG, accessibility):include($$PWD/accessible/accessible.pri)
+
+DEFINES *= LIBEGL_NAME=$${LIBEGL_NAME}
+DEFINES *= LIBGLESV2_NAME=$${LIBGLESV2_NAME}

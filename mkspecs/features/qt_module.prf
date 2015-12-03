@@ -93,7 +93,7 @@ INCLUDEPATH *= $$eval(QT.$${MODULE}.includes) $$eval(QT.$${MODULE}_private.inclu
     contains(QT_CONFIG, build_all):CONFIG += build_all
 }
 
-linux*:QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
+QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 
 QT += $$QT_FOR_PRIVATE
 unset(QT_FOR_PRIVATE)

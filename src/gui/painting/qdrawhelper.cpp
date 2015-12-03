@@ -3885,7 +3885,7 @@ void blend_color_generic_rgb64(int count, const QSpan *spans, void *userData)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
     Operator op = getOperator(data, spans, count);
     if (!op.funcSolid64) {
-        qDebug() << Q_FUNC_INFO << "unsupported 64bit blend attempted";
+        qDebug("unsupported 64bit blend attempted");
         return blend_color_generic(count, spans, userData);
     }
 
@@ -4180,7 +4180,7 @@ static void blend_untransformed_generic_rgb64(int count, const QSpan *spans, voi
 
     Operator op = getOperator(data, spans, count);
     if (!op.func64) {
-        qWarning() << Q_FUNC_INFO << "Unsupported blend";
+        qWarning("Unsupported blend");
         return blend_untransformed_generic(count, spans, userData);
     }
     QRgba64 buffer[buffer_size];
@@ -6309,7 +6309,7 @@ void qt_memfill16(quint16 *dest, quint16 color, int count)
     qt_memfill_template<quint16>(dest, color, count);
 }
 #endif
-#if !defined(__SSE2__) && (!defined(__ARM_NEON__) || defined(Q_PROCESSOR_ARM_64))
+#if !defined(__SSE2__) && !defined(__ARM_NEON__)
 #  ifdef QT_COMPILER_SUPPORTS_MIPS_DSP
 extern "C" void qt_memfill32_asm_mips_dsp(quint32 *, quint32, int);
 #  endif
@@ -6425,20 +6425,32 @@ void qInitDrawhelperAsm()
 
 #endif // SSE2
 
-#if defined(__ARM_NEON__) && !defined(Q_OS_IOS) && !defined(Q_PROCESSOR_ARM_64)
+#if defined(__ARM_NEON__) && !defined(Q_OS_IOS)
     qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
     qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
     qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
     qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
-    qBlendFunctions[QImage::Format_RGB16][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_rgb16_neon;
-    qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB16] = qt_blend_rgb16_on_argb32_neon;
-    qBlendFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_blend_rgb16_on_rgb16_neon;
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
     qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBX8888] = qt_blend_rgb32_on_rgb32_neon;
     qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBX8888] = qt_blend_rgb32_on_rgb32_neon;
     qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_neon;
     qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_neon;
 #endif
+
+    qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = qt_blend_argb32_on_argb32_scanline_neon;
+    qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_neon;
+    qt_functionForMode_C[QPainter::CompositionMode_Plus] = comp_func_Plus_neon;
+
+    extern const uint * QT_FASTCALL qt_fetch_radial_gradient_neon(uint *buffer, const Operator *op, const QSpanData *data,
+                                                                  int y, int x, int length);
+
+    qt_fetch_radial_gradient = qt_fetch_radial_gradient_neon;
+
+#if !defined(Q_PROCESSOR_ARM_64)
+    // The RGB16 helpers are using Arm32 assemblythat has not been ported to AArch64
+    qBlendFunctions[QImage::Format_RGB16][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_rgb16_neon;
+    qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB16] = qt_blend_rgb16_on_argb32_neon;
+    qBlendFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_blend_rgb16_on_rgb16_neon;
 
     qScaleFunctions[QImage::Format_RGB16][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_rgb16_neon;
     qScaleFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_scale_image_rgb16_on_rgb16_neon;
@@ -6448,19 +6460,13 @@ void qInitDrawhelperAsm()
 
     qDrawHelper[QImage::Format_RGB16].alphamapBlit = qt_alphamapblit_quint16_neon;
 
-    qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = qt_blend_argb32_on_argb32_scanline_neon;
-    qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_neon;
-    qt_functionForMode_C[QPainter::CompositionMode_Plus] = comp_func_Plus_neon;
     destFetchProc[QImage::Format_RGB16] = qt_destFetchRGB16_neon;
     destStoreProc[QImage::Format_RGB16] = qt_destStoreRGB16_neon;
 
     qMemRotateFunctions[QImage::Format_RGB16][0] = qt_memrotate90_16_neon;
     qMemRotateFunctions[QImage::Format_RGB16][2] = qt_memrotate270_16_neon;
+#endif
 
-    extern const uint * QT_FASTCALL qt_fetch_radial_gradient_neon(uint *buffer, const Operator *op, const QSpanData *data,
-                                                                  int y, int x, int length);
-
-    qt_fetch_radial_gradient = qt_fetch_radial_gradient_neon;
 #endif
 
 #if defined(Q_PROCESSOR_MIPS_32) && defined(QT_COMPILER_SUPPORTS_MIPS_DSP)

@@ -338,15 +338,15 @@ void QWindowsXPStylePrivate::cleanupHandleMap()
 HTHEME QWindowsXPStylePrivate::createTheme(int theme, HWND hwnd)
 {
     if (Q_UNLIKELY(theme < 0 || theme >= NThemes || !hwnd)) {
-        qWarning("%s: Invalid parameters #%d, %p", Q_FUNC_INFO, theme, hwnd);
+        qWarning("Invalid parameters #%d, %p", theme, hwnd);
         return 0;
     }
     if (!m_themes[theme]) {
         const wchar_t *name = themeNames[theme];
         m_themes[theme] = pOpenThemeData(hwnd, name);
         if (Q_UNLIKELY(!m_themes[theme]))
-            qErrnoWarning("%s: OpenThemeData() failed for theme %d (%s).",
-                          Q_FUNC_INFO, theme, qPrintable(themeName(theme)));
+            qErrnoWarning("OpenThemeData() failed for theme %d (%s).",
+                          theme, qPrintable(themeName(theme)));
     }
     return m_themes[theme];
 }

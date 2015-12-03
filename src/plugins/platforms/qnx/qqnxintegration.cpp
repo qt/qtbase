@@ -143,7 +143,7 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
 #endif
 {
     ms_options = parseOptions(paramList);
-    qIntegrationDebug() << Q_FUNC_INFO;
+    qIntegrationDebug();
     // Open connection to QNX composition manager
     Q_SCREEN_CRITICALERROR(screen_create_context(&ms_screenContext, SCREEN_APPLICATION_CONTEXT),
                            "Failed to create screen context");
@@ -210,7 +210,7 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
 
 QQnxIntegration::~QQnxIntegration()
 {
-    qIntegrationDebug() << Q_FUNC_INFO << "platform plugin shutdown begin";
+    qIntegrationDebug("platform plugin shutdown begin");
     delete m_nativeInterface;
 
 #if !defined(QT_NO_DRAGANDDROP)
@@ -267,12 +267,12 @@ QQnxIntegration::~QQnxIntegration()
     // Destroy navigator interface
     delete m_navigator;
 
-    qIntegrationDebug() << Q_FUNC_INFO << "platform plugin shutdown end";
+    qIntegrationDebug("platform plugin shutdown end");
 }
 
 bool QQnxIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
-    qIntegrationDebug() << Q_FUNC_INFO;
+    qIntegrationDebug();
     switch (cap) {
     case MultipleWindows:
     case ThreadedPixmaps:
@@ -290,7 +290,7 @@ bool QQnxIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 
 QPlatformWindow *QQnxIntegration::createPlatformWindow(QWindow *window) const
 {
-    qIntegrationDebug() << Q_FUNC_INFO;
+    qIntegrationDebug();
     QSurface::SurfaceType surfaceType = window->surfaceType();
     const bool needRootWindow = options() & RootWindow;
     switch (surfaceType) {
@@ -308,14 +308,14 @@ QPlatformWindow *QQnxIntegration::createPlatformWindow(QWindow *window) const
 
 QPlatformBackingStore *QQnxIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    qIntegrationDebug() << Q_FUNC_INFO;
+    qIntegrationDebug();
     return new QQnxRasterBackingStore(window);
 }
 
 #if !defined(QT_NO_OPENGL)
 QPlatformOpenGLContext *QQnxIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    qIntegrationDebug() << Q_FUNC_INFO;
+    qIntegrationDebug();
     return new QQnxGLContext(context);
 }
 #endif
@@ -323,14 +323,14 @@ QPlatformOpenGLContext *QQnxIntegration::createPlatformOpenGLContext(QOpenGLCont
 #if defined(QQNX_PPS)
 QPlatformInputContext *QQnxIntegration::inputContext() const
 {
-    qIntegrationDebug() << Q_FUNC_INFO;
+    qIntegrationDebug();
     return m_inputContext;
 }
 #endif
 
 void QQnxIntegration::moveToScreen(QWindow *window, int screen)
 {
-    qIntegrationDebug() << Q_FUNC_INFO << "w =" << window << ", s =" << screen;
+    qIntegrationDebug() << "w =" << window << ", s =" << screen;
 
     // get platform window used by widget
     QQnxWindow *platformWindow = static_cast<QQnxWindow *>(window->handle());
@@ -344,7 +344,7 @@ void QQnxIntegration::moveToScreen(QWindow *window, int screen)
 
 QAbstractEventDispatcher *QQnxIntegration::createEventDispatcher() const
 {
-    qIntegrationDebug() << Q_FUNC_INFO;
+    qIntegrationDebug();
 
     // We transfer ownersip of the event-dispatcher to QtCoreApplication
     QAbstractEventDispatcher *eventDispatcher = m_eventDispatcher;
@@ -361,7 +361,7 @@ QPlatformNativeInterface *QQnxIntegration::nativeInterface() const
 #if !defined(QT_NO_CLIPBOARD)
 QPlatformClipboard *QQnxIntegration::clipboard() const
 {
-    qIntegrationDebug() << Q_FUNC_INFO;
+    qIntegrationDebug();
 
 #if defined(QQNX_PPS)
     if (!m_clipboard)
@@ -380,7 +380,7 @@ QPlatformDrag *QQnxIntegration::drag() const
 
 QVariant QQnxIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
 {
-    qIntegrationDebug() << Q_FUNC_INFO;
+    qIntegrationDebug();
     if ((hint == ShowIsFullScreen) && (ms_options & FullScreenApplication))
         return true;
 
@@ -394,7 +394,7 @@ QPlatformServices * QQnxIntegration::services() const
 
 QWindow *QQnxIntegration::window(screen_window_t qnxWindow)
 {
-    qIntegrationDebug() << Q_FUNC_INFO;
+    qIntegrationDebug();
     QMutexLocker locker(&ms_windowMapperMutex);
     Q_UNUSED(locker);
     return ms_windowMapper.value(qnxWindow, 0);
@@ -402,7 +402,7 @@ QWindow *QQnxIntegration::window(screen_window_t qnxWindow)
 
 void QQnxIntegration::addWindow(screen_window_t qnxWindow, QWindow *window)
 {
-    qIntegrationDebug() << Q_FUNC_INFO;
+    qIntegrationDebug();
     QMutexLocker locker(&ms_windowMapperMutex);
     Q_UNUSED(locker);
     ms_windowMapper.insert(qnxWindow, window);
@@ -410,7 +410,7 @@ void QQnxIntegration::addWindow(screen_window_t qnxWindow, QWindow *window)
 
 void QQnxIntegration::removeWindow(screen_window_t qnxWindow)
 {
-    qIntegrationDebug() << Q_FUNC_INFO;
+    qIntegrationDebug();
     QMutexLocker locker(&ms_windowMapperMutex);
     Q_UNUSED(locker);
     ms_windowMapper.remove(qnxWindow);
@@ -418,7 +418,7 @@ void QQnxIntegration::removeWindow(screen_window_t qnxWindow)
 
 void QQnxIntegration::createDisplays()
 {
-    qIntegrationDebug() << Q_FUNC_INFO;
+    qIntegrationDebug();
     // Query number of displays
     int displayCount = 0;
     int result = screen_get_context_property_iv(ms_screenContext, SCREEN_PROPERTY_DISPLAY_COUNT,
@@ -447,11 +447,11 @@ void QQnxIntegration::createDisplays()
         Q_SCREEN_CHECKERROR(result, "Failed to query display attachment");
 
         if (!isAttached) {
-            qIntegrationDebug() << Q_FUNC_INFO << "Skipping non-attached display" << i;
+            qIntegrationDebug() << "Skipping non-attached display" << i;
             continue;
         }
 
-        qIntegrationDebug() << Q_FUNC_INFO << "Creating screen for display" << i;
+        qIntegrationDebug() << "Creating screen for display" << i;
         createDisplay(displays[i], /*isPrimary=*/false);
     } // of displays iteration
 }
@@ -485,7 +485,7 @@ void QQnxIntegration::removeDisplay(QQnxScreen *screen)
 
 void QQnxIntegration::destroyDisplays()
 {
-    qIntegrationDebug() << Q_FUNC_INFO;
+    qIntegrationDebug();
     Q_FOREACH (QQnxScreen *screen, m_screens) {
         QPlatformIntegration::destroyScreen(screen);
     }

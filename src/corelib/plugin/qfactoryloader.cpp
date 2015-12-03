@@ -147,8 +147,8 @@ void QFactoryLoader::update()
             library = QLibraryPrivate::findOrCreate(QFileInfo(fileName).canonicalFilePath());
             if (!library->isPlugin()) {
                 if (qt_debug_component()) {
-                    qDebug() << library->errorString;
-                    qDebug() << "         not a plugin";
+                    qDebug() << library->errorString << endl
+                             << "         not a plugin";
                 }
                 library->release();
                 continue;
