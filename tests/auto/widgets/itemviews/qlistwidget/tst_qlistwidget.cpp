@@ -46,7 +46,6 @@ class tst_QListWidget : public QObject
 
 public:
     tst_QListWidget();
-    ~tst_QListWidget();
 
     enum ModelChanged {
         RowsAboutToBeInserted,
@@ -59,13 +58,10 @@ public:
         ColumnsRemoved
     };
 
-public slots:
+private slots:
     void initTestCase();
     void cleanupTestCase();
     void init();
-    void cleanup();
-
-private slots:
     void addItem();
     void addItem2();
     void addItems();
@@ -162,10 +158,6 @@ tst_QListWidget::tst_QListWidget(): testWidget(0), rcParent(8), rcFirst(8,0), rc
 {
 }
 
-tst_QListWidget::~tst_QListWidget()
-{
-}
-
 void tst_QListWidget::initTestCase()
 {
     testWidget = new QListWidget();
@@ -208,10 +200,6 @@ void tst_QListWidget::checkDefaultValues()
     QCOMPARE(testWidget->currentItem(), (QListWidgetItem *)0);
     QCOMPARE(testWidget->currentRow(), -1);
     QCOMPARE(testWidget->count(), 0);
-}
-
-void tst_QListWidget::cleanup()
-{
 }
 
 void tst_QListWidget::populate()

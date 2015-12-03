@@ -44,21 +44,13 @@ class tst_QStatusBar: public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QStatusBar();
-    virtual ~tst_QStatusBar();
-
-
 protected slots:
     void messageChanged(const QString&);
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
+private slots:
     void init();
     void cleanup();
 
-private slots:
     void tempMessage();
     void insertWidget();
     void insertPermanentWidget();
@@ -72,14 +64,6 @@ private:
     QStatusBar *testWidget;
     QString currentMessage;
 };
-
-tst_QStatusBar::tst_QStatusBar()
-{
-}
-
-tst_QStatusBar::~tst_QStatusBar()
-{
-}
 
 void tst_QStatusBar::init()
 {
@@ -95,14 +79,6 @@ void tst_QStatusBar::init()
 void tst_QStatusBar::cleanup()
 {
     delete testWidget;
-}
-
-void tst_QStatusBar::initTestCase()
-{
-}
-
-void tst_QStatusBar::cleanupTestCase()
-{
 }
 
 void tst_QStatusBar::messageChanged(const QString &m)

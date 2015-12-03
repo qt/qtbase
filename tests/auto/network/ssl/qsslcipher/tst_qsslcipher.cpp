@@ -42,43 +42,13 @@ class tst_QSslCipher : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QSslCipher();
-    virtual ~tst_QSslCipher();
-
-public slots:
-    void initTestCase_data();
-    void init();
-    void cleanup();
-
 #ifndef QT_NO_SSL
 
 private slots:
     void constructing();
 
-#endif
+#endif // QT_NO_SSL
 };
-
-tst_QSslCipher::tst_QSslCipher()
-{
-}
-
-tst_QSslCipher::~tst_QSslCipher()
-{
-
-}
-
-void tst_QSslCipher::initTestCase_data()
-{
-}
-
-void tst_QSslCipher::init()
-{
-}
-
-void tst_QSslCipher::cleanup()
-{
-}
 
 #ifndef QT_NO_SSL
 

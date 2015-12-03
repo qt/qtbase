@@ -63,16 +63,13 @@ class tst_QFtp : public QObject
 
 public:
     tst_QFtp();
-    virtual ~tst_QFtp();
 
-
-public slots:
+private slots:
     void initTestCase_data();
     void initTestCase();
     void cleanupTestCase();
     void init();
     void cleanup();
-private slots:
     void connectToHost_data();
     void connectToHost();
     void connectToUnresponsiveHost();
@@ -184,10 +181,6 @@ const int bytesDone_init = -10;
 
 tst_QFtp::tst_QFtp() :
     ftp(0)
-{
-}
-
-tst_QFtp::~tst_QFtp()
 {
 }
 

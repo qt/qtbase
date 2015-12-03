@@ -205,7 +205,6 @@ class tst_QAccessibility : public QObject
     Q_OBJECT
 public:
     tst_QAccessibility();
-    virtual ~tst_QAccessibility();
 
 public slots:
     void initTestCase();
@@ -284,10 +283,6 @@ QAccessible::State state(QWidget * const widget)
 tst_QAccessibility::tst_QAccessibility()
 {
     click_count = 0;
-}
-
-tst_QAccessibility::~tst_QAccessibility()
-{
 }
 
 void tst_QAccessibility::onClicked()

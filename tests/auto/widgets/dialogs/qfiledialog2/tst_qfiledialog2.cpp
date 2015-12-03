@@ -93,14 +93,12 @@ Q_OBJECT
 
 public:
     tst_QFileDialog2();
-    virtual ~tst_QFileDialog2();
 
-public slots:
+private slots:
     void initTestCase();
     void init();
     void cleanup();
 
-private slots:
 #ifdef QT_BUILD_INTERNAL
     void deleteDirAndFiles();
     void listRoot();
@@ -157,10 +155,6 @@ tst_QFileDialog2::tst_QFileDialog2()
 #if defined(Q_OS_WINCE)
     qApp->setAutoMaximizeThreshold(-1);
 #endif
-}
-
-tst_QFileDialog2::~tst_QFileDialog2()
-{
 }
 
 void tst_QFileDialog2::cleanupSettingsFile()

@@ -77,12 +77,6 @@ protected:
 class tst_QGraphicsWidget : public QObject {
 Q_OBJECT
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-
 private slots:
     void qgraphicswidget();
 
@@ -261,28 +255,6 @@ protected:
         return QGraphicsWidget::event(event);
     }
 };
-
-// This will be called before the first test function is executed.
-// It is only called once.
-void tst_QGraphicsWidget::initTestCase()
-{
-}
-
-// This will be called after the last test function is executed.
-// It is only called once.
-void tst_QGraphicsWidget::cleanupTestCase()
-{
-}
-
-// This will be called before each test function is executed.
-void tst_QGraphicsWidget::init()
-{
-}
-
-// This will be called after every test function.
-void tst_QGraphicsWidget::cleanup()
-{
-}
 
 class SizeHinter : public QGraphicsWidget
 {

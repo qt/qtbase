@@ -43,12 +43,6 @@
 class tst_QGraphicsObject : public QObject {
     Q_OBJECT
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-
 private slots:
     void pos();
     void x();
@@ -59,30 +53,6 @@ private slots:
     void visible();
     void deleted();
 };
-
-
-// This will be called before the first test function is executed.
-// It is only called once.
-void tst_QGraphicsObject::initTestCase()
-{
-}
-
-// This will be called after the last test function is executed.
-// It is only called once.
-void tst_QGraphicsObject::cleanupTestCase()
-{
-}
-
-// This will be called before each test function is executed.
-void tst_QGraphicsObject::init()
-{
-}
-
-// This will be called after every test function.
-void tst_QGraphicsObject::cleanup()
-{
-}
-
 
 class MyGraphicsObject : public QGraphicsObject
 {

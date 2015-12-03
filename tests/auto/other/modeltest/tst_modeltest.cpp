@@ -44,16 +44,6 @@ class tst_ModelTest : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_ModelTest() {}
-    virtual ~tst_ModelTest() {}
-
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-
 private slots:
     void stringListModel();
     void treeWidgetModel();
@@ -63,24 +53,6 @@ private slots:
     void testResetThroughProxy();
 };
 
-
-
-void tst_ModelTest::initTestCase()
-{
-}
-
-void tst_ModelTest::cleanupTestCase()
-{
-}
-
-void tst_ModelTest::init()
-{
-
-}
-
-void tst_ModelTest::cleanup()
-{
-}
 /*
   tests
 */

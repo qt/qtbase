@@ -81,18 +81,12 @@ class tst_QFocusEvent : public QObject
     Q_OBJECT
 
 public:
-    tst_QFocusEvent();
-    virtual ~tst_QFocusEvent();
-
-
     void initWidget();
 
-public slots:
+private slots:
     void initTestCase();
     void cleanupTestCase();
-    void init();
     void cleanup();
-private slots:
     void checkReason_Tab();
     void checkReason_ShiftTab();
     void checkReason_BackTab();
@@ -106,15 +100,6 @@ private:
     FocusLineEdit* childFocusWidgetOne;
     FocusLineEdit* childFocusWidgetTwo;
 };
-
-tst_QFocusEvent::tst_QFocusEvent()
-{
-}
-
-tst_QFocusEvent::~tst_QFocusEvent()
-{
-
-}
 
 void tst_QFocusEvent::initTestCase()
 {
@@ -137,10 +122,6 @@ void tst_QFocusEvent::initTestCase()
 void tst_QFocusEvent::cleanupTestCase()
 {
     delete testFocusWidget;
-}
-
-void tst_QFocusEvent::init()
-{
 }
 
 void tst_QFocusEvent::cleanup()

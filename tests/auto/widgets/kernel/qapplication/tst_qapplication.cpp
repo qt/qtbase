@@ -103,13 +103,10 @@ Q_OBJECT
 
 public:
     tst_QApplication();
-    virtual ~tst_QApplication();
 
-public slots:
-    void initTestCase();
-    void init();
-    void cleanup();
 private slots:
+    void initTestCase();
+    void cleanup();
     void sendEventsOnProcessEvents(); // this must be the first test
     void staticSetup();
 
@@ -247,17 +244,6 @@ tst_QApplication::tst_QApplication()
     // Clean up environment previously to launching test
     qputenv("QT_PLUGIN_PATH", QByteArray());
 #endif
-}
-
-tst_QApplication::~tst_QApplication()
-{
-
-}
-
-void tst_QApplication::init()
-{
-// TODO: Add initialization code here.
-// This will be executed immediately before each test is run.
 }
 
 void tst_QApplication::cleanup()

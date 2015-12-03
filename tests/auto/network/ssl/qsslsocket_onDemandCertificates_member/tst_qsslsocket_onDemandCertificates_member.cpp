@@ -57,8 +57,6 @@ class tst_QSslSocket_onDemandCertificates_member : public QObject
     int proxyAuthCalled;
 
 public:
-    tst_QSslSocket_onDemandCertificates_member();
-    virtual ~tst_QSslSocket_onDemandCertificates_member();
 
 #ifndef QT_NO_OPENSSL
     QSslSocketPtr newSocket();
@@ -79,14 +77,6 @@ private:
     QSslSocket *socket;
 #endif // QT_NO_OPENSSL
 };
-
-tst_QSslSocket_onDemandCertificates_member::tst_QSslSocket_onDemandCertificates_member()
-{
-}
-
-tst_QSslSocket_onDemandCertificates_member::~tst_QSslSocket_onDemandCertificates_member()
-{
-}
 
 enum ProxyTests {
     NoProxy = 0x00,

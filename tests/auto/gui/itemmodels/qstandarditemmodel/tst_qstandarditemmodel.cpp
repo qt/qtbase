@@ -44,7 +44,6 @@ class tst_QStandardItemModel : public QObject
 
 public:
     tst_QStandardItemModel();
-    virtual ~tst_QStandardItemModel();
 
     enum ModelChanged {
         RowsAboutToBeInserted,
@@ -151,10 +150,8 @@ Q_DECLARE_METATYPE(Qt::Orientation)
 
 tst_QStandardItemModel::tst_QStandardItemModel() : m_model(0), rcParent(8), rcFirst(8,0), rcLast(8,0)
 {
-}
-
-tst_QStandardItemModel::~tst_QStandardItemModel()
-{
+    qRegisterMetaType<QStandardItem*>("QStandardItem*");
+    qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
 }
 
 /*
@@ -169,9 +166,6 @@ tst_QStandardItemModel::~tst_QStandardItemModel()
 */
 void tst_QStandardItemModel::init()
 {
-    qRegisterMetaType<QStandardItem*>("QStandardItem*");
-    qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
-
     m_model = new QStandardItemModel(defaultSize, defaultSize);
     connect(m_model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
             this, SLOT(rowsAboutToBeInserted(QModelIndex,int,int)));

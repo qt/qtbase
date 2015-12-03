@@ -41,14 +41,6 @@ class tst_QComplexText : public QObject
 {
 Q_OBJECT
 
-public:
-    tst_QComplexText();
-    virtual ~tst_QComplexText();
-
-
-public slots:
-    void init();
-    void cleanup();
 private slots:
     void bidiReorderString_data();
     void bidiReorderString();
@@ -61,27 +53,6 @@ private slots:
     void bidiInvalidCursorNoMovement_data();
     void bidiInvalidCursorNoMovement();
 };
-
-tst_QComplexText::tst_QComplexText()
-{
-}
-
-tst_QComplexText::~tst_QComplexText()
-{
-
-}
-
-void tst_QComplexText::init()
-{
-// This will be executed immediately before each test is run.
-// TODO: Add initialization code here.
-}
-
-void tst_QComplexText::cleanup()
-{
-// This will be executed immediately after each test is run.
-// TODO: Add cleanup code here.
-}
 
 void tst_QComplexText::bidiReorderString_data()
 {

@@ -45,17 +45,12 @@ class tst_QCheckBox : public QObject
 {
 Q_OBJECT
 
-public:
-    tst_QCheckBox();
-    virtual ~tst_QCheckBox();
-
-public slots:
+private slots:
     void initTestCase();
     void cleanupTestCase();
     void init();
     void cleanup();
 
-private slots:
     void setChecked();
     void setTriState();
     void setText_data();
@@ -85,14 +80,6 @@ private:
     int cur_state;
     QCheckBox *testWidget;
 };
-
-tst_QCheckBox::tst_QCheckBox()
-{
-}
-
-tst_QCheckBox::~tst_QCheckBox()
-{
-}
 
 void tst_QCheckBox::initTestCase()
 {

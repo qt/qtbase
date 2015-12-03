@@ -43,14 +43,6 @@ class tst_QTransform : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QTransform();
-    virtual ~tst_QTransform();
-
-
-public slots:
-    void init();
-    void cleanup();
 private slots:
     void mapRect_data();
     void mapToPolygon_data();
@@ -79,24 +71,6 @@ private:
 };
 
 Q_DECLARE_METATYPE(QTransform)
-
-tst_QTransform::tst_QTransform()
-{
-}
-
-tst_QTransform::~tst_QTransform()
-{
-}
-
-void tst_QTransform::init()
-{
-    // No initialisation is required
-}
-
-void tst_QTransform::cleanup()
-{
-    // No cleanup is required.
-}
 
 #if defined(Q_OS_WIN) && !defined(M_PI)
 #define M_PI 3.14159265897932384626433832795f

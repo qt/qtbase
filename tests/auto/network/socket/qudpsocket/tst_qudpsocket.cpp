@@ -63,17 +63,11 @@ class tst_QUdpSocket : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QUdpSocket();
-    virtual ~tst_QUdpSocket();
-
-
-public slots:
+private slots:
     void initTestCase_data();
     void initTestCase();
     void init();
     void cleanup();
-private slots:
     void constructing();
     void unconnectedServerAndClientTest();
     void broadcasting();
@@ -142,14 +136,6 @@ static QHostAddress makeNonAny(const QHostAddress &address, QHostAddress::Specia
     if (address == QHostAddress::AnyIPv6)
         return QHostAddress::LocalHostIPv6;
     return address;
-}
-
-tst_QUdpSocket::tst_QUdpSocket()
-{
-}
-
-tst_QUdpSocket::~tst_QUdpSocket()
-{
 }
 
 void tst_QUdpSocket::initTestCase_data()

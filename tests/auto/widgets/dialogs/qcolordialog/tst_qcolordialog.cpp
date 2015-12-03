@@ -50,12 +50,6 @@ public slots:
     void testGetRgba();
     void testNativeActiveModalWidget();
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-
 private slots:
     void defaultOkButton();
     void native_activeModalWidget();
@@ -106,22 +100,6 @@ void tst_QColorDialog::native_activeModalWidget()
     QTimer::singleShot(3000, qApp, SLOT(quit()));
     QTimer::singleShot(0, this, SLOT(testNativeActiveModalWidget()));
     qApp->exec();
-}
-
-void tst_QColorDialog::initTestCase()
-{
-}
-
-void tst_QColorDialog::cleanupTestCase()
-{
-}
-
-void tst_QColorDialog::init()
-{
-}
-
-void tst_QColorDialog::cleanup()
-{
 }
 
 void tst_QColorDialog::postKeyReturn() {

@@ -42,14 +42,6 @@ class tst_QWMatrix : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QWMatrix();
-    virtual ~tst_QWMatrix();
-
-
-public slots:
-    void init();
-    void cleanup();
 private slots:
     void mapRect_data();
     void mapToPolygon_data();
@@ -64,25 +56,6 @@ private slots:
 private:
     void mapping_data();
 };
-
-
-tst_QWMatrix::tst_QWMatrix()
-{
-}
-
-tst_QWMatrix::~tst_QWMatrix()
-{
-}
-
-void tst_QWMatrix::init()
-{
-    // No initialisation is required
-}
-
-void tst_QWMatrix::cleanup()
-{
-    // No cleanup is required.
-}
 
 void tst_QWMatrix::mapRect_data()
 {

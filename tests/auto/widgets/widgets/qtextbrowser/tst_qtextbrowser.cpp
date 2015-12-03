@@ -72,15 +72,11 @@ QVariant TestBrowser::loadResource(int type, const QUrl &name)
 class tst_QTextBrowser : public QObject
 {
     Q_OBJECT
-public:
-    tst_QTextBrowser();
-    virtual ~tst_QTextBrowser();
 
-public slots:
+private slots:
     void init();
     void cleanup();
 
-private slots:
     void noReloadOnAnchorJump();
     void bgColorOnSourceChange();
     void forwardButton();
@@ -103,14 +99,6 @@ private slots:
 private:
     TestBrowser *browser;
 };
-
-tst_QTextBrowser::tst_QTextBrowser()
-{
-}
-
-tst_QTextBrowser::~tst_QTextBrowser()
-{
-}
 
 void tst_QTextBrowser::init()
 {

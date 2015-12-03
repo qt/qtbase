@@ -51,17 +51,9 @@ class tst_qmouseevent_modal : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_qmouseevent_modal();
-    virtual ~tst_qmouseevent_modal();
-
-
-public slots:
+private slots:
     void initTestCase();
     void cleanupTestCase();
-    void init();
-    void cleanup();
-private slots:
     void mousePressRelease();
 
 private:
@@ -97,14 +89,6 @@ private:
     int c;
 };
 
-tst_qmouseevent_modal::tst_qmouseevent_modal()
-{
-}
-
-tst_qmouseevent_modal::~tst_qmouseevent_modal()
-{
-}
-
 void tst_qmouseevent_modal::initTestCase()
 {
     w = new TstWidget;
@@ -115,14 +99,6 @@ void tst_qmouseevent_modal::cleanupTestCase()
 {
     delete w;
     w = 0;
-}
-
-void tst_qmouseevent_modal::init()
-{
-}
-
-void tst_qmouseevent_modal::cleanup()
-{
 }
 
 /*

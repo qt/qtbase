@@ -42,37 +42,10 @@ class tst_QRegExpValidator : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QRegExpValidator();
-    virtual ~tst_QRegExpValidator();
-
-
-    // I can think of no other way to do this for the moment
-    enum State { Invalid=0, Intermediate=1, Acceptable=2 };
-public slots:
-    void init();
-    void cleanup();
 private slots:
     void validate_data();
     void validate();
 };
-
-tst_QRegExpValidator::tst_QRegExpValidator()
-{
-}
-
-tst_QRegExpValidator::~tst_QRegExpValidator()
-{
-
-}
-
-void tst_QRegExpValidator::init()
-{
-}
-
-void tst_QRegExpValidator::cleanup()
-{
-}
 
 void tst_QRegExpValidator::validate_data()
 {

@@ -51,16 +51,9 @@ class tst_qmake : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_qmake();
-    virtual ~tst_qmake();
-
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void cleanup();
-
 private slots:
+    void initTestCase();
+    void cleanup();
     void simple_app();
     void simple_app_shadowbuild();
     void simple_app_shadowbuild2();
@@ -92,15 +85,6 @@ private:
     QString base_path;
 };
 
-tst_qmake::tst_qmake()
-{
-}
-
-tst_qmake::~tst_qmake()
-{
-
-}
-
 void tst_qmake::initTestCase()
 {
     QString binpath = QLibraryInfo::location(QLibraryInfo::BinariesPath);
@@ -126,10 +110,6 @@ void tst_qmake::initTestCase()
         base_path = base_path.left(base_path.lastIndexOf(subProgram));
     else
         base_path = QCoreApplication::applicationDirPath();
-}
-
-void tst_qmake::cleanupTestCase()
-{
 }
 
 void tst_qmake::cleanup()

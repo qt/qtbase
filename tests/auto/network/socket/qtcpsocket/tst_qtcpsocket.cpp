@@ -94,7 +94,6 @@ class tst_QTcpSocket : public QObject
 
 public:
     tst_QTcpSocket();
-    virtual ~tst_QTcpSocket();
 
     static void enterLoop(int secs)
     {
@@ -320,11 +319,6 @@ tst_QTcpSocket::tst_QTcpSocket()
     earlyConstructedSockets->endPoints[1]->write("hello work");
 
     firstFailInfo.setAddresses(QList<QHostAddress>() << QHostAddress("224.0.0.0") << QtNetworkSettings::serverIP());
-}
-
-tst_QTcpSocket::~tst_QTcpSocket()
-{
-
 }
 
 void tst_QTcpSocket::initTestCase_data()

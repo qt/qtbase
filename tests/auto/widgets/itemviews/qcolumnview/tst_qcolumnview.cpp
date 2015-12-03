@@ -51,14 +51,10 @@ class tst_QColumnView : public QObject {
 
 public:
     tst_QColumnView();
-    virtual ~tst_QColumnView();
-
-public Q_SLOTS:
-    void initTestCase();
-    void init();
-    void cleanup();
 
 private slots:
+    void initTestCase();
+    void init();
     void rootIndex();
     void grips();
     void isIndexHidden();
@@ -183,10 +179,6 @@ tst_QColumnView::tst_QColumnView()
     m_fakeDirHomeIndex = m_fakeDirModel.indexFromItem(homeItem);
 }
 
-tst_QColumnView::~tst_QColumnView()
-{
-}
-
 void tst_QColumnView::initTestCase()
 {
     QVERIFY(m_fakeDirHomeIndex.isValid());
@@ -199,10 +191,6 @@ void tst_QColumnView::init()
 #ifdef Q_OS_WINCE //disable magic for WindowsCE
     qApp->setAutoMaximizeThreshold(-1);
 #endif
-}
-
-void tst_QColumnView::cleanup()
-{
 }
 
 void tst_QColumnView::rootIndex()

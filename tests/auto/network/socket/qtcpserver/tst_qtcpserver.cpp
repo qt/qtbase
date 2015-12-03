@@ -70,17 +70,11 @@ class tst_QTcpServer : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QTcpServer();
-    virtual ~tst_QTcpServer();
-
-
-public slots:
+private slots:
     void initTestCase_data();
     void initTestCase();
     void init();
     void cleanup();
-private slots:
     void getSetCheck();
     void constructing();
     void clientServerLoop();
@@ -136,14 +130,6 @@ void tst_QTcpServer::getSetCheck()
     QCOMPARE(INT_MIN, obj1.maxPendingConnections());
     obj1.setMaxPendingConnections(INT_MAX);
     QCOMPARE(INT_MAX, obj1.maxPendingConnections());
-}
-
-tst_QTcpServer::tst_QTcpServer()
-{
-}
-
-tst_QTcpServer::~tst_QTcpServer()
-{
 }
 
 void tst_QTcpServer::initTestCase_data()

@@ -119,20 +119,12 @@ class tst_QTreeView : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QTreeView();
-    virtual ~tst_QTreeView();
-
-
 public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-
     void selectionOrderTest();
 
 private slots:
+    void initTestCase();
+
     void getSetCheck();
 
     // one test per QTreeView property
@@ -402,31 +394,11 @@ public:
     mutable QMap<QModelIndex,QModelIndex> parentHash;
 };
 
-tst_QTreeView::tst_QTreeView()
-{
-}
-
-tst_QTreeView::~tst_QTreeView()
-{
-}
-
 void tst_QTreeView::initTestCase()
 {
 #ifdef Q_OS_WINCE //disable magic for WindowsCE
     qApp->setAutoMaximizeThreshold(-1);
 #endif
-}
-
-void tst_QTreeView::cleanupTestCase()
-{
-}
-
-void tst_QTreeView::init()
-{
-}
-
-void tst_QTreeView::cleanup()
-{
 }
 
 // Testing get/set functions

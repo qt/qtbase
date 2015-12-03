@@ -76,13 +76,11 @@ class QTabWidgetChild:public QTabWidget {
 
 class tst_QTabWidget:public QObject {
   Q_OBJECT
-  public:
-    tst_QTabWidget();
 
-  public slots:
+private slots:
     void init();
     void cleanup();
-  private slots:
+
     void getSetCheck();
     void testChild();
     void addRemoveTab();
@@ -154,10 +152,6 @@ void tst_QTabWidget::getSetCheck()
     QCOMPARE(w5, obj1.currentWidget());
     obj1.setCurrentWidget((QWidget *)0);
     QCOMPARE(w5, obj1.currentWidget()); // current not changed
-}
-
-tst_QTabWidget::tst_QTabWidget()
-{
 }
 
 void tst_QTabWidget::init()

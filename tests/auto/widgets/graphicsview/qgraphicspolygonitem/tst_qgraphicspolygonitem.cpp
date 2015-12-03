@@ -41,12 +41,6 @@ class tst_QGraphicsPolygonItem : public QObject
 {
     Q_OBJECT
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-
 private slots:
     void qgraphicspolygonitem_data();
     void qgraphicspolygonitem();
@@ -97,28 +91,6 @@ public:
     bool call_supportsExtension(SubQGraphicsPolygonItem::Extension extension) const
         { return SubQGraphicsPolygonItem::supportsExtension((QGraphicsItem::Extension)extension); }
 };
-
-// This will be called before the first test function is executed.
-// It is only called once.
-void tst_QGraphicsPolygonItem::initTestCase()
-{
-}
-
-// This will be called after the last test function is executed.
-// It is only called once.
-void tst_QGraphicsPolygonItem::cleanupTestCase()
-{
-}
-
-// This will be called before each test function is executed.
-void tst_QGraphicsPolygonItem::init()
-{
-}
-
-// This will be called after every test function.
-void tst_QGraphicsPolygonItem::cleanup()
-{
-}
 
 void tst_QGraphicsPolygonItem::qgraphicspolygonitem_data()
 {

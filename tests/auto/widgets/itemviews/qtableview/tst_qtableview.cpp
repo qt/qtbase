@@ -65,17 +65,9 @@ class tst_QTableView : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QTableView();
-    virtual ~tst_QTableView();
-
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-
 private slots:
+    void initTestCase();
+
     void getSetCheck();
 
     void noDelegate();
@@ -532,31 +524,11 @@ public:
     QSize hint;
 };
 
-tst_QTableView::tst_QTableView()
-{
-}
-
-tst_QTableView::~tst_QTableView()
-{
-}
-
 void tst_QTableView::initTestCase()
 {
 #ifdef Q_OS_WINCE //disable magic for WindowsCE
     qApp->setAutoMaximizeThreshold(-1);
 #endif
-}
-
-void tst_QTableView::cleanupTestCase()
-{
-}
-
-void tst_QTableView::init()
-{
-}
-
-void tst_QTableView::cleanup()
-{
 }
 
 void tst_QTableView::noDelegate()

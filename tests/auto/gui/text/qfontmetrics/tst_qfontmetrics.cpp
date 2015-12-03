@@ -44,13 +44,6 @@ class tst_QFontMetrics : public QObject
 {
 Q_OBJECT
 
-public:
-    tst_QFontMetrics();
-    virtual ~tst_QFontMetrics();
-
-public slots:
-    void init();
-    void cleanup();
 private slots:
     void same();
     void metrics();
@@ -67,24 +60,6 @@ private slots:
     void mnemonicTextWidth();
     void leadingBelowLine();
 };
-
-tst_QFontMetrics::tst_QFontMetrics()
-
-{
-}
-
-tst_QFontMetrics::~tst_QFontMetrics()
-{
-
-}
-
-void tst_QFontMetrics::init()
-{
-}
-
-void tst_QFontMetrics::cleanup()
-{
-}
 
 void tst_QFontMetrics::same()
 {

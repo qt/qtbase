@@ -39,31 +39,9 @@ class tst_QHttpNetworkReply: public QObject
 {
     Q_OBJECT
 private Q_SLOTS:
-    void init();
-    void cleanup();
-    void initTestCase();
-    void cleanupTestCase();
-
     void parseHeader_data();
     void parseHeader();
 };
-
-
-void tst_QHttpNetworkReply::initTestCase()
-{
-}
-
-void tst_QHttpNetworkReply::cleanupTestCase()
-{
-}
-
-void tst_QHttpNetworkReply::init()
-{
-}
-
-void tst_QHttpNetworkReply::cleanup()
-{
-}
 
 void tst_QHttpNetworkReply::parseHeader_data()
 {

@@ -57,12 +57,7 @@ class tst_QHostAddress : public QObject
 
 public:
     tst_QHostAddress();
-    virtual ~tst_QHostAddress();
 
-
-public slots:
-    void init();
-    void cleanup();
 private slots:
     void constructor_QString_data();
     void constructor_QString();
@@ -89,24 +84,11 @@ private slots:
     void convertv4v6();
 };
 
-tst_QHostAddress::tst_QHostAddress()
-{
-}
-
-tst_QHostAddress::~tst_QHostAddress()
-{
-}
-
 Q_DECLARE_METATYPE(QHostAddress)
 
-void tst_QHostAddress::init()
+tst_QHostAddress::tst_QHostAddress()
 {
     qRegisterMetaType<QHostAddress>("QHostAddress");
-}
-
-void tst_QHostAddress::cleanup()
-{
-    // No cleanup is required.
 }
 
 void tst_QHostAddress::constructor_QString_data()

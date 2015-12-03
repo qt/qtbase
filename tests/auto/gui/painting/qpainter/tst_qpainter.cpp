@@ -81,14 +81,9 @@ Q_OBJECT
 
 public:
     tst_QPainter();
-    virtual ~tst_QPainter();
 
-
-public slots:
-    void init();
-    void cleanup();
-    void cleanupTestCase();
 private slots:
+    void cleanupTestCase();
     void getSetCheck();
 #ifndef QT_NO_WIDGETS
     void drawPixmap_comp_data();
@@ -390,18 +385,6 @@ tst_QPainter::tst_QPainter()
 {
     // QtTestCase sets this to false, but this turns off alpha pixmaps on Unix.
     QGuiApplication::setDesktopSettingsAware(true);
-}
-
-tst_QPainter::~tst_QPainter()
-{
-}
-
-void tst_QPainter::init()
-{
-}
-
-void tst_QPainter::cleanup()
-{
 }
 
 void tst_QPainter::cleanupTestCase()

@@ -46,15 +46,6 @@ class tst_QCalendarWidget : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QCalendarWidget();
-    virtual ~tst_QCalendarWidget();
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-
 private slots:
     void getSetCheck();
     void buttonClickCheck();
@@ -264,31 +255,6 @@ void tst_QCalendarWidget::setWeekdayFormat()
             QVERIFY(calendar.weekdayTextFormat(dayOfWeek) != format);
     }
 }
-
-tst_QCalendarWidget::tst_QCalendarWidget()
-{
-}
-
-tst_QCalendarWidget::~tst_QCalendarWidget()
-{
-}
-
-void tst_QCalendarWidget::initTestCase()
-{
-}
-
-void tst_QCalendarWidget::cleanupTestCase()
-{
-}
-
-void tst_QCalendarWidget::init()
-{
-}
-
-void tst_QCalendarWidget::cleanup()
-{
-}
-
 
 typedef void (QCalendarWidget::*ShowFunc)();
 Q_DECLARE_METATYPE(ShowFunc)

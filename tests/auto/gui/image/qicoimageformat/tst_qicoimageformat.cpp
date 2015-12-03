@@ -38,17 +38,8 @@ class tst_QIcoImageFormat : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QIcoImageFormat();
-    virtual ~tst_QIcoImageFormat();
-
-
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
 private slots:
+    void initTestCase();
     void format();
     void canRead_data();
     void canRead();
@@ -69,36 +60,11 @@ private:
     QString m_IconPath;
 };
 
-
-tst_QIcoImageFormat::tst_QIcoImageFormat()
-{
-}
-
-tst_QIcoImageFormat::~tst_QIcoImageFormat()
-{
-
-}
-
-void tst_QIcoImageFormat::init()
-{
-
-}
-
-void tst_QIcoImageFormat::cleanup()
-{
-
-}
-
 void tst_QIcoImageFormat::initTestCase()
 {
     m_IconPath = QFINDTESTDATA("icons");
     if (m_IconPath.isEmpty())
         QFAIL("Cannot find icons directory containing testdata!");
-}
-
-void tst_QIcoImageFormat::cleanupTestCase()
-{
-
 }
 
 void tst_QIcoImageFormat::format()

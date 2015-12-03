@@ -106,15 +106,12 @@ class tst_QHeaderView : public QObject
 
 public:
     tst_QHeaderView();
-    virtual ~tst_QHeaderView();
 
-public slots:
+private slots:
     void initTestCase();
     void cleanupTestCase();
     void init();
     void cleanup();
-
-private slots:
     void getSetCheck();
     void visualIndex();
 
@@ -381,10 +378,6 @@ void tst_QHeaderView::getSetCheck()
 tst_QHeaderView::tst_QHeaderView()
 {
     qRegisterMetaType<int>("Qt::SortOrder");
-}
-
-tst_QHeaderView::~tst_QHeaderView()
-{
 }
 
 void tst_QHeaderView::initTestCase()

@@ -44,14 +44,9 @@ class tst_QTextScriptEngine : public QObject
 
 public:
     tst_QTextScriptEngine();
-    virtual ~tst_QTextScriptEngine();
 
-
-public slots:
-    void initTestCase();
-    void init();
-    void cleanup();
 private slots:
+    void initTestCase();
     void devanagari_data();
     void devanagari();
     void bengali_data();
@@ -97,10 +92,6 @@ tst_QTextScriptEngine::tst_QTextScriptEngine()
 {
 }
 
-tst_QTextScriptEngine::~tst_QTextScriptEngine()
-{
-}
-
 void tst_QTextScriptEngine::initTestCase()
 {
     if (!haveTestFonts) {
@@ -112,14 +103,6 @@ void tst_QTextScriptEngine::initTestCase()
             "run the test again."
         );
     }
-}
-
-void tst_QTextScriptEngine::init()
-{
-}
-
-void tst_QTextScriptEngine::cleanup()
-{
 }
 
 struct ShapeTable {

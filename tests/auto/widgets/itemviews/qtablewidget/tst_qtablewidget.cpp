@@ -51,14 +51,11 @@ class tst_QTableWidget : public QObject
 
 public:
     tst_QTableWidget();
-    ~tst_QTableWidget();
 
-public slots:
+private slots:
     void initTestCase();
     void cleanupTestCase();
     void init();
-    void cleanup();
-private slots:
     void getSetCheck();
     void clear();
     void clearContents();
@@ -161,10 +158,6 @@ tst_QTableWidget::tst_QTableWidget(): testWidget(0)
 {
 }
 
-tst_QTableWidget::~tst_QTableWidget()
-{
-}
-
 void tst_QTableWidget::initTestCase()
 {
     testWidget = new QTableWidget();
@@ -186,11 +179,6 @@ void tst_QTableWidget::init()
         testWidget->showRow(row);
     for (int column=0; column < testWidget->columnCount(); ++column)
         testWidget->showColumn(column);
-}
-
-void tst_QTableWidget::cleanup()
-{
-
 }
 
 void tst_QTableWidget::clearContents()

@@ -125,15 +125,13 @@ public:
 class tst_QDateTimeEdit : public QObject
 {
     Q_OBJECT
-public:
-    tst_QDateTimeEdit();
-    virtual ~tst_QDateTimeEdit();
-public slots:
+
+private slots:
     void initTestCase();
     void init();
     void cleanup();
     void cleanupTestCase();
-private slots:
+
     void cachedDayTest();
     void getSetCheck();
     void constructor_qwidget();
@@ -312,14 +310,6 @@ void tst_QDateTimeEdit::getSetCheck()
     QCOMPARE(dateEdit.inputMethodQuery(Qt::ImHints), QVariant(int(Qt::ImhPreferNumbers)));
     QTimeEdit timeEdit;
     QCOMPARE(timeEdit.inputMethodQuery(Qt::ImHints), QVariant(int(Qt::ImhPreferNumbers)));
-}
-
-tst_QDateTimeEdit::tst_QDateTimeEdit()
-{
-}
-
-tst_QDateTimeEdit::~tst_QDateTimeEdit()
-{
 }
 
 void tst_QDateTimeEdit::initTestCase()

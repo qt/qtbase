@@ -41,15 +41,9 @@ class tst_QDesktopWidget : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QDesktopWidget();
-    virtual ~tst_QDesktopWidget();
-
-public slots:
-    void init();
+private slots:
     void cleanup();
 
-private slots:
     void numScreens();
     void primaryScreen();
     void screenNumberForQWidget();
@@ -58,18 +52,6 @@ private slots:
     void screenGeometry();
     void topLevels();
 };
-
-tst_QDesktopWidget::tst_QDesktopWidget()
-{
-}
-
-tst_QDesktopWidget::~tst_QDesktopWidget()
-{
-}
-
-void tst_QDesktopWidget::init()
-{
-}
 
 void tst_QDesktopWidget::cleanup()
 {

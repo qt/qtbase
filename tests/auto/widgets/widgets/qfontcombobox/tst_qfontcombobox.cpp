@@ -39,12 +39,6 @@ class tst_QFontComboBox : public QObject
 {
     Q_OBJECT
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-
 private slots:
     void qfontcombobox_data();
     void qfontcombobox();
@@ -68,28 +62,6 @@ public:
     bool call_event(QEvent* e)
         { return SubQFontComboBox::event(e); }
 };
-
-// This will be called before the first test function is executed.
-// It is only called once.
-void tst_QFontComboBox::initTestCase()
-{
-}
-
-// This will be called after the last test function is executed.
-// It is only called once.
-void tst_QFontComboBox::cleanupTestCase()
-{
-}
-
-// This will be called before each test function is executed.
-void tst_QFontComboBox::init()
-{
-}
-
-// This will be called after every test function.
-void tst_QFontComboBox::cleanup()
-{
-}
 
 void tst_QFontComboBox::qfontcombobox_data()
 {

@@ -75,16 +75,10 @@ class tst_QMouseEvent : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QMouseEvent();
-    virtual ~tst_QMouseEvent();
-
-
 public slots:
     void initTestCase();
     void cleanupTestCase();
     void init();
-    void cleanup();
 private slots:
     void checkMousePressEvent_data();
     void checkMousePressEvent();
@@ -94,17 +88,6 @@ private slots:
 private:
     MouseEventWidget* testMouseWidget;
 };
-
-
-
-tst_QMouseEvent::tst_QMouseEvent()
-{
-}
-
-tst_QMouseEvent::~tst_QMouseEvent()
-{
-
-}
 
 void tst_QMouseEvent::initTestCase()
 {
@@ -127,10 +110,6 @@ void tst_QMouseEvent::init()
     testMouseWidget->mouseReleaseButton = 0;
     testMouseWidget->mouseReleaseButtons = 0;
     testMouseWidget->mouseReleaseModifiers = 0;
-}
-
-void tst_QMouseEvent::cleanup()
-{
 }
 
 void tst_QMouseEvent::checkMousePressEvent_data()

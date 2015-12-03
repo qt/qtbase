@@ -102,7 +102,6 @@ class tst_QSslSocket : public QObject
 
 public:
     tst_QSslSocket();
-    virtual ~tst_QSslSocket();
 
     static void enterLoop(int secs)
     {
@@ -288,10 +287,6 @@ tst_QSslSocket::tst_QSslSocket()
     qRegisterMetaType<tst_QSslSocket::PskConnectTestType>();
 #endif
 #endif
-}
-
-tst_QSslSocket::~tst_QSslSocket()
-{
 }
 
 enum ProxyTests {

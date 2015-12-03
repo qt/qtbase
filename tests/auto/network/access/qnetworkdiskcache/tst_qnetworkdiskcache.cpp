@@ -50,14 +50,12 @@ public:
     tst_QNetworkDiskCache();
 
 public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
     void accessAfterRemoveReadyReadSlot();
     void setCookieHeaderMetaDataChangedSlot();
 
 private slots:
+    void initTestCase();
+    void cleanupTestCase();
     void qnetworkdiskcache_data();
     void qnetworkdiskcache();
 
@@ -200,16 +198,6 @@ void tst_QNetworkDiskCache::cleanupTestCase()
     QDir workingDir("foo");
     if (workingDir.exists())
         workingDir.removeRecursively();
-}
-
-// This will be called before each test function is executed.
-void tst_QNetworkDiskCache::init()
-{
-}
-
-// This will be called after every test function.
-void tst_QNetworkDiskCache::cleanup()
-{
 }
 
 void tst_QNetworkDiskCache::qnetworkdiskcache_data()

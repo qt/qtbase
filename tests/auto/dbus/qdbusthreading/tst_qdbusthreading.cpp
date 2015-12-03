@@ -96,7 +96,6 @@ public Q_SLOTS:
     void callbackInAnotherAuxThread_thread();
 
 private Q_SLOTS:
-    void initTestCase();
     void dyingThread();
     void lastInstanceInOtherThread();
     void concurrentCreation();
@@ -234,10 +233,6 @@ void tst_QDBusThreading::cleanup()
     loop = 0;
 
     QTest::qWait(500);
-}
-
-void tst_QDBusThreading::initTestCase()
-{
 }
 
 void tst_QDBusThreading::dyingThread_thread()

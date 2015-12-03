@@ -92,17 +92,9 @@ class tst_QHostInfo : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QHostInfo();
-    virtual ~tst_QHostInfo();
-
-
-public slots:
-    void init();
-    void cleanup();
-    void initTestCase();
-
 private slots:
+    void init();
+    void initTestCase();
     void getSetCheck();
     void staticInformation();
     void lookupIPv4_data();
@@ -169,14 +161,6 @@ void tst_QHostInfo::staticInformation()
     qDebug() << "Domain name:" << QHostInfo::localDomainName();
 }
 
-tst_QHostInfo::tst_QHostInfo()
-{
-}
-
-tst_QHostInfo::~tst_QHostInfo()
-{
-}
-
 void tst_QHostInfo::initTestCase()
 {
     QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
@@ -235,10 +219,6 @@ void tst_QHostInfo::init()
 
     QFETCH_GLOBAL(bool, cache);
     qt_qhostinfo_enable_cache(cache);
-}
-
-void tst_QHostInfo::cleanup()
-{
 }
 
 void tst_QHostInfo::lookupIPv4_data()

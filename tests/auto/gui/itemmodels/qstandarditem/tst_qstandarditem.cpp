@@ -40,14 +40,6 @@ class tst_QStandardItem : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QStandardItem();
-    virtual ~tst_QStandardItem();
-
-public slots:
-    void init();
-    void cleanup();
-
 private slots:
     void ctor();
     void textCtor();
@@ -83,22 +75,6 @@ private slots:
     void subclassing();
     void lessThan();
 };
-
-tst_QStandardItem::tst_QStandardItem()
-{
-}
-
-tst_QStandardItem::~tst_QStandardItem()
-{
-}
-
-void tst_QStandardItem::init()
-{
-}
-
-void tst_QStandardItem::cleanup()
-{
-}
 
 void tst_QStandardItem::ctor()
 {

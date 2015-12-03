@@ -51,16 +51,9 @@ class tst_QHttpSocketEngine : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QHttpSocketEngine();
-    virtual ~tst_QHttpSocketEngine();
-
-
-public slots:
+private slots:
     void initTestCase();
     void init();
-    void cleanup();
-private slots:
     void construction();
     void errorTest_data();
     void errorTest();
@@ -131,14 +124,6 @@ public slots:
     }
 };
 
-tst_QHttpSocketEngine::tst_QHttpSocketEngine()
-{
-}
-
-tst_QHttpSocketEngine::~tst_QHttpSocketEngine()
-{
-}
-
 void tst_QHttpSocketEngine::initTestCase()
 {
     QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
@@ -148,10 +133,6 @@ void tst_QHttpSocketEngine::init()
 {
     tmpSocket = 0;
     bytesAvailable = 0;
-}
-
-void tst_QHttpSocketEngine::cleanup()
-{
 }
 
 //---------------------------------------------------------------------------

@@ -90,15 +90,10 @@ class tst_QItemView : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QItemView() {};
-    virtual ~tst_QItemView() {};
-
-public slots:
+private slots:
     void init();
     void cleanup();
 
-private slots:
     void nonDestructiveBasicTest_data();
     void nonDestructiveBasicTest();
 

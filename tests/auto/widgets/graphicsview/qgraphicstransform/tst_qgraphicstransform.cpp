@@ -39,12 +39,6 @@
 class tst_QGraphicsTransform : public QObject {
     Q_OBJECT
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-
 private slots:
     void scale();
     void rotation();
@@ -56,29 +50,6 @@ private slots:
 private:
     QString toString(QTransform const&);
 };
-
-
-// This will be called before the first test function is executed.
-// It is only called once.
-void tst_QGraphicsTransform::initTestCase()
-{
-}
-
-// This will be called after the last test function is executed.
-// It is only called once.
-void tst_QGraphicsTransform::cleanupTestCase()
-{
-}
-
-// This will be called before each test function is executed.
-void tst_QGraphicsTransform::init()
-{
-}
-
-// This will be called after every test function.
-void tst_QGraphicsTransform::cleanup()
-{
-}
 
 static QTransform transform2D(const QGraphicsTransform& t)
 {

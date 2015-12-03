@@ -42,13 +42,8 @@ class tst_QGraphicsGridLayout : public QObject
 {
     Q_OBJECT
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-
 private slots:
+    void initTestCase();
     void qgraphicsgridlayout_data();
     void qgraphicsgridlayout();
     void addItem_data();
@@ -309,25 +304,9 @@ typedef QList<QSizeF> SizeList;
 // It is only called once.
 void tst_QGraphicsGridLayout::initTestCase()
 {
-}
-
-// This will be called after the last test function is executed.
-// It is only called once.
-void tst_QGraphicsGridLayout::cleanupTestCase()
-{
-}
-
-// This will be called before each test function is executed.
-void tst_QGraphicsGridLayout::init()
-{
 #ifdef Q_OS_WINCE //disable magic for WindowsCE
     qApp->setAutoMaximizeThreshold(-1);
 #endif
-}
-
-// This will be called after every test function.
-void tst_QGraphicsGridLayout::cleanup()
-{
 }
 
 void tst_QGraphicsGridLayout::qgraphicsgridlayout_data()

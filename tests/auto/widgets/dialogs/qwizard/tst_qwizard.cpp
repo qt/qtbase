@@ -59,11 +59,8 @@ class tst_QWizard : public QObject
 public:
     tst_QWizard();
 
-public slots:
-    void init();
-    void cleanup();
-
 private slots:
+    void cleanup();
     void buttonText();
     void setButtonLayout();
     void setButton();
@@ -137,10 +134,6 @@ private slots:
 };
 
 tst_QWizard::tst_QWizard()
-{
-}
-
-void tst_QWizard::init()
 {
 #ifdef Q_OS_WINCE //disable magic for WindowsCE
     qApp->setAutoMaximizeThreshold(-1);

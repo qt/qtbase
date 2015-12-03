@@ -49,17 +49,12 @@
 class tst_QPushButton : public QObject
 {
 Q_OBJECT
-public:
-    tst_QPushButton();
-    virtual ~tst_QPushButton();
 
-
-public slots:
+private slots:
     void initTestCase();
     void cleanupTestCase();
     void init();
-    void cleanup();
-private slots:
+
     void getSetCheck();
     void autoRepeat();
     void pressed();
@@ -109,14 +104,6 @@ void tst_QPushButton::getSetCheck()
     delete var1;
 }
 
-tst_QPushButton::tst_QPushButton()
-{
-}
-
-tst_QPushButton::~tst_QPushButton()
-{
-}
-
 void tst_QPushButton::initTestCase()
 {
     // Create the test class
@@ -148,11 +135,6 @@ void tst_QPushButton::init()
 
     resetCounters();
 }
-
-void tst_QPushButton::cleanup()
-{
-}
-
 
 void tst_QPushButton::resetCounters()
 {

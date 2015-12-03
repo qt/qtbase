@@ -44,19 +44,9 @@ class tst_NoQtEventLoop : public QObject
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-    void cleanup();
     void consumeMouseEvents();
 
 };
-
-void tst_NoQtEventLoop::initTestCase()
-{
-}
-
-void tst_NoQtEventLoop::cleanup()
-{
-}
 
 class Window : public QWindow
 {

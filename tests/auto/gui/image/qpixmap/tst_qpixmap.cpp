@@ -64,12 +64,8 @@ class tst_QPixmap : public QObject
 
 public:
     tst_QPixmap();
-    virtual ~tst_QPixmap();
-
 
 public slots:
-    void init();
-    void cleanup();
     void initTestCase();
     void cleanupTestCase();
 
@@ -209,18 +205,6 @@ tst_QPixmap::tst_QPixmap()
     : m_prefix(QFINDTESTDATA("images/"))
     , m_convertFromImage(QFINDTESTDATA("convertFromImage"))
     , m_loadFromData(QFINDTESTDATA("loadFromData"))
-{
-}
-
-tst_QPixmap::~tst_QPixmap()
-{
-}
-
-void tst_QPixmap::init()
-{
-}
-
-void tst_QPixmap::cleanup()
 {
 }
 

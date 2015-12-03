@@ -309,17 +309,9 @@ class tst_Gestures : public QObject
 {
 Q_OBJECT
 
-public:
-    tst_Gestures();
-    virtual ~tst_Gestures();
-
-public slots:
+private slots:
     void initTestCase();
     void cleanupTestCase();
-    void init();
-    void cleanup();
-
-private slots:
     void customGesture();
     void autoCancelingGestures();
     void gestureOverChild();
@@ -355,14 +347,6 @@ private slots:
     void bug_13501_gesture_not_accepted();
 };
 
-tst_Gestures::tst_Gestures()
-{
-}
-
-tst_Gestures::~tst_Gestures()
-{
-}
-
 void tst_Gestures::initTestCase()
 {
     CustomGesture::GestureType = QGestureRecognizer::registerRecognizer(new CustomGestureRecognizer);
@@ -373,14 +357,6 @@ void tst_Gestures::initTestCase()
 void tst_Gestures::cleanupTestCase()
 {
     QGestureRecognizer::unregisterRecognizer(CustomGesture::GestureType);
-}
-
-void tst_Gestures::init()
-{
-}
-
-void tst_Gestures::cleanup()
-{
 }
 
 void tst_Gestures::customGesture()

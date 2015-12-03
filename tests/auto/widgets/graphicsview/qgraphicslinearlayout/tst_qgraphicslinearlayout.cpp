@@ -46,13 +46,8 @@
 class tst_QGraphicsLinearLayout : public QObject {
 Q_OBJECT
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-
 private slots:
+    void initTestCase();
     void qgraphicslinearlayout_data();
     void qgraphicslinearlayout();
 
@@ -149,22 +144,6 @@ void tst_QGraphicsLinearLayout::initTestCase()
     // since the style will influence the results, we have to ensure
     // that the tests are run using the same style on all platforms
     QApplication::setStyle("windows");
-}
-
-// This will be called after the last test function is executed.
-// It is only called once.
-void tst_QGraphicsLinearLayout::cleanupTestCase()
-{
-}
-
-// This will be called before each test function is executed.
-void tst_QGraphicsLinearLayout::init()
-{
-}
-
-// This will be called after every test function.
-void tst_QGraphicsLinearLayout::cleanup()
-{
 }
 
 class RectWidget : public QGraphicsWidget

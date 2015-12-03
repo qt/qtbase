@@ -58,14 +58,9 @@ class tst_QTextTable : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QTextTable();
-
-
-public slots:
+private slots:
     void init();
     void cleanup();
-private slots:
     void cursorPositioning();
     void variousTableModifications();
     void tableShrinking();
@@ -114,9 +109,6 @@ private:
     QTextDocument *doc;
     QTextCursor cursor;
 };
-
-tst_QTextTable::tst_QTextTable()
-{}
 
 void tst_QTextTable::init()
 {

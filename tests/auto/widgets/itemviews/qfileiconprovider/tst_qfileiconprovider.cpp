@@ -40,12 +40,6 @@ class tst_QFileIconProvider : public QObject
 {
     Q_OBJECT
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-
 private slots:
     void qfileiconprovider_data();
     void qfileiconprovider();
@@ -68,29 +62,6 @@ class SubQFileIconProvider : public QFileIconProvider
 public:
 
 };
-
-// This will be called before the first test function is executed.
-// It is only called once.
-void tst_QFileIconProvider::initTestCase()
-{
-}
-
-// This will be called after the last test function is executed.
-// It is only called once.
-void tst_QFileIconProvider::cleanupTestCase()
-{
-}
-
-// This will be called before each test function is executed.
-void tst_QFileIconProvider::init()
-{
-}
-
-// This will be called after every test function.
-void tst_QFileIconProvider::cleanup()
-{
-}
-
 
 void tst_QFileIconProvider::qfileiconprovider_data()
 {

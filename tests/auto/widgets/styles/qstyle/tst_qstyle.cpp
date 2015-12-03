@@ -92,17 +92,15 @@ class tst_QStyle : public QObject
     Q_OBJECT
 public:
     tst_QStyle();
-    virtual ~tst_QStyle();
+
 private:
     bool testAllFunctions(QStyle *);
     bool testScrollBarSubControls(QStyle *);
     void testPainting(QStyle *style, const QString &platform);
 private slots:
     void drawItemPixmap();
-    void initTestCase();
-    void cleanup();
-    void cleanupTestCase();
     void init();
+    void cleanup();
 #ifndef QT_NO_STYLE_FUSION
     void testFusionStyle();
 #endif
@@ -142,10 +140,6 @@ tst_QStyle::tst_QStyle()
     testWidget = 0;
 }
 
-tst_QStyle::~tst_QStyle()
-{
-}
-
 class MyWidget : public QWidget
 {
 public:
@@ -163,14 +157,6 @@ void tst_QStyle::cleanup()
 {
     delete testWidget;
     testWidget = 0;
-}
-
-void tst_QStyle::initTestCase()
-{
-}
-
-void tst_QStyle::cleanupTestCase()
-{
 }
 
 void tst_QStyle::testStyleFactory()

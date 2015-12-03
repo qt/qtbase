@@ -41,33 +41,11 @@ class tst_qdesktopservices : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_qdesktopservices();
-    virtual ~tst_qdesktopservices();
-
 private slots:
-    void init();
-    void cleanup();
     void openUrl();
     void handlers();
     void testDataLocation();
 };
-
-tst_qdesktopservices::tst_qdesktopservices()
-{
-}
-
-tst_qdesktopservices::~tst_qdesktopservices()
-{
-}
-
-void tst_qdesktopservices::init()
-{
-}
-
-void tst_qdesktopservices::cleanup()
-{
-}
 
 void tst_qdesktopservices::openUrl()
 {

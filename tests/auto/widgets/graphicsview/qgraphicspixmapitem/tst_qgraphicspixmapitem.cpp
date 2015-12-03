@@ -40,12 +40,6 @@ class tst_QGraphicsPixmapItem : public QObject
 {
     Q_OBJECT
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-
 private slots:
     void qgraphicspixmapitem_data();
     void qgraphicspixmapitem();
@@ -101,28 +95,6 @@ public:
     bool call_supportsExtension(Extension extension) const
         { return SubQGraphicsPixmapItem::supportsExtension((QGraphicsItem::Extension)extension); }
 };
-
-// This will be called before the first test function is executed.
-// It is only called once.
-void tst_QGraphicsPixmapItem::initTestCase()
-{
-}
-
-// This will be called after the last test function is executed.
-// It is only called once.
-void tst_QGraphicsPixmapItem::cleanupTestCase()
-{
-}
-
-// This will be called before each test function is executed.
-void tst_QGraphicsPixmapItem::init()
-{
-}
-
-// This will be called after every test function.
-void tst_QGraphicsPixmapItem::cleanup()
-{
-}
 
 void tst_QGraphicsPixmapItem::qgraphicspixmapitem_data()
 {

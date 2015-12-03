@@ -41,12 +41,6 @@ class tst_QNetworkCacheMetaData : public QObject
 {
     Q_OBJECT
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-
 private slots:
     void qnetworkcachemetadata_data();
     void qnetworkcachemetadata();
@@ -75,28 +69,6 @@ private slots:
 class SubQNetworkCacheMetaData : public QNetworkCacheMetaData
 {
 public:};
-
-// This will be called before the first test function is executed.
-// It is only called once.
-void tst_QNetworkCacheMetaData::initTestCase()
-{
-}
-
-// This will be called after the last test function is executed.
-// It is only called once.
-void tst_QNetworkCacheMetaData::cleanupTestCase()
-{
-}
-
-// This will be called before each test function is executed.
-void tst_QNetworkCacheMetaData::init()
-{
-}
-
-// This will be called after every test function.
-void tst_QNetworkCacheMetaData::cleanup()
-{
-}
 
 void tst_QNetworkCacheMetaData::qnetworkcachemetadata_data()
 {

@@ -47,16 +47,11 @@
 class tst_QTextDocumentLayout : public QObject
 {
     Q_OBJECT
-public:
-    inline tst_QTextDocumentLayout() {}
-    virtual ~tst_QTextDocumentLayout() {}
 
-public slots:
+private slots:
     void init();
     void cleanup();
     void cleanupTestCase();
-
-private slots:
     void defaultPageSizeHandling();
     void idealWidth();
     void lineSeparatorFollowingTable();

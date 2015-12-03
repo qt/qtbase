@@ -50,13 +50,6 @@ class tst_QFont : public QObject
 {
 Q_OBJECT
 
-public:
-    tst_QFont();
-    virtual ~tst_QFont();
-
-public slots:
-    void init();
-    void cleanup();
 private slots:
     void getSetCheck();
     void exactMatch();
@@ -113,27 +106,6 @@ void tst_QFont::getSetCheck()
     QCOMPARE(QFont::StyleStrategy(QFont::NoAntialias), obj1.styleStrategy());
     obj1.setStyleStrategy(QFont::StyleStrategy(QFont::OpenGLCompatible));
     QCOMPARE(QFont::StyleStrategy(QFont::OpenGLCompatible), obj1.styleStrategy());
-}
-
-tst_QFont::tst_QFont()
-{
-}
-
-tst_QFont::~tst_QFont()
-{
-
-}
-
-void tst_QFont::init()
-{
-// TODO: Add initialization code here.
-// This will be executed immediately before each test is run.
-}
-
-void tst_QFont::cleanup()
-{
-// TODO: Add cleanup code here.
-// This will be executed immediately after each test is run.
 }
 
 void tst_QFont::exactMatch()

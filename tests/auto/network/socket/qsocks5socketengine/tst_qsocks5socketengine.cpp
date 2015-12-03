@@ -57,16 +57,9 @@ class tst_QSocks5SocketEngine : public QObject, public QAbstractSocketEngineRece
 {
     Q_OBJECT
 
-public:
-    tst_QSocks5SocketEngine();
-    virtual ~tst_QSocks5SocketEngine();
-
-
-public slots:
+private slots:
     void initTestCase();
     void init();
-    void cleanup();
-private slots:
     void construction();
     void errorTest_data();
     void errorTest();
@@ -160,14 +153,6 @@ private slots:
     }
 };
 
-tst_QSocks5SocketEngine::tst_QSocks5SocketEngine()
-{
-}
-
-tst_QSocks5SocketEngine::~tst_QSocks5SocketEngine()
-{
-}
-
 void tst_QSocks5SocketEngine::initTestCase()
 {
     QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
@@ -177,10 +162,6 @@ void tst_QSocks5SocketEngine::init()
 {
     tmpSocket = 0;
     bytesAvailable = 0;
-}
-
-void tst_QSocks5SocketEngine::cleanup()
-{
 }
 
 //---------------------------------------------------------------------------

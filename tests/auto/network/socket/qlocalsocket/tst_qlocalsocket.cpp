@@ -54,9 +54,8 @@ class tst_QLocalSocket : public QObject
 {
     Q_OBJECT
 
-public Q_SLOTS:
-    void init();
-    void cleanup();
+public:
+    tst_QLocalSocket();
 
 private slots:
     // basics
@@ -116,16 +115,12 @@ private slots:
 
 };
 
-void tst_QLocalSocket::init()
+tst_QLocalSocket::tst_QLocalSocket()
 {
     qRegisterMetaType<QLocalSocket::LocalSocketState>("QLocalSocket::LocalSocketState");
     qRegisterMetaType<QLocalSocket::LocalSocketError>("QLocalSocket::LocalSocketError");
     qRegisterMetaType<QLocalServer::SocketOption>("QLocalServer::SocketOption");
     qRegisterMetaType<QFile::Permissions>("QFile::Permissions");
-}
-
-void tst_QLocalSocket::cleanup()
-{
 }
 
 class LocalServer : public QLocalServer

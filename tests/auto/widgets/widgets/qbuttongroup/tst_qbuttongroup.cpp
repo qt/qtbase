@@ -68,14 +68,7 @@ protected:
 class tst_QButtonGroup : public QObject
 {
 Q_OBJECT
-public:
-    tst_QButtonGroup();
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
 private slots:
     void arrowKeyNavigation();
     void exclusive();
@@ -90,27 +83,6 @@ private slots:
     void task209485_removeFromGroupInEventHandler_data();
     void task209485_removeFromGroupInEventHandler();
 };
-
-tst_QButtonGroup::tst_QButtonGroup()
-{
-}
-
-
-void tst_QButtonGroup::initTestCase()
-{
-}
-
-void tst_QButtonGroup::cleanupTestCase()
-{
-}
-
-void tst_QButtonGroup::init()
-{
-}
-
-void tst_QButtonGroup::cleanup()
-{
-}
 
 QT_BEGIN_NAMESPACE
 extern bool Q_GUI_EXPORT qt_tab_all_widgets();

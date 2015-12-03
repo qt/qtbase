@@ -69,14 +69,10 @@ public:
 class tst_QSyntaxHighlighter : public QObject
 {
     Q_OBJECT
-public:
-    inline tst_QSyntaxHighlighter() {}
-
-public slots:
-    void init();
-    void cleanup();
 
 private slots:
+    void init();
+    void cleanup();
     void basic();
     void basicTwo();
     void removeFormatsOnDelete();

@@ -189,15 +189,7 @@ class tst_QItemDelegate : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QItemDelegate();
-    virtual ~tst_QItemDelegate();
-
 private slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
     void getSetCheck();
     void textRectangle_data();
     void textRectangle();
@@ -253,30 +245,6 @@ void tst_QItemDelegate::getSetCheck()
     QCOMPARE(obj1.hasClipping(), false);
     obj1.setClipping(true);
     QCOMPARE(obj1.hasClipping(), true);
-}
-
-tst_QItemDelegate::tst_QItemDelegate()
-{
-}
-
-tst_QItemDelegate::~tst_QItemDelegate()
-{
-}
-
-void tst_QItemDelegate::initTestCase()
-{
-}
-
-void tst_QItemDelegate::cleanupTestCase()
-{
-}
-
-void tst_QItemDelegate::init()
-{
-}
-
-void tst_QItemDelegate::cleanup()
-{
 }
 
 void tst_QItemDelegate::textRectangle_data()

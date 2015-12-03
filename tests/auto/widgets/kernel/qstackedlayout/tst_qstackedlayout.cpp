@@ -46,16 +46,11 @@ class tst_QStackedLayout : public QObject
 
 public:
     tst_QStackedLayout();
-    virtual ~tst_QStackedLayout();
 
-
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
+private slots:
     void init();
     void cleanup();
 
-private slots:
     void getSetCheck();
     void testCase();
     void deleteCurrent();
@@ -100,18 +95,6 @@ tst_QStackedLayout::tst_QStackedLayout()
 {
 }
 
-tst_QStackedLayout::~tst_QStackedLayout()
-{
-}
-
-void tst_QStackedLayout::initTestCase()
-{
-}
-
-void tst_QStackedLayout::cleanupTestCase()
-{
-}
-
 void tst_QStackedLayout::init()
 {
     if (testWidget) {
@@ -133,7 +116,6 @@ void tst_QStackedLayout::cleanup()
     delete testWidget;
     testWidget = 0;
 }
-
 
 void tst_QStackedLayout::testCase()
 {

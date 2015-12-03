@@ -87,17 +87,9 @@ class tst_QListView : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QListView();
-    virtual ~tst_QListView();
-
-
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
 private slots:
+    void initTestCase();
+    void cleanup();
     void getSetCheck();
     void noDelegate();
     void noModel();
@@ -292,23 +284,7 @@ public:
     mutable bool wrongIndex;
 };
 
-tst_QListView::tst_QListView()
-{
-}
-
-tst_QListView::~tst_QListView()
-{
-}
-
 void tst_QListView::initTestCase()
-{
-}
-
-void tst_QListView::cleanupTestCase()
-{
-}
-
-void tst_QListView::init()
 {
 #ifdef Q_OS_WINCE //disable magic for WindowsCE
     qApp->setAutoMaximizeThreshold(-1);
@@ -319,7 +295,6 @@ void tst_QListView::cleanup()
 {
     QVERIFY(QApplication::topLevelWidgets().isEmpty());
 }
-
 
 void tst_QListView::noDelegate()
 {

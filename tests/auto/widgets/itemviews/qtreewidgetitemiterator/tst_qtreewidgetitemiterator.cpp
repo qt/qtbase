@@ -46,15 +46,11 @@ class tst_QTreeWidgetItemIterator : public QObject
 
 public:
     tst_QTreeWidgetItemIterator();
-    ~tst_QTreeWidgetItemIterator();
-
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
 
 private slots:
+    void initTestCase();
+    void cleanupTestCase();
+
     void postincrement();
     void preincrement();
     void postdecrement();
@@ -78,10 +74,6 @@ private:
 };
 
 tst_QTreeWidgetItemIterator::tst_QTreeWidgetItemIterator(): testWidget(0)
-{
-}
-
-tst_QTreeWidgetItemIterator::~tst_QTreeWidgetItemIterator()
 {
 }
 
@@ -173,14 +165,6 @@ void tst_QTreeWidgetItemIterator::cleanupTestCase()
 {
     testWidget->hide();
     delete testWidget;
-}
-
-void tst_QTreeWidgetItemIterator::init()
-{
-}
-
-void tst_QTreeWidgetItemIterator::cleanup()
-{
 }
 
 void tst_QTreeWidgetItemIterator::iteratorflags_data()

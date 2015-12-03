@@ -132,14 +132,13 @@ public:
     enum EventStates { Press, Release, Click };
 
     tst_QLineEdit();
-    virtual ~tst_QLineEdit();
 
-public slots:
+private slots:
     void initTestCase();
     void cleanupTestCase();
     void init();
     void cleanup();
-private slots:
+
     void getSetCheck();
     void experimental();
 
@@ -378,10 +377,6 @@ tst_QLineEdit::tst_QLineEdit() : validInput(false), m_testWidget(0), m_keyboardS
             || m_keyboardScheme == QPlatformTheme::CdeKeyboardScheme) {
         m_keyboardScheme = QPlatformTheme::X11KeyboardScheme;
     }
-}
-
-tst_QLineEdit::~tst_QLineEdit()
-{
 }
 
 QLineEdit *tst_QLineEdit::ensureTestWidget()

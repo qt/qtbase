@@ -41,15 +41,6 @@ class tst_QPixmapFilter : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QPixmapFilter();
-    virtual ~tst_QPixmapFilter();
-
-
-public slots:
-    void init();
-    void cleanup();
-
 private slots:
     void colorizeSetColor();
     void colorizeSetStrength();
@@ -77,22 +68,6 @@ public:
         p->drawPixmap(QRectF(pt, srcRect.size()), src, srcRect);
     }
 };
-
-tst_QPixmapFilter::tst_QPixmapFilter()
-{
-}
-
-tst_QPixmapFilter::~tst_QPixmapFilter()
-{
-}
-
-void tst_QPixmapFilter::init()
-{
-}
-
-void tst_QPixmapFilter::cleanup()
-{
-}
 
 void tst_QPixmapFilter::testDefaultImplementations()
 {

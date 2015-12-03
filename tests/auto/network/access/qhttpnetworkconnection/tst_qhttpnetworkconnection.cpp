@@ -44,9 +44,6 @@ class tst_QHttpNetworkConnection: public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QHttpNetworkConnection();
-
 public Q_SLOTS:
     void finishedReply();
     void finishedWithError(QNetworkReply::NetworkError errorCode, const QString &detail);
@@ -60,11 +57,7 @@ private:
     QNetworkReply::NetworkError netErrorCode;
 
 private Q_SLOTS:
-    void init();
-    void cleanup();
     void initTestCase();
-    void cleanupTestCase();
-
     void options_data();
     void options();
     void get_data();
@@ -111,25 +104,9 @@ private Q_SLOTS:
     void overlappingCloseAndWrite();
 };
 
-tst_QHttpNetworkConnection::tst_QHttpNetworkConnection()
-{
-}
-
 void tst_QHttpNetworkConnection::initTestCase()
 {
     QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
-}
-
-void tst_QHttpNetworkConnection::cleanupTestCase()
-{
-}
-
-void tst_QHttpNetworkConnection::init()
-{
-}
-
-void tst_QHttpNetworkConnection::cleanup()
-{
 }
 
 void tst_QHttpNetworkConnection::options_data()

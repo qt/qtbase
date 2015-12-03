@@ -46,13 +46,9 @@ Q_OBJECT
 
 public:
     tst_QFontDatabase();
-    virtual ~tst_QFontDatabase();
 
-public slots:
-    void initTestCase();
-    void init();
-    void cleanup();
 private slots:
+    void initTestCase();
     void styles_data();
     void styles();
 
@@ -82,26 +78,9 @@ tst_QFontDatabase::tst_QFontDatabase()
 {
 }
 
-tst_QFontDatabase::~tst_QFontDatabase()
-{
-
-}
-
 void tst_QFontDatabase::initTestCase()
 {
     QVERIFY(!m_testFont.isEmpty());
-}
-
-void tst_QFontDatabase::init()
-{
-// TODO: Add initialization code here.
-// This will be executed immediately before each test is run.
-}
-
-void tst_QFontDatabase::cleanup()
-{
-// TODO: Add cleanup code here.
-// This will be executed immediately after each test is run.
 }
 
 void tst_QFontDatabase::styles_data()

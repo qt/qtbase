@@ -70,16 +70,8 @@ class tst_PlatformSocketEngine : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_PlatformSocketEngine();
-    virtual ~tst_PlatformSocketEngine();
-
-
-public slots:
-    void initTestCase();
-    void init();
-    void cleanup();
 private slots:
+    void initTestCase();
     void construction();
     void simpleConnectToIMAP();
     void udpLoopbackTest();
@@ -99,25 +91,9 @@ private slots:
     void tooManySockets();
 };
 
-tst_PlatformSocketEngine::tst_PlatformSocketEngine()
-{
-}
-
-tst_PlatformSocketEngine::~tst_PlatformSocketEngine()
-{
-}
-
 void tst_PlatformSocketEngine::initTestCase()
 {
     QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
-}
-
-void tst_PlatformSocketEngine::init()
-{
-}
-
-void tst_PlatformSocketEngine::cleanup()
-{
 }
 
 //---------------------------------------------------------------------------

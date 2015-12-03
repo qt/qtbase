@@ -64,13 +64,11 @@ class tst_QTextDocument : public QObject
 
 public:
     tst_QTextDocument();
-    virtual ~tst_QTextDocument();
 
-public slots:
+private slots:
     void init();
     void cleanup();
     void cleanupTestCase();
-private slots:
     void getSetCheck();
     void isEmpty();
     void find_data();
@@ -245,10 +243,6 @@ tst_QTextDocument::tst_QTextDocument()
 {
     QImage img(16, 16, QImage::Format_ARGB32_Premultiplied);
     img.save("foo.png");
-}
-
-tst_QTextDocument::~tst_QTextDocument()
-{
 }
 
 void tst_QTextDocument::init()

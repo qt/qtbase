@@ -48,14 +48,9 @@ class tst_QTextBlock : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QTextBlock();
-
-
-public slots:
+private slots:
     void init();
     void cleanup();
-private slots:
     void fragmentOverBlockBoundaries();
     void excludeParagraphSeparatorFragment();
     void backwardsBlockIterator();
@@ -66,9 +61,6 @@ private:
     QTextDocument *doc;
     QTextCursor cursor;
 };
-
-tst_QTextBlock::tst_QTextBlock()
-{}
 
 void tst_QTextBlock::init()
 {

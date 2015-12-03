@@ -43,18 +43,22 @@
 
 // #define DEBUG_SAVE_IMAGE
 
+static inline QImage blankSquare()
+{
+    // a "blank" square; we compare against in our testfunctions to verify
+    // that we have actually painted something
+    QPixmap pm(1000, 1000);
+    pm.fill(Qt::white);
+    return pm.toImage();
+}
+
 class tst_QStaticText: public QObject
 {
     Q_OBJECT
 public:
-    tst_QStaticText() {}
+    tst_QStaticText() : m_whiteSquare(blankSquare()) {}
 
 private slots:
-    void initTestCase();
-
-    void init();
-    void cleanup();
-
     void constructionAndDestruction();
     void drawToPoint_data();
     void drawToPoint();
@@ -96,27 +100,10 @@ private slots:
 private:
     bool supportsTransformations() const;
 
-    QImage const    m_whiteSquare;
+    const QImage m_whiteSquare;
 };
 
 Q_DECLARE_METATYPE(QImage::Format);
-
-void tst_QStaticText::initTestCase()
-{
-    // a "blank" square; we compare against in our testfunctions to verify
-    // that we have actually painted something
-    QPixmap pm(1000, 1000);
-    pm.fill(Qt::white);
-    const_cast<QImage&>(m_whiteSquare) = pm.toImage();
-}
-
-void tst_QStaticText::init()
-{
-}
-
-void tst_QStaticText::cleanup()
-{
-}
 
 void tst_QStaticText::constructionAndDestruction()
 {

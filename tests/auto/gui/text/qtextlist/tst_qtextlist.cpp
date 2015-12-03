@@ -45,14 +45,9 @@ class tst_QTextList : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QTextList();
-
-
-public slots:
+private slots:
     void init();
     void cleanup();
-private slots:
     void item();
     void autoNumbering();
     void autoNumberingRTL();
@@ -77,9 +72,6 @@ private:
     QTextCursor cursor;
     QTestDocumentLayout *layout;
 };
-
-tst_QTextList::tst_QTextList()
-{}
 
 void tst_QTextList::init()
 {

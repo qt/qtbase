@@ -39,14 +39,6 @@
 class tst_QSidebar : public QObject {
   Q_OBJECT
 
-public:
-    tst_QSidebar();
-    virtual ~tst_QSidebar();
-
-public Q_SLOTS:
-    void init();
-    void cleanup();
-
 private slots:
     void setUrls();
     void selectUrls();
@@ -54,22 +46,6 @@ private slots:
 
     void goToUrl();
 };
-
-tst_QSidebar::tst_QSidebar()
-{
-}
-
-tst_QSidebar::~tst_QSidebar()
-{
-}
-
-void tst_QSidebar::init()
-{
-}
-
-void tst_QSidebar::cleanup()
-{
-}
 
 void tst_QSidebar::setUrls()
 {

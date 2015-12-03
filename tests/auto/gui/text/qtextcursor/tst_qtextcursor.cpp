@@ -51,14 +51,9 @@ class tst_QTextCursor : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QTextCursor();
-
-
-public slots:
+private slots:
     void init();
     void cleanup();
-private slots:
     void navigation1();
     void navigation2_data();
     void navigation2();
@@ -153,10 +148,6 @@ private:
     QTextDocument *doc;
     QTextCursor cursor;
 };
-
-
-tst_QTextCursor::tst_QTextCursor()
-{}
 
 void tst_QTextCursor::init()
 {

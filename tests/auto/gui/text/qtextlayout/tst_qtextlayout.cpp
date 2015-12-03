@@ -59,13 +59,10 @@ class tst_QTextLayout : public QObject
 
 public:
     tst_QTextLayout();
-    virtual ~tst_QTextLayout();
 
-
-public slots:
+private slots:
     void init();
     void cleanup();
-private slots:
     void getSetCheck();
     void lineBreaking();
 #ifdef QT_BUILD_INTERNAL
@@ -197,10 +194,6 @@ tst_QTextLayout::tst_QTextLayout()
 #ifdef QT_BUILD_INTERNAL
     qt_setQtEnableTestFont(true);
 #endif
-}
-
-tst_QTextLayout::~tst_QTextLayout()
-{
 }
 
 void tst_QTextLayout::init()

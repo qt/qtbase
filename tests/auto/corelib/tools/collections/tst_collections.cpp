@@ -96,13 +96,6 @@ class tst_Collections : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_Collections();
-    ~tst_Collections();
-
-public slots:
-    void init();
-    void cleanup();
 private slots:
     void typeinfo();
     void qstring();
@@ -173,23 +166,6 @@ QT_END_NAMESPACE
 struct Pod {
     int i1, i2;
 };
-
-tst_Collections::tst_Collections()
-{
-}
-
-tst_Collections::~tst_Collections()
-{
-
-}
-
-void tst_Collections::init()
-{
-}
-
-void tst_Collections::cleanup()
-{
-}
 
 void tst_Collections::typeinfo()
 {

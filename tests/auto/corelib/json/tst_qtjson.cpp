@@ -46,14 +46,9 @@
 class tst_QtJson: public QObject
 {
     Q_OBJECT
-public:
-    tst_QtJson(QObject *parent = 0);
 
 private Q_SLOTS:
     void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
 
     void testValueSimple();
     void testNumbers();
@@ -151,27 +146,11 @@ private:
     QString testDataDir;
 };
 
-tst_QtJson::tst_QtJson(QObject *parent) : QObject(parent)
-{
-}
-
 void tst_QtJson::initTestCase()
 {
     testDataDir = QFileInfo(QFINDTESTDATA("test.json")).absolutePath();
     if (testDataDir.isEmpty())
         testDataDir = QCoreApplication::applicationDirPath();
-}
-
-void tst_QtJson::cleanupTestCase()
-{
-}
-
-void tst_QtJson::init()
-{
-}
-
-void tst_QtJson::cleanup()
-{
 }
 
 void tst_QtJson::testValueSimple()

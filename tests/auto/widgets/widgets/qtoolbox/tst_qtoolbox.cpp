@@ -44,19 +44,13 @@ class tst_QToolBox : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QToolBox();
-    virtual ~tst_QToolBox();
-
 protected slots:
     void currentChanged(int);
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
+private slots:
     void init();
     void cleanup();
-private slots:
+
     void getSetCheck();
     void populate();
     void change();
@@ -104,14 +98,6 @@ void tst_QToolBox::getSetCheck()
 
     obj1.setCurrentWidget((QWidget *)0);
     QCOMPARE(w3, obj1.currentWidget());
-}
-
-tst_QToolBox::tst_QToolBox()
-{
-}
-
-tst_QToolBox::~tst_QToolBox()
-{
 }
 
 class tst_QToolBoxPrivate
@@ -181,14 +167,6 @@ void tst_QToolBox::cleanup()
 {
     delete testWidget;
     delete d;
-}
-
-void tst_QToolBox::initTestCase()
-{
-}
-
-void tst_QToolBox::cleanupTestCase()
-{
 }
 
 void tst_QToolBox::currentChanged(int index)

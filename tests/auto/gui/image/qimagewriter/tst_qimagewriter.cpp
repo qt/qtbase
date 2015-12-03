@@ -61,13 +61,10 @@ class tst_QImageWriter : public QObject
     Q_OBJECT
 
 public:
-    tst_QImageWriter();
     virtual ~tst_QImageWriter();
 
 public slots:
-    void init();
     void initTestCase();
-    void cleanup();
 
 private slots:
     void getSetCheck();
@@ -163,10 +160,6 @@ void tst_QImageWriter::getSetCheck()
     QCOMPARE(1.1f, obj1.gamma());
 }
 
-tst_QImageWriter::tst_QImageWriter()
-{
-}
-
 tst_QImageWriter::~tst_QImageWriter()
 {
     QDir dir(prefix);
@@ -175,14 +168,6 @@ tst_QImageWriter::~tst_QImageWriter()
         QFile::remove(dir.absoluteFilePath(file));
     }
 
-}
-
-void tst_QImageWriter::init()
-{
-}
-
-void tst_QImageWriter::cleanup()
-{
 }
 
 void tst_QImageWriter::writeImage_data()

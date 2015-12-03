@@ -101,16 +101,10 @@ class tst_QFiledialog : public QObject
 {
 Q_OBJECT
 
-public:
-    tst_QFiledialog();
-    virtual ~tst_QFiledialog();
-
-public slots:
+private slots:
     void initTestCase();
     void init();
     void cleanup();
-
-private slots:
     void currentChangedSignal();
 #ifdef QT_BUILD_INTERNAL
     void directoryEnteredSignal();
@@ -170,14 +164,6 @@ private slots:
 private:
     void cleanupSettingsFile();
 };
-
-tst_QFiledialog::tst_QFiledialog()
-{
-}
-
-tst_QFiledialog::~tst_QFiledialog()
-{
-}
 
 void tst_QFiledialog::cleanupSettingsFile()
 {

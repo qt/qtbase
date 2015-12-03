@@ -48,17 +48,11 @@ class tst_QAbstractButton : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QAbstractButton();
-    virtual ~tst_QAbstractButton();
-
-
-public slots:
+private slots:
     void initTestCase();
     void cleanupTestCase();
     void init();
-    void cleanup();
-private slots:
+
     void setAutoRepeat_data();
     void setAutoRepeat();
 
@@ -147,14 +141,6 @@ private:
     }
 };
 
-tst_QAbstractButton::tst_QAbstractButton()
-{
-}
-
-tst_QAbstractButton::~tst_QAbstractButton()
-{
-}
-
 void tst_QAbstractButton::initTestCase()
 {
     testWidget = new MyButton(0);
@@ -186,10 +172,6 @@ void tst_QAbstractButton::init()
     press_count = 0;
     release_count = 0;
     click_count = 0;
-}
-
-void tst_QAbstractButton::cleanup()
-{
 }
 
 void tst_QAbstractButton::resetValues()

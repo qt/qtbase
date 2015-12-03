@@ -48,16 +48,12 @@
 class tst_QCommandLinkButton : public QObject
 {
     Q_OBJECT
-public:
-    tst_QCommandLinkButton();
-    virtual ~tst_QCommandLinkButton();
 
-public slots:
+private slots:
     void initTestCase();
     void cleanupTestCase();
     void init();
-    void cleanup();
-private slots:
+
     void getSetCheck();
     void pressed();
     void setAccel();
@@ -112,14 +108,6 @@ void tst_QCommandLinkButton::getSetCheck()
     delete var1;
 }
 
-tst_QCommandLinkButton::tst_QCommandLinkButton()
-{
-}
-
-tst_QCommandLinkButton::~tst_QCommandLinkButton()
-{
-}
-
 void tst_QCommandLinkButton::initTestCase()
 {
     // Create the test class
@@ -151,10 +139,6 @@ void tst_QCommandLinkButton::init()
     testWidget->setShortcut( seq );
 
     resetCounters();
-}
-
-void tst_QCommandLinkButton::cleanup()
-{
 }
 
 void tst_QCommandLinkButton::resetCounters()

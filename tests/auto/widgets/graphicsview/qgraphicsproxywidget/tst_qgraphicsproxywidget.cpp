@@ -84,13 +84,9 @@ class tst_QGraphicsProxyWidget : public QObject
 {
     Q_OBJECT
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-
 private slots:
+    void initTestCase();
+    void cleanup();
     void qgraphicsproxywidget_data();
     void qgraphicsproxywidget();
     void paint();
@@ -289,17 +285,6 @@ void tst_QGraphicsProxyWidget::initTestCase()
     QApplication::setEffectEnabled(Qt::UI_AnimateMenu, false);
     // Disable combo for QTBUG_43780_visibility()/Windows Vista.
     QApplication::setEffectEnabled(Qt::UI_AnimateCombo, false);
-}
-
-// This will be called after the last test function is executed.
-// It is only called once.
-void tst_QGraphicsProxyWidget::cleanupTestCase()
-{
-}
-
-// This will be called before each test function is executed.
-void tst_QGraphicsProxyWidget::init()
-{
 }
 
 // This will be called after every test function.
