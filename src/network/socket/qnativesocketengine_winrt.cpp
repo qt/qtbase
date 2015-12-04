@@ -380,8 +380,10 @@ int QNativeSocketEngine::accept()
     Q_CHECK_STATE(QNativeSocketEngine::accept(), QAbstractSocket::ListeningState, -1);
     Q_CHECK_TYPE(QNativeSocketEngine::accept(), QAbstractSocket::TcpSocket, -1);
 
-    if (d->socketDescriptor == -1 || d->pendingConnections.isEmpty())
+    if (d->socketDescriptor == -1 || d->pendingConnections.isEmpty()) {
+        d->setError(QAbstractSocket::TemporaryError, QNativeSocketEnginePrivate::TemporaryErrorString);
         return -1;
+    }
 
     // Start processing incoming data
     if (d->socketType == QAbstractSocket::TcpSocket) {
