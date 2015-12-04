@@ -49,10 +49,20 @@
         ret; \
     }
 
+#define RETURN_IF_FAILED_WITH_ARGS(msg, ret, ...) \
+    if (FAILED(hr)) { \
+        qErrnoWarning(hr, msg, __VA_ARGS__); \
+        ret; \
+    }
+
 #define RETURN_HR_IF_FAILED(msg) RETURN_IF_FAILED(msg, return hr)
 #define RETURN_OK_IF_FAILED(msg) RETURN_IF_FAILED(msg, return S_OK)
 #define RETURN_FALSE_IF_FAILED(msg) RETURN_IF_FAILED(msg, return false)
 #define RETURN_VOID_IF_FAILED(msg) RETURN_IF_FAILED(msg, return)
+#define RETURN_HR_IF_FAILED_WITH_ARGS(msg, ...) RETURN_IF_FAILED_WITH_ARGS(msg, return hr, __VA_ARGS__)
+#define RETURN_OK_IF_FAILED_WITH_ARGS(msg, ...) RETURN_IF_FAILED_WITH_ARGS(msg, return S_OK, __VA_ARGS__)
+#define RETURN_FALSE_IF_FAILED_WITH_ARGS(msg, ...) RETURN_IF_FAILED_WITH_ARGS(msg, return false, __VA_ARGS__)
+#define RETURN_VOID_IF_FAILED_WITH_ARGS(msg, ...) RETURN_IF_FAILED_WITH_ARGS(msg, return, __VA_ARGS__)
 
 #define Q_ASSERT_SUCCEEDED(hr) \
     Q_ASSERT_X(SUCCEEDED(hr), Q_FUNC_INFO, qPrintable(qt_error_string(hr)));
