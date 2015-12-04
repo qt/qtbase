@@ -585,7 +585,7 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                         wit != where.end(); ++wit) {
                             const ProStringList &l = tmp_proj.values(ProKey(*wit));
                             for (ProStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
-                                QString opt = (*it).toQString();
+                                const QString opt = fixLibFlag(*it).toQString();
                                 if (!opt.startsWith("/") &&   // Not a switch
                                     opt != newDep->target && // Not self
                                     opt != "opengl32.lib" && // We don't care about these libs
