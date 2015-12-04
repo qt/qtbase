@@ -1033,7 +1033,17 @@ void QWindowsWindow::destroyWindow()
 void QWindowsWindow::updateDropSite(bool topLevel)
 {
     bool enabled = false;
-    if (topLevel) {
+    bool parentIsEmbedded = false;
+
+    if (!topLevel) {
+        // if the parent window is a foreign window wrapped via QWindow::fromWinId, we need to enable the drop site
+        // on the first child window
+        const QWindow *parent = window()->parent();
+        if (parent && (parent->type() == Qt::ForeignWindow))
+            parentIsEmbedded = true;
+    }
+
+    if (topLevel || parentIsEmbedded) {
         switch (window()->type()) {
         case Qt::Window:
         case Qt::Dialog:
