@@ -63,8 +63,14 @@ QT_BEGIN_NAMESPACE
  * If the key is not found, or the registry cannot be accessed (for example
  * if this code is compiled for a platform other than Windows), a null
  * string is returned.
+ *
+ * 32-bit code reads from the registry's 32 bit view (Wow6432Node),
+ * 64 bit code reads from the 64 bit view.
+ * Pass KEY_WOW64_32KEY to access the 32 bit view regardless of the
+ * application's architecture, KEY_WOW64_64KEY respectively.
  */
-QString qt_readRegistryKey(HKEY parentHandle, const QString &rSubkey);
+QString qt_readRegistryKey(HKEY parentHandle, const QString &rSubkey,
+                           unsigned long options = 0);
 
 QT_END_NAMESPACE
 

@@ -142,18 +142,8 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
 
                 const bool isPhone = project->isActiveConfig(QStringLiteral("winphone"));
 #ifdef Q_OS_WIN
-                QString regKeyPrefix;
-#if !defined(Q_OS_WIN64) && _WIN32_WINNT >= 0x0501
-                BOOL isWow64;
-                IsWow64Process(GetCurrentProcess(), &isWow64);
-                if (!isWow64)
-                    regKeyPrefix = QStringLiteral("Software\\");
-                else
-#endif
-                    regKeyPrefix = QStringLiteral("Software\\Wow6432Node\\");
-
-                QString regKey = regKeyPrefix + QStringLiteral("Microsoft\\VisualStudio\\") + msvcVer + ("\\Setup\\VC\\ProductDir");
-                const QString vcInstallDir = qt_readRegistryKey(HKEY_LOCAL_MACHINE, regKey);
+                QString regKey = QStringLiteral("Software\\Microsoft\\VisualStudio\\") + msvcVer + ("\\Setup\\VC\\ProductDir");
+                const QString vcInstallDir = qt_readRegistryKey(HKEY_LOCAL_MACHINE, regKey, KEY_WOW64_32KEY);
                 if (vcInstallDir.isEmpty()) {
                     fprintf(stderr, "Failed to find the Visual Studio installation directory.\n");
                     return false;
@@ -161,13 +151,13 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
 
                 QString windowsPath;
                 if (isPhone) {
-                    windowsPath = "Microsoft\\Microsoft SDKs\\WindowsPhoneApp\\v";
+                    windowsPath = "Software\\Microsoft\\Microsoft SDKs\\WindowsPhoneApp\\v";
                 } else {
-                    windowsPath = "Microsoft\\Microsoft SDKs\\Windows\\v";
+                    windowsPath = "Software\\Microsoft\\Microsoft SDKs\\Windows\\v";
                 }
 
-                regKey = regKeyPrefix + windowsPath + winsdkVer + QStringLiteral("\\InstallationFolder");
-                const QString kitDir = qt_readRegistryKey(HKEY_LOCAL_MACHINE, regKey);
+                regKey = windowsPath + winsdkVer + QStringLiteral("\\InstallationFolder");
+                const QString kitDir = qt_readRegistryKey(HKEY_LOCAL_MACHINE, regKey, KEY_WOW64_32KEY);
                 if (kitDir.isEmpty()) {
                     fprintf(stderr, "Failed to find the Windows Kit installation directory.\n");
                     return false;

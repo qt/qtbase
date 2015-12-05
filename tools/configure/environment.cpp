@@ -69,17 +69,11 @@ struct CompilerInfo{
     {CC_MINGW,   "MinGW (Minimalist GNU for Windows)",                             0, "g++.exe"},
     {CC_INTEL,   "Intel(R) C++ Compiler for 32-bit applications",                  0, "icl.exe"}, // xilink.exe, xilink5.exe, xilink6.exe, xilib.exe
     {CC_MSVC2005, "Microsoft (R) Visual Studio 2005 C/C++ Compiler (8.0)",         "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\8.0", "cl.exe"}, // link.exe, lib.exe
-    {CC_MSVC2005, "Microsoft (R) Visual Studio 2005 C/C++ Compiler (8.0)",         "Software\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VC7\\8.0", "cl.exe"}, // link.exe, lib.exe
     {CC_MSVC2008, "Microsoft (R) Visual Studio 2008 C/C++ Compiler (9.0)",         "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\9.0", "cl.exe"}, // link.exe, lib.exe
-    {CC_MSVC2008, "Microsoft (R) Visual Studio 2008 C/C++ Compiler (9.0)",         "Software\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VC7\\9.0", "cl.exe"}, // link.exe, lib.exe
     {CC_MSVC2010, "Microsoft (R) Visual Studio 2010 C/C++ Compiler (10.0)",        "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\10.0", "cl.exe"}, // link.exe, lib.exe
-    {CC_MSVC2010, "Microsoft (R) Visual Studio 2010 C/C++ Compiler (10.0)",        "Software\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VC7\\10.0", "cl.exe"}, // link.exe, lib.exe
     {CC_MSVC2012, "Microsoft (R) Visual Studio 2012 C/C++ Compiler (11.0)",        "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\11.0", "cl.exe"}, // link.exe, lib.exe
-    {CC_MSVC2012, "Microsoft (R) Visual Studio 2012 C/C++ Compiler (11.0)",        "Software\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VC7\\11.0", "cl.exe"}, // link.exe, lib.exe
     {CC_MSVC2013, "Microsoft (R) Visual Studio 2013 C/C++ Compiler (12.0)",        "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\12.0", "cl.exe"}, // link.exe, lib.exe
-    {CC_MSVC2013, "Microsoft (R) Visual Studio 2013 C/C++ Compiler (12.0)",        "Software\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VC7\\12.0", "cl.exe"}, // link.exe, lib.exe
     // Microsoft skipped version 13
-    {CC_MSVC2015, "Microsoft (R) Visual Studio 2015 C/C++ Compiler (14.0)",        "Software\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VS7\\14.0", "cl.exe"}, // link.exe, lib.exe
     {CC_MSVC2015, "Microsoft (R) Visual Studio 2015 C/C++ Compiler (14.0)",        "Software\\Microsoft\\VisualStudio\\SxS\\VS7\\14.0", "cl.exe"}, // link.exe, lib.exe
     {CC_UNKNOWN, "Unknown", 0, 0},
 };
@@ -196,7 +190,8 @@ Compiler Environment::detectCompiler()
     QString paths = qgetenv("PATH");
     QStringList pathlist = paths.toLower().split(";");
     for(int i = 0; compiler_info[i].compiler; ++i) {
-        QString productPath = qt_readRegistryKey(HKEY_LOCAL_MACHINE, compiler_info[i].regKey).toLower();
+        QString productPath = qt_readRegistryKey(HKEY_LOCAL_MACHINE, compiler_info[i].regKey,
+                                                 KEY_WOW64_32KEY).toLower();
         if (productPath.length()) {
             QStringList::iterator it;
             for(it = pathlist.begin(); it != pathlist.end(); ++it) {
