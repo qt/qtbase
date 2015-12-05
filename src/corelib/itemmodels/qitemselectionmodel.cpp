@@ -274,8 +274,6 @@ QItemSelectionRange QItemSelectionRange::intersected(const QItemSelectionRange &
 */
 
 /*!
-    \fn bool QItemSelectionRange::operator<(const QItemSelectionRange &other) const
-
     Returns \c true if the selection range is less than the \a other
     range given; otherwise returns \c false.
 
@@ -284,6 +282,33 @@ QItemSelectionRange QItemSelectionRange::intersected(const QItemSelectionRange &
     class can be used with QMap.
 
 */
+bool QItemSelectionRange::operator<(const QItemSelectionRange &other) const
+{
+    // ### Qt 6: This is inconsistent with op== and needs to be fixed, nay,
+    // ###       removed, but cannot, because it was inline up to and including 5.9
+
+    // Comparing parents will compare the models, but if two equivalent ranges
+    // in two different models have invalid parents, they would appear the same
+    if (other.tl.model() == tl.model()) {
+        // parent has to be calculated, so we only do so once.
+        const QModelIndex topLeftParent = tl.parent();
+        const QModelIndex otherTopLeftParent = other.tl.parent();
+        if (topLeftParent == otherTopLeftParent) {
+            if (other.tl.row() == tl.row()) {
+                if (other.tl.column() == tl.column()) {
+                    if (other.br.row() == br.row()) {
+                        return br.column() < other.br.column();
+                    }
+                    return br.row() < other.br.row();
+                }
+                return tl.column() < other.tl.column();
+            }
+            return tl.row() < other.tl.row();
+        }
+        return topLeftParent < otherTopLeftParent;
+    }
+    return tl.model() < other.tl.model();
+}
 
 /*!
     \fn bool QItemSelectionRange::isValid() const

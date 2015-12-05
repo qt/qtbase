@@ -116,30 +116,7 @@ public:
         { return (tl == other.tl && br == other.br); }
     inline bool operator!=(const QItemSelectionRange &other) const
         { return !operator==(other); }
-    inline bool operator<(const QItemSelectionRange &other) const
-        {
-            // Comparing parents will compare the models, but if two equivalent ranges
-            // in two different models have invalid parents, they would appear the same
-            if (other.tl.model() == tl.model()) {
-                // parent has to be calculated, so we only do so once.
-                const QModelIndex topLeftParent = tl.parent();
-                const QModelIndex otherTopLeftParent = other.tl.parent();
-                if (topLeftParent == otherTopLeftParent) {
-                    if (other.tl.row() == tl.row()) {
-                        if (other.tl.column() == tl.column()) {
-                            if (other.br.row() == br.row()) {
-                                return br.column() < other.br.column();
-                            }
-                            return br.row() < other.br.row();
-                        }
-                        return tl.column() < other.tl.column();
-                    }
-                    return tl.row() < other.tl.row();
-                }
-                return topLeftParent < otherTopLeftParent;
-            }
-            return tl.model() < other.tl.model();
-        }
+    bool operator<(const QItemSelectionRange &other) const;
 
     inline bool isValid() const
     {
