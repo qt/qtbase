@@ -147,6 +147,9 @@ QRectF QInputMethod::cursorRectangle() const
 /*!
     \property QInputMethod::keyboardRectangle
     \brief Virtual keyboard's geometry in window coordinates.
+
+    This might be an empty rectangle if it is not possible to know the geometry
+    of the keyboard. This is the case for a floating keyboard on android.
 */
 QRectF QInputMethod::keyboardRectangle() const
 {

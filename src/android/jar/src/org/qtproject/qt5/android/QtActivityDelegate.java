@@ -66,6 +66,8 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.view.ViewTreeObserver;
+import android.graphics.Rect;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -859,6 +861,25 @@ public class QtActivityDelegate
 
         QtNative.handleOrientationChanged(rotation, m_nativeOrientation);
         m_currentRotation = rotation;
+
+        m_layout.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                if (!m_keyboardIsVisible)
+                    return true;
+
+                Rect r = new Rect();
+                m_activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
+                DisplayMetrics metrics = new DisplayMetrics();
+                m_activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                final int kbHeight = metrics.heightPixels - r.bottom;
+                final int[] location = new int[2];
+                m_layout.getLocationOnScreen(location);
+                QtNative.keyboardGeometryChanged(location[0], r.bottom - location[1],
+                                                 r.width(), kbHeight);
+                return true;
+            }
+        });
     }
 
     public void initializeAccessibility()

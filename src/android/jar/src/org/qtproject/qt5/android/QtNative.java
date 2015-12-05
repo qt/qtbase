@@ -677,6 +677,7 @@ public class QtNative
     public static native void keyDown(int key, int unicode, int modifier, boolean autoRepeat);
     public static native void keyUp(int key, int unicode, int modifier, boolean autoRepeat);
     public static native void keyboardVisibilityChanged(boolean visibility);
+    public static native void keyboardGeometryChanged(int x, int y, int width, int height);
     // keyboard methods
 
     // dispatch events methods
