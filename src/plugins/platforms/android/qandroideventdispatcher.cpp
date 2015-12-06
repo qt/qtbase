@@ -77,8 +77,11 @@ void QAndroidEventDispatcher::goingToStop(bool stop)
         wakeUp();
 }
 
-int QAndroidEventDispatcher::select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, timespec *timeout)
+bool QAndroidEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
+    if (m_goingToStop.load())
+        flags |= QEventLoop::ExcludeSocketNotifiers | QEventLoop::X11ExcludeTimers;
+
     {
         AndroidDeadlockProtector protector;
         if (protector.acquire() && m_stopRequest.testAndSetAcquire(StopRequest, Stopping)) {
@@ -86,20 +89,9 @@ int QAndroidEventDispatcher::select(int nfds, fd_set *readfds, fd_set *writefds,
             wakeUp();
         }
     }
-    return QUnixEventDispatcherQPA::select(nfds, readfds, writefds, exceptfds, timeout);
-}
 
-bool QAndroidEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
-{
-    if (m_goingToStop.load()) {
-        return QUnixEventDispatcherQPA::processEvents(flags /*| QEventLoop::ExcludeUserInputEvents*/
-                                                      | QEventLoop::ExcludeSocketNotifiers
-                                                      | QEventLoop::X11ExcludeTimers);
-    } else {
-        return QUnixEventDispatcherQPA::processEvents(flags);
-    }
+    return QUnixEventDispatcherQPA::processEvents(flags);
 }
-
 
 QAndroidEventDispatcherStopper *QAndroidEventDispatcherStopper::instance()
 {
