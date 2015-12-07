@@ -3793,7 +3793,7 @@ bool QFileDialogPrivate::itemViewKeyboardEvent(QKeyEvent *event) {
     Q_Q(QFileDialog);
 
     if (event->matches(QKeySequence::Cancel)) {
-        q->hide();
+        q->reject();
         return true;
     }
 
