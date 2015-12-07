@@ -1928,9 +1928,9 @@ static inline HMODULE moduleHandleForFunction(LPCVOID address)
 }
 #endif
 
-static inline OSVERSIONINFO winOsVersion()
+static inline OSVERSIONINFOEX determineWinOsVersion()
 {
-    OSVERSIONINFO result = { sizeof(OSVERSIONINFO), 0, 0, 0, 0, {'\0'}};
+    OSVERSIONINFOEX result = { sizeof(OSVERSIONINFOEX), 0, 0, 0, 0, {'\0'}, 0, 0, 0, 0, 0};
 
 #ifndef Q_OS_WINCE
 #define GetProcAddressA GetProcAddress
@@ -1973,7 +1973,13 @@ static inline OSVERSIONINFO winOsVersion()
 
     // GetVersionEx() has been deprecated in Windows 8.1 and will return
     // only Windows 8 from that version on, so use the kernel API function.
-    pRtlGetVersion(&result); // always returns STATUS_SUCCESS
+    pRtlGetVersion((LPOSVERSIONINFO) &result); // always returns STATUS_SUCCESS
+    return result;
+}
+
+static OSVERSIONINFOEX winOsVersion()
+{
+    static OSVERSIONINFOEX result = determineWinOsVersion();
     return result;
 }
 
@@ -1996,7 +2002,7 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
     if (winver)
         return winver;
     winver = QSysInfo::WV_NT;
-    const OSVERSIONINFO osver = winOsVersion();
+    const OSVERSIONINFOEX osver = winOsVersion();
     if (osver.dwMajorVersion == 0)
         return QSysInfo::WV_None;
 #ifdef Q_OS_WINCE
@@ -2080,6 +2086,20 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
 #endif
 
     return winver;
+}
+
+static QString winSp_helper()
+{
+    const qint16 major = winOsVersion().wServicePackMajor;
+    if (major) {
+        QString sp = QStringLiteral(" SP ") + QString::number(major);
+        const qint16 minor = winOsVersion().wServicePackMinor;
+        if (minor)
+            sp += QLatin1Char('.') + QString::number(minor);
+
+        return sp;
+    }
+    return QString();
 }
 
 static const char *winVer_helper()
@@ -2549,7 +2569,7 @@ QString QSysInfo::kernelType()
 QString QSysInfo::kernelVersion()
 {
 #ifdef Q_OS_WIN
-    const OSVERSIONINFO osver = winOsVersion();
+    const OSVERSIONINFOEX osver = winOsVersion();
     return QString::number(int(osver.dwMajorVersion)) + QLatin1Char('.') + QString::number(int(osver.dwMinorVersion))
             + QLatin1Char('.') + QString::number(int(osver.dwBuildNumber));
 #else
@@ -2660,7 +2680,7 @@ QString QSysInfo::productVersion()
 #elif defined(Q_OS_WIN)
     const char *version = winVer_helper();
     if (version)
-        return QString::fromLatin1(version).toLower();
+        return QString::fromLatin1(version).toLower() + winSp_helper().remove(QLatin1Char(' ')).toLower();
     // fall through
 
 // Android should not fall through to the Unix code
@@ -2740,7 +2760,7 @@ QString QSysInfo::prettyProductName()
 #elif defined(Q_OS_WINPHONE)
     return QLatin1String("Windows Phone ") + QLatin1String(winVer_helper());
 #elif defined(Q_OS_WIN)
-    return QLatin1String("Windows ") + QLatin1String(winVer_helper());
+    return QLatin1String("Windows ") + QLatin1String(winVer_helper()) + winSp_helper();
 #elif defined(Q_OS_ANDROID)
     return QLatin1String("Android ") + productVersion();
 #elif defined(Q_OS_HAIKU)
