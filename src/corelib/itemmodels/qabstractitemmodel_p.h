@@ -46,7 +46,8 @@
 //
 //
 
-#include "private/qobject_p.h"
+#include "QtCore/qabstractitemmodel.h"
+#include "QtCore/private/qobject_p.h"
 #include "QtCore/qstack.h"
 #include "QtCore/qset.h"
 #include "QtCore/qhash.h"
