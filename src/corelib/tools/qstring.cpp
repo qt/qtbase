@@ -5686,7 +5686,7 @@ QString QString::rightJustified(int width, QChar fill, bool truncate) const
 */
 
 namespace QUnicodeTables {
-/*!
+/*
     \internal
     Converts the \a str string starting from the position pointed to by the \a
     it iterator, using the Unicode case traits \c Traits, and returns the
