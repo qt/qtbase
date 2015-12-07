@@ -42,13 +42,13 @@
 
 QT_BEGIN_NAMESPACE
 
-QColor qt_mac_colorForTheme(ThemeBrush brush)
+QBrush qt_mac_brushForTheme(ThemeBrush brush)
 {
     QMacAutoReleasePool pool;
 
     QCFType<CGColorRef> cgClr = 0;
     HIThemeBrushCreateCGColor(brush, &cgClr);
-    return qt_mac_toQColor(cgClr);
+    return qt_mac_toQBrush(cgClr);
 }
 
 QColor qt_mac_colorForThemeTextColor(ThemeTextColor themeColor)
@@ -86,25 +86,29 @@ QPalette * qt_mac_createSystemPalette()
     QColor qc;
 
     // Standard palette initialization (copied from Qt 4 styles)
-    QColor background = QColor(237, 237, 237);
+    QBrush backgroundBrush = qt_mac_toQBrush([NSColor windowBackgroundColor]);
+    QColor background = backgroundBrush.color();
     QColor light(background.lighter(110));
     QColor dark(background.darker(160));
     QColor mid(background.darker(140));
     QPalette *palette = new QPalette(Qt::black, background, light, dark, mid, Qt::black, Qt::white);
 
+    palette->setBrush(QPalette::Window, backgroundBrush);
+
     palette->setBrush(QPalette::Disabled, QPalette::WindowText, dark);
     palette->setBrush(QPalette::Disabled, QPalette::Text, dark);
     palette->setBrush(QPalette::Disabled, QPalette::ButtonText, dark);
-    palette->setBrush(QPalette::Disabled, QPalette::Base, background);
+    palette->setBrush(QPalette::Disabled, QPalette::Base, backgroundBrush);
     palette->setColor(QPalette::Disabled, QPalette::Dark, QColor(191, 191, 191));
     palette->setColor(QPalette::Active, QPalette::Dark, QColor(191, 191, 191));
     palette->setColor(QPalette::Inactive, QPalette::Dark, QColor(191, 191, 191));
 
     // System palette initialization:
-    palette->setBrush(QPalette::Active, QPalette::Highlight, qt_mac_colorForTheme(kThemeBrushPrimaryHighlightColor));
-    qc = qt_mac_colorForTheme(kThemeBrushSecondaryHighlightColor);
-    palette->setBrush(QPalette::Inactive, QPalette::Highlight, qc);
-    palette->setBrush(QPalette::Disabled, QPalette::Highlight, qc);
+    palette->setBrush(QPalette::Active, QPalette::Highlight,
+        qt_mac_toQBrush([NSColor selectedControlColor]));
+    QBrush br = qt_mac_toQBrush([NSColor secondarySelectedControlColor]);
+    palette->setBrush(QPalette::Inactive, QPalette::Highlight, br);
+    palette->setBrush(QPalette::Disabled, QPalette::Highlight, br);
 
     palette->setBrush(QPalette::Shadow, background.darker(170));
 
@@ -168,8 +172,7 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
             pal.setColor(QPalette::Disabled, QPalette::HighlightedText, qc);
         }
         if (mac_widget_colors[i].paletteRole == QPlatformTheme::MenuPalette) {
-            qc = qt_mac_colorForTheme(kThemeBrushMenuBackground);
-            pal.setBrush(QPalette::Background, qc);
+            pal.setBrush(QPalette::Background, qt_mac_brushForTheme(kThemeBrushMenuBackground));
             qc = qt_mac_colorForThemeTextColor(kThemeTextColorMenuItemActive);
             pal.setBrush(QPalette::ButtonText, qc);
             qc = qt_mac_colorForThemeTextColor(kThemeTextColorMenuItemSelected);
@@ -186,9 +189,9 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
                          pal.color(QPalette::Active, QPalette::Text));
         } else if (mac_widget_colors[i].paletteRole == QPlatformTheme::ItemViewPalette) {
             pal.setBrush(QPalette::Active, QPalette::Highlight,
-                         qt_mac_colorForTheme(kThemeBrushAlternatePrimaryHighlightColor));
-            qc = qt_mac_colorForThemeTextColor(kThemeTextColorMenuItemSelected);
-            pal.setBrush(QPalette::Active, QPalette::HighlightedText, qc);
+                         qt_mac_toQBrush([NSColor alternateSelectedControlColor]));
+            pal.setBrush(QPalette::Active, QPalette::HighlightedText,
+                         qt_mac_toQBrush([NSColor alternateSelectedControlTextColor]));
             pal.setBrush(QPalette::Inactive, QPalette::Text,
                           pal.brush(QPalette::Active, QPalette::Text));
             pal.setBrush(QPalette::Inactive, QPalette::HighlightedText,
