@@ -259,6 +259,125 @@ QColor qt_mac_toQColor(CGColorRef color)
     return qtColor;
 }
 
+QBrush qt_mac_toQBrush(CGColorRef color)
+{
+    QBrush qtBrush;
+    CGColorSpaceModel model = CGColorSpaceGetModel(CGColorGetColorSpace(color));
+    if (model == kCGColorSpaceModelPattern) {
+        // Colorspace we can't deal with; the color is drawn directly using a callback.
+        qWarning("Qt: qt_mac_toQBrush: cannot convert from colorspace model: %d", model);
+        Q_ASSERT(false);
+    } else {
+        qtBrush.setStyle(Qt::SolidPattern);
+        qtBrush.setColor(qt_mac_toQColor(color));
+    }
+    return qtBrush;
+}
+
+static bool qt_mac_isSystemColorOrInstance(const NSColor *color, NSString *colorNameComponent, NSString *className)
+{
+    // We specifically do not want isKindOfClass: here
+    if ([color.className isEqualToString:className]) // NSPatternColorSpace
+        return true;
+    if ([color.catalogNameComponent isEqualToString:@"System"] &&
+        [color.colorNameComponent isEqualToString:colorNameComponent] &&
+        [color.colorSpaceName isEqualToString:NSNamedColorSpace])
+        return true;
+    return false;
+}
+
+QBrush qt_mac_toQBrush(const NSColor *color, QPalette::ColorGroup colorGroup)
+{
+    QBrush qtBrush;
+
+    // QTBUG-49773: This calls NSDrawMenuItemBackground to render a 1 by n gradient; could use HITheme
+    if ([color.className isEqualToString:@"NSMenuItemHighlightColor"]) {
+        qWarning("Qt: qt_mac_toQBrush: cannot convert from NSMenuItemHighlightColor");
+        return qtBrush;
+    }
+
+    // Not a catalog color or a manifestation of System.windowBackgroundColor;
+    // only retrieved from NSWindow.backgroundColor directly
+    if ([color.className isEqualToString:@"NSMetalPatternColor"]) {
+        // NSTexturedBackgroundWindowMask, could theoretically handle this without private API by
+        // creating a window with the appropriate properties and then calling NSWindow.backgroundColor.patternImage,
+        // which returns a texture sized 1 by (window height, including frame), backed by a CGPattern
+        // which follows the window key state... probably need to allow QBrush to store a function pointer
+        // like CGPattern does
+        qWarning("Qt: qt_mac_toQBrush: cannot convert from NSMetalPatternColor");
+        return qtBrush;
+    }
+
+    // No public API to get these colors/stops;
+    // both accurately obtained through runtime object inspection on OS X 10.11
+    // (the NSColor object has NSGradient i-vars for both color groups)
+    if (qt_mac_isSystemColorOrInstance(color, @"_sourceListBackgroundColor", @"NSSourceListBackgroundColor")) {
+        QLinearGradient gradient;
+        if (colorGroup == QPalette::Active) {
+            gradient.setColorAt(0, QColor(233, 237, 242));
+            gradient.setColorAt(0.5, QColor(225, 229, 235));
+            gradient.setColorAt(1, QColor(209, 216, 224));
+        } else {
+            gradient.setColorAt(0, QColor(248, 248, 248));
+            gradient.setColorAt(0.5, QColor(240, 240, 240));
+            gradient.setColorAt(1, QColor(235, 235, 235));
+        }
+        return QBrush(gradient);
+    }
+
+    // A couple colors are special... they are actually instances of NSGradientPatternColor, which
+    // override set/setFill/setStroke to instead initialize an internal color
+    // ([NSColor colorWithCalibratedWhite:0.909804 alpha:1.000000]) while still returning the
+    // ruled lines pattern image (from OS X 10.4) to the user from -[NSColor patternImage]
+    // (and providing no public API to get the underlying color without this insanity)
+    if (qt_mac_isSystemColorOrInstance(color, @"controlColor", @"NSGradientPatternColor") ||
+        qt_mac_isSystemColorOrInstance(color, @"windowBackgroundColor", @"NSGradientPatternColor")) {
+        static QColor newColor;
+        if (!newColor.isValid()) {
+#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_8, __IPHONE_NA)
+            if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_8) {
+                newColor = qt_mac_toQColor(color.CGColor);
+            } else
+#endif
+            {
+                NSBitmapImageRep *offscreenRep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:nil
+                                                                                         pixelsWide:1
+                                                                                         pixelsHigh:1
+                                                                                      bitsPerSample:8
+                                                                                    samplesPerPixel:4
+                                                                                           hasAlpha:YES
+                                                                                           isPlanar:NO
+                                                                                     colorSpaceName:NSDeviceRGBColorSpace
+                                                                                        bytesPerRow:4
+                                                                                       bitsPerPixel:32];
+                [NSGraphicsContext saveGraphicsState];
+                [NSGraphicsContext setCurrentContext:[NSGraphicsContext graphicsContextWithBitmapImageRep:offscreenRep]];
+                NSEraseRect(NSMakeRect(0, 0, 1, 1));
+                [color drawSwatchInRect:NSMakeRect(0, 0, 1, 1)];
+                [NSGraphicsContext restoreGraphicsState];
+                NSUInteger pixel[4];
+                [offscreenRep getPixel:pixel atX:0 y:0];
+                [offscreenRep release];
+                newColor = QColor(pixel[0], pixel[1], pixel[2], pixel[3]);
+            }
+        }
+
+        qtBrush.setStyle(Qt::SolidPattern);
+        qtBrush.setColor(newColor);
+        return qtBrush;
+    }
+
+    if (NSColor *patternColor = [color colorUsingColorSpaceName:NSPatternColorSpace]) {
+        NSImage *patternImage = patternColor.patternImage;
+        const QSizeF sz(patternImage.size.width, patternImage.size.height);
+        qtBrush.setTexture(qt_mac_toQPixmap(patternImage, sz)); // QTBUG-49774
+    } else {
+        qtBrush.setStyle(Qt::SolidPattern);
+        qtBrush.setColor(qt_mac_toQColor(color));
+    }
+    return qtBrush;
+}
+
 // Use this method to keep all the information in the TextSegment. As long as it is ordered
 // we are in OK shape, and we can influence that ourselves.
 struct KeyPair

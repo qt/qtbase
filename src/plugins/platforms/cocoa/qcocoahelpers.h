@@ -46,6 +46,7 @@
 //
 #include "qt_mac_p.h"
 #include <private/qguiapplication_p.h>
+#include <QtGui/qpalette.h>
 #include <QtGui/qscreen.h>
 
 QT_BEGIN_NAMESPACE
@@ -75,6 +76,8 @@ QRect qt_mac_toQRect(const NSRect &rect);
 QColor qt_mac_toQColor(const NSColor *color);
 QColor qt_mac_toQColor(CGColorRef color);
 
+QBrush qt_mac_toQBrush(CGColorRef color);
+QBrush qt_mac_toQBrush(const NSColor *color, QPalette::ColorGroup colorGroup = QPalette::Normal);
 
 // Creates a mutable shape, it's the caller's responsibility to release.
 HIMutableShapeRef qt_mac_QRegionToHIMutableShape(const QRegion &region);
