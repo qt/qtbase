@@ -581,6 +581,9 @@ void QPlatformWindow::invalidateSurface()
 QRect QPlatformWindow::initialGeometry(const QWindow *w,
     const QRect &initialGeometry, int defaultWidth, int defaultHeight)
 {
+    const QScreen *screen = effectiveScreen(w);
+    if (!screen)
+        return initialGeometry;
     QRect rect(QHighDpi::fromNativePixels(initialGeometry, w));
     if (rect.width() == 0) {
         const int minWidth = w->minimumWidth();
@@ -591,25 +594,23 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w,
         rect.setHeight(minHeight > 0 ? minHeight : defaultHeight);
     }
     if (w->isTopLevel() && qt_window_private(const_cast<QWindow*>(w))->positionAutomatic
-        && w->type() != Qt::Popup) {
-        if (const QScreen *screen = effectiveScreen(w)) {
-            const QRect availableGeometry = screen->availableGeometry();
-            // Center unless the geometry ( + unknown window frame) is too large for the screen).
-            if (rect.height() < (availableGeometry.height() * 8) / 9
+            && w->type() != Qt::Popup) {
+        const QRect availableGeometry = screen->availableGeometry();
+        // Center unless the geometry ( + unknown window frame) is too large for the screen).
+        if (rect.height() < (availableGeometry.height() * 8) / 9
                 && rect.width() < (availableGeometry.width() * 8) / 9) {
-                const QWindow *tp = w->transientParent();
-                if (tp) {
-                    // A transient window should be centered w.r.t. its transient parent.
-                    rect.moveCenter(tp->geometry().center());
-                } else {
-                    // Center the window on the screen.  (Only applicable on platforms
-                    // which do not provide a better way.)
-                    rect.moveCenter(availableGeometry.center());
-                }
+            const QWindow *tp = w->transientParent();
+            if (tp) {
+                // A transient window should be centered w.r.t. its transient parent.
+                rect.moveCenter(tp->geometry().center());
+            } else {
+                // Center the window on the screen.  (Only applicable on platforms
+                // which do not provide a better way.)
+                rect.moveCenter(availableGeometry.center());
             }
         }
     }
-    return QHighDpi::toNativePixels(rect, w);
+    return QHighDpi::toNativePixels(rect, screen);
 }
 
 /*!
