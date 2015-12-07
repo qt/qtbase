@@ -105,8 +105,8 @@ class QMacCGContext
 public:
     QMacCGContext(QPainter *p); //qpaintengine_mac.mm
     inline QMacCGContext() { context = 0; }
-    inline QMacCGContext(const QPaintDevice *pdev) {
-        extern CGContextRef qt_mac_cg_context(const QPaintDevice *);
+    inline QMacCGContext(QPaintDevice *pdev) {
+        extern CGContextRef qt_mac_cg_context(QPaintDevice *);
         context = qt_mac_cg_context(pdev);
     }
     inline QMacCGContext(CGContextRef cg, bool takeOwnership=false) {

@@ -259,18 +259,7 @@ QPixmap QCocoaTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &siz
     NSImage *iconImage = [[NSWorkspace sharedWorkspace] iconForFile:QCFString::toNSString(fileInfo.canonicalFilePath())];
     if (!iconImage)
         return QPixmap();
-    NSSize pixmapSize = NSMakeSize(size.width(), size.height());
-    QPixmap pixmap(pixmapSize.width, pixmapSize.height);
-    pixmap.fill(Qt::transparent);
-    [iconImage setSize:pixmapSize];
-    NSRect iconRect = NSMakeRect(0, 0, pixmapSize.width, pixmapSize.height);
-    CGContextRef ctx = qt_mac_cg_context(&pixmap);
-    NSGraphicsContext *gc = [NSGraphicsContext graphicsContextWithGraphicsPort:ctx flipped:YES];
-    [NSGraphicsContext saveGraphicsState];
-    [NSGraphicsContext setCurrentContext:gc];
-    [iconImage drawInRect:iconRect fromRect:iconRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
-    [NSGraphicsContext restoreGraphicsState];
-    return pixmap;
+    return qt_mac_toQPixmap(iconImage, size);
 }
 
 QVariant QCocoaTheme::themeHint(ThemeHint hint) const

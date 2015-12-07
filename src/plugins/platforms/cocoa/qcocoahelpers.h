@@ -66,6 +66,7 @@ NSImage *qt_mac_create_nsimage(const QIcon &icon);
 CGImageRef qt_mac_toCGImage(const QImage &qImage);
 CGImageRef qt_mac_toCGImageMask(const QImage &qImage);
 QImage qt_mac_toQImage(CGImageRef image);
+QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size);
 
 NSSize qt_mac_toNSSize(const QSize &qtSize);
 NSRect qt_mac_toNSRect(const QRect &rect);

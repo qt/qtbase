@@ -50,6 +50,25 @@
 
 #include <Carbon/Carbon.h>
 
+@interface NSGraphicsContext (QtAdditions)
+
++ (NSGraphicsContext *)qt_graphicsContextWithCGContext:(CGContextRef)graphicsPort flipped:(BOOL)initialFlippedState;
+
+@end
+
+@implementation NSGraphicsContext (QtAdditions)
+
++ (NSGraphicsContext *)qt_graphicsContextWithCGContext:(CGContextRef)graphicsPort flipped:(BOOL)initialFlippedState
+{
+#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_10, __IPHONE_NA)
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_10)
+        return [self graphicsContextWithCGContext:graphicsPort flipped:initialFlippedState];
+#endif
+    return [self graphicsContextWithGraphicsPort:graphicsPort flipped:initialFlippedState];
+}
+
+@end
+
 QT_BEGIN_NAMESPACE
 
 //
@@ -783,6 +802,26 @@ CGContextRef qt_mac_cg_context(QPaintDevice *pdev)
     CGContextTranslateCTM(ret, 0, image->height());
     CGContextScaleCTM(ret, 1, -1);
     return ret;
+}
+
+QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size)
+{
+    const NSSize pixmapSize = NSMakeSize(size.width(), size.height());
+    QPixmap pixmap(pixmapSize.width, pixmapSize.height);
+    pixmap.fill(Qt::transparent);
+    [image setSize:pixmapSize];
+    const NSRect iconRect = NSMakeRect(0, 0, pixmapSize.width, pixmapSize.height);
+    QMacCGContext ctx(&pixmap);
+    if (!ctx)
+        return QPixmap();
+    NSGraphicsContext *gc = [NSGraphicsContext qt_graphicsContextWithCGContext:ctx flipped:YES];
+    if (!gc)
+        return QPixmap();
+    [NSGraphicsContext saveGraphicsState];
+    [NSGraphicsContext setCurrentContext:gc];
+    [image drawInRect:iconRect fromRect:iconRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
+    [NSGraphicsContext restoreGraphicsState];
+    return pixmap;
 }
 
 QImage qt_mac_toQImage(CGImageRef image)
