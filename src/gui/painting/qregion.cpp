@@ -41,7 +41,7 @@
 #include "qimage.h"
 #include "qbitmap.h"
 
-#include <qdebug.h>
+#include <private/qdebug_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -422,11 +422,32 @@ QDataStream &operator>>(QDataStream &s, QRegion &r)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug s, const QRegion &r)
 {
-    QVector<QRect> rects = r.rects();
-    s.nospace() << "QRegion(size=" << rects.size() << "), "
-                << "bounds = " << r.boundingRect() << '\n';
-    for (int i=0; i<rects.size(); ++i)
-        s << "- " << i << rects.at(i) << '\n';
+    QDebugStateSaver saver(s);
+    s.nospace();
+    s << "QRegion(";
+    if (r.isNull()) {
+        s << "null";
+    } else if (r.isEmpty()) {
+        s << "empty";
+    } else {
+        const QVector<QRect> rects = r.rects();
+        const int count = rects.size();
+        if (count > 1)
+            s << "size=" << count << ", bounds=(";
+        QtDebugUtils::formatQRect(s, r.boundingRect());
+        if (count > 1) {
+            s << ") - [";
+            for (int i = 0; i < count; ++i) {
+                if (i)
+                    s << ", ";
+                s << '(';
+                QtDebugUtils::formatQRect(s, rects.at(i));
+                s << ')';
+            }
+            s << ']';
+        }
+    }
+    s << ')';
     return s;
 }
 #endif
