@@ -64,6 +64,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_GLOBAL_STATIC_WITH_ARGS(QSharedDataPointer<QDateTimePrivate>, defaultDateTimePrivate, (new QDateTimePrivate()))
+
 /*****************************************************************************
   Date/Time Constants
  *****************************************************************************/
@@ -2924,7 +2926,7 @@ qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QTimeZone
     \sa isValid()
 */
 QDateTime::QDateTime()
-    : d(new QDateTimePrivate)
+    : d(*defaultDateTimePrivate())
 {
 }
 
