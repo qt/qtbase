@@ -15,6 +15,6 @@ wince* {
   DEPLOYMENT += rsc reg_resource
 }
 
-TEST_HELPER_INSTALLS = \
+!winrt: TEST_HELPER_INSTALLS = \
     ../copier/copier \
     ../paster/paster

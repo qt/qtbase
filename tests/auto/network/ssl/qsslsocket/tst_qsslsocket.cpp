@@ -466,7 +466,9 @@ void tst_QSslSocket::constructing()
     QCOMPARE(socket.peerAddress(), QHostAddress());
     QVERIFY(socket.peerName().isEmpty());
     QCOMPARE(socket.peerPort(), quint16(0));
+#ifndef QT_NO_NETWORKPROXY
     QCOMPARE(socket.proxy().type(), QNetworkProxy::DefaultProxy);
+#endif
     QCOMPARE(socket.readBufferSize(), qint64(0));
     QCOMPARE(socket.socketDescriptor(), (qintptr)-1);
     QCOMPARE(socket.socketType(), QAbstractSocket::TcpSocket);
@@ -2187,6 +2189,7 @@ void tst_QSslSocket::disconnectFromHostWhenConnected()
 
 void tst_QSslSocket::resetProxy()
 {
+#ifndef QT_NO_NETWORKPROXY
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
@@ -2226,6 +2229,7 @@ void tst_QSslSocket::resetProxy()
     socket2.setProxy(goodProxy);
     socket2.connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
     QVERIFY2(socket2.waitForConnected(10000), qPrintable(socket.errorString()));
+#endif // QT_NO_NETWORKPROXY
 }
 
 void tst_QSslSocket::ignoreSslErrorsList_data()

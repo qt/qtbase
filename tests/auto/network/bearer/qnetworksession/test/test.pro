@@ -15,4 +15,4 @@ CONFIG(debug_and_release) {
   DESTDIR = ..
 }
 
-TEST_HELPER_INSTALLS = ../lackey/lackey
+!winrt: TEST_HELPER_INSTALLS = ../lackey/lackey

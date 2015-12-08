@@ -13,4 +13,4 @@ TESTDATA += ../empty ../rfc3252.txt ../resource ../bigfile ../*.jpg ../certs \
 contains(QT_CONFIG,xcb): CONFIG+=insignificant_test  # unstable, QTBUG-21102
 win32:CONFIG += insignificant_test # QTBUG-24226
 
-TEST_HELPER_INSTALLS = ../echo/echo
+!winrt: TEST_HELPER_INSTALLS = ../echo/echo
