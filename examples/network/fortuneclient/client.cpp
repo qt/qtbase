@@ -117,7 +117,7 @@ Client::Client(QWidget *parent)
 //! [4]
 
     QGridLayout *mainLayout = Q_NULLPTR;
-    if (QGuiApplication::styleHints()->showIsFullScreen()) {
+    if (QGuiApplication::styleHints()->showIsFullScreen() || QGuiApplication::styleHints()->showIsMaximized()) {
         QVBoxLayout *outerVerticalLayout = new QVBoxLayout(this);
         outerVerticalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding));
         QHBoxLayout *outerHorizontalLayout = new QHBoxLayout;
