@@ -39,6 +39,7 @@
 #include <QtGui/QOpenGLVertexArrayObject>
 #include <QtGui/QOpenGLBuffer>
 #include <QtGui/QOpenGLPaintDevice>
+#include <QtGui/QOpenGLTexture>
 #include <QtGui/QPainter>
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
@@ -97,8 +98,8 @@ private slots:
     void textureblitterFullTargetRectTransform();
     void textureblitterPartTargetRectTransform();
     void defaultSurfaceFormat();
-
     void imageFormatPainting();
+    void nullTextureInitializtion();
 
 #ifdef USE_GLX
     void glxContextWrap();
@@ -1365,6 +1366,18 @@ void tst_QOpenGL::bufferMapRange()
 
     buf.destroy();
     ctx->doneCurrent();
+}
+
+void tst_QOpenGL::nullTextureInitializtion()
+{
+    QScopedPointer<QSurface> surface(createSurface(QSurface::Window));
+    QOpenGLContext ctx;
+    ctx.create();
+    ctx.makeCurrent(surface.data());
+
+    QImage i;
+    QOpenGLTexture t(i);
+    QVERIFY(!t.isCreated());
 }
 
 QTEST_MAIN(tst_QOpenGL)
