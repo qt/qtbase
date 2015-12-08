@@ -1231,7 +1231,7 @@ void QAction::activate(ActionEvent event)
     \since 4.2
 
     This indicates what role the action serves in the application menu on Mac
-    OS X. By default all action have the TextHeuristicRole, which means that
+    OS X. By default all actions have the TextHeuristicRole, which means that
     the action is added based on its text (see QMenuBar for more information).
 
     The menu role can only be changed before the actions are put into the menu
