@@ -1250,7 +1250,17 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxL
             ret = qint64(bytesRead) > maxLength ? maxLength : qint64(bytesRead);
         } else {
             WS_ERROR_DEBUG(err);
-            setError(QAbstractSocket::NetworkError, ReceiveDatagramErrorString);
+            switch (err) {
+            case WSAENETRESET:
+                setError(QAbstractSocket::NetworkError, NetworkDroppedConnectionErrorString);
+                break;
+            case WSAECONNRESET:
+                setError(QAbstractSocket::ConnectionRefusedError, ConnectionResetErrorString);
+                break;
+            default:
+                setError(QAbstractSocket::NetworkError, ReceiveDatagramErrorString);
+                break;
+            }
             ret = -1;
         }
     } else {

@@ -229,6 +229,8 @@ public:
         NotSocketErrorString,
         InvalidProxyTypeString,
         TemporaryErrorString,
+        NetworkDroppedConnectionErrorString,
+        ConnectionResetErrorString,
 
         UnknownSocketErrorString = -1
     };

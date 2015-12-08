@@ -275,6 +275,12 @@ void QNativeSocketEnginePrivate::setError(QAbstractSocket::SocketError error, Er
     case TemporaryErrorString:
         socketErrorString = QNativeSocketEngine::tr("Temporary error");
         break;
+    case NetworkDroppedConnectionErrorString:
+        socketErrorString = QNativeSocketEngine::tr("Network dropped connection on reset");
+        break;
+    case ConnectionResetErrorString:
+        socketErrorString = QNativeSocketEngine::tr("Connection reset by peer");
+        break;
     case UnknownSocketErrorString:
         socketErrorString = QNativeSocketEngine::tr("Unknown error");
         break;
