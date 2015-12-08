@@ -321,10 +321,6 @@ int AndroidConnectivityManager::getNetworkPreference() const
 
 bool AndroidConnectivityManager::isActiveNetworkMetered() const
 {
-    // This function was added in JB
-    if (QtAndroidPrivate::androidSdkVersion() < 16)
-        return false;
-
     return m_connectivityManager.callMethod<jboolean>("isActiveNetworkMetered");
 }
 

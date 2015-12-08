@@ -328,16 +328,14 @@ public class QtNative
     {
         int pointerType = 0;
 
-        if (Build.VERSION.SDK_INT >= 14) {
-            switch (event.getToolType(0)) {
-            case MotionEvent.TOOL_TYPE_STYLUS:
-                pointerType = 1; // QTabletEvent::Pen
-                break;
-            case MotionEvent.TOOL_TYPE_ERASER:
-                pointerType = 3; // QTabletEvent::Eraser
-                break;
-            // TODO TOOL_TYPE_MOUSE
-            }
+        switch (event.getToolType(0)) {
+        case MotionEvent.TOOL_TYPE_STYLUS:
+            pointerType = 1; // QTabletEvent::Pen
+            break;
+        case MotionEvent.TOOL_TYPE_ERASER:
+            pointerType = 3; // QTabletEvent::Eraser
+            break;
+        // TODO TOOL_TYPE_MOUSE
         }
 
         if (pointerType != 0) {

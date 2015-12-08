@@ -6,6 +6,8 @@ PATHPREFIX = $$PWD/src/org/qtproject/qt5/android/
 
 JAVACLASSPATH += $$PWD/src/
 JAVASOURCES += \
+    $$PATHPREFIX/accessibility/QtAccessibilityDelegate.java \
+    $$PATHPREFIX/accessibility/QtNativeAccessibility.java \
     $$PATHPREFIX/QtActivityDelegate.java \
     $$PATHPREFIX/QtEditText.java \
     $$PATHPREFIX/QtInputConnection.java \
@@ -14,9 +16,7 @@ JAVASOURCES += \
     $$PATHPREFIX/QtNative.java \
     $$PATHPREFIX/QtNativeLibrariesDir.java \
     $$PATHPREFIX/QtSurface.java \
-    $$PATHPREFIX/ExtractStyle.java \
-    $$PATHPREFIX/QtPopupMenu.java \
-    $$PATHPREFIX/QtPopupMenu14.java
+    $$PATHPREFIX/ExtractStyle.java
 
 # install
 target.path = $$[QT_INSTALL_PREFIX]/jar

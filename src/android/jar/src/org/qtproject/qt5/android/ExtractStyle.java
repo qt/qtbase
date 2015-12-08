@@ -1813,11 +1813,7 @@ public class ExtractStyle {
             jsonWriter.name("simple_spinner_item").value(extractItemStyle(android.R.layout.simple_spinner_item, "simple_spinner_item", -1));
             jsonWriter.name("simple_spinner_dropdown_item").value(extractItemStyle(android.R.layout.simple_spinner_dropdown_item, "simple_spinner_dropdown_item",android.R.style.TextAppearance_Large));
             jsonWriter.name("simple_dropdown_item_1line").value(extractItemStyle(android.R.layout.simple_dropdown_item_1line, "simple_dropdown_item_1line",android.R.style.TextAppearance_Large));
-            if (Build.VERSION.SDK_INT > 10) {
-                Class<?> layoutClass = Class.forName("android.R$layout");
-                int styleId = layoutClass.getDeclaredField("simple_selectable_list_item").getInt(null);
-                jsonWriter.name("simple_selectable_list_item").value(extractItemStyle(styleId, "simple_selectable_list_item",android.R.style.TextAppearance_Large));
-            }
+            jsonWriter.name("simple_selectable_list_item").value(extractItemStyle(android.R.layout.simple_selectable_list_item, "simple_selectable_list_item",android.R.style.TextAppearance_Large));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -2018,9 +2014,7 @@ public class ExtractStyle {
               extractProgressBar(jsonWriter, "progressBarStyleSmall", null);
               extractProgressBar(jsonWriter, "progressBarStyle", null);
               extractAbsSeekBar(jsonWriter, "seekBarStyle", "QSlider");
-              if (Build.VERSION.SDK_INT > 13) {
-                  extractSwitch(jsonWriter, "switchStyle", null);
-              }
+              extractSwitch(jsonWriter, "switchStyle", null);
               extractCompoundButton(jsonWriter, "checkboxStyle", "QCheckBox");
               jsonWriter.name("editTextStyle").value(extractTextAppearanceInformations("editTextStyle", "QLineEdit", null, -1));
               extractCompoundButton(jsonWriter, "radioButtonStyle", "QRadioButton");
@@ -2030,15 +2024,13 @@ public class ExtractStyle {
               jsonWriter.name("listSeparatorTextViewStyle").value(extractTextAppearanceInformations("listSeparatorTextViewStyle", null, null, -1));
               extractItemsStyle(jsonWriter);
               extractCompoundButton(jsonWriter, "buttonStyleToggle", null);
-              if (Build.VERSION.SDK_INT > 10) {
-                  extractCalendar(jsonWriter, "calendarViewStyle", "QCalendarWidget");
-                  extractToolBar(jsonWriter, "actionBarStyle", "QToolBar");
-                  jsonWriter.name("actionButtonStyle").value(extractTextAppearanceInformations("actionButtonStyle", "QToolButton", null, -1));
-                  jsonWriter.name("actionBarTabTextStyle").value(extractTextAppearanceInformations("actionBarTabTextStyle", null, null, -1));
-                  jsonWriter.name("actionBarTabStyle").value(extractTextAppearanceInformations("actionBarTabStyle", null, null, -1));
-                  jsonWriter.name("actionOverflowButtonStyle").value(extractImageViewInformations("actionOverflowButtonStyle", null));
-                  extractTabBar(jsonWriter, "actionBarTabBarStyle", "QTabBar");
-              }
+              extractCalendar(jsonWriter, "calendarViewStyle", "QCalendarWidget");
+              extractToolBar(jsonWriter, "actionBarStyle", "QToolBar");
+              jsonWriter.name("actionButtonStyle").value(extractTextAppearanceInformations("actionButtonStyle", "QToolButton", null, -1));
+              jsonWriter.name("actionBarTabTextStyle").value(extractTextAppearanceInformations("actionBarTabTextStyle", null, null, -1));
+              jsonWriter.name("actionBarTabStyle").value(extractTextAppearanceInformations("actionBarTabStyle", null, null, -1));
+              jsonWriter.name("actionOverflowButtonStyle").value(extractImageViewInformations("actionOverflowButtonStyle", null));
+              extractTabBar(jsonWriter, "actionBarTabBarStyle", "QTabBar");
           } catch (Exception e) {
               e.printStackTrace();
           }

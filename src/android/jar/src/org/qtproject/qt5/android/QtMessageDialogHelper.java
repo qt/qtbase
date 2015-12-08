@@ -100,14 +100,12 @@ public class QtMessageDialogHelper
         if (m_icon == 0)
             return null;
 
-        if (Build.VERSION.SDK_INT > 10) {
-            try {
-                TypedValue typedValue = new TypedValue();
-                m_theme.resolveAttribute(Class.forName("android.R$attr").getDeclaredField("alertDialogIcon").getInt(null), typedValue, true);
-                return m_activity.getResources().getDrawable(typedValue.resourceId);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        try {
+            TypedValue typedValue = new TypedValue();
+            m_theme.resolveAttribute(android.R.attr.alertDialogIcon, typedValue, true);
+            return m_activity.getResources().getDrawable(typedValue.resourceId);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         // Information, Warning, Critical, Question
@@ -115,7 +113,7 @@ public class QtMessageDialogHelper
         {
             case 1: // Information
                 try {
-                    return m_activity.getResources().getDrawable(Class.forName("android.R$drawable").getDeclaredField("ic_dialog_info").getInt(null));
+                    return m_activity.getResources().getDrawable(android.R.drawable.ic_dialog_info);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -129,14 +127,14 @@ public class QtMessageDialogHelper
 //                break;
             case 3: // Critical
                 try {
-                    return m_activity.getResources().getDrawable(Class.forName("android.R$drawable").getDeclaredField("ic_dialog_alert").getInt(null));
+                    return m_activity.getResources().getDrawable(android.R.drawable.ic_dialog_alert);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 break;
             case 4: // Question
                 try {
-                    return m_activity.getResources().getDrawable(Class.forName("android.R$drawable").getDeclaredField("ic_menu_help").getInt(null));
+                    return m_activity.getResources().getDrawable(android.R.drawable.ic_menu_help);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -310,15 +308,11 @@ public class QtMessageDialogHelper
                     for (ButtonStruct button: m_buttonsList)
                     {
                         Button bv;
-                        if (Build.VERSION.SDK_INT > 10) {
-                            try {
-                                bv = new Button(m_activity, null, Class.forName("android.R$attr").getDeclaredField("borderlessButtonStyle").getInt(null));
-                            } catch (Exception e) {
-                                bv = new Button(m_activity);
-                                e.printStackTrace();
-                            }
-                        } else {
+                        try {
+                            bv = new Button(m_activity, null, Class.forName("android.R$attr").getDeclaredField("borderlessButtonStyle").getInt(null));
+                        } catch (Exception e) {
                             bv = new Button(m_activity);
+                            e.printStackTrace();
                         }
 
                         bv.setText(button.m_text);
@@ -327,14 +321,12 @@ public class QtMessageDialogHelper
                         {
                             LinearLayout.LayoutParams layout = null;
                             View spacer = new View(m_activity);
-                            if (Build.VERSION.SDK_INT > 10) {
-                                try {
-                                    layout = new LinearLayout.LayoutParams(1, RelativeLayout.LayoutParams.MATCH_PARENT);
-                                    spacer.setBackgroundDrawable(getStyledDrawable("dividerVertical"));
-                                    buttonsLayout.addView(spacer, layout);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
+                            try {
+                                layout = new LinearLayout.LayoutParams(1, RelativeLayout.LayoutParams.MATCH_PARENT);
+                                spacer.setBackgroundDrawable(getStyledDrawable("dividerVertical"));
+                                buttonsLayout.addView(spacer, layout);
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
                         }
                         LinearLayout.LayoutParams layout = null;
@@ -343,23 +335,21 @@ public class QtMessageDialogHelper
                         firstButton = false;
                     }
 
-                    if (Build.VERSION.SDK_INT > 10) {
-                        try {
-                            View horizontalDevider = new View(m_activity);
-                            horizontalDevider.setId(id++);
-                            horizontalDevider.setBackgroundDrawable(getStyledDrawable("dividerHorizontal"));
-                            RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, 1);
-                            relativeParams.setMargins(0, 10, 0, 0);
-                            if (lastView != null) {
-                                relativeParams.addRule(RelativeLayout.BELOW, lastView.getId());
-                            }
-                            else
-                                relativeParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-                            dialogLayout.addView(horizontalDevider, relativeParams);
-                            lastView = horizontalDevider;
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                    try {
+                        View horizontalDevider = new View(m_activity);
+                        horizontalDevider.setId(id++);
+                        horizontalDevider.setBackgroundDrawable(getStyledDrawable("dividerHorizontal"));
+                        RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, 1);
+                        relativeParams.setMargins(0, 10, 0, 0);
+                        if (lastView != null) {
+                            relativeParams.addRule(RelativeLayout.BELOW, lastView.getId());
                         }
+                        else
+                            relativeParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+                        dialogLayout.addView(horizontalDevider, relativeParams);
+                        lastView = horizontalDevider;
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                     RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
                     if (lastView != null) {
@@ -367,10 +357,7 @@ public class QtMessageDialogHelper
                     }
                     else
                         relativeParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-                    if (Build.VERSION.SDK_INT < 11)
-                        relativeParams.setMargins(2, 12, 2, 4);
-                    else
-                        relativeParams.setMargins(2, 0, 2, 0);
+                    relativeParams.setMargins(2, 0, 2, 0);
                     dialogLayout.addView(buttonsLayout, relativeParams);
                 }
                 scrollView.addView(dialogLayout);

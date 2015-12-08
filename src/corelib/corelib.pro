@@ -16,13 +16,11 @@ CONFIG += optimize_full
 QMAKE_DOCS = $$PWD/doc/qtcore.qdocconf
 
 ANDROID_JAR_DEPENDENCIES = \
-    jar/QtAndroid.jar \
-    jar/QtAndroidAccessibility.jar
+    jar/QtAndroid.jar
 ANDROID_LIB_DEPENDENCIES = \
     plugins/platforms/android/libqtforandroid.so
 ANDROID_BUNDLED_JAR_DEPENDENCIES = \
-    jar/QtAndroid-bundled.jar \
-    jar/QtAndroidAccessibility-bundled.jar
+    jar/QtAndroid-bundled.jar
 ANDROID_PERMISSIONS = \
     android.permission.INTERNET \
     android.permission.WRITE_EXTERNAL_STORAGE

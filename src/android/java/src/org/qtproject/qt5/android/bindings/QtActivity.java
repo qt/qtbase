@@ -183,11 +183,7 @@ public class QtActivity extends Activity
 
     public QtActivity()
     {
-        if (Build.VERSION.SDK_INT <= 10) {
-            QT_ANDROID_THEMES = new String[] {"Theme_Light"};
-            QT_ANDROID_DEFAULT_THEME = "Theme_Light";
-        }
-        else if ((Build.VERSION.SDK_INT >= 11 && Build.VERSION.SDK_INT <= 13) || Build.VERSION.SDK_INT >= 21){
+        if (Build.VERSION.SDK_INT >= 21) {
             QT_ANDROID_THEMES = new String[] {"Theme_Holo_Light"};
             QT_ANDROID_DEFAULT_THEME = "Theme_Holo_Light";
         } else {
@@ -843,7 +839,6 @@ public class QtActivity extends Activity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-
         try {
             m_activityInfo = getPackageManager().getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
             for (Field f : Class.forName("android.R$style").getDeclaredFields()) {
@@ -858,21 +853,30 @@ public class QtActivity extends Activity
             return;
         }
 
+        if (Build.VERSION.SDK_INT < 16) {
+            // fatal error, show the error and quit
+            AlertDialog errorDialog = new AlertDialog.Builder(QtActivity.this).create();
+            if (m_activityInfo.metaData.containsKey("android.app.unsupported_android_version"))
+                errorDialog.setMessage(m_activityInfo.metaData.getString("android.app.unsupported_android_version"));
+            else
+                errorDialog.setMessage("Unsupported Android version.");
+            errorDialog.setButton(getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    finish();
+                }
+            });
+            errorDialog.show();
+            return;
+        }
+
         try {
             setTheme(Class.forName("android.R$style").getDeclaredField(QT_ANDROID_DEFAULT_THEME).getInt(null));
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        if (Build.VERSION.SDK_INT > 10) {
-            try {
-                requestWindowFeature(Window.class.getField("FEATURE_ACTION_BAR").getInt(null));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            requestWindowFeature(Window.FEATURE_NO_TITLE);
-        }
+        requestWindowFeature(Window.FEATURE_ACTION_BAR);
 
         if (QtApplication.m_delegateObject != null && QtApplication.onCreate != null) {
             QtApplication.invokeDelegateMethod(QtApplication.onCreate, savedInstanceState);

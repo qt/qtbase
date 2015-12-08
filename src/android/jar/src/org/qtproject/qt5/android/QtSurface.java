@@ -62,9 +62,6 @@ public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
         else
             getHolder().setFormat(PixelFormat.RGBA_8888);
 
-        if (android.os.Build.VERSION.SDK_INT < 11)
-            getHolder().setType(SurfaceHolder.SURFACE_TYPE_GPU);
-
         setId(id);
         m_gestureDetector =
             new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {

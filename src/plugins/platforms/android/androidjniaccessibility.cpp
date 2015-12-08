@@ -68,10 +68,6 @@ namespace QtAndroidAccessibility
 
     void initialize()
     {
-        // API level > 16 is required.
-        if (QtAndroidPrivate::androidSdkVersion() < 16)
-            return;
-
         QJNIObjectPrivate::callStaticMethod<void>(QtAndroid::applicationClass(),
                                                   "initializeAccessibility");
     }
@@ -299,9 +295,6 @@ if (!clazz) { \
 
     bool registerNatives(JNIEnv *env)
     {
-        if (QtAndroidPrivate::androidSdkVersion() < 16)
-            return true; // We need API level 16 or higher
-
         jclass clazz;
         FIND_AND_CHECK_CLASS("org/qtproject/qt5/android/accessibility/QtNativeAccessibility");
         jclass appClass = static_cast<jclass>(env->NewGlobalRef(clazz));
