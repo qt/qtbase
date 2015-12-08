@@ -92,6 +92,7 @@ QT_END_NAMESPACE
 #include <private/qthread_p.h>
 #include <qfile.h>
 #include <qfileinfo.h>
+#include <qdir.h>
 #include <qlist.h>
 #include <qmutex.h>
 #include <qsemaphore.h>
@@ -362,11 +363,14 @@ void QProcessPrivate::startProcess()
             static QBasicMutex cfbundleMutex;
             QMutexLocker lock(&cfbundleMutex);
             QCFType<CFBundleRef> bundle = CFBundleCreate(0, url);
-            url = CFBundleCopyExecutableURL(bundle);
+            // 'executableURL' can be either relative or absolute ...
+            QCFType<CFURLRef> executableURL = CFBundleCopyExecutableURL(bundle);
+            // not to depend on caching - make sure it's always absolute.
+            url = CFURLCopyAbsoluteURL(executableURL);
         }
         if (url) {
-            QCFString str = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
-            encodedProgramName += "/Contents/MacOS/" + QCFString::toQString(str).toUtf8();
+            const QCFString str = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
+            encodedProgramName += (QDir::separator() + QDir(program).relativeFilePath(QCFString::toQString(str))).toUtf8();
         }
     }
 #endif
