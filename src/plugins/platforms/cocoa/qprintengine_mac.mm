@@ -251,7 +251,7 @@ void QMacPrintEnginePrivate::initialize()
     setPageSize(m_pageLayout.pageSize());
 
     QHash<QMacPrintEngine::PrintEnginePropertyKey, QVariant>::const_iterator propC;
-    for (propC = valueCache.constBegin(); propC != valueCache.constEnd(); propC++) {
+    for (propC = valueCache.constBegin(); propC != valueCache.constEnd(); ++propC) {
         q->setProperty(propC.key(), propC.value());
     }
 }

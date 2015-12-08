@@ -372,7 +372,7 @@ bool QFileSystemEntry::isClean() const
     int dots = 0;
     bool dotok = true; // checking for ".." or "." starts to relative paths
     bool slashok = true;
-    for (QString::const_iterator iter = m_filePath.constBegin(); iter != m_filePath.constEnd(); iter++) {
+    for (QString::const_iterator iter = m_filePath.constBegin(); iter != m_filePath.constEnd(); ++iter) {
         if (*iter == QLatin1Char('/')) {
             if (dots == 1 || dots == 2)
                 return false; // path contains "./" or "../"
