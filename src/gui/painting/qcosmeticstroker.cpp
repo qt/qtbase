@@ -538,7 +538,7 @@ void QCosmeticStroker::drawPath(const QVectorPath &path)
                 QPointF p2 = QPointF(p[-2], p[-1]) * state->matrix;
                 calculateLastPoint(p1.x(), p1.y(), p2.x(), p2.y());
             }
-            int caps = (!closed & drawCaps) ? CapBegin : NoCaps;
+            int caps = (!closed && drawCaps) ? CapBegin : NoCaps;
 //            qDebug() << "closed =" << closed << capString(caps);
 
             points += 2;
@@ -589,7 +589,7 @@ void QCosmeticStroker::drawPath(const QVectorPath &path)
         const qreal *end = points + 2*path.elementCount();
         // handle closed path case
         bool closed = path.hasImplicitClose() || (points[0] == end[-2] && points[1] == end[-1]);
-        int caps = (!closed & drawCaps) ? CapBegin : NoCaps;
+        int caps = (!closed && drawCaps) ? CapBegin : NoCaps;
         if (closed) {
             QPointF p2 = QPointF(end[-2], end[-1]) * state->matrix;
             calculateLastPoint(p2.x(), p2.y(), p.x(), p.y());
