@@ -141,6 +141,8 @@
 #  endif
 #  if Q_PROCESSOR_ARM >= 5
 #    define Q_PROCESSOR_ARM_V5
+#  else
+#    error "ARM architecture too old"
 #  endif
 #  if defined(__ARMEL__)
 #    define Q_BYTE_ORDER Q_LITTLE_ENDIAN
