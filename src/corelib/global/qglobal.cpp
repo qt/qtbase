@@ -2104,6 +2104,8 @@ static QString winSp_helper()
 
 static const char *winVer_helper()
 {
+    const bool workstation = winOsVersion().wProductType == VER_NT_WORKSTATION;
+
     switch (int(QSysInfo::WindowsVersion)) {
     case QSysInfo::WV_NT:
         return "NT";
@@ -2114,15 +2116,15 @@ static const char *winVer_helper()
     case QSysInfo::WV_2003:
         return "2003";
     case QSysInfo::WV_VISTA:
-        return "Vista";
+        return workstation ? "Vista" : "Server 2008";
     case QSysInfo::WV_WINDOWS7:
-        return "7";
+        return workstation ? "7" : "Server 2008 R2";
     case QSysInfo::WV_WINDOWS8:
-        return "8";
+        return workstation ? "8" : "Server 2012";
     case QSysInfo::WV_WINDOWS8_1:
-        return "8.1";
+        return workstation ? "8.1" : "Server 2012 R2";
     case QSysInfo::WV_WINDOWS10:
-        return "10";
+        return workstation ? "10" : "Server 2016";
 
     case QSysInfo::WV_CE:
         return "CE";
@@ -2679,8 +2681,10 @@ QString QSysInfo::productVersion()
     return QString::number(version.major) + QLatin1Char('.') + QString::number(version.minor);
 #elif defined(Q_OS_WIN)
     const char *version = winVer_helper();
-    if (version)
-        return QString::fromLatin1(version).toLower() + winSp_helper().remove(QLatin1Char(' ')).toLower();
+    if (version) {
+        const QLatin1Char spaceChar(' ');
+        return QString::fromLatin1(version).remove(spaceChar).toLower() + winSp_helper().remove(spaceChar).toLower();
+    }
     // fall through
 
 // Android should not fall through to the Unix code
