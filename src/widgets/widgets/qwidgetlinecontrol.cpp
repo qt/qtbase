@@ -1516,14 +1516,7 @@ void QWidgetLineControl::timerEvent(QTimerEvent *event)
 #ifndef QT_NO_SHORTCUT
 void QWidgetLineControl::processShortcutOverrideEvent(QKeyEvent *ke)
 {
-    if (isReadOnly())
-        return;
-
     if (ke == QKeySequence::Copy
-        || ke == QKeySequence::Paste
-        || ke == QKeySequence::Cut
-        || ke == QKeySequence::Redo
-        || ke == QKeySequence::Undo
         || ke == QKeySequence::MoveToNextWord
         || ke == QKeySequence::MoveToPreviousWord
         || ke == QKeySequence::MoveToEndOfLine
@@ -1537,22 +1530,35 @@ void QWidgetLineControl::processShortcutOverrideEvent(QKeyEvent *ke)
         || ke == QKeySequence::SelectEndOfBlock
         || ke == QKeySequence::SelectStartOfDocument
         || ke == QKeySequence::SelectAll
-        || ke == QKeySequence::SelectEndOfDocument
-        || ke == QKeySequence::DeleteCompleteLine) {
+        || ke == QKeySequence::SelectEndOfDocument) {
         ke->accept();
+    } else if (ke == QKeySequence::Paste
+               || ke == QKeySequence::Cut
+               || ke == QKeySequence::Redo
+               || ke == QKeySequence::Undo
+               || ke == QKeySequence::DeleteCompleteLine) {
+        if (!isReadOnly())
+            ke->accept();
     } else if (ke->modifiers() == Qt::NoModifier || ke->modifiers() == Qt::ShiftModifier
                || ke->modifiers() == Qt::KeypadModifier) {
         if (ke->key() < Qt::Key_Escape) {
-            ke->accept();
+            if (!isReadOnly())
+                ke->accept();
         } else {
             switch (ke->key()) {
             case Qt::Key_Delete:
+            case Qt::Key_Backspace:
+                if (!isReadOnly())
+                    ke->accept();
+                break;
+
             case Qt::Key_Home:
             case Qt::Key_End:
-            case Qt::Key_Backspace:
             case Qt::Key_Left:
             case Qt::Key_Right:
                 ke->accept();
+                break;
+
             default:
                 break;
             }

@@ -64,6 +64,7 @@
 #include <qsortfilterproxymodel.h>
 #include <qdebug.h>
 #include <qscreen.h>
+#include <qshortcut.h>
 
 #include "qcommonstyle.h"
 #include "qstyleoption.h"
@@ -311,6 +312,9 @@ private slots:
     void shouldShowPlaceholderText_data();
     void shouldShowPlaceholderText();
     void QTBUG1266_setInputMaskEmittingTextEdited();
+
+    void shortcutOverrideOnReadonlyLineEdit_data();
+    void shortcutOverrideOnReadonlyLineEdit();
 
 protected slots:
     void editingFinished();
@@ -4485,6 +4489,62 @@ void tst_QLineEdit::QTBUG1266_setInputMaskEmittingTextEdited()
     lineEdit.setInputMask("AAAA");
     lineEdit.setInputMask(QString());
     QCOMPARE(spy.count(), 0);
+}
+
+void tst_QLineEdit::shortcutOverrideOnReadonlyLineEdit_data()
+{
+    QTest::addColumn<QKeySequence>("keySequence");
+    QTest::addColumn<bool>("shouldBeHandledByQLineEdit");
+
+    QTest::newRow("Copy") << QKeySequence(QKeySequence::Copy) << true;
+    QTest::newRow("MoveToNextChar") << QKeySequence(QKeySequence::MoveToNextChar) << true;
+    QTest::newRow("SelectAll") << QKeySequence(QKeySequence::SelectAll) << true;
+    QTest::newRow("Right press") << QKeySequence(Qt::Key_Right) << true;
+    QTest::newRow("Left press") << QKeySequence(Qt::Key_Left) << true;
+
+    QTest::newRow("Paste") << QKeySequence(QKeySequence::Paste) << false;
+    QTest::newRow("Paste") << QKeySequence(QKeySequence::Cut) << false;
+    QTest::newRow("Undo") << QKeySequence(QKeySequence::Undo) << false;
+    QTest::newRow("Redo") << QKeySequence(QKeySequence::Redo) << false;
+
+    QTest::newRow("a") << QKeySequence(Qt::Key_A) << false;
+    QTest::newRow("b") << QKeySequence(Qt::Key_B) << false;
+    QTest::newRow("c") << QKeySequence(Qt::Key_C) << false;
+    QTest::newRow("x") << QKeySequence(Qt::Key_X) << false;
+    QTest::newRow("X") << QKeySequence(Qt::ShiftModifier + Qt::Key_X) << false;
+
+    QTest::newRow("Alt+Home") << QKeySequence(Qt::AltModifier + Qt::Key_Home) << false;
+}
+
+void tst_QLineEdit::shortcutOverrideOnReadonlyLineEdit()
+{
+    QFETCH(QKeySequence, keySequence);
+    QFETCH(bool, shouldBeHandledByQLineEdit);
+
+    QWidget widget;
+
+    QShortcut *shortcut = new QShortcut(keySequence, &widget);
+    QSignalSpy spy(shortcut, &QShortcut::activated);
+    QVERIFY(spy.isValid());
+
+    QLineEdit *lineEdit = new QLineEdit(QStringLiteral("Test"), &widget);
+    lineEdit->setReadOnly(true);
+    lineEdit->setFocus();
+
+    widget.show();
+
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
+
+    const int keySequenceCount = keySequence.count();
+    for (int i = 0; i < keySequenceCount; ++i) {
+        const uint key = keySequence[i];
+        QTest::keyClick(lineEdit,
+                        Qt::Key(key & ~Qt::KeyboardModifierMask),
+                        Qt::KeyboardModifier(key & Qt::KeyboardModifierMask));
+    }
+
+    const int activationCount = shouldBeHandledByQLineEdit ? 0 : 1;
+    QCOMPARE(spy.count(), activationCount);
 }
 
 QTEST_MAIN(tst_QLineEdit)
