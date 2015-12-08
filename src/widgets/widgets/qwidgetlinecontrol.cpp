@@ -147,10 +147,7 @@ void QWidgetLineControl::copy(QClipboard::Mode mode) const
 {
     QString t = selectedText();
     if (!t.isEmpty() && m_echoMode == QLineEdit::Normal) {
-        disconnect(QApplication::clipboard(), SIGNAL(selectionChanged()), this, 0);
         QApplication::clipboard()->setText(t, mode);
-        connect(QApplication::clipboard(), SIGNAL(selectionChanged()),
-                   this, SLOT(_q_clipboardChanged()));
     }
 }
 
@@ -337,10 +334,6 @@ void QWidgetLineControl::setSelection(int start, int length)
     }
     emit selectionChanged();
     emitCursorPositionChanged();
-}
-
-void QWidgetLineControl::_q_clipboardChanged()
-{
 }
 
 void QWidgetLineControl::_q_deleteSelected()

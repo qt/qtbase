@@ -535,7 +535,6 @@ protected:
     virtual void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
 
 private Q_SLOTS:
-    void _q_clipboardChanged();
     void _q_deleteSelected();
 
 private:
