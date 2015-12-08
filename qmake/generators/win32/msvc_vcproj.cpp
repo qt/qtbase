@@ -520,7 +520,6 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                     ProStringList tmpList;
                     tmpList += subdir.second;
                     tmpList += allDependencies;
-                    QPair<QString, ProStringList> val = qMakePair(fi.absoluteFilePath(), tmpList);
                     // Initialize a 'fake' project to get the correct variables
                     // and to be able to extract all the dependencies
                     Option::QMAKE_MODE old_mode = Option::qmake_mode;
@@ -552,8 +551,8 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                         newDep->target = newDep->target.left(newDep->target.length()-3) + "lib";
                     projGuids.insert(newDep->orig_target, newDep->target);
 
-                    if (val.second.size()) {
-                        const ProStringList depends = val.second;
+                    if (tmpList.size()) {
+                        const ProStringList depends = tmpList;
                         foreach (const ProString &dep, depends) {
                             QString depend = dep.toQString();
                             if (!projGuids[depend].isEmpty()) {
@@ -565,8 +564,7 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                                     newDep->dependencies << projGuids[projLookup[tmpDep]];
                                 }
                             } else {
-                                QStringList dependencies = val.second.toQStringList();
-                                extraSubdirs.insert(newDep, dependencies);
+                                extraSubdirs.insert(newDep, tmpList.toQStringList());
                                 newDep->dependencies.clear();
                                 break;
                             }
@@ -585,7 +583,7 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                         wit != where.end(); ++wit) {
                             const ProStringList &l = tmp_proj.values(ProKey(*wit));
                             for (ProStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
-                                QString opt = (*it).toQString();
+                                const QString opt = fixLibFlag(*it).toQString();
                                 if (!opt.startsWith("/") &&   // Not a switch
                                     opt != newDep->target && // Not self
                                     opt != "opengl32.lib" && // We don't care about these libs

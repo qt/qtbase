@@ -40,6 +40,9 @@ import android.view.inputmethod.CompletionInfo;
 import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputMethodManager;
+import android.graphics.Rect;
+import android.app.Activity;
+import android.util.DisplayMetrics;
 
 class QtExtractedText
 {
@@ -80,7 +83,15 @@ class HideKeyboardRunnable implements Runnable {
 
     @Override
     public void run() {
-        QtNative.activityDelegate().setKeyboardVisibility(false, m_hideTimeStamp);
+        // Check that the keyboard is really no longer there.
+        Activity activity = QtNative.activity();
+        Rect r = new Rect();
+        activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
+        DisplayMetrics metrics = new DisplayMetrics();
+        activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        final int kbHeight = metrics.heightPixels - r.bottom;
+        if (kbHeight < 100)
+            QtNative.activityDelegate().setKeyboardVisibility(false, m_hideTimeStamp);
     }
 }
 

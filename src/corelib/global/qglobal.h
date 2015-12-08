@@ -769,7 +769,7 @@ inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
 typedef void (*QFunctionPointer)();
 
 #if !defined(Q_UNIMPLEMENTED)
-#  define Q_UNIMPLEMENTED() qWarning("%s:%d: %s: Unimplemented code.", __FILE__, __LINE__, Q_FUNC_INFO)
+#  define Q_UNIMPLEMENTED() qWarning("Unimplemented code.")
 #endif
 
 Q_DECL_CONSTEXPR static inline bool qFuzzyCompare(double p1, double p2) Q_REQUIRED_RESULT Q_DECL_UNUSED;

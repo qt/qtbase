@@ -56,7 +56,7 @@ class Server : public QDialog
     Q_OBJECT
 
 public:
-    Server(QWidget *parent = 0);
+    explicit Server(QWidget *parent = Q_NULLPTR);
 
 private slots:
     void sessionOpened();
@@ -64,7 +64,6 @@ private slots:
 
 private:
     QLabel *statusLabel;
-    QPushButton *quitButton;
     QTcpServer *tcpServer;
     QStringList fortunes;
     QNetworkSession *networkSession;

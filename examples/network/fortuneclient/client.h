@@ -46,7 +46,6 @@
 
 QT_BEGIN_NAMESPACE
 class QComboBox;
-class QDialogButtonBox;
 class QLabel;
 class QLineEdit;
 class QPushButton;
@@ -60,7 +59,7 @@ class Client : public QDialog
     Q_OBJECT
 
 public:
-    Client(QWidget *parent = 0);
+    explicit Client(QWidget *parent = Q_NULLPTR);
 
 private slots:
     void requestNewFortune();
@@ -70,14 +69,10 @@ private slots:
     void sessionOpened();
 
 private:
-    QLabel *hostLabel;
-    QLabel *portLabel;
     QComboBox *hostCombo;
     QLineEdit *portLineEdit;
     QLabel *statusLabel;
     QPushButton *getFortuneButton;
-    QPushButton *quitButton;
-    QDialogButtonBox *buttonBox;
 
     QTcpSocket *tcpSocket;
     QString currentFortune;

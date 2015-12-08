@@ -33,6 +33,7 @@
 
 #include "qeglfskmsegldeviceintegration.h"
 #include <QLoggingCategory>
+#include <private/qmath_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -115,7 +116,18 @@ EGLDisplay QEglFSKmsEglDeviceIntegration::createDisplay(EGLNativeDisplayType nat
 
 QSizeF QEglFSKmsEglDeviceIntegration::physicalScreenSize() const
 {
-    return QSizeF(m_drm_connector->mmWidth, m_drm_connector->mmHeight);
+    const int defaultPhysicalDpi = 100;
+    static const int width = qEnvironmentVariableIntValue("QT_QPA_EGLFS_PHYSICAL_WIDTH");
+    static const int height = qEnvironmentVariableIntValue("QT_QPA_EGLFS_PHYSICAL_HEIGHT");
+    QSizeF size(width, height);
+    if (size.isEmpty()) {
+        size = QSizeF(m_drm_connector->mmWidth, m_drm_connector->mmHeight);
+        if (size.isEmpty()) {
+            const float pixelsPerMm = Q_MM_PER_INCH / defaultPhysicalDpi;
+            size = QSizeF(screenSize().width() * pixelsPerMm, screenSize().height() * pixelsPerMm);
+        }
+    }
+    return size;
 }
 
 QSize QEglFSKmsEglDeviceIntegration::screenSize() const

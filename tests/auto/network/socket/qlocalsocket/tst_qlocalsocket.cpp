@@ -733,7 +733,10 @@ public:
         int done = clients;
         while (done > 0) {
             bool timedOut = true;
-            QVERIFY(server.waitForNewConnection(7000, &timedOut));
+            QVERIFY2(server.waitForNewConnection(7000, &timedOut),
+                     (QByteArrayLiteral("done=") + QByteArray::number(done)
+                      + QByteArrayLiteral(", timedOut=")
+                      + (timedOut ? "true" : "false")).constData());
             QVERIFY(!timedOut);
             QLocalSocket *serverSocket = server.nextPendingConnection();
             QVERIFY(serverSocket);

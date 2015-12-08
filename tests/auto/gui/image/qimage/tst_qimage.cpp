@@ -196,6 +196,8 @@ private slots:
 
     void metadataPassthrough();
 
+    void pixelColor();
+
 private:
     const QString m_prefix;
 };
@@ -3025,6 +3027,22 @@ void tst_QImage::metadataPassthrough()
     QCOMPARE(swapped.dotsPerMeterX(), a.dotsPerMeterX());
     QCOMPARE(swapped.dotsPerMeterY(), a.dotsPerMeterY());
     QCOMPARE(swapped.devicePixelRatio(), a.devicePixelRatio());
+}
+
+void tst_QImage::pixelColor()
+{
+    QImage argb32(1, 1, QImage::Format_ARGB32);
+    QImage argb32pm(1, 1, QImage::Format_ARGB32_Premultiplied);
+
+    QColor c(Qt::red);
+    c.setAlpha(128);
+    argb32.setPixelColor(QPoint(0, 0), c);
+    argb32pm.setPixelColor(QPoint(0, 0), c);
+    QCOMPARE(argb32.pixelColor(QPoint(0, 0)), c);
+    QCOMPARE(argb32pm.pixelColor(QPoint(0, 0)), c);
+
+    QImage t = argb32.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    QCOMPARE(t.pixel(0,0), argb32pm.pixel(0,0));
 }
 
 QTEST_GUILESS_MAIN(tst_QImage)

@@ -918,6 +918,13 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
     if (!ianaId.isEmpty() && ianaId.at(0) == ':')
         ianaId = ianaId.mid(1);
 
+    // The TZ value can be ":/etc/localtime" which libc considers
+    // to be a "default timezone", in which case it will be read
+    // by one of the blocks below, so unset it here so it is not
+    // considered as a valid/found ianaId
+    if (ianaId == "/etc/localtime")
+        ianaId.clear();
+
     // On Debian Etch and later /etc/localtime is real file with name held in /etc/timezone
     if (ianaId.isEmpty()) {
         QFile tzif(QStringLiteral("/etc/timezone"));

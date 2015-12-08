@@ -37,6 +37,7 @@
 #include "qwinrtmessagedialoghelper.h"
 #include "qwinrttheme.h"
 
+#include <QtGui/QTextDocument>
 #include <QtCore/qfunctions_winrt.h>
 #include <private/qeventdispatcher_winrt_p.h>
 
@@ -110,6 +111,10 @@ bool QWinRTMessageDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModa
     const QString informativeText = options->informativeText();
     const QString title = options->windowTitle();
     const QString text = informativeText.isEmpty() ? options->text() : (options->text() + QLatin1Char('\n') + informativeText);
+    if (Qt::mightBeRichText(text)) {
+        qWarning("Rich text detected, defaulting to QtWidgets-based dialog.");
+        return false;
+    }
 
     HRESULT hr;
     ComPtr<IMessageDialogFactory> dialogFactory;

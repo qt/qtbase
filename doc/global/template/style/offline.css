@@ -595,6 +595,21 @@ ol.a > li{
     margin-left: 15px
 }
 
+.flowList {
+  padding: 25px
+}
+.flowList dd {
+  display: inline-block;
+  margin-left: 10px;
+  width: 255px;
+  line-height: 1.15em;
+  overflow-x: hidden;
+  text-overflow: ellipsis
+}
+.alphaChar {
+  font-size: 2em;
+  position: relative
+}
 /*
 -----------
 Content table

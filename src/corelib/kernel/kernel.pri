@@ -88,6 +88,7 @@ wince {
         SOURCES += \
                 kernel/qfunctions_wince.cpp
         HEADERS += \
+                kernel/qfunctions_fake_env_p.h \
                 kernel/qfunctions_wince.h
 }
 
@@ -95,6 +96,7 @@ winrt {
         SOURCES += \
                 kernel/qfunctions_winrt.cpp
         HEADERS += \
+                kernel/qfunctions_fake_env_p.h \
                 kernel/qfunctions_winrt.h
 }
 

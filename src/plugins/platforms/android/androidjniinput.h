@@ -35,6 +35,7 @@
 #define ANDROIDJNIINPUT_H
 #include <jni.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/QRect>
 
 QT_BEGIN_NAMESPACE
 
@@ -45,6 +46,7 @@ namespace QtAndroidInput
     void resetSoftwareKeyboard();
     void hideSoftwareKeyboard();
     bool isSoftwareKeyboardVisible();
+    QRect softwareKeyboardRect();
     void updateSelection(int selStart, int selEnd, int candidatesStart, int candidatesEnd);
     // Software keyboard support
 

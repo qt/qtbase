@@ -4822,7 +4822,7 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
 
     \note It is not possible to use this overload to diconnect signals
     connected to functors or lambda expressions. That is because it is not
-    possible to compare them. Instead, use the olverload that take a
+    possible to compare them. Instead, use the overload that takes a
     QMetaObject::Connection
 
     \sa connect()

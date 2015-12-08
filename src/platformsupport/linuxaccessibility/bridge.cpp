@@ -99,7 +99,7 @@ void QSpiAccessibleBridge::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
     if (!dbusAdaptor)
         return;
-    if (isActive())
+    if (isActive() && event->accessibleInterface())
         dbusAdaptor->notify(event);
 }
 

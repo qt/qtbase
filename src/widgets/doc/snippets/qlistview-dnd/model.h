@@ -38,16 +38,6 @@
 **
 ****************************************************************************/
 
-/****************************************************************************
-**
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
-**
-** This file is part of an example program for Qt.
-** EDITIONS: NOLIMITS
-**
-****************************************************************************/
-
 #ifndef MODEL_H
 #define MODEL_H
 

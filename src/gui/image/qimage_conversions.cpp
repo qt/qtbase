@@ -2920,7 +2920,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
     }  // Format_Grayscale8
 };
 
-void qInitImageConversions()
+static void qInitImageConversions()
 {
 #if defined(__SSE2__) && defined(QT_COMPILER_SUPPORTS_SSSE3)
     if (qCpuHasFeature(SSSE3)) {
@@ -2966,5 +2966,16 @@ void qInitImageConversions()
     }
 #endif
 }
+
+class QImageConversionsInitializer {
+public:
+    QImageConversionsInitializer()
+    {
+        qInitImageConversions();
+    }
+};
+
+// Ensure initialization if this object file is linked.
+static QImageConversionsInitializer qImageConversionsInitializer;
 
 QT_END_NAMESPACE

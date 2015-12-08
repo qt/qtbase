@@ -444,12 +444,14 @@ bool QWinRTFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModalit
             }
         }
 
-        const QString suffix = dialogOptions->defaultSuffix();
+        QString suffix = dialogOptions->defaultSuffix();
         if (!suffix.isEmpty()) {
+            if (!suffix.startsWith(QLatin1Char('.')))
+                suffix.prepend(QLatin1Char('.'));
             HStringReference nativeSuffix(reinterpret_cast<const wchar_t *>(suffix.utf16()),
                                           suffix.length());
             hr = picker->put_DefaultFileExtension(nativeSuffix.Get());
-            RETURN_FALSE_IF_FAILED("Failed to set default file extension");
+            RETURN_FALSE_IF_FAILED_WITH_ARGS("Failed to set default file extension \"%s\"", qPrintable(suffix));
         }
 
         const QString suggestedName = QFileInfo(d->saveFileName.toLocalFile()).fileName();
