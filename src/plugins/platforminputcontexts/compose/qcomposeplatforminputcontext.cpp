@@ -111,7 +111,7 @@ bool QComposeInputContext::filterEvent(const QEvent *event)
     keysym = keyEvent->nativeVirtualKey();
 
     int nCompose = 0;
-    while (m_composeBuffer[nCompose] != 0 && nCompose < QT_KEYSEQUENCE_MAX_LEN)
+    while (nCompose < QT_KEYSEQUENCE_MAX_LEN && m_composeBuffer[nCompose] != 0)
         nCompose++;
 
     if (nCompose == QT_KEYSEQUENCE_MAX_LEN) {
