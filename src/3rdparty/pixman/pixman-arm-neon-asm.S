@@ -34,6 +34,8 @@
  *  - pixman_composite_over_n_8_0565_asm_neon
  */
 
+#if defined(ENABLE_PIXMAN_DRAWHELPERS)
+
 /* Prevent the stack from becoming executable for no reason... */
 #if defined(__linux__) && defined(__ELF__)
 .section .note.GNU-stack,"",%progbits
@@ -1707,3 +1709,5 @@ generate_composite_function \
     0, /* dst_r_basereg */ \
     0, /* src_basereg   */ \
     0  /* mask_basereg  */
+
+#endif
