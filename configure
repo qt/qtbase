@@ -4187,8 +4187,8 @@ cat > "$QTCONFFILE" <<EOF
 Prefix=..
 [Paths]
 Prefix=$QT_EXT_PREFIX
-TargetSpec=$XQMAKESPEC
-HostSpec=$QMAKESPEC
+TargetSpec=$XPLATFORM
+HostSpec=$PLATFORM
 EOF
 if [ -n "$CFG_SYSROOT" ]; then
     cat >> "$QTCONFFILE" <<EOF
