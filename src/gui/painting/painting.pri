@@ -101,12 +101,10 @@ SSE4_1_SOURCES += painting/qdrawhelper_sse4.cpp \
                   painting/qimagescale_sse4.cpp
 AVX2_SOURCES += painting/qdrawhelper_avx2.cpp
 
-!ios {
-    CONFIG += no_clang_integrated_as
-    NEON_SOURCES += painting/qdrawhelper_neon.cpp painting/qimagescale_neon.cpp
-    NEON_HEADERS += painting/qdrawhelper_neon_p.h
-    !contains(QT_ARCH, "arm64"): NEON_ASM += ../3rdparty/pixman/pixman-arm-neon-asm.S painting/qdrawhelper_neon_asm.S
-}
+NEON_SOURCES += painting/qdrawhelper_neon.cpp painting/qimagescale_neon.cpp
+NEON_HEADERS += painting/qdrawhelper_neon_p.h
+NEON_ASM += ../3rdparty/pixman/pixman-arm-neon-asm.S painting/qdrawhelper_neon_asm.S
+!ios:!contains(QT_ARCH, "arm64"): DEFINES += ENABLE_PIXMAN_DRAWHELPERS
 
 MIPS_DSP_SOURCES += painting/qdrawhelper_mips_dsp.cpp
 MIPS_DSP_HEADERS += painting/qdrawhelper_mips_dsp_p.h painting/qt_mips_asm_dsp_p.h

@@ -135,7 +135,7 @@ static inline uint16x8_t qvsource_over_u16(uint16x8_t src16, uint16x8_t dst16, u
     return vaddq_u16(src16, qvbyte_mul_u16(dst16, alpha16, half));
 }
 
-#if !defined(Q_PROCESSOR_ARM_64)
+#if defined(ENABLE_PIXMAN_DRAWHELPERS)
 extern "C" void
 pixman_composite_over_8888_0565_asm_neon (int32_t   w,
                                           int32_t   h,
@@ -352,7 +352,7 @@ void qt_blend_argb32_on_rgb16_neon(uchar *destPixels, int dbpl,
 void qt_blend_argb32_on_argb32_scanline_neon(uint *dest, const uint *src, int length, uint const_alpha)
 {
     if (const_alpha == 255) {
-#if !defined(Q_PROCESSOR_ARM_64)
+#if defined(ENABLE_PIXMAN_DRAWHELPERS)
         pixman_composite_scanline_over_asm_neon(length, dest, src);
 #else
         qt_blend_argb32_on_argb32_neon((uchar *)dest, 4 * length, (uchar *)src, 4 * length, length, 1, 256);
@@ -372,7 +372,7 @@ void qt_blend_argb32_on_argb32_neon(uchar *destPixels, int dbpl,
     uint16x8_t half = vdupq_n_u16(0x80);
     uint16x8_t full = vdupq_n_u16(0xff);
     if (const_alpha == 256) {
-#if !defined(Q_PROCESSOR_ARM_64)
+#if defined(ENABLE_PIXMAN_DRAWHELPERS)
         pixman_composite_over_8888_8888_asm_neon(w, h, (uint32_t *)destPixels, dbpl / 4, (uint32_t *)srcPixels, sbpl / 4);
 #else
         for (int y=0; y<h; ++y) {
@@ -530,7 +530,7 @@ void qt_blend_rgb32_on_rgb32_neon(uchar *destPixels, int dbpl,
     }
 }
 
-#if !defined(Q_PROCESSOR_ARM_64)
+#if defined(ENABLE_PIXMAN_DRAWHELPERS)
 void qt_alphamapblit_quint16_neon(QRasterBuffer *rasterBuffer,
                                   int x, int y, const QRgba64 &color,
                                   const uchar *bitmap,
@@ -868,7 +868,7 @@ void QT_FASTCALL comp_func_Plus_neon(uint *dst, const uint *src, int length, uin
     }
 }
 
-#if !defined(Q_PROCESSOR_ARM_64)
+#if defined(ENABLE_PIXMAN_DRAWHELPERS)
 static const int tileSize = 32;
 
 extern "C" void qt_rotate90_16_neon(quint16 *dst, const quint16 *src, int sstride, int dstride, int count);

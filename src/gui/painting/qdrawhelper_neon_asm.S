@@ -31,6 +31,8 @@
 **
 ****************************************************************************/
 
+#if defined(ENABLE_PIXMAN_DRAWHELPERS)
+
 /* Prevent the stack from becoming executable for no reason... */
 #if defined(__linux__) && defined(__ELF__)
 .section .note.GNU-stack,"",%progbits
@@ -287,3 +289,5 @@ qt_rotate90_16_neon:
     pop { r4-r11, pc }
 
     .endfunc
+
+#endif
