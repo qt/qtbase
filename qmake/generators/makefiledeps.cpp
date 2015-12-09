@@ -872,7 +872,7 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
     files_changed = true;
     file->moc_checked = true;
 
-    int buffer_len;
+    int buffer_len = 0;
     char *buffer = 0;
     {
         struct stat fst;
@@ -890,9 +890,9 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
             return false; //shouldn't happen
         }
         buffer = getBuffer(fst.st_size);
-        for(int have_read = buffer_len = 0;
-            (have_read = QT_READ(fd, buffer + buffer_len, fst.st_size - buffer_len));
-            buffer_len += have_read) ;
+        while (int have_read = QT_READ(fd, buffer + buffer_len, fst.st_size - buffer_len))
+            buffer_len += have_read;
+
         QT_CLOSE(fd);
     }
 
