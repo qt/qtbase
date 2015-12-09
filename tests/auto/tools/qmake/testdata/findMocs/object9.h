@@ -32,11 +32,10 @@
 ****************************************************************************/
 
 
-/**//*'*/
 #include <QObject>
+#define juxtaposed "lorem ""ipsum /*"
 
-class Object1 : public QObject
+class Object9 : public QObject
 {
-    Q\
-_OBJECT
+    Q_OBJECT
 };

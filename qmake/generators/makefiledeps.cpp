@@ -902,13 +902,24 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
  /* qmake ignore Q_GADGET */
  /* qmake ignore Q_OBJECT */
     for(int x = 0; x < buffer_len; x++) {
+#define SKIP_BSNL(pos) skipEscapedLineEnds(buffer, buffer_len, (pos), &line_count)
+        x = SKIP_BSNL(x);
         if (buffer[x] == '/') {
-            ++x;
-            if(buffer_len >= x) {
-                if (buffer[x] == '/') { // C++-style comment
-                    for (; x < buffer_len && !qmake_endOfLine(buffer[x]); ++x) {} // skip
-                } else if (buffer[x] == '*') { // C-style comment
-                    for(++x; x < buffer_len; ++x) {
+            int extralines = 0;
+            int y = skipEscapedLineEnds(buffer, buffer_len, x + 1, &extralines);
+            if (buffer_len > y) {
+                // If comment, advance to the character that ends it:
+                if (buffer[y] == '/') { // C++-style comment
+                    line_count += extralines;
+                    x = y;
+                    do {
+                        x = SKIP_BSNL(x + 1);
+                    } while (x < buffer_len && !qmake_endOfLine(buffer[x]));
+
+                } else if (buffer[y] == '*') { // C-style comment
+                    line_count += extralines;
+                    x = SKIP_BSNL(y + 1);
+                    for (; x < buffer_len; x = SKIP_BSNL(x + 1)) {
                         if (buffer[x] == 't' || buffer[x] == 'q') { // ignore
                             if(buffer_len >= (x + 20) &&
                                !strncmp(buffer + x + 1, "make ignore Q_OBJECT", 20)) {
@@ -924,58 +935,58 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
                                 ignore_qgadget = true;
                             }
                         } else if (buffer[x] == '*') {
-                            if (buffer_len >= x + 1 && buffer[x + 1] == '/') {
-                                ++x;
+                            extralines = 0;
+                            y = skipEscapedLineEnds(buffer, buffer_len, x + 1, &extralines);
+                            if (buffer_len > y && buffer[y] == '/') {
+                                line_count += extralines;
+                                x = y;
                                 break;
                             }
                         } else if (Option::debug_level && qmake_endOfLine(buffer[x])) {
                             ++line_count;
                         }
                     }
-                } else { // not a comment, in fact; undo the extra x++ we did.
-                    x--;
                 }
+                // else: don't update x, buffer[x] is just the division operator.
             }
         } else if (buffer[x] == '\'' || buffer[x] == '"') {
             x = scanPastString(buffer, buffer_len, x, &line_count);
             // Leaves us on closing quote; for loop's x++ steps us past it.
         }
 
-        if (Option::debug_level && qmake_endOfLine(buffer[x]))
+        if (x < buffer_len && Option::debug_level && qmake_endOfLine(buffer[x]))
             ++line_count;
-        if (buffer_len > x + 2 && buffer[x + 1] == 'Q' &&
-            buffer[x + 2] == '_' && !isCWordChar(buffer[x])) {
-            ++x;
-            int match = 0;
-            static const char *interesting[] = { "OBJECT", "GADGET" };
-            for (int interest = 0, m1, m2; interest < 2; ++interest) {
+        if (buffer_len > x + 8 && !isCWordChar(buffer[x])) {
+            int morelines = 0;
+            int y = skipEscapedLineEnds(buffer, buffer_len, x + 1, &morelines);
+            if (buffer[y] == 'Q') {
+                static const char interesting[][9] = { "Q_OBJECT", "Q_GADGET" };
+                for (int interest = 0; interest < 2; ++interest) {
                 if(interest == 0 && ignore_qobject)
                     continue;
                 else if(interest == 1 && ignore_qgadget)
                     continue;
-                for (m1 = 0, m2 = 0; interesting[interest][m1]; ++m1) {
-                    if (interesting[interest][m1] != buffer[x + 2 + m1]) {
-                        m2 = -1;
-                        break;
+
+                    int matchlen = 0, extralines = 0;
+                    if (matchWhileUnsplitting(buffer, buffer_len, y,
+                                              interesting[interest],
+                                              strlen(interesting[interest]),
+                                              &matchlen, &extralines)
+                        && y + matchlen < buffer_len
+                        && !isCWordChar(buffer[y + matchlen])) {
+                        if (Option::debug_level) {
+                            buffer[y + matchlen] = '\0';
+                            debug_msg(2, "Mocgen: %s:%d Found MOC symbol %s",
+                                      file->file.real().toLatin1().constData(),
+                                      line_count + morelines, buffer + y);
+                        }
+                        file->mocable = true;
+                        return true;
                     }
-                    ++m2;
                 }
-                if(m1 == m2) {
-                    match = m2 + 2;
-                    break;
-                }
-            }
-            if (match && !isCWordChar(buffer[x + match])) {
-                if (Option::debug_level) {
-                    buffer[x + match] = '\0';
-                    debug_msg(2, "Mocgen: %s:%d Found MOC symbol %s",
-                              file->file.real().toLatin1().constData(),
-                              line_count, buffer + x);
-                }
-                file->mocable = true;
-                return true;
             }
         }
+#undef SKIP_BSNL
     }
     return true;
 }

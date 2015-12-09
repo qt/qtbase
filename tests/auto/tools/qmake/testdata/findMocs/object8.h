@@ -32,11 +32,19 @@
 ****************************************************************************/
 
 
-/**//*'*/
 #include <QObject>
+#define Q_OBJECTOID_THING // empty
 
-class Object1 : public QObject
+class Object8 : public QObject
 {
-    Q\
-_OBJECT
+    Q_OBJECT\
+OID_THING
+};
+
+// Now we poison moc, just to make sure this doesn't get moc'ed :)
+class NonMocObject8
+/*  : QObject */
+{
+    /* qmake ignore Q_OBJECT */
+    Q_OBJECT
 };
