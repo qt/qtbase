@@ -774,14 +774,16 @@ void tst_QFileDialog2::task233037_selectingDirectory()
 void tst_QFileDialog2::task235069_hideOnEscape_data()
 {
     QTest::addColumn<QString>("childName");
-    QTest::newRow("listView") << QStringLiteral("listView");
-    QTest::newRow("fileNameEdit") << QStringLiteral("fileNameEdit");
-    QTest::newRow("treeView") << QStringLiteral("treeView");
+    QTest::addColumn<QFileDialog::ViewMode>("viewMode");
+    QTest::newRow("listView") << QStringLiteral("listView") << QFileDialog::List;
+    QTest::newRow("fileNameEdit") << QStringLiteral("fileNameEdit") << QFileDialog::List;
+    QTest::newRow("treeView") << QStringLiteral("treeView") << QFileDialog::Detail;
 }
 
 void tst_QFileDialog2::task235069_hideOnEscape()
 {
     QFETCH(QString, childName);
+    QFETCH(QFileDialog::ViewMode, viewMode);
     QDir current = QDir::currentPath();
 
     QNonNativeFileDialog fd;
@@ -789,7 +791,7 @@ void tst_QFileDialog2::task235069_hideOnEscape()
     QVERIFY(spyFinished.isValid());
     QSignalSpy spyRejected(&fd, &QDialog::rejected);
     QVERIFY(spyRejected.isValid());
-    fd.setViewMode(QFileDialog::List);
+    fd.setViewMode(viewMode);
     fd.setDirectory(current.absolutePath());
     fd.setAcceptMode(QFileDialog::AcceptSave);
     fd.show();
