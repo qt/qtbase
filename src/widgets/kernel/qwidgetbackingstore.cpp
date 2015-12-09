@@ -641,7 +641,11 @@ void QWidgetBackingStore::markDirty(const QRect &rect, QWidget *widget,
 
 
     const QRect widgetRect = widget->d_func()->effectiveRectFor(rect);
-    const QRect translatedRect(widgetRect.translated(widget->mapTo(tlw, QPoint())));
+    QRect translatedRect = widgetRect;
+    if (widget != tlw)
+        translatedRect.translate(widget->mapTo(tlw, QPoint()));
+    // Graphics effects may exceed window size, clamp.
+    translatedRect = translatedRect.intersected(QRect(QPoint(), tlw->size()));
     if (qt_region_strictContains(dirty, translatedRect)) {
         if (updateTime == UpdateNow)
             sendUpdateRequest(tlw, updateTime);
