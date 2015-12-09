@@ -1720,7 +1720,7 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             if (!m_savedStyle) {
                 m_savedStyle = style();
 #ifndef Q_OS_WINCE
-                if (oldState == Qt::WindowMinimized) {
+                if (oldState == Qt::WindowMinimized || oldState == Qt::WindowMaximized) {
                     const QRect nf = normalFrameGeometry(m_data.hwnd);
                     if (nf.isValid())
                         m_savedFrameGeometry = nf;
@@ -1771,7 +1771,7 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             // preserve maximized state
             if (visible) {
                 setFlag(WithinMaximize);
-                ShowWindow(m_data.hwnd, (newState == Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNOACTIVATE);
+                ShowWindow(m_data.hwnd, (newState == Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNA);
                 clearFlag(WithinMaximize);
             }
             m_savedStyle = 0;
