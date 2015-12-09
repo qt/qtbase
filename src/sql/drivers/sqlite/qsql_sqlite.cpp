@@ -351,7 +351,8 @@ QSQLiteResult::QSQLiteResult(const QSQLiteDriver* db)
 QSQLiteResult::~QSQLiteResult()
 {
     Q_D(QSQLiteResult);
-    const_cast<QSQLiteDriverPrivate*>(d->drv_d_func())->results.removeOne(this);
+    if (d->drv_d_func())
+        const_cast<QSQLiteDriverPrivate*>(d->drv_d_func())->results.removeOne(this);
     d->cleanup();
 }
 
