@@ -229,6 +229,7 @@ private slots:
 
     void isModified();
     void edited();
+    void fixupDoesNotModify_QTBUG_49295();
 
     void insert();
     void setSelection_data();
@@ -2841,6 +2842,29 @@ void tst_QLineEdit::edited()
     QVERIFY(!testWidget->isModified());
 
     testWidget->setModified(true);
+    QVERIFY(testWidget->isModified());
+}
+
+void tst_QLineEdit::fixupDoesNotModify_QTBUG_49295()
+{
+    QLineEdit *testWidget = ensureTestWidget();
+
+    ValidatorWithFixup val;
+    testWidget->setValidator(&val);
+    testWidget->setText("foo");
+    QVERIFY(!testWidget->isModified());
+    QVERIFY(!testWidget->hasAcceptableInput());
+
+    QTest::keyClicks(testWidget, QStringLiteral("bar"));
+    QVERIFY(testWidget->isModified());
+    QVERIFY(!testWidget->hasAcceptableInput());
+
+    // trigger a fixup, which should not reset the modified flag
+    QFocusEvent lostFocus(QEvent::FocusOut);
+    qApp->sendEvent(testWidget, &lostFocus);
+
+    QVERIFY(testWidget->hasAcceptableInput());
+    QEXPECT_FAIL("", "QTBUG-49295: a fixup of a line edit should keep it modified", Continue);
     QVERIFY(testWidget->isModified());
 }
 
