@@ -2793,6 +2793,10 @@ void QFontCache::insertEngineData(const QFontDef &def, QFontEngineData *engineDa
     Q_ASSERT(!engineDataCache.contains(def));
 
     engineData->ref.ref();
+    // Decrease now rather than waiting
+    if (total_cost > min_cost * 2)
+        decreaseCache();
+
     engineDataCache.insert(def, engineData);
     increaseCost(sizeof(QFontEngineData));
 }
@@ -2830,8 +2834,10 @@ void QFontCache::insertEngine(const Key &key, QFontEngine *engine, bool insertMu
                  key.def.pixelSize, key.def.weight, key.def.style, key.def.fixedPitch);
     }
 #endif
-
     engine->ref.ref();
+    // Decrease now rather than waiting
+    if (total_cost > min_cost * 2)
+        decreaseCache();
 
     Engine data(engine);
     data.timestamp = ++current_timestamp;
@@ -2892,7 +2898,11 @@ void QFontCache::timerEvent(QTimerEvent *)
 
         return;
     }
+    decreaseCache();
+}
 
+void QFontCache::decreaseCache()
+{
     // go through the cache and count up everything in use
     uint in_use_cost = 0;
 
