@@ -132,7 +132,6 @@ lib_bundle {
 }
 
 mac {
-   CONFIG += explicitlib
    macx-g++ {
        QMAKE_CFLAGS += -fconstant-cfstrings
        QMAKE_CXXFLAGS += -fconstant-cfstrings
@@ -260,7 +259,7 @@ load(qt_targets)
     QMAKE_PKGCONFIG_INSTALL_REPLACE += pclib_replace
 
     unix {
-        CONFIG += create_libtool explicitlib
+        CONFIG += create_libtool
         host_build: \
             QMAKE_LIBTOOL_LIBDIR = $$[QT_HOST_LIBS]
         else: \
