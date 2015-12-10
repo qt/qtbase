@@ -222,7 +222,7 @@ public:
 
     Type type() const Q_DECL_OVERRIDE { return Raster; }
 
-    QPoint coordinateOffset() const;
+    QPoint coordinateOffset() const Q_DECL_OVERRIDE;
 
     bool requiresPretransformedGlyphPositions(QFontEngine *fontEngine, const QTransform &m) const Q_DECL_OVERRIDE;
     bool shouldDrawCachedGlyphs(QFontEngine *fontEngine, const QTransform &m) const Q_DECL_OVERRIDE;

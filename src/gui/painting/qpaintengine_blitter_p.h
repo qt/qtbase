@@ -60,10 +60,11 @@ class Q_GUI_EXPORT QBlitterPaintEngine : public QRasterPaintEngine
 public:
     QBlitterPaintEngine(QBlittablePlatformPixmap *p);
 
-    virtual QPaintEngine::Type type() const { return Blitter; }
+    virtual QPaintEngine::Type type() const Q_DECL_OVERRIDE
+    { return Blitter; }
 
-    virtual bool begin(QPaintDevice *pdev);
-    virtual bool end();
+    virtual bool begin(QPaintDevice *pdev) Q_DECL_OVERRIDE;
+    virtual bool end() Q_DECL_OVERRIDE;
 
     // Call down into QBlittable
     void fill(const QVectorPath &path, const QBrush &brush) Q_DECL_OVERRIDE;
