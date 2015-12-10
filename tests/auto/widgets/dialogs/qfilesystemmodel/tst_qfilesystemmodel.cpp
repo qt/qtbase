@@ -822,18 +822,21 @@ void tst_QFileSystemModel::sort()
     QModelIndex parent = myModel->index(dirPath, 0);
     QList<QString> expectedOrder;
     expectedOrder << tempFile2.fileName() << tempFile.fileName() << dirPath + QChar('/') + ".." << dirPath + QChar('/') + ".";
-    //File dialog Mode means sub trees are not sorted, only the current root
+
     if (fileDialogMode) {
-       // FIXME: we were only able to disableRecursiveSort in developer builds, so we can only
-       // stably perform this test for developer builds
-#ifdef QT_BUILD_INTERNAL
-       QList<QString> actualRows;
+        // File dialog Mode means sub trees are not sorted, only the current root.
+        // There's no way we can check that the sub tree is "not sorted"; just check if it
+        // has the same contents of the expected list
+        QList<QString> actualRows;
         for(int i = 0; i < myModel->rowCount(parent); ++i)
         {
             actualRows << dirPath + QChar('/') + myModel->index(i, 1, parent).data(QFileSystemModel::FileNameRole).toString();
         }
-        QVERIFY(actualRows != expectedOrder);
-#endif
+
+        std::sort(expectedOrder.begin(), expectedOrder.end());
+        std::sort(actualRows.begin(), actualRows.end());
+
+        QCOMPARE(actualRows, expectedOrder);
     } else {
         for(int i = 0; i < myModel->rowCount(parent); ++i)
         {
