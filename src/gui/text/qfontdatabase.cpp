@@ -924,7 +924,10 @@ QFontEngine *loadSingleEngine(int script,
     QFontCache::Key key(def,script);
     QFontEngine *engine = QFontCache::instance()->findEngine(key);
     if (!engine) {
-        if (script != QChar::Script_Common) {
+        const bool cacheForCommonScript = script != QChar::Script_Common
+                && (family->writingSystems[QFontDatabase::Latin] & QtFontFamily::Supported) != 0;
+
+        if (Q_LIKELY(cacheForCommonScript)) {
             // fast path: check if engine was loaded for another script
             key.script = QChar::Script_Common;
             engine = QFontCache::instance()->findEngine(key);
@@ -963,7 +966,7 @@ QFontEngine *loadSingleEngine(int script,
 
             QFontCache::instance()->insertEngine(key, engine);
 
-            if (!engine->symbol && script != QChar::Script_Common && (family->writingSystems[QFontDatabase::Latin] & QtFontFamily::Supported) != 0) {
+            if (Q_LIKELY(cacheForCommonScript && !engine->symbol)) {
                 // cache engine for Common script as well
                 key.script = QChar::Script_Common;
                 if (!QFontCache::instance()->findEngine(key))
