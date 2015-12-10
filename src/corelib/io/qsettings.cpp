@@ -1383,13 +1383,17 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
         Concurrent read and write are not a problem because the writing operation is atomic.
     */
     QLockFile lockFile(confFile->name + QLatin1String(".lock"));
+#endif
     if (!readOnly) {
-        if (!confFile->isWritable() || !lockFile.lock() ) {
+        if (!confFile->isWritable()
+#ifndef QT_BOOTSTRAPPED
+            || !lockFile.lock()
+#endif
+            ) {
             setStatus(QSettings::AccessError);
             return;
         }
     }
-#endif
 
     /*
         We hold the lock. Let's reread the file if it has changed
