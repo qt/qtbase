@@ -124,6 +124,7 @@ private slots:
     void permissions();
 
     void doNotUnwatchOnFailedRmdir();
+    void specialFiles();
 
 protected:
     bool createFiles(const QString &test_path, const QStringList &initial_files, int existingFileCount = 0, const QStringList &intial_dirs = QStringList());
@@ -1077,6 +1078,49 @@ void tst_QFileSystemModel::doNotUnwatchOnFailedRmdir()
     QTRY_COMPARE(model.rowCount(rootIndex), 2);
 }
 
+static QSet<QString> fileListUnderIndex(const QFileSystemModel *model, const QModelIndex &parent)
+{
+    QSet<QString> fileNames;
+    const int rowCount = model->rowCount(parent);
+    for (int i = 0; i < rowCount; ++i)
+        fileNames.insert(model->index(i, 0, parent).data(QFileSystemModel::FileNameRole).toString());
+    return fileNames;
+}
+
+void tst_QFileSystemModel::specialFiles()
+{
+    QFileSystemModel model;
+
+    model.setFilter(QDir::AllEntries | QDir::System | QDir::Hidden);
+
+    // Can't simply verify if the model returns a valid model index for a special file
+    // as it will always return a valid index for existing files,
+    // even if the file is not visible with the given filter.
+
+#if defined(Q_OS_UNIX)
+    const QModelIndex rootIndex = model.setRootPath(QStringLiteral("/dev/"));
+    const QString testFileName = QStringLiteral("null");
+#elif defined(Q_OS_WIN)
+    const QModelIndex rootIndex = model.setRootPath(flatDirTestPath);
+
+    const QString testFileName = QStringLiteral("linkSource.lnk");
+
+    QFile file(flatDirTestPath + QLatin1String("/linkTarget.txt"));
+    QVERIFY(file.open(QIODevice::WriteOnly));
+    file.close();
+    QVERIFY(file.link(flatDirTestPath + '/' + testFileName));
+#else
+    QSKIP("Not implemented");
+    QModelIndex rootIndex;
+    QString testFileName;
+#endif
+
+    QTRY_VERIFY(fileListUnderIndex(&model, rootIndex).contains(testFileName));
+
+    model.setFilter(QDir::AllEntries | QDir::Hidden);
+
+    QTRY_VERIFY(!fileListUnderIndex(&model, rootIndex).contains(testFileName));
+}
 
 QTEST_MAIN(tst_QFileSystemModel)
 #include "tst_qfilesystemmodel.moc"

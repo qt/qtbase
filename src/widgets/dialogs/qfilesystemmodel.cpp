@@ -1791,10 +1791,6 @@ void QFileSystemModelPrivate::_q_fileSystemChanged(const QString &path, const QV
             node->fileName = fileName;
         }
 
-        if (info.size() == -1 && !info.isSymLink()) {
-            removeNode(parentNode, fileName);
-            continue;
-        }
         if (*node != info ) {
             node->populate(info);
             bypassFilters.remove(node);
