@@ -426,8 +426,8 @@
 
     \value ReuseAddressHint Provides a hint to QAbstractSocket that it should try
     to rebind the service even if the address and port are already bound by
-    another socket. On Windows, this is equivalent to the SO_REUSEADDR
-    socket option. On Unix, this option is ignored.
+    another socket. On Windows and Unix, this is equivalent to the SO_REUSEADDR
+    socket option.
 
     \value DefaultForPlatform The default option for the current platform.
     On Unix and OS X, this is equivalent to (DontShareAddress
