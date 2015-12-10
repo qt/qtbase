@@ -57,6 +57,31 @@
 
 #include <Carbon/Carbon.h>
 
+@interface QT_MANGLE_NAMESPACE(QCocoaThemeNotificationReceiver) : NSObject {
+QCocoaTheme *mPrivate;
+}
+- (id)initWithPrivate:(QCocoaTheme *)priv;
+- (void)systemColorsDidChange:(NSNotification *)notification;
+@end
+
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaThemeNotificationReceiver);
+
+@implementation QCocoaThemeNotificationReceiver
+- (id)initWithPrivate:(QCocoaTheme *)priv
+{
+    self = [super init];
+    mPrivate = priv;
+    return self;
+}
+
+- (void)systemColorsDidChange:(NSNotification *)notification
+{
+    Q_UNUSED(notification);
+    mPrivate->reset();
+    QWindowSystemInterface::handleThemeChange(Q_NULLPTR);
+}
+@end
+
 QT_BEGIN_NAMESPACE
 
 const char *QCocoaTheme::name = "cocoa";
@@ -64,14 +89,27 @@ const char *QCocoaTheme::name = "cocoa";
 QCocoaTheme::QCocoaTheme()
     :m_systemPalette(0)
 {
-
+    m_notificationReceiver = [[QT_MANGLE_NAMESPACE(QCocoaThemeNotificationReceiver) alloc] initWithPrivate:this];
+    [[NSNotificationCenter defaultCenter] addObserver:m_notificationReceiver
+                                             selector:@selector(systemColorsDidChange:)
+                                                 name:NSSystemColorsDidChangeNotification
+                                               object:nil];
 }
 
 QCocoaTheme::~QCocoaTheme()
 {
-    delete m_systemPalette;
-    qDeleteAll(m_palettes);
+    [[NSNotificationCenter defaultCenter] removeObserver:m_notificationReceiver];
+    [m_notificationReceiver release];
+    reset();
     qDeleteAll(m_fonts);
+}
+
+void QCocoaTheme::reset()
+{
+    delete m_systemPalette;
+    m_systemPalette = Q_NULLPTR;
+    qDeleteAll(m_palettes);
+    m_palettes.clear();
 }
 
 bool QCocoaTheme::usePlatformNativeDialog(DialogType dialogType) const

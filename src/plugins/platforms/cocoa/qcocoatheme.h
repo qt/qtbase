@@ -37,6 +37,8 @@
 #include <QtCore/QHash>
 #include <qpa/qplatformtheme.h>
 
+Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QCocoaThemeNotificationReceiver));
+
 QT_BEGIN_NAMESPACE
 
 class QPalette;
@@ -45,6 +47,8 @@ class QCocoaTheme : public QPlatformTheme
 public:
     QCocoaTheme();
     ~QCocoaTheme();
+
+    void reset();
 
     QPlatformMenuItem* createPlatformMenuItem() const Q_DECL_OVERRIDE;
     QPlatformMenu* createPlatformMenu() const Q_DECL_OVERRIDE;
@@ -73,6 +77,7 @@ private:
     mutable QPalette *m_systemPalette;
     mutable QHash<QPlatformTheme::Palette, QPalette*> m_palettes;
     mutable QHash<QPlatformTheme::Font, QFont*> m_fonts;
+    mutable QCocoaThemeNotificationReceiver *m_notificationReceiver;
 };
 
 QT_END_NAMESPACE
