@@ -32,11 +32,6 @@
 ****************************************************************************/
 
 #include <qglobal.h>
-#ifdef Q_OS_IOS
-// We don't build the NEON drawhelpers as they are implemented partly
-// in GAS syntax assembly, which is not supported by the iOS toolchain.
-#undef __ARM_NEON__
-#endif
 
 #include <qstylehints.h>
 #include <qguiapplication.h>
@@ -6425,7 +6420,7 @@ static void qInitDrawhelperFunctions()
 
 #endif // SSE2
 
-#if defined(__ARM_NEON__) && !defined(Q_OS_IOS)
+#if defined(__ARM_NEON__)
     qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
     qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
     qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
@@ -6446,7 +6441,7 @@ static void qInitDrawhelperFunctions()
 
     qt_fetch_radial_gradient = qt_fetch_radial_gradient_neon;
 
-#if !defined(Q_PROCESSOR_ARM_64)
+#if defined(ENABLE_PIXMAN_DRAWHELPERS)
     // The RGB16 helpers are using Arm32 assemblythat has not been ported to AArch64
     qBlendFunctions[QImage::Format_RGB16][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_rgb16_neon;
     qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB16] = qt_blend_rgb16_on_argb32_neon;
