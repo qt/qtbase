@@ -194,7 +194,14 @@ typedef struct {
     quint16 stringOffset;
 } NAME_RECORD;
 
-static QString fontNameFromTTFile(const QString &filename)
+typedef struct {
+    quint32 tag;
+    quint16 majorVersion;
+    quint16 minorVersion;
+    quint32 numFonts;
+} TTC_TABLE_HEADER;
+
+static QString fontNameFromTTFile(const QString &filename, int startPos = 0)
 {
     QFile f(filename);
     QString retVal;
@@ -202,6 +209,7 @@ static QString fontNameFromTTFile(const QString &filename)
     qint64 bytesToRead;
 
     if (f.open(QIODevice::ReadOnly)) {
+        f.seek(startPos);
         OFFSET_TABLE ttOffsetTable;
         bytesToRead = sizeof(OFFSET_TABLE);
         bytesRead = f.read((char*)&ttOffsetTable, bytesToRead);
@@ -282,6 +290,37 @@ static QString fontNameFromTTFile(const QString &filename)
     return retVal;
 }
 
+static QStringList fontNamesFromTTCFile(const QString &filename)
+{
+    QFile f(filename);
+    QStringList retVal;
+    qint64 bytesRead;
+    qint64 bytesToRead;
+
+    if (f.open(QIODevice::ReadOnly)) {
+        TTC_TABLE_HEADER ttcTableHeader;
+        bytesToRead = sizeof(TTC_TABLE_HEADER);
+        bytesRead = f.read((char*)&ttcTableHeader, bytesToRead);
+        if (bytesToRead != bytesRead)
+            return retVal;
+        ttcTableHeader.majorVersion = qFromBigEndian(ttcTableHeader.majorVersion);
+        ttcTableHeader.minorVersion = qFromBigEndian(ttcTableHeader.minorVersion);
+        ttcTableHeader.numFonts = qFromBigEndian(ttcTableHeader.numFonts);
+
+        if (ttcTableHeader.majorVersion < 1 || ttcTableHeader.majorVersion > 2)
+            return retVal;
+        QVarLengthArray<quint32> offsetTable(ttcTableHeader.numFonts);
+        bytesToRead = sizeof(offsetTable) * ttcTableHeader.numFonts;
+        bytesRead = f.read((char*)offsetTable.data(), bytesToRead);
+        if (bytesToRead != bytesRead)
+            return retVal;
+        f.close();
+        for (int i = 0; i < (int)ttcTableHeader.numFonts; ++i)
+            retVal << fontNameFromTTFile(filename, qFromBigEndian(offsetTable[i]));
+    }
+    return retVal;
+}
+
 static inline QString fontSettingsOrganization() { return QStringLiteral("Qt-Project"); }
 static inline QString fontSettingsApplication()  { return QStringLiteral("Qtbase"); }
 static inline QString fontSettingsGroup()        { return QStringLiteral("CEFontCache"); }
@@ -308,20 +347,28 @@ static QString findFontFile(const QString &faceName)
         //empty the cache first, as it seems that it is dirty
         settings.remove(QString());
 
-        QDirIterator it(QStringLiteral("/Windows"), QStringList(QStringLiteral("*.ttf")), QDir::Files | QDir::Hidden | QDir::System);
-
+        QDirIterator it(QStringLiteral("/Windows"), QStringList() << QStringLiteral("*.ttf") << QStringLiteral("*.ttc"), QDir::Files | QDir::Hidden | QDir::System);
+        const QLatin1Char lowerF('f');
+        const QLatin1Char upperF('F');
         while (it.hasNext()) {
             const QString fontFile = it.next();
-            const QString fontName = fontNameFromTTFile(fontFile);
-            if (fontName.isEmpty())
-                continue;
-            fontCache.insert(fontName, fontFile);
-            settings.setValue(fontName, fontFile);
+            QStringList fontNames;
+            const QChar c = fontFile[fontFile.size() - 1];
+            if (c == lowerF || c == upperF)
+                fontNames << fontNameFromTTFile(fontFile);
+            else
+                fontNames << fontNamesFromTTCFile(fontFile);
+            foreach (const QString fontName, fontNames) {
+                if (fontName.isEmpty())
+                    continue;
+                fontCache.insert(fontName, fontFile);
+                settings.setValue(fontName, fontFile);
 
-            if (localizedName(fontName)) {
-                QString englishFontName = getEnglishName(fontName);
-                fontCache.insert(englishFontName, fontFile);
-                settings.setValue(englishFontName, fontFile);
+                if (localizedName(fontName)) {
+                    QString englishFontName = getEnglishName(fontName);
+                    fontCache.insert(englishFontName, fontFile);
+                    settings.setValue(englishFontName, fontFile);
+                }
             }
         }
         settings.endGroup();
