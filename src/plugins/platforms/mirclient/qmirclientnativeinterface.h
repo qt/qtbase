@@ -42,12 +42,13 @@
 
 class QMirClientNativeInterface : public QPlatformNativeInterface {
 public:
-    enum ResourceType { EglDisplay, EglContext, NativeOrientation, Display };
+    enum ResourceType { EglDisplay, EglContext, NativeOrientation, Display, MirConnection };
 
     QMirClientNativeInterface();
     ~QMirClientNativeInterface();
 
     // QPlatformNativeInterface methods.
+    void* nativeResourceForIntegration(const QByteArray &resource) override;
     void* nativeResourceForContext(const QByteArray& resourceString,
                                    QOpenGLContext* context) override;
     void* nativeResourceForWindow(const QByteArray& resourceString,
@@ -57,10 +58,12 @@ public:
 
     // New methods.
     const QByteArray& genericEventFilterType() const { return mGenericEventFilterType; }
+    void setMirConnection(void *mirConnection) { mMirConnection = mirConnection; }
 
 private:
     const QByteArray mGenericEventFilterType;
     Qt::ScreenOrientation* mNativeOrientation;
+    void *mMirConnection;
 };
 
 #endif // QMIRCLIENTNATIVEINTERFACE_H

@@ -35,16 +35,16 @@
 ****************************************************************************/
 
 
+// Local
+#include "qmirclientnativeinterface.h"
+#include "qmirclientscreen.h"
+#include "qmirclientglcontext.h"
+
 // Qt
 #include <private/qguiapplication_p.h>
 #include <QtGui/qopenglcontext.h>
 #include <QtGui/qscreen.h>
 #include <QtCore/QMap>
-
-// Local
-#include "qmirclientnativeinterface.h"
-#include "qmirclientscreen.h"
-#include "qmirclientglcontext.h"
 
 class QMirClientResourceMap : public QMap<QByteArray, QMirClientNativeInterface::ResourceType>
 {
@@ -55,6 +55,7 @@ public:
         insert("eglcontext", QMirClientNativeInterface::EglContext);
         insert("nativeorientation", QMirClientNativeInterface::NativeOrientation);
         insert("display", QMirClientNativeInterface::Display);
+        insert("mirconnection", QMirClientNativeInterface::MirConnection);
     }
 };
 
@@ -63,6 +64,7 @@ Q_GLOBAL_STATIC(QMirClientResourceMap, ubuntuResourceMap)
 QMirClientNativeInterface::QMirClientNativeInterface()
     : mGenericEventFilterType(QByteArrayLiteral("Event"))
     , mNativeOrientation(nullptr)
+    , mMirConnection(nullptr)
 {
 }
 
@@ -70,6 +72,23 @@ QMirClientNativeInterface::~QMirClientNativeInterface()
 {
     delete mNativeOrientation;
     mNativeOrientation = nullptr;
+}
+
+void* QMirClientNativeInterface::nativeResourceForIntegration(const QByteArray &resourceString)
+{
+    const QByteArray lowerCaseResource = resourceString.toLower();
+
+    if (!ubuntuResourceMap()->contains(lowerCaseResource)) {
+        return nullptr;
+    }
+
+    const ResourceType resourceType = ubuntuResourceMap()->value(lowerCaseResource);
+
+    if (resourceType == QMirClientNativeInterface::MirConnection) {
+        return mMirConnection;
+    } else {
+        return nullptr;
+    }
 }
 
 void* QMirClientNativeInterface::nativeResourceForContext(
