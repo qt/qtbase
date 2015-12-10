@@ -257,19 +257,18 @@ load(qt_targets)
         pclib_replace.replace = $$QMAKE_PKGCONFIG_LIBDIR
     pclib_replace.CONFIG = path
     QMAKE_PKGCONFIG_INSTALL_REPLACE += pclib_replace
-
-    unix {
-        CONFIG += create_libtool
-        host_build: \
-            QMAKE_LIBTOOL_LIBDIR = $$[QT_HOST_LIBS]
-        else: \
-            QMAKE_LIBTOOL_LIBDIR = "=$$[QT_INSTALL_LIBS/raw]"
-        ltlib_replace.match = $$lib_replace.match
-        !isEmpty(lib_replace.replace): \
-            ltlib_replace.replace = $$QMAKE_LIBTOOL_LIBDIR
-        ltlib_replace.CONFIG = path
-        QMAKE_LIBTOOL_INSTALL_REPLACE += ltlib_replace
-    }
+}
+!lib_bundle:unix {
+    CONFIG += create_libtool
+    host_build: \
+        QMAKE_LIBTOOL_LIBDIR = $$[QT_HOST_LIBS]
+    else: \
+        QMAKE_LIBTOOL_LIBDIR = "=$$[QT_INSTALL_LIBS/raw]"
+    ltlib_replace.match = $$lib_replace.match
+    !isEmpty(lib_replace.replace): \
+        ltlib_replace.replace = $$QMAKE_LIBTOOL_LIBDIR
+    ltlib_replace.CONFIG = path
+    QMAKE_LIBTOOL_INSTALL_REPLACE += ltlib_replace
 }
 
 contains(QT_PRODUCT, OpenSource.*):DEFINES *= QT_OPENSOURCE
