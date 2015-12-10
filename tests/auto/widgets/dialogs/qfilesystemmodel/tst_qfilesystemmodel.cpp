@@ -123,6 +123,8 @@ private slots:
     void permissions_data();
     void permissions();
 
+    void doNotUnwatchOnFailedRmdir();
+
 protected:
     bool createFiles(const QString &test_path, const QStringList &initial_files, int existingFileCount = 0, const QStringList &intial_dirs = QStringList());
 
@@ -1041,6 +1043,35 @@ void tst_QFileSystemModel::permissions() // checks QTBUG-20503
     QCOMPARE(modelPermissions, modelFileInfoPermissions);
     QCOMPARE(modelFileInfoPermissions, fileInfoPermissions);
     QCOMPARE(fileInfoPermissions, modelPermissions);
+}
+
+void tst_QFileSystemModel::doNotUnwatchOnFailedRmdir()
+{
+    const QString tmp = flatDirTestPath;
+
+    QFileSystemModel model;
+
+    const QTemporaryDir tempDir(tmp + '/' + QStringLiteral("doNotUnwatchOnFailedRmdir-XXXXXX"));
+    QVERIFY(tempDir.isValid());
+
+    const QModelIndex rootIndex = model.setRootPath(tempDir.path());
+
+    // create a file in the directory so to prevent it from deletion
+    {
+        QFile file(tempDir.path() + '/' + QStringLiteral("file1"));
+        QVERIFY(file.open(QIODevice::WriteOnly));
+    }
+
+    QCOMPARE(model.rmdir(rootIndex), false);
+
+    // create another file
+    {
+        QFile file(tempDir.path() + '/' + QStringLiteral("file2"));
+        QVERIFY(file.open(QIODevice::WriteOnly));
+    }
+
+    // the model must now detect this second file
+    QTRY_COMPARE(model.rowCount(rootIndex), 2);
 }
 
 
