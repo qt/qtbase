@@ -693,6 +693,11 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
     \internal
 */
 
+/*! \typedef QJsonObject::iterator::pointer
+
+    \internal
+*/
+
 /*! \fn QJsonObject::iterator::iterator()
 
     Constructs an uninitialized iterator.
@@ -891,6 +896,11 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
 */
 
 /*! \typedef QJsonObject::const_iterator::value_type
+
+    \internal
+*/
+
+/*! \typedef QJsonObject::const_iterator::pointer
 
     \internal
 */
