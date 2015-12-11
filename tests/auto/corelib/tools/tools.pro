@@ -51,6 +51,7 @@ SUBDIRS=\
     qstl \
     qstring \
     qstring_no_cast_from_bytearray \
+    qstringapisymmetry \
     qstringbuilder \
     qstringiterator \
     qstringlist \
