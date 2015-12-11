@@ -1748,6 +1748,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "ANGLE" ]               = "no";
         dictionary[ "DYNAMICGL" ]           = "no";
         dictionary[ "FONT_CONFIG" ]         = "auto";
+        dictionary[ "POLL" ]                = "poll";
     } else if (platform() == ANDROID) {
         dictionary[ "REDUCE_EXPORTS" ]      = "yes";
         dictionary[ "BUILD" ]               = "release";
@@ -1760,6 +1761,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT_XKBCOMMON" ]        = "no";
         dictionary["ANDROID_STYLE_ASSETS"]  = "yes";
         dictionary[ "STYLE_ANDROID" ]       = "yes";
+        dictionary[ "POLL" ]                = "poll";
     }
 }
 
@@ -3085,6 +3087,9 @@ void Configure::generateOutputVars()
 
     if (dictionary["REDUCE_EXPORTS"] == "yes")
         qtConfig += "reduce_exports";
+
+    if (!dictionary["POLL"].isEmpty())
+        qtConfig += "poll_" + dictionary["POLL"];
 
     // We currently have no switch for QtConcurrent, so add it unconditionally.
     qtConfig += "concurrent";
