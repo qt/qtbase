@@ -42,7 +42,7 @@
 
 #include <QtCore/private/qfsfileengine_p.h>
 
-#if defined(Q_OS_VXWORKS)
+#if defined(Q_OS_VXWORKS) || defined(Q_OS_WINRT)
 #define Q_NO_SYMLINKS
 #endif
 
@@ -115,6 +115,10 @@ private slots:
 #ifndef Q_OS_WIN
     void hiddenDirs_hiddenFiles();
 #endif
+#ifdef BUILTIN_TESTDATA
+private:
+    QSharedPointer<QTemporaryDir> m_dataDir;
+#endif
 };
 
 void tst_QDirIterator::initTestCase()
@@ -141,6 +145,10 @@ void tst_QDirIterator::initTestCase()
     }
 
     testdata_dir += QStringLiteral("/entrylist");
+#elif defined(BUILTIN_TESTDATA)
+    m_dataDir = QEXTRACTTESTDATA("/");
+    QVERIFY2(!m_dataDir.isNull(), qPrintable("Could not extract test data"));
+    QString testdata_dir = m_dataDir->path();
 #else
 
     // chdir into testdata directory, then find testdata by relative paths.
@@ -217,6 +225,11 @@ void tst_QDirIterator::cleanupTestCase()
 
     Q_FOREACH(QString dirName, createdDirectories)
         currentDir.rmdir(dirName);
+
+#ifdef Q_OS_WINRT
+    QDir::setCurrent(QCoreApplication::applicationDirPath());
+#endif // Q_OS_WINRT
+
 }
 
 void tst_QDirIterator::iterateRelativeDirectory_data()

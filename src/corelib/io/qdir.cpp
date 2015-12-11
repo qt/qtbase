@@ -152,7 +152,11 @@ inline void QDirPrivate::setPath(const QString &path)
     if (p.endsWith(QLatin1Char('/'))
             && p.length() > 1
 #if defined(Q_OS_WIN)
+#  if defined (Q_OS_WINRT)
+        && (!(p.toLower() == QDir::rootPath().toLower()))
+#  else
         && (!(p.length() == 3 && p.at(1).unicode() == ':' && p.at(0).isLetter()))
+#  endif
 #endif
     ) {
             p.truncate(p.length() - 1);
@@ -885,6 +889,9 @@ bool QDir::cd(const QString &dirName)
 #if defined (Q_OS_UNIX)
             //After cleanPath() if path is "/.." or starts with "/../" it means trying to cd above root.
             if (newPath.startsWith(QLatin1String("/../")) || newPath == QLatin1String("/.."))
+#elif defined (Q_OS_WINRT)
+            const QString rootPath = QDir::rootPath();
+            if (newPath.size() < rootPath.size() && rootPath.startsWith(newPath))
 #else
             /*
               cleanPath() already took care of replacing '\' with '/'.
@@ -2187,7 +2194,11 @@ QString QDir::cleanPath(const QString &path)
     // Strip away last slash except for root directories
     if (ret.length() > 1 && ret.endsWith(QLatin1Char('/'))) {
 #if defined (Q_OS_WIN)
+#  if defined(Q_OS_WINRT)
+        if (!((ret.length() == 3 || ret.length() == QDir::rootPath().length()) && ret.at(1) == QLatin1Char(':')))
+#  else
         if (!(ret.length() == 3 && ret.at(1) == QLatin1Char(':')))
+#  endif
 #endif
             ret.chop(1);
     }

@@ -3013,14 +3013,20 @@ void tst_QUrl::fromUserInputWithCwd_data()
         it.next();
         QUrl url = QUrl::fromLocalFile(it.filePath());
         if (it.fileName() == QLatin1String(".")) {
-            url = QUrl::fromLocalFile(QDir::currentPath()); // fromUserInput cleans the path
+            url = QUrl::fromLocalFile(QDir::currentPath()
+#ifdef Q_OS_WINRT
+                                      + QLatin1Char('/')
+#endif
+                                      ); // fromUserInput cleans the path
         }
         QTest::newRow(QString("file-%1").arg(c++).toLatin1()) << it.fileName() << QDir::currentPath() << url << url;
     }
+#ifndef Q_OS_WINRT // WinRT cannot cd outside current / sandbox
     QDir parent = QDir::current();
     QVERIFY(parent.cdUp());
     QUrl parentUrl = QUrl::fromLocalFile(parent.path());
     QTest::newRow("dotdot") << ".." << QDir::currentPath() << parentUrl << parentUrl;
+#endif
 
     QTest::newRow("nonexisting") << "nonexisting" << QDir::currentPath() << QUrl("http://nonexisting") << QUrl::fromLocalFile(QDir::currentPath() + "/nonexisting");
     QTest::newRow("short-url") << "example.org" << QDir::currentPath() << QUrl("http://example.org") << QUrl::fromLocalFile(QDir::currentPath() + "/example.org");
