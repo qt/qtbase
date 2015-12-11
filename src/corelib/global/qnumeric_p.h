@@ -87,8 +87,8 @@ namespace qnumeric_std_wrapper {
 static inline bool isnan(double d) { return !!_isnan(d); }
 static inline bool isinf(double d) { return !_finite(d) && !_isnan(d); }
 static inline bool isfinite(double d) { return !!_finite(d); }
-static inline bool isnan(float f) { return !!_isnanf(f); }
-static inline bool isinf(float f) { return !_finitef(f) && !_isnan(f); }
+static inline bool isnan(float f) { return !!_isnan(f); }
+static inline bool isinf(float f) { return !_finite(f) && !_isnan(f); }
 static inline bool isfinite(float f) { return !!_finite(f); }
 #elif !defined(Q_CC_MSVC) && (defined(Q_OS_QNX) || !defined(__cplusplus) || __cplusplus < 201103L)
 static inline bool isnan(double d) { return math_h_isnan(d); }
