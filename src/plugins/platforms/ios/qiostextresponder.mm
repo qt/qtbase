@@ -613,7 +613,8 @@
 
 - (UITextPosition *)endOfDocument
 {
-    int endPosition = [self currentImeState:Qt::ImSurroundingText].toString().length();
+    QString surroundingText = [self currentImeState:Qt::ImSurroundingText].toString();
+    int endPosition = surroundingText.length() + m_markedText.length();
     return [QUITextPosition positionWithIndex:endPosition];
 }
 
@@ -644,9 +645,18 @@
 
 - (NSString *)textInRange:(UITextRange *)range
 {
+    QString text = [self currentImeState:Qt::ImSurroundingText].toString();
+    if (!m_markedText.isEmpty()) {
+        // [UITextInput textInRange] is sparsely documented, but it turns out that unconfirmed
+        // marked text should be seen as a part of the text document. This is different from
+        // ImSurroundingText, which excludes it.
+        int cursorPos = [self currentImeState:Qt::ImCursorPosition].toInt();
+        text = text.left(cursorPos) + m_markedText + text.mid(cursorPos);
+    }
+
     int s = static_cast<QUITextPosition *>([range start]).index;
     int e = static_cast<QUITextPosition *>([range end]).index;
-    return [self currentImeState:Qt::ImSurroundingText].toString().mid(s, e - s).toNSString();
+    return text.mid(s, e - s).toNSString();
 }
 
 - (void)setMarkedText:(NSString *)markedText selectedRange:(NSRange)selectedRange
