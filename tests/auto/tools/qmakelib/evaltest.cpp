@@ -2205,9 +2205,10 @@ void tst_qmakelib::addTestFunctions(const QString &qindir)
             << ""
             << true;
 
+    // FIXME: This also tests that 'exe' is accepted, but does not test whether it actually works.
     QTest::newRow("write_file(): append")
             << "VAR = 'one more line'\n"
-               "write_file(" + wpath + ", VAR, append): OK = 1\n"
+               "write_file(" + wpath + ", VAR, append exe): OK = 1\n"
                "OUT = $$cat(" + wpath + ", lines)"
             << "OK = 1\nOUT = 'other content' 'one more line'"
             << ""
@@ -2227,7 +2228,13 @@ void tst_qmakelib::addTestFunctions(const QString &qindir)
     QTest::newRow("write_file(): bad number of arguments")
             << "write_file(1, 2, 3, 4): OK = 1"
             << "OK = UNDEF"
-            << "##:1: write_file(name, [content var, [append]]) requires one to three arguments."
+            << "##:1: write_file(name, [content var, [append] [exe]]) requires one to three arguments."
+            << true;
+
+    QTest::newRow("write_file(): invalid flag")
+            << "write_file(file, VAR, fail): OK = 1"
+            << "OK = UNDEF"
+            << "##:1: write_file(): invalid flag fail."
             << true;
 
     // FIXME: This doesn't test whether it actually works.
