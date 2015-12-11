@@ -16,7 +16,7 @@ equals(QMAKE_HOST.os, Windows) {
     gnutools.value = $$absolute_path(../../../../gnuwin32/bin)
     exists($$gnutools.value/gperf.exe) {
         gnutools.name = PATH
-        gnutools.CONFIG = prepend
+        gnutools.CONFIG = always_prepend
     }
 }
 

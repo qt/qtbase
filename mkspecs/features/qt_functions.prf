@@ -96,8 +96,10 @@ defineTest(qtAddToolEnv) {
         value = $$eval($${env}.value)
         !isEmpty(value) {
             name = $$eval($${env}.name)
+            config = $$eval($${env}.CONFIG)
             equals(ds, /) {
-                contains($${env}.CONFIG, prepend): infix = \${$$name:+:\$$$name}
+                contains(config, prepend): infix = \${$$name:+:\$$$name}
+                else: contains(config, always_prepend): infix = :\$$$name
                 else: infix =
                 # Under msys, this path is taken only in the non-system()
                 # case, so using shell_quote() always works.
@@ -108,13 +110,15 @@ defineTest(qtAddToolEnv) {
                 value ~= s,\\^,^^^^,g
                 value ~= s,!,^^!,g
                 value ~= s,\\),^),g
-                contains($${env}.CONFIG, prepend) {
+                contains(config, prepend) {
                     batch_sets += \
                         "if defined $$name (" \
                         "    set $$name=$$join(value, ;);!$$name!" \
                         ") else (" \
                         "    set $$name=$$join(value, ;)" \
                         ")"
+                } else: contains(config, always_prepend) {
+                    batch_sets += "(set $$name=$$join(value, ;);!$$name!)"
                 } else {
                     batch_sets += "(set $$name=$$join(value, ;))"
                 }
@@ -162,8 +166,10 @@ defineTest(qtAddTargetEnv) {
     deps = $$resolve_depends(deps, "QT.", ".depends" ".run_depends")
     !isEmpty(deps) {
         libs = libs
+        deppath.CONFIG = prepend
         equals(QMAKE_HOST.os, Windows) {
             libs = bins
+            deppath.CONFIG = always_prepend
             deppath.name = PATH
         } else:contains(QMAKE_HOST.os, Linux|FreeBSD|OpenBSD|NetBSD|DragonFly|SunOS|HP-UX|QNX|GNU) {
             deppath.name = LD_LIBRARY_PATH
@@ -188,7 +194,6 @@ defineTest(qtAddTargetEnv) {
             ptypes += $$eval(QT.$${dep}.plugin_types)
         }
         deppath.value = $$unique(deppath)
-        deppath.CONFIG = prepend
 
         pluginpath.value =
         ppaths = $$[QT_INSTALL_PLUGINS/get]
