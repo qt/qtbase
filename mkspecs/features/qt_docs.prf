@@ -18,7 +18,19 @@ QMAKE_DOCS_TARGET = $$replace(QMAKE_DOCS, ^(.*/)?(.*)\\.qdocconf$, \\2)
 isEmpty(QMAKE_DOCS_TARGETDIR): QMAKE_DOCS_TARGETDIR = $$QMAKE_DOCS_TARGET
 QMAKE_DOCS_OUTPUTDIR = $$QMAKE_DOCS_BASE_OUTDIR/$$QMAKE_DOCS_TARGETDIR
 
+qtver.name = QT_VERSION
+qtver.value = $$VERSION
+isEmpty(qtver.value): qtver.value = $$MODULE_VERSION
+isEmpty(qtver.value): error("No version for documentation specified.")
+qtmver.name = QT_VER
+qtmver.value = $$replace(qtver.value, ^(\\d+\\.\\d+).*$, \\1)
+qtvertag.name = QT_VERSION_TAG
+qtvertag.value = $$replace(qtver.value, \.,)
+qtdocs.name = QT_INSTALL_DOCS
+qtdocs.value = $$[QT_INSTALL_DOCS/src]
+QT_TOOL_ENV = qtver qtmver qtvertag qtdocs
 qtPrepareTool(QDOC, qdoc)
+QT_TOOL_ENV =
 QDOC += -outputdir $$QMAKE_DOCS_OUTPUTDIR
 !build_online_docs: \
     QDOC += -installdir $$[QT_INSTALL_DOCS]
@@ -43,17 +55,6 @@ DOC_INDEXES =
         PREP_DOC_INDEXES += -indexdir $$[QT_INSTALL_DOCS/get]
     DOC_INDEXES += -indexdir $$[QT_INSTALL_DOCS/get]
 }
-qtver.name = QT_VERSION
-qtver.value = $$VERSION
-isEmpty(qtver.value): qtver.value = $$MODULE_VERSION
-isEmpty(qtver.value): error("No version for documentation specified.")
-qtmver.name = QT_VER
-qtmver.value = $$replace(qtver.value, ^(\\d+\\.\\d+).*$, \\1)
-qtvertag.name = QT_VERSION_TAG
-qtvertag.value = $$replace(qtver.value, \.,)
-qtdocs.name = QT_INSTALL_DOCS
-qtdocs.value = $$[QT_INSTALL_DOCS/src]
-qtAddToolEnv(QDOC, qtver qtmver qtvertag qtdocs)
 doc_command = $$QDOC $$QMAKE_DOCS
 prepare_docs {
     prepare_docs.commands += $$doc_command -prepare $$PREP_DOC_INDEXES -no-link-errors
