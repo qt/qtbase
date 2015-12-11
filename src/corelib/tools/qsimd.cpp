@@ -65,8 +65,15 @@
 #define HWCAP_VFPv3     8192
 #define HWCAP_VFPv3D16  16384
 
+// copied from <asm/hwcap.h> (ARM):
+#define HWCAP2_CRC32 (1 << 4)
+
+// copied from <asm/hwcap.h> (Aarch64)
+#define HWCAP_CRC32             (1 << 7)
+
 // copied from <linux/auxvec.h>
 #define AT_HWCAP  16    /* arch dependent hints at CPU capabilities */
+#define AT_HWCAP2 26    /* extension of AT_HWCAP */
 
 #elif defined(Q_CC_GHS)
 #include <INTEGRITY_types.h>
@@ -103,7 +110,16 @@ static inline quint64 detectProcessorFeatures()
 {
     quint64 features = 0;
 
-#if defined(Q_OS_LINUX)
+#if defined(Q_OS_IOS)
+    features |= Q_UINT64_C(1) << CpuFeatureNEON; // On iOS, NEON is always available.
+#  ifdef Q_PROCESSOR_ARM_V8
+    features |= Q_UINT64_C(1) << CpuFeatureCRC32; // On iOS, crc32 is always available if the architecture is Aarch32/64.
+#  endif
+    return features;
+#elif defined(Q_OS_LINUX)
+#  if defined(Q_PROCESSOR_ARM_V8) && defined(Q_PROCESSOR_ARM_64)
+    features |= Q_UINT64_C(1) << CpuFeatureNEON; // NEON is always available on ARMv8 64bit.
+#  endif
     int auxv = qt_safe_open("/proc/self/auxv", O_RDONLY);
     if (auxv != -1) {
         unsigned long vector[64];
@@ -116,12 +132,25 @@ static inline quint64 detectProcessorFeatures()
             }
 
             int max = nread / (sizeof vector[0]);
-            for (int i = 0; i < max; i += 2)
+            for (int i = 0; i < max; i += 2) {
                 if (vector[i] == AT_HWCAP) {
+#  if defined(Q_PROCESSOR_ARM_V8) && defined(Q_PROCESSOR_ARM_64)
+                    // For Aarch64:
+                    if (vector[i+1] & HWCAP_CRC32)
+                        features |= Q_UINT64_C(1) << CpuFeatureCRC32;
+#  endif
+                    // Aarch32, or ARMv7 or before:
                     if (vector[i+1] & HWCAP_NEON)
                         features |= Q_UINT64_C(1) << CpuFeatureNEON;
-                    break;
                 }
+#  if defined(Q_PROCESSOR_ARM_32)
+                // For Aarch32:
+                if (vector[i] == AT_HWCAP2) {
+                    if (vector[i+1] & HWCAP2_CRC32)
+                        features |= Q_UINT64_C(1) << CpuFeatureCRC32;
+                }
+#  endif
+            }
         }
 
         qt_safe_close(auxv);
@@ -132,6 +161,9 @@ static inline quint64 detectProcessorFeatures()
 
 #if defined(__ARM_NEON__)
     features = Q_UINT64_C(1) << CpuFeatureNEON;
+#endif
+#if defined(__ARM_FEATURE_CRC32)
+    features = Q_UINT64_C(1) << CpuFeatureCRC32;
 #endif
 
     return features;
@@ -498,9 +530,13 @@ static inline uint detectProcessorFeatures()
 #if defined(Q_PROCESSOR_ARM)
 /* Data:
  neon
+ crc32
  */
-static const char features_string[] = " neon\0";
-static const int features_indices[] = { 0 };
+static const char features_string[] =
+        " neon\0"
+        " crc32\0"
+        "\0";
+static const int features_indices[] = { 0, 6 };
 #elif defined(Q_PROCESSOR_MIPS)
 /* Data:
  dsp

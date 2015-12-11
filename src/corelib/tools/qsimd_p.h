@@ -138,7 +138,18 @@
 
 #define QT_COMPILER_SUPPORTS(x)     (QT_COMPILER_SUPPORTS_ ## x - 0)
 
-#if (defined(Q_CC_INTEL) || defined(Q_CC_MSVC) \
+#if defined(Q_PROCESSOR_ARM)
+#  define QT_COMPILER_SUPPORTS_HERE(x)    (__ARM_FEATURE_ ## x)
+#  if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 600
+     /* GCC requires attributes for a function */
+#    define QT_FUNCTION_TARGET(x)  __attribute__((__target__(QT_FUNCTION_TARGET_STRING_ ## x)))
+#  else
+#    define QT_FUNCTION_TARGET(x)
+#  endif
+#  if !defined(__ARM_FEATURE_NEON) && defined(__ARM_NEON__)
+#    define __ARM_FEATURE_NEON           // also support QT_COMPILER_SUPPORTS_HERE(NEON)
+#  endif
+#elif (defined(Q_CC_INTEL) || defined(Q_CC_MSVC) \
     || (defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && (__GNUC__-0) * 100 + (__GNUC_MINOR__-0) >= 409)) \
     && !defined(QT_BOOTSTRAPPED)
 #  define QT_COMPILER_SUPPORTS_SIMD_ALWAYS
@@ -253,11 +264,16 @@
 // note: as of GCC 4.9, does not support function targets for ARM
 #if defined(__ARM_NEON) || defined(__ARM_NEON__)
 #include <arm_neon.h>
-#define QT_FUNCTION_TARGET_STRING_ARM_NEON      "neon"
+#define QT_FUNCTION_TARGET_STRING_NEON      "+neon" // unused: gcc doesn't support function targets on non-aarch64, and on Aarch64 NEON is always available.
 #ifndef __ARM_NEON__
 // __ARM_NEON__ is not defined on AArch64, but we need it in our NEON detection.
 #define __ARM_NEON__
 #endif
+#endif
+// AArch64/ARM64
+#if defined(Q_PROCESSOR_ARM_V8)
+#define QT_FUNCTION_TARGET_STRING_CRC32      "+crc"
+#  include <arm_acle.h>
 #endif
 
 #undef QT_COMPILER_SUPPORTS_SIMD_ALWAYS
@@ -269,6 +285,7 @@ enum CPUFeatures {
 #if defined(Q_PROCESSOR_ARM)
     CpuFeatureNEON          = 0,
     CpuFeatureARM_NEON      = CpuFeatureNEON,
+    CpuFeatureCRC32         = 1,
 #elif defined(Q_PROCESSOR_MIPS)
     CpuFeatureDSP           = 0,
     CpuFeatureDSPR2         = 1,
@@ -395,6 +412,9 @@ static const quint64 qCompilerCpuFeatures = 0
 #endif
 #if defined __ARM_NEON__
         | (Q_UINT64_C(1) << CpuFeatureNEON)
+#endif
+#if defined __ARM_FEATURE_CRC32
+        | (Q_UINT64_C(1) << CpuFeatureCRC32)
 #endif
 #if defined __mips_dsp
         | (Q_UINT64_C(1) << CpuFeatureDSP)
