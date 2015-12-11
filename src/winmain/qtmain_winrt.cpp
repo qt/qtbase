@@ -260,7 +260,7 @@ private:
                 FILE_ATTRIBUTE_NORMAL
             };
             pidFile = CreateFile2(reinterpret_cast<LPCWSTR>(pidFileName.utf16()),
-                        GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, CREATE_ALWAYS, 0);
+                        GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, CREATE_ALWAYS, &params);
             // Install the develMode message handler
 #ifndef Q_OS_WINPHONE
             defaultMessageHandler = qInstallMessageHandler(devMessageHandler);
