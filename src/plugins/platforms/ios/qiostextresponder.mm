@@ -925,6 +925,14 @@
     if ([text isEqualToString:@"\n"]) {
         [self sendKeyPressRelease:Qt::Key_Return modifiers:Qt::NoModifier];
 
+        // An onEnter handler of a TextInput might move to the next input by calling
+        // nextInput.forceActiveFocus() which changes the focusObject.
+        // In that case we don't want to hide the VKB.
+        if (focusObject != QGuiApplication::focusObject()) {
+            qImDebug() << "focusObject already changed, not resigning first responder.";
+            return;
+        }
+
         if (self.returnKeyType == UIReturnKeyDone || self.returnKeyType == UIReturnKeyGo
             || self.returnKeyType == UIReturnKeySend || self.returnKeyType == UIReturnKeySearch)
             [self resignFirstResponder];
