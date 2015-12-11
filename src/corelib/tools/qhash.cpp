@@ -130,6 +130,55 @@ static uint crc32(const Char *ptr, size_t len, uint h)
         h = _mm_crc32_u8(h, *p);
     return h;
 }
+#elif defined(Q_PROCESSOR_ARM_V8)
+static inline bool hasFastCrc32()
+{
+    return qCpuHasFeature(CRC32);
+}
+
+template <typename Char>
+QT_FUNCTION_TARGET(CRC32)
+static uint crc32(const Char *ptr, size_t len, uint h)
+{
+    // The crc32[whbd] instructions on Aarch64/Aarch32 calculate a 32-bit CRC32 checksum
+    const uchar *p = reinterpret_cast<const uchar *>(ptr);
+    const uchar *const e = p + (len * sizeof(Char));
+
+#ifndef __ARM_FEATURE_UNALIGNED
+    if (Q_UNLIKELY(reinterpret_cast<quintptr>(p) & 7)) {
+        if ((sizeof(Char) == 1) && (reinterpret_cast<quintptr>(p) & 1) && (e - p > 0)) {
+            h = __crc32b(h, *p);
+            ++p;
+        }
+        if ((reinterpret_cast<quintptr>(p) & 2) && (e >= p + 2)) {
+            h = __crc32h(h, *reinterpret_cast<const uint16_t *>(p));
+            p += 2;
+        }
+        if ((reinterpret_cast<quintptr>(p) & 4) && (e >= p + 4)) {
+            h = __crc32w(h, *reinterpret_cast<const uint32_t *>(p));
+            p += 4;
+        }
+    }
+#endif
+
+    for ( ; p + 8 <= e; p += 8)
+        h = __crc32d(h, *reinterpret_cast<const uint64_t *>(p));
+
+    len = e - p;
+    if (len == 0)
+        return h;
+    if (len & 4) {
+        h = __crc32w(h, *reinterpret_cast<const uint32_t *>(p));
+        p += 4;
+    }
+    if (len & 2) {
+        h = __crc32h(h, *reinterpret_cast<const uint16_t *>(p));
+        p += 2;
+    }
+    if (sizeof(Char) == 1 && len & 1)
+        h = __crc32b(h, *p);
+    return h;
+}
 #else
 static inline bool hasFastCrc32()
 {
