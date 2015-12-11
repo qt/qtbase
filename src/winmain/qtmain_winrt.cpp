@@ -243,6 +243,9 @@ private:
             }
         }
 
+        if (args.count() >= 2 && strncmp(args.at(1), "-ServerName:", 12) == 0)
+            args.remove(1);
+
         bool develMode = false;
         bool debugWait = false;
         foreach (const char *arg, args) {
