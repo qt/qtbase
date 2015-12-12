@@ -224,7 +224,7 @@ public:
     // private slots
     void _q_startNextRequest(); // send the next request from the queue
 
-    void _q_hostLookupFinished(QHostInfo info);
+    void _q_hostLookupFinished(const QHostInfo &info);
     void _q_connectDelayedChannel();
 
     void createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request);

@@ -147,7 +147,7 @@ signals:
 
     void startHttpRequestSynchronously();
 
-    void haveUploadData(const qint64 pos, QByteArray dataArray, bool dataAtEnd, qint64 dataSize);
+    void haveUploadData(const qint64 pos, const QByteArray &dataArray, bool dataAtEnd, qint64 dataSize);
 };
 
 class QNetworkReplyHttpImplPrivate: public QNetworkReplyPrivate
@@ -273,8 +273,8 @@ public:
     // From HTTP thread:
     void replyDownloadData(QByteArray);
     void replyFinished();
-    void replyDownloadMetaData(QList<QPair<QByteArray,QByteArray> >, int, QString, bool,
-                               QSharedPointer<char>, qint64, bool);
+    void replyDownloadMetaData(const QList<QPair<QByteArray,QByteArray> > &, int, const QString &,
+                               bool, QSharedPointer<char>, qint64, bool);
     void replyDownloadProgressSlot(qint64,qint64);
     void httpAuthenticationRequired(const QHttpNetworkRequest &request, QAuthenticator *auth);
     void httpError(QNetworkReply::NetworkError error, const QString &errorString);

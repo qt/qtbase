@@ -1131,7 +1131,7 @@ void QHttpNetworkConnectionPrivate::startHostInfoLookup()
 }
 
 
-void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(QHostInfo info)
+void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(const QHostInfo &info)
 {
     bool bIpv4 = false;
     bool bIpv6 = false;

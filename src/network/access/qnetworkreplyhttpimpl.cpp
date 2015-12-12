@@ -1162,11 +1162,10 @@ void QNetworkReplyHttpImplPrivate::checkForRedirect(const int statusCode)
     }
 }
 
-void QNetworkReplyHttpImplPrivate::replyDownloadMetaData
-        (QList<QPair<QByteArray,QByteArray> > hm,
-         int sc,QString rp,bool pu,
-         QSharedPointer<char> db,
-         qint64 contentLength, bool spdyWasUsed)
+void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByteArray,QByteArray> > &hm,
+                                                         int sc, const QString &rp, bool pu,
+                                                         QSharedPointer<char> db,
+                                                         qint64 contentLength, bool spdyWasUsed)
 {
     Q_Q(QNetworkReplyHttpImpl);
     Q_UNUSED(contentLength);

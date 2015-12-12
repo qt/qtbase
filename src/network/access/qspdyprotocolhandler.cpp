@@ -601,7 +601,7 @@ void QSpdyProtocolHandler::sendControlFrame(FrameType type,
     Q_UNUSED(written); // silence -Wunused-variable
 }
 
-void QSpdyProtocolHandler::sendSYN_STREAM(HttpMessagePair messagePair,
+void QSpdyProtocolHandler::sendSYN_STREAM(const HttpMessagePair &messagePair,
                                           qint32 streamID, qint32 associatedToStreamID)
 {
     QHttpNetworkRequest request = messagePair.first;

@@ -61,8 +61,8 @@ uint qHash(const QNetworkConfiguration& config);
 class QSharedNetworkSessionManager
 {
 public:
-    static QSharedPointer<QNetworkSession> getSession(QNetworkConfiguration config);
-    static void setSession(QNetworkConfiguration config, QSharedPointer<QNetworkSession> session);
+    static QSharedPointer<QNetworkSession> getSession(const QNetworkConfiguration &config);
+    static void setSession(const QNetworkConfiguration &config, QSharedPointer<QNetworkSession> session);
 private:
     QHash<QNetworkConfiguration, QWeakPointer<QNetworkSession> > sessions;
 };

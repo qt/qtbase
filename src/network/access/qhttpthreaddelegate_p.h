@@ -130,14 +130,14 @@ signals:
 #ifndef QT_NO_SSL
     void encrypted();
     void sslErrors(const QList<QSslError> &, bool *, QList<QSslError> *);
-    void sslConfigurationChanged(const QSslConfiguration);
+    void sslConfigurationChanged(const QSslConfiguration &);
     void preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator *);
 #endif
-    void downloadMetaData(QList<QPair<QByteArray,QByteArray> >, int, QString, bool,
+    void downloadMetaData(const QList<QPair<QByteArray,QByteArray> > &, int, const QString &, bool,
                           QSharedPointer<char>, qint64, bool);
     void downloadProgress(qint64, qint64);
-    void downloadData(QByteArray);
-    void error(QNetworkReply::NetworkError, const QString);
+    void downloadData(const QByteArray &);
+    void error(QNetworkReply::NetworkError, const QString &);
     void downloadFinished();
     void redirected(const QUrl &url, int httpStatus, int maxRedirectsRemainig);
 
@@ -285,7 +285,7 @@ public:
 
 public slots:
     // From user thread:
-    void haveDataSlot(qint64 pos, QByteArray dataArray, bool dataAtEnd, qint64 dataSize)
+    void haveDataSlot(qint64 pos, const QByteArray &dataArray, bool dataAtEnd, qint64 dataSize)
     {
         if (pos != m_pos) {
             // Sometimes when re-sending a request in the qhttpnetwork* layer there is a pending haveData from the

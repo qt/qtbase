@@ -166,7 +166,7 @@ private:
 
     void sendControlFrame(FrameType type, ControlFrameFlags flags, const char *data, quint32 length);
 
-    void sendSYN_STREAM(HttpMessagePair pair, qint32 streamID,
+    void sendSYN_STREAM(const HttpMessagePair &pair, qint32 streamID,
                         qint32 associatedToStreamID);
     void sendRST_STREAM(qint32 streamID, RST_STREAM_STATUS_CODE statusCode);
     void sendPING(quint32 pingID);

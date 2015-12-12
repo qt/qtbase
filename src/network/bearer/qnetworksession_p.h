@@ -106,7 +106,7 @@ protected:
     }
 
     inline void setPrivateConfiguration(QNetworkConfiguration &config,
-                                        QNetworkConfigurationPrivatePointer ptr) const
+                                        const QNetworkConfigurationPrivatePointer &ptr) const
     {
         config.d = ptr;
     }
