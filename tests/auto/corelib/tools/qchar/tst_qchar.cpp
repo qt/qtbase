@@ -44,6 +44,7 @@ class tst_QChar : public QObject
 {
     Q_OBJECT
 private slots:
+    void operator_eqeq_int();
     void operators_data();
     void operators();
     void toUpper();
@@ -78,6 +79,30 @@ private slots:
     void normalizationCorrections();
     void unicodeVersion();
 };
+
+void tst_QChar::operator_eqeq_int()
+{
+    {
+        const QChar ch = QLatin1Char(' ');
+        QVERIFY(ch != 0);
+        QVERIFY(!(ch == 0));
+
+        QVERIFY(ch == 0x20);
+        QVERIFY(!(ch != 0x20));
+        QVERIFY(0x20 == ch);
+        QVERIFY(!(0x20 != ch));
+    }
+    {
+        const QChar ch = QLatin1Char('\0');
+        QVERIFY(ch == 0);
+        QVERIFY(!(ch != 0));
+
+        QVERIFY(ch != 0x20);
+        QVERIFY(!(ch == 0x20));
+        QVERIFY(0x20 != ch);
+        QVERIFY(!(0x20 == ch));
+    }
+}
 
 void tst_QChar::operators_data()
 {
