@@ -62,12 +62,6 @@ MAKE_LESS_ETC(QChar, QLatin1String)
 MAKE_LESS_ETC(QChar, QStringRef)
 MAKE_LESS_ETC(QStringRef, QChar)
 
-MAKE_LESS_ETC(QString, QStringRef)
-MAKE_LESS_ETC(QStringRef, QString)
-
-MAKE_LESS_ETC(QStringRef, QLatin1String)
-MAKE_LESS_ETC(QLatin1String, QStringRef)
-
 #undef MAKE_LESS_ETC
 #undef MAKE_RELOP
 // END FIXME

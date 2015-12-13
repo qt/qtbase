@@ -1524,24 +1524,10 @@ inline QStringRef::QStringRef(const QString *aString, int aPosition, int aSize)
 inline QStringRef::QStringRef(const QString *aString)
     :m_string(aString), m_position(0), m_size(aString?aString->size() : 0){}
 
+// QStringRef <> QStringRef
 Q_CORE_EXPORT bool operator==(const QStringRef &s1, const QStringRef &s2) Q_DECL_NOTHROW;
 inline bool operator!=(const QStringRef &s1, const QStringRef &s2) Q_DECL_NOTHROW
 { return !(s1 == s2); }
-Q_CORE_EXPORT bool operator==(const QString &s1, const QStringRef &s2) Q_DECL_NOTHROW;
-inline bool operator!=(const QString &s1, const QStringRef &s2) Q_DECL_NOTHROW
-{ return !(s1 == s2); }
-inline bool operator==(const QStringRef &s1, const QString &s2) Q_DECL_NOTHROW
-{ return s2 == s1; }
-inline bool operator!=(const QStringRef &s1, const QString &s2) Q_DECL_NOTHROW
-{ return s2 != s1; }
-Q_CORE_EXPORT bool operator==(QLatin1String s1, const QStringRef &s2) Q_DECL_NOTHROW;
-inline bool operator!=(QLatin1String s1, const QStringRef &s2) Q_DECL_NOTHROW
-{ return !(s1 == s2); }
-inline bool operator==(const QStringRef &s1, QLatin1String s2) Q_DECL_NOTHROW
-{ return s2 == s1; }
-inline bool operator!=(const QStringRef &s1, QLatin1String s2) Q_DECL_NOTHROW
-{ return s2 != s1; }
-
 Q_CORE_EXPORT bool operator<(const QStringRef &s1, const QStringRef &s2) Q_DECL_NOTHROW;
 inline bool operator>(const QStringRef &s1, const QStringRef &s2) Q_DECL_NOTHROW
 { return s2 < s1; }
@@ -1549,6 +1535,36 @@ inline bool operator<=(const QStringRef &s1, const QStringRef &s2) Q_DECL_NOTHRO
 { return !(s1 > s2); }
 inline bool operator>=(const QStringRef &s1, const QStringRef &s2) Q_DECL_NOTHROW
 { return !(s1 < s2); }
+
+// QString <> QStringRef
+Q_CORE_EXPORT bool operator==(const QString &lhs, const QStringRef &rhs) Q_DECL_NOTHROW;
+inline bool operator!=(const QString &lhs, const QStringRef &rhs) Q_DECL_NOTHROW { return lhs.compare(rhs) != 0; }
+inline bool operator< (const QString &lhs, const QStringRef &rhs) Q_DECL_NOTHROW { return lhs.compare(rhs) <  0; }
+inline bool operator> (const QString &lhs, const QStringRef &rhs) Q_DECL_NOTHROW { return lhs.compare(rhs) >  0; }
+inline bool operator<=(const QString &lhs, const QStringRef &rhs) Q_DECL_NOTHROW { return lhs.compare(rhs) <= 0; }
+inline bool operator>=(const QString &lhs, const QStringRef &rhs) Q_DECL_NOTHROW { return lhs.compare(rhs) >= 0; }
+
+inline bool operator==(const QStringRef &lhs, const QString &rhs) Q_DECL_NOTHROW { return rhs == lhs; }
+inline bool operator!=(const QStringRef &lhs, const QString &rhs) Q_DECL_NOTHROW { return rhs != lhs; }
+inline bool operator< (const QStringRef &lhs, const QString &rhs) Q_DECL_NOTHROW { return rhs >  lhs; }
+inline bool operator> (const QStringRef &lhs, const QString &rhs) Q_DECL_NOTHROW { return rhs <  lhs; }
+inline bool operator<=(const QStringRef &lhs, const QString &rhs) Q_DECL_NOTHROW { return rhs >= lhs; }
+inline bool operator>=(const QStringRef &lhs, const QString &rhs) Q_DECL_NOTHROW { return rhs <= lhs; }
+
+// QLatin1String <> QStringRef
+Q_CORE_EXPORT bool operator==(QLatin1String lhs, const QStringRef &rhs) Q_DECL_NOTHROW;
+inline bool operator!=(QLatin1String lhs, const QStringRef &rhs) Q_DECL_NOTHROW { return rhs.compare(lhs) != 0; }
+inline bool operator< (QLatin1String lhs, const QStringRef &rhs) Q_DECL_NOTHROW { return rhs.compare(lhs) >  0; }
+inline bool operator> (QLatin1String lhs, const QStringRef &rhs) Q_DECL_NOTHROW { return rhs.compare(lhs) <  0; }
+inline bool operator<=(QLatin1String lhs, const QStringRef &rhs) Q_DECL_NOTHROW { return rhs.compare(lhs) >= 0; }
+inline bool operator>=(QLatin1String lhs, const QStringRef &rhs) Q_DECL_NOTHROW { return rhs.compare(lhs) <= 0; }
+
+inline bool operator==(const QStringRef &lhs, QLatin1String rhs) Q_DECL_NOTHROW { return rhs == lhs; }
+inline bool operator!=(const QStringRef &lhs, QLatin1String rhs) Q_DECL_NOTHROW { return rhs != lhs; }
+inline bool operator< (const QStringRef &lhs, QLatin1String rhs) Q_DECL_NOTHROW { return rhs >  lhs; }
+inline bool operator> (const QStringRef &lhs, QLatin1String rhs) Q_DECL_NOTHROW { return rhs <  lhs; }
+inline bool operator<=(const QStringRef &lhs, QLatin1String rhs) Q_DECL_NOTHROW { return rhs >= lhs; }
+inline bool operator>=(const QStringRef &lhs, QLatin1String rhs) Q_DECL_NOTHROW { return rhs <= lhs; }
 
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 inline QT_ASCII_CAST_WARN bool QStringRef::operator==(const char *s) const
