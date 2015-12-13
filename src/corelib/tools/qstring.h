@@ -571,22 +571,23 @@ public:
     QString &setUnicode(const QChar *unicode, int size);
     inline QString &setUtf16(const ushort *utf16, int size);
 
-    int compare(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    int compare(QLatin1String other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    int compare(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW;
+    int compare(QLatin1String other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW;
 
-    static inline int compare(const QString &s1, const QString &s2, Qt::CaseSensitivity cs = Qt::CaseSensitive)
+    static inline int compare(const QString &s1, const QString &s2,
+                              Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW
     { return s1.compare(s2, cs); }
 
     static inline int compare(const QString &s1, QLatin1String s2,
-                              Qt::CaseSensitivity cs = Qt::CaseSensitive)
+                              Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW
     { return s1.compare(s2, cs); }
     static inline int compare(QLatin1String s1, const QString &s2,
-                              Qt::CaseSensitivity cs = Qt::CaseSensitive)
+                              Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW
     { return -s2.compare(s1, cs); }
 
-    int compare(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    int compare(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW;
     static int compare(const QString &s1, const QStringRef &s2,
-                       Qt::CaseSensitivity = Qt::CaseSensitive);
+                       Qt::CaseSensitivity = Qt::CaseSensitive) Q_DECL_NOTHROW;
 
     int localeAwareCompare(const QString& s) const;
     static int localeAwareCompare(const QString& s1, const QString& s2)
@@ -626,19 +627,19 @@ public:
     static QString number(qulonglong, int base=10);
     static QString number(double, char f='g', int prec=6);
 
-    friend Q_CORE_EXPORT bool operator==(const QString &s1, const QString &s2);
-    friend Q_CORE_EXPORT bool operator<(const QString &s1, const QString &s2);
-    friend inline bool operator>(const QString &s1, const QString &s2) { return s2 < s1; }
-    friend inline bool operator!=(const QString &s1, const QString &s2) { return !(s1 == s2); }
-    friend inline bool operator<=(const QString &s1, const QString &s2) { return !(s1 > s2); }
-    friend inline bool operator>=(const QString &s1, const QString &s2) { return !(s1 < s2); }
+    friend Q_CORE_EXPORT bool operator==(const QString &s1, const QString &s2) Q_DECL_NOTHROW;
+    friend Q_CORE_EXPORT bool operator<(const QString &s1, const QString &s2) Q_DECL_NOTHROW;
+    friend inline bool operator>(const QString &s1, const QString &s2) Q_DECL_NOTHROW { return s2 < s1; }
+    friend inline bool operator!=(const QString &s1, const QString &s2) Q_DECL_NOTHROW { return !(s1 == s2); }
+    friend inline bool operator<=(const QString &s1, const QString &s2) Q_DECL_NOTHROW { return !(s1 > s2); }
+    friend inline bool operator>=(const QString &s1, const QString &s2) Q_DECL_NOTHROW { return !(s1 < s2); }
 
-    bool operator==(QLatin1String s) const;
-    bool operator<(QLatin1String s) const;
-    bool operator>(QLatin1String s) const;
-    inline bool operator!=(QLatin1String s) const { return !operator==(s); }
-    inline bool operator<=(QLatin1String s) const { return !operator>(s); }
-    inline bool operator>=(QLatin1String s) const { return !operator<(s); }
+    bool operator==(QLatin1String s) const Q_DECL_NOTHROW;
+    bool operator<(QLatin1String s) const Q_DECL_NOTHROW;
+    bool operator>(QLatin1String s) const Q_DECL_NOTHROW;
+    inline bool operator!=(QLatin1String s) const Q_DECL_NOTHROW { return !operator==(s); }
+    inline bool operator<=(QLatin1String s) const Q_DECL_NOTHROW { return !operator>(s); }
+    inline bool operator>=(QLatin1String s) const Q_DECL_NOTHROW { return !operator<(s); }
 
     // ASCII compatibility
 #if defined(QT_RESTRICTED_CAST_FROM_ASCII)
@@ -798,13 +799,13 @@ private:
     QString multiArg(int numArgs, const QString **args) const;
     static int compare_helper(const QChar *data1, int length1,
                               const QChar *data2, int length2,
-                              Qt::CaseSensitivity cs = Qt::CaseSensitive);
+                              Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
     static int compare_helper(const QChar *data1, int length1,
                               const char *data2, int length2,
                               Qt::CaseSensitivity cs = Qt::CaseSensitive);
     static int compare_helper(const QChar *data1, int length1,
                               QLatin1String s2,
-                              Qt::CaseSensitivity cs = Qt::CaseSensitive);
+                              Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
     static int localeAwareCompare_helper(const QChar *data1, int length1,
                                          const QChar *data2, int length2);
     static QString toLower_helper(const QString &str);
@@ -1469,15 +1470,15 @@ public:
     inline QT_ASCII_CAST_WARN bool operator>=(const char *s) const;
 #endif
 
-    int compare(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    int compare(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    int compare(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    int compare(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW;
+    int compare(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW;
+    int compare(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW;
     static int compare(const QStringRef &s1, const QString &s2,
-                       Qt::CaseSensitivity = Qt::CaseSensitive);
+                       Qt::CaseSensitivity = Qt::CaseSensitive) Q_DECL_NOTHROW;
     static int compare(const QStringRef &s1, const QStringRef &s2,
-                       Qt::CaseSensitivity = Qt::CaseSensitive);
+                       Qt::CaseSensitivity = Qt::CaseSensitive) Q_DECL_NOTHROW;
     static int compare(const QStringRef &s1, QLatin1String s2,
-                       Qt::CaseSensitivity cs = Qt::CaseSensitive);
+                       Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
 
     int localeAwareCompare(const QString &s) const;
     int localeAwareCompare(const QStringRef &s) const;
@@ -1507,30 +1508,30 @@ inline QStringRef::QStringRef(const QString *aString, int aPosition, int aSize)
 inline QStringRef::QStringRef(const QString *aString)
     :m_string(aString), m_position(0), m_size(aString?aString->size() : 0){}
 
-Q_CORE_EXPORT bool operator==(const QStringRef &s1,const QStringRef &s2);
-inline bool operator!=(const QStringRef &s1,const QStringRef &s2)
+Q_CORE_EXPORT bool operator==(const QStringRef &s1, const QStringRef &s2) Q_DECL_NOTHROW;
+inline bool operator!=(const QStringRef &s1, const QStringRef &s2) Q_DECL_NOTHROW
 { return !(s1 == s2); }
-Q_CORE_EXPORT bool operator==(const QString &s1,const QStringRef &s2);
-inline bool operator!=(const QString &s1,const QStringRef &s2)
+Q_CORE_EXPORT bool operator==(const QString &s1, const QStringRef &s2) Q_DECL_NOTHROW;
+inline bool operator!=(const QString &s1, const QStringRef &s2) Q_DECL_NOTHROW
 { return !(s1 == s2); }
-inline bool operator==(const QStringRef &s1,const QString &s2)
+inline bool operator==(const QStringRef &s1, const QString &s2) Q_DECL_NOTHROW
 { return s2 == s1; }
-inline bool operator!=(const QStringRef &s1,const QString &s2)
+inline bool operator!=(const QStringRef &s1, const QString &s2) Q_DECL_NOTHROW
 { return s2 != s1; }
-Q_CORE_EXPORT bool operator==(QLatin1String s1, const QStringRef &s2);
-inline bool operator!=(QLatin1String s1, const QStringRef &s2)
+Q_CORE_EXPORT bool operator==(QLatin1String s1, const QStringRef &s2) Q_DECL_NOTHROW;
+inline bool operator!=(QLatin1String s1, const QStringRef &s2) Q_DECL_NOTHROW
 { return !(s1 == s2); }
-inline bool operator==(const QStringRef &s1, QLatin1String s2)
+inline bool operator==(const QStringRef &s1, QLatin1String s2) Q_DECL_NOTHROW
 { return s2 == s1; }
-inline bool operator!=(const QStringRef &s1, QLatin1String s2)
+inline bool operator!=(const QStringRef &s1, QLatin1String s2) Q_DECL_NOTHROW
 { return s2 != s1; }
 
-Q_CORE_EXPORT bool operator<(const QStringRef &s1,const QStringRef &s2);
-inline bool operator>(const QStringRef &s1, const QStringRef &s2)
+Q_CORE_EXPORT bool operator<(const QStringRef &s1, const QStringRef &s2) Q_DECL_NOTHROW;
+inline bool operator>(const QStringRef &s1, const QStringRef &s2) Q_DECL_NOTHROW
 { return s2 < s1; }
-inline bool operator<=(const QStringRef &s1, const QStringRef &s2)
+inline bool operator<=(const QStringRef &s1, const QStringRef &s2) Q_DECL_NOTHROW
 { return !(s1 > s2); }
-inline bool operator>=(const QStringRef &s1, const QStringRef &s2)
+inline bool operator>=(const QStringRef &s1, const QStringRef &s2) Q_DECL_NOTHROW
 { return !(s1 < s2); }
 
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
@@ -1561,21 +1562,21 @@ inline QT_ASCII_CAST_WARN bool operator>=(const char *s1, const QStringRef &s2)
 { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) >= 0; }
 #endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 
-inline int QString::compare(const QStringRef &s, Qt::CaseSensitivity cs) const
+inline int QString::compare(const QStringRef &s, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
 { return QString::compare_helper(constData(), length(), s.constData(), s.length(), cs); }
-inline int QString::compare(const QString &s1, const QStringRef &s2, Qt::CaseSensitivity cs)
+inline int QString::compare(const QString &s1, const QStringRef &s2, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 { return QString::compare_helper(s1.constData(), s1.length(), s2.constData(), s2.length(), cs); }
-inline int QStringRef::compare(const QString &s, Qt::CaseSensitivity cs) const
+inline int QStringRef::compare(const QString &s, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
 { return QString::compare_helper(constData(), length(), s.constData(), s.length(), cs); }
-inline int QStringRef::compare(const QStringRef &s, Qt::CaseSensitivity cs) const
+inline int QStringRef::compare(const QStringRef &s, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
 { return QString::compare_helper(constData(), length(), s.constData(), s.length(), cs); }
-inline int QStringRef::compare(QLatin1String s, Qt::CaseSensitivity cs) const
+inline int QStringRef::compare(QLatin1String s, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
 { return QString::compare_helper(constData(), length(), s, cs); }
-inline int QStringRef::compare(const QStringRef &s1, const QString &s2, Qt::CaseSensitivity cs)
+inline int QStringRef::compare(const QStringRef &s1, const QString &s2, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 { return QString::compare_helper(s1.constData(), s1.length(), s2.constData(), s2.length(), cs); }
-inline int QStringRef::compare(const QStringRef &s1, const QStringRef &s2, Qt::CaseSensitivity cs)
+inline int QStringRef::compare(const QStringRef &s1, const QStringRef &s2, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 { return QString::compare_helper(s1.constData(), s1.length(), s2.constData(), s2.length(), cs); }
-inline int QStringRef::compare(const QStringRef &s1, QLatin1String s2, Qt::CaseSensitivity cs)
+inline int QStringRef::compare(const QStringRef &s1, QLatin1String s2, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 { return QString::compare_helper(s1.constData(), s1.length(), s2, cs); }
 
 inline int QString::localeAwareCompare(const QStringRef &s) const

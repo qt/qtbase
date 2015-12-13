@@ -2671,7 +2671,7 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
   expect. Consider sorting user-interface strings with
   localeAwareCompare().
 */
-bool operator==(const QString &s1, const QString &s2)
+bool operator==(const QString &s1, const QString &s2) Q_DECL_NOTHROW
 {
     if (s1.d->size != s2.d->size)
         return false;
@@ -2684,7 +2684,7 @@ bool operator==(const QString &s1, const QString &s2)
     Returns \c true if this string is equal to \a other; otherwise
     returns \c false.
 */
-bool QString::operator==(QLatin1String other) const
+bool QString::operator==(QLatin1String other) const Q_DECL_NOTHROW
 {
     if (d->size != other.size())
         return false;
@@ -2735,7 +2735,7 @@ bool QString::operator==(QLatin1String other) const
     expect. Consider sorting user-interface strings using the
     QString::localeAwareCompare() function.
 */
-bool operator<(const QString &s1, const QString &s2)
+bool operator<(const QString &s1, const QString &s2) Q_DECL_NOTHROW
 {
     return ucstrcmp(s1.constData(), s1.length(), s2.constData(), s2.length()) < 0;
 }
@@ -2745,7 +2745,7 @@ bool operator<(const QString &s1, const QString &s2)
     Returns \c true if this string is lexically less than the parameter
     string called \a other; otherwise returns \c false.
 */
-bool QString::operator<(QLatin1String other) const
+bool QString::operator<(QLatin1String other) const Q_DECL_NOTHROW
 {
     const uchar *c = (const uchar *) other.latin1();
     if (!c || *c == 0)
@@ -2850,7 +2850,7 @@ bool QString::operator<(QLatin1String other) const
     Returns \c true if this string is lexically greater than the parameter
     string \a other; otherwise returns \c false.
 */
-bool QString::operator>(QLatin1String other) const
+bool QString::operator>(QLatin1String other) const Q_DECL_NOTHROW
 {
     const uchar *c = (const uchar *) other.latin1();
     if (!c || *c == '\0')
@@ -5333,7 +5333,7 @@ QString& QString::fill(QChar ch, int size)
 
     Same as compare(*this, \a other, \a cs).
 */
-int QString::compare(const QString &other, Qt::CaseSensitivity cs) const
+int QString::compare(const QString &other, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
 {
     if (cs == Qt::CaseSensitive)
         return ucstrcmp(constData(), length(), other.constData(), other.length());
@@ -5345,7 +5345,7 @@ int QString::compare(const QString &other, Qt::CaseSensitivity cs) const
     \since 4.5
 */
 int QString::compare_helper(const QChar *data1, int length1, const QChar *data2, int length2,
-                            Qt::CaseSensitivity cs)
+                            Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
     if (cs == Qt::CaseSensitive)
         return ucstrcmp(data1, length1, data2, length2);
@@ -5360,7 +5360,7 @@ int QString::compare_helper(const QChar *data1, int length1, const QChar *data2,
 
     Same as compare(*this, \a other, \a cs).
 */
-int QString::compare(QLatin1String other, Qt::CaseSensitivity cs) const
+int QString::compare(QLatin1String other, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
 {
     return compare_helper(unicode(), length(), other, cs);
 }
@@ -5396,7 +5396,7 @@ int QString::compare_helper(const QChar *data1, int length1, const char *data2, 
     \since 4.5
 */
 int QString::compare_helper(const QChar *data1, int length1, QLatin1String s2,
-                            Qt::CaseSensitivity cs)
+                            Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
     const ushort *uc = reinterpret_cast<const ushort *>(data1);
     const ushort *uce = uc + length1;
@@ -8907,7 +8907,7 @@ QString QStringRef::toString() const {
    Returns \c true if string reference \a s1 is lexically equal to string reference \a s2; otherwise
    returns \c false.
 */
-bool operator==(const QStringRef &s1,const QStringRef &s2)
+bool operator==(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
 { return (s1.size() == s2.size() &&
           qMemEquals((const ushort *)s1.unicode(), (const ushort *)s2.unicode(), s1.size()));
 }
@@ -8917,7 +8917,7 @@ bool operator==(const QStringRef &s1,const QStringRef &s2)
    Returns \c true if string \a s1 is lexically equal to string reference \a s2; otherwise
    returns \c false.
 */
-bool operator==(const QString &s1,const QStringRef &s2)
+bool operator==(const QString &s1,const QStringRef &s2) Q_DECL_NOTHROW
 { return (s1.size() == s2.size() &&
           qMemEquals((const ushort *)s1.unicode(), (const ushort *)s2.unicode(), s1.size()));
 }
@@ -8927,7 +8927,7 @@ bool operator==(const QString &s1,const QStringRef &s2)
    Returns \c true if string  \a s1 is lexically equal to string reference \a s2; otherwise
    returns \c false.
 */
-bool operator==(QLatin1String s1, const QStringRef &s2)
+bool operator==(QLatin1String s1, const QStringRef &s2) Q_DECL_NOTHROW
 {
     if (s1.size() != s2.size())
         return false;
@@ -8949,7 +8949,7 @@ bool operator==(QLatin1String s1, const QStringRef &s2)
     expect. Consider sorting user-interface strings using the
     QString::localeAwareCompare() function.
 */
-bool operator<(const QStringRef &s1,const QStringRef &s2)
+bool operator<(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
 {
     return ucstrcmp(s1.constData(), s1.length(), s2.constData(), s2.length()) < 0;
 }
