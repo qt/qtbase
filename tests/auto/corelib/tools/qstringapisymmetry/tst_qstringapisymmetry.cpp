@@ -148,7 +148,14 @@ void tst_QStringApiSymmetry::compare_impl() const
     const LHS lhs = make<LHS>(lhsUnicode, lhsLatin1);
     const RHS rhs = make<RHS>(rhsUnicode, rhsLatin1);
 
+#ifdef Q_COMPILER_NOEXCEPT
+# define QVERIFY_NOEXCEPT(expr) QVERIFY(noexcept(expr))
+#else
+# define QVERIFY_NOEXCEPT(expr)
+#endif
+
 #define CHECK(op) \
+    QVERIFY_NOEXCEPT(lhs op rhs); \
     do { if (caseSensitiveCompareResult op 0) { \
         QVERIFY(lhs op rhs); \
     } else { \

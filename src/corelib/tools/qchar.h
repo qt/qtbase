@@ -578,6 +578,18 @@ Q_DECL_CONSTEXPR inline bool operator>=(QChar c1, QChar c2) Q_DECL_NOTHROW { ret
 Q_DECL_CONSTEXPR inline bool operator> (QChar c1, QChar c2) Q_DECL_NOTHROW { return  operator< (c2, c1); }
 Q_DECL_CONSTEXPR inline bool operator<=(QChar c1, QChar c2) Q_DECL_NOTHROW { return !operator< (c2, c1); }
 
+// disambiguate QChar == int (but only that, so constrain template to exactly 'int'):
+template <typename T>
+Q_DECL_DEPRECATED_X("don't compare ints to QChars, compare them to QChar::unicode() instead")
+Q_DECL_CONSTEXPR inline
+typename std::enable_if<std::is_same<typename std::remove_cv<T>::type, int>::value, bool>::type
+operator==(QChar lhs, T rhs) Q_DECL_NOEXCEPT { return lhs == QChar(rhs); }
+template <typename T>
+Q_DECL_DEPRECATED_X("don't compare ints to QChars, compare them to QChar::unicode() instead")
+Q_DECL_CONSTEXPR inline
+typename std::enable_if<std::is_same<typename std::remove_cv<T>::type, int>::value, bool>::type
+operator!=(QChar lhs, T rhs) Q_DECL_NOEXCEPT { return lhs != QChar(rhs); }
+
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, QChar);
 Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QChar &);
