@@ -44,28 +44,6 @@ template <typename T>
 QString toQString(const T &t) { return QString(t); }
 QString toQString(const QStringRef &ref) { return ref.toString(); }
 
-// FIXME: these are missing at the time of writing, add them, then remove the dummies here:
-#define MAKE_RELOP(op, A1, A2) \
-    static bool operator op (const A1 &lhs, const A2 &rhs) \
-    { return toQString(lhs) op toQString(rhs); } \
-    /*end*/
-#define MAKE_LESS_ETC(A1, A2) \
-    MAKE_RELOP(<,  A1, A2) \
-    MAKE_RELOP(>,  A1, A2) \
-    MAKE_RELOP(<=, A1, A2) \
-    MAKE_RELOP(>=, A1, A2) \
-    /*end*/
-MAKE_RELOP(==, QChar, QLatin1String)
-MAKE_RELOP(!=, QChar, QLatin1String)
-MAKE_LESS_ETC(QChar, QLatin1String)
-
-MAKE_LESS_ETC(QChar, QStringRef)
-MAKE_LESS_ETC(QStringRef, QChar)
-
-#undef MAKE_LESS_ETC
-#undef MAKE_RELOP
-// END FIXME
-
 class tst_QStringApiSymmetry : public QObject
 {
     Q_OBJECT
