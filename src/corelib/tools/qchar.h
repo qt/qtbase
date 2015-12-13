@@ -567,10 +567,10 @@ Q_DECLARE_TYPEINFO(QChar, Q_MOVABLE_TYPE);
 Q_DECL_CONSTEXPR inline bool operator==(QChar c1, QChar c2) Q_DECL_NOTHROW { return c1.ucs == c2.ucs; }
 Q_DECL_CONSTEXPR inline bool operator< (QChar c1, QChar c2) Q_DECL_NOTHROW { return c1.ucs <  c2.ucs; }
 
-Q_DECL_CONSTEXPR inline bool operator!=(QChar c1, QChar c2) { return !operator==(c1, c2); }
-Q_DECL_CONSTEXPR inline bool operator>=(QChar c1, QChar c2) { return !operator< (c1, c2); }
-Q_DECL_CONSTEXPR inline bool operator> (QChar c1, QChar c2) { return  operator< (c2, c1); }
-Q_DECL_CONSTEXPR inline bool operator<=(QChar c1, QChar c2) { return !operator< (c2, c1); }
+Q_DECL_CONSTEXPR inline bool operator!=(QChar c1, QChar c2) Q_DECL_NOTHROW { return !operator==(c1, c2); }
+Q_DECL_CONSTEXPR inline bool operator>=(QChar c1, QChar c2) Q_DECL_NOTHROW { return !operator< (c1, c2); }
+Q_DECL_CONSTEXPR inline bool operator> (QChar c1, QChar c2) Q_DECL_NOTHROW { return  operator< (c2, c1); }
+Q_DECL_CONSTEXPR inline bool operator<=(QChar c1, QChar c2) Q_DECL_NOTHROW { return !operator< (c2, c1); }
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, QChar);
