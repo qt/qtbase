@@ -112,7 +112,7 @@ QIBusPlatformInputContext::QIBusPlatformInputContext ()
     m_eventFilterUseSynchronousMode = false;
     if (qEnvironmentVariableIsSet("IBUS_ENABLE_SYNC_MODE")) {
         bool ok;
-        int enableSync = qgetenv("IBUS_ENABLE_SYNC_MODE").toInt(&ok);
+        int enableSync = qEnvironmentVariableIntValue("IBUS_ENABLE_SYNC_MODE", &ok);
         if (ok && enableSync == 1)
             m_eventFilterUseSynchronousMode = true;
     }

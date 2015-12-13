@@ -65,7 +65,7 @@ QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, IDirectFBSurface *surface)
     DFBSurfaceCapabilities surfaceCaps;
     m_surface->GetCapabilities(m_surface.data(), &surfaceCaps);
     m_premult = (surfaceCaps & DSCAPS_PREMULTIPLIED);
-    if (qgetenv("QT_DIRECTFB_BLITTER_DEBUGPAINT").toInt())
+    if (qEnvironmentVariableIntValue("QT_DIRECTFB_BLITTER_DEBUGPAINT"))
         m_debugPaint = true;
 }
 
@@ -92,7 +92,7 @@ QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, bool alpha)
         surfaceDesc.pixelformat = QDirectFbBlitter::pixmapFormat();
     }
 
-    if (qgetenv("QT_DIRECTFB_BLITTER_DEBUGPAINT").toInt())
+    if (qEnvironmentVariableIntValue("QT_DIRECTFB_BLITTER_DEBUGPAINT"))
         m_debugPaint = true;
 
     IDirectFB *dfb = QDirectFbConvenience::dfbInterface();

@@ -380,7 +380,7 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
 
 #ifndef QT_NO_LIBRARY
         bool envOK  = false;
-        const int skipGeneric = qgetenv("QT_EXCLUDE_GENERIC_BEARER").toInt(&envOK);
+        const int skipGeneric = qEnvironmentVariableIntValue("QT_EXCLUDE_GENERIC_BEARER", &envOK);
         QBearerEngine *generic = 0;
         QFactoryLoader *l = loader();
         const PluginKeyMap keyMap = l->keyMap();
@@ -477,7 +477,7 @@ void QNetworkConfigurationManagerPrivate::startPolling()
     if (!pollTimer) {
         pollTimer = new QTimer(this);
         bool ok;
-        int interval = qgetenv("QT_BEARER_POLL_TIMEOUT").toInt(&ok);
+        int interval = qEnvironmentVariableIntValue("QT_BEARER_POLL_TIMEOUT", &ok);
         if (!ok)
             interval = 10000;//default 10 seconds
         pollTimer->setInterval(interval);
