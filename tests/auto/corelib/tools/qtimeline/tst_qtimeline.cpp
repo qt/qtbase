@@ -93,29 +93,20 @@ void tst_QTimeLine::range()
     QCOMPARE(timeLine.endFrame(), 16);
 
     // Verify that you can change the range in the timeLine
-    timeLine.setFrameRange(10, 20);
+    timeLine.setFrameRange(1000, 2000);
     QSignalSpy spy(&timeLine, &QTimeLine::frameChanged);
     QVERIFY(spy.isValid());
-    timeLine.start();
-#ifdef Q_OS_WINCE
-    QTest::qWait(1000);
-#else
-    QTest::qWait(100);
-#endif
-    QCOMPARE(timeLine.state(), QTimeLine::Running);
+    timeLine.start();  // make sure that the logic works for a running timeline
+    QTRY_COMPARE(timeLine.state(), QTimeLine::Running);
+    timeLine.setCurrentTime(timeLine.duration()/2);
     int oldValue = timeLine.currentFrame();
-    timeLine.setFrameRange(0, 5);
+    timeLine.setFrameRange(0, 500);
     QVERIFY(timeLine.currentFrame() < oldValue);
-    timeLine.setEndFrame(100);
-    timeLine.setStartFrame(50);
+    timeLine.setEndFrame(10000);
+    timeLine.setStartFrame(5000);
     QVERIFY(timeLine.currentFrame() > oldValue);
-    timeLine.setFrameRange(0, 5);
-#ifdef Q_OS_WINCE
-    QTest::qWait(500);
-#else
-    QTest::qWait(50);
-#endif
-    QVERIFY(spy.count() > 1);
+    timeLine.setFrameRange(0, 500);
+    QTRY_VERIFY(spy.count() > 1);
     QVERIFY(timeLine.currentFrame() < oldValue);
 }
 
