@@ -423,7 +423,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         // set the active window to zero here, the new key window's
         // NSWindowDidBecomeKeyNotification hander will change the active window
         NSWindow *keyWindow = [NSApp keyWindow];
-        if (!keyWindow) {
+        if (!keyWindow || keyWindow == windowNotification.object) {
             // no new key window, go ahead and set the active window to zero
             if (!m_platformWindow->windowIsPopupType() && !m_isMenuView)
                 QWindowSystemInterface::handleWindowActivated(0);
