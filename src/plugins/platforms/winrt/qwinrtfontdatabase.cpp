@@ -439,6 +439,7 @@ QStringList QWinRTFontDatabase::fallbacksForFamily(const QString &family, QFont:
     QStringList result;
     if (family == QLatin1String("Helvetica"))
         result.append(QStringLiteral("Arial"));
+    result.append(QBasicFontDatabase::fallbacksForFamily(family, style, styleHint, script));
     return result;
 }
 
