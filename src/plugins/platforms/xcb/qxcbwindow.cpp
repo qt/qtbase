@@ -2003,14 +2003,11 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     // be queried in the resize event.
     QPlatformWindow::setGeometry(actualGeometry);
 
-    // As we're delivering the geometry change through QPA in n async fashion we can't
-    // pass on the current geometry of the QWindowPrivate, as that may have not been
-    // updated yet by a geometry change that's still in the QPA event queue. Instead
-    // we fall back to the default argument value of QRect(), which will result in
-    // QGuiApplication looking up the previous geometry from QWindowPrivate, but this
-    // time in sync with the even delivery/processing.
-    QWindowSystemInterface::handleGeometryChange(window(), actualGeometry,
-        requestedGeometry != actualGeometry ? requestedGeometry : QRect());
+    // FIXME: In the case of the requestedGeometry not matching the actualGeometry due
+    // to e.g. the window manager applying restrictions to the geometry, the application
+    // will never see a move/resize event if the actualGeometry is the same as the current
+    // geometry, and may think the requested geometry was fulfilled.
+    QWindowSystemInterface::handleGeometryChange(window(), actualGeometry);
 
     // QPlatformScreen::screen() is updated asynchronously, so we can't compare it
     // with the newScreen. Just send the WindowScreenChanged event and QGuiApplication
