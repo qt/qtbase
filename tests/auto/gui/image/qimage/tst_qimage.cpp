@@ -112,6 +112,7 @@ private slots:
     void smoothScale2_data();
     void smoothScale2();
     void smoothScale3();
+    void smoothScale4();
 
     void smoothScaleBig();
     void smoothScaleAlpha();
@@ -1677,6 +1678,30 @@ void tst_QImage::smoothScale2()
         QCOMPARE(qBlue(pixel), qBlue(expected));
     }
 
+    // scale x up
+    scaled = img.scaled(QSize(size, size * 2), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    for (int y = 0; y < scaled.height(); ++y) {
+        for (int x = 0; x < scaled.width(); ++x) {
+            pixel = scaled.pixel(x, y);
+            QCOMPARE(qAlpha(pixel), qAlpha(expected));
+            QCOMPARE(qRed(pixel), qRed(expected));
+            QCOMPARE(qGreen(pixel), qGreen(expected));
+            QCOMPARE(qBlue(pixel), qBlue(expected));
+        }
+    }
+
+    // scale y up
+    scaled = img.scaled(QSize(size * 2, size), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    for (int y = 0; y < scaled.height(); ++y) {
+        for (int x = 0; x < scaled.width(); ++x) {
+            pixel = scaled.pixel(x, y);
+            QCOMPARE(qAlpha(pixel), qAlpha(expected));
+            QCOMPARE(qRed(pixel), qRed(expected));
+            QCOMPARE(qGreen(pixel), qGreen(expected));
+            QCOMPARE(qBlue(pixel), qBlue(expected));
+        }
+    }
+
     // scale x up, y up
     scaled = img.scaled(QSize(size * 2, size * 2), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     for (int y = 0; y < scaled.height(); ++y) {
@@ -1739,6 +1764,26 @@ void tst_QImage::smoothScale3()
             }
         }
         QCOMPARE(err, 0);
+    }
+}
+
+// Tests smooth upscale is smooth
+void tst_QImage::smoothScale4()
+{
+    QImage img(4, 4, QImage::Format_RGB32);
+    for (int y = 0; y < 4; ++y) {
+        for (int x = 0; x < 4; ++x) {
+            img.setPixel(x, y, qRgb(x * 255 / 3, y * 255 / 3, 0));
+        }
+    }
+    QImage scaled = img.scaled(37, 23, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    for (int y = 0; y < scaled.height(); ++y) {
+        for (int x = 0; x < scaled.width(); ++x) {
+            if (x > 0)
+                QVERIFY(qRed(scaled.pixel(x, y)) >= qRed(scaled.pixel(x - 1, y)));
+            if (y > 0)
+                QVERIFY(qGreen(scaled.pixel(x, y)) >= qGreen(scaled.pixel(x, y - 1)));
+        }
     }
 }
 

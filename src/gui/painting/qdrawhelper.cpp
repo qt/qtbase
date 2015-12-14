@@ -2342,8 +2342,8 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                     uint bl = s2[x1];
                     uint br = s2[x2];
 
-#if defined(__SSE2__)
-                    // The SSE2 optimized interpolate_4_pixels is faster than interpolate_4_pixels_16.
+#if defined(__SSE2__) || defined(__ARM_NEON__)
+                    // The optimized interpolate_4_pixels are faster than interpolate_4_pixels_16.
                     int distx = (fx & 0x0000ffff) >> 8;
                     int disty = (fy & 0x0000ffff) >> 8;
                     *b = interpolate_4_pixels(tl, tr, bl, br, distx, disty);
@@ -2572,12 +2572,8 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                     if ((fdx < 0 && fdx > -(fixed_scale / 8)) || std::abs(data->m22) < (1./8.)) { // scale up more than 8x
                         int disty = (fy & 0x0000ffff) >> 8;
                         for (int i = 0; i < len; ++i) {
-                            uint tl = buf1[i * 2 + 0];
-                            uint tr = buf1[i * 2 + 1];
-                            uint bl = buf2[i * 2 + 0];
-                            uint br = buf2[i * 2 + 1];
                             int distx = (fracX & 0x0000ffff) >> 8;
-                            b[i] = interpolate_4_pixels(tl, tr, bl, br, distx, disty);
+                            b[i] = interpolate_4_pixels(buf1 + i * 2, buf2 + i * 2, distx, disty);
                             fracX += fdx;
                         }
                     } else { //scale down
@@ -2638,15 +2634,10 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                 if (std::abs(data->m11) > 8 || std::abs(data->m22) > 8) {
                     //if we are zooming more than 8 times, we use 8bit precision for the position.
                     for (int i = 0; i < len; ++i) {
-                        uint tl = buf1[i * 2 + 0];
-                        uint tr = buf1[i * 2 + 1];
-                        uint bl = buf2[i * 2 + 0];
-                        uint br = buf2[i * 2 + 1];
-
                         int distx = (fracX & 0x0000ffff) >> 8;
                         int disty = (fracY & 0x0000ffff) >> 8;
 
-                        b[i] = interpolate_4_pixels(tl, tr, bl, br, distx, disty);
+                        b[i] = interpolate_4_pixels(buf1 + i * 2, buf2 + i * 2, distx, disty);
                         fracX += fdx;
                         fracY += fdy;
                     }
@@ -2736,12 +2727,7 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                 int distx = distxs[i];
                 int disty = distys[i];
 
-                uint tl = buf1[i * 2 + 0];
-                uint tr = buf1[i * 2 + 1];
-                uint bl = buf2[i * 2 + 0];
-                uint br = buf2[i * 2 + 1];
-
-                b[i] = interpolate_4_pixels(tl, tr, bl, br, distx, disty);
+                b[i] = interpolate_4_pixels(buf1 + i * 2, buf2 + i * 2, distx, disty);
             }
             length -= len;
             b += len;
