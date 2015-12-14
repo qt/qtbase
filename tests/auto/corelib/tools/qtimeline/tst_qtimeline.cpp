@@ -649,22 +649,21 @@ void tst_QTimeLine::restart()
 
 void tst_QTimeLine::setPaused()
 {
-    QTimeLine timeLine(1000);
+    const int EndTime = 10000;
+    QTimeLine timeLine(EndTime);
     {
         QCOMPARE(timeLine.currentTime(), 0);
         timeLine.start();
-        QTest::qWait(250);
+        QTRY_VERIFY(timeLine.currentTime() != 0);  // wait for start
         timeLine.setPaused(true);
         int oldCurrentTime = timeLine.currentTime();
         QVERIFY(oldCurrentTime > 0);
-        QVERIFY(oldCurrentTime < 1000);
+        QVERIFY(oldCurrentTime < EndTime);
         QTest::qWait(1000);
         timeLine.setPaused(false);
-        QTest::qWait(250);
-        int currentTime = timeLine.currentTime();
-        QVERIFY(currentTime > 0);
-        QVERIFY(currentTime > oldCurrentTime);
-        QVERIFY(currentTime < 1000);
+        QTRY_VERIFY(timeLine.currentTime() > oldCurrentTime);
+        QVERIFY(timeLine.currentTime() > 0);
+        QVERIFY(timeLine.currentTime() < EndTime);
         timeLine.stop();
     }
 }
