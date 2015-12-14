@@ -621,8 +621,7 @@ void tst_QTimeLine::restart()
     timeLine.setFrameRange(0,9);
 
     timeLine.start();
-    QTest::qWait(timeLine.duration()*2);
-    QCOMPARE(timeLine.currentFrame(), timeLine.endFrame());
+    QTRY_COMPARE(timeLine.currentFrame(), timeLine.endFrame());
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
 
     // A restart with the same duration
@@ -630,8 +629,7 @@ void tst_QTimeLine::restart()
     QCOMPARE(timeLine.state(), QTimeLine::Running);
     QCOMPARE(timeLine.currentFrame(), timeLine.startFrame());
     QCOMPARE(timeLine.currentTime(), 0);
-    QTest::qWait(250);
-    QCOMPARE(timeLine.currentFrame(), timeLine.endFrame());
+    QTRY_COMPARE(timeLine.currentFrame(), timeLine.endFrame());
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
 
     // Set a smaller duration and restart
@@ -640,8 +638,7 @@ void tst_QTimeLine::restart()
     QCOMPARE(timeLine.state(), QTimeLine::Running);
     QCOMPARE(timeLine.currentFrame(), timeLine.startFrame());
     QCOMPARE(timeLine.currentTime(), 0);
-    QTest::qWait(250);
-    QCOMPARE(timeLine.currentFrame(), timeLine.endFrame());
+    QTRY_COMPARE(timeLine.currentFrame(), timeLine.endFrame());
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
 
     // Set a longer duration and restart
