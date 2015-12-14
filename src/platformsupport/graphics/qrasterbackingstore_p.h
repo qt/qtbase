@@ -3,7 +3,7 @@
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,38 +31,41 @@
 **
 ****************************************************************************/
 
-#ifndef QIOSBACKINGSTORE_H
-#define QIOSBACKINGSTORE_H
+#ifndef QRASTERBACKINGSTORE_P_H
+#define QRASTERBACKINGSTORE_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
 #include <qpa/qplatformbackingstore.h>
 
-#include <QtPlatformSupport/private/qrasterbackingstore_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOpenGLPaintDevice;
-
-class QIOSBackingStore : public QRasterBackingStore
+class QRasterBackingStore : public QPlatformBackingStore
 {
 public:
-    QIOSBackingStore(QWindow *window);
-    ~QIOSBackingStore();
+    QRasterBackingStore(QWindow *window);
+    ~QRasterBackingStore();
 
     QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
+    QImage toImage() const Q_DECL_OVERRIDE;
+    void resize (const QSize &size, const QRegion &) Q_DECL_OVERRIDE;
+    bool scroll(const QRegion &area, int dx, int dy) Q_DECL_OVERRIDE;
+    void beginPaint(const QRegion &region) Q_DECL_OVERRIDE;
 
-    void beginPaint(const QRegion &) Q_DECL_OVERRIDE;
-    void endPaint() Q_DECL_OVERRIDE;
-
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
-    void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
-
-    void makeCurrent();
-
-private:
-    QOpenGLContext *m_context;
-    QOpenGLPaintDevice *m_glDevice;
+protected:
+    QImage m_image;
 };
 
 QT_END_NAMESPACE
 
-#endif // QIOSBACKINGSTORE_H
+#endif // QRASTERBACKINGSTORE_P_H

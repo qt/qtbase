@@ -25,5 +25,6 @@ contains(QT_CONFIG, dbus) {
     include(dbusmenu/dbusmenu.pri)
     include(dbustray/dbustray.pri)
 }
+ios: include(graphics/graphics.pri)
 
 load(qt_module)
