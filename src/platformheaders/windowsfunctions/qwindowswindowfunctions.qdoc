@@ -69,3 +69,29 @@
     This is a convenience function that can be used directly instead of resolving the function pointer.
     \a window and \a type will be relayed to the function retrieved by QGuiApplication
 */
+
+/*!
+    \typedef QWindowsWindowFunctions::SetHasBorderInFullScreen
+
+    This is the typedef for the function returned by QGuiApplication::platformFunction when passed setHasBorderInFullScreenIdentifier.
+*/
+
+/*!
+    \fn QByteArray QWindowsWindowFunctions::setHasBorderInFullScreenIdentifier()
+    \since 5.6
+
+    This function returns the bytearray that can be used to query
+    QGuiApplication::platformFunction to retrieve the SetHasBorderInFullScreen function.
+*/
+
+/*!
+    \fn void QWindowsWindowFunctions::setHasBorderInFullScreen(QWindow *window, bool border)
+    \since 5.6
+
+    This is a convenience function that can be used directly instead of resolving the function pointer.
+    \a window and \a border will be relayed to the function retrieved by QGuiApplication. When \a border
+    is true then it will enable the WS_BORDER flag in full screen mode to enable other top level windows
+    inside the application to appear on top when required.
+
+    See also \l [QtDoc] {Fullscreen OpenGL Based Windows}
+*/
