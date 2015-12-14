@@ -921,14 +921,9 @@ QList<QScreen *> QGuiApplication::screens()
 /*!
     \property QGuiApplication::primaryScreen
 
-    \brief the primary (or default) screen of the application, or null if there is none.
+    \brief the primary (or default) screen of the application.
 
     This will be the screen where QWindows are initially shown, unless otherwise specified.
-
-    On some platforms, it may be null when there are actually no screens connected.
-    It is not possible to start a new QGuiApplication while there are no screens.
-    Applications which were running at the time the primary screen was removed
-    will stop rendering graphics until one or more screens are restored.
 
     The primaryScreenChanged signal was introduced in Qt 5.6.
 
