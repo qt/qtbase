@@ -2639,7 +2639,7 @@ QList<QTableWidgetItem*> QTableWidget::items(const QMimeData *data) const
 }
 
 /*!
-  Returns the QModelIndex assocated with the given \a item.
+  Returns the QModelIndex associated with the given \a item.
 */
 
 QModelIndex QTableWidget::indexFromItem(QTableWidgetItem *item) const
@@ -2649,7 +2649,7 @@ QModelIndex QTableWidget::indexFromItem(QTableWidgetItem *item) const
 }
 
 /*!
-  Returns a pointer to the QTableWidgetItem assocated with the given \a index.
+  Returns a pointer to the QTableWidgetItem associated with the given \a index.
 */
 
 QTableWidgetItem *QTableWidget::itemFromIndex(const QModelIndex &index) const

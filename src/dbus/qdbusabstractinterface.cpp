@@ -364,7 +364,7 @@ bool QDBusAbstractInterface::isValid() const
 }
 
 /*!
-    Returns the connection this interface is assocated with.
+    Returns the connection this interface is associated with.
 */
 QDBusConnection QDBusAbstractInterface::connection() const
 {

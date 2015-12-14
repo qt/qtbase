@@ -3340,7 +3340,7 @@ QList<QTreeWidgetItem*> QTreeWidget::items(const QMimeData *data) const
 }
 
 /*!
-    Returns the QModelIndex assocated with the given \a item in the given \a column.
+    Returns the QModelIndex associated with the given \a item in the given \a column.
 
     \note In Qt versions prior to 5.7, this function took a non-\c{const} \a item.
 
@@ -3362,7 +3362,7 @@ QModelIndex QTreeWidget::indexFromItem(QTreeWidgetItem *item, int column) const
 }
 
 /*!
-    Returns a pointer to the QTreeWidgetItem assocated with the given \a index.
+    Returns a pointer to the QTreeWidgetItem associated with the given \a index.
 
     \sa indexFromItem()
 */
