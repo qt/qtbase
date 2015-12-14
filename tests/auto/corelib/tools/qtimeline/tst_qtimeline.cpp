@@ -114,19 +114,17 @@ void tst_QTimeLine::currentTime()
 {
     QTimeLine timeLine(2000);
     timeLine.setUpdateInterval((timeLine.duration()/2) / 33);
-    QSignalSpy spy(&timeLine, &QTimeLine::valueChanged);
-    QVERIFY(spy.isValid());
     timeLine.setFrameRange(10, 20);
     QCOMPARE(timeLine.currentTime(), 0);
     timeLine.start();
-    QTest::qWait(timeLine.duration()/2);
-    QCOMPARE(timeLine.state(), QTimeLine::Running);
-    QVERIFY(timeLine.currentTime() > timeLine.duration()/2 - timeLine.duration()/10);
-    QVERIFY(timeLine.currentTime() < timeLine.duration()/2 + timeLine.duration()/10);
-    QTest::qWait(timeLine.duration()/4 + timeLine.duration());
-    QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
+    QTRY_COMPARE(timeLine.state(), QTimeLine::Running);
+    QTRY_VERIFY(timeLine.currentTime() > timeLine.duration()/2 - timeLine.duration()/4);
+    QVERIFY(timeLine.currentTime() < timeLine.duration()/2 + timeLine.duration()/4);
+    QTRY_COMPARE(timeLine.state(), QTimeLine::NotRunning);
     QCOMPARE(timeLine.currentTime(), timeLine.duration());
 
+    QSignalSpy spy(&timeLine, &QTimeLine::valueChanged);
+    QVERIFY(spy.isValid());
     spy.clear();
     timeLine.setCurrentTime(timeLine.duration()/2);
     timeLine.setCurrentTime(timeLine.duration()/2);
@@ -135,24 +133,22 @@ void tst_QTimeLine::currentTime()
     QCOMPARE(timeLine.currentTime(), timeLine.duration()/2);
     timeLine.resume();
     // Let it update on its own
-    QTest::qWait(timeLine.duration()/4);
     QCOMPARE(timeLine.state(), QTimeLine::Running);
-    QVERIFY(timeLine.currentTime() > timeLine.duration()/2);
+    QTRY_VERIFY(timeLine.currentTime() > timeLine.duration()/2);
     QVERIFY(timeLine.currentTime() < timeLine.duration());
-    QTest::qWait(timeLine.duration()/4 + timeLine.duration());
-    QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
-    QVERIFY(timeLine.currentTime() == timeLine.duration());
+    QTRY_COMPARE(timeLine.state(), QTimeLine::NotRunning);
+    QCOMPARE(timeLine.currentTime(), timeLine.duration());
 
     // Reverse should decrease the currentTime
     timeLine.setCurrentTime(timeLine.duration()/2);
     timeLine.start();
     // Let it update on its own
-    QTest::qWait(timeLine.duration()/4);
-    QCOMPARE(timeLine.state(), QTimeLine::Running);
     int currentTime = timeLine.currentTime();
+    QTRY_VERIFY(timeLine.currentTime() > currentTime);
+    QCOMPARE(timeLine.state(), QTimeLine::Running);
+    currentTime = timeLine.currentTime();
     timeLine.setDirection(QTimeLine::Backward);
-    QTest::qWait(timeLine.duration()/4);
-    QVERIFY(timeLine.currentTime() < currentTime);
+    QTRY_VERIFY(timeLine.currentTime() < currentTime);
     timeLine.stop();
 }
 
