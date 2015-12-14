@@ -175,7 +175,7 @@ bool QOpenGLTexturePrivate::create()
 
 void QOpenGLTexturePrivate::destroy()
 {
-    if (!context) {
+    if (!textureId) {
         // not created or already destroyed
         return;
     }
