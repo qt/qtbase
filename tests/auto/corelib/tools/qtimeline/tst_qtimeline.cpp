@@ -174,11 +174,9 @@ void tst_QTimeLine::duration()
     QCOMPARE(timeLine.duration(), 1000);
 
     timeLine.start();
-    QTest::qWait(999);
-    QCOMPARE(timeLine.state(), QTimeLine::Running);
-    QVERIFY(timeLine.currentTime() > 900);
-    QTest::qWait(100);
-    QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
+    QTRY_COMPARE(timeLine.state(), QTimeLine::Running);
+    QTRY_VERIFY(timeLine.currentTime() > 0);
+    QTRY_COMPARE(timeLine.state(), QTimeLine::NotRunning);
     QCOMPARE(timeLine.currentTime(), 1000);
     // The duration shouldn't change
     QCOMPARE(timeLine.duration(), 1000);
@@ -187,7 +185,7 @@ void tst_QTimeLine::duration()
 void tst_QTimeLine::frameRate()
 {
     QTimeLine timeLine;
-    timeLine.setFrameRange(10, 20);
+    timeLine.setFrameRange(100, 2000);
     QCOMPARE(timeLine.updateInterval(), 1000 / 25);
     timeLine.setUpdateInterval(1000 / 60);
     QCOMPARE(timeLine.updateInterval(), 1000 / 60);
