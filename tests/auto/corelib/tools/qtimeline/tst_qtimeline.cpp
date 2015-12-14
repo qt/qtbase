@@ -198,31 +198,27 @@ void tst_QTimeLine::frameRate()
 
 void tst_QTimeLine::value()
 {
-    QTimeLine timeLine(2000);
-    QVERIFY(timeLine.currentValue() == 0.0);
+    QTimeLine timeLine(5000);
+    QCOMPARE(timeLine.currentValue(), 0.0);
 
     // Default speed
     QSignalSpy spy(&timeLine, &QTimeLine::valueChanged);
     QVERIFY(spy.isValid());
     timeLine.start();
-    QTest::qWait(timeLine.duration()/3);
-    QVERIFY(timeLine.currentValue() > 0);
-    QTest::qWait(timeLine.duration());
-    QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
-    qreal currentValue = timeLine.currentValue();
-    QVERIFY(currentValue == 1);
+    QTRY_VERIFY(timeLine.currentValue() > 0);
+    QTRY_COMPARE(timeLine.state(), QTimeLine::NotRunning);
+    QCOMPARE(timeLine.currentValue(), 1.0);
     QVERIFY(spy.count() > 0);
 
     // Reverse should decrease the value
     timeLine.setCurrentTime(100);
     timeLine.start();
     // Let it update on its own
-    QTest::qWait(500);
     QCOMPARE(timeLine.state(), QTimeLine::Running);
+    QTRY_VERIFY(timeLine.currentValue());
     qreal value = timeLine.currentValue();
     timeLine.setDirection(QTimeLine::Backward);
-    QTest::qWait(1000);
-    QVERIFY(timeLine.currentValue() < value);
+    QTRY_VERIFY(timeLine.currentValue() < value);
     timeLine.stop();
 }
 
