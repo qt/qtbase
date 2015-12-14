@@ -236,22 +236,19 @@ void tst_QTimeLine::currentFrame()
     QSignalSpy spy(&timeLine, &QTimeLine::frameChanged);
     QVERIFY(spy.isValid());
     timeLine.start();
-    QTest::qWait(timeLine.duration()/3);
-    QVERIFY(timeLine.currentFrame() > 10);
-    QTest::qWait(timeLine.duration());
-    QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
+    QTRY_VERIFY(timeLine.currentFrame() > 10);
+    QTRY_COMPARE(timeLine.state(), QTimeLine::NotRunning);
     QCOMPARE(timeLine.currentFrame(), 20);
 
     // Reverse should decrease the value
     timeLine.setCurrentTime(timeLine.duration()/2);
     timeLine.start();
     // Let it update on its own
-    QTest::qWait(timeLine.duration()/4);
     QCOMPARE(timeLine.state(), QTimeLine::Running);
+    QTRY_VERIFY(timeLine.currentTime() > timeLine.duration()/2); // wait for continuation
     int value = timeLine.currentFrame();
     timeLine.setDirection(QTimeLine::Backward);
-    QTest::qWait(timeLine.duration()/2);
-    QVERIFY(timeLine.currentFrame() < value);
+    QTRY_VERIFY(timeLine.currentFrame() < value);
     timeLine.stop();
 }
 
