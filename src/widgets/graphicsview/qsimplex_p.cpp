@@ -153,9 +153,11 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> &newConstraints)
     // "variables" is a list that provides a stable, indexed list of all variables
     // used in this problem.
     QSet<QSimplexVariable *> variablesSet;
-    for (int i = 0; i < constraints.size(); ++i)
-        variablesSet += \
-            QSet<QSimplexVariable *>::fromList(constraints[i]->variables.keys());
+    for (int i = 0; i < constraints.size(); ++i) {
+        const auto &v = constraints.at(i)->variables;
+        for (auto it = v.cbegin(), end = v.cend(); it != end; ++it)
+            variablesSet.insert(it.key());
+    }
     variables = variablesSet.toList();
 
     // Set Variables reverse mapping

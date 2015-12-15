@@ -2058,9 +2058,8 @@ QList<AnchorData *> getVariables(const QList<QSimplexConstraint *> &constraints)
     QSet<AnchorData *> variableSet;
     for (int i = 0; i < constraints.count(); ++i) {
         const QSimplexConstraint *c = constraints.at(i);
-        foreach (QSimplexVariable *var, c->variables.keys()) {
-            variableSet += static_cast<AnchorData *>(var);
-        }
+        for (auto it = c->variables.cbegin(), end = c->variables.cend(); it != end; ++it)
+            variableSet.insert(static_cast<AnchorData *>(it.key()));
     }
     return variableSet.toList();
 }
@@ -2546,7 +2545,8 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
             // remaining constraints.
             if (match) {
                 trunkConstraints += c;
-                trunkVariables += QSet<QSimplexVariable *>::fromList(c->variables.keys());
+                for (auto jt = c->variables.cbegin(), end = c->variables.cend(); jt != end; ++jt)
+                    trunkVariables.insert(jt.key());
                 it = remainingConstraints.erase(it);
                 dirty = true;
             } else {
