@@ -121,7 +121,7 @@ inline QStringList QUrl::allQueryItemValues(const QString &key) const
 inline void QUrl::removeQueryItem(const QString &key)
 { QUrlQuery q(*this); q.removeQueryItem(key); setQuery(q); }
 inline void QUrl::removeAllQueryItems(const QString &key)
-{ QUrlQuery q(*this); q.removeAllQueryItems(key); }
+{ QUrlQuery q(*this); q.removeAllQueryItems(key); setQuery(q); }
 
 inline void QUrl::addEncodedQueryItem(const QByteArray &key, const QByteArray &value)
 { QUrlQuery q(*this); q.addQueryItem(fromEncodedComponent_helper(key), fromEncodedComponent_helper(value)); setQuery(q); }
@@ -132,7 +132,7 @@ inline QByteArray QUrl::encodedQueryItemValue(const QByteArray &key) const
 inline void QUrl::removeEncodedQueryItem(const QByteArray &key)
 { QUrlQuery q(*this); q.removeQueryItem(fromEncodedComponent_helper(key)); setQuery(q); }
 inline void QUrl::removeAllEncodedQueryItems(const QByteArray &key)
-{ QUrlQuery q(*this); q.removeAllQueryItems(fromEncodedComponent_helper(key)); }
+{ QUrlQuery q(*this); q.removeAllQueryItems(fromEncodedComponent_helper(key)); setQuery(q); }
 
 inline void QUrl::setEncodedQueryItems(const QList<QPair<QByteArray, QByteArray> > &qry)
 {
