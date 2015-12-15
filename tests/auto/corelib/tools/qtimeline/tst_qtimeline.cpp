@@ -583,16 +583,15 @@ void tst_QTimeLine::resume()
     {
         QCOMPARE(timeLine.currentTime(), 0);
         timeLine.start();
-        QTest::qWait(250);
+        QTRY_VERIFY(timeLine.currentTime() > 0);
         timeLine.stop();
         int oldCurrentTime = timeLine.currentTime();
         QVERIFY(oldCurrentTime > 0);
         QVERIFY(oldCurrentTime < 1000);
         timeLine.resume();
-        QTest::qWait(250);
+        QTRY_VERIFY(timeLine.currentTime() > oldCurrentTime);
         timeLine.stop();
         int currentTime = timeLine.currentTime();
-        QVERIFY(currentTime > oldCurrentTime);
         QVERIFY(currentTime < 1000);
     }
     timeLine.setDirection(QTimeLine::Backward);
@@ -600,13 +599,13 @@ void tst_QTimeLine::resume()
         timeLine.setCurrentTime(1000);
         QCOMPARE(timeLine.currentTime(), 1000);
         timeLine.start();
-        QTest::qWait(250);
+        QTRY_VERIFY(timeLine.currentTime() < 1000);
         timeLine.stop();
         int oldCurrentTime = timeLine.currentTime();
         QVERIFY(oldCurrentTime < 1000);
         QVERIFY(oldCurrentTime > 0);
         timeLine.resume();
-        QTest::qWait(250);
+        QTRY_VERIFY(timeLine.currentTime() < oldCurrentTime);
         timeLine.stop();
         int currentTime = timeLine.currentTime();
         QVERIFY(currentTime < oldCurrentTime);
