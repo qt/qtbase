@@ -31,6 +31,8 @@
 **
 ****************************************************************************/
 
+#include "qgraphicsanchorlayout_p.h"
+
 #include <QtWidgets/qwidget.h>
 #include <QtWidgets/qapplication.h>
 #include <QtCore/qlinkedlist.h>
@@ -40,7 +42,6 @@
 #include <QtCore/qfile.h>
 #endif
 
-#include "qgraphicsanchorlayout_p.h"
 
 #ifndef QT_NO_GRAPHICSVIEW
 QT_BEGIN_NAMESPACE
