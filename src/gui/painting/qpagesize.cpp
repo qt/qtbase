@@ -1855,17 +1855,17 @@ QSize QPageSize::sizePixels(PageSizeId pageSizeId, int resolution)
 QDebug operator<<(QDebug dbg, const QPageSize &pageSize)
 {
     QDebugStateSaver saver(dbg);
+    dbg.nospace();
+    dbg.noquote();
+    dbg << "QPageSize(";
     if (pageSize.isValid()) {
-        QString output = QStringLiteral("QPageSize(\"%1\", \"%2\", %3x%4pt, %5)");
-        output = output.arg(pageSize.name())
-                       .arg(pageSize.key())
-                       .arg(pageSize.sizePoints().width())
-                       .arg(pageSize.sizePoints().height())
-                       .arg(pageSize.id());
-        dbg.nospace() << output;
+        dbg << '"' << pageSize.name() << "\", key=\"" << pageSize.key()
+            << "\", " << pageSize.sizePoints().width() << 'x'
+            << pageSize.sizePoints().height() << "pt, id=" << pageSize.id();
     } else {
         dbg.nospace() << "QPageSize()";
     }
+    dbg << ')';
     return dbg;
 }
 #endif
