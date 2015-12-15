@@ -483,9 +483,8 @@ void tst_QTimeLine::finished()
     QSignalSpy spy(&timeLine, &QTimeLine::finished);
     QVERIFY(spy.isValid());
     timeLine.start();
-    QTest::qWait(timeLine.duration()*2);
+    QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
-    QCOMPARE(spy.count(), 1);
 
     spy.clear();
     timeLine.start();
