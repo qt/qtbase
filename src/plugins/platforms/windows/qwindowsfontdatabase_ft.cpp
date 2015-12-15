@@ -724,7 +724,7 @@ QStringList QWindowsFontDatabaseFT::fallbacksForFamily(const QString &family, QF
 
     result.append(QWindowsFontDatabase::extraTryFontsForFamily(family));
 
-    result.append(QPlatformFontDatabase::fallbacksForFamily(family, style, styleHint, script));
+    result.append(QBasicFontDatabase::fallbacksForFamily(family, style, styleHint, script));
 
     qCDebug(lcQpaFonts) << __FUNCTION__ << family << style << styleHint
         << script << result;
