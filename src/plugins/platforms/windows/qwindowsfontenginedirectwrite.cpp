@@ -485,9 +485,9 @@ qreal QWindowsFontEngineDirectWrite::maxCharWidth() const
     return 0;
 }
 
-QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition)
+QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t)
 {
-    QImage im = alphaRGBMapForGlyph(glyph, subPixelPosition, QTransform());
+    QImage im = alphaRGBMapForGlyph(glyph, subPixelPosition, t);
 
     QImage alphaMap(im.width(), im.height(), QImage::Format_Alpha8);
 
@@ -502,6 +502,11 @@ QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed sub
     }
 
     return alphaMap;
+}
+
+QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition)
+{
+    return alphaMapForGlyph(glyph, subPixelPosition, QTransform());
 }
 
 bool QWindowsFontEngineDirectWrite::supportsSubPixelPositions() const
