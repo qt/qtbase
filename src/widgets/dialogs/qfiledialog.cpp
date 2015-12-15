@@ -2761,8 +2761,10 @@ bool QFileDialogPrivate::restoreWidgetState(QStringList &history, int splitterPo
     }
 
     qFileDialogUi->sidebar->setUrls(sidebarUrls);
-    while (history.count() > 5)
-        history.pop_front();
+
+    static const int MaxHistorySize = 5;
+    if (history.size() > MaxHistorySize)
+        history.erase(history.begin(), history.end() - MaxHistorySize);
     q->setHistory(history);
 
     QHeaderView *headerView = qFileDialogUi->treeView->header();
