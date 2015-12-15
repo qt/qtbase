@@ -1816,7 +1816,8 @@ void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
             stream << flags;
 
             if (w->isWindow()) {
-                stream << w->x() << w->y() << w->width() << w->height();
+                const QRect geometry = w->geometry();
+                stream << geometry.x() << geometry.y() << geometry.width() << geometry.height();
             } else {
                 stream << item.pos << item.size << pick(o, item.minimumSize())
                         << pick(o, item.maximumSize());

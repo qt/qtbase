@@ -761,6 +761,9 @@ void tst_QDockWidget::restoreDockWidget()
 {
     QByteArray geometry;
     QByteArray state;
+
+    const bool isXcb = !QGuiApplication::platformName().compare("xcb", Qt::CaseInsensitive);
+
     const QString name = QStringLiteral("main");
     const QRect availableGeometry = QApplication::desktop()->availableGeometry();
     const QSize size = availableGeometry.size() / 5;
@@ -785,11 +788,22 @@ void tst_QDockWidget::restoreDockWidget()
         QVERIFY(dock->isFloating());
         state = saveWindow.saveState();
         geometry = saveWindow.saveGeometry();
+
+        // QTBUG-49832: Delete and recreate the dock; it should be restored to the same position.
+        delete dock;
+        dock = createTestDock(saveWindow);
+        QVERIFY(saveWindow.restoreDockWidget(dock));
+        dock->show();
+        QVERIFY(QTest::qWaitForWindowExposed(dock));
+        QTRY_VERIFY(dock->isFloating());
+        if (!isXcb) // Avoid Window manager positioning issues
+            QTRY_COMPARE(dock->pos(), dockPos);
     }
 
     QVERIFY(!geometry.isEmpty());
     QVERIFY(!state.isEmpty());
 
+    // QTBUG-45780: Completely recreate the dock widget from the saved state.
     {
         QMainWindow restoreWindow;
         restoreWindow.setObjectName(name);
@@ -804,7 +818,7 @@ void tst_QDockWidget::restoreDockWidget()
         restoreWindow.show();
         QVERIFY(QTest::qWaitForWindowExposed(&restoreWindow));
         QTRY_VERIFY(dock->isFloating());
-        if (!QGuiApplication::platformName().compare("xcb", Qt::CaseInsensitive))
+        if (isXcb)
             QSKIP("Skip due to Window manager positioning issues", Abort);
         QTRY_COMPARE(dock->pos(), dockPos);
     }
