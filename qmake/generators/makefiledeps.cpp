@@ -898,7 +898,7 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
 
     debug_msg(2, "findMocs: %s", file->file.local().toLatin1().constData());
     int line_count = 1;
-    bool ignore_qobject = false, ignore_qgadget = false;
+    bool ignore[2] = { false, false }; // [0] for Q_OBJECT, [1] for Q_GADGET
  /* qmake ignore Q_GADGET */
  /* qmake ignore Q_OBJECT */
     for(int x = 0; x < buffer_len; x++) {
@@ -926,13 +926,13 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
                                 debug_msg(2, "Mocgen: %s:%d Found \"qmake ignore Q_OBJECT\"",
                                           file->file.real().toLatin1().constData(), line_count);
                                 x += 20;
-                                ignore_qobject = true;
+                                ignore[0] = true;
                             } else if(buffer_len >= (x + 20) &&
                                       !strncmp(buffer + x + 1, "make ignore Q_GADGET", 20)) {
                                 debug_msg(2, "Mocgen: %s:%d Found \"qmake ignore Q_GADGET\"",
                                           file->file.real().toLatin1().constData(), line_count);
                                 x += 20;
-                                ignore_qgadget = true;
+                                ignore[1] = true;
                             }
                         } else if (buffer[x] == '*') {
                             extralines = 0;
@@ -962,10 +962,8 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
             if (buffer[y] == 'Q') {
                 static const char interesting[][9] = { "Q_OBJECT", "Q_GADGET" };
                 for (int interest = 0; interest < 2; ++interest) {
-                if(interest == 0 && ignore_qobject)
-                    continue;
-                else if(interest == 1 && ignore_qgadget)
-                    continue;
+                    if (ignore[interest])
+                        continue;
 
                     int matchlen = 0, extralines = 0;
                     if (matchWhileUnsplitting(buffer, buffer_len, y,
