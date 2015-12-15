@@ -42,6 +42,7 @@
 #include <QtCore/qfile.h>
 #endif
 
+#include <numeric>
 
 #ifndef QT_NO_GRAPHICSVIEW
 QT_BEGIN_NAMESPACE
@@ -2180,10 +2181,7 @@ static void shiftConstraints(const QList<QSimplexConstraint *> &constraints, qre
 {
     for (int i = 0; i < constraints.count(); ++i) {
         QSimplexConstraint *c = constraints.at(i);
-        qreal multiplier = 0;
-        foreach (qreal v, c->variables) {
-            multiplier += v;
-        }
+        const qreal multiplier = std::accumulate(c->variables.cbegin(), c->variables.cend(), qreal(0));
         c->constant += multiplier * amount;
     }
 }
