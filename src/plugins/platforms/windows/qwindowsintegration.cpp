@@ -596,4 +596,9 @@ QPlatformServices *QWindowsIntegration::services() const
     return &d->m_services;
 }
 
+void QWindowsIntegration::beep() const
+{
+    MessageBeep(MB_OK);  // For QApplication
+}
+
 QT_END_NAMESPACE

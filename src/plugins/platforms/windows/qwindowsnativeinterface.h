@@ -75,8 +75,6 @@ public:
 
     Q_INVOKABLE QString registerWindowClass(const QString &classNameIn, void *eventProc) const;
 
-    Q_INVOKABLE void beep();
-
     Q_INVOKABLE void registerWindowsMime(void *mimeIn);
     Q_INVOKABLE void unregisterWindowsMime(void *mime);
     Q_INVOKABLE int registerMimeType(const QString &mimeType);

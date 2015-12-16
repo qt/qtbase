@@ -557,6 +557,17 @@ void QPlatformIntegration::sync()
 {
 }
 
+/*!
+   \since 5.7
+
+    Should sound a bell, using the default volume and sound.
+
+    \sa QApplication::beep()
+*/
+void QPlatformIntegration::beep() const
+{
+}
+
 #ifndef QT_NO_OPENGL
 /*!
   Platform integration function for querying the OpenGL implementation type.

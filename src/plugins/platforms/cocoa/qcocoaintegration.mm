@@ -614,4 +614,9 @@ void QCocoaIntegration::setApplicationIcon(const QIcon &icon) const
     [image release];
 }
 
+void QCocoaIntegration::beep() const
+{
+    NSBeep();
+}
+
 QT_END_NAMESPACE

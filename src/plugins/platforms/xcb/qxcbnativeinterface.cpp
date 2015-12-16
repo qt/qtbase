@@ -92,18 +92,6 @@ QXcbNativeInterface::QXcbNativeInterface() :
 {
 }
 
-void QXcbNativeInterface::beep() // For QApplication::beep()
-{
-    QScreen *priScreen = QGuiApplication::primaryScreen();
-    if (!priScreen)
-        return;
-    QPlatformScreen *screen = priScreen->handle();
-    if (!screen)
-        return;
-    xcb_connection_t *connection = static_cast<QXcbScreen *>(screen)->xcb_connection();
-    xcb_bell(connection, 0);
-}
-
 static inline QXcbSystemTrayTracker *systemTrayTracker(const QScreen *s)
 {
     if (!s)

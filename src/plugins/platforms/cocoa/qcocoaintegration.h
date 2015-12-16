@@ -148,6 +148,9 @@ public:
     QList<QCocoaWindow *> *popupWindowStack();
 
     void setApplicationIcon(const QIcon &icon) const Q_DECL_OVERRIDE;
+
+    void beep() const Q_DECL_OVERRIDE;
+
 private:
     static QCocoaIntegration *mInstance;
     Options mOptions;

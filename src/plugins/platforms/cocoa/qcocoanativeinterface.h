@@ -60,8 +60,6 @@ public:
 
     NativeResourceForIntegrationFunction nativeResourceFunctionForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
 
-    Q_INVOKABLE void beep();
-
 #ifndef QT_NO_OPENGL
     static void *cglContextForContext(QOpenGLContext *context);
     static void *nsOpenGLContextForContext(QOpenGLContext* context);

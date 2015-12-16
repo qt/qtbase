@@ -4116,7 +4116,7 @@ bool QApplication::isEffectEnabled(Qt::UIEffect effect)
 */
 void QApplication::beep()
 {
-    QMetaObject::invokeMethod(QGuiApplication::platformNativeInterface(), "beep");
+    QGuiApplicationPrivate::platformIntegration()->beep();
 }
 
 /*!

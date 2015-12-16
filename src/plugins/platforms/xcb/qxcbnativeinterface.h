@@ -108,7 +108,6 @@ public:
     static void setAppTime(QScreen *screen, xcb_timestamp_t time);
     static void setAppUserTime(QScreen *screen, xcb_timestamp_t time);
 
-    Q_INVOKABLE void beep();
     Q_INVOKABLE bool systemTrayAvailable(const QScreen *screen) const;
     Q_INVOKABLE void setParentRelativeBackPixmap(QWindow *window);
     Q_INVOKABLE bool systrayVisualHasAlphaChannel();

@@ -96,6 +96,8 @@ public:
 
     unsigned options() const;
 
+    void beep() const Q_DECL_OVERRIDE;
+
 #if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
     QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const Q_DECL_OVERRIDE;
 #endif

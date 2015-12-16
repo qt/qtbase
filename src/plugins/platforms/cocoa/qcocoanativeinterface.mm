@@ -139,11 +139,6 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInter
     return 0;
 }
 
-void QCocoaNativeInterface::beep()
-{
-    NSBeep();
-}
-
 QPlatformPrinterSupport *QCocoaNativeInterface::createPlatformPrinterSupport()
 {
 #if !defined(QT_NO_WIDGETS) && !defined(QT_NO_PRINTER)

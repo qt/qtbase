@@ -104,6 +104,8 @@ public:
 
     void sync() Q_DECL_OVERRIDE;
 
+    void beep() const Q_DECL_OVERRIDE;
+
     static QXcbIntegration *instance() { return m_instance; }
 
 private:

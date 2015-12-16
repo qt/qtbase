@@ -6,7 +6,7 @@ PLUGIN_CLASS_NAME = QIOSIntegrationPlugin
 load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private
-LIBS += -framework Foundation -framework UIKit -framework QuartzCore -framework AssetsLibrary
+LIBS += -framework Foundation -framework UIKit -framework QuartzCore -framework AssetsLibrary -framework AudioToolbox
 
 OBJECTIVE_SOURCES = \
     plugin.mm \

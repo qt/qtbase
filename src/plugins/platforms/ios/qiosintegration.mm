@@ -53,6 +53,8 @@
 #include <QtPlatformSupport/private/qmacmime_p.h>
 #include <QDir>
 
+#import <AudioToolbox/AudioServices.h>
+
 #include <QtDebug>
 
 QT_BEGIN_NAMESPACE
@@ -264,6 +266,13 @@ QPlatformAccessibility *QIOSIntegration::accessibility() const
 QPlatformNativeInterface *QIOSIntegration::nativeInterface() const
 {
     return const_cast<QIOSIntegration *>(this);
+}
+
+void QIOSIntegration::beep() const
+{
+#if !TARGET_IPHONE_SIMULATOR
+    AudioServicesPlayAlertSound(kSystemSoundID_Vibrate);
+#endif
 }
 
 // ---------------------------------------------------------

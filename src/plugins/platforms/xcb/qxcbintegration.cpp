@@ -454,4 +454,17 @@ void QXcbIntegration::sync()
     }
 }
 
+// For QApplication::beep()
+void QXcbIntegration::beep() const
+{
+    QScreen *priScreen = QGuiApplication::primaryScreen();
+    if (!priScreen)
+        return;
+    QPlatformScreen *screen = priScreen->handle();
+    if (!screen)
+        return;
+    xcb_connection_t *connection = static_cast<QXcbScreen *>(screen)->xcb_connection();
+    xcb_bell(connection, 0);
+}
+
 QT_END_NAMESPACE

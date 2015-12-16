@@ -176,6 +176,8 @@ public:
 
     void removeScreen(QScreen *screen);
 
+    virtual void beep() const;
+
 protected:
     void screenAdded(QPlatformScreen *screen, bool isPrimary = false);
     void destroyScreen(QPlatformScreen *screen);

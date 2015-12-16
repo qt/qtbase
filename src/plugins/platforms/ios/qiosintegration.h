@@ -82,6 +82,8 @@ public:
     void addScreen(QPlatformScreen *screen) { screenAdded(screen); }
     void destroyScreen(QPlatformScreen *screen) { QPlatformIntegration::destroyScreen(screen); }
 
+    void beep() const Q_DECL_OVERRIDE;
+
     static QIOSIntegration *instance();
 
     // -- QPlatformNativeInterface --
