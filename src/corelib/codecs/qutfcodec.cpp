@@ -364,6 +364,7 @@ QString QUtf8::convertToUnicode(const char *chars, int len, QTextCodec::Converte
     // main body, stateless decoding
     res = 0;
     const uchar *nextAscii = src;
+    const uchar *start = src;
     while (res >= 0 && src < end) {
         if (src >= nextAscii && simdDecodeAscii(dst, nextAscii, src, end))
             break;
@@ -372,9 +373,11 @@ QString QUtf8::convertToUnicode(const char *chars, int len, QTextCodec::Converte
         res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(ch, dst, src, end);
         if (!headerdone && res >= 0) {
             headerdone = true;
-            // eat the UTF-8 BOM
-            if (dst[-1] == 0xfeff)
-                --dst;
+            if (src == start + 3) { // 3 == sizeof(utf8-bom)
+                // eat the UTF-8 BOM (it can only appear at the beginning of the string).
+                if (dst[-1] == 0xfeff)
+                    --dst;
+            }
         }
         if (res == QUtf8BaseTraits::Error) {
             res = 0;
