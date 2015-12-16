@@ -280,12 +280,18 @@ QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, dr
         qCDebug(qLcEglfsKmsDebug) << "Selected mode" << selected_mode << ":" << width << "x" << height
                                   << '@' << refresh << "hz for output" << connectorName;
     }
-
+    static const int width = qEnvironmentVariableIntValue("QT_QPA_EGLFS_PHYSICAL_WIDTH");
+    static const int height = qEnvironmentVariableIntValue("QT_QPA_EGLFS_PHYSICAL_HEIGHT");
+    QSizeF size(width, height);
+    if (size.isEmpty()) {
+        size.setWidth(connector->mmWidth);
+        size.setHeight(connector->mmHeight);
+    }
     QEglFSKmsOutput output = {
         QString::fromUtf8(connectorName),
         connector->connector_id,
         crtc_id,
-        QSizeF(connector->mmWidth, connector->mmHeight),
+        size,
         selected_mode,
         false,
         drmModeGetCrtc(m_dri_fd, crtc_id),
