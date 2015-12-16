@@ -161,6 +161,7 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     dictionary[ "QML_DEBUG" ]       = "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "no";
     dictionary[ "DIRECTWRITE" ]     = "auto";
+    dictionary[ "DIRECTWRITE2" ]    = "auto";
     dictionary[ "DIRECT2D" ]        = "no";
     dictionary[ "NIS" ]             = "no";
     dictionary[ "NEON" ]            = "auto";
@@ -2235,6 +2236,8 @@ bool Configure::checkAvailability(const QString &part)
         available = findFile("mfapi.h") && findFile("mf.lib");
     } else if (part == "DIRECTWRITE") {
         available = tryCompileProject("win/directwrite");
+    } else if (part == "DIRECTWRITE2") {
+        available = tryCompileProject("win/directwrite2");
     } else if (part == "DIRECT2D") {
         available = tryCompileProject("qpa/direct2d");
     } else if (part == "ICONV") {
@@ -2487,6 +2490,9 @@ void Configure::autoDetection()
 
     if (dictionary["DIRECTWRITE"] == "auto")
         dictionary["DIRECTWRITE"] = checkAvailability("DIRECTWRITE") ? "yes" : "no";
+
+    if (dictionary["DIRECTWRITE2"] == "auto")
+        dictionary["DIRECTWRITE2"] = checkAvailability("DIRECTWRITE2") ? "yes" : "no";
 
     // Mark all unknown "auto" to the default value..
     for (QMap<QString,QString>::iterator i = dictionary.begin(); i != dictionary.end(); ++i) {
@@ -2902,6 +2908,9 @@ void Configure::generateOutputVars()
 
     if (dictionary["DIRECTWRITE"] == "yes")
         qtConfig += "directwrite";
+
+    if (dictionary["DIRECTWRITE2"] == "yes")
+        qtConfig += "directwrite2";
 
     if (dictionary["DIRECT2D"] == "yes")
         qtConfig += "direct2d";
@@ -3428,6 +3437,9 @@ void Configure::generateQConfigPri()
         if (dictionary["DIRECTWRITE"] == "yes")
             configStream << " directwrite";
 
+        if (dictionary["DIRECTWRITE2"] == "yes")
+            configStream << " directwrite2";
+
         if (dictionary["ANDROID_STYLE_ASSETS"] == "yes")
             configStream << " android-style-assets";
 
@@ -3790,6 +3802,7 @@ void Configure::displayConfig()
     sout << "Qt GUI module support......." << dictionary[ "GUI" ] << endl;
     sout << "QML debugging..............." << dictionary[ "QML_DEBUG" ] << endl;
     sout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl;
+    sout << "DirectWrite 2 support......." << dictionary[ "DIRECTWRITE2" ] << endl;
     sout << "Use system proxies.........." << dictionary[ "SYSTEM_PROXIES" ] << endl;
     sout << endl;
 

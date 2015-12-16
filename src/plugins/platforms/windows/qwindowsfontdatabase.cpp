@@ -62,7 +62,11 @@
 #endif
 
 #if !defined(QT_NO_DIRECTWRITE)
-#  include <dwrite.h>
+#  if defined(QT_USE_DIRECTWRITE2)
+#    include <dwrite_2.h>
+#  else
+#    include <dwrite.h>
+#  endif
 #  include <d2d1.h>
 #endif
 
@@ -86,17 +90,27 @@ static inline DWriteCreateFactoryType resolveDWriteCreateFactory()
     return reinterpret_cast<DWriteCreateFactoryType>(result);
 }
 
-static IDWriteFactory *createDirectWriteFactory()
+static void createDirectWriteFactory(IDWriteFactory **factory)
 {
+    *factory = Q_NULLPTR;
+
     static const DWriteCreateFactoryType dWriteCreateFactory = resolveDWriteCreateFactory();
     if (!dWriteCreateFactory)
-        return Q_NULLPTR;
-    IUnknown *result = Q_NULLPTR;
-    if (FAILED(dWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &result))) {
-        qErrnoWarning("DWriteCreateFactory failed");
-        return Q_NULLPTR;
+        return;
+
+    IUnknown *result = NULL;
+#if defined(QT_USE_DIRECTWRITE2)
+    dWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory2), &result);
+#endif
+
+    if (result == NULL) {
+        if (FAILED(dWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &result))) {
+            qErrnoWarning("DWriteCreateFactory failed");
+            return;
+        }
     }
-    return reinterpret_cast<IDWriteFactory *>(result);
+
+    *factory = static_cast<IDWriteFactory *>(result);
 }
 #endif // !QT_NO_DIRECTWRITE
 
@@ -506,8 +520,10 @@ namespace {
     class CustomFontFileLoader
     {
     public:
-        CustomFontFileLoader() : m_directWriteFactory(createDirectWriteFactory()), m_directWriteFontFileLoader(0)
+        CustomFontFileLoader() : m_directWriteFontFileLoader(Q_NULLPTR)
         {
+            createDirectWriteFactory(&m_directWriteFactory);
+
             if (m_directWriteFactory) {
                 m_directWriteFontFileLoader = new DirectWriteFontFileLoader();
                 m_directWriteFactory->RegisterFontFileLoader(m_directWriteFontFileLoader);
@@ -606,7 +622,7 @@ qreal QWindowsFontDatabase::fontSmoothingGamma()
 static inline bool initDirectWrite(QWindowsFontEngineData *d)
 {
     if (!d->directWriteFactory) {
-        d->directWriteFactory = createDirectWriteFactory();
+        createDirectWriteFactory(&d->directWriteFactory);
         if (!d->directWriteFactory)
             return false;
     }
@@ -1757,10 +1773,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
     }
 
 #if !defined(QT_NO_DIRECTWRITE)
-    bool useDirectWrite = (request.hintingPreference == QFont::PreferNoHinting)
-                       || (request.hintingPreference == QFont::PreferVerticalHinting)
-                       || (QHighDpiScaling::isActive() && request.hintingPreference == QFont::PreferDefaultHinting);
-    if (useDirectWrite && initDirectWrite(data.data())) {
+    if (initDirectWrite(data.data())) {
         const QString fam = QString::fromWCharArray(lf.lfFaceName);
         const QString nameSubstitute = QWindowsFontEngineDirectWrite::fontNameSubstitute(fam);
         if (nameSubstitute != fam) {
@@ -1782,18 +1795,38 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
                 qWarning().noquote().nospace() << "DirectWrite: CreateFontFaceFromHDC() failed ("
                     << errorString << ") for " << request << ' ' << lf << " dpi=" << dpi;
             } else {
-                QWindowsFontEngineDirectWrite *fedw = new QWindowsFontEngineDirectWrite(directWriteFontFace,
-                                                                                        request.pixelSize,
-                                                                                        data);
+                bool isColorFont = false;
+#if defined(QT_USE_DIRECTWRITE2)
+                IDWriteFontFace2 *directWriteFontFace2 = Q_NULLPTR;
+                if (SUCCEEDED(directWriteFontFace->QueryInterface(__uuidof(IDWriteFontFace2),
+                                                                  reinterpret_cast<void **>(&directWriteFontFace2)))) {
+                    if (directWriteFontFace2->IsColorFont())
+                        isColorFont = true;
+                }
+#endif
 
-                wchar_t n[64];
-                GetTextFace(data->hdc, 64, n);
+                bool useDirectWrite = (request.hintingPreference == QFont::PreferNoHinting)
+                                   || (request.hintingPreference == QFont::PreferVerticalHinting)
+                                   || (QHighDpiScaling::isActive() && request.hintingPreference == QFont::PreferDefaultHinting)
+                                   || isColorFont;
+                if (useDirectWrite) {
+                    QWindowsFontEngineDirectWrite *fedw = new QWindowsFontEngineDirectWrite(directWriteFontFace,
+                                                                                            request.pixelSize,
+                                                                                            data);
 
-                QFontDef fontDef = request;
-                fontDef.family = QString::fromWCharArray(n);
+                    wchar_t n[64];
+                    GetTextFace(data->hdc, 64, n);
 
-                fedw->initFontInfo(fontDef, dpi);
-                fe = fedw;
+                    QFontDef fontDef = request;
+                    fontDef.family = QString::fromWCharArray(n);
+
+                    if (isColorFont)
+                        fedw->glyphFormat = QFontEngine::Format_ARGB;
+                    fedw->initFontInfo(fontDef, dpi);
+                    fe = fedw;
+                } else {
+                    directWriteFontFace->Release();
+                }
             }
 
             SelectObject(data->hdc, oldFont);

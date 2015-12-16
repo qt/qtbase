@@ -52,6 +52,7 @@ struct IDWriteFontFace;
 struct IDWriteFactory;
 struct IDWriteBitmapRenderTarget;
 struct IDWriteGdiInterop;
+struct IDWriteGlyphRunAnalysis;
 
 QT_BEGIN_NAMESPACE
 
@@ -96,6 +97,7 @@ public:
     QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition) Q_DECL_OVERRIDE;
     QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t) Q_DECL_OVERRIDE;
     QImage alphaRGBMapForGlyph(glyph_t t, QFixed subPixelPosition, const QTransform &xform) Q_DECL_OVERRIDE;
+    QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) Q_DECL_OVERRIDE;
 
     QFontEngine *cloneWithSize(qreal pixelSize) const Q_DECL_OVERRIDE;
     Qt::HANDLE handle() const Q_DECL_OVERRIDE;
@@ -109,6 +111,7 @@ public:
 private:
     QImage imageForGlyph(glyph_t t, QFixed subPixelPosition, int margin, const QTransform &xform);
     void collectMetrics();
+    void renderGlyphRun(QImage *destination, float r, float g, float b, float a, IDWriteGlyphRunAnalysis *glyphAnalysis, const QRect &boundingRect);
 
     const QSharedPointer<QWindowsFontEngineData> m_fontEngineData;
 

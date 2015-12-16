@@ -49,7 +49,12 @@
 #include <private/qstringiterator_p.h>
 #include <QtCore/private/qsystemlibrary_p.h>
 
-#include <dwrite.h>
+#if defined(QT_USE_DIRECTWRITE2)
+#  include <dwrite_2.h>
+#else
+#  include <dwrite.h>
+#endif
+
 #include <d2d1.h>
 
 QT_BEGIN_NAMESPACE
@@ -562,61 +567,181 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
         RECT rect;
         glyphAnalysis->GetAlphaTextureBounds(DWRITE_TEXTURE_CLEARTYPE_3x1, &rect);
 
-        rect.left -= margin;
-        rect.top -= margin;
-        rect.right += margin;
-        rect.bottom += margin;
+        QRect boundingRect = QRect(QPoint(rect.left - margin,
+                                          rect.top - margin),
+                                   QPoint(rect.right + margin,
+                                          rect.bottom + margin));
 
-        const int width = rect.right - rect.left;
-        const int height = rect.bottom - rect.top;
 
-        const int size = width * height * 3;
-        if (size > 0) {
-            BYTE *alphaValues = new BYTE[size];
-            memset(alphaValues, 0, size);
+        const int width = boundingRect.width() - 1; // -1 due to Qt's off-by-one definition of a QRect
+        const int height = boundingRect.height() - 1;
 
-            hr = glyphAnalysis->CreateAlphaTexture(DWRITE_TEXTURE_CLEARTYPE_3x1,
-                                                   &rect,
-                                                   alphaValues,
-                                                   size);
+        QImage image;
+#if defined(QT_USE_DIRECTWRITE2)
+        HRESULT hr = DWRITE_E_NOCOLOR;
+        IDWriteColorGlyphRunEnumerator *enumerator = 0;
+        IDWriteFactory2 *factory2 = Q_NULLPTR;
+        if (glyphFormat == QFontEngine::Format_ARGB
+                && SUCCEEDED(m_fontEngineData->directWriteFactory->QueryInterface(__uuidof(IDWriteFactory2),
+                                                                                  reinterpret_cast<void **>(&factory2)))) {
+            hr = factory2->TranslateColorGlyphRun(0.0f,
+                                                  0.0f,
+                                                  &glyphRun,
+                                                  NULL,
+                                                  DWRITE_MEASURING_MODE_NATURAL,
+                                                  NULL,
+                                                  0,
+                                                  &enumerator);
+            image = QImage(width, height, QImage::Format_ARGB32_Premultiplied);
+            image.fill(0);
+        } else
+#endif
+        {
+            image = QImage(width, height, QImage::Format_RGB32);
+            image.fill(0xffffffff);
+        }
 
-            if (SUCCEEDED(hr)) {
-                QImage img(width, height, QImage::Format_RGB32);
-                img.fill(0xffffffff);
+#if defined(QT_USE_DIRECTWRITE2)
+        BOOL ok = true;
+        if (SUCCEEDED(hr)) {
+            while (SUCCEEDED(hr) && ok) {
+                const DWRITE_COLOR_GLYPH_RUN *colorGlyphRun = 0;
+                hr = enumerator->GetCurrentRun(&colorGlyphRun);
+                if (FAILED(hr)) { // No colored runs, only outline
+                    qErrnoWarning(hr, "%s: IDWriteColorGlyphRunEnumerator::GetCurrentRun failed", __FUNCTION__);
+                    break;
+                }
 
-                for (int y=0; y<height; ++y) {
-                    uint *dest = reinterpret_cast<uint *>(img.scanLine(y));
+                IDWriteGlyphRunAnalysis *colorGlyphsAnalysis = NULL;
+                hr = m_fontEngineData->directWriteFactory->CreateGlyphRunAnalysis(
+                            &colorGlyphRun->glyphRun,
+                            1.0f,
+                            &transform,
+                            renderMode,
+                            DWRITE_MEASURING_MODE_NATURAL,
+                            0.0, 0.0,
+                            &colorGlyphsAnalysis
+                            );
+                if (FAILED(hr)) {
+                    qErrnoWarning(hr, "%s: CreateGlyphRunAnalysis failed for color run", __FUNCTION__);
+                    break;
+                }
+
+                float r = qBound(0.0f, colorGlyphRun->runColor.r, 1.0f);
+                float g = qBound(0.0f, colorGlyphRun->runColor.g, 1.0f);
+                float b = qBound(0.0f, colorGlyphRun->runColor.b, 1.0f);
+                float a = qBound(0.0f, colorGlyphRun->runColor.a, 1.0f);
+
+                if (!qFuzzyIsNull(a)) {
+                    renderGlyphRun(&image,
+                                   r,
+                                   g,
+                                   b,
+                                   a,
+                                   colorGlyphsAnalysis,
+                                   boundingRect);
+                }
+                colorGlyphsAnalysis->Release();
+
+                hr = enumerator->MoveNext(&ok);
+                if (FAILED(hr)) {
+                    qErrnoWarning(hr, "%s: IDWriteColorGlyphRunEnumerator::MoveNext failed", __FUNCTION__);
+                    break;
+                }
+            }
+        } else
+#endif
+        {
+            renderGlyphRun(&image,
+                           0.0,
+                           0.0,
+                           0.0,
+                           1.0,
+                           glyphAnalysis,
+                           boundingRect);
+        }
+
+        glyphAnalysis->Release();
+        return image;
+    } else {
+        qErrnoWarning(hr, "%s: CreateGlyphRunAnalysis failed", __FUNCTION__);
+        return QImage();
+    }
+}
+
+
+void QWindowsFontEngineDirectWrite::renderGlyphRun(QImage *destination,
+                                                   float r,
+                                                   float g,
+                                                   float b,
+                                                   float a,
+                                                   IDWriteGlyphRunAnalysis *glyphAnalysis,
+                                                   const QRect &boundingRect)
+{
+    const int width = destination->width();
+    const int height = destination->height();
+
+    r *= 255.0;
+    g *= 255.0;
+    b *= 255.0;
+
+    const int size = width * height * 3;
+    if (size > 0) {
+        RECT rect;
+        rect.left = boundingRect.left();
+        rect.top = boundingRect.top();
+        rect.right = boundingRect.right();
+        rect.bottom = boundingRect.bottom();
+
+        QVarLengthArray<BYTE, 1024> alphaValueArray(size);
+        BYTE *alphaValues = alphaValueArray.data();
+        memset(alphaValues, 0, size);
+
+        HRESULT hr = glyphAnalysis->CreateAlphaTexture(DWRITE_TEXTURE_CLEARTYPE_3x1,
+                                                       &rect,
+                                                       alphaValues,
+                                                       size);
+        if (SUCCEEDED(hr)) {
+            if (destination->hasAlphaChannel()) {
+                for (int y = 0; y < height; ++y) {
+                    uint *dest = reinterpret_cast<uint *>(destination->scanLine(y));
                     BYTE *src = alphaValues + width * 3 * y;
 
-                    for (int x=0; x<width; ++x) {
-                        dest[x] = *(src) << 16
+                    for (int x = 0; x < width; ++x) {
+                        float redAlpha = a * *src++ / 255.0;
+                        float greenAlpha = a * *src++ / 255.0;
+                        float blueAlpha = a * *src++ / 255.0;
+                        float averageAlpha = (redAlpha + greenAlpha + blueAlpha) / 3.0;
+
+                        QRgb currentRgb = dest[x];
+                        dest[x] = qRgba(qRound(qRed(currentRgb) * (1.0 - averageAlpha) + averageAlpha * r),
+                                        qRound(qGreen(currentRgb) * (1.0 - averageAlpha) + averageAlpha * g),
+                                        qRound(qBlue(currentRgb) * (1.0 - averageAlpha) + averageAlpha * b),
+                                        qRound(qAlpha(currentRgb) * (1.0 - averageAlpha) + averageAlpha * 255));
+                    }
+                }
+
+            } else {
+                for (int y = 0; y < height; ++y) {
+                    uint *dest = reinterpret_cast<uint *>(destination->scanLine(y));
+                    BYTE *src = alphaValues + width * 3 * y;
+
+                    for (int x = 0; x < width; ++x) {
+                        dest[x] = *(src + 0) << 16
                                 | *(src + 1) << 8
                                 | *(src + 2);
 
                         src += 3;
                     }
                 }
-
-                delete[] alphaValues;
-                glyphAnalysis->Release();
-
-                return img;
-            } else {
-                delete[] alphaValues;
-                glyphAnalysis->Release();
-
-                qErrnoWarning("%s: CreateAlphaTexture failed", __FUNCTION__);
             }
         } else {
-            glyphAnalysis->Release();
-            qWarning("%s: Glyph has no bounds", __FUNCTION__);
+            qErrnoWarning("%s: CreateAlphaTexture failed", __FUNCTION__);
         }
-
     } else {
-        qErrnoWarning("%s: CreateGlyphRunAnalysis failed", __FUNCTION__);
+        glyphAnalysis->Release();
+        qWarning("%s: Glyph has no bounds", __FUNCTION__);
     }
-
-    return QImage();
 }
 
 QImage QWindowsFontEngineDirectWrite::alphaRGBMapForGlyph(glyph_t t,
@@ -732,6 +857,11 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph
     } else {
         return glyph_metrics_t();
     }
+}
+
+QImage QWindowsFontEngineDirectWrite::bitmapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t)
+{
+    return imageForGlyph(glyph, subPixelPosition, glyphMargin(QFontEngine::Format_A32), t);
 }
 
 QT_END_NAMESPACE
