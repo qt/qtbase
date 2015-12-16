@@ -798,12 +798,45 @@ QFixed QTextDocumentLayoutPrivate::blockIndent(const QTextBlockFormat &blockForm
     return QFixed::fromReal(indent * scale * document->indentWidth());
 }
 
+struct BorderPaginator
+{
+    BorderPaginator(QTextDocument *document, const QRectF &rect, qreal topMarginAfterPageBreak, qreal bottomMargin, qreal border) :
+        pageHeight(document->pageSize().height()),
+        topPage(pageHeight > 0 ? static_cast<int>(rect.top() / pageHeight) : 0),
+        bottomPage(pageHeight > 0 ? static_cast<int>((rect.bottom() + border) / pageHeight) : 0),
+        rect(rect),
+        topMarginAfterPageBreak(topMarginAfterPageBreak),
+        bottomMargin(bottomMargin), border(border)
+    {}
+
+    QRectF clipRect(int page) const
+    {
+        QRectF clipped = rect.toRect();
+
+        if (topPage != bottomPage) {
+            clipped.setTop(qMax(clipped.top(), page * pageHeight + topMarginAfterPageBreak - border));
+            clipped.setBottom(qMin(clipped.bottom(), (page + 1) * pageHeight - bottomMargin));
+
+            if (clipped.bottom() <= clipped.top())
+                return QRectF();
+        }
+
+        return clipped;
+    }
+
+    qreal pageHeight;
+    int topPage;
+    int bottomPage;
+    QRectF rect;
+    qreal topMarginAfterPageBreak;
+    qreal bottomMargin;
+    qreal border;
+};
+
 void QTextDocumentLayoutPrivate::drawBorder(QPainter *painter, const QRectF &rect, qreal topMargin, qreal bottomMargin,
                                             qreal border, const QBrush &brush, QTextFrameFormat::BorderStyle style) const
 {
-    const qreal pageHeight = document->pageSize().height();
-    const int topPage = pageHeight > 0 ? static_cast<int>(rect.top() / pageHeight) : 0;
-    const int bottomPage = pageHeight > 0 ? static_cast<int>((rect.bottom() + border) / pageHeight) : 0;
+    BorderPaginator paginator(document, rect, topMargin, bottomMargin, border);
 
 #ifndef QT_NO_CSSPARSER
     QCss::BorderStyle cssStyle = static_cast<QCss::BorderStyle>(style + 1);
@@ -814,16 +847,11 @@ void QTextDocumentLayoutPrivate::drawBorder(QPainter *painter, const QRectF &rec
     bool turn_off_antialiasing = !(painter->renderHints() & QPainter::Antialiasing);
     painter->setRenderHint(QPainter::Antialiasing);
 
-    for (int i = topPage; i <= bottomPage; ++i) {
-        QRectF clipped = rect.toRect();
+    for (int i = paginator.topPage; i <= paginator.bottomPage; ++i) {
+        QRectF clipped = paginator.clipRect(i);
+        if (!clipped.isValid())
+            continue;
 
-        if (topPage != bottomPage) {
-            clipped.setTop(qMax(clipped.top(), i * pageHeight + topMargin - border));
-            clipped.setBottom(qMin(clipped.bottom(), (i + 1) * pageHeight - bottomMargin));
-
-            if (clipped.bottom() <= clipped.top())
-                continue;
-        }
 #ifndef QT_NO_CSSPARSER
         qDrawEdge(painter, clipped.left(), clipped.top(), clipped.left() + border, clipped.bottom() + border, 0, 0, QCss::LeftEdge, cssStyle, brush);
         qDrawEdge(painter, clipped.left() + border, clipped.top(), clipped.right() + border, clipped.top() + border, 0, 0, QCss::TopEdge, cssStyle, brush);
