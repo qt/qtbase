@@ -584,8 +584,9 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
 #ifndef QT_NO_GRAPHICSVIEW
                 } else if (QGraphicsObject *go = qobject_cast<QGraphicsObject *>(as->target())) {
                     if (go->scene()) {
+                        const auto goBoundingRectMappedToScene = go->mapToScene(go->boundingRect());
                         foreach (QGraphicsView *gv, go->scene()->views())
-                            scrollerRegion |= gv->mapFromScene(go->mapToScene(go->boundingRect()))
+                            scrollerRegion |= gv->mapFromScene(goBoundingRectMappedToScene)
                                               .translated(gv->mapToGlobal(QPoint(0, 0)));
                     }
 #endif
