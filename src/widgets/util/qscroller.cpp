@@ -1005,7 +1005,7 @@ bool QScroller::handleInput(Input input, const QPointF &position, qint64 timesta
 #if !defined(Q_DEAD_CODE_FROM_QT4_MAC)
 // the Mac version is implemented in qscroller_mac.mm
 
-QPointF QScrollerPrivate::realDpi(int screen)
+QPointF QScrollerPrivate::realDpi(int screen) const
 {
 #  if defined(Q_DEAD_CODE_FROM_QT4_X11) && !defined(QT_NO_XRANDR)
     if (X11 && X11->use_xrandr && X11->ptrXRRSizes && X11->ptrXRRRootToScreen) {
@@ -1176,9 +1176,9 @@ qreal QScrollerPrivate::scrollingSegmentsEndPos(Qt::Orientation orientation) con
 /*! \internal
     Checks if the scroller segment end in a valid position.
 */
-bool QScrollerPrivate::scrollingSegmentsValid(Qt::Orientation orientation)
+bool QScrollerPrivate::scrollingSegmentsValid(Qt::Orientation orientation) const
 {
-    QQueue<ScrollSegment> *segments;
+    const QQueue<ScrollSegment> *segments;
     qreal minPos;
     qreal maxPos;
 
@@ -1893,7 +1893,7 @@ void QScrollerPrivate::setContentPositionHelperScrolling()
     on a snap point.
     Returns the nearest snap position or NaN if no such point could be found.
  */
-qreal QScrollerPrivate::nextSnapPos(qreal p, int dir, Qt::Orientation orientation)
+qreal QScrollerPrivate::nextSnapPos(qreal p, int dir, Qt::Orientation orientation) const
 {
     qreal bestSnapPos = Q_QNAN;
     qreal bestSnapPosDist = Q_INFINITY;

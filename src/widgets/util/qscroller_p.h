@@ -112,7 +112,7 @@ public:
     bool prepareScrolling(const QPointF &position);
     void handleDrag(const QPointF &position, qint64 timestamp);
 
-    QPointF realDpi(int screen);
+    QPointF realDpi(int screen) const;
     QPointF dpi() const;
     void setDpi(const QPointF &dpi);
     void setDpiFromWidget(QWidget *widget);
@@ -121,7 +121,7 @@ public:
     void pushSegment(ScrollType type, qreal deltaTime, qreal stopProgress, qreal startPos, qreal deltaPos, qreal stopPos, QEasingCurve::Type curve, Qt::Orientation orientation);
     void recalcScrollingSegments(bool forceRecalc = false);
     qreal scrollingSegmentsEndPos(Qt::Orientation orientation) const;
-    bool scrollingSegmentsValid(Qt::Orientation orientation);
+    bool scrollingSegmentsValid(Qt::Orientation orientation) const;
     void createScrollToSegments(qreal v, qreal deltaTime, qreal endPos, Qt::Orientation orientation, ScrollType type);
     void createScrollingSegments(qreal v, qreal startPos,
                                  qreal deltaTime, qreal deltaPos,
@@ -131,7 +131,7 @@ public:
     void setContentPositionHelperDragging(const QPointF &deltaPos);
     void setContentPositionHelperScrolling();
 
-    qreal nextSnapPos(qreal p, int dir, Qt::Orientation orientation);
+    qreal nextSnapPos(qreal p, int dir, Qt::Orientation orientation) const;
     static qreal nextSegmentPosition(QQueue<ScrollSegment> &segments, qint64 now, qreal oldPos);
 
     inline int frameRateSkip() const { return properties.d.data()->frameRate; }

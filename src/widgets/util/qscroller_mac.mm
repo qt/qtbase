@@ -41,7 +41,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QPointF QScrollerPrivate::realDpi(int screen)
+QPointF QScrollerPrivate::realDpi(int screen) const
 {
     QMacAutoReleasePool pool;
     NSArray *nsscreens = [NSScreen screens];
