@@ -40,6 +40,8 @@
 #include "qvncscreen.h"
 #include "QtNetwork/qtcpserver.h"
 #include "QtNetwork/qtcpsocket.h"
+#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qguiapplication.h>
 #include <qthread.h>
 
 #ifdef Q_OS_WIN
@@ -410,7 +412,7 @@ bool QRfbPointerEvent::read(QTcpSocket *s)
 
     char buttonMask;
     s->read(&buttonMask, 1);
-    buttons = 0;
+    buttons = Qt::NoButton;
     if (buttonMask & 1)
         buttons |= Qt::LeftButton;
     if (buttonMask & 2)
@@ -481,10 +483,6 @@ void QRfbRawEncoder::write()
         return;
 
     const QImage screenImage = server->screenImage();
-    static int frame = 0;
-    ++frame;
-    QString filename = QString("screen.%1.png").arg(frame);
-    screenImage.save(filename);
 
     for (const QRect &tileRect: rects) {
         const QRfbRect rect(tileRect.x(), tileRect.y(),
@@ -1070,8 +1068,8 @@ void QVncServer::pointerEvent()
 {
     QRfbPointerEvent ev;
     if (ev.read(client)) {
-        //const QPoint offset = qvnc_screen->geometry().topLeft();
-        // ### QWSServer::sendMouseEvent(offset + QPoint(ev.x, ev.y), ev.buttons);
+        const QPoint pos = qvnc_screen->geometry().topLeft() + QPoint(ev.x, ev.y);
+        QWindowSystemInterface::handleMouseEvent(0, pos, pos, ev.buttons, QGuiApplication::keyboardModifiers());
         handleMsg = false;
     }
 }

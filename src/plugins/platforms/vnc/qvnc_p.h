@@ -188,7 +188,7 @@ class QRfbPointerEvent
 public:
     bool read(QTcpSocket *s);
 
-    uint buttons;
+    Qt::MouseButtons buttons;
     quint16 x;
     quint16 y;
 };
