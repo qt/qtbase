@@ -48,7 +48,7 @@
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
-
+#include <private/qinputdevicemanager_p_p.h>
 #ifndef QT_NO_LIBINPUT
 #include <QtPlatformSupport/private/qlibinputhandler_p.h>
 #endif
@@ -80,6 +80,13 @@ void QVncIntegration::initialize()
     m_inputContext = QPlatformInputContextFactory::create();
 
     m_nativeInterface.reset(new QPlatformNativeInterface);
+
+    // we always have exactly one mouse and keyboard
+    QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
+        QInputDeviceManager::DeviceTypePointer, 1);
+    QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
+        QInputDeviceManager::DeviceTypeKeyboard, 1);
+
 }
 
 bool QVncIntegration::hasCapability(QPlatformIntegration::Capability cap) const

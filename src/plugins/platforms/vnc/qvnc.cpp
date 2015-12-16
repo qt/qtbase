@@ -681,7 +681,6 @@ void QVncServer::setDirty()
 
 void QVncServer::newConnection()
 {
-    QT_VNC_DEBUG() << "!!!!!!!!!!!! new connection";
     if (client)
         delete client;
 
@@ -1023,12 +1022,10 @@ void QVncServer::setEncodings()
                 break;
             case Cursor:
                 supportCursor = true;
-#ifndef QT_NO_QWS_CURSOR
                 if (!qvnc_screen->screen()) {
                     delete qvnc_cursor;
                     qvnc_cursor = new QVncClientCursor(this);
                 }
-#endif
                 break;
             case DesktopSize:
                 supportDesktopSize = true;

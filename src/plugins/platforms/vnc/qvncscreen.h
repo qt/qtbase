@@ -64,6 +64,8 @@ public:
     QRegion doRedraw() Q_DECL_OVERRIDE;
     QImage *image() const { return mScreenImage; }
 
+//    QPlatformCursor *cursor() const Q_DECL_OVERRIDE { return mCursor; }
+
     void clearDirty() { dirtyRegion = QRegion(); }
 
     QStringList mArgs;
