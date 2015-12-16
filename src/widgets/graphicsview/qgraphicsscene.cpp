@@ -3870,15 +3870,15 @@ bool QGraphicsScenePrivate::dispatchHoverEvent(QGraphicsSceneHoverEvent *hoverEv
     QList<QGraphicsItem *> parents;
     QGraphicsItem *parent = item;
     while (parent && parent != commonAncestorItem) {
-        parents.prepend(parent);
+        parents.append(parent);
         if (parent->isPanel()) {
             // Stop at the panel - we don't deliver beyond this point.
             break;
         }
         parent = parent->parentItem();
     }
-    for (int i = 0; i < parents.size(); ++i) {
-        parent = parents.at(i);
+    for (auto it = parents.crbegin(), end = parents.crend(); it != end; ++it) {
+        QGraphicsItem *parent = *it;
         hoverItems << parent;
         if (itemAcceptsHoverEvents_helper(parent))
             sendHoverEvent(QEvent::GraphicsSceneHoverEnter, parent, hoverEvent);
