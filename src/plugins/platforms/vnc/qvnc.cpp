@@ -1088,9 +1088,8 @@ void QVncServer::keyEvent()
         else if (ev.keycode == Qt::Key_Alt)
             keymod = ev.down ? keymod | Qt::AltModifier :
                                keymod & ~Qt::AltModifier;
-        // #####
-//        if (ev.unicode || ev.keycode)
-//            QWSServer::sendKeyEvent(ev.unicode, ev.keycode, keymod, ev.down, false);
+        if (ev.unicode || ev.keycode)
+            QWindowSystemInterface::handleKeyEvent(0, ev.down ? QEvent::KeyPress : QEvent::KeyRelease, ev.keycode, keymod, QString(ev.unicode));
         handleMsg = false;
     }
 }
