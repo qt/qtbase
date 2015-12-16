@@ -2330,7 +2330,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
     if (enter && !sameWindow) {
         auto *w = enter;
         do {
-            enterList.prepend(w);
+            enterList.append(w);
         } while (!w->isWindow() && (w = w->parentWidget()));
     }
     if (sameWindow) {
@@ -2361,7 +2361,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
             leaveList.append(w);
 
         for (auto *w = enter; w != wenter; w = w->parentWidget())
-            enterList.prepend(w);
+            enterList.append(w);
     }
 
     QEvent leaveEvent(QEvent::Leave);
@@ -2383,9 +2383,9 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
         const QPoint globalPos = qIsInf(globalPosF.x())
             ? QPoint(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX)
             : globalPosF.toPoint();
-        const QPoint windowPos = enterList.front()->window()->mapFromGlobal(globalPos);
-        for (int i = 0; i < enterList.size(); ++i) {
-            auto *w = enterList.at(i);
+        const QPoint windowPos = enterList.back()->window()->mapFromGlobal(globalPos);
+        for (auto it = enterList.crbegin(), end = enterList.crend(); it != end; ++it) {
+            auto *w = *it;
             if (!QApplication::activeModalWidget() || QApplicationPrivate::tryModalHelper(w, 0)) {
                 const QPointF localPos = w->mapFromGlobal(globalPos);
                 QEnterEvent enterEvent(localPos, windowPos, globalPosF);
