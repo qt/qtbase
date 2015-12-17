@@ -660,6 +660,23 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     \value TableCellTopPadding
     \value TableCellBottomPadding
 
+    Table cell properties intended for use with \l QTextTableFormat::borderCollapse enabled
+
+    \value TableCellTopBorder
+    \value TableCellBottomBorder
+    \value TableCellLeftBorder
+    \value TableCellRightBorder
+
+    \value TableCellTopBorderStyle
+    \value TableCellBottomBorderStyle
+    \value TableCellLeftBorderStyle
+    \value TableCellRightBorderStyle
+
+    \value TableCellTopBorderBrush
+    \value TableCellBottomBorderBrush
+    \value TableCellLeftBorderBrush
+    \value TableCellRightBorderBrush
+
     Image properties
 
     \value ImageName        The filename or source of the image.
@@ -3100,6 +3117,8 @@ QTextTableFormat::QTextTableFormat(const QTextFormat &fmt)
 
     Sets the cell \a spacing for the table. This determines the distance
     between adjacent cells.
+
+    This property will be ignored if \l borderCollapse is enabled.
 */
 
 /*!
@@ -3148,6 +3167,44 @@ QTextTableFormat::QTextTableFormat(const QTextFormat &fmt)
     Returns the number of rows in the table that define the header.
 
     \sa setHeaderRowCount()
+*/
+
+/*!
+    \fn void QTextTableFormat::setBorderCollapse(bool borderCollapse)
+    \since 5.14
+
+    Enabling \a borderCollapse will have the following implications:
+    \list
+    \li The borders and grid of the table will be rendered following the
+        CSS table \c border-collapse: \c collapse rules
+    \li Setting the \c border property to a minimum value of \c 1 will render a
+        one pixel solid inner table grid using the \l borderBrush property and an
+        outer border as specified
+    \li The various border style properties of \l QTextTableCellFormat can be used to
+        customize the grid and have precedence over the border and grid of the table
+    \li The \l cellSpacing property will be ignored
+    \li For print pagination:
+        \list
+        \li Columns continued on a page will not have their top cell border rendered
+        \li Repeated header rows will always have their bottom cell border rendered
+        \endlist
+    \endlist
+
+    With borderCollapse disabled, cell borders can still be styled
+    using QTextTableCellFormat but styling will be applied only within
+    the cell's frame, which is probably not very useful in practice.
+
+    \sa setBorder(), setBorderBrush(), setBorderStyle()
+    \sa QTextTableCellFormat
+*/
+
+/*!
+    \fn bool QTextTableFormat::borderCollapse() const
+    \since 5.14
+
+    Returns true if borderCollapse is enabled.
+
+    \sa setBorderCollapse()
 */
 
 /*!
@@ -3486,6 +3543,228 @@ QTextImageFormat::QTextImageFormat(const QTextFormat &fmt)
    Sets the left, right, top, and bottom \a padding of the table cell.
 
    \sa setLeftPadding(), setRightPadding(), setTopPadding(), setBottomPadding()
+*/
+
+/*!
+   \fn void QTextTableCellFormat::setTopBorder(qreal width)
+   \since 5.14
+
+   Sets the top border \a width of the table cell.
+
+   \sa QTextTableFormat::setBorderCollapse
+*/
+
+/*!
+   \fn qreal QTextTableCellFormat::topBorder() const
+   \since 5.14
+
+   Returns the top border width of the table cell.
+*/
+
+/*!
+   \fn void QTextTableCellFormat::setBottomBorder(qreal width)
+   \since 5.14
+
+   Sets the bottom border \a width of the table cell.
+
+   \sa QTextTableFormat::setBorderCollapse
+*/
+
+/*!
+   \fn qreal QTextTableCellFormat::bottomBorder() const
+   \since 5.14
+
+   Returns the bottom border width of the table cell.
+*/
+
+/*!
+   \fn void QTextTableCellFormat::setLeftBorder(qreal width)
+   \since 5.14
+
+   Sets the left border \a width of the table cell.
+
+   \sa QTextTableFormat::setBorderCollapse
+*/
+
+/*!
+   \fn qreal QTextTableCellFormat::leftBorder() const
+   \since 5.14
+
+   Returns the left border width of the table cell.
+*/
+
+/*!
+   \fn void QTextTableCellFormat::setRightBorder(qreal width)
+   \since 5.14
+
+   Sets the right border \a width of the table cell.
+
+   \sa QTextTableFormat::setBorderCollapse
+*/
+
+/*!
+   \fn qreal QTextTableCellFormat::rightBorder() const
+   \since 5.14
+
+   Returns the right border width of the table cell.
+*/
+
+/*!
+   \fn void QTextTableCellFormat::setBorder(qreal width)
+   \since 5.14
+
+   Sets the left, right, top, and bottom border \a width of the table cell.
+
+   \sa setLeftBorder(), setRightBorder(), setTopBorder(), setBottomBorder()
+   \sa QTextTableFormat::setBorderCollapse
+*/
+
+/*!
+   \fn void QTextTableCellFormat::setTopBorderStyle(QTextFrameFormat::BorderStyle style)
+   \since 5.14
+
+   Sets the top border \a style of the table cell.
+
+   \sa QTextTableFormat::setBorderCollapse
+*/
+
+/*!
+   \fn QTextFrameFormat::BorderStyle QTextTableCellFormat::topBorderStyle() const
+   \since 5.14
+
+   Returns the top border style of the table cell.
+*/
+
+/*!
+   \fn void QTextTableCellFormat::setBottomBorderStyle(QTextFrameFormat::BorderStyle style)
+   \since 5.14
+
+   Sets the bottom border \a style of the table cell.
+
+   \sa QTextTableFormat::setBorderCollapse
+*/
+
+/*!
+   \fn QTextFrameFormat::BorderStyle QTextTableCellFormat::bottomBorderStyle() const
+   \since 5.14
+
+   Returns the bottom border style of the table cell.
+*/
+
+/*!
+   \fn void QTextTableCellFormat::setLeftBorderStyle(QTextFrameFormat::BorderStyle style)
+   \since 5.14
+
+   Sets the left border \a style of the table cell.
+
+   \sa QTextTableFormat::setBorderCollapse
+*/
+
+/*!
+   \fn QTextFrameFormat::BorderStyle QTextTableCellFormat::leftBorderStyle() const
+   \since 5.14
+
+   Returns the left border style of the table cell.
+*/
+
+/*!
+   \fn void QTextTableCellFormat::setRightBorderStyle(QTextFrameFormat::BorderStyle style)
+   \since 5.14
+
+   Sets the right border \a style of the table cell.
+
+   \sa QTextTableFormat::setBorderCollapse
+*/
+
+/*!
+   \fn QTextFrameFormat::BorderStyle QTextTableCellFormat::rightBorderStyle() const
+   \since 5.14
+
+   Returns the right border style of the table cell.
+*/
+
+/*!
+   \fn void QTextTableCellFormat::setBorderStyle(QTextFrameFormat::BorderStyle style)
+   \since 5.14
+
+   Sets the left, right, top, and bottom border \a style of the table cell.
+
+   \sa setLeftBorderStyle(), setRightBorderStyle(), setTopBorderStyle(), setBottomBorderStyle()
+   \sa QTextTableFormat::setBorderCollapse
+*/
+
+/*!
+   \fn void QTextTableCellFormat::setTopBorderBrush(const QBrush &brush)
+   \since 5.14
+
+   Sets the top border \a brush of the table cell.
+
+   \sa QTextTableFormat::setBorderCollapse
+*/
+
+/*!
+   \fn QBrush QTextTableCellFormat::topBorderBrush() const
+   \since 5.14
+
+   Returns the top border brush of the table cell.
+*/
+
+/*!
+   \fn void QTextTableCellFormat::setBottomBorderBrush(const QBrush &brush)
+   \since 5.14
+
+   Sets the bottom border \a brush of the table cell.
+
+   \sa QTextTableFormat::setBorderCollapse
+*/
+
+/*!
+   \fn QBrush QTextTableCellFormat::bottomBorderBrush() const
+   \since 5.14
+
+   Returns the bottom border brush of the table cell.
+*/
+
+/*!
+   \fn void QTextTableCellFormat::setLeftBorderBrush(const QBrush &brush)
+   \since 5.14
+
+   Sets the left border \a brush of the table cell.
+
+   \sa QTextTableFormat::setBorderCollapse
+*/
+
+/*!
+   \fn QBrush QTextTableCellFormat::leftBorderBrush() const
+   \since 5.14
+
+   Returns the left border brush of the table cell.
+*/
+
+/*!
+   \fn void QTextTableCellFormat::setRightBorderBrush(const QBrush &brush)
+   \since 5.14
+
+   Sets the right border \a brush of the table cell.
+
+   \sa QTextTableFormat::setBorderCollapse
+*/
+
+/*!
+   \fn QBrush QTextTableCellFormat::rightBorderBrush() const
+   \since 5.14
+
+   Returns the right border brush of the table cell.
+*/
+
+/*!
+   \fn void QTextTableCellFormat::setBorderBrush(const QBrush &brush)
+   \since 5.14
+
+   Sets the left, right, top, and bottom border \a brush of the table cell.
+
+   \sa setLeftBorderBrush(), setRightBorderBrush(), setTopBorderBrush(), setBottomBorderBrush()
+   \sa QTextTableFormat::setBorderCollapse
 */
 
 /*!

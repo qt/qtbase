@@ -155,6 +155,50 @@ struct QTextLayoutStruct {
     { if (pageHeight == QFIXED_MAX) return; pageBottom += pageHeight; y = qMax(y, pageBottom - pageHeight + pageBottomMargin + pageTopMargin - frameY); }
 };
 
+#ifndef QT_NO_CSSPARSER
+// helper struct to collect edge data and priorize edges for border-collapse mode
+struct EdgeData {
+
+    enum EdgeClass {
+        // don't change order, used for comparison
+        ClassInvalid,     // queried (adjacent) cell does not exist
+        ClassNone,        // no explicit border, no grid, no table border
+        ClassGrid,        // 1px grid if drawGrid is true
+        ClassTableBorder, // an outermost edge
+        ClassExplicit     // set in cell's format
+    };
+
+    EdgeData(qreal width, const QTextTableCell &cell, QCss::Edge edge, EdgeClass edgeClass) :
+        width(width), cell(cell), edge(edge), edgeClass(edgeClass) {}
+    EdgeData() :
+        width(0), edge(QCss::NumEdges), edgeClass(ClassInvalid) {}
+
+    // used for priorization with qMax
+    bool operator< (const EdgeData &other) const {
+        if (width < other.width) return true;
+        if (width > other.width) return false;
+        if (edgeClass < other.edgeClass) return true;
+        if (edgeClass > other.edgeClass) return false;
+        if (edge == QCss::TopEdge && other.edge == QCss::BottomEdge) return true;
+        if (edge == QCss::BottomEdge && other.edge == QCss::TopEdge) return false;
+        if (edge == QCss::LeftEdge && other.edge == QCss::RightEdge) return true;
+        return false;
+    }
+    bool operator> (const EdgeData &other) const {
+        return other < *this;
+    }
+
+    qreal width;
+    QTextTableCell cell;
+    QCss::Edge edge;
+    EdgeClass edgeClass;
+};
+
+// axisEdgeData is referenced by QTextTableData's inline methods, so predeclare
+class QTextTableData;
+static inline EdgeData axisEdgeData(QTextTable *table, const QTextTableData *td, const QTextTableCell &cell, QCss::Edge edge);
+#endif
+
 class QTextTableData : public QTextFrameData
 {
 public:
@@ -169,7 +213,18 @@ public:
 
     QVector<QFixed> cellVerticalOffsets;
 
+    // without borderCollapse, those equal QTextFrameData::border;
+    // otherwise the widest outermost cell edge will be used
+    QFixed effectiveLeftBorder;
+    QFixed effectiveTopBorder;
+    QFixed effectiveRightBorder;
+    QFixed effectiveBottomBorder;
+
     QFixed headerHeight;
+
+    QFixed borderCell; // 0 if borderCollapse is enabled, QTextFrameData::border otherwise
+    bool borderCollapse;
+    bool drawGrid;
 
     // maps from cell index (row + col * rowCount) to child frames belonging to
     // the specific cell
@@ -182,7 +237,7 @@ public:
     inline void calcRowPosition(int row)
     {
         if (row > 0)
-            rowPositions[row] = rowPositions.at(row - 1) + heights.at(row - 1) + border + cellSpacing + border;
+            rowPositions[row] = rowPositions.at(row - 1) + heights.at(row - 1) + borderCell + cellSpacing + borderCell;
     }
 
     QRectF cellRect(const QTextTableCell &cell) const;
@@ -198,30 +253,55 @@ public:
         }
     }
 
-    inline QFixed topPadding(const QTextFormat &format) const
+#ifndef QT_NO_CSSPARSER
+    inline QFixed cellBorderWidth(QTextTable *table, const QTextTableCell &cell, QCss::Edge edge) const
     {
-        return paddingProperty(format, QTextFormat::TableCellTopPadding);
+        qreal rv = axisEdgeData(table, this, cell, edge).width;
+        if (borderCollapse)
+            rv /= 2; // each cell has to add half of the border's width to its own padding
+        return QFixed::fromReal(rv * deviceScale);
+    }
+#endif
+
+    inline QFixed topPadding(QTextTable *table, const QTextTableCell &cell) const
+    {
+        return paddingProperty(cell.format(), QTextFormat::TableCellTopPadding)
+#ifndef QT_NO_CSSPARSER
+                + cellBorderWidth(table, cell, QCss::TopEdge)
+#endif
+        ;
     }
 
-    inline QFixed bottomPadding(const QTextFormat &format) const
+    inline QFixed bottomPadding(QTextTable *table, const QTextTableCell &cell) const
     {
-        return paddingProperty(format, QTextFormat::TableCellBottomPadding);
+        return paddingProperty(cell.format(), QTextFormat::TableCellBottomPadding)
+#ifndef QT_NO_CSSPARSER
+                + cellBorderWidth(table, cell, QCss::BottomEdge)
+#endif
+                ;
     }
 
-    inline QFixed leftPadding(const QTextFormat &format) const
+    inline QFixed leftPadding(QTextTable *table, const QTextTableCell &cell) const
     {
-        return paddingProperty(format, QTextFormat::TableCellLeftPadding);
+        return paddingProperty(cell.format(), QTextFormat::TableCellLeftPadding)
+#ifndef QT_NO_CSSPARSER
+                + cellBorderWidth(table, cell, QCss::LeftEdge)
+#endif
+        ;
     }
 
-    inline QFixed rightPadding(const QTextFormat &format) const
+    inline QFixed rightPadding(QTextTable *table, const QTextTableCell &cell) const
     {
-        return paddingProperty(format, QTextFormat::TableCellRightPadding);
+        return paddingProperty(cell.format(), QTextFormat::TableCellRightPadding)
+#ifndef QT_NO_CSSPARSER
+                + cellBorderWidth(table, cell, QCss::RightEdge)
+#endif
+        ;
     }
 
-    inline QFixedPoint cellPosition(const QTextTableCell &cell) const
+    inline QFixedPoint cellPosition(QTextTable *table, const QTextTableCell &cell) const
     {
-        const QTextFormat fmt = cell.format();
-        return cellPosition(cell.row(), cell.column()) + QFixedPoint(leftPadding(fmt), topPadding(fmt));
+        return cellPosition(cell.row(), cell.column()) + QFixedPoint(leftPadding(table, cell), topPadding(table, cell));
     }
 
     void updateTableSize();
@@ -257,10 +337,10 @@ static bool isFrameFromInlineObject(QTextFrame *f)
 
 void QTextTableData::updateTableSize()
 {
-    const QFixed effectiveTopMargin = this->topMargin + border + padding;
-    const QFixed effectiveBottomMargin = this->bottomMargin + border + padding;
-    const QFixed effectiveLeftMargin = this->leftMargin + border + padding;
-    const QFixed effectiveRightMargin = this->rightMargin + border + padding;
+    const QFixed effectiveTopMargin = this->topMargin + effectiveTopBorder + padding;
+    const QFixed effectiveBottomMargin = this->bottomMargin + effectiveBottomBorder + padding;
+    const QFixed effectiveLeftMargin = this->leftMargin + effectiveLeftBorder + padding;
+    const QFixed effectiveRightMargin = this->rightMargin + effectiveRightBorder + padding;
     size.height = contentsHeight == -1
                    ? rowPositions.constLast() + heights.constLast() + padding + border + cellSpacing + effectiveBottomMargin
                    : effectiveTopMargin + contentsHeight + effectiveBottomMargin;
@@ -453,6 +533,7 @@ public:
                    const QTextBlock &bl, bool inRootFrame) const;
     void drawListItem(const QPointF &offset, QPainter *painter, const QAbstractTextDocumentLayout::PaintContext &context,
                       const QTextBlock &bl, const QTextCharFormat *selectionFormat) const;
+    void drawTableCellBorder(const QRectF &cellRect, QPainter *painter, QTextTable *table, QTextTableData *td, const QTextTableCell &cell) const;
     void drawTableCell(const QRectF &cellRect, QPainter *painter, const QAbstractTextDocumentLayout::PaintContext &cell_context,
                        QTextTable *table, QTextTableData *td, int r, int c,
                        QTextBlock *cursorBlockNeedingRepaint, QPointF *cursorBlockOffset) const;
@@ -719,7 +800,7 @@ QTextDocumentLayoutPrivate::hitTest(QTextTable *table, const QFixedPoint &point,
 
     *position = cell.firstPosition();
 
-    HitPoint hp = hitTest(cell.begin(), PointInside, point - td->cellPosition(cell), position, l, accuracy);
+    HitPoint hp = hitTest(cell.begin(), PointInside, point - td->cellPosition(table, cell), position, l, accuracy);
 
     if (hp == PointExact)
         return hp;
@@ -948,6 +1029,31 @@ static void adjustContextSelectionsForCell(QAbstractTextDocumentLayout::PaintCon
     }
 }
 
+static bool cellClipTest(QTextTable *table, QTextTableData *td,
+                         const QAbstractTextDocumentLayout::PaintContext &cell_context,
+                         const QTextTableCell &cell,
+                         QRectF cellRect)
+{
+    if (!cell_context.clip.isValid())
+        return false;
+
+    if (td->borderCollapse) {
+        // we need to account for the cell borders in the clipping test
+        cellRect.adjust(-axisEdgeData(table, td, cell, QCss::LeftEdge).width / 2,
+                        -axisEdgeData(table, td, cell, QCss::TopEdge).width / 2,
+                        axisEdgeData(table, td, cell, QCss::RightEdge).width / 2,
+                        axisEdgeData(table, td, cell, QCss::BottomEdge).width / 2);
+    } else {
+        qreal border = td->border.toReal();
+        cellRect.adjust(-border, -border, border, border);
+    }
+
+    if (!cellRect.intersects(cell_context.clip))
+        return true;
+
+    return false;
+}
+
 void QTextDocumentLayoutPrivate::drawFrame(const QPointF &offset, QPainter *painter,
                                            const QAbstractTextDocumentLayout::PaintContext &context,
                                            QTextFrame *frame) const
@@ -1010,10 +1116,12 @@ void QTextDocumentLayoutPrivate::drawFrame(const QPointF &offset, QPainter *pain
         const int tableStartPage = (absYPos / pageHeight).truncate();
         const int tableEndPage = ((absYPos + td->size.height) / pageHeight).truncate();
 
-        qreal border = td->border.toReal();
-        drawFrameDecoration(painter, frame, fd, context.clip, frameRect);
+        // for borderCollapse draw frame decoration by drawing the outermost
+        // cell edges with width = td->border
+        if (!td->borderCollapse)
+            drawFrameDecoration(painter, frame, fd, context.clip, frameRect);
 
-        // draw the table headers
+        // draw the repeated table headers for table continuation after page breaks
         const int headerRowCount = qMin(table->format().headerRowCount(), rows - 1);
         int page = tableStartPage + 1;
         while (page <= tableEndPage) {
@@ -1027,9 +1135,7 @@ void QTextDocumentLayoutPrivate::drawFrame(const QPointF &offset, QPainter *pain
                     QRectF cellRect = td->cellRect(cell);
 
                     cellRect.translate(off.x(), headerOffset);
-                    // we need to account for the cell border in the clipping test
-                    int leftAdjust = qMin(qreal(0), 1 - border);
-                    if (cell_context.clip.isValid() && !cellRect.adjusted(leftAdjust, leftAdjust, border, border).intersects(cell_context.clip))
+                    if (cellClipTest(table, td, cell_context, cell, cellRect))
                         continue;
 
                     drawTableCell(cellRect, painter, cell_context, table, td, r, c, &cursorBlockNeedingRepaint,
@@ -1069,9 +1175,7 @@ void QTextDocumentLayoutPrivate::drawFrame(const QPointF &offset, QPainter *pain
                 QRectF cellRect = td->cellRect(cell);
 
                 cellRect.translate(off);
-                // we need to account for the cell border in the clipping test
-                int leftAdjust = qMin(qreal(0), 1 - border);
-                if (cell_context.clip.isValid() && !cellRect.adjusted(leftAdjust, leftAdjust, border, border).intersects(cell_context.clip))
+                if (cellClipTest(table, td, cell_context, cell, cellRect))
                     continue;
 
                 drawTableCell(cellRect, painter, cell_context, table, td, r, c, &cursorBlockNeedingRepaint,
@@ -1108,6 +1212,595 @@ void QTextDocumentLayoutPrivate::drawFrame(const QPointF &offset, QPainter *pain
     return;
 }
 
+#ifndef QT_NO_CSSPARSER
+
+static inline QTextFormat::Property borderPropertyForEdge(QCss::Edge edge)
+{
+    switch (edge) {
+    case QCss::TopEdge:
+        return QTextFormat::TableCellTopBorder;
+    case QCss::BottomEdge:
+        return QTextFormat::TableCellBottomBorder;
+    case QCss::LeftEdge:
+        return QTextFormat::TableCellLeftBorder;
+    case QCss::RightEdge:
+        return QTextFormat::TableCellRightBorder;
+    default:
+        Q_UNREACHABLE();
+        return QTextFormat::UserProperty;
+    }
+}
+
+static inline QTextFormat::Property borderStylePropertyForEdge(QCss::Edge edge)
+{
+    switch (edge) {
+    case QCss::TopEdge:
+        return QTextFormat::TableCellTopBorderStyle;
+    case QCss::BottomEdge:
+        return QTextFormat::TableCellBottomBorderStyle;
+    case QCss::LeftEdge:
+        return QTextFormat::TableCellLeftBorderStyle;
+    case QCss::RightEdge:
+        return QTextFormat::TableCellRightBorderStyle;
+    default:
+        Q_UNREACHABLE();
+        return QTextFormat::UserProperty;
+    }
+}
+
+static inline QCss::Edge adjacentEdge(QCss::Edge edge)
+{
+    switch (edge) {
+    case QCss::TopEdge:
+        return QCss::BottomEdge;
+    case QCss::RightEdge:
+        return QCss::LeftEdge;
+    case QCss::BottomEdge:
+        return QCss::TopEdge;
+    case QCss::LeftEdge:
+        return QCss::RightEdge;
+    default:
+        Q_UNREACHABLE();
+        return QCss::NumEdges;
+    }
+}
+
+static inline bool isSameAxis(QCss::Edge e1, QCss::Edge e2)
+{
+    return e1 == e2 || e1 == adjacentEdge(e2);
+}
+
+static inline bool isVerticalAxis(QCss::Edge e)
+{
+    return e % 2 > 0;
+}
+
+static inline QTextTableCell adjacentCell(QTextTable *table, const QTextTableCell &cell,
+                                          QCss::Edge edge)
+{
+    int dc = 0;
+    int dr = 0;
+
+    switch (edge) {
+    case QCss::LeftEdge:
+        dc = -1;
+        break;
+    case QCss::RightEdge:
+        dc = cell.columnSpan();
+        break;
+    case QCss::TopEdge:
+        dr = -1;
+        break;
+    case QCss::BottomEdge:
+        dr = cell.rowSpan();
+        break;
+    default:
+        Q_UNREACHABLE();
+        break;
+    }
+
+    // get sibling cell
+    int col = cell.column() + dc;
+    int row = cell.row() + dr;
+
+    if (col < 0 || row < 0 || col >= table->columns() || row >= table->rows())
+        return QTextTableCell();
+    else
+        return table->cellAt(cell.row() + dr, cell.column() + dc);
+}
+
+// returns true if the specified edges of both cells
+// are "one the same line" aka axis.
+//
+// | C0
+// |-----|-----|----|-----  < "axis"
+// | C1  | C2  | C3 | C4
+//
+// cell    edge    competingCell competingEdge  result
+// C0      Left    C1            Left           true
+// C0      Left    C2            Left           false
+// C0      Bottom  C2            Top            true
+// C0      Bottom  C4            Left           INVALID
+static inline bool sharesAxis(const QTextTableCell &cell, QCss::Edge edge,
+                              const QTextTableCell &competingCell, QCss::Edge competingCellEdge)
+{
+    Q_ASSERT(isVerticalAxis(edge) == isVerticalAxis(competingCellEdge));
+
+    switch (edge) {
+    case QCss::TopEdge:
+        return cell.row() ==
+                competingCell.row() + (competingCellEdge == QCss::BottomEdge ? competingCell.rowSpan() : 0);
+    case QCss::BottomEdge:
+        return cell.row() + cell.rowSpan() ==
+                competingCell.row() + (competingCellEdge == QCss::TopEdge ? 0 : competingCell.rowSpan());
+    case QCss::LeftEdge:
+        return cell.column() ==
+                competingCell.column() + (competingCellEdge == QCss::RightEdge ? competingCell.columnSpan() : 0);
+    case QCss::RightEdge:
+        return cell.column() + cell.columnSpan() ==
+                competingCell.column() + (competingCellEdge == QCss::LeftEdge ? 0 : competingCell.columnSpan());
+    default:
+        Q_UNREACHABLE();
+        return false;
+    }
+}
+
+// returns the applicable EdgeData for the given cell and edge.
+// this is either set explicitly by the cell's format, an activated grid
+// or the general table border width for outermost edges.
+static inline EdgeData cellEdgeData(QTextTable *table, const QTextTableData *td,
+                                    const QTextTableCell &cell, QCss::Edge edge)
+{
+    if (!cell.isValid()) {
+        // e.g. non-existing adjacent cell
+        return EdgeData();
+    }
+
+    QTextTableCellFormat f = cell.format().toTableCellFormat();
+    if (f.hasProperty(borderStylePropertyForEdge(edge))) {
+        // border style is set
+        double width = 3; // default to 3 like browsers do
+        if (f.hasProperty(borderPropertyForEdge(edge)))
+            width = f.property(borderPropertyForEdge(edge)).toDouble();
+        return EdgeData(width, cell, edge, EdgeData::ClassExplicit);
+    } else if (td->drawGrid) {
+        const bool outermost =
+                (edge == QCss::LeftEdge && cell.column() == 0) ||
+                (edge == QCss::TopEdge && cell.row() == 0) ||
+                (edge == QCss::RightEdge && cell.column() + cell.columnSpan() >= table->columns()) ||
+                (edge == QCss::BottomEdge && cell.row() + cell.rowSpan() >= table->rows());
+
+        if (outermost) {
+            qreal border = table->format().border();
+            if (border > 1.0) {
+                // table border
+                return EdgeData(border, cell, edge, EdgeData::ClassTableBorder);
+            }
+        }
+        // 1px clean grid
+        return EdgeData(1.0, cell, edge, EdgeData::ClassGrid);
+    }
+    else {
+        return EdgeData(0, cell, edge, EdgeData::ClassNone);
+    }
+}
+
+// returns the EdgeData with the larger width of either the cell's edge its adjacent cell's edge
+static inline EdgeData axisEdgeData(QTextTable *table, const QTextTableData *td,
+                                    const QTextTableCell &cell, QCss::Edge edge)
+{
+    Q_ASSERT(cell.isValid());
+
+    EdgeData result = cellEdgeData(table, td, cell, edge);
+    if (!td->borderCollapse)
+        return result;
+
+    QTextTableCell ac = adjacentCell(table, cell, edge);
+    result = qMax(result, cellEdgeData(table, td, ac, adjacentEdge(edge)));
+
+    bool mustCheckThirdCell = false;
+    if (ac.isValid()) {
+        /* if C0 and C3 don't share the left/top axis, we must
+         * also check C1.
+         *
+         * C0 and C4 don't share the left axis so we have
+         * to take the top edge of C1 (T1) into account
+         * because this might be wider than C0's bottom
+         * edge (B0). For the sake of simplicity we skip
+         * checking T2 and T3.
+         *
+         * | C0
+         * |-----|-----|----|-----
+         * | C1  | C2  | C3 | C4
+         *
+         * width(T4) = max(T4, B0, T1) (T2 and T3 won't be checked)
+         */
+        switch (edge) {
+        case QCss::TopEdge:
+        case QCss::BottomEdge:
+            mustCheckThirdCell = !sharesAxis(cell, QCss::LeftEdge, ac, QCss::LeftEdge);
+            break;
+        case QCss::LeftEdge:
+        case QCss::RightEdge:
+            mustCheckThirdCell = !sharesAxis(cell, QCss::TopEdge, ac, QCss::TopEdge);
+            break;
+        default:
+            Q_UNREACHABLE();
+            break;
+        }
+    }
+
+    if (mustCheckThirdCell)
+        result = qMax(result, cellEdgeData(table, td, adjacentCell(table, ac, adjacentEdge(edge)), edge));
+
+    return result;
+}
+
+// checks an edge's joined competing edge according to priority rules and
+// adjusts maxCompetingEdgeData and maxOrthogonalEdgeData
+static inline void checkJoinedEdge(QTextTable *table, const QTextTableData *td, const QTextTableCell &cell,
+                                   QCss::Edge competingEdge,
+                                   const EdgeData &edgeData,
+                                   bool couldHaveContinuation,
+                                   EdgeData *maxCompetingEdgeData,
+                                   EdgeData *maxOrthogonalEdgeData)
+{
+    EdgeData competingEdgeData = axisEdgeData(table, td, cell, competingEdge);
+
+    if (competingEdgeData > edgeData) {
+        *maxCompetingEdgeData = competingEdgeData;
+    } else if (competingEdgeData.width == edgeData.width) {
+        if ((isSameAxis(edgeData.edge, competingEdge) && couldHaveContinuation)
+                || (!isVerticalAxis(edgeData.edge) && isVerticalAxis(competingEdge)) /* both widths are equal, vertical edge has priority */ ) {
+            *maxCompetingEdgeData = competingEdgeData;
+        }
+    }
+
+    if (maxOrthogonalEdgeData && competingEdgeData.width > maxOrthogonalEdgeData->width)
+        *maxOrthogonalEdgeData = competingEdgeData;
+}
+
+// the offset to make adjacent edges overlap in border collapse mode
+static inline qreal collapseOffset(const QTextDocumentLayoutPrivate *p, const EdgeData &w)
+{
+    return p->scaleToDevice(w.width) / 2.0;
+}
+
+// returns the offset that must be applied to the edge's
+// anchor (start point or end point) to avoid overlapping edges.
+//
+// Example 1:
+//       2
+//       2
+// 11111144444444      4 = top edge of cell, 4 pixels width
+//       3             3 = right edge of cell, 3 pixels width
+//       3 cell 4
+//
+// cell 4's top border is the widest border and will be
+// drawn with horiz. offset = -3/2 whereas its left border
+// of width 3 will be drawn with vert. offset = +4/2.
+//
+// Example 2:
+//       2
+//       2
+// 11111143333333
+//       4
+//       4 cell 4
+//
+// cell 4's left border is the widest and will be drawn
+// with vert. offset = -3/2 whereas its top border
+// of of width 3 will be drawn with hor. offset = +4/2.
+//
+// couldHaveContinuation: true for "end" anchor of an edge:
+//      C
+// AAAAABBBBBB
+//      D
+// width(A) == width(B) we consider B to be a continuation of A, so that B wins
+// and will be painted. A would only be painted including the right anchor if
+// there was no edge B (due to a rowspan or the axis C-D being the table's right
+// border).
+//
+// ignoreEdgesAbove: true if an egde (left, right or top) for the first row
+// after a table page break should be painted. In this case the edges of the
+// row above must be ignored.
+static inline double prioritizedEdgeAnchorOffset(const QTextDocumentLayoutPrivate *p,
+                                                 QTextTable *table, const QTextTableData *td,
+                                                 const QTextTableCell &cell,
+                                                 const EdgeData &edgeData,
+                                                 QCss::Edge orthogonalEdge,
+                                                 bool couldHaveContinuation,
+                                                 bool ignoreEdgesAbove)
+{
+    EdgeData maxCompetingEdgeData;
+    EdgeData maxOrthogonalEdgeData;
+    QTextTableCell competingCell;
+
+    // reference scenario for the inline comments:
+    // - edgeData being the top "T0" edge of C0
+    // - right anchor is '+', orthogonal edge is "R0"
+    //   B C3 R|L C2 B
+    //   ------+------
+    //   T C0 R|L C1 T
+
+    // C0: T0/B3
+    // this is "edgeData"
+
+    // C0: R0/L1
+    checkJoinedEdge(table, td, cell, orthogonalEdge, edgeData, false,
+                    &maxCompetingEdgeData, &maxOrthogonalEdgeData);
+
+    if (td->borderCollapse) {
+        // C1: T1/B2
+        if (!isVerticalAxis(edgeData.edge) || !ignoreEdgesAbove) {
+            competingCell = adjacentCell(table, cell, orthogonalEdge);
+            if (competingCell.isValid()) {
+                checkJoinedEdge(table, td, competingCell, edgeData.edge, edgeData, couldHaveContinuation,
+                                &maxCompetingEdgeData, 0);
+            }
+        }
+
+        // C3: R3/L2
+        if (edgeData.edge != QCss::TopEdge || !ignoreEdgesAbove) {
+            competingCell = adjacentCell(table, cell, edgeData.edge);
+            if (competingCell.isValid() && sharesAxis(cell, orthogonalEdge, competingCell, orthogonalEdge)) {
+                checkJoinedEdge(table, td, competingCell, orthogonalEdge, edgeData, false,
+                                &maxCompetingEdgeData, &maxOrthogonalEdgeData);
+            }
+        }
+    }
+
+    // wider edge has priority
+    bool hasPriority = edgeData > maxCompetingEdgeData;
+
+    if (td->borderCollapse) {
+        qreal offset = collapseOffset(p, maxOrthogonalEdgeData);
+        return hasPriority ? -offset : offset;
+    }
+    else
+        return hasPriority ? 0 : p->scaleToDevice(maxOrthogonalEdgeData.width);
+}
+
+// draw one edge of the given cell
+//
+// these options are for pagination / pagebreak handling:
+//
+// forceHeaderRow: true for all rows directly below a (repeated) header row.
+//  if the table has headers the first row after a page break must check against
+//  the last table header's row, not its actual predecessor.
+//
+// adjustTopAnchor: false for rows that are a continuation of a row after a page break
+//   only evaluated for left/right edges
+//
+// adjustBottomAnchor: false for rows that will continue after a page break
+//   only evaluated for left/right edges
+//
+// ignoreEdgesAbove: true if a row starts on top of the page and the
+//   bottom edges of the prior row can therefore be ignored.
+static inline
+void drawCellBorder(const QTextDocumentLayoutPrivate *p, QPainter *painter,
+                    QTextTable *table, const QTextTableData *td, const QTextTableCell &cell,
+                    const QRectF &borderRect, QCss::Edge edge,
+                    int forceHeaderRow, bool adjustTopAnchor, bool adjustBottomAnchor,
+                    bool ignoreEdgesAbove)
+{
+    QPointF p1, p2;
+    qreal wh = 0;
+    qreal wv = 0;
+    EdgeData edgeData = axisEdgeData(table, td, cell, edge);
+
+    if (edgeData.width == 0)
+        return;
+
+    QTextTableCellFormat fmt = edgeData.cell.format().toTableCellFormat();
+    QTextFrameFormat::BorderStyle borderStyle = QTextFrameFormat::BorderStyle_None;
+    QBrush brush;
+
+    if (edgeData.edgeClass != EdgeData::ClassExplicit && td->drawGrid) {
+        borderStyle = QTextFrameFormat::BorderStyle_Solid;
+        brush = table->format().borderBrush();
+    }
+    else {
+        switch (edgeData.edge) {
+        case QCss::TopEdge:
+            brush = fmt.topBorderBrush();
+            borderStyle = fmt.topBorderStyle();
+            break;
+        case QCss::BottomEdge:
+            brush = fmt.bottomBorderBrush();
+            borderStyle = fmt.bottomBorderStyle();
+            break;
+        case QCss::LeftEdge:
+            brush = fmt.leftBorderBrush();
+            borderStyle = fmt.leftBorderStyle();
+            break;
+        case QCss::RightEdge:
+            brush = fmt.rightBorderBrush();
+            borderStyle = fmt.rightBorderStyle();
+            break;
+        default:
+            Q_UNREACHABLE();
+            break;
+        }
+    }
+
+    if (borderStyle == QTextFrameFormat::BorderStyle_None)
+        return;
+
+    // assume black if not explicit brush is set
+    if (brush.style() == Qt::NoBrush)
+        brush = Qt::black;
+
+    QTextTableCell cellOrHeader = cell;
+    if (forceHeaderRow != -1)
+        cellOrHeader = table->cellAt(forceHeaderRow, cell.column());
+
+    // adjust start and end anchors (e.g. left/right for top) according to priority rules
+    switch (edge) {
+    case QCss::TopEdge:
+        wv = p->scaleToDevice(edgeData.width);
+        p1 = borderRect.topLeft()
+                + QPointF(qFloor(prioritizedEdgeAnchorOffset(p, table, td, cell, edgeData, QCss::LeftEdge, false, ignoreEdgesAbove)), 0);
+        p2 = borderRect.topRight()
+                + QPointF(-qCeil(prioritizedEdgeAnchorOffset(p, table, td, cell, edgeData, QCss::RightEdge, true, ignoreEdgesAbove)), 0);
+        break;
+    case QCss::BottomEdge:
+        wv = p->scaleToDevice(edgeData.width);
+        p1 = borderRect.bottomLeft()
+                + QPointF(qFloor(prioritizedEdgeAnchorOffset(p, table, td, cell, edgeData, QCss::LeftEdge, false, false)), -wv);
+        p2 = borderRect.bottomRight()
+                + QPointF(-qCeil(prioritizedEdgeAnchorOffset(p, table, td, cell, edgeData, QCss::RightEdge, true, false)), -wv);
+        break;
+    case QCss::LeftEdge:
+        wh = p->scaleToDevice(edgeData.width);
+        p1 = borderRect.topLeft()
+                + QPointF(0, adjustTopAnchor ? qFloor(prioritizedEdgeAnchorOffset(p, table, td, cellOrHeader, edgeData,
+                                                                                  forceHeaderRow != -1 ? QCss::BottomEdge : QCss::TopEdge,
+                                                                                  false, ignoreEdgesAbove))
+                                             : 0);
+        p2 = borderRect.bottomLeft()
+                + QPointF(0, adjustBottomAnchor ? -qCeil(prioritizedEdgeAnchorOffset(p, table, td, cell, edgeData, QCss::BottomEdge, true, false))
+                                                : 0);
+        break;
+    case QCss::RightEdge:
+        wh = p->scaleToDevice(edgeData.width);
+        p1 = borderRect.topRight()
+                + QPointF(-wh, adjustTopAnchor ? qFloor(prioritizedEdgeAnchorOffset(p, table, td, cellOrHeader, edgeData,
+                                                                                    forceHeaderRow != -1 ? QCss::BottomEdge : QCss::TopEdge,
+                                                                                    false, ignoreEdgesAbove))
+                                               : 0);
+        p2 = borderRect.bottomRight()
+                + QPointF(-wh, adjustBottomAnchor ? -qCeil(prioritizedEdgeAnchorOffset(p, table, td, cell, edgeData, QCss::BottomEdge, true, false))
+                                                  : 0);
+        break;
+    default: break;
+    }
+
+    // for borderCollapse move edge width/2 pixel out of the borderRect
+    // so that it shares space with the adjacent cell's edge.
+    // to avoid fractional offsets, qCeil/qFloor is used
+    if (td->borderCollapse) {
+        QPointF offset;
+        switch (edge) {
+        case QCss::TopEdge:
+            offset = QPointF(0, -qCeil(collapseOffset(p, edgeData)));
+            break;
+        case QCss::BottomEdge:
+            offset = QPointF(0, qFloor(collapseOffset(p, edgeData)));
+            break;
+        case QCss::LeftEdge:
+            offset = QPointF(-qCeil(collapseOffset(p, edgeData)), 0);
+            break;
+        case QCss::RightEdge:
+            offset = QPointF(qFloor(collapseOffset(p, edgeData)), 0);
+            break;
+        default: break;
+        }
+        p1 += offset;
+        p2 += offset;
+    }
+
+    QCss::BorderStyle cssStyle = static_cast<QCss::BorderStyle>(borderStyle + 1);
+
+// this reveals errors in the drawing logic
+#ifdef COLLAPSE_DEBUG
+    QColor c = brush.color();
+    c.setAlpha(150);
+    brush.setColor(c);
+#endif
+
+    qDrawEdge(painter, p1.x(), p1.y(), p2.x() + wh, p2.y() + wv, 0, 0, edge, cssStyle, brush);
+}
+#endif
+
+void QTextDocumentLayoutPrivate::drawTableCellBorder(const QRectF &cellRect, QPainter *painter,
+                                                     QTextTable *table, QTextTableData *td,
+                                                     const QTextTableCell &cell) const
+{
+#ifndef QT_NO_CSSPARSER
+    qreal topMarginAfterPageBreak = (td->effectiveTopMargin + td->cellSpacing + td->border).toReal();
+    qreal bottomMargin = (td->effectiveBottomMargin + td->cellSpacing + td->border).toReal();
+
+    const int headerRowCount = qMin(table->format().headerRowCount(), table->rows() - 1);
+    if (headerRowCount > 0 && cell.row() >= headerRowCount)
+        topMarginAfterPageBreak += td->headerHeight.toReal();
+
+    BorderPaginator paginator(document, cellRect, topMarginAfterPageBreak, bottomMargin, 0);
+
+    bool turn_off_antialiasing = !(painter->renderHints() & QPainter::Antialiasing);
+    painter->setRenderHint(QPainter::Antialiasing);
+
+    // paint cell borders for every page the cell appears on
+    for (int page = paginator.topPage; page <= paginator.bottomPage; ++page) {
+        const QRectF clipped = paginator.clipRect(page);
+        if (!clipped.isValid())
+            continue;
+
+        const qreal offset = cellRect.top() - td->rowPositions.at(cell.row()).toReal();
+        const int lastHeaderRow = table->format().headerRowCount() - 1;
+        const bool tableHasHeader = table->format().headerRowCount() > 0;
+        const bool isHeaderRow = cell.row() < table->format().headerRowCount();
+        const bool isFirstRow = cell.row() == lastHeaderRow + 1;
+        const bool isLastRow = cell.row() + cell.rowSpan() >= table->rows();
+        const bool previousRowOnPreviousPage = !isFirstRow
+                && !isHeaderRow
+                && BorderPaginator(document,
+                                   td->cellRect(adjacentCell(table, cell, QCss::TopEdge)).translated(0, offset),
+                                   topMarginAfterPageBreak,
+                                   bottomMargin,
+                                   0).bottomPage < page;
+        const bool nextRowOnNextPage = !isLastRow
+                && BorderPaginator(document,
+                                   td->cellRect(adjacentCell(table, cell, QCss::BottomEdge)).translated(0, offset),
+                                   topMarginAfterPageBreak,
+                                   bottomMargin,
+                                   0).topPage > page;
+        const bool rowStartsOnPage = page == paginator.topPage;
+        const bool rowEndsOnPage = page == paginator.bottomPage;
+        const bool rowStartsOnPageTop = !tableHasHeader
+                && rowStartsOnPage
+                && previousRowOnPreviousPage;
+        const bool rowStartsOnPageBelowHeader = tableHasHeader
+                && rowStartsOnPage
+                && previousRowOnPreviousPage;
+
+        const bool suppressTopBorder = td->borderCollapse
+                ? !isHeaderRow && (!rowStartsOnPage || rowStartsOnPageBelowHeader)
+                : !rowStartsOnPage;
+        const bool suppressBottomBorder = td->borderCollapse
+                ? !isHeaderRow && (!rowEndsOnPage || nextRowOnNextPage)
+                : !rowEndsOnPage;
+        const bool doNotAdjustTopAnchor = td->borderCollapse
+                ? !tableHasHeader && !rowStartsOnPage
+                : !rowStartsOnPage;
+        const bool doNotAdjustBottomAnchor = suppressBottomBorder;
+
+        if (!suppressTopBorder) {
+            drawCellBorder(this, painter, table, td, cell, clipped, QCss::TopEdge,
+                           -1, true, true, rowStartsOnPageTop);
+        }
+
+        drawCellBorder(this, painter, table, td, cell, clipped, QCss::LeftEdge,
+                       suppressTopBorder ? lastHeaderRow : -1,
+                       !doNotAdjustTopAnchor,
+                       !doNotAdjustBottomAnchor,
+                       rowStartsOnPageTop);
+        drawCellBorder(this, painter, table, td, cell, clipped, QCss::RightEdge,
+                       suppressTopBorder ? lastHeaderRow : -1,
+                       !doNotAdjustTopAnchor,
+                       !doNotAdjustBottomAnchor,
+                       rowStartsOnPageTop);
+
+        if (!suppressBottomBorder) {
+            drawCellBorder(this, painter, table, td, cell, clipped, QCss::BottomEdge,
+                           -1, true, true, false);
+        }
+    }
+
+    if (turn_off_antialiasing)
+        painter->setRenderHint(QPainter::Antialiasing, false);
+#endif
+}
+
 void QTextDocumentLayoutPrivate::drawTableCell(const QRectF &cellRect, QPainter *painter, const QAbstractTextDocumentLayout::PaintContext &cell_context,
                                                QTextTable *table, QTextTableData *td, int r, int c,
                                                QTextBlock *cursorBlockNeedingRepaint, QPointF *cursorBlockOffset) const
@@ -1126,9 +1819,8 @@ void QTextDocumentLayoutPrivate::drawTableCell(const QRectF &cellRect, QPainter 
             return;
     }
 
-    QTextFormat fmt = cell.format();
-    const QFixed leftPadding = td->leftPadding(fmt);
-    const QFixed topPadding = td->topPadding(fmt);
+    const QFixed leftPadding = td->leftPadding(table, cell);
+    const QFixed topPadding = td->topPadding(table, cell);
 
     qreal topMargin = (td->effectiveTopMargin + td->cellSpacing + td->border).toReal();
     qreal bottomMargin = (td->effectiveBottomMargin + td->cellSpacing + td->border).toReal();
@@ -1137,7 +1829,7 @@ void QTextDocumentLayoutPrivate::drawTableCell(const QRectF &cellRect, QPainter 
     if (r >= headerRowCount)
         topMargin += td->headerHeight.toReal();
 
-    if (td->border != 0) {
+    if (!td->borderCollapse && td->border != 0) {
         const QBrush oldBrush = painter->brush();
         const QPen oldPen = painter->pen();
 
@@ -1202,6 +1894,9 @@ void QTextDocumentLayoutPrivate::drawTableCell(const QRectF &cellRect, QPainter 
         if (bg.style() > Qt::SolidPattern)
             painter->setBrushOrigin(cellRect.topLeft());
     }
+
+    // paint over the background - otherwise we would have to adjust the background paint cellRect for the border values
+    drawTableCellBorder(cellRect, painter, table, td, cell);
 
     const QFixed verticalOffset = td->cellVerticalOffsets.at(c + r * table->columns());
 
@@ -1566,8 +2261,7 @@ QTextLayoutStruct QTextDocumentLayoutPrivate::layoutCell(QTextTable *t, const QT
     layoutStruct.maximumWidth = QFIXED_MAX;
     layoutStruct.y = 0;
 
-    const QTextFormat fmt = cell.format();
-    const QFixed topPadding = td->topPadding(fmt);
+    const QFixed topPadding = td->topPadding(t, cell);
     if (withPageBreaks) {
         layoutStruct.frameY = absoluteTableY + td->rowPositions.at(cell.row()) + topPadding;
     }
@@ -1585,8 +2279,20 @@ QTextLayoutStruct QTextDocumentLayoutPrivate::layoutCell(QTextTable *t, const QT
     if (layoutStruct.pageHeight < 0 || !withPageBreaks)
         layoutStruct.pageHeight = QFIXED_MAX;
     const int currentPage = layoutStruct.currentPage();
-    layoutStruct.pageTopMargin = td->effectiveTopMargin + td->cellSpacing + td->border + topPadding;
-    layoutStruct.pageBottomMargin = td->effectiveBottomMargin + td->cellSpacing + td->border + td->bottomPadding(fmt);
+
+    layoutStruct.pageTopMargin = td->effectiveTopMargin
+            + td->cellSpacing
+            + td->border
+            + td->paddingProperty(cell.format(), QTextFormat::TableCellTopPadding); // top cell-border is not repeated
+
+    const int headerRowCount = t->format().headerRowCount();
+    if (td->borderCollapse && headerRowCount > 0) {
+        // consider the header row's bottom edge width
+        qreal headerRowBottomBorderWidth = axisEdgeData(t, td, t->cellAt(headerRowCount - 1, cell.column()), QCss::BottomEdge).width;
+        layoutStruct.pageTopMargin += QFixed::fromReal(scaleToDevice(headerRowBottomBorderWidth) / 2);
+    }
+
+    layoutStruct.pageBottomMargin = td->effectiveBottomMargin + td->cellSpacing + td->effectiveBottomBorder + td->bottomPadding(t, cell);
     layoutStruct.pageBottom = (currentPage + 1) * layoutStruct.pageHeight - layoutStruct.pageBottomMargin;
 
     layoutStruct.fullLayout = true;
@@ -1632,6 +2338,17 @@ QTextLayoutStruct QTextDocumentLayoutPrivate::layoutCell(QTextTable *t, const QT
     return layoutStruct;
 }
 
+#ifndef QT_NO_CSSPARSER
+static inline void findWidestOutermostBorder(QTextTable *table, QTextTableData *td,
+                                             const QTextTableCell &cell, QCss::Edge edge,
+                                             qreal *outerBorders)
+{
+    EdgeData w = cellEdgeData(table, td, cell, edge);
+    if (w.width > outerBorders[edge])
+        outerBorders[edge] = w.width;
+}
+#endif
+
 QRectF QTextDocumentLayoutPrivate::layoutTable(QTextTable *table, int layoutFrom, int layoutTo, QFixed parentY)
 {
     qCDebug(lcTable) << "layoutTable from" << layoutFrom << "to" << layoutTo << "parentY" << parentY;
@@ -1657,12 +2374,49 @@ QRectF QTextDocumentLayoutPrivate::layoutTable(QTextTable *table, int layoutFrom
         columnWidthConstraints.resize(columns);
     Q_ASSERT(columnWidthConstraints.count() == columns);
 
-    const QFixed cellSpacing = td->cellSpacing = QFixed::fromReal(scaleToDevice(fmt.cellSpacing()));
+    // borderCollapse will disable drawing the html4 style table cell borders
+    // and draw a 1px grid instead. This also sets a fixed cellspacing
+    // of 1px if border > 0 (for the grid) and ignore any explicitly set
+    // cellspacing.
+    td->borderCollapse = fmt.borderCollapse();
+    td->borderCell = td->borderCollapse ? 0 : td->border;
+    const QFixed cellSpacing = td->cellSpacing = QFixed::fromReal(scaleToDevice(td->borderCollapse ? 0 : fmt.cellSpacing())).round();
+
+    td->drawGrid = (td->borderCollapse && fmt.border() >= 1);
+
+    td->effectiveTopBorder = td->effectiveBottomBorder = td->effectiveLeftBorder = td->effectiveRightBorder = td->border;
+
+#ifndef QT_NO_CSSPARSER
+    if (td->borderCollapse) {
+        // find the widest borders of the outermost cells
+        qreal outerBorders[QCss::NumEdges];
+        for (int i = 0; i < QCss::NumEdges; ++i)
+            outerBorders[i] = 0;
+
+        for (int r = 0; r < rows; ++r) {
+            if (r == 0) {
+                for (int c = 0; c < columns; ++c)
+                    findWidestOutermostBorder(table, td, table->cellAt(r, c), QCss::TopEdge, outerBorders);
+            }
+            if (r == rows - 1) {
+                for (int c = 0; c < columns; ++c)
+                    findWidestOutermostBorder(table, td, table->cellAt(r, c), QCss::BottomEdge, outerBorders);
+            }
+            findWidestOutermostBorder(table, td, table->cellAt(r, 0), QCss::LeftEdge, outerBorders);
+            findWidestOutermostBorder(table, td, table->cellAt(r, columns - 1), QCss::RightEdge, outerBorders);
+        }
+        td->effectiveTopBorder = QFixed::fromReal(scaleToDevice(outerBorders[QCss::TopEdge] / 2)).round();
+        td->effectiveBottomBorder = QFixed::fromReal(scaleToDevice(outerBorders[QCss::BottomEdge] / 2)).round();
+        td->effectiveLeftBorder = QFixed::fromReal(scaleToDevice(outerBorders[QCss::LeftEdge] / 2)).round();
+        td->effectiveRightBorder = QFixed::fromReal(scaleToDevice(outerBorders[QCss::RightEdge] / 2)).round();
+    }
+#endif
+
     td->deviceScale = scaleToDevice(qreal(1));
     td->cellPadding = QFixed::fromReal(scaleToDevice(fmt.cellPadding()));
-    const QFixed leftMargin = td->leftMargin + td->border + td->padding;
-    const QFixed rightMargin = td->rightMargin + td->border + td->padding;
-    const QFixed topMargin = td->topMargin + td->border + td->padding;
+    const QFixed leftMargin = td->leftMargin + td->padding + td->effectiveLeftBorder;
+    const QFixed rightMargin = td->rightMargin + td->padding + td->effectiveRightBorder;
+    const QFixed topMargin = td->topMargin + td->padding + td->effectiveTopBorder;
 
     const QFixed absoluteTableY = parentY + td->position.y;
 
@@ -1672,11 +2426,17 @@ recalc_minmax_widths:
 
     QFixed remainingWidth = td->contentsWidth;
     // two (vertical) borders per cell per column
-    remainingWidth -= columns * 2 * td->border;
+    remainingWidth -= columns * 2 * td->borderCell;
     // inter-cell spacing
     remainingWidth -= (columns - 1) * cellSpacing;
     // cell spacing at the left and right hand side
     remainingWidth -= 2 * cellSpacing;
+
+    if (td->borderCollapse) {
+        remainingWidth -= td->effectiveLeftBorder;
+        remainingWidth -= td->effectiveRightBorder;
+    }
+
     // remember the width used to distribute to percentaged columns
     const QFixed initialTotalWidth = remainingWidth;
 
@@ -1701,9 +2461,8 @@ recalc_minmax_widths:
             if (cspan > 1 && i != cell.column())
                 continue;
 
-            const QTextFormat fmt = cell.format();
-            const QFixed leftPadding = td->leftPadding(fmt);
-            const QFixed rightPadding = td->rightPadding(fmt);
+            const QFixed leftPadding = td->leftPadding(table, cell);
+            const QFixed rightPadding = td->rightPadding(table, cell);
             const QFixed widthPadding = leftPadding + rightPadding;
 
             // to figure out the min and the max width lay out the cell at
@@ -1832,7 +2591,7 @@ recalc_minmax_widths:
     }
 
     // in order to get a correct border rendering we must ensure that the distance between
-    // two cells is exactly 2 * td->border pixel. we do this by rounding the calculated width
+    // two cells is exactly 2 * td->cellBorder pixel. we do this by rounding the calculated width
     // values here.
     // to minimize the total rounding error we propagate the rounding error for each width
     // to its successor.
@@ -1847,7 +2606,7 @@ recalc_minmax_widths:
     td->columnPositions[0] = leftMargin /*includes table border*/ + cellSpacing + td->border;
 
     for (int i = 1; i < columns; ++i)
-        td->columnPositions[i] = td->columnPositions.at(i-1) + td->widths.at(i-1) + 2 * td->border + cellSpacing;
+        td->columnPositions[i] = td->columnPositions.at(i-1) + td->widths.at(i-1) + 2 * td->borderCell + cellSpacing;
 
     // - margin to compensate the + margin in columnPositions[0]
     const QFixed contentsWidth = td->columnPositions.constLast() + td->widths.constLast() + td->padding + td->border + cellSpacing - leftMargin;
@@ -1948,12 +2707,10 @@ relayout:
                 }
             }
 
-            const QTextFormat fmt = cell.format();
-
-            const QFixed topPadding = td->topPadding(fmt);
-            const QFixed bottomPadding = td->bottomPadding(fmt);
-            const QFixed leftPadding = td->leftPadding(fmt);
-            const QFixed rightPadding = td->rightPadding(fmt);
+            const QFixed topPadding = td->topPadding(table, cell);
+            const QFixed bottomPadding = td->bottomPadding(table, cell);
+            const QFixed leftPadding = td->leftPadding(table, cell);
+            const QFixed rightPadding = td->rightPadding(table, cell);
             const QFixed widthPadding = leftPadding + rightPadding;
 
             ++rowCellCount;
@@ -1990,13 +2747,13 @@ relayout:
         }
 
         if (haveRowSpannedCells) {
-            const QFixed effectiveHeight = td->heights.at(r) + td->border + cellSpacing + td->border;
+            const QFixed effectiveHeight = td->heights.at(r) + td->borderCell + cellSpacing + td->borderCell;
             for (int c = 0; c < columns; ++c)
                 heightToDistribute[c] = qMax(heightToDistribute.at(c) - effectiveHeight - dropDistance, QFixed(0));
         }
 
         if (r == headerRowCount - 1) {
-            td->headerHeight = td->rowPositions.at(r) + td->heights.at(r) - td->rowPositions.at(0) + td->cellSpacing + 2 * td->border;
+            td->headerHeight = td->rowPositions.at(r) + td->heights.at(r) - td->rowPositions.at(0) + td->cellSpacing + 2 * td->borderCell;
             td->headerHeight -= td->headerHeight * (td->headerHeight / pageHeight).truncate();
             td->effectiveTopMargin += td->headerHeight;
         }
@@ -2018,7 +2775,7 @@ relayout:
             const QFixed availableHeight = td->rowPositions.at(r + rowSpan - 1) + td->heights.at(r + rowSpan - 1) - td->rowPositions.at(r);
 
             const QTextCharFormat cellFormat = cell.format();
-            const QFixed cellHeight = cellHeights.at(cellIndex++) + td->topPadding(cellFormat) + td->bottomPadding(cellFormat);
+            const QFixed cellHeight = cellHeights.at(cellIndex++) + td->topPadding(table, cell) + td->bottomPadding(table, cell);
 
             QFixed offset = 0;
             switch (cellFormat.verticalAlignment()) {
@@ -2043,14 +2800,14 @@ relayout:
 
     td->minimumWidth = td->columnPositions.at(0);
     for (int i = 0; i < columns; ++i) {
-        td->minimumWidth += td->minWidths.at(i) + 2 * td->border + cellSpacing;
+        td->minimumWidth += td->minWidths.at(i) + 2 * td->borderCell + cellSpacing;
     }
     td->minimumWidth += rightMargin - td->border;
 
     td->maximumWidth = td->columnPositions.at(0);
     for (int i = 0; i < columns; ++i) {
         if (td->maxWidths.at(i) != QFIXED_MAX)
-            td->maximumWidth += td->maxWidths.at(i) + 2 * td->border + cellSpacing;
+            td->maximumWidth += td->maxWidths.at(i) + 2 * td->borderCell + cellSpacing;
         qCDebug(lcTable) << "column" << i << "has final width" << td->widths.at(i).toReal()
                          << "min" << td->minWidths.at(i).toReal() << "max" << td->maxWidths.at(i).toReal();
     }
@@ -3284,7 +4041,7 @@ QRectF QTextDocumentLayout::tableBoundingRect(QTextTable *table) const
             if (QTextTable *table = qobject_cast<QTextTable *>(f)) {
                 QTextTableCell cell = table->cellAt(framePos);
                 if (cell.isValid())
-                    pos += static_cast<QTextTableData *>(fd)->cellPosition(cell).toPointF();
+                    pos += static_cast<QTextTableData *>(fd)->cellPosition(table, cell).toPointF();
             }
         }
 
@@ -3314,7 +4071,7 @@ QRectF QTextDocumentLayoutPrivate::frameBoundingRectInternal(QTextFrame *frame) 
         if (QTextTable *table = qobject_cast<QTextTable *>(f)) {
             QTextTableCell cell = table->cellAt(framePos);
             if (cell.isValid())
-                pos += static_cast<QTextTableData *>(fd)->cellPosition(cell).toPointF();
+                pos += static_cast<QTextTableData *>(fd)->cellPosition(table, cell).toPointF();
         }
 
         f = f->parentFrame();
@@ -3339,7 +4096,7 @@ QRectF QTextDocumentLayout::blockBoundingRect(const QTextBlock &block) const
         if (QTextTable *table = qobject_cast<QTextTable *>(frame)) {
             QTextTableCell cell = table->cellAt(blockPos);
             if (cell.isValid())
-                offset += static_cast<QTextTableData *>(fd)->cellPosition(cell).toPointF();
+                offset += static_cast<QTextTableData *>(fd)->cellPosition(table, cell).toPointF();
         }
 
         frame = frame->parentFrame();
