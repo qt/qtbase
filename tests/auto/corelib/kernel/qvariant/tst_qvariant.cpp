@@ -1711,12 +1711,16 @@ void tst_QVariant::compareNumbers_data() const
     QTest::newRow("float3") << qVariantFromValue(0.f) << qVariantFromValue(-1.f) << +1;
     QTest::newRow("float4") << qVariantFromValue(-float(qInf())) << qVariantFromValue(0.f) << -1;
     QTest::newRow("float5") << qVariantFromValue(0.f) << qVariantFromValue(-float(qInf())) << +1;
+    QTest::newRow("float6") << qVariantFromValue(-float(qInf())) << qVariantFromValue(-float(qInf())) << 0;
+    QTest::newRow("float7") << qVariantFromValue(float(qInf())) << qVariantFromValue(float(qInf())) << 0;
 
     QTest::newRow("double1") << qVariantFromValue(0.) << qVariantFromValue(0.) << 0;
     QTest::newRow("double2") << qVariantFromValue(-1.) << qVariantFromValue(0.) << -1;
     QTest::newRow("double3") << qVariantFromValue(0.) << qVariantFromValue(-1.) << +1;
     QTest::newRow("double4") << qVariantFromValue(-qInf()) << qVariantFromValue(0.) << -1;
     QTest::newRow("double5") << qVariantFromValue(0.) << qVariantFromValue(-qInf()) << +1;
+    QTest::newRow("double6") << qVariantFromValue(-double(qInf())) << qVariantFromValue(-qInf()) << 0;
+    QTest::newRow("double7") << qVariantFromValue(qInf()) << qVariantFromValue(qInf()) << 0;
 
     // mixed comparisons
     // fp + fp
@@ -1725,6 +1729,8 @@ void tst_QVariant::compareNumbers_data() const
     QTest::newRow("float+double3") << qVariantFromValue(0.f) << qVariantFromValue(-1.) << +1;
     QTest::newRow("float+double4") << qVariantFromValue(-float(qInf())) << qVariantFromValue(0.) << -1;
     QTest::newRow("float+double5") << qVariantFromValue(0.f) << qVariantFromValue(-qInf()) << +1;
+    QTest::newRow("float+double6") << qVariantFromValue(-float(qInf())) << qVariantFromValue(qInf()) << 0;
+    QTest::newRow("float+double7") << qVariantFromValue(float(qInf())) << qVariantFromValue(qInf()) << 0;
 
     // fp + int
     QTest::newRow("float+int1") << qVariantFromValue(0.f) << qVariantFromValue(0) << 0;
@@ -1735,6 +1741,7 @@ void tst_QVariant::compareNumbers_data() const
     QTest::newRow("double+int3") << qVariantFromValue(0.) << qVariantFromValue(-1) << +1;
     QTest::newRow("float+int4") << qVariantFromValue(1.5f) << qVariantFromValue(1) << +1;
     QTest::newRow("double+int4") << qVariantFromValue(1.5) << qVariantFromValue(1) << +1;
+    QTest::newRow("double+int5") << qVariantFromValue(qInf()) << qVariantFromValue(1) << +1;
 
     // fp + uint
     QTest::newRow("float+uint1") << qVariantFromValue(0.f) << qVariantFromValue(0U) << 0;
