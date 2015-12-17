@@ -294,7 +294,12 @@ public class QtNative
 
     private static void quitApp()
     {
-        m_activity.finish();
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                m_activity.finish();
+            }
+        });
     }
 
     //@ANDROID-9
