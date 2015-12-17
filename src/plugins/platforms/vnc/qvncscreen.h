@@ -49,6 +49,7 @@ class QFbCursor;
 class QTcpSocket;
 class QVncServer;
 class QVncDirtyMap;
+class QVncClientCursor;
 
 class QVncScreen : public QFbScreen
 {
@@ -64,7 +65,9 @@ public:
     QRegion doRedraw() Q_DECL_OVERRIDE;
     QImage *image() const { return mScreenImage; }
 
-//    QPlatformCursor *cursor() const Q_DECL_OVERRIDE { return mCursor; }
+    void enableClientCursor();
+    void disableClientCursor();
+    QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
 
     void clearDirty() { dirtyRegion = QRegion(); }
 
@@ -76,7 +79,7 @@ public:
     QRegion dirtyRegion;
     int refreshRate = 30;
     QVncServer *vncServer = 0;
-
+    QVncClientCursor *clientCursor = 0;
 };
 
 QT_END_NAMESPACE

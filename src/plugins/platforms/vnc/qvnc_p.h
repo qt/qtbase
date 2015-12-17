@@ -416,9 +416,6 @@ public:
     inline QTcpSocket* clientSocket() const { return client; }
     QImage screenImage() const;
     inline bool doPixelConversion() const { return needConversion; }
-#ifndef QT_NO_QWS_CURSOR
-    inline bool hasClientCursor() const { return qvnc_cursor != 0; }
-#endif
 
 private:
     void setPixelFormat();
@@ -464,10 +461,6 @@ private:
     bool dirtyCursor;
     int refreshRate;
     QVncScreen *qvnc_screen;
-#ifndef QT_NO_QWS_CURSOR
-    QVncClientCursor *qvnc_cursor;
-#endif
-
     QRfbEncoder *encoder;
 };
 

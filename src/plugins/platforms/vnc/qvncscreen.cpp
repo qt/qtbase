@@ -40,6 +40,7 @@
 #include "qvncscreen.h"
 #include "qvnc_p.h"
 #include <QtPlatformSupport/private/qfbwindow_p.h>
+#include <QtPlatformSupport/private/qfbcursor_p.h>
 
 #include <QtGui/QPainter>
 
@@ -55,6 +56,8 @@ QVncScreen::QVncScreen(const QStringList &args)
 
 QVncScreen::~QVncScreen()
 {
+    if (clientCursor)
+        delete clientCursor;
 }
 
 bool QVncScreen::initialize()
@@ -67,7 +70,7 @@ bool QVncScreen::initialize()
     QFbScreen::initializeCompositor();
     QT_VNC_DEBUG() << "QVncScreen::init" << geometry();
 
-    mCursor = new QFbCursor(this);
+    disableClientCursor();
 
     switch (depth()) {
     case 32:
@@ -102,6 +105,27 @@ QRegion QVncScreen::doRedraw()
 
     vncServer->setDirty();
     return touched;
+}
+
+void QVncScreen::enableClientCursor()
+{
+    delete mCursor;
+    mCursor = 0;
+    clientCursor = new QVncClientCursor(vncServer);
+}
+
+void QVncScreen::disableClientCursor()
+{
+    if (vncServer && clientCursor) {
+        delete clientCursor;
+        clientCursor = 0;
+    }
+    mCursor = new QFbCursor(this);
+}
+
+QPlatformCursor *QVncScreen::cursor() const
+{
+    return mCursor ? static_cast<QPlatformCursor *>(mCursor) : static_cast<QPlatformCursor *>(clientCursor);
 }
 
 // grabWindow() grabs "from the screen" not from the backingstores.

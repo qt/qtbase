@@ -526,6 +526,9 @@ void QRfbRawEncoder::write()
 QVncClientCursor::QVncClientCursor(QVncServer *s)
     : server(s)
 {
+    QWindow *w = QGuiApplication::focusWindow();
+    QCursor c = w ? w->cursor() : QCursor(Qt::ArrowCursor);
+    changeCursor(&c, 0);
 }
 
 QVncClientCursor::~QVncClientCursor()
@@ -634,9 +637,6 @@ void QVncServer::init()
 
     connect(serverSocket, SIGNAL(newConnection()), this, SLOT(newConnection()));
 
-#ifndef QT_NO_QWS_CURSOR
-    qvnc_cursor = 0;
-#endif
     encoder = 0;
 }
 
@@ -646,10 +646,6 @@ QVncServer::~QVncServer()
     encoder = 0;
     delete client;
     client = 0;
-#ifndef QT_NO_QWS_CURSOR
-    delete qvnc_cursor;
-    qvnc_cursor = 0;
-#endif
 }
 
 void QVncServer::setDirty()
@@ -977,10 +973,8 @@ void QVncServer::setEncodings()
                 break;
             case Cursor:
                 supportCursor = true;
-                if (!qvnc_screen->screen()) {
-                    delete qvnc_cursor;
-                    qvnc_cursor = new QVncClientCursor(this);
-                }
+                qDebug() << "client side cursor supported.";
+                qvnc_screen->enableClientCursor();
                 break;
             case DesktopSize:
                 supportDesktopSize = true;
@@ -1259,10 +1253,7 @@ void QVncServer::checkUpdate()
         return;
 
     if (dirtyCursor) {
-#ifndef QT_NO_QWS_CURSOR
-        Q_ASSERT(qvnc_cursor);
-        qvnc_cursor->write();
-#endif
+        qvnc_screen->clientCursor->write();
         dirtyCursor = false;
         wantUpdate = false;
         return;
@@ -1287,11 +1278,7 @@ void QVncServer::discardClient()
     state = Disconnected;
     delete encoder;
     encoder = 0;
-#ifndef QT_NO_QWS_CURSOR
-    delete qvnc_cursor;
-    qvnc_cursor = 0;
-#endif
-
+    qvnc_screen->disableClientCursor();
     qvnc_screen->setPowerState(QPlatformScreen::PowerStateOff);
 }
 
