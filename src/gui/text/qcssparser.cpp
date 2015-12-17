@@ -92,6 +92,7 @@ static const QCssKnownValue properties[NumProperties - 1] = {
     { "border-bottom-right-radius", BorderBottomRightRadius },
     { "border-bottom-style", BorderBottomStyle },
     { "border-bottom-width", BorderBottomWidth },
+    { "border-collapse", BorderCollapse },
     { "border-color", BorderColor },
     { "border-image", BorderImage },
     { "border-left", BorderLeft },
@@ -1730,6 +1731,14 @@ void Declaration::borderImageValue(QString *image, int *cuts,
                                         tileModes, NumKnownTileModes));
     } else
         *h = *v;
+}
+
+bool Declaration::borderCollapseValue() const
+{
+    if (d->values.count() != 1)
+        return false;
+    else
+        return d->values.at(0).toString() == QLatin1String("collapse");
 }
 
 QIcon Declaration::iconValue() const
