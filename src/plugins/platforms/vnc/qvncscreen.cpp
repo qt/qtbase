@@ -70,41 +70,15 @@ bool QVncScreen::initialize()
     mCursor = new QFbCursor(this);
 
     switch (depth()) {
-#if 1//def QT_QWS_DEPTH_32
     case 32:
         dirty = new QVncDirtyMapOptimized<quint32>(this);
         break;
-#endif
-//#if 1//def QT_QWS_DEPTH_24
-//    case 24:
-//        dirty = new QVncDirtyMapOptimized<qrgb888>(this);
-//        break;
-//#endif
-//#if 1//def QT_QWS_DEPTH_24
-//    case 18:
-//        dirty = new QVncDirtyMapOptimized<qrgb666>(this);
-//        break;
-//#endif
-#if 1//def QT_QWS_DEPTH_24
     case 16:
         dirty = new QVncDirtyMapOptimized<quint16>(this);
         break;
-#endif
-//#if 1//def QT_QWS_DEPTH_24
-//    case 15:
-//        dirty = new QVncDirtyMapOptimized<qrgb555>(this);
-//        break;
-//#endif
-//#if 1//def QT_QWS_DEPTH_24
-//    case 12:
-//        dirty = new QVncDirtyMapOptimized<qrgb444>(this);
-//        break;
-//#endif
-#if 1//def QT_QWS_DEPTH_24
     case 8:
         dirty = new QVncDirtyMapOptimized<quint8>(this);
         break;
-#endif
     default:
         qWarning("QVNCScreen::initDevice: No support for screen depth %d",
                  depth());
@@ -112,17 +86,7 @@ bool QVncScreen::initialize()
         return false;
     }
 
-
-//    const bool ok = QProxyScreen::initDevice();
-//#ifndef QT_NO_QWS_CURSOR
-//    qt_screencursor = new QVNCCursor(this);
-//#endif
-//    if (QProxyScreen::screen())
-//        return ok;
-
-//    // Disable painting if there is only 1 display and nothing is attached to the VNC server
-//    if (!d_ptr->noDisablePainting)
-//        QWSServer::instance()->enablePainting(false);
+    setPowerState(PowerStateOff);
 
     return true;
 }
@@ -136,10 +100,6 @@ QRegion QVncScreen::doRedraw()
         return touched;
     dirtyRegion += touched;
 
-    QVector<QRect> rects = touched.rects();
-    for (int i = 0; i < rects.size(); i++) {
-        // ### send to client
-    }
     vncServer->setDirty();
     return touched;
 }

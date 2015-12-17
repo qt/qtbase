@@ -60,9 +60,8 @@ class QVncScreen;
 class QVncServer;
 class QVncClientCursor;
 
+// This fits with the VNC hextile messages
 #define MAP_TILE_SIZE 16
-#define MAP_WIDTH 1280 / MAP_TILE_SIZE
-#define MAP_HEIGHT 1024 / MAP_TILE_SIZE
 
 class QVncDirtyMap
 {
