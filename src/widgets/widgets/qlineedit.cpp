@@ -2180,9 +2180,10 @@ void QLineEdit::changeEvent(QEvent *ev)
         update();
         break;
     case QEvent::LayoutDirectionChange:
-        foreach (const QLineEditPrivate::SideWidgetEntry &e, d->trailingSideWidgets) // Refresh icon to show arrow in right direction.
+        for (const auto &e : d->trailingSideWidgets) { // Refresh icon to show arrow in right direction.
             if (e.flags & QLineEditPrivate::SideWidgetClearButton)
                 static_cast<QLineEditIconButton *>(e.widget)->setIcon(d->clearButtonIcon());
+        }
         d->positionSideWidgets();
         break;
     default:

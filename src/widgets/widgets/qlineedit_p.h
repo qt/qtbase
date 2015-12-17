@@ -114,7 +114,7 @@ public:
         QAction *action;
         int flags;
     };
-    typedef QVector<SideWidgetEntry> SideWidgetEntryList;
+    typedef std::vector<SideWidgetEntry> SideWidgetEntryList;
 
     QLineEditPrivate()
         : control(0), frame(1), contextMenuEnabled(1), cursorVisible(0),
@@ -210,7 +210,7 @@ public:
     QIcon clearButtonIcon() const;
     void setClearButtonEnabled(bool enabled);
     void positionSideWidgets();
-    inline bool hasSideWidgets() const { return !leadingSideWidgets.isEmpty() || !trailingSideWidgets.isEmpty(); }
+    inline bool hasSideWidgets() const { return !leadingSideWidgets.empty() || !trailingSideWidgets.empty(); }
     inline const SideWidgetEntryList &leftSideWidgetList() const
         { return q_func()->layoutDirection() == Qt::LeftToRight ? leadingSideWidgets : trailingSideWidgets; }
     inline const SideWidgetEntryList &rightSideWidgetList() const
@@ -238,15 +238,17 @@ static bool isSideWidgetVisible(const QLineEditPrivate::SideWidgetEntry &e)
 
 inline int QLineEditPrivate::effectiveLeftTextMargin() const
 {
+    const auto &list = leftSideWidgetList();
     return leftTextMargin + (QLineEditIconButton::IconMargin + iconSize().width())
-        * int(std::count_if(leftSideWidgetList().constBegin(), leftSideWidgetList().constEnd(),
+        * int(std::count_if(list.begin(), list.end(),
                             isSideWidgetVisible));
 }
 
 inline int QLineEditPrivate::effectiveRightTextMargin() const
 {
+    const auto &list = rightSideWidgetList();
     return rightTextMargin + (QLineEditIconButton::IconMargin + iconSize().width())
-        * int(std::count_if(rightSideWidgetList().constBegin(), rightSideWidgetList().constEnd(),
+        * int(std::count_if(list.begin(), list.end(),
                             isSideWidgetVisible));
 }
 

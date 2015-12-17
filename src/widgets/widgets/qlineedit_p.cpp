@@ -382,11 +382,11 @@ void QLineEditPrivate::_q_textChanged(const QString &text)
             lastTextSize = newTextSize;
 #ifndef QT_NO_ANIMATION
             const bool fadeIn = newTextSize > 0;
-            foreach (const SideWidgetEntry &e, leadingSideWidgets) {
+            for (const SideWidgetEntry &e : leadingSideWidgets) {
                 if (e.flags & SideWidgetFadeInWithText)
                    static_cast<QLineEditIconButton *>(e.widget)->animateShow(fadeIn);
             }
-            foreach (const SideWidgetEntry &e, trailingSideWidgets) {
+            for (const SideWidgetEntry &e : trailingSideWidgets) {
                 if (e.flags & SideWidgetFadeInWithText)
                    static_cast<QLineEditIconButton *>(e.widget)->animateShow(fadeIn);
             }
@@ -453,13 +453,17 @@ void QLineEditPrivate::positionSideWidgets()
 
 QLineEditPrivate::PositionIndexPair QLineEditPrivate::findSideWidget(const QAction *a) const
 {
-    for (int i = 0; i < leadingSideWidgets.size(); ++i) {
-        if (a == leadingSideWidgets.at(i).action)
+    int i = 0;
+    for (const auto &e : leadingSideWidgets) {
+        if (a == e.action)
             return PositionIndexPair(QLineEdit::LeadingPosition, i);
+        ++i;
     }
-    for (int i = 0; i < trailingSideWidgets.size(); ++i) {
-        if (a == trailingSideWidgets.at(i).action)
+    i = 0;
+    for (const auto &e : trailingSideWidgets) {
+        if (a == e.action)
             return PositionIndexPair(QLineEdit::TrailingPosition, i);
+        ++i;
     }
     return PositionIndexPair(QLineEdit::LeadingPosition, -1);
 }
@@ -493,8 +497,8 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
     PositionIndexPair positionIndex = before ? findSideWidget(before) : PositionIndexPair(position, -1);
     SideWidgetEntryList &list = positionIndex.first == QLineEdit::TrailingPosition ? trailingSideWidgets : leadingSideWidgets;
     if (positionIndex.second < 0)
-        positionIndex.second = list.size();
-    list.insert(positionIndex.second, SideWidgetEntry(w, newAction, flags));
+        positionIndex.second = int(list.size());
+    list.insert(list.begin() + positionIndex.second, SideWidgetEntry(w, newAction, flags));
     positionSideWidgets();
     w->show();
     return w;
@@ -507,7 +511,8 @@ void QLineEditPrivate::removeAction(QAction *action)
     if (positionIndex.second == -1)
         return;
      SideWidgetEntryList &list = positionIndex.first == QLineEdit::TrailingPosition ? trailingSideWidgets : leadingSideWidgets;
-     SideWidgetEntry entry = list.takeAt(positionIndex.second);
+     SideWidgetEntry entry = list[positionIndex.second];
+     list.erase(list.begin() + positionIndex.second);
      if (entry.flags & SideWidgetCreatedByWidgetAction)
          static_cast<QWidgetAction *>(entry.action)->releaseWidget(entry.widget);
      else
