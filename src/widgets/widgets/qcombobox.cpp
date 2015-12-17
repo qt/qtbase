@@ -2429,6 +2429,7 @@ struct IndexSetter {
     {
         cb->setCurrentIndex(index);
         emit cb->activated(index);
+        emit cb->activated(cb->itemText(index));
     }
 };
 }
