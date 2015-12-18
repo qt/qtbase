@@ -87,6 +87,32 @@ QT_BEGIN_NAMESPACE
     }\
 }
 
+#if defined __SSE2__
+#  define LOAD(ptr) _mm_loadl_epi64((__m128i*)(ptr))
+#  define CONVERT(value) _mm_shufflelo_epi16(_mm_cvtsi32_si128(value), _MM_SHUFFLE(0, 0, 0, 0))
+#  define STORE(ptr, value) _mm_storel_epi64((__m128i*)(ptr), value)
+#  define ADD(p, q) _mm_add_epi32(p, q)
+#  define ALPHA(c) _mm_shufflelo_epi16(c, _MM_SHUFFLE(3, 3, 3, 3))
+#  define CONST(n) CONVERT(n)
+#  define INVALPHA(c) _mm_sub_epi32(CONST(65535), ALPHA(c))
+#elif defined __ARM_NEON__
+#  define LOAD(ptr) vreinterpret_u16_u64(vld1_u64((quint64*)(ptr)))
+#  define CONVERT(value) vreinterpret_u16_u64(vmov_n_u64(value))
+#  define STORE(ptr, value) vst1_u64((quint64*)(ptr), vreinterpret_u64_u16(value))
+#  define ADD(p, q) vadd_u16(p, q)
+#  define ALPHA(c) vdup_lane_u16(c, 3)
+#  define CONST(n) vdup_n_u16(n)
+#  define INVALPHA(c) vmvn_u16(ALPHA(c))
+#else
+#  define LOAD(ptr) *ptr
+#  define CONVERT(value) value
+#  define STORE(ptr, value) *ptr = value
+#  define ADD(p, q) (p + q)
+#  define ALPHA(c) (c).alpha()
+#  define CONST(n) n
+#  define INVALPHA(c) (65535 - ALPHA(c))
+#endif
+
 void QT_FASTCALL comp_func_solid_Clear(uint *dest, int length, uint, uint const_alpha)
 {
     comp_func_Clear_impl(dest, length, const_alpha);
@@ -99,7 +125,7 @@ void QT_FASTCALL comp_func_solid_Clear_rgb64(QRgba64 *dest, int length, QRgba64,
     else {
         int ialpha = 255 - const_alpha;
         for (int i = 0; i < length; ++i) {
-            dest[i] = multiplyAlpha255(dest[i], ialpha);
+            STORE(&dest[i], multiplyAlpha255(LOAD(&dest[i]), ialpha));
         }
     }
 }
@@ -116,7 +142,7 @@ void QT_FASTCALL comp_func_Clear_rgb64(QRgba64 *dest, const QRgba64 *, int lengt
     else {
         int ialpha = 255 - const_alpha;
         for (int i = 0; i < length; ++i) {
-            dest[i] = multiplyAlpha255(dest[i], ialpha);
+            STORE(&dest[i], multiplyAlpha255(LOAD(&dest[i]), ialpha));
         }
     }
 }
@@ -146,9 +172,9 @@ void QT_FASTCALL comp_func_solid_Source_rgb64(QRgba64 *dest, int length, QRgba64
         qt_memfill64((quint64*)dest, color, length);
     else {
         int ialpha = 255 - const_alpha;
-        color = multiplyAlpha255(color, const_alpha);
+        auto c = multiplyAlpha255(CONVERT(color), const_alpha);
         for (int i = 0; i < length; ++i) {
-            dest[i] = color + multiplyAlpha255(dest[i], ialpha);
+            STORE(&dest[i], ADD(c, multiplyAlpha255(LOAD(&dest[i]), ialpha)));
         }
     }
 }
@@ -174,7 +200,7 @@ void QT_FASTCALL comp_func_Source_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRg
     else {
         int ialpha = 255 - const_alpha;
         for (int i = 0; i < length; ++i) {
-            dest[i] = interpolate255(src[i], const_alpha, dest[i], ialpha);
+            STORE(&dest[i], interpolate255(LOAD(&src[i]), const_alpha, LOAD(&dest[i]), ialpha));
         }
     }
 }
@@ -221,10 +247,12 @@ void QT_FASTCALL comp_func_solid_SourceOver_rgb64(QRgba64 *dest, int length, QRg
     if (const_alpha == 255 && color.isOpaque()) {
         qt_memfill64((quint64*)dest, color, length);
     } else {
+        auto c = CONVERT(color);
         if (const_alpha != 255)
-            color = multiplyAlpha255(color, const_alpha);
+            c = multiplyAlpha255(c, const_alpha);
+        auto cAlpha = INVALPHA(c);
         for (int i = 0; i < length; ++i) {
-            dest[i] = color + multiplyAlpha65535(dest[i], 65535 - color.alpha());
+            STORE(&dest[i], ADD(c, multiplyAlpha65535(LOAD(&dest[i]), cAlpha)));
         }
     }
 }
@@ -258,12 +286,12 @@ void QT_FASTCALL comp_func_SourceOver_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const
             if (s.isOpaque())
                 dest[i] = s;
             else if (!s.isTransparent())
-                dest[i] = s + multiplyAlpha65535(dest[i], 65535 - s.alpha());
+                STORE(&dest[i], ADD(CONVERT(s), multiplyAlpha65535(LOAD(&dest[i]), 65535 - s.alpha())));
         }
     } else {
         for (int i = 0; i < length; ++i) {
-            QRgba64 s = multiplyAlpha255(src[i], const_alpha);
-            dest[i] = s + multiplyAlpha65535(dest[i], 65535 - s.alpha());
+            auto s = multiplyAlpha255(LOAD(&src[i]), const_alpha);
+            STORE(&dest[i], ADD(s, multiplyAlpha65535(LOAD(&dest[i]), INVALPHA(s))));
         }
     }
 }
@@ -287,11 +315,12 @@ void QT_FASTCALL comp_func_solid_DestinationOver(uint *dest, int length, uint co
 
 void QT_FASTCALL comp_func_solid_DestinationOver_rgb64(QRgba64 *dest, int length, QRgba64 color, uint const_alpha)
 {
+    auto c = CONVERT(color);
     if (const_alpha != 255)
-        color = multiplyAlpha255(color, const_alpha);
+        c = multiplyAlpha255(c, const_alpha);
     for (int i = 0; i < length; ++i) {
-        QRgba64 d = dest[i];
-        dest[i] = d + multiplyAlpha65535(color, 65535 - d.alpha());
+        auto d = LOAD(&dest[i]);
+        STORE(&dest[i], ADD(d, multiplyAlpha65535(c, INVALPHA(d))));
     }
 }
 
@@ -318,14 +347,14 @@ void QT_FASTCALL comp_func_DestinationOver_rgb64(QRgba64 *Q_DECL_RESTRICT dest, 
 {
     if (const_alpha == 255) {
         for (int i = 0; i < length; ++i) {
-            QRgba64 d = dest[i];
-            dest[i] = d + multiplyAlpha65535(src[i], 65535 - d.alpha());
+            auto d = LOAD(&dest[i]);
+            STORE(&dest[i], ADD(d, multiplyAlpha65535(LOAD(&src[i]), INVALPHA(d))));
         }
     } else {
         for (int i = 0; i < length; ++i) {
-            QRgba64 d = dest[i];
-            QRgba64 s = multiplyAlpha255(src[i], const_alpha);
-            dest[i] = d + multiplyAlpha65535(s, 65535 - d.alpha());
+            auto d = LOAD(&dest[i]);
+            auto s = multiplyAlpha255(LOAD(&src[i]), const_alpha);
+            STORE(&dest[i], ADD(d, multiplyAlpha65535(s, INVALPHA(d))));
         }
     }
 }
@@ -393,15 +422,15 @@ void QT_FASTCALL comp_func_SourceIn_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const Q
 {
     if (const_alpha == 255) {
         for (int i = 0; i < length; ++i) {
-            dest[i] = multiplyAlpha65535(src[i], dest[i].alpha());
+            STORE(&dest[i], multiplyAlpha65535(LOAD(&src[i]), dest[i].alpha()));
         }
     } else {
         uint ca = const_alpha * 257;
-        uint cia = 65535 - ca;
+        auto cia = CONST(65535 - ca);
         for (int i = 0; i < length; ++i) {
-            QRgba64 d = dest[i];
-            QRgba64 s = multiplyAlpha65535(src[i], ca);
-            dest[i] = interpolate65535(s, d.alpha(), d, cia);
+            auto d = LOAD(&dest[i]);
+            auto s = multiplyAlpha65535(LOAD(&src[i]), ca);
+            STORE(&dest[i], interpolate65535(s, ALPHA(d), d, cia));
         }
     }
 }
@@ -431,7 +460,7 @@ void QT_FASTCALL comp_func_solid_DestinationIn_rgb64(QRgba64 *dest, int length, 
     if (const_alpha != 255)
         a = qt_div_65535(a * ca64k) + 65535 - ca64k;
     for (int i = 0; i < length; ++i) {
-        dest[i] = multiplyAlpha65535(dest[i], a);
+        STORE(&dest[i], multiplyAlpha65535(LOAD(&dest[i]), a));
     }
 }
 
@@ -885,14 +914,19 @@ void QT_FASTCALL comp_func_solid_Plus(uint *dest, int length, uint color, uint c
 
 void QT_FASTCALL comp_func_solid_Plus_rgb64(QRgba64 *dest, int length, QRgba64 color, uint const_alpha)
 {
+    auto b = CONVERT(color);
     if (const_alpha == 255) {
         for (int i = 0; i < length; ++i) {
-            dest[i] = addWithSaturation(dest[i], color);
+            auto a = LOAD(&dest[i]);
+            a = addWithSaturation(a, b);
+            STORE(&dest[i], a);
         }
     } else {
         for (int i = 0; i < length; ++i) {
-            QRgba64 d = addWithSaturation(dest[i], color);
-            dest[i] = interpolate255(d, const_alpha, dest[i], 255 - const_alpha);
+            auto a = LOAD(&dest[i]);
+            auto d = addWithSaturation(a, b);
+            a = interpolate255(d, const_alpha, a, 255 - const_alpha);
+            STORE(&dest[i], a);
         }
     }
 }
@@ -924,12 +958,18 @@ void QT_FASTCALL comp_func_Plus_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba
 {
     if (const_alpha == 255) {
         for (int i = 0; i < length; ++i) {
-            dest[i] = addWithSaturation(dest[i], src[i]);
+            auto a = LOAD(&dest[i]);
+            auto b = LOAD(&src[i]);
+            a = addWithSaturation(a, b);
+            STORE(&dest[i], a);
         }
     } else {
         for (int i = 0; i < length; ++i) {
-            QRgba64 d = addWithSaturation(dest[i], src[i]);
-            dest[i] = interpolate255(d, const_alpha, dest[i], 255 - const_alpha);
+            auto a = LOAD(&dest[i]);
+            auto b = LOAD(&src[i]);
+            auto d = addWithSaturation(a, b);
+            a = interpolate255(d, const_alpha, a, 255 - const_alpha);
+            STORE(&dest[i], a);
         }
     }
 }

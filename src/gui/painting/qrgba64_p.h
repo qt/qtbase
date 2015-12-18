@@ -72,27 +72,49 @@ inline QRgba64 multiplyAlpha256(QRgba64 rgba64, uint alpha256)
 
 inline QRgba64 multiplyAlpha65535(QRgba64 rgba64, uint alpha65535)
 {
+    return QRgba64::fromRgba64(qt_div_65535(rgba64.red()   * alpha65535),
+                               qt_div_65535(rgba64.green() * alpha65535),
+                               qt_div_65535(rgba64.blue()  * alpha65535),
+                               qt_div_65535(rgba64.alpha() * alpha65535));
+}
+
 #ifdef __SSE2__
-    const __m128i va = _mm_shufflelo_epi16(_mm_cvtsi32_si128(alpha65535), _MM_SHUFFLE(0, 0, 0, 0));
-    __m128i vs = _mm_loadl_epi64((__m128i*)&rgba64);
+Q_ALWAYS_INLINE __m128i multiplyAlpha65535(__m128i rgba64, __m128i va)
+{
+    __m128i vs = rgba64;
     vs = _mm_unpacklo_epi16(_mm_mullo_epi16(vs, va), _mm_mulhi_epu16(vs, va));
     vs = _mm_add_epi32(vs, _mm_srli_epi32(vs, 16));
     vs = _mm_add_epi32(vs, _mm_set1_epi32(0x8000));
     vs = _mm_srai_epi32(vs, 16);
     vs = _mm_packs_epi32(vs, _mm_setzero_si128());
-    _mm_storel_epi64((__m128i*)&rgba64, vs);
-    return rgba64;
-#else
-    return QRgba64::fromRgba64(qt_div_65535(rgba64.red()   * alpha65535),
-                               qt_div_65535(rgba64.green() * alpha65535),
-                               qt_div_65535(rgba64.blue()  * alpha65535),
-                               qt_div_65535(rgba64.alpha() * alpha65535));
-#endif
+    return vs;
 }
-
-inline QRgba64 multiplyAlpha255(QRgba64 rgba64, uint alpha255)
+Q_ALWAYS_INLINE __m128i multiplyAlpha65535(__m128i rgba64, uint alpha65535)
 {
-#ifdef __SSE2__
+    const __m128i va = _mm_shufflelo_epi16(_mm_cvtsi32_si128(alpha65535), _MM_SHUFFLE(0, 0, 0, 0));
+    return multiplyAlpha65535(rgba64, va);
+}
+#endif
+
+#if defined(__ARM_NEON__)
+Q_ALWAYS_INLINE uint16x4_t multiplyAlpha65535(uint16x4_t rgba64, uint16x4_t alpha65535)
+{
+    uint32x4_t vs32 = vmull_u16(rgba64, alpha65535); // vs = vs * alpha
+    vs32 = vsraq_n_u32(vs32, vs32, 16); // vs = vs + (vs >> 16)
+    return vrshrn_n_u32(vs32, 16); // vs = (vs + 0x8000) >> 16
+}
+Q_ALWAYS_INLINE uint16x4_t multiplyAlpha65535(uint16x4_t rgba64, uint alpha65535)
+{
+    uint32x4_t vs32 = vmull_n_u16(rgba64, alpha65535); // vs = vs * alpha
+    vs32 = vsraq_n_u32(vs32, vs32, 16); // vs = vs + (vs >> 16)
+    return vrshrn_n_u32(vs32, 16); // vs = (vs + 0x8000) >> 16
+}
+#endif
+
+template<typename T>
+inline T multiplyAlpha255(T rgba64, uint alpha255)
+{
+#if defined(__SSE2__) || defined(__ARM_NEON__)
     return multiplyAlpha65535(rgba64, alpha255 * 257);
 #else
     return QRgba64::fromRgba64(qt_div_255(rgba64.red()   * alpha255),
@@ -112,25 +134,69 @@ inline QRgba64 interpolate255(QRgba64 x, uint alpha1, QRgba64 y, uint alpha2)
     return QRgba64::fromRgba64(multiplyAlpha255(x, alpha1) + multiplyAlpha255(y, alpha2));
 }
 
+#if defined __SSE2__
+Q_ALWAYS_INLINE __m128i interpolate255(__m128i x, uint alpha1, __m128i y, uint alpha2)
+{
+    return _mm_add_epi32(multiplyAlpha255(x, alpha1), multiplyAlpha255(y, alpha2));
+}
+#endif
+
+#if defined __ARM_NEON__
+Q_ALWAYS_INLINE uint16x4_t interpolate255(uint16x4_t x, uint alpha1, uint16x4_t y, uint alpha2)
+{
+    return vadd_u16(multiplyAlpha255(x, alpha1), multiplyAlpha255(y, alpha2));
+}
+#endif
+
 inline QRgba64 interpolate65535(QRgba64 x, uint alpha1, QRgba64 y, uint alpha2)
 {
     return QRgba64::fromRgba64(multiplyAlpha65535(x, alpha1) + multiplyAlpha65535(y, alpha2));
 }
 
+#if defined __SSE2__
+Q_ALWAYS_INLINE __m128i interpolate65535(__m128i x, uint alpha1, __m128i y, uint alpha2)
+{
+    return _mm_add_epi32(multiplyAlpha65535(x, alpha1), multiplyAlpha65535(y, alpha2));
+}
+// alpha2 below is const-ref because otherwise MSVC2013 complains that it can't 16-byte align the argument.
+Q_ALWAYS_INLINE __m128i interpolate65535(__m128i x, __m128i alpha1, __m128i y, const __m128i &alpha2)
+{
+    return _mm_add_epi32(multiplyAlpha65535(x, alpha1), multiplyAlpha65535(y, alpha2));
+}
+#endif
+
+#if defined __ARM_NEON__
+Q_ALWAYS_INLINE uint16x4_t interpolate65535(uint16x4_t x, uint alpha1, uint16x4_t y, uint alpha2)
+{
+    return vadd_u16(multiplyAlpha65535(x, alpha1), multiplyAlpha65535(y, alpha2));
+}
+Q_ALWAYS_INLINE uint16x4_t interpolate65535(uint16x4_t x, uint16x4_t alpha1, uint16x4_t y, uint16x4_t alpha2)
+{
+    return vadd_u16(multiplyAlpha65535(x, alpha1), multiplyAlpha65535(y, alpha2));
+}
+#endif
+
 inline QRgba64 addWithSaturation(QRgba64 a, QRgba64 b)
 {
-#if defined(__SSE2__) && defined(Q_PROCESSOR_X86_64)
-    __m128i va = _mm_cvtsi64_si128((quint64)a);
-    __m128i vb = _mm_cvtsi64_si128((quint64)b);
-    va = _mm_adds_epu16(va, vb);
-    return QRgba64::fromRgba64(_mm_cvtsi128_si64(va));
-#else
     return QRgba64::fromRgba64(qMin(a.red() + b.red(), 65535),
                                qMin(a.green() + b.green(), 65535),
                                qMin(a.blue() + b.blue(), 65535),
                                qMin(a.alpha() + b.alpha(), 65535));
-#endif
 }
+
+#if defined(__SSE2__)
+Q_ALWAYS_INLINE __m128i addWithSaturation(__m128i a, __m128i b)
+{
+    return _mm_adds_epu16(a, b);
+}
+#endif
+
+#if defined(__ARM_NEON__)
+Q_ALWAYS_INLINE uint16x4_t addWithSaturation(uint16x4_t a, uint16x4_t b)
+{
+    return vqmovn_u32(vaddl_u16(a, b));
+}
+#endif
 
 QT_END_NAMESPACE
 
