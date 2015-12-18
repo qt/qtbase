@@ -120,15 +120,17 @@ QStringList QDeviceDiscoveryStatic::scanConnectedDevices()
 bool QDeviceDiscoveryStatic::checkDeviceType(const QString &device)
 {
     int fd = QT_OPEN(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
-    if (!fd) {
+    if (Q_UNLIKELY(fd == -1)) {
         qWarning() << "Device discovery cannot open device" << device;
         return false;
     }
 
     qCDebug(lcDD) << "doing static device discovery for " << device;
 
-    if ((m_types & Device_DRM) && device.contains(QString::fromLatin1(QT_DRM_DEVICE_PREFIX)))
+    if ((m_types & Device_DRM) && device.contains(QString::fromLatin1(QT_DRM_DEVICE_PREFIX))) {
+        QT_CLOSE(fd);
         return true;
+    }
 
     long bitsAbs[LONG_FIELD_SIZE(ABS_CNT)];
     long bitsKey[LONG_FIELD_SIZE(KEY_CNT)];
