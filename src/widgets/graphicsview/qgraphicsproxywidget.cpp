@@ -187,6 +187,24 @@ Q_WIDGETS_EXPORT extern bool qt_tab_all_widgets();
 /*!
     \internal
 */
+QGraphicsProxyWidgetPrivate::QGraphicsProxyWidgetPrivate()
+    : QGraphicsWidgetPrivate(),
+      dragDropWidget(nullptr),
+      posChangeMode(NoMode),
+      sizeChangeMode(NoMode),
+      visibleChangeMode(NoMode),
+      enabledChangeMode(NoMode),
+      styleChangeMode(NoMode),
+      paletteChangeMode(NoMode),
+      tooltipChangeMode(NoMode),
+      focusFromWidgetToProxy(false),
+      proxyIsGivingFocus(false)
+{
+}
+
+/*!
+    \internal
+*/
 void QGraphicsProxyWidgetPrivate::init()
 {
     Q_Q(QGraphicsProxyWidget);

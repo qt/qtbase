@@ -813,6 +813,78 @@ static QPainterPath qt_graphicsItem_shapeFromPath(const QPainterPath &path, cons
 /*!
     \internal
 */
+QGraphicsItemPrivate::QGraphicsItemPrivate()
+    : z(0),
+      opacity(1.),
+      scene(nullptr),
+      parent(nullptr),
+      transformData(nullptr),
+      graphicsEffect(nullptr),
+      index(-1),
+      siblingIndex(-1),
+      itemDepth(-1),
+      focusProxy(nullptr),
+      subFocusItem(nullptr),
+      focusScopeItem(nullptr),
+      imHints(Qt::ImhNone),
+      panelModality(QGraphicsItem::NonModal),
+      acceptedMouseButtons(0x1f),
+      visible(true),
+      explicitlyHidden(false),
+      enabled(true),
+      explicitlyDisabled(false),
+      selected(false),
+      acceptsHover(false),
+      acceptDrops(false),
+      isMemberOfGroup(false),
+      handlesChildEvents(false),
+      itemDiscovered(false),
+      hasCursor(false),
+      ancestorFlags(0),
+      cacheMode(0),
+      hasBoundingRegionGranularity(false),
+      isWidget(false),
+      dirty(false),
+      dirtyChildren(false),
+      localCollisionHack(false),
+      inSetPosHelper(false),
+      needSortChildren(false),
+      allChildrenDirty(false),
+      fullUpdatePending(false),
+      flags(0),
+      paintedViewBoundingRectsNeedRepaint(false),
+      dirtySceneTransform(true),
+      geometryChanged(true),
+      inDestructor(false),
+      isObject(false),
+      ignoreVisible(false),
+      ignoreOpacity(false),
+      acceptTouchEvents(false),
+      acceptedTouchBeginEvent(false),
+      filtersDescendantEvents(false),
+      sceneTransformTranslateOnly(false),
+      notifyBoundingRectChanged(false),
+      notifyInvalidated(false),
+      mouseSetsFocus(true),
+      explicitActivate(false),
+      wantsActive(false),
+      holesInSiblingIndex(false),
+      sequentialOrdering(true),
+      updateDueToGraphicsEffect(false),
+      scenePosDescendants(false),
+      pendingPolish(false),
+      mayHaveChildWithGraphicsEffect(false),
+      isDeclarativeItem(false),
+      sendParentChangeNotification(false),
+      dirtyChildrenBoundingRect(true),
+      globalStackingOrder(-1),
+      q_ptr(nullptr)
+{
+}
+
+/*!
+    \internal
+*/
 QGraphicsItemPrivate::~QGraphicsItemPrivate()
 {
 }

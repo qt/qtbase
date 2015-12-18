@@ -86,6 +86,25 @@ qreal QGraphicsWidgetPrivate::titleBarHeight(const QStyleOptionTitleBar &options
 /*!
     \internal
 */
+QGraphicsWidgetPrivate::QGraphicsWidgetPrivate()
+    : margins(nullptr),
+      layout(nullptr),
+      inheritedPaletteResolveMask(0),
+      inheritedFontResolveMask(0),
+      inSetGeometry(false),
+      polished(false),
+      inSetPos(false),
+      autoFillBackground(false),
+      focusPolicy(Qt::NoFocus),
+      focusNext(nullptr),
+      focusPrev(nullptr),
+      windowFlags(),
+      windowData(nullptr),
+      setWindowFrameMargins(false),
+      windowFrameMargins(nullptr)
+{
+}
+
 QGraphicsWidgetPrivate::~QGraphicsWidgetPrivate()
 {
     // Remove any lazily allocated data

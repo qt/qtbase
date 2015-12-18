@@ -56,17 +56,8 @@ class QGraphicsProxyWidgetPrivate : public QGraphicsWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsProxyWidget)
 public:
-    QGraphicsProxyWidgetPrivate()
-        : dragDropWidget(0),
-          posChangeMode(NoMode),
-          sizeChangeMode(NoMode),
-          visibleChangeMode(NoMode),
-          enabledChangeMode(NoMode),
-          styleChangeMode(NoMode),
-          paletteChangeMode(NoMode),
-          tooltipChangeMode(NoMode),
-          focusFromWidgetToProxy(0)
-    { }
+    QGraphicsProxyWidgetPrivate();
+
     void init();
     void sendWidgetMouseEvent(QGraphicsSceneMouseEvent *event);
     void sendWidgetMouseEvent(QGraphicsSceneHoverEvent *event);
