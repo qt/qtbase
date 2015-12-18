@@ -64,9 +64,6 @@ class QListViewItem
 public:
     inline QListViewItem()
         : x(-1), y(-1), w(0), h(0), indexHint(-1), visited(0xffff) {}
-    inline QListViewItem(const QListViewItem &other)
-        : x(other.x), y(other.y), w(other.w), h(other.h),
-          indexHint(other.indexHint), visited(other.visited) {}
     inline QListViewItem(QRect r, int i)
         : x(r.x()), y(r.y()), w(qMin(r.width(), SHRT_MAX)), h(qMin(r.height(), SHRT_MAX)),
           indexHint(i), visited(0xffff) {}
