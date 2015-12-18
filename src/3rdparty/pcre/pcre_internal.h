@@ -2454,7 +2454,7 @@ typedef struct compile_data {
   BOOL had_pruneorskip;             /* (*PRUNE) or (*SKIP) encountered */
   BOOL check_lookbehind;            /* Lookbehinds need later checking */
   BOOL dupnames;                    /* Duplicate names exist */
-  BOOL dupgroups;                   /* Duplicate groups exist: (?| found */ 
+  BOOL dupgroups;                   /* Duplicate groups exist: (?| found */
   BOOL iscondassert;                /* Next assert is a condition */
   int  nltype;                      /* Newline type */
   int  nllen;                       /* Newline string length */

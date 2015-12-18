@@ -4342,8 +4342,10 @@ switch(length)
   case 4:
   if ((ranges[1] - ranges[0]) == (ranges[3] - ranges[2])
       && (ranges[0] | (ranges[2] - ranges[0])) == ranges[2]
+      && (ranges[1] & (ranges[2] - ranges[0])) == 0
       && is_powerof2(ranges[2] - ranges[0]))
     {
+    SLJIT_ASSERT((ranges[0] & (ranges[2] - ranges[0])) == 0 && (ranges[2] & ranges[3] & (ranges[2] - ranges[0])) != 0);
     OP2(SLJIT_OR, TMP1, 0, TMP1, 0, SLJIT_IMM, ranges[2] - ranges[0]);
     if (ranges[2] + 1 != ranges[3])
       {
@@ -4931,9 +4933,10 @@ else if ((cc[-1] & XCL_MAP) != 0)
   if (!check_class_ranges(common, (const pcre_uint8 *)cc, FALSE, TRUE, list))
     {
 #ifdef COMPILE_PCRE8
-    SLJIT_ASSERT(common->utf);
+    jump = NULL;
+    if (common->utf)
 #endif
-    jump = CMP(SLJIT_GREATER, TMP1, 0, SLJIT_IMM, 255);
+      jump = CMP(SLJIT_GREATER, TMP1, 0, SLJIT_IMM, 255);
 
     OP2(SLJIT_AND, TMP2, 0, TMP1, 0, SLJIT_IMM, 0x7);
     OP2(SLJIT_LSHR, TMP1, 0, TMP1, 0, SLJIT_IMM, 3);
@@ -4942,7 +4945,10 @@ else if ((cc[-1] & XCL_MAP) != 0)
     OP2(SLJIT_AND | SLJIT_SET_E, SLJIT_UNUSED, 0, TMP1, 0, TMP2, 0);
     add_jump(compiler, list, JUMP(SLJIT_NOT_ZERO));
 
-    JUMPHERE(jump);
+#ifdef COMPILE_PCRE8
+    if (common->utf)
+#endif
+      JUMPHERE(jump);
     }
 
   OP1(SLJIT_MOV, TMP1, 0, TMP3, 0);
@@ -5250,7 +5256,7 @@ while (*cc != XCL_END)
       OP_FLAGS(SLJIT_MOV, TMP2, 0, SLJIT_UNUSED, 0, SLJIT_LESS_EQUAL);
 
       SET_CHAR_OFFSET(0);
-      OP2(SLJIT_SUB | SLJIT_SET_U, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0xff);
+      OP2(SLJIT_SUB | SLJIT_SET_U, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0x7f);
       OP_FLAGS(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_LESS_EQUAL);
 
       SET_TYPE_OFFSET(ucp_Pc);
@@ -8477,8 +8483,7 @@ while (cc < ccend)
       OP1(SLJIT_MOV, SLJIT_MEM1(STACK_TOP), STACK(1), STR_PTR, 0);
       }
     BACKTRACK_AS(braminzero_backtrack)->matchingpath = LABEL();
-    if (cc[1] > OP_ASSERTBACK_NOT)
-      count_match(common);
+    count_match(common);
     break;
 
     case OP_ONCE:
@@ -9660,7 +9665,7 @@ static SLJIT_INLINE void compile_recurse(compiler_common *common)
 DEFINE_COMPILER;
 pcre_uchar *cc = common->start + common->currententry->start;
 pcre_uchar *ccbegin = cc + 1 + LINK_SIZE + (*cc == OP_BRA ? 0 : IMM2_SIZE);
-pcre_uchar *ccend = bracketend(cc);
+pcre_uchar *ccend = bracketend(cc) - (1 + LINK_SIZE);
 BOOL needs_control_head;
 int framesize = get_framesize(common, cc, NULL, TRUE, &needs_control_head);
 int private_data_size = get_private_data_copy_length(common, ccbegin, ccend, needs_control_head);
