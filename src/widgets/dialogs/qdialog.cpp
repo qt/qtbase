@@ -80,6 +80,11 @@ static inline int themeDialogType(const QDialog *dialog)
     return -1;
 }
 
+QDialogPrivate::~QDialogPrivate()
+{
+    delete m_platformHelper;
+}
+
 QPlatformDialogHelper *QDialogPrivate::platformHelper() const
 {
     // Delayed creation of the platform, ensuring that

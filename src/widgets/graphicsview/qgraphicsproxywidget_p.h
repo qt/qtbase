@@ -57,6 +57,7 @@ class QGraphicsProxyWidgetPrivate : public QGraphicsWidgetPrivate
     Q_DECLARE_PUBLIC(QGraphicsProxyWidget)
 public:
     QGraphicsProxyWidgetPrivate();
+    ~QGraphicsProxyWidgetPrivate();
 
     void init();
     void sendWidgetMouseEvent(QGraphicsSceneMouseEvent *event);

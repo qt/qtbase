@@ -70,7 +70,7 @@ public:
           rescode(0), resetModalityTo(-1), wasModalitySet(true), eventLoop(0),
           nativeDialogInUse(false), m_platformHelper(0), m_platformHelperCreated(false)
         {}
-    ~QDialogPrivate() { delete m_platformHelper; }
+    ~QDialogPrivate();
 
     QWindow *parentWindow() const;
     bool setNativeDialogVisible(bool visible);

@@ -1019,6 +1019,15 @@ QPixmapColorizeFilter::QPixmapColorizeFilter(QObject *parent)
 }
 
 /*!
+    \internal
+*/
+QPixmapColorizeFilter::~QPixmapColorizeFilter()
+{
+    // was inline until Qt 5.6, so essentially
+    // must stay empty until ### Qt 6
+}
+
+/*!
     Gets the color of the colorize filter.
 
     \internal

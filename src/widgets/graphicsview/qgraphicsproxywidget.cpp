@@ -205,6 +205,13 @@ QGraphicsProxyWidgetPrivate::QGraphicsProxyWidgetPrivate()
 /*!
     \internal
 */
+QGraphicsProxyWidgetPrivate::~QGraphicsProxyWidgetPrivate()
+{
+}
+
+/*!
+    \internal
+*/
 void QGraphicsProxyWidgetPrivate::init()
 {
     Q_Q(QGraphicsProxyWidget);

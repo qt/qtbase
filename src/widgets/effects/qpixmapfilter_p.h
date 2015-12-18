@@ -142,6 +142,7 @@ class Q_WIDGETS_EXPORT QPixmapColorizeFilter : public QPixmapFilter
 
 public:
     QPixmapColorizeFilter(QObject *parent = 0);
+    ~QPixmapColorizeFilter();
 
     void setColor(const QColor& color);
     QColor color() const;
