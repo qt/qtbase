@@ -695,6 +695,11 @@ QTimeZone::OffsetData QTimeZone::offsetData(const QDateTime &forDateTime) const
 
 /*!
     Returns \c true if the system backend supports obtaining transitions.
+
+    Transitions are changes in the time-zone: these happen when DST turns on or
+    off and when authorities alter the offsets for the time-zone.
+
+    \sa nextTransition(), previousTransition(), transitions()
 */
 
 bool QTimeZone::hasTransitions() const

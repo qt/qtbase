@@ -428,6 +428,21 @@ QFontEngine *QWinRTFontDatabase::fontEngine(const QFontDef &fontDef, void *handl
     return engine;
 }
 
+QStringList QWinRTFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style,
+                                                   QFont::StyleHint styleHint,
+                                                   QChar::Script script) const
+{
+    Q_UNUSED(style)
+    Q_UNUSED(styleHint)
+    Q_UNUSED(script)
+
+    QStringList result;
+    if (family == QLatin1String("Helvetica"))
+        result.append(QStringLiteral("Arial"));
+    result.append(QBasicFontDatabase::fallbacksForFamily(family, style, styleHint, script));
+    return result;
+}
+
 void QWinRTFontDatabase::releaseHandle(void *handle)
 {
     if (!handle)

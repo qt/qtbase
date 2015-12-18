@@ -406,6 +406,9 @@ XInput2TouchDeviceData *QXcbConnection::touchDeviceForId(int id)
 #endif // XCB_USE_XINPUT22
             case XIValuatorClass: {
                 XIValuatorClassInfo *vci = reinterpret_cast<XIValuatorClassInfo *>(classinfo);
+                // Some devices (mice) report a resolution of 0; they will be excluded later,
+                // for now just prevent a division by zero
+                const int vciResolution = vci->resolution ? vci->resolution : 1;
                 if (vci->label == atom(QXcbAtom::AbsMTPositionX))
                     caps |= QTouchDevice::Position | QTouchDevice::NormalizedPosition;
                 else if (vci->label == atom(QXcbAtom::AbsMTTouchMajor))
@@ -414,16 +417,16 @@ XInput2TouchDeviceData *QXcbConnection::touchDeviceForId(int id)
                     caps |= QTouchDevice::Pressure;
                 else if (vci->label == atom(QXcbAtom::RelX)) {
                     hasRelativeCoords = true;
-                    dev->size.setWidth((vci->max - vci->min) * 1000.0 / vci->resolution);
+                    dev->size.setWidth((vci->max - vci->min) * 1000.0 / vciResolution);
                 } else if (vci->label == atom(QXcbAtom::RelY)) {
                     hasRelativeCoords = true;
-                    dev->size.setHeight((vci->max - vci->min) * 1000.0 / vci->resolution);
+                    dev->size.setHeight((vci->max - vci->min) * 1000.0 / vciResolution);
                 } else if (vci->label == atom(QXcbAtom::AbsX)) {
                     caps |= QTouchDevice::Position;
-                    dev->size.setHeight((vci->max - vci->min) * 1000.0 / vci->resolution);
+                    dev->size.setHeight((vci->max - vci->min) * 1000.0 / vciResolution);
                 } else if (vci->label == atom(QXcbAtom::AbsY)) {
                     caps |= QTouchDevice::Position;
-                    dev->size.setWidth((vci->max - vci->min) * 1000.0 / vci->resolution);
+                    dev->size.setWidth((vci->max - vci->min) * 1000.0 / vciResolution);
                 }
                 break;
             }

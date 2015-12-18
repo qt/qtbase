@@ -72,6 +72,7 @@ private slots:
     void one_space();
     void findMocs();
     void findDeps();
+    void rawString();
 #if defined(Q_OS_MAC)
     void bundle_spaces();
 #endif
@@ -384,6 +385,24 @@ void tst_qmake::findDeps()
     QVERIFY( test_compiler.makeDistClean(workDir ) );
     QVERIFY( !test_compiler.exists(workDir, "findDeps", Exe, "1.0.0" ) );
     QVERIFY( test_compiler.removeMakefile(workDir) );
+}
+
+void tst_qmake::rawString()
+{
+#ifdef Q_COMPILER_RAW_STRINGS
+    QString workDir = base_path + "/testdata/rawString";
+
+    QVERIFY( test_compiler.qmake(workDir, "rawString") );
+    QVERIFY( test_compiler.make(workDir) );
+    QVERIFY( test_compiler.exists(workDir, "rawString", Exe, "1.0.0" ) );
+    QVERIFY( test_compiler.makeClean(workDir) );
+    QVERIFY( test_compiler.exists(workDir, "rawString", Exe, "1.0.0" ) );
+    QVERIFY( test_compiler.makeDistClean(workDir ) );
+    QVERIFY( !test_compiler.exists(workDir, "rawString", Exe, "1.0.0" ) );
+    QVERIFY( test_compiler.removeMakefile(workDir) );
+#else
+    QSKIP("Test for C++11 raw strings depends on compiler support for them");
+#endif
 }
 
 struct TempFile

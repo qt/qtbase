@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 CONFIG += ordered
 
-SUBDIRS += \
-    signalbug \
-    test
+!winrt: SUBDIRS+= signalbug
+
+SUBDIRS += test

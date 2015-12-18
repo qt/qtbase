@@ -140,6 +140,8 @@ public:
 
         hr = applicationFactory->CreateInstance(this, &base, &core);
         RETURN_VOID_IF_FAILED("Failed to create application container instance");
+
+        pidFile = INVALID_HANDLE_VALUE;
     }
 
     ~AppContainer()
@@ -157,6 +159,13 @@ public:
             int argc = app->args.count();
             char **argv = app->args.data();
             const int res = main(argc, argv);
+            if (app->pidFile != INVALID_HANDLE_VALUE) {
+                const QByteArray resString = QByteArray::number(res);
+                WriteFile(app->pidFile, reinterpret_cast<LPCVOID>(resString.constData()),
+                          resString.size(), NULL, NULL);
+                FlushFileBuffers(app->pidFile);
+                CloseHandle(app->pidFile);
+            }
             app->core->Exit();
             return res;
         }, this, CREATE_SUSPENDED, nullptr);
@@ -234,6 +243,9 @@ private:
             }
         }
 
+        if (args.count() >= 2 && strncmp(args.at(1), "-ServerName:", 12) == 0)
+            args.remove(1);
+
         bool develMode = false;
         bool debugWait = false;
         foreach (const char *arg, args) {
@@ -248,11 +260,10 @@ private:
                     .absoluteFilePath(QString::number(uint(GetCurrentProcessId())) + QStringLiteral(".pid"));
             CREATEFILE2_EXTENDED_PARAMETERS params = {
                 sizeof(CREATEFILE2_EXTENDED_PARAMETERS),
-                FILE_ATTRIBUTE_NORMAL, FILE_FLAG_DELETE_ON_CLOSE
+                FILE_ATTRIBUTE_NORMAL
             };
-            // (Unused) handle will automatically be closed when the app exits
-            CreateFile2(reinterpret_cast<LPCWSTR>(pidFileName.utf16()),
-                        0, FILE_SHARE_READ|FILE_SHARE_DELETE, CREATE_ALWAYS, &params);
+            pidFile = CreateFile2(reinterpret_cast<LPCWSTR>(pidFileName.utf16()),
+                        GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, CREATE_ALWAYS, &params);
             // Install the develMode message handler
 #ifndef Q_OS_WINPHONE
             defaultMessageHandler = qInstallMessageHandler(devMessageHandler);
@@ -315,6 +326,7 @@ private:
     QByteArray commandLine;
     QVarLengthArray<char *> args;
     HANDLE mainThread;
+    HANDLE pidFile;
 };
 
 // Main entry point for Appx containers

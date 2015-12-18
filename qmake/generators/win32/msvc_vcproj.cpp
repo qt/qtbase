@@ -70,21 +70,6 @@ struct DotNetCombo {
     const char *versionStr;
     const char *regKey;
 } dotNetCombo[] = {
-#ifdef Q_OS_WIN64
-    {NET2015, "MSVC.NET 2015 (14.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\14.0\\Setup\\VC\\ProductDir"},
-    {NET2013, "MSVC.NET 2013 (12.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\12.0\\Setup\\VC\\ProductDir"},
-    {NET2013, "MSVC.NET 2013 Express Edition (12.0)", "Software\\Wow6432Node\\Microsoft\\VCExpress\\12.0\\Setup\\VC\\ProductDir"},
-    {NET2012, "MSVC.NET 2012 (11.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\11.0\\Setup\\VC\\ProductDir"},
-    {NET2012, "MSVC.NET 2012 Express Edition (11.0)", "Software\\Wow6432Node\\Microsoft\\VCExpress\\11.0\\Setup\\VC\\ProductDir"},
-    {NET2010, "MSVC.NET 2010 (10.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\10.0\\Setup\\VC\\ProductDir"},
-    {NET2010, "MSVC.NET 2010 Express Edition (10.0)", "Software\\Wow6432Node\\Microsoft\\VCExpress\\10.0\\Setup\\VC\\ProductDir"},
-    {NET2008, "MSVC.NET 2008 (9.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\9.0\\Setup\\VC\\ProductDir"},
-    {NET2008, "MSVC.NET 2008 Express Edition (9.0)", "Software\\Wow6432Node\\Microsoft\\VCExpress\\9.0\\Setup\\VC\\ProductDir"},
-    {NET2005, "MSVC.NET 2005 (8.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\8.0\\Setup\\VC\\ProductDir"},
-    {NET2005, "MSVC.NET 2005 Express Edition (8.0)", "Software\\Wow6432Node\\Microsoft\\VCExpress\\8.0\\Setup\\VC\\ProductDir"},
-    {NET2003, "MSVC.NET 2003 (7.1)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\7.1\\Setup\\VC\\ProductDir"},
-    {NET2002, "MSVC.NET 2002 (7.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\7.0\\Setup\\VC\\ProductDir"},
-#else
     {NET2015, "MSVC.NET 2015 (14.0)", "Software\\Microsoft\\VisualStudio\\14.0\\Setup\\VC\\ProductDir"},
     {NET2013, "MSVC.NET 2013 (12.0)", "Software\\Microsoft\\VisualStudio\\12.0\\Setup\\VC\\ProductDir"},
     {NET2013, "MSVC.NET 2013 Express Edition (12.0)", "Software\\Microsoft\\VCExpress\\12.0\\Setup\\VC\\ProductDir"},
@@ -98,7 +83,6 @@ struct DotNetCombo {
     {NET2005, "MSVC.NET 2005 Express Edition (8.0)", "Software\\Microsoft\\VCExpress\\8.0\\Setup\\VC\\ProductDir"},
     {NET2003, "MSVC.NET 2003 (7.1)", "Software\\Microsoft\\VisualStudio\\7.1\\Setup\\VC\\ProductDir"},
     {NET2002, "MSVC.NET 2002 (7.0)", "Software\\Microsoft\\VisualStudio\\7.0\\Setup\\VC\\ProductDir"},
-#endif
     {NETUnknown, "", ""},
 };
 
@@ -125,7 +109,8 @@ DotNET which_dotnet_version(const QByteArray &preferredVersion = QByteArray())
     int installed = 0;
     int i = 0;
     for(; dotNetCombo[i].version; ++i) {
-        QString path = qt_readRegistryKey(HKEY_LOCAL_MACHINE, dotNetCombo[i].regKey);
+        QString path = qt_readRegistryKey(HKEY_LOCAL_MACHINE, dotNetCombo[i].regKey,
+                                          KEY_WOW64_32KEY);
         if (!path.isEmpty() && installPaths.value(dotNetCombo[i].version) != path) {
             lowestInstalledVersion = &dotNetCombo[i];
             installPaths.insert(lowestInstalledVersion->version, path);

@@ -60,6 +60,15 @@ public:
         if (func)
             func(window, type);
     }
+
+    typedef void (*SetHasBorderInFullScreen)(QWindow *window, bool border);
+    static const QByteArray setHasBorderInFullScreenIdentifier() { return QByteArrayLiteral("WindowsSetHasBorderInFullScreen"); }
+    static void setHasBorderInFullScreen(QWindow *window, bool border)
+    {
+        SetHasBorderInFullScreen func = reinterpret_cast<SetHasBorderInFullScreen>(QGuiApplication::platformFunction(setHasBorderInFullScreenIdentifier()));
+        if (func)
+            func(window, border);
+    }
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWindowsWindowFunctions::TouchWindowTouchTypes)

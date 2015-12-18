@@ -96,7 +96,7 @@ public:
     qint64 read(char *data, qint64 maxlen);
     qint64 write(const char *data, qint64 len);
 
-    qint64 readDatagram(char *data, qint64 maxlen, QIpPacketHeader *, PacketHeaderOptions);
+    qint64 readDatagram(char *data, qint64 maxlen, QIpPacketHeader * = 0, PacketHeaderOptions = WantNone);
     qint64 writeDatagram(const char *data, qint64 len, const QIpPacketHeader &header);
     bool hasPendingDatagrams() const;
     qint64 pendingDatagramSize() const;

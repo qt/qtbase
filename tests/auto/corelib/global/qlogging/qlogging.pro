@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 CONFIG += ordered
 
-SUBDIRS += \
-    app \
-    test
+!winrt: SUBDIRS += app
+
+SUBDIRS += test

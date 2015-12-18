@@ -156,7 +156,6 @@ public:
     bool autoGenerateMipMaps;
     bool storageAllocated;
 
-    QPair<int, int> glVersion;
     QOpenGLTextureHelper *texFuncs;
 
     QOpenGLTexture::Features features;

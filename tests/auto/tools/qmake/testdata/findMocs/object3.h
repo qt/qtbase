@@ -37,6 +37,6 @@
 
 class Object3 : public QObject
 {
-    Q_OBJECT
+    Q_OBJ\
+ECT
 };
-

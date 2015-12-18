@@ -32,11 +32,6 @@
 ****************************************************************************/
 
 #include <qglobal.h>
-#ifdef Q_OS_IOS
-// We don't build the NEON drawhelpers as they are implemented partly
-// in GAS syntax assembly, which is not supported by the iOS toolchain.
-#undef __ARM_NEON__
-#endif
 
 #include <qstylehints.h>
 #include <qguiapplication.h>
@@ -6314,8 +6309,13 @@ void qt_memfill32(quint32 *dest, quint32 color, int count)
 template<QtPixelOrder> const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
 #endif
 
+extern void qInitBlendFunctions();
+
 static void qInitDrawhelperFunctions()
 {
+    // Set up basic blend function tables.
+    qInitBlendFunctions();
+
 #ifdef __SSE2__
     qDrawHelper[QImage::Format_RGB32].bitmapBlit = qt_bitmapblit32_sse2;
     qDrawHelper[QImage::Format_ARGB32].bitmapBlit = qt_bitmapblit32_sse2;
@@ -6411,7 +6411,7 @@ static void qInitDrawhelperFunctions()
 
 #endif // SSE2
 
-#if defined(__ARM_NEON__) && !defined(Q_OS_IOS)
+#if defined(__ARM_NEON__)
     qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
     qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
     qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
@@ -6432,7 +6432,7 @@ static void qInitDrawhelperFunctions()
 
     qt_fetch_radial_gradient = qt_fetch_radial_gradient_neon;
 
-#if !defined(Q_PROCESSOR_ARM_64)
+#if defined(ENABLE_PIXMAN_DRAWHELPERS)
     // The RGB16 helpers are using Arm32 assemblythat has not been ported to AArch64
     qBlendFunctions[QImage::Format_RGB16][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_rgb16_neon;
     qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB16] = qt_blend_rgb16_on_argb32_neon;
@@ -6509,19 +6509,7 @@ static void qInitDrawhelperFunctions()
 #endif // QT_COMPILER_SUPPORTS_MIPS_DSP || QT_COMPILER_SUPPORTS_MIPS_DSPR2
 }
 
-extern void qInitBlendFunctions();
-class DrawHelperInitializer {
-public:
-    DrawHelperInitializer()
-    {
-        // Set up basic blend function tables.
-        qInitBlendFunctions();
-        // Set up architecture optimized methods for the current machine.
-        qInitDrawhelperFunctions();
-    }
-};
-
 // Ensure initialization if this object file is linked.
-static DrawHelperInitializer drawHelperInitializer;
+Q_CONSTRUCTOR_FUNCTION(qInitDrawhelperFunctions);
 
 QT_END_NAMESPACE

@@ -198,13 +198,14 @@ QFileInfo QFileSystemModel::fileInfo(const QModelIndex &index) const
 bool QFileSystemModel::remove(const QModelIndex &aindex)
 {
     const QString path = filePath(aindex);
+    const bool success = QFileInfo(path).isFile() ? QFile::remove(path) : QDir(path).removeRecursively();
 #ifndef QT_NO_FILESYSTEMWATCHER
-    QFileSystemModelPrivate * d = const_cast<QFileSystemModelPrivate*>(d_func());
-    d->fileInfoGatherer.removePath(path);
+    if (success) {
+        QFileSystemModelPrivate * d = const_cast<QFileSystemModelPrivate*>(d_func());
+        d->fileInfoGatherer.removePath(path);
+    }
 #endif
-    if (QFileInfo(path).isFile())
-        return QFile::remove(path);
-    return QDir(path).removeRecursively();
+    return success;
 }
 
 /*!
@@ -1620,11 +1621,14 @@ bool QFileSystemModel::event(QEvent *event)
 bool QFileSystemModel::rmdir(const QModelIndex &aindex)
 {
     QString path = filePath(aindex);
+    const bool success = QDir().rmdir(path);
 #ifndef QT_NO_FILESYSTEMWATCHER
-    QFileSystemModelPrivate * d = const_cast<QFileSystemModelPrivate*>(d_func());
-    d->fileInfoGatherer.removePath(path);
+    if (success) {
+        QFileSystemModelPrivate * d = const_cast<QFileSystemModelPrivate*>(d_func());
+        d->fileInfoGatherer.removePath(path);
+    }
 #endif
-    return QDir().rmdir(path);
+    return success;
 }
 
 /*!
@@ -1800,10 +1804,6 @@ void QFileSystemModelPrivate::_q_fileSystemChanged(const QString &path, const QV
             node->fileName = fileName;
         }
 
-        if (info.size() == -1 && !info.isSymLink()) {
-            removeNode(parentNode, fileName);
-            continue;
-        }
         if (*node != info ) {
             node->populate(info);
             bypassFilters.remove(node);

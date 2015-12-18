@@ -2967,15 +2967,6 @@ static void qInitImageConversions()
 #endif
 }
 
-class QImageConversionsInitializer {
-public:
-    QImageConversionsInitializer()
-    {
-        qInitImageConversions();
-    }
-};
-
-// Ensure initialization if this object file is linked.
-static QImageConversionsInitializer qImageConversionsInitializer;
+Q_CONSTRUCTOR_FUNCTION(qInitImageConversions);
 
 QT_END_NAMESPACE

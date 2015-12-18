@@ -100,6 +100,8 @@ private slots:
     void windowsTransientChildren();
     void requestUpdate();
     void initTestCase();
+    void stateChange_data();
+    void stateChange();
     void cleanup();
 
 private:
@@ -390,10 +392,29 @@ static inline bool qFuzzyCompareWindowPosition(const QPoint &p1, const QPoint p2
     return (p1 - p2).manhattanLength() <= fuzz;
 }
 
+static inline bool qFuzzyCompareWindowSize(const QSize &s1, const QSize &s2, int fuzz)
+{
+    const int manhattanLength = qAbs(s1.width() - s2.width()) + qAbs(s1.height() - s2.height());
+    return manhattanLength <= fuzz;
+}
+
+static inline bool qFuzzyCompareWindowGeometry(const QRect &r1, const QRect &r2, int fuzz)
+{
+    return qFuzzyCompareWindowPosition(r1.topLeft(), r2.topLeft(), fuzz)
+        && qFuzzyCompareWindowSize(r1.size(), r2.size(), fuzz);
+}
+
 static QString msgPointMismatch(const QPoint &p1, const QPoint p2)
 {
     QString result;
     QDebug(&result) << p1 << "!=" << p2 << ", manhattanLength=" << (p1 - p2).manhattanLength();
+    return result;
+}
+
+static QString msgRectMismatch(const QRect &r1, const QRect &r2)
+{
+    QString result;
+    QDebug(&result) << r1 << "!=" << r2;
     return result;
 }
 
@@ -559,6 +580,52 @@ void tst_QWindow::childWindowPositioning()
     // Creation order shouldn't affect the child ending up at 0,0
     QCOMPARE(childWindowFirst.framePosition(), topLeftOrigin);
     QCOMPARE(childWindowAfter.framePosition(), topLeftOrigin);
+}
+
+// QTBUG-49709: Verify that the normal geometry is correctly restored
+// when executing a sequence of window state changes. So far, Windows
+// only where state changes have immediate effect.
+
+typedef QList<Qt::WindowState> WindowStateList;
+
+Q_DECLARE_METATYPE(WindowStateList)
+
+void tst_QWindow::stateChange_data()
+{
+    QTest::addColumn<WindowStateList>("stateSequence");
+
+    QTest::newRow("normal->min->normal") <<
+        (WindowStateList() << Qt::WindowMinimized << Qt::WindowNoState);
+    QTest::newRow("normal->maximized->normal") <<
+        (WindowStateList() << Qt::WindowMaximized << Qt::WindowNoState);
+    QTest::newRow("normal->fullscreen->normal") <<
+        (WindowStateList() << Qt::WindowFullScreen << Qt::WindowNoState);
+    QTest::newRow("normal->maximized->fullscreen->normal") <<
+        (WindowStateList() << Qt::WindowMaximized << Qt::WindowFullScreen << Qt::WindowNoState);
+}
+
+void tst_QWindow::stateChange()
+{
+    QFETCH(WindowStateList, stateSequence);
+
+    if (QGuiApplication::platformName().compare(QLatin1String("windows"), Qt::CaseInsensitive))
+        QSKIP("Windows-only test");
+
+    Window window;
+    window.setTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1Char(' ') + QLatin1String(QTest::currentDataTag()));
+    const QRect normalGeometry(m_availableTopLeft + QPoint(40, 40), m_testWindowSize);
+    window.setGeometry(normalGeometry);
+    //  explicitly use non-fullscreen show. show() can be fullscreen on some platforms
+    window.showNormal();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    foreach (Qt::WindowState state, stateSequence) {
+        window.setWindowState(state);
+        QCoreApplication::processEvents();
+    }
+    const QRect geometry = window.geometry();
+    const int fuzz = int(QHighDpiScaling::factor(&window));
+    QVERIFY2(qFuzzyCompareWindowGeometry(geometry, normalGeometry, fuzz),
+             qPrintable(msgRectMismatch(geometry, normalGeometry)));
 }
 
 class PlatformWindowFilter : public QObject

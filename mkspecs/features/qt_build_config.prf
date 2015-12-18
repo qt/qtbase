@@ -55,6 +55,9 @@ QMAKE_DIR_REPLACE_SANE = PRECOMPILED_DIR OBJECTS_DIR MOC_DIR RCC_DIR UI_DIR
 cross_compile: \
     CONFIG += force_bootstrap
 
+android|ios|winrt: \
+    CONFIG += builtin_testdata
+
 CONFIG += \
     create_prl link_prl \
     prepare_docs qt_docs_targets \

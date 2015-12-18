@@ -81,6 +81,13 @@ void QXcbVirtualDesktop::addScreen(QPlatformScreen *s)
     ((QXcbScreen *) s)->isPrimary() ? m_screens.prepend(s) : m_screens.append(s);
 }
 
+void QXcbVirtualDesktop::setPrimaryScreen(QPlatformScreen *s)
+{
+    const int idx = m_screens.indexOf(s);
+    Q_ASSERT(idx > -1);
+    m_screens.swap(0, idx);
+}
+
 QXcbXSettings *QXcbVirtualDesktop::xSettings() const
 {
     if (!m_xSettings) {
@@ -149,16 +156,15 @@ void QXcbVirtualDesktop::updateWorkArea()
 }
 
 QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDesktop,
-                       xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *output,
-                       QString outputName)
+                       xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *output)
     : QXcbObject(connection)
     , m_virtualDesktop(virtualDesktop)
     , m_output(outputId)
-    , m_crtc(output ? output->crtc : 0)
+    , m_crtc(output ? output->crtc : XCB_NONE)
     , m_mode(XCB_NONE)
     , m_primary(false)
     , m_rotation(XCB_RANDR_ROTATION_ROTATE_0)
-    , m_outputName(outputName)
+    , m_outputName(getOutputName(output))
     , m_outputSizeMillimeters(output ? QSize(output->mm_width, output->mm_height) : QSize())
     , m_virtualSize(virtualDesktop->size())
     , m_virtualSizeMillimeters(virtualDesktop->physicalSize())
@@ -266,6 +272,22 @@ QXcbScreen::~QXcbScreen()
     delete m_cursor;
 }
 
+QString QXcbScreen::getOutputName(xcb_randr_get_output_info_reply_t *outputInfo)
+{
+    QString name;
+    if (outputInfo) {
+        name = QString::fromUtf8((const char*)xcb_randr_get_output_info_name(outputInfo),
+                                 xcb_randr_get_output_info_name_length(outputInfo));
+    } else {
+        QByteArray displayName = connection()->displayName();
+        int dotPos = displayName.lastIndexOf('.');
+        if (dotPos != -1)
+            displayName.truncate(dotPos);
+        name = QString::fromLocal8Bit(displayName) + QLatin1Char('.')
+                + QString::number(m_virtualDesktop->number());
+    }
+    return name;
+}
 
 QWindow *QXcbScreen::topLevelAt(const QPoint &p) const
 {
@@ -390,6 +412,16 @@ QPlatformCursor *QXcbScreen::cursor() const
     return m_cursor;
 }
 
+void QXcbScreen::setOutput(xcb_randr_output_t outputId,
+                           xcb_randr_get_output_info_reply_t *outputInfo)
+{
+    m_output = outputId;
+    m_crtc = outputInfo ? outputInfo->crtc : XCB_NONE;
+    m_mode = XCB_NONE;
+    m_outputName = getOutputName(outputInfo);
+    // TODO: Send an event to the QScreen instance that the screen changed its name
+}
+
 /*!
     \brief handle the XCB screen change event and update properties
 
@@ -458,19 +490,10 @@ void QXcbScreen::handleScreenChange(xcb_randr_screen_change_notify_event_t *chan
 
     updateGeometry(change_event->timestamp);
 
-    QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry(), availableGeometry());
     QWindowSystemInterface::handleScreenOrientationChange(QPlatformScreen::screen(), m_orientation);
 
     QDpi ldpi = logicalDpi();
     QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(QPlatformScreen::screen(), ldpi.first, ldpi.second);
-
-    // Windows which had null screens have already had expose events by now.
-    // They need to be told the screen is back, it's OK to render.
-    foreach (QWindow *window, QGuiApplication::topLevelWindows()) {
-        QXcbWindow *xcbWin = static_cast<QXcbWindow*>(window->handle());
-        if (xcbWin)
-            xcbWin->maybeSetScreen(this);
-    }
 }
 
 void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
