@@ -1,5 +1,7 @@
 TEMPLATE = subdirs
 SUBDIRS = \
-    crashonexit \
     test
+
+!winrt: SUBDIRS += crashonexit
+
 CONFIG += ordered

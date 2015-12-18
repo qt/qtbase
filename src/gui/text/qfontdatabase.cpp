@@ -47,6 +47,7 @@
 #include <qpa/qplatformfontdatabase.h>
 #include <qpa/qplatformtheme.h>
 
+#include <QtCore/qcache.h>
 #include <QtCore/qmath.h>
 
 #include <stdlib.h>
@@ -413,11 +414,45 @@ void QtFontFamily::ensurePopulated()
     Q_ASSERT_X(populated, Q_FUNC_INFO, qPrintable(name));
 }
 
+
+struct FallbacksCacheKey {
+    QString family;
+    QFont::Style style;
+    QFont::StyleHint styleHint;
+    QChar::Script script;
+};
+
+inline bool operator==(const FallbacksCacheKey &lhs, const FallbacksCacheKey &rhs) Q_DECL_NOTHROW
+{
+    return lhs.script == rhs.script &&
+            lhs.styleHint == rhs.styleHint &&
+            lhs.style == rhs.style &&
+            lhs.family == rhs.family;
+}
+
+inline bool operator!=(const FallbacksCacheKey &lhs, const FallbacksCacheKey &rhs) Q_DECL_NOTHROW
+{
+    return !operator==(lhs, rhs);
+}
+
+inline uint qHash(const FallbacksCacheKey &key, uint seed = 0) Q_DECL_NOTHROW
+{
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, key.family);
+    seed = hash(seed, int(key.style));
+    seed = hash(seed, int(key.styleHint));
+    seed = hash(seed, int(key.script));
+    return seed;
+}
+
+
 class QFontDatabasePrivate
 {
 public:
     QFontDatabasePrivate()
-        : count(0), families(0), reregisterAppFonts(false)
+        : count(0), families(0),
+          fallbacksCache(64),
+          reregisterAppFonts(false)
     { }
 
     ~QFontDatabasePrivate() {
@@ -443,6 +478,7 @@ public:
     int count;
     QtFontFamily **families;
 
+    QCache<FallbacksCacheKey, QStringList> fallbacksCache;
 
 
     struct ApplicationFont {
@@ -461,6 +497,8 @@ public:
 void QFontDatabasePrivate::invalidate()
 {
     QFontCache::instance()->clear();
+
+    fallbacksCache.clear();
     free();
     QGuiApplicationPrivate::platformIntegration()->fontDatabase()->invalidate();
     emit static_cast<QGuiApplication *>(QCoreApplication::instance())->fontDatabaseChanged();
@@ -680,8 +718,10 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutex, fontDatabaseMutex, (QMutex::Recursive))
 void qt_cleanupFontDatabase()
 {
     QFontDatabasePrivate *db = privateDb();
-    if (db)
+    if (db) {
+        db->fallbacksCache.clear();
         db->free();
+    }
 }
 
 // used in qfontengine_x11.cpp
@@ -800,9 +840,15 @@ QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family, QFo
 
 QStringList qt_fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script)
 {
+    QFontDatabasePrivate *db = privateDb();
+
+    const FallbacksCacheKey cacheKey = { family, style, styleHint, script };
+
+    if (const QStringList *fallbacks = db->fallbacksCache.object(cacheKey))
+        return *fallbacks;
+
     // make sure that the db has all fallback families
     QStringList retList = QGuiApplicationPrivate::platformIntegration()->fontDatabase()->fallbacksForFamily(family,style,styleHint,script);
-    QFontDatabasePrivate *db = privateDb();
 
     QStringList::iterator i;
     for (i = retList.begin(); i != retList.end(); ++i) {
@@ -818,6 +864,9 @@ QStringList qt_fallbacksForFamily(const QString &family, QFont::Style style, QFo
             --i;
         }
     }
+
+    db->fallbacksCache.insert(cacheKey, new QStringList(retList));
+
     return retList;
 }
 

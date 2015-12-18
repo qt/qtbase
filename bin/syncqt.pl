@@ -764,7 +764,7 @@ while ( @ARGV ) {
         $var = "version";
         $val = shift @ARGV;
     } elsif($arg =~/^-/) {
-        print STDERR "Unknown option: $arg\n\n" if (!$var);
+        print STDERR "ERROR: Unknown option: $arg\n\n" if (!$var);
         showUsage();
     } else {
         $basedir = locateSyncProfile($arg);
@@ -777,7 +777,7 @@ while ( @ARGV ) {
 
     #do something
     if(!$var || $var eq "show_help") {
-        print STDERR "Unknown option: $arg\n\n" if (!$var);
+        print STDERR "ERROR: Unknown option: $arg\n\n" if (!$var);
         showUsage();
     } elsif ($var eq "copy") {
         if($val eq "yes") {

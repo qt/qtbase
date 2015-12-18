@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
-SUBDIRS = lackey
+!winrt:SUBDIRS = lackey
 test.depends = $$SUBDIRS
 SUBDIRS += test

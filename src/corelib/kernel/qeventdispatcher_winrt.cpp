@@ -201,14 +201,16 @@ bool QEventDispatcherWinRT::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     Q_D(QEventDispatcherWinRT);
 
+    DWORD waitTime = 0;
     do {
         // Additional user events have to be handled before timer events, but the function may not
         // return yet.
         const bool userEventsSent = sendPostedEvents(flags);
 
-        emit aboutToBlock();
         const QVector<HANDLE> timerHandles = d->timerIdToHandle.values().toVector();
-        DWORD waitResult = WaitForMultipleObjectsEx(timerHandles.count(), timerHandles.constData(), FALSE, 1, TRUE);
+        if (waitTime)
+            emit aboutToBlock();
+        DWORD waitResult = WaitForMultipleObjectsEx(timerHandles.count(), timerHandles.constData(), FALSE, waitTime, TRUE);
         if (waitResult >= WAIT_OBJECT_0 && waitResult < WAIT_OBJECT_0 + timerHandles.count()) {
             const HANDLE handle = timerHandles.value(waitResult - WAIT_OBJECT_0);
             ResetEvent(handle);
@@ -231,6 +233,13 @@ bool QEventDispatcherWinRT::processEvents(QEventLoop::ProcessEventsFlags flags)
 
         if (userEventsSent)
             return true;
+
+        // We cannot wait infinitely like on other platforms, as
+        // WaitForMultipleObjectsEx might not return.
+        // For instance win32 uses MsgWaitForMultipleObjects to hook
+        // into the native event loop, while WinRT handles those
+        // via callbacks.
+        waitTime = 1;
     } while (flags & QEventLoop::WaitForMoreEvents);
     return false;
 }

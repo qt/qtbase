@@ -245,6 +245,8 @@ QFunctionPointer QWindowsNativeInterface::platformFunction(const QByteArray &fun
 {
     if (function == QWindowsWindowFunctions::setTouchWindowTouchTypeIdentifier())
         return QFunctionPointer(QWindowsWindow::setTouchWindowTouchTypeStatic);
+    else if (function == QWindowsWindowFunctions::setHasBorderInFullScreenIdentifier())
+        return QFunctionPointer(QWindowsWindow::setHasBorderInFullScreenStatic);
     return Q_NULLPTR;
 }
 

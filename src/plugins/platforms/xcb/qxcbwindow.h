@@ -167,7 +167,6 @@ public:
 
     virtual void create();
     virtual void destroy();
-    void maybeSetScreen(QXcbScreen *screen);
     QXcbScreen *screenForNativeGeometry(const QRect &newGeometry) const;
 
 public Q_SLOTS:
@@ -214,8 +213,6 @@ protected:
                                  Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp);
 
     xcb_window_t m_window;
-
-    QXcbScreen *m_xcbScreen;
 
     uint m_depth;
     QImage::Format m_imageFormat;

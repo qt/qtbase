@@ -502,7 +502,11 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
     QMacAutoReleasePool pool;
 
     if (m_contentViewIsEmbedded) {
-        QPlatformWindow::setGeometry(rect);
+        if (m_qtView) {
+            [m_qtView setFrame:NSMakeRect(0, 0, rect.width(), rect.height())];
+        } else {
+            QPlatformWindow::setGeometry(rect);
+        }
         return;
     }
 

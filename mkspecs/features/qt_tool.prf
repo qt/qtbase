@@ -73,3 +73,5 @@ DEFINES *= QT_USE_QSTRINGBUILDER
         cache(QT_TOOL.$${MODULE}.$$var, transient)
 
 }
+# The variable is re-used by qtPrepareTool(), and we really don't want that.
+unset(QT_TOOL_ENV)

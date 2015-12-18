@@ -79,7 +79,7 @@ isEmpty(BUILDS)|build_pass {
     INSTALLS += target
 }
 
-contains(INSTALLS, target) {
+!builtin_testdata:contains(INSTALLS, target) {
     # Install testdata and helpers as well, but only if we're actually installing the test.
     #
     # Testdata is installed relative to the directory containing the testcase
@@ -173,6 +173,20 @@ contains(INSTALLS, target) {
         $$subConfig += no_check_exist executable
         INSTALLS += $${subInstall}
     }
+}
+
+builtin_testdata {
+    ALL_TESTDATA = $$TESTDATA $$GENERATED_TESTDATA
+    # RESOURCES does not support wildcards (for good reasons)
+    for(td, ALL_TESTDATA): \
+        testdata.files += $$files($$absolute_path($$td, $$_PRO_FILE_PWD_))
+    !isEmpty(testdata.files) {
+        testdata.base = $$_PRO_FILE_PWD_
+        RESOURCES += testdata
+    }
+
+    !isEmpty(TEST_HELPER_INSTALLS): \
+        error("This platform does not support tests which require helpers.")
 }
 
 macx-xcode:bundle:isEmpty(QMAKE_BUNDLE_EXTENSION) {

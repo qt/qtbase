@@ -15,5 +15,5 @@ win32 {
 RESOURCES += ../selftests.qrc
 
 include(../selftests.pri)
-for(file, SUBPROGRAMS): TEST_HELPER_INSTALLS += "../$${file}/$${file}"
+!winrt: for(file, SUBPROGRAMS): TEST_HELPER_INSTALLS += "../$${file}/$${file}"
 

@@ -2408,7 +2408,6 @@
     \row \li .file       \li Specify the subproject \c pro file explicitly. Cannot be
                         used in conjunction with \c .subdir modifier.
     \row \li .depends    \li This subproject depends on specified subproject.
-                        Available only on platforms that use makefiles.
     \row \li .makefile   \li The makefile of subproject.
                         Available only on platforms that use makefiles.
     \row \li .target     \li Base string used for makefile targets related to this

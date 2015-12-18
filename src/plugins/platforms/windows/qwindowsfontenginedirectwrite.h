@@ -86,6 +86,7 @@ public:
     bool supportsSubPixelPositions() const;
 
     QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition);
+    QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t);
     QImage alphaRGBMapForGlyph(glyph_t t, QFixed subPixelPosition, const QTransform &xform);
 
     QFontEngine *cloneWithSize(qreal pixelSize) const;

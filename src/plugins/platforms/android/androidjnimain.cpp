@@ -34,6 +34,7 @@
 
 #include <dlfcn.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <qplugin.h>
 #include <qdebug.h>
 
@@ -91,6 +92,8 @@ extern "C" typedef int (*Main)(int, char **); //use the standard main method to 
 static Main m_main = nullptr;
 static void *m_mainLibraryHnd = nullptr;
 static QList<QByteArray> m_applicationParams;
+pthread_t m_qtAppThread = 0;
+static sem_t m_exitSemaphore, m_terminateSemaphore;
 
 struct SurfaceData
 {
@@ -454,6 +457,10 @@ static void *startMainMethod(void */*data*/)
     if (vm != 0)
         vm->DetachCurrentThread();
 
+    sem_post(&m_terminateSemaphore);
+    sem_wait(&m_exitSemaphore);
+    sem_destroy(&m_exitSemaphore);
+
     // We must call exit() to ensure that all global objects will be destructed
     exit(ret);
     return 0;
@@ -503,8 +510,13 @@ static jboolean startQtApplication(JNIEnv *env, jobject /*object*/, jstring para
         return false;
     }
 
-    pthread_t appThread;
-    return pthread_create(&appThread, nullptr, startMainMethod, nullptr) == 0;
+    if (sem_init(&m_exitSemaphore, 0, 0) == -1)
+        return false;
+
+    if (sem_init(&m_terminateSemaphore, 0, 0) == -1)
+        return false;
+
+    return pthread_create(&m_qtAppThread, nullptr, startMainMethod, nullptr) == 0;
 }
 
 
@@ -518,6 +530,8 @@ static void quitQtAndroidPlugin(JNIEnv *env, jclass /*clazz*/)
 
 static void terminateQt(JNIEnv *env, jclass /*clazz*/)
 {
+    sem_wait(&m_terminateSemaphore);
+    sem_destroy(&m_terminateSemaphore);
     env->DeleteGlobalRef(m_applicationClass);
     env->DeleteGlobalRef(m_classLoaderObject);
     if (m_resourcesObj)
@@ -535,6 +549,8 @@ static void terminateQt(JNIEnv *env, jclass /*clazz*/)
     m_androidPlatformIntegration = nullptr;
     delete m_androidAssetsFileEngineHandler;
     m_androidAssetsFileEngineHandler = nullptr;
+    sem_post(&m_exitSemaphore);
+    pthread_join(m_qtAppThread, nullptr);
 }
 
 static void setSurface(JNIEnv *env, jobject /*thiz*/, jint id, jobject jSurface, jint w, jint h)

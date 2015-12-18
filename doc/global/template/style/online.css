@@ -1260,12 +1260,12 @@ li a.active {
 }
 .mainContent table p {
   margin:0px;
-  padding:0px
-}
-.mainContent table p {
-  margin:0px;
   padding:0px;
+  max-width:initial;
   min-height:2em
+}
+.mainContent table p.centerAlign {
+  text-align:center
 }
 .context h2 {
   font-size:2.1875em

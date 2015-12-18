@@ -36,6 +36,7 @@ HTML.headerscripts = \
     "  <script type=\"text/javascript\" src=\"scripts/extras.js\"></script>\n" \
     "  <script type=\"text/javascript\">\n" \
     "  \$(function(){\n" \
+    "     \$(\"#footer\").load(\"/style/qt-footer.html\");\n" \
     "     \$(\"#sidebar-content\").load(\"style/qt5-sidebar.html\");\n" \
     "  });\n" \
     "  </script>\n" \

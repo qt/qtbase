@@ -2,6 +2,7 @@
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -2516,14 +2517,26 @@ void tst_QVariant::variantMap()
 
     QVariant v = map;
     QVariantMap map2 = qvariant_cast<QVariantMap>(v);
-
     QCOMPARE(map2.value("test").toInt(), 42);
+    QCOMPARE(map2, map);
+
+    map2 = v.toMap();
+    QCOMPARE(map2.value("test").toInt(), 42);
+    QCOMPARE(map2, map);
 
     QVariant v2 = QVariant(QMetaType::type("QVariantMap"), &map);
     QCOMPARE(qvariant_cast<QVariantMap>(v2).value("test").toInt(), 42);
 
     QVariant v3 = QVariant(QMetaType::type("QMap<QString, QVariant>"), &map);
     QCOMPARE(qvariant_cast<QVariantMap>(v3).value("test").toInt(), 42);
+
+    // multi-keys
+    map.insertMulti("test", 47);
+    v = map;
+    map2 = qvariant_cast<QVariantMap>(v);
+    QCOMPARE(map2, map);
+    map2 = v.toMap();
+    QCOMPARE(map2, map);
 }
 
 void tst_QVariant::variantHash()
@@ -2533,14 +2546,26 @@ void tst_QVariant::variantHash()
 
     QVariant v = hash;
     QVariantHash hash2 = qvariant_cast<QVariantHash>(v);
-
     QCOMPARE(hash2.value("test").toInt(), 42);
+    QCOMPARE(hash2, hash);
+
+    hash2 = v.toHash();
+    QCOMPARE(hash2.value("test").toInt(), 42);
+    QCOMPARE(hash2, hash);
 
     QVariant v2 = QVariant(QMetaType::type("QVariantHash"), &hash);
     QCOMPARE(qvariant_cast<QVariantHash>(v2).value("test").toInt(), 42);
 
     QVariant v3 = QVariant(QMetaType::type("QHash<QString, QVariant>"), &hash);
     QCOMPARE(qvariant_cast<QVariantHash>(v3).value("test").toInt(), 42);
+
+    // multi-keys
+    hash.insertMulti("test", 47);
+    v = hash;
+    hash2 = qvariant_cast<QVariantHash>(v);
+    QCOMPARE(hash2, hash);
+    hash2 = v.toHash();
+    QCOMPARE(hash2, hash);
 }
 
 class CustomQObject : public QObject {
@@ -3258,10 +3283,18 @@ void tst_QVariant::convertIterables() const
         map.insert("3", 4);
         QCOMPARE(QVariant::fromValue(map).value<QVariantHash>().count(), map.count());
         QCOMPARE(QVariant::fromValue(map).value<QVariantMap>().count(), map.count());
+
+        map.insertMulti("3", 5);
+        QCOMPARE(QVariant::fromValue(map).value<QVariantHash>().count(), map.count());
+        QCOMPARE(QVariant::fromValue(map).value<QVariantMap>().count(), map.count());
     }
     {
         QVariantMap map;
         map.insert("3", 4);
+        QCOMPARE(QVariant::fromValue(map).value<QVariantHash>().count(), map.count());
+        QCOMPARE(QVariant::fromValue(map).value<QVariantMap>().count(), map.count());
+
+        map.insertMulti("3", 5);
         QCOMPARE(QVariant::fromValue(map).value<QVariantHash>().count(), map.count());
         QCOMPARE(QVariant::fromValue(map).value<QVariantMap>().count(), map.count());
     }
@@ -3270,10 +3303,18 @@ void tst_QVariant::convertIterables() const
         hash.insert("3", 4);
         QCOMPARE(QVariant::fromValue(hash).value<QVariantHash>().count(), hash.count());
         QCOMPARE(QVariant::fromValue(hash).value<QVariantMap>().count(), hash.count());
+
+        hash.insertMulti("3", 5);
+        QCOMPARE(QVariant::fromValue(hash).value<QVariantHash>().count(), hash.count());
+        QCOMPARE(QVariant::fromValue(hash).value<QVariantMap>().count(), hash.count());
     }
     {
         QVariantHash hash;
         hash.insert("3", 4);
+        QCOMPARE(QVariant::fromValue(hash).value<QVariantHash>().count(), hash.count());
+        QCOMPARE(QVariant::fromValue(hash).value<QVariantMap>().count(), hash.count());
+
+        hash.insertMulti("3", 5);
         QCOMPARE(QVariant::fromValue(hash).value<QVariantHash>().count(), hash.count());
         QCOMPARE(QVariant::fromValue(hash).value<QVariantMap>().count(), hash.count());
     }

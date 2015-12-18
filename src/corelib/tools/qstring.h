@@ -221,7 +221,7 @@ public:
     inline ~QString();
     QString &operator=(QChar c);
     QString &operator=(const QString &) Q_DECL_NOTHROW;
-    inline QString &operator=(QLatin1String latin1);
+    QString &operator=(QLatin1String latin1);
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QString(QString && other) Q_DECL_NOTHROW : d(other.d) { other.d = Data::sharedNull(); }
     inline QString &operator=(QString &&other) Q_DECL_NOTHROW
@@ -885,11 +885,6 @@ inline void QString::detach()
 { if (d->ref.isShared() || (d->offset != sizeof(QStringData))) reallocData(uint(d->size) + 1u); }
 inline bool QString::isDetached() const
 { return !d->ref.isShared(); }
-inline QString &QString::operator=(QLatin1String s)
-{
-    *this = fromLatin1(s.latin1(), s.size());
-    return *this;
-}
 inline void QString::clear()
 { if (!isNull()) *this = QString(); }
 inline QString::QString(const QString &other) Q_DECL_NOTHROW : d(other.d)

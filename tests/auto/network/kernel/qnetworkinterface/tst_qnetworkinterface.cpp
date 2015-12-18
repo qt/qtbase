@@ -55,6 +55,7 @@ private slots:
     void initTestCase();
     void cleanupTestCase();
     void dump();
+    void consistencyCheck();
     void loopbackIPv4();
     void loopbackIPv6();
     void localAddress();
@@ -145,6 +146,24 @@ void tst_QNetworkInterface::dump()
             if (!e.broadcast().isNull())
                 s.nospace() << " broadcast " << qPrintable(e.broadcast().toString());
         }
+    }
+}
+
+void tst_QNetworkInterface::consistencyCheck()
+{
+    QList<QNetworkInterface> ifaces = QNetworkInterface::allInterfaces();
+    QSet<QString> interfaceNames;
+    QVector<int> interfaceIndexes;
+
+    foreach (const QNetworkInterface &iface, ifaces) {
+        QVERIFY2(!interfaceNames.contains(iface.name()),
+                 "duplicate name = " + iface.name().toLocal8Bit());
+        interfaceNames << iface.name();
+
+        QVERIFY2(!interfaceIndexes.contains(iface.index()),
+                 "duplicate index = " + QByteArray::number(iface.index()));
+        if (iface.index())
+            interfaceIndexes << iface.index();
     }
 }
 

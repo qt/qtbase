@@ -72,6 +72,7 @@ public:
     void setScreens(QList<QPlatformScreen *> sl) { m_screens = sl; }
     void removeScreen(QPlatformScreen *s) { m_screens.removeOne(s); }
     void addScreen(QPlatformScreen *s);
+    void setPrimaryScreen(QPlatformScreen *s);
 
     QXcbXSettings *xSettings() const;
 
@@ -101,9 +102,10 @@ class Q_XCB_EXPORT QXcbScreen : public QXcbObject, public QPlatformScreen
 {
 public:
     QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDesktop,
-               xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *output,
-               QString outputName);
+               xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *outputInfo);
     ~QXcbScreen();
+
+    QString getOutputName(xcb_randr_get_output_info_reply_t *outputInfo);
 
     QPixmap grabWindow(WId window, int x, int y, int width, int height) const Q_DECL_OVERRIDE;
 
@@ -136,6 +138,10 @@ public:
     xcb_randr_output_t output() const { return m_output; }
     xcb_randr_crtc_t crtc() const { return m_crtc; }
     xcb_randr_mode_t mode() const { return m_mode; }
+
+    void setOutput(xcb_randr_output_t outputId,
+                   xcb_randr_get_output_info_reply_t *outputInfo);
+    void setCrtc(xcb_randr_crtc_t crtc) { m_crtc = crtc; }
 
     void windowShown(QXcbWindow *window);
     QString windowManagerName() const { return m_windowManagerName; }

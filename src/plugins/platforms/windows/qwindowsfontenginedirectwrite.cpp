@@ -485,9 +485,9 @@ qreal QWindowsFontEngineDirectWrite::maxCharWidth() const
     return 0;
 }
 
-QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition)
+QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t)
 {
-    QImage im = imageForGlyph(glyph, subPixelPosition, 0, QTransform());
+    QImage im = alphaRGBMapForGlyph(glyph, subPixelPosition, t);
 
     QImage alphaMap(im.width(), im.height(), QImage::Format_Alpha8);
 
@@ -502,6 +502,11 @@ QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed sub
     }
 
     return alphaMap;
+}
+
+QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition)
+{
+    return alphaMapForGlyph(glyph, subPixelPosition, QTransform());
 }
 
 bool QWindowsFontEngineDirectWrite::supportsSubPixelPositions() const
@@ -709,9 +714,9 @@ QString QWindowsFontEngineDirectWrite::fontNameSubstitute(const QString &familyN
 glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph, QFixed pos, const QTransform &matrix, GlyphFormat format)
 {
     Q_UNUSED(pos);
-    int margin = 0;
-    if (format == QFontEngine::Format_A32 || format == QFontEngine::Format_ARGB)
-        margin = glyphMargin(QFontEngine::Format_A32);
+    Q_UNUSED(format);
+
+    int margin = glyphMargin(QFontEngine::Format_A32);
     glyph_metrics_t gm = QFontEngine::boundingBox(glyph, matrix);
     gm.width += margin * 2;
     gm.height += margin * 2;

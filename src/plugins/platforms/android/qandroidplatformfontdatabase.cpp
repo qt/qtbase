@@ -74,7 +74,7 @@ QStringList QAndroidPlatformFontDatabase::fallbacksForFamily(const QString &fami
         result.append(QString(qgetenv("QT_ANDROID_FONTS_SERIF")).split(QLatin1Char(';')));
     else
         result.append(QString(qgetenv("QT_ANDROID_FONTS")).split(QLatin1Char(';')));
-    result.append(QPlatformFontDatabase::fallbacksForFamily(family, style, styleHint, script));
+    result.append(QBasicFontDatabase::fallbacksForFamily(family, style, styleHint, script));
 
     return result;
 }

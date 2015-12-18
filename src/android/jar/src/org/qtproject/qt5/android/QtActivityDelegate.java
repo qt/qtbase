@@ -904,6 +904,7 @@ public class QtActivityDelegate
     public void onDestroy()
     {
         if (m_quitApp) {
+            QtNative.terminateQt();
             if (m_debuggerProcess != null)
                 m_debuggerProcess.destroy();
             System.exit(0);// FIXME remove it or find a better way

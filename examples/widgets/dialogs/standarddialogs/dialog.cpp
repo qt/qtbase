@@ -98,9 +98,19 @@ int DialogOptionsWidget::value() const
 Dialog::Dialog(QWidget *parent)
     : QWidget(parent)
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    QVBoxLayout *verticalLayout;
+    if (QGuiApplication::styleHints()->showIsFullScreen() || QGuiApplication::styleHints()->showIsMaximized()) {
+        QHBoxLayout *horizontalLayout = new QHBoxLayout(this);
+        QGroupBox *groupBox = new QGroupBox(QGuiApplication::applicationDisplayName(), this);
+        horizontalLayout->addWidget(groupBox);
+        horizontalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored));
+        verticalLayout = new QVBoxLayout(groupBox);
+    } else {
+        verticalLayout = new QVBoxLayout(this);
+    }
+
     QToolBox *toolbox = new QToolBox;
-    mainLayout->addWidget(toolbox);
+    verticalLayout->addWidget(toolbox);
 
     errorMessageDialog = new QErrorMessage(this);
 
@@ -291,7 +301,7 @@ Dialog::Dialog(QWidget *parent)
     layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding), 5, 0);
     toolbox->addItem(page, tr("Message Boxes"));
 
-    setWindowTitle(tr("Standard Dialogs"));
+    setWindowTitle(QGuiApplication::applicationDisplayName());
 }
 
 void Dialog::setInteger()

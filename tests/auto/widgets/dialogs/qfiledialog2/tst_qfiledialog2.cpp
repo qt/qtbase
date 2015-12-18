@@ -128,6 +128,7 @@ private slots:
 #endif
     void completionOnLevelAfterRoot();
     void task233037_selectingDirectory();
+    void task235069_hideOnEscape_data();
     void task235069_hideOnEscape();
     void task203703_returnProperSeparator();
     void task228844_ensurePreviousSorting();
@@ -764,26 +765,38 @@ void tst_QFileDialog2::task233037_selectingDirectory()
     current.rmdir("test");
 }
 
+void tst_QFileDialog2::task235069_hideOnEscape_data()
+{
+    QTest::addColumn<QString>("childName");
+    QTest::addColumn<QFileDialog::ViewMode>("viewMode");
+    QTest::newRow("listView") << QStringLiteral("listView") << QFileDialog::List;
+    QTest::newRow("fileNameEdit") << QStringLiteral("fileNameEdit") << QFileDialog::List;
+    QTest::newRow("treeView") << QStringLiteral("treeView") << QFileDialog::Detail;
+}
+
 void tst_QFileDialog2::task235069_hideOnEscape()
 {
+    QFETCH(QString, childName);
+    QFETCH(QFileDialog::ViewMode, viewMode);
     QDir current = QDir::currentPath();
+
     QNonNativeFileDialog fd;
-    fd.setViewMode(QFileDialog::List);
+    QSignalSpy spyFinished(&fd, &QDialog::finished);
+    QVERIFY(spyFinished.isValid());
+    QSignalSpy spyRejected(&fd, &QDialog::rejected);
+    QVERIFY(spyRejected.isValid());
+    fd.setViewMode(viewMode);
     fd.setDirectory(current.absolutePath());
-    fd.setAcceptMode( QFileDialog::AcceptSave);
+    fd.setAcceptMode(QFileDialog::AcceptSave);
     fd.show();
-    QListView *list = fd.findChild<QListView*>("listView");
-    list->setFocus();
+    QWidget *child = fd.findChild<QWidget *>(childName);
+    QVERIFY(child);
+    child->setFocus();
     QTest::qWait(200);
-    QTest::keyClick(list, Qt::Key_Escape);
+    QTest::keyClick(child, Qt::Key_Escape);
     QCOMPARE(fd.isVisible(), false);
-    QNonNativeFileDialog fd2;
-    fd2.setDirectory(current.absolutePath());
-    fd2.setAcceptMode( QFileDialog::AcceptSave);
-    fd2.show();
-    QLineEdit *edit = fd2.findChild<QLineEdit*>("fileNameEdit");
-    QTest::keyClick(edit, Qt::Key_Escape);
-    QCOMPARE(fd2.isVisible(), false);
+    QCOMPARE(spyFinished.count(), 1); // QTBUG-7690
+    QCOMPARE(spyRejected.count(), 1); // reject(), don't hide()
 }
 
 #ifdef QT_BUILD_INTERNAL

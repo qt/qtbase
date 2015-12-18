@@ -263,11 +263,11 @@ QString TableGenerator::findComposeFile()
 {
     // check if XCOMPOSEFILE points to a Compose file
     if (qEnvironmentVariableIsSet("XCOMPOSEFILE")) {
-        QString path(qgetenv("XCOMPOSEFILE"));
-        if (path.endsWith(QLatin1String("Compose")))
+        const QString path = QFile::decodeName(qgetenv("XCOMPOSEFILE"));
+        if (QFile::exists(path))
             return path;
         else
-            qWarning("Qt Warning: XCOMPOSEFILE doesn't point to a valid Compose file");
+            qWarning("$XCOMPOSEFILE doesn't point to an existing file");
     }
 
     // check if user’s home directory has a file named .XCompose

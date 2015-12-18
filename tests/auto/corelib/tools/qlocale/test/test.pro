@@ -17,4 +17,4 @@ win32 {
     }
 }
 
-TEST_HELPER_INSTALLS = ../syslocaleapp/syslocaleapp
+!winrt: TEST_HELPER_INSTALLS = ../syslocaleapp/syslocaleapp

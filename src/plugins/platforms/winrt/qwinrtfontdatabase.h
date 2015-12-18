@@ -60,6 +60,8 @@ public:
     void populateFontDatabase() Q_DECL_OVERRIDE;
     void populateFamily(const QString &familyName) Q_DECL_OVERRIDE;
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) Q_DECL_OVERRIDE;
+    QStringList fallbacksForFamily(const QString &family, QFont::Style style,
+                                   QFont::StyleHint styleHint, QChar::Script script) const Q_DECL_OVERRIDE;
     void releaseHandle(void *handle) Q_DECL_OVERRIDE;
 private:
     QHash<IDWriteFontFile *, FontDescription> m_fonts;

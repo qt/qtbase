@@ -255,7 +255,7 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
     \value TextHeuristicRole This action should be put in the application menu based on the action's text
            as described in the QMenuBar documentation.
     \value ApplicationSpecificRole This action should be put in the application menu with an application specific role
-    \value AboutQtRole This action matches handles the "About Qt" menu item.
+    \value AboutQtRole This action handles the "About Qt" menu item.
     \value AboutRole This action should be placed where the "About" menu item is in the application menu. The text of
            the menu item will be set to "About <application name>". The application name is fetched from the
            \c{Info.plist} file in the application's bundle (See \l{Qt for OS X - Deployment}).
@@ -1231,7 +1231,7 @@ void QAction::activate(ActionEvent event)
     \since 4.2
 
     This indicates what role the action serves in the application menu on Mac
-    OS X. By default all action have the TextHeuristicRole, which means that
+    OS X. By default all actions have the TextHeuristicRole, which means that
     the action is added based on its text (see QMenuBar for more information).
 
     The menu role can only be changed before the actions are put into the menu
