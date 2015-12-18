@@ -292,10 +292,8 @@ QLinuxFbScreen::~QLinuxFbScreen()
         close(mFbFd);
     }
 
-    if (mTtyFd != -1) {
+    if (mTtyFd != -1)
         resetTty(mTtyFd, mOldTtyMode);
-        close(mTtyFd);
-    }
 
     delete mBlitter;
 }
