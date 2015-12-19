@@ -813,8 +813,10 @@ QString QAccessibleTextWidget::attributes(int offset, int *startOffset, int *end
 
     QTextBlockFormat blockFormat = cursor.blockFormat();
 
+    const QFont charFormatFont = charFormat.font();
+
     AttributeFormatter attrs;
-    QString family = charFormat.font().family();
+    QString family = charFormatFont.family();
     if (!family.isEmpty()) {
         family = family.replace('\\',QStringLiteral("\\\\"));
         family = family.replace(':',QStringLiteral("\\:"));
@@ -825,18 +827,18 @@ QString QAccessibleTextWidget::attributes(int offset, int *startOffset, int *end
         attrs["font-family"] = QString::fromLatin1("\"%1\"").arg(family);
     }
 
-    int fontSize = int(charFormat.font().pointSize());
+    int fontSize = int(charFormatFont.pointSize());
     if (fontSize)
         attrs["font-size"] = QString::fromLatin1("%1pt").arg(fontSize);
 
     //Different weight values are not handled
-    attrs["font-weight"] = QString::fromLatin1(charFormat.font().weight() > QFont::Normal ? "bold" : "normal");
+    attrs["font-weight"] = QString::fromLatin1(charFormatFont.weight() > QFont::Normal ? "bold" : "normal");
 
-    QFont::Style style = charFormat.font().style();
+    QFont::Style style = charFormatFont.style();
     attrs["font-style"] = QString::fromLatin1((style == QFont::StyleItalic) ? "italic" : ((style == QFont::StyleOblique) ? "oblique": "normal"));
 
     QTextCharFormat::UnderlineStyle underlineStyle = charFormat.underlineStyle();
-    if (underlineStyle == QTextCharFormat::NoUnderline && charFormat.font().underline()) // underline could still be set in the default font
+    if (underlineStyle == QTextCharFormat::NoUnderline && charFormatFont.underline()) // underline could still be set in the default font
         underlineStyle = QTextCharFormat::SingleUnderline;
     QString underlineStyleValue;
     switch (underlineStyle) {
