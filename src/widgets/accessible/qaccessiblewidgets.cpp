@@ -707,6 +707,53 @@ int QAccessibleTextWidget::selectionCount() const
     return textCursor().hasSelection() ? 1 : 0;
 }
 
+namespace {
+/*!
+    \internal
+    \brief Helper class for AttributeFormatter
+
+    This class is returned from AttributeFormatter's indexing operator to act
+    as a proxy for the following assignment.
+
+    It uses perfect forwarding in its assignment operator to amend the RHS
+    with the formatting of the key, using QStringBuilder. Consequently, the
+    RHS can be anything that QStringBuilder supports.
+*/
+class AttributeFormatterRef {
+    QString &string;
+    const char *key;
+    friend class AttributeFormatter;
+    AttributeFormatterRef(QString &string, const char *key) : string(string), key(key) {}
+public:
+    template <typename RHS>
+    void operator=(RHS &&rhs)
+    { string += QLatin1String(key) + QLatin1Char(':') + std::forward<RHS>(rhs) + QLatin1Char(';'); }
+};
+
+/*!
+    \internal
+    \brief Small string-builder class that supports a map-like API to serialize key-value pairs.
+    \code
+    AttributeFormatter attrs;
+    attrs["foo"] = QLatinString("hello") + world + QLatin1Char('!');
+    \endcode
+    The key type is always \c{const char*}, and the right-hand-side can
+    be any QStringBuilder expression.
+
+    Breaking it down, this class provides the indexing operator, stores
+    the key in an instance of, and then returns, AttributeFormatterRef,
+    which is the class that provides the assignment part of the operation.
+*/
+class AttributeFormatter {
+    QString string;
+public:
+    AttributeFormatterRef operator[](const char *key)
+    { return AttributeFormatterRef(string, key); }
+
+    QString toFormatted() const { return string; }
+};
+} // unnamed namespace
+
 QString QAccessibleTextWidget::attributes(int offset, int *startOffset, int *endOffset) const
 {
     /* The list of attributes can be found at:
@@ -766,7 +813,7 @@ QString QAccessibleTextWidget::attributes(int offset, int *startOffset, int *end
 
     QTextBlockFormat blockFormat = cursor.blockFormat();
 
-    QMap<QByteArray, QString> attrs;
+    AttributeFormatter attrs;
     QString family = charFormat.font().family();
     if (!family.isEmpty()) {
         family = family.replace('\\',QStringLiteral("\\\\"));
@@ -856,12 +903,7 @@ QString QAccessibleTextWidget::attributes(int offset, int *startOffset, int *end
         break;
     }
 
-    QString result;
-    foreach (const QByteArray &attributeName, attrs.keys()) {
-        result.append(QString::fromLatin1(attributeName)).append(':').append(attrs[attributeName]).append(';');
-    }
-
-    return result;
+    return attrs.toFormatted();
 }
 
 int QAccessibleTextWidget::cursorPosition() const
