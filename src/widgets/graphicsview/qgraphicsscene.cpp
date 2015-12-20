@@ -5728,18 +5728,15 @@ void QGraphicsScene::setActiveWindow(QGraphicsWidget *widget)
 
     // Raise
     if (panel) {
-        QList<QGraphicsItem *> siblingWindows;
         QGraphicsItem *parent = panel->parentItem();
         // Raise ### inefficient for toplevels
-        foreach (QGraphicsItem *sibling, parent ? parent->childItems() : items()) {
-            if (sibling != panel && sibling->isWindow())
-                siblingWindows << sibling;
-        }
 
         // Find the highest z value.
         qreal z = panel->zValue();
-        for (int i = 0; i < siblingWindows.size(); ++i)
-            z = qMax(z, siblingWindows.at(i)->zValue());
+        foreach (QGraphicsItem *sibling, parent ? parent->childItems() : items()) {
+            if (sibling != panel && sibling->isWindow())
+                z = qMax(z, sibling->zValue());
+        }
 
         // This will probably never overflow.
         const qreal litt = qreal(0.001);
