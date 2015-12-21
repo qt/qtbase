@@ -5834,14 +5834,11 @@ void QGraphicsScenePrivate::removeView(QGraphicsView *view)
 
 void QGraphicsScenePrivate::updateTouchPointsForItem(QGraphicsItem *item, QTouchEvent *touchEvent)
 {
-    QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
-    for (int i = 0; i < touchPoints.count(); ++i) {
-        QTouchEvent::TouchPoint &touchPoint = touchPoints[i];
+    for (auto &touchPoint : touchEvent->_touchPoints) {
         touchPoint.setRect(item->mapFromScene(touchPoint.sceneRect()).boundingRect());
         touchPoint.setStartPos(item->d_ptr->genericMapFromScene(touchPoint.startScenePos(), static_cast<QWidget *>(touchEvent->target())));
         touchPoint.setLastPos(item->d_ptr->genericMapFromScene(touchPoint.lastScenePos(), static_cast<QWidget *>(touchEvent->target())));
     }
-    touchEvent->setTouchPoints(touchPoints);
 }
 
 int QGraphicsScenePrivate::findClosestTouchPointId(const QPointF &scenePos)

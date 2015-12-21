@@ -908,6 +908,9 @@ protected:
     friend class QGuiApplicationPrivate;
     friend class QApplication;
     friend class QApplicationPrivate;
+#ifndef QT_NO_GRAPHICSVIEW
+    friend class QGraphicsScenePrivate; // direct access to _touchPoints
+#endif
 };
 Q_DECLARE_TYPEINFO(QTouchEvent::TouchPoint, Q_MOVABLE_TYPE);
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTouchEvent::TouchPoint::InfoFlags)
