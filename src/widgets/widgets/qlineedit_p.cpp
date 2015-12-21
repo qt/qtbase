@@ -523,6 +523,28 @@ void QLineEditPrivate::removeAction(QAction *action)
      q->update();
 }
 
+static bool isSideWidgetVisible(const QLineEditPrivate::SideWidgetEntry &e)
+{
+   return e.widget->isVisible();
+}
+
+int QLineEditPrivate::effectiveLeftTextMargin() const
+{
+    const auto &list = leftSideWidgetList();
+    return leftTextMargin + (QLineEditIconButton::IconMargin + iconSize().width())
+        * int(std::count_if(list.begin(), list.end(),
+                            isSideWidgetVisible));
+}
+
+int QLineEditPrivate::effectiveRightTextMargin() const
+{
+    const auto &list = rightSideWidgetList();
+    return rightTextMargin + (QLineEditIconButton::IconMargin + iconSize().width())
+        * int(std::count_if(list.begin(), list.end(),
+                            isSideWidgetVisible));
+}
+
+
 QT_END_NAMESPACE
 
 #endif

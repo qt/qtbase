@@ -231,27 +231,6 @@ private:
 };
 Q_DECLARE_TYPEINFO(QLineEditPrivate::SideWidgetEntry, Q_PRIMITIVE_TYPE);
 
-static bool isSideWidgetVisible(const QLineEditPrivate::SideWidgetEntry &e)
-{
-   return e.widget->isVisible();
-}
-
-inline int QLineEditPrivate::effectiveLeftTextMargin() const
-{
-    const auto &list = leftSideWidgetList();
-    return leftTextMargin + (QLineEditIconButton::IconMargin + iconSize().width())
-        * int(std::count_if(list.begin(), list.end(),
-                            isSideWidgetVisible));
-}
-
-inline int QLineEditPrivate::effectiveRightTextMargin() const
-{
-    const auto &list = rightSideWidgetList();
-    return rightTextMargin + (QLineEditIconButton::IconMargin + iconSize().width())
-        * int(std::count_if(list.begin(), list.end(),
-                            isSideWidgetVisible));
-}
-
 #endif // QT_NO_LINEEDIT
 
 QT_END_NAMESPACE
