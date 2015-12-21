@@ -6494,28 +6494,29 @@ void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original)
         QGestureEvent ev(list);
         sendEvent(target, &ev);
 
-        foreach (QGesture *g, list) {
-            if (ev.isAccepted() || ev.isAccepted(g))
-                gestures.remove(g);
-        }
+        if (!ev.isAccepted()) {
+            foreach (QGesture *g, list) {
 
-        foreach (QGesture *g, gestures) {
-            if (!g->hasHotSpot())
-                continue;
-
-            QList<QGraphicsItem *> items = itemsAtPosition(QPoint(), g->d_func()->sceneHotSpot, 0);
-            for (int j = 0; j < items.size(); ++j) {
-                QGraphicsObject *item = items.at(j)->toGraphicsObject();
-                if (!item)
+                if (ev.isAccepted(g))
                     continue;
-                QGraphicsItemPrivate *d = item->QGraphicsItem::d_func();
-                if (d->gestureContext.contains(g->gestureType())) {
-                    QList<QGesture *> list;
-                    list << g;
-                    QGestureEvent ev(list);
-                    sendEvent(item, &ev);
-                    if (ev.isAccepted() || ev.isAccepted(g))
-                        break; // successfully delivered
+
+                if (!g->hasHotSpot())
+                    continue;
+
+                QList<QGraphicsItem *> items = itemsAtPosition(QPoint(), g->d_func()->sceneHotSpot, 0);
+                for (int j = 0; j < items.size(); ++j) {
+                    QGraphicsObject *item = items.at(j)->toGraphicsObject();
+                    if (!item)
+                        continue;
+                    QGraphicsItemPrivate *d = item->QGraphicsItem::d_func();
+                    if (d->gestureContext.contains(g->gestureType())) {
+                        QList<QGesture *> list;
+                        list << g;
+                        QGestureEvent ev(list);
+                        sendEvent(item, &ev);
+                        if (ev.isAccepted() || ev.isAccepted(g))
+                            break; // successfully delivered
+                    }
                 }
             }
         }
