@@ -42,6 +42,7 @@
 
 #include <QtGui/qfont.h>
 #include <QtGui/qpa/qplatformnativeinterface.h>
+#include <QtPlatformHeaders/qwindowswindowfunctions.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -96,7 +97,15 @@ public:
     QVariant windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const Q_DECL_OVERRIDE;
     void setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value) Q_DECL_OVERRIDE;
 
+    static QWindowsWindowFunctions::WindowActivationBehavior windowActivationBehavior()
+        { return QWindowsNativeInterface::m_windowActivationBehavior; }
+    static void setWindowActivationBehavior(QWindowsWindowFunctions::WindowActivationBehavior b)
+        { QWindowsNativeInterface::m_windowActivationBehavior = b; }
+
     QFunctionPointer platformFunction(const QByteArray &function) const Q_DECL_OVERRIDE;
+
+private:
+    static QWindowsWindowFunctions::WindowActivationBehavior m_windowActivationBehavior;
 };
 
 QT_END_NAMESPACE

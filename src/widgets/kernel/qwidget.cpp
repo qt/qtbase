@@ -12689,7 +12689,7 @@ QWidget *QWidget::keyboardGrabber()
     does not allow an application to interrupt what the user is currently
     doing in another application.
 
-    \sa isActiveWindow(), window(), show()
+    \sa isActiveWindow(), window(), show(), QWindowsWindowFunctions::setWindowActivationBehavior()
 */
 void QWidget::activateWindow()
 {
