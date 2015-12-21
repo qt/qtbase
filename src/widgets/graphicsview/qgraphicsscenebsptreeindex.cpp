@@ -77,6 +77,8 @@
 #include <QtCore/qmath.h>
 #include <QtCore/qdebug.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 static inline int intmaxlog(int n)
@@ -545,23 +547,18 @@ QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::items(Qt::SortOrder order) co
     Q_D(const QGraphicsSceneBspTreeIndex);
     const_cast<QGraphicsSceneBspTreeIndexPrivate*>(d)->purgeRemovedItems();
     QList<QGraphicsItem *> itemList;
+    itemList.reserve(d->indexedItems.size() + d->unindexedItems.size());
 
-    // If freeItemIndexes is empty, we know there are no holes in indexedItems and
-    // unindexedItems.
-    if (d->freeItemIndexes.isEmpty()) {
-        if (d->unindexedItems.isEmpty()) {
-            itemList = d->indexedItems;
-        } else {
-            itemList = d->indexedItems + d->unindexedItems;
-        }
-    } else {
-        // Rebuild the list of items to avoid holes. ### We could also just
-        // compress the item lists at this point.
-        foreach (QGraphicsItem *item, d->indexedItems + d->unindexedItems) {
-            if (item)
-                itemList << item;
-        }
-    }
+    // Rebuild the list of items to avoid holes. ### We could also just
+    // compress the item lists at this point.
+    QGraphicsItem *null = nullptr; // work-around for (at least) MSVC 2012 emitting
+                                   // warning C4100 for its own header <algorithm>
+                                   // when passing nullptr directly to remove_copy:
+    std::remove_copy(d->indexedItems.cbegin(), d->indexedItems.cend(),
+                     std::back_inserter(itemList), null);
+    std::remove_copy(d->unindexedItems.cbegin(), d->unindexedItems.cend(),
+                     std::back_inserter(itemList), null);
+
     d->sortItems(&itemList, order, d->sortCacheEnabled);
     return itemList;
 }
