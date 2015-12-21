@@ -4185,15 +4185,19 @@ QTCONFFILE="$outpath/bin/qt.conf"
 cat > "$QTCONFFILE" <<EOF
 [EffectivePaths]
 Prefix=..
+EOF
+if [ -n "$CFG_HOST_QT_TOOLS_PATH" ]; then
+    cat >> "$QTCONFFILE" <<EOF
 [Paths]
 Prefix=$QT_EXT_PREFIX
 TargetSpec=$XPLATFORM
 HostSpec=$PLATFORM
 EOF
-if [ -n "$CFG_SYSROOT" ]; then
-    cat >> "$QTCONFFILE" <<EOF
+    if [ -n "$CFG_SYSROOT" ]; then
+        cat >> "$QTCONFFILE" <<EOF
 Sysroot=$CFG_SYSROOT
 EOF
+    fi
 fi
 if [ x"$relpath" != x"$outpath" ]; then
     cat >> "$QTCONFFILE" <<EOF
