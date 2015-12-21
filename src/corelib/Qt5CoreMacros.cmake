@@ -53,8 +53,8 @@ macro(QT5_MAKE_OUTPUT_FILE infile prefix ext outfile )
     else()
         file(RELATIVE_PATH rel ${CMAKE_CURRENT_SOURCE_DIR} ${infile})
     endif()
-    if(WIN32 AND rel MATCHES "^[a-zA-Z]:") # absolute path
-        string(REGEX REPLACE "^([a-zA-Z]):(.*)$" "\\1_\\2" rel "${rel}")
+    if(WIN32 AND rel MATCHES "^([a-zA-Z]):(.*)$") # absolute path
+        set(rel "${CMAKE_MATCH_1}_${CMAKE_MATCH_2}")
     endif()
     set(_outfile "${CMAKE_CURRENT_BINARY_DIR}/${rel}")
     string(REPLACE ".." "__" _outfile ${_outfile})
@@ -94,7 +94,7 @@ endmacro()
 
 
 # helper macro to set up a moc rule
-macro(QT5_CREATE_MOC_COMMAND infile outfile moc_flags moc_options moc_target)
+function(QT5_CREATE_MOC_COMMAND infile outfile moc_flags moc_options moc_target)
     # Pass the parameters in a file.  Set the working directory to
     # be that containing the parameters file and reference it by
     # just the file name.  This is necessary because the moc tool on
@@ -134,7 +134,7 @@ macro(QT5_CREATE_MOC_COMMAND infile outfile moc_flags moc_options moc_target)
                        DEPENDS ${infile}
                        ${_moc_working_dir}
                        VERBATIM)
-endmacro()
+endfunction()
 
 
 function(QT5_GENERATE_MOC infile outfile )
