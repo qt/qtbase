@@ -263,7 +263,7 @@ void QThreadPoolPrivate::reset()
         allThreadsCopy.swap(allThreads);
         locker.unlock();
 
-        foreach (QThreadPoolThread *thread, allThreadsCopy) {
+        for (QThreadPoolThread *thread : qAsConst(allThreadsCopy)) {
             thread->runnableReady.wakeAll();
             thread->wait();
             delete thread;

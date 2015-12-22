@@ -300,9 +300,9 @@ static QString locatePlugin(const QString& fileName)
         paths.prepend(QStringLiteral(".")); // search in current dir first
     }
 
-    foreach (const QString &path, paths) {
-        foreach (const QString &prefix, prefixes) {
-            foreach (const QString &suffix, suffixes) {
+    for (const QString &path : qAsConst(paths)) {
+        for (const QString &prefix : qAsConst(prefixes)) {
+            for (const QString &suffix : qAsConst(suffixes)) {
                 const QString fn = path + QLatin1Char('/') + basePath + prefix + baseName + suffix;
                 if (debug)
                     qDebug() << "Trying..." << fn;

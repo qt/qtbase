@@ -265,7 +265,8 @@ QList<QJsonObject> QFactoryLoader::metaData() const
         metaData.append(d->libraryList.at(i)->metaData);
 #endif
 
-    foreach (const QStaticPlugin &plugin, QPluginLoader::staticPlugins()) {
+    const auto staticPlugins = QPluginLoader::staticPlugins();
+    for (const QStaticPlugin &plugin : staticPlugins) {
         const QJsonObject object = plugin.metaData();
         if (object.value(iidKeyLiteral()) != QLatin1String(d->iid.constData(), d->iid.size()))
             continue;

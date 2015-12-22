@@ -406,7 +406,7 @@ inline void QLibraryStore::cleanup()
 
     if (qt_debug_component()) {
         // dump all objects that remain
-        foreach (QLibraryPrivate *lib, data->libraryMap) {
+        for (QLibraryPrivate *lib : qAsConst(data->libraryMap)) {
             if (lib)
                 qDebug() << "On QtCore unload," << lib->fileName << "was leaked, with"
                          << lib->libraryRefCount.load() << "users";

@@ -104,7 +104,7 @@ bool QLibraryPrivate::load_sys()
         attempts.prepend(QDir::rootPath() + fileName);
 #endif
 
-    Q_FOREACH (const QString &attempt, attempts) {
+    for (const QString &attempt : qAsConst(attempts)) {
 #ifndef Q_OS_WINRT
         pHnd = LoadLibrary((wchar_t*)QDir::toNativeSeparators(attempt).utf16());
 #else // Q_OS_WINRT
