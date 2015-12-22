@@ -255,7 +255,7 @@ static QMap<int, QByteArray> parseTzAbbreviations(QDataStream &ds, int tzh_charc
             return map;
     }
     // Then extract all the substrings pointed to by types
-    foreach (const QTzType &type, types) {
+    for (const QTzType &type : types) {
         QByteArray abbrev;
         for (int i = type.tz_abbrind; input.at(i) != '\0'; ++i)
             abbrev.append(input.at(i));
@@ -629,7 +629,7 @@ void QTzTimeZonePrivate::init(const QByteArray &ianaId)
     // Offsets are stored as total offset, want to know separate UTC and DST offsets
     // so find the first non-dst transition to use as base UTC Offset
     int utcOffset = 0;
-    foreach (const QTzTransition &tran, tranList) {
+    for (const QTzTransition &tran : qAsConst(tranList)) {
         if (!typeList.at(tran.tz_typeind).tz_isdst) {
             utcOffset = typeList.at(tran.tz_typeind).tz_gmtoff;
             break;
@@ -638,7 +638,7 @@ void QTzTimeZonePrivate::init(const QByteArray &ianaId)
 
     // Now for each transition time calculate our rule and save them
     m_tranTimes.reserve(tranList.count());
-    foreach (const QTzTransition &tz_tran, tranList) {
+    for (const QTzTransition &tz_tran : qAsConst(tranList)) {
         QTzTransitionTime tran;
         QTzTransitionRule rule;
         const QTzType tz_type = typeList.at(tz_tran.tz_typeind);
@@ -790,7 +790,7 @@ int QTzTimeZonePrivate::daylightTimeOffset(qint64 atMSecsSinceEpoch) const
 bool QTzTimeZonePrivate::hasDaylightTime() const
 {
     // TODO Perhaps cache as frequently accessed?
-    foreach (const QTzTransitionRule &rule, m_tranRules) {
+    for (const QTzTransitionRule &rule : m_tranRules) {
         if (rule.dstOffset != 0)
             return true;
     }

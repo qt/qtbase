@@ -348,10 +348,10 @@ void QCommandLineParser::setOptionsAfterPositionalArgumentsMode(QCommandLinePars
  */
 bool QCommandLineParser::addOption(const QCommandLineOption &option)
 {
-    QStringList optionNames = option.names();
+    const QStringList optionNames = option.names();
 
     if (!optionNames.isEmpty()) {
-        foreach (const QString &name, optionNames) {
+        for (const QString &name : optionNames) {
             if (d->nameHash.contains(name))
                 return false;
         }
@@ -359,7 +359,7 @@ bool QCommandLineParser::addOption(const QCommandLineOption &option)
         d->commandLineOptionList.append(option);
 
         const int offset = d->commandLineOptionList.size() - 1;
-        foreach (const QString &name, optionNames)
+        for (const QString &name : optionNames)
             d->nameHash.insert(name, offset);
 
         return true;
@@ -791,7 +791,7 @@ bool QCommandLineParser::isSet(const QString &name) const
     if (d->optionNames.contains(name))
         return true;
     const QStringList aliases = d->aliases(name);
-    foreach (const QString &optionName, d->optionNames) {
+    for (const QString &optionName : qAsConst(d->optionNames)) {
         if (aliases.contains(optionName))
             return true;
     }
@@ -1073,7 +1073,7 @@ QString QCommandLineParserPrivate::helpText() const
     usage += QCoreApplication::instance()->arguments().constFirst(); // executable name
     if (!commandLineOptionList.isEmpty())
         usage += QLatin1Char(' ') + QCommandLineParser::tr("[options]");
-    foreach (const PositionalArgumentDefinition &arg, positionalArgumentDefinitions)
+    for (const PositionalArgumentDefinition &arg : positionalArgumentDefinitions)
         usage += QLatin1Char(' ') + arg.syntax;
     text += QCommandLineParser::tr("Usage: %1").arg(usage) + nl;
     if (!description.isEmpty())
@@ -1084,12 +1084,12 @@ QString QCommandLineParserPrivate::helpText() const
     QStringList optionNameList;
     optionNameList.reserve(commandLineOptionList.size());
     int longestOptionNameString = 0;
-    foreach (const QCommandLineOption &option, commandLineOptionList) {
+    for (const QCommandLineOption &option : commandLineOptionList) {
         if (option.isHidden())
             continue;
         const QStringList optionNames = option.names();
         QString optionNamesString;
-        foreach (const QString &optionName, optionNames) {
+        for (const QString &optionName : optionNames) {
             const int numDashes = optionName.length() == 1 ? 1 : 2;
             optionNamesString += QLatin1String("--", numDashes) + optionName + QLatin1String(", ");
         }
@@ -1103,8 +1103,7 @@ QString QCommandLineParserPrivate::helpText() const
     }
     ++longestOptionNameString;
     auto optionNameIterator = optionNameList.cbegin();
-    for (int i = 0; i < commandLineOptionList.count(); ++i) {
-        const QCommandLineOption &option = commandLineOptionList.at(i);
+    for (const QCommandLineOption &option : commandLineOptionList) {
         if (option.isHidden())
             continue;
         text += wrapText(*optionNameIterator, longestOptionNameString, option.description());
@@ -1114,9 +1113,8 @@ QString QCommandLineParserPrivate::helpText() const
         if (!commandLineOptionList.isEmpty())
             text += nl;
         text += QCommandLineParser::tr("Arguments:") + nl;
-        foreach (const PositionalArgumentDefinition &arg, positionalArgumentDefinitions) {
+        for (const PositionalArgumentDefinition &arg : positionalArgumentDefinitions)
             text += wrapText(arg.name, longestOptionNameString, arg.description);
-        }
     }
     return text;
 }

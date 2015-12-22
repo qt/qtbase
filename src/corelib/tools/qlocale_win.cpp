@@ -678,7 +678,7 @@ QVariant QSystemLocalePrivate::uiLanguages()
         bool found = false;
         // Since ApplicationLanguages:::Languages uses long names, we compare the "pre-dash" part of
         // the language and filter it out, if it is already covered by a more specialized form.
-        foreach (const QString &lang, result) {
+        for (const QString &lang : qAsConst(result)) {
             int dashIndex = lang.indexOf('-');
             // There will not be any long name after the first short name was found, so we can stop.
             if (dashIndex == -1)

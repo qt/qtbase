@@ -237,7 +237,8 @@ static QByteArray windowsSystemZoneId()
     TIME_ZONE_INFORMATION sysTzi;
     GetTimeZoneInformation(&sysTzi);
     bool ok = false;
-    foreach (const QByteArray &winId, availableWindowsIds()) {
+    const auto winIds = availableWindowsIds();
+    for (const QByteArray &winId : winIds) {
         if (equalTzi(getRegistryTzi(winId, &ok), sysTzi))
             return winId;
     }
@@ -506,7 +507,7 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
 
 bool QWinTimeZonePrivate::hasTransitions() const
 {
-    foreach (const QWinTransitionRule &rule, m_tranRules) {
+    for (const QWinTransitionRule &rule : m_tranRules) {
         if (rule.standardTimeRule.wMonth > 0 && rule.daylightTimeRule.wMonth > 0)
             return true;
     }
@@ -637,9 +638,9 @@ QByteArray QWinTimeZonePrivate::systemTimeZoneId() const
 QList<QByteArray> QWinTimeZonePrivate::availableTimeZoneIds() const
 {
     QList<QByteArray> result;
-    foreach (const QByteArray &winId, availableWindowsIds()) {
+    const auto winIds = availableWindowsIds();
+    for (const QByteArray &winId : winIds)
         result += windowsIdToIanaIds(winId);
-    }
     std::sort(result.begin(), result.end());
     result.erase(std::unique(result.begin(), result.end()), result.end());
     return result;
