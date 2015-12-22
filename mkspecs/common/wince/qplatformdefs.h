@@ -52,7 +52,6 @@
 #include <tchar.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <windows.h>
 
 #ifdef QT_LARGEFILE_SUPPORT
 #define QT_STATBUF              struct _stati64         // non-ANSI defs
