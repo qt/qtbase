@@ -626,7 +626,7 @@ QGLShaderProgramPrivate::~QGLShaderProgramPrivate()
 
 bool QGLShaderProgramPrivate::hasShader(QGLShader::ShaderType type) const
 {
-    foreach (QGLShader *shader, shaders) {
+    for (QGLShader *shader : shaders) {
         if (shader->shaderType() == type)
             return true;
     }
@@ -876,7 +876,7 @@ void QGLShaderProgram::removeAllShaders()
     d->removingShaders = true;
     if (d->programGuard) {
         if (const auto programGuardId = d->programGuard->id()) {
-            foreach (QGLShader *shader, d->shaders) {
+            for (QGLShader *shader : qAsConst(d->shaders)) {
                 if (shader && shader->d_func()->shaderGuard)
                     d->glfuncs->glDetachShader(programGuardId, shader->d_func()->shaderGuard->id());
             }
@@ -928,7 +928,7 @@ bool QGLShaderProgram::link()
     // Set up the geometry shader parameters
     if (!QOpenGLContext::currentContext()->isOpenGLES()
         && d->glfuncs->glProgramParameteri) {
-        foreach (QGLShader *shader, d->shaders) {
+        for (QGLShader *shader : qAsConst(d->shaders)) {
             if (shader->shaderType() & QGLShader::Geometry) {
                 d->glfuncs->glProgramParameteri(program, GL_GEOMETRY_INPUT_TYPE_EXT,
                                        d->geometryInputType);
