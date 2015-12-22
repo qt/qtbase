@@ -482,7 +482,7 @@ static QVector<QPersistentModelIndex> qSelectionPersistentindexes(const QItemSel
 static QVector<QPair<QPersistentModelIndex, uint> > qSelectionPersistentRowLengths(const QItemSelection &sel)
 {
     QVector<QPair<QPersistentModelIndex, uint> > result;
-    Q_FOREACH (const QItemSelectionRange &range, sel)
+    for (const QItemSelectionRange &range : sel)
         rowLengthsFromRange(range, result);
     return result;
 }

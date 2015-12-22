@@ -498,7 +498,7 @@ QAbstractItemModel *QAbstractItemModelPrivate::staticEmptyModel()
 
 void QAbstractItemModelPrivate::invalidatePersistentIndexes()
 {
-    foreach (QPersistentModelIndexData *data, persistent.indexes) {
+    for (QPersistentModelIndexData *data : qAsConst(persistent.indexes)) {
         data->index = QModelIndex();
         data->model = 0;
     }
