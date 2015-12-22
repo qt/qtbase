@@ -187,7 +187,7 @@ QMimeType QMimeDatabasePrivate::mimeTypeForFileNameAndData(const QString &fileNa
             // "for glob_match in glob_matches:"
             // "if glob_match is subclass or equal to sniffed_type, use glob_match"
             const QString sniffedMime = candidateByData.name();
-            foreach (const QString &m, candidatesByName) {
+            for (const QString &m : qAsConst(candidatesByName)) {
                 if (inherits(m, sniffedMime)) {
                     // We have magic + pattern pointing to this, so it's a pretty good match
                     *accuracyPtr = 100;
@@ -224,7 +224,8 @@ bool QMimeDatabasePrivate::inherits(const QString &mime, const QString &parent)
         const QString current = toCheck.pop();
         if (current == resolvedParent)
             return true;
-        foreach (const QString &par, provider()->parents(current))
+        const auto parents = provider()->parents(current);
+        for (const QString &par : parents)
             toCheck.push(par);
     }
     return false;
@@ -431,10 +432,10 @@ QList<QMimeType> QMimeDatabase::mimeTypesForFileName(const QString &fileName) co
 {
     QMutexLocker locker(&d->mutex);
 
-    QStringList matches = d->mimeTypeForFileName(fileName);
+    const QStringList matches = d->mimeTypeForFileName(fileName);
     QList<QMimeType> mimes;
     mimes.reserve(matches.count());
-    foreach (const QString &mime, matches)
+    for (const QString &mime : matches)
         mimes.append(d->mimeTypeForName(mime));
     return mimes;
 }

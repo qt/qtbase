@@ -85,7 +85,7 @@ QList<QMimeMagicRule> QMimeMagicRuleMatcher::magicRules() const
 // Check for a match on contents of a file
 bool QMimeMagicRuleMatcher::matches(const QByteArray &data) const
 {
-    foreach (const QMimeMagicRule &magicRule, m_list) {
+    for (const QMimeMagicRule &magicRule : m_list) {
         if (magicRule.matches(data))
             return true;
     }

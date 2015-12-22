@@ -241,7 +241,7 @@ QString QMimeType::comment() const
     QStringList languageList;
     languageList << QLocale::system().name();
     languageList << QLocale::system().uiLanguages();
-    Q_FOREACH (const QString &language, languageList) {
+    for (const QString &language : qAsConst(languageList)) {
         const QString lang = language == QLatin1String("C") ? QLatin1String("en_US") : language;
         const QString comm = d->localeComments.value(lang);
         if (!comm.isEmpty())
@@ -337,17 +337,16 @@ QStringList QMimeType::parentMimeTypes() const
 
 static void collectParentMimeTypes(const QString &mime, QStringList &allParents)
 {
-    QStringList parents = QMimeDatabasePrivate::instance()->provider()->parents(mime);
-    foreach (const QString &parent, parents) {
+    const QStringList parents = QMimeDatabasePrivate::instance()->provider()->parents(mime);
+    for (const QString &parent : parents) {
         // I would use QSet, but since order matters I better not
         if (!allParents.contains(parent))
             allParents.append(parent);
     }
     // We want a breadth-first search, so that the least-specific parent (octet-stream) is last
     // This means iterating twice, unfortunately.
-    foreach (const QString &parent, parents) {
+    for (const QString &parent : parents)
         collectParentMimeTypes(parent, allParents);
-    }
 }
 
 /*!
@@ -392,7 +391,7 @@ QStringList QMimeType::suffixes() const
     QMimeDatabasePrivate::instance()->provider()->loadMimeTypePrivate(*d);
 
     QStringList result;
-    foreach (const QString &pattern, d->globPatterns) {
+    for (const QString &pattern : qAsConst(d->globPatterns)) {
         // Not a simple suffix if it looks like: README or *. or *.* or *.JP*G or *.JP?
         if (pattern.startsWith(QLatin1String("*.")) &&
             pattern.length() > 2 &&
