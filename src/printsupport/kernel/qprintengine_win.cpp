@@ -1463,7 +1463,9 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
 
     case PPK_SupportedResolutions: {
         QList<QVariant> list;
-        foreach (int resolution, d->m_printDevice.supportedResolutions())
+        const auto resolutions = d->m_printDevice.supportedResolutions();
+        list.reserve(resolutions.size());
+        for (int resolution : resolutions)
             list << resolution;
         value = list;
         break;
@@ -1475,7 +1477,9 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
 
     case PPK_PaperSources: {
         QList<QVariant> out;
-        foreach (const QPrint::InputSlot inputSlot, d->m_printDevice.supportedInputSlots())
+        const auto inputSlots = d->m_printDevice.supportedInputSlots();
+        out.reserve(inputSlots.size());
+        for (const QPrint::InputSlot inputSlot : inputSlots)
             out << QVariant(inputSlot.id == QPrint::CustomInputSlot ? inputSlot.windowsId : int(inputSlot.id));
         value = out;
         break;

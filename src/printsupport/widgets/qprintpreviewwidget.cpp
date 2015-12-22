@@ -223,8 +223,8 @@ void QPrintPreviewWidgetPrivate::_q_fit(bool doFitting)
     if (doFitting && fitting) {
         QRect viewRect = graphicsView->viewport()->rect();
         if (zoomMode == QPrintPreviewWidget::FitInView) {
-            QList<QGraphicsItem*> containedItems = graphicsView->items(viewRect, Qt::ContainsItemBoundingRect);
-            foreach(QGraphicsItem* item, containedItems) {
+            const QList<QGraphicsItem*> containedItems = graphicsView->items(viewRect, Qt::ContainsItemBoundingRect);
+            for (QGraphicsItem* item : containedItems) {
                 PageItem* pg = static_cast<PageItem*>(item);
                 if (pg->pageNumber() == curPage)
                     return;
