@@ -69,7 +69,7 @@ static jboolean dispatchGenericMotionEvent(JNIEnv *, jclass, jobject event)
 {
     jboolean ret = JNI_FALSE;
     QMutexLocker locker(&g_genericMotionEventListeners()->mutex);
-    foreach (auto listener, g_genericMotionEventListeners()->listeners)
+    for (auto *listener : qAsConst(g_genericMotionEventListeners()->listeners))
         ret |= listener->handleGenericMotionEvent(event);
     return ret;
 }
@@ -86,7 +86,7 @@ static jboolean dispatchKeyEvent(JNIEnv *, jclass, jobject event)
 {
     jboolean ret = JNI_FALSE;
     QMutexLocker locker(&g_keyEventListeners()->mutex);
-    foreach (auto listener, g_keyEventListeners()->listeners)
+    for (auto *listener : qAsConst(g_keyEventListeners()->listeners))
         ret |= listener->handleKeyEvent(event);
     return ret;
 }

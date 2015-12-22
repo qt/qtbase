@@ -652,7 +652,7 @@ static QString find_translation(const QLocale & locale,
 #endif
 
     // try explicit locales names first
-    foreach (QString localeName, languages) {
+    for (QString localeName : qAsConst(languages)) {
         localeName.replace(QLatin1Char('-'), QLatin1Char('_'));
 
         realname += localeName + suffixOrDotQM;
@@ -668,7 +668,7 @@ static QString find_translation(const QLocale & locale,
     }
 
     // start guessing
-    foreach (QString localeName, fuzzyLocales) {
+    for (QString localeName : qAsConst(fuzzyLocales)) {
         for (;;) {
             int rightmost = localeName.lastIndexOf(QLatin1Char('_'));
             // no truncations? fail
@@ -1046,7 +1046,7 @@ QString QTranslatorPrivate::do_translate(const char *context, const char *source
     }
 
 searchDependencies:
-    foreach (QTranslator *translator, subTranslators) {
+    for (QTranslator *translator : subTranslators) {
         QString tn = translator->translate(context, sourceText, comment, n);
         if (!tn.isNull())
             return tn;

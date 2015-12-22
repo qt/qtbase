@@ -376,7 +376,8 @@ bool QEventDispatcherWinRT::unregisterTimers(QObject *object)
     }
 
     Q_D(QEventDispatcherWinRT);
-    foreach (int id, d->timerIdToObject.keys()) {
+    const auto timerIds = d->timerIdToObject.keys(); // ### FIXME: iterate over hash directly? But unregisterTimer() modifies the hash!
+    for (int id : timerIds) {
         if (d->timerIdToObject.value(id) == object)
             unregisterTimer(id);
     }
@@ -395,7 +396,7 @@ QList<QAbstractEventDispatcher::TimerInfo> QEventDispatcherWinRT::registeredTime
 
     Q_D(const QEventDispatcherWinRT);
     QList<TimerInfo> timerInfos;
-    foreach (const WinRTTimerInfo &info, d->timerInfos) {
+    for (const WinRTTimerInfo &info : d->timerInfos) {
         if (info.object == object && info.timerId != INVALID_TIMER_ID)
             timerInfos.append(info);
     }

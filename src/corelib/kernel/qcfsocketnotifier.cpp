@@ -235,7 +235,7 @@ void QCFSocketNotifier::unregisterSocketNotifier(QSocketNotifier *notifier)
 void QCFSocketNotifier::removeSocketNotifiers()
 {
     // Remove CFSockets from the runloop.
-    foreach (MacSocketInfo *socketInfo, macSockets) {
+    for (MacSocketInfo *socketInfo : qAsConst(macSockets)) {
         unregisterSocketInfo(socketInfo);
         delete socketInfo;
     }
@@ -272,9 +272,9 @@ void QCFSocketNotifier::enableSocketNotifiers(CFRunLoopObserverRef ref, CFRunLoo
     Q_UNUSED(ref);
     Q_UNUSED(activity);
 
-    QCFSocketNotifier *that = static_cast<QCFSocketNotifier *>(info);
+    const QCFSocketNotifier *that = static_cast<QCFSocketNotifier *>(info);
 
-    foreach (MacSocketInfo *socketInfo, that->macSockets) {
+    for (MacSocketInfo *socketInfo : that->macSockets) {
         if (!CFSocketIsValid(socketInfo->socket))
             continue;
 

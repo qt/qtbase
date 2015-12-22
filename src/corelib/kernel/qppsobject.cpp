@@ -349,7 +349,8 @@ QVariant QPpsObjectPrivate::variantFromPpsAttribute(const QPpsAttribute &attribu
         return attribute.toString();
     case QPpsAttribute::Array: {
         QVariantList variantList;
-        Q_FOREACH (const QPpsAttribute &attr, attribute.toList()) {
+        const auto attrs = attribute.toList();
+        for (const QPpsAttribute &attr : attrs) {
             QVariant variant = variantFromPpsAttribute(attr);
             if (!variant.isValid())
                 return QVariantList();

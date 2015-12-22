@@ -154,7 +154,7 @@ void qWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdParam,
     const QStringList wArgv = qWinCmdArgs(QString::fromLocal8Bit(cmdParam));
     argv.clear();
     argc = wArgv.size();
-    foreach (const QString &wArg, wArgv)
+    for (const QString &wArg : wArgv)
         argv.append(_strdup(wArg.toLocal8Bit().constData()));
 }
 
