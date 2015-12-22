@@ -77,7 +77,7 @@ private:
     mutable QPalette *m_systemPalette;
     mutable QHash<QPlatformTheme::Palette, QPalette*> m_palettes;
     mutable QHash<QPlatformTheme::Font, QFont*> m_fonts;
-    mutable QCocoaThemeNotificationReceiver *m_notificationReceiver;
+    mutable QT_MANGLE_NAMESPACE(QCocoaThemeNotificationReceiver) *m_notificationReceiver;
 };
 
 QT_END_NAMESPACE
