@@ -82,7 +82,7 @@ QKqueueFileSystemWatcherEngine::~QKqueueFileSystemWatcherEngine()
     notifier.setEnabled(false);
     close(kqfd);
 
-    foreach (int id, pathToID)
+    for (int id : qAsConst(pathToID))
         ::close(id < 0 ? -id : id);
 }
 

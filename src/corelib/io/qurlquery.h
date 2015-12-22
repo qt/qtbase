@@ -154,10 +154,10 @@ inline QList<QPair<QByteArray, QByteArray> > QUrl::encodedQueryItems() const
 }
 inline QList<QByteArray> QUrl::allEncodedQueryItemValues(const QByteArray &key) const
 {
-    QStringList items = QUrlQuery(*this).allQueryItemValues(fromEncodedComponent_helper(key), QUrl::FullyEncoded);
+    const QStringList items = QUrlQuery(*this).allQueryItemValues(fromEncodedComponent_helper(key), QUrl::FullyEncoded);
     QList<QByteArray> result;
     result.reserve(items.size());
-    Q_FOREACH (const QString &item, items)
+    for (const QString &item : items)
         result << item.toLatin1();
     return result;
 }

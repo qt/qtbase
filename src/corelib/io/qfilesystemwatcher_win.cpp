@@ -164,7 +164,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
 
             // now look for a thread to insert
             bool found = false;
-            foreach(QWindowsFileSystemWatcherEngineThread *thread, threads) {
+            for (QWindowsFileSystemWatcherEngineThread *thread : qAsConst(threads)) {
                 QMutexLocker(&(thread->mutex));
                 if (thread->handles.count() < MAXIMUM_WAIT_OBJECTS) {
                     DEBUG() << "Added handle" << handle.handle << "for" << absolutePath << "to watch" << fileInfo.absoluteFilePath()
@@ -311,7 +311,7 @@ QWindowsFileSystemWatcherEngineThread::~QWindowsFileSystemWatcherEngineThread()
     CloseHandle(handles.at(0));
     handles[0] = INVALID_HANDLE_VALUE;
 
-    foreach (HANDLE h, handles) {
+    for (HANDLE h : qAsConst(handles)) {
         if (h == INVALID_HANDLE_VALUE)
             continue;
         FindCloseChangeNotification(h);
@@ -323,7 +323,7 @@ static inline QString msgFindNextFailed(const QWindowsFileSystemWatcherEngineThr
     QString result;
     QTextStream str(&result);
     str << "QFileSystemWatcher: FindNextChangeNotification failed for";
-    foreach (const QWindowsFileSystemWatcherEngine::PathInfo &pathInfo, pathInfos)
+    for (const QWindowsFileSystemWatcherEngine::PathInfo &pathInfo : pathInfos)
         str << " \"" << QDir::toNativeSeparators(pathInfo.absolutePath) << '"';
     str << ' ';
     return result;

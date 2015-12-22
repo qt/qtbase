@@ -533,10 +533,10 @@ QStringList QWinRTSettingsPrivate::children(const QString &uKey, ChildSpec spec)
             const QStringList subContainerList = subContainerNames(container.Get(), spec == AllKeys);
 
             if (spec == AllKeys) {
-                foreach (const QString &item, subContainerList) {
+                for (const QString &item : subContainerList) {
                     const QString subChildren = uKey.isEmpty() ? item : (uKey + QLatin1Char('/') + item);
                     const QStringList subResult = children(subChildren, ChildKeys);
-                    foreach (const QString &subItem, subResult)
+                    for (const QString &subItem : subResult)
                         result += item + QLatin1Char('/') + subItem;
                 }
             }
@@ -644,7 +644,7 @@ IApplicationDataContainer *QWinRTSettingsPrivate::getContainer(IApplicationDataC
         return current;
     const QStringList groupPath = group.split(QLatin1Char('/'), QString::SkipEmptyParts);
 
-    foreach (const QString &subGroup, groupPath) {
+    for (const QString &subGroup : groupPath) {
         ComPtr<IApplicationDataContainer> sub = subContainer(current, subGroup);
         if (!sub && create)
             sub = createSubContainer(current, subGroup);

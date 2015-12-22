@@ -400,7 +400,7 @@ QLoggingRegistry *QLoggingRegistry::instance()
 */
 void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
 {
-    QLoggingRegistry *reg = QLoggingRegistry::instance();
+    const QLoggingRegistry *reg = QLoggingRegistry::instance();
     Q_ASSERT(reg->categories.contains(cat));
     QtMsgType enableForLevel = reg->categories.value(cat);
 
@@ -421,7 +421,7 @@ void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
     }
 
     QString categoryName = QLatin1String(cat->categoryName());
-    foreach (const QLoggingRule &item, reg->rules) {
+    for (const QLoggingRule &item : reg->rules) {
         int filterpass = item.pass(categoryName, QtDebugMsg);
         if (filterpass != 0)
             debug = (filterpass > 0);

@@ -246,7 +246,7 @@ QInotifyFileSystemWatcherEngine::QInotifyFileSystemWatcherEngine(int fd, QObject
 QInotifyFileSystemWatcherEngine::~QInotifyFileSystemWatcherEngine()
 {
     notifier.setEnabled(false);
-    foreach (int id, pathToID)
+    for (int id : qAsConst(pathToID))
         inotify_rm_watch(inotifyFd, id < 0 ? -id : id);
 
     ::close(inotifyFd);

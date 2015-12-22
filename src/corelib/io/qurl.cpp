@@ -4062,7 +4062,7 @@ QStringList QUrl::toStringList(const QList<QUrl> &urls, FormattingOptions option
 {
     QStringList lst;
     lst.reserve(urls.size());
-    foreach (const QUrl &url, urls)
+    for (const QUrl &url : urls)
         lst.append(url.toString(options));
     return lst;
 
@@ -4078,9 +4078,8 @@ QList<QUrl> QUrl::fromStringList(const QStringList &urls, ParsingMode mode)
 {
     QList<QUrl> lst;
     lst.reserve(urls.size());
-    foreach (const QString &str, urls) {
+    for (const QString &str : urls)
         lst.append(QUrl(str, mode));
-    }
     return lst;
 }
 
