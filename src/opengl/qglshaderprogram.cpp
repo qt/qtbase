@@ -882,10 +882,8 @@ void QGLShaderProgram::removeAllShaders()
             }
         }
     }
-    foreach (QGLShader *shader, d->anonShaders) {
-        // Delete shader objects that were created anonymously.
-        delete shader;
-    }
+    // Delete shader objects that were created anonymously.
+    qDeleteAll(d->anonShaders);
     d->shaders.clear();
     d->anonShaders.clear();
     d->linked = false;  // Program needs to be relinked.
