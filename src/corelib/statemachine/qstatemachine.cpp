@@ -294,7 +294,7 @@ static inline bool isDescendant(const QAbstractState *state1, const QAbstractSta
 
 static bool containsDecendantOf(const QSet<QAbstractState *> &states, const QAbstractState *node)
 {
-    foreach (QAbstractState *s, states)
+    for (QAbstractState *s : states)
         if (isDescendant(s, node))
             return true;
 
@@ -361,7 +361,8 @@ static QList<QAbstractState *> getEffectiveTargetStates(QAbstractTransition *tra
         return targetsList;
 
     QSet<QAbstractState *> targets;
-    foreach (QAbstractState *s, transition->targetStates()) {
+    const auto targetStates = transition->targetStates();
+    for (QAbstractState *s : targetStates) {
         if (QHistoryState *historyState = QStateMachinePrivate::toHistoryState(s)) {
             QList<QAbstractState*> historyConfiguration = QHistoryStatePrivate::get(historyState)->configuration;
             if (!historyConfiguration.isEmpty()) {
@@ -547,7 +548,7 @@ QList<QAbstractTransition*> QStateMachinePrivate::selectTransitions(QEvent *even
     Q_Q(const QStateMachine);
 
     QVarLengthArray<QAbstractState *> configuration_sorted;
-    foreach (QAbstractState *s, configuration) {
+    for (QAbstractState *s : qAsConst(configuration)) {
         if (isAtomic(s))
             configuration_sorted.append(s);
     }
@@ -555,7 +556,7 @@ QList<QAbstractTransition*> QStateMachinePrivate::selectTransitions(QEvent *even
 
     QList<QAbstractTransition*> enabledTransitions;
     const_cast<QStateMachine*>(q)->beginSelectTransitions(event);
-    foreach (QAbstractState *state, configuration_sorted) {
+    for (QAbstractState *state : qAsConst(configuration_sorted)) {
         QVector<QState*> lst = getProperAncestors(state, Q_NULLPTR);
         if (QState *grp = toStandardState(state))
             lst.prepend(grp);
@@ -622,7 +623,7 @@ void QStateMachinePrivate::removeConflictingTransitions(QList<QAbstractTransitio
     filteredTransitions.reserve(enabledTransitions.size());
     std::sort(enabledTransitions.begin(), enabledTransitions.end(), transitionStateEntryLessThan);
 
-    foreach (QAbstractTransition *t1, enabledTransitions) {
+    for (QAbstractTransition *t1 : qAsConst(enabledTransitions)) {
         bool t1Preempted = false;
         const QSet<QAbstractState*> exitSetT1 = computeExitSet_Unordered(t1, cache);
         QList<QAbstractTransition*>::iterator t2It = filteredTransitions.begin();
@@ -747,7 +748,7 @@ QSet<QAbstractState*> QStateMachinePrivate::computeExitSet_Unordered(const QList
     Q_ASSERT(cache);
 
     QSet<QAbstractState*> statesToExit;
-    foreach (QAbstractTransition *t, enabledTransitions)
+    for (QAbstractTransition *t : enabledTransitions)
         statesToExit.unite(computeExitSet_Unordered(t, cache));
     return statesToExit;
 }
@@ -780,7 +781,7 @@ QSet<QAbstractState*> QStateMachinePrivate::computeExitSet_Unordered(QAbstractTr
         Q_ASSERT(domain != 0);
     }
 
-    foreach (QAbstractState* s, configuration) {
+    for (QAbstractState* s : qAsConst(configuration)) {
         if (isDescendant(s, domain))
             statesToExit.insert(s);
     }
@@ -854,16 +855,15 @@ QList<QAbstractState*> QStateMachinePrivate::computeEntrySet(const QList<QAbstra
 
     QSet<QAbstractState*> statesToEnter;
     if (pendingErrorStates.isEmpty()) {
-        foreach (QAbstractTransition *t, enabledTransitions) {
-            foreach (QAbstractState *s, t->targetStates()) {
+        for (QAbstractTransition *t : enabledTransitions) {
+            const auto targetStates = t->targetStates();
+            for (QAbstractState *s : targetStates)
                 addDescendantStatesToEnter(s, statesToEnter, statesForDefaultEntry);
-            }
 
-            QList<QAbstractState *> effectiveTargetStates = getEffectiveTargetStates(t, cache);
+            const QList<QAbstractState *> effectiveTargetStates = getEffectiveTargetStates(t, cache);
             QAbstractState *ancestor = getTransitionDomain(t, effectiveTargetStates, cache);
-            foreach (QAbstractState *s, effectiveTargetStates) {
+            for (QAbstractState *s : effectiveTargetStates)
                 addAncestorStatesToEnter(s, ancestor, statesToEnter, statesForDefaultEntry);
-            }
         }
     }
 
@@ -914,7 +914,7 @@ QAbstractState *QStateMachinePrivate::getTransitionDomain(QAbstractTransition *t
         if (QState *tSource = t->sourceState()) {
             if (isCompound(tSource)) {
                 bool allDescendants = true;
-                foreach (QAbstractState *s, effectiveTargetStates) {
+                for (QAbstractState *s : effectiveTargetStates) {
                     if (!isDescendant(s, tSource)) {
                         allDescendants = false;
                         break;
@@ -1090,11 +1090,11 @@ void QStateMachinePrivate::addDescendantStatesToEnter(QAbstractState *state,
                                                       QSet<QAbstractState*> &statesForDefaultEntry)
 {
     if (QHistoryState *h = toHistoryState(state)) {
-        QList<QAbstractState*> historyConfiguration = QHistoryStatePrivate::get(h)->configuration;
+        const QList<QAbstractState*> historyConfiguration = QHistoryStatePrivate::get(h)->configuration;
         if (!historyConfiguration.isEmpty()) {
-            foreach (QAbstractState *s, historyConfiguration)
+            for (QAbstractState *s : historyConfiguration)
                 addDescendantStatesToEnter(s, statesToEnter, statesForDefaultEntry);
-            foreach (QAbstractState *s, historyConfiguration)
+            for (QAbstractState *s : historyConfiguration)
                 addAncestorStatesToEnter(s, state->parentState(), statesToEnter, statesForDefaultEntry);
 
 #ifdef QSTATEMACHINE_DEBUG
@@ -1110,9 +1110,9 @@ void QStateMachinePrivate::addDescendantStatesToEnter(QAbstractState *state,
             if (defaultHistoryContent.isEmpty()) {
                 setError(QStateMachine::NoDefaultStateInHistoryStateError, h);
             } else {
-                foreach (QAbstractState *s, defaultHistoryContent)
+                for (QAbstractState *s : qAsConst(defaultHistoryContent))
                     addDescendantStatesToEnter(s, statesToEnter, statesForDefaultEntry);
-                foreach (QAbstractState *s, defaultHistoryContent)
+                for (QAbstractState *s : qAsConst(defaultHistoryContent))
                     addAncestorStatesToEnter(s, state->parentState(), statesToEnter, statesForDefaultEntry);
 #ifdef QSTATEMACHINE_DEBUG
                 qDebug() << q_func() << ": initial history targets for" << state << ':' << defaultHistoryContent;
@@ -1145,7 +1145,8 @@ void QStateMachinePrivate::addDescendantStatesToEnter(QAbstractState *state,
             }
         } else if (isParallel(state)) {
             QState *grp = toStandardState(state);
-            foreach (QAbstractState *child, QStatePrivate::get(grp)->childStates()) {
+            const auto childStates = QStatePrivate::get(grp)->childStates();
+            for (QAbstractState *child : childStates) {
                 if (!containsDecendantOf(statesToEnter, child))
                     addDescendantStatesToEnter(child, statesToEnter, statesForDefaultEntry);
             }
@@ -1168,12 +1169,14 @@ void QStateMachinePrivate::addAncestorStatesToEnter(QAbstractState *s, QAbstract
                                                     QSet<QAbstractState*> &statesToEnter,
                                                     QSet<QAbstractState*> &statesForDefaultEntry)
 {
-    foreach (QState *anc, getProperAncestors(s, ancestor)) {
+    const auto properAncestors = getProperAncestors(s, ancestor);
+    for (QState *anc : properAncestors) {
         if (!anc->parentState())
             continue;
         statesToEnter.insert(anc);
         if (isParallel(anc)) {
-            foreach (QAbstractState *child, QStatePrivate::get(anc)->childStates()) {
+            const auto childStates = QStatePrivate::get(anc)->childStates();
+            for (QAbstractState *child : childStates) {
                 if (!containsDecendantOf(statesToEnter, child))
                     addDescendantStatesToEnter(child, statesToEnter, statesForDefaultEntry);
             }
