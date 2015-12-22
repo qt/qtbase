@@ -874,11 +874,12 @@ void QGLShaderProgram::removeAllShaders()
 {
     Q_D(QGLShaderProgram);
     d->removingShaders = true;
-    foreach (QGLShader *shader, d->shaders) {
-        if (d->programGuard && d->programGuard->id()
-            && shader && shader->d_func()->shaderGuard)
-        {
-            d->glfuncs->glDetachShader(d->programGuard->id(), shader->d_func()->shaderGuard->id());
+    if (d->programGuard) {
+        if (const auto programGuardId = d->programGuard->id()) {
+            foreach (QGLShader *shader, d->shaders) {
+                if (shader && shader->d_func()->shaderGuard)
+                    d->glfuncs->glDetachShader(programGuardId, shader->d_func()->shaderGuard->id());
+            }
         }
     }
     foreach (QGLShader *shader, d->anonShaders) {
