@@ -427,9 +427,9 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     int data_size = idata.size() +
                     (header->methodCount * (5+intsPerMethod)) + methodParametersDataSize +
                     (header->propertyCount * (3+intsPerProperty));
-    foreach (const Method &mm, signals_)
+    for (const Method &mm : qAsConst(signals_))
         data_size += 2 + mm.inputTypes.count() + mm.outputTypes.count();
-    foreach (const Method &mm, methods)
+    for (const Method &mm : qAsConst(methods))
         data_size += 2 + mm.inputTypes.count() + mm.outputTypes.count();
     idata.resize(data_size + 1);
 

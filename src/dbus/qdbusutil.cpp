@@ -77,8 +77,8 @@ static bool variantToString(const QVariant &arg, QString &out)
 
     if (argType == QVariant::StringList) {
         out += QLatin1Char('{');
-        QStringList list = arg.toStringList();
-        foreach (const QString &item, list)
+        const QStringList list = arg.toStringList();
+        for (const QString &item : list)
             out += QLatin1Char('\"') + item + QLatin1String("\", ");
         if (!list.isEmpty())
             out.chop(2);
@@ -95,8 +95,8 @@ static bool variantToString(const QVariant &arg, QString &out)
         out += QLatin1Char('}');
     } else if (argType == QVariant::List) {
         out += QLatin1Char('{');
-        QList<QVariant> list = arg.toList();
-        foreach (const QVariant &item, list) {
+        const QList<QVariant> list = arg.toList();
+        for (const QVariant &item : list) {
             if (!variantToString(item, out))
                 return false;
             out += QLatin1String(", ");

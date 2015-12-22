@@ -99,9 +99,8 @@ QDBusServer::~QDBusServer()
 {
     if (QDBusConnectionManager::instance()) {
         QMutexLocker locker(&QDBusConnectionManager::instance()->mutex);
-        Q_FOREACH (const QString &name, d->serverConnectionNames) {
+        for (const QString &name : qAsConst(d->serverConnectionNames))
             QDBusConnectionManager::instance()->removeConnection(name);
-        }
         d->serverConnectionNames.clear();
     }
     d->ref.store(0);
