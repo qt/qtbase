@@ -75,3 +75,4 @@ SOURCES += \
 mac: LIBS_PRIVATE += -framework Security
 
 include($$PWD/../../3rdparty/zlib_dependency.pri)
+include($$PWD/http2/http2.pri)
