@@ -138,7 +138,6 @@ public:
         inline ObjectTreeNode() : obj(0), flags(0) { }
         inline ObjectTreeNode(const QString &n) // intentionally implicit
             : name(n), obj(0), flags(0) { }
-        inline ~ObjectTreeNode() { }
         inline bool operator<(const QString &other) const
             { return name < other; }
         inline bool operator<(const QStringRef &other) const
