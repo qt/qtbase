@@ -217,21 +217,23 @@ bool QMimeBinaryProvider::isValid()
 bool QMimeBinaryProvider::CacheFileList::checkCacheChanged()
 {
     bool somethingChanged = false;
-    QMutableListIterator<CacheFile *> it(*this);
-    while (it.hasNext()) {
-        CacheFile *cacheFile = it.next();
+    for (CacheFile *cacheFile : qAsConst(*this)) {
         QFileInfo fileInfo(cacheFile->file);
-        if (!fileInfo.exists()) { // This can't happen by just running update-mime-database. But the user could use rm -rf :-)
-            delete cacheFile;
-            it.remove();
-            somethingChanged = true;
-        } else if (fileInfo.lastModified() > cacheFile->m_mtime) {
-            if (!cacheFile->reload()) {
-                delete cacheFile;
-                it.remove();
-            }
+        if (!fileInfo.exists() || fileInfo.lastModified() > cacheFile->m_mtime) {
+            // Deletion can't happen by just running update-mime-database.
+            // But the user could use rm -rf :-)
+            cacheFile->reload(); // will mark itself as invalid on failure
             somethingChanged = true;
         }
+    }
+    if (somethingChanged) {
+        auto deleteIfNoLongerValid = [](CacheFile *cacheFile) -> bool {
+            const bool invalid = !cacheFile->isValid();
+            if (invalid)
+                delete cacheFile;
+            return invalid;
+        };
+        erase(std::remove_if(begin(), end(), deleteIfNoLongerValid), end());
     }
     return somethingChanged;
 }
