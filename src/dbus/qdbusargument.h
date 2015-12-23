@@ -255,35 +255,6 @@ inline const QDBusArgument &operator>>(const QDBusArgument &arg, Container<T> &l
     return arg;
 }
 
-// QList specializations
-template<typename T>
-inline QDBusArgument &operator<<(QDBusArgument &arg, const QList<T> &list)
-{
-    int id = qMetaTypeId<T>();
-    arg.beginArray(id);
-    typename QList<T>::ConstIterator it = list.constBegin();
-    typename QList<T>::ConstIterator end = list.constEnd();
-    for ( ; it != end; ++it)
-        arg << *it;
-    arg.endArray();
-    return arg;
-}
-
-template<typename T>
-inline const QDBusArgument &operator>>(const QDBusArgument &arg, QList<T> &list)
-{
-    arg.beginArray();
-    list.clear();
-    while (!arg.atEnd()) {
-        T item;
-        arg >> item;
-        list.push_back(item);
-    }
-    arg.endArray();
-
-    return arg;
-}
-
 inline QDBusArgument &operator<<(QDBusArgument &arg, const QVariantList &list)
 {
     int id = qMetaTypeId<QDBusVariant>();
@@ -296,7 +267,6 @@ inline QDBusArgument &operator<<(QDBusArgument &arg, const QVariantList &list)
     return arg;
 }
 
-// QMap specializations
 template<typename Key, typename T>
 inline QDBusArgument &operator<<(QDBusArgument &arg, const QMap<Key, T> &map)
 {
@@ -345,7 +315,6 @@ inline QDBusArgument &operator<<(QDBusArgument &arg, const QVariantMap &map)
     return arg;
 }
 
-// QHash specializations
 template<typename Key, typename T>
 inline QDBusArgument &operator<<(QDBusArgument &arg, const QHash<Key, T> &map)
 {
