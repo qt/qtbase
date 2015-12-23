@@ -107,7 +107,8 @@ QStringList QMimeDatabasePrivate::mimeTypeForFileName(const QString &fileName, Q
     if (fileName.endsWith(QLatin1Char('/')))
         return QStringList() << QLatin1String("inode/directory");
 
-    const QStringList matchingMimeTypes = provider()->findByFileName(QFileInfo(fileName).fileName(), foundSuffix);
+    QStringList matchingMimeTypes = provider()->findByFileName(QFileInfo(fileName).fileName(), foundSuffix);
+    matchingMimeTypes.sort(); // make it deterministic
     return matchingMimeTypes;
 }
 
@@ -200,7 +201,6 @@ QMimeType QMimeDatabasePrivate::mimeTypeForFileNameAndData(const QString &fileNa
 
     if (candidatesByName.count() > 1) {
         *accuracyPtr = 20;
-        candidatesByName.sort(); // to make it deterministic
         const QMimeType mime = mimeTypeForName(candidatesByName.at(0));
         if (mime.isValid())
             return mime;
@@ -406,7 +406,6 @@ QMimeType QMimeDatabase::mimeTypeForFile(const QString &fileName, MatchMode mode
             return d->mimeTypeForName(matches.first());
         } else {
             // We have to pick one.
-            matches.sort(); // Make it deterministic
             return d->mimeTypeForName(matches.first());
         }
     } else {
@@ -434,7 +433,6 @@ QList<QMimeType> QMimeDatabase::mimeTypesForFileName(const QString &fileName) co
 
     QStringList matches = d->mimeTypeForFileName(fileName);
     QList<QMimeType> mimes;
-    matches.sort(); // Make it deterministic
     mimes.reserve(matches.count());
     foreach (const QString &mime, matches)
         mimes.append(d->mimeTypeForName(mime));
