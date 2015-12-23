@@ -517,15 +517,14 @@ bool QDBusConnectionPrivate::handleMessage(const QDBusMessage &amsg)
 
 static void huntAndDestroy(QObject *needle, QDBusConnectionPrivate::ObjectTreeNode &haystack)
 {
-    QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it = haystack.children.begin();
+    for (auto &node : haystack.children)
+        huntAndDestroy(needle, node);
 
-    while (it != haystack.children.end()) {
-        huntAndDestroy(needle, *it);
-        if (!it->isActive())
-            it = haystack.children.erase(it);
-        else
-            it++;
-    }
+    auto isInactive = [](QDBusConnectionPrivate::ObjectTreeNode &node) { return !node.isActive(); };
+
+    haystack.children.erase(std::remove_if(haystack.children.begin(), haystack.children.end(),
+                                           isInactive),
+                            haystack.children.end());
 
     if (needle == haystack.obj) {
         haystack.obj = 0;
