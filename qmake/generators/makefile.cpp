@@ -59,6 +59,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QMakeInternal;
@@ -939,12 +941,12 @@ void
 MakefileGenerator::filterIncludedFiles(const char *var)
 {
     ProStringList &inputs = project->values(var);
-    for (ProStringList::Iterator input = inputs.begin(); input != inputs.end(); ) {
-        if (QMakeSourceFileInfo::included((*input).toQString()) > 0)
-            input = inputs.erase(input);
-        else
-            ++input;
-    }
+    auto isIncluded = [this](const ProString &input) {
+        return QMakeSourceFileInfo::included(input.toQString()) > 0;
+    };
+    inputs.erase(std::remove_if(inputs.begin(), inputs.end(),
+                                isIncluded),
+                 inputs.end());
 }
 
 static QString
