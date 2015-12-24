@@ -44,6 +44,8 @@
 #include <qdebug.h>
 #include <qtimer.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 class QSyntaxHighlighterPrivate : public QObjectPrivate
@@ -96,15 +98,15 @@ void QSyntaxHighlighterPrivate::applyFormatChanges()
     const int preeditAreaLength = layout->preeditAreaText().length();
 
     if (preeditAreaLength != 0) {
-        QVector<QTextLayout::FormatRange>::Iterator it = ranges.begin();
-        while (it != ranges.end()) {
-            if (it->start >= preeditAreaStart
-                && it->start + it->length <= preeditAreaStart + preeditAreaLength) {
-                ++it;
-            } else {
-                it = ranges.erase(it);
-                formatsChanged = true;
-            }
+        auto isOutsidePreeditArea = [=](const QTextLayout::FormatRange &range) {
+            return range.start < preeditAreaStart
+                    || range.start + range.length > preeditAreaStart + preeditAreaLength;
+        };
+        const auto it = std::remove_if(ranges.begin(), ranges.end(),
+                                       isOutsidePreeditArea);
+        if (it != ranges.end()) {
+            ranges.erase(it, ranges.end());
+            formatsChanged = true;
         }
     } else if (!ranges.isEmpty()) {
         ranges.clear();
