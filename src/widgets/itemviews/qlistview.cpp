@@ -52,6 +52,8 @@
 #include <qaccessible.h>
 #endif
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 extern bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
@@ -1843,6 +1845,16 @@ bool QListViewPrivate::dropOn(QDropEvent *event, int *dropRow, int *dropCol, QMo
         return QAbstractItemViewPrivate::dropOn(event, dropRow, dropCol, dropIndex);
 }
 #endif
+
+void QListViewPrivate::removeCurrentAndDisabled(QVector<QModelIndex> *indexes, const QModelIndex &current) const
+{
+    auto isCurrentOrDisabled = [=](const QModelIndex &index) {
+        return !isIndexEnabled(index) || index == current;
+    };
+    indexes->erase(std::remove_if(indexes->begin(), indexes->end(),
+                                  isCurrentOrDisabled),
+                   indexes->end());
+}
 
 /*
  * Common ListView Implementation

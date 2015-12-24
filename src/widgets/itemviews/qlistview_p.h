@@ -372,15 +372,7 @@ public:
     }
     inline bool isHiddenOrDisabled(int row) const { return isHidden(row) || !isIndexEnabled(modelIndex(row)); }
 
-    inline void removeCurrentAndDisabled(QVector<QModelIndex> *indexes, const QModelIndex &current) const {
-        QVector<QModelIndex>::iterator it = indexes->begin();
-        while (it != indexes->end()) {
-            if (!isIndexEnabled(*it) || (*it) == current)
-                indexes->erase(it);
-            else
-                ++it;
-        }
-    }
+    void removeCurrentAndDisabled(QVector<QModelIndex> *indexes, const QModelIndex &current) const;
 
     void scrollElasticBandBy(int dx, int dy);
 
