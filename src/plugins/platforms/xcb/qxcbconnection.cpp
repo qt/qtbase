@@ -1691,15 +1691,14 @@ void QXcbConnection::processXcbEvents()
         if (accepted)
             continue;
 
-        QVector<PeekFunc>::iterator it = m_peekFuncs.begin();
-        while (it != m_peekFuncs.end()) {
+        auto isWaitingFor = [=](PeekFunc peekFunc) {
             // These callbacks return true if the event is what they were
             // waiting for, remove them from the list in that case.
-            if ((*it)(this, event))
-                it = m_peekFuncs.erase(it);
-            else
-                ++it;
-        }
+            return peekFunc(this, event);
+        };
+        m_peekFuncs.erase(std::remove_if(m_peekFuncs.begin(), m_peekFuncs.end(),
+                                         isWaitingFor),
+                          m_peekFuncs.end());
         m_reader->unlock();
         handleXcbEvent(event);
         m_reader->lock();
