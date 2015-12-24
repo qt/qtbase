@@ -144,9 +144,7 @@
            to be consistent in pixels-per-point across devices rather than
            defining 1 point as 1/72 inch.
 
-    \value AA_X11InitThreads Calls \c XInitThreads() as part of the QApplication
-           construction in order to make Xlib calls thread-safe. This
-           attribute must be set before QApplication is constructed.
+    \value AA_X11InitThreads This value is obsolete and has no effect.
 
     \value AA_SynthesizeTouchForUnhandledMouseEvents All mouse events
            that are not accepted by the application will be translated
