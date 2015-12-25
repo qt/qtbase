@@ -480,6 +480,13 @@ public:
 Q_GLOBAL_STATIC(QEmptyItemModel, qEmptyModel)
 
 
+QAbstractItemModelPrivate::QAbstractItemModelPrivate()
+    : QObjectPrivate(),
+      supportedDragActions(-1),
+      roleNames(defaultRoleNames())
+{
+}
+
 QAbstractItemModelPrivate::~QAbstractItemModelPrivate()
 {
 }
@@ -487,6 +494,30 @@ QAbstractItemModelPrivate::~QAbstractItemModelPrivate()
 QAbstractItemModel *QAbstractItemModelPrivate::staticEmptyModel()
 {
     return qEmptyModel();
+}
+
+void QAbstractItemModelPrivate::invalidatePersistentIndexes()
+{
+    foreach (QPersistentModelIndexData *data, persistent.indexes) {
+        data->index = QModelIndex();
+        data->model = 0;
+    }
+    persistent.indexes.clear();
+}
+
+/*!
+    \internal
+    Clean the QPersistentModelIndex relative to the index if there is one.
+    To be used before an index is invalided
+*/
+void QAbstractItemModelPrivate::invalidatePersistentIndex(const QModelIndex &index) {
+    const auto it = persistent.indexes.constFind(index);
+    if (it != persistent.indexes.cend()) {
+        QPersistentModelIndexData *data = *it;
+        persistent.indexes.erase(it);
+        data->index = QModelIndex();
+        data->model = 0;
+    }
 }
 
 namespace {

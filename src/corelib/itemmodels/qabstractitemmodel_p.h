@@ -71,7 +71,7 @@ class Q_CORE_EXPORT QAbstractItemModelPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QAbstractItemModel)
 
 public:
-    QAbstractItemModelPrivate() : QObjectPrivate(), supportedDragActions(-1), roleNames(defaultRoleNames()) {}
+    QAbstractItemModelPrivate();
     ~QAbstractItemModelPrivate();
 
     void removePersistentIndexData(QPersistentModelIndexData *data);
@@ -103,28 +103,8 @@ public:
          return (index.row() >= 0) && (index.column() >= 0) && (index.model() == q_func());
     }
 
-    inline void invalidatePersistentIndexes() {
-        foreach (QPersistentModelIndexData *data, persistent.indexes) {
-            data->index = QModelIndex();
-            data->model = 0;
-        }
-        persistent.indexes.clear();
-    }
-
-    /*!
-      \internal
-      clean the QPersistentModelIndex relative to the index if there is one.
-      To be used before an index is invalided
-      */
-    inline void invalidatePersistentIndex(const QModelIndex &index) {
-        const auto it = persistent.indexes.constFind(index);
-        if (it != persistent.indexes.cend()) {
-            QPersistentModelIndexData *data = *it;
-            persistent.indexes.erase(it);
-            data->index = QModelIndex();
-            data->model = 0;
-        }
-    }
+    void invalidatePersistentIndexes();
+    void invalidatePersistentIndex(const QModelIndex &index);
 
     struct Change {
         Q_DECL_CONSTEXPR Change() : parent(), first(-1), last(-1), needsAdjust(false) {}
