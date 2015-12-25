@@ -638,8 +638,7 @@ QList<QByteArray> QWinTimeZonePrivate::availableTimeZoneIds() const
 {
     QList<QByteArray> result;
     foreach (const QByteArray &winId, availableWindowsIds()) {
-        foreach (const QByteArray &ianaId, windowsIdToIanaIds(winId))
-            result << ianaId;
+        result += windowsIdToIanaIds(winId);
     }
     std::sort(result.begin(), result.end());
     result.erase(std::unique(result.begin(), result.end()), result.end());
