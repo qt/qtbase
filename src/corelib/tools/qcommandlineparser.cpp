@@ -1069,16 +1069,12 @@ QString QCommandLineParserPrivate::helpText() const
 {
     const QLatin1Char nl('\n');
     QString text;
-    const QString exeName = QCoreApplication::instance()->arguments().first();
-    QString usage = exeName;
-    if (!commandLineOptionList.isEmpty()) {
-        usage += QLatin1Char(' ');
-        usage += QCommandLineParser::tr("[options]");
-    }
-    foreach (const PositionalArgumentDefinition &arg, positionalArgumentDefinitions) {
-        usage += QLatin1Char(' ');
-        usage += arg.syntax;
-    }
+    QString usage;
+    usage += QCoreApplication::instance()->arguments().constFirst(); // executable name
+    if (!commandLineOptionList.isEmpty())
+        usage += QLatin1Char(' ') + QCommandLineParser::tr("[options]");
+    foreach (const PositionalArgumentDefinition &arg, positionalArgumentDefinitions)
+        usage += QLatin1Char(' ') + arg.syntax;
     text += QCommandLineParser::tr("Usage: %1").arg(usage) + nl;
     if (!description.isEmpty())
        text += description + nl;
@@ -1086,27 +1082,33 @@ QString QCommandLineParserPrivate::helpText() const
     if (!commandLineOptionList.isEmpty())
         text += QCommandLineParser::tr("Options:") + nl;
     QStringList optionNameList;
+    optionNameList.reserve(commandLineOptionList.size());
     int longestOptionNameString = 0;
     foreach (const QCommandLineOption &option, commandLineOptionList) {
-        QStringList optionNames;
-        foreach (const QString &optionName, option.names()) {
-            if (optionName.length() == 1)
-                optionNames.append(QLatin1Char('-') + optionName);
-            else
-                optionNames.append(QStringLiteral("--") + optionName);
+        if (option.isHidden())
+            continue;
+        const QStringList optionNames = option.names();
+        QString optionNamesString;
+        foreach (const QString &optionName, optionNames) {
+            const int numDashes = optionName.length() == 1 ? 1 : 2;
+            optionNamesString += QLatin1String("--", numDashes) + optionName + QLatin1String(", ");
         }
-        QString optionNamesString = optionNames.join(QStringLiteral(", "));
-        if (!option.valueName().isEmpty())
-            optionNamesString += QStringLiteral(" <") + option.valueName() + QLatin1Char('>');
+        if (!optionNames.isEmpty())
+            optionNamesString.chop(2); // remove trailing ", "
+        const auto valueName = option.valueName();
+        if (!valueName.isEmpty())
+            optionNamesString += QLatin1String(" <") + valueName + QLatin1Char('>');
         optionNameList.append(optionNamesString);
         longestOptionNameString = qMax(longestOptionNameString, optionNamesString.length());
     }
     ++longestOptionNameString;
+    auto optionNameIterator = optionNameList.cbegin();
     for (int i = 0; i < commandLineOptionList.count(); ++i) {
         const QCommandLineOption &option = commandLineOptionList.at(i);
         if (option.isHidden())
             continue;
-        text += wrapText(optionNameList.at(i), longestOptionNameString, option.description());
+        text += wrapText(*optionNameIterator, longestOptionNameString, option.description());
+        ++optionNameIterator;
     }
     if (!positionalArgumentDefinitions.isEmpty()) {
         if (!commandLineOptionList.isEmpty())
