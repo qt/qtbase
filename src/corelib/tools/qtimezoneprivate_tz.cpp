@@ -983,9 +983,9 @@ QList<QByteArray> QTzTimeZonePrivate::availableTimeZoneIds(QLocale::Country coun
 {
     // TODO AnyCountry
     QList<QByteArray> result;
-    foreach (const QByteArray &key, tzZones->keys()) {
-        if (tzZones->value(key).country == country)
-            result << key;
+    for (auto it = tzZones->cbegin(), end = tzZones->cend(); it != end; ++it) {
+        if (it.value().country == country)
+            result << it.key();
     }
     std::sort(result.begin(), result.end());
     return result;
