@@ -80,6 +80,7 @@ class Q_GUI_EXPORT QPlatformDialogHelper : public QObject
     Q_OBJECT
 public:
     enum StyleHint {
+        DialogIsQtWindow
     };
     enum DialogCode { Rejected, Accepted };
 

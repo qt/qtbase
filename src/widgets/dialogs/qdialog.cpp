@@ -731,6 +731,20 @@ void QDialog::setVisible(bool visible)
     if (!testAttribute(Qt::WA_DontShowOnScreen) && d->canBeNativeDialog() && d->setNativeDialogVisible(visible))
         return;
 
+    // We should not block windows by the invisible modal dialog
+    // if a platform-specific dialog is implemented as an in-process
+    // Qt window, because in this case it will also be blocked.
+    const bool dontBlockWindows = testAttribute(Qt::WA_DontShowOnScreen)
+            && d->styleHint(QPlatformDialogHelper::DialogIsQtWindow).toBool();
+    Qt::WindowModality oldModality;
+    bool wasModalitySet;
+
+    if (dontBlockWindows) {
+        oldModality = windowModality();
+        wasModalitySet = testAttribute(Qt::WA_SetWindowModality);
+        setWindowModality(Qt::NonModal);
+    }
+
     if (visible) {
         if (testAttribute(Qt::WA_WState_ExplicitShowHide) && !testAttribute(Qt::WA_WState_Hidden))
             return;
@@ -795,6 +809,11 @@ void QDialog::setVisible(bool visible)
         QWidget::setVisible(visible);
         if (d->eventLoop)
             d->eventLoop->exit();
+    }
+
+    if (dontBlockWindows) {
+        setWindowModality(oldModality);
+        setAttribute(Qt::WA_SetWindowModality, wasModalitySet);
     }
 
 #if QT_CONFIG(pushbutton)

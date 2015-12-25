@@ -61,6 +61,18 @@ QT_BEGIN_NAMESPACE
 
 */
 
+/*!
+    \enum QPlatformDialogHelper::StyleHint
+
+    This enum type specifies platform-specific style hints.
+
+    \value DialogIsQtWindow Indicates that a platform-specific dialog is implemented
+                            as in-process Qt window. It allows to prevent blocking the
+                            dialog by an invisible proxy Qt dialog.
+
+    \sa styleHint()
+*/
+
 static const int buttonRoleLayouts[2][6][14] =
 {
     // Qt::Horizontal
