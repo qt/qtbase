@@ -364,8 +364,8 @@ void QLoggingRegistry::updateRules()
 
     rules = qtConfigRules + configRules + apiRules + envRules;
 
-    foreach (QLoggingCategory *cat, categories.keys())
-        (*categoryFilter)(cat);
+    for (auto it = categories.keyBegin(), end = categories.keyEnd(); it != end; ++it)
+        (*categoryFilter)(*it);
 }
 
 /*!
@@ -383,8 +383,8 @@ QLoggingRegistry::installFilter(QLoggingCategory::CategoryFilter filter)
     QLoggingCategory::CategoryFilter old = categoryFilter;
     categoryFilter = filter;
 
-    foreach (QLoggingCategory *cat, categories.keys())
-        (*categoryFilter)(cat);
+    for (auto it = categories.keyBegin(), end = categories.keyEnd(); it != end; ++it)
+        (*categoryFilter)(*it);
 
     return old;
 }
