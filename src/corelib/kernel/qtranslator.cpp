@@ -668,7 +668,8 @@ static QString find_translation(const QLocale & locale,
     }
 
     // start guessing
-    for (QString localeName : qAsConst(fuzzyLocales)) {
+    for (const QString &fuzzyLocale : qAsConst(fuzzyLocales)) {
+        QStringRef localeName(&fuzzyLocale);
         for (;;) {
             int rightmost = localeName.lastIndexOf(QLatin1Char('_'));
             // no truncations? fail
