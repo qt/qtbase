@@ -25,8 +25,10 @@
 
 #ifndef _GNU_SOURCE
 #  define _GNU_SOURCE
+#  define _NETBSD_SOURCE 1
 #  define _POSIX_C_SOURCE 200809L
 #  define _XOPEN_SOURCE 700
+#  define __BSD_VISIBLE 1
 #endif
 #include "forkfd.h"
 
