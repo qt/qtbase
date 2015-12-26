@@ -62,11 +62,11 @@ QWindowsFileSystemWatcherEngine::Handle::Handle()
 
 QWindowsFileSystemWatcherEngine::~QWindowsFileSystemWatcherEngine()
 {
-    foreach(QWindowsFileSystemWatcherEngineThread *thread, threads) {
+    for (auto *thread : qAsConst(threads))
         thread->stop();
+    for (auto *thread : qAsConst(threads))
         thread->wait();
-        delete thread;
-    }
+    qDeleteAll(threads);
 }
 
 QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
