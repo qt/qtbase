@@ -77,10 +77,12 @@ void tst_QDBusConnection_Delayed::delayedMessages()
     QVERIFY(other.isConnected());
     QVERIFY(!other.baseService().isEmpty());
 
+    // make a method call: those should work even if delivery is disabled
+    QVERIFY(session.interface()->isServiceRegistered(other.baseService()));
+
+    // acquire a name in the main session bus connection: the effect is immediate
     QString name = "org.qtproject.tst_qdbusconnection_delayed-" +
                    QString::number(getpid());
-
-    // acquire a name in the main session bus connection
     QVERIFY(session.registerService(name));
     QVERIFY(other.interface()->isServiceRegistered(name));
 
