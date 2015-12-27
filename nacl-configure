@@ -16,7 +16,6 @@ if [ ! -d "$NACL_SDK_ROOT" ]; then
     echo Directory not found: $NACL_SDK_ROOT. Check NACL_SDK_ROOT.
     echo ""
     exit
-
 fi
 
 # simple mac/linux detection
@@ -26,7 +25,7 @@ if [[ "$unamestr" == 'Linux' ]]; then
    platform='linux'
 fi
 
-# Require a toolcahain as an argument
+# Require a toolchain as argument
 if [ $# -eq 0 ]
   then
     echo ""
@@ -223,7 +222,9 @@ if [[ $QT_MKSPEC == *pnacl* ]]
     NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -no-c++11"
 fi
 
-# emscripten has x11 headers, which makes several configure tests pass.
+# emscripten has several x11 headers but no x11 support
+# (that we want to use). this makes several configure tests
+# pass and produces a broken build.
 if [[ $TOOLCHAIN == emscripten ]]
   then
     NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -no-xlib -no-xcb-xlib -no-eglfs"
