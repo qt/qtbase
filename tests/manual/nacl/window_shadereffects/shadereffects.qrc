@@ -1,8 +1,0 @@
-<RCC>
-    <qresource prefix="/shadereffects">
-        <file>shadereffects.qml</file>
-        <file>content/face-smile.png</file>
-        <file>content/qt-logo.png</file>
-        <file>content/Slider.qml</file>
-    </qresource>
-</RCC>
