@@ -25,6 +25,12 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/core.h"
 
+// Keep file out of the master include: User code may not have
+// include paths to ppapi/ set up.
+#if 0
+#pragma qt_no_master_include
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QPepperModulePrivate;
