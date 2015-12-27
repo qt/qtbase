@@ -709,7 +709,8 @@ static QString find_translation(const QLocale & locale,
     if (is_readable_file(realname))
         return realname;
 
-    return QString();
+    realname.truncate(0);
+    return realname;
 }
 
 /*!
