@@ -1,5 +1,10 @@
 TEMPLATE=subdirs
+
+# Run this test first
 SUBDIRS=\
+           qdbusconnection_delayed
+
+SUBDIRS+=\
            qdbusabstractadaptor \
            qdbusabstractinterface \
            qdbusconnection \

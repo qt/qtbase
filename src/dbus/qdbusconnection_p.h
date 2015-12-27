@@ -169,6 +169,7 @@ public:
     // typedefs
     typedef QMultiHash<int, Watcher> WatcherHash;
     typedef QHash<int, DBusTimeout *> TimeoutHash;
+    typedef QVector<QDBusMessage> PendingMessageList;
 
     typedef QMultiHash<QString, SignalHook> SignalHookHash;
     typedef QHash<QString, QDBusMetaObject* > MetaObjectHash;
@@ -191,6 +192,7 @@ public:
     ~QDBusConnectionPrivate();
 
     void createBusService();
+    void setDispatchEnabled(bool enable);
     void setPeer(DBusConnection *connection, const QDBusErrorInternal &error);
     void setConnection(DBusConnection *connection, const QDBusErrorInternal &error);
     void setServer(QDBusServer *object, DBusServer *server, const QDBusErrorInternal &error);
@@ -308,6 +310,7 @@ public:
     };
     WatcherHash watchers;
     TimeoutHash timeouts;
+    PendingMessageList pendingMessages;
 
     // the master lock protects our own internal state
     QReadWriteLock lock;
@@ -322,6 +325,7 @@ public:
     PendingCallList pendingCalls;
 
     bool anonymousAuthenticationAllowed;
+    bool dispatchEnabled;               // protected by the dispatch lock, not the main lock
 
 public:
     // static methods
