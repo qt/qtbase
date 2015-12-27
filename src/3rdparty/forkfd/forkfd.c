@@ -64,7 +64,7 @@
 #  undef HAVE_WAITID
 #endif
 
-#if defined(__FreeBSD__)
+#if defined(__FreeBSD__) && defined(__FreeBSD_version) && __FreeBSD_version >= 1000032
 #  define HAVE_PIPE2    1
 #endif
 
