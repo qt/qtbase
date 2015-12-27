@@ -634,6 +634,8 @@ static QString find_translation(const QLocale & locale,
     }
 
     QString realname;
+    realname += path + filename + prefix; // using += in the hope for some reserve capacity
+    const int realNameBaseSize = realname.size();
     QStringList fuzzyLocales;
 
     // see http://www.unicode.org/reports/tr35/#LanguageMatching for inspiration
@@ -652,14 +654,15 @@ static QString find_translation(const QLocale & locale,
     foreach (QString localeName, languages) {
         localeName.replace(QLatin1Char('-'), QLatin1Char('_'));
 
-        realname = path + filename + prefix + localeName + (suffix.isNull() ? QLatin1String(".qm") : suffix);
+        realname += localeName + (suffix.isNull() ? QLatin1String(".qm") : suffix);
         if (is_readable_file(realname))
             return realname;
 
-        realname = path + filename + prefix + localeName;
+        realname.truncate(realNameBaseSize + localeName.size());
         if (is_readable_file(realname))
             return realname;
 
+        realname.truncate(realNameBaseSize);
         fuzzyLocales.append(localeName);
     }
 
@@ -672,27 +675,35 @@ static QString find_translation(const QLocale & locale,
                 break;
             localeName.truncate(rightmost);
 
-            realname = path + filename + prefix + localeName + (suffix.isNull() ? QLatin1String(".qm") : suffix);
+            realname += localeName + (suffix.isNull() ? QLatin1String(".qm") : suffix);
             if (is_readable_file(realname))
                 return realname;
 
-            realname = path + filename + prefix + localeName;
+            realname.truncate(realNameBaseSize + localeName.size());
             if (is_readable_file(realname))
                 return realname;
+
+            realname.truncate(realNameBaseSize);
         }
     }
 
+    const int realNameBaseSizeFallbacks = path.size() + filename.size();
+
+    // realname == path + filename + prefix;
     if (!suffix.isNull()) {
-        realname = path + filename + suffix;
+        realname.replace(realNameBaseSizeFallbacks, prefix.size(), suffix);
+        // realname == path + filename;
         if (is_readable_file(realname))
             return realname;
+        realname.replace(realNameBaseSizeFallbacks, suffix.size(), prefix);
     }
 
-    realname = path + filename + prefix;
+    // realname == path + filename + prefix;
     if (is_readable_file(realname))
         return realname;
 
-    realname = path + filename;
+    realname.truncate(realNameBaseSizeFallbacks);
+    // realname == path + filename;
     if (is_readable_file(realname))
         return realname;
 
