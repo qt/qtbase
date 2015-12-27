@@ -632,6 +632,7 @@ static QString find_translation(const QLocale & locale,
         if (!path.isEmpty() && !path.endsWith(QLatin1Char('/')))
             path += QLatin1Char('/');
     }
+    const QString suffixOrDotQM = suffix.isNull() ? QStringLiteral(".qm") : suffix;
 
     QString realname;
     realname += path + filename + prefix; // using += in the hope for some reserve capacity
@@ -654,7 +655,7 @@ static QString find_translation(const QLocale & locale,
     foreach (QString localeName, languages) {
         localeName.replace(QLatin1Char('-'), QLatin1Char('_'));
 
-        realname += localeName + (suffix.isNull() ? QLatin1String(".qm") : suffix);
+        realname += localeName + suffixOrDotQM;
         if (is_readable_file(realname))
             return realname;
 
@@ -675,7 +676,7 @@ static QString find_translation(const QLocale & locale,
                 break;
             localeName.truncate(rightmost);
 
-            realname += localeName + (suffix.isNull() ? QLatin1String(".qm") : suffix);
+            realname += localeName + suffixOrDotQM;
             if (is_readable_file(realname))
                 return realname;
 
