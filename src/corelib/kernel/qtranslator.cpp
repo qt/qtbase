@@ -613,6 +613,13 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
     return false;
 }
 
+Q_NEVER_INLINE
+static bool is_readable_file(const QString &name)
+{
+    const QFileInfo fi(name);
+    return fi.isReadable() && fi.isFile();
+}
+
 static QString find_translation(const QLocale & locale,
                                 const QString & filename,
                                 const QString & prefix,
@@ -626,7 +633,6 @@ static QString find_translation(const QLocale & locale,
             path += QLatin1Char('/');
     }
 
-    QFileInfo fi;
     QString realname;
     QStringList fuzzyLocales;
 
@@ -647,13 +653,11 @@ static QString find_translation(const QLocale & locale,
         localeName.replace(QLatin1Char('-'), QLatin1Char('_'));
 
         realname = path + filename + prefix + localeName + (suffix.isNull() ? QLatin1String(".qm") : suffix);
-        fi.setFile(realname);
-        if (fi.isReadable() && fi.isFile())
+        if (is_readable_file(realname))
             return realname;
 
         realname = path + filename + prefix + localeName;
-        fi.setFile(realname);
-        if (fi.isReadable() && fi.isFile())
+        if (is_readable_file(realname))
             return realname;
 
         fuzzyLocales.append(localeName);
@@ -669,32 +673,27 @@ static QString find_translation(const QLocale & locale,
             localeName.truncate(rightmost);
 
             realname = path + filename + prefix + localeName + (suffix.isNull() ? QLatin1String(".qm") : suffix);
-            fi.setFile(realname);
-            if (fi.isReadable() && fi.isFile())
+            if (is_readable_file(realname))
                 return realname;
 
             realname = path + filename + prefix + localeName;
-            fi.setFile(realname);
-            if (fi.isReadable() && fi.isFile())
+            if (is_readable_file(realname))
                 return realname;
         }
     }
 
     if (!suffix.isNull()) {
         realname = path + filename + suffix;
-        fi.setFile(realname);
-        if (fi.isReadable() && fi.isFile())
+        if (is_readable_file(realname))
             return realname;
     }
 
     realname = path + filename + prefix;
-    fi.setFile(realname);
-    if (fi.isReadable() && fi.isFile())
+    if (is_readable_file(realname))
         return realname;
 
     realname = path + filename;
-    fi.setFile(realname);
-    if (fi.isReadable() && fi.isFile())
+    if (is_readable_file(realname))
         return realname;
 
     return QString();
