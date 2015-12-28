@@ -106,7 +106,7 @@ public:
     void waitForFinished();     // non-virtual override
 
 Q_SIGNALS:
-    void finished(QDBusPendingCallWatcher *self);
+    void finished(QDBusPendingCallWatcher *self = Q_NULLPTR);
 
 private:
     Q_DECLARE_PRIVATE(QDBusPendingCallWatcher)
