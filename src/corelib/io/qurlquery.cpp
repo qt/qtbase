@@ -169,7 +169,6 @@ public:
     Map::iterator findKey(const QString &key)
     { return itemList.begin() + findRecodedKey(recodeFromUser(key)); }
 
-    // use QMap so we end up sorting the items by key
     Map itemList;
     QChar valueDelimiter;
     QChar pairDelimiter;
