@@ -174,7 +174,7 @@ public:
     typedef QMultiHash<QString, SignalHook> SignalHookHash;
     typedef QHash<QString, QDBusMetaObject* > MetaObjectHash;
     typedef QHash<QByteArray, int> MatchRefCountHash;
-    typedef QList<QDBusPendingCallPrivate*> PendingCallList;
+    typedef QVector<QDBusPendingCallPrivate*> PendingCallList;
 
     struct WatchedServiceData {
         WatchedServiceData() : refcount(0) {}
