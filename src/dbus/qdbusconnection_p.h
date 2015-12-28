@@ -169,7 +169,6 @@ public:
     // typedefs
     typedef QMultiHash<int, Watcher> WatcherHash;
     typedef QHash<int, DBusTimeout *> TimeoutHash;
-    typedef QVector<QPair<DBusTimeout *, int> > PendingTimeoutList;
 
     typedef QMultiHash<QString, SignalHook> SignalHookHash;
     typedef QHash<QString, QDBusMetaObject* > MetaObjectHash;
@@ -309,7 +308,6 @@ public:
     };
     WatcherHash watchers;
     TimeoutHash timeouts;
-    PendingTimeoutList timeoutsPendingAdd;
 
     // the master lock protects our own internal state
     QReadWriteLock lock;
