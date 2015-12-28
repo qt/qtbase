@@ -39,6 +39,15 @@
 #  define _XOPEN_SOURCE 700
 #endif
 
+// Define BSD visibility macros. These are also defined in forkfd.c, but the
+// headers using them may be included before forkfd.c itself.
+#ifndef _NETBSD_SOURCE
+#  define _NETBSD_SOURCE 1
+#endif
+#ifndef __BSD_VISIBLE
+#  define __BSD_VISIBLE 1
+#endif
+
 #include <QtCore/qatomic.h>
 #include "qprocess_p.h"
 
