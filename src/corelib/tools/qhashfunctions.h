@@ -147,6 +147,15 @@ template <typename T1, typename T2> inline uint qHash(const QPair<T1, T2> &key, 
     return ((h1 << 16) | (h1 >> 16)) ^ h2 ^ seed;
 }
 
+template <typename T1, typename T2> inline uint qHash(const std::pair<T1, T2> &key, uint seed = 0)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(key.first, seed)) && noexcept(qHash(key.second, seed)))
+{
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, key.first);
+    seed = hash(seed, key.second);
+    return seed;
+}
+
 QT_END_NAMESPACE
 
 #if defined(Q_CC_MSVC)

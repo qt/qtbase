@@ -711,6 +711,23 @@ void QHashData::checkSanity()
     Types \c T1 and \c T2 must be supported by qHash().
 */
 
+/*!
+    \fn uint qHash(const std::pair<T1, T2> &key, uint seed = 0)
+    \since 5.7
+    \relates QHash
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+
+    Types \c T1 and \c T2 must be supported by qHash().
+
+    \note The return type of this function is \e{not} the same as that of
+    \code
+    qHash(qMakePair(key.first, key.second), seed);
+    \endcode
+    The two functions use different hashing algorithms; due to binary compatibility
+    constraints, we cannot change the QPair algorithm to match the std::pair one before Qt 6.
+*/
+
 /*! \fn uint qHashRange(InputIterator first, InputIterator last, uint seed = 0)
     \relates QHash
     \since 5.5

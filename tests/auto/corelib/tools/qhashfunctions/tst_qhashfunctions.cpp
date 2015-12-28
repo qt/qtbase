@@ -115,6 +115,22 @@ void tst_QHashFunctions::qhash()
 
         QVERIFY(qHash(pA) != qHash(pB));
     }
+
+    {
+        std::pair<int, int> p12(1, 2);
+        std::pair<int, int> p21(2, 1);
+
+        using QT_PREPEND_NAMESPACE(qHash);
+
+        QVERIFY(qHash(p12) == qHash(p12));
+        QVERIFY(qHash(p21) == qHash(p21));
+        QVERIFY(qHash(p12) != qHash(p21));
+
+        std::pair<int, int> pA(0x12345678, 0x12345678);
+        std::pair<int, int> pB(0x12345675, 0x12345675);
+
+        QVERIFY(qHash(pA) != qHash(pB));
+    }
 }
 
 void tst_QHashFunctions::fp_qhash_of_zero_is_zero()
