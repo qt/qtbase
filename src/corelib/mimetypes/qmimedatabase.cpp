@@ -47,11 +47,11 @@
 #include <QtCore/QSet>
 #include <QtCore/QBuffer>
 #include <QtCore/QUrl>
-#include <QtCore/QStack>
 #include <QtCore/QDebug>
 
 #include <algorithm>
 #include <functional>
+#include <stack>
 
 QT_BEGIN_NAMESPACE
 
@@ -218,13 +218,13 @@ bool QMimeDatabasePrivate::inherits(const QString &mime, const QString &parent)
 {
     const QString resolvedParent = provider()->resolveAlias(parent);
     //Q_ASSERT(provider()->resolveAlias(mime) == mime);
-    QStack<QString> toCheck;
+    std::stack<QString, QStringList> toCheck;
     toCheck.push(mime);
-    while (!toCheck.isEmpty()) {
-        const QString current = toCheck.pop();
-        if (current == resolvedParent)
+    while (!toCheck.empty()) {
+        if (toCheck.top() == resolvedParent)
             return true;
-        const auto parents = provider()->parents(current);
+        const auto parents = provider()->parents(toCheck.top());
+        toCheck.pop();
         for (const QString &par : parents)
             toCheck.push(par);
     }
