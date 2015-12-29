@@ -1946,13 +1946,12 @@ int QPrinter::winPageSize() const
 QList<int> QPrinter::supportedResolutions() const
 {
     Q_D(const QPrinter);
-    QList<QVariant> varlist
+    const QList<QVariant> varlist
         = d->printEngine->property(QPrintEngine::PPK_SupportedResolutions).toList();
     QList<int> intlist;
-    const int numSupportedResolutions = varlist.size();
-    intlist.reserve(numSupportedResolutions);
-    for (int i = 0; i < numSupportedResolutions; ++i)
-        intlist << varlist.at(i).toInt();
+    intlist.reserve(varlist.size());
+    for (auto var : varlist)
+        intlist << var.toInt();
     return intlist;
 }
 
@@ -2015,10 +2014,11 @@ QList<QPrinter::PaperSource> QPrinter::supportedPaperSources() const
     Q_D(const QPrinter);
     QVariant v = d->printEngine->property(QPrintEngine::PPK_PaperSources);
 
-    QList<QVariant> variant_list = v.toList();
+    const QList<QVariant> variant_list = v.toList();
     QList<QPrinter::PaperSource> int_list;
-    for (int i=0; i<variant_list.size(); ++i)
-        int_list << (QPrinter::PaperSource) variant_list.at(i).toInt();
+    int_list.reserve(variant_list.size());
+    for (const auto &variant : variant_list)
+        int_list << QPrinter::PaperSource(variant.toInt());
 
     return int_list;
 }

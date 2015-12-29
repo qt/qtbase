@@ -295,9 +295,9 @@ int QPrintPreviewWidgetPrivate::calcCurrentPage()
     int maxArea = 0;
     int newPage = curPage;
     QRect viewRect = graphicsView->viewport()->rect();
-    QList<QGraphicsItem*> items = graphicsView->items(viewRect);
-    for (int i=0; i<items.size(); ++i) {
-        PageItem* pg = static_cast<PageItem*>(items.at(i));
+    const QList<QGraphicsItem*> items = graphicsView->items(viewRect);
+    for (auto *item : items) {
+        PageItem* pg = static_cast<PageItem*>(item);
         QRect overlap = graphicsView->mapFromScene(pg->sceneBoundingRect()).boundingRect() & viewRect;
         int area = overlap.width() * overlap.height();
         if (area > maxArea) {
@@ -335,17 +335,17 @@ void QPrintPreviewWidgetPrivate::init()
 void QPrintPreviewWidgetPrivate::populateScene()
 {
     // remove old pages
-    for (int i = 0; i < pages.size(); i++)
-        scene->removeItem(pages.at(i));
+    for (auto *page : qAsConst(pages))
+        scene->removeItem(page);
     qDeleteAll(pages);
     pages.clear();
 
-    int numPages = pictures.count();
     QSize paperSize = printer->pageLayout().fullRectPixels(printer->resolution()).size();
     QRect pageRect = printer->pageLayout().paintRectPixels(printer->resolution());
 
-    for (int i = 0; i < numPages; i++) {
-        PageItem* item = new PageItem(i+1, pictures.at(i), paperSize, pageRect);
+    int page = 1;
+    for (auto *picture : qAsConst(pictures)) {
+        PageItem* item = new PageItem(page++, picture, paperSize, pageRect);
         scene->addItem(item);
         pages.append(item);
     }

@@ -283,10 +283,10 @@ void QPrintDevice::format(QDebug debug) const
               << ", defaultColorMode="<< defaultColorMode();
 #    ifndef QT_NO_MIMETYPE
         const QList<QMimeType> mimeTypes = supportedMimeTypes();
-        if (const int mimeTypeCount = mimeTypes.size()) {
+        if (!mimeTypes.isEmpty()) {
             debug << ", supportedMimeTypes=(";
-            for (int i = 0; i < mimeTypeCount; ++i)
-                debug << " \"" << mimeTypes.at(i).name() << '"';
+            for (const auto &mimeType : mimeTypes)
+                debug << " \"" << mimeType.name() << '"';
             debug << ')';
         }
 #    endif // !QT_NO_MIMETYPE
