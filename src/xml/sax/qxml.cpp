@@ -75,6 +75,14 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace {
+
+// work around missing std::stack::clear()
+template <typename Container>
+void clear(Container &c) { c = Container(); }
+
+}
+
 // the constants for the lookup table
 static const signed char cltWS      =  0; // white space
 static const signed char cltPer     =  1; // %
@@ -3197,7 +3205,7 @@ bool QXmlSimpleReader::parse(const QXmlInputSource *input, bool incremental)
         d->contentHnd->setDocumentLocator(d->locator.data());
         if (!d->contentHnd->startDocument()) {
             d->reportParseError(d->contentHnd->errorString());
-            d->tags.clear();
+            clear(d->tags);
             return false;
         }
     }
@@ -3253,7 +3261,7 @@ bool QXmlSimpleReaderPrivate::parseBeginOrContinue(int state, bool incremental)
                 pushParseState(0, 0);
                 return true;
             } else {
-                tags.clear();
+                clear(tags);
                 return false;
             }
         }
@@ -3265,7 +3273,7 @@ bool QXmlSimpleReaderPrivate::parseBeginOrContinue(int state, bool incremental)
                 pushParseState(0, 1);
                 return true;
             } else {
-                tags.clear();
+                clear(tags);
                 return false;
             }
         }
@@ -3278,7 +3286,7 @@ bool QXmlSimpleReaderPrivate::parseBeginOrContinue(int state, bool incremental)
                 pushParseState(0, 2);
                 return true;
             } else {
-                tags.clear();
+                clear(tags);
                 return false;
             }
         }
@@ -3289,9 +3297,9 @@ bool QXmlSimpleReaderPrivate::parseBeginOrContinue(int state, bool incremental)
         return true;
     }
     // is stack empty?
-    if (!tags.isEmpty() && !error.isNull()) {
+    if (!tags.empty() && !error.isNull()) {
         reportParseError(QLatin1String(XMLERR_UNEXPECTEDEOF));
-        tags.clear();
+        clear(tags);
         return false;
     }
     // call the handler
@@ -3697,16 +3705,15 @@ bool QXmlSimpleReaderPrivate::parseElement()
             case STagEnd:
                 // call the handler
                 if (contentHnd) {
-                    const QString &tagsTop = tags.top();
                     if (useNamespaces) {
                         QString uri, lname;
-                        namespaceSupport.processName(tagsTop, false, uri, lname);
-                        if (!contentHnd->startElement(uri, lname, tagsTop, attList)) {
+                        namespaceSupport.processName(tags.top(), false, uri, lname);
+                        if (!contentHnd->startElement(uri, lname, tags.top(), attList)) {
                             reportParseError(contentHnd->errorString());
                             return false;
                         }
                     } else {
-                        if (!contentHnd->startElement(QString(), QString(), tagsTop, attList)) {
+                        if (!contentHnd->startElement(QString(), QString(), tags.top(), attList)) {
                             reportParseError(contentHnd->errorString());
                             return false;
                         }
@@ -3732,7 +3739,7 @@ bool QXmlSimpleReaderPrivate::parseElement()
                 }
                 break;
             case EmptyTag:
-                if  (tags.isEmpty()) {
+                if (tags.empty()) {
                     reportParseError(QLatin1String(XMLERR_TAGMISMATCH));
                     return false;
                 }
@@ -3773,7 +3780,9 @@ bool QXmlSimpleReaderPrivate::processElementEmptyTag()
                 return false;
             }
             // ... followed by endElement...
-            if (!contentHnd->endElement(uri, lname, tags.pop())) {
+            const bool endElementReturnedFalse = !contentHnd->endElement(uri, lname, tags.top());
+            tags.pop();
+            if (endElementReturnedFalse) {
                 reportParseError(contentHnd->errorString());
                 return false;
             }
@@ -3800,13 +3809,15 @@ bool QXmlSimpleReaderPrivate::processElementEmptyTag()
                 return false;
             }
             // ... followed by endElement
-            if (!contentHnd->endElement(QString(), QString(), tags.pop())) {
+            const bool endElementReturnedFalse = !contentHnd->endElement(QString(), QString(), tags.top());
+            tags.pop();
+            if (endElementReturnedFalse) {
                 reportParseError(contentHnd->errorString());
                 return false;
             }
         }
     } else {
-        tags.pop_back();
+        tags.pop();
         namespaceSupport.popContext();
     }
     return true;
@@ -3820,7 +3831,9 @@ bool QXmlSimpleReaderPrivate::processElementETagBegin2()
     const QString &name = QXmlSimpleReaderPrivate::name();
 
     // pop the stack and compare it with the name
-    if (tags.pop() != name) {
+    const bool nameIsTagsTop = tags.top() == name;
+    tags.pop();
+    if (!nameIsTagsTop) {
         reportParseError(QLatin1String(XMLERR_TAGMISMATCH));
         return false;
     }
@@ -7839,7 +7852,7 @@ void QXmlSimpleReaderPrivate::init(const QXmlInputSource *i)
     externEntities.clear();
     entities.clear();
 
-    tags.clear();
+    clear(tags);
 
     doctype.clear();
     xmlVersion.clear();

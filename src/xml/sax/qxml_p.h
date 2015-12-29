@@ -38,6 +38,8 @@
 #include <qmap.h>
 #include <qxml.h>
 
+#include <stack>
+
 QT_BEGIN_NAMESPACE
 
 //
@@ -61,7 +63,7 @@ private:
     void initIncrementalParsing();
 
     // used to determine if elements are correctly nested
-    QStack<QString> tags;
+    std::stack<QString, QStringList> tags;
 
     // used by parseReference() and parsePEReference()
     enum EntityRecognitionContext { InContent, InAttributeValue, InEntityValue, InDTD };
