@@ -34,8 +34,9 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <qstack.h>
 #include "symbols.h"
+
+#include <stack>
 
 QT_BEGIN_NAMESPACE
 
@@ -57,7 +58,7 @@ public:
     };
     QList<IncludePath> includes;
 
-    QStack<QByteArray> currentFilenames;
+    std::stack<QByteArray, QByteArrayList> currentFilenames;
 
     inline bool hasNext() const { return (index < symbols.size()); }
     inline Token next() { if (index >= symbols.size()) return NOTOKEN; return symbols.at(index++).token; }
