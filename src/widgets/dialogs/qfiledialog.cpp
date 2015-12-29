@@ -1091,46 +1091,43 @@ void QFileDialog::selectUrl(const QUrl &url)
 }
 
 #ifdef Q_OS_UNIX
-Q_AUTOTEST_EXPORT QString qt_tildeExpansion(const QString &path, bool *expanded = 0)
+Q_AUTOTEST_EXPORT QString qt_tildeExpansion(const QString &path)
 {
-    if (expanded != 0)
-        *expanded = false;
     if (!path.startsWith(QLatin1Char('~')))
         return path;
-    QString ret = path;
-    QStringList tokens = ret.split(QDir::separator());
-    if (tokens.first() == QLatin1String("~")) {
-        ret.replace(0, 1, QDir::homePath());
+    int separatorPosition = path.indexOf(QDir::separator());
+    if (separatorPosition < 0)
+        separatorPosition = path.size();
+    if (separatorPosition == 1) {
+        return QDir::homePath() + path.midRef(1);
     } else {
-        QString userName = tokens.first();
-        userName.remove(0, 1);
 #if defined(Q_OS_VXWORKS) || defined(Q_OS_INTEGRITY)
         const QString homePath = QDir::homePath();
-#elif defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
+#else
+        const QByteArray userName = path.midRef(1, separatorPosition - 1).toLocal8Bit();
+# if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
         passwd pw;
         passwd *tmpPw;
         char buf[200];
         const int bufSize = sizeof(buf);
         int err = 0;
-#if defined(Q_OS_SOLARIS) && (_POSIX_C_SOURCE - 0 < 199506L)
-        tmpPw = getpwnam_r(userName.toLocal8Bit().constData(), &pw, buf, bufSize);
-#else
-        err = getpwnam_r(userName.toLocal8Bit().constData(), &pw, buf, bufSize, &tmpPw);
-#endif
+#  if defined(Q_OS_SOLARIS) && (_POSIX_C_SOURCE - 0 < 199506L)
+        tmpPw = getpwnam_r(userName.constData(), &pw, buf, bufSize);
+#  else
+        err = getpwnam_r(userName.constData(), &pw, buf, bufSize, &tmpPw);
+#  endif
         if (err || !tmpPw)
-            return ret;
+            return path;
         const QString homePath = QString::fromLocal8Bit(pw.pw_dir);
-#else
-        passwd *pw = getpwnam(userName.toLocal8Bit().constData());
+# else
+        passwd *pw = getpwnam(userName.constData());
         if (!pw)
-            return ret;
+            return path;
         const QString homePath = QString::fromLocal8Bit(pw->pw_dir);
+# endif
 #endif
-        ret.replace(0, tokens.first().length(), homePath);
+        return homePath + path.midRef(separatorPosition);
     }
-    if (expanded != 0)
-        *expanded = true;
-    return ret;
 }
 #endif
 
@@ -4044,15 +4041,17 @@ QStringList QFSCompleter::splitPath(const QString &path) const
     else
         doubleSlash.clear();
 #elif defined(Q_OS_UNIX)
-    bool expanded;
-    pathCopy = qt_tildeExpansion(pathCopy, &expanded);
-    if (expanded) {
-        QFileSystemModel *dirModel;
-        if (proxyModel)
-            dirModel = qobject_cast<QFileSystemModel *>(proxyModel->sourceModel());
-        else
-            dirModel = sourceModel;
-        dirModel->fetchMore(dirModel->index(pathCopy));
+    {
+        QString tildeExpanded = qt_tildeExpansion(pathCopy);
+        if (tildeExpanded != pathCopy) {
+            QFileSystemModel *dirModel;
+            if (proxyModel)
+                dirModel = qobject_cast<QFileSystemModel *>(proxyModel->sourceModel());
+            else
+                dirModel = sourceModel;
+            dirModel->fetchMore(dirModel->index(tildeExpanded));
+        }
+        pathCopy = std::move(tildeExpanded);
     }
 #endif
 

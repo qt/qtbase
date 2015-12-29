@@ -68,7 +68,7 @@
 #include <unistd.h> // for pathconf() on OS X
 #ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
-extern Q_GUI_EXPORT QString qt_tildeExpansion(const QString &path, bool *expanded = 0);
+extern Q_GUI_EXPORT QString qt_tildeExpansion(const QString &path);
 QT_END_NAMESPACE
 #endif
 #endif
@@ -1395,15 +1395,18 @@ void tst_QFiledialog::tildeExpansion_data()
     QTest::addColumn<QString>("tildePath");
     QTest::addColumn<QString>("expandedPath");
 
+    const QString tilde = QStringLiteral("~");
+    const QString tildeUser = tilde + QString(qgetenv("USER"));
+    const QLatin1String someSubDir("/some/sub/dir");
+    const QString homePath = QDir::homePath();
+    const QString invalid = QStringLiteral("~thisIsNotAValidUserName");
+
     QTest::newRow("empty path") << QString() << QString();
-    QTest::newRow("~") << QString::fromLatin1("~") << QDir::homePath();
-    QTest::newRow("~/some/sub/dir/") << QString::fromLatin1("~/some/sub/dir") << QDir::homePath()
-                                        + QString::fromLatin1("/some/sub/dir");
-    QString userHome = QString(qgetenv("USER"));
-    userHome.prepend('~');
-    QTest::newRow("current user (~<user> syntax)") << userHome << QDir::homePath();
-    QString invalid = QString::fromLatin1("~thisIsNotAValidUserName");
-    QTest::newRow("invalid user name") << invalid << invalid;
+    QTest::newRow("~")                    << tilde                  << homePath;
+    QTest::newRow("~/some/sub/dir/")      << tilde     + someSubDir << homePath + someSubDir;
+    QTest::newRow("~<user>")              << tildeUser              << homePath;
+    QTest::newRow("~<user>/some/sub/dir") << tildeUser + someSubDir << homePath + someSubDir;
+    QTest::newRow("invalid user name")    << invalid                << invalid;
 }
 #endif // QT_BUILD_INTERNAL
 
