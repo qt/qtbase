@@ -1548,9 +1548,8 @@ void QComboBox::setDuplicatesEnabled(bool enable)
 int QComboBox::findData(const QVariant &data, int role, Qt::MatchFlags flags) const
 {
     Q_D(const QComboBox);
-    QModelIndexList result;
     QModelIndex start = d->model->index(0, d->modelColumn, d->root);
-    result = d->model->match(start, role, data, 1, flags);
+    const QModelIndexList result = d->model->match(start, role, data, 1, flags);
     if (result.isEmpty())
         return -1;
     return result.first().row();
