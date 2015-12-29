@@ -661,18 +661,16 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *
     widget.setupUi(parent);
 
     int currentPrinterIndex = 0;
-    QStringList printers;
-    QString defaultPrinter;
     QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
     if (ps) {
-        printers = ps->availablePrintDeviceIds();
-        defaultPrinter = ps->defaultPrintDeviceId();
-    }
+        const QStringList printers = ps->availablePrintDeviceIds();
+        const QString defaultPrinter = ps->defaultPrintDeviceId();
 
-    for (int i = 0; i < printers.size(); ++i) {
-        widget.printers->addItem(printers.at(i));
-        if (printers.at(i) == defaultPrinter)
-            currentPrinterIndex = i;
+        widget.printers->addItems(printers);
+
+        const int idx = printers.indexOf(defaultPrinter);
+        if (idx >= 0)
+            currentPrinterIndex = idx;
     }
     widget.properties->setEnabled(true);
 
@@ -827,12 +825,9 @@ void QUnixPrintWidgetPrivate::applyPrinterProperties()
         widget.filename->setText( printer->outputFileName() );
     QString printerName = printer->printerName();
     if (!printerName.isEmpty()) {
-        for (int i = 0; i < widget.printers->count(); ++i) {
-            if (widget.printers->itemText(i) == printerName) {
-                widget.printers->setCurrentIndex(i);
-                break;
-            }
-        }
+        const int i = widget.printers->findText(printerName);
+        if (i >= 0)
+            widget.printers->setCurrentIndex(i);
     }
     // PDF printer not added to the dialog yet, we'll handle those cases in QUnixPrintWidgetPrivate::updateWidget
 
