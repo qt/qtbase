@@ -15,7 +15,9 @@ const char * templateWindowed = R"STRING_DELIMITER(
 
 <style>
     .qt-container { width:640px; height:480px; display:block; margin: auto; box-shadow: 0 0 1em #888888; }
-    embed { width:640px; height:480px; display:block; margin: auto; box-shadow: 0 0 1em #888888; }
+    .qt-container { display:flex; justify-content: center; align-items: center }
+    .qt-embed { width:640px; height:480px; display:block; margin: auto; box-shadow: 0 0 1em #888888; }
+
     H2 { text-align: center; }
 </style>
 
@@ -24,7 +26,7 @@ const char * templateWindowed = R"STRING_DELIMITER(
 function init()
 {
     // Create and configure Qt/NaCl controller
-    var qt = new Qt({
+    var qt = new QtLoader({
         src : "%APPSOURCE%",
         type : "%APPTYPE%",
         query : window.location.search.substring(1),
@@ -33,7 +35,7 @@ function init()
 
     // Create Qt element
     var qtEmbed = document.getElementById("qt-container")
-    qt.createQtElement(qtEmbed)
+    qt.createElement(qtEmbed)
     qt.load()
 }
 </script>

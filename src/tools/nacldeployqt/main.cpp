@@ -214,8 +214,8 @@ int QtNaclDeployer::deploy()
     instantiateWriteTemplate(html, outDir + mainHtmlFileName);
 
     // Write qtloader.js
-    extern const char *loaderScript;
-    instantiateWriteTemplate(QByteArray(loaderScript),  outDir + "qtloader.js");
+    extern const char *templateQtLoader;
+    instantiateWriteTemplate(QByteArray(templateQtLoader),  outDir + "qtloader.js");
 
     // Create Chrome App support files.
     if (isApp) {

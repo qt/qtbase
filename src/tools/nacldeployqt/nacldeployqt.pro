@@ -7,7 +7,7 @@ SOURCES += \
     template_debug.cpp \
     template_fullscreen.cpp \
     template_windowed.cpp \
-    script_loader.cpp \
+    template_qtloader.cpp \
     main.cpp \
 
 load(qt_tool)
