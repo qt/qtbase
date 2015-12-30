@@ -733,7 +733,7 @@ QStringList QUrlQuery::allQueryItemValues(const QString &key, QUrl::ComponentFor
 */
 void QUrlQuery::removeQueryItem(const QString &key)
 {
-    if (d) {
+    if (d.constData()) {
         Map::iterator it = d->findKey(key);
         if (it != d->itemList.end())
             d->itemList.erase(it);
