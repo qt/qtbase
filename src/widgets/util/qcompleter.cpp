@@ -755,9 +755,9 @@ void QUnsortedModelEngine::filterOnDemand(int n)
     const QAbstractItemModel *model = c->proxy->sourceModel();
     int lastRow = model->rowCount(curParent) - 1;
     QIndexMapper im(curMatch.indices.last() + 1, lastRow);
-    int lastIndex = buildIndices(curParts.last(), curParent, n, im, &curMatch);
+    int lastIndex = buildIndices(curParts.constLast(), curParent, n, im, &curMatch);
     curMatch.partial = (lastRow != lastIndex);
-    saveInCache(curParts.last(), curParent, curMatch);
+    saveInCache(curParts.constLast(), curParent, curMatch);
 }
 
 QMatchData QUnsortedModelEngine::filter(const QString& part, const QModelIndex& parent, int n)

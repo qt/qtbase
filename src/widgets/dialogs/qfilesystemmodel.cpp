@@ -374,7 +374,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
     QModelIndex index = QModelIndex(); // start with "My Computer"
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     if (absolutePath.startsWith(QLatin1String("//"))) { // UNC path
-        QString host = QLatin1String("\\\\") + pathElements.first();
+        QString host = QLatin1String("\\\\") + pathElements.constFirst();
         if (absolutePath == QDir::fromNativeSeparators(host))
             absolutePath.append(QLatin1Char('/'));
         if (longPath.endsWith(QLatin1Char('/')) && !absolutePath.endsWith(QLatin1Char('/')))

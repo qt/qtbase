@@ -850,9 +850,9 @@ void QWizardPrivate::switchToPage(int newId, Direction direction)
                 q->cleanupPage(oldId);
                 initialized.remove(oldId);
             }
-            Q_ASSERT(history.last() == oldId);
+            Q_ASSERT(history.constLast() == oldId);
             history.removeLast();
-            Q_ASSERT(history.last() == newId);
+            Q_ASSERT(history.constLast() == newId);
         }
     }
 

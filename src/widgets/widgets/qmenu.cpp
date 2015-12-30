@@ -117,7 +117,7 @@ public:
     {
         Q_D(QTornOffMenu);
         // make the torn-off menu a sibling of p (instead of a child)
-        QWidget *parentWidget = d->causedStack.isEmpty() ? p : d->causedStack.last();
+        QWidget *parentWidget = d->causedStack.isEmpty() ? p : d->causedStack.constLast();
         if (parentWidget->parentWidget())
             parentWidget = parentWidget->parentWidget();
         setParent(parentWidget, Qt::Window | Qt::Tool);

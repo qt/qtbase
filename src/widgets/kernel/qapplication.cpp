@@ -786,7 +786,7 @@ void QApplicationPrivate::initializeWidgetFontHash()
 QWidget *QApplication::activePopupWidget()
 {
     return QApplicationPrivate::popupWidgets && !QApplicationPrivate::popupWidgets->isEmpty() ?
-        QApplicationPrivate::popupWidgets->last() : 0;
+        QApplicationPrivate::popupWidgets->constLast() : nullptr;
 }
 
 
@@ -2391,7 +2391,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
         const QPoint globalPos = qIsInf(globalPosF.x())
             ? QPoint(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX)
             : globalPosF.toPoint();
-        const QPoint windowPos = enterList.back()->window()->mapFromGlobal(globalPos);
+        const QPoint windowPos = qAsConst(enterList).back()->window()->mapFromGlobal(globalPos);
         for (auto it = enterList.crbegin(), end = enterList.crend(); it != end; ++it) {
             auto *w = *it;
             if (!QApplication::activeModalWidget() || QApplicationPrivate::tryModalHelper(w, 0)) {
@@ -3795,7 +3795,7 @@ void QApplicationPrivate::closePopup(QWidget *popup)
 
     } else {
         // A popup was closed, so the previous popup gets the focus.
-        QWidget* aw = QApplicationPrivate::popupWidgets->last();
+        QWidget* aw = QApplicationPrivate::popupWidgets->constLast();
         if (QWidget *fw = aw->focusWidget())
             fw->setFocus(Qt::PopupFocusReason);
 

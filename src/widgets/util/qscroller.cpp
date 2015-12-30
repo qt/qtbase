@@ -575,8 +575,11 @@ QPointF QScroller::pixelPerMeter() const
     if (QGraphicsObject *go = qobject_cast<QGraphicsObject *>(d->target)) {
         QTransform viewtr;
         //TODO: the first view isn't really correct - maybe use an additional field in the prepare event?
-        if (go->scene() && !go->scene()->views().isEmpty())
-            viewtr = go->scene()->views().first()->viewportTransform();
+        if (const auto *scene = go->scene()) {
+            const auto views = scene->views();
+            if (!views.isEmpty())
+                viewtr = views.first()->viewportTransform();
+        }
         QTransform tr = go->deviceTransform(viewtr);
         if (tr.isScaling()) {
             QPointF p0 = tr.map(QPointF(0, 0));
@@ -1121,12 +1124,15 @@ void QScrollerPrivate::pushSegment(ScrollType type, qreal deltaTime, qreal stopP
         return;
 
     ScrollSegment s;
-    if (orientation == Qt::Horizontal && !xSegments.isEmpty())
-        s.startTime = xSegments.last().startTime + xSegments.last().deltaTime * xSegments.last().stopProgress;
-    else if (orientation == Qt::Vertical && !ySegments.isEmpty())
-        s.startTime = ySegments.last().startTime + ySegments.last().deltaTime * ySegments.last().stopProgress;
-    else
+    if (orientation == Qt::Horizontal && !xSegments.isEmpty()) {
+        const auto &lastX = xSegments.constLast();
+        s.startTime = lastX.startTime + lastX.deltaTime * lastX.stopProgress;
+    } else if (orientation == Qt::Vertical && !ySegments.isEmpty()) {
+        const auto &lastY = ySegments.constLast();
+        s.startTime = lastY.startTime + lastY.deltaTime * lastY.stopProgress;
+    } else {
         s.startTime = monotonicTimer.elapsed();
+    }
 
     s.startPos = startPos;
     s.deltaPos = deltaPos;
@@ -1463,8 +1469,11 @@ bool QScrollerPrivate::prepareScrolling(const QPointF &position)
 #ifndef QT_NO_GRAPHICSVIEW
         if (QGraphicsObject *go = qobject_cast<QGraphicsObject *>(target)) {
             //TODO: the first view isn't really correct - maybe use an additional field in the prepare event?
-            if (go->scene() && !go->scene()->views().isEmpty())
-                setDpiFromWidget(go->scene()->views().first());
+            if (const auto *scene = go->scene()) {
+                const auto views = scene->views();
+                if (!views.isEmpty())
+                    setDpiFromWidget(views.first());
+            }
         }
 #endif
 

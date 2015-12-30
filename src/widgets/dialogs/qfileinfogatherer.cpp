@@ -217,9 +217,9 @@ void QFileInfoGatherer::run()
             condition.wait(&mutex);
         if (abort.load())
             return;
-        const QString thisPath = path.front();
+        const QString thisPath = qAsConst(path).front();
         path.pop_front();
-        const QStringList thisList = files.front();
+        const QStringList thisList = qAsConst(files).front();
         files.pop_front();
         locker.unlock();
 
