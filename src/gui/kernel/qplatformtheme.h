@@ -240,6 +240,7 @@ public:
         MediaSeekBackward,
         MediaVolume,
         MediaVolumeMuted,
+        LineEditClearButton,
         // do not add any values below/greater than this
         CustomBase = 0xf0000000
     };
