@@ -195,28 +195,46 @@ const QRect QDesktopWidget::screenGeometry(int screenNo) const
 int QDesktopWidget::screenNumber(const QWidget *w) const
 {
     if (!w)
-        return 0;
+        return primaryScreen();
 
-    // Find the root widget, get a QScreen pointer from it and find
-    // the screen number.
-    const QWidget *root = w;
-    const QWidget *tmp = w;
-    while ((tmp = tmp->parentWidget()))
-        root = tmp;
-    QWindow *winHandle = root->windowHandle();
-    if (winHandle) {
-        int screenIdx = QGuiApplication::screens().indexOf(winHandle->screen());
-        if (screenIdx > -1)
-            return screenIdx;
+    const QList<QScreen *> allScreens = QGuiApplication::screens();
+    QList<QScreen *> screens = allScreens;
+    if (screens.isEmpty()) // This should never happen
+        return primaryScreen();
+
+    // If there is more than one virtual desktop
+    if (screens.count() != screens.first()->virtualSiblings().count()) {
+        // Find the root widget, get a QScreen from it and use the
+        // virtual siblings for checking the window position.
+        const QWidget *root = w;
+        const QWidget *tmp = w;
+        while ((tmp = tmp->parentWidget()))
+            root = tmp;
+        const QWindow *winHandle = root->windowHandle();
+        if (winHandle) {
+            const QScreen *winScreen = winHandle->screen();
+            if (winScreen)
+                screens = winScreen->virtualSiblings();
+        }
     }
 
-    // If the screen number cannot be obtained using QScreen pointer,
-    // get it from window position using screen geometry.
+    // Get the screen number from window position using screen geometry
+    // and proper screens.
     QRect frame = w->frameGeometry();
     if (!w->isWindow())
         frame.moveTopLeft(w->mapToGlobal(QPoint(0, 0)));
-    const QPoint midpoint = (frame.topLeft() + frame.bottomRight()) / 2;
-    return screenNumber(midpoint);
+
+    QScreen *widgetScreen = Q_NULLPTR;
+    int largestArea = 0;
+    foreach (QScreen *screen, screens) {
+        QRect intersected = screen->geometry().intersected(frame);
+        int area = intersected.width() * intersected.height();
+        if (largestArea < area) {
+            widgetScreen = screen;
+            largestArea = area;
+        }
+    }
+    return allScreens.indexOf(widgetScreen);
 }
 
 int QDesktopWidget::screenNumber(const QPoint &p) const
