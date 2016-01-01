@@ -609,18 +609,16 @@ void QWindow::setParent(QWindow *parent)
     }
 
     QObject::setParent(parent);
-    if (parent)
+
+    QPlatformWindow *parentPlatformWindow = parent ? parent->d_func()->platformWindow : Q_NULLPTR;
+
+    if (parentPlatformWindow)
         d->disconnectFromScreen();
     else
         d->connectToScreen(newScreen);
 
-    if (d->platformWindow) {
-        if (parent && parent->d_func()->platformWindow) {
-            d->platformWindow->setParent(parent->d_func()->platformWindow);
-        } else {
-            d->platformWindow->setParent(0);
-        }
-    }
+    if (d->platformWindow)
+        d->platformWindow->setParent(parentPlatformWindow);
 
     d->parentWindow = parent;
 
