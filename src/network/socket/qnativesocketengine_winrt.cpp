@@ -643,7 +643,7 @@ qint64 QNativeSocketEngine::bytesAvailable() const
     if (d->socketType != QAbstractSocket::TcpSocket)
         return -1;
 
-    return d->readBytes.size() - d->readBytes.pos();
+    return d->bytesAvailable;
 }
 
 qint64 QNativeSocketEngine::read(char *data, qint64 maxlen)
@@ -661,7 +661,9 @@ qint64 QNativeSocketEngine::read(char *data, qint64 maxlen)
     }
 
     QMutexLocker mutexLocker(&d->readMutex);
-    return d->readBytes.read(data, maxlen);
+    qint64 b = d->readBytes.read(data, maxlen);
+    d->bytesAvailable = d->readBytes.size() - d->readBytes.pos();
+    return b;
 }
 
 qint64 QNativeSocketEngine::write(const char *data, qint64 len)
@@ -1456,6 +1458,7 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
     Q_ASSERT(readBytes.atEnd());
     readBytes.write(reinterpret_cast<const char*>(data), qint64(bufferLength));
     readBytes.seek(readPos);
+    bytesAvailable = readBytes.size() - readBytes.pos();
     readMutex.unlock();
 
     if (notifyOnRead)

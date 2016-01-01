@@ -55,6 +55,7 @@
 #include <QtCore/QEventLoop>
 #include <QtCore/QBuffer>
 #include <QtCore/QMutex>
+#include <QtCore/QAtomicInteger>
 #include "QtNetwork/qhostaddress.h"
 #include "private/qabstractsocketengine_p.h"
 #include <wrl.h>
@@ -217,6 +218,7 @@ private:
     QBuffer readBytes;
     QMutex readMutex;
     bool emitOnNewDatagram;
+    QAtomicInteger<int> bytesAvailable;
 
     QList<WinRtDatagram> pendingDatagrams;
     QList<ABI::Windows::Networking::Sockets::IStreamSocket *> pendingConnections;
