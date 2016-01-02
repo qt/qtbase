@@ -199,7 +199,10 @@ android: CONFIG += qt_android_deps no_linker_version_script
         verscript_content = "Qt_$${QT_MAJOR_VERSION}_PRIVATE_API { *; };"
     } else {
         verscript_content = "Qt_$${QT_MAJOR_VERSION}_PRIVATE_API {" \
-                            "    qt_private_api_tag*;" "@CLASSLIST@" "};"
+                            "    qt_private_api_tag*;"
+        for(header, SYNCQT.PRIVATE_HEADER_FILES): \
+            verscript_content += "    @FILE:$${_PRO_FILE_PWD_}/$$header@"
+        verscript_content += "};"
 
         current = Qt_$$QT_MAJOR_VERSION
         verscript_content += "$$current { *; };"
@@ -213,13 +216,12 @@ android: CONFIG += qt_android_deps no_linker_version_script
             else:                          verscript_content += "$$current {} $$previous;"
         }
 
-        # Add a post-processing step to replace the @CLASSLIST@
-        verscriptprocess.commands = perl $${PWD}/data/unix/findclasslist.pl < $${verscript}.in $${verscript}.in.args > $@
+        # Add a post-processing step to replace the @FILE:filename@
+        verscriptprocess.commands = perl $${PWD}/data/unix/findclasslist.pl < $${verscript}.in > $@
         verscriptprocess.target = $$verscript
         for(header, SYNCQT.PRIVATE_HEADER_FILES): \
             verscriptprocess.depends += $${_PRO_FILE_PWD_}/$$header
-        write_file($${verscript}.in.args, verscriptprocess.depends)|error("Aborting.")
-        verscriptprocess.depends += $${verscript}.in $${verscript}.in.args
+        verscriptprocess.depends += $${verscript}.in
         QMAKE_EXTRA_TARGETS += verscriptprocess
         PRE_TARGETDEPS += $$verscript
         verscript = $${verscript}.in
