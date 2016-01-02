@@ -1487,9 +1487,12 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     if (extra && !extra->mask.isEmpty())
         setMask_sys(extra->mask);
 
-    // If widget is already shown, set window visible, too
-    if (q->isVisible())
+    if (data.crect.width() == 0 || data.crect.height() == 0) {
+        q->setAttribute(Qt::WA_OutsideWSRange, true);
+    } else if (q->isVisible()) {
+        // If widget is already shown, set window visible, too
         win->setVisible(true);
+    }
 }
 
 #ifdef Q_OS_WIN
@@ -7210,7 +7213,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     if (q->isWindow() || q->windowHandle()) {
         if (!(data.window_state & Qt::WindowFullScreen) && (w == 0 || h == 0)) {
             q->setAttribute(Qt::WA_OutsideWSRange, true);
-            if (q->isVisible() && q->testAttribute(Qt::WA_Mapped))
+            if (q->isVisible())
                 hide_sys();
             data.crect = QRect(x, y, w, h);
         } else if (q->isVisible() && q->testAttribute(Qt::WA_OutsideWSRange)) {
@@ -7927,8 +7930,10 @@ void QWidgetPrivate::show_sys()
     else
         QApplication::postEvent(q, new QUpdateLaterEvent(q->rect()));
 
-    if (!q->isWindow() && !q->testAttribute(Qt::WA_NativeWindow))
+    if ((!q->isWindow() && !q->testAttribute(Qt::WA_NativeWindow))
+            || q->testAttribute(Qt::WA_OutsideWSRange)) {
         return;
+    }
 
     if (window) {
         if (q->isWindow())
