@@ -1311,8 +1311,8 @@ void QComboBoxPrivate::_q_emitCurrentIndexChanged(const QModelIndex &index)
     if (!lineEdit)
         emit q->currentTextChanged(text);
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessibleValueChangeEvent event(q, text);
-        QAccessible::updateAccessibility(&event);
+    QAccessibleValueChangeEvent event(q, text);
+    QAccessible::updateAccessibility(&event);
 #endif
 }
 
@@ -2830,8 +2830,8 @@ void QComboBox::clear()
     Q_D(QComboBox);
     d->model->removeRows(0, d->model->rowCount(d->root), d->root);
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessibleValueChangeEvent event(this, QString());
-        QAccessible::updateAccessibility(&event);
+    QAccessibleValueChangeEvent event(this, QString());
+    QAccessible::updateAccessibility(&event);
 #endif
 }
 
@@ -2844,8 +2844,8 @@ void QComboBox::clearEditText()
     if (d->lineEdit)
         d->lineEdit->clear();
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessibleValueChangeEvent event(this, QString());
-        QAccessible::updateAccessibility(&event);
+    QAccessibleValueChangeEvent event(this, QString());
+    QAccessible::updateAccessibility(&event);
 #endif
 }
 
@@ -2858,8 +2858,8 @@ void QComboBox::setEditText(const QString &text)
     if (d->lineEdit)
         d->lineEdit->setText(text);
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessibleValueChangeEvent event(this, text);
-        QAccessible::updateAccessibility(&event);
+    QAccessibleValueChangeEvent event(this, text);
+    QAccessible::updateAccessibility(&event);
 #endif
 }
 
@@ -3004,8 +3004,8 @@ bool QComboBox::event(QEvent *event)
     case QEvent::HoverEnter:
     case QEvent::HoverLeave:
     case QEvent::HoverMove:
-    if (const QHoverEvent *he = static_cast<const QHoverEvent *>(event))
-        d->updateHoverControl(he->pos());
+        if (const QHoverEvent *he = static_cast<const QHoverEvent *>(event))
+            d->updateHoverControl(he->pos());
         break;
     case QEvent::ShortcutOverride:
         if (d->lineEdit)

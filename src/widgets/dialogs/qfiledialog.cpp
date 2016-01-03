@@ -3400,27 +3400,27 @@ void QFileDialogPrivate::_q_deleteCurrent()
         if (!index.isValid())
             continue;
 
-    QString fileName = index.data(QFileSystemModel::FileNameRole).toString();
-    QString filePath = index.data(QFileSystemModel::FilePathRole).toString();
-    bool isDir = model->isDir(index);
+        QString fileName = index.data(QFileSystemModel::FileNameRole).toString();
+        QString filePath = index.data(QFileSystemModel::FilePathRole).toString();
+        bool isDir = model->isDir(index);
 
-    QFile::Permissions p(index.parent().data(QFileSystemModel::FilePermissions).toInt());
+        QFile::Permissions p(index.parent().data(QFileSystemModel::FilePermissions).toInt());
 #ifndef QT_NO_MESSAGEBOX
-    Q_Q(QFileDialog);
-    if (!(p & QFile::WriteUser) && (QMessageBox::warning(q_func(), QFileDialog::tr("Delete"),
-                                QFileDialog::tr("'%1' is write protected.\nDo you want to delete it anyway?")
-                                .arg(fileName),
-                                 QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::No))
-        return;
-    else if (QMessageBox::warning(q_func(), QFileDialog::tr("Delete"),
-                                  QFileDialog::tr("Are you sure you want to delete '%1'?")
-                                  .arg(fileName),
-                                  QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::No)
-        return;
+        Q_Q(QFileDialog);
+        if (!(p & QFile::WriteUser) && (QMessageBox::warning(q_func(), QFileDialog::tr("Delete"),
+                                    QFileDialog::tr("'%1' is write protected.\nDo you want to delete it anyway?")
+                                    .arg(fileName),
+                                     QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::No))
+            return;
+        else if (QMessageBox::warning(q_func(), QFileDialog::tr("Delete"),
+                                      QFileDialog::tr("Are you sure you want to delete '%1'?")
+                                      .arg(fileName),
+                                      QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::No)
+            return;
 
 #else
-    if (!(p & QFile::WriteUser))
-        return;
+        if (!(p & QFile::WriteUser))
+            return;
 #endif // QT_NO_MESSAGEBOX
 
         // the event loop has run, we can NOT reuse index because the model might have removed it.
