@@ -28,7 +28,7 @@
 
     For non-x86 platforms we stick to the __GNUC__ compilers only.
 */
-#if !defined(PCRE_DISABLE_JIT) && (\
+#if !defined(PCRE2_DISABLE_JIT) && (\
     /* ARM */ \
     (defined(__GNUC__) \
         && (defined(__arm__) || defined(__TARGET_ARCH_ARM) || defined(_M_ARM) || defined(__aarch64__))) \

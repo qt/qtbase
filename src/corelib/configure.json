@@ -11,7 +11,7 @@
             "icu": "boolean",
             "inotify": "boolean",
             "journald": "boolean",
-            "pcre": { "type": "enum", "values": [ "qt", "system" ] },
+            "pcre2": { "type": "enum", "values": [ "qt", "system" ] },
             "posix-ipc": { "type": "boolean", "name": "ipc_posix" },
             "pps": { "type": "boolean", "name": "qqnx_pps" },
             "slog2": "boolean",
@@ -81,11 +81,11 @@
                 "-ldl"
             ]
         },
-        "pcre": {
-            "label": "PCRE",
-            "test": "unix/pcre",
+        "pcre2": {
+            "label": "PCRE2",
+            "test": "unix/pcre2",
             "sources": [
-                "-lpcre16"
+                "-lpcre2-16"
             ]
         },
         "pps": {
@@ -307,14 +307,14 @@
             "section": "Utilities",
             "output": [ "publicFeature", "feature" ]
         },
-        "system-pcre": {
-            "label": "Using system PCRE",
-            "disable": "input.pcre == 'qt'",
-            "enable": "input.pcre == 'system'",
-            "condition": "libs.pcre",
+        "system-pcre2": {
+            "label": "Using system PCRE2",
+            "disable": "input.pcre2 == 'qt'",
+            "enable": "input.pcre2 == 'system'",
+            "condition": "libs.pcre2",
             "output": [
                 "privateFeature",
-                { "type": "privateConfig", "negative": true, "name": "pcre" }
+                { "type": "privateConfig", "negative": true, "name": "pcre2" }
             ]
         },
         "poll_ppoll": {
@@ -631,7 +631,7 @@ Please apply the patch corresponding to your Standard Library vendor, found in
                     "args": "qqnx_pps",
                     "condition": "config.qnx"
                 },
-                "system-pcre"
+                "system-pcre2"
             ]
         }
     ]

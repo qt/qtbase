@@ -174,7 +174,7 @@ qtConfig(timezone) {
 }
 
 qtConfig(regularexpression) {
-    QMAKE_USE_PRIVATE += pcre
+    QMAKE_USE_PRIVATE += pcre2
 
     HEADERS += tools/qregularexpression.h
     SOURCES += tools/qregularexpression.cpp

@@ -78,8 +78,8 @@ src_testlib.subdir = $$PWD/testlib
 src_testlib.target = sub-testlib
 src_testlib.depends = src_corelib   # testlib links only to corelib, but see below for the headers
 
-src_3rdparty_pcre.subdir = $$PWD/3rdparty/pcre
-src_3rdparty_pcre.target = sub-3rdparty-pcre
+src_3rdparty_pcre2.subdir = $$PWD/3rdparty/pcre2
+src_3rdparty_pcre2.target = sub-3rdparty-pcre2
 
 src_3rdparty_harfbuzzng.subdir = $$PWD/3rdparty/harfbuzz-ng
 src_3rdparty_harfbuzzng.target = sub-3rdparty-harfbuzzng
@@ -137,9 +137,9 @@ src_android.subdir = $$PWD/android
     }
 }
 SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc
-qtConfig(regularexpression):pcre {
-    SUBDIRS += src_3rdparty_pcre
-    src_corelib.depends += src_3rdparty_pcre
+qtConfig(regularexpression):pcre2 {
+    SUBDIRS += src_3rdparty_pcre2
+    src_corelib.depends += src_3rdparty_pcre2
 }
 SUBDIRS += src_corelib src_tools_qlalr
 TOOLS = src_tools_moc src_tools_rcc src_tools_qlalr
@@ -201,7 +201,7 @@ android: SUBDIRS += src_android
 TR_EXCLUDE = \
     src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_uic src_tools_qlalr \
     src_tools_bootstrap_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml \
-    src_3rdparty_pcre src_3rdparty_harfbuzzng src_3rdparty_freetype
+    src_3rdparty_pcre2 src_3rdparty_harfbuzzng src_3rdparty_freetype
 
 sub-tools.depends = $$TOOLS
 QMAKE_EXTRA_TARGETS = sub-tools

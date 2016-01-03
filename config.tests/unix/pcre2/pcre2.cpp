@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Giuseppe D'Angelo <dangelog@gmail.com>.
+** Copyright (C) 2016 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the config.tests of the Qt Toolkit.
@@ -37,9 +37,9 @@
 **
 ****************************************************************************/
 
-#include <pcre.h>
+#include <pcre2.h>
 
-#if (PCRE_MAJOR < 8) || ((PCRE_MAJOR == 8) && (PCRE_MINOR < 31))
+#if (PCRE2_MAJOR < 10) || ((PCRE2_MAJOR == 10) && (PCRE_MINOR < 20))
 #error This PCRE version is not supported
 #endif
 
