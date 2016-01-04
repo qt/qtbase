@@ -229,6 +229,14 @@ QString QStandardPaths::displayName(StandardLocation type)
     if (QStandardPaths::HomeLocation == type)
         return QCoreApplication::translate("QStandardPaths", "Home");
 
+    if (QStandardPaths::DownloadLocation == type) {
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        NSURL *url = [fileManager URLForDirectory:NSDownloadsDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
+        if (!url)
+            return QString();
+        return QString::fromNSString([fileManager displayNameAtPath: [url absoluteString]]);
+    }
+
     FSRef ref;
     OSErr err = FSFindFolder(kOnAppropriateDisk, translateLocation(type), false, &ref);
     if (err)
