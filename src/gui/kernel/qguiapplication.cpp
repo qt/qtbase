@@ -2090,10 +2090,12 @@ void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfa
 void QGuiApplicationPrivate::processWindowScreenChangedEvent(QWindowSystemInterfacePrivate::WindowScreenChangedEvent *wse)
 {
     if (QWindow *window  = wse->window.data()) {
-        if (QScreen *screen = wse->screen.data())
-            window->d_func()->setTopLevelScreen(screen, false /* recreate */);
-        else // Fall back to default behavior, and try to find some appropriate screen
-            window->setScreen(0);
+        if (window->isTopLevel()) {
+            if (QScreen *screen = wse->screen.data())
+                window->d_func()->setTopLevelScreen(screen, false /* recreate */);
+            else // Fall back to default behavior, and try to find some appropriate screen
+                window->setScreen(0);
+        }
         // we may have changed scaling, so trigger resize event if needed
         if (window->handle()) {
             QWindowSystemInterfacePrivate::GeometryChangeEvent gce(window, QHighDpi::fromNativePixels(window->handle()->geometry(), window), QRect());
