@@ -935,7 +935,7 @@ template <typename T>
 Q_OUTOFLINE_TEMPLATE QList<T> &QList<T>::operator+=(const QList<T> &l)
 {
     if (!l.isEmpty()) {
-        if (isEmpty()) {
+        if (d == &QListData::shared_null) {
             *this = l;
         } else {
             Node *n = (d->ref.isShared())
