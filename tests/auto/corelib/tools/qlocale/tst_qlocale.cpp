@@ -46,6 +46,7 @@
 
 #include <qlocale.h>
 #include <private/qlocale_p.h>
+#include <private/qlocale_tools_p.h>
 #include <qnumeric.h>
 
 #if defined(Q_OS_LINUX) && !defined(__UCLIBC__)
@@ -99,6 +100,8 @@ private slots:
     void stringToDouble();
     void doubleToString_data();
     void doubleToString();
+    void strtod_data();
+    void strtod();
     void long_long_conversion_data();
     void long_long_conversion();
     void long_long_conversion_extra();
@@ -877,6 +880,63 @@ void tst_QLocale::doubleToString()
     char *currentLocale = setlocale(LC_ALL, "de_DE");
     QCOMPARE(locale.toString(num, mode, precision), num_str);
     setlocale(LC_ALL, currentLocale);
+}
+
+void tst_QLocale::strtod_data()
+{
+    QTest::addColumn<QString>("num_str");
+    QTest::addColumn<double>("num");
+    QTest::addColumn<int>("processed");
+    QTest::addColumn<bool>("ok");
+
+    QTest::newRow("3.4")             << QString("3.4")             << 3.4           << 3  << true;
+    QTest::newRow("0.035003945")     << QString("0.035003945")     << 0.035003945   << 11 << true;
+    QTest::newRow("3.5003945e-2")    << QString("3.5003945e-2")    << 0.035003945   << 12 << true;
+    QTest::newRow("0.000003945")     << QString("0.000003945")     << 0.000003945   << 11 << true;
+    QTest::newRow("3.945e-6")        << QString("3.945e-6")        << 0.000003945   << 8  << true;
+    QTest::newRow("12456789012")     << QString("12456789012")     << 12456789012.0 << 11 << true;
+    QTest::newRow("1.2456789012e10") << QString("1.2456789012e10") << 12456789012.0 << 15 << true;
+
+    QTest::newRow("a3.4")             << QString("a3.4")             << 0.0 << 0 << false;
+    QTest::newRow("b0.035003945")     << QString("b0.035003945")     << 0.0 << 0 << false;
+    QTest::newRow("c3.5003945e-2")    << QString("c3.5003945e-2")    << 0.0 << 0 << false;
+    QTest::newRow("d0.000003945")     << QString("d0.000003945")     << 0.0 << 0 << false;
+    QTest::newRow("e3.945e-6")        << QString("e3.945e-6")        << 0.0 << 0 << false;
+    QTest::newRow("f12456789012")     << QString("f12456789012")     << 0.0 << 0 << false;
+    QTest::newRow("g1.2456789012e10") << QString("g1.2456789012e10") << 0.0 << 0 << false;
+
+    QTest::newRow("3.4a")             << QString("3.4a")             << 3.4           << 3  << true;
+    QTest::newRow("0.035003945b")     << QString("0.035003945b")     << 0.035003945   << 11 << true;
+    QTest::newRow("3.5003945e-2c")    << QString("3.5003945e-2c")    << 0.035003945   << 12 << true;
+    QTest::newRow("0.000003945d")     << QString("0.000003945d")     << 0.000003945   << 11 << true;
+    QTest::newRow("3.945e-6e")        << QString("3.945e-6e")        << 0.000003945   << 8  << true;
+    QTest::newRow("12456789012f")     << QString("12456789012f")     << 12456789012.0 << 11 << true;
+    QTest::newRow("1.2456789012e10g") << QString("1.2456789012e10g") << 12456789012.0 << 15 << true;
+
+    QTest::newRow("0x3.4")             << QString("0x3.4")             << 0.0 << 1 << true;
+    QTest::newRow("0x0.035003945")     << QString("0x0.035003945")     << 0.0 << 1 << true;
+    QTest::newRow("0x3.5003945e-2")    << QString("0x3.5003945e-2")    << 0.0 << 1 << true;
+    QTest::newRow("0x0.000003945")     << QString("0x0.000003945")     << 0.0 << 1 << true;
+    QTest::newRow("0x3.945e-6")        << QString("0x3.945e-6")        << 0.0 << 1 << true;
+    QTest::newRow("0x12456789012")     << QString("0x12456789012")     << 0.0 << 1 << true;
+    QTest::newRow("0x1.2456789012e10") << QString("0x1.2456789012e10") << 0.0 << 1 << true;
+}
+
+void tst_QLocale::strtod()
+{
+    QFETCH(QString, num_str);
+    QFETCH(double, num);
+    QFETCH(int, processed);
+    QFETCH(bool, ok);
+
+    QByteArray numData = num_str.toLatin1();
+    const char *end = 0;
+    bool actualOk = false;
+    double result = qstrtod(numData.constData(), &end, &actualOk);
+
+    QCOMPARE(result, num);
+    QCOMPARE(actualOk, ok);
+    QCOMPARE(static_cast<int>(end - numData.constData()), processed);
 }
 
 void tst_QLocale::long_long_conversion_data()

@@ -271,7 +271,8 @@ void doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *
         --length;
 }
 
-double asciiToDouble(const char *num, int numLen, bool &ok, int &processed)
+double asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
+                     TrailingJunkMode trailingJunkMode)
 {
     if (*num == '\0') {
         ok = false;
@@ -308,7 +309,9 @@ double asciiToDouble(const char *num, int numLen, bool &ok, int &processed)
 
     double d = 0.0;
 #if !defined(QT_NO_DOUBLECONVERSION) && !defined(QT_BOOTSTRAPPED)
-    int conv_flags = double_conversion::StringToDoubleConverter::NO_FLAGS;
+    int conv_flags = (trailingJunkMode == TrailingJunkAllowed) ?
+                double_conversion::StringToDoubleConverter::ALLOW_TRAILING_JUNK :
+                double_conversion::StringToDoubleConverter::NO_FLAGS;
     double_conversion::StringToDoubleConverter conv(conv_flags, 0.0, qt_snan(), 0, 0);
     d = conv.StringToDouble(num, numLen, &processed);
 
@@ -327,7 +330,7 @@ double asciiToDouble(const char *num, int numLen, bool &ok, int &processed)
     if (qDoubleSscanf(num, QT_CLOCALE, "%lf%n", &d, &processed) < 1)
         processed = 0;
 
-    if (processed != numLen || qIsNaN(d)) {
+    if ((trailingJunkMode == TrailingJunkProhibited && processed != numLen) || qIsNaN(d)) {
         // Implementation defined nan symbol or garbage found. We don't accept it.
         processed = 0;
         ok = false;
@@ -339,7 +342,7 @@ double asciiToDouble(const char *num, int numLen, bool &ok, int &processed)
         // We assume that any infinity symbol has to contain a character that cannot be part of a
         // "normal" number (that is 0-9, ., -, +, e).
         ok = false;
-        for (int i = 0; i < numLen; ++i) {
+        for (int i = 0; i < processed; ++i) {
             char c = num[i];
             if ((c < '0' || c > '9') && c != '.' && c != '-' && c != '+' && c != 'e') {
                 // Garbage found
@@ -351,11 +354,12 @@ double asciiToDouble(const char *num, int numLen, bool &ok, int &processed)
     }
 #endif // !defined(QT_NO_DOUBLECONVERSION) && !defined(QT_BOOTSTRAPPED)
 
-    Q_ASSERT(processed == numLen); // Otherwise we would have gotten NaN or sorted it out above.
+    // Otherwise we would have gotten NaN or sorted it out above.
+    Q_ASSERT(trailingJunkMode == TrailingJunkAllowed || processed == numLen);
 
     // Check if underflow has occurred.
     if (isZero(d)) {
-        for (int i = 0; i < numLen; ++i) {
+        for (int i = 0; i < processed; ++i) {
             if (num[i] >= '1' && num[i] <= '9') {
                 // if a digit before any 'e' is not 0, then a non-zero number was intended.
                 ok = false;
@@ -529,7 +533,7 @@ double qstrtod(const char *s00, const char **se, bool *ok)
     bool nonNullOk = false;
     int len = static_cast<int>(strlen(s00));
     Q_ASSERT(len >= 0);
-    double d = asciiToDouble(s00, len, nonNullOk, processed);
+    double d = asciiToDouble(s00, len, nonNullOk, processed, TrailingJunkAllowed);
     if (se)
         *se = s00 + processed;
     if (ok)
