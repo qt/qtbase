@@ -48,6 +48,18 @@
 
     \snippet code/doc_src_qpair.cpp 1
 
+    Note, however, that it is almost always preferable to define a small struct
+    to hold the result of a function with multiple return values. A struct
+    trivially generalizes to more than two values, and allows more descriptive
+    member names than \c{first} and \c{second}:
+
+    \snippet code/doc_src_qpair.cpp struct
+
+    The advent of C++11 automatic variable type deduction (\c{auto}) shifts the
+    emphasis from the type name to the name of functions and members. Thus, QPair,
+    like \c{std::pair} and \c{std::tuple}, is mostly useful in generic (template)
+    code, where defining a dedicated type is not possible.
+
     QPair's template data types (T1 and T2) must be \l{assignable
     data types}. You cannot, for example, store a QWidget as a value;
     instead, store a QWidget *. A few functions have additional

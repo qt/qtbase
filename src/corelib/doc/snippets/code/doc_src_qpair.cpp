@@ -48,6 +48,15 @@ pair.first = "pi";
 pair.second = 3.14159265358979323846;
 //! [1]
 
+//! [struct]
+struct Variable {
+    QString name;
+    double value;
+};
+Variable v;
+v.name = "pi";
+v.value = 3.14159265358979323846;
+//! [struct]
 
 //! [2]
 QList<QPair<int, double> > list;
