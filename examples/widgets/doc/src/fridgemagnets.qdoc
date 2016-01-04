@@ -28,6 +28,8 @@
 /*!
     \example draganddrop/fridgemagnets
     \title Fridge Magnets Example
+    \brief The Fridge Magnets example illustrates how to move around several types of
+    MIME-encoded data with drag and drop.
 
     The Fridge Magnets example shows how to supply more than one type
     of MIME-encoded data with a drag and drop operation.
