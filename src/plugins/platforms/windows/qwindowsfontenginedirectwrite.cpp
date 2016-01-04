@@ -50,6 +50,7 @@
 #include <QtCore/QtEndian>
 #include <QtCore/QVarLengthArray>
 #include <private/qstringiterator_p.h>
+#include <QtCore/private/qsystemlibrary_p.h>
 
 #include <dwrite.h>
 #include <d2d1.h>
@@ -645,6 +646,16 @@ QFontEngine *QWindowsFontEngineDirectWrite::cloneWithSize(qreal pixelSize) const
     return fontEngine;
 }
 
+// Dynamically resolve GetUserDefaultLocaleName, which is available from Windows
+// Vista onwards. ### fixme 5.7: Consider reverting to direct linking.
+typedef int (WINAPI *GetUserDefaultLocaleNamePtr)(LPWSTR, int);
+
+static inline GetUserDefaultLocaleNamePtr resolveGetUserDefaultLocaleName()
+{
+    QSystemLibrary library(QStringLiteral("kernel32"));
+    return (GetUserDefaultLocaleNamePtr)library.resolve("GetUserDefaultLocaleName");
+}
+
 void QWindowsFontEngineDirectWrite::initFontInfo(const QFontDef &request,
                                                  int dpi, IDWriteFont *font)
 {
@@ -663,7 +674,9 @@ void QWindowsFontEngineDirectWrite::initFontInfo(const QFontDef &request,
         BOOL exists = false;
 
         wchar_t localeName[LOCALE_NAME_MAX_LENGTH];
-        int defaultLocaleSuccess = GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH);
+        static const GetUserDefaultLocaleNamePtr getUserDefaultLocaleName = resolveGetUserDefaultLocaleName();
+        const int defaultLocaleSuccess = getUserDefaultLocaleName
+            ? getUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) : 0;
         if (defaultLocaleSuccess)
             hr = familyNames->FindLocaleName(localeName, &index, &exists);
 
