@@ -1512,20 +1512,18 @@ void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractSta
 
 #ifndef QT_NO_ANIMATION
 
-QPair<QList<QAbstractAnimation*>, QList<QAbstractAnimation*> >
+QStateMachinePrivate::InitializeAnimationResult
 QStateMachinePrivate::initializeAnimation(QAbstractAnimation *abstractAnimation,
                                           const QPropertyAssignment &prop)
 {
-    QList<QAbstractAnimation*> handledAnimations;
-    QList<QAbstractAnimation*> localResetEndValues;
+    InitializeAnimationResult result;
     QAnimationGroup *group = qobject_cast<QAnimationGroup*>(abstractAnimation);
     if (group) {
         for (int i = 0; i < group->animationCount(); ++i) {
             QAbstractAnimation *animationChild = group->animationAt(i);
-            QPair<QList<QAbstractAnimation*>, QList<QAbstractAnimation*> > ret;
-            ret = initializeAnimation(animationChild, prop);
-            handledAnimations << ret.first;
-            localResetEndValues << ret.second;
+            const auto ret = initializeAnimation(animationChild, prop);
+            result.handledAnimations << ret.handledAnimations;
+            result.localResetEndValues << ret.localResetEndValues;
         }
     } else {
         QPropertyAnimation *animation = qobject_cast<QPropertyAnimation *>(abstractAnimation);
@@ -1536,12 +1534,12 @@ QStateMachinePrivate::initializeAnimation(QAbstractAnimation *abstractAnimation,
             // Only change end value if it is undefined
             if (!animation->endValue().isValid()) {
                 animation->setEndValue(prop.value);
-                localResetEndValues.append(animation);
+                result.localResetEndValues.append(animation);
             }
-            handledAnimations.append(animation);
+            result.handledAnimations.append(animation);
         }
     }
-    return qMakePair(handledAnimations, localResetEndValues);
+    return result;
 }
 
 void QStateMachinePrivate::_q_animationFinished()
@@ -1652,13 +1650,11 @@ void QStateMachinePrivate::initializeAnimations(QAbstractState *state, const QLi
         QAbstractAnimation *anim = selectedAnimations.at(i);
         QVector<QPropertyAssignment>::iterator it;
         for (it = assignments.begin(); it != assignments.end(); ) {
-            QPair<QList<QAbstractAnimation*>, QList<QAbstractAnimation*> > ret;
             const QPropertyAssignment &assn = *it;
-            ret = initializeAnimation(anim, assn);
-            QList<QAbstractAnimation*> handlers = ret.first;
-            if (!handlers.isEmpty()) {
-                for (int j = 0; j < handlers.size(); ++j) {
-                    QAbstractAnimation *a = handlers.at(j);
+            const auto ret = initializeAnimation(anim, assn);
+            if (!ret.handledAnimations.isEmpty()) {
+                for (int j = 0; j < ret.handledAnimations.size(); ++j) {
+                    QAbstractAnimation *a = ret.handledAnimations.at(j);
                     propertyForAnimation.insert(a, assn);
                     stateForAnimation.insert(a, state);
                     animationsForState[state].append(a);
@@ -1675,8 +1671,8 @@ void QStateMachinePrivate::initializeAnimations(QAbstractState *state, const QLi
             } else {
                 ++it;
             }
-            for (int j = 0; j < ret.second.size(); ++j)
-                resetAnimationEndValues.insert(ret.second.at(j));
+            for (int j = 0; j < ret.localResetEndValues.size(); ++j)
+                resetAnimationEndValues.insert(ret.localResetEndValues.at(j));
         }
         // We require that at least one animation is valid.
         // ### generalize

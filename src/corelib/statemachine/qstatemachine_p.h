@@ -259,7 +259,18 @@ public:
 #ifndef QT_NO_ANIMATION
     bool animated;
 
-    QPair<QList<QAbstractAnimation*>, QList<QAbstractAnimation*> >
+    struct InitializeAnimationResult {
+        QList<QAbstractAnimation*> handledAnimations;
+        QList<QAbstractAnimation*> localResetEndValues;
+
+        void swap(InitializeAnimationResult &other) Q_DECL_NOTHROW
+        {
+            qSwap(handledAnimations,   other.handledAnimations);
+            qSwap(localResetEndValues, other.localResetEndValues);
+        }
+    };
+
+    InitializeAnimationResult
         initializeAnimation(QAbstractAnimation *abstractAnimation,
                             const QPropertyAssignment &prop);
 
@@ -307,6 +318,7 @@ public:
 
     static const Handler *handler;
 };
+Q_DECLARE_SHARED(QStateMachinePrivate::InitializeAnimationResult)
 
 Q_CORE_EXPORT const QStateMachinePrivate::Handler *qcoreStateMachineHandler();
 
