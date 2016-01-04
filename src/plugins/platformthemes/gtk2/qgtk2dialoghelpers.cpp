@@ -71,6 +71,9 @@ Q_SIGNALS:
 protected:
     static void onResponse(QGtk2Dialog *dialog, int response);
 
+private slots:
+    void onParentWindowDestroyed();
+
 private:
     GtkWidget *gtkWidget;
 };
@@ -108,6 +111,8 @@ void QGtk2Dialog::exec()
 
 bool QGtk2Dialog::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent)
 {
+    connect(parent, &QWindow::destroyed, this, &QGtk2Dialog::onParentWindowDestroyed,
+            Qt::UniqueConnection);
     setParent(parent);
     setFlags(flags);
     setModality(modality);
@@ -142,6 +147,12 @@ void QGtk2Dialog::onResponse(QGtk2Dialog *dialog, int response)
         emit dialog->accept();
     else
         emit dialog->reject();
+}
+
+void QGtk2Dialog::onParentWindowDestroyed()
+{
+    // The QGtk2*DialogHelper classes own this object. Make sure the parent doesn't delete it.
+    setParent(0);
 }
 
 QGtk2ColorDialogHelper::QGtk2ColorDialogHelper()
