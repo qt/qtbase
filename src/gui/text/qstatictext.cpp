@@ -700,25 +700,4 @@ void QStaticTextPrivate::init()
     needsRelayout = false;
 }
 
-QStaticTextItem::~QStaticTextItem()
-{
-    if (m_userData != 0 && !m_userData->ref.deref())
-        delete m_userData;
-    setFontEngine(0);
-}
-
-void QStaticTextItem::setFontEngine(QFontEngine *fe)
-{
-    if (m_fontEngine == fe)
-        return;
-
-    if (m_fontEngine != 0 && !m_fontEngine->ref.deref())
-        delete m_fontEngine;
-
-    m_fontEngine = fe;
-
-    if (m_fontEngine != 0)
-        m_fontEngine->ref.ref();
-}
-
 QT_END_NAMESPACE

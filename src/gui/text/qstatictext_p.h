@@ -75,46 +75,18 @@ public:
                         userDataNeedsUpdate(0), usesRawFont(0),
                         m_fontEngine(0), m_userData(0) {}
 
-    QStaticTextItem(const QStaticTextItem &other)
-    {
-        operator=(other);
-    }
-
-    void operator=(const QStaticTextItem &other)
-    {
-        glyphPositions = other.glyphPositions;
-        glyphs = other.glyphs;
-        numGlyphs = other.numGlyphs;
-        font = other.font;
-        color = other.color;
-        useBackendOptimizations = other.useBackendOptimizations;
-        userDataNeedsUpdate = other.userDataNeedsUpdate;
-        usesRawFont = other.usesRawFont;
-
-        m_fontEngine = 0;
-        m_userData = 0;
-        setUserData(other.userData());
-        setFontEngine(other.fontEngine());
-    }
-
-    ~QStaticTextItem();
-
     void setUserData(QStaticTextUserData *newUserData)
     {
-        if (m_userData == newUserData)
-            return;
-
-        if (m_userData != 0 && !m_userData->ref.deref())
-            delete m_userData;
-
         m_userData = newUserData;
-        if (m_userData != 0)
-            m_userData->ref.ref();
     }
-    QStaticTextUserData *userData() const { return m_userData; }
+    QStaticTextUserData *userData() const { return m_userData.data(); }
 
-    void setFontEngine(QFontEngine *fe);
-    QFontEngine *fontEngine() const { return m_fontEngine; }
+    void setFontEngine(QFontEngine *fe)
+    {
+        m_fontEngine = fe;
+    }
+
+    QFontEngine *fontEngine() const { return m_fontEngine.data(); }
 
     union {
         QFixedPoint *glyphPositions;             // 8 bytes per glyph
@@ -135,11 +107,11 @@ public:
     char userDataNeedsUpdate : 1;                //
     char usesRawFont : 1;                        //
 
-private: // Needs special handling in setters, so private to avoid abuse
-    QFontEngine *m_fontEngine;                     // 4 bytes per item
-    QStaticTextUserData *m_userData;               // 8 bytes per item
-                                                 // ================
-                                                 // 43 bytes per item
+private: // private to avoid abuse
+    QExplicitlySharedDataPointer<QFontEngine> m_fontEngine;       // 4 bytes per item
+    QExplicitlySharedDataPointer<QStaticTextUserData> m_userData; // 8 bytes per item
+                                                                  // ================
+                                                                  // 43 bytes per item
 };
 
 class QStaticText;
