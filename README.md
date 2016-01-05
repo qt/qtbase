@@ -4,7 +4,7 @@ Getting started instructions:
 
 0) Install the NaCL SDK, set NACL_SDK_ROOT:
 
-    export NACL_SDK_ROOT=/path/to/nacl_sdk/pepper_42
+    export NACL_SDK_ROOT=/path/to/nacl_sdk/pepper_44
 
 Qt should build using any recent NaCl toolchain.
 
@@ -16,7 +16,7 @@ Make sure all Qt modules are at the correct branch when building Qt: select one 
 the 'nacl' branches for qtbase and then check out the corresponding branch for other
 modules.
 
-The 5.4 build is a stable build and is recommended when staring out. You may
+The 5.4 or 5.6 builds are a stable builds and are recommended when staring out. You may
 also want to use the exact SDK version listed below.
 
 The "dev" build has a few more moving parts, where the 'dev' branch for other modules
@@ -28,7 +28,12 @@ below) as a starting point.
             branch : nacl-5.4 (github)
         qtdeclarative:
             patch: https://codereview.qt-project.org/#/c/114670/
-    dev: pepper_42
+    5.6: pepper_44
+        qtbase
+            branch : nacl-5.6 (github)
+        qtdeclarative:
+            patch: https://codereview.qt-project.org/#/c/114670/
+    dev: pepper_44
         qtbase
             branch: nacl-dev (github), wip/nacl (codereview)
         qtdeclarative:
@@ -84,7 +89,7 @@ without errors. Other modules may or may not work.
 
 2) Building applications with Qt for NaCl:
 
-A sample known-good application can be found at: qtdeclarative/examples/nacl
+Sample applications and test cases are available at: github.com/msorvig/qt-nacl-manualtests
 
 2.1) Porting
 
