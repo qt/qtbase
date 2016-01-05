@@ -650,9 +650,10 @@ QItemViewPaintPairs QListViewPrivate::draggablePaintPairs(const QModelIndexList 
     QRect &rect = *r;
     const QRect viewportRect = viewport->rect();
     QItemViewPaintPairs ret;
-    const QSet<QModelIndex> visibleIndexes = intersectingSet(viewportRect.translated(q->horizontalOffset(), q->verticalOffset())).toList().toSet();
+    QVector<QModelIndex> visibleIndexes = intersectingSet(viewportRect.translated(q->horizontalOffset(), q->verticalOffset()));
+    std::sort(visibleIndexes.begin(), visibleIndexes.end());
     for (const auto &index : indexes) {
-        if (visibleIndexes.contains(index)) {
+        if (std::binary_search(visibleIndexes.cbegin(), visibleIndexes.cend(), index)) {
             const QRect current = q->visualRect(index);
             QItemViewPaintPair p = { current, index };
             ret += p;
