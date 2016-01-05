@@ -51,23 +51,22 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
 
 QPlatformTheme *QPlatformThemeFactory::create(const QString& key, const QString &platformPluginPath)
 {
+#ifndef QT_NO_LIBRARY
     QStringList paramList = key.split(QLatin1Char(':'));
     const QString platform = paramList.takeFirst().toLower();
 
-#ifndef QT_NO_LIBRARY
     // Try loading the plugin from platformPluginPath first:
     if (!platformPluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(platformPluginPath);
-        if (QPlatformTheme *ret = qLoadPlugin1<QPlatformTheme, QPlatformThemePlugin>(directLoader(), platform, paramList))
+        if (QPlatformTheme *ret = qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(directLoader(), platform, paramList))
             return ret;
     }
-    if (QPlatformTheme *ret = qLoadPlugin1<QPlatformTheme, QPlatformThemePlugin>(loader(), platform, paramList))
-           return ret;
+    return qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(loader(), platform, paramList);
 #else
     Q_UNUSED(key);
     Q_UNUSED(platformPluginPath);
-#endif
     return 0;
+#endif
 }
 
 /*!

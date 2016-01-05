@@ -71,7 +71,7 @@ QObject *QGenericPluginFactory::create(const QString& key, const QString &specif
 {
 #if (!defined(Q_OS_WIN32) || defined(QT_SHARED)) && !defined(QT_NO_LIBRARY)
     const QString driver = key.toLower();
-    if (QObject *object = qLoadPlugin1<QObject, QGenericPlugin>(loader(), driver, specification))
+    if (QObject *object = qLoadPlugin<QObject, QGenericPlugin>(loader(), driver, specification))
         return object;
 #else // (!Q_OS_WIN32 || QT_SHARED) && !QT_NO_LIBRARY
     Q_UNUSED(key)
