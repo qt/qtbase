@@ -2309,18 +2309,25 @@ QString WriteInitialization::trCall(const QString &str, const QString &commentHi
     const QString comment = commentHint.isEmpty() ? QString(QLatin1Char('0')) : fixString(commentHint, m_dindent);
 
     if (m_option.translateFunction.isEmpty()) {
-        result = QLatin1String("QApplication::translate(\"");
-        result += m_generatedClass;
-        result += QLatin1Char('"');
-        result += QLatin1String(", ");
+        if (m_option.idBased) {
+            result = QLatin1String("qtTrId(");
+        } else {
+            result = QLatin1String("QApplication::translate(\"");
+            result += m_generatedClass;
+            result += QLatin1Char('"');
+            result += QLatin1String(", ");
+        }
     } else {
         result = m_option.translateFunction;
         result += QLatin1Char('(');
     }
 
     result += fixString(str, m_dindent);
-    result += QLatin1String(", ");
-    result += comment;
+
+    if (!m_option.idBased) {
+        result += QLatin1String(", ");
+        result += comment;
+    }
 
     result += QLatin1Char(')');
     return result;

@@ -95,6 +95,10 @@ int runUic(int argc, char *argv[])
     generatorOption.setValueName(QStringLiteral("java|cpp"));
     parser.addOption(generatorOption);
 
+    QCommandLineOption idBasedOption(QStringLiteral("idbased"));
+    idBasedOption.setDescription(QStringLiteral("Use id based function for i18n"));
+    parser.addOption(idBasedOption);
+
     parser.addPositionalArgument(QStringLiteral("[uifile]"), QStringLiteral("Input file (*.ui), otherwise stdin."));
 
     parser.process(app);
@@ -103,6 +107,7 @@ int runUic(int argc, char *argv[])
     driver.option().outputFile = parser.value(outputOption);
     driver.option().headerProtection = !parser.isSet(noProtOption);
     driver.option().implicitIncludes = !parser.isSet(noImplicitIncludesOption);
+    driver.option().idBased = parser.isSet(idBasedOption);
     driver.option().postfix = parser.value(postfixOption);
     driver.option().translateFunction = parser.value(translateOption);
     driver.option().includeFile = parser.value(includeOption);

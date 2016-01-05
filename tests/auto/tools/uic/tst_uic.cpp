@@ -142,10 +142,11 @@ void tst_uic::run()
 {
     QFETCH(QString, originalFile);
     QFETCH(QString, generatedFile);
+    QFETCH(QStringList, options);
 
     QProcess process;
     process.start(m_command, QStringList(originalFile)
-        << QString(QLatin1String("-o")) << generatedFile);
+        << QString(QLatin1String("-o")) << generatedFile << options);
     QVERIFY2(process.waitForStarted(), msgProcessStartFailed(m_command, process.errorString()));
     QVERIFY(process.waitForFinished());
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
@@ -157,6 +158,7 @@ void tst_uic::run_data() const
 {
     QTest::addColumn<QString>("originalFile");
     QTest::addColumn<QString>("generatedFile");
+    QTest::addColumn<QStringList>("options");
 
     QDir generated(m_generated.path());
     QDir baseline(m_baseline);
@@ -165,9 +167,15 @@ void tst_uic::run_data() const
         const QString generatedFile = generated.absolutePath()
             + QLatin1Char('/') + baselineFile.fileName()
             + QLatin1String(".h");
+
+        QStringList options;
+        if (baselineFile.fileName() == QLatin1String("qttrid.ui"))
+            options << QStringList(QLatin1String("-idbased"));
+
         QTest::newRow(qPrintable(baselineFile.baseName()))
             << baselineFile.absoluteFilePath()
-            << generatedFile;
+            << generatedFile
+            << options;
     }
 }
 
