@@ -964,18 +964,38 @@ qreal QGuiApplication::devicePixelRatio() const
 */
 QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
 {
-    QList<QScreen *> screens = QGuiApplication::screens();
-    QList<QScreen *>::const_iterator screen = screens.constBegin();
-    QList<QScreen *>::const_iterator end = screens.constEnd();
+    const QList<QScreen *> screens = QGuiApplication::screens();
+    if (!screens.isEmpty()) {
+        const QList<QScreen *> primaryScreens = screens.first()->virtualSiblings();
+        QScreen *windowScreen = Q_NULLPTR;
 
-    while (screen != end) {
-        if ((*screen)->geometry().contains(pos)) {
-            const QPoint devicePosition = QHighDpi::toNativePixels(pos, *screen);
-            return (*screen)->handle()->topLevelAt(devicePosition);
+        // Find the window on the primary virtual desktop first
+        foreach (QScreen *screen, primaryScreens) {
+            if (screen->geometry().contains(pos)) {
+                windowScreen = screen;
+                break;
+            }
         }
-        ++screen;
+
+        // If the window is not found on primary virtual desktop, find it on all screens
+        // except the first which was for sure in the previous loop. Some other screens
+        // may repeat. Find only when there is more than one virtual desktop.
+        if (!windowScreen && screens.count() != primaryScreens.count()) {
+            for (int i = 1; i < screens.size(); ++i) {
+                QScreen *screen = screens[i];
+                if (screen->geometry().contains(pos)) {
+                    windowScreen = screen;
+                    break;
+                }
+            }
+        }
+
+        if (windowScreen) {
+            const QPoint devicePosition = QHighDpi::toNativePixels(pos, windowScreen);
+            return windowScreen->handle()->topLevelAt(devicePosition);
+        }
     }
-    return 0;
+    return Q_NULLPTR;
 }
 
 /*!
