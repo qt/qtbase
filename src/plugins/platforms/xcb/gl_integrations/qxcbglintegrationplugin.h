@@ -53,6 +53,9 @@ public:
         { }
 
         virtual QXcbGlIntegration *create() = 0;
+    // the pattern expected by qLoadPlugin calls for a QString argument.
+    // we don't need it, so don't bother subclasses with it:
+    QXcbGlIntegration *create(const QString &) { return create(); }
 };
 QT_END_NAMESPACE
 

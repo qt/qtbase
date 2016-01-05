@@ -46,17 +46,6 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QXcbGlIntegrationFactoryInterface_iid, QLatin1String("/xcbglintegrations"), Qt::CaseInsensitive))
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
                           (QXcbGlIntegrationFactoryInterface_iid, QLatin1String(""), Qt::CaseInsensitive))
-
-static inline QXcbGlIntegration *loadIntegration(QFactoryLoader *loader, const QString &key)
-{
-    const int index = loader->indexOf(key);
-    if (index != -1) {
-        if (QXcbGlIntegrationPlugin *factory = qobject_cast<QXcbGlIntegrationPlugin *>(loader->instance(index)))
-            if (QXcbGlIntegration *result = factory->create())
-                return result;
-    }
-    return Q_NULLPTR;
-}
 #endif // !QT_NO_LIBRARY
 
 QStringList QXcbGlIntegrationFactory::keys(const QString &pluginPath)
@@ -86,13 +75,13 @@ QStringList QXcbGlIntegrationFactory::keys(const QString &pluginPath)
 QXcbGlIntegration *QXcbGlIntegrationFactory::create(const QString &platform, const QString &pluginPath)
 {
 #ifndef QT_NO_LIBRARY
-    // Try loading the plugin from platformPluginPath first:
+    // Try loading the plugin from pluginPath first:
     if (!pluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(pluginPath);
-        if (QXcbGlIntegration *ret = loadIntegration(directLoader(), platform))
+        if (QXcbGlIntegration *ret = qLoadPlugin<QXcbGlIntegration, QXcbGlIntegrationPlugin>(directLoader(), platform))
             return ret;
     }
-    if (QXcbGlIntegration *ret = loadIntegration(loader(), platform))
+    if (QXcbGlIntegration *ret = qLoadPlugin<QXcbGlIntegration, QXcbGlIntegrationPlugin>(loader(), platform))
         return ret;
 #else
     Q_UNUSED(platform);
