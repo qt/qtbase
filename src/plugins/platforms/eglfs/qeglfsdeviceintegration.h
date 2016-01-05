@@ -108,6 +108,10 @@ class Q_EGLFS_EXPORT QEGLDeviceIntegrationPlugin : public QObject
 
 public:
     virtual QEGLDeviceIntegration *create() = 0;
+
+    // the pattern expected by qLoadPlugin calls for a QString argument.
+    // we don't need it, so don't bother subclasses with it:
+    QEGLDeviceIntegration *create(const QString &) { return create(); }
 };
 
 class Q_EGLFS_EXPORT QEGLDeviceIntegrationFactory

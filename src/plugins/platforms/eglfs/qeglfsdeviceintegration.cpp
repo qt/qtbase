@@ -65,19 +65,6 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
                           (QEGLDeviceIntegrationFactoryInterface_iid, QLatin1String(""), Qt::CaseInsensitive))
 
-static inline QEGLDeviceIntegration *loadIntegration(QFactoryLoader *loader, const QString &key)
-{
-    const int index = loader->indexOf(key);
-    if (index != -1) {
-        QObject *plugin = loader->instance(index);
-        if (QEGLDeviceIntegrationPlugin *factory = qobject_cast<QEGLDeviceIntegrationPlugin *>(plugin)) {
-            if (QEGLDeviceIntegration *result = factory->create())
-                return result;
-        }
-    }
-    return Q_NULLPTR;
-}
-
 #endif // QT_NO_LIBRARY
 
 QStringList QEGLDeviceIntegrationFactory::keys(const QString &pluginPath)
@@ -111,10 +98,10 @@ QEGLDeviceIntegration *QEGLDeviceIntegrationFactory::create(const QString &key, 
 #ifndef QT_NO_LIBRARY
     if (!pluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(pluginPath);
-        integration = loadIntegration(directLoader(), key);
+        integration = qLoadPlugin<QEGLDeviceIntegration, QEGLDeviceIntegrationPlugin>(directLoader(), key);
     }
     if (!integration)
-        integration = loadIntegration(loader(), key);
+        integration = qLoadPlugin<QEGLDeviceIntegration, QEGLDeviceIntegrationPlugin>(loader(), key);
     if (integration)
         qCDebug(qLcEglDevDebug) << "Using EGL device integration" << key;
     else
