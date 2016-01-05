@@ -148,7 +148,6 @@ public:
 
     QTimer *connectTimer;
     QTimer *disconnectTimer;
-    int connectTimeElapsed;
 
     int hostLookupId;
 
