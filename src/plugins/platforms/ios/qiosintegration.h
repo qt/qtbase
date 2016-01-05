@@ -46,6 +46,7 @@
 
 #include "qiosapplicationstate.h"
 #include "qiosfileenginefactory.h"
+#include "qiostextinputoverlay.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -108,6 +109,7 @@ private:
     QIOSServices *m_platformServices;
     mutable QPlatformAccessibility *m_accessibility;
     QIOSFileEngineFactory m_fileEngineFactory;
+    QIOSTextInputOverlay m_textInputOverlay;
 
     bool m_debugWindowManagement;
 };
