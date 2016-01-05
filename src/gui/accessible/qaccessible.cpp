@@ -1758,15 +1758,8 @@ QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
         return QAccessible::accessibleInterface(m_uniqueId);
 
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(m_object);
-    if (!iface || !iface->isValid()) {
-        static bool hasWarned = false;
-        if (!iface && !hasWarned) {
-            qWarning() << "Problem creating accessible interface for: " << m_object << endl
-                       << "Make sure to deploy Qt with accessibility plugins.";
-            hasWarned = true;
-        }
+    if (!iface || !iface->isValid())
         return 0;
-    }
 
     if (m_child >= 0) {
         QAccessibleInterface *child = iface->child(m_child);
