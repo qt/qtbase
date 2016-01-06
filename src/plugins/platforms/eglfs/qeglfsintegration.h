@@ -68,6 +68,7 @@ public:
     QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
     QPlatformServices *services() const Q_DECL_OVERRIDE;
     QPlatformInputContext *inputContext() const Q_DECL_OVERRIDE { return m_inputContext; }
+    QPlatformTheme *createPlatformTheme(const QString &name) const Q_DECL_OVERRIDE;
 
     QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;

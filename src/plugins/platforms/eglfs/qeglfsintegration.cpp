@@ -49,6 +49,7 @@
 #include <QtCore/QLoggingCategory>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
+#include <private/qgenericunixthemes_p.h>
 
 #include "qeglfsintegration.h"
 #include "qeglfswindow.h"
@@ -171,6 +172,11 @@ QPlatformServices *QEglFSIntegration::services() const
 QPlatformFontDatabase *QEglFSIntegration::fontDatabase() const
 {
     return m_fontDb.data();
+}
+
+QPlatformTheme *QEglFSIntegration::createPlatformTheme(const QString &name) const
+{
+    return QGenericUnixTheme::createUnixTheme(name);
 }
 
 QPlatformBackingStore *QEglFSIntegration::createPlatformBackingStore(QWindow *window) const
