@@ -178,20 +178,7 @@ void QRasterPlatformPixmap::fill(const QColor &color)
         int alpha = color.alpha();
         if (alpha != 255) {
             if (!image.hasAlphaChannel()) {
-                QImage::Format toFormat;
-#if !(defined(__ARM_NEON__) || defined(__SSE2__))
-                if (image.format() == QImage::Format_RGB16)
-                    toFormat = QImage::Format_ARGB8565_Premultiplied;
-                else if (image.format() == QImage::Format_RGB666)
-                    toFormat = QImage::Format_ARGB6666_Premultiplied;
-                else if (image.format() == QImage::Format_RGB555)
-                    toFormat = QImage::Format_ARGB8555_Premultiplied;
-                else if (image.format() == QImage::Format_RGB444)
-                    toFormat = QImage::Format_ARGB4444_Premultiplied;
-                else
-#endif
-                    toFormat = QImage::Format_ARGB32_Premultiplied;
-
+                QImage::Format toFormat = qt_alphaVersionForPainting(image.format());
                 if (!image.isNull() && qt_depthForFormat(image.format()) == qt_depthForFormat(toFormat)) {
                     image.detach();
                     image.d->format = toFormat;
@@ -314,17 +301,7 @@ void QRasterPlatformPixmap::createPixmapForImage(QImage &sourceImage, Qt::ImageC
                     : QImage::Format_RGB32;
         } else {
             QImage::Format opaqueFormat = QNativeImage::systemFormat();
-            QImage::Format alphaFormat = QImage::Format_ARGB32_Premultiplied;
-
-#if !defined(__ARM_NEON__) && !defined(__SSE2__)
-            switch (opaqueFormat) {
-            case QImage::Format_RGB16:
-                alphaFormat = QImage::Format_ARGB8565_Premultiplied;
-                break;
-            default: // We don't care about the others...
-                break;
-            }
-#endif
+            QImage::Format alphaFormat = qt_alphaVersionForPainting(opaqueFormat);
 
             if (!sourceImage.hasAlphaChannel()) {
                 format = opaqueFormat;
