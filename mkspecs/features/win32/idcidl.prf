@@ -1,4 +1,4 @@
-build_pass:console: {
+build_pass:console {
     warning("QAxServer applications cannot be console applications.")
     warning("Remove 'console' from your CONFIG.")
 }
