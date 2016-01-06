@@ -51,7 +51,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QSqlTableModelPrivate: public QSqlQueryModelPrivate
+class Q_AUTOTEST_EXPORT QSqlTableModelPrivate: public QSqlQueryModelPrivate
 {
     Q_DECLARE_PUBLIC(QSqlTableModel)
 
@@ -62,6 +62,8 @@ public:
           strategy(QSqlTableModel::OnRowChange),
           busyInsertingRows(false)
     {}
+    ~QSqlTableModelPrivate();
+
     void clear();
     virtual void clearCache();
     QSqlRecord record(const QVector<QVariant> &values) const;

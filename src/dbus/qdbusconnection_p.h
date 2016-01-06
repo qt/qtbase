@@ -100,7 +100,7 @@ public:
 // QDBusConnectionPrivate holds the DBusConnection and
 // can have many QDBusConnection objects referring to it
 
-class QDBusConnectionPrivate: public QObject
+class Q_AUTOTEST_EXPORT QDBusConnectionPrivate: public QObject
 {
     Q_OBJECT
 public:
