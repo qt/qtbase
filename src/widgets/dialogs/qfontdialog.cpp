@@ -103,7 +103,8 @@ static const Qt::WindowFlags DefaultWindowFlags =
         Qt::Dialog | Qt::WindowSystemMenuHint;
 
 QFontDialogPrivate::QFontDialogPrivate()
-    : writingSystem(QFontDatabase::Any), options(new QFontDialogOptions)
+    : writingSystem(QFontDatabase::Any),
+      options(QSharedPointer<QFontDialogOptions>::create())
 {
 }
 
