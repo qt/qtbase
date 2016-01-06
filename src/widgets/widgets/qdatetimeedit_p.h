@@ -62,11 +62,12 @@
 QT_BEGIN_NAMESPACE
 
 class QCalendarPopup;
-class QDateTimeEditPrivate : public QAbstractSpinBoxPrivate, public QDateTimeParser
+class Q_AUTOTEST_EXPORT QDateTimeEditPrivate : public QAbstractSpinBoxPrivate, public QDateTimeParser
 {
     Q_DECLARE_PUBLIC(QDateTimeEdit)
 public:
     QDateTimeEditPrivate();
+    ~QDateTimeEditPrivate();
 
     void init(const QVariant &var);
     void readLocaleSettings();

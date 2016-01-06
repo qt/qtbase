@@ -102,6 +102,15 @@ QFontListView::QFontListView(QWidget *parent)
 static const Qt::WindowFlags DefaultWindowFlags =
         Qt::Dialog | Qt::WindowSystemMenuHint;
 
+QFontDialogPrivate::QFontDialogPrivate()
+    : writingSystem(QFontDatabase::Any), options(new QFontDialogOptions)
+{
+}
+
+QFontDialogPrivate::~QFontDialogPrivate()
+{
+}
+
 /*!
   \class QFontDialog
   \ingroup standard-dialogs
