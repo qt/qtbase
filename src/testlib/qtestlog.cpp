@@ -46,6 +46,7 @@
 #include <QtTest/private/qcsvbenchmarklogger_p.h>
 #include <QtTest/private/qxunittestlogger_p.h>
 #include <QtTest/private/qxmltestlogger_p.h>
+#include <QtTest/private/qteamcitylogger_p.h>
 #if defined(HAVE_XCTEST)
 #include <QtTest/private/qxctestlogger_p.h>
 #endif
@@ -499,6 +500,9 @@ void QTestLog::addLogger(LogMode mode, const char *filename)
         break;
     case QTestLog::XunitXML:
         logger = new QXunitTestLogger(filename);
+        break;
+    case QTestLog::TeamCity:
+        logger = new QTeamCityLogger(filename);
         break;
 #if defined(HAVE_XCTEST)
     case QTestLog::XCTest:

@@ -233,6 +233,14 @@ QList<LoggerSet> tst_Selftests::allLoggerSets() const
         << LoggerSet("old csv", // benchmarks only
                      QStringList() << "csv",
                      QStringList() << "-csv" << "-o" << logName("csv"))
+        << LoggerSet("old stdout teamcity",
+                     QStringList() << "stdout teamcity",
+                     QStringList() << "-teamcity"
+                    )
+        << LoggerSet("old teamcity",
+                     QStringList() << "teamcity",
+                     QStringList() << "-teamcity" << "-o" << logName("teamcity")
+                    )
         // Test with new-style options for a single logger
         << LoggerSet("new stdout txt",
                      QStringList() << "stdout txt",
@@ -272,6 +280,14 @@ QList<LoggerSet> tst_Selftests::allLoggerSets() const
         << LoggerSet("new csv", // benchmarks only
                      QStringList() << "csv",
                      QStringList() << "-o" << logName("csv")+",csv")
+        << LoggerSet("new stdout teamcity",
+                     QStringList() << "stdout teamcity",
+                     QStringList() << "-o" << "-,teamcity"
+                    )
+        << LoggerSet("new teamcity",
+                     QStringList() << "teamcity",
+                     QStringList() << "-o" << logName("teamcity")+",teamcity"
+                    )
         // Test with two loggers (don't test all 32 combinations, just a sample)
         << LoggerSet("stdout txt + txt",
                      QStringList() << "stdout txt" << "txt",
@@ -301,6 +317,7 @@ QList<LoggerSet> tst_Selftests::allLoggerSets() const
                                    << "-o" << logName("lightxml")+",lightxml"
                                    << "-o" << "-,txt"
                                    << "-o" << logName("xunitxml")+",xunitxml"
+                                   << "-o" << logName("teamcity")+",teamcity"
                     )
     ;
 }
@@ -501,6 +518,9 @@ void tst_Selftests::runSubTest_data()
 
             if (loggerSet.name.contains("csv") && !subtest.startsWith("benchlib"))
                 continue;
+
+            if (loggerSet.name.contains("teamcity") && subtest.startsWith("benchlib"))
+                continue;   // Skip benchmark for TeamCity logger
 
             const bool crashes = subtest == QLatin1String("assert") || subtest == QLatin1String("exceptionthrow")
                 || subtest == QLatin1String("fetchbogus") || subtest == QLatin1String("crashedterminate")
@@ -744,8 +764,17 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
                     continue;
             }
 
+            QByteArray expLine = exp.at(i);
+
+            // Special handling for ignoring _FILE_ and _LINE_ if logger is teamcity
+            if (logFormat(logger) == "teamcity") {
+                QRegularExpression teamcityLocRegExp("\\|\\[Loc: .*\\(\\d*\\)\\|\\]");
+                line = QString(line).replace(teamcityLocRegExp, "|[Loc: _FILE_(_LINE_)|]").toLatin1();
+                expLine = QString(expLine).replace(teamcityLocRegExp, "|[Loc: _FILE_(_LINE_)|]").toLatin1();
+            }
+
             const QString output(QString::fromLatin1(line));
-            const QString expected(QString::fromLatin1(exp.at(i)).replace("@INSERT_QT_VERSION_HERE@", QT_VERSION_STR));
+            const QString expected(QString::fromLatin1(expLine).replace("@INSERT_QT_VERSION_HERE@", QT_VERSION_STR));
 
             if (subdir == "assert" && output.contains("ASSERT: ") && expected.contains("ASSERT: ") && output != expected)
                 // Q_ASSERT uses __FILE__, the exact contents of which are

@@ -1,0 +1,5 @@
+##teamcity[testSuiteStarted name='tst_SkipInit']
+##teamcity[testIgnored name='initTestCase()' message='Skip inside initTestCase. This should skip all tests in the class. |[Loc: tst_skipinit.cpp(47)|]']
+##teamcity[testStarted name='cleanupTestCase()']
+##teamcity[testFinished name='cleanupTestCase()']
+##teamcity[testSuiteFinished name='tst_SkipInit']

@@ -1,0 +1,7 @@
+##teamcity[testSuiteStarted name='tst_SkipCleanup']
+##teamcity[testStarted name='initTestCase()']
+##teamcity[testFinished name='initTestCase()']
+##teamcity[testStarted name='aTestFunction()']
+##teamcity[testFinished name='aTestFunction()']
+##teamcity[testIgnored name='cleanupTestCase()' message='Skip inside cleanupTestCase. |[Loc: tst_skipcleanup.cpp(51)|]']
+##teamcity[testSuiteFinished name='tst_SkipCleanup']

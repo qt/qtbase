@@ -54,6 +54,7 @@ SOURCES = qtestcase.cpp \
     qbenchmarkperfevents.cpp \
     qbenchmarkmetric.cpp \
     qcsvbenchmarklogger.cpp \
+    qteamcitylogger.cpp \
     qtestelement.cpp \
     qtestelementattribute.cpp \
     qtestmouse.cpp \

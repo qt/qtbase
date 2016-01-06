@@ -1,0 +1,7 @@
+##teamcity[testSuiteStarted name='tst_FailInit']
+##teamcity[testStarted name='initTestCase()']
+##teamcity[testFailed name='initTestCase()' message='Failure! |[Loc: tst_failinit.cpp(47)|]' details='|'false|' returned FALSE. ()']
+##teamcity[testFinished name='initTestCase()']
+##teamcity[testStarted name='cleanupTestCase()']
+##teamcity[testFinished name='cleanupTestCase()']
+##teamcity[testSuiteFinished name='tst_FailInit']

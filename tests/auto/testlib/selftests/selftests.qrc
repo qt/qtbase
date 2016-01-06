@@ -1,11 +1,13 @@
 <RCC>
-    <qresource prefix="/" >
+    <qresource prefix="/">
         <file>expected_alive.txt</file>
         <file>expected_assert.lightxml</file>
+        <file>expected_assert.teamcity</file>
         <file>expected_assert.txt</file>
         <file>expected_assert.xml</file>
         <file>expected_assert.xunitxml</file>
         <file>expected_badxml.lightxml</file>
+        <file>expected_badxml.teamcity</file>
         <file>expected_badxml.txt</file>
         <file>expected_badxml.xml</file>
         <file>expected_badxml.xunitxml</file>
@@ -33,14 +35,17 @@
         <file>expected_benchlibwalltime.xunitxml</file>
         <file>expected_benchlibwalltime.csv</file>
         <file>expected_cmptest.lightxml</file>
+        <file>expected_cmptest.teamcity</file>
         <file>expected_cmptest.txt</file>
         <file>expected_cmptest.xml</file>
         <file>expected_cmptest.xunitxml</file>
         <file>expected_commandlinedata.lightxml</file>
+        <file>expected_commandlinedata.teamcity</file>
         <file>expected_commandlinedata.txt</file>
         <file>expected_commandlinedata.xml</file>
         <file>expected_commandlinedata.xunitxml</file>
         <file>expected_counting.lightxml</file>
+        <file>expected_counting.teamcity</file>
         <file>expected_counting.txt</file>
         <file>expected_counting.xml</file>
         <file>expected_counting.xunitxml</file>
@@ -48,52 +53,64 @@
         <file>expected_crashes_2.txt</file>
         <file>expected_crashes_3.txt</file>
         <file>expected_datatable.lightxml</file>
+        <file>expected_datatable.teamcity</file>
         <file>expected_datatable.txt</file>
         <file>expected_datatable.xml</file>
         <file>expected_datatable.xunitxml</file>
         <file>expected_datetime.lightxml</file>
+        <file>expected_datetime.teamcity</file>
         <file>expected_datetime.txt</file>
         <file>expected_datetime.xml</file>
         <file>expected_datetime.xunitxml</file>
         <file>expected_differentexec.txt</file>
         <file>expected_exceptionthrow.lightxml</file>
+        <file>expected_exceptionthrow.teamcity</file>
         <file>expected_exceptionthrow.txt</file>
         <file>expected_exceptionthrow.xml</file>
         <file>expected_exceptionthrow.xunitxml</file>
         <file>expected_expectfail.lightxml</file>
+        <file>expected_expectfail.teamcity</file>
         <file>expected_expectfail.txt</file>
         <file>expected_expectfail.xml</file>
         <file>expected_expectfail.xunitxml</file>
         <file>expected_failcleanup.lightxml</file>
+        <file>expected_failcleanup.teamcity</file>
         <file>expected_failcleanup.txt</file>
         <file>expected_failcleanup.xml</file>
         <file>expected_failcleanup.xunitxml</file>
         <file>expected_failinit.lightxml</file>
+        <file>expected_failinit.teamcity</file>
         <file>expected_failinit.txt</file>
         <file>expected_failinit.xml</file>
         <file>expected_failinit.xunitxml</file>
         <file>expected_failinitdata.lightxml</file>
+        <file>expected_failinitdata.teamcity</file>
         <file>expected_failinitdata.txt</file>
         <file>expected_failinitdata.xml</file>
         <file>expected_failinitdata.xunitxml</file>
         <file>expected_fetchbogus.lightxml</file>
+        <file>expected_fetchbogus.teamcity</file>
         <file>expected_fetchbogus.txt</file>
         <file>expected_fetchbogus.xml</file>
         <file>expected_fetchbogus.xunitxml</file>
         <file>expected_findtestdata.lightxml</file>
+        <file>expected_findtestdata.teamcity</file>
         <file>expected_findtestdata.txt</file>
         <file>expected_findtestdata.xml</file>
         <file>expected_findtestdata.xunitxml</file>
         <file>expected_float.txt</file>
         <file>expected_globaldata.lightxml</file>
+        <file>expected_globaldata.teamcity</file>
         <file>expected_globaldata.txt</file>
         <file>expected_globaldata.xml</file>
         <file>expected_globaldata.xunitxml</file>
         <file>expected_longstring.lightxml</file>
+        <file>expected_longstring.teamcity</file>
         <file>expected_longstring.txt</file>
         <file>expected_longstring.xml</file>
         <file>expected_longstring.xunitxml</file>
         <file>expected_maxwarnings.lightxml</file>
+        <file>expected_maxwarnings.teamcity</file>
         <file>expected_maxwarnings.txt</file>
         <file>expected_maxwarnings.xml</file>
         <file>expected_maxwarnings.xunitxml</file>
@@ -101,53 +118,67 @@
         <file>expected_printdatatags.txt</file>
         <file>expected_printdatatagswithglobaltags.txt</file>
         <file>expected_qexecstringlist.txt</file>
+        <file>expected_silent.teamcity</file>
         <file>expected_silent.txt</file>
         <file>expected_singleskip.lightxml</file>
+        <file>expected_singleskip.teamcity</file>
         <file>expected_singleskip.txt</file>
         <file>expected_singleskip.xml</file>
         <file>expected_singleskip.xunitxml</file>
         <file>expected_skip.lightxml</file>
+        <file>expected_skip.teamcity</file>
         <file>expected_skip.txt</file>
         <file>expected_skip.xml</file>
         <file>expected_skip.xunitxml</file>
         <file>expected_skipcleanup.lightxml</file>
+        <file>expected_skipcleanup.teamcity</file>
         <file>expected_skipcleanup.txt</file>
         <file>expected_skipcleanup.xml</file>
         <file>expected_skipcleanup.xunitxml</file>
         <file>expected_skipinit.lightxml</file>
         <file>expected_skipinit.txt</file>
+        <file>expected_skipinit.teamcity</file>
         <file>expected_skipinit.xml</file>
         <file>expected_skipinit.xunitxml</file>
         <file>expected_skipinitdata.lightxml</file>
+        <file>expected_skipinitdata.teamcity</file>
         <file>expected_skipinitdata.txt</file>
         <file>expected_skipinitdata.xml</file>
         <file>expected_skipinitdata.xunitxml</file>
+        <file>expected_sleep.teamcity</file>
         <file>expected_sleep.txt</file>
         <file>expected_strcmp.lightxml</file>
+        <file>expected_strcmp.teamcity</file>
         <file>expected_strcmp.txt</file>
         <file>expected_strcmp.xml</file>
         <file>expected_strcmp.xunitxml</file>
         <file>expected_subtest.lightxml</file>
         <file>expected_subtest.txt</file>
+        <file>expected_subtest.teamcity</file>
         <file>expected_subtest.xml</file>
         <file>expected_subtest.xunitxml</file>
         <file>expected_verbose1.lightxml</file>
+        <file>expected_verbose1.teamcity</file>
         <file>expected_verbose1.txt</file>
         <file>expected_verbose1.xml</file>
         <file>expected_verbose1.xunitxml</file>
         <file>expected_verbose2.lightxml</file>
+        <file>expected_verbose2.teamcity</file>
         <file>expected_verbose2.txt</file>
         <file>expected_verbose2.xml</file>
         <file>expected_verbose2.xunitxml</file>
         <file>expected_verifyexceptionthrown.lightxml</file>
+        <file>expected_verifyexceptionthrown.teamcity</file>
         <file>expected_verifyexceptionthrown.txt</file>
         <file>expected_verifyexceptionthrown.xml</file>
         <file>expected_verifyexceptionthrown.xunitxml</file>
         <file>expected_warnings.lightxml</file>
+        <file>expected_warnings.teamcity</file>
         <file>expected_warnings.txt</file>
         <file>expected_warnings.xml</file>
         <file>expected_warnings.xunitxml</file>
         <file>expected_xunit.lightxml</file>
+        <file>expected_xunit.teamcity</file>
         <file>expected_xunit.txt</file>
         <file>expected_xunit.xml</file>
         <file>expected_xunit.xunitxml</file>

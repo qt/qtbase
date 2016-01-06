@@ -404,6 +404,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
          "                         xunitxml : XML XUnit document\n"
          "                         xml      : XML document\n"
          "                         lightxml : A stream of XML tags\n"
+         "                         teamcity : TeamCity format\n"
          "\n"
          "     *** Multiple loggers can be specified, but at most one can log to stdout.\n"
          "\n"
@@ -414,6 +415,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
          " -xunitxml           : Output results as XML XUnit document\n"
          " -xml                : Output results as XML document\n"
          " -lightxml           : Output results as stream of XML tags\n"
+         " -teamcity           : Output results in TeamCity format\n"
          "\n"
          "     *** If no output file is specified, stdout is assumed.\n"
          "     *** If no output format is specified, -txt is assumed.\n"
@@ -499,6 +501,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             logFormat = QTestLog::XML;
         } else if (strcmp(argv[i], "-lightxml") == 0) {
             logFormat = QTestLog::LightXML;
+        } else if (strcmp(argv[i], "-teamcity") == 0) {
+            logFormat = QTestLog::TeamCity;
         } else if (strcmp(argv[i], "-silent") == 0) {
             QTestLog::setVerboseLevel(-1);
         } else if (strcmp(argv[i], "-v1") == 0) {
@@ -531,8 +535,10 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                     logFormat = QTestLog::XML;
                 else if (strcmp(format, "xunitxml") == 0)
                     logFormat = QTestLog::XunitXML;
+                else if (strcmp(format, "teamcity") == 0)
+                    logFormat = QTestLog::TeamCity;
                 else {
-                    fprintf(stderr, "output format must be one of txt, csv, lightxml, xml or xunitxml\n");
+                    fprintf(stderr, "output format must be one of txt, csv, lightxml, xml, teamcity or xunitxml\n");
                     exit(1);
                 }
                 if (strcmp(filename, "-") == 0 && QTestLog::loggerUsingStdout()) {

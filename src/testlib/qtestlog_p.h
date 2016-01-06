@@ -62,7 +62,7 @@ class Q_TESTLIB_EXPORT QTestLog
 {
 public:
     enum LogMode {
-        Plain = 0, XML, LightXML, XunitXML, CSV,
+        Plain = 0, XML, LightXML, XunitXML, CSV, TeamCity,
 #if defined(HAVE_XCTEST)
         XCTest
 #endif

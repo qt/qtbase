@@ -1,0 +1,8 @@
+##teamcity[testSuiteStarted name='tst_Sleep']
+##teamcity[testStarted name='initTestCase()']
+##teamcity[testFinished name='initTestCase()']
+##teamcity[testStarted name='sleep()']
+##teamcity[testFinished name='sleep()']
+##teamcity[testStarted name='cleanupTestCase()']
+##teamcity[testFinished name='cleanupTestCase()']
+##teamcity[testSuiteFinished name='tst_Sleep']

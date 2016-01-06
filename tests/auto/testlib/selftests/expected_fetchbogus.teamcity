@@ -1,0 +1,8 @@
+##teamcity[testSuiteStarted name='tst_FetchBogus']
+##teamcity[testStarted name='initTestCase()']
+##teamcity[testFinished name='initTestCase()']
+##teamcity[testStarted name='fetchBogus(foo)']
+##teamcity[testFailed name='fetchBogus(foo)' message='Failure! |[Loc: Unknown file(57)|]' details='Received a fatal error.']
+##teamcity[testStdOut name='fetchBogus(foo)' out='QFATAL: QFETCH: Requested testdata |'bubu|' not available, check your _data function.']
+##teamcity[testFinished name='fetchBogus(foo)']
+##teamcity[testSuiteFinished name='tst_FetchBogus']

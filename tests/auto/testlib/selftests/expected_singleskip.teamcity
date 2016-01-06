@@ -1,0 +1,7 @@
+##teamcity[testSuiteStarted name='tst_SingleSkip']
+##teamcity[testStarted name='initTestCase()']
+##teamcity[testFinished name='initTestCase()']
+##teamcity[testIgnored name='myTest()' message='skipping test |[Loc: tst_singleskip.cpp(48)|]']
+##teamcity[testStarted name='cleanupTestCase()']
+##teamcity[testFinished name='cleanupTestCase()']
+##teamcity[testSuiteFinished name='tst_SingleSkip']

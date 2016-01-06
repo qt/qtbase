@@ -1,0 +1,7 @@
+##teamcity[testSuiteStarted name='tst_Exception']
+##teamcity[testStarted name='initTestCase()']
+##teamcity[testFinished name='initTestCase()']
+##teamcity[testStarted name='throwException()']
+##teamcity[testFailed name='throwException()' message='Failure! |[Loc: qtestcase.cpp(1707)|]' details='Caught unhandled exception']
+##teamcity[testFinished name='throwException()']
+##teamcity[testSuiteFinished name='tst_Exception']
