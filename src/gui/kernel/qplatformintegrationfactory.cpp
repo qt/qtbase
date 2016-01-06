@@ -80,8 +80,8 @@ QPlatformIntegration *QPlatformIntegrationFactory::create(const QString &platfor
 
 QStringList QPlatformIntegrationFactory::keys(const QString &platformPluginPath)
 {
-#ifndef QT_NO_LIBRARY
     QStringList list;
+#ifndef QT_NO_LIBRARY
     if (!platformPluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(platformPluginPath);
         list = directLoader()->keyMap().values();
@@ -94,12 +94,11 @@ QStringList QPlatformIntegrationFactory::keys(const QString &platformPluginPath)
                 (*it).append(postFix);
         }
     }
-    list.append(loader()->keyMap().values());
-    return list;
 #else
     Q_UNUSED(platformPluginPath);
-    return QStringList();
 #endif
+    list.append(loader()->keyMap().values());
+    return list;
 }
 
 QT_END_NAMESPACE

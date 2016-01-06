@@ -50,10 +50,8 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_ACCESSIBILITY
 
 /* accessiblebridge plugin discovery stuff */
-#ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, bridgeloader,
     (QAccessibleBridgeFactoryInterface_iid, QLatin1String("/accessiblebridge")))
-#endif
 
 Q_GLOBAL_STATIC(QVector<QAccessibleBridge *>, bridges)
 
@@ -112,7 +110,6 @@ void QPlatformAccessibility::initialize()
         return;
     isInit = true;      // ### not atomic
 
-#ifndef QT_NO_LIBRARY
     typedef QMultiMap<int, QString> PluginKeyMap;
     typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
 
@@ -129,7 +126,6 @@ void QPlatformAccessibility::initialize()
             if (QAccessibleBridge *bridge = factory->create(it.value()))
                 bridges()->append(bridge);
     }
-#endif
 }
 
 void QPlatformAccessibility::cleanup()

@@ -46,7 +46,7 @@
 QT_BEGIN_NAMESPACE
 
 
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_PICTURE)
+#if !defined(QT_NO_PICTURE)
 
 class QPicture;
 class QImage;
@@ -68,7 +68,7 @@ public:
 
 };
 
-#endif // QT_NO_LIBRARY || QT_NO_PICTURE
+#endif // QT_NO_PICTURE
 
 QT_END_NAMESPACE
 

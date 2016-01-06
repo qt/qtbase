@@ -529,7 +529,6 @@ void QPixmapIconEngine::virtual_hook(int id, void *data)
     }
 }
 
-#ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QIconEngineFactoryInterface_iid, QLatin1String("/iconengines"), Qt::CaseInsensitive))
 
@@ -537,8 +536,6 @@ QFactoryLoader *qt_iconEngineFactoryLoader()
 {
     return loader();
 }
-#endif
-
 
 
 /*!
@@ -1015,7 +1012,6 @@ void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State
         return;
     detach();
     if (!d) {
-#ifndef QT_NO_LIBRARY
         QFileInfo info(fileName);
         QString suffix = info.suffix();
         if (!suffix.isEmpty()) {
@@ -1030,7 +1026,6 @@ void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State
                 }
             }
         }
-#endif
         // ...then fall back to the default engine
         if (!d) {
             d = new QIconPrivate;
@@ -1330,7 +1325,6 @@ QDataStream &operator>>(QDataStream &s, QIcon &icon)
             QIconEngine *engine = new QIconLoaderEngine();
             icon.d->engine = engine;
             engine->read(s);
-#ifndef QT_NO_LIBRARY
         } else {
             const int index = loader()->indexOf(key);
             if (index != -1) {
@@ -1342,7 +1336,6 @@ QDataStream &operator>>(QDataStream &s, QIcon &icon)
                     } // factory
                 } // instance
             } // index
-#endif
         }
     } else if (s.version() == QDataStream::Qt_4_2) {
         icon = QIcon();

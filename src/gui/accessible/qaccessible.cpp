@@ -465,12 +465,10 @@ QAccessibleInterface::~QAccessibleInterface()
 
 
 /* accessible widgets plugin discovery stuff */
-#ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QAccessibleFactoryInterface_iid, QLatin1String("/accessible")))
 typedef QHash<QString, QAccessiblePlugin*> QAccessiblePluginsHash;
 Q_GLOBAL_STATIC(QAccessiblePluginsHash, qAccessiblePlugins)
-#endif
 
 // FIXME turn this into one global static struct
 Q_GLOBAL_STATIC(QList<QAccessible::InterfaceFactory>, qAccessibleFactories)
@@ -691,7 +689,6 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
                 return iface;
             }
         }
-#ifndef QT_NO_LIBRARY
         // Find a QAccessiblePlugin (factory) for the class name. If there's
         // no entry in the cache try to create it using the plugin loader.
         if (!qAccessiblePlugins()->contains(cn)) {
@@ -713,7 +710,6 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
             }
             return result;
         }
-#endif
         mo = mo->superClass();
     }
 

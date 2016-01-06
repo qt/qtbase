@@ -367,10 +367,8 @@ void QNetworkConfigurationManagerPrivate::configurationChanged(QNetworkConfigura
 
 void QNetworkConfigurationManagerPrivate::updateConfigurations()
 {
-#ifndef QT_NO_LIBRARY
     typedef QMultiMap<int, QString> PluginKeyMap;
     typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
-#endif
     QMutexLocker locker(&mutex);
 
     if (firstUpdate) {
@@ -379,7 +377,6 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
 
         updating = false;
 
-#ifndef QT_NO_LIBRARY
         bool envOK  = false;
         const int skipGeneric = qEnvironmentVariableIntValue("QT_EXCLUDE_GENERIC_BEARER", &envOK);
         QBearerEngine *generic = 0;
@@ -421,7 +418,6 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
             if (!envOK || skipGeneric <= 0)
                 sessionEngines.append(generic);
         }
-#endif // QT_NO_LIBRARY
     }
 
     QBearerEngine *engine = qobject_cast<QBearerEngine *>(sender());

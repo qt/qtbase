@@ -63,20 +63,18 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(qLcEglDevDebug, "qt.qpa.egldeviceintegration")
 
-#ifndef QT_NO_LIBRARY
-
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QEGLDeviceIntegrationFactoryInterface_iid, QLatin1String("/egldeviceintegrations"), Qt::CaseInsensitive))
 
+#ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
                           (QEGLDeviceIntegrationFactoryInterface_iid, QLatin1String(""), Qt::CaseInsensitive))
-
 #endif // QT_NO_LIBRARY
 
 QStringList QEGLDeviceIntegrationFactory::keys(const QString &pluginPath)
 {
-#ifndef QT_NO_LIBRARY
     QStringList list;
+#ifndef QT_NO_LIBRARY
     if (!pluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(pluginPath);
         list = directLoader()->keyMap().values();
@@ -89,13 +87,12 @@ QStringList QEGLDeviceIntegrationFactory::keys(const QString &pluginPath)
                 (*it).append(postFix);
         }
     }
+#else
+    Q_UNUSED(pluginPath);
+#endif
     list.append(loader()->keyMap().values());
     qCDebug(qLcEglDevDebug) << "EGL device integration plugin keys:" << list;
     return list;
-#else
-    Q_UNUSED(pluginPath);
-    return QStringList();
-#endif
 }
 
 QEGLDeviceIntegration *QEGLDeviceIntegrationFactory::create(const QString &key, const QString &pluginPath)
@@ -106,16 +103,16 @@ QEGLDeviceIntegration *QEGLDeviceIntegrationFactory::create(const QString &key, 
         QCoreApplication::addLibraryPath(pluginPath);
         integration = qLoadPlugin<QEGLDeviceIntegration, QEGLDeviceIntegrationPlugin>(directLoader(), key);
     }
+#else
+    Q_UNUSED(pluginPath);
+#endif
     if (!integration)
         integration = qLoadPlugin<QEGLDeviceIntegration, QEGLDeviceIntegrationPlugin>(loader(), key);
     if (integration)
         qCDebug(qLcEglDevDebug) << "Using EGL device integration" << key;
     else
         qCWarning(qLcEglDevDebug) << "Failed to load EGL device integration" << key;
-#else
-    Q_UNUSED(key);
-    Q_UNUSED(pluginPath);
-#endif
+
     return integration;
 }
 

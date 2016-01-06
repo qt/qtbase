@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include "qpictureformatplugin.h"
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_PICTURE)
+#if !defined(QT_NO_PICTURE)
 #include "qpicture.h"
 
 QT_BEGIN_NAMESPACE
@@ -130,6 +130,6 @@ bool QPictureFormatPlugin::savePicture(const QString &format, const QString &fil
     return false;
 }
 
-#endif // QT_NO_LIBRARY || QT_NO_PICTURE
+#endif // QT_NO_PICTURE
 
 QT_END_NAMESPACE

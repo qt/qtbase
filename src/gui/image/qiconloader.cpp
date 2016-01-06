@@ -94,9 +94,7 @@ static inline QStringList systemIconSearchPaths()
     return QStringList();
 }
 
-#ifndef QT_NO_LIBRARY
 extern QFactoryLoader *qt_iconEngineFactoryLoader(); // qicon.cpp
-#endif
 
 void QIconLoader::ensureInitialized()
 {
@@ -109,10 +107,8 @@ void QIconLoader::ensureInitialized()
 
         if (m_systemTheme.isEmpty())
             m_systemTheme = fallbackTheme();
-#ifndef QT_NO_LIBRARY
         if (qt_iconEngineFactoryLoader()->keyMap().key(QLatin1String("svg"), -1) != -1)
             m_supportsSvg = true;
-#endif //QT_NO_LIBRARY
     }
 }
 

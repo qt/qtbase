@@ -1414,7 +1414,6 @@ Q_GLOBAL_STATIC(QPHList, pictureHandlers)
 
 void qt_init_picture_plugins()
 {
-#ifndef QT_NO_LIBRARY
     typedef QMultiMap<int, QString> PluginKeyMap;
     typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
 
@@ -1429,7 +1428,6 @@ void qt_init_picture_plugins()
         if (QPictureFormatPlugin *format = qobject_cast<QPictureFormatPlugin*>(loader.instance(it.key())))
             format->installIOHandler(it.value());
     }
-#endif
 }
 
 static void cleanup()

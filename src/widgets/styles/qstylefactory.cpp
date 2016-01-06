@@ -69,10 +69,8 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QStyleFactoryInterface_iid, QLatin1String("/styles"), Qt::CaseInsensitive))
-#endif
 
 /*!
     \class QStyleFactory
@@ -156,10 +154,8 @@ QStyle *QStyleFactory::create(const QString& key)
     } else
 #endif
     { } // Keep these here - they make the #ifdefery above work
-#ifndef QT_NO_LIBRARY
     if (!ret)
         ret = qLoadPlugin<QStyle, QStylePlugin>(loader(), style);
-#endif
     if(ret)
         ret->setObjectName(style);
     return ret;
@@ -174,14 +170,12 @@ QStyle *QStyleFactory::create(const QString& key)
 QStringList QStyleFactory::keys()
 {
     QStringList list;
-#ifndef QT_NO_LIBRARY
     typedef QMultiMap<int, QString> PluginKeyMap;
 
     const PluginKeyMap keyMap = loader()->keyMap();
     const PluginKeyMap::const_iterator cend = keyMap.constEnd();
     for (PluginKeyMap::const_iterator it = keyMap.constBegin(); it != cend; ++it)
         list.append(it.value());
-#endif
 #ifndef QT_NO_STYLE_WINDOWS
     if (!list.contains(QLatin1String("Windows")))
         list << QLatin1String("Windows");

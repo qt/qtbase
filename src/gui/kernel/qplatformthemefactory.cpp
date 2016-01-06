@@ -48,31 +48,29 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QPlatformThemeFactoryInterface_iid, QLatin1String("/platformthemes"), Qt::CaseInsensitive))
+
+#ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
                           (QPlatformThemeFactoryInterface_iid, QLatin1String(""), Qt::CaseInsensitive))
 #endif
 
 QPlatformTheme *QPlatformThemeFactory::create(const QString& key, const QString &platformPluginPath)
 {
-#ifndef QT_NO_LIBRARY
     QStringList paramList = key.split(QLatin1Char(':'));
     const QString platform = paramList.takeFirst().toLower();
-
+#ifndef QT_NO_LIBRARY
     // Try loading the plugin from platformPluginPath first:
     if (!platformPluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(platformPluginPath);
         if (QPlatformTheme *ret = qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(directLoader(), platform, paramList))
             return ret;
     }
-    return qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(loader(), platform, paramList);
 #else
-    Q_UNUSED(key);
     Q_UNUSED(platformPluginPath);
-    return 0;
 #endif
+    return qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(loader(), platform, paramList);
 }
 
 /*!
@@ -83,9 +81,9 @@ QPlatformTheme *QPlatformThemeFactory::create(const QString& key, const QString 
 */
 QStringList QPlatformThemeFactory::keys(const QString &platformPluginPath)
 {
-#ifndef QT_NO_LIBRARY
     QStringList list;
 
+#ifndef QT_NO_LIBRARY
     if (!platformPluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(platformPluginPath);
         list += directLoader()->keyMap().values();
@@ -98,12 +96,11 @@ QStringList QPlatformThemeFactory::keys(const QString &platformPluginPath)
                 (*it).append(postFix);
         }
     }
-    list += loader()->keyMap().values();
-    return list;
 #else
     Q_UNUSED(platformPluginPath);
-    return QStringList();
 #endif
+    list += loader()->keyMap().values();
+    return list;
 }
 
 QT_END_NAMESPACE

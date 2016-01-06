@@ -47,17 +47,18 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QXcbGlIntegrationFactoryInterface_iid, QLatin1String("/xcbglintegrations"), Qt::CaseInsensitive))
+
+#ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
                           (QXcbGlIntegrationFactoryInterface_iid, QLatin1String(""), Qt::CaseInsensitive))
 #endif // !QT_NO_LIBRARY
 
 QStringList QXcbGlIntegrationFactory::keys(const QString &pluginPath)
 {
-#ifndef QT_NO_LIBRARY
     QStringList list;
+#ifndef QT_NO_LIBRARY
     if (!pluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(pluginPath);
         list = directLoader()->keyMap().values();
@@ -70,12 +71,11 @@ QStringList QXcbGlIntegrationFactory::keys(const QString &pluginPath)
                 (*it).append(postFix);
         }
     }
-    list.append(loader()->keyMap().values());
-    return list;
 #else
     Q_UNUSED(pluginPath);
-    return QStringList();
 #endif
+    list.append(loader()->keyMap().values());
+    return list;
 }
 
 QXcbGlIntegration *QXcbGlIntegrationFactory::create(const QString &platform, const QString &pluginPath)
@@ -87,13 +87,10 @@ QXcbGlIntegration *QXcbGlIntegrationFactory::create(const QString &platform, con
         if (QXcbGlIntegration *ret = qLoadPlugin<QXcbGlIntegration, QXcbGlIntegrationPlugin>(directLoader(), platform))
             return ret;
     }
-    if (QXcbGlIntegration *ret = qLoadPlugin<QXcbGlIntegration, QXcbGlIntegrationPlugin>(loader(), platform))
-        return ret;
 #else
-    Q_UNUSED(platform);
     Q_UNUSED(pluginPath);
 #endif
-    return Q_NULLPTR;
+    return qLoadPlugin<QXcbGlIntegration, QXcbGlIntegrationPlugin>(loader(), platform);
 }
 
 QT_END_NAMESPACE

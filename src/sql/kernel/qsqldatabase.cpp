@@ -99,11 +99,9 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QSqlDriverFactoryInterface_iid,
                            QLatin1String("/sqldrivers")))
-#endif
 
 #if !defined(Q_CC_MSVC) || _MSC_VER >= 1900
 // ### Qt6: remove the #ifdef
@@ -577,7 +575,6 @@ QStringList QSqlDatabase::drivers()
     list << QLatin1String("QIBASE");
 #endif
 
-#ifndef QT_NO_LIBRARY
     if (QFactoryLoader *fl = loader()) {
         typedef QMultiMap<int, QString> PluginKeyMap;
         typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
@@ -588,7 +585,6 @@ QStringList QSqlDatabase::drivers()
             if (!list.contains(it.value()))
                 list << it.value();
     }
-#endif
 
     DriverDict dict = QSqlDatabasePrivate::driverDict();
     for (DriverDict::const_iterator i = dict.constBegin(); i != dict.constEnd(); ++i) {
@@ -778,10 +774,8 @@ void QSqlDatabasePrivate::init(const QString &type)
         }
     }
 
-#ifndef QT_NO_LIBRARY
     if (!driver && loader())
         driver = qLoadPlugin<QSqlDriver, QSqlDriverPlugin>(loader(), type);
-#endif // QT_NO_LIBRARY
 
     if (!driver) {
         qWarning("QSqlDatabase: %s driver not loaded", type.toLatin1().data());
