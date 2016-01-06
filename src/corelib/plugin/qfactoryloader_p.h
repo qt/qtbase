@@ -164,7 +164,7 @@ PluginInterface *qLoadPlugin(const QFactoryLoader *loader,
 
 template <class PluginInterface, class FactoryInterface, typename Arg>
 Q_DECL_DEPRECATED PluginInterface *qLoadPlugin1(const QFactoryLoader *loader, const QString &key, Arg &&arg)
-{ return qLoadPlugin(loader, key, std::forward<Arg>(arg)); }
+{ return qLoadPlugin<PluginInterface, FactoryInterface>(loader, key, std::forward<Arg>(arg)); }
 
 QT_END_NAMESPACE
 
