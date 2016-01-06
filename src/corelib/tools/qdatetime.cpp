@@ -90,14 +90,25 @@ static inline QDate fixedDate(int y, int m, int d)
     return result;
 }
 
+/*
+  Until C++11, rounding direction is implementation-defined.
+
+  For negative operands, implementations may chose to round down instead of
+  towards zero (truncation).  We only actually care about the case a < 0, as all
+  uses of floordiv have b > 0.  In this case, if rounding is down we have a % b
+  >= 0 and simple division works fine; but a % b = a - (a / b) * b always, so
+  rounding towards zero gives a % b <= 0; when < 0, we need to adjust.
+
+  Once we assume C++11, we can safely test a < 0 instead of a % b < 0.
+ */
 static inline qint64 floordiv(qint64 a, int b)
 {
-    return (a - (a < 0 ? b-1 : 0)) / b;
+    return (a - (a % b < 0 ? b - 1 : 0)) / b;
 }
 
 static inline int floordiv(int a, int b)
 {
-    return (a - (a < 0 ? b-1 : 0)) / b;
+    return (a - (a % b < 0 ? b - 1 : 0)) / b;
 }
 
 static inline qint64 julianDayFromDate(int year, int month, int day)
