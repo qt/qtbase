@@ -560,7 +560,7 @@ qint64 QFileDevice::writeData(const char *data, qint64 len)
     char *writePointer = d->writeBuffer.reserve(len);
     if (len == 1)
         *writePointer = *data;
-    else
+    else if (len)
         ::memcpy(writePointer, data, len);
     return len;
 }
