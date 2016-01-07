@@ -820,16 +820,10 @@ QDebug operator<<(QDebug dbg, const QDBusMessage &msg)
         msg.type() == QDBusMessage::SignalMessage)
         dbg.nospace() << ", path=" << msg.path()
                       << ", interface=" << msg.interface()
-                      << ", member=" << msg.member()
-                      << ", serial=" << msg.serial();
+                      << ", member=" << msg.member();
     if (msg.type() == QDBusMessage::ErrorMessage)
         dbg.nospace() << ", error name=" << msg.errorName()
-                      << ", error message=" << msg.errorMessage()
-                      << ", serial=" << msg.serial()
-                      << ", reply serial=" << msg.replySerial();
-    else if (msg.type() == QDBusMessage::ReplyMessage)
-        dbg.nospace() << ", serial=" << msg.serial()
-                      << ", reply serial=" << msg.replySerial();
+                      << ", error message=" << msg.errorMessage();
     dbg.nospace() << ", signature=" << msg.signature()
                   << ", contents=(";
     debugVariantList(dbg, msg.arguments());

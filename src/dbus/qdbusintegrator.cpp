@@ -1819,8 +1819,8 @@ bool QDBusConnectionPrivate::send(const QDBusMessage& message)
     }
 
     q_dbus_message_set_no_reply(msg, true); // the reply would not be delivered to anything
-    emit messageNeedsSending(Q_NULLPTR, msg);
     qDBusDebug() << this << "sending message (no reply):" << message;
+    emit messageNeedsSending(Q_NULLPTR, msg);
     return true;
 }
 
@@ -2019,8 +2019,8 @@ QDBusPendingCallPrivate *QDBusConnectionPrivate::sendWithReplyAsync(const QDBusM
         lastError = error;
         processFinishedCall(pcall);
     } else {
-        emit messageNeedsSending(pcall, msg, timeout);
         qDBusDebug() << this << "sending message:" << message;
+        emit messageNeedsSending(pcall, msg, timeout);
     }
     return pcall;
 }
