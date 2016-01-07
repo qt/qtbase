@@ -286,8 +286,6 @@ DEFINEFUNC(const char*   , dbus_message_get_sender, (DBusMessage   *message),
            (message), return)
 DEFINEFUNC(dbus_uint32_t , dbus_message_get_serial, (DBusMessage   *message),
            (message), return)
-DEFINEFUNC(dbus_uint32_t , dbus_message_get_reply_serial, (DBusMessage   *message),
-           (message), return)
 DEFINEFUNC(const char*   , dbus_message_get_signature, (DBusMessage   *message),
            (message), return)
 DEFINEFUNC(int           , dbus_message_get_type, (DBusMessage   *message),
