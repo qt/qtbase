@@ -162,6 +162,7 @@ void *QCocoaNativeInterface::NSPrintInfoForPrintEngine(QPrintEngine *printEngine
         macPrintEnginePriv->initialize();
     return macPrintEnginePriv->printInfo;
 #else
+    Q_UNUSED(printEngine);
     qFatal("Printing is not supported when Qt is configured with -no-widgets");
     return 0;
 #endif
