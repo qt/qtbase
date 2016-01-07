@@ -802,16 +802,18 @@ void tst_QDateTime::toString_textDate_data()
     QTest::addColumn<QDateTime>("datetime");
     QTest::addColumn<QString>("expected");
 
+    QString wednesdayJanuary = QDate::shortDayName(3) + ' ' + QDate::shortMonthName(1);
+
     QTest::newRow("localtime")  << QDateTime(QDate(2013, 1, 2), QTime(1, 2, 3), Qt::LocalTime)
-                                << QString("Wed Jan 2 01:02:03 2013");
+                                << wednesdayJanuary + QString(" 2 01:02:03 2013");
     QTest::newRow("utc")        << QDateTime(QDate(2013, 1, 2), QTime(1, 2, 3), Qt::UTC)
-                                << QString("Wed Jan 2 01:02:03 2013 GMT");
+                                << wednesdayJanuary + QString(" 2 01:02:03 2013 GMT");
     QTest::newRow("offset+")    << QDateTime(QDate(2013, 1, 2), QTime(1, 2, 3), Qt::OffsetFromUTC,
                                              10 * 60 * 60)
-                                << QString("Wed Jan 2 01:02:03 2013 GMT+1000");
+                                << wednesdayJanuary + QString(" 2 01:02:03 2013 GMT+1000");
     QTest::newRow("offset-")    << QDateTime(QDate(2013, 1, 2), QTime(1, 2, 3), Qt::OffsetFromUTC,
                                              -10 * 60 * 60)
-                                << QString("Wed Jan 2 01:02:03 2013 GMT-1000");
+                                << wednesdayJanuary + QString(" 2 01:02:03 2013 GMT-1000");
     QTest::newRow("invalid")    << QDateTime()
                                 << QString("");
 }
@@ -820,9 +822,6 @@ void tst_QDateTime::toString_textDate()
 {
     QFETCH(QDateTime, datetime);
     QFETCH(QString, expected);
-
-    QLocale oldLocale;
-    QLocale::setDefault(QLocale("en_US"));
 
     QString result = datetime.toString(Qt::TextDate);
     QCOMPARE(result, expected);
@@ -833,8 +832,6 @@ void tst_QDateTime::toString_textDate()
     QCOMPARE(resultDatetime.time(), datetime.time());
     QCOMPARE(resultDatetime.timeSpec(), datetime.timeSpec());
     QCOMPARE(resultDatetime.utcOffset(), datetime.utcOffset());
-
-    QLocale::setDefault(oldLocale);
 }
 
 void tst_QDateTime::toString_rfcDate_data()
