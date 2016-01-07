@@ -319,7 +319,7 @@ void tst_QTextDocumentLayout::blockVisibility()
     for (int i = 0; i < 10; ++i) {
         if (!doc->isEmpty())
             cursor.insertBlock();
-        cursor.insertText(QString::number(i));
+        cursor.insertText("A");
     }
 
     qreal margin = doc->documentMargin();
