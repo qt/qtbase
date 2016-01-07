@@ -124,7 +124,7 @@ QWinRTIntegration::QWinRTIntegration() : d_ptr(new QWinRTIntegrationPrivate)
                                 IID_PPV_ARGS(&d->application));
     Q_ASSERT_SUCCEEDED(hr);
     hr = d->application->add_Suspending(Callback<SuspendHandler>(this, &QWinRTIntegration::onSuspended).Get(),
-                                        &d->applicationTokens[&ICoreApplication::remove_Resuming]);
+                                        &d->applicationTokens[&ICoreApplication::remove_Suspending]);
     Q_ASSERT_SUCCEEDED(hr);
     hr = d->application->add_Resuming(Callback<ResumeHandler>(this, &QWinRTIntegration::onResume).Get(),
                                       &d->applicationTokens[&ICoreApplication::remove_Resuming]);
