@@ -54,9 +54,6 @@ QT_BEGIN_NAMESPACE
 struct WinRTEGLDisplay
 {
     WinRTEGLDisplay() {
-        eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-        if (eglDisplay == EGL_NO_DISPLAY)
-            qCritical("Failed to initialize EGL display: 0x%x", eglGetError());
     }
     ~WinRTEGLDisplay() {
         eglTerminate(eglDisplay);
@@ -117,9 +114,17 @@ void QWinRTEGLContext::initialize()
     if (g->eglDisplay == EGL_NO_DISPLAY)
         qCritical("Failed to initialize EGL display: 0x%x", eglGetError());
 
-    if (!eglInitialize(g->eglDisplay, nullptr, nullptr))
-        qCritical("Failed to initialize EGL: 0x%x", eglGetError());
-
+    // eglInitialize checks for EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE
+    // which adds a suspending handler. This needs to be added from the Xaml
+    // thread itself, otherwise it will not be invoked. add_Suspending does
+    // not return an error unfortunately, so it silently fails and causes
+    // applications to not quit when the system wants to terminate the app
+    // after suspend.
+    hr = QEventDispatcherWinRT::runOnXamlThread([]() {
+        if (!eglInitialize(g->eglDisplay, nullptr, nullptr))
+            qCritical("Failed to initialize EGL: 0x%x", eglGetError());
+        return S_OK;
+    });
     d->eglConfig = q_configFromGLFormat(g->eglDisplay, d->format);
 
     const EGLint flags = d->format.testOption(QSurfaceFormat::DebugContext)
