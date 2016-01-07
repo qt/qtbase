@@ -126,8 +126,8 @@ shellQuoteLines()
 
 makeabs()
 {
-    local FILE=$1
-    local RES=$FILE
+    local FILE="$1"
+    local RES="$FILE"
     if [ -z "${FILE##/*}" ]; then
         true
     elif [ "$OSTYPE" = "msys" -a -z "${FILE##[a-zA-Z]:[/\\]*}" ]; then
