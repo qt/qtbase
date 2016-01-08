@@ -2490,11 +2490,8 @@ qint64 QAbstractSocket::writeData(const char *data, qint64 size)
     } else if (!d->isBuffered && d->socketType != TcpSocket) {
         // This is for a QUdpSocket that was connect()ed
         qint64 written = d->socketEngine->write(data, size);
-        if (written < 0) {
+        if (written < 0)
             d->setError(d->socketEngine->error(), d->socketEngine->errorString());
-        } else if (!d->writeBuffer.isEmpty()) {
-            d->socketEngine->setWriteNotificationEnabled(true);
-        }
 
 #if defined (QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocket::writeData(%p \"%s\", %lli) == %lli", data,
