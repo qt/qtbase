@@ -644,7 +644,10 @@ void QGLXContext::queryDummyContext()
         oldSurface = oldContext->surface();
 
     QScopedPointer<QSurface> surface;
-    const char *glxvendor = glXGetClientString(glXGetCurrentDisplay(), GLX_VENDOR);
+    Display *display = glXGetCurrentDisplay();
+    const char *glxvendor = 0;
+    if (display)
+        glxvendor = glXGetClientString(display, GLX_VENDOR);
     if (glxvendor && !strcmp(glxvendor, "ATI")) {
         QWindow *window = new QWindow;
         window->resize(64, 64);
