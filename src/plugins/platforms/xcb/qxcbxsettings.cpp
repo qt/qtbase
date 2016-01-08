@@ -36,6 +36,9 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QtEndian>
 
+#include <vector>
+#include <algorithm>
+
 #ifdef XCB_USE_XLIB
 #include <X11/extensions/XIproto.h>
 #endif //XCB_USE_XLIB
@@ -49,9 +52,8 @@ enum XSettingsType {
     XSettingsTypeColor = 2
 };
 
-class QXcbXSettingsCallback
+struct QXcbXSettingsCallback
 {
-public:
     QXcbXSettings::PropertyChangeFunc func;
     void *handle;
 };
@@ -69,23 +71,19 @@ public:
             return;
         this->value = value;
         this->last_change_serial = last_change_serial;
-        QLinkedList<QXcbXSettingsCallback>::const_iterator it = callback_links.begin();
-        for (;it != callback_links.end();++it) {
-            it->func(screen,name,value,it->handle);
-        }
+        for (const auto &callback : callback_links)
+            callback.func(screen, name, value, callback.handle);
     }
 
     void addCallback(QXcbXSettings::PropertyChangeFunc func, void *handle)
     {
-        QXcbXSettingsCallback callback;
-        callback.func = func;
-        callback.handle = handle;
-        callback_links.append(callback);
+        QXcbXSettingsCallback callback = { func, handle };
+        callback_links.push_back(callback);
     }
 
     QVariant value;
     int last_change_serial;
-    QLinkedList<QXcbXSettingsCallback> callback_links;
+    std::vector<QXcbXSettingsCallback> callback_links;
 
 };
 
@@ -299,14 +297,13 @@ void QXcbXSettings::registerCallbackForProperty(const QByteArray &property, QXcb
 void QXcbXSettings::removeCallbackForHandle(const QByteArray &property, void *handle)
 {
     Q_D(QXcbXSettings);
-    QXcbXSettingsPropertyValue &value = d->settings[property];
-    QLinkedList<QXcbXSettingsCallback>::iterator it = value.callback_links.begin();
-    while (it != value.callback_links.end()) {
-        if (it->handle == handle)
-            it = value.callback_links.erase(it);
-        else
-            ++it;
-    }
+    auto &callbacks = d->settings[property].callback_links;
+
+    auto isCallbackForHandle = [handle](const QXcbXSettingsCallback &cb) { return cb.handle == handle; };
+
+    callbacks.erase(std::remove_if(callbacks.begin(), callbacks.end(),
+                                   isCallbackForHandle),
+                    callbacks.end());
 }
 
 void QXcbXSettings::removeCallbackForHandle(void *handle)
