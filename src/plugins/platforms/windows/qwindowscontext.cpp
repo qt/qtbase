@@ -405,14 +405,29 @@ void QWindowsContext::setTabletAbsoluteRange(int a)
 #endif
 }
 
+int QWindowsContext::processDpiAwareness()
+{
+#ifndef Q_OS_WINCE
+    int result;
+    if (QWindowsContext::shcoredll.getProcessDpiAwareness
+        && SUCCEEDED(QWindowsContext::shcoredll.getProcessDpiAwareness(NULL, &result))) {
+        return result;
+    }
+#endif // !Q_OS_WINCE
+    return -1;
+}
+
 void QWindowsContext::setProcessDpiAwareness(QtWindows::ProcessDpiAwareness dpiAwareness)
 {
 #ifndef Q_OS_WINCE
     qCDebug(lcQpaWindows) << __FUNCTION__ << dpiAwareness;
     if (QWindowsContext::shcoredll.isValid()) {
         const HRESULT hr = QWindowsContext::shcoredll.setProcessDpiAwareness(dpiAwareness);
-        if (FAILED(hr))
-            qWarning() << "SetProcessDpiAwareness failed:" << QWindowsContext::comErrorString(hr);
+        if (FAILED(hr)) {
+            qWarning().noquote().nospace() << "SetProcessDpiAwareness("
+                << dpiAwareness << ") failed: " << QWindowsContext::comErrorString(hr)
+                << ", using " << QWindowsContext::processDpiAwareness();
+        }
     } else {
         if (dpiAwareness != QtWindows::ProcessDpiUnaware && QWindowsContext::user32dll.setProcessDPIAware) {
             if (!QWindowsContext::user32dll.setProcessDPIAware())

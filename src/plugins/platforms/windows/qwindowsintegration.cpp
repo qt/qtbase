@@ -224,7 +224,8 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
         dpiAwarenessSet = true;
     }
     qCDebug(lcQpaWindows)
-        << __FUNCTION__ << "DpiAwareness=" << dpiAwareness;
+        << __FUNCTION__ << "DpiAwareness=" << dpiAwareness
+        << "effective process DPI awareness=" << QWindowsContext::processDpiAwareness();
 
     m_context.initTouch(m_options);
 }
