@@ -295,6 +295,11 @@ void QXcbConnection::xi2Select(xcb_window_t window)
             bitMask |= XI_ButtonPressMask;
             bitMask |= XI_ButtonReleaseMask;
             bitMask |= XI_MotionMask;
+
+            // There is a check for enter/leave events in plain xcb enter/leave event handler
+            bitMask |= XI_EnterMask;
+            bitMask |= XI_LeaveMask;
+
             qCDebug(lcQpaXInput, "XInput 2.2: Selecting press/release/motion events in addition to touch");
         }
         XIEventMask mask;
@@ -309,9 +314,12 @@ void QXcbConnection::xi2Select(xcb_window_t window)
         if (result != Success)
             qCDebug(lcQpaXInput, "XInput 2.2: failed to select pointer/touch events, window %x, result %d", window, result);
     }
-#endif // XCB_USE_XINPUT22
 
     const bool pointerSelected = isAtLeastXI22() && xi2MouseEvents();
+#else
+    const bool pointerSelected = false;
+#endif // XCB_USE_XINPUT22
+
     QSet<int> tabletDevices;
 #ifndef QT_NO_TABLETEVENT
     if (!m_tabletData.isEmpty()) {
@@ -478,6 +486,7 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
     xXIGenericDeviceEvent *xiEvent = reinterpret_cast<xXIGenericDeviceEvent *>(event);
     int sourceDeviceId = xiEvent->deviceid; // may be the master id
     xXIDeviceEvent *xiDeviceEvent = 0;
+    xXIEnterEvent *xiEnterEvent = 0;
     QXcbWindowEventListener *eventListener = 0;
 
     switch (xiEvent->evtype) {
@@ -492,12 +501,14 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
     {
         xiDeviceEvent = reinterpret_cast<xXIDeviceEvent *>(event);
         eventListener = windowEventListenerFromId(xiDeviceEvent->event);
-        if (eventListener) {
-            long result = 0;
-            if (eventListener->handleGenericEvent(reinterpret_cast<xcb_generic_event_t *>(event), &result))
-                return;
-        }
         sourceDeviceId = xiDeviceEvent->sourceid; // use the actual device id instead of the master
+        break;
+    }
+    case XI_Enter:
+    case XI_Leave: {
+        xiEnterEvent = reinterpret_cast<xXIEnterEvent *>(event);
+        eventListener = windowEventListenerFromId(xiEnterEvent->event);
+        sourceDeviceId = xiEnterEvent->sourceid; // use the actual device id instead of the master
         break;
     }
     case XI_HierarchyChanged:
@@ -510,11 +521,19 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
         break;
     }
 
+    if (eventListener) {
+        long result = 0;
+        if (eventListener->handleGenericEvent(reinterpret_cast<xcb_generic_event_t *>(event), &result))
+            return;
+    }
+
 #ifndef QT_NO_TABLETEVENT
-    for (int i = 0; i < m_tabletData.count(); ++i) {
-        if (m_tabletData.at(i).deviceId == sourceDeviceId) {
-            if (xi2HandleTabletEvent(xiEvent, &m_tabletData[i], eventListener))
-                return;
+    if (!xiEnterEvent) {
+        for (int i = 0; i < m_tabletData.count(); ++i) {
+            if (m_tabletData.at(i).deviceId == sourceDeviceId) {
+                if (xi2HandleTabletEvent(xiEvent, &m_tabletData[i], eventListener))
+                    return;
+            }
         }
     }
 #endif // QT_NO_TABLETEVENT
@@ -545,6 +564,13 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
                         fixed1616ToReal(xiDeviceEvent->root_x), fixed1616ToReal(xiDeviceEvent->root_y),xiDeviceEvent->event);
             if (QXcbWindow *platformWindow = platformWindowFromId(xiDeviceEvent->event))
                 xi2ProcessTouch(xiDeviceEvent, platformWindow);
+            break;
+        }
+    } else if (xiEnterEvent && xi2MouseEvents() && eventListener) {
+        switch (xiEnterEvent->evtype) {
+        case XI_Enter:
+        case XI_Leave:
+            eventListener->handleXIEnterLeave(event);
             break;
         }
     }
@@ -751,6 +777,8 @@ bool QXcbConnection::xi2SetMouseGrabEnabled(xcb_window_t w, bool grab)
     XISetMask(mask, XI_ButtonPress);
     XISetMask(mask, XI_ButtonRelease);
     XISetMask(mask, XI_Motion);
+    XISetMask(mask, XI_Enter);
+    XISetMask(mask, XI_Leave);
     XISetMask(mask, XI_TouchBegin);
     XISetMask(mask, XI_TouchUpdate);
     XISetMask(mask, XI_TouchEnd);
@@ -860,9 +888,9 @@ void QXcbConnection::updateScrollingDevice(ScrollingDevice &scrollingDevice, int
 #endif
 }
 
-void QXcbConnection::handleEnterEvent(const xcb_enter_notify_event_t *)
-{
 #ifdef XCB_USE_XINPUT21
+void QXcbConnection::handleEnterEvent()
+{
     QHash<int, ScrollingDevice>::iterator it = m_scrollingDevices.begin();
     const QHash<int, ScrollingDevice>::iterator end = m_scrollingDevices.end();
     while (it != end) {
@@ -878,8 +906,8 @@ void QXcbConnection::handleEnterEvent(const xcb_enter_notify_event_t *)
         XIFreeDeviceInfo(xiDeviceInfo);
         ++it;
     }
-#endif
 }
+#endif
 
 void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollingDevice)
 {

@@ -797,9 +797,9 @@ void QXcbKeyboard::updateXKBStateFromCore(quint16 state)
     }
 }
 
+#ifdef XCB_USE_XINPUT22
 void QXcbKeyboard::updateXKBStateFromXI(void *modInfo, void *groupInfo)
 {
-#ifdef XCB_USE_XINPUT22
     if (m_config && !connection()->hasXKB()) {
         xXIModifierInfo *mods = static_cast<xXIModifierInfo *>(modInfo);
         xXIGroupInfo *group = static_cast<xXIGroupInfo *>(groupInfo);
@@ -815,12 +815,8 @@ void QXcbKeyboard::updateXKBStateFromXI(void *modInfo, void *groupInfo)
             //qWarning("TODO: Support KeyboardLayoutChange on QPA (QTBUG-27681)");
         }
     }
-#else
-    Q_UNUSED(modInfo);
-    Q_UNUSED(groupInfo);
-    Q_ASSERT(false); // this can't be
-#endif
 }
+#endif
 
 quint32 QXcbKeyboard::xkbModMask(quint16 state)
 {

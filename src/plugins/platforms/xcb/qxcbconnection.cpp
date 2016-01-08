@@ -613,8 +613,8 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     initializeScreens();
 
     initializeXRender();
-    m_xi2Enabled = false;
 #if defined(XCB_USE_XINPUT2)
+    m_xi2Enabled = false;
     initializeXInput2();
 #endif
     initializeXShape();
@@ -1133,8 +1133,16 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             handleClientMessageEvent((xcb_client_message_event_t *)event);
             break;
         case XCB_ENTER_NOTIFY:
+#ifdef XCB_USE_XINPUT22
+            if (isAtLeastXI22() && xi2MouseEvents())
+                break;
+#endif
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
         case XCB_LEAVE_NOTIFY:
+#ifdef XCB_USE_XINPUT22
+            if (isAtLeastXI22() && xi2MouseEvents())
+                break;
+#endif
             m_keyboard->updateXKBStateFromCore(((xcb_leave_notify_event_t *)event)->state);
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_leave_notify_event_t, event, handleLeaveNotifyEvent);
         case XCB_FOCUS_IN:
@@ -2217,13 +2225,15 @@ void QXcbConnection::initializeXKB()
 #endif
 }
 
+#if defined(XCB_USE_XINPUT22)
 bool QXcbConnection::xi2MouseEvents() const
 {
     static bool mouseViaXI2 = !qEnvironmentVariableIsSet("QT_XCB_NO_XI2_MOUSE");
-    // Don't use XInput2 when Xinerama extension is enabled,
-    // because it causes problems with multi-monitor setup.
+    // FIXME: Don't use XInput2 mouse events when Xinerama extension
+    // is enabled, because it causes problems with multi-monitor setup.
     return mouseViaXI2 && !has_xinerama_extension;
 }
+#endif
 
 #if defined(XCB_USE_XINPUT2)
 static int xi2ValuatorOffset(unsigned char *maskPtr, int maskLen, int number)
