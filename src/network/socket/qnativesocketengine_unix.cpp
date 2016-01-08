@@ -972,7 +972,7 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
 #  elif defined(IP_SENDSRCADDR)
             struct in_addr *data = reinterpret_cast<in_addr *>(CMSG_DATA(cmsgptr));
             cmsgptr->cmsg_type = IP_SENDSRCADDR;
-            addr->s_addr = htonl(header.senderAddress.toIPv4Address());
+            data->s_addr = htonl(header.senderAddress.toIPv4Address());
 #  endif
             cmsgptr->cmsg_level = IPPROTO_IP;
             msg.msg_controllen += CMSG_SPACE(sizeof(*data));

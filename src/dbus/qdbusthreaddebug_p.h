@@ -83,7 +83,7 @@ enum ThreadAction {
     HandleObjectCallPostEventAction = 22,
     HandleObjectCallSemaphoreAction = 23,
     DoDispatchAction = 24,
-    // unused: 25,
+    SetDispatchEnabledAction = 25,
     MessageResultReceivedAction = 26,
     ActivateSignalAction = 27,
     PendingCallBlockAction = 28,

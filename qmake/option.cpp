@@ -602,8 +602,9 @@ void EvalHandler::message(int type, const QString &msg, const QString &fileName,
         fprintf(stderr, "%s%s\n", qPrintable(pfx), qPrintable(msg));
 }
 
-void EvalHandler::fileMessage(const QString &msg)
+void EvalHandler::fileMessage(int type, const QString &msg)
 {
+    Q_UNUSED(type)
     fprintf(stderr, "%s\n", qPrintable(msg));
 }
 

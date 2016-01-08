@@ -31,9 +31,9 @@ qtdocs.value = $$[QT_INSTALL_DOCS/src]
 QT_TOOL_ENV = qtver qtmver qtvertag qtdocs
 qtPrepareTool(QDOC, qdoc)
 QT_TOOL_ENV =
-QDOC += -outputdir $$QMAKE_DOCS_OUTPUTDIR
+QDOC += -outputdir $$shell_quote($$QMAKE_DOCS_OUTPUTDIR)
 !build_online_docs: \
-    QDOC += -installdir $$[QT_INSTALL_DOCS]
+    QDOC += -installdir $$shell_quote($$[QT_INSTALL_DOCS])
 PREP_DOC_INDEXES =
 DOC_INDEXES =
 !isEmpty(QTREPOS) {
@@ -46,14 +46,14 @@ DOC_INDEXES =
             mps += $$dirname(QT.$${d}.libs)
         mps = $$unique(mps)
         for (mp, mps): \
-            PREP_DOC_INDEXES += -indexdir $$mp/doc
+            PREP_DOC_INDEXES += -indexdir $$shell_quote($$mp/doc)
     }
     for(qrep, QTREPOS): \
-        DOC_INDEXES += -indexdir $$qrep/doc
+        DOC_INDEXES += -indexdir $$shell_quote($$qrep/doc)
 } else {
     prepare_docs: \
-        PREP_DOC_INDEXES += -indexdir $$[QT_INSTALL_DOCS/get]
-    DOC_INDEXES += -indexdir $$[QT_INSTALL_DOCS/get]
+        PREP_DOC_INDEXES += -indexdir $$shell_quote($$[QT_INSTALL_DOCS/get])
+    DOC_INDEXES += -indexdir $$shell_quote($$[QT_INSTALL_DOCS/get])
 }
 doc_command = $$QDOC $$QMAKE_DOCS
 prepare_docs {
@@ -65,7 +65,7 @@ prepare_docs {
 
 !build_online_docs {
     qtPrepareTool(QHELPGENERATOR, qhelpgenerator)
-    qch_docs.commands = $$QHELPGENERATOR $$QMAKE_DOCS_OUTPUTDIR/$${QMAKE_DOCS_TARGET}.qhp -o $$QMAKE_DOCS_BASE_OUTDIR/$${QMAKE_DOCS_TARGET}.qch
+    qch_docs.commands = $$QHELPGENERATOR $$shell_quote($$QMAKE_DOCS_OUTPUTDIR/$${QMAKE_DOCS_TARGET}.qhp) -o $$shell_quote($$QMAKE_DOCS_BASE_OUTDIR/$${QMAKE_DOCS_TARGET}.qch)
 
     inst_html_docs.files = $$QMAKE_DOCS_OUTPUTDIR
     inst_html_docs.path = $$[QT_INSTALL_DOCS]

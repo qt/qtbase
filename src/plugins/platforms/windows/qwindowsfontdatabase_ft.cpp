@@ -308,7 +308,7 @@ static QStringList fontNamesFromTTCFile(const QString &filename)
         if (ttcTableHeader.majorVersion < 1 || ttcTableHeader.majorVersion > 2)
             return retVal;
         QVarLengthArray<quint32> offsetTable(ttcTableHeader.numFonts);
-        bytesToRead = sizeof(offsetTable) * ttcTableHeader.numFonts;
+        bytesToRead = sizeof(quint32) * ttcTableHeader.numFonts;
         bytesRead = f.read((char*)offsetTable.data(), bytesToRead);
         if (bytesToRead != bytesRead)
             return retVal;

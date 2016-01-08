@@ -741,15 +741,15 @@ void QApplicationPrivate::initializeWidgetFontHash()
     if (const QFont *font = theme->font(QPlatformTheme::ItemViewFont))
         fontHash->insert(QByteArrayLiteral("QAbstractItemView"), *font);
     if (const QFont *font = theme->font(QPlatformTheme::ListViewFont))
-        fontHash->insert(QByteArrayLiteral("QListViewFont"), *font);
+        fontHash->insert(QByteArrayLiteral("QListView"), *font);
     if (const QFont *font = theme->font(QPlatformTheme::HeaderViewFont))
-        fontHash->insert(QByteArrayLiteral("QHeaderViewFont"), *font);
+        fontHash->insert(QByteArrayLiteral("QHeaderView"), *font);
     if (const QFont *font = theme->font(QPlatformTheme::ListBoxFont))
         fontHash->insert(QByteArrayLiteral("QListBox"), *font);
     if (const QFont *font = theme->font(QPlatformTheme::ComboMenuItemFont))
-        fontHash->insert(QByteArrayLiteral("QComboMenuItemFont"), *font);
+        fontHash->insert(QByteArrayLiteral("QComboMenuItem"), *font);
     if (const QFont *font = theme->font(QPlatformTheme::ComboLineEditFont))
-        fontHash->insert(QByteArrayLiteral("QComboLineEditFont"), *font);
+        fontHash->insert(QByteArrayLiteral("QComboLineEdit"), *font);
     if (const QFont *font = theme->font(QPlatformTheme::SmallFont))
         fontHash->insert(QByteArrayLiteral("QSmallFont"), *font);
     if (const QFont *font = theme->font(QPlatformTheme::MiniFont))

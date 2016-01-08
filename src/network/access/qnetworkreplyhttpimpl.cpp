@@ -1584,7 +1584,7 @@ QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNe
         QByteArray maxAge = cacheControl.value("max-age");
         if (!maxAge.isEmpty()) {
             checkExpired = false;
-            QDateTime dt = QDateTime::currentDateTime();
+            QDateTime dt = QDateTime::currentDateTimeUtc();
             dt = dt.addSecs(maxAge.toInt());
             metaData.setExpirationDate(dt);
         }

@@ -33,6 +33,7 @@
 
 #include "qdnslookup_p.h"
 
+#include <qfunctions_winrt.h>
 #include <qurl.h>
 #include <qdebug.h>
 
@@ -49,6 +50,8 @@ using namespace ABI::Windows::Foundation::Collections;
 using namespace ABI::Windows::Networking;
 using namespace ABI::Windows::Networking::Connectivity;
 using namespace ABI::Windows::Networking::Sockets;
+
+#define E_NO_SUCH_HOST 0x80072af9
 
 QT_BEGIN_NAMESPACE
 
@@ -83,40 +86,47 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
     }
     ComPtr<IHostName> host;
     HStringReference hostNameRef((const wchar_t*)aceHostname.utf16());
-    hostnameFactory->CreateHostName(hostNameRef.Get(), &host);
+    hr = hostnameFactory->CreateHostName(hostNameRef.Get(), &host);
+    Q_ASSERT_SUCCEEDED(hr);
 
     ComPtr<IDatagramSocketStatics> datagramSocketStatics;
-    GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_Sockets_DatagramSocket).Get(), &datagramSocketStatics);
+    hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_Sockets_DatagramSocket).Get(), &datagramSocketStatics);
+    Q_ASSERT_SUCCEEDED(hr);
 
     ComPtr<IAsyncOperation<IVectorView<EndpointPair *> *>> op;
-    datagramSocketStatics->GetEndpointPairsAsync(host.Get(),
+    hr = datagramSocketStatics->GetEndpointPairsAsync(host.Get(),
                                                  HString::MakeReference(L"0").Get(),
                                                  &op);
+    Q_ASSERT_SUCCEEDED(hr);
 
     ComPtr<IVectorView<EndpointPair *>> endpointPairs;
-    hr = op->GetResults(&endpointPairs);
-    int waitCount = 0;
-    while (hr == E_ILLEGAL_METHOD_CALL) {
-        WaitForSingleObjectEx(GetCurrentThread(), 50, FALSE);
-        hr = op->GetResults(&endpointPairs);
-        if (++waitCount > 1200) // Wait for 1 minute max
-            return;
+    hr = QWinRTFunctions::await(op, endpointPairs.GetAddressOf(), QWinRTFunctions::YieldThread, 60 * 1000);
+    if (hr == E_NO_SUCH_HOST || !endpointPairs) {
+        reply->error = QDnsLookup::NotFoundError;
+        reply->errorString = tr("Host %1 could not be found.").arg(aceHostname);
+        return;
+    }
+    if (FAILED(hr)) {
+        reply->error = QDnsLookup::ServerFailureError;
+        reply->errorString = tr("Unknown error");
+        return;
     }
 
-    if (!endpointPairs)
-        return;
-
     unsigned int size;
-    endpointPairs->get_Size(&size);
+    hr = endpointPairs->get_Size(&size);
+    Q_ASSERT_SUCCEEDED(hr);
     // endpoint pairs might contain duplicates so we temporarily store addresses in a QSet
     QSet<QHostAddress> addresses;
     for (unsigned int i = 0; i < size; ++i) {
         ComPtr<IEndpointPair> endpointpair;
-        endpointPairs->GetAt(i, &endpointpair);
+        hr = endpointPairs->GetAt(i, &endpointpair);
+        Q_ASSERT_SUCCEEDED(hr);
         ComPtr<IHostName> remoteHost;
-        endpointpair->get_RemoteHostName(&remoteHost);
+        hr = endpointpair->get_RemoteHostName(&remoteHost);
+        Q_ASSERT_SUCCEEDED(hr);
         HostNameType type;
-        remoteHost->get_Type(&type);
+        hr = remoteHost->get_Type(&type);
+        Q_ASSERT_SUCCEEDED(hr);
         if (type == HostNameType_Bluetooth || type == HostNameType_DomainName
                 || (requestType != QDnsLookup::ANY
                 && ((type == HostNameType_Ipv4 && requestType == QDnsLookup::AAAA)
@@ -124,7 +134,8 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
             continue;
 
         HString name;
-        remoteHost->get_CanonicalName(name.GetAddressOf());
+        hr = remoteHost->get_CanonicalName(name.GetAddressOf());
+        Q_ASSERT_SUCCEEDED(hr);
         UINT32 length;
         PCWSTR rawString = name.GetRawBuffer(&length);
         addresses.insert(QHostAddress(QString::fromWCharArray(rawString, length)));

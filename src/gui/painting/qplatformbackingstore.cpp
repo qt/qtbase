@@ -371,17 +371,13 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
     if (textureId) {
         if (d_ptr->needsSwizzle)
             d_ptr->blitter->setSwizzleRB(true);
-        // offset is usually (0, 0) unless we have native child widgets.
-        if (offset.isNull()) {
-            d_ptr->blitter->blit(textureId, QMatrix4x4(), origin);
-        } else {
-            // The backingstore is for the entire tlw. offset tells the position of the native child in the tlw.
-            const QRect srcRect = toBottomLeftRect(deviceWindowRect.translated(offset), d_ptr->textureSize.height());
-            const QMatrix3x3 source = QOpenGLTextureBlitter::sourceTransform(deviceRect(srcRect, window),
-                                                                             d_ptr->textureSize,
-                                                                             origin);
-            d_ptr->blitter->blit(textureId, QMatrix4x4(), source);
-        }
+        // The backingstore is for the entire tlw.
+        // In case of native children offset tells the position relative to the tlw.
+        const QRect srcRect = toBottomLeftRect(deviceWindowRect.translated(offset), d_ptr->textureSize.height());
+        const QMatrix3x3 source = QOpenGLTextureBlitter::sourceTransform(deviceRect(srcRect, window),
+                                                                         d_ptr->textureSize,
+                                                                         origin);
+        d_ptr->blitter->blit(textureId, QMatrix4x4(), source);
         if (d_ptr->needsSwizzle)
             d_ptr->blitter->setSwizzleRB(false);
     }

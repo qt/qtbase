@@ -198,6 +198,15 @@ private:
     HRESULT __stdcall OnLaunched(ILaunchActivatedEventArgs *launchArgs) Q_DECL_OVERRIDE
     {
 #if _MSC_VER >= 1900
+        ComPtr<IPrelaunchActivatedEventArgs> preArgs;
+        HRESULT hr = launchArgs->QueryInterface(preArgs.GetAddressOf());
+        if (SUCCEEDED(hr)) {
+            boolean prelaunched;
+            preArgs->get_PrelaunchActivated(&prelaunched);
+            if (prelaunched)
+                return S_OK;
+        }
+
         commandLine = QString::fromWCharArray(GetCommandLine()).toUtf8();
 #endif
         HString launchCommandLine;

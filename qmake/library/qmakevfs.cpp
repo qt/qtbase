@@ -52,8 +52,8 @@ QMakeVfs::QMakeVfs()
 {
 }
 
-bool QMakeVfs::writeFile(const QString &fn, QIODevice::OpenMode mode, const QString &contents,
-                         QString *errStr)
+bool QMakeVfs::writeFile(const QString &fn, QIODevice::OpenMode mode, bool exe,
+                         const QString &contents, QString *errStr)
 {
 #ifndef PROEVALUATOR_FULL
 # ifdef PROEVALUATOR_THREAD_SAFE
@@ -75,8 +75,16 @@ bool QMakeVfs::writeFile(const QString &fn, QIODevice::OpenMode mode, const QStr
     QByteArray bytes = contents.toLocal8Bit();
     QFile cfile(fn);
     if (!(mode & QIODevice::Append) && cfile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        if (cfile.readAll() == bytes)
+        if (cfile.readAll() == bytes) {
+            if (exe) {
+                cfile.setPermissions(cfile.permissions()
+                                     | QFile::ExeUser | QFile::ExeGroup | QFile::ExeOther);
+            } else {
+                cfile.setPermissions(cfile.permissions()
+                                     & ~(QFile::ExeUser | QFile::ExeGroup | QFile::ExeOther));
+            }
             return true;
+        }
         cfile.close();
     }
     if (!cfile.open(mode | QIODevice::WriteOnly | QIODevice::Text)) {
@@ -89,6 +97,9 @@ bool QMakeVfs::writeFile(const QString &fn, QIODevice::OpenMode mode, const QStr
         *errStr = cfile.errorString();
         return false;
     }
+    if (exe)
+        cfile.setPermissions(cfile.permissions()
+                             | QFile::ExeUser | QFile::ExeGroup | QFile::ExeOther);
     return true;
 #endif
 }

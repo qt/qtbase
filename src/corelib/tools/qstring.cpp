@@ -1675,20 +1675,11 @@ void QString::resize(int size)
         return;
     }
 
-    if (size == 0 && !d->capacityReserved) {
-        Data *x = Data::allocate(0);
-        if (!d->ref.deref())
-            Data::deallocate(d);
-        d = x;
-    } else {
-        if (d->ref.isShared() || uint(size) + 1u > d->alloc
-                || (!d->capacityReserved && size < d->size
-                    && uint(size) + 1u < uint(d->alloc >> 1)))
-            reallocData(uint(size) + 1u, true);
-        if (d->alloc) {
-            d->size = size;
-            d->data()[size] = '\0';
-        }
+    if (d->ref.isShared() || uint(size) + 1u > d->alloc)
+        reallocData(uint(size) + 1u, true);
+    if (d->alloc) {
+        d->size = size;
+        d->data()[size] = '\0';
     }
 }
 

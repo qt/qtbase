@@ -33,8 +33,21 @@
 #############################################################################
 
 use strict;
-my $syntax = "findclasslist.pl [private header list]\n" .
+my $syntax = "findclasslist.pl <file (containing private header list)>\n" .
              "Replaces \@CLASSLIST\@ with the classes found in the header files\n";
+
+die("Expected exactly one argument") if (@ARGV != 1);
+
+my @headers = ();
+
+# Expand contents of the command-line arguments file
+open ARGFILE, "<$ARGV[0]" or die("Could not open arguments file $ARGV[0]: $!");
+while (my $line = <ARGFILE>) {
+    chomp($line);
+    push @headers, $line;
+}
+close ARGFILE;
+
 $\ = $/;
 while (<STDIN>) {
     chomp;
@@ -44,7 +57,7 @@ while (<STDIN>) {
     }
 
     # Replace @CLASSLIST@ with the class list
-    for my $header (@ARGV) {
+    for my $header (@headers) {
         open HDR, "<$header" or die("Could not open header $header: $!");
         my $comment = "    /* $header */";
         while (my $line = <HDR>) {

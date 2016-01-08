@@ -496,6 +496,11 @@ bool QDBusConnectionPrivate::handleMessage(const QDBusMessage &amsg)
 
     if (!ref.load())
         return false;
+    if (!dispatchEnabled && !QDBusMessagePrivate::isLocal(amsg)) {
+        // queue messages only, we'll handle them later
+        pendingMessages << amsg;
+        return amsg.type() == QDBusMessage::MethodCallMessage;
+    }
 
     switch (amsg.type()) {
     case QDBusMessage::SignalMessage:
@@ -687,6 +692,20 @@ static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
 
     // no slot matched
     return -1;
+}
+
+/*!
+    \internal
+    Enables or disables the delivery of incoming method calls and signals. If
+    \a enable is true, this will also cause any queued, pending messages to be
+    delivered.
+ */
+void QDBusConnectionPrivate::setDispatchEnabled(bool enable)
+{
+    QDBusDispatchLocker locker(SetDispatchEnabledAction, this);
+    dispatchEnabled = enable;
+    if (enable)
+        emit dispatchStatusChanged();
 }
 
 static QDBusCallDeliveryEvent * const DIRECT_DELIVERY = (QDBusCallDeliveryEvent *)1;
@@ -945,7 +964,8 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
     : QObject(p), ref(1), capabilities(0), mode(InvalidMode), busService(0),
       dispatchLock(QMutex::Recursive), connection(0),
       rootNode(QString(QLatin1Char('/'))),
-      anonymousAuthenticationAllowed(false)
+      anonymousAuthenticationAllowed(false),
+      dispatchEnabled(true)
 {
     static const bool threads = q_dbus_threads_init_default();
     if (::isDebugging == -1)
@@ -1065,8 +1085,17 @@ void QDBusConnectionPrivate::timerEvent(QTimerEvent *e)
 void QDBusConnectionPrivate::doDispatch()
 {
     QDBusDispatchLocker locker(DoDispatchAction, this);
-    if (mode == ClientMode || mode == PeerMode)
+    if (mode == ClientMode || mode == PeerMode) {
         while (q_dbus_connection_dispatch(connection) == DBUS_DISPATCH_DATA_REMAINS) ;
+        if (dispatchEnabled && !pendingMessages.isEmpty()) {
+            // dispatch previously queued messages
+            PendingMessageList::Iterator it = pendingMessages.begin();
+            PendingMessageList::Iterator end = pendingMessages.end();
+            for ( ; it != end; ++it)
+                handleMessage(qMove(*it));
+            pendingMessages.clear();
+        }
+    }
 }
 
 void QDBusConnectionPrivate::socketRead(int fd)
@@ -1789,8 +1818,8 @@ bool QDBusConnectionPrivate::send(const QDBusMessage& message)
     }
 
     q_dbus_message_set_no_reply(msg, true); // the reply would not be delivered to anything
-    qDBusDebug() << this << "sending message (no reply):" << message;
     emit messageNeedsSending(Q_NULLPTR, msg);
+    qDBusDebug() << this << "sending message (no reply):" << message;
     return true;
 }
 
@@ -1989,8 +2018,8 @@ QDBusPendingCallPrivate *QDBusConnectionPrivate::sendWithReplyAsync(const QDBusM
         lastError = error;
         processFinishedCall(pcall);
     } else {
-        qDBusDebug() << this << "sending message:" << message;
         emit messageNeedsSending(pcall, msg, timeout);
+        qDBusDebug() << this << "sending message:" << message;
     }
     return pcall;
 }

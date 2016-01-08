@@ -58,7 +58,7 @@ class Q_CORE_EXPORT QWinOverlappedIoNotifier : public QObject
     Q_OBJECT
     Q_DISABLE_COPY(QWinOverlappedIoNotifier)
     Q_DECLARE_PRIVATE(QWinOverlappedIoNotifier)
-    Q_PRIVATE_SLOT(d_func(), OVERLAPPED *_q_notified())
+    Q_PRIVATE_SLOT(d_func(), void _q_notified())
     friend class QWinIoCompletionPort;
 public:
     QWinOverlappedIoNotifier(QObject *parent = 0);

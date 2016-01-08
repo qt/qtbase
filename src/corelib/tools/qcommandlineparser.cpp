@@ -540,7 +540,13 @@ static inline bool displayMessageBox()
 
 static void showParserMessage(const QString &message, MessageType type)
 {
-#if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WINRT)
+    if (type == UsageMessage)
+        qInfo(qPrintable(message));
+    else
+        qCritical(qPrintable(message));
+    return;
+#elif defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED) && !defined(Q_OS_WINCE)
     if (displayMessageBox()) {
         const UINT flags = MB_OK | MB_TOPMOST | MB_SETFOREGROUND
             | (type == UsageMessage ? MB_ICONINFORMATION : MB_ICONERROR);
@@ -553,7 +559,7 @@ static void showParserMessage(const QString &message, MessageType type)
                     reinterpret_cast<const wchar_t *>(title.utf16()), flags);
         return;
     }
-#endif // Q_OS_WIN && !QT_BOOTSTRAPPED && !Q_OS_WIN && !Q_OS_WINRT
+#endif // Q_OS_WIN && !QT_BOOTSTRAPPED && !Q_OS_WINCE
     fputs(qPrintable(message), type == UsageMessage ? stdout : stderr);
 }
 

@@ -1428,11 +1428,11 @@ void VcprojGenerator::initWinDeployQtTool()
         //  itself contains the original subdirectories as parameters and hence the
         //  call fails.
         //  Neither there is a way to disable this behavior for Windows Phone, nor
-        //  to influence the parameters. Hence the only way to get a release build
+        //  to influence the parameters. Hence the only way to get a build
         //  done is to recreate the directory structure manually by invoking
         //  windeployqt a second time, so that the MDILXapCompile call succeeds and
         //  deployment continues.
-        if (conf.WinPhone && conf.Name == QStringLiteral("Release|ARM")) {
+        if (conf.WinPhone) {
             conf.windeployqt.CommandLine = commandLine
                     + QStringLiteral(" -list relative -dir \"$(MSBuildProjectDirectory)\\")
                     + var("OBJECTS_DIR")

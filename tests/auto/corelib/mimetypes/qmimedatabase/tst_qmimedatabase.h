@@ -70,6 +70,7 @@ private slots:
     void suffixes_data();
     void suffixes();
     void knownSuffix();
+    void symlinkToFifo();
     void fromThreads();
 
     // shared-mime-info test suite

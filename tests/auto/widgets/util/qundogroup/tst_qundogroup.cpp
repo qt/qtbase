@@ -36,7 +36,22 @@
 #include <QAction>
 
 // Temporarily disabling IRIX due to build issuues with GCC
-#if !defined(__sgi) || defined(__sgi) && !defined(__GNUC__)
+#if defined(__sgi) && defined(__GNUC__)
+
+class tst_QUndoGroup : public QObject
+{
+    Q_OBJECT
+public:
+    tst_QUndoGroup() {}
+
+private slots:
+    void setActive() { QSKIP( "Not tested on irix-g++"); }
+    void addRemoveStack() { QSKIP( "Not tested on irix-g++"); }
+    void deleteStack() { QSKIP( "Not tested on irix-g++"); }
+    void checkSignals() { QSKIP( "Not tested on irix-g++"); }
+    void addStackAndDie() { QSKIP( "Not tested on irix-g++"); }
+};
+#else
 
 /******************************************************************************
 ** Commands
@@ -645,22 +660,7 @@ void tst_QUndoGroup::commandTextFormat()
     qApp->removeTranslator(&translator);
 #endif
 }
-
-#else
-class tst_QUndoGroup : public QObject
-{
-    Q_OBJECT
-public:
-    tst_QUndoGroup() {}
-
-private slots:
-    void setActive() { QSKIP( "Not tested on irix-g++"); }
-    void addRemoveStack() { QSKIP( "Not tested on irix-g++"); }
-    void deleteStack() { QSKIP( "Not tested on irix-g++"); }
-    void checkSignals() { QSKIP( "Not tested on irix-g++"); }
-    void addStackAndDie() { QSKIP( "Not tested on irix-g++"); }
-};
-#endif
+#endif // !(SGI && GCC)
 
 QTEST_MAIN(tst_QUndoGroup)
 

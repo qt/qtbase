@@ -420,6 +420,18 @@ QJsonValue QJsonValue::fromVariant(const QVariant &variant)
         return QJsonValue(QJsonObject::fromVariantMap(variant.toMap()));
     case QVariant::Hash:
         return QJsonValue(QJsonObject::fromVariantHash(variant.toHash()));
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QJsonValue:
+        return variant.toJsonValue();
+    case QMetaType::QJsonObject:
+        return variant.toJsonObject();
+    case QMetaType::QJsonArray:
+        return variant.toJsonArray();
+    case QMetaType::QJsonDocument: {
+        QJsonDocument doc = variant.toJsonDocument();
+        return doc.isArray() ? QJsonValue(doc.array()) : QJsonValue(doc.object());
+    }
+#endif
     default:
         break;
     }

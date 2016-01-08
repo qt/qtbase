@@ -439,16 +439,17 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wobjc-method-access")
         enum { NSWindowOcclusionStateVisible = 1UL << 1 };
 #endif
-        if ((NSUInteger)[self.window occlusionState] & NSWindowOcclusionStateVisible) {
-            m_platformWindow->exposeWindow();
-        } else {
-            // Send Obscure events on window occlusion to stop animations. Several
-            // unit tests expect paint and/or expose events for windows that are
-            // sometimes (unpredictably) occlouded: Don't send Obscure events when
-            // running under QTestLib.
-            static bool onTestLib = qt_mac_resolveOption(false, "QT_QTESTLIB_RUNNING");
-            if (!onTestLib)
+        // Several unit tests expect paint and/or expose events for windows that are
+        // sometimes (unpredictably) occluded and some unit tests depend on QWindow::isExposed -
+        // don't send Expose/Obscure events when running under QTestLib.
+        static const bool onTestLib = qt_mac_resolveOption(false, "QT_QTESTLIB_RUNNING");
+        if (!onTestLib) {
+            if ((NSUInteger)[self.window occlusionState] & NSWindowOcclusionStateVisible) {
+                m_platformWindow->exposeWindow();
+            } else {
+                // Send Obscure events on window occlusion to stop animations.
                 m_platformWindow->obscureWindow();
+            }
         }
 #if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_9
 QT_WARNING_POP

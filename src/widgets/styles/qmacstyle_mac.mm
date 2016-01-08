@@ -3666,7 +3666,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 textr.translate(pixmap.width() / pixmap.devicePixelRatio() + 2, 0);
             }
 
-            p->setFont(qt_app_fonts_hash()->value("QSmallFont", QFont()));
             proxy()->drawItemText(p, textr, header->textAlignment | Qt::AlignVCenter, header->palette,
                                        header->state & State_Enabled, header->text, QPalette::ButtonText);
             p->restore();

@@ -60,7 +60,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QLabelPrivate : public QFramePrivate
+class Q_AUTOTEST_EXPORT QLabelPrivate : public QFramePrivate
 {
     Q_DECLARE_PUBLIC(QLabel)
 public:

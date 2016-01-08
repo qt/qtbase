@@ -52,6 +52,7 @@ namespace ABI {
             namespace UI {
                 namespace Input {
                     struct IBackPressedEventArgs;
+                    struct ICameraEventArgs;
                 }
             }
         }
@@ -100,6 +101,9 @@ public:
 private:
 #ifdef Q_OS_WINPHONE
     HRESULT onBackButtonPressed(IInspectable *, ABI::Windows::Phone::UI::Input::IBackPressedEventArgs *args);
+    HRESULT onCameraPressed(IInspectable *, ABI::Windows::Phone::UI::Input::ICameraEventArgs *);
+    HRESULT onCameraHalfPressed(IInspectable *, ABI::Windows::Phone::UI::Input::ICameraEventArgs *);
+    HRESULT onCameraReleased(IInspectable *, ABI::Windows::Phone::UI::Input::ICameraEventArgs *);
 #endif
     HRESULT onSuspended(IInspectable *, ABI::Windows::ApplicationModel::ISuspendingEventArgs *);
     HRESULT onResume(IInspectable *, IInspectable *);

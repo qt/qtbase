@@ -36,6 +36,7 @@
 #include "qdesktopwidget_p.h"
 #include "qscreen.h"
 #include "qwidget_p.h"
+#include "qwindow.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -99,13 +100,18 @@ void QDesktopWidgetPrivate::_q_updateScreens()
 
     QRegion virtualGeometry;
 
-    // update the geometry of each screen widget, determine virtual geometry
-    // and emit change signals afterwards.
+    // update the geometry of each screen widget, determine virtual geometry,
+    // set the new screen for window handle and emit change signals afterwards.
     QList<int> changedScreens;
     for (int i = 0; i < screens.length(); i++) {
-        const QRect screenGeometry = screenList.at(i)->geometry();
-        if (screenGeometry != screens.at(i)->geometry()) {
-            screens.at(i)->setGeometry(screenGeometry);
+        QDesktopScreenWidget *screenWidget = screens.at(i);
+        QScreen *qScreen = screenList.at(i);
+        QWindow *winHandle = screenWidget->windowHandle();
+        if (winHandle && winHandle->screen() != qScreen)
+            winHandle->setScreen(qScreen);
+        const QRect screenGeometry = qScreen->geometry();
+        if (screenGeometry != screenWidget->geometry()) {
+            screenWidget->setGeometry(screenGeometry);
             changedScreens.push_back(i);
         }
         virtualGeometry += screenGeometry;
@@ -189,23 +195,69 @@ const QRect QDesktopWidget::screenGeometry(int screenNo) const
 int QDesktopWidget::screenNumber(const QWidget *w) const
 {
     if (!w)
-        return 0;
+        return primaryScreen();
 
+    const QList<QScreen *> allScreens = QGuiApplication::screens();
+    QList<QScreen *> screens = allScreens;
+    if (screens.isEmpty()) // This should never happen
+        return primaryScreen();
+
+    // If there is more than one virtual desktop
+    if (screens.count() != screens.first()->virtualSiblings().count()) {
+        // Find the root widget, get a QScreen from it and use the
+        // virtual siblings for checking the window position.
+        const QWidget *root = w;
+        const QWidget *tmp = w;
+        while ((tmp = tmp->parentWidget()))
+            root = tmp;
+        const QWindow *winHandle = root->windowHandle();
+        if (winHandle) {
+            const QScreen *winScreen = winHandle->screen();
+            if (winScreen)
+                screens = winScreen->virtualSiblings();
+        }
+    }
+
+    // Get the screen number from window position using screen geometry
+    // and proper screens.
     QRect frame = w->frameGeometry();
     if (!w->isWindow())
         frame.moveTopLeft(w->mapToGlobal(QPoint(0, 0)));
-    const QPoint midpoint = (frame.topLeft() + frame.bottomRight()) / 2;
-    return screenNumber(midpoint);
+
+    QScreen *widgetScreen = Q_NULLPTR;
+    int largestArea = 0;
+    foreach (QScreen *screen, screens) {
+        QRect intersected = screen->geometry().intersected(frame);
+        int area = intersected.width() * intersected.height();
+        if (largestArea < area) {
+            widgetScreen = screen;
+            largestArea = area;
+        }
+    }
+    return allScreens.indexOf(widgetScreen);
 }
 
 int QDesktopWidget::screenNumber(const QPoint &p) const
 {
-    QList<QScreen *> screens = QGuiApplication::screens();
-
-    for (int i = 0; i < screens.size(); ++i)
-        if (screens.at(i)->geometry().contains(p))
-            return i;
-
+    const QList<QScreen *> screens = QGuiApplication::screens();
+    if (!screens.isEmpty()) {
+        const QList<QScreen *> primaryScreens = screens.first()->virtualSiblings();
+        // Find the screen index on the primary virtual desktop first
+        foreach (QScreen *screen, primaryScreens) {
+            if (screen->geometry().contains(p))
+                return screens.indexOf(screen);
+        }
+        // If the screen index is not found on primary virtual desktop, find
+        // the screen index on all screens except the first which was for
+        // sure in the previous loop. Some other screens may repeat. Find
+        // only when there is more than one virtual desktop.
+        if (screens.count() != primaryScreens.count()) {
+            for (int i = 1; i < screens.size(); ++i) {
+                if (screens[i]->geometry().contains(p))
+                    return i;
+            }
+        }
+    }
     return primaryScreen(); //even better would be closest screen
 }
 

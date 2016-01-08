@@ -208,7 +208,7 @@ contains(qt_module_deps, qml): \
 
     !isEmpty(IMPORTS._KEYS_) {
         # add import plugins to LIBS line
-        for (key, IMPORTS._KEYS_): {
+        for (key, IMPORTS._KEYS_) {
             PATH = $$eval(IMPORTS.$${key}.path)
             PLUGIN = $$eval(IMPORTS.$${key}.plugin)
             !isEmpty(PATH):!isEmpty(PLUGIN): LIBS *= -L$$PATH -l$${PLUGIN}$$qtPlatformTargetSuffix()
@@ -347,7 +347,7 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
         QT_LINKAGE = -l$${QTPLUG}$$qtPlatformTargetSuffix()
 
         # Only link against plugin in static builds
-        isEqual(QT_CURRENT_VERIFY, QTPLUGIN): {
+        isEqual(QT_CURRENT_VERIFY, QTPLUGIN) {
             !isEmpty(QT_PLUGINPATH) {
                 plugpath = $$eval(QT_PLUGIN.$${QTPLUG}.PATH)
                 isEmpty(plugpath): \

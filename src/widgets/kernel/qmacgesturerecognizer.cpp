@@ -256,6 +256,7 @@ void QMacPanGestureRecognizer::reset(QGesture *gesture)
     QPanGesture *g = static_cast<QPanGesture *>(gesture);
     _startPos = QPointF();
     _panCanceled = true;
+    _panTimer.stop();
     g->setOffset(QPointF(0, 0));
     g->setLastOffset(QPointF(0, 0));
     g->setAcceleration(qreal(1));

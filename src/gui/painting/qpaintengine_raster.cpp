@@ -4150,7 +4150,7 @@ public:
     inline const QRgba64 *getBuffer(const QGradient &gradient, int opacity) {
         quint64 hash_val = 0;
 
-        QGradientStops stops = gradient.stops();
+        const QGradientStops stops = gradient.stops();
         for (int i = 0; i < stops.size() && i <= 2; i++)
             hash_val += stops[i].second.rgba64();
 

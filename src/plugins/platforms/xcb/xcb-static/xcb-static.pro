@@ -1,7 +1,8 @@
 #
 # Statically compile in code for
 # libxcb-fixes, libxcb-randr, libxcb-shm, libxcb-sync, libxcb-image,
-# libxcb-keysyms, libxcb-icccm, libxcb-renderutil, libxcb-xkb
+# libxcb-keysyms, libxcb-icccm, libxcb-renderutil, libxcb-xkb,
+# libxcb-xinerama
 #
 CONFIG += static
 load(qt_helper_lib)
@@ -28,7 +29,8 @@ SOURCES += \
     $$LIBXCB_DIR/sync.c \
     $$LIBXCB_DIR/render.c \
     $$LIBXCB_DIR/shape.c \
-    $$LIBXCB_DIR/xkb.c
+    $$LIBXCB_DIR/xkb.c \
+    $$LIBXCB_DIR/xinerama.c
 
 #
 # xcb-util

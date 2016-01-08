@@ -66,18 +66,8 @@
 #endif
 
 #ifdef Q_OS_WINRT
-#include <wrl.h>
-#include <windows.networking.h>
-#include <windows.networking.sockets.h>
-#include <windows.networking.connectivity.h>
-using namespace Microsoft::WRL;
-using namespace Microsoft::WRL::Wrappers;
-using namespace ABI::Windows::Foundation;
-using namespace ABI::Windows::Foundation::Collections;
-using namespace ABI::Windows::Networking;
-using namespace ABI::Windows::Networking::Connectivity;
-using namespace ABI::Windows::Networking::Sockets;
-#endif
+#include <Ws2tcpip.h>
+#endif // Q_OS_WINRT
 
 #if defined(Q_OS_VXWORKS) && defined(_WRS_KERNEL)
 #  include <envLib.h>
@@ -1881,8 +1871,6 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "qt_windows.h"
 QT_END_INCLUDE_NAMESPACE
 
-#ifndef Q_OS_WINRT
-
 #  ifndef QT_BOOTSTRAPPED
 class QWindowsSockInit
 {
@@ -1912,8 +1900,6 @@ QWindowsSockInit::~QWindowsSockInit()
 }
 Q_GLOBAL_STATIC(QWindowsSockInit, winsockInit)
 #  endif // QT_BOOTSTRAPPED
-
-#endif // !Q_OS_WINRT
 
 #ifdef Q_OS_WINRT
 static inline HMODULE moduleHandleForFunction(LPCVOID address)
@@ -2807,42 +2793,6 @@ QString QSysInfo::machineHostName()
     struct utsname u;
     if (uname(&u) == 0)
         return QString::fromLocal8Bit(u.nodename);
-#elif defined(Q_OS_WINRT)
-    ComPtr<INetworkInformationStatics> statics;
-    GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_Connectivity_NetworkInformation).Get(), &statics);
-
-    ComPtr<IVectorView<HostName *>> hostNames;
-    statics->GetHostNames(&hostNames);
-    if (!hostNames)
-        return QString();
-
-    unsigned int size;
-    hostNames->get_Size(&size);
-    if (size == 0)
-        return QString();
-
-    for (unsigned int i = 0; i < size; ++i) {
-        ComPtr<IHostName> hostName;
-        hostNames->GetAt(i, &hostName);
-        HostNameType type;
-        hostName->get_Type(&type);
-        if (type != HostNameType_DomainName)
-            continue;
-
-        HString name;
-        hostName->get_CanonicalName(name.GetAddressOf());
-        UINT32 length;
-        PCWSTR rawString = name.GetRawBuffer(&length);
-        return QString::fromWCharArray(rawString, length);
-    }
-    ComPtr<IHostName> firstHost;
-    hostNames->GetAt(0, &firstHost);
-
-    HString name;
-    firstHost->get_CanonicalName(name.GetAddressOf());
-    UINT32 length;
-    PCWSTR rawString = name.GetRawBuffer(&length);
-    return QString::fromWCharArray(rawString, length);
 #else
 #  ifdef Q_OS_WIN
     // Important: QtNetwork depends on machineHostName() initializing ws2_32.dll

@@ -71,7 +71,7 @@ Arguments:
   startcode       pointer to start of the whole pattern's code
   options         the compiling options
   recurses        chain of recurse_check to catch mutual recursion
-  countptr        pointer to call count (to catch over complexity) 
+  countptr        pointer to call count (to catch over complexity)
 
 Returns:   the minimum length
            -1 if \C in UTF-8 mode or (*ACCEPT) was encountered

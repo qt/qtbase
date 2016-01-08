@@ -1,10 +1,16 @@
 TEMPLATE=subdirs
+
+# Run this test first
 SUBDIRS=\
+           qdbusconnection_delayed
+
+SUBDIRS+=\
            qdbusabstractadaptor \
            qdbusabstractinterface \
            qdbusconnection \
            qdbusconnection_no_app \
            qdbusconnection_no_bus \
+           qdbusconnection_no_libdbus \
            qdbuscontext \
            qdbusinterface \
            qdbuslocalcalls \

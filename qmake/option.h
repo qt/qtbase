@@ -67,7 +67,7 @@ class EvalHandler : public QMakeHandler {
 public:
     void message(int type, const QString &msg, const QString &fileName, int lineNo);
 
-    void fileMessage(const QString &msg);
+    void fileMessage(int type, const QString &msg);
 
     void aboutToEval(ProFile *, ProFile *, EvalFileType);
     void doneWithEval(ProFile *);

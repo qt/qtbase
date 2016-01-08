@@ -52,7 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QGraphicsProxyWidgetPrivate : public QGraphicsWidgetPrivate
+class Q_AUTOTEST_EXPORT QGraphicsProxyWidgetPrivate : public QGraphicsWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsProxyWidget)
 public:

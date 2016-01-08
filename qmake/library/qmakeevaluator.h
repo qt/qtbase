@@ -41,7 +41,6 @@
 #include "qmakeparser.h"
 #include "ioutils.h"
 
-#include <qiodevice.h>
 #include <qlist.h>
 #include <qlinkedlist.h>
 #include <qmap.h>
@@ -52,6 +51,8 @@
 #include <qshareddata.h>
 #ifndef QT_BOOTSTRAPPED
 # include <qprocess.h>
+#else
+# include <qiodevice.h>
 #endif
 #ifdef PROEVALUATOR_THREAD_SAFE
 # include <qmutex.h>
@@ -67,6 +68,8 @@ public:
     enum {
         SourceEvaluator = 0x10,
 
+        CumulativeEvalMessage = 0x1000,
+
         EvalWarnLanguage = SourceEvaluator |  WarningMessage | WarnLanguage,
         EvalWarnDeprecated = SourceEvaluator | WarningMessage | WarnDeprecated,
 
@@ -74,7 +77,7 @@ public:
     };
 
     // error(), warning() and message() from .pro file
-    virtual void fileMessage(const QString &msg) = 0;
+    virtual void fileMessage(int type, const QString &msg) = 0;
 
     enum EvalFileType { EvalProjectFile, EvalIncludeFile, EvalConfigFile, EvalFeatureFile, EvalAuxFile };
     virtual void aboutToEval(ProFile *parent, ProFile *proFile, EvalFileType type) = 0;
@@ -235,7 +238,7 @@ public:
             QMultiMap<int, ProString> &rootSet) const;
 
     VisitReturn writeFile(const QString &ctx, const QString &fn, QIODevice::OpenMode mode,
-                          const QString &contents);
+                          bool exe, const QString &contents);
 #ifndef QT_BOOTSTRAPPED
     void runProcess(QProcess *proc, const QString &command) const;
 #endif

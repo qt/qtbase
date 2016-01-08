@@ -188,7 +188,12 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
 
     // check if everything is ok
     if (marshaller.ok)
+    {
+        QDBusMessage *m = (QDBusMessage*)&message;
+        q_dbus_message_ref(msg);
+        m->d_ptr->msg = msg;
         return msg;
+    }
 
     // not ok;
     q_dbus_message_unref(msg);
@@ -315,6 +320,16 @@ QDBusMessage QDBusMessagePrivate::makeLocalReply(const QDBusConnectionPrivate &c
     if (callMsg.d_ptr->localReply)
         return makeLocal(conn, *callMsg.d_ptr->localReply);
     return QDBusMessage();      // failed
+}
+
+uint QDBusMessagePrivate::serial()
+{
+    return msg ? q_dbus_message_get_serial(msg) : reply ? q_dbus_message_get_serial(reply) : 0;
+}
+
+uint QDBusMessagePrivate::replySerial()
+{
+    return msg ? q_dbus_message_get_reply_serial(msg) : reply ? q_dbus_message_get_reply_serial(reply) : 0;
 }
 
 /*!
@@ -633,6 +648,32 @@ QString QDBusMessage::signature() const
 }
 
 /*!
+    Returns the serial of the message or 0 if undefined.
+
+    The serial number is a unique identifier of a message coming from a
+    given connection.
+
+    The serial is set to a non zero value after the message has been sent
+    over a D-Bus connection.
+*/
+uint QDBusMessage::serial() const
+{
+    return d_ptr->serial();
+}
+
+/*!
+    Returns the serial of the message this is a reply to or 0 if undefined.
+
+    The serial number is a unique identifier of a message coming from a
+    given connection and D-Bus messages of 'method return' or 'error' type
+    use them to match the reply to the method call message.
+*/
+uint QDBusMessage::replySerial() const
+{
+    return d_ptr->replySerial();
+}
+
+/*!
     Returns the flag that indicates if this message should see a reply
     or not. This is only meaningful for \l {MethodCallMessage}{method
     call messages}: any other kind of message cannot have replies and
@@ -820,10 +861,16 @@ QDebug operator<<(QDebug dbg, const QDBusMessage &msg)
         msg.type() == QDBusMessage::SignalMessage)
         dbg.nospace() << ", path=" << msg.path()
                       << ", interface=" << msg.interface()
-                      << ", member=" << msg.member();
+                      << ", member=" << msg.member()
+                      << ", serial=" << msg.serial();
     if (msg.type() == QDBusMessage::ErrorMessage)
         dbg.nospace() << ", error name=" << msg.errorName()
-                      << ", error message=" << msg.errorMessage();
+                      << ", error message=" << msg.errorMessage()
+                      << ", serial=" << msg.serial()
+                      << ", reply serial=" << msg.replySerial();
+    else if (msg.type() == QDBusMessage::ReplyMessage)
+        dbg.nospace() << ", serial=" << msg.serial()
+                      << ", reply serial=" << msg.replySerial();
     dbg.nospace() << ", signature=" << msg.signature()
                   << ", contents=(";
     debugVariantList(dbg, msg.arguments());

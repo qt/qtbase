@@ -88,47 +88,51 @@
     auto-detection implemented below.
 */
 #if defined(__arm__) || defined(__TARGET_ARCH_ARM) || defined(_M_ARM) || defined(__aarch64__)
-#  define Q_PROCESSOR_ARM
 #  if defined(__aarch64__)
 #    define Q_PROCESSOR_ARM_64
 #    define Q_PROCESSOR_WORDSIZE 8
 #  else
 #    define Q_PROCESSOR_ARM_32
 #  endif
-#  if defined(__ARM64_ARCH_8__) \
-      || defined(__ARM_ARCH_8A) \
-      || (defined(__ARM_ARCH) && __ARM_ARCH == 8)
-#    define Q_PROCESSOR_ARM_V8
-#    define Q_PROCESSOR_ARM_V7
-#    define Q_PROCESSOR_ARM_V6
-#    define Q_PROCESSOR_ARM_V5
+#  if defined(__ARM_ARCH) && __ARM_ARCH > 1
+#    define Q_PROCESSOR_ARM __ARM_ARCH
+#  elif defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM > 1
+#    define Q_PROCESSOR_ARM __TARGET_ARCH_ARM
+#  elif defined(_M_ARM) && _M_ARM > 1
+#    define Q_PROCESSOR_ARM _M_ARM
+#  elif defined(__ARM64_ARCH_8__)
+#    define Q_PROCESSOR_ARM 8
 #  elif defined(__ARM_ARCH_7__) \
       || defined(__ARM_ARCH_7A__) \
       || defined(__ARM_ARCH_7R__) \
       || defined(__ARM_ARCH_7M__) \
       || defined(__ARM_ARCH_7S__) \
-      || defined(_ARM_ARCH_7) \
-      || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM-0 >= 7) \
-      || (defined(_M_ARM) && _M_ARM-0 >= 7) \
-      || (defined(__ARMv7__))
-#    define Q_PROCESSOR_ARM_V7
-#    define Q_PROCESSOR_ARM_V6
-#    define Q_PROCESSOR_ARM_V5
+      || defined(_ARM_ARCH_7)
+#    define Q_PROCESSOR_ARM 7
 #  elif defined(__ARM_ARCH_6__) \
       || defined(__ARM_ARCH_6J__) \
       || defined(__ARM_ARCH_6T2__) \
       || defined(__ARM_ARCH_6Z__) \
       || defined(__ARM_ARCH_6K__) \
       || defined(__ARM_ARCH_6ZK__) \
-      || defined(__ARM_ARCH_6M__) \
-      || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM-0 >= 6) \
-      || (defined(_M_ARM) && _M_ARM-0 >= 6)
-#    define Q_PROCESSOR_ARM_V6
-#    define Q_PROCESSOR_ARM_V5
+      || defined(__ARM_ARCH_6M__)
+#    define Q_PROCESSOR_ARM 6
 #  elif defined(__ARM_ARCH_5TEJ__) \
-        || defined(__ARM_ARCH_5TE__) \
-        || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM-0 >= 5) \
-        || (defined(_M_ARM) && _M_ARM-0 >= 5)
+        || defined(__ARM_ARCH_5TE__)
+#    define Q_PROCESSOR_ARM 5
+#  else
+#    define Q_PROCESSOR_ARM 0
+#  endif
+#  if Q_PROCESSOR_ARM >= 8
+#    define Q_PROCESSOR_ARM_V8
+#  endif
+#  if Q_PROCESSOR_ARM >= 7
+#    define Q_PROCESSOR_ARM_V7
+#  endif
+#  if Q_PROCESSOR_ARM >= 6
+#    define Q_PROCESSOR_ARM_V6
+#  endif
+#  if Q_PROCESSOR_ARM >= 5
 #    define Q_PROCESSOR_ARM_V5
 #  endif
 #  if defined(__ARMEL__)

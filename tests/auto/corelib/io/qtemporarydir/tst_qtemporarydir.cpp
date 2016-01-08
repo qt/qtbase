@@ -229,6 +229,13 @@ void tst_QTemporaryDir::autoRemove()
 void tst_QTemporaryDir::nonWritableCurrentDir()
 {
 #ifdef Q_OS_UNIX
+
+#  if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    const char nonWritableDir[] = "/data";
+#  else
+    const char nonWritableDir[] = "/home";
+#  endif
+
     if (::geteuid() == 0)
         QSKIP("not valid running this test as root");
 
@@ -240,13 +247,13 @@ void tst_QTemporaryDir::nonWritableCurrentDir()
         }
         QString dir;
     };
-    ChdirOnReturn cor(QDir::currentPath());
 
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
-    QDir::setCurrent("/data");
-#else
-    QDir::setCurrent("/home");
-#endif
+    const QFileInfo nonWritableDirFi = QFileInfo(QLatin1String(nonWritableDir));
+    QVERIFY(nonWritableDirFi.isDir());
+    QVERIFY(!nonWritableDirFi.isWritable());
+
+    ChdirOnReturn cor(QDir::currentPath());
+    QVERIFY(QDir::setCurrent(nonWritableDirFi.absoluteFilePath()));
     // QTemporaryDir("tempXXXXXX") is probably a bad idea in any app
     // where the current dir could anything...
     QTemporaryDir dir("tempXXXXXX");

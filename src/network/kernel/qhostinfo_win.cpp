@@ -34,7 +34,6 @@
 #include <winsock2.h>
 
 #include "qhostinfo_p.h"
-#include "private/qnativesocketengine_p.h"
 #include <ws2tcpip.h>
 #include <private/qsystemlibrary_p.h>
 #include <qmutex.h>
@@ -77,14 +76,18 @@ static void resolveLibrary()
 {
     // Attempt to resolve getaddrinfo(); without it we'll have to fall
     // back to gethostbyname(), which has no IPv6 support.
-#if !defined(Q_OS_WINCE)
-    local_getaddrinfo = (getaddrinfoProto) QSystemLibrary::resolve(QLatin1String("ws2_32"), "getaddrinfo");
-    local_freeaddrinfo = (freeaddrinfoProto) QSystemLibrary::resolve(QLatin1String("ws2_32"), "freeaddrinfo");
-    local_getnameinfo = (getnameinfoProto) QSystemLibrary::resolve(QLatin1String("ws2_32"), "getnameinfo");
-#else
+#if defined(Q_OS_WINCE)
     local_getaddrinfo = (getaddrinfoProto) QSystemLibrary::resolve(QLatin1String("ws2"), "getaddrinfo");
     local_freeaddrinfo = (freeaddrinfoProto) QSystemLibrary::resolve(QLatin1String("ws2"), "freeaddrinfo");
     local_getnameinfo = (getnameinfoProto) QSystemLibrary::resolve(QLatin1String("ws2"), "getnameinfo");
+#elif defined (Q_OS_WINRT)
+    local_getaddrinfo = (getaddrinfoProto) &getaddrinfo;
+    local_freeaddrinfo = (freeaddrinfoProto) &freeaddrinfo;
+    local_getnameinfo = (getnameinfoProto) getnameinfo;
+#else
+    local_getaddrinfo = (getaddrinfoProto) QSystemLibrary::resolve(QLatin1String("ws2_32"), "getaddrinfo");
+    local_freeaddrinfo = (freeaddrinfoProto) QSystemLibrary::resolve(QLatin1String("ws2_32"), "freeaddrinfo");
+    local_getnameinfo = (getnameinfoProto) QSystemLibrary::resolve(QLatin1String("ws2_32"), "getnameinfo");
 #endif
 }
 

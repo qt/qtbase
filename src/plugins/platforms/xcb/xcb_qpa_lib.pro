@@ -92,7 +92,7 @@ contains(QT_CONFIG, xcb-qt) {
     INCLUDEPATH += $$XCB_DIR/include $$XCB_DIR/sysinclude
     LIBS += -lxcb -L$$OUT_PWD/xcb-static -lxcb-static
 } else {
-    LIBS += -lxcb -lxcb-image -lxcb-icccm -lxcb-sync -lxcb-xfixes -lxcb-shm -lxcb-randr -lxcb-shape -lxcb-keysyms
+    LIBS += -lxcb -lxcb-image -lxcb-icccm -lxcb-sync -lxcb-xfixes -lxcb-shm -lxcb-randr -lxcb-shape -lxcb-keysyms -lxcb-xinerama
     !contains(DEFINES, QT_NO_XKB):LIBS += -lxcb-xkb
 }
 

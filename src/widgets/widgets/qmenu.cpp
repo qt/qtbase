@@ -2586,7 +2586,11 @@ void QMenu::mousePressEvent(QMouseEvent *e)
     Q_D(QMenu);
     if (d->aboutToHide || d->mouseEventTaken(e))
         return;
-    if (!rect().contains(e->pos())) {
+    // Workaround for XCB on multiple screens which doesn't have offset. If the menu is open on one screen
+    // and mouse clicks on second screen, e->pos() is QPoint(0,0) and the menu doesn't hide. This trick makes
+    // possible to hide the menu when mouse clicks on another screen (e->screenPos() returns correct value).
+    // Only when mouse clicks in QPoint(0,0) on second screen, the menu doesn't hide.
+    if ((e->pos().isNull() && !e->screenPos().isNull()) || !rect().contains(e->pos())) {
          if (d->noReplayFor
              && QRect(d->noReplayFor->mapToGlobal(QPoint()), d->noReplayFor->size()).contains(e->globalPos()))
              setAttribute(Qt::WA_NoMouseReplay);

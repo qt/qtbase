@@ -67,7 +67,7 @@ public:
     QDBusConnectionPrivate *connection(const QString &name) const;
     void removeConnection(const QString &name);
     void setConnection(const QString &name, QDBusConnectionPrivate *c);
-    QDBusConnectionPrivate *connectToBus(QDBusConnection::BusType type, const QString &name);
+    QDBusConnectionPrivate *connectToBus(QDBusConnection::BusType type, const QString &name, bool suspendedDelivery);
     QDBusConnectionPrivate *connectToBus(const QString &address, const QString &name);
     QDBusConnectionPrivate *connectToPeer(const QString &address, const QString &name);
 

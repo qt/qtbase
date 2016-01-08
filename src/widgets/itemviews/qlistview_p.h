@@ -290,7 +290,7 @@ private:
 
 };
 
-class QListViewPrivate: public QAbstractItemViewPrivate
+class Q_AUTOTEST_EXPORT QListViewPrivate: public QAbstractItemViewPrivate
 {
     Q_DECLARE_PUBLIC(QListView)
 public:
