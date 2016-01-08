@@ -104,6 +104,10 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
     write_file($$MODULE_PRI, MODULE_PRI_CONT)|error("Aborting.")
     !internal_module:!no_private_module {
         module_build_type += internal_module
+        private_deps = $$QT
+        private_deps -= $$MODULE_DEPENDS
+        private_deps += $$MODULE $$QT_FOR_PRIVATE
+        private_deps ~= s,-private$,_private,g
         MODULE_PRIVATE_PRI_CONT = \
             "QT.$${MODULE}_private.VERSION = $${VERSION}" \
             "QT.$${MODULE}_private.MAJOR_VERSION = $$section(VERSION, ., 0, 0)" \
@@ -115,7 +119,7 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
             "QT.$${MODULE}_private.libs = $$module_libs" \
             "QT.$${MODULE}_private.includes = $$MODULE_PRIVATE_INCLUDES" \
             "QT.$${MODULE}_private.frameworks =" \
-            "QT.$${MODULE}_private.depends = $$replace($$list($$MODULE $$QT_FOR_PRIVATE), -private$, _private)" \
+            "QT.$${MODULE}_private.depends = $$private_deps" \
             "QT.$${MODULE}_private.module_config =$$join(module_build_type, " ", " ")"
         write_file($$MODULE_PRIVATE_PRI, MODULE_PRIVATE_PRI_CONT)|error("Aborting.")
     }
