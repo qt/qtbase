@@ -8,6 +8,8 @@ find_package(Qt5Widgets)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
+
 add_executable(test_interface_exe WIN32 main.cpp mainwindow.cpp)
 
 # No need to specify include directories, compile definitions, the PIC flag, or to
