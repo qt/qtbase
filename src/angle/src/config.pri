@@ -23,6 +23,7 @@ equals(QMAKE_HOST.os, Windows) {
 defineReplace(addGnuPath) {
     gnuPath = $$1
     !isEmpty(gnuPath):!isEmpty(gnutools.name) {
+        QT_TOOL_NAME = $$1
         qtAddToolEnv(gnuPath, gnutools)
         silent: gnuPath = @echo generating sources from ${QMAKE_FILE_IN} && $$gnuPath
     }
