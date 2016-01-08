@@ -549,10 +549,7 @@ static bool isProxyError(QAbstractSocket::SocketError error)
     Constructs a QAbstractSocketPrivate. Initializes all members.
 */
 QAbstractSocketPrivate::QAbstractSocketPrivate()
-    : readSocketNotifierCalled(false),
-      readSocketNotifierState(false),
-      readSocketNotifierStateSet(false),
-      emittedReadyRead(false),
+    : emittedReadyRead(false),
       emittedBytesWritten(false),
       abortCalled(false),
       pendingClose(false),
@@ -684,17 +681,6 @@ bool QAbstractSocketPrivate::canReadNotification()
     qDebug("QAbstractSocketPrivate::canReadNotification()");
 #endif
 
-    // Prevent recursive calls
-    if (readSocketNotifierCalled) {
-        if (!readSocketNotifierStateSet) {
-            readSocketNotifierStateSet = true;
-            readSocketNotifierState = socketEngine->isReadNotificationEnabled();
-            socketEngine->setReadNotificationEnabled(false);
-        }
-    }
-    QScopedValueRollback<bool> rsncrollback(readSocketNotifierCalled);
-    readSocketNotifierCalled = true;
-
     if (!isBuffered)
         socketEngine->setReadNotificationEnabled(false);
 
@@ -744,13 +730,6 @@ bool QAbstractSocketPrivate::canReadNotification()
     if (socketEngine && isBuffered)
         socketEngine->setReadNotificationEnabled(readBufferMaxSize == 0 || readBufferMaxSize > q->bytesAvailable());
 
-    // reset the read socket notifier state if we reentered inside the
-    // readyRead() connected slot.
-    if (readSocketNotifierStateSet && socketEngine &&
-        readSocketNotifierState != socketEngine->isReadNotificationEnabled()) {
-        socketEngine->setReadNotificationEnabled(readSocketNotifierState);
-        readSocketNotifierStateSet = false;
-    }
     return true;
 }
 
@@ -2819,7 +2798,7 @@ void QAbstractSocket::setReadBufferSize(qint64 size)
     if (d->readBufferMaxSize == size)
         return;
     d->readBufferMaxSize = size;
-    if (!d->readSocketNotifierCalled && d->socketEngine) {
+    if (!d->emittedReadyRead && d->socketEngine) {
         // ensure that the read notification is enabled if we've now got
         // room in the read buffer
         // but only if we're not inside canReadNotification -- that will take care on its own

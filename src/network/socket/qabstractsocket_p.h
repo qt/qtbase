@@ -97,10 +97,6 @@ public:
     void _q_abortConnectionAttempt();
     void _q_forceDisconnect();
 
-    bool readSocketNotifierCalled;
-    bool readSocketNotifierState;
-    bool readSocketNotifierStateSet;
-
     bool emittedReadyRead;
     bool emittedBytesWritten;
 
