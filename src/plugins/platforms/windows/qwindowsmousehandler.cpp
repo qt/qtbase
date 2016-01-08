@@ -267,7 +267,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
             // Capture is necessary so we don't get WM_MOUSELEAVEs to confuse matters.
             // This autocapture is released normally when button is released.
             if (!platformWindow->hasMouseCapture()) {
-                QWindowsWindow::baseWindowOf(window)->applyCursor();
+                platformWindow->applyCursor();
                 platformWindow->setMouseGrabEnabled(true);
                 platformWindow->setFlag(QWindowsWindow::AutoMouseCapture);
                 qCDebug(lcQpaEvents) << "Automatic mouse capture for missing buttondown event" << window;
@@ -355,7 +355,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
                 m_trackedWindow = 0;
                 // We are not officially in any window, but we need to set some cursor to clear
                 // whatever cursor the left window had, so apply the cursor of the capture window.
-                QWindowsWindow::baseWindowOf(window)->applyCursor();
+                platformWindow->applyCursor();
             }
         }
         // Enter is needed if:
@@ -367,7 +367,8 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
             || (m_previousCaptureWindow && window != m_previousCaptureWindow && currentWindowUnderMouse
                 && currentWindowUnderMouse != m_previousCaptureWindow)) {
             qCDebug(lcQpaEvents) << "Entering " << currentWindowUnderMouse;
-            QWindowsWindow::baseWindowOf(currentWindowUnderMouse)->applyCursor();
+            if (QWindowsWindow *wumPlatformWindow = QWindowsWindow::windowsWindowOf(currentWindowUnderMouse))
+                wumPlatformWindow->applyCursor();
             QWindowSystemInterface::handleEnterEvent(currentWindowUnderMouse,
                                                      currentWindowUnderMouse->mapFromGlobal(globalPosition),
                                                      globalPosition);
@@ -392,7 +393,7 @@ static bool isValidWheelReceiver(QWindow *candidate)
 {
     if (candidate) {
         const QWindow *toplevel = QWindowsWindow::topLevelOf(candidate);
-        if (const QWindowsWindow *ww = QWindowsWindow::baseWindowOf(toplevel))
+        if (const QWindowsWindow *ww = QWindowsWindow::windowsWindowOf(toplevel))
             return !ww->testFlag(QWindowsWindow::BlockedByModal);
     }
 

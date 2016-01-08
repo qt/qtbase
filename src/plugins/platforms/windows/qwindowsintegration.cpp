@@ -302,6 +302,26 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
 
 QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) const
 {
+    if (window->type() == Qt::Desktop) {
+        QWindowsDesktopWindow *result = new QWindowsDesktopWindow(window);
+        qCDebug(lcQpaWindows) << "Desktop window:" << window
+            << showbase << hex << result->winId() << noshowbase << dec << result->geometry();
+        return result;
+    }
+
+    if (window->type() == Qt::ForeignWindow) {
+        QWindowsForeignWindow *result = new QWindowsForeignWindow(window, reinterpret_cast<HWND>(window->winId()));
+        const QRect obtainedGeometry = result->geometry();
+        QScreen *screen = Q_NULLPTR;
+        if (const QPlatformScreen *pScreen = result->screenForGeometry(obtainedGeometry))
+            screen = pScreen->screen();
+        if (screen && screen != window->screen())
+            window->setScreen(screen);
+        qCDebug(lcQpaWindows) << "Foreign window:" << window << showbase << hex
+            << result->winId() << noshowbase << dec << obtainedGeometry << screen;
+        return result;
+    }
+
     QWindowsWindowData requested;
     requested.flags = window->flags();
     requested.geometry = QHighDpi::toNativePixels(window->geometry(), window);

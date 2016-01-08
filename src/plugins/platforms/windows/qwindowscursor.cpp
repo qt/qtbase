@@ -648,17 +648,19 @@ QWindowsCursor::QWindowsCursor(const QPlatformScreen *screen)
 
 void QWindowsCursor::changeCursor(QCursor *cursorIn, QWindow *window)
 {
-    if (!window)
+    QWindowsWindow *platformWindow = QWindowsWindow::windowsWindowOf(window);
+    if (!platformWindow) // Desktop/Foreign window.
         return;
+
     if (!cursorIn) {
-        QWindowsWindow::baseWindowOf(window)->setCursor(CursorHandlePtr(new CursorHandle));
+        platformWindow->setCursor(CursorHandlePtr(new CursorHandle));
         return;
     }
     const CursorHandlePtr wcursor =
         cursorIn->shape() == Qt::BitmapCursor ?
         pixmapWindowCursor(*cursorIn) : standardWindowCursor(cursorIn->shape());
     if (wcursor->handle()) {
-        QWindowsWindow::baseWindowOf(window)->setCursor(wcursor);
+        platformWindow->setCursor(wcursor);
     } else {
         qWarning("%s: Unable to obtain system cursor for %d",
                  __FUNCTION__, cursorIn->shape());

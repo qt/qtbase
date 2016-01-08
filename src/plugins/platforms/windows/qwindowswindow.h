@@ -118,7 +118,78 @@ struct QWindowsWindowData
                                      const QString &title);
 };
 
-class QWindowsWindow : public QPlatformWindow
+class QWindowsBaseWindow : public QPlatformWindow
+{
+public:
+    explicit QWindowsBaseWindow(QWindow *window) : QPlatformWindow(window) {}
+
+    WId winId() const Q_DECL_OVERRIDE { return WId(handle()); }
+    QRect geometry() const Q_DECL_OVERRIDE { return geometry_sys(); }
+    QMargins frameMargins() const Q_DECL_OVERRIDE { return frameMargins_sys(); }
+    QPoint mapToGlobal(const QPoint &pos) const Q_DECL_OVERRIDE;
+    QPoint mapFromGlobal(const QPoint &pos) const Q_DECL_OVERRIDE;
+
+    using QPlatformWindow::screenForGeometry;
+
+    virtual HWND handle() const = 0;
+    virtual bool isTopLevel() const { return isTopLevel_sys(); }
+
+    unsigned style() const   { return GetWindowLongPtr(handle(), GWL_STYLE); }
+    unsigned exStyle() const { return GetWindowLongPtr(handle(), GWL_EXSTYLE); }
+
+    static QWindowsBaseWindow *baseWindowOf(const QWindow *w);
+    static HWND handleOf(const QWindow *w);
+
+protected:
+    HWND parentHwnd() const { return GetAncestor(handle(), GA_PARENT); }
+    bool isTopLevel_sys() const;
+    QRect frameGeometry_sys() const;
+    QRect geometry_sys() const;
+    void setGeometry_sys(const QRect &rect) const;
+    QMargins frameMargins_sys() const;
+    void hide_sys();
+    void raise_sys();
+    void lower_sys();
+    void setWindowTitle_sys(const QString &title);
+};
+
+class QWindowsDesktopWindow : public QWindowsBaseWindow
+{
+public:
+    explicit QWindowsDesktopWindow(QWindow *window)
+        : QWindowsBaseWindow(window), m_hwnd(GetDesktopWindow()) {}
+
+    QMargins frameMargins() const Q_DECL_OVERRIDE { return QMargins(); }
+    bool isTopLevel() const Q_DECL_OVERRIDE { return true; }
+
+protected:
+     HWND handle() const Q_DECL_OVERRIDE { return m_hwnd; }
+
+private:
+    const HWND m_hwnd;
+};
+
+class QWindowsForeignWindow : public QWindowsBaseWindow
+{
+public:
+    explicit QWindowsForeignWindow(QWindow *window, HWND hwnd);
+
+    void setParent(const QPlatformWindow *window) Q_DECL_OVERRIDE;
+    void setGeometry(const QRect &rect) Q_DECL_OVERRIDE { setGeometry_sys(rect); }
+    void setVisible(bool visible) Q_DECL_OVERRIDE;
+    void raise() Q_DECL_OVERRIDE { raise_sys(); }
+    void lower() Q_DECL_OVERRIDE { lower_sys(); }
+    void setWindowTitle(const QString &title) Q_DECL_OVERRIDE { setWindowTitle_sys(title); }
+
+protected:
+     HWND handle() const Q_DECL_OVERRIDE { return m_hwnd; }
+
+private:
+    const HWND m_hwnd;
+    DWORD m_topLevelStyle;
+};
+
+class QWindowsWindow : public QWindowsBaseWindow
 {
 public:
     enum Flags
@@ -168,14 +239,11 @@ public:
     void setWindowFlags(Qt::WindowFlags flags) Q_DECL_OVERRIDE;
     void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
 
-    HWND handle() const { return m_data.hwnd; }
-
-    WId winId() const Q_DECL_OVERRIDE { return WId(m_data.hwnd); }
     void setParent(const QPlatformWindow *window) Q_DECL_OVERRIDE;
 
     void setWindowTitle(const QString &title) Q_DECL_OVERRIDE;
-    void raise() Q_DECL_OVERRIDE;
-    void lower() Q_DECL_OVERRIDE;
+    void raise() Q_DECL_OVERRIDE { raise_sys(); }
+    void lower() Q_DECL_OVERRIDE { lower_sys(); }
 
     void windowEvent(QEvent *event) Q_DECL_OVERRIDE;
 
@@ -198,14 +266,14 @@ public:
     void setFrameStrutEventsEnabled(bool enabled) Q_DECL_OVERRIDE;
     bool frameStrutEventsEnabled() const Q_DECL_OVERRIDE { return testFlag(FrameStrutEventsEnabled); }
 
+    // QWindowsBaseWindow overrides
+    HWND handle() const Q_DECL_OVERRIDE { return m_data.hwnd; }
+    bool isTopLevel() const Q_DECL_OVERRIDE;
+
     QMargins customMargins() const { return m_data.customMargins; }
     void setCustomMargins(const QMargins &m);
 
-    inline unsigned style() const
-        { return GetWindowLongPtr(m_data.hwnd, GWL_STYLE); }
     void setStyle(unsigned s) const;
-    inline unsigned exStyle() const
-        { return GetWindowLongPtr(m_data.hwnd, GWL_EXSTYLE); }
     void setExStyle(unsigned s) const;
 
     bool handleWmPaint(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -215,8 +283,7 @@ public:
     void handleHidden();
     void handleCompositionSettingsChanged();
 
-    static inline HWND handleOf(const QWindow *w);
-    static inline QWindowsWindow *baseWindowOf(const QWindow *w);
+    static QWindowsWindow *windowsWindowOf(const QWindow *w);
     static QWindow *topLevelOf(QWindow *w);
     static inline void *userDataOf(HWND hwnd);
     static inline void setUserDataOf(HWND hwnd, void *ud);
@@ -262,10 +329,6 @@ public:
     void setHasBorderInFullScreen(bool border);
 private:
     inline void show_sys() const;
-    inline void hide_sys() const;
-    inline void setGeometry_sys(const QRect &rect) const;
-    inline QRect frameGeometry_sys() const;
-    inline QRect geometry_sys() const;
     inline QWindowsWindowData setWindowFlags_sys(Qt::WindowFlags wt, unsigned flags = 0) const;
     inline bool isFullScreen_sys() const;
     inline void setWindowState_sys(Qt::WindowState newState);
@@ -334,19 +397,17 @@ QPoint QWindowsGeometryHint::mapFromGlobal(const QWindow *w, const QPoint &p)
 
 // ---------- QWindowsBaseWindow inline functions.
 
-QWindowsWindow *QWindowsWindow::baseWindowOf(const QWindow *w)
+inline QWindowsWindow *QWindowsWindow::windowsWindowOf(const QWindow *w)
 {
-    if (w)
-        if (QPlatformWindow *pw = w->handle())
-            return static_cast<QWindowsWindow *>(pw);
-    return 0;
-}
-
-HWND QWindowsWindow::handleOf(const QWindow *w)
-{
-    if (const QWindowsWindow *bw = QWindowsWindow::baseWindowOf(w))
-        return bw->handle();
-    return 0;
+    QWindowsWindow *result = Q_NULLPTR;
+    if (w) {
+        const Qt::WindowType type = w->type();
+        if (type != Qt::Desktop && type != Qt::ForeignWindow) {
+            if (QPlatformWindow *pw = w->handle())
+                result = static_cast<QWindowsWindow *>(pw);
+        }
+    }
+    return result;
 }
 
 void *QWindowsWindow::userDataOf(HWND hwnd)

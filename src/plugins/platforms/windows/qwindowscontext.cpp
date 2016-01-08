@@ -1177,8 +1177,11 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             d->m_tabletSupport->notifyActivate();
 #endif // !QT_NO_TABLETEVENT
         if (platformWindow->testFlag(QWindowsWindow::BlockedByModal))
-            if (const QWindow *modalWindow = QGuiApplication::modalWindow())
-                QWindowsWindow::baseWindowOf(modalWindow)->alertWindow();
+            if (const QWindow *modalWindow = QGuiApplication::modalWindow()) {
+                QWindowsWindow *platformWindow = QWindowsWindow::windowsWindowOf(modalWindow);
+                Q_ASSERT(platformWindow);
+                platformWindow->alertWindow();
+            }
         break;
     case QtWindows::MouseActivateWindowEvent:
         if (platformWindow->window()->flags() & Qt::WindowDoesNotAcceptFocus) {

@@ -233,12 +233,10 @@ void QWindowsInputContext::updateEnabled()
 {
     if (!QGuiApplication::focusObject())
         return;
-    const QWindow *window = QGuiApplication::focusWindow();
-    if (window && window->handle()) {
-        QWindowsWindow *platformWindow = QWindowsWindow::baseWindowOf(window);
+    if (QWindowsWindow *platformWindow = QWindowsWindow::windowsWindowOf(QGuiApplication::focusWindow())) {
         const bool accepted = inputMethodAccepted();
         if (QWindowsContext::verbose > 1)
-            qCDebug(lcQpaInputMethods) << __FUNCTION__ << window << "accepted=" << accepted;
+            qCDebug(lcQpaInputMethods) << __FUNCTION__ << platformWindow->window() << "accepted=" << accepted;
             QWindowsInputContext::setWindowsImeEnabled(platformWindow, accepted);
     }
 }

@@ -84,7 +84,8 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
     const QRect br = region.boundingRect();
     if (QWindowsContext::verbose > 1)
         qCDebug(lcQpaBackingStore) << __FUNCTION__ << this << window << offset << br;
-    QWindowsWindow *rw = QWindowsWindow::baseWindowOf(window);
+    QWindowsWindow *rw = QWindowsWindow::windowsWindowOf(window);
+    Q_ASSERT(rw);
 
 #ifndef Q_OS_WINCE
     const bool hasAlpha = rw->format().hasAlpha();
