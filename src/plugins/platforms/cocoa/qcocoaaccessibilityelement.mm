@@ -44,11 +44,11 @@ QT_USE_NAMESPACE
 
 #ifndef QT_NO_ACCESSIBILITY
 
-static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &offset, NSUInteger *start = 0, NSUInteger *end = 0)
+static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *offset, NSUInteger *start = 0, NSUInteger *end = 0)
 {
-    Q_ASSERT(line == -1 || offset == -1);
-    Q_ASSERT(line != -1 || offset != -1);
-    Q_ASSERT(offset <= text->characterCount());
+    Q_ASSERT(*line == -1 || *offset == -1);
+    Q_ASSERT(*line != -1 || *offset != -1);
+    Q_ASSERT(*offset <= text->characterCount());
 
     int curLine = -1;
     int curStart = 0, curEnd = 0;
@@ -75,14 +75,14 @@ static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &of
             if (nextEnd == curEnd)
                 ++curEnd;
         }
-    } while ((line == -1 || curLine < line) && (offset == -1 || (curEnd <= offset)) && curEnd <= text->characterCount());
+    } while ((*line == -1 || curLine < *line) && (*offset == -1 || (curEnd <= *offset)) && curEnd <= text->characterCount());
 
     curEnd = qMin(curEnd, text->characterCount());
 
-    if (line == -1)
-        line = curLine;
-    if (offset == -1)
-        offset = curStart;
+    if (*line == -1)
+        *line = curLine;
+    if (*offset == -1)
+        *offset = curStart;
 
     Q_ASSERT(curStart >= 0);
     Q_ASSERT(curEnd >= 0);
@@ -338,7 +338,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &of
         if (QAccessibleTextInterface *text = iface->textInterface()) {
             int line = -1;
             int position = text->cursorPosition();
-            convertLineOffset(text, line, position);
+            convertLineOffset(text, &line, &position);
             return [NSNumber numberWithInt: line];
         }
         return nil;
@@ -397,7 +397,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &of
         if (index < 0 || index > iface->textInterface()->characterCount())
             return nil;
         int line = -1;
-        convertLineOffset(iface->textInterface(), line, index);
+        convertLineOffset(iface->textInterface(), &line, &index);
         return [NSNumber numberWithInt:line];
     }
     if ([attribute isEqualToString: NSAccessibilityRangeForLineParameterizedAttribute]) {
@@ -407,7 +407,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &of
         int lineOffset = -1;
         NSUInteger startOffset = 0;
         NSUInteger endOffset = 0;
-        convertLineOffset(iface->textInterface(), line, lineOffset, &startOffset, &endOffset);
+        convertLineOffset(iface->textInterface(), &line, &lineOffset, &startOffset, &endOffset);
         return [NSValue valueWithRange:NSMakeRange(startOffset, endOffset - startOffset)];
     }
     if ([attribute isEqualToString: NSAccessibilityBoundsForRangeParameterizedAttribute]) {
