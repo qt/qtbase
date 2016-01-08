@@ -49,6 +49,8 @@
 #include <QtGui/QOpenGLContext>
 #include <qfunctions_winrt.h>
 
+#include <qpa/qplatformoffscreensurface.h>
+
 #include <functional>
 #include <wrl.h>
 #include <windows.ui.xaml.h>
@@ -180,10 +182,15 @@ QWinRTIntegration::~QWinRTIntegration()
         Q_ASSERT_SUCCEEDED(hr);
     }
 #endif
+    // Do not execute this on Windows Phone as the application is already
+    // shutting down and trying to unregister suspending/resume handler will
+    // cause exceptions and assert in debug mode
+#ifndef Q_OS_WINPHONE
     for (QHash<CoreApplicationCallbackRemover, EventRegistrationToken>::const_iterator i = d->applicationTokens.begin(); i != d->applicationTokens.end(); ++i) {
         hr = (d->application.Get()->*i.key())(i.value());
         Q_ASSERT_SUCCEEDED(hr);
     }
+#endif
     destroyScreen(d->mainScreen);
     Windows::Foundation::Uninitialize();
 }
@@ -348,5 +355,15 @@ HRESULT QWinRTIntegration::onResume(IInspectable *, IInspectable *)
     QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationHidden);
     return S_OK;
 }
+
+QPlatformOffscreenSurface *QWinRTIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
+{
+    // This is only used for shutdown of applications.
+    // In case we do not return an empty surface the scenegraph will try
+    // to create a new native window during application exit causing crashes
+    // or assertions.
+    return new QPlatformOffscreenSurface(surface);
+}
+
 
 QT_END_NAMESPACE

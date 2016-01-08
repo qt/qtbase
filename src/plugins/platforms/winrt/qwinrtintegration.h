@@ -98,6 +98,7 @@ public:
     QStringList themeNames() const Q_DECL_OVERRIDE;
     QPlatformTheme *createPlatformTheme(const QString &name) const Q_DECL_OVERRIDE;
 
+    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const Q_DECL_OVERRIDE;
 private:
 #ifdef Q_OS_WINPHONE
     HRESULT onBackButtonPressed(IInspectable *, ABI::Windows::Phone::UI::Input::IBackPressedEventArgs *args);

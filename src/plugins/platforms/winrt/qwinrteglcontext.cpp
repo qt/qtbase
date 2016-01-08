@@ -46,6 +46,7 @@
 #define EGL_EGLEXT_PROTOTYPES
 #include <EGL/eglext.h>
 
+#include <QOffscreenSurface>
 #include <QOpenGLContext>
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 
@@ -146,6 +147,9 @@ bool QWinRTEGLContext::makeCurrent(QPlatformSurface *windowSurface)
 {
     Q_D(QWinRTEGLContext);
     Q_ASSERT(windowSurface->surface()->supportsOpenGL());
+
+    if (windowSurface->surface()->surfaceClass() == QSurface::Offscreen)
+        return false;
 
     QWinRTWindow *window = static_cast<QWinRTWindow *>(windowSurface);
     if (window->eglSurface() == EGL_NO_SURFACE)
