@@ -2479,14 +2479,20 @@ qint64 QAbstractSocket::writeData(const char *data, qint64 size)
         qint64 written = d->socketEngine->write(data, size);
         if (written < 0) {
             d->setError(d->socketEngine->error(), d->socketEngine->errorString());
-            return written;
         } else if (written < size) {
             // Buffer what was not written yet
             char *ptr = d->writeBuffer.reserve(size - written);
             memcpy(ptr, data + written, size - written);
+            written = size;
             d->socketEngine->setWriteNotificationEnabled(true);
         }
-        return size; // size=actually written + what has been buffered
+
+#if defined (QABSTRACTSOCKET_DEBUG)
+        qDebug("QAbstractSocket::writeData(%p \"%s\", %lli) == %lli", data,
+               qt_prettyDebug(data, qMin((int)size, 32), size).data(),
+               size, written);
+#endif
+        return written; // written = actually written + what has been buffered
     } else if (!d->isBuffered && d->socketType != TcpSocket) {
         // This is for a QUdpSocket that was connect()ed
         qint64 written = d->socketEngine->write(data, size);
