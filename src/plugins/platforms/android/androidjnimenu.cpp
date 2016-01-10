@@ -93,7 +93,8 @@ namespace QtAndroidMenu
     void showContextMenu(QAndroidPlatformMenu *menu, const QRect &anchorRect, JNIEnv *env)
     {
         QMutexLocker lock(&visibleMenuMutex);
-        pendingContextMenus.append(visibleMenu);
+        if (visibleMenu)
+            pendingContextMenus.append(visibleMenu);
         visibleMenu = menu;
         menu->aboutToShow();
         env->CallStaticVoidMethod(applicationClass(), openContextMenuMethodID, anchorRect.x(), anchorRect.y(), anchorRect.width(), anchorRect.height());
