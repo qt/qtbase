@@ -165,7 +165,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
             // now look for a thread to insert
             bool found = false;
             foreach(QWindowsFileSystemWatcherEngineThread *thread, threads) {
-                QMutexLocker(&(thread->mutex));
+                QMutexLocker locker(&(thread->mutex));
                 if (thread->handles.count() < MAXIMUM_WAIT_OBJECTS) {
                     DEBUG() << "Added handle" << handle.handle << "for" << absolutePath << "to watch" << fileInfo.absoluteFilePath()
                             << "to existing thread " << thread;

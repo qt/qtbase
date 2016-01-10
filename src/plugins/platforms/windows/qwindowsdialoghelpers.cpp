@@ -737,7 +737,7 @@ inline QUrl QWindowsFileDialogSharedData::directory() const
 
 inline void QWindowsFileDialogSharedData::setDirectory(const QUrl &d)
 {
-    QMutexLocker (&m_data->mutex);
+    QMutexLocker locker(&m_data->mutex);
     m_data->directory = d;
 }
 
@@ -751,7 +751,7 @@ inline QString QWindowsFileDialogSharedData::selectedNameFilter() const
 
 inline void QWindowsFileDialogSharedData::setSelectedNameFilter(const QString &f)
 {
-    QMutexLocker (&m_data->mutex);
+    QMutexLocker locker(&m_data->mutex);
     m_data->selectedNameFilter = f;
 }
 
@@ -771,13 +771,13 @@ inline QString QWindowsFileDialogSharedData::selectedFile() const
 
 inline void QWindowsFileDialogSharedData::setSelectedFiles(const QList<QUrl> &urls)
 {
-    QMutexLocker (&m_data->mutex);
+    QMutexLocker locker(&m_data->mutex);
     m_data->selectedFiles = urls;
 }
 
 inline void QWindowsFileDialogSharedData::fromOptions(const QSharedPointer<QFileDialogOptions> &o)
 {
-    QMutexLocker (&m_data->mutex);
+    QMutexLocker locker(&m_data->mutex);
     m_data->directory = o->initialDirectory();
     m_data->selectedFiles = o->initiallySelectedFiles();
     m_data->selectedNameFilter = o->initiallySelectedNameFilter();
