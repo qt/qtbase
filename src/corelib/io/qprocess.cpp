@@ -874,7 +874,6 @@ QProcessPrivate::QProcessPrivate()
     childStartedPipe[0] = INVALID_Q_PIPE;
     childStartedPipe[1] = INVALID_Q_PIPE;
     forkfd = -1;
-    exitCode = 0;
     crashed = false;
     dying = false;
     emittedReadyRead = false;
