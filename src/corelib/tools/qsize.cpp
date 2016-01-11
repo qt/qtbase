@@ -159,9 +159,7 @@ QT_BEGIN_NAMESPACE
 
 void QSize::transpose() Q_DECL_NOTHROW
 {
-    int tmp = wd;
-    wd = ht;
-    ht = tmp;
+    qSwap(wd, ht);
 }
 
 /*!
@@ -592,9 +590,7 @@ QDebug operator<<(QDebug dbg, const QSize &s)
 
 void QSizeF::transpose() Q_DECL_NOTHROW
 {
-    qreal tmp = wd;
-    wd = ht;
-    ht = tmp;
+    qSwap(wd, ht);
 }
 
 /*!
