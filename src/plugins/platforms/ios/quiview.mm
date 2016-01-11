@@ -286,10 +286,14 @@
 
     QTouchDevice *touchDevice = QIOSIntegration::instance()->touchDevice();
     QTouchDevice::Capabilities touchCapabilities = touchDevice->capabilities();
-    if (self.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable)
-        touchCapabilities |= QTouchDevice::Pressure;
-    else
-        touchCapabilities &= ~QTouchDevice::Pressure;
+
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_9_0) {
+        if (self.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable)
+            touchCapabilities |= QTouchDevice::Pressure;
+        else
+            touchCapabilities &= ~QTouchDevice::Pressure;
+    }
+
     touchDevice->setCapabilities(touchCapabilities);
 }
 

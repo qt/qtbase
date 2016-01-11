@@ -105,7 +105,7 @@ QIOSIntegration::QIOSIntegration()
     m_touchDevice = new QTouchDevice;
     m_touchDevice->setType(QTouchDevice::TouchScreen);
     QTouchDevice::Capabilities touchCapabilities = QTouchDevice::Position | QTouchDevice::NormalizedPosition;
-    if ([mainScreen respondsToSelector:@selector(traitCollection)]) {
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_9_0) {
         if (mainScreen.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable)
             touchCapabilities |= QTouchDevice::Pressure;
     }
