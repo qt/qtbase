@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
     bound texture, otherwise returns false.
 */
 bool QPlatformGraphicsBufferHelper::lockAndBindToTexture(QPlatformGraphicsBuffer *graphicsBuffer,
-                                                         bool *swizzle,
+                                                         bool *swizzle, bool *premultiplied,
                                                          const QRect &rect)
 {
     if (graphicsBuffer->lock(QPlatformGraphicsBuffer::TextureAccess)) {
@@ -74,8 +74,10 @@ bool QPlatformGraphicsBufferHelper::lockAndBindToTexture(QPlatformGraphicsBuffer
         }
         if (swizzle)
             *swizzle = false;
+        if (premultiplied)
+            *premultiplied = false;
     } else if (graphicsBuffer->lock(QPlatformGraphicsBuffer::SWReadAccess)) {
-        if (!bindSWToTexture(graphicsBuffer, swizzle, rect)) {
+        if (!bindSWToTexture(graphicsBuffer, swizzle, premultiplied, rect)) {
             qWarning("Failed to bind %sgraphicsbuffer to texture", "SW ");
             return false;
         }
@@ -109,7 +111,7 @@ bool QPlatformGraphicsBufferHelper::lockAndBindToTexture(QPlatformGraphicsBuffer
     Returns true on success, otherwise false.
 */
 bool QPlatformGraphicsBufferHelper::bindSWToTexture(const QPlatformGraphicsBuffer *graphicsBuffer,
-                                                    bool *swizzleRandB,
+                                                    bool *swizzleRandB, bool *premultipliedB,
                                                     const QRect &subRect)
 {
 #ifndef QT_NO_OPENGL
@@ -124,14 +126,30 @@ bool QPlatformGraphicsBufferHelper::bindSWToTexture(const QPlatformGraphicsBuffe
     Q_ASSERT(subRect.isEmpty() || QRect(QPoint(0,0), size).contains(subRect));
 
     bool swizzle = false;
+    bool premultiplied = false;
     QImage::Format imageformat = QImage::toImageFormat(graphicsBuffer->format());
     QImage image(graphicsBuffer->data(), size.width(), size.height(), graphicsBuffer->bytesPerLine(), imageformat);
     if (graphicsBuffer->bytesPerLine() != (size.width() * 4)) {
         image = image.convertToFormat(QImage::Format_RGBA8888);
-    } else if (imageformat == QImage::Format_RGB32) {
-        swizzle = true;
-    } else if (imageformat != QImage::Format_RGBA8888) {
-        image = image.convertToFormat(QImage::Format_RGBA8888);
+    } else {
+        switch (imageformat) {
+        case QImage::Format_ARGB32_Premultiplied:
+            premultiplied = true;
+            // no break
+        case QImage::Format_RGB32:
+        case QImage::Format_ARGB32:
+            swizzle = true;
+            break;
+        case QImage::Format_RGBA8888_Premultiplied:
+            premultiplied = true;
+            // no break
+        case QImage::Format_RGBX8888:
+        case QImage::Format_RGBA8888:
+            break;
+        default:
+            image = image.convertToFormat(QImage::Format_RGBA8888);
+            break;
+        }
     }
 
     QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
@@ -170,6 +188,8 @@ bool QPlatformGraphicsBufferHelper::bindSWToTexture(const QPlatformGraphicsBuffe
     }
     if (swizzleRandB)
         *swizzleRandB = swizzle;
+    if (premultipliedB)
+        *premultipliedB = premultiplied;
 
     return true;
 

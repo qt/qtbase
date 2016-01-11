@@ -92,6 +92,7 @@ public:
     mutable GLuint textureId;
     mutable QSize textureSize;
     mutable bool needsSwizzle;
+    mutable bool premultiplied;
     QOpenGLTextureBlitter *blitter;
 #endif
 };
@@ -323,9 +324,6 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
             blitTextureForWidget(textures, i, window, deviceWindowRect, d_ptr->blitter, offset);
     }
 
-    funcs->glEnable(GL_BLEND);
-    funcs->glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
-
     // Backingstore texture with the normal widgets.
     GLuint textureId = 0;
     QOpenGLTextureBlitter::Origin origin = QOpenGLTextureBlitter::OriginTopLeft;
@@ -345,7 +343,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
             funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-            if (QPlatformGraphicsBufferHelper::lockAndBindToTexture(graphicsBuffer, &d_ptr->needsSwizzle)) {
+            if (QPlatformGraphicsBufferHelper::lockAndBindToTexture(graphicsBuffer, &d_ptr->needsSwizzle, &d_ptr->premultiplied)) {
                 d_ptr->textureSize = graphicsBuffer->size();
             } else {
                 d_ptr->textureSize = QSize(0,0);
@@ -354,7 +352,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
             graphicsBuffer->unlock();
         } else if (!region.isEmpty()){
             funcs->glBindTexture(GL_TEXTURE_2D, d_ptr->textureId);
-            QPlatformGraphicsBufferHelper::lockAndBindToTexture(graphicsBuffer, &d_ptr->needsSwizzle);
+            QPlatformGraphicsBufferHelper::lockAndBindToTexture(graphicsBuffer, &d_ptr->needsSwizzle, &d_ptr->premultiplied);
         }
 
         if (graphicsBuffer->origin() == QPlatformGraphicsBuffer::OriginBottomLeft)
@@ -364,9 +362,16 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
         TextureFlags flags = 0;
         textureId = toTexture(deviceRegion(region, window, offset), &d_ptr->textureSize, &flags);
         d_ptr->needsSwizzle = (flags & TextureSwizzle) != 0;
+        d_ptr->premultiplied = (flags & TexturePremultiplied) != 0;
         if (flags & TextureFlip)
             origin = QOpenGLTextureBlitter::OriginBottomLeft;
     }
+
+    funcs->glEnable(GL_BLEND);
+    if (d_ptr->premultiplied)
+        funcs->glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+    else
+        funcs->glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 
     if (textureId) {
         if (d_ptr->needsSwizzle)
@@ -443,10 +448,26 @@ GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textu
     QImage image = toImage();
     QSize imageSize = image.size();
 
+    bool needConvert = false;
     *flags = 0;
-    if (image.format() == QImage::Format_RGB32)
+    switch (image.format()) {
+    case QImage::Format_ARGB32_Premultiplied:
+        *flags |= TexturePremultiplied;
+        // no break
+    case QImage::Format_RGB32:
+    case QImage::Format_ARGB32:
         *flags |= TextureSwizzle;
-
+        break;
+    case QImage::Format_RGBA8888_Premultiplied:
+        *flags |= TexturePremultiplied;
+        // no break
+    case QImage::Format_RGBX8888:
+    case QImage::Format_RGBA8888:
+        break;
+    default:
+        needConvert = true;
+        break;
+    }
     if (imageSize.isEmpty()) {
         *textureSize = imageSize;
         return 0;
@@ -460,8 +481,7 @@ GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textu
 
     *textureSize = imageSize;
 
-    // Fast path for RGB32 and RGBA8888, convert everything else to RGBA8888.
-    if (image.format() != QImage::Format_RGB32 && image.format() != QImage::Format_RGBA8888)
+    if (needConvert)
         image = image.convertToFormat(QImage::Format_RGBA8888);
 
     QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
