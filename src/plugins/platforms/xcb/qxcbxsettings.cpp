@@ -117,8 +117,9 @@ public:
             if (!reply)
                 return settings;
 
-            settings += QByteArray((const char *)xcb_get_property_value(reply), xcb_get_property_value_length(reply));
-            offset += xcb_get_property_value_length(reply);
+            const auto property_value_length = xcb_get_property_value_length(reply);
+            settings.append(static_cast<const char *>(xcb_get_property_value(reply)), property_value_length);
+            offset += property_value_length;
             more = reply->bytes_after != 0;
 
             free(reply);
