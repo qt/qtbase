@@ -171,21 +171,70 @@ Q_DECLARE_METATYPE(Qt::DateFormat)
 
 tst_QDateTime::tst_QDateTime()
 {
-    uint x1 = QDateTime(QDate(1990, 1, 1), QTime()).toTime_t();
-    uint x2 = QDateTime(QDate(1990, 6, 1), QTime()).toTime_t();
-    zoneIsCET = (x1 == 631148400 && x2 == 644191200);
+    /*
+      Due to some jurisdictions changing their zones and rules, it's possible
+      for a non-CET zone to accidentally match CET at a few tested moments but
+      be different a few years later or earlier.  This would lead to tests
+      failing if run in the partially-aliasing zone (e.g. Algeria, Lybia).  So
+      test thoroughly; ideally at every mid-winter or mid-summer in whose
+      half-year any test below assumes zoneIsCET means what it says.  (Tests at
+      or near a DST transition implicate both of the half-years that meet
+      there.)  Years outside the 1970--2038 range, however, are likely not
+      properly handled by the TZ-database; and QDateTime explicitly handles them
+      differently, so don't probe them here.
+    */
+    const uint day = 24 * 3600; // in seconds
+    zoneIsCET = (QDateTime(QDate(2038, 1, 19), QTime(4, 14, 7)).toTime_t() == 0x7fffffff
+                 // Entries a year apart robustly differ by multiples of day.
+                 && QDateTime(QDate(2015, 7, 1), QTime()).toTime_t() == 1435701600
+                 && QDateTime(QDate(2015, 1, 1), QTime()).toTime_t() == 1420066800
+                 && QDateTime(QDate(2013, 7, 1), QTime()).toTime_t() == 1372629600
+                 && QDateTime(QDate(2013, 1, 1), QTime()).toTime_t() == 1356994800
+                 && QDateTime(QDate(2012, 7, 1), QTime()).toTime_t() == 1341093600
+                 && QDateTime(QDate(2012, 1, 1), QTime()).toTime_t() == 1325372400
+                 && QDateTime(QDate(2008, 7, 1), QTime()).toTime_t() == 1214863200
+                 && QDateTime(QDate(2004, 1, 1), QTime()).toTime_t() == 1072911600
+                 && QDateTime(QDate(2000, 1, 1), QTime()).toTime_t() == 946681200
+                 && QDateTime(QDate(1990, 7, 1), QTime()).toTime_t() == 646783200
+                 && QDateTime(QDate(1990, 1, 1), QTime()).toTime_t() == 631148400
+                 && QDateTime(QDate(1979, 1, 1), QTime()).toTime_t() == 283993200
+                 // .toTime_t() returns -1 for everything before this:
+                 && QDateTime(QDate(1970, 1, 1), QTime(1, 0, 0)).toTime_t() == 0);
+    // Use .toMSecsSinceEpoch() if you really need to test anything earlier.
 
-    QDateTime dt1 = QDateTime::fromTime_t(0);
-    QDateTime dt2 = QDateTime::fromTime_t(181 * 86400); // six months later, Jul 1
-    if (dt1.date().year() < 1970 || dt2.date().month() < 7) {
-        localTimeType = LocalTimeBehindUtc;
-    } else if (dt1.time().hour() > 0 || dt1.date().day() > 1) {
-        localTimeType = LocalTimeAheadOfUtc;
-    } else if (dt2.time().hour() > 0 || dt2.date().day() > 1) {
-        localTimeType = LocalTimeAheadOfUtc;
-    } else {
-        localTimeType = LocalTimeIsUtc;
+    /*
+      Again, rule changes can cause a TZ to look like UTC at some sample dates
+      but deviate at some date relevant to a test using localTimeType.  These
+      tests mostly use years outside the 1970--2038 range for which TZ data is
+      credible, so we can't helpfully be exhaustive.  So scan a sample of years'
+      starts and middles.
+    */
+    const int sampled = 3;
+    // UTC starts of months in 2004, 2038 and 1970:
+    uint jans[sampled] = { 12418 * day, 24837 * day, 0 };
+    uint juls[sampled] = { 12600 * day, 25018 * day, 181 * day };
+    localTimeType = LocalTimeIsUtc;
+    for (int i = sampled; i-- > 0; ) {
+        QDateTime jan = QDateTime::fromTime_t(jans[i]);
+        QDateTime jul = QDateTime::fromTime_t(juls[i]);
+        if (jan.date().year() < 1970 || jul.date().month() < 7) {
+            localTimeType = LocalTimeBehindUtc;
+            break;
+        } else if (jan.time().hour() > 0 || jul.time().hour() > 0
+                   || jan.date().day() > 1 || jul.date().day() > 1) {
+            localTimeType = LocalTimeAheadOfUtc;
+            break;
+        }
     }
+    /*
+      Even so, TZ=Africa/Algiers will fail fromMSecsSinceEpoch(-1) because it
+      switched from WET without DST (i.e. UTC) in the late 1960s to WET with DST
+      for all of 1970 - so they had a DST transition *on the epoch*.  They've
+      since switched to CET with no DST, making life simple; but our tests for
+      mistakes around the epoch can't tell the difference between what Algeria
+      really did and the symptoms we can believe a bug might produce: there's
+      not much we can do about that, that wouldn't hide real bugs.
+    */
 }
 
 void tst_QDateTime::initTestCase()
