@@ -113,7 +113,7 @@ static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &e
         // Find if an application other than Finder claims to know how to handle the package
         QCFType<CFURLRef> application;
         LSGetApplicationForURL(url,
-                               kLSRolesEditor|kLSRolesViewer|kLSRolesViewer,
+                               kLSRolesEditor|kLSRolesViewer,
                                NULL,
                                &application);
 
