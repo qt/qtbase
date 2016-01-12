@@ -93,8 +93,6 @@ public:
                                   const QDBusMessage &asSent);
     static QDBusMessage makeLocalReply(const QDBusConnectionPrivate &conn,
                                        const QDBusMessage &asSent);
-    uint serial();
-    uint replySerial();
 };
 
 QT_END_NAMESPACE

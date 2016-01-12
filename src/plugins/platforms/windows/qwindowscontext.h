@@ -148,7 +148,7 @@ struct QWindowsShcoreDLL {
     void init();
     inline bool isValid() const { return getProcessDpiAwareness && setProcessDpiAwareness && getDpiForMonitor; }
 
-    typedef HRESULT (WINAPI *GetProcessDpiAwareness)(HANDLE,int);
+    typedef HRESULT (WINAPI *GetProcessDpiAwareness)(HANDLE,int *);
     typedef HRESULT (WINAPI *SetProcessDpiAwareness)(int);
     typedef HRESULT (WINAPI *GetDpiForMonitor)(HMONITOR,int,UINT *,UINT *);
 
@@ -219,6 +219,7 @@ public:
 
     void setTabletAbsoluteRange(int a);
     void setProcessDpiAwareness(QtWindows::ProcessDpiAwareness dpiAwareness);
+    static int processDpiAwareness();
 
     // Returns a combination of SystemInfoFlags
     unsigned systemInfo() const;

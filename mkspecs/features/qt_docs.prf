@@ -11,13 +11,6 @@
 
 !exists($$QMAKE_DOCS): error("Cannot find documentation specification file $$QMAKE_DOCS")
 
-load(qt_build_paths)
-QMAKE_DOCS_BASE_OUTDIR = $$MODULE_BASE_OUTDIR/doc
-
-QMAKE_DOCS_TARGET = $$replace(QMAKE_DOCS, ^(.*/)?(.*)\\.qdocconf$, \\2)
-isEmpty(QMAKE_DOCS_TARGETDIR): QMAKE_DOCS_TARGETDIR = $$QMAKE_DOCS_TARGET
-QMAKE_DOCS_OUTPUTDIR = $$QMAKE_DOCS_BASE_OUTDIR/$$QMAKE_DOCS_TARGETDIR
-
 qtver.name = QT_VERSION
 qtver.value = $$VERSION
 isEmpty(qtver.value): qtver.value = $$MODULE_VERSION
@@ -31,6 +24,21 @@ qtdocs.value = $$[QT_INSTALL_DOCS/src]
 QT_TOOL_ENV = qtver qtmver qtvertag qtdocs
 qtPrepareTool(QDOC, qdoc)
 QT_TOOL_ENV =
+
+!build_online_docs: qtPrepareTool(QHELPGENERATOR, qhelpgenerator)
+
+# qtPrepareTool() must be called outside a build pass, as it protects
+# against concurrent wrapper creation by omitting it during build passes.
+# However, creating the actual targets is reserved to the build passes.
+debug_and_release:!build_pass: return()
+
+load(qt_build_paths)
+QMAKE_DOCS_BASE_OUTDIR = $$MODULE_BASE_OUTDIR/doc
+
+QMAKE_DOCS_TARGET = $$replace(QMAKE_DOCS, ^(.*/)?(.*)\\.qdocconf$, \\2)
+isEmpty(QMAKE_DOCS_TARGETDIR): QMAKE_DOCS_TARGETDIR = $$QMAKE_DOCS_TARGET
+QMAKE_DOCS_OUTPUTDIR = $$QMAKE_DOCS_BASE_OUTDIR/$$QMAKE_DOCS_TARGETDIR
+
 QDOC += -outputdir $$shell_quote($$QMAKE_DOCS_OUTPUTDIR)
 !build_online_docs: \
     QDOC += -installdir $$shell_quote($$[QT_INSTALL_DOCS])
@@ -64,7 +72,6 @@ prepare_docs {
 }
 
 !build_online_docs {
-    qtPrepareTool(QHELPGENERATOR, qhelpgenerator)
     qch_docs.commands = $$QHELPGENERATOR $$shell_quote($$QMAKE_DOCS_OUTPUTDIR/$${QMAKE_DOCS_TARGET}.qhp) -o $$shell_quote($$QMAKE_DOCS_BASE_OUTDIR/$${QMAKE_DOCS_TARGET}.qch)
 
     inst_html_docs.files = $$QMAKE_DOCS_OUTPUTDIR

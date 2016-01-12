@@ -11,3 +11,4 @@ add_definitions(${Qt5Core_DEFINITIONS})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
 
 add_executable(myobject main.cpp)
+target_link_libraries(myobject Qt5::Core)

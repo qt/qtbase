@@ -29,17 +29,17 @@ QMAKE_EXTRA_TARGETS += docs
 contains(TEMPLATE, subdirs) {
     for(inst, DOC_TARGETS): \
         prepareRecursiveTarget($$inst)
-} else:debug_and_release:!build_pass {
-    sub = $$first(BUILDS)
-    for(inst, DOC_TARGETS) {
-        $${inst}.CONFIG = recursive
-        $${inst}.recurse = $$sub
-    }
 } else {
-    # apps and libs only generate docs if QMAKE_DOCS is set
-    !isEmpty(QMAKE_DOCS) {
-        # backwards compat hack
-        load(qt_docs)
+    debug_and_release:!build_pass {
+        sub = $$first(BUILDS)
+        for(inst, DOC_TARGETS) {
+            $${inst}.CONFIG = recursive
+            $${inst}.recurse = $$sub
+        }
     }
+    # Apps and libs request docs creation by setting QMAKE_DOCS.
+    # This is a backwards compat hack - technically, the modules which need it
+    # are supposed to load(qt_docs) themselves.
+    !isEmpty(QMAKE_DOCS): load(qt_docs)
 }
 QMAKE_EXTRA_TARGETS += $$DOC_TARGETS

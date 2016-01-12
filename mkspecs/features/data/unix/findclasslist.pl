@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 #############################################################################
 ##
-## Copyright (C) 2015 Intel Corporation
+## Copyright (C) 2016 Intel Corporation
 ## Contact: http://www.qt.io/licensing/
 ##
 ## This file is part of the build configuration tools of the Qt Toolkit.
@@ -33,40 +33,26 @@
 #############################################################################
 
 use strict;
-my $syntax = "findclasslist.pl <file (containing private header list)>\n" .
-             "Replaces \@CLASSLIST\@ with the classes found in the header files\n";
-
-die("Expected exactly one argument") if (@ARGV != 1);
-
-my @headers = ();
-
-# Expand contents of the command-line arguments file
-open ARGFILE, "<$ARGV[0]" or die("Could not open arguments file $ARGV[0]: $!");
-while (my $line = <ARGFILE>) {
-    chomp($line);
-    push @headers, $line;
-}
-close ARGFILE;
+my $syntax = "findclasslist.pl\n" .
+             "Replaces each \@FILE:filename\@ in stdin with the classes found in that file\n";
 
 $\ = $/;
 while (<STDIN>) {
     chomp;
-    unless (/\@CLASSLIST\@/) {
+    unless (/\@FILE:(.*)\@/) {
         print;
         next;
     }
 
-    # Replace @CLASSLIST@ with the class list
-    for my $header (@headers) {
-        open HDR, "<$header" or die("Could not open header $header: $!");
-        my $comment = "    /* $header */";
-        while (my $line = <HDR>) {
-            # Match a struct or class declaration, but not a forward declaration
-            $line =~ /^(?:struct|class) (?:Q_.*_EXPORT)? (\w+)(?!;)/ or next;
-            print $comment if $comment;
-            printf "    *%d%s*;\n", length $1, $1;
-            $comment = 0;
-        }
-        close HDR;
+    # Replace this line with the class list
+    open HDR, "<$1" or die("Could not open header $1: $!");
+    my $comment = "    /* $1 */";
+    while (my $line = <HDR>) {
+        # Match a struct or class declaration, but not a forward declaration
+        $line =~ /^(?:struct|class) (?:Q_.*_EXPORT)? (\w+)(?!;)/ or next;
+        print $comment if $comment;
+        printf "    *%d%s*;\n", length $1, $1;
+        $comment = 0;
     }
+    close HDR;
 }

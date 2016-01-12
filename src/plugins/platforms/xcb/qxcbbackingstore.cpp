@@ -51,6 +51,7 @@
 #include <qscreen.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <qpa/qplatformgraphicsbuffer.h>
+#include <private/qimage_p.h>
 
 #include <algorithm>
 QT_BEGIN_NAMESPACE
@@ -171,6 +172,9 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
         if (shmctl(m_shm_info.shmid, IPC_RMID, 0) == -1)
             qWarning() << "QXcbBackingStore: Error while marking the shared memory segment to be destroyed";
     }
+
+    if (QImage::toPixelFormat(format).alphaUsage() == QPixelFormat::IgnoresAlpha)
+        format = qt_alphaVersionForPainting(format);
 
     m_qimage = QImage( (uchar*) m_xcb_image->data, m_xcb_image->width, m_xcb_image->height, m_xcb_image->stride, format);
     m_graphics_buffer = new QXcbShmGraphicsBuffer(&m_qimage);

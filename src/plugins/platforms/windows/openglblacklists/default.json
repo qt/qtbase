@@ -1,6 +1,6 @@
 {
     "name": "Qt built-in GPU driver blacklist",
-    "version": "5.5",
+    "version": "5.6",
     "entries": [
         {
             "id": 1,

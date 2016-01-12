@@ -779,6 +779,7 @@ void QWinRTScreen::addWindow(QWindow *window)
     d->visibleWindows.prepend(window);
     QWindowSystemInterface::handleWindowActivated(window, Qt::OtherFocusReason);
     handleExpose();
+    QWindowSystemInterface::flushWindowSystemEvents();
 }
 
 void QWinRTScreen::removeWindow(QWindow *window)
@@ -796,6 +797,7 @@ void QWinRTScreen::removeWindow(QWindow *window)
     if (wasTopWindow)
         QWindowSystemInterface::handleWindowActivated(window, Qt::OtherFocusReason);
     handleExpose();
+    QWindowSystemInterface::flushWindowSystemEvents();
 }
 
 void QWinRTScreen::raise(QWindow *window)
