@@ -136,7 +136,6 @@ static QString qt_eval_string()
         break;
     default:
         return QString();
-        msg = 0;
     }
 
     return QString::fromLatin1(msg)
