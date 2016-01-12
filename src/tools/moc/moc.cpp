@@ -1444,7 +1444,7 @@ bool Moc::until(Token target) {
         case LPAREN: ++parenCount; break;
         case RPAREN: --parenCount; break;
         case LANGLE:
-            if (parenCount == 0 && braceCount == 0 && parenCount == 0)
+            if (parenCount == 0 && braceCount == 0)
                 ++angleCount;
           break;
         case RANGLE:
