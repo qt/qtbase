@@ -718,8 +718,6 @@ void tst_QDateTime::fromMSecsSinceEpoch()
         QCOMPARE(dtLocal.toLocalTime(), cet);
         QCOMPARE(dtUtc.toLocalTime(), cet);
         QCOMPARE(dtOffset.toLocalTime(), cet);
-    } else {
-        QSKIP("You must test using Central European (CET/CEST) time zone, e.g. TZ=Europe/Oslo");
     }
 
     // LocalTime will overflow for max
