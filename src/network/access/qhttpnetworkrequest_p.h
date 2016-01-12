@@ -117,6 +117,9 @@ public:
     bool isSPDYAllowed() const;
     void setSPDYAllowed(bool b);
 
+    bool isHTTP2Allowed() const;
+    void setHTTP2Allowed(bool b);
+
     bool withCredentials() const;
     void setWithCredentials(bool b);
 
@@ -144,6 +147,7 @@ private:
     friend class QHttpNetworkConnectionPrivate;
     friend class QHttpNetworkConnectionChannel;
     friend class QHttpProtocolHandler;
+    friend class QHttp2ProtocolHandler;
     friend class QSpdyProtocolHandler;
 };
 
@@ -165,6 +169,7 @@ public:
     bool autoDecompress;
     bool pipeliningAllowed;
     bool spdyAllowed;
+    bool http2Allowed;
     bool withCredentials;
     bool ssl;
     bool preConnect;

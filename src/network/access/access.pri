@@ -38,7 +38,8 @@ HEADERS += \
     access/qhttpthreaddelegate_p.h \
     access/qhttpmultipart.h \
     access/qhttpmultipart_p.h \
-    access/qnetworkfile_p.h
+    access/qnetworkfile_p.h \
+    access/qhttp2protocolhandler_p.h
 
 SOURCES += \
     access/qftp.cpp \
@@ -70,7 +71,8 @@ SOURCES += \
     access/qnetworkdiskcache.cpp \
     access/qhttpthreaddelegate.cpp \
     access/qhttpmultipart.cpp \
-    access/qnetworkfile.cpp
+    access/qnetworkfile.cpp \
+    access/qhttp2protocolhandler.cpp
 
 mac: LIBS_PRIVATE += -framework Security
 

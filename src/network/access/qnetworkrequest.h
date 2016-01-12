@@ -87,6 +87,8 @@ public:
         BackgroundRequestAttribute,
         SpdyAllowedAttribute,
         SpdyWasUsedAttribute,
+        HTTP2AllowedAttribute,
+        HTTP2WasUsedAttribute,
         EmitAllUploadProgressSignalsAttribute,
         FollowRedirectsAttribute,
 

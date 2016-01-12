@@ -99,7 +99,8 @@ public:
 
     enum ConnectionType {
         ConnectionTypeHTTP,
-        ConnectionTypeSPDY
+        ConnectionTypeSPDY,
+        ConnectionTypeHTTP2
     };
 
 #ifndef QT_NO_BEARERMANAGEMENT
@@ -161,6 +162,7 @@ private:
     friend class QHttpNetworkReply;
     friend class QHttpNetworkReplyPrivate;
     friend class QHttpNetworkConnectionChannel;
+    friend class QHttp2ProtocolHandler;
     friend class QHttpProtocolHandler;
     friend class QSpdyProtocolHandler;
 

@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(QHttpNetworkRequest::Operation op,
         QHttpNetworkRequest::Priority pri, const QUrl &newUrl)
     : QHttpNetworkHeaderPrivate(newUrl), operation(op), priority(pri), uploadByteDevice(0),
-      autoDecompress(false), pipeliningAllowed(false), spdyAllowed(false),
+      autoDecompress(false), pipeliningAllowed(false), spdyAllowed(false), http2Allowed(false),
       withCredentials(true), preConnect(false), followRedirect(false), redirectCount(0)
 {
 }
@@ -61,6 +61,7 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
       autoDecompress(other.autoDecompress),
       pipeliningAllowed(other.pipeliningAllowed),
       spdyAllowed(other.spdyAllowed),
+      http2Allowed(other.http2Allowed),
       withCredentials(other.withCredentials),
       ssl(other.ssl),
       preConnect(other.preConnect),
@@ -82,6 +83,7 @@ bool QHttpNetworkRequestPrivate::operator==(const QHttpNetworkRequestPrivate &ot
         && (autoDecompress == other.autoDecompress)
         && (pipeliningAllowed == other.pipeliningAllowed)
         && (spdyAllowed == other.spdyAllowed)
+        && (http2Allowed == other.http2Allowed)
         // we do not clear the customVerb in setOperation
         && (operation != QHttpNetworkRequest::Custom || (customVerb == other.customVerb))
         && (withCredentials == other.withCredentials)
@@ -329,6 +331,16 @@ bool QHttpNetworkRequest::isSPDYAllowed() const
 void QHttpNetworkRequest::setSPDYAllowed(bool b)
 {
     d->spdyAllowed = b;
+}
+
+bool QHttpNetworkRequest::isHTTP2Allowed() const
+{
+    return d->http2Allowed;
+}
+
+void QHttpNetworkRequest::setHTTP2Allowed(bool b)
+{
+    d->http2Allowed = b;
 }
 
 bool QHttpNetworkRequest::withCredentials() const

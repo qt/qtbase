@@ -82,7 +82,8 @@ QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &host
   networkLayerState(Unknown),
   hostName(hostName), port(port), encrypt(encrypt), delayIpv4(true)
 #ifndef QT_NO_SSL
-, channelCount((type == QHttpNetworkConnection::ConnectionTypeSPDY) ? 1 : defaultHttpChannelCount)
+, channelCount((type == QHttpNetworkConnection::ConnectionTypeSPDY || type == QHttpNetworkConnection::ConnectionTypeHTTP2)
+              ? 1 : defaultHttpChannelCount)
 #else
 , channelCount(defaultHttpChannelCount)
 #endif // QT_NO_SSL
@@ -1011,7 +1012,8 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
         }
         break;
     }
-    case QHttpNetworkConnection::ConnectionTypeSPDY: {
+    case QHttpNetworkConnection::ConnectionTypeSPDY:
+    case QHttpNetworkConnection::ConnectionTypeHTTP2: {
 #ifndef QT_NO_SSL
         if (channels[0].spdyRequestsToSend.isEmpty())
             return;

@@ -287,7 +287,13 @@ void QHttpThreadDelegate::startRequest()
     QHttpNetworkConnection::ConnectionType connectionType
             = QHttpNetworkConnection::ConnectionTypeHTTP;
 #ifndef QT_NO_SSL
-    if (httpRequest.isSPDYAllowed() && ssl) {
+    if (httpRequest.isHTTP2Allowed() && ssl) {
+        connectionType = QHttpNetworkConnection::ConnectionTypeHTTP2;
+        QList<QByteArray> protocols;
+        protocols << QSslConfiguration::ALPNProtocolHTTP2
+                  << QSslConfiguration::NextProtocolHttp1_1;
+        incomingSslConfiguration.setAllowedNextProtocols(protocols);
+    } else if (httpRequest.isSPDYAllowed() && ssl) {
         connectionType = QHttpNetworkConnection::ConnectionTypeSPDY;
         urlCopy.setScheme(QStringLiteral("spdy")); // to differentiate SPDY requests from HTTPS requests
         QList<QByteArray> nextProtocols;

@@ -180,6 +180,7 @@ private:
     friend class QHttpNetworkConnection;
     friend class QHttpNetworkConnectionPrivate;
     friend class QHttpNetworkConnectionChannel;
+    friend class QHttp2ProtocolHandler;
     friend class QHttpProtocolHandler;
     friend class QSpdyProtocolHandler;
 };
