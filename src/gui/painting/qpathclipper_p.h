@@ -336,7 +336,8 @@ inline QPathVertex::operator QPointF() const
 inline QPathSegments::QPathSegments(int reserve) :
     m_points(reserve),
     m_segments(reserve),
-    m_intersections(reserve)
+    m_intersections(reserve),
+    m_pathId(0)
 {
 }
 
