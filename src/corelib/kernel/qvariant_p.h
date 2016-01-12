@@ -121,7 +121,7 @@ inline void v_construct(QVariant::Private *x, const void *copy, T * = 0)
         if (copy)
             new (&x->data.ptr) T(*static_cast<const T *>(copy));
         else
-            new (&x->data.ptr) T;
+            new (&x->data.ptr) T();
     }
 }
 
