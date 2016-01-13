@@ -224,7 +224,8 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
         if (!QCoreApplication::testAttribute(Qt::AA_PluginApplication)) {
             m_context.setProcessDpiAwareness(dpiAwareness);
             qCDebug(lcQpaWindows)
-                << __FUNCTION__ << "DpiAwareness=" << dpiAwareness;
+                << __FUNCTION__ << "DpiAwareness=" << dpiAwareness
+                << "effective process DPI awareness=" << QWindowsContext::processDpiAwareness();
         }
         dpiAwarenessSet = true;
     }

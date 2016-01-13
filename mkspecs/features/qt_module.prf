@@ -132,7 +132,6 @@ lib_bundle {
 }
 
 mac {
-   CONFIG += explicitlib
    macx-g++ {
        QMAKE_CFLAGS += -fconstant-cfstrings
        QMAKE_CXXFLAGS += -fconstant-cfstrings
@@ -200,7 +199,10 @@ android: CONFIG += qt_android_deps no_linker_version_script
         verscript_content = "Qt_$${QT_MAJOR_VERSION}_PRIVATE_API { *; };"
     } else {
         verscript_content = "Qt_$${QT_MAJOR_VERSION}_PRIVATE_API {" \
-                            "    qt_private_api_tag*;" "@CLASSLIST@" "};"
+                            "    qt_private_api_tag*;"
+        for(header, SYNCQT.PRIVATE_HEADER_FILES): \
+            verscript_content += "    @FILE:$${_PRO_FILE_PWD_}/$$header@"
+        verscript_content += "};"
 
         current = Qt_$$QT_MAJOR_VERSION
         verscript_content += "$$current { *; };"
@@ -214,13 +216,12 @@ android: CONFIG += qt_android_deps no_linker_version_script
             else:                          verscript_content += "$$current {} $$previous;"
         }
 
-        # Add a post-processing step to replace the @CLASSLIST@
-        verscriptprocess.commands = perl $${PWD}/data/unix/findclasslist.pl < $${verscript}.in $${verscript}.in.args > $@
+        # Add a post-processing step to replace the @FILE:filename@
+        verscriptprocess.commands = perl $${PWD}/data/unix/findclasslist.pl < $${verscript}.in > $@
         verscriptprocess.target = $$verscript
         for(header, SYNCQT.PRIVATE_HEADER_FILES): \
             verscriptprocess.depends += $${_PRO_FILE_PWD_}/$$header
-        write_file($${verscript}.in.args, verscriptprocess.depends)|error("Aborting.")
-        verscriptprocess.depends += $${verscript}.in $${verscript}.in.args
+        verscriptprocess.depends += $${verscript}.in
         QMAKE_EXTRA_TARGETS += verscriptprocess
         PRE_TARGETDEPS += $$verscript
         verscript = $${verscript}.in
@@ -258,19 +259,18 @@ load(qt_targets)
         pclib_replace.replace = $$QMAKE_PKGCONFIG_LIBDIR
     pclib_replace.CONFIG = path
     QMAKE_PKGCONFIG_INSTALL_REPLACE += pclib_replace
-
-    unix {
-        CONFIG += create_libtool explicitlib
-        host_build: \
-            QMAKE_LIBTOOL_LIBDIR = $$[QT_HOST_LIBS]
-        else: \
-            QMAKE_LIBTOOL_LIBDIR = "=$$[QT_INSTALL_LIBS/raw]"
-        ltlib_replace.match = $$lib_replace.match
-        !isEmpty(lib_replace.replace): \
-            ltlib_replace.replace = $$QMAKE_LIBTOOL_LIBDIR
-        ltlib_replace.CONFIG = path
-        QMAKE_LIBTOOL_INSTALL_REPLACE += ltlib_replace
-    }
+}
+!lib_bundle:unix {
+    CONFIG += create_libtool
+    host_build: \
+        QMAKE_LIBTOOL_LIBDIR = $$[QT_HOST_LIBS]
+    else: \
+        QMAKE_LIBTOOL_LIBDIR = "=$$[QT_INSTALL_LIBS/raw]"
+    ltlib_replace.match = $$lib_replace.match
+    !isEmpty(lib_replace.replace): \
+        ltlib_replace.replace = $$QMAKE_LIBTOOL_LIBDIR
+    ltlib_replace.CONFIG = path
+    QMAKE_LIBTOOL_INSTALL_REPLACE += ltlib_replace
 }
 
 contains(QT_PRODUCT, OpenSource.*):DEFINES *= QT_OPENSOURCE

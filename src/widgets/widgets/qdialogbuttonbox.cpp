@@ -261,7 +261,7 @@ void QDialogButtonBoxPrivate::layoutButtons()
     if (center)
         buttonLayout->addStretch();
 
-    QList<QAbstractButton *> acceptRoleList = buttonLists[QPlatformDialogHelper::AcceptRole];
+    const QList<QAbstractButton *> &acceptRoleList = buttonLists[QPlatformDialogHelper::AcceptRole];
 
     while (*currentLayout != QPlatformDialogHelper::EOL) {
         int role = (*currentLayout & ~QPlatformDialogHelper::Reverse);

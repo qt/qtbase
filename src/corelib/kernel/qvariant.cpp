@@ -3437,7 +3437,7 @@ static int numericCompare(const QVariant::Private *d1, const QVariant::Private *
     Q_ASSERT(ok);
     qreal r2 = qConvertToRealNumber(d2, &ok);
     Q_ASSERT(ok);
-    if (qFuzzyCompare(r1, r2))
+    if (r1 == r2 || qFuzzyCompare(r1, r2))
         return 0;
     return r1 < r2 ? -1 : 1;
 }

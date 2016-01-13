@@ -9,5 +9,5 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
 
 add_subdirectory(subdir1)
 
-add_executable(exe1 "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
-include_directories(${Qt5Core_INCLUDE_DIRS})
+add_executable(exe1 main.cpp)
+target_link_libraries(exe1 Qt5::Core)

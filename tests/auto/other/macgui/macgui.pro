@@ -6,4 +6,6 @@ HEADERS += guitest.h
 
 QT = core-private widgets-private testlib
 
+osx: LIBS += -framework ApplicationServices
+
 requires(mac)

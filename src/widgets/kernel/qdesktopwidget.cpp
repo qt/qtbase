@@ -203,7 +203,7 @@ int QDesktopWidget::screenNumber(const QWidget *w) const
         return primaryScreen();
 
     // If there is more than one virtual desktop
-    if (screens.count() != screens.first()->virtualSiblings().count()) {
+    if (screens.count() != screens.constFirst()->virtualSiblings().count()) {
         // Find the root widget, get a QScreen from it and use the
         // virtual siblings for checking the window position.
         const QWidget *root = w;

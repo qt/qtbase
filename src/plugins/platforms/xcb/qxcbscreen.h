@@ -114,7 +114,6 @@ public:
     QWindow *topLevelAt(const QPoint &point) const Q_DECL_OVERRIDE;
 
     QRect geometry() const Q_DECL_OVERRIDE { return m_geometry; }
-    QRect nativeGeometry() const { return m_nativeGeometry; }
     QRect availableGeometry() const Q_DECL_OVERRIDE {return m_availableGeometry;}
     int depth() const Q_DECL_OVERRIDE { return screen()->root_depth; }
     QImage::Format format() const Q_DECL_OVERRIDE;
@@ -186,7 +185,6 @@ private:
     QSizeF m_outputSizeMillimeters;
     QSizeF m_sizeMillimeters;
     QRect m_geometry;
-    QRect m_nativeGeometry;
     QRect m_availableGeometry;
     QSize m_virtualSize;
     QSizeF m_virtualSizeMillimeters;

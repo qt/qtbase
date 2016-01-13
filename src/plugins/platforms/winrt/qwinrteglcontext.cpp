@@ -46,6 +46,7 @@
 #define EGL_EGLEXT_PROTOTYPES
 #include <EGL/eglext.h>
 
+#include <QOffscreenSurface>
 #include <QOpenGLContext>
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 
@@ -54,9 +55,6 @@ QT_BEGIN_NAMESPACE
 struct WinRTEGLDisplay
 {
     WinRTEGLDisplay() {
-        eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-        if (Q_UNLIKELY(eglDisplay == EGL_NO_DISPLAY))
-            qCritical("Failed to initialize EGL display: 0x%x", eglGetError());
     }
     ~WinRTEGLDisplay() {
         eglTerminate(eglDisplay);
@@ -117,9 +115,17 @@ void QWinRTEGLContext::initialize()
     if (Q_UNLIKELY(g->eglDisplay == EGL_NO_DISPLAY))
         qCritical("Failed to initialize EGL display: 0x%x", eglGetError());
 
-    if (Q_UNLIKELY(!eglInitialize(g->eglDisplay, nullptr, nullptr)))
-        qCritical("Failed to initialize EGL: 0x%x", eglGetError());
-
+    // eglInitialize checks for EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE
+    // which adds a suspending handler. This needs to be added from the Xaml
+    // thread itself, otherwise it will not be invoked. add_Suspending does
+    // not return an error unfortunately, so it silently fails and causes
+    // applications to not quit when the system wants to terminate the app
+    // after suspend.
+    hr = QEventDispatcherWinRT::runOnXamlThread([]() {
+        if (!eglInitialize(g->eglDisplay, nullptr, nullptr))
+            qCritical("Failed to initialize EGL: 0x%x", eglGetError());
+        return S_OK;
+    });
     d->eglConfig = q_configFromGLFormat(g->eglDisplay, d->format);
 
     const EGLint flags = d->format.testOption(QSurfaceFormat::DebugContext)
@@ -141,6 +147,9 @@ bool QWinRTEGLContext::makeCurrent(QPlatformSurface *windowSurface)
 {
     Q_D(QWinRTEGLContext);
     Q_ASSERT(windowSurface->surface()->supportsOpenGL());
+
+    if (windowSurface->surface()->surfaceClass() == QSurface::Offscreen)
+        return false;
 
     QWinRTWindow *window = static_cast<QWinRTWindow *>(windowSurface);
     if (window->eglSurface() == EGL_NO_SURFACE)

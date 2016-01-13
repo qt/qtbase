@@ -585,7 +585,7 @@ int QDate::weekNumber(int *yearNumber) const
         Q_ASSERT(week == 52 || week == 53);
     } else if (week == 53) {
         // maybe first week of next year
-        int w = (yday - 365 - (QDate::isLeapYear(year + 1) ? 1 : 0) - wday + 10) / 7;
+        int w = (yday - 365 - (QDate::isLeapYear(year) ? 1 : 0) - wday + 10) / 7;
         if (w > 0) {
             ++year;
             week = w;
