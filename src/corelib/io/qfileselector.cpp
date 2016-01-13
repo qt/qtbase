@@ -227,9 +227,9 @@ QString QFileSelector::select(const QString &filePath) const
 
 static bool isLocalScheme(const QString &file)
 {
-    bool local = file == QStringLiteral("qrc");
+    bool local = file == QLatin1String("qrc");
 #ifdef Q_OS_ANDROID
-    local |= file == QStringLiteral("assets");
+    local |= file == QLatin1String("assets");
 #endif
     return local;
 }
