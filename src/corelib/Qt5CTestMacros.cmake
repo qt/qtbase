@@ -46,6 +46,20 @@ if (NO_DBUS)
   list(APPEND BUILD_OPTIONS_LIST "-DNO_DBUS=True")
 endif()
 
+# Qt requires C++11 features in header files, which means
+# the buildsystem needs to add a -std flag for certain compilers
+# CMake adds the flag automatically in most cases, but notably not
+# on Windows prior to CMake 3.3
+if (CMAKE_VERSION VERSION_LESS 3.3)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL AppleClang
+            OR (APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL Clang))
+        list(APPEND BUILD_OPTIONS_LIST "-DCMAKE_CXX_FLAGS=-std=gnu++0x -stdlib=libc++")
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL GNU
+            OR CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+        list(APPEND BUILD_OPTIONS_LIST "-DCMAKE_CXX_FLAGS=-std=gnu++0x")
+    endif()
+endif()
+
 foreach(module ${CMAKE_MODULES_UNDER_TEST})
     list(APPEND BUILD_OPTIONS_LIST
         "-DCMAKE_${module}_MODULE_MAJOR_VERSION=${CMAKE_${module}_MODULE_MAJOR_VERSION}"
@@ -166,6 +180,15 @@ function(test_module_includes)
       ${packages_string}
 
       set(CMAKE_CXX_FLAGS \"\${CMAKE_CXX_FLAGS} \${Qt5Core_EXECUTABLE_COMPILE_FLAGS}\")
+      if (CMAKE_VERSION VERSION_LESS 3.3)
+          if (CMAKE_CXX_COMPILER_ID STREQUAL AppleClang
+                  OR (APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL Clang))
+              set(CMAKE_CXX_FLAGS \"\${CMAKE_CXX_FLAGS} -std=gnu++0x -stdlib=libc++\")
+          elseif (CMAKE_CXX_COMPILER_ID STREQUAL GNU
+                  OR CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+              set(CMAKE_CXX_FLAGS \"\${CMAKE_CXX_FLAGS} -std=gnu++0x\")
+          endif()
+      endif()
 
       add_executable(module_includes_exe \"\${CMAKE_CURRENT_SOURCE_DIR}/main.cpp\")
       target_link_libraries(module_includes_exe ${libraries_string})\n"
