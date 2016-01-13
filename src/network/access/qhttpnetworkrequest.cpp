@@ -46,21 +46,21 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(QHttpNetworkRequest::Oper
 {
 }
 
-QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequestPrivate &other)
-    : QHttpNetworkHeaderPrivate(other)
+QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequestPrivate &other) // = default
+    : QHttpNetworkHeaderPrivate(other),
+      operation(other.operation),
+      customVerb(other.customVerb),
+      priority(other.priority),
+      uploadByteDevice(other.uploadByteDevice),
+      autoDecompress(other.autoDecompress),
+      pipeliningAllowed(other.pipeliningAllowed),
+      spdyAllowed(other.spdyAllowed),
+      withCredentials(other.withCredentials),
+      ssl(other.ssl),
+      preConnect(other.preConnect),
+      followRedirect(other.followRedirect),
+      redirectCount(other.redirectCount)
 {
-    operation = other.operation;
-    priority = other.priority;
-    uploadByteDevice = other.uploadByteDevice;
-    autoDecompress = other.autoDecompress;
-    pipeliningAllowed = other.pipeliningAllowed;
-    spdyAllowed = other.spdyAllowed;
-    customVerb = other.customVerb;
-    withCredentials = other.withCredentials;
-    ssl = other.ssl;
-    preConnect = other.preConnect;
-    followRedirect = other.followRedirect;
-    redirectCount = other.redirectCount;
 }
 
 QHttpNetworkRequestPrivate::~QHttpNetworkRequestPrivate()
