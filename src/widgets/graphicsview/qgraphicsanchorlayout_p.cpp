@@ -2513,13 +2513,7 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
         edgeL1 = graph[orientation].edgeData(layoutFirstVertex[orientation], layoutLastVertex[orientation]);
     }
 
-    QLinkedList<QSimplexConstraint *> remainingConstraints;
-    for (int i = 0; i < constraints[orientation].count(); ++i) {
-        remainingConstraints += constraints[orientation].at(i);
-    }
-    for (int i = 0; i < itemCenterConstraints[orientation].count(); ++i) {
-        remainingConstraints += itemCenterConstraints[orientation].at(i);
-    }
+    QList<QSimplexConstraint *> remainingConstraints = constraints[orientation] + itemCenterConstraints[orientation];
 
     QList<QSimplexConstraint *> trunkConstraints;
     QSet<QSimplexVariable *> trunkVariables;
@@ -2529,12 +2523,11 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
         trunkVariables += edgeL2;
 
     bool dirty;
+    auto end = remainingConstraints.end();
     do {
         dirty = false;
 
-        QLinkedList<QSimplexConstraint *>::iterator it = remainingConstraints.begin();
-        while (it != remainingConstraints.end()) {
-            QSimplexConstraint *c = *it;
+        auto isMatch = [&trunkConstraints, &trunkVariables](QSimplexConstraint *c) -> bool {
             bool match = false;
 
             // Check if this constraint have some overlap with current
@@ -2552,8 +2545,7 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
                 trunkConstraints += c;
                 for (auto jt = c->variables.cbegin(), end = c->variables.cend(); jt != end; ++jt)
                     trunkVariables.insert(jt.key());
-                it = remainingConstraints.erase(it);
-                dirty = true;
+                return true;
             } else {
                 // Note that we don't erase the constraint if it's not
                 // a match, since in a next iteration of a do-while we
@@ -2563,24 +2555,21 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
                 // remainingConstraints[1] and it shares with
                 // remainingConstraints[0], we need a second iteration
                 // of the do-while loop to match both.
-                ++it;
+                return false;
             }
-        }
+        };
+        const auto newEnd = std::remove_if(remainingConstraints.begin(), end, isMatch);
+        dirty = newEnd != end;
+        end = newEnd;
     } while (dirty);
+
+    remainingConstraints.erase(end, remainingConstraints.end());
 
     QList< QList<QSimplexConstraint *> > result;
     result += trunkConstraints;
 
-    if (!remainingConstraints.isEmpty()) {
-        QList<QSimplexConstraint *> nonTrunkConstraints;
-        nonTrunkConstraints.reserve(remainingConstraints.size());
-        QLinkedList<QSimplexConstraint *>::iterator it = remainingConstraints.begin();
-        while (it != remainingConstraints.end()) {
-            nonTrunkConstraints += *it;
-            ++it;
-        }
-        result += nonTrunkConstraints;
-    }
+    if (!remainingConstraints.isEmpty())
+        result += remainingConstraints; // non-trunk constraints
 
     return result;
 }
