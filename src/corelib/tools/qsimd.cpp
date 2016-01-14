@@ -39,6 +39,7 @@
 ****************************************************************************/
 
 #include "qsimd_p.h"
+#include "qalgorithms.h"
 #include <QByteArray>
 #include <stdio.h>
 
@@ -676,37 +677,6 @@ static const int features_count = (sizeof features_indices) / (sizeof features_i
 // record what CPU features were enabled by default in this Qt build
 static const quint64 minFeature = qCompilerCpuFeatures;
 
-#ifdef Q_OS_WIN
-#if defined(Q_CC_GNU)
-#  define ffsll __builtin_ffsll
-#else
-int ffsll(quint64 i)
-{
-#if defined(Q_OS_WIN64)
-    unsigned long result;
-    return _BitScanForward64(&result, i) ? result : 0;
-#elif !defined(Q_OS_WINCE)
-    unsigned long result;
-    return _BitScanForward(&result, i) ? result :
-                                         _BitScanForward(&result, i >> 32) ? result + 32 : 0;
-#else
-    return 0;
-#endif
-}
-#endif
-#elif defined(Q_OS_ANDROID) || defined(Q_OS_QNX) || defined(Q_OS_OSX)
-# define ffsll __builtin_ffsll
-#elif defined(Q_OS_INTEGRITY)
-int ffsll(quint64 i)
-{
-    unsigned long result;
-    result = __CLZ32(i);
-    if (!result)
-        result = 32 + __CLZ32(i >> 32);
-    return result;
-}
-#endif
-
 #ifdef Q_ATOMIC_INT64_IS_SUPPORTED
 Q_CORE_EXPORT QBasicAtomicInteger<quint64> qt_cpu_features[1] = { Q_BASIC_ATOMIC_INITIALIZER(0) };
 #else
@@ -762,7 +732,7 @@ void qDetectCpuFeatures()
         fprintf(stderr, "\n");
         fflush(stderr);
         qFatal("Aborted. Incompatible processor: missing feature 0x%llx -%s.", missing,
-               features_string + features_indices[ffsll(missing) - 1]);
+               features_string + features_indices[qCountTrailingZeroBits(missing)]);
     }
 
     qt_cpu_features[0].store(f | quint32(QSimdInitialized));
