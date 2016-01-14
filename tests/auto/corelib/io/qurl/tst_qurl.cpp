@@ -69,6 +69,8 @@ private slots:
     void resolving();
     void toString_data();
     void toString();
+    void toString_PreferLocalFile_data();
+    void toString_PreferLocalFile();
     void toString_constructed_data();
     void toString_constructed();
     void toAndFromStringList_data();
@@ -1049,6 +1051,29 @@ void tst_QUrl::toString()
     QCOMPARE(url.toString(opt), string);
 
     QCOMPARE(url.adjusted(opt).toString(), string);
+}
+void tst_QUrl::toString_PreferLocalFile_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<QString>("string");
+
+#ifdef Q_OS_WIN
+    QTest::newRow("win-drive") << QUrl(QString::fromLatin1("file:///c:/windows/regedit.exe"))
+                               << QString::fromLatin1("c:/windows/regedit.exe");
+    QTest::newRow("win-share") << QUrl(QString::fromLatin1("//Anarki/homes"))
+                               << QString::fromLatin1("//anarki/homes");
+#else
+    QTest::newRow("unix-path") << QUrl(QString::fromLatin1("file:///tmp"))
+                               << QString::fromLatin1("/tmp");
+#endif
+}
+
+void tst_QUrl::toString_PreferLocalFile()
+{
+    QFETCH(QUrl, url);
+    QFETCH(QString, string);
+
+    QCOMPARE(url.toString(QUrl::PreferLocalFile), string);
 }
 
 void tst_QUrl::toAndFromStringList_data()
