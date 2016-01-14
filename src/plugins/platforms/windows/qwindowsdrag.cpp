@@ -78,7 +78,7 @@ public:
     void setPixmap(const QPixmap &p);
 
 protected:
-    void paintEvent(QPaintEvent *)
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE
     {
         QPainter painter(this);
         painter.drawPixmap(0, 0, m_pixmap);

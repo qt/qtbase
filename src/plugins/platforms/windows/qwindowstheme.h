@@ -51,9 +51,9 @@ public:
     bool usePlatformNativeDialog(DialogType type) const Q_DECL_OVERRIDE;
     QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const Q_DECL_OVERRIDE;
     QVariant themeHint(ThemeHint) const Q_DECL_OVERRIDE;
-    virtual const QPalette *palette(Palette type = SystemPalette) const
+    const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE
         { return m_palettes[type]; }
-    virtual const QFont *font(Font type = SystemFont) const
+    const QFont *font(Font type = SystemFont) const Q_DECL_OVERRIDE
         { return m_fonts[type]; }
 
     QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const Q_DECL_OVERRIDE;

@@ -876,12 +876,12 @@ public:
 
     inline static QWindowsNativeFileDialogBase *create(QFileDialogOptions::AcceptMode am, const QWindowsFileDialogSharedData &data);
 
-    virtual void setWindowTitle(const QString &title);
+    void setWindowTitle(const QString &title) Q_DECL_OVERRIDE;
     inline void setMode(QFileDialogOptions::FileMode mode, QFileDialogOptions::AcceptMode acceptMode, QFileDialogOptions::FileDialogOptions options);
     inline void setDirectory(const QUrl &directory);
     inline void updateDirectory() { setDirectory(m_data.directory()); }
     inline QString directory() const;
-    virtual void doExec(HWND owner = 0);
+    void doExec(HWND owner = 0) Q_DECL_OVERRIDE;
     virtual void setNameFilters(const QStringList &f);
     inline void selectNameFilter(const QString &filter);
     inline void updateSelectedNameFilter() { selectNameFilter(m_data.selectedNameFilter()); }
@@ -910,7 +910,7 @@ signals:
     void filterSelected(const QString & filter);
 
 public slots:
-    virtual void close();
+    void close() Q_DECL_OVERRIDE;
 
 protected:
     explicit QWindowsNativeFileDialogBase(const QWindowsFileDialogSharedData &data);
@@ -1460,9 +1460,9 @@ class QWindowsNativeSaveFileDialog : public QWindowsNativeFileDialogBase
 public:
     explicit QWindowsNativeSaveFileDialog(const QWindowsFileDialogSharedData &data)
         : QWindowsNativeFileDialogBase(data) {}
-    virtual void setNameFilters(const QStringList &f);
-    virtual QList<QUrl> selectedFiles() const;
-    virtual QList<QUrl> dialogResult() const;
+    void setNameFilters(const QStringList &f) Q_DECL_OVERRIDE;
+    QList<QUrl> selectedFiles() const Q_DECL_OVERRIDE;
+    QList<QUrl> dialogResult() const Q_DECL_OVERRIDE;
 };
 
 // Return the first suffix from the name filter "Foo files (*.foo;*.bar)" -> "foo".
@@ -1531,8 +1531,8 @@ class QWindowsNativeOpenFileDialog : public QWindowsNativeFileDialogBase
 public:
     explicit QWindowsNativeOpenFileDialog(const QWindowsFileDialogSharedData &data) :
         QWindowsNativeFileDialogBase(data) {}
-    virtual QList<QUrl> selectedFiles() const;
-    virtual QList<QUrl> dialogResult() const;
+    QList<QUrl> selectedFiles() const Q_DECL_OVERRIDE;
+    QList<QUrl> dialogResult() const Q_DECL_OVERRIDE;
 
 private:
     inline IFileOpenDialog *openFileDialog() const
@@ -1616,7 +1616,7 @@ public:
     virtual QString selectedNameFilter() const Q_DECL_OVERRIDE;
 
 private:
-    virtual QWindowsNativeDialogBase *createNativeDialog();
+    QWindowsNativeDialogBase *createNativeDialog() Q_DECL_OVERRIDE;
     inline QWindowsNativeFileDialogBase *nativeFileDialog() const
         { return static_cast<QWindowsNativeFileDialogBase *>(nativeDialog()); }
 
@@ -1744,14 +1744,13 @@ public:
 
     static QWindowsXpNativeFileDialog *create(const OptionsPtr &options, const QWindowsFileDialogSharedData &data);
 
-    virtual void setWindowTitle(const QString &t) { m_title =  t; }
-    virtual void doExec(HWND owner = 0);
-    virtual QPlatformDialogHelper::DialogCode result() const { return m_result; }
+    void setWindowTitle(const QString &t) Q_DECL_OVERRIDE { m_title =  t; }
+    void doExec(HWND owner = 0) Q_DECL_OVERRIDE;
 
     int existingDirCallback(HWND hwnd, UINT uMsg, LPARAM lParam);
 
 public slots:
-    virtual void close() {}
+     void close() Q_DECL_OVERRIDE {}
 
 private:
     typedef BOOL (APIENTRY *PtrGetOpenFileNameW)(LPOPENFILENAMEW);
@@ -1987,19 +1986,19 @@ class QWindowsXpFileDialogHelper : public QWindowsDialogHelperBase<QPlatformFile
 {
 public:
     QWindowsXpFileDialogHelper() {}
-    virtual bool supportsNonModalDialog(const QWindow * /* parent */ = 0) const { return false; }
-    virtual bool defaultNameFilterDisables() const
+    bool supportsNonModalDialog(const QWindow * /* parent */ = 0) const Q_DECL_OVERRIDE { return false; }
+    bool defaultNameFilterDisables() const Q_DECL_OVERRIDE
         { return true; }
-    virtual void setDirectory(const QUrl &directory) Q_DECL_OVERRIDE;
-    virtual QUrl directory() const Q_DECL_OVERRIDE;
-    virtual void selectFile(const QUrl &url) Q_DECL_OVERRIDE;
-    virtual QList<QUrl> selectedFiles() const Q_DECL_OVERRIDE;
-    virtual void setFilter() Q_DECL_OVERRIDE {}
-    virtual void selectNameFilter(const QString &) Q_DECL_OVERRIDE;
-    virtual QString selectedNameFilter() const Q_DECL_OVERRIDE;
+    void setDirectory(const QUrl &directory) Q_DECL_OVERRIDE;
+    QUrl directory() const Q_DECL_OVERRIDE;
+    void selectFile(const QUrl &url) Q_DECL_OVERRIDE;
+    QList<QUrl> selectedFiles() const Q_DECL_OVERRIDE;
+    void setFilter() Q_DECL_OVERRIDE {}
+    void selectNameFilter(const QString &) Q_DECL_OVERRIDE;
+    QString selectedNameFilter() const Q_DECL_OVERRIDE;
 
 private:
-    virtual QWindowsNativeDialogBase *createNativeDialog();
+    QWindowsNativeDialogBase *createNativeDialog() Q_DECL_OVERRIDE;
     inline QWindowsXpNativeFileDialog *nativeFileDialog() const
         { return static_cast<QWindowsXpNativeFileDialog *>(nativeDialog()); }
 
@@ -2073,14 +2072,13 @@ public:
 
     explicit QWindowsNativeColorDialog(const SharedPointerColor &color);
 
-    virtual void setWindowTitle(const QString &) {}
-    virtual QPlatformDialogHelper::DialogCode result() const { return m_code; }
+    void setWindowTitle(const QString &) Q_DECL_OVERRIDE {}
 
 public slots:
-    virtual void close() {}
+    void close() Q_DECL_OVERRIDE {}
 
 private:
-    virtual void doExec(HWND owner = 0);
+    void doExec(HWND owner = 0) Q_DECL_OVERRIDE;
 
     COLORREF m_customColors[CustomColorCount];
     QPlatformDialogHelper::DialogCode m_code;

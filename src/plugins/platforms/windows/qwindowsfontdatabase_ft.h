@@ -43,12 +43,15 @@ QT_BEGIN_NAMESPACE
 class QWindowsFontDatabaseFT : public QBasicFontDatabase
 {
 public:
-    void populateFontDatabase();
+    void populateFontDatabase() Q_DECL_OVERRIDE;
     void populateFamily(const QString &familyName) Q_DECL_OVERRIDE;
-    QFontEngine *fontEngine(const QFontDef &fontDef, void *handle);
-    QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
+    QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) Q_DECL_OVERRIDE;
+    QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize,
+                            QFont::HintingPreference hintingPreference) Q_DECL_OVERRIDE;
 
-    QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const;
+    QStringList fallbacksForFamily(const QString &family, QFont::Style style,
+                                   QFont::StyleHint styleHint,
+                                   QChar::Script script) const Q_DECL_OVERRIDE;
 
     QString fontDir() const Q_DECL_OVERRIDE;
     QFont defaultFont() const Q_DECL_OVERRIDE;
