@@ -268,7 +268,7 @@ QString NmakeMakefileGenerator::defaultInstall(const QString &t)
 
     QString ret = Win32MakefileGenerator::defaultInstall(t);
 
-    const QString root = "$(INSTALL_ROOT)";
+    const QString root = installRoot();
     ProStringList &uninst = project->values(ProKey(t + ".uninstall"));
     QString targetdir = fileFixify(project->first(ProKey(t + ".path")).toQString(), FileFixifyAbsolute);
     if(targetdir.right(1) != Option::dir_sep)

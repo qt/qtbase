@@ -192,6 +192,7 @@ protected:
 
     //for installs
     virtual QString defaultInstall(const QString &);
+    virtual QString installRoot() const;
 
     //for prl
     QString prlFileName(bool fixify=true);
@@ -276,6 +277,9 @@ inline bool MakefileGenerator::noIO() const
 
 inline QString MakefileGenerator::defaultInstall(const QString &)
 { return QString(""); }
+
+inline QString MakefileGenerator::installRoot() const
+{ return QStringLiteral("$(INSTALL_ROOT)"); }
 
 inline bool MakefileGenerator::findLibraries(bool, bool)
 { return true; }

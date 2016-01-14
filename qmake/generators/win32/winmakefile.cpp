@@ -689,7 +689,7 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
         project->first("TEMPLATE") == "subdirs" || project->first("TEMPLATE") == "aux")
        return QString();
 
-    const QString root = "$(INSTALL_ROOT)";
+    const QString root = installRoot();
     ProStringList &uninst = project->values(ProKey(t + ".uninstall"));
     QString ret;
     QString targetdir = fileFixify(project->first(ProKey(t + ".path")).toQString(), FileFixifyAbsolute);

@@ -112,6 +112,18 @@ bool MingwMakefileGenerator::writeMakefile(QTextStream &t)
     return false;
  }
 
+QString MingwMakefileGenerator::installRoot() const
+{
+    /*
+      We include a magic prefix on the path to bypass mingw-make's "helpful"
+      intervention in the environment, recognising variables that look like
+      paths and adding the msys system root as prefix, which we don't want.
+      Once this hack has smuggled INSTALL_ROOT into make's variable space, we
+      can trivially strip the magic prefix back off to get the path we meant.
+     */
+    return QStringLiteral("$(INSTALL_ROOT:@msyshack@%=%)");
+}
+
 void createLdObjectScriptFile(const QString &fileName, const ProStringList &objList)
 {
     QString filePath = Option::output_dir + QDir::separator() + fileName;
