@@ -1,8 +1,8 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
-** Copyright (C) 2014 Intel Corporation.
+** Copyright (C) 2016 Olivier Goffart <ogoffart@woboq.com>
+** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
