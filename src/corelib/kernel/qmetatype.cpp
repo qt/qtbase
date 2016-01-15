@@ -1698,8 +1698,9 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
 void *QMetaType::create(int type, const void *copy)
 {
     QMetaType info(type);
-    int size = info.sizeOf();
-    return info.construct(operator new(size), copy);
+    if (int size = info.sizeOf())
+        return info.construct(operator new(size), copy);
+    return 0;
 }
 
 /*!
