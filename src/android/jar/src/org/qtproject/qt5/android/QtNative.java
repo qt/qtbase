@@ -90,6 +90,12 @@ public class QtNative
     private static final int m_moveThreshold = 0;
     private static ClipboardManager m_clipboardManager = null;
     private static Method m_checkSelfPermissionMethod = null;
+    private static final Runnable runPendingCppRunnablesRunnable = new Runnable() {
+        @Override
+        public void run() {
+            runPendingCppRunnables();
+        }
+    };
 
     private static ClassLoader m_classLoader = null;
     public static ClassLoader classLoader()
@@ -210,14 +216,14 @@ public class QtNative
         }
     }
 
-    private static void runQtOnUiThread(final long id)
+    private static void runPendingCppRunnablesOnUiThread()
     {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                QtNative.onAndroidUiThread(id);
-            }
-        });
+        synchronized (m_mainActivityMutex) {
+            if (!m_activityPaused && m_activity != null)
+                m_activity.runOnUiThread(runPendingCppRunnablesRunnable);
+            else
+                runAction(runPendingCppRunnablesRunnable);
+        }
     }
 
     public static boolean startApplication(String params,
@@ -720,5 +726,5 @@ public class QtNative
     public static native void onActivityResult(int requestCode, int resultCode, Intent data);
     public static native void onNewIntent(Intent data);
 
-    public static native void onAndroidUiThread(long id);
+    public static native void runPendingCppRunnables();
 }

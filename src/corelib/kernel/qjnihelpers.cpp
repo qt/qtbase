@@ -40,8 +40,11 @@
 #include "qjnihelpers_p.h"
 #include "qmutex.h"
 #include "qlist.h"
+#include "qsemaphore.h"
 #include "qvector.h"
 #include <QtCore/qrunnable.h>
+
+#include <deque>
 
 QT_BEGIN_NAMESPACE
 
@@ -50,17 +53,24 @@ static jobject g_jActivity = Q_NULLPTR;
 static jobject g_jClassLoader = Q_NULLPTR;
 static jint g_androidSdkVersion = 0;
 static jclass g_jNativeClass = Q_NULLPTR;
-static jmethodID g_runQtOnUiThreadMethodID = Q_NULLPTR;
+static jmethodID g_runPendingCppRunnablesMethodID = Q_NULLPTR;
+Q_GLOBAL_STATIC(std::deque<QtAndroidPrivate::Runnable>, g_pendingRunnables);
+Q_GLOBAL_STATIC(QMutex, g_pendingRunnablesMutex);
 
-static void onAndroidUiThread(JNIEnv *, jclass, jlong thiz)
+// function called from Java from Android UI thread
+static void runPendingCppRunnables(JNIEnv */*env*/, jobject /*obj*/)
 {
-    QRunnable *runnable = reinterpret_cast<QRunnable *>(thiz);
-    if (runnable == 0)
-        return;
-
-    runnable->run();
-    if (runnable->autoDelete())
-        delete runnable;
+    for (;;) { // run all posted runnables
+        g_pendingRunnablesMutex->lock();
+        if (g_pendingRunnables->empty()) {
+            g_pendingRunnablesMutex->unlock();
+            break;
+        }
+        QtAndroidPrivate::Runnable runnable(std::move(g_pendingRunnables->front()));
+        g_pendingRunnables->pop_front();
+        g_pendingRunnablesMutex->unlock();
+        runnable(); // run it outside the sync block!
+    }
 }
 
 namespace {
@@ -268,7 +278,7 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
     g_javaVM = vm;
 
     static const JNINativeMethod methods[] = {
-        {"onAndroidUiThread", "(J)V", reinterpret_cast<void *>(onAndroidUiThread)},
+        {"runPendingCppRunnables", "()V",  reinterpret_cast<void *>(runPendingCppRunnables)},
         {"dispatchGenericMotionEvent", "(Landroid/view/MotionEvent;)Z", reinterpret_cast<void *>(dispatchGenericMotionEvent)},
         {"dispatchKeyEvent", "(Landroid/view/KeyEvent;)Z", reinterpret_cast<void *>(dispatchKeyEvent)},
     };
@@ -278,9 +288,9 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
     if (!regOk && exceptionCheck(env))
         return JNI_ERR;
 
-    g_runQtOnUiThreadMethodID = env->GetStaticMethodID(jQtNative,
-                                                       "runQtOnUiThread",
-                                                       "(J)V");
+    g_runPendingCppRunnablesMethodID = env->GetStaticMethodID(jQtNative,
+                                                       "runPendingCppRunnablesOnUiThread",
+                                                       "()V");
 
     g_jNativeClass = static_cast<jclass>(env->NewGlobalRef(jQtNative));
     env->DeleteLocalRef(jQtNative);
@@ -311,10 +321,21 @@ jint QtAndroidPrivate::androidSdkVersion()
 
 void QtAndroidPrivate::runOnUiThread(QRunnable *runnable, JNIEnv *env)
 {
-    Q_ASSERT(runnable != 0);
-    env->CallStaticVoidMethod(g_jNativeClass, g_runQtOnUiThreadMethodID, reinterpret_cast<jlong>(runnable));
-    if (exceptionCheck(env) && runnable != 0 && runnable->autoDelete())
-        delete runnable;
+    runOnAndroidThread([runnable]() {
+        runnable->run();
+        if (runnable->autoDelete())
+            delete runnable;
+    }, env);
+}
+
+void QtAndroidPrivate::runOnAndroidThread(const QtAndroidPrivate::Runnable &runnable, JNIEnv *env)
+{
+    g_pendingRunnablesMutex->lock();
+    const bool triggerRun = g_pendingRunnables->empty();
+    g_pendingRunnables->push_back(runnable);
+    g_pendingRunnablesMutex->unlock();
+    if (triggerRun)
+        env->CallStaticVoidMethod(g_jNativeClass, g_runPendingCppRunnablesMethodID);
 }
 
 void QtAndroidPrivate::registerGenericMotionEventListener(QtAndroidPrivate::GenericMotionEventListener *listener)

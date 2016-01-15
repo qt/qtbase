@@ -53,6 +53,7 @@
 
 #include <jni.h>
 #include <QtCore/qglobal.h>
+#include <functional>
 
 QT_BEGIN_NAMESPACE
 
@@ -96,11 +97,14 @@ namespace QtAndroidPrivate
         virtual bool handleKeyEvent(jobject event) = 0;
     };
 
+    typedef std::function<void()> Runnable;
+
     Q_CORE_EXPORT jobject activity();
     Q_CORE_EXPORT JavaVM *javaVM();
     Q_CORE_EXPORT jint initJNI(JavaVM *vm, JNIEnv *env);
     jobject classLoader();
     Q_CORE_EXPORT jint androidSdkVersion();
+    Q_CORE_EXPORT void runOnAndroidThread(const Runnable &runnable, JNIEnv *env);
     Q_CORE_EXPORT void runOnUiThread(QRunnable *runnable, JNIEnv *env);
 
     Q_CORE_EXPORT void handleActivityResult(jint requestCode, jint resultCode, jobject data);
