@@ -535,10 +535,20 @@ QString &exponentForm(QChar zero, QChar decimal, QChar exponential,
 
 double qstrtod(const char *s00, const char **se, bool *ok)
 {
+    const int len = static_cast<int>(strlen(s00));
+    Q_ASSERT(len >= 0);
+    return qstrntod(s00, len, se, ok);
+}
+
+/*!
+  \internal
+
+  Converts the initial portion of the string pointed to by \a s00 to a double, using the 'C' locale.
+ */
+double qstrntod(const char *s00, int len, const char **se, bool *ok)
+{
     int processed = 0;
     bool nonNullOk = false;
-    int len = static_cast<int>(strlen(s00));
-    Q_ASSERT(len >= 0);
     double d = asciiToDouble(s00, len, nonNullOk, processed, TrailingJunkAllowed);
     if (se)
         *se = s00 + processed;

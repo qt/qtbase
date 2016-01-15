@@ -115,6 +115,7 @@ inline bool isZero(double d)
 }
 
 Q_CORE_EXPORT double qstrtod(const char *s00, char const **se, bool *ok);
+Q_CORE_EXPORT double qstrntod(const char *s00, int len, char const **se, bool *ok);
 qlonglong qstrtoll(const char *nptr, const char **endptr, int base, bool *ok);
 qulonglong qstrtoull(const char *nptr, const char **endptr, int base, bool *ok);
 
