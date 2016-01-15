@@ -645,9 +645,12 @@ void QGLXContext::queryDummyContext()
 
     QScopedPointer<QSurface> surface;
     Display *display = glXGetCurrentDisplay();
-    const char *glxvendor = 0;
-    if (display)
-        glxvendor = glXGetClientString(display, GLX_VENDOR);
+    if (!display) {
+        // FIXME: Since Qt 5.6 we don't need to check whether primary screen is NULL
+        if (QScreen *screen = QGuiApplication::primaryScreen())
+            display = DISPLAY_FROM_XCB(static_cast<QXcbScreen *>(screen->handle()));
+    }
+    const char *glxvendor = glXGetClientString(display, GLX_VENDOR);
     if (glxvendor && !strcmp(glxvendor, "ATI")) {
         QWindow *window = new QWindow;
         window->resize(64, 64);
