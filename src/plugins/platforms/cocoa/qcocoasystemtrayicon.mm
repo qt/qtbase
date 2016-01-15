@@ -198,7 +198,7 @@ void QCocoaSystemTrayIcon::updateIcon(const QIcon &icon)
     // current OS X versions is 22 points. Provide some future-proofing
     // by deriving the icon height from the menu height.
     const int padding = 4;
-    const int menuHeight = [[[NSApplication sharedApplication] mainMenu] menuBarHeight];
+    const int menuHeight = [[NSStatusBar systemStatusBar] thickness];
     const int maxImageHeight = menuHeight - padding;
 
     // Select pixmap based on the device pixel height. Ideally we would use
