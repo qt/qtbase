@@ -143,6 +143,11 @@ public:
                                                         bool isSeamless);
     void _q_networkSessionStateChanged(QNetworkSession::State state);
     void _q_onlineStateChanged(bool isOnline);
+    void _q_configurationChanged(const QNetworkConfiguration &configuration);
+    void _q_networkSessionFailed(QNetworkSession::SessionError error);
+
+    QSet<QString> onlineConfigurations;
+
 #endif
 
     QNetworkRequest prepareMultipart(const QNetworkRequest &request, QHttpMultiPart *multiPart);
