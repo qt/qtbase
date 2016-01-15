@@ -447,6 +447,7 @@ void tst_QMenu::overrideMenuAction()
     //test the override menu action by first creating an action to which we set its menu
     QMainWindow w;
     w.resize(300, 200);
+    w.menuBar()->setNativeMenuBar(false);
     centerOnScreen(&w);
 
     QAction *aFileMenu = new QAction("&File", &w);

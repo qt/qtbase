@@ -1411,6 +1411,7 @@ void tst_QAccessibility::menuTest()
     {
     QMainWindow mw;
     mw.resize(300, 200);
+    mw.menuBar()->setNativeMenuBar(false);
     QMenu *file = mw.menuBar()->addMenu("&File");
     QMenu *fileNew = file->addMenu("&New...");
     fileNew->menuAction()->setShortcut(tr("Ctrl+N"));
