@@ -276,7 +276,9 @@ void QStringListModel::sort(int, Qt::SortOrder order)
 
     QModelIndexList oldList = persistentIndexList();
     QModelIndexList newList;
-    for (int i = 0; i < oldList.count(); ++i)
+    const int numOldIndexes = oldList.count();
+    newList.reserve(numOldIndexes);
+    for (int i = 0; i < numOldIndexes; ++i)
         newList.append(index(forwarding.at(oldList.at(i).row()), 0));
     changePersistentIndexList(oldList, newList);
 

@@ -1563,7 +1563,9 @@ static void qPrintDataTags(FILE *stream)
             member.resize(qstrlen(slot) + qstrlen("_data()") + 1);
             qsnprintf(member.data(), member.size(), "%s_data()", slot);
             invokeMethod(QTest::currentTestObject, member.constData());
-            for (int j = 0; j < table.dataCount(); ++j)
+            const int dataCount = table.dataCount();
+            localTags.reserve(dataCount);
+            for (int j = 0; j < dataCount; ++j)
                 localTags << QLatin1String(table.testData(j)->dataTag());
 
             // Print all tag combinations:

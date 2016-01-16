@@ -3350,8 +3350,9 @@ QSet<QTabBar*> QDockAreaLayout::usedTabBars() const
 QSet<QWidget*> QDockAreaLayout::usedSeparatorWidgets() const
 {
     QSet<QWidget*> result;
-
-    for (int i = 0; i < separatorWidgets.count(); ++i)
+    const int numSeparators = separatorWidgets.count();
+    result.reserve(numSeparators);
+    for (int i = 0; i < numSeparators; ++i)
         result << separatorWidgets.at(i);
     for (int i = 0; i < QInternal::DockCount; ++i) {
         const QDockAreaLayoutInfo &dock = docks[i];

@@ -174,9 +174,11 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
     if (canNotGrabEnv)
         m_canGrab = false;
 
+    const int numParameters = parameters.size();
+    m_connections.reserve(1 + numParameters / 2);
     m_connections << new QXcbConnection(m_nativeInterface.data(), m_canGrab, m_defaultVisualId, displayName);
 
-    for (int i = 0; i < parameters.size() - 1; i += 2) {
+    for (int i = 0; i < numParameters - 1; i += 2) {
         qCDebug(lcQpaScreen) << "connecting to additional display: " << parameters.at(i) << parameters.at(i+1);
         QString display = parameters.at(i) + QLatin1Char(':') + parameters.at(i+1);
         m_connections << new QXcbConnection(m_nativeInterface.data(), m_canGrab, m_defaultVisualId, display.toLatin1().constData());

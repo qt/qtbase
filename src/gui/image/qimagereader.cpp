@@ -1623,6 +1623,7 @@ void supportedImageHandlerMimeTypes(QFactoryLoader *loader,
 QList<QByteArray> QImageReader::supportedImageFormats()
 {
     QList<QByteArray> formats;
+    formats.reserve(_qt_NumFormats);
     for (int i = 0; i < _qt_NumFormats; ++i)
         formats << _qt_BuiltInFormats[i].extension;
 
@@ -1647,6 +1648,7 @@ QList<QByteArray> QImageReader::supportedImageFormats()
 QList<QByteArray> QImageReader::supportedMimeTypes()
 {
     QList<QByteArray> mimeTypes;
+    mimeTypes.reserve(_qt_NumFormats);
     for (int i = 0; i < _qt_NumFormats; ++i)
         mimeTypes << _qt_BuiltInFormats[i].mimeType;
 

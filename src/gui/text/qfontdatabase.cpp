@@ -691,7 +691,9 @@ static QStringList familyList(const QFontDef &req)
         return family_list;
 
     QStringList list = req.family.split(QLatin1Char(','));
-    for (int i = 0; i < list.size(); ++i) {
+    const int numFamilies = list.size();
+    family_list.reserve(numFamilies);
+    for (int i = 0; i < numFamilies; ++i) {
         QString str = list.at(i).trimmed();
         if ((str.startsWith(QLatin1Char('"')) && str.endsWith(QLatin1Char('"')))
             || (str.startsWith(QLatin1Char('\'')) && str.endsWith(QLatin1Char('\''))))
@@ -1607,6 +1609,7 @@ QStringList QFontDatabase::styles(const QString &family) const
         }
     }
 
+    l.reserve(allStyles.count);
     for (int i = 0; i < allStyles.count; i++) {
         l.append(allStyles.styles[i]->styleName.isEmpty() ?
                  styleStringHelper(allStyles.styles[i]->key.weight,

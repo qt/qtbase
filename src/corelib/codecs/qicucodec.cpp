@@ -417,6 +417,7 @@ QList<QByteArray> QIcuCodec::availableCodecs()
 QList<int> QIcuCodec::availableMibs()
 {
     QList<int> mibs;
+    mibs.reserve(mibToNameSize + 1);
     for (int i = 0; i < mibToNameSize; ++i)
         mibs += mibToName[i].mib;
 

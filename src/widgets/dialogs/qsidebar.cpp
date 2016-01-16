@@ -460,6 +460,7 @@ void QSidebar::removeEntry()
     QList<QModelIndex> idxs = selectionModel()->selectedIndexes();
     QList<QPersistentModelIndex> indexes;
     const int numIndexes = idxs.count();
+    indexes.reserve(numIndexes);
     for (int i = 0; i < numIndexes; i++)
         indexes.append(idxs.at(i));
 

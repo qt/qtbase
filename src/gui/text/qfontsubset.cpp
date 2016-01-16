@@ -1159,7 +1159,6 @@ QByteArray QFontSubset::toTruetype() const
 
     qreal ppem = fontEngine->fontDef.pixelSize;
 #define TO_TTF(x) qRound(x * 2048. / ppem)
-    QVector<QTtfGlyph> glyphs;
 
     QFontEngine::Properties properties = fontEngine->properties();
     // initialize some stuff needed in createWidthArray
@@ -1194,12 +1193,13 @@ QByteArray QFontSubset::toTruetype() const
     font.maxp.maxCompositeContours = 0;
     font.maxp.maxComponentElements = 0;
     font.maxp.maxComponentDepth = 0;
-    font.maxp.numGlyphs = nGlyphs();
-
-
+    const int numGlyphs = nGlyphs();
+    font.maxp.numGlyphs = numGlyphs;
+    QVector<QTtfGlyph> glyphs;
+    glyphs.reserve(numGlyphs);
 
     uint sumAdvances = 0;
-    for (int i = 0; i < nGlyphs(); ++i) {
+    for (int i = 0; i < numGlyphs; ++i) {
         glyph_t g = glyph_indices.at(i);
         QPainterPath path;
         glyph_metrics_t metric;
