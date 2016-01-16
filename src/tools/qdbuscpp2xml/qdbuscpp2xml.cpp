@@ -420,7 +420,7 @@ int main(int argc, char **argv)
         pp.macros["Q_MOC_RUN"];
         pp.macros["__cplusplus"];
 
-        const QByteArray filename = QFile::decodeName(argv[i]).toLatin1();
+        const QByteArray filename = arg.toLocal8Bit();
 
         moc.filename = filename;
         moc.currentFilenames.push(filename);
