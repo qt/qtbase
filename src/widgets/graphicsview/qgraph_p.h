@@ -103,7 +103,6 @@ public:
                 return row != o.row || column != o.column;
            }
         }
-        inline const_iterator& operator=(const const_iterator &o) const { row = o.row; column = o.column; return *this;}
 
         // prefix
         const_iterator &operator++() {
