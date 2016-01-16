@@ -75,9 +75,7 @@ public:
                 row = g->m_graph.constBegin();
                 //test if the graph is empty
                 if (row != g->m_graph.constEnd())
-                {
-                    column = (*row)->constBegin();
-                }
+                    column = row->cbegin();
             } else {
                 row = g->m_graph.constEnd();
             }
@@ -108,10 +106,10 @@ public:
         const_iterator &operator++() {
             if (row != g->m_graph.constEnd()) {
                 ++column;
-                if (column == (*row)->constEnd()) {
+                if (column == row->cend()) {
                     ++row;
                     if (row != g->m_graph.constEnd()) {
-                        column = (*row)->constBegin();
+                        column = row->cbegin();
                     }
                 }
             }
@@ -120,7 +118,7 @@ public:
 
     private:
         const Graph *g;
-        typename QHash<Vertex *, QHash<Vertex *, EdgeData *> * >::const_iterator row;
+        typename QHash<Vertex *, QHash<Vertex *, EdgeData *> >::const_iterator row;
         typename QHash<Vertex *, EdgeData *>::const_iterator column;
     };
 
@@ -140,8 +138,13 @@ public:
      *
      */
     EdgeData *edgeData(Vertex* first, Vertex* second) {
-        QHash<Vertex *, EdgeData *> *row = m_graph.value(first);
-        return row ? row->value(second) : 0;
+        const auto it = m_graph.constFind(first);
+        if (it == m_graph.cend())
+            return nullptr;
+        const auto jt = it->constFind(second);
+        if (jt == it->cend())
+            return nullptr;
+        return *jt;
     }
 
     void createEdge(Vertex *first, Vertex *second, EdgeData *data)
@@ -193,11 +196,11 @@ public:
 
     QList<Vertex *> adjacentVertices(Vertex *vertex) const
     {
-        QHash<Vertex *, EdgeData *> *row = m_graph.value(vertex);
-        QList<Vertex *> l;
-        if (row)
-            l = row->keys();
-        return l;
+        const auto it = m_graph.constFind(vertex);
+        if (it == m_graph.cend())
+            return QList<Vertex *>();
+        else
+            return it->keys();
     }
 
     QSet<Vertex*> vertices() const {
@@ -253,29 +256,23 @@ public:
 protected:
     void createDirectedEdge(Vertex *from, Vertex *to, EdgeData *data)
     {
-        QHash<Vertex *, EdgeData *> *adjacentToFirst = m_graph.value(from);
-        if (!adjacentToFirst) {
-            adjacentToFirst = new QHash<Vertex *, EdgeData *>();
-            m_graph.insert(from, adjacentToFirst);
-        }
-        adjacentToFirst->insert(to, data);
+        m_graph[from][to] = data;
     }
 
     void removeDirectedEdge(Vertex *from, Vertex *to)
     {
-        QHash<Vertex *, EdgeData *> *adjacentToFirst = m_graph.value(from);
-        Q_ASSERT(adjacentToFirst);
+        const auto it = m_graph.find(from);
+        Q_ASSERT(it != m_graph.end());
 
-        adjacentToFirst->remove(to);
-        if (adjacentToFirst->isEmpty()) {
+        it->remove(to);
+        if (it->isEmpty()) {
             //nobody point to 'from' so we can remove it from the graph
-            m_graph.remove(from);
-            delete adjacentToFirst;
+            m_graph.erase(it);
         }
     }
 
 private:
-    QHash<Vertex *, QHash<Vertex *, EdgeData *> *> m_graph;
+    QHash<Vertex *, QHash<Vertex *, EdgeData *> > m_graph;
 };
 
 QT_END_NAMESPACE
