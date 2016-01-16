@@ -56,6 +56,8 @@
 #include <QtCore/QString>
 #include <QtCore/QDebug>
 
+#include <functional> // for std::less
+
 #include <float.h>
 
 QT_BEGIN_NAMESPACE
@@ -213,9 +215,8 @@ public:
             Vertex *from = it.from();
             Vertex *to = it.to();
             // do not return (from,to) *and* (to,from)
-            if (from < to) {
+            if (std::less<Vertex*>()(from, to))
                 conns.append(qMakePair(from, to));
-            }
         }
         return conns;
     }
