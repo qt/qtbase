@@ -1077,8 +1077,6 @@ bool QOpenGLFramebufferObject::bind()
         }
     }
 
-    d->valid = d->checkFramebufferStatus(current);
-
     return d->valid;
 }
 
