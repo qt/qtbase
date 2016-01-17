@@ -1582,7 +1582,7 @@ void QLineEdit::mouseReleaseEvent(QMouseEvent* e)
             d->control->copy(QClipboard::Selection);
         } else if (!d->control->isReadOnly() && e->button() == Qt::MidButton) {
             deselect();
-            insert(QApplication::clipboard()->text(QClipboard::Selection));
+            d->control->paste(QClipboard::Selection);
         }
     }
 #endif
