@@ -1040,7 +1040,7 @@ bool QSslSocketBackendPrivate::startHandshake()
 
     // Check if the connection has been established. Get all errors from the
     // verification stage.
-    _q_sslErrorList()->mutex.lock();
+    QMutexLocker locker(&_q_sslErrorList()->mutex);
     _q_sslErrorList()->errors.clear();
     int result = (mode == QSslSocket::SslClientMode) ? q_SSL_connect(ssl) : q_SSL_accept(ssl);
 
@@ -1056,7 +1056,7 @@ bool QSslSocketBackendPrivate::startHandshake()
     }
 
     errorList << lastErrors;
-    _q_sslErrorList()->mutex.unlock();
+    locker.unlock();
 
     // Connection aborted during handshake phase.
     if (q->state() != QAbstractSocket::ConnectedState)
