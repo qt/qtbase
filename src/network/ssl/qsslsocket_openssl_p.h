@@ -103,6 +103,14 @@ typedef _STACK STACK;
 
 QT_BEGIN_NAMESPACE
 
+struct QSslErrorEntry {
+    int code;
+    int depth;
+
+    static QSslErrorEntry fromStoreContext(X509_STORE_CTX *ctx);
+};
+Q_DECLARE_TYPEINFO(QSslErrorEntry, Q_PRIMITIVE_TYPE);
+
 class QSslSocketBackendPrivate : public QSslSocketPrivate
 {
     Q_DECLARE_PUBLIC(QSslSocket)
@@ -117,7 +125,7 @@ public:
     BIO *readBio;
     BIO *writeBio;
     SSL_SESSION *session;
-    QList<QPair<int, int> > errorList;
+    QVector<QSslErrorEntry> errorList;
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
     static int s_indexForSSLExtraData; // index used in SSL_get_ex_data to get the matching QSslSocketBackendPrivate
 #endif

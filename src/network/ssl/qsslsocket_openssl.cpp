@@ -259,12 +259,21 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSL_CIPHER(SSL_CIPHER *ciph
     return ciph;
 }
 
+// static
+inline QSslErrorEntry QSslErrorEntry::fromStoreContext(X509_STORE_CTX *ctx) {
+    QSslErrorEntry result = {
+        q_X509_STORE_CTX_get_error(ctx),
+        q_X509_STORE_CTX_get_error_depth(ctx)
+    };
+    return result;
+}
+
 // ### This list is shared between all threads, and protected by a
 // mutex. Investigate using thread local storage instead.
 struct QSslErrorList
 {
     QMutex mutex;
-    QList<QPair<int, int> > errors;
+    QVector<QSslErrorEntry> errors;
 };
 Q_GLOBAL_STATIC(QSslErrorList, _q_sslErrorList)
 
@@ -272,7 +281,7 @@ int q_X509Callback(int ok, X509_STORE_CTX *ctx)
 {
     if (!ok) {
         // Store the error and at which depth the error was detected.
-        _q_sslErrorList()->errors << qMakePair<int, int>(q_X509_STORE_CTX_get_error(ctx), q_X509_STORE_CTX_get_error_depth(ctx));
+        _q_sslErrorList()->errors << QSslErrorEntry::fromStoreContext(ctx);
 #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << "verification error: dumping bad certificate";
         qCDebug(lcSsl) << QSslCertificatePrivate::QSslCertificate_from_X509(q_X509_STORE_CTX_get_current_cert(ctx)).toPem();
@@ -1044,13 +1053,12 @@ bool QSslSocketBackendPrivate::startHandshake()
     _q_sslErrorList()->errors.clear();
     int result = (mode == QSslSocket::SslClientMode) ? q_SSL_connect(ssl) : q_SSL_accept(ssl);
 
-    const QList<QPair<int, int> > &lastErrors = _q_sslErrorList()->errors;
+    const auto &lastErrors = _q_sslErrorList()->errors;
     if (!lastErrors.isEmpty())
         storePeerCertificates();
-    for (int i = 0; i < lastErrors.size(); ++i) {
-        const QPair<int, int> &currentError = lastErrors.at(i);
-        emit q->peerVerifyError(_q_OpenSSL_to_QSslError(currentError.first,
-                                configuration.peerCertificateChain.value(currentError.second)));
+    for (const auto &currentError : lastErrors) {
+        emit q->peerVerifyError(_q_OpenSSL_to_QSslError(currentError.code,
+                                configuration.peerCertificateChain.value(currentError.depth)));
         if (q->state() != QAbstractSocket::ConnectedState)
             break;
     }
@@ -1133,14 +1141,9 @@ bool QSslSocketBackendPrivate::startHandshake()
     }
 
     // Translate errors from the error list into QSslErrors.
-    const int numErrors = errorList.size();
-    errors.reserve(errors.size() + numErrors);
-    for (int i = 0; i < numErrors; ++i) {
-        const QPair<int, int> &errorAndDepth = errorList.at(i);
-        int err = errorAndDepth.first;
-        int depth = errorAndDepth.second;
-        errors << _q_OpenSSL_to_QSslError(err, configuration.peerCertificateChain.value(depth));
-    }
+    errors.reserve(errors.size() + errorList.size());
+    for (const auto &error : qAsConst(errorList))
+        errors << _q_OpenSSL_to_QSslError(error.code, configuration.peerCertificateChain.value(error.depth));
 
     if (!errors.isEmpty()) {
         sslErrors = errors;
@@ -1692,7 +1695,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
 #endif
 
     // Now process the errors
-    const QList<QPair<int, int> > errorList = _q_sslErrorList()->errors;
+    const auto errorList = std::move(_q_sslErrorList()->errors);
     _q_sslErrorList()->errors.clear();
 
     sslErrorListMutexLocker.unlock();
@@ -1711,14 +1714,9 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
     }
 
     // Translate errors from the error list into QSslErrors.
-    const int numErrors = errorList.size();
-    errors.reserve(errors.size() + numErrors);
-    for (int i = 0; i < numErrors; ++i) {
-        const QPair<int, int> &errorAndDepth = errorList.at(i);
-        int err = errorAndDepth.first;
-        int depth = errorAndDepth.second;
-        errors << _q_OpenSSL_to_QSslError(err, certificateChain.value(depth));
-    }
+    errors.reserve(errors.size() + errorList.size());
+    for (const auto &error : qAsConst(errorList))
+        errors << _q_OpenSSL_to_QSslError(error.code, certificateChain.value(error.depth));
 
     q_X509_STORE_free(certStore);
 
