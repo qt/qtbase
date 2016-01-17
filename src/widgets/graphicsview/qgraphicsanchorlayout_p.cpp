@@ -2129,34 +2129,28 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     //  2) The floating or semi-floating anchors (items) that are those which
     //     are connected to only one (or none) of the layout sides, thus are not
     //     influenced by the layout size.
-    QList<QList<QSimplexConstraint *> > parts = getGraphParts(orientation);
+    const auto parts = getGraphParts(orientation);
 
     // Now run the simplex solver to calculate Minimum, Preferred and Maximum sizes
     // of the "trunk" set of constraints and variables.
     // ### does trunk always exist? empty = trunk is the layout left->center->right
-    QList<QSimplexConstraint *> trunkConstraints = parts.at(0);
-    QList<AnchorData *> trunkVariables = getVariables(trunkConstraints);
+    const QList<AnchorData *> trunkVariables = getVariables(parts.trunkConstraints);
 
     // For minimum and maximum, use the path between the two layout sides as the
     // objective function.
     AnchorVertex *v = layoutLastVertex[orientation];
     GraphPath trunkPath = graphPaths[orientation].value(v);
 
-    bool feasible = calculateTrunk(orientation, trunkPath, trunkConstraints, trunkVariables);
+    bool feasible = calculateTrunk(orientation, trunkPath, parts.trunkConstraints, trunkVariables);
 
     // For the other parts that not the trunk, solve only for the preferred size
     // that is the size they will remain at, since they are not stretched by the
     // layout.
 
-    // Skipping the first (trunk)
-    for (int i = 1; i < parts.count(); ++i) {
-        if (!feasible)
-            break;
-
-        QList<QSimplexConstraint *> partConstraints = parts.at(i);
-        QList<AnchorData *> partVariables = getVariables(partConstraints);
+    if (feasible && !parts.nonTrunkConstraints.isEmpty()) {
+        const QList<AnchorData *> partVariables = getVariables(parts.nonTrunkConstraints);
         Q_ASSERT(!partVariables.isEmpty());
-        feasible &= calculateNonTrunk(partConstraints, partVariables);
+        feasible = calculateNonTrunk(parts.nonTrunkConstraints, partVariables);
     }
 
     // Propagate the new sizes down the simplified graph, ie. tell the
@@ -2496,9 +2490,11 @@ QList<QSimplexConstraint *> QGraphicsAnchorLayoutPrivate::constraintsFromSizeHin
 /*!
   \internal
 */
-QList< QList<QSimplexConstraint *> >
+QGraphicsAnchorLayoutPrivate::GraphParts
 QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
 {
+    GraphParts result;
+
     Q_ASSERT(layoutFirstVertex[orientation] && layoutLastVertex[orientation]);
 
     AnchorData *edgeL1 = 0;
@@ -2513,9 +2509,8 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
         edgeL1 = graph[orientation].edgeData(layoutFirstVertex[orientation], layoutLastVertex[orientation]);
     }
 
-    QList<QSimplexConstraint *> remainingConstraints = constraints[orientation] + itemCenterConstraints[orientation];
+    result.nonTrunkConstraints = constraints[orientation] + itemCenterConstraints[orientation];
 
-    QList<QSimplexConstraint *> trunkConstraints;
     QSet<QSimplexVariable *> trunkVariables;
 
     trunkVariables += edgeL1;
@@ -2523,11 +2518,11 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
         trunkVariables += edgeL2;
 
     bool dirty;
-    auto end = remainingConstraints.end();
+    auto end = result.nonTrunkConstraints.end();
     do {
         dirty = false;
 
-        auto isMatch = [&trunkConstraints, &trunkVariables](QSimplexConstraint *c) -> bool {
+        auto isMatch = [&result, &trunkVariables](QSimplexConstraint *c) -> bool {
             bool match = false;
 
             // Check if this constraint have some overlap with current
@@ -2542,7 +2537,7 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
             // If so, we add it to trunk, and erase it from the
             // remaining constraints.
             if (match) {
-                trunkConstraints += c;
+                result.trunkConstraints += c;
                 for (auto jt = c->variables.cbegin(), end = c->variables.cend(); jt != end; ++jt)
                     trunkVariables.insert(jt.key());
                 return true;
@@ -2558,18 +2553,12 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
                 return false;
             }
         };
-        const auto newEnd = std::remove_if(remainingConstraints.begin(), end, isMatch);
+        const auto newEnd = std::remove_if(result.nonTrunkConstraints.begin(), end, isMatch);
         dirty = newEnd != end;
         end = newEnd;
     } while (dirty);
 
-    remainingConstraints.erase(end, remainingConstraints.end());
-
-    QList< QList<QSimplexConstraint *> > result;
-    result += trunkConstraints;
-
-    if (!remainingConstraints.isEmpty())
-        result += remainingConstraints; // non-trunk constraints
+    result.nonTrunkConstraints.erase(end, result.nonTrunkConstraints.end());
 
     return result;
 }

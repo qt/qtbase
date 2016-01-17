@@ -491,7 +491,11 @@ public:
     void constraintsFromPaths(Orientation orientation);
     void updateAnchorSizes(Orientation orientation);
     QList<QSimplexConstraint *> constraintsFromSizeHints(const QList<AnchorData *> &anchors);
-    QList<QList<QSimplexConstraint *> > getGraphParts(Orientation orientation);
+    struct GraphParts {
+        QList<QSimplexConstraint *> trunkConstraints;
+        QList<QSimplexConstraint *> nonTrunkConstraints;
+    };
+    GraphParts getGraphParts(Orientation orientation);
     void identifyFloatItems(const QSet<AnchorData *> &visited, Orientation orientation);
     void identifyNonFloatItems_helper(const AnchorData *ad, QSet<QGraphicsLayoutItem *> *nonFloatingItemsIdentifiedSoFar);
 
