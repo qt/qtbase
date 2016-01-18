@@ -125,14 +125,13 @@ bool QDateTimeParser::setDigit(QDateTime &v, int index, int newVal) const
     }
     const SectionNode &node = sectionNodes.at(index);
 
-    int year, month, day, hour, minute, second, msec;
-    year = v.date().year();
-    month = v.date().month();
-    day = v.date().day();
-    hour = v.time().hour();
-    minute = v.time().minute();
-    second = v.time().second();
-    msec = v.time().msec();
+    int year = v.date().year();
+    int month = v.date().month();
+    int day = v.date().day();
+    int hour = v.time().hour();
+    int minute = v.time().minute();
+    int second = v.time().second();
+    int msec = v.time().msec();
 
     switch (node.type) {
     case Hour24Section: case Hour12Section: hour = newVal; break;
