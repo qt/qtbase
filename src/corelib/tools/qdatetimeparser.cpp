@@ -765,8 +765,8 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
             } else {
                 state = Intermediate;
             }
-            break; }
-        // fall through
+            break;
+        } // else: fall through
     case DaySection:
     case YearSection:
     case YearSection2Digits:
