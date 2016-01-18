@@ -977,22 +977,17 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
 
         if (state != Invalid) {
             if (parserType != QVariant::Time) {
-                if (year % 100 != year2digits) {
-                    switch (isSet & (YearSection2Digits|YearSection)) {
-                    case YearSection2Digits:
+                if (year % 100 != year2digits && (isSet & YearSection2Digits)) {
+                    if (!(isSet & YearSection)) {
                         year = (year / 100) * 100;
                         year += year2digits;
-                        break;
-                    case ((uint)YearSection2Digits|(uint)YearSection): {
+                    } else {
                         conflicts = true;
                         const SectionNode &sn = sectionNode(currentSectionIndex);
                         if (sn.type == YearSection2Digits) {
                             year = (year / 100) * 100;
                             year += year2digits;
                         }
-                        break; }
-                    default:
-                        break;
                     }
                 }
 
