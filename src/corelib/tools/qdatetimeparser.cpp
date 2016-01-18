@@ -669,15 +669,7 @@ QString QDateTimeParser::sectionText(const QString &text, int sectionIndex, int 
 QString QDateTimeParser::sectionText(int sectionIndex) const
 {
     const SectionNode &sn = sectionNode(sectionIndex);
-    switch (sn.type) {
-    case NoSectionIndex:
-    case FirstSectionIndex:
-    case LastSectionIndex:
-        return QString();
-    default: break;
-    }
-
-    return displayText().mid(sn.pos, sectionSize(sectionIndex));
+    return sectionText(displayText(), sectionIndex, sn.pos);
 }
 
 
