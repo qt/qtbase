@@ -873,7 +873,7 @@ void QDateTimeEdit::setDisplayFormat(const QString &format)
             d->displayFormat.clear();
             for (int i=d->sectionNodes.size() - 1; i>=0; --i) {
                 d->displayFormat += d->separators.at(i + 1);
-                d->displayFormat += d->sectionFormat(i);
+                d->displayFormat += d->sectionNode(i).format();
             }
             d->displayFormat += d->separators.at(0);
             d->separators = reverse(d->separators);
@@ -2214,9 +2214,9 @@ void QDateTimeEditPrivate::_q_editorCursorPositionChanged(int oldpos, int newpos
         }
     }
 
-    QDTEDEBUG << "currentSectionIndex is set to" << sectionName(sectionType(s))
+    QDTEDEBUG << "currentSectionIndex is set to" << sectionNode(s).name()
               << oldpos << newpos
-              << "was" << sectionName(sectionType(currentSectionIndex));
+              << "was" << sectionNode(currentSectionIndex).name();
 
     currentSectionIndex = s;
     Q_ASSERT_X(currentSectionIndex < sectionNodes.size(),

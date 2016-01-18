@@ -135,11 +135,16 @@ public:
     }; // duplicated from qdatetimeedit.h
     Q_DECLARE_FLAGS(Sections, Section)
 
-    struct SectionNode {
+    struct Q_CORE_EXPORT SectionNode {
         Section type;
         mutable int pos;
         int count;
         int zeroesAdded;
+
+        static QString name(Section s);
+        QString name() const { return name(type); }
+        QString format() const;
+        int maxChange() const;
     };
 
     enum State { // duplicated from QValidator
@@ -197,15 +202,11 @@ public:
                 QString *dayName = 0, int *used = 0) const;
 #endif
     int findAmPm(QString &str1, int index, int *used = 0) const;
-    int maxChange(int s) const;
     bool potentialValue(const QString &str, int min, int max, int index,
                         const QDateTime &currentValue, int insert) const;
     bool skipToNextSection(int section, const QDateTime &current, const QString &sectionText) const;
-    QString sectionName(int s) const;
-    QString stateName(int s) const;
 
-    QString sectionFormat(int index) const;
-    QString sectionFormat(Section s, int count) const;
+    QString stateName(State s) const;
 
     enum FieldInfoFlag {
         Numeric = 0x01,
