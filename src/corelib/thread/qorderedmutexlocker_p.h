@@ -47,6 +47,8 @@
 
 #include <QtCore/qmutex.h>
 
+#include <functional>
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -57,8 +59,8 @@ class QOrderedMutexLocker
 {
 public:
     QOrderedMutexLocker(QMutex *m1, QMutex *m2)
-        : mtx1((m1 == m2) ? m1 : (m1 < m2 ? m1 : m2)),
-          mtx2((m1 == m2) ?  0 : (m1 < m2 ? m2 : m1)),
+        : mtx1((m1 == m2) ? m1 : (std::less<QMutex *>()(m1, m2) ? m1 : m2)),
+          mtx2((m1 == m2) ?  0 : (std::less<QMutex *>()(m1, m2) ? m2 : m1)),
           locked(false)
     {
         relock();
