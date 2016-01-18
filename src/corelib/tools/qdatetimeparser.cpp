@@ -494,15 +494,15 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
     }
 
     if ((newDisplay & (AmPmSection|Hour12Section)) == Hour12Section) {
-        const int max = newSectionNodes.size();
-        for (int i=0; i<max; ++i) {
+        const int count = newSectionNodes.size();
+        for (int i = 0; i < count; ++i) {
             SectionNode &node = newSectionNodes[i];
             if (node.type == Hour12Section)
                 node.type = Hour24Section;
         }
     }
 
-    if (index < newFormat.size()) {
+    if (index < max) {
         appendSeparator(&newSeparators, newFormat, index, index - max, lastQuote);
     } else {
         newSeparators.append(QString());
