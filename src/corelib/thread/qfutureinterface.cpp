@@ -193,16 +193,19 @@ void QFutureInterfaceBase::waitForResume()
 
 int QFutureInterfaceBase::progressValue() const
 {
+    const QMutexLocker lock(&d->m_mutex);
     return d->m_progressValue;
 }
 
 int QFutureInterfaceBase::progressMinimum() const
 {
+    const QMutexLocker lock(&d->m_mutex);
     return d->m_progressMinimum;
 }
 
 int QFutureInterfaceBase::progressMaximum() const
 {
+    const QMutexLocker lock(&d->m_mutex);
     return d->m_progressMaximum;
 }
 
