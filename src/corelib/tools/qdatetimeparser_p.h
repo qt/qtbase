@@ -97,7 +97,7 @@ public:
         none.zeroesAdded = 0;
     }
     virtual ~QDateTimeParser() {}
-    enum {
+    enum AmPmFinder {
         Neither = -1,
         AM = 0,
         PM = 1,
@@ -201,7 +201,7 @@ public:
     int findDay(const QString &str1, int intDaystart, int sectionIndex,
                 QString *dayName = 0, int *used = 0) const;
 #endif
-    int findAmPm(QString &str1, int index, int *used = 0) const;
+    AmPmFinder findAmPm(QString &str, int index, int *used = 0) const;
     bool potentialValue(const QString &str, int min, int max, int index,
                         const QDateTime &currentValue, int insert) const;
     bool skipToNextSection(int section, const QDateTime &current, const QString &sectionText) const;

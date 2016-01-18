@@ -1355,22 +1355,20 @@ int QDateTimeParser::findDay(const QString &str1, int startDay, int sectionIndex
 /*!
   \internal
 
-  returns
-  0 if str == tr("AM")
-  1 if str == tr("PM")
-  2 if str can become tr("AM")
-  3 if str can become tr("PM")
-  4 if str can become tr("PM") and can become tr("AM")
-  -1 can't become anything sensible
-
+  Returns
+  AM if str == tr("AM")
+  PM if str == tr("PM")
+  PossibleAM if str can become tr("AM")
+  PossiblePM if str can become tr("PM")
+  PossibleBoth if str can become tr("PM") and can become tr("AM")
+  Neither if str can't become anything sensible
 */
-
-int QDateTimeParser::findAmPm(QString &str, int sectionIndex, int *used) const
+QDateTimeParser::AmPmFinder QDateTimeParser::findAmPm(QString &str, int sectionIndex, int *used) const
 {
     const SectionNode &s = sectionNode(sectionIndex);
     if (s.type != AmPmSection) {
         qWarning("QDateTimeParser::findAmPm Internal error");
-        return -1;
+        return Neither;
     }
     if (used)
         *used = str.size();
