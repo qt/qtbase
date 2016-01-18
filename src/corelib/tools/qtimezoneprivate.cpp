@@ -441,22 +441,45 @@ QTimeZone::OffsetData QTimeZonePrivate::toOffsetData(const QTimeZonePrivate::Dat
     return offsetData;
 }
 
-// If the format of the ID is valid
+// Is the format of the ID valid ?
 bool QTimeZonePrivate::isValidId(const QByteArray &ianaId)
 {
-    // Rules for defining TZ/IANA names as per ftp://ftp.iana.org/tz/code/Theory
-    // 1. Use only valid POSIX file name components
-    // 2. Within a file name component, use only ASCII letters, `.', `-' and `_'.
-    // 3. Do not use digits
-    // 4. A file name component must not exceed 14 characters or start with `-'
-    // Aliases such as "Etc/GMT+7" and "SystemV/EST5EDT" are valid so we need to accept digits, ':', and '+'.
+    /*
+      Main rules for defining TZ/IANA names as per ftp://ftp.iana.org/tz/code/Theory
+       1. Use only valid POSIX file name components
+       2. Within a file name component, use only ASCII letters, `.', `-' and `_'.
+       3. Do not use digits (except in a [+-]\d+ suffix, when used).
+       4. A file name component must not exceed 14 characters or start with `-'
+      However, the rules are really guidelines - a later one says
+       - Do not change established names if they only marginally violate the
+         above rules.
+      We may, therefore, need to be a bit slack in our check here, if we hit
+      legitimate exceptions in real time-zone databases.
 
-    // The following would be preferable if QRegExp would work on QByteArrays directly:
-    // const QRegExp rx(QStringLiteral("[a-z0-9:+._][a-z0-9:+._-]{,13}(?:/[a-z0-9:+._][a-z0-9:+._-]{,13})*"),
-    //                  Qt::CaseInsensitive);
-    // return rx.exactMatch(ianaId);
+      In particular, aliases such as "Etc/GMT+7" and "SystemV/EST5EDT" are valid
+      so we need to accept digits, ':', and '+'; aliases typically have the form
+      of POSIX TZ strings, which allow a suffix to a proper IANA name.  A POSIX
+      suffix starts with an offset (as in GMT+7) and may continue with another
+      name (as in EST5EDT, giving the DST name of the zone); a further offset is
+      allowed (for DST).  The ("hard to describe and [...] error-prone in
+      practice") POSIX form even allows a suffix giving the dates (and
+      optionally times) of the annual DST transitions.  Hopefully, no TZ aliases
+      go that far, but we at least need to accept an offset and (single
+      fragment) DST-name.
 
-    // hand-rolled version:
+      But for the legacy complications, the following would be preferable if
+      QRegExp would work on QByteArrays directly:
+          const QRegExp rx(QStringLiteral("[a-z+._][a-z+._-]{,13}"
+                                      "(?:/[a-z+._][a-z+._-]{,13})*"
+                                          // Optional suffix:
+                                          "(?:[+-]?\d{1,2}(?::\d{1,2}){,2}" // offset
+                                             // one name fragment (DST):
+                                             "(?:[a-z+._][a-z+._-]{,13})?)"),
+                           Qt::CaseInsensitive);
+          return rx.exactMatch(ianaId);
+    */
+
+    // Somewhat slack hand-rolled version:
     const int MinSectionLength = 1;
     const int MaxSectionLength = 14;
     int sectionLength = 0;
@@ -472,11 +495,11 @@ bool QTimeZonePrivate::isValidId(const QByteArray &ianaId)
         } else if (!(ch >= 'a' && ch <= 'z')
                 && !(ch >= 'A' && ch <= 'Z')
                 && !(ch == '_')
+                && !(ch == '.')
+                   // Should ideally check these only happen as an offset:
                 && !(ch >= '0' && ch <= '9')
-                && !(ch == '-')
                 && !(ch == '+')
-                && !(ch == ':')
-                && !(ch == '.')) {
+                && !(ch == ':')) {
             return false; // violates (2)
         }
     }
