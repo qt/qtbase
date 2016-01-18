@@ -889,17 +889,17 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
 
     QDTPDEBUG << "parse" << input;
     {
-        int year, month, day, hour12, hour, minute, second, msec, ampm, dayofweek, year2digits;
+        int year, month, day;
         currentValue.date().getDate(&year, &month, &day);
-        year2digits = year % 100;
-        hour = currentValue.time().hour();
-        hour12 = -1;
-        minute = currentValue.time().minute();
-        second = currentValue.time().second();
-        msec = currentValue.time().msec();
-        dayofweek = currentValue.date().dayOfWeek();
+        int year2digits = year % 100;
+        int hour = currentValue.time().hour();
+        int hour12 = -1;
+        int minute = currentValue.time().minute();
+        int second = currentValue.time().second();
+        int msec = currentValue.time().msec();
+        int dayofweek = currentValue.date().dayOfWeek();
 
-        ampm = -1;
+        int ampm = -1;
         Sections isSet = NoSection;
         int num;
         State tmpstate;
