@@ -218,6 +218,7 @@ public:
 
     FieldInfo fieldInfo(int index) const;
 
+    void setDefaultLocale(const QLocale &loc) { defaultLocale = loc; }
     virtual QDateTime getMinimum() const;
     virtual QDateTime getMaximum() const;
     virtual int cursorPosition() const { return -1; }
