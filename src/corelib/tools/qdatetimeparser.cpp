@@ -382,7 +382,7 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
             ++add;
             if (status != quote) {
                 status = quote;
-            } else if (newFormat.at(i - 1) != slash) {
+            } else if (i > 0 && newFormat.at(i - 1) != slash) {
                 status = zero;
             }
         } else if (status != quote) {
