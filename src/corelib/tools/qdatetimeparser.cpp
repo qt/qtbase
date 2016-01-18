@@ -1371,9 +1371,9 @@ int QDateTimeParser::findDay(const QString &str1, int startDay, int sectionIndex
 
 */
 
-int QDateTimeParser::findAmPm(QString &str, int index, int *used) const
+int QDateTimeParser::findAmPm(QString &str, int sectionIndex, int *used) const
 {
-    const SectionNode &s = sectionNode(index);
+    const SectionNode &s = sectionNode(sectionIndex);
     if (s.type != AmPmSection) {
         qWarning("QDateTimeParser::findAmPm Internal error");
         return -1;
@@ -1384,7 +1384,7 @@ int QDateTimeParser::findAmPm(QString &str, int index, int *used) const
         return PossibleBoth;
     }
     const QLatin1Char space(' ');
-    int size = sectionMaxSize(index);
+    int size = sectionMaxSize(sectionIndex);
 
     enum {
         amindex = 0,
