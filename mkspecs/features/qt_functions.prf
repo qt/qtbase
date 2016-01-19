@@ -224,6 +224,7 @@ defineReplace(pkgConfigExecutable) {
         sysroot.value = $$PKG_CONFIG_SYSROOT_DIR
         libdir.name = PKG_CONFIG_LIBDIR
         libdir.value = $$PKG_CONFIG_LIBDIR
+        QT_TOOL_NAME = pkg-config
         qtAddToolEnv(PKG_CONFIG, sysroot libdir, SYS)
     }
 
