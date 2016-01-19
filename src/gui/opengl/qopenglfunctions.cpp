@@ -2142,7 +2142,7 @@ public:
 private:
     FuncType Base::*funcPointerName;
     FuncType fallbackFuncPointer;
-    QByteArray funcName;
+    const char *funcName;
 };
 
 template <typename Base, typename FuncType, int Policy>
@@ -2194,31 +2194,53 @@ public:
 private:
     FuncType Base::*funcPointerName;
     FuncType fallbackFuncPointer;
-    QByteArray funcName;
+    const char *funcName;
 };
+
+static QFunctionPointer getProcAddress(QOpenGLContext *context, const char *funcName, int policy)
+{
+    QByteArray fn = funcName;
+    int size = fn.size();
+    QFunctionPointer function = context->getProcAddress(fn);
+
+    // create room for the extension names
+    fn.resize(size + 5);
+    char *ext = fn.data() + size;
+    if (!function && (policy & ResolveOES)) {
+        memcpy(ext, "OES\0\0", 5);
+        function = context->getProcAddress(fn);
+    }
+
+    if (!function) {
+        memcpy(ext, "ARB\0\0", 5);
+        function = context->getProcAddress(fn);
+    }
+
+    if (!function && (policy & ResolveEXT)) {
+        memcpy(ext, "EXT\0\0", 5);
+        function = context->getProcAddress(fn);
+    }
+
+    if (!function && (policy & ResolveANGLE)) {
+        memcpy(ext, "ANGLE", 5);
+        function = context->getProcAddress(fn);
+    }
+
+    if (!function && (policy & ResolveNV)) {
+        memcpy(ext, "NV\0\0\0", 5);
+        function = context->getProcAddress(fn);
+    }
+
+    return function;
+}
 
 #define RESOLVER_COMMON \
     QOpenGLContext *context = QOpenGLContext::currentContext(); \
     Base *funcs = qt_gl_functions(context); \
  \
     FuncType old = funcs->*funcPointerName; \
- \
-    funcs->*funcPointerName = (FuncType)context->getProcAddress(funcName); \
- \
-    if ((Policy & ResolveOES) && !(funcs->*funcPointerName)) \
-        funcs->*funcPointerName = (FuncType)context->getProcAddress(funcName + "OES"); \
- \
-    if (!(funcs->*funcPointerName)) \
-        funcs->*funcPointerName = (FuncType)context->getProcAddress(funcName + "ARB"); \
- \
-    if ((Policy & ResolveEXT) && !(funcs->*funcPointerName)) \
-        funcs->*funcPointerName = (FuncType)context->getProcAddress(funcName + "EXT"); \
- \
-    if ((Policy & ResolveANGLE) && !(funcs->*funcPointerName)) \
-        funcs->*funcPointerName = (FuncType)context->getProcAddress(funcName + "ANGLE"); \
- \
-    if ((Policy & ResolveNV) && !(funcs->*funcPointerName)) \
-        funcs->*funcPointerName = (FuncType)context->getProcAddress(funcName + "NV");
+    funcs->*funcPointerName = (FuncType)getProcAddress(context, funcName, Policy);
+
 
 #define RESOLVER_COMMON_NON_VOID \
     RESOLVER_COMMON \
