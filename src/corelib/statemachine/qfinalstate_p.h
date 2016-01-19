@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -31,39 +31,38 @@
 **
 ****************************************************************************/
 
-#ifndef QFINALSTATE_H
-#define QFINALSTATE_H
+#ifndef QFINALSTATE_P_H
+#define QFINALSTATE_P_H
 
-#include <QtCore/qabstractstate.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_NAMESPACE
+#include "qfinalstate.h"
+#include "private/qabstractstate_p.h"
 
 #ifndef QT_NO_STATEMACHINE
 
-class QFinalStatePrivate;
-class Q_CORE_EXPORT QFinalState : public QAbstractState
+QT_BEGIN_NAMESPACE
+
+class Q_CORE_EXPORT QFinalStatePrivate : public QAbstractStatePrivate
 {
-    Q_OBJECT
+    Q_DECLARE_PUBLIC(QFinalState)
+
 public:
-    QFinalState(QState *parent = Q_NULLPTR);
-    ~QFinalState();
-
-protected:
-    void onEntry(QEvent *event) Q_DECL_OVERRIDE;
-    void onExit(QEvent *event) Q_DECL_OVERRIDE;
-
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
-
-protected:
-    explicit QFinalState(QFinalStatePrivate &dd, QState *parent);
-
-private:
-    Q_DISABLE_COPY(QFinalState)
-    Q_DECLARE_PRIVATE(QFinalState)
+    QFinalStatePrivate();
+    ~QFinalStatePrivate();
 };
-
-#endif //QT_NO_STATEMACHINE
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QT_NO_STATEMACHINE
+
+#endif // QFINALSTATE_P_H
