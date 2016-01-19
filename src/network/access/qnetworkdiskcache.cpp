@@ -67,8 +67,7 @@ QT_BEGIN_NAMESPACE
 
     QNetworkDiskCache stores each url in its own file inside of the
     cacheDirectory using QDataStream.  Files with a text MimeType
-    are compressed using qCompress.  Each cache file starts with "cache_"
-    and ends in ".cache".  Data is written to disk only in insert()
+    are compressed using qCompress.  Data is written to disk only in insert()
     and updateMetaData().
 
     Currently you cannot share the same cache files with more than

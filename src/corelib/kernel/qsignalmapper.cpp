@@ -220,6 +220,9 @@ QObject *QSignalMapper::mapping(QObject *object) const
     Removes all mappings for \a sender.
 
     This is done automatically when mapped objects are destroyed.
+
+    \note This does not disconnect any signals. If \a sender is not destroyed
+    then this will need to be done explicitly if required.
 */
 void QSignalMapper::removeMappings(QObject *sender)
 {

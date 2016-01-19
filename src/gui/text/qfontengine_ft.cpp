@@ -646,7 +646,7 @@ QFontEngineFT::QFontEngineFT(const QFontDef &fd)
     matrix.yy = 0x10000;
     matrix.xy = 0;
     matrix.yx = 0;
-    cache_cost = 100;
+    cache_cost = 100 * 1024;
     kerning_pairs_loaded = false;
     transform = false;
     embolden = false;
