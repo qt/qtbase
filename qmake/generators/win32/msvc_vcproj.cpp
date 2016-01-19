@@ -1334,7 +1334,7 @@ void VcprojGenerator::initDeploymentTool()
                     if (!vcInstallDir.isEmpty()) {
                         vcInstallDir += "\\ce\\dll\\";
                         vcInstallDir += project->values("CE_ARCH").join(QLatin1Char(' '));
-                        if (!QFileInfo(vcInstallDir + QDir::separator() + runtimeVersion).exists())
+                        if (!QFileInfo::exists(vcInstallDir + QDir::separator() + runtimeVersion))
                             runtime.clear();
                         else
                             runtime = vcInstallDir;
