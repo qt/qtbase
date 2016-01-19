@@ -997,8 +997,10 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
 
                 const QDate date(year, month, day);
                 const int diff = dayofweek - date.dayOfWeek();
-                if (diff != 0 && state == Acceptable && isSet & (DayOfWeekSectionShort|DayOfWeekSectionLong)) {
-                    conflicts = isSet & DaySection;
+                if (diff != 0 && state == Acceptable
+                 && isSet & (DayOfWeekSectionShort | DayOfWeekSectionLong)) {
+                    if (isSet & DaySection)
+                        conflicts = true;
                     const SectionNode &sn = sectionNode(currentSectionIndex);
                     if (sn.type & (DayOfWeekSectionShort|DayOfWeekSectionLong) || currentSectionIndex == -1) {
                         // dayofweek should be preferred

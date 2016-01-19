@@ -2286,7 +2286,9 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("data5") << QString("10") << QString("'") << invalidDateTime();
     QTest::newRow("data6") << QString("pm") << QString("ap") << QDateTime(defDate(), QTime(12, 0, 0));
     QTest::newRow("data7") << QString("foo") << QString("ap") << invalidDateTime();
-    QTest::newRow("data8") << QString("101010") << QString("dMyy") << QDateTime(QDate(1910, 10, 10), QTime());
+    // Day non-conflict should not hide earlier year conflict (1963-03-01 was a
+    // Friday; asking for Thursday moves this, without conflict, to the 7th):
+    QTest::newRow("data8") << QString("77 03 1963 " + thu) << QString("yy MM yyyy ddd") << invalidDateTime();
     QTest::newRow("data9") << QString("101010") << QString("dMyy") << QDateTime(QDate(1910, 10, 10), QTime());
     QTest::newRow("data10") << QString("101010") << QString("dMyy") << QDateTime(QDate(1910, 10, 10), QTime());
     QTest::newRow("data11") << date << QString("dd MMM yy") << QDateTime(QDate(1910, 10, 10), QTime());
