@@ -92,6 +92,9 @@ private slots:
     void modalWithChildWindow();
     void modalWindowModallity();
     void modalWindowPosition();
+#ifndef QT_NO_CURSOR
+    void modalWindowEnterEventOnHide_QTBUG35109();
+#endif
     void windowsTransientChildren();
     void requestUpdate();
     void initTestCase();
@@ -706,10 +709,24 @@ public:
             }
         }
     }
+    bool event(QEvent *e) {
+        switch (e->type()) {
+        case QEvent::Enter:
+            ++enterEventCount;
+            break;
+        case QEvent::Leave:
+            ++leaveEventCount;
+            break;
+        default:
+            break;
+        }
+        return QWindow::event(e);
+    }
     void resetCounters() {
         mousePressedCount = mouseReleasedCount = mouseMovedCount = mouseDoubleClickedCount = 0;
         mouseSequenceSignature = QString();
         touchPressedCount = touchReleasedCount = touchMovedCount = 0;
+        enterEventCount = leaveEventCount = 0;
     }
 
     InputTestWindow() {
@@ -727,6 +744,7 @@ public:
     QPointF mousePressScreenPos, mouseMoveScreenPos, mousePressLocalPos;
     int touchPressedCount, touchReleasedCount, touchMovedCount;
     QEvent::Type touchEventType;
+    int enterEventCount, leaveEventCount;
 
     bool ignoreMouse, ignoreTouch;
 
@@ -1731,6 +1749,181 @@ void tst_QWindow::modalWindowPosition()
     QVERIFY(QTest::qWaitForWindowExposed(&window));
     QCOMPARE(window.geometry(), origGeo);
 }
+
+#ifndef QT_NO_CURSOR
+void tst_QWindow::modalWindowEnterEventOnHide_QTBUG35109()
+{
+    if (QGuiApplication::platformName() == QLatin1String("cocoa"))
+        QSKIP("This test fails on OS X on CI");
+
+    const QPoint center = QGuiApplication::primaryScreen()->availableGeometry().center();
+
+    const int childOffset = 16;
+    const QPoint rootPos = center - QPoint(m_testWindowSize.width(),
+                                           m_testWindowSize.height())/2;
+    const QPoint modalPos = rootPos + QPoint(childOffset * 5,
+                                             childOffset * 5);
+    const QPoint cursorPos = rootPos - QPoint(80, 80);
+
+    // Test whether tlw can receive the enter event
+    {
+        QCursor::setPos(cursorPos);
+        QCoreApplication::processEvents();
+
+        InputTestWindow root;
+        root.setTitle(__FUNCTION__);
+        root.setGeometry(QRect(rootPos, m_testWindowSize));
+        root.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&root));
+        root.requestActivate();
+        QVERIFY(QTest::qWaitForWindowActive(&root));
+
+        // Move the mouse over the root window, but not over the modal window.
+        QCursor::setPos(rootPos + QPoint(childOffset * 5 / 2,
+                                         childOffset * 5 / 2));
+
+        // Wait for the enter event. It must be delivered here, otherwise second
+        // compare can PASS because of this event even after "resetCounters()".
+        QTRY_COMPARE(root.enterEventCount, 1);
+        QTRY_COMPARE(root.leaveEventCount, 0);
+
+        QWindow modal;
+        modal.setTitle(QLatin1String("Modal - ") + __FUNCTION__);
+        modal.setTransientParent(&root);
+        modal.resize(m_testWindowSize/2);
+        modal.setFramePosition(modalPos);
+        modal.setModality(Qt::ApplicationModal);
+        modal.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&modal));
+        modal.requestActivate();
+        QVERIFY(QTest::qWaitForWindowActive(&modal));
+
+        QCoreApplication::processEvents();
+        QTRY_COMPARE(root.leaveEventCount, 1);
+
+        root.resetCounters();
+        modal.close();
+
+        // Check for the enter event
+        QTRY_COMPARE(root.enterEventCount, 1);
+    }
+
+    // Test whether child window can receive the enter event
+    {
+        QCursor::setPos(cursorPos);
+        QCoreApplication::processEvents();
+
+        QWindow root;
+        root.setTitle(__FUNCTION__);
+        root.setGeometry(QRect(rootPos, m_testWindowSize));
+
+        QWindow childLvl1;
+        childLvl1.setParent(&root);
+        childLvl1.setGeometry(childOffset,
+                              childOffset,
+                              m_testWindowSize.width() - childOffset,
+                              m_testWindowSize.height() - childOffset);
+
+        InputTestWindow childLvl2;
+        childLvl2.setParent(&childLvl1);
+        childLvl2.setGeometry(childOffset,
+                              childOffset,
+                              childLvl1.width() - childOffset,
+                              childLvl1.height() - childOffset);
+
+        root.show();
+        childLvl1.show();
+        childLvl2.show();
+
+        QVERIFY(QTest::qWaitForWindowExposed(&root));
+        root.requestActivate();
+        QVERIFY(QTest::qWaitForWindowActive(&root));
+        QVERIFY(childLvl1.isVisible());
+        QVERIFY(childLvl2.isVisible());
+
+        // Move the mouse over the child window, but not over the modal window.
+        // Be sure that the value is almost left-top of second child window for
+        // checking proper position mapping.
+        QCursor::setPos(rootPos + QPoint(childOffset * 5 / 2,
+                                         childOffset * 5 / 2));
+
+        // Wait for the enter event. It must be delivered here, otherwise second
+        // compare can PASS because of this event even after "resetCounters()".
+        QTRY_COMPARE(childLvl2.enterEventCount, 1);
+        QTRY_COMPARE(childLvl2.leaveEventCount, 0);
+
+        QWindow modal;
+        modal.setTitle(QLatin1String("Modal - ") + __FUNCTION__);
+        modal.setTransientParent(&root);
+        modal.resize(m_testWindowSize/2);
+        modal.setFramePosition(modalPos);
+        modal.setModality(Qt::ApplicationModal);
+        modal.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&modal));
+        modal.requestActivate();
+        QVERIFY(QTest::qWaitForWindowActive(&modal));
+
+        QCoreApplication::processEvents();
+        QTRY_COMPARE(childLvl2.leaveEventCount, 1);
+
+        childLvl2.resetCounters();
+        modal.close();
+
+        // Check for the enter event
+        QTRY_COMPARE(childLvl2.enterEventCount, 1);
+    }
+
+    // Test whether tlw can receive the enter event if mouse is over the invisible child windnow
+    {
+        QCursor::setPos(cursorPos);
+        QCoreApplication::processEvents();
+
+        InputTestWindow root;
+        root.setTitle(__FUNCTION__);
+        root.setGeometry(QRect(rootPos, m_testWindowSize));
+
+        QWindow child;
+        child.setParent(&root);
+        child.setGeometry(QRect(QPoint(), m_testWindowSize));
+
+        root.show();
+
+        QVERIFY(QTest::qWaitForWindowExposed(&root));
+        root.requestActivate();
+        QVERIFY(QTest::qWaitForWindowActive(&root));
+        QVERIFY(!child.isVisible());
+
+        // Move the mouse over the child window, but not over the modal window.
+        QCursor::setPos(rootPos + QPoint(childOffset * 5 / 2,
+                                         childOffset * 5 / 2));
+
+        // Wait for the enter event. It must be delivered here, otherwise second
+        // compare can PASS because of this event even after "resetCounters()".
+        QTRY_COMPARE(root.enterEventCount, 1);
+        QTRY_COMPARE(root.leaveEventCount, 0);
+
+        QWindow modal;
+        modal.setTitle(QLatin1String("Modal - ") + __FUNCTION__);
+        modal.setTransientParent(&root);
+        modal.resize(m_testWindowSize/2);
+        modal.setFramePosition(modalPos);
+        modal.setModality(Qt::ApplicationModal);
+        modal.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&modal));
+        modal.requestActivate();
+        QVERIFY(QTest::qWaitForWindowActive(&modal));
+
+        QCoreApplication::processEvents();
+        QTRY_COMPARE(root.leaveEventCount, 1);
+
+        root.resetCounters();
+        modal.close();
+
+        // Check for the enter event
+        QTRY_COMPARE(root.enterEventCount, 1);
+    }
+}
+#endif
 
 class ColoredWindow : public QRasterWindow {
 public:
