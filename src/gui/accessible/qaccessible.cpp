@@ -448,6 +448,8 @@ QT_BEGIN_NAMESPACE
     \sa QAccessibleInterface::interface_cast(), QAccessibleTextInterface, QAccessibleValueInterface, QAccessibleActionInterface, QAccessibleTableInterface, QAccessibleTableCellInterface
 */
 
+#ifndef QT_NO_ACCESSIBILITY
+
 /*!
     Destroys the QAccessibleInterface.
 */
@@ -461,7 +463,6 @@ QAccessibleInterface::~QAccessibleInterface()
     Synonym for unsigned, used by the QAccessibleInterface cache.
 */
 
-#ifndef QT_NO_ACCESSIBILITY
 
 /* accessible widgets plugin discovery stuff */
 #ifndef QT_NO_LIBRARY
