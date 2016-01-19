@@ -53,6 +53,7 @@ int main(int argc, char *argv[])
 MyMainWidget::MyMainWidget(QWidget *parent)
     :QWidget(parent)
 {
+    QGuiApplication::setFallbackSessionManagementEnabled(false);
     connect(qApp, SIGNAL(commitDataRequest(QSessionManager)), SLOT(commitData(QSessionManager)));
 }
 

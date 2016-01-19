@@ -138,6 +138,8 @@ QPlatformTheme *QGuiApplicationPrivate::platform_theme = 0;
 
 QList<QObject *> QGuiApplicationPrivate::generic_plugin_list;
 
+bool QGuiApplicationPrivate::is_fallback_session_management_enabled = true;
+
 enum ApplicationResourceFlags
 {
     ApplicationPaletteExplicitlySet = 0x1,
@@ -3082,6 +3084,55 @@ void QGuiApplicationPrivate::setApplicationState(Qt::ApplicationState state, boo
     emit qApp->applicationStateChanged(applicationState);
 }
 
+// ### Qt6: consider removing the feature or making it less intrusive
+/*!
+    \since 5.6
+
+    Returns whether QGuiApplication will use fallback session management.
+
+    The default is \c true.
+
+    If this is \c true and the session manager allows user interaction,
+    QGuiApplication will try to close toplevel windows after
+    commitDataRequest() has been emitted. If a window cannot be closed, session
+    shutdown will be canceled and the application will keep running.
+
+    Fallback session management only benefits applications that have an
+    "are you sure you want to close this window?" feature or other logic that
+    prevents closing a toplevel window depending on certain conditions, and
+    that do nothing to explicitly implement session management. In applications
+    that \e do implement session management using the proper session management
+    API, fallback session management interferes and may break session
+    management logic.
+
+    \warning If all windows \e are closed due to fallback session management
+    and quitOnLastWindowClosed() is \c true, the application will quit before
+    it is explicitly instructed to quit through the platform's session
+    management protocol. That violation of protocol may prevent the platform
+    session manager from saving application state.
+
+    \sa setFallbackSessionManagementEnabled(),
+    QSessionManager::allowsInteraction(), saveStateRequest(),
+    commitDataRequest(), {Session Management}
+*/
+bool QGuiApplication::isFallbackSessionManagementEnabled()
+{
+    return QGuiApplicationPrivate::is_fallback_session_management_enabled;
+}
+
+/*!
+   \since 5.6
+
+    Sets whether QGuiApplication will use fallback session management to
+    \a enabled.
+
+    \sa isFallbackSessionManagementEnabled()
+*/
+void QGuiApplication::setFallbackSessionManagementEnabled(bool enabled)
+{
+    QGuiApplicationPrivate::is_fallback_session_management_enabled = enabled;
+}
+
 /*!
     \since 4.2
     \fn void QGuiApplication::commitDataRequest(QSessionManager &manager)
@@ -3106,7 +3157,8 @@ void QGuiApplicationPrivate::setApplicationState(Qt::ApplicationState state, boo
 
     \note You should use Qt::DirectConnection when connecting to this signal.
 
-    \sa isSessionRestored(), sessionId(), saveStateRequest(), {Session Management}
+    \sa setFallbackSessionManagementEnabled(), isSessionRestored(),
+    sessionId(), saveStateRequest(), {Session Management}
 */
 
 /*!
@@ -3236,9 +3288,13 @@ void QGuiApplicationPrivate::commitData()
 {
     Q_Q(QGuiApplication);
     is_saving_session = true;
+
     emit q->commitDataRequest(*session_manager);
-    if (session_manager->allowsInteraction() && !tryCloseAllWindows())
+    if (is_fallback_session_management_enabled && session_manager->allowsInteraction()
+        && !tryCloseAllWindows()) {
         session_manager->cancel();
+    }
+
     is_saving_session = false;
 }
 
