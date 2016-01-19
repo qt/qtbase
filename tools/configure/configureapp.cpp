@@ -1094,7 +1094,7 @@ void Configure::parseCmdLine()
             if (i == argCount)
                 break;
             QString mod = configCmdLine.at(i);
-            if (!mod.startsWith(QStringLiteral("qt")))
+            if (!mod.startsWith(QLatin1String("qt")))
                 mod.insert(0, QStringLiteral("qt"));
             if (!QFileInfo(sourcePath + "/../" + mod).isDir()) {
                 cout << "Attempting to skip non-existent module " << mod << "." << endl;
@@ -3810,7 +3810,7 @@ void Configure::displayConfig()
         env = "Unset";
     sout << "    PATH=\n      " << env << endl;
 
-    if (dictionary[QStringLiteral("EDITION")] != QStringLiteral("OpenSource")) {
+    if (dictionary[QStringLiteral("EDITION")] != QLatin1String("OpenSource")) {
         QString l1 = dictionary[ "LICENSEE" ];
         QString l2 = dictionary[ "LICENSEID" ];
         QString l3 = dictionary["EDITION"] + ' ' + "Edition";

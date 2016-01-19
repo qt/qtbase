@@ -121,14 +121,14 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
     bool haveDirectConnection = false;
     foreach (const QUrl& url, rawProxies) {
         QNetworkProxy::ProxyType type;
-        if (url.scheme() == QStringLiteral("http")) {
+        if (url.scheme() == QLatin1String("http")) {
             type = QNetworkProxy::HttpProxy;
-        } else if (url.scheme() == QStringLiteral("socks")
-              || url.scheme() == QStringLiteral("socks5")) {
+        } else if (url.scheme() == QLatin1String("socks")
+              || url.scheme() == QLatin1String("socks5")) {
             type = QNetworkProxy::Socks5Proxy;
-        } else if (url.scheme() == QStringLiteral("ftp")) {
+        } else if (url.scheme() == QLatin1String("ftp")) {
             type = QNetworkProxy::FtpCachingProxy;
-        } else if (url.scheme() == QStringLiteral("direct")) {
+        } else if (url.scheme() == QLatin1String("direct")) {
             type = QNetworkProxy::NoProxy;
             haveDirectConnection = true;
         } else {

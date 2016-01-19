@@ -1613,7 +1613,7 @@ LOGFONT QWindowsFontDatabase::fontDefToLOGFONT(const QFontDef &request)
     if (fam.isEmpty())
         fam = QStringLiteral("MS Sans Serif");
 
-    if ((fam == QStringLiteral("MS Sans Serif"))
+    if (fam == QLatin1String("MS Sans Serif")
         && (request.style == QFont::StyleItalic || (-lf.lfHeight > 18 && -lf.lfHeight != 24))) {
         fam = QStringLiteral("Arial"); // MS Sans Serif has bearing problems in italic, and does not scale
     }

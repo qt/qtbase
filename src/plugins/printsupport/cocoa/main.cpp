@@ -49,7 +49,7 @@ public:
 
 QPlatformPrinterSupport *QCocoaPrinterSupportPlugin::create(const QString &key)
 {
-    if (key.compare(key, QStringLiteral("cocoaprintersupport"), Qt::CaseInsensitive) != 0)
+    if (key.compare(key, QLatin1String("cocoaprintersupport"), Qt::CaseInsensitive) != 0)
         return 0;
     QGuiApplication *app = qobject_cast<QGuiApplication *>(QCoreApplication::instance());
     if (!app)

@@ -389,11 +389,11 @@ QString CodeGenerator::passByType(const Argument &arg) const
 
 QString CodeGenerator::safeArgumentName(const QString& arg) const
 {
-    if (arg == QStringLiteral("near")) // MS Windows defines near and far
+    if (arg == QLatin1String("near")) // MS Windows defines near and far
         return QStringLiteral("nearVal");
-    else if (arg == QStringLiteral("far"))
+    else if (arg == QLatin1String("far"))
         return QStringLiteral("farVal");
-    else if (arg == QStringLiteral("d"))
+    else if (arg == QLatin1String("d"))
         return QStringLiteral("dd"); // Don't shadow d pointer
     else
         return arg;
@@ -810,7 +810,7 @@ void CodeGenerator::writeInlineFunction(QTextStream &stream, const QString &clas
         argumentNames.append(safeArgumentName(arg.name));
     QString argNames = argumentNames.join(", ");
 
-    if (f.returnType == QStringLiteral("void"))
+    if (f.returnType == QLatin1String("void"))
         stream << QString(QStringLiteral("    %1->%2(%3);")).arg(backendVar).arg(f.name).arg(argNames) << endl;
     else
         stream << QString(QStringLiteral("    return %1->%2(%3);")).arg(backendVar).arg(f.name).arg(argNames) << endl;
