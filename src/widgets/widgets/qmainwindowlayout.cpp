@@ -2252,17 +2252,18 @@ void QMainWindowLayout::setCentralWidget(QWidget *widget)
 QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, bool group)
 {
 #if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_TABBAR)
-    QDockWidgetGroupWindow *floatingParent = qobject_cast<QDockWidgetGroupWindow *>(widget->parentWidget());
-    if (group && floatingParent && !widget->isWindow()) {
-        // We are just dragging a floating window as it, not need to do anything, we just have to
-        // look up the corresponding QWidgetItem* if it exists
-        QList<int> tabbedWindowPath = layoutState.indexOf(widget->parentWidget());
-        return tabbedWindowPath.isEmpty() ? 0 : layoutState.item(tabbedWindowPath);
-    } else if (floatingParent) {
-        // We are unplugging a dock widget from a floating window.
-        if (QDockWidget *dw = qobject_cast<QDockWidget*>(widget)) {
-            dw->d_func()->unplug(widget->geometry());
-            return 0;
+    if (!widget->isWindow() && qobject_cast<const QDockWidgetGroupWindow *>(widget->parentWidget())) {
+        if (group) {
+            // We are just dragging a floating window as it, not need to do anything, we just have to
+            // look up the corresponding QWidgetItem* if it exists
+            QList<int> tabbedWindowPath = layoutState.indexOf(widget->parentWidget());
+            return tabbedWindowPath.isEmpty() ? 0 : layoutState.item(tabbedWindowPath);
+        } else {
+            // We are unplugging a dock widget from a floating window.
+            if (QDockWidget *dw = qobject_cast<QDockWidget*>(widget)) {
+                dw->d_func()->unplug(widget->geometry());
+                return 0;
+            }
         }
     }
 #endif
