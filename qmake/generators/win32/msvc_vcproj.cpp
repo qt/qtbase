@@ -1199,7 +1199,7 @@ void VcprojGenerator::initResourceTool()
     foreach (const ProString &path, project->values("RC_INCLUDEPATH")) {
         QString fixedPath = fileFixify(path.toQString());
         if (fileInfo(fixedPath).isRelative()) {
-            if (fixedPath == QStringLiteral("."))
+            if (fixedPath == QLatin1String("."))
                 fixedPath = QStringLiteral("$(ProjectDir)");
             else
                 fixedPath.prepend(QStringLiteral("$(ProjectDir)\\"));

@@ -110,10 +110,10 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                 QString arch = project->first("VCPROJ_ARCH").toQString().toLower();
                 QString compiler;
                 QString compilerArch;
-                if (arch == QStringLiteral("arm")) {
+                if (arch == QLatin1String("arm")) {
                     compiler = QStringLiteral("x86_arm");
                     compilerArch = QStringLiteral("arm");
-                } else if (arch == QStringLiteral("x64")) {
+                } else if (arch == QLatin1String("x64")) {
                     const ProStringList hostArch = project->values("QMAKE_TARGET.arch");
                     if (hostArch.contains("x86_64"))
                         compiler = QStringLiteral("amd64");
