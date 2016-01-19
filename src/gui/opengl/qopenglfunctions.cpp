@@ -2097,11 +2097,10 @@ template <typename Base, typename FuncType, int Policy, typename ReturnType>
 class Resolver
 {
 public:
-    Resolver(FuncType Base::*func, FuncType fallback, const char *name, const char *alternateName = 0)
+    Resolver(FuncType Base::*func, FuncType fallback, const char *name)
         : funcPointerName(func)
         , fallbackFuncPointer(fallback)
         , funcName(name)
-        , alternateFuncName(alternateName)
     {
     }
 
@@ -2144,18 +2143,16 @@ private:
     FuncType Base::*funcPointerName;
     FuncType fallbackFuncPointer;
     QByteArray funcName;
-    QByteArray alternateFuncName;
 };
 
 template <typename Base, typename FuncType, int Policy>
 class Resolver<Base, FuncType, Policy, void>
 {
 public:
-    Resolver(FuncType Base::*func, FuncType fallback, const char *name, const char *alternateName = 0)
+    Resolver(FuncType Base::*func, FuncType fallback, const char *name)
         : funcPointerName(func)
         , fallbackFuncPointer(fallback)
         , funcName(name)
-        , alternateFuncName(alternateName)
     {
     }
 
@@ -2198,7 +2195,6 @@ private:
     FuncType Base::*funcPointerName;
     FuncType fallbackFuncPointer;
     QByteArray funcName;
-    QByteArray alternateFuncName;
 };
 
 #define RESOLVER_COMMON \
@@ -2222,26 +2218,7 @@ private:
         funcs->*funcPointerName = (FuncType)context->getProcAddress(funcName + "ANGLE"); \
  \
     if ((Policy & ResolveNV) && !(funcs->*funcPointerName)) \
-        funcs->*funcPointerName = (FuncType)context->getProcAddress(funcName + "NV"); \
- \
-    if (!alternateFuncName.isEmpty() && !(funcs->*funcPointerName)) { \
-        funcs->*funcPointerName = (FuncType)context->getProcAddress(alternateFuncName); \
- \
-        if ((Policy & ResolveOES) && !(funcs->*funcPointerName)) \
-            funcs->*funcPointerName = (FuncType)context->getProcAddress(alternateFuncName + "OES"); \
- \
-        if (!(funcs->*funcPointerName)) \
-            funcs->*funcPointerName = (FuncType)context->getProcAddress(alternateFuncName + "ARB"); \
- \
-        if ((Policy & ResolveEXT) && !(funcs->*funcPointerName)) \
-            funcs->*funcPointerName = (FuncType)context->getProcAddress(alternateFuncName + "EXT"); \
- \
-        if ((Policy & ResolveANGLE) && !(funcs->*funcPointerName)) \
-            funcs->*funcPointerName = (FuncType)context->getProcAddress(funcName + "ANGLE"); \
- \
-        if ((Policy & ResolveNV) && !(funcs->*funcPointerName)) \
-            funcs->*funcPointerName = (FuncType)context->getProcAddress(funcName + "NV"); \
-    }
+        funcs->*funcPointerName = (FuncType)context->getProcAddress(funcName + "NV");
 
 #define RESOLVER_COMMON_NON_VOID \
     RESOLVER_COMMON \
@@ -2452,15 +2429,15 @@ void Resolver<Base, FuncType, Policy, void>::operator()(P1 p1, P2 p2, P3 p3, P4 
 }
 
 template <typename ReturnType, int Policy, typename Base, typename FuncType>
-Resolver<Base, FuncType, Policy, ReturnType> functionResolverWithFallback(FuncType Base::*func, FuncType fallback, const char *name, const char *alternate = 0)
+Resolver<Base, FuncType, Policy, ReturnType> functionResolverWithFallback(FuncType Base::*func, FuncType fallback, const char *name)
 {
-    return Resolver<Base, FuncType, Policy, ReturnType>(func, fallback, name, alternate);
+    return Resolver<Base, FuncType, Policy, ReturnType>(func, fallback, name);
 }
 
 template <typename ReturnType, int Policy, typename Base, typename FuncType>
-Resolver<Base, FuncType, Policy, ReturnType> functionResolver(FuncType Base::*func, const char *name, const char *alternate = 0)
+Resolver<Base, FuncType, Policy, ReturnType> functionResolver(FuncType Base::*func, const char *name)
 {
-    return Resolver<Base, FuncType, Policy, ReturnType>(func, 0, name, alternate);
+    return Resolver<Base, FuncType, Policy, ReturnType>(func, 0, name);
 }
 
 } // namespace
@@ -2476,12 +2453,6 @@ Resolver<Base, FuncType, Policy, ReturnType> functionResolver(FuncType Base::*fu
 
 #define RESOLVE_FUNC_SPECIAL_VOID(POLICY, NAME) \
     functionResolverWithFallback<void, POLICY>(&QOpenGLExtensionsPrivate::NAME, qopenglfSpecial##NAME, "gl" #NAME)
-
-#define RESOLVE_FUNC_WITH_ALTERNATE(RETURN_TYPE, POLICY, NAME, ALTERNATE) \
-    return functionResolver<RETURN_TYPE, POLICY>(&QOpenGLExtensionsPrivate::NAME, "gl" #NAME, "gl" #ALTERNATE)
-
-#define RESOLVE_FUNC_VOID_WITH_ALTERNATE(POLICY, NAME, ALTERNATE) \
-    functionResolver<void, POLICY>(&QOpenGLExtensionsPrivate::NAME, "gl" #NAME, "gl" #ALTERNATE)
 
 #ifndef QT_OPENGL_ES_2
 
@@ -2740,7 +2711,7 @@ static void QOPENGLF_APIENTRY qopenglfResolveActiveTexture(GLenum texture)
 
 static void QOPENGLF_APIENTRY qopenglfResolveAttachShader(GLuint program, GLuint shader)
 {
-    RESOLVE_FUNC_VOID_WITH_ALTERNATE(0, AttachShader, AttachObject)(program, shader);
+    RESOLVE_FUNC_VOID(0, AttachShader)(program, shader);
 }
 
 static void QOPENGLF_APIENTRY qopenglfResolveBindAttribLocation(GLuint program, GLuint index, const char* name)
@@ -2815,12 +2786,12 @@ static void QOPENGLF_APIENTRY qopenglfResolveCompressedTexSubImage2D(GLenum targ
 
 static GLuint QOPENGLF_APIENTRY qopenglfResolveCreateProgram()
 {
-    RESOLVE_FUNC_WITH_ALTERNATE(GLuint, 0, CreateProgram, CreateProgramObject)();
+    RESOLVE_FUNC(GLuint, 0, CreateProgram)();
 }
 
 static GLuint QOPENGLF_APIENTRY qopenglfResolveCreateShader(GLenum type)
 {
-    RESOLVE_FUNC_WITH_ALTERNATE(GLuint, 0, CreateShader, CreateShaderObject)(type);
+    RESOLVE_FUNC(GLuint, 0, CreateShader)(type);
 }
 
 static void QOPENGLF_APIENTRY qopenglfResolveDeleteBuffers(GLsizei n, const GLuint* buffers)
@@ -2845,12 +2816,12 @@ static void QOPENGLF_APIENTRY qopenglfResolveDeleteRenderbuffers(GLsizei n, cons
 
 static void QOPENGLF_APIENTRY qopenglfResolveDeleteShader(GLuint shader)
 {
-    RESOLVE_FUNC_VOID_WITH_ALTERNATE(0, DeleteShader, DeleteObject)(shader);
+    RESOLVE_FUNC_VOID(0, DeleteShader)(shader);
 }
 
 static void QOPENGLF_APIENTRY qopenglfResolveDetachShader(GLuint program, GLuint shader)
 {
-    RESOLVE_FUNC_VOID_WITH_ALTERNATE(0, DetachShader, DetachObject)(program, shader);
+    RESOLVE_FUNC_VOID(0, DetachShader)(program, shader);
 }
 
 static void QOPENGLF_APIENTRY qopenglfResolveDisableVertexAttribArray(GLuint index)
@@ -2905,7 +2876,7 @@ static void QOPENGLF_APIENTRY qopenglfResolveGetActiveUniform(GLuint program, GL
 
 static void QOPENGLF_APIENTRY qopenglfResolveGetAttachedShaders(GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders)
 {
-    RESOLVE_FUNC_VOID_WITH_ALTERNATE(0, GetAttachedShaders, GetAttachedObjects)(program, maxcount, count, shaders);
+    RESOLVE_FUNC_VOID(0, GetAttachedShaders)(program, maxcount, count, shaders);
 }
 
 static GLint QOPENGLF_APIENTRY qopenglfResolveGetAttribLocation(GLuint program, const char* name)
@@ -2925,12 +2896,12 @@ static void QOPENGLF_APIENTRY qopenglfResolveGetFramebufferAttachmentParameteriv
 
 static void QOPENGLF_APIENTRY qopenglfResolveGetProgramiv(GLuint program, GLenum pname, GLint* params)
 {
-    RESOLVE_FUNC_VOID_WITH_ALTERNATE(0, GetProgramiv, GetObjectParameteriv)(program, pname, params);
+    RESOLVE_FUNC_VOID(0, GetProgramiv)(program, pname, params);
 }
 
 static void QOPENGLF_APIENTRY qopenglfResolveGetProgramInfoLog(GLuint program, GLsizei bufsize, GLsizei* length, char* infolog)
 {
-    RESOLVE_FUNC_VOID_WITH_ALTERNATE(0, GetProgramInfoLog, GetInfoLog)(program, bufsize, length, infolog);
+    RESOLVE_FUNC_VOID(0, GetProgramInfoLog)(program, bufsize, length, infolog);
 }
 
 static void QOPENGLF_APIENTRY qopenglfResolveGetRenderbufferParameteriv(GLenum target, GLenum pname, GLint* params)
@@ -2940,12 +2911,12 @@ static void QOPENGLF_APIENTRY qopenglfResolveGetRenderbufferParameteriv(GLenum t
 
 static void QOPENGLF_APIENTRY qopenglfResolveGetShaderiv(GLuint shader, GLenum pname, GLint* params)
 {
-    RESOLVE_FUNC_VOID_WITH_ALTERNATE(0, GetShaderiv, GetObjectParameteriv)(shader, pname, params);
+    RESOLVE_FUNC_VOID(0, GetShaderiv)(shader, pname, params);
 }
 
 static void QOPENGLF_APIENTRY qopenglfResolveGetShaderInfoLog(GLuint shader, GLsizei bufsize, GLsizei* length, char* infolog)
 {
-    RESOLVE_FUNC_VOID_WITH_ALTERNATE(0, GetShaderInfoLog, GetInfoLog)(shader, bufsize, length, infolog);
+    RESOLVE_FUNC_VOID(0, GetShaderInfoLog)(shader, bufsize, length, infolog);
 }
 
 static void QOPENGLF_APIENTRY qopenglfSpecialGetShaderPrecisionFormat(GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision)
