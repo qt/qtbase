@@ -275,6 +275,12 @@ void QEGLPlatformContext::destroyTemporaryOffscreenSurface(EGLSurface surface)
     eglDestroySurface(m_eglDisplay, surface);
 }
 
+void QEGLPlatformContext::runGLChecks()
+{
+    // Nothing to do here, subclasses may override in order to perform OpenGL
+    // queries needing a context.
+}
+
 void QEGLPlatformContext::updateFormatFromGL()
 {
 #ifndef QT_NO_OPENGL
@@ -346,6 +352,7 @@ void QEGLPlatformContext::updateFormatFromGL()
                 }
             }
         }
+        runGLChecks();
         eglMakeCurrent(prevDisplay, prevSurfaceDraw, prevSurfaceRead, prevContext);
     } else {
         qWarning("QEGLPlatformContext: Failed to make temporary surface current, format not updated (%x)", eglGetError());
