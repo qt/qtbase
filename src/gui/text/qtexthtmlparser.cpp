@@ -1926,13 +1926,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
         decl.d->propertyId = QCss::FontFamily;
         QVector<QCss::Value> values;
         val.type = QCss::Value::String;
-        val.variant = QLatin1String("Courier New");
-        values << val;
-        val.type = QCss::Value::TermOperatorComma;
-        val.variant = QVariant();
-        values << val;
-        val.type = QCss::Value::String;
-        val.variant = QLatin1String("courier");
+        val.variant = QFontDatabase::systemFont(QFontDatabase::FixedFont).family();
         values << val;
         decl.d->values = values;
         decl.d->inheritable = true;

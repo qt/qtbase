@@ -95,6 +95,8 @@ private slots:
 
     void task240325();
 
+    void preFont();
+
     void stylesheetFont_data();
     void stylesheetFont();
 
@@ -673,6 +675,30 @@ void tst_QTextDocument::stylesheetFont()
 
     QCOMPARE(actualFont.bold(), font.bold());
     QCOMPARE(actualFont.pixelSize(), font.pixelSize());
+}
+
+void tst_QTextDocument::preFont()
+{
+    const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    const QString html = QString::fromLatin1(   "<html>"
+                                                "<body>"
+                                                "<pre>"
+                                                "Foobar"
+                                                "</pre>"
+                                                "</body>"
+                                                "</html>");
+
+    doc->setHtml(html);
+    QCOMPARE(doc->blockCount(), 1);
+
+    // First and only block
+    QTextBlock block = doc->firstBlock();
+
+    QString text = block.text();
+    QCOMPARE(text, QString::fromLatin1("Foobar"));
+
+    QFont actualFont = block.charFormat().font();
+    QCOMPARE(actualFont.family(), font.family());
 }
 
 void tst_QTextDocument::noundo_moreIsModified()
