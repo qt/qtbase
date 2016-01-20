@@ -3556,6 +3556,71 @@ int qrand()
 */
 
 /*!
+    \fn qAsConst(T &t)
+    \relates <QtGlobal>
+    \since 5.7
+
+    Returns \a t cast to \c{const T}.
+
+    This function is a Qt implementation of C++17's std::as_const(),
+    a cast function like std::move(). But while std::move() turns
+    lvalues into rvalues, this function turns non-const lvalues into
+    const lvalues. Like std::as_const(), it doesn't work on rvalues,
+    because it cannot be efficiently implemented for rvalues without
+    leaving dangling references.
+
+    Its main use in Qt is to prevent implicitly-shared Qt containers
+    from detaching:
+    \code
+    QString s = ...;
+    for (QChar ch : s) // detaches 's' (performs a deep-copy if 's' was shared)
+        process(ch);
+    for (QChar ch : qAsConst(s)) // ok, no detach attempt
+        process(ch);
+    \endcode
+
+    Of course, in this case, you could (and probably should) have declared
+    \c s as \c const in the first place:
+    \code
+    const QString s = ...;
+    for (QChar ch : s) // ok, no detach attempt on const objects
+        process(ch);
+    \endcode
+    but often that is not easily possible.
+
+    It is important to note that qAsConst() does not copy its argument,
+    it just performs a \c{const_cast<const T&>(t)}. This is also the reason
+    why it is designed to fail for rvalues: The returned reference would go
+    stale too soon. So while this works (but detaches the returned object):
+    \code
+    for (QChar ch : funcReturningQString())
+        process(ch); // OK, the returned object is kept alive for the loop's duration
+    \endcode
+
+    this would not:
+    \code
+    for (QChar ch : qAsConst(funcReturningQString()))
+        process(ch); // ERROR: ch is copied from deleted memory
+    \endcode
+
+    To prevent this construct from compiling (and failing at runtime), qAsConst() has
+    a second, deleted, overload which binds to rvalues.
+*/
+
+/*!
+    \fn qAsConst(const T &&t)
+    \relates <QtGlobal>
+    \since 5.7
+    \overload
+
+    This overload is deleted to prevent a dangling reference in code like
+    \code
+    for (QChar ch : qAsConst(funcReturningQString()))
+        process(ch); // ERROR: ch is copied from deleted memory
+    \endcode
+*/
+
+/*!
     \macro QT_TR_NOOP(sourceText)
     \relates <QtGlobal>
 
