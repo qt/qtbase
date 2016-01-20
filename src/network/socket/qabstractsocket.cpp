@@ -468,6 +468,7 @@
 #include <qtimer.h>
 #include <qelapsedtimer.h>
 #include <qscopedvaluerollback.h>
+#include <qvarlengtharray.h>
 
 #ifndef QT_NO_SSL
 #include <QtNetwork/qsslsocket.h>
@@ -1234,27 +1235,39 @@ bool QAbstractSocketPrivate::readFromSocket()
         // host has _not_ disappeared).
         bytesToRead = 4096;
     }
-    if (readBufferMaxSize && bytesToRead > (readBufferMaxSize - buffer.size()))
-        bytesToRead = readBufferMaxSize - buffer.size();
+
+    if (q->isReadable()) {
+        if (readBufferMaxSize && bytesToRead > (readBufferMaxSize - buffer.size()))
+            bytesToRead = readBufferMaxSize - buffer.size();
 
 #if defined(QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocketPrivate::readFromSocket() about to read %lld bytes",
-           bytesToRead);
+        qDebug("QAbstractSocketPrivate::readFromSocket() about to read %lld bytes",
+               bytesToRead);
 #endif
 
-    // Read from the socket, store data in the read buffer.
-    char *ptr = buffer.reserve(bytesToRead);
-    qint64 readBytes = socketEngine->read(ptr, bytesToRead);
-    if (readBytes == -2) {
-        // No bytes currently available for reading.
-        buffer.chop(bytesToRead);
-        return true;
+        // Read from the socket, store data in the read buffer.
+        char *ptr = buffer.reserve(bytesToRead);
+        qint64 readBytes = socketEngine->read(ptr, bytesToRead);
+        if (readBytes == -2) {
+            // No bytes currently available for reading.
+            buffer.chop(bytesToRead);
+            return true;
+        }
+        buffer.chop(bytesToRead - (readBytes < 0 ? qint64(0) : readBytes));
+#if defined(QABSTRACTSOCKET_DEBUG)
+        qDebug("QAbstractSocketPrivate::readFromSocket() got %lld bytes, buffer size = %lld",
+               readBytes, buffer.size());
+#endif
+    } else {
+        // Discard unwanted data if opened in WriteOnly mode
+        QVarLengthArray<char, 4096> discardBuffer(bytesToRead);
+
+#if defined(QABSTRACTSOCKET_DEBUG)
+        qDebug("QAbstractSocketPrivate::readFromSocket() about to discard %lld bytes",
+               bytesToRead);
+#endif
+        socketEngine->read(discardBuffer.data(), bytesToRead);
     }
-    buffer.chop(bytesToRead - ((readBytes < 0 || !q->isReadable()) ? qint64(0) : readBytes));
-#if defined(QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocketPrivate::readFromSocket() got %lld bytes, buffer size = %lld",
-           readBytes, buffer.size());
-#endif
 
     if (!socketEngine->isValid()) {
         setErrorAndEmit(socketEngine->error(), socketEngine->errorString());
