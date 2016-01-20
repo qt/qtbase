@@ -156,10 +156,9 @@ for (i = list.begin(); i != list.end(); ++i)
 QList<QString> list;
 list << "A" << "B" << "C" << "D";
 
-QList<QString>::iterator i = list.end();
-while (i != list.begin()) {
-    --i;
-    *i = (*i).toLower();
+QList<QString>::reverse_iterator i;
+for (i = list.rbegin(); i != list.rend(); ++i)
+    *i = i->toLower();
 }
 //! [11]
 

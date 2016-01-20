@@ -472,9 +472,7 @@
 
     \image stliterators1.png
 
-    Iterating backward with an STL-style iterator requires us to
-    decrement the iterator \e before we access the item. This
-    requires a \c while loop:
+    Iterating backward with an STL-style iterator is done with reverse iterators:
 
     \snippet code/doc_src_containers.cpp 11
 
