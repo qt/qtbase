@@ -87,7 +87,7 @@ public:
         first.pos = -1;
         first.count = -1;
         first.zeroesAdded = 0;
-        last.type = FirstSection;
+        last.type = LastSection;
         last.pos = -1;
         last.count = -1;
         last.zeroesAdded = 0;
