@@ -1978,6 +1978,11 @@ int QCommonListViewBase::horizontalScrollToValue(const int /*index*/, QListView:
 /*
  * ListMode ListView Implementation
 */
+QListModeViewBase::QListModeViewBase(QListView *q, QListViewPrivate *d)
+    : QCommonListViewBase(q, d)
+{
+    dd->defaultDropAction = Qt::CopyAction;
+}
 
 #ifndef QT_NO_DRAGANDDROP
 QAbstractItemView::DropIndicatorPosition QListModeViewBase::position(const QPoint &pos, const QRect &rect, const QModelIndex &index) const
@@ -2744,7 +2749,7 @@ bool QIconModeViewBase::filterStartDrag(Qt::DropActions supportedActions)
         drag->setMimeData(dd->model->mimeData(indexes));
         drag->setPixmap(pixmap);
         drag->setHotSpot(dd->pressedPosition - rect.topLeft());
-        Qt::DropAction action = drag->exec(supportedActions, Qt::CopyAction);
+        Qt::DropAction action = drag->exec(supportedActions, dd->defaultDropAction);
         draggedItems.clear();
         if (action == Qt::MoveAction)
             dd->clearOrRemove();
