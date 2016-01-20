@@ -114,14 +114,20 @@ public:
         MinuteSection = 0x00008,
         Hour12Section   = 0x00010,
         Hour24Section   = 0x00020,
-        TimeSectionMask = (AmPmSection|MSecSection|SecondSection|MinuteSection|Hour12Section|Hour24Section),
+        HourSectionMask = (Hour12Section | Hour24Section),
+        TimeSectionMask = (MSecSection | SecondSection | MinuteSection |
+                           HourSectionMask | AmPmSection),
+
         DaySection         = 0x00100,
         MonthSection       = 0x00200,
         YearSection        = 0x00400,
         YearSection2Digits = 0x00800,
+        YearSectionMask = YearSection | YearSection2Digits,
         DayOfWeekSectionShort = 0x01000,
         DayOfWeekSectionLong  = 0x02000,
-        DateSectionMask = (DaySection|MonthSection|YearSection|YearSection2Digits|DayOfWeekSectionShort|DayOfWeekSectionLong),
+        DayOfWeekSectionMask = DayOfWeekSectionShort | DayOfWeekSectionLong,
+        DaySectionMask = DaySection | DayOfWeekSectionMask,
+        DateSectionMask = DaySectionMask | MonthSection | YearSectionMask,
 
         Internal             = 0x10000,
         FirstSection         = 0x20000 | Internal,
@@ -132,7 +138,7 @@ public:
         FirstSectionIndex = -2,
         LastSectionIndex = -3,
         CalendarPopupIndex = -4
-    }; // duplicated from qdatetimeedit.h
+    }; // extending qdatetimeedit.h's equivalent
     Q_DECLARE_FLAGS(Sections, Section)
 
     struct Q_CORE_EXPORT SectionNode {

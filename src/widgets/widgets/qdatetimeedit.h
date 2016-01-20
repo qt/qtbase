@@ -69,7 +69,7 @@ class Q_WIDGETS_EXPORT QDateTimeEdit : public QAbstractSpinBox
     Q_PROPERTY(int sectionCount READ sectionCount)
     Q_PROPERTY(Qt::TimeSpec timeSpec READ timeSpec WRITE setTimeSpec)
 public:
-    enum Section {
+    enum Section { // a sub-type of QDateTimeParser's like-named enum.
         NoSection = 0x0000,
         AmPmSection = 0x0001,
         MSecSection = 0x0002,
