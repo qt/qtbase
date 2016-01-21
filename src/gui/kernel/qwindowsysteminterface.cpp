@@ -303,6 +303,23 @@ QWindowSystemInterfacePrivate::ExposeEvent::ExposeEvent(QWindow *window, const Q
 {
 }
 
+/*! \internal
+    Handles an expose event.
+
+    The platform plugin sends expose events when an area of the window
+    is invalidated or window exposure changes. \a region is in window
+    local coordinates. An empty region indicates that the window is
+    obscured, but note that the exposed property of the QWindow will be set
+    based on what QPlatformWindow::isExposed() returns at the time of this call,
+    not based on what the region is. // FIXME: this should probably be fixed.
+
+    The platform plugin may omit sending expose events (or send obscure
+    events) for windows that are on screen but where the client area is
+    completely covered by other windows or otherwise not visible. Expose
+    event consumers can then use this to disable updates for such windows.
+    This is required behavior on platforms where OpenGL swapbuffers stops
+    blocking for obscured windows (like macOS).
+*/
 QT_DEFINE_QPA_EVENT_HANDLER(void, handleExposeEvent, QWindow *window, const QRegion &region)
 {
     QWindowSystemInterfacePrivate::ExposeEvent *e =

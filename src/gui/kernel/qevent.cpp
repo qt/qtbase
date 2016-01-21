@@ -1525,7 +1525,11 @@ QMoveEvent::~QMoveEvent()
     \ingroup events
 
     Expose events are sent to windows when an area of the window is invalidated
-    or window visibility in the windowing system changes.
+    or window exposure in the windowing system changes.
+
+    A Window with a client area that is completely covered by another window, or
+    is otherwise not visible may be considered obscured by Qt and may in such
+    cases not receive expose events.
 
     The event handler QWindow::exposeEvent() receives expose events.
 */
