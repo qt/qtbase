@@ -80,29 +80,27 @@ const QDBusArgument &operator>>(const QDBusArgument &arg, QDBusMenuItemKeys &key
     return arg;
 }
 
-uint QDBusMenuLayoutItem::populate(int id, int depth, const QStringList &propertyNames)
+uint QDBusMenuLayoutItem::populate(int id, int depth, const QStringList &propertyNames, const QDBusPlatformMenu *topLevelMenu)
 {
     qCDebug(qLcMenu) << id << "depth" << depth << propertyNames;
     m_id = id;
     if (id == 0) {
         m_properties.insert(QLatin1String("children-display"), QLatin1String("submenu"));
-        Q_FOREACH (const QDBusPlatformMenu *menu, QDBusPlatformMenu::topLevelMenus()) {
-            if (menu)
-                populate(menu, depth, propertyNames);
-        }
+        if (topLevelMenu)
+            populate(topLevelMenu, depth, propertyNames);
         return 1; // revision
     }
 
-    const QDBusPlatformMenu *menu = QDBusPlatformMenu::byId(id);
-    if (!menu) {
-        QDBusPlatformMenuItem *item = QDBusPlatformMenuItem::byId(id);
-        if (item)
-            menu = static_cast<const QDBusPlatformMenu *>(item->menu());
+    QDBusPlatformMenuItem *item = QDBusPlatformMenuItem::byId(id);
+    if (item) {
+        const QDBusPlatformMenu *menu = static_cast<const QDBusPlatformMenu *>(item->menu());
+
+        if (menu) {
+            if (depth != 0)
+                populate(menu, depth, propertyNames);
+            return menu->revision();
+        }
     }
-    if (depth != 0 && menu)
-        populate(menu, depth, propertyNames);
-    if (menu)
-        return menu->revision();
 
     return 1; // revision
 }
@@ -118,11 +116,13 @@ void QDBusMenuLayoutItem::populate(const QDBusPlatformMenu *menu, int depth, con
 
 void QDBusMenuLayoutItem::populate(const QDBusPlatformMenuItem *item, int depth, const QStringList &propertyNames)
 {
-    Q_UNUSED(depth)
-    Q_UNUSED(propertyNames)
     m_id = item->dbusID();
     QDBusMenuItem proxy(item);
     m_properties = proxy.m_properties;
+
+    const QDBusPlatformMenu *menu = static_cast<const QDBusPlatformMenu *>(item->menu());
+    if (depth != 0 && menu)
+        populate(menu, depth, propertyNames);
 }
 
 const QDBusArgument &operator<<(QDBusArgument &arg, const QDBusMenuLayoutItem &item)
@@ -199,8 +199,7 @@ QDBusMenuItem::QDBusMenuItem(const QDBusPlatformMenuItem *item)
             m_properties.insert(QLatin1String("icon-data"), buf.data());
         }
     }
-    if (!item->isVisible())
-        m_properties.insert(QLatin1String("visible"), false);
+    m_properties.insert(QLatin1String("visible"), item->isVisible());
 }
 
 QDBusMenuItemList QDBusMenuItem::items(const QList<int> &ids, const QStringList &propertyNames)

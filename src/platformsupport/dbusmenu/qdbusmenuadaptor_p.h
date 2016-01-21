@@ -140,7 +140,7 @@ class QDBusMenuAdaptor: public QDBusAbstractAdaptor
 "  </interface>\n"
         "")
 public:
-    QDBusMenuAdaptor(QObject *parent);
+    QDBusMenuAdaptor(QDBusPlatformMenu *topLevelMenu);
     virtual ~QDBusMenuAdaptor();
 
 public: // PROPERTIES
@@ -166,6 +166,9 @@ Q_SIGNALS: // SIGNALS
     void ItemActivationRequested(int id, uint timestamp);
     void ItemsPropertiesUpdated(const QDBusMenuItemList &updatedProps, const QDBusMenuItemKeysList &removedProps);
     void LayoutUpdated(uint revision, int parent);
+
+private:
+    QDBusPlatformMenu *m_topLevelMenu;
 };
 
 QT_END_NAMESPACE

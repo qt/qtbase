@@ -130,6 +130,7 @@ public:
     ~QDBusPlatformMenu();
     void insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before) Q_DECL_OVERRIDE;
     void removeMenuItem(QPlatformMenuItem *menuItem) Q_DECL_OVERRIDE;
+    void syncSubMenu(const QDBusPlatformMenu *menu);
     void syncMenuItem(QPlatformMenuItem *menuItem) Q_DECL_OVERRIDE;
     void syncSeparatorsCollapsible(bool enable) Q_DECL_OVERRIDE { Q_UNUSED(enable); }
 
@@ -147,8 +148,7 @@ public:
     void setMinimumWidth(int width) Q_DECL_OVERRIDE { Q_UNUSED(width); }
     void setFont(const QFont &font) Q_DECL_OVERRIDE { Q_UNUSED(font); }
     void setMenuType(MenuType type) Q_DECL_OVERRIDE { Q_UNUSED(type); }
-
-    int dbusID() const { return m_dbusID; }
+    void setContainingMenuItem(QDBusPlatformMenuItem *item);
 
     void showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item) Q_DECL_OVERRIDE
     {
@@ -169,9 +169,6 @@ public:
 
     bool operator==(const QDBusPlatformMenu& other) { return m_tag == other.m_tag; }
 
-    static QDBusPlatformMenu* byId(int id);
-    static QList<QDBusPlatformMenu *> topLevelMenus() { return m_topLevelMenus; }
-
     uint revision() const { return m_revision; }
 
     void emitUpdated();
@@ -187,12 +184,10 @@ private:
     bool m_isEnabled;
     bool m_isVisible;
     bool m_isSeparator;
-    int m_dbusID;
     uint m_revision;
     QHash<quintptr, QDBusPlatformMenuItem *> m_itemsByTag;
     QList<QDBusPlatformMenuItem *> m_items;
     QDBusPlatformMenuItem *m_containingMenuItem;
-    static QList<QDBusPlatformMenu *> m_topLevelMenus;
 };
 
 QT_END_NAMESPACE
