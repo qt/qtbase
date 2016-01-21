@@ -12346,6 +12346,53 @@ static inline bool canMapPosition(QWindow *window)
     return window->handle() && !qt_window_private(window)->resizeEventPending;
 }
 
+#ifndef QT_NO_GRAPHICSVIEW
+static inline QGraphicsProxyWidget *graphicsProxyWidget(const QWidget *w)
+{
+    QGraphicsProxyWidget *result = Q_NULLPTR;
+    const QWidgetPrivate *d = qt_widget_private(const_cast<QWidget *>(w));
+    if (d->extra)
+        result = d->extra->proxyWidget;
+    return result;
+}
+#endif // !QT_NO_GRAPHICSVIEW
+
+struct MapToGlobalTransformResult {
+    QTransform transform;
+    QWindow *window;
+};
+
+static MapToGlobalTransformResult mapToGlobalTransform(const QWidget *w)
+{
+    MapToGlobalTransformResult result;
+    result.window = Q_NULLPTR;
+    for ( ; w ; w = w->parentWidget()) {
+#ifndef QT_NO_GRAPHICSVIEW
+        if (QGraphicsProxyWidget *qgpw = graphicsProxyWidget(w)) {
+            if (const QGraphicsScene *scene = qgpw->scene()) {
+                const QList <QGraphicsView *> views = scene->views();
+                if (!views.isEmpty()) {
+                    result.transform *= qgpw->sceneTransform();
+                    result.transform *= views.first()->viewportTransform();
+                    w = views.first()->viewport();
+                }
+            }
+        }
+#endif // !QT_NO_GRAPHICSVIEW
+        QWindow *window = w->windowHandle();
+        if (window && canMapPosition(window)) {
+            result.window = window;
+            break;
+        }
+
+        const QPoint topLeft = w->geometry().topLeft();
+        result.transform.translate(topLeft.x(), topLeft.y());
+        if (w->isWindow())
+            break;
+    }
+    return result;
+}
+
 /*!
     \fn QPoint QWidget::mapToGlobal(const QPoint &pos) const
 
@@ -12357,29 +12404,9 @@ static inline bool canMapPosition(QWindow *window)
 */
 QPoint QWidget::mapToGlobal(const QPoint &pos) const
 {
-#ifndef QT_NO_GRAPHICSVIEW
-    Q_D(const QWidget);
-    if (d->extra && d->extra->proxyWidget && d->extra->proxyWidget->scene()) {
-        const QList <QGraphicsView *> views = d->extra->proxyWidget->scene()->views();
-        if (!views.isEmpty()) {
-            const QPointF scenePos = d->extra->proxyWidget->mapToScene(pos);
-            const QPoint viewPortPos = views.first()->mapFromScene(scenePos);
-            return views.first()->viewport()->mapToGlobal(viewPortPos);
-        }
-    }
-#endif // !QT_NO_GRAPHICSVIEW
-    int x = pos.x(), y = pos.y();
-    const QWidget *w = this;
-    while (w) {
-        QWindow *window = w->windowHandle();
-        if (window && canMapPosition(window))
-            return window->mapToGlobal(QPoint(x, y));
-
-        x += w->data->crect.x();
-        y += w->data->crect.y();
-        w = w->isWindow() ? 0 : w->parentWidget();
-    }
-    return QPoint(x, y);
+    const MapToGlobalTransformResult t = mapToGlobalTransform(this);
+    const QPoint g = t.transform.map(pos);
+    return t.window ? t.window->mapToGlobal(g) : g;
 }
 
 /*!
@@ -12392,29 +12419,9 @@ QPoint QWidget::mapToGlobal(const QPoint &pos) const
 */
 QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 {
-#ifndef QT_NO_GRAPHICSVIEW
-    Q_D(const QWidget);
-    if (d->extra && d->extra->proxyWidget && d->extra->proxyWidget->scene()) {
-        const QList <QGraphicsView *> views = d->extra->proxyWidget->scene()->views();
-        if (!views.isEmpty()) {
-            const QPoint viewPortPos = views.first()->viewport()->mapFromGlobal(pos);
-            const QPointF scenePos = views.first()->mapToScene(viewPortPos);
-            return d->extra->proxyWidget->mapFromScene(scenePos).toPoint();
-        }
-    }
-#endif // !QT_NO_GRAPHICSVIEW
-    int x = pos.x(), y = pos.y();
-    const QWidget *w = this;
-    while (w) {
-        QWindow *window = w->windowHandle();
-        if (window && canMapPosition(window))
-            return window->mapFromGlobal(QPoint(x, y));
-
-        x -= w->data->crect.x();
-        y -= w->data->crect.y();
-        w = w->isWindow() ? 0 : w->parentWidget();
-    }
-    return QPoint(x, y);
+   const MapToGlobalTransformResult t = mapToGlobalTransform(this);
+   const QPoint windowLocal = t.window ? t.window->mapFromGlobal(pos) : pos;
+   return t.transform.inverted().map(windowLocal);
 }
 
 QWidget *qt_pressGrab = 0;
