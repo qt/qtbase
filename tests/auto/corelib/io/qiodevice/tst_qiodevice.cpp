@@ -77,16 +77,15 @@ void tst_QIODevice::getSetCheck()
 {
     // OpenMode QIODevice::openMode()
     // void QIODevice::setOpenMode(OpenMode)
-    class MyIODevice : public QIODevice {
+    class MyIODevice : public QTcpSocket {
     public:
-        void setOpenMode(OpenMode openMode) { QIODevice::setOpenMode(openMode); }
+        using QTcpSocket::setOpenMode;
     };
-    QTcpSocket var1;
-    MyIODevice *obj1 = reinterpret_cast<MyIODevice*>(&var1);
-    obj1->setOpenMode(QIODevice::OpenMode(QIODevice::NotOpen));
-    QCOMPARE(QIODevice::OpenMode(QIODevice::NotOpen), obj1->openMode());
-    obj1->setOpenMode(QIODevice::OpenMode(QIODevice::ReadWrite));
-    QCOMPARE(QIODevice::OpenMode(QIODevice::ReadWrite), obj1->openMode());
+    MyIODevice var1;
+    var1.setOpenMode(QIODevice::OpenMode(QIODevice::NotOpen));
+    QCOMPARE(QIODevice::OpenMode(QIODevice::NotOpen), var1.openMode());
+    var1.setOpenMode(QIODevice::OpenMode(QIODevice::ReadWrite));
+    QCOMPARE(QIODevice::OpenMode(QIODevice::ReadWrite), var1.openMode());
 }
 
 //----------------------------------------------------------------------------------

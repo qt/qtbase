@@ -98,14 +98,25 @@ static inline QDate fixedDate(int y, int m, int d)
     return result;
 }
 
+/*
+  Until C++11, rounding direction is implementation-defined.
+
+  For negative operands, implementations may chose to round down instead of
+  towards zero (truncation).  We only actually care about the case a < 0, as all
+  uses of floordiv have b > 0.  In this case, if rounding is down we have a % b
+  >= 0 and simple division works fine; but a % b = a - (a / b) * b always, so
+  rounding towards zero gives a % b <= 0; when < 0, we need to adjust.
+
+  Once we assume C++11, we can safely test a < 0 instead of a % b < 0.
+ */
 static inline qint64 floordiv(qint64 a, int b)
 {
-    return (a - (a < 0 ? b-1 : 0)) / b;
+    return (a - (a % b < 0 ? b - 1 : 0)) / b;
 }
 
 static inline int floordiv(int a, int b)
 {
-    return (a - (a < 0 ? b-1 : 0)) / b;
+    return (a - (a % b < 0 ? b - 1 : 0)) / b;
 }
 
 static inline qint64 julianDayFromDate(int year, int month, int day)
@@ -3660,6 +3671,40 @@ QString QDateTime::toString(const QString& format) const
 }
 #endif //QT_NO_DATESTRING
 
+static void massageAdjustedDateTime(Qt::TimeSpec spec,
+#ifndef QT_BOOTSTRAPPED
+                                    const QTimeZone &zone,
+#endif // QT_BOOTSTRAPPED
+                                    QDate *date,
+                                    QTime *time)
+{
+    /*
+      If we have just adjusted to a day with a DST transition, our given time
+      may lie in the transition hour (either missing or duplicated).  For any
+      other time, telling mktime (deep in the bowels of localMSecsToEpochMSecs)
+      we don't know its DST-ness will produce no adjustment (just a decision as
+      to its DST-ness); but for a time in spring's missing hour it'll adjust the
+      time while picking a DST-ness.  (Handling of autumn is trickier, as either
+      DST-ness is valid, without adjusting the time.  We might want to propagate
+      d->daylightStatus() in that case, but it's hard to do so without breaking
+      (far more common) other cases; and it makes little difference, as the two
+      answers do then differ only in DST-ness.)
+    */
+    if (spec == Qt::LocalTime) {
+        QDateTimePrivate::DaylightStatus status = QDateTimePrivate::UnknownDaylightTime;
+        localMSecsToEpochMSecs(timeToMSecs(*date, *time), &status, date, time);
+#ifndef QT_BOOTSTRAPPED
+    } else if (spec == Qt::TimeZone) {
+        QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(*date, *time), zone, date, time);
+#endif // QT_BOOTSTRAPPED
+    }
+}
+#ifdef QT_BOOTSTRAPPED // Avoid duplicate #if-ery in uses.
+#define MASSAGEADJUSTEDDATETIME(s, z, d, t) massageAdjustedDateTime(s, d, t)
+#else
+#define MASSAGEADJUSTEDDATETIME(s, z, d, t) massageAdjustedDateTime(s, z, d, t)
+#endif // QT_BOOTSTRAPPED
+
 /*!
     Returns a QDateTime object containing a datetime \a ndays days
     later than the datetime of this object (or earlier if \a ndays is
@@ -3681,16 +3726,7 @@ QDateTime QDateTime::addDays(qint64 ndays) const
     QDate &date = p.first;
     QTime &time = p.second;
     date = date.addDays(ndays);
-    // Result might fall into "missing" DaylightTime transition hour,
-    // so call conversion and use the adjusted returned time
-    if (d->m_spec == Qt::LocalTime) {
-        QDateTimePrivate::DaylightStatus status = d->daylightStatus();
-        localMSecsToEpochMSecs(timeToMSecs(date, time), &status, &date, &time);
-#ifndef QT_BOOTSTRAPPED
-    } else if (d->m_spec == Qt::TimeZone) {
-        QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(date, time), d->m_timeZone, &date, &time);
-#endif // QT_BOOTSTRAPPED
-    }
+    MASSAGEADJUSTEDDATETIME(d->m_spec, d->m_timeZone, &date, &time);
     dt.d->setDateTime(date, time);
     return dt;
 }
@@ -3716,16 +3752,7 @@ QDateTime QDateTime::addMonths(int nmonths) const
     QDate &date = p.first;
     QTime &time = p.second;
     date = date.addMonths(nmonths);
-    // Result might fall into "missing" DaylightTime transition hour,
-    // so call conversion and use the adjusted returned time
-    if (d->m_spec == Qt::LocalTime) {
-        QDateTimePrivate::DaylightStatus status = d->daylightStatus();
-        localMSecsToEpochMSecs(timeToMSecs(date, time), &status, &date, &time);
-#ifndef QT_BOOTSTRAPPED
-    } else if (d->m_spec == Qt::TimeZone) {
-        QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(date, time), d->m_timeZone, &date, &time);
-#endif // QT_BOOTSTRAPPED
-    }
+    MASSAGEADJUSTEDDATETIME(d->m_spec, d->m_timeZone, &date, &time);
     dt.d->setDateTime(date, time);
     return dt;
 }
@@ -3751,19 +3778,11 @@ QDateTime QDateTime::addYears(int nyears) const
     QDate &date = p.first;
     QTime &time = p.second;
     date = date.addYears(nyears);
-    // Result might fall into "missing" DaylightTime transition hour,
-    // so call conversion and use the adjusted returned time
-    if (d->m_spec == Qt::LocalTime) {
-        QDateTimePrivate::DaylightStatus status = d->daylightStatus();
-        localMSecsToEpochMSecs(timeToMSecs(date, time), &status, &date, &time);
-#ifndef QT_BOOTSTRAPPED
-    } else if (d->m_spec == Qt::TimeZone) {
-        QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(date, time), d->m_timeZone, &date, &time);
-#endif // QT_BOOTSTRAPPED
-    }
+    MASSAGEADJUSTEDDATETIME(d->m_spec, d->m_timeZone, &date, &time);
     dt.d->setDateTime(date, time);
     return dt;
 }
+#undef MASSAGEADJUSTEDDATETIME
 
 /*!
     Returns a QDateTime object containing a datetime \a s seconds

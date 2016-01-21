@@ -56,6 +56,7 @@ mingw:isEmpty(CROSS_COMPILE):CMAKE_GENERATOR = -G \"MinGW Makefiles\"
 
 BUILD_DIR = $$replace($$list($$OUT_PWD/build), /, $$QMAKE_DIR_SEP)
 
+!qtHaveModule(gui): CMAKE_MODULE_DEFINES += -DNO_GUI=True
 !qtHaveModule(widgets): CMAKE_MODULE_DEFINES += -DNO_WIDGETS=True
 !qtHaveModule(dbus): CMAKE_MODULE_DEFINES += -DNO_DBUS=True
 

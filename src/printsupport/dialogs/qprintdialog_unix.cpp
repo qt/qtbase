@@ -124,9 +124,6 @@ public:
     void applyPrinterProperties(QPrinter *p);
     void setupPrinter() const;
 
-protected:
-    void showEvent(QShowEvent* event) Q_DECL_OVERRIDE;
-
 private:
     friend class QUnixPrintWidgetPrivate;
     Ui::QPrintPropertiesWidget widget;
@@ -278,11 +275,6 @@ void QPrintPropertiesDialog::setupPrinter() const
 void QPrintPropertiesDialog::selectPrinter(QPrinter::OutputFormat outputFormat, const QString &printerName)
 {
     widget.pageSetup->selectPrinter(outputFormat, printerName);
-}
-
-void QPrintPropertiesDialog::showEvent(QShowEvent* event)
-{
-    event->accept();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

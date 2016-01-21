@@ -122,6 +122,13 @@ QLocale::Language QLocalePrivate::codeToLanguage(const QString &code)
         Q_STATIC_ASSERT(QLocale::Moldavian == QLocale::Romanian);
         return QLocale::Moldavian;
     }
+    // Android uses the following deprecated codes
+    if (uc1 == 'i' && uc2 == 'w' && uc3 == 0) // iw -> he
+        return QLocale::Hebrew;
+    if (uc1 == 'i' && uc2 == 'n' && uc3 == 0) // in -> id
+        return QLocale::Indonesian;
+    if (uc1 == 'j' && uc2 == 'i' && uc3 == 0) // ji -> yi
+        return QLocale::Yiddish;
 
     return QLocale::C;
 }

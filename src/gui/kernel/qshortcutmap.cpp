@@ -342,12 +342,16 @@ bool QShortcutMap::tryShortcut(QKeyEvent *e)
         // For a partial match we don't know yet if we will handle the shortcut
         // but we need to say we did, so that we get the follow-up key-presses.
         return true;
-    case QKeySequence::ExactMatch:
+    case QKeySequence::ExactMatch: {
+        // Save number of identical matches before dispatching
+        // to keep QShortcutMap and tryShortcut reentrant.
+        const int identicalMatches = d->identicals.count();
         resetState();
         dispatchEvent(e);
         // If there are no identicals we've only found disabled shortcuts, and
         // shouldn't say that we handled the event.
-        return d->identicals.count() > 0;
+        return identicalMatches > 0;
+    }
     default:
         Q_UNREACHABLE();
     }

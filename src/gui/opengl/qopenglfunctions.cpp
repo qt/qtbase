@@ -102,7 +102,7 @@ Q_LOGGING_CATEGORY(lcGLES3, "qt.opengl.es3")
 
         // Setup scene and render it
         initializeGL();
-        paintGL()
+        paintGL();
     }
 
     void MyGLWindow::initializeGL()

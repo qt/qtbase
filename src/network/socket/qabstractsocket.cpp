@@ -1539,7 +1539,8 @@ bool QAbstractSocketPrivate::bind(const QHostAddress &address, quint16 port, QAb
     localPort = socketEngine->localPort();
 
     emit q->stateChanged(state);
-    socketEngine->setReadNotificationEnabled(true);
+    if (socketType == QAbstractSocket::UdpSocket)
+        socketEngine->setReadNotificationEnabled(true);
     return true;
 }
 

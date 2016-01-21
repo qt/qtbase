@@ -166,6 +166,7 @@ private slots:
     void updateDelegateOnEditableChange();
     void respectChangedOwnershipOfItemView();
     void task_QTBUG_39088_inputMethodHints();
+    void task_QTBUG_49831_scrollerNotActivated();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -3208,6 +3209,36 @@ void tst_QComboBox::respectChangedOwnershipOfItemView()
     QCOMPARE(spy2.count(), 1);
 }
 
+void tst_QComboBox::task_QTBUG_49831_scrollerNotActivated()
+{
+    QStringList modelData;
+    for (int i = 0; i < 1000; i++)
+        modelData << QStringLiteral("Item %1").arg(i);
+    QStringListModel model(modelData);
+
+    QComboBox box;
+    box.setModel(&model);
+    box.setCurrentIndex(500);
+    box.show();
+    QTest::qWaitForWindowShown(&box);
+    QTest::mouseMove(&box, QPoint(5, 5), 100);
+    box.showPopup();
+    QFrame *container = box.findChild<QComboBoxPrivateContainer *>();
+    QVERIFY(container);
+    QTest::qWaitForWindowShown(container);
+
+    QList<QComboBoxPrivateScroller *> scrollers = container->findChildren<QComboBoxPrivateScroller *>();
+    // Not all styles support scrollers. We rely only on those platforms that do to catch any regression.
+    if (!scrollers.isEmpty()) {
+        Q_FOREACH (QComboBoxPrivateScroller *scroller, scrollers) {
+            if (scroller->isVisible()) {
+                QSignalSpy doScrollSpy(scroller, SIGNAL(doScroll(int)));
+                QTest::mouseMove(scroller, QPoint(5, 5), 500);
+                QTRY_VERIFY(doScrollSpy.count() > 0);
+            }
+        }
+    }
+}
 
 QTEST_MAIN(tst_QComboBox)
 #include "tst_qcombobox.moc"

@@ -615,6 +615,8 @@ QGuiApplication::~QGuiApplication()
     QGuiApplicationPrivate::platform_name = 0;
     delete QGuiApplicationPrivate::displayName;
     QGuiApplicationPrivate::displayName = 0;
+    delete QGuiApplicationPrivate::m_inputDeviceManager;
+    QGuiApplicationPrivate::m_inputDeviceManager = 0;
     delete QGuiApplicationPrivate::desktopFileName;
     QGuiApplicationPrivate::desktopFileName = 0;
 }

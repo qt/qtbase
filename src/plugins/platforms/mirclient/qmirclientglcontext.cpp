@@ -140,19 +140,7 @@ void QMirClientOpenGLContext::swapBuffers(QPlatformSurface* surface)
     ASSERT(eglSwapBuffers(mEglDisplay, eglSurface) == EGL_TRUE);
 #endif
 
-    // "Technique" copied from mir, in examples/eglapp.c around line 96
-    EGLint newBufferWidth = -1;
-    EGLint newBufferHeight = -1;
-    /*
-     * Querying the surface (actually the current buffer) dimensions here is
-     * the only truly safe way to be sure that the dimensions we think we
-     * have are those of the buffer being rendered to. But this should be
-     * improved in future; https://bugs.launchpad.net/mir/+bug/1194384
-     */
-    eglQuerySurface(mEglDisplay, eglSurface, EGL_WIDTH, &newBufferWidth);
-    eglQuerySurface(mEglDisplay, eglSurface, EGL_HEIGHT, &newBufferHeight);
-
-    ubuntuWindow->onBuffersSwapped_threadSafe(newBufferWidth, newBufferHeight);
+    ubuntuWindow->onSwapBuffersDone();
 }
 
 void (*QMirClientOpenGLContext::getProcAddress(const QByteArray& procName)) ()

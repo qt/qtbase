@@ -3,7 +3,7 @@
 ** Copyright (C) 2015 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the FOO module of the Qt Toolkit.
+** This file is part of the configuration of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage

@@ -255,6 +255,7 @@ private slots:
     void conflictingTransition2();
     void qtbug_46059();
     void qtbug_46703();
+    void postEventFromBeginSelectTransitions();
 };
 
 class TestState : public QState
@@ -6630,6 +6631,34 @@ void tst_QStateMachine::qtbug_46703()
     QTRY_COMPARE(machine.configuration().contains(&b), true);
     QTRY_COMPARE(machine.configuration().contains(&b1), false);
     QTRY_COMPARE(machine.configuration().contains(&b2), true);
+
+    QVERIFY(machine.isRunning());
+}
+
+void tst_QStateMachine::postEventFromBeginSelectTransitions()
+{
+    class StateMachine : public QStateMachine {
+    protected:
+        void beginSelectTransitions(QEvent* e) Q_DECL_OVERRIDE {
+            if (e->type() == QEvent::Type(QEvent::User + 2))
+                postEvent(new QEvent(QEvent::Type(QEvent::User + 1)), QStateMachine::HighPriority);
+        }
+    } machine;
+    QState a(&machine);
+    QState success(&machine);
+
+    machine.setInitialState(&a);
+    a.addTransition(new EventTransition(QEvent::Type(QEvent::User + 1), &success));
+
+    machine.start();
+
+    QTRY_COMPARE(machine.configuration().contains(&a), true);
+    QTRY_COMPARE(machine.configuration().contains(&success), false);
+
+    machine.postEvent(new QEvent(QEvent::Type(QEvent::User + 2)), QStateMachine::NormalPriority);
+
+    QTRY_COMPARE(machine.configuration().contains(&a), false);
+    QTRY_COMPARE(machine.configuration().contains(&success), true);
 
     QVERIFY(machine.isRunning());
 }

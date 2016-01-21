@@ -92,7 +92,7 @@ class Q_CORE_EXPORT ExceptionHolder
 public:
     ExceptionHolder(QException *exception = Q_NULLPTR);
     ExceptionHolder(const ExceptionHolder &other);
-    void operator=(const ExceptionHolder &other);
+    void operator=(const ExceptionHolder &other); // ### Qt6: copy-assign operator shouldn't return void. Remove this method and the copy-ctor, they are unneeded.
     ~ExceptionHolder();
     QException *exception() const;
     QExplicitlySharedDataPointer<Base> base;

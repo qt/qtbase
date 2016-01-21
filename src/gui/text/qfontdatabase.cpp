@@ -844,7 +844,7 @@ QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family, QFo
     return retList;
 }
 
-QStringList qt_fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script)
+static QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script)
 {
     QFontDatabasePrivate *db = privateDb();
 
@@ -874,6 +874,12 @@ QStringList qt_fallbacksForFamily(const QString &family, QFont::Style style, QFo
     db->fallbacksCache.insert(cacheKey, new QStringList(retList));
 
     return retList;
+}
+
+QStringList qt_fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script)
+{
+    QMutexLocker locker(fontDatabaseMutex());
+    return fallbacksForFamily(family, style, styleHint, script);
 }
 
 static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt);
@@ -990,7 +996,7 @@ QFontEngine *loadEngine(int script, const QFontDef &request,
             if (styleHint == QFont::AnyStyle && request.fixedPitch)
                 styleHint = QFont::TypeWriter;
 
-            fallbacks += qt_fallbacksForFamily(family->name, QFont::Style(style->key.style), styleHint, QChar::Script(script));
+            fallbacks += fallbacksForFamily(family->name, QFont::Style(style->key.style), styleHint, QChar::Script(script));
 
             pfMultiEngine->setFallbackFamiliesList(fallbacks);
         }
@@ -2670,10 +2676,10 @@ QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
                 styleHint = QFont::TypeWriter;
 
             QStringList fallbacks = request.fallBackFamilies
-                                  + qt_fallbacksForFamily(request.family,
-                                                          QFont::Style(request.style),
-                                                          styleHint,
-                                                          QChar::Script(script));
+                                  + fallbacksForFamily(request.family,
+                                                       QFont::Style(request.style),
+                                                       styleHint,
+                                                       QChar::Script(script));
             if (script > QChar::Script_Common)
                 fallbacks += QString(); // Find the first font matching the specified script.
 

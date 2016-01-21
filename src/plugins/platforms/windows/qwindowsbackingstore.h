@@ -71,6 +71,7 @@ public:
 
 private:
     QScopedPointer<QWindowsNativeImage> m_image;
+    bool m_alphaNeedsFill;
 };
 
 QT_END_NAMESPACE

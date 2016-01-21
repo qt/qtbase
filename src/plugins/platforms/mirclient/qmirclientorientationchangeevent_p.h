@@ -43,15 +43,7 @@
 
 class OrientationChangeEvent : public QEvent {
 public:
-    enum Orientation {
-        Undefined = 0,
-        TopUp,
-        TopDown,
-        LeftUp,
-        RightUp,
-        FaceUp,
-        FaceDown
-    };
+    enum Orientation { TopUp, LeftUp, TopDown, RightUp };
 
     OrientationChangeEvent(QEvent::Type type, Orientation orientation)
         : QEvent(type)

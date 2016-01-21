@@ -63,6 +63,7 @@ src_xml.depends = src_corelib
 src_dbus.subdir = $$PWD/dbus
 src_dbus.target = sub-dbus
 src_dbus.depends = src_corelib
+force_bootstrap: src_dbus.depends += src_tools_bootstrap_dbus  # avoid syncqt race
 
 src_concurrent.subdir = $$PWD/concurrent
 src_concurrent.target = sub-concurrent
@@ -139,9 +140,8 @@ TOOLS = src_tools_moc src_tools_rcc src_tools_qlalr
 win32:SUBDIRS += src_winmain
 SUBDIRS += src_network src_sql src_xml src_testlib
 contains(QT_CONFIG, dbus) {
-    SUBDIRS += src_dbus
     force_bootstrap: SUBDIRS += src_tools_bootstrap_dbus
-    SUBDIRS += src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
+    SUBDIRS += src_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
     TOOLS += src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
     contains(QT_CONFIG, accessibility-atspi-bridge): \
         src_platformsupport.depends += src_dbus src_tools_qdbusxml2cpp

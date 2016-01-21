@@ -1085,7 +1085,8 @@ void QWidgetBackingStore::sync(QWidget *exposedWidget, const QRegion &exposedReg
 
     // Nothing to repaint.
     if (!isDirty() && store->size().isValid()) {
-        qt_flush(exposedWidget, exposedRegion, store, tlw, tlwOffset, widgetTexturesFor(tlw, tlw), this);
+        QPlatformTextureList *tl = widgetTexturesFor(tlw, exposedWidget);
+        qt_flush(exposedWidget, tl ? QRegion() : exposedRegion, store, tlw, tlwOffset, tl, this);
         return;
     }
 
@@ -1256,9 +1257,17 @@ void QWidgetBackingStore::doSync()
         for (int i = 0; i < paintPending.count(); ++i) {
             QWidget *w = paintPending[i];
             w->d_func()->sendPaintEvent(w->rect());
-            QWidget *npw = w->nativeParentWidget();
-            if (w->internalWinId() || (npw && npw != tlw))
-                markDirtyOnScreen(w->rect(), w, w->mapTo(tlw, QPoint()));
+            if (w != tlw) {
+                QWidget *npw = w->nativeParentWidget();
+                if (w->internalWinId() || (npw && npw != tlw)) {
+                    if (!w->internalWinId())
+                        w = npw;
+                    QWidgetPrivate *wPrivate = w->d_func();
+                    if (!wPrivate->needsFlush)
+                        wPrivate->needsFlush = new QRegion;
+                    appendDirtyOnScreenWidget(w);
+                }
+            }
         }
 
         // We might have newly exposed areas on the screen if this function was
@@ -1283,13 +1292,8 @@ void QWidgetBackingStore::doSync()
             }
         }
     }
-    for (int i = 0; i < dirtyRenderToTextureWidgets.count(); ++i) {
-        QWidget *w = dirtyRenderToTextureWidgets.at(i);
-        resetWidget(w);
-        QWidget *npw = w->nativeParentWidget();
-        if (w->internalWinId() || (npw && npw != tlw))
-            markDirtyOnScreen(w->rect(), w, w->mapTo(tlw, QPoint()));
-    }
+    for (int i = 0; i < dirtyRenderToTextureWidgets.count(); ++i)
+        resetWidget(dirtyRenderToTextureWidgets.at(i));
     dirtyRenderToTextureWidgets.clear();
 #endif
 

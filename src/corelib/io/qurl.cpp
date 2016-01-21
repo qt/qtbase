@@ -562,6 +562,7 @@ public:
     inline bool hasFragment() const { return sectionIsPresent & Fragment; }
 
     inline bool isLocalFile() const { return flags & IsLocalFile; }
+    QString toLocalFile(QUrl::FormattingOptions options) const;
 
     QString mergePaths(const QString &relativePath) const;
 
@@ -1464,6 +1465,33 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
         return;
     if (hash != -1)
         validateComponent(Fragment, url, hash + 1, len);
+}
+
+QString QUrlPrivate::toLocalFile(QUrl::FormattingOptions options) const
+{
+    QString tmp;
+    QString ourPath;
+    appendPath(ourPath, options, QUrlPrivate::Path);
+
+    // magic for shared drive on windows
+    if (!host.isEmpty()) {
+        tmp = QStringLiteral("//") + host;
+#ifdef Q_OS_WIN // QTBUG-42346, WebDAV is visible as local file on Windows only.
+        if (scheme == webDavScheme())
+            tmp += webDavSslTag();
+#endif
+        if (!ourPath.isEmpty() && !ourPath.startsWith(QLatin1Char('/')))
+            tmp += QLatin1Char('/');
+        tmp += ourPath;
+    } else {
+        tmp = ourPath;
+#ifdef Q_OS_WIN
+        // magic for drives on windows
+        if (ourPath.length() > 2 && ourPath.at(0) == QLatin1Char('/') && ourPath.at(2) == QLatin1Char(':'))
+            tmp.remove(0, 1);
+#endif
+    }
+    return tmp;
 }
 
 /*
@@ -3263,7 +3291,7 @@ QString QUrl::toString(FormattingOptions options) const
             && (!d->hasQuery() || options.testFlag(QUrl::RemoveQuery))
             && (!d->hasFragment() || options.testFlag(QUrl::RemoveFragment))
             && isLocalFile()) {
-        return path(options);
+        return d->toLocalFile(options);
     }
 
     QString url;
@@ -3826,28 +3854,7 @@ QString QUrl::toLocalFile() const
     if (!isLocalFile())
         return QString();
 
-    QString tmp;
-    QString ourPath = path(QUrl::FullyDecoded);
-
-    // magic for shared drive on windows
-    if (!d->host.isEmpty()) {
-        tmp = QStringLiteral("//") + host();
-#ifdef Q_OS_WIN // QTBUG-42346, WebDAV is visible as local file on Windows only.
-        if (scheme() == webDavScheme())
-            tmp += webDavSslTag();
-#endif
-        if (!ourPath.isEmpty() && !ourPath.startsWith(QLatin1Char('/')))
-            tmp += QLatin1Char('/');
-        tmp += ourPath;
-    } else {
-        tmp = ourPath;
-#ifdef Q_OS_WIN
-        // magic for drives on windows
-        if (ourPath.length() > 2 && ourPath.at(0) == QLatin1Char('/') && ourPath.at(2) == QLatin1Char(':'))
-            tmp.remove(0, 1);
-#endif
-    }
-    return tmp;
+    return d->toLocalFile(QUrl::FullyDecoded);
 }
 
 /*!

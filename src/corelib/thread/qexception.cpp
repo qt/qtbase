@@ -171,7 +171,7 @@ public:
 };
 
 ExceptionHolder::ExceptionHolder(QException *exception)
-: base(new Base(exception)) {}
+: base(exception ? new Base(exception) : Q_NULLPTR) {}
 
 ExceptionHolder::ExceptionHolder(const ExceptionHolder &other)
 : base(other.base)
@@ -187,6 +187,8 @@ ExceptionHolder::~ExceptionHolder()
 
 QException *ExceptionHolder::exception() const
 {
+    if (!base)
+        return Q_NULLPTR;
     return base->exception;
 }
 

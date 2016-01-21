@@ -201,6 +201,7 @@ private slots:
     void clientSendDataOnDelayedDisconnect();
     void serverDisconnectWithBuffered();
     void socketDiscardDataInWriteMode();
+    void readNotificationsAfterBind();
 
 protected slots:
     void nonBlockingIMAP_hostFound();
@@ -3052,6 +3053,26 @@ void tst_QTcpSocket::socketDiscardDataInWriteMode()
     QVERIFY(socket->atEnd());
 
     delete socket;
+}
+
+// Test that the socket does not enable the read notifications in bind()
+void tst_QTcpSocket::readNotificationsAfterBind()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QAbstractSocket socket(QAbstractSocket::TcpSocket, Q_NULLPTR);
+    QVERIFY2(socket.bind(), "Bind error!");
+
+    connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QSignalSpy spyReadyRead(&socket, SIGNAL(readyRead()));
+    socket.connectToHost(QtNetworkSettings::serverName(), 12346);
+
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY2(!QTestEventLoop::instance().timeout(), "Connection to closed port timed out instead of refusing, something is wrong");
+    QVERIFY2(socket.state() == QAbstractSocket::UnconnectedState, "Socket connected unexpectedly!");
+    QCOMPARE(spyReadyRead.count(), 0);
 }
 
 QTEST_MAIN(tst_QTcpSocket)

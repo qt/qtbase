@@ -2196,7 +2196,7 @@ void VCFilter::modifyPCHstage(QString str)
             break;
         }
     }
-    bool isHFile = Option::hasFileExtension(str, Option::h_ext) && (str == Project->precompH);
+    const bool isHFile = (str == Project->precompH);
     bool isCPPFile = pchThroughSourceFile && (str == Project->precompCPP);
 
     if(!isCFile && !isHFile && !isCPPFile)

@@ -2886,6 +2886,7 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
 
 /*QUuid*/         1 << QVariant::String
 };
+static const size_t qCanConvertMatrixMaximumTargetType = 8 * sizeof(*qCanConvertMatrix);
 
 #ifndef QT_BOOTSTRAPPED
 /*!
@@ -3135,8 +3136,9 @@ bool QVariant::canConvert(int targetTypeId) const
         case QMetaType::ULong:
         case QMetaType::Short:
         case QMetaType::UShort:
-            return qCanConvertMatrix[QVariant::Int] & (1 << currentType)
-                || currentType == QVariant::Int
+            return currentType == QVariant::Int
+                || (currentType < qCanConvertMatrixMaximumTargetType
+                    && qCanConvertMatrix[QVariant::Int] & (1U << currentType))
                 || QMetaType::typeFlags(currentType) & QMetaType::IsEnumeration;
         case QMetaType::QObjectStar:
             return canConvertMetaObject(currentType, targetTypeId, d.data.o);
@@ -3147,7 +3149,8 @@ bool QVariant::canConvert(int targetTypeId) const
 
     if (targetTypeId == String && currentType == StringList)
         return v_cast<QStringList>(&d)->count() == 1;
-    return qCanConvertMatrix[targetTypeId] & (1 << currentType);
+    return currentType < qCanConvertMatrixMaximumTargetType
+        && qCanConvertMatrix[targetTypeId] & (1U << currentType);
 }
 
 /*!
