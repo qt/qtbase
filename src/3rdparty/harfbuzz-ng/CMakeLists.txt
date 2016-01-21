@@ -86,11 +86,6 @@ qt_extend_target(BundledHarfbuzz CONDITION WIN32
         HB_NO_WIN1256
 )
 
-qt_extend_target(BundledHarfbuzz CONDITION ANDROID
-    DEFINES
-        _POSIX_C_SOURCE=200112L
-)
-
 qt_extend_target(BundledHarfbuzz CONDITION TRUE # special case
     SOURCES
         src/hb-ot.h

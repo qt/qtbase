@@ -28,9 +28,6 @@ DEFINES += HAVE_ATEXIT
 unix: DEFINES += HAVE_PTHREAD HAVE_SCHED_H HAVE_SCHED_YIELD
 win32: DEFINES += HB_NO_WIN1256
 
-#Workaround https://code.google.com/p/android/issues/detail?id=194631
-android: DEFINES += _POSIX_C_SOURCE=200112L
-
 # Harfbuzz-NG inside Qt uses the Qt atomics (inline code only)
 INCLUDEPATH += $$QT.core.includes
 DEFINES += QT_NO_VERSION_TAGGING
