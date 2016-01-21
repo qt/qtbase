@@ -647,7 +647,7 @@ extern "C" void qt_core_boilerplate();
 void qt_core_boilerplate()
 {
     printf("This is the QtCore library version " QT_BUILD_STR "\n"
-           "Copyright (C) 2015 The Qt Company Ltd.\n"
+           "Copyright (C) 2016 The Qt Company Ltd.\n"
            "Contact: http://www.qt.io/licensing/\n"
            "\n"
            "Installation prefix: %s\n"

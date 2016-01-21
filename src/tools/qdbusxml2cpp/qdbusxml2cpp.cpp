@@ -48,7 +48,7 @@
 
 #define PROGRAMNAME     "qdbusxml2cpp"
 #define PROGRAMVERSION  "0.8"
-#define PROGRAMCOPYRIGHT "Copyright (C) 2015 The Qt Company Ltd."
+#define PROGRAMCOPYRIGHT "Copyright (C) 2016 The Qt Company Ltd."
 
 #define ANNOTATION_NO_WAIT      "org.freedesktop.DBus.Method.NoReply"
 
