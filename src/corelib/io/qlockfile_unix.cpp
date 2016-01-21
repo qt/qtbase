@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 David Faure <faure+bluesystems@kde.org>
+** Copyright (C) 2016 Intel Corporation.
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **

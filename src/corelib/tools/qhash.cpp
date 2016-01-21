@@ -2,6 +2,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Intel Corporation.
 ** Copyright (C) 2012 Giuseppe D'Angelo <dangelog@gmail.com>.
 ** Contact: https://www.qt.io/licensing/
 **

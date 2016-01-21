@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2011 Thiago Macieira <thiago@kde.org>
+** Copyright (C) 2016 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.

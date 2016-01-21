@@ -1,6 +1,7 @@
 /***************************************************************************
 **
 ** Copyright (C) 2013 BlackBerry Limited. All rights reserved.
+** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.

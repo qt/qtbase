@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Intel Corporation.
 ** Copyright (C) 2014 Keith Gardner <kreios4004@gmail.com>
 ** Contact: https://www.qt.io/licensing/
 **
