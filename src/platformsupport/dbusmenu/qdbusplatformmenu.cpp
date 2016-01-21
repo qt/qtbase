@@ -49,7 +49,7 @@ QDBusPlatformMenuItem::QDBusPlatformMenuItem(quintptr tag)
     : m_tag(tag ? tag : reinterpret_cast<quintptr>(this)) // QMenu will overwrite this later
     , m_subMenu(Q_NULLPTR)
     , m_role(NoRole)
-    , m_isEnabled(false)
+    , m_isEnabled(true)
     , m_isVisible(true)
     , m_isSeparator(false)
     , m_isCheckable(false)
@@ -146,7 +146,7 @@ QList<const QDBusPlatformMenuItem *> QDBusPlatformMenuItem::byIds(const QList<in
 
 QDBusPlatformMenu::QDBusPlatformMenu(quintptr tag)
     : m_tag(tag ? tag : reinterpret_cast<quintptr>(this))
-    , m_isEnabled(false)
+    , m_isEnabled(true)
     , m_isVisible(true)
     , m_isSeparator(false)
     , m_dbusID(nextDBusID++)
