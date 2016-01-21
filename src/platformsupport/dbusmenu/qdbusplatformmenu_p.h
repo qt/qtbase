@@ -138,8 +138,11 @@ public:
 
     const QString text() const { return m_text; }
     void setText(const QString &text) Q_DECL_OVERRIDE;
+    QIcon icon() const { return m_icon; }
     void setIcon(const QIcon &icon) Q_DECL_OVERRIDE;
+    bool isEnabled() const { return m_isEnabled; }
     void setEnabled(bool enabled) Q_DECL_OVERRIDE;
+    bool isVisible() const { return m_isVisible; }
     void setVisible(bool visible) Q_DECL_OVERRIDE;
     void setMinimumWidth(int width) Q_DECL_OVERRIDE { Q_UNUSED(width); }
     void setFont(const QFont &font) Q_DECL_OVERRIDE { Q_UNUSED(font); }
