@@ -78,7 +78,7 @@ public:
     static QString processNameByPid(qint64 pid);
 
 #ifdef Q_OS_UNIX
-    static int checkFcntlWorksAfterFlock();
+    static int checkFcntlWorksAfterFlock(const QString &fn);
 #endif
 
     QString fileName;

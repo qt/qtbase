@@ -248,9 +248,16 @@ QUrl QFileSelector::select(const QUrl &filePath) const
         return filePath;
     QUrl ret(filePath);
     if (isLocalScheme(filePath.scheme())) {
-        QString equivalentPath = QLatin1Char(':') + filePath.path();
+        QLatin1String scheme(":");
+#ifdef Q_OS_ANDROID
+        // use other scheme because ":" means "qrc" here
+        if (filePath.scheme() == QLatin1String("assets"))
+            scheme = QLatin1String("assets:");
+#endif
+
+        QString equivalentPath = scheme + filePath.path();
         QString selectedPath = d->select(equivalentPath);
-        ret.setPath(selectedPath.remove(0, 1));
+        ret.setPath(selectedPath.remove(0, scheme.size()));
     } else {
         ret = QUrl::fromLocalFile(d->select(ret.toLocalFile()));
     }

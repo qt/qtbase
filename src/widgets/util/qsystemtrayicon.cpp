@@ -687,6 +687,10 @@ void QSystemTrayIconPrivate::install_sys_qpa()
 
 void QSystemTrayIconPrivate::remove_sys_qpa()
 {
+    QObject::disconnect(qpa_sys, SIGNAL(activated(QPlatformSystemTrayIcon::ActivationReason)),
+                        q_func(), SLOT(_q_emitActivated(QPlatformSystemTrayIcon::ActivationReason)));
+    QObject::disconnect(qpa_sys, &QPlatformSystemTrayIcon::messageClicked,
+                        q_func(), &QSystemTrayIcon::messageClicked);
     qpa_sys->cleanup();
 }
 

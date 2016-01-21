@@ -71,6 +71,8 @@ QSslCipher::QSslCipher()
 }
 
 /*!
+    \since 5.3
+
     Constructs a QSslCipher object for the cipher determined by \a
     name. The constructor accepts only supported ciphers (i.e., the
     \a name must identify a cipher in the list of ciphers returned by

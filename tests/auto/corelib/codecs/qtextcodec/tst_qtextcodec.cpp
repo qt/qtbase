@@ -1588,10 +1588,17 @@ void tst_QTextCodec::utf8bom_data()
             << QString("a");
     }
 
-    {
+    { // test the non-SIMD code-path
         static const ushort data[] = { 0x61, 0xfeff, 0x62 };
-        QTest::newRow("middle-bom")
-            << QByteArray("a\357\273\277b", 5)
+        QTest::newRow("middle-bom (non SIMD)")
+            << QByteArray("a\357\273\277b")
+            << QString::fromUtf16(data, sizeof(data)/sizeof(short));
+    }
+
+    { // test the SIMD code-path
+        static const ushort data[] = { 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0xfeff, 0x6d };
+        QTest::newRow("middle-bom (SIMD)")
+            << QByteArray("abcdefghijkl\357\273\277m")
             << QString::fromUtf16(data, sizeof(data)/sizeof(short));
     }
 }

@@ -12349,21 +12349,20 @@ static inline bool canMapPosition(QWindow *window)
 */
 QPoint QWidget::mapToGlobal(const QPoint &pos) const
 {
+#ifndef QT_NO_GRAPHICSVIEW
+    Q_D(const QWidget);
+    if (d->extra && d->extra->proxyWidget && d->extra->proxyWidget->scene()) {
+        const QList <QGraphicsView *> views = d->extra->proxyWidget->scene()->views();
+        if (!views.isEmpty()) {
+            const QPointF scenePos = d->extra->proxyWidget->mapToScene(pos);
+            const QPoint viewPortPos = views.first()->mapFromScene(scenePos);
+            return views.first()->viewport()->mapToGlobal(viewPortPos);
+        }
+    }
+#endif // !QT_NO_GRAPHICSVIEW
     int x = pos.x(), y = pos.y();
     const QWidget *w = this;
     while (w) {
-#ifndef QT_NO_GRAPHICSVIEW
-        const QWidgetPrivate *d = w->d_func();
-        if (d->extra && d->extra->proxyWidget && d->extra->proxyWidget->scene()) {
-            const QList <QGraphicsView *> views = d->extra->proxyWidget->scene()->views();
-            if (!views.isEmpty()) {
-                const QPointF scenePos = d->extra->proxyWidget->mapToScene(QPoint(x, y));
-                const QPoint viewPortPos = views.first()->mapFromScene(scenePos);
-                return views.first()->viewport()->mapToGlobal(viewPortPos);
-            }
-        }
-#endif // !QT_NO_GRAPHICSVIEW
-
         QWindow *window = w->windowHandle();
         if (window && canMapPosition(window))
             return window->mapToGlobal(QPoint(x, y));
@@ -12385,21 +12384,20 @@ QPoint QWidget::mapToGlobal(const QPoint &pos) const
 */
 QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 {
+#ifndef QT_NO_GRAPHICSVIEW
+    Q_D(const QWidget);
+    if (d->extra && d->extra->proxyWidget && d->extra->proxyWidget->scene()) {
+        const QList <QGraphicsView *> views = d->extra->proxyWidget->scene()->views();
+        if (!views.isEmpty()) {
+            const QPoint viewPortPos = views.first()->viewport()->mapFromGlobal(pos);
+            const QPointF scenePos = views.first()->mapToScene(viewPortPos);
+            return d->extra->proxyWidget->mapFromScene(scenePos).toPoint();
+        }
+    }
+#endif // !QT_NO_GRAPHICSVIEW
     int x = pos.x(), y = pos.y();
     const QWidget *w = this;
     while (w) {
-#ifndef QT_NO_GRAPHICSVIEW
-        const QWidgetPrivate *d = w->d_func();
-        if (d->extra && d->extra->proxyWidget && d->extra->proxyWidget->scene()) {
-            const QList <QGraphicsView *> views = d->extra->proxyWidget->scene()->views();
-            if (!views.isEmpty()) {
-                const QPoint viewPortPos = views.first()->viewport()->mapFromGlobal(QPoint(x, y));
-                const QPointF scenePos = views.first()->mapToScene(viewPortPos);
-                return d->extra->proxyWidget->mapFromScene(scenePos).toPoint();
-            }
-        }
-#endif // !QT_NO_GRAPHICSVIEW
-
         QWindow *window = w->windowHandle();
         if (window && canMapPosition(window))
             return window->mapFromGlobal(QPoint(x, y));

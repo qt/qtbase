@@ -364,7 +364,7 @@ bool QWinOverlappedIoNotifier::waitForNotified(int msecs, OVERLAPPED *overlapped
             return false;
         if (triggeredOverlapped == overlapped)
             return true;
-        msecs = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
+        t = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
         if (t == 0)
             return false;
     }

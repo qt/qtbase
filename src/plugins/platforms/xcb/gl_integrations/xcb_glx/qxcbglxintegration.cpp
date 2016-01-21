@@ -195,7 +195,12 @@ QPlatformOffscreenSurface *QXcbGlxIntegration::createPlatformOffscreenSurface(QO
     static bool glxPbufferUsable = true;
     if (!vendorChecked) {
         vendorChecked = true;
-        const char *glxvendor = glXGetClientString(glXGetCurrentDisplay(), GLX_VENDOR);
+        Display *display = glXGetCurrentDisplay();
+#ifdef XCB_USE_XLIB
+        if (!display)
+            display = static_cast<Display *>(m_connection->xlib_display());
+#endif
+        const char *glxvendor = glXGetClientString(display, GLX_VENDOR);
         if (glxvendor && !strcmp(glxvendor, "ATI"))
             glxPbufferUsable = false;
     }
