@@ -1261,7 +1261,28 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
     if ((key & Qt::KeypadModifier) == Qt::KeypadModifier)
         addKey(s, nativeText ? QCoreApplication::translate("QShortcut", "Num") : QString::fromLatin1("Num"), format);
 
+    QString p = keyName(key, format);
 
+#if defined(Q_OS_OSX)
+    if (nativeText)
+        s += p;
+    else
+#endif
+    addKey(s, p, format);
+    return s;
+}
+
+/*!
+    \internal
+    Returns the text representation of the key \a key, which can be used i.e.
+    when the sequence is serialized. This does not take modifiers into account
+    (see encodeString() for a version that does).
+
+    This static method is used by encodeString() and by the D-Bus menu exporter.
+*/
+QString QKeySequencePrivate::keyName(int key, QKeySequence::SequenceFormat format)
+{
+    bool nativeText = (format == QKeySequence::NativeText);
     key &= ~(Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier | Qt::KeypadModifier);
     QString p;
 
@@ -1312,14 +1333,7 @@ NonSymbol:
             }
         }
     }
-
-#if defined(Q_OS_MACX)
-    if (nativeText)
-        s += p;
-    else
-#endif
-    addKey(s, p, format);
-    return s;
+    return p;
 }
 /*!
     Matches the sequence with \a seq. Returns ExactMatch if

@@ -42,6 +42,7 @@
 #include <QDebug>
 #include <QtEndian>
 #include <QBuffer>
+#include <private/qkeysequence_p.h>
 #include <qpa/qplatformmenu.h>
 #include "qdbusplatformmenu_p.h"
 
@@ -165,6 +166,7 @@ void QDBusMenuItem::registerDBusTypes()
     qDBusRegisterMetaType<QDBusMenuLayoutItemList>();
     qDBusRegisterMetaType<QDBusMenuEvent>();
     qDBusRegisterMetaType<QDBusMenuEventList>();
+    qDBusRegisterMetaType<QDBusMenuShortcut>();
 }
 
 QDBusMenuItem::QDBusMenuItem(const QDBusPlatformMenuItem *item)
@@ -183,13 +185,11 @@ QDBusMenuItem::QDBusMenuItem(const QDBusPlatformMenuItem *item)
             m_properties.insert(QLatin1String("toggle-type"), QLatin1String("checkmark"));
             m_properties.insert(QLatin1String("toggle-state"), item->isChecked() ? 1 : 0);
         }
-        /* TODO support shortcuts
         const QKeySequence &scut = item->shortcut();
         if (!scut.isEmpty()) {
-            QDBusMenuShortcut shortcut(scut);
-            properties.insert(QLatin1String("shortcut"), QVariant::fromValue(shortcut));
+            QDBusMenuShortcut shortcut = convertKeySequence(scut);
+            m_properties.insert(QLatin1String("shortcut"), QVariant::fromValue(shortcut));
         }
-        */
         const QIcon &icon = item->icon();
         if (!icon.name().isEmpty()) {
             m_properties.insert(QLatin1String("icon-name"), icon.name());
@@ -224,6 +224,35 @@ QString QDBusMenuItem::convertMnemonic(const QString &label)
     QString ret(label);
     ret[idx] = QLatin1Char('_');
     return ret;
+}
+
+QDBusMenuShortcut QDBusMenuItem::convertKeySequence(const QKeySequence &sequence)
+{
+    QDBusMenuShortcut shortcut;
+    for (int i = 0; i < sequence.count(); ++i) {
+        QStringList tokens;
+        int key = sequence[i];
+        if (key & Qt::MetaModifier)
+            tokens << QStringLiteral("Super");
+        if (key & Qt::ControlModifier)
+            tokens << QStringLiteral("Control");
+        if (key & Qt::AltModifier)
+            tokens << QStringLiteral("Alt");
+        if (key & Qt::ShiftModifier)
+            tokens << QStringLiteral("Shift");
+        if (key & Qt::KeypadModifier)
+            tokens << QStringLiteral("Num");
+
+        QString keyName = QKeySequencePrivate::keyName(key, QKeySequence::PortableText);
+        if (keyName == QLatin1String("+"))
+            tokens << QStringLiteral("plus");
+        else if (keyName == QLatin1String("-"))
+            tokens << QStringLiteral("minus");
+        else
+            tokens << keyName;
+        shortcut << tokens;
+    }
+    return shortcut;
 }
 
 const QDBusArgument &operator<<(QDBusArgument &arg, const QDBusMenuEvent &ev)
