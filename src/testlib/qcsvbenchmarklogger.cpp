@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Intel Corporation
+** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.

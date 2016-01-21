@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 #############################################################################
 ##
-## Copyright (C) 2016 Intel Corporation
+## Copyright (C) 2016 Intel Corporation.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the build configuration tools of the Qt Toolkit.
