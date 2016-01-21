@@ -102,10 +102,11 @@ void QDBusMenuAdaptor::Event(int id, const QString &eventId, const QDBusVariant 
         item->trigger();
 }
 
-void QDBusMenuAdaptor::EventGroup(const QDBusMenuEventList &events)
+QList<int> QDBusMenuAdaptor::EventGroup(const QDBusMenuEventList &events)
 {
     Q_FOREACH (const QDBusMenuEvent &ev, events)
         Event(ev.m_id, ev.m_eventId, ev.m_data, ev.m_timestamp);
+    return QList<int>(); // idErrors
 }
 
 QDBusMenuItemList QDBusMenuAdaptor::GetGroupProperties(const QList<int> &ids, const QStringList &propertyNames)

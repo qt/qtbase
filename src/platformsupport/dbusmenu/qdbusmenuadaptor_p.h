@@ -157,7 +157,7 @@ public Q_SLOTS: // METHODS
     bool AboutToShow(int id);
     QList<int> AboutToShowGroup(const QList<int> &ids, QList<int> &idErrors);
     void Event(int id, const QString &eventId, const QDBusVariant &data, uint timestamp);
-    void EventGroup(const QDBusMenuEventList &events);
+    QList<int> EventGroup(const QDBusMenuEventList &events);
     QDBusMenuItemList GetGroupProperties(const QList<int> &ids, const QStringList &propertyNames);
     uint GetLayout(int parentId, int recursionDepth, const QStringList &propertyNames, QDBusMenuLayoutItem &layout);
     QDBusVariant GetProperty(int id, const QString &name);
