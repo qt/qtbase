@@ -725,16 +725,16 @@ void tst_qmessagehandler::qMessagePattern_data()
 
     // %{file} is tricky because of shadow builds
     QTest::newRow("basic") << "%{type} %{appname} %{line} %{function} %{message}" << true << (QList<QByteArray>()
-            << "debug  44 T::T static constructor"
+            << "debug  39 T::T static constructor"
             //  we can't be sure whether the QT_MESSAGE_PATTERN is already destructed
             << "static destructor"
-            << "debug tst_qlogging 65 MyClass::myFunction from_a_function 34"
-            << "debug tst_qlogging 75 main qDebug"
-            << "info tst_qlogging 76 main qInfo"
-            << "warning tst_qlogging 77 main qWarning"
-            << "critical tst_qlogging 78 main qCritical"
-            << "warning tst_qlogging 81 main qDebug with category"
-            << "debug tst_qlogging 85 main qDebug2");
+            << "debug tst_qlogging 60 MyClass::myFunction from_a_function 34"
+            << "debug tst_qlogging 70 main qDebug"
+            << "info tst_qlogging 71 main qInfo"
+            << "warning tst_qlogging 72 main qWarning"
+            << "critical tst_qlogging 73 main qCritical"
+            << "warning tst_qlogging 76 main qDebug with category"
+            << "debug tst_qlogging 80 main qDebug2");
 
 
     QTest::newRow("invalid") << "PREFIX: %{unknown} %{message}" << false << (QList<QByteArray>()
