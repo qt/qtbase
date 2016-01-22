@@ -235,11 +235,13 @@ static inline void clearFontUnlocked()
     QGuiApplicationPrivate::app_font = 0;
 }
 
+// Using aggregate initialization instead of ctor so we can have a POD global static
+#define Q_WINDOW_GEOMETRY_SPECIFICATION_INITIALIZER { Qt::TopLeftCorner, -1, -1, -1, -1 }
+
 // Geometry specification for top level windows following the convention of the
 // -geometry command line arguments in X11 (see XParseGeometry).
 struct QWindowGeometrySpecification
 {
-    QWindowGeometrySpecification() : corner(Qt::TopLeftCorner), xOffset(-1), yOffset(-1), width(-1), height(-1) {}
     static QWindowGeometrySpecification fromArgument(const QByteArray &a);
     void applyTo(QWindow *window) const;
 
@@ -276,7 +278,7 @@ static inline int nextGeometryToken(const QByteArray &a, int &pos, char *op)
 
 QWindowGeometrySpecification QWindowGeometrySpecification::fromArgument(const QByteArray &a)
 {
-    QWindowGeometrySpecification result;
+    QWindowGeometrySpecification result = Q_WINDOW_GEOMETRY_SPECIFICATION_INITIALIZER;
     int pos = 0;
     for (int i = 0; i < 4; ++i) {
         char op;
@@ -333,7 +335,7 @@ void QWindowGeometrySpecification::applyTo(QWindow *window) const
     }
 }
 
-static QWindowGeometrySpecification windowGeometrySpecification;
+static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOMETRY_SPECIFICATION_INITIALIZER;
 
 /*!
     \class QGuiApplication
