@@ -357,7 +357,7 @@ QDebug &QDebug::resetFormat()
     stream->space = true;
     if (stream->context.version > 1)
         stream->flags = 0;
-    stream->setVerbosity(Stream::defaultVerbosity);
+    stream->setVerbosity(Stream::DefaultVerbosity);
     return *this;
 }
 

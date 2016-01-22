@@ -66,14 +66,14 @@ class Q_CORE_EXPORT QDebug
     friend class QMessageLogger;
     friend class QDebugStateSaverPrivate;
     struct Stream {
-        enum { defaultVerbosity = 2, verbosityShift = 29, verbosityMask = 0x7 };
+        enum { DefaultVerbosity = 2, VerbosityShift = 29, VerbosityMask = 0x7 };
 
         Stream(QIODevice *device) : ts(device), ref(1), type(QtDebugMsg),
-            space(true), message_output(false), flags(defaultVerbosity << verbosityShift) {}
+            space(true), message_output(false), flags(DefaultVerbosity << VerbosityShift) {}
         Stream(QString *string) : ts(string, QIODevice::WriteOnly), ref(1), type(QtDebugMsg),
-            space(true), message_output(false), flags(defaultVerbosity << verbosityShift) {}
+            space(true), message_output(false), flags(DefaultVerbosity << VerbosityShift) {}
         Stream(QtMsgType t) : ts(&buffer, QIODevice::WriteOnly), ref(1), type(t),
-            space(true), message_output(true), flags(defaultVerbosity << verbosityShift) {}
+            space(true), message_output(true), flags(DefaultVerbosity << VerbosityShift) {}
         QTextStream ts;
         QString buffer;
         int ref;
@@ -91,12 +91,12 @@ class Q_CORE_EXPORT QDebug
         void setFlag(FormatFlag flag) { if (context.version > 1) { flags |= flag; } }
         void unsetFlag(FormatFlag flag) { if (context.version > 1) { flags &= ~flag; } }
         int verbosity() const
-        { return context.version > 1 ? (flags >> verbosityShift) & verbosityMask : int(Stream::defaultVerbosity); }
+        { return context.version > 1 ? (flags >> VerbosityShift) & VerbosityMask : int(Stream::DefaultVerbosity); }
         void setVerbosity(int v)
         {
             if (context.version > 1) {
-                flags &= ~(verbosityMask << verbosityShift);
-                flags |= (v & verbosityMask) << verbosityShift;
+                flags &= ~(VerbosityMask << VerbosityShift);
+                flags |= (v & VerbosityMask) << VerbosityShift;
             }
         }
         // added in 5.4
