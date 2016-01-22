@@ -612,6 +612,7 @@ void QAction::setActionGroup(QActionGroup *group)
     d->group = group;
     if(group)
         group->addAction(this);
+    d->sendDataChanged();
 }
 
 /*!

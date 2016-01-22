@@ -97,6 +97,8 @@ public:
     void setCheckable(bool checkable) Q_DECL_OVERRIDE;
     bool isChecked() const { return m_isChecked; }
     void setChecked(bool isChecked) Q_DECL_OVERRIDE;
+    bool hasExclusiveGroup() const { return m_hasExclusiveGroup; }
+    void setHasExclusiveGroup(bool hasExclusiveGroup) Q_DECL_OVERRIDE;
     QKeySequence shortcut() const { return m_shortcut; }
     void setShortcut(const QKeySequence& shortcut) Q_DECL_OVERRIDE;
     void setIconSize(int size) Q_DECL_OVERRIDE { Q_UNUSED(size); }
@@ -123,7 +125,8 @@ private:
     bool m_isCheckable : 1;
     bool m_isChecked : 1;
     int m_dbusID : 16;
-    int m_reserved : 7;
+    bool m_hasExclusiveGroup : 1;
+    int m_reserved : 6;
     QKeySequence m_shortcut;
 };
 

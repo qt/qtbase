@@ -184,9 +184,8 @@ QDBusMenuItem::QDBusMenuItem(const QDBusPlatformMenuItem *item)
             m_properties.insert(QLatin1String("children-display"), QLatin1String("submenu"));
         m_properties.insert(QLatin1String("enabled"), item->isEnabled());
         if (item->isCheckable()) {
-            // dbusmenu supports "radio" too, but QPlatformMenuItem doesn't seem to
-            // (QAction would have an exclusive actionGroup)
-            m_properties.insert(QLatin1String("toggle-type"), QLatin1String("checkmark"));
+            QString toggleType = item->hasExclusiveGroup() ? QLatin1String("radio") : QLatin1String("checkmark");
+            m_properties.insert(QLatin1String("toggle-type"), toggleType);
             m_properties.insert(QLatin1String("toggle-state"), item->isChecked() ? 1 : 0);
         }
         /* TODO support shortcuts

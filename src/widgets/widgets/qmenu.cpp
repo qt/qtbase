@@ -3231,6 +3231,7 @@ static void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem *i
     item->setShortcut(action->shortcut());
     item->setCheckable(action->isCheckable());
     item->setChecked(action->isChecked());
+    item->setHasExclusiveGroup(action->actionGroup() && action->actionGroup()->isExclusive());
     item->setFont(action->font());
     item->setRole((QPlatformMenuItem::MenuRole) action->menuRole());
     item->setEnabled(action->isEnabled());

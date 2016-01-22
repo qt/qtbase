@@ -61,6 +61,7 @@ QDBusPlatformMenuItem::QDBusPlatformMenuItem(quintptr tag)
     , m_isCheckable(false)
     , m_isChecked(false)
     , m_dbusID(nextDBusID++)
+    , m_hasExclusiveGroup(false)
 {
     menuItemsByID.insert(m_dbusID, this);
 }
@@ -122,6 +123,11 @@ void QDBusPlatformMenuItem::setCheckable(bool checkable)
 void QDBusPlatformMenuItem::setChecked(bool isChecked)
 {
     m_isChecked = isChecked;
+}
+
+void QDBusPlatformMenuItem::setHasExclusiveGroup(bool hasExclusiveGroup)
+{
+    m_hasExclusiveGroup = hasExclusiveGroup;
 }
 
 void QDBusPlatformMenuItem::setShortcut(const QKeySequence &shortcut)

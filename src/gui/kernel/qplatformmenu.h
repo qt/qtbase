@@ -87,6 +87,7 @@ public:
     virtual void setEnabled(bool enabled) = 0;
     virtual void setIconSize(int size) = 0;
     virtual void setNativeContents(WId item) { Q_UNUSED(item); }
+    virtual void setHasExclusiveGroup(bool hasExclusiveGroup) { Q_UNUSED(hasExclusiveGroup); }
 
 Q_SIGNALS:
     void activated();
