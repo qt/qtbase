@@ -1780,6 +1780,12 @@ void QFontEngineFT::unlockAlphaMapForGlyph()
     QFontEngine::unlockAlphaMapForGlyph();
 }
 
+static inline bool is2dRotation(const QTransform &t)
+{
+    return qFuzzyCompare(t.m11(), t.m22()) && qFuzzyCompare(t.m12(), -t.m21())
+        && qFuzzyCompare(t.m11()*t.m22() - t.m12()*t.m21(), 1.0);
+}
+
 QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g,
                                                   QFixed subPixelPosition,
                                                   GlyphFormat format,
@@ -1793,7 +1799,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g,
     Glyph *glyph = glyphSet != 0 ? glyphSet->getGlyph(g, subPixelPosition) : 0;
     if (!glyph || glyph->format != format || (!fetchBoundingBox && !glyph->data)) {
         QScopedValueRollback<HintStyle> saved_default_hint_style(default_hint_style);
-        if (t.type() >= QTransform::TxScale)
+        if (t.type() >= QTransform::TxScale && !is2dRotation(t))
             default_hint_style = HintNone; // disable hinting if the glyphs are transformed
 
         lockFace();
