@@ -879,12 +879,12 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
     State state = Acceptable;
 
     QDateTime newCurrentValue;
-    int pos = 0;
     bool conflicts = false;
     const int sectionNodesCount = sectionNodes.size();
 
     QDTPDEBUG << "parse" << input;
     {
+        int pos = 0;
         int year, month, day;
         currentValue.date().getDate(&year, &month, &day);
         int year2digits = year % 100;
