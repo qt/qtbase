@@ -1301,6 +1301,16 @@ void tst_QAccessibility::tabTest()
     child2->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
     QCOMPARE(tabBar->currentIndex(), 1);
 
+    // Test that setAccessibleTabName changes a tab's accessible name
+    tabBar->setAccessibleTabName(0, "AccFoo");
+    tabBar->setAccessibleTabName(1, "AccBar");
+    QCOMPARE(child1->text(QAccessible::Name), QLatin1String("AccFoo"));
+    QCOMPARE(child2->text(QAccessible::Name), QLatin1String("AccBar"));
+    tabBar->setCurrentIndex(0);
+    QCOMPARE(interface->text(QAccessible::Name), QLatin1String("AccFoo"));
+    tabBar->setCurrentIndex(1);
+    QCOMPARE(interface->text(QAccessible::Name), QLatin1String("AccBar"));
+
     delete tabBar;
     QTestAccessibility::clearEvents();
 }
@@ -1338,9 +1348,16 @@ void tst_QAccessibility::tabWidgetTest()
     QCOMPARE(tabButton1Interface->text(QAccessible::Name), QLatin1String("Tab 1"));
 
     QAccessibleInterface* tabButton2Interface = tabBarInterface->child(1);
-    QVERIFY(tabButton1Interface);
+    QVERIFY(tabButton2Interface);
     QCOMPARE(tabButton2Interface->role(), QAccessible::PageTab);
     QCOMPARE(tabButton2Interface->text(QAccessible::Name), QLatin1String("Tab 2"));
+
+    // Test that setAccessibleTabName changes a tab's accessible name
+    tabWidget->setCurrentIndex(0);
+    tabWidget->tabBar()->setAccessibleTabName(0, "Acc Tab");
+    QCOMPARE(tabButton1Interface->role(), QAccessible::PageTab);
+    QCOMPARE(tabButton1Interface->text(QAccessible::Name), QLatin1String("Acc Tab"));
+    QCOMPARE(tabBarInterface->text(QAccessible::Name), QLatin1String("Acc Tab"));
 
     QAccessibleInterface* tabButtonLeft = tabBarInterface->child(2);
     QVERIFY(tabButtonLeft);

@@ -131,6 +131,9 @@ public:
         QWidget *rightWidget;
         int lastTab;
         int dragOffset;
+#ifndef QT_NO_ACCESSIBILITY
+        QString accessibleName;
+#endif
 
 #ifndef QT_NO_ANIMATION
         ~Tab() { delete animation; }

@@ -2522,6 +2522,34 @@ QWidget *QTabBar::tabButton(int index, ButtonPosition position) const
         return d->tabList.at(index).rightWidget;
 }
 
+#ifndef QT_NO_ACCESSIBILITY
+/*!
+    Sets the accessibleName of the tab at position \a index to \a name.
+*/
+void QTabBar::setAccessibleTabName(int index, const QString &name)
+{
+    Q_D(QTabBar);
+    if (QTabBarPrivate::Tab *tab = d->at(index)) {
+        tab->accessibleName = name;
+        QAccessibleEvent event(this, QAccessible::NameChanged);
+        event.setChild(index);
+        QAccessible::updateAccessibility(&event);
+    }
+}
+
+/*!
+    Returns the accessibleName of the tab at position \a index, or an empty
+    string if \a index is out of range.
+*/
+QString QTabBar::accessibleTabName(int index) const
+{
+    Q_D(const QTabBar);
+    if (const QTabBarPrivate::Tab *tab = d->at(index))
+        return tab->accessibleName;
+    return QString();
+}
+#endif // QT_NO_ACCESSIBILITY
+
 CloseButton::CloseButton(QWidget *parent)
     : QAbstractButton(parent)
 {

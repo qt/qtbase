@@ -120,19 +120,26 @@ public:
     {
         if (!isValid())
             return QString();
+        QString str;
         switch (t) {
         case QAccessible::Name:
-            return qt_accStripAmp(m_parent->tabText(m_index));
+            str = m_parent->accessibleTabName(m_index);
+            if (str.isEmpty())
+                str = qt_accStripAmp(m_parent->tabText(m_index));
+            break;
         case QAccessible::Accelerator:
-            return qt_accHotKey(m_parent->tabText(m_index));
+            str = qt_accHotKey(m_parent->tabText(m_index));
+            break;
         case QAccessible::Description:
-            return m_parent->tabToolTip(m_index);
+            str = m_parent->tabToolTip(m_index);
+            break;
         case QAccessible::Help:
-            return m_parent->tabWhatsThis(m_index);
+            str = m_parent->tabWhatsThis(m_index);
+            break;
         default:
             break;
         }
-        return QString();
+        return str;
     }
 
     void setText(QAccessible::Text, const QString &) Q_DECL_OVERRIDE {}
@@ -237,7 +244,12 @@ int QAccessibleTabBar::childCount() const
 QString QAccessibleTabBar::text(QAccessible::Text t) const
 {
     if (t == QAccessible::Name) {
-        return qt_accStripAmp(tabBar()->tabText(tabBar()->currentIndex()));
+        const QTabBar *tBar = tabBar();
+        int idx = tBar->currentIndex();
+        QString str = tBar->accessibleTabName(idx);
+        if (str.isEmpty())
+            str = qt_accStripAmp(tBar->tabText(idx));
+        return str;
     } else if (t == QAccessible::Accelerator) {
         return qt_accHotKey(tabBar()->tabText(tabBar()->currentIndex()));
     }

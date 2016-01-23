@@ -172,6 +172,11 @@ public:
     bool changeCurrentOnDrag() const;
     void setChangeCurrentOnDrag(bool change);
 
+#ifndef QT_NO_ACCESSIBILITY
+    QString accessibleTabName(int index) const;
+    void setAccessibleTabName(int index, const QString &name);
+#endif
+
 public Q_SLOTS:
     void setCurrentIndex(int index);
 
