@@ -80,7 +80,7 @@ public:
 
 Q_GLOBAL_STATIC(QSystemLocaleSingleton, QSystemLocale_globalSystemLocale)
 static QLocaleData *system_data = 0;
-Q_GLOBAL_STATIC(QLocaleData, globalLocaleData)
+static QLocaleData globalLocaleData;
 #endif
 
 /******************************************************************************
@@ -595,7 +595,7 @@ void QLocalePrivate::updateSystemPrivate()
 {
     const QSystemLocale *sys_locale = systemLocale();
     if (!system_data)
-        system_data = globalLocaleData();
+        system_data = &globalLocaleData;
 
     // tell the object that the system locale has changed.
     sys_locale->query(QSystemLocale::LocaleChanged, QVariant());
