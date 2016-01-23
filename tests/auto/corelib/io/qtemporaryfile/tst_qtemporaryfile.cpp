@@ -540,15 +540,16 @@ void tst_QTemporaryFile::keepOpenMode()
     {
         QTemporaryFile file;
         QVERIFY(file.open());
+        QCOMPARE(file.openMode(), QIODevice::ReadWrite);
         QCOMPARE(file.write(data), (qint64)data.size());
         QVERIFY(file.rename("temporary-file.txt"));
 
         QVERIFY(((QFile &)file).open(QIODevice::ReadOnly));
-        QVERIFY(QIODevice::ReadOnly == file.openMode());
+        QCOMPARE(file.openMode(), QIODevice::ReadOnly);
         QCOMPARE(file.readAll(), data);
 
         QVERIFY(((QFile &)file).open(QIODevice::WriteOnly));
-        QVERIFY(QIODevice::WriteOnly == file.openMode());
+        QCOMPARE(file.openMode(), QIODevice::WriteOnly);
     }
 }
 
