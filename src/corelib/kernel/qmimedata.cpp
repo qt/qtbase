@@ -628,7 +628,9 @@ QStringList QMimeData::formats() const
 {
     Q_D(const QMimeData);
     QStringList list;
-    for (int i=0; i<d->dataList.size(); i++)
+    const int size = d->dataList.size();
+    list.reserve(size);
+    for (int i = 0; i < size; ++i)
         list += d->dataList.at(i).format;
     return list;
 }
