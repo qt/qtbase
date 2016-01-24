@@ -446,7 +446,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             break;
 #endif
         case QVariant::Bool:
-            *str = QLatin1String(d->data.b ? "true" : "false");
+            *str = d->data.b ? QStringLiteral("true") : QStringLiteral("false");
             break;
         case QVariant::ByteArray:
             *str = QString::fromUtf8(v_cast<QByteArray>(d)->constData());
