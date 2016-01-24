@@ -490,7 +490,7 @@ bool QTranslator::load(const QString & filename, const QString & directory,
     QString fname = filename;
     QString realname;
     QString delims;
-    delims = search_delimiters.isNull() ? QString::fromLatin1("_.") : search_delimiters;
+    delims = search_delimiters.isNull() ? QStringLiteral("_.") : search_delimiters;
 
     for (;;) {
         QFileInfo fi;
@@ -528,7 +528,7 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
     QTranslatorPrivate *d = this;
     bool ok = false;
 
-    if (realname.startsWith(':')) {
+    if (realname.startsWith(QLatin1Char(':'))) {
         // If the translation is in a non-compressed resource file, the data is already in
         // memory, so no need to use QFile to copy it again.
         Q_ASSERT(!d->resource);
