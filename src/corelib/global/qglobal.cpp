@@ -3540,7 +3540,11 @@ int qrand()
 
     \snippet code/src_corelib_global_qglobal.cpp 33
 
-    \sa Q_FOREACH()
+    \note Since Qt 5.7, the use of this macro is discouraged. It will
+    be removed in a future version of Qt. Please use C++11 range-for,
+    possibly with qAsConst(), as needed.
+
+    \sa qAsConst()
 */
 
 /*!
@@ -3552,7 +3556,11 @@ int qrand()
     This macro is available even when \c no_keywords is specified
     using the \c .pro file's \c CONFIG variable.
 
-    \sa foreach()
+    \note Since Qt 5.7, the use of this macro is discouraged. It will
+    be removed in a future version of Qt. Please use C++11 range-for,
+    possibly with qAsConst(), as needed.
+
+    \sa qAsConst()
 */
 
 /*!
