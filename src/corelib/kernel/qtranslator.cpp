@@ -91,6 +91,8 @@ static const uchar magic[MagicLength] = {
     0xcd, 0x21, 0x1c, 0xbf, 0x60, 0xa1, 0xbd, 0xdd
 };
 
+static inline QString dotQmLiteral() { return QStringLiteral(".qm"); }
+
 static bool match(const uchar *found, uint foundLen, const char *target, uint targetLen)
 {
     // catch the case if \a found has a zero-terminating symbol and \a len includes it.
@@ -484,6 +486,7 @@ bool QTranslator::load(const QString & filename, const QString & directory,
             prefix += QLatin1Char('/');
     }
 
+    const QString suffixOrDotQM = suffix.isNull() ? dotQmLiteral() : suffix;
     QString fname = filename;
     QString realname;
     QString delims;
@@ -492,7 +495,7 @@ bool QTranslator::load(const QString & filename, const QString & directory,
     for (;;) {
         QFileInfo fi;
 
-        realname = prefix + fname + (suffix.isNull() ? QString::fromLatin1(".qm") : suffix);
+        realname = prefix + fname + suffixOrDotQM;
         fi.setFile(realname);
         if (fi.isReadable() && fi.isFile())
             break;
@@ -638,7 +641,7 @@ static QString find_translation(const QLocale & locale,
         if (!path.isEmpty() && !path.endsWith(QLatin1Char('/')))
             path += QLatin1Char('/');
     }
-    const QString suffixOrDotQM = suffix.isNull() ? QStringLiteral(".qm") : suffix;
+    const QString suffixOrDotQM = suffix.isNull() ? dotQmLiteral() : suffix;
 
     QString realname;
     realname += path + filename + prefix; // using += in the hope for some reserve capacity
