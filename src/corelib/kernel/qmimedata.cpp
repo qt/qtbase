@@ -46,6 +46,12 @@
 
 QT_BEGIN_NAMESPACE
 
+static inline QString textUriListLiteral() { return QStringLiteral("text/uri-list"); }
+static inline QString textHtmlLiteral() { return QStringLiteral("text/html"); }
+static inline QString textPlainLiteral() { return QStringLiteral("text/plain"); }
+static inline QString applicationXColorLiteral() { return QStringLiteral("application/x-color"); }
+static inline QString applicationXQtImageLiteral() { return QStringLiteral("application/x-qt-image"); }
+
 struct QMimeDataStruct
 {
     QString format;
@@ -107,7 +113,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
 
     // Text data requested: fallback to URL data if available
     if (format == QLatin1String("text/plain") && !data.isValid()) {
-        data = retrieveTypedData(QLatin1String("text/uri-list"), QVariant::List);
+        data = retrieveTypedData(textUriListLiteral(), QVariant::List);
         if (data.type() == QVariant::Url) {
             data = QVariant(data.toUrl().toDisplayString());
         } else if (data.type() == QVariant::List) {
@@ -331,7 +337,7 @@ QMimeData::~QMimeData()
 QList<QUrl> QMimeData::urls() const
 {
     Q_D(const QMimeData);
-    QVariant data = d->retrieveTypedData(QLatin1String("text/uri-list"), QVariant::List);
+    QVariant data = d->retrieveTypedData(textUriListLiteral(), QVariant::List);
     QList<QUrl> urls;
     if (data.type() == QVariant::Url)
         urls.append(data.toUrl());
@@ -365,7 +371,7 @@ void QMimeData::setUrls(const QList<QUrl> &urls)
     for (int i = 0; i < numUrls; ++i)
         list.append(urls.at(i));
 
-    d->setData(QLatin1String("text/uri-list"), list);
+    d->setData(textUriListLiteral(), list);
 }
 
 /*!
@@ -378,7 +384,7 @@ void QMimeData::setUrls(const QList<QUrl> &urls)
 */
 bool QMimeData::hasUrls() const
 {
-    return hasFormat(QLatin1String("text/uri-list"));
+    return hasFormat(textUriListLiteral());
 }
 
 
@@ -391,7 +397,7 @@ bool QMimeData::hasUrls() const
 QString QMimeData::text() const
 {
     Q_D(const QMimeData);
-    QVariant data = d->retrieveTypedData(QLatin1String("text/plain"), QVariant::String);
+    QVariant data = d->retrieveTypedData(textPlainLiteral(), QVariant::String);
     return data.toString();
 }
 
@@ -404,7 +410,7 @@ QString QMimeData::text() const
 void QMimeData::setText(const QString &text)
 {
     Q_D(QMimeData);
-    d->setData(QLatin1String("text/plain"), text);
+    d->setData(textPlainLiteral(), text);
 }
 
 /*!
@@ -415,7 +421,7 @@ void QMimeData::setText(const QString &text)
 */
 bool QMimeData::hasText() const
 {
-    return hasFormat(QLatin1String("text/plain")) || hasUrls();
+    return hasFormat(textPlainLiteral()) || hasUrls();
 }
 
 /*!
@@ -427,7 +433,7 @@ bool QMimeData::hasText() const
 QString QMimeData::html() const
 {
     Q_D(const QMimeData);
-    QVariant data = d->retrieveTypedData(QLatin1String("text/html"), QVariant::String);
+    QVariant data = d->retrieveTypedData(textHtmlLiteral(), QVariant::String);
     return data.toString();
 }
 
@@ -440,7 +446,7 @@ QString QMimeData::html() const
 void QMimeData::setHtml(const QString &html)
 {
     Q_D(QMimeData);
-    d->setData(QLatin1String("text/html"), html);
+    d->setData(textHtmlLiteral(), html);
 }
 
 /*!
@@ -451,7 +457,7 @@ void QMimeData::setHtml(const QString &html)
 */
 bool QMimeData::hasHtml() const
 {
-    return hasFormat(QLatin1String("text/html"));
+    return hasFormat(textHtmlLiteral());
 }
 
 /*!
@@ -469,7 +475,7 @@ bool QMimeData::hasHtml() const
 QVariant QMimeData::imageData() const
 {
     Q_D(const QMimeData);
-    return d->retrieveTypedData(QLatin1String("application/x-qt-image"), QVariant::Image);
+    return d->retrieveTypedData(applicationXQtImageLiteral(), QVariant::Image);
 }
 
 /*!
@@ -486,7 +492,7 @@ QVariant QMimeData::imageData() const
 void QMimeData::setImageData(const QVariant &image)
 {
     Q_D(QMimeData);
-    d->setData(QLatin1String("application/x-qt-image"), image);
+    d->setData(applicationXQtImageLiteral(), image);
 }
 
 /*!
@@ -497,7 +503,7 @@ void QMimeData::setImageData(const QVariant &image)
 */
 bool QMimeData::hasImage() const
 {
-    return hasFormat(QLatin1String("application/x-qt-image"));
+    return hasFormat(applicationXQtImageLiteral());
 }
 
 /*!
@@ -516,7 +522,7 @@ bool QMimeData::hasImage() const
 QVariant QMimeData::colorData() const
 {
     Q_D(const QMimeData);
-    return d->retrieveTypedData(QLatin1String("application/x-color"), QVariant::Color);
+    return d->retrieveTypedData(applicationXColorLiteral(), QVariant::Color);
 }
 
 /*!
@@ -529,7 +535,7 @@ QVariant QMimeData::colorData() const
 void QMimeData::setColorData(const QVariant &color)
 {
     Q_D(QMimeData);
-    d->setData(QLatin1String("application/x-color"), color);
+    d->setData(applicationXColorLiteral(), color);
 }
 
 
@@ -541,7 +547,7 @@ void QMimeData::setColorData(const QVariant &color)
 */
 bool QMimeData::hasColor() const
 {
-    return hasFormat(QLatin1String("application/x-color"));
+    return hasFormat(applicationXColorLiteral());
 }
 
 /*!
