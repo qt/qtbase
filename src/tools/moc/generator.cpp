@@ -150,16 +150,17 @@ bool Generator::registerableMetaType(const QByteArray &propertyType)
 #undef STREAM_SMART_POINTER
         ;
 
-    foreach (const QByteArray &smartPointer, smartPointers)
+    for (const QByteArray &smartPointer : smartPointers) {
         if (propertyType.startsWith(smartPointer + "<") && !propertyType.endsWith("&"))
             return knownQObjectClasses.contains(propertyType.mid(smartPointer.size() + 1, propertyType.size() - smartPointer.size() - 1 - 1));
+    }
 
     static const QVector<QByteArray> oneArgTemplates = QVector<QByteArray>()
 #define STREAM_1ARG_TEMPLATE(TEMPLATENAME) << #TEMPLATENAME
       QT_FOR_EACH_AUTOMATIC_TEMPLATE_1ARG(STREAM_1ARG_TEMPLATE)
 #undef STREAM_1ARG_TEMPLATE
     ;
-    foreach (const QByteArray &oneArgTemplateType, oneArgTemplates)
+    for (const QByteArray &oneArgTemplateType : oneArgTemplates) {
         if (propertyType.startsWith(oneArgTemplateType + "<") && propertyType.endsWith(">")) {
             const int argumentSize = propertyType.size() - oneArgTemplateType.size() - 1
                                      // The closing '>'
@@ -169,6 +170,7 @@ bool Generator::registerableMetaType(const QByteArray &propertyType)
             const QByteArray templateArg = propertyType.mid(oneArgTemplateType.size() + 1, argumentSize);
             return isBuiltinType(templateArg) || registerableMetaType(templateArg);
         }
+    }
     return false;
 }
 
@@ -1202,10 +1204,14 @@ void Generator::generateStaticMetacall()
                 fprintf(out, "        case %d:\n", it.key());
                 fprintf(out, "            switch (*reinterpret_cast<int*>(_a[1])) {\n");
                 fprintf(out, "            default: *reinterpret_cast<int*>(_a[0]) = -1; break;\n");
-                foreach (const QByteArray &key, it->uniqueKeys()) {
-                    foreach (int argumentID, it->values(key))
-                        fprintf(out, "            case %d:\n", argumentID);
-                    fprintf(out, "                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< %s >(); break;\n", key.constData());
+                auto jt = it->begin();
+                const auto jend = it->end();
+                while (jt != jend) {
+                    fprintf(out, "            case %d:\n", jt.value());
+                    const QByteArray &lastKey = jt.key();
+                    ++jt;
+                    if (jt == jend || jt.key() != lastKey)
+                        fprintf(out, "                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< %s >(); break;\n", lastKey.constData());
                 }
                 fprintf(out, "            }\n");
                 fprintf(out, "            break;\n");
@@ -1257,7 +1263,7 @@ void Generator::generateStaticMetacall()
         needElse = true;
     }
 
-    QMultiMap<QByteArray, int> automaticPropertyMetaTypes = automaticPropertyMetaTypesHelper();
+    const QMultiMap<QByteArray, int> automaticPropertyMetaTypes = automaticPropertyMetaTypesHelper();
 
     if (!automaticPropertyMetaTypes.isEmpty()) {
         if (needElse)
@@ -1267,10 +1273,14 @@ void Generator::generateStaticMetacall()
         fprintf(out, "if (_c == QMetaObject::RegisterPropertyMetaType) {\n");
         fprintf(out, "        switch (_id) {\n");
         fprintf(out, "        default: *reinterpret_cast<int*>(_a[0]) = -1; break;\n");
-        foreach (const QByteArray &key, automaticPropertyMetaTypes.uniqueKeys()) {
-            foreach (int propertyID, automaticPropertyMetaTypes.values(key))
-                fprintf(out, "        case %d:\n", propertyID);
-            fprintf(out, "            *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< %s >(); break;\n", key.constData());
+        auto it = automaticPropertyMetaTypes.begin();
+        const auto end = automaticPropertyMetaTypes.end();
+        while (it != end) {
+            fprintf(out, "        case %d:\n", it.value());
+            const QByteArray &lastKey = it.key();
+            ++it;
+            if (it == end || it.key() != lastKey)
+                fprintf(out, "            *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< %s >(); break;\n", lastKey.constData());
         }
         fprintf(out, "        }\n");
         fprintf(out, "    }\n");
@@ -1561,8 +1571,8 @@ void Generator::generatePluginMetaData()
     data.insert(QStringLiteral("MetaData"), cdef->pluginData.metaData.object());
 
     // Add -M args from the command line:
-    foreach (const QString &key, cdef->pluginData.metaArgs.keys())
-        data.insert(key, cdef->pluginData.metaArgs.value(key));
+    for (auto it = cdef->pluginData.metaArgs.cbegin(), end = cdef->pluginData.metaArgs.cend(); it != end; ++it)
+        data.insert(it.key(), it.value());
 
     fputs("\nQT_PLUGIN_METADATA_SECTION const uint qt_section_alignment_dummy = 42;\n\n"
           "#ifdef QT_NO_DEBUG\n", out);
