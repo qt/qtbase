@@ -568,7 +568,7 @@ void QColumnViewPrivate::closeColumns(const QModelIndex &parent, bool build)
     bool clearAll = !parent.isValid();
     bool passThroughRoot = false;
 
-    QList<QModelIndex> dirsToAppend;
+    QVector<QModelIndex> dirsToAppend;
 
     // Find the last column that matches the parent's tree
     int currentColumn = -1;

@@ -3452,7 +3452,7 @@ void QFileDialogPrivate::_q_autoCompleteFileName(const QString &text)
     const QStringList multipleFiles = typedFiles();
     if (multipleFiles.count() > 0) {
         QModelIndexList oldFiles = qFileDialogUi->listView->selectionModel()->selectedRows();
-        QModelIndexList newFiles;
+        QVector<QModelIndex> newFiles;
         for (const auto &file : multipleFiles) {
             QModelIndex idx = model->index(file);
             if (oldFiles.removeAll(idx) == 0)
