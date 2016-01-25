@@ -1169,7 +1169,7 @@ HRESULT QWinRTScreen::onVisibilityChanged(ICoreWindow *, IVisibilityChangedEvent
     Q_D(QWinRTScreen);
     boolean visible;
     HRESULT hr = args ? args->get_Visible(&visible) : d->coreWindow->get_Visible(&visible);
-    RETURN_OK_IF_FAILED("Failed to get visbile.");
+    RETURN_OK_IF_FAILED("Failed to get visibility.");
     QWindowSystemInterface::handleApplicationStateChanged(visible ? Qt::ApplicationActive : Qt::ApplicationHidden);
     if (visible)
         handleExpose();
