@@ -110,7 +110,7 @@ void tst_QFontCache::clear()
         fontEngine->ref.ref();
 
         // cache the engine once again; there is a special case when the engine is cached more than once
-        QFontCache::instance()->insertEngine(QFontCache::Key(QFontDef(), 0, 0), fontEngine);
+        QFontCache::instance()->insertEngine(QFontCache::Key(QFontDef(), 0, 1), fontEngine);
     }
 
     // use it:

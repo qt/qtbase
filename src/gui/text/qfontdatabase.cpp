@@ -935,7 +935,6 @@ QFontEngine *loadSingleEngine(int script,
             engine = fontCache->findEngine(key);
             key.script = script;
             if (engine) {
-                Q_ASSERT(engine->type() != QFontEngine::Multi);
                 // Also check for OpenType tables when using complex scripts
                 if (Q_UNLIKELY(!engine->supportsScript(QChar::Script(script)))) {
                     qWarning("  OpenType support missing for script %d", script);
@@ -958,7 +957,6 @@ QFontEngine *loadSingleEngine(int script,
 
         engine = pfdb->fontEngine(def, size->handle);
         if (engine) {
-            Q_ASSERT(engine->type() != QFontEngine::Multi);
             // Also check for OpenType tables when using complex scripts
             if (!engine->supportsScript(QChar::Script(script))) {
                 qWarning("  OpenType support missing for script %d", script);
@@ -986,7 +984,7 @@ QFontEngine *loadEngine(int script, const QFontDef &request,
                         QtFontStyle *style, QtFontSize *size)
 {
     QFontEngine *engine = loadSingleEngine(script, request, family, foundry, style, size);
-    Q_ASSERT(!engine || engine->type() != QFontEngine::Multi);
+
     if (engine && !(request.styleStrategy & QFont::NoFontMerging) && !engine->symbol) {
         QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
         QFontEngineMulti *pfMultiEngine = pfdb->fontEngineMulti(engine, QChar::Script(script));
