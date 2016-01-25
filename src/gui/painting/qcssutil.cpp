@@ -337,8 +337,10 @@ static bool paintsOver(const QCss::BorderStyle *styles, const QBrush *colors, QC
     if (s2 == BorderStyle_None || colors[e2] == Qt::transparent)
         return true;
 
-    if ((s1 == BorderStyle_Solid && s2 == BorderStyle_Solid) && (colors[e1] == colors[e2]))
+    if ((s1 == BorderStyle_Solid && s2 == BorderStyle_Solid) && (colors[e1] == colors[e2])
+            && colors[e1].isOpaque()) {
         return true;
+    }
 
     return false;
 }
