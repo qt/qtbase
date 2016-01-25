@@ -612,9 +612,10 @@ bool RCCResourceLibrary::addFile(const QString &alias, const RCCFileInfo &file)
     for (ChildConstIterator it = cbegin; it != cend; ++it) {
         if (it.key() == filename && it.value()->m_language == s->m_language &&
             it.value()->m_country == s->m_country) {
-            foreach (const QString &name, m_fileNames)
+            for (const QString &name : qAsConst(m_fileNames)) {
                 qWarning("%s: Warning: potential duplicate alias detected: '%s'",
                 qPrintable(name), qPrintable(filename));
+            }
             break;
         }
     }

@@ -49,9 +49,9 @@ QT_BEGIN_NAMESPACE
 
 void dumpRecursive(const QDir &dir, QTextStream &out)
 {
-    QFileInfoList entries = dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot
-                                              | QDir::NoSymLinks);
-    foreach (const QFileInfo &entry, entries) {
+    const QFileInfoList entries = dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot
+                                                    | QDir::NoSymLinks);
+    for (const QFileInfo &entry : entries) {
         if (entry.isDir()) {
             dumpRecursive(entry.filePath(), out);
         } else {
@@ -194,7 +194,7 @@ int runRcc(int argc, char *argv[])
     const bool projectRequested = parser.isSet(projectOption);
     const QStringList filenamesIn = parser.positionalArguments();
 
-    foreach (const QString &file, filenamesIn) {
+    for (const QString &file : filenamesIn) {
         if (file == QLatin1String("-"))
             continue;
         else if (!QFile::exists(file)) {
