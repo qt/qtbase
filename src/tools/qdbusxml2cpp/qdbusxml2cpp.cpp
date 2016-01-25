@@ -306,17 +306,14 @@ static QString classNameForInterface(const QString &interface, ClassType classTy
     if (!globalClassName.isEmpty())
         return globalClassName;
 
-    QStringList parts = interface.split(QLatin1Char('.'));
+    const auto parts = interface.splitRef(QLatin1Char('.'));
 
     QString retval;
-    if (classType == Proxy)
-        foreach (QString part, parts) {
-            part[0] = part[0].toUpper();
-            retval += part;
-        }
-    else {
-        retval = parts.last();
-        retval[0] = retval[0].toUpper();
+    if (classType == Proxy) {
+        for (const auto &part : parts)
+            retval += part[0].toUpper() + part.mid(1);
+    } else {
+        retval += parts.last()[0].toUpper() + parts.last().mid(1);
     }
 
     if (classType == Proxy)
