@@ -86,8 +86,9 @@ static const char help[] =
 int qDBusParametersForMethod(const FunctionDef &mm, QVector<int>& metaTypes, QString &errorMsg)
 {
     QList<QByteArray> parameterTypes;
+    parameterTypes.reserve(mm.arguments.size());
 
-    foreach (const ArgumentDef &arg, mm.arguments)
+    for (const ArgumentDef &arg : mm.arguments)
         parameterTypes.append(arg.normalizedType);
 
     return qDBusParametersForMethod(parameterTypes, metaTypes, errorMsg);
@@ -200,7 +201,7 @@ static QString generateInterfaceXml(const ClassDef *mo)
     if (flags & (QDBusConnection::ExportScriptableProperties |
                  QDBusConnection::ExportNonScriptableProperties)) {
         static const char *accessvalues[] = {0, "read", "write", "readwrite"};
-        foreach (const PropertyDef &mp, mo->propertyList) {
+        for (const PropertyDef &mp : mo->propertyList) {
             if (!((!mp.scriptable.isEmpty() && (flags & QDBusConnection::ExportScriptableProperties)) ||
                   (!mp.scriptable.isEmpty() && (flags & QDBusConnection::ExportNonScriptableProperties))))
                 continue;
@@ -235,7 +236,7 @@ static QString generateInterfaceXml(const ClassDef *mo)
     // now add methods:
 
     if (flags & (QDBusConnection::ExportScriptableSignals | QDBusConnection::ExportNonScriptableSignals)) {
-        foreach (const FunctionDef &mm, mo->signalList) {
+        for (const FunctionDef &mm : mo->signalList) {
             if (mm.wasCloned)
                 continue;
             if (!mm.isScriptable && !(flags & QDBusConnection::ExportNonScriptableSignals))
@@ -246,13 +247,13 @@ static QString generateInterfaceXml(const ClassDef *mo)
     }
 
     if (flags & (QDBusConnection::ExportScriptableSlots | QDBusConnection::ExportNonScriptableSlots)) {
-        foreach (const FunctionDef &slot, mo->slotList) {
+        for (const FunctionDef &slot : mo->slotList) {
             if (!slot.isScriptable && !(flags & QDBusConnection::ExportNonScriptableSlots))
                 continue;
             if (slot.access == FunctionDef::Public)
               retval += addFunction(slot);
         }
-        foreach (const FunctionDef &method, mo->methodList) {
+        for (const FunctionDef &method : mo->methodList) {
             if (!method.isScriptable && !(flags & QDBusConnection::ExportNonScriptableSlots))
                 continue;
             if (method.access == FunctionDef::Public)
@@ -266,7 +267,7 @@ QString qDBusInterfaceFromClassDef(const ClassDef *mo)
 {
     QString interface;
 
-    foreach (const ClassInfoDef &cid, mo->classInfoList) {
+    for (const ClassInfoDef &cid : mo->classInfoList) {
         if (cid.name == QCLASSINFO_DBUS_INTERFACE)
             return QString::fromUtf8(cid.value);
     }
@@ -289,7 +290,7 @@ QString qDBusInterfaceFromClassDef(const ClassDef *mo)
 
 QString qDBusGenerateClassDefXml(const ClassDef *cdef)
 {
-    foreach (const ClassInfoDef &cid, cdef->classInfoList) {
+    for (const ClassInfoDef &cid : cdef->classInfoList) {
         if (cid.name == QCLASSINFO_DBUS_INTROSPECTION)
             return QString::fromUtf8(cid.value);
     }
@@ -444,7 +445,7 @@ int main(int argc, char **argv)
 
     output.write(docTypeHeader);
     output.write("<node>\n");
-    foreach (const ClassDef &cdef, classes) {
+    for (const ClassDef &cdef : qAsConst(classes)) {
         QString xml = qDBusGenerateClassDefXml(&cdef);
         output.write(xml.toLocal8Bit());
     }
