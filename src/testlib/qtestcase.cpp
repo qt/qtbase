@@ -1694,8 +1694,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
             handler.reset(new FatalSignalHandler);
 #endif
         TestMethods::MetaMethods commandLineMethods;
-        if (!QTest::testFunctions.isEmpty()) {
-            foreach (const QString &tf, QTest::testFunctions) {
+        for (const QString &tf : qAsConst(QTest::testFunctions)) {
                 const QByteArray tfB = tf.toLatin1();
                 const QByteArray signature = tfB + QByteArrayLiteral("()");
                 QMetaMethod m = TestMethods::findMethod(testObject, signature.constData());
@@ -1706,7 +1705,6 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
                     exit(1);
                 }
                 commandLineMethods.push_back(m);
-            }
         }
         TestMethods test(testObject, commandLineMethods);
         test.invokeTests(testObject);

@@ -151,7 +151,7 @@ public:
         return res;
     }
     static bool containsEvent(QAccessibleEvent *event) {
-        Q_FOREACH (const QAccessibleEvent *ev, eventList()) {
+        for (const QAccessibleEvent *ev : qAsConst(eventList())) {
             if (*ev == *event)
                 return true;
         }
@@ -285,7 +285,7 @@ private:
         QDebug str = QDebug(&rc).nospace();
         str << "Event " << *needle
             <<  " not found at head of event list of size " << haystack.size() << " :";
-        Q_FOREACH (const QAccessibleEvent *e, haystack)
+        for (const QAccessibleEvent *e : haystack)
             str << ' ' << *e;
         return rc;
     }
