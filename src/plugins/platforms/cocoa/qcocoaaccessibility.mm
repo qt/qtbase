@@ -51,7 +51,7 @@ QCocoaAccessibility::~QCocoaAccessibility()
 
 void QCocoaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
-    if (!isActive() || !event->accessibleInterface())
+    if (!isActive() || !event->accessibleInterface() || !event->accessibleInterface()->isValid())
         return;
     QMacAccessibilityElement *element = [QMacAccessibilityElement elementWithId: event->uniqueId()];
     if (!element) {
