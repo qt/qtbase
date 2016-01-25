@@ -2221,8 +2221,8 @@ QList<WriteInitialization::Item *> WriteInitialization::initializeTreeWidgetItem
         // AbstractFromBuilder saves flags last, so they always end up in the last column's map.
         addQtFlagsInitializer(item, map, QLatin1String("flags"));
 
-        QList<Item *> subItems = initializeTreeWidgetItems(domItem->elementItem());
-        foreach (Item *subItem, subItems)
+        const QList<Item *> subItems = initializeTreeWidgetItems(domItem->elementItem());
+        for (Item *subItem : subItems)
             item->addChild(subItem);
     }
     return items;
@@ -2465,7 +2465,7 @@ void WriteInitialization::acceptWidgetScripts(const DomScripts &widgetScripts, D
 
     // concatenate script snippets
     QString script;
-    foreach (const DomScript *domScript, scripts) {
+    for (const DomScript *domScript : qAsConst(scripts)) {
         const QString snippet = domScript->text();
         if (!snippet.isEmpty()) {
             script += snippet.trimmed();
@@ -2479,9 +2479,8 @@ void WriteInitialization::acceptWidgetScripts(const DomScripts &widgetScripts, D
     m_output << m_indent << "childWidgets.clear();\n";
     if (!childWidgets.empty()) {
         m_output << m_indent <<  "childWidgets";
-        foreach (DomWidget *child, childWidgets) {
+        for (DomWidget *child : childWidgets)
             m_output << " << " << m_driver->findOrInsertWidget(child);
-        }
         m_output << ";\n";
     }
     m_output << m_indent << "scriptContext.run("
@@ -2529,8 +2528,7 @@ WriteInitialization::Item::Item(const QString &itemClassName, const QString &ind
 
 WriteInitialization::Item::~Item()
 {
-    foreach (Item *child, m_children)
-        delete child;
+    qDeleteAll(m_children);
 }
 
 QString WriteInitialization::Item::writeSetupUi(const QString &parent, Item::EmptyItemPolicy emptyItemPolicy)
@@ -2567,7 +2565,7 @@ QString WriteInitialization::Item::writeSetupUi(const QString &parent, Item::Emp
         closeIfndef(m_setupUiStream, it.key());
         ++it;
     }
-    foreach (Item *child, m_children)
+    for (Item *child : qAsConst(m_children))
         child->writeSetupUi(uniqueName);
     return uniqueName;
 }
