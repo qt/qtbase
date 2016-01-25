@@ -159,12 +159,12 @@ void CppGenerator::operator () ()
 
           int r = aut.id (item->rule);
 
-          NameSet lookaheads = aut.lookaheads.value (item);
+          const NameSet lookaheads = aut.lookaheads.value (item);
 
           if (item->rule == grammar.goal)
             accept_state = q;
 
-          foreach (const Name &s, lookaheads)
+          for (const Name &s : lookaheads)
             {
               int &u = ACTION (q, aut.id (s));
 
@@ -448,7 +448,7 @@ void CppGenerator::generateDecl (QTextStream &out)
       << "public:" << endl
       << "  enum VariousConstants {" << endl;
 
-  foreach (Name t, grammar.terminals)
+  for (Name t : qAsConst(grammar.terminals))
     {
       QString name = *t;
       int value = std::distance (grammar.names.begin (), t);
@@ -606,7 +606,7 @@ void CppGenerator::generateImpl (QTextStream &out)
       out << endl << "#ifndef " << prot << endl;
       out << "const int " << grammar.table_name << "::rule_info [] = {";
       idx = 0;
-      for (RulePointer rule = grammar.rules.begin (); rule != grammar.rules.end (); ++rule, ++idx)
+      for (auto rule = grammar.rules.cbegin (); rule != grammar.rules.cend (); ++rule, ++idx)
         {
           out << endl << "  ";
 
@@ -617,7 +617,7 @@ void CppGenerator::generateImpl (QTextStream &out)
 
           out << name_ids.value(rule->lhs);
 
-          foreach (const Name &n, rule->rhs)
+          for (const Name &n : rule->rhs)
             out << ", " << name_ids.value (n);
         }
       out << "};" << endl << endl;

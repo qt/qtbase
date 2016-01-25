@@ -67,10 +67,8 @@ int main (int argc, char *argv[])
   bool qt_copyright = false;
   QString file_name = 0;
 
-  QStringList args = app.arguments ();
-  args.removeFirst ();
-
-  foreach (const QString &arg, args) {
+  const QStringList args = app.arguments().mid(1);
+  for (const QString &arg : args) {
       if (arg == QLatin1String ("-h") || arg == QLatin1String ("--help"))
         help_me ();
 

@@ -410,8 +410,10 @@ void Automaton::buildLookbackSets ()
           if (! _M_grammar->isNonTerminal (A))
             continue;
 
-          foreach (const RulePointer &rule, _M_grammar->rule_map.values (A))
+          const auto range = qAsConst(_M_grammar->rule_map).equal_range(A);
+          for (auto it = range.first; it != range.second; ++it)
             {
+              const RulePointer &rule = *it;
               StatePointer q = p;
 
               for (NameList::iterator dot = rule->rhs.begin (); dot != rule->rhs.end (); ++dot)
@@ -603,8 +605,10 @@ void Automaton::buildIncludesDigraph ()
           if (! _M_grammar->isNonTerminal (name))
             continue;
 
-          foreach (const RulePointer &rule, _M_grammar->rule_map.values (name))
+          const auto range = qAsConst(_M_grammar->rule_map).equal_range(name);
+          for (auto it = range.first; it != range.second; ++it)
             {
+              const RulePointer &rule = *it;
               StatePointer p = pp;
 
               for (NameList::iterator A = rule->rhs.begin (); A != rule->rhs.end (); ++A)
