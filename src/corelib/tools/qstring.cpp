@@ -8800,7 +8800,6 @@ Since this class is only used to refer to string data, and does not take
 ownership of it, no memory is freed when instances are destroyed.
 */
 
-
 /*!
     \fn int QStringRef::position() const
 
@@ -9036,6 +9035,19 @@ bool operator<(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
 
     The \a position must be a valid index position in the string
     (i.e., 0 <= \a position < size()).
+*/
+
+/*!
+    \fn QChar QStringRef::operator[](int position) const
+    \since 5.7
+
+    Returns the character at the given index \a position in the
+    string reference.
+
+    The \a position must be a valid index position in the string
+    reference (i.e., 0 <= \a position < size()).
+
+    \sa at()
 */
 
 /*!

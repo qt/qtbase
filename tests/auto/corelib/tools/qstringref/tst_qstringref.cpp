@@ -41,6 +41,7 @@ class tst_QStringRef : public QObject
 public slots:
     void cleanup();
 private slots:
+    void at();
     void endsWith();
     void startsWith();
     void contains();
@@ -170,6 +171,16 @@ static inline double nan()
 void tst_QStringRef::cleanup()
 {
     QLocale::setDefault(QString(QLatin1Char('C')));
+}
+
+void tst_QStringRef::at()
+{
+    const QString hw = QStringLiteral("Hello World");
+    const QStringRef ref = hw.midRef(6);
+    QCOMPARE(ref.at(0), QChar('W'));
+    QCOMPARE(ref.at(4), QChar('d'));
+    QCOMPARE(ref[0], QChar('W'));
+    QCOMPARE(ref[4], QChar('d'));
 }
 
 void tst_QStringRef::length_data()

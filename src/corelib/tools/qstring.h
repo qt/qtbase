@@ -1462,6 +1462,7 @@ public:
 
     inline const QChar at(int i) const
         { Q_ASSERT(uint(i) < uint(size())); return m_string->at(i + m_position); }
+    QChar operator[](int i) const { return at(i); }
 
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
     // ASCII compatibility
