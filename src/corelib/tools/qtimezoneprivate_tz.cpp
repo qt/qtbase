@@ -627,8 +627,15 @@ void QTzTimeZonePrivate::init(const QByteArray &ianaId)
     // Translate the TZ file into internal format
 
     // Translate the array index based tz_abbrind into list index
-    m_abbreviations = abbrevMap.values();
-    QList<int> abbrindList = abbrevMap.keys();
+    const int size = abbrevMap.size();
+    m_abbreviations.clear();
+    m_abbreviations.reserve(size);
+    QVector<int> abbrindList;
+    abbrindList.reserve(size);
+    for (auto it = abbrevMap.cbegin(), end = abbrevMap.cend(); it != end; ++it) {
+        m_abbreviations.append(it.value());
+        abbrindList.append(it.key());
+    }
     for (int i = 0; i < typeList.size(); ++i)
         typeList[i].tz_abbrind = abbrindList.indexOf(typeList.at(i).tz_abbrind);
 
