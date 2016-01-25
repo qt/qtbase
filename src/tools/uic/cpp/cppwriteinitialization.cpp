@@ -770,22 +770,23 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     //
     // Special handling for qtableview/qtreeview fake header attributes
     //
-    static QStringList realPropertyNames =
-            (QStringList() << QLatin1String("visible")
-                           << QLatin1String("cascadingSectionResizes")
-                           << QLatin1String("defaultSectionSize")
-                           << QLatin1String("highlightSections")
-                           << QLatin1String("minimumSectionSize")
-                           << QLatin1String("showSortIndicator")
-                           << QLatin1String("stretchLastSection"));
+    static const QLatin1String realPropertyNames[] = {
+        QLatin1String("visible"),
+        QLatin1String("cascadingSectionResizes"),
+        QLatin1String("defaultSectionSize"),
+        QLatin1String("highlightSections"),
+        QLatin1String("minimumSectionSize"),
+        QLatin1String("showSortIndicator"),
+        QLatin1String("stretchLastSection"),
+    };
 
     if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QTreeView"))
                || m_uic->customWidgetsInfo()->extends(className, QLatin1String("QTreeWidget"))) {
         DomPropertyList headerProperties;
-        foreach (const QString &realPropertyName, realPropertyNames) {
-            const QString upperPropertyName = realPropertyName.at(0).toUpper()
-                                              + realPropertyName.mid(1);
-            const QString fakePropertyName = QLatin1String("header") + upperPropertyName;
+        for (auto realPropertyName : realPropertyNames) {
+            const QString fakePropertyName = QLatin1String("header")
+                    + QChar(QLatin1Char(realPropertyName.data()[0])).toUpper()
+                    + QLatin1String(realPropertyName.data() + 1, realPropertyName.size() - 1);
             if (DomProperty *fakeProperty = attributes.value(fakePropertyName)) {
                 fakeProperty->setAttributeName(realPropertyName);
                 headerProperties << fakeProperty;
@@ -797,16 +798,17 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     } else if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QTableView"))
                || m_uic->customWidgetsInfo()->extends(className, QLatin1String("QTableWidget"))) {
 
-        static QStringList headerPrefixes =
-                (QStringList() << QLatin1String("horizontalHeader")
-                               << QLatin1String("verticalHeader"));
+        static const QLatin1String headerPrefixes[] = {
+            QLatin1String("horizontalHeader"),
+            QLatin1String("verticalHeader"),
+        };
 
-        foreach (const QString &headerPrefix, headerPrefixes) {
+        for (auto headerPrefix : headerPrefixes) {
             DomPropertyList headerProperties;
-            foreach (const QString &realPropertyName, realPropertyNames) {
-                const QString upperPropertyName = realPropertyName.at(0).toUpper()
-                                                  + realPropertyName.mid(1);
-                const QString fakePropertyName = headerPrefix + upperPropertyName;
+            for (auto realPropertyName : realPropertyNames) {
+                const QString fakePropertyName = headerPrefix
+                        + QChar(QLatin1Char(realPropertyName.data()[0])).toUpper()
+                        + QLatin1String(realPropertyName.data() + 1, realPropertyName.size() - 1);
                 if (DomProperty *fakeProperty = attributes.value(fakePropertyName)) {
                     fakeProperty->setAttributeName(realPropertyName);
                     headerProperties << fakeProperty;
