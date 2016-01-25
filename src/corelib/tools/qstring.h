@@ -99,6 +99,18 @@ public:
     Q_DECL_CONSTEXPR int size() const Q_DECL_NOTHROW { return m_size; }
     Q_DECL_CONSTEXPR const char *data() const Q_DECL_NOTHROW { return m_data; }
 
+    Q_DECL_CONSTEXPR QLatin1Char at(int i) const { return QLatin1Char(m_data[i]); }
+    Q_DECL_CONSTEXPR QLatin1Char operator[](int i) const { return at(i); }
+
+    Q_DECL_CONSTEXPR QLatin1String mid(int pos) const
+    { return QLatin1String(m_data + pos, m_size - pos); }
+    Q_DECL_CONSTEXPR QLatin1String mid(int pos, int n) const
+    { return QLatin1String(m_data + pos, n); }
+    Q_DECL_CONSTEXPR QLatin1String left(int n) const
+    { return QLatin1String(m_data, n); }
+    Q_DECL_CONSTEXPR QLatin1String right(int n) const
+    { return QLatin1String(m_data + m_size - n, n); }
+
     inline bool operator==(const QString &s) const Q_DECL_NOTHROW;
     inline bool operator!=(const QString &s) const Q_DECL_NOTHROW;
     inline bool operator>(const QString &s) const Q_DECL_NOTHROW;

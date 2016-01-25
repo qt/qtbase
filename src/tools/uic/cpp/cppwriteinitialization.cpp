@@ -785,8 +785,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
         DomPropertyList headerProperties;
         for (auto realPropertyName : realPropertyNames) {
             const QString fakePropertyName = QLatin1String("header")
-                    + QChar(QLatin1Char(realPropertyName.data()[0])).toUpper()
-                    + QLatin1String(realPropertyName.data() + 1, realPropertyName.size() - 1);
+                    + QChar(realPropertyName.at(0)).toUpper() + realPropertyName.mid(1);
             if (DomProperty *fakeProperty = attributes.value(fakePropertyName)) {
                 fakeProperty->setAttributeName(realPropertyName);
                 headerProperties << fakeProperty;
@@ -807,8 +806,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
             DomPropertyList headerProperties;
             for (auto realPropertyName : realPropertyNames) {
                 const QString fakePropertyName = headerPrefix
-                        + QChar(QLatin1Char(realPropertyName.data()[0])).toUpper()
-                        + QLatin1String(realPropertyName.data() + 1, realPropertyName.size() - 1);
+                        + QChar(realPropertyName.at(0)).toUpper() + realPropertyName.mid(1);
                 if (DomProperty *fakeProperty = attributes.value(fakePropertyName)) {
                     fakeProperty->setAttributeName(realPropertyName);
                     headerProperties << fakeProperty;
