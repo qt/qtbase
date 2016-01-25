@@ -921,8 +921,10 @@ QFontEngine *loadSingleEngine(int script,
     QFontDef def = request;
     def.pixelSize = pixelSize;
 
+    QFontCache *fontCache = QFontCache::instance();
+
     QFontCache::Key key(def,script);
-    QFontEngine *engine = QFontCache::instance()->findEngine(key);
+    QFontEngine *engine = fontCache->findEngine(key);
     if (!engine) {
         const bool cacheForCommonScript = script != QChar::Script_Common
                 && (family->writingSystems[QFontDatabase::Latin] & QtFontFamily::Supported) != 0;
@@ -930,7 +932,7 @@ QFontEngine *loadSingleEngine(int script,
         if (Q_LIKELY(cacheForCommonScript)) {
             // fast path: check if engine was loaded for another script
             key.script = QChar::Script_Common;
-            engine = QFontCache::instance()->findEngine(key);
+            engine = fontCache->findEngine(key);
             key.script = script;
             if (engine) {
                 Q_ASSERT(engine->type() != QFontEngine::Multi);
@@ -940,7 +942,8 @@ QFontEngine *loadSingleEngine(int script,
                     return 0;
                 }
 
-                QFontCache::instance()->insertEngine(key, engine);
+                fontCache->insertEngine(key, engine);
+
                 return engine;
             }
         }
@@ -964,13 +967,13 @@ QFontEngine *loadSingleEngine(int script,
                 return 0;
             }
 
-            QFontCache::instance()->insertEngine(key, engine);
+            fontCache->insertEngine(key, engine);
 
             if (Q_LIKELY(cacheForCommonScript && !engine->symbol)) {
                 // cache engine for Common script as well
                 key.script = QChar::Script_Common;
-                if (!QFontCache::instance()->findEngine(key))
-                    QFontCache::instance()->insertEngine(key, engine);
+                if (!fontCache->findEngine(key))
+                    fontCache->insertEngine(key, engine);
             }
         }
     }
@@ -2639,12 +2642,14 @@ QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
     }
 #endif
 
+    QFontCache *fontCache = QFontCache::instance();
+
     // Until we specifically asked not to, try looking for Multi font engine
     // first, the last '1' indicates that we want Multi font engine instead
     // of single ones
     bool multi = !(request.styleStrategy & QFont::NoFontMerging);
     QFontCache::Key key(request, script, multi ? 1 : 0);
-    engine = QFontCache::instance()->findEngine(key);
+    engine = fontCache->findEngine(key);
     if (engine) {
         FM_DEBUG("Cache hit level 1");
         return engine;
@@ -2685,7 +2690,7 @@ QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
                 QFontDef def = request;
                 def.family = fallbacks.at(i);
                 QFontCache::Key key(def, script, multi ? 1 : 0);
-                engine = QFontCache::instance()->findEngine(key);
+                engine = fontCache->findEngine(key);
                 if (!engine) {
                     QtFontDesc desc;
                     do {
@@ -2730,12 +2735,13 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
         req.stretch = 100;
 
     if (!d->engineData) {
+        QFontCache *fontCache = QFontCache::instance();
         // look for the requested font in the engine data cache
-        d->engineData = QFontCache::instance()->findEngineData(req);
+        d->engineData = fontCache->findEngineData(req);
         if (!d->engineData) {
             // create a new one
             d->engineData = new QFontEngineData;
-            QFontCache::instance()->insertEngineData(req, d->engineData);
+            fontCache->insertEngineData(req, d->engineData);
         }
         d->engineData->ref.ref();
     }
