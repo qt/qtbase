@@ -343,7 +343,7 @@ QXcbCursor::~QXcbCursor()
         xcb_close_font(conn, cursorFont);
 
 #ifndef QT_NO_CURSOR
-    foreach (xcb_cursor_t cursor, m_cursorHash)
+    for (xcb_cursor_t cursor : qAsConst(m_cursorHash))
         xcb_free_cursor(conn, cursor);
 #endif
 }

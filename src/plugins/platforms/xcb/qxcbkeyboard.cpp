@@ -1038,7 +1038,7 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
             // catch only more specific shortcuts, i.e. Ctrl+Shift+= also generates Ctrl++ and +,
             // but Ctrl++ is more specific than +, so we should skip the last one
             bool ambiguous = false;
-            foreach (int shortcut, result) {
+            for (int shortcut : qAsConst(result)) {
                 if (int(shortcut & ~Qt::KeyboardModifierMask) == qtKey && (shortcut & mods) == mods) {
                     ambiguous = true;
                     break;

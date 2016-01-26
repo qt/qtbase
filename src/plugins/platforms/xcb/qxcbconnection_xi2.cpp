@@ -274,7 +274,7 @@ void QXcbConnection::xi2SetupDevices()
 
 void QXcbConnection::finalizeXInput2()
 {
-    foreach (XInput2TouchDeviceData *dev, m_touchDevices) {
+    for (XInput2TouchDeviceData *dev : qAsConst(m_touchDevices)) {
         if (dev->xiDeviceInfo)
             XIFreeDeviceInfo(dev->xiDeviceInfo);
         delete dev;
@@ -359,7 +359,7 @@ void QXcbConnection::xi2Select(xcb_window_t window)
         scrollBitMask = XI_MotionMask;
         scrollBitMask |= XI_ButtonReleaseMask;
         int i=0;
-        Q_FOREACH (const ScrollingDevice& scrollingDevice, m_scrollingDevices) {
+        for (const ScrollingDevice& scrollingDevice : qAsConst(m_scrollingDevices)) {
             if (tabletDevices.contains(scrollingDevice.deviceId))
                 continue; // All necessary events are already captured.
             xiEventMask[i].deviceid = scrollingDevice.deviceId;

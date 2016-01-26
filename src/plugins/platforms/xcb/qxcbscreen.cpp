@@ -158,7 +158,7 @@ void QXcbVirtualDesktop::updateWorkArea()
     QRect workArea = getWorkArea();
     if (m_workArea != workArea) {
         m_workArea = workArea;
-        foreach (QPlatformScreen *screen, m_screens)
+        for (QPlatformScreen *screen : qAsConst(m_screens))
             ((QXcbScreen *)screen)->updateAvailableGeometry();
     }
 }

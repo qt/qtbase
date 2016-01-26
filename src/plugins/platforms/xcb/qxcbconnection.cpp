@@ -522,7 +522,7 @@ void QXcbConnection::initializeScreens()
         ++xcbScreenNumber;
     } // for each xcb screen
 
-    foreach (QXcbVirtualDesktop *virtualDesktop, m_virtualDesktops)
+    for (QXcbVirtualDesktop *virtualDesktop : qAsConst(m_virtualDesktops))
         virtualDesktop->subscribeToXFixesSelectionNotify();
 
     if (m_virtualDesktops.isEmpty()) {
@@ -537,7 +537,7 @@ void QXcbConnection::initializeScreens()
         }
 
         // Push the screens to QGuiApplication
-        foreach (QXcbScreen *screen, m_screens) {
+        for (QXcbScreen *screen : qAsConst(m_screens)) {
             qCDebug(lcQpaScreen) << "adding" << screen << "(Primary:" << screen->isPrimary() << ")";
             QXcbIntegration::instance()->screenAdded(screen, screen->isPrimary());
         }
@@ -1236,7 +1236,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
 #ifndef QT_NO_CLIPBOARD
             m_clipboard->handleXFixesSelectionRequest(notify_event);
 #endif
-            foreach (QXcbVirtualDesktop *virtualDesktop, m_virtualDesktops)
+            for (QXcbVirtualDesktop *virtualDesktop : qAsConst(m_virtualDesktops))
                 virtualDesktop->handleXFixesSelectionNotify(notify_event);
 
             handled = true;
@@ -1245,7 +1245,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             handled = true;
         } else if (has_randr_extension && response_type == xrandr_first_event + XCB_RANDR_SCREEN_CHANGE_NOTIFY) {
             xcb_randr_screen_change_notify_event_t *change_event = (xcb_randr_screen_change_notify_event_t *)event;
-            foreach (QXcbScreen *s, m_screens) {
+            for (QXcbScreen *s : qAsConst(m_screens)) {
                 if (s->root() == change_event->root )
                     s->handleScreenChange(change_event);
             }
@@ -1736,7 +1736,7 @@ void QXcbConnection::processXcbEvents()
 
     // Indicate with a null event that the event the callbacks are waiting for
     // is not in the queue currently.
-    Q_FOREACH (PeekFunc f, m_peekFuncs)
+    for (PeekFunc f : qAsConst(m_peekFuncs))
         f(this, 0);
     m_peekFuncs.clear();
 
