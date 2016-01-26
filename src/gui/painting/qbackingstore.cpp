@@ -106,7 +106,8 @@ void QBackingStore::flush(const QRegion &region, QWindow *win, const QPoint &off
     }
 #endif
 
-    d_ptr->platformBackingStore->flush(win, QHighDpi::toNativeLocalRegion(region, d_ptr->window), offset);
+    d_ptr->platformBackingStore->flush(win, QHighDpi::toNativeLocalRegion(region, win),
+                                            QHighDpi::toNativeLocalPosition(offset, win));
 }
 
 /*!
