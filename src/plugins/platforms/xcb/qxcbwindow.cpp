@@ -286,7 +286,7 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
 // TODO move this into a utility function in QWindow or QGuiApplication
 static QWindow *childWindowAt(QWindow *win, const QPoint &p)
 {
-    foreach (QObject *obj, win->children()) {
+    for (QObject *obj : win->children()) {
         if (obj->isWindowType()) {
             QWindow *childWin = static_cast<QWindow *>(obj);
             if (childWin->isVisible()) {
