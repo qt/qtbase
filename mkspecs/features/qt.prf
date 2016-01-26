@@ -122,7 +122,7 @@ for(ever) {
         QMAKE_FRAMEWORKPATH *= $$MODULE_FRAMEWORKS
         !isEmpty(MODULE_MODULE) {
             contains(MODULE_CONFIG, lib_bundle) {
-                LIBS$$var_sfx += -framework $$MODULE_MODULE
+                LIBS$$var_sfx += -framework $${MODULE_MODULE}$$qtFrameworkPlatformTargetSuffix()
             } else {
                 !isEmpty(MODULE_LIBS_ADD): \
                     LIBS$$var_sfx += -L$$MODULE_LIBS_ADD
