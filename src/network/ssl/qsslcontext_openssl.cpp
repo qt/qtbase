@@ -243,9 +243,9 @@ init_context:
 
     if (QSslSocketPrivate::s_loadRootCertsOnDemand && allowRootCertOnDemandLoading) {
         // tell OpenSSL the directories where to look up the root certs on demand
-        QList<QByteArray> unixDirs = QSslSocketPrivate::unixRootCertDirectories();
-        for (int a = 0; a < unixDirs.count(); ++a)
-            q_SSL_CTX_load_verify_locations(sslContext->ctx, 0, unixDirs.at(a).constData());
+        const QList<QByteArray> unixDirs = QSslSocketPrivate::unixRootCertDirectories();
+        for (const QByteArray &unixDir : unixDirs)
+            q_SSL_CTX_load_verify_locations(sslContext->ctx, 0, unixDir.constData());
     }
 
     if (!sslContext->sslConfiguration.localCertificate().isNull()) {

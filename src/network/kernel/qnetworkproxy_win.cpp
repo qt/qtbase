@@ -194,7 +194,7 @@ static bool isBypassed(const QString &host, const QStringList &bypassList)
         return true;
 
     // does it match the list of exclusions?
-    foreach (const QString &entry, bypassList) {
+    for (const QString &entry : bypassList) {
         if (entry == QLatin1String("<local>")) {
             if (isSimple)
                 return true;
@@ -241,7 +241,7 @@ static QList<QNetworkProxy> filterProxyListByCapabilities(const QList<QNetworkPr
         break;
     }
     QList<QNetworkProxy> result;
-    foreach (const QNetworkProxy& proxy, proxyList) {
+    for (const QNetworkProxy &proxy : proxyList) {
         if (proxy.capabilities() & requiredCaps)
             result.append(proxy);
     }
@@ -251,7 +251,7 @@ static QList<QNetworkProxy> filterProxyListByCapabilities(const QList<QNetworkPr
 static QList<QNetworkProxy> removeDuplicateProxies(const QList<QNetworkProxy> &proxyList)
 {
     QList<QNetworkProxy> result;
-     foreach (QNetworkProxy proxy, proxyList) {
+    for (const QNetworkProxy &proxy : proxyList) {
          bool append = true;
          for (int i=0; i < result.count(); i++) {
              if (proxy.hostName() == result.at(i).hostName()
@@ -283,7 +283,7 @@ static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, con
     QHash<QString, QNetworkProxy> taggedProxies;
     const QString requiredTag = query.protocolTag();
     bool checkTags = !requiredTag.isEmpty() && query.queryType() != QNetworkProxyQuery::TcpServer; //windows tags are only for clients
-    foreach (const QString &entry, proxyList) {
+    for (const QString &entry : proxyList) {
         int server = 0;
 
         QNetworkProxy::ProxyType proxyType = QNetworkProxy::HttpProxy;

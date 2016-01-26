@@ -1660,7 +1660,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
         }
 
         bool first = true;
-        foreach (const QSslCertificate &cert, certificateChain) {
+        for (const QSslCertificate &cert : certificateChain) {
             if (first) {
                 first = false;
                 continue;

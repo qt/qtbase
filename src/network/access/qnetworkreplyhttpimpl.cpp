@@ -1512,8 +1512,8 @@ QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNe
     cacheHeaders.setAllRawHeaders(metaData.rawHeaders());
     QNetworkHeadersPrivate::RawHeadersList::ConstIterator it;
 
-    QList<QByteArray> newHeaders = q->rawHeaderList();
-    foreach (QByteArray header, newHeaders) {
+    const QList<QByteArray> newHeaders = q->rawHeaderList();
+    for (QByteArray header : newHeaders) {
         QByteArray originalHeader = header;
         header = header.toLower();
         bool hop_by_hop =

@@ -549,11 +549,11 @@ static QStringList libraryPathList()
 Q_NEVER_INLINE
 static QStringList findAllLibs(QLatin1String filter)
 {
-    QStringList paths = libraryPathList();
+    const QStringList paths = libraryPathList();
     QStringList found;
     const QStringList filters((QString(filter)));
 
-    foreach (const QString &path, paths) {
+    for (const QString &path : paths) {
         QDir dir(path);
         QStringList entryList = dir.entryList(filters, QDir::Files);
 
@@ -688,16 +688,16 @@ static QPair<QLibrary*, QLibrary*> loadOpenSsl()
 #endif
 
     // third attempt: loop on the most common library paths and find libssl
-    QStringList sslList = findAllLibSsl();
-    QStringList cryptoList = findAllLibCrypto();
+    const QStringList sslList = findAllLibSsl();
+    const QStringList cryptoList = findAllLibCrypto();
 
-    foreach (const QString &crypto, cryptoList) {
+    for (const QString &crypto : cryptoList) {
         libcrypto->setFileNameAndVersion(crypto, -1);
         if (libcrypto->load()) {
             QFileInfo fi(crypto);
             QString version = fi.completeSuffix();
 
-            foreach (const QString &ssl, sslList) {
+            for (const QString &ssl : sslList) {
                 if (!ssl.endsWith(version))
                     continue;
 

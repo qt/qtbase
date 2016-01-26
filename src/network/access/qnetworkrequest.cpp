@@ -857,8 +857,8 @@ static QVariant parseHttpDate(const QByteArray &raw)
 static QVariant parseCookieHeader(const QByteArray &raw)
 {
     QList<QNetworkCookie> result;
-    QList<QByteArray> cookieList = raw.split(';');
-    foreach (const QByteArray &cookie, cookieList) {
+    const QList<QByteArray> cookieList = raw.split(';');
+    for (const QByteArray &cookie : cookieList) {
         QList<QNetworkCookie> parsed = QNetworkCookie::parseCookies(cookie.trimmed());
         if (parsed.count() != 1)
             return QVariant();  // invalid Cookie: header

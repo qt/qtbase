@@ -520,8 +520,8 @@ QUrl QHttpNetworkConnectionPrivate::parseRedirectResponse(QAbstractSocket *socke
         return QUrl();
 
     QUrl rUrl;
-    QList<QPair<QByteArray, QByteArray> > fields = reply->header();
-    foreach (const QNetworkReply::RawHeaderPair &header, fields) {
+    const QList<QPair<QByteArray, QByteArray> > fields = reply->header();
+    for (const QNetworkReply::RawHeaderPair &header : fields) {
         if (header.first.toLower() == "location") {
             rUrl = QUrl::fromEncoded(header.second);
             break;

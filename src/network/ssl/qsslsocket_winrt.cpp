@@ -105,7 +105,7 @@ struct SslSocketGlobal
     void syncCaCertificates(const QSet<QSslCertificate> &add, const QSet<QSslCertificate> &remove)
     {
         QMutexLocker locker(&certificateMutex);
-        foreach (const QSslCertificate &certificate, add) {
+        for (const QSslCertificate &certificate : add) {
             QHash<QSslCertificate, QAtomicInt>::iterator it = additionalCertificates.find(certificate);
             if (it != additionalCertificates.end()) {
                 it.value().ref(); // Add a reference
@@ -117,7 +117,7 @@ struct SslSocketGlobal
                 additionalCertificates.insert(certificate, 1);
             }
         }
-        foreach (const QSslCertificate &certificate, remove) {
+        for (const QSslCertificate &certificate : remove) {
             QHash<QSslCertificate, QAtomicInt>::iterator it = additionalCertificates.find(certificate);
             if (it != additionalCertificates.end() && !it.value().deref()) {
                 // no more references, remove certificate
