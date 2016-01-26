@@ -312,7 +312,7 @@ public:
     {
         d->length = str.length();
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
-        const qle_ushort *uc = (const qle_ushort *)str.unicode();
+        const ushort *uc = (const ushort *)str.unicode();
         for (int i = 0; i < str.length(); ++i)
             d->utf16[i] = uc[i];
 #else

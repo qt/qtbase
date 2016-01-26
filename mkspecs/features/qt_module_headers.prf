@@ -18,10 +18,11 @@ load(qt_build_paths)
     } else {
         contains(QT_CONFIG, private_tests): \   # -developer-build
             QMAKE_SYNCQT += -check-includes
-        QMAKE_SYNCQT += -module $$MODULE_INCNAME -version $$VERSION
     }
+    for(mod, MODULE_INCNAME): \
+        QMAKE_SYNCQT += -module $$mod
     QMAKE_SYNCQT += \
-        -outdir $$system_quote($$MODULE_BASE_OUTDIR) $$MODULE_SYNCQT_DIR
+        -version $$VERSION -outdir $$system_quote($$MODULE_BASE_OUTDIR) $$MODULE_SYNCQT_DIR
     !silent: message($$QMAKE_SYNCQT)
     system($$QMAKE_SYNCQT)|error("Failed to run: $$QMAKE_SYNCQT")
 
@@ -32,6 +33,63 @@ load(qt_build_paths)
         DISTCLEAN_DEPS += include-distclean
     }
 }
+
+# Pre-generated headers in the source tree (tar-ball) and
+# - shadow build or
+# - non-shadow non-prefix build of a module which is not qtbase
+#   (because the build-time generated headers all end up in qtbase).
+!git_build: \
+        if(!equals(_PRO_FILE_PWD_, $$OUT_PWD) \
+           |if(!prefix_build:!equals(MODULE_BASE_INDIR, $$[QT_HOST_PREFIX]))): \
+    CONFIG += split_incpath
+
+# To avoid stuffing the code with repetetive conditionals,
+# we parametrize the names of the variables we assign to.
+
+# Internal modules have no private part - they *are* private.
+!internal_module: \
+    prv = _PRIVATE
+
+# When doing a framework build with a prefix, the module needs to point
+# into the frameworks' Headers dirs directly, as no shared include/ dir
+# is installed.
+# However, during the build, it needs to point into the shared include/
+# dir, as the framework doesn't even exist yet. For bootstrapped modules
+# which borrow headers from "proper" modules, this situation persists
+# even beyond the module's own build. The implication of this is that
+# qmake might never use a framework's headers in a non-prefix build,
+# as there is no separate set of .pri files for users outside Qt.
+prefix_build:lib_bundle: \
+    fwd = _FWD
+# When using a split include path during the build, the installed module's
+# include path is also structurally different from that in the build dir.
+prefix_build:split_incpath: \
+    sfwd = _FWD
+
+ibase = \$\$QT_MODULE_INCLUDE_BASE
+MODULE$${fwd}_INCLUDES = $$ibase
+split_incpath {
+    bibase = $$val_escape(MODULE_BASE_OUTDIR)/include
+    MODULE$${sfwd}_INCLUDES += $$bibase
+}
+for(mod, MODULE_INCNAME) {
+    mibase = $$ibase/$$mod
+    MODULE$${fwd}_INCLUDES += $$mibase
+    MODULE$${fwd}$${prv}_INCLUDES += $$mibase/$$VERSION $$mibase/$$VERSION/$$mod
+    split_incpath {
+        mbibase = $$bibase/$$mod
+        MODULE$${sfwd}_INCLUDES += $$mbibase
+        generated_privates: \
+            MODULE$${sfwd}$${prv}_INCLUDES += $$mbibase/$$VERSION $$mbibase/$$VERSION/$$mod
+    }
+    prefix_build:lib_bundle {
+        mfbase = \$\$QT_MODULE_LIB_BASE/$${mod}.framework/Headers
+        MODULE_INCLUDES += $$mfbase
+        MODULE$${prv}_INCLUDES += $$mfbase/$$VERSION $$mfbase/$$VERSION/$$mod
+    }
+}
+MODULE_INCLUDES += $$MODULE_AUX_INCLUDES
+MODULE_PRIVATE_INCLUDES += $$MODULE_PRIVATE_AUX_INCLUDES
 
 minimal_syncqt: return()
 

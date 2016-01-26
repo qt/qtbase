@@ -445,8 +445,11 @@ void QHttpSocketEngine::setReadNotificationEnabled(bool enable)
     d->readNotificationEnabled = enable;
     if (enable) {
         // Enabling read notification can trigger a notification.
-        if (bytesAvailable())
+        if (bytesAvailable()) {
             slotSocketReadNotification();
+        } else if (d->socket && d->socket->state() == QAbstractSocket::UnconnectedState) {
+            emitReadNotification();
+        }
     }
 }
 

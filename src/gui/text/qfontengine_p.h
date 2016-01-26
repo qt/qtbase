@@ -284,7 +284,7 @@ public:
         qt_get_font_table_func_t get_font_table;
     } faceData;
 
-    uint cache_cost; // amount of mem used in kb by the font
+    uint cache_cost; // amount of mem used in bytes by the font
     uint fsType : 16;
     bool symbol;
     struct KernPair {

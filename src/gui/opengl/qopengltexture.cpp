@@ -3228,6 +3228,12 @@ void QOpenGLTexture::setData(const QImage& image, MipMapGeneration genMipMaps)
         qWarning("QOpenGLTexture::setData() requires a valid current context");
         return;
     }
+
+    if (image.isNull()) {
+        qWarning("QOpenGLTexture::setData() tried to set a null image");
+        return;
+    }
+
     if (context->isOpenGLES() && context->format().majorVersion() < 3)
         setFormat(QOpenGLTexture::RGBAFormat);
     else

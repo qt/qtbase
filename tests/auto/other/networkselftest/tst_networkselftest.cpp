@@ -166,14 +166,16 @@ static bool doSocketRead(QTcpSocket *socket, int minBytesAvailable, int timeout 
 {
     QElapsedTimer timer;
     timer.start();
+    int t = timeout;
     forever {
         if (socket->bytesAvailable() >= minBytesAvailable)
             return true;
-        timeout = qt_subtract_from_timeout(timeout, timer.elapsed());
-        if (socket->state() == QAbstractSocket::UnconnectedState
-            || timeout == 0)
+        if (socket->state() == QAbstractSocket::UnconnectedState)
             return false;
-        if (!socket->waitForReadyRead(timeout))
+        if (!socket->waitForReadyRead(t))
+            return false;
+        t = qt_subtract_from_timeout(timeout, timer.elapsed());
+        if (t == 0)
             return false;
     }
 }
@@ -194,6 +196,7 @@ static bool doSocketFlush(QTcpSocket *socket, int timeout = 4000)
 #endif
     QTime timer;
     timer.start();
+    int t = timeout;
     forever {
         if (socket->bytesToWrite() == 0
 #ifndef QT_NO_SSL
@@ -201,11 +204,12 @@ static bool doSocketFlush(QTcpSocket *socket, int timeout = 4000)
 #endif
             )
             return true;
-        timeout = qt_subtract_from_timeout(timeout, timer.elapsed());
-        if (socket->state() == QAbstractSocket::UnconnectedState
-            || timeout == 0)
+        if (socket->state() == QAbstractSocket::UnconnectedState)
             return false;
-        if (!socket->waitForBytesWritten(timeout))
+        if (!socket->waitForBytesWritten(t))
+            return false;
+        t = qt_subtract_from_timeout(timeout, timer.elapsed());
+        if (t == 0)
             return false;
     }
 }

@@ -80,10 +80,10 @@ CONFIG          += qmake_cache target_qt
 
 QMAKE_DOCS_TARGETDIR = qt$${MODULE}
 
-load(qt_module_pris)
 load(qt_common)
-
 !no_module_headers: load(qt_module_headers)
+load(qt_module_pris)
+
 INCLUDEPATH *= $$eval(QT.$${MODULE}.includes) $$eval(QT.$${MODULE}_private.includes)
 
 # If Qt was configured with -debug-and-release then build the module the same way
@@ -139,6 +139,8 @@ mac {
 
    contains(QT_CONFIG, rpath): \
        QMAKE_SONAME_PREFIX = @rpath
+   else: \
+       CONFIG += absolute_library_soname
 }
 
 DEFINES += QT_BUILDING_QT

@@ -388,7 +388,7 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
             ++add;
             if (status != quote) {
                 status = quote;
-            } else if (newFormat.at(i - 1) != slash) {
+            } else if (i > 0 && newFormat.at(i - 1) != slash) {
                 status = zero;
             }
         } else if (status != quote) {
@@ -500,15 +500,15 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
     }
 
     if ((newDisplay & (AmPmSection|Hour12Section)) == Hour12Section) {
-        const int max = newSectionNodes.size();
-        for (int i=0; i<max; ++i) {
+        const int count = newSectionNodes.size();
+        for (int i = 0; i < count; ++i) {
             SectionNode &node = newSectionNodes[i];
             if (node.type == Hour12Section)
                 node.type = Hour24Section;
         }
     }
 
-    if (index < newFormat.size()) {
+    if (index < max) {
         appendSeparator(&newSeparators, newFormat, index, index - max, lastQuote);
     } else {
         newSeparators.append(QString());
@@ -771,8 +771,8 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
             } else {
                 state = Intermediate;
             }
-            break; }
-        // fall through
+            break;
+        } // else: fall through
     case DaySection:
     case YearSection:
     case YearSection2Digits:
@@ -895,17 +895,17 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
 
     QDTPDEBUG << "parse" << input;
     {
-        int year, month, day, hour12, hour, minute, second, msec, ampm, dayofweek, year2digits;
+        int year, month, day;
         currentValue.date().getDate(&year, &month, &day);
-        year2digits = year % 100;
-        hour = currentValue.time().hour();
-        hour12 = -1;
-        minute = currentValue.time().minute();
-        second = currentValue.time().second();
-        msec = currentValue.time().msec();
-        dayofweek = currentValue.date().dayOfWeek();
+        int year2digits = year % 100;
+        int hour = currentValue.time().hour();
+        int hour12 = -1;
+        int minute = currentValue.time().minute();
+        int second = currentValue.time().second();
+        int msec = currentValue.time().msec();
+        int dayofweek = currentValue.date().dayOfWeek();
 
-        ampm = -1;
+        int ampm = -1;
         Sections isSet = NoSection;
         int num;
         State tmpstate;

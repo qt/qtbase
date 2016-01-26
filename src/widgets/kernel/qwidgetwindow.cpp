@@ -451,7 +451,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                 receiver = popupChild;
             if (receiver != popup)
                 widgetPos = receiver->mapFromGlobal(event->globalPos());
-            QWidget *alien = receiver->childAt(receiver->mapFromGlobal(event->globalPos()));
+            QWidget *alien = m_widget->childAt(m_widget->mapFromGlobal(event->globalPos()));
             QMouseEvent e(event->type(), widgetPos, event->windowPos(), event->screenPos(),
                           event->button(), event->buttons(), event->modifiers(), event->source());
             e.setTimestamp(event->timestamp());

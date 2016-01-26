@@ -2828,7 +2828,9 @@ void QFileDialogPrivate::init(const QUrl &directory, const QString &nameFilter,
     qFileDialogUi->sidebar->hide();
 #endif
 
-    q->resize(q->sizeHint());
+    const QSize sizeHint = q->sizeHint();
+    if (sizeHint.isValid())
+       q->resize(sizeHint);
 }
 
 /*!

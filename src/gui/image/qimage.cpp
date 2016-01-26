@@ -198,7 +198,9 @@ bool QImageData::checkForAlphaPixels() const
     case QImage::Format_Indexed8:
         has_alpha_pixels = has_alpha_clut;
         break;
-
+    case QImage::Format_Alpha8:
+        has_alpha_pixels = true;
+        break;
     case QImage::Format_ARGB32:
     case QImage::Format_ARGB32_Premultiplied: {
         uchar *bits = data;
@@ -272,7 +274,20 @@ bool QImageData::checkForAlphaPixels() const
         }
     } break;
 
-    default:
+    case QImage::Format_RGB32:
+    case QImage::Format_RGB16:
+    case QImage::Format_RGB444:
+    case QImage::Format_RGB555:
+    case QImage::Format_RGB666:
+    case QImage::Format_RGB888:
+    case QImage::Format_RGBX8888:
+    case QImage::Format_BGR30:
+    case QImage::Format_RGB30:
+    case QImage::Format_Grayscale8:
+        break;
+    case QImage::Format_Invalid:
+    case QImage::NImageFormats:
+        Q_UNREACHABLE();
         break;
     }
 

@@ -2440,7 +2440,11 @@ struct IndexSetter {
     int index;
     QComboBox *cb;
 
-    void operator()(void) { cb->setCurrentIndex(index); }
+    void operator()(void)
+    {
+        cb->setCurrentIndex(index);
+        emit cb->activated(index);
+    }
 };
 }
 

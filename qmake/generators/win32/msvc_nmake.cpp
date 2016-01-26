@@ -188,6 +188,9 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                     incDirs << crtInclude + QStringLiteral("/shared");
                     incDirs << crtInclude + QStringLiteral("/winrt");
 
+                    incDirs << kitDir + QStringLiteral("Extension SDKs/WindowsMobile/")
+                                      + crtVersion + QStringLiteral("/Include/WinRT");
+
                     libDirs << vcInstallDir + QStringLiteral("lib/store/") + compilerArch;
                     libDirs << vcInstallDir + QStringLiteral("atlmfc/lib") + compilerArch;
 

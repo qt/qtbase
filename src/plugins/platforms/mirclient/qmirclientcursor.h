@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Canonical, Ltd.
+** Copyright (C) 2015 Canonical, Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -35,32 +35,27 @@
 ****************************************************************************/
 
 
-#ifndef QMIRCLIENTGLCONTEXT_H
-#define QMIRCLIENTGLCONTEXT_H
+#ifndef QMIRCLIENTCURSOR_H
+#define QMIRCLIENTCURSOR_H
 
-#include <qpa/qplatformopenglcontext.h>
-#include "qmirclientscreen.h"
+#include <qpa/qplatformcursor.h>
 
-class QMirClientOpenGLContext : public QPlatformOpenGLContext
+#include <QMap>
+#include <QByteArray>
+
+struct MirConnection;
+struct MirSurface;
+
+class QMirClientCursor : public QPlatformCursor
 {
 public:
-    QMirClientOpenGLContext(QMirClientScreen* screen, QMirClientOpenGLContext* share);
-    virtual ~QMirClientOpenGLContext();
-
-    // QPlatformOpenGLContext methods.
-    QSurfaceFormat format() const override { return mScreen->surfaceFormat(); }
-    void swapBuffers(QPlatformSurface* surface) override;
-    bool makeCurrent(QPlatformSurface* surface) override;
-    void doneCurrent() override;
-    bool isValid() const override { return mEglContext != EGL_NO_CONTEXT; }
-    void (*getProcAddress(const QByteArray& procName)) () override;
-
-    EGLContext eglContext() const { return mEglContext; }
-
+    QMirClientCursor(MirConnection *connection);
+    void changeCursor(QCursor *windowCursor, QWindow *window) override;
 private:
-    QMirClientScreen* mScreen;
-    EGLContext mEglContext;
-    EGLDisplay mEglDisplay;
+    void configureMirCursorWithPixmapQCursor(MirSurface *surface, QCursor &cursor);
+    void applyDefaultCursorConfiguration(MirSurface *surface);
+    QMap<int, QByteArray> mShapeToCursorName;
+    MirConnection *mConnection;
 };
 
-#endif // QMIRCLIENTGLCONTEXT_H
+#endif // QMIRCLIENTCURSOR_H

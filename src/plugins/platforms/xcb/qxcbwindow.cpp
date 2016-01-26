@@ -1901,6 +1901,17 @@ private:
     bool m_pending;
 };
 
+bool QXcbWindow::compressExposeEvent(QRegion &exposeRegion)
+{
+    ExposeCompressor compressor(m_window, &exposeRegion);
+    xcb_generic_event_t *filter = 0;
+    do {
+        filter = connection()->checkEvent(compressor);
+        free(filter);
+    } while (filter);
+    return compressor.pending();
+}
+
 bool QXcbWindow::handleGenericEvent(xcb_generic_event_t *event, long *result)
 {
     return QWindowSystemInterface::handleNativeEvent(window(),
@@ -1918,15 +1929,10 @@ void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
     else
         m_exposeRegion |= rect;
 
-    ExposeCompressor compressor(m_window, &m_exposeRegion);
-    xcb_generic_event_t *filter = 0;
-    do {
-        filter = connection()->checkEvent(compressor);
-        free(filter);
-    } while (filter);
+    bool pending = compressExposeEvent(m_exposeRegion);
 
     // if count is non-zero there are more expose events pending
-    if (event->count == 0 || !compressor.pending()) {
+    if (event->count == 0 || !pending) {
         QWindowSystemInterface::handleExposeEvent(window(), m_exposeRegion);
         m_exposeRegion = QRegion();
     }
@@ -2013,10 +2019,6 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
         }
     }
 
-    // The original geometry requested by setGeometry() might be different
-    // from what we end up with after applying window constraints.
-    QRect requestedGeometry = geometry();
-
     const QRect actualGeometry = QRect(pos, QSize(event->width, event->height));
     QPlatformScreen *newScreen = parent() ? parent()->screen() : screenForGeometry(actualGeometry);
     if (!newScreen)
@@ -2036,15 +2038,6 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     // with the newScreen. Just send the WindowScreenChanged event and QGuiApplication
     // will make the comparison later.
     QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
-
-    // For expose events we have no way of telling QGuiApplication to used the locally
-    // cached version of the previous state, so we may in some situations end up with
-    // an additional expose event.
-    QRect previousGeometry = requestedGeometry != actualGeometry ?
-        requestedGeometry : qt_window_private(window())->geometry;
-
-    if (m_mapped && actualGeometry.size() != previousGeometry.size())
-        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), actualGeometry.size()));
 
     if (m_usingSyncProtocol && m_syncState == SyncReceived)
         m_syncState = SyncAndConfigureReceived;
@@ -2112,7 +2105,9 @@ void QXcbWindow::handleMapNotifyEvent(const xcb_map_notify_event_t *event)
         if (m_deferredActivation)
             requestActivateWindow();
 
-        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size()));
+        QRegion exposeRegion = QRect(QPoint(), geometry().size());
+        compressExposeEvent(exposeRegion);
+        QWindowSystemInterface::handleExposeEvent(window(), exposeRegion);
     }
 }
 

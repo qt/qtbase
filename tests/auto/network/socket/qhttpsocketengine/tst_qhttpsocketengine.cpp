@@ -60,6 +60,7 @@ private slots:
     void downloadBigFile();
    // void tcpLoopbackPerformance();
     void passwordAuth();
+    void ensureEofTriggersNotification();
 
 protected slots:
     void tcpSocketNonBlocking_hostFound();
@@ -714,6 +715,52 @@ void tst_QHttpSocketEngine::passwordAuth()
 }
 
 //----------------------------------------------------------------------------------
+
+void tst_QHttpSocketEngine::ensureEofTriggersNotification()
+{
+    QList<QByteArray> serverData;
+    // Set the handshake and server response data
+    serverData << "HTTP/1.0 200 Connection established\r\n\r\n" << "0";
+    MiniHttpServer server(serverData);
+
+    QTcpSocket socket;
+    connect(&socket, SIGNAL(connected()), SLOT(exitLoopSlot()));
+    socket.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, server.serverAddress().toString(),
+                                  server.serverPort()));
+    socket.connectToHost("0.1.2.3", 12345);
+
+    QTestEventLoop::instance().enterLoop(5);
+    if (QTestEventLoop::instance().timeout())
+        QFAIL("Connect timed out");
+
+    QCOMPARE(socket.state(), QTcpSocket::ConnectedState);
+    // Disable read notification on server response
+    socket.setReadBufferSize(1);
+    socket.putChar(0);
+
+    // Wait for the response
+    connect(&socket, SIGNAL(readyRead()), SLOT(exitLoopSlot()));
+    QTestEventLoop::instance().enterLoop(5);
+    if (QTestEventLoop::instance().timeout())
+        QFAIL("Read timed out");
+
+    QCOMPARE(socket.state(), QTcpSocket::ConnectedState);
+    QCOMPARE(socket.bytesAvailable(), 1);
+    // Trigger a read notification
+    socket.readAll();
+    // Check for pending EOF at input
+    QCOMPARE(socket.bytesAvailable(), 0);
+    QCOMPARE(socket.state(), QTcpSocket::ConnectedState);
+
+    // Try to read EOF
+    connect(&socket, SIGNAL(disconnected()), SLOT(exitLoopSlot()));
+    QTestEventLoop::instance().enterLoop(5);
+    if (QTestEventLoop::instance().timeout())
+        QFAIL("Disconnect timed out");
+
+    // Check that it's closed
+    QCOMPARE(socket.state(), QTcpSocket::UnconnectedState);
+}
 
 QTEST_MAIN(tst_QHttpSocketEngine)
 #include "tst_qhttpsocketengine.moc"

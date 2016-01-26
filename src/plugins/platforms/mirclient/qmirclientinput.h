@@ -40,6 +40,7 @@
 
 // Qt
 #include <qpa/qwindowsysteminterface.h>
+#include <QAtomicInt>
 
 #include <mir_toolkit/mir_client_library.h>
 
@@ -59,12 +60,13 @@ public:
 
     void postEvent(QMirClientWindow* window, const MirEvent *event);
     QMirClientClientIntegration* integration() const { return mIntegration; }
+    QMirClientWindow *lastFocusedWindow() const {return mLastFocusedWindow; }
 
 protected:
-    void dispatchKeyEvent(QWindow *window, const MirInputEvent *event);
-    void dispatchPointerEvent(QWindow *window, const MirInputEvent *event);
-    void dispatchTouchEvent(QWindow *window, const MirInputEvent *event);
-    void dispatchInputEvent(QWindow *window, const MirInputEvent *event);
+    void dispatchKeyEvent(QMirClientWindow *window, const MirInputEvent *event);
+    void dispatchPointerEvent(QMirClientWindow *window, const MirInputEvent *event);
+    void dispatchTouchEvent(QMirClientWindow *window, const MirInputEvent *event);
+    void dispatchInputEvent(QMirClientWindow *window, const MirInputEvent *event);
 
     void dispatchOrientationEvent(QWindow* window, const MirOrientationEvent *event);
 
@@ -73,6 +75,9 @@ private:
     QTouchDevice* mTouchDevice;
     const QByteArray mEventFilterType;
     const QEvent::Type mEventType;
+
+    QMirClientWindow *mLastFocusedWindow;
+    QAtomicInt mPendingFocusGainedEvents;
 };
 
 #endif // QMIRCLIENTINPUT_H

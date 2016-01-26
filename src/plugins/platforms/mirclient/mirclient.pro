@@ -21,6 +21,7 @@ PKGCONFIG += egl mirclient ubuntu-platform-api
 SOURCES = \
     qmirclientbackingstore.cpp \
     qmirclientclipboard.cpp \
+    qmirclientcursor.cpp \
     qmirclientglcontext.cpp \
     qmirclientinput.cpp \
     qmirclientintegration.cpp \
@@ -34,6 +35,7 @@ SOURCES = \
 HEADERS = \
     qmirclientbackingstore.h \
     qmirclientclipboard.h \
+    qmirclientcursor.h \
     qmirclientglcontext.h \
     qmirclientinput.h \
     qmirclientintegration.h \

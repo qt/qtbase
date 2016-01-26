@@ -389,7 +389,7 @@ void MainWindow::createActions()
 //! [23]
 
     sendBackAction = new QAction(QIcon(":/images/sendtoback.png"), tr("Send to &Back"), this);
-    sendBackAction->setShortcut(tr("Ctrl+B"));
+    sendBackAction->setShortcut(tr("Ctrl+T"));
     sendBackAction->setStatusTip(tr("Send item to back"));
     connect(sendBackAction, SIGNAL(triggered()), this, SLOT(sendToBack()));
 
@@ -421,7 +421,7 @@ void MainWindow::createActions()
     connect(underlineAction, SIGNAL(triggered()), this, SLOT(handleFontChange()));
 
     aboutAction = new QAction(tr("A&bout"), this);
-    aboutAction->setShortcut(tr("Ctrl+B"));
+    aboutAction->setShortcut(tr("F1"));
     connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
 }
 

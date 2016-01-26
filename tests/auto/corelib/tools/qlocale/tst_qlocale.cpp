@@ -549,7 +549,8 @@ void tst_QLocale::legacyNames()
     TEST_CTOR("no", Norwegian, Norway)
     TEST_CTOR("sh_ME", Serbian, Montenegro)
     TEST_CTOR("tl", Filipino, Philippines)
-
+    TEST_CTOR("iw", Hebrew, Israel)
+    TEST_CTOR("in", Indonesian, Indonesia)
 #undef TEST_CTOR
 }
 

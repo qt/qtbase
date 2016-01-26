@@ -788,6 +788,7 @@ QPSQLDriver::Protocol QPSQLDriverPrivate::getPSQLVersion()
                     //Client version before QPSQLDriver::Version9 only supports escape mode for bytea type,
                     //but bytea format is set to hex by default in PSQL 9 and above. So need to force the
                     //server use the old escape mode when connects to the new server with old client library.
+                    PQclear(result);
                     result = exec("SET bytea_output=escape; ");
                     status = PQresultStatus(result);
                 } else if (serverVersion == QPSQLDriver::VersionUnknown) {

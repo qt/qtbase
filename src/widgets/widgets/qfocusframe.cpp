@@ -256,6 +256,10 @@ void
 QFocusFrame::paintEvent(QPaintEvent *)
 {
     Q_D(QFocusFrame);
+
+    if (!d->widget)
+        return;
+
     QStylePainter p(this);
     QStyleOption option;
     initStyleOption(&option);

@@ -46,6 +46,14 @@
 
 QT_FORWARD_DECLARE_CLASS(QDialog)
 
+// work around function being protected
+class DummyDialog : public QDialog
+{
+public:
+    DummyDialog(): QDialog(0, Qt::X11BypassWindowManagerHint) {}
+    using QDialog::showExtension;
+};
+
 class tst_QDialog : public QObject
 {
     Q_OBJECT
@@ -80,7 +88,7 @@ private slots:
     void dialogInGraphicsView();
 
 private:
-    QDialog *testWidget;
+    DummyDialog *testWidget;
 };
 
 // Testing get/set functions
@@ -105,13 +113,6 @@ void tst_QDialog::getSetCheck()
     obj1.setResult(INT_MAX);
     QCOMPARE(INT_MAX, obj1.result());
 }
-
-// work around function being protected
-class DummyDialog : public QDialog {
-public:
-    DummyDialog(): QDialog(0) {}
-    void showExtension( bool b ) { QDialog::showExtension( b ); }
-};
 
 class ToolDialog : public QDialog
 {
@@ -150,7 +151,7 @@ tst_QDialog::tst_QDialog()
 void tst_QDialog::initTestCase()
 {
     // Create the test class
-    testWidget = new QDialog(0, Qt::X11BypassWindowManagerHint);
+    testWidget = new DummyDialog;
     testWidget->resize(200,200);
     testWidget->show();
     qApp->setActiveWindow(testWidget);
@@ -195,7 +196,7 @@ void tst_QDialog::showExtension()
     QPoint oldPosition = testWidget->pos();
 
     // show
-    ((DummyDialog*)testWidget)->showExtension( true );
+    testWidget->showExtension( true );
 //     while ( testWidget->size() == dlgSize )
 //         qApp->processEvents();
 
@@ -204,7 +205,7 @@ void tst_QDialog::showExtension()
     QCOMPARE(testWidget->pos(), oldPosition);
 
     // hide extension. back to old size ?
-    ((DummyDialog*)testWidget)->showExtension( false );
+    testWidget->showExtension( false );
     QCOMPARE( testWidget->size(), dlgSize );
 
     testWidget->setExtension( 0 );

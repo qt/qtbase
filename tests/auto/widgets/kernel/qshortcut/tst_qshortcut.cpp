@@ -67,7 +67,8 @@ public:
         TriggerSlot4,
         TriggerSlot5,
         TriggerSlot6,
-        TriggerSlot7
+        TriggerSlot7,
+        SendKeyEvent
     };
 
     enum Result {
@@ -79,6 +80,7 @@ public:
         Slot5Triggered,
         Slot6Triggered,
         Slot7Triggered,
+        SentKeyEvent,
         Ambiguous
     } currentResult;
 
@@ -99,6 +101,7 @@ public slots:
     void ambigSlot7() { currentResult = Ambiguous; ambigResult = Slot7Triggered; }
     void statusMessage( const QString& message ) { sbText = message; }
     void shortcutDestroyed(QObject* obj);
+    void sendKeyEvent() { sendKeyEvents(edit, Qt::CTRL + Qt::Key_B, 0); currentResult = SentKeyEvent; }
 
 public slots:
     void initTestCase();
@@ -977,6 +980,19 @@ void tst_QShortcut::keypressConsumption()
     QVERIFY(edit->toPlainText().endsWith("<Ctrl+I>a"));
 
     clearAllShortcuts();
+    edit->clear();
+    QCOMPARE(edit->toPlainText().size(), 0);
+
+    setupShortcut(edit, "first", SendKeyEvent, "Ctrl+A");
+
+    // Verify reentrancy when a non-shortcut is triggered as part
+    // of shortcut processing.
+    currentResult = NoResult;
+    ambigResult = NoResult;
+    sendKeyEvents(edit, Qt::CTRL + Qt::Key_A, 0);
+    QCOMPARE(currentResult, SentKeyEvent);
+    QCOMPARE(ambigResult, NoResult);
+    QCOMPARE(edit->toPlainText(), QString(QString("<Ctrl+B>")));
 }
 
 // ------------------------------------------------------------------
@@ -1178,9 +1194,12 @@ QShortcut *tst_QShortcut::setupShortcut(QWidget *parent, const char *name, int t
         normal = SLOT(slotTrig7());
         ambig  = SLOT(ambigSlot7());
         break;
+    case SendKeyEvent:
+        normal = SLOT(sendKeyEvent());
     }
     connect(cut, SIGNAL(activated()), this, normal);
-    connect(cut, SIGNAL(activatedAmbiguously()), this, ambig);
+    if (ambig)
+        connect(cut, SIGNAL(activatedAmbiguously()), this, ambig);
     connect(cut, SIGNAL(destroyed(QObject*)), this, SLOT(shortcutDestroyed(QObject*)));
     shortcuts.append(cut);
     return cut;

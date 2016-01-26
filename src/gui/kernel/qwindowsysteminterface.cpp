@@ -281,8 +281,10 @@ bool QWindowSystemInterface::handleExtendedKeyEvent(QWindow *tlw, ulong timestam
                                                     const QString& text, bool autorep,
                                                     ushort count, bool tryShortcutOverride)
 {
-    if (tryShortcutOverride && type == QEvent::KeyPress && QWindowSystemInterface::handleShortcutEvent(tlw, timestamp, key, modifiers, 0, 0, 0, text, autorep, count))
+    if (tryShortcutOverride && type == QEvent::KeyPress && QWindowSystemInterface::handleShortcutEvent(tlw,
+            timestamp, key, modifiers, nativeScanCode, nativeVirtualKey, nativeModifiers, text, autorep, count)) {
         return true;
+    }
 
     QWindowSystemInterfacePrivate::KeyEvent * e =
             new QWindowSystemInterfacePrivate::KeyEvent(tlw, timestamp, type, key, modifiers,

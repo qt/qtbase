@@ -35,6 +35,18 @@
 ****************************************************************************/
 
 
+// Local
+#include "qmirclientintegration.h"
+#include "qmirclientbackingstore.h"
+#include "qmirclientclipboard.h"
+#include "qmirclientglcontext.h"
+#include "qmirclientinput.h"
+#include "qmirclientlogging.h"
+#include "qmirclientnativeinterface.h"
+#include "qmirclientscreen.h"
+#include "qmirclienttheme.h"
+#include "qmirclientwindow.h"
+
 // Qt
 #include <QGuiApplication>
 #include <private/qguiapplication_p.h>
@@ -44,18 +56,6 @@
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QOpenGLContext>
-
-// Local
-#include "qmirclientbackingstore.h"
-#include "qmirclientclipboard.h"
-#include "qmirclientglcontext.h"
-#include "qmirclientinput.h"
-#include "qmirclientintegration.h"
-#include "qmirclientlogging.h"
-#include "qmirclientnativeinterface.h"
-#include "qmirclientscreen.h"
-#include "qmirclienttheme.h"
-#include "qmirclientwindow.h"
 
 // platform-api
 #include <ubuntu/application/lifecycle_delegate.h>
@@ -67,8 +67,11 @@ static void resumedCallback(const UApplicationOptions *options, void* context)
     Q_UNUSED(options)
     Q_UNUSED(context)
     DASSERT(context != NULL);
-    QCoreApplication::postEvent(QCoreApplication::instance(),
-                                new QEvent(QEvent::ApplicationActivate));
+    if (qGuiApp->focusWindow()) {
+        QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationActive);
+    } else {
+        QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationInactive);
+    }
 }
 
 static void aboutToStopCallback(UApplicationArchive *archive, void* context)
@@ -76,9 +79,13 @@ static void aboutToStopCallback(UApplicationArchive *archive, void* context)
     Q_UNUSED(archive)
     DASSERT(context != NULL);
     QMirClientClientIntegration* integration = static_cast<QMirClientClientIntegration*>(context);
-    integration->inputContext()->hideInputPanel();
-    QCoreApplication::postEvent(QCoreApplication::instance(),
-                                new QEvent(QEvent::ApplicationDeactivate));
+    QPlatformInputContext *inputContext = integration->inputContext();
+    if (inputContext) {
+        inputContext->hideInputPanel();
+    } else {
+        qWarning("QMirClientClientIntegration aboutToStopCallback(): no input context");
+    }
+    QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationSuspended);
 }
 
 QMirClientClientIntegration::QMirClientClientIntegration()
@@ -99,6 +106,8 @@ QMirClientClientIntegration::QMirClientClientIntegration()
         qFatal("QMirClientClientIntegration: connection to Mir server failed. Check that a Mir server is\n"
                "running, and the correct socket is being used and is accessible. The shell may have\n"
                "rejected the incoming connection, so check its log file");
+
+    mNativeInterface->setMirConnection(u_application_instance_get_mir_connection(mInstance));
 
     // Create default screen.
     mScreen = new QMirClientScreen(u_application_instance_get_mir_connection(mInstance));
@@ -176,10 +185,8 @@ QPlatformWindow* QMirClientClientIntegration::createPlatformWindow(QWindow* wind
 
 QPlatformWindow* QMirClientClientIntegration::createPlatformWindow(QWindow* window)
 {
-    QPlatformWindow* platformWindow = new QMirClientWindow(
-            window, mClipboard, static_cast<QMirClientScreen*>(mScreen), mInput, u_application_instance_get_mir_connection(mInstance));
-    platformWindow->requestActivateWindow();
-    return platformWindow;
+    return new QMirClientWindow(window, mClipboard, static_cast<QMirClientScreen*>(mScreen),
+                            mInput, u_application_instance_get_mir_connection(mInstance));
 }
 
 bool QMirClientClientIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -187,11 +194,12 @@ bool QMirClientClientIntegration::hasCapability(QPlatformIntegration::Capability
     switch (cap) {
     case ThreadedPixmaps:
         return true;
-        break;
 
     case OpenGL:
         return true;
-        break;
+
+    case ApplicationState:
+        return true;
 
     case ThreadedOpenGL:
         if (qEnvironmentVariableIsEmpty("QTUBUNTU_NO_THREADED_OPENGL")) {
@@ -200,8 +208,9 @@ bool QMirClientClientIntegration::hasCapability(QPlatformIntegration::Capability
             DLOG("ubuntumirclient: disabled threaded OpenGL");
             return false;
         }
-        break;
-
+    case MultipleWindows:
+    case NonFullScreenWindows:
+        return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
     }
@@ -261,4 +270,9 @@ QVariant QMirClientClientIntegration::styleHint(StyleHint hint) const
 QPlatformClipboard* QMirClientClientIntegration::clipboard() const
 {
     return mClipboard.data();
+}
+
+QPlatformNativeInterface* QMirClientClientIntegration::nativeInterface() const
+{
+    return mNativeInterface;
 }

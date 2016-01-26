@@ -1146,7 +1146,7 @@ void tst_QString::constructorQByteArray_data()
     ba1[5] = 'e';
     ba1[6] = 'f';
 
-    QTest::newRow( "2" ) << ba1 << QStringLiteral("abc\0def");
+    QTest::newRow( "2" ) << ba1 << QString("abc");
 
     QTest::newRow( "3" ) << QByteArray::fromRawData("abcd", 3) << QString("abc");
     QTest::newRow( "4" ) << QByteArray("\xc3\xa9") << QString("\xc3\xa9");
@@ -1167,6 +1167,12 @@ void tst_QString::constructorQByteArray()
     QCOMPARE( strBA, expected );
 
     // test operator= too
+    if (src.constData()[src.length()] == '\0') {
+        str1.clear();
+        str1 = src.constData();
+        QCOMPARE( str1, expected );
+    }
+
     strBA.clear();
     strBA = src;
     QCOMPARE( strBA, expected );
@@ -2590,6 +2596,14 @@ void tst_QString::append_bytearray_special_cases()
 
         QTEST( str, "res" );
     }
+
+    QFETCH( QByteArray, ba );
+    if (ba.constData()[ba.length()] == '\0') {
+        QFETCH( QString, str );
+
+        str.append(ba.constData());
+        QTEST( str, "res" );
+    }
 }
 
 void tst_QString::operator_pluseq_data(bool emptyIsNoop)
@@ -2620,6 +2634,14 @@ void tst_QString::operator_pluseq_bytearray_special_cases()
 
         QTEST( str, "res" );
     }
+
+    QFETCH( QByteArray, ba );
+    if (ba.constData()[ba.length()] == '\0') {
+        QFETCH( QString, str );
+
+        str += ba.constData();
+        QTEST( str, "res" );
+    }
 }
 
 void tst_QString::operator_eqeq_bytearray_data()
@@ -2634,6 +2656,11 @@ void tst_QString::operator_eqeq_bytearray()
 
     QVERIFY(expected == src);
     QVERIFY(!(expected != src));
+
+    if (src.constData()[src.length()] == '\0') {
+        QVERIFY(expected == src.constData());
+        QVERIFY(!(expected != src.constData()));
+    }
 }
 
 void tst_QString::swap()
@@ -2691,7 +2718,7 @@ void tst_QString::prepend_bytearray_special_cases_data()
     // byte array with only a 0
     ba.resize( 1 );
     ba[0] = 0;
-    QTest::newRow( "emptyString" ) << QString("foobar ") << ba << QStringLiteral("\0foobar ");
+    QTest::newRow( "emptyString" ) << QString("foobar ") << ba << QString("foobar ");
 
     // empty byte array
     ba.resize( 0 );
@@ -2719,6 +2746,14 @@ void tst_QString::prepend_bytearray_special_cases()
 
         str.prepend( ba );
 
+        QTEST( str, "res" );
+    }
+
+    QFETCH( QByteArray, ba );
+    if (ba.constData()[ba.length()] == '\0') {
+        QFETCH( QString, str );
+
+        str.prepend(ba.constData());
         QTEST( str, "res" );
     }
 }

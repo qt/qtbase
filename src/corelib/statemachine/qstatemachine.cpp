@@ -1894,12 +1894,14 @@ void QStateMachinePrivate::_q_process()
                 }
         }
         if (enabledTransitions.isEmpty()) {
-            processing = false;
-            stopProcessingReason = EventQueueEmpty;
-            noMicrostep();
+            if (isInternalEventQueueEmpty()) {
+                processing = false;
+                stopProcessingReason = EventQueueEmpty;
+                noMicrostep();
 #ifdef QSTATEMACHINE_DEBUG
-            qDebug() << q << ": no transitions enabled";
+                qDebug() << q << ": no transitions enabled";
 #endif
+            }
         } else {
             didChange = true;
             q->beginMicrostep(e);

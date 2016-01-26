@@ -184,7 +184,9 @@ public:
     QSNDict sn_write;
     QSNDict sn_except;
     QSFDict active_fd;
+    bool activateNotifiersPosted;
     void doWsaAsyncSelect(int socket, long event);
+    void postActivateSocketNotifiers();
 
     QList<QWinEventNotifier *> winEventNotifierList;
     void activateEventNotifier(QWinEventNotifier * wen);

@@ -250,8 +250,10 @@ void tst_QSharedPointer::basics()
 
         QCOMPARE(ptr.data(), aData);
         QCOMPARE(ptr.operator->(), aData);
-        Data &dataReference = *ptr;
-        QCOMPARE(&dataReference, aData);
+        if (!isNull) {
+            Data &dataReference = *ptr;
+            QCOMPARE(&dataReference, aData);
+        }
 
         QVERIFY(ptr == aData);
         QVERIFY(!(ptr != aData));
