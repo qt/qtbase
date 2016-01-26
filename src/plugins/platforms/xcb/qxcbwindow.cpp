@@ -2105,9 +2105,7 @@ void QXcbWindow::handleMapNotifyEvent(const xcb_map_notify_event_t *event)
         if (m_deferredActivation)
             requestActivateWindow();
 
-        QRegion exposeRegion = QRect(QPoint(), geometry().size());
-        compressExposeEvent(exposeRegion);
-        QWindowSystemInterface::handleExposeEvent(window(), exposeRegion);
+        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size()));
     }
 }
 
