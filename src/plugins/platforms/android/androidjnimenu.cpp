@@ -152,7 +152,7 @@ namespace QtAndroidMenu
 
         visibleMenuBar = 0;
         activeTopLevelWindow = window;
-        foreach (QAndroidPlatformMenuBar *menuBar, menuBars) {
+        for (QAndroidPlatformMenuBar *menuBar : qAsConst(menuBars)) {
             if (menuBar->parentWindow() == window) {
                 visibleMenuBar = menuBar;
                 resetMenuBar();
@@ -350,7 +350,7 @@ namespace QtAndroidMenu
                 item->activated();
                 visibleMenu->aboutToHide();
                 visibleMenu = 0;
-                foreach (QAndroidPlatformMenu *menu, pendingContextMenus) {
+                for (QAndroidPlatformMenu *menu : qAsConst(pendingContextMenus)) {
                     if (menu->isVisible())
                         menu->aboutToHide();
                 }

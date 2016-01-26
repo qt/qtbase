@@ -112,7 +112,7 @@ void QAndroidEventDispatcherStopper::startAll()
         return;
 
     started = true;
-    foreach (QAndroidEventDispatcher *d, m_dispatchers)
+    for (QAndroidEventDispatcher *d : qAsConst(m_dispatchers))
         d->start();
 }
 
@@ -123,7 +123,7 @@ void QAndroidEventDispatcherStopper::stopAll()
         return;
 
     started = false;
-    foreach (QAndroidEventDispatcher *d, m_dispatchers)
+    for (QAndroidEventDispatcher *d : qAsConst(m_dispatchers))
         d->stop();
 }
 
@@ -142,6 +142,6 @@ void QAndroidEventDispatcherStopper::removeEventDispatcher(QAndroidEventDispatch
 void QAndroidEventDispatcherStopper::goingToStop(bool stop)
 {
     QMutexLocker lock(&m_mutex);
-    foreach (QAndroidEventDispatcher *d, m_dispatchers)
+    for (QAndroidEventDispatcher *d : qAsConst(m_dispatchers))
         d->goingToStop(stop);
 }
