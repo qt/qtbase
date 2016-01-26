@@ -1472,11 +1472,8 @@ void QMakeEvaluator::updateFeaturePaths()
 
     QStringList feature_roots;
 
-    foreach (const QString &f, m_option->getPathListEnv(QLatin1String("QMAKEFEATURES")))
-        feature_roots += f;
-
+    feature_roots += m_option->getPathListEnv(QLatin1String("QMAKEFEATURES"));
     feature_roots += m_qmakefeatures;
-
     feature_roots += m_option->splitPathList(
                 m_option->propertyValue(ProKey("QMAKEFEATURES")).toQString(m_mtmp));
 
