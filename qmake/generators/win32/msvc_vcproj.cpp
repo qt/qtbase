@@ -1167,7 +1167,8 @@ void VcprojGenerator::initLinkerTool()
 
     static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
     for (int i = 0; lflags[i]; i++) {
-        foreach (const ProString &lib, fixLibFlags(lflags[i])) {
+        const auto libs = fixLibFlags(lflags[i]);
+        for (const ProString &lib : libs) {
             if (lib.startsWith("/LIBPATH:"))
                 conf.linker.AdditionalLibraryDirectories << lib.mid(9).toQString();
             else

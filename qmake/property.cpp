@@ -139,7 +139,8 @@ QMakeProperty::exec()
     if(Option::qmake_mode == Option::QMAKE_QUERY_PROPERTY) {
         if(Option::prop::properties.isEmpty()) {
             initSettings();
-            foreach (const QString &key, settings->childKeys()) {
+            const auto keys = settings->childKeys();
+            for (const QString &key : keys) {
                 QString val = settings->value(key).toString();
                 fprintf(stdout, "%s:%s\n", qPrintable(key), qPrintable(val));
             }
