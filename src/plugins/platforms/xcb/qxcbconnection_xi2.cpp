@@ -833,9 +833,8 @@ void QXcbConnection::xi2HandleHierachyEvent(void *event)
         return;
     xi2SetupDevices();
     // Reselect events for all event-listening windows.
-    Q_FOREACH (xcb_window_t window, m_mapper.keys()) {
-        xi2Select(window);
-    }
+    for (auto it = m_mapper.cbegin(), end = m_mapper.cend(); it != end; ++it)
+        xi2Select(it.key());
 }
 
 void QXcbConnection::xi2HandleDeviceChangedEvent(void *event)
