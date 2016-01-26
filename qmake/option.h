@@ -153,7 +153,7 @@ struct Option
 
     inline static bool hasFileExtension(const QString &str, const QStringList &extensions)
     {
-        foreach (const QString &ext, extensions)
+        for (const QString &ext : extensions)
             if (str.endsWith(ext))
                 return true;
         return false;

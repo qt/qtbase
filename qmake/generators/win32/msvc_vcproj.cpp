@@ -124,7 +124,7 @@ DotNET which_dotnet_version(const QByteArray &preferredVersion = QByteArray())
     // More than one version installed, search directory path
     QString paths = qgetenv("PATH");
     const QStringList pathlist = paths.split(QLatin1Char(';'));
-    foreach (const QString &path, pathlist) {
+    for (const QString &path : pathlist) {
         for (i = 0; dotNetCombo[i].version; ++i) {
             const QString productPath = installPaths.value(dotNetCombo[i].version);
             if (productPath.isEmpty())
@@ -533,13 +533,13 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
 
                     if (tmpList.size()) {
                         const ProStringList depends = tmpList;
-                        foreach (const ProString &dep, depends) {
+                        for (const ProString &dep : depends) {
                             QString depend = dep.toQString();
                             if (!projGuids[depend].isEmpty()) {
                                 newDep->dependencies << projGuids[depend];
                             } else if (subdirProjectLookup[projLookup[depend]].size() > 0) {
-                                ProStringList tmpLst = subdirProjectLookup[projLookup[depend]];
-                                foreach (const ProString &tDep, tmpLst) {
+                                const ProStringList tmpLst = subdirProjectLookup[projLookup[depend]];
+                                for (const ProString &tDep : tmpLst) {
                                     QString tmpDep = tDep.toQString();
                                     newDep->dependencies << projGuids[projLookup[tmpDep]];
                                 }
@@ -1264,7 +1264,7 @@ void VcprojGenerator::initDeploymentTool()
         if (targetPath.endsWith("/") || targetPath.endsWith("\\"))
             targetPath.chop(1);
     }
-    ProStringList dllPaths = project->values("QMAKE_DLL_PATHS");
+    const ProStringList dllPaths = project->values("QMAKE_DLL_PATHS");
     // Only deploy Qt libs for shared build
     if (!dllPaths.isEmpty() &&
         !(conf.WinRT && project->first("MSVC_VER").toQString() == "14.0")) {
@@ -1282,7 +1282,7 @@ void VcprojGenerator::initDeploymentTool()
             // Use only the file name and check in Qt's install path and LIBPATHs to check for existence
             dllName.remove(0, dllName.lastIndexOf(QLatin1Char('/')) + 1);
             QFileInfo info;
-            foreach (const ProString &dllPath, dllPaths) {
+            for (const ProString &dllPath : dllPaths) {
                 QString absoluteDllFilePath = dllPath.toQString();
                 if (!absoluteDllFilePath.endsWith(QLatin1Char('/')))
                     absoluteDllFilePath += QLatin1Char('/');
@@ -1664,7 +1664,7 @@ void VcprojGenerator::initExtraCompilerOutputs()
             // provided that the input file variable is not handled already (those in otherFilters
             // are handled, so we avoid them).
             const ProStringList &inputVars = project->values(ProKey(*it + ".input"));
-            foreach (const ProString &inputVar, inputVars) {
+            for (const ProString &inputVar : inputVars) {
                 if (!otherFilters.contains(inputVar)) {
                     const ProStringList &tmp_in = project->values(inputVar.toKey());
                     for (int i = 0; i < tmp_in.count(); ++i) {

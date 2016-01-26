@@ -44,7 +44,7 @@ QT_BEGIN_NAMESPACE
 static QString nmakePathList(const QStringList &list)
 {
     QStringList pathList;
-    foreach (const QString &path, list)
+    for (const QString &path : list)
         pathList.append(QDir::cleanPath(path));
 
     return QDir::toNativeSeparators(pathList.join(QLatin1Char(';')))
@@ -79,7 +79,7 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                                         + " (" + variables["CE_ARCH"].join(' ') + ")";
                 const QList<CeSdkInfo> sdkList = sdkhandler.listAll();
                 CeSdkInfo sdk;
-                foreach (const CeSdkInfo &info, sdkList) {
+                for (const CeSdkInfo &info : sdkList) {
                     if (info.name().compare(sdkName, Qt::CaseInsensitive ) == 0) {
                         sdk = info;
                         break;
@@ -91,7 +91,7 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                     t << "\nPATH = " << sdk.binPath() << "\n";
                 } else {
                     QStringList sdkStringList;
-                    foreach (const CeSdkInfo &info, sdkList)
+                    for (const CeSdkInfo &info : sdkList)
                         sdkStringList << info.name();
 
                     fprintf(stderr, "Failed to find Windows CE SDK matching %s, found: %s\n"

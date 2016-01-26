@@ -173,7 +173,7 @@ QStringList CeSdkHandler::getMsBuildToolPaths() const
 QStringList CeSdkHandler::filterMsBuildToolPaths(const QStringList &paths) const
 {
     QStringList result;
-    foreach (const QString &path, paths) {
+    for (const QString &path : paths) {
         QDir dirVC110(path);
         if (path.endsWith(QLatin1String("bin")))
             dirVC110.cdUp();
@@ -191,9 +191,9 @@ bool CeSdkHandler::retrieveEnvironment(const QStringList &relativePaths,
                                        CeSdkInfo *info)
 {
     bool result = false;
-    foreach (const QString &path, toolPaths) {
+    for (const QString &path : toolPaths) {
         const QDir dir(path);
-        foreach (const QString &filePath, relativePaths) {
+        for (const QString &filePath : relativePaths) {
             QFile file(dir.absoluteFilePath(filePath));
             if (file.exists())
                 result = parseMsBuildFile(&file, info) || result;
@@ -209,7 +209,7 @@ void CeSdkHandler::retrieveWEC2013SDKs()
     const QStringList filteredToolPaths = filterMsBuildToolPaths(toolPaths);
     QSettings settings("HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows CE Tools\\SDKs", QSettings::NativeFormat);
     const QStringList keys = settings.allKeys();
-    foreach (const QString &key, keys) {
+    for (const QString &key : keys) {
         if (key.contains(QLatin1String("SDKInformation")) || key.contains(QLatin1Char('.'))) {
             QFile sdkPropertyFile(settings.value(key).toString());
             if (!sdkPropertyFile.exists())

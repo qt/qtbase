@@ -73,7 +73,7 @@ static ProStringList prepareBuiltinArgs(const QList<ProStringList> &args)
 {
     ProStringList ret;
     ret.reserve(args.size());
-    foreach (const ProStringList &arg, args)
+    for (const ProStringList &arg : args)
         ret << arg.join(' ');
     return ret;
 }

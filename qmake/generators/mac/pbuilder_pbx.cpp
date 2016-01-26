@@ -1646,7 +1646,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         if (attributes.isEmpty())
             continue;
         t << "\t\t\t\t\t" << target << " = {\n";
-        foreach (const ProString &attribute, attributes)
+        for (const ProString &attribute : attributes)
             t << "\t\t\t\t\t\t" << writeSettings(attribute.toQString(), project->first(ProKey("QMAKE_PBX_TARGET_ATTRIBUTES_" + target + "_" + attribute))) << ";\n";
         t << "\t\t\t\t\t};\n";
     }

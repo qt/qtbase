@@ -954,7 +954,7 @@ static QString
 qv(const ProStringList &val)
 {
     QString ret;
-    foreach (const ProString &v, val)
+    for (const ProString &v : val)
         ret += qv(v);
     return ret;
 }

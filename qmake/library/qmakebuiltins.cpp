@@ -428,11 +428,11 @@ void QMakeEvaluator::populateDeps(
         QHash<ProKey, QSet<ProKey> > &dependencies, ProValueMap &dependees,
         QMultiMap<int, ProString> &rootSet) const
 {
-    foreach (const ProString &item, deps)
+    for (const ProString &item : deps)
         if (!dependencies.contains(item.toKey())) {
             QSet<ProKey> &dset = dependencies[item.toKey()]; // Always create entry
             ProStringList depends;
-            foreach (const ProString &suffix, suffixes)
+            for (const ProString &suffix : suffixes)
                 depends += values(ProKey(prefix + item + suffix));
             if (depends.isEmpty()) {
                 rootSet.insert(first(ProKey(prefix + item + priosfx)).toInt(), item);
@@ -599,7 +599,7 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
             const ProStringList &var = values(map(args.at(0)));
             if (!var.isEmpty()) {
                 const ProFile *src = currentProFile();
-                foreach (const ProString &v, var)
+                for (const ProString &v : var)
                     if (const ProFile *s = v.sourceFile()) {
                         src = s;
                         break;
@@ -750,7 +750,7 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
         tmp.sprintf(".QMAKE_INTERNAL_TMP_variableName_%d", m_listCount++);
         ret = ProStringList(ProString(tmp));
         ProStringList lst;
-        foreach (const ProString &arg, args)
+        for (const ProString &arg : args)
             lst += split_value_list(arg.toQString(m_tmp1), arg.sourceFile()); // Relies on deep copy
         m_valuemapStack.top()[ret.at(0).toKey()] = lst;
         break; }
@@ -870,7 +870,7 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
         } else {
             const ProStringList &vals = values(args.at(0).toKey());
             ret.reserve(vals.size());
-            foreach (const ProString &str, vals)
+            for (const ProString &str : vals)
                 ret += ProString(quoteValue(str));
         }
         break;
@@ -1753,7 +1753,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                 varstr += QLatin1Char(' ');
                 varstr += quoteValue(diffval.at(0));
             } else if (!diffval.isEmpty()) {
-                foreach (const ProString &vval, diffval) {
+                for (const ProString &vval : diffval) {
                     varstr += QLatin1String(" \\\n    ");
                     varstr += quoteValue(vval);
                 }
