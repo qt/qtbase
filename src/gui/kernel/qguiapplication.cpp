@@ -1960,6 +1960,15 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
         window = QGuiApplication::focusWindow();
     }
 
+#if !defined(Q_OS_OSX)
+    // FIXME: Include OS X in this code path by passing the key event through
+    // QPlatformInputContext::filterEvent().
+    if (e->keyType == QEvent::KeyPress && window) {
+        QWindowSystemInterface::handleShortcutEvent(window, e->timestamp, e->key, e->modifiers,
+            e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers, e->unicode, e->repeat, e->repeatCount);
+    }
+#endif
+
     QKeyEvent ev(e->keyType, e->key, e->modifiers,
                  e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers,
                  e->unicode, e->repeat, e->repeatCount);
