@@ -1718,9 +1718,11 @@ QString QApplicationPrivate::desktopStyleKey()
     // first valid one.
     if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
         const QStringList availableKeys = QStyleFactory::keys();
-        foreach (const QString &style, theme->themeHint(QPlatformTheme::StyleNames).toStringList())
+        const auto styles = theme->themeHint(QPlatformTheme::StyleNames).toStringList();
+        for (const QString &style : styles) {
             if (availableKeys.contains(style, Qt::CaseInsensitive))
                 return style;
+        }
     }
     return QString();
 }
@@ -2225,10 +2227,13 @@ QWidget *qt_tlw_for_window(QWindow *wnd)
         else
             break;
     }
-    if (wnd)
-        foreach (QWidget *tlw, qApp->topLevelWidgets())
+    if (wnd) {
+        const auto tlws = qApp->topLevelWidgets();
+        for (QWidget *tlw : tlws) {
             if (tlw->windowHandle() == wnd)
                 return tlw;
+        }
+    }
     return 0;
 }
 
@@ -3942,7 +3947,8 @@ void QApplication::alert(QWidget *widget, int duration)
         if (QWindow *window= QApplicationPrivate::windowForWidget(widget))
             window->alert(duration);
     } else {
-        foreach (QWidget *topLevel, topLevelWidgets())
+        const auto topLevels = topLevelWidgets();
+        for (QWidget *topLevel : topLevels)
             QApplication::alert(topLevel, duration);
     }
 }
