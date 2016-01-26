@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -71,6 +72,7 @@
 QT_BEGIN_NAMESPACE
 
 class QDBusConnectionPrivate;
+class QDBusMessage;
 
 // Really private structs used by qdbusintegrator.cpp
 // Things that aren't used by any other file
@@ -137,6 +139,23 @@ private:
     int pathStartPos;
     QDBusMessage message;
     bool handled;
+};
+
+class QDBusSpyCallEvent : public QMetaCallEvent
+{
+public:
+    typedef void (*Hook)(const QDBusMessage&);
+    QDBusSpyCallEvent(QDBusConnectionPrivate *cp, const QDBusConnection &c, const QDBusMessage &msg,
+                      const Hook *hooks, int count)
+        : QMetaCallEvent(0, 0, Q_NULLPTR, cp, 0), conn(c), msg(msg), hooks(hooks), hookCount(count)
+    {}
+    ~QDBusSpyCallEvent();
+    void placeMetaCall(QObject *) Q_DECL_OVERRIDE;
+
+    QDBusConnection conn;   // keeps the refcount in QDBusConnectionPrivate up
+    QDBusMessage msg;
+    const Hook *hooks;
+    int hookCount;
 };
 
 QT_END_NAMESPACE

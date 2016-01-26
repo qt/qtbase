@@ -58,8 +58,8 @@ struct ContainsPathKey
 {
     bool operator()(const QString &val) const
     {
-        return !(val.endsWith(QStringLiteral("MSBuildToolsPath"))
-                 || val.endsWith(QStringLiteral("MSBuildToolsRoot")));
+        return !(val.endsWith(QLatin1String("MSBuildToolsPath"))
+                 || val.endsWith(QLatin1String("MSBuildToolsRoot")));
     }
 };
 
@@ -136,7 +136,7 @@ bool CeSdkHandler::parseMsBuildFile(QFile *file, CeSdkInfo *info)
     if (success) {
         const QString startPattern = QStringLiteral("$(Registry:");
         const int startIndex = sdkRootPath.indexOf(startPattern);
-        const int endIndex = sdkRootPath.lastIndexOf(QStringLiteral(")"));
+        const int endIndex = sdkRootPath.lastIndexOf(QLatin1Char(')'));
         const QString regString = sdkRootPath.mid(startIndex + startPattern.size(),
                                                   endIndex - startIndex - startPattern.size());
         QSettings sdkRootPathRegistry(regString, QSettings::NativeFormat);
@@ -175,7 +175,7 @@ QStringList CeSdkHandler::filterMsBuildToolPaths(const QStringList &paths) const
     QStringList result;
     foreach (const QString &path, paths) {
         QDir dirVC110(path);
-        if (path.endsWith(QStringLiteral("bin")))
+        if (path.endsWith(QLatin1String("bin")))
             dirVC110.cdUp();
         QDir dirVC120 = dirVC110;
         if (dirVC110.cd(QStringLiteral("Microsoft.Cpp\\v4.0\\V110\\Platforms")))
@@ -274,7 +274,7 @@ void CeSdkHandler::retrieveWEC2013SDKs()
             if (cpuInfo.properties.isEmpty())
                 continue;
             const PropertyContainer &cpuInfoVal = cpuInfo.properties.first().properties.value(QLatin1String("CpuName"));
-            if (cpuInfoVal.name != QStringLiteral("CpuName"))
+            if (cpuInfoVal.name != QLatin1String("CpuName"))
                 continue;
             const QString SDKName = QStringLiteral("SDK name");
             currentSdk.m_name = currentProperty.properties.value(SDKName).value+

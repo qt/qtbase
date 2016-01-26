@@ -28,6 +28,7 @@
 /*!
     \example tools/codecs
     \title Text Codecs Example
+    \brief How to import and export text using text codecs.
 
     The Text Codecs example demonstrates the principles behind importing and exporting text
     using codecs to ensure that characters are encoded properly, avoiding loss of data

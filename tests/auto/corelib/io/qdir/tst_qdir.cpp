@@ -51,7 +51,7 @@
 # include <sys/stat.h>
 #endif
 
-#if defined(Q_OS_VXWORKS)
+#if defined(Q_OS_VXWORKS) || defined(Q_OS_WINRT)
 #define Q_NO_SYMLINKS
 #endif
 
@@ -211,7 +211,12 @@ private slots:
     void cdBelowRoot();
 
 private:
+#ifdef BUILTIN_TESTDATA
+    QString m_dataPath;
+    QSharedPointer<QTemporaryDir> m_dataDir;
+#else
     const QString m_dataPath;
+#endif
 };
 
 Q_DECLARE_METATYPE(tst_QDir::UncHandling)
@@ -219,7 +224,7 @@ Q_DECLARE_METATYPE(tst_QDir::UncHandling)
 tst_QDir::tst_QDir()
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
     : m_dataPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation))
-#else
+#elif !defined(BUILTIN_TESTDATA)
     : m_dataPath(QFileInfo(QFINDTESTDATA("testData")).absolutePath())
 #endif
 {
@@ -256,12 +261,23 @@ void tst_QDir::init()
 
 void tst_QDir::initTestCase()
 {
+#ifdef BUILTIN_TESTDATA
+    m_dataDir = QEXTRACTTESTDATA("/");
+    QVERIFY2(!m_dataDir.isNull(), qPrintable("Did not find testdata. Is this builtin?"));
+    m_dataPath = m_dataDir->path();
+#endif
+
     QVERIFY2(!m_dataPath.isEmpty(), "test data not found");
 }
 
 void tst_QDir::cleanupTestCase()
 {
+#ifdef BUILTIN_TESTDATA
+    // We need to reset the current directory outside of QTemporaryDir for successful deletion
+    QDir::setCurrent(QCoreApplication::applicationDirPath());
+#else
     QDir(QDir::currentPath() + "/tmpdir").removeRecursively();
+#endif
 }
 
 // Testing get/set functions
@@ -527,7 +543,7 @@ void tst_QDir::exists_data()
 
     QTest::newRow("simple dir") << (m_dataPath + "/resources") << true;
     QTest::newRow("simple dir with slash") << (m_dataPath + "/resources/") << true;
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) && !defined(Q_OS_WINRT)
     const QString uncRoot = QStringLiteral("//") + QtNetworkSettings::winServerName();
     QTest::newRow("unc 1") << uncRoot << true;
     QTest::newRow("unc 2") << uncRoot + QLatin1Char('/') << true;
@@ -539,7 +555,7 @@ void tst_QDir::exists_data()
     QTest::newRow("unc 8") << uncRoot + "/asharethatshouldnotexist" << false;
     QTest::newRow("unc 9") << "//ahostthatshouldnotexist" << false;
 #endif
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT))
     QTest::newRow("This drive should exist") <<  "C:/" << true;
     // find a non-existing drive and check if it does not exist
 #ifdef QT_BUILD_INTERNAL
@@ -892,7 +908,7 @@ void tst_QDir::entryListSimple_data()
     QTest::newRow("simple dir with slash") << (m_dataPath + "/resources/") << 2;
 #endif
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     const QString uncRoot = QStringLiteral("//") + QtNetworkSettings::winServerName();
     QTest::newRow("unc 1") << uncRoot << 2;
     QTest::newRow("unc 2") << uncRoot + QLatin1Char('/') << 2;
@@ -975,7 +991,6 @@ void tst_QDir::canonicalPath_data()
 
     QTest::newRow("relative") << "." << m_dataPath;
     QTest::newRow("relativeSubDir") << "./testData/../testData" << m_dataPath + "/testData";
-
 #ifndef Q_OS_WIN
     QTest::newRow("absPath") << m_dataPath + "/testData/../testData" << m_dataPath + "/testData";
 #else
@@ -1174,7 +1189,7 @@ tst_QDir::cleanPath_data()
     QTest::newRow("data10") << "/:/" << "/:";
 #endif
 #endif
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     QTest::newRow("data11") << "//foo//bar" << "//foo/bar";
 #endif
     QTest::newRow("data12") << "ab/a/" << "ab/a"; // Path item with length of 2
@@ -1186,11 +1201,13 @@ tst_QDir::cleanPath_data()
 
     QTest::newRow("data14") << "c://foo" << "c:/foo";
     // Drive letters and unc path in one string
+#ifndef Q_OS_WINRT
 #ifdef Q_OS_WIN
     QTest::newRow("data15") << "//c:/foo" << "//c:/foo";
 #else
     QTest::newRow("data15") << "//c:/foo" << "/c:/foo";
 #endif
+#endif // !Q_OS_WINRT
 
     QTest::newRow("QTBUG-23892_0") << "foo/.." << ".";
     QTest::newRow("QTBUG-23892_1") << "foo/../" << ".";
@@ -1309,7 +1326,7 @@ void tst_QDir::absoluteFilePath_data()
     QTest::newRow("2") << "/" << "passwd" << "/passwd";
     QTest::newRow("3") << "relative" << "path" << QDir::currentPath() + "/relative/path";
     QTest::newRow("4") << "" << "" << QDir::currentPath();
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     QTest::newRow("5") << "//machine" << "share" << "//machine/share";
 #endif
 
@@ -1333,7 +1350,7 @@ void tst_QDir::absolutePath_data()
     QTest::addColumn<QString>("expectedPath");
 
     QTest::newRow("0") << "/machine/share/dir1" << "/machine/share/dir1";
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT))
     QTest::newRow("1") << "\\machine\\share\\dir1" << "/machine/share/dir1";
     QTest::newRow("2") << "//machine/share/dir1" << "//machine/share/dir1";
     QTest::newRow("3") << "\\\\machine\\share\\dir1" << "//machine/share/dir1";
@@ -1401,10 +1418,12 @@ void tst_QDir::relativeFilePath_data()
     QTest::newRow("27") << "C:" << "D:/" << "D:/";
     QTest::newRow("28") << "C:/" << "D:" << "D:";
     QTest::newRow("29") << "C:/" << "D:/" << "D:/";
+#ifndef Q_OS_WINRT
     QTest::newRow("30") << "C:/foo/bar" << "//anotherHost/foo/bar" << "//anotherHost/foo/bar";
     QTest::newRow("31") << "//anotherHost/foo" << "//anotherHost/foo/bar" << "bar";
     QTest::newRow("32") << "//anotherHost/foo" << "bar" << "bar";
     QTest::newRow("33") << "//anotherHost/foo" << "C:/foo/bar" << "C:/foo/bar";
+#endif // !Q_OS_WINRT
 #endif
 
     QTest::newRow("resource0") << ":/prefix" << "foo.bar" << "foo.bar";
@@ -1589,7 +1608,11 @@ void tst_QDir::homePath()
     qputenv("HOME", envHome);
 
 #elif defined(Q_OS_WIN)
-    if (strHome.length() > 3)      // root dir = "c:/"; "//" is not really valid...
+    if (strHome.length() > 3      // root dir = "c:/"; "//" is not really valid...
+#if  defined(Q_OS_WINRT)
+        && strHome.length() > QDir::rootPath().length()
+#endif
+    )
         QVERIFY(!strHome.endsWith('/'));
 #endif
 
@@ -2054,6 +2077,9 @@ void tst_QDir::drives()
     QVERIFY(list.count() >= 1); //system
     QLatin1Char systemdrive('c');
 #endif
+#if defined(Q_OS_WINRT)
+    QSKIP("WinRT has no concept of drives");
+#endif
 #if defined(Q_OS_WIN)
     QVERIFY(list.count() <= 26);
     bool foundsystem = false;
@@ -2110,7 +2136,9 @@ void tst_QDir::equalityOperator_data()
         << true;
 
     //need a path in the root directory that is unlikely to be a symbolic link.
-#if defined (Q_OS_WIN)
+#if defined (Q_OS_WINRT)
+    QString pathinroot(QDir::rootPath() + QLatin1String("assets/.."));
+#elif defined (Q_OS_WIN)
     QString pathinroot("c:/windows/..");
 #elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
     QString pathinroot("/system/..");
@@ -2241,6 +2269,10 @@ void tst_QDir::cdBelowRoot()
 #define ROOT QString("/")
 #define DIR QString("/tmp")
 #define CD_INTO "tmp"
+#elif defined (Q_OS_WINRT)
+#define ROOT QDir::rootPath()
+#define DIR QDir::rootPath()
+#define CD_INTO QDir::rootPath()
 #else
 #define ROOT QString::fromLocal8Bit(qgetenv("SystemDrive"))+"/"
 #define DIR QString::fromLocal8Bit(qgetenv("SystemRoot")).replace('\\', '/')
@@ -2255,6 +2287,9 @@ void tst_QDir::cdBelowRoot()
 #ifdef Q_OS_UNIX
     if (::getuid() == 0)
         QSKIP("Running this test as root doesn't make sense");
+#endif
+#ifdef Q_OS_WINRT
+    QSKIP("WinRT has no concept of system root");
 #endif
     QDir dir(DIR);
     QVERIFY(!dir.cd("../.."));

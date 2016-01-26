@@ -39,6 +39,7 @@
 
 #include "qtextdocument.h"
 #include <qtextformat.h>
+#include "qtextcursor_p.h"
 #include "qtextdocumentlayout_p.h"
 #include "qtextdocumentfragment.h"
 #include "qtextdocumentfragment_p.h"
@@ -1279,7 +1280,7 @@ static bool findInBlock(const QTextBlock &block, const QString &expression, int 
             }
         }
         //we have a hit, return the cursor for that.
-        *cursor = QTextCursor(block.docHandle(), block.position() + idx);
+        *cursor = QTextCursorPrivate::fromPosition(block.docHandle(), block.position() + idx);
         cursor->setPosition(cursor->position() + expression.length(), QTextCursor::KeepAnchor);
         return true;
     }
@@ -1397,7 +1398,7 @@ static bool findInBlock(const QTextBlock &block, const QRegExp &expression, int 
             }
         }
         //we have a hit, return the cursor for that.
-        *cursor = QTextCursor(block.docHandle(), block.position() + idx);
+        *cursor = QTextCursorPrivate::fromPosition(block.docHandle(), block.position() + idx);
         cursor->setPosition(cursor->position() + expr.matchedLength(), QTextCursor::KeepAnchor);
         return true;
     }
@@ -1525,7 +1526,7 @@ static bool findInBlock(const QTextBlock &block, const QRegularExpression &expre
             }
         }
         //we have a hit, return the cursor for that.
-        *cursor = QTextCursor(block.docHandle(), block.position() + idx);
+        *cursor = QTextCursorPrivate::fromPosition(block.docHandle(), block.position() + idx);
         cursor->setPosition(cursor->position() + match.capturedLength(), QTextCursor::KeepAnchor);
         return true;
     }

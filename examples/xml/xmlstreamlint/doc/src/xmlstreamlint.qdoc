@@ -29,6 +29,8 @@
     \example xmlstreamlint
     \title XML Stream Lint Example
     \ingroup xml-examples
+    \brief A commandline tool reading from an input file and writing to
+    the standard output file.
 
     The XML Stream Lint example provides a simple command line utility that
     accepts a file name as its single argument and writes it to the standard

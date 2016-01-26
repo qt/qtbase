@@ -183,16 +183,18 @@ void QCoreApplicationPrivate::processCommandLineArguments()
 {
     int j = argc ? 1 : 0;
     for (int i = 1; i < argc; ++i) {
-        if (argv[i] && *argv[i] != '-') {
+        if (!argv[i])
+            continue;
+        if (*argv[i] != '-') {
             argv[j++] = argv[i];
             continue;
         }
-        QByteArray arg = argv[i];
-        if (arg.startsWith("--"))
-            arg.remove(0, 1);
-        if (arg.startsWith("-qmljsdebugger=")) {
-            qmljs_debug_arguments = QString::fromLocal8Bit(arg.right(arg.length() - 15));
-        } else if (arg == "-qmljsdebugger" && i < argc - 1) {
+        const char *arg = argv[i];
+        if (arg[1] == '-') // startsWith("--")
+            ++arg;
+        if (strncmp(arg, "-qmljsdebugger=", 15) == 0) {
+            qmljs_debug_arguments = QString::fromLocal8Bit(arg + 15);
+        } else if (strcmp(arg, "-qmljsdebugger") == 0 && i < argc - 1) {
             ++i;
             qmljs_debug_arguments = QString::fromLocal8Bit(argv[i]);
         } else {

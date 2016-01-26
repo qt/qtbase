@@ -1209,7 +1209,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
         }
 
         bool do_default = true;
-        const QString root = "$(INSTALL_ROOT)";
+        const QString root = installRoot();
         QString dst;
         if (installConfigValues.indexOf("no_path") == -1 &&
             installConfigValues.indexOf("dummy_install") == -1) {

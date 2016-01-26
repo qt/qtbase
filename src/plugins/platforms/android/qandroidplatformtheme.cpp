@@ -201,7 +201,7 @@ QJsonObject AndroidStyle::loadStyleData()
     }
     Q_ASSERT(!stylePath.isEmpty());
 
-    if (!androidTheme.isEmpty() && QFileInfo(stylePath + androidTheme + QLatin1String("style.json")).exists())
+    if (!androidTheme.isEmpty() && QFileInfo::exists(stylePath + androidTheme + QLatin1String("style.json")))
         stylePath += androidTheme;
 
     QFile f(stylePath + QLatin1String("style.json"));

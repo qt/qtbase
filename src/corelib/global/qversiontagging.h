@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
  * qt_version_tag symbol that is present in QtCore. Such symbol is versioned,
  * so the linker will automatically pull the current Qt version and add it to
  * the ELF header of the library/application. The assembly produces one section
- * called ".qtversion" containing two pointer-sized values. The first is a
+ * called ".qtversion" containing two 32-bit values. The first is a
  * relocation to the qt_version_tag symbol (which is what causes the ELF
  * version to get used). The second value is the current Qt version at the time
  * of compilation.
@@ -64,10 +64,12 @@ QT_BEGIN_NAMESPACE
 // don't make tags in QtCore, bootstrapped systems or if the user asked not to
 #elif defined(Q_CC_GNU) && !defined(Q_OS_ANDROID)
 #  if defined(Q_PROCESSOR_X86) && (defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD_KERNEL))
-#    ifdef __LP64__
-#      define QT_VERSION_TAG_RELOC(sym) ".quad " QT_STRINGIFY(QT_MANGLE_NAMESPACE(sym)) "@GOTPCREL\n"
-#    elif defined(Q_PROCESSOR_X86_64)   // x32
-#      define QT_VERSION_TAG_RELOC(sym) ".long " QT_STRINGIFY(QT_MANGLE_NAMESPACE(sym)) "@GOTPCREL\n"
+#    if defined(Q_PROCESSOR_X86_64)   // x86-64 or x32
+#      if defined(__code_model_large__)
+#        define QT_VERSION_TAG_RELOC(sym) ".quad " QT_STRINGIFY(QT_MANGLE_NAMESPACE(sym)) "@GOT\n"
+#      else
+#        define QT_VERSION_TAG_RELOC(sym) ".long " QT_STRINGIFY(QT_MANGLE_NAMESPACE(sym)) "@GOTPCREL\n"
+#      endif
 #    else                               // x86
 #      define QT_VERSION_TAG_RELOC(sym) ".long " QT_STRINGIFY(QT_MANGLE_NAMESPACE(sym)) "@GOT\n"
 #    endif

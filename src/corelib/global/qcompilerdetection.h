@@ -937,8 +937,8 @@
 // Older versions (QNX 650) do not support C++11 features
 // _HAS_* macros are set to 1 by toolchains that actually include
 // Dinkum C++11 libcpp.
-#  if !__GLIBCXX__
-#   if !_HAS_CPP0X
+#  if !defined(__GLIBCXX__)
+#   if !defined(_HAS_CPP0X) || !_HAS_CPP0X
 // Disable C++11 features that depend on library support
 #    undef Q_COMPILER_INITIALIZER_LISTS
 #    undef Q_COMPILER_RVALUE_REFS
@@ -946,10 +946,10 @@
 #    undef Q_COMPILER_UNICODE_STRINGS
 #    undef Q_COMPILER_NOEXCEPT
 #   endif // !_HAS_CPP0X
-#   if !_HAS_NULLPTR_T
+#   if !defined(_HAS_NULLPTR_T) || !_HAS_NULLPTR_T
 #    undef Q_COMPILER_NULLPTR
 #   endif //!_HAS_NULLPTR_T
-#   if !_HAS_CONSTEXPR
+#   if !defined(_HAS_CONSTEXPR) || !_HAS_CONSTEXPR
 // The libcpp is missing constexpr keywords on important functions like std::numeric_limits<>::min()
 // Disable constexpr support on QNX even if the compiler supports it
 #    undef Q_COMPILER_CONSTEXPR

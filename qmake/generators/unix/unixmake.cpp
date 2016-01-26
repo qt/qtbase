@@ -509,6 +509,20 @@ UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
     return false;
 }
 
+#ifdef Q_OS_WIN // MinGW x-compiling for QNX
+QString UnixMakefileGenerator::installRoot() const
+{
+    /*
+      We include a magic prefix on the path to bypass mingw-make's "helpful"
+      intervention in the environment, recognising variables that look like
+      paths and adding the msys system root as prefix, which we don't want.
+      Once this hack has smuggled INSTALL_ROOT into make's variable space, we
+      can trivially strip the magic prefix back off to get the path we meant.
+     */
+    return QStringLiteral("$(INSTALL_ROOT:@msyshack@%=%)");
+}
+#endif
+
 QString
 UnixMakefileGenerator::defaultInstall(const QString &t)
 {
@@ -517,7 +531,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
 
     enum { NoBundle, SolidBundle, SlicedBundle } bundle = NoBundle;
     bool isAux = (project->first("TEMPLATE") == "aux");
-    const QString root = "$(INSTALL_ROOT)";
+    const QString root = installRoot();
     ProStringList &uninst = project->values(ProKey(t + ".uninstall"));
     QString ret, destdir = project->first("DESTDIR").toQString();
     if(!destdir.isEmpty() && destdir.right(1) != Option::dir_sep)

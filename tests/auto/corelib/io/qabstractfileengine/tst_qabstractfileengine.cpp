@@ -47,6 +47,7 @@ class tst_QAbstractFileEngine
 {
     Q_OBJECT
 public slots:
+    void initTestCase();
     void cleanupTestCase();
 
 private slots:
@@ -59,6 +60,8 @@ private slots:
     void mounting();
 private:
     QStringList filesForRemoval;
+    QSharedPointer<QTemporaryDir> m_currentDir;
+    QString m_previousCurrent;
 };
 
 class ReferenceFileEngine
@@ -558,6 +561,14 @@ class FileEngineHandler
     }
 };
 
+void tst_QAbstractFileEngine::initTestCase()
+{
+    m_previousCurrent = QDir::currentPath();
+    m_currentDir = QSharedPointer<QTemporaryDir>(new QTemporaryDir());
+    QVERIFY2(!m_currentDir.isNull(), qPrintable("Could not create current directory."));
+    QDir::setCurrent(m_currentDir->path());
+}
+
 void tst_QAbstractFileEngine::cleanupTestCase()
 {
     bool failed = false;
@@ -571,6 +582,8 @@ void tst_QAbstractFileEngine::cleanupTestCase()
         }
 
     QVERIFY(!failed);
+
+    QDir::setCurrent(m_previousCurrent);
 }
 
 void tst_QAbstractFileEngine::customHandler()

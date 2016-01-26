@@ -29,7 +29,6 @@
 
 #include <QtTest/QtTest>
 
-
 #include <qtextdocument.h>
 #include <qtexttable.h>
 #include <qvariant.h>
@@ -39,6 +38,8 @@
 #include <qtextcursor.h>
 #include <qtextobject.h>
 #include <qdebug.h>
+
+#include <private/qtextcursor_p.h>
 
 QT_FORWARD_DECLARE_CLASS(QTextDocument)
 
@@ -1278,7 +1279,7 @@ void tst_QTextCursor::anchorInitialized1()
 void tst_QTextCursor::anchorInitialized2()
 {
     cursor.insertBlock();
-    cursor = QTextCursor(cursor.block().docHandle(), 1);
+    cursor = QTextCursorPrivate::fromPosition(cursor.block().docHandle(), 1);
     QCOMPARE(cursor.position(), 1);
     QCOMPARE(cursor.anchor(), 1);
     QCOMPARE(cursor.selectionStart(), 1);

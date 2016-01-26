@@ -1710,7 +1710,7 @@ bool QTextDocumentPrivate::ensureMaximumBlockCount()
     beginEditBlock();
 
     const int blocksToRemove = blocks.numNodes() - maximumBlockCount;
-    QTextCursor cursor(this, 0);
+    QTextCursor cursor(*this, 0);
     cursor.movePosition(QTextCursor::NextBlock, QTextCursor::KeepAnchor, blocksToRemove);
 
     unreachableCharacterCount += cursor.selectionEnd() - cursor.selectionStart();

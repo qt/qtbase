@@ -391,7 +391,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
         // The backingstore is for the entire tlw.
         // In case of native children offset tells the position relative to the tlw.
         const QRect srcRect = toBottomLeftRect(deviceWindowRect.translated(offset), d_ptr->textureSize.height());
-        const QMatrix3x3 source = QOpenGLTextureBlitter::sourceTransform(deviceRect(srcRect, window),
+        const QMatrix3x3 source = QOpenGLTextureBlitter::sourceTransform(srcRect,
                                                                          d_ptr->textureSize,
                                                                          origin);
         d_ptr->blitter->blit(textureId, QMatrix4x4(), source);

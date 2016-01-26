@@ -41,6 +41,7 @@
 #include "qtextcursor.h"
 #include "qtextformat.h"
 #include <qdebug.h>
+#include "qtextcursor_p.h"
 #include "qtexttable_p.h"
 #include "qvarlengtharray.h"
 
@@ -226,7 +227,7 @@ int QTextTableCell::columnSpan() const
 */
 QTextCursor QTextTableCell::firstCursorPosition() const
 {
-    return QTextCursor(table->d_func()->pieceTable, firstPosition());
+    return QTextCursorPrivate::fromPosition(table->d_func()->pieceTable, firstPosition());
 }
 
 /*!
@@ -236,7 +237,7 @@ QTextCursor QTextTableCell::firstCursorPosition() const
 */
 QTextCursor QTextTableCell::lastCursorPosition() const
 {
-    return QTextCursor(table->d_func()->pieceTable, lastPosition());
+    return QTextCursorPrivate::fromPosition(table->d_func()->pieceTable, lastPosition());
 }
 
 
@@ -1109,10 +1110,10 @@ void QTextTable::mergeCells(int row, int column, int numRows, int numCols)
             if (nextPos > pos) {
                 if (needsParagraph) {
                     needsParagraph = false;
-                    QTextCursor(p, insertPos++).insertBlock();
+                    QTextCursorPrivate::fromPosition(p, insertPos++).insertBlock();
                     p->move(pos + 1, insertPos, nextPos - pos);
                 } else if (rowHasText) {
-                    QTextCursor(p, insertPos++).insertText(QLatin1String(" "));
+                    QTextCursorPrivate::fromPosition(p, insertPos++).insertText(QLatin1String(" "));
                     p->move(pos + 1, insertPos, nextPos - pos);
                 } else {
                     p->move(pos, insertPos, nextPos - pos);
@@ -1288,7 +1289,7 @@ QTextCursor QTextTable::rowStart(const QTextCursor &c) const
     int row = cell.row();
     QTextDocumentPrivate *p = d->pieceTable;
     QTextDocumentPrivate::FragmentIterator it(&p->fragmentMap(), d->grid[row*d->nCols]);
-    return QTextCursor(p, it.position());
+    return QTextCursorPrivate::fromPosition(p, it.position());
 }
 
 /*!
@@ -1310,7 +1311,7 @@ QTextCursor QTextTable::rowEnd(const QTextCursor &c) const
     int fragment = row < d->nRows ? d->grid[row*d->nCols] : d->fragment_end;
     QTextDocumentPrivate *p = d->pieceTable;
     QTextDocumentPrivate::FragmentIterator it(&p->fragmentMap(), fragment);
-    return QTextCursor(p, it.position() - 1);
+    return QTextCursorPrivate::fromPosition(p, it.position() - 1);
 }
 
 /*!

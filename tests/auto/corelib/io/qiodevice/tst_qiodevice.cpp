@@ -38,6 +38,7 @@ class tst_QIODevice : public QObject
 
 private slots:
     void initTestCase();
+    void cleanupTestCase();
     void getSetCheck();
     void constructing_QTcpSocket();
     void constructing_QFile();
@@ -57,6 +58,10 @@ private slots:
 
     void transaction_data();
     void transaction();
+
+private:
+    QSharedPointer<QTemporaryDir> m_tempDir;
+    QString m_previousCurrent;
 };
 
 void tst_QIODevice::initTestCase()
@@ -65,6 +70,15 @@ void tst_QIODevice::initTestCase()
     QVERIFY(QFileInfo(QStringLiteral("./tst_qiodevice.cpp")).exists()
             || QFile::copy(QStringLiteral(":/tst_qiodevice.cpp"), QStringLiteral("./tst_qiodevice.cpp")));
 #endif
+    m_previousCurrent = QDir::currentPath();
+    m_tempDir = QSharedPointer<QTemporaryDir>(new QTemporaryDir);
+    QVERIFY2(!m_tempDir.isNull(), qPrintable("Could not create temporary directory."));
+    QVERIFY2(QDir::setCurrent(m_tempDir->path()), qPrintable("Could not switch current directory"));
+}
+
+void tst_QIODevice::cleanupTestCase()
+{
+    QDir::setCurrent(m_previousCurrent);
 }
 
 // Testing get/set functions

@@ -45,6 +45,7 @@ protected:
     virtual QString getManifestFileForRcFile() const;
     bool writeMakefile(QTextStream &);
     void init();
+    virtual QString installRoot() const;
 private:
     void writeMingwParts(QTextStream &);
     void writeIncPart(QTextStream &t);

@@ -1969,7 +1969,7 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
             QString testsPath = QLibraryInfo::location(QLibraryInfo::TestsPath);
             QString candidate = QString::fromLatin1("%1/%2/%3")
                 .arg(testsPath, QFile::decodeName(testObjectName).toLower(), base);
-            if (QFileInfo(candidate).exists()) {
+            if (QFileInfo::exists(candidate)) {
                 found = candidate;
             }
             else if (QTestLog::verboseLevel() >= 2) {
@@ -1994,7 +1994,7 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
         }
 
         QString candidate = QString::fromLatin1("%1/%2").arg(srcdir.canonicalFilePath(), base);
-        if (QFileInfo(candidate).exists()) {
+        if (QFileInfo::exists(candidate)) {
             found = candidate;
         }
         else if (QTestLog::verboseLevel() >= 2) {
@@ -2008,21 +2008,21 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
     // 4. Try resources
     if (found.isEmpty()) {
         QString candidate = QString::fromLatin1(":/%1").arg(base);
-        if (QFileInfo(candidate).exists())
+        if (QFileInfo::exists(candidate))
             found = candidate;
     }
 
     // 5. Try current directory
     if (found.isEmpty()) {
         QString candidate = QString::fromLatin1("%1/%2").arg(QDir::currentPath()).arg(base);
-        if (QFileInfo(candidate).exists())
+        if (QFileInfo::exists(candidate))
             found = candidate;
     }
 
     // 6. Try main source directory
     if (found.isEmpty()) {
         QString candidate = QTest::mainSourcePath % QLatin1Char('/') % base;
-        if (QFileInfo(candidate).exists())
+        if (QFileInfo::exists(candidate))
             found = candidate;
     }
 
