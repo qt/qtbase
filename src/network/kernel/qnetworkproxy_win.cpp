@@ -392,9 +392,9 @@ public:
     }
 
     void clear() {
-        foreach (HANDLE event, m_watchEvents)
+        for (HANDLE event : qAsConst(m_watchEvents))
             CloseHandle(event);
-        foreach (HKEY key, m_registryHandles)
+        for (HKEY key : qAsConst(m_registryHandles))
             RegCloseKey(key);
 
         m_watchEvents.clear();

@@ -779,7 +779,7 @@ static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVaria
 
         QByteArray result;
         bool first = true;
-        foreach (const QNetworkCookie &cookie, cookies) {
+        for (const QNetworkCookie &cookie : qAsConst(cookies)) {
             if (!first)
                 result += "; ";
             first = false;
@@ -795,7 +795,7 @@ static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVaria
 
         QByteArray result;
         bool first = true;
-        foreach (const QNetworkCookie &cookie, cookies) {
+        for (const QNetworkCookie &cookie : qAsConst(cookies)) {
             if (!first)
                 result += ", ";
             first = false;

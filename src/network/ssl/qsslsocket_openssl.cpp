@@ -1101,7 +1101,7 @@ bool QSslSocketBackendPrivate::startHandshake()
     QList<QSslError> errors;
 
     // check the whole chain for blacklisting (including root, as we check for subjectInfo and issuer)
-    foreach (const QSslCertificate &cert, configuration.peerCertificateChain) {
+    for (const QSslCertificate &cert : qAsConst(configuration.peerCertificateChain)) {
         if (QSslCertificatePrivate::isBlacklisted(cert)) {
             QSslError error(QSslError::CertificateBlacklisted, cert);
             errors << error;

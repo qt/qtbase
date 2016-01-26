@@ -634,7 +634,7 @@ QList<QHostAddress> QNetworkInterface::allAddresses()
     const QList<QSharedDataPointer<QNetworkInterfacePrivate> > privs = manager()->allInterfaces();
     QList<QHostAddress> result;
     for (const auto &p : privs) {
-        foreach (const QNetworkAddressEntry &entry, p->addressEntries)
+        for (const QNetworkAddressEntry &entry : qAsConst(p->addressEntries))
             result += entry.ip();
     }
 

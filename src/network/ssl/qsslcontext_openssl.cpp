@@ -298,7 +298,7 @@ init_context:
 
         // If we have any intermediate certificates then we need to add them to our chain
         bool first = true;
-        foreach (const QSslCertificate &cert, configuration.d->localCertificateChain) {
+        for (const QSslCertificate &cert : qAsConst(configuration.d->localCertificateChain)) {
             if (first) {
                 first = false;
                 continue;

@@ -751,7 +751,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
         }
     }
 
-    foreach (const QByteArray &header, headers)
+    for (const QByteArray &header : qAsConst(headers))
         httpRequest.setHeaderField(header, newHttpRequest.rawHeader(header));
 
     if (newHttpRequest.attribute(QNetworkRequest::HttpPipeliningAllowedAttribute).toBool())

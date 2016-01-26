@@ -1227,7 +1227,7 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
     }
 
     // check the whole chain for blacklisting (including root, as we check for subjectInfo and issuer)
-    foreach (const QSslCertificate &cert, configuration.peerCertificateChain) {
+    for (const QSslCertificate &cert : qAsConst(configuration.peerCertificateChain)) {
         if (QSslCertificatePrivate::isBlacklisted(cert) && !canIgnoreVerify) {
             const QSslError error(QSslError::CertificateBlacklisted, cert);
             errors << error;
@@ -1271,7 +1271,7 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
 
     // verify certificate chain
     QCFType<CFMutableArrayRef> certArray = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
-    foreach (const QSslCertificate &cert, configuration.caCertificates) {
+    for (const QSslCertificate &cert : qAsConst(configuration.caCertificates)) {
         QCFType<CFDataRef> certData = cert.d->derData.toCFData();
         QCFType<SecCertificateRef> certRef = SecCertificateCreateWithData(NULL, certData);
         CFArrayAppendValue(certArray, certRef);

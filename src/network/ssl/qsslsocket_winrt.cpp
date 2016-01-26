@@ -615,7 +615,7 @@ HRESULT QSslSocketBackendPrivate::onSslUpgrade(IAsyncAction *action, AsyncStatus
     }
 
     // Peer chain validation
-    foreach (const QSslCertificate &certificate, peerCertificateChain) {
+    for (const QSslCertificate &certificate : qAsConst(peerCertificateChain)) {
         if (!QSslCertificatePrivate::isBlacklisted(certificate))
             continue;
 
@@ -629,7 +629,7 @@ HRESULT QSslSocketBackendPrivate::onSslUpgrade(IAsyncAction *action, AsyncStatus
         setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError, sslErrors.first().errorString());
 
         // Disconnect if there are any non-ignorable errors
-        foreach (const QSslError &error, sslErrors) {
+        for (const QSslError &error : qAsConst(sslErrors)) {
             if (ignoreErrorsList.contains(error))
                 continue;
             q->disconnectFromHost();
