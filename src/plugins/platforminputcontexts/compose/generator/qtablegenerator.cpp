@@ -273,7 +273,7 @@ QString TableGenerator::findComposeFile()
     // check if user’s home directory has a file named .XCompose
     if (cleanState()) {
         QString path = qgetenv("HOME") + QStringLiteral("/.XCompose");
-        if (QFile(path).exists())
+        if (QFile::exists(path))
             return path;
     }
 
@@ -286,7 +286,7 @@ QString TableGenerator::findComposeFile()
                 m_state = UnsupportedLocale;
             else {
                 QString path = QDir(systemComposeDir()).filePath(table);
-                if (QFile(path).exists())
+                if (QFile::exists(path))
                     return path;
             }
         }
@@ -308,7 +308,7 @@ bool TableGenerator::findSystemComposeDir()
     bool found = false;
     for (int i = 0; i < m_possibleLocations.size(); ++i) {
         QString path = m_possibleLocations.at(i);
-        if (QFile(path + QLatin1String("/compose.dir")).exists()) {
+        if (QFile::exists(path + QLatin1String("/compose.dir"))) {
             m_systemComposeDir = path;
             found = true;
             break;

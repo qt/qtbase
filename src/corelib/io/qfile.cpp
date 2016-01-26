@@ -747,7 +747,7 @@ QFile::copy(const QString &newName)
         qWarning("QFile::copy: Empty or null file name");
         return false;
     }
-    if (QFile(newName).exists()) {
+    if (QFile::exists(newName)) {
         // ### Race condition. If a file is moved in after this, it /will/ be
         // overwritten. On Unix, the proper solution is to use hardlinks:
         // return ::link(old, new) && ::remove(old); See also rename().
