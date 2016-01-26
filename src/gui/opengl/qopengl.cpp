@@ -548,7 +548,7 @@ Q_GUI_EXPORT std::set<QByteArray> *qgpu_features(const QString &filename)
 {
     const QSet<QString> features = QOpenGLConfig::gpuFeatures(QOpenGLConfig::Gpu::fromContext(), filename);
     std::set<QByteArray> *result = new std::set<QByteArray>;
-    foreach (const QString &feature, features)
+    for (const QString &feature : features)
         result->insert(feature.toUtf8());
     return result;
 }

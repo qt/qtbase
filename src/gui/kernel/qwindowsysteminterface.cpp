@@ -504,7 +504,7 @@ QList<QWindowSystemInterface::TouchPoint>
 {
     QList<QWindowSystemInterface::TouchPoint> newList;
     newList.reserve(pointList.size());
-    foreach (const QTouchEvent::TouchPoint &pt, pointList) {
+    for (const QTouchEvent::TouchPoint &pt : pointList) {
         QWindowSystemInterface::TouchPoint p;
         p.id = pt.id();
         p.flags = pt.flags();
@@ -928,7 +928,7 @@ static QList<struct QWindowSystemInterface::TouchPoint> touchPointList(const QLi
 {
     QList<struct QWindowSystemInterface::TouchPoint> newList;
 
-    Q_FOREACH (QTouchEvent::TouchPoint p, pointList)
+    for (const QTouchEvent::TouchPoint &p : pointList)
         newList.append(touchPoint(p));
 
     return newList;

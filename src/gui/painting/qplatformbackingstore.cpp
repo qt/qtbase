@@ -252,7 +252,7 @@ static QRegion deviceRegion(const QRegion &region, QWindow *window, const QPoint
     QVector<QRect> rects;
     const QVector<QRect> regionRects = region.rects();
     rects.reserve(regionRects.count());
-    foreach (const QRect &rect, regionRects)
+    for (const QRect &rect : regionRects)
         rects.append(deviceRect(rect.translated(offset), window));
 
     QRegion deviceRegion;

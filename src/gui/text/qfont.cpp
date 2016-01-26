@@ -1831,7 +1831,7 @@ void QFont::insertSubstitutions(const QString &familyName,
     QFontSubst *fontSubst = globalFontSubst();
     Q_ASSERT(fontSubst != 0);
     QStringList &list = (*fontSubst)[familyName.toLower()];
-    foreach (const QString &substituteName, substituteNames) {
+    for (const QString &substituteName : substituteNames) {
         const QString lowerSubstituteName = substituteName.toLower();
         if (!list.contains(lowerSubstituteName))
             list.append(lowerSubstituteName);

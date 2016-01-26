@@ -1008,7 +1008,7 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
         QScreen *windowScreen = Q_NULLPTR;
 
         // Find the window on the primary virtual desktop first
-        foreach (QScreen *screen, primaryScreens) {
+        for (QScreen *screen : primaryScreens) {
             if (screen->geometry().contains(pos)) {
                 windowScreen = screen;
                 break;

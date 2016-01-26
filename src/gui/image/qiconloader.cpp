@@ -412,12 +412,12 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
             // a massive amount of file stat (especially if the icon is not there)
             auto cache = theme.m_gtkCaches.at(i);
             if (cache->isValid()) {
-                auto result = cache->lookup(iconNameFallback);
+                const auto result = cache->lookup(iconNameFallback);
                 if (cache->isValid()) {
                     const QVector<QIconDirInfo> subDirsCopy = subDirs;
                     subDirs.clear();
                     subDirs.reserve(result.count());
-                    foreach (const char *s, result) {
+                    for (const char *s : result) {
                         QString path = QString::fromUtf8(s);
                         auto it = std::find_if(subDirsCopy.cbegin(), subDirsCopy.cend(),
                                                [&](const QIconDirInfo &info) {

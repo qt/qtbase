@@ -3341,7 +3341,7 @@ void QTextEngine::drawItemDecorationList(QPainter *painter, const ItemDecoration
     if (decorationList.isEmpty())
         return;
 
-    foreach (const ItemDecoration &decoration, decorationList) {
+    for (const ItemDecoration &decoration : decorationList) {
         painter->setPen(decoration.pen);
         painter->drawLine(QLineF(decoration.x1, decoration.y, decoration.x2, decoration.y));
     }

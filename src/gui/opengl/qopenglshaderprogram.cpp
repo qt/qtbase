@@ -728,7 +728,7 @@ QOpenGLShaderProgramPrivate::~QOpenGLShaderProgramPrivate()
 
 bool QOpenGLShaderProgramPrivate::hasShader(QOpenGLShader::ShaderType type) const
 {
-    foreach (QOpenGLShader *shader, shaders) {
+    for (QOpenGLShader *shader : shaders) {
         if (shader->shaderType() == type)
             return true;
     }
