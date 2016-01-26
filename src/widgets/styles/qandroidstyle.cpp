@@ -1234,8 +1234,9 @@ const QAndroidStyle::AndroidDrawable * QAndroidStyle::AndroidStateDrawable::best
 int QAndroidStyle::AndroidStateDrawable::extractState(const QVariantMap &value)
 {
     QStyle::State state = QStyle::State_Enabled | QStyle::State_Active;;
-    foreach (const QString &key, value.keys()) {
-        bool val = value.value(key).toString() == QLatin1String("true");
+    for (auto it = value.cbegin(), end = value.cend(); it != end; ++it) {
+        const QString &key = it.key();
+        bool val = it.value().toString() == QLatin1String("true");
         if (key == QLatin1String("enabled")) {
             state.setFlag(QStyle::State_Enabled, val);
             continue;
