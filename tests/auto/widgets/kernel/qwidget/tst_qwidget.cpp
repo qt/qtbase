@@ -261,9 +261,7 @@ private slots:
 #endif
     void raise();
     void lower();
-#ifndef QT_MAC_USE_COCOA
     void stackUnder();
-#endif
     void testContentsPropagation();
     void saveRestoreGeometry();
     void restoreVersion1Geometry_data();
@@ -320,9 +318,7 @@ private slots:
     void moveChild();
     void showAndMoveChild();
 
-#ifndef QT_MAC_USE_COCOA
     void subtractOpaqueSiblings();
-#endif
 
 #if defined (Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     void setGeometry_win();
