@@ -624,7 +624,8 @@ void QXcbCursor::queryPointer(QXcbConnection *c, QXcbVirtualDesktop **virtualDes
     xcb_query_pointer_reply_t *reply = xcb_query_pointer_reply(c->xcb_connection(), cookie, &err);
     if (!err && reply) {
         if (virtualDesktop) {
-            foreach (QXcbVirtualDesktop *vd, c->virtualDesktops()) {
+            const auto virtualDesktops = c->virtualDesktops();
+            for (QXcbVirtualDesktop *vd : virtualDesktops) {
                 if (vd->root() == reply->root) {
                     *virtualDesktop = vd;
                     break;

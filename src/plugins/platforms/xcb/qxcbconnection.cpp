@@ -245,7 +245,8 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
                     xcb_randr_get_output_info_reply(xcb_connection(), outputInfoCookie, NULL));
 
                 // Find a fake screen
-                foreach (QPlatformScreen *scr, virtualDesktop->screens()) {
+                const auto scrs = virtualDesktop->screens();
+                for (QPlatformScreen *scr : scrs) {
                     QXcbScreen *xcbScreen = (QXcbScreen *)scr;
                     if (xcbScreen->output() == XCB_NONE) {
                         screen = xcbScreen;

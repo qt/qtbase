@@ -76,7 +76,8 @@ QXcbVirtualDesktop::~QXcbVirtualDesktop()
 
 QXcbScreen *QXcbVirtualDesktop::screenAt(const QPoint &pos) const
 {
-    foreach (QXcbScreen *screen, connection()->screens()) {
+    const auto screens = connection()->screens();
+    for (QXcbScreen *screen : screens) {
         if (screen->virtualDesktop() == this && screen->geometry().contains(pos))
             return screen;
     }

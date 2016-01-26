@@ -864,7 +864,8 @@ void QXcbWindow::hide()
         // Find the top level window at cursor position.
         // Don't use QGuiApplication::topLevelAt(): search only the virtual siblings of this window's screen
         QWindow *enterWindow = Q_NULLPTR;
-        foreach (QPlatformScreen *screen, xcbScreen()->virtualSiblings()) {
+        const auto screens = xcbScreen()->virtualSiblings();
+        for (QPlatformScreen *screen : screens) {
             if (screen->geometry().contains(cursorPos)) {
                 const QPoint devicePosition = QHighDpi::toNativePixels(cursorPos, screen->screen());
                 enterWindow = screen->topLevelAt(devicePosition);
