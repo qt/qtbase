@@ -64,8 +64,9 @@ void QBasicFontDatabase::populateFontDatabase()
     QDir dir(fontpath);
 
     if (!dir.exists()) {
-        qWarning("QFontDatabase: Cannot find font directory %s - is Qt installed correctly?",
-               qPrintable(fontpath));
+        qWarning("QFontDatabase: Cannot find font directory %s.\n"
+                 "Note that Qt no longer ships fonts. Deploy some (from http://dejavu-fonts.org for example) or switch to fontconfig.",
+                 qPrintable(fontpath));
         return;
     }
 
