@@ -275,7 +275,8 @@ void QAndroidBearerEngine::updateConfigurations()
             interfaces = QNetworkInterface::allInterfaces();
 
         // Create a configuration for each of the main types (WiFi, Mobile, Bluetooth, WiMax, Ethernet)
-        foreach (const AndroidNetworkInfo &netInfo, m_connectivityManager->getAllNetworkInfo()) {
+        const auto netInfos = m_connectivityManager->getAllNetworkInfo();
+        for (const AndroidNetworkInfo &netInfo : netInfos) {
 
             if (!netInfo.isValid())
                 continue;

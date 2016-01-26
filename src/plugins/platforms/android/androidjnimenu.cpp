@@ -218,7 +218,8 @@ namespace QtAndroidMenu
     static int addAllMenuItemsToMenu(JNIEnv *env, jobject menu, QAndroidPlatformMenu *platformMenu) {
          int order = 0;
          QMutexLocker lock(platformMenu->menuItemsMutex());
-         foreach (QAndroidPlatformMenuItem *item, platformMenu->menuItems()) {
+         const auto items = platformMenu->menuItems();
+         for (QAndroidPlatformMenuItem *item : items) {
              if (item->isSeparator())
                  continue;
              QString itemText = removeAmpersandEscapes(item->text());
