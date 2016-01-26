@@ -442,7 +442,7 @@ void QPixmapIconEngine::addFile(const QString &fileName, const QSize &size, QIco
             }
         }
     }
-    foreach (const QImage &i, icoImages)
+    for (const QImage &i : qAsConst(icoImages))
         pixmaps += QPixmapIconEngineEntry(abs, i, mode, state);
     if (icoImages.isEmpty() && !ignoreSize) // Add placeholder with the filename and empty pixmap for the size.
         pixmaps += QPixmapIconEngineEntry(abs, size, mode, state);

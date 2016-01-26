@@ -990,9 +990,8 @@ qreal QGuiApplication::devicePixelRatio() const
     }
 
     topDevicePixelRatio = 1.0; // make sure we never return 0.
-    foreach (QScreen *screen, QGuiApplicationPrivate::screen_list) {
+    for (QScreen *screen : qAsConst(QGuiApplicationPrivate::screen_list))
         topDevicePixelRatio = qMax(topDevicePixelRatio, screen->devicePixelRatio());
-    }
 
     return topDevicePixelRatio;
 }
@@ -1127,7 +1126,7 @@ static void init_platform(const QString &pluginArgument, const QString &platform
     // 2) Ask the platform integration for a list of theme names
     themeNames += QGuiApplicationPrivate::platform_integration->themeNames();
     // 3) Look for a theme plugin.
-    foreach (const QString &themeName, themeNames) {
+    for (const QString &themeName : qAsConst(themeNames)) {
         QGuiApplicationPrivate::platform_theme = QPlatformThemeFactory::create(themeName, platformPluginPath);
         if (QGuiApplicationPrivate::platform_theme)
             break;
@@ -1136,7 +1135,7 @@ static void init_platform(const QString &pluginArgument, const QString &platform
     // 4) If no theme plugin was found ask the platform integration to
     // create a theme
     if (!QGuiApplicationPrivate::platform_theme) {
-        foreach (const QString &themeName, themeNames) {
+        for (const QString &themeName : qAsConst(themeNames)) {
             QGuiApplicationPrivate::platform_theme = QGuiApplicationPrivate::platform_integration->createPlatformTheme(themeName);
             if (QGuiApplicationPrivate::platform_theme)
                 break;
@@ -1153,7 +1152,7 @@ static void init_platform(const QString &pluginArgument, const QString &platform
     // boolean 'foo' or strings: 'foo=bar'
     if (!arguments.isEmpty()) {
         if (QObject *nativeInterface = QGuiApplicationPrivate::platform_integration->nativeInterface()) {
-            foreach (const QString &argument, arguments) {
+            for (const QString &argument : qAsConst(arguments)) {
                 const int equalsPos = argument.indexOf(QLatin1Char('='));
                 const QByteArray name =
                     equalsPos != -1 ? argument.left(equalsPos).toUtf8() : argument.toUtf8();

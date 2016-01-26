@@ -986,7 +986,7 @@ void QOpenGLShaderProgram::removeAllShaders()
 {
     Q_D(QOpenGLShaderProgram);
     d->removingShaders = true;
-    foreach (QOpenGLShader *shader, d->shaders) {
+    for (QOpenGLShader *shader : qAsConst(d->shaders)) {
         if (d->programGuard && d->programGuard->id()
             && shader && shader->d_func()->shaderGuard)
         {

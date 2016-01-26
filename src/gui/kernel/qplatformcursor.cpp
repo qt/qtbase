@@ -52,9 +52,10 @@ QT_BEGIN_NAMESPACE
 QList<QPlatformCursor *> QPlatformCursorPrivate::getInstances()
 {
     QList<QPlatformCursor *> result;
-    foreach (const QScreen *screen, QGuiApplicationPrivate::screen_list)
+    for (const QScreen *screen : qAsConst(QGuiApplicationPrivate::screen_list)) {
         if (QPlatformCursor *cursor = screen->handle()->cursor())
             result.push_back(cursor);
+    }
     return result;
 }
 

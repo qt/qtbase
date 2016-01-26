@@ -943,7 +943,7 @@ QOpenGLFramebufferObject::~QOpenGLFramebufferObject()
     if (isBound())
         release();
 
-    foreach (const QOpenGLFramebufferObjectPrivate::ColorAttachment &color, d->colorAttachments) {
+    for (const auto &color : qAsConst(d->colorAttachments)) {
         if (color.guard)
             color.guard->free();
     }

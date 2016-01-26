@@ -3032,9 +3032,8 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
     }
 
     stack.reserve(itemsSet.count());
-    foreach (QStandardItem *item, itemsSet) {
+    for (QStandardItem *item : qAsConst(itemsSet))
         stack.push(item);
-    }
 
     //stream everything recursively
     while (!stack.isEmpty()) {

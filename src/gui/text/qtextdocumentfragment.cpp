@@ -873,7 +873,7 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
     QVector<RowColSpanInfo> rowColSpanForColumn;
 
     int effectiveRow = 0;
-    foreach (int row, rowNodes) {
+    for (int row : qAsConst(rowNodes)) {
         int colsInRow = 0;
 
         foreach (int cell, at(row).children)
