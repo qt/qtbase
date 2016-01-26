@@ -409,7 +409,7 @@ bool VcprojGenerator::isStandardSuffix(const QString &suffix) const
 
 ProString VcprojGenerator::firstInputFileName(const ProString &extraCompilerName) const
 {
-    foreach (const ProString &var, project->values(ProKey(extraCompilerName + ".input"))) {
+    for (const ProString &var : project->values(ProKey(extraCompilerName + ".input"))) {
         const ProStringList &files = project->values(var.toKey());
         if (!files.isEmpty())
             return files.first();
@@ -688,7 +688,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     QHashIterator<VcsolutionDepend *, QStringList> extraIt(extraSubdirs);
     while (extraIt.hasNext()) {
         extraIt.next();
-        foreach (const QString &depend, extraIt.value()) {
+        for (const QString &depend : extraIt.value()) {
             if (!projGuids[depend].isEmpty()) {
                 extraIt.key()->dependencies << projGuids[depend];
             } else if (!profileLookup[depend].isEmpty()) {
@@ -867,7 +867,7 @@ void VcprojGenerator::init()
 
     // Add all input files for a custom compiler into a map for uniqueness,
     // unless the compiler is configure as a combined stage, then use the first one
-    foreach (const ProString &quc, project->values("QMAKE_EXTRA_COMPILERS")) {
+    for (const ProString &quc : project->values("QMAKE_EXTRA_COMPILERS")) {
         const ProStringList &invar = project->values(ProKey(quc + ".input"));
         const QString compiler_out = project->first(ProKey(quc + ".output")).toQString();
         for (ProStringList::ConstIterator iit = invar.constBegin(); iit != invar.constEnd(); ++iit) {
@@ -1189,7 +1189,7 @@ void VcprojGenerator::initResourceTool()
     else
         conf.resource.PreprocessorDefinitions = conf.compiler.PreprocessorDefinitions;
 
-    foreach (const ProString &path, project->values("RC_INCLUDEPATH")) {
+    for (const ProString &path : project->values("RC_INCLUDEPATH")) {
         QString fixedPath = fileFixify(path.toQString());
         if (fileInfo(fixedPath).isRelative()) {
             if (fixedPath == QLatin1String("."))
@@ -1344,7 +1344,7 @@ void VcprojGenerator::initDeploymentTool()
         }
     }
 
-    foreach (const ProString &item, project->values("INSTALLS")) {
+    for (const ProString &item : project->values("INSTALLS")) {
         // get item.path
         QString devicePath = project->first(ProKey(item + ".path")).toQString();
         if (!conf.WinRT) {
@@ -1359,7 +1359,7 @@ void VcprojGenerator::initDeploymentTool()
             }
         }
         // foreach d in item.files
-        foreach (const ProString &src, project->values(ProKey(item + ".files"))) {
+        for (const ProString &src : project->values(ProKey(item + ".files"))) {
             QString itemDevicePath = devicePath;
             QString source = Option::normalizePath(src.toQString());
             QString nameFilter;

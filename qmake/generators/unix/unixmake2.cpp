@@ -988,7 +988,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             ProString header_suffix = project->isActiveConfig("clang_pch_style")
                                ? project->first("QMAKE_PCH_OUTPUT_EXT") : "";
 
-            foreach (const ProString &compiler, project->values("QMAKE_BUILTIN_COMPILERS")) {
+            for (const ProString &compiler : project->values("QMAKE_BUILTIN_COMPILERS")) {
                 if (project->isEmpty(ProKey("QMAKE_" + compiler + "FLAGS_PRECOMPILE")))
                     continue;
                 ProString language = project->first(ProKey("QMAKE_LANGUAGE_" + compiler));
@@ -1050,7 +1050,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     if(doPrecompiledHeaders() && !project->isEmpty("PRECOMPILED_HEADER")) {
         QString pchInput = project->first("PRECOMPILED_HEADER").toQString();
         t << "###### Precompiled headers\n";
-        foreach (const ProString &compiler, project->values("QMAKE_BUILTIN_COMPILERS")) {
+        for (const ProString &compiler : project->values("QMAKE_BUILTIN_COMPILERS")) {
             QString pchFlags = var(ProKey("QMAKE_" + compiler + "FLAGS_PRECOMPILE"));
             if(pchFlags.isEmpty())
                 continue;

@@ -146,7 +146,7 @@ void QMakeProject::dump() const
          it != m_valuemapStack.first().end(); ++it) {
         if (!it.key().startsWith('.')) {
             QString str = it.key() + " =";
-            foreach (const ProString &v, it.value())
+            for (const ProString &v : it.value())
                 str += ' ' + formatValue(v);
             out << str;
         }

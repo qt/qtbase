@@ -1641,7 +1641,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
       << "\t\t\t" << writeSettings("targets", project->values("QMAKE_PBX_TARGETS"), SettingsAsList, 4) << ";\n"
       << "\t\t\t" << "attributes = {\n"
       << "\t\t\t\tTargetAttributes = {\n";
-    foreach (const ProString &target, project->values("QMAKE_PBX_TARGETS")) {
+    for (const ProString &target : project->values("QMAKE_PBX_TARGETS")) {
         const ProStringList &attributes = project->values(ProKey("QMAKE_PBX_TARGET_ATTRIBUTES_" + target));
         if (attributes.isEmpty())
             continue;

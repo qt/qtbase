@@ -60,7 +60,7 @@ UnixMakefileGenerator::init()
     project->values("VER_PAT").append(l[2]);
 
     QString sroot = project->sourceRoot();
-    foreach (const ProString &iif, project->values("QMAKE_INTERNAL_INCLUDED_FILES")) {
+    for (const ProString &iif : project->values("QMAKE_INTERNAL_INCLUDED_FILES")) {
         if (iif == project->cacheFile())
             continue;
         if (iif.startsWith(sroot) && iif.at(sroot.length()) == QLatin1Char('/'))
@@ -156,7 +156,7 @@ UnixMakefileGenerator::init()
     if (project->isActiveConfig("objective_c"))
         project->values("QMAKE_BUILTIN_COMPILERS") << "OBJC" << "OBJCXX";
 
-    foreach (const ProString &compiler, project->values("QMAKE_BUILTIN_COMPILERS")) {
+    for (const ProString &compiler : project->values("QMAKE_BUILTIN_COMPILERS")) {
         QString compile_flag = var("QMAKE_COMPILE_FLAG");
         if(compile_flag.isEmpty())
             compile_flag = "-c";
@@ -334,7 +334,7 @@ QStringList
                     ? project->first("QMAKE_PCH_OUTPUT_EXT").toQString() : "";
             header_prefix += Option::dir_sep + project->first("QMAKE_PRECOMP_PREFIX");
 
-            foreach (const ProString &compiler, project->values("QMAKE_BUILTIN_COMPILERS")) {
+            for (const ProString &compiler : project->values("QMAKE_BUILTIN_COMPILERS")) {
                 if (project->isEmpty(ProKey("QMAKE_" + compiler + "FLAGS_PRECOMPILE")))
                     continue;
 
@@ -347,7 +347,7 @@ QStringList
                 if (extensionSuffix == "CXX")
                     extensionSuffix = ProString("CPP");
 
-                foreach (const ProString &extension, project->values(ProKey("QMAKE_EXT_" + extensionSuffix))) {
+                for (const ProString &extension : project->values(ProKey("QMAKE_EXT_" + extensionSuffix))) {
                     if (!file.endsWith(extension.toQString()))
                         continue;
 
@@ -376,7 +376,7 @@ UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
 {
     QList<QMakeLocalFileName> libdirs, frameworkdirs;
     int libidx = 0, fwidx = 0;
-    foreach (const ProString &dlib, project->values("QMAKE_DEFAULT_LIBDIRS"))
+    for (const ProString &dlib : project->values("QMAKE_DEFAULT_LIBDIRS"))
         libdirs.append(QMakeLocalFileName(dlib.toQString()));
     frameworkdirs.append(QMakeLocalFileName("/System/Library/Frameworks"));
     frameworkdirs.append(QMakeLocalFileName("/Library/Frameworks"));
@@ -648,7 +648,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
             uninst.append("-$(DEL_FILE) " + dst_targ);
         if (bundle == SlicedBundle) {
             int dstlen = project->first("DESTDIR").length();
-            foreach (const ProString &src, project->values("QMAKE_BUNDLED_FILES")) {
+            for (const ProString &src : project->values("QMAKE_BUNDLED_FILES")) {
                 ProString file = src.mid(dstlen);
                 QString dst = escapeFilePath(
                             filePrefixRoot(root, fileFixify(targetdir + file, FileFixifyAbsolute)));

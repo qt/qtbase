@@ -904,7 +904,7 @@ MakefileGenerator::processPrlFile(QString &file)
     project->values("QMAKE_CURRENT_PRL_LIBS") = libinfo.values("QMAKE_PRL_LIBS");
     ProStringList &defs = project->values("DEFINES");
     const ProStringList &prl_defs = project->values("PRL_EXPORT_DEFINES");
-    foreach (const ProString &def, libinfo.values("QMAKE_PRL_DEFINES"))
+    for (const ProString &def : libinfo.values("QMAKE_PRL_DEFINES"))
         if (!defs.contains(def) && prl_defs.contains(def))
             defs.append(def);
     if (try_replace_file) {
@@ -1141,7 +1141,7 @@ MakefileGenerator::writeObj(QTextStream &t, const char *src)
           << " " << escapeDependencyPaths(findDependencies(srcf)).join(" \\\n\t\t");
 
         ProKey comp;
-        foreach (const ProString &compiler, project->values("QMAKE_BUILTIN_COMPILERS")) {
+        for (const ProString &compiler : project->values("QMAKE_BUILTIN_COMPILERS")) {
             // Unfortunately we were not consistent about the C++ naming
             ProString extensionSuffix = compiler;
             if (extensionSuffix == "CXX")
@@ -1152,7 +1152,7 @@ MakefileGenerator::writeObj(QTextStream &t, const char *src)
             if (compilerSuffix == "C")
                 compilerSuffix = ProString("CC");
 
-            foreach (const ProString &extension, project->values(ProKey("QMAKE_EXT_" + extensionSuffix))) {
+            for (const ProString &extension : project->values(ProKey("QMAKE_EXT_" + extensionSuffix))) {
                 if ((*sit).endsWith(extension)) {
                     comp = ProKey("QMAKE_RUN_" + compilerSuffix);
                     break;
@@ -1450,7 +1450,7 @@ QString
 MakefileGenerator::fixFileVarGlue(const ProKey &var, const QString &before, const QString &glue, const QString &after) const
 {
     ProStringList varList;
-    foreach (const ProString &val, project->values(var))
+    for (const ProString &val : project->values(var))
         varList << escapeFilePath(Option::fixPathToTargetOS(val.toQString()));
     return valGlue(varList, before, glue, after);
 }
@@ -2769,11 +2769,11 @@ MakefileGenerator::parseLibFlag(const ProString &flag, ProString *arg)
 ProStringList
 MakefileGenerator::fixLibFlags(const ProKey &var)
 {
-    ProStringList in = project->values(var);
+    const ProStringList &in = project->values(var);
     ProStringList ret;
 
     ret.reserve(in.length());
-    foreach (const ProString &v, in)
+    for (const ProString &v : in)
         ret << fixLibFlag(v);
     return ret;
 }

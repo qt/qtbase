@@ -263,7 +263,7 @@ void Win32MakefileGenerator::processRcFileVar()
         QString versionString = vers.join('.');
 
         QStringList rcIcons;
-        foreach (const ProString &icon, project->values("RC_ICONS"))
+        for (const ProString &icon : project->values("RC_ICONS"))
             rcIcons.append(fileFixify(icon.toQString(), FileFixifyAbsolute));
 
         QString companyName;
