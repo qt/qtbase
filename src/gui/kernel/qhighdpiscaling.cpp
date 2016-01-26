@@ -267,7 +267,8 @@ void QHighDpiScaling::updateHighDpiScaling()
         return;
 
     if (m_usePixelDensity && !m_pixelDensityScalingActive) {
-        Q_FOREACH (QScreen *screen, QGuiApplication::screens()) {
+        const auto screens = QGuiApplication::screens();
+        for (QScreen *screen : screens) {
             if (!qFuzzyCompare(screenSubfactor(screen->handle()), qreal(1))) {
                 m_pixelDensityScalingActive = true;
                 break;
@@ -276,7 +277,8 @@ void QHighDpiScaling::updateHighDpiScaling()
     }
     if (qEnvironmentVariableIsSet(screenFactorsEnvVar)) {
         int i = 0;
-        Q_FOREACH (const QByteArray &spec, qgetenv(screenFactorsEnvVar).split(';')) {
+        const auto specs = qgetenv(screenFactorsEnvVar).split(';');
+        for (const QByteArray &spec : specs) {
             QScreen *screen = 0;
             int equalsPos = spec.lastIndexOf('=');
             double factor = 0;
@@ -287,7 +289,8 @@ void QHighDpiScaling::updateHighDpiScaling()
                 bool ok;
                 factor = f.toDouble(&ok);
                 if (ok) {
-                    Q_FOREACH (QScreen *s, QGuiApplication::screens()) {
+                    const auto screens = QGuiApplication::screens();
+                    for (QScreen *s : screens) {
                         if (s->name() == QString::fromLocal8Bit(name)) {
                             screen = s;
                             break;
@@ -327,7 +330,8 @@ void QHighDpiScaling::setGlobalFactor(qreal factor)
     m_globalScalingActive = !qFuzzyCompare(factor, qreal(1));
     m_factor = m_globalScalingActive ? factor : qreal(1);
     m_active = m_globalScalingActive || m_screenFactorSet || m_pixelDensityScalingActive;
-    Q_FOREACH (QScreen *screen, QGuiApplication::screens())
+    const auto screens = QGuiApplication::screens();
+    for (QScreen *screen : screens)
          screen->d_func()->updateHighDpi();
 }
 

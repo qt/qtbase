@@ -1509,7 +1509,8 @@ QScreen *QWindowPrivate::screenForGeometry(const QRect &newGeometry)
     QScreen *fallback = currentScreen;
     QPoint center = newGeometry.center();
     if (!q->parent() && currentScreen && !currentScreen->geometry().contains(center)) {
-        Q_FOREACH (QScreen* screen, currentScreen->virtualSiblings()) {
+        const auto screens = currentScreen->virtualSiblings();
+        for (QScreen* screen : screens) {
             if (screen->geometry().contains(center))
                 return screen;
             if (screen->geometry().intersects(newGeometry))

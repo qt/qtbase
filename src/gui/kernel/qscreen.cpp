@@ -122,7 +122,8 @@ QScreen::~QScreen()
     bool movingFromVirtualSibling = primaryScreen && primaryScreen->handle()->virtualSiblings().contains(handle());
 
     // Move any leftover windows to the primary screen
-    foreach (QWindow *window, QGuiApplication::allWindows()) {
+    const auto allWindows = QGuiApplication::allWindows();
+    for (QWindow *window : allWindows) {
         if (!window->isTopLevel() || window->screen() != this)
             continue;
 
@@ -399,7 +400,8 @@ QSize QScreen::virtualSize() const
 QRect QScreen::virtualGeometry() const
 {
     QRect result;
-    foreach (QScreen *screen, virtualSiblings())
+    const auto screens = virtualSiblings();
+    for (QScreen *screen : screens)
         result |= screen->geometry();
     return result;
 }
@@ -432,7 +434,8 @@ QSize QScreen::availableVirtualSize() const
 QRect QScreen::availableVirtualGeometry() const
 {
     QRect result;
-    foreach (QScreen *screen, virtualSiblings())
+    const auto screens = virtualSiblings();
+    for (QScreen *screen : screens)
         result |= screen->availableGeometry();
     return result;
 }

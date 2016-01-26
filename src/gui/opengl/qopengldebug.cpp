@@ -176,8 +176,8 @@ QT_BEGIN_NAMESPACE
 
     \code
 
-    QList<QOpenGLDebugMessage> messages = logger->loggedMessages();
-    foreach (const QOpenGLDebugMessage &message, messages)
+    const QList<QOpenGLDebugMessage> messages = logger->loggedMessages();
+    for (const QOpenGLDebugMessage &message : messages)
         qDebug() << message;
 
     \endcode

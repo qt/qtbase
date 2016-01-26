@@ -111,7 +111,8 @@ QWindow *QPlatformScreen::topLevelAt(const QPoint & pos) const
 const QPlatformScreen *QPlatformScreen::screenForPosition(const QPoint &point) const
 {
     if (!geometry().contains(point)) {
-        Q_FOREACH (const QPlatformScreen* screen, virtualSiblings()) {
+        const auto screens = virtualSiblings();
+        for (const QPlatformScreen *screen : screens) {
             if (screen->geometry().contains(point))
                 return screen;
         }

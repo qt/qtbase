@@ -381,7 +381,8 @@ inline QRegion fromNativeLocalRegion(const QRegion &pixelRegion, const QWindow *
 
     qreal scaleFactor = QHighDpiScaling::factor(window);
     QRegion pointRegion;
-    foreach (const QRect &rect, pixelRegion.rects()) {
+    const auto rects = pixelRegion.rects();
+    for (const QRect &rect : rects) {
         pointRegion += QRect(fromNative(rect.topLeft(), scaleFactor),
                              fromNative(rect.size(), scaleFactor));
     }
@@ -395,7 +396,8 @@ inline QRegion toNativeLocalRegion(const QRegion &pointRegion, const QWindow *wi
 
     qreal scaleFactor = QHighDpiScaling::factor(window);
     QRegion pixelRegon;
-    foreach (const QRect &rect, pointRegion.rects()) {
+    const auto rects = pointRegion.rects();
+    for (const QRect &rect : rects) {
         pixelRegon += QRect(toNative(rect.topLeft(), scaleFactor),
                              toNative(rect.size(), scaleFactor));
     }

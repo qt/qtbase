@@ -494,7 +494,8 @@ QPlatformScreen *QPlatformWindow::screenForGeometry(const QRect &newGeometry) co
     const QPoint center = newGeometry.isEmpty() ? newGeometry.topLeft() : newGeometry.center();
 
     if (!parent() && currentScreen && !currentScreen->geometry().contains(center)) {
-        Q_FOREACH (QPlatformScreen* screen, currentScreen->virtualSiblings()) {
+        const auto screens = currentScreen->virtualSiblings();
+        for (QPlatformScreen *screen : screens) {
             if (screen->geometry().contains(center))
                 return screen;
             if (screen->geometry().intersects(newGeometry))

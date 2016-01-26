@@ -89,7 +89,8 @@ QSize MyWidget::sizeHint() const
 //! [4]
 void showAllHiddenTopLevelWidgets()
 {
-    foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+    const auto topLevelWidgets = QApplication::topLevelWidgets();
+    for (QWidget *widget : topLevelWidgets) {
         if (widget->isHidden())
             widget->show();
     }
@@ -100,7 +101,8 @@ void showAllHiddenTopLevelWidgets()
 //! [5]
 void updateAllWidgets()
 {
-    foreach (QWidget *widget, QApplication::allWidgets())
+    const auto topLevelWidgets = QApplication::topLevelWidgets();
+    for (QWidget *widget : topLevelWidgets)
         widget->update();
 }
 //! [5]
