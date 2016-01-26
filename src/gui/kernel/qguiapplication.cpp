@@ -719,9 +719,10 @@ static void updateBlockedStatusRecursion(QWindow *window, bool shouldBeBlocked)
         p->blockedByModalWindow = shouldBeBlocked;
         QEvent e(shouldBeBlocked ? QEvent::WindowBlocked : QEvent::WindowUnblocked);
         QGuiApplication::sendEvent(window, &e);
-        foreach (QObject *c, window->children())
+        for (QObject *c : window->children()) {
             if (c->isWindowType())
                 updateBlockedStatusRecursion(static_cast<QWindow *>(c), shouldBeBlocked);
+        }
     }
 }
 

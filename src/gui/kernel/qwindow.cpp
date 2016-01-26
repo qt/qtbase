@@ -365,7 +365,7 @@ void QWindowPrivate::emitScreenChangedRecursion(QScreen *newScreen)
 {
     Q_Q(QWindow);
     emit q->screenChanged(newScreen);
-    foreach (QObject *child, q->children()) {
+    for (QObject *child : q->children()) {
         if (child->isWindowType())
             static_cast<QWindow *>(child)->d_func()->emitScreenChangedRecursion(newScreen);
     }

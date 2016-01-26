@@ -851,7 +851,7 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
     int tableHeaderRowCount = 0;
     QVector<int> rowNodes;
     rowNodes.reserve(at(tableNodeIdx).children.count());
-    foreach (int row, at(tableNodeIdx).children)
+    for (int row : at(tableNodeIdx).children) {
         switch (at(row).id) {
             case Html_tr:
                 rowNodes += row;
@@ -859,15 +859,17 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
             case Html_thead:
             case Html_tbody:
             case Html_tfoot:
-                foreach (int potentialRow, at(row).children)
+                for (int potentialRow : at(row).children) {
                     if (at(potentialRow).id == Html_tr) {
                         rowNodes += potentialRow;
                         if (at(row).id == Html_thead)
                             ++tableHeaderRowCount;
                     }
+                }
                 break;
             default: break;
         }
+    }
 
     QVector<RowColSpanInfo> rowColSpans;
     QVector<RowColSpanInfo> rowColSpanForColumn;
@@ -876,7 +878,7 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
     for (int row : qAsConst(rowNodes)) {
         int colsInRow = 0;
 
-        foreach (int cell, at(row).children)
+        for (int cell : at(row).children) {
             if (at(cell).isTableCell()) {
                 // skip all columns with spans from previous rows
                 while (colsInRow < rowColSpanForColumn.size()) {
@@ -913,6 +915,7 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
                     rowColSpanForColumn[i] = spanInfo;
                 }
             }
+        }
 
         table.columns = qMax(table.columns, colsInRow);
 
