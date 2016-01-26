@@ -692,8 +692,8 @@ void QXcbKeyboard::updateKeymap()
     if (!xkb_context) {
         if (qEnvironmentVariableIsSet("QT_XKB_CONFIG_ROOT")) {
             xkb_context = xkb_context_new((xkb_context_flags)XKB_CONTEXT_NO_DEFAULT_INCLUDES);
-            QList<QByteArray> xkbRootList = QByteArray(qgetenv("QT_XKB_CONFIG_ROOT")).split(':');
-            foreach (const QByteArray &xkbRoot, xkbRootList)
+            const QList<QByteArray> xkbRootList = QByteArray(qgetenv("QT_XKB_CONFIG_ROOT")).split(':');
+            for (const QByteArray &xkbRoot : xkbRootList)
                 xkb_context_include_path_append(xkb_context, xkbRoot.constData());
         } else {
             xkb_context = xkb_context_new((xkb_context_flags)0);
