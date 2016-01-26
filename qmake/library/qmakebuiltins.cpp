@@ -437,7 +437,7 @@ void QMakeEvaluator::populateDeps(
             if (depends.isEmpty()) {
                 rootSet.insert(first(ProKey(prefix + item + priosfx)).toInt(), item);
             } else {
-                foreach (const ProString &dep, depends) {
+                for (const ProString &dep : qAsConst(depends)) {
                     dset.insert(dep.toKey());
                     dependees[dep.toKey()] << item;
                 }
@@ -989,7 +989,7 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
                 rootSet.erase(it);
                 if ((func_t == E_RESOLVE_DEPENDS) || orgList.contains(item))
                     ret.prepend(item);
-                foreach (const ProString &dep, dependees[item.toKey()]) {
+                for (const ProString &dep : qAsConst(dependees[item.toKey()])) {
                     QSet<ProKey> &dset = dependencies[dep.toKey()];
                     dset.remove(item.toKey());
                     if (dset.isEmpty())
@@ -1000,11 +1000,11 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
         break;
     case E_ENUMERATE_VARS: {
         QSet<ProString> keys;
-        foreach (const ProValueMap &vmap, m_valuemapStack)
+        for (const ProValueMap &vmap : qAsConst(m_valuemapStack))
             for (ProValueMap::ConstIterator it = vmap.constBegin(); it != vmap.constEnd(); ++it)
                 keys.insert(it.key());
         ret.reserve(keys.size());
-        foreach (const ProString &key, keys)
+        for (const ProString &key : qAsConst(keys))
             ret << key;
         break; }
     case E_SHADOWED:

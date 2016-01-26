@@ -427,9 +427,9 @@ QStringList NmakeMakefileGenerator::sourceFilesForImplicitRulesFilter()
 {
     QStringList filter;
     const QChar wildcard = QLatin1Char('*');
-    foreach (const QString &ext, Option::c_ext)
+    for (const QString &ext : qAsConst(Option::c_ext))
         filter << wildcard + ext;
-    foreach (const QString &ext, Option::cpp_ext)
+    for (const QString &ext : qAsConst(Option::cpp_ext))
         filter << wildcard + ext;
     return filter;
 }
@@ -477,7 +477,7 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
         const QStringList sourceFilesFilter = sourceFilesForImplicitRulesFilter();
         QStringList fixifiedSourceDirs = fileFixify(source_directories.toList(), FileFixifyAbsolute);
         fixifiedSourceDirs.removeDuplicates();
-        foreach (const QString &sourceDir, fixifiedSourceDirs) {
+        for (const QString &sourceDir : qAsConst(fixifiedSourceDirs)) {
             QDirIterator dit(sourceDir, sourceFilesFilter, QDir::Files | QDir::NoDotAndDotDot);
             while (dit.hasNext()) {
                 dit.next();
@@ -502,7 +502,7 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
         project->variables().remove("QMAKE_RUN_CXX");
         project->variables().remove("QMAKE_RUN_CC");
 
-        foreach (const QString &sourceDir, source_directories) {
+        for (const QString &sourceDir : qAsConst(source_directories)) {
             if (sourceDir.isEmpty())
                 continue;
             QString objDir = var("OBJECTS_DIR");

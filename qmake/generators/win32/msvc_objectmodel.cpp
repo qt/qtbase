@@ -2224,7 +2224,7 @@ void VCFilter::modifyPCHstage(QString str)
             lines << "* WARNING: All changes made in this file will be lost.";
             lines << "--------------------------------------------------------------------*/";
             lines << "#include \"" + Project->precompHFilename + "\"";
-            foreach(QString line, lines)
+            for (const QString &line : qAsConst(lines))
                 CustomBuildTool.CommandLine += "echo " + line + ">>" + toFile;
         }
         return;
@@ -2415,9 +2415,8 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
 
     // Ensure that none of the output files are also dependencies. Or else, the custom buildstep
     // will be rebuild every time, even if nothing has changed.
-    foreach(QString output, CustomBuildTool.Outputs) {
+    for (const QString &output : qAsConst(CustomBuildTool.Outputs))
         CustomBuildTool.AdditionalDependencies.removeAll(output);
-    }
 
     useCustomBuildTool = !CustomBuildTool.CommandLine.isEmpty();
     return useCustomBuildTool;

@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 
 ProFileCache::~ProFileCache()
 {
-    foreach (const Entry &ent, parsed_files)
+    for (const Entry &ent : qAsConst(parsed_files))
         if (ent.pro)
             ent.pro->deref();
 }

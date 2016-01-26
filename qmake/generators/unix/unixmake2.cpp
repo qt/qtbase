@@ -816,7 +816,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 QString icon = fileFixify(var("ICON"));
                 t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
                   << "@sed ";
-                foreach (const ProString &arg, commonSedArgs)
+                for (const ProString &arg : qAsConst(commonSedArgs))
                     t << arg;
                 t << "-e \"s,@ICON@," << icon.section(Option::dir_sep, -1) << ",g\" "
                   << "-e \"s,@EXECUTABLE@," << var("QMAKE_ORIG_TARGET") << ",g\" "
@@ -840,7 +840,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 symlinks[bundle_dir + "Resources"] = "Versions/Current/Resources";
                 t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
                   << "@sed ";
-                foreach (const ProString &arg, commonSedArgs)
+                for (const ProString &arg : qAsConst(commonSedArgs))
                     t << arg;
                 t << "-e \"s,@LIBRARY@," << var("QMAKE_ORIG_TARGET") << ",g\" "
                   << "-e \"s,@TYPEINFO@,"

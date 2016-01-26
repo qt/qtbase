@@ -474,17 +474,17 @@ ProjectBuilderSources::files(QMakeProject *project) const
 
 static QString xcodeFiletypeForFilename(const QString &filename)
 {
-    foreach (const QString &ext, Option::cpp_ext) {
+    for (const QString &ext : qAsConst(Option::cpp_ext)) {
         if (filename.endsWith(ext))
             return QStringLiteral("sourcecode.cpp.cpp");
     }
 
-    foreach (const QString &ext, Option::c_ext) {
+    for (const QString &ext : qAsConst(Option::c_ext)) {
         if (filename.endsWith(ext))
             return QStringLiteral("sourcecode.c.c");
     }
 
-    foreach (const QString &ext, Option::h_ext) {
+    for (const QString &ext : qAsConst(Option::h_ext)) {
         if (filename.endsWith(ext))
             return "sourcecode.c.h";
     }
@@ -1129,7 +1129,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
 
             if (copyBundleResources && ((ios && path.isEmpty())
                                         || (!ios && path == QLatin1String("Contents/Resources")))) {
-                foreach (const ProString &s, bundle_files)
+                for (const ProString &s : qAsConst(bundle_files))
                     bundle_resources_files << s;
             } else {
                 QString phase_key = keyFor("QMAKE_PBX_BUNDLE_COPY." + bundle_data[i]);

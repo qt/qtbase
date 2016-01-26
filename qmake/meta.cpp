@@ -160,7 +160,7 @@ QMakeMetaInfo::readLibtoolFile(const QString &f)
                 }
             }
             ProStringList &prlLibs = vars["QMAKE_PRL_LIBS"];
-            foreach (const ProString &s, lst) {
+            for (const ProString &s : qAsConst(lst)) {
                 prlLibs.removeAll(s);
                 prlLibs.append(s);
             }

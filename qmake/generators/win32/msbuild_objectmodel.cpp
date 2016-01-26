@@ -856,7 +856,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
             << tag("AppxManifest")
             << attrTag("Include", manifest)
             << closetag();
-        foreach (const QString &icon, icons) {
+        for (const QString &icon : qAsConst(icons)) {
             xml << tag("Image")
                 << attrTag("Include", icon)
                 << closetag();

@@ -1864,7 +1864,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             if (raw_clean.isEmpty())
                 raw_clean << tmp_out;
             QString tmp_clean;
-            foreach (const QString &rc, raw_clean)
+            for (const QString &rc : qAsConst(raw_clean))
                 tmp_clean += ' ' + escapeFilePath(Option::fixPathToTargetOS(rc));
             QString tmp_clean_cmds = project->values(ProKey(*it + ".clean_commands")).join(' ');
             if(!tmp_inputs.isEmpty())
@@ -1889,7 +1889,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                     for (ProStringList::ConstIterator input = tmp_inputs.begin(); input != tmp_inputs.end(); ++input) {
                         QString tinp = (*input).toQString();
                         QString out = replaceExtraCompilerVariables(tmp_out, tinp, QString(), NoShell);
-                        foreach (const QString &rc, raw_clean) {
+                        for (const QString &rc : qAsConst(raw_clean)) {
                             dels << ' ' + escapeFilePath(Option::fixPathToTargetOS(
                                     replaceExtraCompilerVariables(rc, tinp, out, NoShell), false));
                         }
@@ -1899,7 +1899,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                     } else {
                         QString files;
                         const int commandlineLimit = 2047; // NT limit, expanded
-                        foreach (const QString &file, dels) {
+                        for (const QString &file : qAsConst(dels)) {
                             if(del_statement.length() + files.length() +
                                qMax(fixEnvVariables(file).length(), file.length()) > commandlineLimit) {
                                 cleans.append(files);
@@ -2245,7 +2245,7 @@ QString MakefileGenerator::buildArgs()
 {
     QString ret;
 
-    foreach (const QString &arg, Option::globals->qmake_args)
+    for (const QString &arg : qAsConst(Option::globals->qmake_args))
         ret += " " + shellQuote(arg);
     return ret;
 }

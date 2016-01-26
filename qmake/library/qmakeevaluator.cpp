@@ -1218,7 +1218,7 @@ bool QMakeEvaluator::loadSpec()
         qmakespec = m_hostBuild ? QLatin1String("default-host") : QLatin1String("default");
 #endif
     if (IoUtils::isRelativePath(qmakespec)) {
-        foreach (const QString &root, m_mkspecPaths) {
+        for (const QString &root : qAsConst(m_mkspecPaths)) {
             QString mkspec = root + QLatin1Char('/') + qmakespec;
             if (IoUtils::exists(mkspec)) {
                 qmakespec = mkspec;
@@ -1452,7 +1452,7 @@ void QMakeEvaluator::updateMkspecPaths()
     for (const QString &it : paths)
         ret << it + concat;
 
-    foreach (const QString &it, m_qmakepath)
+    for (const QString &it : qAsConst(m_qmakepath))
         ret << it + concat;
 
     if (!m_buildRoot.isEmpty())
@@ -1493,7 +1493,7 @@ void QMakeEvaluator::updateFeaturePaths()
     for (const QString &item : items)
         feature_bases << (item + mkspecs_concat);
 
-    foreach (const QString &item, m_qmakepath)
+    for (const QString &item : qAsConst(m_qmakepath))
         feature_bases << (item + mkspecs_concat);
 
     if (!m_qmakespec.isEmpty()) {
@@ -1515,7 +1515,7 @@ void QMakeEvaluator::updateFeaturePaths()
     feature_bases << (m_option->propertyValue(ProKey("QT_HOST_DATA/get")) + mkspecs_concat);
     feature_bases << (m_option->propertyValue(ProKey("QT_HOST_DATA/src")) + mkspecs_concat);
 
-    foreach (const QString &fb, feature_bases) {
+    for (const QString &fb : qAsConst(feature_bases)) {
         const auto sfxs = values(ProKey("QMAKE_PLATFORM"));
         for (const ProString &sfx : sfxs)
             feature_roots << (fb + features_concat + sfx + QLatin1Char('/'));
@@ -1529,7 +1529,7 @@ void QMakeEvaluator::updateFeaturePaths()
     feature_roots.removeDuplicates();
 
     QStringList ret;
-    foreach (const QString &root, feature_roots)
+    for (const QString &root : qAsConst(feature_roots))
         if (IoUtils::exists(root))
             ret << root;
     m_featureRoots = new QMakeFeatureRoots(ret);

@@ -421,7 +421,7 @@ UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
                             opt = (*++it).toQString();
                         else
                             opt = opt.mid(10).trimmed();
-                        foreach (const QMakeLocalFileName &dir, frameworkdirs) {
+                        for (const QMakeLocalFileName &dir : qAsConst(frameworkdirs)) {
                             QString prl = dir.local() + "/" + opt + ".framework/" + opt + Option::prl_ext;
                             if (processPrlFile(prl))
                                 break;

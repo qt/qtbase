@@ -152,7 +152,7 @@ void QMakeProject::dump() const
         }
     }
     out.sort();
-    foreach (const QString &v, out)
+    for (const QString &v : qAsConst(out))
         puts(qPrintable(v));
 }
 

@@ -137,7 +137,7 @@ static int doSed(int argc, char **argv)
     }
     if (inFiles.isEmpty())
         inFiles << "-";
-    foreach (const char *inFile, inFiles) {
+    for (const char *inFile : qAsConst(inFiles)) {
         FILE *f;
         if (!strcmp(inFile, "-")) {
             f = stdin;

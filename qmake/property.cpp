@@ -151,7 +151,7 @@ QMakeProperty::exec()
 #ifdef QT_VERSION_STR
             specialProps.append("QT_VERSION");
 #endif
-            foreach (QString prop, specialProps) {
+            for (const QString &prop : qAsConst(specialProps)) {
                 ProString val = value(ProKey(prop));
                 ProString pval = value(ProKey(prop + "/raw"));
                 ProString gval = value(ProKey(prop + "/get"));
