@@ -137,6 +137,11 @@ typedef struct {
 
 QAppleOperatingSystemVersion qt_apple_os_version();
 
+#ifdef Q_OS_OSX
+Q_CORE_EXPORT QChar qt_mac_qtKey2CocoaKey(Qt::Key key);
+Q_CORE_EXPORT Qt::Key qt_mac_cocoaKey2QtKey(QChar keyCode);
+#endif
+
 QT_END_NAMESPACE
 
 #endif // QCORE_MAC_P_H
