@@ -49,9 +49,9 @@
 ****************************************************************************/
 
 //! [0]
-foreach (const QSslCertificate &cert, QSslCertificate::fromPath("C:/ssl/certificate.*.pem",
-                                                         QSsl::Pem,
-                                                         QRegExp::Wildcard)) {
+const auto certs = QSslCertificate::fromPath("C:/ssl/certificate.*.pem",
+                                             QSsl::Pem, QRegExp::Wildcard);
+for (const QSslCertificate &cert : certs) {
     qDebug() << cert.issuerInfo(QSslCertificate::Organization);
 }
 //! [0]

@@ -224,7 +224,8 @@ init_context:
     const QDateTime now = QDateTime::currentDateTimeUtc();
 
     // Add all our CAs to this store.
-    foreach (const QSslCertificate &caCertificate, sslContext->sslConfiguration.caCertificates()) {
+    const auto caCertificates = sslContext->sslConfiguration.caCertificates();
+    for (const QSslCertificate &caCertificate : caCertificates) {
         // From https://www.openssl.org/docs/ssl/SSL_CTX_load_verify_locations.html:
         //
         // If several CA certificates matching the name, key identifier, and

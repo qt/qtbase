@@ -999,9 +999,11 @@ void QAbstractSocketPrivate::_q_startConnecting(const QHostInfo &hostInfo)
     if (preferredNetworkLayerProtocol == QAbstractSocket::UnknownNetworkLayerProtocol || preferredNetworkLayerProtocol == QAbstractSocket::AnyIPProtocol) {
         addresses = hostInfo.addresses();
     } else {
-        foreach (const QHostAddress &address, hostInfo.addresses())
+        const auto candidates = hostInfo.addresses();
+        for (const QHostAddress &address : candidates) {
             if (address.protocol() == preferredNetworkLayerProtocol)
                 addresses += address;
+        }
     }
 
 

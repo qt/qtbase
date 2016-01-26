@@ -200,8 +200,10 @@ static bool isBypassed(const QString &host, const QStringList &bypassList)
                 return true;
             if (isIpAddress) {
                 //exclude all local subnets
-                foreach (const QNetworkInterface &iface, QNetworkInterface::allInterfaces()) {
-                    foreach (const QNetworkAddressEntry netaddr, iface.addressEntries()) {
+                const auto ifaces = QNetworkInterface::allInterfaces();
+                for (const QNetworkInterface &iface : ifaces) {
+                    const auto netaddrs = iface.addressEntries();
+                    for (const QNetworkAddressEntry &netaddr : netaddrs) {
                         if (ipAddress.isInSubnet(netaddr.ip(), netaddr.prefixLength())) {
                             return true;
                         }

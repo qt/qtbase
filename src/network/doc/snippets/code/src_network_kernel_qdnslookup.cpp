@@ -75,7 +75,8 @@ void MyObject::handleServers()
     }
 
     // Handle the results.
-    foreach (const QDnsServiceRecord &record, dns->serviceRecords()) {
+    const auto records = dns->serviceRecords();
+    for (const QDnsServiceRecord &record : records) {
         ...
     }
     dns->deleteLater();

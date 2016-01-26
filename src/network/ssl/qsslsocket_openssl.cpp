@@ -286,7 +286,8 @@ int q_X509Callback(int ok, X509_STORE_CTX *ctx)
         qCDebug(lcSsl) << "verification error: dumping bad certificate";
         qCDebug(lcSsl) << QSslCertificatePrivate::QSslCertificate_from_X509(q_X509_STORE_CTX_get_current_cert(ctx)).toPem();
         qCDebug(lcSsl) << "dumping chain";
-        foreach (QSslCertificate cert, QSslSocketBackendPrivate::STACKOFX509_to_QSslCertificates(q_X509_STORE_CTX_get_chain(ctx))) {
+        const auto certs = QSslSocketBackendPrivate::STACKOFX509_to_QSslCertificates(q_X509_STORE_CTX_get_chain(ctx));
+        for (const QSslCertificate &cert : certs) {
             qCDebug(lcSsl) << "Issuer:" << "O=" << cert.issuerInfo(QSslCertificate::Organization)
                 << "CN=" << cert.issuerInfo(QSslCertificate::CommonName)
                 << "L=" << cert.issuerInfo(QSslCertificate::LocalityName)
@@ -1625,7 +1626,8 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
     }
 
     const QDateTime now = QDateTime::currentDateTimeUtc();
-    foreach (const QSslCertificate &caCertificate, QSslConfiguration::defaultConfiguration().caCertificates()) {
+    const auto caCertificates = QSslConfiguration::defaultConfiguration().caCertificates();
+    for (const QSslCertificate &caCertificate : caCertificates) {
         // From https://www.openssl.org/docs/ssl/SSL_CTX_load_verify_locations.html:
         //
         // If several CA certificates matching the name, key identifier, and

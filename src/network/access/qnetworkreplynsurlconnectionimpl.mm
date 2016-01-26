@@ -365,7 +365,8 @@ QNetworkReplyNSURLConnectionImpl::QNetworkReplyNSURLConnectionImpl(QObject *pare
                                              cachePolicy:NSURLRequestUseProtocolCachePolicy
                                              timeoutInterval:60.0];
     // copy headers
-    foreach (const QByteArray &header, request.rawHeaderList()) {
+    const auto headers = request.rawHeaderList();
+    for (const QByteArray &header : headers) {
         QByteArray headerValue = request.rawHeader(header);
         [nsRequest addValue:QString::fromUtf8(headerValue).toNSString()
                  forHTTPHeaderField:QString::fromUtf8(header).toNSString()];

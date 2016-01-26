@@ -648,7 +648,8 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     QNetworkProxy transparentProxy, cacheProxy;
 
     // FIXME the proxy stuff should be done in the HTTP thread
-    foreach (const QNetworkProxy &p, managerPrivate->queryProxy(QNetworkProxyQuery(newHttpRequest.url()))) {
+    const auto proxies = managerPrivate->queryProxy(QNetworkProxyQuery(newHttpRequest.url()));
+    for (const QNetworkProxy &p : proxies) {
         // use the first proxy that works
         // for non-encrypted connections, any transparent or HTTP proxy
         // for encrypted, only transparent proxies

@@ -121,7 +121,8 @@ void QNetworkAccessFtpBackend::open()
 {
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy proxy;
-    foreach (const QNetworkProxy &p, proxyList()) {
+    const auto proxies = proxyList();
+    for (const QNetworkProxy &p : proxies) {
         // use the first FTP proxy
         // or no proxy at all
         if (p.type() == QNetworkProxy::FtpCachingProxy

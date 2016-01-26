@@ -1148,7 +1148,8 @@ void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(const QHostInfo &info)
     if (networkLayerState == IPv4 || networkLayerState == IPv6 || networkLayerState == IPv4or6)
         return;
 
-    foreach (const QHostAddress &address, info.addresses()) {
+    const auto addresses = info.addresses();
+    for (const QHostAddress &address : addresses) {
         const QAbstractSocket::NetworkLayerProtocol protocol = address.protocol();
         if (protocol == QAbstractSocket::IPv4Protocol) {
             if (!foundAddress) {
