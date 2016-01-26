@@ -1043,7 +1043,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
                                       offsetHi, offsetLo, size + extra);
 #else
     LPVOID mapAddress = ::MapViewOfFileFromApp(mapHandle, access,
-                                               (ULONG64(offsetHi) << 32) + offsetLo, size);
+                                               (ULONG64(offsetHi) << 32) + offsetLo, size + extra);
 #endif
     if (mapAddress) {
         uchar *address = extra + static_cast<uchar*>(mapAddress);

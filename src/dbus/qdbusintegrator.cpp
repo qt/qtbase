@@ -126,8 +126,7 @@ void qdbusDefaultThreadDebug(int action, int condition, QDBusConnectionPrivate *
 qdbusThreadDebugFunc qdbusThreadDebug = 0;
 #endif
 
-typedef void (*QDBusSpyHook)(const QDBusMessage&);
-typedef QVarLengthArray<QDBusSpyHook, 4> QDBusSpyHookList;
+typedef QVarLengthArray<QDBusSpyCallEvent::Hook, 4> QDBusSpyHookList;
 Q_GLOBAL_STATIC(QDBusSpyHookList, qDBusSpyHookList)
 
 extern "C" {
@@ -467,10 +466,27 @@ static QStringList matchArgsForService(const QString &service, QDBusServiceWatch
 }
 
 
-extern Q_DBUS_EXPORT void qDBusAddSpyHook(QDBusSpyHook);
-void qDBusAddSpyHook(QDBusSpyHook hook)
+extern Q_DBUS_EXPORT void qDBusAddSpyHook(QDBusSpyCallEvent::Hook);
+void qDBusAddSpyHook(QDBusSpyCallEvent::Hook hook)
 {
     qDBusSpyHookList()->append(hook);
+}
+
+QDBusSpyCallEvent::~QDBusSpyCallEvent()
+{
+    // Reinsert the message into the processing queue for the connection.
+    // This is done in the destructor so the message is reinserted even if
+    // QCoreApplication is destroyed.
+    QDBusConnectionPrivate *d = static_cast<QDBusConnectionPrivate *>(const_cast<QObject *>(sender()));
+    qDBusDebug() << d << "message spies done for" << msg;
+    emit d->spyHooksFinished(msg);
+}
+
+void QDBusSpyCallEvent::placeMetaCall(QObject *)
+{
+    // call the spy hook list
+    for (int i = 0; i < hookCount; ++i)
+        hooks[i](msg);
 }
 
 extern "C" {
@@ -494,16 +510,11 @@ qDBusSignalFilter(DBusConnection *connection, DBusMessage *message, void *data)
 
 bool QDBusConnectionPrivate::handleMessage(const QDBusMessage &amsg)
 {
-    const QDBusSpyHookList *list = qDBusSpyHookList();
-    for (int i = 0; list && i < list->size(); ++i) {
-        qDBusDebug() << "calling the message spy hook";
-        (*(*list)[i])(amsg);
-    }
-
     if (!ref.load())
         return false;
     if (!dispatchEnabled && !QDBusMessagePrivate::isLocal(amsg)) {
         // queue messages only, we'll handle them later
+        qDBusDebug() << this << "delivery is suspended";
         pendingMessages << amsg;
         return amsg.type() == QDBusMessage::MethodCallMessage;
     }
@@ -515,6 +526,15 @@ bool QDBusConnectionPrivate::handleMessage(const QDBusMessage &amsg)
         // let them see the signal too
         return false;
     case QDBusMessage::MethodCallMessage:
+        // run it through the spy filters (if any) before the regular processing
+        if (Q_UNLIKELY(qDBusSpyHookList.exists()) && qApp) {
+            const QDBusSpyHookList &list = *qDBusSpyHookList;
+            qDBusDebug() << this << "invoking message spies";
+            QCoreApplication::postEvent(qApp, new QDBusSpyCallEvent(this, QDBusConnection(this),
+                                                                    amsg, list.constData(), list.size()));
+            return true;
+        }
+
         handleObjectCall(amsg);
         return true;
     case QDBusMessage::ReplyMessage:
@@ -986,6 +1006,8 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
     QDBusMetaTypeId::init();
     connect(this, &QDBusConnectionPrivate::dispatchStatusChanged,
             this, &QDBusConnectionPrivate::doDispatch, Qt::QueuedConnection);
+    connect(this, &QDBusConnectionPrivate::spyHooksFinished,
+            this, &QDBusConnectionPrivate::handleObjectCall, Qt::QueuedConnection);
     connect(this, &QDBusConnectionPrivate::messageNeedsSending,
             this, &QDBusConnectionPrivate::sendInternal);
     connect(this, &QDBusConnectionPrivate::signalNeedsConnecting,
@@ -1097,8 +1119,10 @@ void QDBusConnectionPrivate::doDispatch()
             // dispatch previously queued messages
             PendingMessageList::Iterator it = pendingMessages.begin();
             PendingMessageList::Iterator end = pendingMessages.end();
-            for ( ; it != end; ++it)
+            for ( ; it != end; ++it) {
+                qDBusDebug() << this << "dequeueing message" << *it;
                 handleMessage(qMove(*it));
+            }
             pendingMessages.clear();
         }
     }

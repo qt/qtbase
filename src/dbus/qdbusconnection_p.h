@@ -286,6 +286,7 @@ private slots:
 
 signals:
     void dispatchStatusChanged();
+    void spyHooksFinished(const QDBusMessage &msg);
     void messageNeedsSending(QDBusPendingCallPrivate *pcall, void *msg, int timeout = -1);
     void signalNeedsConnecting(const QString &key, const QDBusConnectionPrivate::SignalHook &hook);
     bool signalNeedsDisconnecting(const QString &key, const QDBusConnectionPrivate::SignalHook &hook);

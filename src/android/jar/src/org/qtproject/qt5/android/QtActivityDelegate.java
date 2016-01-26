@@ -48,6 +48,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.Rect;
 import android.net.LocalServerSocket;
 import android.net.LocalSocket;
 import android.os.Build;
@@ -74,7 +75,6 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.view.ViewTreeObserver;
 import android.widget.PopupMenu;
-import android.graphics.Rect;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -134,6 +134,9 @@ public class QtActivityDelegate
     private boolean m_keyboardIsVisible = false;
     public boolean m_backKeyPressedSent = false;
     private long m_showHideTimeStamp = System.nanoTime();
+    private int m_portraitKeyboardHeight = 0;
+    private int m_landscapeKeyboardHeight = 0;
+    private int m_probeKeyboardHeightDelay = 50; // ms
 
     public void setFullScreen(boolean enterFullScreen)
     {
@@ -244,19 +247,26 @@ public class QtActivityDelegate
         }, 5);
     }
 
-    public void showSoftwareKeyboard(int x, int y, int width, int height, int inputHints, int enterKeyType)
+    public void showSoftwareKeyboard(final int x, final int y, final int width, final int height, final int inputHints, final int enterKeyType)
     {
         if (m_imm == null)
             return;
 
+        DisplayMetrics metrics = new DisplayMetrics();
+        m_activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+        // If the screen is in portrait mode than we estimate that keyboard height will not be higher than 2/5 of the screen.
+        // else than we estimate that keyboard height will not be higher than 2/3 of the screen
+        final int visibleHeight;
+        if (metrics.widthPixels < metrics.heightPixels)
+            visibleHeight = m_portraitKeyboardHeight != 0 ? m_portraitKeyboardHeight : metrics.heightPixels * 3 / 5;
+        else
+            visibleHeight = m_landscapeKeyboardHeight != 0 ? m_landscapeKeyboardHeight : metrics.heightPixels / 3;
+
         if (m_softInputMode != 0) {
             m_activity.getWindow().setSoftInputMode(m_softInputMode);
-            // softInputIsHidden is true if SOFT_INPUT_STATE_HIDDEN or SOFT_INPUT_STATE_ALWAYS_HIDDEN is set.
-            final boolean softInputIsHidden = (m_softInputMode & WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN) != 0;
-            if (softInputIsHidden)
-               return;
         } else {
-            if (height > m_layout.getHeight() * 2 / 3)
+            if (height > visibleHeight)
                 m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
             else
                 m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
@@ -362,6 +372,38 @@ public class QtActivityDelegate
                                 //FALLTHROUGH
                             case InputMethodManager.RESULT_UNCHANGED_SHOWN:
                                 setKeyboardVisibility(true, System.nanoTime());
+                                if (m_softInputMode == 0) {
+                                    // probe for real keyboard height
+                                    m_layout.postDelayed(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                if (!m_keyboardIsVisible)
+                                                    return;
+                                                DisplayMetrics metrics = new DisplayMetrics();
+                                                m_activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                                                Rect r = new Rect();
+                                                m_activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
+                                                if (metrics.heightPixels != r.bottom) {
+                                                    if (metrics.widthPixels > metrics.heightPixels) { // landscape
+                                                        if (m_landscapeKeyboardHeight != r.bottom) {
+                                                            m_landscapeKeyboardHeight = r.bottom;
+                                                            showSoftwareKeyboard(x, y, width, height, inputHints, enterKeyType);
+                                                        }
+                                                    } else {
+                                                        if (m_portraitKeyboardHeight != r.bottom) {
+                                                            m_portraitKeyboardHeight = r.bottom;
+                                                            showSoftwareKeyboard(x, y, width, height, inputHints, enterKeyType);
+                                                        }
+                                                    }
+                                                } else {
+                                                    // no luck ?
+                                                    // maybe the delay was too short, so let's make it longer
+                                                    if (m_probeKeyboardHeightDelay < 1000)
+                                                        m_probeKeyboardHeightDelay *= 2;
+                                                }
+                                            }
+                                        }, m_probeKeyboardHeightDelay);
+                                    }
                                 break;
                             case InputMethodManager.RESULT_HIDDEN:
                             case InputMethodManager.RESULT_UNCHANGED_HIDDEN:

@@ -47,6 +47,9 @@ public:
 protected:
     virtual bool doPrecompiledHeaders() const { return project->isActiveConfig("precompile_header"); }
     virtual bool doDepends() const { return !Option::mkfile::do_stub_makefile && MakefileGenerator::doDepends(); }
+#ifdef Q_OS_WIN // MinGW x-compiling for QNX
+    virtual QString installRoot() const;
+#endif
     virtual QString defaultInstall(const QString &);
     virtual ProString fixLibFlag(const ProString &lib);
 

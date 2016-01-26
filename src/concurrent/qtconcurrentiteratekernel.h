@@ -88,6 +88,32 @@ private:
     Q_DISABLE_COPY(BlockSizeManager)
 };
 
+// ### Qt6: Replace BlockSizeManager with V2 implementation
+class Q_CONCURRENT_EXPORT BlockSizeManagerV2
+{
+public:
+    explicit BlockSizeManagerV2(int iterationCount);
+
+    void timeBeforeUser();
+    void timeAfterUser();
+    int blockSize();
+
+private:
+    inline bool blockSizeMaxed()
+    {
+        return (m_blockSize >= maxBlockSize);
+    }
+
+    const int maxBlockSize;
+    qint64 beforeUser;
+    qint64 afterUser;
+    MedianDouble controlPartElapsed;
+    MedianDouble userPartElapsed;
+    int m_blockSize;
+
+    Q_DISABLE_COPY(BlockSizeManagerV2)
+};
+
 template <typename T>
 class ResultReporter
 {
@@ -196,7 +222,7 @@ public:
 
     ThreadFunctionResult forThreadFunction()
     {
-        BlockSizeManager blockSizeManager(iterationCount);
+        BlockSizeManagerV2 blockSizeManager(iterationCount);
         ResultReporter<T> resultReporter(this);
 
         for(;;) {

@@ -584,7 +584,7 @@ qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHea
     } else {
         readOrigin = datagram.data;
     }
-    strcpy(data, readOrigin);
+    memcpy(data, readOrigin, qMin(maxlen, qint64(datagram.data.length())));
     return readOrigin.length();
 }
 

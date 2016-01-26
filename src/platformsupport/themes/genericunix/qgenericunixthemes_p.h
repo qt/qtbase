@@ -81,8 +81,8 @@ public:
     static QPlatformTheme *createUnixTheme(const QString &name);
     static QStringList themeNames();
 
-    virtual const QFont *font(Font type) const Q_DECL_OVERRIDE;
-    virtual QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
+    const QFont *font(Font type) const Q_DECL_OVERRIDE;
+    QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
 
     static QStringList xdgIconThemePaths();
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
@@ -102,11 +102,11 @@ public:
     QKdeTheme(const QStringList& kdeDirs, int kdeVersion);
 
     static QPlatformTheme *createKdeTheme();
-    virtual QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
+    QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
 
-    virtual const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE;
+    const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE;
 
-    virtual const QFont *font(Font type) const Q_DECL_OVERRIDE;
+    const QFont *font(Font type) const Q_DECL_OVERRIDE;
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
     QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const Q_DECL_OVERRIDE;
 #endif
@@ -122,8 +122,8 @@ class QGnomeTheme : public QPlatformTheme
     Q_DECLARE_PRIVATE(QGnomeTheme)
 public:
     QGnomeTheme();
-    virtual QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
-    virtual const QFont *font(Font type) const Q_DECL_OVERRIDE;
+    QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
+    const QFont *font(Font type) const Q_DECL_OVERRIDE;
     QString standardButtonText(int button) const Q_DECL_OVERRIDE;
 
     virtual QString gtkFontName() const;

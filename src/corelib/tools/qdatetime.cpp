@@ -2706,10 +2706,11 @@ qint64 QDateTimePrivate::toMSecsSinceEpoch() const
     }
 
     case Qt::TimeZone:
-#ifndef QT_BOOTSTRAPPED
+#ifdef QT_BOOTSTRAPPED
+        break;
+#else
         return zoneMSecsToEpochMSecs(m_msecs, m_timeZone);
 #endif
-        break;
     }
     Q_UNREACHABLE();
     return 0;
@@ -3206,7 +3207,9 @@ QString QDateTime::timeZoneAbbreviation() const
     case Qt::OffsetFromUTC:
         return QTimeZonePrivate::utcQString() + toOffsetString(Qt::ISODate, d->m_offsetFromUtc);
     case Qt::TimeZone:
-#ifndef QT_BOOTSTRAPPED
+#ifdef QT_BOOTSTRAPPED
+        break;
+#else
         return d->m_timeZone.d->abbreviation(d->toMSecsSinceEpoch());
 #endif // QT_BOOTSTRAPPED
     case Qt::LocalTime:  {
@@ -3237,7 +3240,9 @@ bool QDateTime::isDaylightTime() const
     case Qt::OffsetFromUTC:
         return false;
     case Qt::TimeZone:
-#ifndef QT_BOOTSTRAPPED
+#ifdef QT_BOOTSTRAPPED
+        break;
+#else
         return d->m_timeZone.d->isDaylightTime(toMSecsSinceEpoch());
 #endif // QT_BOOTSTRAPPED
     case Qt::LocalTime: {
@@ -4829,10 +4834,8 @@ QDataStream &operator<<(QDataStream &out, const QDateTime &dateTime)
             out << (qint8)QDateTimePrivate::OffsetFromUTC;
             break;
         case Qt::TimeZone:
-#ifndef QT_BOOTSTRAPPED
             out << (qint8)QDateTimePrivate::TimeZone;
             break;
-#endif // QT_BOOTSTRAPPED
         case Qt::LocalTime:
             out << (qint8)QDateTimePrivate::LocalUnknown;
             break;
@@ -4905,10 +4908,11 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
             spec = Qt::OffsetFromUTC;
             break;
         case QDateTimePrivate::TimeZone:
-#ifndef QT_BOOTSTRAPPED
             spec = Qt::TimeZone;
+#ifndef QT_BOOTSTRAPPED
+            // FIXME: need to use a different constructor !
+#endif
             break;
-#endif // QT_BOOTSTRAPPED
         case QDateTimePrivate::LocalUnknown:
         case QDateTimePrivate::LocalStandard:
         case QDateTimePrivate::LocalDST:
@@ -4964,8 +4968,8 @@ QDebug operator<<(QDebug dbg, const QDateTime &date)
     case Qt::TimeZone:
 #ifndef QT_BOOTSTRAPPED
         dbg << ' ' << date.timeZone().id();
-        break;
 #endif // QT_BOOTSTRAPPED
+        break;
     case Qt::LocalTime:
         break;
     }

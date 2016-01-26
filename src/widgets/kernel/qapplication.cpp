@@ -485,22 +485,24 @@ void QApplicationPrivate::process_cmdline()
 
     j = 1;
     for (i=1; i<argc; i++) { // if you add anything here, modify QCoreApplication::arguments()
-        if (argv[i] && *argv[i] != '-') {
+        if (!argv[i])
+            continue;
+        if (*argv[i] != '-') {
             argv[j++] = argv[i];
             continue;
         }
-        QByteArray arg = argv[i];
-        if (arg.startsWith("--"))
-            arg.remove(0, 1);
-        if (arg == "-qdevel" || arg == "-qdebug") {
+        const char *arg = argv[i];
+        if (arg[1] == '-') // startsWith("--")
+            ++arg;
+        if (strcmp(arg, "-qdevel") == 0 || strcmp(arg, "-qdebug") == 0) {
             // obsolete argument
 #ifndef QT_NO_STYLE_STYLESHEET
-        } else if (arg == "-stylesheet" && i < argc -1) {
+        } else if (strcmp(arg, "-stylesheet") == 0 && i < argc -1) {
             styleSheet = QLatin1String("file:///");
             styleSheet.append(QString::fromLocal8Bit(argv[++i]));
-        } else if (arg.indexOf("-stylesheet=") != -1) {
+        } else if (strncmp(arg, "-stylesheet=", 12) == 0) {
             styleSheet = QLatin1String("file:///");
-            styleSheet.append(QString::fromLocal8Bit(arg.right(arg.length() - 12)));
+            styleSheet.append(QString::fromLocal8Bit(arg + 12));
 #endif
         } else if (qstrcmp(arg, "-widgetcount") == 0) {
             widgetCount = true;

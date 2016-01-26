@@ -39,6 +39,7 @@
 
 #include "qtextobject.h"
 #include "qtextobject_p.h"
+#include "qtextcursor_p.h"
 #include "qtextdocument.h"
 #include "qtextformat_p.h"
 #include "qtextdocument_p.h"
@@ -467,7 +468,7 @@ QTextFrame *QTextFrame::parentFrame() const
 QTextCursor QTextFrame::firstCursorPosition() const
 {
     Q_D(const QTextFrame);
-    return QTextCursor(d->pieceTable, firstPosition());
+    return QTextCursorPrivate::fromPosition(d->pieceTable, firstPosition());
 }
 
 /*!
@@ -478,7 +479,7 @@ QTextCursor QTextFrame::firstCursorPosition() const
 QTextCursor QTextFrame::lastCursorPosition() const
 {
     Q_D(const QTextFrame);
-    return QTextCursor(d->pieceTable, lastPosition());
+    return QTextCursorPrivate::fromPosition(d->pieceTable, lastPosition());
 }
 
 /*!

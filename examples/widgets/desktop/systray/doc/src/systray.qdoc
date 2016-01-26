@@ -28,9 +28,8 @@
 /*!
     \example desktop/systray
     \title System Tray Icon Example
-
-
-    The System Tray Icon example shows how to add an icon with a menu
+    \ingroup examples-widgets
+    \brief The System Tray Icon example shows how to add an icon with a menu
     and popup messages to a desktop environment's system tray.
 
     \image systemtray-example.png Screenshot of the System Tray Icon.
@@ -47,7 +46,7 @@
 
     The editor allows the user to choose the preferred icon as well as
     set the balloon message's type and duration. The user can also
-    edit the message's title and body. Finally, the editor provide a
+    edit the message's title and body. Finally, the editor provides a
     checkbox controlling whether the icon is actually shown in the
     system tray, or not.
 
@@ -65,8 +64,8 @@
     check whether a system tray is present on the user's desktop, call
     the static QSystemTrayIcon::isSystemTrayAvailable()
     function. Associated with the icon, we provide a menu containing
-    the typical \gui minimize, \gui maximize, \gui restore and \gui
-    quit actions. We reimplement the QWidget::setVisible() function to
+    the typical \uicontrol minimize, \uicontrol maximize, \uicontrol restore and
+    \uicontrol quit actions. We reimplement the QWidget::setVisible() function to
     update the tray icon's menu whenever the editor's appearance
     changes, e.g., when maximizing or minimizing the main application
     window.
@@ -74,7 +73,7 @@
     Finally, we reimplement QWidget's \l {QWidget::}{closeEvent()}
     function to be able to inform the user (when closing the editor
     window) that the program will keep running in the system tray
-    until the user chooses the \gui Quit entry in the icon's context
+    until the user chooses the \uicontrol Quit entry in the icon's context
     menu.
 
     \section1 Window Class Implementation
