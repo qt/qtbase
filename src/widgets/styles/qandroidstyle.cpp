@@ -838,7 +838,7 @@ int QAndroidStyle::Android9PatchDrawable::calculateStretch(int boundsLimit,
 void QAndroidStyle::Android9PatchDrawable::extractIntArray(const QVariantList &values,
                                                            QVector<int> & array)
 {
-    foreach (QVariant value, values)
+    for (const QVariant &value : values)
         array << value.toInt();
 }
 
@@ -1140,8 +1140,8 @@ QAndroidStyle::AndroidStateDrawable::AndroidStateDrawable(const QVariantMap &dra
                                                           QAndroidStyle::ItemType itemType)
     : AndroidDrawable(drawable, itemType)
 {
-    QVariantList states = drawable.value(QLatin1String("stateslist")).toList();
-    foreach (QVariant stateVariant, states) {
+    const QVariantList states = drawable.value(QLatin1String("stateslist")).toList();
+    for (const QVariant &stateVariant : states) {
         QVariantMap state = stateVariant.toMap();
         const int s = extractState(state.value(QLatin1String("states")).toMap());
         if (-1 == s)
@@ -1192,7 +1192,7 @@ const QAndroidStyle::AndroidDrawable * QAndroidStyle::AndroidStateDrawable::best
     }
 
     uint bestCost = 0xffff;
-    foreach (const StateType & state, m_states) {
+    for (const StateType & state : m_states) {
         if (int(opt->state) == state.first)
             return state.second;
         uint cost = 1;
@@ -1293,8 +1293,8 @@ QAndroidStyle::AndroidLayerDrawable::AndroidLayerDrawable(const QVariantMap &dra
     m_id = 0;
     m_factor = 1;
     m_orientation = Qt::Horizontal;
-    QVariantList layers = drawable.value(QLatin1String("layers")).toList();
-    foreach (QVariant layer, layers) {
+    const QVariantList layers = drawable.value(QLatin1String("layers")).toList();
+    for (const QVariant &layer : layers) {
         QVariantMap layerMap = layer.toMap();
         AndroidDrawable *ad = fromMap(layerMap, itemType);
         if (ad) {
@@ -1326,7 +1326,7 @@ void QAndroidStyle::AndroidLayerDrawable::setFactor(int id, double factor, Qt::O
 
 void QAndroidStyle::AndroidLayerDrawable::draw(QPainter *painter, const QStyleOption *opt) const
 {
-    foreach (const LayerType &layer, m_layers) {
+    for (const LayerType &layer : m_layers) {
         if (layer.first == m_id) {
             QStyleOption copy(*opt);
             if (m_orientation == Qt::Horizontal)
@@ -1342,7 +1342,7 @@ void QAndroidStyle::AndroidLayerDrawable::draw(QPainter *painter, const QStyleOp
 
 QAndroidStyle::AndroidDrawable *QAndroidStyle::AndroidLayerDrawable::layer(int id) const
 {
-    foreach (const LayerType &layer, m_layers)
+    for (const LayerType &layer : m_layers)
         if (layer.first == id)
             return layer.second;
     return 0;
@@ -1351,7 +1351,7 @@ QAndroidStyle::AndroidDrawable *QAndroidStyle::AndroidLayerDrawable::layer(int i
 QSize QAndroidStyle::AndroidLayerDrawable::size() const
 {
     QSize sz;
-    foreach (const LayerType &layer, m_layers)
+    for (const LayerType &layer : m_layers)
         sz = sz.expandedTo(layer.second->size());
     return sz;
 }

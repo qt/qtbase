@@ -117,7 +117,7 @@ QAndroidPlatformScreen::~QAndroidPlatformScreen()
 
 QWindow *QAndroidPlatformScreen::topWindow() const
 {
-    foreach (QAndroidPlatformWindow *w, m_windowStack) {
+    for (QAndroidPlatformWindow *w : m_windowStack) {
         if (w->window()->type() == Qt::Window ||
                 w->window()->type() == Qt::Popup ||
                 w->window()->type() == Qt::Dialog) {
@@ -129,7 +129,7 @@ QWindow *QAndroidPlatformScreen::topWindow() const
 
 QWindow *QAndroidPlatformScreen::topLevelAt(const QPoint &p) const
 {
-    foreach (QAndroidPlatformWindow *w, m_windowStack) {
+    for (QAndroidPlatformWindow *w : m_windowStack) {
         if (w->geometry().contains(p, false) && w->window()->isVisible())
             return w->window();
     }
@@ -363,8 +363,8 @@ void QAndroidPlatformScreen::doRedraw()
                 || !window->isRaster())
             continue;
 
-        QVector<QRect> visibleRects = visibleRegion.rects();
-        foreach (const QRect &rect, visibleRects) {
+        const QVector<QRect> visibleRects = visibleRegion.rects();
+        for (const QRect &rect : visibleRects) {
             QRect targetRect = window->geometry();
             targetRect &= rect;
 

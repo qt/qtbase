@@ -494,7 +494,7 @@ static jboolean startQtApplication(JNIEnv *env, jobject /*object*/, jstring para
         const char *nativeString = env->GetStringUTFChars(environmentString, 0);
         const QList<QByteArray> envVars = QByteArray(nativeString).split('\t');
         env->ReleaseStringUTFChars(environmentString, nativeString);
-        foreach (const QByteArray &envVar, envVars) {
+        for (const QByteArray &envVar : envVars) {
             const QList<QByteArray> envVarPair = envVar.split('=');
             if (envVarPair.size() == 2 && ::setenv(envVarPair[0], envVarPair[1], 1) != 0)
                 qWarning() << "Can't set environment" << envVarPair;

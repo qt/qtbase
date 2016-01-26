@@ -257,7 +257,7 @@ namespace QtAndroidMenu
         if (menus.size() == 1) { // Expand the menu
             order = addAllMenuItemsToMenu(env, menu, static_cast<QAndroidPlatformMenu *>(menus.front()));
         } else {
-            foreach (QAndroidPlatformMenu *item, menus) {
+            for (QAndroidPlatformMenu *item : menus) {
                 QString itemText = removeAmpersandEscapes(item->text());
                 jstring jtext = env->NewString(reinterpret_cast<const jchar *>(itemText.data()),
                                                itemText.length());
