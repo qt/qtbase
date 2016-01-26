@@ -679,8 +679,11 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
 
 /*! \typedef QJsonObject::iterator::iterator_category
 
-    A synonym for \e {std::bidirectional_iterator_tag} indicating
-    this iterator is a bidirectional iterator.
+    A synonym for \e {std::random_access_iterator_tag} indicating
+    this iterator is a random-access iterator.
+
+    \note In Qt versions before 5.6, this was set by mistake to
+    \e {std::bidirectional_iterator_tag}.
 */
 
 /*! \typedef QJsonObject::iterator::reference
@@ -886,8 +889,11 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
 
 /*! \typedef QJsonObject::const_iterator::iterator_category
 
-    A synonym for \e {std::bidirectional_iterator_tag} indicating
-    this iterator is a bidirectional iterator.
+    A synonym for \e {std::random_access_iterator_tag} indicating
+    this iterator is a random-access iterator.
+
+    \note In Qt versions before 5.6, this was set by mistake to
+    \e {std::bidirectional_iterator_tag}.
 */
 
 /*! \typedef QJsonObject::const_iterator::reference
