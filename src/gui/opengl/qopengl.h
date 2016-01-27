@@ -83,13 +83,11 @@ typedef void* GLeglImageOES;
 // include headers on top of each other, meaning that applications can
 // include gl2.h even if gl31.h gets included here.
 
-// This compile time differentation is important inside Qt because,
-// unlike desktop GL, GLES is different when it comes to versioning
-// and extensions: Standard functions that are new in a given version
-// are always available in a version-specific header and are not
-// guaranteed to be dynamically resolvable via eglGetProcAddress (and
-// are typically not available as extensions even if they were part of
-// an extension for a previous version).
+// NB! This file contains the only usages of the ES_3 and ES_3_1
+// macros. They are useless for pretty much anything else. The fact
+// that Qt was built against an SDK with f.ex. ES 2 only does not mean
+// applications cannot target ES 3. Therefore QOpenGLFunctions and
+// friends do everything dynamically and never rely on these macros.
 
 #  if defined(QT_OPENGL_ES_3_1)
 #   include <GLES3/gl31.h>

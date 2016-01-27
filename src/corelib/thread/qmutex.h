@@ -73,16 +73,16 @@ public:
 
 private:
     inline bool fastTryLock() Q_DECL_NOTHROW {
-        return d_ptr.testAndSetAcquire(0, dummyLocked());
+        return d_ptr.testAndSetAcquire(Q_NULLPTR, dummyLocked());
     }
     inline bool fastTryUnlock() Q_DECL_NOTHROW {
-        return d_ptr.testAndSetRelease(dummyLocked(), 0);
+        return d_ptr.testAndSetRelease(dummyLocked(), Q_NULLPTR);
     }
     inline bool fastTryLock(QMutexData *&current) Q_DECL_NOTHROW {
-        return d_ptr.testAndSetAcquire(0, dummyLocked(), current);
+        return d_ptr.testAndSetAcquire(Q_NULLPTR, dummyLocked(), current);
     }
     inline bool fastTryUnlock(QMutexData *&current) Q_DECL_NOTHROW {
-        return d_ptr.testAndSetRelease(dummyLocked(), 0, current);
+        return d_ptr.testAndSetRelease(dummyLocked(), Q_NULLPTR, current);
     }
 
     void lockInternal() QT_MUTEX_LOCK_NOEXCEPT;

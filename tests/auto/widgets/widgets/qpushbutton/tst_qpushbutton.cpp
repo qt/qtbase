@@ -227,8 +227,8 @@ void tst_QPushButton::autoRepeat()
     QVERIFY( testWidget->isDown() );
     QVERIFY( toggle_count == 0 );
     QTest::keyRelease( testWidget, Qt::Key_Space );
-    QVERIFY(press_count == release_count);
-    QVERIFY(release_count == click_count);
+    QCOMPARE(press_count, release_count);
+    QCOMPARE(release_count, click_count);
     QVERIFY(press_count > 1);
 
     // #### shouldn't I check here to see if multiple signals have been fired???

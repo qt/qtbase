@@ -108,6 +108,7 @@ QList<QSharedDataPointer<QNetworkInterfacePrivate> > QNetworkInterfaceManager::a
 {
     QList<QNetworkInterfacePrivate *> list = postProcess(scan());
     QList<QSharedDataPointer<QNetworkInterfacePrivate> > result;
+    result.reserve(list.size());
 
     foreach (QNetworkInterfacePrivate *ptr, list)
         result << QSharedDataPointer<QNetworkInterfacePrivate>(ptr);
@@ -549,6 +550,7 @@ QList<QNetworkInterface> QNetworkInterface::allInterfaces()
 {
     QList<QSharedDataPointer<QNetworkInterfacePrivate> > privs = manager()->allInterfaces();
     QList<QNetworkInterface> result;
+    result.reserve(privs.size());
     foreach (const QSharedDataPointer<QNetworkInterfacePrivate> &p, privs) {
         QNetworkInterface item;
         item.d = p;

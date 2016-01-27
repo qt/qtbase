@@ -446,7 +446,7 @@ void tst_QQuaternion::compare()
     QQuaternion v5(8, 1, 2, 3);
     QQuaternion v6(3, 1, 2, 4);
 
-    QVERIFY(v1 == v2);
+    QCOMPARE(v1, v2);
     QVERIFY(v1 != v3);
     QVERIFY(v1 != v4);
     QVERIFY(v1 != v5);
@@ -522,7 +522,7 @@ void tst_QQuaternion::add()
 
     QQuaternion v4(v1);
     v4 += v2;
-    QVERIFY(v4 == v3);
+    QCOMPARE(v4, v3);
 
     QCOMPARE(v4.x(), v1.x() + v2.x());
     QCOMPARE(v4.y(), v1.y() + v2.y());
@@ -560,7 +560,7 @@ void tst_QQuaternion::subtract()
 
     QQuaternion v4(v3);
     v4 -= v1;
-    QVERIFY(v4 == v2);
+    QCOMPARE(v4, v2);
 
     QCOMPARE(v4.x(), v3.x() - v1.x());
     QCOMPARE(v4.y(), v3.y() - v1.y());
@@ -569,7 +569,7 @@ void tst_QQuaternion::subtract()
 
     QQuaternion v5(v3);
     v5 -= v2;
-    QVERIFY(v5 == v1);
+    QCOMPARE(v5, v1);
 
     QCOMPARE(v5.x(), v3.x() - v2.x());
     QCOMPARE(v5.y(), v3.y() - v2.y());
@@ -704,7 +704,7 @@ void tst_QQuaternion::multiplyFactor()
 
     QQuaternion v3(v1);
     v3 *= factor;
-    QVERIFY(v3 == v2);
+    QCOMPARE(v3, v2);
 
     QCOMPARE(v3.x(), v1.x() * factor);
     QCOMPARE(v3.y(), v1.y() * factor);
@@ -740,7 +740,7 @@ void tst_QQuaternion::divide()
 
     QQuaternion v3(v2);
     v3 /= factor;
-    QVERIFY(v3 == v1);
+    QCOMPARE(v3, v1);
 
     QCOMPARE(v3.x(), v2.x() / factor);
     QCOMPARE(v3.y(), v2.y() / factor);
@@ -764,7 +764,7 @@ void tst_QQuaternion::negate()
     QQuaternion v1(w1, x1, y1, z1);
     QQuaternion v2(-w1, -x1, -y1, -z1);
 
-    QVERIFY(-v1 == v2);
+    QCOMPARE(-v1, v2);
 }
 
 // Test quaternion conjugate calculations.
@@ -783,7 +783,7 @@ void tst_QQuaternion::conjugate()
     QQuaternion v1(w1, x1, y1, z1);
     QQuaternion v2(w1, -x1, -y1, -z1);
 
-    QVERIFY(v1.conjugate() == v2);
+    QCOMPARE(v1.conjugate(), v2);
 }
 
 // Test quaternion creation from an axis and an angle.
@@ -1325,14 +1325,14 @@ void tst_QQuaternion::properties()
 
 void tst_QQuaternion::metaTypes()
 {
-    QVERIFY(QMetaType::type("QQuaternion") == QMetaType::QQuaternion);
+    QCOMPARE(QMetaType::type("QQuaternion"), int(QMetaType::QQuaternion));
 
     QCOMPARE(QByteArray(QMetaType::typeName(QMetaType::QQuaternion)),
              QByteArray("QQuaternion"));
 
     QVERIFY(QMetaType::isRegistered(QMetaType::QQuaternion));
 
-    QVERIFY(qMetaTypeId<QQuaternion>() == QMetaType::QQuaternion);
+    QCOMPARE(qMetaTypeId<QQuaternion>(), int(QMetaType::QQuaternion));
 }
 
 QTEST_APPLESS_MAIN(tst_QQuaternion)

@@ -1091,8 +1091,8 @@ void QMdiSubWindowPrivate::updateDirtyRegions()
     if (!parent)
         return;
 
-    foreach (Operation operation, operationMap.keys())
-        operationMap.find(operation).value().region = getRegion(operation);
+    for (OperationInfoMap::iterator it = operationMap.begin(), end = operationMap.end(); it != end; ++it)
+        it.value().region = getRegion(it.key());
 }
 
 /*!

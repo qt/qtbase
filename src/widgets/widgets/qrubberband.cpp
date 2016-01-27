@@ -126,7 +126,7 @@ void QRubberBand::initStyleOption(QStyleOptionRubberBand *option) const
 
     By default a rectangular rubber band (\a s is \c Rectangle) will
     use a mask, so that a small border of the rectangle is all
-    that is visible. Some styles (e.g., native Mac OS X) will
+    that is visible. Some styles (e.g., native OS X) will
     change this and call QWidget::setWindowOpacity() to make a
     semi-transparent filled selection rectangle.
 */

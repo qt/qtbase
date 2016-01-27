@@ -602,16 +602,16 @@ void tst_QPainterPath::testOperatorEquals()
 {
     QPainterPath empty1;
     QPainterPath empty2;
-    QVERIFY(empty1 == empty2);
+    QCOMPARE(empty1, empty2);
 
     QPainterPath rect1;
     rect1.addRect(100, 100, 100, 100);
-    QVERIFY(rect1 == rect1);
+    QCOMPARE(rect1, rect1);
     QVERIFY(rect1 != empty1);
 
     QPainterPath rect2;
     rect2.addRect(100, 100, 100, 100);
-    QVERIFY(rect1 == rect2);
+    QCOMPARE(rect1, rect2);
 
     rect2.setFillRule(Qt::WindingFill);
     QVERIFY(rect1 != rect2);
@@ -622,7 +622,7 @@ void tst_QPainterPath::testOperatorEquals()
 
     QPainterPath ellipse2;
     ellipse2.addEllipse(50, 50, 100, 100);
-    QVERIFY(ellipse1 == ellipse2);
+    QCOMPARE(ellipse1, ellipse2);
 }
 
 void tst_QPainterPath::testOperatorEquals_fuzzy()
@@ -638,12 +638,12 @@ void tst_QPainterPath::testOperatorEquals_fuzzy()
         QPainterPath pb;
         pb.addRect(b);
 
-        QVERIFY(pa == pb);
+        QCOMPARE(pa, pb);
 
         QTransform transform;
         transform.translate(-100, -100);
 
-        QVERIFY(transform.map(pa) == transform.map(pb));
+        QCOMPARE(transform.map(pa), transform.map(pb));
     }
 
     // higher tolerance for error when path's bounding rect is big
@@ -656,12 +656,12 @@ void tst_QPainterPath::testOperatorEquals_fuzzy()
         QPainterPath pb;
         pb.addRect(b);
 
-        QVERIFY(pa == pb);
+        QCOMPARE(pa, pb);
 
         QTransform transform;
         transform.translate(-1, -1);
 
-        QVERIFY(transform.map(pa) == transform.map(pb));
+        QCOMPARE(transform.map(pa), transform.map(pb));
     }
 
     // operator== should return true for a path that has
@@ -676,7 +676,7 @@ void tst_QPainterPath::testOperatorEquals_fuzzy()
 
         QPainterPath b = transform.inverted().map(transform.map(a));
 
-        QVERIFY(a == b);
+        QCOMPARE(a, b);
     }
 
     {
@@ -720,7 +720,7 @@ void tst_QPainterPath::testOperatorDatastream()
         stream >> other;
     }
 
-    QVERIFY(other == path);
+    QCOMPARE(other, path);
 }
 
 void tst_QPainterPath::closing()
@@ -1066,19 +1066,19 @@ void tst_QPainterPath::setElementPositionAt()
 {
     QPainterPath path(QPointF(42., 42.));
     QCOMPARE(path.elementCount(), 1);
-    QVERIFY(path.elementAt(0).type == QPainterPath::MoveToElement);
+    QCOMPARE(path.elementAt(0).type, QPainterPath::MoveToElement);
     QCOMPARE(path.elementAt(0).x, qreal(42.));
     QCOMPARE(path.elementAt(0).y, qreal(42.));
 
     QPainterPath copy = path;
     copy.setElementPositionAt(0, qreal(0), qreal(0));
     QCOMPARE(copy.elementCount(), 1);
-    QVERIFY(copy.elementAt(0).type == QPainterPath::MoveToElement);
+    QCOMPARE(copy.elementAt(0).type, QPainterPath::MoveToElement);
     QCOMPARE(copy.elementAt(0).x, qreal(0));
     QCOMPARE(copy.elementAt(0).y, qreal(0));
 
     QCOMPARE(path.elementCount(), 1);
-    QVERIFY(path.elementAt(0).type == QPainterPath::MoveToElement);
+    QCOMPARE(path.elementAt(0).type, QPainterPath::MoveToElement);
     QCOMPARE(path.elementAt(0).x, qreal(42.));
     QCOMPARE(path.elementAt(0).y, qreal(42.));
 }
@@ -1253,10 +1253,10 @@ void tst_QPainterPath::connectPathMoveTo()
 
     path1.connectPath(path2);
 
-    QVERIFY(path1.elementAt(0).type == QPainterPath::MoveToElement);
-    QVERIFY(path2.elementAt(0).type == QPainterPath::MoveToElement);
-    QVERIFY(path3.elementAt(0).type == QPainterPath::MoveToElement);
-    QVERIFY(path4.elementAt(0).type == QPainterPath::MoveToElement);
+    QCOMPARE(path1.elementAt(0).type, QPainterPath::MoveToElement);
+    QCOMPARE(path2.elementAt(0).type, QPainterPath::MoveToElement);
+    QCOMPARE(path3.elementAt(0).type, QPainterPath::MoveToElement);
+    QCOMPARE(path4.elementAt(0).type, QPainterPath::MoveToElement);
 }
 
 void tst_QPainterPath::translate()

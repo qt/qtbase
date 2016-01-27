@@ -75,13 +75,7 @@ private:
     const QString m_pngImageFileName;
     const QString m_pngRectFileName;
     const QString m_sourceFileName;
-
-    const static QIcon staticIcon;
 };
-
-// Creating an icon statically should not cause a crash.
-// But we do not officially support this. See QTBUG-8666
-const QIcon tst_QIcon::staticIcon = QIcon::fromTheme("edit-find");
 
 bool tst_QIcon::haveImageFormat(QByteArray const& desiredFormat)
 {
@@ -354,10 +348,10 @@ void tst_QIcon::cacheKey()
     qint64 icon1_key = icon1.cacheKey();
     QIcon icon2 = icon1;
 
-    QVERIFY(icon2.cacheKey() == icon1.cacheKey());
+    QCOMPARE(icon2.cacheKey(), icon1.cacheKey());
     icon2.detach();
     QVERIFY(icon2.cacheKey() != icon1.cacheKey());
-    QVERIFY(icon1.cacheKey() == icon1_key);
+    QCOMPARE(icon1.cacheKey(), icon1_key);
 }
 
 void tst_QIcon::detach()
@@ -374,7 +368,7 @@ void tst_QIcon::detach()
 
     img1 = icon1.pixmap(32, 32).toImage();
     img2 = icon2.pixmap(32, 32).toImage();
-    QVERIFY(img1 == img2);
+    QCOMPARE(img1, img2);
 }
 
 void tst_QIcon::addFile()
@@ -562,7 +556,7 @@ void tst_QIcon::fromTheme()
     QString firstSearchPath = QLatin1String(":/icons");
     QString secondSearchPath = QLatin1String(":/second_icons");
     QIcon::setThemeSearchPaths(QStringList() << firstSearchPath << secondSearchPath);
-    QVERIFY(QIcon::themeSearchPaths().size() == 2);
+    QCOMPARE(QIcon::themeSearchPaths().size(), 2);
     QCOMPARE(firstSearchPath, QIcon::themeSearchPaths()[0]);
     QCOMPARE(secondSearchPath, QIcon::themeSearchPaths()[1]);
 
@@ -599,7 +593,7 @@ void tst_QIcon::fromTheme()
 
     // Test non existing icon with fallback
     noIcon = QIcon::fromTheme("broken-icon", abIcon);
-    QVERIFY(noIcon.cacheKey() == abIcon.cacheKey());
+    QCOMPARE(noIcon.cacheKey(), abIcon.cacheKey());
 
     // Test svg-only icon
     noIcon = QIcon::fromTheme("svg-icon", abIcon);

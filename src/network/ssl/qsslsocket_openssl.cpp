@@ -671,6 +671,7 @@ void QSslSocketPrivate::resetDefaultEllipticCurves()
     QVarLengthArray<EC_builtin_curve> builtinCurves(static_cast<int>(curveCount));
 
     if (q_EC_get_builtin_curves(builtinCurves.data(), curveCount) == curveCount) {
+        curves.reserve(int(curveCount));
         for (size_t i = 0; i < curveCount; ++i) {
             QSslEllipticCurve curve;
             curve.id = builtinCurves[int(i)].nid;
@@ -1199,7 +1200,9 @@ bool QSslSocketBackendPrivate::startHandshake()
     }
 
     // Translate errors from the error list into QSslErrors.
-    for (int i = 0; i < errorList.size(); ++i) {
+    const int numErrors = errorList.size();
+    errors.reserve(errors.size() + numErrors);
+    for (int i = 0; i < numErrors; ++i) {
         const QPair<int, int> &errorAndDepth = errorList.at(i);
         int err = errorAndDepth.first;
         int depth = errorAndDepth.second;
@@ -1668,7 +1671,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
         setDefaultCaCertificates(defaultCaCertificates() + systemCaCertificates());
     }
 
-    foreach (const QSslCertificate &caCertificate, QSslSocket::defaultCaCertificates()) {
+    foreach (const QSslCertificate &caCertificate, QSslConfiguration::defaultConfiguration().caCertificates()) {
         // From https://www.openssl.org/docs/ssl/SSL_CTX_load_verify_locations.html:
         //
         // If several CA certificates matching the name, key identifier, and
@@ -1761,7 +1764,9 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
     }
 
     // Translate errors from the error list into QSslErrors.
-    for (int i = 0; i < errorList.size(); ++i) {
+    const int numErrors = errorList.size();
+    errors.reserve(errors.size() + numErrors);
+    for (int i = 0; i < numErrors; ++i) {
         const QPair<int, int> &errorAndDepth = errorList.at(i);
         int err = errorAndDepth.first;
         int depth = errorAndDepth.second;

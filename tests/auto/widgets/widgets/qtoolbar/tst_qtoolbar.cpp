@@ -67,6 +67,7 @@ private slots:
     void allowedAreas();
     void orientation();
     void addAction();
+    void addActionConnect();
     void insertAction();
     void addSeparator();
     void insertSeparator();
@@ -361,6 +362,23 @@ void tst_QToolBar::addAction()
     }
 }
 
+static void testFunction() { }
+
+void tst_QToolBar::addActionConnect()
+{
+    QToolBar tb;
+    const QString text = QLatin1String("bla");
+    const QIcon icon;
+    tb.addAction(text, &tb, SLOT(deleteLater()));
+    tb.addAction(text, &tb, &QMenu::deleteLater);
+    tb.addAction(text, testFunction);
+    tb.addAction(text, &tb, testFunction);
+    tb.addAction(icon, text, &tb, SLOT(deleteLater()));
+    tb.addAction(icon, text, &tb, &QMenu::deleteLater);
+    tb.addAction(icon, text, testFunction);
+    tb.addAction(icon, text, &tb, testFunction);
+}
+
 void tst_QToolBar::insertAction()
 {
     QToolBar tb;
@@ -495,13 +513,13 @@ void tst_QToolBar::insertWidget()
         QToolBar tb;
         QPointer<QWidget> widget = new QWidget;
         QAction *action = tb.addWidget(widget);
-        QVERIFY(action->parent() == &tb);
+        QCOMPARE(action->parent(), &tb);
 
         QToolBar tb2;
         tb.removeAction(action);
         tb2.addAction(action);
         QVERIFY(widget && widget->parent() == &tb2);
-        QVERIFY(action->parent() == &tb2);
+        QCOMPARE(action->parent(), &tb2);
     }
 }
 
@@ -960,10 +978,10 @@ void tst_QToolBar::actionOwnership()
         QToolBar *tb2 = new QToolBar;
 
         QPointer<QAction> action = tb1->addAction("test");
-        QVERIFY(action->parent() == tb1);
+        QCOMPARE(action->parent(), tb1);
 
         tb2->addAction(action);
-        QVERIFY(action->parent() == tb1);
+        QCOMPARE(action->parent(), tb1);
 
         delete tb1;
         QVERIFY(!action);
@@ -974,13 +992,13 @@ void tst_QToolBar::actionOwnership()
         QToolBar *tb2 = new QToolBar;
 
         QPointer<QAction> action = tb1->addAction("test");
-        QVERIFY(action->parent() == tb1);
+        QCOMPARE(action->parent(), tb1);
 
         tb1->removeAction(action);
-        QVERIFY(action->parent() == tb1);
+        QCOMPARE(action->parent(), tb1);
 
         tb2->addAction(action);
-        QVERIFY(action->parent() == tb1);
+        QCOMPARE(action->parent(), tb1);
 
         delete tb1;
         QVERIFY(!action);

@@ -382,7 +382,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     \warning Some styles do not use the palette for all drawing, for
     instance, if they make use of native theme engines. This is the
-    case for both the Windows XP, Windows Vista, and the Mac OS X
+    case for both the Windows XP, Windows Vista, and the OS X
     styles.
 
     \sa QApplication::setPalette(), QWidget::setPalette(), QColor

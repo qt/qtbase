@@ -1591,7 +1591,7 @@ QString QTextStream::readLine(qint64 maxlen)
 {
     QString line;
 
-    readLine(&line, maxlen);
+    readLineInto(&line, maxlen);
     return line;
 }
 
@@ -1612,7 +1612,7 @@ QString QTextStream::readLine(qint64 maxlen)
 
     If \a line has sufficient capacity for the data that is about to be
     read, this function may not need to allocate new memory. Because of
-    this, it can be faster than the other readLine() overload.
+    this, it can be faster than readLine().
 
     Returns \c false if the stream has read to the end of the file or
     an error has occurred; otherwise returns \c true. The contents in
@@ -1620,7 +1620,7 @@ QString QTextStream::readLine(qint64 maxlen)
 
     \sa readAll(), QIODevice::readLine()
 */
-bool QTextStream::readLine(QString *line, qint64 maxlen)
+bool QTextStream::readLineInto(QString *line, qint64 maxlen)
 {
     Q_D(QTextStream);
     // keep in sync with CHECK_VALID_STREAM

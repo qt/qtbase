@@ -100,7 +100,7 @@ public:
     {
     }
 
-    QList<QBackingstoreTextureInfo> textures;
+    QVector<QBackingstoreTextureInfo> textures;
     bool locked;
 };
 
@@ -220,7 +220,9 @@ static QRegion deviceRegion(const QRegion &region, QWindow *window)
         return region;
 
     QVector<QRect> rects;
-    foreach (QRect rect, region.rects())
+    const QVector<QRect> regionRects = region.rects();
+    rects.reserve(regionRects.count());
+    foreach (const QRect &rect, regionRects)
         rects.append(deviceRect(rect, window));
 
     QRegion deviceRegion;

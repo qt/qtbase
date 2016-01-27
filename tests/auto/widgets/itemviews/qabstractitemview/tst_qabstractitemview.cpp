@@ -197,16 +197,11 @@ class tst_QAbstractItemView : public QObject
     Q_OBJECT
 
 public:
-
-    tst_QAbstractItemView();
-    virtual ~tst_QAbstractItemView();
     void basic_tests(TestView *view);
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-
 private slots:
+    void initTestCase();
+    void cleanup();
     void getSetCheck();
     void emptyModels_data();
     void emptyModels();
@@ -360,14 +355,6 @@ void tst_QAbstractItemView::getSetCheck()
     QCOMPARE(16, obj1->autoScrollMargin());
 }
 
-tst_QAbstractItemView::tst_QAbstractItemView()
-{
-}
-
-tst_QAbstractItemView::~tst_QAbstractItemView()
-{
-}
-
 void tst_QAbstractItemView::initTestCase()
 {
 #ifdef Q_OS_WINCE_WM
@@ -375,8 +362,9 @@ void tst_QAbstractItemView::initTestCase()
 #endif
 }
 
-void tst_QAbstractItemView::cleanupTestCase()
+void tst_QAbstractItemView::cleanup()
 {
+    QVERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
 void tst_QAbstractItemView::emptyModels_data()
@@ -1048,7 +1036,7 @@ void tst_QAbstractItemView::dragAndDropOnChild()
             ++successes;
     }
 
-    QVERIFY(successes == 0);
+    QCOMPARE(successes, 0);
 }
 
 #endif // 0
@@ -1226,7 +1214,7 @@ void tst_QAbstractItemView::setCurrentIndex()
     view->setModel(model);
 
     view->setCurrentIndex(model->index(0,0));
-    QVERIFY(view->currentIndex() == model->index(0,0));
+    QCOMPARE(view->currentIndex(), model->index(0,0));
     view->setCurrentIndex(model->index(1,0));
     QVERIFY(view->currentIndex() == model->index(result ? 1 : 0,0));
 }
@@ -1330,8 +1318,7 @@ void tst_QAbstractItemView::task200665_itemEntered()
     moveCursorAway(&view);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QRect rect = view.visualRect(model.index(0,0));
-    QCursor::setPos( view.viewport()->mapToGlobal(rect.center()) );
+    QCursor::setPos( view.geometry().center() );
     QCoreApplication::processEvents();
     QSignalSpy spy(&view, SIGNAL(entered(QModelIndex)));
     view.verticalScrollBar()->setValue(view.verticalScrollBar()->maximum());

@@ -2128,7 +2128,8 @@ QStringRef QRegularExpressionMatch::capturedRef(const QString &name) const
 QStringList QRegularExpressionMatch::capturedTexts() const
 {
     QStringList texts;
-    for (int i = 0; i <= lastCapturedIndex(); ++i)
+    texts.reserve(d->capturedCount);
+    for (int i = 0; i < d->capturedCount; ++i)
         texts << captured(i);
     return texts;
 }

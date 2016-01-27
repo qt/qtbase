@@ -37,6 +37,8 @@ Cpp.ignoretokens        += \
                           Q_DECL_NOTHROW \
                           Q_DECL_PURE_FUNCTION \
                           Q_DECL_UNUSED \
+                          Q_DECL_CF_RETURNS_RETAINED \
+                          Q_DECL_NS_RETURNS_AUTORELEASED \
                           Q_DECLARATIVE_EXPORT \
                           Q_EXPLICIT \
                           Q_EXPORT \
@@ -135,6 +137,7 @@ Cpp.ignoredirectives    += \
                           Q_DECLARE_PRIVATE_D \
                           Q_DECLARE_PUBLIC \
                           Q_DECLARE_SHARED \
+                          Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6 \
                           Q_DECLARE_TR_FUNCTIONS \
                           Q_DECLARE_TYPEINFO \
                           Q_DECL_NOEXCEPT_EXPR \
@@ -153,4 +156,5 @@ Cpp.ignoredirectives    += \
                           QT_WARNING_DISABLE_CLANG \
                           QT_WARNING_DISABLE_GCC \
                           QT_WARNING_DISABLE_INTEL \
-                          QT_WARNING_DISABLE_MSVC
+                          QT_WARNING_DISABLE_MSVC \
+                          Q_ATTRIBUTE_FORMAT_PRINTF

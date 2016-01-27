@@ -119,10 +119,13 @@ void qsslSocketUnresolvedSymbolWarning(const char *functionName)
     qCWarning(lcSsl, "QSslSocket: cannot call unresolved function %s", functionName);
 }
 
+#ifndef QT_NO_LIBRARY
 void qsslSocketCannotResolveSymbolWarning(const char *functionName)
 {
     qCWarning(lcSsl, "QSslSocket: cannot resolve %s", functionName);
 }
+#endif
+
 }
 
 #endif // QT_LINKED_OPENSSL
@@ -156,7 +159,16 @@ DEFINEFUNC3(X509 *, d2i_X509, X509 **a, a, const unsigned char **b, b, long c, c
 DEFINEFUNC2(char *, ERR_error_string, unsigned long a, a, char *b, b, return 0, return)
 DEFINEFUNC(unsigned long, ERR_get_error, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(void, ERR_free_strings, void, DUMMYARG, return, DUMMYARG)
+DEFINEFUNC(void, EVP_CIPHER_CTX_cleanup, EVP_CIPHER_CTX *a, a, return, DUMMYARG)
+DEFINEFUNC(void, EVP_CIPHER_CTX_init, EVP_CIPHER_CTX *a, a, return, DUMMYARG)
+DEFINEFUNC4(int, EVP_CIPHER_CTX_ctrl, EVP_CIPHER_CTX *ctx, ctx, int type, type, int arg, arg, void *ptr, ptr, return 0, return);
+DEFINEFUNC2(int, EVP_CIPHER_CTX_set_key_length, EVP_CIPHER_CTX *ctx, ctx, int keylen, keylen, return 0, return)
+DEFINEFUNC5(int, EVP_CipherInit, EVP_CIPHER_CTX *ctx, ctx, const EVP_CIPHER *type, type, const unsigned char *key, key, const unsigned char *iv, iv, int enc, enc, return 0, return);
+DEFINEFUNC5(int, EVP_CipherUpdate, EVP_CIPHER_CTX *ctx, ctx, unsigned char *out, out, int *outl, outl, const unsigned char *in, in, int inl, inl, return 0, return);
+DEFINEFUNC3(int, EVP_CipherFinal, EVP_CIPHER_CTX *ctx, ctx, unsigned char *out, out, int *outl, outl, return 0, return);
+DEFINEFUNC(const EVP_CIPHER *, EVP_des_cbc, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(const EVP_CIPHER *, EVP_des_ede3_cbc, DUMMYARG, DUMMYARG, return 0, return)
+DEFINEFUNC(const EVP_CIPHER *, EVP_rc2_cbc, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC3(int, EVP_PKEY_assign, EVP_PKEY *a, a, int b, b, char *c, c, return -1, return)
 DEFINEFUNC2(int, EVP_PKEY_set1_RSA, EVP_PKEY *a, a, RSA *b, b, return -1, return)
 DEFINEFUNC2(int, EVP_PKEY_set1_DSA, EVP_PKEY *a, a, DSA *b, b, return -1, return)
@@ -309,13 +321,17 @@ DEFINEFUNC(const SSL_METHOD *, TLSv1_1_server_method, DUMMYARG, DUMMYARG, return
 DEFINEFUNC(const SSL_METHOD *, TLSv1_2_server_method, DUMMYARG, DUMMYARG, return 0, return)
 #endif
 #else
+#ifndef OPENSSL_NO_SSL2
 DEFINEFUNC(SSL_METHOD *, SSLv2_client_method, DUMMYARG, DUMMYARG, return 0, return)
+#endif
 #ifndef OPENSSL_NO_SSL3_METHOD
 DEFINEFUNC(SSL_METHOD *, SSLv3_client_method, DUMMYARG, DUMMYARG, return 0, return)
 #endif
 DEFINEFUNC(SSL_METHOD *, SSLv23_client_method, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(SSL_METHOD *, TLSv1_client_method, DUMMYARG, DUMMYARG, return 0, return)
+#ifndef OPENSSL_NO_SSL2
 DEFINEFUNC(SSL_METHOD *, SSLv2_server_method, DUMMYARG, DUMMYARG, return 0, return)
+#endif
 #ifndef OPENSSL_NO_SSL3_METHOD
 DEFINEFUNC(SSL_METHOD *, SSLv3_server_method, DUMMYARG, DUMMYARG, return 0, return)
 #endif
@@ -436,39 +452,41 @@ bool q_resolveOpenSslSymbols()
 #else
 
 # ifdef Q_OS_UNIX
-static bool libGreaterThan(const QString &lhs, const QString &rhs)
+struct NumericallyLess
 {
-    QStringList lhsparts = lhs.split(QLatin1Char('.'));
-    QStringList rhsparts = rhs.split(QLatin1Char('.'));
-    Q_ASSERT(lhsparts.count() > 1 && rhsparts.count() > 1);
-
-    for (int i = 1; i < rhsparts.count(); ++i) {
-        if (lhsparts.count() <= i)
-            // left hand side is shorter, so it's less than rhs
-            return false;
-
+    typedef bool result_type;
+    result_type operator()(const QStringRef &lhs, const QStringRef &rhs) const
+    {
         bool ok = false;
         int b = 0;
-        int a = lhsparts.at(i).toInt(&ok);
+        int a = lhs.toInt(&ok);
         if (ok)
-            b = rhsparts.at(i).toInt(&ok);
+            b = rhs.toInt(&ok);
         if (ok) {
             // both toInt succeeded
-            if (a == b)
-                continue;
-            return a > b;
+            return a < b;
         } else {
             // compare as strings;
-            if (lhsparts.at(i) == rhsparts.at(i))
-                continue;
-            return lhsparts.at(i) > rhsparts.at(i);
+            return lhs < rhs;
         }
     }
+};
 
-    // they compared strictly equally so far
-    // lhs cannot be less than rhs
-    return true;
-}
+struct LibGreaterThan
+{
+    typedef bool result_type;
+    result_type operator()(const QString &lhs, const QString &rhs) const
+    {
+        const QVector<QStringRef> lhsparts = lhs.splitRef(QLatin1Char('.'));
+        const QVector<QStringRef> rhsparts = rhs.splitRef(QLatin1Char('.'));
+        Q_ASSERT(lhsparts.count() > 1 && rhsparts.count() > 1);
+
+        // note: checking rhs < lhs, the same as lhs > rhs
+        return std::lexicographical_compare(rhsparts.begin() + 1, rhsparts.end(),
+                                            lhsparts.begin() + 1, lhsparts.end(),
+                                            NumericallyLess());
+    }
+};
 
 #if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
 static int dlIterateCallback(struct dl_phdr_info *info, size_t size, void *data)
@@ -522,39 +540,33 @@ static QStringList libraryPathList()
     return paths;
 }
 
-
-static QStringList findAllLibSsl()
+Q_NEVER_INLINE
+static QStringList findAllLibs(QLatin1String filter)
 {
     QStringList paths = libraryPathList();
-    QStringList foundSsls;
+    QStringList found;
+    const QStringList filters((QString(filter)));
 
     foreach (const QString &path, paths) {
         QDir dir(path);
-        QStringList entryList = dir.entryList(QStringList() << QLatin1String("libssl.*"), QDir::Files);
+        QStringList entryList = dir.entryList(filters, QDir::Files);
 
-        std::sort(entryList.begin(), entryList.end(), libGreaterThan);
+        std::sort(entryList.begin(), entryList.end(), LibGreaterThan());
         foreach (const QString &entry, entryList)
-            foundSsls << path + QLatin1Char('/') + entry;
+            found << path + QLatin1Char('/') + entry;
     }
 
-    return foundSsls;
+    return found;
+}
+
+static QStringList findAllLibSsl()
+{
+    return findAllLibs(QLatin1String("libssl.*"));
 }
 
 static QStringList findAllLibCrypto()
 {
-    QStringList paths = libraryPathList();
-
-    QStringList foundCryptos;
-    foreach (const QString &path, paths) {
-        QDir dir(path);
-        QStringList entryList = dir.entryList(QStringList() << QLatin1String("libcrypto.*"), QDir::Files);
-
-        std::sort(entryList.begin(), entryList.end(), libGreaterThan);
-        foreach (const QString &entry, entryList)
-            foundCryptos << path + QLatin1Char('/') + entry;
-    }
-
-    return foundCryptos;
+    return findAllLibs(QLatin1String("libcrypto.*"));
 }
 # endif
 
@@ -759,7 +771,16 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(ERR_error_string)
     RESOLVEFUNC(ERR_get_error)
     RESOLVEFUNC(ERR_free_strings)
+    RESOLVEFUNC(EVP_CIPHER_CTX_cleanup)
+    RESOLVEFUNC(EVP_CIPHER_CTX_init)
+    RESOLVEFUNC(EVP_CIPHER_CTX_ctrl)
+    RESOLVEFUNC(EVP_CIPHER_CTX_set_key_length)
+    RESOLVEFUNC(EVP_CipherInit)
+    RESOLVEFUNC(EVP_CipherUpdate)
+    RESOLVEFUNC(EVP_CipherFinal)
+    RESOLVEFUNC(EVP_des_cbc)
     RESOLVEFUNC(EVP_des_ede3_cbc)
+    RESOLVEFUNC(EVP_rc2_cbc)
     RESOLVEFUNC(EVP_PKEY_assign)
     RESOLVEFUNC(EVP_PKEY_set1_RSA)
     RESOLVEFUNC(EVP_PKEY_set1_DSA)

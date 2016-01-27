@@ -74,7 +74,7 @@ public:
     };
     Q_ENUM(ItemRole)
 
-    explicit QFormLayout(QWidget *parent = 0);
+    explicit QFormLayout(QWidget *parent = Q_NULLPTR);
     ~QFormLayout();
 
     void setFieldGrowthPolicy(FieldGrowthPolicy policy);

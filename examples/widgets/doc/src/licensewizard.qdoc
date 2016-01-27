@@ -94,7 +94,7 @@
     \snippet dialogs/licensewizard/licensewizard.cpp 4
 
     We set the style to \l{QWizard::}{ModernStyle} on all platforms
-    except Mac OS X,
+    except OS X,
 
     \snippet dialogs/licensewizard/licensewizard.cpp 5
     \snippet dialogs/licensewizard/licensewizard.cpp 6
@@ -160,7 +160,7 @@
     layouts. The fields are created with an asterisk (\c
     *) next to their name. This makes them \l{mandatory fields}, that
     is, fields that must be filled before the user can press the
-    \uicontrol Next button (\uicontrol Continue on Mac OS X). The fields' values
+    \uicontrol Next button (\uicontrol Continue on OS X). The fields' values
     can be accessed from any other page using QWizardPage::field().
 
     Resetting the page amounts to clearing the two text fields.

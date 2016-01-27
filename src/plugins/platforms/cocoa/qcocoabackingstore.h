@@ -49,12 +49,12 @@ public:
     QCocoaBackingStore(QWindow *window);
     ~QCocoaBackingStore();
 
-    QPaintDevice *paintDevice();
-    void flush(QWindow *widget, const QRegion &region, const QPoint &offset);
-    QImage toImage() const;
-    void resize (const QSize &size, const QRegion &);
-    bool scroll(const QRegion &area, int dx, int dy);
-    void beginPaint(const QRegion &region);
+    QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
+    void flush(QWindow *widget, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
+    QImage toImage() const Q_DECL_OVERRIDE;
+    void resize (const QSize &size, const QRegion &) Q_DECL_OVERRIDE;
+    bool scroll(const QRegion &area, int dx, int dy) Q_DECL_OVERRIDE;
+    void beginPaint(const QRegion &region) Q_DECL_OVERRIDE;
     qreal getBackingStoreDevicePixelRatio();
 
 private:

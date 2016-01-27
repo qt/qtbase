@@ -1266,7 +1266,8 @@ void QStandardItem::setCheckable(bool checkable)
 */
 
 /*!
-  Sets whether the item is tristate and controlled by QTreeWidget.
+  Determines that the item is tristate and controlled by QTreeWidget if \a tristate
+  is \c true.
   This enables automatic management of the state of parent items in QTreeWidget
   (checked if all children are checked, unchecked if all children are unchecked,
   or partially checked if only some children are checked).
@@ -1803,6 +1804,7 @@ QList<QStandardItem*> QStandardItem::takeRow(int row)
     int index = d->childIndex(row, 0);  // Will return -1 if there are no columns
     if (index != -1) {
         int col_count = d->columnCount();
+        items.reserve(col_count);
         for (int column = 0; column < col_count; ++column) {
             QStandardItem *ch = d->children.at(index + column);
             if (ch)
@@ -1864,9 +1866,11 @@ bool QStandardItem::operator<(const QStandardItem &other) const
     const int role = model() ? model()->sortRole() : Qt::DisplayRole;
     const QVariant l = data(role), r = other.data(role);
     // this code is copied from QSortFilterProxyModel::lessThan()
+    if (l.userType() == QVariant::Invalid)
+        return false;
+    if (r.userType() == QVariant::Invalid)
+        return true;
     switch (l.userType()) {
-    case QVariant::Invalid:
-        return (r.type() == QVariant::Invalid);
     case QVariant::Int:
         return l.toInt() < r.toInt();
     case QVariant::UInt:
@@ -2518,7 +2522,9 @@ QList<QStandardItem*> QStandardItemModel::findItems(const QString &text,
     QModelIndexList indexes = match(index(0, column, QModelIndex()),
                                     Qt::DisplayRole, text, -1, flags);
     QList<QStandardItem*> items;
-    for (int i = 0; i < indexes.size(); ++i)
+    const int numIndexes = indexes.size();
+    items.reserve(numIndexes);
+    for (int i = 0; i < numIndexes; ++i)
         items.append(itemFromIndex(indexes.at(i)));
     return items;
 }

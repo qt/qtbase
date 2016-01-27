@@ -75,6 +75,7 @@ struct QPropertyAssignment
     QVariant value;
     bool explicitlySet; // false means the property is being restored to its old value
 };
+Q_DECLARE_TYPEINFO(QPropertyAssignment, Q_MOVABLE_TYPE);
 
 #endif // QT_NO_PROPERTIES
 
@@ -108,7 +109,7 @@ public:
     mutable QList<QAbstractTransition*> transitionsList;
 
 #ifndef QT_NO_PROPERTIES
-    QList<QPropertyAssignment> propertyAssignments;
+    QVector<QPropertyAssignment> propertyAssignments;
 #endif
 };
 

@@ -61,9 +61,10 @@ class Q_WIDGETS_EXPORT QProgressDialog : public QDialog
     Q_PROPERTY(QString labelText READ labelText WRITE setLabelText)
 
 public:
-    explicit QProgressDialog(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    explicit QProgressDialog(QWidget *parent = Q_NULLPTR, Qt::WindowFlags flags = Qt::WindowFlags());
     QProgressDialog(const QString &labelText, const QString &cancelButtonText,
-                    int minimum, int maximum, QWidget *parent = 0, Qt::WindowFlags flags = 0);
+                    int minimum, int maximum, QWidget *parent = Q_NULLPTR,
+                    Qt::WindowFlags flags = Qt::WindowFlags());
     ~QProgressDialog();
 
     void setLabel(QLabel *label);

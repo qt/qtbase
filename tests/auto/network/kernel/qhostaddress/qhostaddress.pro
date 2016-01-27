@@ -7,7 +7,7 @@ SOURCES  += tst_qhostaddress.cpp
 QT = core network testlib
 
 win32: {
-wince*: {
+wince {
 	LIBS += -lws2
 } else {
 	LIBS += -lws2_32

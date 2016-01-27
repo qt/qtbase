@@ -105,13 +105,13 @@ public:
 
 #ifndef QT_NO_QOBJECT
     explicit QSettings(const QString &organization,
-                       const QString &application = QString(), QObject *parent = 0);
+                       const QString &application = QString(), QObject *parent = Q_NULLPTR);
     QSettings(Scope scope, const QString &organization,
-              const QString &application = QString(), QObject *parent = 0);
+              const QString &application = QString(), QObject *parent = Q_NULLPTR);
     QSettings(Format format, Scope scope, const QString &organization,
-              const QString &application = QString(), QObject *parent = 0);
-    QSettings(const QString &fileName, Format format, QObject *parent = 0);
-    explicit QSettings(QObject *parent = 0);
+              const QString &application = QString(), QObject *parent = Q_NULLPTR);
+    QSettings(const QString &fileName, Format format, QObject *parent = Q_NULLPTR);
+    explicit QSettings(QObject *parent = Q_NULLPTR);
 #else
     explicit QSettings(const QString &organization,
                        const QString &application = QString());

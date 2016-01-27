@@ -58,11 +58,10 @@ public:
 
     QCommandLineOption &operator=(const QCommandLineOption &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QCommandLineOption &operator=(QCommandLineOption &&other)
-    { qSwap(d, other.d); return *this; }
+    QCommandLineOption &operator=(QCommandLineOption &&other) Q_DECL_NOTHROW { swap(other); return *this; }
 #endif
 
-    inline void swap(QCommandLineOption &other)
+    void swap(QCommandLineOption &other) Q_DECL_NOTHROW
     { qSwap(d, other.d); }
 
     QStringList names() const;

@@ -1,29 +1,16 @@
 contains(QT_CONFIG,egl) {
     HEADERS += \
-        $$PWD/qeglconvenience_p.h \
-        $$PWD/qeglpbuffer_p.h
+        $$PWD/qeglconvenience_p.h
 
     SOURCES += \
-        $$PWD/qeglconvenience.cpp \
-        $$PWD/qeglpbuffer.cpp
+        $$PWD/qeglconvenience.cpp
 
     contains(QT_CONFIG,opengl) {
-        HEADERS += $$PWD/qeglplatformcontext_p.h
-        SOURCES += $$PWD/qeglplatformcontext.cpp
+        HEADERS += $$PWD/qeglplatformcontext_p.h \
+                   $$PWD/qeglpbuffer_p.h
 
-        unix {
-            HEADERS += \
-                $$PWD/qeglplatformcursor_p.h \
-                $$PWD/qeglplatformwindow_p.h \
-                $$PWD/qeglplatformscreen_p.h \
-                $$PWD/qeglplatformintegration_p.h
-
-            SOURCES += \
-                $$PWD/qeglplatformcursor.cpp \
-                $$PWD/qeglplatformwindow.cpp \
-                $$PWD/qeglplatformscreen.cpp \
-                $$PWD/qeglplatformintegration.cpp
-        }
+        SOURCES += $$PWD/qeglplatformcontext.cpp \
+                   $$PWD/qeglpbuffer.cpp
     }
 
     # Avoid X11 header collision

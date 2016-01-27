@@ -71,16 +71,20 @@ public:
 private:
     int id;
 
-    friend Q_DECL_CONSTEXPR bool operator==(QSslEllipticCurve lhs, QSslEllipticCurve rhs) Q_DECL_NOTHROW
-    { return lhs.id == rhs.id; }
-    friend Q_DECL_CONSTEXPR uint qHash(QSslEllipticCurve curve, uint seed) Q_DECL_NOTHROW
-    { return qHash(curve.id, seed); }
+    friend Q_DECL_CONSTEXPR bool operator==(QSslEllipticCurve lhs, QSslEllipticCurve rhs) Q_DECL_NOTHROW;
+    friend Q_DECL_CONSTEXPR uint qHash(QSslEllipticCurve curve, uint seed) Q_DECL_NOTHROW;
 
     friend class QSslSocketPrivate;
     friend class QSslSocketBackendPrivate;
 };
 
 Q_DECLARE_TYPEINFO(QSslEllipticCurve, Q_PRIMITIVE_TYPE);
+
+Q_DECL_CONSTEXPR inline uint qHash(QSslEllipticCurve curve, uint seed) Q_DECL_NOTHROW
+{ return qHash(curve.id, seed); }
+
+Q_DECL_CONSTEXPR inline bool operator==(QSslEllipticCurve lhs, QSslEllipticCurve rhs) Q_DECL_NOTHROW
+{ return lhs.id == rhs.id; }
 
 Q_DECL_CONSTEXPR inline bool operator!=(QSslEllipticCurve lhs, QSslEllipticCurve rhs) Q_DECL_NOTHROW
 { return !operator==(lhs, rhs); }

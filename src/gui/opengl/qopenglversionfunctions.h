@@ -123,7 +123,7 @@ class QAbstractOpenGLFunctionsPrivate
 {
 public:
     QAbstractOpenGLFunctionsPrivate()
-        : owningContext(0),
+        : owningContext(Q_NULLPTR),
           initialized(false)
     {}
 

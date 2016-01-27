@@ -98,7 +98,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     The style gets all the information it needs to render the
     graphical element from the QStyleOption class. The widget is
     passed as the last argument in case the style needs it to perform
-    special effects (such as animated default buttons on Mac OS X),
+    special effects (such as animated default buttons on OS X),
     but it isn't mandatory. In fact, QStyle can be used to draw on any
     paint device (not just widgets), in which case the widget argument
     is a zero pointer.
@@ -197,7 +197,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     QStyle gets all the information it needs to render the graphical
     element from QStyleOption. The widget is passed as the last
     argument in case the style needs it to perform special effects
-    (such as animated default buttons on Mac OS X), but it isn't
+    (such as animated default buttons on OS X), but it isn't
     mandatory. In fact, you can use QStyle to draw on any paint
     device, not just widgets, by setting the QPainter properly.
 

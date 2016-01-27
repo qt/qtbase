@@ -212,7 +212,7 @@ static QImageIOHandler *createWriteHandlerHelper(QIODevice *device,
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
     if (!testFormat.isEmpty()) {
-        const int keyCount = keyMap.keys().size();
+        const int keyCount = keyMap.size();
         for (int i = 0; i < keyCount; ++i) {
             QImageIOPlugin *plugin = qobject_cast<QImageIOPlugin *>(l->instance(i));
             if (plugin && (plugin->capabilities(device, testFormat) & QImageIOPlugin::CanWrite)) {
@@ -621,7 +621,7 @@ bool QImageWriter::progressiveScanWrite() const
 /*!
     \since 5.5
 
-    Sets the image transformations metadata including orientation.
+    Sets the image transformations metadata including orientation to \a transform.
 
     If transformation metadata is not supported by the image format,
     the transform is applied before writing.

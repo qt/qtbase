@@ -173,7 +173,7 @@ void tst_QComplexText::bidiCursor_qtbug2795()
     qreal x2 = line2.cursorToX(0) - line2.cursorToX(str.size());
 
     // The cursor should remain at the same position after a digit is appended
-    QVERIFY(x1 == x2);
+    QCOMPARE(x1, x2);
 }
 
 void tst_QComplexText::bidiCursorMovement_data()

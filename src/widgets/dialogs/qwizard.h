@@ -114,7 +114,7 @@ public:
 
     Q_DECLARE_FLAGS(WizardOptions, WizardOption)
 
-    explicit QWizard(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    explicit QWizard(QWidget *parent = Q_NULLPTR, Qt::WindowFlags flags = Qt::WindowFlags());
     ~QWizard();
 
     int addPage(QWizardPage *page);
@@ -209,7 +209,7 @@ class Q_WIDGETS_EXPORT QWizardPage : public QWidget
     Q_PROPERTY(QString subTitle READ subTitle WRITE setSubTitle)
 
 public:
-    explicit QWizardPage(QWidget *parent = 0);
+    explicit QWizardPage(QWidget *parent = Q_NULLPTR);
     ~QWizardPage();
 
     void setTitle(const QString &title);
@@ -237,8 +237,8 @@ Q_SIGNALS:
 protected:
     void setField(const QString &name, const QVariant &value);
     QVariant field(const QString &name) const;
-    void registerField(const QString &name, QWidget *widget, const char *property = 0,
-                       const char *changedSignal = 0);
+    void registerField(const QString &name, QWidget *widget, const char *property = Q_NULLPTR,
+                       const char *changedSignal = Q_NULLPTR);
     QWizard *wizard() const;
 
 private:

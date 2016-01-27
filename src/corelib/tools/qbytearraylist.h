@@ -61,7 +61,7 @@ protected:
 #endif
 public:
     inline QByteArray join() const
-    { return QtPrivate::QByteArrayList_join(self(), 0, 0); }
+    { return QtPrivate::QByteArrayList_join(self(), Q_NULLPTR, 0); }
     inline QByteArray join(const QByteArray &sep) const
     { return QtPrivate::QByteArrayList_join(self(), sep.constData(), sep.size()); }
     inline QByteArray join(char sep) const

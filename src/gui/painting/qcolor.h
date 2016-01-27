@@ -67,8 +67,19 @@ public:
     QColor(QRgba64 rgba64);
     QColor(const QString& name);
     QColor(const char *name);
-    QColor(const QColor &color); // ### Qt 6: remove, the trivial one is fine.
     QColor(Spec spec);
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    QColor(const QColor &color); // ### Qt 6: remove all of these, the trivial ones are fine.
+# ifdef Q_COMPILER_RVALUE_REFS
+    QColor(QColor &&other) Q_DECL_NOTHROW : cspec(other.cspec), ct(other.ct) {}
+    QColor &operator=(QColor &&other) Q_DECL_NOTHROW
+    { cspec = other.cspec; ct = other.ct; return *this; }
+# endif
+    QColor &operator=(const QColor &);
+#endif // Qt < 6
+
+    QColor &operator=(Qt::GlobalColor color);
 
     bool isValid() const;
 
@@ -102,10 +113,10 @@ public:
     void setGreenF(qreal green);
     void setBlueF(qreal blue);
 
-    void getRgb(int *r, int *g, int *b, int *a = 0) const;
+    void getRgb(int *r, int *g, int *b, int *a = Q_NULLPTR) const;
     void setRgb(int r, int g, int b, int a = 255);
 
-    void getRgbF(qreal *r, qreal *g, qreal *b, qreal *a = 0) const;
+    void getRgbF(qreal *r, qreal *g, qreal *b, qreal *a = Q_NULLPTR) const;
     void setRgbF(qreal r, qreal g, qreal b, qreal a = 1.0);
 
     QRgb rgba() const;
@@ -129,10 +140,10 @@ public:
     qreal hsvSaturationF() const;
     qreal valueF() const;
 
-    void getHsv(int *h, int *s, int *v, int *a = 0) const;
+    void getHsv(int *h, int *s, int *v, int *a = Q_NULLPTR) const;
     void setHsv(int h, int s, int v, int a = 255);
 
-    void getHsvF(qreal *h, qreal *s, qreal *v, qreal *a = 0) const;
+    void getHsvF(qreal *h, qreal *s, qreal *v, qreal *a = Q_NULLPTR) const;
     void setHsvF(qreal h, qreal s, qreal v, qreal a = 1.0);
 
     int cyan() const;
@@ -145,10 +156,10 @@ public:
     qreal yellowF() const;
     qreal blackF() const;
 
-    void getCmyk(int *c, int *m, int *y, int *k, int *a = 0);
+    void getCmyk(int *c, int *m, int *y, int *k, int *a = Q_NULLPTR);
     void setCmyk(int c, int m, int y, int k, int a = 255);
 
-    void getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a = 0);
+    void getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a = Q_NULLPTR);
     void setCmykF(qreal c, qreal m, qreal y, qreal k, qreal a = 1.0);
 
     int hslHue() const; // 0 <= hue < 360
@@ -159,10 +170,10 @@ public:
     qreal hslSaturationF() const;
     qreal lightnessF() const;
 
-    void getHsl(int *h, int *s, int *l, int *a = 0) const;
+    void getHsl(int *h, int *s, int *l, int *a = Q_NULLPTR) const;
     void setHsl(int h, int s, int l, int a = 255);
 
-    void getHslF(qreal *h, qreal *s, qreal *l, qreal *a = 0) const;
+    void getHslF(qreal *h, qreal *s, qreal *l, qreal *a = Q_NULLPTR) const;
     void setHslF(qreal h, qreal s, qreal l, qreal a = 1.0);
 
     QColor toRgb() const;
@@ -194,9 +205,6 @@ public:
     QColor lighter(int f = 150) const Q_REQUIRED_RESULT;
     QColor dark(int f = 200) const Q_REQUIRED_RESULT;
     QColor darker(int f = 200) const Q_REQUIRED_RESULT;
-
-    QColor &operator=(const QColor &);
-    QColor &operator=(Qt::GlobalColor color);
 
     bool operator==(const QColor &c) const;
     bool operator!=(const QColor &c) const;
@@ -262,9 +270,11 @@ inline QColor::QColor(const char *aname)
 inline QColor::QColor(const QString& aname)
 { setNamedColor(aname); }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 inline QColor::QColor(const QColor &acolor)
     : cspec(acolor.cspec)
 { ct.argb = acolor.ct.argb; }
+#endif
 
 inline bool QColor::isValid() const
 { return cspec != Invalid; }

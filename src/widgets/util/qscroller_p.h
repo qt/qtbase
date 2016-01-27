@@ -196,6 +196,9 @@ public:
 
     QScroller *q_ptr;
 };
+template <>
+class QTypeInfo<QScrollerPrivate::ScrollSegment>
+    : public QTypeInfoMerger<QScrollerPrivate::ScrollSegment, QEasingCurve> {};
 
 
 QT_END_NAMESPACE

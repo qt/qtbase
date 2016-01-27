@@ -164,6 +164,7 @@ private slots:
     void keyboardSelection();
     void setCustomModelAndView();
     void updateDelegateOnEditableChange();
+    void respectChangedOwnershipOfItemView();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -452,7 +453,7 @@ void tst_QComboBox::setPalette()
     for (int i = 0; i < comboChildren.size(); ++i) {
         QObject *o = comboChildren.at(i);
         if (o->isWidgetType()) {
-            QVERIFY(((QWidget*)o)->palette() == pal);
+            QCOMPARE(((QWidget*)o)->palette(), pal);
         }
     }
 
@@ -461,12 +462,12 @@ void tst_QComboBox::setPalette()
     //Setting it on the lineedit should be separate form the combo
     testWidget->lineEdit()->setPalette(pal);
     QVERIFY(testWidget->palette() != pal);
-    QVERIFY(testWidget->lineEdit()->palette() == pal);
+    QCOMPARE(testWidget->lineEdit()->palette(), pal);
     pal.setColor(QPalette::Base, Qt::green);
     //Setting it on the combo directly should override lineedit
     testWidget->setPalette(pal);
-    QVERIFY(testWidget->palette() == pal);
-    QVERIFY(testWidget->lineEdit()->palette() == pal);
+    QCOMPARE(testWidget->palette(), pal);
+    QCOMPARE(testWidget->lineEdit()->palette(), pal);
 }
 
 void tst_QComboBox::sizeAdjustPolicy()
@@ -477,7 +478,7 @@ void tst_QComboBox::sizeAdjustPolicy()
     QComboBox *testWidget = topLevel.comboBox();
     // test that adding new items will not change the sizehint for AdjustToContentsOnFirstShow
     QVERIFY(!testWidget->count());
-    QVERIFY(testWidget->sizeAdjustPolicy() == QComboBox::AdjustToContentsOnFirstShow);
+    QCOMPARE(testWidget->sizeAdjustPolicy(), QComboBox::AdjustToContentsOnFirstShow);
     QVERIFY(testWidget->isVisible());
     QSize firstShow = testWidget->sizeHint();
     testWidget->addItem("normal item");
@@ -750,7 +751,7 @@ void tst_QComboBox::insertPolicy()
 
     // First check that there is the right number of entries, or
     // we may unwittingly pass
-    QVERIFY((int)result.count() == testWidget->count());
+    QCOMPARE((int)result.count(), testWidget->count());
 
     // No need to compare if there are no strings to compare
     if (result.count() > 0) {
@@ -795,7 +796,7 @@ void tst_QComboBox::virtualAutocompletion()
     QApplication::sendEvent(testWidget, &kr1);
 
     qApp->processEvents(); // Process events to trigger autocompletion
-    QTRY_VERIFY(testWidget->currentIndex() == 1);
+    QTRY_COMPARE(testWidget->currentIndex(), 1);
 
     QKeyEvent kp2(QEvent::KeyPress, Qt::Key_O, 0, "o");
     QKeyEvent kr2(QEvent::KeyRelease, Qt::Key_O, 0, "o");
@@ -844,7 +845,7 @@ void tst_QComboBox::autoCompletionCaseSensitivity()
     testWidget->clearEditText();
     QSignalSpy spyReturn(testWidget, SIGNAL(activated(int)));
     testWidget->setAutoCompletionCaseSensitivity(Qt::CaseInsensitive);
-    QVERIFY(testWidget->autoCompletionCaseSensitivity() == Qt::CaseInsensitive);
+    QCOMPARE(testWidget->autoCompletionCaseSensitivity(), Qt::CaseInsensitive);
 
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_A);
     qApp->processEvents();
@@ -878,7 +879,7 @@ void tst_QComboBox::autoCompletionCaseSensitivity()
     // case sensitive
     testWidget->clearEditText();
     testWidget->setAutoCompletionCaseSensitivity(Qt::CaseSensitive);
-    QVERIFY(testWidget->autoCompletionCaseSensitivity() == Qt::CaseSensitive);
+    QCOMPARE(testWidget->autoCompletionCaseSensitivity(), Qt::CaseSensitive);
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_A);
     qApp->processEvents();
     QCOMPARE(testWidget->currentText(), QString("aww"));
@@ -1376,7 +1377,7 @@ void tst_QComboBox::textpixmapdata()
         QCOMPARE(icon.cacheKey(), icons.at(i).cacheKey());
         QPixmap original = icons.at(i).pixmap(1024);
         QPixmap pixmap = icon.pixmap(1024);
-        QVERIFY(pixmap.toImage() == original.toImage());
+        QCOMPARE(pixmap.toImage(), original.toImage());
     }
 
     for (int i = 0; i<text.count(); ++i) {
@@ -1610,7 +1611,7 @@ void tst_QComboBox::setModel()
     QCOMPARE(box.currentIndex(), 0);
     QVERIFY(box.model() != oldModel);
     QVERIFY(box.rootModelIndex() != rootModelIndex);
-    QVERIFY(box.rootModelIndex() == QModelIndex());
+    QCOMPARE(box.rootModelIndex(), QModelIndex());
 
     // check that setting the very same model doesn't move the current item
     box.setCurrentIndex(1);
@@ -3168,6 +3169,28 @@ void tst_QComboBox::updateDelegateOnEditableChange()
         QCOMPARE(menuDelegateAfter, menuDelegateBefore);
     }
 }
+
+void tst_QComboBox::respectChangedOwnershipOfItemView()
+{
+    QComboBox box1;
+    QComboBox box2;
+    QTableView *v1 = new QTableView;
+    box1.setView(v1);
+
+    QSignalSpy spy1(v1, SIGNAL(destroyed()));
+    box2.setView(v1); // Ownership should now be transferred to box2
+
+
+    QTableView *v2 = new QTableView(&box1);
+    box1.setView(v2);  // Here we do not expect v1 to be deleted
+    QApplication::processEvents();
+    QCOMPARE(spy1.count(), 0);
+
+    QSignalSpy spy2(v2, SIGNAL(destroyed()));
+    box1.setView(v1);
+    QCOMPARE(spy2.count(), 1);
+}
+
 
 QTEST_MAIN(tst_QComboBox)
 #include "tst_qcombobox.moc"

@@ -80,7 +80,7 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     QString defaultsBasePath = "data/";
     QString defaultsPath = defaultsBasePath + "defaults.conf";
     QString localizedPath = defaultsBasePath
-            + QString("%1/defaults.conf").arg(QLocale::system().name());
+            + QString("%1/defaults.conf").arg(QLocale().name());
     if (QFile::exists(localizedPath))
         defaultsPath = localizedPath;
     QFile defaults(defaultsPath);
@@ -148,7 +148,7 @@ QFileSelectorPrivate::QFileSelectorPrivate()
         on (list not exhaustive): android, blackberry, ios, osx, darwin, mac, linux, wince, unix,
         windows. On Linux, if it can be determined, the name of the distribution too, like debian,
         fedora or opensuse.
-    \li locale, same as QLocale::system().name().
+    \li locale, same as QLocale().name().
     \endlist
 
     Further selectors will be added from the \c QT_FILE_SELECTORS environment variable, which
@@ -347,7 +347,7 @@ void QFileSelectorPrivate::updateSelectors()
     sharedData->staticSelectors << sharedData->preloadedStatics; //Potential for static selectors from other modules
 
     // TODO: Update on locale changed?
-    sharedData->staticSelectors << QLocale::system().name();
+    sharedData->staticSelectors << QLocale().name();
 
     sharedData->staticSelectors << platformSelectors();
 }

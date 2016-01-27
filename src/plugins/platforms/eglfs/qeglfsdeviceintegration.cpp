@@ -33,8 +33,8 @@
 
 #include "qeglfsdeviceintegration.h"
 #include "qeglfsintegration.h"
+#include "qeglfscursor.h"
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
-#include <QtPlatformSupport/private/qeglplatformcursor_p.h>
 #include <QGuiApplication>
 #include <private/qguiapplication_p.h>
 #include <QScreen>
@@ -99,6 +99,7 @@ QStringList QEGLDeviceIntegrationFactory::keys(const QString &pluginPath)
     qCDebug(qLcEglDevDebug) << "EGL device integration plugin keys:" << list;
     return list;
 #else
+    Q_UNUSED(pluginPath);
     return QStringList();
 #endif
 }
@@ -117,6 +118,9 @@ QEGLDeviceIntegration *QEGLDeviceIntegrationFactory::create(const QString &key, 
         qCDebug(qLcEglDevDebug) << "Using EGL device integration" << key;
     else
         qCWarning(qLcEglDevDebug) << "Failed to load EGL device integration" << key;
+#else
+    Q_UNUSED(key);
+    Q_UNUSED(pluginPath);
 #endif
     return integration;
 }
@@ -282,7 +286,7 @@ bool QEGLDeviceIntegration::hasCapability(QPlatformIntegration::Capability cap) 
 
 QPlatformCursor *QEGLDeviceIntegration::createCursor(QPlatformScreen *screen) const
 {
-    return new QEGLPlatformCursor(screen);
+    return new QEglFSCursor(screen);
 }
 
 void QEGLDeviceIntegration::waitForVSync(QPlatformSurface *surface) const

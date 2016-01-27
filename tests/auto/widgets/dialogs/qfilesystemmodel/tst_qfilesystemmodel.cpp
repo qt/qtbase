@@ -167,7 +167,7 @@ void tst_QFileSystemModel::cleanup()
                 QVERIFY(dir.rmdir(list.at(i)));
         }
         list = dir.entryList(QDir::AllEntries | QDir::System | QDir::Hidden | QDir::NoDotAndDotDot);
-        QVERIFY(list.count() == 0);
+        QCOMPARE(list.count(), 0);
     }
 }
 
@@ -523,8 +523,14 @@ void tst_QFileSystemModel::rowsInserted()
 
     QVERIFY(createFiles(tmp, QStringList(".hidden_file"), 5 + count));
 
-    if (count != 0) QTRY_VERIFY(spy0.count() >= 1); else QTRY_VERIFY(spy0.count() == 0);
-    if (count != 0) QTRY_VERIFY(spy1.count() >= 1); else QTRY_VERIFY(spy1.count() == 0);
+    if (count != 0)
+        QTRY_VERIFY(spy0.count() >= 1);
+    else
+        QTRY_COMPARE(spy0.count(), 0);
+    if (count != 0)
+        QTRY_VERIFY(spy1.count() >= 1);
+    else
+        QTRY_COMPARE(spy1.count(), 0);
 }
 
 void tst_QFileSystemModel::rowsRemoved_data()
@@ -563,8 +569,8 @@ void tst_QFileSystemModel::rowsRemoved()
             }
         } else {
             if (i == 10 || spy0.count() == 0) {
-                QVERIFY(spy0.count() == 0);
-                QVERIFY(spy1.count() == 0);
+                QCOMPARE(spy0.count(), 0);
+                QCOMPARE(spy1.count(), 0);
             }
         }
         QStringList lst;
@@ -583,8 +589,8 @@ void tst_QFileSystemModel::rowsRemoved()
     QVERIFY(QFile::remove(tmp + '/' + QString(".c")));
     QTest::qWait(WAITTIME);
 
-    if (count != 0) QVERIFY(spy0.count() >= 1); else QVERIFY(spy0.count() == 0);
-    if (count != 0) QVERIFY(spy1.count() >= 1); else QVERIFY(spy1.count() == 0);
+    if (count != 0) QVERIFY(spy0.count() >= 1); else QCOMPARE(spy0.count(), 0);
+    if (count != 0) QVERIFY(spy1.count() >= 1); else QCOMPARE(spy1.count(), 0);
 }
 
 void tst_QFileSystemModel::dataChanged_data()
@@ -614,7 +620,7 @@ void tst_QFileSystemModel::dataChanged()
 
     QTest::qWait(WAITTIME);
 
-    if (count != 0) QVERIFY(spy.count() >= 1); else QVERIFY(spy.count() == 0);
+    if (count != 0) QVERIFY(spy.count() >= 1); else QCOMPARE(spy.count(), 0);
     */
 }
 

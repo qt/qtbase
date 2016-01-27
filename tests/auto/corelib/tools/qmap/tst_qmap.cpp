@@ -65,6 +65,7 @@ private slots:
     void take();
 
     void iterators();
+    void keyIterator();
     void keys_values_uniqueKeys();
     void qmultimap_specific();
 
@@ -835,6 +836,34 @@ void tst_QMap::iterators()
     }
 }
 
+void tst_QMap::keyIterator()
+{
+    QMap<int, int> map;
+
+    for (int i = 0; i < 100; ++i)
+        map.insert(i, i*100);
+
+    QMap<int, int>::key_iterator key_it = map.keyBegin();
+    QMap<int, int>::const_iterator it = map.cbegin();
+    for (int i = 0; i < 100; ++i) {
+        QCOMPARE(*key_it, it.key());
+        ++key_it;
+        ++it;
+    }
+
+    key_it = std::find(map.keyBegin(), map.keyEnd(), 50);
+    it = std::find(map.cbegin(), map.cend(), 50 * 100);
+
+    QVERIFY(key_it != map.keyEnd());
+    QCOMPARE(*key_it, it.key());
+    QCOMPARE(*(key_it++), (it++).key());
+    QCOMPARE(*(key_it--), (it--).key());
+    QCOMPARE(*(++key_it), (++it).key());
+    QCOMPARE(*(--key_it), (--it).key());
+
+    QCOMPARE(std::count(map.keyBegin(), map.keyEnd(), 99), 1);
+}
+
 void tst_QMap::keys_values_uniqueKeys()
 {
     QMap<QString, int> map;
@@ -996,10 +1025,15 @@ void tst_QMap::const_shared_null()
 void tst_QMap::equal_range()
 {
     QMap<int, QString> map;
+    const QMap<int, QString> &cmap = map;
 
     QPair<QMap<int, QString>::iterator, QMap<int, QString>::iterator> result = map.equal_range(0);
     QCOMPARE(result.first, map.end());
     QCOMPARE(result.second, map.end());
+
+    QPair<QMap<int, QString>::const_iterator, QMap<int, QString>::const_iterator> cresult = cmap.equal_range(0);
+    QCOMPARE(cresult.first, cmap.cend());
+    QCOMPARE(cresult.second, cmap.cend());
 
     map.insert(1, "one");
 
@@ -1014,6 +1048,18 @@ void tst_QMap::equal_range()
     result = map.equal_range(2);
     QCOMPARE(result.first, map.end());
     QCOMPARE(result.second, map.end());
+
+    cresult = cmap.equal_range(0);
+    QCOMPARE(cresult.first, cmap.find(1));
+    QCOMPARE(cresult.second, cmap.find(1));
+
+    cresult = cmap.equal_range(1);
+    QCOMPARE(cresult.first, cmap.find(1));
+    QCOMPARE(cresult.second, cmap.cend());
+
+    cresult = cmap.equal_range(2);
+    QCOMPARE(cresult.first, cmap.cend());
+    QCOMPARE(cresult.second, cmap.cend());
 
     for (int i = -10; i < 10; i += 2)
         map.insert(i, QString("%1").arg(i));
@@ -1030,10 +1076,27 @@ void tst_QMap::equal_range()
     QCOMPARE(result.first, map.find(2));
     QCOMPARE(result.second, map.find(4));
 
+    cresult = cmap.equal_range(0);
+    QCOMPARE(cresult.first, cmap.find(0));
+    QCOMPARE(cresult.second, cmap.find(1));
+
+    cresult = cmap.equal_range(1);
+    QCOMPARE(cresult.first, cmap.find(1));
+    QCOMPARE(cresult.second, cmap.find(2));
+
+    cresult = cmap.equal_range(2);
+    QCOMPARE(cresult.first, cmap.find(2));
+    QCOMPARE(cresult.second, cmap.find(4));
+
     map.insertMulti(1, "another one");
+
     result = map.equal_range(1);
     QCOMPARE(result.first, map.find(1));
     QCOMPARE(result.second, map.find(2));
+
+    cresult = cmap.equal_range(1);
+    QCOMPARE(cresult.first, cmap.find(1));
+    QCOMPARE(cresult.second, cmap.find(2));
 
     QCOMPARE(map.count(1), 2);
 }

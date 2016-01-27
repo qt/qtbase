@@ -38,6 +38,9 @@
 
 QT_BEGIN_NAMESPACE
 
+// ### Qt 6: remove the static assertion, the 'sorts' field was changed from QList to QVector in Qt 5.6
+Q_STATIC_ASSERT((sizeof(QList<bool>) == sizeof(QVector<bool>)));
+
 /*!
     \class QSqlIndex
     \brief The QSqlIndex class provides functions to manipulate and

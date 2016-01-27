@@ -141,7 +141,7 @@ QLocalServer::~QLocalServer()
     and are created based on the umask. Setting the access flags will
     overide this and will restrict or permit access as specified.
 
-    Other Unix-based operating systems, such as Mac OS X, do not
+    Other Unix-based operating systems, such as OS X, do not
     honor file permissions for Unix domain sockets and by default
     have WorldAccess and these permission flags will have no effect.
 

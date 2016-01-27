@@ -43,7 +43,7 @@ QOpenGLShader shader(QOpenGLShader::Vertex);
 shader.compileSourceCode(code);
 
 QOpenGLShaderProgram program(context);
-program.addShader(shader);
+program.addShader(&shader);
 program.link();
 
 program.bind();

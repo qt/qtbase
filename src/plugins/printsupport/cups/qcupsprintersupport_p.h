@@ -48,8 +48,6 @@
 
 #include <qpa/qplatformprintersupport.h>
 
-#ifndef QT_NO_PRINTER
-
 #include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE
@@ -73,5 +71,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_PRINTER
 #endif // QCUPSPRINTERSUPPORT_H

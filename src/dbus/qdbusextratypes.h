@@ -53,11 +53,18 @@ class Q_DBUS_EXPORT QDBusObjectPath
 {
     QString m_path;
 public:
-    inline QDBusObjectPath() { }
+    QDBusObjectPath() Q_DECL_NOTHROW : m_path() {}
+    // compiler-generated copy/move constructor/assignment operators are ok!
+    // compiler-generated destructor is ok!
 
     inline explicit QDBusObjectPath(const char *path);
     inline explicit QDBusObjectPath(QLatin1String path);
     inline explicit QDBusObjectPath(const QString &path);
+#ifdef Q_COMPILER_RVALUE_REFS
+    explicit QDBusObjectPath(QString &&p) : m_path(std::move(p)) { doCheck(); }
+#endif
+
+    void swap(QDBusObjectPath &other) Q_DECL_NOTHROW { qSwap(m_path, other.m_path); }
 
     inline void setPath(const QString &path);
 
@@ -67,6 +74,7 @@ public:
 private:
     void doCheck();
 };
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QDBusObjectPath)
 
 inline QDBusObjectPath::QDBusObjectPath(const char *objectPath)
     : m_path(QString::fromLatin1(objectPath))
@@ -92,7 +100,7 @@ inline bool operator!=(const QDBusObjectPath &lhs, const QDBusObjectPath &rhs)
 inline bool operator<(const QDBusObjectPath &lhs, const QDBusObjectPath &rhs)
 { return lhs.path() < rhs.path(); }
 
-inline uint qHash(const QDBusObjectPath &objectPath, uint seed)
+inline uint qHash(const QDBusObjectPath &objectPath, uint seed = 0)
 { return qHash(objectPath.path(), seed); }
 
 
@@ -100,11 +108,18 @@ class Q_DBUS_EXPORT QDBusSignature
 {
     QString m_signature;
 public:
-    inline QDBusSignature() { }
+    QDBusSignature() Q_DECL_NOTHROW : m_signature() {}
+    // compiler-generated copy/move constructor/assignment operators are ok!
+    // compiler-generated destructor is ok!
 
     inline explicit QDBusSignature(const char *signature);
     inline explicit QDBusSignature(QLatin1String signature);
     inline explicit QDBusSignature(const QString &signature);
+#ifdef Q_COMPILER_RVALUE_REFS
+    explicit QDBusSignature(QString &&sig) : m_signature(std::move(sig)) { doCheck(); }
+#endif
+
+    void swap(QDBusSignature &other) Q_DECL_NOTHROW { qSwap(m_signature, other.m_signature); }
 
     inline void setSignature(const QString &signature);
 
@@ -114,6 +129,7 @@ public:
 private:
     void doCheck();
 };
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QDBusSignature)
 
 inline QDBusSignature::QDBusSignature(const char *dBusSignature)
     : m_signature(QString::fromLatin1(dBusSignature))
@@ -139,21 +155,30 @@ inline bool operator!=(const QDBusSignature &lhs, const QDBusSignature &rhs)
 inline bool operator<(const QDBusSignature &lhs, const QDBusSignature &rhs)
 { return lhs.signature() < rhs.signature(); }
 
-inline uint qHash(const QDBusSignature &signature, uint seed)
+inline uint qHash(const QDBusSignature &signature, uint seed = 0)
 { return qHash(signature.signature(), seed); }
 
 class QDBusVariant
 {
     QVariant m_variant;
 public:
-    inline QDBusVariant() { }
+    QDBusVariant() Q_DECL_NOTHROW : m_variant() {}
+    // compiler-generated copy/move constructor/assignment operators are ok!
+    // compiler-generated destructor is ok!
+
     inline explicit QDBusVariant(const QVariant &variant);
+#ifdef Q_COMPILER_RVALUE_REFS
+    explicit QDBusVariant(QVariant &&v) Q_DECL_NOTHROW : m_variant(std::move(v)) {}
+#endif
+
+    void swap(QDBusVariant &other) Q_DECL_NOTHROW { qSwap(m_variant, other.m_variant); }
 
     inline void setVariant(const QVariant &variant);
 
     inline QVariant variant() const
     { return m_variant; }
 };
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QDBusVariant)
 
 inline  QDBusVariant::QDBusVariant(const QVariant &dBusVariant)
     : m_variant(dBusVariant) { }

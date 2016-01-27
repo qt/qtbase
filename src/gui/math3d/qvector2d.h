@@ -122,7 +122,7 @@ private:
     friend class QVector4D;
 };
 
-Q_DECLARE_TYPEINFO(QVector2D, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QVector2D, Q_PRIMITIVE_TYPE);
 
 Q_DECL_CONSTEXPR inline QVector2D::QVector2D() : xp(0.0f), yp(0.0f) {}
 

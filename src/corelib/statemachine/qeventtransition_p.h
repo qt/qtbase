@@ -57,7 +57,8 @@ public:
     QEventTransitionPrivate();
     ~QEventTransitionPrivate();
 
-    static QEventTransitionPrivate *get(QEventTransition *q);
+    static QEventTransitionPrivate *get(QEventTransition *q)
+    { return q->d_func(); }
 
     void unregister();
     void maybeRegister();

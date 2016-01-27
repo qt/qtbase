@@ -749,7 +749,7 @@ void QCocoaWindow::setVisible(bool visible)
         }
         removeMonitor();
 
-        if (window()->type() == Qt::Popup)
+        if (window()->type() == Qt::Popup || window()->type() == Qt::ToolTip)
             QCocoaIntegration::instance()->popupWindowStack()->removeAll(this);
 
         if (parentCocoaWindow && window()->type() == Qt::Popup) {
@@ -1837,6 +1837,25 @@ bool QCocoaWindow::shouldRefuseKeyWindowAndFirstResponder()
     }
 
     return false;
+}
+
+QPoint QCocoaWindow::bottomLeftClippedByNSWindowOffsetStatic(QWindow *window)
+{
+    if (window->handle())
+        return static_cast<QCocoaWindow *>(window->handle())->bottomLeftClippedByNSWindowOffset();
+    return QPoint();
+}
+
+QPoint QCocoaWindow::bottomLeftClippedByNSWindowOffset() const
+{
+    if (!m_contentView)
+        return QPoint();
+    NSPoint origin = [m_contentView isFlipped] ?
+                        NSMakePoint(0, [m_contentView frame].size.height) :
+                        NSMakePoint(0, 0);
+    NSPoint windowPoint = [m_contentView convertPoint:origin toView:nil];
+
+    return QPoint(-std::min((int)windowPoint.x, 0), -std::min((int)windowPoint.y,0));
 }
 
 QMargins QCocoaWindow::frameMargins() const

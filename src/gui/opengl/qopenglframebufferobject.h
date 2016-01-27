@@ -63,14 +63,17 @@ public:
     QOpenGLFramebufferObject(int width, int height, GLenum target = GL_TEXTURE_2D);
 
     QOpenGLFramebufferObject(const QSize &size, Attachment attachment,
-                         GLenum target = GL_TEXTURE_2D, GLenum internal_format = 0);
+                         GLenum target = GL_TEXTURE_2D, GLenum internalFormat = 0);
     QOpenGLFramebufferObject(int width, int height, Attachment attachment,
-                         GLenum target = GL_TEXTURE_2D, GLenum internal_format = 0);
+                         GLenum target = GL_TEXTURE_2D, GLenum internalFormat = 0);
 
     QOpenGLFramebufferObject(const QSize &size, const QOpenGLFramebufferObjectFormat &format);
     QOpenGLFramebufferObject(int width, int height, const QOpenGLFramebufferObjectFormat &format);
 
     virtual ~QOpenGLFramebufferObject();
+
+    void addColorAttachment(const QSize &size, GLenum internalFormat = 0);
+    void addColorAttachment(int width, int height, GLenum internalFormat = 0);
 
     QOpenGLFramebufferObjectFormat format() const;
 
@@ -83,12 +86,19 @@ public:
     int height() const { return size().height(); }
 
     GLuint texture() const;
+    QVector<GLuint> textures() const;
+
     GLuint takeTexture();
+    GLuint takeTexture(int colorAttachmentIndex);
+
     QSize size() const;
+    QVector<QSize> sizes() const;
+
     QImage toImage() const;
     QImage toImage(bool flipped) const;
-    Attachment attachment() const;
+    QImage toImage(bool flipped, int colorAttachmentIndex) const;
 
+    Attachment attachment() const;
     void setAttachment(Attachment attachment);
 
     GLuint handle() const;
@@ -98,6 +108,12 @@ public:
     static bool hasOpenGLFramebufferObjects();
 
     static bool hasOpenGLFramebufferBlit();
+    static void blitFramebuffer(QOpenGLFramebufferObject *target, const QRect &targetRect,
+                                QOpenGLFramebufferObject *source, const QRect &sourceRect,
+                                GLbitfield buffers,
+                                GLenum filter,
+                                int readColorAttachmentIndex,
+                                int drawColorAttachmentIndex);
     static void blitFramebuffer(QOpenGLFramebufferObject *target, const QRect &targetRect,
                                 QOpenGLFramebufferObject *source, const QRect &sourceRect,
                                 GLbitfield buffers = GL_COLOR_BUFFER_BIT,

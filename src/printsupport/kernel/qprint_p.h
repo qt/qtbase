@@ -245,7 +245,7 @@ public:
     // but where would it live?  Not in base module as don't want to link to CUPS.
     // May have to have two copies in plugins to keep in sync.
 
-    static QPrint::InputSlot ppdChoiceToInputSlot(ppd_choice_t choice)
+    static QPrint::InputSlot ppdChoiceToInputSlot(const ppd_choice_t &choice)
     {
         QPrint::InputSlot input;
         input.key = choice.choice;
@@ -255,7 +255,7 @@ public:
         return input;
     }
 
-    static QPrint::OutputBin ppdChoiceToOutputBin(ppd_choice_t choice)
+    static QPrint::OutputBin ppdChoiceToOutputBin(const ppd_choice_t &choice)
     {
         QPrint::OutputBin output;
         output.key = choice.choice;

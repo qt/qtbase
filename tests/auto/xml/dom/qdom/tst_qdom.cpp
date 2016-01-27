@@ -1043,15 +1043,15 @@ void tst_QDom::browseElements()
     QVERIFY(!bar.isNull());
     QVERIFY(bar.previousSiblingElement("bar").isNull());
     QVERIFY(bar.previousSiblingElement().isNull());
-    QVERIFY(bar.nextSiblingElement("bar").tagName() == "bar");
+    QCOMPARE(bar.nextSiblingElement("bar").tagName(), QLatin1String("bar"));
     QVERIFY(bar.nextSiblingElement("bar").nextSiblingElement("bar").isNull());
 
     QDomElement bop = foo.firstChildElement("bop");
     QVERIFY(!bop.isNull());
-    QVERIFY(bar.nextSiblingElement() == bop);
-    QVERIFY(bop.nextSiblingElement("bop") == foo.lastChildElement("bop"));
-    QVERIFY(bop.previousSiblingElement("bar") == foo.firstChildElement("bar"));
-    QVERIFY(bop.previousSiblingElement("bar") == foo.firstChildElement());
+    QCOMPARE(bar.nextSiblingElement(), bop);
+    QCOMPARE(bop.nextSiblingElement("bop"), foo.lastChildElement("bop"));
+    QCOMPARE(bop.previousSiblingElement("bar"), foo.firstChildElement("bar"));
+    QCOMPARE(bop.previousSiblingElement("bar"), foo.firstChildElement());
 }
 
 void tst_QDom::domNodeMapAndList()

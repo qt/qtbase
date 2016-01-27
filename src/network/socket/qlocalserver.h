@@ -64,7 +64,7 @@ public:
     };
     Q_DECLARE_FLAGS(SocketOptions, SocketOption)
 
-    explicit QLocalServer(QObject *parent = 0);
+    explicit QLocalServer(QObject *parent = Q_NULLPTR);
     ~QLocalServer();
 
     void close();
@@ -80,7 +80,7 @@ public:
     static bool removeServer(const QString &name);
     QAbstractSocket::SocketError serverError() const;
     void setMaxPendingConnections(int numConnections);
-    bool waitForNewConnection(int msec = 0, bool *timedOut = 0);
+    bool waitForNewConnection(int msec = 0, bool *timedOut = Q_NULLPTR);
 
     void setSocketOptions(SocketOptions options);
     SocketOptions socketOptions() const;

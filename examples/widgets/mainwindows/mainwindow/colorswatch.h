@@ -44,47 +44,15 @@ class ColorSwatch : public QDockWidget
 {
     Q_OBJECT
 
-    QAction *closableAction;
-    QAction *movableAction;
-    QAction *floatableAction;
-    QAction *floatingAction;
-    QAction *verticalTitleBarAction;
-
-    QActionGroup *allowedAreasActions;
-    QAction *allowLeftAction;
-    QAction *allowRightAction;
-    QAction *allowTopAction;
-    QAction *allowBottomAction;
-
-    QActionGroup *areaActions;
-    QAction *leftAction;
-    QAction *rightAction;
-    QAction *topAction;
-    QAction *bottomAction;
-
-    QAction *changeSizeHintsAction;
-
-    QMenu *tabMenu;
-    QMenu *splitHMenu;
-    QMenu *splitVMenu;
-
-    QAction *windowModifiedAction;
-
-    QMainWindow *mainWindow;
-
 public:
-    explicit ColorSwatch(const QString &colorName, QMainWindow *parent = 0, Qt::WindowFlags flags = 0);
+    explicit ColorSwatch(const QString &colorName, QMainWindow *parent = Q_NULLPTR, Qt::WindowFlags flags = 0);
 
-    QMenu *menu;
     void setCustomSizeHint(const QSize &size);
+    QMenu *colorSwatchMenu() const { return menu; }
 
 protected:
-    virtual void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
-    virtual void resizeEvent(QResizeEvent *e) Q_DECL_OVERRIDE;
-
-private:
-    void allow(Qt::DockWidgetArea area, bool allow);
-    void place(Qt::DockWidgetArea area, bool place);
+    void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *e) Q_DECL_OVERRIDE;
 
 private slots:
     void changeClosable(bool on);
@@ -106,25 +74,57 @@ private slots:
 
     void splitInto(QAction *action);
     void tabInto(QAction *action);
+
+private:
+    void allow(Qt::DockWidgetArea area, bool allow);
+    void place(Qt::DockWidgetArea area, bool place);
+
+    QAction *closableAction;
+    QAction *movableAction;
+    QAction *floatableAction;
+    QAction *floatingAction;
+    QAction *verticalTitleBarAction;
+
+    QActionGroup *allowedAreasActions;
+    QAction *allowLeftAction;
+    QAction *allowRightAction;
+    QAction *allowTopAction;
+    QAction *allowBottomAction;
+
+    QActionGroup *areaActions;
+    QAction *leftAction;
+    QAction *rightAction;
+    QAction *topAction;
+    QAction *bottomAction;
+
+    QMenu *tabMenu;
+    QMenu *splitHMenu;
+    QMenu *splitVMenu;
+    QMenu *menu;
+
+    QMainWindow *mainWindow;
 };
 
 class BlueTitleBar : public QWidget
 {
     Q_OBJECT
 public:
-    BlueTitleBar(QWidget *parent = 0);
+    explicit BlueTitleBar(QWidget *parent = Q_NULLPTR);
 
     QSize sizeHint() const Q_DECL_OVERRIDE { return minimumSizeHint(); }
     QSize minimumSizeHint() const Q_DECL_OVERRIDE;
+
 protected:
     void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
     void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+
 public slots:
     void updateMask();
 
 private:
-    QPixmap leftPm, centerPm, rightPm;
+    const QPixmap leftPm;
+    const QPixmap centerPm;
+    const QPixmap rightPm;
 };
 
-
-#endif
+#endif // COLORSWATCH_H

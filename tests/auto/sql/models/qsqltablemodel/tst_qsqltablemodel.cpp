@@ -533,7 +533,7 @@ void tst_QSqlTableModel::setData()
     idx = model.index(0, 0);
     QVERIFY_SQL(model, setData(idx, QVariant(QVariant::Int)));
     val = model.data(idx);
-    QVERIFY(val == QVariant(QVariant::Int));
+    QCOMPARE(val, QVariant(QVariant::Int));
     QVERIFY(val.isNull());
     QVERIFY_SQL(model, isDirty(idx));
     QVERIFY_SQL(model, submitAll());
@@ -560,13 +560,13 @@ void tst_QSqlTableModel::setData()
     // initial state
     idx = model.index(0, 0);
     QSqlRecord rec = model.record(0);
-    QVERIFY(rec.value(0) == QVariant(QVariant::Int));
+    QCOMPARE(rec.value(0), QVariant(QVariant::Int));
     QVERIFY(rec.isNull(0));
     QVERIFY(!rec.isGenerated(0));
     // unchanged value, but causes column to be included in INSERT
     QVERIFY_SQL(model, setData(idx, QVariant(QVariant::Int)));
     rec = model.record(0);
-    QVERIFY(rec.value(0) == QVariant(QVariant::Int));
+    QCOMPARE(rec.value(0), QVariant(QVariant::Int));
     QVERIFY(rec.isNull(0));
     QVERIFY(rec.isGenerated(0));
     QVERIFY_SQL(model, submitAll());
@@ -1136,8 +1136,8 @@ void tst_QSqlTableModel::removeRows()
     QVERIFY_SQL(model, removeRows(0, 1));
     QVERIFY_SQL(model, removeRows(1, 1));
     QCOMPARE(beforeDeleteSpy.count(), 2);
-    QVERIFY(beforeDeleteSpy.at(0).at(0).toInt() == 0);
-    QVERIFY(beforeDeleteSpy.at(1).at(0).toInt() == 1);
+    QCOMPARE(beforeDeleteSpy.at(0).at(0).toInt(), 0);
+    QCOMPARE(beforeDeleteSpy.at(1).at(0).toInt(), 1);
     // deleted rows shown as empty until select
     QCOMPARE(model.rowCount(), 3);
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString(""));
@@ -1172,11 +1172,11 @@ void tst_QSqlTableModel::removeRows()
     QCOMPARE(headerDataChangedSpy.at(1).at(1).toInt(), 0);
     QCOMPARE(headerDataChangedSpy.at(1).at(2).toInt(), 0);
     QCOMPARE(model.rowCount(), 3);
-    QVERIFY(beforeDeleteSpy.count() == 0);
+    QCOMPARE(beforeDeleteSpy.count(), 0);
     QVERIFY(model.submitAll());
-    QVERIFY(beforeDeleteSpy.count() == 2);
-    QVERIFY(beforeDeleteSpy.at(0).at(0).toInt() == 0);
-    QVERIFY(beforeDeleteSpy.at(1).at(0).toInt() == 1);
+    QCOMPARE(beforeDeleteSpy.count(), 2);
+    QCOMPARE(beforeDeleteSpy.at(0).at(0).toInt(), 0);
+    QCOMPARE(beforeDeleteSpy.at(1).at(0).toInt(), 1);
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("vohi"));
 }

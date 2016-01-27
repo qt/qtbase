@@ -47,7 +47,7 @@ class Q_CORE_EXPORT QEventLoop : public QObject
     Q_DECLARE_PRIVATE(QEventLoop)
 
 public:
-    explicit QEventLoop(QObject *parent = 0);
+    explicit QEventLoop(QObject *parent = Q_NULLPTR);
     ~QEventLoop();
 
     enum ProcessEventsFlag {

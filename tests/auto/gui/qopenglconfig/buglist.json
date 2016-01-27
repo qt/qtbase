@@ -103,6 +103,28 @@
             ]
         },
         {
+            "id": 7,
+            "description": "driver description test",
+            "driver_description": "Long And Special Driver Description",
+            "os": {
+                "type": "win"
+            },
+            "features": [
+                "feature2"
+            ]
+        },
+        {
+            "id": 8,
+            "description": "Windows version test",
+            "os": {
+                "type": "win",
+                "release": [ "10" ]
+            },
+            "features": [
+                "win10_feature"
+            ]
+        },
+        {
             "id": 128,
             "description": "check for matching GL_VENDOR",
             "gl_vendor": "The Qt Company",

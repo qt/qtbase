@@ -133,7 +133,6 @@ static bool checkReverseDirection(QGraphicsWidget *widget)
     layout->getContentsMargins(&left, &top, &right, &bottom);
     widget->setLayoutDirection(Qt::LeftToRight);
     QApplication::processEvents();
-    const QRectF layoutGeometry = layout->geometry();
     QMap<QGraphicsLayoutItem *, QRectF> geometries;
     for (int i = 0; i < layout->count(); ++i) {
         QGraphicsLayoutItem *item = layout->itemAt(i);
@@ -141,7 +140,7 @@ static bool checkReverseDirection(QGraphicsWidget *widget)
     }
     widget->setLayoutDirection(Qt::RightToLeft);
     QApplication::processEvents();
-    layoutGeometry.adjusted(+right, +top, -left, -bottom);
+    const QRectF layoutGeometry = layout->geometry().adjusted(+right, +top, -left, -bottom);
     for (int i = 0; i < layout->count(); ++i) {
         QGraphicsLayoutItem *item = layout->itemAt(i);
         const QRectF rightToLeftGeometry = item->geometry();
@@ -653,7 +652,7 @@ void tst_QGraphicsAnchorLayout::snake()
     QCOMPARE(c->geometry(), QRectF(90.0, 200.0, 100.0, 100.0));
     QCOMPARE(p.size(), layoutMaximumSize);
 
-    QVERIFY(layoutHasConflict(l) == false);
+    QVERIFY(!layoutHasConflict(l));
 
     // Test QSizePolicy::ExpandFlag, it shouldn't change the extreme
     // points of the layout...
@@ -2041,9 +2040,9 @@ void tst_QGraphicsAnchorLayout::graphicsAnchorHandling()
     QGraphicsAnchor *invalidAnchor = l->anchor(a, Qt::AnchorTop, l, Qt::AnchorBottom);
 
     // Ensure none of these anchors are accessible.
-    QVERIFY(layoutAnchor == 0);
-    QVERIFY(itemAnchor == 0);
-    QVERIFY(invalidAnchor == 0);
+    QVERIFY(!layoutAnchor);
+    QVERIFY(!itemAnchor);
+    QVERIFY(!invalidAnchor);
 
     // Hook the anchors to a QObject
     QObject object;

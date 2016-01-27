@@ -59,8 +59,8 @@ TabDialog::TabDialog(const QString &fileName, QWidget *parent)
 //! [1] //! [3]
                                      | QDialogButtonBox::Cancel);
 
-    connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
-    connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+    connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
+    connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 //! [2] //! [3]
 
 //! [4]

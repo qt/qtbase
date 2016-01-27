@@ -1018,7 +1018,7 @@ QLayoutItem *QDockAreaLayoutInfo::plug(const QList<int> &path)
         index = -index - 1;
 
     if (path.count() > 1) {
-        const QDockAreaLayoutItem &item = item_list.at(index);
+        QDockAreaLayoutItem &item = item_list[index];
         Q_ASSERT(item.subinfo != 0);
         return item.subinfo->plug(path.mid(1));
     }
@@ -1064,7 +1064,7 @@ QLayoutItem *QDockAreaLayoutInfo::unplug(const QList<int> &path)
 
     const int index = path.first();
     if (path.count() > 1) {
-        const QDockAreaLayoutItem &item = item_list.at(index);
+        QDockAreaLayoutItem &item = item_list[index];
         Q_ASSERT(item.subinfo != 0);
         return item.subinfo->unplug(path.mid(1));
     }
@@ -2211,8 +2211,10 @@ QSet<QTabBar*> QDockAreaLayoutInfo::usedTabBars() const
 QSet<QWidget*> QDockAreaLayoutInfo::usedSeparatorWidgets() const
 {
     QSet<QWidget*> result;
+    const int numSeparatorWidgets = separatorWidgets.count();
+    result.reserve(numSeparatorWidgets);
 
-    for (int i = 0; i < separatorWidgets.count(); ++i)
+    for (int i = 0; i < numSeparatorWidgets; ++i)
         result << separatorWidgets.at(i);
 
     for (int i = 0; i < item_list.count(); ++i) {

@@ -46,11 +46,6 @@
 #include "qdebug.h"
 #include "qpalette.h"
 
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
-#include <private/qt_mac_p.h>
-#include <private/qt_cocoa_helpers_mac_p.h>
-#endif
-
 #include "private/qhexstring_p.h"
 #include "private/qguiapplication_p.h"
 #include "qpa/qplatformtheme.h"
@@ -134,7 +129,8 @@ static qreal qt_effective_device_pixel_ratio(QWindow *window = 0)
 QIconPrivate::QIconPrivate()
     : engine(0), ref(1),
     serialNum(serialNumCounter.fetchAndAddRelaxed(1)),
-    detach_no(0)
+    detach_no(0),
+    is_mask(false)
 {
 }
 
@@ -362,7 +358,7 @@ static inline int origIcoDepth(const QImage &image)
     return s.isEmpty() ? 32 : s.toInt();
 }
 
-static inline int findBySize(const QList<QImage> &images, const QSize &size)
+static inline int findBySize(const QVector<QImage> &images, const QSize &size)
 {
     for (int i = 0; i < images.size(); ++i) {
         if (images.at(i).size() == size)
@@ -426,7 +422,7 @@ void QPixmapIconEngine::addFile(const QString &fileName, const QSize &size, QIco
     // these files may contain low-resolution images. As this information is lost,
     // ICOReader sets the original format as an image text key value. Read all matching
     // images into a list trying to find the highest quality per size.
-    QList<QImage> icoImages;
+    QVector<QImage> icoImages;
     while (imageReader.read(&image)) {
         if (ignoreSize || image.size() == size) {
             const int position = findBySize(icoImages, image.size());
@@ -598,6 +594,8 @@ QFactoryLoader *qt_iconEngineFactoryLoader()
   used to draw a different icon.
 
   \image icon.png QIcon
+
+  \note QIcon needs a QGuiApplication instance before the icon is created.
 
   \sa {fowler}{GUI Design Handbook: Iconic Label}, {Icons Example}
 */
@@ -1170,15 +1168,14 @@ QIcon QIcon::fromTheme(const QString &name, const QIcon &fallback)
         icon = *qtIconCache()->object(name);
     } else {
         QPlatformTheme * const platformTheme = QGuiApplicationPrivate::platformTheme();
-        QIconEngine * const engine = platformTheme ? platformTheme->createIconEngine(name)
+        bool hasUserTheme = QIconLoader::instance()->hasUserTheme();
+        QIconEngine * const engine = (platformTheme && !hasUserTheme) ? platformTheme->createIconEngine(name)
                                                    : new QIconLoaderEngine(name);
         QIcon *cachedIcon  = new QIcon(engine);
         icon = *cachedIcon;
         qtIconCache()->insert(name, cachedIcon);
     }
 
-    // Note the qapp check is to allow lazy loading of static icons
-    // Supporting fallbacks will not work for this case.
     if (qApp && icon.availableSizes().isEmpty())
         return fallback;
 
@@ -1200,6 +1197,31 @@ bool QIcon::hasThemeIcon(const QString &name)
     return icon.name() == name;
 }
 
+/*!
+    \since 5.6
+
+    Indicate that this icon is a mask image, and hence can potentially
+    be modified based on where it's displayed.
+    \sa isMask()
+*/
+void QIcon::setIsMask(bool isMask)
+{
+    d->is_mask = isMask;
+}
+
+/*!
+    \since 5.6
+
+    Returns \c true if this icon has been marked as a mask image.
+    Certain platforms render mask icons differently (for example,
+    menu icons on OS X).
+
+    \sa setIsMask()
+*/
+bool QIcon::isMask() const
+{
+    return d->is_mask;
+}
 
 /*****************************************************************************
   QIcon stream functions

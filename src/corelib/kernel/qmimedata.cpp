@@ -354,7 +354,9 @@ void QMimeData::setUrls(const QList<QUrl> &urls)
 {
     Q_D(QMimeData);
     QList<QVariant> list;
-    for (int i = 0; i < urls.size(); ++i)
+    const int numUrls = urls.size();
+    list.reserve(numUrls);
+    for (int i = 0; i < numUrls; ++i)
         list.append(urls.at(i));
 
     d->setData(QLatin1String("text/uri-list"), list);

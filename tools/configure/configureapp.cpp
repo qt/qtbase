@@ -169,7 +169,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "WMSDK" ]           = "auto";
     dictionary[ "QML_DEBUG" ]       = "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "no";
-    dictionary[ "DIRECTWRITE" ]     = "no";
+    dictionary[ "DIRECTWRITE" ]     = "auto";
     dictionary[ "DIRECT2D" ]        = "no";
     dictionary[ "NIS" ]             = "no";
     dictionary[ "NEON" ]            = "auto";
@@ -2010,8 +2010,8 @@ bool Configure::displayHelp()
         desc("WMF_BACKEND", "yes","-wmf-backend",       "Compile in the windows media foundation backend into Qt Multimedia.\n");
         desc("QML_DEBUG", "no",    "-no-qml-debug",     "Do not build the in-process QML debugging support.");
         desc("QML_DEBUG", "yes",   "-qml-debug",        "Build the in-process QML debugging support.\n");
-        desc("DIRECTWRITE", "no", "-no-directwrite", "Do not build support for DirectWrite font rendering.");
-        desc("DIRECTWRITE", "yes", "-directwrite", "Build support for DirectWrite font rendering (requires DirectWrite availability on target systems, e.g. Windows Vista with Platform Update, Windows 7, etc.)\n");
+        desc("DIRECTWRITE", "no", "-no-directwrite",    "Do not build support for DirectWrite font rendering.");
+        desc("DIRECTWRITE", "yes", "-directwrite",      "Build support for DirectWrite font rendering.\n");
 
         desc("DIRECT2D", "no",  "-no-direct2d",         "Do not build the Direct2D platform plugin.");
         desc("DIRECT2D", "yes", "-direct2d",            "Build the Direct2D platform plugin (experimental,\n"
@@ -2291,7 +2291,7 @@ bool Configure::checkAvailability(const QString &part)
     } else if (part == "WMF_BACKEND") {
         available = findFile("mfapi.h") && findFile("mf.lib");
     } else if (part == "DIRECTWRITE") {
-        available = findFile("dwrite.h") && findFile("d2d1.h") && findFile("dwrite.lib");
+        available = tryCompileProject("win/directwrite");
     } else if (part == "DIRECT2D") {
         available = tryCompileProject("qpa/direct2d");
     } else if (part == "ICONV") {
@@ -2509,6 +2509,9 @@ void Configure::autoDetection()
 
     if (dictionary["FONT_CONFIG"] == "auto")
         dictionary["FONT_CONFIG"] = checkAvailability("FONT_CONFIG") ? "yes" : "no";
+
+    if (dictionary["DIRECTWRITE"] == "auto")
+        dictionary["DIRECTWRITE"] = checkAvailability("DIRECTWRITE") ? "yes" : "no";
 
     // Mark all unknown "auto" to the default value..
     for (QMap<QString,QString>::iterator i = dictionary.begin(); i != dictionary.end(); ++i) {
@@ -2906,6 +2909,9 @@ void Configure::generateOutputVars()
     // ### Vestige
     if (dictionary["AUDIO_BACKEND"] == "yes")
         qtConfig += "audio-backend";
+
+    if (dictionary["QML_DEBUG"] == "no")
+        qtConfig += "no-qml-debug";
 
     if (dictionary["WMF_BACKEND"] == "yes")
         qtConfig += "wmf-backend";
@@ -3621,7 +3627,6 @@ void Configure::generateConfigfiles()
         if (dictionary["OPENSSL"] == "no")           qconfigList += "QT_NO_OPENSSL";
         if (dictionary["OPENSSL"] == "linked")       qconfigList += "QT_LINKED_OPENSSL";
         if (dictionary["DBUS"] == "no")              qconfigList += "QT_NO_DBUS";
-        if (dictionary["QML_DEBUG"] == "no")         qconfigList += "QT_NO_QML_DEBUGGER";
         if (dictionary["FREETYPE"] == "no")          qconfigList += "QT_NO_FREETYPE";
         if (dictionary["HARFBUZZ"] == "no")          qconfigList += "QT_NO_HARFBUZZ";
         if (dictionary["NATIVE_GESTURES"] == "no")   qconfigList += "QT_NO_NATIVE_GESTURES";

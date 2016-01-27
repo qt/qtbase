@@ -48,7 +48,7 @@ class Q_WIDGETS_EXPORT QErrorMessage: public QDialog
     Q_OBJECT
     Q_DECLARE_PRIVATE(QErrorMessage)
 public:
-    explicit QErrorMessage(QWidget* parent = 0);
+    explicit QErrorMessage(QWidget* parent = Q_NULLPTR);
     ~QErrorMessage();
 
     static QErrorMessage * qtHandler();

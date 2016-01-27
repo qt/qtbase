@@ -125,9 +125,9 @@ public:
 
     Q_DECLARE_FLAGS(StandardButtons, StandardButton)
 
-    explicit QMessageBox(QWidget *parent = 0);
+    explicit QMessageBox(QWidget *parent = Q_NULLPTR);
     QMessageBox(Icon icon, const QString &title, const QString &text,
-                StandardButtons buttons = NoButton, QWidget *parent = 0,
+                StandardButtons buttons = NoButton, QWidget *parent = Q_NULLPTR,
                 Qt::WindowFlags flags = Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
     ~QMessageBox();
 
@@ -198,7 +198,7 @@ public:
 
     QMessageBox(const QString &title, const QString &text, Icon icon,
                   int button0, int button1, int button2,
-                  QWidget *parent = 0,
+                  QWidget *parent = Q_NULLPTR,
                   Qt::WindowFlags f = Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
 
     static int information(QWidget *parent, const QString &title,

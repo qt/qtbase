@@ -154,7 +154,7 @@ macx {
         widgets/qmaccocoaviewcontainer_mac.mm
 }
 
-wince*: {
+wince {
     SOURCES += widgets/qmenu_wince.cpp
     HEADERS += widgets/qmenu_wince_resource_p.h
     RC_FILE = widgets/qmenu_wince.rc

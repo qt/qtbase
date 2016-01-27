@@ -101,6 +101,8 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
         // Use our own DSA emulation
         TextureParameteri = &QOpenGLTextureHelper::qt_TextureParameteri;
         TextureParameteriv = &QOpenGLTextureHelper::qt_TextureParameteriv;
+        TextureParameterf = &QOpenGLTextureHelper::qt_TextureParameterf;
+        TextureParameterfv = &QOpenGLTextureHelper::qt_TextureParameterfv;
         GenerateTextureMipmap = &QOpenGLTextureHelper::qt_GenerateTextureMipmap;
         TextureStorage3D = &QOpenGLTextureHelper::qt_TextureStorage3D;
         TextureStorage2D = &QOpenGLTextureHelper::qt_TextureStorage2D;

@@ -49,6 +49,8 @@ int main(int argc, char *argv[])
     Q_INIT_RESOURCE(mdi);
 
     QApplication app(argc, argv);
+    QCoreApplication::setApplicationName("MDI Example");
+    QCoreApplication::setOrganizationName("QtProject");
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);
     QCommandLineParser parser;
     parser.setApplicationDescription("Qt MDI Example");

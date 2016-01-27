@@ -127,6 +127,7 @@ public:
     int num;
     int maxNum;
 };
+Q_DECLARE_TYPEINFO(QSettingsGroup, Q_MOVABLE_TYPE);
 
 inline QString QSettingsGroup::toString() const
 {
@@ -211,7 +212,7 @@ public:
                                         const QString &organization, const QString &application);
     static QSettingsPrivate *create(const QString &fileName, QSettings::Format format);
 
-    static void processChild(QString key, ChildSpec spec, QMap<QString, QString> &result);
+    static void processChild(QStringRef key, ChildSpec spec, QStringList &result);
 
     // Variant streaming functions
     static QStringList variantListToStringList(const QVariantList &l);

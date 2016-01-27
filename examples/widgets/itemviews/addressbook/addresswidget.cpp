@@ -49,8 +49,8 @@ AddressWidget::AddressWidget(QWidget *parent)
 {
     table = new TableModel(this);
     newAddressTab = new NewAddressTab(this);
-    connect(newAddressTab, SIGNAL(sendDetails(QString, QString)),
-        this, SLOT(addEntry(QString, QString)));
+    connect(newAddressTab, &NewAddressTab::sendDetails,
+        this, &AddressWidget::addEntry);
 
     addTab(newAddressTab, "Address Book");
 
@@ -59,7 +59,7 @@ AddressWidget::AddressWidget(QWidget *parent)
 //! [0]
 
 //! [2]
-void AddressWidget::addEntry()
+void AddressWidget::showAddEntryDialog()
 {
     AddDialog aDialog;
 
@@ -182,8 +182,8 @@ void AddressWidget::setupTabs()
         tableView->setSortingEnabled(true);
 
         connect(tableView->selectionModel(),
-            SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
-            this, SIGNAL(selectionChanged(QItemSelection)));
+            &QItemSelectionModel::selectionChanged,
+            this, &AddressWidget::selectionChanged);
 
         addTab(tableView, str);
     }

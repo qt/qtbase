@@ -154,6 +154,7 @@ void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLCont
         }
     }
     contextAttrs.append(EGL_NONE);
+    m_contextAttrs = contextAttrs;
 
     switch (m_format.renderableType()) {
     case QSurfaceFormat::OpenVG:
@@ -243,6 +244,8 @@ void QEGLPlatformContext::initialize()
     updateFormatFromGL();
 }
 
+// Base implementation for pbuffers. Subclasses will handle the specialized cases for
+// platforms without pbuffers.
 EGLSurface QEGLPlatformContext::createTemporaryOffscreenSurface()
 {
     // Make the context current to ensure the GL version query works. This needs a surface too.
@@ -282,10 +285,18 @@ void QEGLPlatformContext::updateFormatFromGL()
     // avoid creating an extra pbuffer surface which is apparently troublesome with some
     // drivers (Mesa) when certain attributes are present (multisampling).
     EGLSurface tempSurface = EGL_NO_SURFACE;
+    EGLContext tempContext = EGL_NO_CONTEXT;
     if (!q_hasEglExtension(m_eglDisplay, "EGL_KHR_surfaceless_context"))
         tempSurface = createTemporaryOffscreenSurface();
 
-    if (eglMakeCurrent(m_eglDisplay, tempSurface, tempSurface, m_eglContext)) {
+    EGLBoolean ok = eglMakeCurrent(m_eglDisplay, tempSurface, tempSurface, m_eglContext);
+    if (!ok) {
+        EGLConfig config = q_configFromGLFormat(m_eglDisplay, m_format, false, EGL_PBUFFER_BIT);
+        tempContext = eglCreateContext(m_eglDisplay, config, 0, m_contextAttrs.constData());
+        if (tempContext != EGL_NO_CONTEXT)
+            ok = eglMakeCurrent(m_eglDisplay, tempSurface, tempSurface, tempContext);
+    }
+    if (ok) {
         if (m_format.renderableType() == QSurfaceFormat::OpenGL
             || m_format.renderableType() == QSurfaceFormat::OpenGLES) {
             const GLubyte *s = glGetString(GL_VERSION);
@@ -323,10 +334,12 @@ void QEGLPlatformContext::updateFormatFromGL()
         }
         eglMakeCurrent(prevDisplay, prevSurfaceDraw, prevSurfaceRead, prevContext);
     } else {
-        qWarning("QEGLPlatformContext: Failed to make temporary surface current, format not updated");
+        qWarning("QEGLPlatformContext: Failed to make temporary surface current, format not updated (%x)", eglGetError());
     }
     if (tempSurface != EGL_NO_SURFACE)
         destroyTemporaryOffscreenSurface(tempSurface);
+    if (tempContext != EGL_NO_CONTEXT)
+        eglDestroyContext(m_eglDisplay, tempContext);
 #endif // QT_NO_OPENGL
 }
 

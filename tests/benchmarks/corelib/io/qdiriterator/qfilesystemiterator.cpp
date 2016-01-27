@@ -99,6 +99,8 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QDirIteratorTest {
+
 class QFileSystemIteratorPrivate
 {
 public:
@@ -670,5 +672,7 @@ QString QFileSystemIterator::path() const
 {
     return QString::fromLocal8Bit(d->m_dirPaths.top());
 }
+
+} // QDirIteratorTest::
 
 QT_END_NAMESPACE

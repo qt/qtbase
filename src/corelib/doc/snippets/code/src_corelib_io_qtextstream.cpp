@@ -51,7 +51,7 @@ if (data.open(QFile::WriteOnly | QFile::Truncate)) {
 //! [1]
 QTextStream stream(stdin);
 QString line;
-while (stream.readLine(&line)) {
+while (stream.readLineInto(&line)) {
     ...
 }
 //! [1]

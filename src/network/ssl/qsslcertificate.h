@@ -83,9 +83,12 @@ public:
     explicit QSslCertificate(const QByteArray &data = QByteArray(), QSsl::EncodingFormat format = QSsl::Pem);
     QSslCertificate(const QSslCertificate &other);
     ~QSslCertificate();
+#ifdef Q_COMPILER_RVALUE_REFS
+    QSslCertificate &operator=(QSslCertificate &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
     QSslCertificate &operator=(const QSslCertificate &other);
 
-    inline void swap(QSslCertificate &other)
+    void swap(QSslCertificate &other) Q_DECL_NOTHROW
     { qSwap(d, other.d); }
 
     bool operator==(const QSslCertificate &other) const;
@@ -144,7 +147,7 @@ public:
 
     static bool importPkcs12(QIODevice *device,
                              QSslKey *key, QSslCertificate *cert,
-                             QList<QSslCertificate> *caCertificates=0,
+                             QList<QSslCertificate> *caCertificates = Q_NULLPTR,
                              const QByteArray &passPhrase=QByteArray());
 
     Qt::HANDLE handle() const;

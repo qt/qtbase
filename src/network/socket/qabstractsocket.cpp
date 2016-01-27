@@ -420,7 +420,7 @@
     allowed to rebind, even if they pass ReuseAddressHint. This option
     provides more security than ShareAddress, but on certain operating
     systems, it requires you to run the server with administrator privileges.
-    On Unix and Mac OS X, not sharing is the default behavior for binding
+    On Unix and OS X, not sharing is the default behavior for binding
     an address and port, so this option is ignored. On Windows, this
     option uses the SO_EXCLUSIVEADDRUSE socket option.
 
@@ -430,7 +430,7 @@
     socket option. On Unix, this option is ignored.
 
     \value DefaultForPlatform The default option for the current platform.
-    On Unix and Mac OS X, this is equivalent to (DontShareAddress
+    On Unix and OS X, this is equivalent to (DontShareAddress
     + ReuseAddressHint), and on Windows, its equivalent to ShareAddress.
 */
 

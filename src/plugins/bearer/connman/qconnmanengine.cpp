@@ -46,7 +46,6 @@
 #include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusMessage>
 #include <QtDBus/QDBusReply>
-#ifndef QT_NO_BEARERMANAGEMENT
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
@@ -122,8 +121,10 @@ QList<QNetworkConfigurationPrivate *> QConnmanEngine::getConfigurations()
     QMutexLocker locker(&mutex);
     QList<QNetworkConfigurationPrivate *> fetchedConfigurations;
     QNetworkConfigurationPrivate* cpPriv = 0;
+    const int numFoundConfigurations = foundConfigurations.count();
+    fetchedConfigurations.reserve(numFoundConfigurations);
 
-    for (int i = 0; i < foundConfigurations.count(); ++i) {
+    for (int i = 0; i < numFoundConfigurations; ++i) {
         QNetworkConfigurationPrivate *config = new QNetworkConfigurationPrivate;
         cpPriv = foundConfigurations.at(i);
 
@@ -556,4 +557,3 @@ void QConnmanEngine::reEvaluateCellular()
 QT_END_NAMESPACE
 
 #endif // QT_NO_DBUS
-#endif // QT_NO_BEARERMANAGEMENT

@@ -149,12 +149,6 @@ bool PureDocParser::processQdocComments()
                     isJsPropertyTopic = true;
                 }
             }
-            if ((isQmlPropertyTopic || isJsPropertyTopic) && topics.size() > 1) {
-                qDebug() << "MULTIPLE TOPICS:" << doc.location().fileName() << doc.location().lineNo();
-                for (int i=0; i<topics.size(); ++i) {
-                    qDebug() << "  " << topics[i].topic << topics[i].args;
-                }
-            }
 
             NodeList nodes;
             DocList docs;

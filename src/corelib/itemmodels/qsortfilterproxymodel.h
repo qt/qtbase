@@ -63,7 +63,7 @@ class Q_CORE_EXPORT QSortFilterProxyModel : public QAbstractProxyModel
     Q_PROPERTY(int filterRole READ filterRole WRITE setFilterRole)
 
 public:
-    explicit QSortFilterProxyModel(QObject *parent = 0);
+    explicit QSortFilterProxyModel(QObject *parent = Q_NULLPTR);
     ~QSortFilterProxyModel();
 
     void setSourceModel(QAbstractItemModel *sourceModel) Q_DECL_OVERRIDE;

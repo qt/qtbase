@@ -48,12 +48,28 @@ class Q_CORE_EXPORT QItemSelectionRange
 {
 
 public:
-    inline QItemSelectionRange() {}
+    inline QItemSelectionRange() : tl(), br() {}
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    // ### Qt 6: remove them all, the compiler-generated ones are fine
     inline QItemSelectionRange(const QItemSelectionRange &other)
         : tl(other.tl), br(other.br) {}
-    inline QItemSelectionRange(const QModelIndex &topLeft, const QModelIndex &bottomRight);
-    explicit inline QItemSelectionRange(const QModelIndex &index)
-        { tl = index; br = tl; }
+# ifdef Q_COMPILER_RVALUE_REFS
+    QItemSelectionRange(QItemSelectionRange &&other) Q_DECL_NOTHROW
+        : tl(std::move(other.tl)), br(std::move(other.br)) {}
+    QItemSelectionRange &operator=(QItemSelectionRange &&other) Q_DECL_NOTHROW
+    { tl = std::move(other.tl); br = std::move(other.br); return *this; }
+# endif
+    QItemSelectionRange &operator=(const QItemSelectionRange &other)
+    { tl = other.tl; br = other.br; return *this; }
+#endif // Qt < 6
+    QItemSelectionRange(const QModelIndex &topL, const QModelIndex &bottomR) : tl(topL), br(bottomR) {}
+    explicit QItemSelectionRange(const QModelIndex &index) : tl(index), br(tl) {}
+
+    void swap(QItemSelectionRange &other) Q_DECL_NOTHROW
+    {
+        qSwap(tl, other.tl);
+        qSwap(br, other.br);
+    }
 
     inline int top() const { return tl.row(); }
     inline int left() const { return tl.column(); }
@@ -133,10 +149,6 @@ private:
 };
 Q_DECLARE_TYPEINFO(QItemSelectionRange, Q_MOVABLE_TYPE);
 
-inline QItemSelectionRange::QItemSelectionRange(const QModelIndex &atopLeft,
-                                                const QModelIndex &abottomRight)
-{ tl = atopLeft; br = abottomRight; }
-
 class QItemSelection;
 class QItemSelectionModelPrivate;
 
@@ -170,7 +182,7 @@ public:
     Q_DECLARE_FLAGS(SelectionFlags, SelectionFlag)
     Q_FLAG(SelectionFlags)
 
-    explicit QItemSelectionModel(QAbstractItemModel *model = 0);
+    explicit QItemSelectionModel(QAbstractItemModel *model = Q_NULLPTR);
     explicit QItemSelectionModel(QAbstractItemModel *model, QObject *parent);
     virtual ~QItemSelectionModel();
 
@@ -235,8 +247,11 @@ inline uint qHash(const QItemSelectionRange &) { return 0; }
 class Q_CORE_EXPORT QItemSelection : public QList<QItemSelectionRange>
 {
 public:
-    QItemSelection() {}
+    QItemSelection() Q_DECL_NOTHROW : QList<QItemSelectionRange>() {}
     QItemSelection(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+
+    // reusing QList::swap() here is OK!
+
     void select(const QModelIndex &topLeft, const QModelIndex &bottomRight);
     bool contains(const QModelIndex &index) const;
     QModelIndexList indexes() const;
@@ -245,6 +260,7 @@ public:
                       const QItemSelectionRange &other,
                       QItemSelection *result);
 };
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QItemSelection)
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QItemSelectionRange &);

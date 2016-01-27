@@ -874,7 +874,7 @@
     The following table lists the HTML tags supported by Qt's
     \l{Rich Text Processing}{rich text} engine:
 
-    \table
+    \table 70%
     \header \li Tag
             \li Description
             \li Comment

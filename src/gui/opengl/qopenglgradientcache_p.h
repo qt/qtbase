@@ -59,7 +59,7 @@ class QOpenGL2GradientCache : public QOpenGLSharedResource
     struct CacheInfo
     {
         inline CacheInfo(QGradientStops s, qreal op, QGradient::InterpolationMode mode) :
-            stops(s), opacity(op), interpolationMode(mode) {}
+            stops(qMove(s)), opacity(op), interpolationMode(mode) {}
 
         GLuint texId;
         QGradientStops stops;
@@ -85,6 +85,9 @@ private:
     inline int maxCacheSize() const { return 60; }
     inline void generateGradientColorTable(const QGradient& gradient,
                                            QRgba64 *colorTable,
+                                           int size, qreal opacity) const;
+    inline void generateGradientColorTable(const QGradient& gradient,
+                                           uint *colorTable,
                                            int size, qreal opacity) const;
     GLuint addCacheElement(quint64 hash_val, const QGradient &gradient, qreal opacity);
     void cleanCache();

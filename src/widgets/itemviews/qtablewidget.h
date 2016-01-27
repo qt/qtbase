@@ -214,8 +214,8 @@ class Q_WIDGETS_EXPORT QTableWidget : public QTableView
 
     friend class QTableModel;
 public:
-    explicit QTableWidget(QWidget *parent = 0);
-    QTableWidget(int rows, int columns, QWidget *parent = 0);
+    explicit QTableWidget(QWidget *parent = Q_NULLPTR);
+    QTableWidget(int rows, int columns, QWidget *parent = Q_NULLPTR);
     ~QTableWidget();
 
     void setRowCount(int rows);
@@ -344,7 +344,7 @@ private:
 };
 
 inline void QTableWidget::removeCellWidget(int arow, int acolumn)
-{ setCellWidget(arow, acolumn, 0); }
+{ setCellWidget(arow, acolumn, Q_NULLPTR); }
 
 inline QTableWidgetItem *QTableWidget::itemAt(int ax, int ay) const
 { return itemAt(QPoint(ax, ay)); }

@@ -1184,14 +1184,25 @@ static int match(int script, const QFontDef &request,
 static QString styleStringHelper(int weight, QFont::Style style)
 {
     QString result;
-    if (weight >= QFont::Black)
-        result = QCoreApplication::translate("QFontDatabase", "Black");
-    else if (weight >= QFont::Bold)
-        result = QCoreApplication::translate("QFontDatabase", "Bold");
-    else if (weight >= QFont::DemiBold)
-        result = QCoreApplication::translate("QFontDatabase", "Demi Bold");
-    else if (weight < QFont::Normal)
-        result = QCoreApplication::translate("QFontDatabase", "Light");
+    if (weight > QFont::Normal) {
+        if (weight >= QFont::Black)
+            result = QCoreApplication::translate("QFontDatabase", "Black");
+        else if (weight >= QFont::ExtraBold)
+            result = QCoreApplication::translate("QFontDatabase", "Extra Bold");
+        else if (weight >= QFont::Bold)
+            result = QCoreApplication::translate("QFontDatabase", "Bold");
+        else if (weight >= QFont::DemiBold)
+            result = QCoreApplication::translate("QFontDatabase", "Demi Bold");
+        else if (weight >= QFont::Medium)
+            result = QCoreApplication::translate("QFontDatabase", "Medium", "The Medium font weight");
+    } else {
+        if (weight <= QFont::Thin)
+            result = QCoreApplication::translate("QFontDatabase", "Thin");
+        else if (weight <= QFont::ExtraLight)
+            result = QCoreApplication::translate("QFontDatabase", "Extra Light");
+        else if (weight <= QFont::Light)
+            result = QCoreApplication::translate("QFontDatabase", "Light");
+    }
 
     if (style == QFont::StyleItalic)
         result += QLatin1Char(' ') + QCoreApplication::translate("QFontDatabase", "Italic");
@@ -1199,7 +1210,7 @@ static QString styleStringHelper(int weight, QFont::Style style)
         result += QLatin1Char(' ') + QCoreApplication::translate("QFontDatabase", "Oblique");
 
     if (result.isEmpty())
-        result = QCoreApplication::translate("QFontDatabase", "Normal");
+        result = QCoreApplication::translate("QFontDatabase", "Normal", "The Normal or Regular font weight");
 
     return result.simplified();
 }
@@ -1358,22 +1369,30 @@ QList<QFontDatabase::WritingSystem> QFontDatabase::writingSystems() const
 
     QT_PREPEND_NAMESPACE(load)();
 
-    QList<WritingSystem> list;
+    quint64 writingSystemsFound = 0;
+    Q_STATIC_ASSERT(WritingSystemsCount < 64);
+
     for (int i = 0; i < d->count; ++i) {
         QtFontFamily *family = d->families[i];
         family->ensurePopulated();
 
         if (family->count == 0)
             continue;
-        for (int x = Latin; x < WritingSystemsCount; ++x) {
-            const WritingSystem writingSystem = WritingSystem(x);
-            if (!(family->writingSystems[writingSystem] & QtFontFamily::Supported))
-                continue;
-            if (!list.contains(writingSystem))
-                list.append(writingSystem);
+        for (uint x = Latin; x < uint(WritingSystemsCount); ++x) {
+            if (family->writingSystems[x] & QtFontFamily::Supported)
+                writingSystemsFound |= quint64(1) << x;
         }
     }
-    std::sort(list.begin(), list.end());
+
+    // mutex protection no longer needed - just working on local data now:
+    locker.unlock();
+
+    QList<WritingSystem> list;
+    list.reserve(qPopulationCount(writingSystemsFound));
+    for (uint x = Latin ; x < uint(WritingSystemsCount); ++x) {
+        if (writingSystemsFound & (quint64(1) << x))
+            list.push_back(WritingSystem(x));
+    }
     return list;
 }
 

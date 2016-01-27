@@ -57,26 +57,27 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle(tr("Puzzle"));
 }
 
-void MainWindow::openImage(const QString &path)
+void MainWindow::openImage()
 {
-    QString fileName = path;
+    const QString fileName =
+        QFileDialog::getOpenFileName(this,
+                                     tr("Open Image"), QString(),
+                                     tr("Image Files (*.png *.jpg *.bmp)"));
+    if (!fileName.isEmpty())
+        loadImage(fileName);
+}
 
-    if (fileName.isNull()) {
-        fileName = QFileDialog::getOpenFileName(this,
-            tr("Open Image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
+void MainWindow::loadImage(const QString &fileName)
+{
+    QPixmap newImage;
+    if (!newImage.load(fileName)) {
+        QMessageBox::warning(this, tr("Open Image"),
+                             tr("The image file could not be loaded."),
+                             QMessageBox::Cancel);
+        return;
     }
-
-    if (!fileName.isEmpty()) {
-        QPixmap newImage;
-        if (!newImage.load(fileName)) {
-            QMessageBox::warning(this, tr("Open Image"),
-                                 tr("The image file could not be loaded."),
-                                 QMessageBox::Cancel);
-            return;
-        }
-        puzzleImage = newImage;
-        setupPuzzle();
-    }
+    puzzleImage = newImage;
+    setupPuzzle();
 }
 
 void MainWindow::setCompleted()
@@ -116,9 +117,9 @@ void MainWindow::setupMenus()
 
     QAction *restartAction = gameMenu->addAction(tr("&Restart"));
 
-    connect(openAction, SIGNAL(triggered()), this, SLOT(openImage()));
-    connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    connect(restartAction, SIGNAL(triggered()), this, SLOT(setupPuzzle()));
+    connect(openAction, &QAction::triggered, this, &MainWindow::openImage);
+    connect(exitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
+    connect(restartAction, &QAction::triggered, this, &MainWindow::setupPuzzle);
 }
 
 void MainWindow::setupWidgets()
@@ -141,8 +142,8 @@ void MainWindow::setupWidgets()
     PiecesModel *model = new PiecesModel(puzzleWidget->pieceSize(), this);
     piecesList->setModel(model);
 
-    connect(puzzleWidget, SIGNAL(puzzleCompleted()),
-            this, SLOT(setCompleted()), Qt::QueuedConnection);
+    connect(puzzleWidget, &PuzzleWidget::puzzleCompleted,
+            this, &MainWindow::setCompleted, Qt::QueuedConnection);
 
     frameLayout->addWidget(piecesList);
     frameLayout->addWidget(puzzleWidget);

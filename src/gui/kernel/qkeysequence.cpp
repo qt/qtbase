@@ -194,7 +194,7 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
 
     QKeySequence objects can be cast to a QString to obtain a human-readable
     translated version of the sequence. Similarly, the toString() function
-    produces human-readable strings for use in menus. On Mac OS X, the
+    produces human-readable strings for use in menus. On OS X, the
     appropriate symbols are used to describe keyboard shortcuts using special
     keys on the Macintosh keyboard.
 
@@ -202,12 +202,12 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     code point of the character; for example, 'A' gives the same key sequence
     as Qt::Key_A.
 
-    \b{Note:} On Mac OS X, references to "Ctrl", Qt::CTRL, Qt::Control
+    \b{Note:} On OS X, references to "Ctrl", Qt::CTRL, Qt::Control
     and Qt::ControlModifier correspond to the \uicontrol Command keys on the
     Macintosh keyboard, and references to "Meta", Qt::META, Qt::Meta and
     Qt::MetaModifier correspond to the \uicontrol Control keys. Developers on
-    Mac OS X can use the same shortcut descriptions across all platforms,
-    and their applications will automatically work as expected on Mac OS X.
+    OS X can use the same shortcut descriptions across all platforms,
+    and their applications will automatically work as expected on OS X.
 
     \section1 Standard Shortcuts
 
@@ -216,12 +216,12 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     setting up actions in a typical application. The table below shows
     some common key sequences that are often used for these standard
     shortcuts by applications on four widely-used platforms.  Note
-    that on Mac OS X, the \uicontrol Ctrl value corresponds to the \uicontrol
+    that on OS X, the \uicontrol Ctrl value corresponds to the \uicontrol
     Command keys on the Macintosh keyboard, and the \uicontrol Meta value
     corresponds to the \uicontrol Control keys.
 
     \table
-    \header \li StandardKey      \li Windows                              \li Mac OS X                 \li KDE          \li GNOME
+    \header \li StandardKey      \li Windows                              \li OS X                 \li KDE          \li GNOME
     \row    \li HelpContents     \li F1                                   \li Ctrl+?                   \li F1           \li F1
     \row    \li WhatsThis        \li Shift+F1                             \li Shift+F1                 \li Shift+F1     \li Shift+F1
     \row    \li Open             \li Ctrl+O                               \li Ctrl+O                   \li Ctrl+O       \li Ctrl+O
@@ -819,6 +819,7 @@ QKeySequence::QKeySequence(const QString &key, QKeySequence::SequenceFormat form
     assign(key, format);
 }
 
+Q_STATIC_ASSERT_X(QKeySequencePrivate::MaxKeyCount == 4, "Change docs and ctor impl below");
 /*!
     Constructs a key sequence with up to 4 keys \a k1, \a k2,
     \a k3 and \a k4.
@@ -877,26 +878,19 @@ QKeySequence::~QKeySequence()
 
 void QKeySequence::setKey(int key, int index)
 {
-    Q_ASSERT_X(index >= 0 && index < 4, "QKeySequence::setKey", "index out of range");
+    Q_ASSERT_X(index >= 0 && index < QKeySequencePrivate::MaxKeyCount, "QKeySequence::setKey", "index out of range");
     qAtomicDetach(d);
     d->key[index] = key;
 }
 
+Q_STATIC_ASSERT_X(QKeySequencePrivate::MaxKeyCount == 4, "Change docs below");
 /*!
     Returns the number of keys in the key sequence.
     The maximum is 4.
  */
 int QKeySequence::count() const
 {
-    if (!d->key[0])
-        return 0;
-    if (!d->key[1])
-        return 1;
-    if (!d->key[2])
-        return 2;
-    if (!d->key[3])
-        return 3;
-    return 4;
+    return int(std::distance(d->key, std::find(d->key, d->key + QKeySequencePrivate::MaxKeyCount, 0)));
 }
 
 
@@ -988,8 +982,8 @@ int QKeySequence::assign(const QString &ks, QKeySequence::SequenceFormat format)
     int p = 0, diff = 0;
 
     // Run through the whole string, but stop
-    // if we have 4 keys before the end.
-    while (keyseq.length() && n < 4) {
+    // if we have MaxKeyCount keys before the end.
+    while (keyseq.length() && n < QKeySequencePrivate::MaxKeyCount) {
         // We MUST use something to separate each sequence, and space
         // does not cut it, since some of the key names have space
         // in them.. (Let's hope no one translate with a comma in it:)
@@ -1023,9 +1017,10 @@ struct QModifKeyName {
     int qt_key;
     QString name;
 };
+Q_DECLARE_TYPEINFO(QModifKeyName, Q_MOVABLE_TYPE);
 
-Q_GLOBAL_STATIC(QList<QModifKeyName>, globalModifs)
-Q_GLOBAL_STATIC(QList<QModifKeyName>, globalPortableModifs)
+Q_GLOBAL_STATIC(QVector<QModifKeyName>, globalModifs)
+Q_GLOBAL_STATIC(QVector<QModifKeyName>, globalPortableModifs)
 
 /*!
   Constructs a single key from the string \a str.
@@ -1041,7 +1036,7 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
     QString accel = str.toLower();
     bool nativeText = (format == QKeySequence::NativeText);
 
-    QList<QModifKeyName> *gmodifs;
+    QVector<QModifKeyName> *gmodifs;
     if (nativeText) {
         gmodifs = globalModifs();
         if (gmodifs->isEmpty()) {
@@ -1077,7 +1072,7 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
     if (!gmodifs) return ret;
 
 
-    QList<QModifKeyName> modifs;
+    QVector<QModifKeyName> modifs;
     if (nativeText) {
         modifs << QModifKeyName(Qt::CTRL, QCoreApplication::translate("QShortcut", "Ctrl").toLower().append(QLatin1Char('+')))
                << QModifKeyName(Qt::SHIFT, QCoreApplication::translate("QShortcut", "Shift").toLower().append(QLatin1Char('+')))
@@ -1101,7 +1096,7 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
     int i = 0;
     int lastI = 0;
     while ((i = sl.indexOf(QLatin1Char('+'), i + 1)) != -1) {
-        const QString sub = sl.mid(lastI, i - lastI + 1);
+        const QStringRef sub = sl.midRef(lastI, i - lastI + 1);
         // If we get here the shortcuts contains at least one '+'. We break up
         // along the following strategy:
         //      Meta+Ctrl++   ( "Meta+", "Ctrl+", "+" )
@@ -1207,7 +1202,7 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
 
 #if defined(Q_OS_MACX)
     if (nativeText) {
-        // On Mac OS X the order (by default) is Meta, Alt, Shift, Control.
+        // On OS X the order (by default) is Meta, Alt, Shift, Control.
         // If the AA_MacDontSwapCtrlAndMeta is enabled, then the order
         // is Ctrl, Alt, Shift, Meta. The macSymbolForQtKey does this swap
         // for us, which means that we have to adjust our order here.
@@ -1367,7 +1362,7 @@ QKeySequence::operator QVariant() const
  */
 int QKeySequence::operator[](uint index) const
 {
-    Q_ASSERT_X(index < 4, "QKeySequence::operator[]", "index out of range");
+    Q_ASSERT_X(index < QKeySequencePrivate::MaxKeyCount, "QKeySequence::operator[]", "index out of range");
     return d->key[index];
 }
 
@@ -1435,10 +1430,8 @@ uint qHash(const QKeySequence &key, uint seed) Q_DECL_NOTHROW
 */
 bool QKeySequence::operator< (const QKeySequence &other) const
 {
-    for (int i = 0; i < 4; ++i)
-        if (d->key[i] != other.d->key[i])
-            return d->key[i] < other.d->key[i];
-    return false;
+    return std::lexicographical_compare(d->key, d->key + QKeySequencePrivate::MaxKeyCount,
+                                        other.d->key, other.d->key + QKeySequencePrivate::MaxKeyCount);
 }
 
 /*!
@@ -1490,7 +1483,7 @@ bool QKeySequence::isDetached() const
 
     If the key sequence has no keys, an empty string is returned.
 
-    On Mac OS X, the string returned resembles the sequence that is
+    On OS X, the string returned resembles the sequence that is
     shown in the menu bar.
 
     \sa fromString()
@@ -1534,6 +1527,7 @@ QList<QKeySequence> QKeySequence::listFromString(const QString &str, SequenceFor
     QList<QKeySequence> result;
 
     QStringList strings = str.split(QLatin1String("; "));
+    result.reserve(strings.count());
     foreach (const QString &string, strings) {
         result << fromString(string, format);
     }
@@ -1576,15 +1570,14 @@ QString QKeySequence::listToString(const QList<QKeySequence> &list, SequenceForm
 */
 QDataStream &operator<<(QDataStream &s, const QKeySequence &keysequence)
 {
-    QList<quint32> list;
-    list << keysequence.d->key[0];
-
-    if (s.version() >= 5 && keysequence.count() > 1) {
-        list << keysequence.d->key[1];
-        list << keysequence.d->key[2];
-        list << keysequence.d->key[3];
+    Q_STATIC_ASSERT_X(QKeySequencePrivate::MaxKeyCount == 4, "Forgot to adapt QDataStream &operator<<(QDataStream &s, const QKeySequence &keysequence) to new QKeySequence::MaxKeyCount");
+    const bool extended = s.version() >= 5 && keysequence.count() > 1;
+    s << quint32(extended ? 4 : 1) << quint32(keysequence.d->key[0]);
+    if (extended) {
+        s << quint32(keysequence.d->key[1])
+          << quint32(keysequence.d->key[2])
+          << quint32(keysequence.d->key[3]);
     }
-    s << list;
     return s;
 }
 
@@ -1599,11 +1592,19 @@ QDataStream &operator<<(QDataStream &s, const QKeySequence &keysequence)
 */
 QDataStream &operator>>(QDataStream &s, QKeySequence &keysequence)
 {
+    const quint32 MaxKeys = QKeySequencePrivate::MaxKeyCount;
+    quint32 c;
+    s >> c;
+    quint32 keys[MaxKeys] = {0};
+    for (uint i = 0; i < qMin(c, MaxKeys); ++i) {
+        if (s.atEnd()) {
+            qWarning("Premature EOF while reading QKeySequence");
+            return s;
+        }
+        s >> keys[i];
+    }
     qAtomicDetach(keysequence.d);
-    QList<quint32> list;
-    s >> list;
-    for (int i = 0; i < 4; ++i)
-        keysequence.d->key[i] = list.value(i);
+    std::copy(keys, keys + MaxKeys, keysequence.d->key);
     return s;
 }
 

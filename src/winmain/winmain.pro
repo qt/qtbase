@@ -32,4 +32,4 @@ load(qt_targets)
 load(qt_build_paths)
 load(qt_common)
 
-wince*:QMAKE_POST_LINK =
+wince: QMAKE_POST_LINK =

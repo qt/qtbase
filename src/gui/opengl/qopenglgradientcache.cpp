@@ -39,10 +39,6 @@
 #include "qopenglfunctions.h"
 #include "qopenglextensions_p.h"
 
-#ifndef GL_RGBA8
-#define GL_RGBA8    0x8058
-#endif
-
 #ifndef GL_RGBA16
 #define GL_RGBA16   0x805B
 #endif
@@ -147,19 +143,19 @@ GLuint QOpenGL2GradientCache::addCacheElement(quint64 hash_val, const QGradient 
     }
 
     CacheInfo cache_entry(gradient.stops(), opacity, gradient.interpolationMode());
-    QRgba64 buffer[1024];
-    generateGradientColorTable(gradient, buffer, paletteSize(), opacity);
     funcs->glGenTextures(1, &cache_entry.texId);
     funcs->glBindTexture(GL_TEXTURE_2D, cache_entry.texId);
-    GLenum internalFormat = GL_RGBA16;
-    if (QOpenGLContext::currentContext()->isOpenGLES()) {
-        if (static_cast<QOpenGLExtensions*>(funcs)->hasOpenGLExtension(QOpenGLExtensions::Sized8Formats))
-            internalFormat = GL_RGBA8;
-        else
-            internalFormat = GL_RGBA; // Let OpenGLES use whatever it prefers.
+    if (static_cast<QOpenGLExtensions *>(funcs)->hasOpenGLExtension(QOpenGLExtensions::Sized16Formats)) {
+        QRgba64 buffer[1024];
+        generateGradientColorTable(gradient, buffer, paletteSize(), opacity);
+        funcs->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, paletteSize(), 1,
+                            0, GL_RGBA, GL_UNSIGNED_SHORT, buffer);
+    } else {
+        uint buffer[1024];
+        generateGradientColorTable(gradient, buffer, paletteSize(), opacity);
+        funcs->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, paletteSize(), 1,
+                            0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
     }
-    funcs->glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, paletteSize(), 1,
-                        0, GL_RGBA, GL_UNSIGNED_SHORT, buffer);
     return cache.insert(hash_val, cache_entry).value().texId;
 }
 
@@ -213,6 +209,61 @@ void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient
     Q_ASSERT(s.size() > 0);
 
     QRgba64 last_color = qPremultiply(combineAlpha256(colors[s.size() - 1], alpha));
+    for (;pos < size; ++pos)
+        colorTable[pos] = last_color;
+
+    // Make sure the last color stop is represented at the end of the table
+    colorTable[size-1] = last_color;
+}
+
+void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient, uint *colorTable, int size, qreal opacity) const
+{
+    int pos = 0;
+    QGradientStops s = gradient.stops();
+    QVector<uint> colors(s.size());
+
+    for (int i = 0; i < s.size(); ++i)
+        colors[i] = s[i].second.rgba(); // Qt LIES! It returns ARGB (on little-endian AND on big-endian)
+
+    bool colorInterpolation = (gradient.interpolationMode() == QGradient::ColorInterpolation);
+
+    uint alpha = qRound(opacity * 256);
+    uint current_color = ARGB_COMBINE_ALPHA(colors[0], alpha);
+    qreal incr = 1.0 / qreal(size);
+    qreal fpos = 1.5 * incr;
+    colorTable[pos++] = ARGB2RGBA(qPremultiply(current_color));
+
+    while (fpos <= s.first().first) {
+        colorTable[pos] = colorTable[pos - 1];
+        pos++;
+        fpos += incr;
+    }
+
+    if (colorInterpolation)
+        current_color = qPremultiply(current_color);
+
+    for (int i = 0; i < s.size() - 1; ++i) {
+        qreal delta = 1/(s[i+1].first - s[i].first);
+        uint next_color = ARGB_COMBINE_ALPHA(colors[i+1], alpha);
+        if (colorInterpolation)
+            next_color = qPremultiply(next_color);
+
+        while (fpos < s[i+1].first && pos < size) {
+            int dist = int(256 * ((fpos - s[i].first) * delta));
+            int idist = 256 - dist;
+            if (colorInterpolation)
+                colorTable[pos] = ARGB2RGBA(INTERPOLATE_PIXEL_256(current_color, idist, next_color, dist));
+            else
+                colorTable[pos] = ARGB2RGBA(qPremultiply(INTERPOLATE_PIXEL_256(current_color, idist, next_color, dist)));
+            ++pos;
+            fpos += incr;
+        }
+        current_color = next_color;
+    }
+
+    Q_ASSERT(s.size() > 0);
+
+    uint last_color = ARGB2RGBA(qPremultiply(ARGB_COMBINE_ALPHA(colors[s.size() - 1], alpha)));
     for (;pos < size; ++pos)
         colorTable[pos] = last_color;
 

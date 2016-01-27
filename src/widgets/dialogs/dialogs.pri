@@ -24,7 +24,7 @@ win32 {
     SOURCES += dialogs/qwizard_win.cpp
 }
 
-wince*: FORMS += dialogs/qfiledialog_embedded.ui
+wince: FORMS += dialogs/qfiledialog_embedded.ui
 else: FORMS += dialogs/qfiledialog.ui
 
 INCLUDEPATH += $$PWD

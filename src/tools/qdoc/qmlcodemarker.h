@@ -66,7 +66,7 @@ public:
     virtual QString functionEndRegExp(const QString &funcName) Q_DECL_OVERRIDE;
 
     /* Copied from src/declarative/qml/qdeclarativescriptparser.cpp */
-    QList<QQmlJS::AST::SourceLocation> extractPragmas(QString &script);
+    QVector<QQmlJS::AST::SourceLocation> extractPragmas(QString &script);
 
 private:
     QString addMarkUp(const QString &code, const Node *relative,

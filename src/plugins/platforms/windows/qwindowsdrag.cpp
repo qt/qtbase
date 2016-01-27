@@ -33,7 +33,7 @@
 
 #include "qwindowsdrag.h"
 #include "qwindowscontext.h"
-#include "qwindowsscaling.h"
+#include "qwindowsscreen.h"
 #ifndef QT_NO_CLIPBOARD
 #  include "qwindowsclipboard.h"
 #endif
@@ -43,7 +43,6 @@
 #include "qwindowswindow.h"
 #include "qwindowsmousehandler.h"
 #include "qwindowscursor.h"
-#include "qwindowsscaling.h"
 
 #include <QtGui/QMouseEvent>
 #include <QtGui/QPixmap>
@@ -52,6 +51,7 @@
 #include <QtGui/QGuiApplication>
 #include <qpa/qwindowsysteminterface_p.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <QtCore/QDebug>
 #include <QtCore/QBuffer>
@@ -280,6 +280,13 @@ QDebug operator<<(QDebug d, const QWindowsOleDropSource::CursorEntry &e)
 }
 #endif // !QT_NO_DEBUG_OUTPUT
 
+static qreal dragScaleFactor()
+{
+    const QWindowsScreenManager &screenManager = QWindowsContext::instance()->screenManager();
+    const QWindowsScreen *screen = screenManager.screenAtDp(QWindowsCursor::mousePosition());
+    return screen ? QHighDpiScaling::factor(screen) : qreal(1);
+}
+
 /*!
     \brief Blend custom pixmap with cursors.
 */
@@ -289,19 +296,22 @@ void QWindowsOleDropSource::createCursors()
     const QDrag *drag = m_drag->currentDrag();
     const QPixmap pixmap = drag->pixmap();
     const bool hasPixmap = !pixmap.isNull();
-    const int scaleFactor = QWindowsScaling::factor();
-    const QSize pixmapSizeDp = pixmap.size() * scaleFactor;
+
+    const qreal scaleFactor = dragScaleFactor();
     const bool scalePixmap = hasPixmap
         && m_mode != TouchDrag // Touch drag: pixmap is shown in a separate QWindow, which will be scaled.
         && (scaleFactor != 1 && scaleFactor != qRound(pixmap.devicePixelRatio()));
-    const QPixmap drawPixmap = scalePixmap
-        ? pixmap.scaled(pixmapSizeDp, Qt::KeepAspectRatio, Qt::SmoothTransformation) : pixmap;
-
+    const QPixmap scaledPixmap = scalePixmap
+        ? pixmap.scaled((QSizeF(pixmap.size()) * scaleFactor).toSize(),
+                        Qt::KeepAspectRatio, Qt::SmoothTransformation)
+        : pixmap;
     Qt::DropAction actions[] = { Qt::MoveAction, Qt::CopyAction, Qt::LinkAction, Qt::IgnoreAction };
     int actionCount = int(sizeof(actions) / sizeof(actions[0]));
     if (!hasPixmap)
         --actionCount; // No Qt::IgnoreAction unless pixmap
-    const QPoint hotSpot = drag->hotSpot() * scaleFactor;
+    const QPoint hotSpot = scalePixmap
+        ? (QPointF(drag->hotSpot()) * scaleFactor).toPoint()
+        : drag->hotSpot();
     for (int cnum = 0; cnum < actionCount; ++cnum) {
         const Qt::DropAction action = actions[cnum];
         QPixmap cursorPixmap = drag->dragCursor(action);
@@ -321,14 +331,14 @@ void QWindowsOleDropSource::createCursors()
 
         if (hasPixmap) {
             const int x1 = qMin(-hotSpot.x(), 0);
-            const int x2 = qMax(pixmapSizeDp.width() - hotSpot.x(), cursorPixmap.width());
+            const int x2 = qMax(scaledPixmap.width() - hotSpot.x(), cursorPixmap.width());
             const int y1 = qMin(-hotSpot.y(), 0);
-            const int y2 = qMax(pixmapSizeDp.height() - hotSpot.y(), cursorPixmap.height());
+            const int y2 = qMax(scaledPixmap.height() - hotSpot.y(), cursorPixmap.height());
             QPixmap newCursor(x2 - x1 + 1, y2 - y1 + 1);
             newCursor.fill(Qt::transparent);
             QPainter p(&newCursor);
             const QPoint pmDest = QPoint(qMax(0, -hotSpot.x()), qMax(0, -hotSpot.y()));
-            p.drawPixmap(pmDest, drawPixmap);
+            p.drawPixmap(pmDest, scaledPixmap);
             p.drawPixmap(qMax(0, hotSpot.x()),qMax(0, hotSpot.y()), cursorPixmap);
             newPixmap = newCursor;
             newHotSpot = QPoint(qMax(0, hotSpot.x()), qMax(0, hotSpot.y()));
@@ -454,7 +464,7 @@ QWindowsOleDropSource::GiveFeedback(DWORD dwEffect)
             if (!m_touchDragWindow)
                 m_touchDragWindow = new QWindowsDragCursorWindow;
             m_touchDragWindow->setPixmap(e.pixmap);
-            m_touchDragWindow->setFramePosition((QWindowsCursor::mousePosition() - e.hotSpot) / QWindowsScaling::factor());
+            m_touchDragWindow->setFramePosition(QWindowsCursor::mousePosition() - e.hotSpot);
             if (!m_touchDragWindow->isVisible())
                 m_touchDragWindow->show();
             break;
@@ -530,9 +540,7 @@ void QWindowsOleDropTarget::handleDrag(QWindow *window, DWORD grfKeyState,
     QGuiApplicationPrivate::mouse_buttons = QWindowsMouseHandler::keyStateToMouseButtons(grfKeyState);
 
     const QPlatformDragQtResponse response =
-          QWindowSystemInterface::handleDrag(window, windowsDrag->dropData(),
-                                             m_lastPoint / QWindowsScaling::factor(),
-                                             actions);
+          QWindowSystemInterface::handleDrag(window, windowsDrag->dropData(), m_lastPoint, actions);
 
     m_answerRect = response.answerRect();
     const Qt::DropAction action = response.acceptedAction();
@@ -625,9 +633,8 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT pDataObj, DWORD grfKeyState,
 
     const QPlatformDropQtResponse response =
         QWindowSystemInterface::handleDrop(m_window, windowsDrag->dropData(),
-                                           m_lastPoint / QWindowsScaling::factor(),
-                                           translateToQDragDropActions(m_chosenEffect));
-
+                                           m_lastPoint,
+                                           translateToQDragDropActions(*pdwEffect));
     if (response.isAccepted()) {
         const Qt::DropAction action = response.acceptedAction();
         if (action == Qt::MoveAction || action == Qt::TargetMoveAction) {

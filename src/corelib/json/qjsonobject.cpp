@@ -274,7 +274,7 @@ QStringList QJsonObject::keys() const
         return QStringList();
 
     QStringList keys;
-
+    keys.reserve(o->length);
     for (uint i = 0; i < o->length; ++i) {
         QJsonPrivate::Entry *e = o->entryAt(i);
         keys.append(e->key());

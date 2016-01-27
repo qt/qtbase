@@ -117,7 +117,7 @@ static quint64 getTickCount()
 #endif // Q_OS_WINRT
 }
 
-int qt_msectime()
+quint64 qt_msectime()
 {
     return ticksToNanoseconds(getTickCount()) / 1000000;
 }

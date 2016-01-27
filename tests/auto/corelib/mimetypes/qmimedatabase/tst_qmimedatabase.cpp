@@ -35,6 +35,7 @@
 
 #include "qstandardpaths.h"
 
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QTextStream>
@@ -81,7 +82,8 @@ tst_QMimeDatabase::tst_QMimeDatabase()
 
 void tst_QMimeDatabase::initTestCase()
 {
-    QVERIFY(m_temporaryDir.isValid());
+    QVERIFY2(m_temporaryDir.isValid(),
+             ("Could not create temporary subdir: " + m_temporaryDir.errorString()).toUtf8());
 
     // Create a "global" and a "local" XDG data dir, right here.
     // The local dir will be empty initially, while the global dir will contain a copy of freedesktop.org.xml
@@ -765,16 +767,20 @@ static bool runUpdateMimeDatabase(const QString &path) // TODO make it a QMimeDa
         return false;
     }
 
+    QElapsedTimer timer;
     QProcess proc;
     proc.setProcessChannelMode(QProcess::MergedChannels); // silence output
+    qDebug().noquote() << "runUpdateMimeDatabase: running" << umd << path << "...";
+    timer.start();
     proc.start(umd, QStringList(path));
     if (!proc.waitForStarted()) {
         qWarning("Cannot start %s: %s",
                  qPrintable(umd), qPrintable(proc.errorString()));
         return false;
     }
-    proc.waitForFinished();
-    //qDebug() << "runUpdateMimeDatabase" << path;
+    const bool success = proc.waitForFinished();
+    qDebug().noquote() << "runUpdateMimeDatabase: done,"
+        << success << timer.elapsed() << "ms";
     return true;
 }
 

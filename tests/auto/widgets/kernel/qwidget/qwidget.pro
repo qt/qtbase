@@ -20,4 +20,4 @@ x11 {
     LIBS += $$QMAKE_LIBS_X11
 }
 
-!wince*:win32:!winrt: LIBS += -luser32 -lgdi32
+win32:!wince:!winrt: LIBS += -luser32 -lgdi32

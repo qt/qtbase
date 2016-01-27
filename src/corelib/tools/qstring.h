@@ -44,6 +44,7 @@
 #include <QtCore/qnamespace.h>
 
 #include <string>
+#include <iterator>
 
 #if defined(Q_OS_ANDROID)
 // std::wstring is disabled on android's glibc, as bionic lacks certain features
@@ -594,16 +595,16 @@ public:
     static int localeAwareCompare(const QString& s1, const QStringRef& s2);
 
     // ### Qt6: make inline except for the long long versions
-    short  toShort(bool *ok=0, int base=10) const;
-    ushort toUShort(bool *ok=0, int base=10) const;
-    int toInt(bool *ok=0, int base=10) const;
-    uint toUInt(bool *ok=0, int base=10) const;
-    long toLong(bool *ok=0, int base=10) const;
-    ulong toULong(bool *ok=0, int base=10) const;
-    qlonglong toLongLong(bool *ok=0, int base=10) const;
-    qulonglong toULongLong(bool *ok=0, int base=10) const;
-    float toFloat(bool *ok=0) const;
-    double toDouble(bool *ok=0) const;
+    short  toShort(bool *ok=Q_NULLPTR, int base=10) const;
+    ushort toUShort(bool *ok=Q_NULLPTR, int base=10) const;
+    int toInt(bool *ok=Q_NULLPTR, int base=10) const;
+    uint toUInt(bool *ok=Q_NULLPTR, int base=10) const;
+    long toLong(bool *ok=Q_NULLPTR, int base=10) const;
+    ulong toULong(bool *ok=Q_NULLPTR, int base=10) const;
+    qlonglong toLongLong(bool *ok=Q_NULLPTR, int base=10) const;
+    qulonglong toULongLong(bool *ok=Q_NULLPTR, int base=10) const;
+    float toFloat(bool *ok=Q_NULLPTR) const;
+    double toDouble(bool *ok=Q_NULLPTR) const;
 
     QString &setNum(short, int base=10);
     QString &setNum(ushort, int base=10);
@@ -715,14 +716,22 @@ public:
     typedef const QChar *const_iterator;
     typedef iterator Iterator;
     typedef const_iterator ConstIterator;
-    iterator begin();
-    const_iterator begin() const;
-    const_iterator cbegin() const;
-    const_iterator constBegin() const;
-    iterator end();
-    const_iterator end() const;
-    const_iterator cend() const;
-    const_iterator constEnd() const;
+    typedef std::reverse_iterator<iterator> reverse_iterator;
+    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+    inline iterator begin();
+    inline const_iterator begin() const;
+    inline const_iterator cbegin() const;
+    inline const_iterator constBegin() const;
+    inline iterator end();
+    inline const_iterator end() const;
+    inline const_iterator cend() const;
+    inline const_iterator constEnd() const;
+    reverse_iterator rbegin() { return reverse_iterator(end()); }
+    reverse_iterator rend() { return reverse_iterator(begin()); }
+    const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+    const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crbegin() const { return const_reverse_iterator(end()); }
+    const_reverse_iterator crend() const { return const_reverse_iterator(begin()); }
 
     // STL compatibility
     typedef int size_type;
@@ -1350,27 +1359,31 @@ public:
     typedef QString::const_reference const_reference;
 
     // ### Qt 6: make this constructor constexpr, after the destructor is made trivial
-    inline QStringRef():m_string(0), m_position(0), m_size(0){}
+    inline QStringRef() : m_string(Q_NULLPTR), m_position(0), m_size(0) {}
     inline QStringRef(const QString *string, int position, int size);
     inline QStringRef(const QString *string);
 
-    // ### Qt 6: remove this copy constructor, the implicit one is fine
-    inline QStringRef(const QStringRef &other)
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    // ### Qt 6: remove all of these, the implicit ones are fine
+    QStringRef(const QStringRef &other) Q_DECL_NOTHROW
         :m_string(other.m_string), m_position(other.m_position), m_size(other.m_size)
         {}
-
-    // ### Qt 6: remove this destructor, the implicit one is fine
+#ifdef Q_COMPILER_RVALUE_REFS
+    QStringRef(QStringRef &&other) Q_DECL_NOTHROW : m_string(other.m_string), m_position(other.m_position), m_size(other.m_size) {}
+    QStringRef &operator=(QStringRef &&other) Q_DECL_NOTHROW { return *this = other; }
+#endif
+    QStringRef &operator=(const QStringRef &other) Q_DECL_NOTHROW {
+        m_string = other.m_string; m_position = other.m_position;
+        m_size = other.m_size; return *this;
+    }
     inline ~QStringRef(){}
+#endif // Qt < 6.0.0
+
     inline const QString *string() const { return m_string; }
     inline int position() const { return m_position; }
     inline int size() const { return m_size; }
     inline int count() const { return m_size; }
     inline int length() const { return m_size; }
-
-    inline QStringRef &operator=(const QStringRef &other) {
-        m_string = other.m_string; m_position = other.m_position;
-        m_size = other.m_size; return *this;
-    }
 
     int indexOf(const QString &str, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int indexOf(QChar ch, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
@@ -1398,6 +1411,8 @@ public:
     QStringRef left(int n) const Q_REQUIRED_RESULT;
     QStringRef right(int n) const Q_REQUIRED_RESULT;
     QStringRef mid(int pos, int n = -1) const Q_REQUIRED_RESULT;
+
+    void truncate(int pos) Q_DECL_NOTHROW { m_size = qBound(0, pos, m_size); }
 
     bool startsWith(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool startsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
@@ -1432,10 +1447,10 @@ public:
     QByteArray toLocal8Bit() const Q_REQUIRED_RESULT;
     QVector<uint> toUcs4() const Q_REQUIRED_RESULT;
 
-    inline void clear() { m_string = 0; m_position = m_size = 0; }
+    inline void clear() { m_string = Q_NULLPTR; m_position = m_size = 0; }
     QString toString() const;
     inline bool isEmpty() const { return m_size == 0; }
-    inline bool isNull() const { return m_string == 0 || m_string->isNull(); }
+    inline bool isNull() const { return m_string == Q_NULLPTR || m_string->isNull(); }
 
     QStringRef appendTo(QString *string) const;
 
@@ -1468,16 +1483,16 @@ public:
     static int localeAwareCompare(const QStringRef &s1, const QStringRef &s2);
 
     QStringRef trimmed() const Q_REQUIRED_RESULT;
-    short  toShort(bool *ok = 0, int base = 10) const;
-    ushort toUShort(bool *ok = 0, int base = 10) const;
-    int toInt(bool *ok = 0, int base = 10) const;
-    uint toUInt(bool *ok = 0, int base = 10) const;
-    long toLong(bool *ok = 0, int base = 10) const;
-    ulong toULong(bool *ok = 0, int base = 10) const;
-    qlonglong toLongLong(bool *ok = 0, int base = 10) const;
-    qulonglong toULongLong(bool *ok = 0, int base = 10) const;
-    float toFloat(bool *ok = 0) const;
-    double toDouble(bool *ok = 0) const;
+    short  toShort(bool *ok = Q_NULLPTR, int base = 10) const;
+    ushort toUShort(bool *ok = Q_NULLPTR, int base = 10) const;
+    int toInt(bool *ok = Q_NULLPTR, int base = 10) const;
+    uint toUInt(bool *ok = Q_NULLPTR, int base = 10) const;
+    long toLong(bool *ok = Q_NULLPTR, int base = 10) const;
+    ulong toULong(bool *ok = Q_NULLPTR, int base = 10) const;
+    qlonglong toLongLong(bool *ok = Q_NULLPTR, int base = 10) const;
+    qulonglong toULongLong(bool *ok = Q_NULLPTR, int base = 10) const;
+    float toFloat(bool *ok = Q_NULLPTR) const;
+    double toDouble(bool *ok = Q_NULLPTR) const;
 };
 Q_DECLARE_TYPEINFO(QStringRef, Q_PRIMITIVE_TYPE);
 

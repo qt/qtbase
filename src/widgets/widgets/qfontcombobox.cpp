@@ -401,14 +401,6 @@ void QFontComboBoxPrivate::_q_currentChanged(const QString &text)
 */
 
 /*!
-    \fn void QFontComboBox::setWritingSystem(QFontDatabase::WritingSystem script)
-*/
-
-/*!
-    \fn void QFontComboBox::setCurrentFont(const QFont &font);
-*/
-
-/*!
     Constructs a font combobox with the given \a parent.
 */
 QFontComboBox::QFontComboBox(QWidget *parent)

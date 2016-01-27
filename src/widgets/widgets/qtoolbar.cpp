@@ -240,7 +240,7 @@ bool QToolBarPrivate::mousePressEvent(QMouseEvent *event)
     q->initStyleOption(&opt);
     if (q->style()->subElementRect(QStyle::SE_ToolBarHandle, &opt, q).contains(event->pos()) == false) {
 #ifdef Q_OS_OSX
-        // When using the unified toolbar on Mac OS X, the user can click and
+        // When using the unified toolbar on OS X, the user can click and
         // drag between toolbar contents to move the window. Make this work by
         // implementing the standard mouse-dragging code and then call
         // window->move() in mouseMoveEvent below.
@@ -792,6 +792,82 @@ QAction *QToolBar::addAction(const QIcon &icon, const QString &text,
     addAction(action);
     return action;
 }
+
+/*!\fn QAction *QToolBar::addAction(const QString &text, const QObject *receiver, PointerToMemberFunction method)
+
+    \since 5.6
+
+    \overload
+
+    Creates a new action with the given \a text. This action is added to
+    the end of the toolbar. The action's
+    \l{QAction::triggered()}{triggered()} signal is connected to the
+    \a method of the \a receiver.
+*/
+
+/*!\fn QAction *QToolBar::addAction(const QString &text, Functor functor)
+
+    \since 5.6
+
+    \overload
+
+    Creates a new action with the given \a text. This action is added to
+    the end of the toolbar. The action's
+    \l{QAction::triggered()}{triggered()} signal is connected to the
+    \a functor.
+*/
+
+/*!\fn QAction *QToolBar::addAction(const QString &text, const QObject *context, Functor functor)
+
+    \since 5.6
+
+    \overload
+
+    Creates a new action with the given \a text. This action is added to
+    the end of the toolbar. The action's
+    \l{QAction::triggered()}{triggered()} signal is connected to the
+    \a functor.
+
+    If \a context is destroyed, the functor will not be called.
+*/
+
+/*!\fn QAction *QToolBar::addAction(const QIcon &icon, const QString &text, const QObject *receiver, PointerToMemberFunction method)
+
+    \since 5.6
+
+    \overload
+
+    Creates a new action with the given \a icon and \a text. This
+    action is added to the end of the toolbar. The action's
+    \l{QAction::triggered()}{triggered()} signal is connected to the
+    \a method of the \a receiver.
+*/
+
+/*!\fn QAction *QToolBar::addAction(const QIcon &icon, const QString &text, Functor functor)
+
+    \since 5.6
+
+    \overload
+
+    Creates a new action with the given \a icon and \a text. This
+    action is added to the end of the toolbar. The action's
+    \l{QAction::triggered()}{triggered()} signal is connected to the
+    \a functor.
+*/
+
+/*!\fn QAction *QToolBar::addAction(const QIcon &icon, const QString &text, const QObject *context, Functor functor)
+
+    \since 5.6
+
+    \overload
+
+    Creates a new action with the given \a icon and \a text. This
+    action is added to the end of the toolbar. The action's
+    \l{QAction::triggered()}{triggered()} signal is connected to the
+    \a functor.
+
+    If \a context is destroyed, the functor will not be called.
+*/
 
 /*!
      Adds a separator to the end of the toolbar.

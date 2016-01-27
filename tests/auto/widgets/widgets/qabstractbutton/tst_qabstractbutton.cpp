@@ -283,9 +283,9 @@ void tst_QAbstractButton::setAutoRepeat()
         QTest::qWait(REPEAT_DELAY);
         QVERIFY(testWidget->isDown());
         QTest::keyRelease(testWidget, Qt::Key_Space);
-        QVERIFY(release_count == press_count);
-        QVERIFY(toggle_count == 0);
-        QVERIFY(press_count == click_count);
+        QCOMPARE(release_count, press_count);
+        QCOMPARE(toggle_count, uint(0));
+        QCOMPARE(press_count, click_count);
         QVERIFY(click_count > 1);
         break;
     case 4:

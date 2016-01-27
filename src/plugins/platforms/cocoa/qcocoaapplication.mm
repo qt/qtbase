@@ -79,12 +79,12 @@ QT_USE_NAMESPACE
 
 - (void)QT_MANGLE_NAMESPACE(qt_setDockMenu):(NSMenu *)newMenu
 {
-    [[QCocoaApplicationDelegate sharedDelegate] setDockMenu:newMenu];
+    [[QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate] setDockMenu:newMenu];
 }
 
 - (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)
 {
-    return [[QCocoaApplicationDelegate sharedDelegate] menuLoader];
+    return [[QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate] menuLoader];
 }
 
 - (int)QT_MANGLE_NAMESPACE(qt_validModesForFontPanel):(NSFontPanel *)fontPanel
@@ -147,9 +147,9 @@ static const QByteArray q_macLocalEventType = QByteArrayLiteral("mac_generic_NSE
 
 @end
 
-@implementation QNSApplication
+@implementation QT_MANGLE_NAMESPACE(QNSApplication)
 
-- (void)qt_sendEvent_original:(NSEvent *)event
+- (void)QT_MANGLE_NAMESPACE(qt_sendEvent_original):(NSEvent *)event
 {
     Q_UNUSED(event);
     // This method will only be used as a signature
@@ -157,14 +157,14 @@ static const QByteArray q_macLocalEventType = QByteArrayLiteral("mac_generic_NSE
     // containing the original [NSApplication sendEvent:] implementation
 }
 
-- (void)qt_sendEvent_replacement:(NSEvent *)event
+- (void)QT_MANGLE_NAMESPACE(qt_sendEvent_replacement):(NSEvent *)event
 {
     // This method (or its implementation to be precise) will
     // be called instead of sendEvent if redirection occurs.
     // 'self' will then be an instance of NSApplication
     // (and not QNSApplication)
     if (![NSApp QT_MANGLE_NAMESPACE(qt_filterEvent):event])
-        [self qt_sendEvent_original:event];
+        [self QT_MANGLE_NAMESPACE(qt_sendEvent_original):event];
 }
 
 - (void)sendEvent:(NSEvent *)event
@@ -187,7 +187,7 @@ void qt_redirectNSApplicationSendEvent()
         // can be unloaded.
         return;
 
-    if ([NSApp isMemberOfClass:[QNSApplication class]]) {
+    if ([NSApp isMemberOfClass:[QT_MANGLE_NAMESPACE(QNSApplication) class]]) {
         // No need to change implementation since Qt
         // already controls a subclass of NSApplication
         return;
@@ -200,9 +200,9 @@ void qt_redirectNSApplicationSendEvent()
     qt_cocoa_change_implementation(
             [NSApplication class],
             @selector(sendEvent:),
-            [QNSApplication class],
-            @selector(qt_sendEvent_replacement:),
-            @selector(qt_sendEvent_original:));
+            [QT_MANGLE_NAMESPACE(QNSApplication) class],
+            @selector(QT_MANGLE_NAMESPACE(qt_sendEvent_replacement):),
+            @selector(QT_MANGLE_NAMESPACE(qt_sendEvent_original):));
  }
 
 void qt_resetNSApplicationSendEvent()

@@ -38,6 +38,7 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QDirIteratorTest {
 
 class QFileSystemIteratorPrivate;
 class //Q_CORE_EXPORT
@@ -80,6 +81,8 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QFileSystemIterator::IteratorFlags)
+
+} // namespace QDirIteratorTest
 
 QT_END_NAMESPACE
 

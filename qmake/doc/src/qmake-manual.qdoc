@@ -2185,52 +2185,10 @@
 
     \section1 QT
 
-    Specifies the Qt modules that are used by your project.
+    Specifies the \l{All Modules}{Qt modules} that are used by your project. For
+    the value to add for each module, see the module documentation.
 
-    The table below shows the options that can be used with the \c QT variable
-    and the Qt modules that are associated with each of them:
-
-    \table
-    \header \li Option                     \li Module Enabled
-    \row    \li axcontainer                \li \l{Using ActiveX controls and COM in Qt}
-                                               {QAxContainer}, which is
-                                               part of the \l{Active Qt} framework
-    \row    \li axserver                   \li \l{Building ActiveX servers in Qt}
-                                               {QAxServer}, which is
-                                               part of the \l{Active Qt} framework
-    \row    \li concurrent                 \li \l{Qt Concurrent}
-    \row    \li core (included by default) \li \l{Qt Core}
-    \row    \li dbus                       \li \l{Qt D-Bus}
-    \row    \li declarative                \li \l{Qt Quick 1} (deprecated)
-    \row    \li designer                   \li \l{Qt Designer}
-    \row    \li gui  (included by default) \li \l{Qt GUI}
-    \row    \li help                       \li \l{Qt Help}
-    \row    \li multimedia                 \li \l{Qt Multimedia}
-    \row    \li multimediawidgets          \li \l{Qt Multimedia Widgets}
-    \row    \li network                    \li \l{Qt Network}
-    \row    \li opengl                     \li \l{Qt OpenGL} (deprecated)
-    \row    \li printsupport               \li \l{Qt Print Support}
-    \row    \li qml                        \li \l{Qt QML}
-    \row    \li qmltest                    \li \l{Qt QML Test}
-    \row    \li x11extras                  \li \l{Qt X11 Extras}
-    \row    \li quick                      \li \l{Qt Quick}
-    \row    \li script                     \li \l{Qt Script} (deprecated)
-    \row    \li scripttools                \li \l{Qt Script Tools} (deprecated)
-    \row    \li sensors                    \li \l{Qt Sensors}
-    \row    \li serialport                 \li \l{Qt Serial Port}
-    \row    \li sql                        \li \l{Qt SQL}
-    \row    \li svg                        \li \l{Qt SVG}
-    \row    \li testlib                    \li \l{Qt Test}
-    \row    \li uitools                    \li \l{Qt UI Tools}
-    \row    \li webkit                     \li \l{Qt WebKit}
-    \row    \li webkitwidgets              \li \l{Qt WebKit Widgets}
-    \row    \li widgets                    \li \l{Qt Widgets}
-    \row    \li winextras                  \li \l{Qt Windows Extras}
-    \row    \li xml                        \li \l{Qt XML} (deprecated)
-    \row    \li xmlpatterns                \li \l{Qt XML Patterns}
-    \endtable
-
-    By default, \c QT contains both \c core and \c gui, ensuring that standard
+    By default, \c QT contains \c core and \c gui, ensuring that standard
     GUI applications can be built without further configuration.
 
     If you want to build a project \e without the \l{Qt GUI} module, you need to

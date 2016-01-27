@@ -126,7 +126,7 @@ public:
     static void cleanup()
     {
         delete instance();
-        instance() = 0;
+        instance() = Q_NULLPTR;
     }
     static void clearEvents() { eventList().clear(); }
     static EventList events() { return eventList(); }
@@ -162,8 +162,8 @@ private:
 
     ~QTestAccessibility()
     {
-        QAccessible::installUpdateHandler(0);
-        QAccessible::installRootObjectHandler(0);
+        QAccessible::installUpdateHandler(Q_NULLPTR);
+        QAccessible::installRootObjectHandler(Q_NULLPTR);
     }
 
     static void rootObjectHandler(QObject *object)
@@ -268,7 +268,7 @@ private:
 
     static QTestAccessibility *&instance()
     {
-        static QTestAccessibility *ta = 0;
+        static QTestAccessibility *ta = Q_NULLPTR;
         return ta;
     }
 

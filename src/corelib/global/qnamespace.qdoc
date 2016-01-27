@@ -197,6 +197,11 @@
     \value AA_SetPalette Indicates whether a palette was explicitly set on the
            QApplication/QGuiApplication. This value has been added in Qt 5.5.
 
+    \value AA_NoHighDpiScaling Disables all high-DPI scaling in Qt, exposing window
+           system coordinates. Note that the window system may do its own scaling,
+           so this does not guarantee that QPaintDevice::devicePixelRatio() will
+           be equal to 1. This value has been added in Qt 5.6.
+
     The following values are obsolete:
 
     \value AA_ImmediateWidgetCreation This attribute is no longer fully
@@ -2540,10 +2545,10 @@
 /*!
     \enum Qt::EnterKeyType
 
-    This can be used to alter the appearance of the Return key on an on screen keyboard.
+    This can be used to alter the appearance of the Return key on an on-screen keyboard.
 
     \note Not all of these values are supported on all platforms.
-    For unsuppoted values the default key will be used instead.
+    For unsupported values the default key will be used instead.
 
     \value EnterKeyDefault     The default Enter key.
                                This can either be a button closing the keyboard, or a Return button
@@ -3067,6 +3072,12 @@
 
     \value MouseEventSynthesizedByQt Indicates that the mouse event was
     synthesized from an unhandled touch event by Qt.
+
+    \value MouseEventSynthesizedByApplication Indicates that the mouse
+    event was synthesized by the application. This allows
+    distinguishing application-generated mouse events from the ones
+    that are coming from the system or are synthesized by Qt. This
+    value was introduced in Qt 5.6
 
     \sa Qt::AA_SynthesizeMouseForUnhandledTouchEvents
 */

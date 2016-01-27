@@ -1115,7 +1115,9 @@ void QTextFormat::setProperty(int propertyId, const QVector<QTextLength> &value)
     if (!d)
         d = new QTextFormatPrivate;
     QVariantList list;
-    for (int i=0; i<value.size(); ++i)
+    const int numValues = value.size();
+    list.reserve(numValues);
+    for (int i = 0; i < numValues; ++i)
         list << value.at(i);
     d->insertProperty(propertyId, list);
 }
@@ -1325,7 +1327,7 @@ bool QTextFormat::operator==(const QTextFormat &rhs) const
     \value WaveUnderline        The text is underlined using a wave shaped line.
     \value SpellCheckUnderline  The underline is drawn depending on the QStyle::SH_SpellCeckUnderlineStyle
                                 style hint of the QApplication style. By default this is mapped to
-                                WaveUnderline, on Mac OS X it is mapped to DashDotLine.
+                                WaveUnderline, on OS X it is mapped to DashDotLine.
 
     \sa Qt::PenStyle
 */
@@ -2041,6 +2043,7 @@ QTextBlockFormat::QTextBlockFormat(const QTextFormat &fmt)
 void QTextBlockFormat::setTabPositions(const QList<QTextOption::Tab> &tabs)
 {
     QList<QVariant> list;
+    list.reserve(tabs.count());
     QList<QTextOption::Tab>::ConstIterator iter = tabs.constBegin();
     while (iter != tabs.constEnd()) {
         QVariant v;
@@ -2065,6 +2068,7 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     QList<QTextOption::Tab> answer;
     QList<QVariant> variantsList = qvariant_cast<QList<QVariant> >(variant);
     QList<QVariant>::Iterator iter = variantsList.begin();
+    answer.reserve(variantsList.count());
     while(iter != variantsList.end()) {
         answer.append( qvariant_cast<QTextOption::Tab>(*iter));
         ++iter;

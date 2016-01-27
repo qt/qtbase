@@ -5,10 +5,9 @@ SOURCES  += tst_qftp.cpp
 requires(contains(QT_CONFIG,private_tests))
 QT = core network network-private testlib
 
-wince*: {
+wince {
    addFiles.files = rfc3252.txt
    addFiles.path = .
    DEPLOYMENT += addFiles
 }
 
-CONFIG+=insignificant_test  # QTBUG-15111: uses live qt-test-server, inherently unstable

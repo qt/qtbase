@@ -428,7 +428,7 @@
     \note If both this flag and ItemClipsChildrenToShape are set, the clip
     will be enforced. This is equivalent to just setting
     ItemClipsChildrenToShape.
-    .
+
     This flag was introduced in Qt 5.4.
 */
 

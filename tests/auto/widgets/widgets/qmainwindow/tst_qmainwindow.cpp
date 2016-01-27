@@ -211,15 +211,15 @@ tst_QMainWindow::tst_QMainWindow()
 void tst_QMainWindow::constructor()
 {
     QMainWindow mw;
-    QVERIFY(mw.parentWidget() == 0);
+    QVERIFY(!mw.parentWidget());
     QVERIFY(mw.isWindow());
 
     QMainWindow mw2(&mw);
-    QVERIFY(mw2.parentWidget() == &mw);
+    QCOMPARE(mw2.parentWidget(), &mw);
     QVERIFY(mw2.isWindow());
 
     QMainWindow mw3(&mw, Qt::FramelessWindowHint);
-    QVERIFY(mw3.parentWidget() == &mw);
+    QCOMPARE(mw3.parentWidget(), &mw);
     QVERIFY(mw3.isWindow());
 }
 
@@ -607,7 +607,7 @@ void tst_QMainWindow::menuBar()
         QVERIFY(mw.menuBar() != 0);
         //we now call deleteLater on the previous menubar
         QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-        QVERIFY(mb1 == 0);
+        QVERIFY(mb1.isNull());
 
         mw.setMenuBar(mb2);
         QVERIFY(mw.menuBar() != 0);
@@ -618,7 +618,7 @@ void tst_QMainWindow::menuBar()
         QVERIFY(mw.menuBar() != 0);
         //we now call deleteLater on the previous menubar
         QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-        QVERIFY(mb2 == 0);
+        QVERIFY(mb2.isNull());
 
         mb1 = new QMenuBar;
         mw.setMenuBar(mb1);
@@ -631,7 +631,7 @@ void tst_QMainWindow::menuBar()
         QCOMPARE(mw.menuBar(), (QMenuBar *)mb2);
         //we now call deleteLater on the previous menubar
         QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-        QVERIFY(mb1 == 0);
+        QVERIFY(mb1.isNull());
 
         mb1 = new QMenuBar;
         mw.setMenuBar(mb1);
@@ -639,7 +639,7 @@ void tst_QMainWindow::menuBar()
         QCOMPARE(mw.menuBar(), (QMenuBar *)mb1);
         //we now call deleteLater on the previous menubar
         QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-        QVERIFY(mb2 == 0);
+        QVERIFY(mb2.isNull());
 
         QPointer<QWidget> topLeftCornerWidget = new QWidget;
         mb1->setCornerWidget(topLeftCornerWidget, Qt::TopLeftCorner);
@@ -652,7 +652,7 @@ void tst_QMainWindow::menuBar()
         QCOMPARE(mw.menuBar(), (QMenuBar *)mb2);
         //we now call deleteLater on the previous menubar
         QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-        QVERIFY(mb1 == 0);
+        QVERIFY(mb1.isNull());
 
         QVERIFY(topLeftCornerWidget);
         QCOMPARE(mb2->cornerWidget(Qt::TopLeftCorner), static_cast<QWidget *>(topLeftCornerWidget));
@@ -663,8 +663,8 @@ void tst_QMainWindow::menuBar()
         QVERIFY(mw.menuBar() != 0);
         //we now call deleteLater on the previous menubar
         QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-        QVERIFY(mb2 == 0);
 
+        QVERIFY(mb2.isNull());
         QVERIFY(!topLeftCornerWidget);
         QVERIFY(!topRightCornerWidget);
     }
@@ -692,7 +692,7 @@ void tst_QMainWindow::statusBar()
         QVERIFY(mw.statusBar() != 0);
         //we now call deleteLater on the previous statusbar
         QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-        QVERIFY(sb1 == 0);
+        QVERIFY(sb1.isNull());
 
         mw.setStatusBar(sb2);
         QVERIFY(mw.statusBar() != 0);
@@ -703,7 +703,7 @@ void tst_QMainWindow::statusBar()
         QVERIFY(mw.statusBar() != 0);
         //we now call deleteLater on the previous statusbar
         QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-        QVERIFY(sb2 == 0);
+        QVERIFY(sb2.isNull());
 
         sb1 = new QStatusBar;
         mw.setStatusBar(sb1);
@@ -718,7 +718,7 @@ void tst_QMainWindow::statusBar()
         QCOMPARE(sb2->parentWidget(), (QWidget *)&mw);
         //we now call deleteLater on the previous statusbar
         QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-        QVERIFY(sb1 == 0);
+        QVERIFY(sb1.isNull());
 
         sb1 = new QStatusBar;
         mw.setStatusBar(sb1);
@@ -727,7 +727,7 @@ void tst_QMainWindow::statusBar()
         QCOMPARE(sb1->parentWidget(), (QWidget *)&mw);
         //we now call deleteLater on the previous statusbar
         QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-        QVERIFY(sb2 == 0);
+        QVERIFY(sb2.isNull());
 
         sb2 = new QStatusBar;
         mw.setStatusBar(sb2);
@@ -736,7 +736,7 @@ void tst_QMainWindow::statusBar()
         QCOMPARE(sb2->parentWidget(), (QWidget *)&mw);
         //we now call deleteLater on the previous statusbar
         QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-        QVERIFY(sb1 == 0);
+        QVERIFY(sb1.isNull());
     }
 
     {
@@ -749,7 +749,7 @@ void tst_QMainWindow::statusBar()
         QVERIFY(indexOfSb != -1);
         delete sb;
         indexOfSb = l->indexOf(sb);
-        QVERIFY(indexOfSb == -1);
+        QCOMPARE(indexOfSb, -1);
     }
 }
 
@@ -791,7 +791,7 @@ void tst_QMainWindow::centralWidget()
 {
     {
         QMainWindow mw;
-        QVERIFY(mw.centralWidget() == 0);
+        QVERIFY(!mw.centralWidget());
     }
 
     {
@@ -799,7 +799,7 @@ void tst_QMainWindow::centralWidget()
         QPointer<QWidget> w1 = new QWidget;
         QPointer<QWidget> w2 = new QWidget;
 
-        QVERIFY(mw.centralWidget() == 0);
+        QVERIFY(!mw.centralWidget());
 
         mw.setCentralWidget(w1);
         QVERIFY(mw.centralWidget() != 0);
@@ -812,12 +812,12 @@ void tst_QMainWindow::centralWidget()
         QCOMPARE(w2->parentWidget(), (QWidget *)&mw);
 
         mw.setCentralWidget(0);
-        QVERIFY(mw.centralWidget() == 0);
+        QVERIFY(!mw.centralWidget());
 
         //we now call deleteLater on the previous central widgets
         QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-        QVERIFY(w1 == 0);
-        QVERIFY(w2 == 0);
+        QVERIFY(w1.isNull());
+        QVERIFY(w2.isNull());
     }
 
     {
@@ -831,7 +831,7 @@ void tst_QMainWindow::centralWidget()
         QPointer<QWidget> w1 = new QWidget;
         QPointer<QWidget> w2 = new QWidget;
 
-        QVERIFY(mw.centralWidget() == 0);
+        QVERIFY(!mw.centralWidget());
 
         mw.setCentralWidget(w1);
         QVERIFY(mw.centralWidget() != 0);
@@ -844,12 +844,12 @@ void tst_QMainWindow::centralWidget()
         QCOMPARE(w2->parentWidget(), (QWidget *)&mw);
 
         mw.setCentralWidget(0);
-        QVERIFY(mw.centralWidget() == 0);
+        QVERIFY(!mw.centralWidget());
 
         //we now call deleteLater on the previous central widgets
         QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-        QVERIFY(w1 == 0);
-        QVERIFY(w2 == 0);
+        QVERIFY(w1.isNull());
+        QVERIFY(w2.isNull());
     }
 
 }
@@ -860,25 +860,25 @@ void tst_QMainWindow::takeCentralWidget() {
 
     QPointer<QWidget> w1 = new QWidget;
 
-    QVERIFY(mw.centralWidget() == 0);
+    QVERIFY(!mw.centralWidget());
 
     mw.setCentralWidget(w1);
 
     QWidget *oldCentralWidget = mw.takeCentralWidget();
-    QVERIFY(oldCentralWidget == w1.data());
+    QCOMPARE(oldCentralWidget, w1.data());
 
     // ensure that takeCentralWidget doesn't end up calling deleteLater
     // on the central widget
     QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-    QVERIFY(mw.centralWidget() == 0);
+    QVERIFY(!mw.centralWidget());
     QVERIFY(!w1.isNull());
-    QVERIFY(w1->parent() == 0);
+    QVERIFY(!w1->parent());
 
     mw.setCentralWidget(w1);
     // ensure that the deleteLater called by setCentralWidget
     // gets executed
     QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-    QVERIFY(mw.centralWidget() == w1.data());
+    QCOMPARE(mw.centralWidget(), w1.data());
 
     QPointer<QWidget> w2 = new QWidget;
 
@@ -887,10 +887,10 @@ void tst_QMainWindow::takeCentralWidget() {
     QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     QVERIFY(w1.isNull());
 
-    QVERIFY(mw.centralWidget() == w2.data());
+    QCOMPARE(mw.centralWidget(), w2.data());
 
     QWidget *hopefullyW2 = mw.takeCentralWidget();
-    QVERIFY(mw.centralWidget() == 0);
+    QVERIFY(!mw.centralWidget());
     // ensure that takeCentralWidget doesn't end up calling deleteLater
     // on the central widget
     QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
@@ -1928,9 +1928,9 @@ void tst_QMainWindow::toggleUnifiedTitleAndToolBarOnMac()
     mw.show();
     QRect frameGeometry = mw.frameGeometry();
     mw.setUnifiedTitleAndToolBarOnMac(false);
-    QVERIFY(frameGeometry.topLeft() == mw.frameGeometry().topLeft());
+    QCOMPARE(frameGeometry.topLeft(), mw.frameGeometry().topLeft());
     mw.setUnifiedTitleAndToolBarOnMac(true);
-    QVERIFY(frameGeometry.topLeft() == mw.frameGeometry().topLeft());
+    QCOMPARE(frameGeometry.topLeft(), mw.frameGeometry().topLeft());
 }
 #endif
 

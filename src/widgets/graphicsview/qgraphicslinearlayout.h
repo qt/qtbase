@@ -47,8 +47,8 @@ class QGraphicsLinearLayoutPrivate;
 class Q_WIDGETS_EXPORT QGraphicsLinearLayout : public QGraphicsLayout
 {
 public:
-    QGraphicsLinearLayout(QGraphicsLayoutItem *parent = 0);
-    QGraphicsLinearLayout(Qt::Orientation orientation, QGraphicsLayoutItem *parent = 0);
+    QGraphicsLinearLayout(QGraphicsLayoutItem *parent = Q_NULLPTR);
+    QGraphicsLinearLayout(Qt::Orientation orientation, QGraphicsLayoutItem *parent = Q_NULLPTR);
     virtual ~QGraphicsLinearLayout();
 
     void setOrientation(Qt::Orientation orientation);

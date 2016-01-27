@@ -1256,7 +1256,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
         // scaling the advances for this particular version
         if (actualFontEngine->fontDef.stretch != 100
                 && QSysInfo::MacintoshVersion != QSysInfo::MV_10_6) {
-            QFixed stretch = QFixed(actualFontEngine->fontDef.stretch) / QFixed(100);
+            QFixed stretch = QFixed(int(actualFontEngine->fontDef.stretch)) / QFixed(100);
             for (uint i = 0; i < num_glyphs; ++i)
                 g.advances[i] *= stretch;
         }
@@ -2863,6 +2863,7 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
     if (!tabArray.isEmpty()) {
         if (isRightToLeft()) { // rebase the tabArray positions.
             QList<QTextOption::Tab> newTabs;
+            newTabs.reserve(tabArray.count());
             QList<QTextOption::Tab>::Iterator iter = tabArray.begin();
             while(iter != tabArray.end()) {
                 QTextOption::Tab tab = *iter;

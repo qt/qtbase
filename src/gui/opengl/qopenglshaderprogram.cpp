@@ -1776,7 +1776,7 @@ void QOpenGLShaderProgram::setAttributeBuffer
     Q_UNUSED(d);
     if (location != -1) {
         d->glfuncs->glVertexAttribPointer(location, tupleSize, type, GL_TRUE, stride,
-                              reinterpret_cast<const void *>(offset));
+                              reinterpret_cast<const void *>(qintptr(offset)));
     }
 }
 

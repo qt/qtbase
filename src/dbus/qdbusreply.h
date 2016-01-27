@@ -125,7 +125,7 @@ private:
 template<> inline QDBusReply<QVariant>&
 QDBusReply<QVariant>::operator=(const QDBusMessage &reply)
 {
-    void *null = 0;
+    void *null = Q_NULLPTR;
     QVariant data(qMetaTypeId<QDBusVariant>(), null);
     qDBusReplyFill(reply, m_error, data);
     m_data = qvariant_cast<QDBusVariant>(data).variant();

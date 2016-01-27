@@ -54,6 +54,7 @@
 #include "qsslcipher.h"
 #include "qsslcipher_p.h"
 #include "qsslsocket.h"
+#include "qsslconfiguration.h"
 
 #ifndef QT_NO_DEBUG_STREAM
 #include <QtCore/qdebug.h>
@@ -81,7 +82,7 @@ QSslCipher::QSslCipher()
 QSslCipher::QSslCipher(const QString &name)
     : d(new QSslCipherPrivate)
 {
-    foreach (const QSslCipher &cipher, QSslSocket::supportedCiphers()) {
+    foreach (const QSslCipher &cipher, QSslConfiguration::supportedCiphers()) {
         if (cipher.name() == name) {
             *this = cipher;
             return;
@@ -102,7 +103,7 @@ QSslCipher::QSslCipher(const QString &name)
 QSslCipher::QSslCipher(const QString &name, QSsl::SslProtocol protocol)
     : d(new QSslCipherPrivate)
 {
-    foreach (const QSslCipher &cipher, QSslSocket::supportedCiphers()) {
+    foreach (const QSslCipher &cipher, QSslConfiguration::supportedCiphers()) {
         if (cipher.name() == name && cipher.protocol() == protocol) {
             *this = cipher;
             return;

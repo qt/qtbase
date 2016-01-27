@@ -53,7 +53,7 @@ class Q_WIDGETS_EXPORT QFontComboBox : public QComboBox
     Q_PROPERTY(QFont currentFont READ currentFont WRITE setCurrentFont NOTIFY currentFontChanged)
 
 public:
-    explicit QFontComboBox(QWidget *parent = 0);
+    explicit QFontComboBox(QWidget *parent = Q_NULLPTR);
     ~QFontComboBox();
 
     void setWritingSystem(QFontDatabase::WritingSystem);

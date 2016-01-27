@@ -52,6 +52,7 @@ struct XInput2TouchDeviceData {
     }
     XIDeviceInfo *xiDeviceInfo;
     QTouchDevice *qtTouchDevice;
+    QHash<int, QWindowSystemInterface::TouchPoint> touchPoints;
 
     // Stuff that is relevant only for touchpads
     QHash<int, QPointF> pointPressedPosition; // in screen coordinates where each point was pressed
@@ -525,7 +526,7 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
             case XI_ButtonPress:
             case XI_ButtonRelease:
             case XI_Motion:
-                if (xi2MouseEvents() && eventListener)
+                if (xi2MouseEvents() && eventListener && !(xiDeviceEvent->flags & XIPointerEmulated))
                     eventListener->handleXIMouseEvent(event);
                 break;
 
@@ -552,19 +553,19 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
     xXIDeviceEvent *xiDeviceEvent = static_cast<xXIDeviceEvent *>(xiDevEvent);
     XInput2TouchDeviceData *dev = touchDeviceForId(xiDeviceEvent->sourceid);
     Q_ASSERT(dev);
-    const bool firstTouch = m_touchPoints.isEmpty();
+    const bool firstTouch = dev->touchPoints.isEmpty();
     if (xiDeviceEvent->evtype == XI_TouchBegin) {
         QWindowSystemInterface::TouchPoint tp;
         tp.id = xiDeviceEvent->detail % INT_MAX;
         tp.state = Qt::TouchPointPressed;
         tp.pressure = -1.0;
-        m_touchPoints[tp.id] = tp;
+        dev->touchPoints[tp.id] = tp;
     }
-    QWindowSystemInterface::TouchPoint &touchPoint = m_touchPoints[xiDeviceEvent->detail];
+    QWindowSystemInterface::TouchPoint &touchPoint = dev->touchPoints[xiDeviceEvent->detail];
+    QXcbScreen* screen = platformWindow->xcbScreen();
     qreal x = fixed1616ToReal(xiDeviceEvent->root_x);
     qreal y = fixed1616ToReal(xiDeviceEvent->root_y);
     qreal nx = -1.0, ny = -1.0, d = 0.0;
-    QXcbScreen* screen = m_screens.at(0);
     for (int i = 0; i < dev->xiDeviceInfo->num_classes; ++i) {
         XIAnyClassInfo *classinfo = dev->xiDeviceInfo->classes[i];
         if (classinfo->type == XIValuatorClass) {
@@ -677,10 +678,10 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
     if (Q_UNLIKELY(lcQpaXInput().isDebugEnabled()))
         qCDebug(lcQpaXInput) << "   touchpoint "  << touchPoint.id << " state " << touchPoint.state << " pos norm " << touchPoint.normalPosition <<
             " area " << touchPoint.area << " pressure " << touchPoint.pressure;
-    QWindowSystemInterface::handleTouchEvent(platformWindow->window(), xiDeviceEvent->time, dev->qtTouchDevice, m_touchPoints.values());
+    QWindowSystemInterface::handleTouchEvent(platformWindow->window(), xiDeviceEvent->time, dev->qtTouchDevice, dev->touchPoints.values());
     if (touchPoint.state == Qt::TouchPointReleased)
         // If a touchpoint was released, we can forget it, because the ID won't be reused.
-        m_touchPoints.remove(touchPoint.id);
+        dev->touchPoints.remove(touchPoint.id);
     else
         // Make sure that we don't send TouchPointPressed/Moved in more than one QTouchEvent
         // with this touch point if the next XI2 event is about a different touch point.
@@ -870,9 +871,8 @@ void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollin
                 }
             }
             if (!angleDelta.isNull()) {
-                const int dpr = int(platformWindow->devicePixelRatio());
-                QPoint local(fixed1616ToReal(xiDeviceEvent->event_x)/dpr, fixed1616ToReal(xiDeviceEvent->event_y)/dpr);
-                QPoint global(fixed1616ToReal(xiDeviceEvent->root_x)/dpr, fixed1616ToReal(xiDeviceEvent->root_y)/dpr);
+                QPoint local(fixed1616ToReal(xiDeviceEvent->event_x), fixed1616ToReal(xiDeviceEvent->event_y));
+                QPoint global(fixed1616ToReal(xiDeviceEvent->root_x), fixed1616ToReal(xiDeviceEvent->root_y));
                 Qt::KeyboardModifiers modifiers = keyboard()->translateModifiers(xiDeviceEvent->mods.effective_mods);
                 if (modifiers & Qt::AltModifier) {
                     std::swap(angleDelta.rx(), angleDelta.ry());
@@ -898,9 +898,8 @@ void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollin
                     angleDelta.setX(-120);
             }
             if (!angleDelta.isNull()) {
-                const int dpr = int(platformWindow->devicePixelRatio());
-                QPoint local(fixed1616ToReal(xiDeviceEvent->event_x)/dpr, fixed1616ToReal(xiDeviceEvent->event_y)/dpr);
-                QPoint global(fixed1616ToReal(xiDeviceEvent->root_x)/dpr, fixed1616ToReal(xiDeviceEvent->root_y)/dpr);
+                QPoint local(fixed1616ToReal(xiDeviceEvent->event_x), fixed1616ToReal(xiDeviceEvent->event_y));
+                QPoint global(fixed1616ToReal(xiDeviceEvent->root_x), fixed1616ToReal(xiDeviceEvent->root_y));
                 Qt::KeyboardModifiers modifiers = keyboard()->translateModifiers(xiDeviceEvent->mods.effective_mods);
                 if (modifiers & Qt::AltModifier)
                     std::swap(angleDelta.rx(), angleDelta.ry());

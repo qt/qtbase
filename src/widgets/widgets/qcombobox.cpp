@@ -546,7 +546,8 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
         disconnect(view, SIGNAL(destroyed()),
                    this, SLOT(viewDestroyed()));
 
-        delete view;
+        if (isAncestorOf(view))
+            delete view;
         view = 0;
     }
 
@@ -2092,8 +2093,10 @@ void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
         const QString newText = itemText(normalized);
         if (lineEdit->text() != newText) {
             lineEdit->setText(newText);
+#ifndef QT_NO_COMPLETER
             if (lineEdit->completer())
                 lineEdit->completer()->setCompletionPrefix(newText);
+#endif
         }
         updateLineEditGeometry();
     }
@@ -2263,6 +2266,7 @@ void QComboBox::insertItems(int index, const QStringList &list)
     // construct a QStandardItem, reducing the number of expensive signals from the model
     if (QStandardItemModel *m = qobject_cast<QStandardItemModel*>(d->model)) {
         QList<QStandardItem *> items;
+        items.reserve(insertCount);
         QStandardItem *hiddenRoot = m->invisibleRootItem();
         for (int i = 0; i < insertCount; ++i)
             items.append(new QStandardItem(list.at(i)));
@@ -2699,7 +2703,7 @@ void QComboBox::showPopup()
         qScrollEffect(container, scrollDown ? QEffects::DownScroll : QEffects::UpScroll, 150);
 #endif
 
-// Don't disable updates on Mac OS X. Windows are displayed immediately on this platform,
+// Don't disable updates on OS X. Windows are displayed immediately on this platform,
 // which means that the window will be visible before the call to container->show() returns.
 // If updates are disabled at this point we'll miss our chance at painting the popup
 // menu before it's shown, causing flicker since the window then displays the standard gray

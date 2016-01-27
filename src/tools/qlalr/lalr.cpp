@@ -367,7 +367,7 @@ void Automaton::closure (StatePointer state)
 
       if (_M_grammar->isNonTerminal (*item->dot))
         {
-          foreach (RulePointer rule, _M_grammar->rule_map.values (*item->dot))
+          foreach (const RulePointer &rule, _M_grammar->rule_map.values (*item->dot))
             {
               Item ii;
               ii.rule = rule;
@@ -413,7 +413,7 @@ void Automaton::buildLookbackSets ()
           if (! _M_grammar->isNonTerminal (A))
             continue;
 
-          foreach (RulePointer rule, _M_grammar->rule_map.values (A))
+          foreach (const RulePointer &rule, _M_grammar->rule_map.values (A))
             {
               StatePointer q = p;
 
@@ -606,7 +606,7 @@ void Automaton::buildIncludesDigraph ()
           if (! _M_grammar->isNonTerminal (name))
             continue;
 
-          foreach (RulePointer rule, _M_grammar->rule_map.values (name))
+          foreach (const RulePointer &rule, _M_grammar->rule_map.values (name))
             {
               StatePointer p = pp;
 
@@ -706,7 +706,7 @@ void Automaton::buildLookaheads ()
     {
       for (ItemPointer item = p->closure.begin (); item != p->closure.end (); ++item)
         {
-          foreach (Lookback lookback, lookbacks.values (item))
+          foreach (const Lookback &lookback, lookbacks.values (item))
             {
               StatePointer q = lookback.state;
 

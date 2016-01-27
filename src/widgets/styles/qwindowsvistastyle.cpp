@@ -396,7 +396,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
 
     case PE_IndicatorBranch:
         {
-            XPThemeData theme(0, painter, QWindowsXPStylePrivate::TreeViewTheme);
+            XPThemeData theme(widget, painter, QWindowsXPStylePrivate::TreeViewTheme);
             static int decoration_size = 0;
             if (d->initTreeViewTheming() && theme.isValid() && !decoration_size) {
                 XPThemeData themeSize = theme;
@@ -657,6 +657,8 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                 newStyle = !qobject_cast<const QTableView*>(view);
                 selectionBehavior = view->selectionBehavior();
                 selectionMode = view->selectionMode();
+            } else if (!widget) {
+                newStyle = !QStyleHelper::hasAncestor(option->styleObject, QAccessible::MenuItem) ;
             }
 
             if (newStyle && (vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option))) {
@@ -710,7 +712,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                                 state = LISS_HOT;
 
                             QPainter pixmapPainter(&pixmap);
-                            XPThemeData theme(0, &pixmapPainter,
+                            XPThemeData theme(widget, &pixmapPainter,
                                               QWindowsXPStylePrivate::TreeViewTheme,
                                 LVP_LISTITEM, state, QRect(0, 0, sectionSize.width(), sectionSize.height()));
                             if (d->initTreeViewTheming() && theme.isValid()) {

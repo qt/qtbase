@@ -72,12 +72,12 @@ Window::Window(QWidget *parent)
 //! [Set up the mapper]
 
 //! [Set up connections and layouts]
-    connect(previousButton, SIGNAL(clicked()),
-            mapper, SLOT(toPrevious()));
-    connect(nextButton, SIGNAL(clicked()),
-            mapper, SLOT(toNext()));
-    connect(mapper, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(updateButtons(int)));
+    connect(previousButton, &QAbstractButton::clicked,
+            mapper, &QDataWidgetMapper::toPrevious);
+    connect(nextButton, &QAbstractButton::clicked,
+            mapper, &QDataWidgetMapper::toNext);
+    connect(mapper, &QDataWidgetMapper::currentIndexChanged,
+            this, &Window::updateButtons);
 
     QGridLayout *layout = new QGridLayout();
     layout->addWidget(nameLabel, 0, 0, 1, 1);

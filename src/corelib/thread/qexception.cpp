@@ -108,7 +108,9 @@ QT_BEGIN_NAMESPACE
 */
 
 QException::~QException()
-#ifndef Q_COMPILER_NOEXCEPT
+#ifdef Q_COMPILER_NOEXCEPT
+    noexcept
+#else
     throw()
 #endif
 {
@@ -127,7 +129,9 @@ QException *QException::clone() const
 }
 
 QUnhandledException::~QUnhandledException()
-#ifndef Q_COMPILER_NOEXCEPT
+#ifdef Q_COMPILER_NOEXCEPT
+    noexcept
+#else
     throw()
 #endif
 {

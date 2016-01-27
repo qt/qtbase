@@ -69,11 +69,11 @@ public:
     inline ~QVector() { if (!d->ref.deref()) freeData(d); }
     QVector<T> &operator=(const QVector<T> &v);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QVector(QVector<T> &&other) : d(other.d) { other.d = Data::sharedNull(); }
-    inline QVector<T> operator=(QVector<T> &&other)
-    { qSwap(d, other.d); return *this; }
+    QVector(QVector<T> &&other) Q_DECL_NOTHROW : d(other.d) { other.d = Data::sharedNull(); }
+    QVector<T> &operator=(QVector<T> &&other) Q_DECL_NOTHROW
+    { QVector moved(std::move(other)); swap(moved); return *this; }
 #endif
-    inline void swap(QVector<T> &other) { qSwap(d, other.d); }
+    void swap(QVector<T> &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QVector(std::initializer_list<T> args);
 #endif
@@ -129,6 +129,9 @@ public:
     T &operator[](int i);
     const T &operator[](int i) const;
     void append(const T &t);
+#ifdef Q_COMPILER_RVALUE_REFS
+    void append(T &&t);
+#endif
     inline void append(const QVector<T> &l) { *this += l; }
     void prepend(const T &t);
     void insert(int i, const T &t);
@@ -172,6 +175,19 @@ public:
     }
     int length() const { return size(); }
     T takeAt(int i) { T t = at(i); remove(i); return t; }
+    void move(int from, int to)
+    {
+        Q_ASSERT_X(from >= 0 && from < size(), "QVector::move(int,int)", "'from' is out-of-range");
+        Q_ASSERT_X(to >= 0 && to < size(), "QVector::move(int,int)", "'to' is out-of-range");
+        if (from == to) // don't detach when no-op
+            return;
+        detach();
+        T * const b = d->begin();
+        if (from < to)
+            std::rotate(b + from, b + from + 1, b + to + 1);
+        else
+            std::rotate(b + to, b + from, b + from + 1);
+    }
 
     // STL-style
     typedef typename Data::iterator iterator;
@@ -180,29 +196,29 @@ public:
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 #if !defined(QT_STRICT_ITERATORS) || defined(Q_QDOC)
     inline iterator begin() { detach(); return d->begin(); }
-    inline const_iterator begin() const { return d->constBegin(); }
-    inline const_iterator cbegin() const { return d->constBegin(); }
-    inline const_iterator constBegin() const { return d->constBegin(); }
+    inline const_iterator begin() const Q_DECL_NOTHROW { return d->constBegin(); }
+    inline const_iterator cbegin() const Q_DECL_NOTHROW { return d->constBegin(); }
+    inline const_iterator constBegin() const Q_DECL_NOTHROW { return d->constBegin(); }
     inline iterator end() { detach(); return d->end(); }
-    inline const_iterator end() const { return d->constEnd(); }
-    inline const_iterator cend() const { return d->constEnd(); }
-    inline const_iterator constEnd() const { return d->constEnd(); }
+    inline const_iterator end() const Q_DECL_NOTHROW { return d->constEnd(); }
+    inline const_iterator cend() const Q_DECL_NOTHROW { return d->constEnd(); }
+    inline const_iterator constEnd() const Q_DECL_NOTHROW { return d->constEnd(); }
 #else
     inline iterator begin(iterator = iterator()) { detach(); return d->begin(); }
-    inline const_iterator begin(const_iterator = const_iterator()) const { return d->constBegin(); }
-    inline const_iterator cbegin(const_iterator = const_iterator()) const { return d->constBegin(); }
-    inline const_iterator constBegin(const_iterator = const_iterator()) const { return d->constBegin(); }
+    inline const_iterator begin(const_iterator = const_iterator()) const Q_DECL_NOTHROW { return d->constBegin(); }
+    inline const_iterator cbegin(const_iterator = const_iterator()) const Q_DECL_NOTHROW { return d->constBegin(); }
+    inline const_iterator constBegin(const_iterator = const_iterator()) const Q_DECL_NOTHROW { return d->constBegin(); }
     inline iterator end(iterator = iterator()) { detach(); return d->end(); }
-    inline const_iterator end(const_iterator = const_iterator()) const { return d->constEnd(); }
-    inline const_iterator cend(const_iterator = const_iterator()) const { return d->constEnd(); }
-    inline const_iterator constEnd(const_iterator = const_iterator()) const { return d->constEnd(); }
+    inline const_iterator end(const_iterator = const_iterator()) const Q_DECL_NOTHROW { return d->constEnd(); }
+    inline const_iterator cend(const_iterator = const_iterator()) const Q_DECL_NOTHROW { return d->constEnd(); }
+    inline const_iterator constEnd(const_iterator = const_iterator()) const Q_DECL_NOTHROW { return d->constEnd(); }
 #endif
     reverse_iterator rbegin() { return reverse_iterator(end()); }
     reverse_iterator rend() { return reverse_iterator(begin()); }
-    const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
-    const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
-    const_reverse_iterator crbegin() const { return const_reverse_iterator(end()); }
-    const_reverse_iterator crend() const { return const_reverse_iterator(begin()); }
+    const_reverse_iterator rbegin() const Q_DECL_NOTHROW { return const_reverse_iterator(end()); }
+    const_reverse_iterator rend() const Q_DECL_NOTHROW { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crbegin() const Q_DECL_NOTHROW { return const_reverse_iterator(end()); }
+    const_reverse_iterator crend() const Q_DECL_NOTHROW { return const_reverse_iterator(begin()); }
     iterator insert(iterator before, int n, const T &x);
     inline iterator insert(iterator before, const T &x) { return insert(before, 1, x); }
     iterator erase(iterator begin, iterator end);
@@ -234,6 +250,9 @@ public:
     typedef const_iterator ConstIterator;
     typedef int size_type;
     inline void push_back(const T &t) { append(t); }
+#ifdef Q_COMPILER_RVALUE_REFS
+    void push_back(T &&t) { append(std::move(t)); }
+#endif
     inline void push_front(const T &t) { prepend(t); }
     void pop_back() { removeLast(); }
     void pop_front() { removeFirst(); }
@@ -612,14 +631,14 @@ void QVector<T>::append(const T &t)
 {
     const bool isTooSmall = uint(d->size + 1) > d->alloc;
     if (!isDetached() || isTooSmall) {
-        const T copy(t);
+        T copy(t);
         QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
         reallocData(d->size, isTooSmall ? d->size + 1 : d->alloc, opt);
 
         if (QTypeInfo<T>::isComplex)
-            new (d->end()) T(copy);
+            new (d->end()) T(qMove(copy));
         else
-            *d->end() = copy;
+            *d->end() = qMove(copy);
 
     } else {
         if (QTypeInfo<T>::isComplex)
@@ -629,6 +648,22 @@ void QVector<T>::append(const T &t)
     }
     ++d->size;
 }
+
+#ifdef Q_COMPILER_RVALUE_REFS
+template <typename T>
+void QVector<T>::append(T &&t)
+{
+    const bool isTooSmall = uint(d->size + 1) > d->alloc;
+    if (!isDetached() || isTooSmall) {
+        QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
+        reallocData(d->size, isTooSmall ? d->size + 1 : d->alloc, opt);
+    }
+
+    new (d->end()) T(std::move(t));
+
+    ++d->size;
+}
+#endif
 
 template <typename T>
 void QVector<T>::removeLast()

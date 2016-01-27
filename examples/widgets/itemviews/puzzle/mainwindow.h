@@ -58,7 +58,8 @@ public:
     MainWindow(QWidget *parent = 0);
 
 public slots:
-    void openImage(const QString &path = QString());
+    void openImage();
+    void loadImage(const QString &path);
     void setupPuzzle();
 
 private slots:

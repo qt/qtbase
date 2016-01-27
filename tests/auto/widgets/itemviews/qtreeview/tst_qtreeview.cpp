@@ -850,7 +850,7 @@ void tst_QTreeView::editTriggers()
     case QAbstractItemView::EditKeyPressed:
         view.setFocus();
 #ifdef Q_OS_MAC
-        // Mac OS X uses Enter for editing
+        // OS X uses Enter for editing
         QTest::keyPress(&view, Qt::Key_Enter);
 #else
         // All other platforms use F2
@@ -3657,7 +3657,7 @@ void tst_QTreeView::task202039_closePersistentEditor()
     QVERIFY(view.indexWidget(current));
 
     view.closePersistentEditor(current);
-    QVERIFY(view.indexWidget(current) == 0);
+    QVERIFY(!view.indexWidget(current));
 
     //here was the bug: closing the persistent editor would not reset the state
     //and it was impossible to go into editinon again

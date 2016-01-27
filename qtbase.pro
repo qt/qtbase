@@ -49,7 +49,7 @@ INSTALLS += qmake
 #licheck
 licheck.path = $$[QT_HOST_BINS]
 licheck.files = $$PWD/bin/$$QT_LICHECK
-exists($$licheck.files): INSTALLS += licheck
+!isEmpty(QT_LICHECK): INSTALLS += licheck
 
 #syncqt
 syncqt.path = $$[QT_HOST_BINS]

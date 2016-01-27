@@ -434,6 +434,7 @@ QList<QMimeType> QMimeDatabase::mimeTypesForFileName(const QString &fileName) co
     QStringList matches = d->mimeTypeForFileName(fileName);
     QList<QMimeType> mimes;
     matches.sort(); // Make it deterministic
+    mimes.reserve(matches.count());
     foreach (const QString &mime, matches)
         mimes.append(d->mimeTypeForName(mime));
     return mimes;

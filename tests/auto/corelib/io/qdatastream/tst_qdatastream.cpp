@@ -1837,7 +1837,7 @@ static QRegion qRegionData(int index)
     case 12: return QRegion(0, 0, 3, 3, QRegion::Ellipse);
 #else
     case 7:
-        qWarning("Skipping streaming of elliptical regions on embedded, Mac OS X, and X11;"
+        qWarning("Skipping streaming of elliptical regions on embedded, OS X, and X11;"
                  " our pointarray stuff is not that great at approximating.");
 #endif
     }

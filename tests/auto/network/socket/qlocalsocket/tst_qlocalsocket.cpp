@@ -246,8 +246,8 @@ void tst_QLocalSocket::socket_basic()
     QCOMPARE(socket.serverName(), QString());
     QCOMPARE(socket.fullServerName(), QString());
     socket.abort();
-    QVERIFY(socket.bytesAvailable() == 0);
-    QVERIFY(socket.bytesToWrite() == 0);
+    QCOMPARE(socket.bytesAvailable(), 0);
+    QCOMPARE(socket.bytesToWrite(), 0);
     QCOMPARE(socket.canReadLine(), false);
     socket.close();
     socket.disconnectFromServer();
@@ -255,7 +255,7 @@ void tst_QLocalSocket::socket_basic()
     QVERIFY(!socket.errorString().isEmpty());
     QCOMPARE(socket.flush(), false);
     QCOMPARE(socket.isValid(), false);
-    QVERIFY(socket.readBufferSize() == 0);
+    QCOMPARE(socket.readBufferSize(), 0);
     socket.setReadBufferSize(0);
     //QCOMPARE(socket.socketDescriptor(), (qintptr)-1);
     QCOMPARE(socket.state(), QLocalSocket::UnconnectedState);
@@ -375,13 +375,13 @@ void tst_QLocalSocket::listenAndConnect()
             QVERIFY(!socket->errorString().isEmpty());
             QVERIFY(socket->error() != QLocalSocket::UnknownSocketError);
             QCOMPARE(socket->state(), QLocalSocket::UnconnectedState);
-            //QVERIFY(socket->socketDescriptor() == -1);
+            //QCOMPARE(socket->socketDescriptor(), -1);
             QCOMPARE(qvariant_cast<QLocalSocket::LocalSocketError>(spyError.first()[0]),
                      QLocalSocket::ServerNotFoundError);
         }
 
-        QVERIFY(socket->bytesAvailable() == 0);
-        QVERIFY(socket->bytesToWrite() == 0);
+        QCOMPARE(socket->bytesAvailable(), 0);
+        QCOMPARE(socket->bytesToWrite(), 0);
         QCOMPARE(socket->canReadLine(), false);
         QCOMPARE(socket->flush(), false);
         QCOMPARE(socket->isValid(), canListen);
@@ -432,7 +432,7 @@ void tst_QLocalSocket::listenAndConnect()
         } else {
             QVERIFY(server.serverName().isEmpty());
             QVERIFY(server.fullServerName().isEmpty());
-            QVERIFY(server.nextPendingConnection() == (QLocalSocket*)0);
+            QCOMPARE(server.nextPendingConnection(), (QLocalSocket*)0);
             QCOMPARE(spyNewConnection.count(), 0);
             QCOMPARE(server.hits.count(), 0);
             QVERIFY(!server.errorString().isEmpty());
@@ -616,7 +616,7 @@ void tst_QLocalSocket::readBufferOverflow()
     QVERIFY(client.waitForReadyRead());
     QCOMPARE(client.read(buffer, readBufferSize), qint64(readBufferSize));
     // no more bytes available
-    QVERIFY(client.bytesAvailable() == 0);
+    QCOMPARE(client.bytesAvailable(), 0);
 }
 
 // QLocalSocket/Server can take a name or path, check that it works as expected
@@ -912,7 +912,7 @@ void tst_QLocalSocket::waitForDisconnectByServer()
     QLocalSocket *serverSocket = server.nextPendingConnection();
     QVERIFY(serverSocket);
     serverSocket->close();
-    QVERIFY(serverSocket->state() == QLocalSocket::UnconnectedState);
+    QCOMPARE(serverSocket->state(), QLocalSocket::UnconnectedState);
     QVERIFY(socket.waitForDisconnected(3000));
     QCOMPARE(spy.count(), 1);
 }
@@ -1197,11 +1197,12 @@ void tst_QLocalSocket::verifyListenWithDescriptor()
     QVERIFY2(server.listen(listenSocket), "failed to start create QLocalServer with local socket");
 
 #ifdef Q_OS_LINUX
+    const QChar at(QLatin1Char('@'));
     if (!bound) {
-        QVERIFY(server.serverName().at(0) == QLatin1Char('@'));
-        QVERIFY(server.fullServerName().at(0) == QLatin1Char('@'));
+        QCOMPARE(server.serverName().at(0), at);
+        QCOMPARE(server.fullServerName().at(0), at);
     } else if (abstract) {
-        QVERIFY2(server.fullServerName().at(0) == QLatin1Char('@'), "abstract sockets should start with a '@'");
+        QVERIFY2(server.fullServerName().at(0) == at, "abstract sockets should start with a '@'");
     } else {
         QCOMPARE(server.fullServerName(), path);
         if (path.contains(QLatin1String("/"))) {

@@ -507,11 +507,15 @@ void QTableModel::sort(int column, Qt::SortOrder order)
     QVector<QTableWidgetItem*> sorted_table(tableItems.count());
     QModelIndexList from;
     QModelIndexList to;
-    for (int i = 0; i < rowCount(); ++i) {
+    const int numRows = rowCount();
+    const int numColumns = columnCount();
+    from.reserve(numRows * numColumns);
+    to.reserve(numRows * numColumns);
+    for (int i = 0; i < numRows; ++i) {
         int r = (i < sortable.count()
                  ? sortable.at(i).second
                  : unsortable.at(i - sortable.count()));
-        for (int c = 0; c < columnCount(); ++c) {
+        for (int c = 0; c < numColumns; ++c) {
             sorted_table[tableIndex(i, c)] = item(r, c);
             from.append(createIndex(r, c));
             to.append(createIndex(i, c));

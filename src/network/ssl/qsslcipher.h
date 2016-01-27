@@ -52,10 +52,13 @@ public:
     explicit QSslCipher(const QString &name);
     QSslCipher(const QString &name, QSsl::SslProtocol protocol);
     QSslCipher(const QSslCipher &other);
-    ~QSslCipher();
+#ifdef Q_COMPILER_RVALUE_REFS
+    QSslCipher &operator=(QSslCipher &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
     QSslCipher &operator=(const QSslCipher &other);
+    ~QSslCipher();
 
-    inline void swap(QSslCipher &other)
+    void swap(QSslCipher &other) Q_DECL_NOTHROW
     { qSwap(d, other.d); }
 
     bool operator==(const QSslCipher &other) const;

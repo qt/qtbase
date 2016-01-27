@@ -409,12 +409,22 @@ QTemporaryFilePrivate::~QTemporaryFilePrivate()
 QAbstractFileEngine *QTemporaryFilePrivate::engine() const
 {
     if (!fileEngine) {
-        if (fileName.isEmpty())
-            fileEngine = new QTemporaryFileEngine(templateName, 0600);
-        else
-            fileEngine = new QTemporaryFileEngine(fileName, 0600, false);
+        fileEngine = new QTemporaryFileEngine;
+        resetFileEngine();
     }
     return fileEngine;
+}
+
+void QTemporaryFilePrivate::resetFileEngine() const
+{
+    if (!fileEngine)
+        return;
+
+    QTemporaryFileEngine *tef = static_cast<QTemporaryFileEngine *>(fileEngine);
+    if (fileName.isEmpty())
+        tef->initialize(templateName, 0600);
+    else
+        tef->initialize(fileName, 0600, false);
 }
 
 QString QTemporaryFilePrivate::defaultTemplateName()
@@ -768,6 +778,13 @@ bool QTemporaryFile::open(OpenMode flags)
             return true;
         }
     }
+
+    // reset the engine state so it creates a new, unique file name from the template;
+    // equivalent to:
+    //    delete d->fileEngine;
+    //    d->fileEngine = 0;
+    //    d->engine();
+    d->resetFileEngine();
 
     if (QFile::open(flags)) {
         d->fileName = d->fileEngine->fileName(QAbstractFileEngine::DefaultName);

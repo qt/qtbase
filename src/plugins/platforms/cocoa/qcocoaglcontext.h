@@ -50,22 +50,22 @@ public:
     QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, const QVariant &nativeHandle);
     ~QCocoaGLContext();
 
-    QSurfaceFormat format() const;
+    QSurfaceFormat format() const Q_DECL_OVERRIDE;
 
-    void swapBuffers(QPlatformSurface *surface);
+    void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
 
-    bool makeCurrent(QPlatformSurface *surface);
-    void doneCurrent();
+    bool makeCurrent(QPlatformSurface *surface) Q_DECL_OVERRIDE;
+    void doneCurrent() Q_DECL_OVERRIDE;
 
-    void (*getProcAddress(const QByteArray &procName)) ();
+    void (*getProcAddress(const QByteArray &procName)) () Q_DECL_OVERRIDE;
 
     void update();
 
     static NSOpenGLPixelFormat *createNSOpenGLPixelFormat(const QSurfaceFormat &format);
     NSOpenGLContext *nsOpenGLContext() const;
 
-    bool isSharing() const;
-    bool isValid() const;
+    bool isSharing() const Q_DECL_OVERRIDE;
+    bool isValid() const Q_DECL_OVERRIDE;
 
     void windowWasHidden();
 

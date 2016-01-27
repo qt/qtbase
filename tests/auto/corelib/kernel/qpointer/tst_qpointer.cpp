@@ -50,6 +50,7 @@ private slots:
     void destructor();
     void assignment_operators();
     void equality_operators();
+    void swap();
     void isNull();
     void dereference_operators();
     void disconnect();
@@ -167,6 +168,22 @@ void tst_QPointer::equality_operators()
     QVERIFY(p2 != widget);
     QVERIFY(widget != p2);
 #endif
+}
+
+void tst_QPointer::swap()
+{
+    QPointer<QObject> c1, c2;
+    {
+        QObject o;
+        c1 = &o;
+        QVERIFY(c2.isNull());
+        QCOMPARE(c1.data(), &o);
+        c1.swap(c2);
+        QVERIFY(c1.isNull());
+        QCOMPARE(c2.data(), &o);
+    }
+    QVERIFY(c1.isNull());
+    QVERIFY(c2.isNull());
 }
 
 void tst_QPointer::isNull()

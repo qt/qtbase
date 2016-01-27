@@ -146,6 +146,7 @@ void QTextOption::setTabArray(const QList<qreal> &tabStops)
         d = new QTextOptionPrivate;
     QList<QTextOption::Tab> tabs;
     QTextOption::Tab tab;
+    tabs.reserve(tabStops.count());
     foreach (qreal pos, tabStops) {
         tab.position = pos;
         tabs.append(tab);
@@ -174,10 +175,11 @@ void QTextOption::setTabs(const QList<QTextOption::Tab> &tabStops)
 */
 QList<qreal> QTextOption::tabArray() const
 {
-    if (!d)
-        return QList<qreal>();
-
     QList<qreal> answer;
+    if (!d)
+        return answer;
+
+    answer.reserve(d->tabStops.count());
     QList<QTextOption::Tab>::ConstIterator iter = d->tabStops.constBegin();
     while(iter != d->tabStops.constEnd()) {
         answer.append( (*iter).position);

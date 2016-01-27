@@ -39,6 +39,10 @@
 #include <qwindow.h>
 #include <qevent.h>
 
+#include <qpa/qplatformcursor.h>
+#include <qpa/qplatformscreen.h>
+#include <qpa/qwindowsysteminterface.h>
+
 #include "qibusproxy.h"
 #include "qibusinputcontextproxy.h"
 #include "qibustypes.h"
@@ -48,7 +52,13 @@
 
 #include <QtDBus>
 
+#ifndef IBUS_RELEASE_MASK
+#define IBUS_RELEASE_MASK (1 << 30)
+#endif
+
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(qtQpaInputMethods, "qt.qpa.input.methods")
 
 enum { debug = 0 };
 
@@ -86,6 +96,13 @@ QIBusPlatformInputContext::QIBusPlatformInputContext ()
     }
     QInputMethod *p = qApp->inputMethod();
     connect(p, SIGNAL(cursorRectangleChanged()), this, SLOT(cursorRectChanged()));
+    m_eventFilterUseSynchronousMode = false;
+    if (qEnvironmentVariableIsSet("IBUS_ENABLE_SYNC_MODE")) {
+        bool ok;
+        int enableSync = qgetenv("IBUS_ENABLE_SYNC_MODE").toInt(&ok);
+        if (ok && enableSync == 1)
+            m_eventFilterUseSynchronousMode = true;
+    }
 }
 
 QIBusPlatformInputContext::~QIBusPlatformInputContext (void)
@@ -272,8 +289,7 @@ void QIBusPlatformInputContext::deleteSurroundingText(int offset, uint n_chars)
     QCoreApplication::sendEvent(input, &event);
 }
 
-bool
-QIBusPlatformInputContext::x11FilterEvent(uint keyval, uint keycode, uint state, bool press)
+bool QIBusPlatformInputContext::filterEvent(const QEvent *event)
 {
     if (!d->valid)
         return false;
@@ -281,15 +297,89 @@ QIBusPlatformInputContext::x11FilterEvent(uint keyval, uint keycode, uint state,
     if (!inputMethodAccepted())
         return false;
 
-    if (!press)
-        return false;
+    const QKeyEvent *keyEvent = static_cast<const QKeyEvent *>(event);
+    quint32 sym = keyEvent->nativeVirtualKey();
+    quint32 code = keyEvent->nativeScanCode();
+    quint32 state = keyEvent->nativeModifiers();
 
-    keycode -= 8; // ###
-    QDBusReply<bool> reply = d->context->ProcessKeyEvent(keyval, keycode, state);
+    if (keyEvent->type() != QEvent::KeyPress)
+        state |= IBUS_RELEASE_MASK;
 
-//    qDebug() << "x11FilterEvent return" << reply.value();
+    code -= 8; // ###
+    QDBusPendingReply<bool> reply = d->context->ProcessKeyEvent(sym, code, state);
 
-    return reply.value();
+    if (m_eventFilterUseSynchronousMode || reply.isFinished()) {
+        bool retval = reply.value();
+        qCDebug(qtQpaInputMethods) << "filterEvent return" << code << sym << state << retval;
+        return retval;
+    }
+
+    Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
+
+    QVariantList args;
+    args << QVariant::fromValue(keyEvent->timestamp());
+    args << QVariant::fromValue(static_cast<uint>(keyEvent->type()));
+    args << QVariant::fromValue(keyEvent->key());
+    args << QVariant::fromValue(code) << QVariant::fromValue(sym) << QVariant::fromValue(state);
+    args << QVariant::fromValue(keyEvent->text());
+    args << QVariant::fromValue(keyEvent->isAutoRepeat());
+    args << QVariant::fromValue(keyEvent->count());
+
+    QIBusFilterEventWatcher *watcher = new QIBusFilterEventWatcher(reply, this, qApp->focusObject(), modifiers, args);
+    QObject::connect(watcher, &QDBusPendingCallWatcher::finished, this, &QIBusPlatformInputContext::filterEventFinished);
+
+    return true;
+}
+
+void QIBusPlatformInputContext::filterEventFinished(QDBusPendingCallWatcher *call)
+{
+    QIBusFilterEventWatcher *watcher = (QIBusFilterEventWatcher *) call;
+    QDBusPendingReply<bool> reply = *call;
+
+    if (reply.isError()) {
+        call->deleteLater();
+        return;
+    }
+
+    // Use watcher's window instead of the current focused window
+    // since there is a time lag until filterEventFinished() returns.
+    QObject *input = watcher->input();
+
+    if (!input) {
+        call->deleteLater();
+        return;
+    }
+
+    Qt::KeyboardModifiers modifiers = watcher->modifiers();
+    QVariantList args = watcher->arguments();
+    const ulong time = static_cast<const ulong>(args.at(0).toUInt());
+    const QEvent::Type type = static_cast<const QEvent::Type>(args.at(1).toUInt());
+    const int qtcode = args.at(2).toInt();
+    const quint32 code = args.at(3).toUInt();
+    const quint32 sym = args.at(4).toUInt();
+    const quint32 state = args.at(5).toUInt();
+    const QString string = args.at(6).toString();
+    const bool isAutoRepeat = args.at(7).toBool();
+    const int count = args.at(8).toInt();
+
+    // copied from QXcbKeyboard::handleKeyEvent()
+    bool retval = reply.value();
+    qCDebug(qtQpaInputMethods) << "filterEventFinished return" << code << sym << state << retval;
+    if (!retval) {
+        QWindow *window = dynamic_cast<QWindow *>(input);
+        if (type == QEvent::KeyPress && qtcode == Qt::Key_Menu
+            && window != NULL) {
+            const QPoint globalPos = window->screen()->handle()->cursor()->pos();
+            const QPoint pos = window->mapFromGlobal(globalPos);
+            QWindowSystemInterface::handleContextMenuEvent(window, false, pos,
+                                                           globalPos, modifiers);
+        }
+        QKeyEvent event(type, qtcode, modifiers, code, sym,
+                        state, string, isAutoRepeat, count);
+        event.setTimestamp(time);
+        QCoreApplication::sendEvent(input, &event);
+    }
+    call->deleteLater();
 }
 
 QIBusPlatformInputContextPrivate::QIBusPlatformInputContextPrivate()

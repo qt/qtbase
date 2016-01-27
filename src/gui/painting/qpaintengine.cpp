@@ -149,7 +149,7 @@ QFont QTextItem::font() const
   provided is the raster paint engine, which contains a software
   rasterizer which supports the full feature set on all supported platforms.
   This is the default for painting on QWidget-based classes in e.g. on Windows,
-  X11 and Mac OS X, it is the backend for painting on QImage and it is
+  X11 and OS X, it is the backend for painting on QImage and it is
   used as a fallback for paint engines that do not support a certain
   capability. In addition we provide QPaintEngine implementations for
   OpenGL (accessible through QGLWidget) and printing (which allows using
@@ -363,8 +363,8 @@ void QPaintEngine::drawPolygon(const QPoint *points, int pointCount, PolygonDraw
     \value X11
     \value Windows
     \value MacPrinter
-    \value CoreGraphics Mac OS X's Quartz2D (CoreGraphics)
-    \value QuickDraw Mac OS X's QuickDraw
+    \value CoreGraphics OS X's Quartz2D (CoreGraphics)
+    \value QuickDraw OS X's QuickDraw
     \value QWindowSystem Qt for Embedded Linux
     \value PostScript (No longer supported)
     \value OpenGL

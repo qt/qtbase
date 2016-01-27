@@ -1224,7 +1224,7 @@ void QWindowsXPStyle::polish(QWidget *widget)
     if (!d->hasInitColors) {
         // Get text color for group box labels
         COLORREF cref;
-        XPThemeData theme(0, 0, QWindowsXPStylePrivate::ButtonTheme, 0, 0);
+        XPThemeData theme(widget, 0, QWindowsXPStylePrivate::ButtonTheme, 0, 0);
         QWindowsXPStylePrivate::pGetThemeColor(theme.handle(), BP_GROUPBOX, GBS_NORMAL, TMT_TEXTCOLOR, &cref);
         d->groupBoxTextColor = qRgb(GetRValue(cref), GetGValue(cref), GetBValue(cref));
         QWindowsXPStylePrivate::pGetThemeColor(theme.handle(), BP_GROUPBOX, GBS_DISABLED, TMT_TEXTCOLOR, &cref);
@@ -1540,7 +1540,7 @@ case PE_Frame:
             return;
         themeNumber = QWindowsXPStylePrivate::ListViewTheme;
         partId = LVP_LISTGROUP;
-        XPThemeData theme(0, 0, themeNumber, partId, 0);
+        XPThemeData theme(widget, 0, themeNumber, partId, 0);
 
         if (!(flags & State_Enabled))
             stateId = ETS_DISABLED;

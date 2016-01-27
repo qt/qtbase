@@ -198,7 +198,7 @@ namespace
     bool debugStackUsage = false;
 }
 
-extern "C" int __attribute__((weak)) main(int argc, char *argv[])
+extern "C" int qt_main_wrapper(int argc, char *argv[])
 {
     @autoreleasepool {
         size_t defaultStackSize = 512 * kBytesPerKiloByte; // Same as secondary threads
@@ -233,18 +233,7 @@ enum SetJumpResult
     kJumpedFromUserMainTrampoline,
 };
 
-// We define qtmn so that user_main_trampoline() will not cause
-// missing symbols in the case of hybrid applications that don't
-// use our main wrapper. Since the symbol is weak, it will not
-// get used or cause a clash in the normal Qt application usecase,
-// where we rename main to qtmn before linking.
-extern "C" int __attribute__((weak)) qtmn(int argc, char *argv[])
-{
-    Q_UNUSED(argc);
-    Q_UNUSED(argv);
-
-    Q_UNREACHABLE();
-}
+extern "C" int main(int argc, char *argv[]);
 
 static void __attribute__((noinline, noreturn)) user_main_trampoline()
 {
@@ -263,7 +252,7 @@ static void __attribute__((noinline, noreturn)) user_main_trampoline()
             qFatal("Could not convert argv[%d] to C string", i);
     }
 
-    int exitCode = qtmn(argc, argv);
+    int exitCode = main(argc, argv);
     delete[] argv;
 
     qEventDispatcherDebug() << "Returned from main with exit code " << exitCode;

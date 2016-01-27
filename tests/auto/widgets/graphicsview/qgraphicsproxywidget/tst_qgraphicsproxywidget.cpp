@@ -97,8 +97,8 @@ private slots:
     void paint_2();
     void setWidget_data();
     void setWidget();
-    void eventFilter_data();
-    void eventFilter();
+    void testEventFilter_data();
+    void testEventFilter();
     void focusInEvent_data();
     void focusInEvent();
     void focusInEventNoWidget();
@@ -314,7 +314,7 @@ void tst_QGraphicsProxyWidget::qgraphicsproxywidget()
     SubQGraphicsProxyWidget proxy;
     proxy.paint(0, 0, 0);
     proxy.setWidget(0);
-    QVERIFY(proxy.type() == QGraphicsProxyWidget::Type);
+    QCOMPARE(proxy.type(), int(QGraphicsProxyWidget::Type));
     QVERIFY(!proxy.widget());
     QEvent event(QEvent::None);
     proxy.call_eventFilter(0, &event);
@@ -533,7 +533,7 @@ void tst_QGraphicsProxyWidget::setWidget()
 }
 
 Q_DECLARE_METATYPE(QEvent::Type)
-void tst_QGraphicsProxyWidget::eventFilter_data()
+void tst_QGraphicsProxyWidget::testEventFilter_data()
 {
     QTest::addColumn<QEvent::Type>("eventType");
     QTest::addColumn<bool>("fromObject"); // big grin evil
@@ -552,7 +552,7 @@ void tst_QGraphicsProxyWidget::eventFilter_data()
 }
 
 // protected bool eventFilter(QObject* object, QEvent* event)
-void tst_QGraphicsProxyWidget::eventFilter()
+void tst_QGraphicsProxyWidget::testEventFilter()
 {
     QFETCH(QEvent::Type, eventType);
     QFETCH(bool, fromObject);
@@ -3017,36 +3017,36 @@ void tst_QGraphicsProxyWidget::createProxyForChildWidget()
     layout->addWidget(rightDial);
     window.setLayout(layout);
 
-    QVERIFY(window.graphicsProxyWidget() == 0);
-    QVERIFY(checkbox->graphicsProxyWidget() == 0);
+    QVERIFY(!window.graphicsProxyWidget());
+    QVERIFY(!checkbox->graphicsProxyWidget());
 
     QGraphicsProxyWidget *windowProxy = scene.addWidget(&window);
     QGraphicsView view(&scene);
     view.show();
     view.resize(500,500);
 
-    QVERIFY(window.graphicsProxyWidget() == windowProxy);
-    QVERIFY(box->graphicsProxyWidget() == 0);
-    QVERIFY(checkbox->graphicsProxyWidget() == 0);
+    QCOMPARE(window.graphicsProxyWidget(), windowProxy);
+    QVERIFY(!box->graphicsProxyWidget());
+    QVERIFY(!checkbox->graphicsProxyWidget());
 
     QPointer<QGraphicsProxyWidget> checkboxProxy = windowProxy->createProxyForChildWidget(checkbox);
 
     QGraphicsProxyWidget *boxProxy = box->graphicsProxyWidget();
 
     QVERIFY(boxProxy);
-    QVERIFY(checkbox->graphicsProxyWidget() == checkboxProxy);
-    QVERIFY(checkboxProxy->parentItem() == boxProxy);
-    QVERIFY(boxProxy->parentItem() == windowProxy);
+    QCOMPARE(checkbox->graphicsProxyWidget(), checkboxProxy.data());
+    QCOMPARE(checkboxProxy->parentItem(), boxProxy);
+    QCOMPARE(boxProxy->parentItem(), windowProxy);
 
     QVERIFY(checkboxProxy->mapToScene(QPointF()) == checkbox->mapTo(&window, QPoint()));
-    QVERIFY(checkboxProxy->size() == checkbox->size());
-    QVERIFY(boxProxy->size() == box->size());
+    QCOMPARE(checkboxProxy->size().toSize(), checkbox->size());
+    QCOMPARE(boxProxy->size().toSize(), box->size());
 
     window.resize(500,500);
-    QVERIFY(windowProxy->size() == QSize(500,500));
+    QCOMPARE(windowProxy->size().toSize(), QSize(500,500));
     QVERIFY(checkboxProxy->mapToScene(QPointF()) == checkbox->mapTo(&window, QPoint()));
-    QVERIFY(checkboxProxy->size() == checkbox->size());
-    QVERIFY(boxProxy->size() == box->size());
+    QCOMPARE(checkboxProxy->size().toSize(), checkbox->size());
+    QCOMPARE(boxProxy->size().toSize(), box->size());
 
     QTest::qWait(10);
 
@@ -3064,9 +3064,9 @@ void tst_QGraphicsProxyWidget::createProxyForChildWidget()
 
     boxProxy->setWidget(0);
 
-    QVERIFY(checkbox->graphicsProxyWidget() == 0);
-    QVERIFY(box->graphicsProxyWidget() == 0);
-    QVERIFY(checkboxProxy == 0);
+    QVERIFY(!checkbox->graphicsProxyWidget());
+    QVERIFY(!box->graphicsProxyWidget());
+    QVERIFY(checkboxProxy.isNull());
 
     delete boxProxy;
 }
@@ -3670,6 +3670,14 @@ void tst_QGraphicsProxyWidget::QTBUG_6986_sendMouseEventToAlienWidget()
     QTRY_COMPARE(scene.hoverButton->hoverLeaveReceived, true);
 }
 
+static QByteArray msgPointMismatch(const QPoint &actual, const QPoint &expected)
+{
+    QString result;
+    QDebug(&result) << actual << " != " << expected << " manhattanLength="
+        << (expected - actual).manhattanLength();
+    return result.toLocal8Bit();
+}
+
 void tst_QGraphicsProxyWidget::mapToGlobal() // QTBUG-41135
 {
     const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
@@ -3681,20 +3689,29 @@ void tst_QGraphicsProxyWidget::mapToGlobal() // QTBUG-41135
     view.move(availableGeometry.bottomRight() - QPoint(size.width(), size.height()) - QPoint(100, 100));
     QWidget *embeddedWidget = new QWidget;
     embeddedWidget->setFixedSize(size / 2);
+    QWidget *childWidget = new QWidget(embeddedWidget);
+    childWidget->setStyleSheet(QLatin1String("background-color: \"red\"; "));
+    childWidget->resize(embeddedWidget->size() / 2);
+    childWidget->move(embeddedWidget->width() / 4, embeddedWidget->height() / 4); // center in embeddedWidget
     scene.addWidget(embeddedWidget);
     QApplication::setActiveWindow(&view);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    const QPoint embeddedCenter = embeddedWidget->geometry().center();
+    const QPoint embeddedCenter = embeddedWidget->rect().center();
     const QPoint embeddedCenterGlobal = embeddedWidget->mapToGlobal(embeddedCenter);
     QCOMPARE(embeddedWidget->mapFromGlobal(embeddedCenterGlobal), embeddedCenter);
     // This should be equivalent to the view center give or take rounding
     // errors due to odd window margins
     const QPoint viewCenter = view.geometry().center();
     QVERIFY2((viewCenter - embeddedCenterGlobal).manhattanLength() <= 2,
-             qPrintable(QStringLiteral("%1, %2 != %3, %4")
-                        .arg(viewCenter.x()).arg(viewCenter.y())
-                        .arg(embeddedCenterGlobal.x()).arg(embeddedCenterGlobal.y())));
+             msgPointMismatch(embeddedCenterGlobal, viewCenter).constData());
+
+    // Same test with child centered on embeddedWidget
+    const QPoint childCenter = childWidget->rect().center();
+    const QPoint childCenterGlobal = childWidget->mapToGlobal(childCenter);
+    QCOMPARE(childWidget->mapFromGlobal(childCenterGlobal), childCenter);
+    QVERIFY2((viewCenter - childCenterGlobal).manhattanLength() <= 4,
+             msgPointMismatch(childCenterGlobal, viewCenter).constData());
 }
 
 void tst_QGraphicsProxyWidget::mapToGlobalWithoutScene() // QTBUG-44509

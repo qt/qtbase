@@ -111,7 +111,7 @@ public:
         QAction *action;
         int flags;
     };
-    typedef QList<SideWidgetEntry> SideWidgetEntryList;
+    typedef QVector<SideWidgetEntry> SideWidgetEntryList;
 
     QLineEditPrivate()
         : control(0), frame(1), contextMenuEnabled(1), cursorVisible(0),
@@ -225,6 +225,7 @@ private:
     int lastTextSize;
     mutable QSize m_iconSize;
 };
+Q_DECLARE_TYPEINFO(QLineEditPrivate::SideWidgetEntry, Q_PRIMITIVE_TYPE);
 
 inline int QLineEditPrivate::effectiveLeftTextMargin() const
 {

@@ -365,9 +365,9 @@ static QList<QAbstractState *> getEffectiveTargetStates(QAbstractTransition *tra
             if (!historyConfiguration.isEmpty()) {
                 // There is a saved history, so apply that.
                 targets.unite(historyConfiguration.toSet());
-            } else if (QAbstractState *defaultState = historyState->defaultState()) {
-                // Qt does not support initial transitions, but uses the default state of the history state for this.
-                targets.insert(defaultState);
+            } else if (QAbstractTransition *defaultTransition = historyState->defaultTransition()) {
+                // No saved history, take all default transition targets.
+                targets.unite(defaultTransition->targetStates().toSet());
             } else {
                 // Woops, we found a history state without a default state. That's not valid!
                 QStateMachinePrivate *m = QStateMachinePrivate::get(historyState->machine());
@@ -382,10 +382,6 @@ static QList<QAbstractState *> getEffectiveTargetStates(QAbstractTransition *tra
     cache->insert(transition, targetsList);
     return targetsList;
 }
-
-template <class T>
-static uint qHash(const QPointer<T> &p)
-{ return qHash(p.data()); }
 
 QStateMachinePrivate::QStateMachinePrivate()
 {
@@ -408,13 +404,6 @@ QStateMachinePrivate::~QStateMachinePrivate()
 {
     qDeleteAll(internalEventQueue);
     qDeleteAll(externalEventQueue);
-}
-
-QStateMachinePrivate *QStateMachinePrivate::get(QStateMachine *q)
-{
-    if (q)
-        return q->d_func();
-    return 0;
 }
 
 QState *QStateMachinePrivate::rootState() const
@@ -684,7 +673,7 @@ void QStateMachinePrivate::microstep(QEvent *event, const QList<QAbstractTransit
     qDebug() << q_func() << ": computed entry set:" << enteredStates;
 #endif
 
-    QHash<QAbstractState*, QList<QPropertyAssignment> > assignmentsForEnteredStates =
+    QHash<QAbstractState*, QVector<QPropertyAssignment> > assignmentsForEnteredStates =
             computePropertyAssignments(enteredStates, pendingRestorables);
     if (!pendingRestorables.isEmpty()) {
         // Add "implicit" assignments for restored properties to the first
@@ -795,7 +784,7 @@ QSet<QAbstractState*> QStateMachinePrivate::computeExitSet_Unordered(QAbstractTr
 }
 
 void QStateMachinePrivate::exitStates(QEvent *event, const QList<QAbstractState*> &statesToExit_sorted,
-                                      const QHash<QAbstractState*, QList<QPropertyAssignment> > &assignmentsForEnteredStates)
+                                      const QHash<QAbstractState*, QVector<QPropertyAssignment> > &assignmentsForEnteredStates)
 {
     for (int i = 0; i < statesToExit_sorted.size(); ++i) {
         QAbstractState *s = statesToExit_sorted.at(i);
@@ -943,7 +932,7 @@ QAbstractState *QStateMachinePrivate::getTransitionDomain(QAbstractTransition *t
 void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState*> &exitedStates_sorted,
                                        const QList<QAbstractState*> &statesToEnter_sorted,
                                        const QSet<QAbstractState*> &statesForDefaultEntry,
-                                       QHash<QAbstractState*, QList<QPropertyAssignment> > &propertyAssignmentsForState
+                                       QHash<QAbstractState*, QVector<QPropertyAssignment> > &propertyAssignmentsForState
 #ifndef QT_NO_ANIMATION
                                        , const QList<QAbstractAnimation *> &selectedAnimations
 #endif
@@ -966,7 +955,7 @@ void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState
 
         // Immediately set the properties that are not animated.
         {
-            QList<QPropertyAssignment> assignments = propertyAssignmentsForState.value(s);
+            QVector<QPropertyAssignment> assignments = propertyAssignmentsForState.value(s);
             for (int i = 0; i < assignments.size(); ++i) {
                 const QPropertyAssignment &assn = assignments.at(i);
                 if (globalRestorePolicy == QState::RestoreProperties) {
@@ -989,9 +978,16 @@ void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState
 
         QAbstractStatePrivate::get(s)->callOnEntry(event);
         QAbstractStatePrivate::get(s)->emitEntered();
-        if (statesForDefaultEntry.contains(s)) {
-            // ### executeContent(s.initial.transition.children())
-        }
+
+        // FIXME:
+        // See the "initial transitions" comment in addDescendantStatesToEnter first, then implement:
+//        if (statesForDefaultEntry.contains(s)) {
+//            // ### executeContent(s.initial.transition.children())
+//        }
+        Q_UNUSED(statesForDefaultEntry);
+
+        if (QHistoryState *h = toHistoryState(s))
+            QAbstractTransitionPrivate::get(h->defaultTransition())->callOnTransition(event);
 
         // Emit propertiesAssigned signal if the state has no animated properties.
         {
@@ -1052,69 +1048,6 @@ void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState
 //    qDebug() << "configuration:" << configuration.toList();
 }
 
-void QStateMachinePrivate::addStatesToEnter(QAbstractState *s, QState *root,
-                                            QSet<QAbstractState*> &statesToEnter,
-                                            QSet<QAbstractState*> &statesForDefaultEntry)
-{
-    if (QHistoryState *h = toHistoryState(s)) {
-        QList<QAbstractState*> hconf = QHistoryStatePrivate::get(h)->configuration;
-        if (!hconf.isEmpty()) {
-            for (int k = 0; k < hconf.size(); ++k) {
-                QAbstractState *s0 = hconf.at(k);
-                addStatesToEnter(s0, root, statesToEnter, statesForDefaultEntry);
-            }
-#ifdef QSTATEMACHINE_DEBUG
-            qDebug() << q_func() << ": restoring"
-                     << ((QHistoryStatePrivate::get(h)->historyType == QHistoryState::DeepHistory) ? "deep" : "shallow")
-                     << "history from" << s << ':' << hconf;
-#endif
-        } else {
-            QList<QAbstractState*> hlst;
-            if (QHistoryStatePrivate::get(h)->defaultState)
-                hlst.append(QHistoryStatePrivate::get(h)->defaultState);
-
-            if (hlst.isEmpty()) {
-                setError(QStateMachine::NoDefaultStateInHistoryStateError, h);
-            } else {
-                for (int k = 0; k < hlst.size(); ++k) {
-                    QAbstractState *s0 = hlst.at(k);
-                    addStatesToEnter(s0, root, statesToEnter, statesForDefaultEntry);
-                }
-#ifdef QSTATEMACHINE_DEBUG
-                qDebug() << q_func() << ": initial history targets for" << s << ':' << hlst;
-#endif
-           }
-        }
-    } else {
-        if (s == rootState()) {
-            // Error has already been set by exitStates().
-            Q_ASSERT(error != QStateMachine::NoError);
-            return;
-        }
-        statesToEnter.insert(s);
-        if (isParallel(s)) {
-            QState *grp = toStandardState(s);
-            QList<QAbstractState*> lst = QStatePrivate::get(grp)->childStates();
-            for (int i = 0; i < lst.size(); ++i) {
-                QAbstractState *child = lst.at(i);
-                addStatesToEnter(child, grp, statesToEnter, statesForDefaultEntry);
-            }
-        } else if (isCompound(s)) {
-            statesForDefaultEntry.insert(s);
-            QState *grp = toStandardState(s);
-            QAbstractState *initial = grp->initialState();
-            if (initial != 0) {
-                Q_ASSERT(initial->machine() == q_func());
-                addStatesToEnter(initial, grp, statesToEnter, statesForDefaultEntry);
-            } else {
-                setError(QStateMachine::NoInitialStateError, grp);
-                return;
-            }
-        }
-        addAncestorStatesToEnter(s, root, statesToEnter, statesForDefaultEntry);
-    }
-}
-
 /* The algorithm as described in http://www.w3.org/TR/2014/WD-scxml-20140529/ has a bug. See
  * QTBUG-44963 for details. The algorithm here is as described in
  * http://www.w3.org/Voice/2013/scxml-irp/SCXML.htm as of Friday March 13, 2015.
@@ -1165,8 +1098,8 @@ void QStateMachinePrivate::addDescendantStatesToEnter(QAbstractState *state,
 #endif
         } else {
             QList<QAbstractState*> defaultHistoryContent;
-            if (QHistoryStatePrivate::get(h)->defaultState)
-                defaultHistoryContent.append(QHistoryStatePrivate::get(h)->defaultState);
+            if (QAbstractTransition *t = QHistoryStatePrivate::get(h)->defaultTransition)
+                defaultHistoryContent = t->targetStates();
 
             if (defaultHistoryContent.isEmpty()) {
                 setError(QStateMachine::NoDefaultStateInHistoryStateError, h);
@@ -1192,8 +1125,10 @@ void QStateMachinePrivate::addDescendantStatesToEnter(QAbstractState *state,
             if (QAbstractState *initial = toStandardState(state)->initialState()) {
                 Q_ASSERT(initial->machine() == q_func());
 
+                // FIXME:
                 // Qt does not support initial transitions (which is a problem for parallel states).
                 // The way it simulates this for other states, is by having a single initial state.
+                // See also the FIXME in enterStates.
                 statesForDefaultEntry.insert(initial);
 
                 addDescendantStatesToEnter(initial, statesToEnter, statesForDefaultEntry);
@@ -1413,9 +1348,9 @@ void QStateMachinePrivate::unregisterRestorables(const QList<QAbstractState *> &
     }
 }
 
-QList<QPropertyAssignment> QStateMachinePrivate::restorablesToPropertyList(const QHash<RestorableId, QVariant> &restorables) const
+QVector<QPropertyAssignment> QStateMachinePrivate::restorablesToPropertyList(const QHash<RestorableId, QVariant> &restorables) const
 {
-    QList<QPropertyAssignment> result;
+    QVector<QPropertyAssignment> result;
     QHash<RestorableId, QVariant>::const_iterator it;
     for (it = restorables.constBegin(); it != restorables.constEnd(); ++it) {
         const RestorableId &id = it.key();
@@ -1470,16 +1405,16 @@ QHash<QStateMachinePrivate::RestorableId, QVariant> QStateMachinePrivate::comput
   properties that should not be restored because they are assigned by an
   entered state).
 */
-QHash<QAbstractState*, QList<QPropertyAssignment> > QStateMachinePrivate::computePropertyAssignments(
+QHash<QAbstractState*, QVector<QPropertyAssignment> > QStateMachinePrivate::computePropertyAssignments(
         const QList<QAbstractState*> &statesToEnter_sorted, QHash<RestorableId, QVariant> &pendingRestorables) const
 {
-    QHash<QAbstractState*, QList<QPropertyAssignment> > assignmentsForState;
+    QHash<QAbstractState*, QVector<QPropertyAssignment> > assignmentsForState;
     for (int i = 0; i < statesToEnter_sorted.size(); ++i) {
         QState *s = toStandardState(statesToEnter_sorted.at(i));
         if (!s)
             continue;
 
-        QList<QPropertyAssignment> &assignments = QStatePrivate::get(s)->propertyAssignments;
+        QVector<QPropertyAssignment> &assignments = QStatePrivate::get(s)->propertyAssignments;
         for (int j = 0; j < assignments.size(); ++j) {
             const QPropertyAssignment &assn = assignments.at(j);
             if (assn.objectDeleted()) {
@@ -1556,8 +1491,11 @@ void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractSta
 #ifdef QSTATEMACHINE_DEBUG
         qDebug() << q << ": entering error state" << currentErrorState << "from" << currentContext;
 #endif
-        QState *lca = findLCA(QList<QAbstractState*>() << currentErrorState << currentContext);
-        addStatesToEnter(currentErrorState, lca, pendingErrorStates, pendingErrorStatesForDefaultEntry);
+        pendingErrorStates.insert(currentErrorState);
+        addDescendantStatesToEnter(currentErrorState, pendingErrorStates, pendingErrorStatesForDefaultEntry);
+        addAncestorStatesToEnter(currentErrorState, rootState(), pendingErrorStates, pendingErrorStatesForDefaultEntry);
+        foreach (QAbstractState *s, configuration)
+            pendingErrorStates.remove(s);
     } else {
         qWarning("Unrecoverable error detected in running state machine: %s",
                  qPrintable(errorString));
@@ -1652,7 +1590,7 @@ QList<QAbstractAnimation *> QStateMachinePrivate::selectAnimations(const QList<Q
 }
 
 void QStateMachinePrivate::terminateActiveAnimations(QAbstractState *state,
-    const QHash<QAbstractState*, QList<QPropertyAssignment> > &assignmentsForEnteredStates)
+    const QHash<QAbstractState*, QVector<QPropertyAssignment> > &assignmentsForEnteredStates)
 {
     Q_Q(QStateMachine);
     QList<QAbstractAnimation*> animations = animationsForState.take(state);
@@ -1677,9 +1615,9 @@ void QStateMachinePrivate::terminateActiveAnimations(QAbstractState *state,
         // If there is no property assignment that sets this property,
         // set the property to its target value.
         bool found = false;
-        QHash<QAbstractState*, QList<QPropertyAssignment> >::const_iterator it;
+        QHash<QAbstractState*, QVector<QPropertyAssignment> >::const_iterator it;
         for (it = assignmentsForEnteredStates.constBegin(); it != assignmentsForEnteredStates.constEnd(); ++it) {
-            const QList<QPropertyAssignment> &assignments = it.value();
+            const QVector<QPropertyAssignment> &assignments = it.value();
             for (int j = 0; j < assignments.size(); ++j) {
                 if (assignments.at(j).hasTarget(assn.object, assn.propertyName)) {
                     found = true;
@@ -1697,15 +1635,15 @@ void QStateMachinePrivate::terminateActiveAnimations(QAbstractState *state,
 
 void QStateMachinePrivate::initializeAnimations(QAbstractState *state, const QList<QAbstractAnimation *> &selectedAnimations,
                                                 const QList<QAbstractState*> &exitedStates_sorted,
-                                                QHash<QAbstractState*, QList<QPropertyAssignment> > &assignmentsForEnteredStates)
+                                                QHash<QAbstractState*, QVector<QPropertyAssignment> > &assignmentsForEnteredStates)
 {
     Q_Q(QStateMachine);
     if (!assignmentsForEnteredStates.contains(state))
         return;
-    QList<QPropertyAssignment> &assignments = assignmentsForEnteredStates[state];
+    QVector<QPropertyAssignment> &assignments = assignmentsForEnteredStates[state];
     for (int i = 0; i < selectedAnimations.size(); ++i) {
         QAbstractAnimation *anim = selectedAnimations.at(i);
-        QList<QPropertyAssignment>::iterator it;
+        QVector<QPropertyAssignment>::iterator it;
         for (it = assignments.begin(); it != assignments.end(); ) {
             QPair<QList<QAbstractAnimation*>, QList<QAbstractAnimation*> > ret;
             const QPropertyAssignment &assn = *it;
@@ -1864,7 +1802,7 @@ void QStateMachinePrivate::_q_start()
     QSet<QAbstractState*> statesForDefaultEntry;
     QList<QAbstractState*> enteredStates = computeEntrySet(transitions, statesForDefaultEntry, &calculationCache);
     QHash<RestorableId, QVariant> pendingRestorables;
-    QHash<QAbstractState*, QList<QPropertyAssignment> > assignmentsForEnteredStates =
+    QHash<QAbstractState*, QVector<QPropertyAssignment> > assignmentsForEnteredStates =
             computePropertyAssignments(enteredStates, pendingRestorables);
 #ifndef QT_NO_ANIMATION
     QList<QAbstractAnimation*> selectedAnimations = selectAnimations(transitions);
@@ -2454,6 +2392,7 @@ void QStateMachinePrivate::handleTransitionSignal(QObject *sender, int signalInd
     QMetaMethod method = meta->method(signalIndex);
     int argc = method.parameterCount();
     QList<QVariant> vargs;
+    vargs.reserve(argc);
     for (int i = 0; i < argc; ++i) {
         int type = method.parameterType(i);
         vargs.append(QVariant(type, argv[i+1]));
@@ -3273,7 +3212,7 @@ QStateMachine::WrappedEvent::~WrappedEvent()
   \fn QStateMachine::runningChanged(bool running)
   \since 5.4
 
-  This signal is emitted when the running property is changed.
+  This signal is emitted when the running property is changed with \a running as argument.
 
   \sa QStateMachine::running
 */

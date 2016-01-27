@@ -228,8 +228,9 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
 
     \snippet mainwindows/application/mainwindow.cpp 19
     \codeline
-    \snippet mainwindows/application/mainwindow.cpp 28
-    \snippet mainwindows/application/mainwindow.cpp 31
+    \code
+    fileMenu->addAction(openAct);
+    \endcode
 
     We recommend that actions are created as children of the window
     they are used in. In most cases actions will be children of

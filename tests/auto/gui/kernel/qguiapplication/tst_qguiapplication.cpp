@@ -912,7 +912,7 @@ void tst_QGuiApplication::genericPluginsAndWindowSystemEvents()
     QGuiApplication app(argc, argv);
 
     QVERIFY(QGuiApplication::primaryScreen());
-    QVERIFY(QGuiApplication::primaryScreen()->orientation() == testOrientationToSend);
+    QCOMPARE(QGuiApplication::primaryScreen()->orientation(), testOrientationToSend);
 
     QCOMPARE(testReceiver.customEvents, 0);
     QCoreApplication::sendPostedEvents(&testReceiver);

@@ -226,7 +226,7 @@ public:
     QOpenGLContext *context;
 };
 
-static QThreadStorage<QGuiGLThreadContext *> qwindow_context_storage;
+Q_GLOBAL_STATIC(QThreadStorage<QGuiGLThreadContext *>, qwindow_context_storage);
 static QOpenGLContext *global_share_context = 0;
 
 #ifndef QT_NO_DEBUG
@@ -336,14 +336,14 @@ QOpenGLContext *qt_gl_global_share_context()
 */
 QOpenGLContext *QOpenGLContextPrivate::setCurrentContext(QOpenGLContext *context)
 {
-    QGuiGLThreadContext *threadContext = qwindow_context_storage.localData();
+    QGuiGLThreadContext *threadContext = qwindow_context_storage()->localData();
     if (!threadContext) {
         if (!QThread::currentThread()) {
             qWarning("No QTLS available. currentContext won't work");
             return 0;
         }
         threadContext = new QGuiGLThreadContext;
-        qwindow_context_storage.setLocalData(threadContext);
+        qwindow_context_storage()->setLocalData(threadContext);
     }
     QOpenGLContext *previous = threadContext->context;
     threadContext->context = context;
@@ -412,8 +412,8 @@ int QOpenGLContextPrivate::maxTextureSize()
 */
 QOpenGLContext* QOpenGLContext::currentContext()
 {
-    QGuiGLThreadContext *threadContext = qwindow_context_storage.localData();
-    if(threadContext) {
+    QGuiGLThreadContext *threadContext = qwindow_context_storage()->localData();
+    if (threadContext) {
         return threadContext->context;
     }
     return 0;
@@ -716,6 +716,28 @@ QOpenGLFunctions *QOpenGLContext::functions() const
     if (!d->functions)
         const_cast<QOpenGLFunctions *&>(d->functions) = new QOpenGLExtensions(QOpenGLContext::currentContext());
     return d->functions;
+}
+
+/*!
+    Get the QOpenGLExtraFunctions instance for this context.
+
+    QOpenGLContext offers this as a convenient way to access QOpenGLExtraFunctions
+    without having to manage it manually.
+
+    The context or a sharing context must be current.
+
+    The returned QOpenGLExtraFunctions instance is ready to be used and it
+    does not need initializeOpenGLFunctions() to be called.
+
+    \note QOpenGLExtraFunctions contains functionality that is not guaranteed to
+    be available at runtime. Runtime availability depends on the platform,
+    graphics driver, and the OpenGL version requested by the application.
+
+    \sa QOpenGLFunctions, QOpenGLExtraFunctions
+*/
+QOpenGLExtraFunctions *QOpenGLContext::extraFunctions() const
+{
+    return static_cast<QOpenGLExtraFunctions *>(functions());
 }
 
 /*!

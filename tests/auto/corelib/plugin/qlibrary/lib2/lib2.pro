@@ -7,7 +7,7 @@ DESTDIR = ../
 VERSION = 2
 QT = core
 
-wince*: DEFINES += WIN32_MSVC
+wince: DEFINES += WIN32_MSVC
 win32-msvc: DEFINES += WIN32_MSVC
 
 # Force a copy of the library to have an extension that is non-standard.

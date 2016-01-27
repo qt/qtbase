@@ -117,7 +117,7 @@ int QKeyEventTransition::key() const
 }
 
 /*!
-  Sets the key that this key event transition will check for.
+  Sets the \a key that this key event transition will check for.
 */
 void QKeyEventTransition::setKey(int key)
 {

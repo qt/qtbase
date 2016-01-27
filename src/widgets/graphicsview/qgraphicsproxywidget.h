@@ -47,7 +47,7 @@ class Q_WIDGETS_EXPORT QGraphicsProxyWidget : public QGraphicsWidget
 {
     Q_OBJECT
 public:
-    QGraphicsProxyWidget(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
+    QGraphicsProxyWidget(QGraphicsItem *parent = Q_NULLPTR, Qt::WindowFlags wFlags = Qt::WindowFlags());
     ~QGraphicsProxyWidget();
 
     void setWidget(QWidget *widget);

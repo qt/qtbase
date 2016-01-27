@@ -59,6 +59,7 @@ class CollectionNode;
 class QmlPropertyNode;
 
 typedef QList<Node*> NodeList;
+typedef QList<PropertyNode*> PropNodeList;
 typedef QMap<QString, Node*> NodeMap;
 typedef QMultiMap<QString, Node*> NodeMultiMap;
 typedef QPair<int, int> NodeTypePair;
@@ -202,6 +203,7 @@ public:
     virtual bool isJsType() const { return false; }
     virtual bool isQmlBasicType() const { return false; }
     virtual bool isJsBasicType() const { return false; }
+    virtual bool isEnumType() const { return false; }
     virtual bool isExample() const { return false; }
     virtual bool isExampleFile() const { return false; }
     virtual bool isHeaderFile() const { return false; }
@@ -243,7 +245,7 @@ public:
     virtual QmlPropertyNode* hasQmlProperty(const QString& ) const { return 0; }
     virtual QmlPropertyNode* hasQmlProperty(const QString&, bool ) const { return 0; }
     virtual void getMemberNamespaces(NodeMap& ) { }
-    virtual void getMemberClasses(NodeMap& ) { }
+    virtual void getMemberClasses(NodeMap& ) const { }
     virtual bool isInternal() const;
     virtual void setDataType(const QString& ) { }
     virtual void setReadOnly(bool ) { }
@@ -253,6 +255,7 @@ public:
     virtual QString element() const { return QString(); }
     virtual Tree* tree() const;
     virtual void findChildren(const QString& , NodeList& nodes) const { nodes.clear(); }
+    virtual void setNoAutoList(bool ) { }
     bool isIndexNode() const { return indexNodeFlag_; }
     NodeType type() const { return (NodeType) nodeType_; }
     virtual DocSubtype docSubtype() const { return NoSubtype; }
@@ -297,7 +300,7 @@ public:
 
     void clearRelated() { relatesTo_ = 0; }
 
-    QString guid() const;
+    //QString guid() const;
     QString extractClassName(const QString &string) const;
     virtual QString qmlTypeName() const { return name_; }
     virtual QString qmlFullBaseName() const { return QString(); }
@@ -318,7 +321,7 @@ public:
     virtual void setOutputSubdirectory(const QString& t) { outSubDir_ = t; }
     QString fullDocumentName() const;
     static QString cleanId(const QString &str);
-    QString idForNode() const;
+    //QString idForNode() const;
 
     static FlagValue toFlagValue(bool b);
     static bool fromFlagValue(FlagValue fv, bool defaultValue);
@@ -357,12 +360,13 @@ private:
     QString since_;
     QString templateStuff_;
     QString reconstitutedBrief_;
-    mutable QString uuid_;
+    //mutable QString uuid_;
     QString outSubDir_;
     static QStringMap operators_;
     static int propertyGroupCount_;
     static QMap<QString,Node::NodeType> goals_;
 };
+Q_DECLARE_TYPEINFO(Node::DocSubtype, Q_PRIMITIVE_TYPE);
 
 class Aggregate : public Node
 {
@@ -376,7 +380,6 @@ public:
     FunctionNode* findFunctionNode(const FunctionNode* clone) const;
     void addInclude(const QString &include);
     void setIncludes(const QStringList &includes);
-    void setOverload(FunctionNode* func, bool overlode);
     void normalizeOverloads();
     void makeUndocumentedChildrenInternal();
     void deleteChildren();
@@ -389,7 +392,6 @@ public:
     const NodeList & relatedNodes() const { return related_; }
 
     int count() const { return children_.size(); }
-    int overloadNumber(const FunctionNode* func) const;
     NodeList overloads(const QString &funcName) const;
     const QStringList& includes() const { return includes_; }
 
@@ -408,6 +410,8 @@ public:
     void addChild(Node* child);
     void removeChild(Node* child);
     void setOutputSubdirectory(const QString& t) Q_DECL_OVERRIDE;
+    const NodeMap& primaryFunctionMap() { return primaryFunctionMap_; }
+    const QMap<QString, NodeList>& secondaryFunctionMap() { return secondaryFunctionMap_; }
 
 protected:
     Aggregate(NodeType type, Aggregate* parent, const QString& name);
@@ -425,9 +429,9 @@ private:
     NodeList children_;
     NodeList enumChildren_;
     NodeList related_;
-    QMap<QString, Node*> childMap;
-    QMap<QString, Node*> primaryFunctionMap;
-    QMap<QString, NodeList> secondaryFunctionMap;
+    NodeMap childMap_;
+    NodeMap primaryFunctionMap_;
+    QMap<QString, NodeList> secondaryFunctionMap_;
 };
 
 class LeafNode : public Node
@@ -776,6 +780,7 @@ public:
     void addItem(const EnumItem& item);
     void setFlagsType(TypedefNode* typedeff);
     bool hasItem(const QString &name) const { return names_.contains(name); }
+    virtual bool isEnumType() const Q_DECL_OVERRIDE { return true; }
 
     const QList<EnumItem>& items() const { return items_; }
     Access itemAccess(const QString& name) const;
@@ -864,7 +869,9 @@ public:
     void setVirtualness(Virtualness v);
     void setConst(bool b) { const_ = b; }
     void setStatic(bool b) { static_ = b; }
-    void setOverload(bool b);
+    unsigned char overloadNumber() const { return overloadNumber_; }
+    void setOverloadFlag(bool b) { overload_ = b; }
+    void setOverloadNumber(unsigned char n) { overloadNumber_ = n; }
     void setReimplemented(bool b);
     void addParameter(const Parameter& parameter);
     inline void setParameters(const QList<Parameter>& parameters);
@@ -900,15 +907,18 @@ public:
     virtual bool isJsMethod() const Q_DECL_OVERRIDE {
         return (type() == Node::QmlMethod) && (genus() == Node::JS);
     }
-    int overloadNumber() const;
     const QList<Parameter>& parameters() const { return parameters_; }
     void clearParams() { parameters_.clear(); }
     QStringList parameterNames() const;
     QString rawParameters(bool names = false, bool values = false) const;
     const FunctionNode* reimplementedFrom() const { return reimplementedFrom_; }
     const QList<FunctionNode*> &reimplementedBy() const { return reimplementedBy_; }
-    const PropertyNode* associatedProperty() const { return associatedProperty_; }
+    const PropNodeList& associatedProperties() const { return associatedProperties_; }
     const QStringList& parentPath() const { return parentPath_; }
+    bool hasAssociatedProperties() const { return !associatedProperties_.isEmpty(); }
+    bool hasOneAssociatedProperty() const { return (associatedProperties_.size() == 1); }
+    PropertyNode* firstAssociatedProperty() const { return associatedProperties_[0]; }
+    bool hasActiveAssociatedProperty() const;
 
     QStringList reconstructParameters(bool values = false) const;
     QString signature(bool values = false) const;
@@ -931,7 +941,7 @@ public:
     void debug() const;
 
 private:
-    void setAssociatedProperty(PropertyNode* property);
+    void addAssociatedProperty(PropertyNode* property);
 
     friend class Aggregate;
     friend class PropertyNode;
@@ -942,13 +952,14 @@ private:
     Virtualness virtualness_;
     bool const_ : 1;
     bool static_ : 1;
-    bool overload_ : 1;
     bool reimplemented_: 1;
     bool attached_: 1;
     bool privateSignal_: 1;
+    bool overload_ : 1;
+    unsigned char overloadNumber_;
     QList<Parameter> parameters_;
     const FunctionNode* reimplementedFrom_;
-    const PropertyNode* associatedProperty_;
+    PropNodeList        associatedProperties_;
     QList<FunctionNode*> reimplementedBy_;
 };
 
@@ -985,6 +996,7 @@ public:
     NodeList setters() const { return functions(Setter); }
     NodeList resetters() const { return functions(Resetter); }
     NodeList notifiers() const { return functions(Notifier); }
+    FunctionRole role(const FunctionNode* fn) const;
     bool isStored() const { return fromFlagValue(stored_, storedDefault()); }
     bool isDesignable() const { return fromFlagValue(designable_, designableDefault()); }
     bool isScriptable() const { return fromFlagValue(scriptable_, scriptableDefault()); }
@@ -1026,13 +1038,13 @@ inline void FunctionNode::setParameters(const QList<Parameter> &p)
 inline void PropertyNode::addFunction(FunctionNode* function, FunctionRole role)
 {
     functions_[(int)role].append(function);
-    function->setAssociatedProperty(this);
+    function->addAssociatedProperty(this);
 }
 
 inline void PropertyNode::addSignal(FunctionNode* function, FunctionRole role)
 {
     functions_[(int)role].append(function);
-    function->setAssociatedProperty(this);
+    function->addAssociatedProperty(this);
 }
 
 inline NodeList PropertyNode::functions() const
@@ -1086,7 +1098,8 @@ class CollectionNode : public Aggregate
  CollectionNode(NodeType type,
                 Aggregate* parent,
                 const QString& name,
-                Genus genus) : Aggregate(type, parent, name), seen_(false)
+                Genus genus)
+     : Aggregate(type, parent, name), seen_(false), noAutoList_(false)
     {
         setPageType(Node::OverviewPage);
         setGenus(genus);
@@ -1105,7 +1118,7 @@ class CollectionNode : public Aggregate
     virtual bool hasNamespaces() const Q_DECL_OVERRIDE;
     virtual bool hasClasses() const Q_DECL_OVERRIDE;
     virtual void getMemberNamespaces(NodeMap& out) Q_DECL_OVERRIDE;
-    virtual void getMemberClasses(NodeMap& out) Q_DECL_OVERRIDE;
+    virtual void getMemberClasses(NodeMap& out) const Q_DECL_OVERRIDE;
     virtual bool wasSeen() const Q_DECL_OVERRIDE { return seen_; }
     virtual QString title() const Q_DECL_OVERRIDE { return title_; }
     virtual QString subTitle() const Q_DECL_OVERRIDE { return subtitle_; }
@@ -1129,9 +1142,12 @@ class CollectionNode : public Aggregate
 
     void markSeen() { seen_ = true; }
     void markNotSeen() { seen_ = false; }
+    bool noAutoList() const { return noAutoList_; }
+    virtual void setNoAutoList(bool b)  Q_DECL_OVERRIDE { noAutoList_ = b; }
 
  private:
     bool        seen_;
+    bool        noAutoList_;
     QString     title_;
     QString     subtitle_;
     NodeList    members_;

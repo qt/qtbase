@@ -80,7 +80,7 @@
     the QPalette::Button role to red for a QPushButton to obtain a
     red push button. However, this wasn't guaranteed to work for all
     styles, because style authors are restricted by the different
-    platforms' guidelines and (on Windows XP and Mac OS X) by the
+    platforms' guidelines and (on Windows XP and OS X) by the
     native theme engine.
 
     Style sheets let you perform all kinds of customizations that are
@@ -121,7 +121,7 @@
     \row \li \inlineimage stylesheet-coffee-cleanlooks.png
          \li \inlineimage stylesheet-pagefold-mac.png
     \row \li Coffee theme running on Ubuntu Linux
-         \li Pagefold theme running on Mac OS X
+         \li Pagefold theme running on OS X
     \endtable
 
     When a style sheet is active, the QStyle returned by QWidget::style()
@@ -130,7 +130,7 @@
     otherwise forwards the drawing operations to the underlying,
     platform-specific style (e.g., QWindowsXPStyle on Windows XP).
 
-    Since Qt 4.5, Qt style sheets fully supports Mac OS X.
+    Since Qt 4.5, Qt style sheets fully supports OS X.
 
 */
 
@@ -3745,7 +3745,7 @@
     \snippet code/doc_src_stylesheet.qdoc 135
 
     If you want the scroll buttons of the scroll bar to be placed together
-    (instead of the edges) like on Mac OS X, you can use the following
+    (instead of the edges) like on OS X, you can use the following
     stylesheet:
     \snippet code/doc_src_stylesheet.qdoc 136
 

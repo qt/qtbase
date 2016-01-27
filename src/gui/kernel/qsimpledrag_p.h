@@ -73,10 +73,12 @@ protected:
 
     virtual void startDrag();
     virtual void cancel();
-    virtual void move(const QMouseEvent *me);
-    virtual void drop(const QMouseEvent *me);
+    virtual void move(const QPoint &globalPos) = 0;
+    virtual void drop(const QPoint &globalPos) = 0;
     virtual void endDrag();
 
+
+    void moveShapedPixmapWindow(const QPoint &deviceIndependentPosition);
     QShapedPixmapWindow *shapedPixmapWindow() const { return m_drag_icon_window; }
     void updateCursor(Qt::DropAction action);
 
@@ -111,8 +113,8 @@ public:
 protected:
     virtual void startDrag() Q_DECL_OVERRIDE;
     virtual void cancel() Q_DECL_OVERRIDE;
-    virtual void move(const QMouseEvent *me) Q_DECL_OVERRIDE;
-    virtual void drop(const QMouseEvent *me) Q_DECL_OVERRIDE;
+    virtual void move(const QPoint &globalPos) Q_DECL_OVERRIDE;
+    virtual void drop(const QPoint &globalPos) Q_DECL_OVERRIDE;
 
 private:
     QWindow *m_current_window;

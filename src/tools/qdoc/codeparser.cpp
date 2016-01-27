@@ -65,6 +65,7 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_THREADSAFE              Doc::alias(QLatin1String("threadsafe"))
 #define COMMAND_TITLE                   Doc::alias(QLatin1String("title"))
 #define COMMAND_WRAPPER                 Doc::alias(QLatin1String("wrapper"))
+#define COMMAND_NOAUTOLIST              Doc::alias(QLatin1String("noautolist"))
 
 QList<CodeParser *> CodeParser::parsers;
 bool CodeParser::showInternal_ = false;
@@ -219,8 +220,9 @@ const QSet<QString>& CodeParser::commonMetaCommands()
                             << COMMAND_THREADSAFE
                             << COMMAND_TITLE
                             << COMMAND_WRAPPER
-                            << COMMAND_INJSMODULE;
-    }
+                            << COMMAND_INJSMODULE
+                            << COMMAND_NOAUTOLIST;
+   }
     return commonMetaCommands_;
 }
 
@@ -316,6 +318,9 @@ void CodeParser::processCommonMetaCommand(const Location& location,
         if (!node->isModule() && !node->isQmlModule())
             location.warning(tr("Command '\\%1' is only meanigfule in '\\module' and '\\qmlmodule'.")
                              .arg(COMMAND_QTVARIABLE));
+    }
+    else if (command == COMMAND_NOAUTOLIST) {
+        node->setNoAutoList(true);
     }
 }
 

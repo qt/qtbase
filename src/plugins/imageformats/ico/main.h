@@ -34,8 +34,6 @@
 #include <qimageiohandler.h>
 #include <qdebug.h>
 
-#ifndef QT_NO_IMAGEFORMATPLUGIN
-
 #ifdef QT_NO_IMAGEFORMAT_ICO
 #undef QT_NO_IMAGEFORMAT_ICO
 #endif
@@ -53,5 +51,3 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif

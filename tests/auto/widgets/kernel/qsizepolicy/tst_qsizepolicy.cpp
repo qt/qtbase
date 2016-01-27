@@ -44,6 +44,7 @@ class tst_QSizePolicy : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    void cleanup() { QVERIFY(QApplication::topLevelWidgets().isEmpty()); }
     void qtest();
     void defaultValues();
     void getSetCheck_data() { data(); }
@@ -51,6 +52,8 @@ private Q_SLOTS:
     void dataStream();
     void horizontalStretch();
     void verticalStretch();
+    void qhash_data() { data(); }
+    void qhash();
 private:
     void data() const;
 };
@@ -148,8 +151,6 @@ void tst_QSizePolicy::getSetCheck()
     QCOMPARE(sp.hasWidthForHeight(),   wfh);
     QCOMPARE(sp.expandingDirections(), ed);
 }
-
-#undef FETCH_TEST_DATA
 
 static void makeRow(QSizePolicy sp, QSizePolicy::Policy hp, QSizePolicy::Policy vp,
                     int hst, int vst, QSizePolicy::ControlType ct, bool hfw, bool wfh,
@@ -313,6 +314,22 @@ void tst_QSizePolicy::verticalStretch()
     sp.setVerticalStretch(257);
     QCOMPARE(sp.verticalStretch(), 255);
 }
+
+void tst_QSizePolicy::qhash()
+{
+    FETCH_TEST_DATA;
+    Q_UNUSED(ed);
+
+    QSizePolicy sp2(hp, vp, ct);
+    sp2.setVerticalStretch(vst);
+    sp2.setHorizontalStretch(hst);
+    if (hfw) sp2.setHeightForWidth(true);
+    if (wfh) sp2.setWidthForHeight(true);
+    QCOMPARE(sp, sp2);
+    QCOMPARE(qHash(sp), qHash(sp2));
+}
+
+#undef FETCH_TEST_DATA
 
 QTEST_MAIN(tst_QSizePolicy)
 #include "tst_qsizepolicy.moc"

@@ -422,8 +422,8 @@ static void qt_blend_argb32pm_on_a2rgb30pm(uchar *destPixels, int dbpl,
         const_alpha = (const_alpha * 255) >> 8;
         for (int y=0; y<h; ++y) {
             for (int x=0; x<w; ++x) {
-                uint s = BYTE_MUL(src[x], const_alpha);
-                dst[x] = qConvertArgb32ToA2rgb30<PixelOrder>(s) + BYTE_MUL_RGB30(dst[x], 255 - qAlpha(s));
+                uint s = src[x];
+                dst[x] = BYTE_MUL_RGB30(qConvertArgb32ToA2rgb30<PixelOrder>(s), const_alpha) + BYTE_MUL_RGB30(dst[x], 255 - qt_div_255(qAlpha(s) * const_alpha));
             }
             dst = (quint32 *)(((uchar *) dst) + dbpl);
             src = (const quint32 *)(((const uchar *) src) + sbpl);

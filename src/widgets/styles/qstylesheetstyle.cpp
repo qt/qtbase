@@ -460,7 +460,6 @@ class QRenderRule
 public:
     QRenderRule() : features(0), hasFont(false), pal(0), b(0), bg(0), bd(0), ou(0), geo(0), p(0), img(0), clipset(0) { }
     QRenderRule(const QVector<QCss::Declaration> &, const QObject *);
-    ~QRenderRule() { }
 
     QRect borderRect(const QRect &r) const;
     QRect outlineRect(const QRect &r) const;
@@ -558,16 +557,22 @@ public:
         return csz;
     }
 
+    bool hasStyleHint(const QString &sh) const { return styleHints.contains(sh); }
+    QVariant styleHint(const QString &sh) const { return styleHints.value(sh); }
+
+    void fixupBorder(int);
+
+    // Shouldn't be here
+    void setClip(QPainter *p, const QRect &rect);
+    void unsetClip(QPainter *);
+
+public:
     int features;
     QBrush defaultBackground;
     QFont font;
     bool hasFont;
 
     QHash<QString, QVariant> styleHints;
-    bool hasStyleHint(const QString& sh) const { return styleHints.contains(sh); }
-    QVariant styleHint(const QString& sh) const { return styleHints.value(sh); }
-
-    void fixupBorder(int);
 
     QSharedDataPointer<QStyleSheetPaletteData> pal;
     QSharedDataPointer<QStyleSheetBoxData> b;
@@ -578,12 +583,10 @@ public:
     QSharedDataPointer<QStyleSheetPositionData> p;
     QSharedDataPointer<QStyleSheetImageData> img;
 
-    // Shouldn't be here
-    void setClip(QPainter *p, const QRect &rect);
-    void unsetClip(QPainter *);
     int clipset;
     QPainterPath clipPath;
 };
+Q_DECLARE_TYPEINFO(QRenderRule, Q_MOVABLE_TYPE);
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 static const char *const knownStyleHints[] = {
@@ -728,6 +731,7 @@ namespace {
         int width;
     };
 }
+template <> class QTypeInfo<ButtonInfo> : public QTypeInfoMerger<ButtonInfo, QRenderRule, int> {};
 
 QHash<QStyle::SubControl, QRect> QStyleSheetStyle::titleBarLayout(const QWidget *w, const QStyleOptionTitleBar *tb) const
 {
@@ -742,16 +746,19 @@ QHash<QStyle::SubControl, QRect> QStyleSheetStyle::titleBarLayout(const QWidget 
 
     int offsets[3] = { 0, 0, 0 };
     enum Where { Left, Right, Center, NoWhere } where = Left;
-    QList<ButtonInfo> infos;
-    for (int i = 0; i < layout.count(); i++) {
-        ButtonInfo info;
-        info.element = layout[i].toInt();
-        if (info.element == '(') {
+    QVector<ButtonInfo> infos;
+    const int numLayouts = layout.size();
+    infos.reserve(numLayouts);
+    for (int i = 0; i < numLayouts; i++) {
+        const int element = layout[i].toInt();
+        if (element == '(') {
             where = Center;
-        } else if (info.element == ')') {
+        } else if (element == ')') {
             where = Right;
         } else {
-            switch (info.element) {
+            ButtonInfo info;
+            info.element = element;
+            switch (element) {
             case PseudoElement_TitleBar:
                 if (!(tb->titleBarFlags & (Qt::WindowTitleHint | Qt::WindowSystemMenuHint)))
                     continue;
@@ -796,14 +803,14 @@ QHash<QStyle::SubControl, QRect> QStyleSheetStyle::titleBarLayout(const QWidget 
             info.rule = subRule;
             info.offset = offsets[where];
             info.where = where;
-            infos.append(info);
+            infos.append(qMove(info));
 
             offsets[where] += info.width;
         }
     }
 
-    for (int i = 0; i < infos.count(); i++) {
-        ButtonInfo info = infos[i];
+    for (int i = 0; i < infos.size(); i++) {
+        const ButtonInfo &info = infos[i];
         QRect lr = cr;
         switch (info.where) {
         case Center: {

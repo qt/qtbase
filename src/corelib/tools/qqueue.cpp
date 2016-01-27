@@ -71,19 +71,6 @@
 */
 
 /*!
-    \fn QQueue::QQueue()
-
-    Constructs an empty queue.
-*/
-
-/*!
-    \fn QQueue::~QQueue()
-
-    Destroys the queue. References to the values in the queue, and all
-    iterators over this queue, become invalid.
-*/
-
-/*!
     \fn void QQueue::swap(QQueue<T> &other)
     \since 4.8
 

@@ -122,6 +122,8 @@ private:
     QSystemLocale(bool);
     friend class QSystemLocaleSingleton;
 };
+Q_DECLARE_TYPEINFO(QSystemLocale::QueryType, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(QSystemLocale::CurrencyToStringArgument, Q_MOVABLE_TYPE);
 #endif
 
 #ifdef QT_USE_ICU
@@ -153,6 +155,7 @@ struct QLocaleId
 
     ushort language_id, script_id, country_id;
 };
+Q_DECLARE_TYPEINFO(QLocaleId, Q_PRIMITIVE_TYPE);
 
 struct QLocaleData
 {

@@ -733,7 +733,7 @@ void tst_QImageReader::gifHandlerBugs()
         QVERIFY(io.loopCount() != 1);
         int count=0;
         for (; io.canRead(); io.read(), ++count) ;
-        QVERIFY(count == 34);
+        QCOMPARE(count, 34);
     }
 
     // Task 95166
@@ -810,7 +810,7 @@ void tst_QImageReader::gifImageCount()
         QVERIFY(io.canRead());
         QImage greenFrame = io.read();
 
-        QVERIFY(io.imageCount() == 4);
+        QCOMPARE(io.imageCount(), 4);
 
         QVERIFY(io.canRead());
         QImage blueFrame = io.read();
@@ -925,8 +925,8 @@ void tst_QImageReader::gifImageCount()
     }
     {
         QImageReader io(":images/trolltech.gif");
-        QVERIFY(io.imageCount() == 34);
-        QVERIFY(io.size() == QSize(128,64));
+        QCOMPARE(io.imageCount(), 34);
+        QCOMPARE(io.size(), QSize(128,64));
     }
 }
 

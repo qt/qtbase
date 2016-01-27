@@ -58,7 +58,8 @@ public:
         PdmDpiY,
         PdmPhysicalDpiX,
         PdmPhysicalDpiY,
-        PdmDevicePixelRatio
+        PdmDevicePixelRatio,
+        PdmDevicePixelRatioScaled
     };
 
     virtual ~QPaintDevice();
@@ -76,9 +77,11 @@ public:
     int physicalDpiX() const { return metric(PdmPhysicalDpiX); }
     int physicalDpiY() const { return metric(PdmPhysicalDpiY); }
     int devicePixelRatio() const { return metric(PdmDevicePixelRatio); }
+    qreal devicePixelRatioF()  const { return metric(PdmDevicePixelRatioScaled) / devicePixelRatioFScale(); }
     int colorCount() const { return metric(PdmNumColors); }
     int depth() const { return metric(PdmDepth); }
 
+    static inline qreal devicePixelRatioFScale() {return 10000000.0; }
 protected:
     QPaintDevice() Q_DECL_NOEXCEPT;
     virtual int metric(PaintDeviceMetric metric) const;
@@ -87,7 +90,6 @@ protected:
     virtual QPainter *sharedPainter() const;
 
     ushort        painters;                        // refcount
-
 private:
     Q_DISABLE_COPY(QPaintDevice)
 

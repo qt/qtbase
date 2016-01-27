@@ -34,8 +34,6 @@
 #include <qimageiohandler.h>
 #include <qstringlist.h>
 
-#ifndef QT_NO_IMAGEFORMATPLUGIN
-
 #ifdef QT_NO_IMAGEFORMAT_JPEG
 #undef QT_NO_IMAGEFORMAT_JPEG
 #endif
@@ -52,5 +50,3 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif

@@ -71,7 +71,7 @@ private:
 class Q_WIDGETS_EXPORT QGraphicsAnchorLayout : public QGraphicsLayout
 {
 public:
-    QGraphicsAnchorLayout(QGraphicsLayoutItem *parent = 0);
+    QGraphicsAnchorLayout(QGraphicsLayoutItem *parent = Q_NULLPTR);
     virtual ~QGraphicsAnchorLayout();
 
     QGraphicsAnchor *addAnchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,

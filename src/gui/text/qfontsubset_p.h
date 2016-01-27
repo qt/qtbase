@@ -79,7 +79,7 @@ public:
     const int object_id;
     bool noEmbed;
     QFontEngine *fontEngine;
-    QList<int> glyph_indices;
+    QVector<int> glyph_indices;
     mutable int downloaded_glyphs;
     mutable bool standard_font;
     int nGlyphs() const { return glyph_indices.size(); }

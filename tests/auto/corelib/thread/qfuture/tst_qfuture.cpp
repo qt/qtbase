@@ -648,7 +648,7 @@ void tst_QFuture::cancel()
 
         result.reportStarted();
         f = result.future();
-        QVERIFY(f.isCanceled() == false);
+        QVERIFY(!f.isCanceled());
         result.reportCanceled();
         QVERIFY(f.isCanceled());
         result.reportFinished();
@@ -663,14 +663,14 @@ void tst_QFuture::cancel()
         QFutureInterface<void> result;
 
         QFuture<void> f;
-        QVERIFY(f.isStarted() == true);
+        QVERIFY(f.isStarted());
 
         result.reportStarted();
         f = result.future();
 
-        QVERIFY(f.isStarted() == true);
+        QVERIFY(f.isStarted());
 
-        QVERIFY(result.isCanceled() == false);
+        QVERIFY(!result.isCanceled());
         f.cancel();
 
         QVERIFY(result.isCanceled());
@@ -683,12 +683,12 @@ void tst_QFuture::cancel()
         QFutureInterface<void> result;
 
         QFuture<void> f;
-        QVERIFY(f.isStarted() == true);
+        QVERIFY(f.isStarted());
 
         result.reportStarted();
         f = result.future();
 
-        QVERIFY(f.isStarted() == true);
+        QVERIFY(f.isStarted());
 
         result.reportFinished();
 
@@ -805,12 +805,12 @@ void tst_QFuture::indexedResults()
     {
         QFutureInterface<QChar> Interface;
         QFuture<QChar> f;
-        QVERIFY(f.isStarted() == true);
+        QVERIFY(f.isStarted());
 
         Interface.reportStarted();
         f = Interface.future();
 
-        QVERIFY(f.isStarted() == true);
+        QVERIFY(f.isStarted());
 
         QChar result;
 
@@ -1126,14 +1126,14 @@ void tst_QFuture::iterators()
             QVERIFY(it.hasNext());
             QCOMPARE(it.peekNext(), resultCount - 1);
             QCOMPARE(it.next(), resultCount - 1);
-            QVERIFY(it.hasNext() == false);
+            QVERIFY(!it.hasNext());
         }
 
         {
             QFutureIterator<int> it(f);
             QVERIFY(it.hasNext());
             it.toBack();
-            QVERIFY(it.hasNext() == false);
+            QVERIFY(!it.hasNext());
             it.toFront();
             QVERIFY(it.hasNext());
         }
@@ -1192,15 +1192,15 @@ void tst_QFuture::pause()
     Interface.reportStarted();
     QFuture<void> f = Interface.future();
 
-    QVERIFY(Interface.isPaused() == false);
+    QVERIFY(!Interface.isPaused());
     f.pause();
-    QVERIFY(Interface.isPaused() == true);
+    QVERIFY(Interface.isPaused());
     f.resume();
-    QVERIFY(Interface.isPaused() == false);
+    QVERIFY(!Interface.isPaused());
     f.togglePaused();
-    QVERIFY(Interface.isPaused() == true);
+    QVERIFY(Interface.isPaused());
     f.togglePaused();
-    QVERIFY(Interface.isPaused() == false);
+    QVERIFY(!Interface.isPaused());
 
     Interface.reportFinished();
 }
@@ -1228,13 +1228,13 @@ void tst_QFuture::throttling()
         i.reportStarted();
         QFuture<void> f = i.future();
 
-        QVERIFY(i.isThrottled() == false);
+        QVERIFY(!i.isThrottled());
 
         i.setThrottled(true);
         QVERIFY(i.isThrottled());
 
         i.setThrottled(false);
-        QVERIFY(i.isThrottled() == false);
+        QVERIFY(!i.isThrottled());
 
         i.setThrottled(true);
         QVERIFY(i.isThrottled());

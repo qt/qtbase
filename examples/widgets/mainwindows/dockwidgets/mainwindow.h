@@ -69,8 +69,6 @@ private slots:
 
 private:
     void createActions();
-    void createMenus();
-    void createToolBars();
     void createStatusBar();
     void createDockWindows();
 
@@ -78,19 +76,7 @@ private:
     QListWidget *customerList;
     QListWidget *paragraphsList;
 
-    QMenu *fileMenu;
-    QMenu *editMenu;
     QMenu *viewMenu;
-    QMenu *helpMenu;
-    QToolBar *fileToolBar;
-    QToolBar *editToolBar;
-    QAction *newLetterAct;
-    QAction *saveAct;
-    QAction *printAct;
-    QAction *undoAct;
-    QAction *aboutAct;
-    QAction *aboutQtAct;
-    QAction *quitAct;
 };
 //! [0]
 

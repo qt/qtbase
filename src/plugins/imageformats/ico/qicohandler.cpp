@@ -96,9 +96,9 @@ public:
     QImage iconAt(int index);
     static bool canRead(QIODevice *iodev);
 
-    static QList<QImage> read(QIODevice * device);
+    static QVector<QImage> read(QIODevice *device);
 
-    static bool write(QIODevice * device, const QList<QImage> & images);
+    static bool write(QIODevice *device, const QVector<QImage> &images);
 
 private:
     bool readHeader();
@@ -612,12 +612,14 @@ QImage ICOReader::iconAt(int index)
 
     \sa write()
 */
-QList<QImage> ICOReader::read(QIODevice * device)
+QVector<QImage> ICOReader::read(QIODevice *device)
 {
-    QList<QImage> images;
+    QVector<QImage> images;
 
     ICOReader reader(device);
-    for (int i = 0; i < reader.count(); i++)
+    const int N = reader.count();
+    images.reserve(N);
+    for (int i = 0; i < N; i++)
         images += reader.iconAt(i);
 
     return images;
@@ -636,7 +638,7 @@ QList<QImage> ICOReader::read(QIODevice * device)
 
     \sa read()
 */
-bool ICOReader::write(QIODevice * device, const QList<QImage> & images)
+bool ICOReader::write(QIODevice *device, const QVector<QImage> &images)
 {
     bool retValue = false;
 
@@ -849,7 +851,7 @@ bool QtIcoHandler::read(QImage *image)
 bool QtIcoHandler::write(const QImage &image)
 {
     QIODevice *device = QImageIOHandler::device();
-    QList<QImage> imgs;
+    QVector<QImage> imgs;
     imgs.append(image);
     return ICOReader::write(device, imgs);
 }

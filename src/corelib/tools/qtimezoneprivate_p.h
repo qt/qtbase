@@ -165,6 +165,7 @@ public:
 protected:
     QByteArray m_id;
 };
+Q_DECLARE_TYPEINFO(QTimeZonePrivate::Data, Q_MOVABLE_TYPE);
 
 template<> QTimeZonePrivate *QSharedDataPointer<QTimeZonePrivate>::clone();
 

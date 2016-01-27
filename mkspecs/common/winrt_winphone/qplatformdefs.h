@@ -130,4 +130,14 @@
 
 typedef int mode_t;
 
+#ifndef INADDR_ANY
+#  define INADDR_ANY        (u_long)0x00000000
+#endif
+#ifndef INADDR_LOOPBACK
+#  define INADDR_LOOPBACK   0x7f000001
+#endif
+#ifndef INADDR_BROADCAST
+#  define INADDR_BROADCAST  (u_long)0xffffffff
+#endif
+
 #endif // QPLATFORMDEFS_H

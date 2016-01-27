@@ -70,8 +70,14 @@ public:
 
     QDBusArgument();
     QDBusArgument(const QDBusArgument &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+    QDBusArgument(QDBusArgument &&other) Q_DECL_NOTHROW : d(other.d) { other.d = Q_NULLPTR; }
+    QDBusArgument &operator=(QDBusArgument &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
     QDBusArgument &operator=(const QDBusArgument &other);
     ~QDBusArgument();
+
+    void swap(QDBusArgument &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
     // used for marshalling (Qt -> D-BUS)
     QDBusArgument &operator<<(uchar arg);
@@ -140,6 +146,7 @@ protected:
     friend class QDBusArgumentPrivate;
     mutable QDBusArgumentPrivate *d;
 };
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QDBusArgument)
 
 QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QDBusArgument)
@@ -147,7 +154,7 @@ QT_BEGIN_NAMESPACE
 
 template<typename T> inline T qdbus_cast(const QDBusArgument &arg
 #ifndef Q_QDOC
-, T * = 0
+, T * = Q_NULLPTR
 #endif
     )
 {
@@ -158,7 +165,7 @@ template<typename T> inline T qdbus_cast(const QDBusArgument &arg
 
 template<typename T> inline T qdbus_cast(const QVariant &v
 #ifndef Q_QDOC
-, T * = 0
+, T * = Q_NULLPTR
 #endif
     )
 {

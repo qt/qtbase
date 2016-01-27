@@ -167,7 +167,7 @@ void QDocForest::setSearchOrder(QStringList& t)
     forest_.remove(primaryName);
 
     QMap<QString, Tree*>::iterator i;
-    foreach (QString m, t) {
+    foreach (const QString &m, t) {
         if (primaryName != m) {
             i = forest_.find(m);
             if (i != forest_.end()) {
@@ -1264,6 +1264,10 @@ const NodeMap& QDocDatabase::getSinceMap(const QString& key)
   to generating documentation.
  */
 void QDocDatabase::resolveIssues() {
+    primaryTreeRoot()->normalizeOverloads();
+    fixInheritance();
+    resolveProperties();
+    primaryTreeRoot()->makeUndocumentedChildrenInternal();
     resolveQmlInheritance(primaryTreeRoot());
     primaryTree()->resolveTargets(primaryTreeRoot());
     primaryTree()->resolveCppToQmlLinks();
@@ -1277,6 +1281,7 @@ void QDocDatabase::resolveStuff()
     primaryTree()->resolveCppToQmlLinks();
     primaryTree()->resolveUsingClauses();
     resolveNamespaces();
+    primaryTreeRoot()->normalizeOverloads();
 }
 
 /*!
@@ -1291,7 +1296,7 @@ void QDocDatabase::resolveNamespaces()
         t = forest_.nextTree();
     }
     QList<QString> keys = nmm_.uniqueKeys();
-    foreach (QString s, keys) {
+    foreach (const QString &s, keys) {
         NamespaceNode* ns = 0;
         QList<Node*> nodes = nmm_.values(s);
         int count = nmm_.remove(s);
@@ -1574,6 +1579,13 @@ void QDocDatabase::mergeCollections(Node::Genus genus, CNMap& cnm, const Node* r
             if (values.size() > 1) {
                 foreach (CollectionNode* v, values) {
                     if (v != n) {
+                        // Allow multiple (major) versions of QML/JS modules
+                        if (n->type() == Node::QmlModule
+                                && n->logicalModuleIdentifier() != v->logicalModuleIdentifier()) {
+                            if (v->wasSeen() && v != relative && !v->members().isEmpty())
+                                cnm.insert(v->fullTitle().toLower(), v);
+                            continue;
+                        }
                         foreach (Node* t, v->members())
                             n->addMember(t);
                     }
@@ -1594,12 +1606,19 @@ void QDocDatabase::mergeCollections(Node::Genus genus, CNMap& cnm, const Node* r
   Finds all the collection nodes with the same name
   and genus as \a c and merges their members into the
   members list of \a c.
+
+  For QML and JS modules, the merge is done only if
+  the module identifier matches between the nodes, to avoid
+  merging modules with different (major) versions.
  */
 void QDocDatabase::mergeCollections(CollectionNode* c)
 {
     foreach (Tree* t, searchOrder()) {
         CollectionNode* cn = t->getCollection(c->name(), c->genus());
         if (cn && cn != c) {
+            if (cn->type() == Node::QmlModule
+                    && cn->logicalModuleIdentifier() != c->logicalModuleIdentifier())
+                continue;
             foreach (Node* n, cn->members())
                 c->addMember(n);
         }

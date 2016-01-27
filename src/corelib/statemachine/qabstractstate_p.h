@@ -46,12 +46,13 @@
 //
 
 #include <private/qobject_p.h>
+#include <QtCore/qabstractstate.h>
 
 QT_BEGIN_NAMESPACE
 
 class QStateMachine;
 
-class QAbstractState;
+class QState;
 class QAbstractStatePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QAbstractState)
@@ -66,8 +67,10 @@ public:
 
     QAbstractStatePrivate(StateType type);
 
-    static QAbstractStatePrivate *get(QAbstractState *q);
-    static const QAbstractStatePrivate *get(const QAbstractState *q);
+    static QAbstractStatePrivate *get(QAbstractState *q)
+    { return q->d_func(); }
+    static const QAbstractStatePrivate *get(const QAbstractState *q)
+    { return q->d_func(); }
 
     QStateMachine *machine() const;
 

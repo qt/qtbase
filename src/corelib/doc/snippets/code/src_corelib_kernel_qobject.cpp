@@ -418,17 +418,17 @@ QString example = tr("Example");
 //! [40]
 
 //! [41]
-QPushButton *button = parentWidget->findChild<QPushButton *>("button1", Qt::FindDirectChildOnly);
+QPushButton *button = parentWidget->findChild<QPushButton *>("button1", Qt::FindDirectChildrenOnly);
 //! [41]
 
 
 //! [42]
-QListWidget *list = parentWidget->findChild<QListWidget *>(QString(), Qt::FindDirectChildOnly);
+QListWidget *list = parentWidget->findChild<QListWidget *>(QString(), Qt::FindDirectChildrenOnly);
 //! [42]
 
 
 //! [43]
-QList<QPushButton *> childButtons = parentWidget.findChildren<QPushButton *>(QString(), Qt::FindDirectChildOnly);
+QList<QPushButton *> childButtons = parentWidget.findChildren<QPushButton *>(QString(), Qt::FindDirectChildrenOnly);
 //! [43]
 
 //! [44]

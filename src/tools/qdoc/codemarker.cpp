@@ -194,6 +194,22 @@ QString CodeMarker::protect(const QString& str)
     return marked;
 }
 
+void CodeMarker::appendProtectedString(QString *output, const QStringRef &str)
+{
+    int n = str.length();
+    output->reserve(output->size() + n * 2 + 30);
+    const QChar *data = str.constData();
+    for (int i = 0; i != n; ++i) {
+        switch (data[i].unicode()) {
+        case '&': *output += samp;  break;
+        case '<': *output += slt;   break;
+        case '>': *output += sgt;   break;
+        case '"': *output += squot; break;
+        default : *output += data[i];
+        }
+    }
+}
+
 QString CodeMarker::typified(const QString &string)
 {
     QString result;
@@ -361,8 +377,7 @@ QString CodeMarker::sortName(const Node *node, const QString* name)
             else
                 sortNo = QLatin1String("E");
         }
-        return sortNo + nodeName + QLatin1Char(' ')
-                + QString::number(func->overloadNumber(), 36);
+        return sortNo + nodeName + QLatin1Char(' ') + QString::number(func->overloadNumber(), 36);
     }
 
     if (node->type() == Node::Class)

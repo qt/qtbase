@@ -50,8 +50,8 @@ class Q_CORE_EXPORT QPluginLoader : public QObject
     Q_PROPERTY(QString fileName READ fileName WRITE setFileName)
     Q_PROPERTY(QLibrary::LoadHints loadHints READ loadHints WRITE setLoadHints)
 public:
-    explicit QPluginLoader(QObject *parent = 0);
-    explicit QPluginLoader(const QString &fileName, QObject *parent = 0);
+    explicit QPluginLoader(QObject *parent = Q_NULLPTR);
+    explicit QPluginLoader(const QString &fileName, QObject *parent = Q_NULLPTR);
     ~QPluginLoader();
 
     QObject *instance();

@@ -51,7 +51,7 @@ class Q_DBUS_EXPORT QDBusVirtualObject : public QObject
 {
     Q_OBJECT
 public:
-    explicit QDBusVirtualObject(QObject *parent = 0);
+    explicit QDBusVirtualObject(QObject *parent = Q_NULLPTR);
     virtual ~QDBusVirtualObject();
 
     virtual QString introspect(const QString &path) const = 0;

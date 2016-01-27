@@ -49,6 +49,7 @@
 #include <QString>
 #include <QList>
 #include <QThread>
+#include <QtCore/private/qthread_p.h>
 #include <qpa/qwindowsysteminterface.h>
 
 #if !defined(QT_NO_MTDEV)
@@ -80,7 +81,7 @@ private:
 #endif
 };
 
-class QEvdevTouchScreenHandlerThread : public QThread
+class QEvdevTouchScreenHandlerThread : public QDaemonThread
 {
 public:
     explicit QEvdevTouchScreenHandlerThread(const QString &device, const QString &spec, QObject *parent = 0);

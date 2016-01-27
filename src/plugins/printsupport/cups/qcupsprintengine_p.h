@@ -47,8 +47,6 @@
 
 #include "QtPrintSupport/qprintengine.h"
 
-#ifndef QT_NO_PRINTER
-
 #include <QtCore/qstring.h>
 #include <QtGui/qpaintengine.h>
 
@@ -99,7 +97,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_PRINTER
 
 #endif // QCUPSPRINTENGINE_P_H

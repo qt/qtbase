@@ -74,7 +74,7 @@ public:
     Q_DECLARE_FLAGS(PrintDialogOptions, PrintDialogOption)
 
 #ifndef QT_NO_PRINTDIALOG
-    explicit QAbstractPrintDialog(QPrinter *printer, QWidget *parent = 0);
+    explicit QAbstractPrintDialog(QPrinter *printer, QWidget *parent = Q_NULLPTR);
     ~QAbstractPrintDialog();
 
     virtual int exec() = 0;
@@ -101,7 +101,7 @@ public:
     QPrinter *printer() const;
 
 protected:
-    QAbstractPrintDialog(QAbstractPrintDialogPrivate &ptr, QPrinter *printer, QWidget *parent = 0);
+    QAbstractPrintDialog(QAbstractPrintDialogPrivate &ptr, QPrinter *printer, QWidget *parent = Q_NULLPTR);
 
 private:
     Q_DISABLE_COPY(QAbstractPrintDialog)

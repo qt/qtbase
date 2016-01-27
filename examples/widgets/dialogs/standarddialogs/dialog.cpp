@@ -180,27 +180,27 @@ Dialog::Dialog(QWidget *parent)
     QPushButton *errorButton =
             new QPushButton(tr("QErrorMessage::showM&essage()"));
 
-    connect(integerButton, SIGNAL(clicked()), this, SLOT(setInteger()));
-    connect(doubleButton, SIGNAL(clicked()), this, SLOT(setDouble()));
-    connect(itemButton, SIGNAL(clicked()), this, SLOT(setItem()));
-    connect(textButton, SIGNAL(clicked()), this, SLOT(setText()));
-    connect(multiLineTextButton, SIGNAL(clicked()), this, SLOT(setMultiLineText()));
-    connect(colorButton, SIGNAL(clicked()), this, SLOT(setColor()));
-    connect(fontButton, SIGNAL(clicked()), this, SLOT(setFont()));
-    connect(directoryButton, SIGNAL(clicked()),
-            this, SLOT(setExistingDirectory()));
-    connect(openFileNameButton, SIGNAL(clicked()),
-            this, SLOT(setOpenFileName()));
-    connect(openFileNamesButton, SIGNAL(clicked()),
-            this, SLOT(setOpenFileNames()));
-    connect(saveFileNameButton, SIGNAL(clicked()),
-            this, SLOT(setSaveFileName()));
-    connect(criticalButton, SIGNAL(clicked()), this, SLOT(criticalMessage()));
-    connect(informationButton, SIGNAL(clicked()),
-            this, SLOT(informationMessage()));
-    connect(questionButton, SIGNAL(clicked()), this, SLOT(questionMessage()));
-    connect(warningButton, SIGNAL(clicked()), this, SLOT(warningMessage()));
-    connect(errorButton, SIGNAL(clicked()), this, SLOT(errorMessage()));
+    connect(integerButton, &QAbstractButton::clicked, this, &Dialog::setInteger);
+    connect(doubleButton, &QAbstractButton::clicked, this, &Dialog::setDouble);
+    connect(itemButton, &QAbstractButton::clicked, this, &Dialog::setItem);
+    connect(textButton, &QAbstractButton::clicked, this, &Dialog::setText);
+    connect(multiLineTextButton, &QAbstractButton::clicked, this, &Dialog::setMultiLineText);
+    connect(colorButton, &QAbstractButton::clicked, this, &Dialog::setColor);
+    connect(fontButton, &QAbstractButton::clicked, this, &Dialog::setFont);
+    connect(directoryButton, &QAbstractButton::clicked,
+            this, &Dialog::setExistingDirectory);
+    connect(openFileNameButton, &QAbstractButton::clicked,
+            this, &Dialog::setOpenFileName);
+    connect(openFileNamesButton, &QAbstractButton::clicked,
+            this, &Dialog::setOpenFileNames);
+    connect(saveFileNameButton, &QAbstractButton::clicked,
+            this, &Dialog::setSaveFileName);
+    connect(criticalButton, &QAbstractButton::clicked, this, &Dialog::criticalMessage);
+    connect(informationButton, &QAbstractButton::clicked,
+            this, &Dialog::informationMessage);
+    connect(questionButton, &QAbstractButton::clicked, this, &Dialog::questionMessage);
+    connect(warningButton, &QAbstractButton::clicked, this, &Dialog::warningMessage);
+    connect(errorButton, &QAbstractButton::clicked, this, &Dialog::errorMessage);
 
     QWidget *page = new QWidget;
     QGridLayout *layout = new QGridLayout(page);

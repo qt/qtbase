@@ -32,13 +32,6 @@
 ****************************************************************************/
 
 // these might be defined via precompiled headers
-#ifndef _POSIX_C_SOURCE
-#  define _POSIX_C_SOURCE 200809L
-#endif
-#if !defined(_XOPEN_SOURCE) && !defined(__QNXNTO__) && !defined(ANDROID)
-#  define _XOPEN_SOURCE 700
-#endif
-
 #include <QtCore/qatomic.h>
 #include "qprocess_p.h"
 

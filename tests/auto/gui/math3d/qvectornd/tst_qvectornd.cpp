@@ -885,7 +885,7 @@ void tst_QVectorND::compare2()
     QVector2D v3(3, 2);
     QVector2D v4(1, 3);
 
-    QVERIFY(v1 == v2);
+    QCOMPARE(v1, v2);
     QVERIFY(v1 != v3);
     QVERIFY(v1 != v4);
 }
@@ -899,7 +899,7 @@ void tst_QVectorND::compare3()
     QVector3D v4(1, 3, 4);
     QVector3D v5(1, 2, 3);
 
-    QVERIFY(v1 == v2);
+    QCOMPARE(v1, v2);
     QVERIFY(v1 != v3);
     QVERIFY(v1 != v4);
     QVERIFY(v1 != v5);
@@ -915,7 +915,7 @@ void tst_QVectorND::compare4()
     QVector4D v5(1, 2, 3, 8);
     QVector4D v6(1, 2, 4, 3);
 
-    QVERIFY(v1 == v2);
+    QCOMPARE(v1, v2);
     QVERIFY(v1 != v3);
     QVERIFY(v1 != v4);
     QVERIFY(v1 != v5);
@@ -969,7 +969,7 @@ void tst_QVectorND::add2()
 
     QVector2D v4(v1);
     v4 += v2;
-    QVERIFY(v4 == v3);
+    QCOMPARE(v4, v3);
 
     QCOMPARE(v4.x(), v1.x() + v2.x());
     QCOMPARE(v4.y(), v1.y() + v2.y());
@@ -1033,7 +1033,7 @@ void tst_QVectorND::add3()
 
     QVector3D v4(v1);
     v4 += v2;
-    QVERIFY(v4 == v3);
+    QCOMPARE(v4, v3);
 
     QCOMPARE(v4.x(), v1.x() + v2.x());
     QCOMPARE(v4.y(), v1.y() + v2.y());
@@ -1109,7 +1109,7 @@ void tst_QVectorND::add4()
 
     QVector4D v4(v1);
     v4 += v2;
-    QVERIFY(v4 == v3);
+    QCOMPARE(v4, v3);
 
     QCOMPARE(v4.x(), v1.x() + v2.x());
     QCOMPARE(v4.y(), v1.y() + v2.y());
@@ -1141,14 +1141,14 @@ void tst_QVectorND::subtract2()
 
     QVector2D v4(v3);
     v4 -= v1;
-    QVERIFY(v4 == v2);
+    QCOMPARE(v4, v2);
 
     QCOMPARE(v4.x(), v3.x() - v1.x());
     QCOMPARE(v4.y(), v3.y() - v1.y());
 
     QVector2D v5(v3);
     v5 -= v2;
-    QVERIFY(v5 == v1);
+    QCOMPARE(v5, v1);
 
     QCOMPARE(v5.x(), v3.x() - v2.x());
     QCOMPARE(v5.y(), v3.y() - v2.y());
@@ -1181,7 +1181,7 @@ void tst_QVectorND::subtract3()
 
     QVector3D v4(v3);
     v4 -= v1;
-    QVERIFY(v4 == v2);
+    QCOMPARE(v4, v2);
 
     QCOMPARE(v4.x(), v3.x() - v1.x());
     QCOMPARE(v4.y(), v3.y() - v1.y());
@@ -1189,7 +1189,7 @@ void tst_QVectorND::subtract3()
 
     QVector3D v5(v3);
     v5 -= v2;
-    QVERIFY(v5 == v1);
+    QCOMPARE(v5, v1);
 
     QCOMPARE(v5.x(), v3.x() - v2.x());
     QCOMPARE(v5.y(), v3.y() - v2.y());
@@ -1226,7 +1226,7 @@ void tst_QVectorND::subtract4()
 
     QVector4D v4(v3);
     v4 -= v1;
-    QVERIFY(v4 == v2);
+    QCOMPARE(v4, v2);
 
     QCOMPARE(v4.x(), v3.x() - v1.x());
     QCOMPARE(v4.y(), v3.y() - v1.y());
@@ -1235,7 +1235,7 @@ void tst_QVectorND::subtract4()
 
     QVector4D v5(v3);
     v5 -= v2;
-    QVERIFY(v5 == v1);
+    QCOMPARE(v5, v1);
 
     QCOMPARE(v5.x(), v3.x() - v2.x());
     QCOMPARE(v5.y(), v3.y() - v2.y());
@@ -1290,7 +1290,7 @@ void tst_QVectorND::multiply2()
 
     QVector2D v4(v1);
     v4 *= v2;
-    QVERIFY(v4 == v3);
+    QCOMPARE(v4, v3);
 
     QCOMPARE(v4.x(), v1.x() * v2.x());
     QCOMPARE(v4.y(), v1.y() * v2.y());
@@ -1354,7 +1354,7 @@ void tst_QVectorND::multiply3()
 
     QVector3D v4(v1);
     v4 *= v2;
-    QVERIFY(v4 == v3);
+    QCOMPARE(v4, v3);
 
     QCOMPARE(v4.x(), v1.x() * v2.x());
     QCOMPARE(v4.y(), v1.y() * v2.y());
@@ -1430,7 +1430,7 @@ void tst_QVectorND::multiply4()
 
     QVector4D v4(v1);
     v4 *= v2;
-    QVERIFY(v4 == v3);
+    QCOMPARE(v4, v3);
 
     QCOMPARE(v4.x(), v1.x() * v2.x());
     QCOMPARE(v4.y(), v1.y() * v2.y());
@@ -1488,7 +1488,7 @@ void tst_QVectorND::multiplyFactor2()
 
     QVector2D v3(v1);
     v3 *= factor;
-    QVERIFY(v3 == v2);
+    QCOMPARE(v3, v2);
 
     QCOMPARE(v3.x(), v1.x() * factor);
     QCOMPARE(v3.y(), v1.y() * factor);
@@ -1553,7 +1553,7 @@ void tst_QVectorND::multiplyFactor3()
 
     QVector3D v3(v1);
     v3 *= factor;
-    QVERIFY(v3 == v2);
+    QCOMPARE(v3, v2);
 
     QCOMPARE(v3.x(), v1.x() * factor);
     QCOMPARE(v3.y(), v1.y() * factor);
@@ -1628,7 +1628,7 @@ void tst_QVectorND::multiplyFactor4()
 
     QVector4D v3(v1);
     v3 *= factor;
-    QVERIFY(v3 == v2);
+    QCOMPARE(v3, v2);
 
     QCOMPARE(v3.x(), v1.x() * factor);
     QCOMPARE(v3.y(), v1.y() * factor);
@@ -1660,7 +1660,7 @@ void tst_QVectorND::divide2()
 
         QVector2D v4(v3);
         v4 /= v2;
-        QVERIFY(v4 == v1);
+        QCOMPARE(v4, v1);
 
         QCOMPARE(v4.x(), v3.x() / v2.x());
         QCOMPARE(v4.y(), v3.y() / v2.y());
@@ -1670,7 +1670,7 @@ void tst_QVectorND::divide2()
 
         QVector2D v4(v3);
         v4 /= v1;
-        QVERIFY(v4 == v2);
+        QCOMPARE(v4, v2);
 
         QCOMPARE(v4.x(), v3.x() / v1.x());
         QCOMPARE(v4.y(), v3.y() / v1.y());
@@ -1704,7 +1704,7 @@ void tst_QVectorND::divide3()
 
         QVector3D v4(v3);
         v4 /= v2;
-        QVERIFY(v4 == v1);
+        QCOMPARE(v4, v1);
 
         QCOMPARE(v4.x(), v3.x() / v2.x());
         QCOMPARE(v4.y(), v3.y() / v2.y());
@@ -1715,7 +1715,7 @@ void tst_QVectorND::divide3()
 
         QVector3D v4(v3);
         v4 /= v1;
-        QVERIFY(v4 == v2);
+        QCOMPARE(v4, v2);
 
         QCOMPARE(v4.x(), v3.x() / v1.x());
         QCOMPARE(v4.y(), v3.y() / v1.y());
@@ -1753,7 +1753,7 @@ void tst_QVectorND::divide4()
 
         QVector4D v4(v3);
         v4 /= v2;
-        QVERIFY(v4 == v1);
+        QCOMPARE(v4, v1);
 
         QCOMPARE(v4.x(), v3.x() / v2.x());
         QCOMPARE(v4.y(), v3.y() / v2.y());
@@ -1765,7 +1765,7 @@ void tst_QVectorND::divide4()
 
         QVector4D v4(v3);
         v4 /= v1;
-        QVERIFY(v4 == v2);
+        QCOMPARE(v4, v2);
 
         QCOMPARE(v4.x(), v3.x() / v1.x());
         QCOMPARE(v4.y(), v3.y() / v1.y());
@@ -1798,7 +1798,7 @@ void tst_QVectorND::divideFactor2()
 
     QVector2D v3(v2);
     v3 /= factor;
-    QVERIFY(v3 == v1);
+    QCOMPARE(v3, v1);
 
     QCOMPARE(v3.x(), v2.x() / factor);
     QCOMPARE(v3.y(), v2.y() / factor);
@@ -1830,7 +1830,7 @@ void tst_QVectorND::divideFactor3()
 
     QVector3D v3(v2);
     v3 /= factor;
-    QVERIFY(v3 == v1);
+    QCOMPARE(v3, v1);
 
     QCOMPARE(v3.x(), v2.x() / factor);
     QCOMPARE(v3.y(), v2.y() / factor);
@@ -1865,7 +1865,7 @@ void tst_QVectorND::divideFactor4()
 
     QVector4D v3(v2);
     v3 /= factor;
-    QVERIFY(v3 == v1);
+    QCOMPARE(v3, v1);
 
     QCOMPARE(v3.x(), v2.x() / factor);
     QCOMPARE(v3.y(), v2.y() / factor);
@@ -1887,7 +1887,7 @@ void tst_QVectorND::negate2()
     QVector2D v1(x1, y1);
     QVector2D v2(-x1, -y1);
 
-    QVERIFY(-v1 == v2);
+    QCOMPARE(-v1, v2);
 }
 
 // Test vector negation for 3D vectors.
@@ -1905,7 +1905,7 @@ void tst_QVectorND::negate3()
     QVector3D v1(x1, y1, z1);
     QVector3D v2(-x1, -y1, -z1);
 
-    QVERIFY(-v1 == v2);
+    QCOMPARE(-v1, v2);
 }
 
 // Test vector negation for 4D vectors.
@@ -1924,7 +1924,7 @@ void tst_QVectorND::negate4()
     QVector4D v1(x1, y1, z1, w1);
     QVector4D v2(-x1, -y1, -z1, -w1);
 
-    QVERIFY(-v1 == v2);
+    QCOMPARE(-v1, v2);
 }
 
 // Test the computation of vector cross-products.
@@ -1976,7 +1976,7 @@ void tst_QVectorND::crossProduct()
     QVector3D v3(x3, y3, z3);
 
     QVector3D v4 = QVector3D::crossProduct(v1, v2);
-    QVERIFY(v4 == v3);
+    QCOMPARE(v4, v3);
 
     // Compute the cross-product long-hand and check again.
     float xres = y1 * z2 - z1 * y2;
@@ -2667,9 +2667,9 @@ void tst_QVectorND::properties()
 
 void tst_QVectorND::metaTypes()
 {
-    QVERIFY(QMetaType::type("QVector2D") == QMetaType::QVector2D);
-    QVERIFY(QMetaType::type("QVector3D") == QMetaType::QVector3D);
-    QVERIFY(QMetaType::type("QVector4D") == QMetaType::QVector4D);
+    QCOMPARE(QMetaType::type("QVector2D"), int(QMetaType::QVector2D));
+    QCOMPARE(QMetaType::type("QVector3D"), int(QMetaType::QVector3D));
+    QCOMPARE(QMetaType::type("QVector4D"), int(QMetaType::QVector4D));
 
     QCOMPARE(QByteArray(QMetaType::typeName(QMetaType::QVector2D)),
              QByteArray("QVector2D"));
@@ -2682,9 +2682,9 @@ void tst_QVectorND::metaTypes()
     QVERIFY(QMetaType::isRegistered(QMetaType::QVector3D));
     QVERIFY(QMetaType::isRegistered(QMetaType::QVector4D));
 
-    QVERIFY(qMetaTypeId<QVector2D>() == QMetaType::QVector2D);
-    QVERIFY(qMetaTypeId<QVector3D>() == QMetaType::QVector3D);
-    QVERIFY(qMetaTypeId<QVector4D>() == QMetaType::QVector4D);
+    QCOMPARE(qMetaTypeId<QVector2D>(), int(QMetaType::QVector2D));
+    QCOMPARE(qMetaTypeId<QVector3D>(), int(QMetaType::QVector3D));
+    QCOMPARE(qMetaTypeId<QVector4D>(), int(QMetaType::QVector4D));
 }
 
 QTEST_APPLESS_MAIN(tst_QVectorND)

@@ -66,10 +66,13 @@ public:
     explicit QTextCursor(const QTextBlock &block);
     explicit QTextCursor(QTextCursorPrivate *d);
     QTextCursor(const QTextCursor &cursor);
+#ifdef Q_COMPILER_RVALUE_REFS
+    QTextCursor &operator=(QTextCursor &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
     QTextCursor &operator=(const QTextCursor &other);
     ~QTextCursor();
 
-    void swap(QTextCursor &other) { qSwap(d, other.d); }
+    void swap(QTextCursor &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
     bool isNull() const;
 

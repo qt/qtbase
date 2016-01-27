@@ -56,8 +56,8 @@ public:
     QIcon(const QIcon &other);
 #ifdef Q_COMPILER_RVALUE_REFS
     QIcon(QIcon &&other) Q_DECL_NOEXCEPT
-        : d(0)
-    { qSwap(d, other.d); }
+        : d(other.d)
+    { other.d = Q_NULLPTR; }
 #endif
     explicit QIcon(const QString &fileName); // file or resource name
     explicit QIcon(QIconEngine *engine);
@@ -65,7 +65,7 @@ public:
     QIcon &operator=(const QIcon &other);
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QIcon &operator=(QIcon &&other) Q_DECL_NOEXCEPT
-    { qSwap(d, other.d); return *this; }
+    { swap(other); return *this; }
 #endif
     inline void swap(QIcon &other) Q_DECL_NOEXCEPT
     { qSwap(d, other.d); }
@@ -101,6 +101,9 @@ public:
     void addFile(const QString &fileName, const QSize &size = QSize(), Mode mode = Normal, State state = Off);
 
     QList<QSize> availableSizes(Mode mode = Normal, State state = Off) const;
+
+    void setIsMask(bool isMask);
+    bool isMask() const;
 
     static QIcon fromTheme(const QString &name, const QIcon &fallback = QIcon());
     static bool hasThemeIcon(const QString &name);

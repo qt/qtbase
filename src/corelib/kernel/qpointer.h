@@ -64,7 +64,9 @@ public:
     inline QPointer() { }
     inline QPointer(T *p) : wp(p, true) { }
     // compiler-generated copy/move ctor/assignment operators are fine!
-    inline ~QPointer() { }
+    // compiler-generated dtor is fine!
+
+    inline void swap(QPointer &other) { wp.swap(other.wp); }
 
     inline QPointer<T> &operator=(T* p)
     { wp.assign(static_cast<QObjectType*>(p)); return *this; }

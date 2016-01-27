@@ -328,14 +328,8 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
 */
 
 QT_BEGIN_INCLUDE_NAMESPACE
-#ifdef Q_DEAD_CODE_FROM_QT4_WIN
-#include <qwindowsstyle_p.h>
-#endif
 #include <QMetaEnum>
 #include <qshortcut.h>
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
-#include <qmacstyle_mac_p.h>
-#endif
 QT_END_INCLUDE_NAMESPACE
 
 /*!
@@ -1189,12 +1183,17 @@ QList<QUrl> QFileDialogPrivate::userSelectedFiles() const
     if (!usingWidgets())
         return addDefaultSuffixToUrls(selectedFiles_sys());
 
-    foreach (const QModelIndex &index, qFileDialogUi->listView->selectionModel()->selectedRows())
+    const QModelIndexList selectedRows = qFileDialogUi->listView->selectionModel()->selectedRows();
+    files.reserve(selectedRows.size());
+    foreach (const QModelIndex &index, selectedRows)
         files.append(QUrl::fromLocalFile(index.data(QFileSystemModel::FilePathRole).toString()));
 
-    if (files.isEmpty() && !lineEdit()->text().isEmpty())
-        foreach (const QString &path, typedFiles())
+    if (files.isEmpty() && !lineEdit()->text().isEmpty()) {
+        const QStringList typedFilesList = typedFiles();
+        files.reserve(typedFilesList.size());
+        foreach (const QString &path, typedFilesList)
             files.append(QUrl::fromLocalFile(path));
+    }
 
     return files;
 }
@@ -1228,7 +1227,9 @@ QStringList QFileDialogPrivate::addDefaultSuffixToFiles(const QStringList &files
 QList<QUrl> QFileDialogPrivate::addDefaultSuffixToUrls(const QList<QUrl> &urlsToFix) const
 {
     QList<QUrl> urls;
-    for (int i=0; i<urlsToFix.size(); ++i) {
+    const int numUrlsToFix = urlsToFix.size();
+    urls.reserve(numUrlsToFix);
+    for (int i = 0; i < numUrlsToFix; ++i) {
         QUrl url = urlsToFix.at(i);
         // if the filename has no suffix, add the default suffix
         const QString defaultSuffix = options->defaultSuffix();
@@ -1252,7 +1253,9 @@ QStringList QFileDialog::selectedFiles() const
     Q_D(const QFileDialog);
 
     QStringList files;
-    foreach (const QUrl &file, d->userSelectedFiles())
+    const QList<QUrl> userSelectedFiles = d->userSelectedFiles();
+    files.reserve(userSelectedFiles.size());
+    foreach (const QUrl &file, userSelectedFiles)
         files.append(file.toLocalFile());
     if (files.isEmpty() && d->usingWidgets()) {
         const FileMode fm = fileMode();
@@ -1277,7 +1280,9 @@ QList<QUrl> QFileDialog::selectedUrls() const
         return d->userSelectedFiles();
     } else {
         QList<QUrl> urls;
-        foreach (const QString &file, selectedFiles())
+        const QStringList selectedFileList = selectedFiles();
+        urls.reserve(selectedFileList.size());
+        foreach (const QString &file, selectedFileList)
             urls.append(QUrl::fromLocalFile(file));
         return urls;
     }
@@ -1356,7 +1361,9 @@ QStringList qt_strip_filters(const QStringList &filters)
 {
     QStringList strippedFilters;
     QRegExp r(QString::fromLatin1(QPlatformFileDialogHelper::filterRegExp));
-    for (int i = 0; i < filters.count(); ++i) {
+    const int numFilters = filters.count();
+    strippedFilters.reserve(numFilters);
+    for (int i = 0; i < numFilters; ++i) {
         QString filterName;
         int index = r.indexIn(filters[i]);
         if (index >= 0)
@@ -1391,7 +1398,9 @@ void QFileDialog::setNameFilters(const QStringList &filters)
     Q_D(QFileDialog);
     d->defaultFileTypes = (filters == QStringList(QFileDialog::tr("All Files (*)")));
     QStringList cleanedFilters;
-    for (int i = 0; i < filters.count(); ++i) {
+    const int numFilters = filters.count();
+    cleanedFilters.reserve(numFilters);
+    for (int i = 0; i < numFilters; ++i) {
         cleanedFilters << filters[i].simplified();
     }
     d->options->setNameFilters(cleanedFilters);
@@ -1689,6 +1698,30 @@ void QFileDialog::setAcceptMode(QFileDialog::AcceptMode mode)
         d->qFileDialogUi->lookInCombo->setEditable(false);
     }
     d->retranslateWindowTitle();
+}
+
+/*!
+    \property QFileDialog::supportedSchemes
+    \brief the URL schemes that the file dialog should allow navigating to.
+    \since 5.6
+
+    Setting this property allows to restrict the type of URLs the
+    user will be able to select. It is a way for the application to declare
+    the protocols it will support to fetch the file content. An empty list
+    means that no restriction is applied (the default).
+    Supported for local files ("file" scheme) is implicit and always enabled;
+    it is not necessary to include it in the restriction.
+*/
+
+void QFileDialog::setSupportedSchemes(const QStringList &schemes)
+{
+    Q_D(QFileDialog);
+    d->options->setSupportedSchemes(schemes);
+}
+
+QStringList QFileDialog::supportedSchemes() const
+{
+    return d_func()->options->supportedSchemes();
 }
 
 /*
@@ -2039,7 +2072,7 @@ QString QFileDialog::labelText(DialogLabel label) const
     The dialog's caption is set to \a caption. If \a caption is not specified
     then a default caption will be used.
 
-    On Windows, and Mac OS X, this static function will use the
+    On Windows, and OS X, this static function will use the
     native file dialog and not a QFileDialog.
 
     On Windows the dialog will spin a blocking modal event loop that will not
@@ -2087,8 +2120,8 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
     user will be able to select. It is a way for the application to declare
     the protocols it will support to fetch the file content. An empty list
     means that no restriction is applied (the default).
-    Supported for local files ("file" scheme) is implicit and always enabled.
-    it is not necessary to include in the restriction.
+    Supported for local files ("file" scheme) is implicit and always enabled;
+    it is not necessary to include it in the restriction.
 
     When possible, this static function will use the native file dialog and
     not a QFileDialog. On platforms which don't support selecting remote
@@ -2105,8 +2138,6 @@ QUrl QFileDialog::getOpenFileUrl(QWidget *parent,
                                  Options options,
                                  const QStringList &supportedSchemes)
 {
-    Q_UNUSED(supportedSchemes); // TODO
-
     QFileDialogArgs args;
     args.parent = parent;
     args.caption = caption;
@@ -2117,6 +2148,7 @@ QUrl QFileDialog::getOpenFileUrl(QWidget *parent,
     args.options = options;
 
     QFileDialog dialog(args);
+    dialog.setSupportedSchemes(supportedSchemes);
     if (selectedFilter && !selectedFilter->isEmpty())
         dialog.selectNameFilter(*selectedFilter);
     if (dialog.exec() == QDialog::Accepted) {
@@ -2151,7 +2183,7 @@ QUrl QFileDialog::getOpenFileUrl(QWidget *parent,
     The dialog's caption is set to \a caption. If \a caption is not specified
     then a default caption will be used.
 
-    On Windows, and Mac OS X, this static function will use the
+    On Windows, and OS X, this static function will use the
     native file dialog and not a QFileDialog.
 
     On Windows the dialog will spin a blocking modal event loop that will not
@@ -2164,11 +2196,6 @@ QUrl QFileDialog::getOpenFileUrl(QWidget *parent,
     The \a options argument holds various options about how to run the dialog,
     see the QFileDialog::Option enum for more information on the flags you can
     pass.
-
-    \note If you want to iterate over the list of files, you should iterate
-    over a copy. For example:
-
-    \snippet code/src_gui_dialogs_qfiledialog.cpp 10
 
     \warning Do not delete \a parent during the execution of the dialog. If you
     want to do this, you should create the dialog yourself using one of the
@@ -2186,6 +2213,7 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
     const QStringList schemes = QStringList(QStringLiteral("file"));
     const QList<QUrl> selectedUrls = getOpenFileUrls(parent, caption, QUrl::fromLocalFile(dir), filter, selectedFilter, options, schemes);
     QStringList fileNames;
+    fileNames.reserve(selectedUrls.size());
     foreach (const QUrl &url, selectedUrls)
         fileNames << url.toLocalFile();
     return fileNames;
@@ -2209,8 +2237,8 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
     user will be able to select. It is a way for the application to declare
     the protocols it will support to fetch the file content. An empty list
     means that no restriction is applied (the default).
-    Supported for local files ("file" scheme) is implicit and always enabled.
-    it is not necessary to include in the restriction.
+    Supported for local files ("file" scheme) is implicit and always enabled;
+    it is not necessary to include it in the restriction.
 
     When possible, this static function will use the native file dialog and
     not a QFileDialog. On platforms which don't support selecting remote
@@ -2227,8 +2255,6 @@ QList<QUrl> QFileDialog::getOpenFileUrls(QWidget *parent,
                                          Options options,
                                          const QStringList &supportedSchemes)
 {
-    Q_UNUSED(supportedSchemes);
-
     QFileDialogArgs args;
     args.parent = parent;
     args.caption = caption;
@@ -2239,6 +2265,7 @@ QList<QUrl> QFileDialog::getOpenFileUrls(QWidget *parent,
     args.options = options;
 
     QFileDialog dialog(args);
+    dialog.setSupportedSchemes(supportedSchemes);
     if (selectedFilter && !selectedFilter->isEmpty())
         dialog.selectNameFilter(*selectedFilter);
     if (dialog.exec() == QDialog::Accepted) {
@@ -2279,12 +2306,12 @@ QList<QUrl> QFileDialog::getOpenFileUrls(QWidget *parent,
     The dialog's caption is set to \a caption. If \a caption is not specified,
     a default caption will be used.
 
-    On Windows, and Mac OS X, this static function will use the
+    On Windows, and OS X, this static function will use the
     native file dialog and not a QFileDialog.
 
     On Windows the dialog will spin a blocking modal event loop that will not
     dispatch any QTimers, and if \a parent is not 0 then it will position the
-    dialog just below the parent's title bar. On Mac OS X, with its native file
+    dialog just below the parent's title bar. On OS X, with its native file
     dialog, the filter argument is ignored.
 
     On Unix/X11, the normal behavior of the file dialog is to resolve and
@@ -2328,8 +2355,8 @@ QString QFileDialog::getSaveFileName(QWidget *parent,
     user will be able to select. It is a way for the application to declare
     the protocols it will support to save the file content. An empty list
     means that no restriction is applied (the default).
-    Supported for local files ("file" scheme) is implicit and always enabled.
-    it is not necessary to include in the restriction.
+    Supported for local files ("file" scheme) is implicit and always enabled;
+    it is not necessary to include it in the restriction.
 
     When possible, this static function will use the native file dialog and
     not a QFileDialog. On platforms which don't support selecting remote
@@ -2346,8 +2373,6 @@ QUrl QFileDialog::getSaveFileUrl(QWidget *parent,
                                  Options options,
                                  const QStringList &supportedSchemes)
 {
-    Q_UNUSED(supportedSchemes);
-
     QFileDialogArgs args;
     args.parent = parent;
     args.caption = caption;
@@ -2358,6 +2383,7 @@ QUrl QFileDialog::getSaveFileUrl(QWidget *parent,
     args.options = options;
 
     QFileDialog dialog(args);
+    dialog.setSupportedSchemes(supportedSchemes);
     dialog.setAcceptMode(AcceptSave);
     if (selectedFilter && !selectedFilter->isEmpty())
         dialog.selectNameFilter(*selectedFilter);
@@ -2388,7 +2414,7 @@ QUrl QFileDialog::getSaveFileUrl(QWidget *parent,
     pass. To ensure a native file dialog, \l{QFileDialog::}{ShowDirsOnly} must
     be set.
 
-    On Windows, and Mac OS X, this static function will use the
+    On Windows, and OS X, this static function will use the
     native file dialog and not a QFileDialog. On Windows CE, if the device has
     no native file dialog, a QFileDialog will be used.
 
@@ -2435,8 +2461,8 @@ QString QFileDialog::getExistingDirectory(QWidget *parent,
     user will be able to select. It is a way for the application to declare
     the protocols it will support to fetch the file content. An empty list
     means that no restriction is applied (the default).
-    Supported for local files ("file" scheme) is implicit and always enabled.
-    it is not necessary to include in the restriction.
+    Supported for local files ("file" scheme) is implicit and always enabled;
+    it is not necessary to include it in the restriction.
 
     When possible, this static function will use the native file dialog and
     not a QFileDialog. On platforms which don't support selecting remote
@@ -2451,8 +2477,6 @@ QUrl QFileDialog::getExistingDirectoryUrl(QWidget *parent,
                                           Options options,
                                           const QStringList &supportedSchemes)
 {
-    Q_UNUSED(supportedSchemes);
-
     QFileDialogArgs args;
     args.parent = parent;
     args.caption = caption;
@@ -2461,6 +2485,7 @@ QUrl QFileDialog::getExistingDirectoryUrl(QWidget *parent,
     args.options = options;
 
     QFileDialog dialog(args);
+    dialog.setSupportedSchemes(supportedSchemes);
     if (dialog.exec() == QDialog::Accepted)
         return dialog.selectedUrls().value(0);
     return QUrl();
@@ -2662,7 +2687,9 @@ void QFileDialogPrivate::saveSettings()
         settings.setValue(QLatin1String("treeViewHeader"), qFileDialogUi->treeView->header()->saveState());
     }
     QStringList historyUrls;
-    foreach (const QString &path, q->history())
+    const QStringList history = q->history();
+    historyUrls.reserve(history.size());
+    foreach (const QString &path, history)
         historyUrls << QUrl::fromLocalFile(path).toString();
     settings.setValue(QLatin1String("history"), historyUrls);
     settings.setValue(QLatin1String("lastVisited"), lastVisitedDir()->toString());
@@ -2954,7 +2981,7 @@ void QFileDialogPrivate::createWidgets()
     q->setHistory(options->history());
     if (options->initiallySelectedFiles().count() == 1)
         q->selectFile(options->initiallySelectedFiles().first().fileName());
-    foreach (QUrl url, options->initiallySelectedFiles())
+    foreach (const QUrl &url, options->initiallySelectedFiles())
         q->selectUrl(url);
     lineEdit()->selectAll();
     _q_updateOkButton();

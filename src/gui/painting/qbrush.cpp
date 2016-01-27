@@ -1163,6 +1163,7 @@ QDataStream &operator>>(QDataStream &s, QBrush &b)
             QColor c;
 
             s >> numStops;
+            stops.reserve(numStops);
             for (quint32 i = 0; i < numStops; ++i) {
                 s >> n >> c;
                 stops << QPair<qreal, QColor>(n, c);

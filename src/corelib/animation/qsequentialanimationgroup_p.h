@@ -86,7 +86,7 @@ public:
 
     // this is the actual duration of uncontrolled animations
     // it helps seeking and even going forward
-    QList<int> actualDuration;
+    QVector<int> actualDuration;
 
     void restart();
     int lastLoop;

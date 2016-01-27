@@ -57,12 +57,13 @@ public:
     MainWindow();
 
 private slots:
-    void openFile(const QString &path = QString());
+    void openFile();
     void saveFile();
 
 private:
     void setupModel();
     void setupViews();
+    void loadFile(const QString &path);
 
     QAbstractItemModel *model;
     QAbstractItemView *pieChart;

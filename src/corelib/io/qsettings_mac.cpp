@@ -491,7 +491,7 @@ bool QMacSettingsPrivate::get(const QString &key, QVariant *value) const
 
 QStringList QMacSettingsPrivate::children(const QString &prefix, ChildSpec spec) const
 {
-    QMap<QString, QString> result;
+    QStringList result;
     int startPos = prefix.size();
 
     for (int i = 0; i < numDomains; ++i) {
@@ -505,7 +505,7 @@ QStringList QMacSettingsPrivate::children(const QString &prefix, ChildSpec spec)
                     QString currentKey =
                             qtKey(static_cast<CFStringRef>(CFArrayGetValueAtIndex(cfarray, k)));
                     if (currentKey.startsWith(prefix))
-                        processChild(currentKey.mid(startPos), spec, result);
+                        processChild(currentKey.midRef(startPos), spec, result);
                 }
             }
         }
@@ -513,7 +513,10 @@ QStringList QMacSettingsPrivate::children(const QString &prefix, ChildSpec spec)
         if (!fallbacks)
             break;
     }
-    return result.keys();
+    std::sort(result.begin(), result.end());
+    result.erase(std::unique(result.begin(), result.end()),
+                 result.end());
+    return result;
 }
 
 void QMacSettingsPrivate::clear()

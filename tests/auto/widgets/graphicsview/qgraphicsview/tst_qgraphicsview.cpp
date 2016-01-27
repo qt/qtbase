@@ -2683,7 +2683,7 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState()
     view.viewport()->repaint();
 
 #ifdef Q_OS_MAC
-    // Repaint on Mac OS X actually does require spinning the event loop.
+    // Repaint on OS X actually does require spinning the event loop.
     QTest::qWait(100);
 #endif
     QVERIFY(!parent->dirtyPainter);
@@ -3525,7 +3525,7 @@ void tst_QGraphicsView::embeddedViews()
     v2->QWidget::render(&actual);
     QTransform b = item->transform;
 
-    QVERIFY(a == b);
+    QCOMPARE(a, b);
     delete v1;
 }
 

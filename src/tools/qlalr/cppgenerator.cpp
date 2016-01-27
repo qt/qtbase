@@ -163,7 +163,7 @@ void CppGenerator::operator () ()
           if (item->rule == grammar.goal)
             accept_state = q;
 
-          foreach (Name s, lookaheads)
+          foreach (const Name &s, lookaheads)
             {
               int &u = ACTION (q, aut.id (s));
 
@@ -616,7 +616,7 @@ void CppGenerator::generateImpl (QTextStream &out)
 
           out << name_ids.value(rule->lhs);
 
-          foreach (Name n, rule->rhs)
+          foreach (const Name &n, rule->rhs)
             out << ", " << name_ids.value (n);
         }
       out << "};" << endl << endl;

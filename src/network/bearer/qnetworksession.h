@@ -80,7 +80,7 @@ public:
 
     Q_DECLARE_FLAGS(UsagePolicies, UsagePolicy)
 
-    explicit QNetworkSession(const QNetworkConfiguration &connConfig, QObject *parent = 0);
+    explicit QNetworkSession(const QNetworkConfiguration &connConfig, QObject *parent = Q_NULLPTR);
     virtual ~QNetworkSession();
 
     bool isOpen() const;

@@ -67,6 +67,7 @@
     \li \l {li-command} {\\li} \span {class="newStuff"}
     \li \l {list-command} {\\list}
     \li \l {meta-command} {\\meta}
+    \li \l {noautolist-command} {\\noautolist}
     \li \l {newcode-command} {\\newcode}
     \li \l {li-command} {\\o} \span {class="newStuff"} {(deprecated, use \\li)}
     \li \l {note-command} {\\note}
@@ -2091,8 +2092,11 @@
     {sa-command} {\\sa (see also)} commands.
 
     The \\keyword command is like the \l {target-command} {\\target}
-    command, but stronger. A keyword can be linked from anywhere using
-    a simple syntax.
+    command, except when linking to keyword the link goes to the top of
+    the QDoc comment where the \\keyword appears in. If you want to
+    create a link target to a \c section unit within a \\page, use
+    \\target instead. A keyword can be linked from anywhere using a
+    simple syntax.
 
     Keywords must be unique over all the documents processed during
     the QDoc run. The command uses the rest of the line as its
@@ -2178,7 +2182,7 @@
         \image happyguy.jpg "Happy guy"
 
         Qt provides single-source portability across Microsoft
-        Windows, Mac OS X, Linux, and all major commercial Unix
+        Windows, OS X, Linux, and all major commercial Unix
         variants. It is also available for embedded devices.
     * /
     \endcode
@@ -2191,7 +2195,7 @@
         \image happyguy.jpg image "Happy guy"
 
         Qt provides single-source portability across Microsoft
-        Windows, Mac OS X, Linux, and all major commercial Unix
+        Windows, OS X, Linux, and all major commercial Unix
         variants. It is also available for embedded devices.
         \endquotation
 
@@ -3282,7 +3286,7 @@
            / *!
                Qt::HANDLE is a platform-specific handle type
                for system objects. This is  equivalent to
-               \c{void *} on Windows and Mac OS X, and to
+               \c{void *} on Windows and OS X, and to
                \c{unsigned long} on X11.
 
                \warning Using this type is not portable.
@@ -3294,7 +3298,7 @@
            \quotation
                Qt::HANDLE is a platform-specific handle type
                for system objects. This is  equivalent to
-               \c{void *} on Windows and Mac OS X, and to
+               \c{void *} on Windows and OS X, and to
                \c{unsigned long} on X11.
 
                \warning Using this type is not portable.
@@ -3450,6 +3454,20 @@
     Each class that is a member of the specified module must be marked
     with the \l {inmodule-command} {\\inmodule} command in its \\class
     comment.
+
+    \section2 \c qmltypesbymodule
+
+    Similar to \c classesbymodule argument, but used for listing the
+    QML types from the QML module specified with the second argument.
+
+    \note Support for this argument was introduced in QDoc 5.6.
+
+    \section2 \c jstypesbymodule
+
+    Similar to \c classesbymodule argument, but used for listing the
+    JavaScript types from the module specified with the second argument.
+
+    \note Support for this argument was introduced in QDoc 5.6.
 
     \section2 \c compatclasses
 
@@ -3880,6 +3898,28 @@
     In the example output, several values have been set using default
     values obtained from the QDoc configuration file. See \l
     {Generating DITA XML Output} for details.
+
+    \target noautolist-command
+    \section1 \\noautolist
+
+    The \\noautolist command indicates that the annotated list of C++
+    classes or QML types, which is automatically generated at the
+    bottom of the C++ or QML module page should be omitted, because
+    the classes or types have been listed manually. This command can
+    also be used with the \l {group-command}{\\group} command to omit
+    the list of group members, when they are listed manually.
+
+    The command must stand on its own line. See \l {Qt Sensors QML Types} for
+    an example. The page is generated from \c {qtsensors5.qdoc}. There you will
+    find a qdoc comment containing the \c{\qmlmodule} command for the QtSensors
+    module. The same qdoc comment contains two \c {\annotated-list} commands to
+    list the QML types in two separate groups. The QML types have been divided
+    into these two groups because it makes more sense to list them this way than
+    it does to list them in a single alphabetical list. At the bottom of the
+    comment, \c {\noautolist} has been used to tell qdoc not to generate the
+    automatic annotated list.
+
+    This command was introduced in QDoc 5.6.
 
     \target omit-command
     \section1 \\omit

@@ -3687,7 +3687,7 @@ void QGLContext::doneCurrent()
     QGLWidget. This will side-step the issue altogether, and is what
     we recommend for users that need this kind of functionality.
 
-    On Mac OS X, when Qt is built with Cocoa support, a QGLWidget
+    On OS X, when Qt is built with Cocoa support, a QGLWidget
     can't have any sibling widgets placed ontop of itself. This is due
     to limitations in the Cocoa API and is not supported by Apple.
 
@@ -4354,6 +4354,8 @@ void QGLWidget::resizeOverlayGL(int, int)
 {
 }
 
+/*!\reimp
+ */
 bool QGLWidget::event(QEvent *e)
 {
     Q_D(QGLWidget);
@@ -4494,7 +4496,7 @@ QImage QGLWidget::grabFrameBuffer(bool withAlpha)
 {
     makeCurrent();
     QImage res;
-    qreal pixelRatio = devicePixelRatio();
+    qreal pixelRatio = devicePixelRatioF();
     int w = pixelRatio * width();
     int h = pixelRatio * height();
     if (format().rgba())
@@ -4907,7 +4909,7 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
         GLdouble win_x = 0, win_y = 0, win_z = 0;
         qgluProject(x, y, z, &model[0], &proj[0], &view[0],
                     &win_x, &win_y, &win_z);
-        const int dpr = d->glcx->device()->devicePixelRatio();
+        const int dpr = d->glcx->device()->devicePixelRatioF();
         win_x /= dpr;
         win_y /= dpr;
         win_y = height - win_y; // y is inverted

@@ -168,7 +168,7 @@ public:
     bool hasKeywords() const;
     bool hasTargets() const;
     const QList<Atom *> &tableOfContents() const;
-    const QList<int> &tableOfContentsLevels() const;
+    const QVector<int> &tableOfContentsLevels() const;
     const QList<Atom *> &keywords() const;
     const QList<Atom *> &targets() const;
     const QStringMultiMap &metaTagMap() const;
@@ -188,6 +188,7 @@ private:
     DocPrivate *priv;
     static const Config* config_;
 };
+Q_DECLARE_TYPEINFO(Doc, Q_MOVABLE_TYPE);
 typedef QList<Doc> DocList;
 
 QT_END_NAMESPACE

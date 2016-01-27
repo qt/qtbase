@@ -259,10 +259,7 @@ QModelIndex QFileSystemModel::index(const QString &path, int column) const
 {
     Q_D(const QFileSystemModel);
     QFileSystemModelPrivate::QFileSystemNode *node = d->node(path, false);
-    QModelIndex idx = d->index(node);
-    if (idx.column() != column)
-        idx = idx.sibling(idx.row(), column);
-    return idx;
+    return d->index(node, column);
 }
 
 /*!
@@ -562,7 +559,7 @@ QModelIndex QFileSystemModel::parent(const QModelIndex &index) const
 
     return the index for node
 */
-QModelIndex QFileSystemModelPrivate::index(const QFileSystemModelPrivate::QFileSystemNode *node) const
+QModelIndex QFileSystemModelPrivate::index(const QFileSystemModelPrivate::QFileSystemNode *node, int column) const
 {
     Q_Q(const QFileSystemModel);
     QFileSystemModelPrivate::QFileSystemNode *parentNode = (node ? node->parent : 0);
@@ -575,7 +572,7 @@ QModelIndex QFileSystemModelPrivate::index(const QFileSystemModelPrivate::QFileS
         return QModelIndex();
 
     int visualRow = translateVisibleLocation(parentNode, parentNode->visibleLocation(node->fileName));
-    return q->createIndex(visualRow, 0, const_cast<QFileSystemNode*>(node));
+    return q->createIndex(visualRow, column, const_cast<QFileSystemNode*>(node));
 }
 
 /*!
@@ -643,7 +640,7 @@ int QFileSystemModel::rowCount(const QModelIndex &parent) const
 */
 int QFileSystemModel::columnCount(const QModelIndex &parent) const
 {
-    return (parent.column() > 0) ? 0 : 4;
+    return (parent.column() > 0) ? 0 : QFileSystemModelPrivate::NumColumns;
 }
 
 /*!
@@ -1183,8 +1180,11 @@ void QFileSystemModel::sort(int column, Qt::SortOrder order)
     emit layoutAboutToBeChanged();
     QModelIndexList oldList = persistentIndexList();
     QList<QPair<QFileSystemModelPrivate::QFileSystemNode*, int> > oldNodes;
-    for (int i = 0; i < oldList.count(); ++i) {
-        QPair<QFileSystemModelPrivate::QFileSystemNode*, int> pair(d->node(oldList.at(i)), oldList.at(i).column());
+    const int nodeCount = oldList.count();
+    oldNodes.reserve(nodeCount);
+    for (int i = 0; i < nodeCount; ++i) {
+        const QModelIndex &oldNode = oldList.at(i);
+        QPair<QFileSystemModelPrivate::QFileSystemNode*, int> pair(d->node(oldNode), oldNode.column());
         oldNodes.append(pair);
     }
 
@@ -1197,10 +1197,11 @@ void QFileSystemModel::sort(int column, Qt::SortOrder order)
     d->sortOrder = order;
 
     QModelIndexList newList;
-    for (int i = 0; i < oldNodes.count(); ++i) {
-        QModelIndex idx = d->index(oldNodes.at(i).first);
-        idx = idx.sibling(idx.row(), oldNodes.at(i).second);
-        newList.append(idx);
+    const int numOldNodes = oldNodes.size();
+    newList.reserve(numOldNodes);
+    for (int i = 0; i < numOldNodes; ++i) {
+        const QPair<QFileSystemModelPrivate::QFileSystemNode*, int> &oldNode = oldNodes.at(i);
+        newList.append(d->index(oldNode.first, oldNode.second));
     }
     changePersistentIndexList(oldList, newList);
     emit layoutChanged();
@@ -1648,7 +1649,9 @@ QStringList QFileSystemModel::nameFilters() const
     Q_D(const QFileSystemModel);
     QStringList filters;
 #ifndef QT_NO_REGEXP
-    for (int i = 0; i < d->nameFilters.size(); ++i) {
+    const int numNameFilters = d->nameFilters.size();
+    filters.reserve(numNameFilters);
+    for (int i = 0; i < numNameFilters; ++i) {
          filters << d->nameFilters.at(i).pattern();
     }
 #endif

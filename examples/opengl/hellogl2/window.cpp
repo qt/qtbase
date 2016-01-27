@@ -59,12 +59,12 @@ Window::Window(MainWindow *mw)
     ySlider = createSlider();
     zSlider = createSlider();
 
-    connect(xSlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setXRotation(int)));
-    connect(glWidget, SIGNAL(xRotationChanged(int)), xSlider, SLOT(setValue(int)));
-    connect(ySlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setYRotation(int)));
-    connect(glWidget, SIGNAL(yRotationChanged(int)), ySlider, SLOT(setValue(int)));
-    connect(zSlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setZRotation(int)));
-    connect(glWidget, SIGNAL(zRotationChanged(int)), zSlider, SLOT(setValue(int)));
+    connect(xSlider, &QSlider::valueChanged, glWidget, &GLWidget::setXRotation);
+    connect(glWidget, &GLWidget::xRotationChanged, xSlider, &QSlider::setValue);
+    connect(ySlider, &QSlider::valueChanged, glWidget, &GLWidget::setYRotation);
+    connect(glWidget, &GLWidget::yRotationChanged, ySlider, &QSlider::setValue);
+    connect(zSlider, &QSlider::valueChanged, glWidget, &GLWidget::setZRotation);
+    connect(glWidget, &GLWidget::zRotationChanged, zSlider, &QSlider::setValue);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     QHBoxLayout *container = new QHBoxLayout;
@@ -77,7 +77,7 @@ Window::Window(MainWindow *mw)
     w->setLayout(container);
     mainLayout->addWidget(w);
     dockBtn = new QPushButton(tr("Undock"), this);
-    connect(dockBtn, SIGNAL(clicked()), this, SLOT(dockUndock()));
+    connect(dockBtn, &QPushButton::clicked, this, &Window::dockUndock);
     mainLayout->addWidget(dockBtn);
 
     setLayout(mainLayout);

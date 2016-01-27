@@ -320,7 +320,7 @@ void QState::addTransition(QAbstractTransition *transition)
     }
 
     transition->setParent(this);
-    const QList<QPointer<QAbstractState> > &targets = QAbstractTransitionPrivate::get(transition)->targetStates;
+    const QVector<QPointer<QAbstractState> > &targets = QAbstractTransitionPrivate::get(transition)->targetStates;
     for (int i = 0; i < targets.size(); ++i) {
         QAbstractState *t = targets.at(i).data();
         if (!t) {
@@ -518,6 +518,14 @@ QState::ChildMode QState::childMode() const
 void QState::setChildMode(ChildMode mode)
 {
     Q_D(QState);
+
+    if (mode == QState::ParallelStates && d->initialState) {
+        qWarning("QState::setChildMode: setting the child-mode of state %p to "
+                 "parallel removes the initial state", this);
+        d->initialState = Q_NULLPTR;
+        emit initialStateChanged(QState::QPrivateSignal());
+    }
+
     if (d->childMode != mode) {
         d->childMode = mode;
         emit childModeChanged(QState::QPrivateSignal());

@@ -520,7 +520,9 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::estimateTopLevelItems(const QRectF &
     scened->ensureSortedTopLevelItems();
     if (order == Qt::DescendingOrder) {
         QList<QGraphicsItem *> sorted;
-        for (int i = scened->topLevelItems.size() - 1; i >= 0; --i)
+        const int numTopLevelItems = scened->topLevelItems.size();
+        sorted.reserve(numTopLevelItems);
+        for (int i = numTopLevelItems - 1; i >= 0; --i)
             sorted << scened->topLevelItems.at(i);
         return sorted;
     }

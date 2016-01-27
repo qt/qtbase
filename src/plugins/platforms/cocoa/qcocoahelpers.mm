@@ -269,10 +269,14 @@ bool operator<(const KeyPair &entry, const Qt::Key &key)
     return entry.qtKey < key;
 }
 
-static bool qtKey2CocoaKeySortLessThan(const KeyPair &entry1, const KeyPair &entry2)
+struct qtKey2CocoaKeySortLessThan
 {
-    return entry1.qtKey < entry2.qtKey;
-}
+    typedef bool result_type;
+    Q_DECL_CONSTEXPR result_type operator()(const KeyPair &entry1, const KeyPair &entry2) const Q_DECL_NOTHROW
+    {
+        return entry1.qtKey < entry2.qtKey;
+    }
+};
 
 static const int NumEntries = 59;
 static const KeyPair entries[NumEntries] = {
@@ -352,7 +356,7 @@ QChar qt_mac_qtKey2CocoaKey(Qt::Key key)
         mustInit = false;
         for (int i=0; i<NumEntries; ++i)
             rev_entries[i] = entries[i];
-        std::sort(rev_entries.begin(), rev_entries.end(), qtKey2CocoaKeySortLessThan);
+        std::sort(rev_entries.begin(), rev_entries.end(), qtKey2CocoaKeySortLessThan());
     }
     const QVector<KeyPair>::iterator i
             = std::lower_bound(rev_entries.begin(), rev_entries.end(), key);
@@ -775,7 +779,7 @@ QString qt_mac_removeAmpersandEscapes(QString s)
  returned if it can't be obtained. It is the caller's responsibility to
  CGContextRelease the context when finished using it.
 
- \warning This function is only available on Mac OS X.
+ \warning This function is only available on OS X.
  \warning This function is duplicated in qmacstyle_mac.mm
  */
 CGContextRef qt_mac_cg_context(QPaintDevice *pdev)

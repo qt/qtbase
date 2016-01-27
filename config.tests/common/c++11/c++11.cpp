@@ -40,7 +40,7 @@
 #include <utility>
 #if defined(__clang__)
 #  if __has_feature(cxx_generalized_initializers)
-//   On Mac OS X, the libstdc++ headers don't include <initializer_list>
+//   On OS X, the libstdc++ headers don't include <initializer_list>
 //   This #include here forces a failure unless we're using libc++
 #    include <initializer_list>
 #  endif

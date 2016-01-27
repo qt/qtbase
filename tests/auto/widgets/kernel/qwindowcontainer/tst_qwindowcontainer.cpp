@@ -327,7 +327,7 @@ void tst_QWindowContainer::testDockWidget()
 
     QTest::qWait(1000);
     dock->setFloating(false);
-    QTRY_VERIFY(window->parent() == mainWindow.window()->windowHandle());
+    QTRY_COMPARE(window->parent(), mainWindow.window()->windowHandle());
 }
 
 QTEST_MAIN(tst_QWindowContainer)

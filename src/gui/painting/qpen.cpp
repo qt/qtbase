@@ -980,6 +980,7 @@ QDataStream &operator>>(QDataStream &s, QPen &p)
             quint32 numDashes;
             s >> numDashes;
             double dash;
+            dashPattern.reserve(numDashes);
             for (quint32 i = 0; i < numDashes; ++i) {
                 s >> dash;
                 dashPattern << dash;

@@ -57,7 +57,7 @@ public:
     static int idealThreadCount() Q_DECL_NOTHROW;
     static void yieldCurrentThread();
 
-    explicit QThread(QObject *parent = 0);
+    explicit QThread(QObject *parent = Q_NULLPTR);
     ~QThread();
 
     enum Priority {
@@ -118,7 +118,7 @@ protected:
     static void setTerminationEnabled(bool enabled = true);
 
 protected:
-    QThread(QThreadPrivate &dd, QObject *parent = 0);
+    QThread(QThreadPrivate &dd, QObject *parent = Q_NULLPTR);
 
 private:
     Q_DECLARE_PRIVATE(QThread)

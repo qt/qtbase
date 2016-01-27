@@ -64,10 +64,10 @@ public:
         { }
     };
 
-    explicit QAbstractEventDispatcher(QObject *parent = 0);
+    explicit QAbstractEventDispatcher(QObject *parent = Q_NULLPTR);
     ~QAbstractEventDispatcher();
 
-    static QAbstractEventDispatcher *instance(QThread *thread = 0);
+    static QAbstractEventDispatcher *instance(QThread *thread = Q_NULLPTR);
 
     virtual bool processEvents(QEventLoop::ProcessEventsFlags flags) = 0;
     virtual bool hasPendingEvents() = 0; // ### Qt6: remove, mark final or make protected

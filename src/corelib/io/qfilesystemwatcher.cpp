@@ -185,7 +185,7 @@ void QFileSystemWatcherPrivate::_q_directoryChanged(const QString &path, bool re
     the file system monitor. Also note that your process may have
     other file descriptors open in addition to the ones for files
     being monitored, and these other open descriptors also count in
-    the total. OS X 10.5 and up use a different backend and do not
+    the total. Mac OS X 10.5 and up use a different backend and do not
     suffer from this issue.
 
 

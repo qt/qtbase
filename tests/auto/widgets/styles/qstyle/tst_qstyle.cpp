@@ -214,12 +214,12 @@ void tst_QStyle::testProxyStyle()
     QProxyStyle *proxyStyle = new QProxyStyle();
     QVERIFY(proxyStyle->baseStyle());
     QStyle *style = QStyleFactory::create("Windows");
-    QVERIFY(style->proxy() == style);
+    QCOMPARE(style->proxy(), style);
 
     proxyStyle->setBaseStyle(style);
-    QVERIFY(style->proxy() == proxyStyle);
-    QVERIFY(style->parent() == proxyStyle);
-    QVERIFY(proxyStyle->baseStyle() == style);
+    QCOMPARE(style->proxy(), proxyStyle);
+    QCOMPARE(style->parent(), proxyStyle);
+    QCOMPARE(proxyStyle->baseStyle(), style);
 
     QVERIFY(testAllFunctions(proxyStyle));
     proxyStyle->setBaseStyle(0);
@@ -236,7 +236,7 @@ void tst_QStyle::testProxyStyle()
     QLineEdit edit;
     edit.setStyle(&customStyle);
     QVERIFY(!customStyle.parent());
-    QVERIFY(edit.style()->pixelMetric(QStyle::PM_ButtonIconSize) == 13);
+    QCOMPARE(edit.style()->pixelMetric(QStyle::PM_ButtonIconSize), 13);
 }
 
 void tst_QStyle::drawItemPixmap()

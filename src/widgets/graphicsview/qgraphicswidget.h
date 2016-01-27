@@ -74,7 +74,7 @@ class Q_WIDGETS_EXPORT QGraphicsWidget : public QGraphicsObject, public QGraphic
     Q_PROPERTY(bool autoFillBackground READ autoFillBackground WRITE setAutoFillBackground)
     Q_PROPERTY(QGraphicsLayout* layout READ layout WRITE setLayout NOTIFY layoutChanged)
 public:
-    QGraphicsWidget(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
+    QGraphicsWidget(QGraphicsItem *parent = Q_NULLPTR, Qt::WindowFlags wFlags = Qt::WindowFlags());
     ~QGraphicsWidget();
     QGraphicsLayout *layout() const;
     void setLayout(QGraphicsLayout *layout);
@@ -156,8 +156,8 @@ public:
     };
     int type() const Q_DECL_OVERRIDE;
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) Q_DECL_OVERRIDE;
-    virtual void paintWindowFrame(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = Q_NULLPTR) Q_DECL_OVERRIDE;
+    virtual void paintWindowFrame(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = Q_NULLPTR);
     QRectF boundingRect() const Q_DECL_OVERRIDE;
     QPainterPath shape() const Q_DECL_OVERRIDE;
 
@@ -213,7 +213,7 @@ protected:
     virtual void ungrabMouseEvent(QEvent *event);
     virtual void grabKeyboardEvent(QEvent *event);
     virtual void ungrabKeyboardEvent(QEvent *event);
-    QGraphicsWidget(QGraphicsWidgetPrivate &, QGraphicsItem *parent, Qt::WindowFlags wFlags = 0);
+    QGraphicsWidget(QGraphicsWidgetPrivate &, QGraphicsItem *parent, Qt::WindowFlags wFlags = Qt::WindowFlags());
 
 private:
     Q_DISABLE_COPY(QGraphicsWidget)

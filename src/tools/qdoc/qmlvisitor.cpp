@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_PRELIMINARY             Doc::alias(QLatin1String("preliminary"))
 #define COMMAND_SINCE                   Doc::alias(QLatin1String("since"))
 #define COMMAND_WRAPPER                 Doc::alias(QLatin1String("wrapper"))
+#define COMMAND_NOAUTOLIST              Doc::alias(QLatin1String("noautolist"))
 
 #define COMMAND_ABSTRACT                Doc::alias(QLatin1String("abstract"))
 #define COMMAND_QMLABSTRACT             Doc::alias(QLatin1String("qmlabstract"))
@@ -119,7 +120,7 @@ QmlDocVisitor::~QmlDocVisitor()
  */
 QQmlJS::AST::SourceLocation QmlDocVisitor::precedingComment(quint32 offset) const
 {
-    QListIterator<QQmlJS::AST::SourceLocation> it(engine->comments());
+    QVectorIterator<QQmlJS::AST::SourceLocation> it(engine->comments());
     it.toBack();
 
     while (it.hasPrevious()) {
@@ -201,13 +202,6 @@ bool QmlDocVisitor::applyDocumentation(QQmlJS::AST::SourceLocation location, Nod
         node->setDoc(doc);
         nodes.append(node);
         if (topicsUsed.size() > 0) {
-            for (int i=0; i<topicsUsed.size(); ++i) {
-                if ((topicsUsed.at(i).topic == COMMAND_QMLPROPERTYGROUP) ||
-                    (topicsUsed.at(i).topic == COMMAND_JSPROPERTYGROUP)) {
-                    qDebug() << "PROPERTY GROUP COMMAND SEEN:" <<  topicsUsed.at(i).args << filePath_;
-                    break;
-                }
-            }
             for (int i=0; i<topicsUsed.size(); ++i) {
                 QString topic = topicsUsed.at(i).topic;
                 QString args = topicsUsed.at(i).args;
@@ -752,14 +746,14 @@ bool QmlDocVisitor::visit(QQmlJS::AST::FunctionDeclaration* fd)
             if (current->isJsType())
                 qmlMethod->setGenus(Node::JS);
             int overloads = 0;
-            NodeList::ConstIterator overloadIterator = current->childNodes().constBegin();
-            while (overloadIterator != current->childNodes().constEnd()) {
-                if ((*overloadIterator)->name() == name)
+            NodeList::ConstIterator i = current->childNodes().constBegin();
+            while (i != current->childNodes().constEnd()) {
+                if ((*i)->name() == name)
                     overloads++;
-                overloadIterator++;
+                i++;
             }
             if (overloads > 1)
-                qmlMethod->setOverload(true);
+                qmlMethod->setOverloadFlag(true);
             QList<Parameter> parameters;
             QQmlJS::AST::FormalParameterList* formals = fd->formals;
             if (formals) {

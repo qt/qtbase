@@ -36,10 +36,6 @@
 
 #include <QtGui/qpixmap.h>
 
-#ifdef Q_TEST_QPIXMAPCACHE
-#include <QtCore/qpair.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 
@@ -52,11 +48,17 @@ public:
     public:
         Key();
         Key(const Key &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+        Key(Key &&other) Q_DECL_NOTHROW : d(other.d) { other.d = Q_NULLPTR; }
+        Key &operator =(Key &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
         ~Key();
         bool operator ==(const Key &key) const;
         inline bool operator !=(const Key &key) const
         { return !operator==(key); }
         Key &operator =(const Key &other);
+
+        void swap(Key &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
     private:
         KeyData *d;
@@ -80,9 +82,9 @@ public:
 #ifdef Q_TEST_QPIXMAPCACHE
     static void flushDetachedPixmaps();
     static int totalUsed();
-    static QList< QPair<QString,QPixmap> > allPixmaps();
 #endif
 };
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QPixmapCache::Key)
 
 QT_END_NAMESPACE
 

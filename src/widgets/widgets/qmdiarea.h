@@ -79,7 +79,7 @@ public:
     };
     Q_ENUM(ViewMode)
 
-    QMdiArea(QWidget *parent = 0);
+    QMdiArea(QWidget *parent = Q_NULLPTR);
     ~QMdiArea();
 
     QSize sizeHint() const Q_DECL_OVERRIDE;
@@ -89,7 +89,7 @@ public:
     QMdiSubWindow *activeSubWindow() const;
     QList<QMdiSubWindow *> subWindowList(WindowOrder order = CreationOrder) const;
 
-    QMdiSubWindow *addSubWindow(QWidget *widget, Qt::WindowFlags flags = 0);
+    QMdiSubWindow *addSubWindow(QWidget *widget, Qt::WindowFlags flags = Qt::WindowFlags());
     void removeSubWindow(QWidget *widget);
 
     QBrush background() const;

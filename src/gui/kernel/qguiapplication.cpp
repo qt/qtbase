@@ -959,8 +959,10 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
     QList<QScreen *>::const_iterator end = screens.constEnd();
 
     while (screen != end) {
-        if ((*screen)->geometry().contains(pos))
-            return (*screen)->handle()->topLevelAt(pos);
+        if ((*screen)->geometry().contains(pos)) {
+            const QPoint devicePosition = QHighDpi::toNativePixels(pos, *screen);
+            return (*screen)->handle()->topLevelAt(devicePosition);
+        }
         ++screen;
     }
     return 0;
@@ -975,7 +977,7 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
 
     \list
         \li \c android
-        \li \c cocoa is a platform plugin for Mac OS X.
+        \li \c cocoa is a platform plugin for OS X.
         \li \c directfb
         \li \c eglfs is a platform plugin for running Qt5 applications on top of
             EGL and  OpenGL ES 2.0 without an actual windowing system (like X11
@@ -1123,6 +1125,9 @@ void QGuiApplicationPrivate::createPlatformIntegration()
     // this flag.
     QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, true);
 
+
+    QHighDpiScaling::initHighDpiScaling();
+
     // Load the platform integration
     QString platformPluginPath = QLatin1String(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
 
@@ -1212,6 +1217,10 @@ void QGuiApplicationPrivate::eventDispatcherReady()
         createPlatformIntegration();
 
     platform_integration->initialize();
+
+    // Do this here in order to play nice with platforms that add screens only
+    // in initialize().
+    QHighDpiScaling::updateHighDpiScaling();
 }
 
 void QGuiApplicationPrivate::init()
@@ -1353,6 +1362,8 @@ void QGuiApplicationPrivate::init()
             qCritical() << "Library qttestability load failed:" << testLib.errorString();
         }
     }
+#else
+    Q_UNUSED(loadTestability);
 #endif // QT_NO_LIBRARY
 }
 
@@ -1827,7 +1838,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         points << point;
 
         QEvent::Type type;
-        QList<QTouchEvent::TouchPoint> touchPoints = QWindowSystemInterfacePrivate::convertTouchPoints(points, &type);
+        QList<QTouchEvent::TouchPoint> touchPoints = QWindowSystemInterfacePrivate::fromNativeTouchPoints(points, window, &type);
 
         QWindowSystemInterfacePrivate::TouchEvent fake(window, e->timestamp, type, m_fakeTouchDevice, touchPoints, e->modifiers);
         fake.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
@@ -1894,7 +1905,7 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
 #if !defined(Q_OS_OSX)
     // On OS X the shortcut override is checked earlier, see: QWindowSystemInterface::handleKeyEvent()
     const bool checkShortcut = e->keyType == QEvent::KeyPress && window != 0;
-    if (checkShortcut && QWindowSystemInterface::tryHandleShortcutEvent(window, e->timestamp, e->key, e->modifiers, e->unicode))
+    if (checkShortcut && QWindowSystemInterface::tryHandleShortcutEvent(window, e->timestamp, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount))
         return;
 #endif // Q_OS_OSX
 
@@ -2038,6 +2049,11 @@ void QGuiApplicationPrivate::processWindowScreenChangedEvent(QWindowSystemInterf
             window->d_func()->setTopLevelScreen(screen, false /* recreate */);
         else // Fall back to default behavior, and try to find some appropriate screen
             window->setScreen(0);
+        // we may have changed scaling, so trigger resize event if needed
+        if (window->handle()) {
+            QWindowSystemInterfacePrivate::GeometryChangeEvent gce(window, QHighDpi::fromNativePixels(window->handle()->geometry(), window), QRect());
+            processGeometryChangeEvent(&gce);
+        }
     }
 }
 

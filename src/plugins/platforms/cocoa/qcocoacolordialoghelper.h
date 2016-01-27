@@ -43,14 +43,14 @@ class QCocoaColorDialogHelper : public QPlatformColorDialogHelper
 {
 public:
     QCocoaColorDialogHelper();
-    virtual ~QCocoaColorDialogHelper();
+    ~QCocoaColorDialogHelper();
 
-    void exec();
-    bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent);
-    void hide();
+    void exec() Q_DECL_OVERRIDE;
+    bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent) Q_DECL_OVERRIDE;
+    void hide() Q_DECL_OVERRIDE;
 
-    void setCurrentColor(const QColor&);
-    QColor currentColor() const;
+    void setCurrentColor(const QColor&) Q_DECL_OVERRIDE;
+    QColor currentColor() const Q_DECL_OVERRIDE;
 };
 
 QT_END_NAMESPACE

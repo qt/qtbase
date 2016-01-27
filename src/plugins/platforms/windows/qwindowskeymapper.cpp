@@ -35,12 +35,12 @@
 #include "qwindowscontext.h"
 #include "qwindowswindow.h"
 #include "qwindowsguieventdispatcher.h"
-#include "qwindowsscaling.h"
 #include "qwindowsinputcontext.h"
 
 #include <QtGui/QWindow>
 #include <qpa/qwindowsysteminterface.h>
 #include <private/qguiapplication_p.h>
+#include <private/qhighdpiscaling_p.h>
 #include <QtGui/QKeyEvent>
 
 #if defined(WM_APPCOMMAND)
@@ -792,10 +792,12 @@ static void showSystemMenu(QWindow* w)
 #undef enabled
 #undef disabled
 #endif // !Q_OS_WINCE
-    const QPoint topLeft = topLevel->geometry().topLeft() * QWindowsScaling::factor();
+    const QPoint pos = QHighDpi::toNativePixels(topLevel->geometry().topLeft(), topLevel);
     const int ret = TrackPopupMenuEx(menu,
                                TPM_LEFTALIGN  | TPM_TOPALIGN | TPM_NONOTIFY | TPM_RETURNCMD,
-                               topLeft.x(), topLeft.y(), topLevelHwnd, 0);
+                               pos.x(), pos.y(),
+                               topLevelHwnd,
+                               0);
     if (ret)
         qWindowsWndProc(topLevelHwnd, WM_SYSCOMMAND, ret, 0);
 }

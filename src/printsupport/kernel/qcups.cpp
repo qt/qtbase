@@ -59,6 +59,16 @@ void QCUPSSupport::setCupsOption(QStringList &cupsOptions, const QString &option
     }
 }
 
+void QCUPSSupport::clearCupsOption(QStringList &cupsOptions, const QString &option)
+{
+    // ### use const_iterator once QList::erase takes them
+    const QStringList::iterator it = std::find(cupsOptions.begin(), cupsOptions.end(), option);
+    if (it != cupsOptions.end()) {
+        Q_ASSERT(it + 1 < cupsOptions.end());
+        cupsOptions.erase(it, it+1);
+    }
+}
+
 static inline QString jobHoldToString(const QCUPSSupport::JobHoldUntil jobHold, const QTime holdUntilTime)
 {
     switch (jobHold) {
@@ -94,14 +104,16 @@ static inline QString jobHoldToString(const QCUPSSupport::JobHoldUntil jobHold, 
 
 void QCUPSSupport::setJobHold(QPrinter *printer, const JobHoldUntil jobHold, const QTime &holdUntilTime)
 {
+    QStringList cupsOptions = cupsOptionsList(printer);
     const QString jobHoldUntilArgument = jobHoldToString(jobHold, holdUntilTime);
     if (!jobHoldUntilArgument.isEmpty()) {
-        QStringList cupsOptions = cupsOptionsList(printer);
         setCupsOption(cupsOptions,
                       QStringLiteral("job-hold-until"),
                       jobHoldUntilArgument);
-        setCupsOptions(printer, cupsOptions);
+    } else {
+        clearCupsOption(cupsOptions, QStringLiteral("job-hold-until"));
     }
+    setCupsOptions(printer, cupsOptions);
 }
 
 void QCUPSSupport::setJobBilling(QPrinter *printer, const QString &jobBilling)

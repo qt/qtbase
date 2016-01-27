@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -333,12 +334,14 @@ struct QCoreApplicationData {
     QCoreApplicationData() Q_DECL_NOTHROW {
 #ifndef QT_NO_LIBRARY
         app_libpaths = 0;
+        manual_libpaths = 0;
 #endif
         applicationNameSet = false;
     }
     ~QCoreApplicationData() {
 #ifndef QT_NO_LIBRARY
         delete app_libpaths;
+        delete manual_libpaths;
 #endif
 #ifndef QT_NO_QOBJECT
         // cleanup the QAdoptedThread created for the main() thread
@@ -384,6 +387,7 @@ struct QCoreApplicationData {
 
 #ifndef QT_NO_LIBRARY
     QStringList *app_libpaths;
+    QStringList *manual_libpaths;
 #endif
 
 };
@@ -401,7 +405,7 @@ static bool quitLockRefEnabled = true;
 // GUI apps or when using MinGW due to its globbing.
 static inline bool isArgvModified(int argc, char **argv)
 {
-    if (__argc != argc)
+    if (__argc != argc || !__argv /* wmain() */)
         return true;
     if (__argv == argv)
         return false;
@@ -546,6 +550,14 @@ QThread *QCoreApplicationPrivate::mainThread()
 {
     Q_ASSERT(theMainThread != 0);
     return theMainThread;
+}
+
+bool QCoreApplicationPrivate::threadRequiresCoreApplication()
+{
+    QThreadData *data = QThreadData::current(false);
+    if (!data)
+        return true;    // default setting
+    return data->requiresCoreApplication;
 }
 
 void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
@@ -769,6 +781,38 @@ void QCoreApplication::init()
 
     QLoggingRegistry::instance()->init();
 
+#ifndef QT_NO_LIBRARY
+    // Reset the lib paths, so that they will be recomputed, taking the availability of argv[0]
+    // into account. If necessary, recompute right away and replay the manual changes on top of the
+    // new lib paths.
+    QStringList *appPaths = coreappdata()->app_libpaths;
+    QStringList *manualPaths = coreappdata()->manual_libpaths;
+    if (appPaths) {
+        coreappdata()->app_libpaths = 0;
+        if (manualPaths) {
+            // Replay the delta. As paths can only be prepended to the front or removed from
+            // anywhere in the list, we can just linearly scan the lists and find the items that
+            // have been removed. Once the original list is exhausted we know all the remaining
+            // items have been added.
+            coreappdata()->manual_libpaths = 0;
+            QStringList newPaths(libraryPaths());
+            for (int i = manualPaths->length(), j = appPaths->length(); i > 0 || j > 0; qt_noop()) {
+                if (--j < 0) {
+                    newPaths.prepend((*manualPaths)[--i]);
+                } else if (--i < 0) {
+                    newPaths.removeAll((*appPaths)[j]);
+                } else if ((*manualPaths)[i] != (*appPaths)[j]) {
+                    newPaths.removeAll((*appPaths)[j]);
+                    ++i; // try again with next item.
+                }
+            }
+            delete manualPaths;
+            coreappdata()->manual_libpaths = new QStringList(newPaths);
+        }
+        delete appPaths;
+    }
+#endif
+
 #ifndef QT_NO_QOBJECT
     // use the event dispatcher created by the app programmer (if any)
     if (!QCoreApplicationPrivate::eventDispatcher)
@@ -785,11 +829,6 @@ void QCoreApplication::init()
 
     d->threadData->eventDispatcher = QCoreApplicationPrivate::eventDispatcher;
     d->eventDispatcherReady();
-#endif
-
-#ifndef QT_NO_LIBRARY
-    if (coreappdata()->app_libpaths)
-        d->appendApplicationPathToLibraryPaths();
 #endif
 
 #ifdef QT_EVAL
@@ -846,6 +885,8 @@ QCoreApplication::~QCoreApplication()
 #ifndef QT_NO_LIBRARY
     delete coreappdata()->app_libpaths;
     coreappdata()->app_libpaths = 0;
+    delete coreappdata()->manual_libpaths;
+    coreappdata()->manual_libpaths = 0;
 #endif
 }
 
@@ -936,6 +977,8 @@ bool QCoreApplication::isQuitLockEnabled()
     return quitLockRefEnabled;
 }
 
+static bool doNotify(QObject *, QEvent *);
+
 /*!
     Enables the ability of the QEventLoopLocker feature to quit
     the application.
@@ -951,12 +994,29 @@ void QCoreApplication::setQuitLockEnabled(bool enabled)
 
 /*!
   \internal
+  \deprecated
 
   This function is here to make it possible for Qt extensions to
   hook into event notification without subclassing QApplication
 */
 bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
 {
+    return notifyInternal2(receiver, event);
+}
+
+/*!
+  \internal
+  \since 5.6
+
+  This function is here to make it possible for Qt extensions to
+  hook into event notification without subclassing QApplication.
+*/
+bool QCoreApplication::notifyInternal2(QObject *receiver, QEvent *event)
+{
+    bool selfRequired = QCoreApplicationPrivate::threadRequiresCoreApplication();
+    if (!self && selfRequired)
+        return false;
+
     // Make it possible for Qt Script to hook into events even
     // though QApplication is subclassed...
     bool result = false;
@@ -972,9 +1032,10 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
     QObjectPrivate *d = receiver->d_func();
     QThreadData *threadData = d->threadData;
     QScopedLoopLevelCounter loopLevelCounter(threadData);
-    return notify(receiver, event);
+    if (!selfRequired)
+        return doNotify(receiver, event);
+    return self->notify(receiver, event);
 }
-
 
 /*!
   Sends \a event to \a receiver: \a {receiver}->event(\a event).
@@ -1015,31 +1076,48 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
   do not change the focus widget.
   \endlist
 
+  \b{Future direction:} This function will not be called for objects that live
+  outside the main thread in Qt 6. Applications that need that functionality
+  should find other solutions for their event inspection needs in the meantime.
+  The change may be extended to the main thread, causing this function to be
+  deprecated.
+
+  \warning If you override this function, you must ensure all threads that
+  process events stop doing so before your application object begins
+  destruction. This includes threads started by other libraries that you may be
+  using, but does not apply to Qt's own threads.
+
   \sa QObject::event(), installNativeEventFilter()
 */
 
 bool QCoreApplication::notify(QObject *receiver, QEvent *event)
 {
-    Q_D(QCoreApplication);
     // no events are delivered after ~QCoreApplication() has started
     if (QCoreApplicationPrivate::is_app_closing)
         return true;
+    return doNotify(receiver, event);
+}
 
+static bool doNotify(QObject *receiver, QEvent *event)
+{
     if (receiver == 0) {                        // serious error
         qWarning("QCoreApplication::notify: Unexpected null receiver");
         return true;
     }
 
 #ifndef QT_NO_DEBUG
-    d->checkReceiverThread(receiver);
+    QCoreApplicationPrivate::checkReceiverThread(receiver);
 #endif
 
-    return receiver->isWidgetType() ? false : d->notify_helper(receiver, event);
+    return receiver->isWidgetType() ? false : QCoreApplicationPrivate::notify_helper(receiver, event);
 }
 
 bool QCoreApplicationPrivate::sendThroughApplicationEventFilters(QObject *receiver, QEvent *event)
 {
-    if (receiver->d_func()->threadData == this->threadData && extraData) {
+    // We can't access the application event filters outside of the main thread (race conditions)
+    Q_ASSERT(receiver->d_func()->threadData->thread == mainThread());
+
+    if (extraData) {
         // application event filters are only called for objects in the GUI thread
         for (int i = 0; i < extraData->eventFilters.size(); ++i) {
             QObject *obj = extraData->eventFilters.at(i);
@@ -1058,8 +1136,7 @@ bool QCoreApplicationPrivate::sendThroughApplicationEventFilters(QObject *receiv
 
 bool QCoreApplicationPrivate::sendThroughObjectEventFilters(QObject *receiver, QEvent *event)
 {
-    Q_Q(QCoreApplication);
-    if (receiver != q && receiver->d_func()->extraData) {
+    if (receiver != QCoreApplication::instance() && receiver->d_func()->extraData) {
         for (int i = 0; i < receiver->d_func()->extraData->eventFilters.size(); ++i) {
             QObject *obj = receiver->d_func()->extraData->eventFilters.at(i);
             if (!obj)
@@ -1078,12 +1155,14 @@ bool QCoreApplicationPrivate::sendThroughObjectEventFilters(QObject *receiver, Q
 /*!
   \internal
 
-  Helper function called by notify()
+  Helper function called by QCoreApplicationPrivate::notify() and qapplication.cpp
  */
 bool QCoreApplicationPrivate::notify_helper(QObject *receiver, QEvent * event)
 {
-    // send to all application event filters
-    if (sendThroughApplicationEventFilters(receiver, event))
+    // send to all application event filters (only does anything in the main thread)
+    if (QCoreApplication::self
+            && receiver->d_func()->threadData->thread == mainThread()
+            && QCoreApplication::self->d_func()->sendThroughApplicationEventFilters(receiver, event))
         return true;
     // send to all receiver event filters
     if (sendThroughObjectEventFilters(receiver, event))
@@ -2064,11 +2143,13 @@ QString QCoreApplication::applicationFilePath()
 
     QCoreApplicationPrivate *d = self->d_func();
 
-    static char *procName = d->argv[0];
-    if (qstrcmp(procName, d->argv[0]) != 0) {
-        // clear the cache if the procname changes, so we reprocess it.
-        QCoreApplicationPrivate::clearApplicationFilePath();
-        procName = d->argv[0];
+    if (d->argc) {
+        static const char *procName = d->argv[0];
+        if (qstrcmp(procName, d->argv[0]) != 0) {
+            // clear the cache if the procname changes, so we reprocess it.
+            QCoreApplicationPrivate::clearApplicationFilePath();
+            procName = d->argv[0];
+        }
     }
 
     if (QCoreApplicationPrivate::cachedApplicationFilePath)
@@ -2465,6 +2546,10 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutex, libraryPathMutex, (QMutex::Recursive))
 QStringList QCoreApplication::libraryPaths()
 {
     QMutexLocker locker(libraryPathMutex());
+
+    if (coreappdata()->manual_libpaths)
+        return *(coreappdata()->manual_libpaths);
+
     if (!coreappdata()->app_libpaths) {
         QStringList *app_libpaths = coreappdata()->app_libpaths = new QStringList;
         QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
@@ -2481,12 +2566,7 @@ QStringList QCoreApplication::libraryPaths()
 
         const QByteArray libPathEnv = qgetenv("QT_PLUGIN_PATH");
         if (!libPathEnv.isEmpty()) {
-#if defined(Q_OS_WIN)
-            QLatin1Char pathSep(';');
-#else
-            QLatin1Char pathSep(':');
-#endif
-            QStringList paths = QFile::decodeName(libPathEnv).split(pathSep, QString::SkipEmptyParts);
+            QStringList paths = QFile::decodeName(libPathEnv).split(QDir::listSeparator(), QString::SkipEmptyParts);
             for (QStringList::const_iterator it = paths.constBegin(); it != paths.constEnd(); ++it) {
                 QString canonicalPath = QDir(*it).canonicalPath();
                 if (!canonicalPath.isEmpty()
@@ -2507,14 +2587,25 @@ QStringList QCoreApplication::libraryPaths()
     \a paths. All existing paths will be deleted and the path list
     will consist of the paths given in \a paths.
 
+    The library paths are reset to the default when an instance of
+    QCoreApplication is destructed.
+
     \sa libraryPaths(), addLibraryPath(), removeLibraryPath(), QLibrary
  */
 void QCoreApplication::setLibraryPaths(const QStringList &paths)
 {
     QMutexLocker locker(libraryPathMutex());
+
+    // setLibraryPaths() is considered a "remove everything and then add some new ones" operation.
+    // When the application is constructed it should still amend the paths. So we keep the originals
+    // around, and even create them if they don't exist, yet.
     if (!coreappdata()->app_libpaths)
-        coreappdata()->app_libpaths = new QStringList;
-    *(coreappdata()->app_libpaths) = paths;
+        libraryPaths();
+
+    if (!coreappdata()->manual_libpaths)
+        coreappdata()->manual_libpaths = new QStringList;
+    *(coreappdata()->manual_libpaths) = paths;
+
     locker.unlock();
     QFactoryLoader::refreshAll();
 }
@@ -2529,6 +2620,9 @@ void QCoreApplication::setLibraryPaths(const QStringList &paths)
   is \c INSTALL/plugins, where \c INSTALL is the directory where Qt was
   installed.
 
+  The library paths are reset to the default when an instance of
+  QCoreApplication is destructed.
+
   \sa removeLibraryPath(), libraryPaths(), setLibraryPaths()
  */
 void QCoreApplication::addLibraryPath(const QString &path)
@@ -2536,23 +2630,37 @@ void QCoreApplication::addLibraryPath(const QString &path)
     if (path.isEmpty())
         return;
 
+    QString canonicalPath = QDir(path).canonicalPath();
+    if (canonicalPath.isEmpty())
+        return;
+
     QMutexLocker locker(libraryPathMutex());
 
-    // make sure that library paths is initialized
-    libraryPaths();
+    QStringList *libpaths = coreappdata()->manual_libpaths;
+    if (libpaths) {
+        if (libpaths->contains(canonicalPath))
+            return;
+    } else {
+        // make sure that library paths are initialized
+        libraryPaths();
+        QStringList *app_libpaths = coreappdata()->app_libpaths;
+        if (app_libpaths->contains(canonicalPath))
+            return;
 
-    QString canonicalPath = QDir(path).canonicalPath();
-    if (!canonicalPath.isEmpty()
-        && !coreappdata()->app_libpaths->contains(canonicalPath)) {
-        coreappdata()->app_libpaths->prepend(canonicalPath);
-        locker.unlock();
-        QFactoryLoader::refreshAll();
+        libpaths = coreappdata()->manual_libpaths = new QStringList(*app_libpaths);
     }
+
+    libpaths->prepend(canonicalPath);
+    locker.unlock();
+    QFactoryLoader::refreshAll();
 }
 
 /*!
     Removes \a path from the library path list. If \a path is empty or not
     in the path list, the list is not changed.
+
+    The library paths are reset to the default when an instance of
+    QCoreApplication is destructed.
 
     \sa addLibraryPath(), libraryPaths(), setLibraryPaths()
 */
@@ -2561,13 +2669,28 @@ void QCoreApplication::removeLibraryPath(const QString &path)
     if (path.isEmpty())
         return;
 
+    QString canonicalPath = QDir(path).canonicalPath();
+    if (canonicalPath.isEmpty())
+        return;
+
     QMutexLocker locker(libraryPathMutex());
 
-    // make sure that library paths is initialized
-    libraryPaths();
+    QStringList *libpaths = coreappdata()->manual_libpaths;
+    if (libpaths) {
+        if (libpaths->removeAll(canonicalPath) == 0)
+            return;
+    } else {
+        // make sure that library paths is initialized
+        libraryPaths();
+        QStringList *app_libpaths = coreappdata()->app_libpaths;
+        if (!app_libpaths->contains(canonicalPath))
+            return;
 
-    QString canonicalPath = QDir(path).canonicalPath();
-    coreappdata()->app_libpaths->removeAll(canonicalPath);
+        libpaths = coreappdata()->manual_libpaths = new QStringList(*app_libpaths);
+        libpaths->removeAll(canonicalPath);
+    }
+
+    locker.unlock();
     QFactoryLoader::refreshAll();
 }
 

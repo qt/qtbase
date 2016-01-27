@@ -78,7 +78,7 @@ FindDialog::FindDialog(QWidget *parent)
     buttonBox->addButton(findButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(moreButton, QDialogButtonBox::ActionRole);
 
-    connect(moreButton, SIGNAL(toggled(bool)), extension, SLOT(setVisible(bool)));
+    connect(moreButton, &QAbstractButton::toggled, extension, &QWidget::setVisible);
 
     QVBoxLayout *extensionLayout = new QVBoxLayout;
     extensionLayout->setMargin(0);

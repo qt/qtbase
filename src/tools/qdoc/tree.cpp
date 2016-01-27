@@ -327,6 +327,8 @@ Aggregate* Tree::findRelatesNode(const QStringList& path)
 }
 
 /*!
+  Inserts function name \a funcName and function role \a funcRole into
+  the property function map for the specified \a property.
  */
 void Tree::addPropertyFunction(PropertyNode* property,
                                const QString& funcName,
@@ -993,7 +995,6 @@ void Tree::insertTarget(const QString& name,
  */
 void Tree::resolveTargets(Aggregate* root)
 {
-    // need recursion
     foreach (Node* child, root->childNodes()) {
         if (child->type() == Node::Document) {
             DocumentNode* node = static_cast<DocumentNode*>(child);
@@ -1037,9 +1038,8 @@ void Tree::resolveTargets(Aggregate* root)
                 QString ref = refForAtom(keywords.at(i));
                 QString title = keywords.at(i)->string();
                 if (!ref.isEmpty() && !title.isEmpty()) {
-                    QString key = Doc::canonicalTitle(title);
                     TargetRec* target = new TargetRec(ref, title, TargetRec::Keyword, child, 1);
-                    nodesByTargetRef_.insert(key, target);
+                    nodesByTargetRef_.insert(Doc::canonicalTitle(title), target);
                     nodesByTargetTitle_.insert(title, target);
                 }
             }
@@ -1057,6 +1057,8 @@ void Tree::resolveTargets(Aggregate* root)
                 }
             }
         }
+        if (child->isAggregate())
+            resolveTargets(static_cast<Aggregate*>(child));
     }
 }
 
@@ -1140,18 +1142,15 @@ const DocumentNode* Tree::findDocumentNodeByTitle(const QString& title) const
         DocumentNodeMultiMap::const_iterator j = i;
         ++j;
         if (j != docNodesByTitle_.constEnd() && j.key() == i.key()) {
-            QList<Location> internalLocations;
             while (j != docNodesByTitle_.constEnd()) {
                 if (j.key() == i.key() && j.value()->url().isEmpty()) {
-                    internalLocations.append(j.value()->location());
                     break; // Just report one duplicate for now.
                 }
                 ++j;
             }
-            if (internalLocations.size() > 0) {
+            if (j != docNodesByTitle_.cend()) {
                 i.value()->location().warning("This page title exists in more than one file: " + title);
-                foreach (const Location &location, internalLocations)
-                    location.warning("[It also exists here]");
+                j.value()->location().warning("[It also exists here]");
             }
         }
         return i.value();

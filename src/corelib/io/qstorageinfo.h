@@ -55,11 +55,10 @@ public:
 
     QStorageInfo &operator=(const QStorageInfo &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QStorageInfo &operator=(QStorageInfo &&other)
-    { qSwap(d, other.d); return *this; }
+    QStorageInfo &operator=(QStorageInfo &&other) Q_DECL_NOTHROW { swap(other); return *this; }
 #endif
 
-    inline void swap(QStorageInfo &other)
+    inline void swap(QStorageInfo &other) Q_DECL_NOTHROW
     { qSwap(d, other.d); }
 
     void setPath(const QString &path);
@@ -73,6 +72,7 @@ public:
     qint64 bytesTotal() const;
     qint64 bytesFree() const;
     qint64 bytesAvailable() const;
+    int blockSize() const;
 
     inline bool isRoot() const;
     bool isReadOnly() const;

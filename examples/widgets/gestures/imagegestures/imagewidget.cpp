@@ -202,6 +202,7 @@ QImage ImageWidget::loadImage(const QString &fileName)
 {
     qDebug() << position << files << fileName;
     QImageReader reader(fileName);
+    reader.setAutoTransform(true);
     qCDebug(lcExample) << "loading" << QDir::toNativeSeparators(fileName) << position << '/' << files.size();
     if (!reader.canRead()) {
         qCWarning(lcExample) << QDir::toNativeSeparators(fileName) << ": can't load image";

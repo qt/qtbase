@@ -1,0 +1,35 @@
+From 121e4d1ad09bdbfeb8a871d4f2c3ffe1acb8e2d6 Mon Sep 17 00:00:00 2001
+From: Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
+Date: Tue, 30 Jun 2015 09:41:39 +0200
+Subject: [PATCH] Re-fix X86 Wince builds.
+
+eebb8de21ce4845866f15e444a4c78fc2cbb7f3f fixed the PCRE
+build, but was accidentally overwritten by a subsequent
+import of the PCRE tarball.
+
+Now put the same patch also into patches/ so that we don't
+forget it needs to be manually applied.
+
+Change-Id: I93c2ee9c2e2dd1c48d391ce7e16d33208fb2cbbb
+---
+ src/3rdparty/pcre/sljit/sljitNativeX86_common.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/3rdparty/pcre/sljit/sljitNativeX86_common.c b/src/3rdparty/pcre/sljit/sljitNativeX86_common.c
+index 22a163f..21b276f 100644
+--- a/src/3rdparty/pcre/sljit/sljitNativeX86_common.c
++++ b/src/3rdparty/pcre/sljit/sljitNativeX86_common.c
+@@ -273,7 +273,9 @@ static sljit_si cpu_has_sse2 = -1;
+ #endif
+ static sljit_si cpu_has_cmov = -1;
+ 
+-#if defined(_MSC_VER) && _MSC_VER >= 1400
++#ifdef _WIN32_WCE
++#include <cmnintrin.h>
++#elif defined(_MSC_VER) && _MSC_VER >= 1400
+ #include <intrin.h>
+ #endif
+ 
+-- 
+1.9.1
+

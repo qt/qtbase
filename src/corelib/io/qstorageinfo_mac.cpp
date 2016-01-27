@@ -76,6 +76,7 @@ void QStorageInfoPrivate::retrievePosixInfo()
         device = QByteArray(statfs_buf.f_mntfromname);
         readOnly = (statfs_buf.f_flags & MNT_RDONLY) != 0;
         fileSystemType = QByteArray(statfs_buf.f_fstypename);
+        blockSize = statfs_buf.f_bsize;
     }
 }
 

@@ -4,9 +4,6 @@ TARGET = QtBootstrap
 QT =
 CONFIG += internal_module force_bootstrap
 
-# otherwise mingw headers do not declare common functions like putenv
-mingw:QMAKE_CXXFLAGS_CXX11 = -std=gnu++0x
-
 MODULE_DEFINES = \
         QT_BOOTSTRAPPED \
         QT_LITE_UNICODE \
@@ -48,6 +45,9 @@ contains(QT_CONFIG, zlib): \
 QMAKE_SYNCQT_OPTIONS += -version $$QT_VERSION
 
 load(qt_module)
+
+# otherwise mingw headers do not declare common functions like putenv
+mingw: CONFIG -= strict_c++
 
 SOURCES += \
            ../../corelib/codecs/qlatincodec.cpp \

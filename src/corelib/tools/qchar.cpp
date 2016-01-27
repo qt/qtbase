@@ -178,6 +178,7 @@ QT_BEGIN_NAMESPACE
     \value Unicode_6_1  Version 6.1
     \value Unicode_6_2  Version 6.2
     \value Unicode_6_3  Version 6.3  Since Qt 5.3
+    \value Unicode_7_0  Version 7.0  Since Qt 5.5
     \value Unicode_Unassigned  The value is not assigned to any character
                                in version 6.3 of Unicode.
 

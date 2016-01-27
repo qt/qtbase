@@ -70,6 +70,8 @@ class Q_AUTOTEST_EXPORT QFileSystemModelPrivate : public QAbstractItemModelPriva
     Q_DECLARE_PUBLIC(QFileSystemModel)
 
 public:
+    enum { NumColumns = 4 };
+
     class QFileSystemNode
     {
     public:
@@ -220,8 +222,8 @@ public:
     }
     QFileSystemNode *node(const QModelIndex &index) const;
     QFileSystemNode *node(const QString &path, bool fetch = true) const;
-    inline QModelIndex index(const QString &path) { return index(node(path)); }
-    QModelIndex index(const QFileSystemNode *node) const;
+    inline QModelIndex index(const QString &path, int column = 0) { return index(node(path), column); }
+    QModelIndex index(const QFileSystemNode *node, int column = 0) const;
     bool filtersAcceptsNode(const QFileSystemNode *node) const;
     bool passNameFilters(const QFileSystemNode *node) const;
     void removeNode(QFileSystemNode *parentNode, const QString &name);
@@ -318,6 +320,7 @@ public:
     QList<Fetching> toFetch;
 
 };
+Q_DECLARE_TYPEINFO(QFileSystemModelPrivate::Fetching, Q_MOVABLE_TYPE);
 #endif // QT_NO_FILESYSTEMMODEL
 
 QT_END_NAMESPACE

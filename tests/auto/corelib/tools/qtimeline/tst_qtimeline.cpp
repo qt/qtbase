@@ -208,7 +208,7 @@ void tst_QTimeLine::frameRate()
     timeLine.start();
     QTest::qWait(timeLine.duration()*2);
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
-    QVERIFY(slowCount < spy.count());
+    QVERIFY2(slowCount < spy.count(), QByteArray::number(spy.count()));
 }
 
 void tst_QTimeLine::value()

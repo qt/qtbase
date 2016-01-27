@@ -79,8 +79,8 @@ QT_BEGIN_NAMESPACE
     Note that it is up to the widget to activate the action, for example by
     reimplementing mouse event handlers and calling QAction::trigger().
 
-    \b {Mac OS X}: If you add a widget to a menu in the application's menu
-    bar on Mac OS X, the widget will be added and it will function but with some
+    \b {OS X}: If you add a widget to a menu in the application's menu
+    bar on OS X, the widget will be added and it will function but with some
     limitations:
     \list 1
         \li The widget is reparented away from the QMenu to the native menu

@@ -253,7 +253,7 @@ void tst_QColor::isValid()
 {
     QFETCH(QColor, color);
     QFETCH(bool, isValid);
-    QVERIFY(color.isValid() == isValid);
+    QCOMPARE(color.isValid(), isValid);
 }
 
 Q_DECLARE_METATYPE(QColor::NameFormat);
@@ -1325,19 +1325,19 @@ void tst_QColor::convertTo()
     QColor color(Qt::black);
 
     QColor rgb = color.convertTo(QColor::Rgb);
-    QVERIFY(rgb.spec() == QColor::Rgb);
+    QCOMPARE(rgb.spec(), QColor::Rgb);
 
     QColor hsv = color.convertTo(QColor::Hsv);
-    QVERIFY(hsv.spec() == QColor::Hsv);
+    QCOMPARE(hsv.spec(), QColor::Hsv);
 
     QColor cmyk = color.convertTo(QColor::Cmyk);
-    QVERIFY(cmyk.spec() == QColor::Cmyk);
+    QCOMPARE(cmyk.spec(), QColor::Cmyk);
 
     QColor hsl = color.convertTo(QColor::Hsl);
-    QVERIFY(hsl.spec() == QColor::Hsl);
+    QCOMPARE(hsl.spec(), QColor::Hsl);
 
     QColor invalid = color.convertTo(QColor::Invalid);
-    QVERIFY(invalid.spec() == QColor::Invalid);
+    QCOMPARE(invalid.spec(), QColor::Invalid);
 }
 
 void tst_QColor::light()

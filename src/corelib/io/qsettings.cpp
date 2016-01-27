@@ -127,6 +127,7 @@ struct QConfFileCustomFormat
     QSettings::WriteFunc writeFunc;
     Qt::CaseSensitivity caseSensitivity;
 };
+Q_DECLARE_TYPEINFO(QConfFileCustomFormat, Q_MOVABLE_TYPE);
 
 typedef QHash<QString, QConfFile *> ConfFileHash;
 typedef QCache<QString, QConfFile> ConfFileCache;
@@ -299,7 +300,7 @@ QSettingsPrivate *QSettingsPrivate::create(const QString &fileName, QSettings::F
 }
 #endif
 
-void QSettingsPrivate::processChild(QString key, ChildSpec spec, QMap<QString, QString> &result)
+void QSettingsPrivate::processChild(QStringRef key, ChildSpec spec, QStringList &result)
 {
     if (spec != AllKeys) {
         int slashPos = key.indexOf(QLatin1Char('/'));
@@ -312,7 +313,7 @@ void QSettingsPrivate::processChild(QString key, ChildSpec spec, QMap<QString, Q
             key.truncate(slashPos);
         }
     }
-    result.insert(key, QString());
+    result.append(key.toString());
 }
 
 void QSettingsPrivate::beginGroupOrArray(const QSettingsGroup &group)
@@ -357,6 +358,7 @@ void QSettingsPrivate::requestUpdate()
 QStringList QSettingsPrivate::variantListToStringList(const QVariantList &l)
 {
     QStringList result;
+    result.reserve(l.count());
     QVariantList::const_iterator it = l.constBegin();
     for (; it != l.constEnd(); ++it)
         result.append(variantToString(*it));
@@ -374,7 +376,9 @@ QVariant QSettingsPrivate::stringListToVariantList(const QStringList &l)
                 outStringList[i].remove(0, 1);
             } else {
                 QVariantList variantList;
-                for (int j = 0; j < l.count(); ++j)
+                const int stringCount = l.count();
+                variantList.reserve(stringCount);
+                for (int j = 0; j < stringCount; ++j)
                     variantList.append(stringToVariant(l.at(j)));
                 return variantList;
             }
@@ -1269,7 +1273,7 @@ bool QConfFileSettingsPrivate::get(const QString &key, QVariant *value) const
 
 QStringList QConfFileSettingsPrivate::children(const QString &prefix, ChildSpec spec) const
 {
-    QMap<QString, QString> result;
+    QStringList result;
     ParsedSettingsMap::const_iterator j;
 
     QSettingsKey thePrefix(prefix, caseSensitivity);
@@ -1289,14 +1293,14 @@ QStringList QConfFileSettingsPrivate::children(const QString &prefix, ChildSpec 
                     &confFile->originalKeys)->lowerBound( thePrefix);
             while (j != confFile->originalKeys.constEnd() && j.key().startsWith(thePrefix)) {
                 if (!confFile->removedKeys.contains(j.key()))
-                    processChild(j.key().originalCaseKey().mid(startPos), spec, result);
+                    processChild(j.key().originalCaseKey().midRef(startPos), spec, result);
                 ++j;
             }
 
             j = const_cast<const ParsedSettingsMap *>(
                     &confFile->addedKeys)->lowerBound(thePrefix);
             while (j != confFile->addedKeys.constEnd() && j.key().startsWith(thePrefix)) {
-                processChild(j.key().originalCaseKey().mid(startPos), spec, result);
+                processChild(j.key().originalCaseKey().midRef(startPos), spec, result);
                 ++j;
             }
 
@@ -1304,7 +1308,10 @@ QStringList QConfFileSettingsPrivate::children(const QString &prefix, ChildSpec 
                 break;
         }
     }
-    return result.keys();
+    std::sort(result.begin(), result.end());
+    result.erase(std::unique(result.begin(), result.end()),
+                 result.end());
+    return result;
 }
 
 void QConfFileSettingsPrivate::clear()
@@ -1755,6 +1762,7 @@ public:
 
     int position;
 };
+Q_DECLARE_TYPEINFO(QSettingsIniKey, Q_MOVABLE_TYPE);
 
 static bool operator<(const QSettingsIniKey &k1, const QSettingsIniKey &k2)
 {

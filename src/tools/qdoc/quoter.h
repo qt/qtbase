@@ -78,7 +78,7 @@ private:
     QStringList plainLines;
     QStringList markedLines;
     Location codeLocation;
-    QHash<QString,QString> commentHash;
+    static QHash<QString,QString> commentHash;
 };
 
 QT_END_NAMESPACE

@@ -59,13 +59,13 @@ public:
 
     Q_DECLARE_FLAGS(Capabilities, Capability)
 
-    explicit QNetworkConfigurationManager(QObject *parent = 0);
+    explicit QNetworkConfigurationManager(QObject *parent = Q_NULLPTR);
     virtual ~QNetworkConfigurationManager();
 
     QNetworkConfigurationManager::Capabilities capabilities() const;
 
     QNetworkConfiguration defaultConfiguration() const;
-    QList<QNetworkConfiguration> allConfigurations(QNetworkConfiguration::StateFlags flags = 0) const;
+    QList<QNetworkConfiguration> allConfigurations(QNetworkConfiguration::StateFlags flags = QNetworkConfiguration::StateFlags()) const;
     QNetworkConfiguration configurationFromIdentifier(const QString &identifier) const;
 
     bool isOnline() const;

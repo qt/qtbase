@@ -1,4 +1,4 @@
-wince*: {
+wince {
     DEFINES += NO_GETENV
     contains(CE_ARCH,x86):CONFIG -= stl exceptions
     contains(CE_ARCH,x86):CONFIG += exceptions_off

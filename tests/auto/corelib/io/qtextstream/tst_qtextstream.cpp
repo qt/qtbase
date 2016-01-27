@@ -81,7 +81,7 @@ private slots:
     void readLineMaxlen_data();
     void readLineMaxlen();
     void readLinesFromBufferCRCR();
-    void readLineOverload();
+    void readLineInto();
 
     // all
     void readAllFromDevice_data();
@@ -612,22 +612,22 @@ protected:
     }
 };
 
-void tst_QTextStream::readLineOverload()
+void tst_QTextStream::readLineInto()
 {
     QByteArray data = "1\n2\n3";
 
     QTextStream ts(&data);
     QString line;
 
-    ts.readLine(&line);
+    ts.readLineInto(&line);
     QCOMPARE(line, QStringLiteral("1"));
 
-    ts.readLine(Q_NULLPTR, 0); // read the second line, but don't store it
+    ts.readLineInto(Q_NULLPTR, 0); // read the second line, but don't store it
 
-    ts.readLine(&line);
+    ts.readLineInto(&line);
     QCOMPARE(line, QStringLiteral("3"));
 
-    QVERIFY(!ts.readLine(&line));
+    QVERIFY(!ts.readLineInto(&line));
     QVERIFY(line.isEmpty());
 
     QFile file(m_rfc3261FilePath);
@@ -637,7 +637,7 @@ void tst_QTextStream::readLineOverload()
     line.reserve(1);
     int maxLineCapacity = line.capacity();
 
-    while (ts.readLine(&line)) {
+    while (ts.readLineInto(&line)) {
         QVERIFY(line.capacity() >= maxLineCapacity);
         maxLineCapacity = line.capacity();
     }
@@ -647,7 +647,7 @@ void tst_QTextStream::readLineOverload()
     QVERIFY(errorDevice.open(QIODevice::ReadOnly));
     ts.setDevice(&errorDevice);
 
-    QVERIFY(!ts.readLine(&line));
+    QVERIFY(!ts.readLineInto(&line));
     QVERIFY(line.isEmpty());
 }
 
@@ -1025,7 +1025,7 @@ void tst_QTextStream::performance()
 
         QTextStream stream2(&file3);
         QString line;
-        while (stream2.readLine(&line))
+        while (stream2.readLineInto(&line))
             ++nlines3;
 
         elapsed[2] = stopWatch.elapsed();

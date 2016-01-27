@@ -160,13 +160,8 @@
     Because QDate is user-defined, you must include the \c{<QDate>}
     header file with the property declaration.
 
-    For QMap, QList, and QValueList properties, the property value is
-    a QVariant whose value is the entire list or map.  Note that the
-    Q_PROPERTY string cannot contain commas, because commas separate
-    macro arguments. Therefore, you must use \c QMap as the property
-    type instead of \c QMap<QString,QVariant>. For consistency, also
-    use \c QList and \c QValueList instead of \c QList<QVariant> and
-    \c QValueList<QVariant>.
+    For historical reasons, \a QMap and \a QList as property types
+    are synonym of \a QVariantMap and \a QVariantList.
 
     \section1 Reading and Writing Properties with the Meta-Object System
 

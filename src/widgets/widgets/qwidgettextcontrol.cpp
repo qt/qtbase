@@ -248,7 +248,7 @@ bool QWidgetTextControlPrivate::cursorMoveKeyEvent(QKeyEvent *e)
         return false;
     }
 
-// Except for pageup and pagedown, Mac OS X has very different behavior, we don't do it all, but
+// Except for pageup and pagedown, OS X has very different behavior, we don't do it all, but
 // here's the breakdown:
 // Shift still works as an anchor, but only one of the other keys can be down Ctrl (Command),
 // Alt (Option), or Meta (Control).
@@ -2439,10 +2439,13 @@ QList<QTextEdit::ExtraSelection> QWidgetTextControl::extraSelections() const
 {
     Q_D(const QWidgetTextControl);
     QList<QTextEdit::ExtraSelection> selections;
-    for (int i = 0; i < d->extraSelections.count(); ++i) {
+    const int numExtraSelections = d->extraSelections.count();
+    selections.reserve(numExtraSelections);
+    for (int i = 0; i < numExtraSelections; ++i) {
         QTextEdit::ExtraSelection sel;
-        sel.cursor = d->extraSelections.at(i).cursor;
-        sel.format = d->extraSelections.at(i).format;
+        const QAbstractTextDocumentLayout::Selection &sel2 = d->extraSelections.at(i);
+        sel.cursor = sel2.cursor;
+        sel.format = sel2.format;
         selections.append(sel);
     }
     return selections;

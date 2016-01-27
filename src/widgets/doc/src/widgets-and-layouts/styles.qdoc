@@ -115,7 +115,7 @@
 
     The widget is passed as the last argument in case the style needs
     it to perform special effects (such as animated default buttons on
-    Mac OS X), but it isn't mandatory.
+    OS X), but it isn't mandatory.
 
     In the course of this section, we will look at the style elements,
     the style options, and the functions of QStyle. Finally, we describe

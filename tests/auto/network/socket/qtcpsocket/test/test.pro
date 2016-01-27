@@ -3,7 +3,7 @@ CONFIG += testcase
 QT = core-private network-private testlib
 SOURCES += ../tst_qtcpsocket.cpp
 win32: {
-wince*: {
+wince {
 	LIBS += -lws2
 } else {
 	LIBS += -lws2_32
@@ -21,3 +21,5 @@ win32 {
 } else {
     DESTDIR = ../
 }
+
+win32: CONFIG += insignificant_test # Hangs in release builds

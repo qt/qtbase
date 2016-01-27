@@ -8,9 +8,9 @@ SUBDIRS             =   books \
                         relationaltablemodel \
                         sqlwidgetmapper
 
-!wince*:  SUBDIRS   +=  masterdetail
+!wince:  SUBDIRS   +=  masterdetail
 
-!wince*:  SUBDIRS += \
+!wince:  SUBDIRS += \
                         querymodel \
                         tablemodel
 

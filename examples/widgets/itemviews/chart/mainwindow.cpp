@@ -56,14 +56,14 @@ MainWindow::MainWindow()
     setupModel();
     setupViews();
 
-    connect(openAction, SIGNAL(triggered()), this, SLOT(openFile()));
-    connect(saveAction, SIGNAL(triggered()), this, SLOT(saveFile()));
-    connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    connect(openAction, &QAction::triggered, this, &MainWindow::openFile);
+    connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile);
+    connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
 
     menuBar()->addMenu(fileMenu);
     statusBar();
 
-    openFile(":/Charts/qtdata.cht");
+    loadFile(":/Charts/qtdata.cht");
 
     setWindowTitle(tr("Chart"));
     resize(870, 550);
@@ -99,17 +99,16 @@ void MainWindow::setupViews()
     setCentralWidget(splitter);
 }
 
-void MainWindow::openFile(const QString &path)
+void MainWindow::openFile()
 {
-    QString fileName;
-    if (path.isNull())
-        fileName = QFileDialog::getOpenFileName(this, tr("Choose a data file"), "", "*.cht");
-    else
-        fileName = path;
+    const QString fileName =
+        QFileDialog::getOpenFileName(this, tr("Choose a data file"), "", "*.cht");
+    if (!fileName.isEmpty())
+        loadFile(fileName);
+}
 
-    if (fileName.isEmpty())
-        return;
-
+void MainWindow::loadFile(const QString &fileName)
+{
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text))
         return;

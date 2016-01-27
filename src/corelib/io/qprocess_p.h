@@ -383,6 +383,8 @@ public:
     qint64 writeToStdin(const char *data, qint64 maxlen);
 
     void cleanup();
+    void setError(QProcess::ProcessError error, const QString &description = QString());
+    void setErrorAndEmit(QProcess::ProcessError error, const QString &description = QString());
 
 #ifdef Q_OS_BLACKBERRY
     QList<QSocketNotifier *> defaultNotifiers() const;

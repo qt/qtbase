@@ -628,8 +628,8 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
         QList<QByteArray> res = splitLines(actualOutputs[n]);
         const QString expectedFileName = expectedFileNameFromTest(subdir, logger);
         QList<QByteArray> exp = expectedResult(expectedFileName);
-#if defined (Q_CC_MSVC) || defined(Q_CC_MINGW)
-        // MSVC, MinGW format double numbers differently
+#if (defined (Q_CC_MSVC) && _MSC_VER < 1900)|| defined(Q_CC_MINGW)
+        // MSVC up to MSVC2013, MinGW format double numbers differently
         if (n == 0 && subdir == QStringLiteral("float")) {
             for (int i = 0; i < exp.size(); ++i) {
                 exp[i].replace("e-07", "e-007");

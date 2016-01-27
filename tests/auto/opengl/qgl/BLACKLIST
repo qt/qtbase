@@ -1,0 +1,16 @@
+[glWidgetRendering]
+windows
+[glFBORendering]
+windows
+[multipleFBOInterleavedRendering]
+windows
+[glPBufferRendering]
+windows
+[replaceClipping]
+windows
+[clipTest]
+windows
+[graphicsViewClipping]
+windows
+[glFBOUseInGLWidget]
+windows

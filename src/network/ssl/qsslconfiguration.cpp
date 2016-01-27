@@ -36,6 +36,7 @@
 #include "qsslconfiguration.h"
 #include "qsslconfiguration_p.h"
 #include "qsslsocket.h"
+#include "qsslsocket_p.h"
 #include "qmutex.h"
 #include "qdebug.h"
 
@@ -590,6 +591,20 @@ void QSslConfiguration::setCiphers(const QList<QSslCipher> &ciphers)
 }
 
 /*!
+    \since 5.5
+
+    Returns the list of cryptographic ciphers supported by this
+    system. This list is set by the system's SSL libraries and may
+    vary from system to system.
+
+    \sa ciphers(), setCiphers()
+*/
+QList<QSslCipher> QSslConfiguration::supportedCiphers()
+{
+    return QSslSocketPrivate::supportedCiphers();
+}
+
+/*!
   Returns this connection's CA certificate database. The CA certificate
   database is used by the socket during the handshake phase to
   validate the peer's certificate. It can be modified prior to the
@@ -616,6 +631,22 @@ void QSslConfiguration::setCaCertificates(const QList<QSslCertificate> &certific
 {
     d->caCertificates = certificates;
     d->allowRootCertOnDemandLoading = false;
+}
+
+/*!
+    \since 5.5
+
+    This function provides the CA certificate database
+    provided by the operating system. The CA certificate database
+    returned by this function is used to initialize the database
+    returned by caCertificates() on the default QSslConfiguration.
+
+    \sa caCertificates(), setCaCertificates(), defaultConfiguration()
+*/
+QList<QSslCertificate> QSslConfiguration::systemCaCertificates()
+{
+    // we are calling ensureInitialized() in the method below
+    return QSslSocketPrivate::systemCaCertificates();
 }
 
 /*!
@@ -741,6 +772,20 @@ QVector<QSslEllipticCurve> QSslConfiguration::ellipticCurves() const
 void QSslConfiguration::setEllipticCurves(const QVector<QSslEllipticCurve> &curves)
 {
     d->ellipticCurves = curves;
+}
+
+/*!
+    \since 5.5
+
+    Returns the list of elliptic curves supported by this
+    system. This list is set by the system's SSL libraries and may
+    vary from system to system.
+
+    \sa ellipticCurves(), setEllipticCurves()
+*/
+QVector<QSslEllipticCurve> QSslConfiguration::supportedEllipticCurves()
+{
+    return QSslSocketPrivate::supportedEllipticCurves();
 }
 
 /*!

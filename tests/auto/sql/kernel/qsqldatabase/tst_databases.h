@@ -261,8 +261,8 @@ public:
 
 //         addDb( "QMYSQL3", "testdb", "troll", "trond", "horsehead.qt-project.org" );
 //         addDb( "QMYSQL3", "testdb", "troll", "trond", "horsehead.qt-project.org", 3307 );
-//         addDb( "QMYSQL3", "testdb", "troll", "trond", "horsehead.qt-project.org", 3308, "CLIENT_COMPRESS=1;CLIENT_SSL=1" ); // MySQL 4.1.1
-//         addDb( "QMYSQL3", "testdb", "troll", "trond", "horsehead.qt-project.org", 3309, "CLIENT_COMPRESS=1;CLIENT_SSL=1" ); // MySQL 5.0.18 Linux
+//         addDb( "QMYSQL3", "testdb", "troll", "trond", "horsehead.qt-project.org", 3308, "CLIENT_COMPRESS=1" ); // MySQL 4.1.1
+//         addDb( "QMYSQL3", "testdb", "troll", "trond", "horsehead.qt-project.org", 3309, "CLIENT_COMPRESS=1" ); // MySQL 5.0.18 Linux
 //         addDb( "QMYSQL3", "testdb", "troll", "trond", "silence.qt-project.org" ); // MySQL 5.1.36 Windows
 
 //         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "bq-mysql41.qt-project.org" ); // MySQL 4.1.22-2.el4  linux

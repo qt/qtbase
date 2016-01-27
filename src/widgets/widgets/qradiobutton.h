@@ -47,8 +47,8 @@ class Q_WIDGETS_EXPORT QRadioButton : public QAbstractButton
     Q_OBJECT
 
 public:
-    explicit QRadioButton(QWidget *parent=0);
-    explicit QRadioButton(const QString &text, QWidget *parent=0);
+    explicit QRadioButton(QWidget *parent = Q_NULLPTR);
+    explicit QRadioButton(const QString &text, QWidget *parent = Q_NULLPTR);
     ~QRadioButton();
 
     QSize sizeHint() const Q_DECL_OVERRIDE;

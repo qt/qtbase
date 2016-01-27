@@ -308,7 +308,7 @@ public:
     Doc::Sections       granularity_;
     Doc::Sections       section_; // ###
     QList<Atom*>        tableOfContents_;
-    QList<int>          tableOfContentsLevels_;
+    QVector<int>        tableOfContentsLevels_;
     QList<Atom*>        keywords_;
     QList<Atom*>        targets_;
     QStringMultiMap     metaMap_;
@@ -3087,7 +3087,7 @@ const QList<Atom *> &Doc::tableOfContents() const
     return priv->extra->tableOfContents_;
 }
 
-const QList<int> &Doc::tableOfContentsLevels() const
+const QVector<int> &Doc::tableOfContentsLevels() const
 {
     priv->constructExtra();
     return priv->extra->tableOfContentsLevels_;

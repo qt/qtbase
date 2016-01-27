@@ -6,3 +6,4 @@ windows 64bit msvc
 osx
 [watchFileAndItsDirectory:native backend-specialchars]
 osx
+windows

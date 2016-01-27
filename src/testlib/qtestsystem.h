@@ -56,7 +56,7 @@ namespace QTest
         timer.start();
         do {
             QCoreApplication::processEvents(QEventLoop::AllEvents, ms);
-            QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+            QCoreApplication::sendPostedEvents(Q_NULLPTR, QEvent::DeferredDelete);
             QTest::qSleep(10);
         } while (timer.elapsed() < ms);
     }
@@ -71,7 +71,7 @@ namespace QTest
             if (remaining <= 0)
                 break;
             QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
-            QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+            QCoreApplication::sendPostedEvents(Q_NULLPTR, QEvent::DeferredDelete);
             QTest::qSleep(10);
         }
         // Try ensuring the platform window receives the real position.
@@ -100,7 +100,7 @@ namespace QTest
             if (remaining <= 0)
                 break;
             QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
-            QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+            QCoreApplication::sendPostedEvents(Q_NULLPTR, QEvent::DeferredDelete);
             QTest::qSleep(10);
         }
         return window->isExposed();

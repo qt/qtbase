@@ -78,6 +78,7 @@ public slots:
 private slots:
     void getSetCheck();
     void addActionsAndClear();
+    void addActionsConnect();
 
     void keyboardNavigation_data();
     void keyboardNavigation();
@@ -264,6 +265,34 @@ void tst_QMenu::addActionsAndClear()
     QCOMPARE(menus[0]->actions().count(), 0);
 }
 
+static void testFunction() { }
+
+void tst_QMenu::addActionsConnect()
+{
+    QMenu menu;
+    const QString text = QLatin1String("bla");
+    const QIcon icon;
+    menu.addAction(text, &menu, SLOT(deleteLater()));
+    menu.addAction(text, &menu, &QMenu::deleteLater);
+    menu.addAction(text, testFunction);
+    menu.addAction(text, &menu, testFunction);
+    menu.addAction(icon, text, &menu, SLOT(deleteLater()));
+    menu.addAction(icon, text, &menu, &QMenu::deleteLater);
+    menu.addAction(icon, text, testFunction);
+    menu.addAction(icon, text, &menu, testFunction);
+#ifndef QT_NO_SHORTCUT
+    const QKeySequence keySequence(Qt::CTRL + Qt::Key_C);
+    menu.addAction(text, &menu, SLOT(deleteLater()), keySequence);
+    menu.addAction(text, &menu, &QMenu::deleteLater, keySequence);
+    menu.addAction(text, testFunction, keySequence);
+    menu.addAction(text, &menu, testFunction, keySequence);
+    menu.addAction(icon, text, &menu, SLOT(deleteLater()), keySequence);
+    menu.addAction(icon, text, &menu, &QMenu::deleteLater, keySequence);
+    menu.addAction(icon, text, testFunction, keySequence);
+    menu.addAction(icon, text, &menu, testFunction, keySequence);
+#endif // !QT_NO_SHORTCUT
+}
+
 // We have a separate mouseActivation test for Windows mobile
 #ifndef Q_OS_WINCE
 void tst_QMenu::mouseActivation()
@@ -334,8 +363,10 @@ void tst_QMenu::keyboardNavigation_data()
     QTest::newRow("data9") << Qt::Key(Qt::Key_Down) << Qt::KeyboardModifiers(Qt::NoModifier) << 3 << 0 << false << false<< true;
     QTest::newRow("data10") << Qt::Key(Qt::Key_Return) << Qt::KeyboardModifiers(Qt::NoModifier) << 3 << 0 << false << true << false;
 
-    // Test shortcuts.
-    QTest::newRow("shortcut0") << Qt::Key(Qt::Key_V) << Qt::KeyboardModifiers(Qt::AltModifier) << 5 << 0 << true << true << false;
+    if (qApp->platformName().toLower() != QStringLiteral("xcb")) {
+        // Test shortcuts.
+        QTest::newRow("shortcut0") << Qt::Key(Qt::Key_V) << Qt::KeyboardModifiers(Qt::AltModifier) << 5 << 0 << true << true << false;
+    }
 }
 
 void tst_QMenu::keyboardNavigation()
@@ -513,7 +544,7 @@ void tst_QMenu::onStatusTipTimer()
     menu->close(); //goes out of the menu
 
     QCOMPARE(st, QString("sub action"));
-    QVERIFY(menu->isVisible() == false);
+    QVERIFY(!menu->isVisible());
     m_onStatusTipTimerExecuted = true;
 }
 

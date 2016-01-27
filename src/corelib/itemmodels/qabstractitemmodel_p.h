@@ -164,6 +164,7 @@ public:
     QHash<int,QByteArray> roleNames;
     static const QHash<int,QByteArray> &defaultRoleNames();
 };
+Q_DECLARE_TYPEINFO(QAbstractItemModelPrivate::Change, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 

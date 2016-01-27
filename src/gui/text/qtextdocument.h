@@ -109,11 +109,11 @@ class Q_GUI_EXPORT QTextDocument : public QObject
     Q_PROPERTY(QUrl baseUrl READ baseUrl WRITE setBaseUrl NOTIFY baseUrlChanged)
 
 public:
-    explicit QTextDocument(QObject *parent = 0);
-    explicit QTextDocument(const QString &text, QObject *parent = 0);
+    explicit QTextDocument(QObject *parent = Q_NULLPTR);
+    explicit QTextDocument(const QString &text, QObject *parent = Q_NULLPTR);
     ~QTextDocument();
 
-    QTextDocument *clone(QObject *parent = 0) const;
+    QTextDocument *clone(QObject *parent = Q_NULLPTR) const;
 
     bool isEmpty() const;
     virtual void clear();
@@ -157,17 +157,17 @@ public:
     };
     Q_DECLARE_FLAGS(FindFlags, FindFlag)
 
-    QTextCursor find(const QString &subString, int from = 0, FindFlags options = 0) const;
-    QTextCursor find(const QString &subString, const QTextCursor &cursor, FindFlags options = 0) const;
+    QTextCursor find(const QString &subString, int from = 0, FindFlags options = FindFlags()) const;
+    QTextCursor find(const QString &subString, const QTextCursor &cursor, FindFlags options = FindFlags()) const;
 
 #ifndef QT_NO_REGEXP
-    QTextCursor find(const QRegExp &expr, int from = 0, FindFlags options = 0) const;
-    QTextCursor find(const QRegExp &expr, const QTextCursor &cursor, FindFlags options = 0) const;
+    QTextCursor find(const QRegExp &expr, int from = 0, FindFlags options = FindFlags()) const;
+    QTextCursor find(const QRegExp &expr, const QTextCursor &cursor, FindFlags options = FindFlags()) const;
 #endif
 
 #ifndef QT_NO_REGULAREXPRESSION
-    QTextCursor find(const QRegularExpression &expr, int from = 0, FindFlags options = 0) const;
-    QTextCursor find(const QRegularExpression &expr, const QTextCursor &cursor, FindFlags options = 0) const;
+    QTextCursor find(const QRegularExpression &expr, int from = 0, FindFlags options = FindFlags()) const;
+    QTextCursor find(const QRegularExpression &expr, const QTextCursor &cursor, FindFlags options = FindFlags()) const;
 #endif
 
     QTextFrame *frameAt(int pos) const;

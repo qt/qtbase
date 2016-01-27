@@ -292,7 +292,7 @@ void tst_QColumnView::grips()
         for (int i = 0 ; i < list.count(); ++i) {
             if (QAbstractItemView *view = qobject_cast<QAbstractItemView*>(list.at(i))) {
                 if (view->isVisible())
-                    QVERIFY(view->cornerWidget() == 0);
+                    QVERIFY(!view->cornerWidget());
             }
         }
     }
@@ -587,7 +587,7 @@ void tst_QColumnView::selectAll()
     QVERIFY(view.selectionModel()->selectedIndexes().count() > 0);
 
     view.setCurrentIndex(QModelIndex());
-    QVERIFY(view.selectionModel()->selectedIndexes().count() == 0);
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 0);
 }
 
 void tst_QColumnView::clicked()

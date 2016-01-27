@@ -93,6 +93,13 @@ QIOSWindow::~QIOSWindow()
     [m_view release];
 }
 
+
+QSurfaceFormat QIOSWindow::format() const
+{
+    return window()->requestedFormat();
+}
+
+
 bool QIOSWindow::blockedByModal()
 {
     QWindow *modalWindow = QGuiApplication::modalWindow();

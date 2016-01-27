@@ -48,6 +48,7 @@
 #include "QtCore/qatomic.h"
 #include "QtCore/qbuffer.h"
 #include "QtCore/qobjectdefs.h"
+#include "QtCore/qvector.h"
 #include "QtGui/qpicture.h"
 #include "QtGui/qpixmap.h"
 #include "QtGui/qpen.h"
@@ -150,8 +151,8 @@ public:
     QRect override_rect;
     QScopedPointer<QPaintEngine> paintEngine;
     bool in_memory_only;
-    QList<QImage> image_list;
-    QList<QPixmap> pixmap_list;
+    QVector<QImage> image_list;
+    QVector<QPixmap> pixmap_list;
     QList<QBrush> brush_list;
     QList<QPen> pen_list;
 };

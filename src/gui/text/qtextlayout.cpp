@@ -87,6 +87,20 @@ QT_BEGIN_NAMESPACE
     Specifies the format to apply.
 */
 
+/*! \fn bool operator==(const FormatRange &lhs, const FormatRange &rhs)
+  \relates QTextLayout::FormatRange
+
+  Returns true if the \c {start}, \c {length}, and \c {format} fields
+  in \a lhs and \a rhs contain the same values respectively.
+ */
+
+/*! \fn bool operator!=(const FormatRange &lhs, const FormatRange &rhs)
+  \relates QTextLayout::FormatRange
+
+  Returns true if any of the \c {start}, \c {length}, or \c {format} fields
+  in \a lhs and \a rhs contain different values respectively.
+ */
+
 /*!
     \class QTextInlineObject
     \reentrant
@@ -485,16 +499,15 @@ QString QTextLayout::preeditAreaText() const
     return d->preeditAreaText();
 }
 
+#if QT_DEPRECATED_SINCE(5, 6)
 /*!
-    Sets the additional formats supported by the text layout to \a formatList.
-    The formats are applied with preedit area text in place.
-
-    \sa additionalFormats(), clearAdditionalFormats()
+    \obsolete Use setFormats() instead.
 */
 void QTextLayout::setAdditionalFormats(const QList<FormatRange> &formatList)
 {
     setFormats(formatList.toVector());
 }
+#endif // deprecated since 5.6
 
 /*!
     \since 5.6
@@ -512,8 +525,9 @@ void QTextLayout::setFormats(const QVector<FormatRange> &formats)
         d->block.docHandle()->documentChange(d->block.position(), d->block.length());
 }
 
+#if QT_DEPRECATED_SINCE(5, 6)
 /*!
-    Returns the list of additional formats supported by the text layout.
+    \obsolete Use formats() instead.
 
     \sa setAdditionalFormats(), clearAdditionalFormats()
 */
@@ -521,6 +535,7 @@ QList<QTextLayout::FormatRange> QTextLayout::additionalFormats() const
 {
     return formats().toList();
 }
+#endif // deprecated since 5.6
 
 /*!
     \since 5.6
@@ -534,15 +549,15 @@ QVector<QTextLayout::FormatRange> QTextLayout::formats() const
     return d->formats();
 }
 
+#if QT_DEPRECATED_SINCE(5, 6)
 /*!
-    Clears the list of additional formats supported by the text layout.
-
-    \sa additionalFormats(), setAdditionalFormats()
+    \obsolete Use clearFormats() instead.
 */
 void QTextLayout::clearAdditionalFormats()
 {
     clearFormats();
 }
+#endif // deprecated since 5.6
 
 /*!
     \since 5.6

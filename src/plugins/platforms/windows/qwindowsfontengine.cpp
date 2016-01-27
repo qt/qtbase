@@ -671,7 +671,7 @@ void QWindowsFontEngine::getGlyphBearings(glyph_t glyph, qreal *leftBearing, qre
 
 bool QWindowsFontEngine::hasUnreliableGlyphOutline() const
 {
-    return hasUnreliableOutline;
+    return hasUnreliableOutline || QFontEngine::hasUnreliableGlyphOutline();
 }
 
 qreal QWindowsFontEngine::minLeftBearing() const

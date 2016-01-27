@@ -52,15 +52,15 @@ FreezeTableWidget::FreezeTableWidget(QAbstractItemModel * model)
       init();
 
       //connect the headers and scrollbars of both tableviews together
-      connect(horizontalHeader(),SIGNAL(sectionResized(int,int,int)), this,
-              SLOT(updateSectionWidth(int,int,int)));
-      connect(verticalHeader(),SIGNAL(sectionResized(int,int,int)), this,
-              SLOT(updateSectionHeight(int,int,int)));
+      connect(horizontalHeader(),&QHeaderView::sectionResized, this,
+              &FreezeTableWidget::updateSectionWidth);
+      connect(verticalHeader(),&QHeaderView::sectionResized, this,
+              &FreezeTableWidget::updateSectionHeight);
 
-      connect(frozenTableView->verticalScrollBar(), SIGNAL(valueChanged(int)),
-              verticalScrollBar(), SLOT(setValue(int)));
-      connect(verticalScrollBar(), SIGNAL(valueChanged(int)),
-              frozenTableView->verticalScrollBar(), SLOT(setValue(int)));
+      connect(frozenTableView->verticalScrollBar(), &QAbstractSlider::valueChanged,
+              verticalScrollBar(), &QAbstractSlider::setValue);
+      connect(verticalScrollBar(), &QAbstractSlider::valueChanged,
+              frozenTableView->verticalScrollBar(), &QAbstractSlider::setValue);
 
 
 }

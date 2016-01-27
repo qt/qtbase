@@ -1344,13 +1344,13 @@ QByteArray QFontEngine::convertToPostscriptFontFamilyName(const QByteArray &fami
     return f;
 }
 
-/**
- * Some font engines like the windows font engine
- * can not reliable create outline paths
- */
+// Allow font engines (e.g. Windows) that can not reliably create
+// outline paths for distance-field rendering to switch the scene
+// graph over to native text rendering.
 bool QFontEngine::hasUnreliableGlyphOutline() const
 {
-    return false;
+    // Color glyphs (Emoji) are generally not suited for outlining
+    return glyphFormat == QFontEngine::Format_ARGB;
 }
 
 QFixed QFontEngine::lastRightBearing(const QGlyphLayout &glyphs, bool round)

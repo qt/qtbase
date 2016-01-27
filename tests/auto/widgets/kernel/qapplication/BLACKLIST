@@ -1,0 +1,4 @@
+[quitOnLastWindowClosed]
+osx-10.10
+[touchEventPropagation]
+xcb

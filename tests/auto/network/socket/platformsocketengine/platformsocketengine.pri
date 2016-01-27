@@ -5,7 +5,7 @@ QNETWORK_SRC = $$QT_SOURCE_TREE/src/network
 INCLUDEPATH += $$QNETWORK_SRC
 
 win32 {
-    wince*: {
+    wince {
         LIBS += -lws2
     } else {
         LIBS += -lws2_32

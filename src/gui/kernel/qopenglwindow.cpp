@@ -664,15 +664,10 @@ int QOpenGLWindow::metric(PaintDeviceMetric metric) const
             if (d->paintDevice)
                 return d->paintDevice->depth();
             break;
-        case PdmDevicePixelRatio:
-            if (d->paintDevice)
-                return devicePixelRatio();
-            break;
         default:
             break;
     }
     return QPaintDeviceWindow::metric(metric);
-
 }
 
 /*!

@@ -153,7 +153,7 @@ public:
 
     enum ActionEvent { Trigger, Hover };
     void activate(ActionEvent event);
-    bool showStatusText(QWidget *widget=0);
+    bool showStatusText(QWidget *widget = Q_NULLPTR);
 
     void setMenuRole(MenuRole menuRole);
     MenuRole menuRole() const;

@@ -196,9 +196,9 @@ void tst_QTableWidget::clearContents()
 {
     QTableWidgetItem *item = new QTableWidgetItem("test");
     testWidget->setHorizontalHeaderItem(0, item);
-    QVERIFY(testWidget->horizontalHeaderItem(0) == item);
+    QCOMPARE(testWidget->horizontalHeaderItem(0), item);
     testWidget->clearContents();
-    QVERIFY(testWidget->horizontalHeaderItem(0) == item);
+    QCOMPARE(testWidget->horizontalHeaderItem(0), item);
 }
 
 void tst_QTableWidget::clear()
@@ -1559,7 +1559,7 @@ void tst_QTableWidget::mimeData()
 
     QVERIFY(data->hasFormat(format));
     QVERIFY(data2->hasFormat(format));
-    QVERIFY(data->data(format) == data2->data(format));
+    QCOMPARE(data->data(format), data2->data(format));
 
     delete data;
     delete data2;

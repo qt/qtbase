@@ -2238,6 +2238,8 @@ void VCFilter::modifyPCHstage(QString str)
     CompilerTool.UsePrecompiledHeader     = (isCFile ? pchNone : pchCreateUsingSpecific);
     if (isCFile)
         CompilerTool.PrecompiledHeaderThrough = QLatin1String("$(NOINHERIT)");
+    else if (autogenSourceFile)
+        CompilerTool.PrecompiledHeaderThrough = Project->precompHFilename;
     CompilerTool.ForcedIncludeFiles       = QStringList("$(NOINHERIT)");
 }
 

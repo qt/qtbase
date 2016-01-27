@@ -5,4 +5,4 @@ SUBDIRS     = draggableicons \
               fridgemagnets \
               puzzle
 
-wince*: SUBDIRS -= dropsite
+wince: SUBDIRS -= dropsite

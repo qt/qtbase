@@ -13,7 +13,7 @@ wince* {
 	DEPLOYMENT += addit tests sourceFile
 }
 
-android|wince*: {
+android|wince {
     DEFINES += SRCDIR=\\\"./\\\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"

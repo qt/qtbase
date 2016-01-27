@@ -252,7 +252,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
 
 #ifdef QIMAGEREADER_DEBUG
     qDebug() << "QImageReader::createReadHandler( device =" << (void *)device << ", format =" << format << "),"
-             << keyMap.values().size() << "plugins available: " << keyMap.values();
+             << keyMap.size() << "plugins available: " << keyMap.values();
 #endif
 
     int suffixPluginIndex = -1;
@@ -312,7 +312,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
         const qint64 pos = device ? device->pos() : 0;
 
         if (autoDetectImageFormat) {
-            const int keyCount = keyMap.keys().size();
+            const int keyCount = keyMap.size();
             for (int i = 0; i < keyCount; ++i) {
                 if (i != suffixPluginIndex) {
                     QImageIOPlugin *plugin = qobject_cast<QImageIOPlugin *>(l->instance(i));
@@ -392,7 +392,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
     if (!handler && (autoDetectImageFormat || ignoresFormatAndExtension)) {
         // check if any of our plugins recognize the file from its contents.
         const qint64 pos = device ? device->pos() : 0;
-        const int keyCount = keyMap.keys().size();
+        const int keyCount = keyMap.size();
         for (int i = 0; i < keyCount; ++i) {
             if (i != suffixPluginIndex) {
                 QImageIOPlugin *plugin = qobject_cast<QImageIOPlugin *>(l->instance(i));
@@ -1168,9 +1168,10 @@ QImageIOHandler::Transformations QImageReader::transformation() const
 /*!
     \since 5.5
 
-    Sets if images returned by read() should have transformation metadata automatically applied.
+    Determines that images returned by read() should have transformation metadata automatically
+    applied if \a enabled is \c true.
 
-    \sa autoTransform(), transform(), read()
+    \sa autoTransform(), read()
 */
 void QImageReader::setAutoTransform(bool enabled)
 {
@@ -1200,6 +1201,39 @@ bool QImageReader::autoTransform() const
         break;
     }
     return false;
+}
+
+/*!
+    \since 5.6
+
+    This is an image format specific function that forces images with
+    gamma information to be gamma corrected to \a gamma. For image formats
+    that do not support gamma correction, this value is ignored.
+
+    To gamma correct to a standard PC color-space, set gamma to \c 1/2.2.
+
+    \sa gamma()
+*/
+void QImageReader::setGamma(float gamma)
+{
+    if (d->initHandler() && d->handler->supportsOption(QImageIOHandler::Gamma))
+        d->handler->setOption(QImageIOHandler::Gamma, gamma);
+}
+
+/*!
+    \since 5.6
+
+    Returns the gamma level of the decoded image. If setGamma() has been
+    called and gamma correction is supported it will return the gamma set.
+    If gamma level is not supported by the image format, \c 0.0 is returned.
+
+    \sa setGamma()
+*/
+float QImageReader::gamma() const
+{
+    if (d->initHandler() && d->handler->supportsOption(QImageIOHandler::Gamma))
+        return d->handler->option(QImageIOHandler::Gamma).toFloat();
+    return 0.0;
 }
 
 /*!

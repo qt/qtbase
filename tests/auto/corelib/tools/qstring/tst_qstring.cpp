@@ -534,6 +534,7 @@ private slots:
     void localeAwareCompare_data();
     void localeAwareCompare();
 #endif
+    void reverseIterators();
     void split_data();
     void split();
     void split_regexp_data();
@@ -5246,7 +5247,7 @@ void tst_QString::localeAwareCompare_data()
         It's hard to test English, because it's treated differently
         on different platforms. For example, on Linux, it uses the
         iso14651_t1 template file, which happens to provide good
-        defaults for Swedish. Mac OS X seems to do a pure bytewise
+        defaults for Swedish. OS X seems to do a pure bytewise
         comparison of Latin-1 values, although I'm not sure. So I
         just test digits to make sure that it's not totally broken.
     */
@@ -5398,6 +5399,20 @@ void tst_QString::localeAwareCompare()
 #endif
 }
 #endif //!defined(Q_OS_WIN) || defined(Q_OS_WIN_AND_WINCE)
+
+void tst_QString::reverseIterators()
+{
+    QString s = "1234";
+    QString sr = s;
+    std::reverse(sr.begin(), sr.end());
+    const QString &csr = sr;
+    QVERIFY(std::equal(s.begin(), s.end(), sr.rbegin()));
+    QVERIFY(std::equal(s.begin(), s.end(), sr.crbegin()));
+    QVERIFY(std::equal(s.begin(), s.end(), csr.rbegin()));
+    QVERIFY(std::equal(sr.rbegin(), sr.rend(), s.begin()));
+    QVERIFY(std::equal(sr.crbegin(), sr.crend(), s.begin()));
+    QVERIFY(std::equal(csr.rbegin(), csr.rend(), s.begin()));
+}
 
 void tst_QString::split_data()
 {

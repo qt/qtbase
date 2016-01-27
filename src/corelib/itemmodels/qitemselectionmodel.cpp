@@ -104,6 +104,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QItemSelectionRange::swap(QItemSelectionRange &other)
+    \since 5.6
+
+    Swaps this selection range's contents with \a other.
+    This function is very fast and never fails.
+*/
+
+/*!
     \fn int QItemSelectionRange::top() const
 
     Returns the row index corresponding to the uppermost selected row in the
@@ -1764,7 +1772,7 @@ const QAbstractItemModel *QItemSelectionModel::model() const
 /*!
     \since 5.5
 
-    Sets the model. The modelChanged() signal will be emitted.
+    Sets the model to \a model. The modelChanged() signal will be emitted.
 
     \sa model(), modelChanged()
 */

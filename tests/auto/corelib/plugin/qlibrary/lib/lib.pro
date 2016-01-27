@@ -6,7 +6,7 @@ TARGET = mylib
 DESTDIR = ../
 QT = core
 
-wince*: DEFINES += WIN32_MSVC
+wince: DEFINES += WIN32_MSVC
 win32-msvc: DEFINES += WIN32_MSVC
 
 # This project is testdata for tst_qlibrary

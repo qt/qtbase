@@ -133,7 +133,7 @@ void tst_QCommandLineParser::testBooleanOption()
     QFETCH(bool, expectedIsSet);
     QCoreApplication app(empty_argc, empty_argv);
     QCommandLineParser parser;
-    QVERIFY(parser.addOption(QCommandLineOption(QStringLiteral("b"), QStringLiteral("a boolean option"))));
+    QVERIFY(parser.addOption(QCommandLineOption(QStringLiteral("b"))));
     QVERIFY(parser.parse(args));
     QCOMPARE(parser.optionNames(), expectedOptionNames);
     QCOMPARE(parser.isSet("b"), expectedIsSet);

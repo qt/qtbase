@@ -429,11 +429,11 @@ void QIOSFileEngineAssetsLibrary::setFileName(const QString &file)
     // QUrl::fromLocalFile() will remove double slashes. Since the asset url is
     // passed around as a file name in the app (and converted to/from a file url, e.g
     // in QFileDialog), we need to ensure that m_assetUrl ends up being valid.
-    int index = file.indexOf(QLatin1String("asset.JPG?"));
+    int index = file.indexOf(QLatin1String("/asset"));
     if (index == -1)
         m_assetUrl = QLatin1String("assets-library://");
     else
-        m_assetUrl = QLatin1String("assets-library://asset/") + file.mid(index);
+        m_assetUrl = QLatin1String("assets-library:/") + file.mid(index);
 }
 
 QStringList QIOSFileEngineAssetsLibrary::entryList(QDir::Filters filters, const QStringList &filterNames) const

@@ -569,7 +569,7 @@ void ModelTest::dataChanged(const QModelIndex &topLeft, const QModelIndex &botto
     QVERIFY(topLeft.isValid());
     QVERIFY(bottomRight.isValid());
     QModelIndex commonParent = bottomRight.parent();
-    QVERIFY(topLeft.parent() == commonParent);
+    QCOMPARE(topLeft.parent(), commonParent);
     QVERIFY(topLeft.row() <= bottomRight.row());
     QVERIFY(topLeft.column() <= bottomRight.column());
     int rowCount = model->rowCount(commonParent);

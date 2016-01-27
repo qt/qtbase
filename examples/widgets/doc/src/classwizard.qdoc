@@ -76,7 +76,7 @@
     \endlist
 
     Although the program is just an example, if you press \uicontrol Finish
-    (\uicontrol Done on Mac OS X), actual C++ source files will actually be
+    (\uicontrol Done on OS X), actual C++ source files will actually be
     generated.
 
     \section1 The ClassWizard Class
@@ -158,7 +158,7 @@
     layouts. The \c className field is created with an asterisk (\c
     *) next to its name. This makes it a \l{mandatory fields}{mandatory field}, that
     is, a field that must be filled before the user can press the
-    \uicontrol Next button (\uicontrol Continue on Mac OS X). The fields' values
+    \uicontrol Next button (\uicontrol Continue on OS X). The fields' values
     can be accessed from any other page using QWizardPage::field(),
     or from the wizard code using QWizard::field().
 

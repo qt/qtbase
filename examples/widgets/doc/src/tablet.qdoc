@@ -259,23 +259,17 @@
 
     \snippet widgets/tablet/tabletcanvas.cpp 5
 
-    In this function we draw on the pixmap based on the movement of the
-    device. If the device used on the tablet is a stylus we want to draw a
-    line between the positions of the stylus recorded in \c polyLine. We
-    also assume that this is a reasonable handling of any unknown device,
-    but update the statusbar with a warning so that the user can see that
-    for his tablet he might have to implement special handling.
-    If it is an airbrush we want to draw a circle of points with a
-    point density based on the tangential pressure, which is the position
-    of the finger wheel on the airbrush. We use the Qt::BrushStyle to
-    draw the points as it has styles that draw points with different
-    density; we select the style based on the tangential pressure in
-    \c brushPattern().
+    In this function we draw on the pixmap based on the movement of the device.
+    If the device used on the tablet is a stylus, we want to draw a line from
+    the last-known position to the current position. We also assume that this
+    is a reasonable handling of any unknown device, but update the status bar
+    with a warning. If it is an airbrush, we want to draw a circle filled with
+    a soft gradient, whose density can depend on various event parameters.
+    By default it depends on the tangential pressure, which is the position of
+    the finger wheel on the airbrush.  If it is a rotation stylus, we simulate
+    a felt marker by drawing trapezoidal strokes.
 
     \snippet widgets/tablet/tabletcanvas.cpp 6
-
-    We return a brush style with a point density that increases with
-    the tangential pressure.
 
     In \c updateBrush() we set the pen and brush used for drawing
     to match \c alphaChannelType, \c lineWidthType, \c

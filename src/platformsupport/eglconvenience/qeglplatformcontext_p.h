@@ -94,6 +94,7 @@ private:
     bool m_swapIntervalEnvChecked;
     int m_swapIntervalFromEnv;
     bool m_ownsContext;
+    QVector<EGLint> m_contextAttrs;
 };
 
 QT_END_NAMESPACE

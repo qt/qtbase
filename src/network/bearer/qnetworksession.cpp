@@ -468,7 +468,7 @@ QString QNetworkSession::errorString() const
 
     The following property keys are guaranteed to be specified on all platforms:
 
-    \table
+    \table 80%
         \header
             \li Key \li Description
         \row

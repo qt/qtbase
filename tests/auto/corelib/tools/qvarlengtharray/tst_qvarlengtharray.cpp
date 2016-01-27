@@ -56,6 +56,7 @@ private slots:
     void indexOf();
     void lastIndexOf();
     void contains();
+    void clear();
     void initializeListInt();
     void initializeListMovable();
     void initializeListComplex();
@@ -810,6 +811,21 @@ void tst_QVarLengthArray::contains()
     // add it and make sure it does :)
     myvec.append(QLatin1String("I don't exist"));
     QVERIFY(myvec.contains(QLatin1String("I don't exist")));
+}
+
+void tst_QVarLengthArray::clear()
+{
+    QVarLengthArray<QString, 5> myvec;
+
+    for (int i = 0; i < 10; ++i)
+        myvec << "aaa";
+
+    QCOMPARE(myvec.size(), 10);
+    QVERIFY(myvec.capacity() >= myvec.size());
+    const int oldCapacity = myvec.capacity();
+    myvec.clear();
+    QCOMPARE(myvec.size(), 0);
+    QCOMPARE(myvec.capacity(), oldCapacity);
 }
 
 void tst_QVarLengthArray::initializeListInt()

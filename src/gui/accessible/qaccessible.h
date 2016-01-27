@@ -505,7 +505,7 @@ public:
     virtual void virtual_hook(int id, void *data);
 
     virtual void *interface_cast(QAccessible::InterfaceType)
-    { return 0; }
+    { return Q_NULLPTR; }
 
 protected:
     friend class QAccessibleCache;
@@ -635,12 +635,12 @@ public:
     static const QString &showMenuAction();
     static const QString &setFocusAction();
     static const QString &toggleAction();
-    static const QString &scrollLeftAction();
-    static const QString &scrollRightAction();
-    static const QString &scrollUpAction();
-    static const QString &scrollDownAction();
-    static const QString &nextPageAction();
-    static const QString &previousPageAction();
+    static QString scrollLeftAction();
+    static QString scrollRightAction();
+    static QString scrollUpAction();
+    static QString scrollDownAction();
+    static QString nextPageAction();
+    static QString previousPageAction();
 };
 
 class Q_GUI_EXPORT QAccessibleImageInterface
@@ -676,7 +676,7 @@ public:
     }
 
     inline QAccessibleEvent(QAccessibleInterface *iface, QAccessible::Event typ)
-        : m_type(typ), m_object(0)
+        : m_type(typ), m_object(Q_NULLPTR)
     {
         Q_ASSERT(iface);
         Q_ASSERT(m_type != QAccessible::ValueChanged);

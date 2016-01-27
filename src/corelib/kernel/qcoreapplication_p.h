@@ -86,8 +86,8 @@ public:
 
 #ifndef QT_NO_QOBJECT
     bool sendThroughApplicationEventFilters(QObject *, QEvent *);
-    bool sendThroughObjectEventFilters(QObject *, QEvent *);
-    bool notify_helper(QObject *, QEvent *);
+    static bool sendThroughObjectEventFilters(QObject *, QEvent *);
+    static bool notify_helper(QObject *, QEvent *);
     static inline void setEventSpontaneous(QEvent *e, bool spontaneous) { e->spont = spontaneous; }
 
     virtual void createEventDispatcher();
@@ -107,9 +107,11 @@ public:
 
     static QThread *theMainThread;
     static QThread *mainThread();
+    static bool threadRequiresCoreApplication();
+
     static void sendPostedEvents(QObject *receiver, int event_type, QThreadData *data);
 
-    void checkReceiverThread(QObject *receiver);
+    static void checkReceiverThread(QObject *receiver);
     void cleanupThreadData();
 #endif // QT_NO_QOBJECT
 

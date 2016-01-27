@@ -342,7 +342,7 @@ void QPicturePaintEngine::writeCmdLength(int pos, const QRectF &r, bool corr)
         }
         br = painter()->transform().mapRect(br);
         if (painter()->hasClipping()) {
-            QRect cr = painter()->clipRegion().boundingRect();
+            QRectF cr = painter()->clipBoundingRect();
             br &= cr;
         }
 
@@ -398,6 +398,7 @@ void QPicturePaintEngine::drawPolygon(const QPointF *points, int numPoints, Poly
     int pos;
 
     QPolygonF polygon;
+    polygon.reserve(numPoints);
     for (int i=0; i<numPoints; ++i)
         polygon << points[i];
 

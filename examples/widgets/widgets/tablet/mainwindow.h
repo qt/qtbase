@@ -79,6 +79,7 @@ private:
 
     QActionGroup *alphaChannelGroup;
     QAction *alphaChannelPressureAction;
+    QAction *alphaChannelTangentialPressureAction;
     QAction *alphaChannelTiltAction;
     QAction *noAlphaChannelAction;
 

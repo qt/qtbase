@@ -32,7 +32,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/private/qversionnumber_p.h>
+#include <QtCore/qversionnumber.h>
 #include <QtCore/qhash.h>
 #include <QtCore/private/qlocale_tools_p.h>
 #include <QtCore/qcollator.h>
@@ -53,8 +53,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QVersionNumber
     \inmodule QtCore
-    \internal
-    \since 5.4
+    \since 5.6
     \brief The QVersionNumber class contains a version number with an arbitrary
            number of segments.
 
@@ -168,6 +167,17 @@ QT_BEGIN_NAMESPACE
 
     \sa majorVersion(), minorVersion(), microVersion()
 */
+QVector<int> QVersionNumber::segments() const
+{
+    if (m_segments.isUsingPointer())
+        return *m_segments.pointer_segments;
+
+    QVector<int> result;
+    result.resize(segmentCount());
+    for (int i = 0; i < segmentCount(); ++i)
+        result[i] = segmentAt(i);
+    return result;
+}
 
 /*!
     \fn int QVersionNumber::segmentAt(int index) const
@@ -196,6 +206,17 @@ QT_BEGIN_NAMESPACE
 
     \snippet qversionnumber/main.cpp 4
  */
+QVersionNumber QVersionNumber::normalized() const
+{
+    int i;
+    for (i = m_segments.size(); i; --i)
+        if (m_segments.at(i - 1) != 0)
+            break;
+
+    QVersionNumber result(*this);
+    result.m_segments.resize(i);
+    return result;
+}
 
 /*!
     \fn bool QVersionNumber::isPrefixOf(const QVersionNumber &other) const
@@ -209,8 +230,13 @@ QT_BEGIN_NAMESPACE
 */
 bool QVersionNumber::isPrefixOf(const QVersionNumber &other) const Q_DECL_NOTHROW
 {
-    return m_segments.size() <= other.m_segments.size() &&
-            std::equal(m_segments.begin(), m_segments.end(), other.m_segments.begin());
+    if (segmentCount() > other.segmentCount())
+        return false;
+    for (int i = 0; i < segmentCount(); ++i) {
+        if (segmentAt(i) != other.segmentAt(i))
+            return false;
+    }
+    return true;
 }
 
 /*!
@@ -228,30 +254,37 @@ bool QVersionNumber::isPrefixOf(const QVersionNumber &other) const Q_DECL_NOTHRO
 */
 int QVersionNumber::compare(const QVersionNumber &v1, const QVersionNumber &v2) Q_DECL_NOTHROW
 {
-    QVector<int>::const_iterator i1 = v1.m_segments.constBegin();
-    const QVector<int>::const_iterator e1 = v1.m_segments.constEnd();
-    QVector<int>::const_iterator i2 = v2.m_segments.constBegin();
-    const QVector<int>::const_iterator e2 = v2.m_segments.constEnd();
+    int commonlen;
 
-    while (i1 != e1 && i2 != e2) {
-        if (*i1 != *i2)
-            return (*i1 - *i2);
-        ++i1;
-        ++i2;
+    if (Q_LIKELY(!v1.m_segments.isUsingPointer() && !v2.m_segments.isUsingPointer())) {
+        // we can't use memcmp because it interprets the data as unsigned bytes
+        const qint8 *ptr1 = v1.m_segments.inline_segments + InlineSegmentStartIdx;
+        const qint8 *ptr2 = v2.m_segments.inline_segments + InlineSegmentStartIdx;
+        commonlen = qMin(v1.m_segments.size(),
+                         v2.m_segments.size());
+        for (int i = 0; i < commonlen; ++i)
+            if (int x = ptr1[i] - ptr2[i])
+                return x;
+    } else {
+        commonlen = qMin(v1.segmentCount(), v2.segmentCount());
+        for (int i = 0; i < commonlen; ++i) {
+            if (v1.segmentAt(i) != v2.segmentAt(i))
+                return v1.segmentAt(i) - v2.segmentAt(i);
+        }
     }
 
     // ran out of segments in v1 and/or v2 and need to check the first trailing
     // segment to finish the compare
-    if (i1 != e1) {
+    if (v1.segmentCount() > commonlen) {
         // v1 is longer
-        if (*i1 != 0)
-            return *i1;
+        if (v1.segmentAt(commonlen) != 0)
+            return v1.segmentAt(commonlen);
         else
             return 1;
-    } else if (i2 != e2) {
+    } else if (v2.segmentCount() > commonlen) {
         // v2 is longer
-        if (*i2 != 0)
-            return -*i2;
+        if (v2.segmentAt(commonlen) != 0)
+            return -v2.segmentAt(commonlen);
         else
             return -1;
     }
@@ -271,13 +304,20 @@ int QVersionNumber::compare(const QVersionNumber &v1, const QVersionNumber &v2) 
 QVersionNumber QVersionNumber::commonPrefix(const QVersionNumber &v1,
                                             const QVersionNumber &v2)
 {
-    int min = qMin(v1.m_segments.size(), v2.m_segments.size());
-    QVector<int>::const_iterator i1 = v1.m_segments.begin();
-    QVector<int>::const_iterator e1;
-    e1 = std::mismatch(i1,
-                       v1.m_segments.begin() + min,
-                       v2.m_segments.begin()).first;
-    return QVersionNumber(v1.m_segments.mid(0, e1 - i1));
+    int commonlen = qMin(v1.segmentCount(), v2.segmentCount());
+    int i;
+    for (i = 0; i < commonlen; ++i) {
+        if (v1.segmentAt(i) != v2.segmentAt(i))
+            break;
+    }
+
+    if (i == 0)
+        return QVersionNumber();
+
+    // try to use the one with inline segments, if there's one
+    QVersionNumber result(!v1.m_segments.isUsingPointer() ? v1 : v2);
+    result.m_segments.resize(i);
+    return result;
 }
 
 /*!
@@ -348,12 +388,12 @@ QVersionNumber QVersionNumber::commonPrefix(const QVersionNumber &v1,
 QString QVersionNumber::toString() const
 {
     QString version;
-    version.reserve(qMax(m_segments.size() * 2 - 1, 0));
+    version.reserve(qMax(segmentCount() * 2 - 1, 0));
     bool first = true;
-    for (QVector<int>::const_iterator it = m_segments.begin(), end = m_segments.end(); it != end; ++it) {
+    for (int i = 0; i < segmentCount(); ++i) {
         if (!first)
             version += QLatin1Char('.');
-        version += QString::number(*it);
+        version += QString::number(segmentAt(i));
         first = false;
     }
     return version;
@@ -401,19 +441,17 @@ QVersionNumber QVersionNumber::fromString(const QString &string, int *suffixInde
     return QVersionNumber(qMove(seg));
 }
 
-/*!
-    \fn QVersionNumber QVersionNumber::normalizedImpl(QVector<int> &segs)
-
-    Implementation of the normalized() function.  Takes the movable list \a segs
-    and normalizes them.
-
-    \internal
- */
-QVersionNumber QVersionNumber::normalizedImpl(QVector<int> &segs)
+void QVersionNumber::SegmentStorage::setVector(int len, int maj, int min, int mic)
 {
-    while (segs.size() && segs.last() == 0)
-        segs.pop_back();
-    return QVersionNumber(qMove(segs));
+    pointer_segments = new QVector<int>;
+    pointer_segments->resize(len);
+    pointer_segments->data()[0] = maj;
+    if (len > 1) {
+        pointer_segments->data()[1] = min;
+        if (len > 2) {
+            pointer_segments->data()[2] = mic;
+        }
+    }
 }
 
 #ifndef QT_NO_DATASTREAM
@@ -442,7 +480,9 @@ QDataStream& operator<<(QDataStream &out, const QVersionNumber &version)
  */
 QDataStream& operator>>(QDataStream &in, QVersionNumber &version)
 {
-    in >> version.m_segments;
+    if (!version.m_segments.isUsingPointer())
+        version.m_segments.pointer_segments = new QVector<int>;
+    in >> *version.m_segments.pointer_segments;
     return in;
 }
 #endif
@@ -459,14 +499,18 @@ QDebug operator<<(QDebug debug, const QVersionNumber &version)
 /*!
     \fn uint qHash(const QVersionNumber &key, uint seed)
     \relates QHash
-    \since 5.4
+    \since 5.6
 
     Returns the hash value for the \a key, using \a seed to seed the
     calculation.
 */
 uint qHash(const QVersionNumber &key, uint seed)
 {
-    return qHashRange(key.m_segments.begin(), key.m_segments.end(), seed);
+    QtPrivate::QHashCombine hash;
+    for (int i = 0; i < key.segmentCount(); ++i)
+        seed = hash(seed, key.segmentAt(i));
+    return seed;
 }
 
 QT_END_NAMESPACE
+

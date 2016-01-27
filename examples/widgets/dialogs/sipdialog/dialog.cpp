@@ -89,10 +89,9 @@ Dialog::Dialog()
 //! [Dialog constructor part4]
 
 //! [Dialog constructor part5]
-    connect(button, SIGNAL(clicked()),
-        qApp, SLOT(closeAllWindows()));
-    connect(QApplication::desktop(), SIGNAL(workAreaResized(int)),
-        this, SLOT(desktopResized(int)));
+    connect(button, &QAbstractButton::clicked, qApp, &QApplication::closeAllWindows);
+    connect(QApplication::desktop(), &QDesktopWidget::workAreaResized,
+        this, &Dialog::desktopResized);
 }
 //! [Dialog constructor part5]
 

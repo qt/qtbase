@@ -1103,7 +1103,7 @@ static bool mask_alpha_converter_rgbx_inplace(QImageData *data, Qt::ImageConvers
         }
         rgb_data += pad;
     }
-    data->format = DestFormat;
+    data->format = QImage::Format_RGBX8888;
     return true;
 #endif
 }

@@ -49,6 +49,8 @@
 #include "qthread.h"
 #include "QtCore/qcoreapplication.h"
 
+#include <QtCore/private/qthread_p.h>
+
 #include "qnetworkcookiejar.h"
 
 #ifndef QT_NO_HTTP

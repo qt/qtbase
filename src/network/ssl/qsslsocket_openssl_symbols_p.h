@@ -235,7 +235,16 @@ X509 *q_d2i_X509(X509 **a, const unsigned char **b, long c);
 char *q_ERR_error_string(unsigned long a, char *b);
 unsigned long q_ERR_get_error();
 void q_ERR_free_strings();
+void q_EVP_CIPHER_CTX_cleanup(EVP_CIPHER_CTX *a);
+void q_EVP_CIPHER_CTX_init(EVP_CIPHER_CTX *a);
+int q_EVP_CIPHER_CTX_ctrl(EVP_CIPHER_CTX *ctx, int type, int arg, void *ptr);
+int q_EVP_CIPHER_CTX_set_key_length(EVP_CIPHER_CTX *x, int keylen);
+int q_EVP_CipherInit(EVP_CIPHER_CTX *ctx, const EVP_CIPHER *type, const unsigned char *key, const unsigned char *iv, int enc);
+int q_EVP_CipherUpdate(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl, const unsigned char *in, int inl);
+int q_EVP_CipherFinal(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl);
+const EVP_CIPHER *q_EVP_des_cbc();
 const EVP_CIPHER *q_EVP_des_ede3_cbc();
+const EVP_CIPHER *q_EVP_rc2_cbc();
 int q_EVP_PKEY_assign(EVP_PKEY *a, int b, char *c);
 Q_AUTOTEST_EXPORT int q_EVP_PKEY_set1_RSA(EVP_PKEY *a, RSA *b);
 int q_EVP_PKEY_set1_DSA(EVP_PKEY *a, DSA *b);
@@ -363,27 +372,43 @@ typedef unsigned int (*q_psk_client_callback_t)(SSL *ssl, const char *hint, char
 void q_SSL_set_psk_client_callback(SSL *ssl, q_psk_client_callback_t callback);
 #endif // OPENSSL_NO_PSK
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
+#ifndef OPENSSL_NO_SSL2
 const SSL_METHOD *q_SSLv2_client_method();
+#endif
+#ifndef OPENSSL_NO_SSL3_METHOD
 const SSL_METHOD *q_SSLv3_client_method();
+#endif
 const SSL_METHOD *q_SSLv23_client_method();
 const SSL_METHOD *q_TLSv1_client_method();
 const SSL_METHOD *q_TLSv1_1_client_method();
 const SSL_METHOD *q_TLSv1_2_client_method();
+#ifndef OPENSSL_NO_SSL2
 const SSL_METHOD *q_SSLv2_server_method();
+#endif
+#ifndef OPENSSL_NO_SSL3_METHOD
 const SSL_METHOD *q_SSLv3_server_method();
+#endif
 const SSL_METHOD *q_SSLv23_server_method();
 const SSL_METHOD *q_TLSv1_server_method();
 const SSL_METHOD *q_TLSv1_1_server_method();
 const SSL_METHOD *q_TLSv1_2_server_method();
 #else
+#ifndef OPENSSL_NO_SSL2
 SSL_METHOD *q_SSLv2_client_method();
+#endif
+#ifndef OPENSSL_NO_SSL3_METHOD
 SSL_METHOD *q_SSLv3_client_method();
+#endif
 SSL_METHOD *q_SSLv23_client_method();
 SSL_METHOD *q_TLSv1_client_method();
 SSL_METHOD *q_TLSv1_1_client_method();
 SSL_METHOD *q_TLSv1_2_client_method();
+#ifndef OPENSSL_NO_SSL2
 SSL_METHOD *q_SSLv2_server_method();
+#endif
+#ifndef OPENSSL_NO_SSL3_METHOD
 SSL_METHOD *q_SSLv3_server_method();
+#endif
 SSL_METHOD *q_SSLv23_server_method();
 SSL_METHOD *q_TLSv1_server_method();
 SSL_METHOD *q_TLSv1_1_server_method();

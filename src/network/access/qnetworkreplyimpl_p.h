@@ -203,6 +203,7 @@ public:
 
     Q_DECLARE_PUBLIC(QNetworkReplyImpl)
 };
+Q_DECLARE_TYPEINFO(QNetworkReplyImplPrivate::InternalNotifications, Q_PRIMITIVE_TYPE);
 
 #ifndef QT_NO_BEARERMANAGEMENT
 class QDisabledNetworkReply : public QNetworkReply

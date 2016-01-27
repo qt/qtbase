@@ -149,7 +149,7 @@
      Returns the available geometry of the screen with index \a screen. What
      is available will be subrect of screenGeometry() based on what the
      platform decides is available (for example excludes the dock and menu bar
-     on Mac OS X, or the task bar on Windows). The default screen is used if
+     on OS X, or the task bar on Windows). The default screen is used if
      \a screen is -1.
 
      \sa screenNumber(), screenGeometry()

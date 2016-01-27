@@ -117,6 +117,7 @@ public:
     static QStringList cupsOptionsList(QPrinter *printer);
     static void setCupsOptions(QPrinter *printer, const QStringList &cupsOptions);
     static void setCupsOption(QStringList &cupsOptions, const QString &option, const QString &value);
+    static void clearCupsOption(QStringList &cupsOptions, const QString &option);
 
     static void setJobHold(QPrinter *printer, const JobHoldUntil jobHold = NoHold, const QTime &holdUntilTime = QTime());
     static void setJobBilling(QPrinter *printer, const QString &jobBilling = QString());
@@ -127,6 +128,11 @@ public:
                                        const PagesPerSheetLayout pagesPerSheetLayout);
     static void setPageRange(QPrinter *printer, int pageFrom, int pageTo);
 };
+Q_DECLARE_TYPEINFO(QCUPSSupport::JobHoldUntil,        Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(QCUPSSupport::BannerPage,          Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(QCUPSSupport::PageSet,             Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(QCUPSSupport::PagesPerSheetLayout, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(QCUPSSupport::PagesPerSheet,       Q_PRIMITIVE_TYPE);
 
 QT_END_NAMESPACE
 

@@ -105,6 +105,7 @@ private:
         int lineNo;
         int columnNo;
     };
+    friend class QTypeInfo<StackEntry>;
 
     void emitMessage(MessageType type,
                      const QString& message,
@@ -124,6 +125,8 @@ private:
     static QRegExp *spuriousRegExp;
     static bool logProgress_;
 };
+Q_DECLARE_TYPEINFO(Location::StackEntry, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Location, Q_COMPLEX_TYPE); // stkTop = &stkBottom
 
 QT_END_NAMESPACE
 

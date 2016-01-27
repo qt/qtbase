@@ -90,9 +90,9 @@ namespace QtPrivate {
     { enum { Value = QMetaTypeId2<Arg>::Defined && TypesAreDeclaredMetaType<List<Tail...>>::Value }; };
 
     template <typename ArgList, bool Declared = TypesAreDeclaredMetaType<ArgList>::Value > struct ConnectionTypes
-    { static const int *types() { return 0; } };
+    { static const int *types() { return Q_NULLPTR; } };
     template <> struct ConnectionTypes<List<>, true>
-    { static const int *types() { return 0; } };
+    { static const int *types() { return Q_NULLPTR; } };
     template <typename... Args> struct ConnectionTypes<List<Args...>, true>
     { static const int *types() { static const int t[sizeof...(Args) + 1] = { (QtPrivate::QMetaTypeIdHelper<Args>::qt_metatype_id())..., 0 }; return t; } };
 #endif
@@ -118,10 +118,10 @@ namespace QtPrivate {
 
         inline int ref() Q_DECL_NOTHROW { return m_ref.ref(); }
         inline void destroyIfLastRef() Q_DECL_NOTHROW
-        { if (!m_ref.deref()) m_impl(Destroy, this, 0, 0, 0); }
+        { if (!m_ref.deref()) m_impl(Destroy, this, Q_NULLPTR, Q_NULLPTR, Q_NULLPTR); }
 
-        inline bool compare(void **a) { bool ret; m_impl(Compare, this, 0, a, &ret); return ret; }
-        inline void call(QObject *r, void **a)  { m_impl(Call,    this, r, a, 0); }
+        inline bool compare(void **a) { bool ret; m_impl(Compare, this, Q_NULLPTR, a, &ret); return ret; }
+        inline void call(QObject *r, void **a)  { m_impl(Call,    this, r, a, Q_NULLPTR); }
     protected:
         ~QSlotObjectBase() {}
     private:

@@ -559,7 +559,9 @@ void QQnxIntegration::removeDisplay(QQnxScreen *screen)
 void QQnxIntegration::destroyDisplays()
 {
     qIntegrationDebug() << Q_FUNC_INFO;
-    qDeleteAll(m_screens);
+    Q_FOREACH (QQnxScreen *screen, m_screens) {
+        QPlatformIntegration::destroyScreen(screen);
+    }
     m_screens.clear();
 }
 

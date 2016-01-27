@@ -73,17 +73,17 @@ SpreadSheet::SpreadSheet(int rows, int cols, QWidget *parent)
     setCentralWidget(table);
 
     statusBar();
-    connect(table, SIGNAL(currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)),
-            this, SLOT(updateStatus(QTableWidgetItem*)));
-    connect(table, SIGNAL(currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)),
-            this, SLOT(updateColor(QTableWidgetItem*)));
-    connect(table, SIGNAL(currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)),
-            this, SLOT(updateLineEdit(QTableWidgetItem*)));
-    connect(table, SIGNAL(itemChanged(QTableWidgetItem*)),
-            this, SLOT(updateStatus(QTableWidgetItem*)));
-    connect(formulaInput, SIGNAL(returnPressed()), this, SLOT(returnPressed()));
-    connect(table, SIGNAL(itemChanged(QTableWidgetItem*)),
-            this, SLOT(updateLineEdit(QTableWidgetItem*)));
+    connect(table, &QTableWidget::currentItemChanged,
+            this, &SpreadSheet::updateStatus);
+    connect(table, &QTableWidget::currentItemChanged,
+            this, &SpreadSheet::updateColor);
+    connect(table, &QTableWidget::currentItemChanged,
+            this, &SpreadSheet::updateLineEdit);
+    connect(table, &QTableWidget::itemChanged,
+            this, &SpreadSheet::updateStatus);
+    connect(formulaInput, &QLineEdit::returnPressed, this, &SpreadSheet::returnPressed);
+    connect(table, &QTableWidget::itemChanged,
+            this, &SpreadSheet::updateLineEdit);
 
     setWindowTitle(tr("Spreadsheet"));
 }
@@ -91,43 +91,43 @@ SpreadSheet::SpreadSheet(int rows, int cols, QWidget *parent)
 void SpreadSheet::createActions()
 {
     cell_sumAction = new QAction(tr("Sum"), this);
-    connect(cell_sumAction, SIGNAL(triggered()), this, SLOT(actionSum()));
+    connect(cell_sumAction, &QAction::triggered, this, &SpreadSheet::actionSum);
 
     cell_addAction = new QAction(tr("&Add"), this);
     cell_addAction->setShortcut(Qt::CTRL | Qt::Key_Plus);
-    connect(cell_addAction, SIGNAL(triggered()), this, SLOT(actionAdd()));
+    connect(cell_addAction, &QAction::triggered, this, &SpreadSheet::actionAdd);
 
     cell_subAction = new QAction(tr("&Subtract"), this);
     cell_subAction->setShortcut(Qt::CTRL | Qt::Key_Minus);
-    connect(cell_subAction, SIGNAL(triggered()), this, SLOT(actionSubtract()));
+    connect(cell_subAction, &QAction::triggered, this, &SpreadSheet::actionSubtract);
 
     cell_mulAction = new QAction(tr("&Multiply"), this);
     cell_mulAction->setShortcut(Qt::CTRL | Qt::Key_multiply);
-    connect(cell_mulAction, SIGNAL(triggered()), this, SLOT(actionMultiply()));
+    connect(cell_mulAction, &QAction::triggered, this, &SpreadSheet::actionMultiply);
 
     cell_divAction = new QAction(tr("&Divide"), this);
     cell_divAction->setShortcut(Qt::CTRL | Qt::Key_division);
-    connect(cell_divAction, SIGNAL(triggered()), this, SLOT(actionDivide()));
+    connect(cell_divAction, &QAction::triggered, this, &SpreadSheet::actionDivide);
 
     fontAction = new QAction(tr("Font..."), this);
     fontAction->setShortcut(Qt::CTRL | Qt::Key_F);
-    connect(fontAction, SIGNAL(triggered()), this, SLOT(selectFont()));
+    connect(fontAction, &QAction::triggered, this, &SpreadSheet::selectFont);
 
     colorAction = new QAction(QPixmap(16, 16), tr("Background &Color..."), this);
-    connect(colorAction, SIGNAL(triggered()), this, SLOT(selectColor()));
+    connect(colorAction, &QAction::triggered, this, &SpreadSheet::selectColor);
 
     clearAction = new QAction(tr("Clear"), this);
     clearAction->setShortcut(Qt::Key_Delete);
-    connect(clearAction, SIGNAL(triggered()), this, SLOT(clear()));
+    connect(clearAction, &QAction::triggered, this, &SpreadSheet::clear);
 
     aboutSpreadSheet = new QAction(tr("About Spreadsheet"), this);
-    connect(aboutSpreadSheet, SIGNAL(triggered()), this, SLOT(showAbout()));
+    connect(aboutSpreadSheet, &QAction::triggered, this, &SpreadSheet::showAbout);
 
     exitAction = new QAction(tr("E&xit"), this);
-    connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    connect(exitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
 
     printAction = new QAction(tr("&Print"), this);
-    connect(printAction, SIGNAL(triggered()), this, SLOT(print()));
+    connect(printAction, &QAction::triggered, this, &SpreadSheet::print);
 
     firstSeparator = new QAction(this);
     firstSeparator->setSeparator(true);
@@ -309,11 +309,11 @@ bool SpreadSheet::runInputDialog(const QString &title,
     outColInput.setCurrentIndex(outCol);
 
     QPushButton cancelButton(tr("Cancel"), &addDialog);
-    connect(&cancelButton, SIGNAL(clicked()), &addDialog, SLOT(reject()));
+    connect(&cancelButton, &QAbstractButton::clicked, &addDialog, &QDialog::reject);
 
     QPushButton okButton(tr("OK"), &addDialog);
     okButton.setDefault(true);
-    connect(&okButton, SIGNAL(clicked()), &addDialog, SLOT(accept()));
+    connect(&okButton, &QAbstractButton::clicked, &addDialog, &QDialog::accept);
 
     QHBoxLayout *buttonsLayout = new QHBoxLayout;
     buttonsLayout->addStretch(1);
@@ -625,7 +625,7 @@ void SpreadSheet::print()
     QPrintPreviewDialog dlg(&printer);
     PrintView view;
     view.setModel(table->model());
-    connect(&dlg, SIGNAL(paintRequested(QPrinter*)), &view, SLOT(print(QPrinter*)));
+    connect(&dlg, &QPrintPreviewDialog::paintRequested, &view, &PrintView::print);
     dlg.exec();
 #endif
 }

@@ -21,3 +21,5 @@ wince* {
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
+
+linux*: CONFIG += insignificant_test # Crashes on different Linux distros

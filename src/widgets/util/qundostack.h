@@ -51,8 +51,8 @@ class Q_WIDGETS_EXPORT QUndoCommand
     QUndoCommandPrivate *d;
 
 public:
-    explicit QUndoCommand(QUndoCommand *parent = 0);
-    explicit QUndoCommand(const QString &text, QUndoCommand *parent = 0);
+    explicit QUndoCommand(QUndoCommand *parent = Q_NULLPTR);
+    explicit QUndoCommand(const QString &text, QUndoCommand *parent = Q_NULLPTR);
     virtual ~QUndoCommand();
 
     virtual void undo();
@@ -85,7 +85,7 @@ class Q_WIDGETS_EXPORT QUndoStack : public QObject
     Q_PROPERTY(int undoLimit READ undoLimit WRITE setUndoLimit)
 
 public:
-    explicit QUndoStack(QObject *parent = 0);
+    explicit QUndoStack(QObject *parent = Q_NULLPTR);
     ~QUndoStack();
     void clear();
 

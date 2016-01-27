@@ -12,8 +12,8 @@ FORMS = bearermonitor_240_320.ui \
         bearermonitor_640_480.ui \
         sessionwidget.ui
 
-win32:!wince*:LIBS += -lws2_32
-wince*:LIBS += -lws2
+win32:!wince: LIBS += -lws2_32
+wince: LIBS += -lws2
 
 CONFIG += console
 

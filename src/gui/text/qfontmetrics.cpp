@@ -582,6 +582,7 @@ int QFontMetrics::width(QChar ch) const
     return qRound(advance);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 /*! \obsolete
 
     Returns the width of the character at position \a pos in the
@@ -634,6 +635,7 @@ int QFontMetrics::charWidth(const QString &text, int pos) const
     }
     return width;
 }
+#endif
 
 /*!
     Returns the bounding rectangle of the characters in the string

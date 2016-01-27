@@ -57,6 +57,10 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 // Advanced Bit Manipulation, AMD Barcelona (family 10h)
 " abm"
 #endif
+#ifdef __ADX__
+// Multi-Precision Add-Carry Instruction Extensions, Intel Core 5th generation ("Broadwell")
+" adx"
+#endif
 #ifdef __AES__
 // AES New Instructions, Intel Core-i7 second generation ("Sandy Bridge")
 " aes"
@@ -70,19 +74,19 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 " avx2"
 #endif
 #ifdef __AVX512F__
-// AVX512 Foundation, Intel Xeon Phi codename "Knights Landing"
+// AVX512 Foundation, Intel Xeon Phi codename "Knights Landing" and Intel Xeon codename "Skylake"
 " avx512f"
 #endif
 #ifdef __AVX512CD__
-// AVX512 Conflict Detection, Intel Xeon Phi codename "Knights Landing"
+// AVX512 Conflict Detection, Intel Xeon Phi codename "Knights Landing" and Intel Xeon codename "Skylake"
 " avx512cd"
 #endif
 #ifdef __AVX512DQ__
-// AVX512 Double & Quadword, future Intel Xeon processor
+// AVX512 Double & Quadword, Intel Xeon processor codename "Skylake"
 " avx512dq"
 #endif
 #ifdef __AVX512BW__
-// AVX512 Byte & Word, future Intel Xeon processor
+// AVX512 Byte & Word, Intel Xeon processor codename "Skylake"
 " avx512bw"
 #endif
 #ifdef __AVX512ER__
@@ -94,8 +98,16 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 " avx512pf"
 #endif
 #ifdef __AVX512VL__
-// AVX512 Vector Length, future Intel Xeon processor
+// AVX512 Vector Length, Intel Xeon processor codename "Skylake"
 " avx512vl"
+#endif
+#ifdef __AVX512IFMA__
+// AVX512 Integer Fused Multiply-Add, Intel processor codename "Cannonlake"
+" avx512ifma"
+#endif
+#ifdef __AVX512VBMI__
+// AVX512 Vector Byte Manipulation Instructions, Intel processor codename "Cannonlake"
+" avx512vbmi"
 #endif
 #ifdef __BMI__
 // Bit Manipulation Instructions 1, Intel Core 4th Generation ("Haswell"), AMD "Bulldozer 2"
@@ -143,6 +155,10 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 // Move Big Endian, Intel Atom & "Haswell"
 " movbe"
 #endif
+#ifdef __MPX__
+// Memory Protection Extensions, Intel Core processor codename "Skylake"
+" mpx"
+#endif
 #ifdef __NO_SAHF__
 // missing SAHF instruction in 64-bit, up to Intel Pentium 4 64-bit ("Nocona"), AMD Athlon FX
 // Note: the macro is not defined, so this will never show up
@@ -156,9 +172,25 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 // Population Count (count of set bits), Intel Core-i7 second generation ("Sandy Bridge")
 " popcnt"
 #endif
+#ifdef __PREFETCHWT1__
+// Prefetch data for writing with T1 hint, Intel processor TBA
+" prefetchwt1"
+#endif
+#ifdef __PRFCHW__
+// Prefetch data for writing, Intel Core 5th Generation ("Broadwell")
+" prfchw"
+#endif
 #ifdef __RDRND__
 // Random number generator, Intel Core 3rd Generation ("Ivy Bridge")
 " rdrnd"
+#endif
+#ifdef __RDSEED__
+// Random number generator, Intel Core 5th Generation ("Broadwell")
+" rdseed"
+#endif
+#ifdef __RTM__
+// Restricted Transactional Memory, Intel Core 4th Generation ("Haswell")
+" rtm"
 #endif
 #ifdef __SHA__
 // SHA-1 and SHA-256 instructions, Intel processor TBA

@@ -53,6 +53,50 @@
 
 QT_BEGIN_NAMESPACE
 
+QLabelPrivate::QLabelPrivate()
+    : QFramePrivate(),
+      sh(),
+      msh(),
+      text(),
+      pixmap(Q_NULLPTR),
+      scaledpixmap(Q_NULLPTR),
+      cachedimage(Q_NULLPTR),
+#ifndef QT_NO_PICTURE
+      picture(Q_NULLPTR),
+#endif
+#ifndef QT_NO_MOVIE
+      movie(),
+#endif
+      control(Q_NULLPTR),
+      shortcutCursor(),
+#ifndef QT_NO_CURSOR
+      cursor(),
+#endif
+#ifndef QT_NO_SHORTCUT
+      buddy(),
+      shortcutId(0),
+#endif
+      textformat(Qt::AutoText),
+      textInteractionFlags(Qt::LinksAccessibleByMouse),
+      sizePolicy(),
+      margin(0),
+      align(Qt::AlignLeft | Qt::AlignVCenter | Qt::TextExpandTabs),
+      indent(-1),
+      valid_hints(false),
+      scaledcontents(false),
+      textLayoutDirty(false),
+      textDirty(false),
+      isRichText(false),
+      isTextLabel(false),
+      hasShortcut(/*???*/),
+#ifndef QT_NO_CURSOR
+      validCursor(false),
+      onAnchor(false),
+#endif
+      openExternalLinks(false)
+{
+}
+
 QLabelPrivate::~QLabelPrivate()
 {
 }
@@ -206,41 +250,8 @@ void QLabelPrivate::init()
 {
     Q_Q(QLabel);
 
-    valid_hints = false;
-    margin = 0;
-#ifndef QT_NO_MOVIE
-    movie = 0;
-#endif
-#ifndef QT_NO_SHORTCUT
-    shortcutId = 0;
-#endif
-    pixmap = 0;
-    scaledpixmap = 0;
-    cachedimage = 0;
-#ifndef QT_NO_PICTURE
-    picture = 0;
-#endif
-    align = Qt::AlignLeft | Qt::AlignVCenter | Qt::TextExpandTabs;
-    indent = -1;
-    scaledcontents = false;
-    textLayoutDirty = false;
-    textDirty = false;
-    textformat = Qt::AutoText;
-    control = 0;
-    textInteractionFlags = Qt::LinksAccessibleByMouse;
-    isRichText = false;
-    isTextLabel = false;
-
     q->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred,
                                  QSizePolicy::Label));
-
-#ifndef QT_NO_CURSOR
-    validCursor = false;
-    onAnchor = false;
-#endif
-
-    openExternalLinks = false;
-
     setLayoutItemMargins(QStyle::SE_LabelLayoutItem);
 }
 
@@ -1085,7 +1096,7 @@ void QLabel::paintEvent(QPaintEvent *)
                     d->cachedimage = new QImage(d->pixmap->toImage());
                 delete d->scaledpixmap;
                 QImage scaledImage =
-                    d->cachedimage->scaled(cr.size() * devicePixelRatio(),
+                    d->cachedimage->scaled(cr.size() * devicePixelRatioF(),
                                            Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
                 d->scaledpixmap = new QPixmap(QPixmap::fromImage(scaledImage));
             }

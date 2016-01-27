@@ -218,7 +218,7 @@ QObject *QDrag::target() const
     from are specified in \a supportedActions. The default proposed action will be selected
     among the allowed actions in the following order: Move, Copy and Link.
 
-    \b{Note:} On Linux and Mac OS X, the drag and drop operation
+    \b{Note:} On Linux and OS X, the drag and drop operation
     can take some time, but this function does not block the event
     loop. Other events are still delivered to the application while
     the operation is performed. On Windows, the Qt event loop is
@@ -240,7 +240,7 @@ Qt::DropAction QDrag::exec(Qt::DropActions supportedActions)
     The \a defaultDropAction determines which action will be proposed when the user performs a
     drag without using modifier keys.
 
-    \b{Note:} On Linux and Mac OS X, the drag and drop operation
+    \b{Note:} On Linux and OS X, the drag and drop operation
     can take some time, but this function does not block the event
     loop. Other events are still delivered to the application while
     the operation is performed. On Windows, the Qt event loop is

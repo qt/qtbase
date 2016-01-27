@@ -97,7 +97,7 @@
 /* Intel C++ disguising as Visual C++: the `using' keyword avoids warnings */
 #  if defined(__INTEL_COMPILER)
 #    define Q_DECL_VARIABLE_DEPRECATED
-#    define Q_CC_INTEL
+#    define Q_CC_INTEL  __INTEL_COMPILER
 #  endif
 
 /* only defined for MSVC since that's the only compiler that actually optimizes for this */
@@ -155,7 +155,9 @@
 /* Clang also masquerades as GCC */
 #    if defined(__apple_build_version__)
 #      /* http://en.wikipedia.org/wiki/Xcode#Toolchain_Versions */
-#      if __apple_build_version__ >= 6000051
+#      if __apple_build_version__ >= 7000053
+#        define Q_CC_CLANG 306
+#      elif __apple_build_version__ >= 6000051
 #        define Q_CC_CLANG 305
 #      elif __apple_build_version__ >= 5030038
 #        define Q_CC_CLANG 304
@@ -556,8 +558,21 @@
 #      define Q_COMPILER_ALIGNAS
 #      define Q_COMPILER_ALIGNOF
 #      define Q_COMPILER_INHERITING_CONSTRUCTORS
-#      define Q_COMPILER_THREAD_LOCAL
+#      ifndef Q_OS_OSX
+//       C++11 thread_local is broken on OS X (Clang doesn't support it either)
+#        define Q_COMPILER_THREAD_LOCAL
+#      endif
 #      define Q_COMPILER_UDL
+#    endif
+#    ifdef _MSC_VER
+#      if _MSC_VER == 1700
+//       <initializer_list> is missing with MSVC 2012 (it's present in 2010, 2013 and up)
+#        undef Q_COMPILER_INITIALIZER_LISTS
+#      endif
+#      if _MSC_VER < 1900
+//       ICC disables unicode string support when compatibility mode with MSVC 2013 or lower is active
+#        undef Q_COMPILER_UNICODE_STRINGS
+#      endif
 #    endif
 #  endif
 #endif
@@ -613,7 +628,7 @@
 #    if __has_feature(cxx_strong_enums)
 #      define Q_COMPILER_CLASS_ENUM
 #    endif
-#    if __has_feature(cxx_constexpr)
+#    if __has_feature(cxx_constexpr) && Q_CC_CLANG > 302 /* CLANG 3.2 has bad/partial support */
 #      define Q_COMPILER_CONSTEXPR
 #    endif
 #    if __has_feature(cxx_decltype) /* && __has_feature(cxx_decltype_incomplete_return_types) */
@@ -885,7 +900,8 @@
 #      define Q_COMPILER_RANGE_FOR
 #      define Q_COMPILER_REF_QUALIFIERS
 #      define Q_COMPILER_THREAD_LOCAL
-#      define Q_COMPILER_THREADSAFE_STATICS
+// Broken, see QTBUG-47224 and https://connect.microsoft.com/VisualStudio/feedback/details/1549785
+//#      define Q_COMPILER_THREADSAFE_STATICS
 #      define Q_COMPILER_UDL
 #      define Q_COMPILER_UNICODE_STRINGS
 // Uniform initialization is not working yet -- build errors with QUuid

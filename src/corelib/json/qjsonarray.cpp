@@ -271,6 +271,7 @@ QVariantList QJsonArray::toVariantList() const
     QVariantList list;
 
     if (a) {
+        list.reserve(a->length);
         for (int i = 0; i < (int)a->length; ++i)
             list.append(QJsonValue(d, a, a->at(i)).toVariant());
     }

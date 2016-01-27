@@ -163,7 +163,8 @@ public:
 
 protected:
     virtual QString sortName(const Node *node, const QString* name = 0);
-    QString protect(const QString &string);
+    static QString protect(const QString &string);
+    static void appendProtectedString(QString *output, const QStringRef &str);
     QString taggedNode(const Node* node);
     QString taggedQmlNode(const Node* node);
     QString linkTag(const Node *node, const QString& body);

@@ -265,4 +265,53 @@ Qt::HANDLE QSslKeyPrivate::handle() const
     }
 }
 
+static QByteArray doCrypt(QSslKeyPrivate::Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv, int enc)
+{
+    EVP_CIPHER_CTX ctx;
+    const EVP_CIPHER* type = 0;
+    int i = 0, len = 0;
+
+    switch (cipher) {
+    case QSslKeyPrivate::DesCbc:
+        type = q_EVP_des_cbc();
+        break;
+    case QSslKeyPrivate::DesEde3Cbc:
+        type = q_EVP_des_ede3_cbc();
+        break;
+    case QSslKeyPrivate::Rc2Cbc:
+        type = q_EVP_rc2_cbc();
+        break;
+    }
+
+    QByteArray output;
+    output.resize(data.size() + EVP_MAX_BLOCK_LENGTH);
+    q_EVP_CIPHER_CTX_init(&ctx);
+    q_EVP_CipherInit(&ctx, type, NULL, NULL, enc);
+    q_EVP_CIPHER_CTX_set_key_length(&ctx, key.size());
+    if (cipher == QSslKeyPrivate::Rc2Cbc)
+        q_EVP_CIPHER_CTX_ctrl(&ctx, EVP_CTRL_SET_RC2_KEY_BITS, 8 * key.size(), NULL);
+    q_EVP_CipherInit(&ctx, NULL,
+        reinterpret_cast<const unsigned char *>(key.constData()),
+        reinterpret_cast<const unsigned char *>(iv.constData()), enc);
+    q_EVP_CipherUpdate(&ctx,
+        reinterpret_cast<unsigned char *>(output.data()), &len,
+        reinterpret_cast<const unsigned char *>(data.constData()), data.size());
+    q_EVP_CipherFinal(&ctx,
+        reinterpret_cast<unsigned char *>(output.data()) + len, &i);
+    len += i;
+    q_EVP_CIPHER_CTX_cleanup(&ctx);
+
+    return output.left(len);
+}
+
+QByteArray QSslKeyPrivate::decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv)
+{
+    return doCrypt(cipher, data, key, iv, 0);
+}
+
+QByteArray QSslKeyPrivate::encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv)
+{
+    return doCrypt(cipher, data, key, iv, 1);
+}
+
 QT_END_NAMESPACE

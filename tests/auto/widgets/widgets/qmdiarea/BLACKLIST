@@ -1,2 +1,5 @@
 [updateScrollBars]
 osx
+[tileSubWindows]
+osx
+xcb

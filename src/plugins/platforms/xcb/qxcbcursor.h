@@ -90,7 +90,7 @@ private:
 #ifndef QT_NO_CURSOR
     CursorHash m_cursorHash;
 #endif
-#ifdef XCB_USE_XLIB
+#if defined(XCB_USE_XLIB) && !defined(QT_NO_LIBRARY)
     static void cursorThemePropertyChanged(QXcbVirtualDesktop *screen,
                                            const QByteArray &name,
                                            const QVariant &property,

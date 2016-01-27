@@ -114,39 +114,6 @@
 */
 
 /*!
-    \fn QSet::QSet(const QSet<T> &other)
-
-    Constructs a copy of \a other.
-
-    This operation occurs in \l{constant time}, because QSet is
-    \l{implicitly shared}. This makes returning a QSet from a
-    function very fast. If a shared instance is modified, it will be
-    copied (copy-on-write), and this takes \l{linear time}.
-
-    \sa operator=()
-*/
-
-/*!
-    \fn QSet::QSet(QSet && other)
-
-    Move-constructs a QSet instance, making it point to the same object that \a other was pointing to.
-*/
-
-
-/*!
-    \fn QSet<T> &QSet::operator=(const QSet<T> &other)
-
-    Assigns the \a other set to this set and returns a reference to
-    this set.
-*/
-
-/*!
-    \fn QSet<T> &QSet::operator=(QSet<T> &&other)
-
-    Move-assigns the \a other set to this set.
-*/
-
-/*!
     \fn void QSet::swap(QSet<T> &other)
 
     Swaps set \a other with this set. This operation is very fast and

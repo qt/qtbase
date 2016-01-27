@@ -261,6 +261,19 @@ void Widget::argFunction()
     str.arg("%1f").arg("Hello");    // returns "Hellof %2"
     //! [13]
 
+    //! [97]
+    str = "%1%3%2";
+    str.arg("Hello").arg(20).arg(50); // returns "Hello500"
+
+    str = "%1%2%3";
+    str.arg("Hello").arg(50).arg(20); // returns "Hello5020"
+    //! [97]
+
+    //! [98]
+    str = "%1%2%3";
+    str.arg("Hello", QString::number(20), QString::number(50)); // returns "Hello5020"
+    //! [98]
+
     //! [14]
     str = QString("Decimal 63 is %1 in hexadecimal")
             .arg(63, 0, 16);

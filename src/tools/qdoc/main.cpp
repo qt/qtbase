@@ -342,9 +342,11 @@ static void processQdocconfFile(const QString &fileName)
 
     qdb->clearSearchOrder();
     if (!Generator::singleExec()) {
-        Generator::debug("  loading index files");
-        loadIndexFiles(config);
-        Generator::debug("  done loading index files");
+        if (!Generator::preparing()) {
+            Generator::debug("  loading index files");
+            loadIndexFiles(config);
+            Generator::debug("  done loading index files");
+        }
         qdb->newPrimaryTree(project);
     }
     else if (Generator::preparing())
@@ -480,6 +482,9 @@ static void processQdocconfFile(const QString &fileName)
         }
         Generator::debug(QString("Parsing done."));
 
+        /*
+          Currently these doneParsingSourceFiles() calls do nothing.
+         */
         foreach (CodeParser *codeParser, usedParsers)
             codeParser->doneParsingSourceFiles();
 

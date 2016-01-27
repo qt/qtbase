@@ -66,7 +66,6 @@ public:
     struct QDirNode
     {
         QDirNode() : parent(0), populated(false), stat(false) {}
-        ~QDirNode() { children.clear(); }
         QDirNode *parent;
         QFileInfo info;
         QIcon icon; // cache the icon

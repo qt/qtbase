@@ -78,8 +78,7 @@ void QSpiDBusCache::emitRemoveAccessible(const QSpiObjectReference& item)
 
 QSpiAccessibleCacheArray QSpiDBusCache::GetItems()
 {
-    QList <QSpiAccessibleCacheItem> cacheArray;
-    return cacheArray;
+    return QSpiAccessibleCacheArray();
 }
 
 QT_END_NAMESPACE

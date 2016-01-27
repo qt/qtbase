@@ -1112,6 +1112,7 @@ void QOpenGLTexturePrivate::setData(int mipLevel, int layer, QOpenGLTexture::Cub
                                       mipLevelSize(mipLevel, dimensions[0]),
                                       1,
                                       sourceFormat, sourceType, data, options);
+        break;
 
     case QOpenGLTexture::Target2D:
         Q_UNUSED(layer);
@@ -1210,6 +1211,7 @@ void QOpenGLTexturePrivate::setCompressedData(int mipLevel, int layer, QOpenGLTe
                                                 mipLevelSize(mipLevel, dimensions[0]),
                                                 1,
                                                 format, dataSize, data, options);
+        break;
 
     case QOpenGLTexture::Target2D:
         Q_UNUSED(layer);

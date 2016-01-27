@@ -234,7 +234,7 @@ void tst_QHostAddress::setAddress_QString()
     QFETCH(int, protocol);
 
     QHostAddress hostAddr;
-    QVERIFY(hostAddr.setAddress(address) == ok);
+    QCOMPARE(hostAddr.setAddress(address), ok);
 
     if (ok)
         QTEST(hostAddr.toString(), "resAddr");
@@ -316,7 +316,7 @@ void tst_QHostAddress::compare_data()
     QTest::newRow("6") << QHostAddress(QHostAddress::LocalHost) << QHostAddress(QHostAddress::LocalHostIPv6) << false;
     QTest::newRow("7") << QHostAddress() << QHostAddress(QHostAddress::LocalHostIPv6) << false;
 
-    Q_IPV6ADDR localhostv4mapped = { 0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 255, 255,  127, 0, 0, 1 };
+    Q_IPV6ADDR localhostv4mapped = { { 0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 255, 255,  127, 0, 0, 1 } };
     QTest::newRow("v4-v4mapped") << QHostAddress(QHostAddress::LocalHost) << QHostAddress("::ffff:127.0.0.1") << false;
     QTest::newRow("v4-v4mapped-2") << QHostAddress(QHostAddress::LocalHost) << QHostAddress(localhostv4mapped) << false;
 }
@@ -330,7 +330,7 @@ void tst_QHostAddress::compare()
     QCOMPARE(first == second, result);
     QCOMPARE(second == first, result);
     if (result == true)
-        QVERIFY(qHash(first) == qHash(second));
+        QCOMPARE(qHash(first), qHash(second));
 }
 
 void tst_QHostAddress::assignment()
@@ -399,11 +399,11 @@ void tst_QHostAddress::streaming()
     QByteArray ba;
     QDataStream ds1(&ba, QIODevice::WriteOnly);
     ds1 << address;
-    QVERIFY(ds1.status() == QDataStream::Ok);
+    QCOMPARE(ds1.status(), QDataStream::Ok);
     QDataStream ds2(&ba, QIODevice::ReadOnly);
     QHostAddress address2;
     ds2 >> address2;
-    QVERIFY(ds2.status() == QDataStream::Ok);
+    QCOMPARE(ds2.status(), QDataStream::Ok);
     QCOMPARE(address, address2);
 }
 

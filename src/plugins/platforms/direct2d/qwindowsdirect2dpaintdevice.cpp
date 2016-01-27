@@ -113,6 +113,9 @@ int QWindowsDirect2DPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) 
     case QPaintDevice::PdmDevicePixelRatio:
         return 1;
         break;
+    case QPaintDevice::PdmDevicePixelRatioScaled:
+        return 1 * devicePixelRatioFScale();
+        break;
     case QPaintDevice::PdmWidthMM:
     case QPaintDevice::PdmHeightMM:
         return -1;

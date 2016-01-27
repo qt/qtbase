@@ -7,7 +7,7 @@ else: DEFINES += QT_NO_NETWORK
 
 TARGET = ../tst_qfile
 SOURCES = ../tst_qfile.cpp
-wince*: SOURCES += $$QT_SOURCE_TREE/src/corelib/kernel/qfunctions_wince.cpp
+wince: SOURCES += $$QT_SOURCE_TREE/src/corelib/kernel/qfunctions_wince.cpp
 
 RESOURCES += ../qfile.qrc ../rename-fallback.qrc ../copy-fallback.qrc
 

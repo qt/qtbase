@@ -223,7 +223,7 @@ void tst_QUdpSocket::constructing()
 
     QVERIFY(socket.isSequential());
     QVERIFY(!socket.isOpen());
-    QVERIFY(socket.socketType() == QUdpSocket::UdpSocket);
+    QCOMPARE(socket.socketType(), QUdpSocket::UdpSocket);
     QCOMPARE((int) socket.bytesAvailable(), 0);
     QCOMPARE(socket.canReadLine(), false);
     QCOMPARE(socket.readLine(), QByteArray());
@@ -749,7 +749,7 @@ void tst_QUdpSocket::writeDatagram()
             QCOMPARE(client.error(), QUdpSocket::DatagramTooLargeError);
             break;
         }
-        QVERIFY(bytesspy.count() == 1);
+        QCOMPARE(bytesspy.count(), 1);
         QCOMPARE(*static_cast<const qint64 *>(bytesspy.at(0).at(0).constData()),
                 qint64(i * 1024));
         QCOMPARE(errorspy.count(), 0);

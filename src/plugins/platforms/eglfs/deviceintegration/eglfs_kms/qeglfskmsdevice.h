@@ -78,6 +78,7 @@ private:
 
     int crtcForConnector(drmModeResPtr resources, drmModeConnectorPtr connector);
     QEglFSKmsScreen *screenForConnector(drmModeResPtr resources, drmModeConnectorPtr connector, QPoint pos);
+    drmModePropertyPtr connectorProperty(drmModeConnectorPtr connector, const QByteArray &name);
 
     static void pageFlipHandler(int fd,
                                 unsigned int sequence,

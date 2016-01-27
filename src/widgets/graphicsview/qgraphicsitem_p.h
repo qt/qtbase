@@ -353,6 +353,7 @@ public:
     }
 
     struct ExtraStruct {
+        ExtraStruct() {} // for QVector, don't use
         ExtraStruct(Extra type, QVariant value)
             : type(type), value(value)
         { }
@@ -364,7 +365,7 @@ public:
         { return type < extra; }
     };
 
-    QList<ExtraStruct> extras;
+    QVector<ExtraStruct> extras;
 
     QGraphicsItemCache *maybeExtraItemCache() const;
     QGraphicsItemCache *extraItemCache() const;
@@ -584,6 +585,7 @@ public:
     int globalStackingOrder;
     QGraphicsItem *q_ptr;
 };
+Q_DECLARE_TYPEINFO(QGraphicsItemPrivate::ExtraStruct, Q_MOVABLE_TYPE);
 
 struct QGraphicsItemPrivate::TransformData
 {

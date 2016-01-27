@@ -96,7 +96,7 @@ public:
     QSizeF physicalVirtualSize() const { return m_virtualSizeMillimeters; }
     QDpi virtualDpi() const;
     QDpi logicalDpi() const Q_DECL_OVERRIDE;
-    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
+    qreal pixelDensity() const Q_DECL_OVERRIDE;
     QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
     qreal refreshRate() const Q_DECL_OVERRIDE { return m_refreshRate; }
     Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE { return m_orientation; }
@@ -115,8 +115,6 @@ public:
     xcb_randr_output_t output() const { return m_output; }
     xcb_randr_crtc_t crtc() const { return m_crtc; }
     xcb_randr_mode_t mode() const { return m_mode; }
-
-    xcb_window_t clientLeader() const { return m_clientLeader; }
 
     void windowShown(QXcbWindow *window);
     QString windowManagerName() const { return m_windowManagerName; }
@@ -140,11 +138,6 @@ public:
     int antialiasingEnabled() const { return m_antialiasingEnabled; }
 
     QXcbXSettings *xSettings() const;
-
-    QPoint mapToNative(const QPoint &pos) const;
-    QPoint mapFromNative(const QPoint &pos) const;
-    QRect mapToNative(const QRect &rect) const;
-    QRect mapFromNative(const QRect &rect) const;
 
 private:
     static bool xResource(const QByteArray &identifier,
@@ -171,13 +164,12 @@ private:
     Qt::ScreenOrientation m_orientation;
     QString m_windowManagerName;
     bool m_syncRequestSupported;
-    xcb_window_t m_clientLeader;
     QMap<xcb_visualid_t, xcb_visualtype_t> m_visuals;
     QMap<xcb_visualid_t, quint8> m_visualDepths;
     QXcbCursor *m_cursor;
     int m_refreshRate;
     int m_forcedDpi;
-    int m_devicePixelRatio;
+    int m_pixelDensity;
     QFontEngine::HintStyle m_hintStyle;
     bool m_noFontHinting;
     QFontEngine::SubpixelAntialiasingType m_subpixelType;

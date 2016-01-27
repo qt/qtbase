@@ -1,0 +1,64 @@
+
+xcodebuild {
+    # Xcode project files always support both Debug and Release configurations
+    # and iOS device and simulator targets, so we make sure the wrapper-makefile
+    # also does.
+    CONFIG += debug_and_release iphonesimulator_and_iphoneos
+}
+
+load(resolve_config)
+
+CONFIG(iphonesimulator, iphonesimulator|iphoneos): \
+    CONFIG -= iphoneos
+else: \
+    CONFIG -= iphonesimulator
+
+macx-xcode {
+    # There is no way to genereate Xcode projects that are limited to either
+    # simulator or device builds, so iphonesimulator_and_iphoneos is always
+    # effectivly active, even if the user disabled it explicitly.
+    # The Xcode generator doesn't support multiple BUILDS though (exclusive
+    # builds), so we have to manually set up the simulator suffix.
+    library_suffix_iphonesimulator.name = "$${QMAKE_XCODE_LIBRARY_SUFFIX_SETTING}[sdk=iphonesimulator*]"
+    library_suffix_iphonesimulator.value = "_iphonesimulator$($${QMAKE_XCODE_LIBRARY_SUFFIX_SETTING})"
+    QMAKE_MAC_XCODE_SETTINGS += library_suffix_iphonesimulator
+    CONFIG *= xcode_dynamic_library_suffix
+} else {
+    iphonesimulator.name = Simulator
+    iphoneos.name = Device
+    addExclusiveBuilds(iphonesimulator, iphoneos)
+}
+
+equals(TEMPLATE, subdirs) {
+    # Prevent recursion into host_builds
+    for(subdir, SUBDIRS) {
+        contains($${subdir}.CONFIG, host_build) {
+            $${subdir}.CONFIG += no_iphoneos_target no_iphonesimulator_target
+
+            # Other targets which we do want to recurse into may depend on this target,
+            # for example corelib depends on moc, rcc, bootstrap, etc, and other libs
+            # may depend on host-tools that are needed to build the lib, so we resolve
+            # the final target name and redirect it to the base target, so that the
+            # dependency chain is not broken for the other targets.
+
+            !isEmpty($${subdir}.target) {
+                target = $$eval($${subdir}.target)
+            } else {
+                !isEmpty($${subdir}.file): \
+                    file = $$eval($${subdir}.file)
+                else: !isEmpty($${subdir}.subdir): \
+                    file = $$eval($${subdir}.subdir)
+                else: \
+                    file = $$subdir
+
+                target = sub-$$file
+            }
+
+            target ~= s,[^a-zA-Z0-9_],-,
+
+            $${target}-iphonesimulator.depends = $$target
+            $${target}-iphoneos.depends = $$target
+            QMAKE_EXTRA_TARGETS += $${target}-iphonesimulator $${target}-iphoneos
+        }
+    }
+}

@@ -820,7 +820,7 @@ void tst_QSslSocket::peerCertificateChain()
     this->socket = socket.data();
 
     QList<QSslCertificate> caCertificates = QSslCertificate::fromPath(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem"));
-    QVERIFY(caCertificates.count() == 1);
+    QCOMPARE(caCertificates.count(), 1);
     socket->addCaCertificates(caCertificates);
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
     connect(socket.data(), SIGNAL(sslErrors(QList<QSslError>)),
@@ -866,7 +866,7 @@ void tst_QSslSocket::peerCertificateChain()
         QSKIP("Skipping flaky test - See QTBUG-29941");
 
     QCOMPARE(socket->peerCertificateChain().first(), socket->peerCertificate());
-    QVERIFY(socket->peerCertificateChain() == certChain);
+    QCOMPARE(socket->peerCertificateChain(), certChain);
 
     socket->disconnectFromHost();
     QVERIFY(socket->waitForDisconnected());
@@ -1733,7 +1733,7 @@ void tst_QSslSocket::spontaneousWrite()
 
     QSslSocket *sender = server.socket;
     QVERIFY(sender);
-    QVERIFY(sender->state() == QAbstractSocket::ConnectedState);
+    QCOMPARE(sender->state(), QAbstractSocket::ConnectedState);
     receiver->setObjectName("receiver");
     sender->setObjectName("sender");
     receiver->ignoreSslErrors();
@@ -1778,7 +1778,7 @@ void tst_QSslSocket::setReadBufferSize()
 
     QSslSocket *sender = server.socket;
     QVERIFY(sender);
-    QVERIFY(sender->state() == QAbstractSocket::ConnectedState);
+    QCOMPARE(sender->state(), QAbstractSocket::ConnectedState);
     receiver->setObjectName("receiver");
     sender->setObjectName("sender");
     receiver->ignoreSslErrors();
@@ -2332,7 +2332,7 @@ void tst_QSslSocket::readFromClosedSocket()
     socket->close();
     QVERIFY(!socket->bytesAvailable());
     QVERIFY(!socket->bytesToWrite());
-    QVERIFY(socket->state() == QAbstractSocket::UnconnectedState);
+    QCOMPARE(socket->state(), QAbstractSocket::UnconnectedState);
 }
 
 void tst_QSslSocket::writeBigChunk()
@@ -2359,7 +2359,7 @@ void tst_QSslSocket::writeBigChunk()
     QString errorBefore = socket->errorString();
 
     int ret = socket->write(data.constData(), data.size());
-    QVERIFY(data.size() == ret);
+    QCOMPARE(data.size(), ret);
 
     // spin the event loop once so QSslSocket::transmit() gets called
     QCoreApplication::processEvents();
@@ -2376,7 +2376,7 @@ void tst_QSslSocket::writeBigChunk()
              QByteArray("unexpected error: ").append(qPrintable(errorAfter)));
 
     // check that everything has been written to OpenSSL
-    QVERIFY(socket->bytesToWrite() == 0);
+    QCOMPARE(socket->bytesToWrite(), 0);
 
     socket->close();
 }
@@ -2400,7 +2400,7 @@ void tst_QSslSocket::blacklistedCertificates()
 
     QSslSocket *sender = server.socket;
     QVERIFY(sender);
-    QVERIFY(sender->state() == QAbstractSocket::ConnectedState);
+    QCOMPARE(sender->state(), QAbstractSocket::ConnectedState);
     receiver->setObjectName("receiver");
     sender->setObjectName("sender");
     receiver->startClientEncryption();
@@ -2726,9 +2726,9 @@ void tst_QSslSocket::qtbug18498_peek2()
     while (client->bytesAvailable() < 7 && stopwatch.elapsed() < 5000)
         QTest::qWait(100);
     char c;
-    QVERIFY(client->peek(&c,1) == 1);
+    QCOMPARE(client->peek(&c,1), 1);
     QCOMPARE(c, 'H');
-    QVERIFY(client->read(&c,1) == 1);
+    QCOMPARE(client->read(&c,1), 1);
     QCOMPARE(c, 'H');
     QByteArray b = client->peek(2);
     QCOMPARE(b, QByteArray("EL"));
@@ -2764,7 +2764,7 @@ void tst_QSslSocket::qtbug18498_peek2()
     // ### Qt5 use QTRY_VERIFY
     while (server->bytesAvailable() < 10 && stopwatch.elapsed() < 5000)
         QTest::qWait(100);
-    QVERIFY(server->peek(&c,1) == 1);
+    QCOMPARE(server->peek(&c,1), 1);
     QCOMPARE(c, 'S');
     b = server->peek(3);
     QCOMPARE(b, QByteArray("STA"));
@@ -2800,9 +2800,9 @@ void tst_QSslSocket::qtbug18498_peek2()
     while (client->bytesAvailable() < 7 && stopwatch.elapsed() < 5000)
         QTest::qWait(100);
     QVERIFY(server->mode() == QSslSocket::SslServerMode && client->mode() == QSslSocket::SslClientMode);
-    QVERIFY(client->peek(&c,1) == 1);
+    QCOMPARE(client->peek(&c,1), 1);
     QCOMPARE(c, 'h');
-    QVERIFY(client->read(&c,1) == 1);
+    QCOMPARE(client->read(&c,1), 1);
     QCOMPARE(c, 'h');
     b = client->peek(2);
     QCOMPARE(b, QByteArray("el"));
@@ -2812,7 +2812,7 @@ void tst_QSslSocket::qtbug18498_peek2()
     stopwatch.start();
     while (server->bytesAvailable() < 9 && stopwatch.elapsed() < 5000)
         QTest::qWait(100);
-    QVERIFY(server->peek(&c,1) == 1);
+    QCOMPARE(server->peek(&c,1), 1);
     QCOMPARE(c, 'g');
     QCOMPARE(server->readAll(), QByteArray("goodbye\r\n"));
     client->disconnectFromHost();
@@ -2846,7 +2846,7 @@ void tst_QSslSocket::dhServer()
     client->connectToHostEncrypted(QHostAddress(QHostAddress::LocalHost).toString(), server.serverPort());
 
     loop.exec();
-    QVERIFY(client->state() == QAbstractSocket::ConnectedState);
+    QCOMPARE(client->state(), QAbstractSocket::ConnectedState);
 }
 
 void tst_QSslSocket::ecdhServer()
@@ -2876,7 +2876,7 @@ void tst_QSslSocket::ecdhServer()
     client->connectToHostEncrypted(QHostAddress(QHostAddress::LocalHost).toString(), server.serverPort());
 
     loop.exec();
-    QVERIFY(client->state() == QAbstractSocket::ConnectedState);
+    QCOMPARE(client->state(), QAbstractSocket::ConnectedState);
 }
 
 void tst_QSslSocket::verifyClientCertificate_data()

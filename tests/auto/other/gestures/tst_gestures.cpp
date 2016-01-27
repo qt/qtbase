@@ -1461,7 +1461,7 @@ void tst_Gestures::ungrabGesture() // a method on QWidget
     QPointer<QGesture> customGestureB;
     customGestureB = *(b->gestures.begin());
     QVERIFY(!customGestureB.isNull());
-    QVERIFY(customGestureA.data() == customGestureB.data());
+    QCOMPARE(customGestureA.data(), customGestureB.data());
     QCOMPARE(customGestureB->gestureType(), CustomGesture::GestureType);
 
     a->gestures.clear();

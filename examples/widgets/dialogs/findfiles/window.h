@@ -68,7 +68,6 @@ private slots:
 private:
     QStringList findFiles(const QStringList &files, const QString &text);
     void showFiles(const QStringList &files);
-    QPushButton *createButton(const QString &text, const char *member);
     QComboBox *createComboBox(const QString &text = QString());
     void createFilesTable();
 

@@ -43,6 +43,7 @@
 #include <stdarg.h>
 
 #include <string>
+#include <iterator>
 
 #ifdef truncate
 #error qbytearray.h must be included before any header file that defines truncate
@@ -162,9 +163,6 @@ private:
     typedef QTypedArrayData<char> Data;
 
 public:
-    // undocumented:
-    static const quint64 MaxSize = (1 << 30) - sizeof(Data);
-
     enum Base64Option {
         Base64Encoding = 0,
         Base64UrlEncoding = 1,
@@ -338,16 +336,16 @@ public:
     inline QT_ASCII_CAST_WARN bool operator>=(const QString &s2) const;
 #endif
 
-    short toShort(bool *ok = 0, int base = 10) const;
-    ushort toUShort(bool *ok = 0, int base = 10) const;
-    int toInt(bool *ok = 0, int base = 10) const;
-    uint toUInt(bool *ok = 0, int base = 10) const;
-    long toLong(bool *ok = 0, int base = 10) const;
-    ulong toULong(bool *ok = 0, int base = 10) const;
-    qlonglong toLongLong(bool *ok = 0, int base = 10) const;
-    qulonglong toULongLong(bool *ok = 0, int base = 10) const;
-    float toFloat(bool *ok = 0) const;
-    double toDouble(bool *ok = 0) const;
+    short toShort(bool *ok = Q_NULLPTR, int base = 10) const;
+    ushort toUShort(bool *ok = Q_NULLPTR, int base = 10) const;
+    int toInt(bool *ok = Q_NULLPTR, int base = 10) const;
+    uint toUInt(bool *ok = Q_NULLPTR, int base = 10) const;
+    long toLong(bool *ok = Q_NULLPTR, int base = 10) const;
+    ulong toULong(bool *ok = Q_NULLPTR, int base = 10) const;
+    qlonglong toLongLong(bool *ok = Q_NULLPTR, int base = 10) const;
+    qulonglong toULongLong(bool *ok = Q_NULLPTR, int base = 10) const;
+    float toFloat(bool *ok = Q_NULLPTR) const;
+    double toDouble(bool *ok = Q_NULLPTR) const;
     QByteArray toBase64(Base64Options options) const;
     QByteArray toBase64() const; // ### Qt6 merge with previous
     QByteArray toHex() const;
@@ -393,14 +391,22 @@ public:
     typedef const char *const_iterator;
     typedef iterator Iterator;
     typedef const_iterator ConstIterator;
-    iterator begin();
-    const_iterator begin() const;
-    const_iterator cbegin() const;
-    const_iterator constBegin() const;
-    iterator end();
-    const_iterator end() const;
-    const_iterator cend() const;
-    const_iterator constEnd() const;
+    typedef std::reverse_iterator<iterator> reverse_iterator;
+    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+    inline iterator begin();
+    inline const_iterator begin() const;
+    inline const_iterator cbegin() const;
+    inline const_iterator constBegin() const;
+    inline iterator end();
+    inline const_iterator end() const;
+    inline const_iterator cend() const;
+    inline const_iterator constEnd() const;
+    reverse_iterator rbegin() { return reverse_iterator(end()); }
+    reverse_iterator rend() { return reverse_iterator(begin()); }
+    const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+    const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crbegin() const { return const_reverse_iterator(end()); }
+    const_reverse_iterator crend() const { return const_reverse_iterator(begin()); }
 
     // stl compatibility
     typedef int size_type;

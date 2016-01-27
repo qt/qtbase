@@ -273,9 +273,9 @@ static inline __m128i mergeQuestionMarks(__m128i chunk)
     //  that they are doing the right thing. Inverting the arguments in the
     //  instruction does cause a bunch of test failures.
 
-    const int mode = _SIDD_UWORD_OPS | _SIDD_CMP_RANGES | _SIDD_UNIT_MASK;
     const __m128i rangeMatch = _mm_cvtsi32_si128(0xffff0100);
-    const __m128i offLimitMask = _mm_cmpestrm(rangeMatch, 2, chunk, 8, mode);
+    const __m128i offLimitMask = _mm_cmpestrm(rangeMatch, 2, chunk, 8,
+            _SIDD_UWORD_OPS | _SIDD_CMP_RANGES | _SIDD_UNIT_MASK);
 
     // replace the non-Latin 1 characters in the chunk with question marks
     chunk = _mm_blendv_epi8(chunk, questionMark, offLimitMask);
@@ -1200,6 +1200,22 @@ const QString::Null QString::null = { };
     \sa QString::const_iterator
 */
 
+/*! \typedef QString::const_reverse_iterator
+    \since 5.6
+
+    This typedef provides an STL-style const reverse iterator for QString.
+
+    \sa QString::reverse_iterator, QString::const_iterator
+*/
+
+/*! \typedef QString::reverse_iterator
+    \since 5.6
+
+    This typedef provides an STL-style non-const reverse iterator for QString.
+
+    \sa QString::const_reverse_iterator, QString::iterator
+*/
+
 /*!
     \typedef QString::size_type
 
@@ -1301,6 +1317,52 @@ const QString::Null QString::null = { };
     character after the last character in the list.
 
     \sa constBegin(), end()
+*/
+
+/*! \fn QString::reverse_iterator QString::rbegin()
+    \since 5.6
+
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
+    character in the string, in reverse order.
+
+    \sa begin(), crbegin(), rend()
+*/
+
+/*! \fn QString::const_reverse_iterator QString::rbegin() const
+    \since 5.6
+    \overload
+*/
+
+/*! \fn QString::const_reverse_iterator QString::crbegin() const
+    \since 5.6
+
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
+    character in the string, in reverse order.
+
+    \sa begin(), rbegin(), rend()
+*/
+
+/*! \fn QString::reverse_iterator QString::rend()
+    \since 5.6
+
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
+    the last character in the string, in reverse order.
+
+    \sa end(), crend(), rbegin()
+*/
+
+/*! \fn QString::const_reverse_iterator QString::rend() const
+    \since 5.6
+    \overload
+*/
+
+/*! \fn QString::const_reverse_iterator QString::crend() const
+    \since 5.6
+
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to one
+    past the last character in the string, in reverse order.
+
+    \sa end(), rend(), rbegin()
 */
 
 /*!
@@ -2719,9 +2781,9 @@ bool QString::operator<(QLatin1String other) const
     go through QObject::tr(), for example.
 */
 
-/*! \fn bool QString::operator<=(const QString &s1, const QString &s2)
+/*! \fn bool operator<=(const QString &s1, const QString &s2)
 
-    \relates Qstring
+    \relates QString
 
     Returns \c true if string \a s1 is lexically less than or equal to
     string \a s2; otherwise returns \c false.
@@ -2767,7 +2829,7 @@ bool QString::operator<(QLatin1String other) const
     go through QObject::tr(), for example.
 */
 
-/*! \fn bool QString::operator>(const QString &s1, const QString &s2)
+/*! \fn bool operator>(const QString &s1, const QString &s2)
     \relates QString
 
     Returns \c true if string \a s1 is lexically greater than string \a s2;
@@ -3244,6 +3306,7 @@ struct QStringCapture
     int len;
     int no;
 };
+Q_DECLARE_TYPEINFO(QStringCapture, Q_PRIMITIVE_TYPE);
 #endif
 
 #ifndef QT_NO_REGEXP
@@ -4207,8 +4270,8 @@ QString QString::section(const QRegularExpression &re, int start, int end, Secti
     Returns a substring that contains the \a n leftmost characters
     of the string.
 
-    The entire string is returned if \a n is greater than size() or
-    less than zero.
+    The entire string is returned if \a n is greater than or equal
+    to size(), or less than zero.
 
     \snippet qstring/main.cpp 31
 
@@ -4225,8 +4288,8 @@ QString QString::left(int n)  const
     Returns a substring that contains the \a n rightmost characters
     of the string.
 
-    The entire string is returned if \a n is greater than size() or
-    less than zero.
+    The entire string is returned if \a n is greater than or equal
+    to size(), or less than zero.
 
     \snippet qstring/main.cpp 48
 
@@ -4880,7 +4943,7 @@ modifiable reference.
 
     If \a position is negative, it is equivalent to passing zero.
 
-    \sa chop(), resize(), left()
+    \sa chop(), resize(), left(), QStringRef::truncate()
 */
 
 void QString::truncate(int pos)
@@ -4893,7 +4956,8 @@ void QString::truncate(int pos)
 /*!
     Removes \a n characters from the end of the string.
 
-    If \a n is greater than size(), the result is an empty string.
+    If \a n is greater than or equal to size(), the result is an
+    empty string.
 
     Example:
     \snippet qstring/main.cpp 15
@@ -7264,6 +7328,25 @@ QString QString::arg(const QString &a, int fieldWidth, QChar fillChar) const
   difference if \a a1 contains e.g. \c{%1}:
 
   \snippet qstring/main.cpp 13
+
+  A similar problem occurs when the numbered place markers are not
+  white space separated:
+
+  \snippet qstring/main.cpp 12
+  \snippet qstring/main.cpp 97
+
+  Let's look at the substitutions:
+  \list
+  \li First, \c Hello replaces \c {%1} so the string becomes \c {"Hello%3%2"}.
+  \li Then, \c 20 replaces \c {%2} so the string becomes \c {"Hello%320"}.
+  \li Since the maximum numbered place marker value is 99, \c 50 replaces \c {%32}.
+  \endlist
+  Thus the string finally becomes \c {"Hello500"}.
+
+  In such cases, the following yields the expected results:
+
+  \snippet qstring/main.cpp 12
+  \snippet qstring/main.cpp 98
 */
 
 /*!
@@ -9233,8 +9316,8 @@ QString &QString::append(const QStringRef &str)
     Returns a substring reference to the \a n leftmost characters
     of the string.
 
-    If \a n is greater than size() or less than zero, a reference to the entire
-    string is returned.
+    If \a n is greater than or equal to size(), or less than zero,
+    a reference to the entire string is returned.
 
     \sa right(), mid(), startsWith()
 */
@@ -9251,8 +9334,8 @@ QStringRef QStringRef::left(int n) const
     Returns a substring reference to the \a n leftmost characters
     of the string.
 
-    If \a n is greater than size() or less than zero, a reference to the entire
-    string is returned.
+    If \a n is greater than or equal to size(), or less than zero,
+    a reference to the entire string is returned.
 
     \snippet qstring/main.cpp leftRef
 
@@ -9272,8 +9355,8 @@ QStringRef QString::leftRef(int n)  const
     Returns a substring reference to the \a n rightmost characters
     of the string.
 
-    If \a n is greater than size() or less than zero, a reference to the entire
-    string is returned.
+    If \a n is greater than or equal to size(), or less than zero,
+    a reference to the entire string is returned.
 
     \sa left(), mid(), endsWith()
 */
@@ -9290,8 +9373,8 @@ QStringRef QStringRef::right(int n) const
     Returns a substring reference to the \a n rightmost characters
     of the string.
 
-    If \a n is greater than size() or less than zero, a reference to the entire
-    string is returned.
+    If \a n is greater than or equal to size(), or less than zero,
+    a reference to the entire string is returned.
 
     \snippet qstring/main.cpp rightRef
 
@@ -9374,6 +9457,20 @@ QStringRef QString::midRef(int position, int n) const
     Q_UNREACHABLE();
     return QStringRef();
 }
+
+/*!
+    \fn void QStringRef::truncate(int position)
+    \since 5.6
+
+    Truncates the string at the given \a position index.
+
+    If the specified \a position index is beyond the end of the
+    string, nothing happens.
+
+    If \a position is negative, it is equivalent to passing zero.
+
+    \sa QString::truncate()
+*/
 
 /*!
   \since 4.8

@@ -17,7 +17,7 @@ target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/icons
 INSTALLS += target
 
 
-wince*: {
+wince {
     imageFiles.files = images/*
     wincewm*: {
         imageFiles.path = "/My Documents/My Pictures"

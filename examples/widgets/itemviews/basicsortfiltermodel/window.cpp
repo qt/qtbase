@@ -77,16 +77,18 @@ Window::Window()
     filterColumnLabel = new QLabel(tr("Filter &column:"));
     filterColumnLabel->setBuddy(filterColumnComboBox);
 
-    connect(filterPatternLineEdit, SIGNAL(textChanged(QString)),
-            this, SLOT(filterRegExpChanged()));
-    connect(filterSyntaxComboBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(filterRegExpChanged()));
-    connect(filterColumnComboBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(filterColumnChanged()));
-    connect(filterCaseSensitivityCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(filterRegExpChanged()));
-    connect(sortCaseSensitivityCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(sortChanged()));
+    connect(filterPatternLineEdit, &QLineEdit::textChanged,
+            this, &Window::filterRegExpChanged);
+
+    typedef void (QComboBox::*QComboIntSignal)(int);
+    connect(filterSyntaxComboBox, static_cast<QComboIntSignal>(&QComboBox::currentIndexChanged),
+            this, &Window::filterRegExpChanged);
+    connect(filterColumnComboBox, static_cast<QComboIntSignal>(&QComboBox::currentIndexChanged),
+            this, &Window::filterColumnChanged);
+    connect(filterCaseSensitivityCheckBox, &QAbstractButton::toggled,
+            this, &Window::filterRegExpChanged);
+    connect(sortCaseSensitivityCheckBox, &QAbstractButton::toggled,
+            this, &Window::sortChanged);
 
     sourceGroupBox = new QGroupBox(tr("Original Model"));
     proxyGroupBox = new QGroupBox(tr("Sorted/Filtered Model"));

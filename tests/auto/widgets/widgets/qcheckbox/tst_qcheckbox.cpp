@@ -83,9 +83,7 @@ private:
     uint press_count;
     uint release_count;
     int cur_state;
-    uint tmp;
     QCheckBox *testWidget;
-    uint tmp2;
 };
 
 tst_QCheckBox::tst_QCheckBox()
@@ -326,7 +324,7 @@ void tst_QCheckBox::isToggleButton()
 
 void tst_QCheckBox::foregroundRole()
 {
-    QVERIFY(testWidget->foregroundRole() == QPalette::WindowText);
+    QCOMPARE(testWidget->foregroundRole(), QPalette::WindowText);
 }
 
 void tst_QCheckBox::minimumSizeHint()

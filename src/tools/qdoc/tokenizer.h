@@ -107,6 +107,7 @@ public:
     int braceDepth() const { return yyBraceDepth; }
     int parenDepth() const { return yyParenDepth; }
     int bracketDepth() const { return yyBracketDepth; }
+    Location& tokenLocation() { return yyTokLoc; }
 
     static void initialize(const Config &config);
     static void terminate();

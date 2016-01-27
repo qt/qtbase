@@ -457,7 +457,7 @@ void tst_QGlobal::isEnum()
     // fallback type traits implementation. Any compiler
     // supported by Qt that supports C++0x class enums
     // should also support the __is_enum intrinsic.
-    QVERIFY(Q_IS_ENUM(isEnum_G) == true);
+    QVERIFY(Q_IS_ENUM(isEnum_G));
 #endif
 
 #undef IS_ENUM_TRUE

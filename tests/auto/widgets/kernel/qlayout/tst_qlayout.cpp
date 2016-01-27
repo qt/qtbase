@@ -66,6 +66,7 @@ public:
     virtual ~tst_QLayout();
 
 private slots:
+    void cleanup() { QVERIFY(QApplication::topLevelWidgets().isEmpty()); }
     void getSetCheck();
     void geometry();
     void smartMaxSize();
@@ -217,12 +218,12 @@ void tst_QLayout::setLayoutBugs()
     }
 
     widget.setLayout(hBoxLayout);
-    QVERIFY(widget.layout() == hBoxLayout);
+    QCOMPARE(widget.layout(), hBoxLayout);
 
     QWidget containerWidget(0);
     containerWidget.setLayout(widget.layout());
-    QVERIFY(widget.layout() == 0);
-    QVERIFY(containerWidget.layout() == hBoxLayout);
+    QVERIFY(!widget.layout());
+    QCOMPARE(containerWidget.layout(), hBoxLayout);
 }
 
 class MyLayout : public QLayout

@@ -74,6 +74,22 @@ const uint *QT_FASTCALL convertRGBXFromARGB32PM_sse4(uint *buffer, const uint *s
     return buffer;
 }
 
+template<QtPixelOrder PixelOrder>
+const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM_sse4(uint *buffer, const uint *src, int count,
+                                                          const QPixelLayout *, const QRgb *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = qConvertArgb32ToA2rgb30_sse4<PixelOrder>(src[i]);
+    return buffer;
+}
+
+template
+const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM_sse4<PixelOrderBGR>(uint *buffer, const uint *src, int count,
+                                                                         const QPixelLayout *, const QRgb *);
+template
+const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM_sse4<PixelOrderRGB>(uint *buffer, const uint *src, int count,
+                                                                         const QPixelLayout *, const QRgb *);
+
 QT_END_NAMESPACE
 
 #endif

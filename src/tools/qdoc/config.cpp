@@ -91,6 +91,7 @@ QString ConfigStrings::OUTPUTENCODING = QStringLiteral("outputencoding");
 QString ConfigStrings::OUTPUTLANGUAGE = QStringLiteral("outputlanguage");
 QString ConfigStrings::OUTPUTFORMATS = QStringLiteral("outputformats");
 QString ConfigStrings::OUTPUTPREFIXES = QStringLiteral("outputprefixes");
+QString ConfigStrings::OUTPUTSUFFIXES = QStringLiteral("outputsuffixes");
 QString ConfigStrings::PROJECT = QStringLiteral("project");
 QString ConfigStrings::REDIRECTDOCUMENTATIONTODEVNULL = QStringLiteral("redirectdocumentationtodevnull");
 QString ConfigStrings::QHP = QStringLiteral("qhp");
@@ -134,6 +135,7 @@ public:
     QStringList accum;
     QStringList next;
 };
+Q_DECLARE_TYPEINFO(MetaStackEntry, Q_MOVABLE_TYPE);
 
 /*!
   Start accumulating values in a list by appending an empty

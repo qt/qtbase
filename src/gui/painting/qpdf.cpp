@@ -1318,6 +1318,9 @@ int QPdfEngine::metric(QPaintDevice::PaintDeviceMetric metricType) const
     case QPaintDevice::PdmDevicePixelRatio:
         val = 1;
         break;
+    case QPaintDevice::PdmDevicePixelRatioScaled:
+        val = 1 * QPaintDevice::devicePixelRatioFScale();
+        break;
     default:
         qWarning("QPdfWriter::metric: Invalid metric command");
         return 0;
@@ -1952,7 +1955,9 @@ int QPdfEnginePrivate::createShadingFunction(const QGradient *gradient, int from
         stops.append(QGradientStop(1, stops.at(stops.size() - 1).second));
 
     QVector<int> functions;
-    for (int i = 0; i < stops.size() - 1; ++i) {
+    const int numStops = stops.size();
+    functions.reserve(numStops - 1);
+    for (int i = 0; i < numStops - 1; ++i) {
         int f = addXrefEntry(-1);
         QByteArray data;
         QPdf::ByteStream s(&data);

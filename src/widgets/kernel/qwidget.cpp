@@ -68,6 +68,7 @@
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
 #include "qfileinfo.h"
+#include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/qinputmethod.h>
 #include <QtGui/qopenglcontext.h>
 #include <QtGui/private/qopenglcontext_p.h>
@@ -289,8 +290,15 @@ QWidgetPrivate::QWidgetPrivate(int version)
         return;
     }
 
+#ifdef QT_BUILD_INTERNAL
+    // Don't check the version parameter in internal builds.
+    // This allows incompatible versions to be loaded, possibly for testing.
+    Q_UNUSED(version);
+#else
     if (version != QObjectPrivateVersion)
-        qFatal("Cannot mix incompatible Qt libraries");
+        qFatal("Cannot mix incompatible Qt library (version 0x%x) with this library (version 0x%x)",
+                version, QObjectPrivateVersion);
+#endif
 
     isWidget = true;
     memset(high_attributes, 0, sizeof(high_attributes));
@@ -2028,7 +2036,7 @@ void QWidgetPrivate::setSystemClip(QPaintDevice *paintDevice, const QRegion &reg
 // Transform the system clip region from device-independent pixels to device pixels
     QPaintEngine *paintEngine = paintDevice->paintEngine();
     QTransform scaleTransform;
-    const qreal devicePixelRatio = paintDevice->devicePixelRatio();
+    const qreal devicePixelRatio = paintDevice->devicePixelRatioF();
     scaleTransform.scale(devicePixelRatio, devicePixelRatio);
     paintEngine->d_func()->systemClip = scaleTransform.map(region);
 }
@@ -2454,7 +2462,7 @@ QWidget *QWidget::find(WId id)
     If a widget is non-native (alien) and winId() is invoked on it, that widget
     will be provided a native handle.
 
-    On Mac OS X, the type returned depends on which framework Qt was linked
+    On OS X, the type returned depends on which framework Qt was linked
     against. If Qt is using Carbon, the {WId} is actually an HIViewRef. If Qt
     is using Cocoa, {WId} is a pointer to an NSView.
 
@@ -2590,7 +2598,7 @@ QWindow *QWidget::windowHandle() const
     The style sheet contains a textual description of customizations to the
     widget's style, as described in the \l{Qt Style Sheets} document.
 
-    Since Qt 4.5, Qt style sheets fully supports Mac OS X.
+    Since Qt 4.5, Qt style sheets fully supports OS X.
 
     \warning Qt style sheets are currently not supported for custom QStyle
     subclasses. We plan to address this in some future release.
@@ -5065,7 +5073,7 @@ void QWidget::render(QPaintDevice *target, const QPoint &targetOffset,
     Transformations and settings applied to the \a painter will be used
     when rendering.
 
-    \note The \a painter must be active. On Mac OS X the widget will be
+    \note The \a painter must be active. On OS X the widget will be
     rendered into a QPixmap and then drawn by the \a painter.
 
     \sa QPainter::device()
@@ -5354,7 +5362,7 @@ void QWidgetPrivate::render_helper(QPainter *painter, const QPoint &targetOffset
         if (size.isNull())
             return;
 
-        const qreal pixmapDevicePixelRatio = qreal(painter->device()->devicePixelRatio());
+        const qreal pixmapDevicePixelRatio = painter->device()->devicePixelRatioF();
         QPixmap pixmap(size * pixmapDevicePixelRatio);
         pixmap.setDevicePixelRatio(pixmapDevicePixelRatio);
 
@@ -6200,7 +6208,7 @@ QString QWidget::windowIconText() const
     If the window title is set at any point, then the window title takes precedence and
     will be shown instead of the file path string.
 
-    Additionally, on Mac OS X, this has an added benefit that it sets the
+    Additionally, on OS X, this has an added benefit that it sets the
     \l{http://developer.apple.com/documentation/UserExperience/Conceptual/OSXHIGuidelines/XHIGWindows/chapter_17_section_3.html}{proxy icon}
     for the window, assuming that the file path exists.
 
@@ -9730,6 +9738,8 @@ void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
     d->imHints = hints;
     if (this == QGuiApplication::focusObject())
         QGuiApplication::inputMethod()->update(Qt::ImHints);
+#else
+    Q_UNUSED(hints);
 #endif //QT_NO_IM
 }
 
@@ -11223,7 +11233,7 @@ bool QWidget::testAttribute_helper(Qt::WidgetAttribute attribute) const
 
   By default the value of this property is 1.0.
 
-  This feature is available on Embedded Linux, Mac OS X, Windows,
+  This feature is available on Embedded Linux, OS X, Windows,
   and X11 platforms that support the Composite extension.
 
   This feature is not available on Windows CE.
@@ -11286,7 +11296,7 @@ void QWidgetPrivate::setWindowOpacity_sys(qreal level)
 
     A modified window is a window whose content has changed but has
     not been saved to disk. This flag will have different effects
-    varied by the platform. On Mac OS X the close button will have a
+    varied by the platform. On OS X the close button will have a
     modified look; on other platforms, the window title will have an
     '*' (asterisk).
 
@@ -11824,13 +11834,11 @@ void QWidgetPrivate::updateFrameStrut()
     Q_Q(QWidget);
     if (q->data->fstrut_dirty) {
         if (QTLWExtra *te = maybeTopData()) {
-            if (te->window) {
-                if (const QPlatformWindow *pw = te->window->handle()) {
-                    const QMargins margins = pw->frameMargins();
-                    if (!margins.isNull()) {
-                        te->frameStrut.setCoords(margins.left(), margins.top(), margins.right(), margins.bottom());
-                        q->data->fstrut_dirty = false;
-                    }
+            if (te->window && te->window->handle()) {
+                const QMargins margins = te->window->frameMargins();
+                if (!margins.isNull()) {
+                    te->frameStrut.setCoords(margins.left(), margins.top(), margins.right(), margins.bottom());
+                    q->data->fstrut_dirty = false;
                 }
             }
         }
@@ -12283,20 +12291,21 @@ QPaintEngine *QWidget::paintEngine() const
 */
 QPoint QWidget::mapToGlobal(const QPoint &pos) const
 {
-#ifndef QT_NO_GRAPHICSVIEW
-    Q_D(const QWidget);
-    if (d->extra && d->extra->proxyWidget && d->extra->proxyWidget->scene()) {
-        const QList <QGraphicsView *> views = d->extra->proxyWidget->scene()->views();
-        if (!views.isEmpty()) {
-            const QPointF scenePos = d->extra->proxyWidget->mapToScene(pos);
-            const QPoint viewPortPos = views.first()->mapFromScene(scenePos);
-            return views.first()->viewport()->mapToGlobal(viewPortPos);
-        }
-    }
-#endif // !QT_NO_GRAPHICSVIEW
     int x = pos.x(), y = pos.y();
     const QWidget *w = this;
     while (w) {
+#ifndef QT_NO_GRAPHICSVIEW
+        const QWidgetPrivate *d = w->d_func();
+        if (d->extra && d->extra->proxyWidget && d->extra->proxyWidget->scene()) {
+            const QList <QGraphicsView *> views = d->extra->proxyWidget->scene()->views();
+            if (!views.isEmpty()) {
+                const QPointF scenePos = d->extra->proxyWidget->mapToScene(QPoint(x, y));
+                const QPoint viewPortPos = views.first()->mapFromScene(scenePos);
+                return views.first()->viewport()->mapToGlobal(viewPortPos);
+            }
+        }
+#endif // !QT_NO_GRAPHICSVIEW
+
         QWindow *window = w->windowHandle();
         if (window && window->handle())
             return window->mapToGlobal(QPoint(x, y));
@@ -12318,20 +12327,21 @@ QPoint QWidget::mapToGlobal(const QPoint &pos) const
 */
 QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 {
-#ifndef QT_NO_GRAPHICSVIEW
-    Q_D(const QWidget);
-    if (d->extra && d->extra->proxyWidget && d->extra->proxyWidget->scene()) {
-        const QList <QGraphicsView *> views = d->extra->proxyWidget->scene()->views();
-        if (!views.isEmpty()) {
-            const QPoint viewPortPos = views.first()->viewport()->mapFromGlobal(pos);
-            const QPointF scenePos = views.first()->mapToScene(viewPortPos);
-            return d->extra->proxyWidget->mapFromScene(scenePos).toPoint();
-        }
-    }
-#endif // !QT_NO_GRAPHICSVIEW
     int x = pos.x(), y = pos.y();
     const QWidget *w = this;
     while (w) {
+#ifndef QT_NO_GRAPHICSVIEW
+        const QWidgetPrivate *d = w->d_func();
+        if (d->extra && d->extra->proxyWidget && d->extra->proxyWidget->scene()) {
+            const QList <QGraphicsView *> views = d->extra->proxyWidget->scene()->views();
+            if (!views.isEmpty()) {
+                const QPoint viewPortPos = views.first()->viewport()->mapFromGlobal(QPoint(x, y));
+                const QPointF scenePos = views.first()->mapToScene(viewPortPos);
+                return d->extra->proxyWidget->mapFromScene(scenePos).toPoint();
+            }
+        }
+#endif // !QT_NO_GRAPHICSVIEW
+
         QWindow *window = w->windowHandle();
         if (window && window->handle())
             return window->mapFromGlobal(QPoint(x, y));
@@ -12647,6 +12657,9 @@ int QWidget::metric(PaintDeviceMetric m) const
         return qRound(screen->physicalDotsPerInchY());
     } else if (m == PdmDevicePixelRatio) {
         return topLevelWindow ? topLevelWindow->devicePixelRatio() : qApp->devicePixelRatio();
+    } else if (m == PdmDevicePixelRatioScaled) {
+        return (QPaintDevice::devicePixelRatioFScale() *
+                (topLevelWindow ? topLevelWindow->devicePixelRatio() : qApp->devicePixelRatio()));
     } else {
         val = QPaintDevice::metric(m);// XXX
     }
@@ -12762,7 +12775,7 @@ void QWidgetPrivate::setMask_sys(const QRegion &region)
     Q_Q(QWidget);
     if (const QWindow *window = q->windowHandle())
         if (QPlatformWindow *platformWindow = window->handle())
-            platformWindow->setMask(region);
+            platformWindow->setMask(QHighDpi::toNativeLocalRegion(region, window));
 }
 
 /*!
@@ -12862,7 +12875,7 @@ QDebug operator<<(QDebug debug, const QWidget *widget)
                                        frameGeometry.bottom() - geometry.bottom());
                 debug << ", margins=" << margins;
             }
-            debug << ", devicePixelRatio=" << widget->devicePixelRatio();
+            debug << ", devicePixelRatio=" << widget->devicePixelRatioF();
             if (const WId wid = widget->internalWinId())
                 debug << ", winId=0x" << hex << wid << dec;
         }

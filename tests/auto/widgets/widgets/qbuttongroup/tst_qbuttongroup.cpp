@@ -324,13 +324,13 @@ void tst_QButtonGroup::testSignals()
 
     int expectedId = -2;
 
-    QVERIFY(clickedIdSpy.takeFirst().at(0).toInt() == expectedId);
+    QCOMPARE(clickedIdSpy.takeFirst().at(0).toInt(), expectedId);
     QCOMPARE(pressedSpy.count(), 1);
     QCOMPARE(pressedIdSpy.count(), 1);
-    QVERIFY(pressedIdSpy.takeFirst().at(0).toInt() == expectedId);
+    QCOMPARE(pressedIdSpy.takeFirst().at(0).toInt(), expectedId);
     QCOMPARE(releasedSpy.count(), 1);
     QCOMPARE(releasedIdSpy.count(), 1);
-    QVERIFY(releasedIdSpy.takeFirst().at(0).toInt() == expectedId);
+    QCOMPARE(releasedIdSpy.takeFirst().at(0).toInt(), expectedId);
 
     clickedSpy.clear();
     clickedIdSpy.clear();
@@ -344,13 +344,13 @@ void tst_QButtonGroup::testSignals()
 
     QCOMPARE(clickedSpy.count(), 1);
     QCOMPARE(clickedIdSpy.count(), 1);
-    QVERIFY(clickedIdSpy.takeFirst().at(0).toInt() == 23);
+    QCOMPARE(clickedIdSpy.takeFirst().at(0).toInt(), 23);
     QCOMPARE(pressedSpy.count(), 1);
     QCOMPARE(pressedIdSpy.count(), 1);
-    QVERIFY(pressedIdSpy.takeFirst().at(0).toInt() == 23);
+    QCOMPARE(pressedIdSpy.takeFirst().at(0).toInt(), 23);
     QCOMPARE(releasedSpy.count(), 1);
     QCOMPARE(releasedIdSpy.count(), 1);
-    QVERIFY(releasedIdSpy.takeFirst().at(0).toInt() == 23);
+    QCOMPARE(releasedIdSpy.takeFirst().at(0).toInt(), 23);
 
 
     QSignalSpy toggledSpy(&buttons, SIGNAL(buttonToggled(QAbstractButton*, bool)));
@@ -427,25 +427,25 @@ void tst_QButtonGroup::checkedButton()
     buttons.addButton(&pb1);
     buttons.addButton(&pb2, 23);
 
-    QVERIFY(buttons.checkedButton() == 0);
+    QVERIFY(!buttons.checkedButton());
     pb1.setChecked(true);
-    QVERIFY(buttons.checkedButton() == &pb1);
+    QCOMPARE(buttons.checkedButton(), &pb1);
     pb2.setChecked(true);
-    QVERIFY(buttons.checkedButton() == &pb2);
+    QCOMPARE(buttons.checkedButton(), &pb2);
     pb2.setChecked(false);
-    QVERIFY(buttons.checkedButton() == &pb1);
+    QCOMPARE(buttons.checkedButton(), &pb1);
     pb1.setChecked(false);
-    QVERIFY(buttons.checkedButton() == 0);
+    QVERIFY(!buttons.checkedButton());
 
     buttons.setExclusive(true);
-    QVERIFY(buttons.checkedButton() == 0);
+    QVERIFY(!buttons.checkedButton());
     pb1.setChecked(true);
-    QVERIFY(buttons.checkedButton() == &pb1);
+    QCOMPARE(buttons.checkedButton(), &pb1);
     pb2.setChecked(true);
-    QVERIFY(buttons.checkedButton() == &pb2);
+    QCOMPARE(buttons.checkedButton(), &pb2);
     // checked button cannot be unchecked
     pb2.setChecked(false);
-    QVERIFY(buttons.checkedButton() == &pb2);
+    QCOMPARE(buttons.checkedButton(), &pb2);
 }
 
 class task209485_ButtonDeleter : public QObject
@@ -523,9 +523,9 @@ void tst_QButtonGroup::autoIncrementId()
 
     radio1->setChecked(true);
 
-    QVERIFY(buttons->id(radio1) == -2);
-    QVERIFY(buttons->id(radio2) == -3);
-    QVERIFY(buttons->id(radio3) == -4);
+    QCOMPARE(buttons->id(radio1), -2);
+    QCOMPARE(buttons->id(radio2), -3);
+    QCOMPARE(buttons->id(radio3), -4);
 
     dlg.show();
 }

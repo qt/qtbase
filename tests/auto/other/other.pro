@@ -58,7 +58,7 @@ wince*|!contains(QT_CONFIG, accessibility): SUBDIRS -= qaccessibility
            macplist \
            qaccessibilitymac
 
-!embedded|wince*: SUBDIRS -= \
+!embedded|wince: SUBDIRS -= \
            qdirectpainter
 
 winrt: SUBDIRS -= \

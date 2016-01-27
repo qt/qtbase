@@ -241,7 +241,8 @@ public:
         NPOTTextures          = 0x1000,
         NPOTTextureRepeat     = 0x2000,
         FixedFunctionPipeline = 0x4000,
-        TextureRGFormats      = 0x8000
+        TextureRGFormats      = 0x8000,
+        MultipleRenderTargets = 0x10000
     };
     Q_DECLARE_FLAGS(OpenGLFeatures, OpenGLFeature)
 
@@ -402,7 +403,7 @@ public:
 
 protected:
     QOpenGLFunctionsPrivate *d_ptr;
-    static bool isInitialized(const QOpenGLFunctionsPrivate *d) { return d != 0; }
+    static bool isInitialized(const QOpenGLFunctionsPrivate *d) { return d != Q_NULLPTR; }
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QOpenGLFunctions::OpenGLFeatures)

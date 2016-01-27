@@ -961,6 +961,9 @@ int QPicture::metric(PaintDeviceMetric m) const
         case PdmDevicePixelRatio:
             val = 1;
             break;
+        case PdmDevicePixelRatioScaled:
+            val = 1 * QPaintDevice::devicePixelRatioFScale();
+            break;
         default:
             val = 0;
             qWarning("QPicture::metric: Invalid metric command");
@@ -1216,7 +1219,9 @@ QList<QByteArray> QPicture::inputFormats()
 static QStringList qToStringList(const QList<QByteArray> &arr)
 {
     QStringList list;
-    for (int i = 0; i < arr.count(); ++i)
+    const int count = arr.count();
+    list.reserve(count);
+    for (int i = 0; i < count; ++i)
         list.append(QString::fromLatin1(arr.at(i)));
     return list;
 }

@@ -38,7 +38,7 @@
 #ifndef HTMLGENERATOR_H
 #define HTMLGENERATOR_H
 
-#include <qmap.h>
+#include <qhash.h>
 #include <qregexp.h>
 #include <qxmlstream.h>
 #include "codemarker.h"
@@ -106,6 +106,7 @@ protected:
     void generateManifestFile(const QString &manifest, const QString &element);
     void readManifestMetaContent(const Config &config);
     void generateKeywordAnchors(const Node* node);
+    void generateAssociatedPropertyNotes(const FunctionNode* fn);
 
 private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };
@@ -186,7 +187,6 @@ private:
     void generateQmlInstantiates(QmlTypeNode* qcn, CodeMarker* marker);
     void generateInstantiatedBy(ClassNode* cn, CodeMarker* marker);
 
-    void generateRequisitesTable(const QStringList& requisitesOrder, QMap<QString, Text>& requisites);
     void generateSection(const NodeList& nl,
                          const Node *relative,
                          CodeMarker *marker,
@@ -231,7 +231,7 @@ private:
     void writeDitaRefs(const DitaRefList& ditarefs);
     QXmlStreamWriter& xmlWriter();
 
-    QMap<QString, QString> refMap;
+    QHash<QString, QString> refMap;
     int codeIndent;
     HelpProjectWriter *helpProjectWriter;
     bool inObsoleteLink;

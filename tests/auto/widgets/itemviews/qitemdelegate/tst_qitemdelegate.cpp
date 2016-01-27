@@ -804,9 +804,9 @@ void tst_QItemDelegate::dateTimeEditor()
     dateTimeEditor->setTime(time.addSecs(600));
     widget.clearFocus();
 
-    QVERIFY(item1->data(Qt::EditRole).userType() == QMetaType::QTime);
-    QVERIFY(item2->data(Qt::EditRole).userType() == QMetaType::QDate);
-    QVERIFY(item3->data(Qt::EditRole).userType() == QMetaType::QDateTime);
+    QCOMPARE(item1->data(Qt::EditRole).userType(), int(QMetaType::QTime));
+    QCOMPARE(item2->data(Qt::EditRole).userType(), int(QMetaType::QDate));
+    QCOMPARE(item3->data(Qt::EditRole).userType(), int(QMetaType::QDateTime));
 }
 
 // A delegate where we can either enforce a certain widget or use the standard widget.
@@ -901,9 +901,9 @@ void tst_QItemDelegate::dateAndTimeEditorTest2()
     s.setData(i1, datetime2);
     editor = w.fastEdit(i1);
     timeEdit = qobject_cast<QTimeEdit*>(editor);
-    QVERIFY(timeEdit == 0);
+    QVERIFY(!timeEdit);
     dateEdit = qobject_cast<QDateEdit*>(editor);
-    QVERIFY(dateEdit == 0);
+    QVERIFY(!dateEdit);
     dateTimeEdit =  qobject_cast<QDateTimeEdit*>(editor);
     QVERIFY(dateTimeEdit);
     QCOMPARE(dateTimeEdit->dateTime(), datetime2);

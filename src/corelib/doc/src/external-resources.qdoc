@@ -65,4 +65,13 @@
     \externalpage http://doc-snapshot.qt-project.org/qt5-5.4/designer-widget-mode.html#the-property-editor
     \title Qt Designer's Widget Editing Mode#The Property Editor
 */
+
+/*!
+    \externalpage http://marcmutz.wordpress.com/effective-qt/containers/#containers-qlist
+    \title Pros and Cons of Using QList
+*/
+
+/*!
+    \externalpage http://marcmutz.wordpress.com/effective-qt/containers/
+    \title Understand the Qt Containers
 */

@@ -135,6 +135,13 @@ private:
 
 #ifndef QT_NO_THREAD
 
+class Q_CORE_EXPORT QDaemonThread : public QThread
+{
+public:
+    QDaemonThread(QObject *parent = 0);
+    ~QDaemonThread();
+};
+
 class QThreadPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QThread)
@@ -171,19 +178,10 @@ public:
 #endif // Q_OS_UNIX
 
 #ifdef Q_OS_WIN
-#  ifndef Q_OS_WINRT
     static unsigned int __stdcall start(void *);
     static void finish(void *, bool lockAnyway=true);
-#  else
-    HRESULT start(ABI::Windows::Foundation::IAsyncAction *);
-    void finish(bool lockAnyway = true);
-#  endif
 
-#  ifndef Q_OS_WINRT
     Qt::HANDLE handle;
-#  else
-    ABI::Windows::Foundation::IAsyncAction *handle;
-#  endif
     unsigned int id;
     int waiters;
     bool terminationEnabled, terminatePending;
@@ -233,7 +231,7 @@ public:
     QThreadData(int initialRefCount = 1);
     ~QThreadData();
 
-    static QThreadData *current(bool createIfNecessary = true);
+    static Q_AUTOTEST_EXPORT QThreadData *current(bool createIfNecessary = true);
     static void clearCurrentThreadData();
     static QThreadData *get2(QThread *thread)
     { Q_ASSERT_X(thread != 0, "QThread", "internal error"); return thread->d_func()->data; }
@@ -287,6 +285,7 @@ public:
     bool quitNow;
     bool canWait;
     bool isAdopted;
+    bool requiresCoreApplication;
 };
 
 class QScopedLoopLevelCounter

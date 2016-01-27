@@ -67,6 +67,7 @@ private slots:
     void endsWith_data();
     void endsWith();
     void endsWith_char();
+    void reverseIterators();
     void split_data();
     void split();
     void base64_data();
@@ -538,6 +539,20 @@ void tst_QByteArray::endsWith_char()
     QVERIFY(!QByteArray("").endsWith('a'));
     QVERIFY(!QByteArray().endsWith('a'));
     QVERIFY(!QByteArray().endsWith('\0'));
+}
+
+void tst_QByteArray::reverseIterators()
+{
+    QByteArray s = "1234";
+    QByteArray sr = s;
+    std::reverse(sr.begin(), sr.end());
+    const QByteArray &csr = sr;
+    QVERIFY(std::equal(s.begin(), s.end(), sr.rbegin()));
+    QVERIFY(std::equal(s.begin(), s.end(), sr.crbegin()));
+    QVERIFY(std::equal(s.begin(), s.end(), csr.rbegin()));
+    QVERIFY(std::equal(sr.rbegin(), sr.rend(), s.begin()));
+    QVERIFY(std::equal(sr.crbegin(), sr.crend(), s.begin()));
+    QVERIFY(std::equal(csr.rbegin(), csr.rend(), s.begin()));
 }
 
 void tst_QByteArray::split_data()

@@ -298,6 +298,25 @@ while (i != hash.end() && i.key() == "plenty") {
 }
 //! [26]
 
+//! [27]
+for (QHash<int, QString>::const_iterator it = hash.cbegin(), end = hash.cend(); it != end; ++it) {
+    cout << "The key: " << it.key() << endl
+    cout << "The value: " << it.value() << endl;
+    cout << "Also the value: " << (*it) << endl;
+}
+//! [27]
+
+//! [28]
+// Inefficient, keys() is expensive
+QList<int> keys = hash.keys();
+int numPrimes = std::count_if(keys.cbegin(), keys.cend(), isPrimeNumber);
+qDeleteAll(hash2.keys());
+
+// Efficient, no memory allocation needed
+int numPrimes = std::count_if(hash.keyBegin(), hash.keyEnd(), isPrimeNumber);
+qDeleteAll(hash2.keyBegin(), hash2.keyEnd());
+//! [28]
+
 //! [qhashbits]
 inline uint qHash(const std::vector<int> &key, uint seed = 0)
 {

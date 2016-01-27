@@ -1356,7 +1356,7 @@ void tst_qmakelib::addReplaceFunctions(const QString &qindir)
 
     QTest::newRow("$$relative_path(): relative file to empty")
             << "VAR = $$relative_path(dir/..)"
-            << "VAR ="
+            << "VAR = ."
             << ""
             << true;
 
@@ -1368,7 +1368,7 @@ void tst_qmakelib::addReplaceFunctions(const QString &qindir)
 
     QTest::newRow("$$relative_path(): empty file & path")
             << "VAR = $$relative_path('', /root/sub)"
-            << "VAR ="
+            << "VAR = ."
             << ""
             << true;
 

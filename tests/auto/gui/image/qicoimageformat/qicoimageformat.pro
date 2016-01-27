@@ -4,7 +4,7 @@ TARGET = tst_qicoimageformat
 SOURCES+= tst_qicoimageformat.cpp
 QT += testlib
 
-wince*: {
+wince {
    CONFIG(debug, debug|release):{
        addPlugins.files = $$QT_BUILD_TREE/plugins/imageformats/qico4d.dll
    } else {

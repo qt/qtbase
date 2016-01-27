@@ -102,9 +102,9 @@ class QTornOffMenu : public QMenu
             causedPopup.action = ((QTornOffMenu*)p)->d_func()->causedPopup.action;
             causedStack = ((QTornOffMenu*)p)->d_func()->calcCausedStack();
         }
-        QList<QPointer<QWidget> > calcCausedStack() const Q_DECL_OVERRIDE { return causedStack; }
+        QVector<QPointer<QWidget> > calcCausedStack() const Q_DECL_OVERRIDE { return causedStack; }
         QPointer<QMenu> causedMenu;
-        QList<QPointer<QWidget> > causedStack;
+        QVector<QPointer<QWidget> > causedStack;
     };
 public:
     QTornOffMenu(QMenu *p) : QMenu(*(new QTornOffMenuPrivate(p)))
@@ -236,9 +236,9 @@ QRect QMenuPrivate::popupGeometry(int screen) const
     }
 }
 
-QList<QPointer<QWidget> > QMenuPrivate::calcCausedStack() const
+QVector<QPointer<QWidget> > QMenuPrivate::calcCausedStack() const
 {
-    QList<QPointer<QWidget> > ret;
+    QVector<QPointer<QWidget> > ret;
     for(QWidget *widget = causedPopup.widget; widget; ) {
         ret.append(widget);
         if (QTornOffMenu *qtmenu = qobject_cast<QTornOffMenu*>(widget))
@@ -1122,7 +1122,7 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
     return false;
 }
 
-void QMenuPrivate::activateCausedStack(const QList<QPointer<QWidget> > &causedStack, QAction *action, QAction::ActionEvent action_e, bool self)
+void QMenuPrivate::activateCausedStack(const QVector<QPointer<QWidget> > &causedStack, QAction *action, QAction::ActionEvent action_e, bool self)
 {
     QBoolBlocker guard(activationRecursionGuard);
     if(self)
@@ -1170,7 +1170,7 @@ void QMenuPrivate::activateAction(QAction *action, QAction::ActionEvent action_e
     /* I have to save the caused stack here because it will be undone after popup execution (ie in the hide).
        Then I iterate over the list to actually send the events. --Sam
     */
-    const QList<QPointer<QWidget> > causedStack = calcCausedStack();
+    const QVector<QPointer<QWidget> > causedStack = calcCausedStack();
     if (action_e == QAction::Trigger) {
 #ifndef QT_NO_WHATSTHIS
         if (!inWhatsThisMode)
@@ -1232,7 +1232,7 @@ void QMenuPrivate::_q_actionTriggered()
         if (!activationRecursionGuard && actionGuard) {
             //in case the action has not been activated by the mouse
             //we check the parent hierarchy
-            QList< QPointer<QWidget> > list;
+            QVector< QPointer<QWidget> > list;
             for(QWidget *widget = q->parentWidget(); widget; ) {
                 if (qobject_cast<QMenu*>(widget)
 #ifndef QT_NO_MENUBAR
@@ -1431,7 +1431,7 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     do not support the signals: aboutToHide (), aboutToShow () and hovered ().
     It is not possible to display an icon in a native menu on Windows Mobile.
 
-    \section1 QMenu on Mac OS X with Qt Build Against Cocoa
+    \section1 QMenu on OS X with Qt Build Against Cocoa
 
     QMenu can be inserted only once in a menu/menubar. Subsequent insertions will
     have no effect or will result in a disabled menu item.
@@ -1570,6 +1570,100 @@ QAction *QMenu::addAction(const QString &text, const QObject *receiver, const ch
     addAction(action);
     return action;
 }
+
+/*!\fn QAction *QMenu::addAction(const QString &text, const QObject *receiver, PointerToMemberFunction method, const QKeySequence &shortcut = 0)
+
+    \since 5.6
+
+    \overload
+
+    This convenience function creates a new action with the text \a
+    text and an optional shortcut \a shortcut. The action's
+    \l{QAction::triggered()}{triggered()} signal is connected to the
+    \a method of the \a receiver. The function adds the newly created
+    action to the menu's list of actions and returns it.
+
+    QMenu takes ownership of the returned QAction.
+*/
+
+/*!\fn QAction *QMenu::addAction(const QString &text, Functor functor, const QKeySequence &shortcut = 0)
+
+    \since 5.6
+
+    \overload
+
+    This convenience function creates a new action with the text \a
+    text and an optional shortcut \a shortcut. The action's
+    \l{QAction::triggered()}{triggered()} signal is connected to the
+    \a functor. The function adds the newly created
+    action to the menu's list of actions and returns it.
+
+    QMenu takes ownership of the returned QAction.
+*/
+
+/*!\fn QAction *QMenu::addAction(const QString &text, const QObject *context, Functor functor, const QKeySequence &shortcut = 0)
+
+    \since 5.6
+
+    \overload
+
+    This convenience function creates a new action with the text \a
+    text and an optional shortcut \a shortcut. The action's
+    \l{QAction::triggered()}{triggered()} signal is connected to the
+    \a functor. The function adds the newly created
+    action to the menu's list of actions and returns it.
+
+    If \a context is destroyed, the functor will not be called.
+
+    QMenu takes ownership of the returned QAction.
+*/
+
+/*!\fn QAction *QMenu::addAction(const QIcon &icon, const QString &text, const QObject *receiver, PointerToMemberFunction method, const QKeySequence &shortcut = 0)
+
+    \since 5.6
+
+    \overload
+
+    This convenience function creates a new action with an \a icon
+    and some \a text and an optional shortcut \a shortcut. The action's
+    \l{QAction::triggered()}{triggered()} signal is connected to the
+    \a method of the \a receiver. The function adds the newly created
+    action to the menu's list of actions and returns it.
+
+    QMenu takes ownership of the returned QAction.
+*/
+
+/*!\fn QAction *QMenu::addAction(const QIcon &icon, const QString &text, Functor functor, const QKeySequence &shortcut = 0)
+
+    \since 5.6
+
+    \overload
+
+    This convenience function creates a new action with an \a icon
+    and some \a text and an optional shortcut \a shortcut. The action's
+    \l{QAction::triggered()}{triggered()} signal is connected to the
+    \a functor. The function adds the newly created
+    action to the menu's list of actions and returns it.
+
+    QMenu takes ownership of the returned QAction.
+*/
+
+/*!\fn QAction *QMenu::addAction(const QIcon &icon, const QString &text, const QObject *context, Functor functor, const QKeySequence &shortcut = 0)
+
+    \since 5.6
+
+    \overload
+
+    This convenience function creates a new action with an \a icon
+    and some \a text and an optional shortcut \a shortcut. The action's
+    \l{QAction::triggered()}{triggered()} signal is connected to the
+    \a functor. The function adds the newly created
+    action to the menu's list of actions and returns it.
+
+    If \a context is destroyed, the functor will not be called.
+
+    QMenu takes ownership of the returned QAction.
+*/
 
 /*!
     \overload

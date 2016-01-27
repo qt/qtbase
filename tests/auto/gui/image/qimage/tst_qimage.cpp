@@ -190,6 +190,8 @@ private slots:
 
     void devicePixelRatio();
     void rgb30Unpremul();
+    void rgb30Repremul_data();
+    void rgb30Repremul();
 
     void metadataPassthrough();
 
@@ -475,7 +477,7 @@ void tst_QImage::setAlphaChannel()
 
     image.setAlphaChannel(alphaChannel);
     image = image.convertToFormat(QImage::Format_ARGB32);
-    QVERIFY(image.format() == QImage::Format_ARGB32);
+    QCOMPARE(image.format(), QImage::Format_ARGB32);
 
     // alpha of 0 becomes black at a=0 due to premultiplication
     QRgb pixel = alpha == 0 ? 0 : qRgba(red, green, blue, alpha);
@@ -1562,12 +1564,12 @@ void tst_QImage::createHeuristicMask()
 
     // line 2
     QVERIFY(newMask.pixel(0,1) != newMask.pixel(1,1));
-    QVERIFY(newMask.pixel(1,1) == newMask.pixel(2,1));
+    QCOMPARE(newMask.pixel(1,1), newMask.pixel(2,1));
     QVERIFY(newMask.pixel(2,1) != newMask.pixel(3,1));
 
     // line 3
     QVERIFY(newMask.pixel(0,2) != newMask.pixel(1,2));
-    QVERIFY(newMask.pixel(1,2) == newMask.pixel(2,2));
+    QCOMPARE(newMask.pixel(1,2), newMask.pixel(2,2));
     QVERIFY(newMask.pixel(2,2) != newMask.pixel(3,2));
 }
 #endif
@@ -1578,10 +1580,10 @@ void tst_QImage::cacheKey()
     qint64 image1_key = image1.cacheKey();
     QImage image2 = image1;
 
-    QVERIFY(image2.cacheKey() == image1.cacheKey());
+    QCOMPARE(image2.cacheKey(), image1.cacheKey());
     image2.detach();
     QVERIFY(image2.cacheKey() != image1.cacheKey());
-    QVERIFY(image1.cacheKey() == image1_key);
+    QCOMPARE(image1.cacheKey(), image1_key);
 }
 
 void tst_QImage::smoothScale()
@@ -2944,6 +2946,31 @@ void tst_QImage::rgb30Unpremul()
     QCOMPARE(bbits[0], (3U << 30) | (128 << 20) | (256 << 10) | 512);
     QCOMPARE(bbits[1], (3U << 30) | (196 << 20) | (388 << 10) | 772);
     QCOMPARE(bbits[2], (3U << 30) | (201 << 20) | (393 << 10) | 777);
+}
+
+void tst_QImage::rgb30Repremul_data()
+{
+    QTest::addColumn<uint>("color");
+    for (int i = 255; i > 0; i -= 15) {
+        QTest::newRow(qPrintable(QStringLiteral("100% red=") + QString::number(i))) << qRgba(i, 0, 0, 0xff);
+        QTest::newRow(qPrintable(QStringLiteral("75% red=") + QString::number(i))) << qRgba(i, 0, 0, 0xc0);
+        QTest::newRow(qPrintable(QStringLiteral("50% red=") + QString::number(i))) << qRgba(i, 0, 0, 0x80);
+        QTest::newRow(qPrintable(QStringLiteral("37.5% red=") + QString::number(i))) << qRgba(i, 0, 0, 0x60);
+    }
+}
+
+void tst_QImage::rgb30Repremul()
+{
+    QFETCH(uint, color);
+
+    QImage a(1, 1, QImage::Format_ARGB32);
+    a.setPixel(0, 0, color);
+
+    QImage b = a.convertToFormat(QImage::Format_A2BGR30_Premultiplied);
+    b = b.convertToFormat(QImage::Format_ARGB32);
+    uint expectedColor = qUnpremultiply(qPremultiply(color));
+    uint newColor = b.pixel(0, 0);
+    QVERIFY(qAbs(qRed(newColor) - qRed(expectedColor)) <= 1);
 }
 
 void tst_QImage::metadataPassthrough()

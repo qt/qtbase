@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -58,6 +59,38 @@ public:
         recordedEvents.append(event->type());
         return false;
     }
+};
+
+class ThreadedEventReceiver : public QObject
+{
+    Q_OBJECT
+public:
+    QList<int> recordedEvents;
+    bool event(QEvent *event) Q_DECL_OVERRIDE
+    {
+        if (event->type() != QEvent::Type(QEvent::User + 1))
+            return QObject::event(event);
+        recordedEvents.append(event->type());
+        QThread::currentThread()->quit();
+        QCoreApplication::quit();
+        moveToThread(0);
+        return true;
+    }
+};
+
+class Thread : public QDaemonThread
+{
+    void run() Q_DECL_OVERRIDE
+    {
+        QThreadData *data = QThreadData::current();
+        QVERIFY(!data->requiresCoreApplication);        // daemon thread
+        data->requiresCoreApplication = requiresCoreApplication;
+        QThread::run();
+    }
+
+public:
+    Thread() : requiresCoreApplication(true) {}
+    bool requiresCoreApplication;
 };
 
 void tst_QCoreApplication::sendEventsOnProcessEvents()
@@ -797,6 +830,105 @@ void tst_QCoreApplication::QTBUG31606_QEventDestructorDeadLock()
     QVERIFY(spy.recordedEvents.contains(QEvent::User + 2));
 }
 
+// this is almost identical to sendEventsOnProcessEvents
+void tst_QCoreApplication::applicationEventFilters_mainThread()
+{
+    int argc = 1;
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    TestApplication app(argc, argv);
+
+    EventSpy spy;
+    app.installEventFilter(&spy);
+
+    QCoreApplication::postEvent(&app,  new QEvent(QEvent::Type(QEvent::User + 1)));
+    QTimer::singleShot(10, &app, SLOT(quit()));
+    app.exec();
+    QVERIFY(spy.recordedEvents.contains(QEvent::User + 1));
+}
+
+void tst_QCoreApplication::applicationEventFilters_auxThread()
+{
+    int argc = 1;
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    TestApplication app(argc, argv);
+    QThread thread;
+    ThreadedEventReceiver receiver;
+    receiver.moveToThread(&thread);
+
+    EventSpy spy;
+    app.installEventFilter(&spy);
+
+    // this is very similar to sendEventsOnProcessEvents
+    QCoreApplication::postEvent(&receiver,  new QEvent(QEvent::Type(QEvent::User + 1)));
+    QTimer::singleShot(1000, &app, SLOT(quit()));
+    thread.start();
+    app.exec();
+    QVERIFY(thread.wait(1000));
+    QVERIFY(receiver.recordedEvents.contains(QEvent::User + 1));
+    QVERIFY(!spy.recordedEvents.contains(QEvent::User + 1));
+}
+
+void tst_QCoreApplication::threadedEventDelivery_data()
+{
+    QTest::addColumn<bool>("requiresCoreApplication");
+    QTest::addColumn<bool>("createCoreApplication");
+    QTest::addColumn<bool>("eventsReceived");
+
+    // invalid combination:
+    //QTest::newRow("default-without-coreapp") << true << false << false;
+    QTest::newRow("default") << true << true << true;
+    QTest::newRow("independent-without-coreapp") << false << false << true;
+    QTest::newRow("independent-with-coreapp") << false << true << true;
+}
+
+// posts the event before the QCoreApplication is destroyed, starts thread after
+void tst_QCoreApplication::threadedEventDelivery()
+{
+    QFETCH(bool, requiresCoreApplication);
+    QFETCH(bool, createCoreApplication);
+    QFETCH(bool, eventsReceived);
+
+    int argc = 1;
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    QScopedPointer<TestApplication> app(createCoreApplication ? new TestApplication(argc, argv) : 0);
+
+    Thread thread;
+    thread.requiresCoreApplication = requiresCoreApplication;
+    ThreadedEventReceiver receiver;
+    receiver.moveToThread(&thread);
+    QCoreApplication::postEvent(&receiver, new QEvent(QEvent::Type(QEvent::User + 1)));
+
+    thread.start();
+    QVERIFY(thread.wait(1000));
+    QCOMPARE(receiver.recordedEvents.contains(QEvent::User + 1), eventsReceived);
+}
+
+void tst_QCoreApplication::addRemoveLibPaths()
+{
+    QStringList paths = QCoreApplication::libraryPaths();
+    if (paths.isEmpty())
+        QSKIP("Cannot add/remove library paths if there are none.");
+
+    QString currentDir = QDir().absolutePath();
+    QCoreApplication::addLibraryPath(currentDir);
+    QVERIFY(QCoreApplication::libraryPaths().contains(currentDir));
+
+    QCoreApplication::removeLibraryPath(paths[0]);
+    QVERIFY(!QCoreApplication::libraryPaths().contains(paths[0]));
+
+    int argc = 1;
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    TestApplication app(argc, argv);
+
+    // Check that modifications stay alive across the creation of an application.
+    QVERIFY(QCoreApplication::libraryPaths().contains(currentDir));
+    QVERIFY(!QCoreApplication::libraryPaths().contains(paths[0]));
+
+    QStringList replace;
+    replace << currentDir << paths[0];
+    QCoreApplication::setLibraryPaths(replace);
+    QVERIFY(QCoreApplication::libraryPaths() == replace);
+}
 
 static void createQObjectOnDestruction()
 {

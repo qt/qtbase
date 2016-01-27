@@ -160,7 +160,7 @@ static dbus_bool_t qDBusAddTimeout(DBusTimeout *timeout, void *data)
 
 static bool qDBusRealAddTimeout(QDBusConnectionPrivate *d, DBusTimeout *timeout, int ms)
 {
-    Q_ASSERT(d->timeouts.keys(timeout).isEmpty());
+    Q_ASSERT(d->timeouts.key(timeout, 0) == 0);
 
     int timerId = d->startTimer(ms);
     if (!timerId)
@@ -952,14 +952,19 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
     }
 
     // output arguments
+    const int numMetaTypes = metaTypes.count();
     QVariantList outputArgs;
     void *null = 0;
     if (metaTypes[0] != QMetaType::Void && metaTypes[0] != QMetaType::UnknownType) {
+        outputArgs.reserve(numMetaTypes - i + 1);
         QVariant arg(metaTypes[0], null);
         outputArgs.append( arg );
         params[0] = const_cast<void*>(outputArgs.at( outputArgs.count() - 1 ).constData());
+    } else {
+        outputArgs.reserve(numMetaTypes - i);
     }
-    for ( ; i < metaTypes.count(); ++i) {
+
+    for ( ; i < numMetaTypes; ++i) {
         QVariant arg(metaTypes[i], null);
         outputArgs.append( arg );
         params.append(const_cast<void*>(outputArgs.at( outputArgs.count() - 1 ).constData()));
@@ -1730,7 +1735,7 @@ static QDBusConnection::ConnectionCapabilities connectionCapabilies(DBusConnecti
 # if DBUS_VERSION-0 >= 0x010400
     can_send_type = dbus_connection_can_send_type;
 # endif
-#else
+#elif !defined(QT_NO_LIBRARY)
     // run-time check if the next functions are available
     can_send_type = (can_send_type_t)qdbus_resolve_conditionally("dbus_connection_can_send_type");
 #endif

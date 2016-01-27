@@ -63,7 +63,7 @@ public:
     void writeToFile(const QString &fileName);
 
 public slots:
-    void addEntry();
+    void showAddEntryDialog();
     void addEntry(QString name, QString address);
     void editEntry();
     void removeEntry();

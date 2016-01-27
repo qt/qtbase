@@ -52,7 +52,7 @@ class Q_WIDGETS_EXPORT QUndoGroup : public QObject
     Q_DECLARE_PRIVATE(QUndoGroup)
 
 public:
-    explicit QUndoGroup(QObject *parent = 0);
+    explicit QUndoGroup(QObject *parent = Q_NULLPTR);
     ~QUndoGroup();
 
     void addStack(QUndoStack *stack);

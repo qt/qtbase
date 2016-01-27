@@ -880,7 +880,7 @@ void tst_Moc::preprocessorConditionals()
     QVERIFY(mobj->indexOfSignal("signalInIf1()") != -1);
     QVERIFY(mobj->indexOfSignal("signalInIf2()") != -1);
     QVERIFY(mobj->indexOfSignal("signalInIf3()") != -1);
-    QVERIFY(mobj->indexOfSignal("doNotExist()") == -1);
+    QCOMPARE(mobj->indexOfSignal("doNotExist()"), -1);
 }
 
 void tst_Moc::blackslashNewlines()
@@ -888,7 +888,7 @@ void tst_Moc::blackslashNewlines()
     BackslashNewlines tst;
     const QMetaObject *mobj = tst.metaObject();
     QVERIFY(mobj->indexOfSlot("works()") != -1);
-    QVERIFY(mobj->indexOfSlot("buggy()") == -1);
+    QCOMPARE(mobj->indexOfSlot("buggy()"), -1);
 }
 
 void tst_Moc::slotWithSillyConst()
@@ -928,8 +928,8 @@ void tst_Moc::testExtraDataForEnum()
 
     const QMetaObject * const *objects = mobjUser->d.relatedMetaObjects;
     QVERIFY(objects);
-    QVERIFY(objects[0] == mobjSource);
-    QVERIFY(objects[1] == 0);
+    QCOMPARE(objects[0], mobjSource);
+    QVERIFY(!objects[1]);
 }
 
 void tst_Moc::namespaceTypeProperty()
@@ -982,7 +982,7 @@ void tst_Moc::namespacedFlags()
     const QVariant v = bar.property("flags");
     QVERIFY(v.isValid());
     QVERIFY(baz.setProperty("flags", v));
-    QVERIFY(baz.flags() == bar.flags());
+    QCOMPARE(baz.flags(), bar.flags());
 
     QList<Foo::Bar::Flags> l;
     l << baz.flags();
@@ -1104,7 +1104,7 @@ void tst_Moc::winNewline()
         if (data.at(i) == QLatin1Char('\r')) {
             QVERIFY(i < data.count() - 1);
             ++i;
-            QVERIFY(data.at(i) == '\n');
+            QCOMPARE(data.at(i), '\n');
         } else {
             QVERIFY(data.at(i) != '\n');
         }
@@ -1255,14 +1255,14 @@ void tst_Moc::invokable()
     {
         const QMetaObject &mobj = InvokableBeforeReturnType::staticMetaObject;
         QCOMPARE(mobj.methodCount(), 6);
-        QVERIFY(mobj.method(5).methodSignature() == QByteArray("foo()"));
+        QCOMPARE(mobj.method(5).methodSignature(), QByteArray("foo()"));
     }
 
     {
         const QMetaObject &mobj = InvokableBeforeInline::staticMetaObject;
         QCOMPARE(mobj.methodCount(), 7);
-        QVERIFY(mobj.method(5).methodSignature() == QByteArray("foo()"));
-        QVERIFY(mobj.method(6).methodSignature() == QByteArray("bar()"));
+        QCOMPARE(mobj.method(5).methodSignature(), QByteArray("foo()"));
+        QCOMPARE(mobj.method(6).methodSignature(), QByteArray("bar()"));
     }
 }
 
@@ -1271,22 +1271,22 @@ void tst_Moc::singleFunctionKeywordSignalAndSlot()
     {
         const QMetaObject &mobj = SingleFunctionKeywordBeforeReturnType::staticMetaObject;
         QCOMPARE(mobj.methodCount(), 7);
-        QVERIFY(mobj.method(5).methodSignature() == QByteArray("mySignal()"));
-        QVERIFY(mobj.method(6).methodSignature() == QByteArray("mySlot()"));
+        QCOMPARE(mobj.method(5).methodSignature(), QByteArray("mySignal()"));
+        QCOMPARE(mobj.method(6).methodSignature(), QByteArray("mySlot()"));
     }
 
     {
         const QMetaObject &mobj = SingleFunctionKeywordBeforeInline::staticMetaObject;
         QCOMPARE(mobj.methodCount(), 7);
-        QVERIFY(mobj.method(5).methodSignature() == QByteArray("mySignal()"));
-        QVERIFY(mobj.method(6).methodSignature() == QByteArray("mySlot()"));
+        QCOMPARE(mobj.method(5).methodSignature(), QByteArray("mySignal()"));
+        QCOMPARE(mobj.method(6).methodSignature(), QByteArray("mySlot()"));
     }
 
     {
         const QMetaObject &mobj = SingleFunctionKeywordAfterInline::staticMetaObject;
         QCOMPARE(mobj.methodCount(), 7);
-        QVERIFY(mobj.method(5).methodSignature() == QByteArray("mySignal()"));
-        QVERIFY(mobj.method(6).methodSignature() == QByteArray("mySlot()"));
+        QCOMPARE(mobj.method(5).methodSignature(), QByteArray("mySignal()"));
+        QCOMPARE(mobj.method(6).methodSignature(), QByteArray("mySlot()"));
     }
 }
 
@@ -1740,34 +1740,34 @@ template <class T>
 void tst_Moc::revisions_T()
 {
     int idx = T::staticMetaObject.indexOfProperty("prop1");
-    QVERIFY(T::staticMetaObject.property(idx).revision() == 0);
+    QCOMPARE(T::staticMetaObject.property(idx).revision(), 0);
     idx = T::staticMetaObject.indexOfProperty("prop2");
-    QVERIFY(T::staticMetaObject.property(idx).revision() == 2);
+    QCOMPARE(T::staticMetaObject.property(idx).revision(), 2);
 
     idx = T::staticMetaObject.indexOfMethod("method1()");
-    QVERIFY(T::staticMetaObject.method(idx).revision() == 0);
+    QCOMPARE(T::staticMetaObject.method(idx).revision(), 0);
     idx = T::staticMetaObject.indexOfMethod("method2()");
-    QVERIFY(T::staticMetaObject.method(idx).revision() == 4);
+    QCOMPARE(T::staticMetaObject.method(idx).revision(), 4);
 
     idx = T::staticMetaObject.indexOfSlot("slot1()");
-    QVERIFY(T::staticMetaObject.method(idx).revision() == 0);
+    QCOMPARE(T::staticMetaObject.method(idx).revision(), 0);
     idx = T::staticMetaObject.indexOfSlot("slot2()");
-    QVERIFY(T::staticMetaObject.method(idx).revision() == 3);
+    QCOMPARE(T::staticMetaObject.method(idx).revision(), 3);
 
     idx = T::staticMetaObject.indexOfSlot("slot3()");
-    QVERIFY(T::staticMetaObject.method(idx).revision() == 6);
+    QCOMPARE(T::staticMetaObject.method(idx).revision(), 6);
     idx = T::staticMetaObject.indexOfSlot("slot4()");
-    QVERIFY(T::staticMetaObject.method(idx).revision() == 6);
+    QCOMPARE(T::staticMetaObject.method(idx).revision(), 6);
 
     idx = T::staticMetaObject.indexOfSignal("signal1()");
-    QVERIFY(T::staticMetaObject.method(idx).revision() == 0);
+    QCOMPARE(T::staticMetaObject.method(idx).revision(), 0);
     idx = T::staticMetaObject.indexOfSignal("signal2()");
-    QVERIFY(T::staticMetaObject.method(idx).revision() == 5);
+    QCOMPARE(T::staticMetaObject.method(idx).revision(), 5);
 
     idx = T::staticMetaObject.indexOfSignal("signal3()");
-    QVERIFY(T::staticMetaObject.method(idx).revision() == 7);
+    QCOMPARE(T::staticMetaObject.method(idx).revision(), 7);
     idx = T::staticMetaObject.indexOfSignal("signal4()");
-    QVERIFY(T::staticMetaObject.method(idx).revision() == 7);
+    QCOMPARE(T::staticMetaObject.method(idx).revision(), 7);
 
     idx = T::staticMetaObject.indexOfEnumerator("TestEnum");
     QCOMPARE(T::staticMetaObject.enumerator(idx).keyCount(), 2);
@@ -1947,7 +1947,7 @@ public:
 
 void tst_Moc::privateClass()
 {
-    QVERIFY(PrivateClass::staticMetaObject.indexOfConstructor("PrivateClass()") == 0);
+    QCOMPARE(PrivateClass::staticMetaObject.indexOfConstructor("PrivateClass()"), 0);
     QVERIFY(PrivateClass::staticMetaObject.indexOfSignal("someSignal()") > 0);
 }
 
@@ -3068,7 +3068,7 @@ void tst_Moc::parseDefines()
 
     int index = mo->indexOfSlot("stringMethod()");
     QVERIFY(index != -1);
-    QVERIFY(mo->method(index).returnType() == QMetaType::QString);
+    QCOMPARE(mo->method(index).returnType(), int(QMetaType::QString));
 
     index = mo->indexOfSlot("combined1()");
     QVERIFY(index != -1);
@@ -3127,7 +3127,7 @@ void tst_Moc::parseDefines()
             QVERIFY(!qstrcmp(mci.value(), "TestValue"));
         }
     }
-    QVERIFY(count == 3);
+    QCOMPARE(count, 3);
 
     index = mo->indexOfSlot("PD_DEFINE_ITSELF_SUFFIX(int)");
     QVERIFY(index != -1);
@@ -3253,7 +3253,7 @@ void tst_Moc::relatedMetaObjectsWithinNamespaces()
 
     const QMetaObject *testMo = &QTBUG_2151::B::staticMetaObject;
     QVERIFY(testMo->d.relatedMetaObjects);
-    QVERIFY(testMo->d.relatedMetaObjects[0] == relatedMo);
+    QCOMPARE(testMo->d.relatedMetaObjects[0], relatedMo);
 }
 
 void tst_Moc::relatedMetaObjectsInGadget()
@@ -3262,7 +3262,7 @@ void tst_Moc::relatedMetaObjectsInGadget()
 
     const QMetaObject *testMo = &QTBUG_35657::B::staticMetaObject;
     QVERIFY(testMo->d.relatedMetaObjects);
-    QVERIFY(testMo->d.relatedMetaObjects[0] == relatedMo);
+    QCOMPARE(testMo->d.relatedMetaObjects[0], relatedMo);
 }
 
 void tst_Moc::relatedMetaObjectsNameConflict_data()

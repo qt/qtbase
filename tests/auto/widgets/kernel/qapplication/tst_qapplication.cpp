@@ -62,6 +62,7 @@
 #endif
 
 #include <qpa/qwindowsysteminterface.h>
+#include <private/qhighdpiscaling_p.h>
 
 #include "../../../qtest-config.h"
 
@@ -161,9 +162,6 @@ private slots:
     void topLevelWidgets();
 
     void setAttribute();
-
-    void windowsCommandLine_data();
-    void windowsCommandLine();
 
     void touchEventPropagation();
 
@@ -1160,7 +1158,7 @@ void tst_QApplication::sendPostedEvents()
     QMetaObject::invokeMethod(&app, "quit", Qt::QueuedConnection);
     QPointer<SendPostedEventsTester> p = tester;
     (void) app.exec();
-    QVERIFY(p == 0);
+    QVERIFY(p.isNull());
 }
 
 void tst_QApplication::thread()
@@ -1178,8 +1176,8 @@ void tst_QApplication::thread()
     // *before* the QApplication has a thread
     QObject object;
     QObject child(&object);
-    QVERIFY(object.thread() == currentThread);
-    QVERIFY(child.thread() == currentThread);
+    QCOMPARE(object.thread(), currentThread);
+    QCOMPARE(child.thread(), currentThread);
 
     {
         int argc = 0;
@@ -1209,8 +1207,8 @@ void tst_QApplication::thread()
     QVERIFY(!currentThread->isFinished());
 
     // should still have a thread
-    QVERIFY(object.thread() == currentThread);
-    QVERIFY(child.thread() == currentThread);
+    QCOMPARE(object.thread(), currentThread);
+    QCOMPARE(child.thread(), currentThread);
 
     // do the test again, making sure that the thread is the same as
     // before
@@ -1231,8 +1229,8 @@ void tst_QApplication::thread()
         QVERIFY(!currentThread->isFinished());
 
         // should still have a thread
-        QVERIFY(object.thread() == currentThread);
-        QVERIFY(child.thread() == currentThread);
+        QCOMPARE(object.thread(), currentThread);
+        QCOMPARE(child.thread(), currentThread);
 
         QTestEventLoop::instance().enterLoop(1);
     }
@@ -1246,8 +1244,8 @@ void tst_QApplication::thread()
     QVERIFY(!currentThread->isFinished());
 
     // should still have a thread
-    QVERIFY(object.thread() == currentThread);
-    QVERIFY(child.thread() == currentThread);
+    QCOMPARE(object.thread(), currentThread);
+    QCOMPARE(child.thread(), currentThread);
 }
 
 class DeleteLaterWidget : public QWidget
@@ -1302,7 +1300,7 @@ void DeleteLaterWidget::checkDeleteLater()
 void tst_QApplication::testDeleteLater()
 {
 #ifdef Q_OS_MAC
-    QSKIP("This test fails and then hangs on Mac OS X, see QTBUG-24318");
+    QSKIP("This test fails and then hangs on OS X, see QTBUG-24318");
 #endif
     int argc = 0;
     QApplication app(argc, 0);
@@ -1561,9 +1559,9 @@ void tst_QApplication::focusChanged()
     QCOMPARE(spy.at(0).count(), 2);
     old = qvariant_cast<QWidget*>(spy.at(0).at(0));
     now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-    QVERIFY(now == &le1);
-    QVERIFY(now == QApplication::focusWidget());
-    QVERIFY(old == 0);
+    QCOMPARE(now, &le1);
+    QCOMPARE(now, QApplication::focusWidget());
+    QVERIFY(!old);
     spy.clear();
     QCOMPARE(spy.count(), 0);
 
@@ -1571,27 +1569,27 @@ void tst_QApplication::focusChanged()
     QCOMPARE(spy.count(), 1);
     old = qvariant_cast<QWidget*>(spy.at(0).at(0));
     now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-    QVERIFY(now == &pb1);
-    QVERIFY(now == QApplication::focusWidget());
-    QVERIFY(old == &le1);
+    QCOMPARE(now, &pb1);
+    QCOMPARE(now, QApplication::focusWidget());
+    QCOMPARE(old, &le1);
     spy.clear();
 
     lb1.setFocus();
     QCOMPARE(spy.count(), 1);
     old = qvariant_cast<QWidget*>(spy.at(0).at(0));
     now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-    QVERIFY(now == &lb1);
-    QVERIFY(now == QApplication::focusWidget());
-    QVERIFY(old == &pb1);
+    QCOMPARE(now, &lb1);
+    QCOMPARE(now, QApplication::focusWidget());
+    QCOMPARE(old, &pb1);
     spy.clear();
 
     lb1.clearFocus();
     QCOMPARE(spy.count(), 1);
     old = qvariant_cast<QWidget*>(spy.at(0).at(0));
     now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-    QVERIFY(now == 0);
-    QVERIFY(now == QApplication::focusWidget());
-    QVERIFY(old == &lb1);
+    QVERIFY(!now);
+    QCOMPARE(now, QApplication::focusWidget());
+    QCOMPARE(old, &lb1);
     spy.clear();
 
     QWidget parent2;
@@ -1608,9 +1606,9 @@ void tst_QApplication::focusChanged()
     QVERIFY(spy.count() > 0); // one for deactivation, one for activation on Windows
     old = qvariant_cast<QWidget*>(spy.at(spy.count()-1).at(0));
     now = qvariant_cast<QWidget*>(spy.at(spy.count()-1).at(1));
-    QVERIFY(now == &le2);
-    QVERIFY(now == QApplication::focusWidget());
-    QVERIFY(old == 0);
+    QCOMPARE(now, &le2);
+    QCOMPARE(now, QApplication::focusWidget());
+    QVERIFY(!old);
     spy.clear();
 
     QTestKeyEvent tab(QTest::Press, Qt::Key_Tab, 0, 0);
@@ -1632,82 +1630,82 @@ void tst_QApplication::focusChanged()
 
     tab.simulate(now);
     if (!tabAllControls) {
-        QVERIFY(spy.count() == 0);
-        QVERIFY(now == QApplication::focusWidget());
+        QCOMPARE(spy.count(), 0);
+        QCOMPARE(now, QApplication::focusWidget());
     } else {
         QVERIFY(spy.count() > 0);
         old = qvariant_cast<QWidget*>(spy.at(0).at(0));
         now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-        QVERIFY(now == &pb2);
-        QVERIFY(now == QApplication::focusWidget());
-        QVERIFY(old == &le2);
+        QCOMPARE(now, &pb2);
+        QCOMPARE(now, QApplication::focusWidget());
+        QCOMPARE(old, &le2);
         spy.clear();
     }
 
     if (!tabAllControls) {
-        QVERIFY(spy.count() == 0);
-        QVERIFY(now == QApplication::focusWidget());
+        QCOMPARE(spy.count(), 0);
+        QCOMPARE(now, QApplication::focusWidget());
     } else {
         tab.simulate(now);
         QVERIFY(spy.count() > 0);
         old = qvariant_cast<QWidget*>(spy.at(0).at(0));
         now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-        QVERIFY(now == &le2);
-        QVERIFY(now == QApplication::focusWidget());
-        QVERIFY(old == &pb2);
+        QCOMPARE(now, &le2);
+        QCOMPARE(now, QApplication::focusWidget());
+        QCOMPARE(old, &pb2);
         spy.clear();
     }
 
     if (!tabAllControls) {
-        QVERIFY(spy.count() == 0);
-        QVERIFY(now == QApplication::focusWidget());
+        QCOMPARE(spy.count(), 0);
+        QCOMPARE(now, QApplication::focusWidget());
     } else {
         backtab.simulate(now);
         QVERIFY(spy.count() > 0);
         old = qvariant_cast<QWidget*>(spy.at(0).at(0));
         now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-        QVERIFY(now == &pb2);
-        QVERIFY(now == QApplication::focusWidget());
-        QVERIFY(old == &le2);
+        QCOMPARE(now, &pb2);
+        QCOMPARE(now, QApplication::focusWidget());
+        QCOMPARE(old, &le2);
         spy.clear();
     }
 
 
     if (!tabAllControls) {
-        QVERIFY(spy.count() == 0);
-        QVERIFY(now == QApplication::focusWidget());
+        QCOMPARE(spy.count(), 0);
+        QCOMPARE(now, QApplication::focusWidget());
         old = &pb2;
     } else {
         backtab.simulate(now);
         QVERIFY(spy.count() > 0);
         old = qvariant_cast<QWidget*>(spy.at(0).at(0));
         now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-        QVERIFY(now == &le2);
-        QVERIFY(now == QApplication::focusWidget());
-        QVERIFY(old == &pb2);
+        QCOMPARE(now, &le2);
+        QCOMPARE(now, QApplication::focusWidget());
+        QCOMPARE(old, &pb2);
         spy.clear();
     }
 
     click.simulate(old);
     if (!(pb2.focusPolicy() & Qt::ClickFocus)) {
-        QVERIFY(spy.count() == 0);
-        QVERIFY(now == QApplication::focusWidget());
+        QCOMPARE(spy.count(), 0);
+        QCOMPARE(now, QApplication::focusWidget());
     } else {
         QVERIFY(spy.count() > 0);
         old = qvariant_cast<QWidget*>(spy.at(0).at(0));
         now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-        QVERIFY(now == &pb2);
-        QVERIFY(now == QApplication::focusWidget());
-        QVERIFY(old == &le2);
+        QCOMPARE(now, &pb2);
+        QCOMPARE(now, QApplication::focusWidget());
+        QCOMPARE(old, &le2);
         spy.clear();
 
         click.simulate(old);
         QVERIFY(spy.count() > 0);
         old = qvariant_cast<QWidget*>(spy.at(0).at(0));
         now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-        QVERIFY(now == &le2);
-        QVERIFY(now == QApplication::focusWidget());
-        QVERIFY(old == &pb2);
+        QCOMPARE(now, &le2);
+        QCOMPARE(now, QApplication::focusWidget());
+        QCOMPARE(old, &pb2);
         spy.clear();
     }
 
@@ -1722,9 +1720,9 @@ void tst_QApplication::focusChanged()
     else
         old = qvariant_cast<QWidget*>(spy.at(spy.count()-2).at(0));
     now = qvariant_cast<QWidget*>(spy.at(spy.count()-1).at(1));
-    QVERIFY(now == &le1);
-    QVERIFY(now == QApplication::focusWidget());
-    QVERIFY(old == &le2);
+    QCOMPARE(now, &le1);
+    QCOMPARE(now, QApplication::focusWidget());
+    QCOMPARE(old, &le2);
     spy.clear();
 }
 
@@ -1933,39 +1931,6 @@ void tst_QApplication::setAttribute()
     delete w;
 }
 
-void tst_QApplication::windowsCommandLine_data()
-{
-#if defined(Q_OS_WIN)
-    QTest::addColumn<QString>("args");
-    QTest::addColumn<QString>("expected");
-
-    QTest::newRow("hello world")
-        << QString("Hello \"World\"")
-        << QString("Hello \"World\"");
-    QTest::newRow("sql")
-        << QString("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'PNR' AND TABLE_TYPE = 'VIEW' ORDER BY TABLE_NAME")
-        << QString("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'PNR' AND TABLE_TYPE = 'VIEW' ORDER BY TABLE_NAME");
-#endif
-}
-
-void tst_QApplication::windowsCommandLine()
-{
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
-    QFETCH(QString, args);
-    QFETCH(QString, expected);
-
-    QProcess testProcess;
-    const QString path = QStringLiteral("wincmdline/wincmdline");
-    testProcess.start(path, QStringList(args));
-    QVERIFY2(testProcess.waitForStarted(),
-             qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, testProcess.errorString())));
-    QVERIFY(testProcess.waitForFinished(10000));
-    QByteArray error = testProcess.readAllStandardError();
-    QString procError(error);
-    QCOMPARE(procError, expected);
-#endif
-}
-
 class TouchEventPropagationTestWidget : public QWidget
 {
     Q_OBJECT
@@ -2038,8 +2003,10 @@ void tst_QApplication::touchEventPropagation()
         QVERIFY(QTest::qWaitForWindowExposed(&window));
         // QPA always takes screen positions and since we map the TouchPoint back to QPA's structure first,
         // we must ensure there is a screen position in the TouchPoint that maps to a local 0, 0.
-        pressedTouchPoints[0].setScreenPos(window.mapToGlobal(QPoint(0, 0)));
-        releasedTouchPoints[0].setScreenPos(window.mapToGlobal(QPoint(0, 0)));
+        const QPoint deviceGlobalPos =
+            QHighDpi::toNativePixels(window.mapToGlobal(QPoint(0, 0)), window.windowHandle()->screen());
+        pressedTouchPoints[0].setScreenPos(deviceGlobalPos);
+        releasedTouchPoints[0].setScreenPos(deviceGlobalPos);
 
         QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
                                                  0,
@@ -2088,11 +2055,14 @@ void tst_QApplication::touchEventPropagation()
         window.resize(200, 200);
         window.setObjectName("2. window");
         TouchEventPropagationTestWidget widget(&window);
+        widget.resize(200, 200);
         widget.setObjectName("2. widget");
         window.show();
         QVERIFY(QTest::qWaitForWindowExposed(&window));
-        pressedTouchPoints[0].setScreenPos(window.mapToGlobal(QPoint(0, 0)));
-        releasedTouchPoints[0].setScreenPos(window.mapToGlobal(QPoint(0, 0)));
+        const QPoint deviceGlobalPos =
+            QHighDpi::toNativePixels(window.mapToGlobal(QPoint(50, 50)), window.windowHandle()->screen());
+        pressedTouchPoints[0].setScreenPos(deviceGlobalPos);
+        releasedTouchPoints[0].setScreenPos(deviceGlobalPos);
 
         QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
                                                  0,
@@ -2102,9 +2072,8 @@ void tst_QApplication::touchEventPropagation()
                                                  0,
                                                  device,
                                                  touchPointList(releasedTouchPoints));
-        QCoreApplication::processEvents();
+        QTRY_VERIFY(widget.seenMouseEvent);
         QVERIFY(!widget.seenTouchEvent);
-        QVERIFY(widget.seenMouseEvent);
         QVERIFY(!window.seenTouchEvent);
         QVERIFY(window.seenMouseEvent);
 

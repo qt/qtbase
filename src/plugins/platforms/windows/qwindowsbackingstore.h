@@ -35,7 +35,6 @@
 #define QWINDOWSBACKINGSTORE_H
 
 #include "qtwindows_additional.h"
-#include "qwindowsscaling.h"
 
 #include <qpa/qplatformbackingstore.h>
 #include <QtCore/QScopedPointer>
@@ -53,12 +52,7 @@ public:
     ~QWindowsBackingStore();
 
     QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE
-    {
-        flushDp(window, QWindowsScaling::mapToNative(region.boundingRect()),
-                offset * QWindowsScaling::factor());
-    }
-    void flushDp(QWindow *window, const QRect &boundingRect, const QPoint &offset);
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
     void resize(const QSize &size, const QRegion &r) Q_DECL_OVERRIDE;
     bool scroll(const QRegion &area, int dx, int dy) Q_DECL_OVERRIDE;
     void beginPaint(const QRegion &) Q_DECL_OVERRIDE;

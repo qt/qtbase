@@ -63,13 +63,3 @@ while (new_data_available()) {
 }
 delete decoder;
 //! [2]
-
-
-//! [3]
-int main(int argc, char *argv[])
-{
-    QApplication app(argc, argv);
-    QTextCodec::setCodecForTr(QTextCodec::codecForName("eucKR"));
-    ...
-}
-//! [3]

@@ -360,7 +360,8 @@ QSpinBox::down-button { height: 10px }
 
 
 //! [59]
-/* implicitly sets the size of down-button to the size of spindown.png */
+// implicitly sets the size of down-button to the
+// size of spindown.png
 QSpinBox::down-button { image: url(:/images/spindown.png) }
 //! [59]
 
@@ -489,7 +490,8 @@ QDialog { etch-disabled-text: 1 }
 QLabel { border-color: red }   /* red red red red */
 QLabel { border-color: red blue } /* red blue red blue */
 QLabel { border-color: red blue green } /* red blue green blue */
-QLabel { border-color: red blue green yellow }  /* red blue green yellow */
+QLabel { border-color: red blue green yellow }
+/* red blue green yellow */
 //! [82]
 
 
@@ -522,7 +524,8 @@ QTextEdit {
 /* linear gradient from white to green */
 QTextEdit {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                stop:0 white, stop: 0.4 rgba(10, 20, 30, 40), stop:1 rgb(0, 200, 230, 200))
+                stop:0 white, stop: 0.4 rgba(10, 20, 30, 40),
+                stop:1 rgb(0, 200, 230, 200))
 }
 
 
@@ -549,7 +552,8 @@ QTextEdit {
 QMessageBox {
     dialogbuttonbox-buttons-have-icons: true;
     dialog-ok-icon: url(ok.svg);
-    dialog-cancel-icon: url(cancel.png), url(grayed_cancel.png) disabled;
+    dialog-cancel-icon: url(cancel.png),
+                        url(grayed_cancel.png) disabled;
 }
 //! [86]
 

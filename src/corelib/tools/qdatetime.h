@@ -59,7 +59,7 @@ public:
         StandaloneFormat
     };
 private:
-    Q_DECL_CONSTEXPR QDate(qint64 julianDay) : jd(julianDay) {}
+    explicit Q_DECL_CONSTEXPR QDate(qint64 julianDay) : jd(julianDay) {}
 public:
     Q_DECL_CONSTEXPR QDate() : jd(nullJd()) {}
     QDate(int y, int m, int d);
@@ -74,7 +74,7 @@ public:
     int dayOfYear() const;
     int daysInMonth() const;
     int daysInYear() const;
-    int weekNumber(int *yearNum = 0) const;
+    int weekNumber(int *yearNum = Q_NULLPTR) const;
 
 #ifndef QT_NO_TEXTDATE
     static QString shortMonthName(int month, MonthNameType type = DateFormat);
@@ -138,7 +138,7 @@ Q_DECLARE_TYPEINFO(QDate, Q_MOVABLE_TYPE);
 
 class Q_CORE_EXPORT QTime
 {
-    Q_DECL_CONSTEXPR QTime(int ms) : mds(ms)
+    explicit Q_DECL_CONSTEXPR QTime(int ms) : mds(ms)
 #if defined(Q_OS_WINCE)
         , startTick(NullTime)
 #endif
@@ -222,9 +222,12 @@ public:
     QDateTime(const QDateTime &other);
     ~QDateTime();
 
+#ifdef Q_COMPILER_RVALUE_REFS
+    QDateTime &operator=(QDateTime &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
     QDateTime &operator=(const QDateTime &other);
 
-    inline void swap(QDateTime &other) { qSwap(d, other.d); }
+    void swap(QDateTime &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
     bool isNull() const;
     bool isValid() const;

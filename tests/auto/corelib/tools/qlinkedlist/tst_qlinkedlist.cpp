@@ -527,12 +527,12 @@ void tst_QLinkedList::contains() const
     QLinkedList<T> list;
     list << T_FOO << T_BAR << T_BAZ;
 
-    QVERIFY(list.contains(T_FOO) == true);
+    QVERIFY(list.contains(T_FOO));
     QVERIFY(list.contains(T_BLAH) != true);
 
     // add it and make sure it matches
     list.append(T_BLAH);
-    QVERIFY(list.contains(T_BLAH) == true);
+    QVERIFY(list.contains(T_BLAH));
 }
 
 void tst_QLinkedList::containsInt() const

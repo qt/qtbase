@@ -1218,7 +1218,6 @@ QSqlRecord QSqlDatabase::record(const QString& tablename) const
     \li CLIENT_COMPRESS
     \li CLIENT_FOUND_ROWS
     \li CLIENT_IGNORE_SPACE
-    \li CLIENT_SSL
     \li CLIENT_ODBC
     \li CLIENT_NO_SCHEMA
     \li CLIENT_INTERACTIVE
@@ -1227,6 +1226,11 @@ QSqlRecord QSqlDatabase::record(const QString& tablename) const
     \li MYSQL_OPT_CONNECT_TIMEOUT
     \li MYSQL_OPT_READ_TIMEOUT
     \li MYSQL_OPT_WRITE_TIMEOUT
+    \li SSL_KEY
+    \li SSL_CERT
+    \li SSL_CA
+    \li SSL_CAPATH
+    \li SSL_CIPHER
     \endlist
 
     \li

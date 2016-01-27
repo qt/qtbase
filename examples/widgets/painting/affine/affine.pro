@@ -17,6 +17,6 @@ RESOURCES += affine.qrc
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/painting/affine
 INSTALLS += target
 
-wince*: {
+wince {
     DEPLOYMENT_PLUGIN += qjpeg
 }

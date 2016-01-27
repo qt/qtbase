@@ -80,7 +80,7 @@ if (db.open()) {
 //! [4]
 ...
 // MySQL connection
-db.setConnectOptions("CLIENT_SSL=1;CLIENT_IGNORE_SPACE=1"); // use an SSL connection to the server
+db.setConnectOptions("SSL_KEY=client-key.pem;SSL_CERT=client-cert.pem;SSL_CA=ca-cert.pem;CLIENT_IGNORE_SPACE=1"); // use an SSL connection to the server
 if (!db.open()) {
     db.setConnectOptions(); // clears the connect option string
     ...

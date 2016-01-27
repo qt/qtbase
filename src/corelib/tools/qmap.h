@@ -38,6 +38,7 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qrefcount.h>
 #include <QtCore/qpair.h>
+#include <QtCore/qtypetraits.h>
 
 #ifdef Q_MAP_DEBUG
 #include <QtCore/qdebug.h>
@@ -94,6 +95,13 @@ struct Q_CORE_EXPORT QMapNodeBase
     void setColor(Color c) { if (c == Black) p |= Black; else p &= ~Black; }
     QMapNodeBase *parent() const { return reinterpret_cast<QMapNodeBase *>(p & ~Mask); }
     void setParent(QMapNodeBase *pp) { p = (p & Mask) | quintptr(pp); }
+
+    template <typename T>
+    static typename QtPrivate::QEnableIf<QTypeInfo<T>::isComplex>::Type
+    callDestructorIfNecessary(T &t) Q_DECL_NOTHROW { Q_UNUSED(t); t.~T(); } // Q_UNUSED: silence MSVC unused 't' warning
+    template <typename T>
+    static typename QtPrivate::QEnableIf<!QTypeInfo<T>::isComplex>::Type
+    callDestructorIfNecessary(T &) Q_DECL_NOTHROW {}
 };
 
 template <class Key, class T>
@@ -112,12 +120,26 @@ struct QMapNode : public QMapNodeBase
 
     QMapNode<Key, T> *copy(QMapData<Key, T> *d) const;
 
-    void destroySubTree();
+    void destroySubTree()
+    {
+        callDestructorIfNecessary(key);
+        callDestructorIfNecessary(value);
+        doDestroySubTree(QtPrivate::integral_constant<bool, QTypeInfo<T>::isComplex || QTypeInfo<Key>::isComplex>());
+    }
 
     QMapNode<Key, T> *lowerBound(const Key &key);
     QMapNode<Key, T> *upperBound(const Key &key);
 
 private:
+    void doDestroySubTree(QtPrivate::false_type) {}
+    void doDestroySubTree(QtPrivate::true_type)
+    {
+        if (left)
+            leftNode()->destroySubTree();
+        if (right)
+            rightNode()->destroySubTree();
+    }
+
     QMapNode() Q_DECL_EQ_DELETE;
     Q_DISABLE_COPY(QMapNode)
 };
@@ -126,7 +148,7 @@ template <class Key, class T>
 inline QMapNode<Key, T> *QMapNode<Key, T>::lowerBound(const Key &akey)
 {
     QMapNode<Key, T> *n = this;
-    QMapNode<Key, T> *lastNode = 0;
+    QMapNode<Key, T> *lastNode = Q_NULLPTR;
     while (n) {
         if (!qMapLessThanKey(n->key, akey)) {
             lastNode = n;
@@ -142,7 +164,7 @@ template <class Key, class T>
 inline QMapNode<Key, T> *QMapNode<Key, T>::upperBound(const Key &akey)
 {
     QMapNode<Key, T> *n = this;
-    QMapNode<Key, T> *lastNode = 0;
+    QMapNode<Key, T> *lastNode = Q_NULLPTR;
     while (n) {
         if (qMapLessThanKey(akey, n->key)) {
             lastNode = n;
@@ -194,7 +216,7 @@ struct QMapData : public QMapDataBase
     Node *findNode(const Key &akey) const;
     void nodeRange(const Key &akey, Node **firstNode, Node **lastNode);
 
-    Node *createNode(const Key &k, const T &v, Node *parent = 0, bool left = false)
+    Node *createNode(const Key &k, const T &v, Node *parent = Q_NULLPTR, bool left = false)
     {
         Node *n = static_cast<Node *>(QMapDataBase::createNode(sizeof(Node), Q_ALIGNOF(Node),
                                       parent, left));
@@ -235,48 +257,22 @@ QMapNode<Key, T> *QMapNode<Key, T>::copy(QMapData<Key, T> *d) const
         n->left = leftNode()->copy(d);
         n->left->setParent(n);
     } else {
-        n->left = 0;
+        n->left = Q_NULLPTR;
     }
     if (right) {
         n->right = rightNode()->copy(d);
         n->right->setParent(n);
     } else {
-        n->right = 0;
+        n->right = Q_NULLPTR;
     }
     return n;
 }
 
-#if defined(Q_CC_MSVC)
-#pragma warning( push )
-#pragma warning( disable : 4127 ) // conditional expression is constant
-#endif
-
-template <class Key, class T>
-void QMapNode<Key, T>::destroySubTree()
-{
-    if (QTypeInfo<Key>::isComplex)
-        key.~Key();
-    if (QTypeInfo<T>::isComplex)
-        value.~T();
-    if (QTypeInfo<Key>::isComplex || QTypeInfo<T>::isComplex) {
-        if (left)
-            leftNode()->destroySubTree();
-        if (right)
-            rightNode()->destroySubTree();
-    }
-}
-
-#if defined(Q_CC_MSVC)
-#pragma warning( pop )
-#endif
-
 template <class Key, class T>
 void QMapData<Key, T>::deleteNode(QMapNode<Key, T> *z)
 {
-    if (QTypeInfo<Key>::isComplex)
-        z->key.~Key();
-    if (QTypeInfo<T>::isComplex)
-        z->value.~T();
+    QMapNodeBase::callDestructorIfNecessary(z->key);
+    QMapNodeBase::callDestructorIfNecessary(z->value);
     freeNodeAndRebalance(z);
 }
 
@@ -288,7 +284,7 @@ QMapNode<Key, T> *QMapData<Key, T>::findNode(const Key &akey) const
         if (lb && !qMapLessThanKey(akey, lb->key))
             return lb;
     }
-    return 0;
+    return Q_NULLPTR;
 }
 
 
@@ -304,10 +300,10 @@ void QMapData<Key, T>::nodeRange(const Key &akey, QMapNode<Key, T> **firstNode, 
         } else if (qMapLessThanKey(n->key, akey)) {
             n = n->rightNode();
         } else {
-            *firstNode = n->leftNode() ? n->leftNode()->lowerBound(akey) : 0;
+            *firstNode = n->leftNode() ? n->leftNode()->lowerBound(akey) : Q_NULLPTR;
             if (!*firstNode)
                 *firstNode = n;
-            *lastNode = n->rightNode() ? n->rightNode()->upperBound(akey) : 0;
+            *lastNode = n->rightNode() ? n->rightNode()->upperBound(akey) : Q_NULLPTR;
             if (!*lastNode)
                 *lastNode = l;
             return;
@@ -348,7 +344,7 @@ public:
     }
 
     inline QMap<Key, T> &operator=(QMap<Key, T> &&other)
-    { qSwap(d, other.d); return *this; }
+    { QMap moved(std::move(other)); swap(moved); return *this; }
 #endif
     inline void swap(QMap<Key, T> &other) { qSwap(d, other.d); }
     explicit QMap(const typename std::map<Key, T> &other);
@@ -416,7 +412,7 @@ public:
         typedef T *pointer;
         typedef T &reference;
 
-        inline iterator() : i(0) { }
+        inline iterator() : i(Q_NULLPTR) { }
         inline iterator(Node *node) : i(node) { }
 
         inline const Key &key() const { return i->key; }
@@ -473,7 +469,7 @@ public:
         typedef const T *pointer;
         typedef const T &reference;
 
-        inline const_iterator() : i(0) { }
+        inline const_iterator() : i(Q_NULLPTR) { }
         inline const_iterator(const Node *node) : i(node) { }
 #ifdef QT_STRICT_ITERATORS
         explicit inline const_iterator(const iterator &o)
@@ -522,6 +518,32 @@ public:
     };
     friend class const_iterator;
 
+    class key_iterator
+    {
+        const_iterator i;
+
+    public:
+        typedef typename const_iterator::iterator_category iterator_category;
+        typedef typename const_iterator::difference_type difference_type;
+        typedef Key value_type;
+        typedef const Key *pointer;
+        typedef const Key &reference;
+
+        explicit key_iterator(const_iterator o) : i(o) { }
+
+        const Key &operator*() const { return i.key(); }
+        const Key *operator->() const { return &i.key(); }
+        bool operator==(key_iterator o) const { return i == o.i; }
+        bool operator!=(key_iterator o) const { return i != o.i; }
+
+        inline key_iterator &operator++() { ++i; return *this; }
+        inline key_iterator operator++(int) { return key_iterator(i++);}
+        inline key_iterator &operator--() { --i; return *this; }
+        inline key_iterator operator--(int) { return key_iterator(i--); }
+        const_iterator base() const { return i; }
+    };
+
+
     // STL style
     inline iterator begin() { detach(); return iterator(d->begin()); }
     inline const_iterator begin() const { return const_iterator(d->begin()); }
@@ -531,6 +553,8 @@ public:
     inline const_iterator end() const { return const_iterator(d->end()); }
     inline const_iterator constEnd() const { return const_iterator(d->end()); }
     inline const_iterator cend() const { return const_iterator(d->end()); }
+    inline key_iterator keyBegin() const { return key_iterator(begin()); }
+    inline key_iterator keyEnd() const { return key_iterator(end()); }
     iterator erase(iterator it);
 
     // more Qt
@@ -557,6 +581,7 @@ public:
     typedef int size_type;
     inline bool empty() const { return isEmpty(); }
     QPair<iterator, iterator> equal_range(const Key &akey);
+    QPair<const_iterator, const_iterator> equal_range(const Key &akey) const;
 
 #ifdef Q_MAP_DEBUG
     void dump() const;
@@ -653,7 +678,7 @@ Q_INLINE_TEMPLATE int QMap<Key, T>::count(const Key &akey) const
 template <class Key, class T>
 Q_INLINE_TEMPLATE bool QMap<Key, T>::contains(const Key &akey) const
 {
-    return d->findNode(akey) != 0;
+    return d->findNode(akey) != Q_NULLPTR;
 }
 
 template <class Key, class T>
@@ -662,7 +687,7 @@ Q_INLINE_TEMPLATE typename QMap<Key, T>::iterator QMap<Key, T>::insert(const Key
     detach();
     Node *n = d->root();
     Node *y = d->end();
-    Node *lastNode = 0;
+    Node *lastNode = Q_NULLPTR;
     bool  left = true;
     while (n) {
         y = n;
@@ -737,15 +762,15 @@ typename QMap<Key, T>::iterator QMap<Key, T>::insert(const_iterator pos, const K
             }
 
             // we need to insert (not overwrite)
-            if (prev->right == 0) {
+            if (prev->right == Q_NULLPTR) {
                 Node *z = d->createNode(akey, avalue, prev, false);
                 return iterator(z);
             }
-            if (next->left == 0) {
+            if (next->left == Q_NULLPTR) {
                 Node *z = d->createNode(akey, avalue, next, true);
                 return iterator(z);
             }
-            Q_ASSERT(false); // We should have prev->right == 0 or next->left == 0.
+            Q_ASSERT(false); // We should have prev->right == Q_NULLPTR or next->left == Q_NULLPTR.
             return this->insert(akey, avalue);
         }
     }
@@ -759,7 +784,7 @@ Q_INLINE_TEMPLATE typename QMap<Key, T>::iterator QMap<Key, T>::insertMulti(cons
     Node* y = d->end();
     Node* x = static_cast<Node *>(d->root());
     bool left = true;
-    while (x != 0) {
+    while (x != Q_NULLPTR) {
         left = !qMapLessThanKey(x->key, akey);
         y = x;
         x = left ? x->leftNode() : x->rightNode();
@@ -806,15 +831,15 @@ typename QMap<Key, T>::iterator QMap<Key, T>::insertMulti(const_iterator pos, co
                 return this->insertMulti(akey, avalue); // ignore hint
 
             // Hint is ok - do insert
-            if (prev->right == 0) {
+            if (prev->right == Q_NULLPTR) {
                 Node *z = d->createNode(akey, avalue, prev, false);
                 return iterator(z);
             }
-            if (next->left == 0) {
+            if (next->left == Q_NULLPTR) {
                 Node *z = d->createNode(akey, avalue, next, true);
                 return iterator(z);
             }
-            Q_ASSERT(false); // We should have prev->right == 0 or next->left == 0.
+            Q_ASSERT(false); // We should have prev->right == Q_NULLPTR or next->left == Q_NULLPTR.
             return this->insertMulti(akey, avalue);
         }
     }
@@ -862,6 +887,15 @@ QPair<typename QMap<Key, T>::iterator, typename QMap<Key, T>::iterator> QMap<Key
     Node *firstNode, *lastNode;
     d->nodeRange(akey, &firstNode, &lastNode);
     return QPair<iterator, iterator>(iterator(firstNode), iterator(lastNode));
+}
+
+template <class Key, class T>
+QPair<typename QMap<Key, T>::const_iterator, typename QMap<Key, T>::const_iterator>
+QMap<Key, T>::equal_range(const Key &akey) const
+{
+    Node *firstNode, *lastNode;
+    d->nodeRange(akey, &firstNode, &lastNode);
+    return qMakePair(const_iterator(firstNode), const_iterator(lastNode));
 }
 
 #ifdef Q_MAP_DEBUG
@@ -1051,7 +1085,7 @@ Q_OUTOFLINE_TEMPLATE QList<T> QMap<Key, T>::values(const Key &akey) const
 template <class Key, class T>
 Q_INLINE_TEMPLATE typename QMap<Key, T>::const_iterator QMap<Key, T>::lowerBound(const Key &akey) const
 {
-    Node *lb = d->root() ? d->root()->lowerBound(akey) : 0;
+    Node *lb = d->root() ? d->root()->lowerBound(akey) : Q_NULLPTR;
     if (!lb)
         lb = d->end();
     return const_iterator(lb);
@@ -1061,7 +1095,7 @@ template <class Key, class T>
 Q_INLINE_TEMPLATE typename QMap<Key, T>::iterator QMap<Key, T>::lowerBound(const Key &akey)
 {
     detach();
-    Node *lb = d->root() ? d->root()->lowerBound(akey) : 0;
+    Node *lb = d->root() ? d->root()->lowerBound(akey) : Q_NULLPTR;
     if (!lb)
         lb = d->end();
     return iterator(lb);
@@ -1071,7 +1105,7 @@ template <class Key, class T>
 Q_INLINE_TEMPLATE typename QMap<Key, T>::const_iterator
 QMap<Key, T>::upperBound(const Key &akey) const
 {
-    Node *ub = d->root() ? d->root()->upperBound(akey) : 0;
+    Node *ub = d->root() ? d->root()->upperBound(akey) : Q_NULLPTR;
     if (!ub)
         ub = d->end();
     return const_iterator(ub);
@@ -1081,7 +1115,7 @@ template <class Key, class T>
 Q_INLINE_TEMPLATE typename QMap<Key, T>::iterator QMap<Key, T>::upperBound(const Key &akey)
 {
     detach();
-    Node *ub = d->root() ? d->root()->upperBound(akey) : 0;
+    Node *ub = d->root() ? d->root()->upperBound(akey) : Q_NULLPTR;
     if (!ub)
         ub = d->end();
     return iterator(ub);

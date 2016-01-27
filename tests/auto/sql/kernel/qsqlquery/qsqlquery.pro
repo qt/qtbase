@@ -5,9 +5,9 @@ SOURCES  += tst_qsqlquery.cpp
 
 QT = core sql testlib core-private sql-private
 
-!wince*:win32:LIBS += -lws2_32
+win32:!wince: LIBS += -lws2_32
 
-wince*: {
+wince {
    plugFiles.files = ../../../plugins/sqldrivers
    plugFiles.path    = .
    DEPLOYMENT += plugFiles

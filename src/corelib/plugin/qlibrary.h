@@ -59,10 +59,10 @@ public:
     Q_FLAG(LoadHint)
     Q_FLAG(LoadHints)
 
-    explicit QLibrary(QObject *parent = 0);
-    explicit QLibrary(const QString& fileName, QObject *parent = 0);
-    explicit QLibrary(const QString& fileName, int verNum, QObject *parent = 0);
-    explicit QLibrary(const QString& fileName, const QString &version, QObject *parent = 0);
+    explicit QLibrary(QObject *parent = Q_NULLPTR);
+    explicit QLibrary(const QString& fileName, QObject *parent = Q_NULLPTR);
+    explicit QLibrary(const QString& fileName, int verNum, QObject *parent = Q_NULLPTR);
+    explicit QLibrary(const QString& fileName, const QString &version, QObject *parent = Q_NULLPTR);
     ~QLibrary();
 
     QFunctionPointer resolve(const char *symbol);

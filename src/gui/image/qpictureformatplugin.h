@@ -53,7 +53,7 @@ class Q_GUI_EXPORT QPictureFormatPlugin : public QObject
 {
     Q_OBJECT
 public:
-    explicit QPictureFormatPlugin(QObject *parent = 0);
+    explicit QPictureFormatPlugin(QObject *parent = Q_NULLPTR);
     ~QPictureFormatPlugin();
 
     virtual bool loadPicture(const QString &format, const QString &filename, QPicture *pic);

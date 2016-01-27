@@ -46,9 +46,9 @@ public:
     explicit QCocoaInputContext();
     ~QCocoaInputContext();
 
-    virtual bool isValid() const { return true; }
+    bool isValid() const Q_DECL_OVERRIDE { return true; }
 
-    virtual void reset();
+    void reset() Q_DECL_OVERRIDE;
 
 private Q_SLOTS:
     void connectSignals();

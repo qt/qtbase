@@ -585,7 +585,9 @@ Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max
 #  define QT_OSX_DEPLOYMENT_TARGET_BELOW(osx) \
       QT_MAC_DEPLOYMENT_TARGET_BELOW(osx, __IPHONE_NA)
 
+QT_END_NAMESPACE
 Q_FORWARD_DECLARE_OBJC_CLASS(NSAutoreleasePool);
+QT_BEGIN_NAMESPACE
 
 // Implemented in qcore_mac_objc.mm
 class Q_CORE_EXPORT QMacAutoReleasePool
@@ -1077,7 +1079,7 @@ Q_CORE_EXPORT bool qunsetenv(const char *varName);
 
 Q_CORE_EXPORT bool qEnvironmentVariableIsEmpty(const char *varName) Q_DECL_NOEXCEPT;
 Q_CORE_EXPORT bool qEnvironmentVariableIsSet(const char *varName) Q_DECL_NOEXCEPT;
-Q_CORE_EXPORT int  qEnvironmentVariableIntValue(const char *varName, bool *ok=0) Q_DECL_NOEXCEPT;
+Q_CORE_EXPORT int  qEnvironmentVariableIntValue(const char *varName, bool *ok=Q_NULLPTR) Q_DECL_NOEXCEPT;
 
 inline int qIntCast(double f) { return int(f); }
 inline int qIntCast(float f) { return int(f); }

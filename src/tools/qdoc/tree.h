@@ -56,7 +56,12 @@ struct TargetRec
               TargetRec::TargetType type,
               Node* node,
               int priority)
-    : node_(node), ref_(name), title_(title), priority_(priority), type_(type) { }
+    : node_(node), ref_(name), title_(title), priority_(priority), type_(type) {
+        // Discard the dedicated ref for keywords - they always
+        // link to the top of the QDoc comment they appear in
+        if (type == Keyword)
+            ref_.clear();
+    }
 
     bool isEmpty() const { return ref_.isEmpty(); }
 

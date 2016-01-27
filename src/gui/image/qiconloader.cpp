@@ -46,10 +46,6 @@
 #include <QtCore/QSettings>
 #include <QtGui/QPainter>
 
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
-#include <private/qt_cocoa_helpers_mac_p.h>
-#endif
-
 #include <private/qhexstring_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -71,9 +67,6 @@ QIconLoader::QIconLoader() :
         m_themeKey(1), m_supportsSvg(false), m_initialized(false)
 {
 }
-
-// We lazily initialize the loader to make static icons
-// work. Though we do not officially support this.
 
 static inline QString systemThemeName()
 {
@@ -397,9 +390,6 @@ void QIconLoaderEngine::paint(QPainter *painter, const QRect &rect,
                              QIcon::Mode mode, QIcon::State state)
 {
     QSize pixmapSize = rect.size();
-#if defined(Q_DEAD_CODE_FROM_QT4_MAC)
-    pixmapSize *= qt_mac_get_scalefactor();
-#endif
     painter->drawPixmap(rect, pixmap(pixmapSize, mode, state));
 }
 

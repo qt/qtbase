@@ -2752,12 +2752,12 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
             QFixed spp = fontEngine->subPixelPositionForX(positions[i].x);
 
             QPoint offset;
-            QImage *alphaMap = fontEngine->lockedAlphaMapForGlyph(glyphs[i], spp, neededFormat, s->matrix,
-                                                                  &offset);
+            const QImage *alphaMap = fontEngine->lockedAlphaMapForGlyph(glyphs[i], spp, neededFormat, s->matrix,
+                                                                        &offset);
             if (alphaMap == 0 || alphaMap->isNull())
                 continue;
 
-            alphaPenBlt(alphaMap->bits(), alphaMap->bytesPerLine(), alphaMap->depth(),
+            alphaPenBlt(alphaMap->constBits(), alphaMap->bytesPerLine(), alphaMap->depth(),
                         qFloor(positions[i].x) + offset.x(),
                         qRound(positions[i].y) + offset.y(),
                         alphaMap->width(), alphaMap->height());
@@ -4132,7 +4132,7 @@ class QGradientCache
     struct CacheInfo
     {
         inline CacheInfo(QGradientStops s, int op, QGradient::InterpolationMode mode) :
-            stops(s), opacity(op), interpolationMode(mode) {}
+            stops(qMove(s)), opacity(op), interpolationMode(mode) {}
         QRgba64 buffer[GRADIENT_STOPTABLE_SIZE];
         QGradientStops stops;
         int opacity;

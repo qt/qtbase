@@ -172,11 +172,15 @@ void QQnxInputContext::setFocusObject(QObject *object)
         if (m_inputPanelVisible)
             hideInputPanel();
     } else {
-        QInputMethodQueryEvent query(Qt::ImHints);
+        QInputMethodQueryEvent query(Qt::ImHints | Qt::ImEnterKeyType);
         QCoreApplication::sendEvent(object, &query);
         int inputHints = query.value(Qt::ImHints).toInt();
+        Qt::EnterKeyType qtEnterKeyType = Qt::EnterKeyType(query.value(Qt::ImEnterKeyType).toInt());
 
         m_virtualKeyboard.setInputHints(inputHints);
+        m_virtualKeyboard.setEnterKeyType(
+            QQnxAbstractVirtualKeyboard::qtEnterKeyTypeToQnx(qtEnterKeyType)
+        );
 
         if (!m_inputPanelVisible)
             showInputPanel();

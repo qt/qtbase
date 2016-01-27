@@ -166,7 +166,7 @@ public:
     // typedefs
     typedef QMultiHash<int, Watcher> WatcherHash;
     typedef QHash<int, DBusTimeout *> TimeoutHash;
-    typedef QList<QPair<DBusTimeout *, int> > PendingTimeoutList;
+    typedef QVector<QPair<DBusTimeout *, int> > PendingTimeoutList;
 
     typedef QMultiHash<QString, SignalHook> SignalHookHash;
     typedef QHash<QString, QDBusMetaObject* > MetaObjectHash;

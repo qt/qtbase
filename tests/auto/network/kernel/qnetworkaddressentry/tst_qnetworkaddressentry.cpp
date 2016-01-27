@@ -76,7 +76,7 @@ void tst_QNetworkAddressEntry::getSetCheck()
 
     entry = entry2;
     QCOMPARE(entry, entry2);
-    QVERIFY(entry == entry);
+    QCOMPARE(entry, entry);
     QVERIFY(!(entry != entry2));
 }
 

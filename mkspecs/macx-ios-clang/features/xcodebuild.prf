@@ -1,0 +1,49 @@
+
+# For Qt applications we want Xcode project files as the generated output,
+# but since qmake doesn't handle the transition between makefiles and Xcode
+# project files (which happens when using subdirs), we can't just override
+# MAKEFILE_GENERATOR. Instead, we generate the Xcode project by spawing a
+# child qmake process with -spec macx-xcode and let the top level qmake
+# process generate a wrapper makefile that forwards everything to xcodebuild.
+
+TEMPLATE = aux
+
+SOURCES =
+OBJECTIVE_SOURCES =
+RESOURCES =
+INSTALLS =
+QMAKE_EXTRA_COMPILERS =
+
+!mkpath($$OUT_PWD): \
+    error("Failed to create $$OUT_PWD")
+
+args =
+for(arg, QMAKE_ARGS): \
+    args += $$system_quote($$arg)
+
+cmd = "$$QMAKE_QMAKE $$args $$system_quote($$_PRO_FILE_) -spec macx-xcode"
+debug(1, "Generating Xcode project in $$OUT_PWD using '$$cmd'")
+system("cd $$system_quote($$OUT_PWD) && $$cmd")
+
+# Subtargets
+
+for(build, BUILDS): \
+    SUBTARGETS += $$eval($${build}.target)
+QMAKE_EXTRA_VARIABLES += SUBTARGETS
+
+CONFIG += no_default_goal_deps
+
+QMAKE_EXTRA_INCLUDES += $$shell_quote($$QMAKESPEC/xcodebuild.mk)
+
+# Distclean
+
+distfiles = $${TARGET}.xcodeproj
+for(build, BUILDS): \
+    distfiles += $$title($$eval($${build}.target))
+distclean_xcodebuild.commands = -$(DEL_FILE) -R $$distfiles
+
+distclean.depends += clean_all distclean_xcodebuild
+QMAKE_EXTRA_TARGETS += distclean distclean_xcodebuild
+
+# Empty exclusive builds, we've set them up manually
+BUILDS =

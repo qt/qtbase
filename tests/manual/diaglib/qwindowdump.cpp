@@ -131,6 +131,8 @@ void formatWindow(QTextStream &str, const QWindow *w, FormatWindowOptions option
         str << "[top] ";
     if (w->isExposed())
         str << "[exposed] ";
+    if (const Qt::WindowState state = w->windowState())
+        str << "windowState=" << state << ' ';
     formatRect(str, w->geometry());
     if (!(options & DontPrintWindowFlags)) {
         str << ' ';

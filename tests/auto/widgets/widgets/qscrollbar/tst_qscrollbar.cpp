@@ -100,7 +100,7 @@ void tst_QScrollBar::scrollSingleStep()
     QTest::qWait(510); // initial delay is 500 for setRepeatAction
     disconnect(&testWidget, &QAbstractSlider::actionTriggered, &testWidget, &SingleStepTestScrollBar::hideAndShow);
 #ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "This test fails on Mac OS X, see QTBUG-25272", Abort);
+    QEXPECT_FAIL("", "This test fails on OS X, see QTBUG-25272", Abort);
 #endif
     QCOMPARE(testWidget.value(), testWidget.singleStep());
 }

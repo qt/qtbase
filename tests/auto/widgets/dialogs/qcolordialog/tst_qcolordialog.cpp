@@ -98,7 +98,7 @@ void tst_QColorDialog::testNativeActiveModalWidget()
     TestNativeDialog d;
     QTimer::singleShot(1000, &d, SLOT(hide()));
     d.exec();
-    QVERIFY(&d == d.m_activeModalWidget);
+    QCOMPARE(&d, d.m_activeModalWidget);
 }
 
 void tst_QColorDialog::native_activeModalWidget()

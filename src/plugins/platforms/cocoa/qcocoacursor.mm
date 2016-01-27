@@ -72,7 +72,7 @@ void QCocoaCursor::setPos(const QPoint &position)
     pos.x = position.x();
     pos.y = position.y();
 
-    CGEventRef e = CGEventCreateMouseEvent(0, kCGEventMouseMoved, pos, 0);
+    CGEventRef e = CGEventCreateMouseEvent(0, kCGEventMouseMoved, pos, kCGMouseButtonLeft);
     CGEventPost(kCGHIDEventTap, e);
     CFRelease(e);
 }

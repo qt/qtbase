@@ -6291,6 +6291,10 @@ void qt_memfill32(quint32 *dest, quint32 color, int count)
 }
 #endif
 
+#ifdef QT_COMPILER_SUPPORTS_SSE4_1
+template<QtPixelOrder> const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
+#endif
+
 void qInitDrawhelperAsm()
 {
     const uint features = qCpuFeatures();
@@ -6352,7 +6356,7 @@ void qInitDrawhelperAsm()
     }
 #endif // SSSE3
 
-#if QT_COMPILER_SUPPORTS_SSE4_1
+#if defined(QT_COMPILER_SUPPORTS_SSE4_1)
     if (qCpuHasFeature(SSE4_1)) {
 #if !defined(__SSE4_1__)
         extern const uint *QT_FASTCALL convertARGB32ToARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
@@ -6366,10 +6370,12 @@ void qInitDrawhelperAsm()
         qPixelLayouts[QImage::Format_ARGB32].convertFromARGB32PM = convertARGB32FromARGB32PM_sse4;
         qPixelLayouts[QImage::Format_RGBA8888].convertFromARGB32PM = convertRGBA8888FromARGB32PM_sse4;
         qPixelLayouts[QImage::Format_RGBX8888].convertFromARGB32PM = convertRGBXFromARGB32PM_sse4;
+        qPixelLayouts[QImage::Format_A2BGR30_Premultiplied].convertFromARGB32PM = convertA2RGB30PMFromARGB32PM_sse4<PixelOrderBGR>;
+        qPixelLayouts[QImage::Format_A2RGB30_Premultiplied].convertFromARGB32PM = convertA2RGB30PMFromARGB32PM_sse4<PixelOrderRGB>;
     }
 #endif
 
-#if QT_COMPILER_SUPPORTS_AVX2 && !defined(__AVX2__)
+#if defined(QT_COMPILER_SUPPORTS_AVX2) && !defined(__AVX2__)
     if (qCpuHasFeature(AVX2)) {
         extern const uint *QT_FASTCALL convertARGB32ToARGB32PM_avx2(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
         extern const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_avx2(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);

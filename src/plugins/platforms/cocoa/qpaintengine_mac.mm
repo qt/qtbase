@@ -559,7 +559,7 @@ QCoreGraphicsPaintEngine::begin(QPaintDevice *pdev)
 
         if ((w->windowType() == Qt::Desktop)) {
             if (!unclipped)
-                qWarning("QCoreGraphicsPaintEngine::begin: Does not support clipped desktop on Mac OS X");
+                qWarning("QCoreGraphicsPaintEngine::begin: Does not support clipped desktop on OS X");
             // ## need to do [qt_mac_window_for(w) makeKeyAndOrderFront]; (need to rename the file)
         } else if (unclipped) {
             qWarning("QCoreGraphicsPaintEngine::begin: Does not support unclipped painting");

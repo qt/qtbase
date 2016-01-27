@@ -186,7 +186,7 @@ int Tokenizer::getToken()
                 }
                 else if (strcmp(yyLex, kwords[i - 1]) == 0) {
                     int ret = (int) Tok_FirstKeyword + i - 1;
-                    if (ret != Tok_explicit && ret != Tok_inline && ret != Tok_typename)
+                    if (ret != Tok_typename)
                         return ret;
                     break;
                 }

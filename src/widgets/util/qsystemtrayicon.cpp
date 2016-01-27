@@ -76,7 +76,7 @@ QT_BEGIN_NAMESPACE
     \li All X11 desktop environments that implement the D-Bus
        \l{http://www.freedesktop.org/wiki/Specifications/StatusNotifierItem/ StatusNotifierItem}
        specification, including recent versions of KDE and Unity.
-    \li All supported versions of Mac OS X. Note that the Growl
+    \li All supported versions of OS X. Note that the Growl
        notification system must be installed for
        QSystemTrayIcon::showMessage() to display messages on Mac OS X prior to 10.8 (Mountain Lion).
     \endlist
@@ -157,7 +157,7 @@ QSystemTrayIcon::~QSystemTrayIcon()
     The menu will pop up when the user requests the context menu for the system
     tray icon by clicking the mouse button.
 
-    On Mac OS X, this is currenly converted to a NSMenu, so the
+    On OS X, this is currenly converted to a NSMenu, so the
     aboutToHide() signal is not emitted.
 
     \note The system tray icon does not take ownership of the menu. You must
@@ -323,7 +323,7 @@ bool QSystemTrayIcon::event(QEvent *e)
     This signal is emitted when the message displayed using showMessage()
     was clicked by the user.
 
-    Currently this signal is not sent on Mac OS X.
+    Currently this signal is not sent on OS X.
 
     \note We follow Microsoft Windows XP/Vista behavior, so the
     signal is also emitted when the user clicks on a tray icon with
@@ -374,7 +374,7 @@ bool QSystemTrayIcon::supportsMessages()
     On Windows, the \a millisecondsTimeoutHint is usually ignored by the system
     when the application has focus.
 
-    On Mac OS X, the Growl notification system must be installed for this function to
+    On OS X, the Growl notification system must be installed for this function to
     display messages.
 
     Has been turned into a slot in Qt 5.2.

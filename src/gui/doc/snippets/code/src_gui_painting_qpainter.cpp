@@ -257,3 +257,23 @@ glDisable(GL_SCISSOR_TEST);
 
 painter.endNativePainting();
 //! [21]
+
+//! [drawText]
+QPainter painter(this);
+QFont font = painter.font();
+font.setPixelSize(48);
+painter.setFont(font);
+
+const QRect rectangle = QRect(0, 0, 100, 50);
+QRect boundingRect;
+painter.drawText(rectangle, 0, tr("Hello"), &boundingRect);
+
+QPen pen = painter.pen();
+pen.setStyle(Qt::DotLine);
+painter.setPen(pen);
+painter.drawRect(boundingRect.adjusted(0, 0, -pen.width(), -pen.width()));
+
+pen.setStyle(Qt::DashLine);
+painter.setPen(pen);
+painter.drawRect(rectangle.adjusted(0, 0, -pen.width(), -pen.width()));
+//! [drawText]

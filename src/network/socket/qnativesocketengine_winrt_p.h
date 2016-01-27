@@ -216,7 +216,7 @@ private:
                               ABI::Windows::Networking::Sockets::IDatagramSocketMessageReceivedEventArgs *args);
     HRESULT handleClientConnection(ABI::Windows::Networking::Sockets::IStreamSocketListener *tcpListener,
                                    ABI::Windows::Networking::Sockets::IStreamSocketListenerConnectionReceivedEventArgs *args);
-    HRESULT handleConnectToHost(ABI::Windows::Foundation::IAsyncAction *, ABI::Windows::Foundation::AsyncStatus);
+    void handleConnectionErrors(ABI::Windows::Foundation::IAsyncAction *connectAction, bool *errorsOccured);
     HRESULT handleReadyRead(ABI::Windows::Foundation::IAsyncOperationWithProgress<ABI::Windows::Storage::Streams::IBuffer *, UINT32> *asyncInfo, ABI::Windows::Foundation::AsyncStatus);
 };
 

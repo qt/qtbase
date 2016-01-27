@@ -55,7 +55,7 @@ win32 {
         equals(TEMPLATE, lib) {
             static {
                 QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_TARGET}$${LIBPREFIX}$${TARGET}.a
-            } else:plugin {
+            } else: plugin|unversioned_libname {
                 QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_TARGET}$${LIBPREFIX}$${TARGET}.so
             } else {
                 TEMP_VERSION = $$VERSION

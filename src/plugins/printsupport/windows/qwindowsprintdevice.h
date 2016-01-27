@@ -47,8 +47,6 @@
 
 #include <qpa/qplatformprintdevice.h>
 
-#ifndef QT_NO_PRINTER
-
 #include <QtCore/qt_windows.h>
 
 QT_BEGIN_NAMESPACE
@@ -95,5 +93,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_PRINTER
 #endif // QWINDOWSPRINTDEVICE_H

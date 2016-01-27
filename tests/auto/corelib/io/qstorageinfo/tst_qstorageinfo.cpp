@@ -61,9 +61,9 @@ void tst_QStorageInfo::defaultValues()
     QVERIFY(!storage.isRoot());
     QVERIFY(storage.device().isEmpty());
     QVERIFY(storage.fileSystemType().isEmpty());
-    QVERIFY(storage.bytesTotal() == 0);
-    QVERIFY(storage.bytesFree() == 0);
-    QVERIFY(storage.bytesAvailable() == 0);
+    QVERIFY(storage.bytesTotal() == -1);
+    QVERIFY(storage.bytesFree() == -1);
+    QVERIFY(storage.bytesAvailable() == -1);
 }
 
 void tst_QStorageInfo::operatorEqual()
@@ -106,9 +106,9 @@ void tst_QStorageInfo::root()
     QVERIFY(!storage.device().isEmpty());
     QVERIFY(!storage.fileSystemType().isEmpty());
 #ifndef Q_OS_HAIKU
-    QVERIFY(storage.bytesTotal() > 0);
-    QVERIFY(storage.bytesFree() > 0);
-    QVERIFY(storage.bytesAvailable() > 0);
+    QVERIFY(storage.bytesTotal() >= 0);
+    QVERIFY(storage.bytesFree() >= 0);
+    QVERIFY(storage.bytesAvailable() >= 0);
 #endif
 }
 
@@ -121,9 +121,9 @@ void tst_QStorageInfo::currentStorage()
     QVERIFY(appPath.startsWith(storage.rootPath(), Qt::CaseInsensitive));
     QVERIFY(!storage.device().isEmpty());
     QVERIFY(!storage.fileSystemType().isEmpty());
-    QVERIFY(storage.bytesTotal() > 0);
-    QVERIFY(storage.bytesFree() > 0);
-    QVERIFY(storage.bytesAvailable() > 0);
+    QVERIFY(storage.bytesTotal() >= 0);
+    QVERIFY(storage.bytesFree() >= 0);
+    QVERIFY(storage.bytesAvailable() >= 0);
 }
 
 void tst_QStorageInfo::storageList()

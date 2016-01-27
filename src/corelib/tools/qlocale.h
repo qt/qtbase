@@ -45,12 +45,15 @@ QT_BEGIN_NAMESPACE
 class QDataStream;
 class QDate;
 class QDateTime;
+class QLocale;
 class QTime;
 class QVariant;
 class QTextStream;
 class QTextStreamPrivate;
 
 class QLocalePrivate;
+
+Q_CORE_EXPORT uint qHash(const QLocale &key, uint seed = 0) Q_DECL_NOTHROW;
 
 class Q_CORE_EXPORT QLocale
 {
@@ -868,23 +871,23 @@ public:
     QString nativeLanguageName() const;
     QString nativeCountryName() const;
 
-    short toShort(const QString &s, bool *ok = 0) const;
-    ushort toUShort(const QString &s, bool *ok = 0) const;
-    int toInt(const QString &s, bool *ok = 0) const;
-    uint toUInt(const QString &s, bool *ok = 0) const;
-    qlonglong toLongLong(const QString &s, bool *ok = 0) const;
-    qulonglong toULongLong(const QString &s, bool *ok = 0) const;
-    float toFloat(const QString &s, bool *ok = 0) const;
-    double toDouble(const QString &s, bool *ok = 0) const;
+    short toShort(const QString &s, bool *ok = Q_NULLPTR) const;
+    ushort toUShort(const QString &s, bool *ok = Q_NULLPTR) const;
+    int toInt(const QString &s, bool *ok = Q_NULLPTR) const;
+    uint toUInt(const QString &s, bool *ok = Q_NULLPTR) const;
+    qlonglong toLongLong(const QString &s, bool *ok = Q_NULLPTR) const;
+    qulonglong toULongLong(const QString &s, bool *ok = Q_NULLPTR) const;
+    float toFloat(const QString &s, bool *ok = Q_NULLPTR) const;
+    double toDouble(const QString &s, bool *ok = Q_NULLPTR) const;
 
-    short toShort(const QStringRef &s, bool *ok = 0) const;
-    ushort toUShort(const QStringRef &s, bool *ok = 0) const;
-    int toInt(const QStringRef &s, bool *ok = 0) const;
-    uint toUInt(const QStringRef &s, bool *ok = 0) const;
-    qlonglong toLongLong(const QStringRef &s, bool *ok = 0) const;
-    qulonglong toULongLong(const QStringRef &s, bool *ok = 0) const;
-    float toFloat(const QStringRef &s, bool *ok = 0) const;
-    double toDouble(const QStringRef &s, bool *ok = 0) const;
+    short toShort(const QStringRef &s, bool *ok = Q_NULLPTR) const;
+    ushort toUShort(const QStringRef &s, bool *ok = Q_NULLPTR) const;
+    int toInt(const QStringRef &s, bool *ok = Q_NULLPTR) const;
+    uint toUInt(const QStringRef &s, bool *ok = Q_NULLPTR) const;
+    qlonglong toLongLong(const QStringRef &s, bool *ok = Q_NULLPTR) const;
+    qulonglong toULongLong(const QStringRef &s, bool *ok = Q_NULLPTR) const;
+    float toFloat(const QStringRef &s, bool *ok = Q_NULLPTR) const;
+    double toDouble(const QStringRef &s, bool *ok = Q_NULLPTR) const;
 
     QString toString(qlonglong i) const;
     QString toString(qulonglong i) const;
@@ -979,6 +982,8 @@ public:
 private:
     QLocale(QLocalePrivate &dd);
     friend class QLocalePrivate;
+    friend Q_CORE_EXPORT uint qHash(const QLocale &key, uint seed) Q_DECL_NOTHROW;
+
     QSharedDataPointer<QLocalePrivate> d;
 };
 Q_DECLARE_TYPEINFO(QLocale, Q_MOVABLE_TYPE);

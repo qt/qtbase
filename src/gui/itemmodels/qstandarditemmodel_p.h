@@ -61,7 +61,7 @@ class QStandardItemData
 {
 public:
     inline QStandardItemData() : role(-1) {}
-    inline QStandardItemData(int r, QVariant v) : role(r), value(v) {}
+    inline QStandardItemData(int r, const QVariant &v) : role(r), value(v) {}
     int role;
     QVariant value;
     inline bool operator==(const QStandardItemData &other) const { return role == other.role && value == other.value; }

@@ -317,7 +317,9 @@ void QDBusAdaptorConnector::relay(QObject *senderObj, int lastSignalIdx, void **
     }
 
     QVariantList args;
-    for (int i = 1; i < types.count(); ++i)
+    const int numTypes = types.count();
+    args.reserve(numTypes - 1);
+    for (int i = 1; i < numTypes; ++i)
         args << QVariant(types.at(i), argv[i]);
 
     // now emit the signal with all the information

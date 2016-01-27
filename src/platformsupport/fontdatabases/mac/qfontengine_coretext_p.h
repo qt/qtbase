@@ -64,48 +64,48 @@ public:
     QCoreTextFontEngine(CGFontRef font, const QFontDef &def);
     ~QCoreTextFontEngine();
 
-    virtual glyph_t glyphIndex(uint ucs4) const;
-    virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
-    virtual void recalcAdvances(QGlyphLayout *, ShaperFlags) const;
+    glyph_t glyphIndex(uint ucs4) const Q_DECL_OVERRIDE;
+    bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const Q_DECL_OVERRIDE;
+    void recalcAdvances(QGlyphLayout *, ShaperFlags) const Q_DECL_OVERRIDE;
 
-    virtual glyph_metrics_t boundingBox(const QGlyphLayout &glyphs);
-    virtual glyph_metrics_t boundingBox(glyph_t glyph);
+    glyph_metrics_t boundingBox(const QGlyphLayout &glyphs) Q_DECL_OVERRIDE;
+    glyph_metrics_t boundingBox(glyph_t glyph) Q_DECL_OVERRIDE;
 
-    virtual QFixed ascent() const;
-    virtual QFixed descent() const;
-    virtual QFixed leading() const;
-    virtual QFixed xHeight() const;
-    virtual qreal maxCharWidth() const;
-    virtual QFixed averageCharWidth() const;
+    QFixed ascent() const Q_DECL_OVERRIDE;
+    QFixed descent() const Q_DECL_OVERRIDE;
+    QFixed leading() const Q_DECL_OVERRIDE;
+    QFixed xHeight() const Q_DECL_OVERRIDE;
+    qreal maxCharWidth() const Q_DECL_OVERRIDE;
+    QFixed averageCharWidth() const Q_DECL_OVERRIDE;
 
-    virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int numGlyphs,
-                                 QPainterPath *path, QTextItem::RenderFlags);
+    void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int numGlyphs,
+                         QPainterPath *path, QTextItem::RenderFlags) Q_DECL_OVERRIDE;
 
-    virtual bool canRender(const QChar *string, int len) const;
+    bool canRender(const QChar *string, int len) const Q_DECL_OVERRIDE;
 
-    virtual int synthesized() const { return synthesisFlags; }
-    virtual bool supportsSubPixelPositions() const { return true; }
+    int synthesized() const Q_DECL_OVERRIDE { return synthesisFlags; }
+    bool supportsSubPixelPositions() const Q_DECL_OVERRIDE { return true; }
 
     void draw(CGContextRef ctx, qreal x, qreal y, const QTextItemInt &ti, int paintDeviceHeight);
 
-    virtual FaceId faceId() const;
-    virtual bool getSfntTableData(uint /*tag*/, uchar * /*buffer*/, uint * /*length*/) const;
-    virtual void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics);
-    virtual QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition);
-    virtual QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t);
-    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
-    glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed, const QTransform &matrix, GlyphFormat);
-    virtual QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
-    virtual qreal minRightBearing() const;
-    virtual qreal minLeftBearing() const;
-    virtual QFixed emSquareSize() const;
+    FaceId faceId() const Q_DECL_OVERRIDE;
+    bool getSfntTableData(uint /*tag*/, uchar * /*buffer*/, uint * /*length*/) const Q_DECL_OVERRIDE;
+    void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics) Q_DECL_OVERRIDE;
+    QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition) Q_DECL_OVERRIDE;
+    QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t) Q_DECL_OVERRIDE;
+    QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) Q_DECL_OVERRIDE;
+    glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed, const QTransform &matrix, GlyphFormat) Q_DECL_OVERRIDE;
+    QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) Q_DECL_OVERRIDE;
+    qreal minRightBearing() const Q_DECL_OVERRIDE;
+    qreal minLeftBearing() const Q_DECL_OVERRIDE;
+    QFixed emSquareSize() const Q_DECL_OVERRIDE;
 
-    bool supportsTransformation(const QTransform &transform) const;
+    bool supportsTransformation(const QTransform &transform) const Q_DECL_OVERRIDE;
 
-    virtual QFontEngine *cloneWithSize(qreal pixelSize) const;
-    virtual int glyphMargin(QFontEngine::GlyphFormat format) { Q_UNUSED(format); return 0; }
+    QFontEngine *cloneWithSize(qreal pixelSize) const Q_DECL_OVERRIDE;
+    int glyphMargin(QFontEngine::GlyphFormat format) Q_DECL_OVERRIDE { Q_UNUSED(format); return 0; }
 
-    virtual QFontEngine::Properties properties() const;
+    QFontEngine::Properties properties() const Q_DECL_OVERRIDE;
 
     static bool supportsColorGlyphs()
     {

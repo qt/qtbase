@@ -57,7 +57,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
     CGImageRef m_maskImage;
     uchar *m_maskData;
     bool m_shouldInvalidateWindowShadow;
-    QWindow *m_window;
+    QPointer<QWindow> m_window;
     QCocoaWindow *m_platformWindow;
     NSTrackingArea *m_trackingArea;
     Qt::MouseButtons m_buttons;

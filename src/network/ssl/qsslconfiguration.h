@@ -71,9 +71,12 @@ public:
     QSslConfiguration();
     QSslConfiguration(const QSslConfiguration &other);
     ~QSslConfiguration();
+#ifdef Q_COMPILER_RVALUE_REFS
+    QSslConfiguration &operator=(QSslConfiguration &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
     QSslConfiguration &operator=(const QSslConfiguration &other);
 
-    inline void swap(QSslConfiguration &other)
+    void swap(QSslConfiguration &other) Q_DECL_NOTHROW
     { qSwap(d, other.d); }
 
     bool operator==(const QSslConfiguration &other) const;
@@ -111,10 +114,12 @@ public:
     // Cipher settings
     QList<QSslCipher> ciphers() const;
     void setCiphers(const QList<QSslCipher> &ciphers);
+    static QList<QSslCipher> supportedCiphers();
 
     // Certificate Authority (CA) settings
     QList<QSslCertificate> caCertificates() const;
     void setCaCertificates(const QList<QSslCertificate> &certificates);
+    static QList<QSslCertificate> systemCaCertificates();
 
     void setSslOption(QSsl::SslOption option, bool on);
     bool testSslOption(QSsl::SslOption option) const;
@@ -126,6 +131,7 @@ public:
     // EC settings
     QVector<QSslEllipticCurve> ellipticCurves() const;
     void setEllipticCurves(const QVector<QSslEllipticCurve> &curves);
+    static QVector<QSslEllipticCurve> supportedEllipticCurves();
 
     static QSslConfiguration defaultConfiguration();
     static void setDefaultConfiguration(const QSslConfiguration &configuration);

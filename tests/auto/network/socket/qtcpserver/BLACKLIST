@@ -1,0 +1,13 @@
+windows
+[linkLocal]
+linux
+[listenWhileListening:WithSocks5Proxy]
+linux
+windows
+[ipv6Server:WithoutProxy]
+windows
+osx
+[clientServerLoop:WithSocks5Proxy]
+linux
+[crashTests:WithSocks5Proxy]
+linux

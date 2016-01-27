@@ -62,7 +62,7 @@ class Q_WIDGETS_EXPORT QTabWidget : public QWidget
     Q_PROPERTY(bool tabBarAutoHide READ tabBarAutoHide WRITE setTabBarAutoHide)
 
 public:
-    explicit QTabWidget(QWidget *parent = 0);
+    explicit QTabWidget(QWidget *parent = Q_NULLPTR);
     ~QTabWidget();
 
     int addTab(QWidget *widget, const QString &);

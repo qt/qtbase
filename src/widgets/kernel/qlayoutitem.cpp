@@ -332,14 +332,11 @@ QSpacerItem * QSpacerItem::spacerItem()
 }
 
 /*!
+    \fn QSizePolicy QSpacerItem::sizePolicy() const
     \since 5.5
 
     Returns the size policy of this item.
 */
-QSizePolicy QSpacerItem::sizePolicy() const
-{
-    return sizeP;
-}
 
 /*!
     If this item is a QWidget, it is returned as a QWidget; otherwise

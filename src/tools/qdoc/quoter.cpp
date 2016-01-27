@@ -39,6 +39,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QHash<QString,QString> Quoter::commentHash;
+
 static void replaceMultipleNewlines(QString &s)
 {
     const int n = s.size();
@@ -120,14 +122,16 @@ Quoter::Quoter()
         * .html, .qrc, .ui, .xq, .xml .dita files:
           <!-- [<id>] -->
     */
-    commentHash["pro"] = "#!";
-    commentHash["py"] = "#!";
-    commentHash["html"] = "<!--";
-    commentHash["qrc"] = "<!--";
-    commentHash["ui"] = "<!--";
-    commentHash["xml"] = "<!--";
-    commentHash["dita"] = "<!--";
-    commentHash["xq"] = "<!--";
+    if (!commentHash.size()) {
+        commentHash["pro"] = "#!";
+        commentHash["py"] = "#!";
+        commentHash["html"] = "<!--";
+        commentHash["qrc"] = "<!--";
+        commentHash["ui"] = "<!--";
+        commentHash["xml"] = "<!--";
+        commentHash["dita"] = "<!--";
+        commentHash["xq"] = "<!--";
+    }
 }
 
 void Quoter::reset()

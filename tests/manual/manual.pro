@@ -58,7 +58,7 @@ contains(QT_CONFIG, opengl) {
 win32 {
     SUBDIRS -= network_remote_stresstest network_stresstest
     # disable some tests on wince because of missing dependencies
-    wince*:SUBDIRS -= lance windowmodality
+    wince: SUBDIRS -= lance windowmodality
 }
 
 lessThan(QT_MAJOR_VERSION, 5): SUBDIRS -= bearerex lance qnetworkaccessmanager/qget qmimedatabase qnetworkreply \

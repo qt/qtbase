@@ -48,6 +48,7 @@
 #include "qcocoaaccessibility.h"
 
 #include <qpa/qplatformaccessibility.h>
+#include <qpa/qplatforminputcontextfactory_p.h>
 #include <QtCore/qcoreapplication.h>
 
 #include <IOKit/graphics/IOGraphicsLib.h>
@@ -247,7 +248,6 @@ QCocoaIntegration *QCocoaIntegration::mInstance = 0;
 
 QCocoaIntegration::QCocoaIntegration()
     : mFontDb(new QCoreTextFontDatabase())
-    , mInputContext(new QCocoaInputContext)
 #ifndef QT_NO_ACCESSIBILITY
     , mAccessibility(new QCocoaAccessibility)
 #endif
@@ -260,6 +260,10 @@ QCocoaIntegration::QCocoaIntegration()
     if (mInstance != 0)
         qWarning("Creating multiple Cocoa platform integrations is not supported");
     mInstance = this;
+
+    mInputContext.reset(QPlatformInputContextFactory::create());
+    if (mInputContext.isNull())
+        mInputContext.reset(new QCocoaInputContext());
 
     initResources();
     QMacAutoReleasePool pool;
@@ -462,7 +466,7 @@ QCocoaNativeInterface *QCocoaIntegration::nativeInterface() const
     return mNativeInterface.data();
 }
 
-QCocoaInputContext *QCocoaIntegration::inputContext() const
+QPlatformInputContext *QCocoaIntegration::inputContext() const
 {
     return mInputContext.data();
 }

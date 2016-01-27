@@ -61,7 +61,7 @@ class TabletCanvas : public QWidget
     Q_OBJECT
 
 public:
-    enum AlphaChannelType { AlphaPressure, AlphaTilt, NoAlpha };
+    enum AlphaChannelType { AlphaPressure, AlphaTangentialPressure, AlphaTilt, NoAlpha };
     enum ColorSaturationType { SaturationVTilt, SaturationHTilt,
                                SaturationPressure, NoSaturation };
     enum LineWidthType { LineWidthPressure, LineWidthTilt, NoLineWidth };
@@ -80,8 +80,8 @@ public:
         { myColor = color; }
     QColor color() const
         { return myColor; }
-    void setTabletDevice(QTabletEvent::TabletDevice device)
-        { myTabletDevice = device; }
+    void setTabletDevice(QTabletEvent *event)
+        { myTabletDevice = event->device(); updateCursor(event); }
     int maximum(int a, int b)
         { return a > b ? a : b; }
 
@@ -94,7 +94,8 @@ private:
     void initPixmap();
     void paintPixmap(QPainter &painter, QTabletEvent *event);
     Qt::BrushStyle brushPattern(qreal value);
-    void updateBrush(QTabletEvent *event);
+    void updateBrush(const QTabletEvent *event);
+    void updateCursor(const QTabletEvent *event);
 
     AlphaChannelType alphaChannelType;
     ColorSaturationType colorSaturationType;
@@ -107,7 +108,11 @@ private:
     QBrush myBrush;
     QPen myPen;
     bool deviceDown;
-    QPoint polyLine[3];
+
+    struct Point {
+        QPointF pos;
+        qreal rotation;
+    } lastPoint;
 };
 //! [0]
 

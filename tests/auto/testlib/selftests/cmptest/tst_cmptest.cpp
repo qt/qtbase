@@ -124,6 +124,8 @@ class tst_Cmptest: public QObject
     Q_OBJECT
 
 private slots:
+    void compare_unregistered_enums();
+    void compare_registered_enums();
     void compare_boolfuncs();
     void compare_pointerfuncs();
     void compare_tostring();
@@ -138,7 +140,25 @@ private slots:
     void compareQImages();
     void compareQImages_data();
 #endif
+    void verify();
+    void verify2();
+    void tryVerify();
+    void tryVerify2();
 };
+
+enum MyUnregisteredEnum { MyUnregisteredEnumValue1, MyUnregisteredEnumValue2 };
+
+void tst_Cmptest::compare_unregistered_enums()
+{
+    QCOMPARE(MyUnregisteredEnumValue1, MyUnregisteredEnumValue1);
+    QCOMPARE(MyUnregisteredEnumValue1, MyUnregisteredEnumValue2);
+}
+
+void tst_Cmptest::compare_registered_enums()
+{
+    QCOMPARE(Qt::ArrowCursor, Qt::ArrowCursor);
+    QCOMPARE(Qt::ArrowCursor, Qt::BusyCursor);
+}
 
 static bool boolfunc() { return true; }
 static bool boolfunc2() { return true; }
@@ -371,7 +391,36 @@ void tst_Cmptest::compareQImages()
 
     QCOMPARE(opA, opB);
 }
-#endif
+#endif // QT_GUI_LIB
+
+static int opaqueFunc()
+{
+    return 42;
+}
+
+void tst_Cmptest::verify()
+{
+    QVERIFY(opaqueFunc() > 2);
+    QVERIFY(opaqueFunc() < 2);
+}
+
+void tst_Cmptest::verify2()
+{
+    QVERIFY2(opaqueFunc() > 2, QByteArray::number(opaqueFunc()).constData());
+    QVERIFY2(opaqueFunc() < 2, QByteArray::number(opaqueFunc()).constData());
+}
+
+void tst_Cmptest::tryVerify()
+{
+    QTRY_VERIFY(opaqueFunc() > 2);
+    QTRY_VERIFY_WITH_TIMEOUT(opaqueFunc() < 2, 1);
+}
+
+void tst_Cmptest::tryVerify2()
+{
+    QTRY_VERIFY2(opaqueFunc() > 2, QByteArray::number(opaqueFunc()).constData());
+    QTRY_VERIFY2_WITH_TIMEOUT(opaqueFunc() < 2, QByteArray::number(opaqueFunc()).constData(), 1);
+}
 
 QTEST_MAIN(tst_Cmptest)
 #include "tst_cmptest.moc"

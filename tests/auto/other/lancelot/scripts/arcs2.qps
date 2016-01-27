@@ -45,3 +45,10 @@ drawArc 100 350 300 300 5440 5760
 drawArc 100 350 300 300 5600 5760
 setPen white
 drawArc 100 350 300 300 0 5760
+
+translate 400 300
+setRenderHint Antialiasing true
+setPen blue 40
+drawArc 100 100 200 200 0 4320
+setPen red 40
+drawArc 60 60 280 280 0 4320

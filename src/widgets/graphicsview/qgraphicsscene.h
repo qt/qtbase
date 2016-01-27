@@ -115,9 +115,9 @@ public:
     };
     Q_DECLARE_FLAGS(SceneLayers, SceneLayer)
 
-    QGraphicsScene(QObject *parent = 0);
-    QGraphicsScene(const QRectF &sceneRect, QObject *parent = 0);
-    QGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObject *parent = 0);
+    QGraphicsScene(QObject *parent = Q_NULLPTR);
+    QGraphicsScene(const QRectF &sceneRect, QObject *parent = Q_NULLPTR);
+    QGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObject *parent = Q_NULLPTR);
     virtual ~QGraphicsScene();
 
     QRectF sceneRect() const;
@@ -192,7 +192,7 @@ public:
     QGraphicsRectItem *addRect(const QRectF &rect, const QPen &pen = QPen(), const QBrush &brush = QBrush());
     QGraphicsTextItem *addText(const QString &text, const QFont &font = QFont());
     QGraphicsSimpleTextItem *addSimpleText(const QString &text, const QFont &font = QFont());
-    QGraphicsProxyWidget *addWidget(QWidget *widget, Qt::WindowFlags wFlags = 0);
+    QGraphicsProxyWidget *addWidget(QWidget *widget, Qt::WindowFlags wFlags = Qt::WindowFlags());
     inline QGraphicsEllipseItem *addEllipse(qreal x, qreal y, qreal w, qreal h, const QPen &pen = QPen(), const QBrush &brush = QBrush())
     { return addEllipse(QRectF(x, y, w, h), pen, brush); }
     inline QGraphicsLineItem *addLine(qreal x1, qreal y1, qreal x2, qreal y2, const QPen &pen = QPen())
@@ -279,7 +279,7 @@ protected:
     virtual void drawItems(QPainter *painter, int numItems,
                            QGraphicsItem *items[],
                            const QStyleOptionGraphicsItem options[],
-                           QWidget *widget = 0);
+                           QWidget *widget = Q_NULLPTR);
 
 protected Q_SLOTS:
     // ### Qt 6: make unconditional

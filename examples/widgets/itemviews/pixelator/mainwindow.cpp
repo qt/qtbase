@@ -98,15 +98,16 @@ MainWindow::MainWindow()
     menuBar()->addSeparator();
     menuBar()->addMenu(helpMenu);
 
-    connect(openAction, SIGNAL(triggered()), this, SLOT(chooseImage()));
-    connect(printAction, SIGNAL(triggered()), this, SLOT(printImage()));
-    connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    connect(aboutAction, SIGNAL(triggered()), this, SLOT(showAboutBox()));
+    connect(openAction, &QAction::triggered, this, &MainWindow::chooseImage);
+    connect(printAction, &QAction::triggered, this, &MainWindow::printImage);
+    connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
+    connect(aboutAction, &QAction::triggered, this, &MainWindow::showAboutBox);
 //! [4]
-    connect(pixelSizeSpinBox, SIGNAL(valueChanged(int)),
-            delegate, SLOT(setPixelSize(int)));
-    connect(pixelSizeSpinBox, SIGNAL(valueChanged(int)),
-            this, SLOT(updateView()));
+    typedef void (QSpinBox::*QSpinBoxIntSignal)(int);
+    connect(pixelSizeSpinBox, static_cast<QSpinBoxIntSignal>(&QSpinBox::valueChanged),
+            delegate, &PixelDelegate::setPixelSize);
+    connect(pixelSizeSpinBox, static_cast<QSpinBoxIntSignal>(&QSpinBox::valueChanged),
+            this, &MainWindow::updateView);
 //! [4]
 
     QHBoxLayout *controlsLayout = new QHBoxLayout;

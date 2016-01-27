@@ -62,7 +62,7 @@ ConfigDialog::ConfigDialog()
     createIcons();
     contentsWidget->setCurrentRow(0);
 
-    connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(closeButton, &QAbstractButton::clicked, this, &QWidget::close);
 
     QHBoxLayout *horizontalLayout = new QHBoxLayout;
     horizontalLayout->addWidget(contentsWidget);
@@ -102,9 +102,7 @@ void ConfigDialog::createIcons()
     queryButton->setTextAlignment(Qt::AlignHCenter);
     queryButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
-    connect(contentsWidget,
-            SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
-            this, SLOT(changePage(QListWidgetItem*,QListWidgetItem*)));
+    connect(contentsWidget, &QListWidget::currentItemChanged, this, &ConfigDialog::changePage);
 }
 
 void ConfigDialog::changePage(QListWidgetItem *current, QListWidgetItem *previous)

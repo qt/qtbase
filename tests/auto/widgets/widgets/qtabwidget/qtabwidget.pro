@@ -8,4 +8,4 @@ INCLUDEPATH += ../
 HEADERS +=  
 SOURCES += tst_qtabwidget.cpp
 
-win32:!wince*:!winrt:LIBS += -luser32
+win32:!wince:!winrt: LIBS += -luser32

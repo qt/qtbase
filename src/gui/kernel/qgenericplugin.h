@@ -48,7 +48,7 @@ class Q_GUI_EXPORT QGenericPlugin : public QObject
 {
     Q_OBJECT
 public:
-    explicit QGenericPlugin(QObject *parent = 0);
+    explicit QGenericPlugin(QObject *parent = Q_NULLPTR);
     ~QGenericPlugin();
 
     virtual QObject* create(const QString& name, const QString &spec) = 0;

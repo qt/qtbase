@@ -269,7 +269,8 @@ void tst_QGestureRecognizer::pinchGesture()
 
 enum SwipeSubTest {
     SwipeLineSubTest,
-    SwipeChangeDirectionSubTest,
+    SwipeDirectionChangeSubTest,
+    SwipeSmallDirectionChangeSubTest
 };
 
 void tst_QGestureRecognizer::swipeGesture_data()
@@ -277,7 +278,8 @@ void tst_QGestureRecognizer::swipeGesture_data()
     QTest::addColumn<int>("swipeSubTest");
     QTest::addColumn<bool>("gestureExpected");
     QTest::newRow("Line") << int(SwipeLineSubTest) << true;
-    QTest::newRow("ChangeDirection") << int(SwipeChangeDirectionSubTest) << false;
+    QTest::newRow("DirectionChange") << int(SwipeDirectionChangeSubTest) << false;
+    QTest::newRow("SmallDirectionChange") << int(SwipeSmallDirectionChangeSubTest) << true;
 }
 
 void tst_QGestureRecognizer::swipeGesture()
@@ -314,9 +316,16 @@ void tst_QGestureRecognizer::swipeGesture()
     case SwipeLineSubTest:
         linearSequence(5, moveDelta, swipeSequence, points, &widget);
         break;
-    case SwipeChangeDirectionSubTest:
+    case SwipeDirectionChangeSubTest:
         linearSequence(5, moveDelta, swipeSequence, points, &widget);
         linearSequence(3, QPoint(-moveDelta.x(), moveDelta.y()), swipeSequence, points, &widget);
+        break;
+    case SwipeSmallDirectionChangeSubTest: { // QTBUG-46195, small changes in direction should not cause the gesture to be canceled.
+        const QPoint smallChangeMoveDelta(50, 1);
+        linearSequence(5, smallChangeMoveDelta, swipeSequence, points, &widget);
+        linearSequence(1, QPoint(smallChangeMoveDelta.x(), -3), swipeSequence, points, &widget);
+        linearSequence(5, smallChangeMoveDelta, swipeSequence, points, &widget);
+    }
         break;
     }
 

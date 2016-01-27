@@ -37,6 +37,7 @@
 
 #include "qabstracttransition_p.h"
 #include "qabstractstate.h"
+#include "qhistorystate.h"
 #include "qstate.h"
 #include "qstatemachine.h"
 
@@ -133,17 +134,14 @@ QAbstractTransitionPrivate::QAbstractTransitionPrivate()
 {
 }
 
-QAbstractTransitionPrivate *QAbstractTransitionPrivate::get(QAbstractTransition *q)
-{
-    return q->d_func();
-}
-
 QStateMachine *QAbstractTransitionPrivate::machine() const
 {
-    QState *source = sourceState();
-    if (!source)
-        return 0;
-    return source->machine();
+    if (QState *source = sourceState())
+        return source->machine();
+    Q_Q(const QAbstractTransition);
+    if (QHistoryState *parent = qobject_cast<QHistoryState *>(q->parent()))
+        return parent->machine();
+    return 0;
 }
 
 bool QAbstractTransitionPrivate::callEventTest(QEvent *e)
@@ -254,7 +252,7 @@ QList<QAbstractState*> QAbstractTransition::targetStates() const
 void QAbstractTransition::setTargetStates(const QList<QAbstractState*> &targets)
 {
     Q_D(QAbstractTransition);
-    QList<QPointer<QAbstractState> > copy(d->targetStates);
+    QVector<QPointer<QAbstractState> > copy(d->targetStates);
     bool sameList = true;
     for (int i = 0; i < targets.size(); ++i) {
         QAbstractState *target = targets.at(i);

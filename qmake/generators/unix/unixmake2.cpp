@@ -306,7 +306,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         t << "include " << escapeDependencyPath(*it) << endl;
 
     /* rules */
-    t << "first: all\n";
+    t << "first:" << (!project->isActiveConfig("no_default_goal_deps") ? " all" : "") << "\n";
     t << "####### Implicit rules\n\n";
     t << ".SUFFIXES: " << Option::obj_ext;
     for(QStringList::Iterator cit = Option::c_ext.begin(); cit != Option::c_ext.end(); ++cit)

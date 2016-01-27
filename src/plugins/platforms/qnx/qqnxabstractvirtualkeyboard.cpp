@@ -124,4 +124,25 @@ void QQnxAbstractVirtualKeyboard::setLocale(const QLocale &locale)
     emit localeChanged(locale);
 }
 
+QQnxAbstractVirtualKeyboard::EnterKeyType
+    QQnxAbstractVirtualKeyboard::qtEnterKeyTypeToQnx(Qt::EnterKeyType type)
+{
+    switch (type) {
+    case Qt::EnterKeyDone:
+        return Done;
+    case Qt::EnterKeyGo:
+        return Go;
+    case Qt::EnterKeyNext:
+        return Next;
+    case Qt::EnterKeySearch:
+        return Search;
+    case Qt::EnterKeySend:
+        return Send;
+    case Qt::EnterKeyDefault:
+    case Qt::EnterKeyReturn:
+    case Qt::EnterKeyPrevious: // unsupported
+        return DefaultReturn;
+    }
+}
+
 QT_END_NAMESPACE

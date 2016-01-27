@@ -537,11 +537,9 @@ QList<Section> CppCodeMarker::sections(const Aggregate *inner,
                         isSlot = (func->metaness() == FunctionNode::Slot);
                         isSignal = (func->metaness() == FunctionNode::Signal);
                         isStatic = func->isStatic();
-                        if (func->associatedProperty()) {
-                            if (func->associatedProperty()->status() == Node::Obsolete) {
-                                ++c;
-                                continue;
-                            }
+                        if (func->hasAssociatedProperties() && !func->hasActiveAssociatedProperty()) {
+                            ++c;
+                            continue;
                         }
                     }
                     else if ((*c)->type() == Node::Variable) {
@@ -685,7 +683,7 @@ QList<Section> CppCodeMarker::sections(const Aggregate *inner,
                 }
                 else if ((*c)->type() == Node::Function) {
                     FunctionNode *function = static_cast<FunctionNode *>(*c);
-                    if (!function->associatedProperty())
+                    if (!function->hasAssociatedProperties() || !function->doc().isEmpty())
                         insert(memberFunctions, function, style, status);
                 }
                 ++c;
@@ -895,8 +893,8 @@ QString CppCodeMarker::addMarkUp(const QString &in,
     ch = (i < (int)code.length()) ? code[i++].cell() : EOF
 
     QString code = in;
-    QStringList out;
-    QString text;
+    QString out;
+    QStringRef text;
     int braceDepth = 0;
     int parenDepth = 0;
     int i = 0;
@@ -931,8 +929,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
             } else if (keywords.contains(ident)) {
                 tag = QStringLiteral("keyword");
             } else if (braceDepth == 0 && parenDepth == 0) {
-                if (QString(code.unicode() + i - 1, code.length() - (i - 1))
-                        .indexOf(findFunctionRegExp) == 0)
+                if (code.indexOf(findFunctionRegExp, i - 1) == i - 1)
                     tag = QStringLiteral("func");
                 target = true;
             }
@@ -1071,27 +1068,34 @@ QString CppCodeMarker::addMarkUp(const QString &in,
             }
         }
 
-        text = code.mid(start, finish - start);
+        text = code.midRef(start, finish - start);
         start = finish;
 
         if (!tag.isEmpty()) {
-            out << QStringLiteral("<@") << tag;
-            if (target)
-                out << QStringLiteral(" target=\"") << text << QStringLiteral("()\"");
-            out << QStringLiteral(">");
+            out += QStringLiteral("<@");
+            out += tag;
+            if (target) {
+                out += QStringLiteral(" target=\"");
+                out += text;
+                out += QStringLiteral("()\"");
+            }
+            out += QStringLiteral(">");
         }
 
-        out << protect(text);
+        appendProtectedString(&out, text);
 
-        if (!tag.isEmpty())
-            out << QStringLiteral("</@") << tag << QStringLiteral(">");
+        if (!tag.isEmpty()) {
+            out += QStringLiteral("</@");
+            out += tag;
+            out += QStringLiteral(">");
+        }
     }
 
     if (start < code.length()) {
-        out << protect(code.mid(start));
+        appendProtectedString(&out, code.midRef(start));
     }
 
-    return out.join(QString());
+    return out;
 }
 
 /*!
