@@ -1668,12 +1668,7 @@ QDateTimeEditPrivate::QDateTimeEditPrivate()
     cachedDay = -1;
     currentSectionIndex = FirstSectionIndex;
 
-    first.type = FirstSection;
-    last.type = LastSection;
-    none.type = NoSection;
     first.pos = 0;
-    last.pos = -1;
-    none.pos = -1;
     sections = 0;
     calendarPopup = false;
     minimum = QDATETIMEEDIT_COMPAT_DATETIME_MIN;
