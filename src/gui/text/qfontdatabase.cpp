@@ -2732,9 +2732,16 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     if (req.stretch == 0)
         req.stretch = 100;
 
+    // respect the fallback families that might be passed through the request
+    const QStringList fallBackFamilies = familyList(req);
+
     if (!d->engineData) {
         QFontCache *fontCache = QFontCache::instance();
         // look for the requested font in the engine data cache
+        // note: fallBackFamilies are not respected in the EngineData cache key;
+        //       join them with the primary selection family to avoid cache misses
+        req.family = fallBackFamilies.join(QLatin1Char(','));
+
         d->engineData = fontCache->findEngineData(req);
         if (!d->engineData) {
             // create a new one
@@ -2748,25 +2755,18 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     if (d->engineData->engines[script])
         return;
 
-    // Until we specifically asked not to, try looking for Multi font engine
-    // first, the last '1' indicates that we want Multi font engine instead
-    // of single ones
-    bool multi = !(req.styleStrategy & QFont::NoFontMerging);
-    QFontCache::Key key(req, script, multi ? 1 : 0);
+    QFontEngine *fe = Q_NULLPTR;
 
-    QFontEngine *fe = QFontCache::instance()->findEngine(key);
+    req.fallBackFamilies = fallBackFamilies;
+    if (!req.fallBackFamilies.isEmpty())
+        req.family = req.fallBackFamilies.takeFirst();
 
     // list of families to try
     QStringList family_list;
 
     if (!req.family.isEmpty()) {
-        QStringList familiesForRequest = familyList(req);
-
         // Add primary selection
-        family_list << familiesForRequest.takeFirst();
-
-        // Fallbacks requested in font request
-        req.fallBackFamilies = familiesForRequest;
+        family_list << req.family;
 
         // add the default family
         QString defaultFamily = QGuiApplication::font().family();
