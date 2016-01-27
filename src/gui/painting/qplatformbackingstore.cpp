@@ -263,12 +263,14 @@ static inline QRect toBottomLeftRect(const QRect &topLeftRect, int windowHeight)
 static void blitTextureForWidget(const QPlatformTextureList *textures, int idx, QWindow *window, const QRect &deviceWindowRect,
                                  QOpenGLTextureBlitter *blitter, const QPoint &offset)
 {
+    const QRect clipRect = textures->clipRect(idx);
+    if (clipRect.isEmpty())
+        return;
+
     QRect rectInWindow = textures->geometry(idx);
     // relative to the TLW, not necessarily our window (if the flush is for a native child widget), have to adjust
     rectInWindow.translate(-offset);
-    QRect clipRect = textures->clipRect(idx);
-    if (clipRect.isEmpty())
-        clipRect = QRect(QPoint(0, 0), rectInWindow.size());
+
     const QRect clippedRectInWindow = rectInWindow & clipRect.translated(rectInWindow.topLeft());
     const QRect srcRect = toBottomLeftRect(clipRect, rectInWindow.height());
 
