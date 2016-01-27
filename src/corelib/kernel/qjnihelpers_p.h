@@ -105,6 +105,7 @@ namespace QtAndroidPrivate
     jobject classLoader();
     Q_CORE_EXPORT jint androidSdkVersion();
     Q_CORE_EXPORT void runOnAndroidThread(const Runnable &runnable, JNIEnv *env);
+    Q_CORE_EXPORT void runOnAndroidThreadSync(const Runnable &runnable, JNIEnv *env, int timeoutMs = INT_MAX);
     Q_CORE_EXPORT void runOnUiThread(QRunnable *runnable, JNIEnv *env);
 
     Q_CORE_EXPORT void handleActivityResult(jint requestCode, jint resultCode, jobject data);

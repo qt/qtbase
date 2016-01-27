@@ -41,6 +41,7 @@
 #include "qmutex.h"
 #include "qlist.h"
 #include "qsemaphore.h"
+#include "qsharedpointer.h"
 #include "qvector.h"
 #include <QtCore/qrunnable.h>
 
@@ -336,6 +337,16 @@ void QtAndroidPrivate::runOnAndroidThread(const QtAndroidPrivate::Runnable &runn
     g_pendingRunnablesMutex->unlock();
     if (triggerRun)
         env->CallStaticVoidMethod(g_jNativeClass, g_runPendingCppRunnablesMethodID);
+}
+
+void QtAndroidPrivate::runOnAndroidThreadSync(const QtAndroidPrivate::Runnable &runnable, JNIEnv *env, int timeoutMs)
+{
+    QSharedPointer<QSemaphore> sem(new QSemaphore);
+    runOnAndroidThread([&runnable, sem]{
+        runnable();
+        sem->release();
+    }, env);
+    sem->tryAcquire(1, timeoutMs);
 }
 
 void QtAndroidPrivate::registerGenericMotionEventListener(QtAndroidPrivate::GenericMotionEventListener *listener)
