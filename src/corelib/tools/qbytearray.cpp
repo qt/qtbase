@@ -489,8 +489,8 @@ quint16 qChecksum(const char *data, uint len)
 
     \overload
 
-    Compresses the first \a nbytes of \a data and returns the
-    compressed data in a new byte array.
+    Compresses the first \a nbytes of \a data at compression level
+    \a compressionLevel and returns the compressed data in a new byte array.
 */
 
 #ifndef QT_NO_COMPRESS
@@ -511,7 +511,7 @@ QByteArray qCompress(const uchar* data, int nbytes, int compressionLevel)
     int res;
     do {
         bazip.resize(len + 4);
-        res = ::compress2((uchar*)bazip.data()+4, &len, (uchar*)data, nbytes, compressionLevel);
+        res = ::compress2((uchar*)bazip.data()+4, &len, data, nbytes, compressionLevel);
 
         switch (res) {
         case Z_OK:
@@ -578,8 +578,8 @@ QByteArray qUncompress(const uchar* data, int nbytes)
             qWarning("qUncompress: Input data is corrupted");
         return QByteArray();
     }
-    ulong expectedSize = (data[0] << 24) | (data[1] << 16) |
-                       (data[2] <<  8) | (data[3]      );
+    ulong expectedSize = uint((data[0] << 24) | (data[1] << 16) |
+                              (data[2] <<  8) | (data[3]      ));
     ulong len = qMax(expectedSize, 1ul);
     QScopedPointer<QByteArray::Data, QScopedPointerPodDeleter> d;
 
@@ -602,7 +602,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
         d->size = 0; // Shut up valgrind "uninitialized variable" warning
 
         int res = ::uncompress((uchar*)d->data(), &len,
-                               (uchar*)data+4, nbytes-4);
+                               data+4, nbytes-4);
 
         switch (res) {
         case Z_OK:
@@ -2186,9 +2186,9 @@ QByteArray &QByteArray::replace(const char *before, int bsize, const char *after
     }
 
     if (a != after)
-        ::free((char *)a);
+        ::free(const_cast<char *>(a));
     if (b != before)
-        ::free((char *)b);
+        ::free(const_cast<char *>(b));
 
 
     return *this;
@@ -2883,9 +2883,9 @@ QByteArray QByteArray::toUpper_helper(QByteArray &a)
 
 /*! \fn void QByteArray::clear()
 
-    Clears the contents of the byte array and makes it empty.
+    Clears the contents of the byte array and makes it null.
 
-    \sa resize(), isEmpty()
+    \sa resize(), isNull()
 */
 
 void QByteArray::clear()

@@ -73,6 +73,13 @@
             ReferencedContainer = "container:@QMAKE_ORIG_TARGET@.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "DYLD_IMAGE_SUFFIX"
+            value = "$(QT_LIBRARY_SUFFIX)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>

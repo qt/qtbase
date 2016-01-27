@@ -243,7 +243,7 @@ void QDialogPrivate::deletePlatformHelper()
     \section1 Escape Key
 
     If the user presses the Esc key in a dialog, QDialog::reject()
-    will be called. This will cause the window to close: The \l{QCloseEvent}{close event} cannot be \l{QCloseEvent::ignore()}{ignored}.
+    will be called. This will cause the window to close: The \l{QCloseEvent}{close event} cannot be \l{QEvent::ignore()}{ignored}.
 
     \section1 Extensibility
 
@@ -565,7 +565,7 @@ int QDialog::exec()
   last window closed, the QApplication::lastWindowClosed() signal is
   emitted.
 
-  \sa accept(), reject(), QApplication::activeWindow(), QApplication::quit()
+  \sa accept(), reject(), QApplication::activeWindow(), QCoreApplication::quit()
 */
 
 void QDialog::done(int r)
@@ -651,11 +651,9 @@ void QDialog::keyPressEvent(QKeyEvent *e)
     //   Calls reject() if Escape is pressed. Simulates a button
     //   click for the default button if Enter is pressed. Move focus
     //   for the arrow keys. Ignore the rest.
-#ifdef Q_OS_MAC
-    if(e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_Period) {
+    if (e->matches(QKeySequence::Cancel)) {
         reject();
     } else
-#endif
     if (!e->modifiers() || (e->modifiers() & Qt::KeypadModifier && e->key() == Qt::Key_Enter)) {
         switch (e->key()) {
         case Qt::Key_Enter:
@@ -671,9 +669,6 @@ void QDialog::keyPressEvent(QKeyEvent *e)
             }
         }
         break;
-        case Qt::Key_Escape:
-            reject();
-            break;
         default:
             e->ignore();
             return;

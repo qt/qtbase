@@ -165,6 +165,7 @@ private slots:
     void setCustomModelAndView();
     void updateDelegateOnEditableChange();
     void respectChangedOwnershipOfItemView();
+    void task_QTBUG_39088_inputMethodHints();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -2044,7 +2045,13 @@ void tst_QComboBox::mouseWheel_data()
     QTest::newRow("upper locked") << disabled << start << wheel << expected;
 
     wheel = -1;
+#ifdef Q_OS_DARWIN
+    // on OS X & iOS mouse wheel shall have no effect on combo box
+    expected = start;
+#else
+    // on other OSes we should jump to next enabled item (no. 5)
     expected = 5;
+#endif
     QTest::newRow("jump over") << disabled << start << wheel << expected;
 
     disabled.clear();
@@ -3168,6 +3175,14 @@ void tst_QComboBox::updateDelegateOnEditableChange()
         bool menuDelegateAfter = qobject_cast<QComboMenuDelegate *>(box.itemDelegate()) != 0;
         QCOMPARE(menuDelegateAfter, menuDelegateBefore);
     }
+}
+
+void tst_QComboBox::task_QTBUG_39088_inputMethodHints()
+{
+    QComboBox box;
+    box.setEditable(true);
+    box.setInputMethodHints(Qt::ImhNoPredictiveText);
+    QCOMPARE(box.lineEdit()->inputMethodHints(), Qt::ImhNoPredictiveText);
 }
 
 void tst_QComboBox::respectChangedOwnershipOfItemView()

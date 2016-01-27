@@ -19,22 +19,22 @@ SUBDIRS=\
 
 
 contains(QT_CONFIG, c++11)|msvc: SUBDIRS +=\
-    cxx11/char \
-    cxx11/char16_t \
-    cxx11/char32_t \
-    cxx11/int \
-    cxx11/long \
-    cxx11/qlonglong \
-    cxx11/qptrdiff \
-    cxx11/quintptr \
-    cxx11/qulonglong \
-    cxx11/schar \
-    cxx11/short \
-    cxx11/uchar \
-    cxx11/uint \
-    cxx11/ulong \
-    cxx11/ushort \
-    cxx11/wchar_t \
+    no-cxx11/char \
+    no-cxx11/char16_t \
+    no-cxx11/char32_t \
+    no-cxx11/int \
+    no-cxx11/long \
+    no-cxx11/qlonglong \
+    no-cxx11/qptrdiff \
+    no-cxx11/quintptr \
+    no-cxx11/qulonglong \
+    no-cxx11/schar \
+    no-cxx11/short \
+    no-cxx11/uchar \
+    no-cxx11/uint \
+    no-cxx11/ulong \
+    no-cxx11/ushort \
+    no-cxx11/wchar_t \
 
 
 # The GCC-style atomics only support 32-bit and pointer-sized but add

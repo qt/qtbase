@@ -110,7 +110,7 @@ public:
         QVector<QObjectUserData *> userData;
     #endif
         QList<QByteArray> propertyNames;
-        QList<QVariant> propertyValues;
+        QVector<QVariant> propertyValues;
         QVector<int> runningTimers;
         QList<QPointer<QObject> > eventFilters;
         QString objectName;

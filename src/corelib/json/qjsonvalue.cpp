@@ -173,7 +173,7 @@ QJsonValue::QJsonValue(int n)
 QJsonValue::QJsonValue(qint64 n)
     : d(0), t(Double)
 {
-    this->dbl = n;
+    this->dbl = double(n);
 }
 
 /*!
@@ -515,7 +515,7 @@ bool QJsonValue::toBool(bool defaultValue) const
 int QJsonValue::toInt(int defaultValue) const
 {
     if (t == Double && int(dbl) == dbl)
-        return dbl;
+        return int(dbl);
     return defaultValue;
 }
 
@@ -738,23 +738,23 @@ QDebug operator<<(QDebug dbg, const QJsonValue &o)
         dbg << "QJsonValue(null)";
         break;
     case QJsonValue::Bool:
-        dbg.nospace() << "QJsonValue(bool, " << o.toBool() << ")";
+        dbg.nospace() << "QJsonValue(bool, " << o.toBool() << ')';
         break;
     case QJsonValue::Double:
-        dbg.nospace() << "QJsonValue(double, " << o.toDouble() << ")";
+        dbg.nospace() << "QJsonValue(double, " << o.toDouble() << ')';
         break;
     case QJsonValue::String:
-        dbg.nospace() << "QJsonValue(string, " << o.toString() << ")";
+        dbg.nospace() << "QJsonValue(string, " << o.toString() << ')';
         break;
     case QJsonValue::Array:
         dbg.nospace() << "QJsonValue(array, ";
         dbg << o.toArray();
-        dbg << ")";
+        dbg << ')';
         break;
     case QJsonValue::Object:
         dbg.nospace() << "QJsonValue(object, ";
         dbg << o.toObject();
-        dbg << ")";
+        dbg << ')';
         break;
     }
     return dbg;

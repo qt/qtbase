@@ -98,6 +98,7 @@ private slots:
     void removeServer();
 
     void recycleServer();
+    void recycleClientSocket();
 
     void multiConnect();
     void writeOnlySocket();
@@ -731,7 +732,10 @@ public:
         int done = clients;
         while (done > 0) {
             bool timedOut = true;
-            QVERIFY(server.waitForNewConnection(7000, &timedOut));
+            QVERIFY2(server.waitForNewConnection(7000, &timedOut),
+                     (QByteArrayLiteral("done=") + QByteArray::number(done)
+                      + QByteArrayLiteral(", timedOut=")
+                      + (timedOut ? "true" : "false")).constData());
             QVERIFY(!timedOut);
             QLocalSocket *serverSocket = server.nextPendingConnection();
             QVERIFY(serverSocket);
@@ -952,6 +956,34 @@ void tst_QLocalSocket::recycleServer()
     QVERIFY(client.waitForConnected(202));
     QVERIFY(server.waitForNewConnection(202));
     QVERIFY(server.nextPendingConnection() != 0);
+}
+
+void tst_QLocalSocket::recycleClientSocket()
+{
+    const QByteArrayList lines = QByteArrayList() << "Have you heard of that new band"
+                                                  << "\"1023 Megabytes\"?"
+                                                  << "They haven't made it to a gig yet.";
+    QLocalServer server;
+    const QString serverName = QStringLiteral("recycleClientSocket");
+    QVERIFY(server.listen(serverName));
+    QLocalSocket client;
+    QSignalSpy clientReadyReadSpy(&client, SIGNAL(readyRead()));
+    QSignalSpy clientErrorSpy(&client, SIGNAL(error(QLocalSocket::LocalSocketError)));
+    for (int i = 0; i < lines.count(); ++i) {
+        client.abort();
+        clientReadyReadSpy.clear();
+        client.connectToServer(serverName);
+        QVERIFY(client.waitForConnected());
+        QVERIFY(server.waitForNewConnection());
+        QLocalSocket *serverSocket = server.nextPendingConnection();
+        QVERIFY(serverSocket);
+        connect(serverSocket, &QLocalSocket::disconnected, &QLocalSocket::deleteLater);
+        serverSocket->write(lines.at(i));
+        serverSocket->flush();
+        QVERIFY(clientReadyReadSpy.wait());
+        QCOMPARE(client.readAll(), lines.at(i));
+        QVERIFY(clientErrorSpy.isEmpty());
+    }
 }
 
 void tst_QLocalSocket::multiConnect()

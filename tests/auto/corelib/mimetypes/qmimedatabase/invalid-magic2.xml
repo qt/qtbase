@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
+  <mime-type type="text/invalid-magic2">
+      <comment>mask doesn't start with 0x</comment>
+      <magic>
+          <match value="foo" type="string" mask="ffff" offset="0"/>
+      </magic>
+  </mime-type>
+</mime-info>

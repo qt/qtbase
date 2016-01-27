@@ -66,6 +66,11 @@ public:
     // compiler-generated copy/move ctor/assignment operators are fine!
     // compiler-generated dtor is fine!
 
+#ifdef Q_QDOC
+    // Stop qdoc from complaining about missing function
+    ~QPointer();
+#endif
+
     inline void swap(QPointer &other) { wp.swap(other.wp); }
 
     inline QPointer<T> &operator=(T* p)

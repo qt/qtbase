@@ -172,6 +172,7 @@ static inline WindowsScreenDataList monitorData()
     return result;
 }
 
+#ifndef QT_NO_DEBUG_STREAM
 static QDebug operator<<(QDebug dbg, const QWindowsScreenData &d)
 {
     QDebugStateSaver saver(dbg);
@@ -192,16 +193,7 @@ static QDebug operator<<(QDebug dbg, const QWindowsScreenData &d)
         dbg << " lock screen";
     return dbg;
 }
-
-// Return the cursor to be shared by all screens (virtual desktop).
-static inline QSharedPointer<QPlatformCursor> sharedCursor()
-{
-#ifndef QT_NO_CURSOR
-    if (const QScreen *primaryScreen = QGuiApplication::primaryScreen())
-        return static_cast<const QWindowsScreen *>(primaryScreen->handle())->cursorPtr();
-#endif
-    return QSharedPointer<QPlatformCursor>(new QWindowsCursor);
-}
+#endif // !QT_NO_DEBUG_STREAM
 
 /*!
     \class QWindowsScreen
@@ -214,7 +206,7 @@ static inline QSharedPointer<QPlatformCursor> sharedCursor()
 QWindowsScreen::QWindowsScreen(const QWindowsScreenData &data) :
     m_data(data)
 #ifndef QT_NO_CURSOR
-    ,m_cursor(sharedCursor())
+    , m_cursor(new QWindowsCursor(this))
 #endif
 {
 }
@@ -276,22 +268,13 @@ QWindow *QWindowsScreen::windowAt(const QPoint &screenPoint, unsigned flags)
     return result;
 }
 
-QWindowsScreen *QWindowsScreen::screenOf(const QWindow *w)
-{
-    if (w)
-        if (const QScreen *s = w->screen())
-            if (QPlatformScreen *pscr = s->handle())
-                return static_cast<QWindowsScreen *>(pscr);
-    if (const QScreen *ps = QGuiApplication::primaryScreen())
-        if (QPlatformScreen *ppscr = ps->handle())
-            return static_cast<QWindowsScreen *>(ppscr);
-    return 0;
-}
-
 qreal QWindowsScreen::pixelDensity() const
 {
-    const qreal physicalDpi = m_data.geometry.width() / m_data.physicalSizeMM.width() * qreal(25.4);
-    return qRound(physicalDpi / 96);
+    // QTBUG-49195: Use logical DPI instead of physical DPI to calculate
+    // the pixel density since it is reflects the Windows UI scaling.
+    // High DPI auto scaling should be disabled when the user chooses
+    // small fonts on a High DPI monitor, resulting in lower logical DPI.
+    return qRound(logicalDpi().first / 96);
 }
 
 /*!
@@ -340,6 +323,74 @@ void QWindowsScreen::handleChanges(const QWindowsScreenData &newData)
         QWindowSystemInterface::handleScreenOrientationChange(screen(),
                                                               newData.orientation);
     }
+}
+
+enum OrientationPreference // matching Win32 API ORIENTATION_PREFERENCE
+#if defined(Q_COMPILER_CLASS_ENUM) || defined(Q_CC_MSVC)
+    : DWORD
+#endif
+{
+    orientationPreferenceNone = 0,
+    orientationPreferenceLandscape = 0x1,
+    orientationPreferencePortrait = 0x2,
+    orientationPreferenceLandscapeFlipped = 0x4,
+    orientationPreferencePortraitFlipped = 0x8
+};
+
+bool QWindowsScreen::setOrientationPreference(Qt::ScreenOrientation o)
+{
+    bool result = false;
+#ifndef Q_OS_WINCE
+    if (QWindowsContext::user32dll.setDisplayAutoRotationPreferences) {
+        DWORD orientationPreference = 0;
+        switch (o) {
+        case Qt::PrimaryOrientation:
+            orientationPreference = orientationPreferenceNone;
+            break;
+        case Qt::PortraitOrientation:
+            orientationPreference = orientationPreferencePortrait;
+            break;
+        case Qt::LandscapeOrientation:
+            orientationPreference = orientationPreferenceLandscape;
+            break;
+        case Qt::InvertedPortraitOrientation:
+            orientationPreference = orientationPreferencePortraitFlipped;
+            break;
+        case Qt::InvertedLandscapeOrientation:
+            orientationPreference = orientationPreferenceLandscapeFlipped;
+            break;
+        }
+        result = QWindowsContext::user32dll.setDisplayAutoRotationPreferences(orientationPreference);
+    }
+#endif // !Q_OS_WINCE
+    return result;
+}
+
+Qt::ScreenOrientation QWindowsScreen::orientationPreference()
+{
+    Qt::ScreenOrientation result = Qt::PrimaryOrientation;
+#ifndef Q_OS_WINCE
+    if (QWindowsContext::user32dll.getDisplayAutoRotationPreferences) {
+        DWORD orientationPreference = 0;
+        if (QWindowsContext::user32dll.getDisplayAutoRotationPreferences(&orientationPreference)) {
+            switch (orientationPreference) {
+            case orientationPreferenceLandscape:
+                result = Qt::LandscapeOrientation;
+                break;
+            case orientationPreferencePortrait:
+                result = Qt::PortraitOrientation;
+                break;
+            case orientationPreferenceLandscapeFlipped:
+                result = Qt::InvertedLandscapeOrientation;
+                break;
+            case orientationPreferencePortraitFlipped:
+                result = Qt::InvertedPortraitOrientation;
+                break;
+            }
+        }
+    }
+#endif // !Q_OS_WINCE
+    return result;
 }
 
 /*!

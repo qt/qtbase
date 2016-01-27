@@ -4,7 +4,7 @@ project                 = QtPrintSupport
 description             = Qt Print Support Reference Documentation
 version                 = $QT_VERSION
 
-examplesinstallpath     = printsupport
+examplesinstallpath     = qtbase/printsupport
 
 qhp.projects            = QtPrintSupport
 
@@ -26,7 +26,7 @@ qhp.QtPrintSupport.subprojects.classes.sortPages = true
 
 tagfile                 = ../../../doc/qtprintsupport/qtprintsupport.tags
 
-depends                 += qtcore qtgui qtwidgets qtdoc
+depends                 += qtcore qtgui qtwidgets qtdoc qmake
 
 headerdirs  += ..
 

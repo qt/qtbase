@@ -89,6 +89,7 @@ public:
 #ifndef QT_NO_BEARERMANAGEMENT
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionConnected())
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionFailed())
+    Q_PRIVATE_SLOT(d_func(), void _q_networkSessionStateChanged(QNetworkSession::State))
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies))
 #endif
 
@@ -115,8 +116,6 @@ public:
     QNetworkReplyImplPrivate();
 
     void _q_startOperation();
-    void _q_sourceReadyRead();
-    void _q_sourceReadChannelFinished();
     void _q_copyReadyRead();
     void _q_copyReadChannelFinished();
     void _q_bufferOutgoingData();
@@ -124,6 +123,7 @@ public:
 #ifndef QT_NO_BEARERMANAGEMENT
     void _q_networkSessionConnected();
     void _q_networkSessionFailed();
+    void _q_networkSessionStateChanged(QNetworkSession::State);
     void _q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies);
 #endif
 

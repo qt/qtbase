@@ -203,6 +203,7 @@ egl::Error SurfaceD3D::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
 
     if (width == 0 || height == 0)
     {
+        checkForOutOfDateSwapChain();
         return egl::Error(EGL_SUCCESS);
     }
 

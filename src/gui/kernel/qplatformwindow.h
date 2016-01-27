@@ -95,7 +95,7 @@ public:
 
     virtual bool isExposed() const;
     virtual bool isActive() const;
-    virtual bool isEmbedded(const QPlatformWindow *parentWindow) const;
+    virtual bool isEmbedded(const QPlatformWindow *parentWindow = 0) const;
     virtual QPoint mapToGlobal(const QPoint &pos) const;
     virtual QPoint mapFromGlobal(const QPoint &pos) const;
 
@@ -138,7 +138,9 @@ public:
     QSize windowBaseSize() const;
     QSize windowSizeIncrement() const;
     QRect windowGeometry() const;
+    QRect windowFrameGeometry() const;
     QRectF windowClosestAcceptableGeometry(const QRectF &nativeRect) const;
+    static QRectF closestAcceptableGeometry(const QWindow *w, const QRectF &nativeRect);
 
 protected:
     static QString formatWindowTitle(const QString &title, const QString &separator);

@@ -720,7 +720,16 @@ void QAbstractSpinBox::interpretText()
 QVariant QAbstractSpinBox::inputMethodQuery(Qt::InputMethodQuery query) const
 {
     Q_D(const QAbstractSpinBox);
-    return d->edit->inputMethodQuery(query);
+    const QVariant lineEditValue = d->edit->inputMethodQuery(query);
+    switch (query) {
+    case Qt::ImHints:
+        if (const int hints = inputMethodHints())
+            return QVariant(hints | lineEditValue.toInt());
+        break;
+    default:
+        break;
+    }
+    return lineEditValue;
 }
 
 /*!

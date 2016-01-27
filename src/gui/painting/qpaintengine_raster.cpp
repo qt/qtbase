@@ -3277,6 +3277,10 @@ bool QRasterPaintEngine::requiresPretransformedGlyphPositions(QFontEngine *fontE
     return QPaintEngineEx::requiresPretransformedGlyphPositions(fontEngine, m);
 }
 
+/*!
+   Indicates whether glyph caching is supported by the font engine
+   \a fontEngine with the given transform \a m applied.
+*/
 bool QRasterPaintEngine::shouldDrawCachedGlyphs(QFontEngine *fontEngine, const QTransform &m) const
 {
     // The raster engine does not support projected cached glyph drawing
@@ -3649,8 +3653,9 @@ QImage::Format QRasterBuffer::prepare(QImage *image)
     drawHelper = qDrawHelper + format;
     if (image->depth() == 1 && image->colorTable().size() == 2) {
         monoDestinationWithClut = true;
-        destColor0 = qPremultiply(image->colorTable()[0]);
-        destColor1 = qPremultiply(image->colorTable()[1]);
+        const QVector<QRgb> colorTable = image->colorTable();
+        destColor0 = qPremultiply(colorTable[0]);
+        destColor1 = qPremultiply(colorTable[1]);
     }
 
     return format;

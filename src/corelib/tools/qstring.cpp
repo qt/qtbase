@@ -203,7 +203,7 @@ inline RetType UnrollTailLoop<0>::exec(int, RetType returnIfExited, Functor1, Fu
 #endif
 
 // conversion between Latin 1 and UTF-16
-void qt_from_latin1(ushort *dst, const char *str, size_t size)
+void qt_from_latin1(ushort *dst, const char *str, size_t size) Q_DECL_NOTHROW
 {
     /* SIMD:
      * Unpacking with SSE has been shown to improve performance on recent CPUs
@@ -215,7 +215,7 @@ void qt_from_latin1(ushort *dst, const char *str, size_t size)
 
     // we're going to read str[offset..offset+15] (16 bytes)
     for ( ; str + offset + 15 < e; offset += 16) {
-        const __m128i chunk = _mm_loadu_si128((__m128i*)(str + offset)); // load
+        const __m128i chunk = _mm_loadu_si128((const __m128i*)(str + offset)); // load
 #ifdef __AVX2__
         // zero extend to an YMM register
         const __m256i extended = _mm256_cvtepu8_epi16(chunk);
@@ -316,10 +316,10 @@ static void qt_to_latin1(uchar *dst, const ushort *src, int length)
 
     // we're going to write to dst[offset..offset+15] (16 bytes)
     for ( ; dst + offset + 15 < e; offset += 16) {
-        __m128i chunk1 = _mm_loadu_si128((__m128i*)(src + offset)); // load
+        __m128i chunk1 = _mm_loadu_si128((const __m128i*)(src + offset)); // load
         chunk1 = mergeQuestionMarks(chunk1);
 
-        __m128i chunk2 = _mm_loadu_si128((__m128i*)(src + offset + 8)); // load
+        __m128i chunk2 = _mm_loadu_si128((const __m128i*)(src + offset + 8)); // load
         chunk2 = mergeQuestionMarks(chunk2);
 
         // pack the two vector to 16 x 8bits elements
@@ -458,8 +458,8 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
 
     // we're going to read ptr[0..15] (16 bytes)
     for ( ; ptr + 15 < reinterpret_cast<const char *>(a); ptr += 16) {
-        __m128i a_data = _mm_loadu_si128((__m128i*)ptr);
-        __m128i b_data = _mm_loadu_si128((__m128i*)(ptr + distance));
+        __m128i a_data = _mm_loadu_si128((const __m128i*)ptr);
+        __m128i b_data = _mm_loadu_si128((const __m128i*)(ptr + distance));
         __m128i result = _mm_cmpeq_epi16(a_data, b_data);
         uint mask = ~_mm_movemask_epi8(result);
         if (ushort(mask)) {
@@ -541,14 +541,14 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
     for ( ; uc + offset + 15 < e; offset += 16) {
         // similar to fromLatin1_helper:
         // load 16 bytes of Latin 1 data
-        __m128i chunk = _mm_loadu_si128((__m128i*)(c + offset));
+        __m128i chunk = _mm_loadu_si128((const __m128i*)(c + offset));
 
 #  ifdef __AVX2__
         // expand Latin 1 data via zero extension
         __m256i ldata = _mm256_cvtepu8_epi16(chunk);
 
         // load UTF-16 data and compare
-        __m256i ucdata = _mm256_loadu_si256((__m256i*)(uc + offset));
+        __m256i ucdata = _mm256_loadu_si256((const __m256i*)(uc + offset));
         __m256i result = _mm256_cmpeq_epi16(ldata, ucdata);
 
         uint mask = ~_mm256_movemask_epi8(result);
@@ -558,8 +558,8 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
         __m128i secondHalf = _mm_unpackhi_epi8(chunk, nullmask);
 
         // load UTF-16 data and compare
-        __m128i ucdata1 = _mm_loadu_si128((__m128i*)(uc + offset));
-        __m128i ucdata2 = _mm_loadu_si128((__m128i*)(uc + offset + 8));
+        __m128i ucdata1 = _mm_loadu_si128((const __m128i*)(uc + offset));
+        __m128i ucdata2 = _mm_loadu_si128((const __m128i*)(uc + offset + 8));
         __m128i result1 = _mm_cmpeq_epi16(firstHalf, ucdata1);
         __m128i result2 = _mm_cmpeq_epi16(secondHalf, ucdata2);
 
@@ -577,10 +577,10 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
     // we'll read uc[offset..offset+7] (16 bytes) and c[offset..offset+7] (8 bytes)
     if (uc + offset + 7 < e) {
         // same, but we're using an 8-byte load
-        __m128i chunk = _mm_cvtsi64_si128(*(long long *)(c + offset));
+        __m128i chunk = _mm_cvtsi64_si128(*(const long long *)(c + offset));
         __m128i secondHalf = _mm_unpacklo_epi8(chunk, nullmask);
 
-        __m128i ucdata = _mm_loadu_si128((__m128i*)(uc + offset));
+        __m128i ucdata = _mm_loadu_si128((const __m128i*)(uc + offset));
         __m128i result = _mm_cmpeq_epi16(secondHalf, ucdata);
         uint mask = ~_mm_movemask_epi8(result);
         if (ushort(mask)) {
@@ -672,7 +672,7 @@ static int findChar(const QChar *str, int len, QChar ch, int from,
 
             // we're going to read n[0..7] (16 bytes)
             for (const ushort *next = n + 8; next <= e; n = next, next += 8) {
-                __m128i data = _mm_loadu_si128((__m128i*)n);
+                __m128i data = _mm_loadu_si128((const __m128i*)n);
                 __m128i result = _mm_cmpeq_epi16(data, mch);
                 uint mask = _mm_movemask_epi8(result);
                 if (ushort(mask)) {
@@ -1509,7 +1509,7 @@ QString::QString(const QChar *unicode, int size)
     } else {
         if (size < 0) {
             size = 0;
-            while (unicode[size] != 0)
+            while (!unicode[size].isNull())
                 ++size;
         }
         if (!size) {
@@ -1818,6 +1818,17 @@ QString &QString::operator=(const QString &other) Q_DECL_NOTHROW
 
     Assigns the Latin-1 string \a str to this string.
 */
+QString &QString::operator=(QLatin1String other)
+{
+    if (isDetached() && other.size() <= capacity()) { // assumes d->alloc == 0 → !isDetached() (sharedNull)
+        d->size = other.size();
+        d->data()[other.size()] = 0;
+        qt_from_latin1(d->data(), other.latin1(), other.size());
+    } else {
+        *this = fromLatin1(other.latin1(), other.size());
+    }
+    return *this;
+}
 
 /*! \fn QString &QString::operator=(const QByteArray &ba)
 
@@ -1868,7 +1879,16 @@ QString &QString::operator=(const QString &other) Q_DECL_NOTHROW
 */
 QString &QString::operator=(QChar ch)
 {
-    return operator=(QString(ch));
+    if (isDetached() && capacity() >= 1) { // assumes d->alloc == 0 → !isDetached() (sharedNull)
+        // re-use existing capacity:
+        ushort *dat = d->data();
+        dat[0] = ch.unicode();
+        dat[1] = 0;
+        d->size = 1;
+    } else {
+        operator=(QString(ch));
+    }
+    return *this;
 }
 
 /*!
@@ -2680,6 +2700,8 @@ bool operator==(const QString &s1, const QString &s2)
 
 /*!
     \overload operator==()
+    Returns \c true if this string is equal to \a other; otherwise
+    returns \c false.
 */
 bool QString::operator==(QLatin1String other) const
 {
@@ -2738,13 +2760,13 @@ bool operator<(const QString &s1, const QString &s2)
 }
 /*!
    \overload operator<()
-   \relates QString
+
     Returns \c true if this string is lexically less than the parameter
     string called \a other; otherwise returns \c false.
 */
 bool QString::operator<(QLatin1String other) const
 {
-    const uchar *c = (uchar *) other.latin1();
+    const uchar *c = (const uchar *) other.latin1();
     if (!c || *c == 0)
         return false;
 
@@ -2843,13 +2865,13 @@ bool QString::operator<(QLatin1String other) const
 
 /*!
    \overload operator>()
-   \relates QString
+
     Returns \c true if this string is lexically greater than the parameter
     string \a other; otherwise returns \c false.
 */
 bool QString::operator>(QLatin1String other) const
 {
-    const uchar *c = (uchar *) other.latin1();
+    const uchar *c = (const uchar *) other.latin1();
     if (!c || *c == '\0')
         return !isEmpty();
 
@@ -3614,9 +3636,14 @@ int QString::count(const QString &str, Qt::CaseSensitivity cs) const
 }
 
 /*!
-  \overload count()
+    \overload count()
 
-  Returns the number of occurrences of character \a ch in the string.
+    Returns the number of occurrences of character \a ch in the string.
+
+    If \a cs is Qt::CaseSensitive (default), the search is
+    case sensitive; otherwise the search is case insensitive.
+
+    \sa contains(), indexOf()
 */
 
 int QString::count(QChar ch, Qt::CaseSensitivity cs) const
@@ -3839,7 +3866,7 @@ int QString::indexOf(const QRegularExpression& re, int from) const
 
     Example:
 
-    \snippet qstring/main.cpp 97
+    \snippet qstring/main.cpp 99
 */
 int QString::indexOf(const QRegularExpression &re, int from, QRegularExpressionMatch *rmatch) const
 {
@@ -3890,7 +3917,7 @@ int QString::lastIndexOf(const QRegularExpression &re, int from) const
 
     Example:
 
-    \snippet qstring/main.cpp 98
+    \snippet qstring/main.cpp 100
 */
 int QString::lastIndexOf(const QRegularExpression &re, int from, QRegularExpressionMatch *rmatch) const
 {
@@ -5392,7 +5419,7 @@ int QString::compare_helper(const QChar *data1, int length1, QLatin1String s2,
 {
     const ushort *uc = reinterpret_cast<const ushort *>(data1);
     const ushort *uce = uc + length1;
-    const uchar *c = (uchar *)s2.latin1();
+    const uchar *c = (const uchar *)s2.latin1();
 
     if (!c)
         return length1;
@@ -5659,34 +5686,36 @@ QString QString::rightJustified(int width, QChar fill, bool truncate) const
 */
 
 namespace QUnicodeTables {
-struct LowercaseTraits
-{
-    static signed short caseDiff(const Properties *prop)
-    { return prop->lowerCaseDiff; }
-    static bool caseSpecial(const Properties *prop)
-    { return prop->lowerCaseSpecial; }
-};
+/*
+    \internal
+    Converts the \a str string starting from the position pointed to by the \a
+    it iterator, using the Unicode case traits \c Traits, and returns the
+    result. The input string must not be empty (the convertCase function below
+    guarantees that).
 
-struct UppercaseTraits
-{
-    static signed short caseDiff(const Properties *prop)
-    { return prop->upperCaseDiff; }
-    static bool caseSpecial(const Properties *prop)
-    { return prop->upperCaseSpecial; }
-};
+    The string type \c{T} is also a template and is either \c{const QString} or
+    \c{QString}. This function can do both copy-conversion and in-place
+    conversion depending on the state of the \a str parameter:
+    \list
+       \li \c{T} is \c{const QString}: copy-convert
+       \li \c{T} is \c{QString} and its refcount != 1: copy-convert
+       \li \c{T} is \c{QString} and its refcount == 1: in-place convert
+    \endlist
 
-struct CasefoldTraits
-{
-    static signed short caseDiff(const Properties *prop)
-    { return prop->caseFoldDiff; }
-    static bool caseSpecial(const Properties *prop)
-    { return prop->caseFoldSpecial; }
-};
+    In copy-convert mode, the local variable \c{s} is detached from the input
+    \a str. In the in-place convert mode, \a str is in moved-from state (which
+    this function requires to be a valid, empty string) and \c{s} contains the
+    only copy of the string, without reallocation (thus, \a it is still valid).
 
+    There's one pathological case left: when the in-place conversion needs to
+    reallocate memory to grow the buffer. In that case, we need to adjust the \a
+    it pointer.
+ */
 template <typename Traits, typename T>
 Q_NEVER_INLINE
 static QString detachAndConvertCase(T &str, QStringIterator it)
 {
+    Q_ASSERT(!str.isEmpty());
     QString s = qMove(str);             // will copy if T is const QString
     QChar *pp = s.begin() + it.index(); // will detach if necessary
     uint uc = it.nextUnchecked();
@@ -5695,12 +5724,19 @@ static QString detachAndConvertCase(T &str, QStringIterator it)
         signed short caseDiff = Traits::caseDiff(prop);
 
         if (Q_UNLIKELY(Traits::caseSpecial(prop))) {
-            // slow path
+            // slow path: the string is growing
             const ushort *specialCase = specialCaseMap + caseDiff;
             ushort length = *specialCase++;
-            int pos = pp - s.constBegin();
-            s.replace(pos, 1, reinterpret_cast<const QChar *>(specialCase), length);
-            pp = const_cast<QChar *>(s.constBegin()) + pos + length;
+            int inpos = it.index() - 1;
+            int outpos = pp - s.constBegin();
+
+            s.replace(outpos, 1, reinterpret_cast<const QChar *>(specialCase), length);
+            pp = const_cast<QChar *>(s.constBegin()) + outpos + length;
+
+            // do we need to adjust the input iterator too?
+            // if it is pointing to s's data, str is empty
+            if (str.isEmpty())
+                it = QStringIterator(s.constBegin(), inpos + length, s.constEnd());
         } else if (QChar::requiresSurrogates(uc)) {
             *pp++ = QChar::highSurrogate(uc + caseDiff);
             *pp++ = QChar::lowSurrogate(uc + caseDiff);
@@ -8215,14 +8251,25 @@ QString &QString::setRawData(const QChar *unicode, int size)
 
     \snippet code/src_corelib_tools_qstring.cpp 6
 
+    \note If the function you're calling with a QLatin1String
+    argument isn't actually overloaded to take QLatin1String, the
+    implicit conversion to QString will trigger a memory allocation,
+    which is usually what you want to avoid by using QLatin1String
+    in the first place. In those cases, using QStringLiteral may be
+    the better option.
+
     \sa QString, QLatin1Char, {QStringLiteral()}{QStringLiteral}
+*/
+
+/*! \fn QLatin1String::QLatin1String()
+    \since 5.6
+
+    Constructs a QLatin1String object that stores a nullptr.
 */
 
 /*! \fn QLatin1String::QLatin1String(const char *str)
 
-    Constructs a QLatin1String object that stores \a str. Note that if
-    \a str is 0, an empty string is created; this case is handled by
-    QString.
+    Constructs a QLatin1String object that stores \a str.
 
     The string data is \e not copied. The caller must be able to
     guarantee that \a str will not be deleted or modified as long as
@@ -8234,8 +8281,6 @@ QString &QString::setRawData(const QChar *unicode, int size)
 /*! \fn QLatin1String::QLatin1String(const char *str, int size)
 
     Constructs a QLatin1String object that stores \a str with \a size.
-    Note that if \a str is 0, an empty string is created; this case
-    is handled by QString.
 
     The string data is \e not copied. The caller must be able to
     guarantee that \a str will not be deleted or modified as long as

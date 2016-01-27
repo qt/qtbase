@@ -186,6 +186,8 @@ public:
     static QString productType();
     static QString productVersion();
     static QString prettyProductName();
+
+    static QString machineHostName();
 };
 
 QT_END_NAMESPACE

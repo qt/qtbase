@@ -87,7 +87,7 @@ QCollator::QCollator(const QCollator &other)
 }
 
 /*!
-   Destructor for QCollator.
+    Destroys the collator.
  */
 QCollator::~QCollator()
 {
@@ -247,6 +247,8 @@ bool QCollator::numericMode() const
     If \a on is set to true, punctuation characters and symbols are ignored when determining sort order.
 
     The default is locale dependent.
+
+    \note This method is not currently supported on Apple platforms or if Qt is configured to not use ICU on Linux.
 
     \sa ignorePunctuation()
  */

@@ -389,12 +389,19 @@ static int parsePosixOffset(const QByteArray &timeRule)
     // Format "[+|-]hh[:mm[:ss]]"
     QList<QByteArray> parts = timeRule.split(':');
     int count = parts.count();
-    if (count == 3)
-        return (parts.at(0).toInt() * -60 * 60) + (parts.at(1).toInt() * 60) + parts.at(2).toInt();
-    else if (count == 2)
-        return (parts.at(0).toInt() * -60 * 60) + (parts.at(1).toInt() * 60);
-    else if (count == 1)
-        return (parts.at(0).toInt() * -60 * 60);
+    if (count == 3) {
+        int hour = parts.at(0).toInt();
+        int sign = hour >= 0 ? -1 : 1;
+        return sign * ((qAbs(hour) * 60 * 60) + (parts.at(1).toInt() * 60) + parts.at(2).toInt());
+    } else if (count == 2) {
+        int hour = parts.at(0).toInt();
+        int sign = hour >= 0 ? -1 : 1;
+        return sign * ((qAbs(hour) * 60 * 60) + (parts.at(1).toInt() * 60));
+    } else if (count == 1) {
+        int hour = parts.at(0).toInt();
+        int sign = hour >= 0 ? -1 : 1;
+        return sign * (qAbs(hour) * 60 * 60);
+    }
     return 0;
 }
 
@@ -910,6 +917,13 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
     QByteArray ianaId = qgetenv("TZ");
     if (!ianaId.isEmpty() && ianaId.at(0) == ':')
         ianaId = ianaId.mid(1);
+
+    // The TZ value can be ":/etc/localtime" which libc considers
+    // to be a "default timezone", in which case it will be read
+    // by one of the blocks below, so unset it here so it is not
+    // considered as a valid/found ianaId
+    if (ianaId == "/etc/localtime")
+        ianaId.clear();
 
     // On Debian Etch and later /etc/localtime is real file with name held in /etc/timezone
     if (ianaId.isEmpty()) {

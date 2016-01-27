@@ -284,7 +284,7 @@ QStringList QCommandLineOptionPrivate::removeInvalidNames(QStringList nameList)
     else
         nameList.erase(std::remove_if(nameList.begin(), nameList.end(), IsInvalidName()),
                        nameList.end());
-    return qMove(nameList);
+    return nameList;
 }
 
 /*!
@@ -391,7 +391,7 @@ QStringList QCommandLineOption::defaultValues() const
 /*!
     Sets whether to hide this option in the user-visible help output.
 
-    All options are visible by default. Setting \a hidden to true for
+    All options are visible by default. Setting \a hide to true for
     a particular option makes it internal, i.e. not listed in the help output.
 
     \since 5.6

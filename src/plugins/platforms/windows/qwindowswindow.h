@@ -143,6 +143,8 @@ public:
     QWindowsWindow(QWindow *window, const QWindowsWindowData &data);
     ~QWindowsWindow();
 
+    using QPlatformWindow::screenForGeometry;
+
     QSurfaceFormat format() const Q_DECL_OVERRIDE { return m_format; }
     void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
     QRect geometry() const Q_DECL_OVERRIDE { return m_data.geometry; }
@@ -152,7 +154,7 @@ public:
     bool isVisible() const;
     bool isExposed() const Q_DECL_OVERRIDE { return testFlag(Exposed); }
     bool isActive() const Q_DECL_OVERRIDE;
-    bool isEmbedded(const QPlatformWindow *parentWindow) const Q_DECL_OVERRIDE;
+    bool isEmbedded(const QPlatformWindow *parentWindow = 0) const Q_DECL_OVERRIDE;
     QPoint mapToGlobal(const QPoint &pos) const Q_DECL_OVERRIDE;
     QPoint mapFromGlobal(const QPoint &pos) const Q_DECL_OVERRIDE;
 
@@ -223,9 +225,9 @@ public:
 #endif // !Q_OS_WINCE
 
 #ifndef QT_NO_CURSOR
-    QWindowsWindowCursor cursor() const { return m_cursor; }
+    CursorHandlePtr cursor() const { return m_cursor; }
 #endif
-    void setCursor(const QWindowsWindowCursor &c);
+    void setCursor(const CursorHandlePtr &c);
     void applyCursor();
 
     inline bool testFlag(unsigned f) const  { return (m_flags & f) != 0; }
@@ -276,7 +278,7 @@ private:
     Qt::WindowState m_windowState;
     qreal m_opacity;
 #ifndef QT_NO_CURSOR
-    QWindowsWindowCursor m_cursor;
+    CursorHandlePtr m_cursor;
 #endif
     QWindowsOleDropTarget *m_dropTarget;
     unsigned m_savedStyle;
@@ -290,12 +292,15 @@ private:
     void *m_surface;
 };
 
-// Debug
+#ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const RECT &r);
-#ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO/WM_NCCALCSIZE
+QDebug operator<<(QDebug d, const POINT &);
+#  ifndef Q_OS_WINCE
 QDebug operator<<(QDebug d, const MINMAXINFO &i);
 QDebug operator<<(QDebug d, const NCCALCSIZE_PARAMS &p);
-#endif
+QDebug operator<<(QDebug d, const WINDOWPLACEMENT &);
+#  endif // !Q_OS_WINCE
+#endif // !QT_NO_DEBUG_STREAM
 
 // ---------- QWindowsGeometryHint inline functions.
 QPoint QWindowsGeometryHint::mapToGlobal(HWND hwnd, const QPoint &qp)

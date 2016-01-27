@@ -80,7 +80,7 @@ bool QQnxVirtualKeyboardBps::handleEvent(bps_event_t *event)
 
 bool QQnxVirtualKeyboardBps::showKeyboard()
 {
-    qVirtualKeyboardDebug() << Q_FUNC_INFO << "current visibility=" << isVisible();
+    qVirtualKeyboardDebug() << "current visibility=" << isVisible();
 
     // They keyboard's mode is global between applications, we have to set it each time
     if ( !isVisible() )
@@ -92,7 +92,7 @@ bool QQnxVirtualKeyboardBps::showKeyboard()
 
 bool QQnxVirtualKeyboardBps::hideKeyboard()
 {
-    qVirtualKeyboardDebug() << Q_FUNC_INFO << "current visibility=" << isVisible();
+    qVirtualKeyboardDebug() << "current visibility=" << isVisible();
     virtualkeyboard_hide();
     return true;
 }
@@ -102,7 +102,7 @@ void QQnxVirtualKeyboardBps::applyKeyboardOptions()
     virtualkeyboard_layout_t layout = keyboardLayout();
     virtualkeyboard_enter_t enter = enterKey();
 
-    qVirtualKeyboardDebug() << Q_FUNC_INFO << "mode=" << keyboardMode() << "enterKey=" << enterKeyType();
+    qVirtualKeyboardDebug() << "mode=" << keyboardMode() << "enterKey=" << enterKeyType();
 
     virtualkeyboard_change_options(layout, enter);
 }
@@ -176,12 +176,12 @@ bool QQnxVirtualKeyboardBps::handleLocaleEvent(bps_event_t *event)
         const QString country  = QString::fromLatin1(locale_event_get_country(event));
         const QLocale newLocale(language + QLatin1Char('_') + country);
 
-        qVirtualKeyboardDebug() << Q_FUNC_INFO << "current locale" << locale() << "new locale=" << newLocale;
+        qVirtualKeyboardDebug() << "current locale" << locale() << "new locale=" << newLocale;
         setLocale(newLocale);
         return true;
     }
 
-    qVirtualKeyboardDebug() << Q_FUNC_INFO << "Unhandled locale event. code=" << bps_event_get_code(event);
+    qVirtualKeyboardDebug() << "Unhandled locale event. code=" << bps_event_get_code(event);
 
     return false;
 }
@@ -190,24 +190,24 @@ bool QQnxVirtualKeyboardBps::handleVirtualKeyboardEvent(bps_event_t *event)
 {
     switch (bps_event_get_code(event)) {
     case VIRTUALKEYBOARD_EVENT_VISIBLE:
-        qVirtualKeyboardDebug() << Q_FUNC_INFO << "EVENT VISIBLE: current visibility=" << isVisible();
+        qVirtualKeyboardDebug() << "EVENT VISIBLE: current visibility=" << isVisible();
         setVisible(true);
         break;
 
     case VIRTUALKEYBOARD_EVENT_HIDDEN:
-        qVirtualKeyboardDebug() << Q_FUNC_INFO << "EVENT HIDDEN: current visibility=" << isVisible();
+        qVirtualKeyboardDebug() << "EVENT HIDDEN: current visibility=" << isVisible();
         setVisible(false);
         break;
 
     case VIRTUALKEYBOARD_EVENT_INFO: {
         const int newHeight = virtualkeyboard_event_get_height(event);
-        qVirtualKeyboardDebug() << Q_FUNC_INFO << "EVENT INFO: current height=" << height() << "new height=" << newHeight;
+        qVirtualKeyboardDebug() << "EVENT INFO: current height=" << height() << "new height=" << newHeight;
         setHeight(newHeight);
         break;
     }
 
     default:
-        qVirtualKeyboardDebug() << Q_FUNC_INFO << "Unhandled virtual keyboard event. code=" << bps_event_get_code(event);
+        qVirtualKeyboardDebug() << "Unhandled virtual keyboard event. code=" << bps_event_get_code(event);
         return false;
     }
 

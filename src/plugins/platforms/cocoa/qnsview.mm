@@ -41,6 +41,7 @@
 #include "qcocoahelpers.h"
 #include "qmultitouch_mac_p.h"
 #include "qcocoadrag.h"
+#include "qcocoainputcontext.h"
 #include <qpa/qplatformintegration.h>
 
 #include <qpa/qwindowsysteminterface.h>
@@ -134,7 +135,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 {
     self = [super initWithFrame : NSMakeRect(0,0, 300,300)];
     if (self) {
-        m_pixelRatio = 1.;
+        m_backingStore = 0;
         m_maskImage = 0;
         m_shouldInvalidateWindowShadow = false;
         m_window = 0;
@@ -152,6 +153,8 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         m_mouseMoveHelper = [[QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) alloc] initWithView:self];
         m_resendKeyEvent = false;
         m_scrolling = false;
+        m_updatingDrag = false;
+        m_currentlyInterpretedKeyEvent = 0;
 
         if (!touchDevice) {
             touchDevice = new QTouchDevice;
@@ -159,6 +162,8 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
             touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::NormalizedPosition | QTouchDevice::MouseEmulation);
             QWindowSystemInterface::registerTouchDevice(touchDevice);
         }
+
+        m_isMenuView = false;
     }
     return self;
 }
@@ -211,6 +216,11 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
                                           selector:@selector(updateGeometry)
                                           name:NSViewFrameDidChangeNotification
                                           object:self];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                          selector:@selector(textInputContextKeyboardSelectionDidChangeNotification:)
+                                          name:NSTextInputContextKeyboardSelectionDidChangeNotification
+                                          object:nil];
 
     return self;
 }
@@ -268,11 +278,11 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 
 - (void)viewDidMoveToWindow
 {
+    m_isMenuView = [self.window.className isEqualToString:@"NSCarbonMenuWindow"];
     if (self.window) {
         // This is the case of QWidgetAction's generated QWidget inserted in an NSMenu.
         // 10.9 and newer get the NSWindowDidChangeOcclusionStateNotification
-        if ((!_q_NSWindowDidChangeOcclusionStateNotification
-            && [self.window.className isEqualToString:@"NSCarbonMenuWindow"])) {
+        if (!_q_NSWindowDidChangeOcclusionStateNotification && m_isMenuView) {
             m_exposedOnMoveToWindow = true;
             m_platformWindow->exposeWindow();
         }
@@ -376,7 +386,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         if (!m_platformWindow->m_inSetGeometry)
             QWindowSystemInterface::flushWindowSystemEvents();
         else
-            m_backingStore = QImage();
+            m_backingStore = 0;
     }
 }
 
@@ -401,7 +411,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 
     NSString *notificationName = [windowNotification name];
     if (notificationName == NSWindowDidBecomeKeyNotification) {
-        if (!m_platformWindow->windowIsPopupType())
+        if (!m_platformWindow->windowIsPopupType() && !m_isMenuView)
             QWindowSystemInterface::handleWindowActivated(m_window);
     } else if (notificationName == NSWindowDidResignKeyNotification) {
         // key window will be non-nil if another window became key... do not
@@ -410,7 +420,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         NSWindow *keyWindow = [NSApp keyWindow];
         if (!keyWindow) {
             // no new key window, go ahead and set the active window to zero
-            if (!m_platformWindow->windowIsPopupType())
+            if (!m_platformWindow->windowIsPopupType() && !m_isMenuView)
                 QWindowSystemInterface::handleWindowActivated(0);
         }
     } else if (notificationName == NSWindowDidMiniaturizeNotification
@@ -461,6 +471,15 @@ QT_WARNING_POP
     }
 }
 
+- (void)textInputContextKeyboardSelectionDidChangeNotification : (NSNotification *) textInputContextKeyboardSelectionDidChangeNotification
+{
+    Q_UNUSED(textInputContextKeyboardSelectionDidChangeNotification)
+    if (([NSApp keyWindow] == [self window]) && [[self window] firstResponder] == self) {
+        QCocoaInputContext *ic = qobject_cast<QCocoaInputContext *>(QCocoaIntegration::instance()->inputContext());
+        ic->updateLocale();
+    }
+}
+
 - (void)notifyWindowWillZoom:(BOOL)willZoom
 {
     Qt::WindowState newState = willZoom ? Qt::WindowMaximized : Qt::WindowNoState;
@@ -479,14 +498,24 @@ QT_WARNING_POP
     m_platformWindow->exposeWindow();
 }
 
+- (void)removeFromSuperview
+{
+    QMacAutoReleasePool pool;
+    [super removeFromSuperview];
+}
+
 - (void) flushBackingStore:(QCocoaBackingStore *)backingStore region:(const QRegion &)region offset:(QPoint)offset
 {
-    m_backingStore = backingStore->toImage();
-    m_pixelRatio = backingStore->getBackingStoreDevicePixelRatio();
-    m_backingStoreOffset = offset * m_pixelRatio;
-    foreach (QRect rect, region.rects()) {
+    m_backingStore = backingStore;
+    m_backingStoreOffset = offset * m_backingStore->getBackingStoreDevicePixelRatio();
+    foreach (QRect rect, region.rects())
         [self setNeedsDisplayInRect:NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height())];
-    }
+}
+
+- (void)clearBackingStore:(QCocoaBackingStore *)backingStore
+{
+    if (backingStore == m_backingStore)
+        m_backingStore = 0;
 }
 
 - (BOOL) hasMask
@@ -549,7 +578,7 @@ QT_WARNING_POP
     if (m_platformWindow->m_drawContentBorderGradient)
         NSDrawWindowBackground(dirtyRect);
 
-    if (m_backingStore.isNull())
+    if (!m_backingStore)
         return;
 
     // Calculate source and target rects. The target rect is the dirtyRect:
@@ -557,10 +586,11 @@ QT_WARNING_POP
 
     // The backing store source rect will be larger on retina displays.
     // Scale dirtyRect by the device pixel ratio:
-    CGRect dirtyBackingRect = CGRectMake(dirtyRect.origin.x * m_pixelRatio,
-                                         dirtyRect.origin.y * m_pixelRatio,
-                                         dirtyRect.size.width * m_pixelRatio,
-                                         dirtyRect.size.height * m_pixelRatio);
+    const qreal devicePixelRatio = m_backingStore->getBackingStoreDevicePixelRatio();
+    CGRect dirtyBackingRect = CGRectMake(dirtyRect.origin.x * devicePixelRatio,
+                                         dirtyRect.origin.y * devicePixelRatio,
+                                         dirtyRect.size.width * devicePixelRatio,
+                                         dirtyRect.size.height * devicePixelRatio);
 
     NSGraphicsContext *nsGraphicsContext = [NSGraphicsContext currentContext];
     CGContextRef cgContext = (CGContextRef) [nsGraphicsContext graphicsPort];
@@ -586,7 +616,7 @@ QT_WARNING_POP
         dirtyBackingRect.size.width,
         dirtyBackingRect.size.height
     );
-    CGImageRef bsCGImage = qt_mac_toCGImage(m_backingStore);
+    CGImageRef bsCGImage = qt_mac_toCGImage(m_backingStore->toImage());
     CGImageRef cleanImg = CGImageCreateWithImageInRect(bsCGImage, backingStoreRect);
 
     // Optimization: Copy frame buffer content instead of blending for
@@ -615,13 +645,15 @@ QT_WARNING_POP
 {
     if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return NO;
-    if (!m_platformWindow->windowIsPopupType())
+    if (!m_platformWindow->windowIsPopupType() && !m_isMenuView)
         QWindowSystemInterface::handleWindowActivated([self topLevelWindow]);
     return YES;
 }
 
 - (BOOL)acceptsFirstResponder
 {
+    if (m_isMenuView)
+        return NO;
     if (m_platformWindow->shouldRefuseKeyWindowAndFirstResponder())
         return NO;
     if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
@@ -704,8 +736,12 @@ QT_WARNING_POP
 
     // Popups implicitly grap mouse events; forward to the active popup if there is one
     if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow()) {
-        if (QNSView *popupView = popup->qtView())
-            targetView = popupView;
+        // Tooltips must be transparent for mouse events
+        // The bug reference is QTBUG-46379
+        if (!popup->m_windowFlags.testFlag(Qt::ToolTip)) {
+            if (QNSView *popupView = popup->qtView())
+                targetView = popupView;
+        }
     }
 
     [targetView convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
@@ -1431,37 +1467,42 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     if (!(modifiers & (Qt::ControlModifier | Qt::MetaModifier)) && (ch.unicode() < 0xf700 || ch.unicode() > 0xf8ff))
         text = QCFString::toQString(characters);
 
-    QWindow *focusWindow = [self topLevelWindow];
+    QWindow *window = [self topLevelWindow];
+
+    // Popups implicitly grab key events; forward to the active popup if there is one.
+    // This allows popups to e.g. intercept shortcuts and close the popup in response.
+    if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow()) {
+        if (!popup->m_windowFlags.testFlag(Qt::ToolTip))
+            window = popup->window();
+    }
 
     if (eventType == QEvent::KeyPress) {
 
-        if (m_composingText.isEmpty())
-            m_sendKeyEvent = !QWindowSystemInterface::tryHandleShortcutEvent(focusWindow, timestamp, keyCode, modifiers, text, [nsevent isARepeat], 1);
+        if (m_composingText.isEmpty()) {
+            m_sendKeyEvent = !QWindowSystemInterface::handleShortcutEvent(window, timestamp, keyCode,
+                modifiers, nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat], 1);
+        }
 
         QObject *fo = QGuiApplication::focusObject();
         if (m_sendKeyEvent && fo) {
-            // if escape is pressed we don't want interpretKeyEvents to close a dialog. This will be done via QWindowSystemInterface
-            if (keyCode == Qt::Key_Escape)
-                m_platformWindow->m_ignoreWindowShouldClose = true;
-
             QInputMethodQueryEvent queryEvent(Qt::ImEnabled | Qt::ImHints);
             if (QCoreApplication::sendEvent(fo, &queryEvent)) {
                 bool imEnabled = queryEvent.value(Qt::ImEnabled).toBool();
                 Qt::InputMethodHints hints = static_cast<Qt::InputMethodHints>(queryEvent.value(Qt::ImHints).toUInt());
                 if (imEnabled && !(hints & Qt::ImhDigitsOnly || hints & Qt::ImhFormattedNumbersOnly || hints & Qt::ImhHiddenText)) {
                     // pass the key event to the input method. note that m_sendKeyEvent may be set to false during this call
+                    m_currentlyInterpretedKeyEvent = nsevent;
                     [self interpretKeyEvents:[NSArray arrayWithObject:nsevent]];
+                    m_currentlyInterpretedKeyEvent = 0;
                 }
             }
-
-            m_platformWindow->m_ignoreWindowShouldClose = false;;
         }
         if (m_resendKeyEvent)
             m_sendKeyEvent = true;
     }
 
     if (m_sendKeyEvent && m_composingText.isEmpty())
-        QWindowSystemInterface::handleExtendedKeyEvent(focusWindow, timestamp, QEvent::Type(eventType), keyCode, modifiers,
+        QWindowSystemInterface::handleExtendedKeyEvent(window, timestamp, QEvent::Type(eventType), keyCode, modifiers,
                                                        nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat], 1, false);
 
     m_sendKeyEvent = false;
@@ -1482,21 +1523,23 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     [self handleKeyEvent:nsevent eventType:int(QEvent::KeyRelease)];
 }
 
-- (BOOL)performKeyEquivalent:(NSEvent *)nsevent
+- (void)cancelOperation:(id)sender
 {
-    NSString *chars = [nsevent charactersIgnoringModifiers];
+    Q_UNUSED(sender);
 
-    if ([nsevent type] == NSKeyDown && [chars length] > 0) {
-        QChar ch = [chars characterAtIndex:0];
-        Qt::Key qtKey = qt_mac_cocoaKey2QtKey(ch);
-        // check for Command + Key_Period
-        if ([nsevent modifierFlags] & NSCommandKeyMask
-                && qtKey == Qt::Key_Period) {
-            [self handleKeyEvent:nsevent eventType:int(QEvent::KeyPress)];
-            return YES;
-        }
-    }
-    return [super performKeyEquivalent:nsevent];
+    NSEvent *currentEvent = [NSApp currentEvent];
+    if (!currentEvent || currentEvent.type != NSKeyDown)
+        return;
+
+    // Handling the key event may recurse back here through interpretKeyEvents
+    // (when IM is enabled), so we need to guard against that.
+    if (currentEvent == m_currentlyInterpretedKeyEvent)
+        return;
+
+    // Send Command+Key_Period and Escape as normal keypresses so that
+    // the key sequence is delivered through Qt. That way clients can
+    // intercept the shortcut and override its effect.
+    [self handleKeyEvent:currentEvent eventType:int(QEvent::KeyPress)];
 }
 
 - (void)flagsChanged:(NSEvent *)nsevent
@@ -1883,6 +1926,9 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 
     // Make sure the cursor is updated correctly if the mouse does not move and window is under cursor
     // by creating a fake move event
+    if (m_updatingDrag)
+        return;
+
     const QPoint mousePos(QCursor::pos());
     CGEventRef moveEvent(CGEventCreateMouseEvent(
         NULL, kCGEventMouseMoved,
@@ -1900,7 +1946,11 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 
 - (NSDragOperation)draggingUpdated:(id <NSDraggingInfo>)sender
 {
-    return [self handleDrag : sender];
+    m_updatingDrag = true;
+    const NSDragOperation ret([self handleDrag : sender]);
+    m_updatingDrag = false;
+
+    return ret;
 }
 
 // Sends drag update to Qt, return the action

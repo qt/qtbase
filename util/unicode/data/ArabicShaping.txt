@@ -1,5 +1,5 @@
-# ArabicShaping-7.0.0.txt
-# Date: 2014-02-14, 21:00:00 GMT [RP, KW, LI]
+# ArabicShaping-8.0.0.txt
+# Date: 2015-02-17, 23:33:00 GMT [RP]
 #
 # This file is a normative contributory data file in the
 # Unicode Character Database.
@@ -7,16 +7,17 @@
 # Copyright (c) 1991-2014 Unicode, Inc.
 # For terms of use, see http://www.unicode.org/terms_of_use.html
 #
-# This file defines the Joining_Type and Joining_Group property values for
-# Arabic, Syriac, N'Ko, Mandaic, Manichaean, and Psalter Pahlavi positional
-# shaping, repeating in machine readable form the information exemplified in
-# Tables 9-3, 9-8, 9-9, 9-10, 9-14, 9-15, 9-16, 9-19, 9-20, 10-XX, 19-5 of The
-# Unicode Standard, Version 7.0. This file also defines Joining_Type values
-# for Mongolian and Phags-pa positional shaping, which are not listed in
-# tables in the standard.
+# This file defines the Joining_Type and Joining_Group property
+# values for Arabic, Syriac, N'Ko, Mandaic, and Manichaean positional
+# shaping, repeating in machine readable form the information
+# exemplified in Tables 9-3, 9-8, 9-9, 9-10, 9-14, 9-15, 9-16, 9-19,
+# 9-20, 10-4, 10-5, 10-6, 10-7, and 19-5 of The Unicode Standard core
+# specification. This file also defines Joining_Type values for
+# Mongolian, Phags-pa, and Psalter Pahlavi positional shaping, which
+# are not listed in tables in the standard.
 #
 # See Sections 9.2, 9.3, 9.5, 10.5, 10.6, 13.4, 14.3, 19.4 of
-# The Unicode Standard, Version 7.0 for more information.
+# The Unicode Standard core specification for more information.
 #
 # Each line contains four fields, separated by a semicolon.
 #
@@ -72,14 +73,15 @@
 #   no longer applies to its namesake character, U+06C2.
 #   See PropertyValueAliases.txt.
 #
-# When other cursive scripts are added to the Unicode Standard in
-# the future, the joining group value of all its letters will default
-# to jg=No_Joining_Group in this data file. Other, more specific
+# When other cursive scripts are added to the Unicode Standard in the
+# future, the joining group value of all its letters will default to
+# jg=No_Joining_Group in this data file. Other, more specific
 # joining group values will be defined only if an explicit proposal
 # to define those values exactly has been approved by the UTC. This
 # is the convention exemplified by the N'Ko, Mandaic, Mongolian,
-# and Phags-pa scripts. Only the Arabic and Syriac scripts
-# currently have explicit joining group values defined.
+# Phags-pa, and Psalter Pahlavi scripts. Only the Arabic,
+# Manichaean, and Syriac scripts currently have explicit joining
+# group values defined.
 #
 # Note: Code points that are not explicitly listed in this file are
 # either of joining type T or U:
@@ -392,7 +394,7 @@
 0844; MANDAIC AH; D; No_Joining_Group
 0845; MANDAIC USHENNA; D; No_Joining_Group
 0846; MANDAIC AZ; R; No_Joining_Group
-0847; MANDAIC IT; D; No_Joining_Group
+0847; MANDAIC IT; R; No_Joining_Group
 0848; MANDAIC ATT; D; No_Joining_Group
 0849; MANDAIC AKSA; R; No_Joining_Group
 084A; MANDAIC AK; D; No_Joining_Group
@@ -400,7 +402,7 @@
 084C; MANDAIC AM; D; No_Joining_Group
 084D; MANDAIC AN; D; No_Joining_Group
 084E; MANDAIC AS; D; No_Joining_Group
-084F; MANDAIC IN; R; No_Joining_Group
+084F; MANDAIC IN; D; No_Joining_Group
 0850; MANDAIC AP; D; No_Joining_Group
 0851; MANDAIC ASZ; D; No_Joining_Group
 0852; MANDAIC AQ; D; No_Joining_Group
@@ -432,6 +434,8 @@
 08B0; KEHEH WITH STROKE BELOW; D; GAF
 08B1; STRAIGHT WAW; R; STRAIGHT WAW
 08B2; REH WITH DOT AND INVERTED V ABOVE; R; REH
+08B3; AIN WITH 3 DOTS BELOW; D; AIN
+08B4; KAF WITH DOT BELOW; D; KAF
 
 # Mongolian Characters
 

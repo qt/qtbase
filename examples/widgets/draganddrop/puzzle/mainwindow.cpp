@@ -55,26 +55,27 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle(tr("Puzzle"));
 }
 
-void MainWindow::openImage(const QString &path)
+void MainWindow::openImage()
 {
-    QString fileName = path;
+    const QString fileName =
+        QFileDialog::getOpenFileName(this, tr("Open Image"), QString(),
+                                     tr("Image Files (*.png *.jpg *.bmp)"));
 
-    if (fileName.isNull()) {
-        fileName = QFileDialog::getOpenFileName(this,
-            tr("Open Image"), "", "Image Files (*.png *.jpg *.bmp)");
-    }
+    if (!fileName.isEmpty())
+        loadImage(fileName);
+}
 
-    if (!fileName.isEmpty()) {
-        QPixmap newImage;
-        if (!newImage.load(fileName)) {
-            QMessageBox::warning(this, tr("Open Image"),
-                                  tr("The image file could not be loaded."),
-                                  QMessageBox::Cancel);
-            return;
-        }
-        puzzleImage = newImage;
-        setupPuzzle();
+void MainWindow::loadImage(const QString &fileName)
+{
+    QPixmap newImage;
+    if (!newImage.load(fileName)) {
+        QMessageBox::warning(this, tr("Open Image"),
+                             tr("The image file could not be loaded."),
+                             QMessageBox::Close);
+        return;
     }
+    puzzleImage = newImage;
+    setupPuzzle();
 }
 
 void MainWindow::setCompleted()
@@ -120,19 +121,15 @@ void MainWindow::setupMenus()
 {
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
 
-    QAction *openAction = fileMenu->addAction(tr("&Open..."));
+    QAction *openAction = fileMenu->addAction(tr("&Open..."), this, &MainWindow::openImage);
     openAction->setShortcuts(QKeySequence::Open);
 
-    QAction *exitAction = fileMenu->addAction(tr("E&xit"));
+    QAction *exitAction = fileMenu->addAction(tr("E&xit"), qApp, &QCoreApplication::quit);
     exitAction->setShortcuts(QKeySequence::Quit);
 
     QMenu *gameMenu = menuBar()->addMenu(tr("&Game"));
 
-    QAction *restartAction = gameMenu->addAction(tr("&Restart"));
-
-    connect(openAction, SIGNAL(triggered()), this, SLOT(openImage()));
-    connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    connect(restartAction, SIGNAL(triggered()), this, SLOT(setupPuzzle()));
+    gameMenu->addAction(tr("&Restart"), this, &MainWindow::setupPuzzle);
 }
 
 void MainWindow::setupWidgets()
@@ -144,8 +141,8 @@ void MainWindow::setupWidgets()
     piecesList = new PiecesList(puzzleWidget->pieceSize(), this);
 
 
-    connect(puzzleWidget, SIGNAL(puzzleCompleted()),
-            this, SLOT(setCompleted()), Qt::QueuedConnection);
+    connect(puzzleWidget, &PuzzleWidget::puzzleCompleted,
+            this, &MainWindow::setCompleted, Qt::QueuedConnection);
 
     frameLayout->addWidget(piecesList);
     frameLayout->addWidget(puzzleWidget);

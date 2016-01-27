@@ -104,6 +104,7 @@ public:
     };
 
     Q_DECLARE_FLAGS(StandardButtons, StandardButton)
+    Q_FLAG(StandardButtons)
 
     enum ButtonRole {
         // keep this in sync with QDialogButtonBox::ButtonRole and QMessageBox::ButtonRole
@@ -128,6 +129,7 @@ public:
         Reverse         = 0x40000000,
         EOL             = InvalidRole
     };
+    Q_ENUM(ButtonRole)
 
     enum ButtonLayout {
         // keep this in sync with QDialogButtonBox::ButtonLayout and QMessageBox::ButtonLayout
@@ -160,8 +162,14 @@ Q_SIGNALS:
     void reject();
 };
 
+QT_END_NAMESPACE
+Q_DECLARE_METATYPE(QPlatformDialogHelper::StandardButton)
+Q_DECLARE_METATYPE(QPlatformDialogHelper::ButtonRole)
+QT_BEGIN_NAMESPACE
+
 class Q_GUI_EXPORT QColorDialogOptions
 {
+    Q_GADGET
 public:
     enum ColorDialogOption {
         ShowAlphaChannel    = 0x00000001,
@@ -170,6 +178,7 @@ public:
     };
 
     Q_DECLARE_FLAGS(ColorDialogOptions, ColorDialogOption)
+    Q_FLAG(ColorDialogOptions)
 
     QColorDialogOptions();
     QColorDialogOptions(const QColorDialogOptions &rhs);
@@ -221,6 +230,7 @@ private:
 
 class Q_GUI_EXPORT QFontDialogOptions
 {
+    Q_GADGET
 public:
     enum FontDialogOption {
         NoButtons           = 0x00000001,
@@ -232,6 +242,7 @@ public:
     };
 
     Q_DECLARE_FLAGS(FontDialogOptions, FontDialogOption)
+    Q_FLAG(FontDialogOptions)
 
     QFontDialogOptions();
     QFontDialogOptions(const QFontDialogOptions &rhs);
@@ -274,11 +285,19 @@ private:
 
 class Q_GUI_EXPORT QFileDialogOptions
 {
+    Q_GADGET
 public:
     enum ViewMode { Detail, List };
+    Q_ENUM(ViewMode)
+
     enum FileMode { AnyFile, ExistingFile, Directory, ExistingFiles, DirectoryOnly };
+    Q_ENUM(FileMode)
+
     enum AcceptMode { AcceptOpen, AcceptSave };
+    Q_ENUM(AcceptMode)
+
     enum DialogLabel { LookIn, FileName, FileType, Accept, Reject, DialogLabelCount };
+    Q_ENUM(DialogLabel)
 
     enum FileDialogOption
     {
@@ -292,6 +311,7 @@ public:
         DontUseCustomDirectoryIcons = 0x00000080
     };
     Q_DECLARE_FLAGS(FileDialogOptions, FileDialogOption)
+    Q_FLAG(FileDialogOptions)
 
     QFileDialogOptions();
     QFileDialogOptions(const QFileDialogOptions &rhs);
@@ -391,9 +411,11 @@ private:
 
 class Q_GUI_EXPORT QMessageDialogOptions
 {
+    Q_GADGET
 public:
     // Keep in sync with QMessageBox::Icon
     enum Icon { NoIcon, Information, Warning, Critical, Question };
+    Q_ENUM(Icon)
 
     QMessageDialogOptions();
     QMessageDialogOptions(const QMessageDialogOptions &rhs);

@@ -1,3 +1,118 @@
+Overview of changes leading to 1.0.6
+Thursday, October 15, 2015
+====================================
+
+- Reduce max nesting level in OT lookups from 8 to 6.
+  Should not affect any real font as far as I know.
+- Fix memory access issue in ot-font.
+- Revert default load-flags of fonts created using hb_ft_font_create()
+  back to FT_LOAD_DEFAULT|FT_LOAD_NO_HINTING.  This was changed in
+  last release (1.0.5), but caused major issues, so revert.
+  https://github.com/behdad/harfbuzz/issues/143
+
+
+Overview of changes leading to 1.0.5
+Tuesday, October 13, 2015
+====================================
+
+- Fix multiple memory access bugs discovered using libFuzzer.
+  https://github.com/behdad/harfbuzz/issues/139
+  Everyone should upgrade to this version as soon as possible.
+  We now have continuous fuzzing set up, to avoid issues like
+  these creeping in again.
+- Misc fixes.
+
+- New API:
+  * hb_font_set_parent().
+  * hb_ft_font_[sg]et_load_flags()
+    The default flags for fonts created using hb_ft_font_create()
+    has changed to default to FT_LOAD_DEFAULT now.  Previously it
+    was defaulting to FT_LOAD_DFEAULT|FT_LOAD_NO_HINTING.
+
+- API changes:
+  * Fonts now default to units-per-EM as their scale, instead of 0.
+  * hb_font_create_sub_font() does NOT make parent font immutable
+    anymore.  hb_font_make_immutable() does.
+
+
+Overview of changes leading to 1.0.4
+Wednesday, September 30, 2015
+====================================
+
+- Fix minor out-of-bounds read error.
+
+
+Overview of changes leading to 1.0.3
+Tuesday, September 1, 2015
+====================================
+
+- Start of user documentation, from Simon Cozens!
+- Implement glyph_extents() for TrueType fonts in hb-ot-font.
+- Improve GPOS cursive attachments with conflicting lookups.
+- More fixes for cluster-level = 1.
+- Uniscribe positioning fix.
+
+
+Overview of changes leading to 1.0.2
+Wednesday, August 19, 2015
+====================================
+
+- Fix shaping with cluster-level > 0.
+- Fix Uniscribe backend font-size scaling.
+- Declare dependencies in harfbuzz.pc.
+  FreeType is not declared though, to avoid bugs in pkg-config
+  0.26 with recursive dependencies.
+- Slightly improved debug infrastructure.  More to come later.
+- Misc build fixes.
+
+
+Overview of changes leading to 1.0.1
+Monday, July 27, 2015
+====================================
+
+- Fix out-of-bounds access in USE shaper.
+
+
+Overview of changes leading to 1.0.0
+Sunday, July 26, 2015
+====================================
+
+- Implement Universal Shaping Engine:
+  https://www.microsoft.com/typography/OpenTypeDev/USE/intro.htm
+  http://blogs.windows.com/bloggingwindows/2015/02/23/windows-shapes-the-worlds-languages/
+- Bump version to 1.0.0.  The soname was NOT bumped.
+
+
+Overview of changes leading to 0.9.42
+Thursday, July 26, 2015
+=====================================
+
+- New API to allow for retrieving finer-grained cluster
+  mappings if the client desires to handle them.  Default
+  behavior is unchanged.
+- Fix cluster merging when removing default-ignorables.
+- Update to Unicode 8.0
+- hb-graphite2 fixes.
+- Misc fixes.
+- Removed HB_NO_MERGE_CLUSTERS hack.
+- New API:
+  hb_buffer_cluster_level_t enum
+  hb_buffer_get_cluster_level()
+  hb_buffer_set_cluster_level()
+  hb-shape / hb-view --cluster-level
+
+
+Overview of changes leading to 0.9.41
+Thursday, June 18, 2015
+=====================================
+
+- Fix hb-coretext with trailing whitespace in right-to-left.
+- New API: hb_buffer_reverse_range().
+- Allow implementing atomic ops in config.h.
+- Fix hb_language_t in language bindings.
+- Misc fixes.
+
+
 Overview of changes leading to 0.9.40
 Friday, March 20, 2015
 =====================================

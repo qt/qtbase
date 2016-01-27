@@ -115,7 +115,7 @@ void QQnxEglWindow::destroyEGLSurface()
 
 void QQnxEglWindow::swapEGLBuffers()
 {
-    qEglWindowDebug() << Q_FUNC_INFO;
+    qEglWindowDebug();
     // Set current rendering API
     EGLBoolean eglResult = eglBindAPI(EGL_OPENGL_ES_API);
     if (eglResult != EGL_TRUE)

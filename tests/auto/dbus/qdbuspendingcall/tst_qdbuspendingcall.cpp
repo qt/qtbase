@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -172,10 +173,6 @@ QDBusPendingCall tst_QDBusPendingCall::sendError()
 void tst_QDBusPendingCall::waitForFinished()
 {
     QDBusPendingCall ac = sendMessage();
-    QVERIFY(!ac.isFinished());
-    QVERIFY(!ac.isError());
-    QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
-
     ac.waitForFinished();
     QVERIFY(ac.isFinished());
     QVERIFY(!ac.isError());
@@ -195,10 +192,6 @@ void tst_QDBusPendingCall::waitForFinished()
 void tst_QDBusPendingCall::waitForFinished_error()
 {
     QDBusPendingCall ac = sendError();
-    QVERIFY(!ac.isFinished());
-    QVERIFY(!ac.isError());
-    QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
-
     ac.waitForFinished();
     QVERIFY(ac.isFinished());
     QVERIFY(ac.isError());
@@ -254,10 +247,6 @@ void tst_QDBusPendingCall::callWithCallback_localLoop_errorReply()
 void tst_QDBusPendingCall::watcher()
 {
     QDBusPendingCall ac = sendMessage();
-    QVERIFY(!ac.isFinished());
-    QVERIFY(!ac.isError());
-    QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
-
     callCount = 0;
     watchArgument = 0;
 
@@ -284,10 +273,6 @@ void tst_QDBusPendingCall::watcher()
 void tst_QDBusPendingCall::watcher_error()
 {
     QDBusPendingCall ac = sendError();
-    QVERIFY(!ac.isFinished());
-    QVERIFY(!ac.isError());
-    QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
-
     callCount = 0;
     watchArgument = 0;
 
@@ -312,10 +297,6 @@ void tst_QDBusPendingCall::watcher_error()
 void tst_QDBusPendingCall::watcher_waitForFinished()
 {
     QDBusPendingCall ac = sendMessage();
-    QVERIFY(!ac.isFinished());
-    QVERIFY(!ac.isError());
-    QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
-
     callCount = 0;
     watchArgument = 0;
 
@@ -391,10 +372,6 @@ void tst_QDBusPendingCall::watcher_waitForFinished_threaded()
 void tst_QDBusPendingCall::watcher_waitForFinished_alreadyFinished()
 {
     QDBusPendingCall ac = sendMessage();
-    QVERIFY(!ac.isFinished());
-    QVERIFY(!ac.isError());
-    QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
-
     ac.waitForFinished();
     QVERIFY(ac.isFinished());
     QVERIFY(!ac.isError());
@@ -425,10 +402,6 @@ void tst_QDBusPendingCall::watcher_waitForFinished_alreadyFinished()
 void tst_QDBusPendingCall::watcher_waitForFinished_alreadyFinished_eventLoop()
 {
     QDBusPendingCall ac = sendMessage();
-    QVERIFY(!ac.isFinished());
-    QVERIFY(!ac.isError());
-    QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
-
     ac.waitForFinished();
     QVERIFY(ac.isFinished());
     QVERIFY(!ac.isError());
@@ -462,10 +435,6 @@ void tst_QDBusPendingCall::watcher_waitForFinished_alreadyFinished_eventLoop()
 void tst_QDBusPendingCall::watcher_waitForFinished_error()
 {
     QDBusPendingCall ac = sendError();
-    QVERIFY(!ac.isFinished());
-    QVERIFY(!ac.isError());
-    QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
-
     callCount = 0;
     watchArgument = 0;
 

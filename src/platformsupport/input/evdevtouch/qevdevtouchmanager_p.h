@@ -65,6 +65,8 @@ private slots:
     void addDevice(const QString &deviceNode);
     void removeDevice(const QString &deviceNode);
 
+    void updateInputDeviceCount();
+
 private:
     QString m_spec;
     QDeviceDiscovery *m_deviceDiscovery;

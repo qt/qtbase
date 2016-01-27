@@ -41,9 +41,6 @@
 #include <QtCore/QRectF>
 
 #include <wrl.h>
-#ifndef Q_OS_WINPHONE
-#  include <UIAutomationCore.h>
-#endif
 
 namespace ABI {
     namespace Windows {
@@ -63,11 +60,6 @@ QT_BEGIN_NAMESPACE
 
 class QWinRTScreen;
 class QWinRTInputContext : public QPlatformInputContext
-#ifndef Q_OS_WINPHONE
-                         , public Microsoft::WRL::RuntimeClass<
-                           Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::WinRtClassicComMix>,
-                           IRawElementProviderSimple, ITextProvider, IValueProvider>
-#endif // !Q_OS_WINPHONE
 {
 public:
     explicit QWinRTInputContext(QWinRTScreen *);
@@ -76,29 +68,10 @@ public:
 
     bool isInputPanelVisible() const;
 
-#ifdef Q_OS_WINPHONE
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
     void showInputPanel();
     void hideInputPanel();
-#else // Q_OS_WINPHONE
-    // IRawElementProviderSimple
-    HRESULT __stdcall get_ProviderOptions(ProviderOptions *retVal);
-    HRESULT __stdcall GetPatternProvider(PATTERNID, IUnknown **);
-    HRESULT __stdcall GetPropertyValue(PROPERTYID idProp, VARIANT *retVal);
-    HRESULT __stdcall get_HostRawElementProvider(IRawElementProviderSimple **retVal);
-
-    // ITextProvider
-    HRESULT __stdcall GetSelection(SAFEARRAY **);
-    HRESULT __stdcall GetVisibleRanges(SAFEARRAY **);
-    HRESULT __stdcall RangeFromChild(IRawElementProviderSimple *,ITextRangeProvider **);
-    HRESULT __stdcall RangeFromPoint(UiaPoint, ITextRangeProvider **);
-    HRESULT __stdcall get_DocumentRange(ITextRangeProvider **);
-    HRESULT __stdcall get_SupportedTextSelection(SupportedTextSelection *);
-
-    // IValueProvider
-    HRESULT __stdcall SetValue(LPCWSTR);
-    HRESULT __stdcall get_Value(BSTR *);
-    HRESULT __stdcall get_IsReadOnly(BOOL *);
-#endif // !Q_OS_WINPHONE
+#endif
 
 private:
     HRESULT onShowing(ABI::Windows::UI::ViewManagement::IInputPane *,

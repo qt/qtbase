@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -88,12 +89,10 @@ public:
     QDBusMessage replyMessage;
     DBusPendingCall *pending;
     QString expectedReplySignature;
-    int expectedReplyCount;
-    bool waitingForFinished;
     // }
 
     QDBusPendingCallPrivate(const QDBusMessage &sent, QDBusConnectionPrivate *connection)
-        : sentMessage(sent), connection(connection), watcherHelper(0), pending(0), waitingForFinished(false)
+        : sentMessage(sent), connection(connection), watcherHelper(0), pending(0)
     { }
     ~QDBusPendingCallPrivate();
     bool setReplyCallback(QObject *target, const char *member);

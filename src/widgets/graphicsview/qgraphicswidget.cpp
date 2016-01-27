@@ -2398,7 +2398,7 @@ bool QGraphicsWidget::close()
 #if 0
 void QGraphicsWidget::dumpFocusChain()
 {
-    qDebug() << "=========== Dumping focus chain ==============";
+    qDebug("=========== Dumping focus chain ==============");
     int i = 0;
     QGraphicsWidget *next = this;
     QSet<QGraphicsWidget*> visited;

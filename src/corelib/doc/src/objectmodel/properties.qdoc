@@ -31,7 +31,7 @@
     \brief An overview of Qt's property system.
 
     \ingroup qt-basic-concepts
-    \target Qt's Property System
+    \keyword Qt's Property System
 
     Qt provides a sophisticated property system similar to the ones
     supplied by some compiler vendors. However, as a compiler- and

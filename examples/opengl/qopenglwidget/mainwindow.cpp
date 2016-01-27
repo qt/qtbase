@@ -51,6 +51,8 @@
 
 #include "glwidget.h"
 
+typedef void (QWidget::*QWidgetVoidSlot)();
+
 MainWindow::MainWindow()
     : m_nextX(1), m_nextY(1)
 {
@@ -107,34 +109,27 @@ MainWindow::MainWindow()
 
     groupBox->setLayout(m_layout);
 
+
     QMenu *fileMenu = menuBar()->addMenu("&File");
+    fileMenu->addAction("E&xit", this, &QWidget::close);
     QMenu *showMenu = menuBar()->addMenu("&Show");
-    QMenu *helpMenu = menuBar()->addMenu("&Help");
-    QAction *exit = new QAction("E&xit", fileMenu);
-    QAction *aboutQt = new QAction("About Qt", helpMenu);
-    QAction *showLogo = new QAction("Show 3D Logo", showMenu);
-    QAction *showTexture = new QAction("Show 2D Texture", showMenu);
-    QAction *showBubbles = new QAction("Show bubbles", showMenu);
+    showMenu->addAction("Show 3D Logo", glwidget, &GLWidget::setLogo);
+    showMenu->addAction("Show 2D Texture", glwidget, &GLWidget::setTexture);
+    QAction *showBubbles = showMenu->addAction("Show bubbles", glwidget, &GLWidget::setShowBubbles);
     showBubbles->setCheckable(true);
     showBubbles->setChecked(true);
-    fileMenu->addAction(exit);
-    helpMenu->addAction(aboutQt);
-    showMenu->addAction(showLogo);
-    showMenu->addAction(showTexture);
-    showMenu->addAction(showBubbles);
+    QMenu *helpMenu = menuBar()->addMenu("&Help");
+    helpMenu->addAction("About Qt", qApp, &QApplication::aboutQt);
 
-    connect(exit, SIGNAL(triggered(bool)), this, SLOT(close()));
-    connect(aboutQt, SIGNAL(triggered(bool)), qApp, SLOT(aboutQt()));
+    connect(m_timer, &QTimer::timeout,
+            glwidget, static_cast<QWidgetVoidSlot>(&QWidget::update));
 
-    connect(m_timer, SIGNAL(timeout()), glwidget, SLOT(update()));
-
-    connect(showLogo, SIGNAL(triggered(bool)), glwidget, SLOT(setLogo()));
-    connect(showTexture, SIGNAL(triggered(bool)), glwidget, SLOT(setTexture()));
-    connect(showBubbles, SIGNAL(triggered(bool)), glwidget, SLOT(setShowBubbles(bool)));
-    connect(slider, SIGNAL(valueChanged(int)), glwidget, SLOT(setScaling(int)));
+    connect(slider, &QAbstractSlider::valueChanged, glwidget, &GLWidget::setScaling);
     connect(transparent, &QCheckBox::toggled, glwidget, &GLWidget::setTransparent);
 
-    connect(updateInterval, SIGNAL(valueChanged(int)), this, SLOT(updateIntervalChanged(int)));
+    typedef void (QSpinBox::*QSpinBoxIntSignal)(int);
+    connect(updateInterval, static_cast<QSpinBoxIntSignal>(&QSpinBox::valueChanged),
+            this, &MainWindow::updateIntervalChanged);
     connect(timerBased, &QCheckBox::toggled, this, &MainWindow::timerUsageChanged);
     connect(timerBased, &QCheckBox::toggled, updateInterval, &QWidget::setEnabled);
 
@@ -157,7 +152,7 @@ void MainWindow::addNew()
         return;
     GLWidget *w = new GLWidget(this, false, qRgb(qrand() % 256, qrand() % 256, qrand() % 256));
     m_glWidgets << w;
-    connect(m_timer, SIGNAL(timeout()), w, SLOT(update()));
+    connect(m_timer, &QTimer::timeout, w, static_cast<QWidgetVoidSlot>(&QWidget::update));
     m_layout->addWidget(w, m_nextY, m_nextX, 1, 1);
     if (m_nextX == 3) {
         m_nextX = 1;

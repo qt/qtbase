@@ -68,6 +68,12 @@ QT_END_NAMESPACE
 
 #endif
 
+static QByteArray msgDoesNotExist(const QString &name)
+{
+    return (QLatin1Char('"') + QDir::toNativeSeparators(name)
+        + QLatin1String("\" does not exist.")).toLocal8Bit();
+}
+
 class tst_QDir : public QObject
 {
 Q_OBJECT
@@ -354,7 +360,7 @@ void tst_QDir::mkdir()
 
     //make sure it really exists (ie that mkdir returns the right value)
     QFileInfo fi(path);
-    QVERIFY(fi.exists() && fi.isDir());
+    QVERIFY2(fi.exists() && fi.isDir(), msgDoesNotExist(path).constData());
 }
 
 void tst_QDir::makedirReturnCode()
@@ -378,7 +384,7 @@ void tst_QDir::makedirReturnCode()
     f.open(QIODevice::WriteOnly);
     f.write("test");
     f.close();
-    QVERIFY(f.exists());
+    QVERIFY2(f.exists(), msgDoesNotExist(f.fileName()).constData());
     QVERIFY(!QDir::current().mkdir(dirName)); // calling mkdir on an existing file will fail.
     QVERIFY(!QDir::current().mkpath(dirName)); // calling mkpath on an existing file will fail.
     f.remove();
@@ -474,7 +480,7 @@ void tst_QDir::removeRecursivelyFailure()
     QVERIFY(!QDir().rmdir(path));
     QDir dir(path);
     QVERIFY(!dir.removeRecursively()); // didn't work
-    QVERIFY(dir.exists()); // still exists
+    QVERIFY2(dir.exists(), msgDoesNotExist(dir.absolutePath()).constData()); // still exists
 
     QVERIFY(dirAsFile.setPermissions(QFile::Permissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner)));
     QVERIFY(dir.removeRecursively());
@@ -527,14 +533,15 @@ void tst_QDir::exists_data()
     QTest::newRow("simple dir") << (m_dataPath + "/resources") << true;
     QTest::newRow("simple dir with slash") << (m_dataPath + "/resources/") << true;
 #if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
-    QTest::newRow("unc 1") << "//" + QtNetworkSettings::winServerName() << true;
-    QTest::newRow("unc 2") << "//"  + QtNetworkSettings::winServerName() + "/" << true;
-    QTest::newRow("unc 3") << "//"  + QtNetworkSettings::winServerName() + "/testshare" << true;
-    QTest::newRow("unc 4") << "//"  + QtNetworkSettings::winServerName() + "/testshare/" << true;
-    QTest::newRow("unc 5") << "//"  + QtNetworkSettings::winServerName() + "/testshare/tmp" << true;
-    QTest::newRow("unc 6") << "//"  + QtNetworkSettings::winServerName() + "/testshare/tmp/" << true;
-    QTest::newRow("unc 7") << "//"  + QtNetworkSettings::winServerName() + "/testshare/adirthatshouldnotexist" << false;
-    QTest::newRow("unc 8") << "//"  + QtNetworkSettings::winServerName() + "/asharethatshouldnotexist" << false;
+    const QString uncRoot = QStringLiteral("//") + QtNetworkSettings::winServerName();
+    QTest::newRow("unc 1") << uncRoot << true;
+    QTest::newRow("unc 2") << uncRoot + QLatin1Char('/') << true;
+    QTest::newRow("unc 3") << uncRoot + "/testshare" << true;
+    QTest::newRow("unc 4") << uncRoot + "/testshare/" << true;
+    QTest::newRow("unc 5") << uncRoot + "/testshare/tmp" << true;
+    QTest::newRow("unc 6") << uncRoot + "/testshare/tmp/" << true;
+    QTest::newRow("unc 7") << uncRoot + "/testshare/adirthatshouldnotexist" << false;
+    QTest::newRow("unc 8") << uncRoot + "/asharethatshouldnotexist" << false;
     QTest::newRow("unc 9") << "//ahostthatshouldnotexist" << false;
 #endif
 #if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
@@ -566,7 +573,10 @@ void tst_QDir::exists()
     QFETCH(bool, expected);
 
     QDir dir(path);
-    QCOMPARE(dir.exists(), expected);
+    if (expected)
+        QVERIFY2(dir.exists(), msgDoesNotExist(path).constData());
+    else
+        QVERIFY(!dir.exists());
 }
 
 void tst_QDir::isRelativePath_data()
@@ -802,7 +812,7 @@ void tst_QDir::entryList()
 #endif //Q_NO_SYMLINKS
 
     QDir dir(dirName);
-    QVERIFY(dir.exists());
+    QVERIFY2(dir.exists(), msgDoesNotExist(dirName).constData());
 
     QStringList actual = dir.entryList(nameFilters, (QDir::Filters)filterspec,
                                        (QDir::SortFlags)sortspec);
@@ -845,8 +855,8 @@ void tst_QDir::entryListTimedSort()
     QTemporaryFile aFile(entrylistPath + "A-XXXXXX.qws");
     QTemporaryFile bFile(entrylistPath + "B-XXXXXX.qws");
 
-    QVERIFY(aFile.open());
-    QVERIFY(bFile.open());
+    QVERIFY2(aFile.open(), qPrintable(aFile.errorString()));
+    QVERIFY2(bFile.open(), qPrintable(bFile.errorString()));
     {
         QProcess p;
         p.start(touchBinary, QStringList() << "-t" << "201306021513" << aFile.fileName());
@@ -888,16 +898,23 @@ void tst_QDir::entryListSimple_data()
 #endif
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    QTest::newRow("unc 1") << "//"  + QtNetworkSettings::winServerName() << 2;
-    QTest::newRow("unc 2") << "//"  + QtNetworkSettings::winServerName() + "/" << 2;
-    QTest::newRow("unc 3") << "//"  + QtNetworkSettings::winServerName() + "/testshare" << 2;
-    QTest::newRow("unc 4") << "//"  + QtNetworkSettings::winServerName() + "/testshare/" << 2;
-    QTest::newRow("unc 5") << "//"  + QtNetworkSettings::winServerName() + "/testshare/tmp" << 2;
-    QTest::newRow("unc 6") << "//"  + QtNetworkSettings::winServerName() + "/testshare/tmp/" << 2;
-    QTest::newRow("unc 7") << "//"  + QtNetworkSettings::winServerName() + "/testshare/adirthatshouldnotexist" << 0;
-    QTest::newRow("unc 8") << "//"  + QtNetworkSettings::winServerName() + "/asharethatshouldnotexist" << 0;
+    const QString uncRoot = QStringLiteral("//") + QtNetworkSettings::winServerName();
+    QTest::newRow("unc 1") << uncRoot << 2;
+    QTest::newRow("unc 2") << uncRoot + QLatin1Char('/') << 2;
+    QTest::newRow("unc 3") << uncRoot + "/testshare" << 2;
+    QTest::newRow("unc 4") << uncRoot + "/testshare/" << 2;
+    QTest::newRow("unc 5") << uncRoot + "/testshare/tmp" << 2;
+    QTest::newRow("unc 6") << uncRoot + "/testshare/tmp/" << 2;
+    QTest::newRow("unc 7") << uncRoot + "/testshare/adirthatshouldnotexist" << 0;
+    QTest::newRow("unc 8") << uncRoot + "/asharethatshouldnotexist" << 0;
     QTest::newRow("unc 9") << "//ahostthatshouldnotexist" << 0;
 #endif
+}
+
+static QByteArray msgEntryListFailed(int actual, int expectedMin, const QString &name)
+{
+    return QByteArray::number(actual) + " < " + QByteArray::number(expectedMin) + " in \""
+        + QFile::encodeName(QDir::toNativeSeparators(name)) + '"';
 }
 
 void tst_QDir::entryListSimple()
@@ -907,7 +924,7 @@ void tst_QDir::entryListSimple()
 
     QDir dir(dirName);
     QStringList actual = dir.entryList();
-    QVERIFY(actual.count() >= countMin);
+    QVERIFY2(actual.count() >= countMin, msgEntryListFailed(actual.count(), countMin, dirName).constData());
 }
 
 void tst_QDir::entryListWithSymLinks()
@@ -1121,7 +1138,7 @@ void tst_QDir::setNameFilters()
     QFETCH(QStringList, expected);
 
     QDir dir(dirName);
-    QVERIFY(dir.exists());
+    QVERIFY2(dir.exists(), msgDoesNotExist(dirName).constData());
 
     dir.setNameFilters(nameFilters);
     QStringList actual = dir.entryList();
@@ -1504,7 +1521,7 @@ void tst_QDir::exists2()
 
     QDir dir;
     if (exists)
-        QVERIFY(dir.exists(path));
+        QVERIFY2(dir.exists(path), msgDoesNotExist(path).constData());
     else
         QVERIFY(!dir.exists(path));
 

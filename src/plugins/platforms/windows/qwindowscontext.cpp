@@ -33,9 +33,9 @@
 ****************************************************************************/
 
 #include "qwindowscontext.h"
+#include "qwindowsintegration.h"
 #include "qwindowswindow.h"
 #include "qwindowskeymapper.h"
-#include "qwindowsguieventdispatcher.h"
 #include "qwindowsmousehandler.h"
 #include "qtwindowsglobal.h"
 #include "qwindowsmime.h"
@@ -64,6 +64,8 @@
 #include <QtCore/QSysInfo>
 #include <QtCore/QScopedArrayPointer>
 #include <QtCore/private/qsystemlibrary_p.h>
+
+#include <QtPlatformSupport/private/qwindowsguieventdispatcher_p.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -175,7 +177,8 @@ QWindowsUser32DLL::QWindowsUser32DLL() :
     isHungAppWindow(0), isTouchWindow(0),
     registerTouchWindow(0), unregisterTouchWindow(0),
     getTouchInputInfo(0), closeTouchInputHandle(0), setProcessDPIAware(0),
-    addClipboardFormatListener(0), removeClipboardFormatListener(0)
+    addClipboardFormatListener(0), removeClipboardFormatListener(0),
+    getDisplayAutoRotationPreferences(0), setDisplayAutoRotationPreferences(0)
 {
 }
 
@@ -196,16 +199,20 @@ void QWindowsUser32DLL::init()
         addClipboardFormatListener = (AddClipboardFormatListener)library.resolve("AddClipboardFormatListener");
         removeClipboardFormatListener = (RemoveClipboardFormatListener)library.resolve("RemoveClipboardFormatListener");
     }
+    getDisplayAutoRotationPreferences = (GetDisplayAutoRotationPreferences)library.resolve("GetDisplayAutoRotationPreferences");
+    setDisplayAutoRotationPreferences = (SetDisplayAutoRotationPreferences)library.resolve("SetDisplayAutoRotationPreferences");
 }
 
 bool QWindowsUser32DLL::initTouch()
 {
-    QSystemLibrary library(QStringLiteral("user32"));
-    isTouchWindow = (IsTouchWindow)(library.resolve("IsTouchWindow"));
-    registerTouchWindow = (RegisterTouchWindow)(library.resolve("RegisterTouchWindow"));
-    unregisterTouchWindow = (UnregisterTouchWindow)(library.resolve("UnregisterTouchWindow"));
-    getTouchInputInfo = (GetTouchInputInfo)(library.resolve("GetTouchInputInfo"));
-    closeTouchInputHandle = (CloseTouchInputHandle)(library.resolve("CloseTouchInputHandle"));
+    if (!isTouchWindow && QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
+        QSystemLibrary library(QStringLiteral("user32"));
+        isTouchWindow = (IsTouchWindow)(library.resolve("IsTouchWindow"));
+        registerTouchWindow = (RegisterTouchWindow)(library.resolve("RegisterTouchWindow"));
+        unregisterTouchWindow = (UnregisterTouchWindow)(library.resolve("UnregisterTouchWindow"));
+        getTouchInputInfo = (GetTouchInputInfo)(library.resolve("GetTouchInputInfo"));
+        closeTouchInputHandle = (CloseTouchInputHandle)(library.resolve("CloseTouchInputHandle"));
+    }
     return isTouchWindow && registerTouchWindow && unregisterTouchWindow && getTouchInputInfo && closeTouchInputHandle;
 }
 
@@ -356,6 +363,36 @@ QWindowsContext::~QWindowsContext()
 
     d->m_screenManager.clearScreens(); // Order: Potentially calls back to the windows.
     m_instance = 0;
+}
+
+bool QWindowsContext::initTouch()
+{
+    return initTouch(QWindowsIntegration::instance()->options());
+}
+
+bool QWindowsContext::initTouch(unsigned integrationOptions)
+{
+    if (d->m_systemInfo & QWindowsContext::SI_SupportsTouch)
+        return true;
+
+    QTouchDevice *touchDevice = d->m_mouseHandler.ensureTouchDevice();
+    if (!touchDevice)
+        return false;
+
+#ifndef Q_OS_WINCE
+    if (!QWindowsContext::user32dll.initTouch()) {
+        delete touchDevice;
+        return false;
+    }
+#endif // !Q_OS_WINCE
+
+    if (!(integrationOptions & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch))
+        touchDevice->setCapabilities(touchDevice->capabilities() | QTouchDevice::MouseEmulation);
+
+    QWindowSystemInterface::registerTouchDevice(touchDevice);
+
+    d->m_systemInfo |= QWindowsContext::SI_SupportsTouch;
+    return true;
 }
 
 void QWindowsContext::setTabletAbsoluteRange(int a)
@@ -859,6 +896,11 @@ QByteArray QWindowsContext::comErrorString(HRESULT hr)
     return result;
 }
 
+static inline QWindowsInputContext *windowsInputContext()
+{
+    return qobject_cast<QWindowsInputContext *>(QWindowsIntegration::instance()->inputContext());
+}
+
 /*!
      \brief Main windows procedure registered for windows.
 
@@ -907,18 +949,35 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             return true;
         }
     }
+    if (et & QtWindows::InputMethodEventFlag) {
+        QWindowsInputContext *windowsInputContext = ::windowsInputContext();
+        // Disable IME assuming this is a special implementation hooking into keyboard input.
+        // "Real" IME implementations should use a native event filter intercepting IME events.
+        if (!windowsInputContext) {
+            QWindowsInputContext::setWindowsImeEnabled(platformWindow, false);
+            return false;
+        }
+        switch (et) {
+        case QtWindows::InputMethodStartCompositionEvent:
+            return windowsInputContext->startComposition(hwnd);
+        case QtWindows::InputMethodCompositionEvent:
+            return windowsInputContext->composition(hwnd, lParam);
+        case QtWindows::InputMethodEndCompositionEvent:
+            return windowsInputContext->endComposition(hwnd);
+        case QtWindows::InputMethodRequest:
+            return windowsInputContext->handleIME_Request(wParam, lParam, result);
+        default:
+            break;
+        }
+    } // InputMethodEventFlag
 
     switch (et) {
-    case QtWindows::InputMethodStartCompositionEvent:
-        return QWindowsInputContext::instance()->startComposition(hwnd);
-    case QtWindows::InputMethodCompositionEvent:
-        return QWindowsInputContext::instance()->composition(hwnd, lParam);
-    case QtWindows::InputMethodEndCompositionEvent:
-        return QWindowsInputContext::instance()->endComposition(hwnd);
-    case QtWindows::InputMethodRequest:
-        return QWindowsInputContext::instance()->handleIME_Request(wParam, lParam, result);
     case QtWindows::GestureEvent:
-        return d->m_mouseHandler.translateTouchEvent(platformWindow->window(), hwnd, et, msg, result);
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
+        return platformSessionManager()->isInteractionBlocked() ? true : d->m_mouseHandler.translateGestureEvent(platformWindow->window(), hwnd, et, msg, result);
+#else
+        return d->m_mouseHandler.translateGestureEvent(platformWindow->window(), hwnd, et, msg, result);
+#endif
     case QtWindows::InputMethodOpenCandidateWindowEvent:
     case QtWindows::InputMethodCloseCandidateWindowEvent:
         // TODO: Release/regrab mouse if a popup has mouse grab.
@@ -987,11 +1046,13 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     }
 
     switch (et) {
+    case QtWindows::KeyboardLayoutChangeEvent:
+        if (QWindowsInputContext *wic = windowsInputContext())
+            wic->handleInputLanguageChanged(wParam, lParam); // fallthrough intended.
     case QtWindows::KeyDownEvent:
     case QtWindows::KeyEvent:
     case QtWindows::InputMethodKeyEvent:
     case QtWindows::InputMethodKeyDownEvent:
-    case QtWindows::KeyboardLayoutChangeEvent:
     case QtWindows::AppCommandEvent:
 #if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
         return platformSessionManager()->isInteractionBlocked() ? true : d->m_keyMapper.translateKeyEvent(platformWindow->window(), hwnd, msg, result);

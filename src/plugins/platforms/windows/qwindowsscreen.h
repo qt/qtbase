@@ -42,7 +42,7 @@
 #include <QtCore/QList>
 #include <QtCore/QVector>
 #include <QtCore/QPair>
-#include <QtCore/QSharedPointer>
+#include <QtCore/QScopedPointer>
 #include <qpa/qplatformscreen.h>
 
 QT_BEGIN_NAMESPACE
@@ -74,12 +74,10 @@ class QWindowsScreen : public QPlatformScreen
 {
 public:
 #ifndef QT_NO_CURSOR
-    typedef QSharedPointer<QPlatformCursor> CursorPtr;
+    typedef QScopedPointer<QPlatformCursor> CursorPtr;
 #endif
 
     explicit QWindowsScreen(const QWindowsScreenData &data);
-
-    static QWindowsScreen *screenOf(const QWindow *w = 0);
 
     QRect geometry() const Q_DECL_OVERRIDE { return m_data.geometry; }
     QRect availableGeometry() const Q_DECL_OVERRIDE { return m_data.availableGeometry; }
@@ -98,6 +96,9 @@ public:
 
     QPixmap grabWindow(WId window, int qX, int qY, int qWidth, int qHeight) const Q_DECL_OVERRIDE;
     QPlatformScreen::SubpixelAntialiasingType subpixelAntialiasingTypeHint() const Q_DECL_OVERRIDE;
+
+    static Qt::ScreenOrientation orientationPreference();
+    static bool setOrientationPreference(Qt::ScreenOrientation o);
 
     inline void handleChanges(const QWindowsScreenData &newData);
 

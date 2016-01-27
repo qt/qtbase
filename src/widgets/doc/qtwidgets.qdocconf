@@ -4,7 +4,7 @@ project                 = QtWidgets
 description             = Qt Widgets Reference Documentation
 version                 = $QT_VERSION
 
-examplesinstallpath     = widgets
+examplesinstallpath     = qtbase/widgets
 
 qhp.projects            = QtWidgets
 
@@ -26,7 +26,7 @@ qhp.QtWidgets.subprojects.classes.sortPages = true
 
 tagfile                 = ../../../doc/qtwidgets/qtwidgets.tags
 
-depends                 += qtcore qtgui qtdoc qtsql qtdesigner qtquick
+depends                 += qtcore qtgui qtdoc qtsql qtdesigner qtquick qmake qtsvg
 
 headerdirs  += ..
 

@@ -40,6 +40,10 @@ $(EXPORT_SUBTARGETS): % : %-build
 %-install: ACTION = install
 %-install: xcodebuild-% ;
 
+# iOS Simulator doesn't support archiving
+%-iphonesimulator-install: ACTION = build
+iphonesimulator-install: ACTION = build
+
 # Limit check to a single configuration
 %-iphoneos-check: check-iphoneos ;
 %-iphonesimulator-check: check-iphonesimulator ;
@@ -67,7 +71,7 @@ endif
 %-iphoneos: DEVICES = $(IPHONEOS_DEVICES)
 
 IPHONEOS_GENERIC_DESTINATION := "generic/platform=iOS"
-IPHONESIMULATOR_GENERIC_DESTINATION := "id=$(shell xcrun simctl list devices | grep -v unavailable | perl -lne 'print $$1 if /\((.*?)\)/' | tail -n 1)"
+IPHONESIMULATOR_GENERIC_DESTINATION := "id=$(shell xcrun simctl list devices | grep -E 'iPhone|iPad' | grep -v unavailable | perl -lne 'print $$1 if /\((.*?)\)/' | tail -n 1)"
 
 DESTINATION = $(if $(DESTINATION_ID),"id=$(DESTINATION_ID)",$(value $(call toupper,$(call basesdk,$(SDK)))_GENERIC_DESTINATION))
 

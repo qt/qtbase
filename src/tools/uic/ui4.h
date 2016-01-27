@@ -144,6 +144,7 @@ class DomWidgetData;
 class DomDesignerData;
 class DomSlots;
 class DomPropertySpecifications;
+class DomPropertyToolTip;
 class DomStringPropertySpecification;
 
 /*******************************************************************************
@@ -3541,6 +3542,9 @@ public:
 
     // attribute accessors
     // child element accessors
+    inline QList<DomPropertyToolTip*> elementTooltip() const { return m_tooltip; }
+    void setElementTooltip(const QList<DomPropertyToolTip*>& a);
+
     inline QList<DomStringPropertySpecification*> elementStringpropertyspecification() const { return m_stringpropertyspecification; }
     void setElementStringpropertyspecification(const QList<DomStringPropertySpecification*>& a);
 
@@ -3551,13 +3555,47 @@ private:
     // attribute data
     // child element data
     uint m_children;
+    QList<DomPropertyToolTip*> m_tooltip;
     QList<DomStringPropertySpecification*> m_stringpropertyspecification;
     enum Child {
-        Stringpropertyspecification = 1
+        Tooltip = 1,
+        Stringpropertyspecification = 2
     };
 
     DomPropertySpecifications(const DomPropertySpecifications &other);
     void operator = (const DomPropertySpecifications&other);
+};
+
+class QDESIGNER_UILIB_EXPORT DomPropertyToolTip {
+public:
+    DomPropertyToolTip();
+    ~DomPropertyToolTip();
+
+    void read(QXmlStreamReader &reader);
+    void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
+    inline QString text() const { return m_text; }
+    inline void setText(const QString &s) { m_text = s; }
+
+    // attribute accessors
+    inline bool hasAttributeName() const { return m_has_attr_name; }
+    inline QString attributeName() const { return m_attr_name; }
+    inline void setAttributeName(const QString& a) { m_attr_name = a; m_has_attr_name = true; }
+    inline void clearAttributeName() { m_has_attr_name = false; }
+
+    // child element accessors
+private:
+    QString m_text;
+    void clear(bool clear_all = true);
+
+    // attribute data
+    QString m_attr_name;
+    bool m_has_attr_name;
+
+    // child element data
+    uint m_children;
+
+    DomPropertyToolTip(const DomPropertyToolTip &other);
+    void operator = (const DomPropertyToolTip&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomStringPropertySpecification {

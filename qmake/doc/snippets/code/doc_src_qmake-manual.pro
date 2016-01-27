@@ -977,3 +977,9 @@ VERSION_PE_HEADER = 1.2
 RC_DEFINES += USE_MY_STUFF
 #! [186]
 
+#! [187]
+win32-g++:contains(QMAKE_HOST.arch, x86_64):{
+    message("Host is 64bit")
+    ...
+}
+#! [187]

@@ -55,6 +55,8 @@ public slots:
 private slots:
     void benchmark_data() { generic_data(); }
     void benchmark();
+    void benchmarkSelectPrepared_data() { generic_data(); }
+    void benchmarkSelectPrepared();
 
 private:
     // returns all database connections
@@ -262,6 +264,44 @@ void tst_QSqlQuery::benchmark()
     }
 
     tst_Databases::safeDropTable( db, tableName );
+}
+
+void tst_QSqlQuery::benchmarkSelectPrepared()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    if (tst_Databases::getMySqlVersion(db).section(QChar('.'), 0, 0).toInt() < 5)
+        QSKIP("Test requires MySQL >= 5.0");
+
+    QSqlQuery q(db);
+    const QString tableName(qTableName("benchmark", __FILE__, db));
+
+    tst_Databases::safeDropTable(db, tableName);
+
+    QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + "(id INT NOT NULL)"));
+
+    const int NUM_ROWS = 1000;
+    int expectedSum = 0;
+    QString fillQuery = "INSERT INTO " + tableName + " VALUES (0)";
+    for (int i = 1; i < NUM_ROWS; ++i) {
+        fillQuery += ", (" + QString::number(i) + ")";
+        expectedSum += i;
+    }
+    QVERIFY_SQL(q, exec(fillQuery));
+
+    QVERIFY_SQL(q, prepare("SELECT id FROM "+tableName));
+    QBENCHMARK {
+        QVERIFY_SQL(q, exec());
+        int sum = 0;
+
+        while (q.next())
+            sum += q.value(0).toInt();
+
+        QCOMPARE(sum, expectedSum);
+    }
+
+    tst_Databases::safeDropTable(db, tableName);
 }
 
 #include "main.moc"

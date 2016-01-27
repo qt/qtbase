@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Klaralvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author David Faure <david.faure@kdab.com>
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -79,10 +80,9 @@ Q_CORE_EXPORT int qmime_secondsBetweenChecks = 5; // exported for the unit test
 
 bool QMimeProviderBase::shouldCheck()
 {
-    const QDateTime now = QDateTime::currentDateTime();
-    if (m_lastCheck.isValid() && m_lastCheck.secsTo(now) < qmime_secondsBetweenChecks)
+    if (m_lastCheck.isValid() && m_lastCheck.elapsed() < qmime_secondsBetweenChecks * 1000)
         return false;
-    m_lastCheck = now;
+    m_lastCheck.start();
     return true;
 }
 
@@ -562,12 +562,15 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
     // load comment and globPatterns
 
     const QString file = data.name + QLatin1String(".xml");
-    const QStringList mimeFiles = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QString::fromLatin1("mime/") + file);
+    // shared-mime-info since 1.3 lowercases the xml files
+    QStringList mimeFiles = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QString::fromLatin1("mime/") + file.toLower());
     if (mimeFiles.isEmpty()) {
-        // TODO: ask Thiago about this
-        qWarning() << "No file found for" << file << ", even though the file appeared in a directory listing.";
-        qWarning() << "Either it was just removed, or the directory doesn't have executable permission...";
-        qWarning() << QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QLatin1String("mime"), QStandardPaths::LocateDirectory);
+        mimeFiles = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QString::fromLatin1("mime/") + file); // pre-1.3
+    }
+    if (mimeFiles.isEmpty()) {
+        qWarning() << "No file found for" << file << ", even though update-mime-info said it would exist.\n"
+                      "Either it was just removed, or the directory doesn't have executable permission..."
+                   << QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QLatin1String("mime"), QStandardPaths::LocateDirectory);
         return;
     }
 
@@ -575,11 +578,8 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
     QString mainPattern;
     const QString preferredLanguage = QLocale::system().name();
 
-    QListIterator<QString> mimeFilesIter(mimeFiles);
-    mimeFilesIter.toBack();
-    while (mimeFilesIter.hasPrevious()) { // global first, then local.
-        const QString fullPath = mimeFilesIter.previous();
-        QFile qfile(fullPath);
+    for (QStringList::const_reverse_iterator it = mimeFiles.crbegin(), end = mimeFiles.crend(); it != end; ++it) { // global first, then local.
+        QFile qfile(*it);
         if (!qfile.open(QFile::ReadOnly))
             continue;
 
@@ -588,7 +588,7 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
             if (xml.name() != QLatin1String("mime-type")) {
                 continue;
             }
-            const QString name = xml.attributes().value(QLatin1String("type")).toString();
+            const QStringRef name = xml.attributes().value(QLatin1String("type"));
             if (name.isEmpty())
                 continue;
             if (name != data.name) {
@@ -626,7 +626,7 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
     // Let's assume that shared-mime-info is at least version 0.70
     // Otherwise we would need 1) a version check, and 2) code for parsing patterns from the globs file.
 #if 1
-    if (!mainPattern.isEmpty() && data.globPatterns.first() != mainPattern) {
+    if (!mainPattern.isEmpty() && (data.globPatterns.isEmpty() || data.globPatterns.first() != mainPattern)) {
         // ensure it's first in the list of patterns
         data.globPatterns.removeAll(mainPattern);
         data.globPatterns.prepend(mainPattern);
@@ -756,7 +756,7 @@ void QMimeXMLProvider::ensureLoaded()
         foreach (const QString &packageDir, packageDirs) {
             QDir dir(packageDir);
             const QStringList files = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
-            //qDebug() << static_cast<const void *>(this) << Q_FUNC_INFO << packageDir << files;
+            //qDebug() << static_cast<const void *>(this) << packageDir << files;
             if (!fdoXmlFound)
                 fdoXmlFound = files.contains(QLatin1String("freedesktop.org.xml"));
             QStringList::const_iterator endIt(files.constEnd());

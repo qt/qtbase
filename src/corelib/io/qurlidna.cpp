@@ -1503,7 +1503,7 @@ static bool isMappedToNothing(uint uc)
 static bool containsProhibitedOuptut(const QString *str, int from)
 {
     const ushort *in = reinterpret_cast<const ushort *>(str->begin() + from);
-    const ushort *end = (ushort *)str->data() + str->size();
+    const ushort *end = (const ushort *)str->data() + str->size();
     for ( ; in < end; ++in) {
         uint uc = *in;
         if (QChar(uc).isHighSurrogate() && in < end - 1) {

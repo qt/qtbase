@@ -92,14 +92,21 @@ mac {
         # don't know yet if the target that links to testlib will build under Xcode or not.
         # The corresponding flags for the target lives in xctest.prf, where we do know.
         QMAKE_LFLAGS += -F$${platform_dev_frameworks_path} -weak_framework XCTest
-        QMAKE_OBJECTIVE_CFLAGS += -F$${platform_dev_frameworks_path}
+        QMAKE_CXXFLAGS += -F$${platform_dev_frameworks_path}
         MODULE_CONFIG += xctest
     }
 }
 
 # Exclude these headers from the clean check if their dependencies aren't
 # being built
-contains(QT_CONFIG, no-widgets): HEADERSCLEAN_EXCLUDE += qtest_widgets.h
-contains(QT_CONFIG, no-gui):     HEADERSCLEAN_EXCLUDE += qtest_gui.h
+!qtHaveModule(gui) {
+    HEADERSCLEAN_EXCLUDE += qtest_gui.h \
+        qtestaccessible.h \
+        qtestkeyboard.h \
+        qtestmouse.h \
+        qtesttouch.h
+}
+
+!qtHaveModule(widgets): HEADERSCLEAN_EXCLUDE += qtest_widgets.h
 
 load(qt_module)

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
-** Copyright (C) 2014 Intel Corporation
+** Copyright (C) 2015 Intel Corporation
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -83,7 +83,7 @@ static inline void promptKeyPress()
         exit(0);      // Exit cleanly for Ctrl+C
 }
 
-Configure::Configure(int& argc, char** argv)
+Configure::Configure(int& argc, char** argv) : verbose(0)
 {
     // Default values for indentation
     optionIndent = 4;
@@ -165,7 +165,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "CETEST" ]          = "auto";
     dictionary[ "CE_SIGNATURE" ]    = "no";
     dictionary[ "AUDIO_BACKEND" ]   = "auto";
-    dictionary[ "WMF_BACKEND" ]     = "auto";
+    dictionary[ "WMF_BACKEND" ]     = "no";
     dictionary[ "WMSDK" ]           = "auto";
     dictionary[ "QML_DEBUG" ]       = "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "no";
@@ -192,25 +192,24 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "SYSTEM_PROXIES" ]  = "no";
     dictionary[ "WERROR" ]          = "auto";
     dictionary[ "QREAL" ]           = "double";
+    dictionary[ "ATOMIC64" ]        = "auto";
 
     //Only used when cross compiling.
     dictionary[ "QT_INSTALL_SETTINGS" ] = "/etc/xdg";
 
     QString version;
-    QFile qglobal_h(sourcePath + "/src/corelib/global/qglobal.h");
-    if (qglobal_h.open(QFile::ReadOnly)) {
-        QTextStream read(&qglobal_h);
-        QRegExp version_regexp("^# *define *QT_VERSION_STR *\"([^\"]*)\"");
-        QString line;
-        while (!read.atEnd()) {
-            line = read.readLine();
-            if (version_regexp.exactMatch(line)) {
-                version = version_regexp.cap(1).trimmed();
-                if (!version.isEmpty())
-                    break;
-            }
+    QFile qmake_conf(sourcePath + "/.qmake.conf");
+    if (qmake_conf.open(QFile::ReadOnly)) {
+        while (!qmake_conf.atEnd()) {
+            static const char beginning[] = "MODULE_VERSION = ";
+            QByteArray line = qmake_conf.readLine();
+            if (!line.startsWith(beginning))
+                continue;
+
+            version = qMove(line).mid(int(strlen(beginning))).trimmed();
+            break;
         }
-        qglobal_h.close();
+        qmake_conf.close();
     }
 
     if (version.isEmpty())
@@ -231,6 +230,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "BUILD" ]           = "debug";
     dictionary[ "BUILDALL" ]        = "auto"; // Means yes, but not explicitly
     dictionary[ "FORCEDEBUGINFO" ]  = "no";
+    dictionary[ "OPTIMIZED_TOOLS" ] = "no";
 
     dictionary[ "BUILDTYPE" ]      = "none";
 
@@ -238,7 +238,7 @@ Configure::Configure(int& argc, char** argv)
 
     dictionary[ "COMPILE_EXAMPLES" ] = "yes";
 
-    dictionary[ "C++11" ]           = "auto";
+    dictionary[ "C++STD" ]          = "auto";
 
     dictionary[ "USE_GOLD_LINKER" ] = "no";
 
@@ -382,6 +382,7 @@ void Configure::parseCmdLine()
         configCmdLine.clear();
         reloadCmdLine();
     }
+
     else if (configCmdLine.at(i) == "-loadconfig") {
         ++i;
         if (i != argCount) {
@@ -418,6 +419,10 @@ void Configure::parseCmdLine()
             || configCmdLine.at(i) == "-h"
             || configCmdLine.at(i) == "-?")
             dictionary[ "HELP" ] = "yes";
+
+        else if (configCmdLine.at(i) == "-v" || configCmdLine.at(i) == "-verbose") {
+            ++verbose;
+        }
 
         else if (configCmdLine.at(i) == "-qconfig") {
             ++i;
@@ -456,6 +461,10 @@ void Configure::parseCmdLine()
             dictionary[ "SEPARATE_DEBUG_INFO" ] = "no";
         else if (configCmdLine.at(i) == "-separate-debug-info")
             dictionary[ "SEPARATE_DEBUG_INFO" ] = "yes";
+        else if (configCmdLine.at(i) == "-optimized-tools")
+            dictionary[ "RELEASE_TOOLS" ] = "yes";
+        else if (configCmdLine.at(i) == "-no-optimized-tools")
+            dictionary[ "RELEASE_TOOLS" ] = "no";
 
         else if (configCmdLine.at(i) == "-compile-examples") {
             dictionary[ "COMPILE_EXAMPLES" ] = "yes";
@@ -464,9 +473,29 @@ void Configure::parseCmdLine()
         }
 
         else if (configCmdLine.at(i) == "-c++11")
-            dictionary[ "C++11" ] = "yes";
+            dictionary[ "C++STD" ] = "c++11";
         else if (configCmdLine.at(i) == "-no-c++11")
-            dictionary[ "C++11" ] = "no";
+            dictionary[ "C++STD" ] = "c++98";
+        else if (configCmdLine.at(i) == "-c++std") {
+            ++i;
+            if (i == argCount)
+                break;
+
+            QString level = configCmdLine.at(i);
+            if (level == "c++98" || level == "c++11" || level == "c++14" || level == "c++1z"
+                    || level == "auto") {
+                dictionary[ "C++STD" ] = level;
+            } else if (level == "98" || level == "11" || level == "14" || level == "1z") {
+                dictionary[ "C++STD" ] = "c++" + level;
+            } else {
+                dictionary[ "DONE" ] = "error";
+                cout << "ERROR: invalid C++ standard " << level
+                     << "; valid options are: c++98 c++11 c++14 c++1z auto" << endl;
+                return;
+            }
+        }
+
+
         else if (configCmdLine.at(i) == "-use-gold-linker")
             dictionary[ "USE_GOLD_LINKER" ] = "yes";
         else if (configCmdLine.at(i) == "-no-use-gold-linker")
@@ -883,13 +912,15 @@ void Configure::parseCmdLine()
         } else if (configCmdLine.at(i) == "-no-qdbus") {
             dictionary[ "DBUS" ] = "no";
         } else if (configCmdLine.at(i) == "-qdbus") {
-            dictionary[ "DBUS" ] = "yes";
+            dictionary[ "DBUS" ] = "auto";
         } else if (configCmdLine.at(i) == "-no-dbus") {
             dictionary[ "DBUS" ] = "no";
         } else if (configCmdLine.at(i) == "-dbus") {
-            dictionary[ "DBUS" ] = "yes";
+            dictionary[ "DBUS" ] = "auto";
         } else if (configCmdLine.at(i) == "-dbus-linked") {
             dictionary[ "DBUS" ] = "linked";
+        } else if (configCmdLine.at(i) == "-dbus-runtime") {
+            dictionary[ "DBUS" ] = "runtime";
         } else if (configCmdLine.at(i) == "-audio-backend") {
             dictionary[ "AUDIO_BACKEND" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-audio-backend") {
@@ -1385,8 +1416,8 @@ void Configure::parseCmdLine()
             cout << "QMAKESPEC environment variable is set to \"" << dictionary["QMAKESPEC"]
                  << "\" which is not a supported platform" << endl;
         } else { // was autodetected from environment
-            cout << "Unable to detect the platform from environment. Use -platform command line"
-                    "argument or set the QMAKESPEC environment variable and run configure again" << endl;
+            cout << "Unable to detect the platform from environment. Use -platform command line" << endl
+                 << "argument or set the QMAKESPEC environment variable and run configure again." << endl;
         }
         cout << "See the README file for a list of supported operating systems and compilers." << endl;
     } else {
@@ -1788,11 +1819,14 @@ bool Configure::displayHelp()
 
         desc("BUILDDEV", "yes", "-developer-build",      "Compile and link Qt with Qt developer options (including auto-tests exporting)\n");
 
+        desc("RELEASE_TOOLS", "yes", "-optimized-tools", "Build optimized host tools even in debug build.");
+        desc("RELEASE_TOOLS", "no", "-no-optimized-tools", "Do not build optimized host tools even in debug build.\n");
+
         desc("OPENSOURCE", "opensource", "-opensource",   "Compile and link the Open-Source Edition of Qt.");
         desc("COMMERCIAL", "commercial", "-commercial",   "Compile and link the Commercial Edition of Qt.\n");
 
-        desc("C++11", "yes", "-c++11",                  "Compile Qt with C++11 support enabled.");
-        desc("C++11", "no", "-no-c++11",                "Do not compile Qt with C++11 support enabled.\n");
+        desc(        "-c++std <edition>",               "Compile Qt with C++ standard edition (c++98, c++11, c++14, c++1z)\n"
+                                                        "Default: highest supported. This option is not supported for MSVC.\n");
 
         desc("USE_GOLD_LINKER", "yes", "-use-gold-linker",                  "Link using the GNU gold linker (gcc only).");
         desc("USE_GOLD_LINKER", "no", "-no-use-gold-linker",                "Do not link using the GNU gold linker.\n");
@@ -1889,9 +1923,6 @@ bool Configure::displayHelp()
 
         desc("LARGE_FILE",  "yes",     "-largefile",    "Enables Qt to access files larger than 4 GB.\n");
 
-        desc("FONT_CONFIG", "yes",     "-fontconfig",   "Build with FontConfig support.");
-        desc("FONT_CONFIG", "no",      "-no-fontconfig", "Do not build with FontConfig support.\n");
-
         desc("POSIX_IPC",   "yes",     "-posix-ipc",    "Enable POSIX IPC.\n");
 
         desc("QT_GLIB",     "yes",     "-glib",         "Compile Glib support.\n");
@@ -1937,7 +1968,10 @@ bool Configure::displayHelp()
 
         desc("FREETYPE", "no",   "-no-freetype",        "Do not compile in Freetype2 support.");
         desc("FREETYPE", "yes",  "-qt-freetype",        "Use the libfreetype bundled with Qt.");
-        desc("FREETYPE", "system","-system-freetype",   "Use the libfreetype provided by the system.");
+        desc("FREETYPE", "system","-system-freetype",   "Use the libfreetype provided by the system.\n");
+
+        desc("FONT_CONFIG", "yes",     "-fontconfig",   "Build with FontConfig support.");
+        desc("FONT_CONFIG", "no",      "-no-fontconfig", "Do not build with FontConfig support.\n");
 
         desc("HARFBUZZ", "no",   "-no-harfbuzz",        "Do not compile in HarfBuzz-NG support.");
         desc("HARFBUZZ", "qt",   "-qt-harfbuzz",        "Use HarfBuzz-NG bundled with Qt to do text shaping.\n"
@@ -2002,8 +2036,8 @@ bool Configure::displayHelp()
         desc("LIBPROXY", "no",   "-no-libproxy",        "Do not compile in libproxy support.");
         desc("LIBPROXY", "yes",  "-libproxy",           "Compile in libproxy support (for cross compilation targets).\n");
         desc("DBUS", "no",       "-no-dbus",            "Do not compile in D-Bus support.");
-        desc("DBUS", "yes",      "-dbus",               "Compile in D-Bus support and load libdbus-1\ndynamically.");
         desc("DBUS", "linked",   "-dbus-linked",        "Compile in D-Bus support and link to libdbus-1.\n");
+        desc("DBUS", "runtime",  "-dbus-runtime",       "Compile in D-Bus support and load libdbus-1\ndynamically.");
         desc("AUDIO_BACKEND", "no","-no-audio-backend", "Do not compile in the platform audio backend into\nQt Multimedia.");
         desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into Qt Multimedia.\n");
         desc("WMF_BACKEND", "no","-no-wmf-backend",     "Do not compile in the windows media foundation backend\ninto Qt Multimedia.");
@@ -2035,6 +2069,7 @@ bool Configure::displayHelp()
         desc(                   "-loadconfig <config>", "Run configure with the parameters from file configure_<config>.cache.");
         desc(                   "-saveconfig <config>", "Run configure and save the parameters in file configure_<config>.cache.");
         desc(                   "-redo",                "Run configure with the same parameters as last time.\n");
+        desc(                   "-v, -verbose",         "Run configure tests with verbose output.\n");
 
         // Qt\Windows CE only options go below here -----------------------------------------------------------------------------
         desc("Qt for Windows CE only:\n\n");
@@ -2117,7 +2152,7 @@ QString Configure::defaultTo(const QString &option)
         return "no";
 
     // keep 'auto' default for msvc, since we can't set the language supported
-    if (option == "C++11"
+    if (option == "C++STD"
         && dictionary["QMAKESPEC"].contains("msvc"))
         return "auto";
 
@@ -2194,6 +2229,12 @@ bool Configure::checkAvailability(const QString &part)
 
     else if (part == "OBJCOPY")
         available = tryCompileProject("unix/objcopy");
+
+    else if (part == "ATOMIC64")
+        available = tryCompileProject("common/atomic64");
+
+    else if (part == "ATOMIC64-LIBATOMIC")
+        available = tryCompileProject("common/atomic64", "LIBS+=-latomic");
 
     else if (part == "ZLIB")
         available = findFile("zlib.h");
@@ -2338,10 +2379,37 @@ void Configure::autoDetection()
     // Auto-detect CPU architectures.
     detectArch();
 
-    if (dictionary["C++11"] == "auto") {
-        if (!dictionary["QMAKESPEC"].contains("msvc"))
-            dictionary["C++11"] = tryCompileProject("common/c++11") ? "yes" : "no";
+    if (dictionary["C++STD"] == "auto" && !dictionary["QMAKESPEC"].contains("msvc")) {
+        if (!tryCompileProject("common/c++11")) {
+            dictionary["C++STD"] = "c++98";
+        } else if (!tryCompileProject("common/c++14")) {
+            dictionary["C++STD"] = "c++11";
+        } else if (!tryCompileProject("common/c++1z")) {
+            dictionary["C++STD"] = "c++14";
+        } else {
+            dictionary["C++STD"] = "c++1z";
+        }
     }
+
+    if (!dictionary["QMAKESPEC"].contains("msvc")) {
+        if (tryCompileProject("common/c++default", QString(), false)) {
+            QFile iiFile(buildPath + "/config.tests/common/c++default/c++default.ii");
+            if (iiFile.open(QIODevice::ReadOnly)) {
+                QString content = QString::fromUtf8(iiFile.readAll());
+                QRegExp expr("\\b([0-9]+)L\\b");
+                if (expr.indexIn(content) != -1)
+                    dictionary["CFG_STDCXX_DEFAULT"] = expr.cap(1);
+            }
+        }
+        if (dictionary["CFG_STDCXX_DEFAULT"].isEmpty()) {
+            cout << "Could not determine the C++ standard the compiler uses by default, assuming C++98." << endl;
+            dictionary["CFG_STDCXX_DEFAULT"] = "199711";
+        }
+    }
+
+    if (dictionary["ATOMIC64"] == "auto")
+        dictionary["ATOMIC64"] = checkAvailability("ATOMIC64") ? "yes" :
+                                 checkAvailability("ATOMIC64-LIBATOMIC") ? "libatomic" : "no";
 
     // Style detection
     if (dictionary["STYLE_WINDOWSXP"] == "auto")
@@ -2442,7 +2510,7 @@ void Configure::autoDetection()
     if (dictionary["LIBPROXY"] == "auto")
         dictionary["LIBPROXY"] = checkAvailability("LIBPROXY") ? "yes" : "no";
     if (dictionary["DBUS"] == "auto")
-        dictionary["DBUS"] = checkAvailability("DBUS") ? "yes" : "no";
+        dictionary["DBUS"] = checkAvailability("DBUS") ? "linked" : "runtime";
     if (dictionary["QML_DEBUG"] == "auto")
         dictionary["QML_DEBUG"] = dictionary["QML"] == "yes" ? "yes" : "no";
     if (dictionary["AUDIO_BACKEND"] == "auto")
@@ -2519,25 +2587,17 @@ void Configure::autoDetection()
             i.value() = defaultTo(i.key());
     }
 
-    if (tryCompileProject("unix/ptrsize"))
-        dictionary["QT_POINTER_SIZE"] = "8";
-    else
-        dictionary["QT_POINTER_SIZE"] = "4";
+    cout << "Done running configuration tests." << endl;
 }
 
 bool Configure::verifyConfiguration()
 {
     bool prompt = false;
-    if (dictionary["C++11"] != "auto"
+    if (dictionary["C++STD"] != "auto"
             && dictionary["QMAKESPEC"].contains("msvc")) {
-        cout << "WARNING: Qt does not support disabling or enabling any existing C++11 support "
-                "with MSVC compilers.";
-        if (dictionary["C++11"] == "yes")
-            cout << "Therefore -c++11 is ignored." << endl << endl;
-        else
-            cout << "Therefore -no-c++11 is ignored." << endl << endl;
-
-        dictionary["C++11"] = "auto";
+        cout << "WARNING: It is not possible to change the C++ standard edition with MSVC compilers. "
+                "Therefore, the option -c++std " << dictionary["C++STD"] << " was ignored." << endl << endl;
+        dictionary["C++STD"] = "auto";
     }
 
     if (dictionary["STATIC_RUNTIME"] == "yes" && dictionary["SHARED"] == "yes") {
@@ -2639,6 +2699,14 @@ bool Configure::verifyConfiguration()
         }
     }
 
+    if (dictionary["OPENGL"] == "no" || dictionary["OPENGL_ES_2"] == "no") {
+        if (dictionary.value("XQMAKESPEC").startsWith("winphone") ||
+                dictionary.value("XQMAKESPEC").startsWith("winrt")) {
+            cout << "ERROR: Option -no-opengl is not valid for WinRT." << endl;
+            dictionary[ "DONE" ] = "error";
+        }
+    }
+
     if (prompt)
         promptKeyPress();
 
@@ -2678,9 +2746,17 @@ void Configure::generateOutputVars()
             qtConfig += "debug_and_release build_all debug";
         qtConfig += "release";
     }
+    if (dictionary[ "RELEASE_TOOLS" ] == "yes")
+        qtConfig += "release_tools";
 
-    if (dictionary[ "C++11" ] == "yes")
+    if (dictionary[ "C++STD" ] == "c++11")
         qtConfig += "c++11";
+    else if (dictionary[ "C++STD" ] == "c++14")
+        qtConfig += "c++11 c++14";
+    else if (dictionary[ "C++STD" ] == "c++1z")
+        qtConfig += "c++11 c++14 c++1z";
+    if (!dictionary[ "CFG_STDCXX_DEFAULT" ].isEmpty())
+        qmakeVars += "QT_COMPILER_STDCXX = " + dictionary[ "CFG_STDCXX_DEFAULT" ];
 
     if (dictionary[ "USE_GOLD_LINKER" ] == "yes")
         qmakeConfig += "use_gold_linker";
@@ -2865,6 +2941,9 @@ void Configure::generateOutputVars()
         }
     }
 
+    if (dictionary["ATOMIC64"] == "libatomic")
+        qmakeConfig += "atomic64-libatomic";
+
     if (dictionary[ "ACCESSIBILITY" ] == "yes")
         qtConfig += "accessibility";
 
@@ -2898,7 +2977,7 @@ void Configure::generateOutputVars()
     if (dictionary[ "LIBPROXY" ] == "yes")
         qtConfig += "libproxy";
 
-    if (dictionary[ "DBUS" ] == "yes")
+    if (dictionary[ "DBUS" ] == "runtime")
         qtConfig += "dbus";
     else if (dictionary[ "DBUS" ] == "linked")
         qtConfig += "dbus dbus-linked";
@@ -3008,7 +3087,7 @@ void Configure::generateOutputVars()
             qmakeVars += QString("OPENSSL_LIBS += -L%1/lib").arg(opensslPath);
         }
     }
-    if (dictionary[ "DBUS" ] != "no") {
+    if (dictionary[ "DBUS" ] == "linked") {
        if (!dbusPath.isEmpty()) {
            qmakeVars += QString("QT_CFLAGS_DBUS = -I%1/include").arg(dbusPath);
            qmakeVars += QString("QT_LIBS_DBUS = -L%1/lib").arg(dbusPath);
@@ -3067,7 +3146,7 @@ void Configure::generateOutputVars()
 
 void Configure::generateCachefile()
 {
-    // Generate qmodule.pri
+    // Generate qmodule.pri, which is loaded only by Qt modules
     {
         FileWriter moduleStream(buildPath + "/mkspecs/qmodule.pri");
 
@@ -3135,6 +3214,8 @@ void Configure::generateCachefile()
             moduleStream << " largefile";
         if (dictionary[ "STRIP" ] == "no")
             moduleStream << " nostrip";
+        if (dictionary[ "LTCG" ] == "yes")
+            moduleStream << " ltcg";
         moduleStream << endl;
 
         for (QStringList::Iterator var = qmakeVars.begin(); var != qmakeVars.end(); ++var)
@@ -3289,7 +3370,8 @@ void Configure::detectArch()
     QDir::setCurrent(oldpwd);
 }
 
-bool Configure::tryCompileProject(const QString &projectPath, const QString &extraOptions)
+bool Configure::tryCompileProject(const QString &projectPath, const QString &extraOptions,
+                                  bool distClean)
 {
     QString oldpwd = QDir::currentPath();
 
@@ -3306,7 +3388,7 @@ bool Configure::tryCompileProject(const QString &projectPath, const QString &ext
     }
 
     // run qmake
-    QString command = QString("%1 %2 %3 2>&1")
+    QString command = QString("%1 %2 %3")
         .arg(QDir::toNativeSeparators(QDir(newpwd).relativeFilePath(buildPath + "/bin/qmake.exe")),
              QDir::toNativeSeparators(sourcePath + "/config.tests/" + projectPath),
              extraOptions);
@@ -3318,6 +3400,11 @@ bool Configure::tryCompileProject(const QString &projectPath, const QString &ext
         addSysroot(&command);
     }
 
+    if (verbose)
+        cout << qPrintable(command) << endl;
+    else
+        command += " 2>&1";
+
     int code = 0;
     QString output = Environment::execute(command, &code);
     //cout << output << endl;
@@ -3327,12 +3414,16 @@ bool Configure::tryCompileProject(const QString &projectPath, const QString &ext
         command = dictionary[ "MAKE" ];
         if (command.contains("nmake") || command.contains("jom"))
             command += " /NOLOGO";
-        command += " -s 2>&1";
+        if (verbose)
+            cout << qPrintable(command) << endl;
+        else
+            command += " -s 2>&1";
         output = Environment::execute(command, &code);
         //cout << output << endl;
 
         // clean up
-        Environment::execute(command + " distclean 2>&1");
+        if (distClean)
+            Environment::execute(command + " distclean 2>&1");
     }
 
     QDir::setCurrent(oldpwd);
@@ -3412,8 +3503,6 @@ void Configure::generateQConfigPri()
 
         if (dictionary["STATIC_RUNTIME"] == "yes")
             configStream << " static_runtime";
-        if (dictionary[ "LTCG" ] == "yes")
-            configStream << " ltcg";
         if (dictionary[ "RTTI" ] == "yes")
             configStream << " rtti";
         if (dictionary["INCREDIBUILD_XGE"] == "yes")
@@ -3546,6 +3635,12 @@ void Configure::generateConfigfiles()
     {
         FileWriter tmpStream(buildPath + "/src/corelib/global/qconfig.h");
 
+        tmpStream << "#define QT_VERSION_MAJOR    " << dictionary["VERSION_MAJOR"] << endl
+                  << "#define QT_VERSION_MINOR    " << dictionary["VERSION_MINOR"] << endl
+                  << "#define QT_VERSION_PATCH    " << dictionary["VERSION_PATCH"] << endl
+                  << "#define QT_VERSION_STR      \"" << dictionary["VERSION"] << "\"\n"
+                  << endl;
+
         if (dictionary[ "QCONFIG" ] == "full") {
             tmpStream << "/* Everything */" << endl;
         } else {
@@ -3666,12 +3761,11 @@ void Configure::generateConfigfiles()
         if (dictionary["QT_GLIB"] == "no")           qconfigList += "QT_NO_GLIB";
         if (dictionary["QT_INOTIFY"] == "no")        qconfigList += "QT_NO_INOTIFY";
         if (dictionary["QT_EVENTFD"] ==  "no")       qconfigList += "QT_NO_EVENTFD";
+        if (dictionary["ATOMIC64"] == "no")          qconfigList += "QT_NO_STD_ATOMIC64";
 
         if (dictionary["REDUCE_EXPORTS"] == "yes")     qconfigList += "QT_VISIBILITY_AVAILABLE";
         if (dictionary["REDUCE_RELOCATIONS"] == "yes") qconfigList += "QT_REDUCE_RELOCATIONS";
         if (dictionary["QT_GETIFADDRS"] == "no")       qconfigList += "QT_NO_GETIFADDRS";
-
-        qconfigList += QString("QT_POINTER_SIZE=%1").arg(dictionary["QT_POINTER_SIZE"]);
 
         qconfigList.sort();
         for (int i = 0; i < qconfigList.count(); ++i)
@@ -3753,7 +3847,9 @@ void Configure::displayConfig()
     }
     if (dictionary[ "BUILD" ] == "release" || dictionary[ "BUILDALL" ] == "yes")
         sout << "Force debug info............" << dictionary[ "FORCEDEBUGINFO" ] << endl;
-    sout << "C++11 support..............." << dictionary[ "C++11" ] << endl;
+    if (dictionary[ "BUILD" ] == "debug")
+        sout << "Force optimized tools......." << dictionary[ "RELEASE_TOOLS" ] << endl;
+    sout << "C++ language standard......." << dictionary[ "C++STD" ] << endl;
     sout << "Link Time Code Generation..." << dictionary[ "LTCG" ] << endl;
     sout << "Accessibility support......." << dictionary[ "ACCESSIBILITY" ] << endl;
     sout << "RTTI support................" << dictionary[ "RTTI" ] << endl;
@@ -3918,6 +4014,18 @@ void Configure::displayConfig()
              << "will be the same unless you are cross-compiling)." << endl
              << endl;
     }
+    if (dictionary["C++STD"] == "c++98") {
+        sout << endl
+             << "NOTE: The -no-c++11 / -c++-level c++98 option is deprecated." << endl
+             << endl
+             << "Qt 5.7 will require C++11 support. The options are in effect for this" << endl
+             << "Qt 5.6 build, but you should update your build scripts to remove the" << endl
+             << "option and, if necessary, upgrade your compiler." << endl;
+    }
+    if (dictionary["RELEASE_TOOLS"] == "yes" && dictionary["BUILD"] != "debug" ) {
+        sout << endl
+             << "NOTE:  -optimized-tools is not useful in -release mode." << endl;
+    }
     if (!dictionary["PREFIX_COMPLAINTS"].isEmpty()) {
         sout << endl
              << dictionary["PREFIX_COMPLAINTS"] << endl
@@ -3944,7 +4052,7 @@ void Configure::generateHeaders()
             QStringList args;
             args << "perl" << "-w";
             args += sourcePath + "/bin/syncqt.pl";
-            args << "-minimal" << "-module" << "QtCore";
+            args << "-version" << dictionary["VERSION"] << "-minimal" << "-module" << "QtCore";
             args += sourcePath;
             int retc = Environment::execute(args, QStringList(), QStringList());
             if (retc) {
@@ -4207,7 +4315,10 @@ void Configure::buildQmake()
                     << "INC_PATH = " << QDir::toNativeSeparators(
                            (QFile::exists(sourcePath + "/.git") ? ".." : sourcePath)
                            + "/include") << endl;
-                stream << "QT_VERSION = " << dictionary["VERSION"] << endl;
+                stream << "QT_VERSION = " << dictionary["VERSION"] << endl
+                       << "QT_MAJOR_VERSION = " << dictionary["VERSION_MAJOR"] << endl
+                       << "QT_MINOR_VERSION = " << dictionary["VERSION_MINOR"] << endl
+                       << "QT_PATCH_VERSION = " << dictionary["VERSION_PATCH"] << endl;
                 if (dictionary[ "QMAKESPEC" ] == QString("win32-g++")) {
                     stream << "QMAKESPEC = $(SOURCE_PATH)\\mkspecs\\win32-g++" << endl
                            << "EXTRA_CFLAGS = -DUNICODE -ffunction-sections" << endl

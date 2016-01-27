@@ -55,7 +55,6 @@
 
 #include <algorithm>
 
-#include <dlfcn.h>
 #include <stdio.h>
 #include <errno.h>
 #include <xcb/shm.h>
@@ -77,6 +76,25 @@
 #include <xcb/render.h>
 #endif
 
+#if defined(Q_CC_GNU) && defined(Q_OF_ELF)
+static xcb_generic_event_t *local_xcb_poll_for_queued_event(xcb_connection_t *c)
+    __attribute__((weakref("xcb_poll_for_queued_event")));
+
+static inline void checkXcbPollForQueuedEvent()
+{ }
+#else
+#include <dlfcn.h>
+typedef xcb_generic_event_t * (*XcbPollForQueuedEventFunctionPointer)(xcb_connection_t *c);
+static XcbPollForQueuedEventFunctionPointer local_xcb_poll_for_queued_event;
+
+static inline void checkXcbPollForQueuedEvent()
+{
+#ifdef RTLD_DEFAULT
+    local_xcb_poll_for_queued_event = (XcbPollForQueuedEventFunctionPointer)dlsym(RTLD_DEFAULT, "xcb_poll_for_queued_event");
+#endif
+}
+#endif
+
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaXInput, "qt.qpa.input")
@@ -88,6 +106,24 @@ Q_LOGGING_CATEGORY(lcQpaScreen, "qt.qpa.screen")
 #ifndef XCB_GE_GENERIC
 #define XCB_GE_GENERIC 35
 #endif
+
+// Starting from the xcb version 1.9.3 struct xcb_ge_event_t has changed:
+// - "pad0" became "extension"
+// - "pad1" and "pad" became "pad0"
+// New and old version of this struct share the following fields:
+typedef struct qt_xcb_ge_event_t {
+    uint8_t  response_type;
+    uint8_t  extension;
+    uint16_t sequence;
+    uint32_t length;
+    uint16_t event_type;
+} qt_xcb_ge_event_t;
+
+static inline bool isXIEvent(xcb_generic_event_t *event, int opCode)
+{
+    qt_xcb_ge_event_t *e = (qt_xcb_ge_event_t *)event;
+    return e->extension == opCode;
+}
 
 #ifdef XCB_USE_XLIB
 static const char * const xcbConnectionErrors[] = {
@@ -143,42 +179,6 @@ QXcbScreen* QXcbConnection::findScreenForOutput(xcb_window_t rootWindow, xcb_ran
     return 0;
 }
 
-QXcbScreen* QXcbConnection::createScreen(QXcbVirtualDesktop* virtualDesktop,
-                                         xcb_randr_output_t outputId,
-                                         xcb_randr_get_output_info_reply_t *output)
-{
-    QString name;
-    if (output)
-        name = QString::fromUtf8((const char*)xcb_randr_get_output_info_name(output),
-                xcb_randr_get_output_info_name_length(output));
-    else {
-        QByteArray displayName = m_displayName;
-        int dotPos = displayName.lastIndexOf('.');
-        if (dotPos != -1)
-            displayName.truncate(dotPos);
-        name = QString::fromLocal8Bit(displayName) + QLatin1Char('.') + QString::number(virtualDesktop->number());
-    }
-
-    return new QXcbScreen(this, virtualDesktop, outputId, output, name);
-}
-
-bool QXcbConnection::checkOutputIsPrimary(xcb_window_t rootWindow, xcb_randr_output_t output)
-{
-    xcb_generic_error_t *error = 0;
-    xcb_randr_get_output_primary_cookie_t primaryCookie =
-        xcb_randr_get_output_primary(xcb_connection(), rootWindow);
-    QScopedPointer<xcb_randr_get_output_primary_reply_t, QScopedPointerPodDeleter> primary (
-        xcb_randr_get_output_primary_reply(xcb_connection(), primaryCookie, &error));
-    if (!primary || error) {
-        qWarning("failed to get the primary output of the screen");
-        free(error);
-        error = NULL;
-    }
-    const bool isPrimary = primary ? (primary->output == output) : false;
-
-    return isPrimary;
-}
-
 QXcbVirtualDesktop* QXcbConnection::virtualDesktopForRootWindow(xcb_window_t rootWindow)
 {
     foreach (QXcbVirtualDesktop *virtualDesktop, m_virtualDesktops) {
@@ -201,8 +201,9 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
             // Not for us
             return;
 
-        qCDebug(lcQpaScreen) << "QXcbConnection: XCB_RANDR_NOTIFY_CRTC_CHANGE:" << crtc.crtc;
         QXcbScreen *screen = findScreenForCrtc(crtc.window, crtc.crtc);
+        qCDebug(lcQpaScreen) << "QXcbConnection: XCB_RANDR_NOTIFY_CRTC_CHANGE:" << crtc.crtc
+                             << "mode" << crtc.mode << "relevant screen" << screen;
         // Only update geometry when there's a valid mode on the CRTC
         // CRTC with node mode could mean that output has been disabled, and we'll
         // get RRNotifyOutputChange notification for that.
@@ -224,17 +225,7 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
 
         if (screen && output.connection == XCB_RANDR_CONNECTION_DISCONNECTED) {
             qCDebug(lcQpaScreen) << "screen" << screen->name() << "has been disconnected";
-
-            // Known screen removed -> delete it
-            m_screens.removeOne(screen);
-            foreach (QXcbScreen *otherScreen, m_screens)
-                otherScreen->removeVirtualSibling((QPlatformScreen *) screen);
-
-            QXcbIntegration::instance()->destroyScreen(screen);
-
-            // QTBUG-40174, QTBUG-42985: If all screens are removed, wait
-            // and start rendering again later if a screen becomes available.
-
+            destroyScreen(screen);
         } else if (!screen && output.connection == XCB_RANDR_CONNECTION_CONNECTED) {
             // New XRandR output is available and it's enabled
             if (output.crtc != XCB_NONE && output.mode != XCB_NONE) {
@@ -243,49 +234,142 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
                 QScopedPointer<xcb_randr_get_output_info_reply_t, QScopedPointerPodDeleter> outputInfo(
                     xcb_randr_get_output_info_reply(xcb_connection(), outputInfoCookie, NULL));
 
-                screen = createScreen(virtualDesktop, output.output, outputInfo.data());
-                qCDebug(lcQpaScreen) << "output" << screen->name() << "is connected and enabled";
-
-                screen->setPrimary(checkOutputIsPrimary(output.window, output.output));
-                foreach (QXcbScreen *otherScreen, m_screens)
-                    if (otherScreen->root() == output.window)
-                        otherScreen->addVirtualSibling(screen);
-                m_screens << screen;
-                QXcbIntegration::instance()->screenAdded(screen, screen->isPrimary());
-            }
-            // else ignore disabled screens
-        } else if (screen) {
-            // Screen has been disabled -> remove
-            if (output.crtc == XCB_NONE && output.mode == XCB_NONE) {
-                qCDebug(lcQpaScreen) << "output" << screen->name() << "has been disabled";
-                m_screens.removeOne(screen);
-                foreach (QXcbScreen *otherScreen, m_screens)
-                    otherScreen->removeVirtualSibling((QPlatformScreen *) screen);
-                QXcbIntegration::instance()->destroyScreen(screen);
-            } else {
-                // Just update existing screen
-                screen->updateGeometry(output.config_timestamp);
-                const bool wasPrimary = screen->isPrimary();
-                screen->setPrimary(checkOutputIsPrimary(output.window, output.output));
-                if (screen->mode() != output.mode)
-                    screen->updateRefreshRate(output.mode);
-
-                // If the screen became primary, reshuffle the order in QGuiApplicationPrivate
-                // TODO: add a proper mechanism for updating primary screen
-                if (!wasPrimary && screen->isPrimary()) {
-                    QScreen *realScreen = static_cast<QPlatformScreen*>(screen)->screen();
-                    QGuiApplicationPrivate::screen_list.removeOne(realScreen);
-                    QGuiApplicationPrivate::screen_list.prepend(realScreen);
-                    m_screens.removeOne(screen);
-                    m_screens.prepend(screen);
+                // Find a fake screen
+                foreach (QPlatformScreen *scr, virtualDesktop->screens()) {
+                    QXcbScreen *xcbScreen = (QXcbScreen *)scr;
+                    if (xcbScreen->output() == XCB_NONE) {
+                        screen = xcbScreen;
+                        break;
+                    }
                 }
+
+                if (screen) {
+                    QString nameWas = screen->name();
+                    // Transform the fake screen into a physical screen
+                    screen->setOutput(output.output, outputInfo.data());
+                    updateScreen(screen, output);
+                    qCDebug(lcQpaScreen) << "output" << screen->name()
+                                         << "is connected and enabled; was fake:" << nameWas;
+                } else {
+                    screen = createScreen(virtualDesktop, output, outputInfo.data());
+                    qCDebug(lcQpaScreen) << "output" << screen->name() << "is connected and enabled";
+                }
+            }
+        } else if (screen) {
+            if (output.crtc == XCB_NONE && output.mode == XCB_NONE) {
+                // Screen has been disabled
+                xcb_randr_get_output_info_cookie_t outputInfoCookie =
+                    xcb_randr_get_output_info(xcb_connection(), output.output, output.config_timestamp);
+                QScopedPointer<xcb_randr_get_output_info_reply_t, QScopedPointerPodDeleter> outputInfo(
+                    xcb_randr_get_output_info_reply(xcb_connection(), outputInfoCookie, NULL));
+                if (outputInfo->crtc == XCB_NONE) {
+                    qCDebug(lcQpaScreen) << "output" << screen->name() << "has been disabled";
+                    destroyScreen(screen);
+                } else {
+                    qCDebug(lcQpaScreen) << "output" << screen->name() << "has been temporarily disabled for the mode switch";
+                    // Reset crtc to skip RRCrtcChangeNotify events,
+                    // because they may be invalid in the middle of the mode switch
+                    screen->setCrtc(XCB_NONE);
+                }
+            } else {
+                updateScreen(screen, output);
                 qCDebug(lcQpaScreen) << "output has changed" << screen;
             }
         }
+
+        qCDebug(lcQpaScreen) << "primary output is" << m_screens.first()->name();
+    }
+}
+
+bool QXcbConnection::checkOutputIsPrimary(xcb_window_t rootWindow, xcb_randr_output_t output)
+{
+    xcb_generic_error_t *error = 0;
+    xcb_randr_get_output_primary_cookie_t primaryCookie =
+        xcb_randr_get_output_primary(xcb_connection(), rootWindow);
+    QScopedPointer<xcb_randr_get_output_primary_reply_t, QScopedPointerPodDeleter> primary (
+        xcb_randr_get_output_primary_reply(xcb_connection(), primaryCookie, &error));
+    if (!primary || error) {
+        qWarning("failed to get the primary output of the screen");
+        free(error);
+        error = NULL;
+    }
+    const bool isPrimary = primary ? (primary->output == output) : false;
+
+    return isPrimary;
+}
+
+void QXcbConnection::updateScreen(QXcbScreen *screen, const xcb_randr_output_change_t &outputChange)
+{
+    screen->setCrtc(outputChange.crtc); // Set the new crtc, because it can be invalid
+    screen->updateGeometry(outputChange.config_timestamp);
+    if (screen->mode() != outputChange.mode)
+        screen->updateRefreshRate(outputChange.mode);
+    // Only screen which belongs to the primary virtual desktop can be a primary screen
+    if (screen->screenNumber() == m_primaryScreenNumber) {
+        if (!screen->isPrimary() && checkOutputIsPrimary(outputChange.window, outputChange.output)) {
+            screen->setPrimary(true);
+
+            // If the screen became primary, reshuffle the order in QGuiApplicationPrivate
+            const int idx = m_screens.indexOf(screen);
+            if (idx > 0) {
+                m_screens.first()->setPrimary(false);
+                m_screens.swap(0, idx);
+            }
+            screen->virtualDesktop()->setPrimaryScreen(screen);
+            QXcbIntegration::instance()->setPrimaryScreen(screen);
+        }
+    }
+}
+
+QXcbScreen *QXcbConnection::createScreen(QXcbVirtualDesktop *virtualDesktop,
+                                         const xcb_randr_output_change_t &outputChange,
+                                         xcb_randr_get_output_info_reply_t *outputInfo)
+{
+    QXcbScreen *screen = new QXcbScreen(this, virtualDesktop, outputChange.output, outputInfo);
+    // Only screen which belongs to the primary virtual desktop can be a primary screen
+    if (screen->screenNumber() == m_primaryScreenNumber)
+        screen->setPrimary(checkOutputIsPrimary(outputChange.window, outputChange.output));
+
+    if (screen->isPrimary()) {
         if (!m_screens.isEmpty())
-            qCDebug(lcQpaScreen) << "primary output is" << m_screens.first()->name();
-        else
-            qCDebug(lcQpaScreen) << "no outputs";
+            m_screens.first()->setPrimary(false);
+
+        m_screens.prepend(screen);
+    } else {
+        m_screens.append(screen);
+    }
+    virtualDesktop->addScreen(screen);
+    QXcbIntegration::instance()->screenAdded(screen, screen->isPrimary());
+
+    return screen;
+}
+
+void QXcbConnection::destroyScreen(QXcbScreen *screen)
+{
+    QXcbVirtualDesktop *virtualDesktop = screen->virtualDesktop();
+    if (virtualDesktop->screens().count() == 1) {
+        // If there are no other screens on the same virtual desktop,
+        // then transform the physical screen into a fake screen.
+        const QString nameWas = screen->name();
+        screen->setOutput(XCB_NONE, Q_NULLPTR);
+        qCDebug(lcQpaScreen) << "transformed" << nameWas << "to fake" << screen;
+    } else {
+        // There is more than one screen on the same virtual desktop, remove the screen
+        m_screens.removeOne(screen);
+        virtualDesktop->removeScreen(screen);
+
+        // When primary screen is removed, set the new primary screen
+        // which belongs to the primary virtual desktop.
+        if (screen->isPrimary()) {
+            QXcbScreen *newPrimary = (QXcbScreen *)virtualDesktop->screens().at(0);
+            newPrimary->setPrimary(true);
+            const int idx = m_screens.indexOf(newPrimary);
+            if (idx > 0)
+                m_screens.swap(0, idx);
+            QXcbIntegration::instance()->setPrimaryScreen(newPrimary);
+        }
+
+        QXcbIntegration::instance()->destroyScreen(screen);
     }
 }
 
@@ -293,8 +377,7 @@ void QXcbConnection::initializeScreens()
 {
     xcb_screen_iterator_t it = xcb_setup_roots_iterator(m_setup);
     int xcbScreenNumber = 0;    // screen number in the xcb sense
-    QXcbScreen* primaryScreen = Q_NULLPTR;
-    bool hasOutputs = false;
+    QXcbScreen *primaryScreen = Q_NULLPTR;
     while (it.rem) {
         // Each "screen" in xcb terminology is a virtual desktop,
         // potentially a collection of separate juxtaposed monitors.
@@ -303,8 +386,6 @@ void QXcbConnection::initializeScreens()
         xcb_screen_t *xcbScreen = it.data;
         QXcbVirtualDesktop *virtualDesktop = new QXcbVirtualDesktop(this, xcbScreen, xcbScreenNumber);
         m_virtualDesktops.append(virtualDesktop);
-        QList<QPlatformScreen *> siblings;
-        int outputCount = 0;
         if (has_randr_extension) {
             xcb_generic_error_t *error = NULL;
             // RRGetScreenResourcesCurrent is fast but it may return nothing if the
@@ -321,7 +402,7 @@ void QXcbConnection::initializeScreens()
             } else {
                 xcb_timestamp_t timestamp;
                 xcb_randr_output_t *outputs = Q_NULLPTR;
-                outputCount = xcb_randr_get_screen_resources_current_outputs_length(resources_current.data());
+                int outputCount = xcb_randr_get_screen_resources_current_outputs_length(resources_current.data());
                 if (outputCount) {
                     timestamp = resources_current->config_timestamp;
                     outputs = xcb_randr_get_screen_resources_current_outputs(resources_current.data());
@@ -348,6 +429,7 @@ void QXcbConnection::initializeScreens()
                         qWarning("failed to get the primary output of the screen");
                         free(error);
                     } else {
+                        QList<QPlatformScreen *> siblings;
                         for (int i = 0; i < outputCount; i++) {
                             QScopedPointer<xcb_randr_get_output_info_reply_t, QScopedPointerPodDeleter> output(
                                     xcb_randr_get_output_info_reply(xcb_connection(),
@@ -371,9 +453,8 @@ void QXcbConnection::initializeScreens()
                                 continue;
                             }
 
-                            QXcbScreen *screen = createScreen(virtualDesktop, outputs[i], output.data());
+                            QXcbScreen *screen = new QXcbScreen(this, virtualDesktop, outputs[i], output.data());
                             siblings << screen;
-                            hasOutputs = true;
                             m_screens << screen;
 
                             // There can be multiple outputs per screen, use either
@@ -390,49 +471,49 @@ void QXcbConnection::initializeScreens()
                                 }
                             }
                         }
+                        virtualDesktop->setScreens(siblings);
                     }
                 }
             }
         }
-        foreach (QPlatformScreen* s, siblings)
-            ((QXcbScreen*)s)->setVirtualSiblings(siblings);
+        if (virtualDesktop->screens().isEmpty()) {
+            // If there are no XRandR outputs or XRandR extension is missing,
+            // then create a fake/legacy screen.
+            QXcbScreen *screen = new QXcbScreen(this, virtualDesktop, XCB_NONE, Q_NULLPTR);
+            qCDebug(lcQpaScreen) << "created fake screen" << screen;
+            m_screens << screen;
+            if (m_primaryScreenNumber == xcbScreenNumber) {
+                primaryScreen = screen;
+                primaryScreen->setPrimary(true);
+            }
+            virtualDesktop->addScreen(screen);
+        }
         xcb_screen_next(&it);
         ++xcbScreenNumber;
     } // for each xcb screen
 
-    // If there's no randr extension, or there was some error above, or we found a
-    // screen which doesn't have outputs for some other reason (e.g. on VNC or ssh -X),
-    // but the dimensions are known anyway, and we don't already have any lingering
-    // (possibly disconnected) screens, then showing windows should be possible,
-    // so create one screen. (QTBUG-31389)
-    QXcbVirtualDesktop *virtualDesktop = m_virtualDesktops.value(0);
-    if (virtualDesktop && !hasOutputs && !virtualDesktop->size().isEmpty() && m_screens.isEmpty()) {
-        QXcbScreen *screen = createScreen(virtualDesktop, 0, Q_NULLPTR);
-        screen->setVirtualSiblings(QList<QPlatformScreen *>() << screen);
-        m_screens << screen;
-        primaryScreen = screen;
-        primaryScreen->setPrimary(true);
-        qCDebug(lcQpaScreen) << "found a screen with zero outputs" << screen;
-    }
+    foreach (QXcbVirtualDesktop *virtualDesktop, m_virtualDesktops)
+        virtualDesktop->subscribeToXFixesSelectionNotify();
 
-    // Ensure the primary screen is first in the list
-    if (primaryScreen) {
-        Q_ASSERT(!m_screens.isEmpty());
-        if (m_screens.first() != primaryScreen) {
-            m_screens.removeOne(primaryScreen);
-            m_screens.prepend(primaryScreen);
+    if (m_virtualDesktops.isEmpty()) {
+        qFatal("QXcbConnection: no screens available");
+    } else {
+        // Ensure the primary screen is first on the list
+        if (primaryScreen) {
+            if (m_screens.first() != primaryScreen) {
+                m_screens.removeOne(primaryScreen);
+                m_screens.prepend(primaryScreen);
+            }
         }
-    }
 
-    // Push the screens to QApplication
-    QXcbIntegration *integration = QXcbIntegration::instance();
-    foreach (QXcbScreen* screen, m_screens) {
-        qCDebug(lcQpaScreen) << "adding" << screen << "(Primary:" << screen->isPrimary() << ")";
-        integration->screenAdded(screen, screen->isPrimary());
-    }
+        // Push the screens to QGuiApplication
+        foreach (QXcbScreen *screen, m_screens) {
+            qCDebug(lcQpaScreen) << "adding" << screen << "(Primary:" << screen->isPrimary() << ")";
+            QXcbIntegration::instance()->screenAdded(screen, screen->isPrimary());
+        }
 
-    if (!m_screens.isEmpty())
         qCDebug(lcQpaScreen) << "primary output is" << m_screens.first()->name();
+    }
 }
 
 QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, xcb_visualid_t defaultVisualId, const char *displayName)
@@ -458,6 +539,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     , m_systemTrayTracker(0)
     , m_glIntegration(Q_NULLPTR)
     , m_xiGrab(false)
+    , m_qtSelectionOwner(0)
 {
 #ifdef XCB_USE_XLIB
     Display *dpy = XOpenDisplay(m_displayName.constData());
@@ -502,12 +584,9 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     m_netWmUserTime = XCB_CURRENT_TIME;
 
     initializeXRandr();
+    initializeXFixes();
     initializeScreens();
 
-    if (m_screens.isEmpty())
-        qFatal("QXcbConnection: no screens available");
-
-    initializeXFixes();
     initializeXRender();
     m_xi2Enabled = false;
 #if defined(XCB_USE_XINPUT2)
@@ -556,9 +635,6 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
         qCDebug(QT_XCB_GLINTEGRATION) << "Failed to create xcb gl-integration";
 
     sync();
-
-    if (qEnvironmentVariableIsEmpty("QT_IM_MODULE"))
-        qputenv("QT_IM_MODULE", QByteArray("compose"));
 }
 
 QXcbConnection::~QXcbConnection()
@@ -1041,8 +1117,12 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         case XCB_FOCUS_OUT:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_out_event_t, event, handleFocusOutEvent);
         case XCB_KEY_PRESS:
-            m_keyboard->updateXKBStateFromCore(((xcb_key_press_event_t *)event)->state);
+        {
+            xcb_key_press_event_t *kp = (xcb_key_press_event_t *)event;
+            m_keyboard->updateXKBStateFromCore(kp->state);
+            setTime(kp->time);
             HANDLE_KEYBOARD_EVENT(xcb_key_press_event_t, handleKeyPressEvent);
+        }
         case XCB_KEY_RELEASE:
             m_keyboard->updateXKBStateFromCore(((xcb_key_release_event_t *)event)->state);
             HANDLE_KEYBOARD_EVENT(xcb_key_release_event_t, handleKeyReleaseEvent);
@@ -1076,12 +1156,21 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             handled = false;
             break;
         case XCB_PROPERTY_NOTIFY:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_property_notify_event_t, window, handlePropertyNotifyEvent);
+        {
+            xcb_property_notify_event_t *pn = (xcb_property_notify_event_t *)event;
+            if (pn->atom == atom(QXcbAtom::_NET_WORKAREA)) {
+                QXcbVirtualDesktop *virtualDesktop = virtualDesktopForRootWindow(pn->window);
+                if (virtualDesktop)
+                    virtualDesktop->updateWorkArea();
+            } else {
+                HANDLE_PLATFORM_WINDOW_EVENT(xcb_property_notify_event_t, window, handlePropertyNotifyEvent);
+            }
             break;
+        }
 #if defined(XCB_USE_XINPUT2)
         case XCB_GE_GENERIC:
             // Here the windowEventListener is invoked from xi2HandleEvent()
-            if (m_xi2Enabled)
+            if (m_xi2Enabled && isXIEvent(event, m_xiOpCode))
                 xi2HandleEvent(reinterpret_cast<xcb_ge_event_t *>(event));
             break;
 #endif
@@ -1093,10 +1182,14 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
 
     if (!handled) {
         if (response_type == xfixes_first_event + XCB_XFIXES_SELECTION_NOTIFY) {
-            setTime(((xcb_xfixes_selection_notify_event_t *)event)->timestamp);
+            xcb_xfixes_selection_notify_event_t *notify_event = (xcb_xfixes_selection_notify_event_t *)event;
+            setTime(notify_event->timestamp);
 #ifndef QT_NO_CLIPBOARD
-            m_clipboard->handleXFixesSelectionRequest((xcb_xfixes_selection_notify_event_t *)event);
+            m_clipboard->handleXFixesSelectionRequest(notify_event);
 #endif
+            foreach (QXcbVirtualDesktop *virtualDesktop, m_virtualDesktops)
+                virtualDesktop->handleXFixesSelectionNotify(notify_event);
+
             handled = true;
         } else if (has_randr_extension && response_type == xrandr_first_event + XCB_RANDR_NOTIFY) {
             updateScreens((xcb_randr_notify_event_t *)event);
@@ -1153,21 +1246,13 @@ void QXcbConnection::addPeekFunc(PeekFunc f)
 
 QXcbEventReader::QXcbEventReader(QXcbConnection *connection)
     : m_connection(connection)
-    , m_xcb_poll_for_queued_event(0)
 {
-#ifdef RTLD_DEFAULT
-    m_xcb_poll_for_queued_event = (XcbPollForQueuedEventFunctionPointer)dlsym(RTLD_DEFAULT, "xcb_poll_for_queued_event");
-#endif
-
-#ifdef Q_XCB_DEBUG
-    if (m_xcb_poll_for_queued_event)
-        qDebug("Using threaded event reader with xcb_poll_for_queued_event");
-#endif
+    checkXcbPollForQueuedEvent();
 }
 
 void QXcbEventReader::start()
 {
-    if (m_xcb_poll_for_queued_event) {
+    if (local_xcb_poll_for_queued_event) {
         connect(this, SIGNAL(eventPending()), m_connection, SLOT(processXcbEvents()), Qt::QueuedConnection);
         connect(this, SIGNAL(finished()), m_connection, SLOT(processXcbEvents()));
         QThread::start();
@@ -1193,7 +1278,7 @@ void QXcbEventReader::registerEventDispatcher(QAbstractEventDispatcher *dispatch
     // flush the xcb connection before the EventDispatcher is going to block
     // In the non-threaded case processXcbEvents is called before going to block,
     // which flushes the connection.
-    if (m_xcb_poll_for_queued_event)
+    if (local_xcb_poll_for_queued_event)
         connect(dispatcher, SIGNAL(aboutToBlock()), m_connection, SLOT(flush()));
 }
 
@@ -1203,7 +1288,7 @@ void QXcbEventReader::run()
     while (m_connection && (event = xcb_wait_for_event(m_connection->xcb_connection()))) {
         m_mutex.lock();
         addEvent(event);
-        while (m_connection && (event = m_xcb_poll_for_queued_event(m_connection->xcb_connection())))
+        while (m_connection && (event = local_xcb_poll_for_queued_event(m_connection->xcb_connection())))
             addEvent(event);
         m_mutex.unlock();
         emit eventPending();
@@ -1227,7 +1312,7 @@ void QXcbEventReader::addEvent(xcb_generic_event_t *event)
 QXcbEventArray *QXcbEventReader::lock()
 {
     m_mutex.lock();
-    if (!m_xcb_poll_for_queued_event) {
+    if (!local_xcb_poll_for_queued_event) {
         while (xcb_generic_event_t *event = xcb_poll_for_event(m_connection->xcb_connection()))
             m_events << event;
     }
@@ -1262,10 +1347,12 @@ void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom a, uint id)
     memset(&event, 0, sizeof(event));
 
     const xcb_window_t eventListener = xcb_generate_id(m_connection);
+    xcb_screen_iterator_t it = xcb_setup_roots_iterator(m_setup);
+    xcb_screen_t *screen = it.data;
     Q_XCB_CALL(xcb_create_window(m_connection, XCB_COPY_FROM_PARENT,
-                                 eventListener, m_screens.at(0)->root(),
+                                 eventListener, screen->root,
                                  0, 0, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY,
-                                 m_screens.at(0)->screen()->root_visual, 0, 0));
+                                 screen->root_visual, 0, 0));
 
     event.response_type = XCB_CLIENT_MESSAGE;
     event.format = 32;
@@ -1329,6 +1416,37 @@ xcb_timestamp_t QXcbConnection::getTimestamp()
     xcb_delete_property(xcb_connection(), root_win, atom(QXcbAtom::CLIP_TEMPORARY));
 
     return timestamp;
+}
+
+xcb_window_t QXcbConnection::getSelectionOwner(xcb_atom_t atom) const
+{
+    xcb_connection_t *c = xcb_connection();
+    xcb_get_selection_owner_cookie_t cookie = xcb_get_selection_owner(c, atom);
+    xcb_get_selection_owner_reply_t *reply;
+    reply = xcb_get_selection_owner_reply(c, cookie, 0);
+    xcb_window_t win = reply->owner;
+    free(reply);
+    return win;
+}
+
+xcb_window_t QXcbConnection::getQtSelectionOwner()
+{
+    if (!m_qtSelectionOwner) {
+        xcb_screen_t *xcbScreen = primaryVirtualDesktop()->screen();
+        int x = 0, y = 0, w = 3, h = 3;
+        m_qtSelectionOwner = xcb_generate_id(xcb_connection());
+        Q_XCB_CALL(xcb_create_window(xcb_connection(),
+                                     XCB_COPY_FROM_PARENT,               // depth -- same as root
+                                     m_qtSelectionOwner,                 // window id
+                                     xcbScreen->root,                    // parent window id
+                                     x, y, w, h,
+                                     0,                                  // border width
+                                     XCB_WINDOW_CLASS_INPUT_OUTPUT,      // window class
+                                     xcbScreen->root_visual,             // visual
+                                     0,                                  // value mask
+                                     0));                                // value list
+    }
+    return m_qtSelectionOwner;
 }
 
 xcb_window_t QXcbConnection::rootWindow()
@@ -1411,6 +1529,105 @@ void *QXcbConnection::createVisualInfoForDefaultVisualId() const
 
 #endif
 
+#if defined(XCB_USE_XINPUT2)
+// it is safe to cast XI_* events here as long as we are only touching the first 32 bytes,
+// after that position event needs memmove, see xi2PrepareXIGenericDeviceEvent
+static inline bool isXIType(xcb_generic_event_t *event, int opCode, uint16_t type)
+{
+    if (!isXIEvent(event, opCode))
+        return false;
+
+    xXIGenericDeviceEvent *xiEvent = reinterpret_cast<xXIGenericDeviceEvent *>(event);
+    return xiEvent->evtype == type;
+}
+#endif
+static inline bool isValid(xcb_generic_event_t *event)
+{
+    return event && (event->response_type & ~0x80);
+}
+
+/*! \internal
+
+    Compresses events of the same type to avoid swamping the event queue.
+    If event compression is not desired there are several options what developers can do:
+
+    1) Write responsive applications. We drop events that have been buffered in the event
+       queue while waiting on unresponsive GUI thread.
+    2) Use QAbstractNativeEventFilter to get all events from X connection. This is not optimal
+       because it requires working with native event types.
+    3) Or add public API to Qt for disabling event compression QTBUG-44964
+
+*/
+bool QXcbConnection::compressEvent(xcb_generic_event_t *event, int currentIndex, QXcbEventArray *eventqueue) const
+{
+    uint responseType = event->response_type & ~0x80;
+    int nextIndex = currentIndex + 1;
+
+    if (responseType == XCB_MOTION_NOTIFY) {
+        // compress XCB_MOTION_NOTIFY notify events
+        for (int j = nextIndex; j < eventqueue->size(); ++j) {
+            xcb_generic_event_t *next = eventqueue->at(j);
+            if (!isValid(next))
+                continue;
+            if (next->response_type == XCB_MOTION_NOTIFY)
+                return true;
+        }
+        return false;
+    }
+#if defined(XCB_USE_XINPUT2)
+    // compress XI_* events
+    if (responseType == XCB_GE_GENERIC) {
+        if (!m_xi2Enabled)
+            return false;
+
+        // compress XI_Motion
+        if (isXIType(event, m_xiOpCode, XI_Motion)) {
+            for (int j = nextIndex; j < eventqueue->size(); ++j) {
+                xcb_generic_event_t *next = eventqueue->at(j);
+                if (!isValid(next))
+                    continue;
+                if (isXIType(next, m_xiOpCode, XI_Motion))
+                    return true;
+            }
+            return false;
+        }
+#ifdef XCB_USE_XINPUT22
+        // compress XI_TouchUpdate for the same touch point id
+        if (isXIType(event, m_xiOpCode, XI_TouchUpdate)) {
+            xXIDeviceEvent *xiDeviceEvent = reinterpret_cast<xXIDeviceEvent *>(event);
+            uint32_t id = xiDeviceEvent->detail % INT_MAX;
+            for (int j = nextIndex; j < eventqueue->size(); ++j) {
+                xcb_generic_event_t *next = eventqueue->at(j);
+                if (!isValid(next))
+                    continue;
+                if (isXIType(next, m_xiOpCode, XI_TouchUpdate)) {
+                    xXIDeviceEvent *xiDeviceNextEvent = reinterpret_cast<xXIDeviceEvent *>(next);
+                    if (id == xiDeviceNextEvent->detail % INT_MAX)
+                        return true;
+                }
+            }
+            return false;
+        }
+#endif
+        return false;
+    }
+#endif
+    if (responseType == XCB_CONFIGURE_NOTIFY) {
+        // compress multiple configure notify events for the same window
+        for (int j = nextIndex; j < eventqueue->size(); ++j) {
+            xcb_generic_event_t *next = eventqueue->at(j);
+            if (isValid(next) && next->response_type == XCB_CONFIGURE_NOTIFY
+                && ((xcb_configure_notify_event_t *)next)->event == ((xcb_configure_notify_event_t*)event)->event)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    return false;
+}
+
 void QXcbConnection::processXcbEvents()
 {
     int connection_error = xcb_connection_has_error(xcb_connection());
@@ -1421,61 +1638,39 @@ void QXcbConnection::processXcbEvents()
 
     QXcbEventArray *eventqueue = m_reader->lock();
 
-    for(int i = 0; i < eventqueue->size(); ++i) {
+    for (int i = 0; i < eventqueue->size(); ++i) {
         xcb_generic_event_t *event = eventqueue->at(i);
         if (!event)
             continue;
         QScopedPointer<xcb_generic_event_t, QScopedPointerPodDeleter> eventGuard(event);
         (*eventqueue)[i] = 0;
 
-        uint response_type = event->response_type & ~0x80;
-
-        if (!response_type) {
+        if (!(event->response_type & ~0x80)) {
             handleXcbError((xcb_generic_error_t *)event);
-        } else {
-            if (response_type == XCB_MOTION_NOTIFY) {
-                // compress multiple motion notify events in a row
-                // to avoid swamping the event queue
-                xcb_generic_event_t *next = eventqueue->value(i+1, 0);
-                if (next && (next->response_type & ~0x80) == XCB_MOTION_NOTIFY)
-                    continue;
-            }
-
-            if (response_type == XCB_CONFIGURE_NOTIFY) {
-                // compress multiple configure notify events for the same window
-                bool found = false;
-                for (int j = i; j < eventqueue->size(); ++j) {
-                    xcb_generic_event_t *other = eventqueue->at(j);
-                    if (other && (other->response_type & ~0x80) == XCB_CONFIGURE_NOTIFY
-                        && ((xcb_configure_notify_event_t *)other)->event == ((xcb_configure_notify_event_t *)event)->event)
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-                if (found)
-                    continue;
-            }
-
-            bool accepted = false;
-            if (clipboard()->processIncr())
-                clipboard()->incrTransactionPeeker(event, accepted);
-            if (accepted)
-                continue;
-
-            QVector<PeekFunc>::iterator it = m_peekFuncs.begin();
-            while (it != m_peekFuncs.end()) {
-                // These callbacks return true if the event is what they were
-                // waiting for, remove them from the list in that case.
-                if ((*it)(this, event))
-                    it = m_peekFuncs.erase(it);
-                else
-                    ++it;
-            }
-            m_reader->unlock();
-            handleXcbEvent(event);
-            m_reader->lock();
+            continue;
         }
+
+        if (compressEvent(event, i, eventqueue))
+            continue;
+
+        bool accepted = false;
+        if (clipboard()->processIncr())
+            clipboard()->incrTransactionPeeker(event, accepted);
+        if (accepted)
+            continue;
+
+        QVector<PeekFunc>::iterator it = m_peekFuncs.begin();
+        while (it != m_peekFuncs.end()) {
+            // These callbacks return true if the event is what they were
+            // waiting for, remove them from the list in that case.
+            if ((*it)(this, event))
+                it = m_peekFuncs.erase(it);
+            else
+                ++it;
+        }
+        m_reader->unlock();
+        handleXcbEvent(event);
+        m_reader->lock();
     }
 
     eventqueue->clear();
@@ -1720,7 +1915,8 @@ static const char * xcb_atomnames = {
     "_XSETTINGS_SETTINGS\0"
     "_COMPIZ_DECOR_PENDING\0"
     "_COMPIZ_DECOR_REQUEST\0"
-    "_COMPIZ_DECOR_DELETE_PIXMAP\0" // \0\0 terminates loop.
+    "_COMPIZ_DECOR_DELETE_PIXMAP\0"
+    "_COMPIZ_TOOLKIT_ACTION\0" // \0\0 terminates loop.
 };
 
 QXcbAtom::Atom QXcbConnection::qatom(xcb_atom_t xatom) const
@@ -2017,34 +2213,13 @@ bool QXcbConnection::xi2GetValuatorValueIfSet(void *event, int valuatorNum, doub
     return true;
 }
 
-// Starting from the xcb version 1.9.3 struct xcb_ge_event_t has changed:
-// - "pad0" became "extension"
-// - "pad1" and "pad" became "pad0"
-// New and old version of this struct share the following fields:
-// NOTE: API might change again in the next release of xcb in which case this comment will
-// need to be updated to reflect the reality.
-typedef struct qt_xcb_ge_event_t {
-    uint8_t  response_type;
-    uint8_t  extension;
-    uint16_t sequence;
-    uint32_t length;
-    uint16_t event_type;
-} qt_xcb_ge_event_t;
-
-bool QXcbConnection::xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *ev, int opCode)
+void QXcbConnection::xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event)
 {
-    qt_xcb_ge_event_t *event = (qt_xcb_ge_event_t *)ev;
-    // xGenericEvent has "extension" on the second byte, the same is true for xcb_ge_event_t starting from
-    // the xcb version 1.9.3, prior to that it was called "pad0".
-    if (event->extension == opCode) {
-        // xcb event structs contain stuff that wasn't on the wire, the full_sequence field
-        // adds an extra 4 bytes and generic events cookie data is on the wire right after the standard 32 bytes.
-        // Move this data back to have the same layout in memory as it was on the wire
-        // and allow casting, overwriting the full_sequence field.
-        memmove((char*) event + 32, (char*) event + 36, event->length * 4);
-        return true;
-    }
-    return false;
+    // xcb event structs contain stuff that wasn't on the wire, the full_sequence field
+    // adds an extra 4 bytes and generic events cookie data is on the wire right after the standard 32 bytes.
+    // Move this data back to have the same layout in memory as it was on the wire
+    // and allow casting, overwriting the full_sequence field.
+    memmove((char*) event + 32, (char*) event + 36, event->length * 4);
 }
 #endif // defined(XCB_USE_XINPUT2)
 

@@ -101,7 +101,11 @@ HANDLE QSharedMemoryPrivate::handle()
         Q_UNIMPLEMENTED();
         hand = 0;
 #elif defined(Q_OS_WINRT)
+#if _MSC_VER >= 1900
+        hand = OpenFileMappingFromApp(FILE_MAP_ALL_ACCESS, FALSE, reinterpret_cast<PCWSTR>(nativeKey.utf16()));
+#else
         hand = CreateFileMappingFromApp(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0, (PCWSTR)nativeKey.utf16());
+#endif
 #elif defined(Q_OS_WINCE)
         // This works for opening a mapping too, but always opens it with read/write access in
         // attach as it seems.

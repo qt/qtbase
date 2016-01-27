@@ -143,7 +143,7 @@
 
     if (uiWindow.screen != [UIScreen mainScreen] && self.subviews.count == 1) {
         // Removing the last view of an external screen, go back to mirror mode
-        uiWindow.screen = nil;
+        uiWindow.screen = [UIScreen mainScreen];
         uiWindow.hidden = YES;
     }
 }
@@ -185,13 +185,21 @@
 
 - (void)setFrame:(CGRect)newFrame
 {
-    [super setFrame:CGRectMake(0, 0, CGRectGetWidth(newFrame), CGRectGetHeight(self.window.bounds))];
+    Q_UNUSED(newFrame);
+    Q_ASSERT(!self.window || self.window.rootViewController.view == self);
+
+    // When presenting view controllers our view may be temporarily reparented into a UITransitionView
+    // instead of the UIWindow, and the UITransitionView may have a transform set, so we need to do a
+    // mapping even if we still expect to always be the root view-controller.
+    CGRect transformedWindowBounds = [self.superview convertRect:self.window.bounds fromView:self.window];
+    [super setFrame:transformedWindowBounds];
 }
 
 - (void)setBounds:(CGRect)newBounds
 {
+    Q_UNUSED(newBounds);
     CGRect transformedWindowBounds = [self convertRect:self.window.bounds fromView:self.window];
-    [super setBounds:CGRectMake(0, 0, CGRectGetWidth(newBounds), CGRectGetHeight(transformedWindowBounds))];
+    [super setBounds:CGRectMake(0, 0, CGRectGetWidth(transformedWindowBounds), CGRectGetHeight(transformedWindowBounds))];
 }
 
 - (void)setCenter:(CGPoint)newCenter

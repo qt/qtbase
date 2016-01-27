@@ -276,7 +276,7 @@ void tst_languageChange::retranslatability()
         tempDirPattern += QStringLiteral("languagechangetestdirXXXXXX");
         QTemporaryDir temporaryDir(tempDirPattern);
         temporaryDir.setAutoRemove(true);
-        QVERIFY(temporaryDir.isValid());
+        QVERIFY2(temporaryDir.isValid(), qPrintable(temporaryDir.errorString()));
         const QString finalDir = temporaryDir.path() + QStringLiteral("/finaldir");
         const QString fooName = temporaryDir.path() + QStringLiteral("/foo");
         QDir dir;

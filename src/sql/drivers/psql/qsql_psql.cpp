@@ -449,7 +449,7 @@ QVariant QPSQLResult::data(int i)
     case QVariant::ByteArray: {
         size_t len;
         unsigned char *data = PQunescapeBytea((const unsigned char*)val, &len);
-        QByteArray ba((const char*)data, len);
+        QByteArray ba(reinterpret_cast<const char *>(data), int(len));
         qPQfreemem(data);
         return QVariant(ba);
     }
@@ -1331,6 +1331,9 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
             assignSpecialPsqlFloatValue(field.value().toDouble(), &r);
             if (r.isEmpty())
                 r = QSqlDriver::formatValue(field, trimStrings);
+            break;
+        case QVariant::Uuid:
+            r = QLatin1Char('\'') + field.value().toString() + QLatin1Char('\'');
             break;
         default:
             r = QSqlDriver::formatValue(field, trimStrings);

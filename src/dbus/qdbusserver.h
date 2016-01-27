@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -66,7 +67,9 @@ Q_SIGNALS:
 
 private:
     Q_DISABLE_COPY(QDBusServer)
+    Q_PRIVATE_SLOT(d, void _q_newConnection(QDBusConnectionPrivate*))
     QDBusConnectionPrivate *d;
+    friend class QDBusConnectionPrivate;
 };
 
 QT_END_NAMESPACE

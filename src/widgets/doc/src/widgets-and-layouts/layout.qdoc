@@ -197,7 +197,7 @@
 
 
     \section2 Stretch Factors
-    \keyword stretch factor
+    \target stretch factor
 
     Widgets are normally created without any stretch factor set. When they are
     laid out in a layout the widgets are given a share of space in accordance
@@ -249,7 +249,7 @@
 
     For further guidance when implementing these functions, see the
     \e{Qt Quarterly} article
-    \l{http://doc.qt.digia.com/qq/qq04-height-for-width.html}
+    \l{http://doc.qt.io/archives/qq/qq04-height-for-width.html}
     {Trading Height for Width}.
 
 

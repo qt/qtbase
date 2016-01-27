@@ -70,7 +70,8 @@ public:
     short     hx, hy;
     static bool initialized;
     void update();
-    static QCursorData *setBitmap(const QBitmap &bitmap, const QBitmap &mask, int hotX, int hotY);
+    static QCursorData *setBitmap(const QBitmap &bitmap, const QBitmap &mask, int hotX, int hotY,
+                                  qreal devicePixelRatio);
 };
 
 extern QCursorData *qt_cursorTable[Qt::LastCursor + 1]; // qcursor.cpp

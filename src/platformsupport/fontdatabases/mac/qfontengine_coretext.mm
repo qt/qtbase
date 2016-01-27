@@ -361,16 +361,6 @@ qreal QCoreTextFontEngine::maxCharWidth() const
     return bb.xoff.toReal();
 }
 
-qreal QCoreTextFontEngine::minLeftBearing() const
-{
-    return 0;
-}
-
-qreal QCoreTextFontEngine::minRightBearing() const
-{
-    return 0;
-}
-
 void QCoreTextFontEngine::draw(CGContextRef ctx, qreal x, qreal y, const QTextItemInt &ti, int paintDeviceHeight)
 {
     QVarLengthArray<QFixedPoint> positions;

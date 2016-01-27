@@ -202,7 +202,7 @@ void QTuioHandler::process2DCurAlive(const QOscMessage &message)
 
     for (int i = 1; i < arguments.count(); ++i) {
         if (QMetaType::Type(arguments.at(i).type()) != QMetaType::Int) {
-            qWarning() << "Ignoring malformed TUIO alive message (bad argument on position" << i << arguments << ")";
+            qWarning() << "Ignoring malformed TUIO alive message (bad argument on position" << i << arguments << ')';
             return;
         }
 

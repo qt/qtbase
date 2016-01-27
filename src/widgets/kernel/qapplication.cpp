@@ -339,8 +339,7 @@ void QApplicationPrivate::createEventDispatcher()
         \li  Miscellaneous
         \li  closeAllWindows(),
             startingUp(),
-            closingDown(),
-            type().
+            closingDown().
     \endtable
 
     \sa QCoreApplication, QAbstractEventDispatcher, QEventLoop, QSettings
@@ -399,8 +398,6 @@ void qt_cleanup();
 QStyle *QApplicationPrivate::app_style = 0;        // default application style
 bool QApplicationPrivate::overrides_native_style = false; // whether native QApplication style is
                                                           // overridden, i.e. not native
-QString QApplicationPrivate::styleOverride;        // style override
-
 #ifndef QT_NO_STYLE_STYLESHEET
 QString QApplicationPrivate::styleSheet;           // default application stylesheet
 #endif
@@ -466,6 +463,13 @@ QDesktopWidget *qt_desktopWidget = 0;                // root window widgets
 */
 void QApplicationPrivate::process_cmdline()
 {
+    if (!styleOverride.isEmpty()) {
+        if (app_style) {
+            delete app_style;
+            app_style = 0;
+        }
+    }
+
     // process platform-indep command line
     if (!qt_is_gui_used || !argc)
         return;
@@ -481,13 +485,8 @@ void QApplicationPrivate::process_cmdline()
         QByteArray arg = argv[i];
         if (arg.startsWith("--"))
             arg.remove(0, 1);
-        QString s;
         if (arg == "-qdevel" || arg == "-qdebug") {
             // obsolete argument
-        } else if (arg.indexOf("-style=", 0) != -1) {
-            s = QString::fromLocal8Bit(arg.right(arg.length() - 7).toLower());
-        } else if (arg == "-style" && i < argc-1) {
-            s = QString::fromLocal8Bit(argv[++i]).toLower();
 #ifndef QT_NO_STYLE_STYLESHEET
         } else if (arg == "-stylesheet" && i < argc -1) {
             styleSheet = QLatin1String("file:///");
@@ -500,13 +499,6 @@ void QApplicationPrivate::process_cmdline()
             widgetCount = true;
         } else {
             argv[j++] = argv[i];
-        }
-        if (!s.isEmpty()) {
-            if (app_style) {
-                delete app_style;
-                app_style = 0;
-            }
-            styleOverride = s;
         }
     }
 
@@ -558,7 +550,7 @@ void QApplicationPrivate::process_cmdline()
             and will make the application wait until a debugger connects to it.
     \endlist
 
-    \sa arguments()
+    \sa QCoreApplication::arguments()
 */
 
 #ifdef Q_QDOC
@@ -1906,7 +1898,7 @@ bool QApplicationPrivate::tryCloseAllWidgetWindows(QWindowList *processedWindows
         if (!w->isVisible() || w->data->is_closing)
             break;
         QWindow *window = w->windowHandle();
-        if (!w->close()) // Qt::WA_DeleteOnClose may cause deletion.
+        if (!window->close()) // Qt::WA_DeleteOnClose may cause deletion.
             return false;
         if (window)
             processedWindows->append(window);
@@ -1918,7 +1910,7 @@ bool QApplicationPrivate::tryCloseAllWidgetWindows(QWindowList *processedWindows
         if (w->isVisible() && w->windowType() != Qt::Desktop &&
                 !w->testAttribute(Qt::WA_DontShowOnScreen) && !w->data->is_closing) {
             QWindow *window = w->windowHandle();
-            if (!w->close())  // Qt::WA_DeleteOnClose may cause deletion.
+            if (!window->close())  // Qt::WA_DeleteOnClose may cause deletion.
                 return false;
             if (window)
                 processedWindows->append(window);
@@ -1951,7 +1943,7 @@ bool QApplicationPrivate::tryCloseAllWindows()
     \l quitOnLastWindowClosed to false.
 
     \sa quitOnLastWindowClosed, lastWindowClosed(), QWidget::close(),
-    QWidget::closeEvent(), lastWindowClosed(), quit(), topLevelWidgets(),
+    QWidget::closeEvent(), lastWindowClosed(), QCoreApplication::quit(), topLevelWidgets(),
     QWidget::isWindow()
 */
 void QApplication::closeAllWindows()
@@ -2249,8 +2241,10 @@ void QApplicationPrivate::notifyActiveWindowChange(QWindow *previous)
     QApplication::setActiveWindow(tlw);
     // QTBUG-37126, Active X controls may set the focus on native child widgets.
     if (wnd && tlw && wnd != tlw->windowHandle()) {
-        if (QWidgetWindow *widgetWindow = qobject_cast<QWidgetWindow *>(wnd))
-            widgetWindow->widget()->setFocus(Qt::ActiveWindowFocusReason);
+        if (QWidgetWindow *widgetWindow = qobject_cast<QWidgetWindow *>(wnd)) {
+            if (widgetWindow->widget()->inherits("QAxHostWidget"))
+                widgetWindow->widget()->setFocus(Qt::ActiveWindowFocusReason);
+        }
     }
 }
 
@@ -2969,8 +2963,8 @@ int QApplication::startDragDistance()
     application will have time to exit its event loop and execute code at the
     end of the \c{main()} function, after the QApplication::exec() call.
 
-    \sa quitOnLastWindowClosed, quit(), exit(), processEvents(),
-        QCoreApplication::exec()
+    \sa quitOnLastWindowClosed, QCoreApplication::quit(), QCoreApplication::exit(),
+        QCoreApplication::processEvents(), QCoreApplication::exec()
 */
 int QApplication::exec()
 {

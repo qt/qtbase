@@ -4,7 +4,7 @@
     "entries": [
         {
             "id": 1,
-            "description": "Desktop OpenGL is unreliable on some Intel HD laptops (QTBUG-43263, QTBUG-42240)",
+            "description": "Desktop OpenGL is unreliable on some Intel HD laptops (QTBUG-43263)",
             "vendor_id": "0x8086",
             "device_id": [ "0x0A16" ],
             "os": {
@@ -40,8 +40,44 @@
                "type": "win"
            },
            "features": [
-               "disable_desktopgl",
+               "disable_desktopgl"
            ]
-       }
+       },
+       {
+           "id": 4,
+          "description": "Intel HD Graphics 3000 crashes when initializing the OpenGL driver (QTBUG-42240)",
+          "vendor_id": "0x8086",
+          "device_id": [ "0x0102", "0x0106", "0x010A", "0x0112", "0x0116", "0x0122", "0x0126" ],
+          "os": {
+              "type": "win"
+          },
+          "features": [
+              "disable_desktopgl"
+          ]
+       },
+       {
+           "id": 5,
+           "description": "Intel GMA 3150 (QTBUG-43243), Mobile Intel 945GM (QTBUG-47435) crash",
+           "vendor_id": "0x8086",
+           "device_id": [ "0xA001", "0xA011", "0x27A0" ],
+           "os": {
+               "type": "win"
+           },
+           "features": [
+               "disable_desktopgl", "disable_angle"
+           ]
+        },
+        {
+           "id": 6,
+           "description": "Intel(R) HD Graphics 4000 / 5500 cause crashes on orientation changes in fullscreen mode (QTBUG-49541)",
+           "vendor_id": "0x8086",
+           "device_id": [ "0x0166", "0x1616" ],
+           "os": {
+               "type": "win"
+           },
+           "features": [
+               "disable_rotation"
+           ]
+        }
     ]
 }

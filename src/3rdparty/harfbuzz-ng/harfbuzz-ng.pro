@@ -7,7 +7,8 @@ CONFIG += \
 
 load(qt_helper_lib)
 
-DEFINES += HAVE_OT HAVE_QT5_ATOMICS HB_NO_UNICODE_FUNCS HB_DISABLE_DEPRECATED
+DEFINES += HAVE_CONFIG_H
+DEFINES += HAVE_OT HB_NO_UNICODE_FUNCS HB_DISABLE_DEPRECATED
 
 # platform/compiler specific definitions
 DEFINES += HAVE_ATEXIT
@@ -45,6 +46,7 @@ HEADERS += \
     $$PWD/src/hb-open-file-private.hh \
     $$PWD/src/hb-open-type-private.hh \
     $$PWD/src/hb-ot-cmap-table.hh \
+    $$PWD/src/hb-ot-glyf-table.hh \
     $$PWD/src/hb-ot-head-table.hh \
     $$PWD/src/hb-ot-hhea-table.hh \
     $$PWD/src/hb-ot-hmtx-table.hh \
@@ -86,9 +88,10 @@ SOURCES += \
     $$PWD/src/hb-ot-shape-complex-indic.cc \
     $$PWD/src/hb-ot-shape-complex-indic-table.cc \
     $$PWD/src/hb-ot-shape-complex-myanmar.cc \
-    $$PWD/src/hb-ot-shape-complex-sea.cc \
     $$PWD/src/hb-ot-shape-complex-thai.cc \
     $$PWD/src/hb-ot-shape-complex-tibetan.cc \
+    $$PWD/src/hb-ot-shape-complex-use.cc \
+    $$PWD/src/hb-ot-shape-complex-use-table.cc \
     $$PWD/src/hb-ot-shape-fallback.cc \
     $$PWD/src/hb-ot-shape-normalize.cc
 
@@ -102,12 +105,14 @@ HEADERS += \
     $$PWD/src/hb-ot-layout-private.hh \
     $$PWD/src/hb-ot-map-private.hh \
     $$PWD/src/hb-ot-shape-complex-arabic-fallback.hh \
+    $$PWD/src/hb-ot-shape-complex-arabic-private.hh \
     $$PWD/src/hb-ot-shape-complex-arabic-table.hh \
     $$PWD/src/hb-ot-shape-complex-indic-machine.hh \
     $$PWD/src/hb-ot-shape-complex-indic-private.hh \
     $$PWD/src/hb-ot-shape-complex-myanmar-machine.hh \
     $$PWD/src/hb-ot-shape-complex-private.hh \
-    $$PWD/src/hb-ot-shape-complex-sea-machine.hh \
+    $$PWD/src/hb-ot-shape-complex-use-machine.hh \
+    $$PWD/src/hb-ot-shape-complex-use-private.hh \
     $$PWD/src/hb-ot-shape-fallback-private.hh \
     $$PWD/src/hb-ot-shape-normalize-private.hh \
     $$PWD/src/hb-ot-shape-private.hh

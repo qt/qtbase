@@ -1237,6 +1237,35 @@ void QMainWindow::removeDockWidget(QDockWidget *dockwidget)
 Qt::DockWidgetArea QMainWindow::dockWidgetArea(QDockWidget *dockwidget) const
 { return d_func()->layout->dockWidgetArea(dockwidget); }
 
+
+/*!
+    \since 5.6
+    Resizes the dock widgets in the list \a docks to the corresponding size in
+    pixels from the list \a sizes. If \a orientation is Qt::Horizontal, adjusts
+    the width, otherwise adjusts the height of the dock widgets.
+    The sizes will be adjusted such that the maximum and the minimum sizes are
+    respected and the QMainWindow itself will not be resized.
+    Any additional/missing space is distributed amongst the widgets according
+    to the relative weight of the sizes.
+
+    Example:
+    \code
+    resizeDocks({blueWidget, yellowWidget}, {20 , 40}, Qt::Horizontal);
+    \endcode
+    If the blue and the yellow widget are nested on the same level they will be
+    resized such that the yellowWidget is twice as big as the blueWidget
+
+    If some widgets are grouped in tabs, only one widget per group should be
+    specified. Widgets not in the list might be changed to repect the constraints.
+*/
+void QMainWindow::resizeDocks(const QList<QDockWidget *> &docks,
+                              const QList<int> &sizes, Qt::Orientation orientation)
+{
+    d_func()->layout->layoutState.dockAreaLayout.resizeDocks(docks, sizes, orientation);
+    d_func()->layout->invalidate();
+}
+
+
 #endif // QT_NO_DOCKWIDGET
 
 /*!

@@ -157,6 +157,7 @@ public:
 
     void init();
     void close();
+    void abort();
 
     bool sendRequest();
 
@@ -169,6 +170,7 @@ public:
 
     void handleUnexpectedEOF();
     void closeAndResendCurrentRequest();
+    void resendCurrentRequest();
 
     bool isSocketBusy() const;
     bool isSocketWriting() const;

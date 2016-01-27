@@ -37,7 +37,9 @@
 #include "qwinrtinputcontext.h"
 #include "qwinrtscreen.h"
 #include <QtGui/QWindow>
+#include <private/qeventdispatcher_winrt_p.h>
 
+#include <functional>
 #include <wrl.h>
 #include <roapi.h>
 #include <windows.ui.viewmanagement.h>
@@ -51,6 +53,14 @@ using namespace ABI::Windows::UI::Core;
 typedef ITypedEventHandler<InputPane*, InputPaneVisibilityEventArgs*> InputPaneVisibilityHandler;
 
 QT_BEGIN_NAMESPACE
+
+inline QRectF getInputPaneRect(IInputPane *pane, qreal scaleFactor)
+{
+    Rect rect;
+    pane->get_OccludedRect(&rect);
+    return QRectF(qRound(rect.X * scaleFactor), qRound(rect.Y * scaleFactor),
+                  qRound(rect.Width * scaleFactor), qRound(rect.Height * scaleFactor));
+}
 
 /*!
     \class QWinRTInputContext
@@ -71,7 +81,7 @@ QWinRTInputContext::QWinRTInputContext(QWinRTScreen *screen)
     IInputPaneStatics *statics;
     if (FAILED(GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_ViewManagement_InputPane).Get(),
                                     &statics))) {
-        qWarning(Q_FUNC_INFO ": failed to retrieve input pane statics.");
+        qWarning("failed to retrieve input pane statics.");
         return;
     }
 
@@ -85,10 +95,10 @@ QWinRTInputContext::QWinRTInputContext(QWinRTScreen *screen)
         inputPane->add_Hiding(Callback<InputPaneVisibilityHandler>(
                                   this, &QWinRTInputContext::onHiding).Get(), &hideToken);
 
-        handleVisibilityChange(inputPane);
+        m_keyboardRect = getInputPaneRect(inputPane, m_screen->scaleFactor());
         m_isInputPanelVisible = !m_keyboardRect.isEmpty();
     } else {
-        qWarning(Q_FUNC_INFO ": failed to retrieve InputPane.");
+        qWarning("failed to retrieve InputPane.");
     }
 }
 
@@ -118,10 +128,7 @@ HRESULT QWinRTInputContext::onHiding(IInputPane *pane, IInputPaneVisibilityEvent
 
 HRESULT QWinRTInputContext::handleVisibilityChange(IInputPane *pane)
 {
-    Rect rect;
-    pane->get_OccludedRect(&rect);
-    const QRectF keyboardRect = QRectF(qRound(rect.X * m_screen->scaleFactor()), qRound(rect.Y * m_screen->scaleFactor()),
-                                       qRound(rect.Width * m_screen->scaleFactor()), qRound(rect.Height * m_screen->scaleFactor()));
+    const QRectF keyboardRect = getInputPaneRect(pane, m_screen->scaleFactor());
     if (m_keyboardRect != keyboardRect) {
         m_keyboardRect = keyboardRect;
         emitKeyboardRectChanged();
@@ -129,7 +136,7 @@ HRESULT QWinRTInputContext::handleVisibilityChange(IInputPane *pane)
     return S_OK;
 }
 
-#ifdef Q_OS_WINPHONE
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
 
 static HRESULT getInputPane(ComPtr<IInputPane2> *inputPane2)
 {
@@ -158,159 +165,34 @@ static HRESULT getInputPane(ComPtr<IInputPane2> *inputPane2)
 
 void QWinRTInputContext::showInputPanel()
 {
-    ComPtr<IInputPane2> inputPane;
-    HRESULT hr = getInputPane(&inputPane);
-    if (FAILED(hr))
-        return;
-
-    boolean success;
-    hr = inputPane->TryShow(&success);
-    if (FAILED(hr))
-        qErrnoWarning(hr, "Failed to show input panel.");
+    QEventDispatcherWinRT::runOnXamlThread([&]() {
+        ComPtr<IInputPane2> inputPane;
+        HRESULT hr = getInputPane(&inputPane);
+        if (FAILED(hr))
+            return hr;
+        boolean success;
+        hr = inputPane->TryShow(&success);
+        if (FAILED(hr) || !success)
+            qErrnoWarning(hr, "Failed to show input panel.");
+        return hr;
+    });
 }
 
 void QWinRTInputContext::hideInputPanel()
 {
-    ComPtr<IInputPane2> inputPane;
-    HRESULT hr = getInputPane(&inputPane);
-    if (FAILED(hr))
-        return;
-
-    boolean success;
-    hr = inputPane->TryHide(&success);
-    if (FAILED(hr))
-        qErrnoWarning(hr, "Failed to hide input panel.");
+    QEventDispatcherWinRT::runOnXamlThread([&]() {
+        ComPtr<IInputPane2> inputPane;
+        HRESULT hr = getInputPane(&inputPane);
+        if (FAILED(hr))
+            return hr;
+        boolean success;
+        hr = inputPane->TryHide(&success);
+        if (FAILED(hr) || !success)
+            qErrnoWarning(hr, "Failed to hide input panel.");
+        return hr;
+    });
 }
 
-#else // Q_OS_WINPHONE
-
-// IRawElementProviderSimple
-HRESULT QWinRTInputContext::get_ProviderOptions(ProviderOptions *retVal)
-{
-    *retVal = ProviderOptions_ServerSideProvider|ProviderOptions_UseComThreading;
-    return S_OK;
-}
-
-HRESULT QWinRTInputContext::GetPatternProvider(PATTERNID id, IUnknown **retVal)
-{
-    switch (id) {
-    case 10002: //UIA_ValuePatternId
-        return QueryInterface(__uuidof(IValueProvider), (void**)retVal);
-        break;
-    case 10014: //UIA_TextPatternId:
-        return QueryInterface(__uuidof(ITextProvider), (void**)retVal);
-    case 10029: //UIA_TextChildPatternId:
-        *retVal = nullptr;
-        break;
-    default:
-        qWarning("Unhandled pattern ID: %d", id);
-        break;
-    }
-    return S_OK;
-}
-
-HRESULT QWinRTInputContext::GetPropertyValue(PROPERTYID idProp, VARIANT *retVal)
-{
-    switch (idProp) {
-    case 30003: //UIA_ControlTypePropertyId
-        retVal->vt = VT_I4;
-        retVal->lVal = 50025; //UIA_CustomControlTypeId
-        break;
-    case 30008: //UIA_IsKeyboardFocusablePropertyId
-    case 30009: //UIA_HasKeyboardFocusPropertyId
-        // These are probably never actually called
-    case 30016: //UIA_IsControlElementPropertyId
-    case 30017: //UIA_IsContentElementPropertyId
-        retVal->vt = VT_BOOL;
-        retVal->boolVal = VARIANT_TRUE;
-        break;
-    case 30019: //UIA_IsPasswordPropertyId
-        retVal->vt = VT_BOOL;
-        retVal->boolVal = VARIANT_FALSE;
-        break;
-    case 30020: //UIA_NativeWindowHandlePropertyId
-        retVal->vt = VT_PTR;
-        retVal->punkVal = m_screen->coreWindow();
-        break;
-    }
-    return S_OK;
-}
-
-HRESULT QWinRTInputContext::get_HostRawElementProvider(IRawElementProviderSimple **retVal)
-{
-    // Return the window's element provider
-    IInspectable *hostProvider;
-    HRESULT hr = m_screen->coreWindow()->get_AutomationHostProvider(&hostProvider);
-    if (SUCCEEDED(hr)) {
-        hr = hostProvider->QueryInterface(IID_PPV_ARGS(retVal));
-        hostProvider->Release();
-    }
-    return hr;
-}
-
-// ITextProvider
-HRESULT QWinRTInputContext::GetSelection(SAFEARRAY **)
-{
-    // To be useful, requires listening to the focus object for a selection change and raising an event
-    return S_OK;
-}
-
-HRESULT QWinRTInputContext::GetVisibleRanges(SAFEARRAY **)
-{
-    // To be useful, requires listening to the focus object for a selection change and raising an event
-    return S_OK;
-}
-
-HRESULT QWinRTInputContext::RangeFromChild(IRawElementProviderSimple *,ITextRangeProvider **)
-{
-    // To be useful, requires listening to the focus object for a selection change and raising an event
-    return S_OK;
-}
-
-HRESULT QWinRTInputContext::RangeFromPoint(UiaPoint, ITextRangeProvider **)
-{
-    // To be useful, requires listening to the focus object for a selection change and raising an event
-    return S_OK;
-}
-
-HRESULT QWinRTInputContext::get_DocumentRange(ITextRangeProvider **)
-{
-    // To be useful, requires listening to the focus object for a selection change and raising an event
-    return S_OK;
-}
-
-HRESULT QWinRTInputContext::get_SupportedTextSelection(SupportedTextSelection *)
-{
-    // To be useful, requires listening to the focus object for a selection change and raising an event
-    return S_OK;
-}
-
-// IValueProvider
-HRESULT QWinRTInputContext::SetValue(LPCWSTR)
-{
-    // To be useful, requires listening to the focus object for a value change and raising an event
-    // May be useful for inputPanel autocomplete, etc.
-    return S_OK;
-}
-
-HRESULT QWinRTInputContext::get_Value(BSTR *)
-{
-    // To be useful, requires listening to the focus object for a value change and raising an event
-    // May be useful for inputPanel autocomplete, etc.
-    return S_OK;
-}
-
-HRESULT QWinRTInputContext::get_IsReadOnly(BOOL *isReadOnly)
-{
-    // isReadOnly dictates keyboard opening behavior when view is tapped.
-    // We need to decide if the user tapped within a control which is about to receive focus...
-    // Since this isn't possible (this function gets called before we receive the touch event),
-    // the most platform-aligned option is to show the keyboard if an editable item has focus,
-    // and close the keyboard if it is already open.
-    *isReadOnly = m_isInputPanelVisible || !inputMethodAccepted();
-    return S_OK;
-}
-
-#endif // !Q_OS_WINPHONE
+#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
 
 QT_END_NAMESPACE

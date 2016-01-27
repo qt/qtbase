@@ -56,15 +56,15 @@ static Qt::KeyboardModifiers getModifiersFromQuartzEvent(CGEventRef inEvent)
 
 static void setModifiersFromQNativeEvent(CGEventRef inEvent, const QNativeEvent &event)
 {
-    CGEventFlags flags = 0;
+    CGEventFlags flags = CGEventFlags(0);
     if (event.modifiers.testFlag(Qt::ShiftModifier))
-        flags |= kCGEventFlagMaskShift;
+        flags = CGEventFlags(flags | kCGEventFlagMaskShift);
     if (event.modifiers.testFlag(Qt::ControlModifier))
-        flags |= kCGEventFlagMaskControl;
+        flags = CGEventFlags(flags | kCGEventFlagMaskControl);
     if (event.modifiers.testFlag(Qt::AltModifier))
-        flags |= kCGEventFlagMaskAlternate;
+        flags = CGEventFlags(flags | kCGEventFlagMaskAlternate);
     if (event.modifiers.testFlag(Qt::MetaModifier))
-        flags |= kCGEventFlagMaskCommand;
+        flags = CGEventFlags(flags | kCGEventFlagMaskCommand);
     CGEventSetFlags(inEvent, flags);
 }
 
@@ -240,7 +240,7 @@ Qt::Native::Status sendNativeMouseMoveEvent_Quartz(const QNativeMouseMoveEvent &
     pos.x = event.globalPos.x();
     pos.y = event.globalPos.y();
 
-    CGEventRef e = CGEventCreateMouseEvent(0, kCGEventMouseMoved, pos, 0);
+    CGEventRef e = CGEventCreateMouseEvent(0, kCGEventMouseMoved, pos, kCGMouseButtonLeft /* ignored */);
     setModifiersFromQNativeEvent(e, event);
     CGEventPost(kCGHIDEventTap, e);
     CFRelease(e);
@@ -253,7 +253,7 @@ Qt::Native::Status sendNativeMouseButtonEvent_Quartz(const QNativeMouseButtonEve
     pos.x = event.globalPos.x();
     pos.y = event.globalPos.y();
 
-    CGEventType type = 0;
+    CGEventType type = kCGEventNull;
     if (event.button == Qt::LeftButton)
         type = (event.clickCount > 0) ? kCGEventLeftMouseDown : kCGEventLeftMouseUp;
     else if (event.button == Qt::RightButton)
@@ -261,7 +261,12 @@ Qt::Native::Status sendNativeMouseButtonEvent_Quartz(const QNativeMouseButtonEve
     else
         type = (event.clickCount > 0) ? kCGEventOtherMouseDown : kCGEventOtherMouseUp;
 
-    CGEventRef e = CGEventCreateMouseEvent(0, type, pos, event.button);
+    // The mouseButton argument to CGEventCreateMouseEvent() is ignored unless the type
+    // is kCGEventOtherSomething, so defaulting to kCGMouseButtonLeft is fine.
+    CGMouseButton mouseButton = (type == kCGEventOtherMouseDown || type == kCGEventOtherMouseUp) ?
+        kCGMouseButtonCenter : kCGMouseButtonLeft;
+
+    CGEventRef e = CGEventCreateMouseEvent(0, type, pos, mouseButton);
     setModifiersFromQNativeEvent(e, event);
     CGEventSetIntegerValueField(e, kCGMouseEventClickState, event.clickCount);
     CGEventPost(kCGHIDEventTap, e);
@@ -275,7 +280,7 @@ Qt::Native::Status sendNativeMouseDragEvent_Quartz(const QNativeMouseDragEvent &
     pos.x = event.globalPos.x();
     pos.y = event.globalPos.y();
 
-    CGEventType type = 0;
+    CGEventType type = kCGEventNull;
     if (event.button == Qt::LeftButton)
         type = kCGEventLeftMouseDragged;
     else if (event.button == Qt::RightButton)
@@ -283,7 +288,11 @@ Qt::Native::Status sendNativeMouseDragEvent_Quartz(const QNativeMouseDragEvent &
     else
         type = kCGEventOtherMouseDragged;
 
-    CGEventRef e = CGEventCreateMouseEvent(0, type, pos, event.button);
+    // The mouseButton argument to CGEventCreateMouseEvent() is ignored unless the type
+    // is kCGEventOtherSomething, so defaulting to kCGMouseButtonLeft is fine.
+    CGMouseButton mouseButton = type == kCGEventOtherMouseDragged ? kCGMouseButtonCenter : kCGMouseButtonLeft;
+
+    CGEventRef e = CGEventCreateMouseEvent(0, type, pos, mouseButton);
     setModifiersFromQNativeEvent(e, event);
     CGEventPost(kCGHIDEventTap, e);
     CFRelease(e);

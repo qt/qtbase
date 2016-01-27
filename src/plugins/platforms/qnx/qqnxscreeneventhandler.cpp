@@ -141,7 +141,7 @@ bool QQnxScreenEventHandler::handleEvent(screen_event_t event, int qnxType)
 
     default:
         // event ignored
-        qScreenEventDebug() << Q_FUNC_INFO << "unknown event" << qnxType;
+        qScreenEventDebug() << "unknown event" << qnxType;
         return false;
     }
 
@@ -188,7 +188,7 @@ void QQnxScreenEventHandler::injectKeyboardEvent(int flags, int sym, int modifie
 
         QWindowSystemInterface::handleExtendedKeyEvent(QGuiApplication::focusWindow(), type, key, qtMod,
                 scan, sym, modifiers, keyStr);
-        qScreenEventDebug() << Q_FUNC_INFO << "Qt key t=" << type << ", k=" << key << ", s=" << keyStr;
+        qScreenEventDebug() << "Qt key t=" << type << ", k=" << key << ", s=" << keyStr;
     }
 }
 
@@ -315,12 +315,12 @@ void QQnxScreenEventHandler::handlePointerEvent(screen_event_t event)
 
         if (wOld) {
             QWindowSystemInterface::handleLeaveEvent(wOld);
-            qScreenEventDebug() << Q_FUNC_INFO << "Qt leave, w=" << wOld;
+            qScreenEventDebug() << "Qt leave, w=" << wOld;
         }
 
         if (w) {
             QWindowSystemInterface::handleEnterEvent(w);
-            qScreenEventDebug() << Q_FUNC_INFO << "Qt enter, w=" << w;
+            qScreenEventDebug() << "Qt enter, w=" << w;
         }
     }
 
@@ -363,14 +363,14 @@ void QQnxScreenEventHandler::handlePointerEvent(screen_event_t event)
             m_lastLocalMousePoint != localPoint ||
             m_lastButtonState != buttons) {
             QWindowSystemInterface::handleMouseEvent(w, localPoint, globalPoint, buttons);
-            qScreenEventDebug() << Q_FUNC_INFO << "Qt mouse, w=" << w << ", (" << localPoint.x() << "," << localPoint.y() << "), b=" << static_cast<int>(buttons);
+            qScreenEventDebug() << "Qt mouse, w=" << w << ", (" << localPoint.x() << "," << localPoint.y() << "), b=" << static_cast<int>(buttons);
         }
 
         if (wheelDelta) {
             // Screen only supports a single wheel, so we will assume Vertical orientation for
             // now since that is pretty much standard.
             QWindowSystemInterface::handleWheelEvent(w, localPoint, globalPoint, wheelDelta, Qt::Vertical);
-            qScreenEventDebug() << Q_FUNC_INFO << "Qt wheel, w=" << w << ", (" << localPoint.x() << "," << localPoint.y() << "), d=" << static_cast<int>(wheelDelta);
+            qScreenEventDebug() << "Qt wheel, w=" << w << ", (" << localPoint.x() << "," << localPoint.y() << "), d=" << static_cast<int>(wheelDelta);
         }
     }
 
@@ -427,12 +427,12 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
 
             if (wOld) {
                 QWindowSystemInterface::handleLeaveEvent(wOld);
-                qScreenEventDebug() << Q_FUNC_INFO << "Qt leave, w=" << wOld;
+                qScreenEventDebug() << "Qt leave, w=" << wOld;
             }
 
             if (w) {
                 QWindowSystemInterface::handleEnterEvent(w);
-                qScreenEventDebug() << Q_FUNC_INFO << "Qt enter, w=" << w;
+                qScreenEventDebug() << "Qt enter, w=" << w;
             }
         }
         m_lastMouseWindow = qnxWindow;
@@ -496,7 +496,7 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
 
             // inject event into Qt
             QWindowSystemInterface::handleTouchEvent(w, m_touchDevice, pointList);
-            qScreenEventDebug() << Q_FUNC_INFO << "Qt touch, w =" << w
+            qScreenEventDebug() << "Qt touch, w =" << w
                                 << ", p=" << m_touchPoints[touchId].area.topLeft()
                                 << ", t=" << type;
         }
@@ -542,7 +542,7 @@ void QQnxScreenEventHandler::handleDisplayEvent(screen_event_t event)
         return;
     }
 
-    qScreenEventDebug() << Q_FUNC_INFO << "display attachment is now:" << isAttached;
+    qScreenEventDebug() << "display attachment is now:" << isAttached;
     QQnxScreen *screen = m_qnxIntegration->screenForNative(nativeDisplay);
 
     if (!screen) {
@@ -598,7 +598,7 @@ void QQnxScreenEventHandler::handlePropertyEvent(screen_event_t event)
         break;
     default:
         // event ignored
-        qScreenEventDebug() << Q_FUNC_INFO << "Ignore property event for property: " << property;
+        qScreenEventDebug() << "Ignore property event for property: " << property;
     }
 }
 

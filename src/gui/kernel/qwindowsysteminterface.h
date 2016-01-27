@@ -1,3 +1,4 @@
+
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
@@ -78,30 +79,18 @@ public:
                                            Qt::KeyboardModifiers mods = Qt::NoModifier,
                                            Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
 
-    static bool tryHandleShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
-                                                  const QString & text = QString(), bool autorep = false, ushort count = 1);
-    static bool tryHandleShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods,
-                                                  const QString & text = QString(), bool autorep = false, ushort count = 1);
-
-    static bool tryHandleShortcutEventToObject(QObject *o, ulong timestamp, int k, Qt::KeyboardModifiers mods,
-                                       const QString & text = QString(), bool autorep = false, ushort count = 1);
-
-    static bool tryHandleExtendedShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
-                                                          quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
-                                                          const QString & text = QString(), bool autorep = false, ushort count = 1);
-    static bool tryHandleExtendedShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods,
-                                                          quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
-                                                          const QString & text = QString(), bool autorep = false, ushort count = 1);
+    static bool handleShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods, quint32 nativeScanCode,
+                                      quint32 nativeVirtualKey, quint32 nativeModifiers, const QString & text = QString(), bool autorep = false, ushort count = 1);
 
     static bool handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
     static bool handleKeyEvent(QWindow *w, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
 
-    static void handleExtendedKeyEvent(QWindow *w, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
+    static bool handleExtendedKeyEvent(QWindow *w, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
                                        quint32 nativeScanCode, quint32 nativeVirtualKey,
                                        quint32 nativeModifiers,
                                        const QString& text = QString(), bool autorep = false,
-                                       ushort count = 1);
-    static void handleExtendedKeyEvent(QWindow *w, ulong timestamp, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
+                                       ushort count = 1, bool tryShortcutOverride = true);
+    static bool handleExtendedKeyEvent(QWindow *w, ulong timestamp, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
                                        quint32 nativeScanCode, quint32 nativeVirtualKey,
                                        quint32 nativeModifiers,
                                        const QString& text = QString(), bool autorep = false,
@@ -125,7 +114,8 @@ public:
         QVector<QPointF> rawPositions; // in screen coordinates
     };
 
-    static void registerTouchDevice(QTouchDevice *device);
+    static void registerTouchDevice(const QTouchDevice *device);
+    static void unregisterTouchDevice(const QTouchDevice *device);
     static void handleTouchEvent(QWindow *w, QTouchDevice *device,
                                  const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods = Qt::NoModifier);
     static void handleTouchEvent(QWindow *w, ulong timestamp, QTouchDevice *device,

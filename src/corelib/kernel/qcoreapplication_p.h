@@ -105,7 +105,7 @@ public:
     }
     void maybeQuit();
 
-    static QThread *theMainThread;
+    static QBasicAtomicPointer<QThread> theMainThread;
     static QThread *mainThread();
     static bool threadRequiresCoreApplication();
 

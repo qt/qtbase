@@ -2110,6 +2110,9 @@ QString QFont::lastResortFamily() const
     return QString::fromLatin1("helvetica");
 }
 
+extern QStringList qt_fallbacksForFamily(const QString &family, QFont::Style style,
+                                         QFont::StyleHint styleHint, QChar::Script script);
+
 /*!
     \fn QString QFont::defaultFamily() const
 
@@ -2120,8 +2123,7 @@ QString QFont::lastResortFamily() const
 */
 QString QFont::defaultFamily() const
 {
-    QPlatformFontDatabase *fontDB = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
-    const QStringList fallbacks = fontDB->fallbacksForFamily(QString(), QFont::StyleNormal
+    const QStringList fallbacks = qt_fallbacksForFamily(QString(), QFont::StyleNormal
                                       , QFont::StyleHint(d->request.styleHint), QChar::Script_Common);
     if (!fallbacks.isEmpty())
         return fallbacks.first();
@@ -2218,6 +2220,8 @@ QDataStream &operator<<(QDataStream &s, const QFont &font)
     }
     if (s.version() >= QDataStream::Qt_5_4)
         s << (quint8)font.d->request.hintingPreference;
+    if (s.version() >= QDataStream::Qt_5_6)
+        s << (quint8)font.d->capital;
     return s;
 }
 
@@ -2308,7 +2312,11 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
         s >> value;
         font.d->request.hintingPreference = QFont::HintingPreference(value);
     }
-
+    if (s.version() >= QDataStream::Qt_5_6) {
+        quint8 value;
+        s >> value;
+        font.d->capital = QFont::Capitalization(value);
+    }
     return s;
 }
 

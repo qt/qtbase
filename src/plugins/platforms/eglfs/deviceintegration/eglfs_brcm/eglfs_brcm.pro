@@ -12,6 +12,9 @@ CONFIG += egl
 LIBS += -lbcm_host
 QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 
+# Avoid X11 header collision
+DEFINES += MESA_EGL_NO_X11_HEADERS
+
 SOURCES += $$PWD/qeglfsbrcmmain.cpp \
            $$PWD/qeglfsbrcmintegration.cpp
 

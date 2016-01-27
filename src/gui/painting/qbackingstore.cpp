@@ -182,7 +182,8 @@ void QBackingStore::beginPaint(const QRegion &region)
             qCDebug(lcScaling) << "QBackingStore::beginPaint new backingstore for" << d_ptr->window;
             qCDebug(lcScaling) << "  source size" << source->size() << "dpr" << source->devicePixelRatio();
             d_ptr->highDpiBackingstore.reset(
-                new QImage(source->bits(), source->width(), source->height(), source->format()));
+                new QImage(source->bits(), source->width(), source->height(), source->bytesPerLine(), source->format()));
+
             qreal targetDevicePixelRatio = d_ptr->window->devicePixelRatio();
             d_ptr->highDpiBackingstore->setDevicePixelRatio(targetDevicePixelRatio);
             qCDebug(lcScaling) <<"  destination size" << d_ptr->highDpiBackingstore->size()
@@ -235,16 +236,27 @@ bool QBackingStore::scroll(const QRegion &area, int dx, int dy)
     return d_ptr->platformBackingStore->scroll(QHighDpi::toNativeLocalRegion(area, d_ptr->window), QHighDpi::toNativePixels(dx, d_ptr->window), QHighDpi::toNativePixels(dy, d_ptr->window));
 }
 
+/*!
+   Set \a region as the static contents of this window.
+*/
 void QBackingStore::setStaticContents(const QRegion &region)
 {
     d_ptr->staticContents = region;
 }
 
+/*!
+   Returns a pointer to the QRegion that has the static contents
+   of this window.
+*/
 QRegion QBackingStore::staticContents() const
 {
     return d_ptr->staticContents;
 }
 
+/*!
+   Returns a boolean indicating if this window
+   has static contents or not.
+*/
 bool QBackingStore::hasStaticContents() const
 {
     return !d_ptr->staticContents.isEmpty();
@@ -297,6 +309,9 @@ void Q_GUI_EXPORT qt_scrollRectInImage(QImage &img, const QRect &rect, const QPo
     }
 }
 
+/*!
+   Returns a pointer to the QPlatformBackingStore implementation
+*/
 QPlatformBackingStore *QBackingStore::handle() const
 {
     return d_ptr->platformBackingStore;

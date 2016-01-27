@@ -45,13 +45,18 @@
 
 //! [0]
 Client::Client(QWidget *parent)
-:   QDialog(parent), networkSession(0)
+    : QDialog(parent)
+    , hostCombo(new QComboBox)
+    , portLineEdit(new QLineEdit)
+    , getFortuneButton(new QPushButton(tr("Get Fortune")))
+//! [1]
+    , tcpSocket(new QTcpSocket(this))
+//! [1]
+    , blockSize(0)
+    , networkSession(Q_NULLPTR)
 {
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 //! [0]
-    hostLabel = new QLabel(tr("&Server name:"));
-    portLabel = new QLabel(tr("S&erver port:"));
-
-    hostCombo = new QComboBox;
     hostCombo->setEditable(true);
     // find out name of this machine
     QString name = QHostInfo::localHostName();
@@ -61,7 +66,7 @@ Client::Client(QWidget *parent)
         if (!domain.isEmpty())
             hostCombo->addItem(name + QChar('.') + domain);
     }
-    if (name != QString("localhost"))
+    if (name != QLatin1String("localhost"))
         hostCombo->addItem(QString("localhost"));
     // find out IP addresses of this machine
     QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
@@ -76,54 +81,64 @@ Client::Client(QWidget *parent)
             hostCombo->addItem(ipAddressesList.at(i).toString());
     }
 
-    portLineEdit = new QLineEdit;
     portLineEdit->setValidator(new QIntValidator(1, 65535, this));
 
+    QLabel *hostLabel = new QLabel(tr("&Server name:"));
     hostLabel->setBuddy(hostCombo);
+    QLabel *portLabel = new QLabel(tr("S&erver port:"));
     portLabel->setBuddy(portLineEdit);
 
     statusLabel = new QLabel(tr("This examples requires that you run the "
                                 "Fortune Server example as well."));
 
-    getFortuneButton = new QPushButton(tr("Get Fortune"));
     getFortuneButton->setDefault(true);
     getFortuneButton->setEnabled(false);
 
-    quitButton = new QPushButton(tr("Quit"));
+    QPushButton *quitButton = new QPushButton(tr("Quit"));
 
-    buttonBox = new QDialogButtonBox;
+    QDialogButtonBox *buttonBox = new QDialogButtonBox;
     buttonBox->addButton(getFortuneButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(quitButton, QDialogButtonBox::RejectRole);
 
-//! [1]
-    tcpSocket = new QTcpSocket(this);
-//! [1]
-
-    connect(hostCombo, SIGNAL(editTextChanged(QString)),
-            this, SLOT(enableGetFortuneButton()));
-    connect(portLineEdit, SIGNAL(textChanged(QString)),
-            this, SLOT(enableGetFortuneButton()));
-    connect(getFortuneButton, SIGNAL(clicked()),
-            this, SLOT(requestNewFortune()));
-    connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(hostCombo, &QComboBox::editTextChanged,
+            this, &Client::enableGetFortuneButton);
+    connect(portLineEdit, &QLineEdit::textChanged,
+            this, &Client::enableGetFortuneButton);
+    connect(getFortuneButton, &QAbstractButton::clicked,
+            this, &Client::requestNewFortune);
+    connect(quitButton, &QAbstractButton::clicked, this, &QWidget::close);
 //! [2] //! [3]
-    connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readFortune()));
+    connect(tcpSocket, &QIODevice::readyRead, this, &Client::readFortune);
 //! [2] //! [4]
-    connect(tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
+    typedef void (QAbstractSocket::*QAbstractSocketErrorSignal)(QAbstractSocket::SocketError);
+    connect(tcpSocket, static_cast<QAbstractSocketErrorSignal>(&QAbstractSocket::error),
 //! [3]
-            this, SLOT(displayError(QAbstractSocket::SocketError)));
+            this, &Client::displayError);
 //! [4]
 
-    QGridLayout *mainLayout = new QGridLayout;
+    QGridLayout *mainLayout = Q_NULLPTR;
+    if (QGuiApplication::styleHints()->showIsFullScreen() || QGuiApplication::styleHints()->showIsMaximized()) {
+        QVBoxLayout *outerVerticalLayout = new QVBoxLayout(this);
+        outerVerticalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding));
+        QHBoxLayout *outerHorizontalLayout = new QHBoxLayout;
+        outerHorizontalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored));
+        QGroupBox *groupBox = new QGroupBox(QGuiApplication::applicationDisplayName());
+        mainLayout = new QGridLayout(groupBox);
+        outerHorizontalLayout->addWidget(groupBox);
+        outerHorizontalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored));
+        outerVerticalLayout->addLayout(outerHorizontalLayout);
+        outerVerticalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding));
+    } else {
+        mainLayout = new QGridLayout(this);
+    }
     mainLayout->addWidget(hostLabel, 0, 0);
     mainLayout->addWidget(hostCombo, 0, 1);
     mainLayout->addWidget(portLabel, 1, 0);
     mainLayout->addWidget(portLineEdit, 1, 1);
     mainLayout->addWidget(statusLabel, 2, 0, 1, 2);
     mainLayout->addWidget(buttonBox, 3, 0, 1, 2);
-    setLayout(mainLayout);
 
-    setWindowTitle(tr("Fortune Client"));
+    setWindowTitle(QGuiApplication::applicationDisplayName());
     portLineEdit->setFocus();
 
     QNetworkConfigurationManager manager;
@@ -142,7 +157,7 @@ Client::Client(QWidget *parent)
         }
 
         networkSession = new QNetworkSession(config, this);
-        connect(networkSession, SIGNAL(opened()), this, SLOT(sessionOpened()));
+        connect(networkSession, &QNetworkSession::opened, this, &Client::sessionOpened);
 
         getFortuneButton->setEnabled(false);
         statusLabel->setText(tr("Opening network session."));
@@ -189,7 +204,7 @@ void Client::readFortune()
     in >> nextFortune;
 
     if (nextFortune == currentFortune) {
-        QTimer::singleShot(0, this, SLOT(requestNewFortune()));
+        QTimer::singleShot(0, this, &Client::requestNewFortune);
         return;
     }
 //! [11]

@@ -473,7 +473,7 @@ IDirectFBSurface *QDirectFbTextureGlyphCache::sourceSurface()
         case QImage::Format_Mono:
             desc.pixelformat = DSPF_A1;
             break;
-        case QImage::Format_Indexed8:
+        case QImage::Format_Alpha8:
             desc.pixelformat = DSPF_A8;
             break;
         default:

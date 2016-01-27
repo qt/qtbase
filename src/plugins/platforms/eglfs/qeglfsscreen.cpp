@@ -45,7 +45,6 @@ QT_BEGIN_NAMESPACE
 
 QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
     : m_dpy(dpy),
-      m_pointerWindow(0),
       m_surface(EGL_NO_SURFACE),
       m_cursor(0)
 {
@@ -81,6 +80,11 @@ QSizeF QEglFSScreen::physicalSize() const
 QDpi QEglFSScreen::logicalDpi() const
 {
     return qt_egl_device_integration()->logicalDpi();
+}
+
+qreal QEglFSScreen::pixelDensity() const
+{
+    return qt_egl_device_integration()->pixelDensity();
 }
 
 Qt::ScreenOrientation QEglFSScreen::nativeOrientation() const

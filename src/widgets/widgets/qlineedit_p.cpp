@@ -70,6 +70,12 @@ int QLineEditPrivate::xToPos(int x, QTextLine::CursorPosition betweenOrOn) const
     return control->xToPos(x, betweenOrOn);
 }
 
+bool QLineEditPrivate::inSelection(int x) const
+{
+    x -= adjustedContentsRect().x() - hscroll + horizontalMargin;
+    return control->inSelection(x);
+}
+
 QRect QLineEditPrivate::cursorRect() const
 {
     return adjustedControlRect(control->cursorRect());
@@ -187,6 +193,9 @@ void QLineEditPrivate::init(const QString& txt)
     // for now, going completely overboard with updates.
     QObject::connect(control, SIGNAL(selectionChanged()),
             q, SLOT(update()));
+
+    QObject::connect(control, SIGNAL(selectionChanged()),
+            q, SLOT(updateMicroFocus()));
 
     QObject::connect(control, SIGNAL(displayTextChanged(QString)),
             q, SLOT(update()));
@@ -321,6 +330,24 @@ void QLineEditIconButton::paintEvent(QPaintEvent *)
     painter.drawPixmap(pixmapRect, iconPixmap);
 }
 
+void QLineEditIconButton::actionEvent(QActionEvent *e)
+{
+    switch (e->type()) {
+    case QEvent::ActionChanged: {
+        const QAction *action = e->action();
+        if (isVisibleTo(parentWidget()) != action->isVisible()) {
+            setVisible(action->isVisible());
+            if (QLineEdit *le = qobject_cast<QLineEdit *>(parentWidget()))
+                static_cast<QLineEditPrivate *>(qt_widget_private(le))->positionSideWidgets();
+        }
+    }
+        break;
+    default:
+        break;
+    }
+    QToolButton::actionEvent(e);
+}
+
 void QLineEditIconButton::setOpacity(qreal value)
 {
     if (!qFuzzyCompare(m_opacity, value)) {
@@ -343,7 +370,7 @@ void QLineEditIconButton::startOpacityAnimation(qreal endValue)
 void QLineEditIconButton::updateCursor()
 {
 #ifndef QT_NO_CURSOR
-    setCursor(qFuzzyCompare(m_opacity, 1.0) || !parentWidget() ? QCursor(Qt::ArrowCursor) : parentWidget()->cursor());
+    setCursor(qFuzzyCompare(m_opacity, qreal(1.0)) || !parentWidget() ? QCursor(Qt::ArrowCursor) : parentWidget()->cursor());
 #endif
 }
 
@@ -412,12 +439,14 @@ void QLineEditPrivate::positionSideWidgets()
         QRect widgetGeometry(QPoint(QLineEditIconButton::IconMargin, (contentRect.height() - iconSize.height()) / 2), iconSize);
         foreach (const SideWidgetEntry &e, leftSideWidgetList()) {
             e.widget->setGeometry(widgetGeometry);
-            widgetGeometry.moveLeft(widgetGeometry.left() + delta);
+            if (e.action->isVisible())
+                widgetGeometry.moveLeft(widgetGeometry.left() + delta);
         }
         widgetGeometry.moveLeft(contentRect.width() - iconSize.width() - QLineEditIconButton::IconMargin);
         foreach (const SideWidgetEntry &e, rightSideWidgetList()) {
             e.widget->setGeometry(widgetGeometry);
-            widgetGeometry.moveLeft(widgetGeometry.left() - delta);
+            if (e.action->isVisible())
+                widgetGeometry.moveLeft(widgetGeometry.left() - delta);
         }
     }
 }

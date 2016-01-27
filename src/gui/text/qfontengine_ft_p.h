@@ -208,8 +208,6 @@ private:
     virtual QFixed averageCharWidth() const Q_DECL_OVERRIDE;
 
     virtual qreal maxCharWidth() const Q_DECL_OVERRIDE;
-    virtual qreal minLeftBearing() const Q_DECL_OVERRIDE;
-    virtual qreal minRightBearing() const Q_DECL_OVERRIDE;
     virtual QFixed lineThickness() const Q_DECL_OVERRIDE;
     virtual QFixed underlinePosition() const Q_DECL_OVERRIDE;
 
@@ -281,7 +279,7 @@ private:
 
     virtual int getPointInOutline(glyph_t glyph, int flags, quint32 point, QFixed *xpos, QFixed *ypos, quint32 *nPoints) Q_DECL_OVERRIDE;
 
-
+    void setQtDefaultHintStyle(QFont::HintingPreference hintingPreference);
     virtual void setDefaultHintStyle(HintStyle style) Q_DECL_OVERRIDE;
 
     virtual QFontEngine *cloneWithSize(qreal pixelSize) const Q_DECL_OVERRIDE;
@@ -307,6 +305,7 @@ private:
     friend class QFontEngineFTRawFont;
     friend class QFontconfigDatabase;
     friend class QBasicFontDatabase;
+    friend class QCoreTextFontDatabase;
     friend class QFontEngineMultiFontConfig;
 
     int loadFlags(QGlyphSet *set, GlyphFormat format, int flags, bool &hsubpixel, int &vfactor) const;
@@ -323,8 +322,6 @@ private:
     int xsize;
     int ysize;
 
-    mutable QFixed lbearing;
-    mutable QFixed rbearing;
     QFixed line_thickness;
     QFixed underline_position;
 

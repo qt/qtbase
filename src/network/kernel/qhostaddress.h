@@ -124,6 +124,7 @@ public:
     bool isInSubnet(const QPair<QHostAddress, int> &subnet) const;
 
     bool isLoopback() const;
+    bool isMulticast() const;
 
     static QPair<QHostAddress, int> parseSubnet(const QString &subnet);
 
@@ -131,6 +132,7 @@ public:
 protected:
     QScopedPointer<QHostAddressPrivate> d;
 };
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QHostAddress)
 
 inline bool operator ==(QHostAddress::SpecialAddress address1, const QHostAddress &address2)
 { return address2 == address1; }

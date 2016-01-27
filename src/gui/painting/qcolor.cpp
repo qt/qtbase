@@ -2075,7 +2075,7 @@ QColor QColor::fromHsl(int h, int s, int l, int a)
         || s < 0 || s > 255
         || l < 0 || l > 255
         || a < 0 || a > 255) {
-        qWarning("QColor::fromHsv: HSV parameters out of range");
+        qWarning("QColor::fromHsl: HSL parameters out of range");
         return QColor();
     }
 
@@ -2107,7 +2107,7 @@ QColor QColor::fromHslF(qreal h, qreal s, qreal l, qreal a)
         || (s < qreal(0.0) || s > qreal(1.0))
         || (l < qreal(0.0) || l > qreal(1.0))
         || (a < qreal(0.0) || a > qreal(1.0))) {
-        qWarning("QColor::fromHsvF: HSV parameters out of range");
+        qWarning("QColor::fromHslF: HSL parameters out of range");
         return QColor();
     }
 

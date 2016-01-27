@@ -153,7 +153,7 @@ void tst_QStorageInfo::storageList()
 void tst_QStorageInfo::tempFile()
 {
     QTemporaryFile file;
-    QVERIFY(file.open());
+    QVERIFY2(file.open(), qPrintable(file.errorString()));
 
     QStorageInfo storage1(file.fileName());
 #ifdef Q_OS_LINUX
@@ -174,7 +174,7 @@ void tst_QStorageInfo::tempFile()
 void tst_QStorageInfo::caching()
 {
     QTemporaryFile file;
-    QVERIFY(file.open());
+    QVERIFY2(file.open(), qPrintable(file.errorString()));
 
     QStorageInfo storage1(file.fileName());
 #ifdef Q_OS_LINUX

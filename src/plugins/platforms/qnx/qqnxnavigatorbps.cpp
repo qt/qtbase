@@ -56,7 +56,7 @@ bool QQnxNavigatorBps::requestInvokeUrl(const QByteArray &encodedUrl)
 
     int ret = navigator_invoke(encodedUrl, &error);
     if (error) {
-        qWarning() << Q_FUNC_INFO << "error=" << error;
+        qWarning() << "error=" << error;
         bps_free(error);
     }
 

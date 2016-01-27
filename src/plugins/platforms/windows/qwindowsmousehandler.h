@@ -52,6 +52,7 @@ public:
     QWindowsMouseHandler();
 
     QTouchDevice *touchDevice() const { return m_touchDevice; }
+    QTouchDevice *ensureTouchDevice();
 
     bool translateMouseEvent(QWindow *widget, HWND hwnd,
                              QtWindows::WindowsEventType t, MSG msg,
@@ -59,6 +60,9 @@ public:
     bool translateTouchEvent(QWindow *widget, HWND hwnd,
                              QtWindows::WindowsEventType t, MSG msg,
                              LRESULT *result);
+    bool translateGestureEvent(QWindow *window, HWND hwnd,
+                               QtWindows::WindowsEventType,
+                               MSG msg, LRESULT *);
     bool translateScrollEvent(QWindow *window, HWND hwnd,
                               MSG msg, LRESULT *result);
 

@@ -574,7 +574,7 @@ QDebug operator<<(QDebug dbg, const QJsonDocument &o)
         QJsonPrivate::Writer::objectToJson(static_cast<QJsonPrivate::Object *>(o.d->header->root()), json, 0, true);
     dbg.nospace() << "QJsonDocument("
                   << json.constData() // print as utf-8 string without extra quotation marks
-                  << ")";
+                  << ')';
     return dbg;
 }
 #endif

@@ -157,7 +157,7 @@
 #    define QT_FUNCTION_TARGET(x)
 #  endif
 #else
-#  define QT_COMPILER_SUPPORTS_HERE(x)    defined(__ ## x ## __)
+#  define QT_COMPILER_SUPPORTS_HERE(x)    (__ ## x ## __)
 #  define QT_FUNCTION_TARGET(x)
 #endif
 
@@ -225,6 +225,23 @@
 #  endif
 #endif
 
+#define QT_FUNCTION_TARGET_STRING_AVX512F       "avx512f"
+#define QT_FUNCTION_TARGET_STRING_AVX512CD      "avx512cd"
+#define QT_FUNCTION_TARGET_STRING_AVX512ER      "avx512er"
+#define QT_FUNCTION_TARGET_STRING_AVX512PF      "avx512pf"
+#define QT_FUNCTION_TARGET_STRING_AVX512BW      "avx512bw"
+#define QT_FUNCTION_TARGET_STRING_AVX512DQ      "avx512dq"
+#define QT_FUNCTION_TARGET_STRING_AVX512VL      "avx512vl"
+#define QT_FUNCTION_TARGET_STRING_AVX512IFMA    "avx512ifma"
+#define QT_FUNCTION_TARGET_STRING_AVX512VBMI    "avx512vbmi"
+
+#define QT_FUNCTION_TARGET_STRING_F16C          "f16c"
+#define QT_FUNCTION_TARGET_STRING_RDRAND        "rdrnd"
+#define QT_FUNCTION_TARGET_STRING_BMI           "bmi"
+#define QT_FUNCTION_TARGET_STRING_BMI2          "bmi2"
+#define QT_FUNCTION_TARGET_STRING_RDSEED        "rdseed"
+#define QT_FUNCTION_TARGET_STRING_SHA           "sha"
+
 // other x86 intrinsics
 #if defined(Q_PROCESSOR_X86) && ((defined(Q_CC_GNU) && (Q_CC_GNU >= 404)) \
     || (defined(Q_CC_CLANG) && (Q_CC_CLANG >= 208)) \
@@ -241,9 +258,13 @@
 
 // NEON intrinsics
 // note: as of GCC 4.9, does not support function targets for ARM
-#if defined __ARM_NEON__
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
 #include <arm_neon.h>
 #define QT_FUNCTION_TARGET_STRING_ARM_NEON      "neon"
+#ifndef __ARM_NEON__
+// __ARM_NEON__ is not defined on AArch64, but we need it in our NEON detection.
+#define __ARM_NEON__
+#endif
 #endif
 
 #undef QT_COMPILER_SUPPORTS_SIMD_ALWAYS
@@ -252,77 +273,170 @@ QT_BEGIN_NAMESPACE
 
 
 enum CPUFeatures {
-    NEON        = 0x2,  ARM_NEON = NEON,
-    SSE2        = 0x4,
-    SSE3        = 0x8,
-    SSSE3       = 0x10,
-    SSE4_1      = 0x20,
-    SSE4_2      = 0x40,
-    AVX         = 0x80,
-    AVX2        = 0x100,
-    HLE         = 0x200,
-    RTM         = 0x400,
-    DSP         = 0x800,
-    DSPR2       = 0x1000,
+#if defined(Q_PROCESSOR_ARM)
+    CpuFeatureNEON          = 0,
+    CpuFeatureARM_NEON      = CpuFeatureNEON,
+#elif defined(Q_PROCESSOR_MIPS)
+    CpuFeatureDSP           = 0,
+    CpuFeatureDSPR2         = 1,
+#elif defined(Q_PROCESSOR_X86)
+    // The order of the flags is jumbled so it matches most closely the bits in CPUID
+    // Out of order:
+    CpuFeatureSSE2          = 1,                       // uses the bit for PCLMULQDQ
+    // in level 1, ECX
+    CpuFeatureSSE3          = (0 + 0),
+    CpuFeatureSSSE3         = (0 + 9),
+    CpuFeatureSSE4_1        = (0 + 19),
+    CpuFeatureSSE4_2        = (0 + 20),
+    CpuFeatureMOVBE         = (0 + 22),
+    CpuFeaturePOPCNT        = (0 + 23),
+    CpuFeatureAES           = (0 + 25),
+    CpuFeatureAVX           = (0 + 28),
+    CpuFeatureF16C          = (0 + 29),
+    CpuFeatureRDRAND        = (0 + 30),
+    // 31 is always zero and we've used it for the QSimdInitialized
+
+    // in level 7, leaf 0, EBX
+    CpuFeatureBMI           = (32 + 3),
+    CpuFeatureHLE           = (32 + 4),
+    CpuFeatureAVX2          = (32 + 5),
+    CpuFeatureBMI2          = (32 + 8),
+    CpuFeatureRTM           = (32 + 11),
+    CpuFeatureAVX512F       = (32 + 16),
+    CpuFeatureAVX512DQ      = (32 + 17),
+    CpuFeatureRDSEED        = (32 + 18),
+    CpuFeatureAVX512IFMA    = (32 + 21),
+    CpuFeatureAVX512PF      = (32 + 26),
+    CpuFeatureAVX512ER      = (32 + 27),
+    CpuFeatureAVX512CD      = (32 + 28),
+    CpuFeatureSHA           = (32 + 29),
+    CpuFeatureAVX512BW      = (32 + 30),
+    CpuFeatureAVX512VL      = (32 + 31),
+
+    // in level 7, leaf 0, ECX (out of order, for now)
+    CpuFeatureAVX512VBMI    = 2,                       // uses the bit for DTES64
+#endif
 
     // used only to indicate that the CPU detection was initialised
     QSimdInitialized = 0x80000000
 };
 
-static const uint qCompilerCpuFeatures = 0
-#if defined __RTM__
-        | RTM
+static const quint64 qCompilerCpuFeatures = 0
+#if defined __SHA__
+        | (Q_UINT64_C(1) << CpuFeatureSHA)
 #endif
-#if defined __HLE__
-        | HLE
+#if defined __AES__
+        | (Q_UINT64_C(1) << CpuFeatureAES)
+#endif
+#if defined __RTM__
+        | (Q_UINT64_C(1) << CpuFeatureRTM)
+#endif
+#ifdef __RDRND__
+        | (Q_UINT64_C(1) << CpuFeatureRDRAND)
+#endif
+#ifdef __RDSEED__
+        | (Q_UINT64_C(1) << CpuFeatureRDSEED)
+#endif
+#if defined __BMI__
+        | (Q_UINT64_C(1) << CpuFeatureBMI)
+#endif
+#if defined __BMI2__
+        | (Q_UINT64_C(1) << CpuFeatureBMI2)
+#endif
+#if defined __F16C__
+        | (Q_UINT64_C(1) << CpuFeatureF16C)
+#endif
+#if defined __POPCNT__
+        | (Q_UINT64_C(1) << CpuFeaturePOPCNT)
+#endif
+#if defined __MOVBE__           // GCC and Clang don't seem to define this
+        | (Q_UINT64_C(1) << CpuFeatureMOVBE)
+#endif
+#if defined __AVX512F__
+        | (Q_UINT64_C(1) << CpuFeatureAVX512F)
+#endif
+#if defined __AVX512CD__
+        | (Q_UINT64_C(1) << CpuFeatureAVX512CD)
+#endif
+#if defined __AVX512ER__
+        | (Q_UINT64_C(1) << CpuFeatureAVX512ER)
+#endif
+#if defined __AVX512PF__
+        | (Q_UINT64_C(1) << CpuFeatureAVX512PF)
+#endif
+#if defined __AVX512BW__
+        | (Q_UINT64_C(1) << CpuFeatureAVX512BW)
+#endif
+#if defined __AVX512DQ__
+        | (Q_UINT64_C(1) << CpuFeatureAVX512DQ)
+#endif
+#if defined __AVX512VL__
+        | (Q_UINT64_C(1) << CpuFeatureAVX512VL)
+#endif
+#if defined __AVX512IFMA__
+        | (Q_UINT64_C(1) << CpuFeatureAVX512IFMA)
+#endif
+#if defined __AVX512VBMI__
+        | (Q_UINT64_C(1) << CpuFeatureAVX512VBMI)
 #endif
 #if defined __AVX2__
-        | AVX2
+        | (Q_UINT64_C(1) << CpuFeatureAVX2)
 #endif
 #if defined __AVX__
-        | AVX
+        | (Q_UINT64_C(1) << CpuFeatureAVX)
 #endif
 #if defined __SSE4_2__
-        | SSE4_2
+        | (Q_UINT64_C(1) << CpuFeatureSSE4_2)
 #endif
 #if defined __SSE4_1__
-        | SSE4_1
+        | (Q_UINT64_C(1) << CpuFeatureSSE4_1)
 #endif
 #if defined __SSSE3__
-        | SSSE3
+        | (Q_UINT64_C(1) << CpuFeatureSSSE3)
 #endif
 #if defined __SSE3__
-        | SSE3
+        | (Q_UINT64_C(1) << CpuFeatureSSE3)
 #endif
 #if defined __SSE2__
-        | SSE2
+        | (Q_UINT64_C(1) << CpuFeatureSSE2)
 #endif
 #if defined __ARM_NEON__
-        | NEON
+        | (Q_UINT64_C(1) << CpuFeatureNEON)
 #endif
 #if defined __mips_dsp
-        | DSP
+        | (Q_UINT64_C(1) << CpuFeatureDSP)
 #endif
 #if defined __mips_dspr2
-        | DSPR2
+        | (Q_UINT64_C(1) << CpuFeatureDSPR2)
 #endif
         ;
 
-extern Q_CORE_EXPORT QBasicAtomicInt qt_cpu_features;
+#ifdef Q_ATOMIC_INT64_IS_SUPPORTED
+extern Q_CORE_EXPORT QBasicAtomicInteger<quint64> qt_cpu_features[1];
+#else
+extern Q_CORE_EXPORT QBasicAtomicInteger<unsigned> qt_cpu_features[2];
+#endif
 Q_CORE_EXPORT void qDetectCpuFeatures();
 
-static inline uint qCpuFeatures()
+static inline quint64 qCpuFeatures()
 {
-    int features = qt_cpu_features.load();
+    quint64 features = qt_cpu_features[0].load();
+#ifndef Q_ATOMIC_INT64_IS_SUPPORTED
+    features |= quint64(qt_cpu_features[1].load()) << 32;
+#endif
     if (Q_UNLIKELY(features == 0)) {
         qDetectCpuFeatures();
-        features = qt_cpu_features.load();
+        features = qt_cpu_features[0].load();
+#ifndef Q_ATOMIC_INT64_IS_SUPPORTED
+        features |= quint64(qt_cpu_features[1].load()) << 32;
+#endif
         Q_ASSUME(features != 0);
     }
-    return uint(features);
+    return features;
 }
 
-#define qCpuHasFeature(feature)  ((qCompilerCpuFeatures & (feature)) || (qCpuFeatures() & (feature)))
+#define qCpuHasFeature(feature)     ((qCompilerCpuFeatures & (Q_UINT64_C(1) << CpuFeature ## feature)) \
+                                     || (qCpuFeatures() & (Q_UINT64_C(1) << CpuFeature ## feature)))
 
 #ifdef Q_PROCESSOR_X86
 // Bit scan functions for x86

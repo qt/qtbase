@@ -35,7 +35,7 @@
 #include <private/qimage_p.h>
 #include <private/qsimd_p.h>
 
-#if defined(__ARM_NEON__) && !defined(Q_PROCESSOR_ARM_64)
+#if defined(__ARM_NEON__)
 
 QT_BEGIN_NAMESPACE
 
@@ -55,6 +55,7 @@ Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_neon(quint32 *dst, cons
 
     if ((len - offsetToAlignOn8Bytes) >= 8) {
         const quint32 *const simdEnd = end - 7;
+#if !defined(Q_PROCESSOR_ARM_64)
         register uint8x8_t fullVector asm ("d3") = vdup_n_u8(0xff);
         do {
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
@@ -76,6 +77,31 @@ Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_neon(quint32 *dst, cons
             );
 #endif
         } while (dst < simdEnd);
+#else
+        register uint8x8_t fullVector asm ("v3") = vdup_n_u8(0xff);
+        do {
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+            asm volatile (
+                "ld3     { v4.8b, v5.8b, v6.8b }, [%[SRC]], #24 \n\t"
+                "st4     { v3.8b, v4.8b, v5.8b, v6.8b }, [%[DST]], #32 \n\t"
+                : [DST]"+r" (dst), [SRC]"+r" (src)
+                : "w"(fullVector)
+                : "memory", "v4", "v5", "v6"
+            );
+#else
+            asm volatile (
+                "ld3     { v0.8b, v1.8b, v2.8b }, [%[SRC]], #24 \n\t"
+                "mov v4.8b, v2.8b\n\t"
+                "mov v2.8b, v0.8b\n\t"
+                "mov v0.8b, v4.8b\n\t"
+                "st4     { v0.8b, v1.8b, v2.8b, v3.8b }, [%[DST]], #32 \n\t"
+                : [DST]"+r" (dst), [SRC]"+r" (src)
+                : "w"(fullVector)
+                : "memory", "v0", "v1", "v2", "v4"
+            );
+#endif
+        } while (dst < simdEnd);
+#endif
     }
 
     while (dst != end) {
@@ -103,4 +129,4 @@ void convert_RGB888_to_RGB32_neon(QImageData *dest, const QImageData *src, Qt::I
 
 QT_END_NAMESPACE
 
-#endif // defined(__ARM_NEON__) && !defined(Q_PROCESSOR_ARM_64)
+#endif // defined(__ARM_NEON__)

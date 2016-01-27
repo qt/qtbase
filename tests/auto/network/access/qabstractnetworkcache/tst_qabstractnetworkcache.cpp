@@ -294,6 +294,7 @@ void tst_QAbstractNetworkCache::runTest()
 
     QNetworkAccessManager manager;
     NetworkDiskCache *diskCache = new NetworkDiskCache(&manager);
+    QVERIFY2(diskCache->tempDir.isValid(), qPrintable(diskCache->tempDir.errorString()));
     manager.setCache(diskCache);
     QCOMPARE(diskCache->gotData, false);
 
@@ -344,6 +345,7 @@ void tst_QAbstractNetworkCache::checkSynchronous()
 
     QNetworkAccessManager manager;
     NetworkDiskCache *diskCache = new NetworkDiskCache(&manager);
+    QVERIFY2(diskCache->tempDir.isValid(), qPrintable(diskCache->tempDir.errorString()));
     manager.setCache(diskCache);
     QCOMPARE(diskCache->gotData, false);
 
@@ -392,6 +394,7 @@ void tst_QAbstractNetworkCache::deleteCache()
 {
     QNetworkAccessManager manager;
     NetworkDiskCache *diskCache = new NetworkDiskCache(&manager);
+    QVERIFY2(diskCache->tempDir.isValid(), qPrintable(diskCache->tempDir.errorString()));
     manager.setCache(diskCache);
 
     QString url = "httpcachetest_cachecontrol.cgi?max-age=1000";

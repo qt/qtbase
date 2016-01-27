@@ -108,12 +108,12 @@ void QCocoaMenuBar::insertMenu(QPlatformMenu *platformMenu, QPlatformMenu *befor
 #endif
 
     if (m_menus.contains(menu)) {
-        qWarning() << Q_FUNC_INFO << "This menu already belongs to the menubar, remove it first";
+        qWarning("This menu already belongs to the menubar, remove it first");
         return;
     }
 
     if (beforeMenu && !m_menus.contains(beforeMenu)) {
-        qWarning() << Q_FUNC_INFO << "The before menu does not belong to the menubar";
+        qWarning("The before menu does not belong to the menubar");
         return;
     }
 
@@ -138,7 +138,7 @@ void QCocoaMenuBar::removeMenu(QPlatformMenu *platformMenu)
 {
     QCocoaMenu *menu = static_cast<QCocoaMenu *>(platformMenu);
     if (!m_menus.contains(menu)) {
-        qWarning() << Q_FUNC_INFO << "Trying to remove a menu that does not belong to the menubar";
+        qWarning("Trying to remove a menu that does not belong to the menubar");
         return;
     }
     m_menus.removeOne(menu);

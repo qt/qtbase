@@ -191,10 +191,10 @@ static UINT64 fromInterleaving(UINT64 x)
    return x;
 }
 
-static void setInterleavedWordsInto8bytes(UINT8* dest, UINT32* evenAndOdd)
+static void setInterleavedWordsInto8bytes(UINT8* dest, const UINT32* evenAndOdd)
 {
 #if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
-    ((UINT64*)dest)[0] = fromInterleaving(*(UINT64*)evenAndOdd);
+    ((UINT64*)dest)[0] = fromInterleaving(*(const UINT64*)evenAndOdd);
 #else // (PLATFORM_BYTE_ORDER == IS_BIG_ENDIAN)
     // This can be optimized
     UINT64 evenAndOddWord = (UINT64)evenAndOdd[0] ^ ((UINT64)evenAndOdd[1] << 32);
@@ -214,7 +214,7 @@ static void setInterleavedWordsInto8bytes(UINT8* dest, UINT32* evenAndOdd)
     { \
         unsigned i; \
         for(i=0; i<(laneCount); i++) \
-            setInterleavedWordsInto8bytes(data+i*8, (UINT32*)state+i*2); \
+            setInterleavedWordsInto8bytes(data+i*8, (const UINT32*)state+i*2); \
     }
 
 #endif // With or without interleaving tables

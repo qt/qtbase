@@ -40,11 +40,13 @@
 
 #include <QtGui/QFont>
 #include <QtGui/QGuiApplication>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <QtCore/qmath.h>
 #include <QtCore/QDebug>
 #include <QtCore/QtEndian>
 #include <QtCore/QThreadStorage>
+#include <QtCore/private/qsystemlibrary_p.h>
 
 #include <wchar.h>
 
@@ -58,6 +60,38 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+#ifndef QT_NO_DIRECTWRITE
+// ### fixme: Consider direct linking of dwrite.dll once Windows Vista pre SP2 is dropped (QTBUG-49711)
+
+typedef HRESULT (WINAPI *DWriteCreateFactoryType)(DWRITE_FACTORY_TYPE, const IID &, IUnknown **);
+
+static inline DWriteCreateFactoryType resolveDWriteCreateFactory()
+{
+    if (QSysInfo::windowsVersion() < QSysInfo::WV_VISTA)
+        return Q_NULLPTR;
+    QSystemLibrary library(QStringLiteral("dwrite"));
+    QFunctionPointer result = library.resolve("DWriteCreateFactory");
+    if (Q_UNLIKELY(!result)) {
+        qWarning("Unable to load dwrite.dll");
+        return Q_NULLPTR;
+    }
+    return reinterpret_cast<DWriteCreateFactoryType>(result);
+}
+
+static IDWriteFactory *createDirectWriteFactory()
+{
+    static const DWriteCreateFactoryType dWriteCreateFactory = resolveDWriteCreateFactory();
+    if (!dWriteCreateFactory)
+        return Q_NULLPTR;
+    IUnknown *result = Q_NULLPTR;
+    if (FAILED(dWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &result))) {
+        qErrnoWarning("DWriteCreateFactory failed");
+        return Q_NULLPTR;
+    }
+    return reinterpret_cast<IDWriteFactory *>(result);
+}
+#endif // !QT_NO_DIRECTWRITE
 
 // Helper classes for creating font engines directly from font data
 namespace {
@@ -465,14 +499,9 @@ namespace {
     class CustomFontFileLoader
     {
     public:
-        CustomFontFileLoader() : m_directWriteFactory(0), m_directWriteFontFileLoader(0)
+        CustomFontFileLoader() : m_directWriteFactory(createDirectWriteFactory()), m_directWriteFontFileLoader(0)
         {
-            HRESULT hres = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
-                                               __uuidof(IDWriteFactory),
-                                               reinterpret_cast<IUnknown **>(&m_directWriteFactory));
-            if (FAILED(hres)) {
-                qErrnoWarning(hres, "%s: DWriteCreateFactory failed.", __FUNCTION__);
-            } else {
+            if (m_directWriteFactory) {
                 m_directWriteFontFileLoader = new DirectWriteFontFileLoader();
                 m_directWriteFactory->RegisterFontFileLoader(m_directWriteFontFileLoader);
             }
@@ -570,15 +599,9 @@ qreal QWindowsFontDatabase::fontSmoothingGamma()
 static inline bool initDirectWrite(QWindowsFontEngineData *d)
 {
     if (!d->directWriteFactory) {
-        const HRESULT hr = DWriteCreateFactory(
-                    DWRITE_FACTORY_TYPE_SHARED,
-                    __uuidof(IDWriteFactory),
-                    reinterpret_cast<IUnknown **>(&d->directWriteFactory)
-                    );
-        if (FAILED(hr)) {
-            qErrnoWarning("%s: DWriteCreateFactory failed", __FUNCTION__);
+        d->directWriteFactory = createDirectWriteFactory();
+        if (!d->directWriteFactory)
             return false;
-        }
     }
     if (!d->directWriteGdiInterop) {
         const HRESULT  hr = d->directWriteFactory->GetGdiInterop(&d->directWriteGdiInterop);
@@ -606,6 +629,7 @@ static inline bool initDirectWrite(QWindowsFontEngineData *d)
     \ingroup qt-lighthouse-win
 */
 
+#ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const QFontDef &def)
 {
     QDebugStateSaver saver(d);
@@ -617,6 +641,7 @@ QDebug operator<<(QDebug d, const QFontDef &def)
         << def.hintingPreference;
     return d;
 }
+#endif // !QT_NO_DEBUG_STREAM
 
 static inline QFontDatabase::WritingSystem writingSystemFromCharSet(uchar charSet)
 {
@@ -933,7 +958,7 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
 }
 
 static int QT_WIN_CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetric,
-                                     int type, LPARAM)
+                                     int type, LPARAM registerAlias)
 {
     const QString familyName = QString::fromWCharArray(f->elfLogFont.lfFaceName);
     const uchar charSet = f->elfLogFont.lfCharSet;
@@ -943,13 +968,13 @@ static int QT_WIN_CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetr
     // NEWTEXTMETRICEX is a NEWTEXTMETRIC, which according to the documentation is
     // identical to a TEXTMETRIC except for the last four members, which we don't use
     // anyway
-    addFontToDatabase(familyName, charSet, (TEXTMETRIC *)textmetric, &signature, type, false);
+    addFontToDatabase(familyName, charSet, (TEXTMETRIC *)textmetric, &signature, type, registerAlias);
 
     // keep on enumerating
     return 1;
 }
 
-void QWindowsFontDatabase::populateFamily(const QString &familyName)
+void QWindowsFontDatabase::populateFamily(const QString &familyName, bool registerAlias)
 {
     qCDebug(lcQpaFonts) << familyName;
     if (familyName.size() >= LF_FACESIZE) {
@@ -962,8 +987,13 @@ void QWindowsFontDatabase::populateFamily(const QString &familyName)
     familyName.toWCharArray(lf.lfFaceName);
     lf.lfFaceName[familyName.size()] = 0;
     lf.lfPitchAndFamily = 0;
-    EnumFontFamiliesEx(dummy, &lf, (FONTENUMPROC)storeFont, 0, 0);
+    EnumFontFamiliesEx(dummy, &lf, (FONTENUMPROC)storeFont, (LPARAM)registerAlias, 0);
     ReleaseDC(0, dummy);
+}
+
+void QWindowsFontDatabase::populateFamily(const QString &familyName)
+{
+    populateFamily(familyName, false);
 }
 
 namespace {
@@ -1075,11 +1105,7 @@ QWindowsFontDatabase::~QWindowsFontDatabase()
 
 QFontEngineMulti *QWindowsFontDatabase::fontEngineMulti(QFontEngine *fontEngine, QChar::Script script)
 {
-    if (script == QChar::Script_Common)
-        return new QWindowsMultiFontEngine(fontEngine, script);
-    // ### as long as fallbacksForFamily() does not take script parameter into account,
-    // prefer QFontEngineMulti's loadEngine() implementation for complex scripts
-    return QPlatformFontDatabase::fontEngineMulti(fontEngine, script);
+    return new QWindowsMultiFontEngine(fontEngine, script);
 }
 
 QFontEngine * QWindowsFontDatabase::fontEngine(const QFontDef &fontDef, void *handle)
@@ -1097,8 +1123,11 @@ QFontEngine *QWindowsFontDatabase::fontEngine(const QByteArray &fontData, qreal 
     QFontEngine *fontEngine = 0;
 
 #if !defined(QT_NO_DIRECTWRITE)
-    if (hintingPreference == QFont::PreferDefaultHinting
-        || hintingPreference == QFont::PreferFullHinting)
+    bool useDirectWrite = (hintingPreference == QFont::PreferNoHinting)
+                       || (hintingPreference == QFont::PreferVerticalHinting)
+                       || (QHighDpiScaling::isActive() && hintingPreference == QFont::PreferDefaultHinting);
+
+    if (!useDirectWrite)
 #endif
     {
         GUID guid;
@@ -1210,11 +1239,13 @@ QT_WARNING_POP
 
         fontFile->Release();
 
-        fontEngine = new QWindowsFontEngineDirectWrite(directWriteFontFace, pixelSize,
+        fontEngine = new QWindowsFontEngineDirectWrite(directWriteFontFace,
+                                                       pixelSize,
                                                        fontEngineData);
 
         // Get font family from font data
         fontEngine->fontDef.family = font.familyName();
+        fontEngine->fontDef.hintingPreference = hintingPreference;
 
         directWriteFontFace->Release();
     }
@@ -1382,7 +1413,7 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
 
         // Fonts based on files are added via populate, as they will show up in font enumeration.
         for (int j = 0; j < families.count(); ++j)
-            populateFamily(families.at(j));
+            populateFamily(families.at(j), true);
     }
 
     m_applicationFonts << font;
@@ -1661,11 +1692,10 @@ QString QWindowsFontDatabase::familyForStyleHint(QFont::StyleHint styleHint)
 
 QStringList QWindowsFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
-    QStringList result = QPlatformFontDatabase::fallbacksForFamily(family, style, styleHint, script);
-    if (!result.isEmpty())
-        return result;
+    QStringList result;
     result.append(QWindowsFontDatabase::familyForStyleHint(styleHint));
     result.append(QWindowsFontDatabase::extraTryFontsForFamily(family));
+    result.append(QPlatformFontDatabase::fallbacksForFamily(family, style, styleHint, script));
 
     qCDebug(lcQpaFonts) << __FUNCTION__ << family << style << styleHint
         << script << result;
@@ -1702,7 +1732,8 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
 
 #if !defined(QT_NO_DIRECTWRITE)
     bool useDirectWrite = (request.hintingPreference == QFont::PreferNoHinting)
-                       || (request.hintingPreference == QFont::PreferVerticalHinting);
+                       || (request.hintingPreference == QFont::PreferVerticalHinting)
+                       || (QHighDpiScaling::isActive() && request.hintingPreference == QFont::PreferDefaultHinting);
     if (useDirectWrite && initDirectWrite(data.data())) {
         const QString fam = QString::fromWCharArray(lf.lfFaceName);
         const QString nameSubstitute = QWindowsFontEngineDirectWrite::fontNameSubstitute(fam);

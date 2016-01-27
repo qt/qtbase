@@ -60,6 +60,7 @@ class tst_QGuiApplication: public tst_QCoreApplication
     Q_OBJECT
 
 private slots:
+    void initTestCase();
     void cleanup();
     void displayName();
     void firstWindowTitle();
@@ -83,6 +84,21 @@ private slots:
     void settableStyleHints_data();
     void settableStyleHints(); // Needs to run last as it changes style hints.
 };
+
+void tst_QGuiApplication::initTestCase()
+{
+#ifdef QT_QPA_DEFAULT_PLATFORM_NAME
+    if ((QString::compare(QStringLiteral(QT_QPA_DEFAULT_PLATFORM_NAME),
+         QStringLiteral("eglfs"), Qt::CaseInsensitive) == 0) ||
+        (QString::compare(QString::fromLatin1(qgetenv("QT_QPA_PLATFORM")),
+         QStringLiteral("eglfs"), Qt::CaseInsensitive) == 0)) {
+        // Set env variables to disable input and cursor because eglfs is single fullscreen window
+        // and trying to initialize input and cursor will crash test.
+        qputenv("QT_QPA_EGLFS_DISABLE_INPUT", "1");
+        qputenv("QT_QPA_EGLFS_HIDECURSOR", "1");
+    }
+#endif
+}
 
 void tst_QGuiApplication::cleanup()
 {
@@ -155,7 +171,7 @@ void tst_QGuiApplication::focusObject()
     int argc = 0;
     QGuiApplication app(argc, 0);
 
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
     QObject obj1, obj2, obj3;
@@ -326,7 +342,7 @@ void tst_QGuiApplication::changeFocusWindow()
     int argc = 0;
     QGuiApplication app(argc, 0);
 
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
     const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
@@ -400,11 +416,11 @@ void tst_QGuiApplication::keyboardModifiers()
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
 
     // shortcut events
-    QWindowSystemInterface::tryHandleShortcutEvent(window.data(), Qt::Key_5, Qt::MetaModifier);
+    QTest::keyEvent(QTest::Shortcut, window.data(), Qt::Key_5, Qt::MetaModifier);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::MetaModifier);
-    QWindowSystemInterface::tryHandleShortcutEvent(window.data(), Qt::Key_Period, Qt::NoModifier);
+    QTest::keyEvent(QTest::Shortcut, window.data(), Qt::Key_Period, Qt::NoModifier);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
-    QWindowSystemInterface::tryHandleShortcutEvent(window.data(), Qt::Key_0, Qt::ControlModifier);
+    QTest::keyEvent(QTest::Shortcut, window.data(), Qt::Key_0, Qt::ControlModifier);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
 
     // key events

@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 
         for (int i = 0; i < items; ++i) {
             for (int j = 0; j < indentations[i]; ++j)
-                std::cout << " ";
+                std::cout << ' ';
             std::cout << names[i].toLocal8Bit().constData() << std::endl;
         }
     }

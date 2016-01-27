@@ -150,10 +150,17 @@ static inline QTouchDevice *createTouchDevice()
 QWindowsMouseHandler::QWindowsMouseHandler() :
     m_windowUnderMouse(0),
     m_trackedWindow(0),
-    m_touchDevice(createTouchDevice()),
+    m_touchDevice(Q_NULLPTR),
     m_leftButtonDown(false),
     m_previousCaptureWindow(0)
 {
+}
+
+QTouchDevice *QWindowsMouseHandler::ensureTouchDevice()
+{
+    if (!m_touchDevice)
+        m_touchDevice = createTouchDevice();
+    return m_touchDevice;
 }
 
 Qt::MouseButtons QWindowsMouseHandler::queryMouseButtons()
@@ -368,7 +375,10 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
                                              QWindowsKeyMapper::queryKeyboardModifiers(),
                                              source);
     m_previousCaptureWindow = hasCapture ? window : 0;
-    return true;
+    // QTBUG-48117, force synchronous handling for the extra buttons so that WM_APPCOMMAND
+    // is sent for unhandled WM_XBUTTONDOWN.
+    return (msg.message != WM_XBUTTONUP && msg.message != WM_XBUTTONDOWN && msg.message != WM_XBUTTONDBLCLK)
+        || QWindowSystemInterface::flushWindowSystemEvents();
 }
 
 static bool isValidWheelReceiver(QWindow *candidate)
@@ -465,17 +475,25 @@ bool QWindowsMouseHandler::translateScrollEvent(QWindow *window, HWND,
 }
 
 // from bool QApplicationPrivate::translateTouchEvent()
-bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND hwnd,
+bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
                                                QtWindows::WindowsEventType,
                                                MSG msg, LRESULT *)
 {
 #ifndef Q_OS_WINCE
-    Q_UNUSED(hwnd);
     typedef QWindowSystemInterface::TouchPoint QTouchPoint;
     typedef QList<QWindowSystemInterface::TouchPoint> QTouchPointList;
 
-    Q_ASSERT(m_touchDevice);
-    const QRect screenGeometry = window->screen()->geometry();
+    if (!QWindowsContext::instance()->initTouch()) {
+        qWarning("Unable to initialize touch handling.");
+        return true;
+    }
+
+    const QScreen *screen = window->screen();
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+    if (!screen)
+        return true;
+    const QRect screenGeometry = screen->geometry();
 
     const int winTouchPointCount = msg.wParam;
     QScopedArrayPointer<TOUCHINPUT> winTouchInputs(new TOUCHINPUT[winTouchPointCount]);
@@ -484,8 +502,6 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND hwnd,
     QTouchPointList touchPoints;
     touchPoints.reserve(winTouchPointCount);
     Qt::TouchPointStates allStates = 0;
-
-    Q_ASSERT(QWindowsContext::user32dll.getTouchInputInfo);
 
     QWindowsContext::user32dll.getTouchInputInfo((HANDLE) msg.lParam, msg.wParam, winTouchInputs.data(), sizeof(TOUCHINPUT));
     for (int i = 0; i < winTouchPointCount; ++i) {
@@ -537,8 +553,24 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND hwnd,
     QWindowSystemInterface::handleTouchEvent(window,
                                              m_touchDevice,
                                              touchPoints);
+#else // !Q_OS_WINCE
+    Q_UNUSED(window)
+    Q_UNUSED(msg)
+#endif
     return true;
-#else //Q_OS_WINCE
+
+}
+
+bool QWindowsMouseHandler::translateGestureEvent(QWindow *window, HWND hwnd,
+                                                 QtWindows::WindowsEventType,
+                                                 MSG msg, LRESULT *)
+{
+#ifndef Q_OS_WINCE
+    Q_UNUSED(window)
+    Q_UNUSED(hwnd)
+    Q_UNUSED(msg)
+    return false;
+#else // !Q_OS_WINCE
     GESTUREINFO gi;
     memset(&gi, 0, sizeof(GESTUREINFO));
     gi.cbSize = sizeof(GESTUREINFO);
@@ -551,7 +583,12 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND hwnd,
     if (gi.dwID != GID_DIRECTMANIPULATION)
         return true;
     static QPoint lastTouchPos;
-    const QRect screenGeometry = window->screen()->geometry();
+    const QScreen *screen = window->screen();
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+    if (!screen)
+        return true;
+    const QRect screenGeometry = screen->geometry();
     QWindowSystemInterface::TouchPoint touchPoint;
     static QWindowSystemInterface::TouchPoint touchPoint2;
     touchPoint.id = 0;//gi.dwInstanceID;
@@ -617,9 +654,8 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND hwnd,
             QWindowSystemInterface::handleEnterEvent(window);
         m_windowUnderMouse = window;
     }
-
     return true;
-#endif
+#endif // Q_OS_WINCE
 }
 
 QT_END_NAMESPACE

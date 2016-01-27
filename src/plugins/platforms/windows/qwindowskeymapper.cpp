@@ -33,8 +33,8 @@
 
 #include "qwindowskeymapper.h"
 #include "qwindowscontext.h"
+#include "qwindowsintegration.h"
 #include "qwindowswindow.h"
-#include "qwindowsguieventdispatcher.h"
 #include "qwindowsinputcontext.h"
 
 #include <QtGui/QWindow>
@@ -42,6 +42,7 @@
 #include <private/qguiapplication_p.h>
 #include <private/qhighdpiscaling_p.h>
 #include <QtGui/QKeyEvent>
+#include <QtPlatformSupport/private/qwindowsguieventdispatcher_p.h>
 
 #if defined(WM_APPCOMMAND)
 #  ifndef FAPPCOMMAND_MOUSE
@@ -1074,7 +1075,9 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
         // results, if we map this virtual key-code directly (for eg '?' US layouts). So try
         // to find the correct key using the current message parameters & keyboard state.
         if (uch.isNull() && msgType == WM_IME_KEYDOWN) {
-            if (!QWindowsInputContext::instance()->isComposing())
+            const QWindowsInputContext *windowsInputContext =
+                qobject_cast<const QWindowsInputContext *>(QWindowsIntegration::instance()->inputContext());
+            if (!(windowsInputContext && windowsInputContext->isComposing()))
                 vk_key = ImmGetVirtualKey((HWND)window->winId());
             BYTE keyState[256];
             wchar_t newKey[3] = {0};

@@ -127,14 +127,13 @@ static QNetworkInterface::InterfaceFlags convertFlags(uint rawFlags)
 #ifdef QT_NO_GETIFADDRS
 // getifaddrs not available
 
-static const int STORAGEBUFFER_GROWTH = 256;
-
 static QSet<QByteArray> interfaceNames(int socket)
 {
     QSet<QByteArray> result;
 #ifdef QT_NO_IPV6IFNAME
     QByteArray storageBuffer;
     struct ifconf interfaceList;
+    static const int STORAGEBUFFER_GROWTH = 256;
 
     forever {
         // grow the storage buffer
@@ -186,9 +185,14 @@ static QNetworkInterfacePrivate *findInterface(int socket, QList<QNetworkInterfa
     QNetworkInterfacePrivate *iface = 0;
     int ifindex = 0;
 
-#ifndef QT_NO_IPV6IFNAME
+#if !defined(QT_NO_IPV6IFNAME) || defined(SIOCGIFINDEX)
     // Get the interface index
+#  ifdef SIOCGIFINDEX
+    if (qt_safe_ioctl(socket, SIOCGIFINDEX, &req) >= 0)
+        ifindex = req.ifr_ifindex;
+#  else
     ifindex = if_nametoindex(req.ifr_name);
+#  endif
 
     // find the interface data
     QList<QNetworkInterfacePrivate *>::Iterator if_it = interfaces.begin();
@@ -214,6 +218,27 @@ static QNetworkInterfacePrivate *findInterface(int socket, QList<QNetworkInterfa
         iface = new QNetworkInterfacePrivate;
         iface->index = ifindex;
         interfaces << iface;
+    }
+
+    return iface;
+}
+
+static QList<QNetworkInterfacePrivate *> interfaceListing()
+{
+    QList<QNetworkInterfacePrivate *> interfaces;
+
+    int socket;
+    if ((socket = qt_safe_socket(AF_INET, SOCK_STREAM, IPPROTO_IP)) == -1)
+        return interfaces;      // error
+
+    QSet<QByteArray> names = interfaceNames(socket);
+    QSet<QByteArray>::ConstIterator it = names.constBegin();
+    for ( ; it != names.constEnd(); ++it) {
+        ifreq req;
+        memset(&req, 0, sizeof(ifreq));
+        memcpy(req.ifr_name, *it, qMin<int>(it->length() + 1, sizeof(req.ifr_name) - 1));
+
+        QNetworkInterfacePrivate *iface = findInterface(socket, interfaces, req);
 
 #ifdef SIOCGIFNAME
         // Get the canonical name
@@ -242,27 +267,6 @@ static QNetworkInterfacePrivate *findInterface(int socket, QList<QNetworkInterfa
             iface->hardwareAddress = iface->makeHwAddress(6, addr);
         }
 #endif
-    }
-
-    return iface;
-}
-
-static QList<QNetworkInterfacePrivate *> interfaceListing()
-{
-    QList<QNetworkInterfacePrivate *> interfaces;
-
-    int socket;
-    if ((socket = qt_safe_socket(AF_INET, SOCK_STREAM, IPPROTO_IP)) == -1)
-        return interfaces;      // error
-
-    QSet<QByteArray> names = interfaceNames(socket);
-    QSet<QByteArray>::ConstIterator it = names.constBegin();
-    for ( ; it != names.constEnd(); ++it) {
-        ifreq req;
-        memset(&req, 0, sizeof(ifreq));
-        memcpy(req.ifr_name, *it, qMin<int>(it->length() + 1, sizeof(req.ifr_name) - 1));
-
-        QNetworkInterfacePrivate *iface = findInterface(socket, interfaces, req);
 
         // Get the interface broadcast address
         QNetworkAddressEntry entry;
@@ -310,10 +314,15 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
 {
     QList<QNetworkInterfacePrivate *> interfaces;
     QSet<QString> seenInterfaces;
+    QVarLengthArray<int, 16> seenIndexes;   // faster than QSet<int>
 
-    // on Linux, AF_PACKET addresses carry the hardware address and interface index;
-    // scan for them first (they're usually first, but we have no guarantee this
-    // will be the case forever)
+    // On Linux, glibc, uClibc and MUSL obtain the address listing via two
+    // netlink calls: first an RTM_GETLINK to obtain the interface listing,
+    // then one RTM_GETADDR to get all the addresses (uClibc implementation is
+    // copied from glibc; Bionic currently doesn't support getifaddrs). They
+    // synthesize AF_PACKET addresses from the RTM_GETLINK responses, which
+    // means by construction they currently show up first in the interface
+    // listing.
     for (ifaddrs *ptr = rawList; ptr; ptr = ptr->ifa_next) {
         if (ptr->ifa_addr && ptr->ifa_addr->sa_family == AF_PACKET) {
             sockaddr_ll *sll = (sockaddr_ll *)ptr->ifa_addr;
@@ -324,23 +333,30 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
             iface->flags = convertFlags(ptr->ifa_flags);
             iface->hardwareAddress = iface->makeHwAddress(sll->sll_halen, (uchar*)sll->sll_addr);
 
+            Q_ASSERT(!seenIndexes.contains(iface->index));
+            seenIndexes.append(iface->index);
             seenInterfaces.insert(iface->name);
         }
     }
 
     // see if we missed anything:
-    // virtual interfaces with no HW address have no AF_PACKET
+    // - virtual interfaces with no HW address have no AF_PACKET
+    // - interface labels have no AF_PACKET, but shouldn't be shown as a new interface
     for (ifaddrs *ptr = rawList; ptr; ptr = ptr->ifa_next) {
         if (ptr->ifa_addr && ptr->ifa_addr->sa_family != AF_PACKET) {
             QString name = QString::fromLatin1(ptr->ifa_name);
             if (seenInterfaces.contains(name))
                 continue;
 
+            int ifindex = if_nametoindex(ptr->ifa_name);
+            if (seenIndexes.contains(ifindex))
+                continue;
+
             QNetworkInterfacePrivate *iface = new QNetworkInterfacePrivate;
             interfaces << iface;
             iface->name = name;
             iface->flags = convertFlags(ptr->ifa_flags);
-            iface->index = if_nametoindex(ptr->ifa_name);
+            iface->index = ifindex;
         }
     }
 
@@ -419,7 +435,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
 
     interfaces = createInterfaces(interfaceListing);
     for (ifaddrs *ptr = interfaceListing; ptr; ptr = ptr->ifa_next) {
-        // Get the interface index
+        // Find the interface
         QString name = QString::fromLatin1(ptr->ifa_name);
         QNetworkInterfacePrivate *iface = 0;
         QList<QNetworkInterfacePrivate *>::Iterator if_it = interfaces.begin();
@@ -429,6 +445,18 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
                 iface = *if_it;
                 break;
             }
+
+        if (!iface) {
+            // it may be an interface label, search by interface index
+            int ifindex = if_nametoindex(ptr->ifa_name);
+            for (if_it = interfaces.begin(); if_it != interfaces.end(); ++if_it)
+                if ((*if_it)->index == ifindex) {
+                    // found this interface already
+                    iface = *if_it;
+                    break;
+                }
+        }
+
         if (!iface) {
             // skip all non-IP interfaces
             continue;

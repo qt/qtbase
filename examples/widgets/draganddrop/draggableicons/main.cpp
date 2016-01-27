@@ -50,11 +50,10 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     QWidget mainWidget;
-    QHBoxLayout *horizontalLayout = new QHBoxLayout;
+    QHBoxLayout *horizontalLayout = new QHBoxLayout(&mainWidget);
     horizontalLayout->addWidget(new DragWidget);
     horizontalLayout->addWidget(new DragWidget);
 
-    mainWidget.setLayout(horizontalLayout);
     mainWidget.setWindowTitle(QObject::tr("Draggable Icons"));
     mainWidget.show();
 

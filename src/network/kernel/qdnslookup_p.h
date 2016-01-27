@@ -89,6 +89,8 @@ public:
 
     void _q_lookupFinished(const QDnsLookupReply &reply);
 
+    static const char *msgNoIpV6NameServerAdresses;
+
     bool isFinished;
     QString name;
     QDnsLookup::Type type;

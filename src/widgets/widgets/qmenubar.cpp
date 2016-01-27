@@ -638,7 +638,7 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
     \row \li quit or exit
          \li Application Menu | Quit <application name>
          \li If this entry is not found a default Quit item will be
-            created to call QApplication::quit()
+            created to call QCoreApplication::quit()
     \endtable
 
     You can override this behavior by using the QAction::menuRole()
@@ -1044,8 +1044,8 @@ void QMenuBar::mousePressEvent(QMouseEvent *e)
     if(d->currentAction == action && d->popupState) {
         if(QMenu *menu = d->activeMenu) {
             d->activeMenu = 0;
+            menu->setAttribute(Qt::WA_NoMouseReplay);
             menu->hide();
-            d->closePopupMode = 1;
         }
     } else {
         d->setCurrentAction(action, true);
@@ -1122,14 +1122,14 @@ void QMenuBar::keyPressEvent(QKeyEvent *e)
         }
         break; }
 
-    case Qt::Key_Escape:
+    default:
+        key_consumed = false;
+    }
+
+    if (!key_consumed && e->matches(QKeySequence::Cancel)) {
         d->setCurrentAction(0);
         d->setKeyboardMode(false);
         key_consumed = true;
-        break;
-
-    default:
-        key_consumed = false;
     }
 
     if(!key_consumed &&
@@ -1432,7 +1432,7 @@ bool QMenuBar::event(QEvent *e)
     case QEvent::ShortcutOverride: {
         QKeyEvent *kev = static_cast<QKeyEvent*>(e);
         //we only filter out escape if there is a current action
-        if (kev->key() == Qt::Key_Escape && d->currentAction) {
+        if (kev->matches(QKeySequence::Cancel) && d->currentAction) {
             e->accept();
             return true;
         }

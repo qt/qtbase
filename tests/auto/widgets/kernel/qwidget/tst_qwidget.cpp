@@ -627,7 +627,7 @@ void tst_QWidget::getSetCheck()
 }
 
 tst_QWidget::tst_QWidget()
-    : m_platform(qApp->platformName().toLower())
+    : m_platform(QGuiApplication::platformName().toLower())
     , m_windowsAnimationsEnabled(windowsAnimationsEnabled())
 {
     if (m_windowsAnimationsEnabled) // Disable animations which can interfere with screen grabbing in moveChild(), showAndMoveChild()
@@ -1860,10 +1860,6 @@ void tst_QWidget::activation()
     QCOMPARE(QApplication::activeWindow(), &widget1);
     widget2.showNormal();
     QTest::qWait(waitTime);
-#ifndef Q_OS_WINCE
-    if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA)
-        QEXPECT_FAIL("", "MS introduced new behavior after XP", Continue);
-#endif
     QTest::qWait(waitTime);
     QCOMPARE(QApplication::activeWindow(), &widget2);
     widget2.hide();
@@ -4566,8 +4562,18 @@ void tst_QWidget::setWindowGeometry_data()
     QList<int> windowFlags;
     windowFlags << 0 << Qt::FramelessWindowHint;
 
+    const bool skipEmptyRects = (m_platform == QStringLiteral("windows"));
     foreach (QList<QRect> l, rects) {
         QRect rect = l.first();
+        if (skipEmptyRects) {
+            QList<QRect>::iterator it = l.begin();
+            while (it != l.end()) {
+                if (it->isEmpty())
+                    it = l.erase(it);
+                else
+                    ++it;
+            }
+        }
         foreach (int windowFlag, windowFlags) {
             QTest::newRow(QString("%1,%2 %3x%4, flags %5")
                           .arg(rect.x())
@@ -4616,8 +4622,13 @@ void tst_QWidget::setWindowGeometry()
 
         widget.setGeometry(rect);
         widget.showNormal();
-        if (rect.isValid())
+        if (rect.isValid()) {
             QVERIFY(QTest::qWaitForWindowExposed(&widget));
+        } else {
+            // in case of an invalid rect, wait for the geometry to become
+            // adjusted to the actual (valid) value.
+            QApplication::processEvents();
+        }
         QTRY_COMPARE(widget.geometry(), rect);
 
         // setGeometry() while shown

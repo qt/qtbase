@@ -97,7 +97,7 @@ public:
     bool isNull() const;
 #if QT_DEPRECATED_SINCE(5,0)
     QT_DEPRECATED inline bool isValid() const {
-        const QDateTime currentTime = QDateTime::currentDateTime();
+        const QDateTime currentTime = QDateTime::currentDateTimeUtc();
         return currentTime >= effectiveDate() &&
                currentTime <= expiryDate() &&
                !isBlacklisted();

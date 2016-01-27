@@ -352,7 +352,7 @@ public:
 #elif defined(QPROCESS_USE_SPAWN)
     pid_t spawnChild(pid_t *ppid, const char *workingDirectory, char **argv, char **envp);
 #endif
-    bool processStarted();
+    bool processStarted(QString *errorMessage = Q_NULLPTR);
     void terminateProcess();
     void killProcess();
     void findExitCode();

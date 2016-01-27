@@ -34,6 +34,7 @@
 #include "qeglfsdeviceintegration.h"
 #include "qeglfsintegration.h"
 #include "qeglfscursor.h"
+#include "qeglfswindow.h"
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QGuiApplication>
 #include <private/qguiapplication_p.h>
@@ -175,6 +176,11 @@ EGLNativeDisplayType QEGLDeviceIntegration::platformDisplay() const
     return EGL_DEFAULT_DISPLAY;
 }
 
+EGLDisplay QEGLDeviceIntegration::createDisplay(EGLNativeDisplayType nativeDisplay)
+{
+    return eglGetDisplay(nativeDisplay);
+}
+
 bool QEGLDeviceIntegration::usesDefaultScreen()
 {
     return true;
@@ -206,11 +212,19 @@ QSize QEGLDeviceIntegration::screenSize() const
 
 QDpi QEGLDeviceIntegration::logicalDpi() const
 {
-    QSizeF ps = physicalScreenSize();
-    QSize s = screenSize();
+    const QSizeF ps = physicalScreenSize();
+    const QSize s = screenSize();
 
-    return QDpi(25.4 * s.width() / ps.width(),
-                25.4 * s.height() / ps.height());
+    if (!ps.isEmpty() && !s.isEmpty())
+        return QDpi(25.4 * s.width() / ps.width(),
+                    25.4 * s.height() / ps.height());
+    else
+        return QDpi(100, 100);
+}
+
+qreal QEGLDeviceIntegration::pixelDensity() const
+{
+    return logicalDpi().first / qreal(100);
 }
 
 Qt::ScreenOrientation QEGLDeviceIntegration::nativeOrientation() const
@@ -238,6 +252,11 @@ qreal QEGLDeviceIntegration::refreshRate() const
     return q_refreshRateFromFb(framebuffer);
 }
 
+EGLint QEGLDeviceIntegration::surfaceType() const
+{
+    return EGL_WINDOW_BIT;
+}
+
 QSurfaceFormat QEGLDeviceIntegration::surfaceFormatFor(const QSurfaceFormat &inputFormat) const
 {
     QSurfaceFormat format = inputFormat;
@@ -255,6 +274,11 @@ QSurfaceFormat QEGLDeviceIntegration::surfaceFormatFor(const QSurfaceFormat &inp
 bool QEGLDeviceIntegration::filterConfig(EGLDisplay, EGLConfig) const
 {
     return true;
+}
+
+QEglFSWindow *QEGLDeviceIntegration::createWindow(QWindow *window) const
+{
+    return new QEglFSWindow(window);
 }
 
 EGLNativeWindowType QEGLDeviceIntegration::createNativeWindow(QPlatformWindow *platformWindow,
@@ -311,6 +335,16 @@ void QEGLDeviceIntegration::presentBuffer(QPlatformSurface *surface)
 bool QEGLDeviceIntegration::supportsPBuffers() const
 {
     return true;
+}
+
+bool QEGLDeviceIntegration::supportsSurfacelessContexts() const
+{
+    return true;
+}
+
+void *QEGLDeviceIntegration::wlDisplay() const
+{
+    return Q_NULLPTR;
 }
 
 QT_END_NAMESPACE

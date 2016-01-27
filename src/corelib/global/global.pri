@@ -17,7 +17,8 @@ HEADERS +=  \
         global/qisenum.h \
         global/qtypetraits.h \
         global/qflags.h \
-        global/qhooks_p.h
+        global/qhooks_p.h \
+        global/qversiontagging.h
 
 SOURCES += \
         global/archdetect.cpp \
@@ -27,7 +28,8 @@ SOURCES += \
 	global/qmalloc.cpp \
         global/qnumeric.cpp \
         global/qlogging.cpp \
-        global/qhooks.cpp
+        global/qhooks.cpp \
+        global/qversiontagging.cpp
 
 # qlibraryinfo.cpp includes qconfig.cpp
 INCLUDEPATH += $$QT_BUILD_TREE/src/corelib/global
@@ -53,4 +55,8 @@ journald {
     CONFIG += link_pkgconfig
     PKGCONFIG_PRIVATE += libsystemd-journal
     DEFINES += QT_USE_JOURNALD
+}
+
+syslog {
+    DEFINES += QT_USE_SYSLOG
 }

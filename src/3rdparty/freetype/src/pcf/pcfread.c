@@ -448,14 +448,14 @@ THE SOFTWARE.
   pcf_get_properties( FT_Stream  stream,
                       PCF_Face   face )
   {
-    PCF_ParseProperty  props      = 0;
+    PCF_ParseProperty  props      = NULL;
     PCF_Property       properties = NULL;
     FT_ULong           nprops, i;
     FT_ULong           format, size;
     FT_Error           error;
     FT_Memory          memory     = FT_FACE( face )->memory;
     FT_ULong           string_size;
-    FT_String*         strings    = 0;
+    FT_String*         strings    = NULL;
 
 
     error = pcf_seek_to_table_type( stream,
@@ -485,9 +485,9 @@ THE SOFTWARE.
       goto Bail;
 
     FT_TRACE4(( "  nprop = %d (truncate %d props)\n",
-                (int)nprops, nprops - (int)nprops ));
+                (int)nprops, nprops - (FT_ULong)(int)nprops ));
 
-    nprops = (int)nprops;
+    nprops = (FT_ULong)(int)nprops;
 
     /* rough estimate */
     if ( nprops > size / PCF_PROPERTY_SIZE )
@@ -620,7 +620,7 @@ THE SOFTWARE.
     FT_Error    error;
     FT_Memory   memory  = FT_FACE( face )->memory;
     FT_ULong    format, size;
-    PCF_Metric  metrics = 0;
+    PCF_Metric  metrics = NULL;
     FT_ULong    nmetrics, i;
 
 
@@ -766,8 +766,7 @@ THE SOFTWARE.
 
     FT_TRACE4(( "  number of bitmaps: %d\n", nbitmaps ));
 
-    /* XXX: PCF_Face->nmetrics is signed FT_Long, see pcf.h */
-    if ( face->nmetrics < 0 || nbitmaps != (FT_ULong)face->nmetrics )
+    if ( nbitmaps != face->nmetrics )
       return FT_THROW( Invalid_File_Format );
 
     if ( FT_NEW_ARRAY( offsets, nbitmaps ) )
@@ -795,9 +794,10 @@ THE SOFTWARE.
       if ( error )
         goto Bail;
 
-      sizebitmaps = bitmapSizes[PCF_GLYPH_PAD_INDEX( format )];
+      sizebitmaps = (FT_ULong)bitmapSizes[PCF_GLYPH_PAD_INDEX( format )];
 
-      FT_TRACE4(( "  padding %d implies a size of %ld\n", i, bitmapSizes[i] ));
+      FT_TRACE4(( "  padding %d implies a size of %ld\n",
+                  i, bitmapSizes[i] ));
     }
 
     FT_TRACE4(( "  %d bitmaps, padding index %ld\n",
@@ -817,7 +817,7 @@ THE SOFTWARE.
                     " invalid offset to bitmap data of glyph %d\n", i ));
       }
       else
-        face->metrics[i].bits = stream->pos + offsets[i];
+        face->metrics[i].bits = stream->pos + (FT_ULong)offsets[i];
     }
 
     face->bitmapsFormat = format;
@@ -837,8 +837,10 @@ THE SOFTWARE.
     FT_ULong      format, size;
     int           firstCol, lastCol;
     int           firstRow, lastRow;
-    int           nencoding, encodingOffset;
-    int           i, j, k;
+    FT_ULong      nencoding;
+    int           encodingOffset;
+    int           i, j;
+    FT_ULong      k;
     PCF_Encoding  encoding = NULL;
 
 
@@ -893,7 +895,8 @@ THE SOFTWARE.
     FT_TRACE4(( "  firstCol %d, lastCol %d, firstRow %d, lastRow %d\n",
                 firstCol, lastCol, firstRow, lastRow ));
 
-    nencoding = ( lastCol - firstCol + 1 ) * ( lastRow - firstRow + 1 );
+    nencoding = (FT_ULong)( lastCol - firstCol + 1 ) *
+                (FT_ULong)( lastRow - firstRow + 1 );
 
     if ( FT_NEW_ARRAY( encoding, nencoding ) )
       return FT_THROW( Out_Of_Memory );
@@ -912,10 +915,10 @@ THE SOFTWARE.
         else
           encodingOffset = FT_GET_SHORT_LE();
 
-        if ( encodingOffset != -1 )
+        if ( encodingOffset > -1 )
         {
           encoding[k].enc   = i * 256 + j;
-          encoding[k].glyph = (FT_Short)encodingOffset;
+          encoding[k].glyph = (FT_UShort)encodingOffset;
 
           FT_TRACE5(( "  code %d (0x%04X): idx %d\n",
                       encoding[k].enc, encoding[k].enc, encoding[k].glyph ));
@@ -1256,7 +1259,7 @@ THE SOFTWARE.
        *
        * This implies bumping the number of `available' glyphs by 1.
        */
-      root->num_glyphs = face->nmetrics + 1;
+      root->num_glyphs = (FT_Long)( face->nmetrics + 1 );
 
       root->num_fixed_sizes = 1;
       if ( FT_NEW_ARRAY( root->available_sizes, 1 ) )
@@ -1269,51 +1272,91 @@ THE SOFTWARE.
 
         FT_MEM_ZERO( bsize, sizeof ( FT_Bitmap_Size ) );
 
+        /* for simplicity, we take absolute values of integer properties */
+
 #if 0
         bsize->height = face->accel.maxbounds.ascent << 6;
 #endif
-        bsize->height = (FT_Short)( face->accel.fontAscent +
-                                    face->accel.fontDescent );
+
+#ifdef FT_DEBUG_LEVEL_TRACE
+        if ( face->accel.fontAscent + face->accel.fontDescent < 0 )
+          FT_TRACE0(( "pcf_load_font: negative height\n" ));
+#endif
+        bsize->height = FT_ABS( (FT_Short)( face->accel.fontAscent +
+                                            face->accel.fontDescent ) );
 
         prop = pcf_find_property( face, "AVERAGE_WIDTH" );
         if ( prop )
-          bsize->width = (FT_Short)( ( prop->value.l + 5 ) / 10 );
+        {
+#ifdef FT_DEBUG_LEVEL_TRACE
+          if ( prop->value.l < 0 )
+            FT_TRACE0(( "pcf_load_font: negative average width\n" ));
+#endif
+          bsize->width = FT_ABS( (FT_Short)( ( prop->value.l ) + 5 ) / 10 );
+        }
         else
-          bsize->width = (FT_Short)( bsize->height * 2/3 );
+          bsize->width = (FT_Short)FT_MulDiv( bsize->height, 2, 3 );
 
         prop = pcf_find_property( face, "POINT_SIZE" );
         if ( prop )
+        {
+#ifdef FT_DEBUG_LEVEL_TRACE
+          if ( prop->value.l < 0 )
+            FT_TRACE0(( "pcf_load_font: negative point size\n" ));
+#endif
           /* convert from 722.7 decipoints to 72 points per inch */
-          bsize->size =
-            (FT_Pos)( ( prop->value.l * 64 * 7200 + 36135L ) / 72270L );
+          bsize->size = FT_MulDiv( FT_ABS( prop->value.l ),
+                                   64 * 7200,
+                                   72270L );
+        }
 
         prop = pcf_find_property( face, "PIXEL_SIZE" );
         if ( prop )
-          bsize->y_ppem = (FT_Short)prop->value.l << 6;
+        {
+#ifdef FT_DEBUG_LEVEL_TRACE
+          if ( prop->value.l < 0 )
+            FT_TRACE0(( "pcf_load_font: negative pixel size\n" ));
+#endif
+          bsize->y_ppem = FT_ABS( (FT_Short)prop->value.l ) << 6;
+        }
 
         prop = pcf_find_property( face, "RESOLUTION_X" );
         if ( prop )
-          resolution_x = (FT_Short)prop->value.l;
+        {
+#ifdef FT_DEBUG_LEVEL_TRACE
+          if ( prop->value.l < 0 )
+            FT_TRACE0(( "pcf_load_font: negative X resolution\n" ));
+#endif
+          resolution_x = FT_ABS( (FT_Short)prop->value.l );
+        }
 
         prop = pcf_find_property( face, "RESOLUTION_Y" );
         if ( prop )
-          resolution_y = (FT_Short)prop->value.l;
+        {
+#ifdef FT_DEBUG_LEVEL_TRACE
+          if ( prop->value.l < 0 )
+            FT_TRACE0(( "pcf_load_font: negative Y resolution\n" ));
+#endif
+          resolution_y = FT_ABS( (FT_Short)prop->value.l );
+        }
 
         if ( bsize->y_ppem == 0 )
         {
           bsize->y_ppem = bsize->size;
           if ( resolution_y )
-            bsize->y_ppem = bsize->y_ppem * resolution_y / 72;
+            bsize->y_ppem = FT_MulDiv( bsize->y_ppem, resolution_y, 72 );
         }
         if ( resolution_x && resolution_y )
-          bsize->x_ppem = bsize->y_ppem * resolution_x / resolution_y;
+          bsize->x_ppem = FT_MulDiv( bsize->y_ppem,
+                                     resolution_x,
+                                     resolution_y );
         else
           bsize->x_ppem = bsize->y_ppem;
       }
 
       /* set up charset */
       {
-        PCF_Property  charset_registry = 0, charset_encoding = 0;
+        PCF_Property  charset_registry, charset_encoding;
 
 
         charset_registry = pcf_find_property( face, "CHARSET_REGISTRY" );

@@ -17,6 +17,8 @@ contains(QT_CONFIG, xcb-glx) {
     LIBS += -lxcb-glx
 }
 
+LIBS += $$QMAKE_LIBS_DYNLOAD
+
 HEADERS += \
     qxcbglxintegration.h \
     qxcbglxwindow.h \

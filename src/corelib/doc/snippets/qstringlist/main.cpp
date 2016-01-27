@@ -82,7 +82,7 @@ Widget::Widget(QWidget *parent)
 //! [5] //! [6]
     QStringList list;
 //! [5]
-    list = str.split(",");
+    list = str.split(',');
      // list: ["Arial", "Helvetica", "Times", "Courier"]
 //! [6]
 

@@ -34,6 +34,7 @@
 
 #include <QtTest/QtTest>
 #include <QtGlobal>
+#include "private/qnumeric_p.h"
 
 #include <math.h>
 #include <float.h>
@@ -50,6 +51,10 @@ private slots:
     void floatDistance();
     void floatDistance_double_data();
     void floatDistance_double();
+    void addOverflow_data();
+    void addOverflow();
+    void mulOverflow_data();
+    void mulOverflow();
 };
 
 void tst_QNumeric::fuzzyCompare_data()
@@ -204,6 +209,161 @@ void tst_QNumeric::floatDistance_double()
     QEXPECT_FAIL("denormal", "See QTBUG-37094", Continue);
 #endif
     QCOMPARE(qFloatDistance(val1, val2), expectedDistance);
+}
+
+void tst_QNumeric::addOverflow_data()
+{
+    QTest::addColumn<int>("size");
+    QTest::newRow("quint8") << 8;
+    QTest::newRow("quint16") << 16;
+    QTest::newRow("quint32") << 32;
+    QTest::newRow("quint64") << 64;
+    QTest::newRow("ulong") << 48;   // it's either 32- or 64-bit, so on average it's 48 :-)
+}
+
+// Note: in release mode, all the tests may be statically determined and only the calls
+// to QTest::toString and QTest::qCompare will remain.
+template <typename Int> static void addOverflow_template()
+{
+#if defined(Q_CC_MSVC) && Q_CC_MSVC < 2000
+    QSKIP("Test disabled, this test generates an Internal Compiler Error compiling in release mode");
+#else
+    const Int max = std::numeric_limits<Int>::max();
+    Int r;
+
+    // basic values
+    QCOMPARE(add_overflow(Int(0), Int(0), &r), false);
+    QCOMPARE(r, Int(0));
+    QCOMPARE(add_overflow(Int(1), Int(0), &r), false);
+    QCOMPARE(r, Int(1));
+    QCOMPARE(add_overflow(Int(0), Int(1), &r), false);
+    QCOMPARE(r, Int(1));
+
+    // half-way through max
+    QCOMPARE(add_overflow(Int(max/2), Int(max/2), &r), false);
+    QCOMPARE(r, Int(max / 2 * 2));
+    QCOMPARE(add_overflow(Int(max/2 - 1), Int(max/2 + 1), &r), false);
+    QCOMPARE(r, Int(max / 2 * 2));
+    QCOMPARE(add_overflow(Int(max/2 + 1), Int(max/2), &r), false);
+    QCOMPARE(r, max);
+    QCOMPARE(add_overflow(Int(max/2), Int(max/2 + 1), &r), false);
+    QCOMPARE(r, max);
+
+    // more than half
+    QCOMPARE(add_overflow(Int(max/4 * 3), Int(max/4), &r), false);
+    QCOMPARE(r, Int(max / 4 * 4));
+
+    // max
+    QCOMPARE(add_overflow(max, Int(0), &r), false);
+    QCOMPARE(r, max);
+    QCOMPARE(add_overflow(Int(0), max, &r), false);
+    QCOMPARE(r, max);
+
+    // 64-bit issues
+    if (max > std::numeric_limits<uint>::max()) {
+        QCOMPARE(add_overflow(Int(std::numeric_limits<uint>::max()), Int(std::numeric_limits<uint>::max()), &r), false);
+        QCOMPARE(r, Int(2 * Int(std::numeric_limits<uint>::max())));
+    }
+
+    // overflows
+    QCOMPARE(add_overflow(max, Int(1), &r), true);
+    QCOMPARE(add_overflow(Int(1), max, &r), true);
+    QCOMPARE(add_overflow(Int(max/2 + 1), Int(max/2 + 1), &r), true);
+#endif
+}
+
+void tst_QNumeric::addOverflow()
+{
+    QFETCH(int, size);
+    if (size == 8)
+        addOverflow_template<quint8>();
+    if (size == 16)
+        addOverflow_template<quint16>();
+    if (size == 32)
+        addOverflow_template<quint32>();
+    if (size == 48)
+        addOverflow_template<ulong>();  // not really 48-bit
+    if (size == 64)
+        addOverflow_template<quint64>();
+}
+
+void tst_QNumeric::mulOverflow_data()
+{
+    addOverflow_data();
+}
+
+// Note: in release mode, all the tests may be statically determined and only the calls
+// to QTest::toString and QTest::qCompare will remain.
+template <typename Int> static void mulOverflow_template()
+{
+#if defined(Q_CC_MSVC) && Q_CC_MSVC < 1900
+    QSKIP("Test disabled, this test generates an Internal Compiler Error compiling");
+#else
+    const Int max = std::numeric_limits<Int>::max();
+    const Int middle = Int(max >> (sizeof(Int) * CHAR_BIT / 2));
+    Int r;
+
+    // basic multiplications
+    QCOMPARE(mul_overflow(Int(0), Int(0), &r), false);
+    QCOMPARE(r, Int(0));
+    QCOMPARE(mul_overflow(Int(1), Int(0), &r), false);
+    QCOMPARE(r, Int(0));
+    QCOMPARE(mul_overflow(Int(0), Int(1), &r), false);
+    QCOMPARE(r, Int(0));
+    QCOMPARE(mul_overflow(max, Int(0), &r), false);
+    QCOMPARE(r, Int(0));
+    QCOMPARE(mul_overflow(Int(0), max, &r), false);
+    QCOMPARE(r, Int(0));
+
+    QCOMPARE(mul_overflow(Int(1), Int(1), &r), false);
+    QCOMPARE(r, Int(1));
+    QCOMPARE(mul_overflow(Int(1), max, &r), false);
+    QCOMPARE(r, max);
+    QCOMPARE(mul_overflow(max, Int(1), &r), false);
+    QCOMPARE(r, max);
+
+    // almost max
+    QCOMPARE(mul_overflow(middle, middle, &r), false);
+    QCOMPARE(r, Int(max - 2 * middle));
+    QCOMPARE(mul_overflow(Int(middle + 1), middle, &r), false);
+    QCOMPARE(r, Int(middle << (sizeof(Int) * CHAR_BIT / 2)));
+    QCOMPARE(mul_overflow(middle, Int(middle + 1), &r), false);
+    QCOMPARE(r, Int(middle << (sizeof(Int) * CHAR_BIT / 2)));
+    QCOMPARE(mul_overflow(Int(max / 2), Int(2), &r), false);
+    QCOMPARE(r, Int(max & ~Int(1)));
+    QCOMPARE(mul_overflow(Int(max / 4), Int(4), &r), false);
+    QCOMPARE(r, Int(max & ~Int(3)));
+
+    // overflows
+    QCOMPARE(mul_overflow(max, Int(2), &r), true);
+    QCOMPARE(mul_overflow(Int(max / 2), Int(3), &r), true);
+    QCOMPARE(mul_overflow(Int(middle + 1), Int(middle + 1), &r), true);
+#endif
+}
+
+template <typename Int, bool enabled = sizeof(Int) <= sizeof(void*)> struct MulOverflowDispatch;
+template <typename Int> struct MulOverflowDispatch<Int, true>
+{
+    void operator()() { mulOverflow_template<Int>(); }
+};
+template <typename Int> struct MulOverflowDispatch<Int, false>
+{
+    void operator()() { QSKIP("This type is too big for this architecture"); }
+};
+
+void tst_QNumeric::mulOverflow()
+{
+    QFETCH(int, size);
+    if (size == 8)
+        MulOverflowDispatch<quint8>()();
+    if (size == 16)
+        MulOverflowDispatch<quint16>()();
+    if (size == 32)
+        MulOverflowDispatch<quint32>()();
+    if (size == 48)
+        MulOverflowDispatch<ulong>()();     // not really 48-bit
+    if (size == 64)
+        MulOverflowDispatch<quint64>()();
 }
 
 QTEST_APPLESS_MAIN(tst_QNumeric)

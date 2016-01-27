@@ -202,6 +202,7 @@ public:
     static QWindow *currentMouseWindow;
     static QWindow *currentMousePressWindow;
     static Qt::ApplicationState applicationState;
+    static bool highDpiScalingUpdated;
 
 #ifndef QT_NO_CLIPBOARD
     static QClipboard *qt_clipboard;
@@ -219,6 +220,7 @@ public:
 
     static QFont *app_font;
 
+    static QString styleOverride;
     static QStyleHints *styleHints;
     static bool obey_desktop_settings;
     QInputMethod *inputMethod;

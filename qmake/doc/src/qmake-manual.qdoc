@@ -728,8 +728,7 @@
     \section2 Creating and Moving Xcode Projects
 
     Developers on OS X can take advantage of the qmake support for Xcode
-    project files, as described in
-    \l{Qt is OS X Native#Development Tools}{Qt is OS X Native},
+    project files, as described in \l{Qt for OS X#Additional Command-Line Options}{Qt for OS X} documentation.
     by running qmake to generate an Xcode project from an existing qmake project
     file. For example:
 
@@ -1714,6 +1713,25 @@
 
     See \l{Creating Frameworks} for more information about creating frameworks.
 
+    \target QMAKE_HOST
+    \section1 QMAKE_HOST
+
+    Provides information about the host machine running qmake.
+    For example, you can retrieve the host machine architecture from
+    \c{QMAKE_HOST.arch}.
+
+    \table
+    \header \li Keys               \li Values
+    \row    \li .arch              \li Host architecture
+    \row    \li .os                \li Host OS
+    \row    \li .cpu_count         \li Number of available cpus
+    \row    \li .name              \li Host computer name
+    \row    \li .version           \li Host OS version number
+    \row    \li .version_string    \li Host OS version string
+    \endtable
+
+    \snippet code/doc_src_qmake-manual.pro 187
+
     \target QMAKE_INCDIR
     \section1 QMAKE_INCDIR
 
@@ -1823,6 +1841,22 @@
     \note This variable is used on Unix platforms only.
 
     Specifies the linker flags needed to use the values from \l{QMAKE_RPATHDIR}.
+
+    The value of this variable is typically handled by
+    qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    \section1 QMAKE_LFLAGS_REL_RPATH
+
+    Specifies the linker flags needed to enable relative paths in
+    \l{QMAKE_RPATHDIR}.
+
+    The value of this variable is typically handled by
+    qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    \section1 QMAKE_REL_RPATH_BASE
+
+    Specifies the string the dynamic linker understands to be the
+    location of the referring executable or library.
 
     The value of this variable is typically handled by
     qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
@@ -2077,6 +2111,13 @@
     executable at link time so that the paths will be preferentially
     searched at runtime.
 
+    When relative paths are specified, qmake will mangle them into a form
+    understood by the dynamic linker to be relative to the location of
+    the referring executable or library.
+    This is supported only by some platforms (currently Linux and
+    Darwin-based ones) and is detectable by checking whether
+    \l{QMAKE_REL_RPATH_BASE} is set.
+
     \section1 QMAKE_RPATHLINKDIR
 
     Specifies a list of library paths for the static linker to search for implicit
@@ -2196,6 +2237,10 @@
     result in a minimal Qt project being built:
 
     \snippet code/doc_src_qmake-manual.pro 47
+
+    If your project is a \QD plugin, use the value \c uiplugin to specify that
+    the project is to be built as a library, but with specific plugin support
+    for \QD. For more information, see \l {Building and Installing the Plugin}.
 
     \section1 QTPLUGIN
 
@@ -2363,7 +2408,6 @@
     \row \li .file       \li Specify the subproject \c pro file explicitly. Cannot be
                         used in conjunction with \c .subdir modifier.
     \row \li .depends    \li This subproject depends on specified subproject.
-                        Available only on platforms that use makefiles.
     \row \li .makefile   \li The makefile of subproject.
                         Available only on platforms that use makefiles.
     \row \li .target     \li Base string used for makefile targets related to this
@@ -3920,25 +3964,27 @@
 
     \list 1
     \li In a directory listed in the \c QMAKEFEATURES environment variable that
-        contains a colon-separated list of directories.
+        contains a list of directories delimited by the platform's path list separator
+        (colon for Unix, semicolon for Windows).
     \li In a directory listed in the \c QMAKEFEATURES property variable that
-       contains a colon-spearated list of directories.
+        contains a list of directories delimited by the platform's path list separator.
     \omit
     \li In a features directory beneath the project's root directory (where
-       the \c{.qmake.cache} file is generated).
+        the \c{.qmake.cache} file is generated).
     \endomit
     \li In a features directory residing within a \c mkspecs directory.
-       \c mkspecs directories can be located beneath any of the directories
-       listed in the \c QMAKEPATH environment variable that contains a
-        colon-separated list of directories. For example:
+        \c mkspecs directories can be located beneath any of the directories
+        listed in the \c QMAKEPATH environment variable that contains a
+        list of directories delimited by the platform's path list separator.
+        For example:
         \c{$QMAKEPATH/mkspecs/<features>}.
     \li In a features directory residing beneath the directory provided by the
-       \l{QMAKESPEC} environment variable. For example: \c{$QMAKESPEC/<features>}.
+        \l{QMAKESPEC} environment variable. For example: \c{$QMAKESPEC/<features>}.
     \li In a features directory residing in the \c data_install/mkspecs directory.
-       For example: \c{data_install/mkspecs/<features>}.
+        For example: \c{data_install/mkspecs/<features>}.
     \li In a features directory that exists as a sibling of the directory
-       specified by the \c QMAKESPEC environment variable.
-       For example: \c{$QMAKESPEC/../<features>}.
+        specified by the \c QMAKESPEC environment variable.
+        For example: \c{$QMAKESPEC/../<features>}.
     \endlist
 
     The following features directories are searched for features files:
@@ -4444,7 +4490,7 @@
 */
 
 /*!
-    \target qmake-getting-started
+    \keyword qmake-getting-started
     \page qmake-tutorial.html
     \title Getting Started
     \contentspage {qmake Manual}{Contents}

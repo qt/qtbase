@@ -92,7 +92,7 @@ QEucJpCodec::QEucJpCodec() : conv(QJpUnicodeConv::newConverter(QJpUnicodeConv::D
 */
 QEucJpCodec::~QEucJpCodec()
 {
-    delete (QJpUnicodeConv*)conv;
+    delete (const QJpUnicodeConv*)conv;
     conv = 0;
 }
 
@@ -139,7 +139,7 @@ QByteArray QEucJpCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
             ++invalid;
         }
     }
-    rstr.resize(cursor - (uchar*)rstr.constData());
+    rstr.resize(cursor - (const uchar*)rstr.constData());
 
     if (state) {
         state->invalidChars += invalid;

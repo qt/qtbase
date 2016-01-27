@@ -32,11 +32,6 @@
 ****************************************************************************/
 
 #include <qglobal.h>
-#ifdef Q_OS_IOS
-// We don't build the NEON drawhelpers as they are implemented partly
-// in GAS syntax assembly, which is not supported by the iOS toolchain.
-#undef __ARM_NEON__
-#endif
 
 #include <qstylehints.h>
 #include <qguiapplication.h>
@@ -379,9 +374,9 @@ static const uint *QT_FASTCALL convertARGBPMFromARGB32PM(uint *buffer, const uin
 template<QImage::Format Format> Q_DECL_CONSTEXPR static inline QPixelLayout pixelLayoutRGB()
 {
     return QPixelLayout{
-        redWidth<Format>(), redShift<Format>(),
-        greenWidth<Format>(), greenShift<Format>(),
-        blueWidth<Format>(), blueShift<Format>(),
+        uchar(redWidth<Format>()), uchar(redShift<Format>()),
+        uchar(greenWidth<Format>()), uchar(greenShift<Format>()),
+        uchar(blueWidth<Format>()), uchar(blueShift<Format>()),
         0, 0,
         false, bitsPerPixel<Format>(),
         convertToRGB32<Format>,
@@ -394,10 +389,10 @@ template<QImage::Format Format> Q_DECL_CONSTEXPR static inline QPixelLayout pixe
 template<QImage::Format Format> Q_DECL_CONSTEXPR static inline QPixelLayout pixelLayoutARGBPM()
 {
     return QPixelLayout{
-        redWidth<Format>(), redShift<Format>(),
-        greenWidth<Format>(), greenShift<Format>(),
-        blueWidth<Format>(), blueShift<Format>(),
-        alphaWidth<Format>(), alphaShift<Format>(),
+        uchar(redWidth<Format>()), uchar(redShift<Format>()),
+        uchar(greenWidth<Format>()), uchar(greenShift<Format>()),
+        uchar(blueWidth<Format>()), uchar(blueShift<Format>()),
+        uchar(alphaWidth<Format>()), uchar(alphaShift<Format>()),
         true, bitsPerPixel<Format>(),
         convertARGBPMToARGB32PM<Format>,
         convertARGBPMFromARGB32PM<Format>,
@@ -503,14 +498,16 @@ static const uint *QT_FASTCALL convertRGBA8888PMFromARGB32PM(uint *buffer, const
 template<bool RGBA, bool maskAlpha>
 static inline void qConvertARGB32PMToARGB64PM_sse2(QRgba64 *buffer, const uint *src, int count)
 {
+    if (count <= 0)
+        return;
+
     const __m128i amask = _mm_set1_epi32(0xff000000);
     int i = 0;
-    if (((uintptr_t)buffer & 0xf) && count > 0) {
+    for (; ((uintptr_t)buffer & 0xf) && i < count; ++i) {
         uint s = *src++;
         if (RGBA)
             s = RGBA2ARGB(s);
         *buffer++ = QRgba64::fromArgb32(s);
-        i++;
     }
     for (; i < count-3; i += 4) {
         __m128i vs = _mm_loadu_si128((const __m128i*)src);
@@ -641,15 +638,18 @@ static const uint *QT_FASTCALL convertA2RGB30PMToARGB32PM(uint *buffer, const ui
 template<QtPixelOrder PixelOrder>
 static inline void qConvertA2RGB30PMToARGB64PM_sse2(QRgba64 *buffer, const uint *src, int count)
 {
+    if (count <= 0)
+        return;
+
     const __m128i rmask = _mm_set1_epi32(0x3ff00000);
     const __m128i gmask = _mm_set1_epi32(0x000ffc00);
     const __m128i bmask = _mm_set1_epi32(0x000003ff);
     const __m128i afactor = _mm_set1_epi16(0x5555);
     int i = 0;
-    if (((uintptr_t)buffer & 0xf) && count > 0) {
+
+    for (; ((uintptr_t)buffer & 0xf) && i < count; ++i)
         *buffer++ = qConvertA2rgb30ToRgb64<PixelOrder>(*src++);
-        i++;
-    }
+
     for (; i < count-3; i += 4) {
         __m128i vs = _mm_loadu_si128((const __m128i*)src);
         src += 4;
@@ -1252,25 +1252,53 @@ static inline void qConvertARGB64PMToA2RGB30PM_sse2(uint *dest, const QRgba64 *b
     const __m128i cmask = _mm_set1_epi32(0x000003ff);
     int i = 0;
     __m128i vr, vg, vb, va;
-    for (; i < count-1; i += 2) {
-        __m128i vs = _mm_loadu_si128((const __m128i*)buffer);
-        buffer += 2;
-        vr = _mm_srli_epi64(vs, 6);
-        vg = _mm_srli_epi64(vs, 16 + 6 - 10);
-        vb = _mm_srli_epi64(vs, 32 + 6);
-        vr = _mm_and_si128(vr, cmask);
-        vg = _mm_and_si128(vg, gmask);
-        vb = _mm_and_si128(vb, cmask);
-        va = _mm_srli_epi64(vs, 48 + 14);
-        if (PixelOrder == PixelOrderRGB)
-            vr = _mm_slli_epi32(vr, 20);
-        else
-            vb = _mm_slli_epi32(vb, 20);
-        va = _mm_slli_epi32(va, 30);
-        __m128i vd = _mm_or_si128(_mm_or_si128(vr, vg), _mm_or_si128(vb, va));
-        vd = _mm_shuffle_epi32(vd, _MM_SHUFFLE(3, 1, 2, 0));
-        _mm_storel_epi64((__m128i*)dest, vd);
-        dest += 2;
+    for (; i < count && (const uintptr_t)buffer & 0xF; ++i) {
+        *dest++ = qConvertRgb64ToRgb30<PixelOrder>(*buffer++);
+    }
+
+    for (; i < count-15; i += 16) {
+        // Repremultiplying is really expensive and hard to do in SIMD without AVX2,
+        // so we try to avoid it by checking if it is needed 16 samples at a time.
+        __m128i vOr = _mm_set1_epi32(0);
+        __m128i vAnd = _mm_set1_epi32(0xffffffff);
+        for (int j = 0; j < 16; j += 2) {
+            __m128i vs = _mm_load_si128((const __m128i*)(buffer + j));
+            vOr = _mm_or_si128(vOr, vs);
+            vAnd = _mm_and_si128(vAnd, vs);
+        }
+        const quint16 orAlpha = ((uint)_mm_extract_epi16(vOr, 3)) | ((uint)_mm_extract_epi16(vOr, 7));
+        const quint16 andAlpha = ((uint)_mm_extract_epi16(vAnd, 3)) & ((uint)_mm_extract_epi16(vAnd, 7));
+
+        if (andAlpha == 0xffff) {
+            for (int j = 0; j < 16; j += 2) {
+                __m128i vs = _mm_load_si128((const __m128i*)buffer);
+                buffer += 2;
+                vr = _mm_srli_epi64(vs, 6);
+                vg = _mm_srli_epi64(vs, 16 + 6 - 10);
+                vb = _mm_srli_epi64(vs, 32 + 6);
+                vr = _mm_and_si128(vr, cmask);
+                vg = _mm_and_si128(vg, gmask);
+                vb = _mm_and_si128(vb, cmask);
+                va = _mm_srli_epi64(vs, 48 + 14);
+                if (PixelOrder == PixelOrderRGB)
+                    vr = _mm_slli_epi32(vr, 20);
+                else
+                    vb = _mm_slli_epi32(vb, 20);
+                va = _mm_slli_epi32(va, 30);
+                __m128i vd = _mm_or_si128(_mm_or_si128(vr, vg), _mm_or_si128(vb, va));
+                vd = _mm_shuffle_epi32(vd, _MM_SHUFFLE(3, 1, 2, 0));
+                _mm_storel_epi64((__m128i*)dest, vd);
+                dest += 2;
+            }
+        } else if (orAlpha == 0) {
+            for (int j = 0; j < 16; ++j) {
+                *dest++ = 0;
+                buffer++;
+            }
+        } else {
+            for (int j = 0; j < 16; ++j)
+                *dest++ = qConvertRgb64ToRgb30<PixelOrder>(*buffer++);
+        }
     }
 
     for (; i < count; ++i)
@@ -3852,7 +3880,7 @@ void blend_color_generic_rgb64(int count, const QSpan *spans, void *userData)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
     Operator op = getOperator(data, spans, count);
     if (!op.funcSolid64) {
-        qDebug() << Q_FUNC_INFO << "unsupported 64bit blend attempted";
+        qDebug("unsupported 64bit blend attempted");
         return blend_color_generic(count, spans, userData);
     }
 
@@ -4147,7 +4175,7 @@ static void blend_untransformed_generic_rgb64(int count, const QSpan *spans, voi
 
     Operator op = getOperator(data, spans, count);
     if (!op.func64) {
-        qWarning() << Q_FUNC_INFO << "Unsupported blend";
+        qWarning("Unsupported blend");
         return blend_untransformed_generic(count, spans, userData);
     }
     QRgba64 buffer[buffer_size];
@@ -6295,10 +6323,8 @@ void qt_memfill32(quint32 *dest, quint32 color, int count)
 template<QtPixelOrder> const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
 #endif
 
-void qInitDrawhelperAsm()
+static void qInitDrawhelperFunctions()
 {
-    const uint features = qCpuFeatures();
-    Q_UNUSED(features);
 #ifdef __SSE2__
     qDrawHelper[QImage::Format_RGB32].bitmapBlit = qt_bitmapblit32_sse2;
     qDrawHelper[QImage::Format_ARGB32].bitmapBlit = qt_bitmapblit32_sse2;
@@ -6343,7 +6369,7 @@ void qInitDrawhelperAsm()
     qt_fetch_radial_gradient = qt_fetch_radial_gradient_sse2;
 
 #ifdef QT_COMPILER_SUPPORTS_SSSE3
-    if (features & SSSE3) {
+    if (qCpuHasFeature(SSSE3)) {
         extern void qt_blend_argb32_on_argb32_ssse3(uchar *destPixels, int dbpl,
                                                     const uchar *srcPixels, int sbpl,
                                                     int w, int h,
@@ -6394,20 +6420,32 @@ void qInitDrawhelperAsm()
 
 #endif // SSE2
 
-#if defined(__ARM_NEON__) && !defined(Q_OS_IOS)
+#if defined(__ARM_NEON__)
     qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
     qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
     qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
     qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
-    qBlendFunctions[QImage::Format_RGB16][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_rgb16_neon;
-    qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB16] = qt_blend_rgb16_on_argb32_neon;
-    qBlendFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_blend_rgb16_on_rgb16_neon;
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
     qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBX8888] = qt_blend_rgb32_on_rgb32_neon;
     qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBX8888] = qt_blend_rgb32_on_rgb32_neon;
     qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_neon;
     qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_neon;
 #endif
+
+    qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = qt_blend_argb32_on_argb32_scanline_neon;
+    qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_neon;
+    qt_functionForMode_C[QPainter::CompositionMode_Plus] = comp_func_Plus_neon;
+
+    extern const uint * QT_FASTCALL qt_fetch_radial_gradient_neon(uint *buffer, const Operator *op, const QSpanData *data,
+                                                                  int y, int x, int length);
+
+    qt_fetch_radial_gradient = qt_fetch_radial_gradient_neon;
+
+#if defined(ENABLE_PIXMAN_DRAWHELPERS)
+    // The RGB16 helpers are using Arm32 assemblythat has not been ported to AArch64
+    qBlendFunctions[QImage::Format_RGB16][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_rgb16_neon;
+    qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB16] = qt_blend_rgb16_on_argb32_neon;
+    qBlendFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_blend_rgb16_on_rgb16_neon;
 
     qScaleFunctions[QImage::Format_RGB16][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_rgb16_neon;
     qScaleFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_scale_image_rgb16_on_rgb16_neon;
@@ -6417,19 +6455,13 @@ void qInitDrawhelperAsm()
 
     qDrawHelper[QImage::Format_RGB16].alphamapBlit = qt_alphamapblit_quint16_neon;
 
-    qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = qt_blend_argb32_on_argb32_scanline_neon;
-    qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_neon;
-    qt_functionForMode_C[QPainter::CompositionMode_Plus] = comp_func_Plus_neon;
     destFetchProc[QImage::Format_RGB16] = qt_destFetchRGB16_neon;
     destStoreProc[QImage::Format_RGB16] = qt_destStoreRGB16_neon;
 
     qMemRotateFunctions[QImage::Format_RGB16][0] = qt_memrotate90_16_neon;
     qMemRotateFunctions[QImage::Format_RGB16][2] = qt_memrotate270_16_neon;
+#endif
 
-    extern const uint * QT_FASTCALL qt_fetch_radial_gradient_neon(uint *buffer, const Operator *op, const QSpanData *data,
-                                                                  int y, int x, int length);
-
-    qt_fetch_radial_gradient = qt_fetch_radial_gradient_neon;
 #endif
 
 #if defined(Q_PROCESSOR_MIPS_32) && defined(QT_COMPILER_SUPPORTS_MIPS_DSP)
@@ -6437,7 +6469,7 @@ void qInitDrawhelperAsm()
 #endif // Q_PROCESSOR_MIPS_32
 
 #if defined(QT_COMPILER_SUPPORTS_MIPS_DSP) || defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
-    if (features & (DSP | DSPR2)) {
+    if (qCpuHasFeature(DSP) && qCpuHasFeature(DSPR2)) {
         // Composition functions are all DSP r1
         qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_asm_mips_dsp;
         qt_functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_mips_dsp;
@@ -6485,5 +6517,20 @@ void qInitDrawhelperAsm()
     }
 #endif // QT_COMPILER_SUPPORTS_MIPS_DSP || QT_COMPILER_SUPPORTS_MIPS_DSPR2
 }
+
+extern void qInitBlendFunctions();
+class DrawHelperInitializer {
+public:
+    DrawHelperInitializer()
+    {
+        // Set up basic blend function tables.
+        qInitBlendFunctions();
+        // Set up architecture optimized methods for the current machine.
+        qInitDrawhelperFunctions();
+    }
+};
+
+// Ensure initialization if this object file is linked.
+static DrawHelperInitializer drawHelperInitializer;
 
 QT_END_NAMESPACE

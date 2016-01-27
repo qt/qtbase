@@ -89,7 +89,7 @@ public:
     const QPlatformTextureList *textures() const Q_DECL_OVERRIDE;
     void endCompositing() Q_DECL_OVERRIDE;
 
-private:
+protected:
     QOpenGLCompositorBackingStore *m_backingStore;
     bool m_raster;
     WId m_winId;

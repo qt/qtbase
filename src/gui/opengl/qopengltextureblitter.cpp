@@ -39,6 +39,10 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLFunctions>
 
+#ifndef GL_TEXTURE_EXTERNAL_OES
+#define GL_TEXTURE_EXTERNAL_OES           0x8D65
+#endif
+
 QT_BEGIN_NAMESPACE
 
 static const char vertex_shader150[] =
@@ -88,6 +92,18 @@ static const char fragment_shader[] =
     "   gl_FragColor = swizzle ? tmpFragColor.bgra : tmpFragColor;"
     "}";
 
+static const char fragment_shader_external_oes[] =
+    "#extension GL_OES_EGL_image_external : require\n"
+    "varying highp vec2 uv;"
+    "uniform samplerExternalOES textureSampler;\n"
+    "uniform bool swizzle;"
+    "uniform highp float opacity;"
+    "void main() {"
+    "   highp vec4 tmpFragColor = texture2D(textureSampler, uv);"
+    "   tmpFragColor.a *= opacity;"
+    "   gl_FragColor = swizzle ? tmpFragColor.bgra : tmpFragColor;"
+    "}";
+
 static const GLfloat vertex_buffer_data[] = {
         -1,-1, 0,
         -1, 1, 0,
@@ -109,14 +125,17 @@ static const GLfloat texture_buffer_data[] = {
 class TextureBinder
 {
 public:
-    TextureBinder(GLuint textureId)
+    TextureBinder(GLenum target, GLuint textureId) : m_target(target)
     {
-        QOpenGLContext::currentContext()->functions()->glBindTexture(GL_TEXTURE_2D, textureId);
+        QOpenGLContext::currentContext()->functions()->glBindTexture(m_target, textureId);
     }
     ~TextureBinder()
     {
-        QOpenGLContext::currentContext()->functions()->glBindTexture(GL_TEXTURE_2D, 0);
+        QOpenGLContext::currentContext()->functions()->glBindTexture(m_target, 0);
     }
+
+private:
+    GLenum m_target;
 };
 
 class QOpenGLTextureBlitterPrivate
@@ -128,74 +147,106 @@ public:
         IdentityFlipped
     };
 
-    QOpenGLTextureBlitterPrivate()
-        : program(0)
-        , vertexCoordAttribPos(0)
-        , vertexTransformUniformPos(0)
-        , textureCoordAttribPos(0)
-        , textureTransformUniformPos(0)
-        , swizzle(false)
-        , swizzleOld(false)
-        , opacity(1.0f)
-        , opacityOld(0.0f)
-        , textureMatrixUniformState(User)
-        , vao(new QOpenGLVertexArrayObject())
+    enum ProgramIndex {
+        TEXTURE_2D,
+        TEXTURE_EXTERNAL_OES
+    };
+
+    QOpenGLTextureBlitterPrivate() :
+        swizzle(false),
+        opacity(1.0f),
+        vao(new QOpenGLVertexArrayObject),
+        currentTarget(TEXTURE_2D)
     { }
+
+    bool buildProgram(ProgramIndex idx, const char *vs, const char *fs);
 
     void blit(GLuint texture, const QMatrix4x4 &vertexTransform, const QMatrix3x3 &textureTransform);
     void blit(GLuint texture, const QMatrix4x4 &vertexTransform, QOpenGLTextureBlitter::Origin origin);
 
-    void prepareProgram(const QMatrix4x4 &vertexTransform)
-    {
-        vertexBuffer.bind();
-        program->setAttributeBuffer(vertexCoordAttribPos, GL_FLOAT, 0, 3, 0);
-        program->enableAttributeArray(vertexCoordAttribPos);
-        vertexBuffer.release();
-
-        program->setUniformValue(vertexTransformUniformPos, vertexTransform);
-
-        textureBuffer.bind();
-        program->setAttributeBuffer(textureCoordAttribPos, GL_FLOAT, 0, 2, 0);
-        program->enableAttributeArray(textureCoordAttribPos);
-        textureBuffer.release();
-
-        if (swizzle != swizzleOld) {
-            program->setUniformValue(swizzleUniformPos, swizzle);
-            swizzleOld = swizzle;
-        }
-
-        if (opacity != opacityOld) {
-            program->setUniformValue(opacityUniformPos, opacity);
-            opacityOld = opacity;
-        }
-    }
+    void prepareProgram(const QMatrix4x4 &vertexTransform);
 
     QOpenGLBuffer vertexBuffer;
     QOpenGLBuffer textureBuffer;
-    QScopedPointer<QOpenGLShaderProgram> program;
-    GLuint vertexCoordAttribPos;
-    GLuint vertexTransformUniformPos;
-    GLuint textureCoordAttribPos;
-    GLuint textureTransformUniformPos;
-    GLuint swizzleUniformPos;
-    GLuint opacityUniformPos;
+    struct Program {
+        Program() :
+            vertexCoordAttribPos(0),
+            vertexTransformUniformPos(0),
+            textureCoordAttribPos(0),
+            textureTransformUniformPos(0),
+            swizzleUniformPos(0),
+            opacityUniformPos(0),
+            swizzle(false),
+            opacity(0.0f),
+            textureMatrixUniformState(User)
+        { }
+        QScopedPointer<QOpenGLShaderProgram> glProgram;
+        GLuint vertexCoordAttribPos;
+        GLuint vertexTransformUniformPos;
+        GLuint textureCoordAttribPos;
+        GLuint textureTransformUniformPos;
+        GLuint swizzleUniformPos;
+        GLuint opacityUniformPos;
+        bool swizzle;
+        float opacity;
+        TextureMatrixUniform textureMatrixUniformState;
+    } programs[2];
     bool swizzle;
-    bool swizzleOld;
     float opacity;
-    float opacityOld;
-    TextureMatrixUniform textureMatrixUniformState;
     QScopedPointer<QOpenGLVertexArrayObject> vao;
+    GLenum currentTarget;
 };
+
+static inline QOpenGLTextureBlitterPrivate::ProgramIndex targetToProgramIndex(GLenum target)
+{
+    switch (target) {
+    case GL_TEXTURE_2D:
+        return QOpenGLTextureBlitterPrivate::TEXTURE_2D;
+    case GL_TEXTURE_EXTERNAL_OES:
+        return QOpenGLTextureBlitterPrivate::TEXTURE_EXTERNAL_OES;
+    default:
+        qWarning("Unsupported texture target 0x%x", target);
+        return QOpenGLTextureBlitterPrivate::TEXTURE_2D;
+    }
+}
+
+void QOpenGLTextureBlitterPrivate::prepareProgram(const QMatrix4x4 &vertexTransform)
+{
+    Program *program = &programs[targetToProgramIndex(currentTarget)];
+
+    vertexBuffer.bind();
+    program->glProgram->setAttributeBuffer(program->vertexCoordAttribPos, GL_FLOAT, 0, 3, 0);
+    program->glProgram->enableAttributeArray(program->vertexCoordAttribPos);
+    vertexBuffer.release();
+
+    program->glProgram->setUniformValue(program->vertexTransformUniformPos, vertexTransform);
+
+    textureBuffer.bind();
+    program->glProgram->setAttributeBuffer(program->textureCoordAttribPos, GL_FLOAT, 0, 2, 0);
+    program->glProgram->enableAttributeArray(program->textureCoordAttribPos);
+    textureBuffer.release();
+
+    if (swizzle != program->swizzle) {
+        program->glProgram->setUniformValue(program->swizzleUniformPos, swizzle);
+        program->swizzle = swizzle;
+    }
+
+    if (opacity != program->opacity) {
+        program->glProgram->setUniformValue(program->opacityUniformPos, opacity);
+        program->opacity = opacity;
+    }
+}
 
 void QOpenGLTextureBlitterPrivate::blit(GLuint texture,
                                         const QMatrix4x4 &vertexTransform,
                                         const QMatrix3x3 &textureTransform)
 {
-    TextureBinder binder(texture);
+    TextureBinder binder(currentTarget, texture);
     prepareProgram(vertexTransform);
 
-    program->setUniformValue(textureTransformUniformPos, textureTransform);
-    textureMatrixUniformState = User;
+    Program *program = &programs[targetToProgramIndex(currentTarget)];
+    program->glProgram->setUniformValue(program->textureTransformUniformPos, textureTransform);
+    program->textureMatrixUniformState = User;
 
     QOpenGLContext::currentContext()->functions()->glDrawArrays(GL_TRIANGLES, 0, 6);
 }
@@ -204,23 +255,52 @@ void QOpenGLTextureBlitterPrivate::blit(GLuint texture,
                                         const QMatrix4x4 &vertexTransform,
                                         QOpenGLTextureBlitter::Origin origin)
 {
-    TextureBinder binder(texture);
+    TextureBinder binder(currentTarget, texture);
     prepareProgram(vertexTransform);
 
+    Program *program = &programs[targetToProgramIndex(currentTarget)];
     if (origin == QOpenGLTextureBlitter::OriginTopLeft) {
-        if (textureMatrixUniformState != IdentityFlipped) {
+        if (program->textureMatrixUniformState != IdentityFlipped) {
             QMatrix3x3 flipped;
             flipped(1,1) = -1;
             flipped(1,2) = 1;
-            program->setUniformValue(textureTransformUniformPos, flipped);
-            textureMatrixUniformState = IdentityFlipped;
+            program->glProgram->setUniformValue(program->textureTransformUniformPos, flipped);
+            program->textureMatrixUniformState = IdentityFlipped;
         }
-    } else if (textureMatrixUniformState != Identity) {
-        program->setUniformValue(textureTransformUniformPos, QMatrix3x3());
-        textureMatrixUniformState = Identity;
+    } else if (program->textureMatrixUniformState != Identity) {
+        program->glProgram->setUniformValue(program->textureTransformUniformPos, QMatrix3x3());
+        program->textureMatrixUniformState = Identity;
     }
 
     QOpenGLContext::currentContext()->functions()->glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
+bool QOpenGLTextureBlitterPrivate::buildProgram(ProgramIndex idx, const char *vs, const char *fs)
+{
+    Program *p = &programs[idx];
+
+    p->glProgram.reset(new QOpenGLShaderProgram);
+
+    p->glProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vs);
+    p->glProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fs);
+    p->glProgram->link();
+    if (!p->glProgram->isLinked()) {
+        qWarning() << "Could not link shader program:\n" << p->glProgram->log();
+        return false;
+    }
+
+    p->glProgram->bind();
+
+    p->vertexCoordAttribPos = p->glProgram->attributeLocation("vertexCoord");
+    p->vertexTransformUniformPos = p->glProgram->uniformLocation("vertexTransform");
+    p->textureCoordAttribPos = p->glProgram->attributeLocation("textureCoord");
+    p->textureTransformUniformPos = p->glProgram->uniformLocation("textureTransform");
+    p->swizzleUniformPos = p->glProgram->uniformLocation("swizzle");
+    p->opacityUniformPos = p->glProgram->uniformLocation("opacity");
+
+    p->glProgram->setUniformValue(p->swizzleUniformPos, false);
+
+    return true;
 }
 
 QOpenGLTextureBlitter::QOpenGLTextureBlitter()
@@ -241,27 +321,20 @@ bool QOpenGLTextureBlitter::create()
 
     Q_D(QOpenGLTextureBlitter);
 
-    if (d->program)
+    if (d->programs[QOpenGLTextureBlitterPrivate::TEXTURE_2D].glProgram)
         return true;
 
-    d->program.reset(new QOpenGLShaderProgram());
-
     QSurfaceFormat format = currentContext->format();
-
     if (format.profile() == QSurfaceFormat::CoreProfile && format.version() >= qMakePair(3,2)) {
-        d->program->addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader150);
-        d->program->addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader150);
+        if (!d->buildProgram(QOpenGLTextureBlitterPrivate::TEXTURE_2D, vertex_shader150, fragment_shader150))
+            return false;
     } else {
-        d->program->addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader);
-        d->program->addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader);
+        if (!d->buildProgram(QOpenGLTextureBlitterPrivate::TEXTURE_2D, vertex_shader, fragment_shader))
+            return false;
+        if (supportsExternalOESTarget())
+            if (!d->buildProgram(QOpenGLTextureBlitterPrivate::TEXTURE_EXTERNAL_OES, vertex_shader, fragment_shader_external_oes))
+                return false;
     }
-    d->program->link();
-    if (!d->program->isLinked()) {
-        qWarning() << Q_FUNC_INFO << "Could not link shader program:\n" << d->program->log();
-        return false;
-    }
-
-    d->program->bind();
 
     // Create and bind the VAO, if supported.
     QOpenGLVertexArrayObject::Binder vaoBinder(d->vao.data());
@@ -276,22 +349,13 @@ bool QOpenGLTextureBlitter::create()
     d->textureBuffer.allocate(texture_buffer_data, sizeof(texture_buffer_data));
     d->textureBuffer.release();
 
-    d->vertexCoordAttribPos = d->program->attributeLocation("vertexCoord");
-    d->vertexTransformUniformPos = d->program->uniformLocation("vertexTransform");
-    d->textureCoordAttribPos = d->program->attributeLocation("textureCoord");
-    d->textureTransformUniformPos = d->program->uniformLocation("textureTransform");
-    d->swizzleUniformPos = d->program->uniformLocation("swizzle");
-    d->opacityUniformPos = d->program->uniformLocation("opacity");
-
-    d->program->setUniformValue(d->swizzleUniformPos,false);
-
     return true;
 }
 
 bool QOpenGLTextureBlitter::isCreated() const
 {
     Q_D(const QOpenGLTextureBlitter);
-    return d->program;
+    return d->programs[QOpenGLTextureBlitterPrivate::TEXTURE_2D].glProgram;
 }
 
 void QOpenGLTextureBlitter::destroy()
@@ -299,36 +363,45 @@ void QOpenGLTextureBlitter::destroy()
     if (!isCreated())
         return;
     Q_D(QOpenGLTextureBlitter);
-    d->program.reset();
+    d->programs[QOpenGLTextureBlitterPrivate::TEXTURE_2D].glProgram.reset();
+    d->programs[QOpenGLTextureBlitterPrivate::TEXTURE_EXTERNAL_OES].glProgram.reset();
     d->vertexBuffer.destroy();
     d->textureBuffer.destroy();
     d->vao.reset();
 }
 
-void QOpenGLTextureBlitter::bind()
+bool QOpenGLTextureBlitter::supportsExternalOESTarget() const
+{
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    return ctx && ctx->isOpenGLES() && ctx->hasExtension("GL_OES_EGL_image_external");
+}
+
+void QOpenGLTextureBlitter::bind(GLenum target)
 {
     Q_D(QOpenGLTextureBlitter);
 
     if (d->vao->isCreated())
         d->vao->bind();
 
-    d->program->bind();
+    d->currentTarget = target;
+    QOpenGLTextureBlitterPrivate::Program *p = &d->programs[targetToProgramIndex(target)];
+    p->glProgram->bind();
 
     d->vertexBuffer.bind();
-    d->program->setAttributeBuffer(d->vertexCoordAttribPos, GL_FLOAT, 0, 3, 0);
-    d->program->enableAttributeArray(d->vertexCoordAttribPos);
+    p->glProgram->setAttributeBuffer(p->vertexCoordAttribPos, GL_FLOAT, 0, 3, 0);
+    p->glProgram->enableAttributeArray(p->vertexCoordAttribPos);
     d->vertexBuffer.release();
 
     d->textureBuffer.bind();
-    d->program->setAttributeBuffer(d->textureCoordAttribPos, GL_FLOAT, 0, 2, 0);
-    d->program->enableAttributeArray(d->textureCoordAttribPos);
+    p->glProgram->setAttributeBuffer(p->textureCoordAttribPos, GL_FLOAT, 0, 2, 0);
+    p->glProgram->enableAttributeArray(p->textureCoordAttribPos);
     d->textureBuffer.release();
 }
 
 void QOpenGLTextureBlitter::release()
 {
     Q_D(QOpenGLTextureBlitter);
-    d->program->release();
+    d->programs[targetToProgramIndex(d->currentTarget)].glProgram->release();
     if (d->vao->isCreated())
         d->vao->release();
 }

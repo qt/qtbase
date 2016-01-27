@@ -1627,7 +1627,7 @@ namespace QtPrivate {
     template<typename T>
     struct QMetaTypeTypeFlags
     {
-        enum { Flags = (!QTypeInfo<T>::isStatic ? QMetaType::MovableType : 0)
+        enum { Flags = (QTypeInfoQuery<T>::isRelocatable ? QMetaType::MovableType : 0)
                      | (QTypeInfo<T>::isComplex ? QMetaType::NeedsConstruction : 0)
                      | (QTypeInfo<T>::isComplex ? QMetaType::NeedsDestruction : 0)
                      | (IsPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::PointerToQObject : 0)
@@ -2243,21 +2243,6 @@ namespace QtPrivate {
         }
     };
 }
-
-namespace QtMetaTypePrivate {
-inline Q_DECL_CONSTEXPR bool isBuiltinSequentialType(int typeId)
-{
-    return typeId == qMetaTypeId<QStringList>()
-            || typeId == qMetaTypeId<QByteArrayList>()
-            || typeId == qMetaTypeId<QVariantList>();
-}
-
-inline Q_DECL_CONSTEXPR bool isBuiltinAssociativeType(int typeId)
-{
-    return typeId == qMetaTypeId<QVariantHash>()
-            || typeId == qMetaTypeId<QVariantMap>();
-}
-} // QtMetaTypePrivate
 
 QT_END_NAMESPACE
 

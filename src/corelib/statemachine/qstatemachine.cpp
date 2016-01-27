@@ -160,6 +160,8 @@ QT_BEGIN_NAMESPACE
     \since 5.4
 
     \brief the running state of this state machine
+
+    \sa start(), stop(), started(), stopped(), runningChanged()
 */
 
 #ifndef QT_NO_ANIMATION
@@ -404,6 +406,10 @@ QStateMachinePrivate::~QStateMachinePrivate()
 {
     qDeleteAll(internalEventQueue);
     qDeleteAll(externalEventQueue);
+
+    for (QHash<int, DelayedEvent>::const_iterator it = delayedEvents.begin(), eit = delayedEvents.end(); it != eit; ++it) {
+        delete it.value().event;
+    }
 }
 
 QState *QStateMachinePrivate::rootState() const
@@ -618,7 +624,7 @@ void QStateMachinePrivate::removeConflictingTransitions(QList<QAbstractTransitio
 
     foreach (QAbstractTransition *t1, enabledTransitions) {
         bool t1Preempted = false;
-        QSet<QAbstractState*> exitSetT1 = computeExitSet_Unordered(t1, cache);
+        const QSet<QAbstractState*> exitSetT1 = computeExitSet_Unordered(t1, cache);
         QList<QAbstractTransition*>::iterator t2It = filteredTransitions.begin();
         while (t2It != filteredTransitions.end()) {
             QAbstractTransition *t2 = *t2It;
@@ -630,7 +636,7 @@ void QStateMachinePrivate::removeConflictingTransitions(QList<QAbstractTransitio
             }
 
             QSet<QAbstractState*> exitSetT2 = computeExitSet_Unordered(t2, cache);
-            if (exitSetT1.intersect(exitSetT2).isEmpty()) {
+            if (!exitSetT1.intersects(exitSetT2)) {
                 // No conflict, no cry. Next patient please.
                 ++t2It;
             } else {
@@ -1286,7 +1292,7 @@ QVariant QStateMachinePrivate::savedValueForRestorable(const QList<QAbstractStat
                                                        QObject *object, const QByteArray &propertyName) const
 {
 #ifdef QSTATEMACHINE_RESTORE_PROPERTIES_DEBUG
-    qDebug() << q_func() << ": savedValueForRestorable(" << exitedStates_sorted << object << propertyName << ")";
+    qDebug() << q_func() << ": savedValueForRestorable(" << exitedStates_sorted << object << propertyName << ')';
 #endif
     for (int i = exitedStates_sorted.size() - 1; i >= 0; --i) {
         QAbstractState *s = exitedStates_sorted.at(i);
@@ -1309,7 +1315,7 @@ void QStateMachinePrivate::registerRestorable(QAbstractState *state, QObject *ob
                                               const QVariant &value)
 {
 #ifdef QSTATEMACHINE_RESTORE_PROPERTIES_DEBUG
-    qDebug() << q_func() << ": registerRestorable(" << state << object << propertyName << value << ")";
+    qDebug() << q_func() << ": registerRestorable(" << state << object << propertyName << value << ')';
 #endif
     RestorableId id(object, propertyName);
     QHash<RestorableId, QVariant> &restorables = registeredRestorablesForState[state];
@@ -1325,7 +1331,7 @@ void QStateMachinePrivate::unregisterRestorables(const QList<QAbstractState *> &
                                                  const QByteArray &propertyName)
 {
 #ifdef QSTATEMACHINE_RESTORE_PROPERTIES_DEBUG
-    qDebug() << q_func() << ": unregisterRestorables(" << states << object << propertyName << ")";
+    qDebug() << q_func() << ": unregisterRestorables(" << states << object << propertyName << ')';
 #endif
     RestorableId id(object, propertyName);
     for (int i = 0; i < states.size(); ++i) {
@@ -1832,6 +1838,7 @@ void QStateMachinePrivate::_q_start()
         unregisterAllTransitions();
         emitFinished();
         emit q->runningChanged(false);
+        exitInterpreter();
     } else {
         _q_process();
     }
@@ -1926,6 +1933,8 @@ void QStateMachinePrivate::_q_process()
         break;
     }
     endMacrostep(didChange);
+    if (stopProcessingReason == Finished)
+        exitInterpreter();
 }
 
 void QStateMachinePrivate::_q_startDelayedEventTimer(int id, int delay)
@@ -1939,6 +1948,7 @@ void QStateMachinePrivate::_q_startDelayedEventTimer(int id, int delay)
         e.timerId = q->startTimer(delay);
         if (!e.timerId) {
             qWarning("QStateMachine::postDelayedEvent: failed to start timer (id=%d, delay=%d)", id, delay);
+            delete e.event;
             delayedEvents.erase(it);
             delayedEventIdFreeList.release(id);
         } else {
@@ -2055,6 +2065,8 @@ void QStateMachinePrivate::noMicrostep()
   4) the state machine either enters an infinite loop, or stops (runningChanged(false),
      and either finished or stopped are emitted), or processedPendingEvents() is called.
   5) if the machine is not in an infinite loop endMacrostep is called
+  6) when the machine is finished and all processing (like signal emission) is done,
+     exitInterpreter() is called. (This is the same name as the SCXML specification uses.)
 
   didChange is set to true if at least one microstep was performed, it is possible
   that the machine returned to exactly the same state as before, but some transitions
@@ -2075,6 +2087,9 @@ void QStateMachinePrivate::endMacrostep(bool didChange)
     Q_UNUSED(didChange);
 }
 
+void QStateMachinePrivate::exitInterpreter()
+{
+}
 
 void QStateMachinePrivate::emitStateFinished(QState *forState, QFinalState *guiltyState)
 {
@@ -2576,11 +2591,6 @@ void QStateMachine::removeState(QAbstractState *state)
     state->setParent(0);
 }
 
-/*!
-  Returns whether this state machine is running.
-
-  \sa start(), stop()
-*/
 bool QStateMachine::isRunning() const
 {
     Q_D(const QStateMachine);
@@ -2643,11 +2653,6 @@ void QStateMachine::stop()
     }
 }
 
-/*!
-    Convenience functions to start/stop this state machine.
-
-    \sa start(), stop(), started(), finished(), stopped()
-*/
 void QStateMachine::setRunning(bool running)
 {
     if (running)

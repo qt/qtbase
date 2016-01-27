@@ -22,7 +22,7 @@ CFLAGS_EXTRA      = /Zc:wchar_t-
 !  elseif "$(QMAKESPEC)" == "win32-msvc2008" || "$(QMAKESPEC)" == "win32-msvc2010" || "$(QMAKESPEC)" == "win32-msvc2012" || "$(QMAKESPEC)" == "win32-msvc2013"
 CFLAGS_EXTRA      = /MP /D_CRT_SECURE_NO_WARNINGS /D_SCL_SECURE_NO_WARNINGS $(CFLAGS_CRT)
 !  elseif "$(QMAKESPEC)" == "win32-msvc2015"
-CFLAGS_EXTRA      = /MP /D_CRT_SECURE_NO_WARNINGS /D_SCL_SECURE_NO_WARNINGS /Zc:strictStrings /w44456 /w44457 /w44458 $(CFLAGS_CRT)
+CFLAGS_EXTRA      = /MP /D_CRT_SECURE_NO_WARNINGS /D_SCL_SECURE_NO_WARNINGS /Zc:strictStrings /w44456 /w44457 /w44458 /wd4577 $(CFLAGS_CRT)
 !  else
 !    error Unsupported compiler for this Makefile
 !  endif
@@ -36,6 +36,7 @@ CFLAGS_BARE = -c -Fo./ -Fdqmake.pdb \
               -I$(BUILD_PATH)\src\corelib\global -DHAVE_QCONFIG_CPP \
               -I$(SOURCE_PATH)\mkspecs\$(QMAKESPEC)  \
               -I$(SOURCE_PATH)\tools\shared \
+              -DQT_VERSION_STR=\"$(QT_VERSION)\" -DQT_VERSION_MAJOR=$(QT_MAJOR_VERSION) -DQT_VERSION_MINOR=$(QT_MINOR_VERSION) -DQT_VERSION_PATCH=$(QT_PATCH_VERSION) \
               -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED -DPROEVALUATOR_FULL \
               -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_NO_COMPONENT -DQT_NO_COMPRESS \
               -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM \

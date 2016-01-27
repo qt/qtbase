@@ -58,6 +58,7 @@ class QWindow;
 class QEventLoop;
 class QDropData;
 class QShapedPixmapWindow;
+class QScreen;
 
 class Q_GUI_EXPORT QBasicDrag : public QPlatformDrag, public QObject
 {
@@ -80,10 +81,14 @@ protected:
 
     void moveShapedPixmapWindow(const QPoint &deviceIndependentPosition);
     QShapedPixmapWindow *shapedPixmapWindow() const { return m_drag_icon_window; }
+    void recreateShapedPixmapWindow(QScreen *screen, const QPoint &pos);
     void updateCursor(Qt::DropAction action);
 
     bool canDrop() const { return m_can_drop; }
     void setCanDrop(bool c) { m_can_drop = c; }
+
+    bool useCompositing() const { return m_useCompositing; }
+    void setUseCompositing(bool on) { m_useCompositing = on; }
 
     Qt::DropAction executedDropAction() const { return m_executed_drop_action; }
     void  setExecutedDropAction(Qt::DropAction da) { m_executed_drop_action = da; }
@@ -102,6 +107,7 @@ private:
     bool m_can_drop;
     QDrag *m_drag;
     QShapedPixmapWindow *m_drag_icon_window;
+    bool m_useCompositing;
 };
 
 class Q_GUI_EXPORT QSimpleDrag : public QBasicDrag

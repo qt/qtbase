@@ -82,7 +82,7 @@ key_t QSharedMemoryPrivate::handle()
         return 0;
     }
 
-    unix_key = ftok(QFile::encodeName(nativeKey).constData(), 'Q');
+    unix_key = qt_safe_ftok(QFile::encodeName(nativeKey), 'Q');
     if (-1 == unix_key) {
         errorString = QSharedMemory::tr("%1: ftok failed").arg(QLatin1String("QSharedMemory::handle:"));
         error = QSharedMemory::KeyError;

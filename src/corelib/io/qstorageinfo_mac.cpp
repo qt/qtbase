@@ -147,32 +147,24 @@ void QStorageInfoPrivate::retrieveUrlProperties(bool initRootPath)
 
 void QStorageInfoPrivate::retrieveLabel()
 {
-#if !defined(Q_OS_IOS)
-    // deprecated since 10.8
-    FSRef ref;
-    FSPathMakeRef(reinterpret_cast<const UInt8*>(QFile::encodeName(rootPath).constData()),
-                  &ref,
-                  Q_NULLPTR);
-
-    // deprecated since 10.8
-    FSCatalogInfo catalogInfo;
-    OSErr error;
-    error = FSGetCatalogInfo(&ref, kFSCatInfoVolume, &catalogInfo, Q_NULLPTR, Q_NULLPTR, Q_NULLPTR);
-    if (error != noErr)
+    QCFString path = CFStringCreateWithFileSystemRepresentation(0,
+        QFile::encodeName(rootPath).constData());
+    if (!path)
         return;
 
-    // deprecated (use CFURLCopyResourcePropertiesForKeys for 10.7 and higher)
-    HFSUniStr255 volumeName;
-    error = FSGetVolumeInfo(catalogInfo.volume,
-                            0,
-                            Q_NULLPTR,
-                            kFSVolInfoFSInfo,
-                            Q_NULLPTR,
-                            &volumeName,
-                            Q_NULLPTR);
-    if (error == noErr)
-        name = QCFString(FSCreateStringFromHFSUniStr(Q_NULLPTR, &volumeName));
-#endif
+    QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, path, kCFURLPOSIXPathStyle, true);
+    if (!url)
+        return;
+
+    QCFType<CFURLRef> volumeUrl;
+    if (!CFURLCopyResourcePropertyForKey(url, kCFURLVolumeURLKey, &volumeUrl, NULL))
+        return;
+
+    QCFString volumeName;
+    if (!CFURLCopyResourcePropertyForKey(url, kCFURLNameKey, &volumeName, NULL))
+        return;
+
+    name = volumeName;
 }
 
 QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()

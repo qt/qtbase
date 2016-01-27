@@ -25,7 +25,6 @@
 
 QMAKE_CFLAGS           += -fprofile-arcs -ftest-coverage
 QMAKE_CXXFLAGS         += -fprofile-arcs -ftest-coverage
-QMAKE_OBJECTIVE_CFLAGS += -fprofile-arcs -ftest-coverage
 QMAKE_LFLAGS           += -fprofile-arcs -ftest-coverage
 
 QMAKE_CLEAN += $(OBJECTS_DIR)*.gcno and $(OBJECTS_DIR)*.gcda

@@ -98,6 +98,7 @@ GpuDescription GpuDescription::detect()
 #endif
 }
 
+#ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const GpuDescription &gd)
 {
     QDebugStateSaver s(d);
@@ -109,6 +110,7 @@ QDebug operator<<(QDebug d, const GpuDescription &gd)
       << ", version=" << gd.driverVersion << ", " << gd.description << ')';
     return d;
 }
+#endif // !QT_NO_DEBUG_STREAM
 
 // Return printable string formatted like the output of the dxdiag tool.
 QString GpuDescription::toString() const
@@ -266,7 +268,10 @@ QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::detectSupportedRenderers(c
             result &= ~QWindowsOpenGLTester::AngleRendererD3d9;
         }
     }
-
+    if (features.contains(QStringLiteral("disable_rotation"))) {
+        qCDebug(lcQpaGl) << "Disabling rotation: " << gpu;
+        result |= DisableRotationFlag;
+    }
     srCache->insert(qgpu, result);
     return result;
 #endif // !Q_OS_WINCE && !QT_NO_OPENGL
@@ -276,7 +281,7 @@ QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::supportedGlesRenderers()
 {
     const GpuDescription gpu = GpuDescription::detect();
     const QWindowsOpenGLTester::Renderers result = detectSupportedRenderers(gpu, true);
-    qDebug(lcQpaGl) << __FUNCTION__ << gpu << "renderer: " << result;
+    qCDebug(lcQpaGl) << __FUNCTION__ << gpu << "renderer: " << result;
     return result;
 }
 
@@ -284,7 +289,7 @@ QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::supportedRenderers()
 {
     const GpuDescription gpu = GpuDescription::detect();
     const QWindowsOpenGLTester::Renderers result = detectSupportedRenderers(gpu, false);
-    qDebug(lcQpaGl) << __FUNCTION__ << gpu << "renderer: " << result;
+    qCDebug(lcQpaGl) << __FUNCTION__ << gpu << "renderer: " << result;
     return result;
 }
 

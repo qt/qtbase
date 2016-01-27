@@ -50,6 +50,7 @@
 #include <qpa/qplatformwindow.h>
 
 #include <QtCore/private/qobject_p.h>
+#include <QtCore/qelapsedtimer.h>
 #include <QtGui/QIcon>
 
 QT_BEGIN_NAMESPACE
@@ -187,6 +188,7 @@ public:
 #endif
 
     bool compositing;
+    QElapsedTimer lastComposeTime;
 };
 
 

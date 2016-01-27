@@ -93,9 +93,10 @@ static QByteArray msgBeginFailed(const char *function, const DOCINFO &d)
 {
     QString result;
     QTextStream str(&result);
-    str << "QWin32PrintEngine::begin: " << function << " failed, document \""
-        << QString::fromWCharArray(d.lpszDocName) << '"';
-    if (d.lpszOutput[0])
+    str << "QWin32PrintEngine::begin: " << function << " failed";
+    if (d.lpszDocName && d.lpszDocName[0])
+       str << ", document \"" << QString::fromWCharArray(d.lpszDocName) << '"';
+    if (d.lpszOutput && d.lpszOutput[0])
         str << ", file \"" << QString::fromWCharArray(d.lpszOutput) << '"';
     return result.toLocal8Bit();
 }
@@ -1149,7 +1150,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         d->updateMetrics();
         d->doReinit();
 #ifdef QT_DEBUG_METRICS
-        qDebug() << "QWin32PrintEngine::setProperty(PPK_Orientation," << orientation << ")";
+        qDebug() << "QWin32PrintEngine::setProperty(PPK_Orientation," << orientation << ')';
         d->debugMetrics();
 #endif // QT_DEBUG_METRICS
         break;
@@ -1172,7 +1173,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
             d->setPageSize(pageSize);
             d->doReinit();
 #ifdef QT_DEBUG_METRICS
-            qDebug() << "QWin32PrintEngine::setProperty(PPK_PageSize," << value.toInt() << ")";
+            qDebug() << "QWin32PrintEngine::setProperty(PPK_PageSize," << value.toInt() << ')';
             d->debugMetrics();
 #endif // QT_DEBUG_METRICS
         }
@@ -1188,7 +1189,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
             d->setPageSize(pageSize);
             d->doReinit();
 #ifdef QT_DEBUG_METRICS
-            qDebug() << "QWin32PrintEngine::setProperty(PPK_PaperName," << value.toString() << ")";
+            qDebug() << "QWin32PrintEngine::setProperty(PPK_PaperName," << value.toString() << ')';
             d->debugMetrics();
 #endif // QT_DEBUG_METRICS
         }
@@ -1227,7 +1228,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         d->stretch_y = d->dpi_y / double(d->resolution);
         d->updateMetrics();
 #ifdef QT_DEBUG_METRICS
-        qDebug() << "QWin32PrintEngine::setProperty(PPK_Resolution," << value.toInt() << ")";
+        qDebug() << "QWin32PrintEngine::setProperty(PPK_Resolution," << value.toInt() << ')';
         d->debugMetrics();
 #endif // QT_DEBUG_METRICS
         break;
@@ -1241,7 +1242,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
             d->setPageSize(pageSize);
             d->doReinit();
 #ifdef QT_DEBUG_METRICS
-            qDebug() << "QWin32PrintEngine::setProperty(PPK_WindowsPageSize," << value.toInt() << ")";
+            qDebug() << "QWin32PrintEngine::setProperty(PPK_WindowsPageSize," << value.toInt() << ')';
             d->debugMetrics();
 #endif // QT_DEBUG_METRICS
             break;
@@ -1257,7 +1258,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
             d->setPageSize(pageSize);
             d->doReinit();
 #ifdef QT_DEBUG_METRICS
-            qDebug() << "QWin32PrintEngine::setProperty(PPK_CustomPaperSize," << value.toSizeF() << ")";
+            qDebug() << "QWin32PrintEngine::setProperty(PPK_CustomPaperSize," << value.toSizeF() << ')';
             d->debugMetrics();
 #endif // QT_DEBUG_METRICS
         }
@@ -1272,7 +1273,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
                                              margins.at(2).toReal(), margins.at(3).toReal()));
         d->updateMetrics();
 #ifdef QT_DEBUG_METRICS
-        qDebug() << "QWin32PrintEngine::setProperty(PPK_PageMargins," << margins << ")";
+        qDebug() << "QWin32PrintEngine::setProperty(PPK_PageMargins," << margins << ')';
         d->debugMetrics();
 #endif // QT_DEBUG_METRICS
         break;
@@ -1287,7 +1288,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
             d->setPageSize(pageSize);
             d->doReinit();
 #ifdef QT_DEBUG_METRICS
-            qDebug() << "QWin32PrintEngine::setProperty(PPK_QPageSize," << pageSize << ")";
+            qDebug() << "QWin32PrintEngine::setProperty(PPK_QPageSize," << pageSize << ')';
             d->debugMetrics();
 #endif // QT_DEBUG_METRICS
         }
@@ -1300,7 +1301,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         d->m_pageLayout.setMargins(pair.first);
         d->updateMetrics();
 #ifdef QT_DEBUG_METRICS
-        qDebug() << "QWin32PrintEngine::setProperty(PPK_QPageMargins," << pair.first << pair.second << ")";
+        qDebug() << "QWin32PrintEngine::setProperty(PPK_QPageMargins," << pair.first << pair.second << ')';
         d->debugMetrics();
 #endif // QT_DEBUG_METRICS
         break;
@@ -1316,7 +1317,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
             d->m_pageLayout.setMargins(pageLayout.margins());
             d->updateMetrics();
 #ifdef QT_DEBUG_METRICS
-            qDebug() << "QWin32PrintEngine::setProperty(PPK_QPageLayout," << pageLayout << ")";
+            qDebug() << "QWin32PrintEngine::setProperty(PPK_QPageLayout," << pageLayout << ')';
             d->debugMetrics();
 #endif // QT_DEBUG_METRICS
         }
@@ -1632,7 +1633,7 @@ void QWin32PrintEnginePrivate::updatePageLayout()
 
     // Update orientation first as is needed to obtain printable margins when changing page size
     m_pageLayout.setOrientation(devMode->dmOrientation == DMORIENT_LANDSCAPE ? QPageLayout::Landscape : QPageLayout::Portrait);
-    if (devMode->dmPaperSize >= DMPAPER_USER) {
+    if (devMode->dmPaperSize >= DMPAPER_LAST) {
         // Is a custom size
         QPageSize pageSize = QPageSize(QSizeF(devMode->dmPaperWidth / 10.0f, devMode->dmPaperLength / 10.0f),
                                        QPageSize::Millimeter);

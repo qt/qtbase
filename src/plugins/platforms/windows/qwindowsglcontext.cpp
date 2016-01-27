@@ -284,6 +284,7 @@ static inline void initPixelFormatDescriptor(PIXELFORMATDESCRIPTOR *d)
     d->nVersion = 1;
 }
 
+#ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const PIXELFORMATDESCRIPTOR &pd)
 {
     QDebugStateSaver saver(d);
@@ -325,6 +326,32 @@ QDebug operator<<(QDebug d, const PIXELFORMATDESCRIPTOR &pd)
         << " cAccumAlphaBits=" << pd.cAccumAlphaBits;
     return d;
 }
+
+QDebug operator<<(QDebug d, const QOpenGLStaticContext &s)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "OpenGL: " << s.vendor << ',' << s.renderer << " default "
+        <<  s.defaultFormat;
+    if (s.extensions &  QOpenGLStaticContext::SampleBuffers)
+        d << ",SampleBuffers";
+    if (s.hasExtensions())
+        d << ", Extension-API present";
+    d << "\nExtensions: " << (s.extensionNames.count(' ') + 1);
+    if (QWindowsContext::verbose > 1)
+        d << s.extensionNames;
+    return d;
+}
+
+QDebug operator<<(QDebug d, const QWindowsOpenGLContextFormat &f)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "ContextFormat: v" << (f.version >> 8) << '.' << (f.version & 0xFF)
+        << " profile: " << f.profile << " options: " << f.options;
+    return d;
+}
+#endif // !QT_NO_DEBUG_STREAM
 
 // Check whether an obtained PIXELFORMATDESCRIPTOR matches the request.
 static inline bool
@@ -436,7 +463,7 @@ static int choosePixelFormat(HDC hdc, const QSurfaceFormat &format,
                             PIXELFORMATDESCRIPTOR *obtainedPfd)
 {
     if (QOpenGLStaticContext::opengl32.moduleIsNotOpengl32()) {
-        qWarning("%s: Attempted to use GDI functions with a non-opengl32.dll library", Q_FUNC_INFO);
+        qWarning("Attempted to use GDI functions with a non-opengl32.dll library");
         return 0;
     }
 
@@ -856,16 +883,11 @@ QWindowsOpenGLContextFormat QWindowsOpenGLContextFormat::current()
 {
     QWindowsOpenGLContextFormat result;
     const QByteArray version = QOpenGLStaticContext::getGlString(GL_VERSION);
-    const int majorDot = version.indexOf('.');
-    if (majorDot != -1) {
-        int minorDot = version.indexOf('.', majorDot + 1);
-        if (minorDot == -1)
-            minorDot = version.size();
-        result.version = (version.mid(0, majorDot).toInt() << 8)
-            + version.mid(majorDot + 1, minorDot - majorDot - 1).toInt();
-    } else {
+    int major, minor;
+    if (QPlatformOpenGLContext::parseOpenGLVersion(version, major, minor))
+        result.version = (major << 8) + minor;
+    else
         result.version = 0x0200;
-    }
     result.profile = QSurfaceFormat::NoProfile;
     if (result.version < 0x0300) {
         result.options |= QSurfaceFormat::DeprecatedFunctions;
@@ -903,15 +925,6 @@ void QWindowsOpenGLContextFormat::apply(QSurfaceFormat *format) const
         format->setOption(QSurfaceFormat::DebugContext);
     if (options & QSurfaceFormat::DeprecatedFunctions)
         format->setOption(QSurfaceFormat::DeprecatedFunctions);
-}
-
-QDebug operator<<(QDebug d, const QWindowsOpenGLContextFormat &f)
-{
-    QDebugStateSaver saver(d);
-    d.nospace();
-    d << "ContextFormat: v" << (f.version >> 8) << '.' << (f.version & 0xFF)
-        << " profile: " << f.profile << " options: " << f.options;
-    return d;
 }
 
 /*!
@@ -1005,7 +1018,7 @@ QByteArray QOpenGLStaticContext::getGlString(unsigned int which)
 QOpenGLStaticContext *QOpenGLStaticContext::create(bool softwareRendering)
 {
     if (!opengl32.init(softwareRendering)) {
-        qWarning("%s: Failed to load and resolve WGL/OpenGL functions", Q_FUNC_INFO);
+        qWarning("Failed to load and resolve WGL/OpenGL functions");
         return 0;
     }
 
@@ -1016,22 +1029,6 @@ QOpenGLStaticContext *QOpenGLStaticContext::create(bool softwareRendering)
     QOpenGLStaticContext *result = new QOpenGLStaticContext;
     qCDebug(lcQpaGl) << __FUNCTION__ << *result;
     return result;
-}
-
-QDebug operator<<(QDebug d, const QOpenGLStaticContext &s)
-{
-    QDebugStateSaver saver(d);
-    d.nospace();
-    d << "OpenGL: " << s.vendor << ',' << s.renderer << " default "
-        <<  s.defaultFormat;
-    if (s.extensions &  QOpenGLStaticContext::SampleBuffers)
-        d << ",SampleBuffers";
-    if (s.hasExtensions())
-        d << ", Extension-API present";
-    d << "\nExtensions: " << (s.extensionNames.count(' ') + 1);
-    if (QWindowsContext::verbose > 1)
-        d <<  s.extensionNames;
-    return d;
 }
 
 /*!

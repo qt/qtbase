@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -34,6 +35,7 @@
 #include "qdbusabstractinterface.h"
 #include "qdbusabstractinterface_p.h"
 
+#include <qcoreapplication.h>
 #include <qthread.h>
 
 #include "qdbusargument.h"
@@ -41,6 +43,7 @@
 #include "qdbusmessage_p.h"
 #include "qdbusmetaobject_p.h"
 #include "qdbusmetatype_p.h"
+#include "qdbusservicewatcher.h"
 #include "qdbusutil_p.h"
 
 #include <qdebug.h>
@@ -48,6 +51,29 @@
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
+
+namespace {
+// ### Qt6: change to a regular QEvent (customEvent)
+// We need to use a QMetaCallEvent here because we can't override customEvent() in
+// Qt 5. Since QDBusAbstractInterface is meant to be derived from, the vtables of
+// classes in generated code will have a pointer to QObject::customEvent instead
+// of to QDBusAbstractInterface::customEvent.
+// See solution in Patch Set 1 of this change in the Qt Gerrit servers.
+// (https://codereview.qt-project.org/#/c/126384/1)
+class DisconnectRelayEvent : public QMetaCallEvent
+{
+public:
+    DisconnectRelayEvent(QObject *sender, const QMetaMethod &m)
+        : QMetaCallEvent(0, 0, Q_NULLPTR, sender, m.methodIndex())
+    {}
+
+    void placeMetaCall(QObject *object) Q_DECL_OVERRIDE
+    {
+        QDBusAbstractInterface *iface = static_cast<QDBusAbstractInterface *>(object);
+        QDBusAbstractInterfacePrivate::finishDisconnectNotify(iface, signalId());
+    }
+};
+}
 
 static QDBusError checkIfValid(const QString &service, const QString &path,
                                const QString &interface, bool isDynamic, bool isPeer)
@@ -95,6 +121,15 @@ QDBusAbstractInterfacePrivate::QDBusAbstractInterfacePrivate(const QString &serv
             lastError = connectionPrivate()->lastError;
         }
     }
+}
+
+void QDBusAbstractInterfacePrivate::initOwnerTracking()
+{
+    if (!isValid || !connection.isConnected() || !connectionPrivate()->shouldWatchService(service))
+        return;
+    QObject::connect(new QDBusServiceWatcher(service, connection, QDBusServiceWatcher::WatchForOwnerChange, q_func()),
+                     SIGNAL(serviceOwnerChanged(QString,QString,QString)),
+                     q_func(), SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
 }
 
 bool QDBusAbstractInterfacePrivate::canMakeCalls() const
@@ -218,9 +253,8 @@ void QDBusAbstractInterfacePrivate::_q_serviceOwnerChanged(const QString &name,
     Q_UNUSED(oldOwner);
     Q_UNUSED(name);
     //qDebug() << "QDBusAbstractInterfacePrivate serviceOwnerChanged" << name << oldOwner << newOwner;
-    if (name == service) {
-        currentOwner = newOwner;
-    }
+    Q_ASSERT(name == service);
+    currentOwner = newOwner;
 }
 
 QDBusAbstractInterfaceBase::QDBusAbstractInterfaceBase(QDBusAbstractInterfacePrivate &d, QObject *parent)
@@ -285,19 +319,7 @@ int QDBusAbstractInterfaceBase::qt_metacall(QMetaObject::Call _c, int _id, void 
 QDBusAbstractInterface::QDBusAbstractInterface(QDBusAbstractInterfacePrivate &d, QObject *parent)
     : QDBusAbstractInterfaceBase(d, parent)
 {
-    // keep track of the service owner
-    if (d.isValid &&
-        d.connection.isConnected()
-        && !d.service.isEmpty()
-        && !d.service.startsWith(QLatin1Char(':'))
-        && d.connectionPrivate()->mode != QDBusConnectionPrivate::PeerMode)
-        d_func()->connection.connect(QDBusUtil::dbusService(), // service
-                                     QString(), // path
-                                     QDBusUtil::dbusInterface(), // interface
-                                     QDBusUtil::nameOwnerChanged(),
-                                     QStringList() << d.service,
-                                     QString(), // signature
-                                     this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+    d.initOwnerTracking();
 }
 
 /*!
@@ -312,18 +334,7 @@ QDBusAbstractInterface::QDBusAbstractInterface(const QString &service, const QSt
                                                  con, false), parent)
 {
     // keep track of the service owner
-    if (d_func()->isValid &&
-        d_func()->connection.isConnected()
-        && !service.isEmpty()
-        && !service.startsWith(QLatin1Char(':'))
-        && d_func()->connectionPrivate()->mode != QDBusConnectionPrivate::PeerMode)
-        d_func()->connection.connect(QDBusUtil::dbusService(), // service
-                                     QString(), // path
-                                     QDBusUtil::dbusInterface(), // interface
-                                     QDBusUtil::nameOwnerChanged(),
-                                     QStringList() << service,
-                                     QString(), //signature
-                                     this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+    d_func()->initOwnerTracking();
 }
 
 /*!
@@ -617,22 +628,38 @@ void QDBusAbstractInterface::disconnectNotify(const QMetaMethod &signal)
     if (!d->isValid)
         return;
 
+    // disconnection is just resource freeing, so it can be delayed;
+    // let's do that later, after all the QObject mutexes have been unlocked.
+    QCoreApplication::postEvent(this, new DisconnectRelayEvent(this, signal));
+}
+
+/*!
+    \internal
+    Continues the disconnect notification from above.
+*/
+void QDBusAbstractInterfacePrivate::finishDisconnectNotify(QDBusAbstractInterface *ptr, int signalId)
+{
+    QDBusAbstractInterfacePrivate *d = ptr->d_func();
     QDBusConnectionPrivate *conn = d->connectionPrivate();
-    if (conn && signal.isValid() && !isSignalConnected(signal))
-        return conn->disconnectRelay(d->service, d->path, d->interface,
-                                     this, signal);
     if (!conn)
         return;
 
-    // wildcard disconnecting, we need to figure out which of our signals are
-    // no longer connected to anything
-    const QMetaObject *mo = metaObject();
-    int midx = QObject::staticMetaObject.methodCount();
-    const int end = mo->methodCount();
-    for ( ; midx < end; ++midx) {
-        QMetaMethod mm = mo->method(midx);
-        if (mm.methodType() == QMetaMethod::Signal && !isSignalConnected(mm))
-            conn->disconnectRelay(d->service, d->path, d->interface, this, mm);
+    const QMetaObject *mo = ptr->metaObject();
+    QMetaMethod signal = signalId >= 0 ? mo->method(signalId) : QMetaMethod();
+    if (signal.isValid()) {
+        if (!ptr->isSignalConnected(signal))
+            return conn->disconnectRelay(d->service, d->path, d->interface,
+                                         ptr, signal);
+    } else {
+        // wildcard disconnecting, we need to figure out which of our signals are
+        // no longer connected to anything
+        int midx = QObject::staticMetaObject.methodCount();
+        const int end = mo->methodCount();
+        for ( ; midx < end; ++midx) {
+            QMetaMethod mm = mo->method(midx);
+            if (mm.methodType() == QMetaMethod::Signal && !ptr->isSignalConnected(mm))
+                conn->disconnectRelay(d->service, d->path, d->interface, ptr, mm);
+        }
     }
 }
 

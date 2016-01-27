@@ -744,7 +744,7 @@ static QSqlIndex qGetTableInfo(QSqlQuery &q, const QString &tableName, bool only
         schema = tableName.left(indexOfSeparator).append(QLatin1Char('.'));
         table = tableName.mid(indexOfSeparator + 1);
     }
-    q.exec(QLatin1String("PRAGMA ") + schema + QLatin1String("table_info (") + _q_escapeIdentifier(table) + QLatin1String(")"));
+    q.exec(QLatin1String("PRAGMA ") + schema + QLatin1String("table_info (") + _q_escapeIdentifier(table) + QLatin1Char(')'));
 
     QSqlIndex ind;
     while (q.next()) {

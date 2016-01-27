@@ -191,6 +191,12 @@ QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, dr
         return Q_NULLPTR;
     }
 
+    // Skip disconnected output
+    if (configuration == OutputConfigPreferred && connector->connection == DRM_MODE_DISCONNECTED) {
+        qCDebug(qLcEglfsKmsDebug) << "Skipping disconnected output" << connectorName;
+        return Q_NULLPTR;
+    }
+
     // Get the current mode on the current crtc
     drmModeModeInfo crtc_mode;
     memset(&crtc_mode, 0, sizeof crtc_mode);
@@ -213,7 +219,7 @@ QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, dr
     for (int i = 0; i < connector->count_modes; i++) {
         const drmModeModeInfo &mode = connector->modes[i];
         qCDebug(qLcEglfsKmsDebug) << "mode" << i << mode.hdisplay << "x" << mode.vdisplay
-                                  << "@" << mode.vrefresh << "hz";
+                                  << '@' << mode.vrefresh << "hz";
         modes << connector->modes[i];
     }
 
@@ -272,7 +278,7 @@ QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, dr
         int height = modes[selected_mode].vdisplay;
         int refresh = modes[selected_mode].vrefresh;
         qCDebug(qLcEglfsKmsDebug) << "Selected mode" << selected_mode << ":" << width << "x" << height
-                                  << "@" << refresh << "hz for output" << connectorName;
+                                  << '@' << refresh << "hz for output" << connectorName;
     }
 
     QEglFSKmsOutput output = {
@@ -284,6 +290,7 @@ QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, dr
         false,
         drmModeGetCrtc(m_dri_fd, crtc_id),
         modes,
+        connector->subpixel,
         connectorProperty(connector, QByteArrayLiteral("DPMS"))
     };
 

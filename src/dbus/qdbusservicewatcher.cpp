@@ -38,6 +38,7 @@
 #include <QStringList>
 
 #include <private/qobject_p.h>
+#include <private/qdbusconnection_p.h>
 
 #ifndef QT_NO_DBUS
 
@@ -59,7 +60,6 @@ public:
     void _q_serviceOwnerChanged(const QString &, const QString &, const QString &);
     void setConnection(const QStringList &services, const QDBusConnection &c, QDBusServiceWatcher::WatchMode watchMode);
 
-    QStringList matchArgsForService(const QString &service);
     void addService(const QString &service);
     void removeService(const QString &service);
 };
@@ -93,40 +93,18 @@ void QDBusServiceWatcherPrivate::setConnection(const QStringList &s, const QDBus
     }
 }
 
-QStringList QDBusServiceWatcherPrivate::matchArgsForService(const QString &service)
-{
-    QStringList matchArgs;
-    matchArgs << service;
-
-    switch (watchMode) {
-    case QDBusServiceWatcher::WatchForOwnerChange:
-        break;
-
-    case QDBusServiceWatcher::WatchForRegistration:
-        matchArgs << QString::fromLatin1("", 0);
-        break;
-
-    case QDBusServiceWatcher::WatchForUnregistration:
-        matchArgs << QString() << QString::fromLatin1("", 0);
-        break;
-    }
-    return matchArgs;
-}
-
 void QDBusServiceWatcherPrivate::addService(const QString &service)
 {
-    QStringList matchArgs = matchArgsForService(service);
-    connection.connect(QDBusUtil::dbusService(), QString(), QDBusUtil::dbusInterface(), QDBusUtil::nameOwnerChanged(),
-                       matchArgs, QString(), q_func(),
-                       SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+    QDBusConnectionPrivate *d = QDBusConnectionPrivate::d(connection);
+    if (d && d->shouldWatchService(service))
+        d->watchService(service, watchMode, q_func(), SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
 }
 
 void QDBusServiceWatcherPrivate::removeService(const QString &service)
 {
-    QStringList matchArgs = matchArgsForService(service);
-    connection.disconnect(QDBusUtil::dbusService(), QString(), QDBusUtil::dbusInterface(), QDBusUtil::nameOwnerChanged(),
-                          matchArgs, QString(), q_func(),
-                          SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+    QDBusConnectionPrivate *d = QDBusConnectionPrivate::d(connection);
+    if (d && d->shouldWatchService(service))
+        d->unwatchService(service, watchMode, q_func(), SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
 }
 
 /*!

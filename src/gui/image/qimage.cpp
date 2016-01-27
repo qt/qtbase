@@ -313,7 +313,7 @@ bool QImageData::checkForAlphaPixels() const
     sharing}. QImage objects can also be streamed and compared.
 
     \note If you would like to load QImage objects in a static build of Qt,
-    refer to the \l{How To Create Qt Plugins}{Plugin HowTo}.
+    refer to the \l{How to Create Qt Plugins}{Plugin HowTo}.
 
     \warning Painting on a QImage with the format
     QImage::Format_Indexed8 is not supported.
@@ -572,12 +572,13 @@ bool QImageData::checkForAlphaPixels() const
 
     \endtable
 
+    \target qimage-legalese
     \section1 Legal Information
 
     For smooth scaling, the transformed() functions use code based on
     smooth scaling algorithm by Daniel M. Duley.
 
-    \legalese
+    \badcode
      Copyright (C) 2004, 2005 Daniel M. Duley
 
      Redistribution and use in source and binary forms, with or without
@@ -600,7 +601,7 @@ bool QImageData::checkForAlphaPixels() const
      THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
      (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
      THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-    \endlegalese
+    \endcode
 
     \sa QImageReader, QImageWriter, QPixmap, QSvgRenderer, {Image Composition Example},
         {Image Viewer Example}, {Scribble Example}, {Pixelator Example}
@@ -2208,12 +2209,12 @@ int QImage::pixelIndex(int x, int y) const
 */
 QRgb QImage::pixel(int x, int y) const
 {
-    if (!d || x < 0 || x >= d->width || y < 0 || y >= height()) {
+    if (!d || x < 0 || x >= d->width || y < 0 || y >= d->height) {
         qWarning("QImage::pixel: coordinate (%d,%d) out of range", x, y);
         return 12345;
     }
 
-    const uchar * s = constScanLine(y);
+    const uchar *s = d->data + y * d->bytes_per_line;
     switch(d->format) {
     case Format_Mono:
         return d->colortable.at((*(s + (x >> 3)) >> (~x & 7)) & 1);
@@ -2379,17 +2380,25 @@ QColor QImage::pixelColor(int x, int y) const
         return QColor();
     }
 
+    QRgba64 c;
     const uchar * s = constScanLine(y);
     switch (d->format) {
     case Format_BGR30:
     case Format_A2BGR30_Premultiplied:
-        return QColor(qConvertA2rgb30ToRgb64<PixelOrderBGR>(reinterpret_cast<const quint32 *>(s)[x]));
+        c = qConvertA2rgb30ToRgb64<PixelOrderBGR>(reinterpret_cast<const quint32 *>(s)[x]);
+        break;
     case Format_RGB30:
     case Format_A2RGB30_Premultiplied:
-        return QColor(qConvertA2rgb30ToRgb64<PixelOrderRGB>(reinterpret_cast<const quint32 *>(s)[x]));
+        c = qConvertA2rgb30ToRgb64<PixelOrderRGB>(reinterpret_cast<const quint32 *>(s)[x]);
+        break;
     default:
-        return QColor(pixel(x, y));
+        c = QRgba64::fromArgb32(pixel(x, y));
+        break;
     }
+    // QColor is always unpremultiplied
+    if (hasAlphaChannel() && qPixelLayouts[d->format].premultiplied)
+        c = c.unpremultiplied();
+    return QColor(c);
 }
 
 /*!
@@ -2420,6 +2429,12 @@ void QImage::setPixelColor(int x, int y, const QColor &color)
         qWarning("QImage::setPixelColor: coordinate (%d,%d) out of range", x, y);
         return;
     }
+    // QColor is always unpremultiplied
+    QRgba64 c = color.rgba64();
+    if (!hasAlphaChannel())
+        c.setAlpha(65535);
+    else if (qPixelLayouts[d->format].premultiplied)
+        c = c.premultiplied();
     // detach is called from within scanLine
     uchar * s = scanLine(y);
     switch (d->format) {
@@ -2429,19 +2444,19 @@ void QImage::setPixelColor(int x, int y, const QColor &color)
         qWarning("QImage::setPixelColor: called on monochrome or indexed format");
         return;
     case Format_BGR30:
-        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderBGR>(color.rgba64()) | 0xc0000000;
+        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderBGR>(c) | 0xc0000000;
         return;
     case Format_A2BGR30_Premultiplied:
-        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderBGR>(color.rgba64());
+        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderBGR>(c);
         return;
     case Format_RGB30:
-        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderRGB>(color.rgba64()) | 0xc0000000;
+        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderRGB>(c) | 0xc0000000;
         return;
     case Format_A2RGB30_Premultiplied:
-        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderRGB>(color.rgba64());
+        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderRGB>(c);
         return;
     default:
-        setPixel(x, y, color.rgba());
+        setPixel(x, y, c.toArgb32());
         return;
     }
 }
@@ -4236,9 +4251,6 @@ QImage QImage::alphaChannel() const
     if (!d)
         return QImage();
 
-    if (d->format == QImage::Format_Alpha8)
-        return *this;
-
     int w = d->width;
     int h = d->height;
 
@@ -4268,6 +4280,10 @@ QImage QImage::alphaChannel() const
             src_data += d->bytes_per_line;
             dest_data += image.d->bytes_per_line;
         }
+    } else if (d->format == Format_Alpha8) {
+        const uchar *src_data = d->data;
+        uchar *dest_data = image.d->data;
+        memcpy(dest_data, src_data, d->bytes_per_line * h);
     } else {
         QImage alpha32 = *this;
         bool canSkipConversion = (d->format == Format_ARGB32 || d->format == Format_ARGB32_Premultiplied);
@@ -4359,6 +4375,10 @@ int QImage::bitPlaneCount() const
     return bpc;
 }
 
+/*!
+   Returns a smoothly scaled copy of the image. The returned image has a size
+   of width \a w by height \a h pixels.
+*/
 QImage QImage::smoothScaled(int w, int h) const {
     QImage src = *this;
     switch (src.format()) {
@@ -4382,6 +4402,8 @@ QImage QImage::smoothScaled(int w, int h) const {
 
 static QImage rotated90(const QImage &image) {
     QImage out(image.height(), image.width(), image.format());
+    out.setDotsPerMeterX(image.dotsPerMeterY());
+    out.setDotsPerMeterY(image.dotsPerMeterX());
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();
@@ -4450,6 +4472,8 @@ static QImage rotated180(const QImage &image) {
 
 static QImage rotated270(const QImage &image) {
     QImage out(image.height(), image.width(), image.format());
+    out.setDotsPerMeterX(image.dotsPerMeterY());
+    out.setDotsPerMeterY(image.dotsPerMeterX());
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();

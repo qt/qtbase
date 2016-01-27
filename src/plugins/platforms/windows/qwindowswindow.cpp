@@ -106,20 +106,6 @@ static QByteArray debugWinExStyle(DWORD exStyle)
     return rc;
 }
 
-#ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO
-QDebug operator<<(QDebug d, const MINMAXINFO &i)
-{
-    QDebugStateSaver saver(d);
-    d.nospace();
-    d << "MINMAXINFO maxSize=" << i.ptMaxSize.x << ','
-        << i.ptMaxSize.y << " maxpos=" << i.ptMaxPosition.x
-        << ',' << i.ptMaxPosition.y << " mintrack="
-        << i.ptMinTrackSize.x << ',' << i.ptMinTrackSize.y
-        << " maxtrack=" << i.ptMaxTrackSize.x << ',' << i.ptMaxTrackSize.y;
-    return d;
-}
-#endif // !Q_OS_WINCE
-
 static inline QSize qSizeOfRect(const RECT &rect)
 {
     return QSize(rect.right -rect.left, rect.bottom - rect.top);
@@ -138,6 +124,7 @@ static inline RECT RECTfromQRect(const QRect &rect)
     return result;
 }
 
+#ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const RECT &r)
 {
     QDebugStateSaver saver(d);
@@ -147,7 +134,13 @@ QDebug operator<<(QDebug d, const RECT &r)
     return d;
 }
 
-#ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_NCCALCSIZE
+QDebug operator<<(QDebug d, const POINT &p)
+{
+    d << p.x << ',' << p.y;
+    return d;
+}
+
+#  ifndef Q_OS_WINCE
 QDebug operator<<(QDebug d, const NCCALCSIZE_PARAMS &p)
 {
     QDebugStateSaver saver(d);
@@ -156,7 +149,30 @@ QDebug operator<<(QDebug d, const NCCALCSIZE_PARAMS &p)
         << ' ' << qrectFromRECT(p.rgrc[1]) << ' ' << qrectFromRECT(p.rgrc[2]);
     return d;
 }
-#endif // !Q_OS_WINCE
+
+QDebug operator<<(QDebug d, const MINMAXINFO &i)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "MINMAXINFO maxSize=" << i.ptMaxSize.x << ','
+        << i.ptMaxSize.y << " maxpos=" << i.ptMaxPosition.x
+        << ',' << i.ptMaxPosition.y << " mintrack="
+        << i.ptMinTrackSize.x << ',' << i.ptMinTrackSize.y
+        << " maxtrack=" << i.ptMaxTrackSize.x << ',' << i.ptMaxTrackSize.y;
+    return d;
+}
+
+QDebug operator<<(QDebug d, const WINDOWPLACEMENT &wp)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d <<  "WINDOWPLACEMENT(flags=0x" << hex << wp.flags << dec << ", showCmd="
+        << wp.showCmd << ", ptMinPosition=" << wp.ptMinPosition << ", ptMaxPosition=" << wp.ptMaxPosition
+        << ", rcNormalPosition=" << wp.rcNormalPosition;
+    return d;
+}
+#  endif // !Q_OS_WINCE
+#endif // !QT_NO_DEBUG_STREAM
 
 // QTBUG-43872, for windows that do not have WS_EX_TOOLWINDOW set, WINDOWPLACEMENT
 // is in workspace/available area coordinates.
@@ -912,6 +928,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
     m_hdc(0),
     m_windowState(Qt::WindowNoState),
     m_opacity(1.0),
+    m_cursor(new CursorHandle),
     m_dropTarget(0),
     m_savedStyle(0),
     m_format(aWindow->requestedFormat()),
@@ -1016,7 +1033,17 @@ void QWindowsWindow::destroyWindow()
 void QWindowsWindow::updateDropSite(bool topLevel)
 {
     bool enabled = false;
-    if (topLevel) {
+    bool parentIsEmbedded = false;
+
+    if (!topLevel) {
+        // if the parent window is a foreign window wrapped via QWindow::fromWinId, we need to enable the drop site
+        // on the first child window
+        const QWindow *parent = window()->parent();
+        if (parent && (parent->type() == Qt::ForeignWindow))
+            parentIsEmbedded = true;
+    }
+
+    if (topLevel || parentIsEmbedded) {
         switch (window()->type()) {
         case Qt::Window:
         case Qt::Dialog:
@@ -1045,8 +1072,8 @@ void QWindowsWindow::setDropSiteEnabled(bool dropEnabled)
         RegisterDragDrop(m_data.hwnd, m_dropTarget);
         CoLockObjectExternal(m_dropTarget, true, true);
     } else {
-        m_dropTarget->Release();
         CoLockObjectExternal(m_dropTarget, false, true);
+        m_dropTarget->Release();
         RevokeDragDrop(m_data.hwnd);
         m_dropTarget = 0;
     }
@@ -1062,7 +1089,7 @@ QWindow *QWindowsWindow::topLevelOf(QWindow *w)
 
     if (const QPlatformWindow *handle = w->handle()) {
         const QWindowsWindow *ww = static_cast<const QWindowsWindow *>(handle);
-        if (ww->isEmbedded(0)) {
+        if (ww->isEmbedded()) {
             HWND parentHWND = GetAncestor(ww->handle(), GA_PARENT);
             const HWND desktopHwnd = GetDesktopWindow();
             const QWindowsContext *ctx = QWindowsContext::instance();
@@ -1140,7 +1167,7 @@ bool QWindowsWindow::isEmbedded(const QPlatformWindow *parentWindow) const
     }
 
     if (!m_data.embedded && parent())
-        return parent()->isEmbedded(0);
+        return parent()->isEmbedded();
 
     return m_data.embedded;
 }
@@ -1637,8 +1664,12 @@ void QWindowsWindow::setWindowState(Qt::WindowState state)
 bool QWindowsWindow::isFullScreen_sys() const
 {
     const QWindow *w = window();
-    return w->isTopLevel()
-        && geometry_sys() == QHighDpi::toNativePixels(w->screen()->geometry(), w);
+    if (!w->isTopLevel())
+        return false;
+    const QScreen *screen = w->screen();
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+    return screen && geometry_sys() == QHighDpi::toNativePixels(screen->geometry(), w);
 }
 
 /*!
@@ -1708,7 +1739,9 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             // Use geometry of QWindow::screen() within creation or the virtual screen the
             // window is in (QTBUG-31166, QTBUG-30724).
             const QScreen *screen = window()->screen();
-            const QRect r = QHighDpi::toNativePixels(screen->geometry(), window());
+            if (!screen)
+                screen = QGuiApplication::primaryScreen();
+            const QRect r = screen ? QHighDpi::toNativePixels(screen->geometry(), window()) : m_savedFrameGeometry;
             const UINT swpf = SWP_FRAMECHANGED | SWP_NOACTIVATE;
             const bool wasSync = testFlag(SynchronousGeometryChangeEvent);
             setFlag(SynchronousGeometryChangeEvent);
@@ -1756,7 +1789,7 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
     if ((oldState == Qt::WindowMinimized) != (newState == Qt::WindowMinimized)) {
         if (visible)
             ShowWindow(m_data.hwnd, (newState == Qt::WindowMinimized) ? SW_MINIMIZE :
-                       (newState == Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNOACTIVATE);
+                       (newState == Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNORMAL);
     }
     qCDebug(lcQpaWindows) << '<' << __FUNCTION__ << this << window() << newState;
 }
@@ -1825,7 +1858,7 @@ bool QWindowsWindow::handleGeometryChangingMessage(MSG *message, const QWindow *
     const QRect suggestedFrameGeometry(windowPos->x, windowPos->y,
                                        windowPos->cx, windowPos->cy);
     const QRect suggestedGeometry = suggestedFrameGeometry - margins;
-    const QRectF correctedGeometryF = qWindow->handle()->windowClosestAcceptableGeometry(suggestedGeometry);
+    const QRectF correctedGeometryF = QPlatformWindow::closestAcceptableGeometry(qWindow, suggestedGeometry);
     if (!correctedGeometryF.isValid())
         return false;
     const QRect correctedFrameGeometry = correctedGeometryF.toRect() + margins;
@@ -2091,13 +2124,13 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
 
 #ifndef QT_NO_CURSOR
 // Return the default cursor (Arrow) from QWindowsCursor's cache.
-static inline QWindowsWindowCursor defaultCursor(const QWindow *w)
+static inline CursorHandlePtr defaultCursor(const QWindow *w)
 {
     if (QScreen *screen = w->screen())
         if (const QPlatformScreen *platformScreen = screen->handle())
             if (QPlatformCursor *cursor = platformScreen->cursor())
                 return static_cast<QWindowsCursor *>(cursor)->standardWindowCursor(Qt::ArrowCursor);
-    return QWindowsWindowCursor(Qt::ArrowCursor);
+    return CursorHandlePtr(new CursorHandle(QWindowsCursor::createCursorFromShape(Qt::ArrowCursor)));
 }
 
 // Check whether to apply a new cursor. Either the window in question is
@@ -2111,7 +2144,7 @@ static inline bool applyNewCursor(const QWindow *w)
     for (const QWindow *p = underMouse; p ; p = p->parent()) {
         if (p == w)
             return true;
-        if (!QWindowsWindow::baseWindowOf(p)->cursor().isNull())
+        if (!QWindowsWindow::baseWindowOf(p)->cursor()->isNull())
             return false;
     }
     return false;
@@ -2127,25 +2160,25 @@ static inline bool applyNewCursor(const QWindow *w)
 void QWindowsWindow::applyCursor()
 {
 #ifndef QT_NO_CURSOR
-    if (m_cursor.isNull()) { // Recurse up to parent with non-null cursor. Set default for toplevel.
+    if (m_cursor->isNull()) { // Recurse up to parent with non-null cursor. Set default for toplevel.
         if (const QWindow *p = window()->parent()) {
             QWindowsWindow::baseWindowOf(p)->applyCursor();
         } else {
-            SetCursor(defaultCursor(window()).handle());
+            SetCursor(defaultCursor(window())->handle());
         }
     } else {
-        SetCursor(m_cursor.handle());
+        SetCursor(m_cursor->handle());
     }
 #endif
 }
 
-void QWindowsWindow::setCursor(const QWindowsWindowCursor &c)
+void QWindowsWindow::setCursor(const CursorHandlePtr &c)
 {
 #ifndef QT_NO_CURSOR
-    if (c.handle() != m_cursor.handle()) {
+    if (c->handle() != m_cursor->handle()) {
         const bool apply = applyNewCursor(window());
         qCDebug(lcQpaWindows) << window() << __FUNCTION__
-            << c.cursor().shape() << " doApply=" << apply;
+            << c->handle() << " doApply=" << apply;
         m_cursor = c;
         if (apply)
             applyCursor();
@@ -2270,6 +2303,7 @@ void QWindowsWindow::setCustomMargins(const QMargins &newCustomMargins)
 void *QWindowsWindow::surface(void *nativeConfig, int *err)
 {
 #ifdef QT_NO_OPENGL
+    Q_UNUSED(err)
     Q_UNUSED(nativeConfig)
     return 0;
 #else

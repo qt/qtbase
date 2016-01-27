@@ -38,14 +38,24 @@
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
+#include <QtCore/QStandardPaths>
+#include <QtCore/QTemporaryDir>
 #include <QtCore/QTextStream>
 #include <QFutureSynchronizer>
 #include <QtConcurrent/QtConcurrentRun>
 
 #include <QtTest/QtTest>
 
-static const char yastFileName[] ="yast2-metapackage-handler-mimetypes.xml";
-static const char qmlAgainFileName[] ="qml-again.xml";
+static const char *const additionalMimeFiles[] = {
+    "yast2-metapackage-handler-mimetypes.xml",
+    "qml-again.xml",
+    "text-x-objcsrc.xml",
+    "invalid-magic1.xml",
+    "invalid-magic2.xml",
+    "invalid-magic3.xml",
+    0
+};
+
 #define RESOURCE_PREFIX ":/qt-project.org/qmime/"
 
 void initializeLang()
@@ -73,51 +83,102 @@ static inline QString testSuiteWarning()
     return result;
 }
 
+static bool copyResourceFile(const QString &sourceFileName, const QString &targetFileName,
+                             QString *errorMessage)
+{
+
+    QFile sourceFile(sourceFileName);
+    if (!sourceFile.exists()) {
+        *errorMessage = QDir::toNativeSeparators(sourceFileName) + QLatin1String(" does not exist.");
+        return false;
+    }
+    if (!sourceFile.copy(targetFileName)) {
+        *errorMessage = QLatin1String("Cannot copy ")
+            + QDir::toNativeSeparators(sourceFileName) + QLatin1String(" to ")
+            + QDir::toNativeSeparators(targetFileName) + QLatin1String(": ")
+            + sourceFile.errorString();
+        return false;
+    }
+    // QFile::copy() sets the permissions of the source file which are read-only for
+    // resource files. Set write permission to enable deletion of the temporary directory.
+    QFile targetFile(targetFileName);
+    if (!targetFile.setPermissions(targetFile.permissions() | QFileDevice::WriteUser)) {
+        *errorMessage = QLatin1String("Cannot set write permission on ")
+            + QDir::toNativeSeparators(targetFileName) + QLatin1String(": ")
+            + targetFile.errorString();
+        return false;
+    }
+    return true;
+}
+
 // Set LANG before QCoreApplication is created
 Q_CONSTRUCTOR_FUNCTION(initializeLang)
 
+static QString seedAndTemplate()
+{
+    qsrand(QDateTime::currentDateTimeUtc().toTime_t());
+    return QDir::tempPath() + "/tst_qmimedatabase-XXXXXX";
+}
+
 tst_QMimeDatabase::tst_QMimeDatabase()
+    : m_temporaryDir(seedAndTemplate())
 {
 }
 
 void tst_QMimeDatabase::initTestCase()
 {
+    QVERIFY2(m_temporaryDir.isValid(), qPrintable(m_temporaryDir.errorString()));
+    QStandardPaths::setTestModeEnabled(true);
+    m_localMimeDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "/mime";
+    if (QDir(m_localMimeDir).exists()) {
+        QVERIFY2(QDir(m_localMimeDir).removeRecursively(), qPrintable(m_localMimeDir + ": " + qt_error_string()));
+    }
+    QString errorMessage;
+
+#ifdef USE_XDG_DATA_DIRS
+    // Create a temporary "global" XDG data dir for later use
+    // It will initially contain a copy of freedesktop.org.xml
     QVERIFY2(m_temporaryDir.isValid(),
              ("Could not create temporary subdir: " + m_temporaryDir.errorString()).toUtf8());
-
-    // Create a "global" and a "local" XDG data dir, right here.
-    // The local dir will be empty initially, while the global dir will contain a copy of freedesktop.org.xml
-
     const QDir here = QDir(m_temporaryDir.path());
-
     m_globalXdgDir = m_temporaryDir.path() + QStringLiteral("/global");
-    m_localXdgDir = m_temporaryDir.path() + QStringLiteral("/local");
-
     const QString globalPackageDir = m_globalXdgDir + QStringLiteral("/mime/packages");
-    QVERIFY(here.mkpath(globalPackageDir) && here.mkpath(m_localXdgDir));
+    QVERIFY(here.mkpath(globalPackageDir));
 
     qputenv("XDG_DATA_DIRS", QFile::encodeName(m_globalXdgDir));
-    qputenv("XDG_DATA_HOME", QFile::encodeName(m_localXdgDir));
-    qDebug() << "\nLocal XDG_DATA_HOME: " << m_localXdgDir
-             << "\nGlobal XDG_DATA_DIRS: " << m_globalXdgDir;
+    qDebug() << "\nGlobal XDG_DATA_DIRS: " << m_globalXdgDir;
 
     const QString freeDesktopXml = QStringLiteral("freedesktop.org.xml");
     const QString xmlFileName = QLatin1String(RESOURCE_PREFIX) + freeDesktopXml;
-    QVERIFY2(QFileInfo(xmlFileName).exists(), qPrintable(xmlFileName + QStringLiteral(" does not exist")));
-    QFile xml(xmlFileName);
-    QVERIFY(xml.copy(globalPackageDir + '/' + freeDesktopXml));
+    const QString xmlTargetFileName = globalPackageDir + QLatin1Char('/') + freeDesktopXml;
+    QVERIFY2(copyResourceFile(xmlFileName, xmlTargetFileName, &errorMessage), qPrintable(errorMessage));
+#endif
 
     m_testSuite = QFINDTESTDATA("testfiles");
     if (m_testSuite.isEmpty())
         qWarning("%s", qPrintable(testSuiteWarning()));
 
-    const QString errorMessage = QString::fromLatin1("Cannot find '%1'");
-    m_yastMimeTypes = QLatin1String(RESOURCE_PREFIX) + yastFileName;
-    QVERIFY2(QFile::exists(m_yastMimeTypes), qPrintable(errorMessage.arg(yastFileName)));
-    m_qmlAgainFileName = QLatin1String(RESOURCE_PREFIX) + qmlAgainFileName;
-    QVERIFY2(QFile::exists(m_qmlAgainFileName), qPrintable(errorMessage.arg(qmlAgainFileName)));
+    errorMessage = QString::fromLatin1("Cannot find '%1'");
+    for (uint i = 0; i < sizeof additionalMimeFiles / sizeof additionalMimeFiles[0] - 1; i++) {
+        const QString resourceFilePath = QString::fromLatin1(RESOURCE_PREFIX) + QLatin1String(additionalMimeFiles[i]);
+        QVERIFY2(QFile::exists(resourceFilePath), qPrintable(errorMessage.arg(resourceFilePath)));
+        m_additionalMimeFileNames.append(QLatin1String(additionalMimeFiles[i]));
+        m_additionalMimeFilePaths.append(resourceFilePath);
+    }
 
-    init();
+    initTestCaseInternal();
+    m_isUsingCacheProvider = !qEnvironmentVariableIsSet("QT_NO_MIME_CACHE");
+}
+
+void tst_QMimeDatabase::init()
+{
+    // clean up local data from previous runs
+    QDir(m_localMimeDir).removeRecursively();
+}
+
+void tst_QMimeDatabase::cleanupTestCase()
+{
+    QDir(m_localMimeDir).removeRecursively();
 }
 
 void tst_QMimeDatabase::mimeTypeForName()
@@ -812,12 +873,24 @@ static void checkHasMimeType(const QString &mimeType)
     QVERIFY(found);
 }
 
+static void ignoreInvalidMimetypeWarnings(const QString &mimeDir)
+{
+    const QByteArray basePath = QFile::encodeName(mimeDir) + "/packages/";
+    QTest::ignoreMessage(QtWarningMsg, ("QMimeDatabase: Error parsing " + basePath + "invalid-magic1.xml\nInvalid magic rule value \"foo\"").constData());
+    QTest::ignoreMessage(QtWarningMsg, ("QMimeDatabase: Error parsing " + basePath + "invalid-magic2.xml\nInvalid magic rule mask \"ffff\"").constData());
+    QTest::ignoreMessage(QtWarningMsg, ("QMimeDatabase: Error parsing " + basePath + "invalid-magic3.xml\nInvalid magic rule mask size \"0xffff\"").constData());
+}
+
 QT_BEGIN_NAMESPACE
 extern Q_CORE_EXPORT int qmime_secondsBetweenChecks; // see qmimeprovider.cpp
 QT_END_NAMESPACE
 
 void tst_QMimeDatabase::installNewGlobalMimeType()
 {
+#if !defined(USE_XDG_DATA_DIRS)
+    QSKIP("This test requires XDG_DATA_DIRS");
+#endif
+
 #ifdef QT_NO_PROCESS
     QSKIP("This test requires QProcess support");
 #else
@@ -828,21 +901,23 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
 
     const QString mimeDir = m_globalXdgDir + QLatin1String("/mime");
     const QString destDir = mimeDir + QLatin1String("/packages/");
-    const QString destFile = destDir + QLatin1String(yastFileName);
-    QFile::remove(destFile);
-    const QString destQmlFile = destDir + QLatin1String(qmlAgainFileName);
-    QFile::remove(destQmlFile);
-    //qDebug() << destFile;
-
     if (!QFileInfo(destDir).isDir())
         QVERIFY(QDir(m_globalXdgDir).mkpath(destDir));
-    QVERIFY(QFile::copy(m_yastMimeTypes, destFile));
-    QVERIFY(QFile::copy(m_qmlAgainFileName, destQmlFile));
-    if (!waitAndRunUpdateMimeDatabase(mimeDir))
+
+    QString errorMessage;
+    for (int i = 0; i < m_additionalMimeFileNames.size(); ++i) {
+        const QString destFile = destDir + m_additionalMimeFileNames.at(i);
+        QFile::remove(destFile);
+        QVERIFY2(copyResourceFile(m_additionalMimeFilePaths.at(i), destFile, &errorMessage), qPrintable(errorMessage));
+    }
+    if (m_isUsingCacheProvider && !waitAndRunUpdateMimeDatabase(mimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
 
+    if (!m_isUsingCacheProvider)
+        ignoreInvalidMimetypeWarnings(mimeDir);
+
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
-             QString::fromLatin1("text/x-suse-ymu"));
+             QString::fromLatin1("text/x-SuSE-ymu"));
     QVERIFY(db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
     checkHasMimeType("text/x-suse-ymp");
 
@@ -854,10 +929,17 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
     QCOMPARE(db.mimeTypeForFile(qmlTestFile).name(),
              QString::fromLatin1("text/x-qml"));
 
-    // Now test removing it again
-    QFile::remove(destFile);
-    QFile::remove(destQmlFile);
-    if (!waitAndRunUpdateMimeDatabase(mimeDir))
+    // ensure we can access the empty glob list
+    {
+        QMimeType objcsrc = db.mimeTypeForName(QStringLiteral("text/x-objcsrc"));
+        QVERIFY(objcsrc.isValid());
+        qDebug() << objcsrc.globPatterns();
+    }
+
+    // Now test removing the mimetype definitions again
+    for (int i = 0; i < m_additionalMimeFileNames.size(); ++i)
+        QFile::remove(destDir + m_additionalMimeFileNames.at(i));
+    if (m_isUsingCacheProvider && !waitAndRunUpdateMimeDatabase(mimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
              QString::fromLatin1("application/octet-stream"));
@@ -873,26 +955,39 @@ void tst_QMimeDatabase::installNewLocalMimeType()
     qmime_secondsBetweenChecks = 0;
 
     QMimeDatabase db;
-    QVERIFY(!db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
 
-    const QString mimeDir = m_localXdgDir + QLatin1String("/mime");
-    const QString destDir = mimeDir + QLatin1String("/packages/");
-    QDir().mkpath(destDir);
-    const QString destFile = destDir + QLatin1String(yastFileName);
-    QFile::remove(destFile);
-    const QString destQmlFile = destDir + QLatin1String(qmlAgainFileName);
-    QFile::remove(destQmlFile);
-    QVERIFY(QFile::copy(m_yastMimeTypes, destFile));
-    QVERIFY(QFile::copy(m_qmlAgainFileName, destQmlFile));
-    if (!runUpdateMimeDatabase(mimeDir)) {
+    // Check that we're starting clean
+    QVERIFY(!db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
+    QVERIFY(!db.mimeTypeForName(QLatin1String("text/invalid-magic1")).isValid());
+
+    const QString destDir = m_localMimeDir + QLatin1String("/packages/");
+    QVERIFY(QDir().mkpath(destDir));
+    QString errorMessage;
+    for (int i = 0; i < m_additionalMimeFileNames.size(); ++i) {
+        const QString destFile = destDir + m_additionalMimeFileNames.at(i);
+        QFile::remove(destFile);
+        QVERIFY2(copyResourceFile(m_additionalMimeFilePaths.at(i), destFile, &errorMessage), qPrintable(errorMessage));
+    }
+    if (m_isUsingCacheProvider && !waitAndRunUpdateMimeDatabase(m_localMimeDir)) {
         const QString skipWarning = QStringLiteral("shared-mime-info not found, skipping mime.cache test (")
-                                    + QDir::toNativeSeparators(mimeDir) + QLatin1Char(')');
+                                    + QDir::toNativeSeparators(m_localMimeDir) + QLatin1Char(')');
         QSKIP(qPrintable(skipWarning));
     }
 
-    QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
-             QString::fromLatin1("text/x-suse-ymu"));
+    if (!m_isUsingCacheProvider)
+        ignoreInvalidMimetypeWarnings(m_localMimeDir);
+
     QVERIFY(db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
+
+    // These mimetypes have invalid magic, but still do exist.
+    QVERIFY(db.mimeTypeForName(QLatin1String("text/invalid-magic1")).isValid());
+    QVERIFY(db.mimeTypeForName(QLatin1String("text/invalid-magic2")).isValid());
+    QVERIFY(db.mimeTypeForName(QLatin1String("text/invalid-magic3")).isValid());
+
+    QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
+             QString::fromLatin1("text/x-SuSE-ymu"));
+    QVERIFY(db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
+    QCOMPARE(db.mimeTypeForName(QLatin1String("text/x-SuSE-ymu")).comment(), QString("URL of a YaST Meta Package"));
     checkHasMimeType("text/x-suse-ymp");
 
     // Test that a double-definition of a mimetype doesn't lead to sniffing ("conflicting globs").
@@ -904,16 +999,16 @@ void tst_QMimeDatabase::installNewLocalMimeType()
              QString::fromLatin1("text/x-qml"));
 
     // Now test removing the local mimetypes again (note, this leaves a mostly-empty mime.cache file)
-    QFile::remove(destFile);
-    QFile::remove(destQmlFile);
-    if (!waitAndRunUpdateMimeDatabase(mimeDir))
+    for (int i = 0; i < m_additionalMimeFileNames.size(); ++i)
+        QFile::remove(destDir + m_additionalMimeFileNames.at(i));
+    if (m_isUsingCacheProvider && !waitAndRunUpdateMimeDatabase(m_localMimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
              QString::fromLatin1("application/octet-stream"));
     QVERIFY(!db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
 
     // And now the user goes wild and uses rm -rf
-    QFile::remove(mimeDir + QString::fromLatin1("/mime.cache"));
+    QFile::remove(m_localMimeDir + QString::fromLatin1("/mime.cache"));
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
              QString::fromLatin1("application/octet-stream"));
     QVERIFY(!db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());

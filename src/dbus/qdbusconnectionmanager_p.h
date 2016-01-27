@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -47,25 +48,46 @@
 #define QDBUSCONNECTIONMANAGER_P_H
 
 #include "qdbusconnection_p.h"
+#include "private/qthread_p.h"
 
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
 
-class QDBusConnectionManager
+class QDBusConnectionManager : public QDaemonThread
 {
+    Q_OBJECT
+    struct ConnectionRequestData;
 public:
-    QDBusConnectionManager() {}
+    QDBusConnectionManager();
     ~QDBusConnectionManager();
     static QDBusConnectionManager* instance();
 
+    QDBusConnectionPrivate *busConnection(QDBusConnection::BusType type);
     QDBusConnectionPrivate *connection(const QString &name) const;
     void removeConnection(const QString &name);
     void setConnection(const QString &name, QDBusConnectionPrivate *c);
+    QDBusConnectionPrivate *connectToBus(QDBusConnection::BusType type, const QString &name);
+    QDBusConnectionPrivate *connectToBus(const QString &address, const QString &name);
+    QDBusConnectionPrivate *connectToPeer(const QString &address, const QString &name);
 
     mutable QMutex mutex;
+
+signals:
+    void connectionRequested(ConnectionRequestData *);
+    void serverRequested(const QString &address, void *server);
+
+protected:
+    void run() Q_DECL_OVERRIDE;
+
 private:
+    void executeConnectionRequest(ConnectionRequestData *data);
+    void createServer(const QString &address, void *server);
+
     QHash<QString, QDBusConnectionPrivate *> connectionHash;
+
+    QMutex defaultBusMutex;
+    QDBusConnectionPrivate *defaultBuses[2];
 
     mutable QMutex senderMutex;
     QString senderName; // internal; will probably change

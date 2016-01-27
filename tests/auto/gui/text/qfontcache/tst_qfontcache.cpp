@@ -51,15 +51,15 @@ private slots:
     void clear();
 };
 
-QT_BEGIN_NAMESPACE
-extern void qt_setQtEnableTestFont(bool value); // qfontdatabase.cpp
-
 #ifdef QT_BUILD_INTERNAL
+QT_BEGIN_NAMESPACE
+// qfontdatabase.cpp
+Q_AUTOTEST_EXPORT void qt_setQtEnableTestFont(bool value);
 // qfontengine.cpp
-extern void QFontEngine_startCollectingEngines();
-extern QList<QFontEngine *> QFontEngine_stopCollectingEngines();
-#endif
+Q_AUTOTEST_EXPORT void QFontEngine_startCollectingEngines();
+Q_AUTOTEST_EXPORT QList<QFontEngine *> QFontEngine_stopCollectingEngines();
 QT_END_NAMESPACE
+#endif
 
 tst_QFontCache::tst_QFontCache()
 {
@@ -79,6 +79,7 @@ void tst_QFontCache::clear()
 
     QFontEngine *fontEngine = 0;
 
+#ifdef QT_BUILD_INTERNAL
     {
         // we're never caching the box (and the "test") font engines
         // let's ensure we're not leaking them as well as the cached ones
@@ -88,6 +89,7 @@ void tst_QFontCache::clear()
         f.setFamily("__Qt__Box__Engine__");
         f.exactMatch(); // loads engine
     }
+#endif
     {
         QFontDatabase db;
 

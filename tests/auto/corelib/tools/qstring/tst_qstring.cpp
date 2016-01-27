@@ -582,6 +582,7 @@ private slots:
     void compareQLatin1Strings();
     void fromQLatin1StringWithLength();
     void assignQLatin1String();
+    void assignQChar();
     void isRightToLeft_data();
     void isRightToLeft();
     void unicodeStrings();
@@ -2144,6 +2145,22 @@ void tst_QString::toUpper()
     QCOMPARE( QString("`abyz{").toUpper(), QString("`ABYZ{"));
 
     QCOMPARE( QString(1, QChar(0xdf)).toUpper(), QString("SS"));
+    {
+        QString s = QString::fromUtf8("Gro\xc3\x9fstra\xc3\x9f""e");
+
+        // call lvalue-ref version, mustn't change the original
+        QCOMPARE(s.toUpper(), QString("GROSSSTRASSE"));
+        QCOMPARE(s, QString::fromUtf8("Gro\xc3\x9fstra\xc3\x9f""e"));
+
+        // call rvalue-ref while shared (the original mustn't change)
+        QString copy = s;
+        QCOMPARE(qMove(copy).toUpper(), QString("GROSSSTRASSE"));
+        QCOMPARE(s, QString::fromUtf8("Gro\xc3\x9fstra\xc3\x9f""e"));
+
+        // call rvalue-ref version on detached case
+        copy.clear();
+        QCOMPARE(qMove(s).toUpper(), QString("GROSSSTRASSE"));
+    }
 
     QString lower, upper;
     lower += QChar(QChar::highSurrogate(0x10428));
@@ -4988,6 +5005,22 @@ void tst_QString::operator_smaller()
     QVERIFY(QString("b") >= "a");
     QVERIFY(QString("b") > "a");
 
+    QVERIFY(QString("a") < QByteArray("b"));
+    QVERIFY(QString("a") <= QByteArray("b"));
+    QVERIFY(QString("a") <= QByteArray("a"));
+    QVERIFY(QString("a") == QByteArray("a"));
+    QVERIFY(QString("a") >= QByteArray("a"));
+    QVERIFY(QString("b") >= QByteArray("a"));
+    QVERIFY(QString("b") > QByteArray("a"));
+
+    QVERIFY(QByteArray("a") < QString("b"));
+    QVERIFY(QByteArray("a") <= QString("b"));
+    QVERIFY(QByteArray("a") <= QString("a"));
+    QVERIFY(QByteArray("a") == QString("a"));
+    QVERIFY(QByteArray("a") >= QString("a"));
+    QVERIFY(QByteArray("b") >= QString("a"));
+    QVERIFY(QByteArray("b") > QString("a"));
+
     QVERIFY(QLatin1String("a") < QString("b"));
     QVERIFY(QLatin1String("a") <= QString("b"));
     QVERIFY(QLatin1String("a") <= QString("a"));
@@ -6239,14 +6272,15 @@ void tst_QString::arg_locale()
     QLocale l(QLocale::English, QLocale::UnitedKingdom);
     QString str("*%L1*%L2*");
 
-    QCOMPARE(str.arg(123456).arg(1234.56), QString::fromLatin1("*123,456*1,234.56*"));
     QLocale::setDefault(l);
+    QCOMPARE(str.arg(123456).arg(1234.56), QString::fromLatin1("*123,456*1,234.56*"));
 
     l.setNumberOptions(QLocale::OmitGroupSeparator);
     QLocale::setDefault(l);
     QCOMPARE(str.arg(123456).arg(1234.56), QString::fromLatin1("*123456*1234.56*"));
 
     QLocale::setDefault(QLocale::C);
+    QCOMPARE(str.arg(123456).arg(1234.56), QString::fromLatin1("*123456*1234.56*"));
 }
 
 
@@ -6565,6 +6599,71 @@ void tst_QString::assignQLatin1String()
     QCOMPARE(foo.size(), latin1subfoo.size());
     QCOMPARE(foo, QString::fromLatin1("foo"));
 
+    // check capacity re-use:
+    QString s;
+    QCOMPARE(s.capacity(), 0);
+
+    // assign to null QString:
+    s = latin1foo;
+    QCOMPARE(s, QString::fromLatin1("foo"));
+    QCOMPARE(s.capacity(), 3);
+
+    // assign to non-null QString with enough capacity:
+    s = QString::fromLatin1("foofoo");
+    const int capacity = s.capacity();
+    s = latin1foo;
+    QCOMPARE(s, QString::fromLatin1("foo"));
+    QCOMPARE(s.capacity(), capacity);
+
+    // assign to shared QString (enough capacity, but can't use):
+    s = QString::fromLatin1("foofoo");
+    QString s2 = s;
+    s = latin1foo;
+    QCOMPARE(s, QString::fromLatin1("foo"));
+    QCOMPARE(s.capacity(), 3);
+
+    // assign to QString with too little capacity:
+    s = QString::fromLatin1("fo");
+    QCOMPARE(s.capacity(), 2);
+    s = latin1foo;
+    QCOMPARE(s, QString::fromLatin1("foo"));
+    QCOMPARE(s.capacity(), 3);
+
+}
+
+void tst_QString::assignQChar()
+{
+    const QChar sp = QLatin1Char(' ');
+    QString s;
+    QCOMPARE(s.capacity(), 0);
+
+    // assign to null QString:
+    s = sp;
+    QCOMPARE(s, QString(sp));
+    QCOMPARE(s.capacity(), 1);
+
+    // assign to non-null QString with enough capacity:
+    s = QLatin1String("foo");
+    const int capacity = s.capacity();
+    QCOMPARE(capacity, 3);
+    s = sp;
+    QCOMPARE(s, QString(sp));
+    QCOMPARE(s.capacity(), capacity);
+
+    // assign to shared QString (enough capacity, but can't use):
+    s = QLatin1String("foo");
+    QString s2 = s;
+    s = sp;
+    QCOMPARE(s, QString(sp));
+    QCOMPARE(s.capacity(), 1);
+
+    // assign to empty QString:
+    s = QString("");
+    s.detach();
+    QCOMPARE(s.capacity(), 0);
+    s = sp;
+    QCOMPARE(s, QString(sp));
+    QCOMPARE(s.capacity(), 1);
 }
 
 void tst_QString::isRightToLeft_data()

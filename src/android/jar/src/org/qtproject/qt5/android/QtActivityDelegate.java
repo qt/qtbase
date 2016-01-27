@@ -59,12 +59,15 @@ import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.view.ViewTreeObserver;
+import android.graphics.Rect;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -76,7 +79,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 
 public class QtActivityDelegate
 {
@@ -89,6 +91,7 @@ public class QtActivityDelegate
     private Method m_super_onKeyUp = null;
     private Method m_super_onConfigurationChanged = null;
     private Method m_super_onActivityResult = null;
+    private Method m_super_dispatchGenericMotionEvent = null;
 
     private static final String NATIVE_LIBRARIES_KEY = "native.libraries";
     private static final String BUNDLED_LIBRARIES_KEY = "bundled.libraries";
@@ -131,37 +134,32 @@ public class QtActivityDelegate
         if (m_fullScreen = enterFullScreen) {
             m_activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
             m_activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-            if (Build.VERSION.SDK_INT >= 19) {
-                try {
-                    int ui_flag_immersive_sticky = View.class.getDeclaredField("SYSTEM_UI_FLAG_IMMERSIVE_STICKY").getInt(null);
-                    int ui_flag_layout_stable = View.class.getDeclaredField("SYSTEM_UI_FLAG_LAYOUT_STABLE").getInt(null);
-                    int ui_flag_layout_hide_navigation = View.class.getDeclaredField("SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION").getInt(null);
-                    int ui_flag_layout_fullscreen = View.class.getDeclaredField("SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN").getInt(null);
-                    int ui_flag_hide_navigation = View.class.getDeclaredField("SYSTEM_UI_FLAG_HIDE_NAVIGATION").getInt(null);
-                    int ui_flag_fullscreen = View.class.getDeclaredField("SYSTEM_UI_FLAG_FULLSCREEN").getInt(null);
+            try {
+                if (Build.VERSION.SDK_INT >= 14) {
+                    int flags = View.class.getDeclaredField("SYSTEM_UI_FLAG_HIDE_NAVIGATION").getInt(null);
+                    if (Build.VERSION.SDK_INT >= 16) {
+                        flags |= View.class.getDeclaredField("SYSTEM_UI_FLAG_LAYOUT_STABLE").getInt(null);
+                        flags |= View.class.getDeclaredField("SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION").getInt(null);
+                        flags |= View.class.getDeclaredField("SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN").getInt(null);
+                        flags |= View.class.getDeclaredField("SYSTEM_UI_FLAG_FULLSCREEN").getInt(null);
 
+                        if (Build.VERSION.SDK_INT >= 19)
+                            flags |= View.class.getDeclaredField("SYSTEM_UI_FLAG_IMMERSIVE_STICKY").getInt(null);
+                    }
                     Method m = View.class.getMethod("setSystemUiVisibility", int.class);
-                    m.invoke(m_activity.getWindow().getDecorView(),
-                             ui_flag_layout_stable
-                             | ui_flag_layout_hide_navigation
-                             | ui_flag_layout_fullscreen
-                             | ui_flag_hide_navigation
-                             | ui_flag_fullscreen
-                             | ui_flag_immersive_sticky
-                             | View.INVISIBLE);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    m.invoke(m_activity.getWindow().getDecorView(), flags | View.INVISIBLE);
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         } else {
             m_activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
             m_activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            if (Build.VERSION.SDK_INT >= 19) {
+            if (Build.VERSION.SDK_INT >= 14) {
                 try {
                     int ui_flag_visible = View.class.getDeclaredField("SYSTEM_UI_FLAG_VISIBLE").getInt(null);
                     Method m = View.class.getMethod("setSystemUiVisibility", int.class);
-                    m.invoke(m_activity.getWindow().getDecorView(),
-                             ui_flag_visible);
+                    m.invoke(m_activity.getWindow().getDecorView(), ui_flag_visible);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -203,11 +201,21 @@ public class QtActivityDelegate
     private final int ImhUrlCharactersOnly = 0x400000;
     private final int ImhLatinOnly = 0x800000;
 
+    // enter key type - must be kept in sync with QTDIR/src/corelib/global/qnamespace.h
+    private final int EnterKeyDefault = 0;
+    private final int EnterKeyReturn = 1;
+    private final int EnterKeyDone = 2;
+    private final int EnterKeyGo = 3;
+    private final int EnterKeySend = 4;
+    private final int EnterKeySearch = 5;
+    private final int EnterKeyNext = 6;
+    private final int EnterKeyPrevious = 7;
+
     // application state
-    private final int ApplicationSuspended = 0x0;
-    private final int ApplicationHidden = 0x1;
-    private final int ApplicationInactive = 0x2;
-    private final int ApplicationActive = 0x4;
+    public static final int ApplicationSuspended = 0x0;
+    public static final int ApplicationHidden = 0x1;
+    public static final int ApplicationInactive = 0x2;
+    public static final int ApplicationActive = 0x4;
 
 
     public boolean setKeyboardVisibility(boolean visibility, long timeStamp)
@@ -239,20 +247,50 @@ public class QtActivityDelegate
         }, 5);
     }
 
-    public void showSoftwareKeyboard(int x, int y, int width, int height, int inputHints)
+    public void showSoftwareKeyboard(int x, int y, int width, int height, int inputHints, int enterKeyType)
     {
         if (m_imm == null)
             return;
 
-        if (m_softInputMode == 0 && height > m_layout.getHeight() * 2 / 3)
-           m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        else if (m_softInputMode == 0)
-            m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-        else
+        if (m_softInputMode != 0) {
             m_activity.getWindow().setSoftInputMode(m_softInputMode);
+            // softInputIsHidden is true if SOFT_INPUT_STATE_HIDDEN or SOFT_INPUT_STATE_ALWAYS_HIDDEN is set.
+            final boolean softInputIsHidden = (m_softInputMode & WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN) != 0;
+            if (softInputIsHidden)
+               return;
+        } else {
+            if (height > m_layout.getHeight() * 2 / 3)
+                m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+            else
+                m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+        }
 
         int initialCapsMode = 0;
+
         int imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE;
+
+        switch (enterKeyType) {
+        case EnterKeyReturn:
+            imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_ENTER_ACTION;
+            break;
+        case EnterKeyGo:
+            imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
+            break;
+        case EnterKeySend:
+            imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEND;
+            break;
+        case EnterKeySearch:
+            imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH;
+            break;
+        case EnterKeyNext:
+            imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_NEXT;
+            break;
+        case EnterKeyPrevious:
+            if (Build.VERSION.SDK_INT > 10)
+                imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_PREVIOUS;
+            break;
+        }
+
         int inputType = android.text.InputType.TYPE_CLASS_TEXT;
 
         if ((inputHints & (ImhPreferNumbers | ImhDigitsOnly | ImhFormattedNumbersOnly)) != 0) {
@@ -278,7 +316,9 @@ public class QtActivityDelegate
             if ((inputHints & (ImhEmailCharactersOnly | ImhUrlCharactersOnly)) != 0) {
                 if ((inputHints & ImhUrlCharactersOnly) != 0) {
                     inputType |= android.text.InputType.TYPE_TEXT_VARIATION_URI;
-                    imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
+
+                    if (enterKeyType == 0) // not explicitly overridden
+                        imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
                 } else if ((inputHints & ImhEmailCharactersOnly) != 0) {
                     inputType |= android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
                 }
@@ -305,15 +345,14 @@ public class QtActivityDelegate
             }
         }
 
-        if ((inputHints & ImhMultiLine) != 0)
+        if (enterKeyType == 0 && (inputHints & ImhMultiLine) != 0)
             imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_ENTER_ACTION;
 
         m_editText.setInitialCapsMode(initialCapsMode);
         m_editText.setImeOptions(imeOptions);
         m_editText.setInputType(inputType);
 
-        m_layout.removeView(m_editText);
-        m_layout.addView(m_editText, new QtLayout.LayoutParams(width, height, x, y));
+        m_layout.setLayoutParams(m_editText, new QtLayout.LayoutParams(width, height, x, y), false);
         m_editText.requestFocus();
         m_editText.postDelayed(new Runnable() {
             @Override
@@ -439,6 +478,13 @@ public class QtActivityDelegate
             m_super_onKeyUp = m_activity.getClass().getMethod("super_onKeyUp", Integer.TYPE, KeyEvent.class);
             m_super_onConfigurationChanged = m_activity.getClass().getMethod("super_onConfigurationChanged", Configuration.class);
             m_super_onActivityResult = m_activity.getClass().getMethod("super_onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class);
+            if (Build.VERSION.SDK_INT >= 12) {
+                try {
+                    m_super_dispatchGenericMotionEvent = m_activity.getClass().getMethod("super_dispatchGenericMotionEvent", MotionEvent.class);
+                } catch (Exception e) {
+                }
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -760,12 +806,6 @@ public class QtActivityDelegate
 
             if (null == m_surfaces)
                 onCreate(null);
-            String nativeLibraryDir = QtNativeLibrariesDir.nativeLibrariesDir(m_activity);
-            QtNative.startApplication(m_applicationParameters,
-                    m_environmentVariables,
-                    m_mainLib,
-                    nativeLibraryDir);
-            m_started = true;
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -781,14 +821,26 @@ public class QtActivityDelegate
     public void onCreate(Bundle savedInstanceState)
     {
         m_quitApp = true;
+        Runnable startApplication = null;
         if (null == savedInstanceState) {
-            DisplayMetrics metrics = new DisplayMetrics();
-            m_activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-            QtNative.setApplicationDisplayMetrics(metrics.widthPixels, metrics.heightPixels,
-                                                  0, 0,
-                                                  metrics.xdpi, metrics.ydpi, metrics.scaledDensity);
+            startApplication = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        String nativeLibraryDir = QtNativeLibrariesDir.nativeLibrariesDir(m_activity);
+                        QtNative.startApplication(m_applicationParameters,
+                            m_environmentVariables,
+                            m_mainLib,
+                            nativeLibraryDir);
+                        m_started = true;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        m_activity.finish();
+                    }
+                }
+            };
         }
-        m_layout = new QtLayout(m_activity);
+        m_layout = new QtLayout(m_activity, startApplication);
         m_editText = new QtEditText(m_activity, this);
         m_imm = (InputMethodManager)m_activity.getSystemService(Context.INPUT_METHOD_SERVICE);
         m_surfaces =  new HashMap<Integer, QtSurface>();
@@ -809,6 +861,25 @@ public class QtActivityDelegate
 
         QtNative.handleOrientationChanged(rotation, m_nativeOrientation);
         m_currentRotation = rotation;
+
+        m_layout.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                if (!m_keyboardIsVisible)
+                    return true;
+
+                Rect r = new Rect();
+                m_activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
+                DisplayMetrics metrics = new DisplayMetrics();
+                m_activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                final int kbHeight = metrics.heightPixels - r.bottom;
+                final int[] location = new int[2];
+                m_layout.getLocationOnScreen(location);
+                QtNative.keyboardGeometryChanged(location[0], r.bottom - location[1],
+                                                 r.width(), kbHeight);
+                return true;
+            }
+        });
     }
 
     public void initializeAccessibility()
@@ -856,24 +927,15 @@ public class QtActivityDelegate
 
     public void onPause()
     {
-        QtNative.updateApplicationState(ApplicationInactive);
+        QtNative.setApplicationState(ApplicationInactive);
     }
 
     public void onResume()
     {
-        // fire all lostActions
-        synchronized (QtNative.m_mainActivityMutex)
-        {
-            Iterator<Runnable> itr = QtNative.getLostActions().iterator();
-            while (itr.hasNext())
-                m_activity.runOnUiThread(itr.next());
-
-            QtNative.updateApplicationState(ApplicationActive);
-            if (m_started) {
-                QtNative.clearLostActions();
-                QtNative.updateWindow();
-                updateFullScreen(); // Suspending the app clears the immersive mode, so we need to set it again.
-            }
+        QtNative.setApplicationState(ApplicationActive);
+        if (m_started) {
+            QtNative.updateWindow();
+            updateFullScreen(); // Suspending the app clears the immersive mode, so we need to set it again.
         }
     }
 
@@ -896,7 +958,7 @@ public class QtActivityDelegate
 
     public void onStop()
     {
-        QtNative.updateApplicationState(ApplicationSuspended);
+        QtNative.setApplicationState(ApplicationSuspended);
     }
 
     public Object onRetainNonConfigurationInstance()
@@ -1001,6 +1063,9 @@ public class QtActivityDelegate
             QtNative.keyUp(0, event.getCharacters().charAt(0), event.getMetaState(), event.getRepeatCount() > 0);
         }
 
+        if (QtNative.dispatchKeyEvent(event))
+            return true;
+
         try {
             return (Boolean) m_super_dispatchKeyEvent.invoke(m_activity, event);
         } catch (Exception e) {
@@ -1085,12 +1150,10 @@ public class QtActivityDelegate
                     if (Build.VERSION.SDK_INT < 11 || w <= 0 || h <= 0) {
                         m_activity.openContextMenu(m_layout);
                     } else if (Build.VERSION.SDK_INT < 14) {
-                        m_layout.removeView(m_editText);
-                        m_layout.addView(m_editText, new QtLayout.LayoutParams(w, h, x, y));
+                        m_layout.setLayoutParams(m_editText, new QtLayout.LayoutParams(w, h, x, y), false);
                         QtPopupMenu.getInstance().showMenu(m_editText);
                     } else {
-                        m_layout.removeView(m_editText);
-                        m_layout.addView(m_editText, new QtLayout.LayoutParams(w, h, x, y));
+                        m_layout.setLayoutParams(m_editText, new QtLayout.LayoutParams(w, h, x, y), false);
                         QtPopupMenu14.getInstance().showMenu(m_editText);
                     }
                 }
@@ -1268,5 +1331,18 @@ public class QtActivityDelegate
             final int index = getSurfaceCount();
             m_layout.moveChild(view, index);
         }
+    }
+
+    public boolean dispatchGenericMotionEvent (MotionEvent ev)
+    {
+        if (m_started && QtNative.dispatchGenericMotionEvent(ev))
+            return true;
+
+        try {
+            return (Boolean) m_super_dispatchGenericMotionEvent.invoke(m_activity, ev);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

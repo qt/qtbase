@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
-include(selftests.pri)
+!winrt: include(selftests.pri)
 
 SUBDIRS = $$SUBPROGRAMS test
 

@@ -166,7 +166,7 @@ ProjectGenerator::init()
                             QString nd = newdir;
                             if(nd == ".")
                                 nd = "";
-                            else if(!nd.isEmpty() && !nd.endsWith(QString(QChar(QDir::separator()))))
+                            else if (!nd.isEmpty() && !nd.endsWith(QDir::separator()))
                                 nd += QDir::separator();
                             nd += profiles[i];
                             fileFixify(nd);

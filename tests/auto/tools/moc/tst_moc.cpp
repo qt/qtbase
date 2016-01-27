@@ -513,6 +513,8 @@ class tst_Moc : public QObject
     Q_PROPERTY(QString member4 MEMBER sMember NOTIFY member4Changed)
     Q_PROPERTY(QString member5 MEMBER sMember NOTIFY member5Changed)
     Q_PROPERTY(QString member6 MEMBER sConst CONSTANT)
+    Q_PROPERTY(QString sub1 MEMBER (sub.m_string))
+    Q_PROPERTY(QString sub2 READ (sub.string) WRITE (sub.setString))
 
 public:
     inline tst_Moc() : sConst("const") {}
@@ -626,6 +628,13 @@ private:
     QString sMember;
     const QString sConst;
     PrivatePropertyTest *pPPTest;
+
+    struct {
+        QString m_string;
+        void setString(const QString &s) { m_string = s; }
+        QString string() { return m_string; }
+    } sub;
+
 };
 
 void tst_Moc::initTestCase()
@@ -1883,12 +1892,19 @@ void tst_Moc::warnings_data()
         << QString()
         << QString("standard input:5: Error: Class declaration lacks Q_OBJECT macro.");
 
-    QTest::newRow("QTBUG-46210: crash on invalid macro")
-        << QByteArray("#define Foo(a, b, c) a b c #a #b #c a##b##c #d\n Foo(45);")
+    QTest::newRow("Invalid macro definition")
+        << QByteArray("#define Foo(a, b, c) a b c #a #b #c a##b##c #d\n Foo(45, 42, 39);")
         << QStringList()
         << 1
         << QString("IGNORE_ALL_STDOUT")
         << QString(":2: Error: '#' is not followed by a macro parameter");
+
+    QTest::newRow("QTBUG-46210: crash on invalid macro invocation")
+        << QByteArray("#define Foo(a, b, c) a b c #a #b #c a##b##c\n Foo(45);")
+        << QStringList()
+        << 1
+        << QString("IGNORE_ALL_STDOUT")
+        << QString(":2: Error: Macro invoked with too few parameters for a use of '#'");
 }
 
 void tst_Moc::warnings()
@@ -2037,6 +2053,10 @@ void tst_Moc::memberProperties_data()
             << 1 << "blub5" << "blub5Changed(const QString&)" << "mno" << true << "mno";
     QTest::newRow("private MEMBER property with CONSTANT")
             << 1 << "blub6" << "" << "test" << false << "const";
+    QTest::newRow("sub1")
+            << 0 << "sub1" << "" << "helloSub1" << true << "helloSub1";
+    QTest::newRow("sub2")
+            << 0 << "sub2" << "" << "helloSub2" << true << "helloSub2";
 }
 
 void tst_Moc::memberProperties()

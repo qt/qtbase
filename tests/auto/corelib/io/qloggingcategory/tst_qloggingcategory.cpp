@@ -376,6 +376,7 @@ private slots:
 #ifdef Q_COMPILER_VARIADIC_MACROS
     Q_LOGGING_CATEGORY(TST_MACRO_2, "tst.macro.2", QtDebugMsg)
     Q_LOGGING_CATEGORY(TST_MACRO_3, "tst.macro.3", QtFatalMsg)
+    Q_LOGGING_CATEGORY(TST_MACRO_4, "tst.macro.4", QtInfoMsg)
 #endif
 
     void QLoggingCategoryMacro()
@@ -383,6 +384,7 @@ private slots:
         const QLoggingCategory &cat1 = TST_MACRO_1();
         QCOMPARE(cat1.categoryName(), "tst.macro.1");
         QCOMPARE(cat1.isDebugEnabled(), true);
+        QCOMPARE(cat1.isInfoEnabled(), true);
         QCOMPARE(cat1.isWarningEnabled(), true);
         QCOMPARE(cat1.isCriticalEnabled(), true);
 
@@ -390,14 +392,23 @@ private slots:
         const QLoggingCategory &cat2 = TST_MACRO_2();
         QCOMPARE(cat2.categoryName(), "tst.macro.2");
         QCOMPARE(cat2.isDebugEnabled(), true);
+        QCOMPARE(cat2.isInfoEnabled(), true);
         QCOMPARE(cat2.isWarningEnabled(), true);
         QCOMPARE(cat2.isCriticalEnabled(), true);
 
         const QLoggingCategory &cat3 = TST_MACRO_3();
         QCOMPARE(cat3.categoryName(), "tst.macro.3");
         QCOMPARE(cat3.isDebugEnabled(), false);
+        QCOMPARE(cat3.isInfoEnabled(), false);
         QCOMPARE(cat3.isWarningEnabled(), false);
         QCOMPARE(cat3.isCriticalEnabled(), false);
+
+        const QLoggingCategory &cat4 = TST_MACRO_4();
+        QCOMPARE(cat4.categoryName(), "tst.macro.4");
+        QCOMPARE(cat4.isDebugEnabled(), false);
+        QCOMPARE(cat4.isInfoEnabled(), true);
+        QCOMPARE(cat4.isWarningEnabled(), true);
+        QCOMPARE(cat4.isCriticalEnabled(), true);
 #endif
     }
 

@@ -147,7 +147,7 @@ namespace QTest {
     {
         QByteArray ba = "MyPoint(";
         ba += QByteArray::number(point.x()) + ", " + QByteArray::number(point.y());
-        ba += ")";
+        ba += ')';
         return qstrdup(ba.data());
     }
 }

@@ -369,7 +369,7 @@ void QWindowPrivate::setTopLevelScreen(QScreen *newScreen, bool recreate)
 {
     Q_Q(QWindow);
     if (parentWindow) {
-        qWarning() << this << Q_FUNC_INFO << '(' << newScreen << "): Attempt to set a screen on a child window.";
+        qWarning() << this << '(' << newScreen << "): Attempt to set a screen on a child window.";
         return;
     }
     if (newScreen != topLevelScreen) {
@@ -389,25 +389,31 @@ void QWindowPrivate::setTopLevelScreen(QScreen *newScreen, bool recreate)
 void QWindowPrivate::create(bool recursive)
 {
     Q_Q(QWindow);
-    if (!platformWindow) {
-        platformWindow = QGuiApplicationPrivate::platformIntegration()->createPlatformWindow(q);
-        QObjectList childObjects = q->children();
-        for (int i = 0; i < childObjects.size(); i ++) {
-            QObject *object = childObjects.at(i);
-            if (object->isWindowType()) {
-                QWindow *window = static_cast<QWindow *>(object);
-                if (recursive)
-                    window->d_func()->create(true);
-                if (window->d_func()->platformWindow)
-                    window->d_func()->platformWindow->setParent(platformWindow);
-            }
-        }
+    if (platformWindow)
+        return;
 
-        if (platformWindow) {
-            QPlatformSurfaceEvent e(QPlatformSurfaceEvent::SurfaceCreated);
-            QGuiApplication::sendEvent(q, &e);
+    platformWindow = QGuiApplicationPrivate::platformIntegration()->createPlatformWindow(q);
+    Q_ASSERT(platformWindow);
+
+    if (!platformWindow) {
+        qWarning() << "Failed to create platform window for" << q << "with flags" << q->flags();
+        return;
+    }
+
+    QObjectList childObjects = q->children();
+    for (int i = 0; i < childObjects.size(); i ++) {
+        QObject *object = childObjects.at(i);
+        if (object->isWindowType()) {
+            QWindow *window = static_cast<QWindow *>(object);
+            if (recursive)
+                window->d_func()->create(true);
+            if (window->d_func()->platformWindow)
+                window->d_func()->platformWindow->setParent(platformWindow);
         }
     }
+
+    QPlatformSurfaceEvent e(QPlatformSurfaceEvent::SurfaceCreated);
+    QGuiApplication::sendEvent(q, &e);
 }
 
 void QWindowPrivate::clearFocusObject()
@@ -588,8 +594,7 @@ QWindow *QWindow::parent() const
     Setting \a parent to be 0 will make the window become a top level window.
 
     If \a parent is a window created by fromWinId(), then the current window
-    will be embedded inside \a parent, if the platform supports it. Window
-    embedding is currently supported only by the X11 platform plugin.
+    will be embedded inside \a parent, if the platform supports it.
 */
 void QWindow::setParent(QWindow *parent)
 {
@@ -599,7 +604,7 @@ void QWindow::setParent(QWindow *parent)
 
     QScreen *newScreen = parent ? parent->screen() : screen();
     if (d->windowRecreationRequired(newScreen)) {
-        qWarning() << this << Q_FUNC_INFO << '(' << parent << "): Cannot change screens (" << screen() << newScreen << ')';
+        qWarning() << this << '(' << parent << "): Cannot change screens (" << screen() << newScreen << ')';
         return;
     }
 
@@ -1155,7 +1160,7 @@ void QWindow::setTransientParent(QWindow *parent)
 {
     Q_D(QWindow);
     if (parent && !parent->isTopLevel()) {
-        qWarning() << Q_FUNC_INFO << parent << "must be a top level window.";
+        qWarning() << parent << "must be a top level window.";
         return;
     }
 
@@ -1271,8 +1276,11 @@ void QWindow::setMinimumSize(const QSize &size)
 */
 void QWindow::setX(int arg)
 {
+    Q_D(QWindow);
     if (x() != arg)
         setGeometry(QRect(arg, y(), width(), height()));
+    else
+        d->positionAutomatic = false;
 }
 
 /*!
@@ -1281,8 +1289,11 @@ void QWindow::setX(int arg)
 */
 void QWindow::setY(int arg)
 {
+    Q_D(QWindow);
     if (y() != arg)
         setGeometry(QRect(x(), arg, width(), height()));
+    else
+        d->positionAutomatic = false;
 }
 
 /*!
@@ -2286,10 +2297,10 @@ QPoint QWindow::mapToGlobal(const QPoint &pos) const
     Q_D(const QWindow);
     // QTBUG-43252, prefer platform implementation for foreign windows.
     if (d->platformWindow
-        && (type() == Qt::ForeignWindow || d->platformWindow->isEmbedded(0))) {
+        && (type() == Qt::ForeignWindow || d->platformWindow->isEmbedded())) {
         return d->platformWindow->mapToGlobal(pos);
     }
-    return pos + d_func()->globalPosition();
+    return pos + d->globalPosition();
 }
 
 
@@ -2306,10 +2317,10 @@ QPoint QWindow::mapFromGlobal(const QPoint &pos) const
     Q_D(const QWindow);
     // QTBUG-43252, prefer platform implementation for foreign windows.
     if (d->platformWindow
-        && (type() == Qt::ForeignWindow || d->platformWindow->isEmbedded(0))) {
+        && (type() == Qt::ForeignWindow || d->platformWindow->isEmbedded())) {
         return d->platformWindow->mapFromGlobal(pos);
     }
-    return pos - d_func()->globalPosition();
+    return pos - d->globalPosition();
 }
 
 
@@ -2371,9 +2382,16 @@ QWindow *QWindowPrivate::topLevelWindow() const
     Given the handle \a id to a native window, this method creates a QWindow
     object which can be used to represent the window when invoking methods like
     setParent() and setTransientParent().
-    This can be used, on platforms which support it, to embed a window inside a
-    container or to make a window stick on top of a window created by another
-    process.
+
+    This can be used, on platforms which support it, to embed a QWindow inside a
+    native window, or to embed a native window inside a QWindow.
+
+    If foreign windows are not supported, this function returns 0.
+
+    \note The resulting QWindow should not be used to manipulate the underlying
+    native window (besides re-parenting), or to observe state changes of the
+    native window. Any support for these kind of operations is incidental, highly
+    platform dependent and untested.
 
     \sa setParent()
     \sa setTransientParent()
@@ -2508,7 +2526,7 @@ QDebug operator<<(QDebug debug, const QWindow *window)
     QDebugStateSaver saver(debug);
     debug.nospace();
     if (window) {
-        debug << window->metaObject()->className() << '(' << (void *)window;
+        debug << window->metaObject()->className() << '(' << (const void *)window;
         if (!window->objectName().isEmpty())
             debug << ", name=" << window->objectName();
         if (debug.verbosity() > 2) {

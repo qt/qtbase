@@ -51,8 +51,7 @@ QT_END_NAMESPACE
 Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 
 @interface QT_MANGLE_NAMESPACE(QNSView) : NSView <NSTextInputClient> {
-    QImage m_backingStore;
-    qreal m_pixelRatio;
+    QCocoaBackingStore* m_backingStore;
     QPoint m_backingStoreOffset;
     CGImageRef m_maskImage;
     uchar *m_maskData;
@@ -76,7 +75,10 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
     QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) *m_mouseMoveHelper;
     bool m_resendKeyEvent;
     bool m_scrolling;
+    bool m_updatingDrag;
     bool m_exposedOnMoveToWindow;
+    NSEvent *m_currentlyInterpretedKeyEvent;
+    bool m_isMenuView;
 }
 
 - (id)init;
@@ -86,6 +88,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 - (void)setQCocoaGLContext:(QCocoaGLContext *)context;
 #endif
 - (void)flushBackingStore:(QCocoaBackingStore *)backingStore region:(const QRegion &)region offset:(QPoint)offset;
+- (void)clearBackingStore:(QCocoaBackingStore *)backingStore;
 - (void)setMaskRegion:(const QRegion *)region;
 - (void)invalidateWindowShadowIfNeeded;
 - (void)drawRect:(NSRect)dirtyRect;
@@ -93,8 +96,10 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 - (void)notifyWindowStateChanged:(Qt::WindowState)newState;
 - (void)windowNotification : (NSNotification *) windowNotification;
 - (void)notifyWindowWillZoom:(BOOL)willZoom;
+- (void)textInputContextKeyboardSelectionDidChangeNotification : (NSNotification *) textInputContextKeyboardSelectionDidChangeNotification;
 - (void)viewDidHide;
 - (void)viewDidUnhide;
+- (void)removeFromSuperview;
 
 - (BOOL)isFlipped;
 - (BOOL)acceptsFirstResponder;
@@ -131,7 +136,6 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 - (void)handleKeyEvent:(NSEvent *)theEvent eventType:(int)eventType;
 - (void)keyDown:(NSEvent *)theEvent;
 - (void)keyUp:(NSEvent *)theEvent;
-- (BOOL)performKeyEquivalent:(NSEvent *)theEvent;
 
 - (void)registerDragTypes;
 - (NSDragOperation)handleDrag:(id <NSDraggingInfo>)sender;

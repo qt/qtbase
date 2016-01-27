@@ -58,7 +58,9 @@ namespace {
 
 // avoid duplicate QStringLiteral data:
 inline QString iidKeyLiteral() { return QStringLiteral("IID"); }
+#ifdef QT_SHARED
 inline QString versionKeyLiteral() { return QStringLiteral("version"); }
+#endif
 inline QString metaDataKeyLiteral() { return QStringLiteral("MetaData"); }
 inline QString keysKeyLiteral() { return QStringLiteral("Keys"); }
 
@@ -169,8 +171,8 @@ void QFactoryLoader::update()
 
             if (!library->isPlugin()) {
                 if (qt_debug_component()) {
-                    qDebug() << library->errorString;
-                    qDebug() << "         not a plugin";
+                    qDebug() << library->errorString << endl
+                             << "         not a plugin";
                 }
                 library->release();
 #ifndef Q_OS_NACL

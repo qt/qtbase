@@ -116,8 +116,8 @@ QScreen::~QScreen()
     bool movingFromVirtualSibling = primaryScreen && primaryScreen->handle()->virtualSiblings().contains(handle());
 
     // Move any leftover windows to the primary screen
-    foreach (QWindow *window, QGuiApplication::topLevelWindows()) {
-        if (window->screen() != this)
+    foreach (QWindow *window, QGuiApplication::allWindows()) {
+        if (!window->isTopLevel() || window->screen() != this)
             continue;
 
         const bool wasVisible = window->isVisible();
@@ -680,7 +680,7 @@ QPixmap QScreen::grabWindow(WId window, int x, int y, int width, int height)
 {
     const QPlatformScreen *platformScreen = handle();
     if (!platformScreen) {
-        qWarning("%s invoked with handle==0", Q_FUNC_INFO);
+        qWarning("invoked with handle==0");
         return QPixmap();
     }
     return platformScreen->grabWindow(window, x, y, width, height);
@@ -698,7 +698,7 @@ Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QScreen *screen)
 {
     const QDebugStateSaver saver(debug);
     debug.nospace();
-    debug << "QScreen(" << (void *)screen;
+    debug << "QScreen(" << (const void *)screen;
     if (screen) {
         debug << ", name=" << screen->name();
         if (debug.verbosity() > 2) {

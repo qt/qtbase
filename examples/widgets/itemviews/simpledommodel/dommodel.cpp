@@ -88,7 +88,7 @@ QVariant DomModel::data(const QModelIndex &index, int role) const
             for (int i = 0; i < attributeMap.count(); ++i) {
                 QDomNode attribute = attributeMap.item(i);
                 attributes << attribute.nodeName() + "=\""
-                              +attribute.nodeValue() + "\"";
+                              +attribute.nodeValue() + '"';
             }
             return attributes.join(' ');
         case 2:

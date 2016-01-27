@@ -81,7 +81,7 @@ QIOSIntegration::QIOSIntegration()
     // QPlatformBackingStore.
     qApp->setAttribute(Qt::AA_ShareOpenGLContexts, true);
     // And that context must match the format used for the backingstore's context.
-    QSurfaceFormat fmt;
+    QSurfaceFormat fmt = QSurfaceFormat::defaultFormat();
     fmt.setDepthBufferSize(16);
     fmt.setStencilBufferSize(8);
     QSurfaceFormat::setDefaultFormat(fmt);
@@ -89,10 +89,11 @@ QIOSIntegration::QIOSIntegration()
     // Set current directory to app bundle folder
     QDir::setCurrent(QString::fromUtf8([[[NSBundle mainBundle] bundlePath] UTF8String]));
 
+    UIScreen *mainScreen = [UIScreen mainScreen];
     NSMutableArray *screens = [[[UIScreen screens] mutableCopy] autorelease];
-    if (![screens containsObject:[UIScreen mainScreen]]) {
+    if (![screens containsObject:mainScreen]) {
         // Fallback for iOS 7.1 (QTBUG-42345)
-        [screens insertObject:[UIScreen mainScreen] atIndex:0];
+        [screens insertObject:mainScreen atIndex:0];
     }
 
     for (UIScreen *screen in screens)
@@ -103,7 +104,10 @@ QIOSIntegration::QIOSIntegration()
 
     m_touchDevice = new QTouchDevice;
     m_touchDevice->setType(QTouchDevice::TouchScreen);
-    m_touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::NormalizedPosition);
+    QTouchDevice::Capabilities touchCapabilities = QTouchDevice::Position | QTouchDevice::NormalizedPosition;
+    if (mainScreen.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable)
+        touchCapabilities |= QTouchDevice::Pressure;
+    m_touchDevice->setCapabilities(touchCapabilities);
     QWindowSystemInterface::registerTouchDevice(m_touchDevice);
     QMacInternalPasteboardMime::initializeMimeTypes();
 }

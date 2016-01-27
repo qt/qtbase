@@ -43,9 +43,11 @@ import android.view.ViewGroup;
 
 public class QtLayout extends ViewGroup
 {
-    public QtLayout(Context context)
+    private Runnable m_startApplicationRunnable;
+    public QtLayout(Context context, Runnable startRunnable)
     {
         super(context);
+        m_startApplicationRunnable = startRunnable;
     }
 
     public QtLayout(Context context, AttributeSet attrs)
@@ -63,8 +65,12 @@ public class QtLayout extends ViewGroup
     {
         DisplayMetrics metrics = new DisplayMetrics();
         ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        QtNative.setApplicationDisplayMetrics(metrics.widthPixels,
-                                              metrics.heightPixels, w, h, metrics.xdpi, metrics.ydpi, metrics.scaledDensity);
+        QtNative.setApplicationDisplayMetrics(metrics.widthPixels, metrics.heightPixels, w, h,
+                                              metrics.xdpi, metrics.ydpi, metrics.scaledDensity, metrics.density);
+        if (m_startApplicationRunnable != null) {
+            m_startApplicationRunnable.run();
+            m_startApplicationRunnable = null;
+        }
     }
 
     @Override
@@ -209,5 +215,35 @@ public class QtLayout extends ViewGroup
         requestLayout();
         invalidate();
         attachViewToParent(view, index, view.getLayoutParams());
+    }
+
+    /**
+    * set the layout params on a child view.
+    *
+    * Note: This function adds the child view if it's not in the
+    *       layout already.
+    */
+    public void setLayoutParams(final View childView,
+                                final ViewGroup.LayoutParams params,
+                                final boolean forceRedraw)
+    {
+        // Invalid view
+        if (childView == null)
+            return;
+
+        // Invalid params
+        if (!checkLayoutParams(params))
+            return;
+
+        // View is already in the layout and can therefore be updated
+        final boolean canUpdate = (this == childView.getParent());
+
+        if (canUpdate) {
+            childView.setLayoutParams(params);
+            if (forceRedraw)
+                invalidate();
+        } else {
+            addView(childView, params);
+        }
     }
 }

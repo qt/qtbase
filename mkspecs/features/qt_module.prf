@@ -32,7 +32,7 @@ host_build {
     QMAKE_CFLAGS += $$QMAKE_CFLAGS_SPLIT_SECTIONS
     QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS_SPLIT_SECTIONS
     force_bootstrap {
-        !build_pass: CONFIG += release
+        !build_pass:contains(QT_CONFIG, release_tools): CONFIG += release
         contains(QT, core(-private)?|xml) {
             QT -= core core-private xml
             QT += bootstrap-private
@@ -41,6 +41,11 @@ host_build {
         !build_pass:contains(QT_CONFIG, build_all): CONFIG += release
     }
 }
+
+CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework): \
+    CONFIG += lib_bundle
+
+CONFIG += relative_qt_rpath  # Qt libraries should be relocatable
 
 ucmodule = $$upper($$MODULE)
 
@@ -51,6 +56,8 @@ internal_module: \
 else: \
     MODULE_DEPENDS = $$replace(QT, -private$, )
 MODULE_DEPENDS = $$unique(MODULE_DEPENDS)
+contains(MODULE_DEPENDS, $$MODULE): \
+    error("$$TARGET depends on itself.")
 
 contains(TARGET, QtAddOn.*): \
     MODULE_DEFINE = QT_ADDON_$${ucmodule}_LIB
@@ -86,7 +93,7 @@ INCLUDEPATH *= $$eval(QT.$${MODULE}.includes) $$eval(QT.$${MODULE}_private.inclu
     contains(QT_CONFIG, build_all):CONFIG += build_all
 }
 
-linux*:QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
+QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 
 QT += $$QT_FOR_PRIVATE
 unset(QT_FOR_PRIVATE)
@@ -99,17 +106,15 @@ else: \
     DEFINES += QT_BUILD_$${ucmodule}_LIB
 
 # OS X and iOS frameworks
-mac:CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework) {
+lib_bundle {
    # Set the CFBundleIdentifier prefix for Qt frameworks
    QMAKE_TARGET_BUNDLE_PREFIX = org.qt-project
    #QMAKE_FRAMEWORK_VERSION = 4.0
-   CONFIG += sliced_bundle qt_framework
+   CONFIG += sliced_bundle
    header_module {
         CONFIG += bundle
         QMAKE_BUNDLE_EXTENSION = .framework
         QMAKE_INFO_PLIST = $$QMAKESPEC/Info.plist.lib
-   } else {
-        CONFIG += lib_bundle
    }
    CONFIG -= qt_install_headers #no need to install these as well
    !debug_and_release|!build_all|CONFIG(release, debug|release) {
@@ -185,7 +190,46 @@ equals(QT_ARCH, i386):contains(QT_CPU_FEATURES.$$QT_ARCH, sse2):compiler_support
     QMAKE_CXXFLAGS += -mfpmath=sse
 }
 
-android: CONFIG += qt_android_deps
+android: CONFIG += qt_android_deps no_linker_version_script
+
+!header_module:unix:!isEmpty(QMAKE_LFLAGS_VERSION_SCRIPT):!no_linker_version_script:!static {
+    verscript = $$OUT_PWD/$${TARGET}.version
+    QMAKE_LFLAGS += $${QMAKE_LFLAGS_VERSION_SCRIPT}$$verscript
+
+    internal_module {
+        verscript_content = "Qt_$${QT_MAJOR_VERSION}_PRIVATE_API { *; };"
+    } else {
+        verscript_content = "Qt_$${QT_MAJOR_VERSION}_PRIVATE_API {" \
+                            "    qt_private_api_tag*;" "@CLASSLIST@" "};"
+
+        current = Qt_$$QT_MAJOR_VERSION
+        verscript_content += "$$current { *; };"
+        isEmpty(QT_NAMESPACE): tag_symbol = qt_version_tag
+        else:                  tag_symbol = qt_version_tag_$$QT_NAMESPACE
+
+        for(i, 0..$$QT_MINOR_VERSION) {
+            previous = $$current
+            current = Qt_$${QT_MAJOR_VERSION}.$$i
+            equals(i, $$QT_MINOR_VERSION): verscript_content += "$$current { $$tag_symbol; } $$previous;"
+            else:                          verscript_content += "$$current {} $$previous;"
+        }
+
+        # Add a post-processing step to replace the @CLASSLIST@
+        verscriptprocess.commands = perl $${PWD}/data/unix/findclasslist.pl < $^ > $@
+        verscriptprocess.target = $$verscript
+        verscriptprocess.depends = $${verscript}.in
+        for(header, SYNCQT.PRIVATE_HEADER_FILES): \
+            verscriptprocess.depends += $${_PRO_FILE_PWD_}/$$header
+        QMAKE_EXTRA_TARGETS += verscriptprocess
+        PRE_TARGETDEPS += $$verscript
+        verscript = $${verscript}.in
+    }
+    write_file($$verscript, verscript_content)|error("Aborting.")
+    unset(current)
+    unset(previous)
+    unset(verscript)
+    unset(verscript_content)
+}
 
 #install directives
 load(qt_installs)
@@ -193,7 +237,7 @@ load(qt_installs)
 load(qt_targets)
 
 # this builds on top of qt_common
-unix|mingw {
+!internal_module:!lib_bundle:if(unix|mingw) {
     CONFIG += create_pc
     QMAKE_PKGCONFIG_DESTDIR = pkgconfig
     host_build: \

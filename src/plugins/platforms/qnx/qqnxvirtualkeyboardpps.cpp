@@ -75,7 +75,7 @@ QQnxVirtualKeyboardPps::~QQnxVirtualKeyboardPps()
 
 void QQnxVirtualKeyboardPps::start()
 {
-    qVirtualKeyboardDebug() << Q_FUNC_INFO << "starting keyboard event processing";
+    qVirtualKeyboardDebug("starting keyboard event processing");
     if (!connect())
         return;
 }
@@ -120,8 +120,8 @@ bool QQnxVirtualKeyboardPps::connect()
     m_fd = ::open(ms_PPSPath, O_RDWR);
     if (m_fd == -1)
     {
-        qVirtualKeyboardDebug() << Q_FUNC_INFO << ": Unable to open" << ms_PPSPath
-                                               << ":" << strerror(errno);
+        qVirtualKeyboardDebug() << "Unable to open" << ms_PPSPath
+                                               << ':' << strerror(errno);
         close();
         return false;
     }
@@ -158,7 +158,7 @@ void QQnxVirtualKeyboardPps::ppsDataReady()
 {
     ssize_t nread = qt_safe_read(m_fd, m_buffer, ms_bufferSize - 1);
 
-    qVirtualKeyboardDebug() << Q_FUNC_INFO << "keyboardMessage size: " << nread;
+    qVirtualKeyboardDebug() << "keyboardMessage size: " << nread;
     if (nread < 0){
         connect(); // reconnect
         return;
@@ -197,7 +197,7 @@ void QQnxVirtualKeyboardPps::ppsDataReady()
         else if (strcmp(value, "info") == 0)
             handleKeyboardInfoMessage();
         else if (strcmp(value, "connect") == 0)
-            qVirtualKeyboardDebug() << Q_FUNC_INFO << "Unhandled command 'connect'";
+            qVirtualKeyboardDebug("Unhandled command 'connect'");
         else
             qCritical("QQnxVirtualKeyboard: Unexpected keyboard PPS msg value: %s", value ? value : "[null]");
     } else if (pps_decoder_get_string(m_decoder, "res", &value) == PPS_DECODER_OK) {
@@ -224,12 +224,12 @@ void QQnxVirtualKeyboardPps::handleKeyboardInfoMessage()
     }
     setHeight(newHeight);
 
-    qVirtualKeyboardDebug() << Q_FUNC_INFO << "size=" << newHeight;
+    qVirtualKeyboardDebug() << "size=" << newHeight;
 }
 
 bool QQnxVirtualKeyboardPps::showKeyboard()
 {
-    qVirtualKeyboardDebug() << Q_FUNC_INFO;
+    qVirtualKeyboardDebug();
 
     if (!prepareToSend())
         return false;
@@ -251,7 +251,7 @@ bool QQnxVirtualKeyboardPps::showKeyboard()
 
 bool QQnxVirtualKeyboardPps::hideKeyboard()
 {
-    qVirtualKeyboardDebug() << Q_FUNC_INFO;
+    qVirtualKeyboardDebug();
 
     if (!prepareToSend())
         return false;

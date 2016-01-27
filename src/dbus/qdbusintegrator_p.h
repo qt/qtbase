@@ -133,29 +133,6 @@ private:
     bool handled;
 };
 
-class QDBusConnectionCallbackEvent : public QEvent
-{
-public:
-    QDBusConnectionCallbackEvent()
-        : QEvent(User), subtype(Subtype(0))
-    { }
-
-    DBusWatch *watch;
-    union {
-        int timerId;
-        int fd;
-    };
-    int extra;
-
-    enum Subtype {
-        AddTimeout = 0,
-        KillTimer,
-        AddWatch,
-        //RemoveWatch,
-        ToggleWatch
-    } subtype;
-};
-
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QDBusSlotCache)

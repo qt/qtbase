@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
     \class QSessionManager
     \brief The QSessionManager class provides access to the session manager.
 
-    \inmodule QtWidgets
+    \inmodule QtGui
 
     A session manager in a desktop environment (in which Qt GUI applications
     live) keeps track of a session, which is a group of running applications,

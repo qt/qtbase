@@ -85,7 +85,7 @@ key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
     createdFile = (1 == built);
 
     // Get the unix key for the created file
-    unix_key = ftok(QFile::encodeName(fileName).constData(), 'Q');
+    unix_key = qt_safe_ftok(QFile::encodeName(fileName), 'Q');
     if (-1 == unix_key) {
         errorString = QCoreApplication::tr("%1: ftok failed", "QSystemSemaphore").arg(QLatin1String("QSystemSemaphore::handle:"));
         error = QSystemSemaphore::KeyError;

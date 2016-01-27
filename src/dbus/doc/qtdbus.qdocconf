@@ -19,7 +19,7 @@ sourcedirs += .. \
               ../../../examples/dbus/doc/src
 excludedirs += ../../../examples/widgets/doc
 
-examplesinstallpath     = dbus
+examplesinstallpath     = qtbase/dbus
 
 depends += qtdoc qtcore
 

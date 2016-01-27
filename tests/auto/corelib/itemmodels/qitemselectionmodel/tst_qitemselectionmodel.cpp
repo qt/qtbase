@@ -94,6 +94,9 @@ private slots:
     void testChainedSelectionClear();
     void testClearCurrentIndex();
 
+    void QTBUG48402_data();
+    void QTBUG48402();
+
 private:
     QAbstractItemModel *model;
     QItemSelectionModel *selection;
@@ -2754,6 +2757,97 @@ void tst_QItemSelectionModel::testClearCurrentIndex()
 
     QVERIFY(selectionModel.currentIndex() == QModelIndex());
     QVERIFY(currentIndexSpy.size() == 2);
+}
+
+void tst_QItemSelectionModel::QTBUG48402_data()
+{
+    QTest::addColumn<int>("rows");
+    QTest::addColumn<int>("columns");
+
+    QTest::addColumn<int>("selectTop");
+    QTest::addColumn<int>("selectLeft");
+    QTest::addColumn<int>("selectBottom");
+    QTest::addColumn<int>("selectRight");
+
+    QTest::addColumn<int>("removeTop");
+    QTest::addColumn<int>("removeBottom");
+
+    QTest::addColumn<int>("deselectTop");
+    QTest::addColumn<int>("deselectLeft");
+    QTest::addColumn<int>("deselectBottom");
+    QTest::addColumn<int>("deselectRight");
+
+    QTest::newRow("4x4 top intersection")
+        << 4 << 4
+        << 0 << 2 << 1 << 3
+        << 1 << 1
+        << 1 << 2 << 1 << 3;
+
+    QTest::newRow("4x4 bottom intersection")
+        << 4 << 4
+        << 0 << 2 << 1 << 3
+        << 0 << 0
+        << 0 << 2 << 0 << 3;
+
+    QTest::newRow("4x4 middle intersection")
+        << 4 << 4
+        << 0 << 2 << 2 << 3
+        << 1 << 1
+        << 1 << 2 << 1 << 3;
+
+    QTest::newRow("4x4 full inclusion")
+        << 4 << 4
+        << 0 << 2 << 1 << 3
+        << 0 << 1
+        << 0 << 2 << 1 << 3;
+}
+class QTBUG48402_helper : public QObject
+{
+    Q_OBJECT
+public:
+    QModelIndex tl;
+    QModelIndex br;
+public slots:
+    void changed(const QItemSelection &, const QItemSelection &deselected)
+    {
+        tl = deselected.first().topLeft();
+        br = deselected.first().bottomRight();
+    }
+};
+
+void tst_QItemSelectionModel::QTBUG48402()
+{
+    QFETCH(int, rows);
+    QFETCH(int, columns);
+    QFETCH(int, selectTop);
+    QFETCH(int, selectLeft);
+    QFETCH(int, selectBottom);
+    QFETCH(int, selectRight);
+    QFETCH(int, removeTop);
+    QFETCH(int, removeBottom);
+    QFETCH(int, deselectTop);
+    QFETCH(int, deselectLeft);
+    QFETCH(int, deselectBottom);
+    QFETCH(int, deselectRight);
+
+    MyStandardItemModel model(rows, columns);
+    QItemSelectionModel selections(&model);
+
+    QModelIndex stl = model.index(selectTop, selectLeft);
+    QModelIndex sbr = model.index(selectBottom, selectRight);
+    QModelIndex dtl = model.index(deselectTop, deselectLeft);
+    QModelIndex dbr = model.index(deselectBottom, deselectRight);
+
+    selections.select(QItemSelection(stl, sbr), QItemSelectionModel::ClearAndSelect);
+    QTBUG48402_helper helper;
+    helper.connect(&selections, &QItemSelectionModel::selectionChanged, &helper, &QTBUG48402_helper::changed);
+    QVERIFY(selections.isSelected(stl));
+    QVERIFY(selections.isSelected(sbr));
+    QVERIFY(selections.hasSelection());
+
+    model.removeRows(removeTop, removeBottom - removeTop + 1);
+
+    QCOMPARE(QItemSelectionRange(helper.tl, helper.br), QItemSelectionRange(dtl, dbr));
 }
 
 QTEST_MAIN(tst_QItemSelectionModel)

@@ -63,6 +63,7 @@ public:
                     // They could be added as public QAction roles if necessary.
                     CutRole, CopyRole, PasteRole, SelectAllRole,
                     RoleCount };
+    Q_ENUM(MenuRole)
 
     virtual void setTag(quintptr tag) = 0;
     virtual quintptr tag()const = 0;
@@ -91,6 +92,7 @@ class Q_GUI_EXPORT QPlatformMenu : public QObject
 Q_OBJECT
 public:
     enum MenuType { DefaultMenu = 0, EditMenu };
+    Q_ENUM(MenuType)
 
     virtual void insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before) = 0;
     virtual void removeMenuItem(QPlatformMenuItem *menuItem) = 0;

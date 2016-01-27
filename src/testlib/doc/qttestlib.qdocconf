@@ -4,7 +4,7 @@ project                 = QtTestLib
 description             = Qt Test Reference Documentation
 version                 = $QT_VERSION
 
-examplesinstallpath     = testlib
+examplesinstallpath     = qtbase/testlib
 
 qhp.projects            = QtTestLib
 

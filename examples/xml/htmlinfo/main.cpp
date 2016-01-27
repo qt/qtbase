@@ -79,7 +79,7 @@ void parseHtmlFile(QTextStream &out, const QString &fileName) {
     }
 //! [2]
 
-    out << "  Title: \"" << title << "\"" << endl
+    out << "  Title: \"" << title << '"' << endl
         << "  Number of paragraphs: " << paragraphCount << endl
         << "  Number of links: " << links.size() << endl
         << "  Showing first few links:" << endl;

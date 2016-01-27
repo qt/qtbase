@@ -149,6 +149,8 @@ private slots:
     void toggleUnifiedTitleAndToolBarOnMac();
 #endif
     void QTBUG21378_animationFinished();
+    void resizeDocks();
+    void resizeDocks_data();
 };
 
 
@@ -1950,5 +1952,96 @@ void tst_QMainWindow::QTBUG21378_animationFinished()
     delete mwClickTimer;
     QVERIFY(true);
 }
+
+Q_DECLARE_METATYPE(Qt::Orientation)
+
+void tst_QMainWindow::resizeDocks_data()
+{
+    QTest::addColumn<Qt::Orientation>("orientation");
+    QTest::addColumn<QStringList>("docks");
+    QTest::addColumn<QList<int> >("sizes");
+
+    QTest::newRow("1") << Qt::Horizontal
+        << (QStringList() << "blue" << "orange" << "green" << "gray")
+        << (QList<int>() << 190 << 190 << 320 << 160);
+
+    QTest::newRow("2") << Qt::Vertical
+        << (QStringList() << "yellow"  << "orange")
+        << (QList<int>() << 147   <<  133 );
+
+
+    QTest::newRow("3") << Qt::Horizontal
+        << (QStringList() << "blue" << "yellow")
+        << (QList<int>() << 190 <<  600);
+}
+
+void tst_QMainWindow::resizeDocks()
+{
+    AddList addList;
+    addList
+        << AddDockWidget("blue", Qt::LeftDockWidgetArea)
+        << AddDockWidget("red", Qt::TopDockWidgetArea)
+        << AddDockWidget("pink", "red")
+        << AddDockWidget("yellow", Qt::RightDockWidgetArea)
+        << AddDockWidget("orange", Qt::RightDockWidgetArea)
+        << AddDockWidget("green", "orange", Qt::Horizontal)
+        << AddDockWidget("gray", "orange", Qt::Horizontal);
+    /*
+        +--------------------------------+
+        |          red/pink              |
+        +------+-+-----------------------+
+        |      | |         yellow        |
+        | blue + +--------+------+-------+
+        |      | | orange | gray | green |
+        +------+-+--------+------+-------+
+
+    */
+
+    QMainWindow mw(0, Qt::BypassWindowManagerHint);
+    mw.setDockNestingEnabled(true);
+    mw.resize(1800, 600);
+
+    foreach (const AddDockWidget &i, addList)
+        i.apply(&mw);
+
+    foreach (QDockWidget *dw, mw.findChildren<QDockWidget *>())
+        dw->setStyleSheet( "* { background-color: " + dw->objectName() +" }");
+
+    mw.setCentralWidget(new QTextEdit);
+
+    mw.show();
+    QTest::qWaitForWindowExposed(&mw);
+
+    QFETCH(Qt::Orientation, orientation);
+    QFETCH(QStringList, docks);
+    QFETCH(QList<int>, sizes);
+
+    QList<QDockWidget *> list;
+    foreach (const QString &name, docks) {
+        QDockWidget *d = mw.findChild<QDockWidget *>(name);
+        QVERIFY(d);
+        list << d;
+    }
+
+    mw.resizeDocks(list, sizes, orientation);
+
+    qApp->processEvents();
+
+    int totalFromList = 0;
+    int actualTotal = 0;
+    for (int i = 0; i < docks.count(); ++i) {
+        totalFromList += sizes[i];
+        QSize s = list[i]->size();
+        actualTotal += (orientation == Qt::Horizontal) ? s.width() : s.height();
+//        qDebug() << list[i] << list[i]->size() << sizes[i];
+    }
+
+    for (int i = 0; i < docks.count(); ++i) {
+        QSize s = list[i]->size();
+        int value = (orientation == Qt::Horizontal) ? s.width() : s.height();
+        QCOMPARE(value,  qRound(sizes[i]*actualTotal/double(totalFromList)));
+    }
+}
+
 QTEST_MAIN(tst_QMainWindow)
 #include "tst_qmainwindow.moc"

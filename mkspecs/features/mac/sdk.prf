@@ -32,7 +32,6 @@ isEmpty(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.version) {
 !equals(MAKEFILE_GENERATOR, XCODE) {
     QMAKE_CFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH
     QMAKE_CXXFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH
-    QMAKE_OBJECTIVE_CFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH
     QMAKE_LFLAGS += -Wl,-syslibroot,$$QMAKE_MAC_SDK_PATH
 }
 
@@ -72,9 +71,6 @@ isEmpty(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.platform_name) {
     # FIXME: Get the version_min_flag out of the platform's 'Native Build System.xcspec'
     version_identifier = $$replace(QMAKE_MAC_PLATFORM_NAME, iphonesimulator, ios-simulator)
 
-    # C++11 support may affect the deployment target
-    c++11: load(c++11)
-
     ios:!host_build: \
         deployment_target = $$QMAKE_IOS_DEPLOYMENT_TARGET
     else: \
@@ -83,6 +79,5 @@ isEmpty(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.platform_name) {
     version_min_flag = -m$${version_identifier}-version-min=$$deployment_target
     QMAKE_CFLAGS += $$version_min_flag
     QMAKE_CXXFLAGS += $$version_min_flag
-    QMAKE_OBJECTIVE_CFLAGS += $$version_min_flag
     QMAKE_LFLAGS += $$version_min_flag
 }

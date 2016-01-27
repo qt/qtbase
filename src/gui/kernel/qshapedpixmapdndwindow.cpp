@@ -35,12 +35,16 @@
 
 #include <QtGui/QPainter>
 #include <QtGui/QCursor>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QPalette>
+#include <QtGui/QBitmap>
 
 QT_BEGIN_NAMESPACE
 
-QShapedPixmapWindow::QShapedPixmapWindow()
-    : QWindow(),
-      m_backingStore(0)
+QShapedPixmapWindow::QShapedPixmapWindow(QScreen *screen)
+    : QWindow(screen),
+      m_backingStore(0),
+      m_useCompositing(true)
 {
     QSurfaceFormat format;
     format.setAlphaBufferSize(8);
@@ -68,7 +72,10 @@ void QShapedPixmapWindow::render()
 
     {
         QPainter p(device);
-        p.setCompositionMode(QPainter::CompositionMode_Source);
+        if (m_useCompositing)
+            p.setCompositionMode(QPainter::CompositionMode_Source);
+        else
+            p.fillRect(rect, QGuiApplication::palette().base());
         p.drawPixmap(0, 0, m_pixmap);
     }
 
@@ -79,6 +86,8 @@ void QShapedPixmapWindow::render()
 void QShapedPixmapWindow::setPixmap(const QPixmap &pixmap)
 {
     m_pixmap = pixmap;
+    if (!m_useCompositing)
+        setMask(m_pixmap.mask());
 }
 
 void QShapedPixmapWindow::setHotspot(const QPoint &hotspot)

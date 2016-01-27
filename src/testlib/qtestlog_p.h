@@ -110,6 +110,11 @@ public:
     static void setInstalledTestCoverage(bool installed);
     static bool installedTestCoverage();
 
+    static qint64 nsecsTotalTime();
+    static qreal msecsTotalTime()    { return QTestLog::nsecsTotalTime() / 1000000.; }
+    static qint64 nsecsFunctionTime();
+    static qreal msecsFunctionTime() { return QTestLog::nsecsFunctionTime() / 1000000.; }
+
 private:
     QTestLog();
     ~QTestLog();

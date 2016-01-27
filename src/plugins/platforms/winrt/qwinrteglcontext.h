@@ -37,23 +37,29 @@
 #ifndef QWINDOWSEGLCONTEXT_H
 #define QWINDOWSEGLCONTEXT_H
 
-#include <QtPlatformSupport/private/qeglplatformcontext_p.h>
+#include <qpa/qplatformopenglcontext.h>
 
 QT_BEGIN_NAMESPACE
 
-class QWinRTEGLContext : public QEGLPlatformContext
+class QWinRTEGLContextPrivate;
+class QWinRTEGLContext : public QPlatformOpenGLContext
 {
 public:
-    explicit QWinRTEGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display, EGLSurface surface, EGLConfig config);
+    explicit QWinRTEGLContext(QOpenGLContext *context);
+    ~QWinRTEGLContext();
 
-    void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
+    void initialize() Q_DECL_OVERRIDE;
+
+    bool makeCurrent(QPlatformSurface *windowSurface) Q_DECL_OVERRIDE;
+    void doneCurrent() Q_DECL_OVERRIDE;
+    void swapBuffers(QPlatformSurface *windowSurface) Q_DECL_OVERRIDE;
+
+    QSurfaceFormat format() const Q_DECL_OVERRIDE;
     QFunctionPointer getProcAddress(const QByteArray &procName) Q_DECL_OVERRIDE;
 
-protected:
-    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface);
-
 private:
-    EGLSurface m_eglSurface;
+    QScopedPointer<QWinRTEGLContextPrivate> d_ptr;
+    Q_DECLARE_PRIVATE(QWinRTEGLContext)
 };
 
 QT_END_NAMESPACE

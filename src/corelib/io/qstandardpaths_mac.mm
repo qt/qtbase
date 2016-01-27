@@ -204,7 +204,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
             CFRelease(bundleUrl);
 
             CFURLRef resourcesUrl = CFBundleCopyResourcesDirectoryURL(mainBundle);
-            CFStringRef cfResourcesPath = CFURLCopyPath(bundleUrl);
+            CFStringRef cfResourcesPath = CFURLCopyPath(resourcesUrl);
             QString resourcesPath = QCFString::toQString(cfResourcesPath);
             CFRelease(cfResourcesPath);
             CFRelease(resourcesUrl);

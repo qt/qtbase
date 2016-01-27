@@ -413,15 +413,6 @@ void tst_QLibrary::loadHints_data()
     QTest::addColumn<bool>("result");
 
     QLibrary::LoadHints lh;
-#if defined(Q_OS_AIX)
-    if (QFile::exists("/usr/lib/libGL.a") || QFile::exists("/usr/X11R6/lib/libGL.a")) {
-# if QT_POINTER_SIZE == 4
-        QTest::newRow( "ok03 (Archive member)" ) << "libGL.a(shr.o)" << int(QLibrary::LoadArchiveMemberHint) << true;
-# else
-        QTest::newRow( "ok03 (Archive member)" ) << "libGL.a(shr_64.o)" << int(QLibrary::LoadArchiveMemberHint) << true;
-#endif
-    }
-#endif
 
     QString appDir = QCoreApplication::applicationDirPath();
 

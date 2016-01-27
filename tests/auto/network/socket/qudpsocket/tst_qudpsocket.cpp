@@ -56,7 +56,6 @@
 #endif
 
 Q_DECLARE_METATYPE(QHostAddress)
-Q_DECLARE_METATYPE(QNetworkInterface)
 
 QT_FORWARD_DECLARE_CLASS(QUdpSocket)
 
@@ -116,10 +115,13 @@ private slots:
     void linkLocalIPv4();
     void readyRead();
     void readyReadForEmptyDatagram();
+    void asyncReadDatagram();
+    void writeInHostLookupState();
 
 protected slots:
     void empty_readyReadSlot();
     void empty_connectedSlot();
+    void async_readDatagramSlot();
 
 private:
 #ifndef QT_NO_BEARERMANAGEMENT
@@ -127,6 +129,8 @@ private:
     QNetworkConfiguration networkConfiguration;
     QSharedPointer<QNetworkSession> networkSession;
 #endif
+    QUdpSocket *m_asyncSender;
+    QUdpSocket *m_asyncReceiver;
 };
 
 static QHostAddress makeNonAny(const QHostAddress &address, QHostAddress::SpecialAddress preferForAny = QHostAddress::LocalHost)
@@ -848,7 +852,11 @@ void tst_QUdpSocket::writeDatagramToNonExistingPeer_data()
     QTest::addColumn<bool>("bind");
     QTest::addColumn<QHostAddress>("peerAddress");
     QHostAddress localhost(QHostAddress::LocalHost);
-    QHostAddress remote = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first();
+    QList<QHostAddress> serverAddresses(QHostInfo::fromName(QtNetworkSettings::serverName()).addresses());
+    if (serverAddresses.isEmpty())
+        return;
+
+    QHostAddress remote = serverAddresses.first();
 
     QTest::newRow("localhost-unbound") << false << localhost;
     QTest::newRow("localhost-bound") << true << localhost;
@@ -858,6 +866,8 @@ void tst_QUdpSocket::writeDatagramToNonExistingPeer_data()
 
 void tst_QUdpSocket::writeDatagramToNonExistingPeer()
 {
+    if (QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().isEmpty())
+        QFAIL("Could not find test server address");
     QFETCH(bool, bind);
     QFETCH(QHostAddress, peerAddress);
 
@@ -879,7 +889,11 @@ void tst_QUdpSocket::writeToNonExistingPeer_data()
 {
     QTest::addColumn<QHostAddress>("peerAddress");
     QHostAddress localhost(QHostAddress::LocalHost);
-    QHostAddress remote = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first();
+    QList<QHostAddress> serverAddresses(QHostInfo::fromName(QtNetworkSettings::serverName()).addresses());
+    if (serverAddresses.isEmpty())
+        return;
+
+    QHostAddress remote = serverAddresses.first();
     // write (required to be connected)
     QTest::newRow("localhost") << localhost;
     QTest::newRow("remote") << remote;
@@ -888,6 +902,8 @@ void tst_QUdpSocket::writeToNonExistingPeer_data()
 void tst_QUdpSocket::writeToNonExistingPeer()
 {
     QSKIP("Connected-mode UDP sockets and their behaviour are erratic");
+    if (QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().isEmpty())
+        QFAIL("Could not find test server address");
     QFETCH(QHostAddress, peerAddress);
     quint16 peerPort = 34534;
     qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
@@ -1114,6 +1130,9 @@ void tst_QUdpSocket::multicastTtlOption_data()
 
 void tst_QUdpSocket::multicastTtlOption()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("WinRT does not support multicast.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     QFETCH(QHostAddress, bindAddress);
     QFETCH(int, ttl);
@@ -1156,6 +1175,9 @@ void tst_QUdpSocket::multicastLoopbackOption_data()
 
 void tst_QUdpSocket::multicastLoopbackOption()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("WinRT does not support multicast.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     QFETCH(QHostAddress, bindAddress);
     QFETCH(int, loopback);
@@ -1186,6 +1208,9 @@ void tst_QUdpSocket::multicastJoinBeforeBind_data()
 
 void tst_QUdpSocket::multicastJoinBeforeBind()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("WinRT does not support multicast.");
+#endif
     QFETCH(QHostAddress, groupAddress);
 
     QUdpSocket udpSocket;
@@ -1206,6 +1231,9 @@ void tst_QUdpSocket::multicastLeaveAfterClose_data()
 
 void tst_QUdpSocket::multicastLeaveAfterClose()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("WinRT does not support multicast.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     QFETCH(QHostAddress, groupAddress);
     if (setProxy)
@@ -1247,6 +1275,9 @@ void tst_QUdpSocket::setMulticastInterface_data()
 
 void tst_QUdpSocket::setMulticastInterface()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("WinRT does not support multicast.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     QFETCH(QNetworkInterface, iface);
     QFETCH(QHostAddress, address);
@@ -1295,6 +1326,9 @@ void tst_QUdpSocket::multicast_data()
 
 void tst_QUdpSocket::multicast()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("WinRT does not support multicast.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     QFETCH(QHostAddress, bindAddress);
     QFETCH(bool, bindResult);
@@ -1574,7 +1608,7 @@ void tst_QUdpSocket::readyRead()
     QSignalSpy spy(&receiver, SIGNAL(readyRead()));
 
     // send a datagram to that port
-    sender.writeDatagram("a", makeNonAny(receiver.localAddress()), port);
+    sender.writeDatagram("aa", makeNonAny(receiver.localAddress()), port);
 
     // wait a little
     // if QTBUG-43857 is still going, we'll live-lock on socket notifications from receiver's socket
@@ -1583,8 +1617,8 @@ void tst_QUdpSocket::readyRead()
     // make sure only one signal was emitted
     QCOMPARE(spy.count(), 1);
     QVERIFY(receiver.hasPendingDatagrams());
-    QCOMPARE(receiver.bytesAvailable(), qint64(1));
-    QCOMPARE(receiver.pendingDatagramSize(), qint64(1));
+    QCOMPARE(receiver.bytesAvailable(), qint64(2));
+    QCOMPARE(receiver.pendingDatagramSize(), qint64(2));
 
     // write another datagram
     sender.writeDatagram("ab", makeNonAny(receiver.localAddress()), port);
@@ -1594,7 +1628,7 @@ void tst_QUdpSocket::readyRead()
     QCOMPARE(spy.count(), 1);
     QVERIFY(receiver.hasPendingDatagrams());
     QVERIFY(receiver.bytesAvailable() >= 1);    // most likely is 1, but it could be 1 + 2 in the future
-    QCOMPARE(receiver.pendingDatagramSize(), qint64(1));
+    QCOMPARE(receiver.pendingDatagramSize(), qint64(2));
 
     // read all the datagrams (we could read one only, but we can't be sure the OS is queueing)
     while (receiver.hasPendingDatagrams())
@@ -1639,6 +1673,68 @@ void tst_QUdpSocket::readyReadForEmptyDatagram()
     QCOMPARE(receiver.pendingDatagramSize(), qint64(0));
     QCOMPARE(receiver.bytesAvailable(), qint64(0));
     QCOMPARE(receiver.readDatagram(buf, sizeof buf), qint64(0));
+}
+
+void tst_QUdpSocket::async_readDatagramSlot()
+{
+    char buf[1];
+    QVERIFY(m_asyncReceiver->hasPendingDatagrams());
+    QCOMPARE(m_asyncReceiver->pendingDatagramSize(), qint64(1));
+    QCOMPARE(m_asyncReceiver->bytesAvailable(), qint64(1));
+    QCOMPARE(m_asyncReceiver->readDatagram(buf, sizeof(buf)), qint64(1));
+
+    if (buf[0] == '2') {
+        QTestEventLoop::instance().exitLoop();
+        return;
+    }
+
+    m_asyncSender->writeDatagram("2", makeNonAny(m_asyncReceiver->localAddress()), m_asyncReceiver->localPort());
+    // wait a little to ensure that the datagram we've just sent
+    // will be delivered on receiver side.
+    QTest::qSleep(100);
+}
+
+void tst_QUdpSocket::asyncReadDatagram()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    m_asyncSender = new QUdpSocket;
+    m_asyncReceiver = new QUdpSocket;
+#ifdef FORCE_SESSION
+    m_asyncSender->setProperty("_q_networksession", QVariant::fromValue(networkSession));
+    m_asyncReceiver->setProperty("_q_networksession", QVariant::fromValue(networkSession));
+#endif
+
+    QVERIFY(m_asyncReceiver->bind(QHostAddress(QHostAddress::AnyIPv4), 0));
+    quint16 port = m_asyncReceiver->localPort();
+    QVERIFY(port != 0);
+
+    QSignalSpy spy(m_asyncReceiver, SIGNAL(readyRead()));
+    connect(m_asyncReceiver, SIGNAL(readyRead()), SLOT(async_readDatagramSlot()));
+
+    m_asyncSender->writeDatagram("1", makeNonAny(m_asyncReceiver->localAddress()), port);
+
+    QTestEventLoop::instance().enterLoop(1);
+
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(spy.count(), 2);
+
+    delete m_asyncSender;
+    delete m_asyncReceiver;
+}
+
+void tst_QUdpSocket::writeInHostLookupState()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QUdpSocket socket;
+    socket.connectToHost("nosuchserver.qt-project.org", 80);
+    QCOMPARE(socket.state(), QUdpSocket::HostLookupState);
+    QVERIFY(!socket.putChar('0'));
 }
 
 QTEST_MAIN(tst_QUdpSocket)

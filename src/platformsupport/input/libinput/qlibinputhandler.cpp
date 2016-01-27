@@ -46,7 +46,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(qLcInput, "qt.qpa.input")
+Q_LOGGING_CATEGORY(qLcLibInput, "qt.qpa.input")
 
 static int liOpen(const char *path, int flags, void *user_data)
 {
@@ -75,7 +75,7 @@ static void liLogHandler(libinput *libinput, libinput_log_priority priority, con
     if (n > 0) {
         if (buf[n - 1] == '\n')
             buf[n - 1] = '\0';
-        qCDebug(qLcInput, "libinput: %s", buf);
+        qCDebug(qLcLibInput, "libinput: %s", buf);
     }
 }
 
@@ -93,7 +93,7 @@ QLibInputHandler::QLibInputHandler(const QString &key, const QString &spec)
         qFatal("Failed to get libinput context");
 
     libinput_log_set_handler(m_li, liLogHandler);
-    if (qLcInput().isDebugEnabled())
+    if (qLcLibInput().isDebugEnabled())
         libinput_log_set_priority(m_li, LIBINPUT_LOG_PRIORITY_DEBUG);
 
     if (libinput_udev_assign_seat(m_li, "seat0"))

@@ -122,6 +122,7 @@ private:
 
     QMutex registryMutex;
 
+    QVector<QLoggingRule> qtConfigRules;
     QVector<QLoggingRule> configRules;
     QVector<QLoggingRule> envRules;
     QVector<QLoggingRule> apiRules;

@@ -90,6 +90,7 @@ struct Q_CORE_EXPORT QListData {
     Data *detach(int alloc);
     Data *detach_grow(int *i, int n);
     void realloc(int alloc);
+    void realloc_grow(int growth);
     inline void dispose() { dispose(d); }
     static void dispose(Data *d);
     static const Data shared_null;
@@ -142,11 +143,12 @@ public:
     ~QList();
     QList<T> &operator=(const QList<T> &l);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QList(QList<T> &&other) : d(other.d) { other.d = const_cast<QListData::Data *>(&QListData::shared_null); }
-    inline QList &operator=(QList<T> &&other)
+    inline QList(QList<T> &&other) Q_DECL_NOTHROW
+        : d(other.d) { other.d = const_cast<QListData::Data *>(&QListData::shared_null); }
+    inline QList &operator=(QList<T> &&other) Q_DECL_NOTHROW
     { QList moved(std::move(other)); swap(moved); return *this; }
 #endif
-    inline void swap(QList<T> &other) { qSwap(d, other.d); }
+    inline void swap(QList<T> &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QList(std::initializer_list<T> args)
         : d(const_cast<QListData::Data *>(&QListData::shared_null))

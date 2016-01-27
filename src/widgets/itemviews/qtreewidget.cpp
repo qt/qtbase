@@ -3281,7 +3281,7 @@ QMimeData *QTreeWidget::mimeData(const QList<QTreeWidgetItem*> items) const
         for (int i = 0; i < items.count(); ++i) {
             QTreeWidgetItem *item = items.at(i);
             if (!item) {
-                qWarning() << "QTreeWidget::mimeData: Null-item passed";
+                qWarning("QTreeWidget::mimeData: Null-item passed");
                 return 0;
             }
 
@@ -3386,7 +3386,7 @@ void QTreeWidget::dropEvent(QDropEvent *event) {
 
             // Remove the items
             QList<QTreeWidgetItem *> taken;
-            for (int i = indexes.count() - 1; i >= 0; --i) {
+            for (int i = 0; i < indexes.count(); ++i) {
                 QTreeWidgetItem *parent = itemFromIndex(indexes.at(i));
                 if (!parent || !parent->parent()) {
                     taken.append(takeTopLevelItem(indexes.at(i).row()));

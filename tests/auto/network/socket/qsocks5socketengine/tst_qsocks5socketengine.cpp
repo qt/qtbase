@@ -591,13 +591,13 @@ void tst_QSocks5SocketEngine::udpTest()
     QVERIFY(available > 0);
     QByteArray answer;
     answer.resize(available);
-    QHostAddress senderAddress;
-    quint16 senderPort = 0;
-    QVERIFY(udpSocket.readDatagram(answer.data(), answer.size(),
-                                  &senderAddress,
-                                  &senderPort) == message1.size());
-    QCOMPARE(senderAddress, udpSocket2.localAddress());
-    QCOMPARE(senderPort, udpSocket2.localPort());
+    QIpPacketHeader header;
+    QCOMPARE(udpSocket.readDatagram(answer.data(), answer.size(),
+                                    &header, QAbstractSocketEngine::WantDatagramSender),
+             qint64(message1.size()));
+    QVERIFY(header.senderAddress == udpSocket2.localAddress());
+    QCOMPARE(header.senderAddress, udpSocket2.localAddress());
+    QCOMPARE(header.senderPort, udpSocket2.localPort());
 }
 
 void tst_QSocks5SocketEngine::tcpSocketBlockingTest()

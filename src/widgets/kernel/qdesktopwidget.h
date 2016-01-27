@@ -47,7 +47,7 @@ class Q_WIDGETS_EXPORT QDesktopWidget : public QWidget
     Q_OBJECT
     Q_PROPERTY(bool virtualDesktop READ isVirtualDesktop)
     Q_PROPERTY(int screenCount READ screenCount NOTIFY screenCountChanged)
-    Q_PROPERTY(int primaryScreen READ primaryScreen)
+    Q_PROPERTY(int primaryScreen READ primaryScreen NOTIFY primaryScreenChanged)
 public:
     QDesktopWidget();
     ~QDesktopWidget();
@@ -77,6 +77,7 @@ Q_SIGNALS:
     void resized(int);
     void workAreaResized(int);
     void screenCountChanged(int);
+    void primaryScreenChanged();
 
 protected:
     void resizeEvent(QResizeEvent *e) Q_DECL_OVERRIDE;

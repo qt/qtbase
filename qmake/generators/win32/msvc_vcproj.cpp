@@ -70,21 +70,6 @@ struct DotNetCombo {
     const char *versionStr;
     const char *regKey;
 } dotNetCombo[] = {
-#ifdef Q_OS_WIN64
-    {NET2015, "MSVC.NET 2015 (14.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\14.0\\Setup\\VC\\ProductDir"},
-    {NET2013, "MSVC.NET 2013 (12.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\12.0\\Setup\\VC\\ProductDir"},
-    {NET2013, "MSVC.NET 2013 Express Edition (12.0)", "Software\\Wow6432Node\\Microsoft\\VCExpress\\12.0\\Setup\\VC\\ProductDir"},
-    {NET2012, "MSVC.NET 2012 (11.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\11.0\\Setup\\VC\\ProductDir"},
-    {NET2012, "MSVC.NET 2012 Express Edition (11.0)", "Software\\Wow6432Node\\Microsoft\\VCExpress\\11.0\\Setup\\VC\\ProductDir"},
-    {NET2010, "MSVC.NET 2010 (10.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\10.0\\Setup\\VC\\ProductDir"},
-    {NET2010, "MSVC.NET 2010 Express Edition (10.0)", "Software\\Wow6432Node\\Microsoft\\VCExpress\\10.0\\Setup\\VC\\ProductDir"},
-    {NET2008, "MSVC.NET 2008 (9.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\9.0\\Setup\\VC\\ProductDir"},
-    {NET2008, "MSVC.NET 2008 Express Edition (9.0)", "Software\\Wow6432Node\\Microsoft\\VCExpress\\9.0\\Setup\\VC\\ProductDir"},
-    {NET2005, "MSVC.NET 2005 (8.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\8.0\\Setup\\VC\\ProductDir"},
-    {NET2005, "MSVC.NET 2005 Express Edition (8.0)", "Software\\Wow6432Node\\Microsoft\\VCExpress\\8.0\\Setup\\VC\\ProductDir"},
-    {NET2003, "MSVC.NET 2003 (7.1)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\7.1\\Setup\\VC\\ProductDir"},
-    {NET2002, "MSVC.NET 2002 (7.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\7.0\\Setup\\VC\\ProductDir"},
-#else
     {NET2015, "MSVC.NET 2015 (14.0)", "Software\\Microsoft\\VisualStudio\\14.0\\Setup\\VC\\ProductDir"},
     {NET2013, "MSVC.NET 2013 (12.0)", "Software\\Microsoft\\VisualStudio\\12.0\\Setup\\VC\\ProductDir"},
     {NET2013, "MSVC.NET 2013 Express Edition (12.0)", "Software\\Microsoft\\VCExpress\\12.0\\Setup\\VC\\ProductDir"},
@@ -98,7 +83,6 @@ struct DotNetCombo {
     {NET2005, "MSVC.NET 2005 Express Edition (8.0)", "Software\\Microsoft\\VCExpress\\8.0\\Setup\\VC\\ProductDir"},
     {NET2003, "MSVC.NET 2003 (7.1)", "Software\\Microsoft\\VisualStudio\\7.1\\Setup\\VC\\ProductDir"},
     {NET2002, "MSVC.NET 2002 (7.0)", "Software\\Microsoft\\VisualStudio\\7.0\\Setup\\VC\\ProductDir"},
-#endif
     {NETUnknown, "", ""},
 };
 
@@ -125,7 +109,8 @@ DotNET which_dotnet_version(const QByteArray &preferredVersion = QByteArray())
     int installed = 0;
     int i = 0;
     for(; dotNetCombo[i].version; ++i) {
-        QString path = qt_readRegistryKey(HKEY_LOCAL_MACHINE, dotNetCombo[i].regKey);
+        QString path = qt_readRegistryKey(HKEY_LOCAL_MACHINE, dotNetCombo[i].regKey,
+                                          KEY_WOW64_32KEY);
         if (!path.isEmpty() && installPaths.value(dotNetCombo[i].version) != path) {
             lowestInstalledVersion = &dotNetCombo[i];
             installPaths.insert(lowestInstalledVersion->version, path);
@@ -520,7 +505,6 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                     ProStringList tmpList;
                     tmpList += subdir.second;
                     tmpList += allDependencies;
-                    QPair<QString, ProStringList> val = qMakePair(fi.absoluteFilePath(), tmpList);
                     // Initialize a 'fake' project to get the correct variables
                     // and to be able to extract all the dependencies
                     Option::QMAKE_MODE old_mode = Option::qmake_mode;
@@ -532,31 +516,13 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
 
                     // We assume project filename is [QMAKE_PROJECT_NAME].vcproj
                     QString vcproj = tmp_vcproj.project->first("QMAKE_PROJECT_NAME") + project->first("VCPROJ_EXTENSION");
-                    QString vcprojDir = qmake_getpwd();
+                    QString vcprojDir = Option::output_dir;
 
                     // If file doesn't exsist, then maybe the users configuration
                     // doesn't allow it to be created. Skip to next...
                     if (!exists(vcprojDir + Option::dir_sep + vcproj)) {
-                        // Try to find the directory which fits relative
-                        // to the output path, which represents the shadow
-                        // path in case we are shadow building
-                        QStringList list = fi.path().split(QLatin1Char('/'));
-                        QString tmpDir = QFileInfo(Option::output).path() + Option::dir_sep;
-                        bool found = false;
-                        for (int i = list.size() - 1; i >= 0; --i) {
-                            QString curr;
-                            for (int j = i; j < list.size(); ++j)
-                                curr += list.at(j) + Option::dir_sep;
-                            if (exists(tmpDir + curr + vcproj)) {
-                                vcprojDir = QDir::cleanPath(tmpDir + curr);
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            warn_msg(WarnLogic, "Ignored (not found) '%s'", QString(vcprojDir + Option::dir_sep + vcproj).toLatin1().constData());
-                            goto nextfile; // # Dirty!
-                        }
+                        warn_msg(WarnLogic, "Ignored (not found) '%s'", QString(vcprojDir + Option::dir_sep + vcproj).toLatin1().constData());
+                        goto nextfile; // # Dirty!
                     }
 
                     VcsolutionDepend *newDep = new VcsolutionDepend;
@@ -570,8 +536,8 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                         newDep->target = newDep->target.left(newDep->target.length()-3) + "lib";
                     projGuids.insert(newDep->orig_target, newDep->target);
 
-                    if (val.second.size()) {
-                        const ProStringList depends = val.second;
+                    if (tmpList.size()) {
+                        const ProStringList depends = tmpList;
                         foreach (const ProString &dep, depends) {
                             QString depend = dep.toQString();
                             if (!projGuids[depend].isEmpty()) {
@@ -583,8 +549,7 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                                     newDep->dependencies << projGuids[projLookup[tmpDep]];
                                 }
                             } else {
-                                QStringList dependencies = val.second.toQStringList();
-                                extraSubdirs.insert(newDep, dependencies);
+                                extraSubdirs.insert(newDep, tmpList.toQStringList());
                                 newDep->dependencies.clear();
                                 break;
                             }
@@ -603,7 +568,7 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                         wit != where.end(); ++wit) {
                             const ProStringList &l = tmp_proj.values(ProKey(*wit));
                             for (ProStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
-                                QString opt = (*it).toQString();
+                                const QString opt = fixLibFlag(*it).toQString();
                                 if (!opt.startsWith("/") &&   // Not a switch
                                     opt != newDep->target && // Not self
                                     opt != "opengl32.lib" && // We don't care about these libs
@@ -655,6 +620,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     switch (which_dotnet_version(project->first("MSVC_VER").toLatin1())) {
     case NET2015:
         t << _slnHeader140;
+        break;
     case NET2013:
         t << _slnHeader120;
         break;
@@ -808,8 +774,6 @@ void VcprojGenerator::init()
         project->values("QMAKE_APP_FLAG").append("1");
     else if (project->first("TEMPLATE") == "vclib")
         project->values("QMAKE_LIB_FLAG").append("1");
-
-    project->values("QMAKE_L_FLAG") << "/LIBPATH:";
 
     processVars();
 
@@ -1036,6 +1000,17 @@ void VcprojGenerator::initConfiguration()
     conf.suppressUnknownOptionWarnings = project->isActiveConfig("suppress_vcproj_warnings");
     conf.CompilerVersion = which_dotnet_version(project->first("MSVC_VER").toLatin1());
 
+    if (conf.CompilerVersion >= NET2012) {
+        conf.WinRT = project->isActiveConfig("winrt");
+        if (conf.WinRT) {
+            conf.WinPhone = project->isActiveConfig("winphone");
+            // Saner defaults
+            conf.compiler.UsePrecompiledHeader = pchNone;
+            conf.compiler.CompileAsWinRT = _False;
+            conf.linker.GenerateWindowsMetadata = _False;
+        }
+    }
+
     initCompilerTool();
 
     // Only on configuration per build
@@ -1080,17 +1055,6 @@ void VcprojGenerator::initConfiguration()
         const QString targetSuffix = targetInfo.suffix();
         if (!isStandardSuffix(targetSuffix))
             conf.PrimaryOutputExtension = '.' + targetSuffix;
-    }
-
-    if (conf.CompilerVersion >= NET2012) {
-        conf.WinRT = project->isActiveConfig("winrt");
-        if (conf.WinRT) {
-            conf.WinPhone = project->isActiveConfig("winphone");
-            // Saner defaults
-            conf.compiler.UsePrecompiledHeader = pchNone;
-            conf.compiler.CompileAsWinRT = _False;
-            conf.linker.GenerateWindowsMetadata = _False;
-        }
     }
 
     conf.Name = project->values("BUILD_NAME").join(' ');
@@ -1208,12 +1172,13 @@ void VcprojGenerator::initLinkerTool()
     if (!project->values("DEF_FILE").isEmpty())
         conf.linker.ModuleDefinitionFile = project->first("DEF_FILE").toQString();
 
-    foreach (const ProString &libs, project->values("QMAKE_LIBS") + project->values("QMAKE_LIBS_PRIVATE")) {
-        if (libs.left(9).toQString().toUpper() == "/LIBPATH:") {
-            ProStringList l = ProStringList(libs);
-            conf.linker.parseOptions(l);
-        } else {
-            conf.linker.AdditionalDependencies << escapeFilePath(libs.toQString());
+    static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
+    for (int i = 0; lflags[i]; i++) {
+        foreach (const ProString &lib, fixLibFlags(lflags[i])) {
+            if (lib.startsWith("/LIBPATH:"))
+                conf.linker.AdditionalLibraryDirectories << lib.mid(9).toQString();
+            else
+                conf.linker.AdditionalDependencies << lib.toQString();
         }
     }
 
@@ -1307,7 +1272,8 @@ void VcprojGenerator::initDeploymentTool()
     }
     ProStringList dllPaths = project->values("QMAKE_DLL_PATHS");
     // Only deploy Qt libs for shared build
-    if (!dllPaths.isEmpty()) {
+    if (!dllPaths.isEmpty() &&
+        !(conf.WinRT && project->first("MSVC_VER").toQString() == "14.0")) {
         // FIXME: This code should actually resolve the libraries from all Qt modules.
         ProStringList arg = project->values("QMAKE_LIBS") + project->values("QMAKE_LIBS_PRIVATE");
         for (ProStringList::ConstIterator it = arg.constBegin(); it != arg.constEnd(); ++it) {

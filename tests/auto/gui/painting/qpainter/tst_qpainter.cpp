@@ -4882,8 +4882,12 @@ void tst_QPainter::blendARGBonRGB_data()
                                         << QPainter::CompositionMode_SourceOver << qRgba(85, 0, 0, 85) << 85;
     QTest::newRow("ARGB source RGB30") << QImage::Format_RGB30 << QImage::Format_ARGB32
                                        << QPainter::CompositionMode_Source << qRgba(255, 0, 0, 85) << 85;
+    QTest::newRow("ARGB source RGB30") << QImage::Format_RGB30 << QImage::Format_ARGB32
+                                       << QPainter::CompositionMode_Source << qRgba(255, 0, 0, 120) << 85;
     QTest::newRow("ARGB_PM source RGB30") << QImage::Format_RGB30 << QImage::Format_ARGB32_Premultiplied
                                           << QPainter::CompositionMode_Source << qRgba(85, 0, 0, 85) << 85;
+    QTest::newRow("ARGB_PM source RGB30") << QImage::Format_RGB30 << QImage::Format_ARGB32_Premultiplied
+                                          << QPainter::CompositionMode_Source << qRgba(180, 0, 0, 180) << 170;
     QTest::newRow("ARGB source-in RGB30") << QImage::Format_RGB30 << QImage::Format_ARGB32
                                           << QPainter::CompositionMode_SourceIn << qRgba(255, 0, 0, 85) << 85;
     QTest::newRow("ARGB_PM source-in RGB30") << QImage::Format_RGB30 << QImage::Format_ARGB32_Premultiplied
@@ -5021,6 +5025,7 @@ void tst_QPainter::drawPolyline_data()
     QTest::newRow("basic") << (QVector<QPointF>() << QPointF(10, 10) << QPointF(20, 10) << QPointF(20, 20) << QPointF(10, 20));
     QTest::newRow("clipped") << (QVector<QPointF>() << QPoint(-10, 100) << QPoint(-1, 100) << QPoint(-1,  -2) << QPoint(100, -2) << QPoint(100, 40)); // QTBUG-31579
     QTest::newRow("shortsegment") << (QVector<QPointF>() << QPoint(20, 100) << QPoint(20, 99) << QPoint(21, 99) << QPoint(21, 104)); // QTBUG-42398
+    QTest::newRow("edge") << (QVector<QPointF>() << QPointF(4.5, 121.6) << QPointF(9.4, 150.9) << QPointF(14.2, 184.8) << QPointF(19.1, 130.4));
 }
 
 void tst_QPainter::drawPolyline()
@@ -5030,7 +5035,7 @@ void tst_QPainter::drawPolyline()
 
     for (int r = 0; r < 2; r++) {
         images[r] = QImage(150, 150, QImage::Format_ARGB32);
-        images[r].fill(Qt::transparent);
+        images[r].fill(Qt::white);
         QPainter p(images + r);
         QPen pen(Qt::red, 0, Qt::SolidLine, Qt::FlatCap);
         p.setPen(pen);

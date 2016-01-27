@@ -55,6 +55,7 @@
 #include <QtCore/private/qjnihelpers_p.h>
 #include <QtCore/private/qjni_p.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <qpa/qwindowsysteminterface.h>
 
@@ -109,6 +110,7 @@ static QAndroidPlatformIntegration *m_androidPlatformIntegration = nullptr;
 static int m_desktopWidthPixels  = 0;
 static int m_desktopHeightPixels = 0;
 static double m_scaledDensity = 0;
+static double m_density = 1.0;
 
 static volatile bool m_pauseApplication;
 
@@ -155,6 +157,11 @@ namespace QtAndroid
     double scaledDensity()
     {
         return m_scaledDensity;
+    }
+
+    double pixelDensity()
+    {
+        return m_density;
     }
 
     JavaVM *javaVM()
@@ -292,7 +299,7 @@ namespace QtAndroid
         QString manufacturer = QJNIObjectPrivate::getStaticObjectField("android/os/Build", "MANUFACTURER", "Ljava/lang/String;").toString();
         QString model = QJNIObjectPrivate::getStaticObjectField("android/os/Build", "MODEL", "Ljava/lang/String;").toString();
 
-        return manufacturer + QStringLiteral(" ") + model;
+        return manufacturer + QLatin1Char(' ') + model;
     }
 
     int createSurface(AndroidSurfaceClient *client, const QRect &geometry, bool onTop, int imageDepth)
@@ -432,7 +439,6 @@ static void *startMainMethod(void */*data*/)
         params[i] = static_cast<const char *>(m_applicationParams[i].constData());
 
     int ret = m_main(m_applicationParams.length(), const_cast<char **>(params.data()));
-    Q_UNUSED(ret);
 
     if (m_mainLibraryHnd) {
         int res = dlclose(m_mainLibraryHnd);
@@ -443,6 +449,13 @@ static void *startMainMethod(void */*data*/)
     if (m_applicationClass)
         QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "quitApp", "()V");
 
+    // All attached threads should be detached before returning from this function.
+    JavaVM *vm = QtAndroidPrivate::javaVM();
+    if (vm != 0)
+        vm->DetachCurrentThread();
+
+    // We must call exit() to ensure that all global objects will be destructed
+    exit(ret);
     return 0;
 }
 
@@ -485,8 +498,8 @@ static jboolean startQtApplication(JNIEnv *env, jobject /*object*/, jstring para
     }
 
     if (!m_main) {
-        qCritical() << "dlsym failed:" << dlerror();
-        qCritical() << "Could not find main method";
+        qCritical() << "dlsym failed:" << dlerror() << endl
+                    << "Could not find main method";
         return false;
     }
 
@@ -541,7 +554,8 @@ static void setSurface(JNIEnv *env, jobject /*thiz*/, jint id, jobject jSurface,
 static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
                             jint widthPixels, jint heightPixels,
                             jint desktopWidthPixels, jint desktopHeightPixels,
-                            jdouble xdpi, jdouble ydpi, jdouble scaledDensity)
+                            jdouble xdpi, jdouble ydpi,
+                            jdouble scaledDensity, jdouble density)
 {
     // Android does not give us the correct screen size for immersive mode, but
     // the surface does have the right size
@@ -552,6 +566,7 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
     m_desktopWidthPixels = desktopWidthPixels;
     m_desktopHeightPixels = desktopHeightPixels;
     m_scaledDensity = scaledDensity;
+    m_density = density;
 
     if (!m_androidPlatformIntegration) {
         QAndroidPlatformIntegration::setDefaultDisplayMetrics(desktopWidthPixels,
@@ -677,7 +692,7 @@ static JNINativeMethod methods[] = {
     {"startQtApplication", "(Ljava/lang/String;Ljava/lang/String;)V", (void *)startQtApplication},
     {"quitQtAndroidPlugin", "()V", (void *)quitQtAndroidPlugin},
     {"terminateQt", "()V", (void *)terminateQt},
-    {"setDisplayMetrics", "(IIIIDDD)V", (void *)setDisplayMetrics},
+    {"setDisplayMetrics", "(IIIIDDDD)V", (void *)setDisplayMetrics},
     {"setSurface", "(ILjava/lang/Object;II)V", (void *)setSurface},
     {"updateWindow", "()V", (void *)updateWindow},
     {"updateApplicationState", "(I)V", (void *)updateApplicationState},

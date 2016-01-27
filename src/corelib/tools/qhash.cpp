@@ -290,6 +290,53 @@ static void qt_initialize_qhash_seed()
     }
 }
 
+/*! \relates QHash
+    \since 5.6
+
+    Returns the current global QHash seed.
+
+    The seed is set in any newly created QHash. See \l{qHash} about how this seed
+    is being used by QHash.
+
+    \sa qSetGlobalQHashSeed
+ */
+int qGlobalQHashSeed()
+{
+    return qt_qhash_seed.load();
+}
+
+/*! \relates QHash
+    \since 5.6
+
+    Sets the global QHash seed.
+
+    Manually setting the global QHash seed value should be done only for testing
+    and debugging purposes, when deterministic and reproducible behavior on a QHash
+    is needed. We discourage to do it in production code as it can make your
+    application susceptible to \l{algorithmic complexity attacks}.
+
+    The seed is set in any newly created QHash. See \l{qHash} about how this seed
+    is being used by QHash.
+
+    If the environment variable \c QT_HASH_SEED is set, calling this function will
+    result in a no-op.
+
+    Passing the value -1 will reinitialize the global QHash seed to a random value.
+
+    \sa qGlobalQHashSeed
+ */
+void qSetGlobalQHashSeed(int newSeed)
+{
+    if (qEnvironmentVariableIsSet("QT_HASH_SEED"))
+        return;
+    if (newSeed == -1) {
+        int x(qt_create_qhash_seed() & INT_MAX);
+        qt_qhash_seed.store(x);
+    } else {
+        qt_qhash_seed.store(newSeed & INT_MAX);
+    }
+}
+
 /*!
     \internal
 
@@ -1132,7 +1179,8 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     where you temporarily need deterministic behavior, for example for debugging or
     regression testing. To disable the randomization, define the environment
     variable \c QT_HASH_SEED. The contents of that variable, interpreted as a
-    decimal value, will be used as the seed for qHash().
+    decimal value, will be used as the seed for qHash(). Alternatively, you can
+    call the qSetGlobalQHashSeed() function.
 
     \sa QHashIterator, QMutableHashIterator, QMap, QSet
 */
@@ -2240,7 +2288,7 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     Returns a pointer to the current item's key.
 */
 
-/*! \fn bool QHash::key_iterator::operator==(key_iterator other)
+/*! \fn bool QHash::key_iterator::operator==(key_iterator other) const
 
     Returns \c true if \a other points to the same item as this
     iterator; otherwise returns \c false.
@@ -2248,7 +2296,7 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     \sa operator!=()
 */
 
-/*! \fn bool QHash::key_iterator::operator!=(key_iterator other)
+/*! \fn bool QHash::key_iterator::operator!=(key_iterator other) const
 
     Returns \c true if \a other points to a different item than this
     iterator; otherwise returns \c false.

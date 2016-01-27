@@ -1090,12 +1090,12 @@ void tst_QPrinter::doubleSidedPrinting()
     QPrinter native;
     if (native.outputFormat() == QPrinter::NativeFormat) {
         // Test default
-        QPrinterInfo printerInfo;
+        QPrinterInfo printerInfo(native);
         bool expected = (printerInfo.defaultDuplexMode() != QPrinter::DuplexNone);
-        QCOMPARE(native.doubleSidedPrinting(), false);
+        QCOMPARE(native.doubleSidedPrinting(), expected);
 
-        // Test set/get
-        expected = (printerInfo.supportedDuplexModes().count() > 1);
+        // Test set/get, changing the expected value if possible
+        expected = expected ? false : (printerInfo.supportedDuplexModes().count() > 1);
         native.setDoubleSidedPrinting(expected);
         QCOMPARE(native.doubleSidedPrinting(), expected);
 

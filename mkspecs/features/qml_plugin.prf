@@ -19,6 +19,8 @@ if(win32|mac):!macx-xcode {
     contains(QT_CONFIG, build_all):CONFIG += build_all
 }
 
+CONFIG += relative_qt_rpath  # Qt's QML plugins should be relocatable
+
 !no_cxx_module:isEmpty(CXX_MODULE) {
     CXX_MODULE = $$TARGET
     TARGET = declarative_$${TARGET}
@@ -88,7 +90,6 @@ load(qt_common)
             qmlplugindump = qmlplugindump
             importpath.name = QML2_IMPORT_PATH
         }
-        qtPrepareTool(QMLPLUGINDUMP, $$qmlplugindump)
         importpath.value =
         for(qmod, QTREPOS) {
             qml1_target: \
@@ -98,7 +99,9 @@ load(qt_common)
             exists($$qmod): importpath.value += $$shell_path($$qmod)
         }
         importpath.value = $$unique(importpath.value)
-        qtAddToolEnv(QMLPLUGINDUMP, importpath)
+        QT_TOOL_ENV = importpath
+        qtPrepareTool(QMLPLUGINDUMP, $$qmlplugindump)
+        QT_TOOL_ENV =
         TARGETPATHBASE = $$replace(TARGETPATH, \\.\\d+\$, )
         qmltypes.target = qmltypes
         qmltypes.commands = $$QMLPLUGINDUMP -nonrelocatable $$replace(TARGETPATHBASE, /, .) $$IMPORT_VERSION > $$QMLTYPEFILE

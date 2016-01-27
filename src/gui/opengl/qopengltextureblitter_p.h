@@ -68,7 +68,9 @@ public:
     bool isCreated() const;
     void destroy();
 
-    void bind();
+    bool supportsExternalOESTarget() const;
+
+    void bind(GLenum target = GL_TEXTURE_2D);
     void release();
 
     void setSwizzleRB(bool swizzle);

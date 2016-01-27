@@ -146,19 +146,25 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
 
     QMacAutoReleasePool pool; // For the SG Canvas render thread
 
+    // create native context for the requested pixel format and share
     NSOpenGLPixelFormat *pixelFormat = static_cast <NSOpenGLPixelFormat *>(qcgl_createNSOpenGLPixelFormat(m_format));
     m_shareContext = share ? static_cast<QCocoaGLContext *>(share)->nsOpenGLContext() : nil;
+    m_context = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:m_shareContext];
 
-    m_context = [NSOpenGLContext alloc];
-    [m_context initWithFormat:pixelFormat shareContext:m_shareContext];
-
+    // retry without sharing on context creation failure.
     if (!m_context && m_shareContext) {
-        // try without shared context
         m_shareContext = nil;
-        [m_context initWithFormat:pixelFormat shareContext:nil];
+        m_context = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:nil];
+        if (m_context)
+            qWarning("QCocoaGLContext: Falling back to unshared context.");
     }
 
+    // give up if we still did not get a native context
     [pixelFormat release];
+    if (!m_context) {
+        qWarning("QCocoaGLContext: Failed to create context.");
+        return;
+    }
 
     const GLint interval = format.swapInterval() >= 0 ? format.swapInterval() : 1;
     [m_context setValues:&interval forParameter:NSOpenGLCPSwapInterval];

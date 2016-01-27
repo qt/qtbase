@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -78,6 +79,7 @@ public:
     QDBusAbstractInterfacePrivate(const QString &serv, const QString &p,
                                   const QString &iface, const QDBusConnection& con, bool dynamic);
     virtual ~QDBusAbstractInterfacePrivate() { }
+    void initOwnerTracking();
     bool canMakeCalls() const;
 
     // these functions do not check if the property is valid
@@ -89,6 +91,8 @@ public:
     { return QDBusConnectionPrivate::d(connection); }
 
     void _q_serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
+
+    static void finishDisconnectNotify(QDBusAbstractInterface *iface, int signalId);
 };
 
 QT_END_NAMESPACE

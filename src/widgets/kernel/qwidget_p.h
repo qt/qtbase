@@ -75,6 +75,7 @@ class QWidgetBackingStore;
 class QGraphicsProxyWidget;
 class QWidgetItemV2;
 class QOpenGLContext;
+class QPlatformTextureList;
 
 class QStyle;
 
@@ -153,6 +154,8 @@ struct QTLWExtra {
     QWidgetBackingStoreTracker backingStoreTracker;
     QBackingStore *backingStore;
     QPainter *sharedPainter;
+    QWidgetWindow *window;
+    QOpenGLContext *shareContext;
 
     // Implicit pointers (shared_null).
     QString caption; // widget caption
@@ -167,6 +170,9 @@ struct QTLWExtra {
     QRect frameStrut;
     QRect normalGeometry; // used by showMin/maximized/FullScreen
     Qt::WindowFlags savedFlags; // Save widget flags while showing fullscreen
+    int initialScreenIndex; // Screen number when passing a QDesktop[Screen]Widget as parent.
+
+    QVector<QPlatformTextureList *> widgetTextures;
 
     // *************************** Cross-platform bit fields ****************************
     uint opacity : 8;
@@ -210,9 +216,6 @@ struct QTLWExtra {
     // starting position as 0,0 instead of the normal starting position.
     bool wasMaximized;
 #endif
-    QWidgetWindow *window;
-    QOpenGLContext *shareContext;
-    int initialScreenIndex; // Screen number when passing a QDesktop[Screen]Widget as parent.
 };
 
 struct QWExtra {
@@ -739,6 +742,9 @@ public:
     uint textureChildSeen : 1;
 #ifndef QT_NO_IM
     uint inheritsInputMethodHints : 1;
+#endif
+#ifndef QT_NO_OPENGL
+    uint renderToTextureReallyDirty : 1;
 #endif
 
     // *************************** Platform specific ************************************

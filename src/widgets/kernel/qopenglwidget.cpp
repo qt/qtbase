@@ -425,7 +425,12 @@ QT_BEGIN_NAMESPACE
 
   Note that this does not apply when there are no other widgets underneath and
   the intention is to have a semi-transparent window. In that case the
-  traditional approach of setting Qt::WA_TranslucentBackground is sufficient.
+  traditional approach of setting Qt::WA_TranslucentBackground
+  on the top-level window is sufficient. Note that if the transparent areas are
+  only desired in the QOpenGLWidget, then Qt::WA_NoSystemBackground will need
+  to be turned back to \c false after enabling Qt::WA_TranslucentBackground.
+  Additionally, requesting an alpha channel for the QOpenGLWidget's context via
+  setFormat() may be necessary too, depending on the system.
 
   QOpenGLWidget supports multiple update behaviors, just like QOpenGLWindow. In
   preserved mode the rendered content from the previous paintGL() call is
@@ -553,7 +558,9 @@ public:
           hasBeenComposed(false),
           flushPending(false),
           paintDevice(0),
-          updateBehavior(QOpenGLWidget::NoPartialUpdate)
+          updateBehavior(QOpenGLWidget::NoPartialUpdate),
+          requestedSamples(0),
+          inPaintGL(false)
     {
         requestedFormat = QSurfaceFormat::defaultFormat();
     }
@@ -595,6 +602,8 @@ public:
     QOpenGLPaintDevice *paintDevice;
     QSurfaceFormat requestedFormat;
     QOpenGLWidget::UpdateBehavior updateBehavior;
+    int requestedSamples;
+    bool inPaintGL;
 };
 
 void QOpenGLWidgetPaintDevicePrivate::beginPaint()
@@ -605,7 +614,7 @@ void QOpenGLWidgetPaintDevicePrivate::beginPaint()
     // with the palette's background color.
     if (w->autoFillBackground()) {
         QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
-        if (w->testAttribute(Qt::WA_TranslucentBackground)) {
+        if (w->format().hasAlpha()) {
             f->glClearColor(0, 0, 0, 0);
         } else {
             QColor c = w->palette().brush(w->backgroundRole()).color();
@@ -636,12 +645,6 @@ void QOpenGLWidgetPaintDevice::ensureActiveTarget()
 
 GLuint QOpenGLWidgetPrivate::textureId() const
 {
-    Q_Q(const QOpenGLWidget);
-    if (!q->isWindow() && q->internalWinId()) {
-        qWarning() << "QOpenGLWidget cannot be used as a native child widget."
-                   << "Consider setting Qt::WA_DontCreateNativeAncestors and Qt::AA_DontCreateNativeWidgetSiblings.";
-        return 0;
-    }
     return resolvedFbo ? resolvedFbo->texture() : (fbo ? fbo->texture() : 0);
 }
 
@@ -686,7 +689,7 @@ void QOpenGLWidgetPrivate::recreateFbo()
     delete resolvedFbo;
     resolvedFbo = 0;
 
-    int samples = context->format().samples();
+    int samples = requestedSamples;
     QOpenGLExtensions *extfuncs = static_cast<QOpenGLExtensions *>(context->functions());
     if (!extfuncs->hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample))
         samples = 0;
@@ -741,6 +744,13 @@ void QOpenGLWidgetPrivate::initialize()
         qWarning("QOpenGLWidget: Cannot be used without a context shared with the toplevel.");
         return;
     }
+
+    // Do not include the sample count. Requesting a multisampled context is not necessary
+    // since we render into an FBO, never to an actual surface. What's more, attempting to
+    // create a pbuffer with a multisampled config crashes certain implementations. Just
+    // avoid the entire hassle, the result is the same.
+    requestedSamples = requestedFormat.samples();
+    requestedFormat.setSamples(0);
 
     QScopedPointer<QOpenGLContext> ctx(new QOpenGLContext);
     ctx->setShareContext(shareContext);
@@ -809,7 +819,9 @@ void QOpenGLWidgetPrivate::invokeUserPaint()
     QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = fbo->handle();
 
     f->glViewport(0, 0, q->width() * q->devicePixelRatioF(), q->height() * q->devicePixelRatioF());
+    inPaintGL = true;
     q->paintGL();
+    inPaintGL = false;
     flushPending = true;
 
     QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = 0;
@@ -856,11 +868,24 @@ QImage QOpenGLWidgetPrivate::grabFramebuffer()
     if (!initialized)
         return QImage();
 
-    render();
-    resolveSamples();
-    q->makeCurrent();
+    if (!inPaintGL)
+        render();
+
+    if (resolvedFbo) {
+        resolveSamples();
+        resolvedFbo->bind();
+    } else {
+        q->makeCurrent();
+    }
+
     QImage res = qt_gl_read_framebuffer(q->size() * q->devicePixelRatioF(), false, false);
     res.setDevicePixelRatio(q->devicePixelRatioF());
+
+    // While we give no guarantees of what is going to be left bound, prefer the
+    // multisample fbo instead of the resolved one. Clients may continue to
+    // render straight after calling this function.
+    if (resolvedFbo)
+        q->makeCurrent();
 
     return res;
 }
@@ -946,13 +971,12 @@ QOpenGLWidget::UpdateBehavior QOpenGLWidget::updateBehavior() const
   OpenGL widgets, individual calls to this function can be replaced by one single call to
   QSurfaceFormat::setDefaultFormat() before creating the first widget.
 
-  \note Requesting an alpha buffer via this function, or by setting
-  Qt::WA_TranslucentBackground, will not lead to the desired results when the intention is
-  to make other widgets beneath visible. Instead, use Qt::WA_AlwaysStackOnTop to enable
-  semi-transparent QOpenGLWidget instances with other widgets visible underneath. Keep in
-  mind however that this breaks the stacking order, so it will no longer be possible to
-  have other widgets on top of the QOpenGLWidget. When the intention is to have a
-  semi-transparent top-level window, Qt::WA_TranslucentBackground is sufficient.
+  \note Requesting an alpha buffer via this function will not lead to the
+  desired results when the intention is to make other widgets beneath visible.
+  Instead, use Qt::WA_AlwaysStackOnTop to enable semi-transparent QOpenGLWidget
+  instances with other widgets visible underneath. Keep in mind however that
+  this breaks the stacking order, so it will no longer be possible to have
+  other widgets on top of the QOpenGLWidget.
 
   \sa format(), Qt::WA_AlwaysStackOnTop, QSurfaceFormat::setDefaultFormat()
  */
@@ -1148,8 +1172,7 @@ void QOpenGLWidget::resizeEvent(QResizeEvent *e)
 
     d->recreateFbo();
     resizeGL(width(), height());
-    d->invokeUserPaint();
-    d->resolveSamples();
+    d->sendPaintEvent(QRect(QPoint(0, 0), size()));
 }
 
 /*!

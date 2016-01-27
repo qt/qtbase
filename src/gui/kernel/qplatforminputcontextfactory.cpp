@@ -56,48 +56,34 @@ QStringList QPlatformInputContextFactory::keys()
 #endif
 }
 
+QString QPlatformInputContextFactory::requested()
+{
+    QByteArray env = qgetenv("QT_IM_MODULE");
+    return env.isNull() ? QString() : QString::fromLocal8Bit(env);
+}
+
 QPlatformInputContext *QPlatformInputContextFactory::create(const QString& key)
 {
-    QStringList paramList = key.split(QLatin1Char(':'));
-    const QString platform = paramList.takeFirst().toLower();
-
 #if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
-    if (QPlatformInputContext *ret = qLoadPlugin1<QPlatformInputContext, QPlatformInputContextPlugin>(loader(), platform, paramList))
-        return ret;
+    if (!key.isEmpty()) {
+        QStringList paramList = key.split(QLatin1Char(':'));
+        const QString platform = paramList.takeFirst().toLower();
+
+        QPlatformInputContext *ic = qLoadPlugin1<QPlatformInputContext, QPlatformInputContextPlugin>
+                                                 (loader(), platform, paramList);
+        if (ic && ic->isValid())
+            return ic;
+
+        delete ic;
+    }
 #endif
     return 0;
 }
 
 QPlatformInputContext *QPlatformInputContextFactory::create()
 {
-    QPlatformInputContext *ic = 0;
-
-    QString icString = QString::fromLatin1(qgetenv("QT_IM_MODULE"));
-
-    if (icString == QLatin1String("none"))
-        return 0;
-
-    ic = create(icString);
-    if (ic && ic->isValid())
-        return ic;
-
-    delete ic;
-    ic = 0;
-
-    QStringList k = keys();
-    for (int i = 0; i < k.size(); ++i) {
-        if (k.at(i) == icString)
-            continue;
-        ic = create(k.at(i));
-        if (ic && ic->isValid())
-            return ic;
-        delete ic;
-        ic = 0;
-    }
-
-    return 0;
+    return create(requested());
 }
-
 
 QT_END_NAMESPACE
 

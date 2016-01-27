@@ -19,9 +19,9 @@ exampledirs += ../../../examples/opengl \
 imagedirs   += images \
                ../../../examples/opengl/doc/images
 
-depends += qtdoc qtcore qtgui qtwidgets
+depends += qtdoc qtcore qtgui qtwidgets qmake
 
-examplesinstallpath     = opengl
+examplesinstallpath     = qtbase/opengl
 
 # The following parameters are for creating a qhp file, the qhelpgenerator
 # program can convert the qhp file into a qch file which can be opened in

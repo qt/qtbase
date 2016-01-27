@@ -35,7 +35,6 @@ force_debug_info|debug: \
 force_debug_info {
     QMAKE_CFLAGS_RELEASE = $$QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
     QMAKE_CXXFLAGS_RELEASE = $$QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO
-    QMAKE_OBJECTIVE_CFLAGS_RELEASE = $$QMAKE_OBJECTIVE_CFLAGS_RELEASE_WITH_DEBUGINFO
     QMAKE_LFLAGS_RELEASE = $$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
 }
 
@@ -51,13 +50,11 @@ optimize_full {
 debug {
     QMAKE_CFLAGS += $$QMAKE_CFLAGS_DEBUG
     QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS_DEBUG
-    QMAKE_OBJECTIVE_CFLAGS += $$QMAKE_OBJECTIVE_CFLAGS_DEBUG
     QMAKE_LFLAGS += $$QMAKE_LFLAGS_DEBUG
     QMAKE_LIBFLAGS += $$QMAKE_LIBFLAGS_DEBUG
 } else {
     QMAKE_CFLAGS += $$QMAKE_CFLAGS_RELEASE
     QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS_RELEASE
-    QMAKE_OBJECTIVE_CFLAGS += $$QMAKE_OBJECTIVE_CFLAGS_RELEASE
     QMAKE_LFLAGS += $$QMAKE_LFLAGS_RELEASE
     QMAKE_LIBFLAGS += $$QMAKE_LIBFLAGS_RELEASE
 }
@@ -96,6 +93,20 @@ breakpad {
     !isEmpty(QMAKE_POST_LINK):QMAKE_POST_LINK = $$QMAKE_POST_LINK$$escape_expand(\\n\\t)
     QMAKE_POST_LINK = $$QMAKE_POST_LINK$$quote($${QT_BREAKPAD_ROOT_PATH}$${QMAKE_DIR_SEP}qtbreakpadsymbols $$DEBUGFILENAME $$PROJECTPATH)
     !isEmpty(QMAKE_STRIP):QMAKE_POST_LINK = $$QMAKE_POST_LINK$$escape_expand(\\n\\t)$$quote($$QMAKE_STRIP $$DEBUGFILENAME)
+}
+
+c++11|c++14|c++1z {
+    c++1z:       cxxstd = CXX1Z
+    else: c++14: cxxstd = CXX14
+    else:        cxxstd = CXX11
+
+    # Check if we should disable the GNU extensions or not
+    !strict_c++:!isEmpty(QMAKE_CXXFLAGS_GNU$$cxxstd): cxxstd = GNU$$cxxstd
+
+    QMAKE_CXXFLAGS += $$eval(QMAKE_CXXFLAGS_$$cxxstd)
+    QMAKE_LFLAGS += $$eval(QMAKE_LFLAGS_$$cxxstd)
+
+    unset(cxxstd)
 }
 
 !precompile_header: SOURCES += $$NO_PCH_SOURCES

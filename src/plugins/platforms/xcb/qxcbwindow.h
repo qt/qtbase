@@ -81,7 +81,7 @@ public:
     void setParent(const QPlatformWindow *window) Q_DECL_OVERRIDE;
 
     bool isExposed() const Q_DECL_OVERRIDE;
-    bool isEmbedded(const QPlatformWindow *parentWindow) const Q_DECL_OVERRIDE;
+    bool isEmbedded(const QPlatformWindow *parentWindow = 0) const Q_DECL_OVERRIDE;
     QPoint mapToGlobal(const QPoint &pos) const Q_DECL_OVERRIDE;
     QPoint mapFromGlobal(const QPoint &pos) const Q_DECL_OVERRIDE;
 
@@ -167,7 +167,6 @@ public:
 
     virtual void create();
     virtual void destroy();
-    void maybeSetScreen(QXcbScreen *screen);
     QXcbScreen *screenForNativeGeometry(const QRect &newGeometry) const;
 
 public Q_SLOTS:
@@ -176,7 +175,6 @@ public Q_SLOTS:
 protected:
     virtual void resolveFormat() { m_format = window()->requestedFormat(); }
     virtual void *createVisual() { return Q_NULLPTR; }
-    virtual bool supportsSyncProtocol() { return !window()->supportsOpenGL(); }
 
     QXcbScreen *parentScreen();
 
@@ -215,8 +213,6 @@ protected:
 
     xcb_window_t m_window;
 
-    QXcbScreen *m_xcbScreen;
-
     uint m_depth;
     QImage::Format m_imageFormat;
     bool m_imageRgbSwap;
@@ -232,8 +228,6 @@ protected:
     bool m_transparent;
     bool m_usingSyncProtocol;
     bool m_deferredActivation;
-    bool m_deferredExpose;
-    bool m_configureNotifyPending;
     bool m_embedded;
     bool m_alertState;
     xcb_window_t m_netWmUserTimeWindow;

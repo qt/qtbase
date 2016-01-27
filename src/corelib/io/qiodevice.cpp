@@ -83,6 +83,7 @@ void debugBinaryString(const char *data, qint64 maxlen)
 
 static void checkWarnMessage(const QIODevice *device, const char *function, const char *what)
 {
+#ifndef QT_NO_WARNING_OUTPUT
     QDebug d = qWarning();
     d.noquote();
     d.nospace();
@@ -98,6 +99,11 @@ static void checkWarnMessage(const QIODevice *device, const char *function, cons
     Q_UNUSED(device)
 #endif // !QT_NO_QOBJECT
     d << ": " << what;
+#else
+    Q_UNUSED(device);
+    Q_UNUSED(function);
+    Q_UNUSED(what);
+#endif // QT_NO_WARNING_OUTPUT
 }
 
 #define CHECK_MAXLEN(function, returnType) \
@@ -967,7 +973,7 @@ QByteArray QIODevice::read(qint64 maxSize)
 /*!
     \overload
 
-    Reads all available data from the device, and returns it as a
+    Reads all remaining data from the device, and returns it as a
     byte array.
 
     This function has no way of reporting errors; returning an empty
@@ -1283,6 +1289,7 @@ qint64 QIODevice::write(const char *data, qint64 maxSize)
         const char *startOfBlock = data;
 
         qint64 writtenSoFar = 0;
+        const qint64 savedPos = d->pos;
 
         forever {
             const char *endOfBlock = startOfBlock;
@@ -1294,7 +1301,7 @@ qint64 QIODevice::write(const char *data, qint64 maxSize)
                 qint64 ret = writeData(startOfBlock, blockSize);
                 if (ret <= 0) {
                     if (writtenSoFar && !sequential)
-                        d->buffer.skip(writtenSoFar);
+                        d->buffer.skip(d->pos - savedPos);
                     return writtenSoFar ? writtenSoFar : ret;
                 }
                 if (!sequential) {
@@ -1310,7 +1317,7 @@ qint64 QIODevice::write(const char *data, qint64 maxSize)
             qint64 ret = writeData("\r\n", 2);
             if (ret <= 0) {
                 if (writtenSoFar && !sequential)
-                    d->buffer.skip(writtenSoFar);
+                    d->buffer.skip(d->pos - savedPos);
                 return writtenSoFar ? writtenSoFar : ret;
             }
             if (!sequential) {
@@ -1323,7 +1330,7 @@ qint64 QIODevice::write(const char *data, qint64 maxSize)
         }
 
         if (writtenSoFar && !sequential)
-            d->buffer.skip(writtenSoFar);
+            d->buffer.skip(d->pos - savedPos);
         return writtenSoFar;
     }
 #endif

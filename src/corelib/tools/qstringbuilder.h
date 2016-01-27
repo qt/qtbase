@@ -421,7 +421,7 @@ QString &operator+=(QString &a, const QStringBuilder<A, B> &b)
     a.reserve(len);
     QChar *it = a.data() + a.size();
     QConcatenable< QStringBuilder<A, B> >::appendTo(b, it);
-    a.resize(it - a.constData()); //may be smaller than len if there was conversion from utf8
+    a.resize(int(it - a.constData())); //may be smaller than len if there was conversion from utf8
     return a;
 }
 

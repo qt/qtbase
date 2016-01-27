@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
     memory.
 
     The \e{Qt Quarterly} article
-    \l{http://doc.qt.digia.com/qq/qq12-qpixmapcache.html}{Optimizing
+    \l{http://doc.qt.io/archives/qq/qq12-qpixmapcache.html}{Optimizing
     with QPixmapCache} explains how to use QPixmapCache to speed up
     applications by caching the results of painting.
 
@@ -642,7 +642,8 @@ void QPixmapCache::remove(const Key &key)
 void QPixmapCache::clear()
 {
     QT_TRY {
-        pm_cache()->clear();
+        if (pm_cache.exists())
+            pm_cache->clear();
     } QT_CATCH(const std::bad_alloc &) {
         // if we ran out of memory during pm_cache(), it's no leak,
         // so just ignore it.
@@ -659,4 +660,18 @@ int QPixmapCache::totalUsed()
     return (pm_cache()->totalCost()+1023) / 1024;
 }
 
+/*!
+   \fn QPixmapCache::KeyData::KeyData()
+
+   \internal
+*/
+/*!
+   \fn QPixmapCache::KeyData::KeyData(const KeyData &other)
+   \internal
+*/
+/*!
+   \fn QPixmapCache::KeyData::~KeyData()
+
+   \internal
+*/
 QT_END_NAMESPACE

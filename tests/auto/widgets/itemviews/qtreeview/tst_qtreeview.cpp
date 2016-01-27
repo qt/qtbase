@@ -253,7 +253,6 @@ private slots:
     void taskQTBUG_25333_adjustViewOptionsForIndex();
     void taskQTBUG_18539_emitLayoutChanged();
     void taskQTBUG_8176_emitOnExpandAll();
-    void taskQTBUG_34717_collapseAtBottom();
     void taskQTBUG_37813_crash();
     void taskQTBUG_45697_crash();
     void testInitialFocus();
@@ -2365,7 +2364,7 @@ void tst_QTreeView::selectionOrderTest()
 
 void tst_QTreeView::selection()
 {
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This causes a crash triggered by setVisible(false)");
 
     QTreeView treeView;
@@ -3076,7 +3075,7 @@ void tst_QTreeView::styleOptionViewItem()
 {
     class MyDelegate : public QStyledItemDelegate
     {
-        static QString posToString(QStyleOptionViewItemV4::ViewItemPosition pos) {
+        static QString posToString(QStyleOptionViewItem::ViewItemPosition pos) {
             static const char* s_pos[] = { "Invalid", "Beginning", "Middle", "End", "OnlyOne" };
             return s_pos[pos];
         }
@@ -3089,8 +3088,7 @@ void tst_QTreeView::styleOptionViewItem()
 
             void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index ) const
             {
-                QVERIFY(qstyleoption_cast<const QStyleOptionViewItemV4 *>(&option));
-                QStyleOptionViewItemV4 opt(option);
+                QStyleOptionViewItem opt(option);
                 initStyleOption(&opt, index);
 
                 QVERIFY(!opt.text.isEmpty());
@@ -3098,20 +3096,20 @@ void tst_QTreeView::styleOptionViewItem()
                 //qDebug() << index << opt.text;
 
                 if (allCollapsed)
-                    QCOMPARE(!(opt.features & QStyleOptionViewItemV2::Alternate), !(index.row() % 2));
-                QCOMPARE(!(opt.features & QStyleOptionViewItemV2::HasCheckIndicator), !opt.text.contains("Checkable"));
+                    QCOMPARE(!(opt.features & QStyleOptionViewItem::Alternate), !(index.row() % 2));
+                QCOMPARE(!(opt.features & QStyleOptionViewItem::HasCheckIndicator), !opt.text.contains("Checkable"));
 
                 if (opt.text.contains("Beginning"))
-                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItemV4::Beginning));
+                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItem::Beginning));
 
                 if (opt.text.contains("Middle"))
-                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItemV4::Middle));
+                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItem::Middle));
 
                 if (opt.text.contains("End"))
-                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItemV4::End));
+                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItem::End));
 
                 if (opt.text.contains("OnlyOne"))
-                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItemV4::OnlyOne));
+                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItem::OnlyOne));
 
                 if (opt.text.contains("Checked"))
                     QCOMPARE(opt.checkState, Qt::Checked);
@@ -4193,7 +4191,7 @@ void tst_QTreeView::taskQTBUG_25333_adjustViewOptionsForIndex()
 
 #ifdef QT_BUILD_INTERNAL
     {
-        QStyleOptionViewItemV4 option;
+        QStyleOptionViewItem option;
 
         view.aiv_priv()->adjustViewOptionsForIndex(&option, model.indexFromItem(item1));
 
@@ -4281,35 +4279,6 @@ void tst_QTreeView::taskQTBUG_8176_emitOnExpandAll()
 
     QCOMPARE(spy.size(), 2); // item and item5 are expanded
     QCOMPARE(spy2.size(), 1); // item2 is collapsed
-}
-
-// From QTBUG_34717 (QTreeWidget crashes when scrolling to the end
-// of an expanded tree, then collapse all)
-// The test passes simply if it doesn't crash.
-void tst_QTreeView::taskQTBUG_34717_collapseAtBottom()
-{
-    QTreeWidget treeWidget;
-    treeWidget.header()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    treeWidget.setColumnCount(2);
-    QTreeWidgetItem *mainItem = new QTreeWidgetItem(&treeWidget, QStringList() << "Root");
-    for (int i = 0; i < 200; ++i) {
-        QTreeWidgetItem *item = new QTreeWidgetItem(mainItem, QStringList(QString("Item")));
-        new QTreeWidgetItem(item, QStringList() << "Child" << "1");
-        new QTreeWidgetItem(item, QStringList() << "Child" << "2");
-        new QTreeWidgetItem(item, QStringList() << "Child" << "3");
-    }
-    treeWidget.show();
-    treeWidget.expandAll();
-    treeWidget.scrollToBottom();
-    treeWidget.collapseAll();
-
-    treeWidget.setAnimated(true);
-    treeWidget.expandAll();
-    treeWidget.scrollToBottom();
-    mainItem->setExpanded(false);
-
-    PublicView *pview = (PublicView*) &treeWidget;
-    QVERIFY(pview->sizeHintForColumn(1) >= 0);
 }
 
 void tst_QTreeView::testInitialFocus()

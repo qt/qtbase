@@ -286,7 +286,7 @@ void tst_QWindow::positioning()
         QSKIP("This platform does not support non-fullscreen windows");
     }
 
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
     // Some platforms enforce minimum widths for windows, which can cause extra resize
@@ -476,7 +476,7 @@ void tst_QWindow::isExposed()
 
     window.hide();
 
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This is flaky. Figure out why.");
 
     QCoreApplication::processEvents();
@@ -487,7 +487,7 @@ void tst_QWindow::isExposed()
 
 void tst_QWindow::isActive()
 {
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
     Window window;
@@ -1134,7 +1134,7 @@ void tst_QWindow::close()
 
 void tst_QWindow::activateAndClose()
 {
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
     for (int i = 0; i < 10; ++i)  {
@@ -1388,7 +1388,7 @@ void tst_QWindow::tabletEvents()
 
 void tst_QWindow::windowModality_QTBUG27039()
 {
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
     QWindow parent;
@@ -1483,7 +1483,7 @@ void tst_QWindow::mask()
 
 void tst_QWindow::initialSize()
 {
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
     QSize defaultSize(0,0);
@@ -1524,7 +1524,7 @@ void tst_QWindow::initialSize()
 
 void tst_QWindow::modalDialog()
 {
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
     QWindow normalWindow;
@@ -1550,7 +1550,7 @@ void tst_QWindow::modalDialog()
 
 void tst_QWindow::modalDialogClosingOneOfTwoModal()
 {
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
     QWindow normalWindow;
@@ -1588,7 +1588,7 @@ void tst_QWindow::modalDialogClosingOneOfTwoModal()
 
 void tst_QWindow::modalWithChildWindow()
 {
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
     QWindow normalWindow;
@@ -1622,7 +1622,7 @@ void tst_QWindow::modalWithChildWindow()
 
 void tst_QWindow::modalWindowModallity()
 {
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
     QWindow normal_window;

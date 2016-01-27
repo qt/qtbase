@@ -1958,24 +1958,24 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
         }
 #endif // QT_NO_TOOLBAR
 #ifndef QT_NO_TOOLBOX
-        else if (const QStyleOptionToolBoxV2 *tab = qstyleoption_cast<const QStyleOptionToolBoxV2 *>(opt)) {
-            if (tab->position == QStyleOptionToolBoxV2::OnlyOneTab)
+        else if (const QStyleOptionToolBox *tb = qstyleoption_cast<const QStyleOptionToolBox *>(opt)) {
+            if (tb->position == QStyleOptionToolBox::OnlyOneTab)
                 extraClass |= PseudoClass_OnlyOne;
-            else if (tab->position == QStyleOptionToolBoxV2::Beginning)
+            else if (tb->position == QStyleOptionToolBox::Beginning)
                 extraClass |= PseudoClass_First;
-            else if (tab->position == QStyleOptionToolBoxV2::End)
+            else if (tb->position == QStyleOptionToolBox::End)
                 extraClass |= PseudoClass_Last;
-            else if (tab->position == QStyleOptionToolBoxV2::Middle)
+            else if (tb->position == QStyleOptionToolBox::Middle)
                 extraClass |= PseudoClass_Middle;
 
-            if (tab->selectedPosition == QStyleOptionToolBoxV2::NextIsSelected)
+            if (tb->selectedPosition == QStyleOptionToolBox::NextIsSelected)
                 extraClass |= PseudoClass_NextSelected;
-            else if (tab->selectedPosition == QStyleOptionToolBoxV2::PreviousIsSelected)
+            else if (tb->selectedPosition == QStyleOptionToolBox::PreviousIsSelected)
                 extraClass |= PseudoClass_PreviousSelected;
         }
 #endif // QT_NO_TOOLBOX
 #ifndef QT_NO_DOCKWIDGET
-        else if (const QStyleOptionDockWidgetV2 *dw = qstyleoption_cast<const QStyleOptionDockWidgetV2 *>(opt)) {
+        else if (const QStyleOptionDockWidget *dw = qstyleoption_cast<const QStyleOptionDockWidget *>(opt)) {
             if (dw->verticalTitleBar)
                 extraClass |= PseudoClass_Vertical;
             else
@@ -3807,7 +3807,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
     case CE_ProgressBarContents: {
         QRenderRule subRule = renderRule(w, opt, PseudoElement_ProgressBarChunk);
         if (subRule.hasDrawable()) {
-            if (const QStyleOptionProgressBarV2 *pb = qstyleoption_cast<const QStyleOptionProgressBarV2 *>(opt)) {
+            if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
                 p->save();
                 p->setClipRect(pb->rect);
 
@@ -3888,12 +3888,12 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
         break;
 
     case CE_ProgressBarLabel:
-        if (const QStyleOptionProgressBarV2 *pb = qstyleoption_cast<const QStyleOptionProgressBarV2 *>(opt)) {
+        if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
             if (rule.hasBox() || rule.hasBorder() || hasStyleRule(w, PseudoElement_ProgressBarChunk)) {
                 drawItemText(p, pb->rect, pb->textAlignment | Qt::TextSingleLine, pb->palette,
                              pb->state & State_Enabled, pb->text, QPalette::Text);
             } else {
-                QStyleOptionProgressBarV2 pbCopy(*pb);
+                QStyleOptionProgressBar pbCopy(*pb);
                 rule.configurePalette(&pbCopy.palette, QPalette::HighlightedText, QPalette::Highlight);
                 baseStyle()->drawControl(ce, &pbCopy, p, w);
             }
@@ -4016,13 +4016,13 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
     case CE_TabBarTabLabel:
     case CE_TabBarTabShape:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
-            QStyleOptionTabV3 tabCopy(*tab);
             QRenderRule subRule = renderRule(w, opt, PseudoElement_TabBarTab);
             QRect r = positionRect(w, subRule, PseudoElement_TabBarTab, opt->rect, opt->direction);
             if (ce == CE_TabBarTabShape && subRule.hasDrawable()) {
                 subRule.drawRule(p, r);
                 return;
             }
+            QStyleOptionTab tabCopy(*tab);
             subRule.configurePalette(&tabCopy.palette, QPalette::WindowText, QPalette::Window);
             QFont oldFont = p->font();
             if (subRule.hasFont)
@@ -4050,14 +4050,14 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
        break;
 
     case CE_DockWidgetTitle:
-       if (const QStyleOptionDockWidgetV2 *dwOpt = qstyleoption_cast<const QStyleOptionDockWidgetV2 *>(opt)) {
+       if (const QStyleOptionDockWidget *dwOpt = qstyleoption_cast<const QStyleOptionDockWidget *>(opt)) {
            QRenderRule subRule = renderRule(w, opt, PseudoElement_DockWidgetTitle);
            if (!subRule.hasDrawable() && !subRule.hasPosition())
                break;
            if (subRule.hasDrawable()) {
                subRule.drawRule(p, opt->rect);
            } else {
-               QStyleOptionDockWidgetV2 dwCopy(*dwOpt);
+               QStyleOptionDockWidget dwCopy(*dwOpt);
                dwCopy.title = QString();
                baseStyle()->drawControl(ce, &dwCopy, p, w);
            }
@@ -4156,7 +4156,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
     switch (pe) {
 
     case PE_FrameStatusBar: {
-        QRenderRule subRule = renderRule(w->parentWidget(), opt, PseudoElement_Item);
+        QRenderRule subRule = renderRule(w ? w->parentWidget() : Q_NULLPTR, opt, PseudoElement_Item);
         if (subRule.hasDrawable()) {
             subRule.drawRule(p, opt->rect);
             return;
@@ -4393,7 +4393,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
             QRenderRule subRule = renderRule(w, opt, PseudoElement_TabWidgetPane);
             if (subRule.hasNativeBorder()) {
                 subRule.drawBackground(p, opt->rect);
-                QStyleOptionTabWidgetFrameV2 frmCopy(*frm);
+                QStyleOptionTabWidgetFrame frmCopy(*frm);
                 subRule.configurePalette(&frmCopy.palette, QPalette::WindowText, QPalette::Window);
                 baseStyle()->drawPrimitive(pe, &frmCopy, p, w);
             } else {
@@ -5709,7 +5709,7 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
     case SE_ProgressBarGroove:
     case SE_ProgressBarContents:
     case SE_ProgressBarLabel:
-        if (const QStyleOptionProgressBarV2 *pb = qstyleoption_cast<const QStyleOptionProgressBarV2 *>(opt)) {
+        if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
             if (rule.hasBox() || !rule.hasNativeBorder() || rule.hasPosition() || hasStyleRule(w, PseudoElement_ProgressBarChunk)) {
                 if (se == SE_ProgressBarGroove)
                     return rule.borderRect(pb->rect);

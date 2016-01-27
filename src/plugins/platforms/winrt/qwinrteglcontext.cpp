@@ -35,38 +35,151 @@
 ****************************************************************************/
 
 #include "qwinrteglcontext.h"
+#include "qwinrtwindow.h"
+#include <private/qeventdispatcher_winrt_p.h>
 
+#include <functional>
+
+#include <d3d11.h>
+
+#include <EGL/egl.h>
 #define EGL_EGLEXT_PROTOTYPES
-#include "EGL/eglext.h"
+#include <EGL/eglext.h>
+
+#include <QOpenGLContext>
+#include <QtPlatformSupport/private/qeglconvenience_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QWinRTEGLContext::QWinRTEGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display, EGLSurface surface, EGLConfig config)
-    : QEGLPlatformContext(format, share, display, &config), m_eglSurface(surface)
+struct WinRTEGLDisplay
 {
-}
-
-void QWinRTEGLContext::swapBuffers(QPlatformSurface *surface)
-{
-#ifdef Q_OS_WINPHONE
-    const QSize size = surface->surface()->size();
-    eglPostSubBufferNV(eglDisplay(), eglSurfaceForPlatformSurface(surface),
-                       0, 0, size.width(), size.height());
-#else
-    eglSwapBuffers(eglDisplay(), eglSurfaceForPlatformSurface(surface));
-#endif
-}
-
-EGLSurface QWinRTEGLContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)
-{
-    if (surface->surface()->surfaceClass() == QSurface::Window) {
-        // All windows use the same surface
-        return m_eglSurface;
-    } else {
-        // TODO: return EGL surfaces for offscreen surfaces
-        qWarning("This plugin does not support offscreen surfaces.");
-        return EGL_NO_SURFACE;
+    WinRTEGLDisplay() {
+        eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+        if (eglDisplay == EGL_NO_DISPLAY)
+            qCritical("Failed to initialize EGL display: 0x%x", eglGetError());
     }
+    ~WinRTEGLDisplay() {
+        eglTerminate(eglDisplay);
+    }
+
+    EGLDisplay eglDisplay;
+};
+
+Q_GLOBAL_STATIC(WinRTEGLDisplay, g)
+
+class QWinRTEGLContextPrivate
+{
+public:
+    QWinRTEGLContextPrivate() : eglContext(EGL_NO_CONTEXT), eglShareContext(EGL_NO_CONTEXT) { }
+    QSurfaceFormat format;
+    EGLConfig eglConfig;
+    EGLContext eglContext;
+    EGLContext eglShareContext;
+};
+
+QWinRTEGLContext::QWinRTEGLContext(QOpenGLContext *context)
+    : d_ptr(new QWinRTEGLContextPrivate)
+{
+    Q_D(QWinRTEGLContext);
+    d->format = context->format();
+    d->format.setRenderableType(QSurfaceFormat::OpenGLES);
+    if (QPlatformOpenGLContext *shareHandle = context->shareHandle())
+        d->eglShareContext = static_cast<QWinRTEGLContext *>(shareHandle)->d_ptr->eglContext;
+}
+
+QWinRTEGLContext::~QWinRTEGLContext()
+{
+    Q_D(QWinRTEGLContext);
+    if (d->eglContext != EGL_NO_CONTEXT)
+        eglDestroyContext(g->eglDisplay, d->eglContext);
+}
+
+void QWinRTEGLContext::initialize()
+{
+    Q_D(QWinRTEGLContext);
+
+    // Test if the hardware supports at least level 9_3
+    D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_9_3 }; // minimum feature level
+    HRESULT hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, featureLevels, 1,
+                                   D3D11_SDK_VERSION, nullptr, nullptr, nullptr);
+    EGLint deviceType = SUCCEEDED(hr) ? EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE
+                                      : EGL_PLATFORM_ANGLE_DEVICE_TYPE_WARP_ANGLE;
+
+    eglBindAPI(EGL_OPENGL_ES_API);
+
+    const EGLint displayAttributes[] = {
+        EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+        EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE, deviceType,
+        EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE, true,
+        EGL_NONE,
+    };
+    g->eglDisplay = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, displayAttributes);
+    if (g->eglDisplay == EGL_NO_DISPLAY)
+        qCritical("Failed to initialize EGL display: 0x%x", eglGetError());
+
+    if (!eglInitialize(g->eglDisplay, nullptr, nullptr))
+        qCritical("Failed to initialize EGL: 0x%x", eglGetError());
+
+    d->eglConfig = q_configFromGLFormat(g->eglDisplay, d->format);
+
+    const EGLint flags = d->format.testOption(QSurfaceFormat::DebugContext)
+            ? EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR : 0;
+    const EGLint attributes[] = {
+        EGL_CONTEXT_CLIENT_VERSION, d->format.majorVersion(),
+        EGL_CONTEXT_MINOR_VERSION_KHR, d->format.minorVersion(),
+        EGL_CONTEXT_FLAGS_KHR, flags,
+        EGL_NONE
+    };
+    d->eglContext = eglCreateContext(g->eglDisplay, d->eglConfig, d->eglShareContext, attributes);
+    if (d->eglContext == EGL_NO_CONTEXT) {
+        qWarning("QEGLPlatformContext: Failed to create context: %x", eglGetError());
+        return;
+    }
+}
+
+bool QWinRTEGLContext::makeCurrent(QPlatformSurface *windowSurface)
+{
+    Q_D(QWinRTEGLContext);
+    Q_ASSERT(windowSurface->surface()->supportsOpenGL());
+
+    QWinRTWindow *window = static_cast<QWinRTWindow *>(windowSurface);
+    if (window->eglSurface() == EGL_NO_SURFACE)
+        window->createEglSurface(g->eglDisplay, d->eglConfig);
+
+    EGLSurface surface = window->eglSurface();
+    if (surface == EGL_NO_SURFACE)
+        return false;
+
+    const bool ok = eglMakeCurrent(g->eglDisplay, surface, surface, d->eglContext);
+    if (!ok) {
+        qWarning("QEGLPlatformContext: eglMakeCurrent failed: %x", eglGetError());
+        return false;
+    }
+
+    eglSwapInterval(g->eglDisplay, d->format.swapInterval());
+    return true;
+}
+
+void QWinRTEGLContext::doneCurrent()
+{
+    const bool ok = eglMakeCurrent(g->eglDisplay, EGL_NO_SURFACE,
+                                   EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    if (!ok)
+        qWarning("QEGLPlatformContext: eglMakeCurrent failed: %x", eglGetError());
+}
+
+void QWinRTEGLContext::swapBuffers(QPlatformSurface *windowSurface)
+{
+    Q_ASSERT(windowSurface->surface()->supportsOpenGL());
+
+    const QWinRTWindow *window = static_cast<QWinRTWindow *>(windowSurface);
+    eglSwapBuffers(g->eglDisplay, window->eglSurface());
+}
+
+QSurfaceFormat QWinRTEGLContext::format() const
+{
+    Q_D(const QWinRTEGLContext);
+    return d->format;
 }
 
 QFunctionPointer QWinRTEGLContext::getProcAddress(const QByteArray &procName)
@@ -221,7 +334,7 @@ QFunctionPointer QWinRTEGLContext::getProcAddress(const QByteArray &procName)
     if (i != standardFuncs.end())
         return i.value();
 
-    return QEGLPlatformContext::getProcAddress(procName);
+    return eglGetProcAddress(procName.constData());
 }
 
 QT_END_NAMESPACE

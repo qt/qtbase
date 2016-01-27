@@ -55,19 +55,15 @@ class TextEdit : public QMainWindow
 public:
     TextEdit(QWidget *parent = 0);
 
+    bool load(const QString &f);
+
+public slots:
+    void fileNew();
+
 protected:
     virtual void closeEvent(QCloseEvent *e) Q_DECL_OVERRIDE;
 
-private:
-    void setupFileActions();
-    void setupEditActions();
-    void setupTextActions();
-    bool load(const QString &f);
-    bool maybeSave();
-    void setCurrentFileName(const QString &fileName);
-
 private slots:
-    void fileNew();
     void fileOpen();
     bool fileSave();
     bool fileSaveAs();
@@ -92,6 +88,12 @@ private slots:
     void printPreview(QPrinter *);
 
 private:
+    void setupFileActions();
+    void setupEditActions();
+    void setupTextActions();
+    bool maybeSave();
+    void setCurrentFileName(const QString &fileName);
+
     void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
     void fontChanged(const QFont &f);
     void colorChanged(const QColor &c);
@@ -108,9 +110,11 @@ private:
     QAction *actionAlignJustify;
     QAction *actionUndo;
     QAction *actionRedo;
+#ifndef QT_NO_CLIPBOARD
     QAction *actionCut;
     QAction *actionCopy;
     QAction *actionPaste;
+#endif
 
     QComboBox *comboStyle;
     QFontComboBox *comboFont;

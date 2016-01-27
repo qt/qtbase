@@ -39,6 +39,7 @@ Cpp.ignoretokens        += \
                           Q_DECL_UNUSED \
                           Q_DECL_CF_RETURNS_RETAINED \
                           Q_DECL_NS_RETURNS_AUTORELEASED \
+                          Q_DECL_EQ_DEFAULT \
                           Q_DECLARATIVE_EXPORT \
                           Q_EXPLICIT \
                           Q_EXPORT \
@@ -78,6 +79,7 @@ Cpp.ignoretokens        += \
                           Q_REQUIRED_RESULT \
                           Q_SCRIPT_EXPORT \
                           Q_SCRIPTTOOLS_EXPORT \
+                          Q_SERIALBUS_EXPORT \
                           Q_SQL_EXPORT \
                           Q_SVG_EXPORT \
                           Q_TESTLIB_EXPORT \
@@ -157,4 +159,5 @@ Cpp.ignoredirectives    += \
                           QT_WARNING_DISABLE_GCC \
                           QT_WARNING_DISABLE_INTEL \
                           QT_WARNING_DISABLE_MSVC \
-                          Q_ATTRIBUTE_FORMAT_PRINTF
+                          Q_ATTRIBUTE_FORMAT_PRINTF \
+                          Q_MV_IOS

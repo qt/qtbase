@@ -158,7 +158,6 @@ public:
 private:
     QDBusIntrospection();
 };
-Q_DECLARE_TYPEINFO(QDBusIntrospection::Argument, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 

@@ -41,6 +41,7 @@
 #include <qpa/qplatformintegration.h>
 #include <qdebug.h>
 #include "qhighdpiscaling_p.h"
+#include <QtCore/qscopedvaluerollback.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -49,7 +50,7 @@ QElapsedTimer QWindowSystemInterfacePrivate::eventTime;
 bool QWindowSystemInterfacePrivate::synchronousWindowSystemEvents = false;
 QWaitCondition QWindowSystemInterfacePrivate::eventsFlushed;
 QMutex QWindowSystemInterfacePrivate::flushEventMutex;
-bool QWindowSystemInterfacePrivate::eventAccepted;
+QAtomicInt QWindowSystemInterfacePrivate::eventAccepted;
 QWindowSystemEventHandler *QWindowSystemInterfacePrivate::eventHandler;
 
 //------------------------------------------------------------
@@ -191,97 +192,50 @@ void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *w, ulong timest
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-bool QWindowSystemInterface::tryHandleShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
-                                                               const QString & text, bool autorep, ushort count)
-{
-    unsigned long timestamp = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    return tryHandleShortcutEvent(w, timestamp, k, mods, text, autorep, count);
-}
-
-bool QWindowSystemInterface::tryHandleShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods,
-                                                               const QString & text, bool autorep, ushort count)
+bool QWindowSystemInterface::handleShortcutEvent(QWindow *window, ulong timestamp, int keyCode, Qt::KeyboardModifiers modifiers, quint32 nativeScanCode,
+                                      quint32 nativeVirtualKey, quint32 nativeModifiers, const QString &text, bool autorepeat, ushort count)
 {
 #ifndef QT_NO_SHORTCUT
-    QGuiApplicationPrivate::modifier_buttons = mods;
+    if (!window)
+        window = QGuiApplication::focusWindow();
 
-    if (!w)
-        w = QGuiApplication::focusWindow();
-    if (!w)
-        return false;
+    QShortcutMap &shortcutMap = QGuiApplicationPrivate::instance()->shortcutMap;
+    if (shortcutMap.state() == QKeySequence::NoMatch) {
+        // Check if the shortcut is overridden by some object in the event delivery path (typically the focus object).
+        // If so, we should not look up the shortcut in the shortcut map, but instead deliver the event as a regular
+        // key event, so that the target that accepted the shortcut override event can handle it. Note that we only
+        // do this if the shortcut map hasn't found a partial shortcut match yet. If it has, the shortcut can not be
+        // overridden.
+        QWindowSystemInterfacePrivate::KeyEvent *shortcutOverrideEvent = new QWindowSystemInterfacePrivate::KeyEvent(window, timestamp,
+            QEvent::ShortcutOverride, keyCode, modifiers, nativeScanCode, nativeVirtualKey, nativeModifiers, text, autorepeat, count);
 
-    QObject *focus = w->focusObject();
-    if (!focus)
-        focus = w;
+        {
+            // FIXME: Template handleWindowSystemEvent to support both sync and async delivery
+            QScopedValueRollback<bool> syncRollback(QWindowSystemInterfacePrivate::synchronousWindowSystemEvents);
+            QWindowSystemInterfacePrivate::synchronousWindowSystemEvents = true;
 
-    QKeyEvent qevent(QEvent::ShortcutOverride, k, mods, text, autorep, count);
-    qevent.setTimestamp(timestamp);
-    return QGuiApplicationPrivate::instance()->shortcutMap.tryShortcutEvent(focus, &qevent);
+            if (QWindowSystemInterfacePrivate::handleWindowSystemEvent(shortcutOverrideEvent))
+                return false;
+        }
+    }
+
+    // The shortcut event is dispatched as a QShortcutEvent, not a QKeyEvent, but we use
+    // the QKeyEvent as a container for the various properties that the shortcut map needs
+    // to inspect to determine if a shortcut matched the keys that were pressed.
+    QKeyEvent keyEvent(QEvent::ShortcutOverride, keyCode, modifiers, nativeScanCode,
+        nativeVirtualKey, nativeModifiers, text, autorepeat, count);
+
+    return shortcutMap.tryShortcut(&keyEvent);
 #else
-    Q_UNUSED(w)
+    Q_UNUSED(window)
     Q_UNUSED(timestamp)
-    Q_UNUSED(k)
-    Q_UNUSED(mods)
-    Q_UNUSED(text)
-    Q_UNUSED(autorep)
-    Q_UNUSED(count)
-    return false;
-#endif
-}
-
-// used by QTestLib to directly send shortcuts to objects
-bool QWindowSystemInterface::tryHandleShortcutEventToObject(QObject *o, ulong timestamp, int k, Qt::KeyboardModifiers mods,
-                                   const QString &text, bool autorep, ushort count)
-{
-#ifndef QT_NO_SHORTCUT
-    QGuiApplicationPrivate::modifier_buttons = mods;
-
-    QKeyEvent qevent(QEvent::ShortcutOverride, k, mods, text, autorep, count);
-    qevent.setTimestamp(timestamp);
-    return QGuiApplicationPrivate::instance()->shortcutMap.tryShortcutEvent(o, &qevent);
-#else
-    Q_UNUSED(w)
-    Q_UNUSED(timestamp)
-    Q_UNUSED(k)
-    Q_UNUSED(mods)
-    Q_UNUSED(text)
-    Q_UNUSED(autorep)
-    Q_UNUSED(count)
-    return false;
-#endif
-}
-
-bool QWindowSystemInterface::tryHandleExtendedShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
-                                                                       quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
-                                                                       const QString &text, bool autorep, ushort count)
-{
-    unsigned long timestamp = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    return tryHandleExtendedShortcutEvent(w, timestamp, k, mods, nativeScanCode, nativeVirtualKey, nativeModifiers, text, autorep, count);
-}
-
-bool QWindowSystemInterface::tryHandleExtendedShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods,
-                                                                       quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
-                                                                       const QString &text, bool autorep, ushort count)
-{
-#ifndef QT_NO_SHORTCUT
-    QGuiApplicationPrivate::modifier_buttons = mods;
-
-    QObject *focus = w->focusObject();
-    if (!focus)
-        focus = w;
-
-    QKeyEvent qevent(QEvent::ShortcutOverride, k, mods, nativeScanCode, nativeVirtualKey, nativeModifiers, text, autorep, count);
-    qevent.setTimestamp(timestamp);
-    return QGuiApplicationPrivate::instance()->shortcutMap.tryShortcutEvent(focus, &qevent);
-#else
-    Q_UNUSED(w)
-    Q_UNUSED(timestamp)
-    Q_UNUSED(k)
-    Q_UNUSED(mods)
+    Q_UNUSED(key)
+    Q_UNUSED(modifiers)
     Q_UNUSED(nativeScanCode)
     Q_UNUSED(nativeVirtualKey)
     Q_UNUSED(nativeModifiers)
     Q_UNUSED(text)
-    Q_UNUSED(autorep)
+    Q_UNUSED(autorepeat)
     Q_UNUSED(count)
     return false;
 #endif
@@ -295,42 +249,39 @@ bool QWindowSystemInterface::handleKeyEvent(QWindow *w, QEvent::Type t, int k, Q
 
 bool QWindowSystemInterface::handleKeyEvent(QWindow *tlw, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count)
 {
-    // This is special handling needed for OS X which eventually will call sendEvent(), on other platforms
-    // this might not be safe, e.g., on Android. See: QGuiApplicationPrivate::processKeyEvent() for
-    // shortcut overriding on other platforms.
-#if defined(Q_OS_OSX)
-    if (t == QEvent::KeyPress && QWindowSystemInterface::tryHandleShortcutEvent(tlw, timestamp, k, mods, text))
+    if (t == QEvent::KeyPress && QWindowSystemInterface::handleShortcutEvent(tlw, timestamp, k, mods, 0, 0, 0, text, autorep, count))
         return true;
-#endif // Q_OS_OSX
 
     QWindowSystemInterfacePrivate::KeyEvent * e =
             new QWindowSystemInterfacePrivate::KeyEvent(tlw, timestamp, t, k, mods, text, autorep, count);
     return QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleExtendedKeyEvent(QWindow *w, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
+bool QWindowSystemInterface::handleExtendedKeyEvent(QWindow *w, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
                                                     quint32 nativeScanCode, quint32 nativeVirtualKey,
                                                     quint32 nativeModifiers,
                                                     const QString& text, bool autorep,
-                                                    ushort count)
+                                                    ushort count, bool tryShortcutOverride)
 {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleExtendedKeyEvent(w, time, type, key, modifiers, nativeScanCode, nativeVirtualKey, nativeModifiers,
-                           text, autorep, count);
+    return handleExtendedKeyEvent(w, time, type, key, modifiers, nativeScanCode, nativeVirtualKey, nativeModifiers,
+                           text, autorep, count, tryShortcutOverride);
 }
 
-void QWindowSystemInterface::handleExtendedKeyEvent(QWindow *tlw, ulong timestamp, QEvent::Type type, int key,
+bool QWindowSystemInterface::handleExtendedKeyEvent(QWindow *tlw, ulong timestamp, QEvent::Type type, int key,
                                                     Qt::KeyboardModifiers modifiers,
                                                     quint32 nativeScanCode, quint32 nativeVirtualKey,
                                                     quint32 nativeModifiers,
                                                     const QString& text, bool autorep,
                                                     ushort count, bool tryShortcutOverride)
 {
-    Q_UNUSED(tryShortcutOverride)
+    if (tryShortcutOverride && type == QEvent::KeyPress && QWindowSystemInterface::handleShortcutEvent(tlw, timestamp, key, modifiers, 0, 0, 0, text, autorep, count))
+        return true;
+
     QWindowSystemInterfacePrivate::KeyEvent * e =
             new QWindowSystemInterfacePrivate::KeyEvent(tlw, timestamp, type, key, modifiers,
                 nativeScanCode, nativeVirtualKey, nativeModifiers, text, autorep, count);
-    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+    return QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
 void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods) {
@@ -434,31 +385,40 @@ void QWindowSystemInterfacePrivate::postWindowSystemEvent(WindowSystemEvent *ev)
         dispatcher->wakeUp();
 }
 
+/*!
+    Handles a window system event.
+
+    By default this function posts the event on the window system event queue and
+    wakes the Gui event dispatcher. Qt Gui will then handle the event asynchonously
+    at a later point. The return value is not used in asynchronous mode and will
+    always be true.
+
+    In synchronous mode Qt Gui will process the event immediately. The return value
+    indicates if Qt accepted the event.
+
+    \sa flushWindowSystemEvents(), setSynchronousWindowSystemEvents()
+*/
 bool QWindowSystemInterfacePrivate::handleWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *ev)
 {
     bool eventAccepted = true; // accept all events by default
     if (synchronousWindowSystemEvents) {
-        if (QThread::currentThread() == QGuiApplication::instance()->thread()) {
-            // Process the event immediately on the current thread and return the accepted state.
-            QGuiApplicationPrivate::processWindowSystemEvent(ev);
-            eventAccepted = ev->eventAccepted;
-            delete ev;
-        } else {
-            // Post the event on the Qt main thread queue, flush the queue,
-            // and return the accepted state for the last event on the queue,
-            // which is the event posted by this function.
-            postWindowSystemEvent(ev);
-            eventAccepted = QWindowSystemInterface::flushWindowSystemEvents();
-        }
+        QGuiApplicationPrivate::processWindowSystemEvent(ev);
+        eventAccepted = ev->eventAccepted;
+        delete ev;
     } else {
         postWindowSystemEvent(ev);
     }
     return eventAccepted;
 }
 
-void QWindowSystemInterface::registerTouchDevice(QTouchDevice *device)
+void QWindowSystemInterface::registerTouchDevice(const QTouchDevice *device)
 {
     QTouchDevicePrivate::registerDevice(device);
+}
+
+void QWindowSystemInterface::unregisterTouchDevice(const QTouchDevice *device)
+{
+    QTouchDevicePrivate::unregisterDevice(device);
 }
 
 void QWindowSystemInterface::handleTouchEvent(QWindow *w, QTouchDevice *device,
@@ -617,19 +577,25 @@ void QWindowSystemInterface::deferredFlushWindowSystemEvents(QEventLoop::Process
     QWindowSystemInterfacePrivate::eventsFlushed.wakeOne();
 }
 
+/*!
+    Make Qt Gui process all events on the event queue immediately. Return the
+    accepted state for the last event on the queue.
+*/
 bool QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
 {
     const int count = QWindowSystemInterfacePrivate::windowSystemEventQueue.count();
     if (!count)
-        return QWindowSystemInterfacePrivate::eventAccepted;
+        return false;
     if (!QGuiApplication::instance()) {
         qWarning().nospace()
             << "QWindowSystemInterface::flushWindowSystemEvents() invoked after "
                "QGuiApplication destruction, discarding " << count << " events.";
         QWindowSystemInterfacePrivate::windowSystemEventQueue.clear();
-        return true;
+        return false;
     }
     if (QThread::currentThread() != QGuiApplication::instance()->thread()) {
+        // Post a FlushEvents event which will trigger a call back to
+        // deferredFlushWindowSystemEvents from the Gui thread.
         QMutexLocker locker(&QWindowSystemInterfacePrivate::flushEventMutex);
         QWindowSystemInterfacePrivate::FlushEventsEvent *e = new QWindowSystemInterfacePrivate::FlushEventsEvent(flags);
         QWindowSystemInterfacePrivate::postWindowSystemEvent(e);
@@ -637,7 +603,7 @@ bool QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ProcessEventsFl
     } else {
         sendWindowSystemEvents(flags);
     }
-    return QWindowSystemInterfacePrivate::eventAccepted;
+    return QWindowSystemInterfacePrivate::eventAccepted.load() > 0;
 }
 
 bool QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
@@ -658,13 +624,14 @@ bool QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::ProcessEventsFla
         } else {
             nevents++;
             QGuiApplicationPrivate::processWindowSystemEvent(event);
-            // Record the accepted status for the last event processed
-            // that is not flush event. This status may later be returned
-            // by flushWindowSystemEvents(), if we are here as a result of
-            // a call to that function.
-            if (event->type != QWindowSystemInterfacePrivate::FlushEvents)
-                QWindowSystemInterfacePrivate::eventAccepted = event->eventAccepted;
         }
+
+        // Record the accepted state for the processed event
+        // (excluding flush events). This state can then be
+        // returned by flushWindowSystemEvents().
+        if (event->type != QWindowSystemInterfacePrivate::FlushEvents)
+            QWindowSystemInterfacePrivate::eventAccepted.store(event->eventAccepted);
+
         delete event;
     }
 
@@ -864,64 +831,93 @@ Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QWindowSystemInterface::TouchPo
 }
 #endif
 
+// The following functions are used by testlib, and need to be synchronous to avoid
+// race conditions with plugins delivering native events from secondary threads.
+
 Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF &local, const QPointF &global, Qt::MouseButtons b, Qt::KeyboardModifiers mods, int timestamp)
 {
-    QWindowSystemInterfacePrivate::MouseEvent e(w, timestamp, local, global, b, mods, Qt::MouseEventNotSynthesized);
-    QGuiApplicationPrivate::processWindowSystemEvent(&e);
+    bool wasSynchronous = QWindowSystemInterfacePrivate::synchronousWindowSystemEvents;
+    QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
+    QWindowSystemInterface::handleMouseEvent(w, timestamp, local, global, b, mods);
+    QWindowSystemInterface::setSynchronousWindowSystemEvents(wasSynchronous);
 }
 
 Q_GUI_EXPORT void qt_handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1)
 {
-    unsigned long timestamp = QWindowSystemInterfacePrivate::eventTime.elapsed();
-
-    // This is special handling needed for OS X which eventually will call sendEvent(), on other platforms
-    // this might not be safe, e.g., on Android. See: QGuiApplicationPrivate::processKeyEvent() for
-    // shortcut overriding on other platforms.
-#if defined(Q_OS_OSX)
-    if (t == QEvent::KeyPress && QWindowSystemInterface::tryHandleShortcutEvent(w, timestamp, k, mods, text))
-        return;
-#endif // Q_OS_OSX
-
-    QWindowSystemInterfacePrivate::KeyEvent e(w, timestamp, t, k, mods, text, autorep, count);
-    QGuiApplicationPrivate::processWindowSystemEvent(&e);
+    bool wasSynchronous = QWindowSystemInterfacePrivate::synchronousWindowSystemEvents;
+    QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
+    QWindowSystemInterface::handleKeyEvent(w, t, k, mods, text, autorep, count);
+    QWindowSystemInterface::setSynchronousWindowSystemEvents(wasSynchronous);
 }
 
-Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int k, Qt::KeyboardModifiers mods, const QString &text = QString(), bool autorep = false, ushort count = 1)
+Q_GUI_EXPORT bool qt_handleShortcutEvent(QObject *o, ulong timestamp, int k, Qt::KeyboardModifiers mods, const QString &text = QString(), bool autorep = false, ushort count = 1)
 {
-    return QWindowSystemInterface::tryHandleShortcutEventToObject(o, timestamp, k, mods, text, autorep, count);
+#ifndef QT_NO_SHORTCUT
+
+    // FIXME: This method should not allow targeting a specific object, but should
+    // instead forward the event to a window, which then takes care of normal event
+    // propagation. We need to fix a lot of tests before we can refactor this (the
+    // window needs to be exposed and active and have a focus object), so we leave
+    // it as is for now. See QTBUG-48577.
+
+    QGuiApplicationPrivate::modifier_buttons = mods;
+
+    QKeyEvent qevent(QEvent::ShortcutOverride, k, mods, text, autorep, count);
+    qevent.setTimestamp(timestamp);
+
+    QShortcutMap &shortcutMap = QGuiApplicationPrivate::instance()->shortcutMap;
+    if (shortcutMap.state() == QKeySequence::NoMatch) {
+        // Try sending as QKeyEvent::ShortcutOverride first
+        QCoreApplication::sendEvent(o, &qevent);
+        if (qevent.isAccepted())
+            return false;
+    }
+
+    // Then as QShortcutEvent
+    return shortcutMap.tryShortcut(&qevent);
+#else
+    Q_UNUSED(o)
+    Q_UNUSED(timestamp)
+    Q_UNUSED(k)
+    Q_UNUSED(mods)
+    Q_UNUSED(text)
+    Q_UNUSED(autorep)
+    Q_UNUSED(count)
+    return false;
+#endif
+}
+
+static QWindowSystemInterface::TouchPoint touchPoint(const QTouchEvent::TouchPoint& pt)
+{
+    QWindowSystemInterface::TouchPoint p;
+    p.id = pt.id();
+    p.flags = pt.flags();
+    p.normalPosition = pt.normalizedPos();
+    p.area = pt.screenRect();
+    p.pressure = pt.pressure();
+    p.state = pt.state();
+    p.velocity = pt.velocity();
+    p.rawPositions = pt.rawScreenPositions();
+    return p;
+}
+static QList<struct QWindowSystemInterface::TouchPoint> touchPointList(const QList<QTouchEvent::TouchPoint>& pointList)
+{
+    QList<struct QWindowSystemInterface::TouchPoint> newList;
+
+    Q_FOREACH (QTouchEvent::TouchPoint p, pointList)
+        newList.append(touchPoint(p));
+
+    return newList;
 }
 
 Q_GUI_EXPORT void qt_handleTouchEvent(QWindow *w, QTouchDevice *device,
                                 const QList<QTouchEvent::TouchPoint> &points,
                                 Qt::KeyboardModifiers mods = Qt::NoModifier)
 {
-    unsigned long timestamp = QWindowSystemInterfacePrivate::eventTime.elapsed();
-
-    if (!points.size()) // Touch events must have at least one point
-        return;
-
-    if (!QTouchDevicePrivate::isRegistered(device)) // Disallow passing bogus, non-registered devices.
-        return;
-
-    QEvent::Type type;
-    Qt::TouchPointStates states;
-
-    QList<QTouchEvent::TouchPoint>::const_iterator point = points.constBegin();
-    QList<QTouchEvent::TouchPoint>::const_iterator end = points.constEnd();
-    while (point != end) {
-        states |= point->state();
-        ++point;
-    }
-
-    // Determine the event type based on the combined point states.
-    type = QEvent::TouchUpdate;
-    if (states == Qt::TouchPointPressed)
-        type = QEvent::TouchBegin;
-    else if (states == Qt::TouchPointReleased)
-        type = QEvent::TouchEnd;
-
-    QWindowSystemInterfacePrivate::TouchEvent e(w, timestamp, type, device, points, mods);
-    QGuiApplicationPrivate::processWindowSystemEvent(&e);
+    bool wasSynchronous = QWindowSystemInterfacePrivate::synchronousWindowSystemEvents;
+    QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
+    QWindowSystemInterface::handleTouchEvent(w, device, touchPointList(points), mods);
+    QWindowSystemInterface::setSynchronousWindowSystemEvents(wasSynchronous);
 }
 
 QWindowSystemEventHandler::~QWindowSystemEventHandler()

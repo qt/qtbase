@@ -85,7 +85,8 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     }
     serverName = requestedServerName;
 
-    QString tempPath;
+    QByteArray encodedTempPath;
+    const QByteArray encodedFullServerName = QFile::encodeName(fullServerName);
     QScopedPointer<QTemporaryDir> tempDir;
 
     // Check any of the flags
@@ -96,8 +97,7 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
             setError(QLatin1String("QLocalServer::listen"));
             return false;
         }
-        tempPath = tempDir->path();
-        tempPath += QLatin1String("/s");
+        encodedTempPath = QFile::encodeName(tempDir->path() + QLatin1String("/s"));
     }
 
     // create the unix socket
@@ -111,23 +111,23 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     // Construct the unix address
     struct ::sockaddr_un addr;
     addr.sun_family = PF_UNIX;
-    if (sizeof(addr.sun_path) < (uint)fullServerName.toLatin1().size() + 1) {
+    if (sizeof(addr.sun_path) < (uint)encodedFullServerName.size() + 1) {
         setError(QLatin1String("QLocalServer::listen"));
         closeServer();
         return false;
     }
 
     if (socketOptions & QLocalServer::WorldAccessOption) {
-        if (sizeof(addr.sun_path) < (uint)tempPath.toLatin1().size() + 1) {
+        if (sizeof(addr.sun_path) < (uint)encodedTempPath.size() + 1) {
             setError(QLatin1String("QLocalServer::listen"));
             closeServer();
             return false;
         }
-        ::memcpy(addr.sun_path, tempPath.toLatin1().data(),
-                 tempPath.toLatin1().size() + 1);
+        ::memcpy(addr.sun_path, encodedTempPath.constData(),
+                 encodedTempPath.size() + 1);
     } else {
-        ::memcpy(addr.sun_path, fullServerName.toLatin1().data(),
-                 fullServerName.toLatin1().size() + 1);
+        ::memcpy(addr.sun_path, encodedFullServerName.constData(),
+                 encodedFullServerName.size() + 1);
     }
 
     // bind
@@ -165,13 +165,13 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
         if (socketOptions & QLocalServer::OtherAccessOption)
             mode |= S_IRWXO;
 
-        if (::chmod(tempPath.toLatin1(), mode) == -1) {
+        if (::chmod(encodedTempPath.constData(), mode) == -1) {
             setError(QLatin1String("QLocalServer::listen"));
             closeServer();
             return false;
         }
 
-        if (::rename(tempPath.toLatin1(), fullServerName.toLatin1()) == -1) {
+        if (::rename(encodedTempPath.constData(), encodedFullServerName.constData()) == -1) {
             setError(QLatin1String("QLocalServer::listen"));
             closeServer();
             return false;
@@ -209,7 +209,7 @@ bool QLocalServerPrivate::listen(qintptr socketDescriptor)
         QString name = QString::fromLatin1(addr.sun_path);
         if (!name.isEmpty()) {
             fullServerName = name;
-            serverName = fullServerName.mid(fullServerName.lastIndexOf(QLatin1String("/"))+1);
+            serverName = fullServerName.mid(fullServerName.lastIndexOf(QLatin1Char('/')) + 1);
             if (serverName.isEmpty()) {
                 serverName = fullServerName;
             }

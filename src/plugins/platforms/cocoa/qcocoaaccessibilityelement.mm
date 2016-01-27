@@ -42,6 +42,8 @@
 
 QT_USE_NAMESPACE
 
+#ifndef QT_NO_ACCESSIBILITY
+
 static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &offset, NSUInteger *start = 0, NSUInteger *end = 0)
 {
     Q_ASSERT(line == -1 || offset == -1);
@@ -54,6 +56,14 @@ static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &of
     do {
         curStart = curEnd;
         text->textAtOffset(curStart, QAccessible::LineBoundary, &curStart, &curEnd);
+        // If the text is empty then we just return
+        if (curStart == -1 || curEnd == -1) {
+            if (start)
+                *start = 0;
+            if (end)
+                *end = 0;
+            return;
+        }
         ++curLine;
         {
             // check for a case where a single word longer than the text edit's width and gets wrapped
@@ -580,3 +590,5 @@ static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &of
 }
 
 @end
+
+#endif // QT_NO_ACCESSIBILITY

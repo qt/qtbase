@@ -1219,6 +1219,13 @@ void QObject::setObjectName(const QString &name)
     The event() function can be reimplemented to customize the
     behavior of an object.
 
+    Make sure you call the parent event class implementation
+    for all the events you did not handle.
+
+    Example:
+
+    \snippet code/src_corelib_kernel_qobject.cpp 52
+
     \sa installEventFilter(), timerEvent(), QCoreApplication::sendEvent(),
     QCoreApplication::postEvent()
 */
@@ -1382,7 +1389,7 @@ bool QObject::eventFilter(QObject * /* watched */, QEvent * /* event */)
 
     Signals are not blocked by default.
 
-    \sa blockSignals()
+    \sa blockSignals(), QSignalBlocker
 */
 
 /*!
@@ -1395,7 +1402,9 @@ bool QObject::eventFilter(QObject * /* watched */, QEvent * /* event */)
     Note that the destroyed() signal will be emitted even if the signals
     for this object have been blocked.
 
-    \sa signalsBlocked()
+    Signals emitted while being blocked are not buffered.
+
+    \sa signalsBlocked(), QSignalBlocker
 */
 
 bool QObject::blockSignals(bool block) Q_DECL_NOTHROW
@@ -1476,7 +1485,7 @@ void QObject::moveToThread(QThread *targetThread)
     } else if (d->threadData != currentData) {
         qWarning("QObject::moveToThread: Current thread (%p) is not the object's thread (%p).\n"
                  "Cannot move to target thread (%p)\n",
-                 currentData->thread, d->threadData->thread, targetData ? targetData->thread : Q_NULLPTR);
+                 currentData->thread.load(), d->threadData->thread.load(), targetData ? targetData->thread.load() : Q_NULLPTR);
 
 #ifdef Q_OS_MAC
         qWarning("You might be loading two sets of Qt binaries into the same process. "
@@ -3822,7 +3831,7 @@ int QObjectPrivate::signalIndex(const char *signalName,
   \b{Note:} Dynamic properties starting with "_q_" are reserved for internal
   purposes.
 
-  \sa property(), metaObject(), dynamicPropertyNames()
+  \sa property(), metaObject(), dynamicPropertyNames(), QMetaProperty::write()
 */
 bool QObject::setProperty(const char *name, const QVariant &value)
 {
@@ -4103,7 +4112,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     QDebugStateSaver saver(dbg);
     if (!o)
         return dbg << "QObject(0x0)";
-    dbg.nospace() << o->metaObject()->className() << '(' << (void *)o;
+    dbg.nospace() << o->metaObject()->className() << '(' << (const void *)o;
     if (!o->objectName().isEmpty())
         dbg << ", name = " << o->objectName();
     dbg << ')';
@@ -4813,7 +4822,7 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
 
     \note It is not possible to use this overload to diconnect signals
     connected to functors or lambda expressions. That is because it is not
-    possible to compare them. Instead, use the olverload that take a
+    possible to compare them. Instead, use the overload that takes a
     QMetaObject::Connection
 
     \sa connect()
@@ -4908,8 +4917,15 @@ QMetaObject::Connection& QMetaObject::Connection::operator=(const QMetaObject::C
     return *this;
 }
 
+/*!
+    Creates a Connection instance.
+*/
+
 QMetaObject::Connection::Connection() : d_ptr(0) {}
 
+/*!
+    Destructor for QMetaObject::Connection.
+*/
 QMetaObject::Connection::~Connection()
 {
     if (d_ptr)

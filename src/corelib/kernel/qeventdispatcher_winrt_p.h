@@ -50,6 +50,8 @@
 
 #include <qt_windows.h>
 
+namespace std { template <typename T> class function; }
+
 QT_BEGIN_NAMESPACE
 
 quint64 qt_msectime();
@@ -64,6 +66,8 @@ class Q_CORE_EXPORT QEventDispatcherWinRT : public QAbstractEventDispatcher
 public:
     explicit QEventDispatcherWinRT(QObject *parent = 0);
     ~QEventDispatcherWinRT();
+
+    static HRESULT runOnXamlThread(const std::function<HRESULT()> &delegate, bool waitForRun = true);
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags);
     bool hasPendingEvents();

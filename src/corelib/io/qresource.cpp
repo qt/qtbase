@@ -800,8 +800,8 @@ bool QResourceRoot::mappingRootSubdir(const QString &path, QString *match) const
 {
     const QString root = mappingRoot();
     if(!root.isEmpty()) {
-        const QStringList root_segments = root.split(QLatin1Char('/'), QString::SkipEmptyParts),
-                          path_segments = path.split(QLatin1Char('/'), QString::SkipEmptyParts);
+        const QVector<QStringRef> root_segments = root.splitRef(QLatin1Char('/'), QString::SkipEmptyParts),
+                                  path_segments = path.splitRef(QLatin1Char('/'), QString::SkipEmptyParts);
         if(path_segments.size() <= root_segments.size()) {
             int matched = 0;
             for(int i = 0; i < path_segments.size(); ++i) {
@@ -811,7 +811,7 @@ bool QResourceRoot::mappingRootSubdir(const QString &path, QString *match) const
             }
             if(matched == path_segments.size()) {
                 if(match && root_segments.size() > matched)
-                    *match = root_segments.at(matched);
+                    *match = root_segments.at(matched).toString();
                 return true;
             }
         }
@@ -956,7 +956,7 @@ public:
         } else
 #endif
         {
-            delete [] (uchar *)mappingBuffer();
+            delete [] mappingBuffer();
         }
     }
     QString mappingFile() const { return fileName; }
@@ -1450,13 +1450,13 @@ bool QResourceFileEngine::extension(Extension extension, const ExtensionOption *
 {
     Q_D(QResourceFileEngine);
     if (extension == MapExtension) {
-        const MapExtensionOption *options = (MapExtensionOption*)(option);
+        const MapExtensionOption *options = (const MapExtensionOption*)(option);
         MapExtensionReturn *returnValue = static_cast<MapExtensionReturn*>(output);
         returnValue->address = d->map(options->offset, options->size, options->flags);
         return (returnValue->address != 0);
     }
     if (extension == UnMapExtension) {
-        UnMapExtensionOption *options = (UnMapExtensionOption*)option;
+        const UnMapExtensionOption *options = (const UnMapExtensionOption*)option;
         return d->unmap(options->address);
     }
     return false;

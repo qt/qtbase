@@ -49,11 +49,9 @@
 #include "ping-common.h"
 #include "complexping.h"
 
-void Ping::start(const QString &name, const QString &oldValue, const QString &newValue)
+void Ping::start(const QString &name)
 {
-    Q_UNUSED(oldValue);
-
-    if (name != SERVICE_NAME || newValue.isEmpty())
+    if (name != SERVICE_NAME)
         return;
 
     // open stdin for reading
@@ -105,10 +103,12 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    QDBusServiceWatcher serviceWatcher(SERVICE_NAME, QDBusConnection::sessionBus(),
+                                       QDBusServiceWatcher::WatchForRegistration);
+
     Ping ping;
-    ping.connect(QDBusConnection::sessionBus().interface(),
-                 SIGNAL(serviceOwnerChanged(QString,QString,QString)),
-                 SLOT(start(QString,QString,QString)));
+    QObject::connect(&serviceWatcher, &QDBusServiceWatcher::serviceRegistered,
+                     &ping, &Ping::start);
 
     QProcess pong;
     pong.start("./complexpong");

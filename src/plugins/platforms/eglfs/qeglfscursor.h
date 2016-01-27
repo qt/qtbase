@@ -131,8 +131,6 @@ private:
     bool m_visible;
     QEglFSScreen *m_screen;
     QOpenGLShaderProgram *m_program;
-    int m_vertexCoordEntry;
-    int m_textureCoordEntry;
     int m_textureEntry;
     QEglFSCursorDeviceListener *m_deviceListener;
     bool m_updateRequested;

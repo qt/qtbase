@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
-** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
+** Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -38,15 +38,29 @@
 #include <qobject.h>
 #include <qmetaobject.h>
 
+struct CustomType
+{
+    int padding;
+    QString str;
+    CustomType(const QString &str = QString()) : str(str) {}
+    operator QString() const { return str; }
+    friend bool operator!=(const CustomType &a, const CustomType &b)
+    { return a.str != b.str; }
+};
+
+Q_DECLARE_METATYPE(CustomType)
+
 class tst_QMetaProperty : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(EnumType value WRITE setValue READ getValue)
     Q_PROPERTY(EnumType value2 WRITE set_value READ get_value)
+    Q_PROPERTY(QString value7 MEMBER value7 RESET resetValue7)
     Q_PROPERTY(int value8 READ value8)
     Q_PROPERTY(int value9 READ value9 CONSTANT)
     Q_PROPERTY(int value10 READ value10 FINAL)
     Q_PROPERTY(QMap<int, int> map MEMBER map)
+    Q_PROPERTY(CustomType custom MEMBER custom)
 
 private slots:
     void hasStdCppSet();
@@ -55,6 +69,7 @@ private slots:
     void gadget();
     void readAndWriteWithLazyRegistration();
     void mapProperty();
+    void conversion();
 
 public:
     enum EnumType { EnumType1 };
@@ -64,11 +79,14 @@ public:
     void set_value(EnumType) {}
     EnumType get_value() const { return EnumType1; }
 
+    void resetValue7() { value7 = QStringLiteral("reset"); }
     int value8() const { return 1; }
     int value9() const { return 1; }
     int value10() const { return 1; }
 
+    QString value7;
     QMap<int, int> map;
+    CustomType custom;
 };
 
 void tst_QMetaProperty::hasStdCppSet()
@@ -193,6 +211,43 @@ void tst_QMetaProperty::mapProperty()
     QVariant v = property("map");
     QVERIFY(v.isValid());
     QCOMPARE(map, (v.value<QMap<int,int> >()));
+}
+
+void tst_QMetaProperty::conversion()
+{
+    QMetaType::registerConverter<QString, CustomType>();
+    QMetaType::registerConverter<CustomType, QString>();
+
+    QString hello = QStringLiteral("Hello");
+
+    // Write to a QString property using a CustomType in a QVariant
+    QMetaProperty value7P = metaObject()->property(metaObject()->indexOfProperty("value7"));
+    QVERIFY(value7P.isValid());
+    QVERIFY(value7P.write(this, QVariant::fromValue(CustomType(hello))));
+    QCOMPARE(value7, hello);
+
+    // Write to a CustomType property using a QString in a QVariant
+    QMetaProperty customP = metaObject()->property(metaObject()->indexOfProperty("custom"));
+    QVERIFY(customP.isValid());
+    QVERIFY(customP.write(this, hello));
+    QCOMPARE(custom.str, hello);
+
+    // Something that cannot be converted should fail
+    QVERIFY(!customP.write(this, 45));
+    QVERIFY(!customP.write(this, QVariant::fromValue(this)));
+    QVERIFY(!value7P.write(this, QVariant::fromValue(this)));
+    QVERIFY(!value7P.write(this, QVariant::fromValue<QObject*>(this)));
+
+    // none of this should have changed the values
+    QCOMPARE(value7, hello);
+    QCOMPARE(custom.str, hello);
+
+    // Empty variant should be converted to default object
+    QVERIFY(customP.write(this, QVariant()));
+    QCOMPARE(custom.str, QString());
+    // or reset resetable
+    QVERIFY(value7P.write(this, QVariant()));
+    QCOMPARE(value7, QLatin1Literal("reset"));
 }
 
 QTEST_MAIN(tst_QMetaProperty)

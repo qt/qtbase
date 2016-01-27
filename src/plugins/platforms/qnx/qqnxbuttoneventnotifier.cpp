@@ -74,7 +74,7 @@ QQnxButtonEventNotifier::~QQnxButtonEventNotifier()
 
 void QQnxButtonEventNotifier::start()
 {
-    qButtonDebug() << Q_FUNC_INFO << "starting hardware button event processing";
+    qButtonDebug("starting hardware button event processing");
     if (m_fd != -1)
         return;
 
@@ -91,7 +91,7 @@ void QQnxButtonEventNotifier::start()
     m_readNotifier = new QSocketNotifier(m_fd, QSocketNotifier::Read);
     QObject::connect(m_readNotifier, SIGNAL(activated(int)), this, SLOT(updateButtonStates()));
 
-    qButtonDebug() << Q_FUNC_INFO << "successfully connected to Navigator. fd =" << m_fd;
+    qButtonDebug() << "successfully connected to Navigator. fd =" << m_fd;
 }
 
 void QQnxButtonEventNotifier::updateButtonStates()
@@ -115,7 +115,7 @@ void QQnxButtonEventNotifier::updateButtonStates()
     // Ensure data is null terminated
     buffer[bytes] = '\0';
 
-    qButtonDebug() << Q_FUNC_INFO << "received PPS message:\n" << buffer;
+    qButtonDebug() << "received PPS message:\n" << buffer;
 
     // Process received message
     QByteArray ppsData = QByteArray::fromRawData(buffer, bytes);
@@ -197,7 +197,7 @@ bool QQnxButtonEventNotifier::parsePPS(const QByteArray &ppsData, QHash<QByteArr
         // tokenize current attribute
         const QByteArray &attr = lines.at(i);
 
-        qButtonDebug() << Q_FUNC_INFO << "attr=" << attr;
+        qButtonDebug() << "attr=" << attr;
 
         int doubleColon = attr.indexOf(QByteArrayLiteral("::"));
         if (doubleColon == -1) {

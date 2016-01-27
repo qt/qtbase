@@ -52,13 +52,13 @@ IconSizeSpinBox::IconSizeSpinBox(QWidget *parent)
 //! [1]
 int IconSizeSpinBox::valueFromText(const QString &text) const
 {
-    QRegExp regExp(tr("(\\d+)(\\s*[xx]\\s*\\d+)?"));
+    static const QRegularExpression regExp(tr("(\\d+)(\\s*[xx]\\s*\\d+)?"));
+    Q_ASSERT(regExp.isValid());
 
-    if (regExp.exactMatch(text)) {
-        return regExp.cap(1).toInt();
-    } else {
-        return 0;
-    }
+    const QRegularExpressionMatch match = regExp.match(text);
+    if (match.isValid())
+        return match.captured(1).toInt();
+    return 0;
 }
 //! [1]
 

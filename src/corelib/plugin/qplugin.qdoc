@@ -28,7 +28,7 @@
 /*!
     \headerfile <QtPlugin>
     \title Defining Plugins
-    \target qtplugin-defining-plugins
+    \keyword qtplugin-defining-plugins
     \ingroup plugins
 
     \brief The <QtPlugin> header file defines macros for defining plugins.
@@ -93,9 +93,9 @@
     \macro Q_IMPORT_PLUGIN(PluginName)
     \relates <QtPlugin>
 
-    This macro imports the plugin named \a PluginName, corresponding
-    to the \l{qmake Variable Reference#TARGET}{TARGET} specified in the
-    plugin's project file.
+    This macro imports the plugin named \a PluginName, which corresponds
+    with the name of the class that declares metadata for the plugin with
+    Q_PLUGIN_METADATA().
 
     Inserting this macro into your application's source code will allow
     you to make use of a static plugin.

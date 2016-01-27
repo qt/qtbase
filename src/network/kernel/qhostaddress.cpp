@@ -48,6 +48,9 @@
 #ifndef QT_NO_DATASTREAM
 #include <qdatastream.h>
 #endif
+#ifdef __SSE2__
+#  include <private/qsimd_p.h>
+#endif
 
 #ifdef QT_LINUXBASE
 #  include <arpa/inet.h>
@@ -147,7 +150,11 @@ public:
     QString scopeId;
 
     quint32 a;    // IPv4 address
-    Q_IPV6ADDR a6; // IPv6 address
+    union {
+        Q_IPV6ADDR a6; // IPv6 address
+        struct { quint64 c[2]; } a6_64;
+        struct { quint32 c[4]; } a6_32;
+    };
     QAbstractSocket::NetworkLayerProtocol protocol;
 
     bool isParsed;
@@ -164,24 +171,17 @@ QHostAddressPrivate::QHostAddressPrivate()
 void QHostAddressPrivate::setAddress(quint32 a_)
 {
     a = a_;
-    //create mapped address, except for a_ == 0 (any)
-    memset(&a6, 0, sizeof(a6));
-    if (a) {
-        a6[11] = 0xFF;
-        a6[10] = 0xFF;
-    } else {
-        a6[11] = 0;
-        a6[10] = 0;
-    }
-
-    int i;
-    for (i=15; a_ != 0; i--) {
-        a6[i] = a_ & 0xFF;
-        a_ >>=8;
-    }
-    Q_ASSERT(i >= 11);
     protocol = QAbstractSocket::IPv4Protocol;
     isParsed = true;
+
+    //create mapped address, except for a_ == 0 (any)
+    a6_64.c[0] = 0;
+    if (a) {
+        a6_32.c[2] = qToBigEndian(0xffff);
+        a6_32.c[3] = qToBigEndian(a);
+    } else {
+        a6_64.c[1] = 0;
+    }
 }
 
 /// parses v4-mapped addresses or the AnyIPv6 address and stores in \a a;
@@ -204,21 +204,16 @@ static bool convertToIpv4(quint32& a, const Q_IPV6ADDR &a6)
 
 void QHostAddressPrivate::setAddress(const quint8 *a_)
 {
-    for (int i = 0; i < 16; i++)
-        a6[i] = a_[i];
-    a = 0;
-    convertToIpv4(a, a6);
     protocol = QAbstractSocket::IPv6Protocol;
     isParsed = true;
+    memcpy(a6.c, a_, sizeof(a6));
+    a = 0;
+    convertToIpv4(a, a6);
 }
 
 void QHostAddressPrivate::setAddress(const Q_IPV6ADDR &a_)
 {
-    a6 = a_;
-    a = 0;
-    convertToIpv4(a, a6);
-    protocol = QAbstractSocket::IPv6Protocol;
-    isParsed = true;
+    setAddress(a_.c);
 }
 
 static bool parseIp6(const QString &address, QIPAddressUtils::IPv6Address &addr, QString *scopeId)
@@ -234,7 +229,7 @@ static bool parseIp6(const QString &address, QIPAddressUtils::IPv6Address &addr,
     return QIPAddressUtils::parseIp6(addr, tmp.constBegin(), tmp.constEnd()) == 0;
 }
 
-bool QHostAddressPrivate::parse()
+Q_NEVER_INLINE bool QHostAddressPrivate::parse()
 {
     isParsed = true;
     protocol = QAbstractSocket::UnknownNetworkLayerProtocol;
@@ -527,31 +522,35 @@ QHostAddress::QHostAddress(SpecialAddress address)
 {
     Q_IPV6ADDR ip6;
     memset(&ip6, 0, sizeof ip6);
+    quint32 ip4 = INADDR_ANY;
 
     switch (address) {
     case Null:
-        break;
+        return;
+
     case Broadcast:
-        d->setAddress(quint32(-1));
+        ip4 = INADDR_BROADCAST;
         break;
     case LocalHost:
-        d->setAddress(0x7f000001);
-        break;
-    case LocalHostIPv6:
-        ip6[15] = 1;
-        d->setAddress(ip6);
+        ip4 = INADDR_LOOPBACK;
         break;
     case AnyIPv4:
-        setAddress(0u);
         break;
+
+    case LocalHostIPv6:
+        ip6[15] = 1;
+        // fall through
     case AnyIPv6:
         d->setAddress(ip6);
-        break;
+        return;
+
     case Any:
-        d->clear();
         d->protocol = QAbstractSocket::AnyIPProtocol;
-        break;
+        return;
     }
+
+    // common IPv4 part
+    d->setAddress(ip4);
 }
 
 /*!
@@ -816,11 +815,6 @@ QString QHostAddress::toString() const
     on your host. Link-local addresses ("fe80...") are generated from the MAC
     address of the local network adaptor, and are not guaranteed to be unique.
 
-    \li Site-local: Addresses that are local to the site / private network
-    (e.g., the company intranet). Site-local addresses ("fec0...")  are
-    usually distributed by the site router, and are not guaranteed to be
-    unique outside of the local site.
-
     \li Global: For globally routable addresses, such as public servers on the
     Internet.
 
@@ -831,7 +825,7 @@ QString QHostAddress::toString() const
     usually the same as the interface name (e.g., "eth0", "en1") or number
     (e.g., "1", "2").
 
-    \sa setScopeId()
+    \sa setScopeId(), QNetworkInterface, QNetworkInterface::interfaceFromName
 */
 QString QHostAddress::scopeId() const
 {
@@ -842,8 +836,14 @@ QString QHostAddress::scopeId() const
 /*!
     \since 4.1
 
-    Sets the IPv6 scope ID of the address to \a id. If the address
-    protocol is not IPv6, this function does nothing.
+    Sets the IPv6 scope ID of the address to \a id. If the address protocol is
+    not IPv6, this function does nothing. The scope ID may be set as an
+    interface name (such as "eth0" or "en1") or as an integer representing the
+    interface index. If \a id is an interface name, QtNetwork will convert to
+    an interface index using QNetworkInterface::interfaceIndexFromName() before
+    calling the operating system networking functions.
+
+    \sa scopeId(), QNetworkInterface, QNetworkInterface::interfaceFromName
 */
 void QHostAddress::setScopeId(const QString &id)
 {
@@ -877,34 +877,36 @@ bool QHostAddress::operator==(const QHostAddress &other) const
 bool QHostAddress::operator ==(SpecialAddress other) const
 {
     QT_ENSURE_PARSED(this);
+    quint32 ip4 = INADDR_ANY;
     switch (other) {
     case Null:
         return d->protocol == QAbstractSocket::UnknownNetworkLayerProtocol;
 
     case Broadcast:
-        return d->protocol == QAbstractSocket::IPv4Protocol && d->a == INADDR_BROADCAST;
+        ip4 = INADDR_BROADCAST;
+        break;
 
     case LocalHost:
-        return d->protocol == QAbstractSocket::IPv4Protocol && d->a == INADDR_LOOPBACK;
+        ip4 = INADDR_LOOPBACK;
+        break;
 
     case Any:
         return d->protocol == QAbstractSocket::AnyIPProtocol;
 
     case AnyIPv4:
-        return d->protocol == QAbstractSocket::IPv4Protocol && d->a == INADDR_ANY;
+        break;
 
     case LocalHostIPv6:
     case AnyIPv6:
         if (d->protocol == QAbstractSocket::IPv6Protocol) {
-            Q_IPV6ADDR ip6 = { { 0 } };
-            ip6[15] = quint8(other == LocalHostIPv6);  // 1 for localhost, 0 for any
-            return memcmp(&d->a6, &ip6, sizeof ip6) == 0;
+            quint64 second = quint8(other == LocalHostIPv6);  // 1 for localhost, 0 for any
+            return d->a6_64.c[0] == 0 && d->a6_64.c[1] == qToBigEndian(second);
         }
         return false;
     }
 
-    Q_UNREACHABLE();
-    return false;
+    // common IPv4 part
+    return d->protocol == QAbstractSocket::IPv4Protocol && d->a == ip4;
 }
 
 /*!
@@ -1126,13 +1128,33 @@ bool QHostAddress::isLoopback() const
     if ((d->a & 0xFF000000) == 0x7F000000)
         return true; // v4 range (including IPv6 wrapped IPv4 addresses)
     if (d->protocol == QAbstractSocket::IPv6Protocol) {
-        if (d->a6.c[15] != 1)
+#ifdef __SSE2__
+        const __m128i loopback = _mm_setr_epi8(0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 1);
+        __m128i ipv6 = _mm_loadu_si128((const __m128i *)d->a6.c);
+        __m128i cmp = _mm_cmpeq_epi8(ipv6, loopback);
+        return _mm_movemask_epi8(cmp) == 0xffff;
+#else
+        if (d->a6_64.c[0] != 0 || qFromBigEndian(d->a6_64.c[1]) != 1)
             return false;
-        for (int i = 0; i < 15; i++)
-            if (d->a6[i] != 0)
-                return false;
+#endif
         return true;
     }
+    return false;
+}
+
+/*!
+    \since 5.6
+
+    Returns \c true if the address is an IPv4 or IPv6 multicast address, \c
+    false otherwise.
+*/
+bool QHostAddress::isMulticast() const
+{
+    QT_ENSURE_PARSED(this);
+    if ((d->a & 0xF0000000) == 0xE0000000)
+        return true; // 224.0.0.0-239.255.255.255 (including v4-mapped IPv6 addresses)
+    if (d->protocol == QAbstractSocket::IPv6Protocol)
+        return d->a6.c[0] == 0xff;
     return false;
 }
 
@@ -1153,7 +1175,7 @@ uint qHash(const QHostAddress &key, uint seed)
 {
     // both lines might throw
     QT_ENSURE_PARSED(&key);
-    return qHash(QByteArray::fromRawData(reinterpret_cast<const char *>(key.d->a6.c), 16), seed);
+    return qHashBits(key.d->a6.c, 16, seed);
 }
 
 #ifndef QT_NO_DATASTREAM

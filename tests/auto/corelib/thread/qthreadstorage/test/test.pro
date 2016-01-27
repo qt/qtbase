@@ -5,6 +5,6 @@ CONFIG += console
 QT = core testlib
 SOURCES = ../tst_qthreadstorage.cpp
 
-TEST_HELPER_INSTALLS = ../crashonexit/crashonexit
+!winrt: TEST_HELPER_INSTALLS = ../crashonexit/crashonexit
 
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

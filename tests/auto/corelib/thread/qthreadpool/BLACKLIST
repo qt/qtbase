@@ -1,5 +1,2 @@
 [expiryTimeoutRace]
 osx
-[tryStartCount]
-windows msvc-2012
-linux

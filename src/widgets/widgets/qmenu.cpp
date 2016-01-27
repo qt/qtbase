@@ -192,11 +192,10 @@ void QMenuPrivate::syncPlatformMenu()
         return;
 
     QPlatformMenuItem *beforeItem = Q_NULLPTR;
-    QListIterator<QAction*> it(q->actions());
-    it.toBack();
-    while (it.hasPrevious()) {
+    const QList<QAction*> actions = q->actions();
+    for (QList<QAction*>::const_reverse_iterator it = actions.rbegin(), end = actions.rend(); it != end; ++it) {
         QPlatformMenuItem *menuItem = platformMenu->createMenuItem();
-        QAction *action = it.previous();
+        QAction *action = *it;
         menuItem->setTag(reinterpret_cast<quintptr>(action));
         QObject::connect(menuItem, SIGNAL(activated()), action, SLOT(trigger()), Qt::QueuedConnection);
         QObject::connect(menuItem, SIGNAL(hovered()), action, SIGNAL(hovered()), Qt::QueuedConnection);
@@ -503,8 +502,8 @@ void QMenuPrivate::hideMenu(QMenu *menu)
     if (activeMenu == menu)
         activeMenu = 0;
     menu->d_func()->causedPopup.action = 0;
-    menu->d_func()->causedPopup.widget = 0;
     menu->close();
+    menu->d_func()->causedPopup.widget = 0;
     if (previousMouseMenu.data() == menu)
         handleEnterLeaveEvents(&previousMouseMenu, Q_NULLPTR);
 }
@@ -1265,7 +1264,7 @@ void QMenuPrivate::_q_platformMenuAboutToShow()
 #ifdef Q_OS_OSX
     if (platformMenu)
         Q_FOREACH (QAction *action, q->actions())
-            if (QWidget *widget = widgetItems.value(const_cast<QAction *>(action)))
+            if (QWidget *widget = widgetItems.value(action))
                 if (widget->parent() == q) {
                     QPlatformMenuItem *menuItem = platformMenu->menuItemForTag(reinterpret_cast<quintptr>(action));
                     moveWidgetToPlatformItem(widget, menuItem);
@@ -1443,7 +1442,7 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     addSeparator(), and addMenu().
 
     \sa QMenuBar, {fowler}{GUI Design Handbook: Menu, Drop-Down and Pop-Up},
-        {Application Example}, {Menus Example}, {Recent Files Example}
+        {Application Example}, {Menus Example}
 */
 
 
@@ -2679,7 +2678,7 @@ QMenu::event(QEvent *e)
             if (kev->key() == Qt::Key_Up || kev->key() == Qt::Key_Down
                 || kev->key() == Qt::Key_Left || kev->key() == Qt::Key_Right
                 || kev->key() == Qt::Key_Enter || kev->key() == Qt::Key_Return
-                || kev->key() == Qt::Key_Escape) {
+                || kev->matches(QKeySequence::Cancel)) {
                 e->accept();
                 return true;
             }
@@ -2965,27 +2964,6 @@ void QMenu::keyPressEvent(QKeyEvent *e)
         }
         break;
 
-    case Qt::Key_Escape:
-#ifdef QT_KEYPAD_NAVIGATION
-    case Qt::Key_Back:
-#endif
-        key_consumed = true;
-        if (d->tornoff) {
-            close();
-            return;
-        }
-        {
-            QPointer<QWidget> caused = d->causedPopup.widget;
-            d->hideMenu(this); // hide after getting causedPopup
-#ifndef QT_NO_MENUBAR
-            if (QMenuBar *mb = qobject_cast<QMenuBar*>(caused)) {
-                mb->d_func()->setCurrentAction(d->menuAction);
-                mb->d_func()->setKeyboardMode(true);
-            }
-#endif
-        }
-        break;
-
     case Qt::Key_Space:
         if (!style()->styleHint(QStyle::SH_Menu_SpaceActivatesItem, 0, this))
             break;
@@ -3020,6 +2998,28 @@ void QMenu::keyPressEvent(QKeyEvent *e)
 #endif
     default:
         key_consumed = false;
+    }
+
+    if (!key_consumed && (e->matches(QKeySequence::Cancel)
+#ifdef QT_KEYPAD_NAVIGATION
+        || e->key() == Qt::Key_Back
+#endif
+    )) {
+        key_consumed = true;
+        if (d->tornoff) {
+            close();
+            return;
+        }
+        {
+            QPointer<QWidget> caused = d->causedPopup.widget;
+            d->hideMenu(this); // hide after getting causedPopup
+#ifndef QT_NO_MENUBAR
+            if (QMenuBar *mb = qobject_cast<QMenuBar*>(caused)) {
+                mb->d_func()->setCurrentAction(d->menuAction);
+                mb->d_func()->setKeyboardMode(true);
+            }
+#endif
+        }
     }
 
     if (!key_consumed) {                                // send to menu bar
@@ -3142,7 +3142,7 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
         d->activeMenu->d_func()->setCurrentAction(0);
 
     QMenuSloppyState::MouseEventResult sloppyEventResult = d->sloppyState.processMouseEvent(e->localPos(), action, d->currentAction);
-    if (sloppyEventResult == QMenuSloppyState::EventShouldBePropogated) {
+    if (sloppyEventResult == QMenuSloppyState::EventShouldBePropagated) {
         d->setCurrentAction(action, d->mousePopupDelay);
     } else if (sloppyEventResult == QMenuSloppyState::EventDiscardsSloppyState) {
         d->sloppyState.reset();

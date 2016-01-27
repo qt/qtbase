@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -180,7 +181,6 @@ bool QDBusPendingCallPrivate::setReplyCallback(QObject *target, const char *memb
 
 void QDBusPendingCallPrivate::setMetaTypes(int count, const int *types)
 {
-    expectedReplyCount = count;
     if (count == 0) {
         expectedReplySignature = QLatin1String(""); // not null
         return;
@@ -231,7 +231,7 @@ void QDBusPendingCallPrivate::waitForFinished()
     if (replyMessage.type() != QDBusMessage::InvalidMessage)
         return;                 // already finished
 
-    connection->waitForFinished(this);
+    waitForFinishedCondition.wait(&mutex);
 }
 
 /*!

@@ -384,6 +384,9 @@
     initialized with a \l{default-constructed value}. If \a size is less
     than the current size, elements are removed from the end.
 
+    Since Qt 5.6, resize() doesn't shrink the capacity anymore.
+    To shed excess capacity, use squeeze().
+
     \sa size()
 */
 
@@ -403,15 +406,24 @@
 /*! \fn void QVector::reserve(int size)
 
     Attempts to allocate memory for at least \a size elements. If you
-    know in advance how large the vector will be, you can call this
-    function, and if you call resize() often you are likely to get
-    better performance. If \a size is an underestimate, the worst
-    that will happen is that the QVector will be a bit slower.
+    know in advance how large the vector will be, you should call this
+    function to prevent reallocations and memory fragmentation.
 
-    The sole purpose of this function is to provide a means of fine
-    tuning QVector's memory usage. In general, you will rarely ever
-    need to call this function. If you want to change the size of the
-    vector, call resize().
+    If \a size is an underestimate, the worst that will happen is that
+    the QVector will be a bit slower. If \a size is an overestimate, you
+    may have used more memory than the normal QVector growth strategy
+    would have allocated—or you may have used less.
+
+    An alternative to reserve() is calling resize(). Whether or not that is
+    faster than reserve() depends on the element type, because resize()
+    default-constructs all elements, and requires assignment to existing
+    entries rather than calling append(), which copy- or move-constructs.
+    For simple types, like \c int or \c double, resize() is typically faster,
+    but for anything more complex, you should prefer reserve().
+
+    \warning If the size passed to resize() was underestimated, you run out
+    of allocated space and into undefined behavior. This problem does not
+    exist with reserve(), because it treats the size as just a hint.
 
     \sa squeeze(), capacity()
 */

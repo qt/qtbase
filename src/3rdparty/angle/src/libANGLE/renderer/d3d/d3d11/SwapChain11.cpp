@@ -154,14 +154,8 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
         const bool useSharedResource = !mNativeWindow.getNativeWindow() && mRenderer->getShareHandleSupport();
 
         D3D11_TEXTURE2D_DESC offscreenTextureDesc = {0};
-#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
-        const int textureLength = std::max(backbufferWidth, backbufferHeight);
-        offscreenTextureDesc.Width = textureLength;
-        offscreenTextureDesc.Height = textureLength;
-#else
         offscreenTextureDesc.Width = backbufferWidth;
         offscreenTextureDesc.Height = backbufferHeight;
-#endif
         offscreenTextureDesc.Format = backbufferFormatInfo.texFormat;
         offscreenTextureDesc.MipLevels = 1;
         offscreenTextureDesc.ArraySize = 1;
@@ -241,14 +235,8 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
     if (mDepthBufferFormat != GL_NONE)
     {
         D3D11_TEXTURE2D_DESC depthStencilTextureDesc;
-#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
-        const int textureLength = std::max(backbufferWidth, backbufferHeight);
-        depthStencilTextureDesc.Width = textureLength;
-        depthStencilTextureDesc.Height = textureLength;
-#else
         depthStencilTextureDesc.Width = backbufferWidth;
         depthStencilTextureDesc.Height = backbufferHeight;
-#endif
         depthStencilTextureDesc.Format = depthBufferFormatInfo.texFormat;
         depthStencilTextureDesc.MipLevels = 1;
         depthStencilTextureDesc.ArraySize = 1;
@@ -349,7 +337,6 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
         return EGL_SUCCESS;
     }
 
-#if !defined(ANGLE_ENABLE_WINDOWS_STORE) || (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP)
     // Can only call resize if we have already created our swap buffer and resources
     ASSERT(mSwapChain && mBackBufferTexture && mBackBufferRTView);
 
@@ -392,12 +379,6 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
     }
 
     return resetOffscreenTexture(backbufferWidth, backbufferHeight);
-#else
-    // Do nothing on Windows Phone apart from updating the internal buffer/width height
-    mWidth = backbufferWidth;
-    mHeight = backbufferHeight;
-    return EGL_SUCCESS;
-#endif
 }
 
 EGLint SwapChain11::reset(int backbufferWidth, int backbufferHeight, EGLint swapInterval)
@@ -552,27 +533,6 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
 
     d3d11::PositionTexCoordVertex *vertices = static_cast<d3d11::PositionTexCoordVertex*>(mappedResource.pData);
 
-#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
-    // Create a quad in homogeneous coordinates
-    float x1 = -1.0f;
-    float y1 = -1.0f;
-    float x2 = 1.0f;
-    float y2 = 1.0f;
-
-    const float dim = std::max(mWidth, mHeight);
-    float u1 = 0;
-    float v1 = 0;
-    float u2 = float(width) / dim;
-    float v2 = float(height) / dim;
-
-    const NativeWindow::RotationFlags flags = mNativeWindow.rotationFlags();
-    const bool rotateL = flags == NativeWindow::RotateLeft;
-    const bool rotateR = flags == NativeWindow::RotateRight;
-    d3d11::SetPositionTexCoordVertex(&vertices[0], x1, y1, rotateL ? u2 : u1, rotateR ? v2 : v1);
-    d3d11::SetPositionTexCoordVertex(&vertices[1], x1, y2, rotateR ? u2 : u1, rotateL ? v1 : v2);
-    d3d11::SetPositionTexCoordVertex(&vertices[2], x2, y1, rotateR ? u1 : u2, rotateL ? v2 : v1);
-    d3d11::SetPositionTexCoordVertex(&vertices[3], x2, y2, rotateL ? u1 : u2, rotateR ? v1 : v2);
-#else
     // Create a quad in homogeneous coordinates
     float x1 = (x / float(mWidth)) * 2.0f - 1.0f;
     float y1 = (y / float(mHeight)) * 2.0f - 1.0f;
@@ -588,7 +548,6 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
     d3d11::SetPositionTexCoordVertex(&vertices[1], x1, y2, u1, v2);
     d3d11::SetPositionTexCoordVertex(&vertices[2], x2, y1, u2, v1);
     d3d11::SetPositionTexCoordVertex(&vertices[3], x2, y2, u2, v2);
-#endif
 
     deviceContext->Unmap(mQuadVB, 0);
 
@@ -618,13 +577,8 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
     D3D11_VIEWPORT viewport;
     viewport.TopLeftX = 0;
     viewport.TopLeftY = 0;
-#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
-    viewport.Width = (rotateL || rotateR) ? height : width;
-    viewport.Height = (rotateL || rotateR) ? width : height;
-#else
     viewport.Width = mWidth;
     viewport.Height = mHeight;
-#endif
     viewport.MinDepth = 0.0f;
     viewport.MaxDepth = 1.0f;
     deviceContext->RSSetViewports(1, &viewport);

@@ -26,3 +26,8 @@ qhp.extraFiles +=   style/offline.css \
                     images/bullet_dn.png \
                     images/bullet_sq.png \
                     images/bgrContent.png
+
+# By default, include override definitions for a simplified template/CSS,
+# suited for rendering HTML with QTextBrowser. Comment out this line to
+# select the standard CSS.
+include(qt-html-templates-offline-simple.qdocconf)

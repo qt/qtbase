@@ -99,6 +99,13 @@ static bool ft_getSfntTable(void *user_data, uint tag, uchar *buffer, uint *leng
 
 static QFontEngineFT::Glyph emptyGlyph = {0, 0, 0, 0, 0, 0, 0, 0};
 
+static const QFontEngine::HintStyle ftInitialDefaultHintStyle =
+#ifdef Q_OS_WIN
+    QFontEngineFT::HintFull;
+#else
+    QFontEngineFT::HintNone;
+#endif
+
 // -------------------------- Freetype support ------------------------------
 
 class QtFreetypeData
@@ -527,69 +534,87 @@ QFontEngineFT::Glyph::~Glyph()
     delete [] data;
 }
 
-static const uint subpixel_filter[3][3] = {
-    { 180, 60, 16 },
-    { 38, 180, 38 },
-    { 16, 60, 180 }
+struct LcdFilterDummy
+{
+    static inline void filterPixel(uchar &, uchar &, uchar &)
+    {}
 };
 
-static inline uint filterPixel(uint red, uint green, uint blue, bool legacyFilter)
+struct LcdFilterLegacy
 {
-    uint res;
-    if (legacyFilter) {
-        uint high = (red*subpixel_filter[0][0] + green*subpixel_filter[0][1] + blue*subpixel_filter[0][2]) >> 8;
-        uint mid = (red*subpixel_filter[1][0] + green*subpixel_filter[1][1] + blue*subpixel_filter[1][2]) >> 8;
-        uint low = (red*subpixel_filter[2][0] + green*subpixel_filter[2][1] + blue*subpixel_filter[2][2]) >> 8;
-        res = (mid << 24) + (high << 16) + (mid << 8) + low;
-    } else {
-        uint alpha = green;
-        res = (alpha << 24) + (red << 16) + (green << 8) + blue;
+    static inline void filterPixel(uchar &red, uchar &green, uchar &blue)
+    {
+        uint r = red, g = green, b = blue;
+        // intra-pixel filter used by the legacy filter (adopted from _ft_lcd_filter_legacy)
+        red   = (r * uint(65538 * 9/13) + g * uint(65538 * 1/6) + b * uint(65538 * 1/13)) / 65536;
+        green = (r * uint(65538 * 3/13) + g * uint(65538 * 4/6) + b * uint(65538 * 3/13)) / 65536;
+        blue  = (r * uint(65538 * 1/13) + g * uint(65538 * 1/6) + b * uint(65538 * 9/13)) / 65536;
     }
-    return res;
-}
+};
 
-static void convertRGBToARGB(const uchar *src, uint *dst, int width, int height, int src_pitch, bool bgr, bool legacyFilter)
+template <typename LcdFilter>
+static void convertRGBToARGB_helper(const uchar *src, uint *dst, int width, int height, int src_pitch, bool bgr)
 {
-    int h = height;
     const int offs = bgr ? -1 : 1;
     const int w = width * 3;
-    while (h--) {
+    while (height--) {
         uint *dd = dst;
         for (int x = 0; x < w; x += 3) {
-            uint red = src[x+1-offs];
-            uint green = src[x+1];
-            uint blue = src[x+1+offs];
-            *dd = filterPixel(red, green, blue, legacyFilter);
-            ++dd;
+            uchar red = src[x + 1 - offs];
+            uchar green = src[x + 1];
+            uchar blue = src[x + 1 + offs];
+            LcdFilter::filterPixel(red, green, blue);
+            // alpha = green
+            *dd++ = (green << 24) | (red << 16) | (green << 8) | blue;
         }
         dst += width;
         src += src_pitch;
     }
 }
 
-static void convertRGBToARGB_V(const uchar *src, uint *dst, int width, int height, int src_pitch, bool bgr, bool legacyFilter)
+static inline void convertRGBToARGB(const uchar *src, uint *dst, int width, int height, int src_pitch, bool bgr, bool legacyFilter)
 {
-    int h = height;
+    if (!legacyFilter)
+        convertRGBToARGB_helper<LcdFilterDummy>(src, dst, width, height, src_pitch, bgr);
+    else
+        convertRGBToARGB_helper<LcdFilterLegacy>(src, dst, width, height, src_pitch, bgr);
+}
+
+template <typename LcdFilter>
+static void convertRGBToARGB_V_helper(const uchar *src, uint *dst, int width, int height, int src_pitch, bool bgr)
+{
     const int offs = bgr ? -src_pitch : src_pitch;
-    while (h--) {
+    while (height--) {
         for (int x = 0; x < width; x++) {
-            uint red = src[x+src_pitch-offs];
-            uint green = src[x+src_pitch];
-            uint blue = src[x+src_pitch+offs];
-            dst[x] = filterPixel(red, green, blue, legacyFilter);
+            uchar red = src[x + src_pitch - offs];
+            uchar green = src[x + src_pitch];
+            uchar blue = src[x + src_pitch + offs];
+            LcdFilter::filterPixel(red, green, blue);
+            // alpha = green
+            *dst++ = (green << 24) | (red << 16) | (green << 8) | blue;
         }
-        dst += width;
         src += 3*src_pitch;
     }
 }
 
-static void convertGRAYToARGB(const uchar *src, uint *dst, int width, int height, int src_pitch) {
-    for (int y = 0; y < height; ++y) {
-        int readpos =  (y * src_pitch);
-        int writepos = (y * width);
-        for (int x = 0; x < width; ++x) {
-            dst[writepos + x] = (0xFF << 24) + (src[readpos + x] << 16) + (src[readpos + x] << 8) + src[readpos + x];
+static inline void convertRGBToARGB_V(const uchar *src, uint *dst, int width, int height, int src_pitch, bool bgr, bool legacyFilter)
+{
+    if (!legacyFilter)
+        convertRGBToARGB_V_helper<LcdFilterDummy>(src, dst, width, height, src_pitch, bgr);
+    else
+        convertRGBToARGB_V_helper<LcdFilterLegacy>(src, dst, width, height, src_pitch, bgr);
+}
+
+static inline void convertGRAYToARGB(const uchar *src, uint *dst, int width, int height, int src_pitch)
+{
+    while (height--) {
+        const uchar *p = src;
+        const uchar * const e = p + width;
+        while (p < e) {
+            uchar gray = *p++;
+            *dst++ = (0xFF << 24) | (gray << 16) | (gray << 8) | gray;
         }
+        src += src_pitch;
     }
 }
 
@@ -629,11 +654,7 @@ QFontEngineFT::QFontEngineFT(const QFontDef &fd)
     antialias = true;
     freetype = 0;
     default_load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
-#ifndef Q_OS_WIN
-    default_hint_style = HintNone;
-#else
-    default_hint_style = HintFull;
-#endif
+    default_hint_style = ftInitialDefaultHintStyle;
     subpixelType = Subpixel_None;
     lcdFilterType = 0;
 #if defined(FT_LCD_FILTER_H)
@@ -685,7 +706,6 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
         symbol = bool(fontDef.family.contains(QLatin1String("symbol"), Qt::CaseInsensitive));
     }
 
-    lbearing = rbearing = SHRT_MIN;
     freetype->computeSize(fontDef, &xsize, &ysize, &defaultGlyphSet.outline_drawing);
 
     FT_Face face = lockFace();
@@ -697,8 +717,12 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
         FT_Set_Transform(face, &matrix, 0);
         freetype->matrix = matrix;
         // fake bold
-        if ((fontDef.weight >= QFont::Bold) && !(face->style_flags & FT_STYLE_FLAG_BOLD) && !FT_IS_FIXED_WIDTH(face))
-            embolden = true;
+        if ((fontDef.weight >= QFont::Bold) && !(face->style_flags & FT_STYLE_FLAG_BOLD) && !FT_IS_FIXED_WIDTH(face)) {
+            if (const TT_OS2 *os2 = reinterpret_cast<const TT_OS2 *>(FT_Get_Sfnt_Table(face, ft_sfnt_os2))) {
+                if (os2->usWeightClass < 750)
+                    embolden = true;
+            }
+        }
         // underline metrics
         line_thickness =  QFixed::fromFixed(FT_MulFix(face->underline_thickness, face->size->metrics.y_scale));
         underline_position = QFixed::fromFixed(-FT_MulFix(face->underline_position, face->size->metrics.y_scale));
@@ -758,6 +782,24 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
 
     fsType = freetype->fsType();
     return true;
+}
+
+void QFontEngineFT::setQtDefaultHintStyle(QFont::HintingPreference hintingPreference)
+{
+    switch (hintingPreference) {
+    case QFont::PreferNoHinting:
+        setDefaultHintStyle(HintNone);
+        break;
+    case QFont::PreferFullHinting:
+        setDefaultHintStyle(HintFull);
+        break;
+    case QFont::PreferVerticalHinting:
+        setDefaultHintStyle(HintLight);
+        break;
+    case QFont::PreferDefaultHinting:
+        setDefaultHintStyle(ftInitialDefaultHintStyle);
+        break;
+    }
 }
 
 void QFontEngineFT::setDefaultHintStyle(HintStyle style)
@@ -1235,54 +1277,6 @@ QFixed QFontEngineFT::averageCharWidth() const
 qreal QFontEngineFT::maxCharWidth() const
 {
     return metrics.max_advance >> 6;
-}
-
-static const ushort char_table[] = {
-        40,
-        67,
-        70,
-        75,
-        86,
-        88,
-        89,
-        91,
-        95,
-        102,
-        114,
-        124,
-        127,
-        205,
-        645,
-        884,
-        922,
-        1070,
-        12386
-};
-
-static const int char_table_entries = sizeof(char_table)/sizeof(ushort);
-
-
-qreal QFontEngineFT::minLeftBearing() const
-{
-    if (lbearing == SHRT_MIN)
-        (void) minRightBearing(); // calculates both
-    return lbearing.toReal();
-}
-
-qreal QFontEngineFT::minRightBearing() const
-{
-    if (rbearing == SHRT_MIN) {
-        lbearing = rbearing = 0;
-        for (int i = 0; i < char_table_entries; ++i) {
-            const glyph_t glyph = glyphIndex(char_table[i]);
-            if (glyph != 0) {
-                glyph_metrics_t gi = const_cast<QFontEngineFT *>(this)->boundingBox(glyph);
-                lbearing = qMin(lbearing, gi.x);
-                rbearing = qMin(rbearing, (gi.xoff - gi.x - gi.width));
-            }
-        }
-    }
-    return rbearing.toReal();
 }
 
 QFixed QFontEngineFT::lineThickness() const

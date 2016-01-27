@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Klaralvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author David Faure <david.faure@kdab.com>
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -51,6 +52,7 @@
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qset.h>
+#include <QtCore/qelapsedtimer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -77,7 +79,7 @@ public:
     QMimeDatabasePrivate *m_db;
 protected:
     bool shouldCheck();
-    QDateTime m_lastCheck;
+    QElapsedTimer m_lastCheck;
 };
 
 /*

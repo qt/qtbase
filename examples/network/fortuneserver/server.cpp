@@ -46,11 +46,13 @@
 #include "server.h"
 
 Server::Server(QWidget *parent)
-:   QDialog(parent), tcpServer(0), networkSession(0)
+    : QDialog(parent)
+    , statusLabel(new QLabel)
+    , tcpServer(Q_NULLPTR)
+    , networkSession(0)
 {
-    statusLabel = new QLabel;
-    quitButton = new QPushButton(tr("Quit"));
-    quitButton->setAutoDefault(false);
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    statusLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
 
     QNetworkConfigurationManager manager;
     if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired) {
@@ -68,7 +70,7 @@ Server::Server(QWidget *parent)
         }
 
         networkSession = new QNetworkSession(config, this);
-        connect(networkSession, SIGNAL(opened()), this, SLOT(sessionOpened()));
+        connect(networkSession, &QNetworkSession::opened, this, &Server::sessionOpened);
 
         statusLabel->setText(tr("Opening network session."));
         networkSession->open();
@@ -85,10 +87,11 @@ Server::Server(QWidget *parent)
                  << tr("You cannot kill time without injuring eternity.")
                  << tr("Computers are not intelligent. They only think they are.");
     //! [2]
-
-        connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
+        QPushButton *quitButton = new QPushButton(tr("Quit"));
+        quitButton->setAutoDefault(false);
+        connect(quitButton, &QAbstractButton::clicked, this, &QWidget::close);
     //! [3]
-        connect(tcpServer, SIGNAL(newConnection()), this, SLOT(sendFortune()));
+        connect(tcpServer, &QTcpServer::newConnection, this, &Server::sendFortune);
     //! [3]
 
         QHBoxLayout *buttonLayout = new QHBoxLayout;
@@ -96,12 +99,26 @@ Server::Server(QWidget *parent)
         buttonLayout->addWidget(quitButton);
         buttonLayout->addStretch(1);
 
-        QVBoxLayout *mainLayout = new QVBoxLayout;
+        QVBoxLayout *mainLayout = Q_NULLPTR;
+        if (QGuiApplication::styleHints()->showIsFullScreen() || QGuiApplication::styleHints()->showIsMaximized()) {
+            QVBoxLayout *outerVerticalLayout = new QVBoxLayout(this);
+            outerVerticalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding));
+            QHBoxLayout *outerHorizontalLayout = new QHBoxLayout;
+            outerHorizontalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored));
+            QGroupBox *groupBox = new QGroupBox(QGuiApplication::applicationDisplayName());
+            mainLayout = new QVBoxLayout(groupBox);
+            outerHorizontalLayout->addWidget(groupBox);
+            outerHorizontalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored));
+            outerVerticalLayout->addLayout(outerHorizontalLayout);
+            outerVerticalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding));
+        } else {
+            mainLayout = new QVBoxLayout(this);
+        }
+
         mainLayout->addWidget(statusLabel);
         mainLayout->addLayout(buttonLayout);
-        setLayout(mainLayout);
 
-        setWindowTitle(tr("Fortune Server"));
+        setWindowTitle(QGuiApplication::applicationDisplayName());
 }
 
 void Server::sessionOpened()
@@ -165,8 +182,8 @@ void Server::sendFortune()
 //! [6] //! [7]
 
     QTcpSocket *clientConnection = tcpServer->nextPendingConnection();
-    connect(clientConnection, SIGNAL(disconnected()),
-            clientConnection, SLOT(deleteLater()));
+    connect(clientConnection, &QAbstractSocket::disconnected,
+            clientConnection, &QObject::deleteLater);
 //! [7] //! [8]
 
     clientConnection->write(block);

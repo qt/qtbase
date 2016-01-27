@@ -243,11 +243,11 @@ public class QtActivity extends Activity
             @SuppressWarnings("rawtypes")
             Class loaderClass = m_classLoader.loadClass(loaderParams.getString(LOADER_CLASS_NAME_KEY)); // load QtLoader class
             Object qtLoader = loaderClass.newInstance(); // create an instance
-            Method perpareAppMethod = qtLoader.getClass().getMethod("loadApplication",
+            Method prepareAppMethod = qtLoader.getClass().getMethod("loadApplication",
                                                                     Activity.class,
                                                                     ClassLoader.class,
                                                                     Bundle.class);
-            if (!(Boolean)perpareAppMethod.invoke(qtLoader, this, m_classLoader, loaderParams))
+            if (!(Boolean)prepareAppMethod.invoke(qtLoader, this, m_classLoader, loaderParams))
                 throw new Exception("");
 
             QtApplication.setQtActivityDelegate(qtLoader);
@@ -897,6 +897,12 @@ public class QtActivity extends Activity
             } else {
                 ENVIRONMENT_VARIABLES += "QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED=1\t";
             }
+
+            if (m_activityInfo.metaData.containsKey("android.app.auto_screen_scale_factor")
+                && m_activityInfo.metaData.getBoolean("android.app.auto_screen_scale_factor")) {
+                ENVIRONMENT_VARIABLES += "QT_AUTO_SCREEN_SCALE_FACTOR=1\t";
+            }
+
             startApp(true);
         }
     }

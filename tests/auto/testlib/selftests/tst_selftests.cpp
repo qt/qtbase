@@ -316,6 +316,7 @@ tst_Selftests::tst_Selftests()
 
 void tst_Selftests::initTestCase()
 {
+    QVERIFY2(tempDir.isValid(), qPrintable(tempDir.errorString()));
     //Detect the location of the sub programs
     QString subProgram = QLatin1String("float/float");
 #if defined(Q_OS_WIN)
@@ -625,6 +626,28 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
 
     for (int n = 0; n < loggers.count(); ++n) {
         QString logger = loggers[n];
+        if (n == 0 && subdir == QLatin1String("crashes")) {
+            QByteArray &actual = actualOutputs[0];
+#ifndef Q_OS_WIN
+             // Remove digits of times to match the expected file.
+            const QLatin1String timePattern("Function time:");
+            int timePos = actual.indexOf(timePattern);
+            if (timePos >= 0) {
+                timePos += timePattern.size();
+                const int nextLinePos = actual.indexOf('\n', timePos);
+                for (int c = (nextLinePos != -1 ? nextLinePos : actual.size()) - 1; c >= timePos; --c) {
+                    if (actual.at(c) >= '0' && actual.at(c) <= '9')
+                        actual.remove(c, 1);
+                }
+            }
+#else // !Q_OS_WIN
+            // Remove stack trace which is output to stdout.
+            const int exceptionLogStart = actual.indexOf("A crash occurred in ");
+            if (exceptionLogStart >= 0)
+                actual.truncate(exceptionLogStart);
+#endif // Q_OS_WIN
+        }
+
         QList<QByteArray> res = splitLines(actualOutputs[n]);
         const QString expectedFileName = expectedFileNameFromTest(subdir, logger);
         QList<QByteArray> exp = expectedResult(expectedFileName);

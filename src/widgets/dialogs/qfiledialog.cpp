@@ -189,7 +189,9 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
     \value AnyFile        The name of a file, whether it exists or not.
     \value ExistingFile   The name of a single existing file.
     \value Directory      The name of a directory. Both files and
-                          directories are displayed.
+                          directories are displayed. However, the native Windows
+                          file dialog does not support displaying files in the
+                          directory chooser.
     \value ExistingFiles  The names of zero or more existing files.
 
     This value is obsolete since Qt 4.5:
@@ -975,7 +977,7 @@ void QFileDialog::setDirectoryUrl(const QUrl &directory)
     else if (directory.isLocalFile())
         setDirectory(directory.toLocalFile());
     else if (d->usingWidgets())
-        qWarning() << "Non-native QFileDialog supports only local files";
+        qWarning("Non-native QFileDialog supports only local files");
 }
 
 /*!
@@ -1085,7 +1087,7 @@ void QFileDialog::selectUrl(const QUrl &url)
     else if (url.isLocalFile())
         selectFile(url.toLocalFile());
     else
-        qWarning() << "Non-native QFileDialog supports only local files";
+        qWarning("Non-native QFileDialog supports only local files");
 }
 
 #ifdef Q_OS_UNIX
@@ -1969,6 +1971,8 @@ void QFileDialog::setIconProvider(QFileIconProvider *provider)
 QFileIconProvider *QFileDialog::iconProvider() const
 {
     Q_D(const QFileDialog);
+    if (!d->model)
+        return Q_NULLPTR;
     return d->model->iconProvider();
 }
 
@@ -2414,9 +2418,12 @@ QUrl QFileDialog::getSaveFileUrl(QWidget *parent,
     pass. To ensure a native file dialog, \l{QFileDialog::}{ShowDirsOnly} must
     be set.
 
-    On Windows, and OS X, this static function will use the
-    native file dialog and not a QFileDialog. On Windows CE, if the device has
-    no native file dialog, a QFileDialog will be used.
+    On Windows and OS X, this static function will use the
+    native file dialog and not a QFileDialog. However, the native Windows file
+    dialog does not support displaying files in the directory chooser. You need
+    to pass \l{QFileDialog::}{DontUseNativeDialog} to display files using a
+    QFileDialog. On Windows CE, if the device has no native file dialog, a
+    QFileDialog will be used.
 
     On Unix/X11, the normal behavior of the file dialog is to resolve and
     follow symlinks. For example, if \c{/usr/tmp} is a symlink to \c{/var/tmp},
@@ -2424,7 +2431,7 @@ QUrl QFileDialog::getSaveFileUrl(QWidget *parent,
     \a options includes DontResolveSymlinks, the file dialog will treat
     symlinks as regular directories.
 
-    On Windows the dialog will spin a blocking modal event loop that will not
+    On Windows, the dialog will spin a blocking modal event loop that will not
     dispatch any QTimers, and if \a parent is not 0 then it will position the
     dialog just below the parent's title bar.
 
@@ -2828,6 +2835,13 @@ void QFileDialogPrivate::createWidgets()
     if (qFileDialogUi)
         return;
     Q_Q(QFileDialog);
+
+    // This function is sometimes called late (e.g as a fallback from setVisible). In that case we
+    // need to ensure that the following UI code (setupUI in particular) doesn't reset any explicitly
+    // set window state or geometry.
+    QSize preSize = q->testAttribute(Qt::WA_Resized) ? q->size() : QSize();
+    Qt::WindowStates preState = q->windowState();
+
     model = new QFileSystemModel(q);
     model->setFilter(options->filter());
     model->setObjectName(QLatin1String("qt_filesystem_model"));
@@ -2873,6 +2887,9 @@ void QFileDialogPrivate::createWidgets()
     completer = new QFSCompleter(model, q);
     qFileDialogUi->fileNameEdit->setCompleter(completer);
 #endif // QT_NO_FSCOMPLETER
+
+    qFileDialogUi->fileNameEdit->setInputMethodHints(Qt::ImhNoPredictiveText);
+
     QObject::connect(qFileDialogUi->fileNameEdit, SIGNAL(textChanged(QString)),
             q, SLOT(_q_autoCompleteFileName(QString)));
     QObject::connect(qFileDialogUi->fileNameEdit, SIGNAL(textChanged(QString)),
@@ -2986,7 +3003,8 @@ void QFileDialogPrivate::createWidgets()
     lineEdit()->selectAll();
     _q_updateOkButton();
     retranslateStrings();
-    q->resize(q->sizeHint());
+    q->resize(preSize.isValid() ? preSize : q->sizeHint());
+    q->setWindowState(preState);
 }
 
 void QFileDialogPrivate::_q_showHeader(QAction *action)
@@ -3773,6 +3791,12 @@ void QFileDialogPrivate::_q_nativeEnterDirectory(const QUrl &directory)
 bool QFileDialogPrivate::itemViewKeyboardEvent(QKeyEvent *event) {
 
     Q_Q(QFileDialog);
+
+    if (event->matches(QKeySequence::Cancel)) {
+        q->reject();
+        return true;
+    }
+
     switch (event->key()) {
     case Qt::Key_Backspace:
         _q_navigateToParent();
@@ -3788,9 +3812,6 @@ bool QFileDialogPrivate::itemViewKeyboardEvent(QKeyEvent *event) {
             return true;
         }
         break;
-    case Qt::Key_Escape:
-        q->hide();
-        return true;
     default:
         break;
     }
@@ -3977,7 +3998,7 @@ void QFileDialogLineEdit::keyPressEvent(QKeyEvent *e)
 
     int key = e->key();
     QLineEdit::keyPressEvent(e);
-    if (key != Qt::Key_Escape && key != Qt::Key_Back)
+    if (!e->matches(QKeySequence::Cancel) && key != Qt::Key_Back)
         e->accept();
 }
 

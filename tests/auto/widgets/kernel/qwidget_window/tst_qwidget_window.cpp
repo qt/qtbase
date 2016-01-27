@@ -338,30 +338,30 @@ void tst_QWidget_window::tst_windowFilePath()
 
 void tst_QWidget_window::tst_showWithoutActivating()
 {
-#ifndef Q_DEAD_CODE_FROM_QT4_X11
-    QSKIP("This test is X11-only.");
-#else
-    QWidget w;
-    w.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&w));
-    QApplication::processEvents();
+    QString platformName = QGuiApplication::platformName().toLower();
+    if (platformName == "cocoa")
+        QSKIP("Cocoa: This fails. Figure out why.");
+    else if (platformName != QStringLiteral("xcb")
+            && platformName != QStringLiteral("windows")
+            && platformName != QStringLiteral("ios"))
+        QSKIP("Qt::WA_ShowWithoutActivating is currently supported only on xcb, windows, and ios platforms.");
 
-    QApplication::clipboard();
-    QLineEdit *lineEdit = new QLineEdit;
-    lineEdit->setAttribute(Qt::WA_ShowWithoutActivating, true);
-    lineEdit->show();
-    lineEdit->setAttribute(Qt::WA_ShowWithoutActivating, false);
-    lineEdit->raise();
-    lineEdit->activateWindow();
+    QWidget w1;
+    w1.setAttribute(Qt::WA_ShowWithoutActivating);
+    w1.show();
+    QVERIFY(!QTest::qWaitForWindowActive(&w1));
 
-    Window window;
-    int revertto;
-    QTRY_COMPARE(lineEdit->winId(),
-                 (XGetInputFocus(QX11Info::display(), &window, &revertto), window) );
-    // Note the use of the , before window because we want the XGetInputFocus to be re-executed
-    //     in each iteration of the inside loop of the QTRY_COMPARE macro
+    QWidget w2;
+    w2.show();
+    QVERIFY(QTest::qWaitForWindowActive(&w2));
 
-#endif // Q_DEAD_CODE_FROM_QT4_X11
+    QWidget w3;
+    w3.setAttribute(Qt::WA_ShowWithoutActivating);
+    w3.show();
+    QVERIFY(!QTest::qWaitForWindowActive(&w3));
+
+    w3.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&w3));
 }
 
 void tst_QWidget_window::tst_paintEventOnSecondShow()

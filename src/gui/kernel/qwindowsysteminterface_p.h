@@ -51,6 +51,7 @@
 #include <QMutex>
 #include <QList>
 #include <QWaitCondition>
+#include <QAtomicInt>
 
 QT_BEGIN_NAMESPACE
 
@@ -101,7 +102,7 @@ public:
         };
 
         explicit WindowSystemEvent(EventType t)
-            : type(t), flags(0),  eventAccepted(true) { }
+            : type(t), flags(0), eventAccepted(true) { }
         virtual ~WindowSystemEvent() { }
 
         bool synthetic() const  { return flags & Synthetic; }
@@ -489,7 +490,7 @@ public:
 
     static QWaitCondition eventsFlushed;
     static QMutex flushEventMutex;
-    static bool eventAccepted;
+    static QAtomicInt eventAccepted;
 
     static QList<QTouchEvent::TouchPoint>
         fromNativeTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points,

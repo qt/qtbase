@@ -200,7 +200,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
         case AppDataLocation:
         case AppLocalDataLocation:
         case GenericDataLocation:
-            if (SHGetSpecialFolderPath(0, path, clsidForAppDataLocation(type), FALSE)) {
+            if (SHGetSpecialFolderPath(0, path, CSIDL_COMMON_APPDATA, FALSE)) {
                 QString result = convertCharArray(path);
                 if (type != GenericDataLocation && type != GenericConfigLocation) {
 #ifndef QT_BOOTSTRAPPED
@@ -212,10 +212,8 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
                 }
                 dirs.append(result);
 #ifndef QT_BOOTSTRAPPED
-                if (type != GenericDataLocation) {
-                    dirs.append(QCoreApplication::applicationDirPath());
-                    dirs.append(QCoreApplication::applicationDirPath() + QLatin1String("/data"));
-                }
+                dirs.append(QCoreApplication::applicationDirPath());
+                dirs.append(QCoreApplication::applicationDirPath() + QLatin1String("/data"));
 #endif
             }
             break;

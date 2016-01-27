@@ -338,15 +338,15 @@ void QWindowsXPStylePrivate::cleanupHandleMap()
 HTHEME QWindowsXPStylePrivate::createTheme(int theme, HWND hwnd)
 {
     if (theme < 0 || theme >= NThemes || !hwnd) {
-        qWarning("%s: Invalid parameters #%d, %p", Q_FUNC_INFO, theme, hwnd);
+        qWarning("Invalid parameters #%d, %p", theme, hwnd);
         return 0;
     }
     if (!m_themes[theme]) {
         const wchar_t *name = themeNames[theme];
         m_themes[theme] = pOpenThemeData(hwnd, name);
         if (!m_themes[theme])
-            qErrnoWarning("%s: OpenThemeData() failed for theme %d (%s).",
-                          Q_FUNC_INFO, theme, qPrintable(themeName(theme)));
+            qErrnoWarning("OpenThemeData() failed for theme %d (%s).",
+                          theme, qPrintable(themeName(theme)));
     }
     return m_themes[theme];
 }
@@ -1690,7 +1690,7 @@ case PE_Frame:
                 // This should work, but currently there's an error in the ::drawBackgroundDirectly()
                 // code, when using the HDC directly..
                 if (useGradient) {
-                    QStyleOptionTabWidgetFrameV2 frameOpt = *tab;
+                    QStyleOptionTabWidgetFrame frameOpt = *tab;
                     frameOpt.rect = widget->rect();
                     QRect contentsRect = subElementRect(SE_TabWidgetTabContents, &frameOpt, widget);
                     QRegion reg = option->rect;
@@ -1810,8 +1810,7 @@ case PE_Frame:
         else
             stateId = GBS_NORMAL;
         if (const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
-            const QStyleOptionFrameV2 *frame2 = qstyleoption_cast<const QStyleOptionFrameV2 *>(option);
-            if (frame2->features & QStyleOptionFrameV2::Flat) {
+            if (frame->features & QStyleOptionFrame::Flat) {
                 // Windows XP does not have a theme part for a flat GroupBox, paint it with the windows style
                 QRect fr = frame->rect;
                 QPoint p1(fr.x(), fr.y() + 1);
@@ -1826,10 +1825,9 @@ case PE_Frame:
         {
         Qt::Orientation orient = Qt::Horizontal;
         bool inverted = false;
-        if (const QStyleOptionProgressBarV2 *pb2 = qstyleoption_cast<const QStyleOptionProgressBarV2 *>(option)) {
-            orient = pb2->orientation;
-            if (pb2->invertedAppearance)
-                inverted = true;
+        if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
+            orient = pb->orientation;
+            inverted = pb->invertedAppearance;
         }
         if (orient == Qt::Horizontal) {
             partId = PP_CHUNK;
@@ -2207,8 +2205,8 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
     case CE_ProgressBarGroove:
         {
         Qt::Orientation orient = Qt::Horizontal;
-        if (const QStyleOptionProgressBarV2 *pb2 = qstyleoption_cast<const QStyleOptionProgressBarV2 *>(option))
-            orient = pb2->orientation;
+        if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(option))
+            orient = pb->orientation;
         partId = (orient == Qt::Horizontal) ? PP_BAR : PP_BARVERT;
         themeNumber = QWindowsXPStylePrivate::ProgressTheme;
         stateId = 1;
@@ -2378,9 +2376,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
             bool isFloating = widget && widget->isWindow();
             bool isActive = dwOpt->state & State_Active;
 
-            const QStyleOptionDockWidgetV2 *v2
-                = qstyleoption_cast<const QStyleOptionDockWidgetV2*>(dwOpt);
-            bool verticalTitleBar = v2 == 0 ? false : v2->verticalTitleBar;
+            const bool verticalTitleBar = dwOpt->verticalTitleBar;
 
             if (verticalTitleBar) {
                 rect.setSize(rect.size().transposed());
@@ -3316,8 +3312,8 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
 
 static inline Qt::Orientation progressBarOrientation(const QStyleOption *option = 0)
 {
-    if (const QStyleOptionProgressBarV2 *pb2 = qstyleoption_cast<const QStyleOptionProgressBarV2 *>(option))
-        return pb2->orientation;
+    if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(option))
+        return pb->orientation;
     return Qt::Horizontal;
 }
 

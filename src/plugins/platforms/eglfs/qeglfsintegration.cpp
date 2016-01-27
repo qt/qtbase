@@ -40,6 +40,7 @@
 #include <QtGui/QScreen>
 #include <QtGui/QOffscreenSurface>
 #include <QtGui/QWindow>
+#include <QtCore/QLoggingCategory>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
 
@@ -61,6 +62,10 @@
 #include <QtPlatformSupport/private/qopenglcompositorbackingstore_p.h>
 
 #include <QtPlatformHeaders/QEGLNativeContext>
+
+#ifndef QT_NO_LIBINPUT
+#include <QtPlatformSupport/private/qlibinputhandler_p.h>
+#endif
 
 #if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
 #include <QtPlatformSupport/private/qevdevmousemanager_p.h>
@@ -112,7 +117,7 @@ void QEglFSIntegration::initialize()
 {
     qt_egl_device_integration()->platformInit();
 
-    m_display = eglGetDisplay(nativeDisplay());
+    m_display = qt_egl_device_integration()->createDisplay(nativeDisplay());
     if (m_display == EGL_NO_DISPLAY)
         qFatal("Could not open egl display");
 
@@ -124,13 +129,14 @@ void QEglFSIntegration::initialize()
 
     m_vtHandler.reset(new QFbVtHandler);
 
-    if (!m_disableInputHandlers)
-        createInputHandlers();
-
     if (qt_egl_device_integration()->usesDefaultScreen())
         addScreen(new QEglFSScreen(display()));
     else
         qt_egl_device_integration()->screenInit();
+
+    // Input code may rely on the screens, so do it only after the screen init.
+    if (!m_disableInputHandlers)
+        createInputHandlers();
 }
 
 void QEglFSIntegration::destroy()
@@ -173,7 +179,7 @@ QPlatformBackingStore *QEglFSIntegration::createPlatformBackingStore(QWindow *wi
 QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
 {
     QWindowSystemInterface::flushWindowSystemEvents();
-    QEglFSWindow *w = new QEglFSWindow(window);
+    QEglFSWindow *w = qt_egl_device_integration()->createWindow(window);
     w->create();
     if (window->type() != Qt::ToolTip)
         w->requestActivateWindow();
@@ -207,10 +213,14 @@ QPlatformOffscreenSurface *QEglFSIntegration::createPlatformOffscreenSurface(QOf
 {
     EGLDisplay dpy = surface->screen() ? static_cast<QEglFSScreen *>(surface->screen()->handle())->display() : display();
     QSurfaceFormat fmt = qt_egl_device_integration()->surfaceFormatFor(surface->requestedFormat());
-    if (qt_egl_device_integration()->supportsPBuffers())
-        return new QEGLPbuffer(dpy, fmt, surface);
-    else
+    if (qt_egl_device_integration()->supportsPBuffers()) {
+        QEGLPlatformContext::Flags flags = 0;
+        if (!qt_egl_device_integration()->supportsSurfacelessContexts())
+            flags |= QEGLPlatformContext::NoSurfaceless;
+        return new QEGLPbuffer(dpy, fmt, surface, flags);
+    } else {
         return new QEglFSOffscreenWindow(dpy, fmt, surface);
+    }
     // Never return null. Multiple QWindows are not supported by this plugin.
 }
 
@@ -241,7 +251,8 @@ enum ResourceType {
     EglContext,
     EglConfig,
     NativeDisplay,
-    XlibDisplay
+    XlibDisplay,
+    WaylandDisplay
 };
 
 static int resourceType(const QByteArray &key)
@@ -252,7 +263,8 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("eglcontext"),
         QByteArrayLiteral("eglconfig"),
         QByteArrayLiteral("nativedisplay"),
-        QByteArrayLiteral("display")
+        QByteArrayLiteral("display"),
+        QByteArrayLiteral("server_wl_display")
     };
     const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
     const QByteArray *result = std::find(names, end, key);
@@ -271,6 +283,9 @@ void *QEglFSIntegration::nativeResourceForIntegration(const QByteArray &resource
         break;
     case NativeDisplay:
         result = reinterpret_cast<void*>(nativeDisplay());
+        break;
+    case WaylandDisplay:
+        result = qt_egl_device_integration()->wlDisplay();
         break;
     default:
         break;
@@ -389,6 +404,13 @@ void QEglFSIntegration::loadKeymapStatic(const QString &filename)
 
 void QEglFSIntegration::createInputHandlers()
 {
+#ifndef QT_NO_LIBINPUT
+    if (!qEnvironmentVariableIntValue("QT_QPA_EGLFS_NO_LIBINPUT")) {
+        new QLibInputHandler(QLatin1String("libinput"), QString());
+        return;
+    }
+#endif
+
 #if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
     m_kbdMgr = new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
     new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
@@ -420,6 +442,7 @@ EGLConfig QEglFSIntegration::chooseConfig(EGLDisplay display, const QSurfaceForm
     };
 
     Chooser chooser(display);
+    chooser.setSurfaceType(qt_egl_device_integration()->surfaceType());
     chooser.setSurfaceFormat(format);
     return chooser.chooseConfig();
 }

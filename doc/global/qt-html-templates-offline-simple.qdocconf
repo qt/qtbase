@@ -1,0 +1,35 @@
+# Specify a custom CSS file used by this template
+HTML.stylesheets  += template/style/offline-simple.css
+qhp.extraFiles    += style/offline-simple.css
+
+# Override the header styles
+HTML.headerstyles  = \
+    "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/offline-simple.css\" />\n" \
+    "  <script type=\"text/javascript\">\n" \
+    "    window.onload = function(){document.getElementsByTagName(\"link\").item(0).setAttribute(\"href\", \"style/offline.css\");};\n" \
+    "  </script>\n"
+
+HTML.postheader = \
+    "<body>\n" \
+    "<div class=\"header\" id=\"qtdocheader\">\n"\
+    "  <div class=\"main\">\n" \
+    "    <div class=\"main-rounded\">\n" \
+    "      <div class=\"navigationbar\">\n" \
+    "        <table><tr>\n"
+
+HTML.postpostheader = \
+    "        </tr></table>\n"\
+    "      </div>\n" \
+    "    </div>\n" \
+    "<div class=\"content\">\n" \
+    "<div class=\"line\">\n" \
+    "<div class=\"content mainContent\">\n"
+
+HTML.navigationseparator = \
+    "<span class=\"naviSeparator\">  &#9702;  </span>\n"
+
+# Add some padding around code snippets, as we cannot
+# currectly style them for QTextBrowser using only CSS.
+codeindent         = 2
+codeprefix         = "\n\n"
+codesuffix         = "\n\n"

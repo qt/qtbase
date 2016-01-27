@@ -245,7 +245,7 @@ bool QDockWidgetLayout::nativeWindowDeco(bool floating) const
 
 void QDockWidgetLayout::addItem(QLayoutItem*)
 {
-    qWarning() << "QDockWidgetLayout::addItem(): please use QDockWidgetLayout::setWidget()";
+    qWarning("QDockWidgetLayout::addItem(): please use QDockWidgetLayout::setWidget()");
     return;
 }
 
@@ -507,7 +507,7 @@ void QDockWidgetLayout::setGeometry(const QRect &geometry)
         if (QLayoutItem *item = item_list[TitleBar]) {
             item->setGeometry(_titleArea);
         } else {
-            QStyleOptionDockWidgetV2 opt;
+            QStyleOptionDockWidget opt;
             q->initStyleOption(&opt);
 
             if (QLayoutItem *item = item_list[CloseButton]) {
@@ -614,6 +614,7 @@ void QDockWidgetPrivate::init()
 #ifndef QT_NO_ACTION
     toggleViewAction = new QAction(q);
     toggleViewAction->setCheckable(true);
+    toggleViewAction->setMenuRole(QAction::NoRole);
     fixedWindowTitle = qt_setWindowTitle_helperHelper(q->windowTitle(), q);
     toggleViewAction->setText(fixedWindowTitle);
     QObject::connect(toggleViewAction, SIGNAL(triggered(bool)),
@@ -649,10 +650,7 @@ void QDockWidget::initStyleOption(QStyleOptionDockWidget *option) const
     option->floatable = hasFeature(this, QDockWidget::DockWidgetFloatable);
 
     QDockWidgetLayout *l = qobject_cast<QDockWidgetLayout*>(layout());
-    QStyleOptionDockWidgetV2 *v2
-        = qstyleoption_cast<QStyleOptionDockWidgetV2*>(option);
-    if (v2 != 0)
-        v2->verticalTitleBar = l->verticalTitleBar;
+    option->verticalTitleBar = l->verticalTitleBar;
 }
 
 void QDockWidgetPrivate::_q_toggleView(bool b)
@@ -1095,14 +1093,8 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
     q->setWindowFlags(flags);
 
 
-    if (!rect.isNull()) {
-        if (floating) {
-            q->resize(rect.size());
-            q->move(rect.topLeft());
-        } else {
+    if (!rect.isNull())
             q->setGeometry(rect);
-        }
-    }
 
     updateButtons();
 
@@ -1436,7 +1428,7 @@ void QDockWidget::paintEvent(QPaintEvent *event)
 
         // Title must be painted after the frame, since the areas overlap, and
         // the title may wish to extend out to all sides (eg. XP style)
-        QStyleOptionDockWidgetV2 titleOpt;
+        QStyleOptionDockWidget titleOpt;
         initStyleOption(&titleOpt);
         p.drawControl(QStyle::CE_DockWidgetTitle, titleOpt);
     }

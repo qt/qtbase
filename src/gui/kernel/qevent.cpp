@@ -83,6 +83,52 @@ QEnterEvent::~QEnterEvent()
 }
 
 /*!
+   \fn QPoint QEnterEvent::globalPos() const
+
+   Returns the global position of the widget \e{at the time of the event}.
+*/
+/*!
+   \fn int QEnterEvent::globalX() const
+
+   Returns the global position on the X-axis of the mouse cursor relative to the the widget.
+*/
+/*!
+   \fn int QEnterEvent::globalY() const
+
+   Returns the global position on the Y-axis of the mouse cursor relative to the the widget.
+*/
+/*!
+   \fn QPoint QEnterEvent::localPos() const
+
+   Returns the mouse cursor's position relative to the receiving widget.
+*/
+/*!
+   \fn QPoint QEnterEvent::pos() const
+
+   Returns the position of the mouse cursor in global screen coordinates.
+*/
+/*!
+   \fn QPoint QEnterEvent::screenPos() const
+
+   Returns the position of the mouse cursor relative to the receiving screen.
+*/
+/*!
+   \fn QPoint QEnterEvent::windowPos() const
+
+   Returns the position of the mouse cursor relative to the receiving window.
+*/
+/*!
+   \fn int QEnterEvent::x() const
+
+   Returns the x position of the mouse cursor relative to the receiving widget.
+*/
+/*!
+   \fn int QEnterEvent::y() const
+
+   Returns the y position of the mouse cursor relative to the receiving widget.
+*/
+
+/*!
     \class QInputEvent
     \ingroup events
     \inmodule QtGui
@@ -125,6 +171,8 @@ QInputEvent::~QInputEvent()
     \fn ulong QInputEvent::timestamp() const
 
     Returns the window system's timestamp for this event.
+    It will normally be in milliseconds since some arbitrary point
+    in time, such as the time when the system was started.
 */
 
 /*! \fn void QInputEvent::setTimestamp(ulong atimestamp)
@@ -981,8 +1029,10 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
     when keys are pressed or released.
 
     A key event contains a special accept flag that indicates whether
-    the receiver will handle the key event. This flag is set by default,
-    so there is no need to call accept() when acting on a key event.
+    the receiver will handle the key event. This flag is set by default
+    for QEvent::KeyPress and QEvent::KeyRelease, so there is no need to
+    call accept() when acting on a key event. For QEvent::ShortcutOverride
+    the receiver needs to explicitly accept the event to trigger the override.
     Calling ignore() on a key event will propagate it to the parent widget.
     The event is propagated up the parent widget chain until a widget
     accepts it or an event filter consumes it.
@@ -1017,6 +1067,8 @@ QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, const 
       nScanCode(0), nVirtualKey(0), nModifiers(0),
       c(count), autor(autorep)
 {
+     if (type == QEvent::ShortcutOverride)
+        ignore();
 }
 
 /*!
@@ -1044,6 +1096,8 @@ QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
       nScanCode(nativeScanCode), nVirtualKey(nativeVirtualKey), nModifiers(nativeModifiers),
       c(count), autor(autorep)
 {
+    if (type == QEvent::ShortcutOverride)
+        ignore();
 }
 
 
@@ -3363,6 +3417,21 @@ QShowEvent::~QShowEvent()
     It may be safely ignored.
 
     \note This class is currently supported for OS X only.
+
+    \section1 OS X Example
+
+    In order to trigger the event on OS X, the application must be configured
+    to let the OS know what kind of file(s) it should react on.
+
+    For example, the following \c Info.plist file declares that the application
+    can act as a viewer for files with a PNG extension:
+
+    \snippet qfileopenevent/Info.plist Custom Info.plist
+
+    The following implementation of a QApplication subclass prints the path to
+    the file that was, for example, dropped on the Dock icon of the application.
+
+    \snippet qfileopenevent/main.cpp QApplication subclass
 */
 
 /*!
@@ -4196,6 +4265,12 @@ QTouchEvent::~QTouchEvent()
     \sa QTouchDevice::type(), QTouchEvent::device()
 */
 
+/*! \fn QTouchEvent::TouchPoint::TouchPoint(TouchPoint &&other)
+
+    Move-constructs a TouchPoint instance, making it point to the same
+    object that \a other was pointing to.
+*/
+
 /*! \fn Qt::TouchPointStates QTouchEvent::touchPointStates() const
 
     Returns a bitwise OR of all the touch point states for this event.
@@ -4722,6 +4797,10 @@ void QTouchEvent::TouchPoint::setFlags(InfoFlags flags)
     \internal
  */
 
+/*!
+    \fn TouchPoint &TouchPoint::operator=(TouchPoint &&other)
+    \internal
+ */
 /*!
     \fn void QTouchEvent::TouchPoint::swap(TouchPoint &other);
     \internal

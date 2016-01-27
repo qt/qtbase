@@ -35,7 +35,6 @@
 #include "qwindowscontext.h"
 #include "qwindowsole.h"
 #include "qwindowsmime.h"
-#include "qwindowsguieventdispatcher.h"
 
 #include <QtGui/QGuiApplication>
 #include <QtGui/QClipboard>
@@ -47,6 +46,8 @@
 #include <QtCore/QStringList>
 #include <QtCore/QVariant>
 #include <QtCore/QUrl>
+
+#include <QtPlatformSupport/private/qwindowsguieventdispatcher_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,27 +70,32 @@ static const char formatTextHtmlC[] = "text/html";
     \ingroup qt-lighthouse-win
 */
 
-QDebug operator<<(QDebug d, const QMimeData &m)
+#ifndef QT_NO_DEBUG_STREAM
+static QDebug operator<<(QDebug d, const QMimeData *mimeData)
 {
     QDebugStateSaver saver(d);
     d.nospace();
-    const QStringList formats = m.formats();
-    d << "QMimeData: " << formats.join(QStringLiteral(", ")) << '\n'
-            << "  Text=" << m.hasText() << " HTML=" << m.hasHtml()
-            << " Color=" << m.hasColor() << " Image=" << m.hasImage()
-            << " URLs=" << m.hasUrls() << '\n';
-    if (m.hasText())
-        d << "  Text: '" << m.text() << "'\n";
-    if (m.hasHtml())
-        d << "  HTML: '" << m.html() << "'\n";
-    if (m.hasColor())
-        d << "  Color: " << qvariant_cast<QColor>(m.colorData()) << '\n';
-    if (m.hasImage())
-        d << "  Image: " << qvariant_cast<QImage>(m.imageData()).size() << '\n';
-    if (m.hasUrls())
-        d << "  URLs: " << m.urls() << '\n';
+    d << "QMimeData(";
+    if (mimeData) {
+        const QStringList formats = mimeData->formats();
+        d << "formats=" << formats.join(QStringLiteral(", "));
+        if (mimeData->hasText())
+            d << ", text=" << mimeData->text();
+        if (mimeData->hasHtml())
+            d << ", html=" << mimeData->html();
+        if (mimeData->hasColor())
+            d << ", colorData=" << qvariant_cast<QColor>(mimeData->colorData());
+        if (mimeData->hasImage())
+            d << ", imageData=" << qvariant_cast<QImage>(mimeData->imageData());
+        if (mimeData->hasUrls())
+             d << ", urls=" << mimeData->urls();
+    } else {
+        d << '0';
+    }
+    d << ')';
     return d;
 }
+#endif // !QT_NO_DEBUG_STREAM
 
 /*!
     \class QWindowsClipboardRetrievalMimeData
@@ -106,8 +112,11 @@ QDebug operator<<(QDebug d, const QMimeData &m)
 IDataObject *QWindowsClipboardRetrievalMimeData::retrieveDataObject() const
 {
     IDataObject * pDataObj = 0;
-    if (OleGetClipboard(&pDataObj) == S_OK)
+    if (OleGetClipboard(&pDataObj) == S_OK) {
+        if (QWindowsContext::verbose > 1)
+            qCDebug(lcQpaMime) << __FUNCTION__ << pDataObj;
         return pDataObj;
+    }
     return 0;
 }
 
@@ -227,7 +236,7 @@ void QWindowsClipboard::propagateClipboardMessage(UINT message, WPARAM wParam, L
     // suspended by a shell prompt 'Select' or debugger).
     if (QWindowsContext::user32dll.isHungAppWindow
         && QWindowsContext::user32dll.isHungAppWindow(m_nextClipboardViewer)) {
-        qWarning("%s: Cowardly refusing to send clipboard message to hung application...", Q_FUNC_INFO);
+        qWarning("Cowardly refusing to send clipboard message to hung application...");
         return;
     }
     // Do not block if the process is being debugged, specifically, if it is
@@ -297,7 +306,7 @@ QMimeData *QWindowsClipboard::mimeData(QClipboard::Mode mode)
 
 void QWindowsClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
 {
-    qCDebug(lcQpaMime) << __FUNCTION__ <<  mode << *mimeData;
+    qCDebug(lcQpaMime) << __FUNCTION__ <<  mode << mimeData;
     if (mode != QClipboard::Clipboard)
         return;
 

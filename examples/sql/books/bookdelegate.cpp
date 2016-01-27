@@ -44,7 +44,7 @@ void BookDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
                            const QModelIndex &index) const
 {
     if (index.column() != 5) {
-        QStyleOptionViewItemV3 opt = option;
+        QStyleOptionViewItem opt = option;
         opt.rect.adjust(0, 0, -1, -1); // since we draw the grid ourselves
         QSqlRelationalDelegate::paint(painter, opt, index);
     } else {

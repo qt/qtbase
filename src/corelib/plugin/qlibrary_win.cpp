@@ -124,7 +124,8 @@ bool QLibraryPrivate::load_sys()
     SetErrorMode(oldmode);
 #endif
     if (!pHnd) {
-        errorString = QLibrary::tr("Cannot load library %1: %2").arg(fileName).arg(qt_error_string());
+        errorString = QLibrary::tr("Cannot load library %1: %2").arg(
+                    QDir::toNativeSeparators(fileName)).arg(qt_error_string());
     } else {
         // Query the actual name of the library that was loaded
         errorString.clear();
@@ -148,7 +149,8 @@ bool QLibraryPrivate::load_sys()
 bool QLibraryPrivate::unload_sys()
 {
     if (!FreeLibrary(pHnd)) {
-        errorString = QLibrary::tr("Cannot unload library %1: %2").arg(fileName).arg(qt_error_string());
+        errorString = QLibrary::tr("Cannot unload library %1: %2").arg(
+                    QDir::toNativeSeparators(fileName)).arg(qt_error_string());
         return false;
     }
     errorString.clear();
@@ -164,7 +166,8 @@ QFunctionPointer QLibraryPrivate::resolve_sys(const char* symbol)
 #endif
     if (!address) {
         errorString = QLibrary::tr("Cannot resolve symbol \"%1\" in %2: %3").arg(
-            QString::fromLatin1(symbol)).arg(fileName).arg(qt_error_string());
+            QString::fromLatin1(symbol)).arg(
+                    QDir::toNativeSeparators(fileName)).arg(qt_error_string());
     } else {
         errorString.clear();
     }

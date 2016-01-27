@@ -98,9 +98,19 @@ int DialogOptionsWidget::value() const
 Dialog::Dialog(QWidget *parent)
     : QWidget(parent)
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    QVBoxLayout *verticalLayout;
+    if (QGuiApplication::styleHints()->showIsFullScreen() || QGuiApplication::styleHints()->showIsMaximized()) {
+        QHBoxLayout *horizontalLayout = new QHBoxLayout(this);
+        QGroupBox *groupBox = new QGroupBox(QGuiApplication::applicationDisplayName(), this);
+        horizontalLayout->addWidget(groupBox);
+        horizontalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored));
+        verticalLayout = new QVBoxLayout(groupBox);
+    } else {
+        verticalLayout = new QVBoxLayout(this);
+    }
+
     QToolBox *toolbox = new QToolBox;
-    mainLayout->addWidget(toolbox);
+    verticalLayout->addWidget(toolbox);
 
     errorMessageDialog = new QErrorMessage(this);
 
@@ -242,6 +252,10 @@ Dialog::Dialog(QWidget *parent)
     layout->addWidget(fontLabel, 0, 1);
     fontDialogOptionsWidget = new DialogOptionsWidget;
     fontDialogOptionsWidget->addCheckBox(doNotUseNativeDialog, QFontDialog::DontUseNativeDialog);
+    fontDialogOptionsWidget->addCheckBox(tr("Show scalable fonts"), QFontDialog::ScalableFonts);
+    fontDialogOptionsWidget->addCheckBox(tr("Show non scalable fonts"), QFontDialog::NonScalableFonts);
+    fontDialogOptionsWidget->addCheckBox(tr("Show monospaced fonts"), QFontDialog::MonospacedFonts);
+    fontDialogOptionsWidget->addCheckBox(tr("Show proportional fonts"), QFontDialog::ProportionalFonts);
     fontDialogOptionsWidget->addCheckBox(tr("No buttons") , QFontDialog::NoButtons);
     layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding), 1, 0);
     layout->addWidget(fontDialogOptionsWidget, 2, 0, 1 ,2);
@@ -266,6 +280,7 @@ Dialog::Dialog(QWidget *parent)
     fileDialogOptionsWidget->addCheckBox(tr("Do not use sheet"), QFileDialog::DontUseSheet);
     fileDialogOptionsWidget->addCheckBox(tr("Readonly"), QFileDialog::ReadOnly);
     fileDialogOptionsWidget->addCheckBox(tr("Hide name filter details"), QFileDialog::HideNameFilterDetails);
+    fileDialogOptionsWidget->addCheckBox(tr("Do not use custom directory icons (Windows)"), QFileDialog::DontUseCustomDirectoryIcons);
     layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding), 4, 0);
     layout->addWidget(fileDialogOptionsWidget, 5, 0, 1 ,2);
     toolbox->addItem(page, tr("File Dialogs"));
@@ -286,7 +301,7 @@ Dialog::Dialog(QWidget *parent)
     layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding), 5, 0);
     toolbox->addItem(page, tr("Message Boxes"));
 
-    setWindowTitle(tr("Standard Dialogs"));
+    setWindowTitle(QGuiApplication::applicationDisplayName());
 }
 
 void Dialog::setInteger()

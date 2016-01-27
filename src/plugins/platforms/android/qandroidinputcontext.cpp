@@ -342,7 +342,7 @@ QAndroidInputContext::QAndroidInputContext()
     if (clazz == NULL) {
         qCritical() << "Native registration unable to find class '"
                     << QtNativeInputConnectionClassName
-                    << "'";
+                    << '\'';
         return;
     }
 
@@ -350,7 +350,7 @@ QAndroidInputContext::QAndroidInputContext()
     if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) < 0) {
         qCritical() << "RegisterNatives failed for '"
                     << QtNativeInputConnectionClassName
-                    << "'";
+                    << '\'';
         return;
     }
 
@@ -358,7 +358,7 @@ QAndroidInputContext::QAndroidInputContext()
     if (clazz == NULL) {
         qCritical() << "Native registration unable to find class '"
                     << QtExtractedTextClassName
-                    << "'";
+                    << '\'';
         return;
     }
 
@@ -512,7 +512,7 @@ void QAndroidInputContext::invokeAction(QInputMethod::Action action, int cursorP
 
 QRectF QAndroidInputContext::keyboardRect() const
 {
-    return QPlatformInputContext::keyboardRect();
+    return QtAndroidInput::softwareKeyboardRect();
 }
 
 bool QAndroidInputContext::isAnimating() const
@@ -545,7 +545,9 @@ void QAndroidInputContext::showInputPanel()
                                          rect.top(),
                                          rect.width(),
                                          rect.height(),
-                                         query->value(Qt::ImHints).toUInt());
+                                         query->value(Qt::ImHints).toUInt(),
+                                         query->value(Qt::ImEnterKeyType).toUInt()
+                                        );
 }
 
 void QAndroidInputContext::showInputPanelLater(Qt::ApplicationState state)

@@ -36,12 +36,13 @@
 #include <qpa/qplatforminputcontext.h>
 
 #include <QtCore/qpointer.h>
+#include <QtCore/QLocale>
 #include <QtDBus/qdbuspendingreply.h>
-#include <QLoggingCategory>
+#include <QFileSystemWatcher>
+#include <QTimer>
+#include <QWindow>
 
 QT_BEGIN_NAMESPACE
-
-Q_DECLARE_LOGGING_CATEGORY(qtQpaInputMethods)
 
 class QIBusPlatformInputContextPrivate;
 class QDBusVariant;
@@ -51,23 +52,23 @@ class QIBusFilterEventWatcher: public QDBusPendingCallWatcher
 public:
     explicit QIBusFilterEventWatcher(const QDBusPendingCall &call,
                                      QObject *parent = 0,
-                                     QObject *input = 0,
+                                     QWindow *window = 0,
                                      const Qt::KeyboardModifiers modifiers = 0,
                                      const QVariantList arguments = QVariantList())
     : QDBusPendingCallWatcher(call, parent)
-    , m_input(input)
+    , m_window(window)
     , m_modifiers(modifiers)
     , m_arguments(arguments)
     {}
     ~QIBusFilterEventWatcher()
     {}
 
-    inline QObject *input() const { return m_input; }
+    inline QWindow *window() const { return m_window; }
     inline const Qt::KeyboardModifiers modifiers() const { return m_modifiers; }
     inline const QVariantList arguments() const { return m_arguments; }
 
 private:
-    QPointer<QObject> m_input;
+    QPointer<QWindow> m_window;
     const Qt::KeyboardModifiers m_modifiers;
     const QVariantList m_arguments;
 };
@@ -87,6 +88,7 @@ public:
     void commit() Q_DECL_OVERRIDE;
     void update(Qt::InputMethodQueries) Q_DECL_OVERRIDE;
     bool filterEvent(const QEvent *event) Q_DECL_OVERRIDE;
+    QLocale locale() const Q_DECL_OVERRIDE;
 
 public Q_SLOTS:
     void commitText(const QDBusVariant &text);
@@ -95,10 +97,17 @@ public Q_SLOTS:
     void deleteSurroundingText(int offset, uint n_chars);
     void surroundingTextRequired();
     void filterEventFinished(QDBusPendingCallWatcher *call);
+    void socketChanged(const QString &str);
+    void connectToBus();
+    void globalEngineChanged(const QString &engine_name);
 
 private:
     QIBusPlatformInputContextPrivate *d;
     bool m_eventFilterUseSynchronousMode;
+    QFileSystemWatcher m_socketWatcher;
+    QTimer m_timer;
+
+    void connectToContextSignals();
 };
 
 QT_END_NAMESPACE

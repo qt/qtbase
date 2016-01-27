@@ -128,7 +128,7 @@ QLinkedList<QString> list;
 ...
 QLinkedList<QString>::iterator i = list.begin();
 while (i != list.end()) {
-    if ((*i).startsWith("_"))
+    if ((*i).startsWith('_'))
         i = list.erase(i);
     else
         ++i;
@@ -141,7 +141,7 @@ QLinkedList<QString>::iterator i = list.begin();
 while (i != list.end()) {
     QLinkedList<QString>::iterator previous = i;
     ++i;
-    if ((*previous).startsWith("_"))
+    if ((*previous).startsWith('_'))
         list.erase(previous);
 }
 //! [11]
@@ -150,7 +150,7 @@ while (i != list.end()) {
 //! [12]
 // WRONG
 while (i != list.end()) {
-    if ((*i).startsWith("_"))
+    if ((*i).startsWith('_'))
         list.erase(i);
     ++i;
 }

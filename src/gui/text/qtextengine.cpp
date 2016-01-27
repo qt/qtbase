@@ -918,10 +918,11 @@ void QTextEngine::shapeLine(const QScriptLine &line)
 {
     QFixed x;
     bool first = true;
-    const int end = findItem(line.from + line.length - 1);
     int item = findItem(line.from);
     if (item == -1)
         return;
+
+    const int end = findItem(line.from + line.length - 1, item);
     for ( ; item <= end; ++item) {
         QScriptItem &si = layoutData->items[item];
         if (si.analysis.flags == QScriptAnalysis::Tab) {
@@ -1172,7 +1173,23 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
             };
             const int num_features = 1;
 
-            bool shapedOk = hb_shape_full(hb_font, buffer, features, num_features, 0);
+            const char *const *shaper_list = Q_NULLPTR;
+#if defined(Q_OS_DARWIN)
+            // What's behind QFontEngine::FaceData::user_data isn't compatible between different font engines
+            // - specifically functions in hb-coretext.cc would run into undefined behavior with data
+            // from non-CoreText engine. The other shapers works with that engine just fine.
+            if (actualFontEngine->type() != QFontEngine::Mac) {
+                static const char *s_shaper_list_without_coretext[] = {
+                    "graphite2",
+                    "ot",
+                    "fallback",
+                    Q_NULLPTR
+                };
+                shaper_list = s_shaper_list_without_coretext;
+            }
+#endif
+
+            bool shapedOk = hb_shape_full(hb_font, buffer, features, num_features, shaper_list);
             if (Q_UNLIKELY(!shapedOk)) {
                 hb_buffer_destroy(buffer);
                 return 0;
@@ -1251,21 +1268,22 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
                 g.glyphs[i] |= (engineIdx << 24);
         }
 
-#ifdef Q_OS_MAC
-        // CTRunGetPosition has a bug which applies matrix on 10.6, so we disable
-        // scaling the advances for this particular version
-        if (actualFontEngine->fontDef.stretch != 100
-                && QSysInfo::MacintoshVersion != QSysInfo::MV_10_6) {
-            QFixed stretch = QFixed(int(actualFontEngine->fontDef.stretch)) / QFixed(100);
-            for (uint i = 0; i < num_glyphs; ++i)
-                g.advances[i] *= stretch;
+#ifdef Q_OS_DARWIN
+        if (actualFontEngine->type() == QFontEngine::Mac) {
+            // CTRunGetPosition has a bug which applies matrix on 10.6, so we disable
+            // scaling the advances for this particular version
+            if (QSysInfo::MacintoshVersion != QSysInfo::MV_10_6 && actualFontEngine->fontDef.stretch != 100) {
+                QFixed stretch = QFixed(int(actualFontEngine->fontDef.stretch)) / QFixed(100);
+                for (uint i = 0; i < num_glyphs; ++i)
+                    g.advances[i] *= stretch;
+            }
         }
+#endif
 
-        if (actualFontEngine->fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
+        if (!actualFontEngine->supportsSubPixelPositions() || (actualFontEngine->fontDef.styleStrategy & QFont::ForceIntegerMetrics)) {
             for (uint i = 0; i < num_glyphs; ++i)
                 g.advances[i] = g.advances[i].round();
         }
-#endif
 
         glyphs_shaped += num_glyphs;
     }
@@ -1730,13 +1748,13 @@ bool QTextEngine::isRightToLeft() const
 }
 
 
-int QTextEngine::findItem(int strPos) const
+int QTextEngine::findItem(int strPos, int firstItem) const
 {
     itemize();
-    if (strPos < 0 || strPos >= layoutData->string.size())
+    if (strPos < 0 || strPos >= layoutData->string.size() || firstItem < 0)
         return -1;
 
-    int left = 1;
+    int left = firstItem + 1;
     int right = layoutData->items.size()-1;
     while(left <= right) {
         int middle = ((right-left)/2)+left;
@@ -2155,7 +2173,7 @@ void QTextEngine::justify(const QScriptLine &line)
         return;
 
     int firstItem = findItem(line.from);
-    int lastItem = findItem(line.from + line_length - 1);
+    int lastItem = findItem(line.from + line_length - 1, firstItem);
     int nItems = (firstItem >= 0 && lastItem >= firstItem)? (lastItem-firstItem+1) : 0;
 
     QVarLengthArray<QJustificationPoint> justificationPoints;
@@ -3512,7 +3530,7 @@ QTextLineItemIterator::QTextLineItemIterator(QTextEngine *_eng, int _lineNum, co
       lineNum(_lineNum),
       lineEnd(line.from + line.length),
       firstItem(eng->findItem(line.from)),
-      lastItem(eng->findItem(lineEnd - 1)),
+      lastItem(eng->findItem(lineEnd - 1, firstItem)),
       nItems((firstItem >= 0 && lastItem >= firstItem)? (lastItem-firstItem+1) : 0),
       logicalItem(-1),
       item(-1),

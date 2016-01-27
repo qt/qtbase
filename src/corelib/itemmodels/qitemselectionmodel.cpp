@@ -729,11 +729,11 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
             deselected.append(*it);
             it = ranges.erase(it);
         } else if (start <= it->top() && it->top() <= end) {      // Top intersection
-            deselected.append(QItemSelectionRange(it->topLeft(), model->index(end, it->left(), it->parent())));
+            deselected.append(QItemSelectionRange(it->topLeft(), model->index(end, it->right(), it->parent())));
             *it = QItemSelectionRange(model->index(end + 1, it->left(), it->parent()), it->bottomRight());
             ++it;
         } else if (start <= it->bottom() && it->bottom() <= end) {    // Bottom intersection
-            deselected.append(QItemSelectionRange(model->index(start, it->right(), it->parent()), it->bottomRight()));
+            deselected.append(QItemSelectionRange(model->index(start, it->left(), it->parent()), it->bottomRight()));
             *it = QItemSelectionRange(it->topLeft(), model->index(start - 1, it->right(), it->parent()));
             ++it;
         } else if (it->top() < start && end < it->bottom()) { // Middle intersection
@@ -741,8 +741,8 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
             // and [4, 5] is removed, we need to split [3, 4, 5, 6] into [3], [4, 5] and [6].
             // [4, 5] is appended to deselected, and [3] and [6] remain part of the selection
             // in ranges.
-            const QItemSelectionRange removedRange(model->index(start, it->right(), it->parent()),
-                                                    model->index(end, it->left(), it->parent()));
+            const QItemSelectionRange removedRange(model->index(start, it->left(), it->parent()),
+                                                    model->index(end, it->right(), it->parent()));
             deselected.append(removedRange);
             QItemSelection::split(*it, removedRange, &newParts);
             it = ranges.erase(it);
@@ -1744,13 +1744,19 @@ const QItemSelection QItemSelectionModel::selection() const
 
     \property QItemSelectionModel::selectedIndexes
 */
+
+/*!
+    \since 5.5
+
+    \property QItemSelectionModel::selection
+    \internal
+*/
 /*!
     \since 5.5
 
     \property QItemSelectionModel::model
     \internal
 */
-
 /*!
     \since 5.5
 

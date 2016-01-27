@@ -44,6 +44,7 @@
 #include <QIcon>
 #include <QTimer>
 #include <QTreeWidget>
+#include <QSharedPointer>
 
 QT_BEGIN_NAMESPACE
 class QSettings;
@@ -54,9 +55,12 @@ class SettingsTree : public QTreeWidget
     Q_OBJECT
 
 public:
-    SettingsTree(QWidget *parent = 0);
+    typedef QSharedPointer<QSettings> SettingsPtr;
 
-    void setSettingsObject(QSettings *settings);
+    SettingsTree(QWidget *parent = 0);
+    ~SettingsTree();
+
+    void setSettingsObject(const SettingsPtr &settings);
     QSize sizeHint() const Q_DECL_OVERRIDE;
 
 public slots:
@@ -80,7 +84,7 @@ private:
     int findChild(QTreeWidgetItem *parent, const QString &text, int startIndex);
     void moveItemForward(QTreeWidgetItem *parent, int oldIndex, int newIndex);
 
-    QSettings *settings;
+    SettingsPtr settings;
     QTimer refreshTimer;
     bool autoRefresh;
     QIcon groupIcon;

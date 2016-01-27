@@ -13,7 +13,6 @@ wince: DEFINES *= QT_LIBINFIX=L"\"\\\"$${QT_LIBINFIX}\\\"\""
 DEFINES *= QT_NO_CAST_FROM_ASCII
 
 contains(QT_CONFIG, directwrite) {
-    LIBS *= -ldwrite
     SOURCES += $$PWD/qwindowsfontenginedirectwrite.cpp
     HEADERS += $$PWD/qwindowsfontenginedirectwrite.h
 } else {
@@ -29,7 +28,6 @@ SOURCES += \
     $$PWD/qwindowsfontengine.cpp \
     $$PWD/qwindowsfontdatabase.cpp \
     $$PWD/qwindowsmousehandler.cpp \
-    $$PWD/qwindowsguieventdispatcher.cpp \
     $$PWD/qwindowsole.cpp \
     $$PWD/qwindowsmime.cpp \
     $$PWD/qwindowsinternalmimedata.cpp \
@@ -51,7 +49,6 @@ HEADERS += \
     $$PWD/qwindowsfontengine.h \
     $$PWD/qwindowsfontdatabase.h \
     $$PWD/qwindowsmousehandler.h \
-    $$PWD/qwindowsguieventdispatcher.h \
     $$PWD/qtwindowsglobal.h \
     $$PWD/qtwindows_additional.h \
     $$PWD/qwindowsole.h \
@@ -134,3 +131,6 @@ contains(QT_CONFIG, freetype) {
 }
 
 contains(QT_CONFIG, accessibility):include($$PWD/accessible/accessible.pri)
+
+DEFINES *= LIBEGL_NAME=$${LIBEGL_NAME}
+DEFINES *= LIBGLESV2_NAME=$${LIBGLESV2_NAME}

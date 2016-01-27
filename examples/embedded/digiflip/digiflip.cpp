@@ -112,7 +112,7 @@ protected:
 
         QString str = QString::number(n);
         if (str.length() == 1)
-            str.prepend("0");
+            str.prepend('0');
 
         QFont font;
         font.setFamily("Helvetica");

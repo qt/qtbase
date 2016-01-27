@@ -902,6 +902,7 @@ void tst_QLocale::long_long_conversion()
 void tst_QLocale::long_long_conversion_extra()
 {
     QLocale l(QLocale::C);
+    l.setNumberOptions(0);
     QCOMPARE(l.toString((qlonglong)1), QString("1"));
     QCOMPARE(l.toString((qlonglong)12), QString("12"));
     QCOMPARE(l.toString((qlonglong)123), QString("123"));
@@ -1613,20 +1614,20 @@ void tst_QLocale::numberOptions()
     bool ok;
 
     QLocale locale(QLocale::C);
+    QCOMPARE(locale.numberOptions(), QLocale::OmitGroupSeparator);
+    QCOMPARE(locale.toInt(QString("12345"), &ok), 12345);
+    QVERIFY(ok);
+    QCOMPARE(locale.toInt(QString("12345"), &ok), 12345);
+    QVERIFY(ok);
+    QCOMPARE(locale.toString(12345), QString("12345"));
+
+    locale.setNumberOptions(0);
     QCOMPARE(locale.numberOptions(), 0);
     QCOMPARE(locale.toInt(QString("12,345"), &ok), 12345);
     QVERIFY(ok);
     QCOMPARE(locale.toInt(QString("12345"), &ok), 12345);
     QVERIFY(ok);
     QCOMPARE(locale.toString(12345), QString("12,345"));
-
-    locale.setNumberOptions(QLocale::OmitGroupSeparator);
-    QCOMPARE(locale.numberOptions(), QLocale::OmitGroupSeparator);
-    QCOMPARE(locale.toInt(QString("12,345"), &ok), 12345);
-    QVERIFY(ok);
-    QCOMPARE(locale.toInt(QString("12345"), &ok), 12345);
-    QVERIFY(ok);
-    QCOMPARE(locale.toString(12345), QString("12345"));
 
     locale.setNumberOptions(QLocale::RejectGroupSeparator);
     QCOMPARE(locale.numberOptions(), QLocale::RejectGroupSeparator);
@@ -2033,10 +2034,10 @@ void tst_QLocale::standaloneMonthName()
 void tst_QLocale::currency()
 {
     const QLocale c(QLocale::C);
-    QCOMPARE(c.toCurrencyString(qulonglong(1234)), QString("1,234"));
-    QCOMPARE(c.toCurrencyString(qlonglong(-1234)), QString("-1,234"));
-    QCOMPARE(c.toCurrencyString(double(1234.56)), QString("1,234.56"));
-    QCOMPARE(c.toCurrencyString(double(-1234.56)), QString("-1,234.56"));
+    QCOMPARE(c.toCurrencyString(qulonglong(1234)), QString("1234"));
+    QCOMPARE(c.toCurrencyString(qlonglong(-1234)), QString("-1234"));
+    QCOMPARE(c.toCurrencyString(double(1234.56)), QString("1234.56"));
+    QCOMPARE(c.toCurrencyString(double(-1234.56)), QString("-1234.56"));
 
     const QLocale en_US("en_US");
     QCOMPARE(en_US.toCurrencyString(qulonglong(1234)), QString("$1,234"));

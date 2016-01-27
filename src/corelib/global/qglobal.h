@@ -41,11 +41,10 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "5.6.0"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x050600
+#define QT_VERSION      QT_VERSION_CHECK(QT_VERSION_MAJOR, QT_VERSION_MINOR, QT_VERSION_PATCH)
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
@@ -55,6 +54,7 @@
 #include <QtCore/qconfig.h>
 #include <QtCore/qfeatures.h>
 #endif
+
 #ifdef _MSC_VER
 #  define QT_SUPPORTS(FEATURE) (!defined QT_NO_##FEATURE)
 #else
@@ -192,18 +192,6 @@ typedef unsigned long long quint64; /* 64 bit unsigned */
 
 typedef qint64 qlonglong;
 typedef quint64 qulonglong;
-
-#ifndef QT_POINTER_SIZE
-#  if defined(Q_OS_WIN64) || (defined(Q_OS_WINRT) && defined(_M_X64))
-#   define QT_POINTER_SIZE 8
-#  elif defined(Q_OS_WIN32) || defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
-#   define QT_POINTER_SIZE 4
-#  elif defined(Q_OS_ANDROID)
-#   define QT_POINTER_SIZE 4 // ### Add auto-detection to Windows configure
-#  elif !defined(QT_BOOTSTRAPPED)
-#   error could not determine QT_POINTER_SIZE
-#  endif
-#endif
 
 /*
    Useful type definitions for Qt
@@ -448,6 +436,9 @@ template <>    struct QIntegerForSize<1> { typedef quint8  Unsigned; typedef qin
 template <>    struct QIntegerForSize<2> { typedef quint16 Unsigned; typedef qint16 Signed; };
 template <>    struct QIntegerForSize<4> { typedef quint32 Unsigned; typedef qint32 Signed; };
 template <>    struct QIntegerForSize<8> { typedef quint64 Unsigned; typedef qint64 Signed; };
+#if defined(Q_CC_GNU) && defined(__SIZEOF_INT128__)
+template <>    struct QIntegerForSize<16> { __extension__ typedef unsigned __int128 Unsigned; __extension__ typedef __int128 Signed; };
+#endif
 template <class T> struct QIntegerForSizeof: QIntegerForSize<sizeof(T)> { };
 typedef QIntegerForSize<Q_PROCESSOR_WORDSIZE>::Signed qregisterint;
 typedef QIntegerForSize<Q_PROCESSOR_WORDSIZE>::Unsigned qregisteruint;
@@ -496,10 +487,13 @@ typedef qptrdiff qintptr;
 
 #ifdef Q_CC_MSVC
 #  define Q_NEVER_INLINE __declspec(noinline)
+#  define Q_ALWAYS_INLINE __forceinline
 #elif defined(Q_CC_GNU)
 #  define Q_NEVER_INLINE __attribute__((noinline))
+#  define Q_ALWAYS_INLINE inline __attribute__((always_inline))
 #else
 #  define Q_NEVER_INLINE
+#  define Q_ALWAYS_INLINE inline
 #endif
 
 //defines the type for the WNDPROC on windows
@@ -596,7 +590,7 @@ public:
     QMacAutoReleasePool();
     ~QMacAutoReleasePool();
 private:
-    Q_DISABLE_COPY(QMacAutoReleasePool);
+    Q_DISABLE_COPY(QMacAutoReleasePool)
     NSAutoreleasePool *pool;
 };
 
@@ -766,7 +760,7 @@ inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
 typedef void (*QFunctionPointer)();
 
 #if !defined(Q_UNIMPLEMENTED)
-#  define Q_UNIMPLEMENTED() qWarning("%s:%d: %s: Unimplemented code.", __FILE__, __LINE__, Q_FUNC_INFO)
+#  define Q_UNIMPLEMENTED() qWarning("Unimplemented code.")
 #endif
 
 Q_DECL_CONSTEXPR static inline bool qFuzzyCompare(double p1, double p2) Q_REQUIRED_RESULT Q_DECL_UNUSED;
@@ -1120,6 +1114,7 @@ QT_END_NAMESPACE
 #include <QtCore/qatomic.h>
 #include <QtCore/qglobalstatic.h>
 #include <QtCore/qnumeric.h>
+#include <QtCore/qversiontagging.h>
 
 // ### should not be required
 #ifdef Q_OS_NACL

@@ -35,6 +35,7 @@
 #define QEGLFSSCREEN_H
 
 #include "qeglfsglobal.h"
+#include <QtCore/QPointer>
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
@@ -54,6 +55,7 @@ public:
 
     QSizeF physicalSize() const Q_DECL_OVERRIDE;
     QDpi logicalDpi() const Q_DECL_OVERRIDE;
+    qreal pixelDensity() const Q_DECL_OVERRIDE;
     Qt::ScreenOrientation nativeOrientation() const Q_DECL_OVERRIDE;
     Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE;
 
@@ -73,7 +75,7 @@ private:
     void setPrimarySurface(EGLSurface surface);
 
     EGLDisplay m_dpy;
-    QWindow *m_pointerWindow;
+    QPointer<QWindow> m_pointerWindow;
     EGLSurface m_surface;
     QPlatformCursor *m_cursor;
 

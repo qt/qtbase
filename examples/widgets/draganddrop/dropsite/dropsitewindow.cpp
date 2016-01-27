@@ -55,8 +55,8 @@ DropSiteWindow::DropSiteWindow()
 
 //! [constructor part2]
     dropArea = new DropArea;
-    connect(dropArea, SIGNAL(changed(const QMimeData*)),
-            this, SLOT(updateFormatsTable(const QMimeData*)));
+    connect(dropArea, &DropArea::changed,
+            this, &DropSiteWindow::updateFormatsTable);
 //! [constructor part2]
 
 //! [constructor part3]
@@ -78,17 +78,16 @@ DropSiteWindow::DropSiteWindow()
     buttonBox->addButton(clearButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(quitButton, QDialogButtonBox::RejectRole);
 
-    connect(quitButton, SIGNAL(pressed()), this, SLOT(close()));
-    connect(clearButton, SIGNAL(pressed()), dropArea, SLOT(clear()));
+    connect(quitButton, &QAbstractButton::pressed, this, &QWidget::close);
+    connect(clearButton, &QAbstractButton::pressed, dropArea, &DropArea::clear);
 //! [constructor part4]
 
 //! [constructor part5]
-    QVBoxLayout *mainLayout = new QVBoxLayout;
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(abstractLabel);
     mainLayout->addWidget(dropArea);
     mainLayout->addWidget(formatsTable);
     mainLayout->addWidget(buttonBox);
-    setLayout(mainLayout);
 
     setWindowTitle(tr("Drop Site"));
     setMinimumSize(350, 500);
@@ -112,22 +111,18 @@ void DropSiteWindow::updateFormatsTable(const QMimeData *mimeData)
 
 //! [updateFormatsTable() part3]
         QString text;
-        if (format == "text/plain") {
+        if (format == QLatin1String("text/plain")) {
             text = mimeData->text().simplified();
-        } else if (format == "text/html") {
+        } else if (format == QLatin1String("text/html")) {
             text = mimeData->html().simplified();
-        } else if (format == "text/uri-list") {
+        } else if (format == QLatin1String("text/uri-list")) {
             QList<QUrl> urlList = mimeData->urls();
             for (int i = 0; i < urlList.size() && i < 32; ++i)
-                text.append(urlList[i].toString() + " ");
+                text.append(urlList.at(i).toString() + QLatin1Char(' '));
         } else {
             QByteArray data = mimeData->data(format);
-            for (int i = 0; i < data.size() && i < 32; ++i) {
-                QString hex = QString("%1").arg(uchar(data[i]), 2, 16,
-                                                QChar('0'))
-                                           .toUpper();
-                text.append(hex + " ");
-            }
+            for (int i = 0; i < data.size() && i < 32; ++i)
+                text.append(QStringLiteral("%1 ").arg(uchar(data[i]), 2, 16, QLatin1Char('0')).toUpper());
         }
 //! [updateFormatsTable() part3]
 

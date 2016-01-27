@@ -28,7 +28,7 @@
 /*!
     \namespace Qt
     \inmodule QtCore
-    \target Qt Namespace
+    \keyword Qt Namespace
 
     \brief The Qt namespace contains miscellaneous identifiers
     used throughout the Qt library.
@@ -137,7 +137,7 @@
            attribute is true, Qt will not do the flip. \l QKeySequence::StandardKey
            will also flip accordingly (i.e., QKeySequence::Copy will be
            Command+C on the keyboard regardless of the value set, though what is output for
-           QKeySequence::toString(QKeySequence::PortableText) will be different).
+           QKeySequence::toString() will be different).
 
     \value AA_Use96Dpi Assume the screen has a resolution of 96 DPI rather
            than using the OS-provided resolution. This will cause font rendering
@@ -170,12 +170,13 @@
 
     \value AA_UseDesktopOpenGL Forces the usage of desktop OpenGL (for example,
            \e opengl32.dll or \e libGL.so) on platforms that use dynamic loading
-           of the OpenGL implementation.
-           This value has been added in Qt 5.3.
+           of the OpenGL implementation. This value has been added in Qt 5.3.
+           This attribute must be set before Q(Gui)Application is constructed.
 
     \value AA_UseOpenGLES Forces the usage of OpenGL ES 2.0 or higher on
            platforms that use dynamic loading of the OpenGL implementation.
-           This value has been added in Qt 5.3.
+           This value has been added in Qt 5.3. This attribute must be set
+           before Q(Gui)Application is constructed.
 
     \value AA_UseSoftwareOpenGL Forces the usage of a software based OpenGL
            implementation on platforms that use dynamic loading of the OpenGL
@@ -186,21 +187,35 @@
            \c opengl32sw.dll and can be overridden by setting the environment
            variable \e QT_OPENGL_DLL. See the platform-specific pages, for
            instance \l{Qt for Windows}, for more information.  This value has
-           been added in Qt 5.4.
+           been added in Qt 5.4. This attribute must be set before
+           Q(Gui)Application is constructed.
 
     \value AA_ShareOpenGLContexts Enables resource sharing between the OpenGL
            contexts used by classes like QOpenGLWidget and QQuickWidget. This
            allows sharing OpenGL resources, like textures, between QOpenGLWidget
            instances that belong to different top-level windows. This value has
-           been added in Qt 5.4.
+           been added in Qt 5.4. This attribute must be set before
+           Q(Gui)Application is constructed.
 
     \value AA_SetPalette Indicates whether a palette was explicitly set on the
            QApplication/QGuiApplication. This value has been added in Qt 5.5.
 
-    \value AA_NoHighDpiScaling Disables all high-DPI scaling in Qt, exposing window
+    \value AA_EnableHighDpiScaling. Enables high-DPI scaling in Qt on supported
+           platforms (see also \l{High DPI Displays}). Supported platforms are
+           X11, Windows and Android. Enabling makes Qt scale the main (device
+           independent) coordinate system according to display scale factors
+           provided by the operating system. This corresponds to setting the
+           QT_AUTO_SCREEN_SCALE_FACTOR environment variable to 1. This value
+           has been added in Qt 5.6. This attribute must be set before
+           Q(Gui)Application is constructed.
+
+    \value AA_DisableHighDpiScaling Disables high-DPI scaling in Qt, exposing window
            system coordinates. Note that the window system may do its own scaling,
            so this does not guarantee that QPaintDevice::devicePixelRatio() will
-           be equal to 1. This value has been added in Qt 5.6.
+           be equal to 1. In addition, scale factors set by QT_SCALE_FACTOR will not
+           be affected. This corresponds to setting the QT_AUTO_SCREEN_SCALE_FACTOR
+           environment variable to 0. This value has been added in Qt 5.6. This
+           attribute must be set before Q(Gui)Application is constructed.
 
     The following values are obsolete:
 
@@ -769,7 +784,7 @@
     \value UI_FadeTooltip Show tooltip fading effects.
     \value UI_AnimateToolBox Reserved
 
-    \sa QApplication::setEffectEnabled(), QApplication::setDesktopSettingsAware()
+    \sa QApplication::setEffectEnabled(), QGuiApplication::setDesktopSettingsAware()
 */
 
 /*! \enum Qt::AspectRatioMode
@@ -1711,6 +1726,17 @@
     \value Key_Zoom
     \value Key_Exit
     \value Key_Cancel
+    \value Key_MicVolumeUp
+    \value Key_Find
+    \value Key_Open
+    \value Key_MicVolumeDown
+    \value Key_New
+    \value Key_Settings
+    \value Key_Redo
+    \value Key_Exit
+    \value Key_Info
+    \value Key_Undo
+    \value Key_Guide
 
     \sa QKeyEvent::key()
 */
@@ -2402,7 +2428,7 @@
     \value WhatsThisCursor  \inlineimage cursor-whatsthis.png
                           An arrow with a question mark, typically used to indicate
                           the presence of What's This? help for a widget.
-    \value BusyCursor     \inlineimage cursor-wait.png
+    \value BusyCursor     \inlineimage cursor-busy.png
                           An hourglass or watch cursor, usually shown during
                           operations that allow the user to interact with
                           the application while they are performed in the
@@ -2440,7 +2466,7 @@
     When LayoutDirectionAuto is used in conjunction with text layouting, it will imply that the text
     directionality is determined from the content of the string to be layouted.
 
-    \sa QApplication::setLayoutDirection(), QWidget::setLayoutDirection(), QTextOption::setTextDirection(), QString::isRightToLeft()
+    \sa QGuiApplication::setLayoutDirection(), QWidget::setLayoutDirection(), QTextOption::setTextDirection(), QString::isRightToLeft()
 */
 
 /*!
@@ -2655,6 +2681,7 @@
     \value ItemIsTristate \e{This enum value is deprecated.} Use Qt::ItemIsAutoTristate
     instead.
     \value ItemNeverHasChildren The item never has child items.
+           This is used for optimization purposes only.
     \value ItemIsUserTristate The user can cycle through three separate states.
            This value has been added in Qt 5.5.
 
@@ -2711,7 +2738,7 @@
     "\l{http://bugreports.qt.io/browse/QTWEBSITE-13}{http://bugreports.qt.../QTWEBSITE-13/}"),
     whereas Qt::ElideRight is appropriate
     for other strings (e.g.,
-    "\l{http://doc.qt.digia.com/qq/qq09-mac-deployment.html}{Deploying Applications on Ma...}").
+    "\l{http://doc.qt.io/archives/qq/qq09-mac-deployment.html}{Deploying Applications on Ma...}").
 
     \sa QAbstractItemView::textElideMode, QFontMetrics::elidedText(), AlignmentFlag, QTabBar::elideMode
 */

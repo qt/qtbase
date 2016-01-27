@@ -61,6 +61,7 @@ QOpenGLTextureBlitWindow::QOpenGLTextureBlitWindow()
     m_context->makeCurrent(this);
 
     m_blitter.create();
+    qDebug("GL_TEXTURE_EXTERNAL_OES support: %d", m_blitter.supportsExternalOESTarget());
 }
 
 void QOpenGLTextureBlitWindow::render()
@@ -131,6 +132,12 @@ void QOpenGLTextureBlitWindow::render()
     m_blitter.blit(texture.textureId(), bottomRightOriginTopLeftVertex, texTopLeftOriginTopLeft);
     m_blitter.setSwizzleRB(false);
     m_blitter.release();
+
+    if (m_blitter.supportsExternalOESTarget()) {
+        // Cannot do much testing here, just verify that bind and release work, meaning that the program is present.
+        m_blitter.bind(0x8D65);
+        m_blitter.release();
+    }
 
     m_context->swapBuffers(this);
 }

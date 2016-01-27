@@ -252,6 +252,7 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     case ForeignWindows: return true;
     case SyncState: return true;
     case RasterGLSurface: return true;
+    case SwitchableWidgetComposition: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }
@@ -268,7 +269,10 @@ void QXcbIntegration::initialize()
 {
     // Perform everything that may potentially need the event dispatcher (timers, socket
     // notifiers) here instead of the constructor.
-    m_inputContext.reset(QPlatformInputContextFactory::create());
+    QString icStr = QPlatformInputContextFactory::requested();
+    if (icStr.isNull())
+        icStr = QLatin1String("compose");
+    m_inputContext.reset(QPlatformInputContextFactory::create(icStr));
 }
 
 void QXcbIntegration::moveToScreen(QWindow *window, int screen)

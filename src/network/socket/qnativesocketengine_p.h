@@ -51,46 +51,51 @@
 #  include <netinet/in.h>
 #else
 #  include <winsock2.h>
+#  include <ws2tcpip.h>
+#  include <mswsock.h>
 #endif
 
 QT_BEGIN_NAMESPACE
 
-// Use our own defines and structs which we know are correct
-#  define QT_SS_MAXSIZE 128
-#  define QT_SS_ALIGNSIZE (sizeof(qint64))
-#  define QT_SS_PAD1SIZE (QT_SS_ALIGNSIZE - sizeof (short))
-#  define QT_SS_PAD2SIZE (QT_SS_MAXSIZE - (sizeof (short) + QT_SS_PAD1SIZE + QT_SS_ALIGNSIZE))
-struct qt_sockaddr_storage {
-      short ss_family;
-      char __ss_pad1[QT_SS_PAD1SIZE];
-      qint64 __ss_align;
-      char __ss_pad2[QT_SS_PAD2SIZE];
-};
-
 #ifdef Q_OS_WIN
 #define QT_SOCKLEN_T int
 #define QT_SOCKOPTLEN_T int
-#endif
 
-// sockaddr_in6 size changed between old and new SDK
-// Only the new version is the correct one, so always
-// use this structure.
-struct qt_in6_addr {
-    quint8 qt_s6_addr[16];
-};
-struct qt_sockaddr_in6 {
-    short   sin6_family;            /* AF_INET6 */
-    quint16 sin6_port;              /* Transport level port number */
-    quint32 sin6_flowinfo;          /* IPv6 flow information */
-    struct  qt_in6_addr sin6_addr;  /* IPv6 address */
-    quint32 sin6_scope_id;          /* set of interfaces for a scope */
-};
+// The following definitions are copied from the MinGW header mswsock.h which
+// was placed in the public domain. The WSASendMsg and WSARecvMsg functions
+// were introduced with Windows Vista, so some Win32 headers are lacking them.
+// There are no known versions of Windows CE or Embedded that contain them.
+#ifndef Q_OS_WINCE
+#  ifndef WSAID_WSARECVMSG
+typedef INT (WINAPI *LPFN_WSARECVMSG)(SOCKET s, LPWSAMSG lpMsg,
+                                      LPDWORD lpdwNumberOfBytesRecvd,
+                                      LPWSAOVERLAPPED lpOverlapped,
+                                      LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
+#    define WSAID_WSARECVMSG {0xf689d7c8,0x6f1f,0x436b,{0x8a,0x53,0xe5,0x4f,0xe3,0x51,0xc3,0x22}}
+#  endif
+#  ifndef WSAID_WSASENDMSG
+typedef struct {
+  LPWSAMSG lpMsg;
+  DWORD dwFlags;
+  LPDWORD lpNumberOfBytesSent;
+  LPWSAOVERLAPPED lpOverlapped;
+  LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine;
+} WSASENDMSG, *LPWSASENDMSG;
+
+typedef INT (WSAAPI *LPFN_WSASENDMSG)(SOCKET s, LPWSAMSG lpMsg, DWORD dwFlags,
+                                      LPDWORD lpNumberOfBytesSent,
+                                      LPWSAOVERLAPPED lpOverlapped,
+                                      LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
+
+#    define WSAID_WSASENDMSG {0xa441e712,0x754f,0x43ca,{0x84,0xa7,0x0d,0xee,0x44,0xcf,0x60,0x6d}}
+#  endif
+#endif
+#endif
 
 union qt_sockaddr {
     sockaddr a;
     sockaddr_in a4;
-    qt_sockaddr_in6 a6;
-    qt_sockaddr_storage storage;
+    sockaddr_in6 a6;
 };
 
 class QNativeSocketEnginePrivate;
@@ -119,6 +124,12 @@ public:
     int accept() Q_DECL_OVERRIDE;
     void close() Q_DECL_OVERRIDE;
 
+    qint64 bytesAvailable() const Q_DECL_OVERRIDE;
+
+    qint64 read(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
+    qint64 write(const char *data, qint64 len) Q_DECL_OVERRIDE;
+
+#ifndef QT_NO_UDPSOCKET
 #ifndef QT_NO_NETWORKINTERFACE
     bool joinMulticastGroup(const QHostAddress &groupAddress,
                             const QNetworkInterface &iface) Q_DECL_OVERRIDE;
@@ -128,17 +139,12 @@ public:
     bool setMulticastInterface(const QNetworkInterface &iface) Q_DECL_OVERRIDE;
 #endif
 
-    qint64 bytesAvailable() const Q_DECL_OVERRIDE;
-
-    qint64 read(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
-    qint64 write(const char *data, qint64 len) Q_DECL_OVERRIDE;
-
-    qint64 readDatagram(char *data, qint64 maxlen, QHostAddress *addr = 0,
-                            quint16 *port = 0) Q_DECL_OVERRIDE;
-    qint64 writeDatagram(const char *data, qint64 len, const QHostAddress &addr,
-                             quint16 port) Q_DECL_OVERRIDE;
+    qint64 readDatagram(char *data, qint64 maxlen, QIpPacketHeader * = 0,
+                        PacketHeaderOptions = WantNone) Q_DECL_OVERRIDE;
+    qint64 writeDatagram(const char *data, qint64 len, const QIpPacketHeader &) Q_DECL_OVERRIDE;
     bool hasPendingDatagrams() const Q_DECL_OVERRIDE;
     qint64 pendingDatagramSize() const Q_DECL_OVERRIDE;
+#endif // QT_NO_UDPSOCKET
 
     qint64 bytesToWrite() const Q_DECL_OVERRIDE;
 
@@ -173,16 +179,6 @@ private:
     Q_DISABLE_COPY(QNativeSocketEngine)
 };
 
-#ifdef Q_OS_WIN
-class QWindowsSockInit
-{
-public:
-    QWindowsSockInit();
-    ~QWindowsSockInit();
-    int version;
-};
-#endif
-
 class QSocketNotifier;
 
 class QNativeSocketEnginePrivate : public QAbstractSocketEnginePrivate
@@ -196,10 +192,10 @@ public:
 
     QSocketNotifier *readNotifier, *writeNotifier, *exceptNotifier;
 
-#ifdef Q_OS_WIN
-    QWindowsSockInit winSock;
-#endif
-
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    LPFN_WSASENDMSG sendmsg;
+    LPFN_WSARECVMSG recvmsg;
+#  endif
     enum ErrorString {
         NonBlockingInitFailedErrorString,
         BroadcastingInitFailedErrorString,
@@ -256,24 +252,48 @@ public:
 
     bool nativeHasPendingDatagrams() const;
     qint64 nativePendingDatagramSize() const;
-    qint64 nativeReceiveDatagram(char *data, qint64 maxLength,
-                                     QHostAddress *address, quint16 *port);
-    qint64 nativeSendDatagram(const char *data, qint64 length,
-                                  const QHostAddress &host, quint16 port);
+    qint64 nativeReceiveDatagram(char *data, qint64 maxLength, QIpPacketHeader *header,
+                                 QAbstractSocketEngine::PacketHeaderOptions options);
+    qint64 nativeSendDatagram(const char *data, qint64 length, const QIpPacketHeader &header);
     qint64 nativeRead(char *data, qint64 maxLength);
     qint64 nativeWrite(const char *data, qint64 length);
     int nativeSelect(int timeout, bool selectForRead) const;
     int nativeSelect(int timeout, bool checkRead, bool checkWrite,
                      bool *selectForRead, bool *selectForWrite) const;
-#ifdef Q_OS_WIN
-    void setPortAndAddress(sockaddr_in * sockAddrIPv4, qt_sockaddr_in6 * sockAddrIPv6,
-                           quint16 port, const QHostAddress & address, sockaddr ** sockAddrPtr, QT_SOCKLEN_T *sockAddrSize);
-#endif
 
     void nativeClose();
 
     bool checkProxy(const QHostAddress &address);
     bool fetchConnectionParameters();
+
+    static uint scopeIdFromString(const QString &scopeid);
+
+    /*! \internal
+        Sets \a address and \a port in the \a aa sockaddr structure and the size in \a sockAddrSize.
+        The address \a is converted to IPv6 if the current socket protocol is also IPv6.
+     */
+    void setPortAndAddress(quint16 port, const QHostAddress &address, qt_sockaddr *aa, QT_SOCKLEN_T *sockAddrSize)
+    {
+        if (address.protocol() == QAbstractSocket::IPv6Protocol
+            || address.protocol() == QAbstractSocket::AnyIPProtocol
+            || socketProtocol == QAbstractSocket::IPv6Protocol
+            || socketProtocol == QAbstractSocket::AnyIPProtocol) {
+            memset(&aa->a6, 0, sizeof(sockaddr_in6));
+            aa->a6.sin6_family = AF_INET6;
+            aa->a6.sin6_scope_id = scopeIdFromString(address.scopeId());
+            aa->a6.sin6_port = htons(port);
+            Q_IPV6ADDR tmp = address.toIPv6Address();
+            memcpy(&aa->a6.sin6_addr, &tmp, sizeof(tmp));
+            *sockAddrSize = sizeof(sockaddr_in6);
+        } else {
+            memset(&aa->a, 0, sizeof(sockaddr_in));
+            aa->a4.sin_family = AF_INET;
+            aa->a4.sin_port = htons(port);
+            aa->a4.sin_addr.s_addr = htonl(address.toIPv4Address());
+            *sockAddrSize = sizeof(sockaddr_in);
+        }
+    }
+
 };
 
 QT_END_NAMESPACE

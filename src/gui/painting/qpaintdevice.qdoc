@@ -118,7 +118,13 @@
     values are 1 for normal-dpi displays and 2 for high-dpi "retina"
     displays.
 
-    \sa metric()
+    \value PdmDevicePixelRatioScaled The scaled device pixel ratio for the device.
+    This is identical to PdmDevicePixelRatio, except that the value is scaled by a
+    constant factor in order to support paint devices with fractional scale factors.
+    The constant scaling factor used is devicePixelRatioFScale(). This enum value
+    has been introduced in Qt 5.6.
+
+    \sa metric(), devicePixelRatioF()
 */
 
 /*!

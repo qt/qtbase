@@ -99,6 +99,9 @@
 #elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 #  include <QtCore/qt_windows.h>
 #  include <QtCore/QLibraryInfo>
+# if defined(Q_OS_WINPHONE)
+#   include <Objbase.h>
+# endif
 #endif // Q_OS_WIN && !Q_OS_WINCE
 
 #include <ctype.h>
@@ -124,7 +127,11 @@ Qt::MouseButtons QGuiApplicationPrivate::tabletState = Qt::NoButton;
 QWindow *QGuiApplicationPrivate::tabletPressTarget = 0;
 QWindow *QGuiApplicationPrivate::currentMouseWindow = 0;
 
+QString QGuiApplicationPrivate::styleOverride;
+
 Qt::ApplicationState QGuiApplicationPrivate::applicationState = Qt::ApplicationInactive;
+
+bool QGuiApplicationPrivate::highDpiScalingUpdated = false;
 
 QPlatformIntegration *QGuiApplicationPrivate::platform_integration = 0;
 QPlatformTheme *QGuiApplicationPrivate::platform_theme = 0;
@@ -156,7 +163,7 @@ int QGuiApplicationPrivate::mouse_double_click_distance = -1;
 
 QWindow *QGuiApplicationPrivate::currentMousePressWindow = 0;
 
-static Qt::LayoutDirection layout_direction = Qt::LeftToRight;
+static Qt::LayoutDirection layout_direction = Qt::LayoutDirectionAuto;
 static bool force_reverse = false;
 
 QGuiApplicationPrivate *QGuiApplicationPrivate::self = 0;
@@ -185,9 +192,6 @@ extern void qRegisterGuiVariant();
 #ifndef QT_NO_ANIMATION
 extern void qRegisterGuiGetInterpolator();
 #endif
-extern void qInitBlendFunctions();
-extern void qInitDrawhelperAsm();
-extern void qInitImageConversions();
 
 static bool qt_detectRTLLanguage()
 {
@@ -449,8 +453,7 @@ static QWindowGeometrySpecification windowGeometrySpecification;
         \row
         \li  Miscellaneous
         \li  startingUp(),
-            closingDown(),
-            type().
+            closingDown().
     \endtable
 
     \sa QCoreApplication, QAbstractEventDispatcher, QEventLoop
@@ -868,7 +871,7 @@ QWindowList QGuiApplication::topLevelWindows()
         if (!list.at(i)->parent() && list.at(i)->type() != Qt::Desktop) {
             // Top windows of embedded QAxServers do not have QWindow parents,
             // but they are not true top level windows, so do not include them.
-            const bool embedded = list.at(i)->handle() && list.at(i)->handle()->isEmbedded(0);
+            const bool embedded = list.at(i)->handle() && list.at(i)->handle()->isEmbedded();
             if (!embedded)
                 topLevelWindows.prepend(list.at(i));
         }
@@ -876,16 +879,6 @@ QWindowList QGuiApplication::topLevelWindows()
     return topLevelWindows;
 }
 
-/*!
-    Returns the primary (or default) screen of the application, or null if there is none
-
-    This will be the screen where QWindows are initially shown, unless otherwise specified.
-
-    On some platforms, it may be null when there are actually no screens connected.
-    It is not possible to start a new QGuiApplication while there are no screens.
-    Applications which were running at the time the primary screen was removed
-    will stop rendering graphics until one or more screens are restored.
-*/
 QScreen *QGuiApplication::primaryScreen()
 {
     if (QGuiApplicationPrivate::screen_list.isEmpty())
@@ -907,7 +900,7 @@ QList<QScreen *> QGuiApplication::screens()
 
     This signal is emitted whenever a new screen \a screen has been added to the system.
 
-    \sa screens(), primaryScreen(), screenRemoved()
+    \sa screens(), primaryScreen, screenRemoved()
 */
 
 /*!
@@ -922,6 +915,23 @@ QList<QScreen *> QGuiApplication::screens()
     \since 5.4
 */
 
+
+/*!
+    \property QGuiApplication::primaryScreen
+
+    \brief the primary (or default) screen of the application, or null if there is none.
+
+    This will be the screen where QWindows are initially shown, unless otherwise specified.
+
+    On some platforms, it may be null when there are actually no screens connected.
+    It is not possible to start a new QGuiApplication while there are no screens.
+    Applications which were running at the time the primary screen was removed
+    will stop rendering graphics until one or more screens are restored.
+
+    The primaryScreenChanged signal was introduced in Qt 5.6.
+
+    \sa screens()
+*/
 
 /*!
     Returns the highest screen device pixel ratio found on
@@ -1049,6 +1059,13 @@ static void init_platform(const QString &pluginArgument, const QString &platform
         return;
     }
 
+    // Many platforms have created QScreens at this point. Finish initializing
+    // QHighDpiScaling to be prepared for early calls to qt_defaultDpi().
+    if (QGuiApplication::primaryScreen()) {
+        QGuiApplicationPrivate::highDpiScalingUpdated = true;
+        QHighDpiScaling::updateHighDpiScaling();
+    }
+
     // Create the platform theme:
 
     // 1) Fetch the platform name from the environment if present.
@@ -1129,7 +1146,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
     QHighDpiScaling::initHighDpiScaling();
 
     // Load the platform integration
-    QString platformPluginPath = QLatin1String(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
+    QString platformPluginPath = QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
 
 
     QByteArray platformName;
@@ -1159,7 +1176,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
             arg.remove(0, 1);
         if (arg == "-platformpluginpath") {
             if (++i < argc)
-                platformPluginPath = QLatin1String(argv[i]);
+                platformPluginPath = QString::fromLocal8Bit(argv[i]);
         } else if (arg == "-platform") {
             if (++i < argc)
                 platformName = argv[i];
@@ -1218,9 +1235,10 @@ void QGuiApplicationPrivate::eventDispatcherReady()
 
     platform_integration->initialize();
 
-    // Do this here in order to play nice with platforms that add screens only
-    // in initialize().
-    QHighDpiScaling::updateHighDpiScaling();
+    // All platforms should have added screens at this point. Finish
+    // QHighDpiScaling initialization if it has not been done so already.
+    if (!QGuiApplicationPrivate::highDpiScalingUpdated)
+        QHighDpiScaling::updateHighDpiScaling();
 }
 
 void QGuiApplicationPrivate::init()
@@ -1233,7 +1251,18 @@ void QGuiApplicationPrivate::init()
 #ifndef QT_NO_SESSIONMANAGER
     QString session_id;
     QString session_key;
+# if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    wchar_t guidstr[40];
+    GUID guid;
+    CoCreateGuid(&guid);
+    StringFromGUID2(guid, guidstr, 40);
+    session_id = QString::fromWCharArray(guidstr);
+    CoCreateGuid(&guid);
+    StringFromGUID2(guid, guidstr, 40);
+    session_key = QString::fromWCharArray(guidstr);
+# endif
 #endif
+    QString s;
     int j = argc ? 1 : 0;
     for (int i=1; i<argc; i++) {
         if (argv[i] && *argv[i] != '-') {
@@ -1248,7 +1277,6 @@ void QGuiApplicationPrivate::init()
                 pluginList << argv[i];
         } else if (arg == "-reverse") {
             force_reverse = true;
-            QGuiApplication::setLayoutDirection(Qt::RightToLeft);
 #ifdef Q_OS_MAC
         } else if (arg.startsWith("-psn_")) {
             // eat "-psn_xxxx" on Mac, which is passed when starting an app from Finder.
@@ -1276,9 +1304,16 @@ void QGuiApplicationPrivate::init()
 #endif
         } else if (arg == "-testability") {
             loadTestability = true;
+        } else if (arg.indexOf("-style=", 0) != -1) {
+            s = QString::fromLocal8Bit(arg.right(arg.length() - 7).toLower());
+        } else if (arg == "-style" && i < argc-1) {
+            s = QString::fromLocal8Bit(argv[++i]).toLower();
         } else {
             argv[j++] = argv[i];
         }
+
+        if (!s.isEmpty())
+            styleOverride = s;
     }
 
     if (j < argc) {
@@ -1295,13 +1330,6 @@ void QGuiApplicationPrivate::init()
 
     if (platform_integration == 0)
         createPlatformIntegration();
-
-    // Set up blend function tables.
-    qInitBlendFunctions();
-    // Set up which span functions should be used in raster engine...
-    qInitDrawhelperAsm();
-    // and QImage conversion functions
-    qInitImageConversions();
 
     initPalette();
     QFont::initialize();
@@ -1365,6 +1393,9 @@ void QGuiApplicationPrivate::init()
 #else
     Q_UNUSED(loadTestability);
 #endif // QT_NO_LIBRARY
+
+    if (layout_direction == Qt::LayoutDirectionAuto || force_reverse)
+        QGuiApplication::setLayoutDirection(qt_detectRTLLanguage() ? Qt::RightToLeft : Qt::LeftToRight);
 }
 
 extern void qt_cleanupFontDatabase();
@@ -1714,7 +1745,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         // should first send a move event followed by a button changed event. Since this is not the case
         // with the current event, we split it in two.
         QWindowSystemInterfacePrivate::MouseEvent mouseButtonEvent(
-                    e->window.data(), e->timestamp, e->type, e->localPos, e->globalPos, e->buttons, e->modifiers);
+                    e->window.data(), e->timestamp, e->type, e->localPos, e->globalPos, e->buttons, e->modifiers, e->source);
         if (e->flags & QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic)
             mouseButtonEvent.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
         e->buttons = buttons;
@@ -1789,15 +1820,22 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     if (!window)
         return;
 
-    QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, buttons, e->modifiers, e->source);
-    ev.setTimestamp(e->timestamp);
 #ifndef QT_NO_CURSOR
     if (!e->synthetic()) {
         if (const QScreen *screen = window->screen())
-            if (QPlatformCursor *cursor = screen->handle()->cursor())
+            if (QPlatformCursor *cursor = screen->handle()->cursor()) {
+                const QPointF nativeLocalPoint = QHighDpi::toNativePixels(localPoint, screen);
+                const QPointF nativeGlobalPoint = QHighDpi::toNativePixels(globalPoint, screen);
+                QMouseEvent ev(type, nativeLocalPoint, nativeLocalPoint, nativeGlobalPoint,
+                                          button, buttons, e->modifiers, e->source);
+                ev.setTimestamp(e->timestamp);
                 cursor->pointerEvent(ev);
+            }
     }
 #endif
+
+    QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, buttons, e->modifiers, e->source);
+    ev.setTimestamp(e->timestamp);
 
     if (window->d_func()->blockedByModalWindow) {
         // a modal window is blocking this window, don't allow mouse events through
@@ -1810,6 +1848,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     }
 
     QGuiApplication::sendSpontaneousEvent(window, &ev);
+    e->eventAccepted = ev.isAccepted();
     if (!e->synthetic() && !ev.isAccepted()
         && !frameStrut
         && qApp->testAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents)) {
@@ -1901,13 +1940,6 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
             ) {
         window = QGuiApplication::focusWindow();
     }
-
-#if !defined(Q_OS_OSX)
-    // On OS X the shortcut override is checked earlier, see: QWindowSystemInterface::handleKeyEvent()
-    const bool checkShortcut = e->keyType == QEvent::KeyPress && window != 0;
-    if (checkShortcut && QWindowSystemInterface::tryHandleShortcutEvent(window, e->timestamp, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount))
-        return;
-#endif // Q_OS_OSX
 
     QKeyEvent ev(e->keyType, e->key, e->modifiers,
                  e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers,
@@ -3221,7 +3253,10 @@ void QGuiApplication::setLayoutDirection(Qt::LayoutDirection direction)
 
 Qt::LayoutDirection QGuiApplication::layoutDirection()
 {
-    return layout_direction;
+    // layout_direction is only ever Qt::LayoutDirectionAuto if setLayoutDirection
+    // was never called, or called with Qt::LayoutDirectionAuto (which is a no-op).
+    // In that case we return the default LeftToRight.
+    return layout_direction == Qt::LayoutDirectionAuto ? Qt::LeftToRight : layout_direction;
 }
 
 /*!

@@ -1024,9 +1024,9 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
     case PE_IndicatorProgressChunk:
         {
             bool vertical = false, inverted = false;
-            if (const QStyleOptionProgressBarV2 *pb2 = qstyleoption_cast<const QStyleOptionProgressBarV2 *>(opt)) {
-                vertical = (pb2->orientation == Qt::Vertical);
-                inverted = pb2->invertedAppearance;
+            if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
+                vertical = pb->orientation == Qt::Vertical;
+                inverted = pb->invertedAppearance;
             }
 
             int space = 2;
@@ -1689,15 +1689,9 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
             if (!rect.isValid())
                 return;
 
-            bool vertical = false;
-            bool inverted = false;
+            const bool vertical = pb->orientation == Qt::Vertical;
+            const bool inverted = pb->invertedAppearance;
 
-            // Get extra style options if version 2
-            const QStyleOptionProgressBarV2 *pb2 = qstyleoption_cast<const QStyleOptionProgressBarV2 *>(opt);
-            if (pb2) {
-                vertical = (pb2->orientation == Qt::Vertical);
-                inverted = pb2->invertedAppearance;
-            }
             QMatrix m;
             if (vertical) {
                 rect = QRect(rect.y(), rect.x(), rect.height(), rect.width()); // flip width and height
@@ -1716,7 +1710,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
             Q_D(const QWindowsStyle);
             if (pb->minimum == 0 && pb->maximum == 0) {
                 const int unit_width = proxy()->pixelMetric(PM_ProgressBarChunkWidth, pb, widget);
-                QStyleOptionProgressBarV2 pbBits = *pb;
+                QStyleOptionProgressBar pbBits = *pb;
                 Q_ASSERT(unit_width >0);
 
                 pbBits.rect = rect;
@@ -1773,9 +1767,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
         if (const QStyleOptionDockWidget *dwOpt = qstyleoption_cast<const QStyleOptionDockWidget *>(opt)) {
             Q_D(const QWindowsStyle);
 
-            const QStyleOptionDockWidgetV2 *v2
-                = qstyleoption_cast<const QStyleOptionDockWidgetV2*>(opt);
-            bool verticalTitleBar = v2 == 0 ? false : v2->verticalTitleBar;
+            const bool verticalTitleBar = dwOpt->verticalTitleBar;
 
             QRect rect = dwOpt->rect;
             QRect r = rect;
@@ -1874,9 +1866,9 @@ QRect QWindowsStyle::subElementRect(SubElement sr, const QStyleOption *opt, cons
         break;
     case SE_DockWidgetTitleBarText: {
         r = QCommonStyle::subElementRect(sr, opt, w);
-        const QStyleOptionDockWidgetV2 *v2
-            = qstyleoption_cast<const QStyleOptionDockWidgetV2*>(opt);
-        bool verticalTitleBar = v2 == 0 ? false : v2->verticalTitleBar;
+        const QStyleOptionDockWidget *dwOpt
+            = qstyleoption_cast<const QStyleOptionDockWidget*>(opt);
+        const bool verticalTitleBar = dwOpt && dwOpt->verticalTitleBar;
         int m = proxy()->pixelMetric(PM_DockWidgetTitleMargin, opt, w);
         if (verticalTitleBar) {
             r.adjust(0, 0, 0, -m);

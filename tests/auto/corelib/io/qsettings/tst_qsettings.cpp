@@ -37,6 +37,7 @@
 #include <QtCore/QSettings>
 #include <private/qsettings_p.h>
 #include <QtCore/QCoreApplication>
+#include <QtCore/QDateTime>
 #include <QtCore/QtGlobal>
 #include <QtCore/QMetaType>
 #include <QtCore/QString>
@@ -88,12 +89,11 @@ class tst_QSettings : public QObject
     Q_OBJECT
 
 public:
-    tst_QSettings() : m_canWriteNativeSystemSettings(canWriteNativeSystemSettings()) {}
+    tst_QSettings();
 
 public slots:
     void initTestCase();
-    void init();
-    void cleanup();
+    void cleanup() { cleanupTestFiles(); }
 private slots:
     void getSetCheck();
     void ctor_data();
@@ -164,6 +164,8 @@ private slots:
     void bom();
 
 private:
+    void cleanupTestFiles();
+
     const bool m_canWriteNativeSystemSettings;
 };
 
@@ -179,39 +181,16 @@ void tst_QSettings::getSetCheck()
     QCOMPARE(true, obj1.fallbacksEnabled());
 }
 
-#if defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
-static void removePath(const QString& _path)
-{
-    QString path = _path;
-    QDir dir(path);
-    if (!dir.exists())
-        return;
-    QStringList entries = dir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot);
-    foreach(QString name, entries) {
-        QString absolute = path + name;
-        if (QFileInfo(absolute).isDir())
-            removePath(absolute+"\\");
-        else
-            QFile::remove(absolute);
-    }
-    dir.cdUp();
-    if (path[path.size()-1] == '\\')
-        path = path.left(path.size()-1);
-    dir.rmdir(path.mid(path.lastIndexOf('\\')+1));
-}
-#endif
-
-static QString settingsPath(const char *path = "")
+static QString settingsPath(const char *path = Q_NULLPTR)
 {
     // Temporary path for files that are specified explicitly in the constructor.
 #ifndef Q_OS_WINRT
-    QString tempPath = QDir::tempPath();
+    static const QString tempPath = QDir::tempPath() + QLatin1String("/tst_QSettings");
 #else
-    QString tempPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    static const QString tempPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)
+        + QLatin1String("/tst_QSettings");
 #endif
-    if (tempPath.endsWith("/"))
-        tempPath.truncate(tempPath.size() - 1);
-    return QDir::toNativeSeparators(tempPath + "/tst_QSettings/" + QLatin1String(path));
+    return path && *path ? tempPath + QLatin1Char('/') + QLatin1String(path) : tempPath;
 }
 
 static bool readCustom1File(QIODevice &device, QSettings::SettingsMap &map)
@@ -281,6 +260,12 @@ static void populateWithFormats()
     QTest::newRow("custom2") << QSettings::CustomFormat2;
 }
 
+tst_QSettings::tst_QSettings()
+    : m_canWriteNativeSystemSettings(canWriteNativeSystemSettings())
+{
+    QStandardPaths::setTestModeEnabled(true);
+}
+
 void tst_QSettings::initTestCase()
 {
     if (!m_canWriteNativeSystemSettings)
@@ -293,12 +278,18 @@ void tst_QSettings::initTestCase()
                                                           );
     QVERIFY(custom1 == QSettings::CustomFormat1);
     QVERIFY(custom2 == QSettings::CustomFormat2);
+
+    cleanupTestFiles();
 }
 
-void tst_QSettings::init()
+void tst_QSettings::cleanupTestFiles()
 {
     QSettings::setSystemIniPath(settingsPath("__system__"));
     QSettings::setUserIniPath(settingsPath("__user__"));
+
+    QDir settingsDir(settingsPath());
+    if (settingsDir.exists())
+        QVERIFY(settingsDir.removeRecursively());
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     QSettings("HKEY_CURRENT_USER\\Software\\software.org", QSettings::NativeFormat).clear();
@@ -315,17 +306,7 @@ void tst_QSettings::init()
         QSettings("HKEY_LOCAL_MACHINE\\Software\\bat", QSettings::NativeFormat).clear();
         QSettings("HKEY_LOCAL_MACHINE\\Software\\baz", QSettings::NativeFormat).clear();
     }
-    if (QDir(settingsPath()).exists()) {
-#if defined(Q_OS_WINCE)
-        removePath(settingsPath());
-#else
-        if (QSysInfo::windowsVersion() & QSysInfo::WV_NT_based)
-            system(QString("rmdir /Q /S %1").arg(settingsPath()).toLatin1());
-        else
-            system(QString("deltree /Y %1").arg(settingsPath()).toLatin1());
-#endif
-    }
-#elif defined(Q_OS_DARWIN)
+#elif defined(Q_OS_DARWIN) || defined(Q_OS_WINRT)
     QSettings(QSettings::UserScope, "software.org", "KillerAPP").clear();
     QSettings(QSettings::SystemScope, "software.org", "KillerAPP").clear();
     QSettings(QSettings::UserScope, "other.software.org", "KillerAPP").clear();
@@ -336,31 +317,16 @@ void tst_QSettings::init()
     QSettings(QSettings::SystemScope, "other.software.org").clear();
 #endif
 
-#if !defined(Q_OS_WIN)
-    system(QString("chmod -R u+rw %1 2> /dev/null").arg(settingsPath()).toLatin1());
-    system(QString("rm -fr %1 2> /dev/null").arg(settingsPath()).toLatin1());
-#endif
+    const QString foo(QLatin1String("foo"));
 
 #if defined(Q_OS_WINRT)
-    QSettings(QSettings::UserScope, "software.org", "KillerAPP").clear();
-    QSettings(QSettings::SystemScope, "software.org", "KillerAPP").clear();
-    QSettings(QSettings::UserScope, "other.software.org", "KillerAPP").clear();
-    QSettings(QSettings::SystemScope, "other.software.org", "KillerAPP").clear();
-    QSettings(QSettings::UserScope, "software.org").clear();
-    QSettings(QSettings::SystemScope, "software.org").clear();
-    QSettings(QSettings::UserScope, "other.software.org").clear();
-    QSettings(QSettings::SystemScope, "other.software.org").clear();
-    QSettings("foo", QSettings::NativeFormat).clear();
-    removePath(settingsPath());
-    QFile::remove(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/foo");
+    QSettings(foo, QSettings::NativeFormat).clear();
+    QFile fooFile(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + QLatin1Char('/') + foo);
 #else
-    QFile::remove("foo");
+    QFile fooFile(foo);
 #endif
-}
-
-void tst_QSettings::cleanup()
-{
-    init();
+    if (fooFile.exists())
+        QVERIFY2(fooFile.remove(), qPrintable(fooFile.errorString()));
 }
 
 /*
@@ -1201,6 +1167,9 @@ void tst_QSettings::testVariantTypes()
     QList<QVariant> l4;
     l4 << QVariant(m2) << QVariant(l2) << QVariant(l3);
     testVal("key13", l4, QVariantList, List);
+    QDateTime dt = QDateTime::currentDateTime();
+    dt.setOffsetFromUtc(3600);
+    testVal("key14", dt, QDateTime, DateTime);
 
     // We store key sequences as strings instead of binary variant blob, for improved
     // readability in the resulting format.
@@ -3327,7 +3296,7 @@ void tst_QSettings::dontReorderIniKeysNeedlessly()
     QString outFileName2;
 
     QTemporaryFile outFile;
-    outFile.open();
+    QVERIFY2(outFile.open(), qPrintable(outFile.errorString()));
     outFile.write(contentsBefore);
     outFileName = outFile.fileName();
     outFile.close();

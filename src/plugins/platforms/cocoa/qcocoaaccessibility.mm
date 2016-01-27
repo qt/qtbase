@@ -37,6 +37,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_ACCESSIBILITY
+
 QCocoaAccessibility::QCocoaAccessibility()
 {
 
@@ -49,6 +51,8 @@ QCocoaAccessibility::~QCocoaAccessibility()
 
 void QCocoaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
+    if (!isActive() || !event->accessibleInterface())
+        return;
     QMacAccessibilityElement *element = [QMacAccessibilityElement elementWithId: event->uniqueId()];
     if (!element) {
         qWarning() << "QCocoaAccessibility::notifyAccessibilityUpdate: invalid element";
@@ -373,6 +377,8 @@ id getValueAttribute(QAccessibleInterface *interface)
 }
 
 } // namespace QCocoaAccessible
+
+#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE
 

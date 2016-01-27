@@ -208,7 +208,7 @@ QByteArray QHttpNetworkReply::readAny()
         return QByteArray();
 
     // we'll take the last buffer, so schedule another read from http
-    if (d->downstreamLimited && d->responseData.bufferCount() == 1)
+    if (d->downstreamLimited && d->responseData.bufferCount() == 1 && !isFinished())
         d->connection->d_func()->readMoreLater(this);
     return d->responseData.read();
 }
@@ -262,6 +262,17 @@ char* QHttpNetworkReply::userProvidedDownloadBuffer()
 {
     Q_D(QHttpNetworkReply);
     return d->userProvidedDownloadBuffer;
+}
+
+void QHttpNetworkReply::abort()
+{
+    Q_D(QHttpNetworkReply);
+    d->state = QHttpNetworkReplyPrivate::Aborted;
+}
+
+bool QHttpNetworkReply::isAborted() const
+{
+    return d_func()->state == QHttpNetworkReplyPrivate::Aborted;
 }
 
 bool QHttpNetworkReply::isFinished() const

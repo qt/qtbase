@@ -55,8 +55,6 @@ protected:
     virtual void releaseDataObject(IDataObject *) const {}
 };
 
-QDebug operator<<(QDebug d, const QMimeData &m);
-
 QT_END_NAMESPACE
 
 #endif // QWINDOWSINTERNALMIME_H

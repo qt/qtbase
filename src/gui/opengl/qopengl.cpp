@@ -198,7 +198,7 @@ struct VersionTerm {
 bool VersionTerm::matches(const QVersionNumber &other) const
 {
     if (isNull() || other.isNull()) {
-        qWarning() << Q_FUNC_INFO << "called with invalid parameters";
+        qWarning("called with invalid parameters");
         return false;
     }
     switch (op) {
@@ -276,7 +276,7 @@ struct OsTypeTerm
     bool matches(const QString &osName, const QVersionNumber &kernelVersion, const QString &osRelease) const
     {
         if (isNull() || osName.isEmpty() || kernelVersion.isNull()) {
-            qWarning() << Q_FUNC_INFO << "called with invalid parameters";
+            qWarning("called with invalid parameters");
             return false;
         }
         if (type != osName)

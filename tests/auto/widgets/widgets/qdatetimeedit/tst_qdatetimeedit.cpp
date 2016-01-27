@@ -285,6 +285,7 @@ typedef QList<Qt::Key> KeyList;
 void tst_QDateTimeEdit::getSetCheck()
 {
     QDateTimeEdit obj1;
+    QCOMPARE(obj1.inputMethodQuery(Qt::ImHints), QVariant(int(Qt::ImhPreferNumbers)));
     obj1.setDisplayFormat("dd/MM/yyyy hh:mm:ss.zzz d/M/yy h:m:s.z AP");
     // Section QDateTimeEdit::currentSection()
     // void QDateTimeEdit::setCurrentSection(Section)
@@ -306,6 +307,11 @@ void tst_QDateTimeEdit::getSetCheck()
     QCOMPARE(QDateTimeEdit::MonthSection, obj1.currentSection());
     obj1.setCurrentSection(QDateTimeEdit::YearSection);
     QCOMPARE(QDateTimeEdit::YearSection, obj1.currentSection());
+
+    QDateEdit dateEdit;
+    QCOMPARE(dateEdit.inputMethodQuery(Qt::ImHints), QVariant(int(Qt::ImhPreferNumbers)));
+    QTimeEdit timeEdit;
+    QCOMPARE(timeEdit.inputMethodQuery(Qt::ImHints), QVariant(int(Qt::ImhPreferNumbers)));
 }
 
 tst_QDateTimeEdit::tst_QDateTimeEdit()

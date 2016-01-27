@@ -65,6 +65,7 @@ private slots:
     void begin();
     void end();
     void insert();
+    void reverseIterators();
     void setOperations();
     void stlIterator();
     void stlMutableIterator();
@@ -555,6 +556,21 @@ void tst_QSet::insert()
     }
 }
 
+void tst_QSet::reverseIterators()
+{
+    QSet<int> s;
+    s << 1 << 17 << 61 << 127 << 911;
+    std::vector<int> v(s.begin(), s.end());
+    std::reverse(v.begin(), v.end());
+    const QSet<int> &cs = s;
+    QVERIFY(std::equal(v.begin(), v.end(), s.rbegin()));
+    QVERIFY(std::equal(v.begin(), v.end(), s.crbegin()));
+    QVERIFY(std::equal(v.begin(), v.end(), cs.rbegin()));
+    QVERIFY(std::equal(s.rbegin(), s.rend(), v.begin()));
+    QVERIFY(std::equal(s.crbegin(), s.crend(), v.begin()));
+    QVERIFY(std::equal(cs.rbegin(), cs.rend(), v.begin()));
+}
+
 void tst_QSet::setOperations()
 {
     QSet<QString> set1, set2;
@@ -970,24 +986,6 @@ void tst_QSet::initializerList()
 #endif
 }
 
-QT_BEGIN_NAMESPACE
-extern Q_CORE_EXPORT QBasicAtomicInt qt_qhash_seed; // from qhash.cpp
-QT_END_NAMESPACE
-
-class QtQHashSeedSaver {
-    int oldSeed, newSeed;
-public:
-    explicit QtQHashSeedSaver(int seed)
-        : oldSeed(qt_qhash_seed.fetchAndStoreRelaxed(seed)),
-          newSeed(seed)
-    {}
-    ~QtQHashSeedSaver()
-    {
-        // only restore when no-one else changed the seed in the meantime:
-        qt_qhash_seed.testAndSetRelaxed(newSeed, oldSeed);
-    }
-};
-
 void tst_QSet::qhash()
 {
     //
@@ -995,14 +993,14 @@ void tst_QSet::qhash()
     //
     {
         // create some deterministic initial state:
-        const QtQHashSeedSaver seed1(0);
+        qSetGlobalQHashSeed(0);
 
         QSet<int> s1;
         s1.reserve(4);
         s1 << 400 << 300 << 200 << 100;
 
         // also change the seed:
-        const QtQHashSeedSaver seed2(0x10101010);
+        qSetGlobalQHashSeed(0x10101010);
 
         QSet<int> s2;
         s2.reserve(100); // provoke different bucket counts
@@ -1049,7 +1047,7 @@ void tst_QSet::intersects()
     s1 << 200;
     QVERIFY(s1.intersects(s2));
 
-    const QtQHashSeedSaver seedSaver(0x10101010);
+    qSetGlobalQHashSeed(0x10101010);
     QSet<int> s3;
     s3 << 500;
     QVERIFY(!s1.intersects(s3));

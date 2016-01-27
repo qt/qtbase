@@ -93,6 +93,8 @@ public:
 private:
     bool checkAngleAvailability(QString *errorMessage = 0) const;
 
+    int verbose;
+
     // Our variable dictionaries
     QMap<QString,QString> dictionary;
     QStringList allBuildParts;
@@ -158,7 +160,8 @@ private:
     void saveCmdLine();
 
     void addSysroot(QString *command);
-    bool tryCompileProject(const QString &projectPath, const QString &extraOptions = QString());
+    bool tryCompileProject(const QString &projectPath, const QString &extraOptions = QString(),
+                           bool distClean = true);
     bool compilerSupportsFlag(const QString &compilerAndArgs);
 
     void desc(const char *description, int startingAt = 0, int wrapIndent = 0);

@@ -76,6 +76,7 @@
 #if defined(Q_OS_LINUX)
 #include <sys/types.h>
 #include <unistd.h>
+#include <fcntl.h>
 #endif
 
 #ifdef Q_OS_WIN
@@ -271,7 +272,7 @@ static void stackTrace()
 
    The QTRY_VERIFY2_WITH_TIMEOUT macro is similar to QTRY_VERIFY_WITH_TIMEOUT()
    except that it outputs a verbose \a message when \a condition is still false
-   after the specified timeout. The \a message is a plain C string.
+   after the specified \a timeout. The \a message is a plain C string.
 
    Example:
    \code
@@ -2213,9 +2214,11 @@ static bool qInvokeTestMethod(const char *slotName, const char *data, WatchDog *
                     QTestDataSetter s(curDataIndex >= dataCount ? static_cast<QTestData *>(0)
                                                       : table.testData(curDataIndex));
 
-                    watchDog->beginTest();
+                    if (watchDog)
+                        watchDog->beginTest();
                     qInvokeTestMethodDataEntry(slot);
-                    watchDog->testFinished();
+                    if (watchDog)
+                        watchDog->testFinished();
 
                     if (data)
                         break;
@@ -2487,6 +2490,37 @@ char *toPrettyUnicode(const ushort *p, int length)
     return buffer.take();
 }
 
+static bool debuggerPresent()
+{
+#if defined(Q_OS_LINUX)
+    int fd = open("/proc/self/status", O_RDONLY);
+    if (fd == -1)
+        return false;
+    char buffer[2048];
+    ssize_t size = read(fd, buffer, sizeof(buffer));
+    if (size == -1) {
+        close(fd);
+        return false;
+    }
+    buffer[size] = 0;
+    const char tracerPidToken[] = "\nTracerPid:";
+    char *tracerPid = strstr(buffer, tracerPidToken);
+    if (!tracerPid) {
+        close(fd);
+        return false;
+    }
+    tracerPid += sizeof(tracerPidToken);
+    long int pid = strtol(tracerPid, &tracerPid, 10);
+    close(fd);
+    return pid != 0;
+#elif defined(Q_OS_WIN)
+    return IsDebuggerPresent();
+#else
+    // TODO
+    return false;
+#endif
+}
+
 static void qInvokeTestMethods(QObject *testObject)
 {
     const QMetaObject *metaObject = testObject->metaObject();
@@ -2496,7 +2530,9 @@ static void qInvokeTestMethods(QObject *testObject)
     QTestTable::globalTestTable();
     invokeMethod(testObject, "initTestCase_data()");
 
-    WatchDog watchDog;
+    QScopedPointer<WatchDog> watchDog;
+    if (!debuggerPresent())
+        watchDog.reset(new WatchDog);
 
     if (!QTestResult::skipCurrentTest() && !QTest::currentTestFailed()) {
         invokeMethod(testObject, "initTestCase()");
@@ -2512,7 +2548,7 @@ static void qInvokeTestMethods(QObject *testObject)
             if (QTest::testFuncs) {
                 for (int i = 0; i != QTest::testFuncCount; i++) {
                     if (!qInvokeTestMethod(metaObject->method(QTest::testFuncs[i].function()).methodSignature().constData(),
-                                                              QTest::testFuncs[i].data(), &watchDog)) {
+                                                              QTest::testFuncs[i].data(), watchDog.data())) {
                         break;
                     }
                 }
@@ -2525,7 +2561,7 @@ static void qInvokeTestMethods(QObject *testObject)
                 for (int i = 0; i != methodCount; i++) {
                     if (!isValidSlot(testMethods[i]))
                         continue;
-                    if (!qInvokeTestMethod(testMethods[i].methodSignature().constData(), 0, &watchDog))
+                    if (!qInvokeTestMethod(testMethods[i].methodSignature().constData(), 0, watchDog.data()))
                         break;
                 }
                 delete[] testMethods;
@@ -2561,9 +2597,13 @@ private:
 
 void FatalSignalHandler::signal(int signum)
 {
+    const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
+    const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
     if (signum != SIGINT)
         stackTrace();
-    qFatal("Received signal %d", signum);
+    qFatal("Received signal %d\n"
+           "         Function time: %dms Total time: %dms",
+           signum, msecsFunctionTime, msecsTotalTime);
 #if defined(Q_OS_INTEGRITY)
     {
         struct sigaction act;
@@ -2758,35 +2798,39 @@ static LONG WINAPI windowsFaultHandler(struct _EXCEPTION_POINTERS *exInfo)
     char appName[MAX_PATH];
     if (!GetModuleFileNameA(NULL, appName, MAX_PATH))
         appName[0] = 0;
-
+    const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
+    const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
     const void *exceptionAddress = exInfo->ExceptionRecord->ExceptionAddress;
-    fprintf(stderr, "A crash occurred in %s.\n\n"
-                    "Exception address: 0x%p\n"
-                    "Exception code   : 0x%lx\n",
-            appName, exceptionAddress, exInfo->ExceptionRecord->ExceptionCode);
+    printf("A crash occurred in %s.\n"
+           "Function time: %dms Total time: %dms\n\n"
+           "Exception address: 0x%p\n"
+           "Exception code   : 0x%lx\n",
+           appName, msecsFunctionTime, msecsTotalTime,
+           exceptionAddress, exInfo->ExceptionRecord->ExceptionCode);
 
     DebugSymbolResolver resolver(GetCurrentProcess());
     if (resolver.isValid()) {
         DebugSymbolResolver::Symbol exceptionSymbol = resolver.resolveSymbol(DWORD64(exceptionAddress));
         if (exceptionSymbol.name) {
-            fprintf(stderr, "Nearby symbol    : %s\n", exceptionSymbol.name);
+            printf("Nearby symbol    : %s\n", exceptionSymbol.name);
             delete [] exceptionSymbol.name;
         }
         void *stack[maxStackFrames];
-        fputs("\nStack:\n", stderr);
+        fputs("\nStack:\n", stdout);
         const unsigned frameCount = CaptureStackBackTrace(0, DWORD(maxStackFrames), stack, NULL);
         for (unsigned f = 0; f < frameCount; ++f)     {
             DebugSymbolResolver::Symbol symbol = resolver.resolveSymbol(DWORD64(stack[f]));
             if (symbol.name) {
-                fprintf(stderr, "#%3u: %s() - 0x%p\n", f + 1, symbol.name, (const void *)symbol.address);
+                printf("#%3u: %s() - 0x%p\n", f + 1, symbol.name, (const void *)symbol.address);
                 delete [] symbol.name;
             } else {
-                fprintf(stderr, "#%3u: Unable to obtain symbol\n", f + 1);
+                printf("#%3u: Unable to obtain symbol\n", f + 1);
             }
         }
     }
 
-    fputc('\n', stderr);
+    fputc('\n', stdout);
+    fflush(stdout);
 
     return EXCEPTION_EXECUTE_HANDLER;
 }

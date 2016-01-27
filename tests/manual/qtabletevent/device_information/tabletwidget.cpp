@@ -73,6 +73,7 @@ bool TabletWidget::eventFilter(QObject *, QEvent *ev)
             mRot = event->rotation();
             mButton = event->button();
             mButtons = event->buttons();
+            mTimestamp = event->timestamp();
             if (isVisible())
                 update();
             break;
@@ -84,6 +85,7 @@ bool TabletWidget::eventFilter(QObject *, QEvent *ev)
             mType = event->type();
             mPos = event->pos();
             mGPos = event->globalPos();
+            mTimestamp = event->timestamp();
         }
     default:
         break;
@@ -122,6 +124,7 @@ void TabletWidget::paintEvent(QPaintEvent *)
 
     eventInfo << QString("Global position: %1 %2").arg(QString::number(mGPos.x()), QString::number(mGPos.y()));
     eventInfo << QString("Local position: %1 %2").arg(QString::number(mPos.x()), QString::number(mPos.y()));
+    eventInfo << QString("Timestamp: %1").arg(QString::number(mTimestamp));
     if (mType == QEvent::TabletEnterProximity || mType == QEvent::TabletLeaveProximity
         || mType == QEvent::TabletMove || mType == QEvent::TabletPress
         || mType == QEvent::TabletRelease) {

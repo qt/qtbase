@@ -294,7 +294,7 @@ void QCocoaMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *
         int index = m_menuItems.indexOf(beforeItem);
         // if a before item is supplied, it should be in the menu
         if (index < 0) {
-            qWarning() << Q_FUNC_INFO << "Before menu item not found";
+            qWarning("Before menu item not found");
             return;
         }
         m_menuItems.insert(index, cocoaItem);
@@ -315,7 +315,7 @@ void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
         return;
 
     if ([item->nsItem() menu]) {
-        qWarning() << Q_FUNC_INFO << "Menu item is already in a menu, remove it from the other menu first before inserting";
+        qWarning("Menu item is already in a menu, remove it from the other menu first before inserting");
         return;
     }
     // if the item we're inserting before is merged, skip along until
@@ -326,7 +326,7 @@ void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
 
     if (beforeItem) {
         if (beforeItem->isMerged()) {
-            qWarning() << Q_FUNC_INFO << "No non-merged before menu item found";
+            qWarning("No non-merged before menu item found");
             return;
         }
         NSUInteger nativeIndex = [m_nativeMenu indexOfItem:beforeItem->nsItem()];
@@ -342,7 +342,7 @@ void QCocoaMenu::removeMenuItem(QPlatformMenuItem *menuItem)
     QMacAutoReleasePool pool;
     QCocoaMenuItem *cocoaItem = static_cast<QCocoaMenuItem *>(menuItem);
     if (!m_menuItems.contains(cocoaItem)) {
-        qWarning() << Q_FUNC_INFO << "Menu does not contain the item to be removed";
+        qWarning("Menu does not contain the item to be removed");
         return;
     }
 
@@ -352,7 +352,7 @@ void QCocoaMenu::removeMenuItem(QPlatformMenuItem *menuItem)
     m_menuItems.removeOne(cocoaItem);
     if (!cocoaItem->isMerged()) {
         if (m_nativeMenu != [cocoaItem->nsItem() menu]) {
-            qWarning() << Q_FUNC_INFO << "Item to remove does not belong to this menu";
+            qWarning("Item to remove does not belong to this menu");
             return;
         }
         [m_nativeMenu removeItem: cocoaItem->nsItem()];
@@ -372,7 +372,7 @@ void QCocoaMenu::syncMenuItem(QPlatformMenuItem *menuItem)
     QMacAutoReleasePool pool;
     QCocoaMenuItem *cocoaItem = static_cast<QCocoaMenuItem *>(menuItem);
     if (!m_menuItems.contains(cocoaItem)) {
-        qWarning() << Q_FUNC_INFO << "Item does not belong to this menu";
+        qWarning("Item does not belong to this menu");
         return;
     }
 
@@ -463,6 +463,13 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect,
     NSView *view = cocoaWindow ? cocoaWindow->contentView() : nil;
     NSMenuItem *nsItem = item ? ((QCocoaMenuItem *)item)->nsItem() : nil;
 
+    QScreen *screen = 0;
+    if (parentWindow)
+        screen = parentWindow->screen();
+    if (!screen && !QGuiApplication::screens().isEmpty())
+        screen = QGuiApplication::screens().at(0);
+    Q_ASSERT(screen);
+
     // Ideally, we would call -popUpMenuPositioningItem:atLocation:inView:.
     // However, this showed not to work with modal windows where the menu items
     // would appear disabled. So, we resort to a more artisanal solution. Note
@@ -479,6 +486,21 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect,
         [popupCell setTransparent:YES];
         [popupCell setMenu:m_nativeMenu];
         [popupCell selectItem:nsItem];
+
+        int availableHeight = screen->availableSize().height();
+        const QPoint &globalPos = parentWindow->mapToGlobal(pos);
+        int menuHeight = m_nativeMenu.size.height;
+        if (globalPos.y() + menuHeight > availableHeight) {
+            // Maybe we need to fix the vertical popup position but we don't know the
+            // exact popup height at the moment (and Cocoa is just guessing) nor its
+            // position. So, instead of translating by the popup's full height, we need
+            // to estimate where the menu will show up and translate by the remaining height.
+            float idx = ([m_nativeMenu indexOfItem:nsItem] + 1.0f) / m_nativeMenu.numberOfItems;
+            float heightBelowPos = (1.0 - idx) * menuHeight;
+            if (globalPos.y() + heightBelowPos > availableHeight)
+                pos.setY(pos.y() - globalPos.y() + availableHeight - heightBelowPos);
+        }
+
         NSRect cellFrame = NSMakeRect(pos.x(), pos.y(), m_nativeMenu.minimumWidth, 10);
         [popupCell performClickWithFrame:cellFrame inView:view];
     } else {
@@ -487,22 +509,21 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect,
         if (view) {
             // convert coordinates from view to the view's window
             nsPos = [view convertPoint:nsPos toView:nil];
-        } else if (!QGuiApplication::screens().isEmpty()) {
-            QScreen *screen = QGuiApplication::screens().at(0);
+        } else {
             nsPos.y = screen->availableVirtualSize().height() - nsPos.y;
         }
 
         if (view) {
             // Finally, we need to synthesize an event.
             NSEvent *menuEvent = [NSEvent mouseEventWithType:NSRightMouseDown
-                    location:nsPos
-                    modifierFlags:0
-                    timestamp:0
-                    windowNumber:view ? view.window.windowNumber : 0
-                                        context:nil
-                                        eventNumber:0
-                                        clickCount:1
-                                        pressure:1.0];
+                                          location:nsPos
+                                          modifierFlags:0
+                                          timestamp:0
+                                          windowNumber:view ? view.window.windowNumber : 0
+                                          context:nil
+                                          eventNumber:0
+                                          clickCount:1
+                                          pressure:1.0];
             [NSMenu popUpContextMenu:m_nativeMenu withEvent:menuEvent forView:view];
         } else {
             [m_nativeMenu popUpMenuPositioningItem:nsItem atLocation:nsPos inView:0];

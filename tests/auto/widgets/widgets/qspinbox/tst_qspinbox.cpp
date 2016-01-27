@@ -165,6 +165,7 @@ Q_DECLARE_METATYPE(QLocale::Country)
 void tst_QSpinBox::getSetCheck()
 {
     QSpinBox obj1;
+    QCOMPARE(obj1.inputMethodQuery(Qt::ImHints), QVariant(int(Qt::ImhDigitsOnly)));
     // int QSpinBox::singleStep()
     // void QSpinBox::setSingleStep(int)
     obj1.setSingleStep(0);
@@ -202,6 +203,7 @@ void tst_QSpinBox::getSetCheck()
     QCOMPARE(INT_MAX, obj1.value());
 
     QDoubleSpinBox obj2;
+    QCOMPARE(obj2.inputMethodQuery(Qt::ImHints), QVariant(int(Qt::ImhFormattedNumbersOnly)));
     // double QDoubleSpinBox::singleStep()
     // void QDoubleSpinBox::setSingleStep(double)
     obj2.setSingleStep(0.0);

@@ -1450,11 +1450,8 @@ void QMessageBox::changeEvent(QEvent *ev)
 void QMessageBox::keyPressEvent(QKeyEvent *e)
 {
     Q_D(QMessageBox);
-    if (e->key() == Qt::Key_Escape
-#ifdef Q_OS_MAC
-        || (e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_Period)
-#endif
-        ) {
+
+        if (e->matches(QKeySequence::Cancel)) {
             if (d->detectedEscapeButton) {
 #ifdef Q_OS_MAC
                 d->detectedEscapeButton->animateClick();

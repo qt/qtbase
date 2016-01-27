@@ -56,7 +56,7 @@ QPlatformScreen::~QPlatformScreen()
     Q_D(QPlatformScreen);
     if (d->screen) {
         qWarning("Manually deleting a QPlatformScreen. Call QPlatformIntegration::destroyScreen instead.");
-        QGuiApplicationPrivate::screen_list.removeOne(d->screen);
+        QGuiApplicationPrivate::platformIntegration()->removeScreen(d->screen);
         delete d->screen;
     }
 }
@@ -90,7 +90,7 @@ QWindow *QPlatformScreen::topLevelAt(const QPoint & pos) const
     QWindowList list = QGuiApplication::topLevelWindows();
     for (int i = list.size()-1; i >= 0; --i) {
         QWindow *w = list[i];
-        if (w->isVisible() && w->geometry().contains(pos))
+        if (w->isVisible() && QHighDpi::toNativePixels(w->geometry(), w).contains(pos))
             return w;
     }
 
@@ -362,7 +362,7 @@ static int log2(uint i)
 int QPlatformScreen::angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b)
 {
     if (a == Qt::PrimaryOrientation || b == Qt::PrimaryOrientation) {
-        qWarning() << "Use QScreen version of" << __FUNCTION__ << "when passing Qt::PrimaryOrientation";
+        qWarning("Use QScreen version of %sBetween() when passing Qt::PrimaryOrientation", "angle");
         return 0;
     }
 
@@ -384,7 +384,7 @@ int QPlatformScreen::angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation
 QTransform QPlatformScreen::transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &target)
 {
     if (a == Qt::PrimaryOrientation || b == Qt::PrimaryOrientation) {
-        qWarning() << "Use QScreen version of" << __FUNCTION__ << "when passing Qt::PrimaryOrientation";
+        qWarning("Use QScreen version of %sBetween() when passing Qt::PrimaryOrientation", "transform");
         return QTransform();
     }
 
@@ -415,7 +415,7 @@ QTransform QPlatformScreen::transformBetween(Qt::ScreenOrientation a, Qt::Screen
 QRect QPlatformScreen::mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &rect)
 {
     if (a == Qt::PrimaryOrientation || b == Qt::PrimaryOrientation) {
-        qWarning() << "Use QScreen version of" << __FUNCTION__ << "when passing Qt::PrimaryOrientation";
+        qWarning("Use QScreen version of %sBetween() when passing Qt::PrimaryOrientation", "map");
         return rect;
     }
 

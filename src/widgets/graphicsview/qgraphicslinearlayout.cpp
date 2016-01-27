@@ -512,7 +512,7 @@ void QGraphicsLinearLayout::setGeometry(const QRectF &rect)
     d->engine.setGeometries(effectiveRect, d->styleInfo());
 #ifdef QGRIDLAYOUTENGINE_DEBUG
     if (qt_graphicsLayoutDebug()) {
-        qDebug() << "post dump";
+        qDebug("post dump");
         dump(1);
     }
 #endif

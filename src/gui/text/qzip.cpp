@@ -795,12 +795,6 @@ void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const 
 */
 
 /*!
-    \variable FileInfo::d
-    \internal
-    private pointer.
-*/
-
-/*!
     \class QZipReader
     \internal
     \since 4.5

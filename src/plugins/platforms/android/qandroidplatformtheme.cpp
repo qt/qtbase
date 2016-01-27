@@ -31,6 +31,7 @@
 **
 ****************************************************************************/
 
+#include "androidjnimain.h"
 #include "androidjnimenu.h"
 #include "qandroidplatformtheme.h"
 #include "qandroidplatformmenubar.h"
@@ -45,6 +46,7 @@
 #include <QVariant>
 
 #include <private/qguiapplication_p.h>
+#include <private/qhighdpiscaling_p.h>
 #include <qandroidplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
@@ -216,6 +218,7 @@ QJsonObject AndroidStyle::loadStyleData()
 
 static std::shared_ptr<AndroidStyle> loadAndroidStyle(QPalette *defaultPalette)
 {
+    double pixelDensity = QHighDpiScaling::isActive() ? QtAndroid::pixelDensity() : 1.0;
     std::shared_ptr<AndroidStyle> style(new AndroidStyle);
     style->m_styleData = AndroidStyle::loadStyleData();
     if (style->m_styleData.isEmpty())
@@ -245,7 +248,7 @@ static std::shared_ptr<AndroidStyle> loadAndroidStyle(QPalette *defaultPalette)
             // Font size (in pixels)
             attributeIterator = item.find(QLatin1String("TextAppearance_textSize"));
             if (attributeIterator != item.constEnd())
-                font.setPixelSize(int(attributeIterator.value().toDouble()));
+                font.setPixelSize(int(attributeIterator.value().toDouble() / pixelDensity));
 
             // Font style
             attributeIterator = item.find(QLatin1String("TextAppearance_textStyle"));

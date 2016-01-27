@@ -188,6 +188,8 @@ public:
                    Qt::ImageConversionFlags flags = Qt::AutoColor) Q_DECL_OVERRIDE;
     void drawTiledPixmap (const QRectF & rectangle, const QPixmap & pixmap, const QPointF & point) Q_DECL_OVERRIDE;
 
+    void drawHyperlink(const QRectF &r, const QUrl &url);
+
     void updateState(const QPaintEngineState &state) Q_DECL_OVERRIDE;
 
     int metric(QPaintDevice::PaintDeviceMetric metricType) const;

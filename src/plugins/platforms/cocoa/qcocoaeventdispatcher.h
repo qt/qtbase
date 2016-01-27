@@ -83,8 +83,8 @@
 #include <QtCore/qstack.h>
 #include <QtGui/qwindowdefs.h>
 #include <QtCore/private/qabstracteventdispatcher_p.h>
+#include <QtCore/private/qcfsocketnotifier_p.h>
 #include <QtCore/private/qtimerinfo_unix_p.h>
-#include <QtPlatformSupport/private/qcfsocketnotifier_p.h>
 
 #include <CoreFoundation/CoreFoundation.h>
 

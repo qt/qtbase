@@ -117,6 +117,7 @@ private slots:
 //     void check_mouse2();
 
     void check_altPress();
+    void check_altClosePress();
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
     void check_shortcutPress();
     void check_menuPosition();
@@ -128,7 +129,7 @@ private slots:
     void taskQTBUG4965_escapeEaten();
 #endif
     void taskQTBUG11823_crashwithInvisibleActions();
-    void closeOnSecondClick();
+    void closeOnSecondClickAndOpenOnThirdClick();
     void cornerWidgets_data();
     void cornerWidgets();
 
@@ -978,6 +979,35 @@ void tst_QMenuBar::check_altPress()
     QTRY_VERIFY( ::qobject_cast<QMenuBar *>(qApp->focusWidget()) );
 }
 
+// QTBUG-47377: Pressing 'Alt' after opening a menu by pressing 'Alt+Accelerator'
+// should close it and QMenuBar::activeAction() should be 0.
+void tst_QMenuBar::check_altClosePress()
+{
+    const QStyle *style = QApplication::style();
+    if (!style->styleHint(QStyle::SH_MenuBar_AltKeyNavigation) ) {
+        QSKIP(("This test is not supposed to work in the " + style->objectName().toLatin1()
+               + " style. Skipping.").constData());
+    }
+
+    QMainWindow w;
+    w.setWindowTitle(QTest::currentTestFunction());
+    QMenu *menuFile = w.menuBar()->addMenu(tr("&File"));
+    menuFile->addAction("Quit");
+    QMenu *menuEdit = w.menuBar()->addMenu(tr("&Edit"));
+    menuEdit->addAction("Copy");
+
+    w.show();
+    w.move(QGuiApplication::primaryScreen()->availableGeometry().center());
+    QApplication::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
+
+    QTest::keyClick(&w, Qt::Key_F, Qt::AltModifier);
+    QTRY_VERIFY(menuFile->isVisible());
+    QTest::keyClick(menuFile, Qt::Key_Alt, Qt::AltModifier);
+    QTRY_VERIFY(!menuFile->isVisible());
+    QTRY_VERIFY(!w.menuBar()->activeAction());
+}
+
 // Qt/Mac,WinCE does not use the native popups/menubar
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
 void tst_QMenuBar::check_shortcutPress()
@@ -1312,7 +1342,7 @@ void tst_QMenuBar::taskQTBUG11823_crashwithInvisibleActions()
     QCOMPARE(menubar.activeAction(), m); //the active action shouldn't have changed
 }
 
-void tst_QMenuBar::closeOnSecondClick() // QTBUG-32807, menu should close on 2nd click.
+void tst_QMenuBar::closeOnSecondClickAndOpenOnThirdClick() // QTBUG-32807, menu should close on 2nd click.
 {
     QMainWindow mainWindow;
     mainWindow.resize(300, 200);
@@ -1322,17 +1352,20 @@ void tst_QMenuBar::closeOnSecondClick() // QTBUG-32807, menu should close on 2nd
 #endif
     QMenuBar *menuBar = mainWindow.menuBar();
     menuBar->setNativeMenuBar(false);
-    QMenu *fileMenu = menuBar->addMenu(QStringLiteral("closeOnSecondClick"));
+    QMenu *fileMenu = menuBar->addMenu(QStringLiteral("OpenCloseOpen"));
     fileMenu->addAction(QStringLiteral("Quit"));
     mainWindow.show();
     QApplication::setActiveWindow(&mainWindow);
     QVERIFY(QTest::qWaitForWindowActive(&mainWindow));
     const QPoint center = menuBar->actionGeometry(fileMenu->menuAction()).center();
+    const QPoint globalPos = menuBar->mapToGlobal(center);
     QTest::mouseMove(menuBar, center);
     QTest::mouseClick(menuBar, Qt::LeftButton, 0, center);
     QTRY_VERIFY(fileMenu->isVisible());
-    QTest::mouseClick(menuBar, Qt::LeftButton, 0, center);
+    QTest::mouseClick(fileMenu, Qt::LeftButton, 0, fileMenu->mapFromGlobal(globalPos));
     QTRY_VERIFY(!fileMenu->isVisible());
+    QTest::mouseClick(menuBar, Qt::LeftButton, 0, center);
+    QTRY_VERIFY(fileMenu->isVisible());
 }
 
 Q_DECLARE_METATYPE(Qt::Corner)

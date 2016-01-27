@@ -36,6 +36,7 @@
 #include "qplatformdefs.h"
 
 #include <private/qcoreapplication_p.h>
+#include <private/qcore_unix_p.h>
 
 #if defined(Q_OS_NACL)
 #include <private/qcorepeppereventdispatcher_p.h>
@@ -43,6 +44,9 @@
 
 #if defined(Q_OS_BLACKBERRY)
 #  include <private/qeventdispatcher_blackberry_p.h>
+#elif defined(Q_OS_OSX)
+#  include <private/qeventdispatcher_cf_p.h>
+#  include <private/qeventdispatcher_unix_p.h>
 #else
 #  if !defined(QT_NO_GLIB)
 #    include "../kernel/qeventdispatcher_glib_p.h"
@@ -79,9 +83,6 @@
 #   define old_qDebug qDebug
 #   undef qDebug
 # endif
-#ifdef Q_OS_MACX
-# include <CoreServices/CoreServices.h>
-#endif // Q_OS_MACX
 
 # ifdef old_qDebug
 #   undef qDebug
@@ -229,7 +230,7 @@ QThreadData *QThreadData::current(bool createIfNecessary)
         data->isAdopted = true;
         data->threadId = (Qt::HANDLE)pthread_self();
         if (!QCoreApplicationPrivate::theMainThread)
-            QCoreApplicationPrivate::theMainThread = data->thread;
+            QCoreApplicationPrivate::theMainThread = data->thread.load();
     }
     return data;
 }
@@ -258,14 +259,21 @@ void QThreadPrivate::createEventDispatcher(QThreadData *data)
     data->eventDispatcher.storeRelease(new QCorePepperEventDispatcher);
 #elif defined(Q_OS_BLACKBERRY)
     data->eventDispatcher.storeRelease(new QEventDispatcherBlackberry);
-#else
-#if !defined(QT_NO_GLIB)
+#  elif defined(Q_OS_OSX)
+    bool ok = false;
+    int value = qEnvironmentVariableIntValue("QT_EVENT_DISPATCHER_CORE_FOUNDATION", &ok);
+    if (ok && value > 0)
+        data->eventDispatcher.storeRelease(new QEventDispatcherCoreFoundation);
+    else
+        data->eventDispatcher.storeRelease(new QEventDispatcherUNIX);
+#  elif !defined(QT_NO_GLIB)
     if (qEnvironmentVariableIsEmpty("QT_NO_GLIB")
         && qEnvironmentVariableIsEmpty("QT_NO_THREADED_GLIB")
         && QEventDispatcherGlib::versionSupported())
         data->eventDispatcher.storeRelease(new QEventDispatcherGlib);
     else
-#endif
+        data->eventDispatcher.storeRelease(new QEventDispatcherUNIX);
+#else
     data->eventDispatcher.storeRelease(new QEventDispatcherUNIX);
 #endif
 

@@ -56,6 +56,7 @@
 QT_BEGIN_NAMESPACE
 
 class QPlatformSurface;
+class QEglFSWindow;
 
 #define QEGLDeviceIntegrationFactoryInterface_iid "org.qt-project.qt.qpa.egl.QEGLDeviceIntegrationFactoryInterface.5.5"
 
@@ -67,18 +68,22 @@ public:
     virtual void platformInit();
     virtual void platformDestroy();
     virtual EGLNativeDisplayType platformDisplay() const;
+    virtual EGLDisplay createDisplay(EGLNativeDisplayType nativeDisplay);
     virtual bool usesDefaultScreen();
     virtual void screenInit();
     virtual void screenDestroy();
     virtual QSizeF physicalScreenSize() const;
     virtual QSize screenSize() const;
     virtual QDpi logicalDpi() const;
+    virtual qreal pixelDensity() const;
     virtual Qt::ScreenOrientation nativeOrientation() const;
     virtual Qt::ScreenOrientation orientation() const;
     virtual int screenDepth() const;
     virtual QImage::Format screenFormat() const;
     virtual qreal refreshRate() const;
     virtual QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const;
+    virtual EGLint surfaceType() const;
+    virtual QEglFSWindow *createWindow(QWindow *window) const;
     virtual EGLNativeWindowType createNativeWindow(QPlatformWindow *platformWindow,
                                                    const QSize &size,
                                                    const QSurfaceFormat &format);
@@ -92,6 +97,9 @@ public:
     virtual QByteArray fbDeviceName() const;
     virtual int framebufferIndex() const;
     virtual bool supportsPBuffers() const;
+    virtual bool supportsSurfacelessContexts() const;
+
+    virtual void *wlDisplay() const;
 };
 
 class Q_EGLFS_EXPORT QEGLDeviceIntegrationPlugin : public QObject

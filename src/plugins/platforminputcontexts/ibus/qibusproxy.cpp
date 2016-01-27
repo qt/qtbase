@@ -9,6 +9,8 @@
  * before re-generating it.
  */
 
+#include <QtDBus/qdbusextratypes.h>
+
 #include "qibusproxy.h"
 
 /*
@@ -18,9 +20,36 @@
 QIBusProxy::QIBusProxy(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent)
     : QDBusAbstractInterface(service, path, staticInterfaceName(), connection, parent)
 {
+    this->connection().connect(service,
+                               path,
+                               this->interface(), // interface
+                               QStringLiteral("GlobalEngineChanged"),
+                               QStringList(),
+                               QString(), // signature
+                               this, SLOT(globalEngineChanged(QString)));
 }
 
 QIBusProxy::~QIBusProxy()
 {
+}
+
+QIBusEngineDesc QIBusProxy::getGlobalEngine()
+{
+    QIBusEngineDesc desc;
+    QDBusReply<QDBusVariant> reply = GetGlobalEngine();
+    QVariant variant = reply.value().variant();
+    if (!variant.isValid())
+        return desc;
+    QVariant child = variant.value<QDBusVariant>().variant();
+    if (!child.isValid())
+        return desc;
+    const QDBusArgument argument = child.value<QDBusArgument>();
+    argument >> desc;
+    return desc;
+}
+
+void QIBusProxy::globalEngineChanged(const QString &engine_name)
+{
+    emit GlobalEngineChanged(engine_name);
 }
 

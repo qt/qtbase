@@ -139,6 +139,9 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QIcon &);
 Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QIcon &);
 #endif
 
+Q_GUI_EXPORT QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRatio,
+                                     qreal *sourceDevicePixelRatio = Q_NULLPTR);
+
 QT_END_NAMESPACE
 
 #endif // QICON_H

@@ -88,7 +88,6 @@ public:
 protected:
     virtual bool filterConfig(EGLConfig config) const;
 
-private:
     QSurfaceFormat m_format;
     EGLDisplay m_display;
     EGLint m_surfaceType;

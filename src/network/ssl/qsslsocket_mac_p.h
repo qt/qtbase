@@ -45,8 +45,6 @@
 // We mean it.
 //
 
-#include <QtCore/private/qcore_mac_p.h>
-
 #include <QtCore/qstring.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qlist.h>
@@ -58,6 +56,20 @@
 #include <Security/SecureTransport.h>
 
 QT_BEGIN_NAMESPACE
+
+class QSecureTransportContext
+{
+public:
+    explicit QSecureTransportContext(SSLContextRef context);
+    ~QSecureTransportContext();
+
+    operator SSLContextRef () const;
+    void reset(SSLContextRef newContext);
+private:
+    SSLContextRef context;
+
+    Q_DISABLE_COPY(QSecureTransportContext);
+};
 
 class QSslSocketBackendPrivate : public QSslSocketPrivate
 {
@@ -76,8 +88,8 @@ public:
     void startServerEncryption() Q_DECL_OVERRIDE;
     void transmit() Q_DECL_OVERRIDE;
 
-    static QList<QSslError> (verify)(QList<QSslCertificate> certificateChain,
-                                     const QString &hostName);
+    static QList<QSslError> verify(QList<QSslCertificate> certificateChain,
+                                   const QString &hostName);
 
     static bool importPkcs12(QIODevice *device,
                              QSslKey *key, QSslCertificate *cert,
@@ -101,14 +113,7 @@ private:
     bool checkSslErrors();
     bool startHandshake();
 
-    // Aux. function, sets:
-    //1) socket error code,
-    //2) error string (description)
-    //3) emits a signal.
-    void setError(const QString &errorString,
-                  QAbstractSocket::SocketError errorCode);
-
-    mutable QCFType<SSLContextRef> context;
+    QSecureTransportContext context;
 
     Q_DISABLE_COPY(QSslSocketBackendPrivate);
 };

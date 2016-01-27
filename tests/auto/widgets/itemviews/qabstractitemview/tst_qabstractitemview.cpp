@@ -250,6 +250,7 @@ private slots:
     void QTBUG39324_settingSameInstanceOfIndexWidget();
     void sizeHintChangeTriggersLayout();
     void shiftSelectionAfterChangingModelContents();
+    void QTBUG48968_reentrant_updateEditorGeometries();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -1988,6 +1989,43 @@ void tst_QAbstractItemView::shiftSelectionAfterChangingModelContents()
     QCOMPARE(selected.count(), 2);
     QVERIFY(selected.contains(indexD));
     QVERIFY(selected.contains(indexE));
+}
+
+void tst_QAbstractItemView::QTBUG48968_reentrant_updateEditorGeometries()
+{
+
+    QStandardItemModel *m = new QStandardItemModel(this);
+    for (int i=0; i<10; ++i) {
+        QStandardItem *item = new QStandardItem(QString("Item number %1").arg(i));
+        item->setEditable(true);
+        for (int j=0; j<5; ++j) {
+            QStandardItem *child = new QStandardItem(QString("Child Item number %1").arg(j));
+            item->setChild(j, 0, child);
+        }
+        m->setItem(i, 0, item);
+    }
+
+    QTreeView tree;
+    tree.setModel(m);
+    tree.setRootIsDecorated(false);
+    QObject::connect(&tree, SIGNAL(doubleClicked(QModelIndex)), &tree, SLOT(setRootIndex(QModelIndex)));
+    tree.show();
+    QTest::qWaitForWindowActive(&tree);
+
+    // Trigger editing idx
+    QModelIndex idx = m->index(1, 0);
+    const QPoint pos = tree.visualRect(idx).center();
+    QTest::mouseClick(tree.viewport(), Qt::LeftButton, Qt::NoModifier, pos);
+    QTest::mouseDClick(tree.viewport(), Qt::LeftButton, Qt::NoModifier, pos);
+
+    // Add more children to idx
+    QStandardItem *item = m->itemFromIndex(idx);
+    for (int j=5; j<10; ++j) {
+        QStandardItem *child = new QStandardItem(QString("Child Item number %1").arg(j));
+        item->setChild(j, 0, child);
+    }
+
+    // No crash, all fine.
 }
 
 QTEST_MAIN(tst_QAbstractItemView)

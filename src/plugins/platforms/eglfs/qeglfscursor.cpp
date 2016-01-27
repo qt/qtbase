@@ -43,6 +43,11 @@
 #include <QtCore/QJsonObject>
 
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qopenglvertexarrayobject_p.h>
+
+#ifndef GL_VERTEX_ARRAY_BINDING
+#define GL_VERTEX_ARRAY_BINDING 0x85B5
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -50,8 +55,6 @@ QEglFSCursor::QEglFSCursor(QPlatformScreen *screen)
     : m_visible(true),
       m_screen(static_cast<QEglFSScreen *>(screen)),
       m_program(0),
-      m_vertexCoordEntry(0),
-      m_textureCoordEntry(0),
       m_textureEntry(0),
       m_deviceListener(0),
       m_updateRequested(false)
@@ -134,10 +137,10 @@ void QEglFSCursor::createShaderPrograms()
     m_program = new QOpenGLShaderProgram;
     m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, textureVertexProgram);
     m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, textureFragmentProgram);
+    m_program->bindAttributeLocation("vertexCoordEntry", 0);
+    m_program->bindAttributeLocation("textureCoordEntry", 1);
     m_program->link();
 
-    m_vertexCoordEntry = m_program->attributeLocation("vertexCoordEntry");
-    m_textureCoordEntry = m_program->attributeLocation("textureCoordEntry");
     m_textureEntry = m_program->uniformLocation("texture");
 }
 
@@ -322,8 +325,105 @@ void QEglFSCursor::paintOnScreen()
     draw(r);
 }
 
+// In order to prevent breaking code doing custom OpenGL rendering while
+// expecting the state in the context unchanged, save and restore all the state
+// we touch. The exception is Qt Quick where the scenegraph is known to be able
+// to deal with the changes we make.
+struct StateSaver
+{
+    StateSaver() {
+        f = QOpenGLContext::currentContext()->functions();
+        vaoHelper = new QOpenGLVertexArrayObjectHelper(QOpenGLContext::currentContext());
+
+        static bool windowsChecked = false;
+        static bool shouldSave = true;
+        if (!windowsChecked) {
+            windowsChecked = true;
+            QWindowList windows = QGuiApplication::allWindows();
+            if (!windows.isEmpty() && windows[0]->inherits("QQuickWindow"))
+                shouldSave = false;
+        }
+        saved = shouldSave;
+        if (!shouldSave)
+            return;
+
+        f->glGetIntegerv(GL_CURRENT_PROGRAM, &program);
+        f->glGetIntegerv(GL_TEXTURE_BINDING_2D, &texture);
+        f->glGetIntegerv(GL_ACTIVE_TEXTURE, &activeTexture);
+        f->glGetIntegerv(GL_FRONT_FACE, &frontFace);
+        cull = f->glIsEnabled(GL_CULL_FACE);
+        depthTest = f->glIsEnabled(GL_DEPTH_TEST);
+        blend = f->glIsEnabled(GL_BLEND);
+        f->glGetIntegerv(GL_BLEND_SRC_RGB, blendFunc);
+        f->glGetIntegerv(GL_BLEND_SRC_ALPHA, blendFunc + 1);
+        f->glGetIntegerv(GL_BLEND_DST_RGB, blendFunc + 2);
+        f->glGetIntegerv(GL_BLEND_DST_ALPHA, blendFunc + 3);
+        f->glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &arrayBuf);
+        if (vaoHelper->isValid())
+            f->glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &vao);
+        for (int i = 0; i < 2; ++i) {
+            f->glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &va[i].enabled);
+            f->glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_SIZE, &va[i].size);
+            f->glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_TYPE, &va[i].type);
+            f->glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, &va[i].normalized);
+            f->glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_STRIDE, &va[i].stride);
+            f->glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, &va[i].buffer);
+            f->glGetVertexAttribPointerv(i, GL_VERTEX_ATTRIB_ARRAY_POINTER, &va[i].pointer);
+        }
+    }
+    ~StateSaver() {
+        if (saved) {
+            f->glUseProgram(program);
+            f->glBindTexture(GL_TEXTURE_2D, texture);
+            f->glActiveTexture(activeTexture);
+            f->glFrontFace(frontFace);
+            if (cull)
+                f->glEnable(GL_CULL_FACE);
+            else
+                f->glDisable(GL_CULL_FACE);
+            if (depthTest)
+                f->glEnable(GL_DEPTH_TEST);
+            else
+                f->glDisable(GL_DEPTH_TEST);
+            if (blend)
+                f->glEnable(GL_BLEND);
+            else
+                f->glDisable(GL_BLEND);
+            f->glBlendFuncSeparate(blendFunc[0], blendFunc[1], blendFunc[2], blendFunc[3]);
+            f->glBindBuffer(GL_ARRAY_BUFFER, arrayBuf);
+            if (vaoHelper->isValid())
+                vaoHelper->glBindVertexArray(vao);
+            for (int i = 0; i < 2; ++i) {
+                if (va[i].enabled)
+                    f->glEnableVertexAttribArray(i);
+                else
+                    f->glDisableVertexAttribArray(i);
+                f->glBindBuffer(GL_ARRAY_BUFFER, va[i].buffer);
+                f->glVertexAttribPointer(i, va[i].size, va[i].type, va[i].normalized, va[i].stride, va[i].pointer);
+            }
+        }
+        delete vaoHelper;
+    }
+    QOpenGLFunctions *f;
+    QOpenGLVertexArrayObjectHelper *vaoHelper;
+    bool saved;
+    GLint program;
+    GLint texture;
+    GLint activeTexture;
+    GLint frontFace;
+    bool cull;
+    bool depthTest;
+    bool blend;
+    GLint blendFunc[4];
+    GLint vao;
+    GLint arrayBuf;
+    struct { GLint enabled, type, size, normalized, stride, buffer; GLvoid *pointer; } va[2];
+};
+
 void QEglFSCursor::draw(const QRectF &r)
 {
+    StateSaver stateSaver;
+
     if (!m_program) {
         // one time initialization
         initializeOpenGLFunctions();
@@ -373,13 +473,16 @@ void QEglFSCursor::draw(const QRectF &r)
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_cursor.texture);
+
+    if (stateSaver.vaoHelper->isValid())
+        stateSaver.vaoHelper->glBindVertexArray(0);
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    m_program->enableAttributeArray(m_vertexCoordEntry);
-    m_program->enableAttributeArray(m_textureCoordEntry);
-
-    m_program->setAttributeArray(m_vertexCoordEntry, cursorCoordinates, 2);
-    m_program->setAttributeArray(m_textureCoordEntry, textureCoordinates, 2);
+    m_program->enableAttributeArray(0);
+    m_program->enableAttributeArray(1);
+    m_program->setAttributeArray(0, cursorCoordinates, 2);
+    m_program->setAttributeArray(1, textureCoordinates, 2);
 
     m_program->setUniformValue(m_textureEntry, 0);
 
@@ -388,13 +491,11 @@ void QEglFSCursor::draw(const QRectF &r)
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     glDisable(GL_DEPTH_TEST); // disable depth testing to make sure cursor is always on top
+
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    glDisable(GL_BLEND);
 
-    glBindTexture(GL_TEXTURE_2D, 0);
-    m_program->disableAttributeArray(m_textureCoordEntry);
-    m_program->disableAttributeArray(m_vertexCoordEntry);
-
+    m_program->disableAttributeArray(0);
+    m_program->disableAttributeArray(1);
     m_program->release();
 }
 

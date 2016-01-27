@@ -152,7 +152,7 @@ static bool _q_resolveEntryAndCreateLegacyEngine_recursive(QFileSystemEntry &ent
 
             const QStringList &paths = QDir::searchPaths(filePath.left(prefixSeparator));
             for (int i = 0; i < paths.count(); i++) {
-                entry = QFileSystemEntry(QDir::cleanPath(paths.at(i) % QLatin1Char('/') % filePath.mid(prefixSeparator + 1)));
+                entry = QFileSystemEntry(QDir::cleanPath(paths.at(i) % QLatin1Char('/') % filePath.midRef(prefixSeparator + 1)));
                 // Recurse!
                 if (_q_resolveEntryAndCreateLegacyEngine_recursive(entry, data, engine, true))
                     return true;
@@ -264,7 +264,7 @@ void QFileSystemMetaData::fillFromStatBuf(const QT_STATBUF &statBuffer)
     // Attributes
     entryFlags |= QFileSystemMetaData::ExistsAttribute;
     size_ = statBuffer.st_size;
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_DARWIN)
     if (statBuffer.st_flags & UF_HIDDEN) {
         entryFlags |= QFileSystemMetaData::HiddenAttribute;
         knownFlagsMask |= QFileSystemMetaData::HiddenAttribute;

@@ -42,11 +42,11 @@
 
 #ifndef QT_NO_SYSTEMTRAYICON
 
-#include <QtGui>
-
 #include <QAction>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QCoreApplication>
+#include <QCloseEvent>
 #include <QGroupBox>
 #include <QLabel>
 #include <QLineEdit>
@@ -68,12 +68,13 @@ Window::Window()
     createActions();
     createTrayIcon();
 
-    connect(showMessageButton, SIGNAL(clicked()), this, SLOT(showMessage()));
-    connect(showIconCheckBox, SIGNAL(toggled(bool)), trayIcon, SLOT(setVisible(bool)));
-    connect(iconComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setIcon(int)));
-    connect(trayIcon, SIGNAL(messageClicked()), this, SLOT(messageClicked()));
-    connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
-            this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
+    connect(showMessageButton, &QAbstractButton::clicked, this, &Window::showMessage);
+    connect(showIconCheckBox, &QAbstractButton::toggled, trayIcon, &QSystemTrayIcon::setVisible);
+    typedef void (QComboBox::*QComboIntSignal)(int);
+    connect(iconComboBox, static_cast<QComboIntSignal>(&QComboBox::currentIndexChanged),
+            this, &Window::setIcon);
+    connect(trayIcon, &QSystemTrayIcon::messageClicked, this, &Window::messageClicked);
+    connect(trayIcon, &QSystemTrayIcon::activated, this, &Window::iconActivated);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(iconGroupBox);
@@ -101,6 +102,11 @@ void Window::setVisible(bool visible)
 //! [2]
 void Window::closeEvent(QCloseEvent *event)
 {
+#ifdef Q_OS_OSX
+    if (!event->spontaneous() || !isVisible()) {
+        return;
+    }
+#endif
     if (trayIcon->isVisible()) {
         QMessageBox::information(this, tr("Systray"),
                                  tr("The program will keep running in the "
@@ -245,16 +251,16 @@ void Window::createMessageGroupBox()
 void Window::createActions()
 {
     minimizeAction = new QAction(tr("Mi&nimize"), this);
-    connect(minimizeAction, SIGNAL(triggered()), this, SLOT(hide()));
+    connect(minimizeAction, &QAction::triggered, this, &QWidget::hide);
 
     maximizeAction = new QAction(tr("Ma&ximize"), this);
-    connect(maximizeAction, SIGNAL(triggered()), this, SLOT(showMaximized()));
+    connect(maximizeAction, &QAction::triggered, this, &QWidget::showMaximized);
 
     restoreAction = new QAction(tr("&Restore"), this);
-    connect(restoreAction, SIGNAL(triggered()), this, SLOT(showNormal()));
+    connect(restoreAction, &QAction::triggered, this, &QWidget::showNormal);
 
     quitAction = new QAction(tr("&Quit"), this);
-    connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
 }
 
 void Window::createTrayIcon()

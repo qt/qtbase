@@ -76,7 +76,7 @@ public:
     void drop(const QPoint &globalPos) Q_DECL_OVERRIDE;
     void endDrag() Q_DECL_OVERRIDE;
 
-    void handleEnter(QPlatformWindow *window, const xcb_client_message_event_t *event);
+    void handleEnter(QPlatformWindow *window, const xcb_client_message_event_t *event, xcb_window_t proxy = 0);
     void handlePosition(QPlatformWindow *w, const xcb_client_message_event_t *event);
     void handleLeave(QPlatformWindow *w, const xcb_client_message_event_t *event);
     void handleDrop(QPlatformWindow *, const xcb_client_message_event_t *event);
@@ -133,7 +133,7 @@ private:
     // window to send events to (always valid if current_target)
     xcb_window_t current_proxy_target;
 
-    QXcbScreen *current_screen;
+    QXcbVirtualDesktop *current_virtual_desktop;
 
     // 10 minute timer used to discard old XdndDrop transactions
     enum { XdndDropTransactionTimeout = 600000 };

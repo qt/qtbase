@@ -182,7 +182,7 @@ QT_BEGIN_NAMESPACE
          \li "C:/Users/<USER>/AppData/Local/<APPNAME>/cache"
     \row \li GenericDataLocation
          \li "~/Library/Application Support", "/Library/Application Support"
-         \li "C:/Users/<USER>/AppData/Local", "C:/ProgramData"
+         \li "C:/Users/<USER>/AppData/Local", "C:/ProgramData", "<APPDIR>", "<APPDIR>/data"
     \row \li RuntimeLocation
          \li "~/Library/Application Support"
          \li "C:/Users/<USER>"

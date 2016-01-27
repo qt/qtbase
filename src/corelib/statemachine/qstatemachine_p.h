@@ -133,16 +133,17 @@ public:
     virtual void processedPendingEvents(bool didChange);
     virtual void beginMacrostep();
     virtual void endMacrostep(bool didChange);
-    void exitStates(QEvent *event, const QList<QAbstractState *> &statesToExit_sorted,
-                    const QHash<QAbstractState*, QVector<QPropertyAssignment> > &assignmentsForEnteredStates);
+    virtual void exitInterpreter();
+    virtual void exitStates(QEvent *event, const QList<QAbstractState *> &statesToExit_sorted,
+                            const QHash<QAbstractState*, QVector<QPropertyAssignment> > &assignmentsForEnteredStates);
     QList<QAbstractState*> computeExitSet(const QList<QAbstractTransition*> &enabledTransitions, CalculationCache *cache);
     QSet<QAbstractState*> computeExitSet_Unordered(const QList<QAbstractTransition*> &enabledTransitions, CalculationCache *cache);
     QSet<QAbstractState*> computeExitSet_Unordered(QAbstractTransition *t, CalculationCache *cache);
     void executeTransitionContent(QEvent *event, const QList<QAbstractTransition*> &transitionList);
-    void enterStates(QEvent *event, const QList<QAbstractState*> &exitedStates_sorted,
-                     const QList<QAbstractState*> &statesToEnter_sorted,
-                     const QSet<QAbstractState*> &statesForDefaultEntry,
-                     QHash<QAbstractState *, QVector<QPropertyAssignment> > &propertyAssignmentsForState
+    virtual void enterStates(QEvent *event, const QList<QAbstractState*> &exitedStates_sorted,
+                             const QList<QAbstractState*> &statesToEnter_sorted,
+                             const QSet<QAbstractState*> &statesForDefaultEntry,
+                             QHash<QAbstractState *, QVector<QPropertyAssignment> > &propertyAssignmentsForState
 #ifndef QT_NO_ANIMATION
                      , const QList<QAbstractAnimation*> &selectedAnimations
 #endif

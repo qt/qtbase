@@ -271,14 +271,12 @@ bool QHttpSocketEngine::setMulticastInterface(const QNetworkInterface &)
 }
 #endif // QT_NO_NETWORKINTERFACE
 
-qint64 QHttpSocketEngine::readDatagram(char *, qint64, QHostAddress *,
-                                       quint16 *)
+qint64 QHttpSocketEngine::readDatagram(char *, qint64, QIpPacketHeader *, PacketHeaderOptions)
 {
     return 0;
 }
 
-qint64 QHttpSocketEngine::writeDatagram(const char *, qint64, const QHostAddress &,
-                                        quint16)
+qint64 QHttpSocketEngine::writeDatagram(const char *, qint64, const QIpPacketHeader &)
 {
     return 0;
 }
@@ -483,7 +481,7 @@ void QHttpSocketEngine::slotSocketConnected()
                              QUrl::toAce(d->peerName);
     QByteArray path = peerAddress + ':' + QByteArray::number(d->peerPort);
     QByteArray data = method;
-    data += " ";
+    data += ' ';
     data += path;
     data += " HTTP/1.1\r\n";
     data += "Proxy-Connection: keep-alive\r\n";

@@ -512,7 +512,7 @@ bool QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
             return false;
     }
 
-    QDateTime currentDateTime = QDateTime::currentDateTime();
+    QDateTime currentDateTime = QDateTime::currentDateTimeUtc();
     QDateTime expirationDate = metaData.expirationDate();
 
     bool response_is_fresh;
@@ -545,7 +545,7 @@ bool QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
             date_value = dateHeader.toTime_t();
         }
 
-        int now = currentDateTime.toUTC().toTime_t();
+        int now = currentDateTime.toTime_t();
         int request_time = now;
         int response_time = now;
 
@@ -1238,7 +1238,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData
 
     if (statusCode == 304) {
 #if defined(QNETWORKACCESSHTTPBACKEND_DEBUG)
-        qDebug() << "Received a 304 from" << url();
+        qDebug() << "Received a 304 from" << request.url();
 #endif
         QAbstractNetworkCache *nc = managerPrivate->networkCache;
         if (nc) {
@@ -1562,7 +1562,7 @@ QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNe
         }
 
 #if defined(QNETWORKACCESSHTTPBACKEND_DEBUG)
-        QByteArray n = rawHeader(header);
+        QByteArray n = q->rawHeader(header);
         QByteArray o;
         if (it != cacheHeaders.rawHeaders.constEnd())
             o = (*it).second;
@@ -1782,6 +1782,12 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
         QMetaObject::invokeMethod(q, "_q_finished", synchronous ? Qt::DirectConnection : Qt::QueuedConnection);
         return;
 #endif
+    } else {
+#ifndef QT_NO_BEARERMANAGEMENT
+        if (session)
+            QObject::connect(session.data(), SIGNAL(stateChanged(QNetworkSession::State)),
+                             q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)), Qt::QueuedConnection);
+#endif
     }
 
     if (synchronous) {
@@ -1947,6 +1953,16 @@ void QNetworkReplyHttpImplPrivate::_q_networkSessionConnected()
         break;
     default:
         ;
+    }
+}
+
+void QNetworkReplyHttpImplPrivate::_q_networkSessionStateChanged(QNetworkSession::State sessionState)
+{
+    if (sessionState == QNetworkSession::Disconnected
+            && (state != Idle || state != Reconnecting)) {
+        error(QNetworkReplyImpl::NetworkSessionFailedError,
+              QCoreApplication::translate("QNetworkReply", "Network session error."));
+        finished();
     }
 }
 

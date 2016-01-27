@@ -55,11 +55,12 @@ class QShapedPixmapWindow : public QWindow
 {
     Q_OBJECT
 public:
-    QShapedPixmapWindow();
+    explicit QShapedPixmapWindow(QScreen *screen = 0);
     ~QShapedPixmapWindow();
 
     void render();
 
+    void setUseCompositing(bool on) { m_useCompositing = on; }
     void setPixmap(const QPixmap &pixmap);
     void setHotspot(const QPoint &hotspot);
 
@@ -72,6 +73,7 @@ private:
     QBackingStore *m_backingStore;
     QPixmap m_pixmap;
     QPoint m_hotSpot;
+    bool m_useCompositing;
 };
 
 QT_END_NAMESPACE

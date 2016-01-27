@@ -484,7 +484,9 @@ QPlatformScreen *QPlatformWindow::screenForGeometry(const QRect &newGeometry) co
 {
     QPlatformScreen *currentScreen = screen();
     QPlatformScreen *fallback = currentScreen;
-    QPoint center = newGeometry.center();
+    //QRect::center can return a value outside the rectangle if it's empty
+    const QPoint center = newGeometry.isEmpty() ? newGeometry.topLeft() : newGeometry.center();
+
     if (!parent() && currentScreen && !currentScreen->geometry().contains(center)) {
         Q_FOREACH (QPlatformScreen* screen, currentScreen->virtualSiblings()) {
             if (screen->geometry().contains(center))
@@ -579,6 +581,9 @@ void QPlatformWindow::invalidateSurface()
 QRect QPlatformWindow::initialGeometry(const QWindow *w,
     const QRect &initialGeometry, int defaultWidth, int defaultHeight)
 {
+    const QScreen *screen = effectiveScreen(w);
+    if (!screen)
+        return initialGeometry;
     QRect rect(QHighDpi::fromNativePixels(initialGeometry, w));
     if (rect.width() == 0) {
         const int minWidth = w->minimumWidth();
@@ -589,25 +594,23 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w,
         rect.setHeight(minHeight > 0 ? minHeight : defaultHeight);
     }
     if (w->isTopLevel() && qt_window_private(const_cast<QWindow*>(w))->positionAutomatic
-        && w->type() != Qt::Popup) {
-        if (const QScreen *screen = effectiveScreen(w)) {
-            const QRect availableGeometry = screen->availableGeometry();
-            // Center unless the geometry ( + unknown window frame) is too large for the screen).
-            if (rect.height() < (availableGeometry.height() * 8) / 9
+            && w->type() != Qt::Popup) {
+        const QRect availableGeometry = screen->availableGeometry();
+        // Center unless the geometry ( + unknown window frame) is too large for the screen).
+        if (rect.height() < (availableGeometry.height() * 8) / 9
                 && rect.width() < (availableGeometry.width() * 8) / 9) {
-                const QWindow *tp = w->transientParent();
-                if (tp) {
-                    // A transient window should be centered w.r.t. its transient parent.
-                    rect.moveCenter(tp->geometry().center());
-                } else {
-                    // Center the window on the screen.  (Only applicable on platforms
-                    // which do not provide a better way.)
-                    rect.moveCenter(availableGeometry.center());
-                }
+            const QWindow *tp = w->transientParent();
+            if (tp) {
+                // A transient window should be centered w.r.t. its transient parent.
+                rect.moveCenter(tp->geometry().center());
+            } else {
+                // Center the window on the screen.  (Only applicable on platforms
+                // which do not provide a better way.)
+                rect.moveCenter(availableGeometry.center());
             }
         }
     }
-    return QHighDpi::toNativePixels(rect, w);
+    return QHighDpi::toNativePixels(rect, screen);
 }
 
 /*!
@@ -690,17 +693,30 @@ QRect QPlatformWindow::windowGeometry() const
 }
 
 /*!
+    Returns the QWindow frame geometry.
+*/
+QRect QPlatformWindow::windowFrameGeometry() const
+{
+    return QHighDpi::toNativePixels(window()->frameGeometry(), window());
+}
+
+/*!
     Returns the closest acceptable geometry for a given geometry before
     a resize/move event for platforms that support it, for example to
     implement heightForWidth().
 */
-QRectF QPlatformWindow::windowClosestAcceptableGeometry(const QRectF &nativeRect) const
+
+QRectF QPlatformWindow::closestAcceptableGeometry(const QWindow *qWindow, const QRectF &nativeRect)
 {
-    QWindow *qWindow = window();
     const QRectF rectF = QHighDpi::fromNativePixels(nativeRect, qWindow);
-    const QRectF correctedGeometryF = qt_window_private(qWindow)->closestAcceptableGeometry(rectF);
+    const QRectF correctedGeometryF = qt_window_private(const_cast<QWindow *>(qWindow))->closestAcceptableGeometry(rectF);
     return !correctedGeometryF.isEmpty() && rectF != correctedGeometryF
         ? QHighDpi::toNativePixels(correctedGeometryF, qWindow) : nativeRect;
+}
+
+QRectF QPlatformWindow::windowClosestAcceptableGeometry(const QRectF &nativeRect) const
+{
+    return QPlatformWindow::closestAcceptableGeometry(window(), nativeRect);
 }
 
 /*!

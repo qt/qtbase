@@ -100,6 +100,7 @@ public:
     static QString familyForStyleHint(QFont::StyleHint styleHint);
 
 private:
+    void populateFamily(const QString &familyName, bool registerAlias);
     void removeApplicationFonts();
 
     struct WinApplicationFont {
@@ -116,6 +117,10 @@ private:
 
     QMap<QString, UniqueFontData> m_uniqueFontData;
 };
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug, const QFontDef &def);
+#endif
 
 QT_END_NAMESPACE
 

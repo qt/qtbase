@@ -49,22 +49,13 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         module_libs = "\$\$QT_MODULE_HOST_LIB_BASE"
     else: \
         module_libs = "\$\$QT_MODULE_LIB_BASE"
-    unix:!static {
-        host_build: \
-            module_rpath = $$[QT_HOST_LIBS]
-        else: \
-            module_rpath = $$[QT_INSTALL_LIBS/dev]
-        module_rpath = "QT.$${MODULE_ID}.rpath = $$val_escape(module_rpath)"
-    } else {
-        module_rpath =
-    }
     !isEmpty(QT_PRIVATE): \
         module_rundep = "QT.$${MODULE_ID}.run_depends = $$replace(QT_PRIVATE, -private$, _private)"
     else: \
         module_rundep =
     static: \
         module_build_type = staticlib
-    else:mac:contains(QT_CONFIG, qt_framework): \
+    else: lib_bundle: \
         module_build_type = lib_bundle
     else: \
         module_build_type =
@@ -115,7 +106,6 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         "" \
         "QT.$${MODULE_ID}.name = $$TARGET" \
         "QT.$${MODULE_ID}.libs = $$module_libs" \
-        $$module_rpath \
         $$module_master \
         "QT.$${MODULE_ID}.includes = $$MODULE_INCLUDES"
     !host_build: MODULE_PRI_CONT += \

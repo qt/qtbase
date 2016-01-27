@@ -594,6 +594,10 @@ void tst_QChar::unicodeVersion()
     QVERIFY(QChar::unicodeVersion(0x20bd) == QChar::Unicode_7_0);
     QVERIFY(QChar::unicodeVersion(0x16b00) == QChar::Unicode_7_0);
 
+    QVERIFY(QChar(0x08b3).unicodeVersion() == QChar::Unicode_8_0);
+    QVERIFY(QChar::unicodeVersion(0x08b3) == QChar::Unicode_8_0);
+    QVERIFY(QChar::unicodeVersion(0x108e0) == QChar::Unicode_8_0);
+
     QVERIFY(QChar(0x09ff).unicodeVersion() == QChar::Unicode_Unassigned);
     QVERIFY(QChar::unicodeVersion(0x09ff) == QChar::Unicode_Unassigned);
     QVERIFY(QChar::unicodeVersion(0x110000) == QChar::Unicode_Unassigned);

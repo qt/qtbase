@@ -252,26 +252,55 @@ QList<QAbstractState*> QAbstractTransition::targetStates() const
 void QAbstractTransition::setTargetStates(const QList<QAbstractState*> &targets)
 {
     Q_D(QAbstractTransition);
-    QVector<QPointer<QAbstractState> > copy(d->targetStates);
-    bool sameList = true;
+
+    // Verify if any of the new target states is a null-pointer:
     for (int i = 0; i < targets.size(); ++i) {
-        QAbstractState *target = targets.at(i);
-        if (!target) {
+        if (targets.at(i) == Q_NULLPTR) {
             qWarning("QAbstractTransition::setTargetStates: target state(s) cannot be null");
             return;
-        } else {
-            sameList &= copy.removeOne(target);
         }
     }
 
-    sameList &= copy.isEmpty();
+    // First clean out any target states that got destroyed, but for which we still have a QPointer
+    // around.
+    for (int i = 0; i < d->targetStates.size(); ) {
+        if (d->targetStates.at(i).isNull()) {
+            d->targetStates.remove(i);
+        } else {
+            ++i;
+        }
+    }
 
-    d->targetStates.clear();
-    for (int i = 0; i < targets.size(); ++i)
-        d->targetStates.append(targets.at(i));
+    // Easy check: if both lists are empty, we're done.
+    if (targets.isEmpty() && d->targetStates.isEmpty())
+        return;
 
-    if (!sameList)
-        emit targetStatesChanged(QPrivateSignal());
+    bool sameList = true;
+
+    if (targets.size() != d->targetStates.size()) {
+        // If the sizes of the lists are different, we don't need to be smart: they're different. So
+        // we can just set the new list as the targetStates.
+        sameList = false;
+    } else {
+        QVector<QPointer<QAbstractState> > copy(d->targetStates);
+        for (int i = 0; i < targets.size(); ++i) {
+            sameList &= copy.removeOne(targets.at(i));
+            if (!sameList)
+                break; // ok, we now know the lists are not the same, so stop the loop.
+        }
+
+        sameList &= copy.isEmpty();
+    }
+
+    if (sameList)
+        return;
+
+    d->targetStates.resize(targets.size());
+    for (int i = 0; i < targets.size(); ++i) {
+        d->targetStates[i] = targets.at(i);
+    }
+
+    emit targetStatesChanged(QPrivateSignal());
 }
 
 /*!

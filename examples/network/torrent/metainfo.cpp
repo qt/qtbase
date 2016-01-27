@@ -96,7 +96,7 @@ bool MetaInfo::parse(const QByteArray &data)
             QByteArray path;
             foreach (QVariant p, pathElements) {
                 if (!path.isEmpty())
-                    path += "/";
+                    path += '/';
                 path += p.toByteArray();
             }
 

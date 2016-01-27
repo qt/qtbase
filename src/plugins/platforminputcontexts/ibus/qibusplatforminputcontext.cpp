@@ -58,8 +58,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(qtQpaInputMethods, "qt.qpa.input.methods")
-
 enum { debug = 0 };
 
 class QIBusPlatformInputContextPrivate
@@ -73,27 +71,42 @@ public:
         delete connection;
     }
 
+    static QString getSocketPath();
     static QDBusConnection *createConnection();
+
+    void initBus();
+    void createBusProxy();
 
     QDBusConnection *connection;
     QIBusProxy *bus;
     QIBusInputContextProxy *context;
 
     bool valid;
+    bool busConnected;
     QString predit;
     bool needsSurroundingText;
+    QLocale locale;
 };
 
 
 QIBusPlatformInputContext::QIBusPlatformInputContext ()
     : d(new QIBusPlatformInputContextPrivate())
 {
-    if (d->context) {
-        connect(d->context, SIGNAL(CommitText(QDBusVariant)), SLOT(commitText(QDBusVariant)));
-        connect(d->context, SIGNAL(UpdatePreeditText(QDBusVariant,uint,bool)), this, SLOT(updatePreeditText(QDBusVariant,uint,bool)));
-        connect(d->context, SIGNAL(DeleteSurroundingText(int,uint)), this, SLOT(deleteSurroundingText(int,uint)));
-        connect(d->context, SIGNAL(RequireSurroundingText()), this, SLOT(surroundingTextRequired()));
+    QString socketPath = QIBusPlatformInputContextPrivate::getSocketPath();
+    QFile file(socketPath);
+    if (file.open(QFile::ReadOnly)) {
+        // If KDE session save is used or restart ibus-daemon,
+        // the applications could run before ibus-daemon runs.
+        // We watch the getSocketPath() to get the launching ibus-daemon.
+        m_socketWatcher.addPath(socketPath);
+        connect(&m_socketWatcher, SIGNAL(fileChanged(QString)), this, SLOT(socketChanged(QString)));
     }
+
+    m_timer.setSingleShot(true);
+    connect(&m_timer, SIGNAL(timeout()), this, SLOT(connectToBus()));
+
+    connectToContextSignals();
+
     QInputMethod *p = qApp->inputMethod();
     connect(p, SIGNAL(cursorRectangleChanged()), this, SLOT(cursorRectChanged()));
     m_eventFilterUseSynchronousMode = false;
@@ -117,7 +130,7 @@ bool QIBusPlatformInputContext::isValid() const
 
 void QIBusPlatformInputContext::invokeAction(QInputMethod::Action a, int)
 {
-    if (!d->valid)
+    if (!d->busConnected)
         return;
 
     if (a == QInputMethod::Click)
@@ -128,7 +141,7 @@ void QIBusPlatformInputContext::reset()
 {
     QPlatformInputContext::reset();
 
-    if (!d->valid)
+    if (!d->busConnected)
         return;
 
     d->context->Reset();
@@ -139,7 +152,7 @@ void QIBusPlatformInputContext::commit()
 {
     QPlatformInputContext::commit();
 
-    if (!d->valid)
+    if (!d->busConnected)
         return;
 
     QObject *input = qApp->focusObject();
@@ -193,7 +206,7 @@ void QIBusPlatformInputContext::update(Qt::InputMethodQueries q)
 
 void QIBusPlatformInputContext::cursorRectChanged()
 {
-    if (!d->valid)
+    if (!d->busConnected)
         return;
 
     QRect r = qApp->inputMethod()->cursorRectangle().toRect();
@@ -211,7 +224,7 @@ void QIBusPlatformInputContext::cursorRectChanged()
 
 void QIBusPlatformInputContext::setFocusObject(QObject *object)
 {
-    if (!d->valid)
+    if (!d->busConnected)
         return;
 
     if (debug)
@@ -291,7 +304,7 @@ void QIBusPlatformInputContext::deleteSurroundingText(int offset, uint n_chars)
 
 bool QIBusPlatformInputContext::filterEvent(const QEvent *event)
 {
-    if (!d->valid)
+    if (!d->busConnected)
         return false;
 
     if (!inputMethodAccepted())
@@ -301,12 +314,12 @@ bool QIBusPlatformInputContext::filterEvent(const QEvent *event)
     quint32 sym = keyEvent->nativeVirtualKey();
     quint32 code = keyEvent->nativeScanCode();
     quint32 state = keyEvent->nativeModifiers();
+    quint32 ibusState = state;
 
     if (keyEvent->type() != QEvent::KeyPress)
-        state |= IBUS_RELEASE_MASK;
+        ibusState |= IBUS_RELEASE_MASK;
 
-    code -= 8; // ###
-    QDBusPendingReply<bool> reply = d->context->ProcessKeyEvent(sym, code, state);
+    QDBusPendingReply<bool> reply = d->context->ProcessKeyEvent(sym, code - 8, ibusState);
 
     if (m_eventFilterUseSynchronousMode || reply.isFinished()) {
         bool retval = reply.value();
@@ -315,17 +328,36 @@ bool QIBusPlatformInputContext::filterEvent(const QEvent *event)
     }
 
     Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
+    const int qtcode = keyEvent->key();
+
+    // From QKeyEvent::modifiers()
+    switch (qtcode) {
+    case Qt::Key_Shift:
+        modifiers ^= Qt::ShiftModifier;
+        break;
+    case Qt::Key_Control:
+        modifiers ^= Qt::ControlModifier;
+        break;
+    case Qt::Key_Alt:
+        modifiers ^= Qt::AltModifier;
+        break;
+    case Qt::Key_Meta:
+        modifiers ^= Qt::MetaModifier;
+        break;
+    case Qt::Key_AltGr:
+        modifiers ^= Qt::GroupSwitchModifier;
+        break;
+    }
 
     QVariantList args;
     args << QVariant::fromValue(keyEvent->timestamp());
     args << QVariant::fromValue(static_cast<uint>(keyEvent->type()));
-    args << QVariant::fromValue(keyEvent->key());
+    args << QVariant::fromValue(qtcode);
     args << QVariant::fromValue(code) << QVariant::fromValue(sym) << QVariant::fromValue(state);
     args << QVariant::fromValue(keyEvent->text());
     args << QVariant::fromValue(keyEvent->isAutoRepeat());
-    args << QVariant::fromValue(keyEvent->count());
 
-    QIBusFilterEventWatcher *watcher = new QIBusFilterEventWatcher(reply, this, qApp->focusObject(), modifiers, args);
+    QIBusFilterEventWatcher *watcher = new QIBusFilterEventWatcher(reply, this, QGuiApplication::focusWindow(), modifiers, args);
     QObject::connect(watcher, &QDBusPendingCallWatcher::finished, this, &QIBusPlatformInputContext::filterEventFinished);
 
     return true;
@@ -343,9 +375,9 @@ void QIBusPlatformInputContext::filterEventFinished(QDBusPendingCallWatcher *cal
 
     // Use watcher's window instead of the current focused window
     // since there is a time lag until filterEventFinished() returns.
-    QObject *input = watcher->input();
+    QWindow *window = watcher->window();
 
-    if (!input) {
+    if (!window) {
         call->deleteLater();
         return;
     }
@@ -360,13 +392,11 @@ void QIBusPlatformInputContext::filterEventFinished(QDBusPendingCallWatcher *cal
     const quint32 state = args.at(5).toUInt();
     const QString string = args.at(6).toString();
     const bool isAutoRepeat = args.at(7).toBool();
-    const int count = args.at(8).toInt();
 
     // copied from QXcbKeyboard::handleKeyEvent()
     bool retval = reply.value();
     qCDebug(qtQpaInputMethods) << "filterEventFinished return" << code << sym << state << retval;
     if (!retval) {
-        QWindow *window = dynamic_cast<QWindow *>(input);
         if (type == QEvent::KeyPress && qtcode == Qt::Key_Menu
             && window != NULL) {
             const QPoint globalPos = window->screen()->handle()->cursor()->pos();
@@ -374,20 +404,102 @@ void QIBusPlatformInputContext::filterEventFinished(QDBusPendingCallWatcher *cal
             QWindowSystemInterface::handleContextMenuEvent(window, false, pos,
                                                            globalPos, modifiers);
         }
-        QKeyEvent event(type, qtcode, modifiers, code, sym,
-                        state, string, isAutoRepeat, count);
-        event.setTimestamp(time);
-        QCoreApplication::sendEvent(input, &event);
+        QWindowSystemInterface::handleExtendedKeyEvent(window, time, type, qtcode, modifiers,
+                                                       code, sym, state, string, isAutoRepeat);
+
     }
     call->deleteLater();
 }
 
+QLocale QIBusPlatformInputContext::locale() const
+{
+    return d->locale;
+}
+
+void QIBusPlatformInputContext::socketChanged(const QString &str)
+{
+    qCDebug(qtQpaInputMethods) << "socketChanged";
+    Q_UNUSED (str);
+
+    m_timer.stop();
+
+    if (d->context)
+        disconnect(d->context);
+    if (d->bus && d->bus->isValid())
+        disconnect(d->bus);
+    if (d->connection)
+        d->connection->disconnectFromBus(QLatin1String("QIBusProxy"));
+
+    m_timer.start(100);
+}
+
+// When getSocketPath() is modified, the bus is not established yet
+// so use m_timer.
+void QIBusPlatformInputContext::connectToBus()
+{
+    qCDebug(qtQpaInputMethods) << "QIBusPlatformInputContext::connectToBus";
+    d->initBus();
+    connectToContextSignals();
+
+    if (m_socketWatcher.files().size() == 0)
+        m_socketWatcher.addPath(QIBusPlatformInputContextPrivate::getSocketPath());
+}
+
+void QIBusPlatformInputContext::globalEngineChanged(const QString &engine_name)
+{
+    if (!d->bus || !d->bus->isValid())
+        return;
+
+    QIBusEngineDesc desc = d->bus->getGlobalEngine();
+    Q_ASSERT(engine_name == desc.engine_name);
+    QLocale locale(desc.language);
+    if (d->locale != locale) {
+        d->locale = locale;
+        emitLocaleChanged();
+    }
+}
+
+void QIBusPlatformInputContext::connectToContextSignals()
+{
+    if (d->bus && d->bus->isValid()) {
+        connect(d->bus, SIGNAL(GlobalEngineChanged(QString)), this, SLOT(globalEngineChanged(QString)));
+    }
+
+    if (d->context) {
+        connect(d->context, SIGNAL(CommitText(QDBusVariant)), SLOT(commitText(QDBusVariant)));
+        connect(d->context, SIGNAL(UpdatePreeditText(QDBusVariant,uint,bool)), this, SLOT(updatePreeditText(QDBusVariant,uint,bool)));
+        connect(d->context, SIGNAL(DeleteSurroundingText(int,uint)), this, SLOT(deleteSurroundingText(int,uint)));
+        connect(d->context, SIGNAL(RequireSurroundingText()), this, SLOT(surroundingTextRequired()));
+    }
+}
+
 QIBusPlatformInputContextPrivate::QIBusPlatformInputContextPrivate()
-    : connection(createConnection()),
+    : connection(0),
       bus(0),
       context(0),
       valid(false),
+      busConnected(false),
       needsSurroundingText(false)
+{
+    valid = !QStandardPaths::findExecutable(QString::fromLocal8Bit("ibus-daemon"), QStringList()).isEmpty();
+    if (!valid)
+        return;
+    initBus();
+
+    if (bus && bus->isValid()) {
+        QIBusEngineDesc desc = bus->getGlobalEngine();
+        locale = QLocale(desc.language);
+    }
+}
+
+void QIBusPlatformInputContextPrivate::initBus()
+{
+    connection = createConnection();
+    busConnected = false;
+    createBusProxy();
+}
+
+void QIBusPlatformInputContextPrivate::createBusProxy()
 {
     if (!connection || !connection->isConnected())
         return;
@@ -424,11 +536,11 @@ QIBusPlatformInputContextPrivate::QIBusPlatformInputContextPrivate()
     context->SetCapabilities(IBUS_CAP_PREEDIT_TEXT|IBUS_CAP_FOCUS|IBUS_CAP_SURROUNDING_TEXT);
 
     if (debug)
-        qDebug(">>>> valid!");
-    valid = true;
+        qDebug(">>>> bus connected!");
+    busConnected = true;
 }
 
-QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
+QString QIBusPlatformInputContextPrivate::getSocketPath()
 {
     QByteArray display(qgetenv("DISPLAY"));
     QByteArray host = "unix";
@@ -446,9 +558,14 @@ QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
     if (debug)
         qDebug() << "host=" << host << "displayNumber" << displayNumber;
 
-    QFile file(QDir::homePath() + QLatin1String("/.config/ibus/bus/") +
+    return QDir::homePath() + QLatin1String("/.config/ibus/bus/") +
                QLatin1String(QDBusConnection::localMachineId()) +
-               QLatin1Char('-') + QString::fromLocal8Bit(host) + QLatin1Char('-') + QString::fromLocal8Bit(displayNumber));
+               QLatin1Char('-') + QString::fromLocal8Bit(host) + QLatin1Char('-') + QString::fromLocal8Bit(displayNumber);
+}
+
+QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
+{
+    QFile file(getSocketPath());
 
     if (!file.open(QFile::ReadOnly))
         return 0;

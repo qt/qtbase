@@ -121,7 +121,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
     digits of the generated number. Some extra number formatting
     options are also available through setNumberFlags().
 
-    \keyword QTextStream manipulators
+    \target QTextStream manipulators
 
     Like \c <iostream> in the standard C++ library, QTextStream also
     defines several global manipulator functions:
@@ -222,6 +222,8 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
 #include "qbuffer.h"
 #include "qfile.h"
 #include "qnumeric.h"
+#include "qvarlengtharray.h"
+
 #ifndef Q_OS_WINCE
 #include <locale.h>
 #endif
@@ -845,6 +847,21 @@ inline void QTextStreamPrivate::write(QChar ch)
 /*!
     \internal
 */
+void QTextStreamPrivate::write(QLatin1String data)
+{
+    if (string) {
+        // ### What about seek()??
+        string->append(data);
+    } else {
+        writeBuffer += data;
+        if (writeBuffer.size() > QTEXTSTREAM_BUFFERSIZE)
+            flushWriteBuffer();
+    }
+}
+
+/*!
+    \internal
+*/
 inline bool QTextStreamPrivate::getChar(QChar *ch)
 {
     if ((string && stringOffset == string->size())
@@ -891,45 +908,97 @@ inline void QTextStreamPrivate::putChar(QChar ch)
         write(ch);
 }
 
+
+/*!
+    \internal
+*/
+QTextStreamPrivate::PaddingResult QTextStreamPrivate::padding(int len) const
+{
+    Q_ASSERT(params.fieldWidth > len); // calling padding() when no padding is needed is an error
+
+    // Do NOT break NRVO in this function or kittens will die!
+
+    PaddingResult result;
+
+    const int padSize = params.fieldWidth - len;
+
+    result.padding.resize(padSize);
+    std::fill_n(result.padding.begin(), padSize, params.padChar);
+
+    switch (params.fieldAlignment) {
+    case QTextStream::AlignLeft:
+        result.left  = 0;
+        result.right = padSize;
+        break;
+    case QTextStream::AlignRight:
+    case QTextStream::AlignAccountingStyle:
+        result.left  = padSize;
+        result.right = 0;
+        break;
+    case QTextStream::AlignCenter:
+        result.left  = padSize/2;
+        result.right = padSize - padSize/2;
+        break;
+    }
+
+    return result;
+}
+
 /*!
     \internal
 */
 void QTextStreamPrivate::putString(const QChar *data, int len, bool number)
 {
-    QString pad;
-    int padLeft = 0, padRight = 0;
+    if (Q_UNLIKELY(params.fieldWidth > len)) {
 
-    // handle padding
-    int padSize = params.fieldWidth - len;
-    if (padSize > 0) {
-        pad = QString(padSize, params.padChar);
-        switch (params.fieldAlignment) {
-        case QTextStream::AlignLeft:
-            padRight = padSize;
-            break;
-        case QTextStream::AlignRight:
-        case QTextStream::AlignAccountingStyle:
-            padLeft = padSize;
-            if (params.fieldAlignment == QTextStream::AlignAccountingStyle && number) {
-                const QChar sign = len > 0 ? data[0] : QChar();
-                if (sign == locale.negativeSign() || sign == locale.positiveSign()) {
-                    // write the sign before the padding, then skip it later
-                    write(&sign, 1);
-                    ++data;
-                    --len;
-                }
+        // handle padding:
+
+        const PaddingResult pad = padding(len);
+
+        if (params.fieldAlignment == QTextStream::AlignAccountingStyle && number) {
+            const QChar sign = len > 0 ? data[0] : QChar();
+            if (sign == locale.negativeSign() || sign == locale.positiveSign()) {
+                // write the sign before the padding, then skip it later
+                write(&sign, 1);
+                ++data;
+                --len;
             }
-            break;
-        case QTextStream::AlignCenter:
-            padLeft = padSize/2;
-            padRight = padSize - padSize/2;
-            break;
         }
-    }
 
-    write(pad.constData(), padLeft);
-    write(data, len);
-    write(pad.constData(), padRight);
+        write(pad.padding.constData(), pad.left);
+        write(data, len);
+        write(pad.padding.constData(), pad.right);
+    } else {
+        write(data, len);
+    }
+}
+
+/*!
+    \internal
+*/
+void QTextStreamPrivate::putString(QLatin1String data, bool number)
+{
+    if (Q_UNLIKELY(params.fieldWidth > data.size())) {
+
+        // handle padding
+
+        const PaddingResult pad = padding(data.size());
+
+        if (params.fieldAlignment == QTextStream::AlignAccountingStyle && number) {
+            const QChar sign = data.size() > 0 ? QLatin1Char(*data.data()) : QChar();
+            if (sign == locale.negativeSign() || sign == locale.positiveSign()) {
+                // write the sign before the padding, then skip it later
+                write(&sign, 1);
+                data = QLatin1String(data.data() + 1, data.size() - 1);
+            }
+        }
+
+        write(pad.padding.constData(), pad.left);
+        write(data);
+        write(pad.padding.constData(), pad.right);
+    } else {
+        write(data);
+    }
 }
 
 /*!
@@ -2503,14 +2572,28 @@ QTextStream &QTextStream::operator<<(const QString &string)
     \overload
 
     Writes \a string to the stream, and returns a reference to the
-    QTextStream. The contents of \a string are converted with the
-    QString constructor that takes a QLatin1String as argument.
+    QTextStream.
 */
 QTextStream &QTextStream::operator<<(QLatin1String string)
 {
     Q_D(QTextStream);
     CHECK_VALID_STREAM(*this);
-    d->putString(QString(string));
+    d->putString(string);
+    return *this;
+}
+
+/*!
+    \since 5.6
+    \overload
+
+    Writes \a string to the stream, and returns a reference to the
+    QTextStream.
+*/
+QTextStream &QTextStream::operator<<(const QStringRef &string)
+{
+    Q_D(QTextStream);
+    CHECK_VALID_STREAM(*this);
+    d->putString(string.data(), string.size());
     return *this;
 }
 
@@ -2800,7 +2883,7 @@ QTextStream &scientific(QTextStream &stream)
     Calls QTextStream::setFieldAlignment(QTextStream::AlignLeft)
     on \a stream and returns \a stream.
 
-    \sa right(), center(), {QTextStream manipulators}
+    \sa {QTextStream::}{right()}, {QTextStream::}{center()}, {QTextStream manipulators}
 */
 QTextStream &left(QTextStream &stream)
 {
@@ -2814,7 +2897,7 @@ QTextStream &left(QTextStream &stream)
     Calls QTextStream::setFieldAlignment(QTextStream::AlignRight)
     on \a stream and returns \a stream.
 
-    \sa left(), center(), {QTextStream manipulators}
+    \sa {QTextStream::}{left()}, {QTextStream::}{center()}, {QTextStream manipulators}
 */
 QTextStream &right(QTextStream &stream)
 {
@@ -2828,7 +2911,7 @@ QTextStream &right(QTextStream &stream)
     Calls QTextStream::setFieldAlignment(QTextStream::AlignCenter)
     on \a stream and returns \a stream.
 
-    \sa left(), right(), {QTextStream manipulators}
+    \sa {QTextStream::}{left()}, {QTextStream::}{right()}, {QTextStream manipulators}
 */
 QTextStream &center(QTextStream &stream)
 {
@@ -2858,7 +2941,7 @@ QTextStream &endl(QTextStream &stream)
 /*!
     \relates QTextStream
 
-    Calls \l{QTextStream::flush()}{flush()} on \a stream and returns \a stream.
+    Calls QTextStream::flush() on \a stream and returns \a stream.
 
     \sa endl(), reset(), {QTextStream manipulators}
 */

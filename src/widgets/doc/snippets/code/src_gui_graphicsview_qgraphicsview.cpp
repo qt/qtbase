@@ -116,7 +116,7 @@ void CustomView::mousePressEvent(QMouseEvent *event)
     if (QGraphicsItem *item = itemAt(event->pos())) {
         qDebug() << "You clicked on item" << item;
     } else {
-        qDebug() << "You didn't click on an item.";
+        qDebug("You didn't click on an item.");
     }
 }
 //! [6]

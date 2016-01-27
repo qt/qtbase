@@ -100,9 +100,10 @@ public:
 
     static bool write(QIODevice *device, const QVector<QImage> &images);
 
+    bool readIconEntry(int index, ICONDIRENTRY * iconEntry);
+
 private:
     bool readHeader();
-    bool readIconEntry(int index, ICONDIRENTRY * iconEntry);
 
     bool readBMPHeader(quint32 imageOffset, BMP_INFOHDR * header);
     void findColorInfo(QImage & image);
@@ -341,7 +342,7 @@ bool ICOReader::readHeader()
 
 bool ICOReader::readIconEntry(int index, ICONDIRENTRY *iconEntry)
 {
-    if (iod) {
+    if (readHeader()) {
         if (iod->seek(startpos + ICONDIR_SIZE + (index * ICONDIRENTRY_SIZE))) {
             return readIconDirEntry(iod, iconEntry);
         }
@@ -558,10 +559,10 @@ QImage ICOReader::iconAt(int index)
                 if (icoAttrib.ncolors > 256) //color table can't be more than 256
                     return img;
                 icoAttrib.w = iconEntry.bWidth;
-                if (icoAttrib.w == 0)
+                if (icoAttrib.w == 0) // means 256 pixels
                     icoAttrib.w = header.biWidth;
                 icoAttrib.h = iconEntry.bHeight;
-                if (icoAttrib.h == 0)
+                if (icoAttrib.h == 0) // means 256 pixels
                     icoAttrib.h = header.biHeight/2;
 
                 QImage::Format format = QImage::Format_ARGB32;
@@ -658,10 +659,11 @@ bool ICOReader::write(QIODevice *device, const QVector<QImage> &images)
         for (int i=0; i<id.idCount; i++) {
 
             QImage image = images[i];
-            // Scale down the image if it is larger than 128 pixels in either width or height
-            if (image.width() > 128 || image.height() > 128)
+            // Scale down the image if it is larger than 256 pixels in either width or height
+            // because this is a maximum size of image in the ICO file.
+            if (image.width() > 256 || image.height() > 256)
             {
-                image = image.scaled(128, 128, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                image = image.scaled(256, 256, Qt::KeepAspectRatio, Qt::SmoothTransformation);
             }
             QImage maskImage(image.width(), image.height(), QImage::Format_Mono);
             image = image.convertToFormat(QImage::Format_ARGB32);
@@ -778,25 +780,37 @@ QtIcoHandler::~QtIcoHandler()
 
 QVariant QtIcoHandler::option(ImageOption option) const
 {
-    if (option == Size) {
-        QIODevice *device = QImageIOHandler::device();
-        qint64 oldPos = device->pos();
+    if (option == Size || option == ImageFormat) {
         ICONDIRENTRY iconEntry;
-        if (device->seek(oldPos + ICONDIR_SIZE + (m_currentIconIndex * ICONDIRENTRY_SIZE))) {
-            if (readIconDirEntry(device, &iconEntry)) {
-                device->seek(oldPos);
-                return QSize(iconEntry.bWidth, iconEntry.bHeight);
+        if (m_pICOReader->readIconEntry(m_currentIconIndex, &iconEntry)) {
+            switch (option) {
+                case Size:
+                    return QSize(iconEntry.bWidth ? iconEntry.bWidth : 256,
+                                iconEntry.bHeight ? iconEntry.bHeight : 256);
+
+                case ImageFormat:
+                    switch (iconEntry.wBitCount) {
+                        case 2:
+                            return QImage::Format_Mono;
+                        case 24:
+                            return QImage::Format_RGB32;
+                        case 32:
+                            return QImage::Format_ARGB32;
+                        default:
+                            return QImage::Format_Indexed8;
+                    }
+                    break;
+                default:
+                    break;
             }
         }
-        if (!device->isSequential())
-            device->seek(oldPos);
     }
     return QVariant();
 }
 
 bool QtIcoHandler::supportsOption(ImageOption option) const
 {
-    return option == Size;
+    return (option == Size || option == ImageFormat);
 }
 
 /*!
@@ -881,9 +895,10 @@ bool QtIcoHandler::jumpToImage(int imageNumber)
 {
     if (imageNumber < imageCount()) {
         m_currentIconIndex = imageNumber;
+        return true;
     }
 
-    return imageNumber < imageCount();
+    return false;
 }
 
 /*! \reimp

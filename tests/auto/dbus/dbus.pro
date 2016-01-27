@@ -3,6 +3,7 @@ SUBDIRS=\
            qdbusabstractadaptor \
            qdbusabstractinterface \
            qdbusconnection \
+           qdbusconnection_no_app \
            qdbusconnection_no_bus \
            qdbuscontext \
            qdbusinterface \
@@ -16,7 +17,7 @@ SUBDIRS=\
            qdbusservicewatcher \
            qdbustype \
            qdbusthreading \
-           qdbusxmlparser \
+           qdbusxmlparser
 
 !contains(QT_CONFIG,private_tests): SUBDIRS -= \
            qdbusmarshall \

@@ -41,6 +41,7 @@
 #include <QtWidgets>
 
 #include "imagedelegate.h"
+#include "iconpreviewarea.h"
 
 //! [0]
 ImageDelegate::ImageDelegate(QObject *parent)
@@ -55,17 +56,14 @@ QWidget *ImageDelegate::createEditor(QWidget *parent,
                                      const QModelIndex &index) const
 {
     QComboBox *comboBox = new QComboBox(parent);
-    if (index.column() == 1) {
-        comboBox->addItem(tr("Normal"));
-        comboBox->addItem(tr("Active"));
-        comboBox->addItem(tr("Disabled"));
-        comboBox->addItem(tr("Selected"));
-    } else if (index.column() == 2) {
-        comboBox->addItem(tr("Off"));
-        comboBox->addItem(tr("On"));
-    }
+    if (index.column() == 1)
+        comboBox->addItems(IconPreviewArea::iconModeNames());
+    else if (index.column() == 2)
+        comboBox->addItems(IconPreviewArea::iconStateNames());
 
-    connect(comboBox, SIGNAL(activated(int)), this, SLOT(emitCommitData()));
+    typedef void (QComboBox::*QComboBoxIntSignal)(int);
+    connect(comboBox, static_cast<QComboBoxIntSignal>(&QComboBox::activated),
+            this, &ImageDelegate::emitCommitData);
 
     return comboBox;
 }

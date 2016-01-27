@@ -146,8 +146,16 @@ void QAlphaPaintEngine::updateState(const QPaintEngineState &state)
 
     d->m_hasalpha = d->m_alphaOpacity || d->m_alphaBrush || d->m_alphaPen;
 
-    if (d->m_picengine)
+    if (d->m_picengine) {
+        const QPainter *p = painter();
+        d->m_picpainter->setPen(p->pen());
+        d->m_picpainter->setBrush(p->brush());
+        d->m_picpainter->setBrushOrigin(p->brushOrigin());
+        d->m_picpainter->setFont(p->font());
+        d->m_picpainter->setOpacity(p->opacity());
+        d->m_picpainter->setTransform(p->combinedTransform());
         d->m_picengine->updateState(state);
+    }
 }
 
 void QAlphaPaintEngine::drawPath(const QPainterPath &path)
@@ -376,6 +384,7 @@ QAlphaPaintEnginePrivate::QAlphaPaintEnginePrivate()
         m_pic(0),
         m_picengine(0),
         m_picpainter(0),
+        m_numberOfCachedRects(0),
         m_hasalpha(false),
         m_alphaPen(false),
         m_alphaBrush(false),
@@ -426,7 +435,14 @@ void QAlphaPaintEnginePrivate::addAlphaRect(const QRectF &rect)
 
 bool QAlphaPaintEnginePrivate::canSeeTroughBackground(bool somethingInRectHasAlpha, const QRectF &rect) const
 {
-    return somethingInRectHasAlpha && m_dirtyrgn.intersects(rect.toAlignedRect());
+    if (somethingInRectHasAlpha) {
+        if (m_dirtyRects.count() != m_numberOfCachedRects) {
+            m_cachedDirtyRgn.setRects(m_dirtyRects.constData(), m_dirtyRects.count());
+            m_numberOfCachedRects = m_dirtyRects.count();
+        }
+        return m_cachedDirtyRgn.intersects(rect.toAlignedRect());
+    }
+    return false;
 }
 
 void QAlphaPaintEnginePrivate::drawAlphaImage(const QRectF &rect)

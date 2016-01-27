@@ -68,8 +68,8 @@
 
 #if defined(Q_OS_BSD4)
 #  if defined(Q_OS_NETBSD)
-     define QT_STATFSBUF struct statvfs
-     define QT_STATFS    ::statvfs
+#    define QT_STATFSBUF struct statvfs
+#    define QT_STATFS    ::statvfs
 #  else
 #    define QT_STATFSBUF struct statfs
 #    define QT_STATFS    ::statfs
@@ -238,7 +238,7 @@ inline QByteArray QStorageIterator::device() const
 
 #elif defined(Q_OS_ANDROID)
 
-static const char pathMounted[] = "/proc/mounts";
+static const QLatin1String pathMounted("/proc/mounts");
 
 inline QStorageIterator::QStorageIterator()
 {
@@ -508,9 +508,15 @@ void QStorageInfoPrivate::retrieveVolumeInfo()
         valid = true;
         ready = true;
 
+#if defined(Q_OS_BSD4) && !defined(Q_OS_NETBSD)
         bytesTotal = statfs_buf.f_blocks * statfs_buf.f_bsize;
         bytesFree = statfs_buf.f_bfree * statfs_buf.f_bsize;
         bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_bsize;
+#else
+        bytesTotal = statfs_buf.f_blocks * statfs_buf.f_frsize;
+        bytesFree = statfs_buf.f_bfree * statfs_buf.f_frsize;
+        bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_frsize;
+#endif
         blockSize = statfs_buf.f_bsize;
 #if defined(Q_OS_ANDROID) || defined (Q_OS_BSD4)
 #if defined(_STATFS_F_FLAGS)

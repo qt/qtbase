@@ -421,23 +421,23 @@ void AddressBook::exportAsVCard()
 //! [export function part2]
 
 //! [export function part3]
-    out << "BEGIN:VCARD" << "\n";
-    out << "VERSION:2.1" << "\n";
-    out << "N:" << lastName << ";" << firstName << "\n";
+    out << "BEGIN:VCARD" << '\n';
+    out << "VERSION:2.1" << '\n';
+    out << "N:" << lastName << ';' << firstName << '\n';
 
     if (!nameList.isEmpty())
-       out << "FN:" << nameList.join(' ') << "\n";
+       out << "FN:" << nameList.join(' ') << '\n';
     else
-       out << "FN:" << firstName << "\n";
+       out << "FN:" << firstName << '\n';
 //! [export function part3]
 
 //! [export function part4]
     address.replace(";", "\\;", Qt::CaseInsensitive);
-    address.replace("\n", ";", Qt::CaseInsensitive);
+    address.replace('\n', ";", Qt::CaseInsensitive);
     address.replace(",", " ", Qt::CaseInsensitive);
 
-    out << "ADR;HOME:;" << address << "\n";
-    out << "END:VCARD" << "\n";
+    out << "ADR;HOME:;" << address << '\n';
+    out << "END:VCARD" << '\n';
 
     QMessageBox::information(this, tr("Export Successful"),
         tr("\"%1\" has been exported as a vCard.").arg(name));

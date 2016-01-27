@@ -254,6 +254,13 @@
   line-height:1.4;
   font-size:0.875em
 }
+@media (min-width: 1320px) {
+  .context .flowListDiv dl.flowList {
+    -webkit-column-count:3;
+    -moz-column-count:3;
+    column-count:3
+  }
+}
 @media (min-width: 1120px) {
   #navbar.fixed,#navbar.shadow_bottom {
     -moz-box-shadow:0px 0px 8px rgba(0,0,0,0.2);
@@ -292,6 +299,11 @@
   }
   #navbar.fixed #mainmenu li.current-menu-item a {
     border-bottom:4px solid #80C342
+  }
+  .flowListDiv dl.flowList {
+    -webkit-column-count:2;
+    -moz-column-count:2;
+    column-count:2
   }
 }
 @media (max-width: 1120px) {
@@ -524,6 +536,21 @@ body.qt-account #navbar .navbar-oneQt h2 {
   right:13px;
   position:absolute;
   transition:none;
+}
+#sidebar-toggle,#toc-toggle {
+  width:24px;
+  height:14px;
+  background-size:24px 28px;
+  cursor:pointer;
+  background-image:url("list_expand.png");
+  float:right
+}
+#sidebar-toggle.collapsed,
+#toc-toggle.collapsed {
+  background-position:bottom left
+}
+#sidebar-content > h2 {
+  display:none
 }
 .cookies_yum .close:hover {
   background-position:bottom left
@@ -960,9 +987,23 @@ ol,ul {
   margin-top:0.75em;
   margin-left:20px
 }
-.mainContent ol>li {
-  list-style-type:decimal
+
+.context ol > li {
+  margin-left: 20px
 }
+
+.mainContent ol>li {
+  list-style-type: decimal;
+}
+
+.mainContent ol.a >li {
+  list-style-type: lower-alpha;
+}
+
+.mainContent ol.A >li {
+  list-style-type: upper-alpha;
+}
+
 blockquote,q {
   quotes:none
 }
@@ -1128,7 +1169,7 @@ dd {
 .mainContent b {
   font-weight:600
 }
-.context ul {
+.context ul,.context ol {
   margin-bottom:1.5em
 }
 .mainContent ul ul {
@@ -1191,6 +1232,19 @@ li a.active {
 .flowList {
   padding:25px
 }
+.flowListDiv dl {
+  -webkit-column-count:1;
+  -moz-column-count:1;
+  column-count:1
+}
+.flowList dd {
+  display:inline-block;
+  margin-left:10px;
+  width:90%;
+  line-height:1.15em;
+  overflow-x:hidden;
+  text-overflow:ellipsis
+}
 .alphaChar {
   font-size:2em;
   position:absolute
@@ -1206,12 +1260,12 @@ li a.active {
 }
 .mainContent table p {
   margin:0px;
-  padding:0px
-}
-.mainContent table p {
-  margin:0px;
   padding:0px;
+  max-width:initial;
   min-height:2em
+}
+.mainContent table p.centerAlign {
+  text-align:center
 }
 .context h2 {
   font-size:2.1875em
@@ -1245,6 +1299,9 @@ table td,table th {
 }
 table.alignedsummary,table.propsummary {
   width:initial
+}
+table.valuelist td.tblval {
+  font-size:0.75em
 }
 div.main_index .row {
   border-bottom:1px solid #eee
@@ -1282,6 +1339,9 @@ div.main_index .row:after {
 div.table {
   overflow-x:auto
 }
+.context tr > td > pre {
+  font-size:0.85em
+}
 p.qt_commercial {
   border:3px solid #5caa15;
   margin:0 auto;
@@ -1312,7 +1372,6 @@ pre {
   line-height:1.5;
   overflow-x:auto;
   margin-bottom:25px;
-  overflow-x:auto;
   padding:25px;
   margin-top:0.75em
 }
@@ -1376,6 +1435,9 @@ pre:hover>.copy_text {
   margin:0;
   border:none
 }
+#sidebar-toggle,#toc-toggle {
+  display:none
+}
 @media (max-width: 980px) {
   body {
     font-size:calc-em(14px)
@@ -1413,7 +1475,8 @@ pre:hover>.copy_text {
     visibility:hidden
   }
   .col-2 h2,.toc h3,.sidebar-content h2,.sidebar-content h3,.sectionlist h2 {
-    text-align:center
+    text-align:center;
+    margin-bottom:0
   }
   div.main_index .row:after {
     content:none
@@ -1438,6 +1501,12 @@ pre:hover>.copy_text {
     margin-bottom:1em;
     padding:20px
   }
+  #sidebar-toggle,#toc-toggle {
+    display:block
+  }
+  #sidebar-toggle.collapsed + h2 {
+    display:block
+  }
   .mainContent p {
     line-height:1.56em;
     margin-bottom:1em;
@@ -1446,6 +1515,9 @@ pre:hover>.copy_text {
   table td,table th {
     padding:5px 5px
   }
+  .sectionlist {
+    padding:0
+  }
 }
 [id]:target,[name]:target,[name]:target+* {
   -webkit-animation:highlighter 3s;
@@ -1453,22 +1525,22 @@ pre:hover>.copy_text {
 }
 @-webkit-keyframes highlighter {
   25% {
-    background-color:#46a2da;
-    color:#fff
+    background-color:#d1e8f6;
+    color:#444
   }
   75% {
-    background-color:#46a2da;
-    color:#fff
+    background-color:#d1e8f6;
+    color:#444
   }
 }
 @keyframes highlighter {
   25% {
-    background-color:#46a2da;
-    color:#fff
+    background-color:#d1e8f6;
+    color:#444
   }
   75% {
-    background-color:#46a2da;
-    color:#fff
+    background-color:#d1e8f6;
+    color:#444
   }
 }
 @-webkit-keyframes copypaste {
@@ -1580,7 +1652,7 @@ img.gsc-branding-img {
 input.gsc-search-button {
   background-color: white !important;
   height: 35px !important;
-  width: 35px !important;
+  width: 25px !important;
   color: transparent !important;
   background-image: url("doc_search.png") !important;
   background-size: 25px auto;

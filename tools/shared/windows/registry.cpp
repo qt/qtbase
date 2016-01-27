@@ -74,7 +74,7 @@ static QString keyName(const QString &rKey)
 }
 #endif
 
-QString qt_readRegistryKey(HKEY parentHandle, const QString &rSubkey)
+QString qt_readRegistryKey(HKEY parentHandle, const QString &rSubkey, unsigned long options)
 {
     QString result;
 
@@ -83,7 +83,8 @@ QString qt_readRegistryKey(HKEY parentHandle, const QString &rSubkey)
     QString rSubkeyPath = keyPath(rSubkey);
 
     HKEY handle = 0;
-    LONG res = RegOpenKeyEx(parentHandle, (wchar_t*)rSubkeyPath.utf16(), 0, KEY_READ, &handle);
+    LONG res = RegOpenKeyEx(parentHandle, (wchar_t*)rSubkeyPath.utf16(), 0,
+                            KEY_READ | options, &handle);
 
     if (res != ERROR_SUCCESS)
         return QString();
@@ -152,6 +153,7 @@ QString qt_readRegistryKey(HKEY parentHandle, const QString &rSubkey)
 #else
     Q_UNUSED(parentHandle);
     Q_UNUSED(rSubkey)
+    Q_UNUSED(options);
 #endif
 
     return result;

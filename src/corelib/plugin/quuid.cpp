@@ -543,7 +543,7 @@ QUuid QUuid::fromRfc4122(const QByteArray &bytes)
 QString QUuid::toString() const
 {
     QString result(38, Qt::Uninitialized);
-    ushort *data = (ushort *)result.unicode();
+    ushort *data = (ushort *)result.data();
 
     _q_uuidToHex(data, data1, data2, data3, data4);
 
@@ -857,7 +857,7 @@ bool QUuid::operator>(const QUuid &other) const Q_DECL_NOTHROW
     different variant field, the return value is determined by
     comparing the two \l{QUuid::Variant} {variants}.
 
-    \sa variant()
+    \sa {QUuid::}{variant()}
 */
 
 /*!
@@ -871,7 +871,7 @@ bool QUuid::operator>(const QUuid &other) const Q_DECL_NOTHROW
     different variant field, the return value is determined by
     comparing the two \l{QUuid::Variant} {variants}.
 
-    \sa variant()
+    \sa {QUuid::}{variant()}
 */
 
 /*!
@@ -891,7 +891,7 @@ bool QUuid::operator>(const QUuid &other) const Q_DECL_NOTHROW
 
     \sa variant(), version()
 */
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WIN)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include <objbase.h> // For CoCreateGuid
@@ -905,7 +905,7 @@ QUuid QUuid::createUuid()
     return result;
 }
 
-#else // !Q_OS_WIN32
+#else // Q_OS_WIN
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "qdatetime.h"
@@ -963,7 +963,7 @@ QUuid QUuid::createUuid()
         {
             int *pseed = new int;
             static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(2);
-            qsrand(*pseed = QDateTime::currentDateTime().toTime_t()
+            qsrand(*pseed = QDateTime::currentDateTimeUtc().toTime_t()
                    + quintptr(&pseed)
                    + serial.fetchAndAddRelaxed(1));
             uuidseed.setLocalData(pseed);
@@ -971,7 +971,7 @@ QUuid QUuid::createUuid()
 #else
         static bool seeded = false;
         if (!seeded)
-            qsrand(QDateTime::currentDateTime().toTime_t()
+            qsrand(QDateTime::currentDateTimeUtc().toTime_t()
                    + quintptr(&seeded));
 #endif
 
@@ -989,7 +989,7 @@ QUuid QUuid::createUuid()
 
     return result;
 }
-#endif // !Q_OS_WIN32
+#endif // !Q_OS_WIN
 
 /*!
     \fn bool QUuid::operator==(const GUID &guid) const

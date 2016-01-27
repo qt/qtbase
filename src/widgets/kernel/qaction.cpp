@@ -58,14 +58,9 @@ QT_BEGIN_NAMESPACE
 static QString qt_strippedText(QString s)
 {
     s.remove( QString::fromLatin1("...") );
-    int i = 0;
-    while (i < s.size()) {
-        ++i;
-        if (s.at(i-1) != QLatin1Char('&'))
-            continue;
-        if (i < s.size() && s.at(i) == QLatin1Char('&'))
-            ++i;
-        s.remove(i-1,1);
+    for (int i = 0; i < s.size(); ++i) {
+        if (s.at(i) == QLatin1Char('&'))
+            s.remove(i, 1);
     }
     return s.trimmed();
 }
@@ -260,7 +255,7 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
     \value TextHeuristicRole This action should be put in the application menu based on the action's text
            as described in the QMenuBar documentation.
     \value ApplicationSpecificRole This action should be put in the application menu with an application specific role
-    \value AboutQtRole This action matches handles the "About Qt" menu item.
+    \value AboutQtRole This action handles the "About Qt" menu item.
     \value AboutRole This action should be placed where the "About" menu item is in the application menu. The text of
            the menu item will be set to "About <application name>". The application name is fetched from the
            \c{Info.plist} file in the application's bundle (See \l{Qt for OS X - Deployment}).
@@ -1236,7 +1231,7 @@ void QAction::activate(ActionEvent event)
     \since 4.2
 
     This indicates what role the action serves in the application menu on Mac
-    OS X. By default all action have the TextHeuristicRole, which means that
+    OS X. By default all actions have the TextHeuristicRole, which means that
     the action is added based on its text (see QMenuBar for more information).
 
     The menu role can only be changed before the actions are put into the menu
@@ -1275,7 +1270,7 @@ QAction::MenuRole QAction::menuRole() const
     For example:
     \snippet code/src_gui_kernel_qaction.cpp 0
 
-    \sa QAction::icon, QApplication::setAttribute()
+    \sa QAction::icon, QCoreApplication::setAttribute()
 */
 void QAction::setIconVisibleInMenu(bool visible)
 {

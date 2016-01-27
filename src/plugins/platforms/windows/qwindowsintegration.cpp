@@ -44,7 +44,6 @@
 #  include "qwindowsfontdatabase_ft.h"
 #endif
 #include "qwindowsfontdatabase.h"
-#include "qwindowsguieventdispatcher.h"
 #ifndef QT_NO_CLIPBOARD
 #  include "qwindowsclipboard.h"
 #  ifndef QT_NO_DRAGANDDROP
@@ -66,7 +65,8 @@
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/qpa/qplatforminputcontextfactory_p.h>
 
-#include <QtCore/private/qeventdispatcher_win_p.h>
+#include <QtPlatformSupport/private/qwindowsguieventdispatcher_p.h>
+
 #include <QtCore/QDebug>
 #include <QtCore/QVariant>
 
@@ -226,17 +226,7 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
     qCDebug(lcQpaWindows)
         << __FUNCTION__ << "DpiAwareness=" << dpiAwareness;
 
-    QTouchDevice *touchDevice = m_context.touchDevice();
-    if (touchDevice) {
-#ifdef Q_OS_WINCE
-        touchDevice->setCapabilities(touchDevice->capabilities() | QTouchDevice::MouseEmulation);
-#else
-        if (!(m_options & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch)) {
-            touchDevice->setCapabilities(touchDevice->capabilities() | QTouchDevice::MouseEmulation);
-        }
-#endif
-        QWindowSystemInterface::registerTouchDevice(touchDevice);
-    }
+    m_context.initTouch(m_options);
 }
 
 QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()
@@ -264,10 +254,9 @@ QWindowsIntegration::~QWindowsIntegration()
 
 void QWindowsIntegration::initialize()
 {
-    if (QPlatformInputContext *pluginContext = QPlatformInputContextFactory::create())
-        d->m_inputContext.reset(pluginContext);
-    else
-        d->m_inputContext.reset(new QWindowsInputContext);
+    QString icStr = QPlatformInputContextFactory::requested();
+    icStr.isNull() ? d->m_inputContext.reset(new QWindowsInputContext)
+                   : d->m_inputContext.reset(QPlatformInputContextFactory::create(icStr));
 }
 
 bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -293,13 +282,15 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
         return true;
     case AllGLFunctionsQueryable:
         return true;
+    case SwitchableWidgetComposition:
+        return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
     }
     return false;
 }
 
-QWindowsWindowData QWindowsIntegration::createWindowData(QWindow *window) const
+QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) const
 {
     QWindowsWindowData requested;
     requested.flags = window->flags();
@@ -318,22 +309,30 @@ QWindowsWindowData QWindowsIntegration::createWindowData(QWindow *window) const
         << "\n    Obtained : " << obtained.geometry << " margins=" << obtained.frame
         << " handle=" << obtained.hwnd << ' ' << obtained.flags << '\n';
 
-    if (obtained.hwnd) {
-        if (requested.flags != obtained.flags)
-            window->setFlags(obtained.flags);
-        // Trigger geometry change signals of QWindow.
-        if ((obtained.flags & Qt::Desktop) != Qt::Desktop && requested.geometry != obtained.geometry)
+    if (Q_UNLIKELY(!obtained.hwnd))
+        return Q_NULLPTR;
+
+    QWindowsWindow *result = createPlatformWindowHelper(window, obtained);
+    Q_ASSERT(result);
+
+    if (requested.flags != obtained.flags)
+        window->setFlags(obtained.flags);
+    // Trigger geometry/screen change signals of QWindow.
+    if ((obtained.flags & Qt::Desktop) != Qt::Desktop) {
+        if (requested.geometry != obtained.geometry)
             QWindowSystemInterface::handleGeometryChange(window, obtained.geometry);
+        QPlatformScreen *screen = result->screenForGeometry(obtained.geometry);
+        if (screen && result->screen() != screen)
+            QWindowSystemInterface::handleWindowScreenChanged(window, screen->screen());
     }
 
-    return obtained;
+    return result;
 }
 
-QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) const
+// Overridden to return a QWindowsDirect2DWindow in Direct2D plugin.
+QWindowsWindow *QWindowsIntegration::createPlatformWindowHelper(QWindow *window, const QWindowsWindowData &data) const
 {
-    QWindowsWindowData data = createWindowData(window);
-    return data.hwnd ? new QWindowsWindow(window, data)
-                     : Q_NULLPTR;
+    return new QWindowsWindow(window, data);
 }
 
 #ifndef QT_NO_OPENGL
@@ -341,11 +340,18 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
 QWindowsStaticOpenGLContext *QWindowsStaticOpenGLContext::doCreate()
 {
 #if defined(QT_OPENGL_DYNAMIC)
+    const QWindowsOpenGLTester::Renderers supportedRenderers = QWindowsOpenGLTester::supportedRenderers();
+
     QWindowsOpenGLTester::Renderer requestedRenderer = QWindowsOpenGLTester::requestedRenderer();
     switch (requestedRenderer) {
     case QWindowsOpenGLTester::DesktopGl:
-        if (QWindowsStaticOpenGLContext *glCtx = QOpenGLStaticContext::create())
+        if (QWindowsStaticOpenGLContext *glCtx = QOpenGLStaticContext::create()) {
+            if ((supportedRenderers & QWindowsOpenGLTester::DisableRotationFlag)
+                && !QWindowsScreen::setOrientationPreference(Qt::LandscapeOrientation)) {
+                qCWarning(lcQpaGl, "Unable to disable rotation.");
+            }
             return glCtx;
+        }
         qCWarning(lcQpaGl, "System OpenGL failed. Falling back to Software OpenGL.");
         return QOpenGLStaticContext::create(true);
     // If ANGLE is requested, use it, don't try anything else.
@@ -366,10 +372,14 @@ QWindowsStaticOpenGLContext *QWindowsStaticOpenGLContext::doCreate()
         break;
     }
 
-    const QWindowsOpenGLTester::Renderers supportedRenderers = QWindowsOpenGLTester::supportedRenderers();
     if (supportedRenderers & QWindowsOpenGLTester::DesktopGl) {
-        if (QWindowsStaticOpenGLContext *glCtx = QOpenGLStaticContext::create())
+        if (QWindowsStaticOpenGLContext *glCtx = QOpenGLStaticContext::create()) {
+            if ((supportedRenderers & QWindowsOpenGLTester::DisableRotationFlag)
+                && !QWindowsScreen::setOrientationPreference(Qt::LandscapeOrientation)) {
+                qCWarning(lcQpaGl, "Unable to disable rotation.");
+            }
             return glCtx;
+        }
     }
     if (QWindowsOpenGLTester::Renderers glesRenderers = supportedRenderers & QWindowsOpenGLTester::GlesMask) {
         if (QWindowsEGLStaticContext *eglCtx = QWindowsEGLStaticContext::create(glesRenderers))
@@ -487,7 +497,7 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
     switch (hint) {
     case QPlatformIntegration::CursorFlashTime:
         if (const unsigned timeMS = GetCaretBlinkTime())
-            return QVariant(int(timeMS) * 2);
+            return QVariant(timeMS != INFINITE ? int(timeMS) * 2 : 0);
         break;
 #ifdef SPI_GETKEYBOARDSPEED
     case KeyboardAutoRepeatRate:

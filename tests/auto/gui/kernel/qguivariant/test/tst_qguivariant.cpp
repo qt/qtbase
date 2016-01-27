@@ -250,6 +250,14 @@ void tst_QGuiVariant::toColor_data()
     QColor c("red");
     QTest::newRow( "string" ) << QVariant( QString( "red" ) ) << c;
     QTest::newRow( "solid brush" ) << QVariant( QBrush(c) ) << c;
+    QTest::newRow("qbytearray") << QVariant(QByteArray("red")) << c;
+    QTest::newRow("same color") << QVariant(c) << c;
+    QTest::newRow("qstring(#ff0000)") << QVariant(QString::fromUtf8("#ff0000")) << c;
+    QTest::newRow("qbytearray(#ff0000)") << QVariant(QByteArray("#ff0000")) << c;
+
+    c.setNamedColor("#88112233");
+    QTest::newRow("qstring(#88112233)") << QVariant(QString::fromUtf8("#88112233")) << c;
+    QTest::newRow("qbytearray(#88112233)") << QVariant(QByteArray("#88112233")) << c;
 }
 
 void tst_QGuiVariant::toColor()
@@ -260,6 +268,8 @@ void tst_QGuiVariant::toColor()
     QVERIFY( value.canConvert( QVariant::Color ) );
     QColor d = qvariant_cast<QColor>(value);
     QCOMPARE( d, result );
+    QVERIFY(value.convert(QMetaType::QColor));
+    QCOMPARE(d, QColor(value.toString()));
 }
 
 void tst_QGuiVariant::toPixmap_data()

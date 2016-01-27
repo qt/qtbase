@@ -2,7 +2,7 @@ naturallanguage         = en
 outputencoding          = UTF-8
 sourceencoding          = UTF-8
 
-examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp *.qml *.css"
+examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp *.qml *.css *.glsl"
 examples.imageextensions = "*.png *.jpg *.gif"
 
 headers.fileextensions  = "*.ch *.h *.h++ *.hh *.hpp *.hxx"

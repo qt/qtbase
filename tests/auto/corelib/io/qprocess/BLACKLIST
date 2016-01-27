@@ -1,2 +1,5 @@
 [lockupsInStartDetached]
 redhatenterpriselinuxworkstation-6.6
+# QTBUG-48455
+[fileWriterProcess]
+msvc-2015

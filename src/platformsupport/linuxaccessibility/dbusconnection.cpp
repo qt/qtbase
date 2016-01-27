@@ -47,8 +47,11 @@
 
 QT_BEGIN_NAMESPACE
 
-QString A11Y_SERVICE = QStringLiteral("org.a11y.Bus");
-QString A11Y_PATH = QStringLiteral("/org/a11y/bus");
+/* note: do not change these to QStringLiteral;
+   we are unloaded before QtDBus is done using the strings.
+ */
+#define A11Y_SERVICE QLatin1String("org.a11y.Bus")
+#define A11Y_PATH QLatin1String("/org/a11y/bus")
 
 /*!
     \class DBusConnection
@@ -137,7 +140,7 @@ void DBusConnection::connectA11yBus(const QString &address)
         qWarning("Could not find Accessibility DBus address.");
         return;
     }
-    m_a11yConnection = QDBusConnection(QDBusConnection::connectToBus(address, QStringLiteral("a11y")));
+    m_a11yConnection = QDBusConnection(QDBusConnection::connectToBus(address, QLatin1String("a11y")));
 
     if (m_enabled)
         emit enabledChanged(true);

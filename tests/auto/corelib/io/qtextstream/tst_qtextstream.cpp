@@ -163,6 +163,7 @@ private slots:
     void string_write_operator_ToDevice_data();
     void string_write_operator_ToDevice();
     void latin1String_write_operator_ToDevice();
+    void stringref_write_operator_ToDevice();
 
     // other
     void skipWhiteSpace_data();
@@ -258,6 +259,7 @@ tst_QTextStream::tst_QTextStream()
 
 void tst_QTextStream::initTestCase()
 {
+    QVERIFY2(tempDir.isValid(), qPrintable(tempDir.errorString()));
     QVERIFY(!m_rfc3261FilePath.isEmpty());
     QVERIFY(!m_shiftJisFilePath.isEmpty());
 
@@ -2553,6 +2555,22 @@ void tst_QTextStream::latin1String_write_operator_ToDevice()
     QCOMPARE(buf.buffer().constData(), "No explicit lengthExplicit length");
 }
 
+void tst_QTextStream::stringref_write_operator_ToDevice()
+{
+    QBuffer buf;
+    buf.open(QBuffer::WriteOnly);
+    QTextStream stream(&buf);
+    stream.setCodec(QTextCodec::codecForName("ISO-8859-1"));
+    stream.setAutoDetectUnicode(true);
+
+    const QString expected = "No explicit lengthExplicit length";
+
+    stream << expected.leftRef(18);
+    stream << expected.midRef(18);
+    stream.flush();
+    QCOMPARE(buf.buffer().constData(), "No explicit lengthExplicit length");
+}
+
 // ------------------------------------------------------------------------------
 void tst_QTextStream::useCase1()
 {
@@ -2711,7 +2729,7 @@ void tst_QTextStream::readBomSeekBackReadBomAgain()
     QFile::remove("utf8bom");
     QFile file("utf8bom");
     QVERIFY(file.open(QFile::ReadWrite));
-    file.write("\xef\xbb\xbf" "Andreas");
+    file.write("\xef\xbb\xbf""Andreas");
     file.seek(0);
     QCOMPARE(file.pos(), qint64(0));
 

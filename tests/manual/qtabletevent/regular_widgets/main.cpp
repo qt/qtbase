@@ -39,6 +39,7 @@
 #include <QMenuBar>
 #include <QMenu>
 #include <QAction>
+#include <QStatusBar>
 #include <QVector>
 #include <QPainter>
 #include <QCursor>
@@ -72,6 +73,9 @@ public:
 public slots:
     void clearPoints() { m_points.clear(); update(); }
 
+signals:
+    void stats(QString s);
+
 protected:
     void mouseDoubleClickEvent(QMouseEvent *event) { outputMouseEvent(event); }
     void mouseMoveEvent(QMouseEvent *event) { outputMouseEvent(event); }
@@ -81,6 +85,7 @@ protected:
     void tabletEvent(QTabletEvent *);
 
     void paintEvent(QPaintEvent *);
+    void timerEvent(QTimerEvent *);
 
 private:
     void outputMouseEvent(QMouseEvent *event);
@@ -89,13 +94,19 @@ private:
     bool m_lastIsTabletMove;
     Qt::MouseButton m_lastButton;
     QVector<TabletPoint> m_points;
+    int m_tabletMoveCount;
+    int m_paintEventCount;
 };
 
 EventReportWidget::EventReportWidget()
     : m_lastIsMouseMove(false)
     , m_lastIsTabletMove(false)
     , m_lastButton(Qt::NoButton)
-{ }
+    , m_tabletMoveCount(0)
+    , m_paintEventCount(0)
+{
+    startTimer(1000);
+}
 
 void EventReportWidget::paintEvent(QPaintEvent *)
 {
@@ -145,6 +156,7 @@ void EventReportWidget::paintEvent(QPaintEvent *)
               }
           }
     }
+    ++m_paintEventCount;
 }
 
 void EventReportWidget::tabletEvent(QTabletEvent *event)
@@ -154,11 +166,13 @@ void EventReportWidget::tabletEvent(QTabletEvent *event)
     switch (event->type()) {
     case QEvent::TabletEnterProximity:
     case QEvent::TabletLeaveProximity:
+        qDebug() << "proximity" << event;
         break;
     case QEvent::TabletMove:
         m_points.push_back(TabletPoint(event->pos(), TabletMove, m_lastButton, event->pointerType(), event->pressure(), event->rotation()));
         update();
         isMove = true;
+        ++m_tabletMoveCount;
         break;
     case QEvent::TabletPress:
         m_points.push_back(TabletPoint(event->pos(), TabletButtonPress, event->button(), event->pointerType(), event->rotation()));
@@ -194,6 +208,13 @@ void EventReportWidget::outputMouseEvent(QMouseEvent *event)
     qDebug() << event;
 }
 
+void EventReportWidget::timerEvent(QTimerEvent *)
+{
+    emit stats(QString("%1 moves/sec, %2 frames/sec").arg(m_tabletMoveCount).arg(m_paintEventCount));
+    m_tabletMoveCount = 0;
+    m_paintEventCount = 0;
+}
+
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
@@ -203,6 +224,7 @@ int main(int argc, char *argv[])
     widget->setMinimumSize(640, 480);
     QMenu *fileMenu = mainWindow.menuBar()->addMenu("File");
     QObject::connect(fileMenu->addAction("Clear"), SIGNAL(triggered()), widget, SLOT(clearPoints()));
+    QObject::connect(widget, SIGNAL(stats(QString)), mainWindow.statusBar(), SLOT(showMessage(QString)));
     QAction *quitAction = fileMenu->addAction("Quit");
     QObject::connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
     quitAction->setShortcut(Qt::CTRL + Qt::Key_Q);

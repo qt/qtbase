@@ -79,31 +79,31 @@ void ClassWizard::accept()
 
     if (field("comment").toBool()) {
         block += "/*\n";
-        block += "    " + header.toLatin1() + "\n";
+        block += "    " + header.toLatin1() + '\n';
         block += "*/\n";
-        block += "\n";
+        block += '\n';
     }
     if (field("protect").toBool()) {
-        block += "#ifndef " + macroName + "\n";
-        block += "#define " + macroName + "\n";
-        block += "\n";
+        block += "#ifndef " + macroName + '\n';
+        block += "#define " + macroName + '\n';
+        block += '\n';
     }
     if (field("includeBase").toBool()) {
-        block += "#include " + baseInclude + "\n";
-        block += "\n";
+        block += "#include " + baseInclude + '\n';
+        block += '\n';
     }
 
     block += "class " + className;
     if (!baseClass.isEmpty())
         block += " : public " + baseClass;
-    block += "\n";
+    block += '\n';
     block += "{\n";
 
     /* qmake ignore Q_OBJECT */
 
     if (field("qobjectMacro").toBool()) {
         block += "    Q_OBJECT\n";
-        block += "\n";
+        block += '\n';
     }
     block += "public:\n";
 
@@ -115,7 +115,7 @@ void ClassWizard::accept()
         block += "    " + className + "();\n";
         if (field("copyCtor").toBool()) {
             block += "    " + className + "(const " + className + " &other);\n";
-            block += "\n";
+            block += '\n';
             block += "    " + className + " &operator=" + "(const " + className
                      + " &other);\n";
         }
@@ -123,11 +123,11 @@ void ClassWizard::accept()
     block += "};\n";
 
     if (field("protect").toBool()) {
-        block += "\n";
+        block += '\n';
         block += "#endif\n";
     }
 
-    QFile headerFile(outputDir + "/" + header);
+    QFile headerFile(outputDir + '/' + header);
     if (!headerFile.open(QFile::WriteOnly | QFile::Text)) {
         QMessageBox::warning(0, QObject::tr("Simple Wizard"),
                              QObject::tr("Cannot write file %1:\n%2")
@@ -141,12 +141,12 @@ void ClassWizard::accept()
 
     if (field("comment").toBool()) {
         block += "/*\n";
-        block += "    " + implementation.toLatin1() + "\n";
+        block += "    " + implementation.toLatin1() + '\n';
         block += "*/\n";
-        block += "\n";
+        block += '\n';
     }
     block += "#include \"" + header.toLatin1() + "\"\n";
-    block += "\n";
+    block += '\n';
 
     if (field("qobjectCtor").toBool()) {
         block += className + "::" + className + "(QObject *parent)\n";
@@ -171,7 +171,7 @@ void ClassWizard::accept()
             block += "{\n";
             block += "    *this = other;\n";
             block += "}\n";
-            block += "\n";
+            block += '\n';
             block += className + " &" + className + "::operator=(const "
                      + className + " &other)\n";
             block += "{\n";
@@ -183,7 +183,7 @@ void ClassWizard::accept()
         }
     }
 
-    QFile implementationFile(outputDir + "/" + implementation);
+    QFile implementationFile(outputDir + '/' + implementation);
     if (!implementationFile.open(QFile::WriteOnly | QFile::Text)) {
         QMessageBox::warning(0, QObject::tr("Simple Wizard"),
                              QObject::tr("Cannot write file %1:\n%2")
@@ -356,9 +356,9 @@ void CodeStylePage::initializePage()
     if (baseClass.isEmpty()) {
         baseIncludeLineEdit->clear();
     } else if (QRegExp("Q[A-Z].*").exactMatch(baseClass)) {
-        baseIncludeLineEdit->setText("<" + baseClass + ">");
+        baseIncludeLineEdit->setText('<' + baseClass + '>');
     } else {
-        baseIncludeLineEdit->setText("\"" + baseClass.toLower() + ".h\"");
+        baseIncludeLineEdit->setText('"' + baseClass.toLower() + ".h\"");
     }
 }
 //! [16]

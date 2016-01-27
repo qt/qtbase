@@ -6,10 +6,11 @@ HEADERS += \
     arch/qatomic_armv7.h \
     arch/qatomic_bootstrap.h \
     arch/qatomic_ia64.h \
-    arch/qatomic_mips.h \
     arch/qatomic_x86.h \
     arch/qatomic_gcc.h \
     arch/qatomic_cxx11.h
+
+atomic64-libatomic: LIBS += -latomic
 
 unix {
     # fallback implementation when no other appropriate qatomic_*.h exists

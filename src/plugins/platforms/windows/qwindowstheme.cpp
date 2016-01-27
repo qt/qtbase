@@ -393,6 +393,8 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
         return QVariant(booleanSystemParametersInfo(SPI_GETSNAPTODEFBUTTON, false));
     case ContextMenuOnMouseRelease:
         return QVariant(true);
+    case WheelScrollLines:
+        return dWordSystemParametersInfo(SPI_GETWHEELSCROLLLINES, 3);
     default:
         break;
     }

@@ -891,7 +891,6 @@ bool QAbstractFileEngine::unmap(uchar *address)
 /*!
     \typedef QAbstractFileEngine::Iterator
     \since 4.3
-    \relates QAbstractFileEngine
 
     Synonym for QAbstractFileEngineIterator.
 */

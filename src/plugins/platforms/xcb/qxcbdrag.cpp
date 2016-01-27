@@ -39,6 +39,7 @@
 #include "qxcbwindow.h"
 #include "qxcbscreen.h"
 #include "qwindow.h"
+#include "qxcbcursor.h"
 #include <private/qdnd_p.h>
 #include <qdebug.h>
 #include <qevent.h>
@@ -160,7 +161,7 @@ void QXcbDrag::init()
     source_time = XCB_CURRENT_TIME;
     target_time = XCB_CURRENT_TIME;
 
-    current_screen = 0;
+    QXcbCursor::queryPointer(connection(), &current_virtual_desktop, 0);
     drag_types.clear();
 }
 
@@ -190,6 +191,8 @@ void QXcbDrag::startDrag()
         xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, connection()->clipboard()->owner(),
                             atom(QXcbAtom::XdndTypelist),
                             XCB_ATOM_ATOM, 32, drag_types.size(), (const void *)drag_types.constData());
+
+    setUseCompositing(current_virtual_desktop->compositingActive());
     QBasicDrag::startDrag();
 }
 
@@ -308,38 +311,21 @@ void QXcbDrag::move(const QPoint &globalPos)
     if (source_sameanswer.contains(globalPos) && source_sameanswer.isValid())
         return;
 
-    const QList<QXcbScreen *> &screens = connection()->screens();
-    QXcbScreen *screen = connection()->primaryScreen();
-    for (int i = 0; i < screens.size(); ++i) {
-        if (screens.at(i)->geometry().contains(globalPos)) {
-            screen = screens.at(i);
-            break;
-        }
+    QXcbVirtualDesktop *virtualDesktop = Q_NULLPTR;
+    QPoint cursorPos;
+    QXcbCursor::queryPointer(connection(), &virtualDesktop, &cursorPos);
+    QXcbScreen *screen = virtualDesktop->screenAt(cursorPos);
+    QPoint deviceIndependentPos = QHighDpiScaling::mapPositionFromNative(globalPos, screen);
+
+    if (virtualDesktop != current_virtual_desktop) {
+        setUseCompositing(virtualDesktop->compositingActive());
+        recreateShapedPixmapWindow(static_cast<QPlatformScreen*>(screen)->screen(), deviceIndependentPos);
+        current_virtual_desktop = virtualDesktop;
+    } else {
+        QBasicDrag::moveShapedPixmapWindow(deviceIndependentPos);
     }
 
-    QBasicDrag::moveShapedPixmapWindow(QHighDpiScaling::mapPositionFromNative(globalPos, screen));
-
-    if (screen != current_screen) {
-        // ### need to recreate the shaped pixmap window?
-//    int screen = QCursor::x11Screen();
-//    if ((qt_xdnd_current_screen == -1 && screen != X11->defaultScreen) || (screen != qt_xdnd_current_screen)) {
-//        // recreate the pixmap on the new screen...
-//        delete xdnd_data.deco;
-//        QWidget* parent = object->source()->window()->x11Info().screen() == screen
-//            ? object->source()->window() : QApplication::desktop()->screen(screen);
-//        xdnd_data.deco = new QShapedPixmapWidget(parent);
-//        if (!QWidget::mouseGrabber()) {
-//            updatePixmap();
-//            xdnd_data.deco->grabMouse();
-//        }
-//    }
-//    xdnd_data.deco->move(QCursor::pos() - xdnd_data.deco->pm_hot);
-        current_screen = screen;
-    }
-
-
-//    qt_xdnd_current_screen = screen;
-    xcb_window_t rootwin = current_screen->root();
+    xcb_window_t rootwin = current_virtual_desktop->root();
     xcb_translate_coordinates_reply_t *translate =
             ::translateCoordinates(connection(), rootwin, rootwin, globalPos.x(), globalPos.y());
     if (!translate)
@@ -444,7 +430,7 @@ void QXcbDrag::move(const QPoint &globalPos)
 
             DEBUG() << "sending Xdnd enter source=" << enter.data.data32[0];
             if (w)
-                handleEnter(w, &enter);
+                handleEnter(w, &enter, current_proxy_target);
             else if (target)
                 xcb_send_event(xcb_connection(), false, proxy_target, XCB_EVENT_MASK_NO_EVENT, (const char *)&enter);
             waiting_for_status = false;
@@ -665,7 +651,7 @@ static bool checkEmbedded(QWidget* w, const XEvent* xe)
 #endif
 
 
-void QXcbDrag::handleEnter(QPlatformWindow *window, const xcb_client_message_event_t *event)
+void QXcbDrag::handleEnter(QPlatformWindow *window, const xcb_client_message_event_t *event, xcb_window_t proxy)
 {
     Q_UNUSED(window);
     DEBUG() << "handleEnter" << window;
@@ -677,6 +663,9 @@ void QXcbDrag::handleEnter(QPlatformWindow *window, const xcb_client_message_eve
         return;
 
     xdnd_dragsource = event->data.data32[0];
+    if (!proxy)
+        proxy = xdndProxy(connection(), xdnd_dragsource);
+    current_proxy_target = proxy ? proxy : xdnd_dragsource;
 
     if (event->data.data32[1] & 1) {
         // get the types from XdndTypeList
@@ -775,7 +764,7 @@ void QXcbDrag::handle_xdnd_position(QPlatformWindow *w, const xcb_client_message
     if (xdnd_dragsource == connection()->clipboard()->owner())
         handle_xdnd_status(&response);
     else
-        Q_XCB_CALL(xcb_send_event(xcb_connection(), false, xdnd_dragsource,
+        Q_XCB_CALL(xcb_send_event(xcb_connection(), false, current_proxy_target,
                                   XCB_EVENT_MASK_NO_EVENT, (const char *)&response));
 }
 
@@ -967,7 +956,7 @@ void QXcbDrag::handleDrop(QPlatformWindow *, const xcb_client_message_event_t *e
     finished.data.data32[0] = currentWindow ? xcb_window(currentWindow.data()) : XCB_NONE;
     finished.data.data32[1] = response.isAccepted(); // flags
     finished.data.data32[2] = toXdndAction(response.acceptedAction());
-    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, xdnd_dragsource,
+    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, current_proxy_target,
                               XCB_EVENT_MASK_NO_EVENT, (char *)&finished));
 
     xdnd_dragsource = 0;
@@ -1132,7 +1121,11 @@ void QXcbDrag::handleSelectionRequest(const xcb_selection_request_event_t *event
         }
     }
 
-    xcb_send_event(xcb_connection(), false, event->requestor, XCB_EVENT_MASK_NO_EVENT, (const char *)&notify);
+    xcb_window_t proxy_target = xdndProxy(connection(), event->requestor);
+    if (!proxy_target)
+        proxy_target = event->requestor;
+
+    xcb_send_event(xcb_connection(), false, proxy_target, XCB_EVENT_MASK_NO_EVENT, (const char *)&notify);
 }
 
 

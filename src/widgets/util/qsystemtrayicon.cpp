@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
        \l{http://standards.freedesktop.org/systemtray-spec/systemtray-spec-0.2.html freedesktop.org}
        XEmbed system tray specification.
     \li All X11 desktop environments that implement the D-Bus
-       \l{http://www.freedesktop.org/wiki/Specifications/StatusNotifierItem/ StatusNotifierItem}
+       \l{http://www.freedesktop.org/wiki/Specifications/StatusNotifierItem/StatusNotifierItem}
        specification, including recent versions of KDE and Unity.
     \li All supported versions of OS X. Note that the Growl
        notification system must be installed for
@@ -284,12 +284,6 @@ bool QSystemTrayIcon::isVisible() const
 */
 bool QSystemTrayIcon::event(QEvent *e)
 {
-#if defined(Q_DEAD_CODE_FROM_QT4_X11)
-    if (e->type() == QEvent::ToolTip) {
-        Q_D(QSystemTrayIcon);
-        return d->sys->deliverToolTipEvent(e);
-    }
-#endif
     return QObject::event(e);
 }
 

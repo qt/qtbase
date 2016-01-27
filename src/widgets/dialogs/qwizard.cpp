@@ -1347,7 +1347,6 @@ void QWizardPrivate::updateMinMaxSizes(const QWizardLayoutInfo &info)
     }
     if (info.watermark && !info.sideWidget) {
         minimumSize.setHeight(mainLayout->totalSizeHint().height());
-        maximumSize.setHeight(mainLayout->totalSizeHint().height());
     }
     if (q->minimumWidth() == minimumWidth) {
         minimumWidth = minimumSize.width();
@@ -3663,7 +3662,7 @@ bool QWizardPage::validatePage()
     from the rest of your implementation, whenever the value of isComplete()
     changes. This ensures that QWizard updates the enabled or disabled state of
     its buttons. An example of the reimplementation is
-    available \l{http://doc.qt.digia.com/qq/qq22-qwizard.html#validatebeforeitstoolate}
+    available \l{http://doc.qt.io/archives/qq/qq22-qwizard.html#validatebeforeitstoolate}
     {here}.
 
     \sa completeChanged(), isFinalPage()

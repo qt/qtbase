@@ -126,7 +126,7 @@ void tst_QFileSystemWatcher::basicTest()
 
     // create test file
     QTemporaryDir temporaryDirectory(m_tempDirPattern);
-    QVERIFY(temporaryDirectory.isValid());
+    QVERIFY2(temporaryDirectory.isValid(), qPrintable(temporaryDirectory.errorString()));
     QFile testFile(temporaryDirectory.path() + QLatin1Char('/') + testFileName);
     QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Truncate));
     testFile.write(QByteArray("hello"));
@@ -263,7 +263,7 @@ void tst_QFileSystemWatcher::watchDirectory()
     QFETCH(QString, backend);
 
     QTemporaryDir temporaryDirectory(m_tempDirPattern);
-    QVERIFY(temporaryDirectory.isValid());
+    QVERIFY2(temporaryDirectory.isValid(), qPrintable(temporaryDirectory.errorString()));
 
     QDir temporaryDir(temporaryDirectory.path());
     const QString testDirName = QStringLiteral("testDir");
@@ -498,7 +498,7 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     QFETCH(QString, backend);
 
     QTemporaryDir temporaryDirectory(m_tempDirPattern);
-    QVERIFY(temporaryDirectory.isValid());
+    QVERIFY2(temporaryDirectory.isValid(), qPrintable(temporaryDirectory.errorString()));
 
     QDir temporaryDir(temporaryDirectory.path());
     const QString testDirName = QStringLiteral("testDir");
@@ -605,7 +605,7 @@ void tst_QFileSystemWatcher::nonExistingFile()
 void tst_QFileSystemWatcher::removeFileAndUnWatch()
 {
     QTemporaryDir temporaryDirectory(m_tempDirPattern);
-    QVERIFY(temporaryDirectory.isValid());
+    QVERIFY2(temporaryDirectory.isValid(), qPrintable(temporaryDirectory.errorString()));
 
     const QString filename = temporaryDirectory.path() + QStringLiteral("/foo.txt");
 
@@ -664,7 +664,7 @@ void tst_QFileSystemWatcher::QTBUG2331()
     QFETCH(QString, backend);
 
     QTemporaryDir temporaryDirectory(m_tempDirPattern);
-    QVERIFY(temporaryDirectory.isValid());
+    QVERIFY2(temporaryDirectory.isValid(), qPrintable(temporaryDirectory.errorString()));
     QFileSystemWatcher watcher;
     watcher.setObjectName(QLatin1String("_qt_autotest_force_engine_") + backend);
     QVERIFY(watcher.addPath(temporaryDirectory.path()));
@@ -724,7 +724,8 @@ void tst_QFileSystemWatcher::signalsEmittedAfterFileMoved()
 {
     const int fileCount = 10;
     QTemporaryDir temporaryDirectory(m_tempDirPattern);
-    QVERIFY(temporaryDirectory.isValid());
+    QVERIFY2(temporaryDirectory.isValid(), qPrintable(temporaryDirectory.errorString()));
+
     QDir testDir(temporaryDirectory.path());
     QVERIFY(testDir.mkdir("movehere"));
     QString movePath = testDir.filePath("movehere");

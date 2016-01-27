@@ -36,6 +36,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QTemporaryDir>
+#include <QtCore/QStringList>
 
 class tst_QMimeDatabase : public QObject
 {
@@ -46,6 +47,8 @@ public:
 
 private slots:
     void initTestCase();
+    void init();
+    void cleanupTestCase();
 
     void mimeTypeForName();
     void mimeTypeForFileName_data();
@@ -86,14 +89,15 @@ private slots:
     void installNewLocalMimeType();
 
 private:
-    void init(); // test-specific
+    void initTestCaseInternal(); // test-specific
 
     QString m_globalXdgDir;
-    QString m_localXdgDir;
-    QString m_yastMimeTypes;
-    QString m_qmlAgainFileName;
+    QString m_localMimeDir;
+    QStringList m_additionalMimeFileNames;
+    QStringList m_additionalMimeFilePaths;
     QTemporaryDir m_temporaryDir;
     QString m_testSuite;
+    bool m_isUsingCacheProvider;
 };
 
 #endif   // TST_QMIMEDATABASE_H

@@ -1719,7 +1719,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     Returns a pointer to the current item's key.
 */
 
-/*! \fn bool QMap::key_iterator::operator==(key_iterator other)
+/*! \fn bool QMap::key_iterator::operator==(key_iterator other) const
 
     Returns \c true if \a other points to the same item as this
     iterator; otherwise returns \c false.
@@ -1727,7 +1727,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa operator!=()
 */
 
-/*! \fn bool QMap::key_iterator::operator!=(key_iterator other)
+/*! \fn bool QMap::key_iterator::operator!=(key_iterator other) const
 
     Returns \c true if \a other points to a different item than this
     iterator; otherwise returns \c false.

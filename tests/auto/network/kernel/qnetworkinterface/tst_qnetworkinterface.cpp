@@ -55,9 +55,11 @@ private slots:
     void initTestCase();
     void cleanupTestCase();
     void dump();
+    void consistencyCheck();
     void loopbackIPv4();
     void loopbackIPv6();
     void localAddress();
+    void interfaceFromXXX_data();
     void interfaceFromXXX();
     void copyInvalidInterface();
 
@@ -147,6 +149,24 @@ void tst_QNetworkInterface::dump()
     }
 }
 
+void tst_QNetworkInterface::consistencyCheck()
+{
+    QList<QNetworkInterface> ifaces = QNetworkInterface::allInterfaces();
+    QSet<QString> interfaceNames;
+    QVector<int> interfaceIndexes;
+
+    foreach (const QNetworkInterface &iface, ifaces) {
+        QVERIFY2(!interfaceNames.contains(iface.name()),
+                 "duplicate name = " + iface.name().toLocal8Bit());
+        interfaceNames << iface.name();
+
+        QVERIFY2(!interfaceIndexes.contains(iface.index()),
+                 "duplicate index = " + QByteArray::number(iface.index()));
+        if (iface.index())
+            interfaceIndexes << iface.index();
+    }
+}
+
 void tst_QNetworkInterface::loopbackIPv4()
 {
     QList<QHostAddress> all = QNetworkInterface::allAddresses();
@@ -188,35 +208,42 @@ void tst_QNetworkInterface::localAddress()
     QVERIFY(all.contains(local));
 }
 
+void tst_QNetworkInterface::interfaceFromXXX_data()
+{
+    QTest::addColumn<QNetworkInterface>("iface");
+
+    QList<QNetworkInterface> allInterfaces = QNetworkInterface::allInterfaces();
+    foreach (QNetworkInterface iface, allInterfaces)
+        QTest::newRow(iface.name().toLocal8Bit()) << iface;
+}
+
 void tst_QNetworkInterface::interfaceFromXXX()
 {
-    QList<QNetworkInterface> allInterfaces = QNetworkInterface::allInterfaces();
+    QFETCH(QNetworkInterface, iface);
 
-    foreach (QNetworkInterface iface, allInterfaces) {
-        QVERIFY(QNetworkInterface::interfaceFromName(iface.name()).isValid());
-        foreach (QNetworkAddressEntry entry, iface.addressEntries()) {
-            QVERIFY(!entry.ip().isNull());
+    QVERIFY(QNetworkInterface::interfaceFromName(iface.name()).isValid());
+    foreach (QNetworkAddressEntry entry, iface.addressEntries()) {
+        QVERIFY(!entry.ip().isNull());
 
-            if (!entry.netmask().isNull()) {
-                QCOMPARE(entry.netmask().protocol(), entry.ip().protocol());
+        if (!entry.netmask().isNull()) {
+            QCOMPARE(entry.netmask().protocol(), entry.ip().protocol());
 
-                // if the netmask is known, the broadcast is known
-                // but only for IPv4 (there is no such thing as broadcast in IPv6)
-                if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
-                    QVERIFY(!entry.broadcast().isNull());
+            // if the netmask is known, the broadcast is known
+            // but only for IPv4 (there is no such thing as broadcast in IPv6)
+            if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
+                QVERIFY(!entry.broadcast().isNull());
 
-                    // verify that the broadcast address is correct
-                    quint32 ip = entry.ip().toIPv4Address();
-                    quint32 mask = entry.netmask().toIPv4Address();
-                    quint32 bcast = entry.broadcast().toIPv4Address();
+                // verify that the broadcast address is correct
+                quint32 ip = entry.ip().toIPv4Address();
+                quint32 mask = entry.netmask().toIPv4Address();
+                quint32 bcast = entry.broadcast().toIPv4Address();
 
-                    QCOMPARE(bcast, ip | ~mask);
-                }
+                QCOMPARE(bcast, ip | ~mask);
             }
-
-            if (!entry.broadcast().isNull())
-                QCOMPARE(entry.broadcast().protocol(), entry.ip().protocol());
         }
+
+        if (!entry.broadcast().isNull())
+            QCOMPARE(entry.broadcast().protocol(), entry.ip().protocol());
     }
 }
 

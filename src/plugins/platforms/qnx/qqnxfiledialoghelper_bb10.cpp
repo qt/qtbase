@@ -69,7 +69,7 @@ QQnxFileDialogHelper::~QQnxFileDialogHelper()
 
 void QQnxFileDialogHelper::exec()
 {
-    qFileDialogHelperDebug() << Q_FUNC_INFO;
+    qFileDialogHelperDebug();
 
     // Clear any previous results
     m_dialog->setDirectories(QStringList());
@@ -85,7 +85,7 @@ bool QQnxFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modali
     Q_UNUSED(parent);
     Q_UNUSED(modality);
 
-    qFileDialogHelperDebug() << Q_FUNC_INFO;
+    qFileDialogHelperDebug();
 
     // Create dialog
     const QSharedPointer<QFileDialogOptions> &opts = options();
@@ -125,13 +125,13 @@ bool QQnxFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modali
 
 void QQnxFileDialogHelper::hide()
 {
-    qFileDialogHelperDebug() << Q_FUNC_INFO;
+    qFileDialogHelperDebug();
     m_dialog->close();
 }
 
 bool QQnxFileDialogHelper::defaultNameFilterDisables() const
 {
-    qFileDialogHelperDebug() << Q_FUNC_INFO;
+    qFileDialogHelperDebug();
     return false;
 }
 
@@ -142,7 +142,7 @@ void QQnxFileDialogHelper::setDirectory(const QUrl &directory)
 
 QUrl QQnxFileDialogHelper::directory() const
 {
-    qFileDialogHelperDebug() << Q_FUNC_INFO;
+    qFileDialogHelperDebug();
     if (!m_dialog->directories().isEmpty())
         return QUrl::fromLocalFile(m_dialog->directories().first());
 
@@ -156,7 +156,7 @@ void QQnxFileDialogHelper::selectFile(const QUrl &fileName)
 
 QList<QUrl> QQnxFileDialogHelper::selectedFiles() const
 {
-    qFileDialogHelperDebug() << Q_FUNC_INFO;
+    qFileDialogHelperDebug();
     QList<QUrl> urls;
     QStringList files = m_dialog->selectedFiles();
     Q_FOREACH (const QString &file, files)
@@ -167,12 +167,12 @@ QList<QUrl> QQnxFileDialogHelper::selectedFiles() const
 void QQnxFileDialogHelper::setFilter()
 {
     // No native api to support setting a filter from QDir::Filters
-    qFileDialogHelperDebug() << Q_FUNC_INFO;
+    qFileDialogHelperDebug();
 }
 
 void QQnxFileDialogHelper::selectNameFilter(const QString &filter)
 {
-    qFileDialogHelperDebug() << Q_FUNC_INFO << "filter =" << filter;
+    qFileDialogHelperDebug() << "filter =" << filter;
     setNameFilter(filter);
 }
 
@@ -180,7 +180,7 @@ QString QQnxFileDialogHelper::selectedNameFilter() const
 {
     // For now there is no way for the user to change the selected filter
     // so this just reflects what the developer has set programmatically.
-    qFileDialogHelperDebug() << Q_FUNC_INFO;
+    qFileDialogHelperDebug();
     return m_selectedFilter;
 }
 
@@ -194,14 +194,14 @@ void QQnxFileDialogHelper::emitSignals()
 
 void QQnxFileDialogHelper::setNameFilter(const QString &filter)
 {
-    qFileDialogHelperDebug() << Q_FUNC_INFO << "filter =" << filter;
+    qFileDialogHelperDebug() << "filter =" << filter;
 
     setNameFilters(QPlatformFileDialogHelper::cleanFilterList(filter));
 }
 
 void QQnxFileDialogHelper::setNameFilters(const QStringList &filters)
 {
-    qFileDialogHelperDebug() << Q_FUNC_INFO << "filters =" << filters;
+    qFileDialogHelperDebug() << "filters =" << filters;
 
     Q_ASSERT(!filters.isEmpty());
 

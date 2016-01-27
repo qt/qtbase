@@ -61,10 +61,10 @@ QStringList findFiles(const QString &startDir, QStringList filters)
     QDir dir(startDir);
 
     foreach (QString file, dir.entryList(filters, QDir::Files))
-        names += startDir + "/" + file;
+        names += startDir + '/' + file;
 
     foreach (QString subdir, dir.entryList(QDir::AllDirs | QDir::NoDotAndDotDot))
-        names += findFiles(startDir + "/" + subdir, filters);
+        names += findFiles(startDir + '/' + subdir, filters);
     return names;
 }
 
@@ -81,7 +81,7 @@ WordCount singleThreadedWordCount(QStringList files)
         f.open(QIODevice::ReadOnly);
         QTextStream textStream(&f);
         while (textStream.atEnd() == false)
-            foreach(QString word, textStream.readLine().split(" "))
+            foreach (const QString &word, textStream.readLine().split(' '))
                 wordCount[word] += 1;
 
     }
@@ -100,7 +100,7 @@ WordCount countWords(const QString &file)
     WordCount wordCount;
 
     while (textStream.atEnd() == false)
-        foreach (QString word, textStream.readLine().split(" "))
+        foreach (const QString &word, textStream.readLine().split(' '))
             wordCount[word] += 1;
 
     return wordCount;

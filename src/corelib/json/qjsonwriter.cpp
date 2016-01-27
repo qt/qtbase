@@ -137,13 +137,13 @@ static void valueToJson(const QJsonPrivate::Base *b, const QJsonPrivate::Value &
         json += compact ? "[" : "[\n";
         arrayContentToJson(static_cast<QJsonPrivate::Array *>(v.base(b)), json, indent + (compact ? 0 : 1), compact);
         json += QByteArray(4*indent, ' ');
-        json += "]";
+        json += ']';
         break;
     case QJsonValue::Object:
         json += compact ? "{" : "{\n";
         objectContentToJson(static_cast<QJsonPrivate::Object *>(v.base(b)), json, indent + (compact ? 0 : 1), compact);
         json += QByteArray(4*indent, ' ');
-        json += "}";
+        json += '}';
         break;
     case QJsonValue::Null:
     default:

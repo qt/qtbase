@@ -336,8 +336,10 @@ QXcbCursor::~QXcbCursor()
     if (!--cursorCount)
         xcb_close_font(conn, cursorFont);
 
+#ifndef QT_NO_CURSOR
     foreach (xcb_cursor_t cursor, m_cursorHash)
         xcb_free_cursor(conn, cursor);
+#endif
 }
 
 #ifndef QT_NO_CURSOR
@@ -605,30 +607,33 @@ xcb_cursor_t QXcbCursor::createBitmapCursor(QCursor *cursor)
 }
 #endif
 
-void QXcbCursor::queryPointer(QXcbConnection *c, xcb_window_t *rootWin, QPoint *pos, int *keybMask)
+void QXcbCursor::queryPointer(QXcbConnection *c, QXcbVirtualDesktop **virtualDesktop, QPoint *pos, int *keybMask)
 {
     if (pos)
         *pos = QPoint();
-    xcb_screen_iterator_t it = xcb_setup_roots_iterator(c->setup());
-    while (it.rem) {
-        xcb_window_t root = it.data->root;
-        xcb_query_pointer_cookie_t cookie = xcb_query_pointer(c->xcb_connection(), root);
-        xcb_generic_error_t *err = 0;
-        xcb_query_pointer_reply_t *reply = xcb_query_pointer_reply(c->xcb_connection(), cookie, &err);
-        if (!err && reply) {
-            if (pos)
-                *pos = QPoint(reply->root_x, reply->root_y);
-            if (rootWin)
-                *rootWin = root;
-            if (keybMask)
-                *keybMask = reply->mask;
-            free(reply);
-            return;
+
+    xcb_window_t root = c->primaryVirtualDesktop()->root();
+    xcb_query_pointer_cookie_t cookie = xcb_query_pointer(c->xcb_connection(), root);
+    xcb_generic_error_t *err = 0;
+    xcb_query_pointer_reply_t *reply = xcb_query_pointer_reply(c->xcb_connection(), cookie, &err);
+    if (!err && reply) {
+        if (virtualDesktop) {
+            foreach (QXcbVirtualDesktop *vd, c->virtualDesktops()) {
+                if (vd->root() == reply->root) {
+                    *virtualDesktop = vd;
+                    break;
+                }
+            }
         }
-        free(err);
+        if (pos)
+            *pos = QPoint(reply->root_x, reply->root_y);
+        if (keybMask)
+            *keybMask = reply->mask;
         free(reply);
-        xcb_screen_next(&it);
+        return;
     }
+    free(err);
+    free(reply);
 }
 
 QPoint QXcbCursor::pos() const
@@ -640,9 +645,9 @@ QPoint QXcbCursor::pos() const
 
 void QXcbCursor::setPos(const QPoint &pos)
 {
-    xcb_window_t root = 0;
-    queryPointer(connection(), &root, 0);
-    xcb_warp_pointer(xcb_connection(), XCB_NONE, root, 0, 0, 0, 0, pos.x(), pos.y());
+    QXcbVirtualDesktop *virtualDesktop = Q_NULLPTR;
+    queryPointer(connection(), &virtualDesktop, 0);
+    xcb_warp_pointer(xcb_connection(), XCB_NONE, virtualDesktop->root(), 0, 0, 0, 0, pos.x(), pos.y());
     xcb_flush(xcb_connection());
 }
 

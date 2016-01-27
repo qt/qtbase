@@ -149,7 +149,7 @@ public:
     qint64 bytesAvailable() const Q_DECL_OVERRIDE;
     qint64 bytesToWrite() const Q_DECL_OVERRIDE;
 
-    bool canReadLine() const Q_DECL_OVERRIDE;
+    bool canReadLine() const Q_DECL_OVERRIDE; // ### Qt6: remove me
 
     quint16 localPort() const;
     QHostAddress localAddress() const;

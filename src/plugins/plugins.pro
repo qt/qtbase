@@ -2,7 +2,7 @@ TEMPLATE = subdirs
 
 load(qfeatures)
 SUBDIRS *= sqldrivers
-!nacl:!winrt:qtHaveModule(network):!contains(QT_DISABLED_FEATURES, bearermanagement): SUBDIRS += bearer
+!nacl:qtHaveModule(network):!contains(QT_DISABLED_FEATURES, bearermanagement): SUBDIRS += bearer
 qtHaveModule(gui) {
     SUBDIRS *= platforms platforminputcontexts platformthemes
     !contains(QT_DISABLED_FEATURES, imageformatplugin): SUBDIRS *= imageformats

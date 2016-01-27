@@ -845,7 +845,7 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
             QHashIterator<QString, QOfonoDataConnectionManagerInterface*> i(ofonoContextManagers);
             while (i.hasNext()) {
                 i.next();
-                const QString path = i.key() +"/"+contextPart;
+                const QString path = i.key() + QLatin1Char('/') +contextPart;
                 if (isActiveContext(path)) {
                     cpPriv->state |= QNetworkConfiguration::Active;
                     break;
@@ -1024,7 +1024,7 @@ QNetworkConfiguration::BearerType QNetworkManagerEngine::currentBearerType(const
     QHashIterator<QString, QOfonoDataConnectionManagerInterface*> i(ofonoContextManagers);
     while (i.hasNext()) {
         i.next();
-        QString contextPath = i.key() +"/"+contextPart;
+        QString contextPath = i.key() + QLatin1Char('/') +contextPart;
 
         if (i.value()->contexts().contains(contextPath)) {
 

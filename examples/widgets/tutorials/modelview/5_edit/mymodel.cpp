@@ -83,7 +83,7 @@ bool MyModel::setData(const QModelIndex & index, const QVariant & value, int rol
         {
             for(int col= 0; col < COLS; col++)
             {
-                result += m_gridData[row][col] + " ";
+                result += m_gridData[row][col] + ' ';
             }
         }
         emit editCompleted( result );

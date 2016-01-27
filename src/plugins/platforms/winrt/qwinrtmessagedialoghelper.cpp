@@ -37,8 +37,11 @@
 #include "qwinrtmessagedialoghelper.h"
 #include "qwinrttheme.h"
 
+#include <QtGui/QTextDocument>
 #include <QtCore/qfunctions_winrt.h>
+#include <private/qeventdispatcher_winrt_p.h>
 
+#include <functional>
 #include <windows.ui.popups.h>
 #include <windows.foundation.h>
 #include <windows.foundation.collections.h>
@@ -108,6 +111,10 @@ bool QWinRTMessageDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModa
     const QString informativeText = options->informativeText();
     const QString title = options->windowTitle();
     const QString text = informativeText.isEmpty() ? options->text() : (options->text() + QLatin1Char('\n') + informativeText);
+    if (Qt::mightBeRichText(text)) {
+        qWarning("Rich text detected, defaulting to QtWidgets-based dialog.");
+        return false;
+    }
 
     HRESULT hr;
     ComPtr<IMessageDialogFactory> dialogFactory;
@@ -131,53 +138,58 @@ bool QWinRTMessageDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModa
         RETURN_FALSE_IF_FAILED("Failed to create dialog");
     }
 
-    // Add Buttons
-    ComPtr<IVector<IUICommand *>> dialogCommands;
-    hr = dialog->get_Commands(&dialogCommands);
-    RETURN_FALSE_IF_FAILED("Failed to get dialog commands");
+    hr = QEventDispatcherWinRT::runOnXamlThread([this, d, options, commandFactory, dialog]() {
+        HRESULT hr;
 
-    // If no button is specified we need to create one to get close notification
-    int buttons = options->standardButtons();
-    if (buttons == 0)
-        buttons = Ok;
+        // Add Buttons
+        ComPtr<IVector<IUICommand *>> dialogCommands;
+        hr = dialog->get_Commands(&dialogCommands);
+        RETURN_HR_IF_FAILED("Failed to get dialog commands");
 
-    for (int i = FirstButton; i < LastButton; i<<=1) {
-        if (!(buttons & i))
-            continue;
-        // Add native command
-        const QString label = d->theme->standardButtonText(i);
-        HStringReference nativeLabel(reinterpret_cast<LPCWSTR>(label.utf16()), label.size());
-        ComPtr<IUICommand> command;
-        hr = commandFactory->Create(nativeLabel.Get(), &command);
-        RETURN_FALSE_IF_FAILED("Failed to create message box command");
-        ComPtr<IInspectable> id = Make<CommandId>(static_cast<StandardButton>(i));
-        hr = command->put_Id(id.Get());
-        RETURN_FALSE_IF_FAILED("Failed to set command ID");
-        hr = dialogCommands->Append(command.Get());
-        if (hr == E_BOUNDS) {
-            qErrnoWarning(hr, "The WinRT message dialog supports a maximum of three buttons");
-            continue;
+        // If no button is specified we need to create one to get close notification
+        int buttons = options->standardButtons();
+        if (buttons == 0)
+            buttons = Ok;
+
+        for (int i = FirstButton; i < LastButton; i<<=1) {
+            if (!(buttons & i))
+                continue;
+            // Add native command
+            const QString label = d->theme->standardButtonText(i);
+            HStringReference nativeLabel(reinterpret_cast<LPCWSTR>(label.utf16()), label.size());
+            ComPtr<IUICommand> command;
+            hr = commandFactory->Create(nativeLabel.Get(), &command);
+            RETURN_HR_IF_FAILED("Failed to create message box command");
+            ComPtr<IInspectable> id = Make<CommandId>(static_cast<StandardButton>(i));
+            hr = command->put_Id(id.Get());
+            RETURN_HR_IF_FAILED("Failed to set command ID");
+            hr = dialogCommands->Append(command.Get());
+            if (hr == E_BOUNDS) {
+                qErrnoWarning(hr, "The WinRT message dialog supports a maximum of three buttons");
+                continue;
+            }
+            RETURN_HR_IF_FAILED("Failed to append message box command");
+            if (i == Abort || i == Cancel || i == Close) {
+                quint32 size;
+                hr = dialogCommands->get_Size(&size);
+                RETURN_HR_IF_FAILED("Failed to get command list size");
+                hr = dialog->put_CancelCommandIndex(size - 1);
+                RETURN_HR_IF_FAILED("Failed to set cancel index");
+            }
         }
-        RETURN_FALSE_IF_FAILED("Failed to append message box command");
-        if (i == Abort || i == Cancel || i == Close) {
-            quint32 size;
-            hr = dialogCommands->get_Size(&size);
-            RETURN_FALSE_IF_FAILED("Failed to get command list size");
-            hr = dialog->put_CancelCommandIndex(size - 1);
-            RETURN_FALSE_IF_FAILED("Failed to set cancel index");
-        }
-    }
 
-    ComPtr<IAsyncOperation<IUICommand *>> op;
-    hr = dialog->ShowAsync(&op);
-    RETURN_FALSE_IF_FAILED("Failed to show dialog");
-    hr = op->put_Completed(Callback<DialogCompletedHandler>(this, &QWinRTMessageDialogHelper::onCompleted).Get());
-    RETURN_FALSE_IF_FAILED("Failed to set dialog callback");
+        ComPtr<IAsyncOperation<IUICommand *>> op;
+        hr = dialog->ShowAsync(&op);
+        RETURN_HR_IF_FAILED("Failed to show dialog");
+        hr = op->put_Completed(Callback<DialogCompletedHandler>(this, &QWinRTMessageDialogHelper::onCompleted).Get());
+        RETURN_HR_IF_FAILED("Failed to set dialog callback");
+        d->shown = true;
+        hr = op.As(&d->info);
+        RETURN_HR_IF_FAILED("Failed to acquire AsyncInfo for MessageDialog");
+        return hr;
+    });
 
-    d->shown = true;
-    hr = op.As(&d->info);
-    RETURN_FALSE_IF_FAILED("Failed to acquire AsyncInfo for MessageDialog");
-
+    RETURN_FALSE_IF_FAILED("Failed to show dialog")
     return true;
 }
 
@@ -200,8 +212,7 @@ HRESULT QWinRTMessageDialogHelper::onCompleted(IAsyncOperation<IUICommand *> *as
     Q_UNUSED(status);
     Q_D(QWinRTMessageDialogHelper);
 
-    if (d->loop.isRunning())
-       d->loop.exit();
+    QEventLoopLocker locker(&d->loop);
 
     d->shown = false;
 

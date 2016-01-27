@@ -192,6 +192,7 @@ Top navigation
      margin-left: 30px;
  }
 
+.naviSeparator { display: none }
 /*
 -----------
 footer and license
@@ -266,7 +267,7 @@ footer and license
      float: left
  }
 
-  .navigationbar li a {
+  .navigationbar li a, .navigationbar td a {
       display: block;
       text-decoration: none;
       background: url(../images/arrow_bc.png);
@@ -274,6 +275,23 @@ footer and license
       background-position: right;
       padding-right: 17px;
   }
+
+table.buildversion {
+      float: right;
+      margin-top: -18px !important;
+}
+
+.navigationbar table {
+      border-radius: 0;
+      border: 0 none;
+      background-color: #F2F2F2;
+      margin: 0;
+}
+
+.navigationbar table td {
+    padding: 0;
+    border: 0 none;
+}
 
 #buildversion {
     font-style: italic;
@@ -497,13 +515,24 @@ li {
     margin-bottom: 10px;
     padding-left: 8px;
     list-style: outside;
-    list-style-type: square;
     text-align: left;
 }
+
+ ul > li {
+    list-style-type: square;
+ }
 
 ol {
     margin: 10px;
     padding: 0;
+}
+
+ol.A > li {
+    list-style-type: upper-alpha;
+}
+
+ol.a > li{
+    list-style-type: lower-alpha;
 }
 
  ol > li {
@@ -566,6 +595,21 @@ ol {
     margin-left: 15px
 }
 
+.flowList {
+  padding: 25px
+}
+.flowList dd {
+  display: inline-block;
+  margin-left: 10px;
+  width: 255px;
+  line-height: 1.15em;
+  overflow-x: hidden;
+  text-overflow: ellipsis
+}
+.alphaChar {
+  font-size: 2em;
+  position: relative
+}
 /*
 -----------
 Content table

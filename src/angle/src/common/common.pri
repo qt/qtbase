@@ -7,6 +7,8 @@ INCLUDEPATH += \
 
 LIBS_PRIVATE = $$QMAKE_LIBS_CORE $$QMAKE_LIBS_GUI
 
+TR_EXCLUDE += $$ANGLE_DIR/src/*
+
 lib_replace.match = $$[QT_INSTALL_LIBS/get]
 lib_replace.replace = \$\$\$\$[QT_INSTALL_LIBS]
 lib_replace.CONFIG = path
@@ -42,8 +44,14 @@ winrt|if(msvc:!win32-msvc2005:!win32-msvc2008:!win32-msvc2010) {
 
         # Similarly we want the MinGW linker to use the import libraries shipped with the compiler
         # instead of those from the SDK which cause a crash on startup.
-        LIBS_PRIVATE += -L\"$$DXLIB_DIR\"
+        LIBS_PRIVATE += -L$$DXLIB_DIR
     }
+}
+
+# static builds should still link ANGLE dynamically when dynamic GL is enabled
+static:contains(QT_CONFIG, dynamicgl) {
+    CONFIG -= static
+    CONFIG += shared
 }
 
 static: DEFINES *= LIBGLESV2_EXPORT_H_ ANGLE_EXPORT=

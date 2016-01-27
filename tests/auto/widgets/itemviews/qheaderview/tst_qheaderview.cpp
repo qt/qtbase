@@ -239,6 +239,8 @@ private slots:
     void testStreamWithHide();
     void testStylePosition();
 
+    void sizeHintCrash();
+
 protected:
     void setupTestData(bool use_reset_model = false);
     void additionalInit();
@@ -2877,6 +2879,16 @@ void tst_QHeaderView::testStylePosition()
     view->setSectionHidden(0, true);
     header->paintSection(&p, view->rect(), 2);
     QCOMPARE(proxy.lastPosition, QStyleOptionHeader::OnlyOneSection);
+}
+
+void tst_QHeaderView::sizeHintCrash()
+{
+    QTreeView treeView;
+    QStandardItemModel *model = new QStandardItemModel(&treeView);
+    model->appendRow(new QStandardItem("QTBUG-48543"));
+    treeView.setModel(model);
+    treeView.header()->sizeHintForColumn(0);
+    treeView.header()->sizeHintForRow(0);
 }
 
 QTEST_MAIN(tst_QHeaderView)

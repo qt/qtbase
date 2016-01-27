@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -45,6 +46,7 @@
 #include "qcache.h"
 #include "qdebug.h"
 #include "qpalette.h"
+#include "qmath.h"
 
 #include "private/qhexstring_p.h"
 #include "private/qguiapplication_p.h"
@@ -629,6 +631,13 @@ QIcon::QIcon(const QIcon &other)
 }
 
 /*!
+  \fn QIcon::QIcon(QIcon &&other)
+
+  Move-constructs a QIcon instance, making it point to the same object
+  that \a other was pointing to.
+*/
+
+/*!
     Constructs an icon from the file with the given \a fileName. The
     file will be loaded on demand.
 
@@ -1019,19 +1028,13 @@ void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State
     } else {
         detach();
     }
+
     d->engine->addFile(fileName, size, mode, state);
 
-    // Check if a "@2x" file exists and add it.
-    static bool disable2xImageLoading = !qEnvironmentVariableIsEmpty("QT_HIGHDPI_DISABLE_2X_IMAGE_LOADING");
-    if (!disable2xImageLoading && qApp->devicePixelRatio() > 1.0) {
-        QString at2xfileName = fileName;
-        int dotIndex = fileName.lastIndexOf(QLatin1Char('.'));
-        if (dotIndex == -1) /* no dot */
-            dotIndex = fileName.size(); /* append */
-        at2xfileName.insert(dotIndex, QStringLiteral("@2x"));
-        if (QFile::exists(at2xfileName))
-            d->engine->addFile(at2xfileName, size, mode, state);
-    }
+    // Check if a "@Nx" file exists and add it.
+    QString atNxFileName = qt_findAtNxFile(fileName, qApp->devicePixelRatio());
+    if (atNxFileName != fileName)
+        d->engine->addFile(atNxFileName, size, mode, state);
 }
 
 /*!
@@ -1206,6 +1209,12 @@ bool QIcon::hasThemeIcon(const QString &name)
 */
 void QIcon::setIsMask(bool isMask)
 {
+    if (!d) {
+        d = new QIconPrivate;
+        d->engine = new QPixmapIconEngine;
+    } else {
+        detach();
+    }
     d->is_mask = isMask;
 }
 
@@ -1220,6 +1229,8 @@ void QIcon::setIsMask(bool isMask)
 */
 bool QIcon::isMask() const
 {
+    if (!d)
+        return false;
     return d->is_mask;
 }
 
@@ -1367,6 +1378,47 @@ QDebug operator<<(QDebug dbg, const QIcon &i)
     \typedef QIcon::DataPtr
     \internal
 */
+
+/*!
+    \internal
+    \since 5.6
+    Attempts to find a suitable @Nx file for the given \a targetDevicePixelRatio
+    Returns the the \a baseFileName if no such file was found.
+
+    Given base foo.png and a target dpr of 2.5, this function will look for
+    foo@3x.png, then foo@2x, then fall back to foo.png if not found.
+
+    \a sourceDevicePixelRatio will be set to the value of N if the argument is
+    a non-null pointer
+*/
+QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRatio,
+                        qreal *sourceDevicePixelRatio)
+{
+    if (targetDevicePixelRatio <= 1.0)
+        return baseFileName;
+
+    static bool disableNxImageLoading = !qEnvironmentVariableIsEmpty("QT_HIGHDPI_DISABLE_2X_IMAGE_LOADING");
+    if (disableNxImageLoading)
+        return baseFileName;
+
+    int dotIndex = baseFileName.lastIndexOf(QLatin1Char('.'));
+    if (dotIndex == -1) /* no dot */
+        dotIndex = baseFileName.size(); /* append */
+
+    QString atNxfileName = baseFileName;
+    atNxfileName.insert(dotIndex, QLatin1String("@2x"));
+    // Check for @Nx, ..., @3x, @2x file versions,
+    for (int n = qMin(qCeil(targetDevicePixelRatio), 9); n > 1; --n) {
+        atNxfileName[dotIndex + 1] = QLatin1Char('0' + n);
+        if (QFile::exists(atNxfileName)) {
+            if (sourceDevicePixelRatio)
+                *sourceDevicePixelRatio = n;
+            return atNxfileName;
+        }
+    }
+
+    return baseFileName;
+}
 
 QT_END_NAMESPACE
 #endif //QT_NO_ICON

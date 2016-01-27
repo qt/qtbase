@@ -1656,8 +1656,8 @@ namespace {
         bool checkFullOtherwiseExtend(QScriptLine &line);
 
         QFixed calculateNewWidth(const QScriptLine &line) const {
-            return line.textWidth + tmpData.textWidth + spaceData.textWidth + softHyphenWidth
-                    - qMin(rightBearing, QFixed());
+            return line.textWidth + tmpData.textWidth + spaceData.textWidth
+                    + softHyphenWidth + negativeRightBearing();
         }
 
         inline glyph_t currentGlyph() const
@@ -1677,32 +1677,50 @@ namespace {
             }
         }
 
-        inline void adjustRightBearing(glyph_t glyph)
+        inline void calculateRightBearing(glyph_t glyph)
         {
             qreal rb;
             fontEngine->getGlyphBearings(glyph, 0, &rb);
-            rightBearing = qMin(QFixed(), QFixed::fromReal(rb));
+
+            // We only care about negative right bearings, so we limit the range
+            // of the bearing here so that we can assume it's negative in the rest
+            // of the code, as well ase use QFixed(1) as a sentinel to represent
+            // the state where we have yet to compute the right bearing.
+            rightBearing = qMin(QFixed::fromReal(rb), QFixed(0));
         }
 
-        inline void adjustRightBearing()
+        inline void calculateRightBearing()
         {
             if (currentPosition <= 0)
                 return;
-            adjustRightBearing(currentGlyph());
+            calculateRightBearing(currentGlyph());
         }
 
-        inline void adjustPreviousRightBearing()
+        inline void calculateRightBearingForPreviousGlyph()
         {
             if (previousGlyph > 0)
-                adjustRightBearing(previousGlyph);
+                calculateRightBearing(previousGlyph);
         }
+
+        static const QFixed RightBearingNotCalculated;
 
         inline void resetRightBearing()
         {
-            rightBearing = QFixed(1); // Any positive number is defined as invalid since only
-                                      // negative right bearings are interesting to us.
+            rightBearing = RightBearingNotCalculated;
+        }
+
+        // We express the negative right bearing as an absolute number
+        // so that it can be applied to the width using addition.
+        inline QFixed negativeRightBearing() const
+        {
+            if (rightBearing == RightBearingNotCalculated)
+                return QFixed(0);
+
+            return qAbs(rightBearing);
         }
     };
+
+const QFixed LineBreakHelper::RightBearingNotCalculated = QFixed(1);
 
 inline bool LineBreakHelper::checkFullOtherwiseExtend(QScriptLine &line)
 {
@@ -1856,7 +1874,7 @@ void QTextLine::layout_helper(int maxGlyphs)
                                current, lbh.logClusters, lbh.glyphs);
             } else {
                 lbh.tmpData.length++;
-                lbh.adjustPreviousRightBearing();
+                lbh.calculateRightBearingForPreviousGlyph();
             }
             line += lbh.tmpData;
             goto found;
@@ -1938,22 +1956,36 @@ void QTextLine::layout_helper(int maxGlyphs)
                     lbh.tmpData.textWidth += lbh.glyphs.advances[lbh.logClusters[lbh.currentPosition - 1]];
             }
 
-            // The actual width of the text needs to take the right bearing into account. The
-            // right bearing is left-ward, which means that if the rightmost pixel is to the right
-            // of the advance of the glyph, the bearing will be negative. We flip the sign
-            // for the code to be more readable. Logic borrowed from qfontmetrics.cpp.
-            // We ignore the right bearing if the minimum negative bearing is too little to
-            // expand the text beyond the edge.
             if (sb_or_ws|breakany) {
-                QFixed rightBearing = lbh.rightBearing; // store previous right bearing
-                if (lbh.calculateNewWidth(line) - lbh.minimumRightBearing > line.width)
-                    lbh.adjustRightBearing();
+                // To compute the final width of the text we need to take negative right bearing
+                // into account (negative right bearing means the glyph has pixel data past the
+                // advance length). Note that the negative right bearing is an absolute number,
+                // so that we can apply it to the width using straight forward addition.
+
+                // Store previous right bearing (for the already accepted glyph) in case we
+                // end up breaking due to the current glyph being too wide.
+                QFixed previousRightBearing = lbh.rightBearing;
+
+                // We skip calculating the right bearing if the minimum negative bearing is too
+                // small to possibly expand the text beyond the edge. Note that this optimization
+                // will in some cases fail, as the minimum right bearing reported by the font
+                // engine may not cover all the glyphs in the font. The result is that we think
+                // we don't need to break at the current glyph (because the right bearing is 0),
+                // and when we then end up breaking on the next glyph we compute the right bearing
+                // and end up with a line width that is slightly larger width than what was requested.
+                // Unfortunately we can't remove this optimization as it will slow down text
+                // layouting significantly, so we accept the slight correctnes issue.
+                if ((lbh.calculateNewWidth(line) + qAbs(lbh.minimumRightBearing)) > line.width)
+                    lbh.calculateRightBearing();
+
                 if (lbh.checkFullOtherwiseExtend(line)) {
-                    // we are too wide, fix right bearing
-                    if (rightBearing <= 0)
-                        lbh.rightBearing = rightBearing; // take from cache
+                    // We are too wide to accept the next glyph with its bearing, so we restore the
+                    // right bearing to that of the previous glyph (the one that was already accepted),
+                    // so that the bearing can be be applied to the final width of the text below.
+                    if (previousRightBearing != LineBreakHelper::RightBearingNotCalculated)
+                        lbh.rightBearing = previousRightBearing;
                     else
-                        lbh.adjustPreviousRightBearing();
+                        lbh.calculateRightBearingForPreviousGlyph();
 
                     if (!breakany) {
                         line.textWidth += lbh.softHyphenWidth;
@@ -1970,10 +2002,14 @@ void QTextLine::layout_helper(int maxGlyphs)
     LB_DEBUG("reached end of line");
     lbh.checkFullOtherwiseExtend(line);
 found:
-    if (lbh.rightBearing > 0 && !lbh.whiteSpaceOrObject) // If right bearing has not yet been adjusted
-        lbh.adjustRightBearing();
     line.textAdvance = line.textWidth;
-    line.textWidth -= qMin(QFixed(), lbh.rightBearing);
+
+    // If right bearing has not been calculated yet, do that now
+    if (lbh.rightBearing == LineBreakHelper::RightBearingNotCalculated && !lbh.whiteSpaceOrObject)
+        lbh.calculateRightBearing();
+
+    // Then apply any negative right bearing
+    line.textWidth += lbh.negativeRightBearing();
 
     if (line.length == 0) {
         LB_DEBUG("no break available in line, adding temp: length %d, width %f, space: length %d, width %f",
@@ -2581,33 +2617,31 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
     inside the line, taking account of the \a edge.
 
     If \a cursorPos is not a valid cursor position, the nearest valid
-    cursor position will be used instead, and cpos will be modified to
+    cursor position will be used instead, and \a cursorPos will be modified to
     point to this valid cursor position.
 
     \sa xToCursor()
 */
 qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
 {
-    if (!eng->layoutData)
-        eng->itemize();
-
     const QScriptLine &line = eng->lines[index];
     bool lastLine = index >= eng->lines.size() - 1;
 
-    QFixed x = line.x;
-    x += eng->alignLine(line) - eng->leadingSpaceWidth(line);
+    QFixed x = line.x + eng->alignLine(line) - eng->leadingSpaceWidth(line);
 
-    if (!index && !eng->layoutData->items.size()) {
-        *cursorPos = 0;
+    if (!eng->layoutData)
+        eng->itemize();
+    if (!eng->layoutData->items.size()) {
+        *cursorPos = line.from;
         return x.toReal();
     }
 
     int lineEnd = line.from + line.length + line.trailingSpaces;
-    int pos = qBound(0, *cursorPos, lineEnd);
+    int pos = qBound(line.from, *cursorPos, lineEnd);
     int itm;
     const QCharAttributes *attributes = eng->attributes();
     if (!attributes) {
-        *cursorPos = 0;
+        *cursorPos = line.from;
         return x.toReal();
     }
     while (pos < lineEnd && !attributes[pos].graphemeBoundary)
@@ -2619,7 +2653,7 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
     else
         itm = eng->findItem(pos);
     if (itm < 0) {
-        *cursorPos = 0;
+        *cursorPos = line.from;
         return x.toReal();
     }
     eng->shapeLine(line);
@@ -2627,17 +2661,13 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
     const QScriptItem *si = &eng->layoutData->items[itm];
     if (!si->num_glyphs)
         eng->shape(itm);
-    pos -= si->position;
+
+    const int l = eng->length(itm);
+    pos = qBound(0, pos - si->position, l);
 
     QGlyphLayout glyphs = eng->shapedGlyphs(si);
     unsigned short *logClusters = eng->logClusters(si);
     Q_ASSERT(logClusters);
-
-    int l = eng->length(itm);
-    if (pos > l)
-        pos = l;
-    if (pos < 0)
-        pos = 0;
 
     int glyph_pos = pos == l ? si->num_glyphs : logClusters[pos];
     if (edge == Trailing && glyph_pos < si->num_glyphs) {
@@ -2647,13 +2677,13 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
             glyph_pos++;
     }
 
-    bool reverse = eng->layoutData->items[itm].analysis.bidiLevel % 2;
+    bool reverse = si->analysis.bidiLevel % 2;
 
 
     // add the items left of the cursor
 
     int firstItem = eng->findItem(line.from);
-    int lastItem = eng->findItem(lineEnd - 1);
+    int lastItem = eng->findItem(lineEnd - 1, itm);
     int nItems = (firstItem >= 0 && lastItem >= firstItem)? (lastItem-firstItem+1) : 0;
 
     QVarLengthArray<int> visualOrder(nItems);
@@ -2674,13 +2704,15 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
             x += si.width;
             continue;
         }
+
+        const int itemLength = eng->length(item);
         int start = qMax(line.from, si.position);
-        int end = qMin(lineEnd, si.position + eng->length(item));
+        int end = qMin(lineEnd, si.position + itemLength);
 
         logClusters = eng->logClusters(&si);
 
         int gs = logClusters[start-si.position];
-        int ge = (end == si.position + eng->length(item)) ? si.num_glyphs-1 : logClusters[end-si.position-1];
+        int ge = (end == si.position + itemLength) ? si.num_glyphs-1 : logClusters[end-si.position-1];
 
         QGlyphLayout glyphs = eng->shapedGlyphs(&si);
 
@@ -2752,7 +2784,7 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
         return line.from;
 
     int firstItem = eng->findItem(line.from);
-    int lastItem = eng->findItem(line.from + line_length - 1);
+    int lastItem = eng->findItem(line.from + line_length - 1, firstItem);
     int nItems = (firstItem >= 0 && lastItem >= firstItem)? (lastItem-firstItem+1) : 0;
 
     if (!nItems)

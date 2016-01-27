@@ -43,12 +43,13 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcScaling, "qt.scaling");
 
+#ifndef QT_NO_HIGHDPISCALING
 static const char legacyDevicePixelEnvVar[] = "QT_DEVICE_PIXEL_RATIO";
 static const char scaleFactorEnvVar[] = "QT_SCALE_FACTOR";
 static const char autoScreenEnvVar[] = "QT_AUTO_SCREEN_SCALE_FACTOR";
 static const char screenFactorsEnvVar[] = "QT_SCREEN_SCALE_FACTORS";
 
-static inline qreal initialScaleFactor()
+static inline qreal initialGlobalScaleFactor()
 {
 
     qreal result = 1;
@@ -61,10 +62,10 @@ static inline qreal initialScaleFactor()
         }
     } else {
         if (qEnvironmentVariableIsSet(legacyDevicePixelEnvVar)) {
-            qWarning() << "Warning:" << legacyDevicePixelEnvVar << "is deprecated. Instead use:";
-            qWarning() << "   " << autoScreenEnvVar << "to enable platform plugin controlled per-screen factors.";
-            qWarning() << "   " << screenFactorsEnvVar << "to set per-screen factors.";
-            qWarning() << "   " << scaleFactorEnvVar << "to set the application global scale factor.";
+            qWarning() << "Warning:" << legacyDevicePixelEnvVar << "is deprecated. Instead use:" << endl
+                       << "   " << autoScreenEnvVar << "to enable platform plugin controlled per-screen factors." << endl
+                       << "   " << screenFactorsEnvVar << "to set per-screen factors." << endl
+                       << "   " << scaleFactorEnvVar << "to set the application global scale factor.";
 
             int dpr = qEnvironmentVariableIntValue(legacyDevicePixelEnvVar);
             if (dpr > 0)
@@ -93,32 +94,121 @@ static inline qreal initialScaleFactor()
     plugin interfacing parts of QtGui, for example the QWindow, QScreen and
     QWindowSystemInterface implementation.
 
-    The coordinate system scaling is enabled by setting one or more scale
-    factors. These will then be factored into the value returned by the
-    devicePixelRatio() accessors (any native scale factor will also be
-    included in this value). Several setters are available:
+    There are now up to three active coordinate systems in Qt:
 
-    - A process-global scale factor
-        - QT_SCALE_FACTOR (environment variable)
-        - QHighDpiScaling::setGlobalFactor()
+     ---------------------------------------------------
+    |  Application            Device Independent Pixels |   devicePixelRatio
+    |  Qt Widgets                                       |         =
+    |  Qt Gui                                           |
+    |---------------------------------------------------|   Qt Scale Factor
+    |  Qt Gui QPlatform*      Native Pixels             |         *
+    |  Qt platform plugin                               |
+    |---------------------------------------------------|   OS Scale Factor
+    |  Display                Device Pixels             |
+    |  (Graphics Buffers)                               |
+    -----------------------------------------------------
 
-    - A per-screen scale factor
-        - QT_AUTO_SCALE_FACTOR (environment variable)
-          Setting this to a true-ish value will make QHighDpiScaling
-          call QPlatformScreen::pixelDensity()
-        - QHighDpiScaling::setScreenFactor(screen, factor);
-        - QT_SCREEN_SCALE_FACTORS (environment variable)
-        Set this to a semicolon-separated list of scale factors
-        (matching the order of QGuiApplications::screens()),
-        or to a list of name=value pairs (where name matches
-        QScreen::name()).
+    This is an simplification and shows the main coordinate system. All layers
+    may work with device pixels in specific cases: OpenGL, creating the backing
+    store, and QPixmap management. The "Native Pixels" coordinate system is
+    internal to Qt and should not be exposed to Qt users: Seen from the outside
+    there are only two coordinate systems: device independent pixels and device
+    pixels.
 
-    All scale factors are of type qreal.
+    The devicePixelRatio seen by applications is the product of the Qt scale
+    factor and the OS scale factor. The value of the scale factors may be 1,
+    in which case two or more of the coordinate systems are equivalent. Platforms
+    that (may) have an OS scale factor include OS X, iOS and Wayland.
 
-    The main scaling functions for use in QtGui are:
+    Note that the functions in this file do not work with the OS scale factor
+    directly and are limited to converting between device independent and native
+    pixels. The OS scale factor is accunted for by QWindow::devicePixelRatio()
+    and similar functions.
+
+    Configuration Examples:
+
+    'Classic': Device Independent Pixels = Native Pixels = Device Pixels
+     ---------------------------------------------------    devicePixelRatio: 1
+    |  Application / Qt Gui             100 x 100       |
+    |                                                   |   Qt Scale Factor: 1
+    |  Qt Platform / OS                 100 x 100       |
+    |                                                   |   OS Scale Factor: 1
+    |  Display                          100 x 100       |
+    -----------------------------------------------------
+
+    'Retina Device': Device Independent Pixels = Native Pixels
+     ---------------------------------------------------    devicePixelRatio: 2
+    |  Application / Qt Gui             100 x 100       |
+    |                                                   |   Qt Scale Factor: 1
+    |  Qt Platform / OS                 100 x 100       |
+    |---------------------------------------------------|   OS Scale Factor: 2
+    |  Display                          200 x 200       |
+    -----------------------------------------------------
+
+    '2x Qt Scaling': Native Pixels = Device Pixels
+     ---------------------------------------------------    devicePixelRatio: 2
+    |  Application / Qt Gui             100 x 100       |
+    |---------------------------------------------------|   Qt Scale Factor: 2
+    |  Qt Platform / OS                 200 x 200       |
+    |                                                   |   OS Scale Factor: 1
+    |  Display                          200 x 200       |
+    -----------------------------------------------------
+
+    The Qt Scale Factor is the product of two sub-scale factors, which
+    are independently either set or determined by the platform plugin.
+    Several APIs are offered for this, targeting both developers and
+    end users. All scale factors are of type qreal.
+
+    1) A global scale factor
+        The QT_SCALE_FACTOR environment variable can be used to set
+        a global scale factor for all windows in the processs. This
+        is useful for testing and debugging (you can simulate any
+        devicePixelRatio without needing access to sepcial hardware),
+        and perhaps also for targeting a specific application to
+        a specific display type (embedded use cases).
+
+    2) A per-screen scale factors
+        Some platform plugins support providing a per-screen scale
+        factor based on display density information. These platforms
+        include X11, Windows, and Android.
+
+        There are two APIs for enabling or disabling this behavior:
+            - The QT_AUTO_SCALE_FACTOR environment variable.
+            - The AA_EnableHighDpiScaling and AA_DisableHighDpiScaling
+              application attributes
+
+        Enabling either will make QHighDpiScaling call QPlatformScreen::pixelDensity()
+        and use the value provided as the scale factor for the screen in
+        question. Disabling is done on a 'veto' basis where either the
+        environment or the application source can disable. The intended use
+        cases are 'My system is not providing correct display density
+        information' and 'My application needs to work in display pixels',
+        respectively.
+
+        The QT_SCREEN_SCALE_FACTORS environment variable can be used to set the screen
+        scale factors manually.Set this to a semicolon-separated
+        list of scale factors (matching the order of QGuiApplications::screens()),
+        or to a list of name=value pairs (where name matches QScreen::name()).
+
+    Coordinate conversion functions must be used when writing code that passes
+    geometry across the Qt Gui / Platform plugin boundary. The main conversion
+    functions are:
         T toNativePixels(T, QWindow *)
         T fromNativePixels(T, QWindow*)
-    Where T is QPoint, QSize, QRect etc.
+
+    The following classes in QtGui use native pixels, for the convenience of the
+    plataform plugins:
+        QPlatformWindow
+        QPlatformScreen
+        QWindowSystemInterface (API only - Events are in device independent pixels)
+
+    As a special consideration platform plugin code should be careful about
+    calling QtGui geometry accessor functions:
+        QRect r = window->geometry();
+    Here the returned geometry is in device independent pixels. Add a conversion call:
+        QRect r = QHighDpi::toNativePixels(window->geometry());
+    (Avoiding calling QWindow and instead using the QPlatformWindow geometry
+     might be a better course of action in this case.)
 */
 
 qreal QHighDpiScaling::m_factor = 1.0;
@@ -133,19 +223,31 @@ QDpi QHighDpiScaling::m_logicalDpi = QDpi(-1,-1); // The scaled logical DPI of t
     Initializes the QHighDpiScaling global variables. Called before the
     platform plugin is created.
 */
+
+static inline bool usePixelDensity()
+{
+    // Determine if we should set a scale factor based on the pixel density
+    // reported by the platform plugin. There are several enablers and several
+    // disablers. A single disable may veto all other enablers.
+    if (QCoreApplication::testAttribute(Qt::AA_DisableHighDpiScaling))
+        return false;
+    bool screenEnvValueOk;
+    const int screenEnvValue = qEnvironmentVariableIntValue(autoScreenEnvVar, &screenEnvValueOk);
+    if (screenEnvValueOk && screenEnvValue < 1)
+        return false;
+    return QCoreApplication::testAttribute(Qt::AA_EnableHighDpiScaling)
+        || (screenEnvValueOk && screenEnvValue > 0)
+        || (qEnvironmentVariableIsSet(legacyDevicePixelEnvVar) && qgetenv(legacyDevicePixelEnvVar).toLower() == "auto");
+}
+
 void QHighDpiScaling::initHighDpiScaling()
 {
-    if (QCoreApplication::testAttribute(Qt::AA_NoHighDpiScaling)) {
-        m_factor = 1;
-        m_active = false;
-        return;
-    }
-    m_factor = initialScaleFactor();
-    bool usePlatformPluginPixelDensity = qEnvironmentVariableIsSet(autoScreenEnvVar)
-                                         || qgetenv(legacyDevicePixelEnvVar).toLower() == "auto";
-
+    // Determine if there is a global scale factor set.
+    m_factor = initialGlobalScaleFactor();
     m_globalScalingActive = !qFuzzyCompare(m_factor, qreal(1));
-    m_usePixelDensity = usePlatformPluginPixelDensity;
+
+    m_usePixelDensity = usePixelDensity();
+
     m_pixelDensityScalingActive = false; //set in updateHighDpiScaling below
 
     // we update m_active in updateHighDpiScaling, but while we create the
@@ -155,7 +257,7 @@ void QHighDpiScaling::initHighDpiScaling()
 
 void QHighDpiScaling::updateHighDpiScaling()
 {
-    if (QCoreApplication::testAttribute(Qt::AA_NoHighDpiScaling))
+    if (QCoreApplication::testAttribute(Qt::AA_DisableHighDpiScaling))
         return;
 
     if (m_usePixelDensity && !m_pixelDensityScalingActive) {
@@ -214,7 +316,7 @@ void QHighDpiScaling::setGlobalFactor(qreal factor)
     if (qFuzzyCompare(factor, m_factor))
         return;
     if (!QGuiApplication::allWindows().isEmpty())
-        qWarning() << Q_FUNC_INFO << "QHighDpiScaling::setFactor: Should only be called when no windows exist.";
+        qWarning("QHighDpiScaling::setFactor: Should only be called when no windows exist.");
 
     m_globalScalingActive = !qFuzzyCompare(factor, qreal(1));
     m_factor = m_globalScalingActive ? factor : qreal(1);
@@ -317,4 +419,5 @@ QPoint QHighDpiScaling::origin(const QPlatformScreen *platformScreen)
     return platformScreen->geometry().topLeft();
 }
 
+#endif //QT_NO_HIGHDPISCALING
 QT_END_NAMESPACE

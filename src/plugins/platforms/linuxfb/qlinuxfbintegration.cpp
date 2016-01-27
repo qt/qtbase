@@ -46,6 +46,10 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
 
+#ifndef QT_NO_LIBINPUT
+#include <QtPlatformSupport/private/qlibinputhandler_p.h>
+#endif
+
 #if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
 #include <QtPlatformSupport/private/qevdevmousemanager_p.h>
 #include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
@@ -130,6 +134,13 @@ QPlatformServices *QLinuxFbIntegration::services() const
 
 void QLinuxFbIntegration::createInputHandlers()
 {
+#ifndef QT_NO_LIBINPUT
+    if (!qEnvironmentVariableIntValue("QT_QPA_FB_NO_LIBINPUT")) {
+        new QLibInputHandler(QLatin1String("libinput"), QString());
+        return;
+    }
+#endif
+
 #if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
     new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString(), this);
     new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString(), this);

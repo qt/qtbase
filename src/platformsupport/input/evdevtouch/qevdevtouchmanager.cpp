@@ -95,13 +95,12 @@ QEvdevTouchManager::~QEvdevTouchManager()
 
 void QEvdevTouchManager::addDevice(const QString &deviceNode)
 {
-    qCDebug(qLcEvdevTouch) << "Adding device at" << deviceNode;
+    qCDebug(qLcEvdevTouch) << "evdevtouch: Adding device at" << deviceNode;
     QEvdevTouchScreenHandlerThread *handler;
     handler = new QEvdevTouchScreenHandlerThread(deviceNode, m_spec);
     if (handler) {
         m_activeDevices.insert(deviceNode, handler);
-        QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
-            QInputDeviceManager::DeviceTypeTouch, m_activeDevices.count());
+        connect(handler, &QEvdevTouchScreenHandlerThread::touchDeviceRegistered, this, &QEvdevTouchManager::updateInputDeviceCount);
     } else {
         qWarning("evdevtouch: Failed to open touch device %s", qPrintable(deviceNode));
     }
@@ -110,13 +109,28 @@ void QEvdevTouchManager::addDevice(const QString &deviceNode)
 void QEvdevTouchManager::removeDevice(const QString &deviceNode)
 {
     if (m_activeDevices.contains(deviceNode)) {
-        qCDebug(qLcEvdevTouch) << "Removing device at" << deviceNode;
+        qCDebug(qLcEvdevTouch) << "evdevtouch: Removing device at" << deviceNode;
         QEvdevTouchScreenHandlerThread *handler = m_activeDevices.value(deviceNode);
         m_activeDevices.remove(deviceNode);
-        QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
-            QInputDeviceManager::DeviceTypeTouch, m_activeDevices.count());
         delete handler;
+
+        updateInputDeviceCount();
     }
+}
+
+void QEvdevTouchManager::updateInputDeviceCount()
+{
+    int registeredTouchDevices = 0;
+    Q_FOREACH (QEvdevTouchScreenHandlerThread *handler, m_activeDevices) {
+        if (handler->isTouchDeviceRegistered())
+            ++registeredTouchDevices;
+    }
+
+    qCDebug(qLcEvdevTouch) << "evdevtouch: Updating QInputDeviceManager device count:" << registeredTouchDevices << " touch devices,"
+                           << m_activeDevices.count() - registeredTouchDevices << "pending handler(s)" ;
+
+    QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
+        QInputDeviceManager::DeviceTypeTouch, registeredTouchDevices);
 }
 
 QT_END_NAMESPACE

@@ -51,6 +51,11 @@ licheck.path = $$[QT_HOST_BINS]
 licheck.files = $$PWD/bin/$$QT_LICHECK
 !isEmpty(QT_LICHECK): INSTALLS += licheck
 
+#fixqt4headers.pl
+fixqt4headers.path = $$[QT_HOST_BINS]
+fixqt4headers.files = $$PWD/bin/fixqt4headers.pl
+INSTALLS += fixqt4headers
+
 #syncqt
 syncqt.path = $$[QT_HOST_BINS]
 syncqt.files = $$PWD/bin/syncqt.pl

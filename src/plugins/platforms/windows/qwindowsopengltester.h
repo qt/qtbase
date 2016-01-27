@@ -60,7 +60,9 @@ struct GpuDescription
     QByteArray description;
 };
 
+#ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const GpuDescription &gd);
+#endif
 
 class QWindowsOpenGLTester
 {
@@ -74,7 +76,9 @@ public:
         AngleBackendMask        = AngleRendererD3d11 | AngleRendererD3d9 | AngleRendererD3d11Warp,
         Gles                    = 0x0010, // ANGLE/unspecified or Generic GLES for Windows CE.
         GlesMask                = Gles | AngleBackendMask,
-        SoftwareRasterizer      = 0x0020
+        SoftwareRasterizer      = 0x0020,
+        RendererMask            = 0x00FF,
+        DisableRotationFlag     = 0x0100
     };
     Q_DECLARE_FLAGS(Renderers, Renderer)
 

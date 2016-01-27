@@ -46,32 +46,94 @@
 IconPreviewArea::IconPreviewArea(QWidget *parent)
     : QWidget(parent)
 {
-    QGridLayout *mainLayout = new QGridLayout;
-    setLayout(mainLayout);
+    QGridLayout *mainLayout = new QGridLayout(this);
 
-    stateLabels[0] = createHeaderLabel(tr("Off"));
-    stateLabels[1] = createHeaderLabel(tr("On"));
+    for (int row = 0; row < NumStates; ++row) {
+        stateLabels[row] = createHeaderLabel(IconPreviewArea::iconStateNames().at(row));
+        mainLayout->addWidget(stateLabels[row], row + 1, 0);
+    }
     Q_ASSERT(NumStates == 2);
 
-    modeLabels[0] = createHeaderLabel(tr("Normal"));
-    modeLabels[1] = createHeaderLabel(tr("Active"));
-    modeLabels[2] = createHeaderLabel(tr("Disabled"));
-    modeLabels[3] = createHeaderLabel(tr("Selected"));
+    for (int column = 0; column < NumModes; ++column) {
+        modeLabels[column] = createHeaderLabel(IconPreviewArea::iconModeNames().at(column));
+        mainLayout->addWidget(modeLabels[column], 0, column + 1);
+    }
     Q_ASSERT(NumModes == 4);
 
-    for (int j = 0; j < NumStates; ++j)
-        mainLayout->addWidget(stateLabels[j], j + 1, 0);
-
-    for (int i = 0; i < NumModes; ++i) {
-        mainLayout->addWidget(modeLabels[i], 0, i + 1);
-
-        for (int j = 0; j < NumStates; ++j) {
-            pixmapLabels[i][j] = createPixmapLabel();
-            mainLayout->addWidget(pixmapLabels[i][j], j + 1, i + 1);
+    for (int column = 0; column < NumModes; ++column) {
+        for (int row = 0; row < NumStates; ++row) {
+            pixmapLabels[column][row] = createPixmapLabel();
+            mainLayout->addWidget(pixmapLabels[column][row], row + 1, column + 1);
         }
     }
 }
 //! [0]
+
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+
+//! [42]
+QVector<QIcon::Mode> IconPreviewArea::iconModes()
+{
+    static const QVector<QIcon::Mode> result = {QIcon::Normal, QIcon::Active, QIcon::Disabled, QIcon::Selected};
+    return result;
+}
+
+QVector<QIcon::State> IconPreviewArea::iconStates()
+{
+    static const QVector<QIcon::State> result = {QIcon::Off, QIcon::On};
+    return result;
+}
+
+QStringList IconPreviewArea::iconModeNames()
+{
+    static const QStringList result = {tr("Normal"), tr("Active"), tr("Disabled"), tr("Selected")};
+    return result;
+}
+
+QStringList IconPreviewArea::iconStateNames()
+{
+    static const QStringList result = {tr("Off"), tr("On")};
+    return result;
+}
+//! [42]
+
+#else // Q_COMPILER_INITIALIZER_LISTS
+
+//! [43]
+QVector<QIcon::Mode> IconPreviewArea::iconModes()
+{
+    static QVector<QIcon::Mode> result;
+    if (result.isEmpty())
+        result << QIcon::Normal << QIcon::Active << QIcon::Disabled << QIcon::Selected;
+    return result;
+}
+//! [43]
+
+QVector<QIcon::State> IconPreviewArea::iconStates()
+{
+    static QVector<QIcon::State> result;
+    if (result.isEmpty())
+        result << QIcon::Off << QIcon::On;
+    return result;
+}
+
+QStringList IconPreviewArea::iconModeNames()
+{
+    static QStringList result;
+    if (result.isEmpty())
+        result << tr("Normal") << tr("Active") << tr("Disabled") << tr("Selected");
+    return result;
+}
+
+QStringList IconPreviewArea::iconStateNames()
+{
+    static QStringList result;
+    if (result.isEmpty())
+        result << tr("Off") << tr("On");
+    return result;
+}
+
+#endif // !Q_COMPILER_INITIALIZER_LISTS
 
 //! [1]
 void IconPreviewArea::setIcon(const QIcon &icon)
@@ -118,23 +180,27 @@ QLabel *IconPreviewArea::createPixmapLabel()
 //! [5]
 void IconPreviewArea::updatePixmapLabels()
 {
-    for (int i = 0; i < NumModes; ++i) {
-        QIcon::Mode mode;
-        if (i == 0) {
-            mode = QIcon::Normal;
-        } else if (i == 1) {
-            mode = QIcon::Active;
-        } else if (i == 2) {
-            mode = QIcon::Disabled;
-        } else {
-            mode = QIcon::Selected;
-        }
-
-        for (int j = 0; j < NumStates; ++j) {
-            QIcon::State state = (j == 0) ? QIcon::Off : QIcon::On;
-            QPixmap pixmap = icon.pixmap(size, mode, state);
-            pixmapLabels[i][j]->setPixmap(pixmap);
-            pixmapLabels[i][j]->setEnabled(!pixmap.isNull());
+    QWindow *window = Q_NULLPTR;
+    if (const QWidget *nativeParent = nativeParentWidget())
+        window = nativeParent->windowHandle();
+    for (int column = 0; column < NumModes; ++column) {
+        for (int row = 0; row < NumStates; ++row) {
+            const QPixmap pixmap =
+                icon.pixmap(window, size, IconPreviewArea::iconModes().at(column),
+                            IconPreviewArea::iconStates().at(row));
+            QLabel *pixmapLabel = pixmapLabels[column][row];
+            pixmapLabel->setPixmap(pixmap);
+            pixmapLabel->setEnabled(!pixmap.isNull());
+            QString toolTip;
+            if (!pixmap.isNull()) {
+                const QSize actualSize = icon.actualSize(size);
+                toolTip =
+                    tr("Size: %1x%2\nActual size: %3x%4\nDevice pixel ratio: %5")
+                        .arg(size.width()).arg(size.height())
+                        .arg(actualSize.width()).arg(actualSize.height())
+                        .arg(pixmap.devicePixelRatioF());
+            }
+            pixmapLabel->setToolTip(toolTip);
         }
     }
 }

@@ -649,7 +649,7 @@ Q_DECL_RELAXED_CONSTEXPR inline uint qCountTrailingZeroBits(unsigned long v) Q_D
     return qCountTrailingZeroBits(QIntegerForSizeof<long>::Unsigned(v));
 }
 
-Q_DECL_CONSTEXPR inline uint qCountLeadingZeroBits(quint32 v) Q_DECL_NOTHROW
+Q_DECL_RELAXED_CONSTEXPR inline uint qCountLeadingZeroBits(quint32 v) Q_DECL_NOTHROW
 {
 #if defined(Q_CC_GNU)
     return v ? __builtin_clz(v) : 32U;
@@ -664,7 +664,7 @@ Q_DECL_CONSTEXPR inline uint qCountLeadingZeroBits(quint32 v) Q_DECL_NOTHROW
 #endif
 }
 
-Q_DECL_CONSTEXPR inline uint qCountLeadingZeroBits(quint8 v) Q_DECL_NOTHROW
+Q_DECL_RELAXED_CONSTEXPR inline uint qCountLeadingZeroBits(quint8 v) Q_DECL_NOTHROW
 {
 #if defined(Q_CC_GNU)
     return v ? __builtin_clz(v)-24U : 8U;
@@ -676,7 +676,7 @@ Q_DECL_CONSTEXPR inline uint qCountLeadingZeroBits(quint8 v) Q_DECL_NOTHROW
 #endif
 }
 
-Q_DECL_CONSTEXPR inline uint qCountLeadingZeroBits(quint16 v) Q_DECL_NOTHROW
+Q_DECL_RELAXED_CONSTEXPR inline uint qCountLeadingZeroBits(quint16 v) Q_DECL_NOTHROW
 {
 #if defined(Q_CC_GNU)
     return v ? __builtin_clz(v)-16U : 16U;
@@ -689,7 +689,7 @@ Q_DECL_CONSTEXPR inline uint qCountLeadingZeroBits(quint16 v) Q_DECL_NOTHROW
 #endif
 }
 
-Q_DECL_CONSTEXPR inline uint qCountLeadingZeroBits(quint64 v) Q_DECL_NOTHROW
+Q_DECL_RELAXED_CONSTEXPR inline uint qCountLeadingZeroBits(quint64 v) Q_DECL_NOTHROW
 {
 #if defined(Q_CC_GNU)
     return v ? __builtin_clzll(v) : 64U;
@@ -704,7 +704,7 @@ Q_DECL_CONSTEXPR inline uint qCountLeadingZeroBits(quint64 v) Q_DECL_NOTHROW
 #endif
 }
 
-Q_DECL_CONSTEXPR inline uint qCountLeadingZeroBits(unsigned long v) Q_DECL_NOTHROW
+Q_DECL_RELAXED_CONSTEXPR inline uint qCountLeadingZeroBits(unsigned long v) Q_DECL_NOTHROW
 {
     return qCountLeadingZeroBits(QIntegerForSizeof<long>::Unsigned(v));
 }
