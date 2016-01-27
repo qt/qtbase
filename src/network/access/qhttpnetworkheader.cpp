@@ -39,6 +39,8 @@
 
 #include "qhttpnetworkheader_p.h"
 
+#include <algorithm>
+
 #ifndef QT_NO_HTTP
 
 QT_BEGIN_NAMESPACE
@@ -103,13 +105,12 @@ QList<QByteArray> QHttpNetworkHeaderPrivate::headerFieldValues(const QByteArray 
 
 void QHttpNetworkHeaderPrivate::setHeaderField(const QByteArray &name, const QByteArray &data)
 {
-    QList<QPair<QByteArray, QByteArray> >::Iterator it = fields.begin();
-    while (it != fields.end()) {
-        if (qstricmp(name.constData(), it->first) == 0)
-            it = fields.erase(it);
-        else
-            ++it;
-    }
+    auto firstEqualsName = [&name](const QPair<QByteArray, QByteArray> &header) {
+        return qstricmp(name.constData(), header.first) == 0;
+    };
+    fields.erase(std::remove_if(fields.begin(), fields.end(),
+                                firstEqualsName),
+                 fields.end());
     fields.append(qMakePair(name, data));
 }
 
