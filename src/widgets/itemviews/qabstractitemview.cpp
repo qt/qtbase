@@ -4353,7 +4353,20 @@ QPixmap QAbstractItemViewPrivate::renderToPixmap(const QModelIndexList &indexes,
     QItemViewPaintPairs paintPairs = draggablePaintPairs(indexes, r);
     if (paintPairs.isEmpty())
         return QPixmap();
-    QPixmap pixmap(r->size());
+
+    qreal scale = 1.0f;
+
+    Q_Q(const QAbstractItemView);
+    QWidget *window = q->window();
+    if (window) {
+        QWindow *windowHandle = window->windowHandle();
+        if (windowHandle)
+            scale = windowHandle->devicePixelRatio();
+    }
+
+    QPixmap pixmap(r->size() * scale);
+    pixmap.setDevicePixelRatio(scale);
+
     pixmap.fill(Qt::transparent);
     QPainter painter(&pixmap);
     QStyleOptionViewItem option = viewOptionsV1();
