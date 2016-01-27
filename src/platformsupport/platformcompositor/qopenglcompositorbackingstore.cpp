@@ -184,6 +184,8 @@ void QOpenGLCompositorBackingStore::flush(QWindow *window, const QRegion &region
 
     QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
     QOpenGLContext *dstCtx = compositor->context();
+    Q_ASSERT(dstCtx);
+
     QWindow *dstWin = compositor->targetWindow();
     if (!dstWin)
         return;
@@ -209,6 +211,12 @@ void QOpenGLCompositorBackingStore::composeAndFlush(QWindow *window, const QRegi
 
     QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
     QOpenGLContext *dstCtx = compositor->context();
+    Q_ASSERT(dstCtx); // setTarget() must have been called before, e.g. from QEGLFSWindow
+
+    // The compositor's context and the context to which QOpenGLWidget/QQuickWidget
+    // textures belong are not the same. They share resources, though.
+    Q_ASSERT(context->shareGroup() == dstCtx->shareGroup());
+
     QWindow *dstWin = compositor->targetWindow();
     if (!dstWin)
         return;

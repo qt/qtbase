@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 
     It is up to the platform plugin to manage the lifetime of the
     compositor (instance(), destroy()), set the correct destination
-    context and window as early as possible (setTargetWindow()),
+    context and window as early as possible (setTarget()),
     register the composited windows as they are shown, activated,
     raised and lowered (addWindow(), moveToTop(), etc.), and to
     schedule repaints (update()).
