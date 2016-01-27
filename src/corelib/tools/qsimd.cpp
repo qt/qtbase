@@ -641,7 +641,7 @@ int ffsll(quint64 i)
 #endif
 
 #ifdef Q_OS_NACL_NEWLIB
-#  define ffs __builtin_ffs
+#  define ffsll __builtin_ffsll
 #endif
 
 #ifdef Q_ATOMIC_INT64_IS_SUPPORTED

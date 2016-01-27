@@ -264,7 +264,8 @@ int QtNaclDeployer::deploy()
     QString chromeOpenAppOptions = " --load-and-launch-app=" + outDir;
     QString chromeOpenWindowOptions = " --incognito --new-window \"http://localhost:8000\"";
     QString chromeOpenOptions = isApp ? chromeOpenAppOptions : chromeOpenWindowOptions;
-    QString chromeRedirectOptions = testlibMode ? " 1>" + stdoutCaptureFile + " 2>" + stderrCaptureFile: " ";
+    QString chromeRedirectOptions = testlibMode ?
+        QString(" 1>") + stdoutCaptureFile + QString(" 2>") + stderrCaptureFile : QStringLiteral(" ");
 
     if (print) {
         qDebug() << "chrome:";
