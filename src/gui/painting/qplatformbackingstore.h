@@ -118,7 +118,8 @@ public:
     virtual QImage toImage() const;
     enum TextureFlag {
         TextureSwizzle = 0x01,
-        TextureFlip = 0x02
+        TextureFlip = 0x02,
+        TexturePremultiplied = 0x04,
     };
     Q_DECLARE_FLAGS(TextureFlags, TextureFlag)
     virtual GLuint toTexture(const QRegion &dirtyRegion, QSize *textureSize, TextureFlags *flags) const;

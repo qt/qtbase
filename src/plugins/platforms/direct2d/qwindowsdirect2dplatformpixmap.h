@@ -54,8 +54,7 @@ public:
     ~QWindowsDirect2DPlatformPixmap();
 
     void resize(int width, int height) Q_DECL_OVERRIDE;
-    virtual void fromImage(const QImage &image,
-                           Qt::ImageConversionFlags flags);
+    void fromImage(const QImage &image, Qt::ImageConversionFlags flags) Q_DECL_OVERRIDE;
 
     int metric(QPaintDevice::PaintDeviceMetric metric) const Q_DECL_OVERRIDE;
     void fill(const QColor &color) Q_DECL_OVERRIDE;

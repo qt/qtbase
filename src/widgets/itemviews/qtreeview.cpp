@@ -2830,10 +2830,14 @@ void QTreeView::updateGeometries()
         if (d->geometryRecursionBlock)
             return;
         d->geometryRecursionBlock = true;
-        QSize hint = d->header->isHidden() ? QSize(0, 0) : d->header->sizeHint();
-        setViewportMargins(0, hint.height(), 0, 0);
+        int height = 0;
+        if (!d->header->isHidden()) {
+            height = qMax(d->header->minimumHeight(), d->header->sizeHint().height());
+            height = qMin(height, d->header->maximumHeight());
+        }
+        setViewportMargins(0, height, 0, 0);
         QRect vg = d->viewport->geometry();
-        QRect geometryRect(vg.left(), vg.top() - hint.height(), vg.width(), hint.height());
+        QRect geometryRect(vg.left(), vg.top() - height, vg.width(), height);
         d->header->setGeometry(geometryRect);
         QMetaObject::invokeMethod(d->header, "updateGeometries");
         d->updateScrollBars();

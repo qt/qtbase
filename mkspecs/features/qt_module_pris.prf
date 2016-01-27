@@ -46,18 +46,22 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         module_rundep = "QT.$${MODULE_ID}.run_depends = $$replace(QT_PRIVATE, -private$, _private)"
     else: \
         module_rundep =
+    module_build_type = v2
     static: \
-        module_build_type = staticlib
-    else: lib_bundle: \
-        module_build_type = lib_bundle
-    else: \
-        module_build_type =
-    equals(TEMPLATE, aux): \
-        module_build_type += no_link
+        module_build_type += staticlib
+    lib_bundle {
+        module_build_type += lib_bundle
+        MODULE_FRAMEWORKS = " \$\$QT_MODULE_LIB_BASE"
+    }
     internal_module: \
         module_build_type += internal_module
     ltcg: \
         module_build_type += ltcg
+    module_module =
+    !equals(TEMPLATE, aux) {
+        module_module = $$TARGET$$QT_LIBINFIX
+        !lib_bundle: module_module ~= s,^Qt,Qt$$QT_MAJOR_VERSION,
+    }
     !isEmpty(MODULE_CONFIG): \
         module_config = "QT.$${MODULE_ID}.CONFIG = $$MODULE_CONFIG"
     else: \
@@ -77,9 +81,11 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         "QT.$${MODULE_ID}.PATCH_VERSION = $$section(VERSION, ., 2, 2)" \
         "" \
         "QT.$${MODULE_ID}.name = $$TARGET" \
+        "QT.$${MODULE_ID}.module = $$module_module" \
         "QT.$${MODULE_ID}.libs = $$module_libs" \
         $$module_master \
-        "QT.$${MODULE_ID}.includes = $$MODULE_INCLUDES"
+        "QT.$${MODULE_ID}.includes = $$MODULE_INCLUDES" \
+        "QT.$${MODULE_ID}.frameworks =$$MODULE_FRAMEWORKS"
     !host_build: MODULE_PRI_CONT += \
         "QT.$${MODULE_ID}.bins = \$\$QT_MODULE_BIN_BASE" \
         "QT.$${MODULE_ID}.libexecs = \$\$QT_MODULE_LIBEXEC_BASE" \
@@ -97,7 +103,11 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         "QT_MODULES += $$MODULE"
     write_file($$MODULE_PRI, MODULE_PRI_CONT)|error("Aborting.")
     !internal_module:!no_private_module {
-        module_build_type += internal_module no_link
+        module_build_type += internal_module
+        private_deps = $$QT
+        private_deps -= $$MODULE_DEPENDS
+        private_deps += $$MODULE $$QT_FOR_PRIVATE
+        private_deps ~= s,-private$,_private,g
         MODULE_PRIVATE_PRI_CONT = \
             "QT.$${MODULE}_private.VERSION = $${VERSION}" \
             "QT.$${MODULE}_private.MAJOR_VERSION = $$section(VERSION, ., 0, 0)" \
@@ -105,9 +115,11 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
             "QT.$${MODULE}_private.PATCH_VERSION = $$section(VERSION, ., 2, 2)" \
             "" \
             "QT.$${MODULE}_private.name = $${TARGET}" \   # Same name as base module
+            "QT.$${MODULE}_private.module =" \
             "QT.$${MODULE}_private.libs = $$module_libs" \
             "QT.$${MODULE}_private.includes = $$MODULE_PRIVATE_INCLUDES" \
-            "QT.$${MODULE}_private.depends = $$replace($$list($$MODULE $$QT_FOR_PRIVATE), -private$, _private)" \
+            "QT.$${MODULE}_private.frameworks =" \
+            "QT.$${MODULE}_private.depends = $$private_deps" \
             "QT.$${MODULE}_private.module_config =$$join(module_build_type, " ", " ")"
         write_file($$MODULE_PRIVATE_PRI, MODULE_PRIVATE_PRI_CONT)|error("Aborting.")
     }
@@ -169,8 +181,8 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         include($$mod_work_pfx/qt_lib_$${pri}.pri)
     for(mod, mods_to_load) {
         for(var, $$list(VERSION MAJOR_VERSION MINOR_VERSION PATCH_VERSION \
-                        name depends run_depends plugin_types module_config CONFIG DEFINES \
-                        priority includes bins libs libexecs plugins imports qml \
+                        name module depends run_depends plugin_types module_config CONFIG DEFINES \
+                        priority includes bins libs frameworks libexecs plugins imports qml \
                 )):defined(QT.$${mod}.$$var, var):cache(QT.$${mod}.$$var, transient)
     }
     cache(QT_MODULES, transient)

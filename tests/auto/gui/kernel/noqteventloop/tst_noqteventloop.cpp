@@ -36,6 +36,9 @@
 #include <QEvent>
 #include <QtCore/qthread.h>
 #include <QtGui/qguiapplication.h>
+#include <QtNetwork/qtcpserver.h>
+#include <QtNetwork/qtcpsocket.h>
+#include <QtCore/qelapsedtimer.h>
 
 #include <QtCore/qt_windows.h>
 
@@ -47,6 +50,7 @@ private slots:
     void initTestCase();
     void cleanup();
     void consumeMouseEvents();
+    void consumeSocketEvents();
 
 };
 
@@ -263,6 +267,36 @@ void tst_NoQtEventLoop::consumeMouseEvents()
 
     QCOMPARE(testThread->passed(), true);
 
+}
+
+void tst_NoQtEventLoop::consumeSocketEvents()
+{
+    int argc = 1;
+    char *argv[] = { const_cast<char *>("test"), 0 };
+    QGuiApplication app(argc, argv);
+    QTcpServer server;
+    QTcpSocket client;
+
+    QVERIFY(server.listen(QHostAddress::LocalHost));
+    client.connectToHost(server.serverAddress(), server.serverPort());
+    QVERIFY(client.waitForConnected());
+
+    QElapsedTimer elapsedTimer;
+    elapsedTimer.start();
+
+    // Exec own message loop
+    MSG msg;
+    forever {
+        if (elapsedTimer.hasExpired(3000) || server.hasPendingConnections())
+            break;
+
+        if (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+            ::TranslateMessage(&msg);
+            ::DispatchMessage(&msg);
+        }
+    }
+
+    QVERIFY(server.hasPendingConnections());
 }
 
 #include <tst_noqteventloop.moc>

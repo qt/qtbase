@@ -57,8 +57,8 @@ public:
 
     QByteArray desktopEnvironment() const Q_DECL_OVERRIDE;
 
-    virtual bool openUrl(const QUrl &url) Q_DECL_OVERRIDE;
-    virtual bool openDocument(const QUrl &url) Q_DECL_OVERRIDE;
+    bool openUrl(const QUrl &url) Q_DECL_OVERRIDE;
+    bool openDocument(const QUrl &url) Q_DECL_OVERRIDE;
 
 private:
     QString m_webBrowser;

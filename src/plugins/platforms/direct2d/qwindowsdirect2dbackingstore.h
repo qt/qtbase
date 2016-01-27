@@ -48,8 +48,8 @@ public:
     QWindowsDirect2DBackingStore(QWindow *window);
     ~QWindowsDirect2DBackingStore();
 
-    void beginPaint(const QRegion &);
-    void endPaint();
+    void beginPaint(const QRegion &) Q_DECL_OVERRIDE;
+    void endPaint() Q_DECL_OVERRIDE;
 
     QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
     void flush(QWindow *targetWindow, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;

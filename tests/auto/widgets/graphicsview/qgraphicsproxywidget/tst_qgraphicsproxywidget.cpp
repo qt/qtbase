@@ -3685,6 +3685,7 @@ void tst_QGraphicsProxyWidget::mapToGlobal() // QTBUG-41135
     const QSize size = availableGeometry.size() / 5;
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    view.setTransform(QTransform::fromScale(2, 2));  // QTBUG-50136, use transform.
     view.setWindowTitle(QTest::currentTestFunction());
     view.resize(size);
     view.move(availableGeometry.bottomRight() - QPoint(size.width(), size.height()) - QPoint(100, 100));
@@ -3707,10 +3708,15 @@ void tst_QGraphicsProxyWidget::mapToGlobal() // QTBUG-41135
     QVERIFY2((viewCenter - embeddedCenterGlobal).manhattanLength() <= 2,
              msgPointMismatch(embeddedCenterGlobal, viewCenter).constData());
 
-    // Same test with child centered on embeddedWidget
+    // Same test with child centered on embeddedWidget. The correct
+    // mapping is not implemented yet, but at least make sure
+    // the roundtrip maptoGlobal()/mapFromGlobal() returns the same
+    // point since that is important for mouse event handling (QTBUG-50030,
+    // QTBUG-50136).
     const QPoint childCenter = childWidget->rect().center();
     const QPoint childCenterGlobal = childWidget->mapToGlobal(childCenter);
     QCOMPARE(childWidget->mapFromGlobal(childCenterGlobal), childCenter);
+    QEXPECT_FAIL("", "Not implemented for child widgets of embedded widgets", Continue);
     QVERIFY2((viewCenter - childCenterGlobal).manhattanLength() <= 4,
              msgPointMismatch(childCenterGlobal, viewCenter).constData());
 }

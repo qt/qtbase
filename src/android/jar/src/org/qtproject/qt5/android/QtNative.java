@@ -214,6 +214,16 @@ public class QtNative
         });
     }
 
+    private static void setViewVisibility(final View view, final boolean visible)
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                view.setVisibility(visible ? View.VISIBLE : View.GONE);
+            }
+        });
+    }
+
     public static boolean startApplication(String params,
                                            String environment,
                                            String mainLibrary,

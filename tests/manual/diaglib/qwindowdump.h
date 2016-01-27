@@ -44,7 +44,8 @@ QT_FORWARD_DECLARE_CLASS(QTextStream)
 namespace QtDiag {
 
 enum FormatWindowOption {
-    DontPrintWindowFlags = 0x001
+    DontPrintWindowFlags = 0x001,
+    PrintSizeConstraints = 0x002
 };
 
 Q_DECLARE_FLAGS(FormatWindowOptions, FormatWindowOption)

@@ -39,6 +39,7 @@
 #include <QtGui/QWindow>
 #include <QtGui/QPainter>
 #include <private/qhighdpiscaling_p.h>
+#include <private/qimage_p.h>
 
 #include <QtCore/QDebug>
 
@@ -52,7 +53,8 @@ QT_BEGIN_NAMESPACE
 */
 
 QWindowsBackingStore::QWindowsBackingStore(QWindow *window) :
-    QPlatformBackingStore(window)
+    QPlatformBackingStore(window),
+    m_alphaNeedsFill(false)
 {
     qCDebug(lcQpaBackingStore) << __FUNCTION__ << this << window;
 }
@@ -144,8 +146,16 @@ void QWindowsBackingStore::resize(const QSize &size, const QRegion &region)
                 << " from: " << (m_image.isNull() ? QSize() : m_image->image().size());
         }
 #endif
-        const QImage::Format format = window()->format().hasAlpha() ?
-            QImage::Format_ARGB32_Premultiplied : QWindowsNativeImage::systemFormat();
+        QImage::Format format = window()->format().hasAlpha() ?
+                    QImage::Format_ARGB32_Premultiplied : QWindowsNativeImage::systemFormat();
+
+        // The backingstore composition (enabling render-to-texture widgets)
+        // punches holes in the backingstores using the alpha channel. Hence
+        // the need for a true alpha format.
+        if (QImage::toPixelFormat(format).alphaUsage() == QPixelFormat::UsesAlpha)
+            m_alphaNeedsFill = true;
+        else // upgrade but here we know app painting does not rely on alpha hence no need to fill
+            format = qt_alphaVersionForPainting(format);
 
         QWindowsNativeImage *oldwni = m_image.data();
         QWindowsNativeImage *newwni = new QWindowsNativeImage(size.width(), size.height(), format);
@@ -186,7 +196,7 @@ void QWindowsBackingStore::beginPaint(const QRegion &region)
     if (QWindowsContext::verbose > 1)
         qCDebug(lcQpaBackingStore) <<__FUNCTION__ << region;
 
-    if (m_image->image().hasAlphaChannel()) {
+    if (m_alphaNeedsFill) {
         QPainter p(&m_image->image());
         p.setCompositionMode(QPainter::CompositionMode_Source);
         const QColor blank = Qt::transparent;

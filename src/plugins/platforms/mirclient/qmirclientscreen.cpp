@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Canonical, Ltd.
+** Copyright (C) 2014-2015 Canonical, Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -35,6 +35,11 @@
 ****************************************************************************/
 
 
+// local
+#include "qmirclientscreen.h"
+#include "qmirclientlogging.h"
+#include "qmirclientorientationchangeevent_p.h"
+
 #include <mir_toolkit/mir_client_library.h>
 
 // Qt
@@ -45,12 +50,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 
-// local
-#include "qmirclientscreen.h"
-#include "qmirclientlogging.h"
-#include "qmirclientorientationchangeevent_p.h"
-
-#include "memory"
+#include <memory>
 
 static const int kSwapInterval = 1;
 
@@ -149,9 +149,11 @@ static const MirDisplayOutput *find_active_output(
 QMirClientScreen::QMirClientScreen(MirConnection *connection)
     : mFormat(QImage::Format_RGB32)
     , mDepth(32)
+    , mOutputId(0)
     , mSurfaceFormat()
     , mEglDisplay(EGL_NO_DISPLAY)
     , mEglConfig(nullptr)
+    , mCursor(connection)
 {
     // Initialize EGL.
     ASSERT(eglBindAPI(EGL_OPENGL_ES_API) == EGL_TRUE);
@@ -202,6 +204,11 @@ QMirClientScreen::QMirClientScreen(MirConnection *connection)
 
     auto const displayOutput = find_active_output(displayConfig.get());
     ASSERT(displayOutput != nullptr);
+
+    mOutputId = displayOutput->output_id;
+
+    mPhysicalSize = QSizeF(displayOutput->physical_width_mm, displayOutput->physical_height_mm);
+    DLOG("ubuntumirclient: screen physical size: %.2fx%.2f", mPhysicalSize.width(), mPhysicalSize.height());
 
     const MirDisplayMode *mode = &displayOutput->modes[displayOutput->current_mode];
     const int kScreenWidth = mode->horizontal_resolution;

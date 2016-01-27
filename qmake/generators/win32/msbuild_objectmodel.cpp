@@ -608,8 +608,8 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
 
     xml.setIndentString("  ");
 
-    const QString toolsVersion = (tool.SdkVersion == QStringLiteral("10.0")) ? QStringLiteral("14.0")
-                                                                             : QStringLiteral("4.0");
+    const QString toolsVersion = (tool.SdkVersion == QLatin1String("10.0")) ? QStringLiteral("14.0")
+                                                                            : QStringLiteral("4.0");
 
     xml << decl("1.0", "utf-8")
         << tag("Project")

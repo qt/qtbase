@@ -139,6 +139,8 @@ mac {
 
    contains(QT_CONFIG, rpath): \
        QMAKE_SONAME_PREFIX = @rpath
+   else: \
+       CONFIG += absolute_library_soname
 }
 
 DEFINES += QT_BUILDING_QT

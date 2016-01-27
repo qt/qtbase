@@ -121,6 +121,72 @@ private:
     bool dirty;
 };
 
+// ### Qt6: Drop Median<double> in favor of this faster MedianDouble
+class MedianDouble
+{
+public:
+    enum { BufferSize = 7 };
+
+    MedianDouble()
+        : currentMedian(), currentIndex(0), valid(false), dirty(true)
+    {
+    }
+
+    void reset()
+    {
+        std::fill_n(values, static_cast<int>(BufferSize), 0.0);
+        currentIndex = 0;
+        valid = false;
+        dirty = true;
+    }
+
+    void addValue(double value)
+    {
+        ++currentIndex;
+        if (currentIndex == BufferSize) {
+            currentIndex = 0;
+            valid = true;
+        }
+
+        // Only update the cached median value when we have to, that
+        // is when the new value is on then other side of the median
+        // compared to the current value at the index.
+        const double currentIndexValue = values[currentIndex];
+        if ((currentIndexValue > currentMedian && currentMedian > value)
+            || (currentMedian > currentIndexValue && value > currentMedian)) {
+            dirty = true;
+        }
+
+        values[currentIndex] = value;
+    }
+
+    bool isMedianValid() const
+    {
+        return valid;
+    }
+
+    double median()
+    {
+        if (dirty) {
+            dirty = false;
+
+            double sorted[BufferSize];
+            ::memcpy(&sorted, &values, sizeof(sorted));
+            std::sort(sorted, sorted + static_cast<int>(BufferSize));
+            currentMedian = sorted[BufferSize / 2];
+        }
+
+        return currentMedian;
+    }
+
+private:
+    double values[BufferSize];
+    double currentMedian;
+    int currentIndex;
+    bool valid;
+    bool dirty;
+};
+
 } // namespace QtConcurrent
 
 #endif //Q_QDOC

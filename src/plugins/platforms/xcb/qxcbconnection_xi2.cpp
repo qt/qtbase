@@ -867,6 +867,8 @@ void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollin
                     // We do not set "pixel" delta if it is only measured in ticks.
                     if (scrollingDevice.verticalIncrement > 1)
                         rawDelta.setY(delta);
+                    else if (scrollingDevice.verticalIncrement < -1)
+                        rawDelta.setY(-delta);
                 }
             }
             if (scrollingDevice.orientations & Qt::Horizontal) {
@@ -877,6 +879,8 @@ void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollin
                     // We do not set "pixel" delta if it is only measured in ticks.
                     if (scrollingDevice.horizontalIncrement > 1)
                         rawDelta.setX(delta);
+                    else if (scrollingDevice.horizontalIncrement < -1)
+                        rawDelta.setX(-delta);
                 }
             }
             if (!angleDelta.isNull()) {

@@ -40,20 +40,23 @@
 
 #include <qpa/qplatformwindow.h>
 #include <QSharedPointer>
+#include <QMutex>
 
-#include <mir_toolkit/mir_client_library.h>
+#include <memory>
 
 class QMirClientClipboard;
 class QMirClientInput;
 class QMirClientScreen;
-class QMirClientWindowPrivate;
+class QMirClientSurface;
+struct MirConnection;
+struct MirSurface;
 
 class QMirClientWindow : public QObject, public QPlatformWindow
 {
     Q_OBJECT
 public:
-    QMirClientWindow(QWindow *w, QSharedPointer<QMirClientClipboard> clipboard, QMirClientScreen *screen,
-                 QMirClientInput *input, MirConnection *mir_connection);
+    QMirClientWindow(QWindow *w, const QSharedPointer<QMirClientClipboard> &clipboard, QMirClientScreen *screen,
+                 QMirClientInput *input, MirConnection *mirConnection);
     virtual ~QMirClientWindow();
 
     // QPlatformWindow methods.
@@ -61,20 +64,22 @@ public:
     void setGeometry(const QRect&) override;
     void setWindowState(Qt::WindowState state) override;
     void setVisible(bool visible) override;
+    void setWindowTitle(const QString &title) override;
+    void propagateSizeHints() override;
 
     // New methods.
-    void* eglSurface() const;
-    void handleSurfaceResize(int width, int height);
-    void handleSurfaceFocusChange(bool focused);
-    void onBuffersSwapped_threadSafe(int newBufferWidth, int newBufferHeight);
-
-    QMirClientWindowPrivate* priv() { return d; }
+    void *eglSurface() const;
+    MirSurface *mirSurface() const;
+    void handleSurfaceResized(int width, int height);
+    void handleSurfaceFocused();
+    void onSwapBuffersDone();
 
 private:
-    void createWindow();
-    void moveResize(const QRect& rect);
-
-    QMirClientWindowPrivate *d;
+    void updatePanelHeightHack(Qt::WindowState);
+    mutable QMutex mMutex;
+    const WId mId;
+    const QSharedPointer<QMirClientClipboard> mClipboard;
+    std::unique_ptr<QMirClientSurface> mSurface;
 };
 
 #endif // QMIRCLIENTWINDOW_H

@@ -67,8 +67,10 @@ for(ever) {
     unset(BAD_QT)
     for(QTLIB, FULL_QT$$var_sfx) {
         MODULE_NAME = $$eval(QT.$${QTLIB}.name)
+        MODULE_MODULE = $$eval(QT.$${QTLIB}.module)
         MODULE_INCLUDES = $$eval(QT.$${QTLIB}.includes)
         MODULE_LIBS = $$eval(QT.$${QTLIB}.libs)
+        MODULE_FRAMEWORKS = $$eval(QT.$${QTLIB}.frameworks)
         MODULE_CONFIG = $$eval(QT.$${QTLIB}.module_config)
 
         isEmpty(MODULE_NAME) {
@@ -88,49 +90,55 @@ for(ever) {
         MODULE_LIBS_ADD = $$MODULE_LIBS
         MODULE_LIBS_ADD -= $$QMAKE_DEFAULT_LIBDIRS
 
-        LINKAGE =
-        contains(MODULE_CONFIG, lib_bundle) {
-            FRAMEWORK_INCLUDE = $${MODULE_LIBS}/$${MODULE_NAME}.framework/Headers
-            !qt_no_framework_direct_includes {
-                INCLUDEPATH *= $$FRAMEWORK_INCLUDE
+        !contains(MODULE_CONFIG, v2) {
+            # Backwards compatibility with pre-5.6 module .pri files
+
+            contains(MODULE_CONFIG, lib_bundle) {
+                MODULE_FRAMEWORKS = $$MODULE_LIBS
+                inc = $$MODULE_LIBS/$${MODULE_NAME}.framework/Headers
+                MODULE_INCLUDES = $$inc
+                contains(MODULE_CONFIG, internal_module): \
+                    MODULE_INCLUDES += \
+                        $$inc/$$eval(QT.$${QTLIB}.VERSION) \
+                        $$inc/$$eval(QT.$${QTLIB}.VERSION)/$$MODULE_NAME
+            } else {
+                # Re-insert the major version in the library name (cf qt5LibraryTarget above)
+                MODULE_NAME ~= s,^Qt,Qt$$QT_MAJOR_VERSION,
             }
-            contains(MODULE_CONFIG, internal_module): \
-                INCLUDEPATH += \
-                    $$FRAMEWORK_INCLUDE/$$eval(QT.$${QTLIB}.VERSION) \
-                    $$FRAMEWORK_INCLUDE/$$eval(QT.$${QTLIB}.VERSION)/$$MODULE_NAME
-            QMAKE_FRAMEWORKPATH *= $${MODULE_LIBS}
-            !contains(MODULE_CONFIG, no_link): \
-                LINKAGE += -framework $${MODULE_NAME}$${QT_LIBINFIX}
-        } else {
-            INCLUDEPATH *= $$MODULE_INCLUDES
+
+            # Only link to this module if a libs directory is set, else this is just a module
+            # to give access to sources or include files, and not for linking.
+            !isEmpty(MODULE_LIBS):!contains(MODULE_CONFIG, no_link): \
+                MODULE_MODULE = $${MODULE_NAME}$${QT_LIBINFIX}
         }
 
-        # Only link to this module if a libs directory is set, else this is just a module
-        # to give access to sources or include files, and not for linking.
-        !isEmpty(MODULE_LIBS):!contains(MODULE_CONFIG, no_link) {
-
-            # Re-insert the major version in the library name (cf qt5LibraryTarget above)
-            # unless it's a framework build
-            !contains(MODULE_CONFIG, lib_bundle): \
-                MODULE_NAME ~= s,^Qt,Qt$$QT_MAJOR_VERSION,
-
-            isEmpty(LINKAGE) {
+        # Frameworks shouldn't need include paths, but much code does not use
+        # module-qualified #includes, so by default we add paths which point
+        # directly into the frameworks. Private modules have somewhat convoluted
+        # header paths, so adding them is necessary in every case.
+        !if(contains(MODULE_CONFIG, lib_bundle):qt_no_framework_direct_includes) \
+                |contains(MODULE_CONFIG, internal_module): \
+            INCLUDEPATH *= $$MODULE_INCLUDES
+        QMAKE_FRAMEWORKPATH *= $$MODULE_FRAMEWORKS
+        !isEmpty(MODULE_MODULE) {
+            contains(MODULE_CONFIG, lib_bundle) {
+                LIBS$$var_sfx += -framework $$MODULE_MODULE
+            } else {
                 !isEmpty(MODULE_LIBS_ADD): \
-                    LINKAGE = -L$$MODULE_LIBS_ADD
-                lib = $${MODULE_NAME}$${QT_LIBINFIX}$$qtPlatformTargetSuffix()
-                LINKAGE += -l$$lib
+                    LIBS$$var_sfx += -L$$MODULE_LIBS_ADD
+
+                lib = $$MODULE_MODULE$$qtPlatformTargetSuffix()
+                LIBS$$var_sfx += -l$$lib
 
                 contains(MODULE_CONFIG, staticlib): \
                     PRE_TARGETDEPS *= $$MODULE_LIBS/$${QMAKE_PREFIX_STATICLIB}$${lib}.$${QMAKE_EXTENSION_STATICLIB}
-            }
 
-            LIBS$$var_sfx += $$LINKAGE
-
-            !isEmpty(QMAKE_LSB) {
-                !isEmpty(MODULE_LIBS_ADD): \
-                    QMAKE_LFLAGS *= --lsb-libpath=$$MODULE_LIBS_ADD
-                QMAKE_LFLAGS *= --lsb-shared-libs=$${MODULE_NAME}$${QT_LIBINFIX}
-                QMAKE_LIBDIR *= /opt/lsb/lib
+                !isEmpty(QMAKE_LSB) {
+                    !isEmpty(MODULE_LIBS_ADD): \
+                        QMAKE_LFLAGS *= --lsb-libpath=$$MODULE_LIBS_ADD
+                    QMAKE_LFLAGS *= --lsb-shared-libs=$$lib
+                    QMAKE_LIBDIR *= /opt/lsb/lib
+                }
             }
         }
     }

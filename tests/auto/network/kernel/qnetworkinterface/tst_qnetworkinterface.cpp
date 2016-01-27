@@ -232,13 +232,6 @@ void tst_QNetworkInterface::interfaceFromXXX()
             // but only for IPv4 (there is no such thing as broadcast in IPv6)
             if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
                 QVERIFY(!entry.broadcast().isNull());
-
-                // verify that the broadcast address is correct
-                quint32 ip = entry.ip().toIPv4Address();
-                quint32 mask = entry.netmask().toIPv4Address();
-                quint32 bcast = entry.broadcast().toIPv4Address();
-
-                QCOMPARE(bcast, ip | ~mask);
             }
         }
 

@@ -110,10 +110,10 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                 QString arch = project->first("VCPROJ_ARCH").toQString().toLower();
                 QString compiler;
                 QString compilerArch;
-                if (arch == QStringLiteral("arm")) {
+                if (arch == QLatin1String("arm")) {
                     compiler = QStringLiteral("x86_arm");
                     compilerArch = QStringLiteral("arm");
-                } else if (arch == QStringLiteral("x64")) {
+                } else if (arch == QLatin1String("x64")) {
                     const ProStringList hostArch = project->values("QMAKE_TARGET.arch");
                     if (hostArch.contains("x86_64"))
                         compiler = QStringLiteral("amd64");
@@ -193,6 +193,9 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                     incDirs << crtInclude + QStringLiteral("/shared");
                     incDirs << crtInclude + QStringLiteral("/winrt");
 
+                    incDirs << kitDir + QStringLiteral("Extension SDKs/WindowsMobile/")
+                                      + crtVersion + QStringLiteral("/Include/WinRT");
+
                     libDirs << vcInstallDir + QStringLiteral("lib/store/") + compilerArch;
                     libDirs << vcInstallDir + QStringLiteral("atlmfc/lib") + compilerArch;
 
@@ -265,7 +268,7 @@ QString NmakeMakefileGenerator::defaultInstall(const QString &t)
 
     QString ret = Win32MakefileGenerator::defaultInstall(t);
 
-    const QString root = "$(INSTALL_ROOT)";
+    const QString root = installRoot();
     ProStringList &uninst = project->values(ProKey(t + ".uninstall"));
     QString targetdir = fileFixify(project->first(ProKey(t + ".path")).toQString(), FileFixifyAbsolute);
     if(targetdir.right(1) != Option::dir_sep)

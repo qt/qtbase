@@ -67,6 +67,8 @@ public:
 
     QSize size() const { return m_qimage.size(); }
 
+    bool hasAlpha() const { return m_hasAlpha; }
+
     void put(xcb_window_t window, const QPoint &dst, const QRect &source);
     void preparePaint(const QRegion &region);
 
@@ -84,6 +86,8 @@ private:
     xcb_window_t m_gc_window;
 
     QRegion m_dirty;
+
+    bool m_hasAlpha;
 };
 
 class QXcbShmGraphicsBuffer : public QPlatformGraphicsBuffer
@@ -173,7 +177,8 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
             qWarning() << "QXcbBackingStore: Error while marking the shared memory segment to be destroyed";
     }
 
-    if (QImage::toPixelFormat(format).alphaUsage() == QPixelFormat::IgnoresAlpha)
+    m_hasAlpha = QImage::toPixelFormat(format).alphaUsage() == QPixelFormat::UsesAlpha;
+    if (!m_hasAlpha)
         format = qt_alphaVersionForPainting(format);
 
     m_qimage = QImage( (uchar*) m_xcb_image->data, m_xcb_image->width, m_xcb_image->height, m_xcb_image->stride, format);
@@ -324,7 +329,7 @@ void QXcbBackingStore::beginPaint(const QRegion &region)
     m_paintRegion = region;
     m_image->preparePaint(m_paintRegion);
 
-    if (m_image->image()->hasAlphaChannel()) {
+    if (m_image->hasAlpha()) {
         QPainter p(paintDevice());
         p.setCompositionMode(QPainter::CompositionMode_Source);
         const QVector<QRect> rects = m_paintRegion.rects();

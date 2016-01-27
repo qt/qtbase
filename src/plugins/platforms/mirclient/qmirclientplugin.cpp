@@ -41,14 +41,14 @@
 QStringList QMirClientIntegrationPlugin::keys() const
 {
     QStringList list;
-    list << "mirclient";
+    list << QStringLiteral("mirclient");
     return list;
 }
 
 QPlatformIntegration* QMirClientIntegrationPlugin::create(const QString &system,
                                                                const QStringList &)
 {
-    if (system.toLower() == "mirclient") {
+    if (system.toLower() == QLatin1String("mirclient")) {
         return new QMirClientClientIntegration;
     } else {
         return 0;

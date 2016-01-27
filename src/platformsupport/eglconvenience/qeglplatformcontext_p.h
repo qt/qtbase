@@ -84,6 +84,7 @@ protected:
     virtual EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) = 0;
     virtual EGLSurface createTemporaryOffscreenSurface();
     virtual void destroyTemporaryOffscreenSurface(EGLSurface surface);
+    virtual void runGLChecks();
 
 private:
     void init(const QSurfaceFormat &format, QPlatformOpenGLContext *share);

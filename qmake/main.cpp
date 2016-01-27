@@ -309,8 +309,8 @@ int runQMake(int argc, char **argv)
                 dir = tmp_dir;
         }
 #ifdef Q_OS_MAC
-        if (fi.fileName().endsWith(QStringLiteral(".pbxproj"))
-            && dir.endsWith(QStringLiteral(".xcodeproj")))
+        if (fi.fileName().endsWith(QLatin1String(".pbxproj"))
+            && dir.endsWith(QLatin1String(".xcodeproj")))
             dir += QStringLiteral("/..");
 #endif
         if(!dir.isNull() && dir != ".")

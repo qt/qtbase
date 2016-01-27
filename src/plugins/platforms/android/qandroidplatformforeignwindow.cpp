@@ -45,10 +45,14 @@ QAndroidPlatformForeignWindow::QAndroidPlatformForeignWindow(QWindow *window)
 {
     const WId wId = window->property("_q_foreignWinId").value<WId>();
     m_view = reinterpret_cast<jobject>(wId);
+    if (m_view.isValid())
+        QtAndroid::setViewVisibility(m_view.object(), false);
 }
 
 QAndroidPlatformForeignWindow::~QAndroidPlatformForeignWindow()
 {
+    if (m_view.isValid())
+        QtAndroid::setViewVisibility(m_view.object(), false);
     if (m_surfaceId != -1)
         QtAndroid::destroySurface(m_surfaceId);
 }
@@ -84,8 +88,9 @@ void QAndroidPlatformForeignWindow::setVisible(bool visible)
     if (!m_view.isValid())
         return;
 
-    QAndroidPlatformWindow::setVisible(visible);
+    QtAndroid::setViewVisibility(m_view.object(), visible);
 
+    QAndroidPlatformWindow::setVisible(visible);
     if (!visible && m_surfaceId != -1) {
         QtAndroid::destroySurface(m_surfaceId);
         m_surfaceId = -1;

@@ -70,7 +70,7 @@ public:
         , fd_(-1)
         , stream_(0)
     {
-    #if defined(QT_LARGEFILE_SUPPORT) && !defined(Q_OS_MAC)
+    #if defined(QT_LARGEFILE_SUPPORT) && !defined(Q_OS_MAC) && !defined(Q_OS_WINRT)
         maxSizeBits = 36; // 64 GiB
     #elif defined(Q_OS_MAC)
         // HFS+ does not support sparse files, so we limit file size for the test
@@ -135,6 +135,9 @@ private:
 
     int fd_;
     FILE *stream_;
+
+    QSharedPointer<QTemporaryDir> m_tempDir;
+    QString m_previousCurrent;
 };
 
 /*
@@ -229,6 +232,11 @@ QByteArray const &tst_LargeFile::getDataBlock(int index, qint64 position)
 
 void tst_LargeFile::initTestCase()
 {
+    m_previousCurrent = QDir::currentPath();
+    m_tempDir = QSharedPointer<QTemporaryDir>(new QTemporaryDir);
+    QVERIFY2(!m_tempDir.isNull(), qPrintable("Could not create temporary directory."));
+    QVERIFY2(QDir::setCurrent(m_tempDir->path()), qPrintable("Could not switch current directory"));
+
     QFile file("qt_largefile.tmp");
     QVERIFY( !file.exists() || file.remove() );
 }
@@ -240,6 +248,8 @@ void tst_LargeFile::cleanupTestCase()
 
     QFile file("qt_largefile.tmp");
     QVERIFY( !file.exists() || file.remove() );
+
+    QDir::setCurrent(m_previousCurrent);
 }
 
 void tst_LargeFile::init()

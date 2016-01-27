@@ -72,11 +72,14 @@ private slots:
 
     void QTBUG43352_failedSetPermissions();
 
-public:
+private:
+    QString m_previousCurrent;
 };
 
 void tst_QTemporaryDir::initTestCase()
 {
+    m_previousCurrent = QDir::currentPath();
+    QDir::setCurrent(QDir::tempPath());
     QVERIFY(QDir("test-XXXXXX").exists() || QDir().mkdir("test-XXXXXX"));
     QCoreApplication::setApplicationName("tst_qtemporarydir");
 }
@@ -84,6 +87,8 @@ void tst_QTemporaryDir::initTestCase()
 void tst_QTemporaryDir::cleanupTestCase()
 {
     QVERIFY(QDir().rmdir("test-XXXXXX"));
+
+    QDir::setCurrent(m_previousCurrent);
 }
 
 void tst_QTemporaryDir::construction()

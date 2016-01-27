@@ -236,9 +236,9 @@ template <> struct QConcatenable<QLatin1String> : private QAbstractConcatenable
     }
     static inline void appendTo(const QLatin1String a, char *&out)
     {
-        if (a.data()) {
-            for (const char *s = a.data(); *s; )
-                *out++ = *s++;
+        if (const char *data = a.data()) {
+            memcpy(out, data, a.size());
+            out += a.size();
         }
     }
 };

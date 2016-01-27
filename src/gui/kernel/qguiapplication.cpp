@@ -607,6 +607,8 @@ QGuiApplication::~QGuiApplication()
     QGuiApplicationPrivate::platform_name = 0;
     delete QGuiApplicationPrivate::displayName;
     QGuiApplicationPrivate::displayName = 0;
+    delete QGuiApplicationPrivate::m_inputDeviceManager;
+    QGuiApplicationPrivate::m_inputDeviceManager = 0;
 }
 
 QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags)
@@ -1063,7 +1065,7 @@ static void init_platform(const QString &pluginArgument, const QString &platform
         QStringList keys = QPlatformIntegrationFactory::keys(platformPluginPath);
 
         QString fatalMessage
-                = QStringLiteral("This application failed to start because it could not find or load the Qt platform plugin \"%1\".\n\n").arg(name);
+                = QStringLiteral("This application failed to start because it could not find or load the Qt platform plugin \"%1\"\nin \"%2\".\n\n").arg(name, QDir::toNativeSeparators(platformPluginPath));
         if (!keys.isEmpty()) {
             fatalMessage += QStringLiteral("Available platform plugins are: %1.\n\n").arg(
                         keys.join(QStringLiteral(", ")));
@@ -1186,30 +1188,32 @@ void QGuiApplicationPrivate::createPlatformIntegration()
 
     int j = argc ? 1 : 0;
     for (int i=1; i<argc; i++) {
-        if (argv[i] && *argv[i] != '-') {
+        if (!argv[i])
+            continue;
+        if (*argv[i] != '-') {
             argv[j++] = argv[i];
             continue;
         }
         const bool isXcb = platformName == "xcb";
-        QByteArray arg = argv[i];
-        if (arg.startsWith("--"))
-            arg.remove(0, 1);
-        if (arg == "-platformpluginpath") {
+        const char *arg = argv[i];
+        if (arg[1] == '-') // startsWith("--")
+            ++arg;
+        if (strcmp(arg, "-platformpluginpath") == 0) {
             if (++i < argc)
                 platformPluginPath = QString::fromLocal8Bit(argv[i]);
-        } else if (arg == "-platform") {
+        } else if (strcmp(arg, "-platform") == 0) {
             if (++i < argc)
                 platformName = argv[i];
-        } else if (arg == "-platformtheme") {
+        } else if (strcmp(arg, "-platformtheme") == 0) {
             if (++i < argc)
                 platformThemeName = QString::fromLocal8Bit(argv[i]);
-        } else if (arg == "-qwindowgeometry" || (isXcb && arg == "-geometry")) {
+        } else if (strcmp(arg, "-qwindowgeometry") == 0 || (isXcb && strcmp(arg, "-geometry") == 0)) {
             if (++i < argc)
                 windowGeometrySpecification = QWindowGeometrySpecification::fromArgument(argv[i]);
-        } else if (arg == "-qwindowtitle" || (isXcb && arg == "-title")) {
+        } else if (strcmp(arg, "-qwindowtitle") == 0 || (isXcb && strcmp(arg, "-title") == 0)) {
             if (++i < argc)
                 firstWindowTitle = QString::fromLocal8Bit(argv[i]);
-        } else if (arg == "-qwindowicon" || (isXcb && arg == "-icon")) {
+        } else if (strcmp(arg, "-qwindowicon") == 0 || (isXcb && strcmp(arg, "-icon") == 0)) {
             if (++i < argc) {
                 icon = QString::fromLocal8Bit(argv[i]);
             }
@@ -1285,20 +1289,22 @@ void QGuiApplicationPrivate::init()
     QString s;
     int j = argc ? 1 : 0;
     for (int i=1; i<argc; i++) {
-        if (argv[i] && *argv[i] != '-') {
+        if (!argv[i])
+            continue;
+        if (*argv[i] != '-') {
             argv[j++] = argv[i];
             continue;
         }
-        QByteArray arg = argv[i];
-        if (arg.startsWith("--"))
-            arg.remove(0, 1);
-        if (arg == "-plugin") {
+        const char *arg = argv[i];
+        if (arg[1] == '-') // startsWith("--")
+            ++arg;
+        if (strcmp(arg, "-plugin") == 0) {
             if (++i < argc)
                 pluginList << argv[i];
-        } else if (arg == "-reverse") {
+        } else if (strcmp(arg, "-reverse") == 0) {
             force_reverse = true;
 #ifdef Q_OS_MAC
-        } else if (arg.startsWith("-psn_")) {
+        } else if (strncmp(arg, "-psn_", 5) == 0) {
             // eat "-psn_xxxx" on Mac, which is passed when starting an app from Finder.
             // special hack to change working directory (for an app bundle) when running from finder
             if (QDir::currentPath() == QLatin1String("/")) {
@@ -1310,7 +1316,7 @@ void QGuiApplicationPrivate::init()
             }
 #endif
 #ifndef QT_NO_SESSIONMANAGER
-        } else if (arg == "-session" && i < argc-1) {
+        } else if (strcmp(arg, "-session") == 0 && i < argc - 1) {
             ++i;
             if (argv[i] && *argv[i]) {
                 session_id = QString::fromLatin1(argv[i]);
@@ -1322,11 +1328,11 @@ void QGuiApplicationPrivate::init()
                 is_session_restored = true;
             }
 #endif
-        } else if (arg == "-testability") {
+        } else if (strcmp(arg, "-testability") == 0) {
             loadTestability = true;
-        } else if (arg.indexOf("-style=", 0) != -1) {
-            s = QString::fromLocal8Bit(arg.right(arg.length() - 7).toLower());
-        } else if (arg == "-style" && i < argc-1) {
+        } else if (strncmp(arg, "-style=", 7) == 0) {
+            s = QString::fromLocal8Bit(arg + 7).toLower();
+        } else if (strcmp(arg, "-style") == 0 && i < argc - 1) {
             s = QString::fromLocal8Bit(argv[++i]).toLower();
         } else {
             argv[j++] = argv[i];

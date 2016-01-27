@@ -85,10 +85,15 @@ private slots:
     void QTBUG_4796_data();
     void QTBUG_4796();
     void guaranteeUnique();
+private:
+    QString m_previousCurrent;
 };
 
 void tst_QTemporaryFile::initTestCase()
 {
+    m_previousCurrent = QDir::currentPath();
+    QDir::setCurrent(QDir::tempPath());
+
     // For QTBUG_4796
     QVERIFY(QDir("test-XXXXXX").exists() || QDir().mkdir("test-XXXXXX"));
     QCoreApplication::setApplicationName("tst_qtemporaryfile");
@@ -116,6 +121,8 @@ void tst_QTemporaryFile::cleanupTestCase()
 {
     // From QTBUG_4796
     QVERIFY(QDir().rmdir("test-XXXXXX"));
+
+    QDir::setCurrent(m_previousCurrent);
 }
 
 void tst_QTemporaryFile::construction()
@@ -678,8 +685,11 @@ void tst_QTemporaryFile::createNativeFile_data()
     const QString nativeFilePath = QFINDTESTDATA("resources/test.txt");
 #endif
 
-    QTest::newRow("nativeFile") << nativeFilePath << (qint64)-1 << false << QByteArray();
-    QTest::newRow("nativeFileWithPos") << nativeFilePath << (qint64)5 << false << QByteArray();
+    // File might not exist locally in case of sandboxing or remote testing
+    if (!nativeFilePath.startsWith(QLatin1String(":/"))) {
+        QTest::newRow("nativeFile") << nativeFilePath << (qint64)-1 << false << QByteArray();
+        QTest::newRow("nativeFileWithPos") << nativeFilePath << (qint64)5 << false << QByteArray();
+    }
     QTest::newRow("resourceFile") << ":/resources/test.txt" << (qint64)-1 << true << QByteArray("This is a test");
     QTest::newRow("resourceFileWithPos") << ":/resources/test.txt" << (qint64)5 << true << QByteArray("This is a test");
 }

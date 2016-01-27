@@ -454,7 +454,7 @@ public class QtActivity extends Activity
     {
         ArrayList<String> libs = new ArrayList<String>();
 
-        String dataDir = getApplicationInfo().dataDir + "/";
+        String libsDir = getApplicationInfo().nativeLibraryDir + "/";
 
         long packageVersion = -1;
         try {
@@ -489,7 +489,7 @@ public class QtActivity extends Activity
 
                 for (String bundledImportBinary : list) {
                     String[] split = bundledImportBinary.split(":");
-                    String sourceFileName = dataDir + "lib/" + split[0];
+                    String sourceFileName = libsDir + split[0];
                     String destinationFileName = pluginsPrefix + split[1];
                     createBundledBinary(sourceFileName, destinationFileName);
                 }

@@ -171,7 +171,7 @@ public:
     void raise() Q_DECL_OVERRIDE;
     void lower() Q_DECL_OVERRIDE;
 
-    void windowEvent(QEvent *event);
+    void windowEvent(QEvent *event) Q_DECL_OVERRIDE;
 
     void propagateSizeHints() Q_DECL_OVERRIDE;
     static bool handleGeometryChangingMessage(MSG *message, const QWindow *qWindow, const QMargins &marginsDp);
@@ -189,8 +189,8 @@ public:
 
     bool startSystemResize(const QPoint &pos, Qt::Corner corner) Q_DECL_OVERRIDE;
 
-    void setFrameStrutEventsEnabled(bool enabled);
-    bool frameStrutEventsEnabled() const { return testFlag(FrameStrutEventsEnabled); }
+    void setFrameStrutEventsEnabled(bool enabled) Q_DECL_OVERRIDE;
+    bool frameStrutEventsEnabled() const Q_DECL_OVERRIDE { return testFlag(FrameStrutEventsEnabled); }
 
     QMargins customMargins() const { return m_data.customMargins; }
     void setCustomMargins(const QMargins &m);
@@ -237,15 +237,15 @@ public:
 
     void setEnabled(bool enabled);
     bool isEnabled() const;
-    void setWindowIcon(const QIcon &icon);
+    void setWindowIcon(const QIcon &icon) Q_DECL_OVERRIDE;
 
     void *surface(void *nativeConfig, int *err);
     void invalidateSurface() Q_DECL_OVERRIDE;
     void aboutToMakeCurrent();
 
 #ifndef Q_OS_WINCE
-    void setAlertState(bool enabled);
-    bool isAlertState() const { return testFlag(AlertState); }
+    void setAlertState(bool enabled) Q_DECL_OVERRIDE;
+    bool isAlertState() const Q_DECL_OVERRIDE { return testFlag(AlertState); }
     void alertWindow(int durationMs = 0);
     void stopAlertWindow();
 #endif

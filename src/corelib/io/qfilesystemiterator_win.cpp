@@ -67,7 +67,8 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Fi
     if (!nativePath.endsWith(QLatin1Char('\\')))
         nativePath.append(QLatin1Char('\\'));
     nativePath.append(QLatin1Char('*'));
-#ifdef Q_OS_WINRT
+    // In MSVC2015+ case we prepend //?/ for longer file-name support
+#if defined(Q_OS_WINRT) && _MSC_VER < 1900
     if (nativePath.startsWith(QLatin1Char('\\')))
         nativePath.remove(0, 1);
 #endif

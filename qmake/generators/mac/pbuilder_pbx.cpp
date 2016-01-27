@@ -498,11 +498,11 @@ static QString xcodeFiletypeForFilename(const QString &filename)
         return QStringLiteral("sourcecode.cpp.objcpp");
     if (filename.endsWith(Option::objc_ext))
         return QStringLiteral("sourcecode.c.objc");
-    if (filename.endsWith(QStringLiteral(".framework")))
+    if (filename.endsWith(QLatin1String(".framework")))
         return QStringLiteral("wrapper.framework");
-    if (filename.endsWith(QStringLiteral(".a")))
+    if (filename.endsWith(QLatin1String(".a")))
         return QStringLiteral("archive.ar");
-    if (filename.endsWith(QStringLiteral(".pro")) || filename.endsWith(QStringLiteral(".qrc")))
+    if (filename.endsWith(QLatin1String(".pro")) || filename.endsWith(QLatin1String(".qrc")))
         return QStringLiteral("text");
 
     return QString();

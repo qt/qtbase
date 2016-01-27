@@ -862,7 +862,7 @@ QModelIndex QDirModel::index(const QString &path, int column) const
 #endif
 
     QStringList pathElements = absolutePath.split(QLatin1Char('/'), QString::SkipEmptyParts);
-    if ((pathElements.isEmpty() || !QFileInfo(path).exists())
+    if ((pathElements.isEmpty() || !QFileInfo::exists(path))
 #if !defined(Q_OS_WIN) || defined(Q_OS_WINCE)
         && path != QLatin1String("/")
 #endif

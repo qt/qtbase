@@ -93,14 +93,25 @@ static inline QDate fixedDate(int y, int m, int d)
     return result;
 }
 
+/*
+  Until C++11, rounding direction is implementation-defined.
+
+  For negative operands, implementations may chose to round down instead of
+  towards zero (truncation).  We only actually care about the case a < 0, as all
+  uses of floordiv have b > 0.  In this case, if rounding is down we have a % b
+  >= 0 and simple division works fine; but a % b = a - (a / b) * b always, so
+  rounding towards zero gives a % b <= 0; when < 0, we need to adjust.
+
+  Once we assume C++11, we can safely test a < 0 instead of a % b < 0.
+ */
 static inline qint64 floordiv(qint64 a, int b)
 {
-    return (a - (a < 0 ? b-1 : 0)) / b;
+    return (a - (a % b < 0 ? b - 1 : 0)) / b;
 }
 
 static inline int floordiv(int a, int b)
 {
-    return (a - (a < 0 ? b-1 : 0)) / b;
+    return (a - (a % b < 0 ? b - 1 : 0)) / b;
 }
 
 static inline qint64 julianDayFromDate(int year, int month, int day)
@@ -2696,10 +2707,11 @@ qint64 QDateTimePrivate::toMSecsSinceEpoch() const
     }
 
     case Qt::TimeZone:
-#ifndef QT_BOOTSTRAPPED
+#ifdef QT_BOOTSTRAPPED
+        break;
+#else
         return zoneMSecsToEpochMSecs(m_msecs, m_timeZone);
 #endif
-        break;
     }
     Q_UNREACHABLE();
     return 0;
@@ -3196,7 +3208,9 @@ QString QDateTime::timeZoneAbbreviation() const
     case Qt::OffsetFromUTC:
         return QTimeZonePrivate::utcQString() + toOffsetString(Qt::ISODate, d->m_offsetFromUtc);
     case Qt::TimeZone:
-#ifndef QT_BOOTSTRAPPED
+#ifdef QT_BOOTSTRAPPED
+        break;
+#else
         return d->m_timeZone.d->abbreviation(d->toMSecsSinceEpoch());
 #endif // QT_BOOTSTRAPPED
     case Qt::LocalTime:  {
@@ -3227,7 +3241,9 @@ bool QDateTime::isDaylightTime() const
     case Qt::OffsetFromUTC:
         return false;
     case Qt::TimeZone:
-#ifndef QT_BOOTSTRAPPED
+#ifdef QT_BOOTSTRAPPED
+        break;
+#else
         return d->m_timeZone.d->isDaylightTime(toMSecsSinceEpoch());
 #endif // QT_BOOTSTRAPPED
     case Qt::LocalTime: {
@@ -4824,10 +4840,8 @@ QDataStream &operator<<(QDataStream &out, const QDateTime &dateTime)
             out << (qint8)QDateTimePrivate::OffsetFromUTC;
             break;
         case Qt::TimeZone:
-#ifndef QT_BOOTSTRAPPED
             out << (qint8)QDateTimePrivate::TimeZone;
             break;
-#endif // QT_BOOTSTRAPPED
         case Qt::LocalTime:
             out << (qint8)QDateTimePrivate::LocalUnknown;
             break;
@@ -4900,10 +4914,11 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
             spec = Qt::OffsetFromUTC;
             break;
         case QDateTimePrivate::TimeZone:
-#ifndef QT_BOOTSTRAPPED
             spec = Qt::TimeZone;
+#ifndef QT_BOOTSTRAPPED
+            // FIXME: need to use a different constructor !
+#endif
             break;
-#endif // QT_BOOTSTRAPPED
         case QDateTimePrivate::LocalUnknown:
         case QDateTimePrivate::LocalStandard:
         case QDateTimePrivate::LocalDST:
@@ -4959,8 +4974,8 @@ QDebug operator<<(QDebug dbg, const QDateTime &date)
     case Qt::TimeZone:
 #ifndef QT_BOOTSTRAPPED
         dbg << ' ' << date.timeZone().id();
-        break;
 #endif // QT_BOOTSTRAPPED
+        break;
     case Qt::LocalTime:
         break;
     }

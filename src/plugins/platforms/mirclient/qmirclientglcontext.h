@@ -53,7 +53,7 @@ public:
     bool makeCurrent(QPlatformSurface* surface) override;
     void doneCurrent() override;
     bool isValid() const override { return mEglContext != EGL_NO_CONTEXT; }
-    void (*getProcAddress(const QByteArray& procName)) ();
+    void (*getProcAddress(const QByteArray& procName)) () override;
 
     EGLContext eglContext() const { return mEglContext; }
 

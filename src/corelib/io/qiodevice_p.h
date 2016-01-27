@@ -102,14 +102,17 @@ public:
     }
     qint64 read(char* target, qint64 size) {
         qint64 r = qMin(size, len);
-        memcpy(target, first, r);
-        len -= r;
-        first += r;
+        if (r) {
+            memcpy(target, first, r);
+            len -= r;
+            first += r;
+        }
         return r;
     }
     qint64 peek(char* target, qint64 size) {
         qint64 r = qMin(size, len);
-        memcpy(target, first, r);
+        if (r)
+            memcpy(target, first, r);
         return r;
     }
     char* reserve(qint64 size) {
@@ -141,7 +144,7 @@ public:
         return r;
     }
     bool canReadLine() const {
-        return memchr(first, '\n', len);
+        return first && memchr(first, '\n', len);
     }
     void ungetChar(char c) {
         if (first == buf) {
@@ -172,7 +175,8 @@ private:
         if (newCapacity > capacity) {
             // allocate more space
             char* newBuf = new char[newCapacity];
-            memmove(newBuf + moveOffset, first, len);
+            if (first)
+                memmove(newBuf + moveOffset, first, len);
             delete [] buf;
             buf = newBuf;
             capacity = newCapacity;
