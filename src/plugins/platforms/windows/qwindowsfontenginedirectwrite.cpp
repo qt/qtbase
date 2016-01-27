@@ -50,6 +50,7 @@
 #include <QtCore/QtEndian>
 #include <QtCore/QVarLengthArray>
 #include <private/qstringiterator_p.h>
+#include <QtCore/private/qsystemlibrary_p.h>
 
 #include <dwrite.h>
 #include <d2d1.h>
@@ -485,9 +486,9 @@ qreal QWindowsFontEngineDirectWrite::maxCharWidth() const
     return 0;
 }
 
-QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition)
+QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t)
 {
-    QImage im = imageForGlyph(glyph, subPixelPosition, 0, QTransform());
+    QImage im = alphaRGBMapForGlyph(glyph, subPixelPosition, t);
 
     QImage alphaMap(im.width(), im.height(), QImage::Format_Alpha8);
 
@@ -502,6 +503,11 @@ QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed sub
     }
 
     return alphaMap;
+}
+
+QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition)
+{
+    return alphaMapForGlyph(glyph, subPixelPosition, QTransform());
 }
 
 bool QWindowsFontEngineDirectWrite::supportsSubPixelPositions() const
@@ -640,6 +646,16 @@ QFontEngine *QWindowsFontEngineDirectWrite::cloneWithSize(qreal pixelSize) const
     return fontEngine;
 }
 
+// Dynamically resolve GetUserDefaultLocaleName, which is available from Windows
+// Vista onwards. ### fixme 5.7: Consider reverting to direct linking.
+typedef int (WINAPI *GetUserDefaultLocaleNamePtr)(LPWSTR, int);
+
+static inline GetUserDefaultLocaleNamePtr resolveGetUserDefaultLocaleName()
+{
+    QSystemLibrary library(QStringLiteral("kernel32"));
+    return (GetUserDefaultLocaleNamePtr)library.resolve("GetUserDefaultLocaleName");
+}
+
 void QWindowsFontEngineDirectWrite::initFontInfo(const QFontDef &request,
                                                  int dpi, IDWriteFont *font)
 {
@@ -658,7 +674,9 @@ void QWindowsFontEngineDirectWrite::initFontInfo(const QFontDef &request,
         BOOL exists = false;
 
         wchar_t localeName[LOCALE_NAME_MAX_LENGTH];
-        int defaultLocaleSuccess = GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH);
+        static const GetUserDefaultLocaleNamePtr getUserDefaultLocaleName = resolveGetUserDefaultLocaleName();
+        const int defaultLocaleSuccess = getUserDefaultLocaleName
+            ? getUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) : 0;
         if (defaultLocaleSuccess)
             hr = familyNames->FindLocaleName(localeName, &index, &exists);
 
@@ -709,9 +727,9 @@ QString QWindowsFontEngineDirectWrite::fontNameSubstitute(const QString &familyN
 glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph, QFixed pos, const QTransform &matrix, GlyphFormat format)
 {
     Q_UNUSED(pos);
-    int margin = 0;
-    if (format == QFontEngine::Format_A32 || format == QFontEngine::Format_ARGB)
-        margin = glyphMargin(QFontEngine::Format_A32);
+    Q_UNUSED(format);
+
+    int margin = glyphMargin(QFontEngine::Format_A32);
     glyph_metrics_t gm = QFontEngine::boundingBox(glyph, matrix);
     gm.width += margin * 2;
     gm.height += margin * 2;

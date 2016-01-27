@@ -243,11 +243,11 @@ static QFile::Permissions modeToPermissions(quint32 mode)
 static quint32 permissionsToMode(QFile::Permissions perms)
 {
     quint32 mode = 0;
-    if (mode & (QFile::ReadOwner | QFile::ReadUser))
+    if (perms & (QFile::ReadOwner | QFile::ReadUser))
         mode |= UnixFileAttributes::ReadUser;
-    if (mode & (QFile::WriteOwner | QFile::WriteUser))
+    if (perms & (QFile::WriteOwner | QFile::WriteUser))
         mode |= UnixFileAttributes::WriteUser;
-    if (mode & (QFile::ExeOwner | QFile::ExeUser))
+    if (perms & (QFile::ExeOwner | QFile::ExeUser))
         mode |= UnixFileAttributes::WriteUser;
     if (perms & QFile::ReadGroup)
         mode |= UnixFileAttributes::ReadGroup;

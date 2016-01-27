@@ -35,6 +35,11 @@
 
 #include "qstandardpaths.h"
 
+#ifdef Q_OS_UNIX
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
+
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
@@ -644,6 +649,28 @@ void tst_QMimeDatabase::knownSuffix()
     QCOMPARE(db.suffixForFileName(QString::fromLatin1("foo.bz2")), QString::fromLatin1("bz2"));
     QCOMPARE(db.suffixForFileName(QString::fromLatin1("foo.bar.bz2")), QString::fromLatin1("bz2"));
     QCOMPARE(db.suffixForFileName(QString::fromLatin1("foo.tar.bz2")), QString::fromLatin1("tar.bz2"));
+}
+
+void tst_QMimeDatabase::symlinkToFifo() // QTBUG-48529
+{
+#ifdef Q_OS_UNIX
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString dir = tempDir.path();
+    const QString fifo = dir + "/fifo";
+    QCOMPARE(mkfifo(QFile::encodeName(fifo), 0006), 0);
+
+    QMimeDatabase db;
+    QCOMPARE(db.mimeTypeForFile(fifo).name(), QString::fromLatin1("inode/fifo"));
+
+    // Now make a symlink to the fifo
+    const QString link = dir + "/link";
+    QVERIFY(QFile::link(fifo, link));
+    QCOMPARE(db.mimeTypeForFile(link).name(), QString::fromLatin1("inode/fifo"));
+
+#else
+    QSKIP("This test requires pipes and symlinks");
+#endif
 }
 
 void tst_QMimeDatabase::findByFileName_data()

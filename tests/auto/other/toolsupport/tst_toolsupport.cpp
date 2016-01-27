@@ -111,7 +111,7 @@ void tst_toolsupport::offsets_data()
     }
 
 #ifdef Q_OS_LINUX
-    if (sizeof(void *) == 8) {
+    {
         QTestData &data = QTest::newRow("QFilePrivate::fileName")
                 << pmm_to_offsetof(&QFilePrivate::fileName);
         data << 168 << 248;

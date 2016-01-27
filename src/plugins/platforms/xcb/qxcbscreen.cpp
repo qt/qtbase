@@ -70,7 +70,7 @@ QXcbVirtualDesktop::~QXcbVirtualDesktop()
 QXcbScreen *QXcbVirtualDesktop::screenAt(const QPoint &pos) const
 {
     foreach (QXcbScreen *screen, connection()->screens()) {
-        if (screen->virtualDesktop() == this && screen->nativeGeometry().contains(pos))
+        if (screen->virtualDesktop() == this && screen->geometry().contains(pos))
             return screen;
     }
     return Q_NULLPTR;
@@ -155,8 +155,15 @@ void QXcbVirtualDesktop::updateWorkArea()
     }
 }
 
+static inline QSizeF sizeInMillimeters(const QSize &size, const QDpi &dpi)
+{
+    return QSizeF(Q_MM_PER_INCH * size.width() / dpi.first,
+                  Q_MM_PER_INCH * size.height() / dpi.second);
+}
+
 QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDesktop,
-                       xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *output)
+                       xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *output,
+                       const xcb_xinerama_screen_info_t *xineramaScreenInfo, int xineramaScreenIdx)
     : QXcbObject(connection)
     , m_virtualDesktop(virtualDesktop)
     , m_output(outputId)
@@ -188,14 +195,18 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
             updateRefreshRate(crtc->mode);
             free(crtc);
         }
-    } else {
-        updateGeometry(output ? output->timestamp : 0);
+    } else if (xineramaScreenInfo) {
+        m_geometry = QRect(xineramaScreenInfo->x_org, xineramaScreenInfo->y_org,
+                           xineramaScreenInfo->width, xineramaScreenInfo->height);
+        m_availableGeometry = m_geometry & m_virtualDesktop->workArea();
+        m_sizeMillimeters = sizeInMillimeters(m_geometry.size(), virtualDpi());
+        if (xineramaScreenIdx > -1)
+            m_outputName += QLatin1Char('-') + QString::number(xineramaScreenIdx);
     }
 
-    if (m_geometry.isEmpty()) {
+    if (m_geometry.isEmpty())
         m_geometry = QRect(QPoint(), m_virtualSize);
-        m_nativeGeometry = QRect(QPoint(), m_virtualSize);
-    }
+
     if (m_availableGeometry.isEmpty())
         m_availableGeometry = m_geometry;
 
@@ -538,16 +549,12 @@ void QXcbScreen::updateGeometry(const QRect &geom, uint8_t rotation)
     // It can be that physical size is unknown while virtual size
     // is known (probably back-calculated from DPI and resolution),
     // e.g. on VNC or with some hardware.
-    if (m_sizeMillimeters.isEmpty()) {
-        QDpi dpi = virtualDpi();
-        m_sizeMillimeters = QSizeF(Q_MM_PER_INCH * xGeometry.width() / dpi.first,
-                                   Q_MM_PER_INCH * xGeometry.width() / dpi.second);
-    }
+    if (m_sizeMillimeters.isEmpty())
+        m_sizeMillimeters = sizeInMillimeters(xGeometry.size(), virtualDpi());
 
     qreal dpi = xGeometry.width() / physicalSize().width() * qreal(25.4);
     m_pixelDensity = qRound(dpi/96);
     m_geometry = QRect(xGeometry.topLeft(), xGeometry.size());
-    m_nativeGeometry = QRect(xGeometry.topLeft(), xGeometry.size());
     m_availableGeometry = xGeometry & m_virtualDesktop->workArea();
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), m_geometry, m_availableGeometry);
 }
@@ -818,9 +825,7 @@ QDebug operator<<(QDebug debug, const QXcbScreen *screen)
         debug << ", screenNumber=" << screen->screenNumber();
         debug << ", virtualSize=" << screen->virtualSize().width() << 'x' << screen->virtualSize().height() << " (";
         formatSizeF(debug, screen->virtualSize());
-        debug << "), nativeGeometry=";
-        formatRect(debug, screen->nativeGeometry());
-        debug << ", orientation=" << screen->orientation();
+        debug << "), orientation=" << screen->orientation();
         debug << ", depth=" << screen->depth();
         debug << ", refreshRate=" << screen->refreshRate();
         debug << ", root=" << hex << screen->root();

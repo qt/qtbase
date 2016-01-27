@@ -97,9 +97,11 @@ QOpenGLTexturePrivate::QOpenGLTexturePrivate(QOpenGLTexture::Target textureTarge
         break;
     case QOpenGLTexture::TargetCubeMap:
         bindingTarget = QOpenGLTexture::BindingTargetCubeMap;
+        faces = 6;
         break;
     case QOpenGLTexture::TargetCubeMapArray:
         bindingTarget = QOpenGLTexture::BindingTargetCubeMapArray;
+        faces = 6;
         break;
     case QOpenGLTexture::Target2DMultisample:
         bindingTarget = QOpenGLTexture::BindingTarget2DMultisample;
@@ -175,7 +177,7 @@ bool QOpenGLTexturePrivate::create()
 
 void QOpenGLTexturePrivate::destroy()
 {
-    if (!context) {
+    if (!textureId) {
         // not created or already destroyed
         return;
     }

@@ -422,6 +422,87 @@ static bool matchWhileUnsplitting(const char *buffer, int buffer_len, int start,
     return true;
 }
 
+/* Advance from an opening quote at buffer[offset] to the matching close quote. */
+static int scanPastString(char *buffer, int buffer_len, int offset, int *lines)
+{
+    // It might be a C++11 raw string.
+    bool israw = false;
+    if (buffer[offset] == '"' && offset > 0) {
+        int explore = offset - 1;
+        while (explore > 0 && buffer[explore] != 'R') {
+            if (buffer[explore] == '8' || buffer[explore] == 'u' || buffer[explore] == 'U') {
+                explore--;
+            } else if (explore > 1 && qmake_endOfLine(buffer[explore])
+                       && buffer[explore - 1] == '\\') {
+                explore -= 2;
+            } else if (explore > 2 && buffer[explore] == '\n'
+                       && buffer[explore - 1] == '\r'
+                       && buffer[explore - 2] == '\\') {
+                explore -= 3;
+            } else {
+                break;
+            }
+        }
+        israw = (buffer[explore] == 'R');
+    }
+
+    if (israw) {
+#define SKIP_BSNL(pos) skipEscapedLineEnds(buffer, buffer_len, (pos), lines)
+
+        offset = SKIP_BSNL(offset + 1);
+        const char *const delim = buffer + offset;
+        int clean = offset;
+        while (offset < buffer_len && buffer[offset] != '(') {
+            if (clean < offset)
+                buffer[clean++] = buffer[offset];
+            else
+                clean++;
+
+            offset = SKIP_BSNL(offset + 1);
+        }
+        /*
+          Not checking correctness (trust real compiler to do that):
+          - no controls, spaces, '(', ')', '\\' or (presumably) '"' in delim;
+          - at most 16 bytes in delim
+
+          Raw strings are surely defined after phase 2, when BSNLs are resolved;
+          so the delimiter's exclusion of '\\' and space (including newlines)
+          applies too late to save us the need to cope with BSNLs in it.
+        */
+
+        const int delimlen = buffer + clean - delim;
+        int matchlen = delimlen, extralines = 0;
+        while ((offset = SKIP_BSNL(offset + 1)) < buffer_len
+               && (buffer[offset] != ')'
+                   || (delimlen > 0 &&
+                       !matchWhileUnsplitting(buffer, buffer_len,
+                                              offset + 1, delim, delimlen,
+                                              &matchlen, &extralines))
+                   || buffer[offset + 1 + matchlen] != '"')) {
+            // skip, but keep track of lines
+            if (qmake_endOfLine(buffer[offset]))
+                ++*lines;
+            extralines = 0;
+        }
+        *lines += extralines; // from the match
+        // buffer[offset] is ')'
+        offset += 1 + matchlen; // 1 for ')', then delim
+        // buffer[offset] is '"'
+
+#undef SKIP_BSNL
+    } else { // Traditional string or char literal:
+        const char term = buffer[offset];
+        while (++offset < buffer_len && buffer[offset] != term) {
+            if (buffer[offset] == '\\')
+                ++offset;
+            else if (qmake_endOfLine(buffer[offset]))
+                ++*lines;
+        }
+    }
+
+    return offset;
+}
+
 bool QMakeSourceFileInfo::findDeps(SourceFile *file)
 {
     if(file->dep_checked || file->type == TYPE_UNKNOWN)
@@ -696,75 +777,7 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                 case InCode:
                     // matching quotes (string literals and character literals)
                     if (buffer[x] == '\'' || buffer[x] == '"') {
-                        // It might be a C++11 raw string.
-                        bool israw = false;
-                        if (buffer[x] == '"' && x > 0) {
-                            int y = x - 1;
-                            while (y > 0 && buffer[y] != 'R') {
-                                if (buffer[y] == '8' || buffer[y] == 'u' || buffer[y] == 'U')
-                                    y--;
-                                else if (y > 1 && qmake_endOfLine(buffer[y])
-                                         && buffer[y - 1] == '\\')
-                                    y -= 2;
-                                else if (y > 2 && buffer[y] == '\n'
-                                         && buffer[y - 1] == '\r'
-                                         && buffer[y - 2] == '\\')
-                                    y -= 3;
-                                else
-                                    break;
-                            }
-                            israw = (buffer[y] == 'R');
-                        }
-                        if (israw) {
-                            x = SKIP_BSNL(x + 1);
-                            const char *const delim = buffer + x;
-                            int clean = x;
-                            while (x < buffer_len && buffer[x] != '(') {
-                                if (clean < x)
-                                    buffer[clean++] = buffer[x];
-                                else
-                                    clean++;
-
-                                x = SKIP_BSNL(x + 1);
-                            }
-                            /*
-                              Not checking correctness (trust real compiler to do that):
-                              - no controls, spaces, '(', ')', '\\' or (presumably) '"' in delim;
-                              - at most 16 bytes in delim
-
-                              Raw strings are surely defined after phase 2, when
-                              BSNLs are resolved; so the delimiter's exclusion
-                              of '\\' and space (including newlines) applies too
-                              late to save us the need to cope with BSNLs in it.
-                            */
-
-                            const int delimlen = buffer + clean - delim;
-                            int matchlen = delimlen, extralines = 0;
-                            while ((x = SKIP_BSNL(x + 1)) < buffer_len
-                                   && (buffer[x] != ')'
-                                       || (delimlen > 0 &&
-                                           !matchWhileUnsplitting(buffer, buffer_len,
-                                                                  x + 1, delim, delimlen,
-                                                                  &matchlen, &extralines))
-                                       || buffer[x + 1 + matchlen] != '"')) {
-                                // skip, but keep track of lines
-                                if (qmake_endOfLine(buffer[x]))
-                                    ++line_count;
-                                extralines = 0;
-                            }
-                            line_count += extralines; // from the match
-                            // buffer[x] is ')'
-                            x += 1 + matchlen; // 1 for ')', then delim
-                            // buffer[x] is '"'
-                        } else {
-                            const char term = buffer[x];
-                            while (++x < buffer_len && buffer[x] != term) {
-                                if (buffer[x] == '\\')
-                                    ++x;
-                                else if (qmake_endOfLine(buffer[x]))
-                                    ++line_count;
-                            }
-                        }
+                        x = scanPastString(buffer, buffer_len, x, &line_count);
                         // for loop's ++x shall step over the closing quote.
                     }
                     // else: buffer[x] is just some code; move on.
@@ -859,7 +872,7 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
     files_changed = true;
     file->moc_checked = true;
 
-    int buffer_len;
+    int buffer_len = 0;
     char *buffer = 0;
     {
         struct stat fst;
@@ -877,101 +890,101 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
             return false; //shouldn't happen
         }
         buffer = getBuffer(fst.st_size);
-        for(int have_read = buffer_len = 0;
-            (have_read = QT_READ(fd, buffer + buffer_len, fst.st_size - buffer_len));
-            buffer_len += have_read) ;
+        while (int have_read = QT_READ(fd, buffer + buffer_len, fst.st_size - buffer_len))
+            buffer_len += have_read;
+
         QT_CLOSE(fd);
     }
 
     debug_msg(2, "findMocs: %s", file->file.local().toLatin1().constData());
     int line_count = 1;
-    bool ignore_qobject = false, ignore_qgadget = false;
+    bool ignore[2] = { false, false }; // [0] for Q_OBJECT, [1] for Q_GADGET
  /* qmake ignore Q_GADGET */
  /* qmake ignore Q_OBJECT */
     for(int x = 0; x < buffer_len; x++) {
+#define SKIP_BSNL(pos) skipEscapedLineEnds(buffer, buffer_len, (pos), &line_count)
+        x = SKIP_BSNL(x);
         if (buffer[x] == '/') {
-            ++x;
-            if(buffer_len >= x) {
-                if (buffer[x] == '/') { // C++-style comment
-                    for (; x < buffer_len && !qmake_endOfLine(buffer[x]); ++x) {} // skip
-                } else if (buffer[x] == '*') { // C-style comment
-                    for(++x; x < buffer_len; ++x) {
+            int extralines = 0;
+            int y = skipEscapedLineEnds(buffer, buffer_len, x + 1, &extralines);
+            if (buffer_len > y) {
+                // If comment, advance to the character that ends it:
+                if (buffer[y] == '/') { // C++-style comment
+                    line_count += extralines;
+                    x = y;
+                    do {
+                        x = SKIP_BSNL(x + 1);
+                    } while (x < buffer_len && !qmake_endOfLine(buffer[x]));
+
+                } else if (buffer[y] == '*') { // C-style comment
+                    line_count += extralines;
+                    x = SKIP_BSNL(y + 1);
+                    for (; x < buffer_len; x = SKIP_BSNL(x + 1)) {
                         if (buffer[x] == 't' || buffer[x] == 'q') { // ignore
                             if(buffer_len >= (x + 20) &&
                                !strncmp(buffer + x + 1, "make ignore Q_OBJECT", 20)) {
                                 debug_msg(2, "Mocgen: %s:%d Found \"qmake ignore Q_OBJECT\"",
                                           file->file.real().toLatin1().constData(), line_count);
                                 x += 20;
-                                ignore_qobject = true;
+                                ignore[0] = true;
                             } else if(buffer_len >= (x + 20) &&
                                       !strncmp(buffer + x + 1, "make ignore Q_GADGET", 20)) {
                                 debug_msg(2, "Mocgen: %s:%d Found \"qmake ignore Q_GADGET\"",
                                           file->file.real().toLatin1().constData(), line_count);
                                 x += 20;
-                                ignore_qgadget = true;
+                                ignore[1] = true;
                             }
                         } else if (buffer[x] == '*') {
-                            if (buffer_len >= x + 1 && buffer[x + 1] == '/') {
-                                ++x;
+                            extralines = 0;
+                            y = skipEscapedLineEnds(buffer, buffer_len, x + 1, &extralines);
+                            if (buffer_len > y && buffer[y] == '/') {
+                                line_count += extralines;
+                                x = y;
                                 break;
                             }
                         } else if (Option::debug_level && qmake_endOfLine(buffer[x])) {
                             ++line_count;
                         }
                     }
-                } else { // not a comment, in fact; undo the extra x++ we did.
-                    x--;
                 }
+                // else: don't update x, buffer[x] is just the division operator.
             }
         } else if (buffer[x] == '\'' || buffer[x] == '"') {
-            const char term = buffer[x++];
-            while(x < buffer_len) {
-                if (buffer[x] == term)
-                    break;
-                if (buffer[x] == '\\') {
-                    x+=2;
-                } else {
-                    if (qmake_endOfLine(buffer[x]))
-                        ++line_count;
-                    ++x;
-                }
-            }
+            x = scanPastString(buffer, buffer_len, x, &line_count);
+            // Leaves us on closing quote; for loop's x++ steps us past it.
         }
-        if (Option::debug_level && qmake_endOfLine(buffer[x]))
+
+        if (x < buffer_len && Option::debug_level && qmake_endOfLine(buffer[x]))
             ++line_count;
-        if (buffer_len > x + 2 && buffer[x + 1] == 'Q' &&
-            buffer[x + 2] == '_' && !isCWordChar(buffer[x])) {
-            ++x;
-            int match = 0;
-            static const char *interesting[] = { "OBJECT", "GADGET" };
-            for (int interest = 0, m1, m2; interest < 2; ++interest) {
-                if(interest == 0 && ignore_qobject)
-                    continue;
-                else if(interest == 1 && ignore_qgadget)
-                    continue;
-                for (m1 = 0, m2 = 0; interesting[interest][m1]; ++m1) {
-                    if (interesting[interest][m1] != buffer[x + 2 + m1]) {
-                        m2 = -1;
-                        break;
+        if (buffer_len > x + 8 && !isCWordChar(buffer[x])) {
+            int morelines = 0;
+            int y = skipEscapedLineEnds(buffer, buffer_len, x + 1, &morelines);
+            if (buffer[y] == 'Q') {
+                static const char interesting[][9] = { "Q_OBJECT", "Q_GADGET" };
+                for (int interest = 0; interest < 2; ++interest) {
+                    if (ignore[interest])
+                        continue;
+
+                    int matchlen = 0, extralines = 0;
+                    if (matchWhileUnsplitting(buffer, buffer_len, y,
+                                              interesting[interest],
+                                              strlen(interesting[interest]),
+                                              &matchlen, &extralines)
+                        && y + matchlen < buffer_len
+                        && !isCWordChar(buffer[y + matchlen])) {
+                        if (Option::debug_level) {
+                            buffer[y + matchlen] = '\0';
+                            debug_msg(2, "Mocgen: %s:%d Found MOC symbol %s",
+                                      file->file.real().toLatin1().constData(),
+                                      line_count + morelines, buffer + y);
+                        }
+                        file->mocable = true;
+                        return true;
                     }
-                    ++m2;
                 }
-                if(m1 == m2) {
-                    match = m2 + 2;
-                    break;
-                }
-            }
-            if (match && !isCWordChar(buffer[x + match])) {
-                if (Option::debug_level) {
-                    buffer[x + match] = '\0';
-                    debug_msg(2, "Mocgen: %s:%d Found MOC symbol %s",
-                              file->file.real().toLatin1().constData(),
-                              line_count, buffer + x);
-                }
-                file->mocable = true;
-                return true;
             }
         }
+#undef SKIP_BSNL
     }
     return true;
 }

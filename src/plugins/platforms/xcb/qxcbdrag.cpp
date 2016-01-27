@@ -194,6 +194,8 @@ void QXcbDrag::startDrag()
 
     setUseCompositing(current_virtual_desktop->compositingActive());
     QBasicDrag::startDrag();
+    if (connection()->mouseGrabber() == Q_NULLPTR)
+        shapedPixmapWindow()->setMouseGrabEnabled(true);
 }
 
 void QXcbDrag::endDrag()

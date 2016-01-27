@@ -46,6 +46,11 @@ QT_BEGIN_NAMESPACE
 class QTestTablePrivate
 {
 public:
+    ~QTestTablePrivate()
+    {
+        qDeleteAll(dataList.begin(), dataList.end());
+    }
+
     struct Element {
         Element() : name(Q_NULLPTR), type(0) {}
         Element(const char *n, int t) : name(n), type(t) {}

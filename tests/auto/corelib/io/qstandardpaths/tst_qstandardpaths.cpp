@@ -464,6 +464,15 @@ void tst_qstandardpaths::testCustomRuntimeDirectory()
 #endif
 
 #ifdef Q_XDG_PLATFORM
+    struct EnvVarRestorer
+    {
+        EnvVarRestorer() : origRuntimeDir(qgetenv("XDG_RUNTIME_DIR")) {}
+        ~EnvVarRestorer() { qputenv("XDG_RUNTIME_DIR", origRuntimeDir.constData()); }
+        const QByteArray origRuntimeDir;
+    };
+    EnvVarRestorer restorer;
+
+    // When $XDG_RUNTIME_DIR points to a directory with wrong ownership, QStandardPaths should warn
     qputenv("XDG_RUNTIME_DIR", QFile::encodeName("/tmp"));
     // It's very unlikely that /tmp is 0600 or that we can chmod it
     // The call below outputs
@@ -474,6 +483,20 @@ void tst_qstandardpaths::testCustomRuntimeDirectory()
             qPrintable(QString::fromLatin1("QStandardPaths: wrong ownership on runtime directory /tmp, 0 instead of %1").arg(uid)));
     const QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
     QVERIFY2(runtimeDir.isEmpty(), qPrintable(runtimeDir));
+
+    // When $XDG_RUNTIME_DIR points to a non-existing directory, QStandardPaths should warn (QTBUG-48771)
+    qputenv("XDG_RUNTIME_DIR", "does_not_exist");
+    QTest::ignoreMessage(QtWarningMsg, "QStandardPaths: XDG_RUNTIME_DIR points to non-existing path 'does_not_exist', please create it with 0700 permissions.");
+    const QString nonExistingRuntimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
+    QVERIFY2(nonExistingRuntimeDir.isEmpty(), qPrintable(nonExistingRuntimeDir));
+
+    // When $XDG_RUNTIME_DIR points to a file, QStandardPaths should warn
+    const QString file = QFINDTESTDATA("tst_qstandardpaths.cpp");
+    QVERIFY(!file.isEmpty());
+    qputenv("XDG_RUNTIME_DIR", QFile::encodeName(file));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(QString::fromLatin1("QStandardPaths: XDG_RUNTIME_DIR points to '%1' which is not a directory").arg(file)));
+    const QString noRuntimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
+    QVERIFY2(noRuntimeDir.isEmpty(), qPrintable(file));
 #endif
 }
 

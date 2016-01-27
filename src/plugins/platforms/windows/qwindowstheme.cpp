@@ -131,7 +131,7 @@ static inline bool booleanSystemParametersInfo(UINT what, bool defaultValue)
     return defaultValue;
 }
 
-static inline bool dWordSystemParametersInfo(UINT what, DWORD defaultValue)
+static inline DWORD dWordSystemParametersInfo(UINT what, DWORD defaultValue)
 {
     DWORD result;
     if (SystemParametersInfo(what, 0, &result, 0))
@@ -394,7 +394,7 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
     case ContextMenuOnMouseRelease:
         return QVariant(true);
     case WheelScrollLines:
-        return dWordSystemParametersInfo(SPI_GETWHEELSCROLLLINES, 3);
+        return QVariant(int(dWordSystemParametersInfo(SPI_GETWHEELSCROLLLINES, 3)));
     default:
         break;
     }

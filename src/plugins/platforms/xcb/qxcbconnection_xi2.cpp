@@ -274,7 +274,7 @@ void QXcbConnection::finalizeXInput2()
 
 void QXcbConnection::xi2Select(xcb_window_t window)
 {
-    if (!m_xi2Enabled)
+    if (!m_xi2Enabled || window == rootWindow())
         return;
 
     Display *xDisplay = static_cast<Display *>(m_xlib_display);

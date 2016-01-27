@@ -49,6 +49,8 @@
 #include <QtGui/QOpenGLContext>
 #include <qfunctions_winrt.h>
 
+#include <qpa/qplatformoffscreensurface.h>
+
 #include <functional>
 #include <wrl.h>
 #include <windows.ui.xaml.h>
@@ -79,6 +81,7 @@ typedef IEventHandler<IInspectable *> ResumeHandler;
 typedef IEventHandler<SuspendingEventArgs *> SuspendHandler;
 #ifdef Q_OS_WINPHONE
 typedef IEventHandler<BackPressedEventArgs*> BackPressedHandler;
+typedef IEventHandler<CameraEventArgs*> CameraButtonHandler;
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -88,6 +91,8 @@ uint qHash(CoreApplicationCallbackRemover key) { void *ptr = *(void **)(&key); r
 #ifdef Q_OS_WINPHONE
 typedef HRESULT (__stdcall IHardwareButtonsStatics::*HardwareButtonsCallbackRemover)(EventRegistrationToken);
 uint qHash(HardwareButtonsCallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
+typedef HRESULT (__stdcall IHardwareButtonsStatics2::*HardwareButtons2CallbackRemover)(EventRegistrationToken);
+uint qHash(HardwareButtons2CallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
 #endif
 
 class QWinRTIntegrationPrivate
@@ -103,6 +108,10 @@ public:
 #ifdef Q_OS_WINPHONE
     ComPtr<IHardwareButtonsStatics> hardwareButtons;
     QHash<HardwareButtonsCallbackRemover, EventRegistrationToken> buttonsTokens;
+    ComPtr<IHardwareButtonsStatics2> cameraButtons;
+    QHash<HardwareButtons2CallbackRemover, EventRegistrationToken> cameraTokens;
+    bool cameraHalfPressed : 1;
+    bool cameraPressed : 1;
 #endif
 };
 
@@ -117,7 +126,7 @@ QWinRTIntegration::QWinRTIntegration() : d_ptr(new QWinRTIntegrationPrivate)
                                 IID_PPV_ARGS(&d->application));
     Q_ASSERT_SUCCEEDED(hr);
     hr = d->application->add_Suspending(Callback<SuspendHandler>(this, &QWinRTIntegration::onSuspended).Get(),
-                                        &d->applicationTokens[&ICoreApplication::remove_Resuming]);
+                                        &d->applicationTokens[&ICoreApplication::remove_Suspending]);
     Q_ASSERT_SUCCEEDED(hr);
     hr = d->application->add_Resuming(Callback<ResumeHandler>(this, &QWinRTIntegration::onResume).Get(),
                                       &d->applicationTokens[&ICoreApplication::remove_Resuming]);
@@ -130,6 +139,23 @@ QWinRTIntegration::QWinRTIntegration() : d_ptr(new QWinRTIntegrationPrivate)
     hr = d->hardwareButtons->add_BackPressed(Callback<BackPressedHandler>(this, &QWinRTIntegration::onBackButtonPressed).Get(),
                                              &d->buttonsTokens[&IHardwareButtonsStatics::remove_BackPressed]);
     Q_ASSERT_SUCCEEDED(hr);
+
+    hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Phone_UI_Input_HardwareButtons).Get(),
+                                IID_PPV_ARGS(&d->cameraButtons));
+    Q_ASSERT_SUCCEEDED(hr);
+    if (qEnvironmentVariableIntValue("QT_QPA_ENABLE_CAMERA_KEYS")) {
+        hr = d->cameraButtons->add_CameraPressed(Callback<CameraButtonHandler>(this, &QWinRTIntegration::onCameraPressed).Get(),
+                                                 &d->cameraTokens[&IHardwareButtonsStatics2::remove_CameraPressed]);
+        Q_ASSERT_SUCCEEDED(hr);
+        hr = d->cameraButtons->add_CameraHalfPressed(Callback<CameraButtonHandler>(this, &QWinRTIntegration::onCameraHalfPressed).Get(),
+                                                     &d->cameraTokens[&IHardwareButtonsStatics2::remove_CameraHalfPressed]);
+        Q_ASSERT_SUCCEEDED(hr);
+        hr = d->cameraButtons->add_CameraReleased(Callback<CameraButtonHandler>(this, &QWinRTIntegration::onCameraReleased).Get(),
+                                                  &d->cameraTokens[&IHardwareButtonsStatics2::remove_CameraReleased]);
+        Q_ASSERT_SUCCEEDED(hr);
+    }
+    d->cameraPressed = false;
+    d->cameraHalfPressed = false;
 #endif // Q_OS_WINPHONE
 
     QEventDispatcherWinRT::runOnXamlThread([d]() {
@@ -151,11 +177,20 @@ QWinRTIntegration::~QWinRTIntegration()
         hr = (d->hardwareButtons.Get()->*i.key())(i.value());
         Q_ASSERT_SUCCEEDED(hr);
     }
+    for (QHash<HardwareButtons2CallbackRemover, EventRegistrationToken>::const_iterator i = d->cameraTokens.begin(); i != d->cameraTokens.end(); ++i) {
+        hr = (d->cameraButtons.Get()->*i.key())(i.value());
+        Q_ASSERT_SUCCEEDED(hr);
+    }
 #endif
+    // Do not execute this on Windows Phone as the application is already
+    // shutting down and trying to unregister suspending/resume handler will
+    // cause exceptions and assert in debug mode
+#ifndef Q_OS_WINPHONE
     for (QHash<CoreApplicationCallbackRemover, EventRegistrationToken>::const_iterator i = d->applicationTokens.begin(); i != d->applicationTokens.end(); ++i) {
         hr = (d->application.Get()->*i.key())(i.value());
         Q_ASSERT_SUCCEEDED(hr);
     }
+#endif
     destroyScreen(d->mainScreen);
     Windows::Foundation::Uninitialize();
 }
@@ -268,6 +303,42 @@ HRESULT QWinRTIntegration::onBackButtonPressed(IInspectable *, IBackPressedEvent
     args->put_Handled(pressed || released);
     return S_OK;
 }
+
+HRESULT QWinRTIntegration::onCameraPressed(IInspectable *, ICameraEventArgs *)
+{
+    Q_D(QWinRTIntegration);
+    QWindow *window = d->mainScreen->topWindow();
+    QWindowSystemInterface::handleExtendedKeyEvent(window, QEvent::KeyPress, Qt::Key_Camera, Qt::NoModifier,
+                                                   0, 0, 0, QString(), false, 1, false);
+    d->cameraPressed = true;
+    return S_OK;
+}
+
+HRESULT QWinRTIntegration::onCameraHalfPressed(IInspectable *, ICameraEventArgs *)
+{
+    Q_D(QWinRTIntegration);
+    QWindow *window = d->mainScreen->topWindow();
+    QWindowSystemInterface::handleExtendedKeyEvent(window, QEvent::KeyPress, Qt::Key_CameraFocus, Qt::NoModifier,
+                                                   0, 0, 0, QString(), false, 1, false);
+    d->cameraHalfPressed = true;
+    return S_OK;
+}
+
+HRESULT QWinRTIntegration::onCameraReleased(IInspectable *, ICameraEventArgs *)
+{
+    Q_D(QWinRTIntegration);
+    QWindow *window = d->mainScreen->topWindow();
+    if (d->cameraHalfPressed)
+        QWindowSystemInterface::handleExtendedKeyEvent(window, QEvent::KeyRelease, Qt::Key_CameraFocus, Qt::NoModifier,
+                                                       0, 0, 0, QString(), false, 1, false);
+
+    if (d->cameraPressed)
+        QWindowSystemInterface::handleExtendedKeyEvent(window, QEvent::KeyRelease, Qt::Key_Camera, Qt::NoModifier,
+                                                       0, 0, 0, QString(), false, 1, false);
+    d->cameraHalfPressed = false;
+    d->cameraPressed = false;
+    return S_OK;
+}
 #endif // Q_OS_WINPHONE
 
 HRESULT QWinRTIntegration::onSuspended(IInspectable *, ISuspendingEventArgs *)
@@ -284,5 +355,15 @@ HRESULT QWinRTIntegration::onResume(IInspectable *, IInspectable *)
     QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationHidden);
     return S_OK;
 }
+
+QPlatformOffscreenSurface *QWinRTIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
+{
+    // This is only used for shutdown of applications.
+    // In case we do not return an empty surface the scenegraph will try
+    // to create a new native window during application exit causing crashes
+    // or assertions.
+    return new QPlatformOffscreenSurface(surface);
+}
+
 
 QT_END_NAMESPACE

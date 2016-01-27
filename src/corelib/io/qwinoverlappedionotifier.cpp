@@ -102,7 +102,8 @@ public:
 
     OVERLAPPED *waitForAnyNotified(int msecs);
     void notify(DWORD numberOfBytes, DWORD errorCode, OVERLAPPED *overlapped);
-    OVERLAPPED *_q_notified();
+    void _q_notified();
+    OVERLAPPED *dispatchNextIoResult();
 
     static QWinIoCompletionPort *iocp;
     static HANDLE iocpInstanceLock;
@@ -302,8 +303,7 @@ OVERLAPPED *QWinOverlappedIoNotifierPrivate::waitForAnyNotified(int msecs)
     const DWORD wfso = WaitForSingleObject(hSemaphore, msecs == -1 ? INFINITE : DWORD(msecs));
     switch (wfso) {
     case WAIT_OBJECT_0:
-        ReleaseSemaphore(hSemaphore, 1, NULL);
-        return _q_notified();
+        return dispatchNextIoResult();
     case WAIT_TIMEOUT:
         return 0;
     default:
@@ -385,17 +385,20 @@ void QWinOverlappedIoNotifierPrivate::notify(DWORD numberOfBytes, DWORD errorCod
         emit q->_q_notify();
 }
 
-OVERLAPPED *QWinOverlappedIoNotifierPrivate::_q_notified()
+void QWinOverlappedIoNotifierPrivate::_q_notified()
+{
+    if (WaitForSingleObject(hSemaphore, 0) == WAIT_OBJECT_0)
+        dispatchNextIoResult();
+}
+
+OVERLAPPED *QWinOverlappedIoNotifierPrivate::dispatchNextIoResult()
 {
     Q_Q(QWinOverlappedIoNotifier);
-    if (WaitForSingleObject(hSemaphore, 0) == WAIT_OBJECT_0) {
-        WaitForSingleObject(hResultsMutex, INFINITE);
-        IOResult ioresult = results.dequeue();
-        ReleaseMutex(hResultsMutex);
-        emit q->notified(ioresult.numberOfBytes, ioresult.errorCode, ioresult.overlapped);
-        return ioresult.overlapped;
-    }
-    return 0;
+    WaitForSingleObject(hResultsMutex, INFINITE);
+    IOResult ioresult = results.dequeue();
+    ReleaseMutex(hResultsMutex);
+    emit q->notified(ioresult.numberOfBytes, ioresult.errorCode, ioresult.overlapped);
+    return ioresult.overlapped;
 }
 
 QT_END_NAMESPACE

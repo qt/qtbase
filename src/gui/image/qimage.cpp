@@ -4623,32 +4623,7 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
 
     if (complex_xform || mode == Qt::SmoothTransformation) {
         if (d->format < QImage::Format_RGB32 || !hasAlphaChannel()) {
-            switch(d->format) {
-            case QImage::Format_RGB16:
-                target_format = Format_ARGB8565_Premultiplied;
-                break;
-            case QImage::Format_RGB555:
-                target_format = Format_ARGB8555_Premultiplied;
-                break;
-            case QImage::Format_RGB666:
-                target_format = Format_ARGB6666_Premultiplied;
-                break;
-            case QImage::Format_RGB444:
-                target_format = Format_ARGB4444_Premultiplied;
-                break;
-            case QImage::Format_RGBX8888:
-                target_format = Format_RGBA8888_Premultiplied;
-                break;
-            case QImage::Format_BGR30:
-                target_format = Format_A2BGR30_Premultiplied;
-                break;
-            case QImage::Format_RGB30:
-                target_format = Format_A2RGB30_Premultiplied;
-                break;
-            default:
-                target_format = Format_ARGB32_Premultiplied;
-                break;
-            }
+            target_format = qt_alphaVersion(d->format);
         }
     }
 

@@ -31,11 +31,10 @@
 **
 ****************************************************************************/
 
-
+#define rawstring R"blah(lorem " ipsum /*)blah";
 #include <QObject>
 
 class Object1 : public QObject
 {
     Q_OBJECT
 };
-

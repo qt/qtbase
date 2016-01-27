@@ -52,6 +52,12 @@ QMAKE_DIR_REPLACE_SANE = PRECOMPILED_DIR OBJECTS_DIR MOC_DIR RCC_DIR UI_DIR
     unset(modpath)
 }
 
+# Don't actually try to install anything in non-prefix builds.
+# This is much easier and safer than making every single INSTALLS
+# assignment conditional.
+!prefix_build: \
+    CONFIG += qt_clear_installs
+
 cross_compile: \
     CONFIG += force_bootstrap
 

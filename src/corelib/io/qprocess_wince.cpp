@@ -235,20 +235,14 @@ bool QProcessPrivate::waitForFinished(int msecs)
     qDebug("QProcessPrivate::waitForFinished(%d)", msecs);
 #endif
 
-    QIncrementalSleepTimer timer(msecs);
+    if (!pid)
+        return true;
 
-    forever {
-        if (!pid)
-            return true;
-
-        if (WaitForSingleObject(pid->hProcess, timer.nextSleepTime()) == WAIT_OBJECT_0) {
-            _q_processDied();
-            return true;
-        }
-
-        if (timer.hasTimedOut())
-            break;
+    if (WaitForSingleObject(pid->hProcess, msecs == -1 ? INFINITE : msecs) == WAIT_OBJECT_0) {
+        _q_processDied();
+        return true;
     }
+
     setError(QProcess::Timedout);
     return false;
 }

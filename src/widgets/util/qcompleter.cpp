@@ -432,7 +432,7 @@ void QCompletionEngine::filter(const QStringList& parts)
 
     QModelIndex parent;
     for (int i = 0; i < curParts.count() - 1; i++) {
-        QString part = curParts[i];
+        QString part = curParts.at(i);
         int emi = filter(part, parent, -1).exactMatchIndex;
         if (emi == -1)
             return;
@@ -442,10 +442,10 @@ void QCompletionEngine::filter(const QStringList& parts)
     // Note that we set the curParent to a valid parent, even if we have no matches
     // When filtering is disabled, we show all the items under this parent
     curParent = parent;
-    if (curParts.last().isEmpty())
+    if (curParts.constLast().isEmpty())
         curMatch = QMatchData(QIndexMapper(0, model->rowCount(curParent) - 1), -1, false);
     else
-        curMatch = filter(curParts.last(), curParent, 1); // build at least one
+        curMatch = filter(curParts.constLast(), curParent, 1); // build at least one
     curRow = curMatch.isValid() ? 0 : -1;
 }
 

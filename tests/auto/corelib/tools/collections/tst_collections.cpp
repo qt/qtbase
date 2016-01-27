@@ -90,7 +90,9 @@ void foo()
 #include "qvector.h"
 #include "qqueue.h"
 
+QT_BEGIN_NAMESPACE
 template class QList<int>;
+QT_END_NAMESPACE
 
 class tst_Collections : public QObject
 {

@@ -137,7 +137,8 @@ public:
         WithinMaximize = 0x40000,
         MaximizeToFullScreen = 0x80000,
         InputMethodDisabled = 0x100000,
-        Compositing = 0x200000
+        Compositing = 0x200000,
+        HasBorderInFullScreen = 0x400000
     };
 
     QWindowsWindow(QWindow *window, const QWindowsWindowData &data);
@@ -251,7 +252,8 @@ public:
 
     static void setTouchWindowTouchTypeStatic(QWindow *window, QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes);
     void registerTouchWindow(QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes = QWindowsWindowFunctions::NormalTouch);
-
+    static void setHasBorderInFullScreenStatic(QWindow *window, bool border);
+    void setHasBorderInFullScreen(bool border);
 private:
     inline void show_sys() const;
     inline void hide_sys() const;

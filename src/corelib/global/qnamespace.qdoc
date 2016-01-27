@@ -144,9 +144,7 @@
            to be consistent in pixels-per-point across devices rather than
            defining 1 point as 1/72 inch.
 
-    \value AA_X11InitThreads Calls \c XInitThreads() as part of the QApplication
-           construction in order to make Xlib calls thread-safe. This
-           attribute must be set before QApplication is constructed.
+    \value AA_X11InitThreads This value is obsolete and has no effect.
 
     \value AA_SynthesizeTouchForUnhandledMouseEvents All mouse events
            that are not accepted by the application will be translated
@@ -1704,8 +1702,8 @@
     \value Key_unknown
 
     \value Key_Call     A key to answer or initiate a call (see Qt::Key_ToggleCallHangup for a key to toggle current call state)
-    \value Key_Camera   A key to activate the camera shutter
-    \value Key_CameraFocus  A key to focus the camera
+    \value Key_Camera   A key to activate the camera shutter. On Windows Runtime, the environment variable QT_QPA_ENABLE_CAMERA_KEYS must be set to receive the event.
+    \value Key_CameraFocus  A key to focus the camera. On Windows Runtime, the environment variable QT_QPA_ENABLE_CAMERA_KEYS must be set to receive the event.
     \value Key_Context1
     \value Key_Context2
     \value Key_Context3

@@ -83,7 +83,7 @@ public:
     QSet<QThreadPoolThread *> allThreads;
     QQueue<QThreadPoolThread *> waitingThreads;
     QQueue<QThreadPoolThread *> expiredThreads;
-    QList<QPair<QRunnable *, int> > queue;
+    QVector<QPair<QRunnable *, int> > queue;
     QWaitCondition noActiveThreads;
 
     bool isExiting;

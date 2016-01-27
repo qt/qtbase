@@ -4150,7 +4150,7 @@ public:
     inline const QRgba64 *getBuffer(const QGradient &gradient, int opacity) {
         quint64 hash_val = 0;
 
-        QGradientStops stops = gradient.stops();
+        const QGradientStops stops = gradient.stops();
         for (int i = 0; i < stops.size() && i <= 2; i++)
             hash_val += stops[i].second.rgba64();
 
@@ -4193,7 +4193,7 @@ protected:
 
 void QGradientCache::generateGradientColorTable(const QGradient& gradient, QRgba64 *colorTable, int size, int opacity) const
 {
-    QGradientStops stops = gradient.stops();
+    const QGradientStops stops = gradient.stops();
     int stopCount = stops.count();
     Q_ASSERT(stopCount > 0);
 

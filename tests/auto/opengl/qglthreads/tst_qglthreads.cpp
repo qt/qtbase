@@ -796,7 +796,6 @@ void tst_QGLThreads::painterOnFboInThread()
 
 int main(int argc, char **argv)
 {
-    QApplication::setAttribute(Qt::AA_X11InitThreads);
     QApplication app(argc, argv);
     QTEST_DISABLE_KEYPAD_NAVIGATION \
 

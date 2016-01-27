@@ -3,7 +3,7 @@ contains(TEMPLATE, ".*app") {
         !contains(TARGET, ".so"): TARGET = lib$${TARGET}.so
         QMAKE_LFLAGS += -Wl,-soname,$$shell_quote($$TARGET)
 
-        android_install: {
+        android_install {
             target.path=/libs/$$ANDROID_TARGET_ARCH/
             INSTALLS *= target
         }

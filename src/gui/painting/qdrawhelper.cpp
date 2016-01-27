@@ -6323,8 +6323,13 @@ void qt_memfill32(quint32 *dest, quint32 color, int count)
 template<QtPixelOrder> const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
 #endif
 
+extern void qInitBlendFunctions();
+
 static void qInitDrawhelperFunctions()
 {
+    // Set up basic blend function tables.
+    qInitBlendFunctions();
+
 #ifdef __SSE2__
     qDrawHelper[QImage::Format_RGB32].bitmapBlit = qt_bitmapblit32_sse2;
     qDrawHelper[QImage::Format_ARGB32].bitmapBlit = qt_bitmapblit32_sse2;
@@ -6518,19 +6523,7 @@ static void qInitDrawhelperFunctions()
 #endif // QT_COMPILER_SUPPORTS_MIPS_DSP || QT_COMPILER_SUPPORTS_MIPS_DSPR2
 }
 
-extern void qInitBlendFunctions();
-class DrawHelperInitializer {
-public:
-    DrawHelperInitializer()
-    {
-        // Set up basic blend function tables.
-        qInitBlendFunctions();
-        // Set up architecture optimized methods for the current machine.
-        qInitDrawhelperFunctions();
-    }
-};
-
 // Ensure initialization if this object file is linked.
-static DrawHelperInitializer drawHelperInitializer;
+Q_CONSTRUCTOR_FUNCTION(qInitDrawhelperFunctions);
 
 QT_END_NAMESPACE

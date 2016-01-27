@@ -94,7 +94,7 @@ endmacro()
 
 
 # helper macro to set up a moc rule
-macro(QT5_CREATE_MOC_COMMAND infile outfile moc_flags moc_options moc_target)
+macro(QT5_CREATE_MOC_COMMAND infile outfile moc_flags moc_options moc_target moc_depends)
     # Pass the parameters in a file.  Set the working directory to
     # be that containing the parameters file and reference it by
     # just the file name.  This is necessary because the moc tool on
@@ -131,7 +131,7 @@ macro(QT5_CREATE_MOC_COMMAND infile outfile moc_flags moc_options moc_target)
     set(_moc_extra_parameters_file @${_moc_parameters_file})
     add_custom_command(OUTPUT ${outfile}
                        COMMAND ${Qt5Core_MOC_EXECUTABLE} ${_moc_extra_parameters_file}
-                       DEPENDS ${infile}
+                       DEPENDS ${infile} ${moc_depends}
                        ${_moc_working_dir}
                        VERBATIM)
 endmacro()
@@ -151,7 +151,7 @@ function(QT5_GENERATE_MOC infile outfile )
         endif()
         set(moc_target ${ARGV3})
     endif()
-    qt5_create_moc_command(${abs_infile} ${_outfile} "${moc_flags}" "" "${moc_target}")
+    qt5_create_moc_command(${abs_infile} ${_outfile} "${moc_flags}" "" "${moc_target}" "")
     set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC TRUE)  # dont run automoc on this file
 endfunction()
 
@@ -164,13 +164,14 @@ function(QT5_WRAP_CPP outfiles )
 
     set(options)
     set(oneValueArgs TARGET)
-    set(multiValueArgs OPTIONS)
+    set(multiValueArgs OPTIONS DEPENDS)
 
     cmake_parse_arguments(_WRAP_CPP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     set(moc_files ${_WRAP_CPP_UNPARSED_ARGUMENTS})
     set(moc_options ${_WRAP_CPP_OPTIONS})
     set(moc_target ${_WRAP_CPP_TARGET})
+    set(moc_depends ${_WRAP_CPP_DEPENDS})
 
     if (moc_target AND CMAKE_VERSION VERSION_LESS 2.8.12)
         message(FATAL_ERROR "The TARGET parameter to qt5_wrap_cpp is only available when using CMake 2.8.12 or later.")
@@ -178,7 +179,7 @@ function(QT5_WRAP_CPP outfiles )
     foreach(it ${moc_files})
         get_filename_component(it ${it} ABSOLUTE)
         qt5_make_output_file(${it} moc_ cpp outfile)
-        qt5_create_moc_command(${it} ${outfile} "${moc_flags}" "${moc_options}" "${moc_target}")
+        qt5_create_moc_command(${it} ${outfile} "${moc_flags}" "${moc_options}" "${moc_target}" "${moc_depends}")
         list(APPEND ${outfiles} ${outfile})
     endforeach()
     set(${outfiles} ${${outfiles}} PARENT_SCOPE)
@@ -335,7 +336,7 @@ if (NOT CMAKE_VERSION VERSION_LESS 2.8.9)
             set_property(TARGET ${_target} APPEND PROPERTY COMPILE_DEFINITIONS_MINSIZEREL QT_NO_DEBUG)
             if (Qt5_POSITION_INDEPENDENT_CODE
                     AND (CMAKE_VERSION VERSION_LESS 2.8.12
-                        AND (NOT CMAKE_CXX_COMPILER_ID STREQUAL \"GNU\"
+                        AND (NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
                         OR CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0)))
                 set_property(TARGET ${_target} PROPERTY POSITION_INDEPENDENT_CODE ${Qt5_POSITION_INDEPENDENT_CODE})
             endif()

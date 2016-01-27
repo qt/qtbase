@@ -60,6 +60,7 @@
 #include <xcb/shm.h>
 #include <xcb/sync.h>
 #include <xcb/xfixes.h>
+#include <xcb/xinerama.h>
 
 #ifdef XCB_USE_XLIB
 #include <X11/Xlib.h>
@@ -386,6 +387,7 @@ void QXcbConnection::initializeScreens()
         xcb_screen_t *xcbScreen = it.data;
         QXcbVirtualDesktop *virtualDesktop = new QXcbVirtualDesktop(this, xcbScreen, xcbScreenNumber);
         m_virtualDesktops.append(virtualDesktop);
+        QList<QPlatformScreen *> siblings;
         if (has_randr_extension) {
             xcb_generic_error_t *error = NULL;
             // RRGetScreenResourcesCurrent is fast but it may return nothing if the
@@ -429,7 +431,6 @@ void QXcbConnection::initializeScreens()
                         qWarning("failed to get the primary output of the screen");
                         free(error);
                     } else {
-                        QList<QPlatformScreen *> siblings;
                         for (int i = 0; i < outputCount; i++) {
                             QScopedPointer<xcb_randr_get_output_info_reply_t, QScopedPointerPodDeleter> output(
                                     xcb_randr_get_output_info_reply(xcb_connection(),
@@ -471,12 +472,30 @@ void QXcbConnection::initializeScreens()
                                 }
                             }
                         }
-                        virtualDesktop->setScreens(siblings);
                     }
                 }
             }
+        } else if (has_xinerama_extension) {
+            // Xinerama is available
+            xcb_xinerama_query_screens_cookie_t cookie = xcb_xinerama_query_screens(m_connection);
+            xcb_xinerama_query_screens_reply_t *screens = xcb_xinerama_query_screens_reply(m_connection,
+                                                                                           cookie,
+                                                                                           Q_NULLPTR);
+            if (screens) {
+                xcb_xinerama_screen_info_iterator_t it = xcb_xinerama_query_screens_screen_info_iterator(screens);
+                while (it.rem) {
+                    xcb_xinerama_screen_info_t *screen_info = it.data;
+                    QXcbScreen *screen = new QXcbScreen(this, virtualDesktop,
+                                                        XCB_NONE, Q_NULLPTR,
+                                                        screen_info, it.index);
+                    siblings << screen;
+                    m_screens << screen;
+                    xcb_xinerama_screen_info_next(&it);
+                }
+                free(screens);
+            }
         }
-        if (virtualDesktop->screens().isEmpty()) {
+        if (siblings.isEmpty()) {
             // If there are no XRandR outputs or XRandR extension is missing,
             // then create a fake/legacy screen.
             QXcbScreen *screen = new QXcbScreen(this, virtualDesktop, XCB_NONE, Q_NULLPTR);
@@ -486,8 +505,9 @@ void QXcbConnection::initializeScreens()
                 primaryScreen = screen;
                 primaryScreen->setPrimary(true);
             }
-            virtualDesktop->addScreen(screen);
+            siblings << screen;
         }
+        virtualDesktop->setScreens(siblings);
         xcb_screen_next(&it);
         ++xcbScreenNumber;
     } // for each xcb screen
@@ -529,12 +549,14 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     , xfixes_first_event(0)
     , xrandr_first_event(0)
     , xkb_first_event(0)
+    , has_xinerama_extension(false)
     , has_shape_extension(false)
     , has_randr_extension(false)
     , has_input_shape(false)
     , has_xkb(false)
     , m_buttons(0)
     , m_focusWindow(0)
+    , m_mouseGrabber(0)
     , m_clientLeader(0)
     , m_systemTrayTracker(0)
     , m_glIntegration(Q_NULLPTR)
@@ -583,7 +605,10 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     m_time = XCB_CURRENT_TIME;
     m_netWmUserTime = XCB_CURRENT_TIME;
 
-    initializeXRandr();
+    if (!qEnvironmentVariableIsSet("QT_XCB_NO_XRANDR"))
+        initializeXRandr();
+    if (!has_randr_extension)
+        initializeXinerama();
     initializeXFixes();
     initializeScreens();
 
@@ -1327,6 +1352,10 @@ void QXcbEventReader::unlock()
 void QXcbConnection::setFocusWindow(QXcbWindow *w)
 {
     m_focusWindow = w;
+}
+void QXcbConnection::setMouseGrabber(QXcbWindow *w)
+{
+    m_mouseGrabber = w;
 }
 
 void QXcbConnection::grabServer()
@@ -2087,6 +2116,22 @@ void QXcbConnection::initializeXRandr()
     }
 }
 
+void QXcbConnection::initializeXinerama()
+{
+    const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_connection, &xcb_xinerama_id);
+    if (!reply || !reply->present)
+        return;
+
+    xcb_generic_error_t *error = Q_NULLPTR;
+    xcb_xinerama_is_active_cookie_t xinerama_query_cookie = xcb_xinerama_is_active(m_connection);
+    xcb_xinerama_is_active_reply_t *xinerama_is_active = xcb_xinerama_is_active_reply(m_connection,
+                                                                                      xinerama_query_cookie,
+                                                                                      &error);
+    has_xinerama_extension = xinerama_is_active && !error && xinerama_is_active->state;
+    free(error);
+    free(xinerama_is_active);
+}
+
 void QXcbConnection::initializeXShape()
 {
     const xcb_query_extension_reply_t *xshape_reply = xcb_get_extension_data(m_connection, &xcb_shape_id);
@@ -2174,7 +2219,9 @@ void QXcbConnection::initializeXKB()
 bool QXcbConnection::xi2MouseEvents() const
 {
     static bool mouseViaXI2 = !qEnvironmentVariableIsSet("QT_XCB_NO_XI2_MOUSE");
-    return mouseViaXI2;
+    // Don't use XInput2 when Xinerama extension is enabled,
+    // because it causes problems with multi-monitor setup.
+    return mouseViaXI2 && !has_xinerama_extension;
 }
 
 #if defined(XCB_USE_XINPUT2)

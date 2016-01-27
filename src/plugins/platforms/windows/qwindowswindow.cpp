@@ -1720,7 +1720,7 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             if (!m_savedStyle) {
                 m_savedStyle = style();
 #ifndef Q_OS_WINCE
-                if (oldState == Qt::WindowMinimized) {
+                if (oldState == Qt::WindowMinimized || oldState == Qt::WindowMaximized) {
                     const QRect nf = normalFrameGeometry(m_data.hwnd);
                     if (nf.isValid())
                         m_savedFrameGeometry = nf;
@@ -1735,6 +1735,8 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
                 newStyle |= WS_SYSMENU;
             if (visible)
                 newStyle |= WS_VISIBLE;
+            if (testFlag(HasBorderInFullScreen))
+                newStyle |= WS_BORDER;
             setStyle(newStyle);
             // Use geometry of QWindow::screen() within creation or the virtual screen the
             // window is in (QTBUG-31166, QTBUG-30724).
@@ -1769,7 +1771,7 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             // preserve maximized state
             if (visible) {
                 setFlag(WithinMaximize);
-                ShowWindow(m_data.hwnd, (newState == Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNOACTIVATE);
+                ShowWindow(m_data.hwnd, (newState == Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNA);
                 clearFlag(WithinMaximize);
             }
             m_savedStyle = 0;
@@ -2369,6 +2371,21 @@ void QWindowsWindow::aboutToMakeCurrent()
         updateGLWindowSettings(window(), m_data.hwnd, m_data.flags, m_opacity);
     }
 #endif
+}
+
+void QWindowsWindow::setHasBorderInFullScreenStatic(QWindow *window, bool border)
+{
+    if (!window->handle())
+        return;
+    static_cast<QWindowsWindow *>(window->handle())->setHasBorderInFullScreen(border);
+}
+
+void QWindowsWindow::setHasBorderInFullScreen(bool border)
+{
+    if (border)
+        setFlag(HasBorderInFullScreen);
+    else
+        clearFlag(HasBorderInFullScreen);
 }
 
 QT_END_NAMESPACE

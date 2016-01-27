@@ -47,6 +47,10 @@ pcviewer.cfg
 *_resource.rc
 .#*
 *.*#
+*_wrapper.sh
+*_wrapper.bat
+wrapper.sh
+wrapper.bat
 core
 .qmake.cache
 .qmake.vars

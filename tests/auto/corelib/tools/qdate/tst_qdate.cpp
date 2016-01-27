@@ -392,16 +392,37 @@ void tst_QDate::weekNumber_data()
     QTest::addColumn<int>("month");
     QTest::addColumn<int>("day");
 
-    //next we fill it with data
-    QTest::newRow( "data0" )  << 10 << 2002 << 2002 << 3 << 8;
-    QTest::newRow( "data1" )  << 10 << 2002 << 2002 << 3 << 8;
-    QTest::newRow( "data2" )  << 52 << 1999 << 2000 << 1 << 1;
-    QTest::newRow( "data3" )  << 52 << 1999 << 1999 << 12 << 31;
-    QTest::newRow( "data4" )  << 1 << 2001 << 2001 << 1 << 1;
-    QTest::newRow( "data5" )  << 53 << 1998 << 1998 << 12 << 31;
-    QTest::newRow( "data6" )  << 1 << 1985 << 1984 << 12 << 31;
-    QTest::newRow( "data7" )  << 52 << 2006 << 2006 << 12 << 31;
-    QTest::newRow( "data8" )  << 53 << 2004 << 2005 << 1 << 1;
+    enum { Thursday = 4 };
+    bool wasLastYearLong = false;   // 1999 was not a long (53-week) year
+    bool isLongYear;
+
+    // full 400-year cycle for Jan 1, 4 and Dec 28, 31
+    for (int yr = 2000; yr < 2400; ++yr, wasLastYearLong = isLongYear) {
+        QByteArray yrstr = QByteArray::number(yr);
+        int wday = QDate(yr, 1, 1).dayOfWeek();
+
+        // the year is 53-week long if Jan 1 is Thursday or, if it's a leap year, a Wednesday
+        isLongYear = (wday == Thursday) || (QDate::isLeapYear(yr) && wday == Thursday - 1);
+
+        // Jan 4 is always on week 1
+        QTest::newRow(yrstr + "-01-04") << 1 << yr << yr << 1 << 4;
+
+        // Dec 28 is always on the last week
+        QTest::newRow(yrstr + "-12-28") << (52 + isLongYear) << yr << yr << 12 << 28;
+
+        // Jan 1 is on either on week 1 or on the last week of the previous year
+        QTest::newRow(yrstr + "-01-01")
+                << (wday <= Thursday ? 1 : 52 + wasLastYearLong)
+                << (wday <= Thursday ? yr : yr - 1)
+                << yr << 1 << 1;
+
+        // Dec 31 is either on the last week or week 1 of the next year
+        wday = QDate(yr, 12, 31).dayOfWeek();
+        QTest::newRow(yrstr + "-12-31")
+                << (wday >= Thursday ? 52 + isLongYear : 1)
+                << (wday >= Thursday ? yr : yr + 1)
+                << yr << 12 << 31;
+    }
 }
 
 void tst_QDate::weekNumber()

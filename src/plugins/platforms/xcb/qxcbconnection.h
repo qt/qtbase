@@ -469,6 +469,8 @@ public:
 
     QXcbWindow *focusWindow() const { return m_focusWindow; }
     void setFocusWindow(QXcbWindow *);
+    QXcbWindow *mouseGrabber() const { return m_mouseGrabber; }
+    void setMouseGrabber(QXcbWindow *);
 
     QByteArray startupId() const { return m_startupId; }
     void setStartupId(const QByteArray &nextId) { m_startupId = nextId; }
@@ -515,6 +517,7 @@ private:
     void initializeXFixes();
     void initializeXRender();
     void initializeXRandr();
+    void initializeXinerama();
     void initializeXShape();
     void initializeXKB();
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
@@ -639,6 +642,7 @@ private:
     uint32_t xrandr_first_event;
     uint32_t xkb_first_event;
 
+    bool has_xinerama_extension;
     bool has_shape_extension;
     bool has_randr_extension;
     bool has_input_shape;
@@ -647,6 +651,7 @@ private:
     Qt::MouseButtons m_buttons;
 
     QXcbWindow *m_focusWindow;
+    QXcbWindow *m_mouseGrabber;
 
     xcb_window_t m_clientLeader;
     QByteArray m_startupId;

@@ -604,6 +604,7 @@ void qt_mac_cleanUpMacColorSpaces()
 CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice)
 {
 #ifdef QT_NO_WIDGETS
+    Q_UNUSED(paintDevice)
     return qt_mac_displayColorSpace(0);
 #else
     bool isWidget = (paintDevice->devType() == QInternal::Widget);

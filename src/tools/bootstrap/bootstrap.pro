@@ -2,8 +2,9 @@ option(host_build)
 
 TARGET = QtBootstrap
 QT =
-CONFIG += internal_module force_bootstrap
+CONFIG += minimal_syncqt internal_module force_bootstrap
 
+MODULE_INCNAME = QtCore QtXml
 MODULE_DEFINES = \
         QT_BOOTSTRAPPED \
         QT_LITE_UNICODE \
@@ -25,21 +26,6 @@ DEFINES += \
     QT_NO_CAST_FROM_ASCII
 
 DEFINES -= QT_EVAL
-
-MODULE_INCLUDES = \
-    \$\$QT_MODULE_INCLUDE_BASE \
-    \$\$QT_MODULE_INCLUDE_BASE/QtCore \
-    \$\$QT_MODULE_INCLUDE_BASE/QtXml
-MODULE_PRIVATE_INCLUDES = \
-    \$\$QT_MODULE_INCLUDE_BASE/QtCore/$$QT_VERSION \
-    \$\$QT_MODULE_INCLUDE_BASE/QtCore/$$QT_VERSION/QtCore \
-    \$\$QT_MODULE_INCLUDE_BASE/QtXml/$$QT_VERSION \
-    \$\$QT_MODULE_INCLUDE_BASE/QtXml/$$QT_VERSION/QtXml
-
-# We need the forwarding headers before their respective modules are built,
-# so do a minimal syncqt run.
-CONFIG += minimal_syncqt
-QMAKE_SYNCQT_OPTIONS = -module QtCore -module QtDBus -module QtXml -version $$QT_VERSION
 
 load(qt_module)
 

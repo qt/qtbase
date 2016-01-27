@@ -1459,11 +1459,11 @@ void QOpenGLContextGroupPrivate::deletePendingResources(QOpenGLContext *ctx)
 {
     QMutexLocker locker(&m_mutex);
 
-    QList<QOpenGLSharedResource *> pending = m_pendingDeletion;
+    const QList<QOpenGLSharedResource *> pending = m_pendingDeletion;
     m_pendingDeletion.clear();
 
-    QList<QOpenGLSharedResource *>::iterator it = pending.begin();
-    QList<QOpenGLSharedResource *>::iterator end = pending.end();
+    QList<QOpenGLSharedResource *>::const_iterator it = pending.begin();
+    QList<QOpenGLSharedResource *>::const_iterator end = pending.end();
     while (it != end) {
         (*it)->freeResource(ctx);
         delete *it;

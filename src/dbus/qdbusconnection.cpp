@@ -38,6 +38,7 @@
 #include <qdebug.h>
 #include <qcoreapplication.h>
 #include <qstringlist.h>
+#include <qtimer.h>
 #include <qthread.h>
 
 #include "qdbusconnectioninterface.h"
@@ -59,6 +60,24 @@ QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QDBusConnectionManager, _q_manager)
 
+// can be replaced with a lambda in Qt 5.7
+class QDBusConnectionDispatchEnabler : public QObject
+{
+    Q_OBJECT
+    QDBusConnectionPrivate *con;
+public:
+    QDBusConnectionDispatchEnabler(QDBusConnectionPrivate *con) : con(con) {}
+
+public slots:
+    void execute()
+    {
+        con->setDispatchEnabled(true);
+        if (!con->ref.deref())
+            con->deleteLater();
+        deleteLater();
+    }
+};
+
 struct QDBusConnectionManager::ConnectionRequestData
 {
     enum RequestType {
@@ -74,6 +93,8 @@ struct QDBusConnectionManager::ConnectionRequestData
     const QString *name;
 
     QDBusConnectionPrivate *result;
+
+    bool suspendedDelivery;
 };
 
 QDBusConnectionPrivate *QDBusConnectionManager::busConnection(QDBusConnection::BusType type)
@@ -84,6 +105,10 @@ QDBusConnectionPrivate *QDBusConnectionManager::busConnection(QDBusConnection::B
     if (!qdbus_loadLibDBus())
         return 0;
 
+    // we'll start in suspended delivery mode if we're in the main thread
+    // (the event loop will resume delivery)
+    bool suspendedDelivery = qApp && qApp->thread() == QThread::currentThread();
+
     QMutexLocker lock(&defaultBusMutex);
     if (defaultBuses[type])
         return defaultBuses[type];
@@ -91,7 +116,7 @@ QDBusConnectionPrivate *QDBusConnectionManager::busConnection(QDBusConnection::B
     QString name = QStringLiteral("qt_default_session_bus");
     if (type == QDBusConnection::SystemBus)
         name = QStringLiteral("qt_default_system_bus");
-    return defaultBuses[type] = connectToBus(type, name);
+    return defaultBuses[type] = connectToBus(type, name, suspendedDelivery);
 }
 
 QDBusConnectionPrivate *QDBusConnectionManager::connection(const QString &name) const
@@ -169,14 +194,22 @@ void QDBusConnectionManager::run()
     moveToThread(Q_NULLPTR);
 }
 
-QDBusConnectionPrivate *QDBusConnectionManager::connectToBus(QDBusConnection::BusType type, const QString &name)
+QDBusConnectionPrivate *QDBusConnectionManager::connectToBus(QDBusConnection::BusType type, const QString &name,
+                                                             bool suspendedDelivery)
 {
     ConnectionRequestData data;
     data.type = ConnectionRequestData::ConnectToStandardBus;
     data.busType = type;
     data.name = &name;
+    data.suspendedDelivery = suspendedDelivery;
 
     emit connectionRequested(&data);
+    if (suspendedDelivery) {
+        data.result->ref.ref();
+        QDBusConnectionDispatchEnabler *o = new QDBusConnectionDispatchEnabler(data.result);
+        QTimer::singleShot(0, o, SLOT(execute()));
+        o->moveToThread(qApp->thread());    // qApp was checked in the caller
+    }
     return data.result;
 }
 
@@ -186,6 +219,7 @@ QDBusConnectionPrivate *QDBusConnectionManager::connectToBus(const QString &addr
     data.type = ConnectionRequestData::ConnectToBusByAddress;
     data.busAddress = &address;
     data.name = &name;
+    data.suspendedDelivery = false;
 
     emit connectionRequested(&data);
     return data.result;
@@ -197,6 +231,7 @@ QDBusConnectionPrivate *QDBusConnectionManager::connectToPeer(const QString &add
     data.type = ConnectionRequestData::ConnectToPeerByAddress;
     data.busAddress = &address;
     data.name = &name;
+    data.suspendedDelivery = false;
 
     emit connectionRequested(&data);
     return data.result;
@@ -252,6 +287,8 @@ void QDBusConnectionManager::executeConnectionRequest(QDBusConnectionManager::Co
         // will lock in QDBusConnectionPrivate::connectRelay()
         d->setConnection(c, error);
         d->createBusService();
+        if (data->suspendedDelivery)
+            d->setDispatchEnabled(false);
     }
 }
 
@@ -456,7 +493,7 @@ QDBusConnection QDBusConnection::connectToBus(BusType type, const QString &name)
         QDBusConnectionPrivate *d = 0;
         return QDBusConnection(d);
     }
-    return QDBusConnection(_q_manager()->connectToBus(type, name));
+    return QDBusConnection(_q_manager()->connectToBus(type, name, false));
 }
 
 /*!
@@ -1231,5 +1268,7 @@ QByteArray QDBusConnection::localMachineId()
 */
 
 QT_END_NAMESPACE
+
+#include "qdbusconnection.moc"
 
 #endif // QT_NO_DBUS

@@ -40,6 +40,7 @@
 #include <xcb/xcb.h>
 #include <xcb/randr.h>
 #include <xcb/xfixes.h>
+#include <xcb/xinerama.h>
 
 #include "qxcbobject.h"
 #include "qxcbscreen.h"
@@ -102,7 +103,8 @@ class Q_XCB_EXPORT QXcbScreen : public QXcbObject, public QPlatformScreen
 {
 public:
     QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDesktop,
-               xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *outputInfo);
+               xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *outputInfo,
+               const xcb_xinerama_screen_info_t *xineramaScreenInfo = Q_NULLPTR, int xineramaScreenIdx = -1);
     ~QXcbScreen();
 
     QString getOutputName(xcb_randr_get_output_info_reply_t *outputInfo);
@@ -112,7 +114,6 @@ public:
     QWindow *topLevelAt(const QPoint &point) const Q_DECL_OVERRIDE;
 
     QRect geometry() const Q_DECL_OVERRIDE { return m_geometry; }
-    QRect nativeGeometry() const { return m_nativeGeometry; }
     QRect availableGeometry() const Q_DECL_OVERRIDE {return m_availableGeometry;}
     int depth() const Q_DECL_OVERRIDE { return screen()->root_depth; }
     QImage::Format format() const Q_DECL_OVERRIDE;
@@ -184,7 +185,6 @@ private:
     QSizeF m_outputSizeMillimeters;
     QSizeF m_sizeMillimeters;
     QRect m_geometry;
-    QRect m_nativeGeometry;
     QRect m_availableGeometry;
     QSize m_virtualSize;
     QSizeF m_virtualSizeMillimeters;

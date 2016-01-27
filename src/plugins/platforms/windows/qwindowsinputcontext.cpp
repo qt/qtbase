@@ -484,7 +484,8 @@ bool QWindowsInputContext::composition(HWND hwnd, LPARAM lParamIn)
     if (lParam & GCS_RESULTSTR) {
         // A fixed result, return the converted string
         event->setCommitString(getCompositionString(himc, GCS_RESULTSTR));
-        endContextComposition();
+        if (!(lParam & GCS_DELTASTART))
+            endContextComposition();
     }
     const bool result = QCoreApplication::sendEvent(m_compositionContext.focusObject, event.data());
     qCDebug(lcQpaInputMethods) << '<' << __FUNCTION__ << "sending markup="

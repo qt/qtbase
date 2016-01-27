@@ -58,7 +58,7 @@ void QSharedMemoryPrivate::setErrorString(QLatin1String function)
         errorString = QSharedMemory::tr("%1: already exists").arg(function);
     break;
     case ERROR_FILE_NOT_FOUND:
-#ifdef Q_OS_WINCE
+#if defined(Q_OS_WINCE) || (defined(Q_OS_WINRT) && _MSC_VER < 1900)
         // This happens on CE only if no file is present as CreateFileMappingW
         // bails out with this error code
     case ERROR_INVALID_PARAMETER:

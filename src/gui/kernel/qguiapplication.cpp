@@ -964,18 +964,38 @@ qreal QGuiApplication::devicePixelRatio() const
 */
 QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
 {
-    QList<QScreen *> screens = QGuiApplication::screens();
-    QList<QScreen *>::const_iterator screen = screens.constBegin();
-    QList<QScreen *>::const_iterator end = screens.constEnd();
+    const QList<QScreen *> screens = QGuiApplication::screens();
+    if (!screens.isEmpty()) {
+        const QList<QScreen *> primaryScreens = screens.first()->virtualSiblings();
+        QScreen *windowScreen = Q_NULLPTR;
 
-    while (screen != end) {
-        if ((*screen)->geometry().contains(pos)) {
-            const QPoint devicePosition = QHighDpi::toNativePixels(pos, *screen);
-            return (*screen)->handle()->topLevelAt(devicePosition);
+        // Find the window on the primary virtual desktop first
+        foreach (QScreen *screen, primaryScreens) {
+            if (screen->geometry().contains(pos)) {
+                windowScreen = screen;
+                break;
+            }
         }
-        ++screen;
+
+        // If the window is not found on primary virtual desktop, find it on all screens
+        // except the first which was for sure in the previous loop. Some other screens
+        // may repeat. Find only when there is more than one virtual desktop.
+        if (!windowScreen && screens.count() != primaryScreens.count()) {
+            for (int i = 1; i < screens.size(); ++i) {
+                QScreen *screen = screens[i];
+                if (screen->geometry().contains(pos)) {
+                    windowScreen = screen;
+                    break;
+                }
+            }
+        }
+
+        if (windowScreen) {
+            const QPoint devicePosition = QHighDpi::toNativePixels(pos, windowScreen);
+            return windowScreen->handle()->topLevelAt(devicePosition);
+        }
     }
-    return 0;
+    return Q_NULLPTR;
 }
 
 /*!
@@ -2077,10 +2097,12 @@ void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfa
 void QGuiApplicationPrivate::processWindowScreenChangedEvent(QWindowSystemInterfacePrivate::WindowScreenChangedEvent *wse)
 {
     if (QWindow *window  = wse->window.data()) {
-        if (QScreen *screen = wse->screen.data())
-            window->d_func()->setTopLevelScreen(screen, false /* recreate */);
-        else // Fall back to default behavior, and try to find some appropriate screen
-            window->setScreen(0);
+        if (window->isTopLevel()) {
+            if (QScreen *screen = wse->screen.data())
+                window->d_func()->setTopLevelScreen(screen, false /* recreate */);
+            else // Fall back to default behavior, and try to find some appropriate screen
+                window->setScreen(0);
+        }
         // we may have changed scaling, so trigger resize event if needed
         if (window->handle()) {
             QWindowSystemInterfacePrivate::GeometryChangeEvent gce(window, QHighDpi::fromNativePixels(window->handle()->geometry(), window), QRect());

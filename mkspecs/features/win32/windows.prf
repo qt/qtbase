@@ -5,7 +5,7 @@ contains(TEMPLATE, ".*app") {
     mingw:DEFINES += QT_NEEDS_QMAIN
 
     qt:for(entryLib, $$list($$unique(QMAKE_LIBS_QT_ENTRY))) {
-        isEqual(entryLib, -lqtmain): {
+        isEqual(entryLib, -lqtmain) {
             !contains(QMAKE_DEFAULT_LIBDIRS, $$QT.core.libs): \
                 QMAKE_LIBS += -L$$QT.core.libs
             CONFIG(debug, debug|release): QMAKE_LIBS += $${entryLib}$${QT_LIBINFIX}d

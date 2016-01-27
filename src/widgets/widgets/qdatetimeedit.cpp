@@ -1687,6 +1687,10 @@ QDateTimeEditPrivate::QDateTimeEditPrivate()
 #endif
 }
 
+QDateTimeEditPrivate::~QDateTimeEditPrivate()
+{
+}
+
 void QDateTimeEditPrivate::updateTimeSpec()
 {
     minimum = minimum.toDateTime().toTimeSpec(spec);

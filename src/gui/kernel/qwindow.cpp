@@ -609,6 +609,8 @@ void QWindow::setParent(QWindow *parent)
     }
 
     QObject::setParent(parent);
+    d->parentWindow = parent;
+
     if (parent)
         d->disconnectFromScreen();
     else
@@ -621,8 +623,6 @@ void QWindow::setParent(QWindow *parent)
             d->platformWindow->setParent(0);
         }
     }
-
-    d->parentWindow = parent;
 
     QGuiApplicationPrivate::updateBlockedStatus(this);
 }

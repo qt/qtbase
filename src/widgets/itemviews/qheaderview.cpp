@@ -2608,10 +2608,12 @@ bool QHeaderView::viewportEvent(QEvent *e)
         }
         return true; }
 #endif // QT_NO_STATUSTIP
-    case QEvent::Hide:
-    case QEvent::Show:
     case QEvent::FontChange:
-    case QEvent::StyleChange:{
+    case QEvent::StyleChange:
+        d->invalidateCachedSizeHint();
+        // Fall through
+    case QEvent::Hide:
+    case QEvent::Show: {
         QAbstractScrollArea *parent = qobject_cast<QAbstractScrollArea *>(parentWidget());
         if (parent && parent->isVisible()) // Only resize if we have a visible parent
             resizeSections();

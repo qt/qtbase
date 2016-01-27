@@ -420,7 +420,7 @@ void QNetmaskAddress::setPrefixLength(QAbstractSocket::NetworkLayerProtocol prot
     \value Any The dual stack any-address. A socket bound with this address will listen on both IPv4 and IPv6 interfaces.
 */
 
-/*!  Constructs a host address object with the IP address 0.0.0.0.
+/*!  Constructs a null host address object, i.e. an address which is not valid for any host or interface.
 
     \sa clear()
 */

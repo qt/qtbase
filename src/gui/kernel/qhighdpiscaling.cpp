@@ -173,7 +173,7 @@ static inline qreal initialGlobalScaleFactor()
         include X11, Windows, and Android.
 
         There are two APIs for enabling or disabling this behavior:
-            - The QT_AUTO_SCALE_FACTOR environment variable.
+            - The QT_AUTO_SCREEN_SCALE_FACTOR environment variable.
             - The AA_EnableHighDpiScaling and AA_DisableHighDpiScaling
               application attributes
 

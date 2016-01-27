@@ -86,10 +86,15 @@ QT_BEGIN_NAMESPACE
     The code originates from \c qkeymapper_win.cpp.
 */
 
+static void clearKeyRecorderOnApplicationInActive(Qt::ApplicationState state);
+
 QWindowsKeyMapper::QWindowsKeyMapper()
     : m_useRTLExtensions(false), m_keyGrabber(0)
 {
     memset(keyLayout, 0, sizeof(keyLayout));
+    QGuiApplication *app = static_cast<QGuiApplication *>(QGuiApplication::instance());
+    QObject::connect(app, &QGuiApplication::applicationStateChanged,
+                     app, clearKeyRecorderOnApplicationInActive);
 }
 
 QWindowsKeyMapper::~QWindowsKeyMapper()
@@ -143,6 +148,12 @@ struct KeyRecorder
     KeyRecord records[QT_MAX_KEY_RECORDINGS];
 };
 static KeyRecorder key_recorder;
+
+static void clearKeyRecorderOnApplicationInActive(Qt::ApplicationState state)
+{
+    if (state == Qt::ApplicationInactive)
+        key_recorder.clearKeys();
+}
 
 KeyRecord *KeyRecorder::findKey(int code, bool remove)
 {

@@ -453,260 +453,192 @@ void QOpenGLTextureHelper::dsa_CompressedTextureImage3D(GLuint texture, GLenum t
     CompressedTextureImage3DEXT(texture, target, level, internalFormat, width, height, depth, border, imageSize, bits);
 }
 
+namespace {
+
+class TextureBinder
+{
+public:
+    TextureBinder(QOpenGLTextureHelper *textureFunctions, GLuint texture, GLenum target, GLenum bindingTarget)
+    : m_textureFunctions(textureFunctions)
+    {
+        // For cubemaps we can't use the standard DSA emulation as it is illegal to
+        // try to bind a texture to one of the cubemap face targets. So we force the
+        // target and binding target to the cubemap values in this case.
+        switch (target) {
+        case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
+        case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
+        case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
+        case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
+        case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
+        case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
+            bindingTarget = GL_TEXTURE_BINDING_CUBE_MAP;
+            m_target = GL_TEXTURE_CUBE_MAP;
+            break;
+
+        default:
+            m_target = target;
+            break;
+        }
+
+        m_textureFunctions->glGetIntegerv(bindingTarget, &m_oldTexture);
+        m_textureFunctions->glBindTexture(m_target, texture);
+    }
+
+    ~TextureBinder()
+    {
+        m_textureFunctions->glBindTexture(m_target, m_oldTexture);
+    }
+
+private:
+    QOpenGLTextureHelper *m_textureFunctions;
+    GLenum m_target;
+    GLint m_oldTexture;
+};
+
+} // namespace
+
 void QOpenGLTextureHelper::qt_TextureParameteri(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, GLint param)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glTexParameteri(target, pname, param);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_TextureParameteriv(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, const GLint *params)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glTexParameteriv(target, pname, params);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_TextureParameterf(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, GLfloat param)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glTexParameterf(target, pname, param);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_TextureParameterfv(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, const GLfloat *params)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glTexParameterfv(target, pname, params);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_GenerateTextureMipmap(GLuint texture, GLenum target, GLenum bindingTarget)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glGenerateMipmap(target);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_TextureStorage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei levels, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glTexStorage3D(target, levels, internalFormat, width, height, depth);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_TextureStorage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei levels, GLenum internalFormat, GLsizei width, GLsizei height)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glTexStorage2D(target, levels, internalFormat, width, height);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_TextureStorage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei levels, GLenum internalFormat, GLsizei width)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glTexStorage1D(target, levels, internalFormat, width);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_TextureStorage3DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedSampleLocations)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glTexStorage3DMultisample(target, samples, internalFormat, width, height, depth, fixedSampleLocations);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_TextureStorage2DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLenum internalFormat, GLsizei width, GLsizei height, GLboolean fixedSampleLocations)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glTexStorage2DMultisample(target, samples, internalFormat, width, height, fixedSampleLocations);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_TextureImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glTexImage3D(target, level, internalFormat, width, height, depth, border, format, type, pixels);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_TextureImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    // For cubemaps we can't use the standard DSA emulation as it is illegal to
-    // try to bind a texture to one of the cubemap face targets. So we force the
-    // target and binding target to the cubemap values in this case.
-    GLint oldTexture;
-
-    switch (target) {
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
-        glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &oldTexture);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
-        glTexImage2D(target, level, internalFormat, width, height, border, format, type, pixels);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, oldTexture);
-        break;
-
-    default:
-        glGetIntegerv(bindingTarget, &oldTexture);
-        glBindTexture(target, texture);
-        glTexImage2D(target, level, internalFormat, width, height, border, format, type, pixels);
-        glBindTexture(target, oldTexture);
-        break;
-    }
+    TextureBinder binder(this, texture, target, bindingTarget);
+    glTexImage2D(target, level, internalFormat, width, height, border, format, type, pixels);
 }
 
 void QOpenGLTextureHelper::qt_TextureImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat, GLsizei width, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glTexImage1D(target, level, internalFormat, width, border, format, type, pixels);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_TextureSubImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_TextureSubImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    // For cubemaps we can't use the standard DSA emulation as it is illegal to
-    // try to bind a texture to one of the cubemap face targets. So we force the
-    // target and binding target to the cubemap values in this case.
-    GLint oldTexture;
-
-    switch (target) {
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
-        glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &oldTexture);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
-        glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, oldTexture);
-        break;
-
-    default:
-        glGetIntegerv(bindingTarget, &oldTexture);
-        glBindTexture(target, texture);
-        glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
-        glBindTexture(target, oldTexture);
-        break;
-    }
+    TextureBinder binder(this, texture, target, bindingTarget);
+    glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
 }
 
 void QOpenGLTextureHelper::qt_TextureSubImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glTexSubImage1D(target, level, xoffset, width, format, type, pixels);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_TextureImage3DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedSampleLocations)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glTexImage3DMultisample(target, samples, internalFormat, width, height, depth, fixedSampleLocations);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_TextureImage2DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLint internalFormat, GLsizei width, GLsizei height, GLboolean fixedSampleLocations)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glTexImage2DMultisample(target, samples, internalFormat, width, height, fixedSampleLocations);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_CompressedTextureSubImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLsizei width, GLenum format, GLsizei imageSize, const GLvoid *bits)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glCompressedTexSubImage1D(target, level, xoffset, width, format, imageSize, bits);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_CompressedTextureSubImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const GLvoid *bits)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glCompressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, bits);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_CompressedTextureSubImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const GLvoid *bits)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glCompressedTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, bits);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_CompressedTextureImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat, GLsizei width, GLint border, GLsizei imageSize, const GLvoid *bits)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glCompressedTexImage1D(target, level, internalFormat, width, border, imageSize, bits);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_CompressedTextureImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid *bits)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glCompressedTexImage2D(target, level, internalFormat, width, height, border, imageSize, bits);
-    glBindTexture(target, oldTexture);
 }
 
 void QOpenGLTextureHelper::qt_CompressedTextureImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const GLvoid *bits)
 {
-    GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
+    TextureBinder binder(this, texture, target, bindingTarget);
     glCompressedTexImage3D(target, level, internalFormat, width, height, depth, border, imageSize, bits);
-    glBindTexture(target, oldTexture);
 }
 
 QT_END_NAMESPACE

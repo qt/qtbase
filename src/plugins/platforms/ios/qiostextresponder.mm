@@ -318,7 +318,11 @@
     // a regular responder transfer to another window. In the former case, iOS
     // will set the new first-responder to our next-responder, and in the latter
     // case we'll have an active responder candidate.
-    if ([UIResponder currentFirstResponder] == [self nextResponder]) {
+    if (![UIResponder currentFirstResponder]) {
+        // No first responder set anymore, sync this with Qt by clearing the
+        // focus object.
+        m_inputContext->clearCurrentFocusObject();
+    } else if ([UIResponder currentFirstResponder] == [self nextResponder]) {
         // We have resigned the keyboard, and transferred first responder back to the parent view
         Q_ASSERT(!FirstResponderCandidate::currentCandidate());
         if ([self currentImeState:Qt::ImEnabled].toBool()) {
@@ -613,7 +617,8 @@
 
 - (UITextPosition *)endOfDocument
 {
-    int endPosition = [self currentImeState:Qt::ImSurroundingText].toString().length();
+    QString surroundingText = [self currentImeState:Qt::ImSurroundingText].toString();
+    int endPosition = surroundingText.length() + m_markedText.length();
     return [QUITextPosition positionWithIndex:endPosition];
 }
 
@@ -644,9 +649,18 @@
 
 - (NSString *)textInRange:(UITextRange *)range
 {
+    QString text = [self currentImeState:Qt::ImSurroundingText].toString();
+    if (!m_markedText.isEmpty()) {
+        // [UITextInput textInRange] is sparsely documented, but it turns out that unconfirmed
+        // marked text should be seen as a part of the text document. This is different from
+        // ImSurroundingText, which excludes it.
+        int cursorPos = [self currentImeState:Qt::ImCursorPosition].toInt();
+        text = text.left(cursorPos) + m_markedText + text.mid(cursorPos);
+    }
+
     int s = static_cast<QUITextPosition *>([range start]).index;
     int e = static_cast<QUITextPosition *>([range end]).index;
-    return [self currentImeState:Qt::ImSurroundingText].toString().mid(s, e - s).toNSString();
+    return text.mid(s, e - s).toNSString();
 }
 
 - (void)setMarkedText:(NSString *)markedText selectedRange:(NSRange)selectedRange
@@ -914,6 +928,14 @@
 
     if ([text isEqualToString:@"\n"]) {
         [self sendKeyPressRelease:Qt::Key_Return modifiers:Qt::NoModifier];
+
+        // An onEnter handler of a TextInput might move to the next input by calling
+        // nextInput.forceActiveFocus() which changes the focusObject.
+        // In that case we don't want to hide the VKB.
+        if (focusObject != QGuiApplication::focusObject()) {
+            qImDebug() << "focusObject already changed, not resigning first responder.";
+            return;
+        }
 
         if (self.returnKeyType == UIReturnKeyDone || self.returnKeyType == UIReturnKeyGo
             || self.returnKeyType == UIReturnKeySend || self.returnKeyType == UIReturnKeySearch)

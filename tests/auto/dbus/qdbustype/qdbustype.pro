@@ -1,4 +1,4 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qdbustype
 QT = core-private dbus-private testlib
 SOURCES += tst_qdbustype.cpp
