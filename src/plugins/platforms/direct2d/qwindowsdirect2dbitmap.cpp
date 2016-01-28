@@ -55,8 +55,9 @@ class QWindowsDirect2DBitmapPrivate
 {
 public:
     QWindowsDirect2DBitmapPrivate(ID2D1DeviceContext *dc = 0, ID2D1Bitmap1 *bm = 0)
-        : bitmap(bm)
-        , deviceContext(new QWindowsDirect2DDeviceContext(dc))
+        : deviceContext(new QWindowsDirect2DDeviceContext(dc))
+        , bitmap(bm)
+
     {
         deviceContext->get()->SetTarget(bm);
     }
@@ -83,7 +84,7 @@ public:
             UINT32(width), UINT32(height)
         };
 
-        HRESULT hr = deviceContext->get()->CreateBitmap(size, data, pitch,
+        HRESULT hr = deviceContext->get()->CreateBitmap(size, data, UINT32(pitch),
                                                         bitmapProperties(),
                                                         bitmap.ReleaseAndGetAddressOf());
         if (SUCCEEDED(hr))
@@ -128,7 +129,7 @@ public:
         }
 
         return QImage(static_cast<const uchar *>(mappedRect.bits),
-                      size.width, size.height, mappedRect.pitch,
+                      int(size.width), int(size.height), int(mappedRect.pitch),
                       QImage::Format_ARGB32_Premultiplied).copy(rect);
     }
 
@@ -197,7 +198,7 @@ QSize QWindowsDirect2DBitmap::size() const
     Q_D(const QWindowsDirect2DBitmap);
 
     D2D1_SIZE_U size = d->bitmap->GetPixelSize();
-    return QSize(size.width, size.height);
+    return QSize(int(size.width), int(size.height));
 }
 
 QT_END_NAMESPACE

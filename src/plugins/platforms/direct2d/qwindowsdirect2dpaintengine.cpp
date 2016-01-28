@@ -87,7 +87,7 @@ enum {
 };
 
 //Clipping flags
-enum {
+enum : unsigned {
     SimpleSystemClip = 0x1
 };
 
@@ -124,6 +124,16 @@ static inline D2D1_MATRIX_3X2_F transformFromLine(const QLineF &line, qreal penW
 
 static void adjustLine(QPointF *p1, QPointF *p2);
 static bool isLinePositivelySloped(const QPointF &p1, const QPointF &p2);
+
+static QVector<D2D1_GRADIENT_STOP> qGradientStopsToD2DStops(const QGradientStops &qstops)
+{
+    QVector<D2D1_GRADIENT_STOP> stops(qstops.count());
+    for (int i = 0, count =  stops.size(); i < count; ++i) {
+        stops[i].position = FLOAT(qstops.at(i).first);
+        stops[i].color = to_d2d_color_f(qstops.at(i).second);
+    }
+    return stops;
+}
 
 class Direct2DPathGeometryWriter
 {
@@ -348,9 +358,9 @@ public:
     void updateOpacity(qreal opacity)
     {
         if (brush.brush)
-            brush.brush->SetOpacity(opacity);
+            brush.brush->SetOpacity(FLOAT(opacity));
         if (pen.brush)
-            pen.brush->SetOpacity(opacity);
+            pen.brush->SetOpacity(FLOAT(opacity));
     }
 
     void pushClip(const QVectorPath &path)
@@ -459,7 +469,7 @@ public:
         brush.qbrush = newBrush;
 
         if (brush.brush) {
-            brush.brush->SetOpacity(q->state()->opacity);
+            brush.brush->SetOpacity(FLOAT(q->state()->opacity));
             applyBrushOrigin(currentBrushOrigin);
         }
     }
@@ -477,8 +487,8 @@ public:
             brush.brush->GetTransform(&transform);
 
             brush.brush->SetTransform(*(D2D1::Matrix3x2F::ReinterpretBaseType(&transform))
-                                      * D2D1::Matrix3x2F::Translation(-currentBrushOrigin.x(),
-                                                                      -currentBrushOrigin.y()));
+                                      * D2D1::Matrix3x2F::Translation(FLOAT(-currentBrushOrigin.x()),
+                                                                      FLOAT(-currentBrushOrigin.y())));
         }
     }
 
@@ -489,7 +499,7 @@ public:
             brush.brush->GetTransform(&transform);
 
             brush.brush->SetTransform(*(D2D1::Matrix3x2F::ReinterpretBaseType(&transform))
-                                      * D2D1::Matrix3x2F::Translation(origin.x(), origin.y()));
+                                      * D2D1::Matrix3x2F::Translation(FLOAT(origin.x()), FLOAT(origin.y())));
         }
 
         currentBrushOrigin = origin;
@@ -511,7 +521,7 @@ public:
         if (!pen.brush)
             return;
 
-        pen.brush->SetOpacity(q->state()->opacity);
+        pen.brush->SetOpacity(FLOAT(q->state()->opacity));
 
         D2D1_STROKE_STYLE_PROPERTIES1 props = {};
 
@@ -541,8 +551,8 @@ public:
             break;
         }
 
-        props.miterLimit = newPen.miterLimit() * qreal(2.0); // D2D and Qt miter specs differ
-        props.dashOffset = newPen.dashOffset();
+        props.miterLimit = FLOAT(newPen.miterLimit() * qreal(2.0)); // D2D and Qt miter specs differ
+        props.dashOffset = FLOAT(newPen.dashOffset());
 
         if (newPen.widthF() == 0)
             props.transformType = D2D1_STROKE_TRANSFORM_TYPE_HAIRLINE;
@@ -577,24 +587,24 @@ public:
             qreal penWidth = pen.qpen.widthF();
             qreal brushWidth = 0;
             for (int i = 0; i < dashes.size(); i++) {
-                converted[i] = dashes[i];
+                converted[i] = FLOAT(dashes[i]);
                 brushWidth += penWidth * dashes[i];
             }
 
-            hr = factory()->CreateStrokeStyle(props, converted.constData(), converted.size(), &pen.strokeStyle);
+            hr = factory()->CreateStrokeStyle(props, converted.constData(), UINT32(converted.size()), &pen.strokeStyle);
 
             // Create a combined brush/dash pattern for optimized line drawing
             QWindowsDirect2DBitmap bitmap;
-            bitmap.resize(ceil(brushWidth), ceil(penWidth));
+            bitmap.resize(int(ceil(brushWidth)), int(ceil(penWidth)));
             bitmap.deviceContext()->begin();
             bitmap.deviceContext()->get()->SetAntialiasMode(antialiasMode());
             bitmap.deviceContext()->get()->SetTransform(D2D1::IdentityMatrix());
             bitmap.deviceContext()->get()->Clear();
             const qreal offsetX = (qreal(bitmap.size().width()) - brushWidth) / 2;
             const qreal offsetY = qreal(bitmap.size().height()) / 2;
-            bitmap.deviceContext()->get()->DrawLine(D2D1::Point2F(offsetX, offsetY),
-                                                    D2D1::Point2F(brushWidth, offsetY),
-                                                    pen.brush.Get(), penWidth, pen.strokeStyle.Get());
+            bitmap.deviceContext()->get()->DrawLine(D2D1::Point2F(FLOAT(offsetX), FLOAT(offsetY)),
+                                                    D2D1::Point2F(FLOAT(brushWidth), FLOAT(offsetY)),
+                                                    pen.brush.Get(), FLOAT(penWidth), pen.strokeStyle.Get());
             bitmap.deviceContext()->end();
             D2D1_BITMAP_BRUSH_PROPERTIES1 bitmapBrushProperties = D2D1::BitmapBrushProperties1(
                         D2D1_EXTEND_MODE_WRAP, D2D1_EXTEND_MODE_CLAMP, D2D1_INTERPOLATION_MODE_LINEAR);
@@ -693,18 +703,14 @@ public:
                 D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES linearGradientBrushProperties;
                 ComPtr<ID2D1GradientStopCollection> gradientStopCollection;
 
-                const QGradientStops &qstops = qlinear->stops();
-                QVector<D2D1_GRADIENT_STOP> stops(qstops.count());
-
                 linearGradientBrushProperties.startPoint = to_d2d_point_2f(qlinear->start());
                 linearGradientBrushProperties.endPoint = to_d2d_point_2f(qlinear->finalStop());
 
-                for (int i = 0; i < stops.size(); i++) {
-                    stops[i].position = qstops[i].first;
-                    stops[i].color = to_d2d_color_f(qstops[i].second);
-                }
+                const QVector<D2D1_GRADIENT_STOP> stops = qGradientStopsToD2DStops(qlinear->stops());
 
-                hr = dc()->CreateGradientStopCollection(stops.constData(), stops.size(), &gradientStopCollection);
+                hr = dc()->CreateGradientStopCollection(stops.constData(),
+                                                        UINT32(stops.size()),
+                                                        &gradientStopCollection);
                 if (FAILED(hr)) {
                     qWarning("%s: Could not create gradient stop collection for linear gradient: %#x", __FUNCTION__, hr);
                     break;
@@ -735,18 +741,12 @@ public:
                 D2D1_RADIAL_GRADIENT_BRUSH_PROPERTIES radialGradientBrushProperties;
                 ComPtr<ID2D1GradientStopCollection> gradientStopCollection;
 
-                const QGradientStops &qstops = qradial->stops();
-                QVector<D2D1_GRADIENT_STOP> stops(qstops.count());
-
                 radialGradientBrushProperties.center = to_d2d_point_2f(qradial->center());
                 radialGradientBrushProperties.gradientOriginOffset = to_d2d_point_2f(qradial->focalPoint() - qradial->center());
-                radialGradientBrushProperties.radiusX = qradial->radius();
-                radialGradientBrushProperties.radiusY = qradial->radius();
+                radialGradientBrushProperties.radiusX = FLOAT(qradial->radius());
+                radialGradientBrushProperties.radiusY = FLOAT(qradial->radius());
 
-                for (int i = 0; i < stops.size(); i++) {
-                    stops[i].position = qstops[i].first;
-                    stops[i].color = to_d2d_color_f(qstops[i].second);
-                }
+                const QVector<D2D1_GRADIENT_STOP> stops = qGradientStopsToD2DStops(qradial->stops());
 
                 hr = dc()->CreateGradientStopCollection(stops.constData(), stops.size(), &gradientStopCollection);
                 if (FAILED(hr)) {
@@ -958,7 +958,8 @@ public:
                 qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);
                 return;
             }
-            dc()->DrawGeometry(geometry.Get(), pen.brush.Get(), pen.qpen.widthF(), pen.strokeStyle.Get());
+            dc()->DrawGeometry(geometry.Get(), pen.brush.Get(),
+                               FLOAT(pen.qpen.widthF()), pen.strokeStyle.Get());
             return;
         }
 
@@ -998,7 +999,7 @@ public:
                 dashOffset = pen.dashLength - fmod(lineLength - dashOffset, pen.dashLength);
             }
             dc()->DrawLine(to_d2d_point_2f(p1), to_d2d_point_2f(p2),
-                           brush, pen.qpen.widthF(), NULL);
+                           brush, FLOAT(pen.qpen.widthF()), NULL);
 
             if (skipJoin)
                 continue;
@@ -1013,7 +1014,8 @@ public:
                 writer.lineTo(p1);
                 writer.lineTo(line.pointAt(patchSegment));
                 writer.close();
-                dc()->DrawGeometry(writer.geometry().Get(), pen.brush.Get(), pen.qpen.widthF(), pen.strokeStyle.Get());
+                dc()->DrawGeometry(writer.geometry().Get(), pen.brush.Get(),
+                                   FLOAT(pen.qpen.widthF()), pen.strokeStyle.Get());
             }
             // Record the start position of the next joint
             jointStart = line.pointAt(1 - patchSegment);
@@ -1025,7 +1027,8 @@ public:
                 writer.lineTo(p2);
                 writer.lineTo(QLineF(p2, QPointF(points[2], points[3])).pointAt(patchSegment));
                 writer.close();
-                dc()->DrawGeometry(writer.geometry().Get(), pen.brush.Get(), pen.qpen.widthF(), pen.strokeStyle.Get());
+                dc()->DrawGeometry(writer.geometry().Get(), pen.brush.Get(),
+                                   FLOAT(pen.qpen.widthF()), pen.strokeStyle.Get());
             }
         }
     }
@@ -1045,7 +1048,7 @@ public:
         const QString nameSubstitute = QSettings(QLatin1String(keyC), QSettings::NativeFormat).value(familyName, familyName).toString();
         if (nameSubstitute != familyName) {
             const int nameSubstituteLength = qMin(nameSubstitute.length(), LF_FACESIZE - 1);
-            memcpy(lf.lfFaceName, nameSubstitute.utf16(), nameSubstituteLength * sizeof(wchar_t));
+            memcpy(lf.lfFaceName, nameSubstitute.utf16(), size_t(nameSubstituteLength) * sizeof(wchar_t));
             lf.lfFaceName[nameSubstituteLength] = 0;
         }
 
@@ -1332,7 +1335,8 @@ void QWindowsDirect2DPaintEngine::drawRects(const QRect *rects, int rectCount)
                 d->dc()->FillRectangle(d2d_rect, d->brush.brush.Get());
 
             if (d->pen.brush)
-                d->dc()->DrawRectangle(d2d_rect, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+                d->dc()->DrawRectangle(d2d_rect, d->pen.brush.Get(),
+                                       FLOAT(d->pen.qpen.widthF()), d->pen.strokeStyle.Get());
         }
     }
 }
@@ -1359,7 +1363,8 @@ void QWindowsDirect2DPaintEngine::drawRects(const QRectF *rects, int rectCount)
                 d->dc()->FillRectangle(d2d_rect, d->brush.brush.Get());
 
             if (d->pen.brush)
-                d->dc()->DrawRectangle(d2d_rect, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+                d->dc()->DrawRectangle(d2d_rect, d->pen.brush.Get(),
+                                       FLOAT(d->pen.qpen.widthF()), d->pen.strokeStyle.Get());
         }
     }
 }
@@ -1407,7 +1412,9 @@ void QWindowsDirect2DPaintEngine::drawEllipse(const QRectF &r)
             d->dc()->FillEllipse(ellipse, d->brush.brush.Get());
 
         if (d->pen.brush)
-            d->dc()->DrawEllipse(ellipse, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+            d->dc()->DrawEllipse(ellipse, d->pen.brush.Get(),
+                                 FLOAT(d->pen.qpen.widthF()),
+                                 d->pen.strokeStyle.Get());
     }
 }
 
@@ -1435,7 +1442,9 @@ void QWindowsDirect2DPaintEngine::drawEllipse(const QRect &r)
             d->dc()->FillEllipse(ellipse, d->brush.brush.Get());
 
         if (d->pen.brush)
-            d->dc()->DrawEllipse(ellipse, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+            d->dc()->DrawEllipse(ellipse, d->pen.brush.Get(),
+                                 FLOAT(d->pen.qpen.widthF()),
+                                 d->pen.strokeStyle.Get());
     }
 }
 
@@ -1490,12 +1499,12 @@ void QWindowsDirect2DPaintEngine::drawPixmap(const QRectF &r,
         // Good, src bitmap != dst bitmap
         if (sr.isValid())
             d->dc()->DrawBitmap(bitmap->bitmap(),
-                                to_d2d_rect_f(r), state()->opacity,
+                                to_d2d_rect_f(r), FLOAT(state()->opacity),
                                 d->interpolationMode(),
                                 to_d2d_rect_f(sr));
         else
             d->dc()->DrawBitmap(bitmap->bitmap(),
-                                to_d2d_rect_f(r), state()->opacity,
+                                to_d2d_rect_f(r), FLOAT(state()->opacity),
                                 d->interpolationMode());
     } else {
         // Ok, so the source pixmap and destination pixmap is the same.
@@ -1504,7 +1513,7 @@ void QWindowsDirect2DPaintEngine::drawPixmap(const QRectF &r,
         QWindowsDirect2DBitmap intermediate;
 
         if (sr.isValid()) {
-            bool r = intermediate.resize(sr.width(), sr.height());
+            bool r = intermediate.resize(int(sr.width()), int(sr.height()));
             if (!r) {
                 qWarning("%s: Could not resize intermediate bitmap to source rect size", __FUNCTION__);
                 return;
@@ -1536,7 +1545,7 @@ void QWindowsDirect2DPaintEngine::drawPixmap(const QRectF &r,
         }
 
         d->dc()->DrawBitmap(intermediate.bitmap(),
-                            to_d2d_rect_f(r), state()->opacity,
+                            to_d2d_rect_f(r), FLOAT(state()->opacity),
                             d->interpolationMode());
     }
 }
@@ -1573,9 +1582,9 @@ void QWindowsDirect2DPaintEngine::drawStaticTextItem(QStaticTextItem *staticText
 
         // This looks  a little funky because the positions are precalculated
         glyphAdvances[i] = 0;
-        glyphOffsets[i].advanceOffset = staticTextItem->glyphPositions[i].x.toReal();
+        glyphOffsets[i].advanceOffset = FLOAT(staticTextItem->glyphPositions[i].x.toReal());
         // Qt and Direct2D seem to disagree on the direction of the ascender offset...
-        glyphOffsets[i].ascenderOffset = staticTextItem->glyphPositions[i].y.toReal() * -1;
+        glyphOffsets[i].ascenderOffset = FLOAT(staticTextItem->glyphPositions[i].y.toReal() * -1);
     }
 
     d->drawGlyphRun(D2D1::Point2F(0, 0),
@@ -1618,11 +1627,11 @@ void QWindowsDirect2DPaintEngine::drawTextItem(const QPointF &p, const QTextItem
 
     for (int i = 0; i < ti.glyphs.numGlyphs; i++) {
         glyphIndices[i] = UINT16(ti.glyphs.glyphs[i]); // Imperfect conversion here
-        glyphAdvances[i] = ti.glyphs.effectiveAdvance(i).toReal();
-        glyphOffsets[i].advanceOffset = ti.glyphs.offsets[i].x.toReal();
+        glyphAdvances[i] = FLOAT(ti.glyphs.effectiveAdvance(i).toReal());
+        glyphOffsets[i].advanceOffset = FLOAT(ti.glyphs.offsets[i].x.toReal());
 
         // XXX Should we negate the y value like for static text items?
-        glyphOffsets[i].ascenderOffset = ti.glyphs.offsets[i].y.toReal();
+        glyphOffsets[i].ascenderOffset = FLOAT(ti.glyphs.offsets[i].y.toReal());
     }
 
     const bool rtl = (ti.flags & QTextItem::RightToLeft);

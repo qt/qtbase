@@ -100,12 +100,12 @@ void QWindowsDirect2DWindow::flush(QWindowsDirect2DBitmap *bitmap, const QRegion
         HRESULT hr = m_swapChain->GetDesc1(&desc);
         QRect geom = geometry();
 
-        if ((FAILED(hr) || (desc.Width != geom.width()) || (desc.Height != geom.height()))) {
+        if (FAILED(hr) || (desc.Width != UINT(geom.width()) || (desc.Height != UINT(geom.height())))) {
             resizeSwapChain(geom.size());
             m_swapChain->GetDesc1(&desc);
         }
-        size.setWidth(desc.Width);
-        size.setHeight(desc.Height);
+        size.setWidth(int(desc.Width));
+        size.setHeight(int(desc.Height));
     } else {
         size = geometry().size();
     }
@@ -175,7 +175,7 @@ void QWindowsDirect2DWindow::present(const QRegion &region)
     UPDATELAYEREDWINDOWINFO info = { sizeof(UPDATELAYEREDWINDOWINFO), NULL,
                                      &ptDst, &size, hdc, &ptSrc, 0, &blend, ULW_ALPHA, &dirty };
     if (!UpdateLayeredWindowIndirect(handle(), &info))
-        qErrnoWarning(GetLastError(), "Failed to update the layered window");
+        qErrnoWarning(int(GetLastError()), "Failed to update the layered window");
 
     hr = dxgiSurface->ReleaseDC(NULL);
     if (FAILED(hr))
@@ -217,7 +217,7 @@ void QWindowsDirect2DWindow::resizeSwapChain(const QSize &size)
         return;
 
     HRESULT hr = m_swapChain->ResizeBuffers(0,
-                                            size.width(), size.height(),
+                                            UINT(size.width()), UINT(size.height()),
                                             DXGI_FORMAT_UNKNOWN,
                                             0);
     if (FAILED(hr))
@@ -282,7 +282,7 @@ void QWindowsDirect2DWindow::setupBitmap()
         }
     } else {
         const QRect rect = geometry();
-        CD3D11_TEXTURE2D_DESC backBufferDesc(DXGI_FORMAT_B8G8R8A8_UNORM, rect.width(), rect.height(), 1, 1);
+        CD3D11_TEXTURE2D_DESC backBufferDesc(DXGI_FORMAT_B8G8R8A8_UNORM, UINT(rect.width()), UINT(rect.height()), 1, 1);
         backBufferDesc.BindFlags = D3D11_BIND_RENDER_TARGET;
         backBufferDesc.MiscFlags = D3D11_RESOURCE_MISC_GDI_COMPATIBLE;
         ComPtr<ID3D11Texture2D> backBufferTexture;
