@@ -636,12 +636,8 @@ int ffsll(quint64 i)
 #endif
 }
 #endif
-#elif defined(Q_OS_ANDROID) || defined(Q_OS_QNX) || defined(Q_OS_OSX) || defined(Q_OS_HAIKU)
+#elif defined(Q_OS_ANDROID) || defined(Q_OS_QNX) || defined(Q_OS_OSX) || defined(Q_OS_HAIKU) || defined (Q_OS_NACL)
 # define ffsll __builtin_ffsll
-#endif
-
-#ifdef Q_OS_NACL_NEWLIB
-#  define ffsll __builtin_ffsll
 #endif
 
 #ifdef Q_ATOMIC_INT64_IS_SUPPORTED
