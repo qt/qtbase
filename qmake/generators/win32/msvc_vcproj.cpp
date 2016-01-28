@@ -434,10 +434,12 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                                                    QHash<QString, ProStringList> &subdirProjectLookup,
                                                    const ProStringList &allDependencies)
 {
-    QLinkedList<QPair<QString, ProStringList> > collectedSubdirs;
+    QVector<QPair<QString, ProStringList> > collectedSubdirs;
     ProStringList tmp_proj_subdirs = proj->values("SUBDIRS");
     ProStringList projectsInProject;
-    for(int x = 0; x < tmp_proj_subdirs.size(); ++x) {
+    const int numSubdirs = tmp_proj_subdirs.size();
+    collectedSubdirs.reserve(numSubdirs);
+    for (int x = 0; x < numSubdirs; ++x) {
         ProString tmpdir = tmp_proj_subdirs.at(x);
         const ProKey tmpdirConfig(tmpdir + ".CONFIG");
         if (!proj->isEmpty(tmpdirConfig)) {
@@ -459,9 +461,7 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
         collectedSubdirs.append(qMakePair(tmpdir.toQString(), proj->values(ProKey(tmp_proj_subdirs.at(x) + ".depends"))));
         projLookup.insert(tmp_proj_subdirs.at(x).toQString(), tmpdir.toQString());
     }
-    QLinkedListIterator<QPair<QString, ProStringList> > collectedIt(collectedSubdirs);
-    while (collectedIt.hasNext()) {
-        QPair<QString, ProStringList> subdir = collectedIt.next();
+    for (const auto &subdir : qAsConst(collectedSubdirs)) {
         QString profile = subdir.first;
         QFileInfo fi(fileInfo(Option::normalizePath(profile)));
         if (fi.exists()) {
