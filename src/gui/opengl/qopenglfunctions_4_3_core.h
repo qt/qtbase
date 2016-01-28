@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Klaralvdalens Datakonsult AB (KDAB)
+** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -625,242 +626,242 @@ private:
 // OpenGL 1.0 core functions
 inline void QOpenGLFunctions_4_3_Core::glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
 {
-    d_1_0_Core->Viewport(x, y, width, height);
+    d_1_0_Core->f.Viewport(x, y, width, height);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDepthRange(GLdouble nearVal, GLdouble farVal)
 {
-    d_1_0_Core->DepthRange(nearVal, farVal);
+    d_1_0_Core->f.DepthRange(nearVal, farVal);
 }
 
 inline GLboolean QOpenGLFunctions_4_3_Core::glIsEnabled(GLenum cap)
 {
-    return d_1_0_Core->IsEnabled(cap);
+    return d_1_0_Core->f.IsEnabled(cap);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint *params)
 {
-    d_1_0_Core->GetTexLevelParameteriv(target, level, pname, params);
+    d_1_0_Core->f.GetTexLevelParameteriv(target, level, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetTexLevelParameterfv(GLenum target, GLint level, GLenum pname, GLfloat *params)
 {
-    d_1_0_Core->GetTexLevelParameterfv(target, level, pname, params);
+    d_1_0_Core->f.GetTexLevelParameterfv(target, level, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetTexParameteriv(GLenum target, GLenum pname, GLint *params)
 {
-    d_1_0_Core->GetTexParameteriv(target, pname, params);
+    d_1_0_Core->f.GetTexParameteriv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetTexParameterfv(GLenum target, GLenum pname, GLfloat *params)
 {
-    d_1_0_Core->GetTexParameterfv(target, pname, params);
+    d_1_0_Core->f.GetTexParameterfv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetTexImage(GLenum target, GLint level, GLenum format, GLenum type, GLvoid *pixels)
 {
-    d_1_0_Core->GetTexImage(target, level, format, type, pixels);
+    d_1_0_Core->f.GetTexImage(target, level, format, type, pixels);
 }
 
 inline const GLubyte * QOpenGLFunctions_4_3_Core::glGetString(GLenum name)
 {
-    return d_1_0_Core->GetString(name);
+    return d_1_0_Core->f.GetString(name);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetIntegerv(GLenum pname, GLint *params)
 {
-    d_1_0_Core->GetIntegerv(pname, params);
+    d_1_0_Core->f.GetIntegerv(pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetFloatv(GLenum pname, GLfloat *params)
 {
-    d_1_0_Core->GetFloatv(pname, params);
+    d_1_0_Core->f.GetFloatv(pname, params);
 }
 
 inline GLenum QOpenGLFunctions_4_3_Core::glGetError()
 {
-    return d_1_0_Core->GetError();
+    return d_1_0_Core->f.GetError();
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetDoublev(GLenum pname, GLdouble *params)
 {
-    d_1_0_Core->GetDoublev(pname, params);
+    d_1_0_Core->f.GetDoublev(pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetBooleanv(GLenum pname, GLboolean *params)
 {
-    d_1_0_Core->GetBooleanv(pname, params);
+    d_1_0_Core->f.GetBooleanv(pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels)
 {
-    d_1_0_Core->ReadPixels(x, y, width, height, format, type, pixels);
+    d_1_0_Core->f.ReadPixels(x, y, width, height, format, type, pixels);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glReadBuffer(GLenum mode)
 {
-    d_1_0_Core->ReadBuffer(mode);
+    d_1_0_Core->f.ReadBuffer(mode);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glPixelStorei(GLenum pname, GLint param)
 {
-    d_1_0_Core->PixelStorei(pname, param);
+    d_1_0_Core->f.PixelStorei(pname, param);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glPixelStoref(GLenum pname, GLfloat param)
 {
-    d_1_0_Core->PixelStoref(pname, param);
+    d_1_0_Core->f.PixelStoref(pname, param);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDepthFunc(GLenum func)
 {
-    d_1_0_Core->DepthFunc(func);
+    d_1_0_Core->f.DepthFunc(func);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glStencilOp(GLenum fail, GLenum zfail, GLenum zpass)
 {
-    d_1_0_Core->StencilOp(fail, zfail, zpass);
+    d_1_0_Core->f.StencilOp(fail, zfail, zpass);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glStencilFunc(GLenum func, GLint ref, GLuint mask)
 {
-    d_1_0_Core->StencilFunc(func, ref, mask);
+    d_1_0_Core->f.StencilFunc(func, ref, mask);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glLogicOp(GLenum opcode)
 {
-    d_1_0_Core->LogicOp(opcode);
+    d_1_0_Core->f.LogicOp(opcode);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBlendFunc(GLenum sfactor, GLenum dfactor)
 {
-    d_1_0_Core->BlendFunc(sfactor, dfactor);
+    d_1_0_Core->f.BlendFunc(sfactor, dfactor);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glFlush()
 {
-    d_1_0_Core->Flush();
+    d_1_0_Core->f.Flush();
 }
 
 inline void QOpenGLFunctions_4_3_Core::glFinish()
 {
-    d_1_0_Core->Finish();
+    d_1_0_Core->f.Finish();
 }
 
 inline void QOpenGLFunctions_4_3_Core::glEnable(GLenum cap)
 {
-    d_1_0_Core->Enable(cap);
+    d_1_0_Core->f.Enable(cap);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDisable(GLenum cap)
 {
-    d_1_0_Core->Disable(cap);
+    d_1_0_Core->f.Disable(cap);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDepthMask(GLboolean flag)
 {
-    d_1_0_Core->DepthMask(flag);
+    d_1_0_Core->f.DepthMask(flag);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha)
 {
-    d_1_0_Core->ColorMask(red, green, blue, alpha);
+    d_1_0_Core->f.ColorMask(red, green, blue, alpha);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glStencilMask(GLuint mask)
 {
-    d_1_0_Core->StencilMask(mask);
+    d_1_0_Core->f.StencilMask(mask);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glClearDepth(GLdouble depth)
 {
-    d_1_0_Core->ClearDepth(depth);
+    d_1_0_Core->f.ClearDepth(depth);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glClearStencil(GLint s)
 {
-    d_1_0_Core->ClearStencil(s);
+    d_1_0_Core->f.ClearStencil(s);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glClearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
 {
-    d_1_0_Core->ClearColor(red, green, blue, alpha);
+    d_1_0_Core->f.ClearColor(red, green, blue, alpha);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glClear(GLbitfield mask)
 {
-    d_1_0_Core->Clear(mask);
+    d_1_0_Core->f.Clear(mask);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDrawBuffer(GLenum mode)
 {
-    d_1_0_Core->DrawBuffer(mode);
+    d_1_0_Core->f.DrawBuffer(mode);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    d_1_0_Core->TexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
+    d_1_0_Core->f.TexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTexImage1D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    d_1_0_Core->TexImage1D(target, level, internalformat, width, border, format, type, pixels);
+    d_1_0_Core->f.TexImage1D(target, level, internalformat, width, border, format, type, pixels);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTexParameteriv(GLenum target, GLenum pname, const GLint *params)
 {
-    d_1_0_Core->TexParameteriv(target, pname, params);
+    d_1_0_Core->f.TexParameteriv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTexParameteri(GLenum target, GLenum pname, GLint param)
 {
-    d_1_0_Core->TexParameteri(target, pname, param);
+    d_1_0_Core->f.TexParameteri(target, pname, param);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTexParameterfv(GLenum target, GLenum pname, const GLfloat *params)
 {
-    d_1_0_Core->TexParameterfv(target, pname, params);
+    d_1_0_Core->f.TexParameterfv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTexParameterf(GLenum target, GLenum pname, GLfloat param)
 {
-    d_1_0_Core->TexParameterf(target, pname, param);
+    d_1_0_Core->f.TexParameterf(target, pname, param);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glScissor(GLint x, GLint y, GLsizei width, GLsizei height)
 {
-    d_1_0_Core->Scissor(x, y, width, height);
+    d_1_0_Core->f.Scissor(x, y, width, height);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glPolygonMode(GLenum face, GLenum mode)
 {
-    d_1_0_Core->PolygonMode(face, mode);
+    d_1_0_Core->f.PolygonMode(face, mode);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glPointSize(GLfloat size)
 {
-    d_1_0_Core->PointSize(size);
+    d_1_0_Core->f.PointSize(size);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glLineWidth(GLfloat width)
 {
-    d_1_0_Core->LineWidth(width);
+    d_1_0_Core->f.LineWidth(width);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glHint(GLenum target, GLenum mode)
 {
-    d_1_0_Core->Hint(target, mode);
+    d_1_0_Core->f.Hint(target, mode);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glFrontFace(GLenum mode)
 {
-    d_1_0_Core->FrontFace(mode);
+    d_1_0_Core->f.FrontFace(mode);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glCullFace(GLenum mode)
 {
-    d_1_0_Core->CullFace(mode);
+    d_1_0_Core->f.CullFace(mode);
 }
 
 
@@ -879,57 +880,57 @@ inline void QOpenGLFunctions_4_3_Core::glIndexub(GLubyte c)
 
 inline GLboolean QOpenGLFunctions_4_3_Core::glIsTexture(GLuint texture)
 {
-    return d_1_1_Core->IsTexture(texture);
+    return d_1_1_Core->f.IsTexture(texture);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGenTextures(GLsizei n, GLuint *textures)
 {
-    d_1_1_Core->GenTextures(n, textures);
+    d_1_1_Core->f.GenTextures(n, textures);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDeleteTextures(GLsizei n, const GLuint *textures)
 {
-    d_1_1_Core->DeleteTextures(n, textures);
+    d_1_1_Core->f.DeleteTextures(n, textures);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBindTexture(GLenum target, GLuint texture)
 {
-    d_1_1_Core->BindTexture(target, texture);
+    d_1_1_Core->f.BindTexture(target, texture);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    d_1_1_Core->TexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
+    d_1_1_Core->f.TexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTexSubImage1D(GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    d_1_1_Core->TexSubImage1D(target, level, xoffset, width, format, type, pixels);
+    d_1_1_Core->f.TexSubImage1D(target, level, xoffset, width, format, type, pixels);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height)
 {
-    d_1_1_Core->CopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
+    d_1_1_Core->f.CopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glCopyTexSubImage1D(GLenum target, GLint level, GLint xoffset, GLint x, GLint y, GLsizei width)
 {
-    d_1_1_Core->CopyTexSubImage1D(target, level, xoffset, x, y, width);
+    d_1_1_Core->f.CopyTexSubImage1D(target, level, xoffset, x, y, width);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glCopyTexImage2D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border)
 {
-    d_1_1_Core->CopyTexImage2D(target, level, internalformat, x, y, width, height, border);
+    d_1_1_Core->f.CopyTexImage2D(target, level, internalformat, x, y, width, height, border);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glCopyTexImage1D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLint border)
 {
-    d_1_1_Core->CopyTexImage1D(target, level, internalformat, x, y, width, border);
+    d_1_1_Core->f.CopyTexImage1D(target, level, internalformat, x, y, width, border);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glPolygonOffset(GLfloat factor, GLfloat units)
 {
-    d_1_1_Core->PolygonOffset(factor, units);
+    d_1_1_Core->f.PolygonOffset(factor, units);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetPointerv(GLenum pname, GLvoid* *params)
@@ -941,1067 +942,1067 @@ inline void QOpenGLFunctions_4_3_Core::glGetPointerv(GLenum pname, GLvoid* *para
 
 inline void QOpenGLFunctions_4_3_Core::glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices)
 {
-    d_1_1_Core->DrawElements(mode, count, type, indices);
+    d_1_1_Core->f.DrawElements(mode, count, type, indices);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDrawArrays(GLenum mode, GLint first, GLsizei count)
 {
-    d_1_1_Core->DrawArrays(mode, first, count);
+    d_1_1_Core->f.DrawArrays(mode, first, count);
 }
 
 
 // OpenGL 1.2 core functions
 inline void QOpenGLFunctions_4_3_Core::glCopyTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height)
 {
-    d_1_2_Core->CopyTexSubImage3D(target, level, xoffset, yoffset, zoffset, x, y, width, height);
+    d_1_2_Core->f.CopyTexSubImage3D(target, level, xoffset, yoffset, zoffset, x, y, width, height);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    d_1_2_Core->TexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
+    d_1_2_Core->f.TexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTexImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    d_1_2_Core->TexImage3D(target, level, internalformat, width, height, depth, border, format, type, pixels);
+    d_1_2_Core->f.TexImage3D(target, level, internalformat, width, height, depth, border, format, type, pixels);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices)
 {
-    d_1_2_Core->DrawRangeElements(mode, start, end, count, type, indices);
+    d_1_2_Core->f.DrawRangeElements(mode, start, end, count, type, indices);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBlendEquation(GLenum mode)
 {
-    d_1_2_Core->BlendEquation(mode);
+    d_1_2_Core->f.BlendEquation(mode);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBlendColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
 {
-    d_1_2_Core->BlendColor(red, green, blue, alpha);
+    d_1_2_Core->f.BlendColor(red, green, blue, alpha);
 }
 
 
 // OpenGL 1.3 core functions
 inline void QOpenGLFunctions_4_3_Core::glGetCompressedTexImage(GLenum target, GLint level, GLvoid *img)
 {
-    d_1_3_Core->GetCompressedTexImage(target, level, img);
+    d_1_3_Core->f.GetCompressedTexImage(target, level, img);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glCompressedTexSubImage1D(GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLsizei imageSize, const GLvoid *data)
 {
-    d_1_3_Core->CompressedTexSubImage1D(target, level, xoffset, width, format, imageSize, data);
+    d_1_3_Core->f.CompressedTexSubImage1D(target, level, xoffset, width, format, imageSize, data);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glCompressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const GLvoid *data)
 {
-    d_1_3_Core->CompressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, data);
+    d_1_3_Core->f.CompressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, data);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glCompressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const GLvoid *data)
 {
-    d_1_3_Core->CompressedTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, data);
+    d_1_3_Core->f.CompressedTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, data);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glCompressedTexImage1D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLint border, GLsizei imageSize, const GLvoid *data)
 {
-    d_1_3_Core->CompressedTexImage1D(target, level, internalformat, width, border, imageSize, data);
+    d_1_3_Core->f.CompressedTexImage1D(target, level, internalformat, width, border, imageSize, data);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid *data)
 {
-    d_1_3_Core->CompressedTexImage2D(target, level, internalformat, width, height, border, imageSize, data);
+    d_1_3_Core->f.CompressedTexImage2D(target, level, internalformat, width, height, border, imageSize, data);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glCompressedTexImage3D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const GLvoid *data)
 {
-    d_1_3_Core->CompressedTexImage3D(target, level, internalformat, width, height, depth, border, imageSize, data);
+    d_1_3_Core->f.CompressedTexImage3D(target, level, internalformat, width, height, depth, border, imageSize, data);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glSampleCoverage(GLfloat value, GLboolean invert)
 {
-    d_1_3_Core->SampleCoverage(value, invert);
+    d_1_3_Core->f.SampleCoverage(value, invert);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glActiveTexture(GLenum texture)
 {
-    d_1_3_Core->ActiveTexture(texture);
+    d_1_3_Core->f.ActiveTexture(texture);
 }
 
 
 // OpenGL 1.4 core functions
 inline void QOpenGLFunctions_4_3_Core::glPointParameteriv(GLenum pname, const GLint *params)
 {
-    d_1_4_Core->PointParameteriv(pname, params);
+    d_1_4_Core->f.PointParameteriv(pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glPointParameteri(GLenum pname, GLint param)
 {
-    d_1_4_Core->PointParameteri(pname, param);
+    d_1_4_Core->f.PointParameteri(pname, param);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glPointParameterfv(GLenum pname, const GLfloat *params)
 {
-    d_1_4_Core->PointParameterfv(pname, params);
+    d_1_4_Core->f.PointParameterfv(pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glPointParameterf(GLenum pname, GLfloat param)
 {
-    d_1_4_Core->PointParameterf(pname, param);
+    d_1_4_Core->f.PointParameterf(pname, param);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glMultiDrawElements(GLenum mode, const GLsizei *count, GLenum type, const GLvoid* const *indices, GLsizei drawcount)
 {
-    d_1_4_Core->MultiDrawElements(mode, count, type, indices, drawcount);
+    d_1_4_Core->f.MultiDrawElements(mode, count, type, indices, drawcount);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glMultiDrawArrays(GLenum mode, const GLint *first, const GLsizei *count, GLsizei drawcount)
 {
-    d_1_4_Core->MultiDrawArrays(mode, first, count, drawcount);
+    d_1_4_Core->f.MultiDrawArrays(mode, first, count, drawcount);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBlendFuncSeparate(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha)
 {
-    d_1_4_Core->BlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
+    d_1_4_Core->f.BlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
 }
 
 
 // OpenGL 1.5 core functions
 inline void QOpenGLFunctions_4_3_Core::glGetBufferPointerv(GLenum target, GLenum pname, GLvoid* *params)
 {
-    d_1_5_Core->GetBufferPointerv(target, pname, params);
+    d_1_5_Core->f.GetBufferPointerv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetBufferParameteriv(GLenum target, GLenum pname, GLint *params)
 {
-    d_1_5_Core->GetBufferParameteriv(target, pname, params);
+    d_1_5_Core->f.GetBufferParameteriv(target, pname, params);
 }
 
 inline GLboolean QOpenGLFunctions_4_3_Core::glUnmapBuffer(GLenum target)
 {
-    return d_1_5_Core->UnmapBuffer(target);
+    return d_1_5_Core->f.UnmapBuffer(target);
 }
 
 inline GLvoid* QOpenGLFunctions_4_3_Core::glMapBuffer(GLenum target, GLenum access)
 {
-    return d_1_5_Core->MapBuffer(target, access);
+    return d_1_5_Core->f.MapBuffer(target, access);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data)
 {
-    d_1_5_Core->GetBufferSubData(target, offset, size, data);
+    d_1_5_Core->f.GetBufferSubData(target, offset, size, data);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid *data)
 {
-    d_1_5_Core->BufferSubData(target, offset, size, data);
+    d_1_5_Core->f.BufferSubData(target, offset, size, data);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBufferData(GLenum target, GLsizeiptr size, const GLvoid *data, GLenum usage)
 {
-    d_1_5_Core->BufferData(target, size, data, usage);
+    d_1_5_Core->f.BufferData(target, size, data, usage);
 }
 
 inline GLboolean QOpenGLFunctions_4_3_Core::glIsBuffer(GLuint buffer)
 {
-    return d_1_5_Core->IsBuffer(buffer);
+    return d_1_5_Core->f.IsBuffer(buffer);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGenBuffers(GLsizei n, GLuint *buffers)
 {
-    d_1_5_Core->GenBuffers(n, buffers);
+    d_1_5_Core->f.GenBuffers(n, buffers);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDeleteBuffers(GLsizei n, const GLuint *buffers)
 {
-    d_1_5_Core->DeleteBuffers(n, buffers);
+    d_1_5_Core->f.DeleteBuffers(n, buffers);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBindBuffer(GLenum target, GLuint buffer)
 {
-    d_1_5_Core->BindBuffer(target, buffer);
+    d_1_5_Core->f.BindBuffer(target, buffer);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetQueryObjectuiv(GLuint id, GLenum pname, GLuint *params)
 {
-    d_1_5_Core->GetQueryObjectuiv(id, pname, params);
+    d_1_5_Core->f.GetQueryObjectuiv(id, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetQueryObjectiv(GLuint id, GLenum pname, GLint *params)
 {
-    d_1_5_Core->GetQueryObjectiv(id, pname, params);
+    d_1_5_Core->f.GetQueryObjectiv(id, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetQueryiv(GLenum target, GLenum pname, GLint *params)
 {
-    d_1_5_Core->GetQueryiv(target, pname, params);
+    d_1_5_Core->f.GetQueryiv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glEndQuery(GLenum target)
 {
-    d_1_5_Core->EndQuery(target);
+    d_1_5_Core->f.EndQuery(target);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBeginQuery(GLenum target, GLuint id)
 {
-    d_1_5_Core->BeginQuery(target, id);
+    d_1_5_Core->f.BeginQuery(target, id);
 }
 
 inline GLboolean QOpenGLFunctions_4_3_Core::glIsQuery(GLuint id)
 {
-    return d_1_5_Core->IsQuery(id);
+    return d_1_5_Core->f.IsQuery(id);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDeleteQueries(GLsizei n, const GLuint *ids)
 {
-    d_1_5_Core->DeleteQueries(n, ids);
+    d_1_5_Core->f.DeleteQueries(n, ids);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGenQueries(GLsizei n, GLuint *ids)
 {
-    d_1_5_Core->GenQueries(n, ids);
+    d_1_5_Core->f.GenQueries(n, ids);
 }
 
 
 // OpenGL 2.0 core functions
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer)
 {
-    d_2_0_Core->VertexAttribPointer(index, size, type, normalized, stride, pointer);
+    d_2_0_Core->f.VertexAttribPointer(index, size, type, normalized, stride, pointer);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glValidateProgram(GLuint program)
 {
-    d_2_0_Core->ValidateProgram(program);
+    d_2_0_Core->f.ValidateProgram(program);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
-    d_2_0_Core->UniformMatrix4fv(location, count, transpose, value);
+    d_2_0_Core->f.UniformMatrix4fv(location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniformMatrix3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
-    d_2_0_Core->UniformMatrix3fv(location, count, transpose, value);
+    d_2_0_Core->f.UniformMatrix3fv(location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniformMatrix2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
-    d_2_0_Core->UniformMatrix2fv(location, count, transpose, value);
+    d_2_0_Core->f.UniformMatrix2fv(location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform4iv(GLint location, GLsizei count, const GLint *value)
 {
-    d_2_0_Core->Uniform4iv(location, count, value);
+    d_2_0_Core->f.Uniform4iv(location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform3iv(GLint location, GLsizei count, const GLint *value)
 {
-    d_2_0_Core->Uniform3iv(location, count, value);
+    d_2_0_Core->f.Uniform3iv(location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform2iv(GLint location, GLsizei count, const GLint *value)
 {
-    d_2_0_Core->Uniform2iv(location, count, value);
+    d_2_0_Core->f.Uniform2iv(location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform1iv(GLint location, GLsizei count, const GLint *value)
 {
-    d_2_0_Core->Uniform1iv(location, count, value);
+    d_2_0_Core->f.Uniform1iv(location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform4fv(GLint location, GLsizei count, const GLfloat *value)
 {
-    d_2_0_Core->Uniform4fv(location, count, value);
+    d_2_0_Core->f.Uniform4fv(location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform3fv(GLint location, GLsizei count, const GLfloat *value)
 {
-    d_2_0_Core->Uniform3fv(location, count, value);
+    d_2_0_Core->f.Uniform3fv(location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform2fv(GLint location, GLsizei count, const GLfloat *value)
 {
-    d_2_0_Core->Uniform2fv(location, count, value);
+    d_2_0_Core->f.Uniform2fv(location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform1fv(GLint location, GLsizei count, const GLfloat *value)
 {
-    d_2_0_Core->Uniform1fv(location, count, value);
+    d_2_0_Core->f.Uniform1fv(location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform4i(GLint location, GLint v0, GLint v1, GLint v2, GLint v3)
 {
-    d_2_0_Core->Uniform4i(location, v0, v1, v2, v3);
+    d_2_0_Core->f.Uniform4i(location, v0, v1, v2, v3);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform3i(GLint location, GLint v0, GLint v1, GLint v2)
 {
-    d_2_0_Core->Uniform3i(location, v0, v1, v2);
+    d_2_0_Core->f.Uniform3i(location, v0, v1, v2);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform2i(GLint location, GLint v0, GLint v1)
 {
-    d_2_0_Core->Uniform2i(location, v0, v1);
+    d_2_0_Core->f.Uniform2i(location, v0, v1);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform1i(GLint location, GLint v0)
 {
-    d_2_0_Core->Uniform1i(location, v0);
+    d_2_0_Core->f.Uniform1i(location, v0);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform4f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)
 {
-    d_2_0_Core->Uniform4f(location, v0, v1, v2, v3);
+    d_2_0_Core->f.Uniform4f(location, v0, v1, v2, v3);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform3f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2)
 {
-    d_2_0_Core->Uniform3f(location, v0, v1, v2);
+    d_2_0_Core->f.Uniform3f(location, v0, v1, v2);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform2f(GLint location, GLfloat v0, GLfloat v1)
 {
-    d_2_0_Core->Uniform2f(location, v0, v1);
+    d_2_0_Core->f.Uniform2f(location, v0, v1);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform1f(GLint location, GLfloat v0)
 {
-    d_2_0_Core->Uniform1f(location, v0);
+    d_2_0_Core->f.Uniform1f(location, v0);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUseProgram(GLuint program)
 {
-    d_2_0_Core->UseProgram(program);
+    d_2_0_Core->f.UseProgram(program);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glShaderSource(GLuint shader, GLsizei count, const GLchar* const *string, const GLint *length)
 {
-    d_2_0_Core->ShaderSource(shader, count, string, length);
+    d_2_0_Core->f.ShaderSource(shader, count, string, length);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glLinkProgram(GLuint program)
 {
-    d_2_0_Core->LinkProgram(program);
+    d_2_0_Core->f.LinkProgram(program);
 }
 
 inline GLboolean QOpenGLFunctions_4_3_Core::glIsShader(GLuint shader)
 {
-    return d_2_0_Core->IsShader(shader);
+    return d_2_0_Core->f.IsShader(shader);
 }
 
 inline GLboolean QOpenGLFunctions_4_3_Core::glIsProgram(GLuint program)
 {
-    return d_2_0_Core->IsProgram(program);
+    return d_2_0_Core->f.IsProgram(program);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetVertexAttribPointerv(GLuint index, GLenum pname, GLvoid* *pointer)
 {
-    d_2_0_Core->GetVertexAttribPointerv(index, pname, pointer);
+    d_2_0_Core->f.GetVertexAttribPointerv(index, pname, pointer);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetVertexAttribiv(GLuint index, GLenum pname, GLint *params)
 {
-    d_2_0_Core->GetVertexAttribiv(index, pname, params);
+    d_2_0_Core->f.GetVertexAttribiv(index, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetVertexAttribfv(GLuint index, GLenum pname, GLfloat *params)
 {
-    d_2_0_Core->GetVertexAttribfv(index, pname, params);
+    d_2_0_Core->f.GetVertexAttribfv(index, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetVertexAttribdv(GLuint index, GLenum pname, GLdouble *params)
 {
-    d_2_0_Core->GetVertexAttribdv(index, pname, params);
+    d_2_0_Core->f.GetVertexAttribdv(index, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetUniformiv(GLuint program, GLint location, GLint *params)
 {
-    d_2_0_Core->GetUniformiv(program, location, params);
+    d_2_0_Core->f.GetUniformiv(program, location, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetUniformfv(GLuint program, GLint location, GLfloat *params)
 {
-    d_2_0_Core->GetUniformfv(program, location, params);
+    d_2_0_Core->f.GetUniformfv(program, location, params);
 }
 
 inline GLint QOpenGLFunctions_4_3_Core::glGetUniformLocation(GLuint program, const GLchar *name)
 {
-    return d_2_0_Core->GetUniformLocation(program, name);
+    return d_2_0_Core->f.GetUniformLocation(program, name);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetShaderSource(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *source)
 {
-    d_2_0_Core->GetShaderSource(shader, bufSize, length, source);
+    d_2_0_Core->f.GetShaderSource(shader, bufSize, length, source);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetShaderInfoLog(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog)
 {
-    d_2_0_Core->GetShaderInfoLog(shader, bufSize, length, infoLog);
+    d_2_0_Core->f.GetShaderInfoLog(shader, bufSize, length, infoLog);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetShaderiv(GLuint shader, GLenum pname, GLint *params)
 {
-    d_2_0_Core->GetShaderiv(shader, pname, params);
+    d_2_0_Core->f.GetShaderiv(shader, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetProgramInfoLog(GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog)
 {
-    d_2_0_Core->GetProgramInfoLog(program, bufSize, length, infoLog);
+    d_2_0_Core->f.GetProgramInfoLog(program, bufSize, length, infoLog);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetProgramiv(GLuint program, GLenum pname, GLint *params)
 {
-    d_2_0_Core->GetProgramiv(program, pname, params);
+    d_2_0_Core->f.GetProgramiv(program, pname, params);
 }
 
 inline GLint QOpenGLFunctions_4_3_Core::glGetAttribLocation(GLuint program, const GLchar *name)
 {
-    return d_2_0_Core->GetAttribLocation(program, name);
+    return d_2_0_Core->f.GetAttribLocation(program, name);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetAttachedShaders(GLuint program, GLsizei maxCount, GLsizei *count, GLuint *obj)
 {
-    d_2_0_Core->GetAttachedShaders(program, maxCount, count, obj);
+    d_2_0_Core->f.GetAttachedShaders(program, maxCount, count, obj);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetActiveUniform(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name)
 {
-    d_2_0_Core->GetActiveUniform(program, index, bufSize, length, size, type, name);
+    d_2_0_Core->f.GetActiveUniform(program, index, bufSize, length, size, type, name);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetActiveAttrib(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name)
 {
-    d_2_0_Core->GetActiveAttrib(program, index, bufSize, length, size, type, name);
+    d_2_0_Core->f.GetActiveAttrib(program, index, bufSize, length, size, type, name);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glEnableVertexAttribArray(GLuint index)
 {
-    d_2_0_Core->EnableVertexAttribArray(index);
+    d_2_0_Core->f.EnableVertexAttribArray(index);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDisableVertexAttribArray(GLuint index)
 {
-    d_2_0_Core->DisableVertexAttribArray(index);
+    d_2_0_Core->f.DisableVertexAttribArray(index);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDetachShader(GLuint program, GLuint shader)
 {
-    d_2_0_Core->DetachShader(program, shader);
+    d_2_0_Core->f.DetachShader(program, shader);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDeleteShader(GLuint shader)
 {
-    d_2_0_Core->DeleteShader(shader);
+    d_2_0_Core->f.DeleteShader(shader);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDeleteProgram(GLuint program)
 {
-    d_2_0_Core->DeleteProgram(program);
+    d_2_0_Core->f.DeleteProgram(program);
 }
 
 inline GLuint QOpenGLFunctions_4_3_Core::glCreateShader(GLenum type)
 {
-    return d_2_0_Core->CreateShader(type);
+    return d_2_0_Core->f.CreateShader(type);
 }
 
 inline GLuint QOpenGLFunctions_4_3_Core::glCreateProgram()
 {
-    return d_2_0_Core->CreateProgram();
+    return d_2_0_Core->f.CreateProgram();
 }
 
 inline void QOpenGLFunctions_4_3_Core::glCompileShader(GLuint shader)
 {
-    d_2_0_Core->CompileShader(shader);
+    d_2_0_Core->f.CompileShader(shader);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBindAttribLocation(GLuint program, GLuint index, const GLchar *name)
 {
-    d_2_0_Core->BindAttribLocation(program, index, name);
+    d_2_0_Core->f.BindAttribLocation(program, index, name);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glAttachShader(GLuint program, GLuint shader)
 {
-    d_2_0_Core->AttachShader(program, shader);
+    d_2_0_Core->f.AttachShader(program, shader);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glStencilMaskSeparate(GLenum face, GLuint mask)
 {
-    d_2_0_Core->StencilMaskSeparate(face, mask);
+    d_2_0_Core->f.StencilMaskSeparate(face, mask);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glStencilFuncSeparate(GLenum face, GLenum func, GLint ref, GLuint mask)
 {
-    d_2_0_Core->StencilFuncSeparate(face, func, ref, mask);
+    d_2_0_Core->f.StencilFuncSeparate(face, func, ref, mask);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glStencilOpSeparate(GLenum face, GLenum sfail, GLenum dpfail, GLenum dppass)
 {
-    d_2_0_Core->StencilOpSeparate(face, sfail, dpfail, dppass);
+    d_2_0_Core->f.StencilOpSeparate(face, sfail, dpfail, dppass);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDrawBuffers(GLsizei n, const GLenum *bufs)
 {
-    d_2_0_Core->DrawBuffers(n, bufs);
+    d_2_0_Core->f.DrawBuffers(n, bufs);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBlendEquationSeparate(GLenum modeRGB, GLenum modeAlpha)
 {
-    d_2_0_Core->BlendEquationSeparate(modeRGB, modeAlpha);
+    d_2_0_Core->f.BlendEquationSeparate(modeRGB, modeAlpha);
 }
 
 
 // OpenGL 2.1 core functions
 inline void QOpenGLFunctions_4_3_Core::glUniformMatrix4x3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
-    d_2_1_Core->UniformMatrix4x3fv(location, count, transpose, value);
+    d_2_1_Core->f.UniformMatrix4x3fv(location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniformMatrix3x4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
-    d_2_1_Core->UniformMatrix3x4fv(location, count, transpose, value);
+    d_2_1_Core->f.UniformMatrix3x4fv(location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniformMatrix4x2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
-    d_2_1_Core->UniformMatrix4x2fv(location, count, transpose, value);
+    d_2_1_Core->f.UniformMatrix4x2fv(location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniformMatrix2x4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
-    d_2_1_Core->UniformMatrix2x4fv(location, count, transpose, value);
+    d_2_1_Core->f.UniformMatrix2x4fv(location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniformMatrix3x2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
-    d_2_1_Core->UniformMatrix3x2fv(location, count, transpose, value);
+    d_2_1_Core->f.UniformMatrix3x2fv(location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniformMatrix2x3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
-    d_2_1_Core->UniformMatrix2x3fv(location, count, transpose, value);
+    d_2_1_Core->f.UniformMatrix2x3fv(location, count, transpose, value);
 }
 
 
 // OpenGL 3.0 core functions
 inline GLboolean QOpenGLFunctions_4_3_Core::glIsVertexArray(GLuint array)
 {
-    return d_3_0_Core->IsVertexArray(array);
+    return d_3_0_Core->f.IsVertexArray(array);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGenVertexArrays(GLsizei n, GLuint *arrays)
 {
-    d_3_0_Core->GenVertexArrays(n, arrays);
+    d_3_0_Core->f.GenVertexArrays(n, arrays);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDeleteVertexArrays(GLsizei n, const GLuint *arrays)
 {
-    d_3_0_Core->DeleteVertexArrays(n, arrays);
+    d_3_0_Core->f.DeleteVertexArrays(n, arrays);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBindVertexArray(GLuint array)
 {
-    d_3_0_Core->BindVertexArray(array);
+    d_3_0_Core->f.BindVertexArray(array);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glFlushMappedBufferRange(GLenum target, GLintptr offset, GLsizeiptr length)
 {
-    d_3_0_Core->FlushMappedBufferRange(target, offset, length);
+    d_3_0_Core->f.FlushMappedBufferRange(target, offset, length);
 }
 
 inline GLvoid* QOpenGLFunctions_4_3_Core::glMapBufferRange(GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access)
 {
-    return d_3_0_Core->MapBufferRange(target, offset, length, access);
+    return d_3_0_Core->f.MapBufferRange(target, offset, length, access);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glFramebufferTextureLayer(GLenum target, GLenum attachment, GLuint texture, GLint level, GLint layer)
 {
-    d_3_0_Core->FramebufferTextureLayer(target, attachment, texture, level, layer);
+    d_3_0_Core->f.FramebufferTextureLayer(target, attachment, texture, level, layer);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glRenderbufferStorageMultisample(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height)
 {
-    d_3_0_Core->RenderbufferStorageMultisample(target, samples, internalformat, width, height);
+    d_3_0_Core->f.RenderbufferStorageMultisample(target, samples, internalformat, width, height);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter)
 {
-    d_3_0_Core->BlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+    d_3_0_Core->f.BlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGenerateMipmap(GLenum target)
 {
-    d_3_0_Core->GenerateMipmap(target);
+    d_3_0_Core->f.GenerateMipmap(target);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetFramebufferAttachmentParameteriv(GLenum target, GLenum attachment, GLenum pname, GLint *params)
 {
-    d_3_0_Core->GetFramebufferAttachmentParameteriv(target, attachment, pname, params);
+    d_3_0_Core->f.GetFramebufferAttachmentParameteriv(target, attachment, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer)
 {
-    d_3_0_Core->FramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer);
+    d_3_0_Core->f.FramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glFramebufferTexture3D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLint zoffset)
 {
-    d_3_0_Core->FramebufferTexture3D(target, attachment, textarget, texture, level, zoffset);
+    d_3_0_Core->f.FramebufferTexture3D(target, attachment, textarget, texture, level, zoffset);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level)
 {
-    d_3_0_Core->FramebufferTexture2D(target, attachment, textarget, texture, level);
+    d_3_0_Core->f.FramebufferTexture2D(target, attachment, textarget, texture, level);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glFramebufferTexture1D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level)
 {
-    d_3_0_Core->FramebufferTexture1D(target, attachment, textarget, texture, level);
+    d_3_0_Core->f.FramebufferTexture1D(target, attachment, textarget, texture, level);
 }
 
 inline GLenum QOpenGLFunctions_4_3_Core::glCheckFramebufferStatus(GLenum target)
 {
-    return d_3_0_Core->CheckFramebufferStatus(target);
+    return d_3_0_Core->f.CheckFramebufferStatus(target);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGenFramebuffers(GLsizei n, GLuint *framebuffers)
 {
-    d_3_0_Core->GenFramebuffers(n, framebuffers);
+    d_3_0_Core->f.GenFramebuffers(n, framebuffers);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDeleteFramebuffers(GLsizei n, const GLuint *framebuffers)
 {
-    d_3_0_Core->DeleteFramebuffers(n, framebuffers);
+    d_3_0_Core->f.DeleteFramebuffers(n, framebuffers);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBindFramebuffer(GLenum target, GLuint framebuffer)
 {
-    d_3_0_Core->BindFramebuffer(target, framebuffer);
+    d_3_0_Core->f.BindFramebuffer(target, framebuffer);
 }
 
 inline GLboolean QOpenGLFunctions_4_3_Core::glIsFramebuffer(GLuint framebuffer)
 {
-    return d_3_0_Core->IsFramebuffer(framebuffer);
+    return d_3_0_Core->f.IsFramebuffer(framebuffer);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetRenderbufferParameteriv(GLenum target, GLenum pname, GLint *params)
 {
-    d_3_0_Core->GetRenderbufferParameteriv(target, pname, params);
+    d_3_0_Core->f.GetRenderbufferParameteriv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height)
 {
-    d_3_0_Core->RenderbufferStorage(target, internalformat, width, height);
+    d_3_0_Core->f.RenderbufferStorage(target, internalformat, width, height);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGenRenderbuffers(GLsizei n, GLuint *renderbuffers)
 {
-    d_3_0_Core->GenRenderbuffers(n, renderbuffers);
+    d_3_0_Core->f.GenRenderbuffers(n, renderbuffers);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDeleteRenderbuffers(GLsizei n, const GLuint *renderbuffers)
 {
-    d_3_0_Core->DeleteRenderbuffers(n, renderbuffers);
+    d_3_0_Core->f.DeleteRenderbuffers(n, renderbuffers);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBindRenderbuffer(GLenum target, GLuint renderbuffer)
 {
-    d_3_0_Core->BindRenderbuffer(target, renderbuffer);
+    d_3_0_Core->f.BindRenderbuffer(target, renderbuffer);
 }
 
 inline GLboolean QOpenGLFunctions_4_3_Core::glIsRenderbuffer(GLuint renderbuffer)
 {
-    return d_3_0_Core->IsRenderbuffer(renderbuffer);
+    return d_3_0_Core->f.IsRenderbuffer(renderbuffer);
 }
 
 inline const GLubyte * QOpenGLFunctions_4_3_Core::glGetStringi(GLenum name, GLuint index)
 {
-    return d_3_0_Core->GetStringi(name, index);
+    return d_3_0_Core->f.GetStringi(name, index);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glClearBufferfi(GLenum buffer, GLint drawbuffer, GLfloat depth, GLint stencil)
 {
-    d_3_0_Core->ClearBufferfi(buffer, drawbuffer, depth, stencil);
+    d_3_0_Core->f.ClearBufferfi(buffer, drawbuffer, depth, stencil);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glClearBufferfv(GLenum buffer, GLint drawbuffer, const GLfloat *value)
 {
-    d_3_0_Core->ClearBufferfv(buffer, drawbuffer, value);
+    d_3_0_Core->f.ClearBufferfv(buffer, drawbuffer, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glClearBufferuiv(GLenum buffer, GLint drawbuffer, const GLuint *value)
 {
-    d_3_0_Core->ClearBufferuiv(buffer, drawbuffer, value);
+    d_3_0_Core->f.ClearBufferuiv(buffer, drawbuffer, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glClearBufferiv(GLenum buffer, GLint drawbuffer, const GLint *value)
 {
-    d_3_0_Core->ClearBufferiv(buffer, drawbuffer, value);
+    d_3_0_Core->f.ClearBufferiv(buffer, drawbuffer, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetTexParameterIuiv(GLenum target, GLenum pname, GLuint *params)
 {
-    d_3_0_Core->GetTexParameterIuiv(target, pname, params);
+    d_3_0_Core->f.GetTexParameterIuiv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetTexParameterIiv(GLenum target, GLenum pname, GLint *params)
 {
-    d_3_0_Core->GetTexParameterIiv(target, pname, params);
+    d_3_0_Core->f.GetTexParameterIiv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTexParameterIuiv(GLenum target, GLenum pname, const GLuint *params)
 {
-    d_3_0_Core->TexParameterIuiv(target, pname, params);
+    d_3_0_Core->f.TexParameterIuiv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTexParameterIiv(GLenum target, GLenum pname, const GLint *params)
 {
-    d_3_0_Core->TexParameterIiv(target, pname, params);
+    d_3_0_Core->f.TexParameterIiv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform4uiv(GLint location, GLsizei count, const GLuint *value)
 {
-    d_3_0_Core->Uniform4uiv(location, count, value);
+    d_3_0_Core->f.Uniform4uiv(location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform3uiv(GLint location, GLsizei count, const GLuint *value)
 {
-    d_3_0_Core->Uniform3uiv(location, count, value);
+    d_3_0_Core->f.Uniform3uiv(location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform2uiv(GLint location, GLsizei count, const GLuint *value)
 {
-    d_3_0_Core->Uniform2uiv(location, count, value);
+    d_3_0_Core->f.Uniform2uiv(location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform1uiv(GLint location, GLsizei count, const GLuint *value)
 {
-    d_3_0_Core->Uniform1uiv(location, count, value);
+    d_3_0_Core->f.Uniform1uiv(location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform4ui(GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3)
 {
-    d_3_0_Core->Uniform4ui(location, v0, v1, v2, v3);
+    d_3_0_Core->f.Uniform4ui(location, v0, v1, v2, v3);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform3ui(GLint location, GLuint v0, GLuint v1, GLuint v2)
 {
-    d_3_0_Core->Uniform3ui(location, v0, v1, v2);
+    d_3_0_Core->f.Uniform3ui(location, v0, v1, v2);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform2ui(GLint location, GLuint v0, GLuint v1)
 {
-    d_3_0_Core->Uniform2ui(location, v0, v1);
+    d_3_0_Core->f.Uniform2ui(location, v0, v1);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform1ui(GLint location, GLuint v0)
 {
-    d_3_0_Core->Uniform1ui(location, v0);
+    d_3_0_Core->f.Uniform1ui(location, v0);
 }
 
 inline GLint QOpenGLFunctions_4_3_Core::glGetFragDataLocation(GLuint program, const GLchar *name)
 {
-    return d_3_0_Core->GetFragDataLocation(program, name);
+    return d_3_0_Core->f.GetFragDataLocation(program, name);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBindFragDataLocation(GLuint program, GLuint color, const GLchar *name)
 {
-    d_3_0_Core->BindFragDataLocation(program, color, name);
+    d_3_0_Core->f.BindFragDataLocation(program, color, name);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetUniformuiv(GLuint program, GLint location, GLuint *params)
 {
-    d_3_0_Core->GetUniformuiv(program, location, params);
+    d_3_0_Core->f.GetUniformuiv(program, location, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetVertexAttribIuiv(GLuint index, GLenum pname, GLuint *params)
 {
-    d_3_0_Core->GetVertexAttribIuiv(index, pname, params);
+    d_3_0_Core->f.GetVertexAttribIuiv(index, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetVertexAttribIiv(GLuint index, GLenum pname, GLint *params)
 {
-    d_3_0_Core->GetVertexAttribIiv(index, pname, params);
+    d_3_0_Core->f.GetVertexAttribIiv(index, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribIPointer(GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
 {
-    d_3_0_Core->VertexAttribIPointer(index, size, type, stride, pointer);
+    d_3_0_Core->f.VertexAttribIPointer(index, size, type, stride, pointer);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glEndConditionalRender()
 {
-    d_3_0_Core->EndConditionalRender();
+    d_3_0_Core->f.EndConditionalRender();
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBeginConditionalRender(GLuint id, GLenum mode)
 {
-    d_3_0_Core->BeginConditionalRender(id, mode);
+    d_3_0_Core->f.BeginConditionalRender(id, mode);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glClampColor(GLenum target, GLenum clamp)
 {
-    d_3_0_Core->ClampColor(target, clamp);
+    d_3_0_Core->f.ClampColor(target, clamp);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetTransformFeedbackVarying(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLsizei *size, GLenum *type, GLchar *name)
 {
-    d_3_0_Core->GetTransformFeedbackVarying(program, index, bufSize, length, size, type, name);
+    d_3_0_Core->f.GetTransformFeedbackVarying(program, index, bufSize, length, size, type, name);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTransformFeedbackVaryings(GLuint program, GLsizei count, const GLchar* const *varyings, GLenum bufferMode)
 {
-    d_3_0_Core->TransformFeedbackVaryings(program, count, varyings, bufferMode);
+    d_3_0_Core->f.TransformFeedbackVaryings(program, count, varyings, bufferMode);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBindBufferBase(GLenum target, GLuint index, GLuint buffer)
 {
-    d_3_0_Core->BindBufferBase(target, index, buffer);
+    d_3_0_Core->f.BindBufferBase(target, index, buffer);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBindBufferRange(GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size)
 {
-    d_3_0_Core->BindBufferRange(target, index, buffer, offset, size);
+    d_3_0_Core->f.BindBufferRange(target, index, buffer, offset, size);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glEndTransformFeedback()
 {
-    d_3_0_Core->EndTransformFeedback();
+    d_3_0_Core->f.EndTransformFeedback();
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBeginTransformFeedback(GLenum primitiveMode)
 {
-    d_3_0_Core->BeginTransformFeedback(primitiveMode);
+    d_3_0_Core->f.BeginTransformFeedback(primitiveMode);
 }
 
 inline GLboolean QOpenGLFunctions_4_3_Core::glIsEnabledi(GLenum target, GLuint index)
 {
-    return d_3_0_Core->IsEnabledi(target, index);
+    return d_3_0_Core->f.IsEnabledi(target, index);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDisablei(GLenum target, GLuint index)
 {
-    d_3_0_Core->Disablei(target, index);
+    d_3_0_Core->f.Disablei(target, index);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glEnablei(GLenum target, GLuint index)
 {
-    d_3_0_Core->Enablei(target, index);
+    d_3_0_Core->f.Enablei(target, index);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetIntegeri_v(GLenum target, GLuint index, GLint *data)
 {
-    d_3_0_Core->GetIntegeri_v(target, index, data);
+    d_3_0_Core->f.GetIntegeri_v(target, index, data);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetBooleani_v(GLenum target, GLuint index, GLboolean *data)
 {
-    d_3_0_Core->GetBooleani_v(target, index, data);
+    d_3_0_Core->f.GetBooleani_v(target, index, data);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glColorMaski(GLuint index, GLboolean r, GLboolean g, GLboolean b, GLboolean a)
 {
-    d_3_0_Core->ColorMaski(index, r, g, b, a);
+    d_3_0_Core->f.ColorMaski(index, r, g, b, a);
 }
 
 
 // OpenGL 3.1 core functions
 inline void QOpenGLFunctions_4_3_Core::glCopyBufferSubData(GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size)
 {
-    d_3_1_Core->CopyBufferSubData(readTarget, writeTarget, readOffset, writeOffset, size);
+    d_3_1_Core->f.CopyBufferSubData(readTarget, writeTarget, readOffset, writeOffset, size);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniformBlockBinding(GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding)
 {
-    d_3_1_Core->UniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding);
+    d_3_1_Core->f.UniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetActiveUniformBlockName(GLuint program, GLuint uniformBlockIndex, GLsizei bufSize, GLsizei *length, GLchar *uniformBlockName)
 {
-    d_3_1_Core->GetActiveUniformBlockName(program, uniformBlockIndex, bufSize, length, uniformBlockName);
+    d_3_1_Core->f.GetActiveUniformBlockName(program, uniformBlockIndex, bufSize, length, uniformBlockName);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetActiveUniformBlockiv(GLuint program, GLuint uniformBlockIndex, GLenum pname, GLint *params)
 {
-    d_3_1_Core->GetActiveUniformBlockiv(program, uniformBlockIndex, pname, params);
+    d_3_1_Core->f.GetActiveUniformBlockiv(program, uniformBlockIndex, pname, params);
 }
 
 inline GLuint QOpenGLFunctions_4_3_Core::glGetUniformBlockIndex(GLuint program, const GLchar *uniformBlockName)
 {
-    return d_3_1_Core->GetUniformBlockIndex(program, uniformBlockName);
+    return d_3_1_Core->f.GetUniformBlockIndex(program, uniformBlockName);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetActiveUniformName(GLuint program, GLuint uniformIndex, GLsizei bufSize, GLsizei *length, GLchar *uniformName)
 {
-    d_3_1_Core->GetActiveUniformName(program, uniformIndex, bufSize, length, uniformName);
+    d_3_1_Core->f.GetActiveUniformName(program, uniformIndex, bufSize, length, uniformName);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetActiveUniformsiv(GLuint program, GLsizei uniformCount, const GLuint *uniformIndices, GLenum pname, GLint *params)
 {
-    d_3_1_Core->GetActiveUniformsiv(program, uniformCount, uniformIndices, pname, params);
+    d_3_1_Core->f.GetActiveUniformsiv(program, uniformCount, uniformIndices, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetUniformIndices(GLuint program, GLsizei uniformCount, const GLchar* const *uniformNames, GLuint *uniformIndices)
 {
-    d_3_1_Core->GetUniformIndices(program, uniformCount, uniformNames, uniformIndices);
+    d_3_1_Core->f.GetUniformIndices(program, uniformCount, uniformNames, uniformIndices);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glPrimitiveRestartIndex(GLuint index)
 {
-    d_3_1_Core->PrimitiveRestartIndex(index);
+    d_3_1_Core->f.PrimitiveRestartIndex(index);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTexBuffer(GLenum target, GLenum internalformat, GLuint buffer)
 {
-    d_3_1_Core->TexBuffer(target, internalformat, buffer);
+    d_3_1_Core->f.TexBuffer(target, internalformat, buffer);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices, GLsizei instancecount)
 {
-    d_3_1_Core->DrawElementsInstanced(mode, count, type, indices, instancecount);
+    d_3_1_Core->f.DrawElementsInstanced(mode, count, type, indices, instancecount);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei instancecount)
 {
-    d_3_1_Core->DrawArraysInstanced(mode, first, count, instancecount);
+    d_3_1_Core->f.DrawArraysInstanced(mode, first, count, instancecount);
 }
 
 
 // OpenGL 3.2 core functions
 inline void QOpenGLFunctions_4_3_Core::glSampleMaski(GLuint index, GLbitfield mask)
 {
-    d_3_2_Core->SampleMaski(index, mask);
+    d_3_2_Core->f.SampleMaski(index, mask);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetMultisamplefv(GLenum pname, GLuint index, GLfloat *val)
 {
-    d_3_2_Core->GetMultisamplefv(pname, index, val);
+    d_3_2_Core->f.GetMultisamplefv(pname, index, val);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTexImage3DMultisample(GLenum target, GLsizei samples, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedsamplelocations)
 {
-    d_3_2_Core->TexImage3DMultisample(target, samples, internalformat, width, height, depth, fixedsamplelocations);
+    d_3_2_Core->f.TexImage3DMultisample(target, samples, internalformat, width, height, depth, fixedsamplelocations);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTexImage2DMultisample(GLenum target, GLsizei samples, GLint internalformat, GLsizei width, GLsizei height, GLboolean fixedsamplelocations)
 {
-    d_3_2_Core->TexImage2DMultisample(target, samples, internalformat, width, height, fixedsamplelocations);
+    d_3_2_Core->f.TexImage2DMultisample(target, samples, internalformat, width, height, fixedsamplelocations);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetSynciv(GLsync sync, GLenum pname, GLsizei bufSize, GLsizei *length, GLint *values)
 {
-    d_3_2_Core->GetSynciv(sync, pname, bufSize, length, values);
+    d_3_2_Core->f.GetSynciv(sync, pname, bufSize, length, values);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetInteger64v(GLenum pname, GLint64 *params)
 {
-    d_3_2_Core->GetInteger64v(pname, params);
+    d_3_2_Core->f.GetInteger64v(pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glWaitSync(GLsync sync, GLbitfield flags, GLuint64 timeout)
 {
-    d_3_2_Core->WaitSync(sync, flags, timeout);
+    d_3_2_Core->f.WaitSync(sync, flags, timeout);
 }
 
 inline GLenum QOpenGLFunctions_4_3_Core::glClientWaitSync(GLsync sync, GLbitfield flags, GLuint64 timeout)
 {
-    return d_3_2_Core->ClientWaitSync(sync, flags, timeout);
+    return d_3_2_Core->f.ClientWaitSync(sync, flags, timeout);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDeleteSync(GLsync sync)
 {
-    d_3_2_Core->DeleteSync(sync);
+    d_3_2_Core->f.DeleteSync(sync);
 }
 
 inline GLboolean QOpenGLFunctions_4_3_Core::glIsSync(GLsync sync)
 {
-    return d_3_2_Core->IsSync(sync);
+    return d_3_2_Core->f.IsSync(sync);
 }
 
 inline GLsync QOpenGLFunctions_4_3_Core::glFenceSync(GLenum condition, GLbitfield flags)
 {
-    return d_3_2_Core->FenceSync(condition, flags);
+    return d_3_2_Core->f.FenceSync(condition, flags);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProvokingVertex(GLenum mode)
 {
-    d_3_2_Core->ProvokingVertex(mode);
+    d_3_2_Core->f.ProvokingVertex(mode);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glMultiDrawElementsBaseVertex(GLenum mode, const GLsizei *count, GLenum type, const GLvoid* const *indices, GLsizei drawcount, const GLint *basevertex)
 {
-    d_3_2_Core->MultiDrawElementsBaseVertex(mode, count, type, indices, drawcount, basevertex);
+    d_3_2_Core->f.MultiDrawElementsBaseVertex(mode, count, type, indices, drawcount, basevertex);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDrawElementsInstancedBaseVertex(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices, GLsizei instancecount, GLint basevertex)
 {
-    d_3_2_Core->DrawElementsInstancedBaseVertex(mode, count, type, indices, instancecount, basevertex);
+    d_3_2_Core->f.DrawElementsInstancedBaseVertex(mode, count, type, indices, instancecount, basevertex);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDrawRangeElementsBaseVertex(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices, GLint basevertex)
 {
-    d_3_2_Core->DrawRangeElementsBaseVertex(mode, start, end, count, type, indices, basevertex);
+    d_3_2_Core->f.DrawRangeElementsBaseVertex(mode, start, end, count, type, indices, basevertex);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDrawElementsBaseVertex(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices, GLint basevertex)
 {
-    d_3_2_Core->DrawElementsBaseVertex(mode, count, type, indices, basevertex);
+    d_3_2_Core->f.DrawElementsBaseVertex(mode, count, type, indices, basevertex);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glFramebufferTexture(GLenum target, GLenum attachment, GLuint texture, GLint level)
 {
-    d_3_2_Core->FramebufferTexture(target, attachment, texture, level);
+    d_3_2_Core->f.FramebufferTexture(target, attachment, texture, level);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetBufferParameteri64v(GLenum target, GLenum pname, GLint64 *params)
 {
-    d_3_2_Core->GetBufferParameteri64v(target, pname, params);
+    d_3_2_Core->f.GetBufferParameteri64v(target, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetInteger64i_v(GLenum target, GLuint index, GLint64 *data)
 {
-    d_3_2_Core->GetInteger64i_v(target, index, data);
+    d_3_2_Core->f.GetInteger64i_v(target, index, data);
 }
 
 
 // OpenGL 3.3 core functions
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribP4uiv(GLuint index, GLenum type, GLboolean normalized, const GLuint *value)
 {
-    d_3_3_Core->VertexAttribP4uiv(index, type, normalized, value);
+    d_3_3_Core->f.VertexAttribP4uiv(index, type, normalized, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribP4ui(GLuint index, GLenum type, GLboolean normalized, GLuint value)
 {
-    d_3_3_Core->VertexAttribP4ui(index, type, normalized, value);
+    d_3_3_Core->f.VertexAttribP4ui(index, type, normalized, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribP3uiv(GLuint index, GLenum type, GLboolean normalized, const GLuint *value)
 {
-    d_3_3_Core->VertexAttribP3uiv(index, type, normalized, value);
+    d_3_3_Core->f.VertexAttribP3uiv(index, type, normalized, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribP3ui(GLuint index, GLenum type, GLboolean normalized, GLuint value)
 {
-    d_3_3_Core->VertexAttribP3ui(index, type, normalized, value);
+    d_3_3_Core->f.VertexAttribP3ui(index, type, normalized, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribP2uiv(GLuint index, GLenum type, GLboolean normalized, const GLuint *value)
 {
-    d_3_3_Core->VertexAttribP2uiv(index, type, normalized, value);
+    d_3_3_Core->f.VertexAttribP2uiv(index, type, normalized, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribP2ui(GLuint index, GLenum type, GLboolean normalized, GLuint value)
 {
-    d_3_3_Core->VertexAttribP2ui(index, type, normalized, value);
+    d_3_3_Core->f.VertexAttribP2ui(index, type, normalized, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribP1uiv(GLuint index, GLenum type, GLboolean normalized, const GLuint *value)
 {
-    d_3_3_Core->VertexAttribP1uiv(index, type, normalized, value);
+    d_3_3_Core->f.VertexAttribP1uiv(index, type, normalized, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribP1ui(GLuint index, GLenum type, GLboolean normalized, GLuint value)
 {
-    d_3_3_Core->VertexAttribP1ui(index, type, normalized, value);
+    d_3_3_Core->f.VertexAttribP1ui(index, type, normalized, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glSecondaryColorP3uiv(GLenum type, const GLuint *color)
@@ -2224,1005 +2225,1005 @@ inline void QOpenGLFunctions_4_3_Core::glVertexP2ui(GLenum type, GLuint value)
 
 inline void QOpenGLFunctions_4_3_Core::glGetQueryObjectui64v(GLuint id, GLenum pname, GLuint64 *params)
 {
-    d_3_3_Core->GetQueryObjectui64v(id, pname, params);
+    d_3_3_Core->f.GetQueryObjectui64v(id, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetQueryObjecti64v(GLuint id, GLenum pname, GLint64 *params)
 {
-    d_3_3_Core->GetQueryObjecti64v(id, pname, params);
+    d_3_3_Core->f.GetQueryObjecti64v(id, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glQueryCounter(GLuint id, GLenum target)
 {
-    d_3_3_Core->QueryCounter(id, target);
+    d_3_3_Core->f.QueryCounter(id, target);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetSamplerParameterIuiv(GLuint sampler, GLenum pname, GLuint *params)
 {
-    d_3_3_Core->GetSamplerParameterIuiv(sampler, pname, params);
+    d_3_3_Core->f.GetSamplerParameterIuiv(sampler, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetSamplerParameterfv(GLuint sampler, GLenum pname, GLfloat *params)
 {
-    d_3_3_Core->GetSamplerParameterfv(sampler, pname, params);
+    d_3_3_Core->f.GetSamplerParameterfv(sampler, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetSamplerParameterIiv(GLuint sampler, GLenum pname, GLint *params)
 {
-    d_3_3_Core->GetSamplerParameterIiv(sampler, pname, params);
+    d_3_3_Core->f.GetSamplerParameterIiv(sampler, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetSamplerParameteriv(GLuint sampler, GLenum pname, GLint *params)
 {
-    d_3_3_Core->GetSamplerParameteriv(sampler, pname, params);
+    d_3_3_Core->f.GetSamplerParameteriv(sampler, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glSamplerParameterIuiv(GLuint sampler, GLenum pname, const GLuint *param)
 {
-    d_3_3_Core->SamplerParameterIuiv(sampler, pname, param);
+    d_3_3_Core->f.SamplerParameterIuiv(sampler, pname, param);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glSamplerParameterIiv(GLuint sampler, GLenum pname, const GLint *param)
 {
-    d_3_3_Core->SamplerParameterIiv(sampler, pname, param);
+    d_3_3_Core->f.SamplerParameterIiv(sampler, pname, param);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glSamplerParameterfv(GLuint sampler, GLenum pname, const GLfloat *param)
 {
-    d_3_3_Core->SamplerParameterfv(sampler, pname, param);
+    d_3_3_Core->f.SamplerParameterfv(sampler, pname, param);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glSamplerParameterf(GLuint sampler, GLenum pname, GLfloat param)
 {
-    d_3_3_Core->SamplerParameterf(sampler, pname, param);
+    d_3_3_Core->f.SamplerParameterf(sampler, pname, param);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glSamplerParameteriv(GLuint sampler, GLenum pname, const GLint *param)
 {
-    d_3_3_Core->SamplerParameteriv(sampler, pname, param);
+    d_3_3_Core->f.SamplerParameteriv(sampler, pname, param);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glSamplerParameteri(GLuint sampler, GLenum pname, GLint param)
 {
-    d_3_3_Core->SamplerParameteri(sampler, pname, param);
+    d_3_3_Core->f.SamplerParameteri(sampler, pname, param);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBindSampler(GLuint unit, GLuint sampler)
 {
-    d_3_3_Core->BindSampler(unit, sampler);
+    d_3_3_Core->f.BindSampler(unit, sampler);
 }
 
 inline GLboolean QOpenGLFunctions_4_3_Core::glIsSampler(GLuint sampler)
 {
-    return d_3_3_Core->IsSampler(sampler);
+    return d_3_3_Core->f.IsSampler(sampler);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDeleteSamplers(GLsizei count, const GLuint *samplers)
 {
-    d_3_3_Core->DeleteSamplers(count, samplers);
+    d_3_3_Core->f.DeleteSamplers(count, samplers);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGenSamplers(GLsizei count, GLuint *samplers)
 {
-    d_3_3_Core->GenSamplers(count, samplers);
+    d_3_3_Core->f.GenSamplers(count, samplers);
 }
 
 inline GLint QOpenGLFunctions_4_3_Core::glGetFragDataIndex(GLuint program, const GLchar *name)
 {
-    return d_3_3_Core->GetFragDataIndex(program, name);
+    return d_3_3_Core->f.GetFragDataIndex(program, name);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBindFragDataLocationIndexed(GLuint program, GLuint colorNumber, GLuint index, const GLchar *name)
 {
-    d_3_3_Core->BindFragDataLocationIndexed(program, colorNumber, index, name);
+    d_3_3_Core->f.BindFragDataLocationIndexed(program, colorNumber, index, name);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribDivisor(GLuint index, GLuint divisor)
 {
-    d_3_3_Core->VertexAttribDivisor(index, divisor);
+    d_3_3_Core->f.VertexAttribDivisor(index, divisor);
 }
 
 
 // OpenGL 4.0 core functions
 inline void QOpenGLFunctions_4_3_Core::glGetQueryIndexediv(GLenum target, GLuint index, GLenum pname, GLint *params)
 {
-    d_4_0_Core->GetQueryIndexediv(target, index, pname, params);
+    d_4_0_Core->f.GetQueryIndexediv(target, index, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glEndQueryIndexed(GLenum target, GLuint index)
 {
-    d_4_0_Core->EndQueryIndexed(target, index);
+    d_4_0_Core->f.EndQueryIndexed(target, index);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBeginQueryIndexed(GLenum target, GLuint index, GLuint id)
 {
-    d_4_0_Core->BeginQueryIndexed(target, index, id);
+    d_4_0_Core->f.BeginQueryIndexed(target, index, id);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDrawTransformFeedbackStream(GLenum mode, GLuint id, GLuint stream)
 {
-    d_4_0_Core->DrawTransformFeedbackStream(mode, id, stream);
+    d_4_0_Core->f.DrawTransformFeedbackStream(mode, id, stream);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDrawTransformFeedback(GLenum mode, GLuint id)
 {
-    d_4_0_Core->DrawTransformFeedback(mode, id);
+    d_4_0_Core->f.DrawTransformFeedback(mode, id);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glResumeTransformFeedback()
 {
-    d_4_0_Core->ResumeTransformFeedback();
+    d_4_0_Core->f.ResumeTransformFeedback();
 }
 
 inline void QOpenGLFunctions_4_3_Core::glPauseTransformFeedback()
 {
-    d_4_0_Core->PauseTransformFeedback();
+    d_4_0_Core->f.PauseTransformFeedback();
 }
 
 inline GLboolean QOpenGLFunctions_4_3_Core::glIsTransformFeedback(GLuint id)
 {
-    return d_4_0_Core->IsTransformFeedback(id);
+    return d_4_0_Core->f.IsTransformFeedback(id);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGenTransformFeedbacks(GLsizei n, GLuint *ids)
 {
-    d_4_0_Core->GenTransformFeedbacks(n, ids);
+    d_4_0_Core->f.GenTransformFeedbacks(n, ids);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDeleteTransformFeedbacks(GLsizei n, const GLuint *ids)
 {
-    d_4_0_Core->DeleteTransformFeedbacks(n, ids);
+    d_4_0_Core->f.DeleteTransformFeedbacks(n, ids);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBindTransformFeedback(GLenum target, GLuint id)
 {
-    d_4_0_Core->BindTransformFeedback(target, id);
+    d_4_0_Core->f.BindTransformFeedback(target, id);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glPatchParameterfv(GLenum pname, const GLfloat *values)
 {
-    d_4_0_Core->PatchParameterfv(pname, values);
+    d_4_0_Core->f.PatchParameterfv(pname, values);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glPatchParameteri(GLenum pname, GLint value)
 {
-    d_4_0_Core->PatchParameteri(pname, value);
+    d_4_0_Core->f.PatchParameteri(pname, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetProgramStageiv(GLuint program, GLenum shadertype, GLenum pname, GLint *values)
 {
-    d_4_0_Core->GetProgramStageiv(program, shadertype, pname, values);
+    d_4_0_Core->f.GetProgramStageiv(program, shadertype, pname, values);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetUniformSubroutineuiv(GLenum shadertype, GLint location, GLuint *params)
 {
-    d_4_0_Core->GetUniformSubroutineuiv(shadertype, location, params);
+    d_4_0_Core->f.GetUniformSubroutineuiv(shadertype, location, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniformSubroutinesuiv(GLenum shadertype, GLsizei count, const GLuint *indices)
 {
-    d_4_0_Core->UniformSubroutinesuiv(shadertype, count, indices);
+    d_4_0_Core->f.UniformSubroutinesuiv(shadertype, count, indices);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetActiveSubroutineName(GLuint program, GLenum shadertype, GLuint index, GLsizei bufsize, GLsizei *length, GLchar *name)
 {
-    d_4_0_Core->GetActiveSubroutineName(program, shadertype, index, bufsize, length, name);
+    d_4_0_Core->f.GetActiveSubroutineName(program, shadertype, index, bufsize, length, name);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetActiveSubroutineUniformName(GLuint program, GLenum shadertype, GLuint index, GLsizei bufsize, GLsizei *length, GLchar *name)
 {
-    d_4_0_Core->GetActiveSubroutineUniformName(program, shadertype, index, bufsize, length, name);
+    d_4_0_Core->f.GetActiveSubroutineUniformName(program, shadertype, index, bufsize, length, name);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetActiveSubroutineUniformiv(GLuint program, GLenum shadertype, GLuint index, GLenum pname, GLint *values)
 {
-    d_4_0_Core->GetActiveSubroutineUniformiv(program, shadertype, index, pname, values);
+    d_4_0_Core->f.GetActiveSubroutineUniformiv(program, shadertype, index, pname, values);
 }
 
 inline GLuint QOpenGLFunctions_4_3_Core::glGetSubroutineIndex(GLuint program, GLenum shadertype, const GLchar *name)
 {
-    return d_4_0_Core->GetSubroutineIndex(program, shadertype, name);
+    return d_4_0_Core->f.GetSubroutineIndex(program, shadertype, name);
 }
 
 inline GLint QOpenGLFunctions_4_3_Core::glGetSubroutineUniformLocation(GLuint program, GLenum shadertype, const GLchar *name)
 {
-    return d_4_0_Core->GetSubroutineUniformLocation(program, shadertype, name);
+    return d_4_0_Core->f.GetSubroutineUniformLocation(program, shadertype, name);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetUniformdv(GLuint program, GLint location, GLdouble *params)
 {
-    d_4_0_Core->GetUniformdv(program, location, params);
+    d_4_0_Core->f.GetUniformdv(program, location, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniformMatrix4x3dv(GLint location, GLsizei count, GLboolean transpose, const GLdouble *value)
 {
-    d_4_0_Core->UniformMatrix4x3dv(location, count, transpose, value);
+    d_4_0_Core->f.UniformMatrix4x3dv(location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniformMatrix4x2dv(GLint location, GLsizei count, GLboolean transpose, const GLdouble *value)
 {
-    d_4_0_Core->UniformMatrix4x2dv(location, count, transpose, value);
+    d_4_0_Core->f.UniformMatrix4x2dv(location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniformMatrix3x4dv(GLint location, GLsizei count, GLboolean transpose, const GLdouble *value)
 {
-    d_4_0_Core->UniformMatrix3x4dv(location, count, transpose, value);
+    d_4_0_Core->f.UniformMatrix3x4dv(location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniformMatrix3x2dv(GLint location, GLsizei count, GLboolean transpose, const GLdouble *value)
 {
-    d_4_0_Core->UniformMatrix3x2dv(location, count, transpose, value);
+    d_4_0_Core->f.UniformMatrix3x2dv(location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniformMatrix2x4dv(GLint location, GLsizei count, GLboolean transpose, const GLdouble *value)
 {
-    d_4_0_Core->UniformMatrix2x4dv(location, count, transpose, value);
+    d_4_0_Core->f.UniformMatrix2x4dv(location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniformMatrix2x3dv(GLint location, GLsizei count, GLboolean transpose, const GLdouble *value)
 {
-    d_4_0_Core->UniformMatrix2x3dv(location, count, transpose, value);
+    d_4_0_Core->f.UniformMatrix2x3dv(location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniformMatrix4dv(GLint location, GLsizei count, GLboolean transpose, const GLdouble *value)
 {
-    d_4_0_Core->UniformMatrix4dv(location, count, transpose, value);
+    d_4_0_Core->f.UniformMatrix4dv(location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniformMatrix3dv(GLint location, GLsizei count, GLboolean transpose, const GLdouble *value)
 {
-    d_4_0_Core->UniformMatrix3dv(location, count, transpose, value);
+    d_4_0_Core->f.UniformMatrix3dv(location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniformMatrix2dv(GLint location, GLsizei count, GLboolean transpose, const GLdouble *value)
 {
-    d_4_0_Core->UniformMatrix2dv(location, count, transpose, value);
+    d_4_0_Core->f.UniformMatrix2dv(location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform4dv(GLint location, GLsizei count, const GLdouble *value)
 {
-    d_4_0_Core->Uniform4dv(location, count, value);
+    d_4_0_Core->f.Uniform4dv(location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform3dv(GLint location, GLsizei count, const GLdouble *value)
 {
-    d_4_0_Core->Uniform3dv(location, count, value);
+    d_4_0_Core->f.Uniform3dv(location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform2dv(GLint location, GLsizei count, const GLdouble *value)
 {
-    d_4_0_Core->Uniform2dv(location, count, value);
+    d_4_0_Core->f.Uniform2dv(location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform1dv(GLint location, GLsizei count, const GLdouble *value)
 {
-    d_4_0_Core->Uniform1dv(location, count, value);
+    d_4_0_Core->f.Uniform1dv(location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform4d(GLint location, GLdouble x, GLdouble y, GLdouble z, GLdouble w)
 {
-    d_4_0_Core->Uniform4d(location, x, y, z, w);
+    d_4_0_Core->f.Uniform4d(location, x, y, z, w);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform3d(GLint location, GLdouble x, GLdouble y, GLdouble z)
 {
-    d_4_0_Core->Uniform3d(location, x, y, z);
+    d_4_0_Core->f.Uniform3d(location, x, y, z);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform2d(GLint location, GLdouble x, GLdouble y)
 {
-    d_4_0_Core->Uniform2d(location, x, y);
+    d_4_0_Core->f.Uniform2d(location, x, y);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUniform1d(GLint location, GLdouble x)
 {
-    d_4_0_Core->Uniform1d(location, x);
+    d_4_0_Core->f.Uniform1d(location, x);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDrawElementsIndirect(GLenum mode, GLenum type, const GLvoid *indirect)
 {
-    d_4_0_Core->DrawElementsIndirect(mode, type, indirect);
+    d_4_0_Core->f.DrawElementsIndirect(mode, type, indirect);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDrawArraysIndirect(GLenum mode, const GLvoid *indirect)
 {
-    d_4_0_Core->DrawArraysIndirect(mode, indirect);
+    d_4_0_Core->f.DrawArraysIndirect(mode, indirect);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBlendFuncSeparatei(GLuint buf, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha)
 {
-    d_4_0_Core->BlendFuncSeparatei(buf, srcRGB, dstRGB, srcAlpha, dstAlpha);
+    d_4_0_Core->f.BlendFuncSeparatei(buf, srcRGB, dstRGB, srcAlpha, dstAlpha);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBlendFunci(GLuint buf, GLenum src, GLenum dst)
 {
-    d_4_0_Core->BlendFunci(buf, src, dst);
+    d_4_0_Core->f.BlendFunci(buf, src, dst);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBlendEquationSeparatei(GLuint buf, GLenum modeRGB, GLenum modeAlpha)
 {
-    d_4_0_Core->BlendEquationSeparatei(buf, modeRGB, modeAlpha);
+    d_4_0_Core->f.BlendEquationSeparatei(buf, modeRGB, modeAlpha);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBlendEquationi(GLuint buf, GLenum mode)
 {
-    d_4_0_Core->BlendEquationi(buf, mode);
+    d_4_0_Core->f.BlendEquationi(buf, mode);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glMinSampleShading(GLfloat value)
 {
-    d_4_0_Core->MinSampleShading(value);
+    d_4_0_Core->f.MinSampleShading(value);
 }
 
 
 // OpenGL 4.1 core functions
 inline void QOpenGLFunctions_4_3_Core::glGetDoublei_v(GLenum target, GLuint index, GLdouble *data)
 {
-    d_4_1_Core->GetDoublei_v(target, index, data);
+    d_4_1_Core->f.GetDoublei_v(target, index, data);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetFloati_v(GLenum target, GLuint index, GLfloat *data)
 {
-    d_4_1_Core->GetFloati_v(target, index, data);
+    d_4_1_Core->f.GetFloati_v(target, index, data);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDepthRangeIndexed(GLuint index, GLdouble n, GLdouble f)
 {
-    d_4_1_Core->DepthRangeIndexed(index, n, f);
+    d_4_1_Core->f.DepthRangeIndexed(index, n, f);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDepthRangeArrayv(GLuint first, GLsizei count, const GLdouble *v)
 {
-    d_4_1_Core->DepthRangeArrayv(first, count, v);
+    d_4_1_Core->f.DepthRangeArrayv(first, count, v);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glScissorIndexedv(GLuint index, const GLint *v)
 {
-    d_4_1_Core->ScissorIndexedv(index, v);
+    d_4_1_Core->f.ScissorIndexedv(index, v);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glScissorIndexed(GLuint index, GLint left, GLint bottom, GLsizei width, GLsizei height)
 {
-    d_4_1_Core->ScissorIndexed(index, left, bottom, width, height);
+    d_4_1_Core->f.ScissorIndexed(index, left, bottom, width, height);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glScissorArrayv(GLuint first, GLsizei count, const GLint *v)
 {
-    d_4_1_Core->ScissorArrayv(first, count, v);
+    d_4_1_Core->f.ScissorArrayv(first, count, v);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glViewportIndexedfv(GLuint index, const GLfloat *v)
 {
-    d_4_1_Core->ViewportIndexedfv(index, v);
+    d_4_1_Core->f.ViewportIndexedfv(index, v);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glViewportIndexedf(GLuint index, GLfloat x, GLfloat y, GLfloat w, GLfloat h)
 {
-    d_4_1_Core->ViewportIndexedf(index, x, y, w, h);
+    d_4_1_Core->f.ViewportIndexedf(index, x, y, w, h);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glViewportArrayv(GLuint first, GLsizei count, const GLfloat *v)
 {
-    d_4_1_Core->ViewportArrayv(first, count, v);
+    d_4_1_Core->f.ViewportArrayv(first, count, v);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetVertexAttribLdv(GLuint index, GLenum pname, GLdouble *params)
 {
-    d_4_1_Core->GetVertexAttribLdv(index, pname, params);
+    d_4_1_Core->f.GetVertexAttribLdv(index, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribLPointer(GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
 {
-    d_4_1_Core->VertexAttribLPointer(index, size, type, stride, pointer);
+    d_4_1_Core->f.VertexAttribLPointer(index, size, type, stride, pointer);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribL4dv(GLuint index, const GLdouble *v)
 {
-    d_4_1_Core->VertexAttribL4dv(index, v);
+    d_4_1_Core->f.VertexAttribL4dv(index, v);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribL3dv(GLuint index, const GLdouble *v)
 {
-    d_4_1_Core->VertexAttribL3dv(index, v);
+    d_4_1_Core->f.VertexAttribL3dv(index, v);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribL2dv(GLuint index, const GLdouble *v)
 {
-    d_4_1_Core->VertexAttribL2dv(index, v);
+    d_4_1_Core->f.VertexAttribL2dv(index, v);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribL1dv(GLuint index, const GLdouble *v)
 {
-    d_4_1_Core->VertexAttribL1dv(index, v);
+    d_4_1_Core->f.VertexAttribL1dv(index, v);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribL4d(GLuint index, GLdouble x, GLdouble y, GLdouble z, GLdouble w)
 {
-    d_4_1_Core->VertexAttribL4d(index, x, y, z, w);
+    d_4_1_Core->f.VertexAttribL4d(index, x, y, z, w);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribL3d(GLuint index, GLdouble x, GLdouble y, GLdouble z)
 {
-    d_4_1_Core->VertexAttribL3d(index, x, y, z);
+    d_4_1_Core->f.VertexAttribL3d(index, x, y, z);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribL2d(GLuint index, GLdouble x, GLdouble y)
 {
-    d_4_1_Core->VertexAttribL2d(index, x, y);
+    d_4_1_Core->f.VertexAttribL2d(index, x, y);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribL1d(GLuint index, GLdouble x)
 {
-    d_4_1_Core->VertexAttribL1d(index, x);
+    d_4_1_Core->f.VertexAttribL1d(index, x);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetProgramPipelineInfoLog(GLuint pipeline, GLsizei bufSize, GLsizei *length, GLchar *infoLog)
 {
-    d_4_1_Core->GetProgramPipelineInfoLog(pipeline, bufSize, length, infoLog);
+    d_4_1_Core->f.GetProgramPipelineInfoLog(pipeline, bufSize, length, infoLog);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glValidateProgramPipeline(GLuint pipeline)
 {
-    d_4_1_Core->ValidateProgramPipeline(pipeline);
+    d_4_1_Core->f.ValidateProgramPipeline(pipeline);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniformMatrix4x3dv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLdouble *value)
 {
-    d_4_1_Core->ProgramUniformMatrix4x3dv(program, location, count, transpose, value);
+    d_4_1_Core->f.ProgramUniformMatrix4x3dv(program, location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniformMatrix3x4dv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLdouble *value)
 {
-    d_4_1_Core->ProgramUniformMatrix3x4dv(program, location, count, transpose, value);
+    d_4_1_Core->f.ProgramUniformMatrix3x4dv(program, location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniformMatrix4x2dv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLdouble *value)
 {
-    d_4_1_Core->ProgramUniformMatrix4x2dv(program, location, count, transpose, value);
+    d_4_1_Core->f.ProgramUniformMatrix4x2dv(program, location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniformMatrix2x4dv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLdouble *value)
 {
-    d_4_1_Core->ProgramUniformMatrix2x4dv(program, location, count, transpose, value);
+    d_4_1_Core->f.ProgramUniformMatrix2x4dv(program, location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniformMatrix3x2dv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLdouble *value)
 {
-    d_4_1_Core->ProgramUniformMatrix3x2dv(program, location, count, transpose, value);
+    d_4_1_Core->f.ProgramUniformMatrix3x2dv(program, location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniformMatrix2x3dv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLdouble *value)
 {
-    d_4_1_Core->ProgramUniformMatrix2x3dv(program, location, count, transpose, value);
+    d_4_1_Core->f.ProgramUniformMatrix2x3dv(program, location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniformMatrix4x3fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
-    d_4_1_Core->ProgramUniformMatrix4x3fv(program, location, count, transpose, value);
+    d_4_1_Core->f.ProgramUniformMatrix4x3fv(program, location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniformMatrix3x4fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
-    d_4_1_Core->ProgramUniformMatrix3x4fv(program, location, count, transpose, value);
+    d_4_1_Core->f.ProgramUniformMatrix3x4fv(program, location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniformMatrix4x2fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
-    d_4_1_Core->ProgramUniformMatrix4x2fv(program, location, count, transpose, value);
+    d_4_1_Core->f.ProgramUniformMatrix4x2fv(program, location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniformMatrix2x4fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
-    d_4_1_Core->ProgramUniformMatrix2x4fv(program, location, count, transpose, value);
+    d_4_1_Core->f.ProgramUniformMatrix2x4fv(program, location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniformMatrix3x2fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
-    d_4_1_Core->ProgramUniformMatrix3x2fv(program, location, count, transpose, value);
+    d_4_1_Core->f.ProgramUniformMatrix3x2fv(program, location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniformMatrix2x3fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
-    d_4_1_Core->ProgramUniformMatrix2x3fv(program, location, count, transpose, value);
+    d_4_1_Core->f.ProgramUniformMatrix2x3fv(program, location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniformMatrix4dv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLdouble *value)
 {
-    d_4_1_Core->ProgramUniformMatrix4dv(program, location, count, transpose, value);
+    d_4_1_Core->f.ProgramUniformMatrix4dv(program, location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniformMatrix3dv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLdouble *value)
 {
-    d_4_1_Core->ProgramUniformMatrix3dv(program, location, count, transpose, value);
+    d_4_1_Core->f.ProgramUniformMatrix3dv(program, location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniformMatrix2dv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLdouble *value)
 {
-    d_4_1_Core->ProgramUniformMatrix2dv(program, location, count, transpose, value);
+    d_4_1_Core->f.ProgramUniformMatrix2dv(program, location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniformMatrix4fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
-    d_4_1_Core->ProgramUniformMatrix4fv(program, location, count, transpose, value);
+    d_4_1_Core->f.ProgramUniformMatrix4fv(program, location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniformMatrix3fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
-    d_4_1_Core->ProgramUniformMatrix3fv(program, location, count, transpose, value);
+    d_4_1_Core->f.ProgramUniformMatrix3fv(program, location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniformMatrix2fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
-    d_4_1_Core->ProgramUniformMatrix2fv(program, location, count, transpose, value);
+    d_4_1_Core->f.ProgramUniformMatrix2fv(program, location, count, transpose, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform4uiv(GLuint program, GLint location, GLsizei count, const GLuint *value)
 {
-    d_4_1_Core->ProgramUniform4uiv(program, location, count, value);
+    d_4_1_Core->f.ProgramUniform4uiv(program, location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform4ui(GLuint program, GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3)
 {
-    d_4_1_Core->ProgramUniform4ui(program, location, v0, v1, v2, v3);
+    d_4_1_Core->f.ProgramUniform4ui(program, location, v0, v1, v2, v3);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform4dv(GLuint program, GLint location, GLsizei count, const GLdouble *value)
 {
-    d_4_1_Core->ProgramUniform4dv(program, location, count, value);
+    d_4_1_Core->f.ProgramUniform4dv(program, location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform4d(GLuint program, GLint location, GLdouble v0, GLdouble v1, GLdouble v2, GLdouble v3)
 {
-    d_4_1_Core->ProgramUniform4d(program, location, v0, v1, v2, v3);
+    d_4_1_Core->f.ProgramUniform4d(program, location, v0, v1, v2, v3);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform4fv(GLuint program, GLint location, GLsizei count, const GLfloat *value)
 {
-    d_4_1_Core->ProgramUniform4fv(program, location, count, value);
+    d_4_1_Core->f.ProgramUniform4fv(program, location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform4f(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)
 {
-    d_4_1_Core->ProgramUniform4f(program, location, v0, v1, v2, v3);
+    d_4_1_Core->f.ProgramUniform4f(program, location, v0, v1, v2, v3);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform4iv(GLuint program, GLint location, GLsizei count, const GLint *value)
 {
-    d_4_1_Core->ProgramUniform4iv(program, location, count, value);
+    d_4_1_Core->f.ProgramUniform4iv(program, location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform4i(GLuint program, GLint location, GLint v0, GLint v1, GLint v2, GLint v3)
 {
-    d_4_1_Core->ProgramUniform4i(program, location, v0, v1, v2, v3);
+    d_4_1_Core->f.ProgramUniform4i(program, location, v0, v1, v2, v3);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform3uiv(GLuint program, GLint location, GLsizei count, const GLuint *value)
 {
-    d_4_1_Core->ProgramUniform3uiv(program, location, count, value);
+    d_4_1_Core->f.ProgramUniform3uiv(program, location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform3ui(GLuint program, GLint location, GLuint v0, GLuint v1, GLuint v2)
 {
-    d_4_1_Core->ProgramUniform3ui(program, location, v0, v1, v2);
+    d_4_1_Core->f.ProgramUniform3ui(program, location, v0, v1, v2);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform3dv(GLuint program, GLint location, GLsizei count, const GLdouble *value)
 {
-    d_4_1_Core->ProgramUniform3dv(program, location, count, value);
+    d_4_1_Core->f.ProgramUniform3dv(program, location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform3d(GLuint program, GLint location, GLdouble v0, GLdouble v1, GLdouble v2)
 {
-    d_4_1_Core->ProgramUniform3d(program, location, v0, v1, v2);
+    d_4_1_Core->f.ProgramUniform3d(program, location, v0, v1, v2);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform3fv(GLuint program, GLint location, GLsizei count, const GLfloat *value)
 {
-    d_4_1_Core->ProgramUniform3fv(program, location, count, value);
+    d_4_1_Core->f.ProgramUniform3fv(program, location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform3f(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2)
 {
-    d_4_1_Core->ProgramUniform3f(program, location, v0, v1, v2);
+    d_4_1_Core->f.ProgramUniform3f(program, location, v0, v1, v2);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform3iv(GLuint program, GLint location, GLsizei count, const GLint *value)
 {
-    d_4_1_Core->ProgramUniform3iv(program, location, count, value);
+    d_4_1_Core->f.ProgramUniform3iv(program, location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform3i(GLuint program, GLint location, GLint v0, GLint v1, GLint v2)
 {
-    d_4_1_Core->ProgramUniform3i(program, location, v0, v1, v2);
+    d_4_1_Core->f.ProgramUniform3i(program, location, v0, v1, v2);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform2uiv(GLuint program, GLint location, GLsizei count, const GLuint *value)
 {
-    d_4_1_Core->ProgramUniform2uiv(program, location, count, value);
+    d_4_1_Core->f.ProgramUniform2uiv(program, location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform2ui(GLuint program, GLint location, GLuint v0, GLuint v1)
 {
-    d_4_1_Core->ProgramUniform2ui(program, location, v0, v1);
+    d_4_1_Core->f.ProgramUniform2ui(program, location, v0, v1);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform2dv(GLuint program, GLint location, GLsizei count, const GLdouble *value)
 {
-    d_4_1_Core->ProgramUniform2dv(program, location, count, value);
+    d_4_1_Core->f.ProgramUniform2dv(program, location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform2d(GLuint program, GLint location, GLdouble v0, GLdouble v1)
 {
-    d_4_1_Core->ProgramUniform2d(program, location, v0, v1);
+    d_4_1_Core->f.ProgramUniform2d(program, location, v0, v1);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform2fv(GLuint program, GLint location, GLsizei count, const GLfloat *value)
 {
-    d_4_1_Core->ProgramUniform2fv(program, location, count, value);
+    d_4_1_Core->f.ProgramUniform2fv(program, location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform2f(GLuint program, GLint location, GLfloat v0, GLfloat v1)
 {
-    d_4_1_Core->ProgramUniform2f(program, location, v0, v1);
+    d_4_1_Core->f.ProgramUniform2f(program, location, v0, v1);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform2iv(GLuint program, GLint location, GLsizei count, const GLint *value)
 {
-    d_4_1_Core->ProgramUniform2iv(program, location, count, value);
+    d_4_1_Core->f.ProgramUniform2iv(program, location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform2i(GLuint program, GLint location, GLint v0, GLint v1)
 {
-    d_4_1_Core->ProgramUniform2i(program, location, v0, v1);
+    d_4_1_Core->f.ProgramUniform2i(program, location, v0, v1);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform1uiv(GLuint program, GLint location, GLsizei count, const GLuint *value)
 {
-    d_4_1_Core->ProgramUniform1uiv(program, location, count, value);
+    d_4_1_Core->f.ProgramUniform1uiv(program, location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform1ui(GLuint program, GLint location, GLuint v0)
 {
-    d_4_1_Core->ProgramUniform1ui(program, location, v0);
+    d_4_1_Core->f.ProgramUniform1ui(program, location, v0);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform1dv(GLuint program, GLint location, GLsizei count, const GLdouble *value)
 {
-    d_4_1_Core->ProgramUniform1dv(program, location, count, value);
+    d_4_1_Core->f.ProgramUniform1dv(program, location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform1d(GLuint program, GLint location, GLdouble v0)
 {
-    d_4_1_Core->ProgramUniform1d(program, location, v0);
+    d_4_1_Core->f.ProgramUniform1d(program, location, v0);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform1fv(GLuint program, GLint location, GLsizei count, const GLfloat *value)
 {
-    d_4_1_Core->ProgramUniform1fv(program, location, count, value);
+    d_4_1_Core->f.ProgramUniform1fv(program, location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform1f(GLuint program, GLint location, GLfloat v0)
 {
-    d_4_1_Core->ProgramUniform1f(program, location, v0);
+    d_4_1_Core->f.ProgramUniform1f(program, location, v0);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform1iv(GLuint program, GLint location, GLsizei count, const GLint *value)
 {
-    d_4_1_Core->ProgramUniform1iv(program, location, count, value);
+    d_4_1_Core->f.ProgramUniform1iv(program, location, count, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramUniform1i(GLuint program, GLint location, GLint v0)
 {
-    d_4_1_Core->ProgramUniform1i(program, location, v0);
+    d_4_1_Core->f.ProgramUniform1i(program, location, v0);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetProgramPipelineiv(GLuint pipeline, GLenum pname, GLint *params)
 {
-    d_4_1_Core->GetProgramPipelineiv(pipeline, pname, params);
+    d_4_1_Core->f.GetProgramPipelineiv(pipeline, pname, params);
 }
 
 inline GLboolean QOpenGLFunctions_4_3_Core::glIsProgramPipeline(GLuint pipeline)
 {
-    return d_4_1_Core->IsProgramPipeline(pipeline);
+    return d_4_1_Core->f.IsProgramPipeline(pipeline);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGenProgramPipelines(GLsizei n, GLuint *pipelines)
 {
-    d_4_1_Core->GenProgramPipelines(n, pipelines);
+    d_4_1_Core->f.GenProgramPipelines(n, pipelines);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDeleteProgramPipelines(GLsizei n, const GLuint *pipelines)
 {
-    d_4_1_Core->DeleteProgramPipelines(n, pipelines);
+    d_4_1_Core->f.DeleteProgramPipelines(n, pipelines);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBindProgramPipeline(GLuint pipeline)
 {
-    d_4_1_Core->BindProgramPipeline(pipeline);
+    d_4_1_Core->f.BindProgramPipeline(pipeline);
 }
 
 inline GLuint QOpenGLFunctions_4_3_Core::glCreateShaderProgramv(GLenum type, GLsizei count, const GLchar* const *strings)
 {
-    return d_4_1_Core->CreateShaderProgramv(type, count, strings);
+    return d_4_1_Core->f.CreateShaderProgramv(type, count, strings);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glActiveShaderProgram(GLuint pipeline, GLuint program)
 {
-    d_4_1_Core->ActiveShaderProgram(pipeline, program);
+    d_4_1_Core->f.ActiveShaderProgram(pipeline, program);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glUseProgramStages(GLuint pipeline, GLbitfield stages, GLuint program)
 {
-    d_4_1_Core->UseProgramStages(pipeline, stages, program);
+    d_4_1_Core->f.UseProgramStages(pipeline, stages, program);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramParameteri(GLuint program, GLenum pname, GLint value)
 {
-    d_4_1_Core->ProgramParameteri(program, pname, value);
+    d_4_1_Core->f.ProgramParameteri(program, pname, value);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glProgramBinary(GLuint program, GLenum binaryFormat, const GLvoid *binary, GLsizei length)
 {
-    d_4_1_Core->ProgramBinary(program, binaryFormat, binary, length);
+    d_4_1_Core->f.ProgramBinary(program, binaryFormat, binary, length);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetProgramBinary(GLuint program, GLsizei bufSize, GLsizei *length, GLenum *binaryFormat, GLvoid *binary)
 {
-    d_4_1_Core->GetProgramBinary(program, bufSize, length, binaryFormat, binary);
+    d_4_1_Core->f.GetProgramBinary(program, bufSize, length, binaryFormat, binary);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glClearDepthf(GLfloat dd)
 {
-    d_4_1_Core->ClearDepthf(dd);
+    d_4_1_Core->f.ClearDepthf(dd);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDepthRangef(GLfloat n, GLfloat f)
 {
-    d_4_1_Core->DepthRangef(n, f);
+    d_4_1_Core->f.DepthRangef(n, f);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetShaderPrecisionFormat(GLenum shadertype, GLenum precisiontype, GLint *range, GLint *precision)
 {
-    d_4_1_Core->GetShaderPrecisionFormat(shadertype, precisiontype, range, precision);
+    d_4_1_Core->f.GetShaderPrecisionFormat(shadertype, precisiontype, range, precision);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glShaderBinary(GLsizei count, const GLuint *shaders, GLenum binaryformat, const GLvoid *binary, GLsizei length)
 {
-    d_4_1_Core->ShaderBinary(count, shaders, binaryformat, binary, length);
+    d_4_1_Core->f.ShaderBinary(count, shaders, binaryformat, binary, length);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glReleaseShaderCompiler()
 {
-    d_4_1_Core->ReleaseShaderCompiler();
+    d_4_1_Core->f.ReleaseShaderCompiler();
 }
 
 
 // OpenGL 4.2 core functions
 inline void QOpenGLFunctions_4_3_Core::glTexStorage3D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth)
 {
-    d_4_2_Core->TexStorage3D(target, levels, internalformat, width, height, depth);
+    d_4_2_Core->f.TexStorage3D(target, levels, internalformat, width, height, depth);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTexStorage2D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height)
 {
-    d_4_2_Core->TexStorage2D(target, levels, internalformat, width, height);
+    d_4_2_Core->f.TexStorage2D(target, levels, internalformat, width, height);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTexStorage1D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width)
 {
-    d_4_2_Core->TexStorage1D(target, levels, internalformat, width);
+    d_4_2_Core->f.TexStorage1D(target, levels, internalformat, width);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glMemoryBarrier(GLbitfield barriers)
 {
-    d_4_2_Core->MemoryBarrier(barriers);
+    d_4_2_Core->f.MemoryBarrier(barriers);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBindImageTexture(GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format)
 {
-    d_4_2_Core->BindImageTexture(unit, texture, level, layered, layer, access, format);
+    d_4_2_Core->f.BindImageTexture(unit, texture, level, layered, layer, access, format);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetActiveAtomicCounterBufferiv(GLuint program, GLuint bufferIndex, GLenum pname, GLint *params)
 {
-    d_4_2_Core->GetActiveAtomicCounterBufferiv(program, bufferIndex, pname, params);
+    d_4_2_Core->f.GetActiveAtomicCounterBufferiv(program, bufferIndex, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetInternalformativ(GLenum target, GLenum internalformat, GLenum pname, GLsizei bufSize, GLint *params)
 {
-    d_4_2_Core->GetInternalformativ(target, internalformat, pname, bufSize, params);
+    d_4_2_Core->f.GetInternalformativ(target, internalformat, pname, bufSize, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDrawTransformFeedbackStreamInstanced(GLenum mode, GLuint id, GLuint stream, GLsizei instancecount)
 {
-    d_4_2_Core->DrawTransformFeedbackStreamInstanced(mode, id, stream, instancecount);
+    d_4_2_Core->f.DrawTransformFeedbackStreamInstanced(mode, id, stream, instancecount);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDrawTransformFeedbackInstanced(GLenum mode, GLuint id, GLsizei instancecount)
 {
-    d_4_2_Core->DrawTransformFeedbackInstanced(mode, id, instancecount);
+    d_4_2_Core->f.DrawTransformFeedbackInstanced(mode, id, instancecount);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDrawElementsInstancedBaseVertexBaseInstance(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount, GLint basevertex, GLuint baseinstance)
 {
-    d_4_2_Core->DrawElementsInstancedBaseVertexBaseInstance(mode, count, type, indices, instancecount, basevertex, baseinstance);
+    d_4_2_Core->f.DrawElementsInstancedBaseVertexBaseInstance(mode, count, type, indices, instancecount, basevertex, baseinstance);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDrawElementsInstancedBaseInstance(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount, GLuint baseinstance)
 {
-    d_4_2_Core->DrawElementsInstancedBaseInstance(mode, count, type, indices, instancecount, baseinstance);
+    d_4_2_Core->f.DrawElementsInstancedBaseInstance(mode, count, type, indices, instancecount, baseinstance);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDrawArraysInstancedBaseInstance(GLenum mode, GLint first, GLsizei count, GLsizei instancecount, GLuint baseinstance)
 {
-    d_4_2_Core->DrawArraysInstancedBaseInstance(mode, first, count, instancecount, baseinstance);
+    d_4_2_Core->f.DrawArraysInstancedBaseInstance(mode, first, count, instancecount, baseinstance);
 }
 
 
 // OpenGL 4.3 core functions
 inline void QOpenGLFunctions_4_3_Core::glTexStorage3DMultisample(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedsamplelocations)
 {
-    d_4_3_Core->TexStorage3DMultisample(target, samples, internalformat, width, height, depth, fixedsamplelocations);
+    d_4_3_Core->f.TexStorage3DMultisample(target, samples, internalformat, width, height, depth, fixedsamplelocations);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTexStorage2DMultisample(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLboolean fixedsamplelocations)
 {
-    d_4_3_Core->TexStorage2DMultisample(target, samples, internalformat, width, height, fixedsamplelocations);
+    d_4_3_Core->f.TexStorage2DMultisample(target, samples, internalformat, width, height, fixedsamplelocations);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTexBufferRange(GLenum target, GLenum internalformat, GLuint buffer, GLintptr offset, GLsizeiptr size)
 {
-    d_4_3_Core->TexBufferRange(target, internalformat, buffer, offset, size);
+    d_4_3_Core->f.TexBufferRange(target, internalformat, buffer, offset, size);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glShaderStorageBlockBinding(GLuint program, GLuint storageBlockIndex, GLuint storageBlockBinding)
 {
-    d_4_3_Core->ShaderStorageBlockBinding(program, storageBlockIndex, storageBlockBinding);
+    d_4_3_Core->f.ShaderStorageBlockBinding(program, storageBlockIndex, storageBlockBinding);
 }
 
 inline GLint QOpenGLFunctions_4_3_Core::glGetProgramResourceLocationIndex(GLuint program, GLenum programInterface, const GLchar *name)
 {
-    return d_4_3_Core->GetProgramResourceLocationIndex(program, programInterface, name);
+    return d_4_3_Core->f.GetProgramResourceLocationIndex(program, programInterface, name);
 }
 
 inline GLint QOpenGLFunctions_4_3_Core::glGetProgramResourceLocation(GLuint program, GLenum programInterface, const GLchar *name)
 {
-    return d_4_3_Core->GetProgramResourceLocation(program, programInterface, name);
+    return d_4_3_Core->f.GetProgramResourceLocation(program, programInterface, name);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetProgramResourceiv(GLuint program, GLenum programInterface, GLuint index, GLsizei propCount, const GLenum *props, GLsizei bufSize, GLsizei *length, GLint *params)
 {
-    d_4_3_Core->GetProgramResourceiv(program, programInterface, index, propCount, props, bufSize, length, params);
+    d_4_3_Core->f.GetProgramResourceiv(program, programInterface, index, propCount, props, bufSize, length, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetProgramResourceName(GLuint program, GLenum programInterface, GLuint index, GLsizei bufSize, GLsizei *length, GLchar *name)
 {
-    d_4_3_Core->GetProgramResourceName(program, programInterface, index, bufSize, length, name);
+    d_4_3_Core->f.GetProgramResourceName(program, programInterface, index, bufSize, length, name);
 }
 
 inline GLuint QOpenGLFunctions_4_3_Core::glGetProgramResourceIndex(GLuint program, GLenum programInterface, const GLchar *name)
 {
-    return d_4_3_Core->GetProgramResourceIndex(program, programInterface, name);
+    return d_4_3_Core->f.GetProgramResourceIndex(program, programInterface, name);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetProgramInterfaceiv(GLuint program, GLenum programInterface, GLenum pname, GLint *params)
 {
-    d_4_3_Core->GetProgramInterfaceiv(program, programInterface, pname, params);
+    d_4_3_Core->f.GetProgramInterfaceiv(program, programInterface, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glMultiDrawElementsIndirect(GLenum mode, GLenum type, const void *indirect, GLsizei drawcount, GLsizei stride)
 {
-    d_4_3_Core->MultiDrawElementsIndirect(mode, type, indirect, drawcount, stride);
+    d_4_3_Core->f.MultiDrawElementsIndirect(mode, type, indirect, drawcount, stride);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glMultiDrawArraysIndirect(GLenum mode, const void *indirect, GLsizei drawcount, GLsizei stride)
 {
-    d_4_3_Core->MultiDrawArraysIndirect(mode, indirect, drawcount, stride);
+    d_4_3_Core->f.MultiDrawArraysIndirect(mode, indirect, drawcount, stride);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glInvalidateSubFramebuffer(GLenum target, GLsizei numAttachments, const GLenum *attachments, GLint x, GLint y, GLsizei width, GLsizei height)
 {
-    d_4_3_Core->InvalidateSubFramebuffer(target, numAttachments, attachments, x, y, width, height);
+    d_4_3_Core->f.InvalidateSubFramebuffer(target, numAttachments, attachments, x, y, width, height);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glInvalidateFramebuffer(GLenum target, GLsizei numAttachments, const GLenum *attachments)
 {
-    d_4_3_Core->InvalidateFramebuffer(target, numAttachments, attachments);
+    d_4_3_Core->f.InvalidateFramebuffer(target, numAttachments, attachments);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glInvalidateBufferData(GLuint buffer)
 {
-    d_4_3_Core->InvalidateBufferData(buffer);
+    d_4_3_Core->f.InvalidateBufferData(buffer);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glInvalidateBufferSubData(GLuint buffer, GLintptr offset, GLsizeiptr length)
 {
-    d_4_3_Core->InvalidateBufferSubData(buffer, offset, length);
+    d_4_3_Core->f.InvalidateBufferSubData(buffer, offset, length);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glInvalidateTexImage(GLuint texture, GLint level)
 {
-    d_4_3_Core->InvalidateTexImage(texture, level);
+    d_4_3_Core->f.InvalidateTexImage(texture, level);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glInvalidateTexSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth)
 {
-    d_4_3_Core->InvalidateTexSubImage(texture, level, xoffset, yoffset, zoffset, width, height, depth);
+    d_4_3_Core->f.InvalidateTexSubImage(texture, level, xoffset, yoffset, zoffset, width, height, depth);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetInternalformati64v(GLenum target, GLenum internalformat, GLenum pname, GLsizei bufSize, GLint64 *params)
 {
-    d_4_3_Core->GetInternalformati64v(target, internalformat, pname, bufSize, params);
+    d_4_3_Core->f.GetInternalformati64v(target, internalformat, pname, bufSize, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glGetFramebufferParameteriv(GLenum target, GLenum pname, GLint *params)
 {
-    d_4_3_Core->GetFramebufferParameteriv(target, pname, params);
+    d_4_3_Core->f.GetFramebufferParameteriv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glFramebufferParameteri(GLenum target, GLenum pname, GLint param)
 {
-    d_4_3_Core->FramebufferParameteri(target, pname, param);
+    d_4_3_Core->f.FramebufferParameteri(target, pname, param);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexBindingDivisor(GLuint bindingindex, GLuint divisor)
 {
-    d_4_3_Core->VertexBindingDivisor(bindingindex, divisor);
+    d_4_3_Core->f.VertexBindingDivisor(bindingindex, divisor);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribBinding(GLuint attribindex, GLuint bindingindex)
 {
-    d_4_3_Core->VertexAttribBinding(attribindex, bindingindex);
+    d_4_3_Core->f.VertexAttribBinding(attribindex, bindingindex);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribLFormat(GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset)
 {
-    d_4_3_Core->VertexAttribLFormat(attribindex, size, type, relativeoffset);
+    d_4_3_Core->f.VertexAttribLFormat(attribindex, size, type, relativeoffset);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribIFormat(GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset)
 {
-    d_4_3_Core->VertexAttribIFormat(attribindex, size, type, relativeoffset);
+    d_4_3_Core->f.VertexAttribIFormat(attribindex, size, type, relativeoffset);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glVertexAttribFormat(GLuint attribindex, GLint size, GLenum type, GLboolean normalized, GLuint relativeoffset)
 {
-    d_4_3_Core->VertexAttribFormat(attribindex, size, type, normalized, relativeoffset);
+    d_4_3_Core->f.VertexAttribFormat(attribindex, size, type, normalized, relativeoffset);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glBindVertexBuffer(GLuint bindingindex, GLuint buffer, GLintptr offset, GLsizei stride)
 {
-    d_4_3_Core->BindVertexBuffer(bindingindex, buffer, offset, stride);
+    d_4_3_Core->f.BindVertexBuffer(bindingindex, buffer, offset, stride);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glTextureView(GLuint texture, GLenum target, GLuint origtexture, GLenum internalformat, GLuint minlevel, GLuint numlevels, GLuint minlayer, GLuint numlayers)
 {
-    d_4_3_Core->TextureView(texture, target, origtexture, internalformat, minlevel, numlevels, minlayer, numlayers);
+    d_4_3_Core->f.TextureView(texture, target, origtexture, internalformat, minlevel, numlevels, minlayer, numlayers);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glCopyImageSubData(GLuint srcName, GLenum srcTarget, GLint srcLevel, GLint srcX, GLint srcY, GLint srcZ, GLuint dstName, GLenum dstTarget, GLint dstLevel, GLint dstX, GLint dstY, GLint dstZ, GLsizei srcWidth, GLsizei srcHeight, GLsizei srcDepth)
 {
-    d_4_3_Core->CopyImageSubData(srcName, srcTarget, srcLevel, srcX, srcY, srcZ, dstName, dstTarget, dstLevel, dstX, dstY, dstZ, srcWidth, srcHeight, srcDepth);
+    d_4_3_Core->f.CopyImageSubData(srcName, srcTarget, srcLevel, srcX, srcY, srcZ, dstName, dstTarget, dstLevel, dstX, dstY, dstZ, srcWidth, srcHeight, srcDepth);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDispatchComputeIndirect(GLintptr indirect)
 {
-    d_4_3_Core->DispatchComputeIndirect(indirect);
+    d_4_3_Core->f.DispatchComputeIndirect(indirect);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDispatchCompute(GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z)
 {
-    d_4_3_Core->DispatchCompute(num_groups_x, num_groups_y, num_groups_z);
+    d_4_3_Core->f.DispatchCompute(num_groups_x, num_groups_y, num_groups_z);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glClearBufferSubData(GLenum target, GLenum internalformat, GLintptr offset, GLsizeiptr size, GLenum format, GLenum type, const void *data)
 {
-    d_4_3_Core->ClearBufferSubData(target, internalformat, offset, size, format, type, data);
+    d_4_3_Core->f.ClearBufferSubData(target, internalformat, offset, size, format, type, data);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glClearBufferData(GLenum target, GLenum internalformat, GLenum format, GLenum type, const void *data)
 {
-    d_4_3_Core->ClearBufferData(target, internalformat, format, type, data);
+    d_4_3_Core->f.ClearBufferData(target, internalformat, format, type, data);
 }
 
 
