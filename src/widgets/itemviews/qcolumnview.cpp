@@ -793,11 +793,8 @@ void QColumnView::initializeColumn(QAbstractItemView *column) const
     column->setModel(model());
 
     // Copy the custom delegate per row
-    QMapIterator<int, QPointer<QAbstractItemDelegate> > i(d->rowDelegates);
-    while (i.hasNext()) {
-        i.next();
+    for (auto i = d->rowDelegates.cbegin(), end = d->rowDelegates.cend(); i != end; ++i)
         column->setItemDelegateForRow(i.key(), i.value());
-    }
 
     // set the delegate to be the columnview delegate
     QAbstractItemDelegate *delegate = column->itemDelegate();

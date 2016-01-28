@@ -685,9 +685,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
 
     t << _slnGlobalBeg;
 
-    QHashIterator<VcsolutionDepend *, QStringList> extraIt(extraSubdirs);
-    while (extraIt.hasNext()) {
-        extraIt.next();
+    for (auto extraIt = extraSubdirs.cbegin(), end = extraSubdirs.cend(); extraIt != end; ++extraIt) {
         for (const QString &depend : extraIt.value()) {
             if (!projGuids[depend].isEmpty()) {
                 extraIt.key()->dependencies << projGuids[depend];

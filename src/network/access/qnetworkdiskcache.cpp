@@ -114,11 +114,7 @@ QNetworkDiskCache::QNetworkDiskCache(QObject *parent)
 QNetworkDiskCache::~QNetworkDiskCache()
 {
     Q_D(QNetworkDiskCache);
-    QHashIterator<QIODevice*, QCacheItem*> it(d->inserting);
-    while (it.hasNext()) {
-        it.next();
-        delete it.value();
-    }
+    qDeleteAll(d->inserting);
 }
 
 /*!
@@ -319,13 +315,11 @@ bool QNetworkDiskCache::remove(const QUrl &url)
     Q_D(QNetworkDiskCache);
 
     // remove is also used to cancel insertions, not a common operation
-    QHashIterator<QIODevice*, QCacheItem*> it(d->inserting);
-    while (it.hasNext()) {
-        it.next();
+    for (auto it = d->inserting.cbegin(), end = d->inserting.cend(); it != end; ++it) {
         QCacheItem *item = it.value();
         if (item && item->metaData.url() == url) {
             delete item;
-            d->inserting.remove(it.key());
+            d->inserting.erase(it);
             return true;
         }
     }
@@ -559,10 +553,7 @@ qint64 QNetworkDiskCache::expire()
         QFile file(name);
 
         if (name.contains(PREPARED_SLASH)) {
-            QHashIterator<QIODevice*, QCacheItem*> iterator(d->inserting);
-            while (iterator.hasNext()) {
-                iterator.next();
-                QCacheItem *item = iterator.value();
+            for (QCacheItem *item : qAsConst(d->inserting)) {
                 if (item && item->file && item->file->fileName() == name) {
                     delete item->file;
                     item->file = 0;
