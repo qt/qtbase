@@ -2476,469 +2476,42 @@ Resolver<Base, FuncType, Policy, ReturnType> functionResolver(FuncType Base::*fu
 #define RESOLVE_FUNC_SPECIAL_VOID(POLICY, NAME) \
     functionResolverWithFallback<void, POLICY>(&QOpenGLExtensionsPrivate::NAME, qopenglfSpecial##NAME, "gl" #NAME)
 
+template <typename Func>
+Func resolve(QOpenGLContext *context, const char *name, int policy, Func)
+{
+    return reinterpret_cast<Func>(getProcAddress(context, name, policy));
+}
+
+template <typename Func>
+Func resolveWithFallback(QOpenGLContext *context, const char *name, int policy, Func fallback)
+{
+    Func f = reinterpret_cast<Func>(getProcAddress(context, name, policy));
+    if (!f)
+        f = fallback;
+    return f;
+}
+
+#define RESOLVE(name, policy) \
+    resolve(context, "gl"#name, policy, name)
+
+#define RESOLVE_WITH_FALLBACK(name, policy) \
+    resolveWithFallback(context, "gl"#name, policy, qopenglfSpecial##name)
+
 #ifndef QT_OPENGL_ES_2
 
-// GLES2 + OpenGL1 common subset. These are normally not resolvable,
-// but the underlying platform code may hide this limitation.
-
-static void QOPENGLF_APIENTRY qopenglfResolveBindTexture(GLenum target, GLuint texture)
-{
-    RESOLVE_FUNC_VOID(0, BindTexture)(target, texture);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBlendFunc(GLenum sfactor, GLenum dfactor)
-{
-    RESOLVE_FUNC_VOID(0, BlendFunc)(sfactor, dfactor);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveClear(GLbitfield mask)
-{
-    RESOLVE_FUNC_VOID(0, Clear)(mask);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha)
-{
-    RESOLVE_FUNC_VOID(0, ClearColor)(red, green, blue, alpha);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveClearDepthf(GLclampf depth)
-{
-    if (QOpenGLContext::currentContext()->isOpenGLES()) {
-        RESOLVE_FUNC_VOID(0, ClearDepthf)(depth);
-    } else {
-        RESOLVE_FUNC_VOID(0, ClearDepth)((GLdouble) depth);
-    }
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveClearStencil(GLint s)
-{
-    RESOLVE_FUNC_VOID(0, ClearStencil)(s);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha)
-{
-    RESOLVE_FUNC_VOID(0, ColorMask)(red, green, blue, alpha);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveCopyTexImage2D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border)
-{
-    RESOLVE_FUNC_VOID(0, CopyTexImage2D)(target, level, internalformat, x, y, width, height, border);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height)
-{
-    RESOLVE_FUNC_VOID(0, CopyTexSubImage2D)(target, level, xoffset, yoffset, x, y, width, height);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveCullFace(GLenum mode)
-{
-    RESOLVE_FUNC_VOID(0, CullFace)(mode);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDeleteTextures(GLsizei n, const GLuint* textures)
-{
-    RESOLVE_FUNC_VOID(0, DeleteTextures)(n, textures);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDepthFunc(GLenum func)
-{
-    RESOLVE_FUNC_VOID(0, DepthFunc)(func);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDepthMask(GLboolean flag)
-{
-    RESOLVE_FUNC_VOID(0, DepthMask)(flag);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDepthRangef(GLclampf zNear, GLclampf zFar)
-{
-    if (QOpenGLContext::currentContext()->isOpenGLES()) {
-        RESOLVE_FUNC_VOID(0, DepthRangef)(zNear, zFar);
-    } else {
-        RESOLVE_FUNC_VOID(0, DepthRange)((GLdouble) zNear, (GLdouble) zFar);
-    }
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDisable(GLenum cap)
-{
-    RESOLVE_FUNC_VOID(0, Disable)(cap);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDrawArrays(GLenum mode, GLint first, GLsizei count)
-{
-    RESOLVE_FUNC_VOID(0, DrawArrays)(mode, first, count);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices)
-{
-    RESOLVE_FUNC_VOID(0, DrawElements)(mode, count, type, indices);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveEnable(GLenum cap)
-{
-    RESOLVE_FUNC_VOID(0, Enable)(cap);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveFinish()
-{
-    RESOLVE_FUNC_VOID(0, Finish)();
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveFlush()
-{
-    RESOLVE_FUNC_VOID(0, Flush)();
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveFrontFace(GLenum mode)
-{
-    RESOLVE_FUNC_VOID(0, FrontFace)(mode);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGenTextures(GLsizei n, GLuint* textures)
-{
-    RESOLVE_FUNC_VOID(0, GenTextures)(n, textures);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetBooleanv(GLenum pname, GLboolean* params)
-{
-    RESOLVE_FUNC_VOID(0, GetBooleanv)(pname, params);
-}
-
-static GLenum QOPENGLF_APIENTRY qopenglfResolveGetError()
-{
-    RESOLVE_FUNC(GLenum, 0, GetError)();
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetFloatv(GLenum pname, GLfloat* params)
-{
-    RESOLVE_FUNC_VOID(0, GetFloatv)(pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetIntegerv(GLenum pname, GLint* params)
-{
-    RESOLVE_FUNC_VOID(0, GetIntegerv)(pname, params);
-}
-
-static const GLubyte * QOPENGLF_APIENTRY qopenglfResolveGetString(GLenum name)
-{
-    RESOLVE_FUNC(const GLubyte *, 0, GetString)(name);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetTexParameterfv(GLenum target, GLenum pname, GLfloat* params)
-{
-    RESOLVE_FUNC_VOID(0, GetTexParameterfv)(target, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetTexParameteriv(GLenum target, GLenum pname, GLint* params)
-{
-    RESOLVE_FUNC_VOID(0, GetTexParameteriv)(target, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveHint(GLenum target, GLenum mode)
-{
-    RESOLVE_FUNC_VOID(0, Hint)(target, mode);
-}
-
-static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsEnabled(GLenum cap)
-{
-    RESOLVE_FUNC(GLboolean, 0, IsEnabled)(cap);
-}
-
-static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsTexture(GLuint texture)
-{
-    RESOLVE_FUNC(GLboolean, 0, IsTexture)(texture);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveLineWidth(GLfloat width)
-{
-    RESOLVE_FUNC_VOID(0, LineWidth)(width);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolvePixelStorei(GLenum pname, GLint param)
-{
-    RESOLVE_FUNC_VOID(0, PixelStorei)(pname, param);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolvePolygonOffset(GLfloat factor, GLfloat units)
-{
-    RESOLVE_FUNC_VOID(0, PolygonOffset)(factor, units);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid* pixels)
-{
-    RESOLVE_FUNC_VOID(0, ReadPixels)(x, y, width, height, format, type, pixels);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveScissor(GLint x, GLint y, GLsizei width, GLsizei height)
-{
-    RESOLVE_FUNC_VOID(0, Scissor)(x, y, width, height);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveStencilFunc(GLenum func, GLint ref, GLuint mask)
-{
-    RESOLVE_FUNC_VOID(0, StencilFunc)(func, ref, mask);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveStencilMask(GLuint mask)
-{
-    RESOLVE_FUNC_VOID(0, StencilMask)(mask);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveStencilOp(GLenum fail, GLenum zfail, GLenum zpass)
-{
-    RESOLVE_FUNC_VOID(0, StencilOp)(fail, zfail, zpass);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid* pixels)
-{
-    RESOLVE_FUNC_VOID(0, TexImage2D)(target, level, internalformat, width, height, border, format, type, pixels);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveTexParameterf(GLenum target, GLenum pname, GLfloat param)
-{
-    RESOLVE_FUNC_VOID(0, TexParameterf)(target, pname, param);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveTexParameterfv(GLenum target, GLenum pname, const GLfloat* params)
-{
-    RESOLVE_FUNC_VOID(0, TexParameterfv)(target, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveTexParameteri(GLenum target, GLenum pname, GLint param)
-{
-    RESOLVE_FUNC_VOID(0, TexParameteri)(target, pname, param);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveTexParameteriv(GLenum target, GLenum pname, const GLint* params)
-{
-    RESOLVE_FUNC_VOID(0, TexParameteriv)(target, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid* pixels)
-{
-    RESOLVE_FUNC_VOID(0, TexSubImage2D)(target, level, xoffset, yoffset, width, height, format, type, pixels);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveViewport(GLint x, GLint y, GLsizei width, GLsizei height)
-{
-    RESOLVE_FUNC_VOID(0, Viewport)(x, y, width, height);
-}
-
-// GL(ES)2
-
-static void QOPENGLF_APIENTRY qopenglfResolveActiveTexture(GLenum texture)
-{
-    RESOLVE_FUNC_VOID(0, ActiveTexture)(texture);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveAttachShader(GLuint program, GLuint shader)
-{
-    RESOLVE_FUNC_VOID(0, AttachShader)(program, shader);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBindAttribLocation(GLuint program, GLuint index, const char* name)
-{
-    RESOLVE_FUNC_VOID(0, BindAttribLocation)(program, index, name);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBindBuffer(GLenum target, GLuint buffer)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, BindBuffer)(target, buffer);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBindFramebuffer(GLenum target, GLuint framebuffer)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, BindFramebuffer)(target, framebuffer);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBindRenderbuffer(GLenum target, GLuint renderbuffer)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, BindRenderbuffer)(target, renderbuffer);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBlendColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, BlendColor)(red, green, blue, alpha);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBlendEquation(GLenum mode)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, BlendEquation)(mode);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBlendEquationSeparate(GLenum modeRGB, GLenum modeAlpha)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, BlendEquationSeparate)(modeRGB, modeAlpha);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBlendFuncSeparate(GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, BlendFuncSeparate)(srcRGB, dstRGB, srcAlpha, dstAlpha);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBufferData(GLenum target, qopengl_GLsizeiptr size, const void* data, GLenum usage)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, BufferData)(target, size, data, usage);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBufferSubData(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr size, const void* data)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, BufferSubData)(target, offset, size, data);
-}
-
-static GLenum QOPENGLF_APIENTRY qopenglfResolveCheckFramebufferStatus(GLenum target)
-{
-    RESOLVE_FUNC(GLenum, ResolveOES | ResolveEXT, CheckFramebufferStatus)(target);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveCompileShader(GLuint shader)
-{
-    RESOLVE_FUNC_VOID(0, CompileShader)(shader);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const void* data)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, CompressedTexImage2D)(target, level, internalformat, width, height, border, imageSize, data);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveCompressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const void* data)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, CompressedTexSubImage2D)(target, level, xoffset, yoffset, width, height, format, imageSize, data);
-}
-
-static GLuint QOPENGLF_APIENTRY qopenglfResolveCreateProgram()
-{
-    RESOLVE_FUNC(GLuint, 0, CreateProgram)();
-}
-
-static GLuint QOPENGLF_APIENTRY qopenglfResolveCreateShader(GLenum type)
-{
-    RESOLVE_FUNC(GLuint, 0, CreateShader)(type);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDeleteBuffers(GLsizei n, const GLuint* buffers)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, DeleteBuffers)(n, buffers);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDeleteFramebuffers(GLsizei n, const GLuint* framebuffers)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, DeleteFramebuffers)(n, framebuffers);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDeleteProgram(GLuint program)
-{
-    RESOLVE_FUNC_VOID(0, DeleteProgram)(program);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, DeleteRenderbuffers)(n, renderbuffers);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDeleteShader(GLuint shader)
-{
-    RESOLVE_FUNC_VOID(0, DeleteShader)(shader);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDetachShader(GLuint program, GLuint shader)
-{
-    RESOLVE_FUNC_VOID(0, DetachShader)(program, shader);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDisableVertexAttribArray(GLuint index)
-{
-    RESOLVE_FUNC_VOID(0, DisableVertexAttribArray)(index);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveEnableVertexAttribArray(GLuint index)
-{
-    RESOLVE_FUNC_VOID(0, EnableVertexAttribArray)(index);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, FramebufferRenderbuffer)(target, attachment, renderbuffertarget, renderbuffer);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, FramebufferTexture2D)(target, attachment, textarget, texture, level);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGenBuffers(GLsizei n, GLuint* buffers)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, GenBuffers)(n, buffers);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGenerateMipmap(GLenum target)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, GenerateMipmap)(target);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGenFramebuffers(GLsizei n, GLuint* framebuffers)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, GenFramebuffers)(n, framebuffers);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGenRenderbuffers(GLsizei n, GLuint* renderbuffers)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, GenRenderbuffers)(n, renderbuffers);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetActiveAttrib(GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size, GLenum* type, char* name)
-{
-    RESOLVE_FUNC_VOID(0, GetActiveAttrib)(program, index, bufsize, length, size, type, name);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetActiveUniform(GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size, GLenum* type, char* name)
-{
-    RESOLVE_FUNC_VOID(0, GetActiveUniform)(program, index, bufsize, length, size, type, name);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetAttachedShaders(GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders)
-{
-    RESOLVE_FUNC_VOID(0, GetAttachedShaders)(program, maxcount, count, shaders);
-}
-
-static GLint QOPENGLF_APIENTRY qopenglfResolveGetAttribLocation(GLuint program, const char* name)
-{
-    RESOLVE_FUNC(GLint, 0, GetAttribLocation)(program, name);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetBufferParameteriv(GLenum target, GLenum pname, GLint* params)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, GetBufferParameteriv)(target, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetFramebufferAttachmentParameteriv(GLenum target, GLenum attachment, GLenum pname, GLint* params)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, GetFramebufferAttachmentParameteriv)(target, attachment, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetProgramiv(GLuint program, GLenum pname, GLint* params)
-{
-    RESOLVE_FUNC_VOID(0, GetProgramiv)(program, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetProgramInfoLog(GLuint program, GLsizei bufsize, GLsizei* length, char* infolog)
-{
-    RESOLVE_FUNC_VOID(0, GetProgramInfoLog)(program, bufsize, length, infolog);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetRenderbufferParameteriv(GLenum target, GLenum pname, GLint* params)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, GetRenderbufferParameteriv)(target, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetShaderiv(GLuint shader, GLenum pname, GLint* params)
+// some fallback functions
+static void QOPENGLF_APIENTRY qopenglfSpecialClearDepthf(GLclampf depth)
 {
-    RESOLVE_FUNC_VOID(0, GetShaderiv)(shader, pname, params);
+    QOpenGLContext *context = QOpenGLContext::currentContext();
+    QOpenGLFunctionsPrivateEx *funcs = qt_gl_functions(context);
+    funcs->ClearDepth((GLdouble) depth);
 }
 
-static void QOPENGLF_APIENTRY qopenglfResolveGetShaderInfoLog(GLuint shader, GLsizei bufsize, GLsizei* length, char* infolog)
+static void QOPENGLF_APIENTRY qopenglfSpecialDepthRangef(GLclampf zNear, GLclampf zFar)
 {
-    RESOLVE_FUNC_VOID(0, GetShaderInfoLog)(shader, bufsize, length, infolog);
+    QOpenGLContext *context = QOpenGLContext::currentContext();
+    QOpenGLFunctionsPrivateEx *funcs = qt_gl_functions(context);
+    funcs->DepthRange((GLdouble) zNear, (GLdouble) zFar);
 }
 
 static void QOPENGLF_APIENTRY qopenglfSpecialGetShaderPrecisionFormat(GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision)
@@ -2948,69 +2521,9 @@ static void QOPENGLF_APIENTRY qopenglfSpecialGetShaderPrecisionFormat(GLenum sha
     range[0] = range[1] = precision[0] = 0;
 }
 
-static void QOPENGLF_APIENTRY qopenglfResolveGetShaderPrecisionFormat(GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision)
-{
-    RESOLVE_FUNC_SPECIAL_VOID(ResolveOES | ResolveEXT, GetShaderPrecisionFormat)(shadertype, precisiontype, range, precision);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetShaderSource(GLuint shader, GLsizei bufsize, GLsizei* length, char* source)
-{
-    RESOLVE_FUNC_VOID(0, GetShaderSource)(shader, bufsize, length, source);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetUniformfv(GLuint program, GLint location, GLfloat* params)
-{
-    RESOLVE_FUNC_VOID(0, GetUniformfv)(program, location, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetUniformiv(GLuint program, GLint location, GLint* params)
-{
-    RESOLVE_FUNC_VOID(0, GetUniformiv)(program, location, params);
-}
-
-static GLint QOPENGLF_APIENTRY qopenglfResolveGetUniformLocation(GLuint program, const char* name)
-{
-    RESOLVE_FUNC(GLint, 0, GetUniformLocation)(program, name);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params)
-{
-    RESOLVE_FUNC_VOID(0, GetVertexAttribfv)(index, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetVertexAttribiv(GLuint index, GLenum pname, GLint* params)
-{
-    RESOLVE_FUNC_VOID(0, GetVertexAttribiv)(index, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetVertexAttribPointerv(GLuint index, GLenum pname, void** pointer)
-{
-    RESOLVE_FUNC_VOID(0, GetVertexAttribPointerv)(index, pname, pointer);
-}
-
-static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsBuffer(GLuint buffer)
-{
-    RESOLVE_FUNC(GLboolean, ResolveOES | ResolveEXT, IsBuffer)(buffer);
-}
-
-static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsFramebuffer(GLuint framebuffer)
-{
-    RESOLVE_FUNC(GLboolean, ResolveOES | ResolveEXT, IsFramebuffer)(framebuffer);
-}
-
 static GLboolean QOPENGLF_APIENTRY qopenglfSpecialIsProgram(GLuint program)
 {
     return program != 0;
-}
-
-static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsProgram(GLuint program)
-{
-    RESOLVE_FUNC_SPECIAL(GLboolean, 0, IsProgram)(program);
-}
-
-static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsRenderbuffer(GLuint renderbuffer)
-{
-    RESOLVE_FUNC(GLboolean, ResolveOES | ResolveEXT, IsRenderbuffer)(renderbuffer);
 }
 
 static GLboolean QOPENGLF_APIENTRY qopenglfSpecialIsShader(GLuint shader)
@@ -3018,208 +2531,8 @@ static GLboolean QOPENGLF_APIENTRY qopenglfSpecialIsShader(GLuint shader)
     return shader != 0;
 }
 
-static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsShader(GLuint shader)
-{
-    RESOLVE_FUNC_SPECIAL(GLboolean, 0, IsShader)(shader);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveLinkProgram(GLuint program)
-{
-    RESOLVE_FUNC_VOID(0, LinkProgram)(program);
-}
-
 static void QOPENGLF_APIENTRY qopenglfSpecialReleaseShaderCompiler()
 {
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveReleaseShaderCompiler()
-{
-    RESOLVE_FUNC_SPECIAL_VOID(0, ReleaseShaderCompiler)();
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, RenderbufferStorage)(target, internalformat, width, height);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveSampleCoverage(GLclampf value, GLboolean invert)
-{
-    RESOLVE_FUNC_VOID(ResolveOES | ResolveEXT, SampleCoverage)(value, invert);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveShaderBinary(GLint n, const GLuint* shaders, GLenum binaryformat, const void* binary, GLint length)
-{
-    RESOLVE_FUNC_VOID(0, ShaderBinary)(n, shaders, binaryformat, binary, length);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveShaderSource(GLuint shader, GLsizei count, const char** string, const GLint* length)
-{
-    RESOLVE_FUNC_VOID(0, ShaderSource)(shader, count, string, length);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveStencilFuncSeparate(GLenum face, GLenum func, GLint ref, GLuint mask)
-{
-    RESOLVE_FUNC_VOID(ResolveEXT, StencilFuncSeparate)(face, func, ref, mask);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveStencilMaskSeparate(GLenum face, GLuint mask)
-{
-    RESOLVE_FUNC_VOID(ResolveEXT, StencilMaskSeparate)(face, mask);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveStencilOpSeparate(GLenum face, GLenum fail, GLenum zfail, GLenum zpass)
-{
-    RESOLVE_FUNC_VOID(ResolveEXT, StencilOpSeparate)(face, fail, zfail, zpass);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform1f(GLint location, GLfloat x)
-{
-    RESOLVE_FUNC_VOID(0, Uniform1f)(location, x);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform1fv(GLint location, GLsizei count, const GLfloat* v)
-{
-    RESOLVE_FUNC_VOID(0, Uniform1fv)(location, count, v);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform1i(GLint location, GLint x)
-{
-    RESOLVE_FUNC_VOID(0, Uniform1i)(location, x);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform1iv(GLint location, GLsizei count, const GLint* v)
-{
-    RESOLVE_FUNC_VOID(0, Uniform1iv)(location, count, v);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform2f(GLint location, GLfloat x, GLfloat y)
-{
-    RESOLVE_FUNC_VOID(0, Uniform2f)(location, x, y);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform2fv(GLint location, GLsizei count, const GLfloat* v)
-{
-    RESOLVE_FUNC_VOID(0, Uniform2fv)(location, count, v);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform2i(GLint location, GLint x, GLint y)
-{
-    RESOLVE_FUNC_VOID(0, Uniform2i)(location, x, y);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform2iv(GLint location, GLsizei count, const GLint* v)
-{
-    RESOLVE_FUNC_VOID(0, Uniform2iv)(location, count, v);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform3f(GLint location, GLfloat x, GLfloat y, GLfloat z)
-{
-    RESOLVE_FUNC_VOID(0, Uniform3f)(location, x, y, z);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform3fv(GLint location, GLsizei count, const GLfloat* v)
-{
-    RESOLVE_FUNC_VOID(0, Uniform3fv)(location, count, v);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform3i(GLint location, GLint x, GLint y, GLint z)
-{
-    RESOLVE_FUNC_VOID(0, Uniform3i)(location, x, y, z);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform3iv(GLint location, GLsizei count, const GLint* v)
-{
-    RESOLVE_FUNC_VOID(0, Uniform3iv)(location, count, v);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform4f(GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
-{
-    RESOLVE_FUNC_VOID(0, Uniform4f)(location, x, y, z, w);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform4fv(GLint location, GLsizei count, const GLfloat* v)
-{
-    RESOLVE_FUNC_VOID(0, Uniform4fv)(location, count, v);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform4i(GLint location, GLint x, GLint y, GLint z, GLint w)
-{
-    RESOLVE_FUNC_VOID(0, Uniform4i)(location, x, y, z, w);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform4iv(GLint location, GLsizei count, const GLint* v)
-{
-    RESOLVE_FUNC_VOID(0, Uniform4iv)(location, count, v);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniformMatrix2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat* value)
-{
-    RESOLVE_FUNC_VOID(0, UniformMatrix2fv)(location, count, transpose, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniformMatrix3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat* value)
-{
-    RESOLVE_FUNC_VOID(0, UniformMatrix3fv)(location, count, transpose, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat* value)
-{
-    RESOLVE_FUNC_VOID(0, UniformMatrix4fv)(location, count, transpose, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUseProgram(GLuint program)
-{
-    RESOLVE_FUNC_VOID(0, UseProgram)(program);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveValidateProgram(GLuint program)
-{
-    RESOLVE_FUNC_VOID(0, ValidateProgram)(program);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveVertexAttrib1f(GLuint indx, GLfloat x)
-{
-    RESOLVE_FUNC_VOID(0, VertexAttrib1f)(indx, x);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveVertexAttrib1fv(GLuint indx, const GLfloat* values)
-{
-    RESOLVE_FUNC_VOID(0, VertexAttrib1fv)(indx, values);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveVertexAttrib2f(GLuint indx, GLfloat x, GLfloat y)
-{
-    RESOLVE_FUNC_VOID(0, VertexAttrib2f)(indx, x, y);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveVertexAttrib2fv(GLuint indx, const GLfloat* values)
-{
-    RESOLVE_FUNC_VOID(0, VertexAttrib2fv)(indx, values);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveVertexAttrib3f(GLuint indx, GLfloat x, GLfloat y, GLfloat z)
-{
-    RESOLVE_FUNC_VOID(0, VertexAttrib3f)(indx, x, y, z);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveVertexAttrib3fv(GLuint indx, const GLfloat* values)
-{
-    RESOLVE_FUNC_VOID(0, VertexAttrib3fv)(indx, values);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveVertexAttrib4f(GLuint indx, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
-{
-    RESOLVE_FUNC_VOID(0, VertexAttrib4f)(indx, x, y, z, w);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveVertexAttrib4fv(GLuint indx, const GLfloat* values)
-{
-    RESOLVE_FUNC_VOID(0, VertexAttrib4fv)(indx, values);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribPointer(GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* ptr)
-{
-    RESOLVE_FUNC_VOID(0, VertexAttribPointer)(indx, size, type, normalized, stride, ptr);
 }
 
 #endif // !QT_OPENGL_ES_2
@@ -3273,56 +2586,58 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
      * context, assigns it to the member variable and executes it
      * (see Resolver template) */
 #ifndef QT_OPENGL_ES_2
+    QOpenGLContext *context = QOpenGLContext::currentContext();
+
     // The GL1 functions may not be queriable via getProcAddress().
     if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::AllGLFunctionsQueryable)) {
         // The platform plugin supports resolving these.
-        BindTexture = qopenglfResolveBindTexture;
-        BlendFunc = qopenglfResolveBlendFunc;
-        Clear = qopenglfResolveClear;
-        ClearColor = qopenglfResolveClearColor;
-        ClearDepthf = qopenglfResolveClearDepthf;
-        ClearStencil = qopenglfResolveClearStencil;
-        ColorMask = qopenglfResolveColorMask;
-        CopyTexImage2D = qopenglfResolveCopyTexImage2D;
-        CopyTexSubImage2D = qopenglfResolveCopyTexSubImage2D;
-        CullFace = qopenglfResolveCullFace;
-        DeleteTextures = qopenglfResolveDeleteTextures;
-        DepthFunc = qopenglfResolveDepthFunc;
-        DepthMask = qopenglfResolveDepthMask;
-        DepthRangef = qopenglfResolveDepthRangef;
-        Disable = qopenglfResolveDisable;
-        DrawArrays = qopenglfResolveDrawArrays;
-        DrawElements = qopenglfResolveDrawElements;
-        Enable = qopenglfResolveEnable;
-        Finish = qopenglfResolveFinish;
-        Flush = qopenglfResolveFlush;
-        FrontFace = qopenglfResolveFrontFace;
-        GenTextures = qopenglfResolveGenTextures;
-        GetBooleanv = qopenglfResolveGetBooleanv;
-        GetError = qopenglfResolveGetError;
-        GetFloatv = qopenglfResolveGetFloatv;
-        GetIntegerv = qopenglfResolveGetIntegerv;
-        GetString = qopenglfResolveGetString;
-        GetTexParameterfv = qopenglfResolveGetTexParameterfv;
-        GetTexParameteriv = qopenglfResolveGetTexParameteriv;
-        Hint = qopenglfResolveHint;
-        IsEnabled = qopenglfResolveIsEnabled;
-        IsTexture = qopenglfResolveIsTexture;
-        LineWidth = qopenglfResolveLineWidth;
-        PixelStorei = qopenglfResolvePixelStorei;
-        PolygonOffset = qopenglfResolvePolygonOffset;
-        ReadPixels = qopenglfResolveReadPixels;
-        Scissor = qopenglfResolveScissor;
-        StencilFunc = qopenglfResolveStencilFunc;
-        StencilMask = qopenglfResolveStencilMask;
-        StencilOp = qopenglfResolveStencilOp;
-        TexImage2D = qopenglfResolveTexImage2D;
-        TexParameterf = qopenglfResolveTexParameterf;
-        TexParameterfv = qopenglfResolveTexParameterfv;
-        TexParameteri = qopenglfResolveTexParameteri;
-        TexParameteriv = qopenglfResolveTexParameteriv;
-        TexSubImage2D = qopenglfResolveTexSubImage2D;
-        Viewport = qopenglfResolveViewport;
+        BindTexture = RESOLVE(BindTexture, 0);
+        BlendFunc = RESOLVE(BlendFunc, 0);
+        Clear = RESOLVE(Clear, 0);
+        ClearColor = RESOLVE(ClearColor, 0);
+        ClearDepthf = RESOLVE_WITH_FALLBACK(ClearDepthf, 0);
+        ClearStencil = RESOLVE(ClearStencil, 0);
+        ColorMask = RESOLVE(ColorMask, 0);
+        CopyTexImage2D = RESOLVE(CopyTexImage2D, 0);
+        CopyTexSubImage2D = RESOLVE(CopyTexSubImage2D, 0);
+        CullFace = RESOLVE(CullFace, 0);
+        DeleteTextures = RESOLVE(DeleteTextures, 0);
+        DepthFunc = RESOLVE(DepthFunc, 0);
+        DepthMask = RESOLVE(DepthMask, 0);
+        DepthRangef = RESOLVE_WITH_FALLBACK(DepthRangef, 0);
+        Disable = RESOLVE(Disable, 0);
+        DrawArrays = RESOLVE(DrawArrays, 0);
+        DrawElements = RESOLVE(DrawElements, 0);
+        Enable = RESOLVE(Enable, 0);
+        Finish = RESOLVE(Finish, 0);
+        Flush = RESOLVE(Flush, 0);
+        FrontFace = RESOLVE(FrontFace, 0);
+        GenTextures = RESOLVE(GenTextures, 0);
+        GetBooleanv = RESOLVE(GetBooleanv, 0);
+        GetError = RESOLVE(GetError, 0);
+        GetFloatv = RESOLVE(GetFloatv, 0);
+        GetIntegerv = RESOLVE(GetIntegerv, 0);
+        GetString = RESOLVE(GetString, 0);
+        GetTexParameterfv = RESOLVE(GetTexParameterfv, 0);
+        GetTexParameteriv = RESOLVE(GetTexParameteriv, 0);
+        Hint = RESOLVE(Hint, 0);
+        IsEnabled = RESOLVE(IsEnabled, 0);
+        IsTexture = RESOLVE(IsTexture, 0);
+        LineWidth = RESOLVE(LineWidth, 0);
+        PixelStorei = RESOLVE(PixelStorei, 0);
+        PolygonOffset = RESOLVE(PolygonOffset, 0);
+        ReadPixels = RESOLVE(ReadPixels, 0);
+        Scissor = RESOLVE(Scissor, 0);
+        StencilFunc = RESOLVE(StencilFunc, 0);
+        StencilMask = RESOLVE(StencilMask, 0);
+        StencilOp = RESOLVE(StencilOp, 0);
+        TexImage2D = RESOLVE(TexImage2D, 0);
+        TexParameterf = RESOLVE(TexParameterf, 0);
+        TexParameterfv = RESOLVE(TexParameterfv, 0);
+        TexParameteri = RESOLVE(TexParameteri, 0);
+        TexParameteriv = RESOLVE(TexParameteriv, 0);
+        TexSubImage2D = RESOLVE(TexSubImage2D, 0);
+        Viewport = RESOLVE(Viewport, 0);
     } else {
 #ifndef QT_OPENGL_DYNAMIC
         // Use the functions directly. This requires linking QtGui to an OpenGL implementation.
@@ -3383,101 +2698,104 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 #endif
     }
 
-    ActiveTexture = qopenglfResolveActiveTexture;
-    AttachShader = qopenglfResolveAttachShader;
-    BindAttribLocation = qopenglfResolveBindAttribLocation;
-    BindBuffer = qopenglfResolveBindBuffer;
-    BindFramebuffer = qopenglfResolveBindFramebuffer;
-    BindRenderbuffer = qopenglfResolveBindRenderbuffer;
-    BlendColor = qopenglfResolveBlendColor;
-    BlendEquation = qopenglfResolveBlendEquation;
-    BlendEquationSeparate = qopenglfResolveBlendEquationSeparate;
-    BlendFuncSeparate = qopenglfResolveBlendFuncSeparate;
-    BufferData = qopenglfResolveBufferData;
-    BufferSubData = qopenglfResolveBufferSubData;
-    CheckFramebufferStatus = qopenglfResolveCheckFramebufferStatus;
-    CompileShader = qopenglfResolveCompileShader;
-    CompressedTexImage2D = qopenglfResolveCompressedTexImage2D;
-    CompressedTexSubImage2D = qopenglfResolveCompressedTexSubImage2D;
-    CreateProgram = qopenglfResolveCreateProgram;
-    CreateShader = qopenglfResolveCreateShader;
-    DeleteBuffers = qopenglfResolveDeleteBuffers;
-    DeleteFramebuffers = qopenglfResolveDeleteFramebuffers;
-    DeleteProgram = qopenglfResolveDeleteProgram;
-    DeleteRenderbuffers = qopenglfResolveDeleteRenderbuffers;
-    DeleteShader = qopenglfResolveDeleteShader;
-    DetachShader = qopenglfResolveDetachShader;
-    DisableVertexAttribArray = qopenglfResolveDisableVertexAttribArray;
-    EnableVertexAttribArray = qopenglfResolveEnableVertexAttribArray;
-    FramebufferRenderbuffer = qopenglfResolveFramebufferRenderbuffer;
-    FramebufferTexture2D = qopenglfResolveFramebufferTexture2D;
-    GenBuffers = qopenglfResolveGenBuffers;
-    GenerateMipmap = qopenglfResolveGenerateMipmap;
-    GenFramebuffers = qopenglfResolveGenFramebuffers;
-    GenRenderbuffers = qopenglfResolveGenRenderbuffers;
-    GetActiveAttrib = qopenglfResolveGetActiveAttrib;
-    GetActiveUniform = qopenglfResolveGetActiveUniform;
-    GetAttachedShaders = qopenglfResolveGetAttachedShaders;
-    GetAttribLocation = qopenglfResolveGetAttribLocation;
-    GetBufferParameteriv = qopenglfResolveGetBufferParameteriv;
-    GetFramebufferAttachmentParameteriv = qopenglfResolveGetFramebufferAttachmentParameteriv;
-    GetProgramiv = qopenglfResolveGetProgramiv;
-    GetProgramInfoLog = qopenglfResolveGetProgramInfoLog;
-    GetRenderbufferParameteriv = qopenglfResolveGetRenderbufferParameteriv;
-    GetShaderiv = qopenglfResolveGetShaderiv;
-    GetShaderInfoLog = qopenglfResolveGetShaderInfoLog;
-    GetShaderPrecisionFormat = qopenglfResolveGetShaderPrecisionFormat;
-    GetShaderSource = qopenglfResolveGetShaderSource;
-    GetUniformfv = qopenglfResolveGetUniformfv;
-    GetUniformiv = qopenglfResolveGetUniformiv;
-    GetUniformLocation = qopenglfResolveGetUniformLocation;
-    GetVertexAttribfv = qopenglfResolveGetVertexAttribfv;
-    GetVertexAttribiv = qopenglfResolveGetVertexAttribiv;
-    GetVertexAttribPointerv = qopenglfResolveGetVertexAttribPointerv;
-    IsBuffer = qopenglfResolveIsBuffer;
-    IsFramebuffer = qopenglfResolveIsFramebuffer;
-    IsProgram = qopenglfResolveIsProgram;
-    IsRenderbuffer = qopenglfResolveIsRenderbuffer;
-    IsShader = qopenglfResolveIsShader;
-    LinkProgram = qopenglfResolveLinkProgram;
-    ReleaseShaderCompiler = qopenglfResolveReleaseShaderCompiler;
-    RenderbufferStorage = qopenglfResolveRenderbufferStorage;
-    SampleCoverage = qopenglfResolveSampleCoverage;
-    ShaderBinary = qopenglfResolveShaderBinary;
-    ShaderSource = qopenglfResolveShaderSource;
-    StencilFuncSeparate = qopenglfResolveStencilFuncSeparate;
-    StencilMaskSeparate = qopenglfResolveStencilMaskSeparate;
-    StencilOpSeparate = qopenglfResolveStencilOpSeparate;
-    Uniform1f = qopenglfResolveUniform1f;
-    Uniform1fv = qopenglfResolveUniform1fv;
-    Uniform1i = qopenglfResolveUniform1i;
-    Uniform1iv = qopenglfResolveUniform1iv;
-    Uniform2f = qopenglfResolveUniform2f;
-    Uniform2fv = qopenglfResolveUniform2fv;
-    Uniform2i = qopenglfResolveUniform2i;
-    Uniform2iv = qopenglfResolveUniform2iv;
-    Uniform3f = qopenglfResolveUniform3f;
-    Uniform3fv = qopenglfResolveUniform3fv;
-    Uniform3i = qopenglfResolveUniform3i;
-    Uniform3iv = qopenglfResolveUniform3iv;
-    Uniform4f = qopenglfResolveUniform4f;
-    Uniform4fv = qopenglfResolveUniform4fv;
-    Uniform4i = qopenglfResolveUniform4i;
-    Uniform4iv = qopenglfResolveUniform4iv;
-    UniformMatrix2fv = qopenglfResolveUniformMatrix2fv;
-    UniformMatrix3fv = qopenglfResolveUniformMatrix3fv;
-    UniformMatrix4fv = qopenglfResolveUniformMatrix4fv;
-    UseProgram = qopenglfResolveUseProgram;
-    ValidateProgram = qopenglfResolveValidateProgram;
-    VertexAttrib1f = qopenglfResolveVertexAttrib1f;
-    VertexAttrib1fv = qopenglfResolveVertexAttrib1fv;
-    VertexAttrib2f = qopenglfResolveVertexAttrib2f;
-    VertexAttrib2fv = qopenglfResolveVertexAttrib2fv;
-    VertexAttrib3f = qopenglfResolveVertexAttrib3f;
-    VertexAttrib3fv = qopenglfResolveVertexAttrib3fv;
-    VertexAttrib4f = qopenglfResolveVertexAttrib4f;
-    VertexAttrib4fv = qopenglfResolveVertexAttrib4fv;
-    VertexAttribPointer = qopenglfResolveVertexAttribPointer;
+    ActiveTexture = RESOLVE(ActiveTexture, 0);
+    AttachShader = RESOLVE(AttachShader, 0);
+    BindAttribLocation = RESOLVE(BindAttribLocation, 0);
+    BindBuffer = RESOLVE(BindBuffer, ResolveOES | ResolveEXT);
+    BindFramebuffer = RESOLVE(BindFramebuffer, ResolveOES | ResolveEXT);
+    BindRenderbuffer = RESOLVE(BindRenderbuffer, ResolveOES | ResolveEXT);
+    BlendColor = RESOLVE(BlendColor, ResolveOES | ResolveEXT);
+    BlendEquation = RESOLVE(BlendEquation, ResolveOES | ResolveEXT);
+    BlendEquationSeparate = RESOLVE(BlendEquationSeparate, ResolveOES | ResolveEXT);
+    BlendFuncSeparate = RESOLVE(BlendFuncSeparate, ResolveOES | ResolveEXT);
+    BufferData = RESOLVE(BufferData, ResolveOES | ResolveEXT);
+    BufferSubData = RESOLVE(BufferSubData, ResolveOES | ResolveEXT);
+    CheckFramebufferStatus = RESOLVE(CheckFramebufferStatus, ResolveOES | ResolveEXT);
+    CompileShader = RESOLVE(CompileShader, 0);
+    CompressedTexImage2D = RESOLVE(CompressedTexImage2D, ResolveOES | ResolveEXT);
+    CompressedTexSubImage2D = RESOLVE(CompressedTexSubImage2D, ResolveOES | ResolveEXT);
+    CreateProgram = RESOLVE(CreateProgram, 0);
+    CreateShader = RESOLVE(CreateShader, 0);
+    DeleteBuffers = RESOLVE(DeleteBuffers, ResolveOES | ResolveEXT);
+    DeleteFramebuffers = RESOLVE(DeleteFramebuffers, ResolveOES | ResolveEXT);
+    DeleteProgram = RESOLVE(DeleteProgram, 0);
+    DeleteRenderbuffers = RESOLVE(DeleteRenderbuffers, ResolveOES | ResolveEXT);
+    DeleteShader = RESOLVE(DeleteShader, 0);
+    DetachShader = RESOLVE(DetachShader, 0);
+    DisableVertexAttribArray = RESOLVE(DisableVertexAttribArray, 0);
+    EnableVertexAttribArray = RESOLVE(EnableVertexAttribArray, 0);
+    FramebufferRenderbuffer = RESOLVE(FramebufferRenderbuffer, ResolveOES | ResolveEXT);
+    FramebufferTexture2D = RESOLVE(FramebufferTexture2D, ResolveOES | ResolveEXT);
+    GenBuffers = RESOLVE(GenBuffers, ResolveOES | ResolveEXT);
+    GenerateMipmap = RESOLVE(GenerateMipmap, ResolveOES | ResolveEXT);
+    GenFramebuffers = RESOLVE(GenFramebuffers, ResolveOES | ResolveEXT);
+    GenRenderbuffers = RESOLVE(GenRenderbuffers, ResolveOES | ResolveEXT);
+    GetActiveAttrib = RESOLVE(GetActiveAttrib, 0);
+    GetActiveUniform = RESOLVE(GetActiveUniform, 0);
+    GetAttachedShaders = RESOLVE(GetAttachedShaders, 0);
+    GetAttribLocation = RESOLVE(GetAttribLocation, 0);
+    GetBufferParameteriv = RESOLVE(GetBufferParameteriv, ResolveOES | ResolveEXT);
+    GetFramebufferAttachmentParameteriv = RESOLVE(GetFramebufferAttachmentParameteriv, ResolveOES | ResolveEXT);
+    GetProgramiv = RESOLVE(GetProgramiv, 0);
+    GetProgramInfoLog = RESOLVE(GetProgramInfoLog, 0);
+    GetRenderbufferParameteriv = RESOLVE(GetRenderbufferParameteriv, ResolveOES | ResolveEXT);
+    GetShaderiv = RESOLVE(GetShaderiv, 0);
+    GetShaderInfoLog = RESOLVE(GetShaderInfoLog, 0);
+    GetShaderPrecisionFormat = RESOLVE_WITH_FALLBACK(GetShaderPrecisionFormat, ResolveOES | ResolveEXT);
+    GetShaderSource = RESOLVE(GetShaderSource, 0);
+    GetUniformfv = RESOLVE(GetUniformfv, 0);
+    GetUniformiv = RESOLVE(GetUniformiv, 0);
+    GetUniformLocation = RESOLVE(GetUniformLocation, 0);
+    GetVertexAttribfv = RESOLVE(GetVertexAttribfv, 0);
+    GetVertexAttribiv = RESOLVE(GetVertexAttribiv, 0);
+    GetVertexAttribPointerv = RESOLVE(GetVertexAttribPointerv, 0);
+    IsBuffer = RESOLVE(IsBuffer, ResolveOES | ResolveEXT);
+    IsFramebuffer = RESOLVE(IsFramebuffer, ResolveOES | ResolveEXT);
+    IsProgram = RESOLVE_WITH_FALLBACK(IsProgram, 0);
+    IsRenderbuffer = RESOLVE(IsRenderbuffer, ResolveOES | ResolveEXT);
+    IsShader = RESOLVE_WITH_FALLBACK(IsShader, 0);
+    LinkProgram = RESOLVE(LinkProgram, 0);
+    ReleaseShaderCompiler = RESOLVE_WITH_FALLBACK(ReleaseShaderCompiler, 0);
+    RenderbufferStorage = RESOLVE(RenderbufferStorage, ResolveOES | ResolveEXT);
+    SampleCoverage = RESOLVE(SampleCoverage, ResolveOES | ResolveEXT);
+    ShaderBinary = RESOLVE(ShaderBinary, 0);
+    ShaderSource = RESOLVE(ShaderSource, 0);
+    StencilFuncSeparate = RESOLVE(StencilFuncSeparate, ResolveEXT);
+    StencilMaskSeparate = RESOLVE(StencilMaskSeparate, ResolveEXT);
+    StencilOpSeparate = RESOLVE(StencilOpSeparate, ResolveEXT);
+    Uniform1f = RESOLVE(Uniform1f, 0);
+    Uniform1fv = RESOLVE(Uniform1fv, 0);
+    Uniform1i = RESOLVE(Uniform1i, 0);
+    Uniform1iv = RESOLVE(Uniform1iv, 0);
+    Uniform2f = RESOLVE(Uniform2f, 0);
+    Uniform2fv = RESOLVE(Uniform2fv, 0);
+    Uniform2i = RESOLVE(Uniform2i, 0);
+    Uniform2iv = RESOLVE(Uniform2iv, 0);
+    Uniform3f = RESOLVE(Uniform3f, 0);
+    Uniform3fv = RESOLVE(Uniform3fv, 0);
+    Uniform3i = RESOLVE(Uniform3i, 0);
+    Uniform3iv = RESOLVE(Uniform3iv, 0);
+    Uniform4f = RESOLVE(Uniform4f, 0);
+    Uniform4fv = RESOLVE(Uniform4fv, 0);
+    Uniform4i = RESOLVE(Uniform4i, 0);
+    Uniform4iv = RESOLVE(Uniform4iv, 0);
+    UniformMatrix2fv = RESOLVE(UniformMatrix2fv, 0);
+    UniformMatrix3fv = RESOLVE(UniformMatrix3fv, 0);
+    UniformMatrix4fv = RESOLVE(UniformMatrix4fv, 0);
+    UseProgram = RESOLVE(UseProgram, 0);
+    ValidateProgram = RESOLVE(ValidateProgram, 0);
+    VertexAttrib1f = RESOLVE(VertexAttrib1f, 0);
+    VertexAttrib1fv = RESOLVE(VertexAttrib1fv, 0);
+    VertexAttrib2f = RESOLVE(VertexAttrib2f, 0);
+    VertexAttrib2fv = RESOLVE(VertexAttrib2fv, 0);
+    VertexAttrib3f = RESOLVE(VertexAttrib3f, 0);
+    VertexAttrib3fv = RESOLVE(VertexAttrib3fv, 0);
+    VertexAttrib4f = RESOLVE(VertexAttrib4f, 0);
+    VertexAttrib4fv = RESOLVE(VertexAttrib4fv, 0);
+    VertexAttribPointer = RESOLVE(VertexAttribPointer, 0);
+
+    ClearDepth = RESOLVE(ClearDepth, 0);
+    DepthRange = RESOLVE(DepthRange, 0);
 #endif // !QT_OPENGL_ES_2
 }
 
