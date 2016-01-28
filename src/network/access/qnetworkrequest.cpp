@@ -51,6 +51,8 @@
 # include <stdio.h>
 #endif
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -991,13 +993,12 @@ void QNetworkHeadersPrivate::setCookedHeader(QNetworkRequest::KnownHeaders heade
 
 void QNetworkHeadersPrivate::setRawHeaderInternal(const QByteArray &key, const QByteArray &value)
 {
-    RawHeadersList::Iterator it = rawHeaders.begin();
-    while (it != rawHeaders.end()) {
-        if (qstricmp(it->first.constData(), key.constData()) == 0)
-            it = rawHeaders.erase(it);
-        else
-            ++it;
-    }
+    auto firstEqualsKey = [&key](const RawHeaderPair &header) {
+        return qstricmp(header.first.constData(), key.constData()) == 0;
+    };
+    rawHeaders.erase(std::remove_if(rawHeaders.begin(), rawHeaders.end(),
+                                    firstEqualsKey),
+                     rawHeaders.end());
 
     if (value.isNull())
         return;                 // only wanted to erase key
