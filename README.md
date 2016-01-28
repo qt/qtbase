@@ -37,7 +37,7 @@ below) as a starting point.
         qtbase
             branch: nacl-dev (github), wip/nacl (codereview)
         qtdeclarative:
-            known-good sha1: 834f9c76151857b8e8bc07341f592187fafa11dc
+            known-good sha1: 67c4017054baf394062ab4f869d9ca9d299d3354
             patch: https://codereview.qt-project.org/#/c/114670/
 
 1.1) Configure Qt
