@@ -197,7 +197,11 @@ inline QAbstractOpenGLFunctionsPrivate *QAbstractOpenGLFunctionsPrivate::get(QAb
 class QOpenGLFunctions_1_0_CoreBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_1_0_CoreBackend(QOpenGLContext *context);
+    QOpenGLFunctions_1_0_CoreBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -258,7 +262,11 @@ public:
 class QOpenGLFunctions_1_1_CoreBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_1_1_CoreBackend(QOpenGLContext *context);
+    QOpenGLFunctions_1_1_CoreBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -287,7 +295,11 @@ public:
 class QOpenGLFunctions_1_2_CoreBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_1_2_CoreBackend(QOpenGLContext *context);
+    QOpenGLFunctions_1_2_CoreBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -306,7 +318,11 @@ public:
 class QOpenGLFunctions_1_3_CoreBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_1_3_CoreBackend(QOpenGLContext *context);
+    QOpenGLFunctions_1_3_CoreBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -328,7 +344,11 @@ public:
 class QOpenGLFunctions_1_4_CoreBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_1_4_CoreBackend(QOpenGLContext *context);
+    QOpenGLFunctions_1_4_CoreBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -348,7 +368,11 @@ public:
 class QOpenGLFunctions_1_5_CoreBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_1_5_CoreBackend(QOpenGLContext *context);
+    QOpenGLFunctions_1_5_CoreBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -380,7 +404,11 @@ public:
 class QOpenGLFunctions_2_0_CoreBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_2_0_CoreBackend(QOpenGLContext *context);
+    QOpenGLFunctions_2_0_CoreBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -486,7 +514,11 @@ public:
 class QOpenGLFunctions_2_1_CoreBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_2_1_CoreBackend(QOpenGLContext *context);
+    QOpenGLFunctions_2_1_CoreBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -505,7 +537,11 @@ public:
 class QOpenGLFunctions_3_0_CoreBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_3_0_CoreBackend(QOpenGLContext *context);
+    QOpenGLFunctions_3_0_CoreBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -602,7 +638,11 @@ public:
 class QOpenGLFunctions_3_1_CoreBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_3_1_CoreBackend(QOpenGLContext *context);
+    QOpenGLFunctions_3_1_CoreBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -627,7 +667,11 @@ public:
 class QOpenGLFunctions_3_2_CoreBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_3_2_CoreBackend(QOpenGLContext *context);
+    QOpenGLFunctions_3_2_CoreBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -659,7 +703,11 @@ public:
 class QOpenGLFunctions_3_3_CoreBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_3_3_CoreBackend(QOpenGLContext *context);
+    QOpenGLFunctions_3_3_CoreBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -730,7 +778,11 @@ public:
 class QOpenGLFunctions_4_0_CoreBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_4_0_CoreBackend(QOpenGLContext *context);
+    QOpenGLFunctions_4_0_CoreBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -789,7 +841,11 @@ public:
 class QOpenGLFunctions_4_1_CoreBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_4_1_CoreBackend(QOpenGLContext *context);
+    QOpenGLFunctions_4_1_CoreBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -890,7 +946,11 @@ public:
 class QOpenGLFunctions_4_2_CoreBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_4_2_CoreBackend(QOpenGLContext *context);
+    QOpenGLFunctions_4_2_CoreBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -915,7 +975,11 @@ public:
 class QOpenGLFunctions_4_3_CoreBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_4_3_CoreBackend(QOpenGLContext *context);
+    QOpenGLFunctions_4_3_CoreBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -971,7 +1035,11 @@ public:
 class QOpenGLFunctions_4_4_CoreBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_4_4_CoreBackend(QOpenGLContext *context);
+    QOpenGLFunctions_4_4_CoreBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -993,7 +1061,11 @@ public:
 class QOpenGLFunctions_4_5_CoreBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_4_5_CoreBackend(QOpenGLContext *context);
+    QOpenGLFunctions_4_5_CoreBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -1112,7 +1184,11 @@ public:
 class QOpenGLFunctions_1_0_DeprecatedBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_1_0_DeprecatedBackend(QOpenGLContext *context);
+    QOpenGLFunctions_1_0_DeprecatedBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -1383,7 +1459,11 @@ public:
 class QOpenGLFunctions_1_1_DeprecatedBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_1_1_DeprecatedBackend(QOpenGLContext *context);
+    QOpenGLFunctions_1_1_DeprecatedBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -1413,7 +1493,11 @@ public:
 class QOpenGLFunctions_1_2_DeprecatedBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_1_2_DeprecatedBackend(QOpenGLContext *context);
+    QOpenGLFunctions_1_2_DeprecatedBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -1458,7 +1542,11 @@ public:
 class QOpenGLFunctions_1_3_DeprecatedBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_1_3_DeprecatedBackend(QOpenGLContext *context);
+    QOpenGLFunctions_1_3_DeprecatedBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -1508,7 +1596,11 @@ public:
 class QOpenGLFunctions_1_4_DeprecatedBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_1_4_DeprecatedBackend(QOpenGLContext *context);
+    QOpenGLFunctions_1_4_DeprecatedBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -1559,7 +1651,11 @@ public:
 class QOpenGLFunctions_2_0_DeprecatedBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_2_0_DeprecatedBackend(QOpenGLContext *context);
+    QOpenGLFunctions_2_0_DeprecatedBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -1608,7 +1704,11 @@ public:
 class QOpenGLFunctions_3_0_DeprecatedBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_3_0_DeprecatedBackend(QOpenGLContext *context);
+    QOpenGLFunctions_3_0_DeprecatedBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -1641,7 +1741,11 @@ public:
 class QOpenGLFunctions_3_3_DeprecatedBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_3_3_DeprecatedBackend(QOpenGLContext *context);
+    QOpenGLFunctions_3_3_DeprecatedBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
@@ -1684,7 +1788,11 @@ public:
 class QOpenGLFunctions_4_5_DeprecatedBackend : public QOpenGLVersionFunctionsBackend
 {
 public:
-    QOpenGLFunctions_4_5_DeprecatedBackend(QOpenGLContext *context);
+    QOpenGLFunctions_4_5_DeprecatedBackend(QOpenGLContext *c)
+        : QOpenGLVersionFunctionsBackend(c)
+    {
+        init();
+    }
 
     static QOpenGLVersionStatus versionStatus();
 
