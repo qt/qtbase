@@ -683,7 +683,7 @@ void QWindowsEGLContext::swapBuffers(QPlatformSurface *surface)
     }
 }
 
-QFunctionPointer QWindowsEGLContext::getProcAddress(const QByteArray &procName)
+QFunctionPointer QWindowsEGLContext::getProcAddress(const char *procName)
 {
     // We support AllGLFunctionsQueryable, which means this function must be able to
     // return a function pointer for standard GLES2 functions too. These are not
@@ -838,15 +838,15 @@ QFunctionPointer QWindowsEGLContext::getProcAddress(const QByteArray &procName)
         { "glDepthRangef", (void *) QWindowsEGLStaticContext::libGLESv2.glDepthRangef }
     };
     for (size_t i = 0; i < sizeof(standardFuncs) / sizeof(StdFunc); ++i)
-        if (procName == standardFuncs[i].name)
+        if (!qstrcmp(procName, standardFuncs[i].name))
             return reinterpret_cast<QFunctionPointer>(standardFuncs[i].func);
 
     QWindowsEGLStaticContext::libEGL.eglBindAPI(m_api);
-    QFunctionPointer procAddress = reinterpret_cast<QFunctionPointer>(QWindowsEGLStaticContext::libEGL.eglGetProcAddress(procName.constData()));
+    QFunctionPointer procAddress = reinterpret_cast<QFunctionPointer>(QWindowsEGLStaticContext::libEGL.eglGetProcAddress(procName));
     if (QWindowsContext::verbose > 1)
         qCDebug(lcQpaGl) << __FUNCTION__ <<  procName << QWindowsEGLStaticContext::libEGL.eglGetCurrentContext() << "returns" << procAddress;
     if (!procAddress && QWindowsContext::verbose)
-        qWarning("%s: Unable to resolve '%s'", __FUNCTION__, procName.constData());
+        qWarning("%s: Unable to resolve '%s'", __FUNCTION__, procName);
     return procAddress;
 }
 

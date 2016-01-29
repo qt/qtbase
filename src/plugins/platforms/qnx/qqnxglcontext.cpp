@@ -252,7 +252,7 @@ void QQnxGLContext::swapBuffers(QPlatformSurface *surface)
     platformWindow->swapEGLBuffers();
 }
 
-QFunctionPointer QQnxGLContext::getProcAddress(const QByteArray &procName)
+QFunctionPointer QQnxGLContext::getProcAddress(const char *procName)
 {
     qGLContextDebug();
 
@@ -262,7 +262,7 @@ QFunctionPointer QQnxGLContext::getProcAddress(const QByteArray &procName)
         qFatal("QQNX: failed to set EGL API, err=%d", eglGetError());
 
     // Lookup EGL extension function pointer
-    return static_cast<QFunctionPointer>(eglGetProcAddress(procName.constData()));
+    return static_cast<QFunctionPointer>(eglGetProcAddress(procName));
 }
 
 bool QQnxGLContext::isSharing() const

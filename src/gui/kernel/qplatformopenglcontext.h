@@ -83,7 +83,7 @@ public:
     virtual bool isSharing() const { return false; }
     virtual bool isValid() const { return true; }
 
-    virtual QFunctionPointer getProcAddress(const QByteArray &procName) = 0;
+    virtual QFunctionPointer getProcAddress(const char *procName) = 0;
 
     QOpenGLContext *context() const;
 

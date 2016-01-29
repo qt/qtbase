@@ -174,6 +174,7 @@ public:
 
     void swapBuffers(QSurface *surface);
     QFunctionPointer getProcAddress(const QByteArray &procName) const;
+    QFunctionPointer getProcAddress(const char *procName) const;
 
     QSurface *surface() const;
 

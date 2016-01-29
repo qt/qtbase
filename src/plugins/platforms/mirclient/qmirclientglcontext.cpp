@@ -143,12 +143,12 @@ void QMirClientOpenGLContext::swapBuffers(QPlatformSurface* surface)
     ubuntuWindow->onSwapBuffersDone();
 }
 
-void (*QMirClientOpenGLContext::getProcAddress(const QByteArray& procName)) ()
+QFunctionPointer QMirClientOpenGLContext::getProcAddress(const char *procName)
 {
 #if defined(QT_NO_DEBUG)
     eglBindAPI(api_in_use());
 #else
     ASSERT(eglBindAPI(api_in_use()) == EGL_TRUE);
 #endif
-    return eglGetProcAddress(procName.constData());
+    return eglGetProcAddress(procName);
 }

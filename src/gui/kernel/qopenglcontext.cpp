@@ -1070,9 +1070,18 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
 */
 QFunctionPointer QOpenGLContext::getProcAddress(const QByteArray &procName) const
 {
+    return getProcAddress(procName.constData());
+}
+
+/*!
+  \overload
+  \since 5.8
+ */
+QFunctionPointer QOpenGLContext::getProcAddress(const char *procName) const
+{
     Q_D(const QOpenGLContext);
     if (!d->platformGLContext)
-        return 0;
+        return nullptr;
     return d->platformGLContext->getProcAddress(procName);
 }
 

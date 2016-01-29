@@ -55,7 +55,7 @@
 #include <QString>
 #include <OpenGL/OpenGL.h>
 
-void (*qcgl_getProcAddress(const QByteArray &procName))();
+QFunctionPointer qcgl_getProcAddress(const char *procName);
 QSurfaceFormat qcgl_surfaceFormat();
 void *qcgl_createNSOpenGLPixelFormat(const QSurfaceFormat &format);
 

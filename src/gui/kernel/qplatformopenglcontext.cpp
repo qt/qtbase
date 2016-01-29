@@ -71,10 +71,9 @@ QT_BEGIN_NAMESPACE
     The implementation must support being called in a thread different than the gui-thread.
 */
 
-/*! \fn QFunctionPointer QPlatformOpenGLContext::getProcAddress(const QByteArray &procName)
-    Reimplement in subclass to native getProcAddr calls.
+/*! \fn QFunctionPointer QPlatformOpenGLContext::getProcAddress(const char *procName)
 
-    Note: its convenient to use qPrintable(const QString &str) to get the const char * pointer
+    Reimplement in subclass to native getProcAddr calls.
 */
 
 class QPlatformOpenGLContextPrivate

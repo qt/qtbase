@@ -251,7 +251,7 @@ public:
 
     typedef void (*GL_Proc) ();
 
-    QFunctionPointer getProcAddress(const QByteArray &procName) Q_DECL_OVERRIDE;
+    QFunctionPointer getProcAddress(const char *procName) Q_DECL_OVERRIDE;
 
     HGLRC renderingContext() const { return m_renderingContext; }
 

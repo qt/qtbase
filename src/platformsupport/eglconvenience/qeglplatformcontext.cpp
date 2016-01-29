@@ -440,10 +440,10 @@ void QEGLPlatformContext::swapBuffers(QPlatformSurface *surface)
     }
 }
 
-void (*QEGLPlatformContext::getProcAddress(const QByteArray &procName)) ()
+QFunctionPointer QEGLPlatformContext::getProcAddress(const char *procName)
 {
     eglBindAPI(m_api);
-    return eglGetProcAddress(procName.constData());
+    return eglGetProcAddress(procName);
 }
 
 QSurfaceFormat QEGLPlatformContext::format() const

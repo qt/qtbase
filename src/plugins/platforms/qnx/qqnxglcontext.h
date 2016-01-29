@@ -67,7 +67,7 @@ public:
     bool makeCurrent(QPlatformSurface *surface);
     void doneCurrent();
     void swapBuffers(QPlatformSurface *surface);
-    QFunctionPointer getProcAddress(const QByteArray &procName);
+    QFunctionPointer getProcAddress(const char *procName);
 
     virtual QSurfaceFormat format() const { return m_windowFormat; }
     bool isSharing() const;

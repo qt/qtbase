@@ -266,9 +266,9 @@ void QIOSContext::windowDestroyed(QObject *object)
     }
 }
 
-QFunctionPointer QIOSContext::getProcAddress(const QByteArray& functionName)
+QFunctionPointer QIOSContext::getProcAddress(const char *functionName)
 {
-    return QFunctionPointer(dlsym(RTLD_DEFAULT, functionName.constData()));
+    return QFunctionPointer(dlsym(RTLD_DEFAULT, functionName));
 }
 
 bool QIOSContext::isValid() const

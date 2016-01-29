@@ -84,9 +84,9 @@ void QOpenWFDGLContext::swapBuffers(QPlatformSurface *surface)
     screen->swapBuffers();
 }
 
-void (*QOpenWFDGLContext::getProcAddress(const QByteArray &procName)) ()
+QFunctionPointer QOpenWFDGLContext::getProcAddress(const char *procName)
 {
-    return eglGetProcAddress(procName.data());
+    return eglGetProcAddress(procName);
 }
 
 EGLContext QOpenWFDGLContext::eglContext() const

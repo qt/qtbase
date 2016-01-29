@@ -1381,7 +1381,7 @@ void QWindowsGLContext::doneCurrent()
     releaseDCs();
 }
 
-QFunctionPointer QWindowsGLContext::getProcAddress(const QByteArray &procName)
+QFunctionPointer QWindowsGLContext::getProcAddress(const char *procName)
 {
     // We support AllGLFunctionsQueryable, which means this function must be able to
     // return a function pointer even for functions that are in GL.h and exported
@@ -1444,17 +1444,17 @@ QFunctionPointer QWindowsGLContext::getProcAddress(const QByteArray &procName)
         { "glDepthRange", (void *) QOpenGLStaticContext::opengl32.glDepthRange },
     };
     for (size_t i = 0; i < sizeof(standardFuncs) / sizeof(StdFunc); ++i)
-        if (procName == standardFuncs[i].name)
+        if (!qstrcmp(procName, standardFuncs[i].name))
             return reinterpret_cast<QFunctionPointer>(standardFuncs[i].func);
 
     // Even though we use QFunctionPointer, it does not mean the function can be called.
     // It will need to be cast to the proper function type with the correct calling
     // convention. QFunctionPointer is nothing more than a glorified void* here.
-    QFunctionPointer procAddress = reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress(procName.constData()));
+    QFunctionPointer procAddress = reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress(procName));
     if (QWindowsContext::verbose > 1)
         qCDebug(lcQpaGl) << __FUNCTION__ <<  procName << QOpenGLStaticContext::opengl32.wglGetCurrentContext() << "returns" << procAddress;
     if (!procAddress && QWindowsContext::verbose)
-        qWarning("%s: Unable to resolve '%s'", __FUNCTION__, procName.constData());
+        qWarning("%s: Unable to resolve '%s'", __FUNCTION__, procName);
     return procAddress;
 }
 

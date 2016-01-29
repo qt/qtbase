@@ -292,7 +292,7 @@ public:
     bool makeCurrent(QPlatformSurface *surface) Q_DECL_OVERRIDE;
     void doneCurrent() Q_DECL_OVERRIDE;
     void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
-    QFunctionPointer getProcAddress(const QByteArray &procName) Q_DECL_OVERRIDE;
+    QFunctionPointer getProcAddress(const char *procName) Q_DECL_OVERRIDE;
 
     QSurfaceFormat format() const Q_DECL_OVERRIDE { return m_format; }
     bool isSharing() const Q_DECL_OVERRIDE { return m_shareContext != EGL_NO_CONTEXT; }

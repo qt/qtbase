@@ -80,10 +80,10 @@ void QDirectFbGLContext::doneCurrent()
     m_dfbGlContext->Unlock(m_dfbGlContext);
 }
 
-void *QDirectFbGLContext::getProcAddress(const QString &procName)
+void *QDirectFbGLContext::getProcAddress(const char *procName)
 {
     void *proc;
-    DFBResult result = m_dfbGlContext->GetProcAddress(m_dfbGlContext,qPrintable(procName),&proc);
+    DFBResult result = m_dfbGlContext->GetProcAddress(m_dfbGlContext, procName, &proc);
     if (result == DFB_OK)
         return proc;
     return 0;

@@ -335,7 +335,7 @@ void QCocoaGLContext::doneCurrent()
     [NSOpenGLContext clearCurrentContext];
 }
 
-void (*QCocoaGLContext::getProcAddress(const QByteArray &procName))()
+QFunctionPointer QCocoaGLContext::getProcAddress(const char *procName)
 {
     return qcgl_getProcAddress(procName);
 }

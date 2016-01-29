@@ -2199,36 +2199,39 @@ private:
 
 static QFunctionPointer getProcAddress(QOpenGLContext *context, const char *funcName, int policy)
 {
-    QByteArray fn = funcName;
-    int size = fn.size();
-    QFunctionPointer function = context->getProcAddress(fn);
+    QFunctionPointer function = context->getProcAddress(funcName);
 
-    // create room for the extension names
-    fn.resize(size + 5);
-    char *ext = fn.data() + size;
-    if (!function && (policy & ResolveOES)) {
-        memcpy(ext, "OES\0\0", 5);
-        function = context->getProcAddress(fn);
-    }
+    if (!function && policy) {
+        char fn[512];
+        size_t size = strlen(funcName);
+        Q_ASSERT(size < 500);
+        memcpy(fn, funcName, size);
 
-    if (!function) {
-        memcpy(ext, "ARB\0\0", 5);
-        function = context->getProcAddress(fn);
-    }
+        char *ext = fn + size;
+        if (!function && (policy & ResolveOES)) {
+            memcpy(ext, "OES", 4);
+            function = context->getProcAddress(fn);
+        }
 
-    if (!function && (policy & ResolveEXT)) {
-        memcpy(ext, "EXT\0\0", 5);
-        function = context->getProcAddress(fn);
-    }
+        if (!function) {
+            memcpy(ext, "ARB", 4);
+            function = context->getProcAddress(fn);
+        }
 
-    if (!function && (policy & ResolveANGLE)) {
-        memcpy(ext, "ANGLE", 5);
-        function = context->getProcAddress(fn);
-    }
+        if (!function && (policy & ResolveEXT)) {
+            memcpy(ext, "EXT", 4);
+            function = context->getProcAddress(fn);
+        }
 
-    if (!function && (policy & ResolveNV)) {
-        memcpy(ext, "NV\0\0\0", 5);
-        function = context->getProcAddress(fn);
+        if (!function && (policy & ResolveANGLE)) {
+            memcpy(ext, "ANGLE", 6);
+            function = context->getProcAddress(fn);
+        }
+
+        if (!function && (policy & ResolveNV)) {
+            memcpy(ext, "NV", 3);
+            function = context->getProcAddress(fn);
+        }
     }
 
     return function;
