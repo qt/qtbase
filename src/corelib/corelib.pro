@@ -27,6 +27,10 @@ ANDROID_PERMISSIONS = \
     android.permission.INTERNET \
     android.permission.WRITE_EXTERNAL_STORAGE
 
+# QtCore can't be compiled with -Wl,-no-undefined because it uses the "environ"
+# variable and on FreeBSD, this variable is in the final executable itself
+freebsd: QMAKE_LFLAGS_NOUNDEF =
+
 load(qt_module)
 load(qfeatures)
 
