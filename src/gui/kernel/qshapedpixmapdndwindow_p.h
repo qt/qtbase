@@ -45,20 +45,17 @@
 // We mean it.
 //
 
-#include <QtGui/QWindow>
+#include <QtGui/QRasterWindow>
 #include <QtGui/QPixmap>
-#include <QtGui/QBackingStore>
 
 QT_BEGIN_NAMESPACE
 
-class QShapedPixmapWindow : public QWindow
+class QShapedPixmapWindow : public QRasterWindow
 {
     Q_OBJECT
 public:
     explicit QShapedPixmapWindow(QScreen *screen = 0);
     ~QShapedPixmapWindow();
-
-    void render();
 
     void setUseCompositing(bool on) { m_useCompositing = on; }
     void setPixmap(const QPixmap &pixmap);
@@ -67,10 +64,9 @@ public:
     void updateGeometry(const QPoint &pos);
 
 protected:
-    void exposeEvent(QExposeEvent *) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
 
 private:
-    QBackingStore *m_backingStore;
     QPixmap m_pixmap;
     QPoint m_hotSpot;
     bool m_useCompositing;
