@@ -458,7 +458,7 @@ QWindowsOleDropSource::GiveFeedback(DWORD dwEffect)
             if (!m_touchDragWindow)
                 m_touchDragWindow = new QWindowsDragCursorWindow;
             m_touchDragWindow->setPixmap(e.pixmap);
-            m_touchDragWindow->setFramePosition(QWindowsCursor::mousePosition() - e.hotSpot);
+            m_touchDragWindow->setFramePosition(QCursor::pos() - e.hotSpot);
             if (!m_touchDragWindow->isVisible())
                 m_touchDragWindow->show();
             break;
