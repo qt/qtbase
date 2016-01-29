@@ -403,12 +403,11 @@ static const struct {
 
 /*!
   Returns the location specified by \a loc.
-
 */
 QString
 QLibraryInfo::location(LibraryLocation loc)
 {
-#ifdef QT_BUILD_QMAKE
+#ifdef QT_BUILD_QMAKE // ends inside rawLocation !
     QString ret = rawLocation(loc, FinalPaths);
 
     // Automatically prepend the sysroot to target paths
@@ -427,7 +426,7 @@ QLibraryInfo::location(LibraryLocation loc)
 QString
 QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 {
-#endif
+#endif // QT_BUILD_QMAKE, started inside location !
     QString ret;
 #ifdef QT_BUILD_QMAKE
     // Logic for choosing the right data source: if EffectivePaths are requested
@@ -543,6 +542,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
         } else {
             // we make any other path absolute to the prefix directory
             baseDir = rawLocation(PrefixPath, group);
+        }
 #else
         if (loc == PrefixPath) {
             if (QCoreApplication::instance()) {
@@ -558,10 +558,10 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
                             return QDir::cleanPath(bundleContentsDir + ret);
 #else
                         return QDir::cleanPath(QString(path) + QLatin1Char('/') + ret); // iOS
-#endif
+#endif // Q_OS_OSX
                     }
                 }
-#endif
+#endif // Q_OS_DARWIN
                 // We make the prefix path absolute to the executable's directory.
                 baseDir = QCoreApplication::applicationDirPath();
             } else {
@@ -570,8 +570,8 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
         } else {
             // we make any other path absolute to the prefix directory
             baseDir = location(PrefixPath);
-#endif
         }
+#endif // QT_BUILD_QMAKE
         ret = QDir::cleanPath(baseDir + QLatin1Char('/') + ret);
     }
     return ret;
