@@ -1657,13 +1657,10 @@ qint64 QIODevice::write(const char *data, qint64 maxSize)
 #endif
 
     qint64 written = writeData(data, maxSize);
-    if (written > 0) {
-        if (!sequential) {
-            d->pos += written;
-            d->devicePos += written;
-        }
-        if (!d->buffer.isEmpty() && !sequential)
-            d->buffer.skip(written);
+    if (!sequential && written > 0) {
+        d->pos += written;
+        d->devicePos += written;
+        d->buffer.skip(written);
     }
     return written;
 }
