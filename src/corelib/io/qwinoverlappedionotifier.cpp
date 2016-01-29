@@ -75,6 +75,22 @@ QT_BEGIN_NAMESPACE
     or WriteFile() is ignored and can be used for other purposes.
 
     \warning This class is only available on Windows.
+
+    Due to peculiarities of the Windows I/O completion port API, users of
+    QWinOverlappedIoNotifier must pay attention to the following restrictions:
+    \list
+    \li File handles with a QWinOverlappedIoNotifer are assigned to an I/O
+        completion port until the handle is closed. It is impossible to
+        disassociate the file handle from the I/O completion port.
+    \li There can be only one QWinOverlappedIoNotifer per file handle. Creating
+        another QWinOverlappedIoNotifier for that file, even with a duplicated
+        handle, will fail.
+    \li Certain Windows API functions are unavailable for file handles that are
+        assigned to an I/O completion port. This includes the functions
+        \c{ReadFileEx} and \c{WriteFileEx}.
+    \endlist
+    See also the remarks in the MSDN documentation for the
+    \c{CreateIoCompletionPort} function.
 */
 
 struct IOResult
