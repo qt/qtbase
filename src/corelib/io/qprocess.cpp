@@ -2040,24 +2040,7 @@ qint64 QProcess::writeData(const char *data, qint64 len)
     }
 #endif
 
-    if (len == 1) {
-        d->writeBuffer.putChar(*data);
-#ifdef Q_OS_WIN
-        if (!d->stdinWriteTrigger->isActive())
-            d->stdinWriteTrigger->start();
-#else
-        if (d->stdinChannel.notifier)
-            d->stdinChannel.notifier->setEnabled(true);
-#endif
-#if defined QPROCESS_DEBUG
-    qDebug("QProcess::writeData(%p \"%s\", %lld) == 1 (written to buffer)",
-           data, qt_prettyDebug(data, len, 16).constData(), len);
-#endif
-        return 1;
-    }
-
-    char *dest = d->writeBuffer.reserve(len);
-    memcpy(dest, data, len);
+    d->writeBuffer.append(data, len);
 #ifdef Q_OS_WIN
     if (!d->stdinWriteTrigger->isActive())
         d->stdinWriteTrigger->start();

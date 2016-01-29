@@ -317,6 +317,20 @@ qint64 QRingBuffer::peek(char *data, qint64 maxLength, qint64 pos) const
 /*!
     \internal
 
+    Append bytes from data to the end
+*/
+void QRingBuffer::append(const char *data, qint64 size)
+{
+    char *writePointer = reserve(size);
+    if (size == 1)
+        *writePointer = *data;
+    else if (size)
+        ::memcpy(writePointer, data, size);
+}
+
+/*!
+    \internal
+
     Append a new buffer to the end
 */
 void QRingBuffer::append(const QByteArray &qba)

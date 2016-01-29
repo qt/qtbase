@@ -111,6 +111,7 @@ public:
         inline qint64 read(char *data, qint64 maxLength) { return (m_buf ? m_buf->read(data, maxLength) : Q_INT64_C(0)); }
         inline QByteArray read() { return (m_buf ? m_buf->read() : QByteArray()); }
         inline qint64 peek(char *data, qint64 maxLength, qint64 pos = 0) const { return (m_buf ? m_buf->peek(data, maxLength, pos) : Q_INT64_C(0)); }
+        inline void append(const char *data, qint64 size) { Q_ASSERT(m_buf); m_buf->append(data, size); }
         inline void append(const QByteArray &qba) { Q_ASSERT(m_buf); m_buf->append(qba); }
         inline qint64 skip(qint64 length) { return (m_buf ? m_buf->skip(length) : Q_INT64_C(0)); }
         inline qint64 readLine(char *data, qint64 maxLength) { return (m_buf ? m_buf->readLine(data, maxLength) : Q_INT64_C(-1)); }

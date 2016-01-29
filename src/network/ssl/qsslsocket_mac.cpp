@@ -670,8 +670,7 @@ void QSslSocketBackendPrivate::transmit()
             }
 
             if (readBytes) {
-                char *const ptr = buffer.reserve(readBytes);
-                std::copy(data.data(), data.data() + readBytes, ptr);
+                buffer.append(data.constData(), readBytes);
                 if (readyReadEmittedPointer)
                     *readyReadEmittedPointer = true;
                 emit q->readyRead();

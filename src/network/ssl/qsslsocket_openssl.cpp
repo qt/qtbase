@@ -940,8 +940,7 @@ void QSslSocketBackendPrivate::transmit()
 #ifdef QSSLSOCKET_DEBUG
                 qCDebug(lcSsl) << "QSslSocketBackendPrivate::transmit: decrypted" << readBytes << "bytes";
 #endif
-                char *ptr = buffer.reserve(readBytes);
-                ::memcpy(ptr, data.data(), readBytes);
+                buffer.append(data.constData(), readBytes);
 
                 if (readyReadEmittedPointer)
                     *readyReadEmittedPointer = true;

@@ -126,6 +126,7 @@ public:
     Q_CORE_EXPORT qint64 read(char *data, qint64 maxLength);
     Q_CORE_EXPORT QByteArray read();
     Q_CORE_EXPORT qint64 peek(char *data, qint64 maxLength, qint64 pos = 0) const;
+    Q_CORE_EXPORT void append(const char *data, qint64 size);
     Q_CORE_EXPORT void append(const QByteArray &qba);
 
     inline qint64 skip(qint64 length) {

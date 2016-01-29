@@ -2004,8 +2004,7 @@ qint64 QSslSocket::writeData(const char *data, qint64 len)
     if (d->mode == UnencryptedMode && !d->autoStartHandshake)
         return d->plainSocket->write(data, len);
 
-    char *writePtr = d->writeBuffer.reserve(len);
-    ::memcpy(writePtr, data, len);
+    d->writeBuffer.append(data, len);
 
     // make sure we flush to the plain socket's buffer
     QMetaObject::invokeMethod(this, "_q_flushWriteBuffer", Qt::QueuedConnection);
