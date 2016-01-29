@@ -81,7 +81,8 @@ QOpenGLTexturePrivate::QOpenGLTexturePrivate(QOpenGLTexture::Target textureTarge
       textureView(false),
       autoGenerateMipMaps(true),
       storageAllocated(false),
-      texFuncs(0)
+      texFuncs(0),
+      functions(0)
 {
     dimensions[0] = dimensions[1] = dimensions[2] = 1;
 
@@ -165,6 +166,7 @@ bool QOpenGLTexturePrivate::create()
         return false;
     }
     context = ctx;
+    functions = ctx->functions();
 
     // Resolve any functions we will need based upon context version and create the texture
     initializeOpenGLFunctions();
@@ -177,7 +179,7 @@ bool QOpenGLTexturePrivate::create()
         feature = static_cast<QOpenGLTexture::Feature>(feature << 1);
     }
 
-    texFuncs->glGenTextures(1, &textureId);
+    functions->glGenTextures(1, &textureId);
     return textureId != 0;
 }
 
@@ -194,9 +196,10 @@ void QOpenGLTexturePrivate::destroy()
         return;
     }
 
-    texFuncs->glDeleteTextures(1, &textureId);
+    functions->glDeleteTextures(1, &textureId);
 
     context = 0;
+    functions = 0;
     textureId = 0;
     format = QOpenGLTexture::NoFormat;
     formatClass = QOpenGLTexture::NoFormatClass;
@@ -231,17 +234,17 @@ void QOpenGLTexturePrivate::destroy()
 
 void QOpenGLTexturePrivate::bind()
 {
-    texFuncs->glBindTexture(target, textureId);
+    functions->glBindTexture(target, textureId);
 }
 
 void QOpenGLTexturePrivate::bind(uint unit, QOpenGLTexture::TextureUnitReset reset)
 {
     GLint oldTextureUnit = 0;
     if (reset == QOpenGLTexture::ResetTextureUnit)
-        texFuncs->glGetIntegerv(GL_ACTIVE_TEXTURE, &oldTextureUnit);
+        functions->glGetIntegerv(GL_ACTIVE_TEXTURE, &oldTextureUnit);
 
     texFuncs->glActiveTexture(GL_TEXTURE0 + unit);
-    texFuncs->glBindTexture(target, textureId);
+    functions->glBindTexture(target, textureId);
 
     if (reset == QOpenGLTexture::ResetTextureUnit)
         texFuncs->glActiveTexture(GL_TEXTURE0 + oldTextureUnit);
@@ -249,17 +252,17 @@ void QOpenGLTexturePrivate::bind(uint unit, QOpenGLTexture::TextureUnitReset res
 
 void QOpenGLTexturePrivate::release()
 {
-    texFuncs->glBindTexture(target, 0);
+    functions->glBindTexture(target, 0);
 }
 
 void QOpenGLTexturePrivate::release(uint unit, QOpenGLTexture::TextureUnitReset reset)
 {
     GLint oldTextureUnit = 0;
     if (reset == QOpenGLTexture::ResetTextureUnit)
-        texFuncs->glGetIntegerv(GL_ACTIVE_TEXTURE, &oldTextureUnit);
+        functions->glGetIntegerv(GL_ACTIVE_TEXTURE, &oldTextureUnit);
 
     texFuncs->glActiveTexture(GL_TEXTURE0 + unit);
-    texFuncs->glBindTexture(target, 0);
+    functions->glBindTexture(target, 0);
 
     if (reset == QOpenGLTexture::ResetTextureUnit)
         texFuncs->glActiveTexture(GL_TEXTURE0 + oldTextureUnit);
@@ -268,18 +271,18 @@ void QOpenGLTexturePrivate::release(uint unit, QOpenGLTexture::TextureUnitReset 
 bool QOpenGLTexturePrivate::isBound() const
 {
     GLint boundTextureId = 0;
-    texFuncs->glGetIntegerv(bindingTarget, &boundTextureId);
+    functions->glGetIntegerv(bindingTarget, &boundTextureId);
     return (static_cast<GLuint>(boundTextureId) == textureId);
 }
 
 bool QOpenGLTexturePrivate::isBound(uint unit) const
 {
     GLint oldTextureUnit = 0;
-    texFuncs->glGetIntegerv(GL_ACTIVE_TEXTURE, &oldTextureUnit);
+    functions->glGetIntegerv(GL_ACTIVE_TEXTURE, &oldTextureUnit);
 
     GLint boundTextureId = 0;
     texFuncs->glActiveTexture(GL_TEXTURE0 + unit);
-    texFuncs->glGetIntegerv(bindingTarget, &boundTextureId);
+    functions->glGetIntegerv(bindingTarget, &boundTextureId);
     bool result = (static_cast<GLuint>(boundTextureId) == textureId);
 
     texFuncs->glActiveTexture(GL_TEXTURE0 + oldTextureUnit);

@@ -46,6 +46,7 @@ QT_BEGIN_NAMESPACE
 
 QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
 {
+    functions = context->functions();
     // Resolve EXT_direct_state_access entry points if present.
 
     // However, disable it on some systems where DSA is known to be unreliable.
@@ -142,63 +143,26 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
         TextureImage2DMultisample = &QOpenGLTextureHelper::qt_TextureImage2DMultisample;
     }
 
+#if defined(Q_OS_WIN) && !defined(QT_OPENGL_ES_2)
     // wglGetProcAddress should not be used to (and indeed will not) load OpenGL <= 1.1 functions.
     // Hence, we resolve them "the hard way"
-
-#if defined(Q_OS_WIN) && !defined(QT_OPENGL_ES_2)
     HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
     if (!handle)
         handle = GetModuleHandleA("opengl32.dll");
 
-    // OpenGL 1.0
-    GetIntegerv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint *)>(GetProcAddress(handle, QByteArrayLiteral("glGetIntegerv")));
-    GetBooleanv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLboolean *)>(GetProcAddress(handle, QByteArrayLiteral("glGetBooleanv")));
-    PixelStorei = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint )>(GetProcAddress(handle, QByteArrayLiteral("glPixelStorei")));
-    GetTexLevelParameteriv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLenum , GLint *)>(GetProcAddress(handle, QByteArrayLiteral("glGetTexLevelParameteriv")));
-    GetTexLevelParameterfv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLenum , GLfloat *)>(GetProcAddress(handle, QByteArrayLiteral("glGetTexLevelParameterfv")));
-    GetTexParameteriv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLint *)>(GetProcAddress(handle, QByteArrayLiteral("glGetTexParameteriv")));
-    GetTexParameterfv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLfloat *)>(GetProcAddress(handle, QByteArrayLiteral("glGetTexParameterfv")));
-    GetTexImage = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLenum , GLenum , GLvoid *)>(GetProcAddress(handle, QByteArrayLiteral("glGetTexImage")));
-    TexImage2D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLsizei , GLint , GLenum , GLenum , const GLvoid *)>(GetProcAddress(handle, QByteArrayLiteral("glTexImage2D")));
     TexImage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLint , GLenum , GLenum , const GLvoid *)>(GetProcAddress(handle, QByteArrayLiteral("glTexImage1D")));
-    TexParameteriv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , const GLint *)>(GetProcAddress(handle, QByteArrayLiteral("glTexParameteriv")));
-    TexParameteri = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLint )>(GetProcAddress(handle, QByteArrayLiteral("glTexParameteri")));
-    TexParameterfv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , const GLfloat *)>(GetProcAddress(handle, QByteArrayLiteral("glTexParameterfv")));
-    TexParameterf = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLfloat )>(GetProcAddress(handle, QByteArrayLiteral("glTexParameterf")));
-
-    // OpenGL 1.1
-    GenTextures = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(GetProcAddress(handle, QByteArrayLiteral("glGenTextures")));
-    DeleteTextures = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *)>(GetProcAddress(handle, QByteArrayLiteral("glDeleteTextures")));
-    BindTexture = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(GetProcAddress(handle, QByteArrayLiteral("glBindTexture")));
-    TexSubImage2D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLint , GLsizei , GLsizei , GLenum , GLenum , const GLvoid *)>(GetProcAddress(handle, QByteArrayLiteral("glTexSubImage2D")));
     TexSubImage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLenum , GLenum , const GLvoid *)>(GetProcAddress(handle, QByteArrayLiteral("glTexSubImage1D")));
+#endif
 
-#elif defined(QT_OPENGL_ES_2)
+#if defined(QT_OPENGL_ES_2)
     // Here we are targeting OpenGL ES 2.0+ only. This is likely using EGL, where,
     // similarly to WGL, non-extension functions (i.e. any function that is part of the
     // GLES spec) *may* not be queried via eglGetProcAddress.
 
     // OpenGL 1.0
-    GetIntegerv = ::glGetIntegerv;
-    GetBooleanv = ::glGetBooleanv;
-    PixelStorei = ::glPixelStorei;
-    GetTexLevelParameteriv = 0;
-    GetTexLevelParameterfv = 0;
-    GetTexParameteriv = ::glGetTexParameteriv;
-    GetTexParameterfv = ::glGetTexParameterfv;
-    GetTexImage = 0;
-    TexImage2D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLsizei , GLint , GLenum , GLenum , const GLvoid *)>(::glTexImage2D);
     TexImage1D = 0;
-    TexParameteriv = ::glTexParameteriv;
-    TexParameteri = ::glTexParameteri;
-    TexParameterfv = ::glTexParameterfv;
-    TexParameterf = ::glTexParameterf;
 
     // OpenGL 1.1
-    GenTextures = ::glGenTextures;
-    DeleteTextures = ::glDeleteTextures;
-    BindTexture = ::glBindTexture;
-    TexSubImage2D = ::glTexSubImage2D;
     TexSubImage1D = 0;
 
     // OpenGL 1.3
@@ -235,30 +199,6 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
     TexBufferRange = 0;
     TextureView = 0;
 
-#else
-
-    // OpenGL 1.0
-    GetIntegerv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint *)>(context->getProcAddress(QByteArrayLiteral("glGetIntegerv")));
-    GetBooleanv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLboolean *)>(context->getProcAddress(QByteArrayLiteral("glGetBooleanv")));
-    PixelStorei = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint )>(context->getProcAddress(QByteArrayLiteral("glPixelStorei")));
-    GetTexLevelParameteriv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLenum , GLint *)>(context->getProcAddress(QByteArrayLiteral("glGetTexLevelParameteriv")));
-    GetTexLevelParameterfv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLenum , GLfloat *)>(context->getProcAddress(QByteArrayLiteral("glGetTexLevelParameterfv")));
-    GetTexParameteriv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLint *)>(context->getProcAddress(QByteArrayLiteral("glGetTexParameteriv")));
-    GetTexParameterfv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLfloat *)>(context->getProcAddress(QByteArrayLiteral("glGetTexParameterfv")));
-    GetTexImage = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLenum , GLenum , GLvoid *)>(context->getProcAddress(QByteArrayLiteral("glGetTexImage")));
-    TexImage2D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLsizei , GLint , GLenum , GLenum , const GLvoid *)>(context->getProcAddress(QByteArrayLiteral("glTexImage2D")));
-    TexImage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLint , GLenum , GLenum , const GLvoid *)>(context->getProcAddress(QByteArrayLiteral("glTexImage1D")));
-    TexParameteriv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , const GLint *)>(context->getProcAddress(QByteArrayLiteral("glTexParameteriv")));
-    TexParameteri = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLint )>(context->getProcAddress(QByteArrayLiteral("glTexParameteri")));
-    TexParameterfv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , const GLfloat *)>(context->getProcAddress(QByteArrayLiteral("glTexParameterfv")));
-    TexParameterf = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLfloat )>(context->getProcAddress(QByteArrayLiteral("glTexParameterf")));
-
-    // OpenGL 1.1
-    GenTextures = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress(QByteArrayLiteral("glGenTextures")));
-    DeleteTextures = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *)>(context->getProcAddress(QByteArrayLiteral("glDeleteTextures")));
-    BindTexture = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint )>(context->getProcAddress(QByteArrayLiteral("glBindTexture")));
-    TexSubImage2D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLint , GLsizei , GLsizei , GLenum , GLenum , const GLvoid *)>(context->getProcAddress(QByteArrayLiteral("glTexSubImage2D")));
-    TexSubImage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLenum , GLenum , const GLvoid *)>(context->getProcAddress(QByteArrayLiteral("glTexSubImage1D")));
 #endif
 
     if (context->isOpenGLES() && context->hasExtension(QByteArrayLiteral("GL_OES_texture_3D"))) {
@@ -464,8 +404,8 @@ namespace {
 class TextureBinder
 {
 public:
-    TextureBinder(QOpenGLTextureHelper *textureFunctions, GLuint texture, GLenum target, GLenum bindingTarget)
-    : m_textureFunctions(textureFunctions)
+    TextureBinder(QOpenGLFunctions *functions, GLuint texture, GLenum target, GLenum bindingTarget)
+    : m_functions(functions)
     {
         // For cubemaps we can't use the standard DSA emulation as it is illegal to
         // try to bind a texture to one of the cubemap face targets. So we force the
@@ -486,17 +426,17 @@ public:
             break;
         }
 
-        m_textureFunctions->glGetIntegerv(bindingTarget, &m_oldTexture);
-        m_textureFunctions->glBindTexture(m_target, texture);
+        m_functions->glGetIntegerv(bindingTarget, &m_oldTexture);
+        m_functions->glBindTexture(m_target, texture);
     }
 
     ~TextureBinder()
     {
-        m_textureFunctions->glBindTexture(m_target, m_oldTexture);
+        m_functions->glBindTexture(m_target, m_oldTexture);
     }
 
 private:
-    QOpenGLTextureHelper *m_textureFunctions;
+    QOpenGLFunctions *m_functions;
     GLenum m_target;
     GLint m_oldTexture;
 };
@@ -505,145 +445,145 @@ private:
 
 void QOpenGLTextureHelper::qt_TextureParameteri(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, GLint param)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
-    glTexParameteri(target, pname, param);
+    TextureBinder binder(functions, texture, target, bindingTarget);
+    functions->glTexParameteri(target, pname, param);
 }
 
 void QOpenGLTextureHelper::qt_TextureParameteriv(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, const GLint *params)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
-    glTexParameteriv(target, pname, params);
+    TextureBinder binder(functions, texture, target, bindingTarget);
+    functions->glTexParameteriv(target, pname, params);
 }
 
 void QOpenGLTextureHelper::qt_TextureParameterf(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, GLfloat param)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
-    glTexParameterf(target, pname, param);
+    TextureBinder binder(functions, texture, target, bindingTarget);
+    functions->glTexParameterf(target, pname, param);
 }
 
 void QOpenGLTextureHelper::qt_TextureParameterfv(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, const GLfloat *params)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
-    glTexParameterfv(target, pname, params);
+    TextureBinder binder(functions, texture, target, bindingTarget);
+    functions->glTexParameterfv(target, pname, params);
 }
 
 void QOpenGLTextureHelper::qt_GenerateTextureMipmap(GLuint texture, GLenum target, GLenum bindingTarget)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
-    glGenerateMipmap(target);
+    TextureBinder binder(functions, texture, target, bindingTarget);
+    functions->glGenerateMipmap(target);
 }
 
 void QOpenGLTextureHelper::qt_TextureStorage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei levels, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
+    TextureBinder binder(functions, texture, target, bindingTarget);
     glTexStorage3D(target, levels, internalFormat, width, height, depth);
 }
 
 void QOpenGLTextureHelper::qt_TextureStorage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei levels, GLenum internalFormat, GLsizei width, GLsizei height)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
+    TextureBinder binder(functions, texture, target, bindingTarget);
     glTexStorage2D(target, levels, internalFormat, width, height);
 }
 
 void QOpenGLTextureHelper::qt_TextureStorage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei levels, GLenum internalFormat, GLsizei width)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
+    TextureBinder binder(functions, texture, target, bindingTarget);
     glTexStorage1D(target, levels, internalFormat, width);
 }
 
 void QOpenGLTextureHelper::qt_TextureStorage3DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedSampleLocations)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
+    TextureBinder binder(functions, texture, target, bindingTarget);
     glTexStorage3DMultisample(target, samples, internalFormat, width, height, depth, fixedSampleLocations);
 }
 
 void QOpenGLTextureHelper::qt_TextureStorage2DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLenum internalFormat, GLsizei width, GLsizei height, GLboolean fixedSampleLocations)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
+    TextureBinder binder(functions, texture, target, bindingTarget);
     glTexStorage2DMultisample(target, samples, internalFormat, width, height, fixedSampleLocations);
 }
 
 void QOpenGLTextureHelper::qt_TextureImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
+    TextureBinder binder(functions, texture, target, bindingTarget);
     glTexImage3D(target, level, internalFormat, width, height, depth, border, format, type, pixels);
 }
 
 void QOpenGLTextureHelper::qt_TextureImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
-    glTexImage2D(target, level, internalFormat, width, height, border, format, type, pixels);
+    TextureBinder binder(functions, texture, target, bindingTarget);
+    functions->glTexImage2D(target, level, internalFormat, width, height, border, format, type, pixels);
 }
 
 void QOpenGLTextureHelper::qt_TextureImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat, GLsizei width, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
+    TextureBinder binder(functions, texture, target, bindingTarget);
     glTexImage1D(target, level, internalFormat, width, border, format, type, pixels);
 }
 
 void QOpenGLTextureHelper::qt_TextureSubImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
+    TextureBinder binder(functions, texture, target, bindingTarget);
     glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
 }
 
 void QOpenGLTextureHelper::qt_TextureSubImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
-    glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
+    TextureBinder binder(functions, texture, target, bindingTarget);
+    functions->glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
 }
 
 void QOpenGLTextureHelper::qt_TextureSubImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
+    TextureBinder binder(functions, texture, target, bindingTarget);
     glTexSubImage1D(target, level, xoffset, width, format, type, pixels);
 }
 
 void QOpenGLTextureHelper::qt_TextureImage3DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedSampleLocations)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
+    TextureBinder binder(functions, texture, target, bindingTarget);
     glTexImage3DMultisample(target, samples, internalFormat, width, height, depth, fixedSampleLocations);
 }
 
 void QOpenGLTextureHelper::qt_TextureImage2DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLint internalFormat, GLsizei width, GLsizei height, GLboolean fixedSampleLocations)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
+    TextureBinder binder(functions, texture, target, bindingTarget);
     glTexImage2DMultisample(target, samples, internalFormat, width, height, fixedSampleLocations);
 }
 
 void QOpenGLTextureHelper::qt_CompressedTextureSubImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLsizei width, GLenum format, GLsizei imageSize, const GLvoid *bits)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
+    TextureBinder binder(functions, texture, target, bindingTarget);
     glCompressedTexSubImage1D(target, level, xoffset, width, format, imageSize, bits);
 }
 
 void QOpenGLTextureHelper::qt_CompressedTextureSubImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const GLvoid *bits)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
+    TextureBinder binder(functions, texture, target, bindingTarget);
     glCompressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, bits);
 }
 
 void QOpenGLTextureHelper::qt_CompressedTextureSubImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const GLvoid *bits)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
+    TextureBinder binder(functions, texture, target, bindingTarget);
     glCompressedTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, bits);
 }
 
 void QOpenGLTextureHelper::qt_CompressedTextureImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat, GLsizei width, GLint border, GLsizei imageSize, const GLvoid *bits)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
+    TextureBinder binder(functions, texture, target, bindingTarget);
     glCompressedTexImage1D(target, level, internalFormat, width, border, imageSize, bits);
 }
 
 void QOpenGLTextureHelper::qt_CompressedTextureImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid *bits)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
+    TextureBinder binder(functions, texture, target, bindingTarget);
     glCompressedTexImage2D(target, level, internalFormat, width, height, border, imageSize, bits);
 }
 
 void QOpenGLTextureHelper::qt_CompressedTextureImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const GLvoid *bits)
 {
-    TextureBinder binder(this, texture, target, bindingTarget);
+    TextureBinder binder(functions, texture, target, bindingTarget);
     glCompressedTexImage3D(target, level, internalFormat, width, height, depth, border, imageSize, bits);
 }
 

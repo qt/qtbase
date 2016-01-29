@@ -70,6 +70,7 @@ QT_BEGIN_NAMESPACE
 
 class QOpenGLContext;
 class QOpenGLTextureHelper;
+class QOpenGLFunctions;
 
 class QOpenGLTexturePrivate
 {
@@ -163,6 +164,7 @@ public:
     bool storageAllocated;
 
     QOpenGLTextureHelper *texFuncs;
+    QOpenGLFunctions *functions;
 
     QOpenGLTexture::Features features;
 };
