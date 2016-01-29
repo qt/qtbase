@@ -44,10 +44,12 @@
 
 #include <QBitmap>
 #include <QCursor>
+#include <QDrag>
 #include <QPainter>
 #include <QPixmap>
 
 #include <QDebug>
+#include <QMimeData>
 #include <QStringList>
 #include <QTextStream>
 
@@ -67,6 +69,14 @@
 
 #include <algorithm>
 #include <iterator>
+
+#if QT_VERSION < 0x050000
+QDebug operator<<(QDebug d, const QPixmap &p)
+{
+    d.nospace() << "QPixmap(" << p.size() << ')';
+    return d;
+}
+#endif // Qt 4
 
 // High DPI cursor test for testing cursor sizes in multi-screen setups.
 // It creates one widget per screen with a grid of standard cursors,
@@ -159,6 +169,49 @@ static QCursor bitmapCursorDevicePixelRatio(int size, int dpr)
 }
 #endif // Qt 5
 
+// A label from which a pixmap can be dragged for testing drag with pixmaps/DPR.
+class DraggableLabel : public QLabel {
+public:
+    explicit DraggableLabel(const QPixmap &p, const QString &text, QWidget *parent = Q_NULLPTR)
+        : QLabel(text, parent), m_pixmap(p)
+    {
+        setToolTip(QLatin1String("Click to drag away the pixmap. Press Shift to set a circular mask."));
+    }
+
+protected:
+    void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+
+private:
+    const QPixmap m_pixmap;
+};
+
+void DraggableLabel::mousePressEvent(QMouseEvent *)
+{
+    QMimeData *mimeData = new QMimeData;
+    mimeData->setImageData(qVariantFromValue(m_pixmap));
+    QDrag *drag = new QDrag(this);
+    QPixmap pixmap = m_pixmap;
+    if (QApplication::keyboardModifiers() & Qt::ShiftModifier) {
+        QBitmap mask(pixmap.width(), pixmap.height());
+        mask.clear();
+        QPainter painter(&mask);
+        painter.setBrush(Qt::color1);
+        const int hx = pixmap.width() / 2;
+        const int hy = pixmap.width() / 2;
+        painter.drawEllipse(QPoint(hx, hy), hx, hy);
+        pixmap.setMask(mask);
+    }
+    drag->setMimeData(mimeData);
+    drag->setPixmap(pixmap);
+    QPoint sizeP = QPoint(m_pixmap.width(), m_pixmap.height());
+#if QT_VERSION > 0x050000
+    sizeP /= int(m_pixmap.devicePixelRatio());
+#endif // Qt 5
+    drag->setHotSpot(sizeP / 2);
+    qDebug() << "Dragging:" << m_pixmap;
+    drag->exec(Qt::CopyAction | Qt::MoveAction, Qt::CopyAction);
+}
+
 // Vertical ruler widget with 10 px marks
 class VerticalRuler : public QWidget {
 public:
@@ -210,8 +263,15 @@ static QLabel *createCursorLabel(const QCursor &cursor, const QString &additiona
 #endif // Qt 5
     if (!additionalText.isEmpty())
         labelText += ' ' + additionalText;
-    QLabel *result = new QLabel(labelText);
-    result->setFrameShape(QFrame::Box);
+    const QPixmap cursorPixmap = cursor.pixmap();
+    QLabel *result = Q_NULLPTR;
+    if (cursorPixmap.size().isEmpty()) {
+        result = new QLabel(labelText);
+        result->setFrameShape(QFrame::Box);
+    } else {
+        result = new DraggableLabel(cursor.pixmap(), labelText);
+        result->setFrameShape(QFrame::StyledPanel);
+    }
     result->setCursor(cursor);
     return result;
 }
@@ -304,7 +364,10 @@ int main(int argc, char *argv[])
 
     QDesktopWidget *desktopWidget = app.desktop();
 
-    for (int s = desktopWidget->screenCount() - 1; s >= 0; --s) {
+    const int lastScreen = arguments.contains("-p")
+        ? 0  // Primary screen only
+        : desktopWidget->screenCount() - 1; // All screens
+    for (int s = lastScreen; s >= 0; --s) {
         MainWindowPtr window(new MainWindow(desktopWidget->screen(s)));
         const QPoint pos = desktopWidget->screenGeometry(s).center() - QPoint(200, 100);
         window->move(pos);
