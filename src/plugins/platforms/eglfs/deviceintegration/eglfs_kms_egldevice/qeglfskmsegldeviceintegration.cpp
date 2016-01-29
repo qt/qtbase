@@ -301,8 +301,13 @@ void QEglFSKmsEglDeviceIntegration::waitForVSync(QPlatformSurface *) const
         if (currentMode)
             drmModeFreeCrtc(currentMode);
         if (alreadySet) {
-            qCDebug(qLcEglfsKmsDebug, "Mode already set");
-            return;
+            // Maybe detecting the DPMS mode could help here, but there are no properties
+            // exposed on the connector apparently. So rely on an env var for now.
+            static bool alwaysDoSet = qEnvironmentVariableIntValue("QT_QPA_EGLFS_ALWAYS_SET_MODE");
+            if (!alwaysDoSet) {
+                qCDebug(qLcEglfsKmsDebug, "Mode already set");
+                return;
+            }
         }
 
         qCDebug(qLcEglfsKmsDebug, "Setting mode");
