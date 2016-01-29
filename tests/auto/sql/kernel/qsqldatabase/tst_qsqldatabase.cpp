@@ -146,6 +146,7 @@ private slots:
     void mysql_multiselect();  // For task 144331
     void mysql_savepointtest_data() { generic_data("QMYSQL"); }
     void mysql_savepointtest();
+    void mysql_connectWithInvalidAddress();
 
     void accessOdbc_strings_data() { generic_data(); }
     void accessOdbc_strings();
@@ -2190,6 +2191,14 @@ void tst_QSqlDatabase::mysql_savepointtest()
     QVERIFY_SQL(q, exec("begin"));
     QVERIFY_SQL(q, exec("insert into " + qTableName("qtest", __FILE__, db) + " VALUES (54, 'foo', 'foo', 54.54)"));
     QVERIFY_SQL(q, exec("savepoint foo"));
+}
+
+void tst_QSqlDatabase::mysql_connectWithInvalidAddress()
+{
+    // Ensure that giving invalid connection parameters fails correctly
+    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
+    db.setHostName("invalid.local");
+    QCOMPARE(db.open(), false);
 }
 
 void tst_QSqlDatabase::oci_tables()
