@@ -35,6 +35,8 @@
 #include <qset.h>
 #include <qstring.h>
 
+#include <set>
+
 QT_BEGIN_NAMESPACE
 
 class QTextStream;
@@ -72,7 +74,7 @@ private:
     void add(const QString &className, bool determineHeader = true, const QString &header = QString(), bool global = false);
 
 private:
-    typedef QMap<QString, bool> OrderedSet;
+    typedef std::set<QString> OrderedSet;
     void insertIncludeForClass(const QString &className, QString header = QString(), bool global = false);
     void insertInclude(const QString &header, bool global);
     void writeHeaders(const OrderedSet &headers, bool global);
