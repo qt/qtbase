@@ -69,6 +69,8 @@ using namespace ABI::Windows::UI::Xaml::Controls;
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcQpaWindows, "qt.qpa.windows");
+
 static void setUIElementVisibility(IUIElement *uiElement, bool visibility)
 {
     Q_ASSERT(uiElement);
@@ -101,6 +103,7 @@ QWinRTWindow::QWinRTWindow(QWindow *window)
     , d_ptr(new QWinRTWindowPrivate)
 {
     Q_D(QWinRTWindow);
+    qCDebug(lcQpaWindows) << __FUNCTION__ << this;
 
     d->surface = EGL_NO_SURFACE;
     d->display = EGL_NO_DISPLAY;
@@ -161,6 +164,7 @@ QWinRTWindow::QWinRTWindow(QWindow *window)
 QWinRTWindow::~QWinRTWindow()
 {
     Q_D(QWinRTWindow);
+    qCDebug(lcQpaWindows) << __FUNCTION__ << this;
 
     HRESULT hr;
     hr = QEventDispatcherWinRT::runOnXamlThread([d]() {
@@ -186,6 +190,8 @@ QWinRTWindow::~QWinRTWindow()
 
     if (!d->surface)
         return;
+
+    qCDebug(lcQpaWindows) << __FUNCTION__ << ": Destroying surface";
 
     EGLBoolean value = eglDestroySurface(d->display, d->surface);
     d->surface = EGL_NO_SURFACE;
@@ -214,12 +220,15 @@ bool QWinRTWindow::isExposed() const
 void QWinRTWindow::setGeometry(const QRect &rect)
 {
     Q_D(QWinRTWindow);
+    qCDebug(lcQpaWindows) << __FUNCTION__ << this << rect;
 
     const Qt::WindowFlags windowFlags = window()->flags();
     const Qt::WindowFlags windowType = windowFlags & Qt::WindowType_Mask;
     if (window()->isTopLevel() && (windowType == Qt::Window || windowType == Qt::Dialog)) {
-        QPlatformWindow::setGeometry(windowFlags & Qt::MaximizeUsingFullscreenGeometryHint
-                                     ? d->screen->geometry() : d->screen->availableGeometry());
+        const QRect screenRect = windowFlags & Qt::MaximizeUsingFullscreenGeometryHint
+                                    ? d->screen->geometry() : d->screen->availableGeometry();
+        qCDebug(lcQpaWindows) << __FUNCTION__ << "top-level, overwrite" << screenRect;
+        QPlatformWindow::setGeometry(screenRect);
         QWindowSystemInterface::handleGeometryChange(window(), geometry());
     } else {
         QPlatformWindow::setGeometry(rect);
@@ -243,6 +252,8 @@ void QWinRTWindow::setGeometry(const QRect &rect)
         Q_ASSERT_SUCCEEDED(hr);
         hr = frameworkElement->put_Height(size.height());
         Q_ASSERT_SUCCEEDED(hr);
+        qCDebug(lcQpaWindows) << __FUNCTION__ << "(setGeometry Xaml)" << this
+                             << topLeft << size;
         return S_OK;
     });
     Q_ASSERT_SUCCEEDED(hr);
@@ -251,6 +262,8 @@ void QWinRTWindow::setGeometry(const QRect &rect)
 void QWinRTWindow::setVisible(bool visible)
 {
     Q_D(QWinRTWindow);
+    qCDebug(lcQpaWindows) << __FUNCTION__ << this << visible;
+
     if (!window()->isTopLevel())
         return;
     if (visible) {
@@ -272,6 +285,7 @@ void QWinRTWindow::setWindowTitle(const QString &title)
 void QWinRTWindow::raise()
 {
     Q_D(QWinRTWindow);
+    qCDebug(lcQpaWindows) << __FUNCTION__ << this;
     if (!window()->isTopLevel())
         return;
     d->screen->raise(window());
@@ -280,6 +294,7 @@ void QWinRTWindow::raise()
 void QWinRTWindow::lower()
 {
     Q_D(QWinRTWindow);
+    qCDebug(lcQpaWindows) << __FUNCTION__ << this;
     if (!window()->isTopLevel())
         return;
     d->screen->lower(window());
@@ -299,6 +314,8 @@ qreal QWinRTWindow::devicePixelRatio() const
 void QWinRTWindow::setWindowState(Qt::WindowState state)
 {
     Q_D(QWinRTWindow);
+    qCDebug(lcQpaWindows) << __FUNCTION__ << this << state;
+
     if (d->state == state)
         return;
 

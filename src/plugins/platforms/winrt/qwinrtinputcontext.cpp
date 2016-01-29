@@ -54,6 +54,8 @@ typedef ITypedEventHandler<InputPane*, InputPaneVisibilityEventArgs*> InputPaneV
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.input.methods")
+
 inline QRectF getInputPaneRect(IInputPane *pane, qreal scaleFactor)
 {
     Rect rect;
@@ -78,6 +80,8 @@ inline QRectF getInputPaneRect(IInputPane *pane, qreal scaleFactor)
 QWinRTInputContext::QWinRTInputContext(QWinRTScreen *screen)
     : m_screen(screen)
 {
+    qCDebug(lcQpaInputMethods) << __FUNCTION__ << screen;
+
     IInputPaneStatics *statics;
     if (FAILED(GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_ViewManagement_InputPane).Get(),
                                     &statics))) {
@@ -114,6 +118,7 @@ bool QWinRTInputContext::isInputPanelVisible() const
 
 HRESULT QWinRTInputContext::onShowing(IInputPane *pane, IInputPaneVisibilityEventArgs *)
 {
+    qCDebug(lcQpaInputMethods) << __FUNCTION__ << pane;
     m_isInputPanelVisible = true;
     emitInputPanelVisibleChanged();
     return handleVisibilityChange(pane);
@@ -121,6 +126,7 @@ HRESULT QWinRTInputContext::onShowing(IInputPane *pane, IInputPaneVisibilityEven
 
 HRESULT QWinRTInputContext::onHiding(IInputPane *pane, IInputPaneVisibilityEventArgs *)
 {
+    qCDebug(lcQpaInputMethods) << __FUNCTION__ << pane;
     m_isInputPanelVisible = false;
     emitInputPanelVisibleChanged();
     return handleVisibilityChange(pane);
@@ -128,6 +134,7 @@ HRESULT QWinRTInputContext::onHiding(IInputPane *pane, IInputPaneVisibilityEvent
 
 HRESULT QWinRTInputContext::handleVisibilityChange(IInputPane *pane)
 {
+    qCDebug(lcQpaInputMethods) << __FUNCTION__ << pane;
     const QRectF keyboardRect = getInputPaneRect(pane, m_screen->scaleFactor());
     if (m_keyboardRect != keyboardRect) {
         m_keyboardRect = keyboardRect;
@@ -165,6 +172,8 @@ static HRESULT getInputPane(ComPtr<IInputPane2> *inputPane2)
 
 void QWinRTInputContext::showInputPanel()
 {
+    qCDebug(lcQpaInputMethods) << __FUNCTION__;
+
     QEventDispatcherWinRT::runOnXamlThread([&]() {
         ComPtr<IInputPane2> inputPane;
         HRESULT hr = getInputPane(&inputPane);
@@ -180,6 +189,8 @@ void QWinRTInputContext::showInputPanel()
 
 void QWinRTInputContext::hideInputPanel()
 {
+    qCDebug(lcQpaInputMethods) << __FUNCTION__;
+
     QEventDispatcherWinRT::runOnXamlThread([&]() {
         ComPtr<IInputPane2> inputPane;
         HRESULT hr = getInputPane(&inputPane);
