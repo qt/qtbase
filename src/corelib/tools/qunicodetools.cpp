@@ -685,10 +685,10 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
 Q_CORE_EXPORT void initScripts(const ushort *string, int length, uchar *scripts)
 {
     int sor = 0;
-    int eor = -1;
+    int eor = 0;
     uchar script = QChar::Script_Common;
-    for (int i = 0; i < length; ++i) {
-        eor = i;
+
+    for (int i = 0; i < length; ++i, eor = i) {
         uint ucs4 = string[i];
         if (QChar::isHighSurrogate(ucs4) && i + 1 < length) {
             ushort low = string[i + 1];
@@ -700,60 +700,37 @@ Q_CORE_EXPORT void initScripts(const ushort *string, int length, uchar *scripts)
 
         const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ucs4);
 
-        if (Q_LIKELY(prop->script == script || prop->script <= QChar::Script_Inherited))
+        uchar nscript = prop->script;
+
+        if (Q_LIKELY(nscript == script || nscript <= QChar::Script_Common))
             continue;
+
+        // inherit preceding Common-s
+        if (Q_UNLIKELY(script <= QChar::Script_Common)) {
+            // also covers a case where the base character of Common script followed
+            // by one or more combining marks of non-Inherited, non-Common script
+            script = nscript;
+            continue;
+        }
 
         // Never break between a combining mark (gc= Mc, Mn or Me) and its base character.
         // Thus, a combining mark — whatever its script property value is — should inherit
         // the script property value of its base character.
         static const int test = (FLAG(QChar::Mark_NonSpacing) | FLAG(QChar::Mark_SpacingCombining) | FLAG(QChar::Mark_Enclosing));
-        if (Q_UNLIKELY(FLAG(prop->category) & test)) {
-            // In cases where the base character itself has the Common script property value,
-            // and it is followed by one or more combining marks with a specific script property value,
-            // it may be even better for processing to let the base acquire the script property value
-            // from the first mark. This approach can be generalized by treating all the characters
-            // of a combining character sequence as having the script property value
-            // of the first non-Inherited, non-Common character in the sequence if there is one,
-            // and otherwise treating all the characters as having the Common script property value.
-            if (Q_LIKELY(script > QChar::Script_Common || prop->script <= QChar::Script_Common))
-                continue;
+        if (Q_UNLIKELY(FLAG(prop->category) & test))
+            continue;
 
-            script = QChar::Script(prop->script);
-        }
+        Q_ASSERT(script > QChar::Script_Common);
+        Q_ASSERT(sor < eor);
+        ::memset(scripts + sor, script, (eor - sor) * sizeof(uchar));
+        sor = eor;
 
-#if 0 // ### Disabled due to regressions. The font selection algorithm is not prepared for this change.
-        if (Q_LIKELY(script != QChar::Script_Common)) {
-            // override preceding Common-s
-            while (sor > 0 && scripts[sor - 1] == QChar::Script_Common)
-                --sor;
-        } else {
-            // see if we are inheriting preceding run
-            if (sor > 0)
-                script = scripts[sor - 1];
-        }
-#endif
-
-        while (sor < eor)
-            scripts[sor++] = script;
-
-        script = prop->script;
+        script = nscript;
     }
-    eor = length;
 
-#if 0 // ### Disabled due to regressions. The font selection algorithm is not prepared for this change.
-    if (Q_LIKELY(script != QChar::Script_Common)) {
-        // override preceding Common-s
-        while (sor > 0 && scripts[sor - 1] == QChar::Script_Common)
-            --sor;
-    } else {
-        // see if we are inheriting preceding run
-        if (sor > 0)
-            script = scripts[sor - 1];
-    }
-#endif
-
-    while (sor < eor)
-        scripts[sor++] = script;
+    Q_ASSERT(script >= QChar::Script_Common);
+    Q_ASSERT(eor == length);
+    ::memset(scripts + sor, script, (eor - sor) * sizeof(uchar));
 }
 
 } // namespace QUnicodeTools
