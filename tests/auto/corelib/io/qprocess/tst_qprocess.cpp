@@ -1012,8 +1012,8 @@ public:
 public slots:
     void terminateSlot()
     {
-        writePendingData(); // In cases 3 and 4 we haven't written the data yet.
-        if (killing || (n == 4 && state() != Running)) {
+        writePendingData(); // In cases 3 and 5 we haven't written the data yet.
+        if (killing || (n == 5 && state() != Running)) {
             // Don't try to kill the process before it is running - that can
             // be hazardous, as the actual child process might not be running
             // yet. Also, don't kill it "recursively".
