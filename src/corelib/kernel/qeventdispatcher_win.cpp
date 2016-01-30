@@ -935,9 +935,8 @@ void QEventDispatcherWin32::registerSocketNotifier(QSocketNotifier *notifier)
 void QEventDispatcherWin32::unregisterSocketNotifier(QSocketNotifier *notifier)
 {
     Q_ASSERT(notifier);
-    int sockfd = notifier->socket();
-    int type = notifier->type();
 #ifndef QT_NO_DEBUG
+    int sockfd = notifier->socket();
     if (sockfd < 0) {
         qWarning("QSocketNotifier: Internal error");
         return;
@@ -946,8 +945,16 @@ void QEventDispatcherWin32::unregisterSocketNotifier(QSocketNotifier *notifier)
         return;
     }
 #endif
+    doUnregisterSocketNotifier(notifier);
+}
 
+void QEventDispatcherWin32::doUnregisterSocketNotifier(QSocketNotifier *notifier)
+{
     Q_D(QEventDispatcherWin32);
+    int type = notifier->type();
+    int sockfd = notifier->socket();
+    Q_ASSERT(sockfd >= 0);
+
     QSFDict::iterator it = d->active_fd.find(sockfd);
     if (it != d->active_fd.end()) {
         QSockFd &sd = it.value();
@@ -1203,11 +1210,11 @@ void QEventDispatcherWin32::closingDown()
 
     // clean up any socketnotifiers
     while (!d->sn_read.isEmpty())
-        unregisterSocketNotifier((*(d->sn_read.begin()))->obj);
+        doUnregisterSocketNotifier((*(d->sn_read.begin()))->obj);
     while (!d->sn_write.isEmpty())
-        unregisterSocketNotifier((*(d->sn_write.begin()))->obj);
+        doUnregisterSocketNotifier((*(d->sn_write.begin()))->obj);
     while (!d->sn_except.isEmpty())
-        unregisterSocketNotifier((*(d->sn_except.begin()))->obj);
+        doUnregisterSocketNotifier((*(d->sn_except.begin()))->obj);
     Q_ASSERT(d->active_fd.isEmpty());
 
     // clean up any timers
