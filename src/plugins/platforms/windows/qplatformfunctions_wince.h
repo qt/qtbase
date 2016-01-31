@@ -340,5 +340,32 @@ HWND qt_wince_SetClipboardViewer(
 );
 #define SetClipboardViewer(a) qt_wince_SetClipboardViewer(a)
 
+/* Shell stock icon IDs
+   SHGetStockIconInfo() is not available on CE, but we're using these
+   constants in code that is built on CE as well */
+ enum
+ {
+    SIID_INVALID = -1,
+    SIID_DOCNOASSOC = 0,
+    SIID_FOLDER = 3,
+    SIID_FOLDEROPEN = 4,
+    SIID_DRIVE35 = 6,
+    SIID_DRIVEFIXED = 8,
+    SIID_DRIVENET = 9,
+    SIID_DRIVECD = 11,
+    SIID_HELP = 23,
+    SIID_RECYCLER = 31,
+    SIID_DRIVEDVD = 59,
+    SIID_SHIELD = 77,
+    SIID_WARNING = 78,
+    SIID_INFO = 79,
+    SIID_ERROR = 80
+};
+
+#ifndef SHGSI_LINKOVERLAY
+// Value is wrong, but doesn't matter, not used at runtime
+#define SHGSI_LINKOVERLAY 0
+#endif
+
 #endif // Q_OS_WINCE
 #endif // QPLATFORMFUNCTIONS_WCE_H
