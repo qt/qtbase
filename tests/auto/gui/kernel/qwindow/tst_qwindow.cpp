@@ -94,7 +94,6 @@ private slots:
     void modalWindowPosition();
     void windowsTransientChildren();
     void requestUpdate();
-    void destroyResetsFocusWindow();
     void initTestCase();
     void stateChange_data();
     void stateChange();
@@ -1803,18 +1802,6 @@ void tst_QWindow::requestUpdate()
 
     window.requestUpdate();
     QTRY_COMPARE(window.received(QEvent::UpdateRequest), 2);
-}
-
-void tst_QWindow::destroyResetsFocusWindow()
-{
-    QWindow window;
-    window.showNormal();
-    window.requestActivate();
-    QVERIFY(QTest::qWaitForWindowActive(&window));
-    QCOMPARE(qGuiApp->focusWindow(), &window);
-
-    window.destroy();
-    QVERIFY(!qGuiApp->focusWindow());
 }
 
 #include <tst_qwindow.moc>

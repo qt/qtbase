@@ -1648,6 +1648,15 @@ void QWindow::destroy()
         }
     }
 
+    if (QGuiApplicationPrivate::focus_window == this)
+        QGuiApplicationPrivate::focus_window = parent();
+    if (QGuiApplicationPrivate::currentMouseWindow == this)
+        QGuiApplicationPrivate::currentMouseWindow = parent();
+    if (QGuiApplicationPrivate::currentMousePressWindow == this)
+        QGuiApplicationPrivate::currentMousePressWindow = parent();
+    if (QGuiApplicationPrivate::tabletPressTarget == this)
+        QGuiApplicationPrivate::tabletPressTarget = parent();
+
     bool wasVisible = isVisible();
     d->visibilityOnDestroy = wasVisible && d->platformWindow;
 
@@ -1656,44 +1665,11 @@ void QWindow::destroy()
     QPlatformSurfaceEvent e(QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed);
     QGuiApplication::sendEvent(this, &e);
 
-    QPlatformWindow *platformWindow = d->platformWindow;
-    d->platformWindow = 0;
-
-    // We flush before deleting the platform window so that any pending activation
-    // events for the window will be delivered.
-    QWindowSystemInterface::flushWindowSystemEvents();
-
-    delete platformWindow;
-
-    // Then we flush again so that if the platform plugin sent any deactivation
-    // events as a result of being destroyed, we can pick that up by looking at
-    // QGuiApplicationPrivate::focus_window, which will be up to date.
-    QWindowSystemInterface::flushWindowSystemEvents();
-
+    delete d->platformWindow;
     d->resizeEventPending = true;
     d->receivedExpose = false;
     d->exposed = false;
-
-    // Ensure Qt doesn't refer to a destroyed QWindow if the platform plugin
-    // didn't reset the window activation or other states as part of setVisible
-    // or its destruction. We make a best guess of transferring to the parent
-    // window, as this is what most window managers will do. We go through the
-    // QWindowSystemInterface so that the proper signals and events are sent
-    // as a result of the reset.
-    if (QGuiApplicationPrivate::focus_window == this)
-        QWindowSystemInterface::handleWindowActivated(parent());
-    if (QGuiApplicationPrivate::currentMouseWindow == this)
-        QWindowSystemInterface::handleEnterLeaveEvent(parent(), this);
-
-    // FIXME: Handle these two though QPA like the others. Unfortunately both
-    // processMouseEvent and processTabletEvent in QGuiApplication have conditions
-    // that make sending the event though QPA not feasable right now.
-    if (QGuiApplicationPrivate::currentMousePressWindow == this)
-        QGuiApplicationPrivate::currentMousePressWindow = parent();
-    if (QGuiApplicationPrivate::tabletPressTarget == this)
-        QGuiApplicationPrivate::tabletPressTarget = parent();
-
-    QWindowSystemInterface::flushWindowSystemEvents();
+    d->platformWindow = 0;
 
     if (wasVisible)
         d->maybeQuitOnLastWindowClosed();

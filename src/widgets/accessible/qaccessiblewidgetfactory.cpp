@@ -43,7 +43,6 @@
 #include <qtreeview.h>
 #include <qvariant.h>
 #include <qaccessible.h>
-#include <private/qwidget_p.h>
 
 #ifndef QT_NO_ACCESSIBILITY
 
@@ -54,15 +53,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     QAccessibleInterface *iface = 0;
     if (!object || !object->isWidgetType())
         return iface;
-
-    // QWidget emits destroyed() from its destructor instead of letting the QObject
-    // destructor do it, which means the QWidget is unregistered from the accessibillity
-    // cache. But QWidget destruction also emits enter and leave events, which may end
-    // up here, so we have to ensure that we don't fill the cache with an entry of
-    // a widget that is going away.
     QWidget *widget = static_cast<QWidget*>(object);
-    if (QWidgetPrivate::get(widget)->data.in_destructor)
-        return iface;
 
     if (false) {
 #ifndef QT_NO_LINEEDIT
