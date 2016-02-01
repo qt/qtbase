@@ -206,32 +206,20 @@ void tst_QWidget_window::tst_show_resize_hide_show()
 //    QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
 }
 
-class TestWidget : public QWidget
+class PaintTestWidget : public QWidget
 {
 public:
-    int m_first, m_next;
-    bool paintEventReceived;
+    int paintEventCount;
 
-    void reset(){ m_first = m_next = 0; paintEventReceived = false; }
-    bool event(QEvent *event)
+    explicit PaintTestWidget(QWidget *parent = Q_NULLPTR)
+        : QWidget(parent)
+        , paintEventCount(0)
+    {}
+
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE
     {
-        switch (event->type()) {
-        case QEvent::WindowActivate:
-        case QEvent::WindowDeactivate:
-        case QEvent::Hide:
-        case QEvent::Show:
-            if (m_first)
-                m_next = event->type();
-            else
-                m_first = event->type();
-            break;
-        case QEvent::Paint:
-            paintEventReceived = true;
-            break;
-        default:
-            break;
-        }
-        return QWidget::event(event);
+        ++paintEventCount;
+        QWidget::paintEvent(event);
     }
 };
 
@@ -366,15 +354,15 @@ void tst_QWidget_window::tst_showWithoutActivating()
 
 void tst_QWidget_window::tst_paintEventOnSecondShow()
 {
-    TestWidget w;
+    PaintTestWidget w;
     w.show();
     w.hide();
 
-    w.reset();
+    w.paintEventCount = 0;
     w.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w));
     QApplication::processEvents();
-    QTRY_VERIFY(w.paintEventReceived);
+    QTRY_VERIFY(w.paintEventCount > 0);
 }
 
 #ifndef QT_NO_DRAGANDDROP
