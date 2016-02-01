@@ -34,7 +34,6 @@
 #include "qtestresult_p.h"
 
 #include <QtTest/qtestcase.h>
-#include <QtTest/qtest.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qset.h>
