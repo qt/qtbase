@@ -1004,7 +1004,10 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         ProStringList outputPaths;
         const ProStringList &archs = project->values("QMAKE_XCODE_ARCHS");
         if (!archs.isEmpty()) {
-            for (int i = 0; i < archs.size(); ++i) {
+            const int size = archs.size();
+            inputPaths.reserve(size);
+            outputPaths.reserve(size);
+            for (int i = 0; i < size; ++i) {
                 const ProString &arch = archs.at(i);
                 inputPaths << "$(OBJECT_FILE_DIR_$(CURRENT_VARIANT))/" + arch + "/";
                 outputPaths << "$(LINK_FILE_LIST_$(CURRENT_VARIANT)_" + arch + ")";

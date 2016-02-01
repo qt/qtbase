@@ -81,6 +81,7 @@ XmlOutput::XMLState XmlOutput::state()
 void XmlOutput::updateIndent()
 {
     currentIndent.clear();
+    currentIndent.reserve(currentLevel);
     for (int i = 0; i < currentLevel; ++i)
         currentIndent.append(indent);
 }

@@ -44,6 +44,7 @@ QT_BEGIN_NAMESPACE
 static QString nmakePathList(const QStringList &list)
 {
     QStringList pathList;
+    pathList.reserve(list.size());
     for (const QString &path : list)
         pathList.append(QDir::cleanPath(path));
 
@@ -91,6 +92,7 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                     t << "\nPATH = " << sdk.binPath() << "\n";
                 } else {
                     QStringList sdkStringList;
+                    sdkStringList.reserve(sdkList.size());
                     for (const CeSdkInfo &info : sdkList)
                         sdkStringList << info.name();
 

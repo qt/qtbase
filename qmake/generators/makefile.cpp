@@ -776,6 +776,7 @@ MakefileGenerator::init()
         if(project->isActiveConfig("depend_includepath"))
             incDirs += v["INCLUDEPATH"];
         QList<QMakeLocalFileName> deplist;
+        deplist.reserve(incDirs.size());
         for (ProStringList::Iterator it = incDirs.begin(); it != incDirs.end(); ++it)
             deplist.append(QMakeLocalFileName((*it).toQString()));
         QMakeSourceFileInfo::setDependencyPaths(deplist);
@@ -1010,6 +1011,7 @@ MakefileGenerator::writeProjectMakefile()
     QList<SubTarget*> targets;
     {
         ProStringList builds = project->values("BUILDS");
+        targets.reserve(builds.size());
         for (ProStringList::Iterator it = builds.begin(); it != builds.end(); ++it) {
             SubTarget *st = new SubTarget;
             targets.append(st);
@@ -1450,7 +1452,9 @@ QString
 MakefileGenerator::fixFileVarGlue(const ProKey &var, const QString &before, const QString &glue, const QString &after) const
 {
     ProStringList varList;
-    for (const ProString &val : project->values(var))
+    const auto values = project->values(var);
+    varList.reserve(values.size());
+    for (const ProString &val : values)
         varList << escapeFilePath(Option::fixPathToTargetOS(val.toQString()));
     return valGlue(varList, before, glue, after);
 }
@@ -2803,7 +2807,9 @@ ProStringList
 MakefileGenerator::escapeFilePaths(const ProStringList &paths) const
 {
     ProStringList ret;
-    for (int i = 0; i < paths.size(); ++i)
+    const int size = paths.size();
+    ret.reserve(size);
+    for (int i = 0; i < size; ++i)
         ret.append(escapeFilePath(paths.at(i)));
     return ret;
 }
@@ -2818,7 +2824,9 @@ QStringList
 MakefileGenerator::escapeDependencyPaths(const QStringList &paths) const
 {
     QStringList ret;
-    for(int i = 0; i < paths.size(); ++i)
+    const int size = paths.size();
+    ret.reserve(size);
+    for (int i = 0; i < size; ++i)
         ret.append(escapeDependencyPath(paths.at(i)));
     return ret;
 }
@@ -2827,7 +2835,9 @@ ProStringList
 MakefileGenerator::escapeDependencyPaths(const ProStringList &paths) const
 {
     ProStringList ret;
-    for (int i = 0; i < paths.size(); ++i)
+    const int size = paths.size();
+    ret.reserve(size);
+    for (int i = 0; i < size; ++i)
         ret.append(escapeDependencyPath(paths.at(i).toQString()));
     return ret;
 }

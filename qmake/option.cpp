@@ -391,6 +391,7 @@ Option::init(int argc, char **argv)
     }
     if(argc && argv) {
         QStringList args;
+        args.reserve(argc - 1);
         for (int i = 1; i < argc; i++)
             args << QString::fromLocal8Bit(argv[i]);
 
