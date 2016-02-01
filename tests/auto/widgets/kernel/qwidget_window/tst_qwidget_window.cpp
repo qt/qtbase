@@ -88,6 +88,7 @@ private slots:
 
     void tst_showWithoutActivating();
     void tst_paintEventOnSecondShow();
+    void tst_paintEventOnResize_QTBUG50796();
 
 #ifndef QT_NO_DRAGANDDROP
     void tst_dnd();
@@ -367,6 +368,29 @@ void tst_QWidget_window::tst_paintEventOnSecondShow()
     QVERIFY(QTest::qWaitForWindowExposed(&w));
     QApplication::processEvents();
     QTRY_VERIFY(w.paintEventCount > 0);
+}
+
+void tst_QWidget_window::tst_paintEventOnResize_QTBUG50796()
+{
+    const QRect availableGeo = QGuiApplication::primaryScreen()->availableGeometry();
+
+    QWidget root;
+    root.setGeometry(availableGeo.width()/2 - 100, availableGeo.height()/2 - 100,
+                     200, 200);
+
+    PaintTestWidget *native = new PaintTestWidget(&root);
+    native->winId(); // We're testing native widgets
+    native->setGeometry(10, 10, 50, 50);
+
+    root.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&root));
+    QVERIFY(QTest::qWaitForWindowActive(&root));
+    QVERIFY(native->isVisible());
+
+    native->paintEventCount = 0;
+    native->resize(native->width() + 10, native->height() + 10);
+    QTest::qWait(50); // Wait for paint events
+    QTRY_COMPARE(native->paintEventCount, 1); // Only one paint event must occur
 }
 
 #ifndef QT_NO_DRAGANDDROP
