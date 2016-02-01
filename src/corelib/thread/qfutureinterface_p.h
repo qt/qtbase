@@ -146,18 +146,20 @@ public:
         QAtomicInt m_refCountT;
     };
 
+    // T: accessed from executing thread
+    // Q: accessed from the waiting/querying thread
     RefCount refCount;
     mutable QMutex m_mutex;
     QWaitCondition waitCondition;
     QList<QFutureCallOutInterface *> outputConnections;
-    int m_progressValue;
-    int m_progressMinimum;
-    int m_progressMaximum;
+    int m_progressValue; // TQ
+    int m_progressMinimum; // TQ
+    int m_progressMaximum; // TQ
     QFutureInterfaceBase::State state;
     QElapsedTimer progressTime;
     QWaitCondition pausedWaitCondition;
     QtPrivate::ResultStoreBase m_results;
-    bool manualProgress;
+    bool manualProgress; // only accessed from executing thread
     int m_expectedResultCount;
     QtPrivate::ExceptionStore m_exceptionStore;
     QString m_progressText;
