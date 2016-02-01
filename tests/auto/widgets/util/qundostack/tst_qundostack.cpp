@@ -2969,7 +2969,7 @@ void tst_QUndoStack::commandTextFormat()
     const QString tsFile = QFINDTESTDATA("testdata/qundostack.ts");
     QVERIFY(!tsFile.isEmpty());
     QFile::remove("qundostack.qm"); // Avoid confusion by strays.
-    QVERIFY(!QProcess::execute(binDir + "/lrelease " + tsFile + " -qm qundostack.qm"));
+    QVERIFY(!QProcess::execute(binDir + "/lrelease -silent " + tsFile + " -qm qundostack.qm"));
 
     QTranslator translator;
     QVERIFY(translator.load("qundostack.qm"));

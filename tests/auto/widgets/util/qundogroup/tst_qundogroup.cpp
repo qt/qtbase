@@ -625,7 +625,7 @@ void tst_QUndoGroup::commandTextFormat()
     const QString tsFile = QFINDTESTDATA("testdata/qundogroup.ts");
     QVERIFY(!tsFile.isEmpty());
     QFile::remove("qundogroup.qm"); // Avoid confusion by strays.
-    QVERIFY(!QProcess::execute(binDir + "/lrelease " + tsFile + " -qm qundogroup.qm"));
+    QVERIFY(!QProcess::execute(binDir + "/lrelease -silent " + tsFile + " -qm qundogroup.qm"));
 
     QTranslator translator;
 
