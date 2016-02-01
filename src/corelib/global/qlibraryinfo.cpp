@@ -47,7 +47,7 @@ QT_END_NAMESPACE
 # include "qcoreapplication.h"
 #endif
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
 #  include "private/qcore_mac_p.h"
 #endif
 
@@ -165,7 +165,7 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
     if (QFile::exists(qtconfig))
         return new QSettings(qtconfig, QSettings::IniFormat);
 #else
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
     CFBundleRef bundleRef = CFBundleGetMainBundle();
     if (bundleRef) {
         QCFType<CFURLRef> urlRef = CFBundleCopyResourceURL(bundleRef,
@@ -546,13 +546,13 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 #else
         if (loc == PrefixPath) {
             if (QCoreApplication::instance()) {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
                 CFBundleRef bundleRef = CFBundleGetMainBundle();
                 if (bundleRef) {
                     QCFType<CFURLRef> urlRef = CFBundleCopyBundleURL(bundleRef);
                     if (urlRef) {
                         QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
-#ifdef Q_OS_MACX
+#ifdef Q_OS_OSX
                         QString bundleContentsDir = QString(path) + QLatin1String("/Contents/");
                         if (QDir(bundleContentsDir).exists())
                             return QDir::cleanPath(bundleContentsDir + ret);
