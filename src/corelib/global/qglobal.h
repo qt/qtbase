@@ -771,18 +771,12 @@ Q_DECL_CONSTEXPR static inline bool qFuzzyCompare(float p1, float p2)
     return (qAbs(p1 - p2) * 100000.f <= qMin(qAbs(p1), qAbs(p2)));
 }
 
-/*!
-  \internal
-*/
 Q_DECL_CONSTEXPR static inline bool qFuzzyIsNull(double d) Q_REQUIRED_RESULT Q_DECL_UNUSED;
 Q_DECL_CONSTEXPR static inline bool qFuzzyIsNull(double d)
 {
     return qAbs(d) <= 0.000000000001;
 }
 
-/*!
-  \internal
-*/
 Q_DECL_CONSTEXPR static inline bool qFuzzyIsNull(float f) Q_REQUIRED_RESULT Q_DECL_UNUSED;
 Q_DECL_CONSTEXPR static inline bool qFuzzyIsNull(float f)
 {

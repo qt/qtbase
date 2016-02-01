@@ -4247,6 +4247,24 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
  */
 
 /*!
+ \fn bool qFuzzyIsNull(double d)
+ \relates <QtGlobal>
+ \since 4.4
+ \threadsafe
+
+ Returns true if the absolute value of \a d is within 0.000000000001 of 0.0.
+*/
+
+/*!
+ \fn bool qFuzzyIsNull(float f)
+ \relates <QtGlobal>
+ \since 4.4
+ \threadsafe
+
+ Returns true if the absolute value of \a f is within 0.00001f of 0.0.
+*/
+
+/*!
     \macro QT_REQUIRE_VERSION(int argc, char **argv, const char *version)
     \relates <QtGlobal>
 
