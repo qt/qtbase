@@ -2540,34 +2540,6 @@ static void QOPENGLF_APIENTRY qopenglfSpecialReleaseShaderCompiler()
 
 #endif // !QT_OPENGL_ES_2
 
-// Extensions not standard in any ES version
-
-static GLvoid *QOPENGLF_APIENTRY qopenglfResolveMapBuffer(GLenum target, GLenum access)
-{
-    // It is possible that GL_OES_map_buffer is present, but then having to
-    // differentiate between glUnmapBufferOES and glUnmapBuffer causes extra
-    // headache. QOpenGLBuffer::map() will handle this automatically, while direct
-    // calls are better off with migrating to the standard glMapBufferRange.
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
-    if (ctx->isOpenGLES() && ctx->format().majorVersion() >= 3) {
-        qWarning("QOpenGLFunctions: glMapBuffer is not available in OpenGL ES 3.0 and up. Use glMapBufferRange instead.");
-        return 0;
-    } else {
-        RESOLVE_FUNC(GLvoid *, ResolveOES, MapBuffer)(target, access);
-    }
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetBufferSubData(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr size, GLvoid *data)
-{
-    RESOLVE_FUNC_VOID(ResolveEXT, GetBufferSubData)
-        (target, offset, size, data);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDiscardFramebuffer(GLenum target, GLsizei numAttachments, const GLenum *attachments)
-{
-    RESOLVE_FUNC_VOID(ResolveEXT, DiscardFramebuffer)(target, numAttachments, attachments);
-}
-
 #if !defined(QT_OPENGL_ES_2) && !defined(QT_OPENGL_DYNAMIC)
 // Special translation functions for ES-specific calls on desktop GL
 
@@ -5337,1387 +5309,6 @@ static inline bool isES3(int minor)
     return false;
 }
 
-// Go through the dlsym-based helper for real ES 3, resolve using
-// wglGetProcAddress or similar when on plain OpenGL.
-
-static void QOPENGLF_APIENTRY qopenglfResolveBeginQuery(GLenum target, GLuint id)
-{
-    if (isES3(0))
-        qgles3Helper()->BeginQuery(target, id);
-    else
-        RESOLVE_FUNC_VOID(0, BeginQuery)(target, id);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBeginTransformFeedback(GLenum primitiveMode)
-{
-    if (isES3(0))
-        qgles3Helper()->BeginTransformFeedback(primitiveMode);
-    else
-        RESOLVE_FUNC_VOID(0, BeginTransformFeedback)(primitiveMode);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBindBufferBase(GLenum target, GLuint index, GLuint buffer)
-{
-    if (isES3(0))
-        qgles3Helper()->BindBufferBase(target, index, buffer);
-    else
-        RESOLVE_FUNC_VOID(0, BindBufferBase)(target, index, buffer);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBindBufferRange(GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size)
-{
-    if (isES3(0))
-        qgles3Helper()->BindBufferRange(target, index, buffer, offset, size);
-    else
-        RESOLVE_FUNC_VOID(0, BindBufferRange)(target, index, buffer, offset, size);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBindSampler(GLuint unit, GLuint sampler)
-{
-    if (isES3(0))
-        qgles3Helper()->BindSampler(unit, sampler);
-    else
-        RESOLVE_FUNC_VOID(0, BindSampler)(unit, sampler);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBindTransformFeedback(GLenum target, GLuint id)
-{
-    if (isES3(0))
-        qgles3Helper()->BindTransformFeedback(target, id);
-    else
-        RESOLVE_FUNC_VOID(0, BindTransformFeedback)(target, id);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBindVertexArray(GLuint array)
-{
-    if (isES3(0))
-        qgles3Helper()->BindVertexArray(array);
-    else
-        RESOLVE_FUNC_VOID(0, BindVertexArray)(array);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter)
-{
-    if (isES3(0))
-        qgles3Helper()->BlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
-    else
-        RESOLVE_FUNC_VOID(ResolveEXT | ResolveANGLE | ResolveNV, BlitFramebuffer)
-            (srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveClearBufferfi(GLenum buffer, GLint drawbuffer, GLfloat depth, GLint stencil)
-{
-    if (isES3(0))
-        qgles3Helper()->ClearBufferfi(buffer, drawbuffer, depth, stencil);
-    else
-        RESOLVE_FUNC_VOID(0, ClearBufferfi)(buffer, drawbuffer, depth, stencil);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveClearBufferfv(GLenum buffer, GLint drawbuffer, const GLfloat * value)
-{
-    if (isES3(0))
-        qgles3Helper()->ClearBufferfv(buffer, drawbuffer, value);
-    else
-        RESOLVE_FUNC_VOID(0, ClearBufferfv)(buffer, drawbuffer, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveClearBufferiv(GLenum buffer, GLint drawbuffer, const GLint * value)
-{
-    if (isES3(0))
-        qgles3Helper()->ClearBufferiv(buffer, drawbuffer, value);
-    else
-        RESOLVE_FUNC_VOID(0, ClearBufferiv)(buffer, drawbuffer, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveClearBufferuiv(GLenum buffer, GLint drawbuffer, const GLuint * value)
-{
-    if (isES3(0))
-        qgles3Helper()->ClearBufferuiv(buffer, drawbuffer, value);
-    else
-        RESOLVE_FUNC_VOID(0, ClearBufferuiv)(buffer, drawbuffer, value);
-}
-
-static GLenum QOPENGLF_APIENTRY qopenglfResolveClientWaitSync(GLsync sync, GLbitfield flags, GLuint64 timeout)
-{
-    if (isES3(0))
-        return qgles3Helper()->ClientWaitSync(sync, flags, timeout);
-    else
-        RESOLVE_FUNC(GLenum, 0, ClientWaitSync)(sync, flags, timeout);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveCompressedTexImage3D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const void * data)
-{
-    if (isES3(0))
-        qgles3Helper()->CompressedTexImage3D(target, level, internalformat, width, height, depth, border, imageSize, data);
-    else
-        RESOLVE_FUNC_VOID(0, CompressedTexImage3D)(target, level, internalformat, width, height, depth, border, imageSize, data);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveCompressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const void * data)
-{
-    if (isES3(0))
-        qgles3Helper()->CompressedTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, data);
-    else
-        RESOLVE_FUNC_VOID(0, CompressedTexSubImage3D)(target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, data);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveCopyBufferSubData(GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size)
-{
-    if (isES3(0))
-        qgles3Helper()->CopyBufferSubData(readTarget, writeTarget, readOffset, writeOffset, size);
-    else
-        RESOLVE_FUNC_VOID(0, CopyBufferSubData)(readTarget, writeTarget, readOffset, writeOffset, size);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveCopyTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height)
-{
-    if (isES3(0))
-        qgles3Helper()->CopyTexSubImage3D(target, level, xoffset, yoffset, zoffset, x, y, width, height);
-    else
-        RESOLVE_FUNC_VOID(0, CopyTexSubImage3D)(target, level, xoffset, yoffset, zoffset, x, y, width, height);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDeleteQueries(GLsizei n, const GLuint * ids)
-{
-    if (isES3(0))
-        qgles3Helper()->DeleteQueries(n, ids);
-    else
-        RESOLVE_FUNC_VOID(0, DeleteQueries)(n, ids);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDeleteSamplers(GLsizei count, const GLuint * samplers)
-{
-    if (isES3(0))
-        qgles3Helper()->DeleteSamplers(count, samplers);
-    else
-        RESOLVE_FUNC_VOID(0, DeleteSamplers)(count, samplers);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDeleteSync(GLsync sync)
-{
-    if (isES3(0))
-        qgles3Helper()->DeleteSync(sync);
-    else
-        RESOLVE_FUNC_VOID(0, DeleteSync)(sync);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDeleteTransformFeedbacks(GLsizei n, const GLuint * ids)
-{
-    if (isES3(0))
-        qgles3Helper()->DeleteTransformFeedbacks(n, ids);
-    else
-        RESOLVE_FUNC_VOID(0, DeleteTransformFeedbacks)(n, ids);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDeleteVertexArrays(GLsizei n, const GLuint * arrays)
-{
-    if (isES3(0))
-        qgles3Helper()->DeleteVertexArrays(n, arrays);
-    else
-        RESOLVE_FUNC_VOID(0, DeleteVertexArrays)(n, arrays);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei instancecount)
-{
-    if (isES3(0))
-        qgles3Helper()->DrawArraysInstanced(mode, first, count, instancecount);
-    else
-        RESOLVE_FUNC_VOID(0, DrawArraysInstanced)(mode, first, count, instancecount);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDrawBuffers(GLsizei n, const GLenum * bufs)
-{
-    if (isES3(0))
-        qgles3Helper()->DrawBuffers(n, bufs);
-    else
-        RESOLVE_FUNC_VOID(0, DrawBuffers)(n, bufs);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void * indices, GLsizei instancecount)
-{
-    if (isES3(0))
-        qgles3Helper()->DrawElementsInstanced(mode, count, type, indices, instancecount);
-    else
-        RESOLVE_FUNC_VOID(0, DrawElementsInstanced)(mode, count, type, indices, instancecount);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const void * indices)
-{
-    if (isES3(0))
-        qgles3Helper()->DrawRangeElements(mode, start, end, count, type, indices);
-    else
-        RESOLVE_FUNC_VOID(0, DrawRangeElements)(mode, start, end, count, type, indices);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveEndQuery(GLenum target)
-{
-    if (isES3(0))
-        qgles3Helper()->EndQuery(target);
-    else
-        RESOLVE_FUNC_VOID(0, EndQuery)(target);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveEndTransformFeedback()
-{
-    if (isES3(0))
-        qgles3Helper()->EndTransformFeedback();
-    else
-        RESOLVE_FUNC_VOID(0, EndTransformFeedback)();
-}
-
-static GLsync QOPENGLF_APIENTRY qopenglfResolveFenceSync(GLenum condition, GLbitfield flags)
-{
-    if (isES3(0))
-        return qgles3Helper()->FenceSync(condition, flags);
-    else
-        RESOLVE_FUNC(GLsync, 0, FenceSync)(condition, flags);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveFlushMappedBufferRange(GLenum target, GLintptr offset, GLsizeiptr length)
-{
-    if (isES3(0))
-        qgles3Helper()->FlushMappedBufferRange(target, offset, length);
-    else
-        RESOLVE_FUNC_VOID(0, FlushMappedBufferRange)(target, offset, length);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveFramebufferTextureLayer(GLenum target, GLenum attachment, GLuint texture, GLint level, GLint layer)
-{
-    if (isES3(0))
-        qgles3Helper()->FramebufferTextureLayer(target, attachment, texture, level, layer);
-    else
-        RESOLVE_FUNC_VOID(0, FramebufferTextureLayer)(target, attachment, texture, level, layer);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGenQueries(GLsizei n, GLuint* ids)
-{
-    if (isES3(0))
-        qgles3Helper()->GenQueries(n, ids);
-    else
-        RESOLVE_FUNC_VOID(0, GenQueries)(n, ids);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGenSamplers(GLsizei count, GLuint* samplers)
-{
-    if (isES3(0))
-        qgles3Helper()->GenSamplers(count, samplers);
-    else
-        RESOLVE_FUNC_VOID(0, GenSamplers)(count, samplers);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGenTransformFeedbacks(GLsizei n, GLuint* ids)
-{
-    if (isES3(0))
-        qgles3Helper()->GenTransformFeedbacks(n, ids);
-    else
-        RESOLVE_FUNC_VOID(0, GenTransformFeedbacks)(n, ids);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGenVertexArrays(GLsizei n, GLuint* arrays)
-{
-    if (isES3(0))
-        qgles3Helper()->GenVertexArrays(n, arrays);
-    else
-        RESOLVE_FUNC_VOID(0, GenVertexArrays)(n, arrays);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetActiveUniformBlockName(GLuint program, GLuint uniformBlockIndex, GLsizei bufSize, GLsizei* length, GLchar* uniformBlockName)
-{
-    if (isES3(0))
-        qgles3Helper()->GetActiveUniformBlockName(program, uniformBlockIndex, bufSize, length, uniformBlockName);
-    else
-        RESOLVE_FUNC_VOID(0, GetActiveUniformBlockName)(program, uniformBlockIndex, bufSize, length, uniformBlockName);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetActiveUniformBlockiv(GLuint program, GLuint uniformBlockIndex, GLenum pname, GLint* params)
-{
-    if (isES3(0))
-        qgles3Helper()->GetActiveUniformBlockiv(program, uniformBlockIndex, pname, params);
-    else
-        RESOLVE_FUNC_VOID(0, GetActiveUniformBlockiv)(program, uniformBlockIndex, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetActiveUniformsiv(GLuint program, GLsizei uniformCount, const GLuint * uniformIndices, GLenum pname, GLint* params)
-{
-    if (isES3(0))
-        qgles3Helper()->GetActiveUniformsiv(program, uniformCount, uniformIndices, pname, params);
-    else
-        RESOLVE_FUNC_VOID(0, GetActiveUniformsiv)(program, uniformCount, uniformIndices, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetBufferParameteri64v(GLenum target, GLenum pname, GLint64* params)
-{
-    if (isES3(0))
-        qgles3Helper()->GetBufferParameteri64v(target, pname, params);
-    else
-        RESOLVE_FUNC_VOID(0, GetBufferParameteri64v)(target, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetBufferPointerv(GLenum target, GLenum pname, void ** params)
-{
-    if (isES3(0))
-        qgles3Helper()->GetBufferPointerv(target, pname, params);
-    else
-        RESOLVE_FUNC_VOID(0, GetBufferPointerv)(target, pname, params);
-}
-
-static GLint QOPENGLF_APIENTRY qopenglfResolveGetFragDataLocation(GLuint program, const GLchar * name)
-{
-    if (isES3(0))
-        return qgles3Helper()->GetFragDataLocation(program, name);
-    else
-        RESOLVE_FUNC(GLint, 0, GetFragDataLocation)(program, name);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetInteger64i_v(GLenum target, GLuint index, GLint64* data)
-{
-    if (isES3(0))
-        qgles3Helper()->GetInteger64i_v(target, index, data);
-    else
-        RESOLVE_FUNC_VOID(0, GetInteger64i_v)(target, index, data);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetInteger64v(GLenum pname, GLint64* data)
-{
-    if (isES3(0))
-        qgles3Helper()->GetInteger64v(pname, data);
-    else
-        RESOLVE_FUNC_VOID(0, GetInteger64v)(pname, data);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetIntegeri_v(GLenum target, GLuint index, GLint* data)
-{
-    if (isES3(0))
-        qgles3Helper()->GetIntegeri_v(target, index, data);
-    else
-        RESOLVE_FUNC_VOID(0, GetIntegeri_v)(target, index, data);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetInternalformativ(GLenum target, GLenum internalformat, GLenum pname, GLsizei bufSize, GLint* params)
-{
-    if (isES3(0))
-        qgles3Helper()->GetInternalformativ(target, internalformat, pname, bufSize, params);
-    else
-        RESOLVE_FUNC_VOID(0, GetInternalformativ)(target, internalformat, pname, bufSize, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetProgramBinary(GLuint program, GLsizei bufSize, GLsizei* length, GLenum* binaryFormat, void * binary)
-{
-    if (isES3(0))
-        qgles3Helper()->GetProgramBinary(program, bufSize, length, binaryFormat, binary);
-    else
-        RESOLVE_FUNC_VOID(0, GetProgramBinary)(program, bufSize, length, binaryFormat, binary);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetQueryObjectuiv(GLuint id, GLenum pname, GLuint* params)
-{
-    if (isES3(0))
-        qgles3Helper()->GetQueryObjectuiv(id, pname, params);
-    else
-        RESOLVE_FUNC_VOID(0, GetQueryObjectuiv)(id, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetQueryiv(GLenum target, GLenum pname, GLint* params)
-{
-    if (isES3(0))
-        qgles3Helper()->GetQueryiv(target, pname, params);
-    else
-        RESOLVE_FUNC_VOID(0, GetQueryiv)(target, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetSamplerParameterfv(GLuint sampler, GLenum pname, GLfloat* params)
-{
-    if (isES3(0))
-        qgles3Helper()->GetSamplerParameterfv(sampler, pname, params);
-    else
-        RESOLVE_FUNC_VOID(0, GetSamplerParameterfv)(sampler, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetSamplerParameteriv(GLuint sampler, GLenum pname, GLint* params)
-{
-    if (isES3(0))
-        qgles3Helper()->GetSamplerParameteriv(sampler, pname, params);
-    else
-        RESOLVE_FUNC_VOID(0, GetSamplerParameteriv)(sampler, pname, params);
-}
-
-static const GLubyte * QOPENGLF_APIENTRY qopenglfResolveGetStringi(GLenum name, GLuint index)
-{
-    if (isES3(0))
-        return qgles3Helper()->GetStringi(name, index);
-    else
-        RESOLVE_FUNC(const GLubyte *, 0, GetStringi)(name, index);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetSynciv(GLsync sync, GLenum pname, GLsizei bufSize, GLsizei* length, GLint* values)
-{
-    if (isES3(0))
-        qgles3Helper()->GetSynciv(sync, pname, bufSize, length, values);
-    else
-        RESOLVE_FUNC_VOID(0, GetSynciv)(sync, pname, bufSize, length, values);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetTransformFeedbackVarying(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLsizei* size, GLenum* type, GLchar* name)
-{
-    if (isES3(0))
-        qgles3Helper()->GetTransformFeedbackVarying(program, index, bufSize, length, size, type, name);
-    else
-        RESOLVE_FUNC_VOID(0, GetTransformFeedbackVarying)(program, index, bufSize, length, size, type, name);
-}
-
-static GLuint QOPENGLF_APIENTRY qopenglfResolveGetUniformBlockIndex(GLuint program, const GLchar * uniformBlockName)
-{
-    if (isES3(0))
-        return qgles3Helper()->GetUniformBlockIndex(program, uniformBlockName);
-    else
-        RESOLVE_FUNC(GLuint, 0, GetUniformBlockIndex)(program, uniformBlockName);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetUniformIndices(GLuint program, GLsizei uniformCount, const GLchar *const* uniformNames, GLuint* uniformIndices)
-{
-    if (isES3(0))
-        qgles3Helper()->GetUniformIndices(program, uniformCount, uniformNames, uniformIndices);
-    else
-        RESOLVE_FUNC_VOID(0, GetUniformIndices)(program, uniformCount, uniformNames, uniformIndices);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetUniformuiv(GLuint program, GLint location, GLuint* params)
-{
-    if (isES3(0))
-        qgles3Helper()->GetUniformuiv(program, location, params);
-    else
-        RESOLVE_FUNC_VOID(0, GetUniformuiv)(program, location, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetVertexAttribIiv(GLuint index, GLenum pname, GLint* params)
-{
-    if (isES3(0))
-        qgles3Helper()->GetVertexAttribIiv(index, pname, params);
-    else
-        RESOLVE_FUNC_VOID(0, GetVertexAttribIiv)(index, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetVertexAttribIuiv(GLuint index, GLenum pname, GLuint* params)
-{
-    if (isES3(0))
-        qgles3Helper()->GetVertexAttribIuiv(index, pname, params);
-    else
-        RESOLVE_FUNC_VOID(0, GetVertexAttribIuiv)(index, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveInvalidateFramebuffer(GLenum target, GLsizei numAttachments, const GLenum * attachments)
-{
-    if (isES3(0))
-        qgles3Helper()->InvalidateFramebuffer(target, numAttachments, attachments);
-    else
-        RESOLVE_FUNC_VOID(0, InvalidateFramebuffer)(target, numAttachments, attachments);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveInvalidateSubFramebuffer(GLenum target, GLsizei numAttachments, const GLenum * attachments, GLint x, GLint y, GLsizei width, GLsizei height)
-{
-    if (isES3(0))
-        qgles3Helper()->InvalidateSubFramebuffer(target, numAttachments, attachments, x, y, width, height);
-    else
-        RESOLVE_FUNC_VOID(0, InvalidateSubFramebuffer)(target, numAttachments, attachments, x, y, width, height);
-}
-
-static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsQuery(GLuint id)
-{
-    if (isES3(0))
-        return qgles3Helper()->IsQuery(id);
-    else
-        RESOLVE_FUNC(GLboolean, 0, IsQuery)(id);
-}
-
-static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsSampler(GLuint sampler)
-{
-    if (isES3(0))
-        return qgles3Helper()->IsSampler(sampler);
-    else
-        RESOLVE_FUNC(GLboolean, 0, IsSampler)(sampler);
-}
-
-static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsSync(GLsync sync)
-{
-    if (isES3(0))
-        return qgles3Helper()->IsSync(sync);
-    else
-        RESOLVE_FUNC(GLboolean, 0, IsSync)(sync);
-}
-
-static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsTransformFeedback(GLuint id)
-{
-    if (isES3(0))
-        return qgles3Helper()->IsTransformFeedback(id);
-    else
-        RESOLVE_FUNC(GLboolean, 0, IsTransformFeedback)(id);
-}
-
-static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsVertexArray(GLuint array)
-{
-    if (isES3(0))
-        return qgles3Helper()->IsVertexArray(array);
-    else
-        RESOLVE_FUNC(GLboolean, 0, IsVertexArray)(array);
-}
-
-static void * QOPENGLF_APIENTRY qopenglfResolveMapBufferRange(GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access)
-{
-    if (isES3(0))
-        return qgles3Helper()->MapBufferRange(target, offset, length, access);
-    else
-        RESOLVE_FUNC(void *, 0, MapBufferRange)(target, offset, length, access);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolvePauseTransformFeedback()
-{
-    if (isES3(0))
-        qgles3Helper()->PauseTransformFeedback();
-    else
-        RESOLVE_FUNC_VOID(0, PauseTransformFeedback)();
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramBinary(GLuint program, GLenum binaryFormat, const void * binary, GLsizei length)
-{
-    if (isES3(0))
-        qgles3Helper()->ProgramBinary(program, binaryFormat, binary, length);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramBinary)(program, binaryFormat, binary, length);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramParameteri(GLuint program, GLenum pname, GLint value)
-{
-    if (isES3(0))
-        qgles3Helper()->ProgramParameteri(program, pname, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramParameteri)(program, pname, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveReadBuffer(GLenum src)
-{
-    if (isES3(0))
-        qgles3Helper()->ReadBuffer(src);
-    else
-        RESOLVE_FUNC_VOID(0, ReadBuffer)(src);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveRenderbufferStorageMultisample(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height)
-{
-    if (isES3(0))
-        qgles3Helper()->RenderbufferStorageMultisample(target, samples, internalformat, width, height);
-    else
-        RESOLVE_FUNC_VOID(ResolveEXT | ResolveANGLE | ResolveNV, RenderbufferStorageMultisample)
-            (target, samples, internalformat, width, height);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveResumeTransformFeedback()
-{
-    if (isES3(0))
-        qgles3Helper()->ResumeTransformFeedback();
-    else
-        RESOLVE_FUNC_VOID(0, ResumeTransformFeedback)();
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveSamplerParameterf(GLuint sampler, GLenum pname, GLfloat param)
-{
-    if (isES3(0))
-        qgles3Helper()->SamplerParameterf(sampler, pname, param);
-    else
-        RESOLVE_FUNC_VOID(0, SamplerParameterf)(sampler, pname, param);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveSamplerParameterfv(GLuint sampler, GLenum pname, const GLfloat * param)
-{
-    if (isES3(0))
-        qgles3Helper()->SamplerParameterfv(sampler, pname, param);
-    else
-        RESOLVE_FUNC_VOID(0, SamplerParameterfv)(sampler, pname, param);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveSamplerParameteri(GLuint sampler, GLenum pname, GLint param)
-{
-    if (isES3(0))
-        qgles3Helper()->SamplerParameteri(sampler, pname, param);
-    else
-        RESOLVE_FUNC_VOID(0, SamplerParameteri)(sampler, pname, param);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveSamplerParameteriv(GLuint sampler, GLenum pname, const GLint * param)
-{
-    if (isES3(0))
-        qgles3Helper()->SamplerParameteriv(sampler, pname, param);
-    else
-        RESOLVE_FUNC_VOID(0, SamplerParameteriv)(sampler, pname, param);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveTexImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const void * pixels)
-{
-    if (isES3(0))
-        qgles3Helper()->TexImage3D(target, level, internalformat, width, height, depth, border, format, type, pixels);
-    else
-        RESOLVE_FUNC_VOID(0, TexImage3D)(target, level, internalformat, width, height, depth, border, format, type, pixels);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveTexStorage2D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height)
-{
-    if (isES3(0))
-        qgles3Helper()->TexStorage2D(target, levels, internalformat, width, height);
-    else
-        RESOLVE_FUNC_VOID(0, TexStorage2D)(target, levels, internalformat, width, height);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveTexStorage3D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth)
-{
-    if (isES3(0))
-        qgles3Helper()->TexStorage3D(target, levels, internalformat, width, height, depth);
-    else
-        RESOLVE_FUNC_VOID(0, TexStorage3D)(target, levels, internalformat, width, height, depth);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void * pixels)
-{
-    if (isES3(0))
-        qgles3Helper()->TexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
-    else
-        RESOLVE_FUNC_VOID(0, TexSubImage3D)(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveTransformFeedbackVaryings(GLuint program, GLsizei count, const GLchar *const* varyings, GLenum bufferMode)
-{
-    if (isES3(0))
-        qgles3Helper()->TransformFeedbackVaryings(program, count, varyings, bufferMode);
-    else
-        RESOLVE_FUNC_VOID(0, TransformFeedbackVaryings)(program, count, varyings, bufferMode);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform1ui(GLint location, GLuint v0)
-{
-    if (isES3(0))
-        qgles3Helper()->Uniform1ui(location, v0);
-    else
-        RESOLVE_FUNC_VOID(0, Uniform1ui)(location, v0);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform1uiv(GLint location, GLsizei count, const GLuint * value)
-{
-    if (isES3(0))
-        qgles3Helper()->Uniform1uiv(location, count, value);
-    else
-        RESOLVE_FUNC_VOID(0, Uniform1uiv)(location, count, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform2ui(GLint location, GLuint v0, GLuint v1)
-{
-    if (isES3(0))
-        qgles3Helper()->Uniform2ui(location, v0, v1);
-    else
-        RESOLVE_FUNC_VOID(0, Uniform2ui)(location, v0, v1);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform2uiv(GLint location, GLsizei count, const GLuint * value)
-{
-    if (isES3(0))
-        qgles3Helper()->Uniform2uiv(location, count, value);
-    else
-        RESOLVE_FUNC_VOID(0, Uniform2uiv)(location, count, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform3ui(GLint location, GLuint v0, GLuint v1, GLuint v2)
-{
-    if (isES3(0))
-        qgles3Helper()->Uniform3ui(location, v0, v1, v2);
-    else
-        RESOLVE_FUNC_VOID(0, Uniform3ui)(location, v0, v1, v2);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform3uiv(GLint location, GLsizei count, const GLuint * value)
-{
-    if (isES3(0))
-        qgles3Helper()->Uniform3uiv(location, count, value);
-    else
-        RESOLVE_FUNC_VOID(0, Uniform3uiv)(location, count, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform4ui(GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3)
-{
-    if (isES3(0))
-        qgles3Helper()->Uniform4ui(location, v0, v1, v2, v3);
-    else
-        RESOLVE_FUNC_VOID(0, Uniform4ui)(location, v0, v1, v2, v3);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniform4uiv(GLint location, GLsizei count, const GLuint * value)
-{
-    if (isES3(0))
-        qgles3Helper()->Uniform4uiv(location, count, value);
-    else
-        RESOLVE_FUNC_VOID(0, Uniform4uiv)(location, count, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniformBlockBinding(GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding)
-{
-    if (isES3(0))
-        qgles3Helper()->UniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding);
-    else
-        RESOLVE_FUNC_VOID(0, UniformBlockBinding)(program, uniformBlockIndex, uniformBlockBinding);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniformMatrix2x3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
-{
-    if (isES3(0))
-        qgles3Helper()->UniformMatrix2x3fv(location, count, transpose, value);
-    else
-        RESOLVE_FUNC_VOID(0, UniformMatrix2x3fv)(location, count, transpose, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniformMatrix2x4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
-{
-    if (isES3(0))
-        qgles3Helper()->UniformMatrix2x4fv(location, count, transpose, value);
-    else
-        RESOLVE_FUNC_VOID(0, UniformMatrix2x4fv)(location, count, transpose, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniformMatrix3x2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
-{
-    if (isES3(0))
-        qgles3Helper()->UniformMatrix3x2fv(location, count, transpose, value);
-    else
-        RESOLVE_FUNC_VOID(0, UniformMatrix3x2fv)(location, count, transpose, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniformMatrix3x4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
-{
-    if (isES3(0))
-        qgles3Helper()->UniformMatrix3x4fv(location, count, transpose, value);
-    else
-        RESOLVE_FUNC_VOID(0, UniformMatrix3x4fv)(location, count, transpose, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniformMatrix4x2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
-{
-    if (isES3(0))
-        qgles3Helper()->UniformMatrix4x2fv(location, count, transpose, value);
-    else
-        RESOLVE_FUNC_VOID(0, UniformMatrix4x2fv)(location, count, transpose, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUniformMatrix4x3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
-{
-    if (isES3(0))
-        qgles3Helper()->UniformMatrix4x3fv(location, count, transpose, value);
-    else
-        RESOLVE_FUNC_VOID(0, UniformMatrix4x3fv)(location, count, transpose, value);
-}
-
-static GLboolean QOPENGLF_APIENTRY qopenglfResolveUnmapBuffer(GLenum target)
-{
-    if (isES3(0))
-        return qgles3Helper()->UnmapBuffer(target);
-    else
-        RESOLVE_FUNC(GLboolean, ResolveOES, UnmapBuffer)(target);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribDivisor(GLuint index, GLuint divisor)
-{
-    if (isES3(0))
-        qgles3Helper()->VertexAttribDivisor(index, divisor);
-    else
-        RESOLVE_FUNC_VOID(0, VertexAttribDivisor)(index, divisor);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribI4i(GLuint index, GLint x, GLint y, GLint z, GLint w)
-{
-    if (isES3(0))
-        qgles3Helper()->VertexAttribI4i(index, x, y, z, w);
-    else
-        RESOLVE_FUNC_VOID(0, VertexAttribI4i)(index, x, y, z, w);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribI4iv(GLuint index, const GLint * v)
-{
-    if (isES3(0))
-        qgles3Helper()->VertexAttribI4iv(index, v);
-    else
-        RESOLVE_FUNC_VOID(0, VertexAttribI4iv)(index, v);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribI4ui(GLuint index, GLuint x, GLuint y, GLuint z, GLuint w)
-{
-    if (isES3(0))
-        qgles3Helper()->VertexAttribI4ui(index, x, y, z, w);
-    else
-        RESOLVE_FUNC_VOID(0, VertexAttribI4ui)(index, x, y, z, w);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribI4uiv(GLuint index, const GLuint * v)
-{
-    if (isES3(0))
-        qgles3Helper()->VertexAttribI4uiv(index, v);
-    else
-        RESOLVE_FUNC_VOID(0, VertexAttribI4uiv)(index, v);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribIPointer(GLuint index, GLint size, GLenum type, GLsizei stride, const void * pointer)
-{
-    if (isES3(0))
-        qgles3Helper()->VertexAttribIPointer(index, size, type, stride, pointer);
-    else
-        RESOLVE_FUNC_VOID(0, VertexAttribIPointer)(index, size, type, stride, pointer);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveWaitSync(GLsync sync, GLbitfield flags, GLuint64 timeout)
-{
-    if (isES3(0))
-        qgles3Helper()->WaitSync(sync, flags, timeout);
-    else
-        RESOLVE_FUNC_VOID(0, WaitSync)(sync, flags, timeout);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveActiveShaderProgram(GLuint pipeline, GLuint program)
-{
-    if (isES3(1))
-        qgles3Helper()->ActiveShaderProgram(pipeline, program);
-    else
-        RESOLVE_FUNC_VOID(0, ActiveShaderProgram)(pipeline, program);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBindImageTexture(GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format)
-{
-    if (isES3(1))
-        qgles3Helper()->BindImageTexture(unit, texture, level, layered, layer, access, format);
-    else
-        RESOLVE_FUNC_VOID(0, BindImageTexture)(unit, texture, level, layered, layer, access, format);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBindProgramPipeline(GLuint pipeline)
-{
-    if (isES3(1))
-        qgles3Helper()->BindProgramPipeline(pipeline);
-    else
-        RESOLVE_FUNC_VOID(0, BindProgramPipeline)(pipeline);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBindVertexBuffer(GLuint bindingindex, GLuint buffer, GLintptr offset, GLsizei stride)
-{
-    if (isES3(1))
-        qgles3Helper()->BindVertexBuffer(bindingindex, buffer, offset, stride);
-    else
-        RESOLVE_FUNC_VOID(0, BindVertexBuffer)(bindingindex, buffer, offset, stride);
-}
-
-static GLuint QOPENGLF_APIENTRY qopenglfResolveCreateShaderProgramv(GLenum type, GLsizei count, const GLchar *const* strings)
-{
-    if (isES3(1))
-        return qgles3Helper()->CreateShaderProgramv(type, count, strings);
-    else
-        RESOLVE_FUNC(GLuint, 0, CreateShaderProgramv)(type, count, strings);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDeleteProgramPipelines(GLsizei n, const GLuint * pipelines)
-{
-    if (isES3(1))
-        qgles3Helper()->DeleteProgramPipelines(n, pipelines);
-    else
-        RESOLVE_FUNC_VOID(0, DeleteProgramPipelines)(n, pipelines);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDispatchCompute(GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z)
-{
-    if (isES3(1))
-        qgles3Helper()->DispatchCompute(num_groups_x, num_groups_y, num_groups_z);
-    else
-        RESOLVE_FUNC_VOID(0, DispatchCompute)(num_groups_x, num_groups_y, num_groups_z);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDispatchComputeIndirect(GLintptr indirect)
-{
-    if (isES3(1))
-        qgles3Helper()->DispatchComputeIndirect(indirect);
-    else
-        RESOLVE_FUNC_VOID(0, DispatchComputeIndirect)(indirect);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDrawArraysIndirect(GLenum mode, const void * indirect)
-{
-    if (isES3(1))
-        qgles3Helper()->DrawArraysIndirect(mode, indirect);
-    else
-        RESOLVE_FUNC_VOID(0, DrawArraysIndirect)(mode, indirect);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveDrawElementsIndirect(GLenum mode, GLenum type, const void * indirect)
-{
-    if (isES3(1))
-        qgles3Helper()->DrawElementsIndirect(mode, type, indirect);
-    else
-        RESOLVE_FUNC_VOID(0, DrawElementsIndirect)(mode, type, indirect);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveFramebufferParameteri(GLenum target, GLenum pname, GLint param)
-{
-    if (isES3(1))
-        qgles3Helper()->FramebufferParameteri(target, pname, param);
-    else
-        RESOLVE_FUNC_VOID(0, FramebufferParameteri)(target, pname, param);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGenProgramPipelines(GLsizei n, GLuint* pipelines)
-{
-    if (isES3(1))
-        qgles3Helper()->GenProgramPipelines(n, pipelines);
-    else
-        RESOLVE_FUNC_VOID(0, GenProgramPipelines)(n, pipelines);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetBooleani_v(GLenum target, GLuint index, GLboolean* data)
-{
-    if (isES3(1))
-        qgles3Helper()->GetBooleani_v(target, index, data);
-    else
-        RESOLVE_FUNC_VOID(0, GetBooleani_v)(target, index, data);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetFramebufferParameteriv(GLenum target, GLenum pname, GLint* params)
-{
-    if (isES3(1))
-        qgles3Helper()->GetFramebufferParameteriv(target, pname, params);
-    else
-        RESOLVE_FUNC_VOID(0, GetFramebufferParameteriv)(target, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetMultisamplefv(GLenum pname, GLuint index, GLfloat* val)
-{
-    if (isES3(1))
-        qgles3Helper()->GetMultisamplefv(pname, index, val);
-    else
-        RESOLVE_FUNC_VOID(0, GetMultisamplefv)(pname, index, val);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetProgramInterfaceiv(GLuint program, GLenum programInterface, GLenum pname, GLint* params)
-{
-    if (isES3(1))
-        qgles3Helper()->GetProgramInterfaceiv(program, programInterface, pname, params);
-    else
-        RESOLVE_FUNC_VOID(0, GetProgramInterfaceiv)(program, programInterface, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetProgramPipelineInfoLog(GLuint pipeline, GLsizei bufSize, GLsizei* length, GLchar* infoLog)
-{
-    if (isES3(1))
-        qgles3Helper()->GetProgramPipelineInfoLog(pipeline, bufSize, length, infoLog);
-    else
-        RESOLVE_FUNC_VOID(0, GetProgramPipelineInfoLog)(pipeline, bufSize, length, infoLog);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetProgramPipelineiv(GLuint pipeline, GLenum pname, GLint* params)
-{
-    if (isES3(1))
-        qgles3Helper()->GetProgramPipelineiv(pipeline, pname, params);
-    else
-        RESOLVE_FUNC_VOID(0, GetProgramPipelineiv)(pipeline, pname, params);
-}
-
-static GLuint QOPENGLF_APIENTRY qopenglfResolveGetProgramResourceIndex(GLuint program, GLenum programInterface, const GLchar * name)
-{
-    if (isES3(1))
-        return qgles3Helper()->GetProgramResourceIndex(program, programInterface, name);
-    else
-        RESOLVE_FUNC(GLuint, 0, GetProgramResourceIndex)(program, programInterface, name);
-}
-
-static GLint QOPENGLF_APIENTRY qopenglfResolveGetProgramResourceLocation(GLuint program, GLenum programInterface, const GLchar * name)
-{
-    if (isES3(1))
-        return qgles3Helper()->GetProgramResourceLocation(program, programInterface, name);
-    else
-        RESOLVE_FUNC(GLint, 0, GetProgramResourceLocation)(program, programInterface, name);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetProgramResourceName(GLuint program, GLenum programInterface, GLuint index, GLsizei bufSize, GLsizei* length, GLchar* name)
-{
-    if (isES3(1))
-        qgles3Helper()->GetProgramResourceName(program, programInterface, index, bufSize, length, name);
-    else
-        RESOLVE_FUNC_VOID(0, GetProgramResourceName)(program, programInterface, index, bufSize, length, name);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetProgramResourceiv(GLuint program, GLenum programInterface, GLuint index, GLsizei propCount, const GLenum * props, GLsizei bufSize, GLsizei* length, GLint* params)
-{
-    if (isES3(1))
-        qgles3Helper()->GetProgramResourceiv(program, programInterface, index, propCount, props, bufSize, length, params);
-    else
-        RESOLVE_FUNC_VOID(0, GetProgramResourceiv)(program, programInterface, index, propCount, props, bufSize, length, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetTexLevelParameterfv(GLenum target, GLint level, GLenum pname, GLfloat* params)
-{
-    if (isES3(1))
-        qgles3Helper()->GetTexLevelParameterfv(target, level, pname, params);
-    else
-        RESOLVE_FUNC_VOID(0, GetTexLevelParameterfv)(target, level, pname, params);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint* params)
-{
-    if (isES3(1))
-        qgles3Helper()->GetTexLevelParameteriv(target, level, pname, params);
-    else
-        RESOLVE_FUNC_VOID(0, GetTexLevelParameteriv)(target, level, pname, params);
-}
-
-static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsProgramPipeline(GLuint pipeline)
-{
-    if (isES3(1))
-        return qgles3Helper()->IsProgramPipeline(pipeline);
-    else
-        RESOLVE_FUNC(GLboolean, 0, IsProgramPipeline)(pipeline);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveMemoryBarrier(GLbitfield barriers)
-{
-    if (isES3(1))
-        qgles3Helper()->MemoryBarrierFunc(barriers);
-    else
-        RESOLVE_FUNC_VOID(0, MemoryBarrierFunc)(barriers);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveMemoryBarrierByRegion(GLbitfield barriers)
-{
-    if (isES3(1))
-        qgles3Helper()->MemoryBarrierByRegion(barriers);
-    else
-        RESOLVE_FUNC_VOID(0, MemoryBarrierByRegion)(barriers);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform1f(GLuint program, GLint location, GLfloat v0)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform1f(program, location, v0);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform1f)(program, location, v0);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform1fv(GLuint program, GLint location, GLsizei count, const GLfloat * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform1fv(program, location, count, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform1fv)(program, location, count, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform1i(GLuint program, GLint location, GLint v0)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform1i(program, location, v0);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform1i)(program, location, v0);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform1iv(GLuint program, GLint location, GLsizei count, const GLint * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform1iv(program, location, count, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform1iv)(program, location, count, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform1ui(GLuint program, GLint location, GLuint v0)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform1ui(program, location, v0);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform1ui)(program, location, v0);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform1uiv(GLuint program, GLint location, GLsizei count, const GLuint * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform1uiv(program, location, count, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform1uiv)(program, location, count, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform2f(GLuint program, GLint location, GLfloat v0, GLfloat v1)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform2f(program, location, v0, v1);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform2f)(program, location, v0, v1);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform2fv(GLuint program, GLint location, GLsizei count, const GLfloat * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform2fv(program, location, count, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform2fv)(program, location, count, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform2i(GLuint program, GLint location, GLint v0, GLint v1)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform2i(program, location, v0, v1);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform2i)(program, location, v0, v1);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform2iv(GLuint program, GLint location, GLsizei count, const GLint * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform2iv(program, location, count, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform2iv)(program, location, count, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform2ui(GLuint program, GLint location, GLuint v0, GLuint v1)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform2ui(program, location, v0, v1);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform2ui)(program, location, v0, v1);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform2uiv(GLuint program, GLint location, GLsizei count, const GLuint * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform2uiv(program, location, count, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform2uiv)(program, location, count, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform3f(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform3f(program, location, v0, v1, v2);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform3f)(program, location, v0, v1, v2);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform3fv(GLuint program, GLint location, GLsizei count, const GLfloat * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform3fv(program, location, count, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform3fv)(program, location, count, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform3i(GLuint program, GLint location, GLint v0, GLint v1, GLint v2)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform3i(program, location, v0, v1, v2);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform3i)(program, location, v0, v1, v2);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform3iv(GLuint program, GLint location, GLsizei count, const GLint * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform3iv(program, location, count, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform3iv)(program, location, count, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform3ui(GLuint program, GLint location, GLuint v0, GLuint v1, GLuint v2)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform3ui(program, location, v0, v1, v2);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform3ui)(program, location, v0, v1, v2);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform3uiv(GLuint program, GLint location, GLsizei count, const GLuint * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform3uiv(program, location, count, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform3uiv)(program, location, count, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform4f(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform4f(program, location, v0, v1, v2, v3);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform4f)(program, location, v0, v1, v2, v3);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform4fv(GLuint program, GLint location, GLsizei count, const GLfloat * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform4fv(program, location, count, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform4fv)(program, location, count, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform4i(GLuint program, GLint location, GLint v0, GLint v1, GLint v2, GLint v3)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform4i(program, location, v0, v1, v2, v3);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform4i)(program, location, v0, v1, v2, v3);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform4iv(GLuint program, GLint location, GLsizei count, const GLint * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform4iv(program, location, count, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform4iv)(program, location, count, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform4ui(GLuint program, GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform4ui(program, location, v0, v1, v2, v3);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform4ui)(program, location, v0, v1, v2, v3);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform4uiv(GLuint program, GLint location, GLsizei count, const GLuint * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniform4uiv(program, location, count, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniform4uiv)(program, location, count, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniformMatrix2fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniformMatrix2fv(program, location, count, transpose, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniformMatrix2fv)(program, location, count, transpose, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniformMatrix2x3fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniformMatrix2x3fv(program, location, count, transpose, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniformMatrix2x3fv)(program, location, count, transpose, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniformMatrix2x4fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniformMatrix2x4fv(program, location, count, transpose, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniformMatrix2x4fv)(program, location, count, transpose, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniformMatrix3fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniformMatrix3fv(program, location, count, transpose, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniformMatrix3fv)(program, location, count, transpose, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniformMatrix3x2fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniformMatrix3x2fv(program, location, count, transpose, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniformMatrix3x2fv)(program, location, count, transpose, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniformMatrix3x4fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniformMatrix3x4fv(program, location, count, transpose, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniformMatrix3x4fv)(program, location, count, transpose, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniformMatrix4fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniformMatrix4fv(program, location, count, transpose, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniformMatrix4fv)(program, location, count, transpose, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniformMatrix4x2fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniformMatrix4x2fv(program, location, count, transpose, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniformMatrix4x2fv)(program, location, count, transpose, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveProgramUniformMatrix4x3fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
-{
-    if (isES3(1))
-        qgles3Helper()->ProgramUniformMatrix4x3fv(program, location, count, transpose, value);
-    else
-        RESOLVE_FUNC_VOID(0, ProgramUniformMatrix4x3fv)(program, location, count, transpose, value);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveSampleMaski(GLuint maskNumber, GLbitfield mask)
-{
-    if (isES3(1))
-        qgles3Helper()->SampleMaski(maskNumber, mask);
-    else
-        RESOLVE_FUNC_VOID(0, SampleMaski)(maskNumber, mask);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveTexStorage2DMultisample(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLboolean fixedsamplelocations)
-{
-    if (isES3(1))
-        qgles3Helper()->TexStorage2DMultisample(target, samples, internalformat, width, height, fixedsamplelocations);
-    else
-        RESOLVE_FUNC_VOID(0, TexStorage2DMultisample)(target, samples, internalformat, width, height, fixedsamplelocations);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveUseProgramStages(GLuint pipeline, GLbitfield stages, GLuint program)
-{
-    if (isES3(1))
-        qgles3Helper()->UseProgramStages(pipeline, stages, program);
-    else
-        RESOLVE_FUNC_VOID(0, UseProgramStages)(pipeline, stages, program);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveValidateProgramPipeline(GLuint pipeline)
-{
-    if (isES3(1))
-        qgles3Helper()->ValidateProgramPipeline(pipeline);
-    else
-        RESOLVE_FUNC_VOID(0, ValidateProgramPipeline)(pipeline);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribBinding(GLuint attribindex, GLuint bindingindex)
-{
-    if (isES3(1))
-        qgles3Helper()->VertexAttribBinding(attribindex, bindingindex);
-    else
-        RESOLVE_FUNC_VOID(0, VertexAttribBinding)(attribindex, bindingindex);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribFormat(GLuint attribindex, GLint size, GLenum type, GLboolean normalized, GLuint relativeoffset)
-{
-    if (isES3(1))
-        qgles3Helper()->VertexAttribFormat(attribindex, size, type, normalized, relativeoffset);
-    else
-        RESOLVE_FUNC_VOID(0, VertexAttribFormat)(attribindex, size, type, normalized, relativeoffset);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribIFormat(GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset)
-{
-    if (isES3(1))
-        qgles3Helper()->VertexAttribIFormat(attribindex, size, type, relativeoffset);
-    else
-        RESOLVE_FUNC_VOID(0, VertexAttribIFormat)(attribindex, size, type, relativeoffset);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveVertexBindingDivisor(GLuint bindingindex, GLuint divisor)
-{
-    if (isES3(1))
-        qgles3Helper()->VertexBindingDivisor(bindingindex, divisor);
-    else
-        RESOLVE_FUNC_VOID(0, VertexBindingDivisor)(bindingindex, divisor);
-}
-
 /*!
     Constructs a default function resolver. The resolver cannot be used until
     \l {QOpenGLFunctions::}{initializeOpenGLFunctions()} is called to specify
@@ -6745,189 +5336,375 @@ QOpenGLExtraFunctions::QOpenGLExtraFunctions(QOpenGLContext *context)
 QOpenGLExtraFunctionsPrivate::QOpenGLExtraFunctionsPrivate(QOpenGLContext *ctx)
     : QOpenGLFunctionsPrivate(ctx)
 {
-    ReadBuffer = qopenglfResolveReadBuffer;
-    DrawRangeElements = qopenglfResolveDrawRangeElements;
-    TexImage3D = qopenglfResolveTexImage3D;
-    TexSubImage3D = qopenglfResolveTexSubImage3D;
-    CopyTexSubImage3D = qopenglfResolveCopyTexSubImage3D;
-    CompressedTexImage3D = qopenglfResolveCompressedTexImage3D;
-    CompressedTexSubImage3D = qopenglfResolveCompressedTexSubImage3D;
-    GenQueries = qopenglfResolveGenQueries;
-    DeleteQueries = qopenglfResolveDeleteQueries;
-    IsQuery = qopenglfResolveIsQuery;
-    BeginQuery = qopenglfResolveBeginQuery;
-    EndQuery = qopenglfResolveEndQuery;
-    GetQueryiv = qopenglfResolveGetQueryiv;
-    GetQueryObjectuiv = qopenglfResolveGetQueryObjectuiv;
-    UnmapBuffer = qopenglfResolveUnmapBuffer;
-    GetBufferPointerv = qopenglfResolveGetBufferPointerv;
-    DrawBuffers = qopenglfResolveDrawBuffers;
-    UniformMatrix2x3fv = qopenglfResolveUniformMatrix2x3fv;
-    UniformMatrix3x2fv = qopenglfResolveUniformMatrix3x2fv;
-    UniformMatrix2x4fv = qopenglfResolveUniformMatrix2x4fv;
-    UniformMatrix4x2fv = qopenglfResolveUniformMatrix4x2fv;
-    UniformMatrix3x4fv = qopenglfResolveUniformMatrix3x4fv;
-    UniformMatrix4x3fv = qopenglfResolveUniformMatrix4x3fv;
-    BlitFramebuffer = qopenglfResolveBlitFramebuffer;
-    RenderbufferStorageMultisample = qopenglfResolveRenderbufferStorageMultisample;
-    FramebufferTextureLayer = qopenglfResolveFramebufferTextureLayer;
-    MapBufferRange = qopenglfResolveMapBufferRange;
-    FlushMappedBufferRange = qopenglfResolveFlushMappedBufferRange;
-    BindVertexArray = qopenglfResolveBindVertexArray;
-    DeleteVertexArrays = qopenglfResolveDeleteVertexArrays;
-    GenVertexArrays = qopenglfResolveGenVertexArrays;
-    IsVertexArray = qopenglfResolveIsVertexArray;
-    GetIntegeri_v = qopenglfResolveGetIntegeri_v;
-    BeginTransformFeedback = qopenglfResolveBeginTransformFeedback;
-    EndTransformFeedback = qopenglfResolveEndTransformFeedback;
-    BindBufferRange = qopenglfResolveBindBufferRange;
-    BindBufferBase = qopenglfResolveBindBufferBase;
-    TransformFeedbackVaryings = qopenglfResolveTransformFeedbackVaryings;
-    GetTransformFeedbackVarying = qopenglfResolveGetTransformFeedbackVarying;
-    VertexAttribIPointer = qopenglfResolveVertexAttribIPointer;
-    GetVertexAttribIiv = qopenglfResolveGetVertexAttribIiv;
-    GetVertexAttribIuiv = qopenglfResolveGetVertexAttribIuiv;
-    VertexAttribI4i = qopenglfResolveVertexAttribI4i;
-    VertexAttribI4ui = qopenglfResolveVertexAttribI4ui;
-    VertexAttribI4iv = qopenglfResolveVertexAttribI4iv;
-    VertexAttribI4uiv = qopenglfResolveVertexAttribI4uiv;
-    GetUniformuiv = qopenglfResolveGetUniformuiv;
-    GetFragDataLocation = qopenglfResolveGetFragDataLocation;
-    Uniform1ui = qopenglfResolveUniform1ui;
-    Uniform2ui = qopenglfResolveUniform2ui;
-    Uniform3ui = qopenglfResolveUniform3ui;
-    Uniform4ui = qopenglfResolveUniform4ui;
-    Uniform1uiv = qopenglfResolveUniform1uiv;
-    Uniform2uiv = qopenglfResolveUniform2uiv;
-    Uniform3uiv = qopenglfResolveUniform3uiv;
-    Uniform4uiv = qopenglfResolveUniform4uiv;
-    ClearBufferiv = qopenglfResolveClearBufferiv;
-    ClearBufferuiv = qopenglfResolveClearBufferuiv;
-    ClearBufferfv = qopenglfResolveClearBufferfv;
-    ClearBufferfi = qopenglfResolveClearBufferfi;
-    GetStringi = qopenglfResolveGetStringi;
-    CopyBufferSubData = qopenglfResolveCopyBufferSubData;
-    GetUniformIndices = qopenglfResolveGetUniformIndices;
-    GetActiveUniformsiv = qopenglfResolveGetActiveUniformsiv;
-    GetUniformBlockIndex = qopenglfResolveGetUniformBlockIndex;
-    GetActiveUniformBlockiv = qopenglfResolveGetActiveUniformBlockiv;
-    GetActiveUniformBlockName = qopenglfResolveGetActiveUniformBlockName;
-    UniformBlockBinding = qopenglfResolveUniformBlockBinding;
-    DrawArraysInstanced = qopenglfResolveDrawArraysInstanced;
-    DrawElementsInstanced = qopenglfResolveDrawElementsInstanced;
-    FenceSync = qopenglfResolveFenceSync;
-    IsSync = qopenglfResolveIsSync;
-    DeleteSync = qopenglfResolveDeleteSync;
-    ClientWaitSync = qopenglfResolveClientWaitSync;
-    WaitSync = qopenglfResolveWaitSync;
-    GetInteger64v = qopenglfResolveGetInteger64v;
-    GetSynciv = qopenglfResolveGetSynciv;
-    GetInteger64i_v = qopenglfResolveGetInteger64i_v;
-    GetBufferParameteri64v = qopenglfResolveGetBufferParameteri64v;
-    GenSamplers = qopenglfResolveGenSamplers;
-    DeleteSamplers = qopenglfResolveDeleteSamplers;
-    IsSampler = qopenglfResolveIsSampler;
-    BindSampler = qopenglfResolveBindSampler;
-    SamplerParameteri = qopenglfResolveSamplerParameteri;
-    SamplerParameteriv = qopenglfResolveSamplerParameteriv;
-    SamplerParameterf = qopenglfResolveSamplerParameterf;
-    SamplerParameterfv = qopenglfResolveSamplerParameterfv;
-    GetSamplerParameteriv = qopenglfResolveGetSamplerParameteriv;
-    GetSamplerParameterfv = qopenglfResolveGetSamplerParameterfv;
-    VertexAttribDivisor = qopenglfResolveVertexAttribDivisor;
-    BindTransformFeedback = qopenglfResolveBindTransformFeedback;
-    DeleteTransformFeedbacks = qopenglfResolveDeleteTransformFeedbacks;
-    GenTransformFeedbacks = qopenglfResolveGenTransformFeedbacks;
-    IsTransformFeedback = qopenglfResolveIsTransformFeedback;
-    PauseTransformFeedback = qopenglfResolvePauseTransformFeedback;
-    ResumeTransformFeedback = qopenglfResolveResumeTransformFeedback;
-    GetProgramBinary = qopenglfResolveGetProgramBinary;
-    ProgramBinary = qopenglfResolveProgramBinary;
-    ProgramParameteri = qopenglfResolveProgramParameteri;
-    InvalidateFramebuffer = qopenglfResolveInvalidateFramebuffer;
-    InvalidateSubFramebuffer = qopenglfResolveInvalidateSubFramebuffer;
-    TexStorage2D = qopenglfResolveTexStorage2D;
-    TexStorage3D = qopenglfResolveTexStorage3D;
-    GetInternalformativ = qopenglfResolveGetInternalformativ;
+    QOpenGLContext *context = QOpenGLContext::currentContext();
 
-    DispatchCompute = qopenglfResolveDispatchCompute;
-    DispatchComputeIndirect = qopenglfResolveDispatchComputeIndirect;
-    DrawArraysIndirect = qopenglfResolveDrawArraysIndirect;
-    DrawElementsIndirect = qopenglfResolveDrawElementsIndirect;
-    FramebufferParameteri = qopenglfResolveFramebufferParameteri;
-    GetFramebufferParameteriv = qopenglfResolveGetFramebufferParameteriv;
-    GetProgramInterfaceiv = qopenglfResolveGetProgramInterfaceiv;
-    GetProgramResourceIndex = qopenglfResolveGetProgramResourceIndex;
-    GetProgramResourceName = qopenglfResolveGetProgramResourceName;
-    GetProgramResourceiv = qopenglfResolveGetProgramResourceiv;
-    GetProgramResourceLocation = qopenglfResolveGetProgramResourceLocation;
-    UseProgramStages = qopenglfResolveUseProgramStages;
-    ActiveShaderProgram = qopenglfResolveActiveShaderProgram;
-    CreateShaderProgramv = qopenglfResolveCreateShaderProgramv;
-    BindProgramPipeline = qopenglfResolveBindProgramPipeline;
-    DeleteProgramPipelines = qopenglfResolveDeleteProgramPipelines;
-    GenProgramPipelines = qopenglfResolveGenProgramPipelines;
-    IsProgramPipeline = qopenglfResolveIsProgramPipeline;
-    GetProgramPipelineiv = qopenglfResolveGetProgramPipelineiv;
-    ProgramUniform1i = qopenglfResolveProgramUniform1i;
-    ProgramUniform2i = qopenglfResolveProgramUniform2i;
-    ProgramUniform3i = qopenglfResolveProgramUniform3i;
-    ProgramUniform4i = qopenglfResolveProgramUniform4i;
-    ProgramUniform1ui = qopenglfResolveProgramUniform1ui;
-    ProgramUniform2ui = qopenglfResolveProgramUniform2ui;
-    ProgramUniform3ui = qopenglfResolveProgramUniform3ui;
-    ProgramUniform4ui = qopenglfResolveProgramUniform4ui;
-    ProgramUniform1f = qopenglfResolveProgramUniform1f;
-    ProgramUniform2f = qopenglfResolveProgramUniform2f;
-    ProgramUniform3f = qopenglfResolveProgramUniform3f;
-    ProgramUniform4f = qopenglfResolveProgramUniform4f;
-    ProgramUniform1iv = qopenglfResolveProgramUniform1iv;
-    ProgramUniform2iv = qopenglfResolveProgramUniform2iv;
-    ProgramUniform3iv = qopenglfResolveProgramUniform3iv;
-    ProgramUniform4iv = qopenglfResolveProgramUniform4iv;
-    ProgramUniform1uiv = qopenglfResolveProgramUniform1uiv;
-    ProgramUniform2uiv = qopenglfResolveProgramUniform2uiv;
-    ProgramUniform3uiv = qopenglfResolveProgramUniform3uiv;
-    ProgramUniform4uiv = qopenglfResolveProgramUniform4uiv;
-    ProgramUniform1fv = qopenglfResolveProgramUniform1fv;
-    ProgramUniform2fv = qopenglfResolveProgramUniform2fv;
-    ProgramUniform3fv = qopenglfResolveProgramUniform3fv;
-    ProgramUniform4fv = qopenglfResolveProgramUniform4fv;
-    ProgramUniformMatrix2fv = qopenglfResolveProgramUniformMatrix2fv;
-    ProgramUniformMatrix3fv = qopenglfResolveProgramUniformMatrix3fv;
-    ProgramUniformMatrix4fv = qopenglfResolveProgramUniformMatrix4fv;
-    ProgramUniformMatrix2x3fv = qopenglfResolveProgramUniformMatrix2x3fv;
-    ProgramUniformMatrix3x2fv = qopenglfResolveProgramUniformMatrix3x2fv;
-    ProgramUniformMatrix2x4fv = qopenglfResolveProgramUniformMatrix2x4fv;
-    ProgramUniformMatrix4x2fv = qopenglfResolveProgramUniformMatrix4x2fv;
-    ProgramUniformMatrix3x4fv = qopenglfResolveProgramUniformMatrix3x4fv;
-    ProgramUniformMatrix4x3fv = qopenglfResolveProgramUniformMatrix4x3fv;
-    ValidateProgramPipeline = qopenglfResolveValidateProgramPipeline;
-    GetProgramPipelineInfoLog = qopenglfResolveGetProgramPipelineInfoLog;
-    BindImageTexture = qopenglfResolveBindImageTexture;
-    GetBooleani_v = qopenglfResolveGetBooleani_v;
-    MemoryBarrierFunc = qopenglfResolveMemoryBarrier;
-    MemoryBarrierByRegion = qopenglfResolveMemoryBarrierByRegion;
-    TexStorage2DMultisample = qopenglfResolveTexStorage2DMultisample;
-    GetMultisamplefv = qopenglfResolveGetMultisamplefv;
-    SampleMaski = qopenglfResolveSampleMaski;
-    GetTexLevelParameteriv = qopenglfResolveGetTexLevelParameteriv;
-    GetTexLevelParameterfv = qopenglfResolveGetTexLevelParameterfv;
-    BindVertexBuffer = qopenglfResolveBindVertexBuffer;
-    VertexAttribFormat = qopenglfResolveVertexAttribFormat;
-    VertexAttribIFormat = qopenglfResolveVertexAttribIFormat;
-    VertexAttribBinding = qopenglfResolveVertexAttribBinding;
-    VertexBindingDivisor = qopenglfResolveVertexBindingDivisor;
+    QOpenGLES3Helper *gl3helper = 0;
+
+    if (isES3(0)) {
+        gl3helper = qgles3Helper();
+
+        ReadBuffer = gl3helper->ReadBuffer;
+        DrawRangeElements = gl3helper->DrawRangeElements;
+        TexImage3D = gl3helper->TexImage3D;
+        TexSubImage3D = gl3helper->TexSubImage3D;
+        CopyTexSubImage3D = gl3helper->CopyTexSubImage3D;
+        CompressedTexImage3D = gl3helper->CompressedTexImage3D;
+        CompressedTexSubImage3D = gl3helper->CompressedTexSubImage3D;
+        GenQueries = gl3helper->GenQueries;
+        DeleteQueries = gl3helper->DeleteQueries;
+        IsQuery = gl3helper->IsQuery;
+        BeginQuery = gl3helper->BeginQuery;
+        EndQuery = gl3helper->EndQuery;
+        GetQueryiv = gl3helper->GetQueryiv;
+        GetQueryObjectuiv = gl3helper->GetQueryObjectuiv;
+        UnmapBuffer = gl3helper->UnmapBuffer;
+        GetBufferPointerv = gl3helper->GetBufferPointerv;
+        DrawBuffers = gl3helper->DrawBuffers;
+        UniformMatrix2x3fv = gl3helper->UniformMatrix2x3fv;
+        UniformMatrix3x2fv = gl3helper->UniformMatrix3x2fv;
+        UniformMatrix2x4fv = gl3helper->UniformMatrix2x4fv;
+        UniformMatrix4x2fv = gl3helper->UniformMatrix4x2fv;
+        UniformMatrix3x4fv = gl3helper->UniformMatrix3x4fv;
+        UniformMatrix4x3fv = gl3helper->UniformMatrix4x3fv;
+        BlitFramebuffer = gl3helper->BlitFramebuffer;
+        RenderbufferStorageMultisample = gl3helper->RenderbufferStorageMultisample;
+        FramebufferTextureLayer = gl3helper->FramebufferTextureLayer;
+        MapBufferRange = gl3helper->MapBufferRange;
+        FlushMappedBufferRange = gl3helper->FlushMappedBufferRange;
+        BindVertexArray = gl3helper->BindVertexArray;
+        DeleteVertexArrays = gl3helper->DeleteVertexArrays;
+        GenVertexArrays = gl3helper->GenVertexArrays;
+        IsVertexArray = gl3helper->IsVertexArray;
+        GetIntegeri_v = gl3helper->GetIntegeri_v;
+        BeginTransformFeedback = gl3helper->BeginTransformFeedback;
+        EndTransformFeedback = gl3helper->EndTransformFeedback;
+        BindBufferRange = gl3helper->BindBufferRange;
+        BindBufferBase = gl3helper->BindBufferBase;
+        TransformFeedbackVaryings = gl3helper->TransformFeedbackVaryings;
+        GetTransformFeedbackVarying = gl3helper->GetTransformFeedbackVarying;
+        VertexAttribIPointer = gl3helper->VertexAttribIPointer;
+        GetVertexAttribIiv = gl3helper->GetVertexAttribIiv;
+        GetVertexAttribIuiv = gl3helper->GetVertexAttribIuiv;
+        VertexAttribI4i = gl3helper->VertexAttribI4i;
+        VertexAttribI4ui = gl3helper->VertexAttribI4ui;
+        VertexAttribI4iv = gl3helper->VertexAttribI4iv;
+        VertexAttribI4uiv = gl3helper->VertexAttribI4uiv;
+        GetUniformuiv = gl3helper->GetUniformuiv;
+        GetFragDataLocation = gl3helper->GetFragDataLocation;
+        Uniform1ui = gl3helper->Uniform1ui;
+        Uniform2ui = gl3helper->Uniform2ui;
+        Uniform3ui = gl3helper->Uniform3ui;
+        Uniform4ui = gl3helper->Uniform4ui;
+        Uniform1uiv = gl3helper->Uniform1uiv;
+        Uniform2uiv = gl3helper->Uniform2uiv;
+        Uniform3uiv = gl3helper->Uniform3uiv;
+        Uniform4uiv = gl3helper->Uniform4uiv;
+        ClearBufferiv = gl3helper->ClearBufferiv;
+        ClearBufferuiv = gl3helper->ClearBufferuiv;
+        ClearBufferfv = gl3helper->ClearBufferfv;
+        ClearBufferfi = gl3helper->ClearBufferfi;
+        GetStringi = gl3helper->GetStringi;
+        CopyBufferSubData = gl3helper->CopyBufferSubData;
+        GetUniformIndices = gl3helper->GetUniformIndices;
+        GetActiveUniformsiv = gl3helper->GetActiveUniformsiv;
+        GetUniformBlockIndex = gl3helper->GetUniformBlockIndex;
+        GetActiveUniformBlockiv = gl3helper->GetActiveUniformBlockiv;
+        GetActiveUniformBlockName = gl3helper->GetActiveUniformBlockName;
+        UniformBlockBinding = gl3helper->UniformBlockBinding;
+        DrawArraysInstanced = gl3helper->DrawArraysInstanced;
+        DrawElementsInstanced = gl3helper->DrawElementsInstanced;
+        FenceSync = gl3helper->FenceSync;
+        IsSync = gl3helper->IsSync;
+        DeleteSync = gl3helper->DeleteSync;
+        ClientWaitSync = gl3helper->ClientWaitSync;
+        WaitSync = gl3helper->WaitSync;
+        GetInteger64v = gl3helper->GetInteger64v;
+        GetSynciv = gl3helper->GetSynciv;
+        GetInteger64i_v = gl3helper->GetInteger64i_v;
+        GetBufferParameteri64v = gl3helper->GetBufferParameteri64v;
+        GenSamplers = gl3helper->GenSamplers;
+        DeleteSamplers = gl3helper->DeleteSamplers;
+        IsSampler = gl3helper->IsSampler;
+        BindSampler = gl3helper->BindSampler;
+        SamplerParameteri = gl3helper->SamplerParameteri;
+        SamplerParameteriv = gl3helper->SamplerParameteriv;
+        SamplerParameterf = gl3helper->SamplerParameterf;
+        SamplerParameterfv = gl3helper->SamplerParameterfv;
+        GetSamplerParameteriv = gl3helper->GetSamplerParameteriv;
+        GetSamplerParameterfv = gl3helper->GetSamplerParameterfv;
+        VertexAttribDivisor = gl3helper->VertexAttribDivisor;
+        BindTransformFeedback = gl3helper->BindTransformFeedback;
+        DeleteTransformFeedbacks = gl3helper->DeleteTransformFeedbacks;
+        GenTransformFeedbacks = gl3helper->GenTransformFeedbacks;
+        IsTransformFeedback = gl3helper->IsTransformFeedback;
+        PauseTransformFeedback = gl3helper->PauseTransformFeedback;
+        ResumeTransformFeedback = gl3helper->ResumeTransformFeedback;
+        GetProgramBinary = gl3helper->GetProgramBinary;
+        ProgramBinary = gl3helper->ProgramBinary;
+        ProgramParameteri = gl3helper->ProgramParameteri;
+        InvalidateFramebuffer = gl3helper->InvalidateFramebuffer;
+        InvalidateSubFramebuffer = gl3helper->InvalidateSubFramebuffer;
+        TexStorage2D = gl3helper->TexStorage2D;
+        TexStorage3D = gl3helper->TexStorage3D;
+        GetInternalformativ = gl3helper->GetInternalformativ;
+    } else {
+        ReadBuffer = RESOLVE(ReadBuffer, 0);
+        DrawRangeElements = RESOLVE(DrawRangeElements, 0);
+        TexImage3D = RESOLVE(TexImage3D, 0);
+        TexSubImage3D = RESOLVE(TexSubImage3D, 0);
+        CopyTexSubImage3D = RESOLVE(CopyTexSubImage3D, 0);
+        CompressedTexImage3D = RESOLVE(CompressedTexImage3D, 0);
+        CompressedTexSubImage3D = RESOLVE(CompressedTexSubImage3D, 0);
+        GenQueries = RESOLVE(GenQueries, 0);
+        DeleteQueries = RESOLVE(DeleteQueries, 0);
+        IsQuery = RESOLVE(IsQuery, 0);
+        BeginQuery = RESOLVE(BeginQuery, 0);
+        EndQuery = RESOLVE(EndQuery, 0);
+        GetQueryiv = RESOLVE(GetQueryiv, 0);
+        GetQueryObjectuiv = RESOLVE(GetQueryObjectuiv, 0);
+        UnmapBuffer = RESOLVE(UnmapBuffer, ResolveOES);
+        GetBufferPointerv = RESOLVE(GetBufferPointerv, 0);
+        DrawBuffers = RESOLVE(DrawBuffers, 0);
+        UniformMatrix2x3fv = RESOLVE(UniformMatrix2x3fv, 0);
+        UniformMatrix3x2fv = RESOLVE(UniformMatrix3x2fv, 0);
+        UniformMatrix2x4fv = RESOLVE(UniformMatrix2x4fv, 0);
+        UniformMatrix4x2fv = RESOLVE(UniformMatrix4x2fv, 0);
+        UniformMatrix3x4fv = RESOLVE(UniformMatrix3x4fv, 0);
+        UniformMatrix4x3fv = RESOLVE(UniformMatrix4x3fv, 0);
+        BlitFramebuffer = RESOLVE(BlitFramebuffer, ResolveEXT | ResolveANGLE | ResolveNV);
+        RenderbufferStorageMultisample = RESOLVE(RenderbufferStorageMultisample, ResolveEXT | ResolveANGLE | ResolveNV);
+        FramebufferTextureLayer = RESOLVE(FramebufferTextureLayer, 0);
+        MapBufferRange = RESOLVE(MapBufferRange, 0);
+        FlushMappedBufferRange = RESOLVE(FlushMappedBufferRange, 0);
+        BindVertexArray = RESOLVE(BindVertexArray, 0);
+        DeleteVertexArrays = RESOLVE(DeleteVertexArrays, 0);
+        GenVertexArrays = RESOLVE(GenVertexArrays, 0);
+        IsVertexArray = RESOLVE(IsVertexArray, 0);
+        GetIntegeri_v = RESOLVE(GetIntegeri_v, 0);
+        BeginTransformFeedback = RESOLVE(BeginTransformFeedback, 0);
+        EndTransformFeedback = RESOLVE(EndTransformFeedback, 0);
+        BindBufferRange = RESOLVE(BindBufferRange, 0);
+        BindBufferBase = RESOLVE(BindBufferBase, 0);
+        TransformFeedbackVaryings = RESOLVE(TransformFeedbackVaryings, 0);
+        GetTransformFeedbackVarying = RESOLVE(GetTransformFeedbackVarying, 0);
+        VertexAttribIPointer = RESOLVE(VertexAttribIPointer, 0);
+        GetVertexAttribIiv = RESOLVE(GetVertexAttribIiv, 0);
+        GetVertexAttribIuiv = RESOLVE(GetVertexAttribIuiv, 0);
+        VertexAttribI4i = RESOLVE(VertexAttribI4i, 0);
+        VertexAttribI4ui = RESOLVE(VertexAttribI4ui, 0);
+        VertexAttribI4iv = RESOLVE(VertexAttribI4iv, 0);
+        VertexAttribI4uiv = RESOLVE(VertexAttribI4uiv, 0);
+        GetUniformuiv = RESOLVE(GetUniformuiv, 0);
+        GetFragDataLocation = RESOLVE(GetFragDataLocation, 0);
+        Uniform1ui = RESOLVE(Uniform1ui, 0);
+        Uniform2ui = RESOLVE(Uniform2ui, 0);
+        Uniform3ui = RESOLVE(Uniform3ui, 0);
+        Uniform4ui = RESOLVE(Uniform4ui, 0);
+        Uniform1uiv = RESOLVE(Uniform1uiv, 0);
+        Uniform2uiv = RESOLVE(Uniform2uiv, 0);
+        Uniform3uiv = RESOLVE(Uniform3uiv, 0);
+        Uniform4uiv = RESOLVE(Uniform4uiv, 0);
+        ClearBufferiv = RESOLVE(ClearBufferiv, 0);
+        ClearBufferuiv = RESOLVE(ClearBufferuiv, 0);
+        ClearBufferfv = RESOLVE(ClearBufferfv, 0);
+        ClearBufferfi = RESOLVE(ClearBufferfi, 0);
+        GetStringi = RESOLVE(GetStringi, 0);
+        CopyBufferSubData = RESOLVE(CopyBufferSubData, 0);
+        GetUniformIndices = RESOLVE(GetUniformIndices, 0);
+        GetActiveUniformsiv = RESOLVE(GetActiveUniformsiv, 0);
+        GetUniformBlockIndex = RESOLVE(GetUniformBlockIndex, 0);
+        GetActiveUniformBlockiv = RESOLVE(GetActiveUniformBlockiv, 0);
+        GetActiveUniformBlockName = RESOLVE(GetActiveUniformBlockName, 0);
+        UniformBlockBinding = RESOLVE(UniformBlockBinding, 0);
+        DrawArraysInstanced = RESOLVE(DrawArraysInstanced, 0);
+        DrawElementsInstanced = RESOLVE(DrawElementsInstanced, 0);
+        FenceSync = RESOLVE(FenceSync, 0);
+        IsSync = RESOLVE(IsSync, 0);
+        DeleteSync = RESOLVE(DeleteSync, 0);
+        ClientWaitSync = RESOLVE(ClientWaitSync, 0);
+        WaitSync = RESOLVE(WaitSync, 0);
+        GetInteger64v = RESOLVE(GetInteger64v, 0);
+        GetSynciv = RESOLVE(GetSynciv, 0);
+        GetInteger64i_v = RESOLVE(GetInteger64i_v, 0);
+        GetBufferParameteri64v = RESOLVE(GetBufferParameteri64v, 0);
+        GenSamplers = RESOLVE(GenSamplers, 0);
+        DeleteSamplers = RESOLVE(DeleteSamplers, 0);
+        IsSampler = RESOLVE(IsSampler, 0);
+        BindSampler = RESOLVE(BindSampler, 0);
+        SamplerParameteri = RESOLVE(SamplerParameteri, 0);
+        SamplerParameteriv = RESOLVE(SamplerParameteriv, 0);
+        SamplerParameterf = RESOLVE(SamplerParameterf, 0);
+        SamplerParameterfv = RESOLVE(SamplerParameterfv, 0);
+        GetSamplerParameteriv = RESOLVE(GetSamplerParameteriv, 0);
+        GetSamplerParameterfv = RESOLVE(GetSamplerParameterfv, 0);
+        VertexAttribDivisor = RESOLVE(VertexAttribDivisor, 0);
+        BindTransformFeedback = RESOLVE(BindTransformFeedback, 0);
+        DeleteTransformFeedbacks = RESOLVE(DeleteTransformFeedbacks, 0);
+        GenTransformFeedbacks = RESOLVE(GenTransformFeedbacks, 0);
+        IsTransformFeedback = RESOLVE(IsTransformFeedback, 0);
+        PauseTransformFeedback = RESOLVE(PauseTransformFeedback, 0);
+        ResumeTransformFeedback = RESOLVE(ResumeTransformFeedback, 0);
+        GetProgramBinary = RESOLVE(GetProgramBinary, 0);
+        ProgramBinary = RESOLVE(ProgramBinary, 0);
+        ProgramParameteri = RESOLVE(ProgramParameteri, 0);
+        InvalidateFramebuffer = RESOLVE(InvalidateFramebuffer, 0);
+        InvalidateSubFramebuffer = RESOLVE(InvalidateSubFramebuffer, 0);
+        TexStorage2D = RESOLVE(TexStorage2D, 0);
+        TexStorage3D = RESOLVE(TexStorage3D, 0);
+        GetInternalformativ = RESOLVE(GetInternalformativ, 0);
+    }
+
+    if (gl3helper && isES3(1)) {
+        DispatchCompute = gl3helper->DispatchCompute;
+        DispatchComputeIndirect = gl3helper->DispatchComputeIndirect;
+        DrawArraysIndirect = gl3helper->DrawArraysIndirect;
+        DrawElementsIndirect = gl3helper->DrawElementsIndirect;
+        FramebufferParameteri = gl3helper->FramebufferParameteri;
+        GetFramebufferParameteriv = gl3helper->GetFramebufferParameteriv;
+        GetProgramInterfaceiv = gl3helper->GetProgramInterfaceiv;
+        GetProgramResourceIndex = gl3helper->GetProgramResourceIndex;
+        GetProgramResourceName = gl3helper->GetProgramResourceName;
+        GetProgramResourceiv = gl3helper->GetProgramResourceiv;
+        GetProgramResourceLocation = gl3helper->GetProgramResourceLocation;
+        UseProgramStages = gl3helper->UseProgramStages;
+        ActiveShaderProgram = gl3helper->ActiveShaderProgram;
+        CreateShaderProgramv = gl3helper->CreateShaderProgramv;
+        BindProgramPipeline = gl3helper->BindProgramPipeline;
+        DeleteProgramPipelines = gl3helper->DeleteProgramPipelines;
+        GenProgramPipelines = gl3helper->GenProgramPipelines;
+        IsProgramPipeline = gl3helper->IsProgramPipeline;
+        GetProgramPipelineiv = gl3helper->GetProgramPipelineiv;
+        ProgramUniform1i = gl3helper->ProgramUniform1i;
+        ProgramUniform2i = gl3helper->ProgramUniform2i;
+        ProgramUniform3i = gl3helper->ProgramUniform3i;
+        ProgramUniform4i = gl3helper->ProgramUniform4i;
+        ProgramUniform1ui = gl3helper->ProgramUniform1ui;
+        ProgramUniform2ui = gl3helper->ProgramUniform2ui;
+        ProgramUniform3ui = gl3helper->ProgramUniform3ui;
+        ProgramUniform4ui = gl3helper->ProgramUniform4ui;
+        ProgramUniform1f = gl3helper->ProgramUniform1f;
+        ProgramUniform2f = gl3helper->ProgramUniform2f;
+        ProgramUniform3f = gl3helper->ProgramUniform3f;
+        ProgramUniform4f = gl3helper->ProgramUniform4f;
+        ProgramUniform1iv = gl3helper->ProgramUniform1iv;
+        ProgramUniform2iv = gl3helper->ProgramUniform2iv;
+        ProgramUniform3iv = gl3helper->ProgramUniform3iv;
+        ProgramUniform4iv = gl3helper->ProgramUniform4iv;
+        ProgramUniform1uiv = gl3helper->ProgramUniform1uiv;
+        ProgramUniform2uiv = gl3helper->ProgramUniform2uiv;
+        ProgramUniform3uiv = gl3helper->ProgramUniform3uiv;
+        ProgramUniform4uiv = gl3helper->ProgramUniform4uiv;
+        ProgramUniform1fv = gl3helper->ProgramUniform1fv;
+        ProgramUniform2fv = gl3helper->ProgramUniform2fv;
+        ProgramUniform3fv = gl3helper->ProgramUniform3fv;
+        ProgramUniform4fv = gl3helper->ProgramUniform4fv;
+        ProgramUniformMatrix2fv = gl3helper->ProgramUniformMatrix2fv;
+        ProgramUniformMatrix3fv = gl3helper->ProgramUniformMatrix3fv;
+        ProgramUniformMatrix4fv = gl3helper->ProgramUniformMatrix4fv;
+        ProgramUniformMatrix2x3fv = gl3helper->ProgramUniformMatrix2x3fv;
+        ProgramUniformMatrix3x2fv = gl3helper->ProgramUniformMatrix3x2fv;
+        ProgramUniformMatrix2x4fv = gl3helper->ProgramUniformMatrix2x4fv;
+        ProgramUniformMatrix4x2fv = gl3helper->ProgramUniformMatrix4x2fv;
+        ProgramUniformMatrix3x4fv = gl3helper->ProgramUniformMatrix3x4fv;
+        ProgramUniformMatrix4x3fv = gl3helper->ProgramUniformMatrix4x3fv;
+        ValidateProgramPipeline = gl3helper->ValidateProgramPipeline;
+        GetProgramPipelineInfoLog = gl3helper->GetProgramPipelineInfoLog;
+        BindImageTexture = gl3helper->BindImageTexture;
+        GetBooleani_v = gl3helper->GetBooleani_v;
+        MemoryBarrier = gl3helper->MemoryBarrierFunc;
+        MemoryBarrierByRegion = gl3helper->MemoryBarrierByRegion;
+        TexStorage2DMultisample = gl3helper->TexStorage2DMultisample;
+        GetMultisamplefv = gl3helper->GetMultisamplefv;
+        SampleMaski = gl3helper->SampleMaski;
+        GetTexLevelParameteriv = gl3helper->GetTexLevelParameteriv;
+        GetTexLevelParameterfv = gl3helper->GetTexLevelParameterfv;
+        BindVertexBuffer = gl3helper->BindVertexBuffer;
+        VertexAttribFormat = gl3helper->VertexAttribFormat;
+        VertexAttribIFormat = gl3helper->VertexAttribIFormat;
+        VertexAttribBinding = gl3helper->VertexAttribBinding;
+        VertexBindingDivisor = gl3helper->VertexBindingDivisor;
+    } else {
+        DispatchCompute = RESOLVE(DispatchCompute, 0);
+        DispatchComputeIndirect = RESOLVE(DispatchComputeIndirect, 0);
+        DrawArraysIndirect = RESOLVE(DrawArraysIndirect, 0);
+        DrawElementsIndirect = RESOLVE(DrawElementsIndirect, 0);
+        FramebufferParameteri = RESOLVE(FramebufferParameteri, 0);
+        GetFramebufferParameteriv = RESOLVE(GetFramebufferParameteriv, 0);
+        GetProgramInterfaceiv = RESOLVE(GetProgramInterfaceiv, 0);
+        GetProgramResourceIndex = RESOLVE(GetProgramResourceIndex, 0);
+        GetProgramResourceName = RESOLVE(GetProgramResourceName, 0);
+        GetProgramResourceiv = RESOLVE(GetProgramResourceiv, 0);
+        GetProgramResourceLocation = RESOLVE(GetProgramResourceLocation, 0);
+        UseProgramStages = RESOLVE(UseProgramStages, 0);
+        ActiveShaderProgram = RESOLVE(ActiveShaderProgram, 0);
+        CreateShaderProgramv = RESOLVE(CreateShaderProgramv, 0);
+        BindProgramPipeline = RESOLVE(BindProgramPipeline, 0);
+        DeleteProgramPipelines = RESOLVE(DeleteProgramPipelines, 0);
+        GenProgramPipelines = RESOLVE(GenProgramPipelines, 0);
+        IsProgramPipeline = RESOLVE(IsProgramPipeline, 0);
+        GetProgramPipelineiv = RESOLVE(GetProgramPipelineiv, 0);
+        ProgramUniform1i = RESOLVE(ProgramUniform1i, 0);
+        ProgramUniform2i = RESOLVE(ProgramUniform2i, 0);
+        ProgramUniform3i = RESOLVE(ProgramUniform3i, 0);
+        ProgramUniform4i = RESOLVE(ProgramUniform4i, 0);
+        ProgramUniform1ui = RESOLVE(ProgramUniform1ui, 0);
+        ProgramUniform2ui = RESOLVE(ProgramUniform2ui, 0);
+        ProgramUniform3ui = RESOLVE(ProgramUniform3ui, 0);
+        ProgramUniform4ui = RESOLVE(ProgramUniform4ui, 0);
+        ProgramUniform1f = RESOLVE(ProgramUniform1f, 0);
+        ProgramUniform2f = RESOLVE(ProgramUniform2f, 0);
+        ProgramUniform3f = RESOLVE(ProgramUniform3f, 0);
+        ProgramUniform4f = RESOLVE(ProgramUniform4f, 0);
+        ProgramUniform1iv = RESOLVE(ProgramUniform1iv, 0);
+        ProgramUniform2iv = RESOLVE(ProgramUniform2iv, 0);
+        ProgramUniform3iv = RESOLVE(ProgramUniform3iv, 0);
+        ProgramUniform4iv = RESOLVE(ProgramUniform4iv, 0);
+        ProgramUniform1uiv = RESOLVE(ProgramUniform1uiv, 0);
+        ProgramUniform2uiv = RESOLVE(ProgramUniform2uiv, 0);
+        ProgramUniform3uiv = RESOLVE(ProgramUniform3uiv, 0);
+        ProgramUniform4uiv = RESOLVE(ProgramUniform4uiv, 0);
+        ProgramUniform1fv = RESOLVE(ProgramUniform1fv, 0);
+        ProgramUniform2fv = RESOLVE(ProgramUniform2fv, 0);
+        ProgramUniform3fv = RESOLVE(ProgramUniform3fv, 0);
+        ProgramUniform4fv = RESOLVE(ProgramUniform4fv, 0);
+        ProgramUniformMatrix2fv = RESOLVE(ProgramUniformMatrix2fv, 0);
+        ProgramUniformMatrix3fv = RESOLVE(ProgramUniformMatrix3fv, 0);
+        ProgramUniformMatrix4fv = RESOLVE(ProgramUniformMatrix4fv, 0);
+        ProgramUniformMatrix2x3fv = RESOLVE(ProgramUniformMatrix2x3fv, 0);
+        ProgramUniformMatrix3x2fv = RESOLVE(ProgramUniformMatrix3x2fv, 0);
+        ProgramUniformMatrix2x4fv = RESOLVE(ProgramUniformMatrix2x4fv, 0);
+        ProgramUniformMatrix4x2fv = RESOLVE(ProgramUniformMatrix4x2fv, 0);
+        ProgramUniformMatrix3x4fv = RESOLVE(ProgramUniformMatrix3x4fv, 0);
+        ProgramUniformMatrix4x3fv = RESOLVE(ProgramUniformMatrix4x3fv, 0);
+        ValidateProgramPipeline = RESOLVE(ValidateProgramPipeline, 0);
+        GetProgramPipelineInfoLog = RESOLVE(GetProgramPipelineInfoLog, 0);
+        BindImageTexture = RESOLVE(BindImageTexture, 0);
+        GetBooleani_v = RESOLVE(GetBooleani_v, 0);
+        MemoryBarrier = RESOLVE(MemoryBarrier, 0);
+        MemoryBarrierByRegion = RESOLVE(MemoryBarrierByRegion, 0);
+        TexStorage2DMultisample = RESOLVE(TexStorage2DMultisample, 0);
+        GetMultisamplefv = RESOLVE(GetMultisamplefv, 0);
+        SampleMaski = RESOLVE(SampleMaski, 0);
+        GetTexLevelParameteriv = RESOLVE(GetTexLevelParameteriv, 0);
+        GetTexLevelParameterfv = RESOLVE(GetTexLevelParameterfv, 0);
+        BindVertexBuffer = RESOLVE(BindVertexBuffer, 0);
+        VertexAttribFormat = RESOLVE(VertexAttribFormat, 0);
+        VertexAttribIFormat = RESOLVE(VertexAttribIFormat, 0);
+        VertexAttribBinding = RESOLVE(VertexAttribBinding, 0);
+        VertexBindingDivisor = RESOLVE(VertexBindingDivisor, 0);
+    }
 }
 
 QOpenGLExtensionsPrivate::QOpenGLExtensionsPrivate(QOpenGLContext *ctx)
     : QOpenGLExtraFunctionsPrivate(ctx),
       flushVendorChecked(false)
 {
-    MapBuffer = qopenglfResolveMapBuffer;
-    GetBufferSubData = qopenglfResolveGetBufferSubData;
-    DiscardFramebuffer = qopenglfResolveDiscardFramebuffer;
-}
+    QOpenGLContext *context = QOpenGLContext::currentContext();
+
+    MapBuffer = RESOLVE(MapBuffer, ResolveOES);
+    GetBufferSubData = RESOLVE(GetBufferSubData, ResolveEXT);
+    DiscardFramebuffer = RESOLVE(DiscardFramebuffer, ResolveEXT);
+ }
 
 QOpenGLES3Helper *QOpenGLExtensions::gles3Helper()
 {
