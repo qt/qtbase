@@ -294,7 +294,7 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, int offset, int
 
     if (depth != 32) {
         ncols = bi.biClrUsed ? bi.biClrUsed : 1 << nbits;
-        if (ncols > 256) // sanity check - don't run out of mem if color table is broken
+        if (ncols < 1 || ncols > 256) // sanity check - don't run out of mem if color table is broken
             return false;
         image.setColorCount(ncols);
     }
