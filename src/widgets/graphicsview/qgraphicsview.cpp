@@ -1297,10 +1297,7 @@ void QGraphicsView::setRenderHint(QPainter::RenderHint hint, bool enabled)
 {
     Q_D(QGraphicsView);
     QPainter::RenderHints oldHints = d->renderHints;
-    if (enabled)
-        d->renderHints |= hint;
-    else
-        d->renderHints &= ~hint;
+    d->renderHints.setFlag(hint, enabled);
     if (oldHints != d->renderHints)
         d->updateAll();
 }
@@ -1463,10 +1460,7 @@ void QGraphicsView::setOptimizationFlags(OptimizationFlags flags)
 void QGraphicsView::setOptimizationFlag(OptimizationFlag flag, bool enabled)
 {
     Q_D(QGraphicsView);
-    if (enabled)
-        d->optimizationFlags |= flag;
-    else
-        d->optimizationFlags &= ~flag;
+    d->optimizationFlags.setFlag(flag, enabled);
 }
 
 /*!

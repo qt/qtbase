@@ -5553,10 +5553,7 @@ QSize QGLTexture::bindCompressedTexturePVR(const char *buf, int len)
 
     // Set the invert flag for the texture.  The "vertical flip"
     // flag in PVR is the opposite sense to our sense of inversion.
-    if ((pvrHeader->flags & PVR_VERTICAL_FLIP) != 0)
-        options &= ~QGLContext::InvertedYBindOption;
-    else
-        options |= QGLContext::InvertedYBindOption;
+    options.setFlag(QGLContext::InvertedYBindOption, !(pvrHeader->flags & PVR_VERTICAL_FLIP));
 
     return QSize(pvrHeader->width, pvrHeader->height);
 }

@@ -575,10 +575,7 @@ void ControllerWidget::setControlVisible(QMdiSubWindowPrivate::WindowStateAction
     if (subControl == QStyle::SC_None)
         return;
 
-    if (visible && !(visibleControls & subControl))
-        visibleControls |= subControl;
-    else if (!visible && (visibleControls & subControl))
-        visibleControls &= ~subControl;
+    visibleControls.setFlag(subControl, visible && !(visibleControls & subControl));
 }
 
 /*
@@ -2417,10 +2414,7 @@ bool QMdiSubWindow::isShaded() const
 void QMdiSubWindow::setOption(SubWindowOption option, bool on)
 {
     Q_D(QMdiSubWindow);
-    if (on && !(d->options & option))
-        d->options |= option;
-    else if (!on && (d->options & option))
-        d->options &= ~option;
+    d->options.setFlag(option, on);
 
 #ifndef QT_NO_RUBBERBAND
     if ((option & (RubberBandResize | RubberBandMove)) && !on && d->isInRubberBandMode)
@@ -3172,10 +3166,7 @@ void QMdiSubWindow::paintEvent(QPaintEvent *paintEvent)
     QStyleOptionFrame frameOptions;
     frameOptions.initFrom(this);
     frameOptions.lineWidth = style()->pixelMetric(QStyle::PM_MdiSubWindowFrameWidth, 0, this);
-    if (d->isActive)
-        frameOptions.state |= QStyle::State_Active;
-    else
-        frameOptions.state &= ~QStyle::State_Active;
+    frameOptions.state.setFlag(QStyle::State_Active, d->isActive);
 
     // ### Ensure that we do not require setting the cliprect for 4.4
     if (!isMinimized() && !d->hasBorder(d->cachedStyleOptions))

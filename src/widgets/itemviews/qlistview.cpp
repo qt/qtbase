@@ -1015,10 +1015,7 @@ void QListView::paintEvent(QPaintEvent *e)
             if (viewState == EditingState)
                 option.state |= QStyle::State_Editing;
         }
-        if (*it == hover)
-            option.state |= QStyle::State_MouseOver;
-        else
-            option.state &= ~QStyle::State_MouseOver;
+        option.state.setFlag(QStyle::State_MouseOver, *it == hover);
 
         if (alternate) {
             int row = (*it).row();
@@ -1033,11 +1030,7 @@ void QListView::paintEvent(QPaintEvent *e)
                     alternateBase = (row & 1) != 0;
                 }
             }
-            if (alternateBase) {
-                option.features |= QStyleOptionViewItem::Alternate;
-            } else {
-                option.features &= ~QStyleOptionViewItem::Alternate;
-            }
+            option.features.setFlag(QStyleOptionViewItem::Alternate, alternateBase);
 
             // draw background of the item (only alternate row). rest of the background
             // is provided by the delegate

@@ -684,10 +684,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
     {
         QStyleOption dockWidgetHandle = *option;
         bool horizontal = option->state & State_Horizontal;
-        if (horizontal)
-            dockWidgetHandle.state &= ~State_Horizontal;
-        else
-            dockWidgetHandle.state |= State_Horizontal;
+        dockWidgetHandle.state.setFlag(State_Horizontal, !horizontal);
         proxy()->drawControl(CE_Splitter, &dockWidgetHandle, painter, widget);
     }
         break;

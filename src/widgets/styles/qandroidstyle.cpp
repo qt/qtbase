@@ -1233,30 +1233,21 @@ const QAndroidStyle::AndroidDrawable * QAndroidStyle::AndroidStateDrawable::best
 
 int QAndroidStyle::AndroidStateDrawable::extractState(const QVariantMap &value)
 {
-    int state = QStyle::State_Enabled | QStyle::State_Active;;
+    QStyle::State state = QStyle::State_Enabled | QStyle::State_Active;;
     foreach (const QString &key, value.keys()) {
         bool val = value.value(key).toString() == QLatin1String("true");
         if (key == QLatin1String("enabled")) {
-            if (val)
-                state |= QStyle::State_Enabled;
-            else
-                state &= ~QStyle::State_Enabled;
+            state.setFlag(QStyle::State_Enabled, val);
             continue;
         }
 
         if (key == QLatin1String("window_focused")) {
-            if (val)
-                state |= QStyle::State_Active;
-            else
-                state &= ~QStyle::State_Active;
+            state.setFlag(QStyle::State_Active, val);
             continue;
         }
 
         if (key == QLatin1String("focused")) {
-            if (val)
-                state |= QStyle::State_HasFocus;
-            else
-                state &= ~QStyle::State_HasFocus;
+            state.setFlag(QStyle::State_HasFocus, val);
             continue;
         }
 
@@ -1271,18 +1262,12 @@ int QAndroidStyle::AndroidStateDrawable::extractState(const QVariantMap &value)
         }
 
         if (key == QLatin1String("selected")) {
-            if (val)
-                state |= QStyle::State_Selected;
-            else
-                state &= ~QStyle::State_Selected;
+            state.setFlag(QStyle::State_Selected, val);
             continue;
         }
 
         if (key == QLatin1String("active")) {
-            if (val)
-                state |= QStyle::State_Active;
-            else
-                state &= ~QStyle::State_Active;
+            state.setFlag(QStyle::State_Active, val);
             continue;
         }
 
@@ -1292,7 +1277,7 @@ int QAndroidStyle::AndroidStateDrawable::extractState(const QVariantMap &value)
         if (key == QLatin1String("background") && val)
             return -1;
     }
-    return state;
+    return static_cast<int>(state);
 }
 
 void QAndroidStyle::AndroidStateDrawable::setPaddingLeftToSizeWidth()

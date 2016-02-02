@@ -3130,10 +3130,7 @@ void QTextStream::setGenerateByteOrderMark(bool generate)
 {
     Q_D(QTextStream);
     if (d->writeBuffer.isEmpty()) {
-        if (generate)
-            d->writeConverterState.flags &= ~QTextCodec::IgnoreHeader;
-        else
-            d->writeConverterState.flags |= QTextCodec::IgnoreHeader;
+        d->writeConverterState.flags.setFlag(QTextCodec::IgnoreHeader, !generate);
     }
 }
 
