@@ -63,11 +63,11 @@ void qtInitializeVertexArrayObjectHelper(QOpenGLVertexArrayObjectHelper *helper,
 
     if (context->isOpenGLES()) {
         if (context->format().majorVersion() >= 3) {
-            QOpenGLES3Helper *es3 = static_cast<QOpenGLExtensions *>(context->functions())->gles3Helper();
-            helper->GenVertexArrays = es3->GenVertexArrays;
-            helper->DeleteVertexArrays = es3->DeleteVertexArrays;
-            helper->BindVertexArray = es3->BindVertexArray;
-            helper->IsVertexArray = es3->IsVertexArray;
+            QOpenGLExtraFunctionsPrivate *extra = static_cast<QOpenGLExtensions *>(context->extraFunctions())->d();
+            helper->GenVertexArrays = extra->GenVertexArrays;
+            helper->DeleteVertexArrays = extra->DeleteVertexArrays;
+            helper->BindVertexArray = extra->BindVertexArray;
+            helper->IsVertexArray = extra->IsVertexArray;
             tryARB = false;
         } else if (context->hasExtension(QByteArrayLiteral("GL_OES_vertex_array_object"))) {
             helper->GenVertexArrays = reinterpret_cast<QOpenGLVertexArrayObjectHelper::qt_GenVertexArrays_t>(context->getProcAddress("glGenVertexArraysOES"));

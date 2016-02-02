@@ -47,10 +47,6 @@
 #include <qpa/qplatformintegration.h>
 #include <QtCore/qloggingcategory.h>
 
-#ifdef Q_OS_IOS
-#include <dlfcn.h>
-#endif
-
 #ifndef GL_FRAMEBUFFER_SRGB_CAPABLE_EXT
 #define GL_FRAMEBUFFER_SRGB_CAPABLE_EXT   0x8DBA
 #endif
@@ -5036,278 +5032,6 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
     \internal
 */
 
-// Functions part of the OpenGL ES 3.0+ standard need special handling. These, just like
-// the 2.0 functions, are not guaranteed to be resolvable via eglGetProcAddress or
-// similar. (we cannot count on EGL_KHR_(client_)get_all_proc_addresses being available)
-
-// Calling them directly is, unlike the 2.0 functions, not feasible because one may build
-// the binaries on a GLES3-capable system and then deploy on a GLES2-only system that does
-// not have these symbols, and vice versa. Until ES3 becomes universally available, they
-// have to be dlsym'ed.
-
-Q_GLOBAL_STATIC(QOpenGLES3Helper, qgles3Helper)
-
-bool QOpenGLES3Helper::init()
-{
-#ifdef QT_NO_LIBRARY
-    return false;
-#elif !defined(Q_OS_IOS)
-# ifdef Q_OS_WIN
-#  ifndef QT_DEBUG
-    m_gl.setFileName(QStringLiteral("libGLESv2"));
-#  else
-    m_gl.setFileName(QStringLiteral("libGLESv2d"));
-#  endif
-# else
-#  ifdef Q_OS_ANDROID
-    m_gl.setFileName(QStringLiteral("GLESv2"));
-#  else
-    m_gl.setFileNameAndVersion(QStringLiteral("GLESv2"), 2);
-#  endif
-# endif // Q_OS_WIN
-    return m_gl.load();
-#else
-    return true;
-#endif // Q_OS_IOS
-}
-
-QFunctionPointer QOpenGLES3Helper::resolve(const char *name)
-{
-#ifdef Q_OS_IOS
-    return QFunctionPointer(dlsym(RTLD_DEFAULT, name));
-#elif !defined(QT_NO_LIBRARY)
-    return m_gl.resolve(name);
-#else
-    Q_UNUSED(name);
-    return 0;
-#endif
-}
-
-QOpenGLES3Helper::QOpenGLES3Helper()
-{
-    m_supportedVersion = qMakePair(2, 0);
-
-    if (Q_UNLIKELY(!init())) {
-        qFatal("Failed to load libGLESv2");
-    } else {
-        const QPair<int, int> contextVersion = QOpenGLContext::currentContext()->format().version();
-
-        qCDebug(lcGLES3, "Resolving OpenGL ES 3.0 entry points");
-
-        BeginQuery = (void (QOPENGLF_APIENTRYP) (GLenum, GLuint)) resolve("glBeginQuery");
-        BeginTransformFeedback = (void (QOPENGLF_APIENTRYP) (GLenum)) resolve("glBeginTransformFeedback");
-        BindBufferBase = (void (QOPENGLF_APIENTRYP) (GLenum, GLuint, GLuint)) resolve("glBindBufferBase");
-        BindBufferRange = (void (QOPENGLF_APIENTRYP) (GLenum, GLuint, GLuint, GLintptr, GLsizeiptr)) resolve("glBindBufferRange");
-        BindSampler = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint)) resolve("glBindSampler");
-        BindTransformFeedback = (void (QOPENGLF_APIENTRYP) (GLenum, GLuint)) resolve("glBindTransformFeedback");
-        BindVertexArray = (void (QOPENGLF_APIENTRYP) (GLuint)) resolve("glBindVertexArray");
-        BlitFramebuffer = (void (QOPENGLF_APIENTRYP) (GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum)) resolve("glBlitFramebuffer");
-        ClearBufferfi = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, GLfloat, GLint)) resolve("glClearBufferfi");
-        ClearBufferfv = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, const GLfloat *)) resolve("glClearBufferfv");
-        ClearBufferiv = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, const GLint *)) resolve("glClearBufferiv");
-        ClearBufferuiv = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, const GLuint *)) resolve("glClearBufferuiv");
-        ClientWaitSync = (GLenum (QOPENGLF_APIENTRYP) (GLsync, GLbitfield, GLuint64)) resolve("glClientWaitSync");
-        CompressedTexImage3D = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)) resolve("glCompressedTexImage3D");
-        CompressedTexSubImage3D = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLsizei, const void *)) resolve("glCompressedTexSubImage3D");
-        CopyBufferSubData = (void (QOPENGLF_APIENTRYP) (GLenum, GLenum, GLintptr, GLintptr, GLsizeiptr)) resolve("glCopyBufferSubData");
-        CopyTexSubImage3D = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)) resolve("glCopyTexSubImage3D");
-        DeleteQueries = (void (QOPENGLF_APIENTRYP) (GLsizei, const GLuint *)) resolve("glDeleteQueries");
-        DeleteSamplers = (void (QOPENGLF_APIENTRYP) (GLsizei, const GLuint *)) resolve("glDeleteSamplers");
-        DeleteSync = (void (QOPENGLF_APIENTRYP) (GLsync)) resolve("glDeleteSync");
-        DeleteTransformFeedbacks = (void (QOPENGLF_APIENTRYP) (GLsizei, const GLuint *)) resolve("glDeleteTransformFeedbacks");
-        DeleteVertexArrays = (void (QOPENGLF_APIENTRYP) (GLsizei, const GLuint *)) resolve("glDeleteVertexArrays");
-        DrawArraysInstanced = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, GLsizei, GLsizei)) resolve("glDrawArraysInstanced");
-        DrawBuffers = (void (QOPENGLF_APIENTRYP) (GLsizei, const GLenum *)) resolve("glDrawBuffers");
-        DrawElementsInstanced = (void (QOPENGLF_APIENTRYP) (GLenum, GLsizei, GLenum, const void *, GLsizei)) resolve("glDrawElementsInstanced");
-        DrawRangeElements = (void (QOPENGLF_APIENTRYP) (GLenum, GLuint, GLuint, GLsizei, GLenum, const void *)) resolve("glDrawRangeElements");
-        EndQuery = (void (QOPENGLF_APIENTRYP) (GLenum)) resolve("glEndQuery");
-        EndTransformFeedback = (void (QOPENGLF_APIENTRYP) ()) resolve("glEndTransformFeedback");
-        FenceSync = (GLsync (QOPENGLF_APIENTRYP) (GLenum, GLbitfield)) resolve("glFenceSync");
-        FlushMappedBufferRange = (void (QOPENGLF_APIENTRYP) (GLenum, GLintptr, GLsizeiptr)) resolve("glFlushMappedBufferRange");
-        FramebufferTextureLayer = (void (QOPENGLF_APIENTRYP) (GLenum, GLenum, GLuint, GLint, GLint)) resolve("glFramebufferTextureLayer");
-        GenQueries = (void (QOPENGLF_APIENTRYP) (GLsizei, GLuint*)) resolve("glGenQueries");
-        GenSamplers = (void (QOPENGLF_APIENTRYP) (GLsizei, GLuint*)) resolve("glGenSamplers");
-        GenTransformFeedbacks = (void (QOPENGLF_APIENTRYP) (GLsizei, GLuint*)) resolve("glGenTransformFeedbacks");
-        GenVertexArrays = (void (QOPENGLF_APIENTRYP) (GLsizei, GLuint*)) resolve("glGenVertexArrays");
-        GetActiveUniformBlockName = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint, GLsizei, GLsizei*, GLchar*)) resolve("glGetActiveUniformBlockName");
-        GetActiveUniformBlockiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint, GLenum, GLint*)) resolve("glGetActiveUniformBlockiv");
-        GetActiveUniformsiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLsizei, const GLuint *, GLenum, GLint*)) resolve("glGetActiveUniformsiv");
-        GetBufferParameteri64v = (void (QOPENGLF_APIENTRYP) (GLenum, GLenum, GLint64*)) resolve("glGetBufferParameteri64v");
-        GetBufferPointerv = (void (QOPENGLF_APIENTRYP) (GLenum, GLenum, void **)) resolve("glGetBufferPointerv");
-        GetFragDataLocation = (GLint (QOPENGLF_APIENTRYP) (GLuint, const GLchar *)) resolve("glGetFragDataLocation");
-        GetInteger64i_v = (void (QOPENGLF_APIENTRYP) (GLenum, GLuint, GLint64*)) resolve("glGetInteger64i_v");
-        GetInteger64v = (void (QOPENGLF_APIENTRYP) (GLenum, GLint64*)) resolve("glGetInteger64v");
-        GetIntegeri_v = (void (QOPENGLF_APIENTRYP) (GLenum, GLuint, GLint*)) resolve("glGetIntegeri_v");
-        GetInternalformativ = (void (QOPENGLF_APIENTRYP) (GLenum, GLenum, GLenum, GLsizei, GLint*)) resolve("glGetInternalformativ");
-        GetProgramBinary = (void (QOPENGLF_APIENTRYP) (GLuint, GLsizei, GLsizei*, GLenum*, void *)) resolve("glGetProgramBinary");
-        GetQueryObjectuiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLuint*)) resolve("glGetQueryObjectuiv");
-        GetQueryiv = (void (QOPENGLF_APIENTRYP) (GLenum, GLenum, GLint*)) resolve("glGetQueryiv");
-        GetSamplerParameterfv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLfloat*)) resolve("glGetSamplerParameterfv");
-        GetSamplerParameteriv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLint*)) resolve("glGetSamplerParameteriv");
-        GetStringi = (const GLubyte * (QOPENGLF_APIENTRYP) (GLenum, GLuint)) resolve("glGetStringi");
-        GetSynciv = (void (QOPENGLF_APIENTRYP) (GLsync, GLenum, GLsizei, GLsizei*, GLint*)) resolve("glGetSynciv");
-        GetTransformFeedbackVarying = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint, GLsizei, GLsizei*, GLsizei*, GLenum*, GLchar*)) resolve("glGetTransformFeedbackVarying");
-        GetUniformBlockIndex = (GLuint (QOPENGLF_APIENTRYP) (GLuint, const GLchar *)) resolve("glGetUniformBlockIndex");
-        GetUniformIndices = (void (QOPENGLF_APIENTRYP) (GLuint, GLsizei, const GLchar *const*, GLuint*)) resolve("glGetUniformIndices");
-        GetUniformuiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLuint*)) resolve("glGetUniformuiv");
-        GetVertexAttribIiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLint*)) resolve("glGetVertexAttribIiv");
-        GetVertexAttribIuiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLuint*)) resolve("glGetVertexAttribIuiv");
-        InvalidateFramebuffer = (void (QOPENGLF_APIENTRYP) (GLenum, GLsizei, const GLenum *)) resolve("glInvalidateFramebuffer");
-        InvalidateSubFramebuffer = (void (QOPENGLF_APIENTRYP) (GLenum, GLsizei, const GLenum *, GLint, GLint, GLsizei, GLsizei)) resolve("glInvalidateSubFramebuffer");
-        IsQuery = (GLboolean (QOPENGLF_APIENTRYP) (GLuint)) resolve("glIsQuery");
-        IsSampler = (GLboolean (QOPENGLF_APIENTRYP) (GLuint)) resolve("glIsSampler");
-        IsSync = (GLboolean (QOPENGLF_APIENTRYP) (GLsync)) resolve("glIsSync");
-        IsTransformFeedback = (GLboolean (QOPENGLF_APIENTRYP) (GLuint)) resolve("glIsTransformFeedback");
-        IsVertexArray = (GLboolean (QOPENGLF_APIENTRYP) (GLuint)) resolve("glIsVertexArray");
-        MapBufferRange = (void * (QOPENGLF_APIENTRYP) (GLenum, GLintptr, GLsizeiptr, GLbitfield)) resolve("glMapBufferRange");
-        PauseTransformFeedback = (void (QOPENGLF_APIENTRYP) ()) resolve("glPauseTransformFeedback");
-        ProgramBinary = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, const void *, GLsizei)) resolve("glProgramBinary");
-        ProgramParameteri = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLint)) resolve("glProgramParameteri");
-        ReadBuffer = (void (QOPENGLF_APIENTRYP) (GLenum)) resolve("glReadBuffer");
-        RenderbufferStorageMultisample = (void (QOPENGLF_APIENTRYP) (GLenum, GLsizei, GLenum, GLsizei, GLsizei)) resolve("glRenderbufferStorageMultisample");
-        ResumeTransformFeedback = (void (QOPENGLF_APIENTRYP) ()) resolve("glResumeTransformFeedback");
-        SamplerParameterf = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLfloat)) resolve("glSamplerParameterf");
-        SamplerParameterfv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, const GLfloat *)) resolve("glSamplerParameterfv");
-        SamplerParameteri = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLint)) resolve("glSamplerParameteri");
-        SamplerParameteriv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, const GLint *)) resolve("glSamplerParameteriv");
-        TexImage3D = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const void *)) resolve("glTexImage3D");
-        TexStorage2D = (void (QOPENGLF_APIENTRYP) (GLenum, GLsizei, GLenum, GLsizei, GLsizei)) resolve("glTexStorage2D");
-        TexStorage3D = (void (QOPENGLF_APIENTRYP) (GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei)) resolve("glTexStorage3D");
-        TexSubImage3D = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const void *)) resolve("glTexSubImage3D");
-        TransformFeedbackVaryings = (void (QOPENGLF_APIENTRYP) (GLuint, GLsizei, const GLchar *const*, GLenum)) resolve("glTransformFeedbackVaryings");
-        Uniform1ui = (void (QOPENGLF_APIENTRYP) (GLint, GLuint)) resolve("glUniform1ui");
-        Uniform1uiv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, const GLuint *)) resolve("glUniform1uiv");
-        Uniform2ui = (void (QOPENGLF_APIENTRYP) (GLint, GLuint, GLuint)) resolve("glUniform2ui");
-        Uniform2uiv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, const GLuint *)) resolve("glUniform2uiv");
-        Uniform3ui = (void (QOPENGLF_APIENTRYP) (GLint, GLuint, GLuint, GLuint)) resolve("glUniform3ui");
-        Uniform3uiv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, const GLuint *)) resolve("glUniform3uiv");
-        Uniform4ui = (void (QOPENGLF_APIENTRYP) (GLint, GLuint, GLuint, GLuint, GLuint)) resolve("glUniform4ui");
-        Uniform4uiv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, const GLuint *)) resolve("glUniform4uiv");
-        UniformBlockBinding = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint, GLuint)) resolve("glUniformBlockBinding");
-        UniformMatrix2x3fv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glUniformMatrix2x3fv");
-        UniformMatrix2x4fv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glUniformMatrix2x4fv");
-        UniformMatrix3x2fv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glUniformMatrix3x2fv");
-        UniformMatrix3x4fv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glUniformMatrix3x4fv");
-        UniformMatrix4x2fv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glUniformMatrix4x2fv");
-        UniformMatrix4x3fv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glUniformMatrix4x3fv");
-        UnmapBuffer = (GLboolean (QOPENGLF_APIENTRYP) (GLenum)) resolve("glUnmapBuffer");
-        VertexAttribDivisor = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint)) resolve("glVertexAttribDivisor");
-        VertexAttribI4i = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLint, GLint, GLint)) resolve("glVertexAttribI4i");
-        VertexAttribI4iv = (void (QOPENGLF_APIENTRYP) (GLuint, const GLint *)) resolve("glVertexAttribI4iv");
-        VertexAttribI4ui = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint, GLuint, GLuint, GLuint)) resolve("glVertexAttribI4ui");
-        VertexAttribI4uiv = (void (QOPENGLF_APIENTRYP) (GLuint, const GLuint *)) resolve("glVertexAttribI4uiv");
-        VertexAttribIPointer = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLenum, GLsizei, const void *)) resolve("glVertexAttribIPointer");
-        WaitSync = (void (QOPENGLF_APIENTRYP) (GLsync, GLbitfield, GLuint64)) resolve("glWaitSync");
-
-        if (!BeginQuery || !BlitFramebuffer || !GenTransformFeedbacks || !GenVertexArrays || !MapBufferRange
-            || !RenderbufferStorageMultisample || !TexStorage2D || !WaitSync) {
-            qWarning("OpenGL ES 3.0 entry points not found. This is odd because the driver returned a context of version %d.%d",
-                     contextVersion.first, contextVersion.second);
-            return;
-        }
-        m_supportedVersion = qMakePair(3, 0);
-
-        if (contextVersion >= qMakePair(3, 1)) {
-            qCDebug(lcGLES3, "Resolving OpenGL ES 3.1 entry points");
-
-            ActiveShaderProgram = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint)) resolve("glActiveShaderProgram");
-            BindImageTexture = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint, GLint, GLboolean, GLint, GLenum, GLenum)) resolve("glBindImageTexture");
-            BindProgramPipeline = (void (QOPENGLF_APIENTRYP) (GLuint)) resolve("glBindProgramPipeline");
-            BindVertexBuffer = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint, GLintptr, GLsizei)) resolve("glBindVertexBuffer");
-            CreateShaderProgramv = (GLuint (QOPENGLF_APIENTRYP) (GLenum, GLsizei, const GLchar *const*)) resolve("glCreateShaderProgramv");
-            DeleteProgramPipelines = (void (QOPENGLF_APIENTRYP) (GLsizei, const GLuint *)) resolve("glDeleteProgramPipelines");
-            DispatchCompute = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint, GLuint)) resolve("glDispatchCompute");
-            DispatchComputeIndirect = (void (QOPENGLF_APIENTRYP) (GLintptr)) resolve("glDispatchComputeIndirect");
-            DrawArraysIndirect = (void (QOPENGLF_APIENTRYP) (GLenum, const void *)) resolve("glDrawArraysIndirect");
-            DrawElementsIndirect = (void (QOPENGLF_APIENTRYP) (GLenum, GLenum, const void *)) resolve("glDrawElementsIndirect");
-            FramebufferParameteri = (void (QOPENGLF_APIENTRYP) (GLenum, GLenum, GLint)) resolve("glFramebufferParameteri");
-            GenProgramPipelines = (void (QOPENGLF_APIENTRYP) (GLsizei, GLuint*)) resolve("glGenProgramPipelines");
-            GetBooleani_v = (void (QOPENGLF_APIENTRYP) (GLenum, GLuint, GLboolean*)) resolve("glGetBooleani_v");
-            GetFramebufferParameteriv = (void (QOPENGLF_APIENTRYP) (GLenum, GLenum, GLint*)) resolve("glGetFramebufferParameteriv");
-            GetMultisamplefv = (void (QOPENGLF_APIENTRYP) (GLenum, GLuint, GLfloat*)) resolve("glGetMultisamplefv");
-            GetProgramInterfaceiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLenum, GLint*)) resolve("glGetProgramInterfaceiv");
-            GetProgramPipelineInfoLog = (void (QOPENGLF_APIENTRYP) (GLuint, GLsizei, GLsizei*, GLchar*)) resolve("glGetProgramPipelineInfoLog");
-            GetProgramPipelineiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLint*)) resolve("glGetProgramPipelineiv");
-            GetProgramResourceIndex = (GLuint (QOPENGLF_APIENTRYP) (GLuint, GLenum, const GLchar *)) resolve("glGetProgramResourceIndex");
-            GetProgramResourceLocation = (GLint (QOPENGLF_APIENTRYP) (GLuint, GLenum, const GLchar *)) resolve("glGetProgramResourceLocation");
-            GetProgramResourceName = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLuint, GLsizei, GLsizei*, GLchar*)) resolve("glGetProgramResourceName");
-            GetProgramResourceiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLuint, GLsizei, const GLenum *, GLsizei, GLsizei*, GLint*)) resolve("glGetProgramResourceiv");
-            GetTexLevelParameterfv = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, GLenum, GLfloat*)) resolve("glGetTexLevelParameterfv");
-            GetTexLevelParameteriv = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, GLenum, GLint*)) resolve("glGetTexLevelParameteriv");
-            IsProgramPipeline = (GLboolean (QOPENGLF_APIENTRYP) (GLuint)) resolve("glIsProgramPipeline");
-            MemoryBarrierFunc = (void (QOPENGLF_APIENTRYP) (GLbitfield)) resolve("glMemoryBarrier");
-            MemoryBarrierByRegion = (void (QOPENGLF_APIENTRYP) (GLbitfield)) resolve("glMemoryBarrierByRegion");
-            ProgramUniform1f = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLfloat)) resolve("glProgramUniform1f");
-            ProgramUniform1fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLfloat *)) resolve("glProgramUniform1fv");
-            ProgramUniform1i = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLint)) resolve("glProgramUniform1i");
-            ProgramUniform1iv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLint *)) resolve("glProgramUniform1iv");
-            ProgramUniform1ui = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLuint)) resolve("glProgramUniform1ui");
-            ProgramUniform1uiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLuint *)) resolve("glProgramUniform1uiv");
-            ProgramUniform2f = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLfloat, GLfloat)) resolve("glProgramUniform2f");
-            ProgramUniform2fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLfloat *)) resolve("glProgramUniform2fv");
-            ProgramUniform2i = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLint, GLint)) resolve("glProgramUniform2i");
-            ProgramUniform2iv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLint *)) resolve("glProgramUniform2iv");
-            ProgramUniform2ui = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLuint, GLuint)) resolve("glProgramUniform2ui");
-            ProgramUniform2uiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLuint *)) resolve("glProgramUniform2uiv");
-            ProgramUniform3f = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLfloat, GLfloat, GLfloat)) resolve("glProgramUniform3f");
-            ProgramUniform3fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLfloat *)) resolve("glProgramUniform3fv");
-            ProgramUniform3i = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLint, GLint, GLint)) resolve("glProgramUniform3i");
-            ProgramUniform3iv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLint *)) resolve("glProgramUniform3iv");
-            ProgramUniform3ui = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLuint, GLuint, GLuint)) resolve("glProgramUniform3ui");
-            ProgramUniform3uiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLuint *)) resolve("glProgramUniform3uiv");
-            ProgramUniform4f = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLfloat, GLfloat, GLfloat, GLfloat)) resolve("glProgramUniform4f");
-            ProgramUniform4fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLfloat *)) resolve("glProgramUniform4fv");
-            ProgramUniform4i = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLint, GLint, GLint, GLint)) resolve("glProgramUniform4i");
-            ProgramUniform4iv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLint *)) resolve("glProgramUniform4iv");
-            ProgramUniform4ui = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLuint, GLuint, GLuint, GLuint)) resolve("glProgramUniform4ui");
-            ProgramUniform4uiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLuint *)) resolve("glProgramUniform4uiv");
-            ProgramUniformMatrix2fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glProgramUniformMatrix2fv");
-            ProgramUniformMatrix2x3fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glProgramUniformMatrix2x3fv");
-            ProgramUniformMatrix2x4fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glProgramUniformMatrix2x4fv");
-            ProgramUniformMatrix3fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glProgramUniformMatrix3fv");
-            ProgramUniformMatrix3x2fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glProgramUniformMatrix3x2fv");
-            ProgramUniformMatrix3x4fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glProgramUniformMatrix3x4fv");
-            ProgramUniformMatrix4fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glProgramUniformMatrix4fv");
-            ProgramUniformMatrix4x2fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glProgramUniformMatrix4x2fv");
-            ProgramUniformMatrix4x3fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glProgramUniformMatrix4x3fv");
-            SampleMaski = (void (QOPENGLF_APIENTRYP) (GLuint, GLbitfield)) resolve("glSampleMaski");
-            TexStorage2DMultisample = (void (QOPENGLF_APIENTRYP) (GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLboolean)) resolve("glTexStorage2DMultisample");
-            UseProgramStages = (void (QOPENGLF_APIENTRYP) (GLuint, GLbitfield, GLuint)) resolve("glUseProgramStages");
-            ValidateProgramPipeline = (void (QOPENGLF_APIENTRYP) (GLuint)) resolve("glValidateProgramPipeline");
-            VertexAttribBinding = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint)) resolve("glVertexAttribBinding");
-            VertexAttribFormat = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLenum, GLboolean, GLuint)) resolve("glVertexAttribFormat");
-            VertexAttribIFormat = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLenum, GLuint)) resolve("glVertexAttribIFormat");
-            VertexBindingDivisor = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint)) resolve("glVertexBindingDivisor");
-
-            if (!ActiveShaderProgram || !BindImageTexture || !DispatchCompute || !DrawArraysIndirect
-                || !GenProgramPipelines || !MemoryBarrierFunc) {
-                qWarning("OpenGL ES 3.1 entry points not found. This is odd because the driver returned a context of version %d.%d",
-                         contextVersion.first, contextVersion.second);
-                return;
-            }
-            m_supportedVersion = qMakePair(3, 1);
-        }
-    }
-}
-
-// GLES 3.0 and 3.1
-
-// Checks for true OpenGL ES 3.x. OpenGL with GL_ARB_ES3_compatibility
-// does not count because there the plain resolvers work anyhow.
-static inline bool isES3(int minor)
-{
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
-
-    const bool libMatches = QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES;
-    const bool contextMatches = ctx->isOpenGLES() && ctx->format().version() >= qMakePair(3, minor);
-
-    // Resolving happens whenever qgles3Helper() is called first. So do it only
-    // when the driver gives a 3.0+ context.
-    if (libMatches && contextMatches)
-        return qgles3Helper()->supportedVersion() >= qMakePair(3, minor);
-
-    return false;
-}
 
 /*!
     Constructs a default function resolver. The resolver cannot be used until
@@ -5338,361 +5062,181 @@ QOpenGLExtraFunctionsPrivate::QOpenGLExtraFunctionsPrivate(QOpenGLContext *ctx)
 {
     QOpenGLContext *context = QOpenGLContext::currentContext();
 
-    QOpenGLES3Helper *gl3helper = 0;
+    // GLES 3.0
+    ReadBuffer = RESOLVE(ReadBuffer, 0);
+    DrawRangeElements = RESOLVE(DrawRangeElements, 0);
+    TexImage3D = RESOLVE(TexImage3D, 0);
+    TexSubImage3D = RESOLVE(TexSubImage3D, 0);
+    CopyTexSubImage3D = RESOLVE(CopyTexSubImage3D, 0);
+    CompressedTexImage3D = RESOLVE(CompressedTexImage3D, 0);
+    CompressedTexSubImage3D = RESOLVE(CompressedTexSubImage3D, 0);
+    GenQueries = RESOLVE(GenQueries, 0);
+    DeleteQueries = RESOLVE(DeleteQueries, 0);
+    IsQuery = RESOLVE(IsQuery, 0);
+    BeginQuery = RESOLVE(BeginQuery, 0);
+    EndQuery = RESOLVE(EndQuery, 0);
+    GetQueryiv = RESOLVE(GetQueryiv, 0);
+    GetQueryObjectuiv = RESOLVE(GetQueryObjectuiv, 0);
+    UnmapBuffer = RESOLVE(UnmapBuffer, ResolveOES);
+    GetBufferPointerv = RESOLVE(GetBufferPointerv, 0);
+    DrawBuffers = RESOLVE(DrawBuffers, 0);
+    UniformMatrix2x3fv = RESOLVE(UniformMatrix2x3fv, 0);
+    UniformMatrix3x2fv = RESOLVE(UniformMatrix3x2fv, 0);
+    UniformMatrix2x4fv = RESOLVE(UniformMatrix2x4fv, 0);
+    UniformMatrix4x2fv = RESOLVE(UniformMatrix4x2fv, 0);
+    UniformMatrix3x4fv = RESOLVE(UniformMatrix3x4fv, 0);
+    UniformMatrix4x3fv = RESOLVE(UniformMatrix4x3fv, 0);
+    BlitFramebuffer = RESOLVE(BlitFramebuffer, ResolveEXT | ResolveANGLE | ResolveNV);
+    RenderbufferStorageMultisample = RESOLVE(RenderbufferStorageMultisample, ResolveEXT | ResolveANGLE | ResolveNV);
+    FramebufferTextureLayer = RESOLVE(FramebufferTextureLayer, 0);
+    MapBufferRange = RESOLVE(MapBufferRange, 0);
+    FlushMappedBufferRange = RESOLVE(FlushMappedBufferRange, 0);
+    BindVertexArray = RESOLVE(BindVertexArray, 0);
+    DeleteVertexArrays = RESOLVE(DeleteVertexArrays, 0);
+    GenVertexArrays = RESOLVE(GenVertexArrays, 0);
+    IsVertexArray = RESOLVE(IsVertexArray, 0);
+    GetIntegeri_v = RESOLVE(GetIntegeri_v, 0);
+    BeginTransformFeedback = RESOLVE(BeginTransformFeedback, 0);
+    EndTransformFeedback = RESOLVE(EndTransformFeedback, 0);
+    BindBufferRange = RESOLVE(BindBufferRange, 0);
+    BindBufferBase = RESOLVE(BindBufferBase, 0);
+    TransformFeedbackVaryings = RESOLVE(TransformFeedbackVaryings, 0);
+    GetTransformFeedbackVarying = RESOLVE(GetTransformFeedbackVarying, 0);
+    VertexAttribIPointer = RESOLVE(VertexAttribIPointer, 0);
+    GetVertexAttribIiv = RESOLVE(GetVertexAttribIiv, 0);
+    GetVertexAttribIuiv = RESOLVE(GetVertexAttribIuiv, 0);
+    VertexAttribI4i = RESOLVE(VertexAttribI4i, 0);
+    VertexAttribI4ui = RESOLVE(VertexAttribI4ui, 0);
+    VertexAttribI4iv = RESOLVE(VertexAttribI4iv, 0);
+    VertexAttribI4uiv = RESOLVE(VertexAttribI4uiv, 0);
+    GetUniformuiv = RESOLVE(GetUniformuiv, 0);
+    GetFragDataLocation = RESOLVE(GetFragDataLocation, 0);
+    Uniform1ui = RESOLVE(Uniform1ui, 0);
+    Uniform2ui = RESOLVE(Uniform2ui, 0);
+    Uniform3ui = RESOLVE(Uniform3ui, 0);
+    Uniform4ui = RESOLVE(Uniform4ui, 0);
+    Uniform1uiv = RESOLVE(Uniform1uiv, 0);
+    Uniform2uiv = RESOLVE(Uniform2uiv, 0);
+    Uniform3uiv = RESOLVE(Uniform3uiv, 0);
+    Uniform4uiv = RESOLVE(Uniform4uiv, 0);
+    ClearBufferiv = RESOLVE(ClearBufferiv, 0);
+    ClearBufferuiv = RESOLVE(ClearBufferuiv, 0);
+    ClearBufferfv = RESOLVE(ClearBufferfv, 0);
+    ClearBufferfi = RESOLVE(ClearBufferfi, 0);
+    GetStringi = RESOLVE(GetStringi, 0);
+    CopyBufferSubData = RESOLVE(CopyBufferSubData, 0);
+    GetUniformIndices = RESOLVE(GetUniformIndices, 0);
+    GetActiveUniformsiv = RESOLVE(GetActiveUniformsiv, 0);
+    GetUniformBlockIndex = RESOLVE(GetUniformBlockIndex, 0);
+    GetActiveUniformBlockiv = RESOLVE(GetActiveUniformBlockiv, 0);
+    GetActiveUniformBlockName = RESOLVE(GetActiveUniformBlockName, 0);
+    UniformBlockBinding = RESOLVE(UniformBlockBinding, 0);
+    DrawArraysInstanced = RESOLVE(DrawArraysInstanced, 0);
+    DrawElementsInstanced = RESOLVE(DrawElementsInstanced, 0);
+    FenceSync = RESOLVE(FenceSync, 0);
+    IsSync = RESOLVE(IsSync, 0);
+    DeleteSync = RESOLVE(DeleteSync, 0);
+    ClientWaitSync = RESOLVE(ClientWaitSync, 0);
+    WaitSync = RESOLVE(WaitSync, 0);
+    GetInteger64v = RESOLVE(GetInteger64v, 0);
+    GetSynciv = RESOLVE(GetSynciv, 0);
+    GetInteger64i_v = RESOLVE(GetInteger64i_v, 0);
+    GetBufferParameteri64v = RESOLVE(GetBufferParameteri64v, 0);
+    GenSamplers = RESOLVE(GenSamplers, 0);
+    DeleteSamplers = RESOLVE(DeleteSamplers, 0);
+    IsSampler = RESOLVE(IsSampler, 0);
+    BindSampler = RESOLVE(BindSampler, 0);
+    SamplerParameteri = RESOLVE(SamplerParameteri, 0);
+    SamplerParameteriv = RESOLVE(SamplerParameteriv, 0);
+    SamplerParameterf = RESOLVE(SamplerParameterf, 0);
+    SamplerParameterfv = RESOLVE(SamplerParameterfv, 0);
+    GetSamplerParameteriv = RESOLVE(GetSamplerParameteriv, 0);
+    GetSamplerParameterfv = RESOLVE(GetSamplerParameterfv, 0);
+    VertexAttribDivisor = RESOLVE(VertexAttribDivisor, 0);
+    BindTransformFeedback = RESOLVE(BindTransformFeedback, 0);
+    DeleteTransformFeedbacks = RESOLVE(DeleteTransformFeedbacks, 0);
+    GenTransformFeedbacks = RESOLVE(GenTransformFeedbacks, 0);
+    IsTransformFeedback = RESOLVE(IsTransformFeedback, 0);
+    PauseTransformFeedback = RESOLVE(PauseTransformFeedback, 0);
+    ResumeTransformFeedback = RESOLVE(ResumeTransformFeedback, 0);
+    GetProgramBinary = RESOLVE(GetProgramBinary, 0);
+    ProgramBinary = RESOLVE(ProgramBinary, 0);
+    ProgramParameteri = RESOLVE(ProgramParameteri, 0);
+    InvalidateFramebuffer = RESOLVE(InvalidateFramebuffer, 0);
+    InvalidateSubFramebuffer = RESOLVE(InvalidateSubFramebuffer, 0);
+    TexStorage2D = RESOLVE(TexStorage2D, 0);
+    TexStorage3D = RESOLVE(TexStorage3D, 0);
+    GetInternalformativ = RESOLVE(GetInternalformativ, 0);
 
-    if (isES3(0)) {
-        gl3helper = qgles3Helper();
-
-        ReadBuffer = gl3helper->ReadBuffer;
-        DrawRangeElements = gl3helper->DrawRangeElements;
-        TexImage3D = gl3helper->TexImage3D;
-        TexSubImage3D = gl3helper->TexSubImage3D;
-        CopyTexSubImage3D = gl3helper->CopyTexSubImage3D;
-        CompressedTexImage3D = gl3helper->CompressedTexImage3D;
-        CompressedTexSubImage3D = gl3helper->CompressedTexSubImage3D;
-        GenQueries = gl3helper->GenQueries;
-        DeleteQueries = gl3helper->DeleteQueries;
-        IsQuery = gl3helper->IsQuery;
-        BeginQuery = gl3helper->BeginQuery;
-        EndQuery = gl3helper->EndQuery;
-        GetQueryiv = gl3helper->GetQueryiv;
-        GetQueryObjectuiv = gl3helper->GetQueryObjectuiv;
-        UnmapBuffer = gl3helper->UnmapBuffer;
-        GetBufferPointerv = gl3helper->GetBufferPointerv;
-        DrawBuffers = gl3helper->DrawBuffers;
-        UniformMatrix2x3fv = gl3helper->UniformMatrix2x3fv;
-        UniformMatrix3x2fv = gl3helper->UniformMatrix3x2fv;
-        UniformMatrix2x4fv = gl3helper->UniformMatrix2x4fv;
-        UniformMatrix4x2fv = gl3helper->UniformMatrix4x2fv;
-        UniformMatrix3x4fv = gl3helper->UniformMatrix3x4fv;
-        UniformMatrix4x3fv = gl3helper->UniformMatrix4x3fv;
-        BlitFramebuffer = gl3helper->BlitFramebuffer;
-        RenderbufferStorageMultisample = gl3helper->RenderbufferStorageMultisample;
-        FramebufferTextureLayer = gl3helper->FramebufferTextureLayer;
-        MapBufferRange = gl3helper->MapBufferRange;
-        FlushMappedBufferRange = gl3helper->FlushMappedBufferRange;
-        BindVertexArray = gl3helper->BindVertexArray;
-        DeleteVertexArrays = gl3helper->DeleteVertexArrays;
-        GenVertexArrays = gl3helper->GenVertexArrays;
-        IsVertexArray = gl3helper->IsVertexArray;
-        GetIntegeri_v = gl3helper->GetIntegeri_v;
-        BeginTransformFeedback = gl3helper->BeginTransformFeedback;
-        EndTransformFeedback = gl3helper->EndTransformFeedback;
-        BindBufferRange = gl3helper->BindBufferRange;
-        BindBufferBase = gl3helper->BindBufferBase;
-        TransformFeedbackVaryings = gl3helper->TransformFeedbackVaryings;
-        GetTransformFeedbackVarying = gl3helper->GetTransformFeedbackVarying;
-        VertexAttribIPointer = gl3helper->VertexAttribIPointer;
-        GetVertexAttribIiv = gl3helper->GetVertexAttribIiv;
-        GetVertexAttribIuiv = gl3helper->GetVertexAttribIuiv;
-        VertexAttribI4i = gl3helper->VertexAttribI4i;
-        VertexAttribI4ui = gl3helper->VertexAttribI4ui;
-        VertexAttribI4iv = gl3helper->VertexAttribI4iv;
-        VertexAttribI4uiv = gl3helper->VertexAttribI4uiv;
-        GetUniformuiv = gl3helper->GetUniformuiv;
-        GetFragDataLocation = gl3helper->GetFragDataLocation;
-        Uniform1ui = gl3helper->Uniform1ui;
-        Uniform2ui = gl3helper->Uniform2ui;
-        Uniform3ui = gl3helper->Uniform3ui;
-        Uniform4ui = gl3helper->Uniform4ui;
-        Uniform1uiv = gl3helper->Uniform1uiv;
-        Uniform2uiv = gl3helper->Uniform2uiv;
-        Uniform3uiv = gl3helper->Uniform3uiv;
-        Uniform4uiv = gl3helper->Uniform4uiv;
-        ClearBufferiv = gl3helper->ClearBufferiv;
-        ClearBufferuiv = gl3helper->ClearBufferuiv;
-        ClearBufferfv = gl3helper->ClearBufferfv;
-        ClearBufferfi = gl3helper->ClearBufferfi;
-        GetStringi = gl3helper->GetStringi;
-        CopyBufferSubData = gl3helper->CopyBufferSubData;
-        GetUniformIndices = gl3helper->GetUniformIndices;
-        GetActiveUniformsiv = gl3helper->GetActiveUniformsiv;
-        GetUniformBlockIndex = gl3helper->GetUniformBlockIndex;
-        GetActiveUniformBlockiv = gl3helper->GetActiveUniformBlockiv;
-        GetActiveUniformBlockName = gl3helper->GetActiveUniformBlockName;
-        UniformBlockBinding = gl3helper->UniformBlockBinding;
-        DrawArraysInstanced = gl3helper->DrawArraysInstanced;
-        DrawElementsInstanced = gl3helper->DrawElementsInstanced;
-        FenceSync = gl3helper->FenceSync;
-        IsSync = gl3helper->IsSync;
-        DeleteSync = gl3helper->DeleteSync;
-        ClientWaitSync = gl3helper->ClientWaitSync;
-        WaitSync = gl3helper->WaitSync;
-        GetInteger64v = gl3helper->GetInteger64v;
-        GetSynciv = gl3helper->GetSynciv;
-        GetInteger64i_v = gl3helper->GetInteger64i_v;
-        GetBufferParameteri64v = gl3helper->GetBufferParameteri64v;
-        GenSamplers = gl3helper->GenSamplers;
-        DeleteSamplers = gl3helper->DeleteSamplers;
-        IsSampler = gl3helper->IsSampler;
-        BindSampler = gl3helper->BindSampler;
-        SamplerParameteri = gl3helper->SamplerParameteri;
-        SamplerParameteriv = gl3helper->SamplerParameteriv;
-        SamplerParameterf = gl3helper->SamplerParameterf;
-        SamplerParameterfv = gl3helper->SamplerParameterfv;
-        GetSamplerParameteriv = gl3helper->GetSamplerParameteriv;
-        GetSamplerParameterfv = gl3helper->GetSamplerParameterfv;
-        VertexAttribDivisor = gl3helper->VertexAttribDivisor;
-        BindTransformFeedback = gl3helper->BindTransformFeedback;
-        DeleteTransformFeedbacks = gl3helper->DeleteTransformFeedbacks;
-        GenTransformFeedbacks = gl3helper->GenTransformFeedbacks;
-        IsTransformFeedback = gl3helper->IsTransformFeedback;
-        PauseTransformFeedback = gl3helper->PauseTransformFeedback;
-        ResumeTransformFeedback = gl3helper->ResumeTransformFeedback;
-        GetProgramBinary = gl3helper->GetProgramBinary;
-        ProgramBinary = gl3helper->ProgramBinary;
-        ProgramParameteri = gl3helper->ProgramParameteri;
-        InvalidateFramebuffer = gl3helper->InvalidateFramebuffer;
-        InvalidateSubFramebuffer = gl3helper->InvalidateSubFramebuffer;
-        TexStorage2D = gl3helper->TexStorage2D;
-        TexStorage3D = gl3helper->TexStorage3D;
-        GetInternalformativ = gl3helper->GetInternalformativ;
-    } else {
-        ReadBuffer = RESOLVE(ReadBuffer, 0);
-        DrawRangeElements = RESOLVE(DrawRangeElements, 0);
-        TexImage3D = RESOLVE(TexImage3D, 0);
-        TexSubImage3D = RESOLVE(TexSubImage3D, 0);
-        CopyTexSubImage3D = RESOLVE(CopyTexSubImage3D, 0);
-        CompressedTexImage3D = RESOLVE(CompressedTexImage3D, 0);
-        CompressedTexSubImage3D = RESOLVE(CompressedTexSubImage3D, 0);
-        GenQueries = RESOLVE(GenQueries, 0);
-        DeleteQueries = RESOLVE(DeleteQueries, 0);
-        IsQuery = RESOLVE(IsQuery, 0);
-        BeginQuery = RESOLVE(BeginQuery, 0);
-        EndQuery = RESOLVE(EndQuery, 0);
-        GetQueryiv = RESOLVE(GetQueryiv, 0);
-        GetQueryObjectuiv = RESOLVE(GetQueryObjectuiv, 0);
-        UnmapBuffer = RESOLVE(UnmapBuffer, ResolveOES);
-        GetBufferPointerv = RESOLVE(GetBufferPointerv, 0);
-        DrawBuffers = RESOLVE(DrawBuffers, 0);
-        UniformMatrix2x3fv = RESOLVE(UniformMatrix2x3fv, 0);
-        UniformMatrix3x2fv = RESOLVE(UniformMatrix3x2fv, 0);
-        UniformMatrix2x4fv = RESOLVE(UniformMatrix2x4fv, 0);
-        UniformMatrix4x2fv = RESOLVE(UniformMatrix4x2fv, 0);
-        UniformMatrix3x4fv = RESOLVE(UniformMatrix3x4fv, 0);
-        UniformMatrix4x3fv = RESOLVE(UniformMatrix4x3fv, 0);
-        BlitFramebuffer = RESOLVE(BlitFramebuffer, ResolveEXT | ResolveANGLE | ResolveNV);
-        RenderbufferStorageMultisample = RESOLVE(RenderbufferStorageMultisample, ResolveEXT | ResolveANGLE | ResolveNV);
-        FramebufferTextureLayer = RESOLVE(FramebufferTextureLayer, 0);
-        MapBufferRange = RESOLVE(MapBufferRange, 0);
-        FlushMappedBufferRange = RESOLVE(FlushMappedBufferRange, 0);
-        BindVertexArray = RESOLVE(BindVertexArray, 0);
-        DeleteVertexArrays = RESOLVE(DeleteVertexArrays, 0);
-        GenVertexArrays = RESOLVE(GenVertexArrays, 0);
-        IsVertexArray = RESOLVE(IsVertexArray, 0);
-        GetIntegeri_v = RESOLVE(GetIntegeri_v, 0);
-        BeginTransformFeedback = RESOLVE(BeginTransformFeedback, 0);
-        EndTransformFeedback = RESOLVE(EndTransformFeedback, 0);
-        BindBufferRange = RESOLVE(BindBufferRange, 0);
-        BindBufferBase = RESOLVE(BindBufferBase, 0);
-        TransformFeedbackVaryings = RESOLVE(TransformFeedbackVaryings, 0);
-        GetTransformFeedbackVarying = RESOLVE(GetTransformFeedbackVarying, 0);
-        VertexAttribIPointer = RESOLVE(VertexAttribIPointer, 0);
-        GetVertexAttribIiv = RESOLVE(GetVertexAttribIiv, 0);
-        GetVertexAttribIuiv = RESOLVE(GetVertexAttribIuiv, 0);
-        VertexAttribI4i = RESOLVE(VertexAttribI4i, 0);
-        VertexAttribI4ui = RESOLVE(VertexAttribI4ui, 0);
-        VertexAttribI4iv = RESOLVE(VertexAttribI4iv, 0);
-        VertexAttribI4uiv = RESOLVE(VertexAttribI4uiv, 0);
-        GetUniformuiv = RESOLVE(GetUniformuiv, 0);
-        GetFragDataLocation = RESOLVE(GetFragDataLocation, 0);
-        Uniform1ui = RESOLVE(Uniform1ui, 0);
-        Uniform2ui = RESOLVE(Uniform2ui, 0);
-        Uniform3ui = RESOLVE(Uniform3ui, 0);
-        Uniform4ui = RESOLVE(Uniform4ui, 0);
-        Uniform1uiv = RESOLVE(Uniform1uiv, 0);
-        Uniform2uiv = RESOLVE(Uniform2uiv, 0);
-        Uniform3uiv = RESOLVE(Uniform3uiv, 0);
-        Uniform4uiv = RESOLVE(Uniform4uiv, 0);
-        ClearBufferiv = RESOLVE(ClearBufferiv, 0);
-        ClearBufferuiv = RESOLVE(ClearBufferuiv, 0);
-        ClearBufferfv = RESOLVE(ClearBufferfv, 0);
-        ClearBufferfi = RESOLVE(ClearBufferfi, 0);
-        GetStringi = RESOLVE(GetStringi, 0);
-        CopyBufferSubData = RESOLVE(CopyBufferSubData, 0);
-        GetUniformIndices = RESOLVE(GetUniformIndices, 0);
-        GetActiveUniformsiv = RESOLVE(GetActiveUniformsiv, 0);
-        GetUniformBlockIndex = RESOLVE(GetUniformBlockIndex, 0);
-        GetActiveUniformBlockiv = RESOLVE(GetActiveUniformBlockiv, 0);
-        GetActiveUniformBlockName = RESOLVE(GetActiveUniformBlockName, 0);
-        UniformBlockBinding = RESOLVE(UniformBlockBinding, 0);
-        DrawArraysInstanced = RESOLVE(DrawArraysInstanced, 0);
-        DrawElementsInstanced = RESOLVE(DrawElementsInstanced, 0);
-        FenceSync = RESOLVE(FenceSync, 0);
-        IsSync = RESOLVE(IsSync, 0);
-        DeleteSync = RESOLVE(DeleteSync, 0);
-        ClientWaitSync = RESOLVE(ClientWaitSync, 0);
-        WaitSync = RESOLVE(WaitSync, 0);
-        GetInteger64v = RESOLVE(GetInteger64v, 0);
-        GetSynciv = RESOLVE(GetSynciv, 0);
-        GetInteger64i_v = RESOLVE(GetInteger64i_v, 0);
-        GetBufferParameteri64v = RESOLVE(GetBufferParameteri64v, 0);
-        GenSamplers = RESOLVE(GenSamplers, 0);
-        DeleteSamplers = RESOLVE(DeleteSamplers, 0);
-        IsSampler = RESOLVE(IsSampler, 0);
-        BindSampler = RESOLVE(BindSampler, 0);
-        SamplerParameteri = RESOLVE(SamplerParameteri, 0);
-        SamplerParameteriv = RESOLVE(SamplerParameteriv, 0);
-        SamplerParameterf = RESOLVE(SamplerParameterf, 0);
-        SamplerParameterfv = RESOLVE(SamplerParameterfv, 0);
-        GetSamplerParameteriv = RESOLVE(GetSamplerParameteriv, 0);
-        GetSamplerParameterfv = RESOLVE(GetSamplerParameterfv, 0);
-        VertexAttribDivisor = RESOLVE(VertexAttribDivisor, 0);
-        BindTransformFeedback = RESOLVE(BindTransformFeedback, 0);
-        DeleteTransformFeedbacks = RESOLVE(DeleteTransformFeedbacks, 0);
-        GenTransformFeedbacks = RESOLVE(GenTransformFeedbacks, 0);
-        IsTransformFeedback = RESOLVE(IsTransformFeedback, 0);
-        PauseTransformFeedback = RESOLVE(PauseTransformFeedback, 0);
-        ResumeTransformFeedback = RESOLVE(ResumeTransformFeedback, 0);
-        GetProgramBinary = RESOLVE(GetProgramBinary, 0);
-        ProgramBinary = RESOLVE(ProgramBinary, 0);
-        ProgramParameteri = RESOLVE(ProgramParameteri, 0);
-        InvalidateFramebuffer = RESOLVE(InvalidateFramebuffer, 0);
-        InvalidateSubFramebuffer = RESOLVE(InvalidateSubFramebuffer, 0);
-        TexStorage2D = RESOLVE(TexStorage2D, 0);
-        TexStorage3D = RESOLVE(TexStorage3D, 0);
-        GetInternalformativ = RESOLVE(GetInternalformativ, 0);
-    }
-
-    if (gl3helper && isES3(1)) {
-        DispatchCompute = gl3helper->DispatchCompute;
-        DispatchComputeIndirect = gl3helper->DispatchComputeIndirect;
-        DrawArraysIndirect = gl3helper->DrawArraysIndirect;
-        DrawElementsIndirect = gl3helper->DrawElementsIndirect;
-        FramebufferParameteri = gl3helper->FramebufferParameteri;
-        GetFramebufferParameteriv = gl3helper->GetFramebufferParameteriv;
-        GetProgramInterfaceiv = gl3helper->GetProgramInterfaceiv;
-        GetProgramResourceIndex = gl3helper->GetProgramResourceIndex;
-        GetProgramResourceName = gl3helper->GetProgramResourceName;
-        GetProgramResourceiv = gl3helper->GetProgramResourceiv;
-        GetProgramResourceLocation = gl3helper->GetProgramResourceLocation;
-        UseProgramStages = gl3helper->UseProgramStages;
-        ActiveShaderProgram = gl3helper->ActiveShaderProgram;
-        CreateShaderProgramv = gl3helper->CreateShaderProgramv;
-        BindProgramPipeline = gl3helper->BindProgramPipeline;
-        DeleteProgramPipelines = gl3helper->DeleteProgramPipelines;
-        GenProgramPipelines = gl3helper->GenProgramPipelines;
-        IsProgramPipeline = gl3helper->IsProgramPipeline;
-        GetProgramPipelineiv = gl3helper->GetProgramPipelineiv;
-        ProgramUniform1i = gl3helper->ProgramUniform1i;
-        ProgramUniform2i = gl3helper->ProgramUniform2i;
-        ProgramUniform3i = gl3helper->ProgramUniform3i;
-        ProgramUniform4i = gl3helper->ProgramUniform4i;
-        ProgramUniform1ui = gl3helper->ProgramUniform1ui;
-        ProgramUniform2ui = gl3helper->ProgramUniform2ui;
-        ProgramUniform3ui = gl3helper->ProgramUniform3ui;
-        ProgramUniform4ui = gl3helper->ProgramUniform4ui;
-        ProgramUniform1f = gl3helper->ProgramUniform1f;
-        ProgramUniform2f = gl3helper->ProgramUniform2f;
-        ProgramUniform3f = gl3helper->ProgramUniform3f;
-        ProgramUniform4f = gl3helper->ProgramUniform4f;
-        ProgramUniform1iv = gl3helper->ProgramUniform1iv;
-        ProgramUniform2iv = gl3helper->ProgramUniform2iv;
-        ProgramUniform3iv = gl3helper->ProgramUniform3iv;
-        ProgramUniform4iv = gl3helper->ProgramUniform4iv;
-        ProgramUniform1uiv = gl3helper->ProgramUniform1uiv;
-        ProgramUniform2uiv = gl3helper->ProgramUniform2uiv;
-        ProgramUniform3uiv = gl3helper->ProgramUniform3uiv;
-        ProgramUniform4uiv = gl3helper->ProgramUniform4uiv;
-        ProgramUniform1fv = gl3helper->ProgramUniform1fv;
-        ProgramUniform2fv = gl3helper->ProgramUniform2fv;
-        ProgramUniform3fv = gl3helper->ProgramUniform3fv;
-        ProgramUniform4fv = gl3helper->ProgramUniform4fv;
-        ProgramUniformMatrix2fv = gl3helper->ProgramUniformMatrix2fv;
-        ProgramUniformMatrix3fv = gl3helper->ProgramUniformMatrix3fv;
-        ProgramUniformMatrix4fv = gl3helper->ProgramUniformMatrix4fv;
-        ProgramUniformMatrix2x3fv = gl3helper->ProgramUniformMatrix2x3fv;
-        ProgramUniformMatrix3x2fv = gl3helper->ProgramUniformMatrix3x2fv;
-        ProgramUniformMatrix2x4fv = gl3helper->ProgramUniformMatrix2x4fv;
-        ProgramUniformMatrix4x2fv = gl3helper->ProgramUniformMatrix4x2fv;
-        ProgramUniformMatrix3x4fv = gl3helper->ProgramUniformMatrix3x4fv;
-        ProgramUniformMatrix4x3fv = gl3helper->ProgramUniformMatrix4x3fv;
-        ValidateProgramPipeline = gl3helper->ValidateProgramPipeline;
-        GetProgramPipelineInfoLog = gl3helper->GetProgramPipelineInfoLog;
-        BindImageTexture = gl3helper->BindImageTexture;
-        GetBooleani_v = gl3helper->GetBooleani_v;
-        MemoryBarrier = gl3helper->MemoryBarrierFunc;
-        MemoryBarrierByRegion = gl3helper->MemoryBarrierByRegion;
-        TexStorage2DMultisample = gl3helper->TexStorage2DMultisample;
-        GetMultisamplefv = gl3helper->GetMultisamplefv;
-        SampleMaski = gl3helper->SampleMaski;
-        GetTexLevelParameteriv = gl3helper->GetTexLevelParameteriv;
-        GetTexLevelParameterfv = gl3helper->GetTexLevelParameterfv;
-        BindVertexBuffer = gl3helper->BindVertexBuffer;
-        VertexAttribFormat = gl3helper->VertexAttribFormat;
-        VertexAttribIFormat = gl3helper->VertexAttribIFormat;
-        VertexAttribBinding = gl3helper->VertexAttribBinding;
-        VertexBindingDivisor = gl3helper->VertexBindingDivisor;
-    } else {
-        DispatchCompute = RESOLVE(DispatchCompute, 0);
-        DispatchComputeIndirect = RESOLVE(DispatchComputeIndirect, 0);
-        DrawArraysIndirect = RESOLVE(DrawArraysIndirect, 0);
-        DrawElementsIndirect = RESOLVE(DrawElementsIndirect, 0);
-        FramebufferParameteri = RESOLVE(FramebufferParameteri, 0);
-        GetFramebufferParameteriv = RESOLVE(GetFramebufferParameteriv, 0);
-        GetProgramInterfaceiv = RESOLVE(GetProgramInterfaceiv, 0);
-        GetProgramResourceIndex = RESOLVE(GetProgramResourceIndex, 0);
-        GetProgramResourceName = RESOLVE(GetProgramResourceName, 0);
-        GetProgramResourceiv = RESOLVE(GetProgramResourceiv, 0);
-        GetProgramResourceLocation = RESOLVE(GetProgramResourceLocation, 0);
-        UseProgramStages = RESOLVE(UseProgramStages, 0);
-        ActiveShaderProgram = RESOLVE(ActiveShaderProgram, 0);
-        CreateShaderProgramv = RESOLVE(CreateShaderProgramv, 0);
-        BindProgramPipeline = RESOLVE(BindProgramPipeline, 0);
-        DeleteProgramPipelines = RESOLVE(DeleteProgramPipelines, 0);
-        GenProgramPipelines = RESOLVE(GenProgramPipelines, 0);
-        IsProgramPipeline = RESOLVE(IsProgramPipeline, 0);
-        GetProgramPipelineiv = RESOLVE(GetProgramPipelineiv, 0);
-        ProgramUniform1i = RESOLVE(ProgramUniform1i, 0);
-        ProgramUniform2i = RESOLVE(ProgramUniform2i, 0);
-        ProgramUniform3i = RESOLVE(ProgramUniform3i, 0);
-        ProgramUniform4i = RESOLVE(ProgramUniform4i, 0);
-        ProgramUniform1ui = RESOLVE(ProgramUniform1ui, 0);
-        ProgramUniform2ui = RESOLVE(ProgramUniform2ui, 0);
-        ProgramUniform3ui = RESOLVE(ProgramUniform3ui, 0);
-        ProgramUniform4ui = RESOLVE(ProgramUniform4ui, 0);
-        ProgramUniform1f = RESOLVE(ProgramUniform1f, 0);
-        ProgramUniform2f = RESOLVE(ProgramUniform2f, 0);
-        ProgramUniform3f = RESOLVE(ProgramUniform3f, 0);
-        ProgramUniform4f = RESOLVE(ProgramUniform4f, 0);
-        ProgramUniform1iv = RESOLVE(ProgramUniform1iv, 0);
-        ProgramUniform2iv = RESOLVE(ProgramUniform2iv, 0);
-        ProgramUniform3iv = RESOLVE(ProgramUniform3iv, 0);
-        ProgramUniform4iv = RESOLVE(ProgramUniform4iv, 0);
-        ProgramUniform1uiv = RESOLVE(ProgramUniform1uiv, 0);
-        ProgramUniform2uiv = RESOLVE(ProgramUniform2uiv, 0);
-        ProgramUniform3uiv = RESOLVE(ProgramUniform3uiv, 0);
-        ProgramUniform4uiv = RESOLVE(ProgramUniform4uiv, 0);
-        ProgramUniform1fv = RESOLVE(ProgramUniform1fv, 0);
-        ProgramUniform2fv = RESOLVE(ProgramUniform2fv, 0);
-        ProgramUniform3fv = RESOLVE(ProgramUniform3fv, 0);
-        ProgramUniform4fv = RESOLVE(ProgramUniform4fv, 0);
-        ProgramUniformMatrix2fv = RESOLVE(ProgramUniformMatrix2fv, 0);
-        ProgramUniformMatrix3fv = RESOLVE(ProgramUniformMatrix3fv, 0);
-        ProgramUniformMatrix4fv = RESOLVE(ProgramUniformMatrix4fv, 0);
-        ProgramUniformMatrix2x3fv = RESOLVE(ProgramUniformMatrix2x3fv, 0);
-        ProgramUniformMatrix3x2fv = RESOLVE(ProgramUniformMatrix3x2fv, 0);
-        ProgramUniformMatrix2x4fv = RESOLVE(ProgramUniformMatrix2x4fv, 0);
-        ProgramUniformMatrix4x2fv = RESOLVE(ProgramUniformMatrix4x2fv, 0);
-        ProgramUniformMatrix3x4fv = RESOLVE(ProgramUniformMatrix3x4fv, 0);
-        ProgramUniformMatrix4x3fv = RESOLVE(ProgramUniformMatrix4x3fv, 0);
-        ValidateProgramPipeline = RESOLVE(ValidateProgramPipeline, 0);
-        GetProgramPipelineInfoLog = RESOLVE(GetProgramPipelineInfoLog, 0);
-        BindImageTexture = RESOLVE(BindImageTexture, 0);
-        GetBooleani_v = RESOLVE(GetBooleani_v, 0);
-        MemoryBarrier = RESOLVE(MemoryBarrier, 0);
-        MemoryBarrierByRegion = RESOLVE(MemoryBarrierByRegion, 0);
-        TexStorage2DMultisample = RESOLVE(TexStorage2DMultisample, 0);
-        GetMultisamplefv = RESOLVE(GetMultisamplefv, 0);
-        SampleMaski = RESOLVE(SampleMaski, 0);
-        GetTexLevelParameteriv = RESOLVE(GetTexLevelParameteriv, 0);
-        GetTexLevelParameterfv = RESOLVE(GetTexLevelParameterfv, 0);
-        BindVertexBuffer = RESOLVE(BindVertexBuffer, 0);
-        VertexAttribFormat = RESOLVE(VertexAttribFormat, 0);
-        VertexAttribIFormat = RESOLVE(VertexAttribIFormat, 0);
-        VertexAttribBinding = RESOLVE(VertexAttribBinding, 0);
-        VertexBindingDivisor = RESOLVE(VertexBindingDivisor, 0);
-    }
+    // GLES 3.1
+    DispatchCompute = RESOLVE(DispatchCompute, 0);
+    DispatchComputeIndirect = RESOLVE(DispatchComputeIndirect, 0);
+    DrawArraysIndirect = RESOLVE(DrawArraysIndirect, 0);
+    DrawElementsIndirect = RESOLVE(DrawElementsIndirect, 0);
+    FramebufferParameteri = RESOLVE(FramebufferParameteri, 0);
+    GetFramebufferParameteriv = RESOLVE(GetFramebufferParameteriv, 0);
+    GetProgramInterfaceiv = RESOLVE(GetProgramInterfaceiv, 0);
+    GetProgramResourceIndex = RESOLVE(GetProgramResourceIndex, 0);
+    GetProgramResourceName = RESOLVE(GetProgramResourceName, 0);
+    GetProgramResourceiv = RESOLVE(GetProgramResourceiv, 0);
+    GetProgramResourceLocation = RESOLVE(GetProgramResourceLocation, 0);
+    UseProgramStages = RESOLVE(UseProgramStages, 0);
+    ActiveShaderProgram = RESOLVE(ActiveShaderProgram, 0);
+    CreateShaderProgramv = RESOLVE(CreateShaderProgramv, 0);
+    BindProgramPipeline = RESOLVE(BindProgramPipeline, 0);
+    DeleteProgramPipelines = RESOLVE(DeleteProgramPipelines, 0);
+    GenProgramPipelines = RESOLVE(GenProgramPipelines, 0);
+    IsProgramPipeline = RESOLVE(IsProgramPipeline, 0);
+    GetProgramPipelineiv = RESOLVE(GetProgramPipelineiv, 0);
+    ProgramUniform1i = RESOLVE(ProgramUniform1i, 0);
+    ProgramUniform2i = RESOLVE(ProgramUniform2i, 0);
+    ProgramUniform3i = RESOLVE(ProgramUniform3i, 0);
+    ProgramUniform4i = RESOLVE(ProgramUniform4i, 0);
+    ProgramUniform1ui = RESOLVE(ProgramUniform1ui, 0);
+    ProgramUniform2ui = RESOLVE(ProgramUniform2ui, 0);
+    ProgramUniform3ui = RESOLVE(ProgramUniform3ui, 0);
+    ProgramUniform4ui = RESOLVE(ProgramUniform4ui, 0);
+    ProgramUniform1f = RESOLVE(ProgramUniform1f, 0);
+    ProgramUniform2f = RESOLVE(ProgramUniform2f, 0);
+    ProgramUniform3f = RESOLVE(ProgramUniform3f, 0);
+    ProgramUniform4f = RESOLVE(ProgramUniform4f, 0);
+    ProgramUniform1iv = RESOLVE(ProgramUniform1iv, 0);
+    ProgramUniform2iv = RESOLVE(ProgramUniform2iv, 0);
+    ProgramUniform3iv = RESOLVE(ProgramUniform3iv, 0);
+    ProgramUniform4iv = RESOLVE(ProgramUniform4iv, 0);
+    ProgramUniform1uiv = RESOLVE(ProgramUniform1uiv, 0);
+    ProgramUniform2uiv = RESOLVE(ProgramUniform2uiv, 0);
+    ProgramUniform3uiv = RESOLVE(ProgramUniform3uiv, 0);
+    ProgramUniform4uiv = RESOLVE(ProgramUniform4uiv, 0);
+    ProgramUniform1fv = RESOLVE(ProgramUniform1fv, 0);
+    ProgramUniform2fv = RESOLVE(ProgramUniform2fv, 0);
+    ProgramUniform3fv = RESOLVE(ProgramUniform3fv, 0);
+    ProgramUniform4fv = RESOLVE(ProgramUniform4fv, 0);
+    ProgramUniformMatrix2fv = RESOLVE(ProgramUniformMatrix2fv, 0);
+    ProgramUniformMatrix3fv = RESOLVE(ProgramUniformMatrix3fv, 0);
+    ProgramUniformMatrix4fv = RESOLVE(ProgramUniformMatrix4fv, 0);
+    ProgramUniformMatrix2x3fv = RESOLVE(ProgramUniformMatrix2x3fv, 0);
+    ProgramUniformMatrix3x2fv = RESOLVE(ProgramUniformMatrix3x2fv, 0);
+    ProgramUniformMatrix2x4fv = RESOLVE(ProgramUniformMatrix2x4fv, 0);
+    ProgramUniformMatrix4x2fv = RESOLVE(ProgramUniformMatrix4x2fv, 0);
+    ProgramUniformMatrix3x4fv = RESOLVE(ProgramUniformMatrix3x4fv, 0);
+    ProgramUniformMatrix4x3fv = RESOLVE(ProgramUniformMatrix4x3fv, 0);
+    ValidateProgramPipeline = RESOLVE(ValidateProgramPipeline, 0);
+    GetProgramPipelineInfoLog = RESOLVE(GetProgramPipelineInfoLog, 0);
+    BindImageTexture = RESOLVE(BindImageTexture, 0);
+    GetBooleani_v = RESOLVE(GetBooleani_v, 0);
+    MemoryBarrier = RESOLVE(MemoryBarrier, 0);
+    MemoryBarrierByRegion = RESOLVE(MemoryBarrierByRegion, 0);
+    TexStorage2DMultisample = RESOLVE(TexStorage2DMultisample, 0);
+    GetMultisamplefv = RESOLVE(GetMultisamplefv, 0);
+    SampleMaski = RESOLVE(SampleMaski, 0);
+    GetTexLevelParameteriv = RESOLVE(GetTexLevelParameteriv, 0);
+    GetTexLevelParameterfv = RESOLVE(GetTexLevelParameterfv, 0);
+    BindVertexBuffer = RESOLVE(BindVertexBuffer, 0);
+    VertexAttribFormat = RESOLVE(VertexAttribFormat, 0);
+    VertexAttribIFormat = RESOLVE(VertexAttribIFormat, 0);
+    VertexAttribBinding = RESOLVE(VertexAttribBinding, 0);
+    VertexBindingDivisor = RESOLVE(VertexBindingDivisor, 0);
 }
 
 QOpenGLExtensionsPrivate::QOpenGLExtensionsPrivate(QOpenGLContext *ctx)
@@ -5705,11 +5249,6 @@ QOpenGLExtensionsPrivate::QOpenGLExtensionsPrivate(QOpenGLContext *ctx)
     GetBufferSubData = RESOLVE(GetBufferSubData, ResolveEXT);
     DiscardFramebuffer = RESOLVE(DiscardFramebuffer, ResolveEXT);
  }
-
-QOpenGLES3Helper *QOpenGLExtensions::gles3Helper()
-{
-    return qgles3Helper();
-}
 
 void QOpenGLExtensions::flushShared()
 {
