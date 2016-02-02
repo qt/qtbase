@@ -51,12 +51,15 @@
 // We mean it.
 //
 
+#include "qstate.h"
 #include "private/qabstractstate_p.h"
 
 #include <QtCore/qlist.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qpointer.h>
 #include <QtCore/qvariant.h>
+
+#ifndef QT_NO_STATEMACHINE
 
 QT_BEGIN_NAMESPACE
 
@@ -89,7 +92,7 @@ class QAbstractTransition;
 class QHistoryState;
 
 class QState;
-class Q_AUTOTEST_EXPORT QStatePrivate : public QAbstractStatePrivate
+class Q_CORE_EXPORT QStatePrivate : public QAbstractStatePrivate
 {
     Q_DECLARE_PUBLIC(QState)
 public:
@@ -120,5 +123,7 @@ public:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_STATEMACHINE
 
 #endif

@@ -90,6 +90,11 @@ public:
         if (usesNativeWidgets || window->parent() == 0)
             return;
         Q_Q(QWindowContainer);
+        if (q->internalWinId()) {
+            // Allow use native widgets if the window container is already a native widget
+            usesNativeWidgets = true;
+            return;
+        }
         QWidget *p = q->parentWidget();
         while (p) {
             if (
@@ -153,8 +158,10 @@ public:
     as a child of a QAbstractScrollArea or QMdiArea, it will
     create a \l {Native Widgets vs Alien Widgets} {native window} for
     every widget in its parent chain to allow for proper stacking and
-    clipping in this use case. Applications with many native child
-    windows may suffer from performance issues.
+    clipping in this use case. Creating a native window for the window
+    container also allows for proper stacking and clipping. This must
+    be done before showing the window container. Applications with
+    many native child windows may suffer from performance issues.
 
     The window container has a number of known limitations:
 

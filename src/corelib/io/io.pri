@@ -107,8 +107,6 @@ win32 {
 
     !winrt {
         SOURCES += io/qsettings_win.cpp
-        HEADERS += io/qwindowspipewriter_p.h
-        SOURCES += io/qwindowspipewriter.cpp
         SOURCES += io/qstandardpaths_win.cpp
 
         wince* {
@@ -117,11 +115,13 @@ win32 {
         } else {
             HEADERS += \
                 io/qwinoverlappedionotifier_p.h \
-                io/qwindowspipereader_p.h
+                io/qwindowspipereader_p.h \
+                io/qwindowspipewriter_p.h
             SOURCES += \
                 io/qprocess_win.cpp \
                 io/qwinoverlappedionotifier.cpp \
                 io/qwindowspipereader.cpp \
+                io/qwindowspipewriter.cpp \
                 io/qstorageinfo_win.cpp
             LIBS += -lmpr
         }

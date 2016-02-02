@@ -75,11 +75,7 @@ namespace QTest
         QEvent::Type type;
         type = press ? QEvent::KeyPress : QEvent::KeyRelease;
         qt_handleKeyEvent(window, type, code, modifier, text, repeat, delay);
-#ifdef QT_MAC_USE_COCOA
-        QTest::qWait(20);
-#else
         qApp->processEvents();
-#endif
     }
 
     static void sendKeyEvent(KeyAction action, QWindow *window, Qt::Key code,

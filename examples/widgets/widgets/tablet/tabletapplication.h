@@ -56,10 +56,10 @@ public:
 
     bool event(QEvent *event) Q_DECL_OVERRIDE;
     void setCanvas(TabletCanvas *canvas)
-        { myCanvas = canvas; }
+        { m_canvas = canvas; }
 
 private:
-    TabletCanvas *myCanvas;
+    TabletCanvas *m_canvas;
 };
 //! [0]
 

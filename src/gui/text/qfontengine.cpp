@@ -2296,7 +2296,7 @@ QFontEngine *QFontEngineMulti::createMultiFontEngine(QFontEngine *fe, int script
     }
     if (!engine) {
         engine = QGuiApplicationPrivate::instance()->platformIntegration()->fontDatabase()->fontEngineMulti(fe, QChar::Script(script));
-        QFontCache::instance()->insertEngine(key, engine, /* insertMulti */ !faceIsLocal);
+        fc->insertEngine(key, engine, /* insertMulti */ !faceIsLocal);
     }
     Q_ASSERT(engine);
     return engine;

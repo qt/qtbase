@@ -1967,71 +1967,71 @@ namespace
         // https://bugzilla.gnome.org/show_bug.cgi?id=744553 "ATK docs provide no guidance for allowed values of some text attributes"
         // specifically for "weight", "invalid", "language" and value range for colors
 
-        if (ia2Name == QStringLiteral("background-color")) {
+        if (ia2Name == QLatin1String("background-color")) {
             name = QStringLiteral("bg-color");
             value = atspiColor(value);
-        } else if (ia2Name == QStringLiteral("font-family")) {
+        } else if (ia2Name == QLatin1String("font-family")) {
             name = QStringLiteral("family-name");
-        } else if (ia2Name == QStringLiteral("color")) {
+        } else if (ia2Name == QLatin1String("color")) {
             name = QStringLiteral("fg-color");
             value = atspiColor(value);
-        } else if (ia2Name == QStringLiteral("text-align")) {
+        } else if (ia2Name == QLatin1String("text-align")) {
             name = QStringLiteral("justification");
-            if (value == QStringLiteral("justify")) {
+            if (value == QLatin1String("justify")) {
                 value = QStringLiteral("fill");
             } else {
-                if (value != QStringLiteral("left") &&
-                    value != QStringLiteral("right") &&
-                    value != QStringLiteral("center")
+                if (value != QLatin1String("left") &&
+                    value != QLatin1String("right") &&
+                    value != QLatin1String("center")
                 ) {
                     value = QString();
                     qAtspiDebug() << "Unknown text-align attribute value \"" << value << "\" cannot be translated to AT-SPI.";
                 }
             }
-        } else if (ia2Name == QStringLiteral("font-size")) {
+        } else if (ia2Name == QLatin1String("font-size")) {
             name = QStringLiteral("size");
             value = atspiSize(value);
-        } else if (ia2Name == QStringLiteral("font-style")) {
+        } else if (ia2Name == QLatin1String("font-style")) {
             name = QStringLiteral("style");
-            if (value != QStringLiteral("normal") &&
-                value != QStringLiteral("italic") &&
-                value != QStringLiteral("oblique")
+            if (value != QLatin1String("normal") &&
+                value != QLatin1String("italic") &&
+                value != QLatin1String("oblique")
             ) {
                 value = QString();
                 qAtspiDebug() << "Unknown font-style attribute value \"" << value << "\" cannot be translated to AT-SPI.";
             }
-        } else if (ia2Name == QStringLiteral("text-underline-type")) {
+        } else if (ia2Name == QLatin1String("text-underline-type")) {
             name = QStringLiteral("underline");
-            if (value != QStringLiteral("none") &&
-                value != QStringLiteral("single") &&
-                value != QStringLiteral("double")
+            if (value != QLatin1String("none") &&
+                value != QLatin1String("single") &&
+                value != QLatin1String("double")
             ) {
                 value = QString();
                 qAtspiDebug() << "Unknown text-underline-type attribute value \"" << value << "\" cannot be translated to AT-SPI.";
             }
-        } else if (ia2Name == QStringLiteral("font-weight")) {
+        } else if (ia2Name == QLatin1String("font-weight")) {
             name = QStringLiteral("weight");
-            if (value == QStringLiteral("normal"))
+            if (value == QLatin1String("normal"))
                 // Orca seems to accept all IAccessible2 values except for "normal"
                 // (on which it produces traceback and fails to read any following text attributes),
                 // but that is the default value, so omit it anyway
                 value = QString();
-        } else if (ia2Name == QStringLiteral("text-position")) {
+        } else if (ia2Name == QLatin1String("text-position")) {
             name = QStringLiteral("vertical-align");
-            if (value != QStringLiteral("baseline") &&
-                value != QStringLiteral("super") &&
-                value != QStringLiteral("sub")
+            if (value != QLatin1String("baseline") &&
+                value != QLatin1String("super") &&
+                value != QLatin1String("sub")
             ) {
                 value = QString();
                 qAtspiDebug() << "Unknown text-position attribute value \"" << value << "\" cannot be translated to AT-SPI.";
             }
-        } else if (ia2Name == QStringLiteral("writing-mode")) {
+        } else if (ia2Name == QLatin1String("writing-mode")) {
             name = QStringLiteral("direction");
-            if (value == QStringLiteral("lr"))
+            if (value == QLatin1String("lr"))
                 value = QStringLiteral("ltr");
-            else if (value == QStringLiteral("rl"))
+            else if (value == QLatin1String("rl"))
                 value = QStringLiteral("rtl");
-            else if (value == QStringLiteral("tb")) {
+            else if (value == QLatin1String("tb")) {
                 // IAccessible2 docs refer to XSL, which specifies "tb" is shorthand for "tb-rl"; so at least give a hint about the horizontal direction (ATK does not support vertical direction in this attribute (yet))
                 value = QStringLiteral("rtl");
                 qAtspiDebug() << "writing-mode attribute value \"tb\" translated only w.r.t. horizontal direction; vertical direction ignored";
@@ -2039,9 +2039,9 @@ namespace
                 value = QString();
                 qAtspiDebug() << "Unknown writing-mode attribute value \"" << value << "\" cannot be translated to AT-SPI.";
             }
-        } else if (ia2Name == QStringLiteral("language")) {
+        } else if (ia2Name == QLatin1String("language")) {
             // OK - ATK has no docs on the format of the value, IAccessible2 has reasonable format - leave it at that now
-        } else if (ia2Name == QStringLiteral("invalid")) {
+        } else if (ia2Name == QLatin1String("invalid")) {
             // OK - ATK docs are vague but suggest they support the same range of values as IAccessible2
         } else {
             // attribute we know nothing about

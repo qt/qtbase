@@ -11,6 +11,7 @@ SUBDIRS=\
    qguitimer \
    qguivariant \
    qinputmethod \
+   qkeyevent \
    qkeysequence \
    qmouseevent \
    qmouseevent_modal \

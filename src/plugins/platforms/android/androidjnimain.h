@@ -68,6 +68,7 @@ namespace QtAndroid
 
     int createSurface(AndroidSurfaceClient * client, const QRect &geometry, bool onTop, int imageDepth);
     int insertNativeView(jobject view, const QRect &geometry);
+    void setViewVisibility(jobject view, bool visible);
     void setSurfaceGeometry(int surfaceId, const QRect &geometry);
     void destroySurface(int surfaceId);
     void bringChildToFront(int surfaceId);

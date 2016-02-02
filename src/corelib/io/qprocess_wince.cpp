@@ -39,7 +39,6 @@
 
 #include "qprocess.h"
 #include "qprocess_p.h"
-#include "qwindowspipewriter_p.h"
 
 #include <qdir.h>
 #include <qfileinfo.h>
@@ -162,7 +161,7 @@ void QProcessPrivate::startProcess()
     }
 
     // give the process a chance to start ...
-    Sleep(SLEEPMIN * 2);
+    Sleep(20);
     _q_startupNotification();
 }
 

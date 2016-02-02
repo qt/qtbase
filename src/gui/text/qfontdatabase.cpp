@@ -927,23 +927,28 @@ QFontEngine *loadSingleEngine(int script,
     QFontDef def = request;
     def.pixelSize = pixelSize;
 
+    QFontCache *fontCache = QFontCache::instance();
+
     QFontCache::Key key(def,script);
-    QFontEngine *engine = QFontCache::instance()->findEngine(key);
+    QFontEngine *engine = fontCache->findEngine(key);
     if (!engine) {
-        if (script != QChar::Script_Common) {
+        const bool cacheForCommonScript = script != QChar::Script_Common
+                && (family->writingSystems[QFontDatabase::Latin] & QtFontFamily::Supported) != 0;
+
+        if (Q_LIKELY(cacheForCommonScript)) {
             // fast path: check if engine was loaded for another script
             key.script = QChar::Script_Common;
-            engine = QFontCache::instance()->findEngine(key);
+            engine = fontCache->findEngine(key);
             key.script = script;
             if (engine) {
-                Q_ASSERT(engine->type() != QFontEngine::Multi);
                 // Also check for OpenType tables when using complex scripts
                 if (Q_UNLIKELY(!engine->supportsScript(QChar::Script(script)))) {
                     qWarning("  OpenType support missing for script %d", script);
                     return 0;
                 }
 
-                QFontCache::instance()->insertEngine(key, engine);
+                fontCache->insertEngine(key, engine);
+
                 return engine;
             }
         }
@@ -951,13 +956,13 @@ QFontEngine *loadSingleEngine(int script,
         // If the font data's native stretch matches the requested stretch we need to set stretch to 100
         // to avoid the fontengine synthesizing stretch. If they didn't match exactly we need to calculate
         // the new stretch factor. This only done if not matched by styleName.
-        bool styleNameMatch = !request.styleName.isEmpty() && request.styleName == style->styleName;
-        if (!styleNameMatch && style->key.stretch != 0 && request.stretch != 0)
+        if (style->key.stretch != 0 && request.stretch != 0
+            && (request.styleName.isEmpty() || request.styleName != style->styleName)) {
             def.stretch = (request.stretch * 100 + 50) / style->key.stretch;
+        }
 
         engine = pfdb->fontEngine(def, size->handle);
         if (engine) {
-            Q_ASSERT(engine->type() != QFontEngine::Multi);
             // Also check for OpenType tables when using complex scripts
             if (!engine->supportsScript(QChar::Script(script))) {
                 qWarning("  OpenType support missing for script %d", script);
@@ -966,13 +971,13 @@ QFontEngine *loadSingleEngine(int script,
                 return 0;
             }
 
-            QFontCache::instance()->insertEngine(key, engine);
+            fontCache->insertEngine(key, engine);
 
-            if (!engine->symbol && script != QChar::Script_Common && (family->writingSystems[QFontDatabase::Latin] & QtFontFamily::Supported) != 0) {
+            if (Q_LIKELY(cacheForCommonScript && !engine->symbol)) {
                 // cache engine for Common script as well
                 key.script = QChar::Script_Common;
-                if (!QFontCache::instance()->findEngine(key))
-                    QFontCache::instance()->insertEngine(key, engine);
+                if (!fontCache->findEngine(key))
+                    fontCache->insertEngine(key, engine);
             }
         }
     }
@@ -985,7 +990,7 @@ QFontEngine *loadEngine(int script, const QFontDef &request,
                         QtFontStyle *style, QtFontSize *size)
 {
     QFontEngine *engine = loadSingleEngine(script, request, family, foundry, style, size);
-    Q_ASSERT(!engine || engine->type() != QFontEngine::Multi);
+
     if (engine && !(request.styleStrategy & QFont::NoFontMerging) && !engine->symbol) {
         QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
         QFontEngineMulti *pfMultiEngine = pfdb->fontEngineMulti(engine, QChar::Script(script));
@@ -2641,12 +2646,14 @@ QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
     }
 #endif
 
+    QFontCache *fontCache = QFontCache::instance();
+
     // Until we specifically asked not to, try looking for Multi font engine
     // first, the last '1' indicates that we want Multi font engine instead
     // of single ones
     bool multi = !(request.styleStrategy & QFont::NoFontMerging);
     QFontCache::Key key(request, script, multi ? 1 : 0);
-    engine = QFontCache::instance()->findEngine(key);
+    engine = fontCache->findEngine(key);
     if (engine) {
         FM_DEBUG("Cache hit level 1");
         return engine;
@@ -2687,7 +2694,7 @@ QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
                 QFontDef def = request;
                 def.family = fallbacks.at(i);
                 QFontCache::Key key(def, script, multi ? 1 : 0);
-                engine = QFontCache::instance()->findEngine(key);
+                engine = fontCache->findEngine(key);
                 if (!engine) {
                     QtFontDesc desc;
                     do {
@@ -2731,13 +2738,21 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     if (req.stretch == 0)
         req.stretch = 100;
 
+    // respect the fallback families that might be passed through the request
+    const QStringList fallBackFamilies = familyList(req);
+
     if (!d->engineData) {
+        QFontCache *fontCache = QFontCache::instance();
         // look for the requested font in the engine data cache
-        d->engineData = QFontCache::instance()->findEngineData(req);
+        // note: fallBackFamilies are not respected in the EngineData cache key;
+        //       join them with the primary selection family to avoid cache misses
+        req.family = fallBackFamilies.join(QLatin1Char(','));
+
+        d->engineData = fontCache->findEngineData(req);
         if (!d->engineData) {
             // create a new one
             d->engineData = new QFontEngineData;
-            QFontCache::instance()->insertEngineData(req, d->engineData);
+            fontCache->insertEngineData(req, d->engineData);
         }
         d->engineData->ref.ref();
     }
@@ -2746,25 +2761,18 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     if (d->engineData->engines[script])
         return;
 
-    // Until we specifically asked not to, try looking for Multi font engine
-    // first, the last '1' indicates that we want Multi font engine instead
-    // of single ones
-    bool multi = !(req.styleStrategy & QFont::NoFontMerging);
-    QFontCache::Key key(req, script, multi ? 1 : 0);
+    QFontEngine *fe = Q_NULLPTR;
 
-    QFontEngine *fe = QFontCache::instance()->findEngine(key);
+    req.fallBackFamilies = fallBackFamilies;
+    if (!req.fallBackFamilies.isEmpty())
+        req.family = req.fallBackFamilies.takeFirst();
 
     // list of families to try
     QStringList family_list;
 
     if (!req.family.isEmpty()) {
-        QStringList familiesForRequest = familyList(req);
-
         // Add primary selection
-        family_list << familiesForRequest.takeFirst();
-
-        // Fallbacks requested in font request
-        req.fallBackFamilies = familiesForRequest;
+        family_list << req.family;
 
         // add the default family
         QString defaultFamily = QGuiApplication::font().family();

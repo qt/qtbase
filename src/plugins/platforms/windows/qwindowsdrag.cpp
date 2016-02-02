@@ -286,30 +286,33 @@ void QWindowsOleDropSource::createCursors()
     const bool hasPixmap = !pixmap.isNull();
 
     // Find screen for drag. Could be obtained from QDrag::source(), but that might be a QWidget.
-
-    qreal scaleFactor = 1;
-    QPlatformCursor *platformCursor = Q_NULLPTR;
-    if (const QPlatformScreen *platformScreen = QWindowsContext::instance()->screenManager().screenAtDp(QWindowsCursor::mousePosition())) {
-        scaleFactor = QHighDpiScaling::factor(platformScreen);
-        platformCursor = platformScreen->cursor();
+    const QPlatformScreen *platformScreen = QWindowsContext::instance()->screenManager().screenAtDp(QWindowsCursor::mousePosition());
+    if (!platformScreen) {
+        if (const QScreen *primaryScreen = QGuiApplication::primaryScreen())
+            platformScreen = primaryScreen->handle();
     }
-    if (!platformCursor && QGuiApplication::primaryScreen())
-        platformCursor = QGuiApplication::primaryScreen()->handle()->cursor();
+    Q_ASSERT(platformScreen);
+    QPlatformCursor *platformCursor = platformScreen->cursor();
 
-    const bool scalePixmap = hasPixmap
-        && m_mode != TouchDrag // Touch drag: pixmap is shown in a separate QWindow, which will be scaled.
-        && (scaleFactor != 1 && scaleFactor != qRound(pixmap.devicePixelRatio()));
-    const QPixmap scaledPixmap = scalePixmap
-        ? pixmap.scaled((QSizeF(pixmap.size()) * scaleFactor).toSize(),
-                        Qt::KeepAspectRatio, Qt::SmoothTransformation)
-        : pixmap;
+    qreal pixmapScaleFactor = 1;
+    qreal hotSpotScaleFactor = 1;
+    if (m_mode != TouchDrag) { // Touch drag: pixmap is shown in a separate QWindow, which will be scaled.)
+        hotSpotScaleFactor = QHighDpiScaling::factor(platformScreen);
+        pixmapScaleFactor = hotSpotScaleFactor / pixmap.devicePixelRatio();
+    }
+    QPixmap scaledPixmap = qFuzzyCompare(pixmapScaleFactor, 1.0)
+        ? pixmap
+        :  pixmap.scaled((QSizeF(pixmap.size()) * pixmapScaleFactor).toSize(),
+                         Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    scaledPixmap.setDevicePixelRatio(1);
+
     Qt::DropAction actions[] = { Qt::MoveAction, Qt::CopyAction, Qt::LinkAction, Qt::IgnoreAction };
     int actionCount = int(sizeof(actions) / sizeof(actions[0]));
     if (!hasPixmap)
         --actionCount; // No Qt::IgnoreAction unless pixmap
-    const QPoint hotSpot = scalePixmap
-        ? (QPointF(drag->hotSpot()) * scaleFactor).toPoint()
-        : drag->hotSpot();
+    const QPoint hotSpot = qFuzzyCompare(hotSpotScaleFactor, 1.0)
+        ?  drag->hotSpot()
+        : (QPointF(drag->hotSpot()) * hotSpotScaleFactor).toPoint();
     for (int cnum = 0; cnum < actionCount; ++cnum) {
         const Qt::DropAction action = actions[cnum];
         QPixmap cursorPixmap = drag->dragCursor(action);
@@ -462,7 +465,7 @@ QWindowsOleDropSource::GiveFeedback(DWORD dwEffect)
             if (!m_touchDragWindow)
                 m_touchDragWindow = new QWindowsDragCursorWindow;
             m_touchDragWindow->setPixmap(e.pixmap);
-            m_touchDragWindow->setFramePosition(QWindowsCursor::mousePosition() - e.hotSpot);
+            m_touchDragWindow->setFramePosition(QCursor::pos() - e.hotSpot);
             if (!m_touchDragWindow->isVisible())
                 m_touchDragWindow->show();
             break;

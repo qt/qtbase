@@ -404,7 +404,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
         {
             XPThemeData theme(widget, painter, QWindowsXPStylePrivate::TreeViewTheme);
             static int decoration_size = 0;
-            if (d->initTreeViewTheming() && theme.isValid() && !decoration_size) {
+            if (!decoration_size && d->initTreeViewTheming() && theme.isValid()) {
                 XPThemeData themeSize = theme;
                 themeSize.partId = TVP_HOTGLYPH;
                 themeSize.stateId = GLPS_OPENED;

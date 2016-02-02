@@ -45,237 +45,172 @@
 
 //! [0]
 MainWindow::MainWindow(TabletCanvas *canvas)
+  : m_canvas(canvas), m_colorDialog(Q_NULLPTR)
 {
-    myCanvas = canvas;
-    createActions();
     createMenus();
-
-    myCanvas->setColor(Qt::red);
-    myCanvas->setLineWidthType(TabletCanvas::LineWidthPressure);
-    myCanvas->setAlphaChannelType(TabletCanvas::AlphaTangentialPressure);
-    myCanvas->setColorSaturationType(TabletCanvas::NoSaturation);
-
     setWindowTitle(tr("Tablet Example"));
-    setCentralWidget(myCanvas);
+    setCentralWidget(m_canvas);
 }
 //! [0]
 
 //! [1]
-void MainWindow::brushColorAct()
+void MainWindow::setBrushColor()
 {
-    QColor color = QColorDialog::getColor(myCanvas->color());
-
-    if (color.isValid())
-        myCanvas->setColor(color);
+    if (!m_colorDialog) {
+        m_colorDialog = new QColorDialog(this);
+        m_colorDialog->setModal(false);
+        m_colorDialog->setCurrentColor(m_canvas->color());
+        connect(m_colorDialog, &QColorDialog::colorSelected, m_canvas, &TabletCanvas::setColor);
+    }
+    m_colorDialog->setVisible(true);
 }
 //! [1]
 
 //! [2]
-void MainWindow::alphaActionTriggered(QAction *action)
+void MainWindow::setAlphaValuator(QAction *action)
 {
-    if (action == alphaChannelPressureAction) {
-        myCanvas->setAlphaChannelType(TabletCanvas::AlphaPressure);
-    } else if (action == alphaChannelTangentialPressureAction) {
-        myCanvas->setAlphaChannelType(TabletCanvas::AlphaTangentialPressure);
-    } else if (action == alphaChannelTiltAction) {
-        myCanvas->setAlphaChannelType(TabletCanvas::AlphaTilt);
-    } else {
-        myCanvas->setAlphaChannelType(TabletCanvas::NoAlpha);
-    }
+    m_canvas->setAlphaChannelValuator(action->data().value<TabletCanvas::Valuator>());
 }
 //! [2]
 
 //! [3]
-void MainWindow::lineWidthActionTriggered(QAction *action)
+void MainWindow::setLineWidthValuator(QAction *action)
 {
-    if (action == lineWidthPressureAction) {
-        myCanvas->setLineWidthType(TabletCanvas::LineWidthPressure);
-    } else if (action == lineWidthTiltAction) {
-        myCanvas->setLineWidthType(TabletCanvas::LineWidthTilt);
-    } else {
-        myCanvas->setLineWidthType(TabletCanvas::NoLineWidth);
-    }
+    m_canvas->setLineWidthType(action->data().value<TabletCanvas::Valuator>());
 }
 //! [3]
 
 //! [4]
-void MainWindow::saturationActionTriggered(QAction *action)
+void MainWindow::setSaturationValuator(QAction *action)
 {
-    if (action == colorSaturationVTiltAction) {
-        myCanvas->setColorSaturationType(TabletCanvas::SaturationVTilt);
-    } else if (action == colorSaturationHTiltAction) {
-        myCanvas->setColorSaturationType(TabletCanvas::SaturationHTilt);
-    } else if (action == colorSaturationPressureAction) {
-        myCanvas->setColorSaturationType(TabletCanvas::SaturationPressure);
-    } else {
-        myCanvas->setColorSaturationType(TabletCanvas::NoSaturation);
-    }
+    m_canvas->setColorSaturationValuator(action->data().value<TabletCanvas::Valuator>());
 }
 //! [4]
 
 //! [5]
-void MainWindow::saveAct()
+void MainWindow::save()
 {
     QString path = QDir::currentPath() + "/untitled.png";
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Picture"),
                              path);
 
-    if (!myCanvas->saveImage(fileName))
+    if (!m_canvas->saveImage(fileName))
         QMessageBox::information(this, "Error Saving Picture",
                                  "Could not save the image");
 }
 //! [5]
 
 //! [6]
-void MainWindow::loadAct()
+void MainWindow::load()
 {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open Picture"),
                                                     QDir::currentPath());
 
-    if (!myCanvas->loadImage(fileName))
+    if (!m_canvas->loadImage(fileName))
         QMessageBox::information(this, "Error Opening Picture",
                                  "Could not open picture");
 }
 //! [6]
 
 //! [7]
-void MainWindow::aboutAct()
+void MainWindow::about()
 {
     QMessageBox::about(this, tr("About Tablet Example"),
-                       tr("This example shows use of a Wacom tablet in Qt"));
+                       tr("This example shows how to use a graphics drawing tablet in Qt."));
 }
 //! [7]
 
 //! [8]
-void MainWindow::createActions()
+void MainWindow::createMenus()
 {
+    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+    fileMenu->addAction(tr("&Open..."), this, &MainWindow::load, QKeySequence::Open);
+    fileMenu->addAction(tr("&Save As..."), this, &MainWindow::save, QKeySequence::SaveAs);
+    fileMenu->addAction(tr("E&xit"), this, &MainWindow::close, QKeySequence::Quit);
+
+    QMenu *brushMenu = menuBar()->addMenu(tr("&Brush"));
+    brushMenu->addAction(tr("&Brush Color..."), this, &MainWindow::setBrushColor, tr("Ctrl+B"));
 //! [8]
-    brushColorAction = new QAction(tr("&Brush Color..."), this);
-    brushColorAction->setShortcut(tr("Ctrl+C"));
-    connect(brushColorAction, SIGNAL(triggered()),
-            this, SLOT(brushColorAct()));
+
+    QMenu *tabletMenu = menuBar()->addMenu(tr("&Tablet"));
+    QMenu *lineWidthMenu = tabletMenu->addMenu(tr("&Line Width"));
+
+    QAction *lineWidthPressureAction = lineWidthMenu->addAction(tr("&Pressure"));
+    lineWidthPressureAction->setData(TabletCanvas::PressureValuator);
+    lineWidthPressureAction->setCheckable(true);
+    lineWidthPressureAction->setChecked(true);
+
+    QAction *lineWidthTiltAction = lineWidthMenu->addAction(tr("&Tilt"));
+    lineWidthTiltAction->setData(TabletCanvas::TiltValuator);
+    lineWidthTiltAction->setCheckable(true);
+
+    QAction *lineWidthFixedAction = lineWidthMenu->addAction(tr("&Fixed"));
+    lineWidthFixedAction->setData(TabletCanvas::NoValuator);
+    lineWidthFixedAction->setCheckable(true);
+
+    QActionGroup *lineWidthGroup = new QActionGroup(this);
+    lineWidthGroup->addAction(lineWidthPressureAction);
+    lineWidthGroup->addAction(lineWidthTiltAction);
+    lineWidthGroup->addAction(lineWidthFixedAction);
+    connect(lineWidthGroup, &QActionGroup::triggered, this,
+            &MainWindow::setLineWidthValuator);
 
 //! [9]
-    alphaChannelPressureAction = new QAction(tr("&Pressure"), this);
+    QMenu *alphaChannelMenu = tabletMenu->addMenu(tr("&Alpha Channel"));
+    QAction *alphaChannelPressureAction = alphaChannelMenu->addAction(tr("&Pressure"));
+    alphaChannelPressureAction->setData(TabletCanvas::PressureValuator);
     alphaChannelPressureAction->setCheckable(true);
 
-    alphaChannelTangentialPressureAction = new QAction(tr("T&angential Pressure"), this);
+    QAction *alphaChannelTangentialPressureAction = alphaChannelMenu->addAction(tr("T&angential Pressure"));
+    alphaChannelTangentialPressureAction->setData(TabletCanvas::TangentialPressureValuator);
     alphaChannelTangentialPressureAction->setCheckable(true);
     alphaChannelTangentialPressureAction->setChecked(true);
 
-    alphaChannelTiltAction = new QAction(tr("&Tilt"), this);
+    QAction *alphaChannelTiltAction = alphaChannelMenu->addAction(tr("&Tilt"));
+    alphaChannelTiltAction->setData(TabletCanvas::TiltValuator);
     alphaChannelTiltAction->setCheckable(true);
 
-    noAlphaChannelAction = new QAction(tr("No Alpha Channel"), this);
+    QAction *noAlphaChannelAction = alphaChannelMenu->addAction(tr("No Alpha Channel"));
+    noAlphaChannelAction->setData(TabletCanvas::NoValuator);
     noAlphaChannelAction->setCheckable(true);
 
-    alphaChannelGroup = new QActionGroup(this);
+    QActionGroup *alphaChannelGroup = new QActionGroup(this);
     alphaChannelGroup->addAction(alphaChannelPressureAction);
     alphaChannelGroup->addAction(alphaChannelTangentialPressureAction);
     alphaChannelGroup->addAction(alphaChannelTiltAction);
     alphaChannelGroup->addAction(noAlphaChannelAction);
-    connect(alphaChannelGroup, SIGNAL(triggered(QAction*)),
-            this, SLOT(alphaActionTriggered(QAction*)));
-
+    connect(alphaChannelGroup, &QActionGroup::triggered,
+            this, &MainWindow::setAlphaValuator);
 //! [9]
-    colorSaturationVTiltAction = new QAction(tr("&Vertical Tilt"), this);
+
+    QMenu *colorSaturationMenu = tabletMenu->addMenu(tr("&Color Saturation"));
+
+    QAction *colorSaturationVTiltAction = colorSaturationMenu->addAction(tr("&Vertical Tilt"));
+    colorSaturationVTiltAction->setData(TabletCanvas::VTiltValuator);
     colorSaturationVTiltAction->setCheckable(true);
 
-    colorSaturationHTiltAction = new QAction(tr("&Horizontal Tilt"), this);
+    QAction *colorSaturationHTiltAction = colorSaturationMenu->addAction(tr("&Horizontal Tilt"));
+    colorSaturationHTiltAction->setData(TabletCanvas::HTiltValuator);
     colorSaturationHTiltAction->setCheckable(true);
 
-    colorSaturationPressureAction = new QAction(tr("&Pressure"), this);
+    QAction *colorSaturationPressureAction = colorSaturationMenu->addAction(tr("&Pressure"));
+    colorSaturationPressureAction->setData(TabletCanvas::PressureValuator);
     colorSaturationPressureAction->setCheckable(true);
 
-    noColorSaturationAction = new QAction(tr("&No Color Saturation"), this);
+    QAction *noColorSaturationAction = colorSaturationMenu->addAction(tr("&No Color Saturation"));
+    noColorSaturationAction->setData(TabletCanvas::NoValuator);
     noColorSaturationAction->setCheckable(true);
     noColorSaturationAction->setChecked(true);
 
-    colorSaturationGroup = new QActionGroup(this);
+    QActionGroup *colorSaturationGroup = new QActionGroup(this);
     colorSaturationGroup->addAction(colorSaturationVTiltAction);
     colorSaturationGroup->addAction(colorSaturationHTiltAction);
     colorSaturationGroup->addAction(colorSaturationPressureAction);
     colorSaturationGroup->addAction(noColorSaturationAction);
-    connect(colorSaturationGroup, SIGNAL(triggered(QAction*)),
-            this, SLOT(saturationActionTriggered(QAction*)));
+    connect(colorSaturationGroup, &QActionGroup::triggered,
+            this, &MainWindow::setSaturationValuator);
 
-    lineWidthPressureAction = new QAction(tr("&Pressure"), this);
-    lineWidthPressureAction->setCheckable(true);
-    lineWidthPressureAction->setChecked(true);
-
-    lineWidthTiltAction = new QAction(tr("&Tilt"), this);
-    lineWidthTiltAction->setCheckable(true);
-
-    lineWidthFixedAction = new QAction(tr("&Fixed"), this);
-    lineWidthFixedAction->setCheckable(true);
-
-    lineWidthGroup = new QActionGroup(this);
-    lineWidthGroup->addAction(lineWidthPressureAction);
-    lineWidthGroup->addAction(lineWidthTiltAction);
-    lineWidthGroup->addAction(lineWidthFixedAction);
-    connect(lineWidthGroup, SIGNAL(triggered(QAction*)),
-            this, SLOT(lineWidthActionTriggered(QAction*)));
-
-    exitAction = new QAction(tr("E&xit"), this);
-    exitAction->setShortcuts(QKeySequence::Quit);
-    connect(exitAction, SIGNAL(triggered()),
-            this, SLOT(close()));
-
-    loadAction = new QAction(tr("&Open..."), this);
-    loadAction->setShortcuts(QKeySequence::Open);
-    connect(loadAction, SIGNAL(triggered()),
-            this, SLOT(loadAct()));
-
-    saveAction = new QAction(tr("&Save As..."), this);
-    saveAction->setShortcuts(QKeySequence::SaveAs);
-    connect(saveAction, SIGNAL(triggered()),
-            this, SLOT(saveAct()));
-
-    aboutAction = new QAction(tr("A&bout"), this);
-    aboutAction->setShortcut(tr("Ctrl+B"));
-    connect(aboutAction, SIGNAL(triggered()),
-            this, SLOT(aboutAct()));
-
-    aboutQtAction = new QAction(tr("About &Qt"), this);
-    aboutQtAction->setShortcut(tr("Ctrl+Q"));
-    connect(aboutQtAction, SIGNAL(triggered()),
-            qApp, SLOT(aboutQt()));
-//! [10]
+    QMenu *helpMenu = menuBar()->addMenu("&Help");
+    helpMenu->addAction(tr("A&bout"), this, &MainWindow::about);
+    helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
 }
-//! [10]
-
-//! [11]
-void MainWindow::createMenus()
-{
-    fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(loadAction);
-    fileMenu->addAction(saveAction);
-    fileMenu->addSeparator();
-    fileMenu->addAction(exitAction);
-
-    brushMenu = menuBar()->addMenu(tr("&Brush"));
-    brushMenu->addAction(brushColorAction);
-
-    tabletMenu = menuBar()->addMenu(tr("&Tablet"));
-
-    lineWidthMenu = tabletMenu->addMenu(tr("&Line Width"));
-    lineWidthMenu->addAction(lineWidthPressureAction);
-    lineWidthMenu->addAction(lineWidthTiltAction);
-    lineWidthMenu->addAction(lineWidthFixedAction);
-
-    alphaChannelMenu = tabletMenu->addMenu(tr("&Alpha Channel"));
-    alphaChannelMenu->addAction(alphaChannelPressureAction);
-    alphaChannelMenu->addAction(alphaChannelTangentialPressureAction);
-    alphaChannelMenu->addAction(alphaChannelTiltAction);
-    alphaChannelMenu->addAction(noAlphaChannelAction);
-
-    colorSaturationMenu = tabletMenu->addMenu(tr("&Color Saturation"));
-    colorSaturationMenu->addAction(colorSaturationVTiltAction);
-    colorSaturationMenu->addAction(colorSaturationHTiltAction);
-    colorSaturationMenu->addAction(noColorSaturationAction);
-
-    helpMenu = menuBar()->addMenu("&Help");
-    helpMenu->addAction(aboutAction);
-    helpMenu->addAction(aboutQtAction);
-}
-//! [11]

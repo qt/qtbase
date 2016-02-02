@@ -230,6 +230,30 @@ static inline QRect frameGeometry(HWND hwnd, bool topLevel)
     return qrectFromRECT(rect);
 }
 
+// Return the visibility of the Window (except full screen since it is not a window state).
+static QWindow::Visibility windowVisibility_sys(HWND hwnd)
+{
+    if (!IsWindowVisible(hwnd))
+        return QWindow::Hidden;
+#ifndef Q_OS_WINCE
+    WINDOWPLACEMENT windowPlacement;
+    windowPlacement.length = sizeof(WINDOWPLACEMENT);
+    if (GetWindowPlacement(hwnd, &windowPlacement)) {
+        switch (windowPlacement.showCmd) {
+        case SW_SHOWMINIMIZED:
+        case SW_MINIMIZE:
+        case SW_FORCEMINIMIZE:
+            return QWindow::Minimized;
+        case SW_SHOWMAXIMIZED:
+            return QWindow::Maximized;
+        default:
+            break;
+        }
+    }
+#endif // !Q_OS_WINCE
+    return QWindow::Windowed;
+}
+
 static inline QSize clientSize(HWND hwnd)
 {
     RECT rect = { 0, 0, 0, 0 };
@@ -1867,6 +1891,10 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
                 swpf |= SWP_NOSIZE | SWP_NOMOVE;
             const bool wasSync = testFlag(SynchronousGeometryChangeEvent);
             setFlag(SynchronousGeometryChangeEvent);
+            // After maximized/fullscreen; the window can be in a maximized state. Clear
+            // it before applying the normal geometry.
+            if (windowVisibility_sys(m_data.hwnd) == QWindow::Maximized)
+                ShowWindow(m_data.hwnd, SW_SHOWNOACTIVATE);
             SetWindowPos(m_data.hwnd, 0, m_savedFrameGeometry.x(), m_savedFrameGeometry.y(),
                          m_savedFrameGeometry.width(), m_savedFrameGeometry.height(), swpf);
             if (!wasSync)

@@ -37,11 +37,10 @@
 **
 ****************************************************************************/
 
-#include "qstate.h"
+#include "qstate_p.h"
 
 #ifndef QT_NO_STATEMACHINE
 
-#include "qstate_p.h"
 #include "qhistorystate.h"
 #include "qhistorystate_p.h"
 #include "qabstracttransition.h"

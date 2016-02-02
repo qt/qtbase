@@ -37,11 +37,9 @@
 **
 ****************************************************************************/
 
-#include "qfinalstate.h"
+#include "qfinalstate_p.h"
 
 #ifndef QT_NO_STATEMACHINE
-
-#include "qabstractstate_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -82,17 +80,14 @@ QT_BEGIN_NAMESPACE
   \sa QState::finished()
 */
 
-class QFinalStatePrivate : public QAbstractStatePrivate
-{
-    Q_DECLARE_PUBLIC(QFinalState)
-
-public:
-    QFinalStatePrivate();
-};
-
 QFinalStatePrivate::QFinalStatePrivate()
     : QAbstractStatePrivate(FinalState)
 {
+}
+
+QFinalStatePrivate::~QFinalStatePrivate()
+{
+    // to prevent vtables being generated in every file that includes the private header
 }
 
 /*!
@@ -102,6 +97,15 @@ QFinalState::QFinalState(QState *parent)
     : QAbstractState(*new QFinalStatePrivate, parent)
 {
 }
+
+/*!
+  \internal
+ */
+QFinalState::QFinalState(QFinalStatePrivate &dd, QState *parent)
+    : QAbstractState(dd, parent)
+{
+}
+
 
 /*!
   Destroys this final state.

@@ -2265,12 +2265,13 @@ void QXcbWindow::handleMouseEvent(xcb_timestamp_t time, const QPoint &local, con
 static bool ignoreLeaveEvent(const xcb_leave_notify_event_t *event)
 {
     return event->detail == XCB_NOTIFY_DETAIL_VIRTUAL
-            || event->detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL;
+            || event->detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL
+            || event->mode == XCB_NOTIFY_MODE_GRAB;
 }
 
 static bool ignoreEnterEvent(const xcb_enter_notify_event_t *event)
 {
-    return ((event->mode != XCB_NOTIFY_MODE_NORMAL && event->mode != XCB_NOTIFY_MODE_UNGRAB)
+    return (event->mode != XCB_NOTIFY_MODE_NORMAL
             || event->detail == XCB_NOTIFY_DETAIL_VIRTUAL
             || event->detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL);
 }

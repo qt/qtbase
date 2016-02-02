@@ -645,7 +645,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     QString glIntegrationName = QString::fromLocal8Bit(qgetenv("QT_XCB_GL_INTEGRATION"));
     if (!glIntegrationName.isEmpty()) {
         qCDebug(QT_XCB_GLINTEGRATION) << "QT_XCB_GL_INTEGRATION is set to" << glIntegrationName;
-        if (glIntegrationName != QStringLiteral("none")) {
+        if (glIntegrationName != QLatin1String("none")) {
             glIntegrationNames.removeAll(glIntegrationName);
             glIntegrationNames.prepend(glIntegrationName);
         } else {

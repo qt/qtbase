@@ -70,6 +70,7 @@ private slots:
     void titleBarDoubleClick();
     void restoreStateOfFloating();
     void restoreDockWidget();
+    void restoreStateWhileStillFloating();
     // task specific tests:
     void task165177_deleteFocusWidget();
     void task169808_setFloating();
@@ -750,6 +751,31 @@ void tst_QDockWidget::restoreStateOfFloating()
     QVERIFY(dock->isFloating());
     QVERIFY(mw.restoreState(ba));
     QVERIFY(!dock->isFloating());
+}
+
+void tst_QDockWidget::restoreStateWhileStillFloating()
+{
+    // When the dock widget is already floating then it takes a different code path
+    // so this test covers the case where the restoreState() is effectively just
+    // moving it back and resizing it
+    const QRect availGeom = QApplication::desktop()->availableGeometry();
+    const QPoint startingDockPos = availGeom.center();
+    QMainWindow mw;
+    QDockWidget *dock = createTestDock(mw);
+    mw.addDockWidget(Qt::TopDockWidgetArea, dock);
+    dock->setFloating(true);
+    dock->move(startingDockPos);
+    mw.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&mw));
+    QVERIFY(dock->isFloating());
+    QByteArray ba = mw.saveState();
+    const QPoint dockPos = dock->pos();
+    dock->move(availGeom.topLeft() + QPoint(10, 10));
+    dock->resize(dock->size() + QSize(10, 10));
+    QVERIFY(mw.restoreState(ba));
+    QVERIFY(dock->isFloating());
+    if (!QGuiApplication::platformName().compare("xcb", Qt::CaseInsensitive))
+        QTRY_COMPARE(dock->pos(), dockPos);
 }
 
 void tst_QDockWidget::restoreDockWidget()

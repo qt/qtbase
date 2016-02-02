@@ -1151,7 +1151,7 @@ QVariant QWindowsMimeImage::convertToMime(const QString &mimeType, IDataObject *
 {
     Q_UNUSED(preferredType);
     QVariant result;
-    if (mimeType != QStringLiteral("application/x-qt-image"))
+    if (mimeType != QLatin1String("application/x-qt-image"))
         return result;
     //Try to convert from a format which has more data
     //DIBV5, use only if its is not synthesized

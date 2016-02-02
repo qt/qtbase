@@ -362,6 +362,15 @@ namespace QtAndroid
         return surfaceId;
     }
 
+    void setViewVisibility(jobject view, bool visible)
+    {
+        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass,
+                                                  "setViewVisibility",
+                                                  "(Landroid/view/View;Z)V",
+                                                  view,
+                                                  visible);
+    }
+
     void setSurfaceGeometry(int surfaceId, const QRect &geometry)
     {
         if (surfaceId == -1)
