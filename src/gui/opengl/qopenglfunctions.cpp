@@ -55,6 +55,24 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcGLES3, "qt.opengl.es3")
 
+
+#define QT_OPENGL_COUNT_FUNCTIONS(ret, name, args) +1
+#define QT_OPENGL_FUNCTION_NAMES(ret, name, args) \
+    "gl"#name"\0"
+#define QT_OPENGL_FLAGS(ret, name, args) \
+    0,
+#define QT_OPENGL_IMPLEMENT_WITH_FLAGS(CLASS, FUNCTIONS) \
+void CLASS::init(QOpenGLContext *context) \
+{ \
+    const int flags[] = { FUNCTIONS(QT_OPENGL_FLAGS) 0 }; \
+    const char *names = FUNCTIONS(QT_OPENGL_FUNCTION_NAMES); \
+    const char *name = names; \
+    for (int i = 0; i < FUNCTIONS(QT_OPENGL_COUNT_FUNCTIONS); ++i) { \
+        functions[i] = ::getProcAddress(context, name, flags[i]); \
+        name += strlen(name) + 1; \
+    } \
+}
+
 /*!
     \class QOpenGLFunctions
     \brief The QOpenGLFunctions class provides cross-platform access to the OpenGL ES 2.0 API.
@@ -2149,9 +2167,6 @@ Func resolveWithFallback(QOpenGLContext *context, const char *name, int policy, 
 #define RESOLVE(name, policy) \
     resolve(context, "gl"#name, policy, name)
 
-#define RESOLVE_WITH_FALLBACK(name, policy) \
-    resolveWithFallback(context, "gl"#name, policy, qopenglfSpecial##name)
-
 #ifndef QT_OPENGL_ES_2
 
 // some fallback functions
@@ -2159,14 +2174,14 @@ static void QOPENGLF_APIENTRY qopenglfSpecialClearDepthf(GLclampf depth)
 {
     QOpenGLContext *context = QOpenGLContext::currentContext();
     QOpenGLFunctionsPrivateEx *funcs = qt_gl_functions(context);
-    funcs->ClearDepth((GLdouble) depth);
+    funcs->f.ClearDepth((GLdouble) depth);
 }
 
 static void QOPENGLF_APIENTRY qopenglfSpecialDepthRangef(GLclampf zNear, GLclampf zFar)
 {
     QOpenGLContext *context = QOpenGLContext::currentContext();
     QOpenGLFunctionsPrivateEx *funcs = qt_gl_functions(context);
-    funcs->DepthRange((GLdouble) zNear, (GLdouble) zFar);
+    funcs->f.DepthRange((GLdouble) zNear, (GLdouble) zFar);
 }
 
 static void QOPENGLF_APIENTRY qopenglfSpecialGetShaderPrecisionFormat(GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision)
@@ -2192,239 +2207,30 @@ static void QOPENGLF_APIENTRY qopenglfSpecialReleaseShaderCompiler()
 
 #endif // !QT_OPENGL_ES_2
 
-#if !defined(QT_OPENGL_ES_2) && !defined(QT_OPENGL_DYNAMIC)
-// Special translation functions for ES-specific calls on desktop GL
 
-static void QOPENGLF_APIENTRY qopenglfTranslateClearDepthf(GLclampf depth)
+QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *c)
 {
-    ::glClearDepth(depth);
-}
+    init(c);
 
-static void QOPENGLF_APIENTRY qopenglfTranslateDepthRangef(GLclampf zNear, GLclampf zFar)
-{
-    ::glDepthRange(zNear, zFar);
-}
-#endif // !ES && !DYNAMIC
-
-QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
-{
-    /* Assign a pointer to an above defined static function
-     * which on first call resolves the function from the current
-     * context, assigns it to the member variable and executes it
-     * (see Resolver template) */
 #ifndef QT_OPENGL_ES_2
-    QOpenGLContext *context = QOpenGLContext::currentContext();
-
-    // The GL1 functions may not be queriable via getProcAddress().
-    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::AllGLFunctionsQueryable)) {
-        // The platform plugin supports resolving these.
-        BindTexture = RESOLVE(BindTexture, 0);
-        BlendFunc = RESOLVE(BlendFunc, 0);
-        Clear = RESOLVE(Clear, 0);
-        ClearColor = RESOLVE(ClearColor, 0);
-        ClearDepthf = RESOLVE_WITH_FALLBACK(ClearDepthf, 0);
-        ClearStencil = RESOLVE(ClearStencil, 0);
-        ColorMask = RESOLVE(ColorMask, 0);
-        CopyTexImage2D = RESOLVE(CopyTexImage2D, 0);
-        CopyTexSubImage2D = RESOLVE(CopyTexSubImage2D, 0);
-        CullFace = RESOLVE(CullFace, 0);
-        DeleteTextures = RESOLVE(DeleteTextures, 0);
-        DepthFunc = RESOLVE(DepthFunc, 0);
-        DepthMask = RESOLVE(DepthMask, 0);
-        DepthRangef = RESOLVE_WITH_FALLBACK(DepthRangef, 0);
-        Disable = RESOLVE(Disable, 0);
-        DrawArrays = RESOLVE(DrawArrays, 0);
-        DrawElements = RESOLVE(DrawElements, 0);
-        Enable = RESOLVE(Enable, 0);
-        Finish = RESOLVE(Finish, 0);
-        Flush = RESOLVE(Flush, 0);
-        FrontFace = RESOLVE(FrontFace, 0);
-        GenTextures = RESOLVE(GenTextures, 0);
-        GetBooleanv = RESOLVE(GetBooleanv, 0);
-        GetError = RESOLVE(GetError, 0);
-        GetFloatv = RESOLVE(GetFloatv, 0);
-        GetIntegerv = RESOLVE(GetIntegerv, 0);
-        GetString = RESOLVE(GetString, 0);
-        GetTexParameterfv = RESOLVE(GetTexParameterfv, 0);
-        GetTexParameteriv = RESOLVE(GetTexParameteriv, 0);
-        Hint = RESOLVE(Hint, 0);
-        IsEnabled = RESOLVE(IsEnabled, 0);
-        IsTexture = RESOLVE(IsTexture, 0);
-        LineWidth = RESOLVE(LineWidth, 0);
-        PixelStorei = RESOLVE(PixelStorei, 0);
-        PolygonOffset = RESOLVE(PolygonOffset, 0);
-        ReadPixels = RESOLVE(ReadPixels, 0);
-        Scissor = RESOLVE(Scissor, 0);
-        StencilFunc = RESOLVE(StencilFunc, 0);
-        StencilMask = RESOLVE(StencilMask, 0);
-        StencilOp = RESOLVE(StencilOp, 0);
-        TexImage2D = RESOLVE(TexImage2D, 0);
-        TexParameterf = RESOLVE(TexParameterf, 0);
-        TexParameterfv = RESOLVE(TexParameterfv, 0);
-        TexParameteri = RESOLVE(TexParameteri, 0);
-        TexParameteriv = RESOLVE(TexParameteriv, 0);
-        TexSubImage2D = RESOLVE(TexSubImage2D, 0);
-        Viewport = RESOLVE(Viewport, 0);
-    } else {
-#ifndef QT_OPENGL_DYNAMIC
-        // Use the functions directly. This requires linking QtGui to an OpenGL implementation.
-        BindTexture = ::glBindTexture;
-        BlendFunc = ::glBlendFunc;
-        Clear = ::glClear;
-        ClearColor = ::glClearColor;
-        ClearDepthf = qopenglfTranslateClearDepthf;
-        ClearStencil = ::glClearStencil;
-        ColorMask = ::glColorMask;
-        CopyTexImage2D = ::glCopyTexImage2D;
-        CopyTexSubImage2D = ::glCopyTexSubImage2D;
-        CullFace = ::glCullFace;
-        DeleteTextures = ::glDeleteTextures;
-        DepthFunc = ::glDepthFunc;
-        DepthMask = ::glDepthMask;
-        DepthRangef = qopenglfTranslateDepthRangef;
-        Disable = ::glDisable;
-        DrawArrays = ::glDrawArrays;
-        DrawElements = ::glDrawElements;
-        Enable = ::glEnable;
-        Finish = ::glFinish;
-        Flush = ::glFlush;
-        FrontFace = ::glFrontFace;
-        GenTextures = ::glGenTextures;
-        GetBooleanv = ::glGetBooleanv;
-        GetError = ::glGetError;
-        GetFloatv = ::glGetFloatv;
-        GetIntegerv = ::glGetIntegerv;
-        GetString = ::glGetString;
-        GetTexParameterfv = ::glGetTexParameterfv;
-        GetTexParameteriv = ::glGetTexParameteriv;
-        Hint = ::glHint;
-        IsEnabled = ::glIsEnabled;
-        IsTexture = ::glIsTexture;
-        LineWidth = ::glLineWidth;
-        PixelStorei = ::glPixelStorei;
-        PolygonOffset = ::glPolygonOffset;
-        ReadPixels = ::glReadPixels;
-        Scissor = ::glScissor;
-        StencilFunc = ::glStencilFunc;
-        StencilMask = ::glStencilMask;
-        StencilOp = ::glStencilOp;
-#if defined(Q_OS_OSX) && MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-        TexImage2D = reinterpret_cast<void (*)(GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *)>(glTexImage2D);
-#else
-        TexImage2D = glTexImage2D;
+    // setup fallbacks in case some methods couldn't get resolved
+    if (!f.ClearDepthf)
+        f.ClearDepthf = qopenglfSpecialClearDepthf;
+    if (!f.DepthRangef)
+        f.DepthRangef = qopenglfSpecialDepthRangef;
+    if (!f.GetShaderPrecisionFormat)
+        f.GetShaderPrecisionFormat = qopenglfSpecialGetShaderPrecisionFormat;
+    if (!f.IsProgram)
+        f.IsProgram = qopenglfSpecialIsProgram;
+    if (!f.IsShader)
+        f.IsShader = qopenglfSpecialIsShader;
+    if (!f.ReleaseShaderCompiler)
+        f.ReleaseShaderCompiler = qopenglfSpecialReleaseShaderCompiler;
 #endif
-        TexParameterf = ::glTexParameterf;
-        TexParameterfv = ::glTexParameterfv;
-        TexParameteri = ::glTexParameteri;
-        TexParameteriv = ::glTexParameteriv;
-        TexSubImage2D = ::glTexSubImage2D;
-        Viewport = ::glViewport;
-#else // QT_OPENGL_DYNAMIC
-        // This should not happen.
-        qFatal("QOpenGLFunctions: Dynamic OpenGL builds do not support platforms with insufficient function resolving capabilities");
-#endif
-    }
-
-    ActiveTexture = RESOLVE(ActiveTexture, 0);
-    AttachShader = RESOLVE(AttachShader, 0);
-    BindAttribLocation = RESOLVE(BindAttribLocation, 0);
-    BindBuffer = RESOLVE(BindBuffer, ResolveOES | ResolveEXT);
-    BindFramebuffer = RESOLVE(BindFramebuffer, ResolveOES | ResolveEXT);
-    BindRenderbuffer = RESOLVE(BindRenderbuffer, ResolveOES | ResolveEXT);
-    BlendColor = RESOLVE(BlendColor, ResolveOES | ResolveEXT);
-    BlendEquation = RESOLVE(BlendEquation, ResolveOES | ResolveEXT);
-    BlendEquationSeparate = RESOLVE(BlendEquationSeparate, ResolveOES | ResolveEXT);
-    BlendFuncSeparate = RESOLVE(BlendFuncSeparate, ResolveOES | ResolveEXT);
-    BufferData = RESOLVE(BufferData, ResolveOES | ResolveEXT);
-    BufferSubData = RESOLVE(BufferSubData, ResolveOES | ResolveEXT);
-    CheckFramebufferStatus = RESOLVE(CheckFramebufferStatus, ResolveOES | ResolveEXT);
-    CompileShader = RESOLVE(CompileShader, 0);
-    CompressedTexImage2D = RESOLVE(CompressedTexImage2D, ResolveOES | ResolveEXT);
-    CompressedTexSubImage2D = RESOLVE(CompressedTexSubImage2D, ResolveOES | ResolveEXT);
-    CreateProgram = RESOLVE(CreateProgram, 0);
-    CreateShader = RESOLVE(CreateShader, 0);
-    DeleteBuffers = RESOLVE(DeleteBuffers, ResolveOES | ResolveEXT);
-    DeleteFramebuffers = RESOLVE(DeleteFramebuffers, ResolveOES | ResolveEXT);
-    DeleteProgram = RESOLVE(DeleteProgram, 0);
-    DeleteRenderbuffers = RESOLVE(DeleteRenderbuffers, ResolveOES | ResolveEXT);
-    DeleteShader = RESOLVE(DeleteShader, 0);
-    DetachShader = RESOLVE(DetachShader, 0);
-    DisableVertexAttribArray = RESOLVE(DisableVertexAttribArray, 0);
-    EnableVertexAttribArray = RESOLVE(EnableVertexAttribArray, 0);
-    FramebufferRenderbuffer = RESOLVE(FramebufferRenderbuffer, ResolveOES | ResolveEXT);
-    FramebufferTexture2D = RESOLVE(FramebufferTexture2D, ResolveOES | ResolveEXT);
-    GenBuffers = RESOLVE(GenBuffers, ResolveOES | ResolveEXT);
-    GenerateMipmap = RESOLVE(GenerateMipmap, ResolveOES | ResolveEXT);
-    GenFramebuffers = RESOLVE(GenFramebuffers, ResolveOES | ResolveEXT);
-    GenRenderbuffers = RESOLVE(GenRenderbuffers, ResolveOES | ResolveEXT);
-    GetActiveAttrib = RESOLVE(GetActiveAttrib, 0);
-    GetActiveUniform = RESOLVE(GetActiveUniform, 0);
-    GetAttachedShaders = RESOLVE(GetAttachedShaders, 0);
-    GetAttribLocation = RESOLVE(GetAttribLocation, 0);
-    GetBufferParameteriv = RESOLVE(GetBufferParameteriv, ResolveOES | ResolveEXT);
-    GetFramebufferAttachmentParameteriv = RESOLVE(GetFramebufferAttachmentParameteriv, ResolveOES | ResolveEXT);
-    GetProgramiv = RESOLVE(GetProgramiv, 0);
-    GetProgramInfoLog = RESOLVE(GetProgramInfoLog, 0);
-    GetRenderbufferParameteriv = RESOLVE(GetRenderbufferParameteriv, ResolveOES | ResolveEXT);
-    GetShaderiv = RESOLVE(GetShaderiv, 0);
-    GetShaderInfoLog = RESOLVE(GetShaderInfoLog, 0);
-    GetShaderPrecisionFormat = RESOLVE_WITH_FALLBACK(GetShaderPrecisionFormat, ResolveOES | ResolveEXT);
-    GetShaderSource = RESOLVE(GetShaderSource, 0);
-    GetUniformfv = RESOLVE(GetUniformfv, 0);
-    GetUniformiv = RESOLVE(GetUniformiv, 0);
-    GetUniformLocation = RESOLVE(GetUniformLocation, 0);
-    GetVertexAttribfv = RESOLVE(GetVertexAttribfv, 0);
-    GetVertexAttribiv = RESOLVE(GetVertexAttribiv, 0);
-    GetVertexAttribPointerv = RESOLVE(GetVertexAttribPointerv, 0);
-    IsBuffer = RESOLVE(IsBuffer, ResolveOES | ResolveEXT);
-    IsFramebuffer = RESOLVE(IsFramebuffer, ResolveOES | ResolveEXT);
-    IsProgram = RESOLVE_WITH_FALLBACK(IsProgram, 0);
-    IsRenderbuffer = RESOLVE(IsRenderbuffer, ResolveOES | ResolveEXT);
-    IsShader = RESOLVE_WITH_FALLBACK(IsShader, 0);
-    LinkProgram = RESOLVE(LinkProgram, 0);
-    ReleaseShaderCompiler = RESOLVE_WITH_FALLBACK(ReleaseShaderCompiler, 0);
-    RenderbufferStorage = RESOLVE(RenderbufferStorage, ResolveOES | ResolveEXT);
-    SampleCoverage = RESOLVE(SampleCoverage, ResolveOES | ResolveEXT);
-    ShaderBinary = RESOLVE(ShaderBinary, 0);
-    ShaderSource = RESOLVE(ShaderSource, 0);
-    StencilFuncSeparate = RESOLVE(StencilFuncSeparate, ResolveEXT);
-    StencilMaskSeparate = RESOLVE(StencilMaskSeparate, ResolveEXT);
-    StencilOpSeparate = RESOLVE(StencilOpSeparate, ResolveEXT);
-    Uniform1f = RESOLVE(Uniform1f, 0);
-    Uniform1fv = RESOLVE(Uniform1fv, 0);
-    Uniform1i = RESOLVE(Uniform1i, 0);
-    Uniform1iv = RESOLVE(Uniform1iv, 0);
-    Uniform2f = RESOLVE(Uniform2f, 0);
-    Uniform2fv = RESOLVE(Uniform2fv, 0);
-    Uniform2i = RESOLVE(Uniform2i, 0);
-    Uniform2iv = RESOLVE(Uniform2iv, 0);
-    Uniform3f = RESOLVE(Uniform3f, 0);
-    Uniform3fv = RESOLVE(Uniform3fv, 0);
-    Uniform3i = RESOLVE(Uniform3i, 0);
-    Uniform3iv = RESOLVE(Uniform3iv, 0);
-    Uniform4f = RESOLVE(Uniform4f, 0);
-    Uniform4fv = RESOLVE(Uniform4fv, 0);
-    Uniform4i = RESOLVE(Uniform4i, 0);
-    Uniform4iv = RESOLVE(Uniform4iv, 0);
-    UniformMatrix2fv = RESOLVE(UniformMatrix2fv, 0);
-    UniformMatrix3fv = RESOLVE(UniformMatrix3fv, 0);
-    UniformMatrix4fv = RESOLVE(UniformMatrix4fv, 0);
-    UseProgram = RESOLVE(UseProgram, 0);
-    ValidateProgram = RESOLVE(ValidateProgram, 0);
-    VertexAttrib1f = RESOLVE(VertexAttrib1f, 0);
-    VertexAttrib1fv = RESOLVE(VertexAttrib1fv, 0);
-    VertexAttrib2f = RESOLVE(VertexAttrib2f, 0);
-    VertexAttrib2fv = RESOLVE(VertexAttrib2fv, 0);
-    VertexAttrib3f = RESOLVE(VertexAttrib3f, 0);
-    VertexAttrib3fv = RESOLVE(VertexAttrib3fv, 0);
-    VertexAttrib4f = RESOLVE(VertexAttrib4f, 0);
-    VertexAttrib4fv = RESOLVE(VertexAttrib4fv, 0);
-    VertexAttribPointer = RESOLVE(VertexAttribPointer, 0);
-
-    ClearDepth = RESOLVE(ClearDepth, 0);
-    DepthRange = RESOLVE(DepthRange, 0);
-#endif // !QT_OPENGL_ES_2
 }
+
+
+QT_OPENGL_IMPLEMENT_WITH_FLAGS(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
 
 /*!
     \class QOpenGLExtraFunctions
