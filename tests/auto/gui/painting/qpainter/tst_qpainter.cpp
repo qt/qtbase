@@ -305,6 +305,8 @@ private slots:
     void drawPolyline_data();
     void drawPolyline();
 
+    void QTBUG50153_drawImage_assert();
+
 private:
     void fillData();
     void setPenColor(QPainter& p);
@@ -5050,6 +5052,30 @@ void tst_QPainter::drawPolyline()
     }
 
     QCOMPARE(images[0], images[1]);
+}
+
+void tst_QPainter::QTBUG50153_drawImage_assert()
+{
+    QImage::Format formats[] = {
+        QImage::Format_RGB32,  // fetchTransformedBilinearARGB32PM
+        QImage::Format_ARGB32  // fetchTransformedBilinear
+    };
+
+    for (unsigned i = 0; i < sizeof(formats) / sizeof(formats[0]); i++) {
+        QImage image(3027, 2999, formats[i]);
+
+        QImage backingStore(image.size(), QImage::Format_ARGB32);
+        QPainter backingStorePainter(&backingStore);
+
+        QTransform transform;
+        transform.scale( 0.999987, 0.999987 );
+
+        backingStorePainter.setTransform(transform);
+        backingStorePainter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+        backingStorePainter.drawImage(0, 0, image);
+
+        // No crash, all fine
+    }
 }
 
 QTEST_MAIN(tst_QPainter)
