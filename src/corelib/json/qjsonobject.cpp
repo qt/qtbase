@@ -270,16 +270,14 @@ QVariantHash QJsonObject::toVariantHash() const
  */
 QStringList QJsonObject::keys() const
 {
-    if (!d)
-        return QStringList();
-
     QStringList keys;
-    keys.reserve(o->length);
-    for (uint i = 0; i < o->length; ++i) {
-        QJsonPrivate::Entry *e = o->entryAt(i);
-        keys.append(e->key());
+    if (o) {
+        keys.reserve(o->length);
+        for (uint i = 0; i < o->length; ++i) {
+            QJsonPrivate::Entry *e = o->entryAt(i);
+            keys.append(e->key());
+        }
     }
-
     return keys;
 }
 
