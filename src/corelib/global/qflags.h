@@ -145,6 +145,11 @@ public:
     Q_DECL_CONSTEXPR inline bool operator!() const Q_DECL_NOTHROW { return !i; }
 
     Q_DECL_CONSTEXPR inline bool testFlag(Enum f) const Q_DECL_NOTHROW { return (i & Int(f)) == Int(f) && (Int(f) != 0 || i == Int(f) ); }
+    Q_DECL_RELAXED_CONSTEXPR inline QFlags &setFlag(Enum f, bool on = true) Q_DECL_NOTHROW
+    {
+        return on ? (*this |= f) : (*this &= ~f);
+    }
+
 private:
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     Q_DECL_CONSTEXPR static inline Int initializer_list_helper(typename std::initializer_list<Enum>::const_iterator it,

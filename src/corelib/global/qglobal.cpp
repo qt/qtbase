@@ -426,6 +426,14 @@ Q_STATIC_ASSERT_X(QT_POINTER_SIZE == sizeof(void *), "QT_POINTER_SIZE defined in
 */
 
 /*!
+    \fn QFlags QFlags::setFlag(Enum flag, bool on) const
+    \since 5.7
+
+    Sets the indicated \a flag if \a on is \c true or unsets it if
+    it if \a on is \c false. Returns a reference to this object.
+*/
+
+/*!
   \macro Q_DISABLE_COPY(Class)
   \relates QObject
 

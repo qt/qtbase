@@ -38,6 +38,7 @@ private slots:
     void signedness();
     void classEnum();
     void initializerLists();
+    void testSetFlags();
 };
 
 void tst_QFlags::testFlag() const
@@ -276,6 +277,19 @@ void tst_QFlags::initializerLists()
 #else
     QSKIP("This test requires C++11 initializer_list support.");
 #endif // Q_COMPILER_INITIALIZER_LISTS
+}
+
+void tst_QFlags::testSetFlags()
+{
+    Qt::MouseButtons btn = Qt::NoButton;
+
+    btn.setFlag(Qt::LeftButton);
+    QVERIFY(btn.testFlag(Qt::LeftButton));
+    QVERIFY(!btn.testFlag(Qt::MidButton));
+
+    btn.setFlag(Qt::LeftButton, false);
+    QVERIFY(!btn.testFlag(Qt::LeftButton));
+    QVERIFY(!btn.testFlag(Qt::MidButton));
 }
 
 // (statically) check QTypeInfo for QFlags instantiations:
