@@ -48,6 +48,9 @@
 #ifdef Q_OS_ANDROID
 #include <QtCore/private/qjnihelpers_p.h>
 #endif
+#ifndef Q_OS_WIN
+#include <dlfcn.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -443,7 +446,12 @@ void QEGLPlatformContext::swapBuffers(QPlatformSurface *surface)
 QFunctionPointer QEGLPlatformContext::getProcAddress(const char *procName)
 {
     eglBindAPI(m_api);
-    return eglGetProcAddress(procName);
+    QFunctionPointer proc = (QFunctionPointer) eglGetProcAddress(procName);
+#ifndef Q_OS_WIN
+    if (!proc)
+        proc = (QFunctionPointer) dlsym(RTLD_DEFAULT, procName);
+#endif
+    return proc;
 }
 
 QSurfaceFormat QEGLPlatformContext::format() const

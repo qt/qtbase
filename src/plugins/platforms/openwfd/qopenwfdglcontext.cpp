@@ -41,6 +41,7 @@
 
 #include "qopenwfdwindow.h"
 #include "qopenwfdscreen.h"
+#include <dlfcn.h>
 
 QOpenWFDGLContext::QOpenWFDGLContext(QOpenWFDDevice *device)
     : QPlatformOpenGLContext()
@@ -86,7 +87,10 @@ void QOpenWFDGLContext::swapBuffers(QPlatformSurface *surface)
 
 QFunctionPointer QOpenWFDGLContext::getProcAddress(const char *procName)
 {
-    return eglGetProcAddress(procName);
+    QFunctionPointer proc = (QFunctionPointer) eglGetProcAddress(procName);
+    if (!proc)
+        proc = (QFunctionPointer) dlsym(RTLD_DEFAULT, procName);
+    return proc;
 }
 
 EGLContext QOpenWFDGLContext::eglContext() const

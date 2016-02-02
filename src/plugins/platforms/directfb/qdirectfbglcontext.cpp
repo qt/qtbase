@@ -40,6 +40,7 @@
 #include "qdirectfbglcontext.h"
 
 #include <directfbgl.h>
+#include <dlfcn.h>
 
 #include <QDebug>
 
@@ -80,13 +81,13 @@ void QDirectFbGLContext::doneCurrent()
     m_dfbGlContext->Unlock(m_dfbGlContext);
 }
 
-void *QDirectFbGLContext::getProcAddress(const char *procName)
+QFunctionPointer QDirectFbGLContext::getProcAddress(const char *procName)
 {
     void *proc;
     DFBResult result = m_dfbGlContext->GetProcAddress(m_dfbGlContext, procName, &proc);
     if (result == DFB_OK)
-        return proc;
-    return 0;
+        return (QFunctionPointer) proc;
+    return dlsym(RTLD_DEFAULT, procName);
 }
 
 void QDirectFbGLContext::swapBuffers()

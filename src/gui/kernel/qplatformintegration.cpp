@@ -224,7 +224,8 @@ QPlatformServices *QPlatformIntegration::services() const
     platforms where no window management is available, meaning for example that windows
     are never repositioned by the window manager. The default implementation returns \c true.
 
-    \value AllGLFunctionsQueryable The QOpenGLContext backend provided by the platform is
+    \value AllGLFunctionsQueryable Deprecated. Used to indicate whether the QOpenGLContext
+    backend provided by the platform is
     able to return function pointers from getProcAddress() even for standard OpenGL
     functions, for example OpenGL 1 functions like glClear() or glDrawArrays(). This is
     important because the OpenGL specifications do not require this ability from the
@@ -232,7 +233,8 @@ QPlatformServices *QPlatformIntegration::services() const
     platform plugins may however choose to enhance the behavior in the backend
     implementation for QOpenGLContext::getProcAddress() and support returning a function
     pointer also for the standard, non-extension functions. This capability is a
-    prerequisite for dynamic OpenGL loading.
+    prerequisite for dynamic OpenGL loading. Starting with Qt 5.7, the platform plugin
+    is required to have this capability.
 
     \value ApplicationIcon The platform supports setting the application icon. (since 5.5)
  */
