@@ -42,19 +42,7 @@
 #include <QtCore/private/qcore_mac_p.h>
 #include <AppKit/AppKit.h>
 #include <QVector>
-
-QFunctionPointer qcgl_getProcAddress(const char *procName)
-{
-    CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
-            CFSTR("/System/Library/Frameworks/OpenGL.framework"), kCFURLPOSIXPathStyle, false);
-    CFBundleRef bundle = CFBundleCreate(kCFAllocatorDefault, url);
-    CFStringRef procNameCF = QCFString::toCFStringRef(QString::fromLatin1(procName));
-    void *proc = CFBundleGetFunctionPointerForName(bundle, procNameCF);
-    CFRelease(url);
-    CFRelease(bundle);
-    CFRelease(procNameCF);
-    return (QFunctionPointer)proc;
-}
+#include <qdebug.h>
 
 // Match up with createNSOpenGLPixelFormat below!
 QSurfaceFormat qcgl_surfaceFormat()
