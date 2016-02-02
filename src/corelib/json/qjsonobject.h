@@ -100,7 +100,7 @@ public:
         int i;
 
     public:
-        typedef std::bidirectional_iterator_tag iterator_category;
+        typedef std::random_access_iterator_tag iterator_category;
         typedef int difference_type;
         typedef QJsonValue value_type;
         typedef QJsonValueRef reference;
@@ -143,7 +143,7 @@ public:
         int i;
 
     public:
-        typedef std::bidirectional_iterator_tag iterator_category;
+        typedef std::random_access_iterator_tag iterator_category;
         typedef int difference_type;
         typedef QJsonValue value_type;
         typedef QJsonValue reference;

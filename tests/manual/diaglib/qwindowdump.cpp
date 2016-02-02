@@ -38,6 +38,7 @@
 #  include <QtGui/QScreen>
 #  include <QtGui/QWindow>
 #  include <qpa/qplatformwindow.h>
+#  include <private/qwindow_p.h>
 #  if QT_VERSION >= 0x050600
 #    include <private/qhighdpiscaling_p.h>
 #  endif
@@ -150,6 +151,15 @@ void formatWindow(QTextStream &str, const QWindow *w, FormatWindowOptions option
     if (!(options & DontPrintWindowFlags)) {
         str << ' ';
         formatWindowFlags(str, w->flags());
+    }
+    if (options & PrintSizeConstraints) {
+        str << ' ';
+        const QSize minimumSize = w->minimumSize();
+        if (minimumSize.width() > 0 || minimumSize.height() > 0)
+            str << "minimumSize=" << minimumSize.width() << 'x' << minimumSize.height() << ' ';
+        const QSize maximumSize = w->maximumSize();
+        if (maximumSize.width() < QWINDOWSIZE_MAX || maximumSize.height() < QWINDOWSIZE_MAX)
+            str << "maximumSize=" << maximumSize.width() << 'x' << maximumSize.height() << ' ';
     }
     str << '\n';
 }

@@ -203,6 +203,10 @@ private:
 #endif
 };
 
+#ifndef QT_NO_DEBUG_STREAM
+Q_WIDGETS_EXPORT QDebug operator<<(QDebug, const QAction *);
+#endif
+
 QT_BEGIN_INCLUDE_NAMESPACE
 #include <QtWidgets/qactiongroup.h>
 QT_END_INCLUDE_NAMESPACE

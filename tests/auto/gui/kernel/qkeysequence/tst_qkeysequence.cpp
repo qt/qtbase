@@ -36,7 +36,6 @@
 #include <qkeysequence.h>
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformtheme_p.h>
-#include <private/qkeysequence_p.h>
 #include <private/qguiapplication_p.h>
 #include <QTranslator>
 #include <QLibraryInfo>

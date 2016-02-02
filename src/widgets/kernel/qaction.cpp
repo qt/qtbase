@@ -39,10 +39,10 @@
 #include "qapplication.h"
 #include "qevent.h"
 #include "qlist.h"
-#include "qdebug.h"
 #include <private/qshortcutmap_p.h>
 #include <private/qapplication_p.h>
 #include <private/qmenu_p.h>
+#include <private/qdebug_p.h>
 
 #define QAPP_CHECK(functionName) \
     if (!qApp) { \
@@ -1295,6 +1295,31 @@ bool QAction::isIconVisibleInMenu() const
     }
     return d->iconVisibleInMenu;
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_WIDGETS_EXPORT QDebug operator<<(QDebug d, const QAction *action)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "QAction(" << static_cast<const void *>(action);
+    if (action) {
+        d << " text=" << action->text();
+        if (!action->toolTip().isEmpty())
+            d << " toolTip=" << action->toolTip();
+        if (action->isCheckable())
+            d << " checked=" << action->isChecked();
+        if (!action->shortcut().isEmpty())
+            d << " shortcut=" << action->shortcut();
+        d << " menuRole=";
+        QtDebugUtils::formatQEnum(d, action->menuRole());
+        d << " visible=" << action->isVisible();
+    } else {
+        d << '0';
+    }
+    d << ')';
+    return d;
+}
+#endif // QT_NO_DEBUG_STREAM
 
 QT_END_NAMESPACE
 

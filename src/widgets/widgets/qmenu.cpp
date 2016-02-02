@@ -584,7 +584,9 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
     if (reason != SelectedFromKeyboard) {
         if (QMenu *menu = qobject_cast<QMenu*>(causedPopup.widget)) {
             if (causedPopup.action && menu->d_func()->activeMenu == q)
-                menu->d_func()->setCurrentAction(causedPopup.action, 0, reason, false);
+                // Reselect parent menu action only if mouse is over a menu and parent menu action is not already selected (QTBUG-47987)
+                if (hasReceievedEnter && menu->d_func()->currentAction != causedPopup.action)
+                    menu->d_func()->setCurrentAction(causedPopup.action, 0, reason, false);
         }
     }
 

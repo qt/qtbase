@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 
 static const char boilerplate_supported_but_time_limited[] =
     "\nQt %1 Evaluation License\n"
-    "Copyright (C) 2015 The Qt Company Ltd.\n"
+    "Copyright (C) 2016 The Qt Company Ltd.\n"
     "This trial version may only be used for evaluation purposes\n"
     "and will shut down after 120 minutes.\n"
     "Registered to:\n"
@@ -57,7 +57,7 @@ static const char boilerplate_supported_but_time_limited[] =
 
 static const char boilerplate_supported[] =
     "\nQt %1 Evaluation License\n"
-    "Copyright (C) 2015 The Qt Company Ltd.\n"
+    "Copyright (C) 2016 The Qt Company Ltd.\n"
     "This trial version may only be used for evaluation purposes\n"
     "Registered to:\n"
     "   Licensee: %2\n\n"

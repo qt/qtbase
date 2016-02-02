@@ -1173,8 +1173,8 @@ void QGraphicsViewPrivate::updateInputMethodSensitivity()
     if (!proxy) {
         q->setInputMethodHints(focusItem->inputMethodHints());
     } else if (QWidget *widget = proxy->widget()) {
-    if (QWidget *fw = widget->focusWidget())
-        widget = fw;
+        if (QWidget *fw = widget->focusWidget())
+            widget = fw;
         q->setInputMethodHints(widget->inputMethodHints());
     } else {
         q->setInputMethodHints(0);

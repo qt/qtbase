@@ -38,7 +38,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
 #ifndef QT_NO_STATEMACHINE
 
 class QFinalStatePrivate;
@@ -54,6 +53,9 @@ protected:
     void onExit(QEvent *event) Q_DECL_OVERRIDE;
 
     bool event(QEvent *e) Q_DECL_OVERRIDE;
+
+protected:
+    explicit QFinalState(QFinalStatePrivate &dd, QState *parent);
 
 private:
     Q_DISABLE_COPY(QFinalState)

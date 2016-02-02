@@ -36,9 +36,11 @@
 
 #include "qwindowdump.h"
 
+QT_FORWARD_DECLARE_CLASS(QWidget)
+
 namespace QtDiag {
 
-void dumpAllWidgets(FormatWindowOptions options = 0);
+void dumpAllWidgets(FormatWindowOptions options = 0, const QWidget *root = 0);
 
 } // namespace QtDiag
 

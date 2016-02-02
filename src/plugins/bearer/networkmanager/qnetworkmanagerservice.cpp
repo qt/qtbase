@@ -214,7 +214,7 @@ void QNetworkManagerInterface::propertiesSwap(QMap<QString,QVariant> map)
         i.next();
         propertyMap.insert(i.key(),i.value());
 
-        if (i.key() == QStringLiteral("State")) {
+        if (i.key() == QLatin1String("State")) {
             quint32 state = i.value().toUInt();
             if (state == NM_DEVICE_STATE_ACTIVATED
                 || state == NM_DEVICE_STATE_DISCONNECTED
@@ -223,7 +223,7 @@ void QNetworkManagerInterface::propertiesSwap(QMap<QString,QVariant> map)
                 Q_EMIT propertiesChanged(map);
                 Q_EMIT stateChanged(state);
             }
-        } else if (i.key() == QStringLiteral("ActiveConnections")) {
+        } else if (i.key() == QLatin1String("ActiveConnections")) {
             Q_EMIT propertiesChanged(map);
         }
     }
@@ -418,7 +418,7 @@ void QNetworkManagerInterfaceDevice::propertiesSwap(QMap<QString,QVariant> map)
     QMapIterator<QString, QVariant> i(map);
     while (i.hasNext()) {
         i.next();
-        if (i.key() == QStringLiteral("AvailableConnections")) { //Device
+        if (i.key() == QLatin1String("AvailableConnections")) { //Device
             const QDBusArgument &dbusArgs = i.value().value<QDBusArgument>();
             QDBusObjectPath path;
             QStringList paths;
@@ -514,9 +514,8 @@ void QNetworkManagerInterfaceDeviceWired::propertiesSwap(QMap<QString,QVariant> 
     while (i.hasNext()) {
         i.next();
         propertyMap.insert(i.key(),i.value());
-        if (i.key() == QStringLiteral("Carrier")) {
+        if (i.key() == QLatin1String("Carrier"))
             Q_EMIT carrierChanged(i.value().toBool());
-        }
     }
     Q_EMIT propertiesChanged(map);
 }
@@ -693,9 +692,8 @@ void QNetworkManagerInterfaceDeviceWireless::propertiesSwap(QMap<QString,QVarian
     while (i.hasNext()) {
         i.next();
         propertyMap.insert(i.key(),i.value());
-        if (i.key() == QStringLiteral("ActiveAccessPoint")) { //DeviceWireless
+        if (i.key() == QLatin1String("ActiveAccessPoint")) //DeviceWireless
             Q_EMIT propertiesChanged(map);
-        }
     }
 }
 
@@ -1051,7 +1049,7 @@ void QNetworkManagerConnectionActive::propertiesSwap(QMap<QString,QVariant> map)
     while (i.hasNext()) {
         i.next();
         propertyMap.insert(i.key(),i.value());
-        if (i.key() == QStringLiteral("State")) {
+        if (i.key() == QLatin1String("State")) {
             quint32 state = i.value().toUInt();
             if (state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED
                 || state == NM_ACTIVE_CONNECTION_STATE_DEACTIVATED) {

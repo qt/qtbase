@@ -1944,12 +1944,8 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                         qt_mac_set_drawer_preferred_edge(widget, toDockWidgetArea(dockPos));
                     } else
 #endif
-                    if (!testing) {
-                        QRect r(x, y, w, h);
-                        r = QDockAreaLayout::constrainedRect(r, widget);
-                        widget->move(r.topLeft());
-                        widget->resize(r.size());
-                    }
+                    if (!testing)
+                        widget->setGeometry(QDockAreaLayout::constrainedRect(QRect(x, y, w, h), widget));
 
                     if (!testing) {
                         widget->setVisible(flags & StateFlagVisible);

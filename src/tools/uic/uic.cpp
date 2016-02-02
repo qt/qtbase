@@ -122,13 +122,13 @@ void Uic::writeCopyrightHeader(DomUI *ui)
     if (comment.size())
         out << "/*\n" << comment << "\n*/\n\n";
 
-        out << "/********************************************************************************\n";
-        out << "** Form generated from reading UI file '" << QFileInfo(opt.inputFile).fileName() << "'\n";
-        out << "**\n";
-        out << "** Created by: Qt User Interface Compiler version " << QLatin1String(QT_VERSION_STR) << "\n";
-        out << "**\n";
-        out << "** WARNING! All changes made in this file will be lost when recompiling UI file!\n";
-        out << "********************************************************************************/\n\n";
+    out << "/********************************************************************************\n";
+    out << "** Form generated from reading UI file '" << QFileInfo(opt.inputFile).fileName() << "'\n";
+    out << "**\n";
+    out << "** Created by: Qt User Interface Compiler version " << QLatin1String(QT_VERSION_STR) << "\n";
+    out << "**\n";
+    out << "** WARNING! All changes made in this file will be lost when recompiling UI file!\n";
+    out << "********************************************************************************/\n\n";
 }
 
 // Check the version with a stream reader at the <ui> element.

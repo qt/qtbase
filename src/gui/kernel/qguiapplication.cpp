@@ -921,14 +921,9 @@ QList<QScreen *> QGuiApplication::screens()
 /*!
     \property QGuiApplication::primaryScreen
 
-    \brief the primary (or default) screen of the application, or null if there is none.
+    \brief the primary (or default) screen of the application.
 
     This will be the screen where QWindows are initially shown, unless otherwise specified.
-
-    On some platforms, it may be null when there are actually no screens connected.
-    It is not possible to start a new QGuiApplication while there are no screens.
-    Applications which were running at the time the primary screen was removed
-    will stop rendering graphics until one or more screens are restored.
 
     The primaryScreenChanged signal was introduced in Qt 5.6.
 
@@ -1058,7 +1053,7 @@ static void init_platform(const QString &pluginArgument, const QString &platform
         QStringList keys = QPlatformIntegrationFactory::keys(platformPluginPath);
 
         QString fatalMessage
-                = QStringLiteral("This application failed to start because it could not find or load the Qt platform plugin \"%1\".\n\n").arg(name);
+                = QStringLiteral("This application failed to start because it could not find or load the Qt platform plugin \"%1\"\nin \"%2\".\n\n").arg(name, QDir::toNativeSeparators(platformPluginPath));
         if (!keys.isEmpty()) {
             fatalMessage += QStringLiteral("Available platform plugins are: %1.\n\n").arg(
                         keys.join(QStringLiteral(", ")));
@@ -1959,6 +1954,16 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
             ) {
         window = QGuiApplication::focusWindow();
     }
+
+#if !defined(Q_OS_OSX)
+    // FIXME: Include OS X in this code path by passing the key event through
+    // QPlatformInputContext::filterEvent().
+    if (e->keyType == QEvent::KeyPress && window) {
+        if (QWindowSystemInterface::handleShortcutEvent(window, e->timestamp, e->key, e->modifiers,
+            e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers, e->unicode, e->repeat, e->repeatCount))
+            return;
+    }
+#endif
 
     QKeyEvent ev(e->keyType, e->key, e->modifiers,
                  e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers,

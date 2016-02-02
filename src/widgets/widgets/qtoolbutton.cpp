@@ -120,7 +120,7 @@ bool QToolButtonPrivate::hasMenu() const
 
     One classic use of a tool button is to select tools; for example,
     the "pen" tool in a drawing program. This would be implemented
-    by using a QToolButton as a toggle button (see setToggleButton()).
+    by using a QToolButton as a toggle button (see setCheckable()).
 
     QToolButton supports auto-raising. In auto-raise mode, the button
     draws a 3D frame only when the mouse points at it. The feature is
@@ -147,8 +147,8 @@ bool QToolButtonPrivate::hasMenu() const
     menu set. The default mode is DelayedPopupMode which is sometimes
     used with the "Back" button in a web browser.  After pressing and
     holding the button down for a while, a menu pops up showing a list
-    of possible pages to jump to. The default delay is 600 ms; you can
-    adjust it with setPopupDelay().
+    of possible pages to jump to. The timeout is style dependent,
+    see QStyle::SH_ToolButton_PopupDelay.
 
     \table 100%
     \row \li \inlineimage assistant-toolbar.png Qt Assistant's toolbar with tool buttons
@@ -820,7 +820,7 @@ void QToolButtonPrivate::_q_menuTriggered(QAction *action)
     a menu set or contains a list of actions.
 
     \value DelayedPopup After pressing and holding the tool button
-    down for a certain amount of time (the timeout is style dependant,
+    down for a certain amount of time (the timeout is style dependent,
     see QStyle::SH_ToolButton_PopupDelay), the menu is displayed.  A
     typical application example is the "back" button in some web
     browsers's tool bars. If the user clicks it, the browser simply
@@ -961,8 +961,8 @@ bool QToolButton::event(QEvent *event)
     case QEvent::HoverEnter:
     case QEvent::HoverLeave:
     case QEvent::HoverMove:
-    if (const QHoverEvent *he = static_cast<const QHoverEvent *>(event))
-        d_func()->updateHoverControl(he->pos());
+        if (const QHoverEvent *he = static_cast<const QHoverEvent *>(event))
+            d_func()->updateHoverControl(he->pos());
         break;
     default:
         break;

@@ -52,7 +52,7 @@
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SHORTCUT
-struct Q_AUTOTEST_EXPORT QKeyBinding
+struct QKeyBinding
 {
     QKeySequence::StandardKey standardKey;
     uchar priority;
@@ -60,7 +60,7 @@ struct Q_AUTOTEST_EXPORT QKeyBinding
     uint platform;
 };
 
-class Q_AUTOTEST_EXPORT QKeySequencePrivate
+class QKeySequencePrivate
 {
 public:
     enum { MaxKeyCount = 4 }; // also used in QKeySequenceEdit

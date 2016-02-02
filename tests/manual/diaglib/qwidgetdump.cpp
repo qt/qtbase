@@ -61,9 +61,31 @@ static void dumpWidgetRecursion(QTextStream &str, const QWidget *w,
     if (const int states = w->windowState())
         str << "windowState=" << hex << showbase << states << dec << noshowbase << ' ';
     formatRect(str, w->geometry());
+    if (w->isWindow()) {
+        const QRect normalGeometry = w->normalGeometry();
+        if (normalGeometry.isValid() && !normalGeometry.isEmpty() && normalGeometry != w->geometry()) {
+            str << " normal=";
+            formatRect(str, w->normalGeometry());
+        }
+    }
     if (!(options & DontPrintWindowFlags)) {
         str << ' ';
         formatWindowFlags(str, w->windowFlags());
+    }
+    if (options & PrintSizeConstraints) {
+        str << ' ';
+        const QSize minimumSize = w->minimumSize();
+        if (minimumSize.width() > 0 || minimumSize.height() > 0)
+            str << "minimumSize=" << minimumSize.width() << 'x' << minimumSize.height() << ' ';
+        const QSize sizeHint = w->sizeHint();
+        const QSize minimumSizeHint = w->minimumSizeHint();
+        if (minimumSizeHint.isValid() && !(sizeHint.isValid() && minimumSizeHint == sizeHint))
+            str << "minimumSizeHint=" << minimumSizeHint.width() << 'x' << minimumSizeHint.height() << ' ';
+        if (sizeHint.isValid())
+            str << "sizeHint=" << sizeHint.width() << 'x' << sizeHint.height() << ' ';
+        const QSize maximumSize = w->maximumSize();
+        if (maximumSize.width() < QWIDGETSIZE_MAX || maximumSize.height() < QWIDGETSIZE_MAX)
+            str << "maximumSize=" << maximumSize.width() << 'x' << maximumSize.height() << ' ';
     }
     str << '\n';
 #if QT_VERSION > 0x050000
@@ -79,12 +101,17 @@ static void dumpWidgetRecursion(QTextStream &str, const QWidget *w,
     }
 }
 
-void dumpAllWidgets(FormatWindowOptions options)
+void dumpAllWidgets(FormatWindowOptions options, const QWidget *root)
 {
     QString d;
     QTextStream str(&d);
     str << "### QWidgets:\n";
-    foreach (QWidget *tw, QApplication::topLevelWidgets())
+    QWidgetList topLevels;
+    if (root)
+        topLevels.append(const_cast<QWidget *>(root));
+    else
+        topLevels = QApplication::topLevelWidgets();
+    foreach (QWidget *tw, topLevels)
         dumpWidgetRecursion(str, tw, options);
 #if QT_VERSION >= 0x050400
     qDebug().noquote() << d;

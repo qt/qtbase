@@ -80,9 +80,6 @@ HIMutableShapeRef qt_mac_QRegionToHIMutableShape(const QRegion &region);
 
 OSStatus qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage);
 
-QChar qt_mac_qtKey2CocoaKey(Qt::Key key);
-Qt::Key qt_mac_cocoaKey2QtKey(QChar keyCode);
-
 NSDragOperation qt_mac_mapDropAction(Qt::DropAction action);
 NSDragOperation qt_mac_mapDropActions(Qt::DropActions actions);
 Qt::DropAction qt_mac_mapNSDragOperation(NSDragOperation nsActions);

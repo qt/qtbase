@@ -47,7 +47,7 @@ QString CppGenerator::copyrightHeader() const
   return QLatin1String(
     "/****************************************************************************\n"
     "**\n"
-    "** Copyright (C) 2015 The Qt Company Ltd.\n"
+    "** Copyright (C) 2016 The Qt Company Ltd.\n"
     "** Contact: http://www.qt.io/licensing/\n"
     "**\n"
     "** This file is part of the Qt Toolkit.\n"

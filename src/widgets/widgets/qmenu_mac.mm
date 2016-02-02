@@ -98,15 +98,13 @@ void QMenu::setAsDockMenu()
 
 
 /*! \fn void qt_mac_set_dock_menu(QMenu *menu)
-    \since 5.2
+    \relates QMenu
     \deprecated
 
-    Set this menu to be the dock menu available by option-clicking
+    Sets this \a menu to be the dock menu available by option-clicking
     on the application dock icon. Available on OS X only.
 
-    Deprecated; use QMenu:setAsDockMenu() instead.
-
-    \sa QMenu:setAsDockMenu()
+    Deprecated; use \l QMenu::setAsDockMenu() instead.
 */
 
 void QMenuPrivate::moveWidgetToPlatformItem(QWidget *widget, QPlatformMenuItem* item)

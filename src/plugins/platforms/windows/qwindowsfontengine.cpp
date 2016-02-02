@@ -231,17 +231,10 @@ int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLa
             }
         } else {
 #endif
-            wchar_t first = tm.tmFirstChar;
-            wchar_t last = tm.tmLastChar;
-
             QStringIterator it(str, str + numChars);
             while (it.hasNext()) {
                 const uint uc = it.next();
-                if (
-#ifdef Q_DEAD_CODE_FROM_QT4_WINCE
-                    tm.tmFirstChar > 60000 ||
-#endif
-                         uc >= first && uc <= last)
+                if (uc >= tm.tmFirstChar && uc <= tm.tmLastChar)
                     glyphs->glyphs[glyph_pos] = uc;
                 else
                     glyphs->glyphs[glyph_pos] = 0;
@@ -351,11 +344,9 @@ glyph_t QWindowsFontEngine::glyphIndex(uint ucs4) const
             glyph = getTrueTypeGlyphIndex(cmap, cmapSize, ucs4 + 0xf000);
     } else if (ttf) {
         glyph = getTrueTypeGlyphIndex(cmap, cmapSize, ucs4);
-#else
-    if (tm.tmFirstChar > 60000) {
-        glyph = ucs4;
+    } else
 #endif
-    } else if (ucs4 >= tm.tmFirstChar && ucs4 <= tm.tmLastChar) {
+    if (ucs4 >= tm.tmFirstChar && ucs4 <= tm.tmLastChar) {
         glyph = ucs4;
     } else {
         glyph = 0;

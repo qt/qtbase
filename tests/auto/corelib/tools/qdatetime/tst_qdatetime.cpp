@@ -1614,8 +1614,14 @@ void tst_QDateTime::daylightSavingsTimeChange_data()
 {
     QTest::addColumn<QDate>("inDST");
     QTest::addColumn<QDate>("outDST");
-    QTest::newRow("Autumn") << QDate(2006, 8, 1) << QDate(2006, 12, 1);
-    QTest::newRow("Spring") << QDate(2006, 5, 1) << QDate(2006, 2, 1);
+    QTest::addColumn<int>("days"); // from in to out; -ve if reversed
+    QTest::addColumn<int>("months");
+
+    QTest::newRow("Autumn") << QDate(2006, 8, 1) << QDate(2006, 12, 1)
+                            << 122 << 4;
+
+    QTest::newRow("Spring") << QDate(2006, 5, 1) << QDate(2006, 2, 1)
+                            << -89 << -3;
 }
 
 void tst_QDateTime::daylightSavingsTimeChange()
@@ -1635,6 +1641,8 @@ void tst_QDateTime::daylightSavingsTimeChange()
 
     QFETCH(QDate, inDST);
     QFETCH(QDate, outDST);
+    QFETCH(int, days);
+    QFETCH(int, months);
 
     // First with simple construction
     QDateTime dt = QDateTime(outDST, QTime(0, 0, 0), Qt::LocalTime);
@@ -1644,6 +1652,22 @@ void tst_QDateTime::daylightSavingsTimeChange()
     dt = dt.addSecs(1);
     QCOMPARE(dt, QDateTime(inDST, QTime(0, 0, 1)));
 
+    // now using addDays:
+    dt = dt.addDays(days).addSecs(1);
+    QCOMPARE(dt, QDateTime(outDST, QTime(0, 0, 2)));
+
+    // ... and back again:
+    dt = dt.addDays(-days).addSecs(1);
+    QCOMPARE(dt, QDateTime(inDST, QTime(0, 0, 3)));
+
+    // now using addMonths:
+    dt = dt.addMonths(months).addSecs(1);
+    QCOMPARE(dt, QDateTime(outDST, QTime(0, 0, 4)));
+
+    // ... and back again:
+    dt = dt.addMonths(-months).addSecs(1);
+    QCOMPARE(dt, QDateTime(inDST, QTime(0, 0, 5)));
+
     // now using fromTime_t
     dt = QDateTime::fromTime_t(outDSTsecs);
     QCOMPARE(dt, QDateTime(outDST, QTime(0, 0, 0)));
@@ -1651,6 +1675,44 @@ void tst_QDateTime::daylightSavingsTimeChange()
     dt.setDate(inDST);
     dt = dt.addSecs(60);
     QCOMPARE(dt, QDateTime(inDST, QTime(0, 1, 0)));
+
+    // using addMonths:
+    dt = dt.addMonths(months).addSecs(60);
+    QCOMPARE(dt, QDateTime(outDST, QTime(0, 2, 0)));
+    // back again:
+    dt = dt.addMonths(-months).addSecs(60);
+    QCOMPARE(dt, QDateTime(inDST, QTime(0, 3, 0)));
+
+    // using addDays:
+    dt = dt.addDays(days).addSecs(60);
+    QCOMPARE(dt, QDateTime(outDST, QTime(0, 4, 0)));
+    // back again:
+    dt = dt.addDays(-days).addSecs(60);
+    QCOMPARE(dt, QDateTime(inDST, QTime(0, 5, 0)));
+
+    // Now use the result of a UTC -> LocalTime conversion
+    dt = QDateTime(outDST, QTime(0, 0, 0), Qt::LocalTime).toUTC();
+    dt = QDateTime(dt.date(), dt.time(), Qt::UTC).toLocalTime();
+    QCOMPARE(dt, QDateTime(outDST, QTime(0, 0, 0)));
+
+    // using addDays:
+    dt = dt.addDays(-days).addSecs(3600);
+    QCOMPARE(dt, QDateTime(inDST, QTime(1, 0, 0)));
+    // back again
+    dt = dt.addDays(days).addSecs(3600);
+    QCOMPARE(dt, QDateTime(outDST, QTime(2, 0, 0)));
+
+    // using addMonths:
+    dt = dt.addMonths(-months).addSecs(3600);
+    QCOMPARE(dt, QDateTime(inDST, QTime(3, 0, 0)));
+    // back again:
+    dt = dt.addMonths(months).addSecs(3600);
+    QCOMPARE(dt, QDateTime(outDST, QTime(4, 0, 0)));
+
+    // using setDate:
+    dt.setDate(inDST);
+    dt = dt.addSecs(3600);
+    QCOMPARE(dt, QDateTime(inDST, QTime(5, 0, 0)));
 }
 
 void tst_QDateTime::springForward_data()
@@ -2224,7 +2286,9 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("data5") << QString("10") << QString("'") << invalidDateTime();
     QTest::newRow("data6") << QString("pm") << QString("ap") << QDateTime(defDate(), QTime(12, 0, 0));
     QTest::newRow("data7") << QString("foo") << QString("ap") << invalidDateTime();
-    QTest::newRow("data8") << QString("101010") << QString("dMyy") << QDateTime(QDate(1910, 10, 10), QTime());
+    // Day non-conflict should not hide earlier year conflict (1963-03-01 was a
+    // Friday; asking for Thursday moves this, without conflict, to the 7th):
+    QTest::newRow("data8") << QString("77 03 1963 " + thu) << QString("yy MM yyyy ddd") << invalidDateTime();
     QTest::newRow("data9") << QString("101010") << QString("dMyy") << QDateTime(QDate(1910, 10, 10), QTime());
     QTest::newRow("data10") << QString("101010") << QString("dMyy") << QDateTime(QDate(1910, 10, 10), QTime());
     QTest::newRow("data11") << date << QString("dd MMM yy") << QDateTime(QDate(1910, 10, 10), QTime());

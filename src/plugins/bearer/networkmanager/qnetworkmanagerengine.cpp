@@ -1030,17 +1030,17 @@ QNetworkConfiguration::BearerType QNetworkManagerEngine::currentBearerType(const
 
             QString bearer = i.value()->bearer();
 
-            if (bearer == QStringLiteral("gsm")) {
+            if (bearer == QLatin1String("gsm")) {
                 return QNetworkConfiguration::Bearer2G;
-            } else if (bearer == QStringLiteral("edge")) {
+            } else if (bearer == QLatin1String("edge")) {
                 return QNetworkConfiguration::Bearer2G;
-            } else if (bearer == QStringLiteral("umts")) {
+            } else if (bearer == QLatin1String("umts")) {
                 return QNetworkConfiguration::BearerWCDMA;
-            } else if (bearer == QStringLiteral("hspa")
-                       || bearer == QStringLiteral("hsdpa")
-                       || bearer == QStringLiteral("hsupa")) {
+            } else if (bearer == QLatin1String("hspa")
+                       || bearer == QLatin1String("hsdpa")
+                       || bearer == QLatin1String("hsupa")) {
                 return QNetworkConfiguration::BearerHSPA;
-            } else if (bearer == QStringLiteral("lte")) {
+            } else if (bearer == QLatin1String("lte")) {
                 return QNetworkConfiguration::BearerLTE;
             }
         }

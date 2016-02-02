@@ -479,8 +479,8 @@ bool QScrollBar::event(QEvent *event)
     case QEvent::HoverEnter:
     case QEvent::HoverLeave:
     case QEvent::HoverMove:
-    if (const QHoverEvent *he = static_cast<const QHoverEvent *>(event))
-        d_func()->updateHoverControl(he->pos());
+        if (const QHoverEvent *he = static_cast<const QHoverEvent *>(event))
+            d_func()->updateHoverControl(he->pos());
         break;
     case QEvent::StyleChange:
         d_func()->setTransient(style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, this));
