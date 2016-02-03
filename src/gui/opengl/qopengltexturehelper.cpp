@@ -185,8 +185,8 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
     if (ctx->format().majorVersion() >= 3) {
         // OpenGL ES 3.0+ has immutable storage for 2D and 3D at least.
         QOpenGLExtraFunctionsPrivate *extra = static_cast<QOpenGLExtensions *>(context->extraFunctions())->d();
-        TexStorage3D = extra->TexStorage3D;
-        TexStorage2D = extra->TexStorage2D;
+        TexStorage3D = extra->f.TexStorage3D;
+        TexStorage2D = extra->f.TexStorage2D;
     } else {
         TexStorage3D = 0;
         TexStorage2D = 0;
@@ -211,10 +211,10 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
         if (ctx->isOpenGLES() && ctx->format().majorVersion() >= 3) {
             // OpenGL ES 3.0+ has glTexImage3D.
             QOpenGLExtraFunctionsPrivate *extra = static_cast<QOpenGLExtensions *>(context->extraFunctions())->d();
-            TexImage3D = extra->TexImage3D;
-            TexSubImage3D = extra->TexSubImage3D;
-            CompressedTexImage3D = extra->CompressedTexImage3D;
-            CompressedTexSubImage3D = extra->CompressedTexSubImage3D;
+            TexImage3D = extra->f.TexImage3D;
+            TexSubImage3D = extra->f.TexSubImage3D;
+            CompressedTexImage3D = extra->f.CompressedTexImage3D;
+            CompressedTexSubImage3D = extra->f.CompressedTexSubImage3D;
         } else {
             // OpenGL 1.2
             TexImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLsizei , GLsizei , GLint , GLenum , GLenum , const GLvoid *)>(context->getProcAddress("glTexImage3D"));
