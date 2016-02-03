@@ -2098,48 +2098,36 @@ void QOpenGLFunctions::initializeOpenGLFunctions()
 
 namespace {
 
-enum ResolvePolicy
-{
-    ResolveOES = 0x1,
-    ResolveEXT = 0x2,
-    ResolveANGLE = 0x4,
-    ResolveNV = 0x8
-};
-
-static QFunctionPointer getProcAddress(QOpenGLContext *context, const char *funcName, int policy = ResolveOES|ResolveEXT|ResolveANGLE|ResolveNV)
+// this function tries hard to get the opengl function we're looking for by also
+// trying to resolve it with some of the common extensions if the generic name
+// can't be found.
+static QFunctionPointer getProcAddress(QOpenGLContext *context, const char *funcName)
 {
     QFunctionPointer function = context->getProcAddress(funcName);
 
-    if (!function && policy) {
+    static const struct {
+        const char *name;
+        int len; // includes trailing \0
+    } extensions[] = {
+        { "ARB", 4 },
+        { "OES", 4 },
+        { "EXT", 4 },
+        { "ANGLE", 6 },
+        { "NV", 3 },
+    };
+
+    if (!function) {
         char fn[512];
         size_t size = strlen(funcName);
         Q_ASSERT(size < 500);
         memcpy(fn, funcName, size);
-
         char *ext = fn + size;
-        if (!function && (policy & ResolveOES)) {
-            memcpy(ext, "OES", 4);
-            function = context->getProcAddress(fn);
-        }
 
-        if (!function) {
-            memcpy(ext, "ARB", 4);
+        for (const auto &e : extensions) {
+            memcpy(ext, e.name, e.len);
             function = context->getProcAddress(fn);
-        }
-
-        if (!function && (policy & ResolveEXT)) {
-            memcpy(ext, "EXT", 4);
-            function = context->getProcAddress(fn);
-        }
-
-        if (!function && (policy & ResolveANGLE)) {
-            memcpy(ext, "ANGLE", 6);
-            function = context->getProcAddress(fn);
-        }
-
-        if (!function && (policy & ResolveNV)) {
-            memcpy(ext, "NV", 3);
-            function = context->getProcAddress(fn);
+            if (function)
+                break;
         }
     }
 
@@ -2147,15 +2135,15 @@ static QFunctionPointer getProcAddress(QOpenGLContext *context, const char *func
 }
 
 template <typename Func>
-Func resolve(QOpenGLContext *context, const char *name, int policy, Func)
+Func resolve(QOpenGLContext *context, const char *name, Func)
 {
-    return reinterpret_cast<Func>(getProcAddress(context, name, policy));
+    return reinterpret_cast<Func>(getProcAddress(context, name));
 }
 
 }
 
-#define RESOLVE(name, policy) \
-    resolve(context, "gl"#name, policy, name)
+#define RESOLVE(name) \
+    resolve(context, "gl"#name, name)
 
 #ifndef QT_OPENGL_ES_2
 
@@ -4523,9 +4511,9 @@ QOpenGLExtensionsPrivate::QOpenGLExtensionsPrivate(QOpenGLContext *ctx)
 {
     QOpenGLContext *context = QOpenGLContext::currentContext();
 
-    MapBuffer = RESOLVE(MapBuffer, ResolveOES);
-    GetBufferSubData = RESOLVE(GetBufferSubData, ResolveEXT);
-    DiscardFramebuffer = RESOLVE(DiscardFramebuffer, ResolveEXT);
+    MapBuffer = RESOLVE(MapBuffer);
+    GetBufferSubData = RESOLVE(GetBufferSubData);
+    DiscardFramebuffer = RESOLVE(DiscardFramebuffer);
  }
 
 void QOpenGLExtensions::flushShared()
