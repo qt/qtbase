@@ -63,6 +63,10 @@ QWindowsDirect2DPaintDevice::QWindowsDirect2DPaintDevice(QWindowsDirect2DBitmap 
 {
 }
 
+QWindowsDirect2DPaintDevice::~QWindowsDirect2DPaintDevice()
+{
+}
+
 QPaintEngine *QWindowsDirect2DPaintDevice::paintEngine() const
 {
     Q_D(const QWindowsDirect2DPaintDevice);

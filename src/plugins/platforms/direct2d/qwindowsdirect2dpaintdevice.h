@@ -50,6 +50,8 @@ class QWindowsDirect2DPaintDevice : public QPaintDevice
 public:
     QWindowsDirect2DPaintDevice(QWindowsDirect2DBitmap *bitmap, QInternal::PaintDeviceFlags flags,
                                 QWindowsDirect2DPaintEngine::Flags paintFlags = QWindowsDirect2DPaintEngine::NoFlag);
+    ~QWindowsDirect2DPaintDevice();
+
     QPaintEngine *paintEngine() const Q_DECL_OVERRIDE;
     int devType() const Q_DECL_OVERRIDE;
 
