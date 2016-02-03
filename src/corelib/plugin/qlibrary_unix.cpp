@@ -286,7 +286,7 @@ bool QLibraryPrivate::unload_sys()
     return true;
 }
 
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) && !defined(QT_NO_DYNAMIC_LIBRARY)
 Q_CORE_EXPORT QFunctionPointer qt_linux_find_symbol_sys(const char *symbol)
 {
     return QFunctionPointer(dlsym(RTLD_DEFAULT, symbol));
