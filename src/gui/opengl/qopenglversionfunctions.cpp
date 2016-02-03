@@ -85,22 +85,20 @@ void CLASS::init() \
 #define QT_OPENGL_IMPLEMENT_WIN QT_OPENGL_IMPLEMENT
 #endif
 
-QOpenGLVersionFunctionsBackend *QAbstractOpenGLFunctionsPrivate::functionsBackend(QOpenGLContext *context,
-                                                                                  const QOpenGLVersionStatus &v)
+QOpenGLVersionFunctionsBackend *QAbstractOpenGLFunctionsPrivate::functionsBackend(QOpenGLContext *context, QOpenGLVersionFunctionsBackend::Version v)
 {
     Q_ASSERT(context);
     return context->functionsBackend(v);
 }
 
-void QAbstractOpenGLFunctionsPrivate::insertFunctionsBackend(QOpenGLContext *context,
-                                                             const QOpenGLVersionStatus &v,
+void QAbstractOpenGLFunctionsPrivate::insertFunctionsBackend(QOpenGLContext *context, QOpenGLVersionFunctionsBackend::Version v,
                                                              QOpenGLVersionFunctionsBackend *backend)
 {
     Q_ASSERT(context);
     context->insertFunctionsBackend(v, backend);
 }
 
-void QAbstractOpenGLFunctionsPrivate::removeFunctionsBackend(QOpenGLContext *context, const QOpenGLVersionStatus &v)
+void QAbstractOpenGLFunctionsPrivate::removeFunctionsBackend(QOpenGLContext *context, QOpenGLVersionFunctionsBackend::Version v)
 {
     Q_ASSERT(context);
     context->removeFunctionsBackend(v);

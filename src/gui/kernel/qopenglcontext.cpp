@@ -1302,7 +1302,7 @@ QOpenGLContext *QOpenGLContext::globalShareContext()
 /*!
     \internal
 */
-QOpenGLVersionFunctionsBackend *QOpenGLContext::functionsBackend(const QOpenGLVersionStatus &v) const
+QOpenGLVersionFunctionsBackend *QOpenGLContext::functionsBackend(const QOpenGLVersionFunctionsBackend::Version v) const
 {
     Q_D(const QOpenGLContext);
     return d->versionFunctionsBackend.value(v, 0);
@@ -1311,8 +1311,7 @@ QOpenGLVersionFunctionsBackend *QOpenGLContext::functionsBackend(const QOpenGLVe
 /*!
     \internal
 */
-void QOpenGLContext::insertFunctionsBackend(const QOpenGLVersionStatus &v,
-                                            QOpenGLVersionFunctionsBackend *backend)
+void QOpenGLContext::insertFunctionsBackend(const QOpenGLVersionFunctionsBackend::Version v, QOpenGLVersionFunctionsBackend *backend)
 {
     Q_D(QOpenGLContext);
     d->versionFunctionsBackend.insert(v, backend);
@@ -1321,7 +1320,7 @@ void QOpenGLContext::insertFunctionsBackend(const QOpenGLVersionStatus &v,
 /*!
     \internal
 */
-void QOpenGLContext::removeFunctionsBackend(const QOpenGLVersionStatus &v)
+void QOpenGLContext::removeFunctionsBackend(const QOpenGLVersionFunctionsBackend::Version v)
 {
     Q_D(QOpenGLContext);
     d->versionFunctionsBackend.remove(v);

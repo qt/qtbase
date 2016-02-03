@@ -222,7 +222,7 @@ public:
     }
 
     mutable QHash<QOpenGLVersionProfile, QAbstractOpenGLFunctions *> versionFunctions;
-    mutable QHash<QOpenGLVersionStatus, QOpenGLVersionFunctionsBackend *> versionFunctionsBackend;
+    mutable QHash<QOpenGLVersionFunctionsBackend::Version, QOpenGLVersionFunctionsBackend *> versionFunctionsBackend;
     mutable QSet<QAbstractOpenGLFunctions *> externalVersionFunctions;
 
     void *qGLContextHandle;
