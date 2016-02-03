@@ -182,7 +182,7 @@ protected:
     void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
     void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
 #ifdef Q_OS_WIN
-    bool nativeEvent(const QByteArray &eventType, void * message, long * result);
+    bool nativeEvent(const QByteArray &eventType, void *message, long *result) Q_DECL_OVERRIDE;
 #endif
     void done(int result) Q_DECL_OVERRIDE;
     virtual void initializePage(int id);
