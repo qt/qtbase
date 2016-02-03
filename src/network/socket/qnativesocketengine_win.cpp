@@ -294,19 +294,6 @@ static inline QAbstractSocket::SocketType qt_socket_getType(qintptr socketDescri
     return QAbstractSocket::UnknownSocketType;
 }
 
-/*! \internal
-
-*/
-static inline int qt_socket_getMaxMsgSize(qintptr socketDescriptor)
-{
-    int value = 0;
-    QT_SOCKLEN_T valueSize = sizeof(value);
-    if (::getsockopt(socketDescriptor, SOL_SOCKET, SO_MAX_MSG_SIZE, (char *) &value, &valueSize) != 0) {
-        WS_ERROR_DEBUG(WSAGetLastError());
-    }
-    return value;
-}
-
 // MS Transport Provider IOCTL to control
 // reporting PORT_UNREACHABLE messages
 // on UDP sockets via recv/WSARecv/etc.
