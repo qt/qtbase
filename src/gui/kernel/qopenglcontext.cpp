@@ -661,8 +661,6 @@ void QOpenGLContext::destroy()
     d->externalVersionFunctions.clear();
     qDeleteAll(d->versionFunctions);
     d->versionFunctions.clear();
-    qDeleteAll(d->versionFunctionsBackend);
-    d->versionFunctionsBackend.clear();
 
     delete d->textureFunctions;
     d->textureFunctions = 0;
@@ -1302,28 +1300,10 @@ QOpenGLContext *QOpenGLContext::globalShareContext()
 /*!
     \internal
 */
-QOpenGLVersionFunctionsBackend *QOpenGLContext::functionsBackend(const QOpenGLVersionFunctionsBackend::Version v) const
+QOpenGLVersionFunctionsStorage *QOpenGLContext::functionsBackendStorage() const
 {
     Q_D(const QOpenGLContext);
-    return d->versionFunctionsBackend.value(v, 0);
-}
-
-/*!
-    \internal
-*/
-void QOpenGLContext::insertFunctionsBackend(const QOpenGLVersionFunctionsBackend::Version v, QOpenGLVersionFunctionsBackend *backend)
-{
-    Q_D(QOpenGLContext);
-    d->versionFunctionsBackend.insert(v, backend);
-}
-
-/*!
-    \internal
-*/
-void QOpenGLContext::removeFunctionsBackend(const QOpenGLVersionFunctionsBackend::Version v)
-{
-    Q_D(QOpenGLContext);
-    d->versionFunctionsBackend.remove(v);
+    return &d->versionFunctionsStorage;
 }
 
 /*!

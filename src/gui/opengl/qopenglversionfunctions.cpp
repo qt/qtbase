@@ -85,23 +85,59 @@ void CLASS::init() \
 #define QT_OPENGL_IMPLEMENT_WIN QT_OPENGL_IMPLEMENT
 #endif
 
+QOpenGLVersionFunctionsStorage::QOpenGLVersionFunctionsStorage()
+    : backends(0)
+{
+}
+
+QOpenGLVersionFunctionsStorage::~QOpenGLVersionFunctionsStorage()
+{
+    if (backends) {
+        for (int i = 0; i < QOpenGLVersionFunctionsBackend::OpenGLVersionBackendCount; ++i) {
+            if (backends[i] && !--backends[i]->refs) {
+                // deleting the base class is ok, as the derived classes don't have a destructor
+                delete backends[i];
+            }
+        }
+        delete[] backends;
+    }
+}
+
+QOpenGLVersionFunctionsBackend *QOpenGLVersionFunctionsStorage::backend(QOpenGLContext *context, QOpenGLVersionFunctionsBackend::Version v)
+{
+#ifdef QT_OPENGL_ES
+    Q_UNUSED(context);
+    Q_UNUSED(v);
+    return 0;
+#else
+    if (!backends) {
+        backends = new QOpenGLVersionFunctionsBackend *[QOpenGLVersionFunctionsBackend::OpenGLVersionBackendCount];
+        memset(backends, 0, sizeof(QOpenGLVersionFunctionsBackend *)*QOpenGLVersionFunctionsBackend::OpenGLVersionBackendCount);
+    }
+    if (backends[v])
+        return backends[v];
+
+    switch(v) {
+#define VERSION_ENUM(X) QOpenGLVersionFunctionsBackend::OpenGL_##X
+#define CREATE_BACKEND(X) \
+    case VERSION_ENUM(X): \
+        backends[VERSION_ENUM(X)] = new QOpenGLFunctions_##X##Backend(context); \
+        break;
+    QT_OPENGL_VERSIONS(CREATE_BACKEND)
+    case QOpenGLVersionFunctionsBackend::OpenGLVersionBackendCount:
+        Q_UNREACHABLE();
+    }
+    // the storage keeps one ref
+    ++backends[v]->refs;
+    return backends[v];
+#endif
+}
+
 QOpenGLVersionFunctionsBackend *QAbstractOpenGLFunctionsPrivate::functionsBackend(QOpenGLContext *context, QOpenGLVersionFunctionsBackend::Version v)
 {
     Q_ASSERT(context);
-    return context->functionsBackend(v);
-}
-
-void QAbstractOpenGLFunctionsPrivate::insertFunctionsBackend(QOpenGLContext *context, QOpenGLVersionFunctionsBackend::Version v,
-                                                             QOpenGLVersionFunctionsBackend *backend)
-{
-    Q_ASSERT(context);
-    context->insertFunctionsBackend(v, backend);
-}
-
-void QAbstractOpenGLFunctionsPrivate::removeFunctionsBackend(QOpenGLContext *context, QOpenGLVersionFunctionsBackend::Version v)
-{
-    Q_ASSERT(context);
-    context->removeFunctionsBackend(v);
+    QOpenGLVersionFunctionsStorage *storage = context->functionsBackendStorage();
+    return storage->backend(context, v);
 }
 
 void QAbstractOpenGLFunctionsPrivate::insertExternalFunctions(QOpenGLContext *context, QAbstractOpenGLFunctions *f)

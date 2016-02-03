@@ -237,9 +237,7 @@ private:
     void setQGLContextHandle(void *handle,void (*qGLContextDeleteFunction)(void *));
     void deleteQGLContext();
 
-    QOpenGLVersionFunctionsBackend* functionsBackend(QOpenGLVersionFunctionsBackend::Version v) const;
-    void insertFunctionsBackend(const QOpenGLVersionFunctionsBackend::Version v, QOpenGLVersionFunctionsBackend *backend);
-    void removeFunctionsBackend(const QOpenGLVersionFunctionsBackend::Version v);
+    QOpenGLVersionFunctionsStorage* functionsBackendStorage() const;
     void insertExternalFunctions(QAbstractOpenGLFunctions *f);
     void removeExternalFunctions(QAbstractOpenGLFunctions *f);
 

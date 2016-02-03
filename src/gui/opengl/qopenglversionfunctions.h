@@ -132,36 +132,41 @@ private: \
 class QOpenGLVersionFunctionsBackend
 {
 public:
+#define QT_OPENGL_VERSIONS(F) \
+        F(1_0_Core) \
+        F(1_1_Core) \
+        F(1_2_Core) \
+        F(1_3_Core) \
+        F(1_4_Core) \
+        F(1_5_Core) \
+        F(2_0_Core) \
+        F(2_1_Core) \
+        F(3_0_Core) \
+        F(3_1_Core) \
+        F(3_2_Core) \
+        F(3_3_Core) \
+        F(4_0_Core) \
+        F(4_1_Core) \
+        F(4_2_Core) \
+        F(4_3_Core) \
+        F(4_4_Core) \
+        F(4_5_Core) \
+        F(1_0_Deprecated) \
+        F(1_1_Deprecated) \
+        F(1_2_Deprecated) \
+        F(1_3_Deprecated) \
+        F(1_4_Deprecated) \
+        F(2_0_Deprecated) \
+        F(3_0_Deprecated) \
+        F(3_3_Deprecated) \
+        F(4_5_Deprecated) \
+
+#define VERSION_ENUM(X) OpenGL_##X,
     enum Version {
-        OpenGL_1_0,
-        OpenGL_1_1,
-        OpenGL_1_2,
-        OpenGL_1_3,
-        OpenGL_1_4,
-        OpenGL_1_5,
-        OpenGL_2_0,
-        OpenGL_2_1,
-        OpenGL_3_0,
-        OpenGL_3_1,
-        OpenGL_3_2_Core,
-        OpenGL_3_3_Core,
-        OpenGL_4_0_Core,
-        OpenGL_4_1_Core,
-        OpenGL_4_2_Core,
-        OpenGL_4_3_Core,
-        OpenGL_4_4_Core,
-        OpenGL_4_5_Core,
-        OpenGL_1_0_Deprecated,
-        OpenGL_1_1_Deprecated,
-        OpenGL_1_2_Deprecated,
-        OpenGL_1_3_Deprecated,
-        OpenGL_1_4_Deprecated,
-        OpenGL_2_0_Deprecated,
-        OpenGL_3_0_Deprecated,
-        OpenGL_3_3_Deprecated,
-        OpenGL_4_5_Deprecated,
+        QT_OPENGL_VERSIONS(VERSION_ENUM)
         OpenGLVersionBackendCount
     };
+#undef VERSION_ENUM
 
     QOpenGLVersionFunctionsBackend(QOpenGLContext *ctx)
         : context(ctx)
@@ -169,6 +174,17 @@ public:
 
     QOpenGLContext *context;
     QAtomicInt refs;
+};
+
+class QOpenGLVersionFunctionsStorage
+{
+public:
+    QOpenGLVersionFunctionsStorage();
+    ~QOpenGLVersionFunctionsStorage();
+
+    QOpenGLVersionFunctionsBackend *backend(QOpenGLContext *context, QOpenGLVersionFunctionsBackend::Version v);
+
+    QOpenGLVersionFunctionsBackend **backends;
 };
 
 class QAbstractOpenGLFunctions;
@@ -182,9 +198,6 @@ public:
     {}
 
     static QOpenGLVersionFunctionsBackend *functionsBackend(QOpenGLContext *context, QOpenGLVersionFunctionsBackend::Version v);
-    static void insertFunctionsBackend(QOpenGLContext *context, QOpenGLVersionFunctionsBackend::Version v,
-                                       QOpenGLVersionFunctionsBackend *backend);
-    static void removeFunctionsBackend(QOpenGLContext *context, QOpenGLVersionFunctionsBackend::Version v);
     static void insertExternalFunctions(QOpenGLContext *context, QAbstractOpenGLFunctions *f);
     static void removeExternalFunctions(QOpenGLContext *context, QAbstractOpenGLFunctions *f);
 
@@ -232,7 +245,7 @@ public:
     }
 
     Q_DECL_CONSTEXPR static Version versionStatus()
-    { return OpenGL_1_0; }
+    { return OpenGL_1_0_Core; }
 
     // OpenGL 1.0 core functions
 #define QT_OPENGL_1_0_FUNCTIONS(F) \
@@ -298,7 +311,7 @@ public:
     }
 
     Q_DECL_CONSTEXPR static Version versionStatus()
-    { return OpenGL_1_1; }
+    { return OpenGL_1_1_Core; }
 
     // OpenGL 1.1 core functions
 #define QT_OPENGL_1_1_FUNCTIONS(F) \
@@ -332,7 +345,7 @@ public:
     }
 
     Q_DECL_CONSTEXPR static Version versionStatus()
-    { return OpenGL_1_2; }
+    { return OpenGL_1_2_Core; }
 
     // OpenGL 1.2 core functions
 #define QT_OPENGL_1_2_FUNCTIONS(F) \
@@ -356,7 +369,7 @@ public:
     }
 
     Q_DECL_CONSTEXPR static Version versionStatus()
-    { return OpenGL_1_3; }
+    { return OpenGL_1_3_Core; }
 
     // OpenGL 1.3 core functions
 #define QT_OPENGL_1_3_FUNCTIONS(F) \
@@ -383,7 +396,7 @@ public:
     }
 
     Q_DECL_CONSTEXPR static Version versionStatus()
-    { return OpenGL_1_4; }
+    { return OpenGL_1_4_Core; }
 
     // OpenGL 1.4 core functions
 #define QT_OPENGL_1_4_FUNCTIONS(F) \
@@ -408,7 +421,7 @@ public:
     }
 
     Q_DECL_CONSTEXPR static Version versionStatus()
-    { return OpenGL_1_5; }
+    { return OpenGL_1_5_Core; }
 
     // OpenGL 1.5 core functions
 #define QT_OPENGL_1_5_FUNCTIONS(F) \
@@ -445,7 +458,7 @@ public:
     }
 
     Q_DECL_CONSTEXPR static Version versionStatus()
-    { return OpenGL_2_0; }
+    { return OpenGL_2_0_Core; }
 
     // OpenGL 2.0 core functions
 #define QT_OPENGL_2_0_FUNCTIONS(F) \
@@ -556,7 +569,7 @@ public:
     }
 
     Q_DECL_CONSTEXPR static Version versionStatus()
-    { return OpenGL_2_1; }
+    { return OpenGL_2_1_Core; }
 
     // OpenGL 2.1 core functions
 #define QT_OPENGL_2_1_FUNCTIONS(F) \
@@ -580,7 +593,7 @@ public:
     }
 
     Q_DECL_CONSTEXPR static Version versionStatus()
-    { return OpenGL_3_0; }
+    { return OpenGL_3_0_Core; }
 
     // OpenGL 3.0 core functions
 #define QT_OPENGL_3_0_FUNCTIONS(F) \
@@ -682,7 +695,7 @@ public:
     }
 
     Q_DECL_CONSTEXPR static Version versionStatus()
-    { return OpenGL_3_1; }
+    { return OpenGL_3_1_Core; }
 
     // OpenGL 3.1 core functions
 #define QT_OPENGL_3_1_FUNCTIONS(F) \
