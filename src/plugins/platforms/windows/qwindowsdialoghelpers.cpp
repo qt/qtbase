@@ -1584,11 +1584,6 @@ QWindowsNativeFileDialogBase *QWindowsNativeFileDialogBase::create(QFileDialogOp
     return result;
 }
 
-static inline bool isQQuickWindow(const QWindow *w = 0)
-{
-    return w && w->inherits("QQuickWindow");
-}
-
 /*!
     \class QWindowsFileDialogHelper
     \brief Helper for native Windows file dialogs

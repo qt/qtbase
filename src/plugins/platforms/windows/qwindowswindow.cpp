@@ -248,13 +248,6 @@ static QWindow::Visibility windowVisibility_sys(HWND hwnd)
     return QWindow::Windowed;
 }
 
-static inline QSize clientSize(HWND hwnd)
-{
-    RECT rect = { 0, 0, 0, 0 };
-    GetClientRect(hwnd, &rect); // Always returns point 0,0, thus unusable for geometry.
-    return qSizeOfRect(rect);
-}
-
 static inline bool windowIsOpenGL(const QWindow *w)
 {
     switch (w->surfaceType()) {

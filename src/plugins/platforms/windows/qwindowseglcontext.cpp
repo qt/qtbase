@@ -342,8 +342,8 @@ bool QWindowsLibGLESv2::init()
     return glBindTexture && glCreateShader && glClearDepthf;
 }
 
-QWindowsEGLStaticContext::QWindowsEGLStaticContext(EGLDisplay display, int version)
-    : m_display(display), m_version(version)
+QWindowsEGLStaticContext::QWindowsEGLStaticContext(EGLDisplay display)
+    : m_display(display)
 {
 }
 
@@ -410,7 +410,7 @@ QWindowsEGLStaticContext *QWindowsEGLStaticContext::create(QWindowsOpenGLTester:
     }
 
     qCDebug(lcQpaGl) << __FUNCTION__ << "Created EGL display" << display << 'v' <<major << '.' << minor;
-    return new QWindowsEGLStaticContext(display, (major << 8) | minor);
+    return new QWindowsEGLStaticContext(display);
 }
 
 QWindowsEGLStaticContext::~QWindowsEGLStaticContext()

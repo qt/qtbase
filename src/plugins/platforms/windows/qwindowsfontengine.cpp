@@ -103,17 +103,6 @@ static void resolveGetCharWidthI()
     ptrGetCharWidthI = (PtrGetCharWidthI)QSystemLibrary::resolve(QStringLiteral("gdi32"), "GetCharWidthI");
 }
 
-static inline quint32 getUInt(unsigned char *p)
-{
-    quint32 val;
-    val = *p++ << 24;
-    val |= *p++ << 16;
-    val |= *p++ << 8;
-    val |= *p;
-
-    return val;
-}
-
 static inline quint16 getUShort(unsigned char *p)
 {
     quint16 val;
@@ -265,7 +254,6 @@ QWindowsFontEngine::QWindowsFontEngine(const QString &name,
     m_logfont(lf),
     ttf(0),
     hasOutline(0),
-    lw(0),
     cmap(0),
     cmapSize(0),
     lbearing(SHRT_MIN),

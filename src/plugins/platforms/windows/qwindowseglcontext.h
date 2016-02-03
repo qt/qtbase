@@ -270,10 +270,9 @@ public:
     static QWindowsLibGLESv2 libGLESv2;
 
 private:
-    QWindowsEGLStaticContext(EGLDisplay display, int version);
+    explicit QWindowsEGLStaticContext(EGLDisplay display);
 
     const EGLDisplay m_display;
-    const int m_version; //! majorVersion<<8 + minorVersion
 };
 
 class QWindowsEGLContext : public QWindowsOpenGLContext

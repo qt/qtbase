@@ -614,10 +614,6 @@ static inline int asciiToKeycode(char a, int state)
     return a & 0xff;
 }
 
-static inline bool isModifierKey(int code)
-{
-    return (code >= Qt::Key_Shift) && (code <= Qt::Key_ScrollLock);
-}
 // Key translation -----------------------------------------------------------------------[ end ]---
 
 

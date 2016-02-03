@@ -144,7 +144,6 @@ private:
     uint        hasUnreliableOutline : 1;
     uint        cffTable   : 1;
     TEXTMETRIC  tm;
-    int         lw;
     const unsigned char *cmap;
     int cmapSize;
     QByteArray cmapTable;

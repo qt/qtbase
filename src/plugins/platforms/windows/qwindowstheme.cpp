@@ -78,11 +78,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static inline COLORREF qColorToCOLORREF(const QColor &color)
-{
-    return RGB(color.red(), color.green(), color.blue());
-}
-
 static inline QColor COLORREFToQColor(COLORREF cr)
 {
     return QColor(GetRValue(cr), GetGValue(cr), GetBValue(cr));
@@ -97,30 +92,6 @@ static inline QTextStream& operator<<(QTextStream &str, const QColor &c)
     str.setIntegerBase(10);
     str.setFieldWidth(0);
     return str;
-}
-
-static inline void paletteRoleToString(const QPalette &palette,
-                                       const QPalette::ColorRole role,
-                                       QTextStream &str)
-{
-    str << "Role: ";
-    str.setFieldWidth(2);
-    str.setPadChar(QLatin1Char('0'));
-    str << role;
-    str.setFieldWidth(0);
-    str << " Active: "  << palette.color(QPalette::Active, role)
-        << " Disabled: "  << palette.color(QPalette::Disabled, role)
-        << " Inactive: " << palette.color(QPalette::Inactive, role)
-        << '\n';
-}
-
-static inline QString paletteToString(const QPalette &palette)
-{
-    QString result;
-    QTextStream str(&result);
-    for (int r = 0; r < QPalette::NColorRoles; ++r)
-        paletteRoleToString(palette, static_cast<QPalette::ColorRole>(r), str);
-    return result;
 }
 
 static inline bool booleanSystemParametersInfo(UINT what, bool defaultValue)
