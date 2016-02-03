@@ -1699,12 +1699,12 @@ QByteArray QWindowsIA2Accessible::IIDToString(REFIID id)
 }
 
 // Q_STATIC_ASSERT(IA2_ROLE_CANVAS == QAccessible::Canvas); // ### Qt 6: make them the same
-Q_STATIC_ASSERT(IA2_ROLE_COLOR_CHOOSER == QAccessible::ColorChooser);
-Q_STATIC_ASSERT(IA2_ROLE_FOOTER == QAccessible::Footer);
-Q_STATIC_ASSERT(IA2_ROLE_FORM == QAccessible::Form);
-Q_STATIC_ASSERT(IA2_ROLE_HEADING == QAccessible::Heading);
-Q_STATIC_ASSERT(IA2_ROLE_NOTE == QAccessible::Note);
-Q_STATIC_ASSERT(IA2_ROLE_COMPLEMENTARY_CONTENT == QAccessible::ComplementaryContent);
+Q_STATIC_ASSERT(IA2_ROLE_COLOR_CHOOSER == static_cast<IA2Role>(QAccessible::ColorChooser));
+Q_STATIC_ASSERT(IA2_ROLE_FOOTER == static_cast<IA2Role>(QAccessible::Footer));
+Q_STATIC_ASSERT(IA2_ROLE_FORM == static_cast<IA2Role>(QAccessible::Form));
+Q_STATIC_ASSERT(IA2_ROLE_HEADING == static_cast<IA2Role>(QAccessible::Heading));
+Q_STATIC_ASSERT(IA2_ROLE_NOTE == static_cast<IA2Role>(QAccessible::Note));
+Q_STATIC_ASSERT(IA2_ROLE_COMPLEMENTARY_CONTENT == static_cast<IA2Role>(QAccessible::ComplementaryContent));
 
 QT_END_NAMESPACE
 
