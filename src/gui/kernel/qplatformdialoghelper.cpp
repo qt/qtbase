@@ -39,6 +39,7 @@
 
 #include "qplatformdialoghelper.h"
 
+#include <QtCore/QCoreApplication>
 #include <QtCore/QVariant>
 #include <QtCore/QSharedData>
 #include <QtCore/QSettings>
@@ -411,7 +412,8 @@ public:
         viewMode(QFileDialogOptions::Detail),
         fileMode(QFileDialogOptions::AnyFile),
         acceptMode(QFileDialogOptions::AcceptOpen),
-        filters(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::AllDirs)
+        filters(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::AllDirs),
+        useDefaultNameFilters(true)
     {}
 
     QFileDialogOptions::FileDialogOptions options;
@@ -423,6 +425,7 @@ public:
     QString labels[QFileDialogOptions::DialogLabelCount];
     QDir::Filters filters;
     QList<QUrl> sidebarUrls;
+    bool useDefaultNameFilters;
     QStringList nameFilters;
     QStringList mimeTypeFilters;
     QString defaultSuffix;
@@ -534,14 +537,48 @@ QList<QUrl> QFileDialogOptions::sidebarUrls() const
     return d->sidebarUrls;
 }
 
+/*!
+    \since 5.7
+    \internal
+    The bool property useDefaultNameFilters indicates that no name filters have been
+    set or that they are equivalent to \gui{All Files (*)}. If it is true, the
+    platform can choose to hide the filter combo box.
+
+    \sa defaultNameFilterString().
+*/
+bool QFileDialogOptions::useDefaultNameFilters() const
+{
+    return d->useDefaultNameFilters;
+}
+
+void QFileDialogOptions::setUseDefaultNameFilters(bool dnf)
+{
+    d->useDefaultNameFilters = dnf;
+}
+
 void QFileDialogOptions::setNameFilters(const QStringList &filters)
 {
+    d->useDefaultNameFilters = filters.size() == 1
+        && filters.first() == QFileDialogOptions::defaultNameFilterString();
     d->nameFilters = filters;
 }
 
 QStringList QFileDialogOptions::nameFilters() const
 {
-    return d->nameFilters;
+    return d->useDefaultNameFilters ?
+        QStringList(QFileDialogOptions::defaultNameFilterString()) : d->nameFilters;
+}
+
+/*!
+    \since 5.6
+    \internal
+    \return The translated default name filter string (\gui{All Files (*)}).
+    \sa defaultNameFilters(), nameFilters()
+*/
+
+QString QFileDialogOptions::defaultNameFilterString()
+{
+    return QCoreApplication::translate("QFileDialog", "All Files (*)");
 }
 
 void QFileDialogOptions::setMimeTypeFilters(const QStringList &filters)

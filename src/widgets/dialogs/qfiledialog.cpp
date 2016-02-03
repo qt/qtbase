@@ -532,7 +532,6 @@ QFileDialogPrivate::QFileDialogPrivate()
         deleteAction(0),
         showHiddenAction(0),
         useDefaultCaption(true),
-        defaultFileTypes(true),
         qFileDialogUi(0),
         options(new QFileDialogOptions)
 {
@@ -663,8 +662,8 @@ void QFileDialogPrivate::retranslateStrings()
 {
     Q_Q(QFileDialog);
     /* WIDGETS */
-    if (defaultFileTypes)
-        q->setNameFilter(QFileDialog::tr("All Files (*)"));
+    if (options->useDefaultNameFilters())
+        q->setNameFilter(QFileDialogOptions::defaultNameFilterString());
     if (nativeDialogInUse)
         return;
 
@@ -1400,7 +1399,6 @@ QStringList qt_strip_filters(const QStringList &filters)
 void QFileDialog::setNameFilters(const QStringList &filters)
 {
     Q_D(QFileDialog);
-    d->defaultFileTypes = (filters == QStringList(QFileDialog::tr("All Files (*)")));
     QStringList cleanedFilters;
     const int numFilters = filters.count();
     cleanedFilters.reserve(numFilters);
