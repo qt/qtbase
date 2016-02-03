@@ -64,9 +64,9 @@ public:
     ~QWindowsDialogHelperBase() { cleanupThread(); }
 
     void exec() Q_DECL_OVERRIDE;
-    virtual bool show(Qt::WindowFlags windowFlags,
+    bool show(Qt::WindowFlags windowFlags,
                           Qt::WindowModality windowModality,
-                          QWindow *parent);
+                          QWindow *parent) Q_DECL_OVERRIDE;
     void hide() Q_DECL_OVERRIDE;
 
     virtual bool supportsNonModalDialog(const QWindow * /* parent */ = 0) const { return true; }
@@ -75,7 +75,7 @@ protected:
     QWindowsDialogHelperBase();
     QWindowsNativeDialogBase *nativeDialog() const;
     inline bool hasNativeDialog() const { return m_nativeDialog; }
-    void timerEvent(QTimerEvent *);
+    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;
 
 private:
     virtual QWindowsNativeDialogBase *createNativeDialog() = 0;

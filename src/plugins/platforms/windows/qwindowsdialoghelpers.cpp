@@ -1604,8 +1604,8 @@ class QWindowsFileDialogHelper : public QWindowsDialogHelperBase<QPlatformFileDi
 {
 public:
     QWindowsFileDialogHelper() {}
-    virtual bool supportsNonModalDialog(const QWindow * /* parent */ = 0) const { return false; }
-    virtual bool defaultNameFilterDisables() const
+    virtual bool supportsNonModalDialog(const QWindow * /* parent */ = 0) const Q_DECL_OVERRIDE { return false; }
+    virtual bool defaultNameFilterDisables() const Q_DECL_OVERRIDE
         { return false; }
     virtual void setDirectory(const QUrl &directory) Q_DECL_OVERRIDE;
     virtual QUrl directory() const Q_DECL_OVERRIDE;
