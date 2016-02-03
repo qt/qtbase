@@ -2141,6 +2141,7 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine,
     QGlyphRunPrivate *d = QGlyphRunPrivate::get(glyphRun);
 
     int rangeStart = textPosition;
+    logClusters += textPosition;
     while (*logClusters != glyphsStart && rangeStart < textPosition + textLength) {
         ++logClusters;
         ++rangeStart;
@@ -2325,16 +2326,16 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
 
             if (mainFontEngine->type() == QFontEngine::Multi) {
                 QFontEngineMulti *multiFontEngine = static_cast<QFontEngineMulti *>(mainFontEngine);
-                int end = rtl ? glyphLayout.numGlyphs : 0;
-                int start = rtl ? end : 0;
-                int which = glyphLayout.glyphs[rtl ? start - 1 : end] >> 24;
-                for (; (rtl && start > 0) || (!rtl && end < glyphLayout.numGlyphs);
+                int start = rtl ? glyphLayout.numGlyphs : 0;
+                int end = start - 1;
+                int which = glyphLayout.glyphs[rtl ? start - 1 : end + 1] >> 24;
+                for (; (rtl && start > 0) || (!rtl && end < glyphLayout.numGlyphs - 1);
                      rtl ? --start : ++end) {
-                    const int e = glyphLayout.glyphs[rtl ? start - 1 : end] >> 24;
+                    const int e = glyphLayout.glyphs[rtl ? start - 1 : end + 1] >> 24;
                     if (e == which)
                         continue;
 
-                    QGlyphLayout subLayout = glyphLayout.mid(start, end - start);
+                    QGlyphLayout subLayout = glyphLayout.mid(start, end - start + 1);
                     multiFontEngine->ensureEngineAt(which);
 
                     QGlyphRun::GlyphRunFlags subFlags = flags;
@@ -2358,13 +2359,13 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
                     }
 
                     if (rtl)
-                        end = start;
+                        end = start - 1;
                     else
-                        start = end;
+                        start = end + 1;
                     which = e;
                 }
 
-                QGlyphLayout subLayout = glyphLayout.mid(start, end - start);
+                QGlyphLayout subLayout = glyphLayout.mid(start, end - start + 1);
                 multiFontEngine->ensureEngineAt(which);
 
                 QGlyphRun::GlyphRunFlags subFlags = flags;
