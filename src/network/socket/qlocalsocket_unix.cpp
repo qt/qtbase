@@ -513,36 +513,25 @@ void QLocalSocket::setReadBufferSize(qint64 size)
 bool QLocalSocket::waitForConnected(int msec)
 {
     Q_D(QLocalSocket);
+
     if (state() != ConnectingState)
         return (state() == ConnectedState);
 
-    fd_set fds;
-    FD_ZERO(&fds);
-    FD_SET(d->connectingSocket, &fds);
-
-    timeval timeout;
-    timeout.tv_sec = msec / 1000;
-    timeout.tv_usec = (msec % 1000) * 1000;
-
-    // timeout can not be 0 or else select will return an error.
-    if (0 == msec)
-        timeout.tv_usec = 1000;
-
-    int result = -1;
-    // on Linux timeout will be updated by select, but _not_ on other systems.
     QElapsedTimer timer;
     timer.start();
-    while (state() == ConnectingState
-           && (-1 == msec || timer.elapsed() < msec)) {
-        result = ::select(d->connectingSocket + 1, &fds, 0, 0, &timeout);
-        if (-1 == result && errno != EINTR) {
-            d->errorOccurred( QLocalSocket::UnknownSocketError,
-                    QLatin1String("QLocalSocket::waitForConnected"));
-            break;
-        }
-        if (result > 0)
+
+    pollfd pfd = qt_make_pollfd(d->connectingSocket, POLLIN);
+
+    do {
+        const int timeout = (msec > 0) ? qMax(msec - timer.elapsed(), Q_INT64_C(0)) : msec;
+        const int result = qt_poll_msecs(&pfd, 1, timeout);
+
+        if (result == -1)
+            d->errorOccurred(QLocalSocket::UnknownSocketError,
+                             QLatin1String("QLocalSocket::waitForConnected"));
+        else if (result > 0)
             d->_q_connectToSocket();
-    }
+    } while (state() == ConnectingState && !timer.hasExpired(msec));
 
     return (state() == ConnectedState);
 }
