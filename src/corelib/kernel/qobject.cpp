@@ -3536,7 +3536,7 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
                             QMutexLocker &locker)
 {
     const int *argumentTypes = c->argumentTypes.load();
-    if (!argumentTypes && argumentTypes != &DIRECT_CONNECTION_ONLY) {
+    if (!argumentTypes) {
         QMetaMethod m = QMetaObjectPrivate::signal(sender->metaObject(), signal);
         argumentTypes = queuedConnectionTypes(m.parameterTypes());
         if (!argumentTypes) // cannot queue arguments
