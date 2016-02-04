@@ -345,11 +345,6 @@ static inline struct pollfd qt_make_pollfd(int fd, short events)
     return pfd;
 }
 
-Q_CORE_EXPORT int qt_safe_select(int nfds, fd_set *fdread, fd_set *fdwrite, fd_set *fdexcept,
-                                 const struct timespec *tv);
-
-int qt_select_msecs(int nfds, fd_set *fdread, fd_set *fdwrite, int timeout);
-
 // according to X/OPEN we have to define semun ourselves
 // we use prefix as on some systems sem.h will have it
 struct semid_ds;

@@ -74,59 +74,6 @@ static inline bool time_update(struct timespec *tv, const struct timespec &start
     return tv->tv_sec >= 0;
 }
 
-int qt_safe_select(int nfds, fd_set *fdread, fd_set *fdwrite, fd_set *fdexcept,
-                   const struct timespec *orig_timeout)
-{
-    if (!orig_timeout) {
-        // no timeout -> block forever
-        int ret;
-        EINTR_LOOP(ret, select(nfds, fdread, fdwrite, fdexcept, 0));
-        return ret;
-    }
-
-    timespec start = qt_gettime();
-    timespec timeout = *orig_timeout;
-
-    // loop and recalculate the timeout as needed
-    int ret;
-    forever {
-#ifndef Q_OS_QNX
-        ret = ::pselect(nfds, fdread, fdwrite, fdexcept, &timeout, 0);
-#else
-        timeval timeoutVal = timespecToTimeval(timeout);
-        ret = ::select(nfds, fdread, fdwrite, fdexcept, &timeoutVal);
-#endif
-        if (ret != -1 || errno != EINTR)
-            return ret;
-
-        // recalculate the timeout
-        if (!time_update(&timeout, start, *orig_timeout)) {
-            // timeout during update
-            // or clock reset, fake timeout error
-            return 0;
-        }
-    }
-}
-
-static inline struct timespec millisecsToTimespec(const unsigned int ms)
-{
-    struct timespec tv;
-
-    tv.tv_sec = ms / 1000;
-    tv.tv_nsec = (ms % 1000) * 1000 * 1000;
-
-    return tv;
-}
-
-int qt_select_msecs(int nfds, fd_set *fdread, fd_set *fdwrite, int timeout)
-{
-    if (timeout < 0)
-        return qt_safe_select(nfds, fdread, fdwrite, 0, 0);
-
-    struct timespec tv = millisecsToTimespec(timeout);
-    return qt_safe_select(nfds, fdread, fdwrite, 0, &tv);
-}
-
 #if !defined(QT_HAVE_PPOLL) && defined(QT_HAVE_POLL)
 static inline int timespecToMillisecs(const struct timespec *ts)
 {
