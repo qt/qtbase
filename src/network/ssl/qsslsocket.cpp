@@ -2621,18 +2621,19 @@ QSharedPointer<QSslContext> QSslSocketPrivate::sslContext(QSslSocket *socket)
 
 bool QSslSocketPrivate::isMatchingHostname(const QSslCertificate &cert, const QString &peerName)
 {
-    QStringList commonNameList = cert.subjectInfo(QSslCertificate::CommonName);
+    const QString lowerPeerName = peerName.toLower();
+    const QStringList commonNames = cert.subjectInfo(QSslCertificate::CommonName);
 
-    foreach (const QString &commonName, commonNameList) {
-        if (isMatchingHostname(commonName.toLower(), peerName.toLower())) {
+    for (const QString &commonName : commonNames) {
+        if (isMatchingHostname(commonName.toLower(), lowerPeerName))
             return true;
-        }
     }
 
-    foreach (const QString &altName, cert.subjectAlternativeNames().values(QSsl::DnsEntry)) {
-        if (isMatchingHostname(altName.toLower(), peerName.toLower())) {
+    const auto subjectAlternativeNames = cert.subjectAlternativeNames();
+    const auto altNames = subjectAlternativeNames.equal_range(QSsl::DnsEntry);
+    for (auto it = altNames.first; it != altNames.second; ++it) {
+        if (isMatchingHostname(it->toLower(), lowerPeerName))
             return true;
-        }
     }
 
     return false;
