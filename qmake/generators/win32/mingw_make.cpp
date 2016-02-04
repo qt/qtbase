@@ -51,7 +51,7 @@ QString MingwMakefileGenerator::escapeDependencyPath(const QString &path) const
 {
     QString ret = path;
     ret.replace('\\', "/");  // ### this shouldn't be here
-    ret.replace(' ', "\\ ");
+    ret.replace(' ', QLatin1String("\\ "));
     return ret;
 }
 

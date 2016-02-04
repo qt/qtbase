@@ -178,12 +178,12 @@ UnixMakefileGenerator::init()
             pchBaseName += project->first("QMAKE_ORIG_TARGET").toQString();
 
             // replace place holders
-            pchFlags.replace("${QMAKE_PCH_INPUT}",
+            pchFlags.replace(QLatin1String("${QMAKE_PCH_INPUT}"),
                              escapeFilePath(project->first("PRECOMPILED_HEADER").toQString()));
-            pchFlags.replace("${QMAKE_PCH_OUTPUT_BASE}", escapeFilePath(pchBaseName));
+            pchFlags.replace(QLatin1String("${QMAKE_PCH_OUTPUT_BASE}"), escapeFilePath(pchBaseName));
             if (project->isActiveConfig("icc_pch_style")) {
                 // icc style
-                pchFlags.replace("${QMAKE_PCH_OUTPUT}",
+                pchFlags.replace(QLatin1String("${QMAKE_PCH_OUTPUT}"),
                                  escapeFilePath(pchBaseName + project->first("QMAKE_PCH_OUTPUT_EXT")));
             } else {
                 // gcc style (including clang_pch_style)
@@ -197,7 +197,7 @@ UnixMakefileGenerator::init()
 
                 ProString language = project->first(ProKey("QMAKE_LANGUAGE_" + compiler));
                 if (!language.isEmpty()) {
-                    pchFlags.replace("${QMAKE_PCH_OUTPUT}",
+                    pchFlags.replace(QLatin1String("${QMAKE_PCH_OUTPUT}"),
                                      escapeFilePath(pchBaseName + language + headerSuffix));
                 }
             }

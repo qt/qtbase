@@ -704,12 +704,12 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     }
     QString slnConf = _slnSolutionConf;
     if (!project->isEmpty("VCPROJ_ARCH")) {
-        slnConf.replace(QString("|Win32"), "|" + project->first("VCPROJ_ARCH"));
+        slnConf.replace(QLatin1String("|Win32"), "|" + project->first("VCPROJ_ARCH"));
     } else if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH")) {
         QString slnPlatform = QString("|") + project->values("CE_SDK").join(' ') + " (" + project->first("CE_ARCH") + ")";
-        slnConf.replace(QString("|Win32"), slnPlatform);
+        slnConf.replace(QLatin1String("|Win32"), slnPlatform);
     } else if (is64Bit) {
-        slnConf.replace(QString("|Win32"), "|x64");
+        slnConf.replace(QLatin1String("|Win32"), QLatin1String("|x64"));
     }
     t << slnConf;
 
@@ -1706,12 +1706,12 @@ QString VcprojGenerator::replaceExtraCompilerVariables(
     if(defines.isEmpty())
         defines.append(varGlue("PRL_EXPORT_DEFINES"," -D"," -D","") +
                        varGlue("DEFINES"," -D"," -D",""));
-    ret.replace("$(DEFINES)", defines.first().toQString());
+    ret.replace(QLatin1String("$(DEFINES)"), defines.first().toQString());
 
     ProStringList &incpath = project->values("VCPROJ_MAKEFILE_INCPATH");
     if(incpath.isEmpty() && !this->var("MSVCPROJ_INCPATH").isEmpty())
         incpath.append(this->var("MSVCPROJ_INCPATH"));
-    ret.replace("$(INCPATH)", incpath.join(' '));
+    ret.replace(QLatin1String("$(INCPATH)"), incpath.join(' '));
 
     return ret;
 }

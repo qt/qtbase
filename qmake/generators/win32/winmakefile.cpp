@@ -401,7 +401,7 @@ void Win32MakefileGenerator::processRcFileVar()
             project->values("RC_FILE").first() = fi.absoluteFilePath();
         }
 
-        resFile.replace(".rc", Option::res_ext);
+        resFile.replace(QLatin1String(".rc"), Option::res_ext);
         project->values("RES_FILE").prepend(fileInfo(resFile).fileName());
         QString resDestDir;
         if (project->isActiveConfig("staticlib"))
@@ -771,8 +771,8 @@ QString Win32MakefileGenerator::escapeFilePath(const QString &path) const
 QString Win32MakefileGenerator::cQuoted(const QString &str)
 {
     QString ret = str;
-    ret.replace(QLatin1Char('\\'), QStringLiteral("\\\\"));
-    ret.replace(QLatin1Char('"'), QStringLiteral("\\\""));
+    ret.replace(QLatin1Char('\\'), QLatin1String("\\\\"));
+    ret.replace(QLatin1Char('"'), QLatin1String("\\\""));
     ret.prepend(QLatin1Char('"'));
     ret.append(QLatin1Char('"'));
     return ret;

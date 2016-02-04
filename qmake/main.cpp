@@ -130,7 +130,7 @@ static int doSed(int argc, char **argv)
                 SedSubst subst;
                 subst.from = QRegExp(phases.at(0), matchcase);
                 subst.to = phases.at(1);
-                subst.to.replace("\\\\", "\\"); // QString::replace(rx, sub) groks \1, but not \\.
+                subst.to.replace(QLatin1String("\\\\"), QLatin1String("\\")); // QString::replace(rx, sub) groks \1, but not \\.
                 substs << subst;
             }
         } else if (argv[i][0] == '-' && argv[i][1] != 0) {

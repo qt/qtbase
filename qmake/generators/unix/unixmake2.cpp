@@ -536,7 +536,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                   << "ld -r  -o " << incr_target_dir_f << ' ' << link_deps << endl;
                 //communicated below
                 ProStringList &cmd = project->values("QMAKE_LINK_SHLIB_CMD");
-                cmd[0] = cmd.at(0).toQString().replace("$(OBJECTS) ", "$(INCREMENTAL_OBJECTS)"); //ick
+                cmd[0] = cmd.at(0).toQString().replace(QLatin1String("$(OBJECTS) "), QLatin1String("$(INCREMENTAL_OBJECTS)")); //ick
                 cmd.append(incr_target_dir_f);
                 deps.prepend(incr_target_dir_d + ' ');
                 incr_deps = "$(INCREMENTAL_OBJECTS)";
@@ -704,7 +704,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     t << destdir_d << "$(TARGET): " << depVar("PRE_TARGETDEPS")
                       << ' ' << depVar("POST_TARGETDEPS") << valList(escapeDependencyPaths(build)) << "\n\t";
                     ar = project->first("QMAKE_AR_CMD").toQString();
-                    ar.replace("$(OBJECTS)", escapeFilePaths(build).join(' '));
+                    ar.replace(QLatin1String("$(OBJECTS)"), escapeFilePaths(build).join(' '));
                 } else {
                     t << destdir_d << escapeDependencyPath(*libit) << ": "
                       << valList(escapeDependencyPaths(build)) << "\n\t";
@@ -1083,8 +1083,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                   << "\n\techo \"// Automatically generated, do not modify\" > " << sourceFile_f
                   << "\n\trm -f " << escapeFilePath(pchOutput);
 
-                pchFlags.replace("${QMAKE_PCH_TEMP_SOURCE}", sourceFile_f)
-                        .replace("${QMAKE_PCH_TEMP_OBJECT}", escapeFilePath(objectFile));
+                pchFlags.replace(QLatin1String("${QMAKE_PCH_TEMP_SOURCE}"), sourceFile_f)
+                        .replace(QLatin1String("${QMAKE_PCH_TEMP_OBJECT}"), escapeFilePath(objectFile));
             } else {
                 // gcc style (including clang_pch_style)
                 ProString header_prefix = project->first("QMAKE_PRECOMP_PREFIX");
@@ -1103,9 +1103,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                   << escapeDependencyPaths(findDependencies(pchInput)).join(" \\\n\t\t")
                   << "\n\t" << mkdir_p_asstring(pchOutputDir);
             }
-            pchFlags.replace("${QMAKE_PCH_INPUT}", escapeFilePath(pchInput))
-                    .replace("${QMAKE_PCH_OUTPUT_BASE}", escapeFilePath(pchBaseName.toQString()))
-                    .replace("${QMAKE_PCH_OUTPUT}", escapeFilePath(pchOutput.toQString()));
+            pchFlags.replace(QLatin1String("${QMAKE_PCH_INPUT}"), escapeFilePath(pchInput))
+                    .replace(QLatin1String("${QMAKE_PCH_OUTPUT_BASE}"), escapeFilePath(pchBaseName.toQString()))
+                    .replace(QLatin1String("${QMAKE_PCH_OUTPUT}"), escapeFilePath(pchOutput.toQString()));
 
             QString compilerExecutable;
             if (compiler == "C" || compiler == "OBJC")
@@ -1151,7 +1151,7 @@ void UnixMakefileGenerator::init2()
 
         ProStringList &ar_cmd = project->values("QMAKE_AR_CMD");
         if (!ar_cmd.isEmpty())
-            ar_cmd[0] = ar_cmd.at(0).toQString().replace("(TARGET)","(TARGETA)");
+            ar_cmd[0] = ar_cmd.at(0).toQString().replace(QLatin1String("(TARGET)"), QLatin1String("(TARGETA)"));
         else
             ar_cmd.append("$(AR) $(TARGETA) $(OBJECTS)");
         if (!project->isEmpty("QMAKE_BUNDLE")) {

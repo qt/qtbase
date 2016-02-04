@@ -147,7 +147,7 @@ bool CeSdkHandler::parseMsBuildFile(QFile *file, CeSdkInfo *info)
         QSettings sdkRootPathRegistry(regString, QSettings::NativeFormat);
         const QString erg = sdkRootPathRegistry.value(QStringLiteral(".")).toString();
         const QString fullSdkRootPath = erg + sdkRootPath.mid(endIndex + 1);
-        const QString rootString = QStringLiteral("$(SdkRootPath)");
+        const QLatin1String rootString("$(SdkRootPath)");
 
         includePath = includePath.replace(rootString, fullSdkRootPath);
         libraryPath = libraryPath.replace(rootString, fullSdkRootPath);

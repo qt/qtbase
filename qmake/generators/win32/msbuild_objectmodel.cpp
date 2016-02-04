@@ -328,7 +328,7 @@ static QString vcxCommandSeparator()
 static QString unquote(const QString &value)
 {
     QString result = value;
-    result.replace(QStringLiteral("\\\""), QStringLiteral("\""));
+    result.replace(QLatin1String("\\\""), QLatin1String("\""));
     return result;
 }
 

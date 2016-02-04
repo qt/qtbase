@@ -140,11 +140,11 @@ QString XmlOutput::doConversion(const QString &text)
     }
 
     if (conversion == XMLConversion) {
-        output.replace('\"', "&quot;");
-        output.replace('\'', "&apos;");
+        output.replace('\"', QLatin1String("&quot;"));
+        output.replace('\'', QLatin1String("&apos;"));
     } else if (conversion == EscapeConversion) {
-        output.replace('\"', "\\\"");
-        output.replace('\'', "\\\'");
+        output.replace('\"', QLatin1String("\\\""));
+        output.replace('\'', QLatin1String("\\\'"));
     }
     return output;
 }
