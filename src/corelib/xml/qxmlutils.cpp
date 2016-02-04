@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-#include <qregexp.h>
 #include <qstring.h>
 
 #include "qxmlutils_p.h"
@@ -230,14 +229,20 @@ bool QXmlUtils::isBaseChar(const QChar c)
  */
 bool QXmlUtils::isEncName(const QString &encName)
 {
-    /* Right, we here have a dependency on QRegExp. Writing a manual parser to
-     * replace that regexp is probably a 70 lines so I prioritize this to when
-     * the dependency is considered alarming, or when the rest of the bugs
-     * are fixed. */
-    QRegExp encNameRegExp(QLatin1String("[A-Za-z][A-Za-z0-9._\\-]*"));
-    Q_ASSERT(encNameRegExp.isValid());
-
-    return encNameRegExp.exactMatch(encName);
+    // Valid encoding names are given by "[A-Za-z][A-Za-z0-9._\\-]*"
+    const ushort *c = encName.utf16();
+    int l = encName.length();
+    if (l < 1 || !((c[0] >= 'a' && c[0] <= 'z') || (c[0] >= 'A' && c[0] <= 'Z')))
+        return false;
+    for (int i = 1; i < l; ++i) {
+        if ((c[i] >= 'a' && c[i] <= 'z')
+            || (c[i] >= 'A' && c[i] <= 'Z')
+            || (c[i] >= '0' && c[i] <= '9')
+            || c[i] == '.' || c[i] == '_' || c[i] == '-')
+            continue;
+        return false;
+    }
+    return true;
 }
 
 /*!
