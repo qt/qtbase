@@ -3358,8 +3358,7 @@ QString MakefileGenerator::installMetaFile(const ProKey &replace_rule, const QSt
 
 QString MakefileGenerator::shellQuote(const QString &str)
 {
-    return isWindowsShell() ? QMakeInternal::IoUtils::shellQuoteWin(str)
-                            : QMakeInternal::IoUtils::shellQuoteUnix(str);
+    return isWindowsShell() ? IoUtils::shellQuoteWin(str) : IoUtils::shellQuoteUnix(str);
 }
 
 QT_END_NAMESPACE
