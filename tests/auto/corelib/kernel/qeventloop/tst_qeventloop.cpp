@@ -425,11 +425,8 @@ public slots:
         dataSent = serverSocket->waitForBytesWritten(-1);
 
         if (dataSent) {
-            fd_set fdread;
-            int fd = socket->socketDescriptor();
-            FD_ZERO(&fdread);
-            FD_SET(fd, &fdread);
-            dataReadable = (1 == qt_safe_select(fd + 1, &fdread, 0, 0, 0));
+            pollfd pfd = qt_make_pollfd(socket->socketDescriptor(), POLLIN);
+            dataReadable = (1 == qt_safe_poll(&pfd, 1, nullptr));
         }
 
         if (!dataReadable) {
