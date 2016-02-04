@@ -454,6 +454,8 @@ static bool addFontToDatabase(const QString &faceName,
     const FontKey *key = findFontKey(faceName, &index);
     if (!key) {
         key = findFontKey(fullName, &index);
+        if (!key && !registerAlias && englishName.isEmpty() && localizedName(faceName))
+            englishName = getEnglishName(faceName);
         if (!key && !englishName.isEmpty())
             key = findFontKey(englishName, &index);
         if (!key)
