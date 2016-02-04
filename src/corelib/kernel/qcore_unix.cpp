@@ -184,18 +184,4 @@ int qt_safe_poll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout
     }
 }
 
-int qt_poll_msecs(pollfd *fds, nfds_t nfds, int timeout)
-{
-    timespec ts, *pts = Q_NULLPTR;
-
-    if (timeout >= 0) {
-        ts.tv_sec = timeout / 1000;
-        ts.tv_nsec = (timeout % 1000) * 1000 * 1000;
-
-        pts = &ts;
-    }
-
-    return qt_safe_poll(fds, nfds, pts);
-}
-
 QT_END_NAMESPACE

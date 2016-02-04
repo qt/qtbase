@@ -1209,18 +1209,7 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
 int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool checkWrite,
                        bool *selectForRead, bool *selectForWrite) const
 {
-    struct timespec tv, *ptv = nullptr;
-
-    if (timeout >= 0) {
-        tv.tv_sec = timeout / 1000;
-        tv.tv_nsec = (timeout % 1000) * 1000 * 1000;
-        ptv = &tv;
-    }
-
-    struct pollfd pfd;
-    pfd.fd = socketDescriptor;
-    pfd.events = 0;
-    pfd.revents = 0;
+    pollfd pfd = qt_make_pollfd(socketDescriptor, 0);
 
     if (checkRead)
         pfd.events |= POLLIN;
@@ -1228,7 +1217,7 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
     if (checkWrite)
         pfd.events |= POLLOUT;
 
-    const int ret = qt_safe_poll(&pfd, 1, ptv);
+    const int ret = qt_poll_msecs(&pfd, 1, timeout);
 
     if (ret <= 0)
         return ret;

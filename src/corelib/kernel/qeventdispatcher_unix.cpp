@@ -89,12 +89,6 @@ static const char *socketType(QSocketNotifier::Type type)
     Q_UNREACHABLE();
 }
 
-static pollfd make_pollfd(int fd, short events)
-{
-    pollfd pfd = { fd, events, 0 };
-    return pfd;
-}
-
 QThreadPipe::QThreadPipe()
 {
     fds[0] = -1;
@@ -173,7 +167,7 @@ bool QThreadPipe::init()
 
 pollfd QThreadPipe::prepare() const
 {
-    return make_pollfd(fds[0], POLLIN);
+    return qt_make_pollfd(fds[0], POLLIN);
 }
 
 void QThreadPipe::wakeUp()
@@ -491,7 +485,7 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     if (include_notifiers)
         for (auto it = d->socketNotifiers.cbegin(); it != d->socketNotifiers.cend(); ++it)
-            d->pollfds.append(make_pollfd(it.key(), it.value().events()));
+            d->pollfds.append(qt_make_pollfd(it.key(), it.value().events()));
 
     // This must be last, as it's popped off the end below
     d->pollfds.append(d->threadPipe.prepare());

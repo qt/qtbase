@@ -326,7 +326,24 @@ void qt_nanosleep(timespec amount);
 
 Q_CORE_EXPORT int qt_safe_poll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout_ts);
 
-int qt_poll_msecs(struct pollfd *fds, nfds_t nfds, int timeout);
+static inline int qt_poll_msecs(struct pollfd *fds, nfds_t nfds, int timeout)
+{
+    timespec ts, *pts = Q_NULLPTR;
+
+    if (timeout >= 0) {
+        ts.tv_sec = timeout / 1000;
+        ts.tv_nsec = (timeout % 1000) * 1000 * 1000;
+        pts = &ts;
+    }
+
+    return qt_safe_poll(fds, nfds, pts);
+}
+
+static inline struct pollfd qt_make_pollfd(int fd, short events)
+{
+    struct pollfd pfd = { fd, events, 0 };
+    return pfd;
+}
 
 Q_CORE_EXPORT int qt_safe_select(int nfds, fd_set *fdread, fd_set *fdwrite, fd_set *fdexcept,
                                  const struct timespec *tv);

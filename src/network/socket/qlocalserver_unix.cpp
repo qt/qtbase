@@ -283,20 +283,9 @@ void QLocalServerPrivate::_q_onNewConnection()
 
 void QLocalServerPrivate::waitForNewConnection(int msec, bool *timedOut)
 {
-    struct timespec tv, *ptv = nullptr;
+    pollfd pfd = qt_make_pollfd(listenSocket, POLLIN);
 
-    if (msec >= 0) {
-        tv.tv_sec = msec / 1000;
-        tv.tv_nsec = (msec % 1000) * 1000 * 1000;
-        ptv = &tv;
-    }
-
-    struct pollfd pfd;
-    pfd.fd = listenSocket;
-    pfd.events = POLLIN;
-    pfd.revents = 0;
-
-    switch (qt_safe_poll(&pfd, 1, ptv)) {
+    switch (qt_poll_msecs(&pfd, 1, msec)) {
     case 0:
         if (timedOut)
             *timedOut = true;

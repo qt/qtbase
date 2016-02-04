@@ -142,7 +142,7 @@ struct QProcessPoller
 QProcessPoller::QProcessPoller(const QProcessPrivate &proc)
 {
     for (int i = 0; i < n_pfds; i++)
-        pfds[i] = { -1, POLLIN, 0 };
+        pfds[i] = qt_make_pollfd(-1, POLLIN);
 
     stdoutPipe().fd = proc.stdoutChannel.pipe[0];
     stderrPipe().fd = proc.stderrChannel.pipe[0];
@@ -873,7 +873,7 @@ bool QProcessPrivate::waitForStarted(int msecs)
            childStartedPipe[0]);
 #endif
 
-    pollfd pfd = { childStartedPipe[0], POLLIN, 0 };
+    pollfd pfd = qt_make_pollfd(childStartedPipe[0], POLLIN);
 
     if (qt_poll_msecs(&pfd, 1, msecs) == 0) {
         setError(QProcess::Timedout);
@@ -1036,7 +1036,7 @@ bool QProcessPrivate::waitForFinished(int msecs)
 
 bool QProcessPrivate::waitForWrite(int msecs)
 {
-    pollfd pfd = { stdinChannel.pipe[1], POLLOUT, 0 };
+    pollfd pfd = qt_make_pollfd(stdinChannel.pipe[1], POLLOUT);
     return qt_poll_msecs(&pfd, 1, msecs < 0 ? 0 : msecs) == 1;
 }
 
