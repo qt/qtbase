@@ -1986,9 +1986,6 @@ void QTabBar::mouseMoveEvent(QMouseEvent *event)
         event->ignore();
         return;
     }
-    QStyleOptionTabBarBase optTabBase;
-    optTabBase.init(this);
-    optTabBase.documentMode = d->documentMode;
 }
 
 void QTabBarPrivate::setupMovableTab()
