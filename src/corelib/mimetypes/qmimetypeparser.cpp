@@ -85,7 +85,7 @@ static const char matchMaskAttributeC[] = "mask";
     \class QMimeTypeParser
     \inmodule QtCore
     \internal
-    \brief The QMimeTypeParser class parses MIME types, and builds a MIME database hierarchy by adding to QMimeDatabasePrivate.
+    \brief The QMimeTypeParser class parses MIME types, and builds a MIME database hierarchy by adding to QMimeDatabase.
 
     Populates QMimeDataBase
 
