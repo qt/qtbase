@@ -219,24 +219,6 @@ IAccessible *QWindowsAccessibility::wrap(QAccessibleInterface *acc)
 #endif // defined(Q_OS_WINCE)
 }
 
-/*
-void QWindowsAccessibility::setRootObject(QObject *o)
-{
-
-}
-
-void QWindowsAccessibility::initialize()
-{
-
-}
-
-void QWindowsAccessibility::cleanup()
-{
-
-}
-
-*/
-
 bool QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(HWND hwnd, WPARAM wParam, LPARAM lParam, LRESULT *lResult)
 {
 #if !defined(Q_OS_WINCE)
@@ -245,12 +227,10 @@ bool QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(HWND hwnd, W
     } else if ((DWORD)lParam == DWORD(OBJID_CLIENT)) {
         // Start handling accessibility internally
         QGuiApplicationPrivate::platformIntegration()->accessibility()->setActive(true);
-#if 1
         // Ignoring all requests while starting up
         // ### Maybe QPA takes care of this???
         if (QCoreApplication::startingUp() || QCoreApplication::closingDown())
             return false;
-#endif
 
         typedef LRESULT (WINAPI *PtrLresultFromObject)(REFIID, WPARAM, LPUNKNOWN);
         static PtrLresultFromObject ptrLresultFromObject = 0;
