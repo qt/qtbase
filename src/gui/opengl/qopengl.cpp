@@ -79,7 +79,7 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
             if (!glGetStringi)
                 return;
 
-            GLint numExtensions;
+            GLint numExtensions = 0;
             funcs->glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
 
             for (int i = 0; i < numExtensions; ++i) {
