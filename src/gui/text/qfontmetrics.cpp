@@ -789,7 +789,7 @@ QRect QFontMetrics::boundingRect(const QRect &rect, int flags, const QString &te
     \li Qt::TextSingleLine ignores newline characters.
     \li Qt::TextExpandTabs expands tabs (see below)
     \li Qt::TextShowMnemonic interprets "&x" as \underline{x}; i.e., underlined.
-    \li Qt::TextWordBreak breaks the text to fit the rectangle.
+    \li Qt::TextWordWrap breaks the text to fit the rectangle.
     \endlist
 
     If Qt::TextExpandTabs is set in \a flags, then: if \a tabArray is
@@ -1573,7 +1573,7 @@ QRectF QFontMetricsF::boundingRect(const QRectF &rect, int flags, const QString&
     \li Qt::TextSingleLine ignores newline characters.
     \li Qt::TextExpandTabs expands tabs (see below)
     \li Qt::TextShowMnemonic interprets "&x" as \underline{x}; i.e., underlined.
-    \li Qt::TextWordBreak breaks the text to fit the rectangle.
+    \li Qt::TextWordWrap breaks the text to fit the rectangle.
     \endlist
 
     These flags are defined in the \l{Qt::TextFlag} enum.
