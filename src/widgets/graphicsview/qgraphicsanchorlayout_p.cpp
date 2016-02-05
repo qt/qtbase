@@ -2239,7 +2239,7 @@ bool QGraphicsAnchorLayoutPrivate::calculateTrunk(Orientation orientation, const
         Q_ASSERT(path.positives.count() == 1);
         Q_ASSERT(path.negatives.count() == 0);
 
-        AnchorData *ad = path.positives.toList()[0];
+        AnchorData *ad = *path.positives.cbegin();
         ad->sizeAtMinimum = ad->minSize;
         ad->sizeAtPreferred = ad->prefSize;
         ad->sizeAtMaximum = ad->maxSize;
