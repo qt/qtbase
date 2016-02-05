@@ -72,6 +72,9 @@ Q_GUI_EXPORT hb_font_t *hb_qt_font_get_for_engine(QFontEngine *fe);
 Q_GUI_EXPORT void hb_qt_font_set_use_design_metrics(hb_font_t *font, uint value);
 Q_GUI_EXPORT uint hb_qt_font_get_use_design_metrics(hb_font_t *font);
 
+Q_GUI_EXPORT void hb_qt_face_set_ignore_gsub(hb_face_t *font, uint value);
+Q_GUI_EXPORT uint hb_qt_face_get_ignore_gsub(hb_face_t *font);
+
 QT_END_NAMESPACE
 
 #endif // QHARFBUZZNG_P_H

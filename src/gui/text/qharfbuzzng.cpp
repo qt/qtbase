@@ -573,10 +573,16 @@ _hb_qt_font_get_glyph_from_name(hb_font_t * /*font*/, void * /*font_data*/,
 
 
 static hb_user_data_key_t _useDesignMetricsKey;
+static hb_user_data_key_t _ignoreGSUB;
 
 void hb_qt_font_set_use_design_metrics(hb_font_t *font, uint value)
 {
     hb_font_set_user_data(font, &_useDesignMetricsKey, (void *)quintptr(value), NULL, true);
+}
+
+void hb_qt_face_set_ignore_gsub(hb_face_t *face, uint value)
+{
+    hb_face_set_user_data(face, &_ignoreGSUB, (void *)quintptr(value), NULL, true);
 }
 
 uint hb_qt_font_get_use_design_metrics(hb_font_t *font)
@@ -584,6 +590,10 @@ uint hb_qt_font_get_use_design_metrics(hb_font_t *font)
     return quintptr(hb_font_get_user_data(font, &_useDesignMetricsKey));
 }
 
+uint hb_qt_face_get_ignore_gsub(hb_face_t *face)
+{
+    return quintptr(hb_face_get_user_data(face, &_ignoreGSUB));
+}
 
 struct _hb_qt_font_funcs_t {
     _hb_qt_font_funcs_t()
@@ -618,10 +628,13 @@ hb_font_funcs_t *hb_qt_get_font_funcs()
 
 
 static hb_blob_t *
-_hb_qt_reference_table(hb_face_t * /*face*/, hb_tag_t tag, void *user_data)
+_hb_qt_reference_table(hb_face_t *face, hb_tag_t tag, void *user_data)
 {
     QFontEngine::FaceData *data = static_cast<QFontEngine::FaceData *>(user_data);
     Q_ASSERT(data);
+
+    if (hb_qt_face_get_ignore_gsub(face) && tag == HB_TAG('G','S','U','B'))
+        return hb_blob_get_empty();
 
     qt_get_font_table_func_t get_font_table = data->get_font_table;
     Q_ASSERT(get_font_table);

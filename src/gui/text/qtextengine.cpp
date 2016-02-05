@@ -1059,7 +1059,7 @@ void QTextEngine::shapeText(int item) const
 
 #ifdef QT_ENABLE_HARFBUZZ_NG
     if (Q_LIKELY(qt_useHarfbuzzNG()))
-        si.num_glyphs = shapeTextWithHarfbuzzNG(si, string, itemLength, fontEngine, itemBoundaries, kerningEnabled);
+        si.num_glyphs = shapeTextWithHarfbuzzNG(si, string, itemLength, fontEngine, itemBoundaries, kerningEnabled, letterSpacing != 0);
     else
 #endif
     si.num_glyphs = shapeTextWithHarfbuzz(si, string, itemLength, fontEngine, itemBoundaries, kerningEnabled);
@@ -1121,7 +1121,13 @@ QT_BEGIN_INCLUDE_NAMESPACE
 
 QT_END_INCLUDE_NAMESPACE
 
-int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *string, int itemLength, QFontEngine *fontEngine, const QVector<uint> &itemBoundaries, bool kerningEnabled) const
+int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
+                                         const ushort *string,
+                                         int itemLength,
+                                         QFontEngine *fontEngine,
+                                         const QVector<uint> &itemBoundaries,
+                                         bool kerningEnabled,
+                                         bool hasLetterSpacing) const
 {
     uint glyphs_shaped = 0;
 
@@ -1135,7 +1141,8 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
 
     hb_segment_properties_t props = HB_SEGMENT_PROPERTIES_DEFAULT;
     props.direction = si.analysis.bidiLevel % 2 ? HB_DIRECTION_RTL : HB_DIRECTION_LTR;
-    props.script = hb_qt_script_to_script(QChar::Script(si.analysis.script));
+    QChar::Script script = QChar::Script(si.analysis.script);
+    props.script = hb_qt_script_to_script(script);
     // ### props.language = hb_language_get_default_for_script(props.script);
 
     for (int k = 0; k < itemBoundaries.size(); k += 3) {
@@ -1167,6 +1174,12 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
             hb_font_t *hb_font = hb_qt_font_get_for_engine(actualFontEngine);
             Q_ASSERT(hb_font);
             hb_qt_font_set_use_design_metrics(hb_font, option.useDesignMetrics() ? uint(QFontEngine::DesignMetrics) : 0); // ###
+
+            bool scriptRequiresOpenType = ((script >= QChar::Script_Syriac && script <= QChar::Script_Sinhala)
+                                         || script == QChar::Script_Khmer || script == QChar::Script_Nko);
+            hb_face_t *hb_face = hb_font_get_face(hb_font);
+            Q_ASSERT(hb_face);
+            hb_qt_face_set_ignore_gsub(hb_face, hasLetterSpacing && !scriptRequiresOpenType);
 
             const hb_feature_t features[1] = {
                 { HB_TAG('k','e','r','n'), !!kerningEnabled, 0, uint(-1) }
