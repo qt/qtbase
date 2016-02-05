@@ -278,12 +278,6 @@ qint64 QProcessPrivate::writeToStdin(const char *data, qint64 maxlen)
     return -1;
 }
 
-bool QProcessPrivate::waitForWrite(int msecs)
-{
-    Q_UNUSED(msecs);
-    return false;
-}
-
 bool QProcessPrivate::startDetached(const QString &program, const QStringList &arguments, const QString &workingDir, qint64 *pid)
 {
     Q_UNUSED(workingDir);

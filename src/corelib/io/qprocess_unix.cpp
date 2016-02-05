@@ -1034,12 +1034,6 @@ bool QProcessPrivate::waitForFinished(int msecs)
     return false;
 }
 
-bool QProcessPrivate::waitForWrite(int msecs)
-{
-    pollfd pfd = qt_make_pollfd(stdinChannel.pipe[1], POLLOUT);
-    return qt_poll_msecs(&pfd, 1, msecs < 0 ? 0 : msecs) == 1;
-}
-
 void QProcessPrivate::findExitCode()
 {
 }

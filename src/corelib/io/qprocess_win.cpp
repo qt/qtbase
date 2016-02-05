@@ -819,15 +819,6 @@ qint64 QProcessPrivate::writeToStdin(const char *data, qint64 maxlen)
     return stdinChannel.writer->write(data, maxlen);
 }
 
-bool QProcessPrivate::waitForWrite(int msecs)
-{
-    if (!stdinChannel.writer || stdinChannel.writer->waitForWrite(msecs))
-        return true;
-
-    setError(QProcess::Timedout);
-    return false;
-}
-
 bool QProcessPrivate::startDetached(const QString &program, const QStringList &arguments, const QString &workingDir, qint64 *pid)
 {
     QString args = qt_create_commandline(program, arguments);

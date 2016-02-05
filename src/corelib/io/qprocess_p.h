@@ -381,7 +381,6 @@ public:
     bool waitForReadyRead(int msecs = 30000);
     bool waitForBytesWritten(int msecs = 30000);
     bool waitForFinished(int msecs = 30000);
-    bool waitForWrite(int msecs = 30000);
 
     qint64 bytesAvailableInChannel(const Channel *channel) const;
     qint64 readFromChannel(const Channel *channel, char *data, qint64 maxlen);
