@@ -126,7 +126,7 @@
     object being tracked is the same.
 
     \omit
-    \secton1 QSharedPointer internals
+    \section1 QSharedPointer internals
 
     QSharedPointer has two "private" members: the pointer itself being tracked
     and a d-pointer. Those members are private to the class, but QSharedPointer
@@ -338,7 +338,7 @@
     creating a QSharedPointer using toStrongRef() is too high.
 
     \omit
-    \secton1 QWeakPointer internals
+    \section1 QWeakPointer internals
 
     QWeakPointer shares most of its internal functionality with
     \l{QSharedPointer#qsharedpointer-internals}{QSharedPointer}, so see that
