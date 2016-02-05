@@ -3161,9 +3161,8 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     case QEvent::KeyRelease:
         {
             bool isWidget = receiver->isWidgetType();
-            bool isGraphicsWidget = false;
 #ifndef QT_NO_GRAPHICSVIEW
-            isGraphicsWidget = !isWidget && qobject_cast<QGraphicsWidget *>(receiver);
+            const bool isGraphicsWidget = !isWidget && qobject_cast<QGraphicsWidget *>(receiver);
 #endif
             QKeyEvent* key = static_cast<QKeyEvent*>(e);
             bool def = key->isAccepted();
