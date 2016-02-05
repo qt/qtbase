@@ -1216,7 +1216,7 @@ void *QOpenGLContext::openGLModuleHandle()
 
   \note A desktop OpenGL implementation may be capable of creating
   ES-compatible contexts too. Therefore in most cases it is more
-  appropriate to check QSurfaceFormat::renderableType() or using the
+  appropriate to check QSurfaceFormat::renderableType() or use
   the convenience function isOpenGLES().
 
   \note This function requires that the QGuiApplication instance is already created.
