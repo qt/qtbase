@@ -190,6 +190,7 @@ QPlatformMenu *QDBusTrayIcon::createMenu() const
 void QDBusTrayIcon::updateMenu(QPlatformMenu * menu)
 {
     qCDebug(qLcTray) << menu;
+    bool needsRegistering = !m_menu;
     if (!m_menu)
         m_menu = qobject_cast<QDBusPlatformMenu *>(menu);
     if (!m_menuAdaptor) {
@@ -201,6 +202,8 @@ void QDBusTrayIcon::updateMenu(QPlatformMenu * menu)
                 m_menuAdaptor, SIGNAL(LayoutUpdated(uint,int)));
     }
     m_menu->emitUpdated();
+    if (needsRegistering)
+        dBusConnection()->registerTrayIconMenu(this);
 }
 
 void QDBusTrayIcon::showMessage(const QString &title, const QString &msg, const QIcon &icon,

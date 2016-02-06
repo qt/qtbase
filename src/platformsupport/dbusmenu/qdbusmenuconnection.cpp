@@ -80,6 +80,14 @@ void QDBusMenuConnection::dbusError(const QDBusError &error)
 }
 
 #ifndef QT_NO_SYSTEMTRAYICON
+bool QDBusMenuConnection::registerTrayIconMenu(QDBusTrayIcon *item)
+{
+    bool success = connection().registerObject(MenuBarPath, item->menu());
+    if (!success)  // success == false is normal, because the object may be already registered
+        qCDebug(qLcMenu) << "failed to register" << item->instanceId() << MenuBarPath;
+    return success;
+}
+
 bool QDBusMenuConnection::registerTrayIcon(QDBusTrayIcon *item)
 {
     bool success = connection().registerService(item->instanceId());
@@ -95,14 +103,8 @@ bool QDBusMenuConnection::registerTrayIcon(QDBusTrayIcon *item)
         return false;
     }
 
-    if (item->menu()) {
-        success = connection().registerObject(MenuBarPath, item->menu());
-        if (!success) {
-            unregisterTrayIcon(item);
-            qWarning() << "failed to register" << item->instanceId() << MenuBarPath;
-            return false;
-        }
-    }
+    if (item->menu())
+        registerTrayIconMenu(item);
 
     QDBusMessage registerMethod = QDBusMessage::createMethodCall(
                 StatusNotifierWatcherService, StatusNotifierWatcherPath, StatusNotifierWatcherService,

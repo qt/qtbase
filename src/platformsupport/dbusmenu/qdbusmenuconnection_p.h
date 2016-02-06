@@ -65,6 +65,7 @@ public:
     QDBusConnection connection() const { return m_connection; }
     bool isStatusNotifierHostRegistered() const { return m_statusNotifierHostRegistered; }
 #ifndef QT_NO_SYSTEMTRAYICON
+    bool registerTrayIconMenu(QDBusTrayIcon *item);
     bool registerTrayIcon(QDBusTrayIcon *item);
     bool unregisterTrayIcon(QDBusTrayIcon *item);
 #endif // QT_NO_SYSTEMTRAYICON
