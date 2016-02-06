@@ -503,7 +503,7 @@ void tst_QTreeView::construction()
     QCOMPARE(view.sizeHintForRow(1), -1);
     QVERIFY(!view.tabKeyNavigation());
     QCOMPARE(view.textElideMode(), Qt::ElideRight);
-    QCOMPARE(view.verticalScrollMode(), QAbstractItemView::ScrollPerItem);
+    QCOMPARE(static_cast<int>(view.verticalScrollMode()), view.style()->styleHint(QStyle::SH_ItemView_ScrollMode, 0, &view));
     QCOMPARE(view.visualRect(QModelIndex()), QRect());
 
     // QTreeView properties

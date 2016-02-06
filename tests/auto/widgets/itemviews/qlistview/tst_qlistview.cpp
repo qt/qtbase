@@ -279,6 +279,18 @@ public:
     mutable bool wrongIndex;
 };
 
+class ScrollPerItemListView : public QListView
+{
+public:
+    explicit ScrollPerItemListView(QWidget *parent = Q_NULLPTR)
+        : QListView(parent)
+    {
+        // Force per item scroll mode since it comes from the style by default
+        setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
+        setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
+    }
+};
+
 void tst_QListView::initTestCase()
 {
 #ifdef Q_OS_WINCE //disable magic for WindowsCE
@@ -823,7 +835,7 @@ void tst_QListView::setCurrentIndex()
 {
     QStringListModel model(generateList(QLatin1String("item "), 20));
 
-    QListView view;
+    ScrollPerItemListView view;
     view.setModel(&model);
 
     view.resize(220,182);
@@ -1153,7 +1165,7 @@ void tst_QListView::scrollTo()
 {
     QWidget topLevel;
     setFrameless(&topLevel);
-    QListView lv(&topLevel);
+    ScrollPerItemListView lv(&topLevel);
     QStringListModel model(&lv);
     QStringList list;
     list << "Short item 1";
@@ -1189,6 +1201,7 @@ void tst_QListView::scrollTo()
     model.setStringList(list);
     lv.setModel(&model);
     lv.setFixedSize(110, 200);
+
     topLevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
 
@@ -1262,7 +1275,7 @@ void tst_QListView::scrollBarRanges()
     const int rowHeight = 20;
 
     QWidget topLevel;
-    QListView lv(&topLevel);
+    ScrollPerItemListView lv(&topLevel);
     QStringListModel model(&lv);
     QStringList list;
     for (int i = 0; i < rowCount; ++i)
@@ -1271,6 +1284,7 @@ void tst_QListView::scrollBarRanges()
     model.setStringList(list);
     lv.setModel(&model);
     lv.resize(250, 130);
+
     TestDelegate *delegate = new TestDelegate(&lv);
     delegate->m_sizeHint = QSize(100, rowHeight);
     lv.setItemDelegate(delegate);
@@ -1814,7 +1828,7 @@ void tst_QListView::taskQTBUG_2233_scrollHiddenItems()
 
     QWidget topLevel;
     setFrameless(&topLevel);
-    QListView view(&topLevel);
+    ScrollPerItemListView view(&topLevel);
     QStringListModel model(&view);
     QStringList list;
     for (int i = 0; i < rowCount; ++i)
@@ -2060,7 +2074,7 @@ void tst_QListView::taskQTBUG_21115_scrollToAndHiddenItems()
 {
     QFETCH(int, flow);
 
-    QListView lv;
+    ScrollPerItemListView lv;
     lv.setUniformItemSizes(true);
     lv.setFlow(static_cast<QListView::Flow>(flow));
 
@@ -2155,7 +2169,7 @@ void tst_QListView::taskQTBUG_21804_hiddenItemsAndScrollingWithKeys()
     model.setStringList(list);
 
     // create listview
-    QListView lv;
+    ScrollPerItemListView lv;
     lv.setFlow(static_cast<QListView::Flow>(flow));
     lv.setSpacing(spacing);
     lv.setModel(&model);
@@ -2227,7 +2241,7 @@ void tst_QListView::spacing()
     model.setStringList(list);
 
     // create listview
-    QListView lv;
+    ScrollPerItemListView lv;
     lv.setFlow(static_cast<QListView::Flow>(flow));
     lv.setModel(&model);
     lv.setSpacing(spacing);

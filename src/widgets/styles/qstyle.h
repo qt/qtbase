@@ -732,6 +732,7 @@ public:
         SH_Menu_SubMenuSloppyCloseTimeout,
         SH_Menu_SubMenuResetWhenReenteringParent,
         SH_Menu_SubMenuDontStartSloppyOnLeave,
+        SH_ItemView_ScrollMode,
         // Add new style hint values here
 
         SH_CustomBase = 0xf0000000

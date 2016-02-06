@@ -461,6 +461,10 @@ public:
     mutable bool delayedPendingLayout;
     bool moveCursorUpdatedView;
 
+    // Whether scroll mode has been explicitly set or its value come from SH_ItemView_ScrollMode
+    bool verticalScrollModeSet;
+    bool horizontalScrollModeSet;
+
 private:
     mutable QBasicTimer delayedLayout;
     mutable QBasicTimer fetchMoreTimer;

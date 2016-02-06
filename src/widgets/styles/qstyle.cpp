@@ -1978,6 +1978,10 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
            tab is changed while dragging over the tabbar, in milliseconds. This
            enum value has been introduced in Qt 5.4
 
+    \value SH_ItemView_ScrollMode The default vertical and horizontal scroll mode as specified
+           by the style. Can be overridden with QAbstractItemView::setVerticalScrollMode() and
+           QAbstractItemView::setHorizontalScrollMode(). This enum value has been introduced in Qt 5.7.
+
     \sa styleHint()
 */
 

@@ -108,7 +108,9 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         currentIndexSet(false),
         wrapItemText(false),
         delayedPendingLayout(true),
-        moveCursorUpdatedView(false)
+        moveCursorUpdatedView(false),
+        verticalScrollModeSet(false),
+        horizontalScrollModeSet(false)
 {
     keyboardInputTime.invalidate();
 }
@@ -137,6 +139,9 @@ void QAbstractItemViewPrivate::init()
     viewport->setBackgroundRole(QPalette::Base);
 
     q->setAttribute(Qt::WA_InputMethodEnabled);
+
+    verticalScrollMode = static_cast<QAbstractItemView::ScrollMode>(q->style()->styleHint(QStyle::SH_ItemView_ScrollMode, 0, q, 0));
+    horizontalScrollMode = static_cast<QAbstractItemView::ScrollMode>(q->style()->styleHint(QStyle::SH_ItemView_ScrollMode, 0, q, 0));
 }
 
 void QAbstractItemViewPrivate::setHoverIndex(const QPersistentModelIndex &index)
@@ -1237,12 +1242,14 @@ QAbstractItemView::EditTriggers QAbstractItemView::editTriggers() const
     \brief how the view scrolls its contents in the vertical direction
 
     This property controls how the view scroll its contents vertically.
-    Scrolling can be done either per pixel or per item.
+    Scrolling can be done either per pixel or per item. Its default value
+    comes from the style via the QStyle::SH_ItemView_ScrollMode style hint.
 */
 
 void QAbstractItemView::setVerticalScrollMode(ScrollMode mode)
 {
     Q_D(QAbstractItemView);
+    d->verticalScrollModeSet = true;
     if (mode == d->verticalScrollMode)
         return;
     QModelIndex topLeft = indexAt(QPoint(0, 0));
@@ -1261,18 +1268,27 @@ QAbstractItemView::ScrollMode QAbstractItemView::verticalScrollMode() const
     return d->verticalScrollMode;
 }
 
+void QAbstractItemView::resetVerticalScrollMode()
+{
+    auto sm = static_cast<ScrollMode>(style()->styleHint(QStyle::SH_ItemView_ScrollMode, 0, this, 0));
+    setVerticalScrollMode(sm);
+    d_func()->verticalScrollModeSet = false;
+}
+
 /*!
     \since 4.2
     \property QAbstractItemView::horizontalScrollMode
     \brief how the view scrolls its contents in the horizontal direction
 
     This property controls how the view scroll its contents horizontally.
-    Scrolling can be done either per pixel or per item.
+    Scrolling can be done either per pixel or per item. Its default value
+    comes from the style via the QStyle::SH_ItemView_ScrollMode style hint.
 */
 
 void QAbstractItemView::setHorizontalScrollMode(ScrollMode mode)
 {
     Q_D(QAbstractItemView);
+    d->horizontalScrollModeSet = true;
     if (mode == d->horizontalScrollMode)
         return;
     d->horizontalScrollMode = mode;
@@ -1287,6 +1303,13 @@ QAbstractItemView::ScrollMode QAbstractItemView::horizontalScrollMode() const
 {
     Q_D(const QAbstractItemView);
     return d->horizontalScrollMode;
+}
+
+void QAbstractItemView::resetHorizontalScrollMode()
+{
+    auto sm = static_cast<ScrollMode>(style()->styleHint(QStyle::SH_ItemView_ScrollMode, 0, this, 0));
+    setHorizontalScrollMode(sm);
+    d_func()->horizontalScrollModeSet = false;
 }
 
 #ifndef QT_NO_DRAGANDDROP
@@ -1627,6 +1650,10 @@ bool QAbstractItemView::event(QEvent *event)
         break;
     case QEvent::StyleChange:
         doItemsLayout();
+        if (!d->verticalScrollModeSet)
+            resetVerticalScrollMode();
+        if (!d->horizontalScrollModeSet)
+            resetHorizontalScrollMode();
         break;
     case QEvent::FocusOut:
         d->checkPersistentEditorFocus();

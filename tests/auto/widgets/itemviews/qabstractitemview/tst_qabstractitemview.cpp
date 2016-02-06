@@ -50,6 +50,7 @@
 #include <qstyleditemdelegate.h>
 #include <qstringlistmodel.h>
 #include <qsortfilterproxymodel.h>
+#include <qproxystyle.h>
 
 static inline void setFrameless(QWidget *w)
 {
@@ -246,6 +247,7 @@ private slots:
     void sizeHintChangeTriggersLayout();
     void shiftSelectionAfterChangingModelContents();
     void QTBUG48968_reentrant_updateEditorGeometries();
+    void QTBUG50102_SH_ItemView_ScrollMode();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -2017,6 +2019,54 @@ void tst_QAbstractItemView::QTBUG48968_reentrant_updateEditorGeometries()
 
     // No crash, all fine.
 }
+
+class ScrollModeProxyStyle: public QProxyStyle
+{
+public:
+    ScrollModeProxyStyle(QAbstractItemView::ScrollMode sm, QStyle *style = 0)
+        : QProxyStyle(style)
+        , scrollMode(sm == QAbstractItemView::ScrollPerItem ?
+                     QAbstractItemView::ScrollPerPixel : QAbstractItemView::ScrollPerItem)
+    { }
+
+    int styleHint(QStyle::StyleHint hint, const QStyleOption *opt, const QWidget *w, QStyleHintReturn *returnData) const override
+    {
+        if (hint == SH_ItemView_ScrollMode)
+            return scrollMode;
+
+        return baseStyle()->styleHint(hint, opt, w, returnData);
+    }
+
+    QAbstractItemView::ScrollMode scrollMode;
+};
+
+void tst_QAbstractItemView::QTBUG50102_SH_ItemView_ScrollMode()
+{
+    QListView view;
+
+    // Default comes from the style
+    auto styleScrollMode = static_cast<QAbstractItemView::ScrollMode>(view.style()->styleHint(QStyle::SH_ItemView_ScrollMode, 0, &view, 0));
+    QCOMPARE(view.verticalScrollMode(), styleScrollMode);
+    QCOMPARE(view.horizontalScrollMode(), styleScrollMode);
+
+    // Change style, get new value
+    view.setStyle(new ScrollModeProxyStyle(styleScrollMode));
+    auto proxyScrollMode = static_cast<QAbstractItemView::ScrollMode>(view.style()->styleHint(QStyle::SH_ItemView_ScrollMode, 0, &view, 0));
+    QVERIFY(styleScrollMode != proxyScrollMode);
+    QCOMPARE(view.verticalScrollMode(), proxyScrollMode);
+    QCOMPARE(view.horizontalScrollMode(), proxyScrollMode);
+
+    // Explicitly set vertical, same value
+    view.setVerticalScrollMode(proxyScrollMode);
+    QCOMPARE(view.verticalScrollMode(), proxyScrollMode);
+    QCOMPARE(view.horizontalScrollMode(), proxyScrollMode);
+
+    // Change style, won't change value for vertical, will change for horizontal
+    view.setStyle(new ScrollModeProxyStyle(proxyScrollMode));
+    QCOMPARE(view.verticalScrollMode(), proxyScrollMode);
+    QCOMPARE(view.horizontalScrollMode(), styleScrollMode);
+}
+
 
 QTEST_MAIN(tst_QAbstractItemView)
 #include "tst_qabstractitemview.moc"

@@ -5215,6 +5215,9 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_Splitter_OpaqueResize:
         ret = true;
         break;
+    case SH_ItemView_ScrollMode:
+        ret = QAbstractItemView::ScrollPerItem;
+        break;
     default:
         ret = 0;
         break;
