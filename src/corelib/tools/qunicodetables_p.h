@@ -55,37 +55,6 @@ QT_BEGIN_NAMESPACE
 
 namespace QUnicodeTables {
 
-#ifdef Q_OS_PNACL
-// Work around bit-field related compiler bug on PNaCl
-//
-// Function _ZN5QChar14isSpace_helperEj disallowed: bad result type: i160*   %gep9.asptr = inttoptr i32 %gep9 to i160*
-// Function _ZN5QChar14isSpace_helperEj disallowed: bad pointer:    %bf.load = load i160* %gep9.asptr, align 1
-// LLVM ERROR: PNaCl ABI verification failed
-//
-struct Properties {
-    ushort category;
-    ushort direction;
-    ushort combiningClass;
-    ushort joining;
-    signed short digitValue;
-    signed short mirrorDiff;
-    signed short lowerCaseDiff;
-    signed short upperCaseDiff;
-    signed short titleCaseDiff;
-    signed short caseFoldDiff;
-    ushort lowerCaseSpecial;
-    ushort upperCaseSpecial;
-    ushort titleCaseSpecial;
-    ushort caseFoldSpecial;
-    ushort unicodeVersion;
-    ushort nfQuickCheck;
-    ushort graphemeBreakClass;
-    ushort wordBreakClass;
-    ushort sentenceBreakClass;
-    ushort lineBreakClass;
-    ushort script;
-};
-#else
 struct Properties {
     ushort category            : 8; /* 5 used */
     ushort direction           : 8; /* 5 used */
@@ -109,7 +78,6 @@ struct Properties {
     ushort lineBreakClass      : 8; /* 6 used */
     ushort script              : 8;
 };
-#endif
 
 Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4) Q_DECL_NOTHROW;
 Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2) Q_DECL_NOTHROW;
