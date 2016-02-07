@@ -1175,7 +1175,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 /*!
   \fn QPair<iterator, iterator> QMap::equal_range(const Key &key)
 
-  Returns a pair of iterators delimiting the range of values that
+  Returns a pair of iterators delimiting the range of values \c{[first, second)}, that
   are stored under \a key.
 */
 
