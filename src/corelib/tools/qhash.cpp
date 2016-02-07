@@ -1803,6 +1803,19 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     returns \c false.
 */
 
+/*! \fn QPair<iterator, iterator> QHash::equal_range(const Key &key)
+    \since 5.7
+
+    Returns a pair of iterators delimiting the range of values \c{[first, second)}, that
+    are stored under \a key. If the range is empty then both iterators will be equal to end().
+*/
+
+/*!
+    \fn QPair<const_iterator, const_iterator> QHash::equal_range(const Key &key) const
+    \overload
+    \since 5.7
+*/
+
 /*! \typedef QHash::ConstIterator
 
     Qt-style synonym for QHash::const_iterator.
