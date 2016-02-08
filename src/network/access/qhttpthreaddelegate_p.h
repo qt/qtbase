@@ -214,7 +214,7 @@ public:
     {
     }
 
-    qint64 pos() Q_DECL_OVERRIDE
+    qint64 pos() const Q_DECL_OVERRIDE
     {
         return m_pos;
     }
@@ -254,7 +254,7 @@ public:
         return true;
     }
 
-    bool atEnd() Q_DECL_OVERRIDE
+    bool atEnd() const Q_DECL_OVERRIDE
     {
         if (m_amount > 0)
             return false;
@@ -284,7 +284,7 @@ public:
         return b;
     }
 
-    qint64 size() Q_DECL_OVERRIDE
+    qint64 size() const Q_DECL_OVERRIDE
     {
         return m_size;
     }

@@ -160,7 +160,7 @@ bool QNonContiguousByteDeviceBufferImpl::advanceReadPointer(qint64 amount)
     return arrayImpl->advanceReadPointer(amount);
 }
 
-bool QNonContiguousByteDeviceBufferImpl::atEnd()
+bool QNonContiguousByteDeviceBufferImpl::atEnd() const
 {
     return arrayImpl->atEnd();
 }
@@ -170,7 +170,7 @@ bool QNonContiguousByteDeviceBufferImpl::reset()
     return arrayImpl->reset();
 }
 
-qint64 QNonContiguousByteDeviceBufferImpl::size()
+qint64 QNonContiguousByteDeviceBufferImpl::size() const
 {
     return arrayImpl->size();
 }
@@ -206,7 +206,7 @@ bool QNonContiguousByteDeviceByteArrayImpl::advanceReadPointer(qint64 amount)
     return true;
 }
 
-bool QNonContiguousByteDeviceByteArrayImpl::atEnd()
+bool QNonContiguousByteDeviceByteArrayImpl::atEnd() const
 {
     return currentPosition >= size();
 }
@@ -217,12 +217,12 @@ bool QNonContiguousByteDeviceByteArrayImpl::reset()
     return true;
 }
 
-qint64 QNonContiguousByteDeviceByteArrayImpl::size()
+qint64 QNonContiguousByteDeviceByteArrayImpl::size() const
 {
     return byteArray->size();
 }
 
-qint64 QNonContiguousByteDeviceByteArrayImpl::pos()
+qint64 QNonContiguousByteDeviceByteArrayImpl::pos() const
 {
     return currentPosition;
 }
@@ -259,12 +259,12 @@ bool QNonContiguousByteDeviceRingBufferImpl::advanceReadPointer(qint64 amount)
     return true;
 }
 
-bool QNonContiguousByteDeviceRingBufferImpl::atEnd()
+bool QNonContiguousByteDeviceRingBufferImpl::atEnd() const
 {
     return currentPosition >= size();
 }
 
-qint64 QNonContiguousByteDeviceRingBufferImpl::pos()
+qint64 QNonContiguousByteDeviceRingBufferImpl::pos() const
 {
     return currentPosition;
 }
@@ -275,7 +275,7 @@ bool QNonContiguousByteDeviceRingBufferImpl::reset()
     return true;
 }
 
-qint64 QNonContiguousByteDeviceRingBufferImpl::size()
+qint64 QNonContiguousByteDeviceRingBufferImpl::size() const
 {
     return ringBuffer->size();
 }
@@ -364,7 +364,7 @@ bool QNonContiguousByteDeviceIoDeviceImpl::advanceReadPointer(qint64 amount)
     return true;
 }
 
-bool QNonContiguousByteDeviceIoDeviceImpl::atEnd()
+bool QNonContiguousByteDeviceIoDeviceImpl::atEnd() const
 {
     return eof == true;
 }
@@ -387,7 +387,7 @@ bool QNonContiguousByteDeviceIoDeviceImpl::reset()
     return false;
 }
 
-qint64 QNonContiguousByteDeviceIoDeviceImpl::size()
+qint64 QNonContiguousByteDeviceIoDeviceImpl::size() const
 {
     // note that this is different from the size() implementation of QIODevice!
 
@@ -397,7 +397,7 @@ qint64 QNonContiguousByteDeviceIoDeviceImpl::size()
     return device->size() - initialPosition;
 }
 
-qint64 QNonContiguousByteDeviceIoDeviceImpl::pos()
+qint64 QNonContiguousByteDeviceIoDeviceImpl::pos() const
 {
     if (device->isSequential())
         return -1;
