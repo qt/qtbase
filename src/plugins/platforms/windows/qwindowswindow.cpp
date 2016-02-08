@@ -183,7 +183,7 @@ static QPoint windowPlacementOffset(HWND hwnd, const QPoint &point)
         return QPoint(0, 0);
     const QWindowsScreenManager &screenManager = QWindowsContext::instance()->screenManager();
     const QWindowsScreen *screen = screenManager.screens().size() == 1
-        ? screenManager.screens().first() : screenManager.screenAtDp(point);
+        ? screenManager.screens().constFirst() : screenManager.screenAtDp(point);
     if (screen)
         return screen->availableGeometry().topLeft() - screen->geometry().topLeft();
 #else

@@ -175,8 +175,8 @@ static bool qt_write_dibv5(QDataStream &s, QImage image)
     memset(buf, 0, bpl_bmp);
     for (int y=image.height()-1; y>=0; y--) {
         // write the image bits
-        QRgb *p = (QRgb *)image.scanLine(y);
-        QRgb *end = p + image.width();
+        const QRgb *p = reinterpret_cast<const QRgb *>(image.constScanLine(y));
+        const QRgb *end = p + image.width();
         b = buf;
         while (p < end) {
             int alpha = qAlpha(*p);

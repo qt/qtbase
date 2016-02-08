@@ -142,8 +142,8 @@ static HCURSOR createBitmapCursor(const QImage &bbits, const QImage &mbits,
     QScopedArrayPointer<uchar> xMask(new uchar[height * n]);
     int x = 0;
     for (int i = 0; i < height; ++i) {
-        const uchar *bits = bbits.scanLine(i);
-        const uchar *mask = mbits.scanLine(i);
+        const uchar *bits = bbits.constScanLine(i);
+        const uchar *mask = mbits.constScanLine(i);
         for (int j = 0; j < n; ++j) {
             uchar b = bits[j];
             uchar m = mask[j];
@@ -173,8 +173,8 @@ static HCURSOR createBitmapCursor(const QImage &bbits, const QImage &mbits,
             x += sysN;
         } else {
             int fillWidth = n > sysN ? sysN : n;
-            const uchar *bits = bbits.scanLine(i);
-            const uchar *mask = mbits.scanLine(i);
+            const uchar *bits = bbits.constScanLine(i);
+            const uchar *mask = mbits.constScanLine(i);
             for (int j = 0; j < fillWidth; ++j) {
                 uchar b = bits[j];
                 uchar m = mask[j];
