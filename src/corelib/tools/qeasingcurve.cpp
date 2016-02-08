@@ -1333,8 +1333,8 @@ void QEasingCurvePrivate::setType_helper(QEasingCurve::Type newType)
         amp = config->_a;
         period = config->_p;
         overshoot = config->_o;
-        bezierCurves = config->_bezierCurves;
-        tcbPoints = config->_tcbPoints;
+        bezierCurves = std::move(config->_bezierCurves);
+        tcbPoints = std::move(config->_tcbPoints);
 
         delete config;
         config = 0;
@@ -1349,8 +1349,8 @@ void QEasingCurvePrivate::setType_helper(QEasingCurve::Type newType)
             config->_p = period;
         if (overshoot != -1.0)
             config->_o = overshoot;
-        config->_bezierCurves = bezierCurves;
-        config->_tcbPoints = tcbPoints;
+        config->_bezierCurves = std::move(bezierCurves);
+        config->_tcbPoints = std::move(tcbPoints);
         func = 0;
     } else if (newType != QEasingCurve::Custom) {
         func = curveToFunc(newType);
