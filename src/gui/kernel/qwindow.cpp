@@ -369,7 +369,7 @@ void QWindowPrivate::setTopLevelScreen(QScreen *newScreen, bool recreate)
 {
     Q_Q(QWindow);
     if (parentWindow) {
-        qWarning() << this << '(' << newScreen << "): Attempt to set a screen on a child window.";
+        qWarning() << q << '(' << newScreen << "): Attempt to set a screen on a child window.";
         return;
     }
     if (newScreen != topLevelScreen) {
