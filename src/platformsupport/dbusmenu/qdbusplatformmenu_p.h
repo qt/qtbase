@@ -141,7 +141,7 @@ public:
     void setText(const QString &text) Q_DECL_OVERRIDE;
     QIcon icon() const { return m_icon; }
     void setIcon(const QIcon &icon) Q_DECL_OVERRIDE;
-    bool isEnabled() const { return m_isEnabled; }
+    bool isEnabled() const Q_DECL_OVERRIDE { return m_isEnabled; }
     void setEnabled(bool enabled) Q_DECL_OVERRIDE;
     bool isVisible() const { return m_isVisible; }
     void setVisible(bool visible) Q_DECL_OVERRIDE;
