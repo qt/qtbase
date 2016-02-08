@@ -415,6 +415,7 @@ public:
     static QString themeName(int theme);
     static inline bool hasTheme(int theme) { return theme >= 0 && theme < NThemes && m_themes[theme]; }
     static bool isItemViewDelegateLineEdit(const QWidget *widget);
+    static bool isLineEditBaseColorSet(const QStyleOption *option, const QWidget *widget);
 
     QIcon dockFloat, dockClose;
 

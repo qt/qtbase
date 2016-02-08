@@ -371,6 +371,22 @@ bool QWindowsXPStylePrivate::isItemViewDelegateLineEdit(const QWidget *widget)
         && parent2->inherits("QAbstractItemView");
 }
 
+// Returns whether base color is set for this widget
+bool QWindowsXPStylePrivate::isLineEditBaseColorSet(const QStyleOption *option, const QWidget *widget)
+{
+    uint resolveMask = option->palette.resolve();
+    if (widget) {
+        // Since spin box includes a line edit we need to resolve the palette mask also from
+        // the parent, as while the color is always correct on the palette supplied by panel,
+        // the mask can still be empty. If either mask specifies custom base color, use that.
+#ifndef QT_NO_SPINBOX
+        if (const QAbstractSpinBox *spinbox = qobject_cast<QAbstractSpinBox*>(widget->parentWidget()))
+            resolveMask |= spinbox->palette().resolve();
+#endif // QT_NO_SPINBOX
+    }
+    return (resolveMask & (1 << QPalette::Base)) != 0;
+}
+
 /*! \internal
     This function will always return a valid window handle, and might
     create a limbo widget to do so.
@@ -1600,30 +1616,12 @@ case PE_Frame:
             themeNumber = QWindowsXPStylePrivate::EditTheme;
             partId = EP_EDITTEXT;
             noBorder = true;
-            QBrush bg;
-            bool usePalette = false;
             bool isEnabled = flags & State_Enabled;
-            uint resolve_mask = panel->palette.resolve();
-
-#ifndef QT_NO_SPINBOX
-            // Since spin box includes a line edit we need to resolve the palette mask also from
-            // the parent, as while the color is always correct on the palette supplied by panel,
-            // the mask can still be empty. If either mask specifies custom base color, use that.
-            if (widget) {
-                if (QAbstractSpinBox *spinbox = qobject_cast<QAbstractSpinBox*>(widget->parentWidget()))
-                    resolve_mask |= spinbox->palette().resolve();
-            }
-#endif // QT_NO_SPINBOX
-            if (resolve_mask & (1 << QPalette::Base)) {
-                // Base color is set for this widget, so use it
-                bg = panel->palette.brush(QPalette::Base);
-                usePalette = true;
-            }
 
             stateId = isEnabled ? ETS_NORMAL : ETS_DISABLED;
 
-            if (usePalette) {
-                p->fillRect(panel->rect, bg);
+            if (QWindowsXPStylePrivate::isLineEditBaseColorSet(option, widget)) {
+                p->fillRect(panel->rect, panel->palette.brush(QPalette::Base));
             } else {
                 XPThemeData theme(0, p, themeNumber, partId, stateId, rect);
                 if (!theme.isValid()) {
