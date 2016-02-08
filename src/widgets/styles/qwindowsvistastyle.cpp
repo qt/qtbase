@@ -213,6 +213,26 @@ void QWindowsVistaAnimation::paint(QPainter *painter, const QStyleOption *option
     painter->drawImage(option->rect, currentImage());
 }
 
+static inline bool supportsStateTransition(QStyle::PrimitiveElement element,
+                                           const QStyleOption *option,
+                                           const QWidget *widget)
+{
+    bool result = false;
+    switch (element) {
+    case QStyle::PE_IndicatorRadioButton:
+    case QStyle::PE_IndicatorCheckBox:
+        result = true;
+        break;
+    // QTBUG-40634, do not animate when color is set in palette for PE_PanelLineEdit.
+    case QStyle::PE_FrameLineEdit:
+        result = !QWindowsXPStylePrivate::isLineEditBaseColorSet(option, widget);
+        break;
+    default:
+        break;
+    }
+    return result;
+}
+
 /*!
  \internal
 
@@ -243,6 +263,7 @@ void QWindowsVistaAnimation::paint(QPainter *painter, const QStyleOption *option
   starting image for the hover transition.
 
  */
+
 void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *option,
                                        QPainter *painter, const QWidget *widget) const
 {
@@ -259,11 +280,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
             QRect oldRect;
             QRect newRect;
 
-            /* widgets that support state transitions : */
-            if (   element == PE_FrameLineEdit
-                || element == PE_IndicatorRadioButton
-                || element == PE_IndicatorCheckBox)
-            {
+            if (supportsStateTransition(element, option, widget)) {
                 // Retrieve and update the dynamic properties tracking
                 // the previous state of the widget:
                 QObject *styleObject = option->styleObject;
