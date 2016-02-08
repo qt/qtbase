@@ -558,6 +558,12 @@
             "purpose": "Provides a framework for gestures.",
             "section": "Utilities",
             "output": [ "publicFeature", "feature" ]
+        },
+        "sha3-fast": {
+            "label": "Speed optimized SHA3",
+            "purpose": "Optimizes SHA3 for speed instead of size.",
+            "section": "Utilities",
+            "output": [ "privateFeature" ]
         }
     },
 
