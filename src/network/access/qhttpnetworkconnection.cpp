@@ -261,15 +261,17 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
     // check if Content-Length is provided
     QNonContiguousByteDevice* uploadByteDevice = request.uploadByteDevice();
     if (uploadByteDevice) {
-        if (request.contentLength() != -1 && uploadByteDevice->size() != -1) {
+        const qint64 contentLength = request.contentLength();
+        const qint64 uploadDeviceSize = uploadByteDevice->size();
+        if (contentLength != -1 && uploadDeviceSize != -1) {
             // both values known, take the smaller one.
-            request.setContentLength(qMin(uploadByteDevice->size(), request.contentLength()));
-        } else if (request.contentLength() == -1 && uploadByteDevice->size() != -1) {
+            request.setContentLength(qMin(uploadDeviceSize, contentLength));
+        } else if (contentLength == -1 && uploadDeviceSize != -1) {
             // content length not supplied by user, but the upload device knows it
-            request.setContentLength(uploadByteDevice->size());
-        } else if (request.contentLength() != -1 && uploadByteDevice->size() == -1) {
+            request.setContentLength(uploadDeviceSize);
+        } else if (contentLength != -1 && uploadDeviceSize == -1) {
             // everything OK, the user supplied us the contentLength
-        } else if (Q_UNLIKELY(request.contentLength() == -1 && uploadByteDevice->size() == -1)) {
+        } else if (Q_UNLIKELY(contentLength == -1 && uploadDeviceSize == -1)) {
             qFatal("QHttpNetworkConnectionPrivate: Neither content-length nor upload device size were given");
         }
     }
@@ -1113,11 +1115,12 @@ void QHttpNetworkConnectionPrivate::startHostInfoLookup()
 #endif
     QHostAddress temp;
     if (temp.setAddress(lookupHost)) {
-        if (temp.protocol() == QAbstractSocket::IPv4Protocol) {
+        const QAbstractSocket::NetworkLayerProtocol protocol = temp.protocol();
+        if (protocol == QAbstractSocket::IPv4Protocol) {
             networkLayerState = QHttpNetworkConnectionPrivate::IPv4;
             QMetaObject::invokeMethod(this->q_func(), "_q_startNextRequest", Qt::QueuedConnection);
             return;
-        } else if (temp.protocol() == QAbstractSocket::IPv6Protocol) {
+        } else if (protocol == QAbstractSocket::IPv6Protocol) {
             networkLayerState = QHttpNetworkConnectionPrivate::IPv6;
             QMetaObject::invokeMethod(this->q_func(), "_q_startNextRequest", Qt::QueuedConnection);
             return;
@@ -1146,13 +1149,14 @@ void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(const QHostInfo &info)
         return;
 
     foreach (const QHostAddress &address, info.addresses()) {
-        if (address.protocol() == QAbstractSocket::IPv4Protocol) {
+        const QAbstractSocket::NetworkLayerProtocol protocol = address.protocol();
+        if (protocol == QAbstractSocket::IPv4Protocol) {
             if (!foundAddress) {
                 foundAddress = true;
                 delayIpv4 = false;
             }
             bIpv4 = true;
-        } else if (address.protocol() == QAbstractSocket::IPv6Protocol) {
+        } else if (protocol == QAbstractSocket::IPv6Protocol) {
             if (!foundAddress) {
                 foundAddress = true;
                 delayIpv4 = true;
@@ -1213,13 +1217,14 @@ void QHttpNetworkConnectionPrivate::startNetworkLayerStateLookup()
         int timeout = 300;
 #ifndef QT_NO_BEARERMANAGEMENT
         if (networkSession) {
-            if (networkSession->configuration().bearerType() == QNetworkConfiguration::Bearer2G)
+            const QNetworkConfiguration::BearerType bearerType = networkSession->configuration().bearerType();
+            if (bearerType == QNetworkConfiguration::Bearer2G)
                 timeout = 800;
-            else if (networkSession->configuration().bearerType() == QNetworkConfiguration::BearerCDMA2000)
+            else if (bearerType == QNetworkConfiguration::BearerCDMA2000)
                 timeout = 500;
-            else if (networkSession->configuration().bearerType() == QNetworkConfiguration::BearerWCDMA)
+            else if (bearerType == QNetworkConfiguration::BearerWCDMA)
                 timeout = 500;
-            else if (networkSession->configuration().bearerType() == QNetworkConfiguration::BearerHSPA)
+            else if (bearerType == QNetworkConfiguration::BearerHSPA)
                 timeout = 400;
         }
 #endif
