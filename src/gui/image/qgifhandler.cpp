@@ -199,7 +199,7 @@ void QGIFFormat::disposePrevious(QImage *image)
             fillRect(image, l, t, r-l+1, b-t+1, color(bgcol));
         } else {
             // Impossible:  We don't know of a bgcol - use pixel 0
-            QRgb *bits = (QRgb*)image->bits();
+            const QRgb *bits = reinterpret_cast<const QRgb *>(image->constBits());
             fillRect(image, l, t, r-l+1, b-t+1, bits[0]);
         }
         // ### Changed: QRect(l, t, r-l+1, b-t+1)
@@ -208,7 +208,7 @@ void QGIFFormat::disposePrevious(QImage *image)
         if (frame >= 0) {
             for (int ln=t; ln<=b; ln++) {
                 memcpy(image->scanLine(ln)+l,
-                    backingstore.scanLine(ln-t),
+                    backingstore.constScanLine(ln-t),
                     (r-l+1)*sizeof(QRgb));
             }
             // ### Changed: QRect(l, t, r-l+1, b-t+1)

@@ -823,7 +823,7 @@ void QFontEngine::addBitmapFontToPath(qreal x, qreal y, const QGlyphLayout &glyp
                 }
             }
         }
-        const uchar *bitmap_data = bitmap.bits();
+        const uchar *bitmap_data = bitmap.constBits();
         QFixedPoint offset = glyphs.offsets[i];
         advanceX += offset.x;
         advanceY += offset.y;
@@ -880,12 +880,12 @@ QImage QFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, con
 
 QImage QFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed /*subPixelPosition*/, const QTransform &t)
 {
-    QImage alphaMask = alphaMapForGlyph(glyph, t);
+    const QImage alphaMask = alphaMapForGlyph(glyph, t);
     QImage rgbMask(alphaMask.width(), alphaMask.height(), QImage::Format_RGB32);
 
     for (int y=0; y<alphaMask.height(); ++y) {
         uint *dst = (uint *) rgbMask.scanLine(y);
-        uchar *src = (uchar *) alphaMask.scanLine(y);
+        const uchar *src = alphaMask.constScanLine(y);
         for (int x=0; x<alphaMask.width(); ++x) {
             int val = src[x];
             dst[x] = qRgb(val, val, val);
@@ -973,7 +973,7 @@ QImage QFontEngine::alphaMapForGlyph(glyph_t glyph)
 
     for (int y=0; y<im.height(); ++y) {
         uchar *dst = (uchar *) alphaMap.scanLine(y);
-        uint *src = (uint *) im.scanLine(y);
+        const uint *src = reinterpret_cast<const uint *>(im.constScanLine(y));
         for (int x=0; x<im.width(); ++x)
             dst[x] = qAlpha(src[x]);
     }

@@ -198,7 +198,7 @@ Q_GUI_EXPORT HBITMAP qt_createIconMask(const QBitmap &bitmap)
     QScopedArrayPointer<uchar> bits(new uchar[bpl * h]);
     bm.invertPixels();
     for (int y = 0; y < h; ++y)
-        memcpy(bits.data() + y * bpl, bm.scanLine(y), bpl);
+        memcpy(bits.data() + y * bpl, bm.constScanLine(y), bpl);
     HBITMAP hbm = CreateBitmap(w, h, 1, 1, bits.data());
     return hbm;
 }

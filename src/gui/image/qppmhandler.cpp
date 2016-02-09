@@ -329,7 +329,7 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
             if (image.format() == QImage::Format_Indexed8) {
                 QVector<QRgb> color = image.colorTable();
                 for (uint y=0; y<h; y++) {
-                    uchar *b = image.scanLine(y);
+                    const uchar *b = image.constScanLine(y);
                     uchar *p = buf;
                     uchar *end = buf+bpl;
                     if (gray) {
@@ -350,7 +350,7 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
                 }
             } else {
                 for (uint y=0; y<h; y++) {
-                    uchar *b = image.scanLine(y);
+                    const uchar *b = image.constScanLine(y);
                     uchar *p = buf;
                     uchar *end = buf + bpl;
                     if (gray) {
@@ -380,7 +380,7 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
             uint bpl = w * 3;
             uchar *buf = new uchar[bpl];
             for (uint y=0; y<h; y++) {
-                QRgb  *b = (QRgb*)image.scanLine(y);
+                const QRgb  *b = reinterpret_cast<const QRgb *>(image.constScanLine(y));
                 uchar *p = buf;
                 uchar *end = buf+bpl;
                 while (p < end) {

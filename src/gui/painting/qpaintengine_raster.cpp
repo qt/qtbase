@@ -3610,7 +3610,7 @@ QImage QRasterBuffer::colorizeBitmap(const QImage &image, const QColor &color)
 {
     Q_ASSERT(image.depth() == 1);
 
-    QImage sourceImage = image.convertToFormat(QImage::Format_MonoLSB);
+    const QImage sourceImage = image.convertToFormat(QImage::Format_MonoLSB);
     QImage dest = QImage(sourceImage.size(), QImage::Format_ARGB32_Premultiplied);
 
     QRgb fg = qPremultiply(color.rgba());
@@ -3619,7 +3619,7 @@ QImage QRasterBuffer::colorizeBitmap(const QImage &image, const QColor &color)
     int height = sourceImage.height();
     int width = sourceImage.width();
     for (int y=0; y<height; ++y) {
-        uchar *source = sourceImage.scanLine(y);
+        const uchar *source = sourceImage.constScanLine(y);
         QRgb *target = reinterpret_cast<QRgb *>(dest.scanLine(y));
         if (!source || !target)
             QT_THROW(std::bad_alloc()); // we must have run out of memory

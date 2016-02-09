@@ -183,7 +183,7 @@ void QBlittablePlatformPixmap::fromImage(const QImage &image,
         correctFormatPic = correctFormatPic.convertToFormat(thisImg->format(), flags);
 
     uchar *mem = thisImg->bits();
-    const uchar *bits = correctFormatPic.bits();
+    const uchar *bits = correctFormatPic.constBits();
     int bytesCopied = 0;
     while (bytesCopied < correctFormatPic.byteCount()) {
         memcpy(mem,bits,correctFormatPic.bytesPerLine());

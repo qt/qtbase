@@ -210,7 +210,7 @@ static bool write_xbm_image(const QImage &sourceImage, QIODevice *device, const 
     char *p = buf;
     int bpl = (w+7)/8;
     for (int y = 0; y < h; ++y) {
-        uchar *b = image.scanLine(y);
+        const uchar *b = image.constScanLine(y);
         for (i = 0; i < bpl; ++i) {
             *p++ = '0'; *p++ = 'x';
             *p++ = hexrep[*b >> 4];
