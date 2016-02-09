@@ -160,7 +160,7 @@ QImage scaledToWith(const QImage &image)
 
 //! [13]
 QList<QImage> images = ...;
-QFuture<QImage> thumbnails = QtConcurrent::mapped(images, std::bind(&QImage::scaledToWidth, 100 Qt::SmoothTransformation));
+QFuture<QImage> thumbnails = QtConcurrent::mapped(images, std::bind(&QImage::scaledToWidth, 100, Qt::SmoothTransformation));
 //! [13]
 
 //! [14]
