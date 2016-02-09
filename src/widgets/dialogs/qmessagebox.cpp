@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -64,6 +64,7 @@
 #include <QtGui/qfont.h>
 #include <QtGui/qfontmetrics.h>
 #include <QtGui/qclipboard.h>
+#include "private/qabstractbutton_p.h"
 #include <private/qdesktopwidget_p.h>
 
 #ifdef Q_OS_WIN
@@ -492,9 +493,17 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
 
 void QMessageBoxPrivate::_q_clicked(QPlatformDialogHelper::StandardButton button, QPlatformDialogHelper::ButtonRole role)
 {
-    Q_UNUSED(role);
     Q_Q(QMessageBox);
-    q->done(button);
+    if (button > QPlatformDialogHelper::LastButton) {
+        // It's a custom button, and the QPushButton in options is just a proxy
+        // for the button on the platform dialog.  Simulate the user clicking it.
+        clickedButton = static_cast<QAbstractButton *>(options->customButton(button)->button);
+        Q_ASSERT(clickedButton);
+        clickedButton->click();
+        q->done(role);
+    } else {
+        q->done(button);
+    }
 }
 
 /*!
@@ -831,6 +840,8 @@ void QMessageBox::addButton(QAbstractButton *button, ButtonRole role)
     if (!button)
         return;
     removeButton(button);
+    d->options->addButton(button->text(), static_cast<QPlatformDialogHelper::ButtonRole>(role),
+                          button);
     d->buttonBox->addButton(button, (QDialogButtonBox::ButtonRole)role);
     d->customButtonList.append(button);
     d->autoAddOkButton = false;
@@ -2678,7 +2689,11 @@ void QMessageBoxPrivate::helperPrepareShow(QPlatformDialogHelper *)
 void QMessageBoxPrivate::helperDone(QDialog::DialogCode code, QPlatformDialogHelper *)
 {
     Q_Q(QMessageBox);
-    clickedButton = q->button(QMessageBox::StandardButton(code));
+    QAbstractButton *button = q->button(QMessageBox::StandardButton(code));
+    // If it was a custom button, a custom ID was used, so we won't get a valid pointer here.
+    // In that case, clickedButton has already been set in _q_buttonClicked.
+    if (button)
+        clickedButton = button;
 }
 
 /*!
