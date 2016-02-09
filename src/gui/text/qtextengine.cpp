@@ -3040,7 +3040,7 @@ void QTextEngine::resolveFormats() const
             format = collection->charFormat(formatIndex(si));
         }
         if (!currentFormats.isEmpty()) {
-            foreach (int cur, currentFormats) {
+            for (int cur : currentFormats) {
                 const QTextLayout::FormatRange &range = specialData->formats.at(cur);
                 Q_ASSERT(range.start <= si->position && range.start + range.length >= end);
                 format.merge(range.format);

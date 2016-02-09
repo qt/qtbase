@@ -1276,9 +1276,9 @@ void QOpenGLDebugLoggerPrivate::controlDebugMessages(QOpenGLDebugMessage::Source
     // Unfortunately, some bugged drivers do NOT ignore it, so pass NULL in case.
     const GLuint * const idPtr = idCount ? ids.constData() : 0;
 
-    foreach (GLenum source, glSources)
-        foreach (GLenum type, glTypes)
-            foreach (GLenum severity, glSeverities)
+    for (GLenum source : glSources)
+        for (GLenum type : glTypes)
+            for (GLenum severity : glSeverities)
                 glDebugMessageControl(source, type, severity, idCount, idPtr, GLboolean(enable));
 }
 
