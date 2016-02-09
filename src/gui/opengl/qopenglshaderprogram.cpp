@@ -993,10 +993,8 @@ void QOpenGLShaderProgram::removeAllShaders()
             d->glfuncs->glDetachShader(d->programGuard->id(), shader->d_func()->shaderGuard->id());
         }
     }
-    foreach (QOpenGLShader *shader, d->anonShaders) {
-        // Delete shader objects that were created anonymously.
-        delete shader;
-    }
+    // Delete shader objects that were created anonymously.
+    qDeleteAll(d->anonShaders);
     d->shaders.clear();
     d->anonShaders.clear();
     d->linked = false;  // Program needs to be relinked.
