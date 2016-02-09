@@ -87,9 +87,23 @@ void QEglFSBrcmIntegration::platformInit()
     bcm_host_init();
 }
 
+static int getDisplayId()
+{
+    // As defined in vc_dispmanx_types.h
+    // DISPMANX_ID_MAIN_LCD     0
+    // DISPMANX_ID_AUX_LCD      1
+    // DISPMANX_ID_HDMI         2
+    // DISPMANX_ID_SDTV         3
+    // DISPMANX_ID_FORCE_LCD    4
+    // DISPMANX_ID_FORCE_TV     5
+    // DISPMANX_ID_FORCE_OTHER  6 /* non-default display */
+    static const int dispmanxId = qEnvironmentVariableIntValue("QT_QPA_EGLFS_DISPMANX_ID");
+    return (dispmanxId >= 0 && dispmanxId <= 6) ? dispmanxId : 0;
+}
+
 EGLNativeDisplayType QEglFSBrcmIntegration::platformDisplay() const
 {
-    dispman_display = vc_dispmanx_display_open(0/* LCD */);
+    dispman_display = vc_dispmanx_display_open(getDisplayId());
     return EGL_DEFAULT_DISPLAY;
 }
 
@@ -101,7 +115,7 @@ void QEglFSBrcmIntegration::platformDestroy()
 QSize QEglFSBrcmIntegration::screenSize() const
 {
     uint32_t width, height;
-    graphics_get_display_size(0 /* LCD */, &width, &height);
+    graphics_get_display_size(getDisplayId(), &width, &height);
     return QSize(width, height);
 }
 
