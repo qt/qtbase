@@ -169,12 +169,12 @@ void QWinRTInputContext::showInputPanel()
         ComPtr<IInputPane2> inputPane;
         HRESULT hr = getInputPane(&inputPane);
         if (FAILED(hr))
-            return hr;
+            return S_OK;
         boolean success;
         hr = inputPane->TryShow(&success);
         if (FAILED(hr) || !success)
             qErrnoWarning(hr, "Failed to show input panel.");
-        return hr;
+        return S_OK;
     });
 }
 
@@ -184,12 +184,12 @@ void QWinRTInputContext::hideInputPanel()
         ComPtr<IInputPane2> inputPane;
         HRESULT hr = getInputPane(&inputPane);
         if (FAILED(hr))
-            return hr;
+            return S_OK;
         boolean success;
         hr = inputPane->TryHide(&success);
         if (FAILED(hr) || !success)
             qErrnoWarning(hr, "Failed to hide input panel.");
-        return hr;
+        return S_OK;
     });
 }
 
