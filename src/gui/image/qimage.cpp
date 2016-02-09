@@ -3752,11 +3752,10 @@ QString QImage::text(const QString &key) const
         return d->text.value(key);
 
     QString tmp;
-    foreach (const QString &key, d->text.keys()) {
-        if (!tmp.isEmpty())
-            tmp += QLatin1String("\n\n");
-        tmp += key + QLatin1String(": ") + d->text.value(key).simplified();
-    }
+    for (auto it = d->text.begin(), end = d->text.end(); it != end; ++it)
+        tmp += it.key() + QLatin1String(": ") + it.value().simplified() + QLatin1String("\n\n");
+    if (!tmp.isEmpty())
+        tmp.chop(2); // remove final \n\n
     return tmp;
 }
 
