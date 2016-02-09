@@ -12848,9 +12848,8 @@ void QWidget::setMask(const QRegion &newMask)
 void QWidgetPrivate::setMask_sys(const QRegion &region)
 {
     Q_Q(QWidget);
-    if (const QWindow *window = q->windowHandle())
-        if (QPlatformWindow *platformWindow = window->handle())
-            platformWindow->setMask(QHighDpi::toNativeLocalRegion(region, window));
+    if (QWindow *window = q->windowHandle())
+        window->setMask(region);
 }
 
 /*!
