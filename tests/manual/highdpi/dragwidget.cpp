@@ -168,7 +168,11 @@ void DragWidget::mousePressEvent(QMouseEvent *event)
     mimeData->setData("application/x-hotspot",
                       QByteArray::number(hotSpot.x()) + " " + QByteArray::number(hotSpot.y()));
 
-    QPixmap pixmap(child->size());
+    const qreal dpr = devicePixelRatioF() > 1 && !(QGuiApplication::keyboardModifiers() & Qt::ShiftModifier)
+        ? devicePixelRatioF() : 1;
+
+    QPixmap pixmap(child->size() * dpr);
+    pixmap.setDevicePixelRatio(dpr);
     child->render(&pixmap);
 
     QDrag *drag = new QDrag(this);
