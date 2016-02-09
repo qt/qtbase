@@ -1378,10 +1378,8 @@ void QGuiApplicationPrivate::init()
 
     // Load environment exported generic plugins
     QByteArray envPlugins = qgetenv("QT_QPA_GENERIC_PLUGINS");
-    if (!envPlugins.isEmpty()) {
-        foreach (const QByteArray &plugin, envPlugins.split(','))
-            pluginList << plugin;
-    }
+    if (!envPlugins.isEmpty())
+        pluginList += envPlugins.split(',');
 
     if (platform_integration == 0)
         createPlatformIntegration();
