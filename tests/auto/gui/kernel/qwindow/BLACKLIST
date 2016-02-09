@@ -1,3 +1,5 @@
+[testInputEvents]
+rhel-7.1
 [positioning:default]
 ubuntu-14.04
 [modalWindowPosition]

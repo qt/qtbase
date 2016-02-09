@@ -10,6 +10,7 @@ ubuntu-14.04
 osx
 [updateWhileMinimized]
 ubuntu-14.04
+rhel-7.1
 osx
 [focusProxyAndInputMethods]
 linux
@@ -31,6 +32,7 @@ osx
 osx
 [widgetAt]
 osx
+rhel-7.1
 [sheetOpacity]
 osx
 [resizeEvent]
@@ -63,8 +65,10 @@ osx
 osx
 [taskQTBUG_4055_sendSyntheticEnterLeave]
 osx
+rhel-7.1
 [syntheticEnterLeave]
 osx
+rhel-7.1
 [maskedUpdate]
 osx
 [hideWhenFocusWidgetIsChild]
