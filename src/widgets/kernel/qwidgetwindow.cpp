@@ -747,13 +747,24 @@ void QWidgetWindow::handleWheelEvent(QWheelEvent *event)
     if (QApplicationPrivate::instance()->modalState() && !qt_try_modal(m_widget, event->type()))
         return;
 
+    QWidget *rootWidget = m_widget;
+    QPoint pos = event->pos();
+
+    // Use proper popup window for wheel event. Some QPA sends the wheel
+    // event to the root menu, so redirect it to the proper popup window.
+    QWidget *activePopupWidget = QApplication::activePopupWidget();
+    if (activePopupWidget && activePopupWidget != m_widget) {
+        rootWidget = activePopupWidget;
+        pos = rootWidget->mapFromGlobal(event->globalPos());
+    }
+
     // which child should have it?
-    QWidget *widget = m_widget->childAt(event->pos());
+    QWidget *widget = rootWidget->childAt(pos);
 
     if (!widget)
-        widget = m_widget;
+        widget = rootWidget;
 
-    QPoint mapped = widget->mapFrom(m_widget, event->pos());
+    QPoint mapped = widget->mapFrom(rootWidget, pos);
 
     QWheelEvent translated(mapped, event->globalPos(), event->pixelDelta(), event->angleDelta(), event->delta(), event->orientation(), event->buttons(), event->modifiers(), event->phase(), event->source());
     QGuiApplication::sendSpontaneousEvent(widget, &translated);
