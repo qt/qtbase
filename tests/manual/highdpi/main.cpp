@@ -380,16 +380,22 @@ Labels::Labels()
 
 class MainWindow : public QMainWindow
 {
+    Q_OBJECT
 public:
     MainWindow();
     QMenu *addNewMenu(const QString &title, int itemCount = 5);
 
+private slots:
+    void maskActionToggled(bool t);
+
+private:
     QIcon qtIcon;
     QIcon qtIcon1x;
     QIcon qtIcon2x;
 
     QToolBar *fileToolBar;
     int menuCount;
+    QAction *m_maskAction;
 };
 
 MainWindow::MainWindow()
@@ -408,7 +414,12 @@ MainWindow::MainWindow()
     addNewMenu("&Edit");
     addNewMenu("&Build");
     addNewMenu("&Debug", 4);
-    addNewMenu("&Transmogrify", 7);
+    QMenu *menu = addNewMenu("&Transmogrify", 7);
+    menu->addSeparator();
+    m_maskAction = menu->addAction("Mask");
+    m_maskAction->setCheckable(true);
+    connect(m_maskAction, &QAction::toggled, this, &MainWindow::maskActionToggled);
+    fileToolBar->addAction(m_maskAction);
     addNewMenu("T&ools");
     addNewMenu("&Help", 2);
 }
@@ -431,6 +442,16 @@ QMenu *MainWindow::addNewMenu(const QString &title, int itemCount)
     return menu;
 }
 
+void MainWindow::maskActionToggled(bool t)
+{
+    if (t) {
+        QVector<QPoint> upperLeftTriangle;
+        upperLeftTriangle << QPoint(0, 0) << QPoint(width(), 0) << QPoint(0, height());
+        setMask(QRegion(QPolygon(upperLeftTriangle)));
+    } else {
+        clearMask();
+    }
+}
 
 class StandardIcons : public QWidget
 {
