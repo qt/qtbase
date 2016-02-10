@@ -3070,6 +3070,8 @@
 
     This enum describes the phase of scrolling.
 
+    \omitvalue NoScrollPhase The input device doesn't support scroll phase.
+
     \value ScrollBegin Scrolling is about to begin, but the scrolling
     distance did not yet change.
 
