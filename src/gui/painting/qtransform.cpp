@@ -1011,10 +1011,11 @@ QTransform QTransform::operator*(const QTransform &m) const
     element of this matrix.
 */
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 /*!
     Assigns the given \a matrix's values to this matrix.
 */
-QTransform & QTransform::operator=(const QTransform &matrix)
+QTransform & QTransform::operator=(const QTransform &matrix) Q_DECL_NOTHROW
 {
     affine._m11 = matrix.affine._m11;
     affine._m12 = matrix.affine._m12;
@@ -1030,6 +1031,7 @@ QTransform & QTransform::operator=(const QTransform &matrix)
 
     return *this;
 }
+#endif
 
 /*!
     Resets the matrix to an identity matrix, i.e. all elements are set

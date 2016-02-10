@@ -244,11 +244,11 @@ QMatrix::QMatrix(qreal m11, qreal m12, qreal m21, qreal m22, qreal dx, qreal dy)
 {
 }
 
-
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 /*!
      Constructs a matrix that is a copy of the given \a matrix.
  */
-QMatrix::QMatrix(const QMatrix &matrix)
+QMatrix::QMatrix(const QMatrix &matrix) Q_DECL_NOTHROW
     : _m11(matrix._m11)
     , _m12(matrix._m12)
     , _m21(matrix._m21)
@@ -257,6 +257,7 @@ QMatrix::QMatrix(const QMatrix &matrix)
     , _dy(matrix._dy)
 {
 }
+#endif
 
 /*!
     Sets the matrix elements to the specified values, \a m11, \a m12,
@@ -1063,10 +1064,11 @@ QMatrix QMatrix::operator *(const QMatrix &m) const
     return QMatrix(tm11, tm12, tm21, tm22, tdx, tdy, true);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 /*!
     Assigns the given \a matrix's values to this matrix.
 */
-QMatrix &QMatrix::operator=(const QMatrix &matrix)
+QMatrix &QMatrix::operator=(const QMatrix &matrix) Q_DECL_NOTHROW
 {
     _m11 = matrix._m11;
     _m12 = matrix._m12;
@@ -1076,6 +1078,7 @@ QMatrix &QMatrix::operator=(const QMatrix &matrix)
     _dy  = matrix._dy;
     return *this;
 }
+#endif
 
 /*!
     \since 4.2

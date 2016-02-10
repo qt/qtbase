@@ -74,6 +74,19 @@ public:
                qreal h22, qreal dx, qreal dy);
     explicit QTransform(const QMatrix &mtx);
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    // ### Qt 6: remove; the compiler-generated ones are fine!
+    QTransform &operator=(QTransform &&other) Q_DECL_NOTHROW // = default
+    { memcpy(this, &other, sizeof(QTransform)); return *this; }
+    QTransform &operator=(const QTransform &) Q_DECL_NOTHROW; // = default
+    QTransform(QTransform &&other) Q_DECL_NOTHROW // = default
+        : affine(Qt::Uninitialized)
+    { memcpy(this, &other, sizeof(QTransform)); }
+    QTransform(const QTransform &other) Q_DECL_NOTHROW // = default
+        : affine(Qt::Uninitialized)
+    { memcpy(this, &other, sizeof(QTransform)); }
+#endif
+
     bool isAffine() const;
     bool isIdentity() const;
     bool isInvertible() const;
@@ -123,8 +136,6 @@ public:
 
     QTransform &operator*=(const QTransform &);
     QTransform operator*(const QTransform &o) const;
-
-    QTransform &operator=(const QTransform &);
 
     operator QVariant() const;
 
@@ -180,9 +191,10 @@ private:
 
     mutable uint m_type : 5;
     mutable uint m_dirty : 5;
-
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     class Private;
     Private *d;
+#endif
 };
 Q_DECLARE_TYPEINFO(QTransform, Q_MOVABLE_TYPE);
 
