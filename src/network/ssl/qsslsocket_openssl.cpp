@@ -643,10 +643,12 @@ void QSslSocketPrivate::resetDefaultCiphers()
                 // Unconditionally exclude ADH and AECDH ciphers since they offer no MITM protection
                 if (!ciph.name().toLower().startsWith(QLatin1String("adh")) &&
                     !ciph.name().toLower().startsWith(QLatin1String("exp-adh")) &&
-                    !ciph.name().toLower().startsWith(QLatin1String("aecdh")))
+                    !ciph.name().toLower().startsWith(QLatin1String("aecdh"))) {
                     ciphers << ciph;
-                if (ciph.usedBits() >= 128)
-                    defaultCiphers << ciph;
+
+                    if (ciph.usedBits() >= 128)
+                        defaultCiphers << ciph;
+                }
             }
         }
     }
