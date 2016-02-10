@@ -34,7 +34,7 @@ set QTDIR=%CD%
 if not exist %QTSRC%.gitignore goto sconf
 echo Please wait while bootstrapping configure ...
 
-for %%C in (cl.exe icl.exe g++.exe perl.exe jom.exe) do set %%C=%%~$PATH:C
+for %%C in (clang-cl.exe cl.exe icl.exe g++.exe perl.exe jom.exe) do set %%C=%%~$PATH:C
 
 if "%perl.exe%" == "" (
     echo Perl not found in PATH. Aborting. >&2
@@ -78,6 +78,12 @@ echo QT_VERSION_PATCH = %QTVERPAT% >> Makefile
 if not "%icl.exe%" == "" (
     echo CXX = icl>>Makefile
     echo EXTRA_CXXFLAGS = /Zc:forScope>>Makefile
+    rem This must have a trailing space.
+    echo QTSRC = %QTSRC% >> Makefile
+    set tmpl=win32
+) else if not "%clang-cl.exe%" == "" (
+    echo CXX = clang-cl>>Makefile
+    echo EXTRA_CXXFLAGS = -fms-compatibility-version=19.00.23506 -Wno-microsoft-enum-value>>Makefile
     rem This must have a trailing space.
     echo QTSRC = %QTSRC% >> Makefile
     set tmpl=win32

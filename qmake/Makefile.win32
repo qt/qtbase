@@ -14,6 +14,10 @@ QMKSRC = $(SOURCE_PATH)\qmake
 CXX               = icl
 LINKER            = link
 CFLAGS_EXTRA      = /Zc:forScope /Qstd=c++11
+!elseif "$(QMAKESPEC)" == "win32-clang-msvc2015"
+CXX               = clang-cl
+LINKER            = link
+CFLAGS_EXTRA      = -fms-compatibility-version=19.00.23506 -Wno-microsoft-enum-value
 !else
 CXX               = cl
 LINKER            = link
@@ -21,12 +25,17 @@ LINKER            = link
 CFLAGS_EXTRA      = /Zc:wchar_t-
 !  elseif "$(QMAKESPEC)" == "win32-msvc2008" || "$(QMAKESPEC)" == "win32-msvc2010" || "$(QMAKESPEC)" == "win32-msvc2012" || "$(QMAKESPEC)" == "win32-msvc2013"
 CFLAGS_EXTRA      = /MP /D_CRT_SECURE_NO_WARNINGS /D_SCL_SECURE_NO_WARNINGS $(CFLAGS_CRT)
-!  elseif "$(QMAKESPEC)" == "win32-msvc2015"
+!  elseif "$(QMAKESPEC)" == "win32-msvc2015" || "$(QMAKESPEC)" == "win32-clang-msvc2015"
 CFLAGS_EXTRA      = /MP /D_CRT_SECURE_NO_WARNINGS /D_SCL_SECURE_NO_WARNINGS /Zc:strictStrings /w44456 /w44457 /w44458 /wd4577 $(CFLAGS_CRT)
 !  else
 !    error Unsupported compiler for this Makefile
 !  endif
 !endif  # !win32-icc
+
+!if "$(QMAKESPEC)" != "win32-clang-msvc2015"
+CFLAGS_PCH        = -Yuqmake_pch.h -FIqmake_pch.h -Fpqmake_pch.pch
+PCH_OBJECT        = qmake_pch.obj
+!endif
 
 CFLAGS_BARE = -c -Fo./ -Fdqmake.pdb \
               -W3 -nologo -O1 \
@@ -41,7 +50,7 @@ CFLAGS_BARE = -c -Fo./ -Fdqmake.pdb \
               -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_NO_COMPONENT -DQT_NO_COMPRESS \
               -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM \
               -DUNICODE -DQT_CRYPTOGRAPHICHASH_ONLY_SHA1 -DQT_JSON_READONLY -DQT_NO_STANDARDPATHS
-CFLAGS   = -Yuqmake_pch.h -FIqmake_pch.h -Fpqmake_pch.pch $(CFLAGS_BARE) $(CFLAGS)
+CFLAGS   = $(CFLAGS_PCH) $(CFLAGS_BARE) $(CFLAGS)
 
 CXXFLAGS_BARE = $(CFLAGS_BARE)
 CXXFLAGS = $(CFLAGS)
@@ -129,7 +138,7 @@ QTOBJS= \
 first all: qmake.exe
 
 qmake.exe: $(OBJS) $(QTOBJS)
-	$(LINKQMAKE) qmake_pch.obj
+	$(LINKQMAKE) $(PCH_OBJECT)
 	-copy qmake.exe $(BUILD_PATH)\bin\qmake.exe
 
 clean::
@@ -158,9 +167,9 @@ distclean:: clean
 .cxx.obj:
 	$(CXX) $(CXXFLAGS) $<
 
-$(OBJS): qmake_pch.obj
+$(OBJS): $(PCH_OBJECT)
 
-$(QTOBJS): qmake_pch.obj
+$(QTOBJS): $(PCH_OBJECT)
 
 qlibraryinfo.obj: $(BUILD_PATH)\src\corelib\global\qconfig.cpp
 

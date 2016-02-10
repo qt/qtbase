@@ -83,6 +83,9 @@
 #  endif
 
 #elif defined(_MSC_VER)
+#  ifdef __clang__
+#    define Q_CC_CLANG ((__clang_major__ * 100) + __clang_minor__)
+#  endif
 #  define Q_CC_MSVC (_MSC_VER)
 #  define Q_CC_MSVC_NET
 #  define Q_OUTOFLINE_TEMPLATE inline
@@ -97,7 +100,9 @@
 #  define Q_UNREACHABLE_IMPL() __assume(0)
 #  define Q_NORETURN __declspec(noreturn)
 #  define Q_DECL_DEPRECATED __declspec(deprecated)
-#  define Q_DECL_DEPRECATED_X(text) __declspec(deprecated(text))
+#  ifndef Q_CC_CLANG
+#    define Q_DECL_DEPRECATED_X(text) __declspec(deprecated(text))
+#  endif
 #  define Q_DECL_EXPORT __declspec(dllexport)
 #  define Q_DECL_IMPORT __declspec(dllimport)
 /* Intel C++ disguising as Visual C++: the `using' keyword avoids warnings */
@@ -1177,7 +1182,7 @@
 #  define QT_WARNING_DISABLE_MSVC(number)
 #  define QT_WARNING_DISABLE_CLANG(text)
 #  define QT_WARNING_DISABLE_GCC(text)
-#elif defined(Q_CC_MSVC) && _MSC_VER >= 1500
+#elif defined(Q_CC_MSVC) && _MSC_VER >= 1500 && !defined(Q_CC_CLANG)
 #  undef QT_DO_PRAGMA                           /* not needed */
 #  define QT_WARNING_PUSH                       __pragma(warning(push))
 #  define QT_WARNING_POP                        __pragma(warning(pop))
