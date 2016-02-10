@@ -1898,6 +1898,18 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     return NO;
 }
 
+
+- (BOOL)wantsPeriodicDraggingUpdates:(void *)dummy
+{
+    // This method never gets called. It's a workaround for Apple's
+    // bug: they first respondsToSelector : @selector(wantsPeriodicDraggingUpdates:)
+    // (note ':') and then call -wantsPeriodicDraggingUpdate (without colon).
+    // So, let's make them happy.
+    Q_UNUSED(dummy);
+
+    return NO;
+}
+
 - (void)updateCursorFromDragResponse:(QPlatformDragQtResponse)response drag:(QCocoaDrag *)drag
 {
     const QPixmap pixmapCursor = drag->currentDrag()->dragCursor(response.acceptedAction());
