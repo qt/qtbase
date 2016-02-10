@@ -1466,18 +1466,21 @@ public:
 };
 
 // Return the first suffix from the name filter "Foo files (*.foo;*.bar)" -> "foo".
+// Also handles the simple name filter case "*.txt" -> "txt"
 static inline QString suffixFromFilter(const QString &filter)
 {
-    int suffixPos = filter.indexOf(QLatin1String("(*."));
+    int suffixPos = filter.indexOf(QLatin1String("*."));
     if (suffixPos < 0)
         return QString();
-    suffixPos += 3;
+    suffixPos += 2;
     int endPos = filter.indexOf(QLatin1Char(' '), suffixPos + 1);
     if (endPos < 0)
         endPos = filter.indexOf(QLatin1Char(';'), suffixPos + 1);
     if (endPos < 0)
         endPos = filter.indexOf(QLatin1Char(')'), suffixPos + 1);
-    return endPos >= 0 ? filter.mid(suffixPos, endPos - suffixPos) : QString();
+    if (endPos < 0)
+        endPos = filter.size();
+    return filter.mid(suffixPos, endPos - suffixPos);
 }
 
 void QWindowsNativeSaveFileDialog::setNameFilters(const QStringList &f)
