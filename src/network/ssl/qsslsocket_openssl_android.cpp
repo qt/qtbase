@@ -70,6 +70,7 @@ QList<QByteArray> QSslSocketPrivate::fetchSslCertificateData()
     QJNIEnvironmentPrivate env;
     jobjectArray jcertificates = static_cast<jobjectArray>(certificates.object());
     const jint nCertificates = env->GetArrayLength(jcertificates);
+    certificateData.reserve(static_cast<int>(nCertificates));
 
     for (int i = 0; i < nCertificates; ++i) {
         jbyteArray jCert = static_cast<jbyteArray>(env->GetObjectArrayElement(jcertificates, i));

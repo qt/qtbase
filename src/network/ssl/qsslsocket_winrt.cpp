@@ -215,7 +215,9 @@ QList<QSslCipher> QSslSocketBackendPrivate::defaultCiphers()
     const QString protocolStrings[] = { QStringLiteral("SSLv3"), QStringLiteral("TLSv1"),
                                         QStringLiteral("TLSv1.1"), QStringLiteral("TLSv1.2") };
     const QSsl::SslProtocol protocols[] = { QSsl::SslV3, QSsl::TlsV1_0, QSsl::TlsV1_1, QSsl::TlsV1_2 };
-    for (int i = 0; i < ARRAYSIZE(protocols); ++i) {
+    const int size = static_cast<int>(ARRAYSIZE(protocols));
+    ciphers.reserve(size);
+    for (int i = 0; i < size; ++i) {
         QSslCipher cipher;
         cipher.d->isNull = false;
         cipher.d->name = QStringLiteral("WINRT");
