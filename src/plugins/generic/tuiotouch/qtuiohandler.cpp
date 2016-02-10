@@ -321,6 +321,14 @@ void QTuioHandler::process2DCurFseq(const QOscMessage &message)
     Q_UNUSED(message); // TODO: do we need to do anything with the frame id?
 
     QWindow *win = QGuiApplication::focusWindow();
+    // With TUIO the first application takes exclusive ownership of the "device"
+    // we cannot attach more than one application to the same port anyway.
+    // Forcing delivery makes it easy to use simulators in the same machine
+    // and forget about headaches about unfocused TUIO windows.
+    static bool forceDelivery = qEnvironmentVariableIsSet("QT_TUIOTOUCH_DELIVER_WITHOUT_FOCUS");
+    if (!win && QGuiApplication::topLevelWindows().length() > 0 && forceDelivery)
+          win = QGuiApplication::topLevelWindows().at(0);
+
     if (!win)
         return;
 
