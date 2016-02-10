@@ -129,10 +129,6 @@ void QTuioHandler::processPackets()
         if (size != datagram.size())
             datagram.resize(size);
 
-        QOscBundle bundle(datagram);
-        if (!bundle.isValid())
-            continue;
-
         // "A typical TUIO bundle will contain an initial ALIVE message,
         // followed by an arbitrary number of SET messages that can fit into the
         // actual bundle capacity and a concluding FSEQ message. A minimal TUIO
@@ -140,7 +136,19 @@ void QTuioHandler::processPackets()
         // messages. The FSEQ frame ID is incremented for each delivered bundle,
         // while redundant bundles can be marked using the frame sequence ID
         // -1."
-        QList<QOscMessage> messages = bundle.messages();
+        QList<QOscMessage> messages;
+
+        QOscBundle bundle(datagram);
+        if (bundle.isValid()) {
+            messages = bundle.messages();
+        } else {
+            QOscMessage msg(datagram);
+            if (!msg.isValid()) {
+                qCWarning(lcTuioSet) << "Got invalid datagram.";
+                continue;
+            }
+            messages.push_back(msg);
+        }
 
         foreach (const QOscMessage &message, messages) {
             if (message.addressPattern() != "/tuio/2Dcur") {
