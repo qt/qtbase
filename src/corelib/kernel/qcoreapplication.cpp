@@ -617,7 +617,8 @@ void QCoreApplicationPrivate::initLocale()
     This class is used by non-GUI applications to provide their event
     loop. For non-GUI application that uses Qt, there should be exactly
     one QCoreApplication object. For GUI applications, see
-    QApplication.
+    QGuiApplication. For applications that use the Qt Widgets module,
+    see QApplication.
 
     QCoreApplication contains the main event loop, where all events
     from the operating system (e.g., timer and network events) and
@@ -631,10 +632,10 @@ void QCoreApplicationPrivate::initLocale()
     operations can call processEvents() to keep the application
     responsive.
 
-    In general, we recommend that you create a QCoreApplication or a
-    QApplication object in your \c main() function as early as
-    possible. exec() will not return until the event loop exits; e.g.,
-    when quit() is called.
+    In general, we recommend that you create a QCoreApplication,
+    QGuiApplication or a QApplication object in your \c main()
+    function as early as possible. exec() will not return until
+    the event loop exits; e.g., when quit() is called.
 
     Several static convenience functions are also provided. The
     QCoreApplication object is available from instance(). Events can
@@ -676,8 +677,8 @@ void QCoreApplicationPrivate::initLocale()
     instance, when converting between data types such as floats and
     strings, since the notation may differ between locales. To get
     around this problem, call the POSIX function \c{setlocale(LC_NUMERIC,"C")}
-    right after initializing QApplication or QCoreApplication to reset
-    the locale that is used for number formatting to "C"-locale.
+    right after initializing QApplication, QGuiApplication or QCoreApplication
+    to reset the locale that is used for number formatting to "C"-locale.
 
     \sa QGuiApplication, QAbstractEventDispatcher, QEventLoop,
     {Semaphores Example}, {Wait Conditions Example}
@@ -687,7 +688,7 @@ void QCoreApplicationPrivate::initLocale()
     \fn static QCoreApplication *QCoreApplication::instance()
 
     Returns a pointer to the application's QCoreApplication (or
-    QApplication) instance.
+    QGuiApplication/QApplication) instance.
 
     If no instance has been allocated, \c null is returned.
 */
@@ -1868,7 +1869,7 @@ void QCoreApplication::quit()
 
     Installing or removing a QTranslator, or changing an installed QTranslator
     generates a \l{QEvent::LanguageChange}{LanguageChange} event for the
-    QCoreApplication instance. A QApplication instance will propagate the event
+    QCoreApplication instance. A QGuiApplication instance will propagate the event
     to all toplevel windows, where a reimplementation of changeEvent can
     re-translate the user interface by passing user-visible strings via the
     tr() function to the respective property setters. User-interface classes
