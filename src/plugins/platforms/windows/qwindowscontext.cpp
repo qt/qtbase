@@ -95,20 +95,6 @@ Q_LOGGING_CATEGORY(lcQpaAccessibility, "qt.qpa.accessibility")
 
 int QWindowsContext::verbose = 0;
 
-// Get verbosity of components from "foo:2,bar:3"
-static inline int componentVerbose(const char *v, const char *keyWord)
-{
-    if (const char *k = strstr(v, keyWord)) {
-        k += qstrlen(keyWord);
-        if (*k == ':') {
-            ++k;
-            if (isdigit(*k))
-                return *k - '0';
-        }
-    }
-    return 0;
-}
-
 #if !defined(LANG_SYRIAC)
 #    define LANG_SYRIAC 0x5a
 #endif

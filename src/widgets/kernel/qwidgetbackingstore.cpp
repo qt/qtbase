@@ -1248,13 +1248,15 @@ void QWidgetBackingStore::doSync()
         // OpenGL content changes. Check if we have such widgets in the special
         // dirty list.
         QVarLengthArray<QWidget *, 16> paintPending;
-        for (int i = 0; i < dirtyRenderToTextureWidgets.count(); ++i) {
+        const int numPaintPending = dirtyRenderToTextureWidgets.count();
+        paintPending.reserve(numPaintPending);
+        for (int i = 0; i < numPaintPending; ++i) {
             QWidget *w = dirtyRenderToTextureWidgets.at(i);
             paintPending << w;
             resetWidget(w);
         }
         dirtyRenderToTextureWidgets.clear();
-        for (int i = 0; i < paintPending.count(); ++i) {
+        for (int i = 0; i < numPaintPending; ++i) {
             QWidget *w = paintPending[i];
             w->d_func()->sendPaintEvent(w->rect());
             if (w != tlw) {

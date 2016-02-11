@@ -364,7 +364,7 @@ int qGlobalQHashSeed()
 /*! \relates QHash
     \since 5.6
 
-    Sets the global QHash seed.
+    Sets the global QHash seed to \a newSeed.
 
     Manually setting the global QHash seed value should be done only for testing
     and debugging purposes, when deterministic and reproducible behavior on a QHash

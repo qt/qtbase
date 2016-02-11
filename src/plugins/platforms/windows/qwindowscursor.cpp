@@ -252,9 +252,10 @@ static QSize systemCursorSize(const QPlatformScreen *screen = Q_NULLPTR)
     return primaryScreenCursorSize;
 }
 
+#if defined (Q_OS_WINCE) || defined (QT_NO_IMAGEFORMAT_PNG)
+
 static inline QSize standardCursorSize() { return QSize(32, 32); }
 
-#if defined (Q_OS_WINCE) || defined (QT_NO_IMAGEFORMAT_PNG)
 // Create pixmap cursors from data and scale the image if the cursor size is
 // higher than the standard 32. Note that bitmap cursors as produced by
 // createBitmapCursor() only work for standard sizes (32,48,64...), which does

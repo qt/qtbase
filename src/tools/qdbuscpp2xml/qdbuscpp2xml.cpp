@@ -392,6 +392,7 @@ static void parseCmdLine(QStringList &arguments)
 int main(int argc, char **argv)
 {
     QStringList args;
+    args.reserve(argc - 1);
     for (int n = 1; n < argc; ++n)
         args.append(QString::fromLocal8Bit(argv[n]));
     parseCmdLine(args);

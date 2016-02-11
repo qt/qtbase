@@ -983,7 +983,7 @@ void QWindow::setMask(const QRegion &region)
     Q_D(QWindow);
     if (!d->platformWindow)
         return;
-    d->platformWindow->setMask(region);
+    d->platformWindow->setMask(QHighDpi::toNativeLocalRegion(region, this));
     d->mask = region;
 }
 

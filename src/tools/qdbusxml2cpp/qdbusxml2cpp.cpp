@@ -381,7 +381,10 @@ static QStringList makeArgNames(const QDBusIntrospection::Arguments &inputArgs,
                                 QDBusIntrospection::Arguments())
 {
     QStringList retval;
-    for (int i = 0; i < inputArgs.count(); ++i) {
+    const int numInputArgs = inputArgs.count();
+    const int numOutputArgs = outputArgs.count();
+    retval.reserve(numInputArgs + numOutputArgs);
+    for (int i = 0; i < numInputArgs; ++i) {
         const QDBusIntrospection::Argument &arg = inputArgs.at(i);
         QString name = arg.name;
         if (name.isEmpty())
@@ -392,7 +395,7 @@ static QStringList makeArgNames(const QDBusIntrospection::Arguments &inputArgs,
             name += QLatin1String("_");
         retval << name;
     }
-    for (int i = 0; i < outputArgs.count(); ++i) {
+    for (int i = 0; i < numOutputArgs; ++i) {
         const QDBusIntrospection::Argument &arg = outputArgs.at(i);
         QString name = arg.name;
         if (name.isEmpty())
@@ -1137,7 +1140,7 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
 int main(int argc, char **argv)
 {
     QStringList arguments;
-
+    arguments.reserve(argc);
     for (int i = 0; i < argc; ++i) {
         arguments.append(QString::fromLocal8Bit(argv[i]));
     }

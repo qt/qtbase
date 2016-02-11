@@ -1009,7 +1009,8 @@ void QPdfEngine::drawHyperlink(const QRectF &r, const QUrl &url)
     const uint annot = d->addXrefEntry(-1);
     const QByteArray urlascii = url.toEncoded();
     int len = urlascii.size();
-    QVarLengthArray<char> url_esc(0);
+    QVarLengthArray<char> url_esc;
+    url_esc.reserve(len + 1);
     for (int j = 0; j < len; j++) {
         if (urlascii[j] == '(' || urlascii[j] == ')' || urlascii[j] == '\\')
             url_esc.append('\\');
@@ -2013,10 +2014,11 @@ int QPdfEnginePrivate::createShadingFunction(const QGradient *gradient, int from
     }
 
     QVector<QGradientBound> gradientBounds;
+    gradientBounds.reserve((to - from) * (numStops - 1));
 
     for (int step = from; step < to; ++step) {
         if (reflect && step % 2) {
-            for (int i = stops.size() - 1; i > 0; --i) {
+            for (int i = numStops - 1; i > 0; --i) {
                 QGradientBound b;
                 b.start = step + 1 - qBound(qreal(0.), stops.at(i).first, qreal(1.));
                 b.stop = step + 1 - qBound(qreal(0.), stops.at(i - 1).first, qreal(1.));
@@ -2025,7 +2027,7 @@ int QPdfEnginePrivate::createShadingFunction(const QGradient *gradient, int from
                 gradientBounds << b;
             }
         } else {
-            for (int i = 0; i < stops.size() - 1; ++i) {
+            for (int i = 0; i < numStops - 1; ++i) {
                 QGradientBound b;
                 b.start = step + qBound(qreal(0.), stops.at(i).first, qreal(1.));
                 b.stop = step + qBound(qreal(0.), stops.at(i + 1).first, qreal(1.));

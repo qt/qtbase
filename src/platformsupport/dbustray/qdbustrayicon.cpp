@@ -190,16 +190,13 @@ void QDBusTrayIcon::updateToolTip(const QString &tooltip)
 
 QPlatformMenu *QDBusTrayIcon::createMenu() const
 {
-    qCDebug(qLcTray);
-    QDBusPlatformMenu *ret = new QDBusPlatformMenu();
-    if (!m_menu)
-        const_cast<QDBusTrayIcon *>(this)->m_menu = ret;
-    return ret;
+    return new QDBusPlatformMenu();
 }
 
 void QDBusTrayIcon::updateMenu(QPlatformMenu * menu)
 {
     qCDebug(qLcTray) << menu;
+    bool needsRegistering = !m_menu;
     if (!m_menu)
         m_menu = qobject_cast<QDBusPlatformMenu *>(menu);
     if (!m_menuAdaptor) {
@@ -211,6 +208,8 @@ void QDBusTrayIcon::updateMenu(QPlatformMenu * menu)
                 m_menuAdaptor, SIGNAL(LayoutUpdated(uint,int)));
     }
     m_menu->emitUpdated();
+    if (needsRegistering)
+        dBusConnection()->registerTrayIconMenu(this);
 }
 
 void QDBusTrayIcon::showMessage(const QString &title, const QString &msg, const QIcon &icon,

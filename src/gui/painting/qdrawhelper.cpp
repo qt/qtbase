@@ -1945,9 +1945,10 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
 
                 // intermediate_buffer[0] is a buffer of red-blue component of the pixel, in the form 0x00RR00BB
                 // intermediate_buffer[1] is the alpha-green component of the pixel, in the form 0x00AA00GG
+                // +1 for the last pixel to interpolate with, and +1 for rounding errors.
                 quint32 intermediate_buffer[2][buffer_size + 2];
                 // count is the size used in the intermediate_buffer.
-                int count = qCeil(length * data->m11) + 2; //+1 for the last pixel to interpolate with, and +1 for rounding errors.
+                int count = (qint64(length) * fdx + fixed_scale - 1) / fixed_scale + 2;
                 Q_ASSERT(count <= buffer_size + 2); //length is supposed to be <= buffer_size and data->m11 < 1 in this case
                 int f = 0;
                 int lim = count;
@@ -2455,12 +2456,13 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                 // The idea is first to do the interpolation between the row s1 and the row s2
                 // into an intermediate buffer, then we interpolate between two pixel of this buffer.
                 FetchPixelsFunc fetch = qFetchPixels[layout->bpp];
+                // +1 for the last pixel to interpolate with, and +1 for rounding errors.
                 uint buf1[buffer_size + 2];
                 uint buf2[buffer_size + 2];
                 const uint *ptr1;
                 const uint *ptr2;
 
-                int count = qCeil(length * data->m11) + 2; //+1 for the last pixel to interpolate with, and +1 for rounding errors.
+                int count = (qint64(length) * fdx + fixed_scale - 1) / fixed_scale + 2;
                 Q_ASSERT(count <= buffer_size + 2); //length is supposed to be <= buffer_size and data->m11 < 1 in this case
 
                 if (blendType == BlendTransformedBilinearTiled) {

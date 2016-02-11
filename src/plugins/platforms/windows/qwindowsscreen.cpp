@@ -83,22 +83,6 @@ static inline QDpi monitorDPI(HMONITOR hMonitor)
 
 #endif // !Q_OS_WINCE
 
-static inline QSizeF deviceSizeMM(const QSize &pixels, const QDpi &dpi)
-{
-    const qreal inchToMM = 25.4;
-    const qreal h = qreal(pixels.width())  / qreal(dpi.first)  * inchToMM;
-    const qreal v = qreal(pixels.height()) / qreal(dpi.second) * inchToMM;
-    return QSizeF(h, v);
-}
-
-static inline QDpi deviceDPI(const QSize &pixels, const QSizeF &physicalSizeMM)
-{
-    const qreal inchToMM = 25.4;
-    const qreal h = qreal(pixels.width())  / (qreal(physicalSizeMM.width())  / inchToMM);
-    const qreal v = qreal(pixels.height()) / (qreal(physicalSizeMM.height()) / inchToMM);
-    return QDpi(h, v);
-}
-
 typedef QList<QWindowsScreenData> WindowsScreenDataList;
 
 static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
