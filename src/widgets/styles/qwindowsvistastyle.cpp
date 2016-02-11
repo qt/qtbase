@@ -219,6 +219,26 @@ void QWindowsVistaAnimation::paint(QPainter *painter, const QStyleOption *option
     painter->drawImage(option->rect, currentImage());
 }
 
+static inline bool supportsStateTransition(QStyle::PrimitiveElement element,
+                                           const QStyleOption *option,
+                                           const QWidget *widget)
+{
+    bool result = false;
+    switch (element) {
+    case QStyle::PE_IndicatorRadioButton:
+    case QStyle::PE_IndicatorCheckBox:
+        result = true;
+        break;
+    // QTBUG-40634, do not animate when color is set in palette for PE_PanelLineEdit.
+    case QStyle::PE_FrameLineEdit:
+        result = !QWindowsXPStylePrivate::isLineEditBaseColorSet(option, widget);
+        break;
+    default:
+        break;
+    }
+    return result;
+}
+
 /*!
  \internal
 
@@ -249,6 +269,7 @@ void QWindowsVistaAnimation::paint(QPainter *painter, const QStyleOption *option
   starting image for the hover transition.
 
  */
+
 void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *option,
                                        QPainter *painter, const QWidget *widget) const
 {
@@ -265,11 +286,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
             QRect oldRect;
             QRect newRect;
 
-            /* widgets that support state transitions : */
-            if (   element == PE_FrameLineEdit
-                || element == PE_IndicatorRadioButton
-                || element == PE_IndicatorCheckBox)
-            {
+            if (supportsStateTransition(element, option, widget)) {
                 // Retrieve and update the dynamic properties tracking
                 // the previous state of the widget:
                 QObject *styleObject = option->styleObject;
@@ -504,26 +521,9 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
 
     case PE_PanelLineEdit:
         if (const QStyleOptionFrame *panel = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
-            QBrush bg;
-            bool usePalette = false;
             bool isEnabled = option->state & State_Enabled;
-            uint resolve_mask = panel->palette.resolve();
-            if (widget) {
-            // Since spin box includes a line edit we need to resolve the palette mask also from
-            // the parent, as while the color is always correct on the palette supplied by panel,
-            // the mask can still be empty. If either mask specifies custom base color, use that.
-#ifndef QT_NO_SPINBOX
-                if (QAbstractSpinBox *spinbox = qobject_cast<QAbstractSpinBox*>(widget->parentWidget()))
-                    resolve_mask |= spinbox->palette().resolve();
-#endif // QT_NO_SPINBOX
-            }
-            if (resolve_mask & (1 << QPalette::Base)) {
-                // Base color is set for this widget, so use it
-                bg = panel->palette.brush(QPalette::Base);
-                usePalette = true;
-            }
-            if (usePalette) {
-                painter->fillRect(panel->rect, bg);
+            if (QWindowsXPStylePrivate::isLineEditBaseColorSet(option, widget)) {
+                painter->fillRect(panel->rect, panel->palette.brush(QPalette::Base));
             } else {
                 int partId = EP_BACKGROUND;
                 int stateId = EBS_NORMAL;

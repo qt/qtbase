@@ -49,7 +49,7 @@ static QString nmakePathList(const QStringList &list)
         pathList.append(QDir::cleanPath(path));
 
     return QDir::toNativeSeparators(pathList.join(QLatin1Char(';')))
-            .replace('#', QStringLiteral("^#")).replace('$', QStringLiteral("$$"));
+            .replace('#', QLatin1String("^#")).replace('$', QLatin1String("$$"));
 }
 
 NmakeMakefileGenerator::NmakeMakefileGenerator() : Win32MakefileGenerator(), usePCH(false)
@@ -327,7 +327,7 @@ QString NmakeMakefileGenerator::var(const ProKey &value) const
             QString precompRule = QString("-c -FI%1 -Yu%2 -Fp%3")
                     .arg(precompH_f, precompH_f, escapeFilePath(precompPch));
             QString p = MakefileGenerator::var(value);
-            p.replace("-c", precompRule);
+            p.replace(QLatin1String("-c"), precompRule);
             // Cannot use -Gm with -FI & -Yu, as this gives an
             // internal compiler error, on the newer compilers
             // ### work-around for a VS 2003 bug. Move to some prf file or remove completely.

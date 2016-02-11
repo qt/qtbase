@@ -39,4 +39,4 @@ darwin {
     OBJECTIVE_SOURCES += plugin/quuid_darwin.mm
 }
 
-LIBS_PRIVATE += $$QMAKE_LIBS_DYNLOAD
+!no-libdl: LIBS_PRIVATE += $$QMAKE_LIBS_DYNLOAD

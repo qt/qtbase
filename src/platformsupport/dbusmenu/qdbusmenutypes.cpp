@@ -48,6 +48,7 @@
 #include <QDebug>
 #include <QtEndian>
 #include <QBuffer>
+#include <private/qkeysequence_p.h>
 #include <qpa/qplatformmenu.h>
 #include "qdbusplatformmenu_p.h"
 
@@ -85,29 +86,27 @@ const QDBusArgument &operator>>(const QDBusArgument &arg, QDBusMenuItemKeys &key
     return arg;
 }
 
-uint QDBusMenuLayoutItem::populate(int id, int depth, const QStringList &propertyNames)
+uint QDBusMenuLayoutItem::populate(int id, int depth, const QStringList &propertyNames, const QDBusPlatformMenu *topLevelMenu)
 {
     qCDebug(qLcMenu) << id << "depth" << depth << propertyNames;
     m_id = id;
     if (id == 0) {
         m_properties.insert(QLatin1String("children-display"), QLatin1String("submenu"));
-        Q_FOREACH (const QDBusPlatformMenu *menu, QDBusPlatformMenu::topLevelMenus()) {
-            if (menu)
-                populate(menu, depth, propertyNames);
-        }
+        if (topLevelMenu)
+            populate(topLevelMenu, depth, propertyNames);
         return 1; // revision
     }
 
-    const QDBusPlatformMenu *menu = QDBusPlatformMenu::byId(id);
-    if (!menu) {
-        QDBusPlatformMenuItem *item = QDBusPlatformMenuItem::byId(id);
-        if (item)
-            menu = static_cast<const QDBusPlatformMenu *>(item->menu());
+    QDBusPlatformMenuItem *item = QDBusPlatformMenuItem::byId(id);
+    if (item) {
+        const QDBusPlatformMenu *menu = static_cast<const QDBusPlatformMenu *>(item->menu());
+
+        if (menu) {
+            if (depth != 0)
+                populate(menu, depth, propertyNames);
+            return menu->revision();
+        }
     }
-    if (depth != 0 && menu)
-        populate(menu, depth, propertyNames);
-    if (menu)
-        return menu->revision();
 
     return 1; // revision
 }
@@ -123,11 +122,13 @@ void QDBusMenuLayoutItem::populate(const QDBusPlatformMenu *menu, int depth, con
 
 void QDBusMenuLayoutItem::populate(const QDBusPlatformMenuItem *item, int depth, const QStringList &propertyNames)
 {
-    Q_UNUSED(depth)
-    Q_UNUSED(propertyNames)
     m_id = item->dbusID();
     QDBusMenuItem proxy(item);
     m_properties = proxy.m_properties;
+
+    const QDBusPlatformMenu *menu = static_cast<const QDBusPlatformMenu *>(item->menu());
+    if (depth != 0 && menu)
+        populate(menu, depth, propertyNames);
 }
 
 const QDBusArgument &operator<<(QDBusArgument &arg, const QDBusMenuLayoutItem &item)
@@ -171,6 +172,7 @@ void QDBusMenuItem::registerDBusTypes()
     qDBusRegisterMetaType<QDBusMenuLayoutItemList>();
     qDBusRegisterMetaType<QDBusMenuEvent>();
     qDBusRegisterMetaType<QDBusMenuEventList>();
+    qDBusRegisterMetaType<QDBusMenuShortcut>();
 }
 
 QDBusMenuItem::QDBusMenuItem(const QDBusPlatformMenuItem *item)
@@ -188,13 +190,11 @@ QDBusMenuItem::QDBusMenuItem(const QDBusPlatformMenuItem *item)
             m_properties.insert(QLatin1String("toggle-type"), toggleType);
             m_properties.insert(QLatin1String("toggle-state"), item->isChecked() ? 1 : 0);
         }
-        /* TODO support shortcuts
         const QKeySequence &scut = item->shortcut();
         if (!scut.isEmpty()) {
-            QDBusMenuShortcut shortcut(scut);
-            properties.insert(QLatin1String("shortcut"), QVariant::fromValue(shortcut));
+            QDBusMenuShortcut shortcut = convertKeySequence(scut);
+            m_properties.insert(QLatin1String("shortcut"), QVariant::fromValue(shortcut));
         }
-        */
         const QIcon &icon = item->icon();
         if (!icon.name().isEmpty()) {
             m_properties.insert(QLatin1String("icon-name"), icon.name());
@@ -204,8 +204,7 @@ QDBusMenuItem::QDBusMenuItem(const QDBusPlatformMenuItem *item)
             m_properties.insert(QLatin1String("icon-data"), buf.data());
         }
     }
-    if (!item->isVisible())
-        m_properties.insert(QLatin1String("visible"), false);
+    m_properties.insert(QLatin1String("visible"), item->isVisible());
 }
 
 QDBusMenuItemList QDBusMenuItem::items(const QList<int> &ids, const QStringList &propertyNames)
@@ -229,6 +228,35 @@ QString QDBusMenuItem::convertMnemonic(const QString &label)
     QString ret(label);
     ret[idx] = QLatin1Char('_');
     return ret;
+}
+
+QDBusMenuShortcut QDBusMenuItem::convertKeySequence(const QKeySequence &sequence)
+{
+    QDBusMenuShortcut shortcut;
+    for (int i = 0; i < sequence.count(); ++i) {
+        QStringList tokens;
+        int key = sequence[i];
+        if (key & Qt::MetaModifier)
+            tokens << QStringLiteral("Super");
+        if (key & Qt::ControlModifier)
+            tokens << QStringLiteral("Control");
+        if (key & Qt::AltModifier)
+            tokens << QStringLiteral("Alt");
+        if (key & Qt::ShiftModifier)
+            tokens << QStringLiteral("Shift");
+        if (key & Qt::KeypadModifier)
+            tokens << QStringLiteral("Num");
+
+        QString keyName = QKeySequencePrivate::keyName(key, QKeySequence::PortableText);
+        if (keyName == QLatin1String("+"))
+            tokens << QStringLiteral("plus");
+        else if (keyName == QLatin1String("-"))
+            tokens << QStringLiteral("minus");
+        else
+            tokens << keyName;
+        shortcut << tokens;
+    }
+    return shortcut;
 }
 
 const QDBusArgument &operator<<(QDBusArgument &arg, const QDBusMenuEvent &ev)

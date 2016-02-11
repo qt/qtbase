@@ -103,7 +103,6 @@ Dialog::Dialog(QWidget *parent)
         QHBoxLayout *horizontalLayout = new QHBoxLayout(this);
         QGroupBox *groupBox = new QGroupBox(QGuiApplication::applicationDisplayName(), this);
         horizontalLayout->addWidget(groupBox);
-        horizontalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored));
         verticalLayout = new QVBoxLayout(groupBox);
     } else {
         verticalLayout = new QVBoxLayout(this);

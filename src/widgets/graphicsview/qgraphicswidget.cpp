@@ -313,6 +313,7 @@ void QGraphicsWidget::resize(const QSizeF &size)
     \fn void QGraphicsWidget::resize(qreal w, qreal h)
     \overload
 
+    Constructs a resize with the given \c width (\a w) and \c height (\a h).
     This convenience function is equivalent to calling resize(QSizeF(w, h)).
 
     \sa setGeometry(), setTransform()

@@ -64,6 +64,7 @@ class QDBusPlatformMenu;
 class QDBusPlatformMenuItem;
 class QDBusMenuItem;
 typedef QVector<QDBusMenuItem> QDBusMenuItemList;
+typedef QVector<QStringList> QDBusMenuShortcut;
 
 class QDBusMenuItem
 {
@@ -73,6 +74,7 @@ public:
 
     static QDBusMenuItemList items(const QList<int> &ids, const QStringList &propertyNames);
     static QString convertMnemonic(const QString &label);
+    static QDBusMenuShortcut convertKeySequence(const QKeySequence &sequence);
     static void registerDBusTypes();
 
     int m_id;
@@ -100,7 +102,7 @@ typedef QVector<QDBusMenuItemKeys> QDBusMenuItemKeysList;
 class QDBusMenuLayoutItem
 {
 public:
-    uint populate(int id, int depth, const QStringList &propertyNames);
+    uint populate(int id, int depth, const QStringList &propertyNames, const QDBusPlatformMenu *topLevelMenu);
     void populate(const QDBusPlatformMenu *menu, int depth, const QStringList &propertyNames);
     void populate(const QDBusPlatformMenuItem *item, int depth, const QStringList &propertyNames);
 
@@ -146,5 +148,6 @@ Q_DECLARE_METATYPE(QDBusMenuLayoutItem)
 Q_DECLARE_METATYPE(QDBusMenuLayoutItemList)
 Q_DECLARE_METATYPE(QDBusMenuEvent)
 Q_DECLARE_METATYPE(QDBusMenuEventList)
+Q_DECLARE_METATYPE(QDBusMenuShortcut)
 
 #endif

@@ -138,7 +138,10 @@ public:
     void handleFocusInEvent(const xcb_focus_in_event_t *event) Q_DECL_OVERRIDE;
     void handleFocusOutEvent(const xcb_focus_out_event_t *event) Q_DECL_OVERRIDE;
     void handlePropertyNotifyEvent(const xcb_property_notify_event_t *event) Q_DECL_OVERRIDE;
+#ifdef XCB_USE_XINPUT22
     void handleXIMouseEvent(xcb_ge_event_t *) Q_DECL_OVERRIDE;
+    void handleXIEnterLeave(xcb_ge_event_t *) Q_DECL_OVERRIDE;
+#endif
 
     QXcbWindow *toWindow() Q_DECL_OVERRIDE;
 
@@ -218,6 +221,12 @@ protected:
 
     void handleMotionNotifyEvent(int event_x, int event_y, int root_x, int root_y,
                                  Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp);
+
+    void handleEnterNotifyEvent(int event_x, int event_y, int root_x, int root_y,
+                                quint8 mode, quint8 detail, xcb_timestamp_t timestamp);
+
+    void handleLeaveNotifyEvent(int root_x, int root_y,
+                                quint8 mode, quint8 detail, xcb_timestamp_t timestamp);
 
     xcb_window_t m_window;
 

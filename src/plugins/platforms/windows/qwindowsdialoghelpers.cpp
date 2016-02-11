@@ -743,7 +743,7 @@ inline QUrl QWindowsFileDialogSharedData::directory() const
 
 inline void QWindowsFileDialogSharedData::setDirectory(const QUrl &d)
 {
-    QMutexLocker (&m_data->mutex);
+    QMutexLocker locker(&m_data->mutex);
     m_data->directory = d;
 }
 
@@ -757,7 +757,7 @@ inline QString QWindowsFileDialogSharedData::selectedNameFilter() const
 
 inline void QWindowsFileDialogSharedData::setSelectedNameFilter(const QString &f)
 {
-    QMutexLocker (&m_data->mutex);
+    QMutexLocker locker(&m_data->mutex);
     m_data->selectedNameFilter = f;
 }
 
@@ -777,13 +777,13 @@ inline QString QWindowsFileDialogSharedData::selectedFile() const
 
 inline void QWindowsFileDialogSharedData::setSelectedFiles(const QList<QUrl> &urls)
 {
-    QMutexLocker (&m_data->mutex);
+    QMutexLocker locker(&m_data->mutex);
     m_data->selectedFiles = urls;
 }
 
 inline void QWindowsFileDialogSharedData::fromOptions(const QSharedPointer<QFileDialogOptions> &o)
 {
-    QMutexLocker (&m_data->mutex);
+    QMutexLocker locker(&m_data->mutex);
     m_data->directory = o->initialDirectory();
     m_data->selectedFiles = o->initiallySelectedFiles();
     m_data->selectedNameFilter = o->initiallySelectedNameFilter();
@@ -1590,11 +1590,6 @@ QWindowsNativeFileDialogBase *QWindowsNativeFileDialogBase::create(QFileDialogOp
     return result;
 }
 
-static inline bool isQQuickWindow(const QWindow *w = 0)
-{
-    return w && w->inherits("QQuickWindow");
-}
-
 /*!
     \class QWindowsFileDialogHelper
     \brief Helper for native Windows file dialogs
@@ -1610,8 +1605,8 @@ class QWindowsFileDialogHelper : public QWindowsDialogHelperBase<QPlatformFileDi
 {
 public:
     QWindowsFileDialogHelper() {}
-    virtual bool supportsNonModalDialog(const QWindow * /* parent */ = 0) const { return false; }
-    virtual bool defaultNameFilterDisables() const
+    virtual bool supportsNonModalDialog(const QWindow * /* parent */ = 0) const Q_DECL_OVERRIDE { return false; }
+    virtual bool defaultNameFilterDisables() const Q_DECL_OVERRIDE
         { return false; }
     virtual void setDirectory(const QUrl &directory) Q_DECL_OVERRIDE;
     virtual QUrl directory() const Q_DECL_OVERRIDE;

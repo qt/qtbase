@@ -57,9 +57,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static const char formatTextPlainC[] = "text/plain";
-static const char formatTextHtmlC[] = "text/html";
-
 /*!
     \class QWindowsClipboard
     \brief Clipboard implementation.

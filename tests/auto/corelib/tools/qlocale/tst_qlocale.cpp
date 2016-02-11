@@ -163,6 +163,7 @@ tst_QLocale::tst_QLocale()
 
 void tst_QLocale::initTestCase()
 {
+#ifndef QT_NO_PROCESS
     const QString syslocaleapp_dir = QFINDTESTDATA("syslocaleapp");
     QVERIFY2(!syslocaleapp_dir.isEmpty(),
             qPrintable(QStringLiteral("Cannot find 'syslocaleapp' starting from ")
@@ -175,6 +176,7 @@ void tst_QLocale::initTestCase()
     QVERIFY2(fi.exists() && fi.isExecutable(),
              qPrintable(QDir::toNativeSeparators(m_sysapp)
                         + QStringLiteral(" does not exist or is not executable.")));
+#endif // QT_NO_PROCESS
 }
 
 void tst_QLocale::cleanupTestCase()

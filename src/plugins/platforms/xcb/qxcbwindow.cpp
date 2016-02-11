@@ -900,8 +900,13 @@ static bool focusInPeeker(QXcbConnection *connection, xcb_generic_event_t *event
         return true;
     }
     uint response_type = event->response_type & ~0x80;
-    if (response_type == XCB_FOCUS_IN)
-        return true;
+    if (response_type == XCB_FOCUS_IN) {
+        // Ignore focus events that are being sent only because the pointer is over
+        // our window, even if the input focus is in a different window.
+        xcb_focus_in_event_t *e = (xcb_focus_in_event_t *) event;
+        if (e->detail != XCB_NOTIFY_DETAIL_POINTER)
+            return true;
+    }
 
     /* We are also interested in XEMBED_FOCUS_IN events */
     if (response_type == XCB_CLIENT_MESSAGE) {
@@ -2171,6 +2176,85 @@ void QXcbWindow::handleButtonReleaseEvent(int event_x, int event_y, int root_x, 
     handleMouseEvent(timestamp, local, global, modifiers);
 }
 
+static bool ignoreLeaveEvent(quint8 mode, quint8 detail)
+{
+    return (mode == XCB_NOTIFY_MODE_GRAB && detail == XCB_NOTIFY_DETAIL_ANCESTOR) // Check for AwesomeWM
+            || detail == XCB_NOTIFY_DETAIL_VIRTUAL
+            || detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL;
+}
+
+static bool ignoreEnterEvent(quint8 mode, quint8 detail)
+{
+    return ((mode == XCB_NOTIFY_MODE_UNGRAB && detail == XCB_NOTIFY_DETAIL_ANCESTOR) // Check for AwesomeWM
+            || (mode != XCB_NOTIFY_MODE_NORMAL && mode != XCB_NOTIFY_MODE_UNGRAB)
+            || detail == XCB_NOTIFY_DETAIL_VIRTUAL
+            || detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL);
+}
+
+class EnterEventChecker
+{
+public:
+    bool checkEvent(xcb_generic_event_t *event)
+    {
+        if (!event)
+            return false;
+        if ((event->response_type & ~0x80) != XCB_ENTER_NOTIFY)
+            return false;
+
+        xcb_enter_notify_event_t *enter = (xcb_enter_notify_event_t *)event;
+        if (ignoreEnterEvent(enter->mode, enter->detail))
+            return false;
+
+        return true;
+    }
+};
+
+void QXcbWindow::handleEnterNotifyEvent(int event_x, int event_y, int root_x, int root_y,
+                                        quint8 mode, quint8 detail, xcb_timestamp_t timestamp)
+{
+    connection()->setTime(timestamp);
+#ifdef XCB_USE_XINPUT21
+    connection()->handleEnterEvent();
+#endif
+
+    const QPoint global = QPoint(root_x, root_y);
+
+    if (ignoreEnterEvent(mode, detail)
+            || (connection()->buttons() != Qt::NoButton
+                && QGuiApplicationPrivate::lastCursorPosition != global))
+        return;
+
+    const QPoint local(event_x, event_y);
+    QWindowSystemInterface::handleEnterEvent(window(), local, global);
+}
+
+void QXcbWindow::handleLeaveNotifyEvent(int root_x, int root_y,
+                                        quint8 mode, quint8 detail, xcb_timestamp_t timestamp)
+{
+    connection()->setTime(timestamp);
+
+    const QPoint global(root_x, root_y);
+
+    if (ignoreLeaveEvent(mode, detail)
+            || (connection()->buttons() != Qt::NoButton
+                && QGuiApplicationPrivate::lastCursorPosition != global))
+        return;
+
+    EnterEventChecker checker;
+    xcb_enter_notify_event_t *enter = (xcb_enter_notify_event_t *)connection()->checkEvent(checker);
+    QXcbWindow *enterWindow = enter ? connection()->platformWindowFromId(enter->event) : 0;
+
+    if (enterWindow) {
+        QPoint local(enter->event_x, enter->event_y);
+        QPoint global = QPoint(root_x, root_y);
+        QWindowSystemInterface::handleEnterLeaveEvent(enterWindow->window(), window(), local, global);
+    } else {
+        QWindowSystemInterface::handleLeaveEvent(window());
+    }
+
+    free(enter);
+}
+
 void QXcbWindow::handleMotionNotifyEvent(int event_x, int event_y, int root_x, int root_y,
                                          Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp)
 {
@@ -2205,12 +2289,10 @@ static inline int fixed1616ToInt(FP1616 val)
 {
     return int((qreal(val >> 16)) + (val & 0xFFFF) / (qreal)0xFFFF);
 }
-#endif
 
 // With XI 2.2+ press/release/motion comes here instead of the above handlers.
 void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event)
 {
-#ifdef XCB_USE_XINPUT22
     QXcbConnection *conn = connection();
     xXIDeviceEvent *ev = reinterpret_cast<xXIDeviceEvent *>(event);
     const Qt::KeyboardModifiers modifiers = conn->keyboard()->translateModifiers(ev->mods.effective_mods);
@@ -2248,11 +2330,40 @@ void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event)
         qWarning() << "Unrecognized XI2 mouse event" << ev->evtype;
         break;
     }
-#else
-    Q_UNUSED(event);
-    Q_ASSERT(false); // this can't be
-#endif
 }
+
+// With XI 2.2+ enter/leave comes here and are blocked in plain xcb events
+void QXcbWindow::handleXIEnterLeave(xcb_ge_event_t *event)
+{
+    xXIEnterEvent *ev = reinterpret_cast<xXIEnterEvent *>(event);
+
+    // Compare the window with current mouse grabber to prevent deliver events to any other windows.
+    // If leave event occurs and the window is under mouse - allow to deliver the leave event.
+    QXcbWindow *mouseGrabber = connection()->mouseGrabber();
+    if (mouseGrabber && mouseGrabber != this
+            && (ev->evtype != XI_Leave || QGuiApplicationPrivate::currentMouseWindow != window())) {
+        return;
+    }
+
+    const int root_x = fixed1616ToInt(ev->root_x);
+    const int root_y = fixed1616ToInt(ev->root_y);
+
+    switch (ev->evtype) {
+    case XI_Enter: {
+        const int event_x = fixed1616ToInt(ev->event_x);
+        const int event_y = fixed1616ToInt(ev->event_y);
+        qCDebug(lcQpaXInput, "XI2 mouse enter %d,%d, mode %d, detail %d, time %d", event_x, event_y, ev->mode, ev->detail, ev->time);
+        handleEnterNotifyEvent(event_x, event_y, root_x, root_y, ev->mode, ev->detail, ev->time);
+        break;
+    }
+    case XI_Leave:
+        qCDebug(lcQpaXInput, "XI2 mouse leave, mode %d, detail %d, time %d", ev->mode, ev->detail, ev->time);
+        connection()->keyboard()->updateXKBStateFromXI(&ev->mods, &ev->group);
+        handleLeaveNotifyEvent(root_x, root_y, ev->mode, ev->detail, ev->time);
+        break;
+    }
+}
+#endif
 
 QXcbWindow *QXcbWindow::toWindow() { return this; }
 
@@ -2262,74 +2373,14 @@ void QXcbWindow::handleMouseEvent(xcb_timestamp_t time, const QPoint &local, con
     QWindowSystemInterface::handleMouseEvent(window(), time, local, global, connection()->buttons(), modifiers);
 }
 
-static bool ignoreLeaveEvent(const xcb_leave_notify_event_t *event)
-{
-    return event->detail == XCB_NOTIFY_DETAIL_VIRTUAL
-            || event->detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL
-            || event->mode == XCB_NOTIFY_MODE_GRAB;
-}
-
-static bool ignoreEnterEvent(const xcb_enter_notify_event_t *event)
-{
-    return (event->mode != XCB_NOTIFY_MODE_NORMAL
-            || event->detail == XCB_NOTIFY_DETAIL_VIRTUAL
-            || event->detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL);
-}
-
-class EnterEventChecker
-{
-public:
-    bool checkEvent(xcb_generic_event_t *event)
-    {
-        if (!event)
-            return false;
-        if ((event->response_type & ~0x80) != XCB_ENTER_NOTIFY)
-            return false;
-
-        xcb_enter_notify_event_t *enter = (xcb_enter_notify_event_t *)event;
-        if (ignoreEnterEvent(enter))
-            return false;
-
-        return true;
-    }
-};
-
 void QXcbWindow::handleEnterNotifyEvent(const xcb_enter_notify_event_t *event)
 {
-    connection()->setTime(event->time);
-#ifdef XCB_USE_XINPUT2
-    connection()->handleEnterEvent(event);
-#endif
-
-    if (ignoreEnterEvent(event))
-        return;
-
-    const QPoint local(event->event_x, event->event_y);
-    QPoint global = QPoint(event->root_x, event->root_y);
-    QWindowSystemInterface::handleEnterEvent(window(), local, global);
+    handleEnterNotifyEvent(event->event_x, event->event_y, event->root_x, event->root_y, event->mode, event->detail, event->time);
 }
 
 void QXcbWindow::handleLeaveNotifyEvent(const xcb_leave_notify_event_t *event)
 {
-    connection()->setTime(event->time);
-
-    if (ignoreLeaveEvent(event))
-        return;
-
-    EnterEventChecker checker;
-    xcb_enter_notify_event_t *enter = (xcb_enter_notify_event_t *)connection()->checkEvent(checker);
-    QXcbWindow *enterWindow = enter ? connection()->platformWindowFromId(enter->event) : 0;
-
-    if (enterWindow) {
-        QPoint local(enter->event_x, enter->event_y);
-        QPoint global = QPoint(event->root_x, event->root_y);
-
-        QWindowSystemInterface::handleEnterLeaveEvent(enterWindow->window(), window(), local, global);
-    } else {
-        QWindowSystemInterface::handleLeaveEvent(window());
-    }
-
-    free(enter);
+    handleLeaveNotifyEvent(event->root_x, event->root_y, event->mode, event->detail, event->time);
 }
 
 void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *event)
@@ -2383,14 +2434,22 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
     }
 }
 
-void QXcbWindow::handleFocusInEvent(const xcb_focus_in_event_t *)
+void QXcbWindow::handleFocusInEvent(const xcb_focus_in_event_t *event)
 {
+    // Ignore focus events that are being sent only because the pointer is over
+    // our window, even if the input focus is in a different window.
+    if (event->detail == XCB_NOTIFY_DETAIL_POINTER)
+        return;
     doFocusIn();
 }
 
 
-void QXcbWindow::handleFocusOutEvent(const xcb_focus_out_event_t *)
+void QXcbWindow::handleFocusOutEvent(const xcb_focus_out_event_t *event)
 {
+    // Ignore focus events that are being sent only because the pointer is over
+    // our window, even if the input focus is in a different window.
+    if (event->detail == XCB_NOTIFY_DETAIL_POINTER)
+        return;
     doFocusOut();
 }
 
@@ -2433,7 +2492,7 @@ bool QXcbWindow::setMouseGrabEnabled(bool grab)
     if (!grab && connection()->mouseGrabber() == this)
         connection()->setMouseGrabber(Q_NULLPTR);
 #ifdef XCB_USE_XINPUT22
-    if (connection()->xi2MouseEvents()) {
+    if (connection()->isAtLeastXI22() && connection()->xi2MouseEvents()) {
         bool result = connection()->xi2SetMouseGrabEnabled(m_window, grab);
         if (grab && result)
             connection()->setMouseGrabber(this);

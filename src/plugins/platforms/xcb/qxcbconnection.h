@@ -267,6 +267,7 @@ namespace QXcbAtom {
         AbsMTPositionY,
         AbsMTTouchMajor,
         AbsMTTouchMinor,
+        AbsMTOrientation,
         AbsMTPressure,
         AbsMTTrackingID,
         MaxContacts,
@@ -353,8 +354,10 @@ public:
     virtual void handleFocusInEvent(const xcb_focus_in_event_t *) {}
     virtual void handleFocusOutEvent(const xcb_focus_out_event_t *) {}
     virtual void handlePropertyNotifyEvent(const xcb_property_notify_event_t *) {}
+#ifdef XCB_USE_XINPUT22
     virtual void handleXIMouseEvent(xcb_ge_event_t *) {}
-
+    virtual void handleXIEnterLeave(xcb_ge_event_t *) {}
+#endif
     virtual QXcbWindow *toWindow() { return 0; }
 };
 
@@ -491,8 +494,8 @@ public:
     static bool xEmbedSystemTrayAvailable();
     static bool xEmbedSystemTrayVisualHasAlphaChannel();
 
-#ifdef XCB_USE_XINPUT2
-    void handleEnterEvent(const xcb_enter_notify_event_t *);
+#ifdef XCB_USE_XINPUT21
+    void handleEnterEvent();
 #endif
 
 #ifdef XCB_USE_XINPUT22
@@ -506,7 +509,9 @@ public:
 
     QXcbGlIntegration *glIntegration() const { return m_glIntegration; }
 
+#ifdef XCB_USE_XINPUT22
     bool xi2MouseEvents() const;
+#endif
 
 protected:
     bool event(QEvent *e) Q_DECL_OVERRIDE;
@@ -540,9 +545,9 @@ private:
     void initializeScreens();
     bool compressEvent(xcb_generic_event_t *event, int currentIndex, QXcbEventArray *eventqueue) const;
 
+#ifdef XCB_USE_XINPUT2
     bool m_xi2Enabled;
     int m_xi2Minor;
-#ifdef XCB_USE_XINPUT2
     void initializeXInput2();
     void finalizeXInput2();
     void xi2SetupDevices();
