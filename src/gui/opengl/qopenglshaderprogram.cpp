@@ -3386,7 +3386,7 @@ QVector<float> QOpenGLShaderProgram::defaultInnerTessellationLevels() const
 #if defined(QT_OPENGL_4)
     Q_D(const QOpenGLShaderProgram);
     if (d->tessellationFuncs)
-        d->tessellationFuncs->glGetFloatv(GL_PATCH_DEFAULT_OUTER_LEVEL, tessLevels.data());
+        d->tessellationFuncs->glGetFloatv(GL_PATCH_DEFAULT_INNER_LEVEL, tessLevels.data());
 #endif
     return tessLevels;
 }
