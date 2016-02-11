@@ -150,7 +150,7 @@ function onProgress(event)
         console.log("progress " + event.loaded  + " " + event.total)
 
     if (event.total == 0) {
-        self.loadTextNode.innerHTML = loadText;
+        self.loadTextNode.innerHTML = self.loadText;
         return;
     }
 
