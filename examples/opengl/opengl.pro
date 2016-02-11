@@ -14,7 +14,8 @@ qtHaveModule(widgets) {
                 qopenglwidget \
                 cube \
                 textures \
-                hellogles3
+                hellogles3 \
+                computegles31
 }
 
 EXAMPLE_FILES += \
