@@ -46,6 +46,8 @@
 #include <qboxlayout.h>
 #include <qtabwidget.h>
 #include <qlabel.h>
+#include <qmainwindow.h>
+#include <qtoolbar.h>
 #include <private/qwindow_p.h>
 
 static inline void setFrameless(QWidget *w)
@@ -99,6 +101,8 @@ private slots:
     void tst_move_count();
 
     void tst_eventfilter_on_toplevel();
+
+    void QTBUG_50561_QCocoaBackingStore_paintDevice_crash();
 };
 
 void tst_QWidget_window::initTestCase()
@@ -793,6 +797,47 @@ void tst_QWidget_window::tst_eventfilter_on_toplevel()
     // and check that it's received by the event filter
     QCoreApplication::postEvent(w.windowHandle(), new QEvent(EventFilter::filterEventType()));
     QTRY_COMPARE(filter.eventCount, 1);
+}
+
+class ApplicationStateSaver
+{
+public:
+    ApplicationStateSaver()
+    {
+        QApplication::setAttribute(Qt::AA_NativeWindows, true);
+        QApplication::setQuitOnLastWindowClosed(false);
+    }
+
+    ~ApplicationStateSaver()
+    {
+        QApplication::setAttribute(Qt::AA_NativeWindows, false);
+        QApplication::setQuitOnLastWindowClosed(true);
+    }
+};
+
+void tst_QWidget_window::QTBUG_50561_QCocoaBackingStore_paintDevice_crash()
+{
+    // Keep application state clean if testcase fails
+    ApplicationStateSaver as;
+
+    QMainWindow w;
+    w.addToolBar(new QToolBar(&w));
+    w.show();
+    QTest::qWaitForWindowExposed(&w);
+
+    // Simulate window system close
+    QCloseEvent *e = new QCloseEvent;
+    e->accept();
+    qApp->postEvent(w.windowHandle(), e);
+    qApp->processEvents();
+
+    // Show again
+    w.show();
+    qApp->processEvents();
+
+    // No crash, all good.
+    // Wrap up and leave
+    w.close();
 }
 
 QTEST_MAIN(tst_QWidget_window)
