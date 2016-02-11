@@ -3426,7 +3426,7 @@ if [ "$XPLATFORM_IOS" = "yes" ]; then
     # Otherwise we build a joined simulator and device build, which is the default.
     if [ -z "$OPT_MAC_SDK" ]; then
          QT_CONFIG="$QT_CONFIG build_all"
-         QTCONFIG_CONFIG="$QTCONFIG_CONFIG iphonesimulator_and_iphoneos"
+         QTCONFIG_CONFIG="$QTCONFIG_CONFIG simulator_and_device"
     fi
 fi
 

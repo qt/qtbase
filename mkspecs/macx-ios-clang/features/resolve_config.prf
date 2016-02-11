@@ -3,37 +3,35 @@ xcodebuild {
     # Xcode project files always support both Debug and Release configurations
     # and iOS device and simulator targets, so we make sure the wrapper-makefile
     # also does.
-    CONFIG += debug_and_release iphonesimulator_and_iphoneos
+    CONFIG += debug_and_release simulator_and_device
 }
 
 load(resolve_config)
 
-CONFIG(iphonesimulator, iphonesimulator|iphoneos): \
-    CONFIG -= iphoneos
+CONFIG(simulator, simulator|device): \
+    CONFIG -= device $${device.CONFIG}
 else: \
-    CONFIG -= iphonesimulator
+    CONFIG -= simulator $${simulator.CONFIG}
 
 macx-xcode {
     # There is no way to genereate Xcode projects that are limited to either
-    # simulator or device builds, so iphonesimulator_and_iphoneos is always
+    # simulator or device builds, so simulator_and_device is always
     # effectivly active, even if the user disabled it explicitly.
     # The Xcode generator doesn't support multiple BUILDS though (exclusive
     # builds), so we have to manually set up the simulator suffix.
-    library_suffix_iphonesimulator.name = "$${QMAKE_XCODE_LIBRARY_SUFFIX_SETTING}[sdk=iphonesimulator*]"
-    library_suffix_iphonesimulator.value = "_iphonesimulator$($${QMAKE_XCODE_LIBRARY_SUFFIX_SETTING})"
-    QMAKE_MAC_XCODE_SETTINGS += library_suffix_iphonesimulator
+    library_suffix_simulator.name = "$${QMAKE_XCODE_LIBRARY_SUFFIX_SETTING}[sdk=$${simulator.sdk}*]"
+    library_suffix_simulator.value = "_$${simulator.sdk}$($${QMAKE_XCODE_LIBRARY_SUFFIX_SETTING})"
+    QMAKE_MAC_XCODE_SETTINGS += library_suffix_simulator
     CONFIG *= xcode_dynamic_library_suffix
 } else {
-    iphonesimulator.name = Simulator
-    iphoneos.name = Device
-    addExclusiveBuilds(iphonesimulator, iphoneos)
+    addExclusiveBuilds(simulator, device)
 }
 
 equals(TEMPLATE, subdirs) {
     # Prevent recursion into host_builds
     for(subdir, SUBDIRS) {
         contains($${subdir}.CONFIG, host_build) {
-            $${subdir}.CONFIG += no_iphoneos_target no_iphonesimulator_target
+            $${subdir}.CONFIG += no_$${simulator.target}_target no_$${device.target}_target
 
             # Other targets which we do want to recurse into may depend on this target,
             # for example corelib depends on moc, rcc, bootstrap, etc, and other libs
@@ -56,9 +54,9 @@ equals(TEMPLATE, subdirs) {
 
             target ~= s,[^a-zA-Z0-9_],-,
 
-            $${target}-iphonesimulator.depends = $$target
-            $${target}-iphoneos.depends = $$target
-            QMAKE_EXTRA_TARGETS += $${target}-iphonesimulator $${target}-iphoneos
+            $${target}-$${simulator.target}.depends = $$target
+            $${target}-$${device.target}.depends = $$target
+            QMAKE_EXTRA_TARGETS += $${target}-$${simulator.target} $${target}-$${device.target}
         }
     }
 }
