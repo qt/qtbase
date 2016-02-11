@@ -186,22 +186,27 @@ function loadScript(src, onload)
 // Create Qt container element, possibly re-using existingElement
 function createElement(existingElement)
 {
-    // Create container div which handles load and message events
-    var listener = existingElement || document.createElement("div");
-    self.listener = listener;
+    // Create container div
+    self.listener = existingElement || document.createElement("div");
+    self.listener.setAttribute("class", "qt-container");
 
-    listener.setAttribute("class", "qt-container");
+    // Add load and progress event listeners
     var useCapture = true;
-    listener.addEventListener('message', onMessage, useCapture);
-    listener.addEventListener('progress', onProgress, useCapture);
-    listener.addEventListener('load', onLoad, useCapture);
+    self.listener.addEventListener('message', onMessage, useCapture);
+    self.listener.addEventListener('progress', onProgress, useCapture);
+    self.listener.addEventListener('load', onLoad, useCapture);
 
-    // create loading text placeholder
+    // Add loading text placeholder to container
     self.loadTextNode = document.createElement("span");
     self.loadTextNode.setAttribute("class", "qt-progress");
-    listener.appendChild(self.loadTextNode);
+    self.listener.appendChild(self.loadTextNode);
 
-    return listener;
+    // Check for (P)NaCl support
+    var pnaclSupported = navigator.mimeTypes['application/x-pnacl'] !== undefined;
+    if (!pnaclSupported && self.type != "emscripten")
+        self.loadTextNode.innerHTML = "Sorry! Google Chrome is required.";
+
+    return self.listener;
 }
 
 function load()
