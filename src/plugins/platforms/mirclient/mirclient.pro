@@ -1,5 +1,4 @@
 TARGET = mirclient
-TEMPLATE = lib
 
 QT += core-private gui-private platformsupport-private dbus
 
