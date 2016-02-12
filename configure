@@ -3087,7 +3087,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         exit 1
     fi
 elif [ $COMMERCIAL_USER = "no" ]; then
-    # Open Source edition - may only be used under the terms of the LGPLv3 or LGPLv21.
+    # Open Source edition - may only be used under the terms of the LGPLv3 or GPLv2.
     Licensee="Open Source"
     Edition="OpenSource"
     EditionString="Open Source"
@@ -3103,15 +3103,15 @@ if [ "$Edition" = "OpenSource" ]; then
     while true; do
         if [ "$CFG_ANDROID_STYLE_ASSETS" = "no" ] || [ "$XPLATFORM_ANDROID" = "no" ]; then
             echo "You are licensed to use this software under the terms of"
-            echo "the Lesser GNU General Public License (LGPL) versions 2.1."
-            echo "You are also licensed to use this software under the terms of"
             echo "the GNU Lesser General Public License (LGPL) versions 3."
+            echo "You are also licensed to use this software under the terms of"
+            echo "the GNU General Public License (GPL) versions 2."
             affix="either"
-            showLGPL2="yes"
+            showGPL2="yes"
         else
             echo "You are licensed to use this software under the terms of"
             echo "the GNU Lesser General Public License (LGPL) versions 3."
-            showLGPL2="no"
+            showGPL2="no"
             affix="the"
         fi
 
@@ -3120,11 +3120,11 @@ if [ "$Edition" = "OpenSource" ]; then
             echo "You have already accepted the terms of the $EditionString license."
             acceptance=yes
         else
-            if [ -f "$relpath/LICENSE.LGPLv3" ]; then
-                echo "Type '3' to view the GNU Lesser General Public License version 3."
+            if [ -f "$relpath/LICENSE.LGPL3" ]; then
+                echo "Type 'L' to view the GNU Lesser General Public License version 3."
             fi
-            if [ "$showLGPL2" = "yes" ]; then
-                echo "Type 'L' to view the Lesser GNU General Public License version 2.1."
+            if [ "$showGPL2" = "yes" ]; then
+                echo "Type 'G' to view the GNU General Public License version 2."
             fi
             echo "Type 'yes' to accept this license offer."
             echo "Type 'no' to decline this license offer."
@@ -3139,10 +3139,10 @@ if [ "$Edition" = "OpenSource" ]; then
             echo "You are not licensed to use this software."
             echo
             exit 1
-        elif [ "$acceptance" = "3" ]; then
-            more "$relpath/LICENSE.LGPLv3"
-        elif [ "$acceptance" = "L" ] && [ "$showLGPL2" = "yes" ]; then
-            more "$relpath/LICENSE.LGPLv21"
+        elif [ "$acceptance" = "L" ]; then
+            more "$relpath/LICENSE.LGPL3"
+        elif [ "$acceptance" = "G" ] && [ "$showGPL2" = "yes" ]; then
+            more "$relpath/LICENSE.GPL2"
         fi
     done
 elif [ "$Edition" = "Preview" ]; then
