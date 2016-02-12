@@ -1758,10 +1758,6 @@ VCManifestTool::VCManifestTool()
 {
 }
 
-VCManifestTool::~VCManifestTool()
-{
-}
-
 bool VCManifestTool::parseOption(const char *option)
 {
     Q_UNUSED(option);
