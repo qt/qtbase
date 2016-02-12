@@ -376,12 +376,13 @@ static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, bo
     Q_UNUSED(level);
 #else
     if (QWindowsWindow::setWindowLayered(hwnd, flags, hasAlpha, level)) {
+        const BYTE alpha = BYTE(qRound(255.0 * level));
         if (hasAlpha && !openGL && (flags & Qt::FramelessWindowHint)) {
             // Non-GL windows with alpha: Use blend function to update.
-            BLENDFUNCTION blend = {AC_SRC_OVER, 0, (BYTE)(255.0 * level), AC_SRC_ALPHA};
+            BLENDFUNCTION blend = {AC_SRC_OVER, 0, alpha, AC_SRC_ALPHA};
             QWindowsContext::user32dll.updateLayeredWindow(hwnd, NULL, NULL, NULL, NULL, NULL, 0, &blend, ULW_ALPHA);
         } else {
-            QWindowsContext::user32dll.setLayeredWindowAttributes(hwnd, 0, (int)(level * 255), LWA_ALPHA);
+            QWindowsContext::user32dll.setLayeredWindowAttributes(hwnd, 0, alpha, LWA_ALPHA);
         }
     } else if (IsWindowVisible(hwnd)) { // Repaint when switching from layered.
         InvalidateRect(hwnd, NULL, TRUE);
@@ -505,7 +506,7 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
     QVariant prop = w->property("_q_embedded_native_parent_handle");
     if (prop.isValid()) {
         embedded = true;
-        parentHandle = (HWND)prop.value<WId>();
+        parentHandle = reinterpret_cast<HWND>(prop.value<WId>());
     }
 
     if (creationFlags & ForceChild) {
@@ -680,10 +681,10 @@ void WindowCreationData::applyWindowFlags(HWND hwnd) const
     if (newExStyle != oldExStyle)
         SetWindowLongPtr(hwnd, GWL_EXSTYLE, newExStyle);
     qCDebug(lcQpaWindows).nospace() << __FUNCTION__ << hwnd << *this
-        << "\n    Style from " << debugWinStyle(oldStyle) << "\n    to "
-        << debugWinStyle(newStyle) << "\n    ExStyle from "
-        << debugWinExStyle(oldExStyle) << " to "
-        << debugWinExStyle(newExStyle);
+        << "\n    Style from " << debugWinStyle(DWORD(oldStyle)) << "\n    to "
+        << debugWinStyle(DWORD(newStyle)) << "\n    ExStyle from "
+        << debugWinExStyle(DWORD(oldExStyle)) << " to "
+        << debugWinExStyle(DWORD(newExStyle));
 }
 
 void WindowCreationData::initialize(const QWindow *w, HWND hwnd, bool frameChange, qreal opacityLevel) const
@@ -802,8 +803,8 @@ bool QWindowsGeometryHint::handleCalculateSize(const QMargins &customMargins, co
 #ifndef Q_OS_WINCE
 void QWindowsGeometryHint::applyToMinMaxInfo(HWND hwnd, MINMAXINFO *mmi) const
 {
-    return applyToMinMaxInfo(GetWindowLong(hwnd, GWL_STYLE),
-                             GetWindowLong(hwnd, GWL_EXSTYLE), mmi);
+    return applyToMinMaxInfo(DWORD(GetWindowLong(hwnd, GWL_STYLE)),
+                             DWORD(GetWindowLong(hwnd, GWL_EXSTYLE)), mmi);
 }
 
 void QWindowsGeometryHint::applyToMinMaxInfo(DWORD style, DWORD exStyle, MINMAXINFO *mmi) const
@@ -1363,7 +1364,7 @@ void QWindowsWindow::updateTransientParent() const
             if (!tw->testFlag(WithinDestroy)) // Prevent destruction by parent window (QTBUG-35499, QTBUG-36666)
                 newTransientParent = tw->handle();
     if (newTransientParent != oldTransientParent)
-        SetWindowLongPtr(m_data.hwnd, GWL_HWNDPARENT, (LONG_PTR)newTransientParent);
+        SetWindowLongPtr(m_data.hwnd, GWL_HWNDPARENT, LONG_PTR(newTransientParent));
 #endif // !Q_OS_WINCE
 }
 
@@ -2015,7 +2016,7 @@ QMargins QWindowsWindow::frameMargins() const
 void QWindowsWindow::setOpacity(qreal level)
 {
     qCDebug(lcQpaWindows) << __FUNCTION__ << level;
-    if (m_opacity != level) {
+    if (!qFuzzyCompare(m_opacity, level)) {
         m_opacity = level;
         if (m_data.hwnd)
             setWindowOpacity(m_data.hwnd, m_data.flags,
@@ -2317,7 +2318,7 @@ void QWindowsWindow::setAlertState(bool enabled)
 
 void QWindowsWindow::alertWindow(int durationMs)
 {
-    DWORD timeOutMs = GetCaretBlinkTime();
+    UINT timeOutMs = GetCaretBlinkTime();
     if (!timeOutMs || timeOutMs == INFINITE)
         timeOutMs = 250;
 
@@ -2326,7 +2327,7 @@ void QWindowsWindow::alertWindow(int durationMs)
     info.hwnd = m_data.hwnd;
     info.dwFlags = FLASHW_TRAY;
     info.dwTimeout = timeOutMs;
-    info.uCount = durationMs == 0 ? 10 : durationMs / timeOutMs;
+    info.uCount = durationMs == 0 ? 10 : UINT(durationMs) / timeOutMs;
     FlashWindowEx(&info);
 }
 
@@ -2379,11 +2380,11 @@ void QWindowsWindow::setWindowIcon(const QIcon &icon)
         m_iconBig = createHIcon(icon, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON));
 
         if (m_iconBig) {
-            SendMessage(m_data.hwnd, WM_SETICON, 0 /* ICON_SMALL */, (LPARAM)m_iconSmall);
-            SendMessage(m_data.hwnd, WM_SETICON, 1 /* ICON_BIG */, (LPARAM)m_iconBig);
+            SendMessage(m_data.hwnd, WM_SETICON, 0 /* ICON_SMALL */, LPARAM(m_iconSmall));
+            SendMessage(m_data.hwnd, WM_SETICON, 1 /* ICON_BIG */, LPARAM(m_iconBig));
         } else {
-            SendMessage(m_data.hwnd, WM_SETICON, 0 /* ICON_SMALL */, (LPARAM)m_iconSmall);
-            SendMessage(m_data.hwnd, WM_SETICON, 1 /* ICON_BIG */, (LPARAM)m_iconSmall);
+            SendMessage(m_data.hwnd, WM_SETICON, 0 /* ICON_SMALL */, LPARAM(m_iconSmall));
+            SendMessage(m_data.hwnd, WM_SETICON, 1 /* ICON_BIG */, LPARAM(m_iconSmall));
         }
     }
 }
@@ -2464,7 +2465,7 @@ void QWindowsWindow::registerTouchWindow(QWindowsWindowFunctions::TouchWindowTou
         // such as HCBT_CREATEWND
         if (ret || touchFlags != 0)
             return;
-        if (QWindowsContext::user32dll.registerTouchWindow(m_data.hwnd, (ULONG)touchTypes))
+        if (QWindowsContext::user32dll.registerTouchWindow(m_data.hwnd, ULONG(touchTypes)))
             setFlag(TouchRegistered);
         else
             qErrnoWarning("RegisterTouchWindow() failed for window '%s'.", qPrintable(window()->objectName()));
