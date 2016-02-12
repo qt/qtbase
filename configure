@@ -3487,12 +3487,6 @@ if [ "$XPLATFORM_ANDROID" = "yes" ] ; then
     fi
 fi
 
-if [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
-    if [ -z "$TEST_COMPILER" ]; then
-        echo "ERROR: Cannot set the compiler for the configuration tests"
-        exit 1
-    fi
-fi
 TEST_COMPILER_CXXFLAGS=`getXQMakeConf QMAKE_CXXFLAGS`
 
 GCC_MACHINE_DUMP=
