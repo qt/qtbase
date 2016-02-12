@@ -74,7 +74,7 @@ public:
 
     QPlatformOpenGLContext* createPlatformOpenGLContext(QOpenGLContext* context);
     QPlatformWindow* createPlatformWindow(QWindow* window);
-    QMirClientScreen* screen() const { return mScreen; }
+    QMirClientScreen* screen() const;
 
 private:
     void setupOptions();
@@ -85,7 +85,6 @@ private:
 
     QMirClientPlatformServices* mServices;
 
-    QMirClientScreen* mScreen;
     QMirClientInput* mInput;
     QPlatformInputContext* mInputContext;
     QSharedPointer<QMirClientClipboard> mClipboard;

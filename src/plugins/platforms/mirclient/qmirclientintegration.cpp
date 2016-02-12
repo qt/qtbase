@@ -110,8 +110,7 @@ QMirClientClientIntegration::QMirClientClientIntegration()
     mNativeInterface->setMirConnection(u_application_instance_get_mir_connection(mInstance));
 
     // Create default screen.
-    mScreen = new QMirClientScreen(u_application_instance_get_mir_connection(mInstance));
-    screenAdded(mScreen);
+    screenAdded(new QMirClientScreen(u_application_instance_get_mir_connection(mInstance)));
 
     // Initialize input.
     if (qEnvironmentVariableIsEmpty("QTUBUNTU_NO_INPUT")) {
@@ -140,7 +139,8 @@ QMirClientClientIntegration::~QMirClientClientIntegration()
 {
     delete mInput;
     delete mInputContext;
-    delete mScreen;
+    for (QScreen *screen : QGuiApplication::screens())
+        QPlatformIntegration::destroyScreen(screen->handle());
     delete mServices;
 }
 
@@ -185,8 +185,13 @@ QPlatformWindow* QMirClientClientIntegration::createPlatformWindow(QWindow* wind
 
 QPlatformWindow* QMirClientClientIntegration::createPlatformWindow(QWindow* window)
 {
-    return new QMirClientWindow(window, mClipboard, static_cast<QMirClientScreen*>(mScreen),
-                            mInput, u_application_instance_get_mir_connection(mInstance));
+    return new QMirClientWindow(window, mClipboard, screen(),
+                                mInput, u_application_instance_get_mir_connection(mInstance));
+}
+
+QMirClientScreen *QMirClientClientIntegration::screen() const
+{
+    return static_cast<QMirClientScreen *>(QGuiApplication::primaryScreen()->handle());
 }
 
 bool QMirClientClientIntegration::hasCapability(QPlatformIntegration::Capability cap) const
