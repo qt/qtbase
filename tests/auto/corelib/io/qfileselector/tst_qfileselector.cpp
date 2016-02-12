@@ -55,6 +55,8 @@ private slots:
 
     void urlConvenience_data();
     void urlConvenience();
+
+    void addStatics();
 };
 
 void tst_QFileSelector::basicTest_data()
@@ -222,6 +224,15 @@ void tst_QFileSelector::urlConvenience()
     QCOMPARE(fs.select(testUrl), testUrl);
     fs.setExtraSelectors(customSelectors);
     QCOMPARE(fs.select(testUrl), expectedUrl);
+}
+
+void tst_QFileSelector::addStatics()
+{
+    QFileSelector fs;
+    QCOMPARE(fs.select(QStringLiteral(":/extras/test")), QStringLiteral(":/extras/test"));
+
+    QFileSelectorPrivate::addStatics(QStringList() << QStringLiteral("custom1"));
+    QCOMPARE(fs.select(QStringLiteral(":/extras/test")), QStringLiteral(":/extras/+custom1/test"));
 }
 
 QTEST_MAIN(tst_QFileSelector)
