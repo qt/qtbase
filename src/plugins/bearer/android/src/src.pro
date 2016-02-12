@@ -1,5 +1,3 @@
-include(wrappers/wrappers.pri)
-
 TARGET = qandroidbearer
 
 QT = core-private network-private
@@ -11,6 +9,8 @@ HEADERS += qandroidbearerengine.h \
 SOURCES += main.cpp \
            qandroidbearerengine.cpp \
            ../../qnetworksession_impl.cpp
+
+include(wrappers/wrappers.pri)
 
 PLUGIN_TYPE = bearer
 PLUGIN_CLASS_NAME = QAndroidBearerEnginePlugin
