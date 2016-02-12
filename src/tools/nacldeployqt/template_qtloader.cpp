@@ -38,16 +38,22 @@ const char *templateQtLoader = R"STRING_DELIMITER(
 //  element.postMessage(message) // ends up in pp::Instance::HandleMessage
 //  element.addEventListener('message', function(message){ ... })
 //
-// Additional supported Qt constructor config keys
-//   query           : Query string. Qt will parse this for environment variables.
+// Additional supported Qt constructor config keys:
+//   query           : Query string. Qt will parse this for pp:Instance::Init() arguments
+//   environment     : JavaScript object with pp::Instance::Init() arguments
 //   isChromeApp     : enable Chrome Application package mode
 //   loadText        : Loading placeholder text
 //
+// The pp:Instance::Init arguments are available in two ways:
+//     1) As argn, argv key/value pairs to Init() of a QPepperInstance subclass.
+//     2) As environment variables: toUpper(key)=value.
+
 function QtLoader(config) {
     var self = this;
     self.config = config;
     self.loadText = config.loadText !== undefined ? config.loadText : "Loading Qt:"
     self.type = config.type !== undefined ? config.type : "%APPTYPE%"
+    self.environment = config.environment;
     self.loadTextElement = undefined;
     self.embed = undefined;
     self.listener = undefined;
@@ -238,6 +244,12 @@ function loadNaCl()
     for (var key in queryHash) {
         if (key !== undefined)
             embed.setAttribute(key, queryHash[key])
+    }
+
+    // Propagate extra environment variables from QtLoader config.
+    for (var key in self.environment) {
+        if (key !== undefined)
+            embed.setAttribute(key, self.environment[key])
     }
 
     self.listener.appendChild(embed);
