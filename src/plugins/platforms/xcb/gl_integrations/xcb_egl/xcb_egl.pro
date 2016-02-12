@@ -1,10 +1,5 @@
 TARGET = qxcb-egl-integration
 
-PLUGIN_CLASS_NAME = QXcbEglIntegrationPlugin
-PLUGIN_TYPE = xcbglintegrations
-
-load(qt_plugin)
-
 include(../gl_integrations_plugin_base.pri)
 
 CONFIG += egl
@@ -22,3 +17,7 @@ SOURCES += \
     qxcbeglwindow.cpp \
     qxcbeglmain.cpp \
     qxcbeglnativeinterfacehandler.cpp
+
+PLUGIN_CLASS_NAME = QXcbEglIntegrationPlugin
+PLUGIN_TYPE = xcbglintegrations
+load(qt_plugin)

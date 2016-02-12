@@ -8,12 +8,7 @@ DEFINES   += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x65000000
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
-MODULE_PLUGIN_TYPES += \
-    styles
-
 QMAKE_DOCS = $$PWD/doc/qtwidgets.qdocconf
-
-load(qt_module)
 
 #platforms
 mac:include(kernel/mac.pri)
@@ -45,3 +40,7 @@ QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtWidgets.dynlist
 testcocoon {
     load(testcocoon)
 }
+
+MODULE_PLUGIN_TYPES += \
+    styles
+load(qt_module)

@@ -1,10 +1,6 @@
 TARGET = qwinrt
-CONFIG -= precompile_header
 
-PLUGIN_TYPE = platforms
-PLUGIN_CLASS_NAME = QWinRTIntegrationPlugin
-!equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN): PLUGIN_EXTENDS = -
-load(qt_plugin)
+CONFIG -= precompile_header
 
 QT += core-private gui-private platformsupport-private
 
@@ -50,3 +46,8 @@ HEADERS = \
     qwinrtwindow.h
 
 OTHER_FILES += winrt.json
+
+PLUGIN_TYPE = platforms
+PLUGIN_CLASS_NAME = QWinRTIntegrationPlugin
+!equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN): PLUGIN_EXTENDS = -
+load(qt_plugin)

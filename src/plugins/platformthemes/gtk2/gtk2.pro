@@ -1,10 +1,5 @@
 TARGET = qgtk2
 
-PLUGIN_TYPE = platformthemes
-PLUGIN_EXTENDS = -
-PLUGIN_CLASS_NAME = QGtk2ThemePlugin
-load(qt_plugin)
-
 QT += core-private gui-private platformsupport-private
 
 CONFIG += X11
@@ -19,3 +14,8 @@ SOURCES += \
         main.cpp \
         qgtk2dialoghelpers.cpp \
         qgtk2theme.cpp \
+
+PLUGIN_TYPE = platformthemes
+PLUGIN_EXTENDS = -
+PLUGIN_CLASS_NAME = QGtk2ThemePlugin
+load(qt_plugin)

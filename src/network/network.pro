@@ -11,12 +11,7 @@ DEFINES += QT_NO_USING_NAMESPACE
 #DEFINES += QUDPSOCKET_DEBUG QUDPSERVER_DEBUG
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x64000000
 
-MODULE_PLUGIN_TYPES = \
-    bearer
-
 QMAKE_DOCS = $$PWD/doc/qtnetwork.qdocconf
-
-load(qt_module)
 
 include(access/access.pri)
 include(bearer/bearer.pri)
@@ -36,3 +31,7 @@ MODULE_PLUGIN_TYPES = \
     bearer
 ANDROID_PERMISSIONS += \
     android.permission.ACCESS_NETWORK_STATE
+
+MODULE_PLUGIN_TYPES = \
+    bearer
+load(qt_module)

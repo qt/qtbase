@@ -27,11 +27,6 @@ DEFINES += \
 
 DEFINES -= QT_EVAL
 
-load(qt_module)
-
-# otherwise mingw headers do not declare common functions like putenv
-mingw: CONFIG -= strict_c++
-
 SOURCES += \
            ../../corelib/codecs/qlatincodec.cpp \
            ../../corelib/codecs/qtextcodec.cpp \
@@ -141,6 +136,11 @@ if(contains(QT_CONFIG, zlib)|cross_compile):include(../../3rdparty/zlib.pri)
 else:include(../../3rdparty/zlib_dependency.pri)
 
 win32:LIBS += -luser32 -lole32 -ladvapi32 -lshell32
+
+load(qt_module)
+
+# otherwise mingw headers do not declare common functions like putenv
+mingw: CONFIG -= strict_c++
 
 lib.CONFIG = dummy_install
 INSTALLS += lib

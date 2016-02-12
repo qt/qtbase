@@ -1,10 +1,5 @@
 TARGET = qcocoa
 
-PLUGIN_TYPE = platforms
-PLUGIN_CLASS_NAME = QCocoaIntegrationPlugin
-!equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN): PLUGIN_EXTENDS = -
-load(qt_plugin)
-
 OBJECTIVE_SOURCES += main.mm \
     qcocoaintegration.mm \
     qcocoatheme.mm \
@@ -112,3 +107,8 @@ OTHER_FILES += cocoa.json
 
 # Window debug support
 #DEFINES += QT_COCOA_ENABLE_WINDOW_DEBUG
+
+PLUGIN_TYPE = platforms
+PLUGIN_CLASS_NAME = QCocoaIntegrationPlugin
+!equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN): PLUGIN_EXTENDS = -
+load(qt_plugin)

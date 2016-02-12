@@ -1,9 +1,5 @@
 TARGET = qbbbearer
 
-PLUGIN_TYPE = bearer
-PLUGIN_CLASS_NAME = QBBEnginePlugin
-load(qt_plugin)
-
 QT = core-private network-private
 
 # Uncomment this to enable debugging output for the plugin
@@ -18,3 +14,7 @@ SOURCES += qbbengine.cpp \
            main.cpp
 
 OTHER_FILES += blackberry.json
+
+PLUGIN_TYPE = bearer
+PLUGIN_CLASS_NAME = QBBEnginePlugin
+load(qt_plugin)

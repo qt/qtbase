@@ -25,8 +25,6 @@ win32 {
 
 QMAKE_DOCS = $$PWD/doc/qtdbus.qdocconf
 
-load(qt_module)
-
 PUB_HEADERS = qdbusargument.h \
     qdbusconnectioninterface.h \
     qdbusmacros.h \
@@ -91,3 +89,5 @@ SOURCES += qdbusconnection.cpp \
     qdbusservicewatcher.cpp \
     qdbusunixfiledescriptor.cpp \
     qdbusvirtualobject.cpp
+
+load(qt_module)

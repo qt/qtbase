@@ -1,9 +1,5 @@
 TARGET = qeglfs-viv-wl-integration
 
-PLUGIN_TYPE = egldeviceintegrations
-PLUGIN_CLASS_NAME = QEglFSVivWaylandIntegrationPlugin
-load(qt_plugin)
-
 QT += core-private gui-private platformsupport-private eglfs_device_lib-private
 
 INCLUDEPATH += $$PWD/../..
@@ -21,3 +17,7 @@ OTHER_FILES += $$PWD/eglfs_viv_wl.json
 
 CONFIG += link_pkgconfig
 PKGCONFIG_PRIVATE += wayland-server
+
+PLUGIN_TYPE = egldeviceintegrations
+PLUGIN_CLASS_NAME = QEglFSVivWaylandIntegrationPlugin
+load(qt_plugin)

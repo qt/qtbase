@@ -1,9 +1,5 @@
 TARGET = bb10styleplugin
 
-PLUGIN_TYPE = styles
-PLUGIN_CLASS_NAME = BlackBerry10StylePlugin
-load(qt_plugin)
-
 INCLUDEPATH += $$PWD
 
 QT += widgets
@@ -26,3 +22,6 @@ RESOURCES += \
 
 OTHER_FILES += qbb10styleplugin.json
 
+PLUGIN_TYPE = styles
+PLUGIN_CLASS_NAME = BlackBerry10StylePlugin
+load(qt_plugin)
