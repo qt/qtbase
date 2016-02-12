@@ -870,14 +870,13 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
 
     static const int SMOOTH_SCALABLE = 0xffff;
     const QString foundryName; // No such concept.
-    const NEWTEXTMETRIC *tm = (NEWTEXTMETRIC *)textmetric;
-    const bool fixed = !(tm->tmPitchAndFamily & TMPF_FIXED_PITCH);
-    const bool ttf = (tm->tmPitchAndFamily & TMPF_TRUETYPE);
-    const bool scalable = tm->tmPitchAndFamily & (TMPF_VECTOR|TMPF_TRUETYPE);
-    const int size = scalable ? SMOOTH_SCALABLE : tm->tmHeight;
-    const QFont::Style style = tm->tmItalic ? QFont::StyleItalic : QFont::StyleNormal;
+    const bool fixed = !(textmetric->tmPitchAndFamily & TMPF_FIXED_PITCH);
+    const bool ttf = (textmetric->tmPitchAndFamily & TMPF_TRUETYPE);
+    const bool scalable = textmetric->tmPitchAndFamily & (TMPF_VECTOR|TMPF_TRUETYPE);
+    const int size = scalable ? SMOOTH_SCALABLE : textmetric->tmHeight;
+    const QFont::Style style = textmetric->tmItalic ? QFont::StyleItalic : QFont::StyleNormal;
     const bool antialias = false;
-    const QFont::Weight weight = QPlatformFontDatabase::weightFromInteger(tm->tmWeight);
+    const QFont::Weight weight = QPlatformFontDatabase::weightFromInteger(textmetric->tmWeight);
     const QFont::Stretch stretch = QFont::Unstretched;
 
 #ifndef QT_NO_DEBUG_OUTPUT
@@ -957,18 +956,21 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
     return true;
 }
 
-static int QT_WIN_CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetric,
-                                     int type, LPARAM registerAlias)
+static int QT_WIN_CALLBACK storeFont(const LOGFONT *logFont, const TEXTMETRIC *textmetric,
+                                     DWORD type, LPARAM lParam)
 {
+    const ENUMLOGFONTEX *f = reinterpret_cast<const ENUMLOGFONTEX *>(logFont);
     const QString familyName = QString::fromWCharArray(f->elfLogFont.lfFaceName);
     const uchar charSet = f->elfLogFont.lfCharSet;
+    const bool registerAlias = bool(lParam);
 
-    const FONTSIGNATURE signature = textmetric->ntmFontSig;
-
-    // NEWTEXTMETRICEX is a NEWTEXTMETRIC, which according to the documentation is
-    // identical to a TEXTMETRIC except for the last four members, which we don't use
-    // anyway
-    addFontToDatabase(familyName, charSet, (TEXTMETRIC *)textmetric, &signature, type, registerAlias);
+    // NEWTEXTMETRICEX (passed for TT fonts) is a NEWTEXTMETRIC, which according
+    // to the documentation is identical to a TEXTMETRIC except for the last four
+    // members, which we don't use anyway
+    const FONTSIGNATURE *signature = Q_NULLPTR;
+    if (type & TRUETYPE_FONTTYPE)
+        signature = &reinterpret_cast<const NEWTEXTMETRICEX *>(textmetric)->ntmFontSig;
+    addFontToDatabase(familyName, charSet, textmetric, signature, type, registerAlias);
 
     // keep on enumerating
     return 1;
@@ -987,7 +989,7 @@ void QWindowsFontDatabase::populateFamily(const QString &familyName, bool regist
     familyName.toWCharArray(lf.lfFaceName);
     lf.lfFaceName[familyName.size()] = 0;
     lf.lfPitchAndFamily = 0;
-    EnumFontFamiliesEx(dummy, &lf, (FONTENUMPROC)storeFont, (LPARAM)registerAlias, 0);
+    EnumFontFamiliesEx(dummy, &lf, storeFont, LPARAM(registerAlias), 0);
     ReleaseDC(0, dummy);
 }
 
@@ -1008,9 +1010,11 @@ struct PopulateFamiliesContext
 };
 } // namespace
 
-static int QT_WIN_CALLBACK populateFontFamilies(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *tm, int, LPARAM lparam)
+static int QT_WIN_CALLBACK populateFontFamilies(const LOGFONT *logFont, const TEXTMETRIC *textmetric,
+                                                DWORD, LPARAM lparam)
 {
     // the "@family" fonts are just the same as "family". Ignore them.
+    const ENUMLOGFONTEX *f = reinterpret_cast<const ENUMLOGFONTEX *>(logFont);
     const wchar_t *faceNameW = f->elfLogFont.lfFaceName;
     if (faceNameW[0] && faceNameW[0] != L'@' && wcsncmp(faceNameW, L"WST_", 4)) {
         const QString faceName = QString::fromWCharArray(faceNameW);
@@ -1020,7 +1024,7 @@ static int QT_WIN_CALLBACK populateFontFamilies(ENUMLOGFONTEX* f, NEWTEXTMETRICE
             context->seenSystemDefaultFont = true;
 
         // Register current font's english name as alias
-        const bool ttf = (tm->ntmTm.tmPitchAndFamily & TMPF_TRUETYPE);
+        const bool ttf = textmetric->tmPitchAndFamily & TMPF_TRUETYPE;
         if (ttf && localizedName(faceName)) {
             const QString englishName = getEnglishName(faceName);
             if (!englishName.isEmpty()) {
@@ -1044,7 +1048,7 @@ void QWindowsFontDatabase::populateFontDatabase()
     lf.lfFaceName[0] = 0;
     lf.lfPitchAndFamily = 0;
     PopulateFamiliesContext context(QWindowsFontDatabase::systemDefaultFont().family());
-    EnumFontFamiliesEx(dummy, &lf, (FONTENUMPROC)populateFontFamilies, reinterpret_cast<LPARAM>(&context), 0);
+    EnumFontFamiliesEx(dummy, &lf, populateFontFamilies, reinterpret_cast<LPARAM>(&context), 0);
     ReleaseDC(0, dummy);
     // Work around EnumFontFamiliesEx() not listing the system font.
     if (!context.seenSystemDefaultFont)
