@@ -107,11 +107,7 @@ static void *resolveFunc(HMODULE lib, const char *name)
 
 void *QWindowsLibEGL::resolve(const char *name)
 {
-    void *proc = m_lib ? resolveFunc(m_lib, name) : 0;
-    if (!proc)
-        qErrnoWarning(::GetLastError(), "Failed to resolve EGL function %s", name);
-
-    return proc;
+    return m_lib ? resolveFunc(m_lib, name) : 0;
 }
 
 #endif // !QT_STATIC
@@ -174,11 +170,7 @@ bool QWindowsLibEGL::init()
 #if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
 void *QWindowsLibGLESv2::resolve(const char *name)
 {
-    void *proc = m_lib ? resolveFunc(m_lib, name) : 0;
-    if (!proc)
-        qWarning() << "Failed to resolve OpenGL ES function" << name;
-
-    return proc;
+    return m_lib ? resolveFunc(m_lib, name) : 0;
 }
 #endif // !QT_STATIC
 
@@ -200,150 +192,10 @@ bool QWindowsLibGLESv2::init()
     }
 #endif // !QT_STATIC
 
-    glBindTexture = RESOLVE((void (APIENTRY *)(GLenum , GLuint )), glBindTexture);
-    glBlendFunc = RESOLVE((void (APIENTRY *)(GLenum , GLenum )), glBlendFunc);
-    glClear = RESOLVE((void (APIENTRY *)(GLbitfield )), glClear);
-    glClearColor = RESOLVE((void (APIENTRY *)(GLfloat , GLfloat , GLfloat , GLfloat )), glClearColor);
-    glClearStencil = RESOLVE((void (APIENTRY *)(GLint )), glClearStencil);
-    glColorMask = RESOLVE((void (APIENTRY *)(GLboolean , GLboolean , GLboolean , GLboolean )), glColorMask);
-    glCopyTexImage2D = RESOLVE((void (APIENTRY *)(GLenum , GLint , GLenum , GLint , GLint , GLsizei , GLsizei , GLint )), glCopyTexImage2D);
-    glCopyTexSubImage2D = RESOLVE((void (APIENTRY *)(GLenum , GLint , GLint , GLint , GLint , GLint , GLsizei , GLsizei )), glCopyTexSubImage2D);
-    glCullFace = RESOLVE((void (APIENTRY *)(GLenum )), glCullFace);
-    glDeleteTextures = RESOLVE((void (APIENTRY *)(GLsizei , const GLuint *)), glDeleteTextures);
-    glDepthFunc = RESOLVE((void (APIENTRY *)(GLenum )), glDepthFunc);
-    glDepthMask = RESOLVE((void (APIENTRY *)(GLboolean )), glDepthMask);
-    glDisable = RESOLVE((void (APIENTRY *)(GLenum )), glDisable);
-    glDrawArrays = RESOLVE((void (APIENTRY *)(GLenum , GLint , GLsizei )), glDrawArrays);
-    glDrawElements = RESOLVE((void (APIENTRY *)(GLenum , GLsizei , GLenum , const GLvoid *)), glDrawElements);
-    glEnable = RESOLVE((void (APIENTRY *)(GLenum )), glEnable);
-    glFinish = RESOLVE((void (APIENTRY *)()), glFinish);
-    glFlush = RESOLVE((void (APIENTRY *)()), glFlush);
-    glFrontFace = RESOLVE((void (APIENTRY *)(GLenum )), glFrontFace);
-    glGenTextures = RESOLVE((void (APIENTRY *)(GLsizei , GLuint *)), glGenTextures);
-    glGetBooleanv = RESOLVE((void (APIENTRY *)(GLenum , GLboolean *)), glGetBooleanv);
-    glGetError = RESOLVE((GLenum (APIENTRY *)()), glGetError);
-    glGetFloatv = RESOLVE((void (APIENTRY *)(GLenum , GLfloat *)), glGetFloatv);
-    glGetIntegerv = RESOLVE((void (APIENTRY *)(GLenum , GLint *)), glGetIntegerv);
+    void (APIENTRY * glBindTexture)(GLenum target, GLuint texture) = RESOLVE((void (APIENTRY *)(GLenum , GLuint )), glBindTexture);
+    GLuint (APIENTRY * glCreateShader)(GLenum type) = RESOLVE((GLuint (APIENTRY *)(GLenum )), glCreateShader);
+    void (APIENTRY * glClearDepthf)(GLclampf depth) = RESOLVE((void (APIENTRY *)(GLclampf )), glClearDepthf);
     glGetString = RESOLVE((const GLubyte * (APIENTRY *)(GLenum )), glGetString);
-    glGetTexParameterfv = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLfloat *)), glGetTexParameterfv);
-    glGetTexParameteriv = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLint *)), glGetTexParameteriv);
-    glHint = RESOLVE((void (APIENTRY *)(GLenum , GLenum )), glHint);
-    glIsEnabled = RESOLVE((GLboolean (APIENTRY *)(GLenum )), glIsEnabled);
-    glIsTexture = RESOLVE((GLboolean (APIENTRY *)(GLuint )), glIsTexture);
-    glLineWidth = RESOLVE((void (APIENTRY *)(GLfloat )), glLineWidth);
-    glPixelStorei = RESOLVE((void (APIENTRY *)(GLenum , GLint )), glPixelStorei);
-    glPolygonOffset = RESOLVE((void (APIENTRY *)(GLfloat , GLfloat )), glPolygonOffset);
-    glReadPixels = RESOLVE((void (APIENTRY *)(GLint , GLint , GLsizei , GLsizei , GLenum , GLenum , GLvoid *)), glReadPixels);
-    glScissor = RESOLVE((void (APIENTRY *)(GLint , GLint , GLsizei , GLsizei )), glScissor);
-    glStencilFunc = RESOLVE((void (APIENTRY *)(GLenum , GLint , GLuint )), glStencilFunc);
-    glStencilMask = RESOLVE((void (APIENTRY *)(GLuint )), glStencilMask);
-    glStencilOp = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLenum )), glStencilOp);
-    glTexImage2D = RESOLVE((void (APIENTRY *)(GLenum , GLint , GLint , GLsizei , GLsizei , GLint , GLenum , GLenum , const GLvoid *)), glTexImage2D);
-    glTexParameterf = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLfloat )), glTexParameterf);
-    glTexParameterfv = RESOLVE((void (APIENTRY *)(GLenum , GLenum , const GLfloat *)), glTexParameterfv);
-    glTexParameteri = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLint )), glTexParameteri);
-    glTexParameteriv = RESOLVE((void (APIENTRY *)(GLenum , GLenum , const GLint *)), glTexParameteriv);
-    glTexSubImage2D = RESOLVE((void (APIENTRY *)(GLenum , GLint , GLint , GLint , GLsizei , GLsizei , GLenum , GLenum , const GLvoid *)), glTexSubImage2D);
-    glViewport = RESOLVE((void (APIENTRY *)(GLint , GLint , GLsizei , GLsizei )), glViewport);
-
-    glActiveTexture = RESOLVE((void (APIENTRY *)(GLenum)), glActiveTexture);
-    glAttachShader = RESOLVE((void (APIENTRY *)(GLuint , GLuint )), glAttachShader);
-    glBindAttribLocation = RESOLVE((void (APIENTRY *)(GLuint , GLuint , const GLchar* )), glBindAttribLocation);
-    glBindBuffer = RESOLVE((void (APIENTRY *)(GLenum , GLuint )), glBindBuffer);
-    glBindFramebuffer = RESOLVE((void (APIENTRY *)(GLenum , GLuint )), glBindFramebuffer);
-    glBindRenderbuffer = RESOLVE((void (APIENTRY *)(GLenum , GLuint )), glBindRenderbuffer);
-    glBlendColor = RESOLVE((void (APIENTRY *)(GLclampf , GLclampf , GLclampf , GLclampf )), glBlendColor);
-    glBlendEquation = RESOLVE((void (APIENTRY *)(GLenum )), glBlendEquation);
-    glBlendEquationSeparate = RESOLVE((void (APIENTRY *)(GLenum , GLenum )), glBlendEquationSeparate);
-    glBlendFuncSeparate = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLenum , GLenum )), glBlendFuncSeparate);
-    glBufferData = RESOLVE((void (APIENTRY *)(GLenum , qopengl_GLsizeiptr , const GLvoid* , GLenum )), glBufferData);
-    glBufferSubData = RESOLVE((void (APIENTRY *)(GLenum , qopengl_GLintptr , qopengl_GLsizeiptr , const GLvoid* )), glBufferSubData);
-    glCheckFramebufferStatus = RESOLVE((GLenum (APIENTRY *)(GLenum )), glCheckFramebufferStatus);
-    glCompileShader = RESOLVE((void (APIENTRY *)(GLuint )), glCompileShader);
-    glCompressedTexImage2D = RESOLVE((void (APIENTRY *)(GLenum , GLint , GLenum , GLsizei , GLsizei, GLint, GLsizei, const GLvoid* )), glCompressedTexImage2D);
-    glCompressedTexSubImage2D = RESOLVE((void (APIENTRY *)(GLenum , GLint , GLint , GLint, GLsizei, GLsizei, GLenum, GLsizei, const GLvoid* )), glCompressedTexSubImage2D);
-    glCreateProgram = RESOLVE((GLuint (APIENTRY *)(void)), glCreateProgram);
-    glCreateShader = RESOLVE((GLuint (APIENTRY *)(GLenum )), glCreateShader);
-    glDeleteBuffers = RESOLVE((void (APIENTRY *)(GLsizei , const GLuint*)), glDeleteBuffers);
-    glDeleteFramebuffers = RESOLVE((void (APIENTRY *)(GLsizei , const GLuint* )), glDeleteFramebuffers);
-    glDeleteProgram = RESOLVE((void (APIENTRY *)(GLuint )), glDeleteProgram);
-    glDeleteRenderbuffers = RESOLVE((void (APIENTRY *)(GLsizei , const GLuint* )), glDeleteRenderbuffers);
-    glDeleteShader = RESOLVE((void (APIENTRY *)(GLuint )), glDeleteShader);
-    glDetachShader = RESOLVE((void (APIENTRY *)(GLuint , GLuint )), glDetachShader);
-    glDisableVertexAttribArray = RESOLVE((void (APIENTRY *)(GLuint )), glDisableVertexAttribArray);
-    glEnableVertexAttribArray = RESOLVE((void (APIENTRY *)(GLuint )), glEnableVertexAttribArray);
-    glFramebufferRenderbuffer = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLenum , GLuint )), glFramebufferRenderbuffer);
-    glFramebufferTexture2D = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLenum , GLuint , GLint )), glFramebufferTexture2D);
-    glGenBuffers = RESOLVE((void (APIENTRY *)(GLsizei , GLuint* )), glGenBuffers);
-    glGenerateMipmap = RESOLVE((void (APIENTRY *)(GLenum )), glGenerateMipmap);
-    glGenFramebuffers = RESOLVE((void (APIENTRY *)(GLsizei , GLuint* )), glGenFramebuffers);
-    glGenRenderbuffers = RESOLVE((void (APIENTRY *)(GLsizei , GLuint* )), glGenRenderbuffers);
-    glGetActiveAttrib = RESOLVE((void (APIENTRY *)(GLuint , GLuint , GLsizei , GLsizei* , GLint* , GLenum* , GLchar* )), glGetActiveAttrib);
-    glGetActiveUniform = RESOLVE((void (APIENTRY *)(GLuint , GLuint , GLsizei , GLsizei* , GLint* , GLenum* , GLchar* )), glGetActiveUniform);
-    glGetAttachedShaders = RESOLVE((void (APIENTRY *)(GLuint , GLsizei , GLsizei*, GLuint* )), glGetAttachedShaders);
-    glGetAttribLocation = RESOLVE((int (APIENTRY *)(GLuint , const GLchar* )), glGetAttribLocation);
-    glGetBufferParameteriv = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLint* )), glGetBufferParameteriv);
-    glGetFramebufferAttachmentParameteriv = RESOLVE((void (APIENTRY *)(GLenum , GLenum, GLenum , GLint* )), glGetFramebufferAttachmentParameteriv);
-    glGetProgramiv = RESOLVE((void (APIENTRY *)(GLuint , GLenum , GLint* )), glGetProgramiv);
-    glGetProgramInfoLog = RESOLVE((void (APIENTRY *)(GLuint , GLsizei , GLsizei* , GLchar* )), glGetProgramInfoLog);
-    glGetRenderbufferParameteriv = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLint* )), glGetRenderbufferParameteriv);
-    glGetShaderiv = RESOLVE((void (APIENTRY *)(GLuint , GLenum , GLint* )), glGetShaderiv);
-    glGetShaderInfoLog = RESOLVE((void (APIENTRY *)(GLuint , GLsizei , GLsizei*, GLchar*)), glGetShaderInfoLog);
-    glGetShaderPrecisionFormat = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLint* , GLint* )), glGetShaderPrecisionFormat);
-    glGetShaderSource = RESOLVE((void (APIENTRY *)(GLuint , GLsizei , GLsizei* , GLchar* )), glGetShaderSource);
-    glGetUniformfv = RESOLVE((void (APIENTRY *)(GLuint , GLint , GLfloat*)), glGetUniformfv);
-    glGetUniformiv = RESOLVE((void (APIENTRY *)(GLuint , GLint , GLint*)), glGetUniformiv);
-    glGetUniformLocation = RESOLVE((int (APIENTRY *)(GLuint , const GLchar* )), glGetUniformLocation);
-    glGetVertexAttribfv = RESOLVE((void (APIENTRY *)(GLuint , GLenum , GLfloat* )), glGetVertexAttribfv);
-    glGetVertexAttribiv = RESOLVE((void (APIENTRY *)(GLuint , GLenum , GLint* )), glGetVertexAttribiv);
-    glGetVertexAttribPointerv = RESOLVE((void (APIENTRY *)(GLuint , GLenum , GLvoid** pointer)), glGetVertexAttribPointerv);
-    glIsBuffer = RESOLVE((GLboolean (APIENTRY *)(GLuint )), glIsBuffer);
-    glIsFramebuffer = RESOLVE((GLboolean (APIENTRY *)(GLuint )), glIsFramebuffer);
-    glIsProgram = RESOLVE((GLboolean (APIENTRY *)(GLuint )), glIsProgram);
-    glIsRenderbuffer = RESOLVE((GLboolean (APIENTRY *)(GLuint )), glIsRenderbuffer);
-    glIsShader = RESOLVE((GLboolean (APIENTRY *)(GLuint )), glIsShader);
-    glLinkProgram = RESOLVE((void (APIENTRY *)(GLuint )), glLinkProgram);
-    glReleaseShaderCompiler = RESOLVE((void (APIENTRY *)(void)), glReleaseShaderCompiler);
-    glRenderbufferStorage = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLsizei , GLsizei )), glRenderbufferStorage);
-    glSampleCoverage = RESOLVE((void (APIENTRY *)(GLclampf , GLboolean )), glSampleCoverage);
-    glShaderBinary = RESOLVE((void (APIENTRY *)(GLsizei , const GLuint*, GLenum , const GLvoid* , GLsizei )), glShaderBinary);
-    glShaderSource = RESOLVE((void (APIENTRY *)(GLuint , GLsizei , const GLchar* *, const GLint* )), glShaderSource);
-    glStencilFuncSeparate = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLint , GLuint )), glStencilFuncSeparate);
-    glStencilMaskSeparate = RESOLVE((void (APIENTRY *)(GLenum , GLuint )), glStencilMaskSeparate);
-    glStencilOpSeparate = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLenum , GLenum )), glStencilOpSeparate);
-    glUniform1f = RESOLVE((void (APIENTRY *)(GLint , GLfloat )), glUniform1f);
-    glUniform1fv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , const GLfloat* )), glUniform1fv);
-    glUniform1i = RESOLVE((void (APIENTRY *)(GLint , GLint )), glUniform1i);
-    glUniform1iv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , const GLint* )), glUniform1iv);
-    glUniform2f = RESOLVE((void (APIENTRY *)(GLint , GLfloat , GLfloat )), glUniform2f);
-    glUniform2fv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , const GLfloat* )), glUniform2fv);
-    glUniform2i = RESOLVE((void (APIENTRY *)(GLint , GLint , GLint )), glUniform2i);
-    glUniform2iv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , const GLint* )), glUniform2iv);
-    glUniform3f = RESOLVE((void (APIENTRY *)(GLint , GLfloat , GLfloat , GLfloat )), glUniform3f);
-    glUniform3fv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , const GLfloat* )), glUniform3fv);
-    glUniform3i = RESOLVE((void (APIENTRY *)(GLint , GLint , GLint , GLint )), glUniform3i);
-    glUniform3iv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , const GLint* )), glUniform3iv);
-    glUniform4f = RESOLVE((void (APIENTRY *)(GLint , GLfloat , GLfloat , GLfloat , GLfloat )), glUniform4f);
-    glUniform4fv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , const GLfloat* )), glUniform4fv);
-    glUniform4i = RESOLVE((void (APIENTRY *)(GLint , GLint , GLint , GLint , GLint )), glUniform4i);
-    glUniform4iv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , const GLint* )), glUniform4iv);
-    glUniformMatrix2fv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , GLboolean , const GLfloat* )), glUniformMatrix2fv);
-    glUniformMatrix3fv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , GLboolean , const GLfloat* )), glUniformMatrix3fv);
-    glUniformMatrix4fv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , GLboolean , const GLfloat* )), glUniformMatrix4fv);
-    glUseProgram = RESOLVE((void (APIENTRY *)(GLuint )), glUseProgram);
-    glValidateProgram = RESOLVE((void (APIENTRY *)(GLuint )), glValidateProgram);
-    glVertexAttrib1f = RESOLVE((void (APIENTRY *)(GLuint , GLfloat )), glVertexAttrib1f);
-    glVertexAttrib1fv = RESOLVE((void (APIENTRY *)(GLuint , const GLfloat* )), glVertexAttrib1fv);
-    glVertexAttrib2f = RESOLVE((void (APIENTRY *)(GLuint , GLfloat , GLfloat )), glVertexAttrib2f);
-    glVertexAttrib2fv = RESOLVE((void (APIENTRY *)(GLuint , const GLfloat* )), glVertexAttrib2fv);
-    glVertexAttrib3f = RESOLVE((void (APIENTRY *)(GLuint , GLfloat , GLfloat , GLfloat )), glVertexAttrib3f);
-    glVertexAttrib3fv = RESOLVE((void (APIENTRY *)(GLuint , const GLfloat* )), glVertexAttrib3fv);
-    glVertexAttrib4f = RESOLVE((void (APIENTRY *)(GLuint , GLfloat , GLfloat , GLfloat , GLfloat )), glVertexAttrib4f);
-    glVertexAttrib4fv = RESOLVE((void (APIENTRY *)(GLuint , const GLfloat* )), glVertexAttrib4fv);
-    glVertexAttribPointer = RESOLVE((void (APIENTRY *)(GLuint , GLint, GLenum, GLboolean, GLsizei, const GLvoid* )), glVertexAttribPointer);
-
-    glClearDepthf = RESOLVE((void (APIENTRY *)(GLclampf )), glClearDepthf);
-    glDepthRangef = RESOLVE((void (APIENTRY *)(GLclampf , GLclampf )), glDepthRangef);
 
     return glBindTexture && glCreateShader && glClearDepthf;
 }
@@ -685,168 +537,174 @@ void QWindowsEGLContext::swapBuffers(QPlatformSurface *surface)
 
 QFunctionPointer QWindowsEGLContext::getProcAddress(const char *procName)
 {
+    QWindowsEGLStaticContext::libEGL.eglBindAPI(m_api);
+    QFunctionPointer procAddress = reinterpret_cast<QFunctionPointer>(QWindowsEGLStaticContext::libEGL.eglGetProcAddress(procName));
+
     // We support AllGLFunctionsQueryable, which means this function must be able to
     // return a function pointer for standard GLES2 functions too. These are not
     // guaranteed to be queryable via eglGetProcAddress().
-    static struct StdFunc {
-        const char *name;
-        void *func;
-    } standardFuncs[] = {
-        { "glBindTexture", (void *) QWindowsEGLStaticContext::libGLESv2.glBindTexture },
-        { "glBlendFunc", (void *) QWindowsEGLStaticContext::libGLESv2.glBlendFunc },
-        { "glClear", (void *) QWindowsEGLStaticContext::libGLESv2.glClear },
-        { "glClearColor", (void *) QWindowsEGLStaticContext::libGLESv2.glClearColor },
-        { "glClearStencil", (void *) QWindowsEGLStaticContext::libGLESv2.glClearStencil },
-        { "glColorMask", (void *) QWindowsEGLStaticContext::libGLESv2.glColorMask },
-        { "glCopyTexImage2D", (void *) QWindowsEGLStaticContext::libGLESv2.glCopyTexImage2D },
-        { "glCopyTexSubImage2D", (void *) QWindowsEGLStaticContext::libGLESv2.glCopyTexSubImage2D },
-        { "glCullFace", (void *) QWindowsEGLStaticContext::libGLESv2.glCullFace },
-        { "glDeleteTextures", (void *) QWindowsEGLStaticContext::libGLESv2.glDeleteTextures },
-        { "glDepthFunc", (void *) QWindowsEGLStaticContext::libGLESv2.glDepthFunc },
-        { "glDepthMask", (void *) QWindowsEGLStaticContext::libGLESv2.glDepthMask },
-        { "glDisable", (void *) QWindowsEGLStaticContext::libGLESv2.glDisable },
-        { "glDrawArrays", (void *) QWindowsEGLStaticContext::libGLESv2.glDrawArrays },
-        { "glDrawElements", (void *) QWindowsEGLStaticContext::libGLESv2.glDrawElements },
-        { "glEnable", (void *) QWindowsEGLStaticContext::libGLESv2.glEnable },
-        { "glFinish", (void *) QWindowsEGLStaticContext::libGLESv2.glFinish },
-        { "glFlush", (void *) QWindowsEGLStaticContext::libGLESv2.glFlush },
-        { "glFrontFace", (void *) QWindowsEGLStaticContext::libGLESv2.glFrontFace },
-        { "glGenTextures", (void *) QWindowsEGLStaticContext::libGLESv2.glGenTextures },
-        { "glGetBooleanv", (void *) QWindowsEGLStaticContext::libGLESv2.glGetBooleanv },
-        { "glGetError", (void *) QWindowsEGLStaticContext::libGLESv2.glGetError },
-        { "glGetFloatv", (void *) QWindowsEGLStaticContext::libGLESv2.glGetFloatv },
-        { "glGetIntegerv", (void *) QWindowsEGLStaticContext::libGLESv2.glGetIntegerv },
-        { "glGetString", (void *) QWindowsEGLStaticContext::libGLESv2.glGetString },
-        { "glGetTexParameterfv", (void *) QWindowsEGLStaticContext::libGLESv2.glGetTexParameterfv },
-        { "glGetTexParameteriv", (void *) QWindowsEGLStaticContext::libGLESv2.glGetTexParameteriv },
-        { "glHint", (void *) QWindowsEGLStaticContext::libGLESv2.glHint },
-        { "glIsEnabled", (void *) QWindowsEGLStaticContext::libGLESv2.glIsEnabled },
-        { "glIsTexture", (void *) QWindowsEGLStaticContext::libGLESv2.glIsTexture },
-        { "glLineWidth", (void *) QWindowsEGLStaticContext::libGLESv2.glLineWidth },
-        { "glPixelStorei", (void *) QWindowsEGLStaticContext::libGLESv2.glPixelStorei },
-        { "glPolygonOffset", (void *) QWindowsEGLStaticContext::libGLESv2.glPolygonOffset },
-        { "glReadPixels", (void *) QWindowsEGLStaticContext::libGLESv2.glReadPixels },
-        { "glScissor", (void *) QWindowsEGLStaticContext::libGLESv2.glScissor },
-        { "glStencilFunc", (void *) QWindowsEGLStaticContext::libGLESv2.glStencilFunc },
-        { "glStencilMask", (void *) QWindowsEGLStaticContext::libGLESv2.glStencilMask },
-        { "glStencilOp", (void *) QWindowsEGLStaticContext::libGLESv2.glStencilOp },
-        { "glTexImage2D", (void *) QWindowsEGLStaticContext::libGLESv2.glTexImage2D },
-        { "glTexParameterf", (void *) QWindowsEGLStaticContext::libGLESv2.glTexParameterf },
-        { "glTexParameterfv", (void *) QWindowsEGLStaticContext::libGLESv2.glTexParameterfv },
-        { "glTexParameteri", (void *) QWindowsEGLStaticContext::libGLESv2.glTexParameteri },
-        { "glTexParameteriv", (void *) QWindowsEGLStaticContext::libGLESv2.glTexParameteriv },
-        { "glTexSubImage2D", (void *) QWindowsEGLStaticContext::libGLESv2.glTexSubImage2D },
-        { "glViewport", (void *) QWindowsEGLStaticContext::libGLESv2.glViewport },
+    if (!procAddress) {
+#if defined(QT_STATIC)
+        static struct StdFunc {
+            const char *name;
+            void *func;
+        } standardFuncs[] = {
+            { "glBindTexture", (void *) ::glBindTexture },
+            { "glBlendFunc", (void *) ::glBlendFunc },
+            { "glClear", (void *) ::glClear },
+            { "glClearColor", (void *) ::glClearColor },
+            { "glClearStencil", (void *) ::glClearStencil },
+            { "glColorMask", (void *) ::glColorMask },
+            { "glCopyTexImage2D", (void *) ::glCopyTexImage2D },
+            { "glCopyTexSubImage2D", (void *) ::glCopyTexSubImage2D },
+            { "glCullFace", (void *) ::glCullFace },
+            { "glDeleteTextures", (void *) ::glDeleteTextures },
+            { "glDepthFunc", (void *) ::glDepthFunc },
+            { "glDepthMask", (void *) ::glDepthMask },
+            { "glDisable", (void *) ::glDisable },
+            { "glDrawArrays", (void *) ::glDrawArrays },
+            { "glDrawElements", (void *) ::glDrawElements },
+            { "glEnable", (void *) ::glEnable },
+            { "glFinish", (void *) ::glFinish },
+            { "glFlush", (void *) ::glFlush },
+            { "glFrontFace", (void *) ::glFrontFace },
+            { "glGenTextures", (void *) ::glGenTextures },
+            { "glGetBooleanv", (void *) ::glGetBooleanv },
+            { "glGetError", (void *) ::glGetError },
+            { "glGetFloatv", (void *) ::glGetFloatv },
+            { "glGetIntegerv", (void *) ::glGetIntegerv },
+            { "glGetString", (void *) ::glGetString },
+            { "glGetTexParameterfv", (void *) ::glGetTexParameterfv },
+            { "glGetTexParameteriv", (void *) ::glGetTexParameteriv },
+            { "glHint", (void *) ::glHint },
+            { "glIsEnabled", (void *) ::glIsEnabled },
+            { "glIsTexture", (void *) ::glIsTexture },
+            { "glLineWidth", (void *) ::glLineWidth },
+            { "glPixelStorei", (void *) ::glPixelStorei },
+            { "glPolygonOffset", (void *) ::glPolygonOffset },
+            { "glReadPixels", (void *) ::glReadPixels },
+            { "glScissor", (void *) ::glScissor },
+            { "glStencilFunc", (void *) ::glStencilFunc },
+            { "glStencilMask", (void *) ::glStencilMask },
+            { "glStencilOp", (void *) ::glStencilOp },
+            { "glTexImage2D", (void *) ::glTexImage2D },
+            { "glTexParameterf", (void *) ::glTexParameterf },
+            { "glTexParameterfv", (void *) ::glTexParameterfv },
+            { "glTexParameteri", (void *) ::glTexParameteri },
+            { "glTexParameteriv", (void *) ::glTexParameteriv },
+            { "glTexSubImage2D", (void *) ::glTexSubImage2D },
+            { "glViewport", (void *) ::glViewport },
 
-        { "glActiveTexture", (void *) QWindowsEGLStaticContext::libGLESv2.glActiveTexture },
-        { "glAttachShader", (void *) QWindowsEGLStaticContext::libGLESv2.glAttachShader },
-        { "glBindAttribLocation", (void *) QWindowsEGLStaticContext::libGLESv2.glBindAttribLocation },
-        { "glBindBuffer", (void *) QWindowsEGLStaticContext::libGLESv2.glBindBuffer },
-        { "glBindFramebuffer", (void *) QWindowsEGLStaticContext::libGLESv2.glBindFramebuffer },
-        { "glBindRenderbuffer", (void *) QWindowsEGLStaticContext::libGLESv2.glBindRenderbuffer },
-        { "glBlendColor", (void *) QWindowsEGLStaticContext::libGLESv2.glBlendColor },
-        { "glBlendEquation", (void *) QWindowsEGLStaticContext::libGLESv2.glBlendEquation },
-        { "glBlendEquationSeparate", (void *) QWindowsEGLStaticContext::libGLESv2.glBlendEquationSeparate },
-        { "glBlendFuncSeparate", (void *) QWindowsEGLStaticContext::libGLESv2.glBlendFuncSeparate },
-        { "glBufferData", (void *) QWindowsEGLStaticContext::libGLESv2.glBufferData },
-        { "glBufferSubData", (void *) QWindowsEGLStaticContext::libGLESv2.glBufferSubData },
-        { "glCheckFramebufferStatus", (void *) QWindowsEGLStaticContext::libGLESv2.glCheckFramebufferStatus },
-        { "glCompileShader", (void *) QWindowsEGLStaticContext::libGLESv2.glCompileShader },
-        { "glCompressedTexImage2D", (void *) QWindowsEGLStaticContext::libGLESv2.glCompressedTexImage2D },
-        { "glCompressedTexSubImage2D", (void *) QWindowsEGLStaticContext::libGLESv2.glCompressedTexSubImage2D },
-        { "glCreateProgram", (void *) QWindowsEGLStaticContext::libGLESv2.glCreateProgram },
-        { "glCreateShader", (void *) QWindowsEGLStaticContext::libGLESv2.glCreateShader },
-        { "glDeleteBuffers", (void *) QWindowsEGLStaticContext::libGLESv2.glDeleteBuffers },
-        { "glDeleteFramebuffers", (void *) QWindowsEGLStaticContext::libGLESv2.glDeleteFramebuffers },
-        { "glDeleteProgram", (void *) QWindowsEGLStaticContext::libGLESv2.glDeleteProgram },
-        { "glDeleteRenderbuffers", (void *) QWindowsEGLStaticContext::libGLESv2.glDeleteRenderbuffers },
-        { "glDeleteShader", (void *) QWindowsEGLStaticContext::libGLESv2.glDeleteShader },
-        { "glDetachShader", (void *) QWindowsEGLStaticContext::libGLESv2.glDetachShader },
-        { "glDisableVertexAttribArray", (void *) QWindowsEGLStaticContext::libGLESv2.glDisableVertexAttribArray },
-        { "glEnableVertexAttribArray", (void *) QWindowsEGLStaticContext::libGLESv2.glEnableVertexAttribArray },
-        { "glFramebufferRenderbuffer", (void *) QWindowsEGLStaticContext::libGLESv2.glFramebufferRenderbuffer },
-        { "glFramebufferTexture2D", (void *) QWindowsEGLStaticContext::libGLESv2.glFramebufferTexture2D },
-        { "glGenBuffers", (void *) QWindowsEGLStaticContext::libGLESv2.glGenBuffers },
-        { "glGenerateMipmap", (void *) QWindowsEGLStaticContext::libGLESv2.glGenerateMipmap },
-        { "glGenFramebuffers", (void *) QWindowsEGLStaticContext::libGLESv2.glGenFramebuffers },
-        { "glGenRenderbuffers", (void *) QWindowsEGLStaticContext::libGLESv2.glGenRenderbuffers },
-        { "glGetActiveAttrib", (void *) QWindowsEGLStaticContext::libGLESv2.glGetActiveAttrib },
-        { "glGetActiveUniform", (void *) QWindowsEGLStaticContext::libGLESv2.glGetActiveUniform },
-        { "glGetAttachedShaders", (void *) QWindowsEGLStaticContext::libGLESv2.glGetAttachedShaders },
-        { "glGetAttribLocation", (void *) QWindowsEGLStaticContext::libGLESv2.glGetAttribLocation },
-        { "glGetBufferParameteriv", (void *) QWindowsEGLStaticContext::libGLESv2.glGetBufferParameteriv },
-        { "glGetFramebufferAttachmentParameteriv", (void *) QWindowsEGLStaticContext::libGLESv2.glGetFramebufferAttachmentParameteriv },
-        { "glGetProgramiv", (void *) QWindowsEGLStaticContext::libGLESv2.glGetProgramiv },
-        { "glGetProgramInfoLog", (void *) QWindowsEGLStaticContext::libGLESv2.glGetProgramInfoLog },
-        { "glGetRenderbufferParameteriv", (void *) QWindowsEGLStaticContext::libGLESv2.glGetRenderbufferParameteriv },
-        { "glGetShaderiv", (void *) QWindowsEGLStaticContext::libGLESv2.glGetShaderiv },
-        { "glGetShaderInfoLog", (void *) QWindowsEGLStaticContext::libGLESv2.glGetShaderInfoLog },
-        { "glGetShaderPrecisionFormat", (void *) QWindowsEGLStaticContext::libGLESv2.glGetShaderPrecisionFormat },
-        { "glGetShaderSource", (void *) QWindowsEGLStaticContext::libGLESv2.glGetShaderSource },
-        { "glGetUniformfv", (void *) QWindowsEGLStaticContext::libGLESv2.glGetUniformfv },
-        { "glGetUniformiv", (void *) QWindowsEGLStaticContext::libGLESv2.glGetUniformiv },
-        { "glGetUniformLocation", (void *) QWindowsEGLStaticContext::libGLESv2.glGetUniformLocation },
-        { "glGetVertexAttribfv", (void *) QWindowsEGLStaticContext::libGLESv2.glGetVertexAttribfv },
-        { "glGetVertexAttribiv", (void *) QWindowsEGLStaticContext::libGLESv2.glGetVertexAttribiv },
-        { "glGetVertexAttribPointerv", (void *) QWindowsEGLStaticContext::libGLESv2.glGetVertexAttribPointerv },
-        { "glIsBuffer", (void *) QWindowsEGLStaticContext::libGLESv2.glIsBuffer },
-        { "glIsFramebuffer", (void *) QWindowsEGLStaticContext::libGLESv2.glIsFramebuffer },
-        { "glIsProgram", (void *) QWindowsEGLStaticContext::libGLESv2.glIsProgram },
-        { "glIsRenderbuffer", (void *) QWindowsEGLStaticContext::libGLESv2.glIsRenderbuffer },
-        { "glIsShader", (void *) QWindowsEGLStaticContext::libGLESv2.glIsShader },
-        { "glLinkProgram", (void *) QWindowsEGLStaticContext::libGLESv2.glLinkProgram },
-        { "glReleaseShaderCompiler", (void *) QWindowsEGLStaticContext::libGLESv2.glReleaseShaderCompiler },
-        { "glRenderbufferStorage", (void *) QWindowsEGLStaticContext::libGLESv2.glRenderbufferStorage },
-        { "glSampleCoverage", (void *) QWindowsEGLStaticContext::libGLESv2.glSampleCoverage },
-        { "glShaderBinary", (void *) QWindowsEGLStaticContext::libGLESv2.glShaderBinary },
-        { "glShaderSource", (void *) QWindowsEGLStaticContext::libGLESv2.glShaderSource },
-        { "glStencilFuncSeparate", (void *) QWindowsEGLStaticContext::libGLESv2.glStencilFuncSeparate },
-        { "glStencilMaskSeparate", (void *) QWindowsEGLStaticContext::libGLESv2.glStencilMaskSeparate },
-        { "glStencilOpSeparate", (void *) QWindowsEGLStaticContext::libGLESv2.glStencilOpSeparate },
-        { "glUniform1f", (void *) QWindowsEGLStaticContext::libGLESv2.glUniform1f },
-        { "glUniform1fv", (void *) QWindowsEGLStaticContext::libGLESv2.glUniform1fv },
-        { "glUniform1i", (void *) QWindowsEGLStaticContext::libGLESv2.glUniform1i },
-        { "glUniform1iv", (void *) QWindowsEGLStaticContext::libGLESv2.glUniform1iv },
-        { "glUniform2f", (void *) QWindowsEGLStaticContext::libGLESv2.glUniform2f },
-        { "glUniform2fv", (void *) QWindowsEGLStaticContext::libGLESv2.glUniform2fv },
-        { "glUniform2i", (void *) QWindowsEGLStaticContext::libGLESv2.glUniform2i },
-        { "glUniform2iv", (void *) QWindowsEGLStaticContext::libGLESv2.glUniform2iv },
-        { "glUniform3f", (void *) QWindowsEGLStaticContext::libGLESv2.glUniform3f },
-        { "glUniform3fv", (void *) QWindowsEGLStaticContext::libGLESv2.glUniform3fv },
-        { "glUniform3i", (void *) QWindowsEGLStaticContext::libGLESv2.glUniform3i },
-        { "glUniform3iv", (void *) QWindowsEGLStaticContext::libGLESv2.glUniform3iv },
-        { "glUniform4f", (void *) QWindowsEGLStaticContext::libGLESv2.glUniform4f },
-        { "glUniform4fv", (void *) QWindowsEGLStaticContext::libGLESv2.glUniform4fv },
-        { "glUniform4i", (void *) QWindowsEGLStaticContext::libGLESv2.glUniform4i },
-        { "glUniform4iv", (void *) QWindowsEGLStaticContext::libGLESv2.glUniform4iv },
-        { "glUniformMatrix2fv", (void *) QWindowsEGLStaticContext::libGLESv2.glUniformMatrix2fv },
-        { "glUniformMatrix3fv", (void *) QWindowsEGLStaticContext::libGLESv2.glUniformMatrix3fv },
-        { "glUniformMatrix4fv", (void *) QWindowsEGLStaticContext::libGLESv2.glUniformMatrix4fv },
-        { "glUseProgram", (void *) QWindowsEGLStaticContext::libGLESv2.glUseProgram },
-        { "glValidateProgram", (void *) QWindowsEGLStaticContext::libGLESv2.glValidateProgram },
-        { "glVertexAttrib1f", (void *) QWindowsEGLStaticContext::libGLESv2.glVertexAttrib1f },
-        { "glVertexAttrib1fv", (void *) QWindowsEGLStaticContext::libGLESv2.glVertexAttrib1fv },
-        { "glVertexAttrib2f", (void *) QWindowsEGLStaticContext::libGLESv2.glVertexAttrib2f },
-        { "glVertexAttrib2fv", (void *) QWindowsEGLStaticContext::libGLESv2.glVertexAttrib2fv },
-        { "glVertexAttrib3f", (void *) QWindowsEGLStaticContext::libGLESv2.glVertexAttrib3f },
-        { "glVertexAttrib3fv", (void *) QWindowsEGLStaticContext::libGLESv2.glVertexAttrib3fv },
-        { "glVertexAttrib4f", (void *) QWindowsEGLStaticContext::libGLESv2.glVertexAttrib4f },
-        { "glVertexAttrib4fv", (void *) QWindowsEGLStaticContext::libGLESv2.glVertexAttrib4fv },
-        { "glVertexAttribPointer", (void *) QWindowsEGLStaticContext::libGLESv2.glVertexAttribPointer },
+            { "glActiveTexture", (void *) ::glActiveTexture },
+            { "glAttachShader", (void *) ::glAttachShader },
+            { "glBindAttribLocation", (void *) ::glBindAttribLocation },
+            { "glBindBuffer", (void *) ::glBindBuffer },
+            { "glBindFramebuffer", (void *) ::glBindFramebuffer },
+            { "glBindRenderbuffer", (void *) ::glBindRenderbuffer },
+            { "glBlendColor", (void *) ::glBlendColor },
+            { "glBlendEquation", (void *) ::glBlendEquation },
+            { "glBlendEquationSeparate", (void *) ::glBlendEquationSeparate },
+            { "glBlendFuncSeparate", (void *) ::glBlendFuncSeparate },
+            { "glBufferData", (void *) ::glBufferData },
+            { "glBufferSubData", (void *) ::glBufferSubData },
+            { "glCheckFramebufferStatus", (void *) ::glCheckFramebufferStatus },
+            { "glCompileShader", (void *) ::glCompileShader },
+            { "glCompressedTexImage2D", (void *) ::glCompressedTexImage2D },
+            { "glCompressedTexSubImage2D", (void *) ::glCompressedTexSubImage2D },
+            { "glCreateProgram", (void *) ::glCreateProgram },
+            { "glCreateShader", (void *) ::glCreateShader },
+            { "glDeleteBuffers", (void *) ::glDeleteBuffers },
+            { "glDeleteFramebuffers", (void *) ::glDeleteFramebuffers },
+            { "glDeleteProgram", (void *) ::glDeleteProgram },
+            { "glDeleteRenderbuffers", (void *) ::glDeleteRenderbuffers },
+            { "glDeleteShader", (void *) ::glDeleteShader },
+            { "glDetachShader", (void *) ::glDetachShader },
+            { "glDisableVertexAttribArray", (void *) ::glDisableVertexAttribArray },
+            { "glEnableVertexAttribArray", (void *) ::glEnableVertexAttribArray },
+            { "glFramebufferRenderbuffer", (void *) ::glFramebufferRenderbuffer },
+            { "glFramebufferTexture2D", (void *) ::glFramebufferTexture2D },
+            { "glGenBuffers", (void *) ::glGenBuffers },
+            { "glGenerateMipmap", (void *) ::glGenerateMipmap },
+            { "glGenFramebuffers", (void *) ::glGenFramebuffers },
+            { "glGenRenderbuffers", (void *) ::glGenRenderbuffers },
+            { "glGetActiveAttrib", (void *) ::glGetActiveAttrib },
+            { "glGetActiveUniform", (void *) ::glGetActiveUniform },
+            { "glGetAttachedShaders", (void *) ::glGetAttachedShaders },
+            { "glGetAttribLocation", (void *) ::glGetAttribLocation },
+            { "glGetBufferParameteriv", (void *) ::glGetBufferParameteriv },
+            { "glGetFramebufferAttachmentParameteriv", (void *) ::glGetFramebufferAttachmentParameteriv },
+            { "glGetProgramiv", (void *) ::glGetProgramiv },
+            { "glGetProgramInfoLog", (void *) ::glGetProgramInfoLog },
+            { "glGetRenderbufferParameteriv", (void *) ::glGetRenderbufferParameteriv },
+            { "glGetShaderiv", (void *) ::glGetShaderiv },
+            { "glGetShaderInfoLog", (void *) ::glGetShaderInfoLog },
+            { "glGetShaderPrecisionFormat", (void *) ::glGetShaderPrecisionFormat },
+            { "glGetShaderSource", (void *) ::glGetShaderSource },
+            { "glGetUniformfv", (void *) ::glGetUniformfv },
+            { "glGetUniformiv", (void *) ::glGetUniformiv },
+            { "glGetUniformLocation", (void *) ::glGetUniformLocation },
+            { "glGetVertexAttribfv", (void *) ::glGetVertexAttribfv },
+            { "glGetVertexAttribiv", (void *) ::glGetVertexAttribiv },
+            { "glGetVertexAttribPointerv", (void *) ::glGetVertexAttribPointerv },
+            { "glIsBuffer", (void *) ::glIsBuffer },
+            { "glIsFramebuffer", (void *) ::glIsFramebuffer },
+            { "glIsProgram", (void *) ::glIsProgram },
+            { "glIsRenderbuffer", (void *) ::glIsRenderbuffer },
+            { "glIsShader", (void *) ::glIsShader },
+            { "glLinkProgram", (void *) ::glLinkProgram },
+            { "glReleaseShaderCompiler", (void *) ::glReleaseShaderCompiler },
+            { "glRenderbufferStorage", (void *) ::glRenderbufferStorage },
+            { "glSampleCoverage", (void *) ::glSampleCoverage },
+            { "glShaderBinary", (void *) ::glShaderBinary },
+            { "glShaderSource", (void *) ::glShaderSource },
+            { "glStencilFuncSeparate", (void *) ::glStencilFuncSeparate },
+            { "glStencilMaskSeparate", (void *) ::glStencilMaskSeparate },
+            { "glStencilOpSeparate", (void *) ::glStencilOpSeparate },
+            { "glUniform1f", (void *) ::glUniform1f },
+            { "glUniform1fv", (void *) ::glUniform1fv },
+            { "glUniform1i", (void *) ::glUniform1i },
+            { "glUniform1iv", (void *) ::glUniform1iv },
+            { "glUniform2f", (void *) ::glUniform2f },
+            { "glUniform2fv", (void *) ::glUniform2fv },
+            { "glUniform2i", (void *) ::glUniform2i },
+            { "glUniform2iv", (void *) ::glUniform2iv },
+            { "glUniform3f", (void *) ::glUniform3f },
+            { "glUniform3fv", (void *) ::glUniform3fv },
+            { "glUniform3i", (void *) ::glUniform3i },
+            { "glUniform3iv", (void *) ::glUniform3iv },
+            { "glUniform4f", (void *) ::glUniform4f },
+            { "glUniform4fv", (void *) ::glUniform4fv },
+            { "glUniform4i", (void *) ::glUniform4i },
+            { "glUniform4iv", (void *) ::glUniform4iv },
+            { "glUniformMatrix2fv", (void *) ::glUniformMatrix2fv },
+            { "glUniformMatrix3fv", (void *) ::glUniformMatrix3fv },
+            { "glUniformMatrix4fv", (void *) ::glUniformMatrix4fv },
+            { "glUseProgram", (void *) ::glUseProgram },
+            { "glValidateProgram", (void *) ::glValidateProgram },
+            { "glVertexAttrib1f", (void *) ::glVertexAttrib1f },
+            { "glVertexAttrib1fv", (void *) ::glVertexAttrib1fv },
+            { "glVertexAttrib2f", (void *) ::glVertexAttrib2f },
+            { "glVertexAttrib2fv", (void *) ::glVertexAttrib2fv },
+            { "glVertexAttrib3f", (void *) ::glVertexAttrib3f },
+            { "glVertexAttrib3fv", (void *) ::glVertexAttrib3fv },
+            { "glVertexAttrib4f", (void *) ::glVertexAttrib4f },
+            { "glVertexAttrib4fv", (void *) ::glVertexAttrib4fv },
+            { "glVertexAttribPointer", (void *) ::glVertexAttribPointer },
 
-        { "glClearDepthf", (void *) QWindowsEGLStaticContext::libGLESv2.glClearDepthf },
-        { "glDepthRangef", (void *) QWindowsEGLStaticContext::libGLESv2.glDepthRangef }
-    };
-    for (size_t i = 0; i < sizeof(standardFuncs) / sizeof(StdFunc); ++i)
-        if (!qstrcmp(procName, standardFuncs[i].name))
-            return reinterpret_cast<QFunctionPointer>(standardFuncs[i].func);
+            { "glClearDepthf", (void *) ::glClearDepthf },
+            { "glDepthRangef", (void *) ::glDepthRangef }
+        };
+        for (size_t i = 0; i < sizeof(standardFuncs) / sizeof(StdFunc); ++i)
+            if (!qstrcmp(procName, standardFuncs[i].name))
+                return reinterpret_cast<QFunctionPointer>(standardFuncs[i].func);
+#else
+            procAddress = reinterpret_cast<QFunctionPointer>(QWindowsEGLStaticContext::libGLESv2.resolve(procName));
+#endif
+}
 
-    QWindowsEGLStaticContext::libEGL.eglBindAPI(m_api);
-    QFunctionPointer procAddress = reinterpret_cast<QFunctionPointer>(QWindowsEGLStaticContext::libEGL.eglGetProcAddress(procName));
     if (QWindowsContext::verbose > 1)
         qCDebug(lcQpaGl) << __FUNCTION__ <<  procName << QWindowsEGLStaticContext::libEGL.eglGetCurrentContext() << "returns" << procAddress;
-    if (!procAddress && QWindowsContext::verbose)
-        qWarning("%s: Unable to resolve '%s'", __FUNCTION__, procName);
+
     return procAddress;
 }
 

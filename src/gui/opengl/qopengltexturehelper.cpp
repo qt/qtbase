@@ -143,17 +143,6 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
         TextureImage2DMultisample = &QOpenGLTextureHelper::qt_TextureImage2DMultisample;
     }
 
-#if defined(Q_OS_WIN) && !defined(QT_OPENGL_ES_2)
-    // wglGetProcAddress should not be used to (and indeed will not) load OpenGL <= 1.1 functions.
-    // Hence, we resolve them "the hard way"
-    HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
-    if (!handle)
-        handle = GetModuleHandleA("opengl32.dll");
-
-    TexImage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLint , GLenum , GLenum , const GLvoid *)>(GetProcAddress(handle, QByteArrayLiteral("glTexImage1D")));
-    TexSubImage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLenum , GLenum , const GLvoid *)>(GetProcAddress(handle, QByteArrayLiteral("glTexSubImage1D")));
-#endif
-
 #if defined(QT_OPENGL_ES_2)
     // Here we are targeting OpenGL ES 2.0+ only. This is likely using EGL, where,
     // similarly to WGL, non-extension functions (i.e. any function that is part of the
@@ -227,6 +216,10 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
     }
 
 #ifndef QT_OPENGL_ES_2
+    // OpenGL 1.0 and 1.1
+    TexImage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLint , GLenum , GLenum , const GLvoid *)>(context->getProcAddress("glTexImage1D"));
+    TexSubImage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLenum , GLenum , const GLvoid *)>(context->getProcAddress("glTexSubImage1D"));\
+
     // OpenGL 1.3
     GetCompressedTexImage = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLvoid *)>(context->getProcAddress("glGetCompressedTexImage"));
     CompressedTexSubImage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLenum , GLsizei , const GLvoid *)>(context->getProcAddress("glCompressedTexSubImage1D"));

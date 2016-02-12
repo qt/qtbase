@@ -67,24 +67,6 @@ void CLASS::init() \
     } \
 }
 
-#ifdef Q_OS_WIN
-#define QT_OPENGL_IMPLEMENT_WIN(CLASS, FUNCTIONS) \
-void CLASS::init() \
-{ \
-    HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle()); \
-    if (!handle) \
-        handle = GetModuleHandleA("opengl32.dll"); \
-    const char *names = FUNCTIONS(QT_OPENGL_FUNCTION_NAMES); \
-    const char *name = names; \
-    for (int i = 0; i < FUNCTIONS(QT_OPENGL_COUNT_FUNCTIONS); ++i) { \
-        functions[i] = (QFunctionPointer)GetProcAddress(handle, name); \
-        name += strlen(name) + 1; \
-    } \
-}
-#else
-#define QT_OPENGL_IMPLEMENT_WIN QT_OPENGL_IMPLEMENT
-#endif
-
 QOpenGLVersionFunctionsStorage::QOpenGLVersionFunctionsStorage()
     : backends(0)
 {
@@ -325,8 +307,8 @@ QOpenGLContext *QAbstractOpenGLFunctions::owningContext() const
 
 #if !defined(QT_OPENGL_ES_2)
 
-QT_OPENGL_IMPLEMENT_WIN(QOpenGLFunctions_1_0_CoreBackend, QT_OPENGL_1_0_FUNCTIONS)
-QT_OPENGL_IMPLEMENT_WIN(QOpenGLFunctions_1_1_CoreBackend, QT_OPENGL_1_1_FUNCTIONS)
+QT_OPENGL_IMPLEMENT(QOpenGLFunctions_1_0_CoreBackend, QT_OPENGL_1_0_FUNCTIONS)
+QT_OPENGL_IMPLEMENT(QOpenGLFunctions_1_1_CoreBackend, QT_OPENGL_1_1_FUNCTIONS)
 
 QT_OPENGL_IMPLEMENT(QOpenGLFunctions_1_2_CoreBackend, QT_OPENGL_1_2_FUNCTIONS)
 QT_OPENGL_IMPLEMENT(QOpenGLFunctions_1_3_CoreBackend, QT_OPENGL_1_3_FUNCTIONS)
@@ -345,8 +327,8 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctions_4_3_CoreBackend, QT_OPENGL_4_3_FUNCTIONS)
 QT_OPENGL_IMPLEMENT(QOpenGLFunctions_4_4_CoreBackend, QT_OPENGL_4_4_FUNCTIONS)
 QT_OPENGL_IMPLEMENT(QOpenGLFunctions_4_5_CoreBackend, QT_OPENGL_4_5_FUNCTIONS)
 
-QT_OPENGL_IMPLEMENT_WIN(QOpenGLFunctions_1_0_DeprecatedBackend, QT_OPENGL_1_0_DEPRECATED_FUNCTIONS)
-QT_OPENGL_IMPLEMENT_WIN(QOpenGLFunctions_1_1_DeprecatedBackend, QT_OPENGL_1_1_DEPRECATED_FUNCTIONS)
+QT_OPENGL_IMPLEMENT(QOpenGLFunctions_1_0_DeprecatedBackend, QT_OPENGL_1_0_DEPRECATED_FUNCTIONS)
+QT_OPENGL_IMPLEMENT(QOpenGLFunctions_1_1_DeprecatedBackend, QT_OPENGL_1_1_DEPRECATED_FUNCTIONS)
 
 QT_OPENGL_IMPLEMENT(QOpenGLFunctions_1_2_DeprecatedBackend, QT_OPENGL_1_2_DEPRECATED_FUNCTIONS)
 QT_OPENGL_IMPLEMENT(QOpenGLFunctions_1_3_DeprecatedBackend, QT_OPENGL_1_3_DEPRECATED_FUNCTIONS)

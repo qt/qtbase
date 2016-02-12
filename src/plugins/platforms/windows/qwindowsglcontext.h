@@ -118,58 +118,12 @@ struct QWindowsOpengl32DLL
     BOOL (WINAPI * wglShareLists)(HGLRC context1, HGLRC context2);
 
     // GL1+GLES2 common
-    void (APIENTRY * glBindTexture)(GLenum target, GLuint texture);
-    void (APIENTRY * glBlendFunc)(GLenum sfactor, GLenum dfactor);
-    void (APIENTRY * glClear)(GLbitfield mask);
-    void (APIENTRY * glClearColor)(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
-    void (APIENTRY * glClearStencil)(GLint s);
-    void (APIENTRY * glColorMask)(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
-    void (APIENTRY * glCopyTexImage2D)(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
-    void (APIENTRY * glCopyTexSubImage2D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
-    void (APIENTRY * glCullFace)(GLenum mode);
-    void (APIENTRY * glDeleteTextures)(GLsizei n, const GLuint* textures);
-    void (APIENTRY * glDepthFunc)(GLenum func);
-    void (APIENTRY * glDepthMask)(GLboolean flag);
-    void (APIENTRY * glDisable)(GLenum cap);
-    void (APIENTRY * glDrawArrays)(GLenum mode, GLint first, GLsizei count);
-    void (APIENTRY * glDrawElements)(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices);
-    void (APIENTRY * glEnable)(GLenum cap);
-    void (APIENTRY * glFinish)();
-    void (APIENTRY * glFlush)();
-    void (APIENTRY * glFrontFace)(GLenum mode);
-    void (APIENTRY * glGenTextures)(GLsizei n, GLuint* textures);
-    void (APIENTRY * glGetBooleanv)(GLenum pname, GLboolean* params);
     GLenum (APIENTRY * glGetError)();
-    void (APIENTRY * glGetFloatv)(GLenum pname, GLfloat* params);
     void (APIENTRY * glGetIntegerv)(GLenum pname, GLint* params);
     const GLubyte * (APIENTRY * glGetString)(GLenum name);
-    void (APIENTRY * glGetTexParameterfv)(GLenum target, GLenum pname, GLfloat* params);
-    void (APIENTRY * glGetTexParameteriv)(GLenum target, GLenum pname, GLint* params);
-    void (APIENTRY * glHint)(GLenum target, GLenum mode);
-    GLboolean (APIENTRY * glIsEnabled)(GLenum cap);
-    GLboolean (APIENTRY * glIsTexture)(GLuint texture);
-    void (APIENTRY * glLineWidth)(GLfloat width);
-    void (APIENTRY * glPixelStorei)(GLenum pname, GLint param);
-    void (APIENTRY * glPolygonOffset)(GLfloat factor, GLfloat units);
-    void (APIENTRY * glReadPixels)(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid* pixels);
-    void (APIENTRY * glScissor)(GLint x, GLint y, GLsizei width, GLsizei height);
-    void (APIENTRY * glStencilFunc)(GLenum func, GLint ref, GLuint mask);
-    void (APIENTRY * glStencilMask)(GLuint mask);
-    void (APIENTRY * glStencilOp)(GLenum fail, GLenum zfail, GLenum zpass);
-    void (APIENTRY * glTexImage2D)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid* pixels);
-    void (APIENTRY * glTexParameterf)(GLenum target, GLenum pname, GLfloat param);
-    void (APIENTRY * glTexParameterfv)(GLenum target, GLenum pname, const GLfloat* params);
-    void (APIENTRY * glTexParameteri)(GLenum target, GLenum pname, GLint param);
-    void (APIENTRY * glTexParameteriv)(GLenum target, GLenum pname, const GLint* params);
-    void (APIENTRY * glTexSubImage2D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid* pixels);
-    void (APIENTRY * glViewport)(GLint x, GLint y, GLsizei width, GLsizei height);
 
-    // GL only
-    void (APIENTRY * glClearDepth)(GLdouble depth);
-    void (APIENTRY * glDepthRange)(GLdouble zNear, GLdouble zFar);
-
-private:
     void *resolve(const char *name);
+private:
     HMODULE m_lib;
     bool m_nonOpengl32;
 
