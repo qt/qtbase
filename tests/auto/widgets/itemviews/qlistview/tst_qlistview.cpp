@@ -152,6 +152,7 @@ private slots:
     void taskQTBUG_39902_mutualScrollBars_data();
     void taskQTBUG_39902_mutualScrollBars();
     void horizontalScrollingByVerticalWheelEvents();
+    void taskQTBUG_51086_skippingIndexesInSelectedIndexes();
 };
 
 // Testing get/set functions
@@ -2491,6 +2492,33 @@ void tst_QListView::horizontalScrollingByVerticalWheelEvents()
     int vValue = lv.verticalScrollBar()->value();
     QApplication::sendEvent(lv.viewport(), &wheelDownEvent);
     QVERIFY(lv.verticalScrollBar()->value() > vValue);
+}
+
+void tst_QListView::taskQTBUG_51086_skippingIndexesInSelectedIndexes()
+{
+    // simple way to get access to selectedIndexes()
+    class QListViewWithPublicSelectedIndexes : public QListView
+    {
+    public:
+        using QListView::selectedIndexes;
+    };
+
+    QStandardItemModel data(10, 1);
+    QItemSelectionModel selections(&data);
+    QListViewWithPublicSelectedIndexes list;
+    list.setModel(&data);
+    list.setSelectionModel(&selections);
+
+    list.setRowHidden(7, true);
+    list.setRowHidden(8, true);
+
+    for (int i = 0, count = data.rowCount(); i < count; ++i)
+        selections.select(data.index(i, 0), QItemSelectionModel::Select);
+
+    const QModelIndexList indexes = list.selectedIndexes();
+
+    QVERIFY(!indexes.contains(data.index(7, 0)));
+    QVERIFY(!indexes.contains(data.index(8, 0)));
 }
 
 QTEST_MAIN(tst_QListView)
