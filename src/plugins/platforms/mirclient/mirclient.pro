@@ -1,4 +1,4 @@
-TARGET = mirclient
+TARGET = qmirclient
 
 QT += core-private gui-private platformsupport-private dbus
 
