@@ -1728,7 +1728,8 @@ void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
     extensions.glBindFramebuffer(GL_READ_FRAMEBUFFER, source ? source->handle() : defaultFboId);
     extensions.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target ? target->handle() : defaultFboId);
 
-    if (extensions.hasOpenGLFeature(QOpenGLFunctions::MultipleRenderTargets)) {
+    const bool supportsMRT = extensions.hasOpenGLFeature(QOpenGLFunctions::MultipleRenderTargets);
+    if (supportsMRT) {
         extensions.glReadBuffer(GL_COLOR_ATTACHMENT0 + readColorAttachmentIndex);
         if (target) {
             GLenum drawBuf = GL_COLOR_ATTACHMENT0 + drawColorAttachmentIndex;
@@ -1740,7 +1741,7 @@ void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
                                  tx0, ty0, tx1, ty1,
                                  buffers, filter);
 
-    if (extensions.hasOpenGLFeature(QOpenGLFunctions::MultipleRenderTargets))
+    if (supportsMRT)
         extensions.glReadBuffer(GL_COLOR_ATTACHMENT0);
 
     switch (restorePolicy) {
