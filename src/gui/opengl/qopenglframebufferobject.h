@@ -114,6 +114,20 @@ public:
     static bool hasOpenGLFramebufferObjects();
 
     static bool hasOpenGLFramebufferBlit();
+
+    enum FramebufferRestorePolicy {
+        DontRestoreFramebufferBinding,
+        RestoreFramebufferBindingToDefault,
+        RestoreFrameBufferBinding
+    };
+
+    static void blitFramebuffer(QOpenGLFramebufferObject *target, const QRect &targetRect,
+                                QOpenGLFramebufferObject *source, const QRect &sourceRect,
+                                GLbitfield buffers,
+                                GLenum filter,
+                                int readColorAttachmentIndex,
+                                int drawColorAttachmentIndex,
+                                FramebufferRestorePolicy restorePolicy);
     static void blitFramebuffer(QOpenGLFramebufferObject *target, const QRect &targetRect,
                                 QOpenGLFramebufferObject *source, const QRect &sourceRect,
                                 GLbitfield buffers,
