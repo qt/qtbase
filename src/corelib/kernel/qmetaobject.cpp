@@ -333,14 +333,8 @@ const char *QMetaObject::className() const
 */
 QObject *QMetaObject::cast(QObject *obj) const
 {
-    if (obj) {
-        const QMetaObject *m = obj->metaObject();
-        do {
-            if (m == this)
-                return obj;
-        } while ((m = m->d.superdata));
-    }
-    return 0;
+    // ### Qt 6: inline
+    return const_cast<QObject*>(cast(const_cast<const QObject*>(obj)));
 }
 
 /*!
