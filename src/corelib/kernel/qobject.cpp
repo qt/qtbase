@@ -3713,8 +3713,6 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
             if (receiverInSameThread) {
                 sw.switchSender(receiver, sender, signal_index);
             }
-            const QObjectPrivate::StaticMetaCallFunction callFunction = c->callFunction;
-            const int method_relative = c->method_relative;
             if (c->isSlotObject) {
                 c->slotObj->ref();
                 QScopedPointer<QtPrivate::QSlotObjectBase, QSlotObjectBaseDeleter> obj(c->slotObj);
@@ -3727,10 +3725,12 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
                 obj.reset();
 
                 locker.relock();
-            } else if (callFunction && c->method_offset <= receiver->metaObject()->methodOffset()) {
+            } else if (c->callFunction && c->method_offset <= receiver->metaObject()->methodOffset()) {
                 //we compare the vtable to make sure we are not in the destructor of the object.
-                locker.unlock();
                 const int methodIndex = c->method();
+                const int method_relative = c->method_relative;
+                const auto callFunction = c->callFunction;
+                locker.unlock();
                 if (qt_signal_spy_callback_set.slot_begin_callback != 0)
                     qt_signal_spy_callback_set.slot_begin_callback(receiver, methodIndex, argv ? argv : empty_argv);
 
@@ -3740,7 +3740,7 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
                     qt_signal_spy_callback_set.slot_end_callback(receiver, methodIndex);
                 locker.relock();
             } else {
-                const int method = method_relative + c->method_offset;
+                const int method = c->method_relative + c->method_offset;
                 locker.unlock();
 
                 if (qt_signal_spy_callback_set.slot_begin_callback != 0) {
