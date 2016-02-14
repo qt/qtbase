@@ -158,6 +158,7 @@ void QScanThread::run()
     mutex.lock();
     CWInterface *currentInterface = [CWInterface interfaceWithName: QCFString::toNSString(interfaceName)];
     mutex.unlock();
+    const bool currentInterfaceServiceActive = currentInterface.serviceActive;
 
     if (currentInterface.powerOn) {
         NSError *err = nil;
@@ -172,7 +173,7 @@ void QScanThread::run()
 
                 QNetworkConfiguration::StateFlags state = QNetworkConfiguration::Undefined;
                 bool known = isKnownSsid(networkSsid);
-                if (currentInterface.serviceActive) {
+                if (currentInterfaceServiceActive) {
                     if( networkSsid == QCFString::toQString( [currentInterface ssid])) {
                         state = QNetworkConfiguration::Active;
                     }
@@ -215,7 +216,7 @@ void QScanThread::run()
                 interfaceName = ij.value();
             }
 
-            if (currentInterface.serviceActive) {
+            if (currentInterfaceServiceActive) {
                 if( networkSsid == QCFString::toQString([currentInterface ssid])) {
                     state = QNetworkConfiguration::Active;
                 }
