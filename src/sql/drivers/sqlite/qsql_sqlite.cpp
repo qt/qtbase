@@ -661,9 +661,8 @@ void QSQLiteDriver::close()
 {
     Q_D(QSQLiteDriver);
     if (isOpen()) {
-        foreach (QSQLiteResult *result, d->results) {
+        for (QSQLiteResult *result : qAsConst(d->results))
             result->d_func()->finalize();
-        }
 
         if (sqlite3_close(d->access) != SQLITE_OK)
             setLastError(qMakeError(d->access, tr("Error closing database"),

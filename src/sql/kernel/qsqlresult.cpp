@@ -709,8 +709,8 @@ void QSqlResult::bindValue(const QString& placeholder, const QVariant& val,
     d->binds = NamedBinding;
     // if the index has already been set when doing emulated named
     // bindings - don't reset it
-    QList<int> indexes = d->indexes.value(placeholder);
-    foreach (int idx, indexes) {
+    const QList<int> indexes = d->indexes.value(placeholder);
+    for (int idx : indexes) {
         if (d->values.count() <= idx)
             d->values.resize(idx + 1);
         d->values[idx] = val;
