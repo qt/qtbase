@@ -2386,17 +2386,46 @@ bool QOCIDriver::rollbackTransaction()
     return true;
 }
 
+enum Expression {
+    OrExpression,
+    AndExpression
+};
+
+static QString make_where_clause(const QString &user, Expression e)
+{
+    static const char sysUsers[][8] = {
+        "MDSYS",
+        "LBACSYS",
+        "SYS",
+        "SYSTEM",
+        "WKSYS",
+        "CTXSYS",
+        "WMSYS",
+    };
+    static const char joinC[][4] = { "or" , "and" };
+    static Q_CONSTEXPR QLatin1Char bang[] = { QLatin1Char(' '), QLatin1Char('!') };
+
+    const QLatin1String join(joinC[e], -1); // -1: force strlen call
+
+    QString result;
+    result.reserve(sizeof sysUsers / sizeof *sysUsers *
+                   // max-sizeof(owner != <sysuser> and )
+                                (9 + sizeof *sysUsers + 5));
+    for (const auto &sysUser : sysUsers) {
+        const QLatin1String l1(sysUser, -1); // -1: force strlen call
+        if (l1 != user)
+            result += QLatin1String("owner ") + bang[e] + QLatin1String("= '") + l1 + QLatin1Char(' ') + join + QLatin1Char(' ');
+    }
+
+    result.chop(join.size() + 2); // remove final " <join> "
+
+    return result;
+}
+
 QStringList QOCIDriver::tables(QSql::TableType type) const
 {
     Q_D(const QOCIDriver);
     QStringList tl;
-    QStringList sysUsers = QStringList() << QLatin1String("MDSYS")
-                                    << QLatin1String("LBACSYS")
-                                    << QLatin1String("SYS")
-                                    << QLatin1String("SYSTEM")
-                                    << QLatin1String("WKSYS")
-                                    << QLatin1String("CTXSYS")
-                                    << QLatin1String("WMSYS");
 
     QString user = d->user;
     if ( isIdentifierEscaped(user, QSqlDriver::TableName))
@@ -2404,21 +2433,15 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
     else
         user = user.toUpper();
 
-    if(sysUsers.contains(user))
-        sysUsers.removeAll(user);;
-
     if (!isOpen())
         return tl;
 
     QSqlQuery t(createResult());
     t.setForwardOnly(true);
     if (type & QSql::Tables) {
-        QString query = QLatin1String("select owner, table_name from all_tables where ");
-        QStringList whereList;
-        foreach(const QString &sysUserName, sysUsers)
-            whereList << QLatin1String("owner != '") + sysUserName + QLatin1String("' ");
-        t.exec(query + whereList.join(QLatin1String(" and ")));
-
+        const QLatin1String tableQuery("select owner, table_name from all_tables where ");
+        const QString where = make_where_clause(user, AndExpression);
+        t.exec(tableQuery + where);
         while (t.next()) {
             if (t.value(0).toString().toUpper() != user.toUpper())
                 tl.append(t.value(0).toString() + QLatin1Char('.') + t.value(1).toString());
@@ -2427,8 +2450,8 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
         }
 
         // list all table synonyms as well
-        query = QLatin1String("select owner, synonym_name from all_synonyms where ");
-        t.exec(query + whereList.join(QLatin1String(" and ")));
+        const QLatin1String synonymQuery("select owner, synonym_name from all_synonyms where ");
+        t.exec(synonymQuery + where);
         while (t.next()) {
             if (t.value(0).toString() != d->user)
                 tl.append(t.value(0).toString() + QLatin1Char('.') + t.value(1).toString());
@@ -2437,11 +2460,9 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
         }
     }
     if (type & QSql::Views) {
-        QString query = QLatin1String("select owner, view_name from all_views where ");
-        QStringList whereList;
-        foreach(const QString &sysUserName, sysUsers)
-            whereList << QLatin1String("owner != '") + sysUserName + QLatin1String("' ");
-        t.exec(query + whereList.join(QLatin1String(" and ")));
+        const QLatin1String query("select owner, view_name from all_views where ");
+        const QString where = make_where_clause(user, AndExpression);
+        t.exec(query + where);
         while (t.next()) {
             if (t.value(0).toString().toUpper() != d->user.toUpper())
                 tl.append(t.value(0).toString() + QLatin1Char('.') + t.value(1).toString());
@@ -2454,12 +2475,9 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
         while (t.next()) {
             tl.append(t.value(0).toString());
         }
-        QString query = QLatin1String("select owner, table_name from all_tables where ");
-        QStringList whereList;
-        foreach(const QString &sysUserName, sysUsers)
-            whereList << QLatin1String("owner = '") + sysUserName + QLatin1String("' ");
-        t.exec(query + whereList.join(QLatin1String(" or ")));
-
+        const QLatin1String tableQuery("select owner, table_name from all_tables where ");
+        const QString where = make_where_clause(user, OrExpression);
+        t.exec(tableQuery + where);
         while (t.next()) {
             if (t.value(0).toString().toUpper() != user.toUpper())
                 tl.append(t.value(0).toString() + QLatin1Char('.') + t.value(1).toString());
@@ -2468,8 +2486,8 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
         }
 
         // list all table synonyms as well
-        query = QLatin1String("select owner, synonym_name from all_synonyms where ");
-        t.exec(query + whereList.join(QLatin1String(" or ")));
+        const QLatin1String synonymQuery("select owner, synonym_name from all_synonyms where ");
+        t.exec(synonymQuery + where);
         while (t.next()) {
             if (t.value(0).toString() != d->user)
                 tl.append(t.value(0).toString() + QLatin1Char('.') + t.value(1).toString());
