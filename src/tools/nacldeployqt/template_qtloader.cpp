@@ -13,7 +13,8 @@ const char *templateQtLoader = R"STRING_DELIMITER(
 //       type : "application/pnacl",
 //   });
 //
-//  Where 'myapp.nmf' is the nmf file for your application.
+//  Where 'myapp.nmf' is the nmf file for your application. Note that
+//  relative paths are relative to the loading html file, not qtloader.js.
 //
 // 2) Create the Qt DOM element
 //
