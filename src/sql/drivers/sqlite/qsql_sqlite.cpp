@@ -613,13 +613,17 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
     bool openReadOnlyOption = false;
     bool openUriOption = false;
 
-    const QStringList opts = QString(conOpts).remove(QLatin1Char(' ')).split(QLatin1Char(';'));
-    foreach (const QString &option, opts) {
-        if (option.startsWith(QLatin1String("QSQLITE_BUSY_TIMEOUT="))) {
-            bool ok;
-            const int nt = option.midRef(21).toInt(&ok);
-            if (ok)
-                timeOut = nt;
+    const auto opts = conOpts.splitRef(QLatin1Char(';'));
+    for (auto option : opts) {
+        option = option.trimmed();
+        if (option.startsWith(QLatin1String("QSQLITE_BUSY_TIMEOUT"))) {
+            option = option.mid(20).trimmed();
+            if (option.startsWith(QLatin1Char('='))) {
+                bool ok;
+                const int nt = option.mid(1).trimmed().toInt(&ok);
+                if (ok)
+                    timeOut = nt;
+            }
         } else if (option == QLatin1String("QSQLITE_OPEN_READONLY")) {
             openReadOnlyOption = true;
         } else if (option == QLatin1String("QSQLITE_OPEN_URI")) {
