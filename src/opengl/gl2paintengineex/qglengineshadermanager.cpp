@@ -48,6 +48,8 @@
 #include <QMetaEnum>
 #endif
 
+#include <algorithm>
+
 // #define QT_GL_SHARED_SHADER_DEBUG
 
 QT_BEGIN_NAMESPACE
@@ -472,15 +474,16 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
 
 void QGLEngineSharedShaders::cleanupCustomStage(QGLCustomShaderStage* stage)
 {
-    // Remove any shader programs which has this as the custom shader src:
-    for (int i = 0; i < cachedPrograms.size(); ++i) {
-        QGLEngineShaderProg *cachedProg = cachedPrograms[i];
+    auto hasStageAsCustomShaderSouce = [stage](QGLEngineShaderProg *cachedProg) -> bool {
         if (cachedProg->customStageSource == stage->source()) {
             delete cachedProg;
-            cachedPrograms.removeAt(i);
-            i--;
+            return true;
         }
-    }
+        return false;
+    };
+    cachedPrograms.erase(std::remove_if(cachedPrograms.begin(), cachedPrograms.end(),
+                                        hasStageAsCustomShaderSouce),
+                         cachedPrograms.end());
 }
 
 

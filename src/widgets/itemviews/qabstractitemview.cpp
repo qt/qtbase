@@ -68,6 +68,8 @@
 #  include <qscroller.h>
 #endif
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 QAbstractItemViewPrivate::QAbstractItemViewPrivate()
@@ -4459,10 +4461,12 @@ QModelIndexList QAbstractItemViewPrivate::selectedDraggableIndexes() const
 {
     Q_Q(const QAbstractItemView);
     QModelIndexList indexes = q->selectedIndexes();
-    for(int i = indexes.count() - 1 ; i >= 0; --i) {
-        if (!isIndexDragEnabled(indexes.at(i)))
-            indexes.removeAt(i);
-    }
+    auto isNotDragEnabled = [this](const QModelIndex &index) {
+        return !isIndexDragEnabled(index);
+    };
+    indexes.erase(std::remove_if(indexes.begin(), indexes.end(),
+                                 isNotDragEnabled),
+                  indexes.end());
     return indexes;
 }
 

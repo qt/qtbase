@@ -48,6 +48,9 @@
 #include "qiosintegration.h"
 #include "qiostextresponder.h"
 
+#include <algorithm>
+#include <iterator>
+
 // m_currentMenu points to the currently visible menu.
 // Only one menu will be visible at a time, and if a second menu
 // is shown on top of a first, the first one will be told to hide.
@@ -525,14 +528,10 @@ bool QIOSMenu::eventFilter(QObject *obj, QEvent *event)
 
 QIOSMenuItemList QIOSMenu::visibleMenuItems() const
 {
-    QIOSMenuItemList visibleMenuItems = m_menuItems;
-
-    for (int i = visibleMenuItems.count() - 1; i >= 0; --i) {
-        QIOSMenuItem *item = visibleMenuItems.at(i);
-        if (!item->m_enabled || !item->m_visible || item->m_separator)
-            visibleMenuItems.removeAt(i);
-    }
-
+    QIOSMenuItemList visibleMenuItems;
+    visibleMenuItems.reserve(m_menuItems.size());
+    std::copy_if(m_menuItems.begin(), m_menuItems.end(), std::back_inserter(visibleMenuItems),
+                 [](QIOSMenuItem *item) { return item->m_enabled && item->m_visible && !item->m_separator; });
     return visibleMenuItems;
 }
 

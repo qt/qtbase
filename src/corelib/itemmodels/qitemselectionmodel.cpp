@@ -1717,15 +1717,15 @@ const QItemSelection QItemSelectionModel::selection() const
     Q_D(const QItemSelectionModel);
     QItemSelection selected = d->ranges;
     selected.merge(d->currentSelection, d->currentCommand);
-    int i = 0;
     // make sure we have no invalid ranges
     // ###  should probably be handled more generic somewhere else
-    while (i<selected.count()) {
-        if (selected.at(i).isValid())
-            ++i;
-        else
-            (selected.removeAt(i));
-    }
+    auto isNotValid = [](const QItemSelectionRange& range) {
+        return !range.isValid();
+    };
+
+    selected.erase(std::remove_if(selected.begin(), selected.end(),
+                                  isNotValid),
+                   selected.end());
     return selected;
 }
 

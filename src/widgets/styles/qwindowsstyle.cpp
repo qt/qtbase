@@ -71,6 +71,8 @@
 #include <private/qstylehelper_p.h>
 #include <private/qstyleanimation_p.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_OS_WIN)
@@ -159,12 +161,11 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
 
             // Alt has been pressed - find all widgets that care
             QList<QWidget *> l = widget->findChildren<QWidget *>();
-            for (int pos=0 ; pos < l.size() ; ++pos) {
-                QWidget *w = l.at(pos);
-                if (w->isWindow() || !w->isVisible() ||
-                    w->style()->styleHint(SH_UnderlineShortcut, 0, w))
-                    l.removeAt(pos);
-            }
+            auto ignorable = [](QWidget *w) {
+                return w->isWindow() || !w->isVisible()
+                        || w->style()->styleHint(SH_UnderlineShortcut, 0, w);
+            };
+            l.erase(std::remove_if(l.begin(), l.end(), ignorable), l.end());
             // Update states before repainting
             d->seenAlt.append(widget);
             d->alt_down = true;
