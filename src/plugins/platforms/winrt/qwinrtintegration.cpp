@@ -44,6 +44,7 @@
 #include "qwinrteglcontext.h"
 #include "qwinrtfontdatabase.h"
 #include "qwinrttheme.h"
+#include "qwinrtclipboard.h"
 
 #include <QtGui/QOffscreenSurface>
 #include <QtGui/QOpenGLContext>
@@ -111,6 +112,7 @@ class QWinRTIntegrationPrivate
 public:
     QPlatformFontDatabase *fontDatabase;
     QPlatformServices *platformServices;
+    QPlatformClipboard *clipboard;
     QWinRTScreen *mainScreen;
     QScopedPointer<QWinRTInputContext> inputContext;
 
@@ -195,6 +197,7 @@ QWinRTIntegration::QWinRTIntegration() : d_ptr(new QWinRTIntegrationPrivate)
 
     screenAdded(d->mainScreen);
     d->platformServices = new QWinRTServices;
+    d->clipboard = new QWinRTClipboard;
 }
 
 QWinRTIntegration::~QWinRTIntegration()
@@ -298,6 +301,12 @@ QPlatformServices *QWinRTIntegration::services() const
 {
     Q_D(const QWinRTIntegration);
     return d->platformServices;
+}
+
+QPlatformClipboard *QWinRTIntegration::clipboard() const
+{
+    Q_D(const QWinRTIntegration);
+    return d->clipboard;
 }
 
 Qt::KeyboardModifiers QWinRTIntegration::queryKeyboardModifiers() const
