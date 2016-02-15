@@ -67,7 +67,7 @@ class Q_GUI_EXPORT QStyleHints : public QObject
     Q_PROPERTY(int startDragTime READ startDragTime NOTIFY startDragTimeChanged FINAL)
     Q_PROPERTY(int startDragVelocity READ startDragVelocity STORED false CONSTANT FINAL)
     Q_PROPERTY(bool useRtlExtensions READ useRtlExtensions STORED false CONSTANT FINAL)
-    Q_PROPERTY(Qt::TabFocusBehavior tabFocusBehavior READ tabFocusBehavior STORED false CONSTANT FINAL)
+    Q_PROPERTY(Qt::TabFocusBehavior tabFocusBehavior READ tabFocusBehavior NOTIFY tabFocusBehaviorChanged FINAL)
     Q_PROPERTY(bool singleClickActivation READ singleClickActivation STORED false CONSTANT FINAL)
 
 public:
@@ -93,6 +93,7 @@ public:
     bool useRtlExtensions() const;
     bool setFocusOnTouchRelease() const;
     Qt::TabFocusBehavior tabFocusBehavior() const;
+    void setTabFocusBehavior(Qt::TabFocusBehavior tabFocusBehavior);
     bool singleClickActivation() const;
 
 Q_SIGNALS:
@@ -102,6 +103,7 @@ Q_SIGNALS:
     void mousePressAndHoldIntervalChanged(int mousePressAndHoldInterval);
     void startDragDistanceChanged(int startDragDistance);
     void startDragTimeChanged(int startDragTime);
+    void tabFocusBehaviorChanged(Qt::TabFocusBehavior tabFocusBehavior);
 
 private:
     friend class QGuiApplication;

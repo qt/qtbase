@@ -76,6 +76,7 @@ public:
         , m_startDragTime(-1)
         , m_keyboardInputInterval(-1)
         , m_cursorFlashTime(-1)
+        , m_tabFocusBehavior(-1)
         {}
 
     int m_mouseDoubleClickInterval;
@@ -84,6 +85,7 @@ public:
     int m_startDragTime;
     int m_keyboardInputInterval;
     int m_cursorFlashTime;
+    int m_tabFocusBehavior;
 };
 
 /*!
@@ -416,7 +418,25 @@ bool QStyleHints::setFocusOnTouchRelease() const
 
 Qt::TabFocusBehavior QStyleHints::tabFocusBehavior() const
 {
-    return Qt::TabFocusBehavior(themeableHint(QPlatformTheme::TabFocusBehavior, QPlatformIntegration::TabFocusBehavior).toInt());
+    Q_D(const QStyleHints);
+    return Qt::TabFocusBehavior(d->m_tabFocusBehavior >= 0 ?
+                                d->m_tabFocusBehavior :
+                                themeableHint(QPlatformTheme::TabFocusBehavior, QPlatformIntegration::TabFocusBehavior).toInt());
+}
+
+/*!
+    Sets the \a tabFocusBehavior.
+    \internal
+    \sa tabFocusBehavior()
+    \since 5.7
+*/
+void QStyleHints::setTabFocusBehavior(Qt::TabFocusBehavior tabFocusBehavior)
+{
+    Q_D(QStyleHints);
+    if (d->m_tabFocusBehavior == tabFocusBehavior)
+        return;
+    d->m_tabFocusBehavior = tabFocusBehavior;
+    emit tabFocusBehaviorChanged(tabFocusBehavior);
 }
 
 /*!
