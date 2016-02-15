@@ -92,6 +92,7 @@ public class QtActivityDelegate
     private Method m_super_onConfigurationChanged = null;
     private Method m_super_onActivityResult = null;
     private Method m_super_dispatchGenericMotionEvent = null;
+    private Method m_super_onWindowFocusChanged = null;
 
     private static final String NATIVE_LIBRARIES_KEY = "native.libraries";
     private static final String BUNDLED_LIBRARIES_KEY = "bundled.libraries";
@@ -520,6 +521,7 @@ public class QtActivityDelegate
             m_super_onKeyUp = m_activity.getClass().getMethod("super_onKeyUp", Integer.TYPE, KeyEvent.class);
             m_super_onConfigurationChanged = m_activity.getClass().getMethod("super_onConfigurationChanged", Configuration.class);
             m_super_onActivityResult = m_activity.getClass().getMethod("super_onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class);
+            m_super_onWindowFocusChanged = m_activity.getClass().getMethod("super_onWindowFocusChanged", Boolean.TYPE);
             if (Build.VERSION.SDK_INT >= 12) {
                 try {
                     m_super_dispatchGenericMotionEvent = m_activity.getClass().getMethod("super_dispatchGenericMotionEvent", MotionEvent.class);
@@ -941,6 +943,16 @@ public class QtActivityDelegate
             // Unknown exception means something went wrong.
             Log.w("Qt A11y", "Unknown exception: " + e.toString());
         }
+    }
+
+    public void onWindowFocusChanged(boolean hasFocus) {
+        try {
+            m_super_onWindowFocusChanged.invoke(m_activity, hasFocus);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (hasFocus)
+            updateFullScreen();
     }
 
     public void onConfigurationChanged(Configuration configuration)
