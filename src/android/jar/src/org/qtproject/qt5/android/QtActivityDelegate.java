@@ -48,6 +48,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.graphics.Rect;
 import android.net.LocalServerSocket;
 import android.net.LocalSocket;
@@ -74,6 +75,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.view.ViewTreeObserver;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
 
 import java.io.BufferedReader;
@@ -127,6 +129,8 @@ public class QtActivityDelegate
     private HashMap<Integer, QtSurface> m_surfaces = null;
     private HashMap<Integer, View> m_nativeViews = null;
     private QtLayout m_layout = null;
+    private ImageView m_splashScreen = null;
+    private boolean m_splashScreenSticky = false;
     private QtEditText m_editText = null;
     private InputMethodManager m_imm = null;
     private boolean m_quitApp = true;
@@ -873,6 +877,22 @@ public class QtActivityDelegate
             };
         }
         m_layout = new QtLayout(m_activity, startApplication);
+
+        try {
+            ActivityInfo info = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(), PackageManager.GET_META_DATA);
+            if (info.metaData.containsKey("android.app.splash_screen_drawable")) {
+                m_splashScreenSticky = info.metaData.containsKey("android.app.splash_screen_sticky") && info.metaData.getBoolean("android.app.splash_screen_sticky");
+                int id = info.metaData.getInt("android.app.splash_screen_drawable");
+                m_splashScreen = new ImageView(m_activity);
+                m_splashScreen.setImageDrawable(m_activity.getResources().getDrawable(id));
+                m_splashScreen.setScaleType(ImageView.ScaleType.FIT_XY);
+                m_splashScreen.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                m_layout.addView(m_splashScreen);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         m_editText = new QtEditText(m_activity, this);
         m_imm = (InputMethodManager)m_activity.getSystemService(Context.INPUT_METHOD_SERVICE);
         m_surfaces =  new HashMap<Integer, QtSurface>();
@@ -914,6 +934,15 @@ public class QtActivityDelegate
         });
     }
 
+    public void hideSplashScreen()
+    {
+        if (m_splashScreen == null)
+            return;
+        m_layout.removeView(m_splashScreen);
+        m_splashScreen = null;
+    }
+
+
     public void initializeAccessibility()
     {
         new QtAccessibilityDelegate(m_activity, m_layout, this);
@@ -933,22 +962,6 @@ public class QtActivityDelegate
     {
         try {
             m_super_onConfigurationChanged.invoke(m_activity, configuration);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // if splash screen is defined, then show it
-        // Note: QtActivity handles settting the splash screen
-        // in onCreate, change that too if you are changing
-        // how the splash screen should be displayed
-        try {
-            if (m_surfaces.size() == 0) {
-                ActivityInfo info = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(), PackageManager.GET_META_DATA);
-                if (info.metaData.containsKey("android.app.splash_screen_drawable"))
-                    m_activity.getWindow().setBackgroundDrawableResource(info.metaData.getInt("android.app.splash_screen_drawable"));
-                else
-                    m_activity.getWindow().setBackgroundDrawable(new ColorDrawable(0xff000000));
-            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1274,6 +1287,8 @@ public class QtActivityDelegate
         m_layout.addView(surface, surfaceCount);
 
         m_surfaces.put(id, surface);
+        if (!m_splashScreenSticky)
+            hideSplashScreen();
     }
 
     public void setSurfaceGeometry(int id, int x, int y, int w, int h) {
