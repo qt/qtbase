@@ -1043,10 +1043,11 @@ bool QFontDialogPrivate::canBeNativeDialog() const
     Q_Q(const QFontDialog);
     if (nativeDialogInUse)
         return true;
-    if (q->testAttribute(Qt::WA_DontShowOnScreen))
+    if (QCoreApplication::testAttribute(Qt::AA_DontUseNativeDialogs)
+        || q->testAttribute(Qt::WA_DontShowOnScreen)
+        || (options->options() & QFontDialog::DontUseNativeDialog)) {
         return false;
-    if (options->options() & QFontDialog::DontUseNativeDialog)
-        return false;
+    }
 
     QLatin1String staticName(QFontDialog::staticMetaObject.className());
     QLatin1String dynamicName(q->metaObject()->className());
