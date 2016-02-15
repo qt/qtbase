@@ -267,7 +267,6 @@ bool QSqlCachedResult::cacheNext()
         return false;
 
     if(isForwardOnly()) {
-        d->cache.clear();
         d->cache.resize(d->colCount);
     }
 
