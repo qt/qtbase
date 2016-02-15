@@ -1200,6 +1200,8 @@ public class QtActivityDelegate
 
     private void setActionBarVisibility(boolean visible)
     {
+        if (m_activity.getActionBar() == null)
+            return;
         if (ViewConfiguration.get(m_activity).hasPermanentMenuKey() || !visible)
             m_activity.getActionBar().hide();
         else
