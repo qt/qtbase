@@ -37,64 +37,32 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKREPLYFILEIMPL_H
-#define QNETWORKREPLYFILEIMPL_H
+#ifndef QNETWORKFILE_H
+#define QNETWORKFILE_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of the Network Access API.  This header file may change from
-// version to version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qnetworkreply.h"
-#include "qnetworkreply_p.h"
-#include "qnetworkaccessmanager.h"
 #include <QFile>
-#include <private/qabstractfileengine_p.h>
+#include <qnetworkreply.h>
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkReplyFileImplPrivate;
-class QNetworkReplyFileImpl: public QNetworkReply
+class QNetworkFile : public QFile
 {
     Q_OBJECT
 public:
-    QNetworkReplyFileImpl(QNetworkAccessManager *manager, const QNetworkRequest &req, const QNetworkAccessManager::Operation op);
-    ~QNetworkReplyFileImpl();
-    virtual void abort() Q_DECL_OVERRIDE;
+    QNetworkFile();
+    QNetworkFile(const QString &name);
+    using QFile::open;
 
-    // reimplemented from QNetworkReply
-    virtual void close() Q_DECL_OVERRIDE;
-    virtual qint64 bytesAvailable() const Q_DECL_OVERRIDE;
-    virtual bool isSequential () const Q_DECL_OVERRIDE;
-    qint64 size() const Q_DECL_OVERRIDE;
+public Q_SLOTS:
+    void open();
+    void close() Q_DECL_OVERRIDE;
 
-    virtual qint64 readData(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
-
-private Q_SLOTS:
-    void fileOpenFinished(bool isOpen);
-
-    Q_DECLARE_PRIVATE(QNetworkReplyFileImpl)
-};
-
-class QNetworkReplyFileImplPrivate: public QNetworkReplyPrivate
-{
-public:
-    QNetworkReplyFileImplPrivate();
-
-    QNetworkAccessManagerPrivate *managerPrivate;
-    QPointer<QFile> realFile;
-
-    Q_DECLARE_PUBLIC(QNetworkReplyFileImpl)
+Q_SIGNALS:
+    void finished(bool ok);
+    void headerRead(QNetworkRequest::KnownHeaders header, const QVariant &value);
+    void error(QNetworkReply::NetworkError error, const QString &message);
 };
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QNetworkRequest::KnownHeaders)
-
-#endif // QNETWORKREPLYFILEIMPL_H
+#endif // QNETWORKFILE_H

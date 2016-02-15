@@ -74,7 +74,7 @@ class QNetworkAccessManagerPrivate: public QObjectPrivate
 public:
     QNetworkAccessManagerPrivate()
         : networkCache(0), cookieJar(0),
-          httpThread(0),
+          thread(0),
 #ifndef QT_NO_NETWORKPROXY
           proxyFactory(0),
 #endif
@@ -106,6 +106,9 @@ public:
 #endif
     }
     ~QNetworkAccessManagerPrivate();
+
+    QThread * createThread();
+    void destroyThread();
 
     void _q_replyFinished();
     void _q_replyEncrypted();
@@ -158,7 +161,7 @@ public:
 
     QNetworkCookieJar *cookieJar;
 
-    QThread *httpThread;
+    QThread *thread;
 
 
 #ifndef QT_NO_NETWORKPROXY

@@ -37,64 +37,55 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKREPLYFILEIMPL_H
-#define QNETWORKREPLYFILEIMPL_H
+#include "qnetworkfile_p.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of the Network Access API.  This header file may change from
-// version to version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qnetworkreply.h"
-#include "qnetworkreply_p.h"
-#include "qnetworkaccessmanager.h"
-#include <QFile>
-#include <private/qabstractfileengine_p.h>
+#include <QtCore/QDebug>
+#include <QNetworkReply>
+#include <QtCore/QFileInfo>
+#include <QtCore/QMetaObject>
+#include <QtCore/QCoreApplication>
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkReplyFileImplPrivate;
-class QNetworkReplyFileImpl: public QNetworkReply
+QNetworkFile::QNetworkFile()
+    : QFile()
 {
-    Q_OBJECT
-public:
-    QNetworkReplyFileImpl(QNetworkAccessManager *manager, const QNetworkRequest &req, const QNetworkAccessManager::Operation op);
-    ~QNetworkReplyFileImpl();
-    virtual void abort() Q_DECL_OVERRIDE;
+}
 
-    // reimplemented from QNetworkReply
-    virtual void close() Q_DECL_OVERRIDE;
-    virtual qint64 bytesAvailable() const Q_DECL_OVERRIDE;
-    virtual bool isSequential () const Q_DECL_OVERRIDE;
-    qint64 size() const Q_DECL_OVERRIDE;
-
-    virtual qint64 readData(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
-
-private Q_SLOTS:
-    void fileOpenFinished(bool isOpen);
-
-    Q_DECLARE_PRIVATE(QNetworkReplyFileImpl)
-};
-
-class QNetworkReplyFileImplPrivate: public QNetworkReplyPrivate
+QNetworkFile::QNetworkFile(const QString &name)
+    : QFile(name)
 {
-public:
-    QNetworkReplyFileImplPrivate();
+}
 
-    QNetworkAccessManagerPrivate *managerPrivate;
-    QPointer<QFile> realFile;
+void QNetworkFile::open()
+{
+    bool opened = false;
+    QFileInfo fi(fileName());
+    if (fi.isDir()) {
+        QString msg = QCoreApplication::translate("QNetworkAccessFileBackend",
+            "Cannot open %1: Path is a directory").arg(fileName());
+        error(QNetworkReply::ContentOperationNotPermittedError, msg);
+    } else {
+        headerRead(QNetworkRequest::LastModifiedHeader, QVariant::fromValue(fi.lastModified()));
+        headerRead(QNetworkRequest::ContentLengthHeader, QVariant::fromValue(fi.size()));
+        opened = QFile::open(QIODevice::ReadOnly | QIODevice::Unbuffered);
+        if (!opened) {
+            QString msg = QCoreApplication::translate("QNetworkAccessFileBackend",
+                "Error opening %1: %2").arg(fileName(), errorString());
+            if (exists())
+                error(QNetworkReply::ContentAccessDenied, msg);
+            else
+                error(QNetworkReply::ContentNotFoundError, msg);
+        }
+    }
+    finished(opened);
+}
 
-    Q_DECLARE_PUBLIC(QNetworkReplyFileImpl)
-};
+void QNetworkFile::close()
+{
+    // This override is needed because 'using' keyword cannot be used for slots. And the base
+    // function is not an invokable/slot function.
+    QFile::close();
+}
 
 QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QNetworkRequest::KnownHeaders)
-
-#endif // QNETWORKREPLYFILEIMPL_H

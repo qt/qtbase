@@ -1525,27 +1525,35 @@ void QNetworkAccessManagerPrivate::clearCache(QNetworkAccessManager *manager)
     manager->d_func()->objectCache.clear();
     manager->d_func()->authenticationManager->clearCache();
 
-    if (manager->d_func()->httpThread) {
-        manager->d_func()->httpThread->quit();
-        manager->d_func()->httpThread->wait(5000);
-        if (manager->d_func()->httpThread->isFinished())
-            delete manager->d_func()->httpThread;
-        else
-            QObject::connect(manager->d_func()->httpThread, SIGNAL(finished()), manager->d_func()->httpThread, SLOT(deleteLater()));
-        manager->d_func()->httpThread = 0;
-    }
+    manager->d_func()->destroyThread();
 }
 
 QNetworkAccessManagerPrivate::~QNetworkAccessManagerPrivate()
 {
-    if (httpThread) {
-        httpThread->quit();
-        httpThread->wait(5000);
-        if (httpThread->isFinished())
-            delete httpThread;
+    destroyThread();
+}
+
+QThread * QNetworkAccessManagerPrivate::createThread()
+{
+    if (!thread) {
+        thread = new QThread;
+        thread->setObjectName(QStringLiteral("QNetworkAccessManager thread"));
+        thread->start();
+    }
+    Q_ASSERT(thread);
+    return thread;
+}
+
+void QNetworkAccessManagerPrivate::destroyThread()
+{
+    if (thread) {
+        thread->quit();
+        thread->wait(5000);
+        if (thread->isFinished())
+            delete thread;
         else
-            QObject::connect(httpThread, SIGNAL(finished()), httpThread, SLOT(deleteLater()));
-        httpThread = 0;
+            QObject::connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+        thread = 0;
     }
 }
 

@@ -617,17 +617,10 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
         thread->setObjectName(QStringLiteral("Qt HTTP synchronous thread"));
         QObject::connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
         thread->start();
-    } else if (!managerPrivate->httpThread) {
+    } else {
         // We use the manager-global thread.
         // At some point we could switch to having multiple threads if it makes sense.
-        managerPrivate->httpThread = new QThread();
-        managerPrivate->httpThread->setObjectName(QStringLiteral("Qt HTTP thread"));
-        managerPrivate->httpThread->start();
-
-        thread = managerPrivate->httpThread;
-    } else {
-        // Asynchronous request, thread already exists
-        thread = managerPrivate->httpThread;
+        thread = managerPrivate->createThread();
     }
 
     QUrl url = newHttpRequest.url();
@@ -1139,8 +1132,8 @@ void QNetworkReplyHttpImplPrivate::onRedirected(const QUrl &redirectUrl, int htt
 
     cookedHeaders.clear();
 
-    if (managerPrivate->httpThread)
-        managerPrivate->httpThread->disconnect();
+    if (managerPrivate->thread)
+        managerPrivate->thread->disconnect();
 
     // Recurse
     QMetaObject::invokeMethod(q, "start", Qt::QueuedConnection,

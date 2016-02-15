@@ -205,6 +205,7 @@ private Q_SLOTS:
     void invalidProtocol();
     void getFromData_data();
     void getFromData();
+    void getFromFile_data();
     void getFromFile();
     void getFromFileSpecial_data();
     void getFromFileSpecial();
@@ -650,8 +651,10 @@ private slots:
 #endif
     void slotError(QAbstractSocket::SocketError err)
     {
-        Q_ASSERT(!client.isNull());
-        qDebug() << "slotError" << err << client->errorString();
+        if (client.isNull())
+            qDebug() << "slotError" << err;
+        else
+            qDebug() << "slotError" << err << client->errorString();
     }
 
 public slots:
@@ -1674,14 +1677,26 @@ void tst_QNetworkReply::getFromData()
     QCOMPARE(reply->readAll(), expected);
 }
 
+void tst_QNetworkReply::getFromFile_data()
+{
+    QTest::addColumn<bool>("backgroundAttribute");
+
+    QTest::newRow("no-background-attribute") << false;
+    QTest::newRow("background-attribute") << true;
+}
+
 void tst_QNetworkReply::getFromFile()
 {
+    QFETCH(bool, backgroundAttribute);
+
     // create the file:
     QTemporaryFile file(QDir::currentPath() + "/temp-XXXXXX");
     file.setAutoRemove(true);
     QVERIFY2(file.open(), qPrintable(file.errorString()));
 
     QNetworkRequest request(QUrl::fromLocalFile(file.fileName()));
+    if (backgroundAttribute)
+        request.setAttribute(QNetworkRequest::BackgroundRequestAttribute, QVariant::fromValue(true));
     QNetworkReplyPtr reply;
 
     static const char fileData[] = "This is some data that is in the file.\r\n";
@@ -1691,6 +1706,7 @@ void tst_QNetworkReply::getFromFile()
     QCOMPARE(file.size(), qint64(data.size()));
 
     RUN_REQUEST(runSimpleRequest(QNetworkAccessManager::GetOperation, request, reply));
+    QVERIFY(waitForFinish(reply) != Timeout);
 
     QCOMPARE(reply->url(), request.url());
     QCOMPARE(reply->error(), QNetworkReply::NoError);

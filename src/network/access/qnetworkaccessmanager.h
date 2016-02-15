@@ -172,6 +172,7 @@ private:
     friend class QNetworkReplyImplPrivate;
     friend class QNetworkReplyHttpImpl;
     friend class QNetworkReplyHttpImplPrivate;
+    friend class QNetworkReplyFileImpl;
 
     Q_DECLARE_PRIVATE(QNetworkAccessManager)
     Q_PRIVATE_SLOT(d_func(), void _q_replyFinished())
