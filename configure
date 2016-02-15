@@ -2854,7 +2854,7 @@ if [ -z "$PLATFORM" ]; then
         PLATFORM=ultrix-g++
         ;;
      FreeBSD:*)
-        PLATFORM=freebsd-g++
+        PLATFORM=freebsd-clang
         PLATFORM_NOTES="
             - Also available for FreeBSD: freebsd-icc
         "

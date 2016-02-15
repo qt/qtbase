@@ -181,6 +181,13 @@ int main(int argc, char *argv[])
     glw3->setObjectName("GL widget in scroll area (possibly native)");
     glw3->setFormat(format);
     glw3->setFixedSize(600, 600);
+    OpenGLWidget *glw3child = new OpenGLWidget(0);
+    const float glw3ClearColor[] = { 0.5f, 0.2f, 0.8f };
+    glw3child->setClearColor(glw3ClearColor);
+    glw3child->setObjectName("Child widget of GL Widget in scroll area");
+    glw3child->setFormat(format);
+    glw3child->setParent(glw3);
+    glw3child->setGeometry(500, 500, 100, 100); // lower right corner of parent
     QScrollArea *sa = new QScrollArea;
     sa->setWidget(glw3);
     sa->setMinimumSize(100, 100);

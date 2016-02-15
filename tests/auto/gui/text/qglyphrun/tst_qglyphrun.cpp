@@ -70,6 +70,7 @@ private slots:
     void setRawDataAndGetAsVector();
     void boundingRect();
     void mixedScripts();
+    void multiLineBoundingRect();
 
 private:
     int m_testFontId;
@@ -733,6 +734,34 @@ void tst_QGlyphRun::mixedScripts()
 
     QList<QGlyphRun> glyphRuns = layout.glyphRuns();
     QCOMPARE(glyphRuns.size(), 2);
+}
+
+void tst_QGlyphRun::multiLineBoundingRect()
+{
+    QTextLayout layout;
+    layout.setText("Foo Bar");
+    layout.beginLayout();
+
+    QTextLine line = layout.createLine();
+    line.setNumColumns(4);
+    line.setPosition(QPointF(0, 0));
+
+    line = layout.createLine();
+    line.setPosition(QPointF(0, 10));
+
+    layout.endLayout();
+
+    QCOMPARE(layout.lineCount(), 2);
+
+    QList<QGlyphRun> firstLineGlyphRuns = layout.lineAt(0).glyphRuns();
+    QList<QGlyphRun> allGlyphRuns = layout.glyphRuns();
+    QCOMPARE(firstLineGlyphRuns.size(), 1);
+    QCOMPARE(allGlyphRuns.size(), 1);
+
+    QGlyphRun firstLineGlyphRun = firstLineGlyphRuns.first();
+    QGlyphRun allGlyphRun = allGlyphRuns.first();
+
+    QVERIFY(firstLineGlyphRun.boundingRect().height() < allGlyphRun.boundingRect().height());
 }
 
 #endif // QT_NO_RAWFONT

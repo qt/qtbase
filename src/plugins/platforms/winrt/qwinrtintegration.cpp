@@ -45,11 +45,16 @@
 #include "qwinrtfontdatabase.h"
 #include "qwinrttheme.h"
 
-#include <QtGui/QSurface>
+#include <QtGui/QOffscreenSurface>
 #include <QtGui/QOpenGLContext>
-#include <qfunctions_winrt.h>
+#include <QtGui/QSurface>
 
+#include <QtPlatformSupport/private/qeglpbuffer_p.h>
+#include <qpa/qwindowsysteminterface.h>
+#include <qpa/qplatformwindow.h>
 #include <qpa/qplatformoffscreensurface.h>
+
+#include <qfunctions_winrt.h>
 
 #include <functional>
 #include <wrl.h>
@@ -385,11 +390,20 @@ HRESULT QWinRTIntegration::onResume(IInspectable *, IInspectable *)
 
 QPlatformOffscreenSurface *QWinRTIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {
-    // This is only used for shutdown of applications.
-    // In case we do not return an empty surface the scenegraph will try
-    // to create a new native window during application exit causing crashes
-    // or assertions.
-    return new QPlatformOffscreenSurface(surface);
+    QEGLPbuffer *pbuffer = nullptr;
+    HRESULT hr = QEventDispatcherWinRT::runOnXamlThread([&pbuffer, surface]() {
+        pbuffer = new QEGLPbuffer(QWinRTEGLContext::display(), surface->requestedFormat(), surface);
+        return S_OK;
+    });
+    if (hr == UI_E_WINDOW_CLOSED) {
+        // This is only used for shutdown of applications.
+        // In case we do not return an empty surface the scenegraph will try
+        // to create a new native window during application exit causing crashes
+        // or assertions.
+        return new QPlatformOffscreenSurface(surface);
+    }
+
+    return pbuffer;
 }
 
 

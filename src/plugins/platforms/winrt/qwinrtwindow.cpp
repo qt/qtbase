@@ -133,6 +133,15 @@ QWinRTWindow::QWinRTWindow(QWindow *window)
         hr = d->swapChainPanel.As(&d->uiElement);
         Q_ASSERT_SUCCEEDED(hr);
 
+        ComPtr<Xaml::IFrameworkElement> frameworkElement;
+        hr = d->swapChainPanel.As(&frameworkElement);
+        Q_ASSERT_SUCCEEDED(hr);
+        const QSizeF size = QSizeF(d->screen->geometry().size()) / d->screen->scaleFactor();
+        hr = frameworkElement->put_Width(size.width());
+        Q_ASSERT_SUCCEEDED(hr);
+        hr = frameworkElement->put_Height(size.height());
+        Q_ASSERT_SUCCEEDED(hr);
+
         ComPtr<IDependencyObject> canvas = d->screen->canvas();
         ComPtr<IPanel> panel;
         hr = canvas.As(&panel);

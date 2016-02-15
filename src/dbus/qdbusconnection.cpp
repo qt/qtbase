@@ -54,6 +54,10 @@
 
 #include <algorithm>
 
+#ifdef interface
+#undef interface
+#endif
+
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE

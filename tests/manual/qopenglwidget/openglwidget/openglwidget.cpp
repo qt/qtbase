@@ -78,6 +78,8 @@ public:
 
     int m_interval;
     QVector3D m_rotAxis;
+
+    float clearColor[3];
 };
 
 
@@ -85,6 +87,7 @@ OpenGLWidget::OpenGLWidget(int interval, const QVector3D &rotAxis, QWidget *pare
     : QOpenGLWidget(parent)
 {
     d.reset(new OpenGLWidgetPrivate(this));
+    d->clearColor[0] = d->clearColor[1] = d->clearColor[2] = 0.0f;
     d->m_interval = interval;
     d->m_rotAxis = rotAxis;
     if (interval > 0) {
@@ -151,7 +154,7 @@ void OpenGLWidgetPrivate::render()
     const qreal retinaScale = q->devicePixelRatio();
     glViewport(0, 0, width() * retinaScale, height() * retinaScale);
 
-    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClearColor(clearColor[0], clearColor[1], clearColor[2], 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     m_program->bind();
@@ -193,4 +196,11 @@ void OpenGLWidgetPrivate::render()
 
     if (m_interval <= 0)
         q->update();
+}
+
+void OpenGLWidget::setClearColor(const float *c)
+{
+    d->clearColor[0] = c[0];
+    d->clearColor[1] = c[1];
+    d->clearColor[2] = c[2];
 }

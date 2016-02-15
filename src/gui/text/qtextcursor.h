@@ -61,6 +61,8 @@ class Q_GUI_EXPORT QTextCursor
 public:
     QTextCursor();
     explicit QTextCursor(QTextDocument *document);
+    QTextCursor(QTextDocumentPrivate *p, int pos);
+    explicit QTextCursor(QTextCursorPrivate *d);
     explicit QTextCursor(QTextFrame *frame);
     explicit QTextCursor(const QTextBlock &block);
     QTextCursor(const QTextCursor &cursor);
@@ -219,9 +221,6 @@ public:
     QTextDocument *document() const;
 
 private:
-    QTextCursor(QTextDocumentPrivate &p, int pos);
-    explicit QTextCursor(QTextCursorPrivate *d);
-
     QSharedDataPointer<QTextCursorPrivate> d;
     friend class QTextCursorPrivate;
     friend class QTextDocumentPrivate;

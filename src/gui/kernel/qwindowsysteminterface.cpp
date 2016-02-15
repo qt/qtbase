@@ -582,7 +582,8 @@ void QWindowSystemInterface::handleThemeChange(QWindow *tlw)
 
 void QWindowSystemInterface::handleExposeEvent(QWindow *tlw, const QRegion &region)
 {
-    QWindowSystemInterfacePrivate::ExposeEvent *e = new QWindowSystemInterfacePrivate::ExposeEvent(tlw, QHighDpi::fromNativeLocalRegion(region, tlw));
+    QWindowSystemInterfacePrivate::ExposeEvent *e =
+        new QWindowSystemInterfacePrivate::ExposeEvent(tlw, QHighDpi::fromNativeLocalExposedRegion(region, tlw));
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
@@ -868,7 +869,7 @@ Q_GUI_EXPORT void qt_handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::Keybo
     QWindowSystemInterface::setSynchronousWindowSystemEvents(wasSynchronous);
 }
 
-Q_GUI_EXPORT bool qt_handleShortcutEvent(QObject *o, ulong timestamp, int k, Qt::KeyboardModifiers mods, const QString &text = QString(), bool autorep = false, ushort count = 1)
+Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int k, Qt::KeyboardModifiers mods, const QString &text = QString(), bool autorep = false, ushort count = 1)
 {
 #ifndef QT_NO_SHORTCUT
 
