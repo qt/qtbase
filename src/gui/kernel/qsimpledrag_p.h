@@ -90,6 +90,8 @@ protected:
     bool useCompositing() const { return m_useCompositing; }
     void setUseCompositing(bool on) { m_useCompositing = on; }
 
+    void setScreen(QScreen *screen) { m_screen = screen; }
+
     Qt::DropAction executedDropAction() const { return m_executed_drop_action; }
     void  setExecutedDropAction(Qt::DropAction da) { m_executed_drop_action = da; }
 
@@ -108,6 +110,7 @@ private:
     QDrag *m_drag;
     QShapedPixmapWindow *m_drag_icon_window;
     bool m_useCompositing;
+    QScreen *m_screen;
 };
 
 class Q_GUI_EXPORT QSimpleDrag : public QBasicDrag

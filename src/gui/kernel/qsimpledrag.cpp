@@ -88,7 +88,8 @@ static QWindow* topLevelAt(const QPoint &pos)
 QBasicDrag::QBasicDrag() :
     m_restoreCursor(false), m_eventLoop(0),
     m_executed_drop_action(Qt::IgnoreAction), m_can_drop(false),
-    m_drag(0), m_drag_icon_window(0), m_useCompositing(true)
+    m_drag(0), m_drag_icon_window(0), m_useCompositing(true),
+    m_screen(Q_NULLPTR)
 {
 }
 
@@ -211,7 +212,7 @@ void QBasicDrag::startDrag()
         pos = QPoint();
     }
 #endif
-    recreateShapedPixmapWindow(Q_NULLPTR, pos);
+    recreateShapedPixmapWindow(m_screen, pos);
     enableEventFilter();
 }
 
