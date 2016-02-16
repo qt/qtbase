@@ -256,7 +256,7 @@ void QXunitTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
 
     benchmarkElement->addAttribute(
         QTest::AI_Metric,
-        QTest::benchmarkMetricName(QBenchmarkTestMethodData::current->result.metric));
+        QTest::benchmarkMetricName(result.metric));
     benchmarkElement->addAttribute(QTest::AI_Tag, result.context.tag.toUtf8().data());
 
     const qreal valuePerIteration = qreal(result.value) / qreal(result.iterations);
