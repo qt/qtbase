@@ -1848,6 +1848,8 @@ void tst_QObject::moveToThread()
         thread.wait();
     }
 
+    // WinRT does not allow connection to localhost
+#ifndef Q_OS_WINRT
     {
         // make sure socket notifiers are moved with the object
         MoveToThreadThread thread;
@@ -1883,6 +1885,7 @@ void tst_QObject::moveToThread()
         QMetaObject::invokeMethod(socket, "deleteLater", Qt::QueuedConnection);
         thread.wait();
     }
+#endif
 }
 
 
