@@ -78,7 +78,8 @@ enum QBenchmarkMetric {
     MinorPageFaults,
     MajorPageFaults,
     AlignmentFaults,
-    EmulationFaults
+    EmulationFaults,
+    RefCPUCycles,
 };
 
 }

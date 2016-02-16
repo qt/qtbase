@@ -56,6 +56,7 @@
   \value CPUTicks               CPU time
   \value CPUMigrations          Process migrations between CPUs
   \value CPUCycles              CPU cycles
+  \value RefCPUCycles           Reference CPU cycles
   \value BusCycles              Bus cycles
   \value StalledCycles          Cycles stalled
   \value InstructionReads       Instruction reads
@@ -108,6 +109,8 @@ const char * QTest::benchmarkMetricName(QBenchmarkMetric metric)
         return "CPUMigrations";
     case CPUCycles:
         return "CPUCycles";
+    case RefCPUCycles:
+        return "RefCPUCycles";
     case BusCycles:
         return "BusCycles";
     case StalledCycles:
@@ -180,6 +183,8 @@ const char * QTest::benchmarkMetricUnit(QBenchmarkMetric metric)
         return "CPU migrations";
     case CPUCycles:
         return "CPU cycles";
+    case RefCPUCycles:
+        return "Reference CPU cycles";
     case BusCycles:
         return "bus cycles";
     case StalledCycles:

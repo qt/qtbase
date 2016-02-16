@@ -153,6 +153,7 @@ bool QBenchmarkPerfEventsMeasurer::isAvailable()
 
    Event type   Event counter           Unit            Name and aliases
    HARDWARE     CPU_CYCLES              CPUCycles       cycles  cpu-cycles
+   HARDWARE     REF_CPU_CYCLES          RefCPUCycles    ref-cycles
    HARDWARE     INSTRUCTIONS            Instructions    instructions
    HARDWARE     CACHE_REFERENCES        CacheReferences cache-references
    HARDWARE     CACHE_MISSES            CacheMisses     cache-misses
@@ -321,6 +322,7 @@ static const char eventlist_strings[] =
     "migrations\0"
     "minor-faults\0"
     "page-faults\0"
+    "ref-cycles\0"
     "stalled-cycles-backend\0"
     "stalled-cycles-frontend\0"
     "task-clock\0"
@@ -407,9 +409,10 @@ static const Events eventlist[] = {
     { 1256, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CPU_MIGRATIONS, QTest::CPUMigrations },
     { 1267, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MIN, QTest::MinorPageFaults },
     { 1280, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS, QTest::PageFaults },
-    { 1292, PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_BACKEND, QTest::StalledCycles },
-    { 1315, PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_FRONTEND, QTest::StalledCycles },
-    { 1339, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK, QTest::WalltimeMilliseconds },
+    { 1292, PERF_TYPE_HARDWARE, PERF_COUNT_HW_REF_CPU_CYCLES, QTest::RefCPUCycles },
+    { 1303, PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_BACKEND, QTest::StalledCycles },
+    { 1326, PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_FRONTEND, QTest::StalledCycles },
+    { 1350, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK, QTest::WalltimeMilliseconds },
     {   0, PERF_TYPE_MAX, 0, QTest::Events }
 };
 /* -- END GENERATED CODE -- */
