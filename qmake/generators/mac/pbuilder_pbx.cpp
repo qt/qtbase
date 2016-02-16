@@ -1123,9 +1123,9 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     bundle_resources_files << s;
             } else {
                 QString phase_key = keyFor("QMAKE_PBX_BUNDLE_COPY." + bundle_data[i]);
-                if (!project->isEmpty(ProKey(bundle_data[i] + ".version"))) {
-                    //###
-                }
+                //if (!project->isActiveConfig("shallow_bundle")
+                //    && !project->isEmpty(ProKey(bundle_data[i] + ".version"))) {
+                //}
 
                 project->values("QMAKE_PBX_BUILDPHASES").append(phase_key);
                 t << "\t\t" << phase_key << " = {\n"

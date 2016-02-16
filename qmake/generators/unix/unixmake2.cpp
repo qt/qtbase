@@ -596,9 +596,10 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
               << var("QMAKE_LINK_SHLIB_CMD") << "\n\t"
               << mkdir_p_asstring("\"`dirname $(DESTDIR)$(TARGETD)`\"", false) << "\n\t"
               << "-$(MOVE) $(TARGET) $(DESTDIR)$(TARGETD)\n\t"
-              << mkdir_p_asstring("\"`dirname $(DESTDIR)$(TARGET0)`\"", false) << "\n\t"
-              << varGlue("QMAKE_LN_SHLIB", "-", " ",
-                         " Versions/Current/$(TARGET) $(DESTDIR)$(TARGET0)") << "\n\t";
+              << mkdir_p_asstring("\"`dirname $(DESTDIR)$(TARGET0)`\"", false) << "\n\t";
+            if (!project->isActiveConfig("shallow_bundle"))
+                t << varGlue("QMAKE_LN_SHLIB", "-", " ",
+                             " Versions/Current/$(TARGET) $(DESTDIR)$(TARGET0)") << "\n\t";
             if(!project->isEmpty("QMAKE_POST_LINK"))
                 t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;
@@ -778,9 +779,14 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 info_plist = escapeFilePath(fileFixify(info_plist));
             }
             bool isFramework = project->first("TEMPLATE") == "lib" && project->isActiveConfig("lib_bundle");
+            bool isShallowBundle = project->isActiveConfig("shallow_bundle");
             QString info_plist_out = bundle_dir +
-                (isFramework ? ("Versions/" + project->first("QMAKE_FRAMEWORK_VERSION") + "/Resources/Info.plist")
-                             : "Contents/Info.plist");
+                (!isShallowBundle
+                    ? (isFramework
+                        ? ("Versions/" + project->first("QMAKE_FRAMEWORK_VERSION") + "/Resources/")
+                        : "Contents/")
+                    : QString())
+                + "Info.plist";
             bundledFiles << info_plist_out;
             alldeps << info_plist_out;
             QString destdir = info_plist_out.section(Option::dir_sep, 0, -2);
@@ -838,7 +844,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                       << "@$(COPY_FILE) " << escapeFilePath(icon) << ' ' << icon_path_f << endl;
                 }
             } else {
-                symlinks[bundle_dir + "Resources"] = "Versions/Current/Resources";
+                if (!isShallowBundle)
+                    symlinks[bundle_dir + "Resources"] = "Versions/Current/Resources";
                 t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
                   << "@sed ";
                 for (const ProString &arg : qAsConst(commonSedArgs))
@@ -857,18 +864,20 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             for(int i = 0; i < bundle_data.count(); i++) {
                 const ProStringList &files = project->values(ProKey(bundle_data[i] + ".files"));
                 QString path = bundle_dir;
-                const ProKey vkey(bundle_data[i] + ".version");
                 const ProKey pkey(bundle_data[i] + ".path");
-                if (!project->isEmpty(vkey)) {
-                    QString version = project->first(vkey) + "/" +
-                                      project->first("QMAKE_FRAMEWORK_VERSION") + "/";
-                    ProString name = project->first(pkey);
-                    int pos = name.indexOf('/');
-                    if (pos > 0)
-                        name = name.mid(0, pos);
-                    symlinks[Option::fixPathToTargetOS(path + name)] =
-                            project->first(vkey) + "/Current/" + name;
-                    path += version;
+                if (!project->isActiveConfig("shallow_bundle")) {
+                    const ProKey vkey(bundle_data[i] + ".version");
+                    if (!project->isEmpty(vkey)) {
+                        QString version = project->first(vkey) + "/" +
+                                          project->first("QMAKE_FRAMEWORK_VERSION") + "/";
+                        ProString name = project->first(pkey);
+                        int pos = name.indexOf('/');
+                        if (pos > 0)
+                            name = name.mid(0, pos);
+                        symlinks[Option::fixPathToTargetOS(path + name)] =
+                                project->first(vkey) + "/Current/" + name;
+                        path += version;
+                    }
                 }
                 path += project->first(pkey).toQString();
                 path = Option::fixPathToTargetOS(path);
@@ -906,15 +915,17 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                   << "@$(SYMLINK) " << escapeFilePath(symIt.value()) << ' ' << bundle_dir_f << endl;
             }
 
-            QString currentLink = bundle_dir + "Versions/Current";
-            QString currentLink_f = escapeDependencyPath(currentLink);
-            bundledFiles << currentLink;
-            alldeps << currentLink;
-            t << currentLink_f << ": $(MAKEFILE)\n\t"
-              << mkdir_p_asstring(bundle_dir + "Versions") << "\n\t"
-              << "@-$(DEL_FILE) " << currentLink_f << "\n\t"
-              << "@$(SYMLINK) " << project->first("QMAKE_FRAMEWORK_VERSION")
-                         << ' ' << currentLink_f << endl;
+            if (!project->isActiveConfig("shallow_bundle")) {
+                QString currentLink = bundle_dir + "Versions/Current";
+                QString currentLink_f = escapeDependencyPath(currentLink);
+                bundledFiles << currentLink;
+                alldeps << currentLink;
+                t << currentLink_f << ": $(MAKEFILE)\n\t"
+                  << mkdir_p_asstring(bundle_dir + "Versions") << "\n\t"
+                  << "@-$(DEL_FILE) " << currentLink_f << "\n\t"
+                  << "@$(SYMLINK) " << project->first("QMAKE_FRAMEWORK_VERSION")
+                             << ' ' << currentLink_f << endl;
+            }
         }
     }
 
@@ -1157,12 +1168,17 @@ void UnixMakefileGenerator::init2()
                 bundle_loc.prepend("/");
             if(!bundle_loc.endsWith("/"))
                 bundle_loc += "/";
-            project->values("TARGET_").append(project->first("QMAKE_BUNDLE") +
-                                              bundle_loc + project->first("TARGET"));
-            project->values("TARGET_x.y").append(project->first("QMAKE_BUNDLE") +
-                                                      "/Versions/" +
-                                                      project->first("QMAKE_FRAMEWORK_VERSION") +
-                                                      bundle_loc + project->first("TARGET"));
+            const QString target = project->first("QMAKE_BUNDLE") +
+                                        bundle_loc + project->first("TARGET");
+            project->values("TARGET_").append(target);
+            if (!project->isActiveConfig("shallow_bundle")) {
+                project->values("TARGET_x.y").append(project->first("QMAKE_BUNDLE") +
+                                                          "/Versions/" +
+                                                          project->first("QMAKE_FRAMEWORK_VERSION") +
+                                                          bundle_loc + project->first("TARGET"));
+            } else {
+                project->values("TARGET_x.y").append(target);
+            }
         } else if(project->isActiveConfig("plugin")) {
             QString prefix;
             if(!project->isActiveConfig("no_plugin_name_prefix"))

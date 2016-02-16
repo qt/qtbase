@@ -37,11 +37,13 @@ defineReplace(qtRelativeRPathBase) {
     darwin {
         if(equals(TEMPLATE, app):app_bundle)|\
                 if(equals(TEMPLATE, lib):plugin:plugin_bundle) {
-            ios: return($$target.path/$${TARGET}.app)
+            shallow_bundle: return($$target.path/$${TARGET}.app)
             return($$target.path/$${TARGET}.app/Contents/MacOS)
         }
-        equals(TEMPLATE, lib):!plugin:lib_bundle: \
+        equals(TEMPLATE, lib):!plugin:lib_bundle {
+            shallow_bundle: return($$target.path/$${TARGET}.framework)
             return($$target.path/$${TARGET}.framework/Versions/Current)
+        }
     }
     return($$target.path)
 }

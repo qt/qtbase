@@ -579,10 +579,13 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
         plain_targ = escapeFilePath(plain_targ);
         if (bundle != NoBundle) {
             QString suffix;
-            if (project->first("TEMPLATE") == "lib")
-                suffix = "/Versions/" + project->first("QMAKE_FRAMEWORK_VERSION") + "/$(TARGET)";
-            else
+            if (project->first("TEMPLATE") == "lib") {
+                if (!project->isActiveConfig("shallow_bundle"))
+                    suffix += "/Versions/" + project->first("QMAKE_FRAMEWORK_VERSION");
+                suffix += "/$(TARGET)";
+            } else {
                 suffix = "/" + project->first("QMAKE_BUNDLE_LOCATION") + "/$(QMAKE_TARGET)";
+            }
             dst_targ += suffix;
             if (bundle == SolidBundle) {
                 if (!ret.isEmpty())
