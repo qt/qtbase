@@ -502,8 +502,19 @@
 
 /*! \fn void QVector::clear()
 
-    Removes all the elements from the vector and releases the memory used by
-    the vector.
+    Removes all the elements from the vector.
+
+    \note Until Qt 5.6, this also released the memory used by
+    the vector. From Qt 5.7, the capacity is preserved. To shed
+    all capacity, swap with a default-constructed vector:
+    \code
+    QVector<T> v ...;
+    QVector<T>().swap(v);
+    Q_ASSERT(v.capacity() == 0);
+    \endcode
+    or call squeeze().
+
+    \sa squeeze()
 */
 
 /*! \fn const T &QVector::at(int i) const

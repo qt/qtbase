@@ -734,10 +734,11 @@ void tst_QVector::clear() const
     QVector<T> myvec;
     myvec << SimpleValue<T>::at(0) << SimpleValue<T>::at(1) << SimpleValue<T>::at(2);
 
-    QVERIFY(myvec.size() == 3);
+    const auto oldCapacity = myvec.capacity();
+    QCOMPARE(myvec.size(), 3);
     myvec.clear();
-    QVERIFY(myvec.size() == 0);
-    QVERIFY(myvec.capacity() == 0);
+    QCOMPARE(myvec.size(), 0);
+    QCOMPARE(myvec.capacity(), oldCapacity);
 }
 
 void tst_QVector::clearInt() const
@@ -1945,7 +1946,7 @@ void tst_QVector::resizePOD() const
 
     const int capacity = vector.capacity();
 
-    vector.resize(0);
+    vector.clear();
     QCOMPARE(vector.size(), 0);
     QVERIFY(vector.capacity() <= capacity);
 }

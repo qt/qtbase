@@ -375,7 +375,7 @@ QKeySequence::SequenceMatch QShortcutMap::nextState(QKeyEvent *e)
     QKeySequence::SequenceMatch result = QKeySequence::NoMatch;
 
     // We start fresh each time..
-    d->identicals.resize(0);
+    d->identicals.clear();
 
     result = find(e);
     if (result == QKeySequence::NoMatch && (e->modifiers() & Qt::KeypadModifier)) {
@@ -448,7 +448,7 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e, int ignoredModifier
     }
 
     // Looking for new identicals, scrap old
-    d->identicals.resize(0);
+    d->identicals.clear();
 
     bool partialFound = false;
     bool identicalDisabledFound = false;
