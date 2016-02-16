@@ -135,7 +135,7 @@ win32 {
                 io/qprocess_unix.cpp \
                 io/qfilesystemiterator_unix.cpp
 
-        !integrity {
+        !integrity:!tvos {
             SOURCES += io/forkfd_qt.cpp
             HEADERS += \
                      ../3rdparty/forkfd/forkfd.h
@@ -153,7 +153,7 @@ win32 {
                 OBJECTIVE_SOURCES += io/qfilesystemwatcher_fsevents.mm
                 HEADERS += io/qfilesystemwatcher_fsevents_p.h
                 LIBS += -framework DiskArbitration -framework IOKit
-            } else:ios {
+            } else {
                 LIBS += -framework MobileCoreServices
             }
         } else:android {

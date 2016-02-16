@@ -54,7 +54,7 @@
 #include <private/qfontengine_p.h>
 #include <private/qcore_mac_p.h>
 
-#ifndef Q_OS_IOS
+#ifdef Q_OS_OSX
 #include <ApplicationServices/ApplicationServices.h>
 #else
 #include <CoreText/CoreText.h>
@@ -118,7 +118,7 @@ public:
 
     static bool supportsColorGlyphs()
     {
-#if defined(Q_OS_IOS)
+#if defined(QT_PLATFORM_UIKIT)
         return true;
 #elif MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
   #if MAC_OS_X_VERSION_MIN_REQUIRED < 1070

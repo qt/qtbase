@@ -109,7 +109,7 @@ using namespace ABI::Windows::Storage;
 #define Q_XDG_PLATFORM
 #endif
 
-#if !defined(QT_NO_STANDARDPATHS) && (defined(Q_XDG_PLATFORM) || defined(Q_OS_IOS))
+#if !defined(QT_NO_STANDARDPATHS) && (defined(Q_XDG_PLATFORM) || defined(QT_PLATFORM_UIKIT))
 #define QSETTINGS_USE_QSTANDARDPATHS
 #endif
 

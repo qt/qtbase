@@ -1,7 +1,7 @@
 TARGET = qios
 
 QT += core-private gui-private platformsupport-private
-LIBS += -framework Foundation -framework UIKit -framework QuartzCore -framework AssetsLibrary -framework AudioToolbox
+LIBS += -framework Foundation -framework UIKit -framework QuartzCore -framework AudioToolbox
 
 OBJECTIVE_SOURCES = \
     plugin.mm \
@@ -19,15 +19,9 @@ OBJECTIVE_SOURCES = \
     qiosglobal.mm \
     qiosservices.mm \
     quiview.mm \
-    qiosclipboard.mm \
     quiaccessibilityelement.mm \
     qiosplatformaccessibility.mm \
-    qiostextresponder.mm \
-    qiosmenu.mm \
-    qiosfileengineassetslibrary.mm \
-    qiosfiledialog.mm \
-    qiosmessagedialog.mm \
-    qiostextinputoverlay.mm
+    qiostextresponder.mm
 
 HEADERS = \
     qiosintegration.h \
@@ -44,16 +38,28 @@ HEADERS = \
     qiosglobal.h \
     qiosservices.h \
     quiview.h \
-    qiosclipboard.h \
     quiaccessibilityelement.h \
     qiosplatformaccessibility.h \
     qiostextresponder.h \
-    qiosmenu.h \
-    qiosfileenginefactory.h \
-    qiosfileengineassetslibrary.h \
-    qiosfiledialog.h \
-    qiosmessagedialog.h \
-    qiostextinputoverlay.h
+    qiosfileenginefactory.h
+
+!tvos {
+    LIBS += -framework AssetsLibrary
+    OBJECTIVE_SOURCES += \
+        qiosclipboard.mm \
+        qiosmenu.mm \
+        qiosfileengineassetslibrary.mm \
+        qiosfiledialog.mm \
+        qiosmessagedialog.mm \
+        qiostextinputoverlay.mm
+    HEADERS += \
+        qiosclipboard.h \
+        qiosmenu.h \
+        qiosfileengineassetslibrary.h \
+        qiosfiledialog.h \
+        qiosmessagedialog.h \
+        qiostextinputoverlay.h
+}
 
 OTHER_FILES = \
     quiview_textinput.mm \

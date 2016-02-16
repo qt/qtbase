@@ -38,4 +38,4 @@ SUBDIRS=\
 # This test is only applicable on Windows
 !win32*|winrt: SUBDIRS -= qwineventnotifier
 
-android|ios: SUBDIRS -= qsharedmemory qsystemsemaphore
+android|uikit: SUBDIRS -= qsharedmemory qsystemsemaphore

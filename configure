@@ -301,6 +301,12 @@ macSDKify()
         iphonesimulator*)
             version_min_flag="-mios-simulator-version-min=$(getSingleQMakeVariable QMAKE_IOS_DEPLOYMENT_TARGET "$1")"
         ;;
+        appletvos*)
+            version_min_flag="-mappletvos-version-min=$(getSingleQMakeVariable QMAKE_TVOS_DEPLOYMENT_TARGET "$1")"
+        ;;
+        appletvsimulator*)
+            version_min_flag="-mtvos-simulator-version-min=$(getSingleQMakeVariable QMAKE_TVOS_DEPLOYMENT_TARGET "$1")"
+        ;;
         *)
         ;;
     esac
@@ -741,8 +747,9 @@ RPATH_FLAGS=
 W_FLAGS=
 QCONFIG_FLAGS=
 XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++"
-XPLATFORM_MAC=no        # Whether target platform is OS X or iOS
+XPLATFORM_MAC=no        # Whether target platform is OS X, iOS or tvOS
 XPLATFORM_IOS=no        # Whether target platform is iOS
+XPLATFORM_TVOS=no       # Whether target platform is tvOS
 XPLATFORM_ANDROID=no
 XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
 XPLATFORM_QNX=no
@@ -2342,6 +2349,10 @@ case "$XPLATFORM" in
         XPLATFORM_MAC=yes
         XPLATFORM_IOS=yes
         ;;
+    *tvos*)
+        XPLATFORM_MAC=yes
+        XPLATFORM_TVOS=yes
+        ;;
     *macx*)
         XPLATFORM_MAC=yes
         ;;
@@ -2714,12 +2725,16 @@ if [ "$XPLATFORM_MAC" = "yes" ]; then
     [ "$CFG_PKGCONFIG" = "auto" ] && CFG_PKGCONFIG="no"
 fi
 
-if [ "$XPLATFORM_IOS" = "yes" ]; then
+if [ "$XPLATFORM_IOS" = "yes" ] || [ "$XPLATFORM_TVOS" = "yes" ]; then
     CFG_RPATH="no"
     CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS examples"
     CFG_SHARED="no" # iOS builds should be static to be able to submit to the App Store
     CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtdoc qtmacextras qtserialport qtwebkit qtwebkit-examples"
     CFG_PRECOMPILE="no" # Precompiled headers not supported with multiple -arch arguments
+    if [ "$XPLATFORM_TVOS" = "yes" ]; then
+        CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtscript"
+        CFG_WIDGETS="no"
+    fi
 
     # If the user passes -sdk on the command line we build a SDK-specific Qt build.
     # Otherwise we build a joined simulator and device build, which is the default.
@@ -6379,7 +6394,7 @@ if [ "$CFG_ARCH" = "i386" -o "$CFG_ARCH" = "x86_64" ]; then
     echo "    SSE .................. ${CFG_SSE_LIST:-<none>}"
     echo "    AVX .................. ${CFG_AVX_LIST:-<none>}"
     echo "    AVX512 ............... ${CFG_AVX512_UPPER:-<none>}"
-elif [ "$CFG_ARCH" = "arm" ]; then
+elif [ "$CFG_ARCH" = "arm" -o "$CFG_ARCH" = "arm64" ]; then
     echo "    Neon ................. ${CFG_NEON}"
 elif [ "$CFG_ARCH" = "mips" ]; then
     echo "    DSP/DSPr2 ............ ${CFG_MIPS_DSP}/${CFG_MIPS_DSPR2}"

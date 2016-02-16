@@ -121,6 +121,7 @@ public:
 
 #define Q_MV_OSX(major, minor) (major == 10 ? minor + 2 : (major == 9 ? 1 : 0))
 #define Q_MV_IOS(major, minor) (QSysInfo::MV_IOS | major << 4 | minor)
+#define Q_MV_TVOS(major, minor) (QSysInfo::MV_TVOS | major << 4 | minor)
     enum MacVersion {
         MV_None    = 0xffff,
         MV_Unknown = 0x0000,
@@ -168,7 +169,12 @@ public:
         MV_IOS_8_2 = Q_MV_IOS(8, 2),
         MV_IOS_8_3 = Q_MV_IOS(8, 3),
         MV_IOS_8_4 = Q_MV_IOS(8, 4),
-        MV_IOS_9_0 = Q_MV_IOS(9, 0)
+        MV_IOS_9_0 = Q_MV_IOS(9, 0),
+
+        /* tvOS */
+        MV_TVOS     = 1 << 9,
+        MV_TVOS_9_0 = Q_MV_TVOS(9, 0),
+        MV_TVOS_9_1 = Q_MV_TVOS(9, 1)
     };
 #if defined(Q_OS_MAC)
     static const MacVersion MacintoshVersion;

@@ -2531,7 +2531,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #if defined(Q_OS_MACX)
 # include <crt_externs.h>
 # define environ (*_NSGetEnviron())
-#elif defined(Q_OS_IOS)
+#elif defined(QT_PLATFORM_UIKIT)
   static char *qt_empty_environ[] = { 0 };
 #define environ qt_empty_environ
 #elif !defined(Q_OS_WIN)

@@ -45,7 +45,9 @@
 #include "qiosscreen.h"
 #include "qiosplatformaccessibility.h"
 #include "qioscontext.h"
+#ifndef Q_OS_TVOS
 #include "qiosclipboard.h"
+#endif
 #include "qiosinputcontext.h"
 #include "qiostheme.h"
 #include "qiosservices.h"
@@ -72,7 +74,9 @@ QIOSIntegration *QIOSIntegration::instance()
 
 QIOSIntegration::QIOSIntegration()
     : m_fontDatabase(new QCoreTextFontDatabase)
+#ifndef Q_OS_TVOS
     , m_clipboard(new QIOSClipboard)
+#endif
     , m_inputContext(0)
     , m_platformServices(new QIOSServices)
     , m_accessibility(0)
@@ -127,8 +131,10 @@ QIOSIntegration::~QIOSIntegration()
     delete m_fontDatabase;
     m_fontDatabase = 0;
 
+#ifndef Q_OS_TVOS
     delete m_clipboard;
     m_clipboard = 0;
+#endif
     QMacInternalPasteboardMime::destroyMimeTypes();
 
     delete m_inputContext;
@@ -217,7 +223,11 @@ QPlatformFontDatabase * QIOSIntegration::fontDatabase() const
 
 QPlatformClipboard *QIOSIntegration::clipboard() const
 {
+#ifndef Q_OS_TVOS
     return m_clipboard;
+#else
+    return 0;
+#endif
 }
 
 QPlatformInputContext *QIOSIntegration::inputContext() const

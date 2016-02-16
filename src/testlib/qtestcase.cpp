@@ -1378,7 +1378,9 @@ FatalSignalHandler::FatalSignalHandler()
     act.sa_flags = SA_RESETHAND;
 #endif
 
-#ifdef SA_ONSTACK
+// tvOS/watchOS both define SA_ONSTACK (in sys/signal.h) but mark sigaltstack() as
+// unavailable (__WATCHOS_PROHIBITED __TVOS_PROHIBITED in signal.h)
+#if defined(SA_ONSTACK) && !defined(Q_OS_TVOS)
     // Let the signal handlers use an alternate stack
     // This is necessary if SIGSEGV is to catch a stack overflow
 #  if defined(Q_CC_GNU) && defined(Q_OF_ELF)

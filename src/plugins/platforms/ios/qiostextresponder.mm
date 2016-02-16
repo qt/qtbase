@@ -896,6 +896,7 @@
     // text instead of just guessing...
 }
 
+#ifndef Q_OS_TVOS
 - (NSDictionary *)textStylingAtPosition:(UITextPosition *)position inDirection:(UITextStorageDirection)direction
 {
     Q_UNUSED(position);
@@ -915,6 +916,7 @@
         return [NSDictionary dictionary];
     return [NSDictionary dictionaryWithObject:uifont forKey:UITextInputTextFontKey];
 }
+#endif
 
 - (NSDictionary *)markedTextStyle
 {

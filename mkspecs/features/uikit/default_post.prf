@@ -20,10 +20,11 @@ load(default_post)
 
 macx-xcode {
     device_family.name = TARGETED_DEVICE_FAMILY
-    device_family.value = $$QMAKE_IOS_TARGETED_DEVICE_FAMILY
+    ios: device_family.value = $$QMAKE_IOS_TARGETED_DEVICE_FAMILY
+    tvos: device_family.value = $$QMAKE_TVOS_TARGETED_DEVICE_FAMILY
     QMAKE_MAC_XCODE_SETTINGS += device_family
 
-    {
+    ios {
         # If QMAKE_BUNDLE_DATA contains an asset catalog that includes an
         # AppIcon.appiconset, we configure Xcode to use it for app icons.
         for(bundle_data, QMAKE_BUNDLE_DATA) {
@@ -66,10 +67,15 @@ macx-xcode {
 macx-xcode {
     arch_device.name = "ARCHS[sdk=$${device.sdk}*]"
     arch_simulator.name = "ARCHS[sdk=$${simulator.sdk}*]"
-    {
+    ios {
         arch_device.value = $$QMAKE_IOS_DEVICE_ARCHS
         arch_simulator.value = $$QMAKE_IOS_SIMULATOR_ARCHS
         QMAKE_XCODE_ARCHS = $$QMAKE_IOS_DEVICE_ARCHS $$QMAKE_IOS_SIMULATOR_ARCHS
+    }
+    tvos {
+        arch_device.value = $$QMAKE_TVOS_DEVICE_ARCHS
+        arch_simulator.value = $$QMAKE_TVOS_SIMULATOR_ARCHS
+        QMAKE_XCODE_ARCHS = $$QMAKE_TVOS_DEVICE_ARCHS $$QMAKE_TVOS_SIMULATOR_ARCHS
     }
 
     QMAKE_MAC_XCODE_SETTINGS += arch_device arch_simulator
@@ -81,9 +87,11 @@ macx-xcode {
 } else {
     # Be more specific about which architecture we're targeting
     contains(QT_ARCH, arm.*) {
-        VALID_ARCHS = $$QMAKE_IOS_DEVICE_ARCHS
+        ios: VALID_ARCHS = $$QMAKE_IOS_DEVICE_ARCHS
+        tvos: VALID_ARCHS = $$QMAKE_TVOS_DEVICE_ARCHS
     } else {
-        VALID_ARCHS = $$QMAKE_IOS_SIMULATOR_ARCHS
+        ios: VALID_ARCHS = $$QMAKE_IOS_SIMULATOR_ARCHS
+        tvos: VALID_ARCHS = $$QMAKE_TVOS_SIMULATOR_ARCHS
     }
 
     single_arch: VALID_ARCHS = $$first(VALID_ARCHS)

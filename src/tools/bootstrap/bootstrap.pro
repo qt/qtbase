@@ -118,7 +118,7 @@ mac {
 
     LIBS += -framework Foundation
     osx: LIBS_PRIVATE += -framework CoreServices
-    ios: LIBS_PRIVATE += -framework UIKit
+    uikit: LIBS_PRIVATE += -framework UIKit
 }
 
 macx {

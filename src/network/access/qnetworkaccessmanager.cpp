@@ -56,7 +56,7 @@
 #include "qnetworkreplydataimpl_p.h"
 #include "qnetworkreplyfileimpl_p.h"
 
-#if defined(Q_OS_IOS) && defined(QT_NO_SSL)
+#if defined(QT_PLATFORM_UIKIT) && defined(QT_NO_SSL)
 #include "qnetworkreplynsurlconnectionimpl_p.h"
 #endif
 
@@ -1205,7 +1205,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     }
 
 // Use NSURLConnection for https on iOS when OpenSSL is disabled.
-#if defined(Q_OS_IOS) && defined(QT_NO_SSL)
+#if defined(QT_PLATFORM_UIKIT) && defined(QT_NO_SSL)
     if (scheme == QLatin1String("https"))
         return new QNetworkReplyNSURLConnectionImpl(this, request, op, outgoingData);
 #endif

@@ -66,8 +66,10 @@ QRectF fromCGRect(const CGRect &rect);
 CGPoint toCGPoint(const QPointF &point);
 QPointF fromCGPoint(const CGPoint &point);
 
+#ifndef Q_OS_TVOS
 Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation);
 UIDeviceOrientation fromQtScreenOrientation(Qt::ScreenOrientation qtOrientation);
+#endif
 
 int infoPlistValue(NSString* key, int defaultValue);
 

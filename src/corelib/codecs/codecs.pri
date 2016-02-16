@@ -40,7 +40,7 @@ contains(QT_CONFIG,icu) {
         codecs/qeuckrcodec.cpp \
         codecs/qbig5codec.cpp
 
-    unix:!qnx:!mac:!ios:!linux-android-* {
+    unix:!qnx:!darwin:!linux-android-* {
         contains(QT_CONFIG, iconv) {
             HEADERS += codecs/qiconvcodec_p.h
             SOURCES += codecs/qiconvcodec.cpp

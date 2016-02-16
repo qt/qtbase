@@ -19,3 +19,13 @@ simulator_and_device:iphonesimulator {
     CONFIG -= neon
     CONFIG += sse sse2
 }
+simulator_and_device:appletvsimulator {
+    # For a simulator_and_device build all the config tests
+    # are based on the AppleTVOS ARM SDK, but we know that the simulator
+    # is x64 and that we support SSE/SSE2.
+    QT_ARCH = x64
+    QT_CPU_FEATURES.x64 = sse sse2
+    DEFINES += QT_COMPILER_SUPPORTS_SSE2
+    CONFIG -= neon
+    CONFIG += sse sse2
+}

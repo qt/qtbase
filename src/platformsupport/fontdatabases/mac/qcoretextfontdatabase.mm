@@ -44,7 +44,7 @@
 #if defined(Q_OS_OSX)
 #import <AppKit/AppKit.h>
 #import <IOKit/graphics/IOGraphicsLib.h>
-#elif defined(Q_OS_IOS)
+#elif defined(QT_PLATFORM_UIKIT)
 #import <UIKit/UIFont.h>
 #endif
 
@@ -191,7 +191,7 @@ static CFArrayRef availableFamilyNames()
 {
 #if defined(Q_OS_OSX)
     return CTFontManagerCopyAvailableFontFamilyNames();
-#elif defined(Q_OS_IOS)
+#elif defined(QT_PLATFORM_UIKIT)
     return (CFArrayRef) [[UIFont familyNames] retain];
 #endif
 }
@@ -847,7 +847,7 @@ static CTFontUIFontType fontTypeFromTheme(QPlatformTheme::Font f)
 
 static CTFontDescriptorRef fontDescriptorFromTheme(QPlatformTheme::Font f)
 {
-#ifdef Q_OS_IOS
+#if defined(QT_PLATFORM_UIKIT)
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_7_0) {
         // Use Dynamic Type to resolve theme fonts if possible, to get
         // correct font sizes and style based on user configuration.
@@ -881,7 +881,7 @@ static CTFontDescriptorRef fontDescriptorFromTheme(QPlatformTheme::Font f)
             return static_cast<CTFontDescriptorRef>(CFBridgingRetain(desc));
         }
     }
-#endif // Q_OS_IOS
+#endif // Q_OS_IOS, Q_OS_TVOS
 
     // OSX default case and iOS fallback case
     CTFontUIFontType fontType = fontTypeFromTheme(f);

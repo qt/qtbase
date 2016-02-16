@@ -54,6 +54,10 @@ xcodebuild test -scheme $2 -destination 'id=0' -destination-timeout 1 2>&1| sed 
                 echo "HARDWARE_DEVICES += $id"
             elif [ "$val" = "iOS Simulator" -a "$id" != "$booted_simulator" ]; then
                 echo "SIMULATOR_DEVICES += $id"
+            elif [ "$val" = "tvOS" ]; then
+                echo "HARDWARE_DEVICES += $id"
+            elif [ "$val" = "tvOS Simulator" -a "$id" != "$booted_simulator" ]; then
+                echo "SIMULATOR_DEVICES += $id"
             fi
         fi
     done

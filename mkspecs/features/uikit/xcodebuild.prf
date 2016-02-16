@@ -35,8 +35,14 @@ CONFIG += no_default_goal_deps
 
 DEVICE_SDK = $${device.sdk}
 SIMULATOR_SDK = $${simulator.sdk}
-DEVICE_FILTER = "iPhone|iPad"
-GENERIC_DEVICE_DESTINATION = "generic/platform=iOS"
+ios {
+    DEVICE_FILTER = "iPhone|iPad"
+    GENERIC_DEVICE_DESTINATION = "generic/platform=iOS"
+}
+tvos {
+    DEVICE_FILTER = "Apple TV"
+    GENERIC_DEVICE_DESTINATION = "generic/platform=tvOS"
+}
 QMAKE_EXTRA_VARIABLES += DEVICE_SDK SIMULATOR_SDK DEVICE_FILTER GENERIC_DEVICE_DESTINATION
 
 QMAKE_EXTRA_INCLUDES += $$shell_quote($$PWD/xcodebuild.mk)

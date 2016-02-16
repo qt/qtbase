@@ -74,7 +74,7 @@ SOURCES += \
 
 mac: LIBS_PRIVATE += -framework Security
 
-ios {
+uikit {
     HEADERS += \
         access/qnetworkreplynsurlconnectionimpl_p.h
 

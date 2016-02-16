@@ -47,7 +47,7 @@
 
 #include <qdebug.h>
 
-#ifdef Q_OS_IOS
+#if defined(Q_OS_IOS)
 #import <UIKit/UIKit.h>
 #endif
 
@@ -101,7 +101,7 @@ QT_FOR_EACH_MUTABLE_CORE_GRAPHICS_TYPE(QT_DECLARE_WEAK_QDEBUG_OPERATOR_FOR_CF_TY
 QAppleOperatingSystemVersion qt_apple_os_version()
 {
     QAppleOperatingSystemVersion v = {0, 0, 0};
-#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_10, __IPHONE_8_0)
+#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_10, __IPHONE_8_0) || defined(Q_OS_TVOS)
     if ([NSProcessInfo instancesRespondToSelector:@selector(operatingSystemVersion)]) {
         NSOperatingSystemVersion osv = NSProcessInfo.processInfo.operatingSystemVersion;
         v.major = osv.majorVersion;

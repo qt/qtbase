@@ -44,7 +44,9 @@
 #include "qiosviewcontroller.h"
 #include "qiostextresponder.h"
 #include "qioswindow.h"
+#ifndef Q_OS_TVOS
 #include "qiosmenu.h"
+#endif
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qwindow_p.h>
@@ -78,7 +80,9 @@
         if (isQtApplication())
             self.hidden = YES;
 
+#ifndef Q_OS_TVOS
         self.multipleTouchEnabled = YES;
+#endif
 
         if (QIOSIntegration::instance()->debugWindowManagement()) {
             static CGFloat hue = 0.0;
@@ -324,6 +328,7 @@
             // Touch positions are expected to be in QScreen global coordinates, and
             // as we already have the QWindow positioned at the right place, we can
             // just map from the local view position to global coordinates.
+            // tvOS: all touches start at the center of the screen and move from there.
             QPoint localViewPosition = fromCGPoint([uiTouch locationInView:self]).toPoint();
             QPoint globalScreenPosition = m_qioswindow->mapToGlobal(localViewPosition);
 
@@ -439,14 +444,24 @@
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
+#ifndef Q_OS_TVOS
     // Check first if QIOSMenu should handle the action before continuing up the responder chain
     return [QIOSMenu::menuActionTarget() targetForAction:action withSender:sender] != 0;
+#else
+    Q_UNUSED(action)
+    Q_UNUSED(sender)
+    return false;
+#endif
 }
 
 - (id)forwardingTargetForSelector:(SEL)selector
 {
     Q_UNUSED(selector)
+#ifndef Q_OS_TVOS
     return QIOSMenu::menuActionTarget();
+#else
+    return nil;
+#endif
 }
 
 @end

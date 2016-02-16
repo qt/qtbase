@@ -59,7 +59,7 @@
 #include <qpa/qplatformtheme.h>
 #include <private/qcore_mac_p.h>
 
-#ifndef Q_OS_IOS
+#ifdef Q_OS_OSX
 #include <ApplicationServices/ApplicationServices.h>
 #else
 #include <CoreText/CoreText.h>

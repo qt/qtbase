@@ -607,7 +607,7 @@ class QDataStream;
 #  define QT_NO_SOCKS5
 #endif
 
-#if defined(Q_OS_IOS)
+#if defined(QT_PLATFORM_UIKIT)
 #  define QT_NO_PROCESS
 #endif
 

@@ -181,7 +181,7 @@ void QCoreTextFontEngine::init()
     synthesisFlags = 0;
     CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(ctfont);
 
-#if defined(Q_OS_IOS) || MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+#if defined(QT_PLATFORM_UIKIT) || MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
     if (supportsColorGlyphs() && (traits & kCTFontColorGlyphsTrait))
         glyphFormat = QFontEngine::Format_ARGB;
     else
@@ -568,7 +568,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
     if (!im.width() || !im.height())
         return im;
 
-#ifndef Q_OS_IOS
+#ifdef Q_OS_OSX
     CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
 #else
     CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
@@ -617,7 +617,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
             CGContextShowGlyphsWithAdvances(ctx, &cgGlyph, &CGSizeZero, 1);
         }
     }
-#if defined(Q_OS_IOS) || MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+#if defined(QT_PLATFORM_UIKIT) || MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
     else if (supportsColorGlyphs()) {
         // CGContextSetTextMatrix does not work with color glyphs, so we use
         // the CTM instead. This means we must translate the CTM as well, to

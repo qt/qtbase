@@ -657,7 +657,7 @@
     qmake knows about many of these features, which can be accessed via specific
     variables that only take effect on the platforms where they are relevant.
 
-    \section1 OS X and iOS
+    \section1 OS X, iOS and tvOS
 
     Features specific to these platforms include support for creating universal
     binaries, frameworks and bundles.
@@ -1439,7 +1439,7 @@
     \target QMAKE_BUNDLE_DATA
     \section1 QMAKE_BUNDLE_DATA
 
-    \note This variable is used on OS X and iOS only.
+    \note This variable is used on OS X, iOS and tvOS only.
 
     Specifies the data that will be installed with a library
     bundle, and is often used to specify a collection of header files.
@@ -1461,7 +1461,7 @@
 
     \section1 QMAKE_BUNDLE_EXTENSION
 
-    \note This variable is used on OS X and iOS only.
+    \note This variable is used on OS X, iOS and tvOS only.
 
     Specifies the extension to be used for library bundles.
     This allows frameworks to be created with custom extensions instead of the
@@ -1688,7 +1688,7 @@
 
     \section1 QMAKE_FRAMEWORK_BUNDLE_NAME
 
-    \note This variable is used on OS X and iOS only.
+    \note This variable is used on OS X, iOS and tvOS only.
 
     In a framework project, this variable contains the name to be used for the
     framework that is built.
@@ -1702,11 +1702,11 @@
     \target QMAKE_FRAMEWORK_VERSION
     \section1 QMAKE_FRAMEWORK_VERSION
 
-    \note This variable is used on OS X and iOS only.
+    \note This variable is used on OS X, iOS and tvOS only.
 
-    For projects where the build target is an OS X or iOS framework, this variable
-    is used to specify the version number that will be applied to the framework
-    that is built.
+    For projects where the build target is an OS X, iOS or tvOS framework, this
+    variable is used to specify the version number that will be applied to the
+    framework that is built.
 
     By default, this variable contains the same value as the \l{#VERSION}{VERSION}
     variable.
@@ -1797,10 +1797,10 @@
     \target QMAKE_INFO_PLIST
     \section1 QMAKE_INFO_PLIST
 
-    \note This variable is used on OS X and iOS platforms only.
+    \note This variable is used on OS X, iOS and tvOS platforms only.
 
     Specifies the name of the property list file, \c{.plist}, you
-    would like to include in your OS X and iOS application bundle.
+    would like to include in your OS X, iOS and tvOS application bundle.
 
     In the \c{.plist} file, you can define some variables, e.g., @EXECUTABLE@,
     which qmake will replace with the actual executable name. Other variables
@@ -2158,7 +2158,7 @@
     the built shared library's \c SONAME identifier. The \c SONAME is the
     identifier that the dynamic linker will later use to reference the library.
     In general this reference may be a library name or full library path. On OS
-    X and iOS, the path may be specified relatively using the following
+    X, iOS and tvOS, the path may be specified relatively using the following
     placeholders:
 
     \table
@@ -4301,7 +4301,7 @@
         \li nmake
         \li Visual Studio projects (VS 2008 and later)
         \endlist
-    \li OS X and iOS
+    \li OS X, iOS and tvOS
         \list
         \li Makefile
         \li Xcode

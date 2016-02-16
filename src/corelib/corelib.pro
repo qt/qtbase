@@ -58,8 +58,8 @@ win32 {
     !winrt: LIBS_PRIVATE += -lwinmm
 }
 
-mac|darwin {
-    !ios {
+darwin {
+    osx {
         LIBS_PRIVATE += -framework ApplicationServices
         LIBS_PRIVATE += -framework CoreServices
     }

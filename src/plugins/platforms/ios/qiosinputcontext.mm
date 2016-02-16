@@ -84,6 +84,7 @@ static QUIView *focusView()
         self.cancelsTouchesInView = NO;
         self.delaysTouchesEnded = NO;
 
+#ifndef Q_OS_TVOS
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
 
         [notificationCenter addObserver:self
@@ -101,6 +102,7 @@ static QUIView *focusView()
         [notificationCenter addObserver:self
             selector:@selector(keyboardDidChangeFrame:)
             name:UIKeyboardDidChangeFrameNotification object:nil];
+#endif
     }
 
     return self;
@@ -342,6 +344,9 @@ void QIOSInputContext::clearCurrentFocusObject()
 
 void QIOSInputContext::updateKeyboardState(NSNotification *notification)
 {
+#ifdef Q_OS_TVOS
+    Q_UNUSED(notification);
+#else
     static CGRect currentKeyboardRect = CGRectZero;
 
     KeyboardState previousState = m_keyboardState;
@@ -395,6 +400,7 @@ void QIOSInputContext::updateKeyboardState(NSNotification *notification)
         emitAnimatingChanged();
     if (m_keyboardState.keyboardRect != previousState.keyboardRect)
         emitKeyboardRectChanged();
+#endif
 }
 
 bool QIOSInputContext::isInputPanelVisible() const
@@ -514,7 +520,11 @@ void QIOSInputContext::scroll(int y)
                 if (keyboardScrollIsActive && !originalWindowLevels.contains(window))
                     originalWindowLevels.insert(window, window.windowLevel);
 
+#ifndef Q_OS_TVOS
                 UIWindowLevel windowLevelAdjustment = keyboardScrollIsActive ? UIWindowLevelStatusBar : 0;
+#else
+                UIWindowLevel windowLevelAdjustment = 0;
+#endif
                 window.windowLevel = originalWindowLevels.value(window) + windowLevelAdjustment;
 
                 if (!keyboardScrollIsActive)

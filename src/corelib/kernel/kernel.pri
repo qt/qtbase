@@ -111,7 +111,7 @@ mac {
 
     osx: LIBS_PRIVATE += -framework CoreServices -framework AppKit
 
-    ios {
+    uikit {
         # We need UIKit for UIDevice
         LIBS_PRIVATE += -framework UIKit
     }

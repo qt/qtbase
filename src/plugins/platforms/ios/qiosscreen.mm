@@ -120,21 +120,25 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
     self = [super init];
     if (self) {
         m_screen = screen;
+#ifndef Q_OS_TVOS
         [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
         [[NSNotificationCenter defaultCenter]
             addObserver:self
             selector:@selector(orientationChanged:)
             name:@"UIDeviceOrientationDidChangeNotification" object:nil];
+#endif
     }
     return self;
 }
 
 - (void)dealloc
 {
+#ifndef Q_OS_TVOS
     [[UIDevice currentDevice] endGeneratingDeviceOrientationNotifications];
     [[NSNotificationCenter defaultCenter]
         removeObserver:self
         name:@"UIDeviceOrientationDidChangeNotification" object:nil];
+#endif
     [super dealloc];
 }
 
@@ -228,8 +232,13 @@ void QIOSScreen::updateProperties()
     QRect previousAvailableGeometry = m_availableGeometry;
 
     m_geometry = fromCGRect(m_uiScreen.bounds).toRect();
+#ifndef Q_OS_TVOS
     m_availableGeometry = fromCGRect(m_uiScreen.applicationFrame).toRect();
+#else
+    m_availableGeometry = fromCGRect(m_uiScreen.bounds).toRect();
+#endif
 
+#ifndef Q_OS_TVOS
     if (m_uiScreen == [UIScreen mainScreen]) {
         Qt::ScreenOrientation statusBarOrientation = toQtScreenOrientation(UIDeviceOrientation([UIApplication sharedApplication].statusBarOrientation));
 
@@ -257,6 +266,7 @@ void QIOSScreen::updateProperties()
             m_availableGeometry = transform.mapRect(m_availableGeometry);
         }
     }
+#endif
 
     if (m_geometry != previousGeometry) {
         QRectF physicalGeometry;
@@ -335,7 +345,7 @@ qreal QIOSScreen::devicePixelRatio() const
 Qt::ScreenOrientation QIOSScreen::nativeOrientation() const
 {
     CGRect nativeBounds =
-#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_8_0)
+#if !defined(Q_OS_TVOS) && QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_8_0)
         QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_8_0 ? m_uiScreen.nativeBounds :
 #endif
         m_uiScreen.bounds;
@@ -348,6 +358,9 @@ Qt::ScreenOrientation QIOSScreen::nativeOrientation() const
 
 Qt::ScreenOrientation QIOSScreen::orientation() const
 {
+#ifdef Q_OS_TVOS
+    return Qt::PrimaryOrientation;
+#else
     // Auxiliary screens are always the same orientation as their primary orientation
     if (m_uiScreen != [UIScreen mainScreen])
         return Qt::PrimaryOrientation;
@@ -372,6 +385,7 @@ Qt::ScreenOrientation QIOSScreen::orientation() const
     }
 
     return toQtScreenOrientation(deviceOrientation);
+#endif
 }
 
 void QIOSScreen::setOrientationUpdateMask(Qt::ScreenOrientations mask)

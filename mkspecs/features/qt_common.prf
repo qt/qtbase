@@ -67,7 +67,7 @@ warnings_are_errors:warning_clean {
     # If the module declares that it has does its clean-up of warnings, enable -Werror.
     # This setting is compiler-dependent anyway because it depends on the version of the
     # compiler.
-    clang:!ios {
+    clang:!uikit {
         # Apple clang 4.0-4.2,5.0-5.1,6.0-6.4
         # Regular clang 3.3-3.8
         apple_ver = $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}

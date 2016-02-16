@@ -351,7 +351,7 @@ bool QSslSocketPrivate::s_loadedCiphersAndCerts = false;
 bool QSslSocketPrivate::s_loadRootCertsOnDemand = false;
 
 
-#ifndef Q_OS_IOS // dhparam is not used on iOS. (see the SSLSetDiffieHellmanParams call below)
+#if !defined(QT_PLATFORM_UIKIT) // dhparam is not used on iOS or tvOS. (see the SSLSetDiffieHellmanParams call below)
 static const uint8_t dhparam[] =
     "\x30\x82\x01\x08\x02\x82\x01\x01\x00\x97\xea\xd0\x46\xf7\xae\xa7\x76\x80"
     "\x9c\x74\x56\x98\xd8\x56\x97\x2b\x20\x6c\x77\xe2\x82\xbb\xc8\x84\xbe\xe7"
@@ -370,8 +370,8 @@ static const uint8_t dhparam[] =
     "\x90\x0b\x35\x64\xff\xd9\xe3\xac\xf2\xf2\xeb\x3a\x63\x02\x01\x02";
 #endif
 
-// No ioErr on iOS. (defined in MacErrors.h on OS X)
-#ifdef Q_OS_IOS
+// No ioErr on iOS/tvOS. (defined in MacErrors.h on OS X)
+#if defined(QT_PLATFORM_UIKIT)
 #  define ioErr -36
 #endif
 
@@ -1011,7 +1011,7 @@ bool QSslSocketBackendPrivate::initSslContext()
                 return false;
             }
         }
-#ifndef Q_OS_IOS
+#if !defined(QT_PLATFORM_UIKIT)
         // No SSLSetDiffieHellmanParams on iOS; calling it is optional according to docs.
         SSLSetDiffieHellmanParams(context, dhparam, sizeof(dhparam));
 #endif

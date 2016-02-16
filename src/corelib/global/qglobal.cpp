@@ -1918,6 +1918,8 @@ QSysInfo::MacVersion QSysInfo::macVersion()
     return QSysInfo::MacVersion(Q_MV_OSX(version.major, version.minor));
 #elif defined(Q_OS_IOS)
     return QSysInfo::MacVersion(Q_MV_IOS(version.major, version.minor));
+#elif defined(Q_OS_TVOS)
+    return QSysInfo::MacVersion(Q_MV_TVOS(version.major, version.minor));
 #else
     return QSysInfo::MV_Unknown;
 #endif
@@ -2620,9 +2622,9 @@ QString QSysInfo::kernelVersion()
     to determine the distribution name and returns that. If determining the
     distribution name failed, it returns "unknown".
 
-    \b{Darwin, OS X and iOS note}: this function returns "osx" for OS X
-    systems, "ios" for iOS systems and "darwin" in case the system could not be
-    determined.
+    \b{Darwin, OS X, iOS and tvOS note}: this function returns "osx" for OS X
+    systems, "ios" for iOS systems, "tvos" for tvOS systems and "darwin" in case
+    the system could not be determined.
 
     \b{FreeBSD note}: this function returns "debian" for Debian/kFreeBSD and
     "unknown" otherwise.
@@ -2652,6 +2654,8 @@ QString QSysInfo::productType()
 
 #elif defined(Q_OS_IOS)
     return QStringLiteral("ios");
+#elif defined(Q_OS_TVOS)
+    return QStringLiteral("tvos");
 #elif defined(Q_OS_OSX)
     return QStringLiteral("osx");
 #elif defined(Q_OS_DARWIN)
@@ -2735,6 +2739,8 @@ QString QSysInfo::prettyProductName()
 {
 #if defined(Q_OS_IOS)
     return QLatin1String("iOS ") + productVersion();
+#elif defined(Q_OS_TVOS)
+    return QLatin1String("tvOS ") + productVersion();
 #elif defined(Q_OS_OSX)
     // get the known codenames
     const char *basename = 0;

@@ -553,7 +553,7 @@ bool QClipboard::ownsFindBuffer() const
 bool QClipboard::supportsMode(Mode mode) const
 {
     QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
-    return clipboard->supportsMode(mode);
+    return clipboard && clipboard->supportsMode(mode);
 }
 
 /*!
@@ -565,7 +565,7 @@ bool QClipboard::supportsMode(Mode mode) const
 bool QClipboard::ownsMode(Mode mode) const
 {
     QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
-    return clipboard->ownsMode(mode);
+    return clipboard && clipboard->ownsMode(mode);
 }
 
 /*!

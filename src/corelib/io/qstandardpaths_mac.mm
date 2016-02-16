@@ -117,7 +117,7 @@ static QString baseWritableLocation(QStandardPaths::StandardLocation type,
     case QStandardPaths::TempLocation:
         path = QDir::tempPath();
         break;
-#ifdef Q_OS_IOS
+#if defined(QT_PLATFORM_UIKIT)
     // These locations point to non-existing write-protected paths. Use sensible fallbacks.
     case QStandardPaths::MusicLocation:
         path = pathForDirectory(NSDocumentDirectory, mask) + QLatin1String("/Music");
@@ -204,7 +204,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
 {
     QStringList dirs;
 
-#ifdef Q_OS_IOS
+#if defined(QT_PLATFORM_UIKIT)
     if (type == PicturesLocation)
         dirs << writableLocation(PicturesLocation) << QLatin1String("assets-library://");
 #endif

@@ -70,7 +70,7 @@
 #   include <cstdio>
 #elif defined(Q_OS_HAIKU)
 #   include <kernel/OS.h>
-#elif defined(Q_OS_BSD4) && !defined(Q_OS_IOS)
+#elif defined(Q_OS_BSD4) && !defined(QT_PLATFORM_UIKIT)
 #   include <sys/user.h>
 # if defined(__GLIBC__) && defined(__FreeBSD_kernel__)
 #   include <sys/cdefs.h>
@@ -285,7 +285,7 @@ QString QLockFilePrivate::processNameByPid(qint64 pid)
     if (get_thread_info(pid, &info) != B_OK)
         return QString();
     return QFile::decodeName(info.name);
-#elif defined(Q_OS_BSD4) && !defined(Q_OS_IOS)
+#elif defined(Q_OS_BSD4) && !defined(QT_PLATFORM_UIKIT)
 # if defined(__GLIBC__) && defined(__FreeBSD_kernel__)
     int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, pid };
     size_t len = 0;

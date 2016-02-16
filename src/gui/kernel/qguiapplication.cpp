@@ -1054,7 +1054,7 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
         \li \c eglfs is a platform plugin for running Qt5 applications on top of
             EGL and  OpenGL ES 2.0 without an actual windowing system (like X11
             or Wayland). For more information, see \l{EGLFS}.
-        \li \c ios
+        \li \c ios (also used for tvOS)
         \li \c kms is an experimental platform plugin using kernel modesetting
             and \l{http://dri.freedesktop.org/wiki/DRM}{DRM} (Direct Rendering
             Manager).

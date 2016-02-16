@@ -51,8 +51,12 @@ public:
     {
         static QLatin1String assetsScheme("assets-library:");
 
+#ifndef Q_OS_TVOS
         if (fileName.toLower().startsWith(assetsScheme))
             return new QIOSFileEngineAssetsLibrary(fileName);
+#else
+        Q_UNUSED(fileName);
+#endif
 
         return 0;
     }

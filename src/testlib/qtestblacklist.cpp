@@ -86,6 +86,9 @@ static QSet<QByteArray> keywords()
 #ifdef Q_OS_IOS
             << "ios"
 #endif
+#ifdef Q_OS_TVOS
+            << "tvos"
+#endif
 #ifdef Q_OS_ANDROID
             << "android"
 #endif

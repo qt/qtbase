@@ -1,0 +1,13 @@
+lessThan(QMAKE_XCODE_VERSION, "7.0") {
+    warning("You need to update Xcode to version 7 or newer to support bitcode")
+} else {
+    release:device {
+        QMAKE_CFLAGS           += -fembed-bitcode
+        QMAKE_CXXFLAGS         += -fembed-bitcode
+        QMAKE_OBJECTIVE_CFLAGS += -fembed-bitcode
+    } else {
+        QMAKE_CFLAGS           += -fembed-bitcode-marker
+        QMAKE_CXXFLAGS         += -fembed-bitcode-marker
+        QMAKE_OBJECTIVE_CFLAGS += -fembed-bitcode-marker
+    }
+}

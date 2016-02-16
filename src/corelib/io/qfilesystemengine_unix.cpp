@@ -61,7 +61,7 @@
 #include <CoreServices/CoreServices.h>
 #endif
 
-#ifdef Q_OS_IOS
+#if defined(QT_PLATFORM_UIKIT)
 #include <MobileCoreServices/MobileCoreServices.h>
 #endif
 

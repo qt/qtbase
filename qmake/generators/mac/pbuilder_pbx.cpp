@@ -1089,7 +1089,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     // Copy Bundle Data
     if (!project->isEmpty("QMAKE_BUNDLE_DATA")) {
         ProStringList bundle_file_refs;
-        bool ios = project->isActiveConfig("ios");
+        bool osx = project->isActiveConfig("osx");
 
         //all bundle data
         const ProStringList &bundle_data = project->values("QMAKE_BUNDLE_DATA");
@@ -1117,8 +1117,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                   << "\t\t};\n";
             }
 
-            if (copyBundleResources && ((ios && path.isEmpty())
-                                        || (!ios && path == QLatin1String("Contents/Resources")))) {
+            if (copyBundleResources && ((!osx && path.isEmpty())
+                                        || (osx && path == QLatin1String("Contents/Resources")))) {
                 for (const ProString &s : qAsConst(bundle_files))
                     bundle_resources_files << s;
             } else {
@@ -1336,7 +1336,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
 
         ProString targetName = project->first("QMAKE_ORIG_TARGET");
         ProString testHost = "$(BUILT_PRODUCTS_DIR)/" + targetName + ".app/";
-        if (!project->isActiveConfig("ios"))
+        if (project->isActiveConfig("osx"))
             testHost.append("Contents/MacOS/");
         testHost.append(targetName);
 
@@ -1404,10 +1404,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
 
         QMap<QString, QString> settings;
         settings.insert("COPY_PHASE_STRIP", (as_release ? "YES" : "NO"));
-        // Bitcode is only supported with a deployment target >= iOS 6.0.
-        // Disable it for now, and consider switching it on when later
-        // bumping the deployment target.
-        settings.insert("ENABLE_BITCODE", "NO");
+        // required for tvOS (and watchos), optional on iOS (deployment target >= iOS 6.0)
+        settings.insert("ENABLE_BITCODE", project->isActiveConfig("bitcode") ? "YES" : "NO");
         settings.insert("GCC_GENERATE_DEBUGGING_SYMBOLS", as_release ? "NO" : "YES");
         if(!as_release)
             settings.insert("GCC_OPTIMIZATION_LEVEL", "0");
@@ -1537,6 +1535,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     t << "\t\t\t\t" << writeSettings("MACOSX_DEPLOYMENT_TARGET", project->first("QMAKE_MACOSX_DEPLOYMENT_TARGET")) << ";\n";
                 if (!project->isEmpty("QMAKE_IOS_DEPLOYMENT_TARGET"))
                     t << "\t\t\t\t" << writeSettings("IPHONEOS_DEPLOYMENT_TARGET", project->first("QMAKE_IOS_DEPLOYMENT_TARGET")) << ";\n";
+                if (!project->isEmpty("QMAKE_TVOS_DEPLOYMENT_TARGET"))
+                    t << "\t\t\t\t" << writeSettings("APPLETVOS_DEPLOYMENT_TARGET", project->first("QMAKE_TVOS_DEPLOYMENT_TARGET")) << ";\n";
 
                 if (!project->isEmpty("QMAKE_XCODE_CODE_SIGN_IDENTITY"))
                     t << "\t\t\t\t" << writeSettings("CODE_SIGN_IDENTITY", project->first("QMAKE_XCODE_CODE_SIGN_IDENTITY")) << ";\n";

@@ -54,8 +54,10 @@ class QIOSIntegrationPlugin : public QPlatformIntegrationPlugin
 QPlatformIntegration * QIOSIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
-    if (!system.compare(QLatin1String("ios"), Qt::CaseInsensitive))
+    if (!system.compare(QLatin1String("ios"), Qt::CaseInsensitive)
+        || !system.compare(QLatin1String("tvos"), Qt::CaseInsensitive)) {
         return new QIOSIntegration;
+    }
 
     return 0;
 }

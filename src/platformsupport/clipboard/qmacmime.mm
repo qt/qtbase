@@ -43,7 +43,7 @@
 #import <AppKit/AppKit.h>
 #endif
 
-#if defined(Q_OS_IOS)
+#if defined(QT_PLATFORM_UIKIT)
 #import <UIKit/UIKit.h>
 #endif
 

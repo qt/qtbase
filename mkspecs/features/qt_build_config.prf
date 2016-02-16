@@ -64,7 +64,7 @@ CONFIG = qt_build_extra $$CONFIG
 cross_compile: \
     CONFIG += force_bootstrap
 
-android|ios|winrt: \
+android|uikit|winrt: \
     CONFIG += builtin_testdata
 
 CONFIG += \

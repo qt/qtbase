@@ -37,6 +37,7 @@
 **
 ****************************************************************************/
 
+#include "qiosglobal.h"
 #import "qiosviewcontroller.h"
 
 #include <QtCore/qscopedvaluerollback.h>
@@ -253,13 +254,15 @@
             [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent];
 #endif
 
-        self.lockedOrientation = UIInterfaceOrientationUnknown;
         self.changingOrientation = NO;
+#ifndef Q_OS_TVOS
+        self.lockedOrientation = UIInterfaceOrientationUnknown;
 
         // Status bar may be initially hidden at startup through Info.plist
         self.prefersStatusBarHidden = infoPlistValue(@"UIStatusBarHidden", false);
         self.preferredStatusBarUpdateAnimation = UIStatusBarAnimationNone;
         self.preferredStatusBarStyle = UIStatusBarStyle(infoPlistValue(@"UIStatusBarStyle", UIStatusBarStyleDefault));
+#endif
 
         m_focusWindowChangeConnection = QObject::connect(qApp, &QGuiApplication::focusWindowChanged, [self]() {
             [self updateProperties];
@@ -284,6 +287,7 @@
 {
     [super viewDidLoad];
 
+#ifndef Q_OS_TVOS
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
     [center addObserver:self selector:@selector(willChangeStatusBarFrame:)
             name:UIApplicationWillChangeStatusBarFrameNotification
@@ -292,6 +296,7 @@
     [center addObserver:self selector:@selector(didChangeStatusBarOrientation:)
             name:UIApplicationDidChangeStatusBarOrientationNotification
             object:[UIApplication sharedApplication]];
+#endif
 }
 
 - (void)viewDidUnload
@@ -304,7 +309,11 @@
 
 - (BOOL)shouldAutorotate
 {
+#ifndef Q_OS_TVOS
     return m_screen && m_screen->uiScreen() == [UIScreen mainScreen] && !self.lockedOrientation;
+#else
+    return NO;
+#endif
 }
 
 #if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_6_0)
@@ -436,6 +445,7 @@
     // All decisions are based on the the top level window
     focusWindow = qt_window_private(focusWindow)->topLevelWindow();
 
+#ifndef Q_OS_TVOS
     UIApplication *uiApplication = [UIApplication sharedApplication];
 
     // -------------- Status bar style and visbility ---------------
@@ -513,6 +523,7 @@
             [UIViewController attemptRotationToDeviceOrientation];
         }
     }
+#endif
 }
 
 @end

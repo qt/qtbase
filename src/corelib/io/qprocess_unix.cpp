@@ -322,7 +322,7 @@ QT_END_INCLUDE_NAMESPACE
 QProcessEnvironment QProcessEnvironment::systemEnvironment()
 {
     QProcessEnvironment env;
-#if !defined(Q_OS_IOS)
+#if !defined(QT_PLATFORM_UIKIT)
     const char *entry;
     for (int count = 0; (entry = environ[count]); ++count) {
         const char *equal = strchr(entry, '=');

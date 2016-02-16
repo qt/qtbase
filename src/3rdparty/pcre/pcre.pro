@@ -11,7 +11,7 @@ DEFINES += HAVE_CONFIG_H
 
 # platform/compiler specific definitions
 win32: DEFINES += PCRE_STATIC
-ios|qnx|winrt: DEFINES += PCRE_DISABLE_JIT
+uikit|qnx|winrt: DEFINES += PCRE_DISABLE_JIT
 
 SOURCES += \
     $$PWD/pcre16_byte_order.c \

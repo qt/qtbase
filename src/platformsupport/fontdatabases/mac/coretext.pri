@@ -7,8 +7,8 @@ contains(QT_CONFIG, freetype) {
     SOURCES += $$QT_SOURCE_TREE/src/gui/text/qfontengine_ft.cpp
 }
 
-ios: \
-    # On iOS CoreText and CoreGraphics are stand-alone frameworks
+uikit: \
+    # On iOS/tvOS CoreText and CoreGraphics are stand-alone frameworks
     LIBS_PRIVATE += -framework CoreText -framework CoreGraphics
 else: \
     # On Mac OS they are part of the ApplicationServices umbrella framework,

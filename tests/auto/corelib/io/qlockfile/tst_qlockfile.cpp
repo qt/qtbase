@@ -281,7 +281,7 @@ void tst_QLockFile::staleLockFromCrashedProcessReusedPid()
 {
 #if defined(QT_NO_PROCESS)
     QSKIP("This test requires QProcess support");
-#elif defined(Q_OS_WINRT) || defined(Q_OS_IOS)
+#elif defined(Q_OS_WINRT) || defined(QT_PLATFORM_UIKIT)
     QSKIP("We cannot retrieve information about other processes on this platform.");
 #else
     const QString fileName = dir.path() + "/staleLockFromCrashedProcessReusedPid";

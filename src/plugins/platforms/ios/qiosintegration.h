@@ -102,7 +102,9 @@ public:
 
 private:
     QPlatformFontDatabase *m_fontDatabase;
+#ifndef Q_OS_TVOS
     QPlatformClipboard *m_clipboard;
+#endif
     QPlatformInputContext *m_inputContext;
     QTouchDevice *m_touchDevice;
     QIOSApplicationState m_applicationState;

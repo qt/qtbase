@@ -3624,7 +3624,7 @@ int QFusionStyle::styleHint(StyleHint hint, const QStyleOption *option, const QW
     case SH_Menu_SupportsSections:
         return 1;
 
-#if defined(Q_OS_IOS)
+#if defined(QT_PLATFORM_UIKIT)
     case SH_ComboBox_UseNativePopup:
         return 1;
 #endif
