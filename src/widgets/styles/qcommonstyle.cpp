@@ -5198,6 +5198,30 @@ static QPixmap cachedPixmapFromXPM(const char * const *xpm)
     return result;
 }
 
+static QIcon clearTextIcon(bool rtl)
+{
+    const QString directionalThemeName = rtl
+        ? QStringLiteral("edit-clear-locationbar-ltr") : QStringLiteral("edit-clear-locationbar-rtl");
+    if (QIcon::hasThemeIcon(directionalThemeName))
+        return QIcon::fromTheme(directionalThemeName);
+    const QString themeName = QStringLiteral("edit-clear");
+    if (QIcon::hasThemeIcon(themeName))
+        return QIcon::fromTheme(themeName);
+
+    QIcon icon;
+#ifndef QT_NO_IMAGEFORMAT_PNG
+    QPixmap clearText16(QStringLiteral(":/qt-project.org/styles/commonstyle/images/cleartext-16.png"));
+    Q_ASSERT(!clearText16.size().isEmpty());
+    icon.addPixmap(clearText16);
+    QPixmap clearText32(QStringLiteral(":/qt-project.org/styles/commonstyle/images/cleartext-32.png"));
+    Q_ASSERT(!clearText32.size().isEmpty());
+    icon.addPixmap(clearText32);
+    clearText32.setDevicePixelRatio(2); // The 32x32 pixmap can also be used for 16x16/devicePixelRatio=2
+    icon.addPixmap(clearText32);
+#endif // !QT_NO_IMAGEFORMAT_PNG
+    return icon;
+}
+
 /*! \reimp */
 QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *option,
                                      const QWidget *widget) const
@@ -5370,12 +5394,8 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
                     }
                 }
                 break;
-        case SP_LineEditClearButton: {
-            QString themeName = rtl ? QStringLiteral("edit-clear-locationbar-ltr") : QStringLiteral("edit-clear-locationbar-rtl");
-            if (!QIcon::hasThemeIcon(themeName))
-                themeName = QStringLiteral("edit-clear");
-            pixmap = QIcon::fromTheme(themeName).pixmap(16);
-        }
+        case SP_LineEditClearButton:
+            pixmap = clearTextIcon(rtl).pixmap(16);
             break;
         default:
             break;
@@ -5505,8 +5525,6 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
         return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-volume-16.png"));
     case SP_MediaVolumeMuted:
         return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-volume-muted-16.png"));
-    case SP_LineEditClearButton:
-        return QPixmap(QStringLiteral(":/qt-project.org/styles/commonstyle/images/cleartext-16.png"));
 #endif // QT_NO_IMAGEFORMAT_PNG
     default:
         break;
@@ -5556,6 +5574,8 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
                                  const QWidget *widget) const
 {
     QIcon icon;
+    const bool rtl = (option && option->direction == Qt::RightToLeft) || (!option && QApplication::isRightToLeft());
+
 #ifdef Q_OS_WIN
     switch (standardIcon) {
     case SP_DriveCDIcon:
@@ -5597,6 +5617,9 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
             icon.addPixmap(pixmap);
         }
         break;
+    case SP_LineEditClearButton:
+        icon = clearTextIcon(rtl);
+        break;
     default:
         break;
     }
@@ -5605,7 +5628,6 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
 
 #endif
 
-    const bool rtl = (option && option->direction == Qt::RightToLeft) || (!option && QApplication::isRightToLeft());
     if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
         switch (standardIcon) {
         case SP_DirHomeIcon:

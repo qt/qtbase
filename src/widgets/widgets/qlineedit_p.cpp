@@ -317,14 +317,17 @@ QLineEditIconButton::QLineEditIconButton(QWidget *parent)
 void QLineEditIconButton::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
+    QWindow *window = Q_NULLPTR;
+    if (const QWidget *nativeParent = nativeParentWidget())
+        window = nativeParent->windowHandle();
     // Note isDown should really use the active state but in most styles
     // this has no proper feedback
     QIcon::Mode state = QIcon::Disabled;
     if (isEnabled())
         state = isDown() ? QIcon::Selected : QIcon::Normal;
-    const QPixmap iconPixmap = icon().pixmap(QSize(IconButtonSize, IconButtonSize),
-                                             state, QIcon::Off);
-    QRect pixmapRect = QRect(QPoint(0, 0), iconPixmap.size() / iconPixmap.devicePixelRatio());
+    const QSize iconSize(IconButtonSize, IconButtonSize);
+    const QPixmap iconPixmap = icon().pixmap(window, iconSize, state, QIcon::Off);
+    QRect pixmapRect = QRect(QPoint(0, 0), iconSize);
     pixmapRect.moveCenter(rect().center());
     painter.setOpacity(m_opacity);
     painter.drawPixmap(pixmapRect, iconPixmap);
@@ -416,7 +419,7 @@ QIcon QLineEditPrivate::clearButtonIcon() const
     Q_Q(const QLineEdit);
     QStyleOptionFrame styleOption;
     q->initStyleOption(&styleOption);
-    return QIcon(q->style()->standardPixmap(QStyle::SP_LineEditClearButton, &styleOption, q));
+    return q->style()->standardIcon(QStyle::SP_LineEditClearButton, &styleOption, q);
 }
 
 void QLineEditPrivate::setClearButtonEnabled(bool enabled)
