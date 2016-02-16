@@ -279,8 +279,10 @@ static void playWithObjects()
 
 void tst_QObject::initTestCase()
 {
+#ifndef QT_NO_PROCESS
     const QString testDataDir = QFileInfo(QFINDTESTDATA("signalbug")).absolutePath();
     QVERIFY2(QDir::setCurrent(testDataDir), qPrintable("Could not chdir to " + testDataDir));
+#endif
 }
 
 void tst_QObject::disconnect()
