@@ -476,31 +476,23 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
         s.prepend(QLatin1String("SELECT ")).append(QLatin1String(" FROM ")).append(tableName);
         break;
     case WhereStatement:
-        if (preparedStatement) {
-            for (int i = 0; i < rec.count(); ++i) {
-                s.append(prepareIdentifier(rec.fieldName(i), FieldName,this));
-                if (rec.isNull(i))
-                    s.append(QLatin1String(" IS NULL"));
-                else
-                    s.append(QLatin1String(" = ?"));
-                s.append(QLatin1String(" AND "));
-            }
-        } else {
-            for (i = 0; i < rec.count(); ++i) {
-                s.append(prepareIdentifier(rec.fieldName(i), QSqlDriver::FieldName, this));
-                QString val = formatValue(rec.field(i));
-                if (val == QLatin1String("NULL"))
-                    s.append(QLatin1String(" IS NULL"));
-                else
-                    s.append(QLatin1String(" = ")).append(val);
-                s.append(QLatin1String(" AND "));
-            }
-        }
-        if (!s.isEmpty()) {
-            s.prepend(QLatin1String("WHERE "));
-            s.chop(5); // remove tailing AND
+    {
+        const QString tableNamePrefix = tableName.isEmpty()
+            ? QString()
+            : prepareIdentifier(tableName, QSqlDriver::TableName, this) + QLatin1Char('.');
+        for (int i = 0; i < rec.count(); ++i) {
+            s.append(QLatin1String(i? " AND " : "WHERE "));
+            s.append(tableNamePrefix);
+            s.append(prepareIdentifier(rec.fieldName(i), QSqlDriver::FieldName, this));
+            if (rec.isNull(i))
+                s.append(QLatin1String(" IS NULL"));
+            else if (preparedStatement)
+                s.append(QLatin1String(" = ?"));
+            else
+                s.append(QLatin1String(" = ")).append(formatValue(rec.field(i)));
         }
         break;
+    }
     case UpdateStatement:
         s.append(QLatin1String("UPDATE ")).append(tableName).append(
                  QLatin1String(" SET "));
