@@ -2253,8 +2253,10 @@ bool QAbstractSocket::waitForBytesWritten(int msecs)
     forever {
         bool readyToRead = false;
         bool readyToWrite = false;
-        if (!d->socketEngine->waitForReadOrWrite(&readyToRead, &readyToWrite, true, !d->writeBuffer.isEmpty(),
-                                               qt_subtract_from_timeout(msecs, stopWatch.elapsed()))) {
+        if (!d->socketEngine->waitForReadOrWrite(&readyToRead, &readyToWrite,
+                                  !d->readBufferMaxSize || d->buffer.size() < d->readBufferMaxSize,
+                                  !d->writeBuffer.isEmpty(),
+                                  qt_subtract_from_timeout(msecs, stopWatch.elapsed()))) {
 #if defined (QABSTRACTSOCKET_DEBUG)
             qDebug("QAbstractSocket::waitForBytesWritten(%i) failed (%i, %s)",
                    msecs, d->socketEngine->error(), d->socketEngine->errorString().toLatin1().constData());
@@ -2269,8 +2271,7 @@ bool QAbstractSocket::waitForBytesWritten(int msecs)
 #if defined (QABSTRACTSOCKET_DEBUG)
             qDebug("QAbstractSocket::waitForBytesWritten calls canReadNotification");
 #endif
-            if(!d->canReadNotification())
-                return false;
+            d->canReadNotification();
         }
 
 

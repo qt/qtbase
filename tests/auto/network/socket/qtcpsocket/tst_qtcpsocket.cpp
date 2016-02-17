@@ -197,6 +197,7 @@ private slots:
     void clientSendDataOnDelayedDisconnect();
     void serverDisconnectWithBuffered();
     void socketDiscardDataInWriteMode();
+    void writeOnReadBufferOverflow();
     void readNotificationsAfterBind();
 
 protected slots:
@@ -3064,6 +3065,40 @@ void tst_QTcpSocket::socketDiscardDataInWriteMode()
     QVERIFY(socket->waitForReadyRead(5000)); // discard input
     QVERIFY(socket->atEnd());
 
+    delete socket;
+}
+
+// Test waitForBytesWritten() does not fail on read buffer overflow
+void tst_QTcpSocket::writeOnReadBufferOverflow()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QTcpServer tcpServer;
+    QTcpSocket *socket = newSocket();
+
+    QVERIFY(tcpServer.listen(QHostAddress::LocalHost));
+    socket->setReadBufferSize(1);
+    socket->connectToHost(tcpServer.serverAddress(), tcpServer.serverPort());
+    QVERIFY(socket->waitForConnected(5000));
+    QCOMPARE(socket->state(), QAbstractSocket::ConnectedState);
+
+    // Accept connection on server side
+    QVERIFY2(tcpServer.waitForNewConnection(5000), "Network timeout");
+    QTcpSocket *newConnection = tcpServer.nextPendingConnection();
+    QVERIFY(newConnection != nullptr);
+    QCOMPARE(newConnection->write("1", 2), Q_INT64_C(2));
+    QVERIFY(newConnection->flush());
+
+    // Wait for buffer overflow
+    QVERIFY(socket->waitForReadyRead(5000));
+    QCOMPARE(socket->bytesAvailable(), Q_INT64_C(1));
+    // Write data and wait for successful send
+    QVERIFY(socket->putChar(0));
+    QVERIFY(socket->waitForBytesWritten(5000));
+
+    delete newConnection;
     delete socket;
 }
 
