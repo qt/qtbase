@@ -458,6 +458,8 @@ public:
     inline key_iterator keyBegin() const { return key_iterator(begin()); }
     inline key_iterator keyEnd() const { return key_iterator(end()); }
 
+    QPair<iterator, iterator> equal_range(const Key &key);
+    QPair<const_iterator, const_iterator> equal_range(const Key &key) const Q_DECL_NOTHROW;
     iterator erase(iterator it) { return erase(const_iterator(it.i)); }
     iterator erase(const_iterator it);
 
@@ -942,6 +944,39 @@ Q_OUTOFLINE_TEMPLATE bool QHash<Key, T>::operator==(const QHash &other) const
         } while (it != end() && it.key() == akey);
     }
     return true;
+}
+
+template <class Key, class T>
+QPair<typename QHash<Key, T>::iterator, typename QHash<Key, T>::iterator> QHash<Key, T>::equal_range(const Key &akey)
+{
+    detach();
+    auto pair = qAsConst(*this).equal_range(akey);
+    return qMakePair(iterator(pair.first.i), iterator(pair.second.i));
+}
+
+template <class Key, class T>
+QPair<typename QHash<Key, T>::const_iterator, typename QHash<Key, T>::const_iterator> QHash<Key, T>::equal_range(const Key &akey) const Q_DECL_NOTHROW
+{
+    uint h;
+    Node *node = *findNode(akey, &h);
+    const_iterator firstIt = const_iterator(node);
+
+    if (node != e) {
+        // equal keys must hash to the same value and so they all
+        // end up in the same bucket. So we can use node->next,
+        // which only works within a bucket, instead of (out-of-line)
+        // QHashData::nextNode()
+        while (node->next != e && node->next->key == akey)
+            node = node->next;
+
+        // 'node' may be the last node in the bucket. To produce the end iterator, we'd
+        // need to enter the next bucket in this case, so we need to use
+        // QHashData::nextNode() here, which, unlike node->next above, can move between
+        // buckets.
+        node = concrete(QHashData::nextNode(reinterpret_cast<QHashData::Node *>(node)));
+    }
+
+    return qMakePair(firstIt, const_iterator(node));
 }
 
 template <class Key, class T>

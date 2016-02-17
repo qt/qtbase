@@ -824,10 +824,7 @@ void QTableViewPrivate::drawAndClipSpans(const QRegion &area, QPainter *painter,
         QStyleOptionViewItem opt = option;
         opt.rect = rect;
         alternateBase = alternatingColors && (span->top() & 1);
-        if (alternateBase)
-            opt.features |= QStyleOptionViewItem::Alternate;
-        else
-            opt.features &= ~QStyleOptionViewItem::Alternate;
+        opt.features.setFlag(QStyleOptionViewItem::Alternate, alternateBase);
         drawCell(painter, opt, index);
         region -= rect;
         for (int r = span->top(); r <= span->bottom(); ++r) {

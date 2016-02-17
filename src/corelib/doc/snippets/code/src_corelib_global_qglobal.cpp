@@ -568,6 +568,29 @@ struct A : public B {
 template<> class QTypeInfo<A> : public QTypeInfoMerger<A, B, C, D> {};
 //! [51]
 
+//! [52]
+    struct Foo {
+        void overloadedFunction();
+        void overloadedFunction(int, QString);
+    };
+    ... qOverload<>(&Foo:overloadedFunction)
+    ... qOverload<int, QString>(&Foo:overloadedFunction)
+//! [52]
+
+//! [53]
+    ... QOverload<>::of(&Foo:overloadedFunction)
+    ... QOverload<int, QString>::of(&Foo:overloadedFunction)
+//! [53]
+
+//! [54]
+    struct Foo {
+        void overloadedFunction(int, QString);
+        void overloadedFunction(int, QString) const;
+    };
+    ... qConstOverload<>(&Foo:overloadedFunction)
+    ... qNonConstOverload<int, QString>(&Foo:overloadedFunction)
+//! [54]
+
 //! [qlikely]
     // the condition inside the "if" will be successful most of the times
     for (int i = 1; i <= 365; i++) {

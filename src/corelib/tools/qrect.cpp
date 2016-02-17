@@ -706,6 +706,20 @@ QRect QRect::normalized() const Q_DECL_NOTHROW
     current position.
 */
 
+/*!
+    \fn QRect QRect::transposed() const
+    \since 5.7
+
+    Returns a copy of the rectangle that has its width and height
+    exchanged:
+
+    \code
+    QRect r = {15, 51, 42, 24};
+    r = r.transposed(); // r == {15, 51, 24, 42}
+    \endcode
+
+    \sa QSize::transposed()
+*/
 
 /*!
     \fn void QRect::setRect(int x, int y, int width, int height)
@@ -1842,6 +1856,20 @@ QRectF QRectF::normalized() const Q_DECL_NOTHROW
     current position.
 */
 
+/*!
+    \fn QRectF QRectF::transposed() const
+    \since 5.7
+
+    Returns a copy of the rectangle that has its width and height
+    exchanged:
+
+    \code
+    QRectF r = {1.5, 5.1, 4.2, 2.4};
+    r = r.transposed(); // r == {1.5, 5.1, 2.4, 4.2}
+    \endcode
+
+    \sa QSizeF::transposed()
+*/
 
 /*!
     \fn void QRectF::setRect(qreal x, qreal y, qreal width, qreal height)

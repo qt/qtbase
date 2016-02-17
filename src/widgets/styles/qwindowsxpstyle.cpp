@@ -2383,7 +2383,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
             const bool verticalTitleBar = dwOpt->verticalTitleBar;
 
             if (verticalTitleBar) {
-                rect.setSize(rect.size().transposed());
+                rect = rect.transposed();
 
                 p->translate(rect.left() - 1, rect.top() + rect.width());
                 p->rotate(-90);

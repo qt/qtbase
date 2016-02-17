@@ -148,10 +148,14 @@ public:
         friend class QTextDocumentLayoutPrivate;
         iterator(QTextFrame *frame, int block, int begin, int end);
     public:
-        iterator();
+        iterator(); // ### Qt 6: inline
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        iterator(const iterator &o);
-        iterator &operator=(const iterator &o);
+        iterator(const iterator &o) Q_DECL_NOTHROW; // = default
+        iterator &operator=(const iterator &o) Q_DECL_NOTHROW; // = default
+        iterator(iterator &&other) Q_DECL_NOTHROW // = default
+        { memcpy(this, &other, sizeof(iterator)); }
+        iterator &operator=(iterator &&other) Q_DECL_NOTHROW // = default
+        { memcpy(this, &other, sizeof(iterator)); return *this; }
 #endif
 
         QTextFrame *parentFrame() const { return f; }

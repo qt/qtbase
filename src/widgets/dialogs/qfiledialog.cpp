@@ -786,10 +786,8 @@ void QFileDialog::setOptions(Options options)
 
         if (changed & DontUseCustomDirectoryIcons) {
             QFileIconProvider::Options providerOptions = iconProvider()->options();
-            if (options & DontUseCustomDirectoryIcons)
-                providerOptions |= QFileIconProvider::DontUseCustomDirectoryIcons;
-            else
-                providerOptions &= ~QFileIconProvider::DontUseCustomDirectoryIcons;
+            providerOptions.setFlag(QFileIconProvider::DontUseCustomDirectoryIcons,
+                                    options & DontUseCustomDirectoryIcons);
             iconProvider()->setOptions(providerOptions);
         }
     }
@@ -3454,7 +3452,7 @@ void QFileDialogPrivate::_q_autoCompleteFileName(const QString &text)
     const QStringList multipleFiles = typedFiles();
     if (multipleFiles.count() > 0) {
         QModelIndexList oldFiles = qFileDialogUi->listView->selectionModel()->selectedRows();
-        QModelIndexList newFiles;
+        QVector<QModelIndex> newFiles;
         for (const auto &file : multipleFiles) {
             QModelIndex idx = model->index(file);
             if (oldFiles.removeAll(idx) == 0)
@@ -3717,10 +3715,7 @@ void QFileDialogPrivate::_q_showHidden()
 {
     Q_Q(QFileDialog);
     QDir::Filters dirFilters = q->filter();
-    if (showHiddenAction->isChecked())
-        dirFilters |= QDir::Hidden;
-    else
-        dirFilters &= ~QDir::Hidden;
+    dirFilters.setFlag(QDir::Hidden, showHiddenAction->isChecked());
     q->setFilter(dirFilters);
 }
 

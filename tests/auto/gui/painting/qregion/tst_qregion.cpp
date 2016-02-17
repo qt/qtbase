@@ -45,6 +45,7 @@ public:
     tst_QRegion();
 
 private slots:
+    void moveSemantics();
     void boundingRect();
     void rects();
     void swap();
@@ -91,6 +92,28 @@ private slots:
 
 tst_QRegion::tst_QRegion()
 {
+}
+
+void tst_QRegion::moveSemantics()
+{
+    const QRegion rect(QRect(0, 0, 100, 100));
+
+    // move assignment
+    {
+        QRegion r1 = rect;
+        QRegion r2;
+        r2 = std::move(r1);
+        QVERIFY(r1.isNull());
+        QCOMPARE(r2, rect);
+    }
+
+    // move construction
+    {
+        QRegion r1 = rect;
+        QRegion r2 = std::move(r1);
+        QVERIFY(r1.isNull());
+        QCOMPARE(r2, rect);
+    }
 }
 
 void tst_QRegion::boundingRect()

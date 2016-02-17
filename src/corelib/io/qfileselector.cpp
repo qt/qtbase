@@ -396,6 +396,7 @@ void QFileSelectorPrivate::addStatics(const QStringList &statics)
 {
     QMutexLocker locker(&sharedDataMutex);
     sharedData->preloadedStatics << statics;
+    sharedData->staticSelectors.clear();
 }
 
 QT_END_NAMESPACE

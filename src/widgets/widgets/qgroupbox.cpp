@@ -103,11 +103,7 @@ void QGroupBox::initStyleOption(QStyleOptionGroupBox *option) const
     option->activeSubControls |= d->pressedControl;
     option->subControls = QStyle::SC_GroupBoxFrame;
 
-    if (d->hover)
-        option->state |= QStyle::State_MouseOver;
-    else
-        option->state &= ~QStyle::State_MouseOver;
-
+    option->state.setFlag(QStyle::State_MouseOver, d->hover);
     if (d->flat)
         option->features |= QStyleOptionFrame::Flat;
 

@@ -568,16 +568,10 @@ void QLineEdit::setEchoMode(EchoMode mode)
     if (mode == (EchoMode)d->control->echoMode())
         return;
     Qt::InputMethodHints imHints = inputMethodHints();
-    if (mode == Password || mode == NoEcho) {
-        imHints |= Qt::ImhHiddenText;
-    } else {
-        imHints &= ~Qt::ImhHiddenText;
-    }
-    if (mode != Normal) {
-        imHints |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText | Qt::ImhSensitiveData);
-    } else {
-        imHints &= ~(Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText | Qt::ImhSensitiveData);
-    }
+    imHints.setFlag(Qt::ImhHiddenText, mode == Password || mode == NoEcho);
+    imHints.setFlag(Qt::ImhNoAutoUppercase, mode != Normal);
+    imHints.setFlag(Qt::ImhNoPredictiveText, mode != Normal);
+    imHints.setFlag(Qt::ImhSensitiveData, mode != Normal);
     setInputMethodHints(imHints);
     d->control->setEchoMode(mode);
     update();

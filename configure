@@ -3380,12 +3380,6 @@ if [ ! -d "${outpath}/lib/fonts" ]; then
     fi
 fi
 
-#-------------------------------------------------------------------------------
-# tests that don't need qmake (must be run before displaying help)
-#-------------------------------------------------------------------------------
-
-echo "Running configuration tests (phase 1)..."
-
 # detect build style
 if [ "$CFG_DEBUG" = "auto" ]; then
     if [ "$XPLATFORM_MAC" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
@@ -3426,7 +3420,7 @@ if [ "$XPLATFORM_IOS" = "yes" ]; then
     # Otherwise we build a joined simulator and device build, which is the default.
     if [ -z "$OPT_MAC_SDK" ]; then
          QT_CONFIG="$QT_CONFIG build_all"
-         QTCONFIG_CONFIG="$QTCONFIG_CONFIG iphonesimulator_and_iphoneos"
+         QTCONFIG_CONFIG="$QTCONFIG_CONFIG simulator_and_device"
     fi
 fi
 
@@ -3487,12 +3481,6 @@ if [ "$XPLATFORM_ANDROID" = "yes" ] ; then
     fi
 fi
 
-if [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
-    if [ -z "$TEST_COMPILER" ]; then
-        echo "ERROR: Cannot set the compiler for the configuration tests"
-        exit 1
-    fi
-fi
 TEST_COMPILER_CXXFLAGS=`getXQMakeConf QMAKE_CXXFLAGS`
 
 GCC_MACHINE_DUMP=
@@ -3507,105 +3495,6 @@ else
     SYSROOT_FLAG=
 fi
 export SYSROOT_FLAG    # used by config.tests/unix/{compile.test,arch.test}
-
-# auto-detect precompiled header support
-if [ "$CFG_PRECOMPILE" = "auto" ]; then
-    if "$unixtests/precomp.test" "$TEST_COMPILER" "$OPT_VERBOSE"; then
-       CFG_PRECOMPILE=no
-    else
-       CFG_PRECOMPILE=yes
-    fi
-fi
-
-# sanity-check for separate debug info
-if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
-    if [ "$CFG_SHARED" = "no" ]; then
-        echo "ERROR: -separate-debug-info is incompatible with -static"
-        exit 1
-    fi
-    if [ "$CFG_DEBUG" = "no" -a "$CFG_DEBUG_RELEASE" = "no" -a "$CFG_FORCEDEBUGINFO" = "no" ]; then
-        echo "ERROR: -separate-debug-info needs -debug, -debug-and-release, or -force-debug-info"
-        exit 1
-    fi
-fi
-
-# auto-detect -fvisibility support
-if [ "$CFG_REDUCE_EXPORTS" != "no" ]; then
-    if "$unixtests/fvisibility.test" "$TEST_COMPILER" "$OPT_VERBOSE"; then
-       if [ "$CFG_REDUCE_EXPORTS" = "yes" ]; then
-           echo "-reduce-exports was requested but this compiler does not support it"
-           echo "Re-run configure with -v for more information"
-           exit 1
-       fi
-       CFG_REDUCE_EXPORTS=no
-    else
-       CFG_REDUCE_EXPORTS=yes
-    fi
-fi
-
-# auto-detect -fuse-ld=gold support
-if [ "$CFG_USE_GOLD_LINKER" != "no" ]; then
-    if compilerSupportsFlag $TEST_COMPILER -fuse-ld=gold; then
-       CFG_USE_GOLD_LINKER=yes
-    else
-        if [ "$CFG_USE_GOLD_LINKER" = "yes" ]; then
-            echo "-use-gold-linker was requested but this compiler does not support it"
-            exit 1
-        fi
-        CFG_USE_GOLD_LINKER=no
-    fi
-fi
-
-# auto-detect --enable-new-dtags support
-if linkerSupportsFlag $TEST_COMPILER --enable-new-dtags; then
-    CFG_ENABLE_NEW_DTAGS=yes
-else
-    CFG_ENABLE_NEW_DTAGS=no
-fi
-
-# auto-detect -fstack-protector-strong support (for QNX only currently)
-if [ "$XPLATFORM_QNX" = "yes" ]; then
-    if compilerSupportsFlag $TEST_COMPILER -fstack-protector-strong; then
-       CFG_STACK_PROTECTOR_STRONG=yes
-    else
-       CFG_STACK_PROTECTOR_STRONG=no
-    fi
-else
-   CFG_STACK_PROTECTOR_STRONG=no
-fi
-
-# detect the availability of the -Bsymbolic-functions linker optimization
-if [ "$CFG_REDUCE_RELOCATIONS" != "no" ]; then
-    if "$unixtests/bsymbolic_functions.test" "$TEST_COMPILER" "$OPT_VERBOSE"; then
-       if [ "$CFG_REDUCE_RELOCATIONS" = "yes" ]; then
-           echo "-reduce-relocations was requested but this compiler does not support it"
-           echo "Re-run configure with -v for more information"
-           exit 1
-       fi
-        CFG_REDUCE_RELOCATIONS=no
-    else
-        CFG_REDUCE_RELOCATIONS=yes
-    fi
-fi
-
-# auto-detect GNU make support
-if [ "$CFG_USE_GNUMAKE" = "auto" ] && "$MAKE" -v | grep "GNU Make" >/dev/null 2>&1; then
-   CFG_USE_GNUMAKE=yes
-fi
-
-# find the default framework value
-if [ "$XPLATFORM_MAC" = "yes" ]; then
-    if [ "$CFG_FRAMEWORK" = "auto" ]; then
-        CFG_FRAMEWORK="$CFG_SHARED"
-    elif [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_SHARED" = "no" ]; then
-	echo
-	echo "WARNING: Using static linking will disable the use of Mac frameworks."
-	echo
-        CFG_FRAMEWORK="no"
-    fi
-else
-    CFG_FRAMEWORK=no
-fi
 
 # Auto-detect default include and library search paths.
 
@@ -3660,8 +3549,6 @@ END {
 awkprog_result=`LC_ALL=C $TEST_COMPILER $SYSROOT_FLAG $TEST_COMPILER_CXXFLAGS -xc++ -E -v - < /dev/null 2>&1 > /dev/null | $AWK "$awkprog"`
 eval "$awkprog_result"
 [ "$OPT_VERBOSE" = "yes" ] && echo "$awkprog_result"
-
-echo "Done running configuration tests."
 
 #setup the build parts
 if [ -z "$CFG_BUILD_PARTS" ]; then
@@ -4172,8 +4059,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
     fi
 fi # Build qmake
 
-echo "Running configuration tests (phase 2)..."
-
 #-------------------------------------------------------------------------------
 # create a qt.conf for the Qt build tree itself
 #-------------------------------------------------------------------------------
@@ -4244,6 +4129,9 @@ else
     mv -f $HOST_VARS_FILE "$HOST_VARS_OUTFILE"
     HOST_VARS_FILE="$HOST_VARS_OUTFILE"
 fi
+
+
+echo "Running configuration tests..."
 
 #-------------------------------------------------------------------------------
 # Verify makespec
@@ -4324,7 +4212,7 @@ if [ -z "$PKG_CONFIG" ]; then
 fi
 
 #-------------------------------------------------------------------------------
-# tests that need qmake
+# run configure tests
 #-------------------------------------------------------------------------------
 
 # parameters: path, name, extra args
@@ -4427,8 +4315,105 @@ fi
 # functionality tests
 #-------------------------------------------------------------------------------
 
-# Detect objcopy support
+# auto-detect precompiled header support
+if [ "$CFG_PRECOMPILE" = "auto" ]; then
+    if "$unixtests/precomp.test" "$TEST_COMPILER" "$OPT_VERBOSE"; then
+        CFG_PRECOMPILE=no
+    else
+        CFG_PRECOMPILE=yes
+    fi
+fi
+
+# auto-detect -fvisibility support
+if [ "$CFG_REDUCE_EXPORTS" != "no" ]; then
+    if "$unixtests/fvisibility.test" "$TEST_COMPILER" "$OPT_VERBOSE"; then
+        if [ "$CFG_REDUCE_EXPORTS" = "yes" ]; then
+            echo "-reduce-exports was requested but this compiler does not support it"
+            echo "Re-run configure with -v for more information"
+            exit 1
+        fi
+        CFG_REDUCE_EXPORTS=no
+    else
+        CFG_REDUCE_EXPORTS=yes
+    fi
+fi
+
+# auto-detect -fuse-ld=gold support
+if [ "$CFG_USE_GOLD_LINKER" != "no" ]; then
+    if compilerSupportsFlag $TEST_COMPILER -fuse-ld=gold; then
+        CFG_USE_GOLD_LINKER=yes
+    else
+        if [ "$CFG_USE_GOLD_LINKER" = "yes" ]; then
+            echo "-use-gold-linker was requested but this compiler does not support it"
+            exit 1
+        fi
+        CFG_USE_GOLD_LINKER=no
+    fi
+fi
+
+# auto-detect --enable-new-dtags support
+if linkerSupportsFlag $TEST_COMPILER --enable-new-dtags; then
+    CFG_ENABLE_NEW_DTAGS=yes
+else
+    CFG_ENABLE_NEW_DTAGS=no
+fi
+
+# auto-detect -fstack-protector-strong support (for QNX only currently)
+if [ "$XPLATFORM_QNX" = "yes" ]; then
+    if compilerSupportsFlag $TEST_COMPILER -fstack-protector-strong; then
+        CFG_STACK_PROTECTOR_STRONG=yes
+    else
+        CFG_STACK_PROTECTOR_STRONG=no
+    fi
+else
+    CFG_STACK_PROTECTOR_STRONG=no
+fi
+
+# detect the availability of the -Bsymbolic-functions linker optimization
+if [ "$CFG_REDUCE_RELOCATIONS" != "no" ]; then
+    if "$unixtests/bsymbolic_functions.test" "$TEST_COMPILER" "$OPT_VERBOSE"; then
+        if [ "$CFG_REDUCE_RELOCATIONS" = "yes" ]; then
+            echo "-reduce-relocations was requested but this compiler does not support it"
+            echo "Re-run configure with -v for more information"
+            exit 1
+        fi
+        CFG_REDUCE_RELOCATIONS=no
+    else
+        CFG_REDUCE_RELOCATIONS=yes
+    fi
+fi
+
+# auto-detect GNU make support
+if [ "$CFG_USE_GNUMAKE" = "auto" ] && "$MAKE" -v | grep "GNU Make" >/dev/null 2>&1; then
+    CFG_USE_GNUMAKE=yes
+fi
+
+# find the default framework value
+if [ "$XPLATFORM_MAC" = "yes" ]; then
+    if [ "$CFG_FRAMEWORK" = "auto" ]; then
+        CFG_FRAMEWORK="$CFG_SHARED"
+    elif [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_SHARED" = "no" ]; then
+        echo
+        echo "WARNING: Using static linking will disable the use of Mac frameworks."
+        echo
+        CFG_FRAMEWORK="no"
+    fi
+else
+    CFG_FRAMEWORK=no
+fi
+
 if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
+    # sanity-check for separate debug info
+    if [ "$CFG_SHARED" = "no" ]; then
+        echo "ERROR: -separate-debug-info is incompatible with -static"
+        exit 1
+    fi
+    if [ "$CFG_DEBUG" = "no" -a "$CFG_DEBUG_RELEASE" = "no" -a "$CFG_FORCEDEBUGINFO" = "no" ]; then
+        echo "ERROR: -separate-debug-info needs -debug, -debug-and-release, or -force-debug-info"
+        exit 1
+    fi
+
+    # Detect objcopy support
     if ! compileTest unix/objcopy "objcopy"; then
         echo "ERROR: -separate-debug-info was requested but this binutils does not support it."
         echo "Re-run configure with -v for more information"

@@ -237,8 +237,8 @@ bool QStringListModel::removeRows(int row, int count, const QModelIndex &parent)
 
     beginRemoveRows(QModelIndex(), row, row + count - 1);
 
-    for (int r = 0; r < count; ++r)
-        lst.removeAt(row);
+    const auto it = lst.begin() + row;
+    lst.erase(it, it + count);
 
     endRemoveRows();
 
@@ -274,8 +274,8 @@ void QStringListModel::sort(int, Qt::SortOrder order)
         std::sort(list.begin(), list.end(), decendingLessThan);
 
     lst.clear();
-    QVector<int> forwarding(list.count());
-    for (int i = 0; i < list.count(); ++i) {
+    QVector<int> forwarding(lstCount);
+    for (int i = 0; i < lstCount; ++i) {
         lst.append(list.at(i).first);
         forwarding[list.at(i).second] = i;
     }

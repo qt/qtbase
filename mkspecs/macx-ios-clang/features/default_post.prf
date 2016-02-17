@@ -63,12 +63,12 @@ macx-xcode {
 }
 
 macx-xcode {
-    arch_iphoneos.name = "ARCHS[sdk=iphoneos*]"
-    arch_iphoneos.value = $$QMAKE_IOS_DEVICE_ARCHS
-    arch_iphonesimulator.name = "ARCHS[sdk=iphonesimulator*]"
-    arch_iphonesimulator.value = $$QMAKE_IOS_SIMULATOR_ARCHS
+    arch_device.name = "ARCHS[sdk=$${device.sdk}*]"
+    arch_device.value = $$QMAKE_IOS_DEVICE_ARCHS
+    arch_simulator.name = "ARCHS[sdk=$${simulator.sdk}*]"
+    arch_simulator.value = $$QMAKE_IOS_SIMULATOR_ARCHS
 
-    QMAKE_MAC_XCODE_SETTINGS += arch_iphoneos arch_iphonesimulator
+    QMAKE_MAC_XCODE_SETTINGS += arch_device arch_simulator
     QMAKE_XCODE_ARCHS = $$QMAKE_IOS_DEVICE_ARCHS $$QMAKE_IOS_SIMULATOR_ARCHS
 
     only_active_arch.name = ONLY_ACTIVE_ARCH

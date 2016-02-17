@@ -282,11 +282,8 @@ QSurfaceFormat::~QSurfaceFormat()
 void QSurfaceFormat::setStereo(bool enable)
 {
     QSurfaceFormat::FormatOptions newOptions = d->opts;
-    if (enable) {
-        newOptions |= QSurfaceFormat::StereoBuffers;
-    } else {
-        newOptions &= ~QSurfaceFormat::StereoBuffers;
-    }
+    newOptions.setFlag(QSurfaceFormat::StereoBuffers, enable);
+
     if (int(newOptions) != int(d->opts)) {
         detach();
         d->opts = newOptions;

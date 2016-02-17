@@ -5,7 +5,7 @@ isEmpty(QT_ARCH) {
     # means we fail to pass -arch to the compiler, resulting in broke tests.
     # As the Xcode toolchain doesn't seem to have a way to auto-detect the
     # arch based on the SDK, we have to hard-code the arch for configure.
-    contains(QMAKE_MAC_SDK, iphoneos.*): \
+    contains(QMAKE_MAC_SDK, $${device.sdk}.*): \
         QT_ARCH = arm
     else: \ # Simulator
         QT_ARCH = i386

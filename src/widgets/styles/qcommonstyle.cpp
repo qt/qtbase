@@ -2036,7 +2036,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 const bool verticalTitleBar = dwOpt->verticalTitleBar;
 
                 if (verticalTitleBar) {
-                    r.setSize(r.size().transposed());
+                    r = r.transposed();
 
                     p->save();
                     p->translate(r.left(), r.top() + r.width());
@@ -2924,7 +2924,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         // horizontal, then transpose again.
 
         if (verticalTitleBar)
-            rect.setSize(rect.size().transposed());
+            rect = rect.transposed();
 
         do {
 
