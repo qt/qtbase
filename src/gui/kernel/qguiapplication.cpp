@@ -138,7 +138,9 @@ QPlatformTheme *QGuiApplicationPrivate::platform_theme = 0;
 
 QList<QObject *> QGuiApplicationPrivate::generic_plugin_list;
 
+#ifndef QT_NO_SESSIONMANAGER
 bool QGuiApplicationPrivate::is_fallback_session_management_enabled = true;
+#endif
 
 enum ApplicationResourceFlags
 {
@@ -3084,6 +3086,7 @@ void QGuiApplicationPrivate::setApplicationState(Qt::ApplicationState state, boo
     emit qApp->applicationStateChanged(applicationState);
 }
 
+#ifndef QT_NO_SESSIONMANAGER
 // ### Qt6: consider removing the feature or making it less intrusive
 /*!
     \since 5.6
@@ -3132,6 +3135,7 @@ void QGuiApplication::setFallbackSessionManagementEnabled(bool enabled)
 {
     QGuiApplicationPrivate::is_fallback_session_management_enabled = enabled;
 }
+#endif // QT_NO_SESSIONMANAGER
 
 /*!
     \since 4.2
