@@ -4411,7 +4411,8 @@ QImage QImage::smoothScaled(int w, int h) const {
             src = src.convertToFormat(QImage::Format_RGB32);
     }
     src = qSmoothScaleImage(src, w, h);
-    copyMetadata(src.d, d);
+    if (!src.isNull())
+        copyMetadata(src.d, d);
     return src;
 }
 
