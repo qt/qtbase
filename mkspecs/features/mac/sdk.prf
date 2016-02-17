@@ -17,7 +17,7 @@ defineReplace(xcodeSDKInfo) {
         cache(QMAKE_MAC_SDK.$${sdk}.$${info}, set stash, QMAKE_MAC_SDK.$${sdk}.$${info})
     }
 
-    return($$eval(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.$${info}))
+    return($$eval(QMAKE_MAC_SDK.$${sdk}.$${info}))
 }
 
 QMAKE_MAC_SDK_PATH = $$xcodeSDKInfo(Path)
