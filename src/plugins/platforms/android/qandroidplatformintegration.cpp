@@ -66,7 +66,6 @@
 #include "qandroidplatformtheme.h"
 #include "qandroidsystemlocale.h"
 
-
 QT_BEGIN_NAMESPACE
 
 int QAndroidPlatformIntegration::m_defaultGeometryWidth = 320;
@@ -87,6 +86,8 @@ void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteA
         return QtAndroid::javaVM();
     if (resource == "QtActivity")
         return QtAndroid::activity();
+    if (resource == "QtService")
+        return QtAndroid::service();
     if (resource == "AndroidStyleData") {
         if (m_androidStyle) {
             if (m_androidStyle->m_styleData.isEmpty())
@@ -122,7 +123,6 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
 #endif
 {
     Q_UNUSED(paramList);
-
     m_androidPlatformNativeInterface = new QAndroidPlatformNativeInterface();
 
     m_eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -159,6 +159,9 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
 #endif // QT_NO_ACCESSIBILITY
 
     QJNIObjectPrivate javaActivity(QtAndroid::activity());
+    if (!javaActivity.isValid())
+        javaActivity = QtAndroid::service();
+
     if (javaActivity.isValid()) {
         QJNIObjectPrivate resources = javaActivity.callObjectMethod("getResources", "()Landroid/content/res/Resources;");
         QJNIObjectPrivate configuration = resources.callObjectMethod("getConfiguration", "()Landroid/content/res/Configuration;");
@@ -205,13 +208,13 @@ static bool needsBasicRenderloopWorkaround()
 bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
 {
     switch (cap) {
-        case ThreadedPixmaps: return true;
         case ApplicationState: return true;
-        case NativeWidgets: return true;
-        case OpenGL: return true;
-        case ForeignWindows: return true;
-        case ThreadedOpenGL: return !needsBasicRenderloopWorkaround();
-        case RasterGLSurface: return true;
+        case ThreadedPixmaps: return true;
+        case NativeWidgets: return QtAndroid::activity();
+        case OpenGL: return QtAndroid::activity();
+        case ForeignWindows: return QtAndroid::activity();
+        case ThreadedOpenGL: return !needsBasicRenderloopWorkaround() && QtAndroid::activity();
+        case RasterGLSurface: return QtAndroid::activity();
         default:
             return QPlatformIntegration::hasCapability(cap);
     }
@@ -219,11 +222,15 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
 
 QPlatformBackingStore *QAndroidPlatformIntegration::createPlatformBackingStore(QWindow *window) const
 {
+    if (!QtAndroid::activity())
+        return nullptr;
     return new QAndroidPlatformBackingStore(window);
 }
 
 QPlatformOpenGLContext *QAndroidPlatformIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
+    if (!QtAndroid::activity())
+        return nullptr;
     QSurfaceFormat format(context->format());
     format.setAlphaBufferSize(8);
     format.setRedBufferSize(8);
@@ -234,6 +241,8 @@ QPlatformOpenGLContext *QAndroidPlatformIntegration::createPlatformOpenGLContext
 
 QPlatformOffscreenSurface *QAndroidPlatformIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {
+    if (!QtAndroid::activity())
+        return nullptr;
     QSurfaceFormat format(surface->requestedFormat());
     format.setAlphaBufferSize(8);
     format.setRedBufferSize(8);
@@ -245,6 +254,8 @@ QPlatformOffscreenSurface *QAndroidPlatformIntegration::createPlatformOffscreenS
 
 QPlatformWindow *QAndroidPlatformIntegration::createPlatformWindow(QWindow *window) const
 {
+    if (!QtAndroid::activity())
+        return nullptr;
     if (window->type() == Qt::ForeignWindow)
         return new QAndroidPlatformForeignWindow(window);
     else

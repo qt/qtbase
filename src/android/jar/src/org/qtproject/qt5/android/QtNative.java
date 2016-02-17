@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
+** Copyright (C) 2016 BogDan Vatra <bogdan@kde.org>
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
 import android.app.Activity;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -72,7 +73,9 @@ public class QtNative
 {
     private static Activity m_activity = null;
     private static boolean m_activityPaused = false;
+    private static Service m_service = null;
     private static QtActivityDelegate m_activityDelegate = null;
+    private static QtServiceDelegate m_serviceDelegate = null;
     public static Object m_mainActivityMutex = new Object(); // mutex used to synchronize runnable operations
 
     public static final String QtTAG = "Qt JAVA"; // string used for Log.x
@@ -115,10 +118,25 @@ public class QtNative
         }
     }
 
+    public static Service service()
+    {
+        synchronized (m_mainActivityMutex) {
+            return m_service;
+        }
+    }
+
+
     public static QtActivityDelegate activityDelegate()
     {
         synchronized (m_mainActivityMutex) {
             return m_activityDelegate;
+        }
+    }
+
+    public static QtServiceDelegate serviceDelegate()
+    {
+        synchronized (m_mainActivityMutex) {
+            return m_serviceDelegate;
         }
     }
 
@@ -183,6 +201,14 @@ public class QtNative
         synchronized (m_mainActivityMutex) {
             m_activity = qtMainActivity;
             m_activityDelegate = qtActivityDelegate;
+        }
+    }
+
+    public static void setService(Service qtMainService, QtServiceDelegate qtServiceDelegate)
+    {
+        synchronized (m_mainActivityMutex) {
+            m_service = qtMainService;
+            m_serviceDelegate = qtServiceDelegate;
         }
     }
 
@@ -319,7 +345,11 @@ public class QtNative
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activity.finish();
+                quitQtAndroidPlugin();
+                if (m_activity != null)
+                     m_activity.finish();
+                 if (m_service != null)
+                     m_service.stopSelf();
             }
         });
     }
@@ -452,7 +482,8 @@ public class QtNative
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activityDelegate.updateSelection(selStart, selEnd, candidatesStart, candidatesEnd);
+                if (m_activityDelegate != null)
+                    m_activityDelegate.updateSelection(selStart, selEnd, candidatesStart, candidatesEnd);
             }
         });
     }
@@ -467,7 +498,8 @@ public class QtNative
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activityDelegate.showSoftwareKeyboard(x, y, width, height, inputHints, enterKeyType);
+                if (m_activityDelegate != null)
+                    m_activityDelegate.showSoftwareKeyboard(x, y, width, height, inputHints, enterKeyType);
             }
         });
     }
@@ -477,7 +509,8 @@ public class QtNative
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activityDelegate.resetSoftwareKeyboard();
+                if (m_activityDelegate != null)
+                    m_activityDelegate.resetSoftwareKeyboard();
             }
         });
     }
@@ -487,7 +520,8 @@ public class QtNative
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activityDelegate.hideSoftwareKeyboard();
+                if (m_activityDelegate != null)
+                    m_activityDelegate.hideSoftwareKeyboard();
             }
         });
     }
@@ -497,7 +531,9 @@ public class QtNative
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activityDelegate.setFullScreen(fullScreen);
+                if (m_activityDelegate != null) {
+                    m_activityDelegate.setFullScreen(fullScreen);
+                }
                 updateWindow();
             }
         });
@@ -505,34 +541,44 @@ public class QtNative
 
     private static void registerClipboardManager()
     {
-        final Semaphore semaphore = new Semaphore(0);
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                m_clipboardManager = (android.text.ClipboardManager) m_activity.getSystemService(Context.CLIPBOARD_SERVICE);
-                semaphore.release();
+        if (m_service == null || m_activity != null) { // Avoid freezing if only service
+            final Semaphore semaphore = new Semaphore(0);
+            runAction(new Runnable() {
+                @Override
+                public void run() {
+                    if (m_activity != null)
+                        m_clipboardManager = (android.text.ClipboardManager) m_activity.getSystemService(Context.CLIPBOARD_SERVICE);
+                    semaphore.release();
+                }
+            });
+            try {
+                semaphore.acquire();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        });
-        try {
-            semaphore.acquire();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
     private static void setClipboardText(String text)
     {
-        m_clipboardManager.setText(text);
+        if (m_clipboardManager != null)
+            m_clipboardManager.setText(text);
     }
 
     private static boolean hasClipboardText()
     {
-        return m_clipboardManager.hasText();
+        if (m_clipboardManager != null)
+            return m_clipboardManager.hasText();
+        else
+            return false;
     }
 
     private static String getClipboardText()
     {
-        return m_clipboardManager.getText().toString();
+        if (m_clipboardManager != null)
+            return m_clipboardManager.getText().toString();
+        else
+            return "";
     }
 
     private static void openContextMenu(final int x, final int y, final int w, final int h)
@@ -540,7 +586,8 @@ public class QtNative
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activityDelegate.openContextMenu(x, y, w, h);
+                if (m_activityDelegate != null)
+                    m_activityDelegate.openContextMenu(x, y, w, h);
             }
         });
     }
@@ -550,7 +597,8 @@ public class QtNative
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activityDelegate.closeContextMenu();
+                if (m_activityDelegate != null)
+                    m_activityDelegate.closeContextMenu();
             }
         });
     }
@@ -560,7 +608,8 @@ public class QtNative
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activityDelegate.resetOptionsMenu();
+                if (m_activityDelegate != null)
+                    m_activityDelegate.resetOptionsMenu();
             }
         });
     }
@@ -570,7 +619,8 @@ public class QtNative
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activity.openOptionsMenu();
+                if (m_activity != null)
+                    m_activity.openOptionsMenu();
             }
         });
     }
@@ -607,7 +657,8 @@ public class QtNative
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activityDelegate.createSurface(id, onTop, x, y, w, h, imageDepth);
+                if (m_activityDelegate != null)
+                    m_activityDelegate.createSurface(id, onTop, x, y, w, h, imageDepth);
             }
         });
     }
@@ -617,7 +668,8 @@ public class QtNative
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activityDelegate.insertNativeView(id, view, x, y, w, h);
+                if (m_activityDelegate != null)
+                    m_activityDelegate.insertNativeView(id, view, x, y, w, h);
             }
         });
     }
@@ -627,7 +679,8 @@ public class QtNative
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activityDelegate.setSurfaceGeometry(id, x, y, w, h);
+                if (m_activityDelegate != null)
+                    m_activityDelegate.setSurfaceGeometry(id, x, y, w, h);
             }
         });
     }
@@ -637,7 +690,8 @@ public class QtNative
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activityDelegate.bringChildToFront(id);
+                if (m_activityDelegate != null)
+                    m_activityDelegate.bringChildToFront(id);
             }
         });
     }
@@ -647,7 +701,8 @@ public class QtNative
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activityDelegate.bringChildToBack(id);
+                if (m_activityDelegate != null)
+                    m_activityDelegate.bringChildToBack(id);
             }
         });
     }
@@ -657,7 +712,8 @@ public class QtNative
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activityDelegate.destroySurface(id);
+                if (m_activityDelegate != null)
+                    m_activityDelegate.destroySurface(id);
             }
         });
     }
@@ -737,4 +793,7 @@ public class QtNative
     public static native void onNewIntent(Intent data);
 
     public static native void runPendingCppRunnables();
+
+    private static native void setNativeActivity(Activity activity);
+    private static native void setNativeService(Service service);
 }

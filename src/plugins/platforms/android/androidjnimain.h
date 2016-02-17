@@ -83,6 +83,7 @@ namespace QtAndroid
     AAssetManager *assetManager();
     jclass applicationClass();
     jobject activity();
+    jobject service();
 
     void setApplicationActive();
 

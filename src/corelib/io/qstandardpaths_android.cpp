@@ -63,12 +63,15 @@ static QJNIObjectPrivate applicationContext()
     if (appCtx.isValid())
         return appCtx;
 
-    QJNIObjectPrivate activity(QtAndroidPrivate::activity());
-    if (!activity.isValid())
-        return appCtx;
+    QJNIObjectPrivate context(QtAndroidPrivate::activity());
+    if (!context.isValid()) {
+        context = QtAndroidPrivate::service();
+        if (!context.isValid())
+            return appCtx;
+    }
 
-    appCtx = activity.callObjectMethod("getApplicationContext",
-                                       "()Landroid/content/Context;");
+    appCtx = context.callObjectMethod("getApplicationContext",
+                                      "()Landroid/content/Context;");
     return appCtx;
 }
 
@@ -136,10 +139,6 @@ static QString getExternalFilesDir(const char *directoryField = 0)
     QString &path = (*androidDirCache)[QString(QLatin1String("APPNAME_%1")).arg(QLatin1String(directoryField))];
     if (!path.isEmpty())
         return path;
-
-    QJNIObjectPrivate activity(QtAndroidPrivate::activity());
-    if (!activity.isValid())
-        return QString();
 
     QJNIObjectPrivate appCtx = applicationContext();
     if (!appCtx.isValid())

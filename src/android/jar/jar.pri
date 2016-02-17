@@ -16,7 +16,8 @@ JAVASOURCES += \
     $$PATHPREFIX/QtNative.java \
     $$PATHPREFIX/QtNativeLibrariesDir.java \
     $$PATHPREFIX/QtSurface.java \
-    $$PATHPREFIX/ExtractStyle.java
+    $$PATHPREFIX/ExtractStyle.java \
+    $$PATHPREFIX/QtServiceDelegate.java
 
 # install
 target.path = $$[QT_INSTALL_PREFIX]/jar
