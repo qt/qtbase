@@ -67,8 +67,11 @@ inline QPlatformNativeInterface::NativeResourceForIntegrationFunction resolvePla
     \since 5.2
 
     Returns the native NSMenu for this menu. Available on OS X only.
+
+    \note Qt sets the delegate on the native menu. If you need to set your own
+    delegate, make sure you save the original one and forward any calls to it.
 */
-NSMenu* QMenu::toNSMenu()
+NSMenu *QMenu::toNSMenu()
 {
     // Call into the cocoa platform plugin: qMenuToNSMenu(platformMenu())
     QPlatformNativeInterface::NativeResourceForIntegrationFunction function = resolvePlatformFunction("qmenutonsmenu");
@@ -133,8 +136,11 @@ void QMenuPrivate::moveWidgetToPlatformItem(QWidget *widget, QPlatformMenuItem* 
     \since 5.2
 
     Returns the native NSMenu for this menu bar. Available on OS X only.
+
+    \note Qt may set the delegate on the native menu bar. If you need to set your
+    own delegate, make sure you save the original one and forward any calls to it.
 */
-NSMenu* QMenuBar::toNSMenu()
+NSMenu *QMenuBar::toNSMenu()
 {
     // Call into the cocoa platform plugin: qMenuBarToNSMenu(platformMenuBar())
     QPlatformNativeInterface::NativeResourceForIntegrationFunction function = resolvePlatformFunction("qmenubartonsmenu");
