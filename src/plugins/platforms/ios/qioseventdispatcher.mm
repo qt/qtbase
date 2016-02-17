@@ -493,7 +493,7 @@ void QIOSEventDispatcher::handleRunLoopExit(CFRunLoopActivity activity)
     Q_UNUSED(activity);
     Q_ASSERT(activity == kCFRunLoopExit);
 
-    if (m_processEventLevel == 1 && !QThreadData::current()->eventLoops.top()->isRunning()) {
+    if (m_processEventLevel == 1 && !currentEventLoop()->isRunning()) {
         qEventDispatcherDebug() << "Root runloop level exited";
         interruptEventLoopExec();
     }

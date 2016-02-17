@@ -210,6 +210,13 @@ QEventDispatcherCoreFoundation::~QEventDispatcherCoreFoundation()
     m_cfSocketNotifier.removeSocketNotifiers();
 }
 
+QEventLoop *QEventDispatcherCoreFoundation::currentEventLoop() const
+{
+    QEventLoop *eventLoop = QThreadData::current()->eventLoops.top();
+    Q_ASSERT(eventLoop);
+    return eventLoop;
+}
+
 /*!
     Processes all pending events that match \a flags until there are no
     more events to process. Returns \c true if pending events were handled;
@@ -302,10 +309,7 @@ bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlag
                 // to exit, and then unwind back to the previous event loop which will break
                 // immediately, since it has already been exited.
 
-                QEventLoop *currentEventLoop = QThreadData::current()->eventLoops.top();
-                Q_ASSERT(currentEventLoop);
-
-                if (!currentEventLoop->isRunning()) {
+                if (!currentEventLoop()->isRunning()) {
                     qEventDispatcherDebug() << "Top level event loop was exited";
                     break;
                 } else {

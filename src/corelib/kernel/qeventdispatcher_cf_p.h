@@ -228,6 +228,8 @@ public:
     void flush();
 
 protected:
+    QEventLoop *currentEventLoop() const;
+
     virtual bool processPostedEvents();
 
     struct ProcessEventsState
