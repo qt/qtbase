@@ -2104,10 +2104,7 @@ void QMdiArea::setActivationOrder(WindowOrder order)
 void QMdiArea::setOption(AreaOption option, bool on)
 {
     Q_D(QMdiArea);
-    if (on && !(d->options & option))
-        d->options |= option;
-    else if (!on && (d->options & option))
-        d->options &= ~option;
+    d->options.setFlag(option, on);
 }
 
 /*!

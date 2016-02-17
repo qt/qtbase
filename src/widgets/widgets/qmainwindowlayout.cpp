@@ -375,10 +375,7 @@ void QDockWidgetGroupWindow::adjustFlags()
     Qt::WindowFlags flags = oldFlags;
     if (nativeDeco) {
         flags |= Qt::CustomizeWindowHint | Qt::WindowTitleHint;
-        if (top->features() & QDockWidget::DockWidgetClosable)
-            flags |= Qt::WindowCloseButtonHint;
-        else
-            flags &= ~Qt::WindowCloseButtonHint;
+        flags.setFlag(Qt::WindowCloseButtonHint, top->features() & QDockWidget::DockWidgetClosable);
         flags &= ~Qt::FramelessWindowHint;
     } else {
         flags |= Qt::FramelessWindowHint;

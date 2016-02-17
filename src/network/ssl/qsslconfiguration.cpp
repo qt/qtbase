@@ -664,10 +664,7 @@ QList<QSslCertificate> QSslConfiguration::systemCaCertificates()
 */
 void QSslConfiguration::setSslOption(QSsl::SslOption option, bool on)
 {
-    if (on)
-        d->sslOptions |= option;
-    else
-        d->sslOptions &= ~option;
+    d->sslOptions.setFlag(option, on);
 }
 
 /*!

@@ -182,10 +182,7 @@ void QRadioButton::initStyleOption(QStyleOptionButton *option) const
         option->state |= QStyle::State_Sunken;
     option->state |= (d->checked) ? QStyle::State_On : QStyle::State_Off;
     if (testAttribute(Qt::WA_Hover) && underMouse()) {
-        if (d->hovering)
-            option->state |= QStyle::State_MouseOver;
-        else
-            option->state &= ~QStyle::State_MouseOver;
+        option->state.setFlag(QStyle::State_MouseOver, d->hovering);
     }
 }
 

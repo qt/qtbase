@@ -51,6 +51,7 @@
 #include "qvariant.h"
 #include "qcache.h"
 #include "qdebug.h"
+#include "qdir.h"
 #include "qpalette.h"
 #include "qmath.h"
 
@@ -1171,6 +1172,8 @@ QIcon QIcon::fromTheme(const QString &name)
 
     if (qtIconCache()->contains(name)) {
         icon = *qtIconCache()->object(name);
+    } else if (QDir::isAbsolutePath(name)) {
+        return QIcon(name);
     } else {
         QPlatformTheme * const platformTheme = QGuiApplicationPrivate::platformTheme();
         bool hasUserTheme = QIconLoader::instance()->hasUserTheme();

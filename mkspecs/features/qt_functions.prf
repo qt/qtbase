@@ -1,6 +1,7 @@
+
 defineReplace(qtPlatformTargetSuffix) {
-    ios:CONFIG(iphonesimulator, iphonesimulator|iphoneos): \
-        suffix = _iphonesimulator
+    ios:CONFIG(simulator, simulator|device): \
+        suffix = _$${simulator.sdk}
     else: \
         suffix =
 

@@ -242,8 +242,7 @@ void JavaStyle::drawControl(ControlElement control, const QStyleOption *option,
             QRect rect = docker->rect;
             QRect titleRect = rect;
             if (docker->verticalTitleBar) {
-                QRect r = rect;
-                r.setSize(r.size().transposed());
+                QRect r = rect.transposed();
 
                 titleRect = QRect(r.left() + rect.bottom()
                                 - titleRect.bottom(),

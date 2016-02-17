@@ -922,10 +922,7 @@ void QMainWindow::setAnimated(bool enabled)
     Q_D(QMainWindow);
 
     DockOptions opts = d->layout->dockOptions;
-    if (enabled)
-        opts |= AnimatedDocks;
-    else
-        opts &= ~AnimatedDocks;
+    opts.setFlag(AnimatedDocks, enabled);
 
     d->layout->setDockOptions(opts);
 }
@@ -961,10 +958,7 @@ void QMainWindow::setDockNestingEnabled(bool enabled)
     Q_D(QMainWindow);
 
     DockOptions opts = d->layout->dockOptions;
-    if (enabled)
-        opts |= AllowNestedDocks;
-    else
-        opts &= ~AllowNestedDocks;
+    opts.setFlag(AllowNestedDocks, enabled);
 
     d->layout->setDockOptions(opts);
 }

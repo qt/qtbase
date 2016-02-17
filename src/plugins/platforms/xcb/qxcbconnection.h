@@ -472,7 +472,7 @@ public:
     xcb_window_t getSelectionOwner(xcb_atom_t atom) const;
     xcb_window_t getQtSelectionOwner();
 
-    void setButton(Qt::MouseButton button, bool down) { if (down) m_buttons |= button; else m_buttons &= ~button; }
+    void setButton(Qt::MouseButton button, bool down) { m_buttons.setFlag(button, down); }
     Qt::MouseButtons buttons() const { return m_buttons; }
     Qt::MouseButton translateMouseButton(xcb_button_t s);
 

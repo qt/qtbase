@@ -327,12 +327,11 @@ void QGraphicsWidgetPrivate::initStyleOptionTitleBar(QStyleOptionTitleBar *optio
     option->subControls = QStyle::SC_TitleBarCloseButton | QStyle::SC_TitleBarLabel | QStyle::SC_TitleBarSysMenu;
     option->activeSubControls = windowData->hoveredSubControl;
     bool isActive = q->isActiveWindow();
+    option->state.setFlag(QStyle::State_Active, isActive);
     if (isActive) {
-        option->state |= QStyle::State_Active;
         option->titleBarState = Qt::WindowActive;
         option->titleBarState |= QStyle::State_Active;
     } else {
-        option->state &= ~QStyle::State_Active;
         option->titleBarState = Qt::WindowNoState;
     }
     QFont windowTitleFont = QApplication::font("QMdiSubWindowTitleBar");

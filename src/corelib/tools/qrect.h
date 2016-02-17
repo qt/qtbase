@@ -102,6 +102,7 @@ public:
     Q_DECL_RELAXED_CONSTEXPR inline void translate(const QPoint &p) Q_DECL_NOTHROW;
     Q_DECL_CONSTEXPR inline QRect translated(int dx, int dy) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
     Q_DECL_CONSTEXPR inline QRect translated(const QPoint &p) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_DECL_CONSTEXPR inline QRect transposed() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
 
     Q_DECL_RELAXED_CONSTEXPR inline void moveTo(int x, int t) Q_DECL_NOTHROW;
     Q_DECL_RELAXED_CONSTEXPR inline void moveTo(const QPoint &p) Q_DECL_NOTHROW;
@@ -283,6 +284,9 @@ Q_DECL_CONSTEXPR inline QRect QRect::translated(int dx, int dy) const Q_DECL_NOT
 
 Q_DECL_CONSTEXPR inline QRect QRect::translated(const QPoint &p) const Q_DECL_NOTHROW
 { return QRect(QPoint(x1 + p.x(), y1 + p.y()), QPoint(x2 + p.x(), y2 + p.y())); }
+
+Q_DECL_CONSTEXPR inline QRect QRect::transposed() const Q_DECL_NOTHROW
+{ return QRect(topLeft(), size().transposed()); }
 
 Q_DECL_RELAXED_CONSTEXPR inline void QRect::moveTo(int ax, int ay) Q_DECL_NOTHROW
 {
@@ -551,6 +555,8 @@ public:
     Q_DECL_CONSTEXPR inline QRectF translated(qreal dx, qreal dy) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
     Q_DECL_CONSTEXPR inline QRectF translated(const QPointF &p) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
 
+    Q_DECL_CONSTEXPR inline QRectF transposed() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+
     Q_DECL_RELAXED_CONSTEXPR inline void moveTo(qreal x, qreal y) Q_DECL_NOTHROW;
     Q_DECL_RELAXED_CONSTEXPR inline void moveTo(const QPointF &p) Q_DECL_NOTHROW;
 
@@ -750,6 +756,9 @@ Q_DECL_CONSTEXPR inline QRectF QRectF::translated(qreal dx, qreal dy) const Q_DE
 
 Q_DECL_CONSTEXPR inline QRectF QRectF::translated(const QPointF &p) const Q_DECL_NOTHROW
 { return QRectF(xp + p.x(), yp + p.y(), w, h); }
+
+Q_DECL_CONSTEXPR inline QRectF QRectF::transposed() const Q_DECL_NOTHROW
+{ return QRectF(topLeft(), size().transposed()); }
 
 Q_DECL_RELAXED_CONSTEXPR inline void QRectF::getRect(qreal *ax, qreal *ay, qreal *aaw, qreal *aah) const
 {

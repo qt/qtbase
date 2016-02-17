@@ -142,6 +142,7 @@ private slots:
     void qmlConnect();
     void exceptions();
     void noDeclarativeParentChangedOnDestruction();
+    void deleteLaterInAboutToBlockHandler();
 };
 
 struct QObjectCreatedOnShutdown
@@ -5787,6 +5788,102 @@ void tst_QObject::connectFunctorWithContext()
 
     // Free
     context->deleteLater();
+}
+
+class StatusChanger : public QObject
+{
+    Q_OBJECT
+public:
+    StatusChanger(int *status) : m_status(status)
+    {
+    }
+    ~StatusChanger()
+    {
+        *m_status = 2;
+    }
+private:
+    int *m_status;
+};
+
+class DispatcherWatcher : public QObject
+{
+    Q_OBJECT
+public:
+    DispatcherWatcher(QEventLoop &e, int *statusAwake, int *statusAboutToBlock) :
+        m_statusAboutToBlock(statusAboutToBlock),
+        m_statusAwake(statusAwake),
+        m_eventLoop(&e),
+        m_aboutToBlocks(0),
+        m_awakes(0)
+    {
+        awake = new StatusChanger(statusAwake);
+        abouttoblock = new StatusChanger(statusAboutToBlock);
+        QCOMPARE(*statusAwake, 1);
+        QCOMPARE(*statusAboutToBlock, 1);
+        connect(QAbstractEventDispatcher::instance(), SIGNAL(awake()), this, SLOT(onAwake()));
+        connect(QAbstractEventDispatcher::instance(), SIGNAL(aboutToBlock()), this, SLOT(onAboutToBlock()));
+
+    }
+
+    ~DispatcherWatcher()
+    {
+        if (awake)
+            awake->deleteLater();
+        if (abouttoblock)
+            abouttoblock->deleteLater();
+    }
+
+public slots:
+    // The order of these 2 handlers differs on different event dispatchers
+    void onAboutToBlock()
+    {
+        if (abouttoblock) {
+            abouttoblock->deleteLater();
+            abouttoblock = 0;
+        }
+        ++m_aboutToBlocks;
+    }
+    void onAwake()
+    {
+        if (awake) {
+            awake->deleteLater();
+            awake = 0;
+        }
+        ++m_awakes;
+
+    }
+    void onSignal1()
+    {
+        // Status check. At this point the event loop should have spinned enough to delete all the objects.
+        QCOMPARE(*m_statusAwake, 2);
+        QCOMPARE(*m_statusAboutToBlock, 2);
+        QMetaObject::invokeMethod(m_eventLoop, "quit", Qt::QueuedConnection);
+    }
+
+private:
+    StatusChanger *awake;
+    StatusChanger *abouttoblock;
+    QEventLoop    *m_eventLoop;
+    int *m_statusAwake;
+    int *m_statusAboutToBlock;
+    int m_aboutToBlocks;
+    int m_awakes;
+};
+
+
+void tst_QObject::deleteLaterInAboutToBlockHandler()
+{
+    int statusAwake        = 1;
+    int statusAboutToBlock = 1;
+    QEventLoop e;
+    DispatcherWatcher dw(e, &statusAwake, &statusAboutToBlock);
+    QTimer::singleShot(2000, &dw, &DispatcherWatcher::onSignal1);
+
+    QCOMPARE(statusAwake, 1);
+    QCOMPARE(statusAboutToBlock, 1);
+    e.exec();
+    QCOMPARE(statusAwake, 2);
+    QCOMPARE(statusAboutToBlock, 2);
 }
 
 class MyFunctor

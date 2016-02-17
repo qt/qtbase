@@ -476,7 +476,7 @@ QByteArray QSpdyProtocolHandler::composeHeader(const QHttpNetworkRequest &reques
     // calculate additional headers first, because we need to know the size
     // ### do not partially copy the list, but restrict the set header fields
     // in QHttpNetworkConnection
-    QList<QPair<QByteArray, QByteArray> > additionalHeaders;
+    QVector<QPair<QByteArray, QByteArray> > additionalHeaders;
     for (int a = 0; a < request.header().count(); ++a) {
         QByteArray key = request.header().at(a).first;
         if (key == "Connection" || key == "Host" || key == "Keep-Alive"

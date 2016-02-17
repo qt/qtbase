@@ -675,7 +675,7 @@ QTextFrame::iterator::iterator(QTextFrame *frame, int block, int begin, int end)
 /*!
     Copy constructor. Constructs a copy of the \a other iterator.
 */
-QTextFrame::iterator::iterator(const iterator &other)
+QTextFrame::iterator::iterator(const iterator &other) Q_DECL_NOTHROW
 {
     f = other.f;
     b = other.b;
@@ -688,7 +688,7 @@ QTextFrame::iterator::iterator(const iterator &other)
     Assigns \a other to this iterator and returns a reference to
     this iterator.
 */
-QTextFrame::iterator &QTextFrame::iterator::operator=(const iterator &other)
+QTextFrame::iterator &QTextFrame::iterator::operator=(const iterator &other) Q_DECL_NOTHROW
 {
     f = other.f;
     b = other.b;

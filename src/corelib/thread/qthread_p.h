@@ -280,6 +280,7 @@ private:
 
 public:
     int loopLevel;
+    int scopeLevel;
 
     QStack<QEventLoop *> eventLoops;
     QPostEventList postEventList;
@@ -295,15 +296,15 @@ public:
     bool requiresCoreApplication;
 };
 
-class QScopedLoopLevelCounter
+class QScopedScopeLevelCounter
 {
     QThreadData *threadData;
 public:
-    inline QScopedLoopLevelCounter(QThreadData *threadData)
+    inline QScopedScopeLevelCounter(QThreadData *threadData)
         : threadData(threadData)
-    { ++threadData->loopLevel; }
-    inline ~QScopedLoopLevelCounter()
-    { --threadData->loopLevel; }
+    { ++threadData->scopeLevel; }
+    inline ~QScopedScopeLevelCounter()
+    { --threadData->scopeLevel; }
 };
 
 // thread wrapper for the main() thread

@@ -458,7 +458,7 @@ bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, vo
     if (!d->eventFilters.isEmpty()) {
         // Raise the loopLevel so that deleteLater() calls in or triggered
         // by event_filter() will be processed from the main event loop.
-        QScopedLoopLevelCounter loopLevelCounter(d->threadData);
+        QScopedScopeLevelCounter scopeLevelCounter(d->threadData);
         for (int i = 0; i < d->eventFilters.size(); ++i) {
             QAbstractNativeEventFilter *filter = d->eventFilters.at(i);
             if (!filter)

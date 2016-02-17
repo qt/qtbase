@@ -68,6 +68,8 @@ public:
     QRegion(const QRect &r, RegionType t = Rectangle);
     QRegion(const QPolygon &pa, Qt::FillRule fillRule = Qt::OddEvenFill);
     QRegion(const QRegion &region);
+    QRegion(QRegion &&other) Q_DECL_NOTHROW
+        : d(other.d) { other.d = const_cast<QRegionData*>(&shared_empty); }
     QRegion(const QBitmap &bitmap);
     ~QRegion();
     QRegion &operator=(const QRegion &);

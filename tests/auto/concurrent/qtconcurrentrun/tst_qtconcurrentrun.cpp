@@ -43,6 +43,7 @@ private slots:
     void memberFunctions();
     void implicitConvertibleTypes();
     void runWaitLoop();
+    void pollForIsFinished();
     void recursive();
 #ifndef QT_NO_EXCEPTIONS
     void exceptions();
@@ -347,6 +348,34 @@ void tst_QtConcurrentRun::runWaitLoop()
     for (int i = 0; i < 1000; ++i)
         run(fn).waitForFinished();
 }
+
+static bool allFinished(const QList<QFuture<void> > &futures)
+{
+    auto hasNotFinished = [](const QFuture<void> &future) { return !future.isFinished(); };
+    return std::find_if(futures.cbegin(), futures.cend(), hasNotFinished)
+        == futures.constEnd();
+}
+
+static void runFunction()
+{
+    QEventLoop loop;
+    QTimer::singleShot(20, &loop, &QEventLoop::quit);
+    loop.exec();
+}
+
+void tst_QtConcurrentRun::pollForIsFinished()
+{
+    const int numThreads = std::max(4, 2 * QThread::idealThreadCount());
+    QThreadPool::globalInstance()->setMaxThreadCount(numThreads);
+
+    QFutureSynchronizer<void> synchronizer;
+    for (int i = 0; i < numThreads; ++i)
+        synchronizer.addFuture(QtConcurrent::run(&runFunction));
+
+    // same as synchronizer.waitForFinished() but with a timeout
+    QTRY_VERIFY(allFinished(synchronizer.futures()));
+}
+
 
 QAtomicInt count;
 

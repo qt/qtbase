@@ -1779,7 +1779,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
             QRect r = rect;
 
             if (verticalTitleBar) {
-                r.setSize(r.size().transposed());
+                r = r.transposed();
 
                 p->save();
                 p->translate(r.left(), r.top() + r.width());

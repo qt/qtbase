@@ -308,7 +308,7 @@ QT_END_NAMESPACE
 
     if ([item tag]) {
         QCocoaMenuItem *cocoaItem = reinterpret_cast<QCocoaMenuItem *>([item tag]);
-        QScopedLoopLevelCounter loopLevelCounter(QGuiApplicationPrivate::instance()->threadData);
+        QScopedScopeLevelCounter scopeLevelCounter(QGuiApplicationPrivate::instance()->threadData);
         cocoaItem->activated();
     }
 }

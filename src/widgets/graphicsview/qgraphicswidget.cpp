@@ -2272,15 +2272,8 @@ void QGraphicsWidget::paintWindowFrame(QPainter *painter, const QStyleOptionGrap
     bar.QStyleOption::operator=(*option);
     d->initStyleOptionTitleBar(&bar);   // this clear flags in bar.state
     d->ensureWindowData();
-    if (d->windowData->buttonMouseOver)
-        bar.state |= QStyle::State_MouseOver;
-    else
-        bar.state &= ~QStyle::State_MouseOver;
-    if (d->windowData->buttonSunken)
-        bar.state |= QStyle::State_Sunken;
-    else
-        bar.state &= ~QStyle::State_Sunken;
-
+    bar.state.setFlag(QStyle::State_MouseOver, d->windowData->buttonMouseOver);
+    bar.state.setFlag(QStyle::State_Sunken, d->windowData->buttonSunken);
     bar.rect = windowFrameRect;
 
     // translate painter to make the style happy
@@ -2337,17 +2330,9 @@ void QGraphicsWidget::paintWindowFrame(QPainter *painter, const QStyleOptionGrap
     initStyleOption(&frameOptions);
     if (!hasBorder)
         painter->setClipRect(windowFrameRect.adjusted(0, +height, 0, 0), Qt::IntersectClip);
-    if (hasFocus()) {
-        frameOptions.state |= QStyle::State_HasFocus;
-    } else {
-        frameOptions.state &= ~QStyle::State_HasFocus;
-    }
+    frameOptions.state.setFlag(QStyle::State_HasFocus, hasFocus());
     bool isActive = isActiveWindow();
-    if (isActive) {
-        frameOptions.state |= QStyle::State_Active;
-    } else {
-        frameOptions.state &= ~QStyle::State_Active;
-    }
+    frameOptions.state.setFlag(QStyle::State_Active, isActive);
 
     frameOptions.palette.setCurrentColorGroup(isActive ? QPalette::Active : QPalette::Normal);
     frameOptions.rect = windowFrameRect;

@@ -76,10 +76,7 @@ void QLibInputPointer::processButton(libinput_event_pointer *e)
     case 0x11f: button = Qt::ExtraButton13; break;
     }
 
-    if (pressed)
-        m_buttons |= button;
-    else
-        m_buttons &= ~button;
+    m_buttons.setFlag(button, pressed);
 
     QWindowSystemInterface::handleMouseEvent(Q_NULLPTR, m_pos, m_pos, m_buttons, QGuiApplication::keyboardModifiers());
 }

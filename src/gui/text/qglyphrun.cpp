@@ -414,10 +414,7 @@ void QGlyphRun::setFlag(GlyphRunFlag flag, bool enabled)
         return;
 
     detach();
-    if (enabled)
-        d->flags |= flag;
-    else
-        d->flags &= ~flag;
+    d->flags.setFlag(flag, enabled);
 }
 
 /*!

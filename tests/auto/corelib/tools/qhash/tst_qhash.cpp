@@ -32,6 +32,7 @@
 #include <qmap.h>
 
 #include <algorithm>
+#include <vector>
 
 class tst_QHash : public QObject
 {
@@ -65,6 +66,7 @@ private slots:
     void twoArguments_qHash();
     void initializerList();
     void eraseValidIteratorOnSharedHash();
+    void equal_range();
 };
 
 struct IdentityTracker {
@@ -1353,6 +1355,112 @@ void tst_QHash::eraseValidIteratorOnSharedHash()
         itemsWith10 += (i.key() == 10);
 
     QCOMPARE(itemsWith10, 3);
+}
+
+void tst_QHash::equal_range()
+{
+    QHash<int, QString> hash;
+
+    auto result = hash.equal_range(0);
+    QCOMPARE(result.first, hash.end());
+    QCOMPARE(result.second, hash.end());
+
+    hash.insert(1, "one");
+
+    result = hash.equal_range(1);
+
+    QCOMPARE(result.first, hash.find(1));
+    QVERIFY(std::distance(result.first, result.second) == 1);
+
+    QHash<int, int> h1;
+    {
+        auto p = h1.equal_range(0);
+        QVERIFY(p.first == p.second);
+        QVERIFY(p.first == h1.end());
+    }
+
+    h1.insert(1, 2);
+    {
+        auto p1 = h1.equal_range(9);
+        QVERIFY(p1.first == p1.second);
+        QVERIFY(p1.first == h1.end());
+    }
+    {
+        auto p2 = h1.equal_range(1);
+        QVERIFY(p2.first != p2.second);
+        QVERIFY(p2.first == h1.begin());
+        QVERIFY(p2.second == h1.end());
+    }
+
+    QMultiHash<int, int> m1 = h1;
+    m1.insert(1, 0);
+    QCOMPARE(m1.size(), 2);
+    {
+        auto p1 = m1.equal_range(9);
+        QVERIFY(p1.first == p1.second);
+        QVERIFY(p1.first == m1.end());
+    }
+    {
+        auto p2 = m1.equal_range(1);
+        QVERIFY(p2.first != p2.second);
+        QVERIFY(p2.first == m1.begin());
+        QVERIFY(p2.second == m1.end());
+        QCOMPARE(std::distance(p2.first, p2.second), 2);
+    }
+
+    m1.insert(0, 0);
+    QCOMPARE(m1.size(), 3);
+    {
+        auto p1 = m1.equal_range(9);
+        QVERIFY(p1.first == p1.second);
+        QVERIFY(p1.first == m1.end());
+    }
+    {
+        const auto p2 = m1.equal_range(1);
+        QVERIFY(p2.first != p2.second);
+        QCOMPARE(p2.first.key(), 1);
+        QCOMPARE(std::distance(p2.first, p2.second), 2);
+        QVERIFY(p2.first == m1.begin() || p2.second == m1.end());
+    }
+
+    const QHash<int, int> ch1 = h1;
+    {
+        auto p1 = ch1.equal_range(9);
+        QVERIFY(p1.first == p1.second);
+        QVERIFY(p1.first == ch1.end());
+    }
+    {
+        auto p2 = ch1.equal_range(1);
+        QVERIFY(p2.first != p2.second);
+        QVERIFY(p2.first == ch1.begin());
+        QVERIFY(p2.second == ch1.end());
+    }
+
+    const QMultiHash<int, int> cm1 = m1;
+    {
+        auto p1 = cm1.equal_range(9);
+        QVERIFY(p1.first == p1.second);
+        QVERIFY(p1.first == cm1.end());
+    }
+    {
+        auto p2 = cm1.equal_range(1);
+        QVERIFY(p2.first != p2.second);
+        QCOMPARE(std::distance(p2.first, p2.second), 2);
+        QVERIFY(p2.first == cm1.cbegin() || p2.second == cm1.cend());
+    }
+
+    QHash<int, int> h2;
+    for (int i = 0; i < 8; ++i)
+        for (int j = 0; j < 8; ++j)
+            h2.insertMulti(i, i*j);
+
+    for (int i = 0; i < 8; ++i) {
+        auto pair = h2.equal_range(i);
+        std::vector<int> vec(pair.first, pair.second);
+        std::sort(vec.begin(), vec.end());
+        for (int j = 0; j < 8; ++j)
+            QCOMPARE(i*j, vec[j]);
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QHash)

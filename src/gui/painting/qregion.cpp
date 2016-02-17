@@ -210,6 +210,16 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QRegion::QRegion(QRegion &&other)
+    \since 5.7
+
+    Move-constructs a new region from region \a other.
+    After the call, \a other is null.
+
+    \sa isNull()
+*/
+
+/*!
     \fn QRegion::QRegion(const QBitmap &bm)
 
     Constructs a region from the bitmap \a bm.

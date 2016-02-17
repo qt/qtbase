@@ -266,10 +266,7 @@ void QEvdevMouseHandler::readMouseData()
             case 0x11e: button = Qt::ExtraButton12; break;
             case 0x11f: button = Qt::ExtraButton13; break;
             }
-            if (data->value)
-                m_buttons |= button;
-            else
-                m_buttons &= ~button;
+            m_buttons.setFlag(button, data->value);
             btnChanged = true;
         } else if (data->type == EV_SYN && data->code == SYN_REPORT) {
             if (btnChanged) {

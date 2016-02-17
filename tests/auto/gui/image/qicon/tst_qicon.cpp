@@ -642,6 +642,10 @@ void tst_QIcon::fromTheme()
     QIcon::setThemeName("");
     abIcon = QIcon::fromTheme("address-book-new");
     QVERIFY(abIcon.isNull());
+
+    // Passing a full path to fromTheme is not very useful, but should work anyway
+    QIcon fullPathIcon = QIcon::fromTheme(m_pngImageFileName);
+    QVERIFY(!fullPathIcon.isNull());
 }
 
 void tst_QIcon::fromThemeCache()

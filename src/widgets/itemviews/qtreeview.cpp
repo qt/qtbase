@@ -1359,11 +1359,7 @@ void QTreeViewPrivate::paintAlternatingRowColors(QPainter *painter, QStyleOption
     }
     while (y <= bottom) {
         option->rect.setRect(0, y, viewport->width(), rowHeight);
-        if (current & 1) {
-            option->features |= QStyleOptionViewItem::Alternate;
-        } else {
-            option->features &= ~QStyleOptionViewItem::Alternate;
-        }
+        option->features.setFlag(QStyleOptionViewItem::Alternate, current & 1);
         ++current;
         q->style()->drawPrimitive(QStyle::PE_PanelItemViewRow, option, painter, q);
         y += rowHeight;
@@ -1709,11 +1705,9 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
             else
                 opt.state |= QStyle::State_HasFocus;
         }
-        if ((hoverRow || modelIndex == hover)
-            && (option.showDecorationSelected || (d->hoverBranch == -1)))
-            opt.state |= QStyle::State_MouseOver;
-        else
-            opt.state &= ~QStyle::State_MouseOver;
+        opt.state.setFlag(QStyle::State_MouseOver,
+                          (hoverRow || modelIndex == hover)
+                          && (option.showDecorationSelected || d->hoverBranch == -1));
 
         if (enabled) {
             QPalette::ColorGroup cg;
@@ -1729,11 +1723,7 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
         }
 
         if (alternate) {
-            if (d->current & 1) {
-                opt.features |= QStyleOptionViewItem::Alternate;
-            } else {
-                opt.features &= ~QStyleOptionViewItem::Alternate;
-            }
+            opt.features.setFlag(QStyleOptionViewItem::Alternate, d->current & 1);
         }
 
         /* Prior to Qt 4.3, the background of the branch (in selected state and
@@ -1832,11 +1822,7 @@ void QTreeView::drawBranches(QPainter *painter, const QRect &rect,
         painter->setBrushOrigin(QPoint(0, verticalOffset()));
 
     if (d->alternatingColors) {
-        if (d->current & 1) {
-            opt.features |= QStyleOptionViewItem::Alternate;
-        } else {
-            opt.features &= ~QStyleOptionViewItem::Alternate;
-        }
+        opt.features.setFlag(QStyleOptionViewItem::Alternate, d->current & 1);
     }
 
     // When hovering over a row, pass State_Hover for painting the branch
@@ -1862,10 +1848,8 @@ void QTreeView::drawBranches(QPainter *painter, const QRect &rect,
                     | (moreSiblings ? QStyle::State_Sibling : QStyle::State_None)
                     | (children ? QStyle::State_Children : QStyle::State_None)
                     | (expanded ? QStyle::State_Open : QStyle::State_None);
-        if (hoverRow || item == d->hoverBranch)
-            opt.state |= QStyle::State_MouseOver;
-        else
-            opt.state &= ~QStyle::State_MouseOver;
+        opt.state.setFlag(QStyle::State_MouseOver, hoverRow || item == d->hoverBranch);
+
         style()->drawPrimitive(QStyle::PE_IndicatorBranch, &opt, painter, this);
     }
     // then go out level by level
@@ -1890,10 +1874,8 @@ void QTreeView::drawBranches(QPainter *painter, const QRect &rect,
         }
         if (moreSiblings)
             opt.state |= QStyle::State_Sibling;
-        if (hoverRow || item == d->hoverBranch)
-            opt.state |= QStyle::State_MouseOver;
-        else
-            opt.state &= ~QStyle::State_MouseOver;
+        opt.state.setFlag(QStyle::State_MouseOver, hoverRow || item == d->hoverBranch);
+
         style()->drawPrimitive(QStyle::PE_IndicatorBranch, &opt, painter, this);
         current = ancestor;
         ancestor = current.parent();
