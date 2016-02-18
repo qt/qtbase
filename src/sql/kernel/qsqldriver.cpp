@@ -466,6 +466,9 @@ QString QSqlDriver::stripDelimiters(const QString &identifier, IdentifierType ty
     with the values from \a rec. If \a preparedStatement is true, the
     string will contain placeholders instead of values.
 
+    The generated flag in each field of \a rec determines whether the
+    field is included in the generated statement.
+
     This method can be used to manipulate tables without having to worry
     about database-dependent SQL dialects. For non-prepared statements,
     the values will be properly escaped.
@@ -493,7 +496,9 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
             ? QString()
             : prepareIdentifier(tableName, QSqlDriver::TableName, this) + QLatin1Char('.');
         for (int i = 0; i < rec.count(); ++i) {
-            s.append(QLatin1String(i? " AND " : "WHERE "));
+            if (!rec.isGenerated(i))
+                continue;
+            s.append(s.isEmpty() ? QLatin1String("WHERE ") : QLatin1String(" AND "));
             s.append(tableNamePrefix);
             s.append(prepareIdentifier(rec.fieldName(i), QSqlDriver::FieldName, this));
             if (rec.isNull(i))
