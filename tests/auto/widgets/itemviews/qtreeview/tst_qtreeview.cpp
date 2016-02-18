@@ -202,7 +202,8 @@ private slots:
     void hiddenItems();
     void spanningItems();
     void rowSizeHint();
-    void setSortingEnabled();
+    void setSortingEnabledTopLevel();
+    void setSortingEnabledChild();
     void headerHidden();
     void indentation();
 
@@ -2527,33 +2528,31 @@ void tst_QTreeView::rowSizeHint()
 
 //From task 155449 (QTreeWidget has a large width for the first section when sorting
 //is turned on before items are added)
-void tst_QTreeView::setSortingEnabled()
-{
-    //1st the treeview is a top-level
-    {
-        QTreeView view;
-        QStandardItemModel model(1,1);
-        view.setModel(&model);
-        const int size = view.header()->sectionSize(0);
-        view.setSortingEnabled(true);
-        model.setColumnCount(3);
-        //we test that changing the column count doesn't change the 1st column size
-        QCOMPARE(view.header()->sectionSize(0), size);
-    }
 
-    //then it is no more a top-level
-    {
-        QMainWindow win;
-        QTreeView view;
-        QStandardItemModel model(1,1);
-        view.setModel(&model);
-        win.setCentralWidget(&view);
-        const int size = view.header()->sectionSize(0);
-        view.setSortingEnabled(true);
-        model.setColumnCount(3);
-        //we test that changing the column count doesn't change the 1st column size
-        QCOMPARE(view.header()->sectionSize(0), size);
-    }
+void tst_QTreeView::setSortingEnabledTopLevel()
+{
+    QTreeView view;
+    QStandardItemModel model(1,1);
+    view.setModel(&model);
+    const int size = view.header()->sectionSize(0);
+    view.setSortingEnabled(true);
+    model.setColumnCount(3);
+    //we test that changing the column count doesn't change the 1st column size
+    QCOMPARE(view.header()->sectionSize(0), size);
+}
+
+void tst_QTreeView::setSortingEnabledChild()
+{
+    QMainWindow win;
+    QTreeView view;
+    QStandardItemModel model(1,1);
+    view.setModel(&model);
+    win.setCentralWidget(&view);
+    const int size = view.header()->sectionSize(0);
+    view.setSortingEnabled(true);
+    model.setColumnCount(3);
+    //we test that changing the column count doesn't change the 1st column size
+    QCOMPARE(view.header()->sectionSize(0), size);
 }
 
 void tst_QTreeView::headerHidden()
