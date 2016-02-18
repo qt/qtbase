@@ -208,7 +208,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
         m_geometry = QRect(QPoint(), m_virtualSize);
 
     if (m_availableGeometry.isEmpty())
-        m_availableGeometry = m_geometry;
+        m_availableGeometry = m_geometry & m_virtualDesktop->workArea();
 
     readXResources();
 
