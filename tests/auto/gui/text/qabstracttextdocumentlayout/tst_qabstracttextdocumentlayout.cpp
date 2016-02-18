@@ -156,7 +156,7 @@ void tst_QAbstractTextDocumentLayout::anchorAt()
 
     // anchorAt on start returns link
     QRect linkBr = metrics.boundingRect("foo");
-    QPointF linkPoint(linkBr.width() + blockStart.x(), (linkBr.height() / 2) + blockStart.y());
+    QPointF linkPoint((linkBr.width() / 2) + blockStart.x(), (linkBr.height() / 2) + blockStart.y());
     QCOMPARE(documentLayout->anchorAt(linkPoint), QString("link"));
 
     // anchorAt() on top of preedit at end should not assert
