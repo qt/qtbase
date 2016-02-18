@@ -250,10 +250,11 @@ static inline void convert_to_wchar_t_elided(wchar_t *d, size_t space, const cha
     if (len + 1 > space) {
         const size_t skip = len - space + 4; // 4 for "..." + '\0'
         s += skip;
+        len -= skip;
         for (int i = 0; i < 3; ++i)
           *d++ = L'.';
     }
-    while (*s)
+    while (len--)
         *d++ = *s++;
     *d++ = 0;
 }
