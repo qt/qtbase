@@ -1,5 +1,10 @@
 TARGET = qios
 
+# QTBUG-42937: Work around linker errors caused by circular
+# dependencies between the iOS platform plugin and the user
+# application's main() when the plugin is a shared library.
+qtConfig(shared): CONFIG += static
+
 QT += core-private gui-private platformsupport-private
 LIBS += -framework Foundation -framework UIKit -framework QuartzCore -framework AudioToolbox
 
