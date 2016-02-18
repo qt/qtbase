@@ -43,7 +43,7 @@
 #include <QtCore/QtGlobal>
 #include <QtCore/QString>
 #include <QtCore/QMetaType>
-#if QT_DEPRECATED_SINCE(5, 5)
+#if QT_DEPRECATED_SINCE(5, 6)
 #include <QtCore/QHash>
 #endif
 #include <QtCore/qhashfunctions.h>

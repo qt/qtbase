@@ -65,11 +65,7 @@ QT_BEGIN_NAMESPACE
 #elif defined(Q_CC_GNU) && !defined(Q_OS_ANDROID)
 #  if defined(Q_PROCESSOR_X86) && (defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD_KERNEL))
 #    if defined(Q_PROCESSOR_X86_64)   // x86-64 or x32
-#      if defined(__code_model_large__)
-#        define QT_VERSION_TAG_RELOC(sym) ".quad " QT_STRINGIFY(QT_MANGLE_NAMESPACE(sym)) "@GOT\n"
-#      else
-#        define QT_VERSION_TAG_RELOC(sym) ".long " QT_STRINGIFY(QT_MANGLE_NAMESPACE(sym)) "@GOTPCREL\n"
-#      endif
+#      define QT_VERSION_TAG_RELOC(sym) ".quad " QT_STRINGIFY(QT_MANGLE_NAMESPACE(sym)) "@GOT\n"
 #    else                               // x86
 #      define QT_VERSION_TAG_RELOC(sym) ".long " QT_STRINGIFY(QT_MANGLE_NAMESPACE(sym)) "@GOT\n"
 #    endif

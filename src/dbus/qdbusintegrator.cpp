@@ -69,6 +69,9 @@
 #include "qdbusthreaddebug_p.h"
 
 #include <algorithm>
+#ifdef interface
+#undef interface
+#endif
 
 #ifndef QT_NO_DBUS
 

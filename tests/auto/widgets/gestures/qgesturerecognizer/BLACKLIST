@@ -1,2 +1,8 @@
 [panGesture:Two finger]
 xcb
+[swipeGesture:SmallDirectionChange]
+rhel-7.1
+[swipeGesture:Line]
+rhel-7.1
+[pinchGesture:Standard]
+rhel-7.1

@@ -38,11 +38,14 @@
 #define QWINRTFONTDATABASE_H
 
 #include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
+#include <QtCore/QLoggingCategory>
 
 struct IDWriteFontFile;
 struct IDWriteFontFamily;
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaFonts)
 
 struct FontDescription
 {

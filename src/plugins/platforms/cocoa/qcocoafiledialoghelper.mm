@@ -134,7 +134,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSOpenSavePanelDelegate);
 
     if ([mSavePanel respondsToSelector:@selector(setLevel:)])
         [mSavePanel setLevel:NSModalPanelWindowLevel];
-    [mSavePanel setDelegate:self];
+
     mReturnCode = -1;
     mHelper = helper;
     mNameFilterDropDownList = new QStringList(mOptions->nameFilters());
@@ -155,7 +155,10 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSOpenSavePanelDelegate);
     [self createTextField];
     [self createAccessory];
     [mSavePanel setAccessoryView:mNameFilterDropDownList->size() > 1 ? mAccessoryView : nil];
-
+    // -setAccessoryView: can result in -panel:directoryDidChange:
+    // resetting our mCurrentDir, set the delegate
+    // here to make sure it gets the correct value.
+    [mSavePanel setDelegate:self];
 
     if (mOptions->isLabelExplicitlySet(QFileDialogOptions::Accept))
         [mSavePanel setPrompt:[self strip:options->labelText(QFileDialogOptions::Accept)]];

@@ -194,7 +194,7 @@ equals(QT_ARCH, i386):contains(QT_CPU_FEATURES.$$QT_ARCH, sse2):compiler_support
 android: CONFIG += qt_android_deps no_linker_version_script
 
 !header_module:unix:!isEmpty(QMAKE_LFLAGS_VERSION_SCRIPT):!no_linker_version_script:!static {
-    verscript = $$OUT_PWD/$${TARGET}.version
+    verscript = $${TARGET}.version
     QMAKE_LFLAGS += $${QMAKE_LFLAGS_VERSION_SCRIPT}$$verscript
 
     internal_module {
@@ -219,16 +219,20 @@ android: CONFIG += qt_android_deps no_linker_version_script
         }
 
         # Add a post-processing step to replace the @FILE:filename@
-        verscriptprocess.commands = perl $${PWD}/data/unix/findclasslist.pl < $${verscript}.in > $@
-        verscriptprocess.target = $$verscript
+        verscript_in = $${verscript}.in
+        verscriptprocess.name = linker version script ${QMAKE_FILE_BASE}
+        verscriptprocess.input = verscript_in
+        verscriptprocess.CONFIG += no_link target_predeps
         for(header, SYNCQT.PRIVATE_HEADER_FILES): \
             verscriptprocess.depends += $${_PRO_FILE_PWD_}/$$header
-        verscriptprocess.depends += $${verscript}.in
-        QMAKE_EXTRA_TARGETS += verscriptprocess
-        PRE_TARGETDEPS += $$verscript
-        verscript = $${verscript}.in
+        verscriptprocess.output = $$verscript
+        verscriptprocess.commands = perl $${PWD}/data/unix/findclasslist.pl < ${QMAKE_FILE_IN} > $@
+        silent:verscriptprocess.commands = @echo creating linker version script ${QMAKE_FILE_BASE} && $$verscriptprocess.commands
+        QMAKE_EXTRA_COMPILERS += verscriptprocess
+
+        verscript = $$verscript_in
     }
-    write_file($$verscript, verscript_content)|error("Aborting.")
+    write_file($$OUT_PWD/$$verscript, verscript_content)|error("Aborting.")
     unset(current)
     unset(previous)
     unset(verscript)

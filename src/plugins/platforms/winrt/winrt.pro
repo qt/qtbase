@@ -16,6 +16,7 @@ INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty/freetype/include
 SOURCES = \
     main.cpp  \
     qwinrtbackingstore.cpp \
+    qwinrtclipboard.cpp \
     qwinrtcursor.cpp \
     qwinrteglcontext.cpp \
     qwinrteventdispatcher.cpp \
@@ -33,6 +34,7 @@ SOURCES = \
 
 HEADERS = \
     qwinrtbackingstore.h \
+    qwinrtclipboard.h \
     qwinrtcursor.h \
     qwinrteglcontext.h \
     qwinrteventdispatcher.h \

@@ -53,7 +53,7 @@
 
 #ifndef QT_NO_OPENGL
 
-#if QT_DEPRECATED_SINCE(5, 5)
+#if QT_DEPRECATED_SINCE(5, 6)
 #include <QtCore/qhash.h>
 #endif
 #include <QtCore/qhashfunctions.h>

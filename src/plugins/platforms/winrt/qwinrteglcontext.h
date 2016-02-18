@@ -38,6 +38,7 @@
 #define QWINDOWSEGLCONTEXT_H
 
 #include <qpa/qplatformopenglcontext.h>
+#include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -57,6 +58,7 @@ public:
     QSurfaceFormat format() const Q_DECL_OVERRIDE;
     QFunctionPointer getProcAddress(const QByteArray &procName) Q_DECL_OVERRIDE;
 
+    static EGLDisplay display();
 private:
     QScopedPointer<QWinRTEGLContextPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QWinRTEGLContext)

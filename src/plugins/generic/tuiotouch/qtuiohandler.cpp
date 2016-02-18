@@ -136,10 +136,6 @@ void QTuioHandler::processPackets()
         if (size != datagram.size())
             datagram.resize(size);
 
-        QOscBundle bundle(datagram);
-        if (!bundle.isValid())
-            continue;
-
         // "A typical TUIO bundle will contain an initial ALIVE message,
         // followed by an arbitrary number of SET messages that can fit into the
         // actual bundle capacity and a concluding FSEQ message. A minimal TUIO
@@ -147,7 +143,19 @@ void QTuioHandler::processPackets()
         // messages. The FSEQ frame ID is incremented for each delivered bundle,
         // while redundant bundles can be marked using the frame sequence ID
         // -1."
-        QList<QOscMessage> messages = bundle.messages();
+        QList<QOscMessage> messages;
+
+        QOscBundle bundle(datagram);
+        if (bundle.isValid()) {
+            messages = bundle.messages();
+        } else {
+            QOscMessage msg(datagram);
+            if (!msg.isValid()) {
+                qCWarning(lcTuioSet) << "Got invalid datagram.";
+                continue;
+            }
+            messages.push_back(msg);
+        }
 
         foreach (const QOscMessage &message, messages) {
             if (message.addressPattern() != "/tuio/2Dcur") {
@@ -320,6 +328,14 @@ void QTuioHandler::process2DCurFseq(const QOscMessage &message)
     Q_UNUSED(message); // TODO: do we need to do anything with the frame id?
 
     QWindow *win = QGuiApplication::focusWindow();
+    // With TUIO the first application takes exclusive ownership of the "device"
+    // we cannot attach more than one application to the same port anyway.
+    // Forcing delivery makes it easy to use simulators in the same machine
+    // and forget about headaches about unfocused TUIO windows.
+    static bool forceDelivery = qEnvironmentVariableIsSet("QT_TUIOTOUCH_DELIVER_WITHOUT_FOCUS");
+    if (!win && QGuiApplication::topLevelWindows().length() > 0 && forceDelivery)
+          win = QGuiApplication::topLevelWindows().at(0);
+
     if (!win)
         return;
 

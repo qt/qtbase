@@ -162,7 +162,7 @@ void QWindowsBackingStore::resize(const QSize &size, const QRegion &region)
         if (QImage::toPixelFormat(format).alphaUsage() == QPixelFormat::UsesAlpha)
             m_alphaNeedsFill = true;
         else // upgrade but here we know app painting does not rely on alpha hence no need to fill
-            format = qt_alphaVersionForPainting(format);
+            format = qt_maybeAlphaVersionWithSameDepth(format);
 
         QWindowsNativeImage *oldwni = m_image.data();
         QWindowsNativeImage *newwni = new QWindowsNativeImage(size.width(), size.height(), format);

@@ -3576,6 +3576,7 @@ static inline void formatTouchEvent(QDebug d, const QTouchEvent &t)
 {
     d << "QTouchEvent(";
     QtDebugUtils::formatQEnum(d, t.type());
+    d << " device: " << t.device()->name();
     d << " states: ";
     QtDebugUtils::formatQFlags(d, t.touchPointStates());
     d << ", " << t.touchPoints().size() << " points: " << t.touchPoints() << ')';

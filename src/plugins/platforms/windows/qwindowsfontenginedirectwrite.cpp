@@ -499,7 +499,7 @@ QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed sub
     QImage alphaMap(im.width(), im.height(), QImage::Format_Alpha8);
 
     for (int y=0; y<im.height(); ++y) {
-        uint *src = (uint*) im.scanLine(y);
+        const uint *src = reinterpret_cast<const uint *>(im.constScanLine(y));
         uchar *dst = alphaMap.scanLine(y);
         for (int x=0; x<im.width(); ++x) {
             *dst = 255 - (m_fontEngineData->pow_gamma[qGray(0xffffffff - *src)] * 255. / 2047.);
@@ -765,12 +765,17 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph
     transform.m21 = matrix.m21();
     transform.m22 = matrix.m22();
 
+    DWRITE_RENDERING_MODE renderMode =
+             fontDef.hintingPreference == QFont::PreferNoHinting
+                ? DWRITE_RENDERING_MODE_CLEARTYPE_NATURAL_SYMMETRIC
+                : DWRITE_RENDERING_MODE_CLEARTYPE_NATURAL;
+
     IDWriteGlyphRunAnalysis *glyphAnalysis = NULL;
     HRESULT hr = m_fontEngineData->directWriteFactory->CreateGlyphRunAnalysis(
                 &glyphRun,
                 1.0f,
                 &transform,
-                DWRITE_RENDERING_MODE_CLEARTYPE_NATURAL_SYMMETRIC,
+                renderMode,
                 DWRITE_MEASURING_MODE_NATURAL,
                 0.0, 0.0,
                 &glyphAnalysis

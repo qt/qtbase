@@ -718,7 +718,6 @@ void QWidgetWindow::handleCloseEvent(QCloseEvent *event)
 {
     bool is_closing = m_widget->d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
     event->setAccepted(is_closing);
-    QWindow::event(event); // Call QWindow QCloseEvent handler.
 }
 
 #ifndef QT_NO_WHEELEVENT

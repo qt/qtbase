@@ -126,7 +126,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     if (!element) {
         QAccessibleInterface *iface = QAccessible::accessibleInterface(anId);
         Q_ASSERT(iface);
-        if (!iface)
+        if (!iface || !iface->isValid())
             return nil;
         element = [[self alloc] initWithId:anId];
         cache->insertElement(anId, element);
@@ -178,7 +178,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     static NSArray *defaultAttributes = nil;
 
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
-    if (!iface)
+    if (!iface || !iface->isValid())
         return defaultAttributes;
 
     if (defaultAttributes == nil) {
@@ -232,7 +232,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
 - (id)parentElement {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
-    if (!iface)
+    if (!iface || !iface->isValid())
         return nil;
 
     if (QWindow *window = iface->window()) {
@@ -265,7 +265,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
 - (id)accessibilityAttributeValue:(NSString *)attribute {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
-    if (!iface) {
+    if (!iface || !iface->isValid()) {
         qWarning() << "Called attribute on invalid object: " << axid;
         return nil;
     }
@@ -344,9 +344,11 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
     } else if ([attribute isEqualToString:NSAccessibilityInsertionPointLineNumberAttribute]) {
         if (QAccessibleTextInterface *text = iface->textInterface()) {
-            int line = -1;
-            int position = text->cursorPosition();
-            convertLineOffset(text, &line, &position);
+            int line = 0; // true for all single line edits
+            if (iface->state().multiLine) {
+                int position = text->cursorPosition();
+                convertLineOffset(text, &line, &position);
+            }
             return [NSNumber numberWithInt: line];
         }
         return nil;
@@ -362,7 +364,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 - (NSArray *)accessibilityParameterizedAttributeNames {
 
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
-    if (!iface) {
+    if (!iface || !iface->isValid()) {
         qWarning() << "Called attribute on invalid object: " << axid;
         return nil;
     }
@@ -387,7 +389,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
 - (id)accessibilityAttributeValue:(NSString *)attribute forParameter:(id)parameter {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
-    if (!iface) {
+    if (!iface || !iface->isValid()) {
         qWarning() << "Called attribute on invalid object: " << axid;
         return nil;
     }
@@ -454,7 +456,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
 - (BOOL)accessibilityIsAttributeSettable:(NSString *)attribute {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
-    if (!iface)
+    if (!iface || !iface->isValid())
         return NO;
 
     if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
@@ -473,7 +475,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
 - (void)accessibilitySetValue:(id)value forAttribute:(NSString *)attribute {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
-    if (!iface)
+    if (!iface || !iface->isValid())
         return;
     if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
         if (QAccessibleActionInterface *action = iface->actionInterface())
@@ -502,7 +504,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 - (NSArray *)accessibilityActionNames {
     NSMutableArray * nsActions = [NSMutableArray new];
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
-    if (!iface)
+    if (!iface || !iface->isValid())
         return nsActions;
 
     const QStringList &supportedActionNames = QAccessibleBridgeUtils::effectiveActionNames(iface);
@@ -517,7 +519,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
 - (NSString *)accessibilityActionDescription:(NSString *)action {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
-    if (!iface)
+    if (!iface || !iface->isValid())
         return nil; // FIXME is that the right return type??
     QString qtAction = QCocoaAccessible::translateAction(action, iface);
     QString description;

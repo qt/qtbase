@@ -269,12 +269,14 @@ static inline QRect toBottomLeftRect(const QRect &topLeftRect, int windowHeight)
 static void blitTextureForWidget(const QPlatformTextureList *textures, int idx, QWindow *window, const QRect &deviceWindowRect,
                                  QOpenGLTextureBlitter *blitter, const QPoint &offset)
 {
+    const QRect clipRect = textures->clipRect(idx);
+    if (clipRect.isEmpty())
+        return;
+
     QRect rectInWindow = textures->geometry(idx);
     // relative to the TLW, not necessarily our window (if the flush is for a native child widget), have to adjust
     rectInWindow.translate(-offset);
-    QRect clipRect = textures->clipRect(idx);
-    if (clipRect.isEmpty())
-        clipRect = QRect(QPoint(0, 0), rectInWindow.size());
+
     const QRect clippedRectInWindow = rectInWindow & clipRect.translated(rectInWindow.topLeft());
     const QRect srcRect = toBottomLeftRect(clipRect, rectInWindow.height());
 
@@ -520,7 +522,23 @@ GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textu
     if (needsConversion)
         image = image.convertToFormat(QImage::Format_RGBA8888);
 
+    // The image provided by the backingstore may have a stride larger than width * 4, for
+    // instance on platforms that manually implement client-side decorations.
+    static const int bytesPerPixel = 4;
+    const int strideInPixels = image.bytesPerLine() / bytesPerPixel;
+    const bool hasUnpackRowLength = !ctx->isOpenGLES() || ctx->format().majorVersion() >= 3;
+
     QOpenGLFunctions *funcs = ctx->functions();
+
+    if (hasUnpackRowLength) {
+        funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, strideInPixels);
+    } else if (strideInPixels != image.width()) {
+        // No UNPACK_ROW_LENGTH on ES 2.0 and yet we would need it. This case is typically
+        // hit with QtWayland which is rarely used in combination with a ES2.0-only GL
+        // implementation.  Therefore, accept the performance hit and do a copy.
+        image = image.copy();
+    }
+
     if (resized) {
         if (d_ptr->textureId)
             funcs->glDeleteTextures(1, &d_ptr->textureId);
@@ -542,11 +560,9 @@ GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textu
         QRect imageRect = image.rect();
         QRect rect = dirtyRegion.boundingRect() & imageRect;
 
-        if (!ctx->isOpenGLES() || ctx->format().majorVersion() >= 3) {
-            funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, image.width());
+        if (hasUnpackRowLength) {
             funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, rect.x(), rect.y(), rect.width(), rect.height(), GL_RGBA, pixelType,
-                                   image.constScanLine(rect.y()) + rect.x() * 4);
-            funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+                                   image.constScanLine(rect.y()) + rect.x() * bytesPerPixel);
         } else {
             // if the rect is wide enough it's cheaper to just
             // extend it instead of doing an image copy
@@ -567,6 +583,9 @@ GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textu
             }
         }
     }
+
+    if (hasUnpackRowLength)
+        funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
     return d_ptr->textureId;
 }
