@@ -210,6 +210,9 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
     if (m_availableGeometry.isEmpty())
         m_availableGeometry = m_geometry & m_virtualDesktop->workArea();
 
+    if (m_sizeMillimeters.isEmpty())
+        m_sizeMillimeters = m_virtualSizeMillimeters;
+
     readXResources();
 
     QScopedPointer<xcb_get_window_attributes_reply_t, QScopedPointerPodDeleter> rootAttribs(
