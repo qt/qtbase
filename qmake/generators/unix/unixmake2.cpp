@@ -822,14 +822,22 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             commonSedArgs << "-e \"s,@BUNDLEIDENTIFIER@," << bundleIdentifier << ",g\" ";
 
             if (!isFramework) {
+                ProString app_bundle_name = var("QMAKE_APPLICATION_BUNDLE_NAME");
+                if (app_bundle_name.isEmpty())
+                    app_bundle_name = var("QMAKE_ORIG_TARGET");
+
+                ProString plugin_bundle_name = var("QMAKE_PLUGIN_BUNDLE_NAME");
+                if (plugin_bundle_name.isEmpty())
+                    plugin_bundle_name = var("QMAKE_ORIG_TARGET");
+
                 QString icon = fileFixify(var("ICON"));
                 t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
                   << "@sed ";
                 for (const ProString &arg : qAsConst(commonSedArgs))
                     t << arg;
                 t << "-e \"s,@ICON@," << icon.section(Option::dir_sep, -1) << ",g\" "
-                  << "-e \"s,@EXECUTABLE@," << var("QMAKE_ORIG_TARGET") << ",g\" "
-                  << "-e \"s,@LIBRARY@," << var("QMAKE_ORIG_TARGET") << ",g\" "
+                  << "-e \"s,@EXECUTABLE@," << app_bundle_name << ",g\" "
+                  << "-e \"s,@LIBRARY@," << plugin_bundle_name << ",g\" "
                   << "-e \"s,@TYPEINFO@,"<< (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
                              QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" "
                   << "" << info_plist << " >" << info_plist_out << endl;
@@ -846,13 +854,17 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                       << "@$(COPY_FILE) " << escapeFilePath(icon) << ' ' << icon_path_f << endl;
                 }
             } else {
+                ProString lib_bundle_name = var("QMAKE_FRAMEWORK_BUNDLE_NAME");
+                if (lib_bundle_name.isEmpty())
+                    lib_bundle_name = var("QMAKE_ORIG_TARGET");
+
                 if (!isShallowBundle)
                     symlinks[bundle_dir + "Resources"] = "Versions/Current/Resources";
                 t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
                   << "@sed ";
                 for (const ProString &arg : qAsConst(commonSedArgs))
                     t << arg;
-                t << "-e \"s,@LIBRARY@," << var("QMAKE_ORIG_TARGET") << ",g\" "
+                t << "-e \"s,@LIBRARY@," << lib_bundle_name << ",g\" "
                   << "-e \"s,@TYPEINFO@,"
                   << (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
                       QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" "

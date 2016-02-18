@@ -1480,9 +1480,15 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                             plist_in_text.replace(QLatin1String("@ICON@"),
                               (project->isEmpty("ICON") ? QString("") : project->first("ICON").toQString().section(Option::dir_sep, -1)));
                             if (project->first("TEMPLATE") == "app") {
-                                plist_in_text.replace(QLatin1String("@EXECUTABLE@"), project->first("QMAKE_ORIG_TARGET").toQString());
+                                ProString app_bundle_name = project->first("QMAKE_APPLICATION_BUNDLE_NAME");
+                                if (app_bundle_name.isEmpty())
+                                    app_bundle_name = project->first("QMAKE_ORIG_TARGET");
+                                plist_in_text.replace(QLatin1String("@EXECUTABLE@"), app_bundle_name.toQString());
                             } else {
-                                plist_in_text.replace(QLatin1String("@LIBRARY@"), project->first("QMAKE_ORIG_TARGET").toQString());
+                                ProString lib_bundle_name = project->first("QMAKE_FRAMEWORK_BUNDLE_NAME");
+                                if (lib_bundle_name.isEmpty())
+                                    lib_bundle_name = project->first("QMAKE_ORIG_TARGET");
+                                plist_in_text.replace(QLatin1String("@LIBRARY@"), lib_bundle_name.toQString());
                             }
                             QString bundlePrefix = project->first("QMAKE_TARGET_BUNDLE_PREFIX").toQString();
                             if (bundlePrefix.isEmpty())
