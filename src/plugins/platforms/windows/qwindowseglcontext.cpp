@@ -538,7 +538,23 @@ void QWindowsEGLContext::swapBuffers(QPlatformSurface *surface)
 QFunctionPointer QWindowsEGLContext::getProcAddress(const char *procName)
 {
     QWindowsEGLStaticContext::libEGL.eglBindAPI(m_api);
-    QFunctionPointer procAddress = reinterpret_cast<QFunctionPointer>(QWindowsEGLStaticContext::libEGL.eglGetProcAddress(procName));
+
+    QFunctionPointer procAddress = nullptr;
+
+    // Special logic for ANGLE extensions for blitFramebuffer and
+    // renderbufferStorageMultisample. In version 2 contexts the extensions
+    // must be used instead of the suffixless, version 3.0 functions.
+    if (m_format.majorVersion() < 3) {
+        if (!strcmp(procName, "glBlitFramebuffer") || !strcmp(procName, "glRenderbufferStorageMultisample")) {
+            char extName[32 + 5 + 1];
+            strcpy(extName, procName);
+            strcat(extName, "ANGLE");
+            procAddress = reinterpret_cast<QFunctionPointer>(QWindowsEGLStaticContext::libEGL.eglGetProcAddress(extName));
+        }
+    }
+
+    if (!procAddress)
+        procAddress = reinterpret_cast<QFunctionPointer>(QWindowsEGLStaticContext::libEGL.eglGetProcAddress(procName));
 
     // We support AllGLFunctionsQueryable, which means this function must be able to
     // return a function pointer for standard GLES2 functions too. These are not
