@@ -497,9 +497,10 @@ void tst_QMdiArea::subWindowActivated2()
     spy.clear();
 
     mdiArea.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
+    QVERIFY(QTest::qWaitForWindowActive(&mdiArea));
     QTRY_COMPARE(spy.count(), 1);
-    QCOMPARE(mdiArea.activeSubWindow(), activeSubWindow);
+    QVERIFY(mdiArea.currentSubWindow());
+    QTRY_COMPARE(mdiArea.activeSubWindow(), activeSubWindow);
     spy.clear();
 
     if (qGuiApp->styleHints()->showIsFullScreen())
