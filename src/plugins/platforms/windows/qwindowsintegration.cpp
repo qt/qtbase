@@ -514,8 +514,8 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
     case QPlatformIntegration::FontSmoothingGamma:
         return QVariant(QWindowsFontDatabase::fontSmoothingGamma());
     case QPlatformIntegration::MouseDoubleClickInterval:
-        if (const int ms = GetDoubleClickTime())
-            return QVariant(ms);
+        if (const UINT ms = GetDoubleClickTime())
+            return QVariant(int(ms));
         break;
     case QPlatformIntegration::UseRtlExtensions:
         return QVariant(d->m_context.useRTLExtensions());

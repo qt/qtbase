@@ -215,7 +215,7 @@ QWindowsOleDataObject::EnumFormatEtc(DWORD dwDirection, LPENUMFORMATETC FAR* ppe
         fmtetcs = mc.allFormatsForMime(data);
     } else {
         FORMATETC formatetc;
-        formatetc.cfFormat = CF_PERFORMEDDROPEFFECT;
+        formatetc.cfFormat = CLIPFORMAT(CF_PERFORMEDDROPEFFECT);
         formatetc.dwAspect = DVASPECT_CONTENT;
         formatetc.lindex = -1;
         formatetc.ptd = NULL;
@@ -269,7 +269,7 @@ QWindowsOleEnumFmtEtc::QWindowsOleEnumFmtEtc(const QVector<FORMATETC> &fmtetcs) 
     m_lpfmtetcs.reserve(fmtetcs.count());
     for (int idx = 0; idx < fmtetcs.count(); ++idx) {
         LPFORMATETC destetc = new FORMATETC();
-        if (copyFormatEtc(destetc, (LPFORMATETC)&(fmtetcs.at(idx)))) {
+        if (copyFormatEtc(destetc, &(fmtetcs.at(idx)))) {
             m_lpfmtetcs.append(destetc);
         } else {
             m_isNull = true;
@@ -363,14 +363,14 @@ QWindowsOleEnumFmtEtc::Next(ULONG celt, LPFORMATETC rgelt, ULONG FAR* pceltFetch
         nOffset = m_nIndex + i;
 
         if (nOffset < ULONG(m_lpfmtetcs.count())) {
-            copyFormatEtc((LPFORMATETC)&(rgelt[i]), m_lpfmtetcs.at(nOffset));
+            copyFormatEtc(rgelt + i, m_lpfmtetcs.at(int(nOffset)));
             i++;
         } else {
             break;
         }
     }
 
-    m_nIndex += (WORD)i;
+    m_nIndex += i;
 
     if (pceltFetched != NULL)
         *pceltFetched = i;
@@ -397,7 +397,7 @@ QWindowsOleEnumFmtEtc::Skip(ULONG celt)
         }
     }
 
-    m_nIndex += (WORD)i;
+    m_nIndex += i;
 
     if (i != celt)
         return ResultFromScode(S_FALSE);
@@ -431,7 +431,7 @@ QWindowsOleEnumFmtEtc::Clone(LPENUMFORMATETC FAR* newEnum)
     return NOERROR;
 }
 
-bool QWindowsOleEnumFmtEtc::copyFormatEtc(LPFORMATETC dest, LPFORMATETC src) const
+bool QWindowsOleEnumFmtEtc::copyFormatEtc(LPFORMATETC dest, const FORMATETC *src) const
 {
     if (dest == NULL || src == NULL)
         return false;

@@ -123,7 +123,7 @@ public:
 
 private:
     unsigned options() const;
-    QWindowsTabletDeviceData tabletInit(const quint64 uniqueId, const UINT cursorType) const;
+    QWindowsTabletDeviceData tabletInit(qint64 uniqueId, UINT cursorType) const;
 
     static QWindowsWinTab32DLL m_winTab32DLL;
     const HWND m_window;

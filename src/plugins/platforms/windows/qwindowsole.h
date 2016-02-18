@@ -103,7 +103,7 @@ public:
     STDMETHOD(Clone)(LPENUMFORMATETC FAR* newEnum);
 
 private:
-    bool copyFormatEtc(LPFORMATETC dest, LPFORMATETC src) const;
+    bool copyFormatEtc(LPFORMATETC dest, const FORMATETC *src) const;
 
     ULONG m_dwRefs;
     ULONG m_nIndex;

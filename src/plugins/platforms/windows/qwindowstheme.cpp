@@ -456,7 +456,9 @@ static QPixmap loadIconFromShell32(int resourceId, QSizeF size)
     HMODULE hmod = QSystemLibrary::load(L"shell32");
 #endif
     if (hmod) {
-        HICON iconHandle = (HICON)LoadImage(hmod, MAKEINTRESOURCE(resourceId), IMAGE_ICON, size.width(), size.height(), 0);
+        HICON iconHandle =
+            static_cast<HICON>(LoadImage(hmod, MAKEINTRESOURCE(resourceId),
+                                         IMAGE_ICON, int(size.width()), int(size.height()), 0));
         if (iconHandle) {
             QPixmap iconpixmap = qt_pixmapFromWinHICON(iconHandle);
             DestroyIcon(iconHandle);
@@ -557,7 +559,7 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) con
             if (sp == FileLinkIcon || sp == DirLinkIcon || sp == DirLinkOpenIcon) {
                 QPainter painter(&pixmap);
                 QPixmap link = loadIconFromShell32(30, pixmapSize);
-                painter.drawPixmap(0, 0, pixmapSize.width(), pixmapSize.height(), link);
+                painter.drawPixmap(0, 0, int(pixmapSize.width()), int(pixmapSize.height()), link);
             }
             pixmap.setDevicePixelRatio(scaleFactor);
             return pixmap;
@@ -632,7 +634,8 @@ static QPixmap pixmapFromShellImageList(int iImageList, const SHFILEINFO &info)
         return result;
 
     IImageList *imageList = 0;
-    HRESULT hr = QWindowsContext::shell32dll.sHGetImageList(iImageList, iID_IImageList, (void **)&imageList);
+    HRESULT hr = QWindowsContext::shell32dll.sHGetImageList(iImageList, iID_IImageList,
+                                                            reinterpret_cast<void **>(&imageList));
     if (hr != S_OK)
         return result;
     HICON hIcon;
@@ -664,7 +667,7 @@ QPixmap QWindowsTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &s
 
     QPixmap pixmap;
     const QString filePath = QDir::toNativeSeparators(fileInfo.filePath());
-    const int width = size.width();
+    const int width = int(size.width());
     const int iconSize = width > 16 ? SHGFI_LARGEICON : SHGFI_SMALLICON;
     const int requestedImageListSize =
 #ifdef USE_IIMAGELIST

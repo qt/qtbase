@@ -51,10 +51,10 @@ struct GpuDescription
     QString toString() const;
     QVariant toVariant() const;
 
-    int vendorId;
-    int deviceId;
-    int revision;
-    int subSysId;
+    uint vendorId;
+    uint deviceId;
+    uint revision;
+    uint subSysId;
     QVersionNumber driverVersion;
     QByteArray driverName;
     QByteArray description;

@@ -1011,7 +1011,7 @@ QOpenGLStaticContext::QOpenGLStaticContext() :
 QByteArray QOpenGLStaticContext::getGlString(unsigned int which)
 {
     if (const GLubyte *s = opengl32.glGetString(which))
-        return QByteArray((const char*)s);
+        return QByteArray(reinterpret_cast<const char*>(s));
     return QByteArray();
 }
 
@@ -1238,7 +1238,7 @@ bool QWindowsGLContext::updateObtainedParams(HDC hdc, int *obtainedSwapInterval)
 
     bool hasRobustness = false;
     if (m_obtainedFormat.majorVersion() < 3) {
-        const char *exts = (const char *) QOpenGLStaticContext::opengl32.glGetString(GL_EXTENSIONS);
+        const char *exts = reinterpret_cast<const char *>(QOpenGLStaticContext::opengl32.glGetString(GL_EXTENSIONS));
         hasRobustness = exts && strstr(exts, "GL_ARB_robustness");
     } else {
         typedef const GLubyte * (APIENTRY *glGetStringi_t)(GLenum, GLuint);
@@ -1247,7 +1247,7 @@ bool QWindowsGLContext::updateObtainedParams(HDC hdc, int *obtainedSwapInterval)
             GLint n = 0;
             QOpenGLStaticContext::opengl32.glGetIntegerv(GL_NUM_EXTENSIONS, &n);
             for (GLint i = 0; i < n; ++i) {
-                const char *p = (const char *) glGetStringi(GL_EXTENSIONS, i);
+                const char *p = reinterpret_cast<const char *>(glGetStringi(GL_EXTENSIONS, i));
                 if (p && !strcmp(p, "GL_ARB_robustness")) {
                     hasRobustness = true;
                     break;

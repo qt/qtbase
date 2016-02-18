@@ -187,9 +187,9 @@ bool QWindowsLibGLESv2::init()
 
     qCDebug(lcQpaGl) << "Qt: Using OpenGL ES 2.0 from" << dllName;
 #if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
-    m_lib = ::LoadLibraryW((const wchar_t *) QString::fromLatin1(dllName).utf16());
+    m_lib = ::LoadLibraryW(reinterpret_cast<LPCWSTR>(QString::fromLatin1(dllName).utf16()));
     if (!m_lib) {
-        qErrnoWarning(::GetLastError(), "Failed to load %s", dllName);
+        qErrnoWarning(int(GetLastError()), "Failed to load %s", dllName);
         return false;
     }
 #endif // !QT_STATIC
@@ -395,7 +395,7 @@ QWindowsEGLStaticContext *QWindowsEGLStaticContext::create(QWindowsOpenGLTester:
     Q_UNUSED(preferredType)
 #endif
     if (display == EGL_NO_DISPLAY)
-        display = libEGL.eglGetDisplay((EGLNativeDisplayType)dc);
+        display = libEGL.eglGetDisplay(dc);
     if (!display) {
         qWarning("%s: Could not obtain EGL display", __FUNCTION__);
         return 0;
@@ -427,8 +427,8 @@ QWindowsOpenGLContext *QWindowsEGLStaticContext::createContext(QOpenGLContext *c
 void *QWindowsEGLStaticContext::createWindowSurface(void *nativeWindow, void *nativeConfig, int *err)
 {
     *err = 0;
-    EGLSurface surface = libEGL.eglCreateWindowSurface(m_display, (EGLConfig) nativeConfig,
-                                                       (EGLNativeWindowType) nativeWindow, 0);
+    EGLSurface surface = libEGL.eglCreateWindowSurface(m_display, nativeConfig,
+                                                       static_cast<EGLNativeWindowType>(nativeWindow), 0);
     if (surface == EGL_NO_SURFACE) {
         *err = libEGL.eglGetError();
         qWarning("%s: Could not create the EGL window surface: 0x%x", __FUNCTION__, *err);
@@ -439,7 +439,7 @@ void *QWindowsEGLStaticContext::createWindowSurface(void *nativeWindow, void *na
 
 void QWindowsEGLStaticContext::destroyWindowSurface(void *nativeSurface)
 {
-    libEGL.eglDestroySurface(m_display, (EGLSurface) nativeSurface);
+    libEGL.eglDestroySurface(m_display, nativeSurface);
 }
 
 QSurfaceFormat QWindowsEGLStaticContext::formatFromConfig(EGLDisplay display, EGLConfig config,

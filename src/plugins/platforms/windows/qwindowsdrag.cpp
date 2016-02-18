@@ -641,7 +641,7 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT pDataObj, DWORD grfKeyState,
                 m_chosenEffect = DROPEFFECT_COPY;
             HGLOBAL hData = GlobalAlloc(0, sizeof(DWORD));
             if (hData) {
-                DWORD *moveEffect = (DWORD *)GlobalLock(hData);;
+                DWORD *moveEffect = reinterpret_cast<DWORD *>(GlobalLock(hData));
                 *moveEffect = DROPEFFECT_MOVE;
                 GlobalUnlock(hData);
                 STGMEDIUM medium;
@@ -649,7 +649,7 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT pDataObj, DWORD grfKeyState,
                 medium.tymed = TYMED_HGLOBAL;
                 medium.hGlobal = hData;
                 FORMATETC format;
-                format.cfFormat = RegisterClipboardFormat(CFSTR_PERFORMEDDROPEFFECT);
+                format.cfFormat = CLIPFORMAT(RegisterClipboardFormat(CFSTR_PERFORMEDDROPEFFECT));
                 format.tymed = TYMED_HGLOBAL;
                 format.ptd = 0;
                 format.dwAspect = 1;

@@ -93,13 +93,13 @@ static inline HBITMAP createDIB(HDC hdc, int width, int height,
         bmi.blueMask = 0;
     }
 
-    void *bits = 0;
+    uchar *bits = Q_NULLPTR;
     HBITMAP bitmap = CreateDIBSection(hdc, reinterpret_cast<BITMAPINFO *>(&bmi),
-                                      DIB_RGB_COLORS, &bits, 0, 0);
+                                      DIB_RGB_COLORS, reinterpret_cast<void **>(&bits), 0, 0);
     if (!bitmap || !bits)
         qFatal("%s: CreateDIBSection failed.", __FUNCTION__);
 
-    *bitsIn = (uchar*)bits;
+    *bitsIn = bits;
     return bitmap;
 }
 
@@ -112,7 +112,7 @@ QWindowsNativeImage::QWindowsNativeImage(int width, int height,
     if (width != 0 && height != 0) {
         uchar *bits;
         m_bitmap = createDIB(m_hdc, width, height, format, &bits);
-        m_null_bitmap = (HBITMAP)SelectObject(m_hdc, m_bitmap);
+        m_null_bitmap = static_cast<HBITMAP>(SelectObject(m_hdc, m_bitmap));
         m_image = QImage(bits, width, height, format);
         Q_ASSERT(m_image.paintEngine()->type() == QPaintEngine::Raster);
         static_cast<QRasterPaintEngine *>(m_image.paintEngine())->setDC(m_hdc);

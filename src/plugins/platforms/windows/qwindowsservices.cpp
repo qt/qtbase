@@ -53,7 +53,10 @@ static inline bool shellExecute(const QUrl &url)
 #ifndef Q_OS_WINCE
     const QString nativeFilePath =
             url.isLocalFile() ? QDir::toNativeSeparators(url.toLocalFile()) : url.toString(QUrl::FullyEncoded);
-    const quintptr result = (quintptr)ShellExecute(0, 0, (wchar_t*)nativeFilePath.utf16(), 0, 0, SW_SHOWNORMAL);
+    const quintptr result =
+        reinterpret_cast<quintptr>(ShellExecute(0, 0,
+                                                reinterpret_cast<const wchar_t *>(nativeFilePath.utf16()),
+                                                0, 0, SW_SHOWNORMAL));
     // ShellExecute returns a value greater than 32 if successful
     if (result <= 32) {
         qWarning("ShellExecute '%s' failed (error %s).", qPrintable(url.toString()), qPrintable(QString::number(result)));
@@ -91,7 +94,7 @@ static inline QString mailCommand()
     if (debug)
         qDebug() << __FUNCTION__ << "keyName=" << keyName;
     command[0] = 0;
-    if (!RegOpenKeyExW(HKEY_CLASSES_ROOT, (const wchar_t*)keyName.utf16(), 0, KEY_READ, &handle)) {
+    if (!RegOpenKeyExW(HKEY_CLASSES_ROOT, reinterpret_cast<const wchar_t*>(keyName.utf16()), 0, KEY_READ, &handle)) {
         DWORD bufferSize = BufferSize;
         RegQueryValueEx(handle, L"", 0, 0, reinterpret_cast<unsigned char*>(command), &bufferSize);
         RegCloseKey(handle);
@@ -134,7 +137,8 @@ static inline bool launchMail(const QUrl &url)
     STARTUPINFO si;
     ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
-    if (!CreateProcess(NULL, (wchar_t*)command.utf16(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+    if (!CreateProcess(NULL, reinterpret_cast<wchar_t *>(const_cast<ushort *>(command.utf16())),
+                       NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
         qErrnoWarning("Unable to launch '%s'", qPrintable(command));
         return false;
     }

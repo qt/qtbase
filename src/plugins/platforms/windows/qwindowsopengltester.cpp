@@ -75,10 +75,10 @@ GpuDescription GpuDescription::detect()
     const HRESULT hr = direct3D9->GetAdapterIdentifier(0, 0, &adapterIdentifier);
     direct3D9->Release();
     if (SUCCEEDED(hr)) {
-        result.vendorId = int(adapterIdentifier.VendorId);
-        result.deviceId = int(adapterIdentifier.DeviceId);
-        result.revision = int(adapterIdentifier.Revision);
-        result.subSysId = int(adapterIdentifier.SubSysId);
+        result.vendorId = adapterIdentifier.VendorId;
+        result.deviceId = adapterIdentifier.DeviceId;
+        result.revision = adapterIdentifier.Revision;
+        result.subSysId = adapterIdentifier.SubSysId;
         QVector<int> version(4, 0);
         version[0] = HIWORD(adapterIdentifier.DriverVersion.HighPart); // Product
         version[1] = LOWORD(adapterIdentifier.DriverVersion.HighPart); // Version
@@ -329,10 +329,10 @@ bool QWindowsOpenGLTester::testDesktopGL()
         WNDCLASS wclass;
         wclass.cbClsExtra = 0;
         wclass.cbWndExtra = 0;
-        wclass.hInstance = (HINSTANCE) GetModuleHandle(0);
+        wclass.hInstance = static_cast<HINSTANCE>(GetModuleHandle(0));
         wclass.hIcon = 0;
         wclass.hCursor = 0;
-        wclass.hbrBackground = (HBRUSH) (COLOR_BACKGROUND);
+        wclass.hbrBackground = HBRUSH(COLOR_BACKGROUND);
         wclass.lpszMenuName = 0;
         wclass.lpfnWndProc = DefWindowProc;
         wclass.lpszClassName = className;
@@ -371,8 +371,7 @@ bool QWindowsOpenGLTester::testDesktopGL()
         typedef const GLubyte * (APIENTRY * GetString_t)(GLenum name);
         GetString_t GetString = reinterpret_cast<GetString_t>(::GetProcAddress(lib, "glGetString"));
         if (GetString) {
-            const char *versionStr = (const char *) GetString(GL_VERSION);
-            if (versionStr) {
+            if (const char *versionStr = reinterpret_cast<const char *>(GetString(GL_VERSION))) {
                 const QByteArray version(versionStr);
                 const int majorDot = version.indexOf('.');
                 if (majorDot != -1) {

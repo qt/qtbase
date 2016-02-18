@@ -316,7 +316,7 @@ QDebug operator<<(QDebug d, const QWindowsTabletDeviceData &t)
 }
 #endif // !QT_NO_DEBUG_STREAM
 
-QWindowsTabletDeviceData QWindowsTabletSupport::tabletInit(const quint64 uniqueId, const UINT cursorType) const
+QWindowsTabletDeviceData QWindowsTabletSupport::tabletInit(qint64 uniqueId, UINT cursorType) const
 {
     QWindowsTabletDeviceData result;
     result.uniqueId = uniqueId;
