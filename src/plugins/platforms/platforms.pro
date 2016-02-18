@@ -2,7 +2,7 @@ TEMPLATE = subdirs
 
 android: SUBDIRS += android
 
-!android: SUBDIRS += minimal
+!android: SUBDIRS += minimal vnc
 
 !android:if(!win32|contains(QT_CONFIG, freetype)): SUBDIRS += offscreen
 
