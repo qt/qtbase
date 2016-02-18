@@ -275,10 +275,45 @@ public:
     QAtomicInt ref;
     QFontDef fontDef;
 
-    mutable void *font_;
-    mutable qt_destroy_func_t font_destroy_func;
-    mutable void *face_;
-    mutable qt_destroy_func_t face_destroy_func;
+    class Holder { // replace by std::unique_ptr once available
+        void *ptr;
+        qt_destroy_func_t destroy_func;
+    public:
+        Holder() : ptr(nullptr), destroy_func(nullptr) {}
+        explicit Holder(void *p, qt_destroy_func_t d) : ptr(p), destroy_func(d) {}
+        ~Holder() { if (ptr && destroy_func) destroy_func(ptr); }
+        Holder(Holder &&other) Q_DECL_NOTHROW
+            : ptr(other.ptr),
+              destroy_func(other.destroy_func)
+        {
+            other.ptr = nullptr;
+            other.destroy_func = nullptr;
+        }
+        Holder &operator=(Holder &&other) Q_DECL_NOTHROW
+        { swap(other); return *this; }
+
+        void swap(Holder &other) Q_DECL_NOTHROW
+        {
+            qSwap(ptr, other.ptr);
+            qSwap(destroy_func, other.destroy_func);
+        }
+
+        void *get() const Q_DECL_NOTHROW { return ptr; }
+        void *release() Q_DECL_NOTHROW {
+            void *result = ptr;
+            ptr = nullptr;
+            destroy_func = nullptr;
+            return result;
+        }
+        void reset() Q_DECL_NOTHROW { Holder().swap(*this); }
+        qt_destroy_func_t get_deleter() const Q_DECL_NOTHROW { return destroy_func; }
+
+        bool operator!() const Q_DECL_NOTHROW { return !ptr; }
+    };
+
+    mutable Holder font_; // \ NOTE: Declared before m_glyphCaches, so font_, face_
+    mutable Holder face_; // / are destroyed _after_ m_glyphCaches is destroyed.
+
     struct FaceData {
         void *user_data;
         qt_get_font_table_func_t get_font_table;
