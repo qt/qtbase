@@ -269,10 +269,10 @@ namespace {
         quint16 nameIds[requiredRecordCount] = { 1, 2, 3, 4, 6 };
 
         int sizeOfHeader = sizeof(NameTable) + sizeof(NameRecord) * requiredRecordCount;
-        int newFamilyNameSize = newFamilyName.size() * sizeof(quint16);
+        int newFamilyNameSize = newFamilyName.size() * int(sizeof(quint16));
 
         const QString regularString = QString::fromLatin1("Regular");
-        int regularStringSize = regularString.size() * sizeof(quint16);
+        int regularStringSize = regularString.size() * int(sizeof(quint16));
 
         // Align table size of table to 32 bits (pad with 0)
         int fullSize = ((sizeOfHeader + newFamilyNameSize + regularStringSize) & ~3) + 4;
@@ -792,7 +792,7 @@ static QString getEnglishName(const uchar *table, quint32 bytes)
 
                 length /= 2;
                 i18n_name.resize(length);
-                QChar *uc = (QChar *) i18n_name.unicode();
+                QChar *uc = const_cast<QChar *>(i18n_name.unicode());
                 const unsigned char *string = table + string_offset + offset;
                 for (int i = 0; i < length; ++i)
                     uc[i] = getUShort(string + 2*i);
@@ -800,10 +800,10 @@ static QString getEnglishName(const uchar *table, quint32 bytes)
                 // Apple Roman
 
                 i18n_name.resize(length);
-                QChar *uc = (QChar *) i18n_name.unicode();
+                QChar *uc = const_cast<QChar *>(i18n_name.unicode());
                 const unsigned char *string = table + string_offset + offset;
                 for (int i = 0; i < length; ++i)
-                    uc[i] = QLatin1Char(string[i]);
+                    uc[i] = QLatin1Char(char(string[i]));
             }
         }
     }
@@ -1154,8 +1154,9 @@ QT_WARNING_POP
 
         DWORD count = 0;
         QByteArray newFontData = font.data();
-        HANDLE fontHandle = AddFontMemResourceEx((void *)newFontData.constData(), newFontData.size(), 0,
-                                          &count);
+        HANDLE fontHandle =
+            AddFontMemResourceEx(const_cast<char *>(newFontData.constData()),
+                                 DWORD(newFontData.size()), 0, &count);
         if (count == 0 && fontHandle != 0) {
             RemoveFontMemResourceEx(fontHandle);
             fontHandle = 0;
@@ -1373,8 +1374,9 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
             return families;
 
         DWORD dummy = 0;
-        font.handle = AddFontMemResourceEx((void *)fontData.constData(), fontData.size(), 0,
-                                             &dummy);
+        font.handle =
+            AddFontMemResourceEx(const_cast<char *>(fontData.constData()),
+                                 DWORD(fontData.size()), 0, &dummy);
         if (font.handle == 0)
             return QStringList();
 
