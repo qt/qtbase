@@ -2498,6 +2498,26 @@ QStringList QCoreApplication::libraryPaths()
             }
         }
 
+#ifdef Q_OS_DARWIN
+        // Check the main bundle's PlugIns directory as this is a standard location for Apple OSes.
+        // Note that the QLibraryInfo::PluginsPath below will coincidentally be the same as this value
+        // but with a different casing, so it can't be relied upon when the underlying filesystem
+        // is case sensitive (and this is always the case on newer OSes like iOS).
+        if (CFBundleRef bundleRef = CFBundleGetMainBundle()) {
+            if (QCFType<CFURLRef> urlRef = CFBundleCopyBuiltInPlugInsURL(bundleRef)) {
+                if (QCFType<CFURLRef> absoluteUrlRef = CFURLCopyAbsoluteURL(urlRef)) {
+                    if (QCFString path = CFURLCopyFileSystemPath(absoluteUrlRef, kCFURLPOSIXPathStyle)) {
+                        if (QFile::exists(path)) {
+                            path = QDir(path).canonicalPath();
+                            if (!app_libpaths->contains(path))
+                                app_libpaths->append(path);
+                        }
+                    }
+                }
+            }
+        }
+#endif // Q_OS_DARWIN
+
         QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
         if (QFile::exists(installPathPlugins)) {
             // Make sure we convert from backslashes to slashes.
