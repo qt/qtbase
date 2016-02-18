@@ -1185,6 +1185,7 @@ QResource::unregisterResource(const uchar *rccData, const QString &resourceRoot)
     return false;
 }
 
+#if !defined(QT_BOOTSTRAPPED)
 //resource engine
 class QResourceFileEnginePrivate : public QAbstractFileEnginePrivate
 {
@@ -1490,5 +1491,6 @@ bool QResourceFileEnginePrivate::unmap(uchar *ptr)
     Q_UNUSED(ptr);
     return true;
 }
+#endif // !defined(QT_BOOTSTRAPPED)
 
 QT_END_NAMESPACE
