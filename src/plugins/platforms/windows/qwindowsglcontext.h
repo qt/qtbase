@@ -40,11 +40,12 @@
 #ifndef QWINDOWSGLCONTEXT_H
 #define QWINDOWSGLCONTEXT_H
 
-#include "array.h"
 #include "qtwindows_additional.h"
 #include "qwindowsopenglcontext.h"
 
 #include <QtGui/QOpenGLContext>
+
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 
@@ -264,7 +265,7 @@ private:
     QOpenGLContext *m_context;
     QSurfaceFormat m_obtainedFormat;
     HGLRC m_renderingContext;
-    Array<QOpenGLContextData> m_windowContexts;
+    std::vector<QOpenGLContextData> m_windowContexts;
     PIXELFORMATDESCRIPTOR m_obtainedPixelFormatDescriptor;
     int m_pixelFormat;
     bool m_extensionsUsed;

@@ -1270,10 +1270,9 @@ bool QWindowsGLContext::updateObtainedParams(HDC hdc, int *obtainedSwapInterval)
 
 void QWindowsGLContext::releaseDCs()
 {
-    const QOpenGLContextData *end = m_windowContexts.end();
-    for (const QOpenGLContextData *p = m_windowContexts.begin(); p < end; ++p)
-        ReleaseDC(p->hwnd, p->hdc);
-    m_windowContexts.resize(0);
+    for (const auto &e : m_windowContexts)
+        ReleaseDC(e.hwnd, e.hdc);
+    m_windowContexts.clear();
 }
 
 static inline QWindowsWindow *glWindowOf(QPlatformSurface *s)
@@ -1288,12 +1287,12 @@ static inline HWND handleOf(QPlatformSurface *s)
 
 // Find a window in a context list.
 static inline const QOpenGLContextData *
-    findByHWND(const Array<QOpenGLContextData> &data, HWND hwnd)
+    findByHWND(const std::vector<QOpenGLContextData> &data, HWND hwnd)
 {
-    const QOpenGLContextData *end = data.end();
-    for (const QOpenGLContextData *p = data.begin(); p < end; ++p)
-        if (p->hwnd == hwnd)
-            return p;
+    for (const auto &e : data) {
+        if (e.hwnd == hwnd)
+            return &e;
+    }
     return 0;
 }
 
@@ -1347,7 +1346,7 @@ bool QWindowsGLContext::makeCurrent(QPlatformSurface *surface)
         if (m_obtainedFormat.swapBehavior() == QSurfaceFormat::DoubleBuffer)
             window->setFlag(QWindowsWindow::OpenGLDoubleBuffered);
     }
-    m_windowContexts.append(newContext);
+    m_windowContexts.push_back(newContext);
 
     m_lost = false;
     bool success = QOpenGLStaticContext::opengl32.wglMakeCurrent(newContext.hdc, newContext.renderingContext);
