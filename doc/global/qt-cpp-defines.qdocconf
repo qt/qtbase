@@ -161,3 +161,7 @@ Cpp.ignoredirectives    += \
                           QT_WARNING_DISABLE_MSVC \
                           Q_ATTRIBUTE_FORMAT_PRINTF \
                           Q_MV_IOS
+
+# Qt 6: Remove
+falsehoods              += \
+                          "QT_VERSION >= QT_VERSION_CHECK\\(6,0,0\\)"
