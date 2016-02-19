@@ -49,6 +49,7 @@
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
+#include <QtPlatformSupport/private/qeglpbuffer_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -148,14 +149,17 @@ bool QWinRTEGLContext::makeCurrent(QPlatformSurface *windowSurface)
     Q_D(QWinRTEGLContext);
     Q_ASSERT(windowSurface->surface()->supportsOpenGL());
 
-    if (windowSurface->surface()->surfaceClass() == QSurface::Offscreen)
-        return false;
+    EGLSurface surface;
+    if (windowSurface->surface()->surfaceClass() == QSurface::Window) {
+        QWinRTWindow *window = static_cast<QWinRTWindow *>(windowSurface);
+        if (window->eglSurface() == EGL_NO_SURFACE)
+            window->createEglSurface(g->eglDisplay, d->eglConfig);
 
-    QWinRTWindow *window = static_cast<QWinRTWindow *>(windowSurface);
-    if (window->eglSurface() == EGL_NO_SURFACE)
-        window->createEglSurface(g->eglDisplay, d->eglConfig);
+        surface = window->eglSurface();
+    } else { // Offscreen
+        surface = static_cast<QEGLPbuffer *>(windowSurface)->pbuffer();
+    }
 
-    EGLSurface surface = window->eglSurface();
     if (surface == EGL_NO_SURFACE)
         return false;
 
@@ -344,6 +348,11 @@ QFunctionPointer QWinRTEGLContext::getProcAddress(const QByteArray &procName)
         return i.value();
 
     return eglGetProcAddress(procName.constData());
+}
+
+EGLDisplay QWinRTEGLContext::display()
+{
+    return g->eglDisplay;
 }
 
 QT_END_NAMESPACE

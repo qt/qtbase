@@ -1064,12 +1064,15 @@ QList<QGlyphRun> QTextLayout::glyphRuns(int from, int length) const
 
                     QVector<quint32> indexes = oldGlyphRun.glyphIndexes();
                     QVector<QPointF> positions = oldGlyphRun.positions();
+                    QRectF boundingRect = oldGlyphRun.boundingRect();
 
                     indexes += glyphRun.glyphIndexes();
                     positions += glyphRun.positions();
+                    boundingRect = boundingRect.united(glyphRun.boundingRect());
 
                     oldGlyphRun.setGlyphIndexes(indexes);
                     oldGlyphRun.setPositions(positions);
+                    oldGlyphRun.setBoundingRect(boundingRect);
                 } else {
                     glyphRunHash[key] = glyphRun;
                 }

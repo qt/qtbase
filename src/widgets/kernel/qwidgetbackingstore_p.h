@@ -170,6 +170,8 @@ private:
 
     void updateLists(QWidget *widget);
 
+    bool syncAllowed();
+
     inline void addDirtyWidget(QWidget *widget, const QRegion &rgn)
     {
         if (widget && !widget->d_func()->inDirtyList && !widget->data->in_destructor) {

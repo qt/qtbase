@@ -3616,7 +3616,7 @@ QImage QRasterBuffer::colorizeBitmap(const QImage &image, const QColor &color)
 {
     Q_ASSERT(image.depth() == 1);
 
-    QImage sourceImage = image.convertToFormat(QImage::Format_MonoLSB);
+    const QImage sourceImage = image.convertToFormat(QImage::Format_MonoLSB);
     QImage dest = QImage(sourceImage.size(), QImage::Format_ARGB32_Premultiplied);
 
     QRgb fg = qPremultiply(color.rgba());
@@ -3625,7 +3625,7 @@ QImage QRasterBuffer::colorizeBitmap(const QImage &image, const QColor &color)
     int height = sourceImage.height();
     int width = sourceImage.width();
     for (int y=0; y<height; ++y) {
-        uchar *source = sourceImage.scanLine(y);
+        const uchar *source = sourceImage.constScanLine(y);
         QRgb *target = reinterpret_cast<QRgb *>(dest.scanLine(y));
         if (!source || !target)
             QT_THROW(std::bad_alloc()); // we must have run out of memory
@@ -4144,7 +4144,8 @@ class QGradientCache
     {
         inline CacheInfo(QGradientStops s, int op, QGradient::InterpolationMode mode) :
             stops(qMove(s)), opacity(op), interpolationMode(mode) {}
-        QRgba64 buffer[GRADIENT_STOPTABLE_SIZE];
+        QRgba64 buffer64[GRADIENT_STOPTABLE_SIZE];
+        QRgb buffer32[GRADIENT_STOPTABLE_SIZE];
         QGradientStops stops;
         int opacity;
         QGradient::InterpolationMode interpolationMode;
@@ -4153,7 +4154,9 @@ class QGradientCache
     typedef QMultiHash<quint64, CacheInfo> QGradientColorTableHash;
 
 public:
-    inline const QRgba64 *getBuffer(const QGradient &gradient, int opacity) {
+    typedef QPair<const QRgb *, const QRgba64 *> ColorBufferPair;
+
+    inline ColorBufferPair getBuffer(const QGradient &gradient, int opacity) {
         quint64 hash_val = 0;
 
         const QGradientStops stops = gradient.stops();
@@ -4169,7 +4172,8 @@ public:
             do {
                 const CacheInfo &cache_info = it.value();
                 if (cache_info.stops == stops && cache_info.opacity == opacity && cache_info.interpolationMode == gradient.interpolationMode())
-                    return cache_info.buffer;
+                    return qMakePair(reinterpret_cast<const QRgb *>(cache_info.buffer32),
+                                     reinterpret_cast<const QRgba64 *>(cache_info.buffer64));
                 ++it;
             } while (it != cache.constEnd() && it.key() == hash_val);
             // an exact match for these stops and opacity was not found, create new cache
@@ -4183,14 +4187,18 @@ protected:
     inline void generateGradientColorTable(const QGradient& g,
                                            QRgba64 *colorTable,
                                            int size, int opacity) const;
-    QRgba64 *addCacheElement(quint64 hash_val, const QGradient &gradient, int opacity) {
+    ColorBufferPair addCacheElement(quint64 hash_val, const QGradient &gradient, int opacity) {
         if (cache.size() == maxCacheSize()) {
             // may remove more than 1, but OK
             cache.erase(cache.begin() + (qrand() % maxCacheSize()));
         }
         CacheInfo cache_entry(gradient.stops(), opacity, gradient.interpolationMode());
-        generateGradientColorTable(gradient, cache_entry.buffer, paletteSize(), opacity);
-        return cache.insert(hash_val, cache_entry).value().buffer;
+        generateGradientColorTable(gradient, cache_entry.buffer64, paletteSize(), opacity);
+        for (int i = 0; i < GRADIENT_STOPTABLE_SIZE; ++i)
+            cache_entry.buffer32[i] = cache_entry.buffer64[i].toArgb32();
+        CacheInfo &cache_value = cache.insert(hash_val, cache_entry).value();
+        return qMakePair(reinterpret_cast<const QRgb *>(cache_value.buffer32),
+                         reinterpret_cast<const QRgba64 *>(cache_value.buffer64));
     }
 
     QGradientColorTableHash cache;
@@ -4424,7 +4432,11 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
             type = LinearGradient;
             const QLinearGradient *g = static_cast<const QLinearGradient *>(brush.gradient());
             gradient.alphaColor = !brush.isOpaque() || alpha != 256;
-            gradient.colorTable = const_cast<QRgba64*>(qt_gradient_cache()->getBuffer(*g, alpha));
+
+            QGradientCache::ColorBufferPair colorBuffers = qt_gradient_cache()->getBuffer(*g, alpha);
+            gradient.colorTable64 = colorBuffers.second;
+            gradient.colorTable32 = colorBuffers.first;
+
             gradient.spread = g->spread();
 
             QLinearGradientData &linearData = gradient.linear;
@@ -4441,7 +4453,11 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
             type = RadialGradient;
             const QRadialGradient *g = static_cast<const QRadialGradient *>(brush.gradient());
             gradient.alphaColor = !brush.isOpaque() || alpha != 256;
-            gradient.colorTable = const_cast<QRgba64*>(qt_gradient_cache()->getBuffer(*g, alpha));
+
+            QGradientCache::ColorBufferPair colorBuffers = qt_gradient_cache()->getBuffer(*g, alpha);
+            gradient.colorTable64 = colorBuffers.second;
+            gradient.colorTable32 = colorBuffers.first;
+
             gradient.spread = g->spread();
 
             QRadialGradientData &radialData = gradient.radial;
@@ -4462,7 +4478,11 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
             type = ConicalGradient;
             const QConicalGradient *g = static_cast<const QConicalGradient *>(brush.gradient());
             gradient.alphaColor = !brush.isOpaque() || alpha != 256;
-            gradient.colorTable = const_cast<QRgba64*>(qt_gradient_cache()->getBuffer(*g, alpha));
+
+            QGradientCache::ColorBufferPair colorBuffers = qt_gradient_cache()->getBuffer(*g, alpha);
+            gradient.colorTable64 = colorBuffers.second;
+            gradient.colorTable32 = colorBuffers.first;
+
             gradient.spread = QGradient::RepeatSpread;
 
             QConicalGradientData &conicalData = gradient.conical;

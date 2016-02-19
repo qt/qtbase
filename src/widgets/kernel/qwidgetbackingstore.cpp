@@ -1065,6 +1065,31 @@ static inline bool discardSyncRequest(QWidget *tlw, QTLWExtra *tlwExtra)
     return false;
 }
 
+bool QWidgetBackingStore::syncAllowed()
+{
+#ifndef QT_NO_OPENGL
+    QTLWExtra *tlwExtra = tlw->d_func()->maybeTopData();
+    if (textureListWatcher && !textureListWatcher->isLocked()) {
+        textureListWatcher->deleteLater();
+        textureListWatcher = 0;
+    } else if (!tlwExtra->widgetTextures.isEmpty()) {
+        bool skipSync = false;
+        foreach (QPlatformTextureList *tl, tlwExtra->widgetTextures) {
+            if (tl->isLocked()) {
+                if (!textureListWatcher)
+                    textureListWatcher = new QPlatformTextureListWatcher(this);
+                if (!textureListWatcher->isLocked())
+                    textureListWatcher->watch(tl);
+                skipSync = true;
+            }
+        }
+        if (skipSync)  // cannot compose due to widget textures being in use
+            return false;
+    }
+#endif
+    return true;
+}
+
 /*!
     Synchronizes the \a exposedRegion of the \a exposedWidget with the backing store.
 
@@ -1095,7 +1120,8 @@ void QWidgetBackingStore::sync(QWidget *exposedWidget, const QRegion &exposedReg
     else
         markDirtyOnScreen(exposedRegion, exposedWidget, QPoint());
 
-    doSync();
+    if (syncAllowed())
+        doSync();
 }
 
 /*!
@@ -1121,27 +1147,8 @@ void QWidgetBackingStore::sync()
         return;
     }
 
-#ifndef QT_NO_OPENGL
-    if (textureListWatcher && !textureListWatcher->isLocked()) {
-        textureListWatcher->deleteLater();
-        textureListWatcher = 0;
-    } else if (!tlwExtra->widgetTextures.isEmpty()) {
-        bool skipSync = false;
-        foreach (QPlatformTextureList *tl, tlwExtra->widgetTextures) {
-            if (tl->isLocked()) {
-                if (!textureListWatcher)
-                    textureListWatcher = new QPlatformTextureListWatcher(this);
-                if (!textureListWatcher->isLocked())
-                    textureListWatcher->watch(tl);
-                skipSync = true;
-            }
-        }
-        if (skipSync) // cannot compose due to widget textures being in use
-            return;
-    }
-#endif
-
-    doSync();
+    if (syncAllowed())
+        doSync();
 }
 
 void QWidgetBackingStore::doSync()

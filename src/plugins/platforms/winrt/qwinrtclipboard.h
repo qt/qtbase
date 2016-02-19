@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -34,47 +34,45 @@
 **
 ****************************************************************************/
 
-#ifndef QWINRTWINDOW_H
-#define QWINRTWINDOW_H
+#ifndef QWINRTPLATFORMCLIPBOARD_H
+#define QWINRTPLATFORMCLIPBOARD_H
 
-#include <QtCore/QLoggingCategory>
-#include <qpa/qplatformwindow.h>
-#include <qpa/qwindowsysteminterface.h>
-#include <EGL/egl.h>
+#include <qpa/qplatformclipboard.h>
+#include <QMimeData>
+
+#include <wrl.h>
+
+#ifndef Q_OS_WINPHONE
+namespace ABI {
+    namespace Windows {
+        namespace ApplicationModel {
+            namespace DataTransfer {
+                struct IClipboardStatics;
+            }
+        }
+    }
+}
+#endif // !Q_OS_WINPHONE
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_LOGGING_CATEGORY(lcQpaWindows)
-
-class QWinRTWindowPrivate;
-class QWinRTWindow : public QPlatformWindow
+class QWinRTClipboard: public QPlatformClipboard
 {
 public:
-    QWinRTWindow(QWindow *window);
-    ~QWinRTWindow();
+    QWinRTClipboard();
 
-    QSurfaceFormat format() const;
-    bool isActive() const;
-    bool isExposed() const;
-    void setGeometry(const QRect &rect);
-    void setVisible(bool visible);
-    void setWindowTitle(const QString &title);
-    void raise();
-    void lower();
+    QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard) Q_DECL_OVERRIDE;
+    void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard) Q_DECL_OVERRIDE;
+    bool supportsMode(QClipboard::Mode mode) const Q_DECL_OVERRIDE;
 
-    WId winId() const Q_DECL_OVERRIDE;
-
-    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
-    void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
-
-    EGLSurface eglSurface() const;
-    void createEglSurface(EGLDisplay display, EGLConfig config);
-
+    HRESULT onContentChanged(IInspectable *, IInspectable *);
 private:
-    QScopedPointer<QWinRTWindowPrivate> d_ptr;
-    Q_DECLARE_PRIVATE(QWinRTWindow)
+#ifndef Q_OS_WINPHONE
+    Microsoft::WRL::ComPtr<ABI::Windows::ApplicationModel::DataTransfer::IClipboardStatics> m_nativeClipBoard;
+#endif
+    QMimeData m_mimeData;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWINRTWINDOW_H
+#endif // QWINRTPLATFORMCLIPBOARD_H

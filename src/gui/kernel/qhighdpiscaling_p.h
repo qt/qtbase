@@ -53,6 +53,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qmargins.h>
+#include <QtCore/qmath.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qloggingcategory.h>
@@ -389,6 +390,24 @@ inline QRegion fromNativeLocalRegion(const QRegion &pixelRegion, const QWindow *
     return pointRegion;
 }
 
+// When mapping expose events to Qt rects: round top/left towards the origin and
+// bottom/right away from the origin, making sure that we cover the whole window.
+inline QRegion fromNativeLocalExposedRegion(const QRegion &pixelRegion, const QWindow *window)
+{
+    if (!QHighDpiScaling::isActive())
+        return pixelRegion;
+
+    const qreal scaleFactor = QHighDpiScaling::factor(window);
+    QRegion pointRegion;
+    foreach (const QRect &rect, pixelRegion.rects()) {
+        const QPointF topLeftP = QPointF(rect.topLeft()) / scaleFactor;
+        const QPointF bottomRightP = QPointF(rect.bottomRight()) / scaleFactor;
+        pointRegion += QRect(QPoint(qFloor(topLeftP.x()), qFloor(topLeftP.y())),
+                             QPoint(qCeil(bottomRightP.x()), qCeil(bottomRightP.y())));
+    }
+    return pointRegion;
+}
+
 inline QRegion toNativeLocalRegion(const QRegion &pointRegion, const QWindow *window)
 {
     if (!QHighDpiScaling::isActive())
@@ -505,6 +524,8 @@ namespace QHighDpi {
 
     template <typename T> inline
     T fromNativeLocalRegion(const T &value, ...) { return value; }
+    template <typename T> inline
+    T fromNativeLocalExposedRegion(const T &value, ...) { return value; }
     template <typename T> inline
     T toNativeLocalRegion(const T &value, ...) { return value; }
 

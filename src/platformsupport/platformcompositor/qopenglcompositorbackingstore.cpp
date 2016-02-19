@@ -40,6 +40,7 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QWindow>
 #include <QtGui/QPainter>
+#include <QtGui/QOffscreenSurface>
 #include <qpa/qplatformbackingstore.h>
 #include <private/qwindow_p.h>
 
@@ -88,13 +89,28 @@ QOpenGLCompositorBackingStore::~QOpenGLCompositorBackingStore()
 {
     if (m_bsTexture) {
         QOpenGLContext *ctx = QOpenGLContext::currentContext();
+        // With render-to-texture-widgets QWidget makes sure the TLW's shareContext() is
+        // made current before destroying backingstores. That is however not the case for
+        // windows with regular widgets only.
+        QScopedPointer<QOffscreenSurface> tempSurface;
+        if (!ctx) {
+            ctx = QOpenGLCompositor::instance()->context();
+            tempSurface.reset(new QOffscreenSurface);
+            tempSurface->setFormat(ctx->format());
+            tempSurface->create();
+            ctx->makeCurrent(tempSurface.data());
+        }
+
         if (ctx && m_bsTextureContext && ctx->shareGroup() == m_bsTextureContext->shareGroup())
             glDeleteTextures(1, &m_bsTexture);
         else
             qWarning("QOpenGLCompositorBackingStore: Texture is not valid in the current context");
+
+        if (tempSurface)
+            ctx->doneCurrent();
     }
 
-    delete m_textures;
+    delete m_textures; // this does not actually own any GL resources
 }
 
 QPaintDevice *QOpenGLCompositorBackingStore::paintDevice()
@@ -164,16 +180,15 @@ void QOpenGLCompositorBackingStore::updateTexture()
 
 void QOpenGLCompositorBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
-    // Called for ordinary raster windows. This is rare since RasterGLSurface
-    // support is claimed which leads to having all QWidget windows marked as
-    // RasterGLSurface instead of just Raster. These go through
-    // compositeAndFlush() instead of this function.
+    // Called for ordinary raster windows.
 
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
     QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
     QOpenGLContext *dstCtx = compositor->context();
+    Q_ASSERT(dstCtx);
+
     QWindow *dstWin = compositor->targetWindow();
     if (!dstWin)
         return;
@@ -190,7 +205,7 @@ void QOpenGLCompositorBackingStore::composeAndFlush(QWindow *window, const QRegi
                                                QPlatformTextureList *textures, QOpenGLContext *context,
                                                bool translucentBackground)
 {
-    // QOpenGLWidget/QQuickWidget content provided as textures. The raster content should go on top.
+    // QOpenGLWidget/QQuickWidget content provided as textures. The raster content goes on top.
 
     Q_UNUSED(region);
     Q_UNUSED(offset);
@@ -199,6 +214,12 @@ void QOpenGLCompositorBackingStore::composeAndFlush(QWindow *window, const QRegi
 
     QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
     QOpenGLContext *dstCtx = compositor->context();
+    Q_ASSERT(dstCtx); // setTarget() must have been called before, e.g. from QEGLFSWindow
+
+    // The compositor's context and the context to which QOpenGLWidget/QQuickWidget
+    // textures belong are not the same. They share resources, though.
+    Q_ASSERT(context->shareGroup() == dstCtx->shareGroup());
+
     QWindow *dstWin = compositor->targetWindow();
     if (!dstWin)
         return;
@@ -260,6 +281,7 @@ void QOpenGLCompositorBackingStore::resize(const QSize &size, const QRegion &sta
     if (m_bsTexture) {
         glDeleteTextures(1, &m_bsTexture);
         m_bsTexture = 0;
+        m_bsTextureContext = Q_NULLPTR;
     }
 }
 

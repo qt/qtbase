@@ -1181,11 +1181,11 @@ QImage QWindowsFontEngine::alphaMapForGlyph(glyph_t glyph, const QTransform &xfo
     for (int y=0; y<mask->height(); ++y) {
         uchar *dest = alphaMap.scanLine(y);
         if (mask->image().format() == QImage::Format_RGB16) {
-            const qint16 *src = (qint16 *) ((const QImage &) mask->image()).scanLine(y);
+            const qint16 *src = reinterpret_cast<const qint16 *>(mask->image().constScanLine(y));
             for (int x=0; x<mask->width(); ++x)
                 dest[x] = 255 - qGray(src[x]);
         } else {
-            const uint *src = (uint *) ((const QImage &) mask->image()).scanLine(y);
+            const uint *src = reinterpret_cast<const uint *>(mask->image().constScanLine(y));
             for (int x=0; x<mask->width(); ++x) {
                 if (QWindowsNativeImage::systemFormat() == QImage::Format_RGB16)
                     dest[x] = 255 - qGray(src[x]);
@@ -1230,7 +1230,7 @@ QImage QWindowsFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed, const QTra
     QImage rgbMask(mask->width(), mask->height(), QImage::Format_RGB32);
     for (int y=0; y<mask->height(); ++y) {
         uint *dest = (uint *) rgbMask.scanLine(y);
-        const uint *src = (uint *) source.scanLine(y);
+        const uint *src = reinterpret_cast<const uint *>(source.constScanLine(y));
         for (int x=0; x<mask->width(); ++x) {
             dest[x] = 0xffffffff - (0x00ffffff & src[x]);
         }

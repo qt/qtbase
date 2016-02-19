@@ -1440,7 +1440,7 @@ QModelIndexList QListView::selectedIndexes() const
         return QModelIndexList();
 
     QModelIndexList viewSelected = d->selectionModel->selectedIndexes();
-    for (int i = 0; i < viewSelected.count(); ++i) {
+    for (int i = 0; i < viewSelected.count();) {
         const QModelIndex &index = viewSelected.at(i);
         if (!isIndexHidden(index) && index.parent() == d->root && index.column() == d->column)
             ++i;

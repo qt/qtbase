@@ -56,6 +56,8 @@ using namespace ABI::Windows::UI::ViewManagement;
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcQpaTheme, "qt.qpa.theme")
+
 static IUISettings *uiSettings()
 {
     static ComPtr<IUISettings> settings;
@@ -285,12 +287,14 @@ QWinRTTheme::QWinRTTheme()
     : d_ptr(new QWinRTThemePrivate)
 {
     Q_D(QWinRTTheme);
+    qCDebug(lcQpaTheme) << __FUNCTION__;
 
     nativeColorSettings(d->palette);
 }
 
 bool QWinRTTheme::usePlatformNativeDialog(DialogType type) const
 {
+    qCDebug(lcQpaTheme) << __FUNCTION__ << type;
     static bool useNativeDialogs = qEnvironmentVariableIsSet("QT_USE_WINRT_NATIVE_DIALOGS")
             ? qEnvironmentVariableIntValue("QT_USE_WINRT_NATIVE_DIALOGS") : true;
 
@@ -301,6 +305,7 @@ bool QWinRTTheme::usePlatformNativeDialog(DialogType type) const
 
 QPlatformDialogHelper *QWinRTTheme::createPlatformDialogHelper(DialogType type) const
 {
+    qCDebug(lcQpaTheme) << __FUNCTION__ << type;
     switch (type) {
     case FileDialog:
         return new QWinRTFileDialogHelper;
@@ -314,6 +319,7 @@ QPlatformDialogHelper *QWinRTTheme::createPlatformDialogHelper(DialogType type) 
 
 QVariant QWinRTTheme::styleHint(QPlatformIntegration::StyleHint hint)
 {
+    qCDebug(lcQpaTheme) << __FUNCTION__ << hint;
     HRESULT hr;
     switch (hint) {
     case QPlatformIntegration::CursorFlashTime: {
@@ -363,6 +369,7 @@ QVariant QWinRTTheme::styleHint(QPlatformIntegration::StyleHint hint)
 const QPalette *QWinRTTheme::palette(Palette type) const
 {
     Q_D(const QWinRTTheme);
+    qCDebug(lcQpaTheme) << __FUNCTION__ << type;
     if (type == SystemPalette)
         return &d->palette;
     return QPlatformTheme::palette(type);
