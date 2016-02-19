@@ -634,11 +634,24 @@ QDebug operator<<(QDebug d, const QFontDef &def)
 {
     QDebugStateSaver saver(d);
     d.nospace();
-    d << "Family=" << def.family << " Stylename=" << def.styleName
-        << " pointsize=" << def.pointSize << " pixelsize=" << def.pixelSize
-        << " styleHint=" << def.styleHint << " weight=" << def.weight
-        << " stretch=" << def.stretch << " hintingPreference="
-        << def.hintingPreference;
+    d.noquote();
+    d << "QFontDef(Family=\"" << def.family << '"';
+    if (!def.styleName.isEmpty())
+        d << ", stylename=" << def.styleName;
+    d << ", pointsize=" << def.pointSize << ", pixelsize=" << def.pixelSize
+        << ", styleHint=" << def.styleHint << ", weight=" << def.weight
+        << ", stretch=" << def.stretch << ", hintingPreference="
+        << def.hintingPreference << ')';
+    return d;
+}
+
+QDebug operator<<(QDebug d, const LOGFONT &lf)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d.noquote();
+    d << "LOGFONT(\"" << QString::fromWCharArray(lf.lfFaceName)
+        << "\", lfWidth=" << lf.lfWidth << ", lfHeight=" << lf.lfHeight << ')';
     return d;
 }
 #endif // !QT_NO_DEBUG_STREAM
@@ -1752,12 +1765,16 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
         IDWriteFont *directWriteFont = 0;
         HRESULT hr = data->directWriteGdiInterop->CreateFontFromLOGFONT(&lf, &directWriteFont);
         if (FAILED(hr)) {
-            qErrnoWarning("%s: CreateFontFromLOGFONT failed", __FUNCTION__);
+            const QString errorString = qt_error_string(int(GetLastError()));
+            qWarning().noquote().nospace() << "DirectWrite: CreateFontFromLOGFONT() failed ("
+                << errorString << ") for " << request << ' ' << lf << " dpi=" << dpi;
         } else {
             IDWriteFontFace *directWriteFontFace = NULL;
             hr = directWriteFont->CreateFontFace(&directWriteFontFace);
             if (FAILED(hr)) {
-                qErrnoWarning("%s: CreateFontFace failed", __FUNCTION__);
+                const QString errorString = qt_error_string(int(GetLastError()));
+                qWarning().noquote() << "DirectWrite: CreateFontFace() failed ("
+                    << errorString << ") for " << request << ' ' << lf << " dpi=" << dpi;
             } else {
                 QWindowsFontEngineDirectWrite *fedw = new QWindowsFontEngineDirectWrite(directWriteFontFace,
                                                                                         request.pixelSize,
