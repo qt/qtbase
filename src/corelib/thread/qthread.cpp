@@ -883,16 +883,12 @@ bool QThread::isInterruptionRequested() const
 
     Note: don't try to deliver events from the started() signal.
 */
-static void setThreadDoesNotRequireCoreApplication()
-{
-    QThreadData::current()->requiresCoreApplication = false;
-}
-
 QDaemonThread::QDaemonThread(QObject *parent)
     : QThread(parent)
 {
     // QThread::started() is emitted from the thread we start
-    connect(this, &QThread::started, setThreadDoesNotRequireCoreApplication);
+    connect(this, &QThread::started,
+            [](){ QThreadData::current()->requiresCoreApplication = false; });
 }
 
 QDaemonThread::~QDaemonThread()

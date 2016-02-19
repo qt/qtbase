@@ -40,17 +40,17 @@
 
 package org.qtproject.qt5.android;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 
 public class QtNativeLibrariesDir {
-    public static String nativeLibrariesDir(Activity activity)
+    public static String nativeLibrariesDir(Context context)
     {
         String m_nativeLibraryDir = null;
         try {
-            ApplicationInfo ai = activity.getPackageManager().getApplicationInfo(activity.getPackageName(), 0);
-            m_nativeLibraryDir = ai.nativeLibraryDir+"/";
+            ApplicationInfo ai = context.getPackageManager().getApplicationInfo(context.getPackageName(), 0);
+            m_nativeLibraryDir = ai.nativeLibraryDir + "/";
         } catch (NameNotFoundException e) {
             e.printStackTrace();
         }

@@ -131,13 +131,15 @@ bool QDateTimeParser::setDigit(QDateTime &v, int index, int newVal) const
     }
     const SectionNode &node = sectionNodes.at(index);
 
-    int year = v.date().year();
-    int month = v.date().month();
-    int day = v.date().day();
-    int hour = v.time().hour();
-    int minute = v.time().minute();
-    int second = v.time().second();
-    int msec = v.time().msec();
+    const QDate date = v.date();
+    const QTime time = v.time();
+    int year = date.year();
+    int month = date.month();
+    int day = date.day();
+    int hour = time.hour();
+    int minute = time.minute();
+    int second = time.second();
+    int msec = time.msec();
 
     switch (node.type) {
     case Hour24Section: case Hour12Section: hour = newVal; break;
@@ -887,14 +889,16 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
     QDTPDEBUG << "parse" << input;
     {
         int year, month, day;
-        currentValue.date().getDate(&year, &month, &day);
+        QDate currentDate = currentValue.date();
+        const QTime currentTime = currentValue.time();
+        currentDate.getDate(&year, &month, &day);
         int year2digits = year % 100;
-        int hour = currentValue.time().hour();
+        int hour = currentTime.hour();
         int hour12 = -1;
-        int minute = currentValue.time().minute();
-        int second = currentValue.time().second();
-        int msec = currentValue.time().msec();
-        int dayofweek = currentValue.date().dayOfWeek();
+        int minute = currentTime.minute();
+        int second = currentTime.second();
+        int msec = currentTime.msec();
+        int dayofweek = currentDate.dayOfWeek();
 
         int ampm = -1;
         Sections isSet = NoSection;
@@ -1136,10 +1140,11 @@ end:
                         }
                     case MonthSection:
                         if (sn.count >= 3) {
-                            int tmp = newCurrentValue.date().month();
+                            const int currentMonth = newCurrentValue.date().month();
+                            int tmp = currentMonth;
                             // I know the first possible month makes the date too early
                             while ((tmp = findMonth(t, tmp + 1, i)) != -1) {
-                                const QDateTime copy(newCurrentValue.addMonths(tmp - newCurrentValue.date().month()));
+                                const QDateTime copy(newCurrentValue.addMonths(tmp - currentMonth));
                                 if (copy >= minimum && copy <= maximum)
                                     break; // break out of while
                             }
@@ -1253,7 +1258,8 @@ int QDateTimeParser::findMonth(const QString &str1, int startMonth, int sectionI
         QLocale l = locale();
 
         for (int month=startMonth; month<=12; ++month) {
-            QString str2 = l.monthName(month, type).toLower();
+            const QString monthName = l.monthName(month, type);
+            QString str2 = monthName.toLower();
 
             if (str1.startsWith(str2)) {
                 if (used) {
@@ -1261,7 +1267,7 @@ int QDateTimeParser::findMonth(const QString &str1, int startMonth, int sectionI
                     *used = str2.size();
                 }
                 if (usedMonth)
-                    *usedMonth = l.monthName(month, type);
+                    *usedMonth = monthName;
 
                 return month;
             }
@@ -1286,7 +1292,7 @@ int QDateTimeParser::findMonth(const QString &str1, int startMonth, int sectionI
                 if (used)
                     *used = limit;
                 if (usedMonth)
-                    *usedMonth = l.monthName(month, type);
+                    *usedMonth = monthName;
                 return month;
             }
         }
@@ -1573,7 +1579,8 @@ bool QDateTimeParser::potentialValue(const QString &str, int min, int max, int i
     int val = (int)locale().toUInt(str);
     const SectionNode &sn = sectionNode(index);
     if (sn.type == YearSection2Digits) {
-        val += currentValue.date().year() - (currentValue.date().year() % 100);
+        const int year = currentValue.date().year();
+        val += year - (year % 100);
     }
     if (val >= min && val <= max && str.size() == size) {
         return true;

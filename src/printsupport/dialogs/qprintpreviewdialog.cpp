@@ -250,8 +250,8 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     zoomEditor->setValidator(new ZoomFactorValidator(1, 1000, 1, zoomEditor));
     zoomFactor->setLineEdit(zoomEditor);
     static const short factorsX2[] = { 25, 50, 100, 200, 250, 300, 400, 800, 1600 };
-    for (int i = 0; i < int(sizeof(factorsX2) / sizeof(factorsX2[0])); ++i)
-        zoomFactor->addItem(QPrintPreviewDialog::tr("%1%").arg(factorsX2[i] / 2.0));
+    for (auto factorX2 : factorsX2)
+        zoomFactor->addItem(QPrintPreviewDialog::tr("%1%").arg(factorX2 / 2.0));
     QObject::connect(zoomFactor->lineEdit(), SIGNAL(editingFinished()),
                      q, SLOT(_q_zoomFactorChanged()));
     QObject::connect(zoomFactor, SIGNAL(currentIndexChanged(int)),

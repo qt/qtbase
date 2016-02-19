@@ -99,7 +99,10 @@ QT_DEPRECATED inline bool setYMD(int y, int m, int d)
 
     bool setDate(int year, int month, int day);
 
-    void getDate(int *year, int *month, int *day);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    void getDate(int *year, int *month, int *day); // ### Qt 6: remove
+#endif // < Qt 6
+    void getDate(int *year, int *month, int *day) const;
 
     QDate addDays(qint64 days) const Q_REQUIRED_RESULT;
     QDate addMonths(int months) const Q_REQUIRED_RESULT;

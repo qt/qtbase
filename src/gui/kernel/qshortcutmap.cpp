@@ -191,7 +191,7 @@ int QShortcutMap::removeShortcut(int id, QObject *owner, const QKeySequence &key
     bool allIds = id == 0;
 
     // Special case, remove everything
-    if (allOwners && allKeys && id == 0) {
+    if (allOwners && allKeys && allIds) {
         itemsRemoved = d->sequences.size();
         d->sequences.clear();
         return itemsRemoved;

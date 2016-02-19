@@ -230,6 +230,10 @@
            \l{The Style Sheet Syntax#Inheritance}{The Style Sheet Syntax - Inheritance}
            for more details. This value has been added in Qt 5.7.
 
+    \value AA_DontUseNativeDialogs All dialogs created while this attribute is
+           set to true won't use the native dialogs provided by the platform.
+           This value has been added in Qt 5.7.
+
     The following values are obsolete:
 
     \value AA_ImmediateWidgetCreation This attribute is no longer fully

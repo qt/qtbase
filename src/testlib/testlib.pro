@@ -78,8 +78,8 @@ mac {
     LIBS += -framework Security
     osx: LIBS += -framework ApplicationServices -framework IOKit
 
-    # XCTest support
-    !lessThan(QMAKE_XCODE_VERSION, "6.0") {
+    # XCTest support (disabled for now)
+    false:!lessThan(QMAKE_XCODE_VERSION, "6.0") {
         OBJECTIVE_SOURCES += qxctestlogger.mm
         HEADERS += qxctestlogger_p.h
 

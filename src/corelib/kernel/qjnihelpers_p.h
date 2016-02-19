@@ -100,6 +100,7 @@ namespace QtAndroidPrivate
     typedef std::function<void()> Runnable;
 
     Q_CORE_EXPORT jobject activity();
+    Q_CORE_EXPORT jobject service();
     Q_CORE_EXPORT JavaVM *javaVM();
     Q_CORE_EXPORT jint initJNI(JavaVM *vm, JNIEnv *env);
     jobject classLoader();

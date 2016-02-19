@@ -288,13 +288,8 @@ void QDialogButtonBoxPrivate::layoutButtons()
         }
             break;
         case QPlatformDialogHelper::AlternateRole:
-            {
-                if (acceptRoleList.size() < 2)
-                    break;
-                QList<QAbstractButton *> list = acceptRoleList;
-                list.removeFirst();
-                addButtonsToLayout(list, reverse);
-            }
+            if (acceptRoleList.size() > 1)
+                addButtonsToLayout(acceptRoleList.mid(1), reverse);
             break;
         case QPlatformDialogHelper::DestructiveRole:
             {

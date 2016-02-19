@@ -477,7 +477,7 @@ class VCCLCompilerTool : public VCToolBase
 public:
     // Functions
     VCCLCompilerTool();
-    virtual ~VCCLCompilerTool(){}
+
     bool parseOption(const char* option);
 
     // Variables
@@ -574,7 +574,7 @@ class VCLinkerTool : public VCToolBase
 public:
     // Functions
     VCLinkerTool();
-    virtual ~VCLinkerTool(){}
+
     bool parseOption(const char* option);
 
     // Variables
@@ -668,7 +668,7 @@ class VCManifestTool : public VCToolBase
 {
 public:
     VCManifestTool();
-    ~VCManifestTool();
+
     bool parseOption(const char* option);
 
     triState                EmbedManifest;
@@ -679,7 +679,7 @@ class VCMIDLTool : public VCToolBase
 public:
     // Functions
     VCMIDLTool();
-    virtual ~VCMIDLTool(){}
+
     bool parseOption(const char* option);
 
     // Variables
@@ -733,7 +733,7 @@ class VCLibrarianTool : public VCToolBase
 public:
     // Functions
     VCLibrarianTool();
-    virtual ~VCLibrarianTool(){}
+
     bool parseOption(const char*){ return false; }
 
     // Variables
@@ -754,7 +754,7 @@ class VCCustomBuildTool : public VCToolBase
 public:
     // Functions
     VCCustomBuildTool();
-    virtual ~VCCustomBuildTool(){}
+
     bool parseOption(const char*){ return false; }
 
     // Variables
@@ -773,7 +773,7 @@ class VCResourceCompilerTool : public VCToolBase
 public:
     // Functions
     VCResourceCompilerTool();
-    virtual ~VCResourceCompilerTool(){}
+
     bool parseOption(const char*){ return false; }
 
     // Variables
@@ -794,7 +794,6 @@ class VCDeploymentTool
 public:
     // Functions
     VCDeploymentTool();
-    virtual ~VCDeploymentTool() {}
 
     // Variables
     QString                 DeploymentTag;
@@ -808,7 +807,7 @@ class VCEventTool : public VCToolBase
 protected:
     // Functions
     VCEventTool(const QString &eventName);
-    virtual ~VCEventTool(){}
+
     bool parseOption(const char*){ return false; }
 
 public:
@@ -825,28 +824,24 @@ class VCPostBuildEventTool : public VCEventTool
 {
 public:
     VCPostBuildEventTool();
-    ~VCPostBuildEventTool(){}
 };
 
 class VCPreBuildEventTool : public VCEventTool
 {
 public:
     VCPreBuildEventTool();
-    ~VCPreBuildEventTool(){}
 };
 
 class VCPreLinkEventTool : public VCEventTool
 {
 public:
     VCPreLinkEventTool();
-    ~VCPreLinkEventTool(){}
 };
 
 class VCWinDeployQtTool : public VCToolBase
 {
 public:
     VCWinDeployQtTool() {}
-    ~VCWinDeployQtTool() {}
 
 protected:
     bool parseOption(const char *) { return false; }

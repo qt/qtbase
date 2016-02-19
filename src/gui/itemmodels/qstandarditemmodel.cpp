@@ -2168,6 +2168,7 @@ void QStandardItemModel::clear()
     Q_D(QStandardItemModel);
     beginResetModel();
     d->root.reset(new QStandardItem);
+    d->root->setFlags(Qt::ItemIsDropEnabled);
     d->root->d_func()->setModel(this);
     qDeleteAll(d->columnHeaderItems);
     d->columnHeaderItems.clear();

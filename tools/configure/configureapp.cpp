@@ -4539,18 +4539,18 @@ bool Configure::showLicense(QString orgLicenseFile)
         return true;
     }
 
-    bool showLgpl2 = true;
+    bool showGpl2 = true;
     QString licenseFile = orgLicenseFile;
     QString theLicense;
     if (dictionary["EDITION"] == "OpenSource") {
         if (platform() != WINDOWS_RT
                 && platform() != WINDOWS_CE
                 && (platform() != ANDROID || dictionary["ANDROID_STYLE_ASSETS"] == "no")) {
-            theLicense = "GNU Lesser General Public License (LGPL) version 2.1"
-                         "\nor the GNU Lesser General Public License (LGPL) version 3";
+            theLicense = "GNU Lesser General Public License (LGPL) version 3\n"
+                         "or the GNU General Public License (GPL) version 2";
         } else {
             theLicense = "GNU Lesser General Public License (LGPL) version 3";
-            showLgpl2 = false;
+            showGpl2 = false;
         }
     } else {
         // the first line of the license file tells us which license it is
@@ -4568,9 +4568,9 @@ bool Configure::showLicense(QString orgLicenseFile)
              << "the " << theLicense << "." << endl
              << endl;
         if (dictionary["EDITION"] == "OpenSource") {
-            cout << "Type '3' to view the Lesser GNU General Public License version 3 (LGPLv3)." << endl;
-            if (showLgpl2)
-                cout << "Type 'L' to view the Lesser GNU General Public License version 2.1 (LGPLv2.1)." << endl;
+            cout << "Type 'L' to view the GNU Lesser General Public License version 3 (LGPLv3)." << endl;
+            if (showGpl2)
+                cout << "Type 'G' to view the GNU General Public License version 2 (GPLv2)." << endl;
         } else {
             cout << "Type '?' to view the " << theLicense << "." << endl;
         }
@@ -4587,10 +4587,10 @@ bool Configure::showLicense(QString orgLicenseFile)
             return false;
         } else {
             if (dictionary["EDITION"] == "OpenSource") {
-                if (accept == '3')
-                    licenseFile = orgLicenseFile + "/LICENSE.LGPLv3";
+                if (accept == 'L')
+                    licenseFile = orgLicenseFile + "/LICENSE.LGPL3";
                 else
-                    licenseFile = orgLicenseFile + "/LICENSE.LGPLv21";
+                    licenseFile = orgLicenseFile + "/LICENSE.GPL2";
             }
             // Get console line height, to fill the screen properly
             int i = 0, screenHeight = 25; // default
@@ -4625,7 +4625,7 @@ void Configure::readLicense()
     dictionary["LICENSE FILE"] = sourcePath;
 
     bool openSource = false;
-    bool hasOpenSource = QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.LGPLv3") || QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.LGPLv21");
+    bool hasOpenSource = QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.LGPL3") || QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.GPL2");
     if (dictionary["BUILDTYPE"] == "commercial") {
         openSource = false;
     } else if (dictionary["BUILDTYPE"] == "opensource") {

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2012-2013, BogDan Vatra <bogdan@kde.org>
+    Copyright (c) 2016, BogDan Vatra <bogdan@kde.org>
     Contact: http://www.qt.io/licensing/
 
     Commercial License Usage
@@ -36,12 +36,12 @@
 
 package org.qtproject.qt5.android.bindings;
 
+import android.app.Application;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import android.app.Application;
 
 public class QtApplication extends Application
 {
@@ -64,10 +64,11 @@ public class QtApplication extends Application
     public static Method onKeyShortcut = null;
     public static Method dispatchGenericMotionEvent = null;
     public static Method onGenericMotionEvent = null;
-
-    public static void setQtActivityDelegate(Object listener)
+    private static String activityClassName;
+    public static void setQtContextDelegate(Class<?> clazz, Object listener)
     {
-        QtApplication.m_delegateObject = listener;
+        m_delegateObject = listener;
+        activityClassName = clazz.getCanonicalName();
 
         ArrayList<Method> delegateMethods = new ArrayList<Method>();
         for (Method m : listener.getClass().getMethods()) {
@@ -83,7 +84,7 @@ public class QtApplication extends Application
 
         for (Method delegateMethod : delegateMethods) {
             try {
-                QtActivity.class.getDeclaredMethod(delegateMethod.getName(), delegateMethod.getParameterTypes());
+                clazz.getDeclaredMethod(delegateMethod.getName(), delegateMethod.getParameterTypes());
                 if (QtApplication.m_delegateMethods.containsKey(delegateMethod.getName())) {
                     QtApplication.m_delegateMethods.get(delegateMethod.getName()).add(delegateMethod);
                 } else {
@@ -126,7 +127,6 @@ public class QtApplication extends Application
             return result;
         StackTraceElement[] elements = Thread.currentThread().getStackTrace();
         if (-1 == stackDeep) {
-            String activityClassName = QtActivity.class.getCanonicalName();
             for (int it=0;it<elements.length;it++)
                 if (elements[it].getClassName().equals(activityClassName)) {
                     stackDeep = it;

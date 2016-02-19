@@ -61,7 +61,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QMimeMagicRulePrivate;
 class QMimeMagicRule
 {
 public:
@@ -69,20 +68,29 @@ public:
 
     QMimeMagicRule(const QString &typeStr, const QByteArray &value, const QString &offsets,
                    const QByteArray &mask, QString *errorString);
-    QMimeMagicRule(const QMimeMagicRule &other);
-    ~QMimeMagicRule();
 
-    QMimeMagicRule &operator=(const QMimeMagicRule &other);
+    void swap(QMimeMagicRule &other) Q_DECL_NOTHROW
+    {
+        qSwap(m_type,          other.m_type);
+        qSwap(m_value,         other.m_value);
+        qSwap(m_startPos,      other.m_startPos);
+        qSwap(m_endPos,        other.m_endPos);
+        qSwap(m_mask,          other.m_mask);
+        qSwap(m_pattern,       other.m_pattern);
+        qSwap(m_number,        other.m_number);
+        qSwap(m_numberMask,    other.m_numberMask);
+        qSwap(m_matchFunction, other.m_matchFunction);
+    }
 
     bool operator==(const QMimeMagicRule &other) const;
 
-    Type type() const;
-    QByteArray value() const;
-    int startPos() const;
-    int endPos() const;
+    Type type() const { return m_type; }
+    QByteArray value() const { return m_value; }
+    int startPos() const { return m_startPos; }
+    int endPos() const { return m_endPos; }
     QByteArray mask() const;
 
-    bool isValid() const;
+    bool isValid() const { return m_matchFunction != Q_NULLPTR; }
 
     bool matches(const QByteArray &data) const;
 
@@ -94,9 +102,26 @@ public:
     static bool matchSubstring(const char *dataPtr, int dataSize, int rangeStart, int rangeLength, int valueLength, const char *valueData, const char *mask);
 
 private:
-    const QScopedPointer<QMimeMagicRulePrivate> d;
+    Type m_type;
+    QByteArray m_value;
+    int m_startPos;
+    int m_endPos;
+    QByteArray m_mask;
+
+    QByteArray m_pattern;
+    quint32 m_number;
+    quint32 m_numberMask;
+
+    typedef bool (QMimeMagicRule::*MatchFunction)(const QByteArray &data) const;
+    MatchFunction m_matchFunction;
+
+private:
+    // match functions
+    bool matchString(const QByteArray &data) const;
+    template <typename T>
+    bool matchNumber(const QByteArray &data) const;
 };
-Q_DECLARE_TYPEINFO(QMimeMagicRule, Q_MOVABLE_TYPE);
+Q_DECLARE_SHARED(QMimeMagicRule)
 
 QT_END_NAMESPACE
 

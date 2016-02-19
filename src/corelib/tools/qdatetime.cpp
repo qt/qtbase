@@ -975,9 +975,11 @@ bool QDate::setDate(int year, int month, int day)
 
     Returns 0 if the date is invalid.
 
+    \note In Qt versions prior to 5.7, this function is marked as non-\c{const}.
+
     \sa year(), month(), day(), isValid()
 */
-void QDate::getDate(int *year, int *month, int *day)
+void QDate::getDate(int *year, int *month, int *day) const
 {
     ParsedDate pd = { 0, 0, 0 };
     if (isValid())
@@ -990,6 +992,17 @@ void QDate::getDate(int *year, int *month, int *day)
     if (day)
         *day = pd.day;
 }
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+/*!
+    \overload
+    \internal
+*/
+void QDate::getDate(int *year, int *month, int *day)
+{
+    qAsConst(*this).getDate(year, month, day);
+}
+#endif // < Qt 6
 
 /*!
     Returns a QDate object containing a date \a ndays later than the

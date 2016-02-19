@@ -56,6 +56,8 @@ void QAndroidSystemLocale::getLocaleFromJava() const
 
     QJNIObjectPrivate javaLocaleObject;
     QJNIObjectPrivate javaActivity(QtAndroid::activity());
+    if (!javaActivity.isValid())
+        javaActivity = QtAndroid::service();
     if (javaActivity.isValid()) {
         QJNIObjectPrivate resources = javaActivity.callObjectMethod("getResources", "()Landroid/content/res/Resources;");
         QJNIObjectPrivate configuration = resources.callObjectMethod("getConfiguration", "()Landroid/content/res/Configuration;");

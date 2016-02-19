@@ -136,11 +136,12 @@ public:
         QPersistentModelIndexData *data;
         QPersistentModelIndex index;
     };
-    QList<SavedPersistent> savedPersistent;
+    QVector<SavedPersistent> savedPersistent;
     QPersistentModelIndex toBeRefreshed;
 
     bool shouldStat; // use the "carefull not to stat directories" mode
 };
+Q_DECLARE_TYPEINFO(QDirModelPrivate::SavedPersistent, Q_MOVABLE_TYPE);
 
 void qt_setDirModelShouldNotStat(QDirModelPrivate *modelPrivate)
 {
@@ -1237,14 +1238,16 @@ void QDirModelPrivate::savePersistentIndexes()
 {
     Q_Q(QDirModel);
     savedPersistent.clear();
+    savedPersistent.reserve(persistent.indexes.size());
     foreach (QPersistentModelIndexData *data, persistent.indexes) {
-        SavedPersistent saved;
         QModelIndex index = data->index;
-        saved.path = q->filePath(index);
-        saved.column = index.column();
-        saved.data = data;
-        saved.index = index;
-        savedPersistent.append(saved);
+        SavedPersistent saved = {
+            q->filePath(index),
+            index.column(),
+            data,
+            index,
+        };
+        savedPersistent.push_back(std::move(saved));
     }
 }
 
@@ -1253,11 +1256,9 @@ void QDirModelPrivate::restorePersistentIndexes()
     Q_Q(QDirModel);
     bool allow = allowAppendChild;
     allowAppendChild = false;
-    for (int i = 0; i < savedPersistent.count(); ++i) {
-        QPersistentModelIndexData *data = savedPersistent.at(i).data;
-        QString path = savedPersistent.at(i).path;
-        int column = savedPersistent.at(i).column;
-        QModelIndex idx = q->index(path, column);
+    for (const SavedPersistent &sp : qAsConst(savedPersistent)) {
+        QPersistentModelIndexData *data = sp.data;
+        QModelIndex idx = q->index(sp.path, sp.column);
         if (idx != data->index || data->model == 0) {
             //data->model may be equal to 0 if the model is getting destroyed
             persistent.indexes.remove(data->index);

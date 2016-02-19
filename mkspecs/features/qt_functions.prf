@@ -14,16 +14,6 @@ defineReplace(qtPlatformTargetSuffix) {
     return($$suffix)
 }
 
-# suffix for the -framework linker flag when the exectuable's name
-# differs from the bundle's, for example -framework QtCore,_debug
-# links to QtCore.framework/QtCore_debug
-defineReplace(qtFrameworkPlatformTargetSuffix) {
-    suffix = $$qtPlatformTargetSuffix()
-    !isEmpty(suffix): \
-        suffix = ,$$suffix
-    return($$suffix)
-}
-
 defineReplace(qtLibraryTarget) {
    LIBRARY_NAME = $$1
    CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework) {

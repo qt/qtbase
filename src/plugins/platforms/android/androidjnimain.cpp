@@ -78,6 +78,7 @@ static AAssetManager *m_assetManager = nullptr;
 static jobject m_resourcesObj = nullptr;
 static jobject m_activityObject = nullptr;
 static jmethodID m_createSurfaceMethodID = nullptr;
+static jobject m_serviceObject = nullptr;
 static jmethodID m_setSurfaceGeometryMethodID = nullptr;
 static jmethodID m_destroySurfaceMethodID = nullptr;
 
@@ -191,6 +192,11 @@ namespace QtAndroid
     jobject activity()
     {
         return m_activityObject;
+    }
+
+    jobject service()
+    {
+        return m_serviceObject;
     }
 
     void showStatusBar()
@@ -534,7 +540,6 @@ static jboolean startQtApplication(JNIEnv *env, jobject /*object*/, jstring para
     return pthread_create(&m_qtAppThread, nullptr, startMainMethod, nullptr) == 0;
 }
 
-
 static void quitQtAndroidPlugin(JNIEnv *env, jclass /*clazz*/)
 {
     Q_UNUSED(env);
@@ -553,6 +558,8 @@ static void terminateQt(JNIEnv *env, jclass /*clazz*/)
         env->DeleteGlobalRef(m_resourcesObj);
     if (m_activityObject)
         env->DeleteGlobalRef(m_activityObject);
+    if (m_serviceObject)
+        env->DeleteGlobalRef(m_serviceObject);
     if (m_bitmapClass)
         env->DeleteGlobalRef(m_bitmapClass);
     if (m_ARGB_8888_BitmapConfigValue)
@@ -785,20 +792,26 @@ static int registerNatives(JNIEnv *env)
     jmethodID methodID;
     GET_AND_CHECK_STATIC_METHOD(methodID, m_applicationClass, "activity", "()Landroid/app/Activity;");
     jobject activityObject = env->CallStaticObjectMethod(m_applicationClass, methodID);
+    GET_AND_CHECK_STATIC_METHOD(methodID, m_applicationClass, "service", "()Landroid/app/Service;");
+    jobject serviceObject = env->CallStaticObjectMethod(m_applicationClass, methodID);
     GET_AND_CHECK_STATIC_METHOD(methodID, m_applicationClass, "classLoader", "()Ljava/lang/ClassLoader;");
     m_classLoaderObject = env->NewGlobalRef(env->CallStaticObjectMethod(m_applicationClass, methodID));
     clazz = env->GetObjectClass(m_classLoaderObject);
     GET_AND_CHECK_METHOD(m_loadClassMethodID, clazz, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+    if (serviceObject)
+        m_serviceObject = env->NewGlobalRef(serviceObject);
 
-    if (activityObject) {
+    if (activityObject)
         m_activityObject = env->NewGlobalRef(activityObject);
 
+    jobject object = activityObject ? activityObject : serviceObject;
+    if (object) {
         FIND_AND_CHECK_CLASS("android/content/ContextWrapper");
         GET_AND_CHECK_METHOD(methodID, clazz, "getAssets", "()Landroid/content/res/AssetManager;");
-        m_assetManager = AAssetManager_fromJava(env, env->CallObjectMethod(activityObject, methodID));
+        m_assetManager = AAssetManager_fromJava(env, env->CallObjectMethod(object, methodID));
 
         GET_AND_CHECK_METHOD(methodID, clazz, "getResources", "()Landroid/content/res/Resources;");
-        m_resourcesObj = env->NewGlobalRef(env->CallObjectMethod(activityObject, methodID));
+        m_resourcesObj = env->NewGlobalRef(env->CallObjectMethod(object, methodID));
 
         FIND_AND_CHECK_CLASS("android/graphics/Bitmap");
         m_bitmapClass = static_cast<jclass>(env->NewGlobalRef(clazz));
@@ -818,8 +831,6 @@ static int registerNatives(JNIEnv *env)
                              "<init>",
                              "(Landroid/content/res/Resources;Landroid/graphics/Bitmap;)V");
     }
-
-
 
     return JNI_TRUE;
 }

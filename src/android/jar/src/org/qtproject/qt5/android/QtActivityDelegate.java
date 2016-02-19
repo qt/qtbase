@@ -953,6 +953,7 @@ public class QtActivityDelegate
     {
         if (m_quitApp) {
             QtNative.terminateQt();
+            QtNative.setActivity(null, null);
             if (m_debuggerProcess != null)
                 m_debuggerProcess.destroy();
             System.exit(0);// FIXME remove it or find a better way
@@ -1200,6 +1201,8 @@ public class QtActivityDelegate
 
     private void setActionBarVisibility(boolean visible)
     {
+        if (m_activity.getActionBar() == null)
+            return;
         if (ViewConfiguration.get(m_activity).hasPermanentMenuKey() || !visible)
             m_activity.getActionBar().hide();
         else

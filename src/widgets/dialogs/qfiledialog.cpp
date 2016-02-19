@@ -704,10 +704,11 @@ bool QFileDialogPrivate::canBeNativeDialog() const
     Q_Q(const QFileDialog);
     if (nativeDialogInUse)
         return true;
-    if (q->testAttribute(Qt::WA_DontShowOnScreen))
+    if (QCoreApplication::testAttribute(Qt::AA_DontUseNativeDialogs)
+        || q->testAttribute(Qt::WA_DontShowOnScreen)
+        || (q->options() & QFileDialog::DontUseNativeDialog)) {
         return false;
-    if (q->options() & QFileDialog::DontUseNativeDialog)
-        return false;
+    }
 
     QLatin1String staticName(QFileDialog::staticMetaObject.className());
     QLatin1String dynamicName(q->metaObject()->className());

@@ -66,6 +66,13 @@ class QMimeMagicRuleMatcher
 public:
     explicit QMimeMagicRuleMatcher(const QString &mime, unsigned priority = 65535);
 
+    void swap(QMimeMagicRuleMatcher &other) Q_DECL_NOTHROW
+    {
+        qSwap(m_list,     other.m_list);
+        qSwap(m_priority, other.m_priority);
+        qSwap(m_mimetype, other.m_mimetype);
+    }
+
     bool operator==(const QMimeMagicRuleMatcher &other) const;
 
     void addRule(const QMimeMagicRule &rule);
@@ -83,6 +90,7 @@ private:
     unsigned m_priority;
     QString m_mimetype;
 };
+Q_DECLARE_SHARED(QMimeMagicRuleMatcher)
 
 QT_END_NAMESPACE
 

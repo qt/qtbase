@@ -1909,10 +1909,11 @@ bool QColorDialogPrivate::canBeNativeDialog() const
     Q_Q(const QColorDialog);
     if (nativeDialogInUse)
         return true;
-    if (q->testAttribute(Qt::WA_DontShowOnScreen))
+    if (QCoreApplication::testAttribute(Qt::AA_DontUseNativeDialogs)
+        || q->testAttribute(Qt::WA_DontShowOnScreen)
+        || (q->options() & QColorDialog::DontUseNativeDialog)) {
         return false;
-    if (q->options() & QColorDialog::DontUseNativeDialog)
-        return false;
+    }
 
     QLatin1String staticName(QColorDialog::staticMetaObject.className());
     QLatin1String dynamicName(q->metaObject()->className());

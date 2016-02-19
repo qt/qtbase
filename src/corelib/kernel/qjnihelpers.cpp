@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 
 static JavaVM *g_javaVM = Q_NULLPTR;
 static jobject g_jActivity = Q_NULLPTR;
+static jobject g_jService = Q_NULLPTR;
 static jobject g_jClassLoader = Q_NULLPTR;
 static jint g_androidSdkVersion = 0;
 static jclass g_jNativeClass = Q_NULLPTR;
@@ -239,6 +240,32 @@ static void setAndroidSdkVersion(JNIEnv *env)
     g_androidSdkVersion = env->GetStaticIntField(androidVersionClass, androidSDKFieldID);
 }
 
+static void setNativeActivity(JNIEnv *env, jclass, jobject activity)
+{
+    if (g_jActivity != 0)
+        env->DeleteGlobalRef(g_jActivity);
+
+    if (activity != 0) {
+        g_jActivity = env->NewGlobalRef(activity);
+        env->DeleteLocalRef(activity);
+    } else {
+        g_jActivity = 0;
+    }
+}
+
+static void setNativeService(JNIEnv *env, jclass, jobject service)
+{
+    if (g_jService != 0)
+        env->DeleteGlobalRef(g_jService);
+
+    if (service != 0) {
+        g_jService = env->NewGlobalRef(service);
+        env->DeleteLocalRef(service);
+    } else {
+        g_jService = 0;
+    }
+}
+
 jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
 {
     jclass jQtNative = env->FindClass("org/qtproject/qt5/android/QtNative");
@@ -254,10 +281,21 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
         return JNI_ERR;
 
     jobject activity = env->CallStaticObjectMethod(jQtNative, activityMethodID);
+
     if (exceptionCheck(env))
         return JNI_ERR;
 
+    jmethodID serviceMethodID = env->GetStaticMethodID(jQtNative,
+                                                       "service",
+                                                       "()Landroid/app/Service;");
 
+    if (exceptionCheck(env))
+        return JNI_ERR;
+
+    jobject service = env->CallStaticObjectMethod(jQtNative, serviceMethodID);
+
+    if (exceptionCheck(env))
+        return JNI_ERR;
 
     jmethodID classLoaderMethodID = env->GetStaticMethodID(jQtNative,
                                                            "classLoader",
@@ -274,14 +312,22 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
 
     g_jClassLoader = env->NewGlobalRef(classLoader);
     env->DeleteLocalRef(classLoader);
-    g_jActivity = env->NewGlobalRef(activity);
-    env->DeleteLocalRef(activity);
+    if (activity) {
+        g_jActivity = env->NewGlobalRef(activity);
+        env->DeleteLocalRef(activity);
+    }
+    if (service) {
+        g_jService = env->NewGlobalRef(service);
+        env->DeleteLocalRef(service);
+    }
     g_javaVM = vm;
 
     static const JNINativeMethod methods[] = {
         {"runPendingCppRunnables", "()V",  reinterpret_cast<void *>(runPendingCppRunnables)},
         {"dispatchGenericMotionEvent", "(Landroid/view/MotionEvent;)Z", reinterpret_cast<void *>(dispatchGenericMotionEvent)},
         {"dispatchKeyEvent", "(Landroid/view/KeyEvent;)Z", reinterpret_cast<void *>(dispatchKeyEvent)},
+        {"setNativeActivity", "(Landroid/app/Activity;)V", reinterpret_cast<void *>(setNativeActivity)},
+        {"setNativeService", "(Landroid/app/Service;)V", reinterpret_cast<void *>(setNativeService)}
     };
 
     const bool regOk = (env->RegisterNatives(jQtNative, methods, sizeof(methods) / sizeof(methods[0])) == JNI_OK);
@@ -303,6 +349,11 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
 jobject QtAndroidPrivate::activity()
 {
     return g_jActivity;
+}
+
+jobject QtAndroidPrivate::service()
+{
+    return g_jService;
 }
 
 JavaVM *QtAndroidPrivate::javaVM()

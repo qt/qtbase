@@ -32,6 +32,7 @@
 #include <qstandarditemmodel.h>
 #include <QTreeView>
 #include <private/qtreeview_p.h>
+#include "modeltest.h"
 
 class tst_QStandardItemModel : public QObject
 {
@@ -734,6 +735,9 @@ void tst_QStandardItemModel::clear()
     QSignalSpy modelResetSpy(&model, SIGNAL(modelReset()));
     QSignalSpy layoutChangedSpy(&model, SIGNAL(layoutChanged()));
     QSignalSpy rowsRemovedSpy(&model, SIGNAL(rowsRemoved(QModelIndex,int,int)));
+
+    ModelTest mt(&model);
+
     model.clear();
 
     QCOMPARE(modelResetSpy.count(), 1);

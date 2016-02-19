@@ -88,7 +88,14 @@ public:
             m_pattern = m_pattern.toLower();
         }
     }
-    ~QMimeGlobPattern() {}
+
+    void swap(QMimeGlobPattern &other) Q_DECL_NOTHROW
+    {
+        qSwap(m_pattern,         other.m_pattern);
+        qSwap(m_mimeType,        other.m_mimeType);
+        qSwap(m_weight,          other.m_weight);
+        qSwap(m_caseSensitivity, other.m_caseSensitivity);
+    }
 
     bool matchFileName(const QString &filename) const;
 
@@ -103,6 +110,7 @@ private:
     int m_weight;
     Qt::CaseSensitivity m_caseSensitivity;
 };
+Q_DECLARE_SHARED(QMimeGlobPattern)
 
 class QMimeGlobPatternList : public QList<QMimeGlobPattern>
 {

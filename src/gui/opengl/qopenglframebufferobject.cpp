@@ -1630,6 +1630,29 @@ void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
 }
 
 /*!
+    \enum QOpenGLFramebufferObject::FramebufferRestorePolicy
+    \since 5.7
+
+    This enum type is used to configure the behavior related to restoring
+    framebuffer bindings when calling blitFramebuffer().
+
+    \value DontRestoreFramebufferBinding        Do not restore the previous framebuffer binding.
+                                                The caller is responsible for tracking and setting
+                                                the framebuffer binding as needed.
+
+    \value RestoreFramebufferBindingToDefault   After the blit operation, bind the default
+                                                framebuffer.
+
+    \value RestoreFrameBufferBinding            Restore the previously bound framebuffer. This is
+                                                potentially expensive because of the need to
+                                                query the currently bound framebuffer.
+
+    \sa blitFramebuffer()
+*/
+
+/*!
+    \since 5.7
+
     Blits from the \a sourceRect rectangle in the \a source framebuffer
     object to the \a targetRect rectangle in the \a target framebuffer object.
 
@@ -1661,6 +1684,13 @@ void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
     drawColorAttachmentIndex specify the index of the color attachments in the
     source and destination framebuffers.
 
+    The \a restorePolicy determines if the framebuffer that was bound prior to
+    calling this function should be restored, or if the default framebuffer
+    should be bound before returning, of if the caller is responsible for
+    tracking and setting the bound framebuffer. Restoring the previous
+    framebuffer can be relatively expensive due to the call to \c{glGetIntegerv}
+    which on some OpenGL drivers may imply a pipeline stall.
+
     \sa hasOpenGLFramebufferBlit()
 */
 void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target, const QRect &targetRect,
@@ -1668,7 +1698,8 @@ void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
                                                GLbitfield buffers,
                                                GLenum filter,
                                                int readColorAttachmentIndex,
-                                               int drawColorAttachmentIndex)
+                                               int drawColorAttachmentIndex,
+                                               QOpenGLFramebufferObject::FramebufferRestorePolicy restorePolicy)
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
     if (!ctx)
@@ -1679,7 +1710,8 @@ void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
         return;
 
     GLuint prevFbo = 0;
-    ctx->functions()->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *) &prevFbo);
+    if (restorePolicy == RestoreFrameBufferBinding)
+        ctx->functions()->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *) &prevFbo);
 
     const int sx0 = sourceRect.left();
     const int sx1 = sourceRect.left() + sourceRect.width();
@@ -1696,7 +1728,8 @@ void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
     extensions.glBindFramebuffer(GL_READ_FRAMEBUFFER, source ? source->handle() : defaultFboId);
     extensions.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target ? target->handle() : defaultFboId);
 
-    if (extensions.hasOpenGLFeature(QOpenGLFunctions::MultipleRenderTargets)) {
+    const bool supportsMRT = extensions.hasOpenGLFeature(QOpenGLFunctions::MultipleRenderTargets);
+    if (supportsMRT) {
         extensions.glReadBuffer(GL_COLOR_ATTACHMENT0 + readColorAttachmentIndex);
         if (target) {
             GLenum drawBuf = GL_COLOR_ATTACHMENT0 + drawColorAttachmentIndex;
@@ -1708,10 +1741,44 @@ void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
                                  tx0, ty0, tx1, ty1,
                                  buffers, filter);
 
-    if (extensions.hasOpenGLFeature(QOpenGLFunctions::MultipleRenderTargets))
+    if (supportsMRT)
         extensions.glReadBuffer(GL_COLOR_ATTACHMENT0);
 
-    ctx->functions()->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo); // sets both READ and DRAW
+    switch (restorePolicy) {
+    case RestoreFrameBufferBinding:
+        ctx->functions()->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo); // sets both READ and DRAW
+        break;
+
+    case RestoreFramebufferBindingToDefault:
+        ctx->functions()->glBindFramebuffer(GL_FRAMEBUFFER, ctx->defaultFramebufferObject()); // sets both READ and DRAW
+        break;
+
+    case DontRestoreFramebufferBinding:
+        break;
+    }
+}
+
+/*!
+   \overload
+
+    Convenience overload to blit between two framebuffer objects and
+    to restore the previous framebuffer binding. Equivalent to calling
+    blitFramebuffer(target, targetRect, source, sourceRect, buffers, filter,
+    readColorAttachmentIndex, drawColorAttachmentIndex,
+    RestoreFrameBufferBinding).
+*/
+void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target, const QRect &targetRect,
+                                               QOpenGLFramebufferObject *source, const QRect &sourceRect,
+                                               GLbitfield buffers,
+                                               GLenum filter,
+                                               int readColorAttachmentIndex,
+                                               int drawColorAttachmentIndex)
+{
+    blitFramebuffer(target, targetRect, source, sourceRect,
+                    buffers, filter,
+                    readColorAttachmentIndex,
+                    drawColorAttachmentIndex,
+                    RestoreFrameBufferBinding);
 }
 
 QT_END_NAMESPACE
