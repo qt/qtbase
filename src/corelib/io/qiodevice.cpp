@@ -1148,13 +1148,24 @@ QByteArray QIODevice::read(qint64 maxSize)
     Q_D(QIODevice);
     QByteArray result;
 
-    CHECK_MAXLEN(read, result);
-
 #if defined QIODEVICE_DEBUG
     printf("%p QIODevice::read(%lld), d->pos = %lld, d->buffer.size() = %lld\n",
            this, maxSize, d->pos, d->buffer.size());
 #endif
 
+    // Try to prevent the data from being copied, if we have a chunk
+    // with the same size in the read buffer.
+    if (maxSize == d->buffer.nextDataBlockSize() && !d->transactionStarted
+        && (d->openMode & (QIODevice::ReadOnly | QIODevice::Text)) == QIODevice::ReadOnly) {
+        result = d->buffer.read();
+        if (!d->isSequential())
+            d->pos += maxSize;
+        if (d->buffer.isEmpty())
+            readData(nullptr, 0);
+        return result;
+    }
+
+    CHECK_MAXLEN(read, result);
     if (maxSize >= MaxByteArraySize) {
         checkWarnMessage(this, "read", "maxSize argument exceeds QByteArray size limit");
         maxSize = MaxByteArraySize - 1;
