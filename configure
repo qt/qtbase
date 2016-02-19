@@ -622,7 +622,7 @@ CFG_SM=auto
 CFG_XSHAPE=auto
 CFG_XSYNC=auto
 CFG_XFIXES=runtime
-CFG_ZLIB=auto
+CFG_SYSTEM_ZLIB=auto
 CFG_MTDEV=auto
 CFG_JOURNALD=no
 CFG_SYSLOG=no
@@ -1661,9 +1661,10 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     zlib)
-        [ "$VAL" = "qt" ] && VAL=yes
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
-            CFG_ZLIB="$VAL"
+        if [ "$VAL" = "system" ]; then
+            CFG_SYSTEM_ZLIB="yes"
+        elif [ "$VAL" = "qt" ]; then
+            CFG_SYSTEM_ZLIB="no"
         else
             UNKNOWN_OPT=yes
         fi
@@ -4637,21 +4638,6 @@ if ! compileTest unix/ipc_sysv "ipc_sysv" ; then
     fi
 fi
 
-# detect zlib
-if [ "$CFG_ZLIB" = "no" ]; then
-    # Note: Qt no longer support builds without zlib
-    # So we force a "no" to be "auto" here.
-    # If you REALLY really need no zlib support, you can still disable
-    # it by doing the following:
-    #   add "no-zlib" to mkspecs/qconfig.pri
-    #   #define QT_NO_COMPRESS (probably by adding to src/corelib/global/qconfig.h)
-    #
-    # There's no guarantee that Qt will build under those conditions
-
-    CFG_ZLIB=auto
-    ZLIB_FORCED=yes
-fi
-
 if [ "$XPLATFORM_QNX" = "yes" ]; then
     if [ "$CFG_SLOG2" != "no" ]; then
         if compileTest unix/slog2 "slog2"; then
@@ -4688,11 +4674,12 @@ if [ "$XPLATFORM_QNX" = "yes" ]; then
     fi
 fi
 
-if [ "$CFG_ZLIB" = "auto" ]; then
+# detect zlib
+if [ "$CFG_SYSTEM_ZLIB" = "auto" ]; then
     if compileTest unix/zlib "zlib"; then
-       CFG_ZLIB=system
+       CFG_SYSTEM_ZLIB=yes
     else
-       CFG_ZLIB=yes
+       CFG_SYSTEM_ZLIB=no
     fi
 fi
 
@@ -6451,11 +6438,9 @@ fi
 if [ "$XPLATFORM_MAC" = "yes" ]; then
     #On Mac we implicitly link against libz, so we
     #never use the 3rdparty stuff.
-    [ "$CFG_ZLIB" = "yes" ] && CFG_ZLIB="system"
+    CFG_SYSTEM_ZLIB=yes
 fi
-if [ "$CFG_ZLIB" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG zlib"
-elif [ "$CFG_ZLIB" = "system" ]; then
+if [ "$CFG_SYSTEM_ZLIB" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG system-zlib"
 fi
 
@@ -6740,7 +6725,6 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_GIF" = "yes" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_BUILTIN_GIF_READER=1"
 [ "$CFG_PNG" != "yes" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IMAGEFORMAT_PNG"
 [ "$CFG_JPEG" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IMAGEFORMAT_JPEG"
-[ "$CFG_ZLIB" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ZLIB"
 [ "$CFG_DBUS" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_DBUS"
 [ "$CFG_LIBPROXY" = "no" ]   && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_LIBPROXY"
 
@@ -7288,7 +7272,7 @@ report_support "  tslib .................." "$CFG_TSLIB"
 report_support "  udev ..................." "$CFG_LIBUDEV"
 report_support "  xkbcommon-x11..........." "$CFG_XKBCOMMON" system "system library" qt "bundled copy, XKB config root: $CFG_XKB_CONFIG_ROOT"
 report_support "  xkbcommon-evdev........." "$CFG_XKBCOMMON_EVDEV"
-report_support "  zlib ..................." "$CFG_ZLIB" system "system library" yes "bundled copy"
+report_support "  zlib ..................." "$CFG_SYSTEM_ZLIB" yes "system library" no "bundled copy"
 
 echo
 
@@ -7382,26 +7366,6 @@ cat <<EOF
         pthread_mutex_t to protect all atomic operations. This
         implementation is the slow (but safe) fallback implementation
         for architectures Qt does not yet support.
-EOF
-fi
-
-#-------------------------------------------------------------------------------
-# check if the user passed the -no-zlib option, which is no longer supported
-#-------------------------------------------------------------------------------
-if [ -n "$ZLIB_FORCED" ]; then
-    which_zlib="supplied"
-    if [ "$CFG_ZLIB" = "system" ]; then
-	which_zlib="system"
-    fi
-
-cat <<EOF
-
-        NOTICE: The -no-zlib option was supplied but is no longer
-        supported.
-
-        Qt now requires zlib support in all builds, so the -no-zlib
-        option was ignored. Qt will be built using the $which_zlib
-        zlib.
 EOF
 fi
 

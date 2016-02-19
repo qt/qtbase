@@ -243,7 +243,7 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
 
     dictionary[ "STATIC_RUNTIME" ]  = "no";
 
-    dictionary[ "ZLIB" ]            = "auto";
+    dictionary[ "SYSTEM_ZLIB" ]     = "auto";
 
     dictionary[ "PCRE" ]            = "auto";
 
@@ -560,24 +560,11 @@ void Configure::parseCmdLine()
                 devOpt.append("\n").append(option);
             else
                 devOpt = option;
-        }
 
-        else if (configCmdLine.at(i) == "-no-zlib") {
-            // No longer supported since Qt 4.4.0
-            // But save the information for later so that we can print a warning
-            //
-            // If you REALLY really need no zlib support, you can still disable
-            // it by doing the following:
-            //   add "no-zlib" to mkspecs/qconfig.pri
-            //   #define QT_NO_COMPRESS (probably by adding to src/corelib/global/qconfig.h)
-            //
-            // There's no guarantee that Qt will build under those conditions
-
-            dictionary[ "ZLIB_FORCED" ] = "yes";
         } else if (configCmdLine.at(i) == "-qt-zlib") {
-            dictionary[ "ZLIB" ] = "qt";
+            dictionary[ "SYSTEM_ZLIB" ] = "no";
         } else if (configCmdLine.at(i) == "-system-zlib") {
-            dictionary[ "ZLIB" ] = "system";
+            dictionary[ "SYSTEM_ZLIB" ] = "yes";
         }
 
         else if (configCmdLine.at(i) == "-qt-pcre") {
@@ -1675,7 +1662,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "SSL" ]                 = "yes";
         dictionary[ "OPENSSL" ]             = "no";
         dictionary[ "DBUS" ]                = "no";
-        dictionary[ "ZLIB" ]                = "qt";
+        dictionary[ "SYSTEM_ZLIB" ]         = "no";
         dictionary[ "PCRE" ]                = "qt";
         dictionary[ "ICU" ]                 = "qt";
         dictionary[ "CE_CRT" ]              = "yes";
@@ -1935,8 +1922,8 @@ bool Configure::displayHelp()
         // 3rd party stuff options go below here --------------------------------------------------------------------------------
         desc("Third Party Libraries:\n\n");
 
-        desc("ZLIB", "qt",      "-qt-zlib",             "Use the zlib bundled with Qt.");
-        desc("ZLIB", "system",  "-system-zlib",         "Use zlib from the operating system.\nSee http://www.gzip.org/zlib\n");
+        desc("SYSTEM_ZLIB", "no", "-qt-zlib",           "Use the zlib bundled with Qt.");
+        desc("SYSTEM_ZLIB", "yes", "-system-zlib",      "Use zlib from the operating system.\nSee http://www.gzip.org/zlib\n");
 
         desc("PCRE", "qt",       "-qt-pcre",            "Use the PCRE library bundled with Qt.");
         desc("PCRE", "system",   "-system-pcre",        "Use the PCRE library from the operating system.\nSee http://pcre.org/\n");
@@ -2110,8 +2097,7 @@ QString Configure::locateFile(const QString &fileName) const
 QString Configure::defaultTo(const QString &option)
 {
     // We prefer using the system version of the 3rd party libs
-    if (option == "ZLIB"
-        || option == "PCRE"
+    if (option == "PCRE"
         || option == "LIBJPEG"
         || option == "LIBPNG")
         return "system";
@@ -2243,7 +2229,7 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "ATOMIC64-LIBATOMIC")
         available = tryCompileProject("common/atomic64", "LIBS+=-latomic");
 
-    else if (part == "ZLIB")
+    else if (part == "SYSTEM_ZLIB")
         available = findFile("zlib.h");
 
     else if (part == "PCRE")
@@ -2429,8 +2415,8 @@ void Configure::autoDetection()
         dictionary["STYLE_WINDOWSVISTA"] = checkAvailability("STYLE_WINDOWSXP") ? defaultTo("STYLE_WINDOWSVISTA") : "no";
 
     // Compression detection
-    if (dictionary["ZLIB"] == "auto")
-        dictionary["ZLIB"] =  checkAvailability("ZLIB") ? defaultTo("ZLIB") : "qt";
+    if (dictionary["SYSTEM_ZLIB"] == "auto")
+        dictionary["SYSTEM_ZLIB"] = checkAvailability("SYSTEM_ZLIB") ? "yes" : "no";
 
     // PCRE detection
     if (dictionary["PCRE"] == "auto")
@@ -2796,9 +2782,7 @@ void Configure::generateOutputVars()
         qtConfig += "no-widgets";
 
     // Compression --------------------------------------------------
-    if (dictionary[ "ZLIB" ] == "qt")
-        qtConfig += "zlib";
-    else if (dictionary[ "ZLIB" ] == "system")
+    if (dictionary[ "SYSTEM_ZLIB" ] == "yes")
         qtConfig += "system-zlib";
 
     // PCRE ---------------------------------------------------------
@@ -3732,10 +3716,6 @@ void Configure::generateConfigfiles()
         if (dictionary["GIF"] == "yes")              qconfigList += "QT_BUILTIN_GIF_READER=1";
         if (dictionary["PNG"] != "yes")              qconfigList += "QT_NO_IMAGEFORMAT_PNG";
         if (dictionary["JPEG"] != "yes")             qconfigList += "QT_NO_IMAGEFORMAT_JPEG";
-        if (dictionary["ZLIB"] == "no") {
-            qconfigList += "QT_NO_ZLIB";
-            qconfigList += "QT_NO_COMPRESS";
-        }
 
         if (dictionary["ACCESSIBILITY"] == "no")     qconfigList += "QT_NO_ACCESSIBILITY";
         if (dictionary["WIDGETS"] == "no")           qconfigList += "QT_NO_WIDGETS";
@@ -3917,7 +3897,7 @@ void Configure::displayConfig()
     sout << endl;
 
     sout << "Third Party Libraries:" << endl;
-    sout << "    ZLIB support............" << dictionary[ "ZLIB" ] << endl;
+    sout << "    ZLIB support............" << (dictionary[ "SYSTEM_ZLIB" ] == QLatin1String("yes") ? QLatin1String("system") : QLatin1String("qt")) << endl;
     sout << "    GIF support............." << dictionary[ "GIF" ] << endl;
     sout << "    JPEG support............" << dictionary[ "JPEG" ] << endl;
     sout << "    PNG support............." << dictionary[ "PNG" ] << endl;
@@ -4021,17 +4001,6 @@ void Configure::displayConfig()
             sout << "For example:" << endl;
             sout << "    configure -openssl-linked OPENSSL_LIBS=\"-lssleay32 -llibeay32\"" << endl;
         }
-    }
-    if (dictionary[ "ZLIB_FORCED" ] == "yes") {
-        QString which_zlib = "supplied";
-        if (dictionary[ "ZLIB" ] == "system")
-            which_zlib = "system";
-
-        sout << "NOTE: The -no-zlib option was supplied but is no longer supported." << endl
-             << endl
-             << "Qt now requires zlib support in all builds, so the -no-zlib" << endl
-             << "option was ignored. Qt will be built using the " << which_zlib
-             << "zlib" << endl;
     }
     if (dictionary["OBSOLETE_ARCH_ARG"] == "yes") {
         sout << endl

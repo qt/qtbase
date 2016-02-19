@@ -150,10 +150,10 @@ else:win32 {
 } else:integrity:SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp
 else:SOURCES += tools/qelapsedtimer_generic.cpp
 
-contains(QT_CONFIG, zlib) {
-    include($$PWD/../../3rdparty/zlib.pri)
-} else {
+contains(QT_CONFIG, system-zlib) {
     include($$PWD/../../3rdparty/zlib_dependency.pri)
+} else {
+    include($$PWD/../../3rdparty/zlib.pri)
 }
 
 contains(QT_CONFIG,icu) {
