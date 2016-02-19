@@ -418,6 +418,18 @@ DEFINEFUNC3(void, SSL_CTX_set_next_proto_select_cb, SSL_CTX *s, s,
             void *arg, arg, return, DUMMYARG)
 DEFINEFUNC3(void, SSL_get0_next_proto_negotiated, const SSL *s, s,
             const unsigned char **data, data, unsigned *len, len, return, DUMMYARG)
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+DEFINEFUNC3(int, SSL_set_alpn_protos, SSL *s, s, const unsigned char *protos, protos,
+            unsigned protos_len, protos_len, return -1, return)
+DEFINEFUNC3(void, SSL_CTX_set_alpn_select_cb, SSL_CTX *s, s,
+            int (*cb) (SSL *ssl, const unsigned char **out,
+                       unsigned char *outlen,
+                       const unsigned char *in,
+                       unsigned int inlen, void *arg), cb,
+            void *arg, arg, return, DUMMYARG)
+DEFINEFUNC3(void, SSL_get0_alpn_selected, const SSL *s, s, const unsigned char **data, data,
+            unsigned *len, len, return, DUMMYARG)
+#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L ...
 #endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
 DEFINEFUNC(DH *, DH_new, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(void, DH_free, DH *dh, dh, return, DUMMYARG)

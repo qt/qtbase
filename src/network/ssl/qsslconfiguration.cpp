@@ -119,7 +119,8 @@ const char QSslConfiguration::NextProtocolHttp1_1[] = "http/1.1";
 /*!
     \enum QSslConfiguration::NextProtocolNegotiationStatus
 
-    Describes the status of the Next Protocol Negotiation (NPN).
+    Describes the status of the Next Protocol Negotiation (NPN) or
+    Application-Layer Protocol Negotiation (ALPN).
 
     \value NextProtocolNegotiationNone No application protocol
     has been negotiated (yet).
@@ -812,8 +813,9 @@ QVector<QSslEllipticCurve> QSslConfiguration::supportedEllipticCurves()
   \since 5.3
 
   This function returns the protocol negotiated with the server
-  if the Next Protocol Negotiation (NPN) TLS extension was enabled.
-  In order for the NPN extension to be enabled, setAllowedNextProtocols()
+  if the Next Protocol Negotiation (NPN) or Application-Layer Protocol
+  Negotiation (ALPN) TLS extension was enabled.
+  In order for the NPN/ALPN extension to be enabled, setAllowedNextProtocols()
   needs to be called explicitly before connecting to the server.
 
   If no protocol could be negotiated or the extension was not enabled,
@@ -830,9 +832,10 @@ QByteArray QSslConfiguration::nextNegotiatedProtocol() const
   \since 5.3
 
   This function sets the allowed \a protocols to be negotiated with the
-  server through the Next Protocol Negotiation (NPN) TLS extension; each
+  server through the Next Protocol Negotiation (NPN) or Application-Layer
+  Protocol Negotiation (ALPN) TLS extension; each
   element in \a protocols must define one allowed protocol.
-  The function must be called explicitly before connecting to send the NPN
+  The function must be called explicitly before connecting to send the NPN/ALPN
   extension in the SSL handshake.
   Whether or not the negotiation succeeded can be queried through
   nextProtocolNegotiationStatus().
@@ -852,8 +855,8 @@ void QSslConfiguration::setAllowedNextProtocols(QList<QByteArray> protocols)
   \since 5.3
 
   This function returns the allowed protocols to be negotiated with the
-  server through the Next Protocol Negotiation (NPN) TLS extension, as set
-  by setAllowedNextProtocols().
+  server through the Next Protocol Negotiation (NPN) or Application-Layer
+  Protocol Negotiation (ALPN) TLS extension, as set by setAllowedNextProtocols().
 
   \sa nextNegotiatedProtocol(), nextProtocolNegotiationStatus(), setAllowedNextProtocols(), QSslConfiguration::NextProtocolSpdy3_0, QSslConfiguration::NextProtocolHttp1_1
  */
@@ -865,7 +868,8 @@ QList<QByteArray> QSslConfiguration::allowedNextProtocols() const
 /*!
   \since 5.3
 
-  This function returns the status of the Next Protocol Negotiation (NPN).
+  This function returns the status of the Next Protocol Negotiation (NPN)
+  or Application-Layer Protocol Negotiation (ALPN).
   If the feature has not been enabled through setAllowedNextProtocols(),
   this function returns NextProtocolNegotiationNone.
   The status will be set before emitting the encrypted() signal.

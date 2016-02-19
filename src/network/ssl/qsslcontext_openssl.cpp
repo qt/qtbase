@@ -457,7 +457,25 @@ SSL* QSslContext::createSsl()
         m_npnContext.data = reinterpret_cast<unsigned char *>(m_supportedNPNVersions.data());
         m_npnContext.len = m_supportedNPNVersions.count();
         m_npnContext.status = QSslConfiguration::NextProtocolNegotiationNone;
-        q_SSL_CTX_set_next_proto_select_cb(ctx, next_proto_cb, &m_npnContext);
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+        if (q_SSLeay() >= 0x10002000L) {
+            // Callback's type has a parameter 'const unsigned char ** out'
+            // since it was introduced in 1.0.2. Internally, OpenSSL's own code
+            // (tests/examples) cast it to unsigned char * (since it's 'out').
+            // We just re-use our NPN callback and cast here:
+            typedef int (*alpn_callback_t) (SSL *, const unsigned char **, unsigned char *,
+                                            const unsigned char *, unsigned int, void *);
+            // With ALPN callback is for a server side only, for a client m_npnContext.status
+            // will stay in NextProtocolNegotiationNone.
+            q_SSL_CTX_set_alpn_select_cb(ctx, alpn_callback_t(next_proto_cb), &m_npnContext);
+            // Client:
+            q_SSL_set_alpn_protos(ssl, m_npnContext.data, m_npnContext.len);
+        } else {
+#else
+        {
+#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L ...
+            q_SSL_CTX_set_next_proto_select_cb(ctx, next_proto_cb, &m_npnContext);
+        }
     }
 #endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
 

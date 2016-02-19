@@ -229,6 +229,7 @@ private slots:
     void simplePskConnect();
     void ephemeralServerKey_data();
     void ephemeralServerKey();
+    void allowedProtocolNegotiation();
 #endif
 
     static void exitLoop()
@@ -3373,6 +3374,45 @@ void tst_QSslSocket::ephemeralServerKey()
     QCOMPARE(spy.count(), 1);
     QVERIFY(server.config.ephemeralServerKey().isNull());
     QCOMPARE(client->sslConfiguration().ephemeralServerKey().isNull(), emptyKey);
+}
+
+void tst_QSslSocket::allowedProtocolNegotiation()
+{
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_TLSEXT)
+
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    const QByteArray expectedNegotiated("cool-protocol");
+    QList<QByteArray> serverProtos;
+    serverProtos << expectedNegotiated << "not-so-cool-protocol";
+    QList<QByteArray> clientProtos;
+    clientProtos << "uber-cool-protocol" << expectedNegotiated << "not-so-cool-protocol";
+
+
+    SslServer server;
+    server.config.setAllowedNextProtocols(serverProtos);
+    QVERIFY(server.listen());
+
+    QSslSocket clientSocket;
+    auto configuration = clientSocket.sslConfiguration();
+    configuration.setAllowedNextProtocols(clientProtos);
+    clientSocket.setSslConfiguration(configuration);
+
+    clientSocket.connectToHostEncrypted("127.0.0.1", server.serverPort());
+    clientSocket.ignoreSslErrors();
+
+    QEventLoop loop;
+    QTimer::singleShot(5000, &loop, SLOT(quit()));
+    connect(&clientSocket, SIGNAL(encrypted()), &loop, SLOT(quit()));
+    loop.exec();
+
+    QVERIFY(server.socket->sslConfiguration().nextNegotiatedProtocol() ==
+            clientSocket.sslConfiguration().nextNegotiatedProtocol());
+    QVERIFY(server.socket->sslConfiguration().nextNegotiatedProtocol() == expectedNegotiated);
+
+#endif // OPENSSL_VERSION_NUMBER
 }
 
 #endif // QT_NO_OPENSSL

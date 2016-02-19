@@ -558,6 +558,19 @@ void q_SSL_CTX_set_next_proto_select_cb(SSL_CTX *s,
                                         void *arg);
 void q_SSL_get0_next_proto_negotiated(const SSL *s, const unsigned char **data,
                                       unsigned *len);
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+int q_SSL_set_alpn_protos(SSL *ssl, const unsigned char *protos,
+                          unsigned protos_len);
+void q_SSL_CTX_set_alpn_select_cb(SSL_CTX *ctx,
+                                  int (*cb) (SSL *ssl,
+                                             const unsigned char **out,
+                                             unsigned char *outlen,
+                                             const unsigned char *in,
+                                             unsigned int inlen,
+                                             void *arg), void *arg);
+void q_SSL_get0_alpn_selected(const SSL *ssl, const unsigned char **data,
+                              unsigned *len);
+#endif
 #endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
 
 // Helper function

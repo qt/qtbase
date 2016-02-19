@@ -1565,7 +1565,20 @@ void QSslSocketBackendPrivate::continueHandshake()
     } else {
         const unsigned char *proto = 0;
         unsigned int proto_len = 0;
-        q_SSL_get0_next_proto_negotiated(ssl, &proto, &proto_len);
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+        if (q_SSLeay() >= 0x10002000L) {
+            q_SSL_get0_alpn_selected(ssl, &proto, &proto_len);
+            if (proto_len && mode == QSslSocket::SslClientMode) {
+                // Client does not have a callback that sets it ...
+                configuration.nextProtocolNegotiationStatus = QSslConfiguration::NextProtocolNegotiationNegotiated;
+            }
+        } else {
+#else
+        {
+#endif
+            q_SSL_get0_next_proto_negotiated(ssl, &proto, &proto_len);
+        }
+
         if (proto_len)
             configuration.nextNegotiatedProtocol = QByteArray(reinterpret_cast<const char *>(proto), proto_len);
         else
