@@ -1069,10 +1069,6 @@ void QListWidgetPrivate::setup()
     QObject::connect(q, SIGNAL(entered(QModelIndex)), q, SLOT(_q_emitItemEntered(QModelIndex)));
     QObject::connect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
                      q, SLOT(_q_emitItemChanged(QModelIndex)));
-    QObject::connect(q->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
-                     q, SLOT(_q_emitCurrentItemChanged(QModelIndex,QModelIndex)));
-    QObject::connect(q->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
-                     q, SIGNAL(itemSelectionChanged()));
     QObject::connect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
                      q, SLOT(_q_dataChanged(QModelIndex,QModelIndex)));
     QObject::connect(model, SIGNAL(columnsRemoved(QModelIndex,int,int)), q, SLOT(_q_sort()));
@@ -1352,6 +1348,31 @@ QListWidget::QListWidget(QWidget *parent)
 
 QListWidget::~QListWidget()
 {
+}
+
+/*!
+    \reimp
+*/
+
+void QListWidget::setSelectionModel(QItemSelectionModel *selectionModel)
+{
+    Q_D(QListWidget);
+
+    if (d->selectionModel) {
+        QObject::disconnect(d->selectionModel, SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+                            this, SLOT(_q_emitCurrentItemChanged(QModelIndex,QModelIndex)));
+        QObject::disconnect(d->selectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+                            this, SIGNAL(itemSelectionChanged()));
+    }
+
+    QListView::setSelectionModel(selectionModel);
+
+    if (d->selectionModel) {
+        QObject::connect(d->selectionModel, SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+                         this, SLOT(_q_emitCurrentItemChanged(QModelIndex,QModelIndex)));
+        QObject::connect(d->selectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+                         this, SIGNAL(itemSelectionChanged()));
+    }
 }
 
 /*!
