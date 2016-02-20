@@ -1,3 +1,4 @@
+#!/bin/bash
 # This scripts generates a configure line for Qt on NaCl.
 
 # Require that NACL_SDK_ROOT is set.
