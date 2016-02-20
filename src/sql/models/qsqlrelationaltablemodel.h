@@ -43,6 +43,8 @@
 #include <QtSql/qtsqlglobal.h>
 #include <QtSql/qsqltablemodel.h>
 
+#include <QtCore/qtypeinfo.h>
+
 QT_BEGIN_NAMESPACE
 
 
@@ -53,17 +55,26 @@ public:
     QSqlRelation(const QString &aTableName, const QString &indexCol,
                const QString &displayCol)
         : tName(aTableName), iColumn(indexCol), dColumn(displayCol) {}
+
+    void swap(QSqlRelation &other) Q_DECL_NOTHROW
+    {
+        qSwap(tName, other.tName);
+        qSwap(iColumn, other.iColumn);
+        qSwap(dColumn, other.dColumn);
+    }
+
     inline QString tableName() const
     { return tName; }
     inline QString indexColumn() const
     { return iColumn; }
     inline QString displayColumn() const
     { return dColumn; }
-    inline bool isValid() const
+    bool isValid() const Q_DECL_NOTHROW
     { return !(tName.isEmpty() || iColumn.isEmpty() || dColumn.isEmpty()); }
 private:
     QString tName, iColumn, dColumn;
 };
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QSqlRelation)
 
 class QSqlRelationalTableModelPrivate;
 
