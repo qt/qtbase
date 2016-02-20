@@ -481,7 +481,7 @@ QMatrix QPixmap::trueMatrix(const QMatrix &m, int w, int h)
 
 bool QPixmap::isQBitmap() const
 {
-    return data->type == QPlatformPixmap::BitmapType;
+    return data && data->type == QPlatformPixmap::BitmapType;
 }
 
 /*!

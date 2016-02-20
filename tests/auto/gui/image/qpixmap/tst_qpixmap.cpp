@@ -105,6 +105,7 @@ private slots:
     void drawBitmap();
     void isNull();
     void task_246446();
+    void task_51271();
 
     void convertFromImageNoDetach();
     void convertFromImageDetach();
@@ -1439,6 +1440,14 @@ void tst_QPixmap::task_246446()
     }
     QCOMPARE(pm.width(), 10);
     QVERIFY(pm.mask().isNull());
+}
+
+void tst_QPixmap::task_51271()
+{
+    QPixmap pm;
+    QBitmap bm;
+    QVERIFY(!pm.isQBitmap()); // Should not crash !
+    QVERIFY(bm.isQBitmap());
 }
 
 void tst_QPixmap::preserveDepth()
