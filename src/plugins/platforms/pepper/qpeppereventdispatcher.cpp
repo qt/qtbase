@@ -53,9 +53,10 @@ QPepperEventDispatcher::~QPepperEventDispatcher() {}
 
 bool QPepperEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
+    bool processed = false;
     do {
-        QUnixEventDispatcherQPA::processEvents(flags);
-    } while (hasPendingEvents());
+        processed = QUnixEventDispatcherQPA::processEvents(flags);
+    } while (processed && hasPendingEvents());
     return true;
 }
 
