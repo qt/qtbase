@@ -1914,7 +1914,7 @@ QMargins QWindowsWindow::frameMargins() const
         // Always skip calculating style-dependent margins for windows claimed to be frameless.
         // This allows users to remove the margins by handling WM_NCCALCSIZE with WS_THICKFRAME set
         // to ensure Areo snap still works (QTBUG-40578).
-        m_data.frame = window()->flags() & Qt::FramelessWindowHint
+        m_data.frame = m_data.flags & Qt::FramelessWindowHint
             ? QMargins(0, 0, 0, 0)
             : QWindowsGeometryHint::frame(style(), exStyle());
         clearFlag(FrameDirty);
