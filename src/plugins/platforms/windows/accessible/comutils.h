@@ -47,14 +47,9 @@ class QVariant;
 // Originally QVariantToVARIANT copied from ActiveQt - renamed to avoid conflicts in static builds.
 bool QVariant2VARIANT(const QVariant &var, VARIANT &arg, const QByteArray &typeName, bool out);
 
-inline QString BSTRToQString(const BSTR &bstr)
-{
-    return QString((QChar*)bstr);
-}
-
 inline BSTR QStringToBSTR(const QString &str)
 {
-    return SysAllocStringLen((OLECHAR*)str.unicode(), str.length());
+    return SysAllocStringLen(reinterpret_cast<const OLECHAR *>(str.unicode()), UINT(str.length()));
 }
 
 QT_END_NAMESPACE

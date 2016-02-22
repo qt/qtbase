@@ -60,7 +60,7 @@ HRESULT STDMETHODCALLTYPE AccessibleApplication::QueryInterface(REFIID id, LPVOI
     *iface = 0;
     if (id == IID_IUnknown) {
         qCDebug(lcQpaAccessibility) << "AccessibleApplication::QI(): IID_IUnknown";
-        *iface = (IUnknown*)this;
+        *iface = static_cast<IUnknown *>(this);
     } else if (id == IID_IAccessibleApplication) {
         qCDebug(lcQpaAccessibility) << "AccessibleApplication::QI(): IID_IAccessibleApplication";
         *iface = static_cast<IAccessibleApplication*>(this);
@@ -130,7 +130,7 @@ HRESULT STDMETHODCALLTYPE AccessibleRelation::QueryInterface(REFIID id, LPVOID *
 {
     *iface = 0;
     if (id == IID_IUnknown || id == IID_IAccessibleRelation)
-        *iface = (IUnknown*)this;
+        *iface = static_cast<IUnknown *>(this);
 
     if (*iface) {
         AddRef();
@@ -208,7 +208,7 @@ HRESULT STDMETHODCALLTYPE AccessibleRelation::get_targets(
     /* [retval][out] */ long *nTargets)
 {
 
-    const int numTargets = qMin((int)maxTargets, m_targets.count());
+    const int numTargets = qMin(int(maxTargets), m_targets.count());
     for (int i = 0; i < numTargets; ++i) {
         QAccessibleInterface *iface = m_targets.at(i);
         IAccessible *iacc = QWindowsAccessibility::wrap(iface);
@@ -237,40 +237,40 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::QueryInterface(REFIID id, LPVOI
     HRESULT hr = QWindowsMsaaAccessible::QueryInterface(id, iface);
     if (!SUCCEEDED(hr)) {
         if (id == IID_IServiceProvider) {
-            *iface = (IServiceProvider*)this;
+            *iface = static_cast<IServiceProvider *>(this);
         } else if (id == IID_IAccessible2) {
-            *iface = (IAccessible2*)this;
+            *iface = static_cast<IAccessible2 *>(this);
         } else if (id == IID_IAccessibleAction) {
             if (accessible->actionInterface())
-                *iface = (IAccessibleAction*)this;
+                *iface = static_cast<IAccessibleAction *>(this);
         } else if (id == IID_IAccessibleComponent) {
-            *iface = (IAccessibleComponent*)this;
+            *iface = static_cast<IAccessibleComponent *>(this);
         } else if (id == IID_IAccessibleEditableText) {
             if (accessible->editableTextInterface() ||
                 accessible->role() == QAccessible::EditableText)
             {
-                *iface = (IAccessibleEditableText*)this;
+                *iface = static_cast<IAccessibleEditableText *>(this);
             }
         } else if (id == IID_IAccessibleHyperlink) {
-            //*iface = (IAccessibleHyperlink*)this;
+            //*iface = static_cast<IAccessibleHyperlink *>(this);
         } else if (id == IID_IAccessibleHypertext) {
-            //*iface = (IAccessibleHypertext*)this;
+            //*iface = static_cast<IAccessibleHypertext *>(this);
         } else if (id == IID_IAccessibleImage) {
-            //*iface = (IAccessibleImage*)this;
+            //*iface = static_cast<IAccessibleImage *>(this);
         } else if (id == IID_IAccessibleTable) {
-            //*iface = (IAccessibleTable*)this; // not supported
+            //*iface = static_cast<IAccessibleTable *>(this); // not supported
         } else if (id == IID_IAccessibleTable2) {
             if (accessible->tableInterface())
-                *iface = (IAccessibleTable2*)this;
+                *iface = static_cast<IAccessibleTable2 *>(this);
         } else if (id == IID_IAccessibleTableCell) {
             if (accessible->tableCellInterface())
-                *iface = (IAccessibleTableCell*)this;
+                *iface = static_cast<IAccessibleTableCell *>(this);
         } else if (id == IID_IAccessibleText) {
             if (accessible->textInterface())
-                *iface = (IAccessibleText*)this;
+                *iface = static_cast<IAccessibleText *>(this);
         } else if (id == IID_IAccessibleValue) {
             if (accessible->valueInterface())
-                *iface = (IAccessibleValue*)this;
+                *iface = static_cast<IAccessibleValue *>(this);
         }
         if (*iface) {
             AddRef();
@@ -674,7 +674,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_foreground(IA2Color *foregr
         return E_FAIL;
 
     // IA2Color is a typedef for long
-    *foreground = (IA2Color)accessible->foregroundColor().rgb();
+    *foreground = static_cast<IA2Color>(accessible->foregroundColor().rgb());
     return S_OK;
 }
 
@@ -686,7 +686,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_background(IA2Color *backgr
         return E_FAIL;
 
     // IA2Color is a typedef for long
-    *background = (IA2Color)accessible->backgroundColor().rgb();
+    *background = static_cast<IA2Color>(accessible->backgroundColor().rgb());
     return S_OK;
 }
 
@@ -760,7 +760,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::insertText(long offset, BSTR *t
 {
     QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    const QString txt(BSTRToQString(*text));
+    const QString txt = QString::fromWCharArray(*text);
     if (QAccessibleEditableTextInterface *editableTextIface = accessible->editableTextInterface())
         editableTextIface->insertText(offset, txt);
     else
@@ -805,7 +805,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::replaceText(long startOffset, l
 {
     QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    const QString txt(BSTRToQString(*text));
+    const QString txt = QString::fromWCharArray(*text);
     if (QAccessibleEditableTextInterface *editableTextIface = accessible->editableTextInterface())
         editableTextIface->replaceText(startOffset, endOffset, txt);
     else
@@ -1206,10 +1206,10 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_rowColumnExtents(long *row,
     if (!accessible || !tableCellInterface())
         return E_FAIL;
 
-    *row = (long)tableCellInterface()->rowIndex();
-    *column = (long)tableCellInterface()->columnIndex();
-    *rowExtents = (long)tableCellInterface()->rowExtent();
-    *columnExtents = (long)tableCellInterface()->columnExtent();
+    *row = tableCellInterface()->rowIndex();
+    *column = tableCellInterface()->columnIndex();
+    *rowExtents = tableCellInterface()->rowExtent();
+    *columnExtents = tableCellInterface()->columnExtent();
     *isSelected = tableCellInterface()->isSelected();
     return S_OK;
 }
@@ -1250,7 +1250,8 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_attributes(long offset,
     QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *text = textInterface()) {
-        const QString attrs = text->attributes(offset, (int*)startOffset, (int*)endOffset);
+        const QString attrs = text->attributes(offset, reinterpret_cast<int *>(startOffset),
+                                               reinterpret_cast<int *>(endOffset));
         *textAttributes = QStringToBSTR(attrs);
         return S_OK;
     }
@@ -1322,7 +1323,8 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_selection(long selectionInd
     QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *text = textInterface()) {
-        text->selection(selectionIndex, (int*)startOffset, (int*)endOffset);
+        text->selection(selectionIndex, reinterpret_cast<int *>(startOffset),
+                        reinterpret_cast<int *>(endOffset));
         return S_OK;
     }
     return E_FAIL;
@@ -1354,7 +1356,10 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_textBeforeOffset(long offse
     QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *textIface = textInterface()) {
-        const QString txt = textIface->textBeforeOffset(offset, (QAccessible::TextBoundaryType)boundaryType, (int*)startOffset, (int*)endOffset);
+        const QString txt =
+            textIface->textBeforeOffset(offset, static_cast<QAccessible::TextBoundaryType>(boundaryType),
+                                        reinterpret_cast<int *>(startOffset),
+                                        reinterpret_cast<int *>(endOffset));
         if (!txt.isEmpty()) {
             *text = QStringToBSTR(txt);
             return S_OK;
@@ -1374,7 +1379,10 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_textAfterOffset(
     QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *textIface = textInterface()) {
-        const QString txt = textIface->textAfterOffset(offset, (QAccessible::TextBoundaryType)boundaryType, (int*)startOffset, (int*)endOffset);
+        const QString txt =
+                textIface->textAfterOffset(offset, static_cast<QAccessible::TextBoundaryType>(boundaryType),
+                                           reinterpret_cast<int *>(startOffset),
+                                           reinterpret_cast<int *>(endOffset));
         if (!txt.isEmpty()) {
             *text = QStringToBSTR(txt);
             return S_OK;
@@ -1393,7 +1401,10 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_textAtOffset(long offset,
     QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *textIface = textInterface()) {
-        const QString txt = textIface->textAtOffset(offset, (QAccessible::TextBoundaryType)boundaryType, (int*)startOffset, (int*)endOffset);
+        const QString txt =
+            textIface->textAtOffset(offset, static_cast<QAccessible::TextBoundaryType>(boundaryType),
+                                    reinterpret_cast<int *>(startOffset),
+                                    reinterpret_cast<int *>(endOffset));
         if (!txt.isEmpty()) {
             *text = QStringToBSTR(txt);
             return S_OK;
@@ -1632,7 +1643,7 @@ HRESULT QWindowsIA2Accessible::getRelationsHelper(IAccessibleRelation **relation
     QList<QAccessible::Relation> keys = relationMap.keys();
     const int numRelations = keys.count();
     if (relations) {
-        for (int i = startIndex; i < qMin(startIndex + (int)maxRelations, numRelations); ++i) {
+        for (int i = startIndex; i < qMin(startIndex + int(maxRelations), numRelations); ++i) {
             QAccessible::Relation relation = keys.at(i);
             QList<QAccessibleInterface*> targets = relationMap.values(relation);
             AccessibleRelation *rel = new AccessibleRelation(targets, relation);
