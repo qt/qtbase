@@ -88,7 +88,7 @@ int QtNaclDeployer::deploy()
         qDebug() << "File not found" << binary;
         return 0;
     }
-    
+
     if (!quickImports && QFile::exists(binary + "_qml_plugin_import.cpp")) {
         qDebug() << "Note: qml_plugin_import.cpp file found. Auto-enabling --quick option.";
         quickImports = true;
@@ -203,11 +203,11 @@ int QtNaclDeployer::deploy()
         QString nmfCommand = QStringLiteral("python ") + createNmf
                 + " -o " + nmfFilePath
                 + " -L " + qtLibDir           // Add Qt libs search payh
-                + " -s  . "                   // copy dependencies 
-//                + " --debug-libs"    
+                + " -s  . "                   // copy dependencies
+//                + " --debug-libs"
                 + " " + finalBinaryPath
                 + " " + (debug ? binary : QString("")); // deploy .bc when debugging (adds a "pnacl-debug" section to the nmf)
-    
+
         runCommand(nmfCommand.toLatin1().constData());
     }
 
