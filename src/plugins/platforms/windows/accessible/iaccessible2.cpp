@@ -249,8 +249,6 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::QueryInterface(REFIID id, LPVOI
             //*iface = (IAccessibleHypertext*)this;
         } else if (id == IID_IAccessibleImage) {
             //*iface = (IAccessibleImage*)this;
-        } else if (id == IID_IAccessibleRelation) {
-            *iface = (IAccessibleRelation*)this;
         } else if (id == IID_IAccessibleTable) {
             //*iface = (IAccessibleTable*)this; // not supported
         } else if (id == IID_IAccessibleTable2) {
