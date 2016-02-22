@@ -33,6 +33,10 @@
 <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
 </TestFunction>
+<TestFunction name="compare_to_nullptr">
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
+</TestFunction>
 <TestFunction name="compare_pointerfuncs">
 <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>

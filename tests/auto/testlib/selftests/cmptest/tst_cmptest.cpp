@@ -128,6 +128,7 @@ private slots:
     void compare_registered_enums();
     void compare_class_enums();
     void compare_boolfuncs();
+    void compare_to_nullptr();
     void compare_pointerfuncs();
     void compare_tostring();
     void compare_tostring_data();
@@ -178,6 +179,24 @@ void tst_Cmptest::compare_boolfuncs()
     QCOMPARE(!boolfunc(), !boolfunc2());
     QCOMPARE(boolfunc(), true);
     QCOMPARE(!boolfunc(), false);
+}
+
+namespace {
+template <typename T>
+T *null() Q_DECL_NOTHROW { return nullptr; }
+}
+
+void tst_Cmptest::compare_to_nullptr()
+{
+    QCOMPARE(null<int>(), nullptr);
+    QCOMPARE(null<const int>(), nullptr);
+    QCOMPARE(null<volatile int>(), nullptr);
+    QCOMPARE(null<const volatile int>(), nullptr);
+
+    QCOMPARE(nullptr, null<int>());
+    QCOMPARE(nullptr, null<const int>());
+    QCOMPARE(nullptr, null<volatile int>());
+    QCOMPARE(nullptr, null<const volatile int>());
 }
 
 static int i = 0;

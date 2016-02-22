@@ -332,11 +332,25 @@ namespace QTest
     Q_TESTLIB_EXPORT bool qCompare(double const &t1, double const &t2,
                     const char *actual, const char *expected, const char *file, int line);
 
-    inline bool compare_ptr_helper(const void *t1, const void *t2, const char *actual,
+    inline bool compare_ptr_helper(const volatile void *t1, const volatile void *t2, const char *actual,
                                    const char *expected, const char *file, int line)
     {
         return compare_helper(t1 == t2, "Compared pointers are not the same",
                               toString(t1), toString(t2), actual, expected, file, line);
+    }
+
+    inline bool compare_ptr_helper(const volatile void *t1, std::nullptr_t, const char *actual,
+                                   const char *expected, const char *file, int line)
+    {
+        return compare_helper(t1 == nullptr, "Compared pointers are not the same",
+                              toString(t1), toString(nullptr), actual, expected, file, line);
+    }
+
+    inline bool compare_ptr_helper(std::nullptr_t, const volatile void *t2, const char *actual,
+                                   const char *expected, const char *file, int line)
+    {
+        return compare_helper(nullptr == t2, "Compared pointers are not the same",
+                              toString(nullptr), toString(t2), actual, expected, file, line);
     }
 
     Q_TESTLIB_EXPORT bool compare_string_helper(const char *t1, const char *t2, const char *actual,
@@ -386,6 +400,19 @@ namespace QTest
                         const char *file, int line)
     {
         return compare_ptr_helper(t1, t2, actual, expected, file, line);
+    }
+
+    template <typename T>
+    inline bool qCompare(T *t1, std::nullptr_t, const char *actual, const char *expected,
+                        const char *file, int line)
+    {
+        return compare_ptr_helper(t1, nullptr, actual, expected, file, line);
+    }
+    template <typename T>
+    inline bool qCompare(std::nullptr_t, T *t2, const char *actual, const char *expected,
+                        const char *file, int line)
+    {
+        return compare_ptr_helper(nullptr, t2, actual, expected, file, line);
     }
 
     template <typename T1, typename T2>

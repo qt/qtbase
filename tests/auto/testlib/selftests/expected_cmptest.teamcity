@@ -12,6 +12,8 @@
 ##teamcity[testFinished name='compare_class_enums()']
 ##teamcity[testStarted name='compare_boolfuncs()']
 ##teamcity[testFinished name='compare_boolfuncs()']
+##teamcity[testStarted name='compare_to_nullptr()']
+##teamcity[testFinished name='compare_to_nullptr()']
 ##teamcity[testStarted name='compare_pointerfuncs()']
 ##teamcity[testFinished name='compare_pointerfuncs()']
 ##teamcity[testStarted name='compare_tostring(int, string)']

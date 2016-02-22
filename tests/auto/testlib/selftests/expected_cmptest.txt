@@ -12,6 +12,7 @@ FAIL!  : tst_Cmptest::compare_class_enums() Compared values are not the same
    Expected (MyClassEnum::MyClassEnumValue2): MyClassEnumValue2
    Loc: [tst_cmptest.cpp(168)]
 PASS   : tst_Cmptest::compare_boolfuncs()
+PASS   : tst_Cmptest::compare_to_nullptr()
 PASS   : tst_Cmptest::compare_pointerfuncs()
 FAIL!  : tst_Cmptest::compare_tostring(int, string) Compared values are not the same
    Actual   (actual)  : QVariant(int,123)
@@ -109,5 +110,5 @@ FAIL!  : tst_Cmptest::tryVerify() 'opaqueFunc() < 2' returned FALSE. ()
 FAIL!  : tst_Cmptest::tryVerify2() 'opaqueFunc() < 2' returned FALSE. (42)
    Loc: [tst_cmptest.cpp(439)]
 PASS   : tst_Cmptest::cleanupTestCase()
-Totals: 11 passed, 28 failed, 0 skipped, 0 blacklisted, 247ms
+Totals: 12 passed, 28 failed, 0 skipped, 0 blacklisted, 247ms
 ********* Finished testing of tst_Cmptest *********

@@ -189,6 +189,11 @@ template<> inline char *toString(const QHostAddress &addr)
 }
 #endif
 
+inline char *toString(std::nullptr_t)
+{
+    return toString(QLatin1String("nullptr"));
+}
+
 template<>
 inline bool qCompare(QString const &t1, QLatin1String const &t2, const char *actual,
                     const char *expected, const char *file, int line)
