@@ -517,8 +517,8 @@ void QGtk2FontDialogHelper::hide()
 static QString qt_fontToString(const QFont &font)
 {
     PangoFontDescription *desc = pango_font_description_new();
-    pango_font_description_set_size(desc, font.pointSizeF() * PANGO_SCALE);
-    pango_font_description_set_family(desc, font.family().toUtf8());
+    pango_font_description_set_size(desc, (font.pointSizeF() > 0.0 ? font.pointSizeF() : QFontInfo(font).pointSizeF()) * PANGO_SCALE);
+    pango_font_description_set_family(desc, QFontInfo(font).family().toUtf8());
 
     int weight = font.weight();
     if (weight >= QFont::Black)
