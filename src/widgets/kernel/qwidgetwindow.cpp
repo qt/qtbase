@@ -156,11 +156,29 @@ QObject *QWidgetWindow::focusObject() const
     return widget;
 }
 
+static inline bool shouldBePropagatedToWidget(QEvent *event)
+{
+    switch (event->type()) {
+    // Handing show events to widgets would cause them to be triggered twice
+    case QEvent::Show:
+    case QEvent::Hide:
+    case QEvent::Timer:
+    case QEvent::DynamicPropertyChange:
+    case QEvent::ChildAdded:
+    case QEvent::ChildRemoved:
+        return false;
+    default:
+        return true;
+    }
+}
+
 bool QWidgetWindow::event(QEvent *event)
 {
     if (m_widget->testAttribute(Qt::WA_DontShowOnScreen)) {
         // \a event is uninteresting for QWidgetWindow, the event was probably
         // generated before WA_DontShowOnScreen was set
+        if (!shouldBePropagatedToWidget(event))
+            return true;
         return QCoreApplication::sendEvent(m_widget, event);
     }
 
@@ -285,10 +303,6 @@ bool QWidgetWindow::event(QEvent *event)
         return true;
 #endif
 
-    // Handing show events to widgets (see below) here would cause them to be triggered twice
-    case QEvent::Show:
-    case QEvent::Hide:
-        return QWindow::event(event);
     case QEvent::WindowBlocked:
         qt_button_down = 0;
         break;
@@ -303,7 +317,7 @@ bool QWidgetWindow::event(QEvent *event)
         break;
     }
 
-    if (QCoreApplication::sendEvent(m_widget, event) && event->type() != QEvent::Timer)
+    if (shouldBePropagatedToWidget(event) && QCoreApplication::sendEvent(m_widget, event))
         return true;
 
     return QWindow::event(event);
