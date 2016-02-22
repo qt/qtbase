@@ -1175,16 +1175,19 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
             Q_ASSERT(hb_font);
             hb_qt_font_set_use_design_metrics(hb_font, option.useDesignMetrics() ? uint(QFontEngine::DesignMetrics) : 0); // ###
 
+            // Ligatures are incompatible with custom letter spacing, so when a letter spacing is set,
+            // we disable them for writing systems where they are purely cosmetic.
             bool scriptRequiresOpenType = ((script >= QChar::Script_Syriac && script <= QChar::Script_Sinhala)
                                          || script == QChar::Script_Khmer || script == QChar::Script_Nko);
-            hb_face_t *hb_face = hb_font_get_face(hb_font);
-            Q_ASSERT(hb_face);
-            hb_qt_face_set_ignore_gsub(hb_face, hasLetterSpacing && !scriptRequiresOpenType);
 
-            const hb_feature_t features[1] = {
-                { HB_TAG('k','e','r','n'), !!kerningEnabled, 0, uint(-1) }
-            };
-            const int num_features = 1;
+            bool dontLigate = hasLetterSpacing && !scriptRequiresOpenType;
+            const hb_feature_t features[5] = {
+                { HB_TAG('k','e','r','n'), !!kerningEnabled, 0, uint(-1) },
+                { HB_TAG('l','i','g','a'), !dontLigate, 0, uint(-1) },
+                { HB_TAG('c','l','i','g'), !dontLigate, 0, uint(-1) },
+                { HB_TAG('d','l','i','g'), !dontLigate, 0, uint(-1) },
+                { HB_TAG('h','l','i','g'), !dontLigate, 0, uint(-1) } };
+            const int num_features = dontLigate ? 5 : 1;
 
             const char *const *shaper_list = Q_NULLPTR;
 #if defined(Q_OS_DARWIN)
