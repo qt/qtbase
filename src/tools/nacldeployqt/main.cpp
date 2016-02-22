@@ -22,6 +22,7 @@ public:
     bool print;
     bool run;
     bool debug;
+    bool compress;
     bool testlibMode;
     QString binary;
     QString qtBaseDir;
@@ -41,6 +42,8 @@ private:
     QString stdoutCaptureFile;
     QString stderrCaptureFile;
 
+
+    QString findPNaClTool(const QString &sdkRoot, const QString &toolName);
     QList<QByteArray> quote(const QList<QByteArray> &list);
     void runCommand(const QString &command);
     bool copyRecursively(const QString &srcFilePath, const QString &tgtFilePath);
@@ -111,7 +114,7 @@ int QtNaclDeployer::deploy()
         return 0;
     }
 
-    // Get the location of the deployment scripts in the nacl sdk:
+    // Get the location of the deployment scripts and tools in the nacl sdk:
     QString createNmf = naclSdkRoot + "/tools/create_nmf.py";
     if (!QFile(createNmf).exists()) {
         qDebug() << "create_nmf.py not found at" << createNmf;
@@ -122,11 +125,16 @@ int QtNaclDeployer::deploy()
         qDebug() << "create_html.py not found at" << createHtml;
         return 0;
     }
-    QString pnaclFinalize = naclSdkRoot + "/toolchain/mac_pnacl/bin/pnacl-finalize";
-    if (!QFile(pnaclFinalize).exists())
-        pnaclFinalize = naclSdkRoot + "/toolchain/linux_pnacl/bin/pnacl-finalize";
-    if (!QFile(pnaclFinalize).exists()) {
+
+    QString pnaclFinalize = findPNaClTool(naclSdkRoot, "pnacl-finalize");
+    if (deploymentType == PNaCl && !QFile(pnaclFinalize).exists()) {
         qDebug() << "pnacl-finalize not found at" << pnaclFinalize;
+        return 0;
+    }
+
+    QString pnaclCompress = findPNaClTool(naclSdkRoot, "pnacl-compress");
+    if (deploymentType == PNaCl && compress && !QFile(pnaclCompress).exists()) {
+        qDebug() << "pnacl-compress not found at" << pnaclCompress;
         return 0;
     }
 
@@ -173,6 +181,7 @@ int QtNaclDeployer::deploy()
     // On PNaCl, the output from "make" is a bitcode .bc file. Create
     // a .pexe suitable for distribution using "pnacl-finalize".
     if (deploymentType == PNaCl) {
+        qDebug() << "pnacl-finalize" << binary;
         finalBinary.replace(".bc", ".pexe");
         QString finalizeCommand = pnaclFinalize + " -o " + outDir + finalBinary + " " + binary;
         runCommand(finalizeCommand);
@@ -181,6 +190,13 @@ int QtNaclDeployer::deploy()
     }
 
     const QString finalBinaryPath = outDir + finalBinary;
+
+    // Compress PNaCl binary using panacl-compress.
+    if (deploymentType == PNaCl && compress) {
+        qDebug() << "pnacl-compress" << finalBinaryPath;
+        QString compressCommand = pnaclCompress + " " + finalBinaryPath;
+        runCommand(compressCommand.toLatin1().constData());
+    }
 
     // create the .nmf manifest file
     if (deploymentType != Emscripten) {
@@ -346,6 +362,15 @@ int QtNaclDeployer::deploy()
     return 0;
 }
 
+// Look up executable in the mac and linux bin dirs.
+QString QtNaclDeployer::findPNaClTool(const QString &sdkRoot, const QString &toolName)
+{
+    QString pnaclFinalize = sdkRoot + "/toolchain/mac_pnacl/bin/" + toolName;
+    if (!QFile(pnaclFinalize).exists())
+        pnaclFinalize = sdkRoot + "/toolchain/linux_pnacl/bin/" + toolName;
+    return pnaclFinalize;
+}
+
 QList<QByteArray> QtNaclDeployer::quote(const QList<QByteArray> &list)
 {
     QList<QByteArray> result;
@@ -440,6 +465,7 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() << "p" << "print", "Print Chrome and debugging help."));
     parser.addOption(QCommandLineOption(QStringList() << "r" << "run", "Run the application in Chrome."));
     parser.addOption(QCommandLineOption(QStringList() << "d" << "debug", "Debug the application in Chrome [OS X only]."));
+    parser.addOption(QCommandLineOption(QStringList() << "c" << "compress", "Compress the application binary with pnacl-compress [PNaCl only]."));
     parser.addOption(QCommandLineOption(QStringList() << "e" << "testlib", "Run in QTestLib mode"));
 
     parser.process(app);
@@ -453,6 +479,7 @@ int main(int argc, char **argv)
     deployer.print = parser.isSet("print");
     deployer.run = parser.isSet("run");
     deployer.debug = parser.isSet("debug");
+    deployer.compress = parser.isSet("compress");
     deployer.testlibMode = parser.isSet("testlib");
 
 #ifdef Q_OS_LINUX
