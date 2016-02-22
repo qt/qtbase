@@ -41,7 +41,15 @@
 #include <QtGui/qguiapplication.h>
 #include <QtCore/qdebug.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
+
+template <class T>
+static inline T *coTaskMemAllocArray(int size)
+{
+    return static_cast<T *>(::CoTaskMemAlloc(sizeof(T) * size_t(size)));
+}
 
 /**************************************************************\
  *                     AccessibleApplication                  *
@@ -591,9 +599,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_keyBinding(long actionIndex
         numBindings = keyBindings.count();
         if (numBindings > 0) {
             // The IDL documents that the client must free with CoTaskMemFree
-            arrayOfBindingsToReturn = (BSTR*)::CoTaskMemAlloc(sizeof(BSTR) * numBindings);
-            for (int i = 0; i < numBindings; ++i)
-                arrayOfBindingsToReturn[i] = QStringToBSTR(keyBindings.at(i));
+            arrayOfBindingsToReturn = coTaskMemAllocArray<BSTR>(numBindings);
+            std::transform(keyBindings.constBegin(), keyBindings.constEnd(),
+                           arrayOfBindingsToReturn, QStringToBSTR);
         }
     }
     *keyBindings = arrayOfBindingsToReturn;
@@ -970,12 +978,13 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_selectedColumns(long **sele
 
     if (QAccessibleTableInterface *tableIface = tableInterface()) {
         const QList<int> selectedIndices = tableIface->selectedColumns();
-        const int &count = selectedIndices.count();
-        long *selected = (count ? (long*)::CoTaskMemAlloc(sizeof(long) * count) : (long*)0);
-        for (int i = 0; i < count; ++i)
-            selected[i] = selectedIndices.at(i);
-        *selectedColumns = selected;
+        const int count = selectedIndices.count();
         *nColumns = count;
+        *selectedColumns = Q_NULLPTR;
+        if (count) {
+            *selectedColumns = coTaskMemAllocArray<long>(count);
+            std::copy(selectedIndices.constBegin(), selectedIndices.constEnd(), *selectedColumns);
+        }
         return count ? S_OK : S_FALSE;
     }
     return E_FAIL;
@@ -991,12 +1000,13 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_selectedRows(long **selecte
 
     if (QAccessibleTableInterface *tableIface = tableInterface()) {
         const QList<int> selectedIndices = tableIface->selectedRows();
-        const int &count = selectedIndices.count();
-        long *selected = (count ? (long*)::CoTaskMemAlloc(sizeof(long) * count) : (long*)0);
-        for (int i = 0; i < count; ++i)
-            selected[i] = selectedIndices.at(i);
-        *selectedRows = selected;
+        const int count = selectedIndices.count();
         *nRows = count;
+        *selectedRows = Q_NULLPTR;
+        if (count) {
+            *selectedRows = coTaskMemAllocArray<long>(count);
+            std::copy(selectedIndices.constBegin(), selectedIndices.constEnd(), *selectedRows);
+        }
         return count ? S_OK : S_FALSE;
     }
     return E_FAIL;
@@ -1648,12 +1658,13 @@ HRESULT QWindowsIA2Accessible::wrapListOfCells(const QList<QAccessibleInterface*
 {
     const int count = inputCells.count();
     // Server allocates array
-    IUnknown **outputCells = count ? (IUnknown**)::CoTaskMemAlloc(sizeof(IUnknown*) * count ) : (IUnknown**)0;
-    for (int i = 0; i < count; ++i)
-        outputCells[i] = QWindowsAccessibility::wrap(inputCells.at(i));
-
-    *outputAccessibles = outputCells;
     *nCellCount = count;
+    *outputAccessibles = Q_NULLPTR;
+    if (count) {
+        *outputAccessibles = coTaskMemAllocArray<IUnknown *>(count);
+        std::transform(inputCells.constBegin(), inputCells.constEnd(),
+                       *outputAccessibles, QWindowsAccessibility::wrap);
+    }
     return count > 0 ? S_OK : S_FALSE;
 }
 
