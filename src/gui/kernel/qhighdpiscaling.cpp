@@ -163,11 +163,11 @@ static inline qreal initialGlobalScaleFactor()
         The QT_SCALE_FACTOR environment variable can be used to set
         a global scale factor for all windows in the processs. This
         is useful for testing and debugging (you can simulate any
-        devicePixelRatio without needing access to sepcial hardware),
+        devicePixelRatio without needing access to special hardware),
         and perhaps also for targeting a specific application to
         a specific display type (embedded use cases).
 
-    2) A per-screen scale factors
+    2) Per-screen scale factors
         Some platform plugins support providing a per-screen scale
         factor based on display density information. These platforms
         include X11, Windows, and Android.
@@ -180,13 +180,13 @@ static inline qreal initialGlobalScaleFactor()
         Enabling either will make QHighDpiScaling call QPlatformScreen::pixelDensity()
         and use the value provided as the scale factor for the screen in
         question. Disabling is done on a 'veto' basis where either the
-        environment or the application source can disable. The intended use
+        environment or the application can disable the scaling. The intended use
         cases are 'My system is not providing correct display density
         information' and 'My application needs to work in display pixels',
         respectively.
 
         The QT_SCREEN_SCALE_FACTORS environment variable can be used to set the screen
-        scale factors manually.Set this to a semicolon-separated
+        scale factors manually. Set this to a semicolon-separated
         list of scale factors (matching the order of QGuiApplications::screens()),
         or to a list of name=value pairs (where name matches QScreen::name()).
 
