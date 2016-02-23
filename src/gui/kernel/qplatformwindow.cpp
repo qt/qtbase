@@ -486,8 +486,9 @@ QPlatformScreen *QPlatformWindow::screenForGeometry(const QRect &newGeometry) co
     QPlatformScreen *fallback = currentScreen;
     // QRect::center can return a value outside the rectangle if it's empty.
     // Apply mapToGlobal() in case it is a foreign/embedded window.
-    const QPoint center =
-        mapToGlobal(newGeometry.isEmpty() ? newGeometry.topLeft() : newGeometry.center());
+    QPoint center = newGeometry.isEmpty() ? newGeometry.topLeft() : newGeometry.center();
+    if (window()->type() == Qt::ForeignWindow)
+        center = mapToGlobal(center - newGeometry.topLeft());
 
     if (!parent() && currentScreen && !currentScreen->geometry().contains(center)) {
         Q_FOREACH (QPlatformScreen* screen, currentScreen->virtualSiblings()) {
