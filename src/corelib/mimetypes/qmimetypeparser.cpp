@@ -172,13 +172,24 @@ bool QMimeTypeParserBase::parseNumber(const QStringRef &n, int *target, QString 
 }
 
 #ifndef QT_NO_XMLSTREAMREADER
-static QMimeMagicRule *createMagicMatchRule(const QXmlStreamAttributes &atts, QString *errorMessage)
+struct CreateMagicMatchRuleResult {
+    QString errorMessage; // must be first
+    QMimeMagicRule rule;
+
+    CreateMagicMatchRuleResult(const QStringRef &type, const QStringRef &value, const QStringRef &offsets, const QStringRef &mask)
+        : errorMessage(), rule(type.toString(), value.toUtf8(), offsets.toString(), mask.toLatin1(), &errorMessage)
+    {
+
+    }
+};
+
+static CreateMagicMatchRuleResult createMagicMatchRule(const QXmlStreamAttributes &atts)
 {
     const QStringRef type = atts.value(QLatin1String(matchTypeAttributeC));
     const QStringRef value = atts.value(QLatin1String(matchValueAttributeC));
     const QStringRef offsets = atts.value(QLatin1String(matchOffsetAttributeC));
     const QStringRef mask = atts.value(QLatin1String(matchMaskAttributeC));
-    return new QMimeMagicRule(type.toString(), value.toUtf8(), offsets.toString(), mask.toLatin1(), errorMessage);
+    return CreateMagicMatchRuleResult(type, value, offsets, mask);
 }
 #endif
 
@@ -266,19 +277,18 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
             }
                 break;
             case ParseMagicMatchRule: {
-                QString magicErrorMessage;
-                QMimeMagicRule *rule = createMagicMatchRule(atts, &magicErrorMessage);
-                if (!rule->isValid())
-                    qWarning("QMimeDatabase: Error parsing %s\n%s", qPrintable(fileName), qPrintable(magicErrorMessage));
+                auto result = createMagicMatchRule(atts);
+                if (Q_UNLIKELY(!result.rule.isValid()))
+                    qWarning("QMimeDatabase: Error parsing %ls\n%ls",
+                             qUtf16Printable(fileName), qUtf16Printable(result.errorMessage));
                 QList<QMimeMagicRule> *ruleList;
                 if (currentRules.isEmpty())
                     ruleList = &rules;
                 else // nest this rule into the proper parent
                     ruleList = &currentRules.top()->m_subMatches;
-                ruleList->append(*rule);
+                ruleList->append(std::move(result.rule));
                 //qDebug() << " MATCH added. Stack size was" << currentRules.size();
                 currentRules.push(&ruleList->last());
-                delete rule;
                 break;
             }
             case ParseError:
