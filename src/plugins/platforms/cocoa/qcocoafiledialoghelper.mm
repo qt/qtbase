@@ -61,6 +61,8 @@
 #include <qvarlengtharray.h>
 #include <stdlib.h>
 #include <qabstracteventdispatcher.h>
+#include <qsysinfo.h>
+#include <qglobal.h>
 #include <QDir>
 
 #include <qpa/qplatformnativeinterface.h>
@@ -156,6 +158,10 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSOpenSavePanelDelegate);
     [self createAccessory];
     [mSavePanel setAccessoryView:mNameFilterDropDownList->size() > 1 ? mAccessoryView : nil];
 
+#if QT_OSX_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_11)
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_11)
+        mOpenPanel.accessoryViewDisclosed = YES;
+#endif
 
     if (mOptions->isLabelExplicitlySet(QFileDialogOptions::Accept))
         [mSavePanel setPrompt:[self strip:options->labelText(QFileDialogOptions::Accept)]];
