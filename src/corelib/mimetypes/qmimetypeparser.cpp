@@ -205,7 +205,7 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
             case ParseMimeType: { // start parsing a MIME type name
                 const QString name = atts.value(QLatin1String(mimeTypeAttributeC)).toString();
                 if (name.isEmpty()) {
-                    reader.raiseError(QString::fromLatin1("Missing '%1'-attribute").arg(QString::fromLatin1(mimeTypeAttributeC)));
+                    reader.raiseError(QStringLiteral("Missing 'type'-attribute"));
                 } else {
                     data.name = name;
                 }
@@ -282,8 +282,7 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
                 break;
             }
             case ParseError:
-                reader.raiseError(QString::fromLatin1("Unexpected element <%1>").
-                                  arg(reader.name().toString()));
+                reader.raiseError(QLatin1String("Unexpected element <") + reader.name() + QLatin1Char('>'));
                 break;
             default:
                 break;
