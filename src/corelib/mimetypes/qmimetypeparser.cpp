@@ -326,8 +326,12 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
     }
 
     if (Q_UNLIKELY(reader.hasError())) {
-        if (errorMessage)
-            *errorMessage = QString::fromLatin1("An error has been encountered at line %1 of %2: %3:").arg(reader.lineNumber()).arg(fileName, reader.errorString());
+        if (errorMessage) {
+            *errorMessage = QString::asprintf("An error has been encountered at line %lld of %ls: %ls:",
+                                              reader.lineNumber(),
+                                              qUtf16Printable(fileName),
+                                              qUtf16Printable(reader.errorString()));
+        }
         return false;
     }
 
