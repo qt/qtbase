@@ -272,6 +272,35 @@ static void qt_debug_path(const QPainterPath &path)
 }
 #endif
 
+// QRect::normalized() will change the width/height of the rectangle due to
+// its incusive-integer definition of left/right vs width. This is not
+// something we want to change in QRect as that would potentially introduce
+// regressions all over the place, so we implement a straightforward
+// normalized here. QRectF already does this, so QRectF::normalized() is ok to
+// use.
+static QRect qrect_normalized(const QRect &rect)
+{
+    int x, y, w, h;
+    if (Q_UNLIKELY(rect.width() < 0)) {
+        x = rect.x() + rect.width();
+        w = -rect.width();
+    } else {
+        x = rect.x();
+        w = rect.width();
+    }
+
+    if (Q_UNLIKELY(rect.height() < 0)) {
+        y = rect.y() + rect.height();
+        h = -rect.height();
+    } else {
+        y = rect.y();
+        h = rect.height();
+    }
+
+    return QRect(x, y, w, h);
+}
+
+
 QRasterPaintEnginePrivate::QRasterPaintEnginePrivate() :
     QPaintEngineExPrivate(),
     cachedLines(0)
@@ -1236,7 +1265,9 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
 bool QRasterPaintEngine::setClipRectInDeviceCoords(const QRect &r, Qt::ClipOperation op)
 {
     Q_D(QRasterPaintEngine);
-    QRect clipRect = r & d->deviceRect;
+    // normalize before using the & operator which uses QRect::normalize()
+    // internally which will give us the wrong values.
+    QRect clipRect = qrect_normalized(r) & d->deviceRect;
     QRasterPaintEngineState *s = state();
 
     if (op == Qt::ReplaceClip || s->clip == 0) {
@@ -1471,7 +1502,7 @@ void QRasterPaintEngine::drawRects(const QRect *rects, int rectCount)
             int offset_x = int(s->matrix.dx());
             int offset_y = int(s->matrix.dy());
             while (r < lastRect) {
-                QRect rect = r->normalized();
+                QRect rect = qrect_normalized(*r);
                 QRect rr = rect.translated(offset_x, offset_y);
                 fillRect_normalized(rr, &s->brushData, d);
                 ++r;
@@ -2498,7 +2529,7 @@ void QRasterPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap,
 
         QRectF rr = r;
         rr.translate(s->matrix.dx(), s->matrix.dy());
-        fillRect_normalized(rr.toRect().normalized(), &d->image_filler, d);
+        fillRect_normalized(rr.normalized().toRect(), &d->image_filler, d);
     }
 }
 
@@ -2878,7 +2909,7 @@ bool QRasterPaintEnginePrivate::isUnclipped(const QRect &rect,
     const QRasterPaintEngineState *s = q->state();
     const QClipData *cl = clip();
     if (!cl) {
-        QRect r = rect.normalized();
+        QRect r = qrect_normalized(rect);
         // inline contains() for performance (we know the rects are normalized)
         const QRect &r1 = deviceRect;
         return (r.left() >= r1.left() && r.right() <= r1.right()
@@ -2893,7 +2924,7 @@ bool QRasterPaintEnginePrivate::isUnclipped(const QRect &rect,
     if (s->flags.antialiased)
         ++penWidth;
 
-    QRect r = rect.normalized();
+    QRect r = qrect_normalized(rect);
     if (penWidth > 0) {
         r.setX(r.x() - penWidth);
         r.setY(r.y() - penWidth);
