@@ -238,10 +238,10 @@ QMimeMagicRule::QMimeMagicRule(const QString &type,
 
     // Parse for offset as "1" or "1:10"
     const int colonIndex = offsets.indexOf(QLatin1Char(':'));
-    const QString startPosStr = colonIndex == -1 ? offsets : offsets.mid(0, colonIndex);
-    const QString endPosStr   = colonIndex == -1 ? offsets : offsets.mid(colonIndex + 1);
-    if (!QMimeTypeParserBase::parseNumber(startPosStr, &m_startPos, errorString) ||
-        !QMimeTypeParserBase::parseNumber(endPosStr, &m_endPos, errorString)) {
+    const QStringRef startPosStr = offsets.midRef(0, colonIndex); // \ These decay to returning 'offsets'
+    const QStringRef endPosStr   = offsets.midRef(colonIndex + 1);// / unchanged when colonIndex == -1
+    if (Q_UNLIKELY(!QMimeTypeParserBase::parseNumber(startPosStr, &m_startPos, errorString)) ||
+        Q_UNLIKELY(!QMimeTypeParserBase::parseNumber(endPosStr, &m_endPos, errorString))) {
         m_type = Invalid;
         return;
     }

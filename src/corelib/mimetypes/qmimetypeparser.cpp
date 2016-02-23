@@ -160,12 +160,12 @@ QMimeTypeParserBase::ParseState QMimeTypeParserBase::nextState(ParseState curren
 }
 
 // Parse int number from an (attribute) string
-bool QMimeTypeParserBase::parseNumber(const QString &n, int *target, QString *errorMessage)
+bool QMimeTypeParserBase::parseNumber(const QStringRef &n, int *target, QString *errorMessage)
 {
     bool ok;
     *target = n.toInt(&ok);
     if (!ok) {
-        *errorMessage = QString::fromLatin1("Not a number '%1'.").arg(n);
+        *errorMessage = QLatin1String("Not a number '") + n + QLatin1String("'.");
         return false;
     }
     return true;
@@ -174,11 +174,11 @@ bool QMimeTypeParserBase::parseNumber(const QString &n, int *target, QString *er
 #ifndef QT_NO_XMLSTREAMREADER
 static QMimeMagicRule *createMagicMatchRule(const QXmlStreamAttributes &atts, QString *errorMessage)
 {
-    const QString type = atts.value(QLatin1String(matchTypeAttributeC)).toString();
-    const QString value = atts.value(QLatin1String(matchValueAttributeC)).toString();
-    const QString offsets = atts.value(QLatin1String(matchOffsetAttributeC)).toString();
-    const QString mask = atts.value(QLatin1String(matchMaskAttributeC)).toString();
-    return new QMimeMagicRule(type, value.toUtf8(), offsets, mask.toLatin1(), errorMessage);
+    const QStringRef type = atts.value(QLatin1String(matchTypeAttributeC));
+    const QStringRef value = atts.value(QLatin1String(matchValueAttributeC));
+    const QStringRef offsets = atts.value(QLatin1String(matchOffsetAttributeC));
+    const QStringRef mask = atts.value(QLatin1String(matchMaskAttributeC));
+    return new QMimeMagicRule(type.toString(), value.toUtf8(), offsets.toString(), mask.toLatin1(), errorMessage);
 }
 #endif
 
@@ -219,8 +219,8 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
                 break;
             case ParseGlobPattern: {
                 const QString pattern = atts.value(QLatin1String(patternAttributeC)).toString();
-                unsigned weight = atts.value(QLatin1String(weightAttributeC)).toString().toInt();
-                const bool caseSensitive = atts.value(QLatin1String(caseSensitiveAttributeC)).toString() == QLatin1String("true");
+                unsigned weight = atts.value(QLatin1String(weightAttributeC)).toInt();
+                const bool caseSensitive = atts.value(QLatin1String(caseSensitiveAttributeC)) == QLatin1String("true");
 
                 if (weight == 0)
                     weight = QMimeGlobPattern::DefaultWeight;
@@ -255,7 +255,7 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
                 break;
             case ParseMagic: {
                 priority = 50;
-                const QString priorityS = atts.value(QLatin1String(priorityAttributeC)).toString();
+                const QStringRef priorityS = atts.value(QLatin1String(priorityAttributeC));
                 if (!priorityS.isEmpty()) {
                     if (!parseNumber(priorityS, &priority, errorMessage))
                         return false;
