@@ -206,12 +206,11 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
     QList<QMimeMagicRule> rules; // toplevel rules
     QXmlStreamReader reader(dev);
     ParseState ps = ParseBeginning;
-    QXmlStreamAttributes atts;
     while (!reader.atEnd()) {
         switch (reader.readNext()) {
-        case QXmlStreamReader::StartElement:
+        case QXmlStreamReader::StartElement: {
             ps = nextState(ps, reader.name());
-            atts = reader.attributes();
+            const QXmlStreamAttributes atts = reader.attributes();
             switch (ps) {
             case ParseMimeType: { // start parsing a MIME type name
                 const QString name = atts.value(QLatin1String(mimeTypeAttributeC)).toString();
@@ -297,6 +296,7 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
             default:
                 break;
             }
+        }
             break;
         // continue switch QXmlStreamReader::Token...
         case QXmlStreamReader::EndElement: // Finished element
