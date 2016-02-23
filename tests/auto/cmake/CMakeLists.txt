@@ -68,6 +68,24 @@ expect_fail(test_wrap_cpp_options)
 expect_pass(test_platform_defs_include)
 expect_pass(test_qtmainwin_library)
 
+if (HAVE_NINJA)
+    make_directory("${CMAKE_CURRENT_SOURCE_DIR}/test_QFINDTESTDATA/build")
+    add_test(test_QFINDTESTDATA ${CMAKE_CTEST_COMMAND}
+      --build-and-test
+      "${CMAKE_CURRENT_SOURCE_DIR}/test_QFINDTESTDATA"
+      # Build in a subdir of the source dir.
+      # This causes Ninja to use relative paths.
+      "${CMAKE_CURRENT_SOURCE_DIR}/test_QFINDTESTDATA/build"
+      --build-generator Ninja
+      --build-options "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}"
+    )
+    add_test(NAME run_test_QFINDTESTDATA COMMAND sh -c "cd \"${CMAKE_SOURCE_DIR}/test_QFINDTESTDATA/build/tests\" && ./test_QFINDTESTDATA -v2")
+
+    set_property(TEST run_test_QFINDTESTDATA
+        PROPERTY DEPENDS test_QFINDTESTDATA
+    )
+endif()
+
 if (NOT NO_DBUS)
     expect_pass(test_dbus_module)
 endif()
