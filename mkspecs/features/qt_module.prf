@@ -117,7 +117,9 @@ lib_bundle {
         QMAKE_INFO_PLIST = $$QMAKESPEC/Info.plist.lib
    }
    CONFIG -= qt_install_headers #no need to install these as well
-   !debug_and_release|!build_all|CONFIG(release, debug|release) {
+   !build_all| \
+           if(if(!debug_and_release|CONFIG(release, debug|release)): \
+              if(!simulator_and_device|CONFIG(device, simulator|device))) {
         FRAMEWORK_HEADERS.version = Versions
         FRAMEWORK_HEADERS.files = $$SYNCQT.HEADER_FILES $$SYNCQT.HEADER_CLASSES
         FRAMEWORK_HEADERS.path = Headers
