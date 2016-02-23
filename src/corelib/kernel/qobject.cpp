@@ -3662,15 +3662,31 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
         return;
     }
 
-    const QObjectPrivate::ConnectionList *list;
-    if (signal_index < connectionLists->count())
-        list = &connectionLists->at(signal_index);
-    else
-        list = &connectionLists->allsignals;
+    // contains the non-empty connection lists
+    const QObjectPrivate::ConnectionList *lists[2];
+    int numLists = 0;
+    if (signal_index < connectionLists->count()) {
+        const auto *list = &connectionLists->at(signal_index);
+        if (list->first) // only add if non-empty
+            lists[numLists++] = list;
+    }
+    if (connectionLists->allsignals.first) // only add if non-empty
+        lists[numLists++] = &connectionLists->allsignals;
 
-    do {
+    for (int i = 0; i < numLists; ++i) {
+        const auto *list = lists[i];
+        if (i == 0) {
+            // on the first iteration, the mutex must be locked already
+            Q_ASSERT(!locker.mutex()->tryLock());
+        } else {
+            // otherwise the mutex is unlocked and must be relocked
+            locker.relock();
+            if (connectionLists->orphaned)
+                break;
+        }
+
         QObjectPrivate::Connection *c = list->first;
-        if (!c) continue;
+        Q_ASSERT(c);
         // We need to check against last here to ensure that signals added
         // during the signal emission are not emitted in this emission.
         QObjectPrivate::Connection *last = list->last;
@@ -3723,8 +3739,6 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
                 // destructor of the slot object might also lock a mutex from the signalSlotLock() mutex pool,
                 // and that would deadlock if the pool happens to return the same mutex.
                 obj.reset();
-
-                locker.relock();
             } else if (c->callFunction && c->method_offset <= receiver->metaObject()->methodOffset()) {
                 //we compare the vtable to make sure we are not in the destructor of the object.
                 const int methodIndex = c->method();
@@ -3738,7 +3752,6 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
 
                 if (qt_signal_spy_callback_set.slot_end_callback != 0)
                     qt_signal_spy_callback_set.slot_end_callback(receiver, methodIndex);
-                locker.relock();
             } else {
                 const int method = c->method_relative + c->method_offset;
                 locker.unlock();
@@ -3753,19 +3766,17 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
 
                 if (qt_signal_spy_callback_set.slot_end_callback != 0)
                     qt_signal_spy_callback_set.slot_end_callback(receiver, method);
-
-                locker.relock();
             }
+
+            if (c == last) // early break without relock for the last signal
+                break;
+
+            locker.relock();
 
             if (connectionLists->orphaned)
                 break;
-        } while (c != last && (c = c->nextConnectionList) != 0);
-
-        if (connectionLists->orphaned)
-            break;
-    } while (list != &connectionLists->allsignals &&
-        //start over for all signals;
-        ((list = &connectionLists->allsignals), true));
+        } while ((c = c->nextConnectionList) != 0);
+    }
 
     }
 
