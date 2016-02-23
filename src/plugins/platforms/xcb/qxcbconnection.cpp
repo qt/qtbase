@@ -1954,7 +1954,9 @@ static const char * xcb_atomnames = {
     "_COMPIZ_DECOR_PENDING\0"
     "_COMPIZ_DECOR_REQUEST\0"
     "_COMPIZ_DECOR_DELETE_PIXMAP\0"
-    "_COMPIZ_TOOLKIT_ACTION\0" // \0\0 terminates loop.
+    "_COMPIZ_TOOLKIT_ACTION\0"
+    "_GTK_LOAD_ICONTHEMES\0"
+    // \0\0 terminates loop.
 };
 
 QXcbAtom::Atom QXcbConnection::qatom(xcb_atom_t xatom) const

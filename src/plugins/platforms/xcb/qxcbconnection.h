@@ -288,6 +288,7 @@ namespace QXcbAtom {
         _COMPIZ_DECOR_REQUEST,
         _COMPIZ_DECOR_DELETE_PIXMAP,
         _COMPIZ_TOOLKIT_ACTION,
+        _GTK_LOAD_ICONTHEMES,
 
         NPredefinedAtoms,
 
