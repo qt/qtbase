@@ -113,6 +113,7 @@ lib_bundle {
    CONFIG += sliced_bundle
    header_module {
         CONFIG += bundle
+        QMAKE_BUNDLE_NAME = $$TARGET
         QMAKE_BUNDLE_EXTENSION = .framework
         QMAKE_INFO_PLIST = $$QMAKESPEC/Info.plist.lib
    }
