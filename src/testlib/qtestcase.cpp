@@ -2296,11 +2296,57 @@ TO_STRING_IMPL(qint64, %lld)
 TO_STRING_IMPL(quint64, %llu)
 #endif
 TO_STRING_IMPL(bool, %d)
-TO_STRING_IMPL(char, %c)
 TO_STRING_IMPL(signed char, %hhd)
 TO_STRING_IMPL(unsigned char, %hhu)
 TO_STRING_IMPL(float, %g)
 TO_STRING_IMPL(double, %lg)
+
+template <> Q_TESTLIB_EXPORT char *QTest::toString<char>(const char &t)
+{
+    unsigned char c = static_cast<unsigned char>(t);
+    char *msg = new char[16];
+    switch (c) {
+    case 0x00:
+        qstrcpy(msg, "'\\0'");
+        break;
+    case 0x07:
+        qstrcpy(msg, "'\\a'");
+        break;
+    case 0x08:
+        qstrcpy(msg, "'\\b'");
+        break;
+    case 0x09:
+        qstrcpy(msg, "'\\t'");
+        break;
+    case 0x0a:
+        qstrcpy(msg, "'\\n'");
+        break;
+    case 0x0b:
+        qstrcpy(msg, "'\\v'");
+        break;
+    case 0x0c:
+        qstrcpy(msg, "'\\f'");
+        break;
+    case 0x0d:
+        qstrcpy(msg, "'\\r'");
+        break;
+    case 0x22:
+        qstrcpy(msg, "'\\\"'");
+        break;
+    case 0x27:
+        qstrcpy(msg, "'\\\''");
+        break;
+    case 0x5c:
+        qstrcpy(msg, "'\\\\'");
+        break;
+    default:
+        if (c < 0x20 || c >= 0x7F)
+            qsnprintf(msg, 16, "'\\x%02x'", c);
+        else
+            qsnprintf(msg, 16, "'%c'" , c);
+    }
+    return msg;
+}
 
 /*! \internal
  */
