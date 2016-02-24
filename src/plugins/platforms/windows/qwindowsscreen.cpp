@@ -158,7 +158,7 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
 static inline WindowsScreenDataList monitorData()
 {
     WindowsScreenDataList result;
-    EnumDisplayMonitors(0, 0, monitorEnumCallback, (LPARAM)&result);
+    EnumDisplayMonitors(0, 0, monitorEnumCallback, reinterpret_cast<LPARAM>(&result));
     return result;
 }
 
@@ -206,7 +206,7 @@ Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat =
 QPixmap QWindowsScreen::grabWindow(WId window, int x, int y, int width, int height) const
 {
     RECT r;
-    HWND hwnd = window ? (HWND)window : GetDesktopWindow();
+    HWND hwnd = window ? reinterpret_cast<HWND>(window) : GetDesktopWindow();
     GetClientRect(hwnd, &r);
 
     if (width < 0) width = r.right - r.left;
@@ -440,7 +440,7 @@ QWindowsScreenManager::QWindowsScreenManager() :
 
 bool QWindowsScreenManager::handleDisplayChange(WPARAM wParam, LPARAM lParam)
 {
-    const int newDepth = (int)wParam;
+    const int newDepth = int(wParam);
     const WORD newHorizontalResolution = LOWORD(lParam);
     const WORD newVerticalResolution = HIWORD(lParam);
     if (newDepth != m_lastDepth || newHorizontalResolution != m_lastHorizontalResolution

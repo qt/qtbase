@@ -1725,8 +1725,8 @@ static inline QImage alphaMapFromGlyphData(QFontEngineFT::Glyph *glyph, QFontEng
     if (glyph == Q_NULLPTR)
         return QImage();
 
-    QImage::Format format;
-    int bytesPerLine;
+    QImage::Format format = QImage::Format_Invalid;
+    int bytesPerLine = -1;
     switch (glyphFormat) {
     case QFontEngine::Format_Mono:
         format = QImage::Format_Mono;
