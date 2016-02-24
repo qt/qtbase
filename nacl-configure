@@ -31,7 +31,7 @@ if [ $# -eq 0 ]
   then
     echo ""
     echo "No arguments supplied. Usage:"
-    echo "\"nacl-configure <tooolchain> [release|debug] [32|64]"
+    echo "\"nacl-configure <tooolchain> [release|debug] [32|64|PNACL_ARCH]"
     echo "Toolchain is one of:"
     echo "    ${platform}_arm_newlib"
     echo "    ${platform}_pnacl"
@@ -39,6 +39,12 @@ if [ $# -eq 0 ]
     echo "    ${platform}_x86_newlib"
     echo "    emscripten"
     echo "    host"
+    echo ""
+    echo "For the pnacl toolchain PNACL_ARCH can be empty for the default"
+    echo "PNaCl build, or one of:"
+    echo "    x86-32"
+    echo "    x86-64"
+    echo "    arm"
     echo ""
     exit
 fi
@@ -63,14 +69,17 @@ else
     shift
 fi
 
-# Argument 3: 32/64 bit build (64-bit default)
+# Argument 3: 32/64 bit build (64-bit default), or PNaCl native arch
 BITS=$1
 if [[ $BITS == "64" ]]; then
     shift
 elif [[ $BITS == "32" ]]; then
     shift
+elif [[ $TOOLCHAIN == *pnacl ]]; then
+    shift
 else
     BITS=64
+    shift
 fi
 
 # set up for passing the rest of the args to configure
@@ -121,6 +130,9 @@ fi
 # nacl-x86-newlib-g++-32
 # nacl-x86-newlib-g++.-64
 # pnacl-newlib-clang
+# pnacl-newlib-clang-x86_32
+# pnacl-newlib-clang-x86_64
+# pnacl-newlib-clang-arm
 
 # Map the selected toolchain to a mkspec.
 if [[ $TOOLCHAIN == *arm_newlib ]]
@@ -129,7 +141,12 @@ if [[ $TOOLCHAIN == *arm_newlib ]]
 fi
 if [[ $TOOLCHAIN == *pnacl ]]
   then
-    QT_MKSPEC="pnacl-newlib-clang"
+    if [[ -z "$BITS" ]]
+      then
+        QT_MKSPEC="pnacl-newlib-clang"
+    else
+        QT_MKSPEC="pnacl-newlib-clang-$BITS"
+    fi
 fi
 if [[ $TOOLCHAIN == *x86_glibc ]]
   then
@@ -160,12 +177,22 @@ fi
 # newlib_x86_32
 # newlib_x86_64
 # pnacl
+# clang-newlib_arm
+# clang-newlib_x86_32
+# clang-newlib_x86_64
+
 if [[ $PNACL == pnacl ]]
   then
-      LIBDIR="pnacl"
+    if [[ -z "$BITS" ]]
+      then
+        LIBDIR="pnacl"                  # standard pnacl
+    else
+        LIBDIR="clang-newlib_${BITS}"   # using one of the native compilers from the
+    fi                                  # pnacl toolchain.
 else
     LIBDIR="${CLIB}_${ARCH}"
 fi
+
 if [[ $ARCH == x86 ]]
   then
       LIBDIR="${LIBDIR}_${BITS}"

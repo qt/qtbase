@@ -33,7 +33,7 @@ below) as a starting point.
             branch : nacl-5.6 (github)
         qtdeclarative:
             patch: https://codereview.qt-project.org/#/c/114670/
-    dev: pepper_44
+    dev: pepper_47
         qtbase
             branch: nacl-dev (github), wip/nacl (codereview)
         qtdeclarative:
@@ -45,11 +45,11 @@ below) as a starting point.
 The Native Client SDK provides several toolchains. Qt provides a script for
 configuring to use one of them:
 
-    qtbase/nacl-configure <toolchain> <release|debug> [32|64]
+    qtbase/nacl-configure <toolchain> <release|debug> [variant]
 
 The script expects a standard Qt module checkout. Example nacl-configure usage:
 
-    /path/to/qt/qtbase/nacl-configure mac_x86_newlib release 64
+    /path/to/qt/qtbase/nacl-configure mac_pnacl release x86_64
 
 Available toolchains include:
 
@@ -57,6 +57,12 @@ Available toolchains include:
     mac_x86_glibc [not supported]
     mac_x86_newlib
     mac_arm_newlib
+
+The pnacl toolchain has variants that generate native (NaCl) code directly:
+
+    x86_64
+    x86_32
+    arm
 
 Linux systems have corresponding "linux_"-prefixed toolchains. Windows is not
 supported as a host platform.
@@ -66,11 +72,11 @@ The glibc toolchain(s) and shared library builds are not currently supported.
 Which toolchain should I use?
 * pnacl is the "deployment" toolchain which produces .pexes which runs in  most
   Chrome Chrome browser (Android and iOS Chrome are not supported)
-* x86_newlib is a good choice for development since it avoids the run-time pnacl
-  to native code translation step, which gives faster build-debug cycles. x86_newlib
-  use requires enabling Native Client in Chrome's about:flags settings.
+* pnacl-x86_64 is a good choice for development since it avoids the run-time pnacl
+  to native code translation step, which gives faster build-debug cycles. Usage
+  requires enabling Native Client in Chrome's about:flags settings.
 
-The arch-specific toolchains have 32/64-bit flavors, which must match the target
+The native toolchains may have 32/64-bit flavors, which must match the target
 Chrome installation. The pnacl toolchain is always 64-bit and is not restricted
 in this way.
 
@@ -127,8 +133,7 @@ nacldeployqt performs the following steps:
 
 Run-time behavior notes:
 * pnacl translation delay: There is a ~10-30s delay the first time a pnacl
-  executable is loaded. The loading screen is currently a blank white screen
-  with no  progress indicator.
+  executable is loaded.
 * qmldir loading: Qt Quick looks for qmldir files using the standard search pattern:
   first QtQuick.2.2/qmldir, then QtQuick.2/qmldir, then QtQuick/qmldir. This
   generates several 404 error messages on the Javascript and terminal console.
