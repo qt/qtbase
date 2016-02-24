@@ -6,13 +6,16 @@ have_target {
 # qt_build_config tells us to re-enable exceptions here.
 testcase_exceptions: CONFIG += exceptions
 
-check.files                =
-check.path                 = .
+benchmark: type = benchmark
+else: type = check
+
+$${type}.files =
+$${type}.path = .
 
 # Add environment for non-installed builds. Do this first, so the
 # 'make' variable expansions don't end up in a batch file/script.
 QT_TOOL_NAME = target
-qtAddTargetEnv(check.commands, QT)
+qtAddTargetEnv($${type}.commands, QT)
 
 # If the test ends up in a different directory, we should cd to that directory.
 TESTRUN_CWD = $$DESTDIR
@@ -27,44 +30,44 @@ debug_and_release:debug_and_release_target {
 }
 
 # Allow for a custom test runner script
-check.commands += $(TESTRUNNER)
+$${type}.commands += $(TESTRUNNER)
 
 unix {
     isEmpty(TEST_TARGET_DIR): TEST_TARGET_DIR = .
 
     app_bundle: \
-        check.commands += $${TEST_TARGET_DIR}/$(QMAKE_TARGET).app/Contents/MacOS/$(QMAKE_TARGET)
+        $${type}.commands += $${TEST_TARGET_DIR}/$(QMAKE_TARGET).app/Contents/MacOS/$(QMAKE_TARGET)
     else: \
-        check.commands += $${TEST_TARGET_DIR}/$(QMAKE_TARGET)
+        $${type}.commands += $${TEST_TARGET_DIR}/$(QMAKE_TARGET)
 } else {
     # Windows
     !isEmpty(TEST_TARGET_DIR): TEST_TARGET_DIR = $${TEST_TARGET_DIR}$${QMAKE_DIR_SEP}
-    check.commands += $${TEST_TARGET_DIR}$(TARGET)
+    $${type}.commands += $${TEST_TARGET_DIR}$(TARGET)
 }
 
 # Allow for custom arguments to tests
-check.commands += $(TESTARGS)
+$${type}.commands += $(TESTARGS)
 
 !isEmpty(TESTRUN_CWD):!contains(TESTRUN_CWD, ^\\./?): \
-    check.commands = cd $$shell_path($$TESTRUN_CWD) && $$check.commands
+    $${type}.commands = cd $$shell_path($$TESTRUN_CWD) && $$eval($${type}.commands)
 
 # If the test is marked as insignificant, discard the exit code
-insignificant_test:check.commands = -$${check.commands}
+insignificant_test: $${type}.commands = -$$eval($${type}.commands)
 
-QMAKE_EXTRA_TARGETS *= check
+QMAKE_EXTRA_TARGETS *= $${type}
 
 isEmpty(BUILDS)|build_pass {
-    check.depends = first
+    $${type}.depends = first
 } else {
     # For exclusive builds, only run the test once.
-    check.CONFIG = recursive
-    check.target = check_all
-    check.recurse_target = check
-    check.commands =
+    $${type}.CONFIG = recursive
+    $${type}.target = $${type}_all
+    $${type}.recurse_target = $${type}
+    $${type}.commands =
 
-    check_first.depends = $$eval($$first(BUILDS).target)-check
-    check_first.target = check
-    QMAKE_EXTRA_TARGETS += check_first
+    $${type}_first.depends = $$eval($$first(BUILDS).target)-$${type}
+    $${type}_first.target = $${type}
+    QMAKE_EXTRA_TARGETS += $${type}_first
 }
 
 !no_testcase_installs:!contains(INSTALLS, target) {
