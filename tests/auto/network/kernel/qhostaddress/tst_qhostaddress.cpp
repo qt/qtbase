@@ -159,8 +159,16 @@ void tst_QHostAddress::setAddress_QString_data()
     QTest::newRow("ip4_06")  << QString("123.0.0") << true << QString("123.0.0.0") << 4;
 
     // for the format of IPv6 addresses see also RFC 5952
-    QTest::newRow("ip6_00")  << QString("FEDC:BA98:7654:3210:FEDC:BA98:7654:3210") << true << QString("fedc:ba98:7654:3210:fedc:ba98:7654:3210") << 6;
-    QTest::newRow("ip6_01")  << QString("1080:0000:0000:0000:0008:0800:200C:417A") << true << QString("1080::8:800:200c:417a") << 6;
+    // rule 4.1: Leading zeros MUST be suppressed
+    // rule 4.2.1: Shorten as Much as Possible
+    // rule 4.2.2: The symbol "::" MUST NOT be used to shorten just one 16-bit 0 field.
+    // rule 4.2.3: the longest run of consecutive 16-bit 0 fields MUST be shortened
+    //             When the length of the consecutive 16-bit 0 fields, the first sequence
+    //             of zero bits MUST be shortened
+    // rule 4.3: The characters "a", "b", "c", "d", "e", and "f" in an IPv6 address
+    //           MUST be represented in lowercase
+    QTest::newRow("ip6_00")  << QString("FEDC:BA98:7654:3210:FEDC:BA98:7654:3210") << true << QString("fedc:ba98:7654:3210:fedc:ba98:7654:3210") << 6; // 4.3
+    QTest::newRow("ip6_01")  << QString("1080:0000:0000:0000:0008:0800:200C:417A") << true << QString("1080::8:800:200c:417a") << 6; // 4.1, 4.2.1
     QTest::newRow("ip6_02")  << QString("1080:0:0:0:8:800:200C:417A") << true << QString("1080::8:800:200c:417a") << 6;
     QTest::newRow("ip6_03")  << QString("1080::8:800:200C:417A") << true << QString("1080::8:800:200c:417a") << 6;
     QTest::newRow("ip6_04")  << QString("FF01::43") << true << QString("ff01::43") << 6;
@@ -173,10 +181,11 @@ void tst_QHostAddress::setAddress_QString_data()
     QTest::newRow("ip6_11")  << QString("::FFFF:129.144.52.38") << true << QString("::ffff:129.144.52.38") << 6;
     QTest::newRow("ip6_12")  << QString("1::FFFF:129.144.52.38") << true << QString("1::ffff:8190:3426") << 6;
     QTest::newRow("ip6_13")  << QString("A:B::D:E") << true << QString("a:b::d:e") << 6;
-    QTest::newRow("ip6_14")  << QString("1080:0:1:0:8:800:200C:417A") << true << QString("1080:0:1:0:8:800:200c:417a") << 6;
+    QTest::newRow("ip6_14")  << QString("1080:0:1:0:8:800:200C:417A") << true << QString("1080:0:1:0:8:800:200c:417a") << 6; // 4.2.2
     QTest::newRow("ip6_15")  << QString("1080:0:1:0:8:800:200C:0") << true << QString("1080:0:1:0:8:800:200c:0") << 6;
     QTest::newRow("ip6_16")  << QString("1080:0:1:0:8:800:0:0") << true << QString("1080:0:1:0:8:800::") << 6;
-    QTest::newRow("ip6_17")  << QString("1080:0:0:0:8:800:0:0") << true << QString("1080::8:800:0:0") << 6;
+    QTest::newRow("ip6_17a") << QString("1080:0:0:8:800:0:0:0") << true << QString("1080:0:0:8:800::") << 6; // 4.2.3a
+    QTest::newRow("ip6_17b") << QString("1080:0:0:0:8:0:0:0") << true << QString("1080::8:0:0:0") << 6; // 4.2.3b
     QTest::newRow("ip6_18")  << QString("0:1:1:1:8:800:0:0") << true << QString("0:1:1:1:8:800::") << 6;
     QTest::newRow("ip6_19")  << QString("0:1:1:1:8:800:0:1") << true << QString("0:1:1:1:8:800:0:1") << 6;
 
