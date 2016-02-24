@@ -45,15 +45,7 @@
 #include <QtNetwork/QHostInfo>
 #include <stdlib.h>
 
-#ifndef QT_NO_PROCESS
 # include <private/qprocess_p.h>    // only so we get QPROCESS_USE_SPAWN
-# if defined(Q_OS_WIN)
-#  include <windows.h>
-# endif
-
-Q_DECLARE_METATYPE(QProcess::ExitStatus);
-Q_DECLARE_METATYPE(QProcess::ProcessState);
-#endif
 
 typedef void (QProcess::*QProcessFinishedSignal1)(int);
 typedef void (QProcess::*QProcessFinishedSignal2)(int, QProcess::ExitStatus);
