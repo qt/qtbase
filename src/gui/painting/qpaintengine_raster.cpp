@@ -689,6 +689,7 @@ void QRasterPaintEngine::penChanged()
     qDebug() << "QRasterPaintEngine::penChanged():" << state()->pen;
 #endif
     QRasterPaintEngineState *s = state();
+    Q_ASSERT(s);
     s->strokeFlags |= DirtyPen;
     s->dirty |= DirtyPen;
 }
@@ -2200,6 +2201,7 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
 
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
+    Q_ASSERT(s);
     int sr_l = qFloor(sr.left());
     int sr_r = qCeil(sr.right()) - 1;
     int sr_t = qFloor(sr.top());
@@ -2437,6 +2439,7 @@ void QRasterPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap,
 #endif
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
+    Q_ASSERT(s);
 
     QImage image;
 

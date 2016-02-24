@@ -56,6 +56,7 @@
 #include "qxcbsystemtraytracker.h"
 
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformcursor.h>
 
 #include <algorithm>
 
@@ -266,6 +267,26 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
     return &tp;
 }
 #endif // XCB_USE_XLIB
+
+// TODO move this into a utility function in QWindow or QGuiApplication
+static QWindow *childWindowAt(QWindow *win, const QPoint &p)
+{
+    foreach (QObject *obj, win->children()) {
+        if (obj->isWindowType()) {
+            QWindow *childWin = static_cast<QWindow *>(obj);
+            if (childWin->isVisible()) {
+                if (QWindow *recurse = childWindowAt(childWin, p))
+                    return recurse;
+            }
+        }
+    }
+    if (!win->isTopLevel()
+            && !(win->flags() & Qt::WindowTransparentForInput)
+            && win->geometry().contains(win->parent()->mapFromGlobal(p))) {
+        return win;
+    }
+    return Q_NULLPTR;
+}
 
 static const char *wm_window_type_property_id = "_q_xcb_wm_window_type";
 
@@ -861,6 +882,33 @@ void QXcbWindow::hide()
         connection()->setMouseGrabber(Q_NULLPTR);
 
     m_mapped = false;
+
+    // Hiding a modal window doesn't send an enter event to its transient parent when the
+    // mouse is already over the parent window, so the enter event must be emulated.
+    if (window()->isModal()) {
+        // Get the cursor position at modal window screen
+        const QPoint nativePos = xcbScreen()->cursor()->pos();
+        const QPoint cursorPos = QHighDpi::fromNativePixels(nativePos, xcbScreen()->screenForPosition(nativePos)->screen());
+
+        // Find the top level window at cursor position.
+        // Don't use QGuiApplication::topLevelAt(): search only the virtual siblings of this window's screen
+        QWindow *enterWindow = Q_NULLPTR;
+        foreach (QPlatformScreen *screen, xcbScreen()->virtualSiblings()) {
+            if (screen->geometry().contains(cursorPos)) {
+                const QPoint devicePosition = QHighDpi::toNativePixels(cursorPos, screen->screen());
+                enterWindow = screen->topLevelAt(devicePosition);
+                break;
+            }
+        }
+
+        if (enterWindow && enterWindow != window()) {
+            // Find the child window at cursor position, otherwise use the top level window
+            if (QWindow *childWindow = childWindowAt(enterWindow, cursorPos))
+                enterWindow = childWindow;
+            const QPoint localPos = enterWindow->mapFromGlobal(cursorPos);
+            QWindowSystemInterface::handleEnterEvent(enterWindow, localPos, cursorPos);
+        }
+    }
 }
 
 static QWindow *tlWindow(QWindow *window)

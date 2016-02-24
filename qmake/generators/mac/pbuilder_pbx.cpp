@@ -98,19 +98,6 @@ struct ProjectBuilderSubDirs {
 bool
 ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
 {
-    if(project->isActiveConfig("generate_pbxbuild_makefile")) {
-        QString mkwrap = fileFixify(pbx_dir + Option::dir_sep + ".." + Option::dir_sep + project->first("MAKEFILE"),
-                                    FileFixifyToIndir);
-        QFile mkwrapf(mkwrap);
-        if(mkwrapf.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            debug_msg(1, "pbuilder: Creating file: %s", mkwrap.toLatin1().constData());
-            QTextStream mkwrapt(&mkwrapf);
-            writingUnixMakefileGenerator = true;
-            UnixMakefileGenerator::writeSubDirs(mkwrapt);
-            writingUnixMakefileGenerator = false;
-        }
-    }
-
     //HEADER
     const int pbVersion = pbuilderVersion();
     t << "// !$*UTF8*$!\n"
@@ -1663,32 +1650,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     t << "\t};\n"
       << "\t" << writeSettings("rootObject", keyFor("QMAKE_PBX_ROOT")) << ";\n"
       << "}\n";
-
-    if(project->isActiveConfig("generate_pbxbuild_makefile")) {
-        QString mkwrap = Option::output_dir + project->first("/MAKEFILE");
-        QFile mkwrapf(mkwrap);
-        if(mkwrapf.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            writingUnixMakefileGenerator = true;
-            debug_msg(1, "pbuilder: Creating file: %s", mkwrap.toLatin1().constData());
-            QTextStream mkwrapt(&mkwrapf);
-            writeHeader(mkwrapt);
-            const char cleans[] = "preprocess_clean ";
-            const QString cmd = escapeFilePath(project->first("QMAKE_ORIG_TARGET") + projectSuffix() + "/") + " && " + pbxbuild();
-            mkwrapt << "#This is a makefile wrapper for PROJECT BUILDER\n"
-                    << "all:\n\t"
-                    << "cd " << cmd << "\n"
-                    << "install: all\n\t"
-                    << "cd " << cmd << " install\n"
-                    << "distclean clean: preprocess_clean\n\t"
-                    << "cd " << cmd << " clean\n"
-                    << (!did_preprocess ? cleans : "") << ":\n";
-            if(did_preprocess)
-                mkwrapt << cleans << ":\n\t"
-                        << "make -f "
-                        << pbx_dir << Option::dir_sep << "qt_preprocess.mak $@\n";
-            writingUnixMakefileGenerator = false;
-        }
-    }
 
     // Scheme
     {

@@ -119,8 +119,8 @@ HCURSOR QWindowsCursor::createPixmapCursor(QPixmap pixmap, const QPoint &hotSpot
 
     ICONINFO ii;
     ii.fIcon     = 0;
-    ii.xHotspot  = hotSpot.x();
-    ii.yHotspot  = hotSpot.y();
+    ii.xHotspot  = DWORD(hotSpot.x());
+    ii.yHotspot  = DWORD(hotSpot.y());
     ii.hbmMask   = im;
     ii.hbmColor  = ic;
 
@@ -577,7 +577,7 @@ HCURSOR QWindowsCursor::createCursorFromShape(Qt::CursorShape cursorShape, const
     for (const QWindowsStandardCursorMapping *s = standardCursors; s < sEnd; ++s) {
         if (s->shape == cursorShape) {
 #ifndef Q_OS_WINCE
-            return (HCURSOR)LoadImage(0, s->resource, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+            return static_cast<HCURSOR>(LoadImage(0, s->resource, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED));
 #else
             return LoadCursor(0, s->resource);
 #endif

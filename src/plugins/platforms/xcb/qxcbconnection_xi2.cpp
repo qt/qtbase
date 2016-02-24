@@ -44,6 +44,7 @@
 #include "qtouchdevice.h"
 #include <qpa/qwindowsysteminterface.h>
 #include <QDebug>
+#include <cmath>
 
 #ifdef XCB_USE_XINPUT2
 

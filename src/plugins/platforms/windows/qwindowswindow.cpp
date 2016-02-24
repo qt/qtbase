@@ -1585,7 +1585,9 @@ void QWindowsWindow::handleGeometryChange()
     // QTBUG-32121: OpenGL/normal windows (with exception of ANGLE) do not receive
     // expose events when shrinking, synthesize.
     if (!testFlag(OpenGL_ES2) && isExposed()
-        && !(m_data.geometry.width() >= previousGeometry.width() || m_data.geometry.height() >= previousGeometry.height())) {
+        && m_data.geometry.size() != previousGeometry.size() // Exclude plain move
+        // One dimension grew -> Windows will send expose, no need to synthesize.
+        && !(m_data.geometry.width() > previousGeometry.width() || m_data.geometry.height() > previousGeometry.height())) {
         fireExpose(QRect(QPoint(0, 0), m_data.geometry.size()), true);
     }
     if (previousGeometry.topLeft() != m_data.geometry.topLeft()) {
@@ -2005,7 +2007,7 @@ QMargins QWindowsWindow::frameMargins() const
         // Always skip calculating style-dependent margins for windows claimed to be frameless.
         // This allows users to remove the margins by handling WM_NCCALCSIZE with WS_THICKFRAME set
         // to ensure Areo snap still works (QTBUG-40578).
-        m_data.frame = window()->flags() & Qt::FramelessWindowHint
+        m_data.frame = m_data.flags & Qt::FramelessWindowHint
             ? QMargins(0, 0, 0, 0)
             : QWindowsGeometryHint::frame(style(), exStyle());
         clearFlag(FrameDirty);

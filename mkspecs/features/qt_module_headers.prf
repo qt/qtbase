@@ -99,7 +99,8 @@ git_build: \
 else: \
     INC_PATH = $$MODULE_BASE_INDIR
 include($$INC_PATH/include/$$MODULE_INCNAME/headers.pri, "", true)
-CONFIG += qt_install_headers
+!lib_bundle: \  # Headers are embedded into the bundle, so don't install them separately.
+    CONFIG += qt_install_headers
 
 alien_syncqt: return()
 
