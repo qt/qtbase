@@ -4110,27 +4110,8 @@ QOpenGLTexture::WrapMode QOpenGLTexture::wrapMode(QOpenGLTexture::CoordinateDire
 */
 void QOpenGLTexture::setBorderColor(QColor color)
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
-        Q_D(QOpenGLTexture);
-        d->create();
-        Q_ASSERT(d->texFuncs);
-        Q_ASSERT(d->textureId);
-        float values[4];
-        values[0] = color.redF();
-        values[1] = color.greenF();
-        values[2] = color.blueF();
-        values[3] = color.alphaF();
-        d->borderColor.clear();
-        for (int i = 0; i < 4; ++i)
-            d->borderColor.append(QVariant(values[i]));
-        d->texFuncs->glTextureParameterfv(d->textureId, d->target, d->bindingTarget, GL_TEXTURE_BORDER_COLOR, values);
-        return;
-    }
-#else
-    Q_UNUSED(color);
-#endif
-    qWarning("QOpenGLTexture: Border color is not supported");
+    setBorderColor(static_cast<float>(color.redF()), static_cast<float>(color.greenF()),
+                   static_cast<float>(color.blueF()), static_cast<float>(color.alphaF()));
 }
 
 /*!
