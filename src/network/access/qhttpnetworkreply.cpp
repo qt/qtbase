@@ -40,8 +40,6 @@
 #include "qhttpnetworkreply_p.h"
 #include "qhttpnetworkconnection_p.h"
 
-#include <qbytearraymatcher.h>
-
 #ifndef QT_NO_HTTP
 
 #ifndef QT_NO_SSL
@@ -611,11 +609,9 @@ void QHttpNetworkReplyPrivate::parseHeader(const QByteArray &header)
 {
     // see rfc2616, sec 4 for information about HTTP/1.1 headers.
     // allows relaxed parsing here, accepts both CRLF & LF line endings
-    const QByteArrayMatcher lf("\n");
-    const QByteArrayMatcher colon(":");
     int i = 0;
     while (i < header.count()) {
-        int j = colon.indexIn(header, i); // field-name
+        int j = header.indexOf(':', i); // field-name
         if (j == -1)
             break;
         const QByteArray field = header.mid(i, j - i).trimmed();
@@ -623,7 +619,7 @@ void QHttpNetworkReplyPrivate::parseHeader(const QByteArray &header)
         // any number of LWS is allowed before and after the value
         QByteArray value;
         do {
-            i = lf.indexIn(header, j);
+            i = header.indexOf('\n', j);
             if (i == -1)
                 break;
             if (!value.isEmpty())
