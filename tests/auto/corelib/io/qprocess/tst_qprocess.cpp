@@ -689,11 +689,7 @@ void tst_QProcess::waitForFinished()
 
     process.start("testProcessOutput/testProcessOutput");
 
-#if !defined(Q_OS_WINCE)
-    QVERIFY(process.waitForFinished(5000));
-#else
-    QVERIFY(process.waitForFinished(30000));
-#endif
+    QVERIFY(process.waitForFinished());
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
 
 #if defined (Q_OS_WINCE)
@@ -917,12 +913,7 @@ void tst_QProcess::hardExit()
     proc.start("testProcessEcho/testProcessEcho");
 #endif
 
-#ifndef Q_OS_WINCE
-    QVERIFY(proc.waitForStarted(5000));
-#else
-    QVERIFY(proc.waitForStarted(10000));
-#endif
-
+    QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));
     proc.kill();
 
     QVERIFY(proc.waitForFinished(5000));
@@ -1415,24 +1406,17 @@ void tst_QProcess::spaceArgsTest()
         QString program = programs.at(i);
         process.start(program, args);
 
-#if defined(Q_OS_WINCE)
-        const int timeOutMS = 10000;
-#else
-        const int timeOutMS = 5000;
-#endif
         QByteArray errorMessage;
-        bool started = process.waitForStarted(timeOutMS);
+        bool started = process.waitForStarted();
         if (!started)
             errorMessage = startFailMessage(program, process);
         QVERIFY2(started, errorMessage.constData());
-        QVERIFY(process.waitForFinished(timeOutMS));
+        QVERIFY(process.waitForFinished());
         QCOMPARE(process.exitStatus(), QProcess::NormalExit);
         QCOMPARE(process.exitCode(), 0);
 
 #if !defined(Q_OS_WINCE)
         QStringList actual = QString::fromLatin1(process.readAll()).split("|");
-#endif
-#if !defined(Q_OS_WINCE)
         QVERIFY(!actual.isEmpty());
         // not interested in the program name, it might be different.
         actual.removeFirst();
@@ -1457,8 +1441,6 @@ void tst_QProcess::spaceArgsTest()
 
 #if !defined(Q_OS_WINCE)
         actual = QString::fromLatin1(process.readAll()).split("|");
-#endif
-#if !defined(Q_OS_WINCE)
         QVERIFY(!actual.isEmpty());
         // not interested in the program name, it might be different.
         actual.removeFirst();
@@ -1480,13 +1462,8 @@ void tst_QProcess::nativeArguments()
 
     proc.start(QString::fromLatin1("testProcessSpacesArgs/nospace"), QStringList());
 
-#if !defined(Q_OS_WINCE)
-    QVERIFY(proc.waitForStarted(5000));
-    QVERIFY(proc.waitForFinished(5000));
-#else
-    QVERIFY(proc.waitForStarted(10000));
-    QVERIFY(proc.waitForFinished(10000));
-#endif
+    QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));
+    QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitStatus(), QProcess::NormalExit);
     QCOMPARE(proc.exitCode(), 0);
 
