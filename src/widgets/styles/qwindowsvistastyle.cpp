@@ -1059,7 +1059,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                         QPainter imagePainter(&image);
                         theme.painter = &imagePainter;
                         theme.partId = vertical ? PP_FILLVERT : PP_FILL;
-                        theme.rect = QRect(QPoint(0,0), theme.rect.size());
+                        theme.rect = QRect(QPoint(0,0), animRect.size());
                         QLinearGradient alphaGradient(0, 0, vertical ? 0 : image.width(),
                                                       vertical ? image.height() : 0);
                         alphaGradient.setColorAt(0, QColor(0, 0, 0, 0));
