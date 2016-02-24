@@ -93,6 +93,7 @@ public:
     bool supportsSubPixelPositions() const Q_DECL_OVERRIDE { return true; }
 
     QFixed lineThickness() const Q_DECL_OVERRIDE;
+    QFixed underlinePosition() const Q_DECL_OVERRIDE;
 
     void draw(CGContextRef ctx, qreal x, qreal y, const QTextItemInt &ti, int paintDeviceHeight);
 
@@ -143,6 +144,7 @@ private:
     CGAffineTransform transform;
     QFixed avgCharWidth;
     QFixed underlineThickness;
+    QFixed underlinePos;
     QFontEngine::FaceId face_id;
     mutable bool kerningPairsLoaded;
 };

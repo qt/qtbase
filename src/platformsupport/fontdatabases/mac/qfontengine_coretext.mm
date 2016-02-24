@@ -216,6 +216,7 @@ void QCoreTextFontEngine::init()
         avgCharWidth = QFontEngine::averageCharWidth();
 
     underlineThickness = QFixed::fromReal(CTFontGetUnderlineThickness(ctfont));
+    underlinePos = -QFixed::fromReal(CTFontGetUnderlinePosition(ctfont));
 
     cache_cost = (CTFontGetAscent(ctfont) + CTFontGetDescent(ctfont)) * avgCharWidth.toInt() * 2000;
 
@@ -762,6 +763,11 @@ bool QCoreTextFontEngine::supportsTransformation(const QTransform &transform) co
 QFixed QCoreTextFontEngine::lineThickness() const
 {
     return underlineThickness;
+}
+
+QFixed QCoreTextFontEngine::underlinePosition() const
+{
+    return underlinePos;
 }
 
 QFontEngine::Properties QCoreTextFontEngine::properties() const
