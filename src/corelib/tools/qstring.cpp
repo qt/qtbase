@@ -10609,7 +10609,7 @@ QString QString::toHtmlEscaped() const
 /*!
     \internal
  */
-void QAbstractConcatenable::appendLatin1To(const char *a, int len, QChar *out)
+void QAbstractConcatenable::appendLatin1To(const char *a, int len, QChar *out) Q_DECL_NOTHROW
 {
     qt_from_latin1(reinterpret_cast<ushort *>(out), a, uint(len));
 }
