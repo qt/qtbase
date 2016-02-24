@@ -4979,7 +4979,9 @@ static inline QByteArray msgRgbMismatch(unsigned actual, unsigned expected)
 static QPixmap grabWindow(QWindow *window, int x, int y, int width, int height)
 {
     QScreen *screen = window->screen();
-    return screen ? screen->grabWindow(window->winId(), x, y, width, height) : QPixmap();
+    Q_ASSERT(screen);
+    QPixmap result = screen->grabWindow(window->winId(), x, y, width, height);
+    return result.devicePixelRatio() > 1 ? result.scaled(width, height) : result;
 }
 
 #define VERIFY_COLOR(child, region, color) verifyColor(child, region, color, __LINE__)
@@ -8505,7 +8507,7 @@ void tst_QWidget::translucentWidget()
 #ifdef Q_OS_WIN
     QWidget *desktopWidget = QApplication::desktop()->screen(0);
     if (QSysInfo::windowsVersion() >= QSysInfo::WV_VISTA)
-        widgetSnapshot = qApp->primaryScreen()->grabWindow(desktopWidget->winId(), labelPos.x(), labelPos.y(), label.width(), label.height());
+        widgetSnapshot = grabWindow(desktopWidget->windowHandle(), labelPos.x(), labelPos.y(), label.width(), label.height());
     else
 #endif
         widgetSnapshot = label.grab(QRect(QPoint(0, 0), label.size()));

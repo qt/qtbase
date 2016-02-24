@@ -40,6 +40,7 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/private/qobject_p.h>
+#include "qhighdpiscaling_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -683,7 +684,19 @@ QPixmap QScreen::grabWindow(WId window, int x, int y, int width, int height)
         qWarning("invoked with handle==0");
         return QPixmap();
     }
-    return platformScreen->grabWindow(window, x, y, width, height);
+    const qreal factor = QHighDpiScaling::factor(this);
+    if (qFuzzyCompare(factor, 1))
+        return platformScreen->grabWindow(window, x, y, width, height);
+
+    const QPoint nativePos = QHighDpi::toNative(QPoint(x, y), factor);
+    QSize nativeSize(width, height);
+    if (nativeSize.isValid())
+        nativeSize = QHighDpi::toNative(nativeSize, factor);
+    QPixmap result =
+        platformScreen->grabWindow(window, nativePos.x(), nativePos.y(),
+                                   nativeSize.width(), nativeSize.height());
+    result.setDevicePixelRatio(factor);
+    return result;
 }
 
 #ifndef QT_NO_DEBUG_STREAM
