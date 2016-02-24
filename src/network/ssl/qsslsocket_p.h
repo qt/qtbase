@@ -191,6 +191,7 @@ public:
 
     virtual qint64 peek(char *data, qint64 maxSize) Q_DECL_OVERRIDE;
     virtual QByteArray peek(qint64 maxSize) Q_DECL_OVERRIDE;
+    bool flush() Q_DECL_OVERRIDE;
 
     // Platform specific functions
     virtual void startClientEncryption() = 0;

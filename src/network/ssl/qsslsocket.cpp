@@ -834,15 +834,7 @@ bool QSslSocket::atEnd() const
 // Note! docs copied from QAbstractSocket::flush()
 bool QSslSocket::flush()
 {
-    Q_D(QSslSocket);
-#ifdef QSSLSOCKET_DEBUG
-    qCDebug(lcSsl) << "QSslSocket::flush()";
-#endif
-    if (d->mode != UnencryptedMode)
-        // encrypt any unencrypted bytes in our buffer
-        d->transmit();
-
-    return d->plainSocket ? d->plainSocket->flush() : false;
+    return d_func()->flush();
 }
 
 /*!
@@ -2577,6 +2569,22 @@ QByteArray QSslSocketPrivate::peek(qint64 maxSize)
         //encrypted mode - the socket engine will read and decrypt data into the QIODevice buffer
         return QTcpSocketPrivate::peek(maxSize);
     }
+}
+
+/*!
+    \internal
+*/
+bool QSslSocketPrivate::flush()
+{
+#ifdef QSSLSOCKET_DEBUG
+    qCDebug(lcSsl) << "QSslSocketPrivate::flush()";
+#endif
+    if (mode != QSslSocket::UnencryptedMode) {
+        // encrypt any unencrypted bytes in our buffer
+        transmit();
+    }
+
+    return plainSocket && plainSocket->flush();
 }
 
 /*!

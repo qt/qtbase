@@ -116,7 +116,7 @@ public:
     bool canReadLine() const Q_DECL_OVERRIDE;
     void close() Q_DECL_OVERRIDE;
     bool atEnd() const Q_DECL_OVERRIDE;
-    bool flush();
+    bool flush(); // ### Qt6: remove me (implementation moved to private flush())
     void abort();
 
     // From QAbstractSocket:

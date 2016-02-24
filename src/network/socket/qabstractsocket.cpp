@@ -2397,15 +2397,7 @@ bool QAbstractSocket::atEnd() const
 // Note! docs copied to QSslSocket::flush()
 bool QAbstractSocket::flush()
 {
-    Q_D(QAbstractSocket);
-#ifndef QT_NO_SSL
-    // Manual polymorphism; flush() isn't virtual, but QSslSocket overloads
-    // it.
-    if (QSslSocket *socket = qobject_cast<QSslSocket *>(this))
-        return socket->flush();
-#endif
-    Q_CHECK_SOCKETENGINE(false);
-    return d->flush();
+    return d_func()->flush();
 }
 
 /*! \reimp

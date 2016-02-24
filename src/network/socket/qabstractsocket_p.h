@@ -129,7 +129,7 @@ public:
     inline void resolveProxy(quint16 port) { resolveProxy(QString(), port); }
 
     void resetSocketLayer();
-    bool flush();
+    virtual bool flush();
 
     bool initSocketLayer(QAbstractSocket::NetworkLayerProtocol protocol);
     virtual void configureCreatedSocket();
