@@ -215,6 +215,8 @@ void QCoreTextFontEngine::init()
     } else
         avgCharWidth = QFontEngine::averageCharWidth();
 
+    underlineThickness = QFixed::fromReal(CTFontGetUnderlineThickness(ctfont));
+
     cache_cost = (CTFontGetAscent(ctfont) + CTFontGetDescent(ctfont)) * avgCharWidth.toInt() * 2000;
 
     // HACK hb_coretext requires both CTFont and CGFont but user_data is only void*
@@ -755,6 +757,11 @@ bool QCoreTextFontEngine::supportsTransformation(const QTransform &transform) co
         return true;
     else
         return false;
+}
+
+QFixed QCoreTextFontEngine::lineThickness() const
+{
+    return underlineThickness;
 }
 
 QFontEngine::Properties QCoreTextFontEngine::properties() const

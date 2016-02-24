@@ -92,6 +92,8 @@ public:
     int synthesized() const Q_DECL_OVERRIDE { return synthesisFlags; }
     bool supportsSubPixelPositions() const Q_DECL_OVERRIDE { return true; }
 
+    QFixed lineThickness() const Q_DECL_OVERRIDE;
+
     void draw(CGContextRef ctx, qreal x, qreal y, const QTextItemInt &ti, int paintDeviceHeight);
 
     FaceId faceId() const Q_DECL_OVERRIDE;
@@ -140,6 +142,7 @@ private:
     int synthesisFlags;
     CGAffineTransform transform;
     QFixed avgCharWidth;
+    QFixed underlineThickness;
     QFontEngine::FaceId face_id;
     mutable bool kerningPairsLoaded;
 };
