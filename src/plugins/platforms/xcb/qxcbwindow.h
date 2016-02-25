@@ -178,6 +178,8 @@ public:
 
     QXcbScreen *xcbScreen() const;
 
+    bool doStartSystemResize(const QPoint &globalPos, Qt::Corner corner);
+
     virtual void create();
     virtual void destroy();
 

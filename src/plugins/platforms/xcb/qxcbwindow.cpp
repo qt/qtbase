@@ -2738,13 +2738,23 @@ bool QXcbWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)
     const xcb_atom_t moveResize = connection()->atom(QXcbAtom::_NET_WM_MOVERESIZE);
     if (!connection()->wmSupport()->isSupportedByWM(moveResize))
         return false;
+    const QPoint globalPos = window()->mapToGlobal(pos);
+#ifdef XCB_USE_XINPUT22
+    if (connection()->startSystemResizeForTouchBegin(m_window, globalPos, corner))
+        return true;
+#endif
+    return doStartSystemResize(globalPos, corner);
+}
+
+bool QXcbWindow::doStartSystemResize(const QPoint &globalPos, Qt::Corner corner)
+{
+    const xcb_atom_t moveResize = connection()->atom(QXcbAtom::_NET_WM_MOVERESIZE);
     xcb_client_message_event_t xev;
     xev.response_type = XCB_CLIENT_MESSAGE;
     xev.type = moveResize;
     xev.sequence = 0;
     xev.window = xcb_window();
     xev.format = 32;
-    const QPoint globalPos = window()->mapToGlobal(pos);
     xev.data.data32[0] = globalPos.x();
     xev.data.data32[1] = globalPos.y();
     const bool bottom = corner == Qt::BottomRightCorner || corner == Qt::BottomLeftCorner;

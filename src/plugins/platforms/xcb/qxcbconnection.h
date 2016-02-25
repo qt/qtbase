@@ -504,6 +504,7 @@ public:
 #endif
 
 #ifdef XCB_USE_XINPUT22
+    bool startSystemResizeForTouchBegin(xcb_window_t window, const QPoint &point, Qt::Corner corner);
     bool xi2SetMouseGrabEnabled(xcb_window_t w, bool grab);
 #endif
     Qt::MouseButton xiToQtMouseButton(uint32_t b);
@@ -639,6 +640,14 @@ private:
     QXcbEventReader *m_reader;
 #if defined(XCB_USE_XINPUT2)
     QHash<int, XInput2TouchDeviceData*> m_touchDevices;
+#ifdef XCB_USE_XINPUT22
+    struct StartSystemResizeInfo {
+        xcb_window_t window;
+        uint16_t deviceid;
+        uint32_t pointid;
+        Qt::Corner corner;
+    } m_startSystemResizeInfo;
+#endif
 #endif
 #ifdef Q_XCB_DEBUG
     struct CallInfo {
