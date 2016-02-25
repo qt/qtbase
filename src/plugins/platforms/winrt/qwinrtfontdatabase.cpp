@@ -47,6 +47,20 @@ using namespace Microsoft::WRL;
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcQpaFonts, "qt.qpa.fonts")
+
+QDebug operator<<(QDebug d, const QFontDef &def)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "Family=" << def.family << " Stylename=" << def.styleName
+        << " pointsize=" << def.pointSize << " pixelsize=" << def.pixelSize
+        << " styleHint=" << def.styleHint << " weight=" << def.weight
+        << " stretch=" << def.stretch << " hintingPreference="
+        << def.hintingPreference;
+    return d;
+}
+
 // Based on unicode range tables at http://www.microsoft.com/typography/otspec/os2.htm#ur
 static QFontDatabase::WritingSystem writingSystemFromUnicodeRange(const DWRITE_UNICODE_RANGE &range)
 {
@@ -114,6 +128,7 @@ static QFontDatabase::WritingSystem writingSystemFromUnicodeRange(const DWRITE_U
 
 QString QWinRTFontDatabase::fontDir() const
 {
+    qCDebug(lcQpaFonts) << __FUNCTION__;
     QString fontDirectory = QBasicFontDatabase::fontDir();
     if (!QFile::exists(fontDirectory)) {
         // Fall back to app directory + fonts, and just app directory after that
@@ -130,6 +145,8 @@ QString QWinRTFontDatabase::fontDir() const
 
 QWinRTFontDatabase::~QWinRTFontDatabase()
 {
+    qCDebug(lcQpaFonts) << __FUNCTION__;
+
     foreach (IDWriteFontFile *fontFile, m_fonts.keys())
         fontFile->Release();
 
@@ -149,6 +166,8 @@ bool QWinRTFontDatabase::fontsAlwaysScalable() const
 
 void QWinRTFontDatabase::populateFontDatabase()
 {
+    qCDebug(lcQpaFonts) << __FUNCTION__;
+
     ComPtr<IDWriteFactory1> factory;
     HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_ISOLATED, __uuidof(IDWriteFactory1), &factory);
     if (FAILED(hr)) {
@@ -204,6 +223,8 @@ void QWinRTFontDatabase::populateFontDatabase()
 
 void QWinRTFontDatabase::populateFamily(const QString &familyName)
 {
+    qCDebug(lcQpaFonts) << __FUNCTION__ << familyName;
+
     IDWriteFontFamily *fontFamily = m_fontFamilies.value(familyName);
     if (!fontFamily) {
         qWarning("The font family %s was not found.", qPrintable(familyName));
@@ -367,6 +388,8 @@ void QWinRTFontDatabase::populateFamily(const QString &familyName)
 
 QFontEngine *QWinRTFontDatabase::fontEngine(const QFontDef &fontDef, void *handle)
 {
+    qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDEF" << fontDef << handle;
+
     if (!handle) // Happens if a font family population failed
         return 0;
 
@@ -436,6 +459,8 @@ QStringList QWinRTFontDatabase::fallbacksForFamily(const QString &family, QFont:
     Q_UNUSED(styleHint)
     Q_UNUSED(script)
 
+    qCDebug(lcQpaFonts) << __FUNCTION__ << family;
+
     QStringList result;
     if (family == QLatin1String("Helvetica"))
         result.append(QStringLiteral("Arial"));
@@ -445,6 +470,8 @@ QStringList QWinRTFontDatabase::fallbacksForFamily(const QString &family, QFont:
 
 void QWinRTFontDatabase::releaseHandle(void *handle)
 {
+    qCDebug(lcQpaFonts) << __FUNCTION__ << handle;
+
     if (!handle)
         return;
 

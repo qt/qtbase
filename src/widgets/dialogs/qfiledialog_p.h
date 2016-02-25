@@ -250,7 +250,6 @@ public:
     QAction *newFolderAction;
 
     bool useDefaultCaption;
-    bool defaultFileTypes;
 
     // setVisible_sys returns true if it ends up showing a native
     // dialog. Returning false means that a non-native dialog must be

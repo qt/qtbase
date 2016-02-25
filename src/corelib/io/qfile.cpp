@@ -581,7 +581,7 @@ QFile::rename(const QString &newName)
 #ifdef Q_OS_LINUX
         // rename() on Linux simply does nothing when renaming "foo" to "Foo" on a case-insensitive
         // FS, such as FAT32. Move the file away and rename in 2 steps to work around.
-        QTemporaryFile tempFile(d->fileName + QStringLiteral(".XXXXXX"));
+        QTemporaryFile tempFile(d->fileName + QLatin1String(".XXXXXX"));
         tempFile.setAutoRemove(false);
         if (!tempFile.open(QIODevice::ReadWrite)) {
             d->setError(QFile::RenameError, tempFile.errorString());

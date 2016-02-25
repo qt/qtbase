@@ -44,6 +44,8 @@ public:
     void resizeGL(int w, int h);
     void paintGL();
 
+    void setClearColor(const float *c);
+
 private:
     QScopedPointer<OpenGLWidgetPrivate> d;
 };

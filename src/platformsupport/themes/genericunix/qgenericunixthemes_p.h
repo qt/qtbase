@@ -85,6 +85,10 @@ public:
     QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
 
     static QStringList xdgIconThemePaths();
+#ifndef QT_NO_DBUS
+    QPlatformMenu *createPlatformMenu() const Q_DECL_OVERRIDE;
+    QPlatformMenuBar *createPlatformMenuBar() const Q_DECL_OVERRIDE;
+#endif
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
     QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const Q_DECL_OVERRIDE;
 #endif
@@ -107,6 +111,10 @@ public:
     const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE;
 
     const QFont *font(Font type) const Q_DECL_OVERRIDE;
+#ifndef QT_NO_DBUS
+    QPlatformMenu *createPlatformMenu() const Q_DECL_OVERRIDE;
+    QPlatformMenuBar *createPlatformMenuBar() const Q_DECL_OVERRIDE;
+#endif
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
     QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const Q_DECL_OVERRIDE;
 #endif
@@ -127,6 +135,10 @@ public:
     QString standardButtonText(int button) const Q_DECL_OVERRIDE;
 
     virtual QString gtkFontName() const;
+#ifndef QT_NO_DBUS
+    QPlatformMenu *createPlatformMenu() const Q_DECL_OVERRIDE;
+    QPlatformMenuBar *createPlatformMenuBar() const Q_DECL_OVERRIDE;
+#endif
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
     QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const Q_DECL_OVERRIDE;
 #endif

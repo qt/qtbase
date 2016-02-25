@@ -1029,7 +1029,7 @@ QString QCommandLineParser::helpText() const
 static QString wrapText(const QString &names, int longestOptionNameString, const QString &description)
 {
     const QLatin1Char nl('\n');
-    QString text = QStringLiteral("  ") + names.leftJustified(longestOptionNameString) + QLatin1Char(' ');
+    QString text = QLatin1String("  ") + names.leftJustified(longestOptionNameString) + QLatin1Char(' ');
     const int indent = text.length();
     int lineStart = 0;
     int lastBreakable = -1;

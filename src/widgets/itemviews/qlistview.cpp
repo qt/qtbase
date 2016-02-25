@@ -1440,13 +1440,11 @@ QModelIndexList QListView::selectedIndexes() const
         return QModelIndexList();
 
     QModelIndexList viewSelected = d->selectionModel->selectedIndexes();
-    for (int i = 0; i < viewSelected.count(); ++i) {
-        const QModelIndex &index = viewSelected.at(i);
-        if (!isIndexHidden(index) && index.parent() == d->root && index.column() == d->column)
-            ++i;
-        else
-            viewSelected.removeAt(i);
-    }
+    auto ignorable = [this, d](const QModelIndex &index) {
+        return index.column() != d->column || index.parent() != d->root || isIndexHidden(index);
+    };
+    viewSelected.erase(std::remove_if(viewSelected.begin(), viewSelected.end(), ignorable),
+                       viewSelected.end());
     return viewSelected;
 }
 

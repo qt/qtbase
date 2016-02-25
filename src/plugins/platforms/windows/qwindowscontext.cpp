@@ -107,10 +107,10 @@ static inline bool useRTL_Extensions(QSysInfo::WinVersion ver)
     if ((ver & QSysInfo::WV_NT_based) && (ver >= QSysInfo::WV_VISTA)) {
         // Since the IsValidLanguageGroup/IsValidLocale functions always return true on
         // Vista, check the Keyboard Layouts for enabling RTL.
-        if (const UINT nLayouts = GetKeyboardLayoutList(0, 0)) {
+        if (const int nLayouts = GetKeyboardLayoutList(0, 0)) {
             QScopedArrayPointer<HKL> lpList(new HKL[nLayouts]);
             GetKeyboardLayoutList(nLayouts, lpList.data());
-            for (UINT i = 0; i < nLayouts; ++i) {
+            for (int i = 0; i < nLayouts; ++i) {
                 switch (PRIMARYLANGID((quintptr)lpList[i])) {
                 case LANG_ARABIC:
                 case LANG_HEBREW:
@@ -546,15 +546,15 @@ QString QWindowsContext::registerWindowClass(QString cname,
     // add an instance-specific ID, the address of the window proc.
     static int classExists = -1;
 
-    const HINSTANCE appInstance = (HINSTANCE)GetModuleHandle(0);
+    const HINSTANCE appInstance = static_cast<HINSTANCE>(GetModuleHandle(0));
     if (classExists == -1) {
         WNDCLASS wcinfo;
-        classExists = GetClassInfo(appInstance, (wchar_t*)cname.utf16(), &wcinfo);
+        classExists = GetClassInfo(appInstance, reinterpret_cast<LPCWSTR>(cname.utf16()), &wcinfo);
         classExists = classExists && wcinfo.lpfnWndProc != proc;
     }
 
     if (classExists)
-        cname += QString::number((quintptr)proc);
+        cname += QString::number(reinterpret_cast<quintptr>(proc));
 
     if (d->m_registeredWindowClassNames.contains(cname))        // already registered in our list
         return cname;
@@ -574,13 +574,13 @@ QString QWindowsContext::registerWindowClass(QString cname,
 #ifndef Q_OS_WINCE
     wc.hbrBackground = brush;
     if (icon) {
-        wc.hIcon = (HICON)LoadImage(appInstance, L"IDI_ICON1", IMAGE_ICON, 0, 0, LR_DEFAULTSIZE);
+        wc.hIcon = static_cast<HICON>(LoadImage(appInstance, L"IDI_ICON1", IMAGE_ICON, 0, 0, LR_DEFAULTSIZE));
         if (wc.hIcon) {
             int sw = GetSystemMetrics(SM_CXSMICON);
             int sh = GetSystemMetrics(SM_CYSMICON);
-            wc.hIconSm = (HICON)LoadImage(appInstance, L"IDI_ICON1", IMAGE_ICON, sw, sh, 0);
+            wc.hIconSm = static_cast<HICON>(LoadImage(appInstance, L"IDI_ICON1", IMAGE_ICON, sw, sh, 0));
         } else {
-            wc.hIcon = (HICON)LoadImage(0, IDI_APPLICATION, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+            wc.hIcon = static_cast<HICON>(LoadImage(0, IDI_APPLICATION, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_SHARED));
             wc.hIconSm = 0;
         }
     } else {
@@ -596,7 +596,7 @@ QString QWindowsContext::registerWindowClass(QString cname,
 #endif
 
     wc.lpszMenuName  = 0;
-    wc.lpszClassName = (wchar_t*)cname.utf16();
+    wc.lpszClassName = reinterpret_cast<LPCWSTR>(cname.utf16());
 #ifndef Q_OS_WINCE
     ATOM atom = RegisterClassEx(&wc);
 #else
@@ -616,10 +616,10 @@ QString QWindowsContext::registerWindowClass(QString cname,
 
 void QWindowsContext::unregisterWindowClasses()
 {
-    const HINSTANCE appInstance = (HINSTANCE)GetModuleHandle(0);
+    const HINSTANCE appInstance = static_cast<HINSTANCE>(GetModuleHandle(0));
 
     foreach (const QString &name,  d->m_registeredWindowClassNames) {
-        if (!UnregisterClass((wchar_t*)name.utf16(), appInstance) && QWindowsContext::verbose)
+        if (!UnregisterClass(reinterpret_cast<LPCWSTR>(name.utf16()), appInstance) && QWindowsContext::verbose)
             qErrnoWarning("UnregisterClass failed for '%s'", qPrintable(name));
     }
     d->m_registeredWindowClassNames.clear();
@@ -635,11 +635,11 @@ QString QWindowsContext::windowsErrorMessage(unsigned long errorCode)
     QString rc = QString::fromLatin1("#%1: ").arg(errorCode);
     ushort *lpMsgBuf;
 
-    const int len = FormatMessage(
+    const DWORD len = FormatMessage(
             FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL, errorCode, 0, (LPTSTR)&lpMsgBuf, 0, NULL);
+            NULL, errorCode, 0, reinterpret_cast<LPTSTR>(&lpMsgBuf), 0, NULL);
     if (len) {
-        rc = QString::fromUtf16(lpMsgBuf, len);
+        rc = QString::fromUtf16(lpMsgBuf, int(len));
         LocalFree(lpMsgBuf);
     } else {
         rc += QString::fromLatin1("<unknown error>");
@@ -803,11 +803,11 @@ HWND QWindowsContext::createDummyWindow(const QString &classNameIn,
     if (!wndProc)
         wndProc = DefWindowProc;
     QString className = registerWindowClass(classNameIn, wndProc);
-    return CreateWindowEx(0, (wchar_t*)className.utf16(),
+    return CreateWindowEx(0, reinterpret_cast<LPCWSTR>(className.utf16()),
                           windowName, style,
                           CW_USEDEFAULT, CW_USEDEFAULT,
                           CW_USEDEFAULT, CW_USEDEFAULT,
-                          HWND_MESSAGE, NULL, (HINSTANCE)GetModuleHandle(0), NULL);
+                          HWND_MESSAGE, NULL, static_cast<HINSTANCE>(GetModuleHandle(0)), NULL);
 }
 
 #ifndef Q_OS_WINCE
@@ -818,11 +818,11 @@ static inline QString errorMessageFromComError(const _com_error &comError)
 {
      TCHAR *message = Q_NULLPTR;
      FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                   NULL, comError.Error(), MAKELANGID(LANG_NEUTRAL,SUBLANG_DEFAULT),
+                   NULL, DWORD(comError.Error()), MAKELANGID(LANG_NEUTRAL,SUBLANG_DEFAULT),
                    message, 0, NULL);
      if (message) {
          const QString result = QString::fromWCharArray(message).trimmed();
-         LocalFree((HLOCAL)message);
+         LocalFree(static_cast<HLOCAL>(message));
          return result;
      }
      if (const WORD wCode = comError.WCode())
@@ -1070,7 +1070,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         platformWindow->handleMoved();
         return true;
     case QtWindows::ResizeEvent:
-        platformWindow->handleResized((int)wParam);
+        platformWindow->handleResized(static_cast<int>(wParam));
         return true;
 #ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO
     case QtWindows::QuerySizeHints:
@@ -1212,7 +1212,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 
         sessionManager->setActive(false);
         sessionManager->allowsInteraction();
-        bool endsession = (bool) wParam;
+        const bool endsession = wParam != 0;
 
         // we receive the message for each toplevel window included internal hidden ones,
         // but the aboutToQuit signal should be emitted only once.
@@ -1279,7 +1279,7 @@ bool QWindowsContext::handleContextMenuEvent(QWindow *window, const MSG &msg)
     bool mouseTriggered = false;
     QPoint globalPos;
     QPoint pos;
-    if (msg.lParam != (int)0xffffffff) {
+    if (msg.lParam != int(0xffffffff)) {
         mouseTriggered = true;
         globalPos.setX(msg.pt.x);
         globalPos.setY(msg.pt.y);
@@ -1287,8 +1287,8 @@ bool QWindowsContext::handleContextMenuEvent(QWindow *window, const MSG &msg)
 
         RECT clientRect;
         if (GetClientRect(msg.hwnd, &clientRect)) {
-            if (pos.x() < (int)clientRect.left || pos.x() >= (int)clientRect.right ||
-                pos.y() < (int)clientRect.top || pos.y() >= (int)clientRect.bottom)
+            if (pos.x() < clientRect.left || pos.x() >= clientRect.right ||
+                pos.y() < clientRect.top || pos.y() >= clientRect.bottom)
             {
                 // This is the case that user has right clicked in the window's caption,
                 // We should call DefWindowProc() to display a default shortcut menu

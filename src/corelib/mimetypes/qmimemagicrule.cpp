@@ -234,14 +234,14 @@ QMimeMagicRule::QMimeMagicRule(const QString &type,
       m_matchFunction(nullptr)
 {
     if (m_type == Invalid)
-        *errorString = QStringLiteral("Type %s is not supported").arg(type);
+        *errorString = QLatin1String("Type ") + type + QLatin1String(" is not supported");
 
     // Parse for offset as "1" or "1:10"
     const int colonIndex = offsets.indexOf(QLatin1Char(':'));
-    const QString startPosStr = colonIndex == -1 ? offsets : offsets.mid(0, colonIndex);
-    const QString endPosStr   = colonIndex == -1 ? offsets : offsets.mid(colonIndex + 1);
-    if (!QMimeTypeParserBase::parseNumber(startPosStr, &m_startPos, errorString) ||
-        !QMimeTypeParserBase::parseNumber(endPosStr, &m_endPos, errorString)) {
+    const QStringRef startPosStr = offsets.midRef(0, colonIndex); // \ These decay to returning 'offsets'
+    const QStringRef endPosStr   = offsets.midRef(colonIndex + 1);// / unchanged when colonIndex == -1
+    if (Q_UNLIKELY(!QMimeTypeParserBase::parseNumber(startPosStr, &m_startPos, errorString)) ||
+        Q_UNLIKELY(!QMimeTypeParserBase::parseNumber(endPosStr, &m_endPos, errorString))) {
         m_type = Invalid;
         return;
     }
@@ -249,7 +249,7 @@ QMimeMagicRule::QMimeMagicRule(const QString &type,
     if (m_value.isEmpty()) {
         m_type = Invalid;
         if (errorString)
-            *errorString = QLatin1String("Invalid empty magic rule value");
+            *errorString = QStringLiteral("Invalid empty magic rule value");
         return;
     }
 
@@ -259,8 +259,7 @@ QMimeMagicRule::QMimeMagicRule(const QString &type,
         if (!ok) {
             m_type = Invalid;
             if (errorString)
-                *errorString = QString::fromLatin1("Invalid magic rule value \"%1\"").arg(
-                        QString::fromLatin1(m_value));
+                *errorString = QLatin1String("Invalid magic rule value \"") + QLatin1String(m_value) + QLatin1Char('"');
             return;
         }
         m_numberMask = !m_mask.isEmpty() ? m_mask.toUInt(&ok, 0) : 0; // autodetect base
@@ -274,8 +273,7 @@ QMimeMagicRule::QMimeMagicRule(const QString &type,
             if (m_mask.size() < 4 || !m_mask.startsWith("0x")) {
                 m_type = Invalid;
                 if (errorString)
-                    *errorString = QString::fromLatin1("Invalid magic rule mask \"%1\"").arg(
-                            QString::fromLatin1(m_mask));
+                    *errorString = QLatin1String("Invalid magic rule mask \"") + QLatin1String(m_mask) + QLatin1Char('"');
                 return;
             }
             const QByteArray &tempMask = QByteArray::fromHex(QByteArray::fromRawData(
@@ -283,8 +281,7 @@ QMimeMagicRule::QMimeMagicRule(const QString &type,
             if (tempMask.size() != m_pattern.size()) {
                 m_type = Invalid;
                 if (errorString)
-                    *errorString = QString::fromLatin1("Invalid magic rule mask size \"%1\"").arg(
-                            QString::fromLatin1(m_mask));
+                    *errorString = QLatin1String("Invalid magic rule mask size \"") + QLatin1String(m_mask) + QLatin1Char('"');
                 return;
             }
             m_mask = tempMask;

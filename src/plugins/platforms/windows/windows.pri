@@ -55,7 +55,6 @@ HEADERS += \
     $$PWD/qwindowsmime.h \
     $$PWD/qwindowsinternalmimedata.h \
     $$PWD/qwindowscursor.h \
-    $$PWD/array.h \
     $$PWD/qwindowsinputcontext.h \
     $$PWD/qwindowstheme.h \
     $$PWD/qwindowsdialoghelpers.h \

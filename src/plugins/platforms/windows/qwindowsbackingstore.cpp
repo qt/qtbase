@@ -100,7 +100,7 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
         SIZE size = {r.width(), r.height()};
         POINT ptDst = {r.x(), r.y()};
         POINT ptSrc = {0, 0};
-        BLENDFUNCTION blend = {AC_SRC_OVER, 0, (BYTE)(255.0 * rw->opacity()), AC_SRC_ALPHA};
+        BLENDFUNCTION blend = {AC_SRC_OVER, 0, BYTE(qRound(255.0 * rw->opacity())), AC_SRC_ALPHA};
         if (QWindowsContext::user32dll.updateLayeredWindowIndirect) {
             RECT dirty = {dirtyRect.x(), dirtyRect.y(),
                 dirtyRect.x() + dirtyRect.width(), dirtyRect.y() + dirtyRect.height()};
@@ -126,7 +126,7 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
                     m_image->hdc(), br.x() + offset.x(), br.y() + offset.y(), SRCCOPY)) {
             const DWORD lastError = GetLastError(); // QTBUG-35926, QTBUG-29716: may fail after lock screen.
             if (lastError != ERROR_SUCCESS && lastError != ERROR_INVALID_HANDLE)
-                qErrnoWarning(lastError, "%s: BitBlt failed", __FUNCTION__);
+                qErrnoWarning(int(lastError), "%s: BitBlt failed", __FUNCTION__);
         }
         rw->releaseDC();
 #ifndef Q_OS_WINCE
@@ -162,7 +162,7 @@ void QWindowsBackingStore::resize(const QSize &size, const QRegion &region)
         if (QImage::toPixelFormat(format).alphaUsage() == QPixelFormat::UsesAlpha)
             m_alphaNeedsFill = true;
         else // upgrade but here we know app painting does not rely on alpha hence no need to fill
-            format = qt_alphaVersionForPainting(format);
+            format = qt_maybeAlphaVersionWithSameDepth(format);
 
         QWindowsNativeImage *oldwni = m_image.data();
         QWindowsNativeImage *newwni = new QWindowsNativeImage(size.width(), size.height(), format);

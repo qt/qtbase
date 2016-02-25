@@ -61,7 +61,6 @@
 
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
-#include <QtCore/qbytearraymatcher.h>
 #include <QtCore/qiodevice.h>
 #ifndef QT_NO_DEBUG_STREAM
 #include <QtCore/qdebug.h>
@@ -191,11 +190,9 @@ QByteArray QSslKeyPrivate::derFromPem(const QByteArray &pem, QMap<QByteArray, QB
 
     if (der.contains("Proc-Type:")) {
         // taken from QHttpNetworkReplyPrivate::parseHeader
-        const QByteArrayMatcher lf("\n");
-        const QByteArrayMatcher colon(":");
         int i = 0;
         while (i < der.count()) {
-            int j = colon.indexIn(der, i); // field-name
+            int j = der.indexOf(':', i); // field-name
             if (j == -1)
                 break;
             const QByteArray field = der.mid(i, j - i).trimmed();
@@ -203,7 +200,7 @@ QByteArray QSslKeyPrivate::derFromPem(const QByteArray &pem, QMap<QByteArray, QB
             // any number of LWS is allowed before and after the value
             QByteArray value;
             do {
-                i = lf.indexIn(der, j);
+                i = der.indexOf('\n', j);
                 if (i == -1)
                     break;
                 if (!value.isEmpty())

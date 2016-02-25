@@ -466,6 +466,9 @@ QString QSqlDriver::stripDelimiters(const QString &identifier, IdentifierType ty
     with the values from \a rec. If \a preparedStatement is true, the
     string will contain placeholders instead of values.
 
+    The generated flag in each field of \a rec determines whether the
+    field is included in the generated statement.
+
     This method can be used to manipulate tables without having to worry
     about database-dependent SQL dialects. For non-prepared statements,
     the values will be properly escaped.
@@ -488,31 +491,25 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
         s.prepend(QLatin1String("SELECT ")).append(QLatin1String(" FROM ")).append(tableName);
         break;
     case WhereStatement:
-        if (preparedStatement) {
-            for (int i = 0; i < rec.count(); ++i) {
-                s.append(prepareIdentifier(rec.fieldName(i), FieldName,this));
-                if (rec.isNull(i))
-                    s.append(QLatin1String(" IS NULL"));
-                else
-                    s.append(QLatin1String(" = ?"));
-                s.append(QLatin1String(" AND "));
-            }
-        } else {
-            for (i = 0; i < rec.count(); ++i) {
-                s.append(prepareIdentifier(rec.fieldName(i), QSqlDriver::FieldName, this));
-                QString val = formatValue(rec.field(i));
-                if (val == QLatin1String("NULL"))
-                    s.append(QLatin1String(" IS NULL"));
-                else
-                    s.append(QLatin1String(" = ")).append(val);
-                s.append(QLatin1String(" AND "));
-            }
-        }
-        if (!s.isEmpty()) {
-            s.prepend(QLatin1String("WHERE "));
-            s.chop(5); // remove tailing AND
+    {
+        const QString tableNamePrefix = tableName.isEmpty()
+            ? QString()
+            : prepareIdentifier(tableName, QSqlDriver::TableName, this) + QLatin1Char('.');
+        for (int i = 0; i < rec.count(); ++i) {
+            if (!rec.isGenerated(i))
+                continue;
+            s.append(s.isEmpty() ? QLatin1String("WHERE ") : QLatin1String(" AND "));
+            s.append(tableNamePrefix);
+            s.append(prepareIdentifier(rec.fieldName(i), QSqlDriver::FieldName, this));
+            if (rec.isNull(i))
+                s.append(QLatin1String(" IS NULL"));
+            else if (preparedStatement)
+                s.append(QLatin1String(" = ?"));
+            else
+                s.append(QLatin1String(" = ")).append(formatValue(rec.field(i)));
         }
         break;
+    }
     case UpdateStatement:
         s.append(QLatin1String("UPDATE ")).append(tableName).append(
                  QLatin1String(" SET "));

@@ -276,7 +276,6 @@ QByteArray QRingBuffer::read()
     if (tailBuffer == 0) {
         qba.resize(tail);
         tail = 0;
-        buffers.append(QByteArray());
     } else {
         --tailBuffer;
     }

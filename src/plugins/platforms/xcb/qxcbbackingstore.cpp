@@ -185,7 +185,7 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
 
     m_hasAlpha = QImage::toPixelFormat(format).alphaUsage() == QPixelFormat::UsesAlpha;
     if (!m_hasAlpha)
-        format = qt_alphaVersionForPainting(format);
+        format = qt_maybeAlphaVersionWithSameDepth(format);
 
     m_qimage = QImage( (uchar*) m_xcb_image->data, m_xcb_image->width, m_xcb_image->height, m_xcb_image->stride, format);
     m_graphics_buffer = new QXcbShmGraphicsBuffer(&m_qimage);
@@ -326,12 +326,9 @@ QPaintDevice *QXcbBackingStore::paintDevice()
 
 void QXcbBackingStore::beginPaint(const QRegion &region)
 {
-    if (!m_image && !m_size.isEmpty())
-        resize(m_size, QRegion());
-
     if (!m_image)
         return;
-    m_size = QSize();
+
     m_paintRegion = region;
     m_image->preparePaint(m_paintRegion);
 
@@ -438,8 +435,7 @@ void QXcbBackingStore::resize(const QSize &size, const QRegion &)
         return;
     Q_XCB_NOOP(connection());
 
-
-    QXcbScreen *screen = window()->screen() ? static_cast<QXcbScreen *>(window()->screen()->handle()) : 0;
+    QXcbScreen *screen = static_cast<QXcbScreen *>(window()->screen()->handle());
     QPlatformWindow *pw = window()->handle();
     if (!pw) {
         window()->create();
@@ -448,11 +444,6 @@ void QXcbBackingStore::resize(const QSize &size, const QRegion &)
     QXcbWindow* win = static_cast<QXcbWindow *>(pw);
 
     delete m_image;
-    if (!screen) {
-        m_image = 0;
-        m_size = size;
-        return;
-    }
     m_image = new QXcbShmImage(screen, size, win->depth(), win->imageFormat());
     // Slow path for bgr888 VNC: Create an additional image, paint into that and
     // swap R and B while copying to m_image after each paint.

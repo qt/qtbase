@@ -115,6 +115,7 @@ private slots:
     void QTBUG8086_currentItemChangedOnClick();
     void QTBUG14363_completerWithAnyKeyPressedEditTriggers();
     void mimeData();
+    void QTBUG50891_ensureSelectionModelSignalConnectionsAreSet();
 
 protected slots:
     void rowsAboutToBeInserted(const QModelIndex &parent, int first, int last)
@@ -1698,6 +1699,31 @@ void tst_QListWidget::mimeData()
 
     delete data;
     delete data2;
+}
+
+void tst_QListWidget::QTBUG50891_ensureSelectionModelSignalConnectionsAreSet()
+{
+    qRegisterMetaType<QListWidgetItem*>("QListWidgetItem*");
+    QListWidget list;
+    for (int i = 0 ; i < 4; ++i)
+        new QListWidgetItem(QString::number(i), &list);
+
+    list.setSelectionModel(new QItemSelectionModel(list.model()));
+    list.show();
+
+    QSignalSpy currentItemChangedSpy(&list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)));
+    QSignalSpy itemSelectionChangedSpy(&list, SIGNAL(itemSelectionChanged()));
+
+    QVERIFY(QTest::qWaitForWindowExposed(&list));
+
+    QCOMPARE(currentItemChangedSpy.count(), 0);
+    QCOMPARE(itemSelectionChangedSpy.count(), 0);
+
+    QTest::mouseClick(list.viewport(), Qt::LeftButton, 0, list.visualItemRect(list.item(2)).center());
+
+    QCOMPARE(currentItemChangedSpy.count(), 1);
+    QCOMPARE(itemSelectionChangedSpy.count(), 1);
+
 }
 
 QTEST_MAIN(tst_QListWidget)

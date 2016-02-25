@@ -199,6 +199,7 @@ void QXcbDrag::startDrag()
                             XCB_ATOM_ATOM, 32, drag_types.size(), (const void *)drag_types.constData());
 
     setUseCompositing(current_virtual_desktop->compositingActive());
+    setScreen(current_virtual_desktop->screens().constFirst()->screen());
     QBasicDrag::startDrag();
     if (connection()->mouseGrabber() == Q_NULLPTR)
         shapedPixmapWindow()->setMouseGrabEnabled(true);
@@ -328,6 +329,9 @@ void QXcbDrag::move(const QPoint &globalPos)
     if (virtualDesktop != current_virtual_desktop) {
         setUseCompositing(virtualDesktop->compositingActive());
         recreateShapedPixmapWindow(static_cast<QPlatformScreen*>(screen)->screen(), deviceIndependentPos);
+        if (connection()->mouseGrabber() == Q_NULLPTR)
+            shapedPixmapWindow()->setMouseGrabEnabled(true);
+
         current_virtual_desktop = virtualDesktop;
     } else {
         QBasicDrag::moveShapedPixmapWindow(deviceIndependentPos);

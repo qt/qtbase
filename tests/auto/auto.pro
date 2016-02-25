@@ -29,9 +29,10 @@ cross_compile:                              SUBDIRS -= tools cmake installed_cma
 !qtHaveModule(printsupport):                SUBDIRS -= printsupport
 !qtHaveModule(concurrent):                  SUBDIRS -= concurrent
 !qtHaveModule(network):                     SUBDIRS -= network
+!qtHaveModule(dbus):                        SUBDIRS -= dbus
 
 # Disable the QtDBus tests if we can't connect to the session bus
-qtHaveModule(dbus) {
+!cross_compile:qtHaveModule(dbus) {
     !system("dbus-send --session --type=signal / local.AutotestCheck.Hello >/dev/null 2>&1") {
         contains(QT_CONFIG, dbus-linked): \
             error("QtDBus is enabled but session bus is not available. Please check the installation.")
@@ -39,6 +40,4 @@ qtHaveModule(dbus) {
             warning("QtDBus is enabled with runtime support, but session bus is not available. Skipping QtDBus tests.")
         SUBDIRS -= dbus
     }
-} else {
-    SUBDIRS -= dbus
 }

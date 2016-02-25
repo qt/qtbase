@@ -206,6 +206,7 @@ void tst_QMenuBar::cleanup()
 TestMenu tst_QMenuBar::initSimpleMenuBar(QMenuBar *mb)
 {
     TestMenu result;
+    mb->setNativeMenuBar(false);
     connect(mb, SIGNAL(triggered(QAction*)), this, SLOT(onSimpleActivated(QAction*)));
     QMenu *menu = mb->addMenu(QStringLiteral("&accel"));
     QAction *action = menu->addAction(QStringLiteral("menu1") );
@@ -273,6 +274,7 @@ void tst_QMenuBar::onComplexActionTriggered()
 TestMenu tst_QMenuBar::initComplexMenuBar(QMenuBar *mb)
 {
     TestMenu result;
+    mb->setNativeMenuBar(false);
     QMenu *menu = addNumberedMenu(mb, 1);
     result.menus << menu;
     for (char c = 'a'; c < 'c'; ++c)
@@ -986,6 +988,7 @@ void tst_QMenuBar::check_altClosePress()
 
     QMainWindow w;
     w.setWindowTitle(QTest::currentTestFunction());
+    w.menuBar()->setNativeMenuBar(false);
     QMenu *menuFile = w.menuBar()->addMenu(tr("&File"));
     menuFile->addAction("Quit");
     QMenu *menuEdit = w.menuBar()->addMenu(tr("&Edit"));
@@ -1061,6 +1064,7 @@ void tst_QMenuBar::check_menuPosition()
         menu.addAction("item");
     }
 
+    w.menuBar()->setNativeMenuBar(false);
     QAction *menu_action = w.menuBar()->addMenu(&menu);
     centerOnScreen(&w);
     w.show();
@@ -1394,6 +1398,7 @@ void tst_QMenuBar::cornerWidgets()
     widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + dataTag);
     QVBoxLayout *layout = new QVBoxLayout(&widget);
     QMenuBar *menuBar = new QMenuBar(&widget);
+    menuBar->setNativeMenuBar(false);
     layout->addWidget(menuBar);
     QMenu *fileMenu = menuBar->addMenu("File");
     fileMenu->addAction("Quit");

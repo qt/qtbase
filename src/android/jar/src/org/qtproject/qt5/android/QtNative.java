@@ -728,6 +728,17 @@ public class QtNative
         });
     }
 
+    private static void hideSplashScreen()
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                if (m_activityDelegate != null)
+                    m_activityDelegate.hideSplashScreen();
+            }
+        });
+    }
+
     // screen methods
     public static native void setDisplayMetrics(int screenWidthPixels,
                                                 int screenHeightPixels,

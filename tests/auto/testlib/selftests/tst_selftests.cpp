@@ -543,6 +543,7 @@ static QProcessEnvironment processEnvironment()
     static QProcessEnvironment result;
     if (result.isEmpty()) {
         const QProcessEnvironment systemEnvironment = QProcessEnvironment::systemEnvironment();
+        const bool preserveLibPath = qEnvironmentVariableIsSet("QT_PRESERVE_TESTLIB_PATH");
         foreach (const QString &key, systemEnvironment.keys()) {
             const bool useVariable = key == QLatin1String("PATH") || key == QLatin1String("QT_QPA_PLATFORM")
 #if defined(Q_OS_QNX)
@@ -557,6 +558,8 @@ static QProcessEnvironment processEnvironment()
 #ifdef __COVERAGESCANNER__
                 || key == QLatin1String("QT_TESTCOCOON_ACTIVE")
 #endif
+                || ( preserveLibPath && (key == QLatin1String("QT_PLUGIN_PATH")
+                                        || key == QLatin1String("LD_LIBRARY_PATH")))
                 ;
             if (useVariable)
                 result.insert(key, systemEnvironment.value(key));

@@ -39,8 +39,12 @@
 
 #include <qpa/qplatformbackingstore.h>
 #include <QtCore/QScopedPointer>
+#include <QtCore/QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaBackingStore)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaBackingStoreVerbose)
 
 class QWinRTScreen;
 
