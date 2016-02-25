@@ -737,27 +737,25 @@
     \value MonoOnly The pixmap becomes monochrome. If necessary,
            it is dithered using the chosen dithering algorithm.
 
-    Dithering mode preference for RGB channels:
+    Dithering mode preference:
 
-    \value DiffuseDither (default) - A high-quality dither.
-    \value OrderedDither A faster, more ordered dither.
+    \value DiffuseDither (default) - A high-quality dither using error diffusion.
+    \value OrderedDither A faster, ordered dither.
     \value ThresholdDither No dithering; closest color is used.
 
-    Dithering mode preference for alpha channel:
+    Dithering mode preference for 1-bit alpha masks:
 
     \value ThresholdAlphaDither (default) - No dithering.
-    \value OrderedAlphaDither A faster, more ordered dither.
-    \value DiffuseAlphaDither A high-quality dither.
+    \value OrderedAlphaDither A faster, ordered dither.
+    \value DiffuseAlphaDither A high-quality dither using error diffusion.
     \omitvalue NoAlpha
 
     Color matching versus dithering preference:
 
-    \value PreferDither (default when converting to a pixmap) - Always dither
-           32-bit images when the image is converted to 8 bits.
-    \value AvoidDither (default when converting for the purpose of saving to
-           file) - Dither 32-bit images only if the image has more than 256
-           colors and it is being converted to 8 bits.
-    \omitvalue AutoDither
+    \value PreferDither Always dither images when converting to smaller color-spaces.
+    \value AvoidDither Only dither to indexed formats if the source image uses more
+           different colors than the size of the color table of the destination format.
+    \value AutoDither (default) - Only dither when down-converting to 1 or 8-bit indexed formats.
 
     \omitvalue ColorMode_Mask
     \omitvalue Dither_Mask

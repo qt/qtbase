@@ -195,6 +195,9 @@ private slots:
     void pixelColor();
     void pixel();
 
+    void ditherGradient_data();
+    void ditherGradient();
+
 private:
     const QString m_prefix;
 };
@@ -3104,6 +3107,79 @@ void tst_QImage::pixel()
         QCOMPARE(QColor(monolsb.pixel(0, 0)), QColor(Qt::black));
         indexed.pixel(0, 0); // Don't crash
     }
+}
+
+void tst_QImage::ditherGradient_data()
+{
+    QTest::addColumn<QImage>("image");
+    QTest::addColumn<QImage::Format>("format");
+    QTest::addColumn<int>("flags");
+    QTest::addColumn<int>("minimumExpectedGradient");
+
+    QImage rgb32(256, 16, QImage::Format_RGB32);
+    QLinearGradient gradient(QRectF(rgb32.rect()).topLeft(), QRectF(rgb32.rect()).topRight());
+    gradient.setColorAt(0.0, QColor(0, 0, 0));
+    gradient.setColorAt(1.0, QColor(255, 255, 255));
+    QPainter p;
+    p.begin(&rgb32);
+    p.fillRect(rgb32.rect(), gradient);
+    p.end();
+
+    QTest::newRow("rgb32 -> rgb444 (no dither)") << rgb32 << QImage::Format_RGB444 << 0 << 16;
+    QTest::newRow("rgb32 -> rgb444 (dithering)") << rgb32 << QImage::Format_RGB444 << int(Qt::PreferDither | Qt::OrderedDither) << 33;
+    QTest::newRow("rgb32 -> argb4444pm (dithering)") << rgb32 << QImage::Format_ARGB4444_Premultiplied << int(Qt::PreferDither | Qt::OrderedDither) << 33;
+    QTest::newRow("rgb32 -> rgb16 (no dither)") << rgb32 << QImage::Format_RGB16 << 0 << 32;
+    QTest::newRow("rgb32 -> rgb16 (dithering)") << rgb32 << QImage::Format_RGB16 << int(Qt::PreferDither | Qt::OrderedDither) << 65;
+    QTest::newRow("rgb32 -> rgb666 (no dither)") << rgb32 << QImage::Format_RGB666 << 0 << 64;
+    QTest::newRow("rgb32 -> rgb666 (dithering)") << rgb32 << QImage::Format_RGB666 << int(Qt::PreferDither | Qt::OrderedDither) << 129;
+
+    // Test we get the same results for opaque input in the ARGBPM implementation.
+    rgb32 = qMove(rgb32).convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    QTest::newRow("argb32pm -> argb4444pm (no dither)") << rgb32 << QImage::Format_ARGB4444_Premultiplied << 0 << 16;
+    QTest::newRow("argb32pm -> rgb444 (dithering)") << rgb32 << QImage::Format_RGB444 << int(Qt::PreferDither | Qt::OrderedDither) << 33;
+    QTest::newRow("argb32pm -> argb4444pm (dithering)") << rgb32 << QImage::Format_ARGB4444_Premultiplied << int(Qt::PreferDither | Qt::OrderedDither) << 33;
+    QTest::newRow("argb32pm -> argb8565pm (no dither)") << rgb32 << QImage::Format_ARGB8565_Premultiplied << 0 << 32;
+    QTest::newRow("argb32pm -> argb8565pm (dithering)") << rgb32 << QImage::Format_ARGB8565_Premultiplied << int(Qt::PreferDither | Qt::OrderedDither) << 65;
+    QTest::newRow("argb32pm -> argb6666pm (no dither)") << rgb32 << QImage::Format_ARGB6666_Premultiplied << 0 << 64;
+    QTest::newRow("argb32pm -> argb6666pm (dithering)") << rgb32 << QImage::Format_ARGB6666_Premultiplied << int(Qt::PreferDither | Qt::OrderedDither) << 129;
+
+    QImage rgb30(1024, 16, QImage::Format_RGB30);
+    QLinearGradient gradient30(QRectF(rgb30.rect()).topLeft(), QRectF(rgb30.rect()).topRight());
+    gradient30.setColorAt(0.0, QColor(0, 0, 0));
+    gradient30.setColorAt(1.0, QColor(255, 255, 255));
+    p.begin(&rgb30);
+    p.fillRect(rgb30.rect(), gradient30);
+    p.end();
+
+    QTest::newRow("rgb30 -> rgb32 (no dither)") << rgb30 << QImage::Format_RGB32 << 0 << 256;
+    QTest::newRow("rgb30 -> rgb32 (dithering)") << rgb30 << QImage::Format_RGB32 << int(Qt::PreferDither | Qt::OrderedDither) << 513;
+    QTest::newRow("rgb30 -> rgb888 (no dither)") << rgb30 << QImage::Format_RGB888 << 0 << 256;
+    QTest::newRow("rgb30 -> rgb888 (dithering)") << rgb30 << QImage::Format_RGB888 << int(Qt::PreferDither | Qt::OrderedDither) << 513;
+}
+
+void tst_QImage::ditherGradient()
+{
+    QFETCH(QImage, image);
+    QFETCH(QImage::Format, format);
+    QFETCH(int, flags);
+    QFETCH(int, minimumExpectedGradient);
+
+    QImage converted = image.convertToFormat(format, (Qt::ImageConversionFlags)flags);
+    int observedGradientSteps = 0;
+    int lastTotal = -1;
+    for (int i = 0; i < converted.width(); ++i) {
+        int total = 0;
+        for (int j = 0; j < converted.height(); ++j) {
+            uint c = converted.pixel(i, j);
+            QCOMPARE(qAlpha(c), 255);
+            total += qRed(c);
+        }
+        if (total > lastTotal) {
+            observedGradientSteps++;
+            lastTotal = total;
+        }
+    }
+    QVERIFY(observedGradientSteps >= minimumExpectedGradient);
 }
 
 QTEST_GUILESS_MAIN(tst_QImage)

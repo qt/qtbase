@@ -1171,7 +1171,10 @@ inline int comp_func_Plus_one_pixel(uint d, const uint s)
 #undef MIX
 #undef AMIX
 
-struct QDitherInfo;
+struct QDitherInfo {
+    int x;
+    int y;
+};
 
 typedef const uint *(QT_FASTCALL *ConvertFunc)(uint *buffer, const uint *src, int count,
                                                const QVector<QRgb> *clut, QDitherInfo *dither);

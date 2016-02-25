@@ -128,7 +128,7 @@ extern const uint *QT_FASTCALL convertRGB32FromARGB32PM_sse4(uint *buffer, const
                                                              const QVector<QRgb> *, QDitherInfo *);
 #endif
 
-void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
+void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags flags)
 {
     // Cannot be used with indexed formats.
     Q_ASSERT(dest->format > QImage::Format_Indexed8);
@@ -159,14 +159,20 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
                 convertFromARGB32PM = convertRGB32FromARGB32PM;
         }
     }
+    QDitherInfo dither;
+    QDitherInfo *ditherPtr = 0;
+    if ((flags & Qt::PreferDither) && (flags & Qt::Dither_Mask) != Qt::ThresholdDither)
+        ditherPtr = &dither;
 
     for (int y = 0; y < src->height; ++y) {
+        dither.y = y;
         int x = 0;
         while (x < src->width) {
+            dither.x = x;
             int l = qMin(src->width - x, buffer_size);
             const uint *ptr = fetch(buffer, srcData, x, l);
-            ptr = convertToARGB32PM(buffer, ptr, l, 0, 0);
-            ptr = convertFromARGB32PM(buffer, ptr, l, 0, 0);
+            ptr = convertToARGB32PM(buffer, ptr, l, 0, ditherPtr);
+            ptr = convertFromARGB32PM(buffer, ptr, l, 0, ditherPtr);
             store(destData, ptr, x, l);
             x += l;
         }
@@ -175,7 +181,7 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
     }
 }
 
-bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::ImageConversionFlags)
+bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::ImageConversionFlags flags)
 {
     // Cannot be used with indexed formats or between formats with different pixel depths.
     Q_ASSERT(dst_format > QImage::Format_Indexed8);
@@ -208,14 +214,20 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
                 convertFromARGB32PM = convertRGB32FromARGB32PM;
         }
     }
+    QDitherInfo dither;
+    QDitherInfo *ditherPtr = 0;
+    if ((flags & Qt::PreferDither) && (flags & Qt::Dither_Mask) != Qt::ThresholdDither)
+        ditherPtr = &dither;
 
     for (int y = 0; y < data->height; ++y) {
+        dither.y = y;
         int x = 0;
         while (x < data->width) {
+            dither.x = x;
             int l = qMin(data->width - x, buffer_size);
             const uint *ptr = fetch(buffer, srcData, x, l);
-            ptr = convertToARGB32PM(buffer, ptr, l, 0, 0);
-            ptr = convertFromARGB32PM(buffer, ptr, l, 0, 0);
+            ptr = convertToARGB32PM(buffer, ptr, l, 0, ditherPtr);
+            ptr = convertFromARGB32PM(buffer, ptr, l, 0, ditherPtr);
             // The conversions might be passthrough and not use the buffer, in that case we are already done.
             if (srcData != (const uchar*)ptr)
                 store(srcData, ptr, x, l);

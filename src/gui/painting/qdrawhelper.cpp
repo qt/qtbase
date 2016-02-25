@@ -336,48 +336,110 @@ static const QRgba64 *QT_FASTCALL convertARGBPMToARGB64PM(QRgba64 *buffer, const
 
 template<QImage::Format Format, bool fromRGB>
 static const uint *QT_FASTCALL convertRGBFromARGB32PM(uint *buffer, const uint *src, int count,
-                                                      const QVector<QRgb> *, QDitherInfo *)
+                                                      const QVector<QRgb> *, QDitherInfo *dither)
 {
-    Q_CONSTEXPR uint rMask = ((1 << redWidth<Format>()) - 1);
-    Q_CONSTEXPR uint gMask = ((1 << greenWidth<Format>()) - 1);
-    Q_CONSTEXPR uint bMask = ((1 << blueWidth<Format>()) - 1);
+    Q_CONSTEXPR uchar rWidth = redWidth<Format>();
+    Q_CONSTEXPR uchar gWidth = greenWidth<Format>();
+    Q_CONSTEXPR uchar bWidth = blueWidth<Format>();
 
-    Q_CONSTEXPR uchar rRightShift = 24 - redWidth<Format>();
-    Q_CONSTEXPR uchar gRightShift = 16 - greenWidth<Format>();
-    Q_CONSTEXPR uchar bRightShift =  8 - blueWidth<Format>();
+    // RGB32 -> RGB888 is not a precision loss.
+    if (!dither || (rWidth == 8 && gWidth == 8 && bWidth == 8)) {
+        Q_CONSTEXPR uint rMask = (1 << rWidth) - 1;
+        Q_CONSTEXPR uint gMask = (1 << gWidth) - 1;
+        Q_CONSTEXPR uint bMask = (1 << bWidth) - 1;
 
-    for (int i = 0; i < count; ++i) {
-        const uint c = fromRGB ? src[i] : qUnpremultiply(src[i]);
-        const uint r = ((c >> rRightShift) & rMask) << redShift<Format>();
-        const uint g = ((c >> gRightShift) & gMask) << greenShift<Format>();
-        const uint b = ((c >> bRightShift) & bMask) << blueShift<Format>();
-        buffer[i] = r | g | b;
+        Q_CONSTEXPR uchar rRightShift = 24 - rWidth;
+        Q_CONSTEXPR uchar gRightShift = 16 - gWidth;
+        Q_CONSTEXPR uchar bRightShift =  8 - bWidth;
+
+        for (int i = 0; i < count; ++i) {
+            const uint c = fromRGB ? src[i] : qUnpremultiply(src[i]);
+            const uint r = ((c >> rRightShift) & rMask) << redShift<Format>();
+            const uint g = ((c >> gRightShift) & gMask) << greenShift<Format>();
+            const uint b = ((c >> bRightShift) & bMask) << blueShift<Format>();
+            buffer[i] = r | g | b;
+        }
+    } else {
+        // We do ordered dither by using a rounding conversion, but instead of
+        // adding half of input precision, we add the adjusted result from the
+        // bayer matrix before narrowing.
+        // Note: Rounding conversion in itself is different from the naive
+        // conversion we do above for non-dithering.
+        const uint *bayer_line = qt_bayer_matrix[dither->y & 15];
+        for (int i = 0; i < count; ++i) {
+            const uint c = fromRGB ? src[i] : qUnpremultiply(src[i]);
+            const int d = bayer_line[(dither->x + i) & 15];
+            const int dr = d - ((d + 1) >> rWidth);
+            const int dg = d - ((d + 1) >> gWidth);
+            const int db = d - ((d + 1) >> bWidth);
+            int r = qRed(c);
+            int g = qGreen(c);
+            int b = qBlue(c);
+            r = (r + ((dr - r) >> rWidth) + 1) >> (8 - rWidth);
+            g = (g + ((dg - g) >> gWidth) + 1) >> (8 - gWidth);
+            b = (b + ((db - b) >> bWidth) + 1) >> (8 - bWidth);
+            buffer[i] = (r << redShift<Format>())
+                      | (g << greenShift<Format>())
+                      | (b << blueShift<Format>());
+        }
     }
     return buffer;
 }
 
 template<QImage::Format Format, bool fromRGB>
 static const uint *QT_FASTCALL convertARGBPMFromARGB32PM(uint *buffer, const uint *src, int count,
-                                                         const QVector<QRgb> *, QDitherInfo *)
+                                                         const QVector<QRgb> *, QDitherInfo *dither)
 {
-    Q_CONSTEXPR uint aMask = ((1 << alphaWidth<Format>()) - 1);
-    Q_CONSTEXPR uint rMask = ((1 << redWidth<Format>()) - 1);
-    Q_CONSTEXPR uint gMask = ((1 << greenWidth<Format>()) - 1);
-    Q_CONSTEXPR uint bMask = ((1 << blueWidth<Format>()) - 1);
+    Q_CONSTEXPR uchar aWidth = alphaWidth<Format>();
+    Q_CONSTEXPR uchar rWidth = redWidth<Format>();
+    Q_CONSTEXPR uchar gWidth = greenWidth<Format>();
+    Q_CONSTEXPR uchar bWidth = blueWidth<Format>();
 
-    Q_CONSTEXPR uchar aRightShift = 32 - alphaWidth<Format>();
-    Q_CONSTEXPR uchar rRightShift = 24 - redWidth<Format>();
-    Q_CONSTEXPR uchar gRightShift = 16 - greenWidth<Format>();
-    Q_CONSTEXPR uchar bRightShift =  8 - blueWidth<Format>();
+    if (!dither) {
+        Q_CONSTEXPR uint aMask = (1 << aWidth) - 1;
+        Q_CONSTEXPR uint rMask = (1 << rWidth) - 1;
+        Q_CONSTEXPR uint gMask = (1 << gWidth) - 1;
+        Q_CONSTEXPR uint bMask = (1 << bWidth) - 1;
 
-    Q_CONSTEXPR uint aOpaque = (0xff & aMask) << alphaShift<Format>();
-    for (int i = 0; i < count; ++i) {
-        const uint c = src[i];
-        const uint a = fromRGB ? aOpaque : (((c >> aRightShift) & aMask) << alphaShift<Format>());
-        const uint r = ((c >> rRightShift) & rMask) << redShift<Format>();
-        const uint g = ((c >> gRightShift) & gMask) << greenShift<Format>();
-        const uint b = ((c >> bRightShift) & bMask) << blueShift<Format>();
-        buffer[i] = a | r | g | b;
+        Q_CONSTEXPR uchar aRightShift = 32 - aWidth;
+        Q_CONSTEXPR uchar rRightShift = 24 - rWidth;
+        Q_CONSTEXPR uchar gRightShift = 16 - gWidth;
+        Q_CONSTEXPR uchar bRightShift =  8 - bWidth;
+
+        Q_CONSTEXPR uint aOpaque = aMask << alphaShift<Format>();
+        for (int i = 0; i < count; ++i) {
+            const uint c = src[i];
+            const uint a = fromRGB ? aOpaque : (((c >> aRightShift) & aMask) << alphaShift<Format>());
+            const uint r = ((c >> rRightShift) & rMask) << redShift<Format>();
+            const uint g = ((c >> gRightShift) & gMask) << greenShift<Format>();
+            const uint b = ((c >> bRightShift) & bMask) << blueShift<Format>();
+            buffer[i] = a | r | g | b;
+        }
+    } else {
+        const uint *bayer_line = qt_bayer_matrix[dither->y & 15];
+        for (int i = 0; i < count; ++i) {
+            const uint c = src[i];
+            const int d = bayer_line[(dither->x + i) & 15];
+            const int da = d - ((d + 1) >> aWidth);
+            const int dr = d - ((d + 1) >> rWidth);
+            const int dg = d - ((d + 1) >> gWidth);
+            const int db = d - ((d + 1) >> bWidth);
+            int a = qAlpha(c);
+            int r = qRed(c);
+            int g = qGreen(c);
+            int b = qBlue(c);
+            if (fromRGB)
+                a = (1 << aWidth) - 1;
+            else
+                a = (a + ((da - a) >> aWidth) + 1) >> (8 - aWidth);
+            r = (r + ((dr - r) >> rWidth) + 1) >> (8 - rWidth);
+            g = (g + ((dg - g) >> gWidth) + 1) >> (8 - gWidth);
+            b = (b + ((db - b) >> bWidth) + 1) >> (8 - bWidth);
+            buffer[i] = (a << alphaShift<Format>())
+                      | (r << redShift<Format>())
+                      | (g << greenShift<Format>())
+                      | (b << blueShift<Format>());
+        }
     }
     return buffer;
 }
@@ -640,10 +702,28 @@ static const uint *QT_FASTCALL convertRGBXFromARGB32PM(uint *buffer, const uint 
 
 template<QtPixelOrder PixelOrder>
 static const uint *QT_FASTCALL convertA2RGB30PMToARGB32PM(uint *buffer, const uint *src, int count,
-                                                          const QVector<QRgb> *, QDitherInfo *)
+                                                          const QVector<QRgb> *, QDitherInfo *dither)
 {
-    for (int i = 0; i < count; ++i)
-        buffer[i] = qConvertA2rgb30ToArgb32<PixelOrder>(src[i]);
+    if (!dither) {
+        for (int i = 0; i < count; ++i)
+            buffer[i] = qConvertA2rgb30ToArgb32<PixelOrder>(src[i]);
+    } else {
+        for (int i = 0; i < count; ++i) {
+            const uint c = src[i];
+            short d10 = (qt_bayer_matrix[dither->y & 15][(dither->x + i) & 15] << 2);
+            short a10 = (c >> 30) * 0x155;
+            short r10 = ((c >> 20) & 0x3ff);
+            short g10 = ((c >> 10) & 0x3ff);
+            short b10 = (c & 0x3ff);
+            if (PixelOrder == PixelOrderBGR)
+                std::swap(r10, b10);
+            short a8 = (a10 + ((d10 - a10) >> 8)) >> 2;
+            short r8 = (r10 + ((d10 - r10) >> 8)) >> 2;
+            short g8 = (g10 + ((d10 - g10) >> 8)) >> 2;
+            short b8 = (b10 + ((d10 - b10) >> 8)) >> 2;
+            buffer[i] = qRgba(r8, g8, b8, a8);
+        }
+    }
     return buffer;
 }
 

@@ -335,7 +335,7 @@ void QRasterPlatformPixmap::createPixmapForImage(QImage &sourceImage, Qt::ImageC
     } else if (inPlace && sourceImage.d->convertInPlace(format, flags)) {
         image = sourceImage;
     } else {
-        image = sourceImage.convertToFormat(format);
+        image = sourceImage.convertToFormat(format, flags);
     }
 
     if (image.d) {
