@@ -73,8 +73,9 @@ public:
     void beginPaint(const QRegion &region) Q_DECL_OVERRIDE
     {
         Q_Q(QRasterWindow);
-        if (backingstore->size() != q->size()) {
-            backingstore->resize(q->size());
+        const QSize size = q->size();
+        if (backingstore->size() != size) {
+            backingstore->resize(size);
             markWindowAsDirty();
         }
         backingstore->beginPaint(region);

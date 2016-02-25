@@ -824,14 +824,15 @@ QZipReader::QZipReader(const QString &archive, QIODevice::OpenMode mode)
     QScopedPointer<QFile> f(new QFile(archive));
     f->open(mode);
     QZipReader::Status status;
-    if (f->error() == QFile::NoError)
+    const QFileDevice::FileError error = f->error();
+    if (error == QFile::NoError)
         status = NoError;
     else {
-        if (f->error() == QFile::ReadError)
+        if (error == QFile::ReadError)
             status = FileReadError;
-        else if (f->error() == QFile::OpenError)
+        else if (error == QFile::OpenError)
             status = FileOpenError;
-        else if (f->error() == QFile::PermissionsError)
+        else if (error == QFile::PermissionsError)
             status = FilePermissionsError;
         else
             status = FileError;

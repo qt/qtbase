@@ -1469,9 +1469,9 @@ void QWindow::setGeometry(const QRect &rect)
 {
     Q_D(QWindow);
     d->positionAutomatic = false;
-    if (rect == geometry())
+    const QRect oldRect = geometry();
+    if (rect == oldRect)
         return;
-    QRect oldRect = geometry();
 
     d->positionPolicy = QWindowPrivate::WindowFrameExclusive;
     if (d->platformWindow) {

@@ -474,8 +474,9 @@ QVector<T> fromNativePixels(const QVector<T> &pixelValues, const QWindow *window
 
     QVector<T> pointValues;
     pointValues.reserve(pixelValues.size());
+    const auto factor = QHighDpiScaling::factor(window);
     for (const T &pixelValue : pixelValues)
-        pointValues.append(pixelValue / QHighDpiScaling::factor(window));
+        pointValues.append(pixelValue / factor);
     return pointValues;
 }
 
@@ -488,8 +489,9 @@ QVector<T> toNativePixels(const QVector<T> &pointValues, const QWindow *window)
 
     QVector<T> pixelValues;
     pixelValues.reserve(pointValues.size());
+    const auto factor = QHighDpiScaling::factor(window);
     for (const T &pointValue : pointValues)
-        pixelValues.append(pointValue * QHighDpiScaling::factor(window));
+        pixelValues.append(pointValue * factor);
     return pixelValues;
 }
 
