@@ -624,6 +624,7 @@ static QTtfTable generateName(const QVector<QTtfNameRecord> &name);
 static QTtfTable generateName(const qttf_name_table &name)
 {
     QVector<QTtfNameRecord> list;
+    list.reserve(5);
     QTtfNameRecord rec;
     rec.nameId = 0;
     rec.value = name.copyright;
@@ -1061,6 +1062,7 @@ static QVector<QTtfTable> generateGlyphTables(qttf_font_tables &tables, const QV
     Q_ASSERT(hmtx.data.size() == hs.offset());
 
     QVector<QTtfTable> list;
+    list.reserve(3);
     list.append(glyf);
     list.append(loca);
     list.append(hmtx);

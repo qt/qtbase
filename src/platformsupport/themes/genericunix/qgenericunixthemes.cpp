@@ -59,9 +59,12 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformservices.h>
 #include <qpa/qplatformdialoghelper.h>
+#ifndef QT_NO_DBUS
+#include "QtPlatformSupport/private/qdbusplatformmenu_p.h"
+#include "QtPlatformSupport/private/qdbusmenubar_p.h"
+#endif
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
 #include "QtPlatformSupport/private/qdbustrayicon_p.h"
-#include "QtPlatformSupport/private/qdbusplatformmenu_p.h"
 #endif
 
 #include <algorithm>
@@ -111,6 +114,21 @@ static bool isDBusTrayAvailable() {
         qCDebug(qLcTray) << "D-Bus tray available:" << dbusTrayAvailable;
     }
     return dbusTrayAvailable;
+}
+#endif
+
+#ifndef QT_NO_DBUS
+static bool checkDBusGlobalMenuAvailable()
+{
+    QDBusConnection connection = QDBusConnection::sessionBus();
+    QString registrarService = QStringLiteral("com.canonical.AppMenu.Registrar");
+    return connection.interface()->isServiceRegistered(registrarService);
+}
+
+static bool isDBusGlobalMenuAvailable()
+{
+    static bool dbusGlobalMenuAvailable = checkDBusGlobalMenuAvailable();
+    return dbusGlobalMenuAvailable;
 }
 #endif
 
@@ -171,6 +189,22 @@ QStringList QGenericUnixTheme::xdgIconThemePaths()
 
     return paths;
 }
+
+#ifndef QT_NO_DBUS
+QPlatformMenu *QGenericUnixTheme::createPlatformMenu() const
+{
+    if (isDBusGlobalMenuAvailable())
+        return new QDBusPlatformMenu();
+    return nullptr;
+}
+
+QPlatformMenuBar *QGenericUnixTheme::createPlatformMenuBar() const
+{
+    if (isDBusGlobalMenuAvailable())
+        return new QDBusMenuBar();
+    return nullptr;
+}
+#endif
 
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
 QPlatformSystemTrayIcon *QGenericUnixTheme::createPlatformSystemTrayIcon() const
@@ -559,6 +593,22 @@ QPlatformTheme *QKdeTheme::createKdeTheme()
     return new QKdeTheme(kdeDirs, kdeVersion);
 }
 
+#ifndef QT_NO_DBUS
+QPlatformMenu *QKdeTheme::createPlatformMenu() const
+{
+    if (isDBusGlobalMenuAvailable())
+        return new QDBusPlatformMenu();
+    return nullptr;
+}
+
+QPlatformMenuBar *QKdeTheme::createPlatformMenuBar() const
+{
+    if (isDBusGlobalMenuAvailable())
+        return new QDBusMenuBar();
+    return nullptr;
+}
+#endif
+
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
 QPlatformSystemTrayIcon *QKdeTheme::createPlatformSystemTrayIcon() const
 {
@@ -654,6 +704,22 @@ QString QGnomeTheme::gtkFontName() const
 {
     return QStringLiteral("%1 %2").arg(QLatin1String(defaultSystemFontNameC)).arg(defaultSystemFontSize);
 }
+
+#ifndef QT_NO_DBUS
+QPlatformMenu *QGnomeTheme::createPlatformMenu() const
+{
+    if (isDBusGlobalMenuAvailable())
+        return new QDBusPlatformMenu();
+    return nullptr;
+}
+
+QPlatformMenuBar *QGnomeTheme::createPlatformMenuBar() const
+{
+    if (isDBusGlobalMenuAvailable())
+        return new QDBusMenuBar();
+    return nullptr;
+}
+#endif
 
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
 QPlatformSystemTrayIcon *QGnomeTheme::createPlatformSystemTrayIcon() const

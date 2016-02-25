@@ -795,7 +795,11 @@ public:
         if (reserve) {
             if (reserve < 128)
                 reserve = 128;
-            size = qMax(size + reserve, size *2);
+            size = qMax(size + reserve, qMin(size *2, (int)Value::MaxSize));
+            if (size > Value::MaxSize) {
+                qWarning("QJson: Document too large to store in data structure");
+                return 0;
+            }
         }
         char *raw = (char *)malloc(size);
         Q_CHECK_PTR(raw);

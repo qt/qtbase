@@ -378,7 +378,7 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
             m_standardName = readRegistryString(baseKey, L"Std");
             m_daylightName = readRegistryString(baseKey, L"Dlt");
             // On Vista and later the optional dynamic key holds historic data
-            const QString dynamicKeyPath = baseKeyPath + QStringLiteral("\\Dynamic DST");
+            const QString dynamicKeyPath = baseKeyPath + QLatin1String("\\Dynamic DST");
             HKEY dynamicKey = NULL;
             if (openRegistryKey(dynamicKeyPath, &dynamicKey)) {
                 // Find out the start and end years stored, then iterate over them

@@ -37,11 +37,14 @@
 #ifndef QWINRTWINDOW_H
 #define QWINRTWINDOW_H
 
+#include <QtCore/QLoggingCategory>
 #include <qpa/qplatformwindow.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaWindows)
 
 class QWinRTWindowPrivate;
 class QWinRTWindow : public QPlatformWindow

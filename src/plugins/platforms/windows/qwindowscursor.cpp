@@ -119,8 +119,8 @@ HCURSOR QWindowsCursor::createPixmapCursor(QPixmap pixmap, const QPoint &hotSpot
 
     ICONINFO ii;
     ii.fIcon     = 0;
-    ii.xHotspot  = hotSpot.x();
-    ii.yHotspot  = hotSpot.y();
+    ii.xHotspot  = DWORD(hotSpot.x());
+    ii.yHotspot  = DWORD(hotSpot.y());
     ii.hbmMask   = im;
     ii.hbmColor  = ic;
 
@@ -148,8 +148,8 @@ static HCURSOR createBitmapCursor(const QImage &bbits, const QImage &mbits,
     QScopedArrayPointer<uchar> xMask(new uchar[height * n]);
     int x = 0;
     for (int i = 0; i < height; ++i) {
-        const uchar *bits = bbits.scanLine(i);
-        const uchar *mask = mbits.scanLine(i);
+        const uchar *bits = bbits.constScanLine(i);
+        const uchar *mask = mbits.constScanLine(i);
         for (int j = 0; j < n; ++j) {
             uchar b = bits[j];
             uchar m = mask[j];
@@ -179,8 +179,8 @@ static HCURSOR createBitmapCursor(const QImage &bbits, const QImage &mbits,
             x += sysN;
         } else {
             int fillWidth = n > sysN ? sysN : n;
-            const uchar *bits = bbits.scanLine(i);
-            const uchar *mask = mbits.scanLine(i);
+            const uchar *bits = bbits.constScanLine(i);
+            const uchar *mask = mbits.constScanLine(i);
             for (int j = 0; j < fillWidth; ++j) {
                 uchar b = bits[j];
                 uchar m = mask[j];
@@ -577,7 +577,7 @@ HCURSOR QWindowsCursor::createCursorFromShape(Qt::CursorShape cursorShape, const
     for (const QWindowsStandardCursorMapping *s = standardCursors; s < sEnd; ++s) {
         if (s->shape == cursorShape) {
 #ifndef Q_OS_WINCE
-            return (HCURSOR)LoadImage(0, s->resource, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+            return static_cast<HCURSOR>(LoadImage(0, s->resource, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED));
 #else
             return LoadCursor(0, s->resource);
 #endif

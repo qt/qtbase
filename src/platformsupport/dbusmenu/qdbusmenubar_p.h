@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Dmitry Shachnev <mitya57@gmail.com>
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the qmake spec of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,4 +37,55 @@
 **
 ****************************************************************************/
 
-#include "../../freebsd-g++/qplatformdefs.h"
+#ifndef QDBUSMENUBAR_P_H
+#define QDBUSMENUBAR_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <private/qdbusplatformmenu_p.h>
+#include <private/qdbusmenuadaptor_p.h>
+#include <QtCore/QHash>
+#include <QtCore/QString>
+#include <QtGui/QWindow>
+
+QT_BEGIN_NAMESPACE
+
+class QDBusMenuBar : public QPlatformMenuBar
+{
+    Q_OBJECT
+
+public:
+    QDBusMenuBar();
+    virtual ~QDBusMenuBar();
+
+    void insertMenu(QPlatformMenu *menu, QPlatformMenu *before) Q_DECL_OVERRIDE;
+    void removeMenu(QPlatformMenu *menu) Q_DECL_OVERRIDE;
+    void syncMenu(QPlatformMenu *menu) Q_DECL_OVERRIDE;
+    void handleReparent(QWindow *newParentWindow) Q_DECL_OVERRIDE;
+    QPlatformMenu *menuForTag(quintptr tag) const Q_DECL_OVERRIDE;
+
+private:
+    QDBusPlatformMenu *m_menu;
+    QDBusMenuAdaptor *m_menuAdaptor;
+    QHash<quintptr, QDBusPlatformMenuItem *> m_menuItems;
+    uint m_windowId;
+    QString m_objectPath;
+
+    QDBusPlatformMenuItem *menuItemForMenu(QPlatformMenu *menu);
+    static void updateMenuItem(QDBusPlatformMenuItem *item, QPlatformMenu *menu);
+    void registerMenuBar();
+    void unregisterMenuBar();
+};
+
+QT_END_NAMESPACE
+
+#endif // QDBUSMENUBAR_P_H

@@ -210,7 +210,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     // Check for events synthesized from touch. Lower 7 bits are touch/pen index, bit 8 indicates touch.
     // However, when tablet support is active, extraInfo is a packet serial number. This is not a problem
     // since we do not want to ignore mouse events coming from a tablet.
-    const quint64 extraInfo = GetMessageExtraInfo();
+    const quint64 extraInfo = quint64(GetMessageExtraInfo());
     if ((extraInfo & signatureMask) == miWpSignature) {
         if (extraInfo & 0x80) { // Bit 7 indicates touch event, else tablet pen.
             source = Qt::MouseEventSynthesizedBySystem;
@@ -250,7 +250,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     }
 
     QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
-    const Qt::MouseButtons buttons = keyStateToMouseButtons((int)msg.wParam);
+    const Qt::MouseButtons buttons = keyStateToMouseButtons(int(msg.wParam));
 
     // If the window was recently resized via mouse doubleclick on the frame or title bar,
     // we don't get WM_LBUTTONDOWN or WM_LBUTTONDBLCLK for the second click,
@@ -426,13 +426,13 @@ static void redirectWheelEvent(QWindow *window, const QPoint &globalPos, int del
 bool QWindowsMouseHandler::translateMouseWheelEvent(QWindow *window, HWND,
                                                     MSG msg, LRESULT *)
 {
-    const Qt::KeyboardModifiers mods = keyStateToModifiers((int)msg.wParam);
+    const Qt::KeyboardModifiers mods = keyStateToModifiers(int(msg.wParam));
 
     int delta;
     if (msg.message == WM_MOUSEWHEEL || msg.message == WM_MOUSEHWHEEL)
-        delta = (short) HIWORD (msg.wParam);
+        delta = HIWORD (msg.wParam);
     else
-        delta = (int) msg.wParam;
+        delta = int(msg.wParam);
 
     Qt::Orientation orientation = (msg.message == WM_MOUSEHWHEEL
                                   || (mods & Qt::AltModifier)) ?
@@ -503,15 +503,17 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
         return true;
     const QRect screenGeometry = screen->geometry();
 
-    const int winTouchPointCount = msg.wParam;
+    const int winTouchPointCount = int(msg.wParam);
     QScopedArrayPointer<TOUCHINPUT> winTouchInputs(new TOUCHINPUT[winTouchPointCount]);
-    memset(winTouchInputs.data(), 0, sizeof(TOUCHINPUT) * winTouchPointCount);
+    memset(winTouchInputs.data(), 0, sizeof(TOUCHINPUT) * size_t(winTouchPointCount));
 
     QTouchPointList touchPoints;
     touchPoints.reserve(winTouchPointCount);
     Qt::TouchPointStates allStates = 0;
 
-    QWindowsContext::user32dll.getTouchInputInfo((HANDLE) msg.lParam, msg.wParam, winTouchInputs.data(), sizeof(TOUCHINPUT));
+    QWindowsContext::user32dll.getTouchInputInfo(reinterpret_cast<HANDLE>(msg.lParam),
+                                                 UINT(msg.wParam),
+                                                 winTouchInputs.data(), sizeof(TOUCHINPUT));
     for (int i = 0; i < winTouchPointCount; ++i) {
         const TOUCHINPUT &winTouchInput = winTouchInputs[i];
         int id = m_touchInputIDToTouchPointID.value(winTouchInput.dwID, -1);
@@ -552,7 +554,7 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
         touchPoints.append(touchPoint);
     }
 
-    QWindowsContext::user32dll.closeTouchInputHandle((HANDLE) msg.lParam);
+    QWindowsContext::user32dll.closeTouchInputHandle(reinterpret_cast<HANDLE>(msg.lParam));
 
     // all touch points released, forget the ids we've seen, they may not be reused
     if (allStates == Qt::TouchPointReleased)

@@ -490,8 +490,10 @@ QPlatformScreen *QPlatformWindow::screenForGeometry(const QRect &newGeometry) co
 {
     QPlatformScreen *currentScreen = screen();
     QPlatformScreen *fallback = currentScreen;
-    //QRect::center can return a value outside the rectangle if it's empty
-    const QPoint center = newGeometry.isEmpty() ? newGeometry.topLeft() : newGeometry.center();
+    // QRect::center can return a value outside the rectangle if it's empty.
+    // Apply mapToGlobal() in case it is a foreign/embedded window.
+    const QPoint center =
+        mapToGlobal(newGeometry.isEmpty() ? newGeometry.topLeft() : newGeometry.center());
 
     if (!parent() && currentScreen && !currentScreen->geometry().contains(center)) {
         const auto screens = currentScreen->virtualSiblings();
@@ -550,8 +552,8 @@ static inline const QScreen *effectiveScreen(const QWindow *window)
     const QScreen *screen = window->screen();
     if (!screen)
         return QGuiApplication::primaryScreen();
-    const QList<QScreen *> siblings = screen->virtualSiblings();
 #ifndef QT_NO_CURSOR
+    const QList<QScreen *> siblings = screen->virtualSiblings();
     if (siblings.size() > 1) {
         const QPoint referencePoint = window->transientParent() ? window->transientParent()->geometry().center() : QCursor::pos();
         for (const QScreen *sibling : siblings) {

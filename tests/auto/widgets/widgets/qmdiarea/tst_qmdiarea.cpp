@@ -492,9 +492,10 @@ void tst_QMdiArea::subWindowActivated2()
     spy.clear();
 
     mdiArea.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
+    QVERIFY(QTest::qWaitForWindowActive(&mdiArea));
     QTRY_COMPARE(spy.count(), 1);
-    QCOMPARE(mdiArea.activeSubWindow(), activeSubWindow);
+    QVERIFY(mdiArea.currentSubWindow());
+    QTRY_COMPARE(mdiArea.activeSubWindow(), activeSubWindow);
     spy.clear();
 
     if (qGuiApp->styleHints()->showIsFullScreen())
@@ -632,7 +633,7 @@ void tst_QMdiArea::changeWindowTitle()
     mw->setWindowTitle( mwc );
     QMdiArea *ws = new QMdiArea( mw );
     mw->setCentralWidget( ws );
-    mw->menuBar();
+    mw->menuBar()->setNativeMenuBar(false);
     mw->show();
     QVERIFY(QTest::qWaitForWindowExposed(mw));
 
@@ -741,7 +742,7 @@ void tst_QMdiArea::changeModified()
     mw->setWindowTitle( mwc );
     QMdiArea *ws = new QMdiArea( mw );
     mw->setCentralWidget( ws );
-    mw->menuBar();
+    mw->menuBar()->setNativeMenuBar(false);
     mw->show();
 
     QWidget *widget = new QWidget( ws );
@@ -2006,6 +2007,7 @@ void tst_QMdiArea::iconGeometryInMenuBar()
 #if !defined (Q_OS_MAC) && !defined(Q_OS_WINCE)
     QMainWindow mainWindow;
     QMenuBar *menuBar = mainWindow.menuBar();
+    menuBar->setNativeMenuBar(false);
     QMdiArea *mdiArea = new QMdiArea;
     QMdiSubWindow *subWindow = mdiArea->addSubWindow(new QWidget);
     mainWindow.setCentralWidget(mdiArea);

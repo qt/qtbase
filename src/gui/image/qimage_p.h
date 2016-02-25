@@ -195,6 +195,12 @@ inline QImage::Format qt_alphaVersion(QImage::Format format)
     return QImage::Format_ARGB32_Premultiplied;
 }
 
+inline QImage::Format qt_maybeAlphaVersionWithSameDepth(QImage::Format format)
+{
+    const QImage::Format toFormat = qt_alphaVersion(format);
+    return qt_depthForFormat(format) == qt_depthForFormat(toFormat) ? toFormat : format;
+}
+
 inline QImage::Format qt_alphaVersionForPainting(QImage::Format format)
 {
     QImage::Format toFormat = qt_alphaVersion(format);

@@ -39,6 +39,7 @@
 
 #include <qpa/qplatforminputcontext.h>
 #include <QtCore/QRectF>
+#include <QtCore/QLoggingCategory>
 
 #include <wrl.h>
 
@@ -57,6 +58,8 @@ namespace ABI {
 }
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaInputMethods)
 
 class QWinRTScreen;
 class QWinRTInputContext : public QPlatformInputContext

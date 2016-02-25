@@ -3426,13 +3426,13 @@ static SourceFetchProc64 sourceFetch64[NBlendTypes][QImage::NImageFormats] = {
 static uint qt_gradient_pixel_fixed(const QGradientData *data, int fixed_pos)
 {
     int ipos = (fixed_pos + (FIXPT_SIZE / 2)) >> FIXPT_BITS;
-    return data->colorTable[qt_gradient_clamp(data, ipos)].toArgb32();
+    return data->colorTable32[qt_gradient_clamp(data, ipos)];
 }
 
 static const QRgba64& qt_gradient_pixel64_fixed(const QGradientData *data, int fixed_pos)
 {
     int ipos = (fixed_pos + (FIXPT_SIZE / 2)) >> FIXPT_BITS;
-    return data->colorTable[qt_gradient_clamp(data, ipos)];
+    return data->colorTable64[qt_gradient_clamp(data, ipos)];
 }
 
 static void QT_FASTCALL getLinearGradientValues(LinearGradientValues *v, const QSpanData *data)

@@ -53,7 +53,10 @@ slog2 {
 
 journald {
     CONFIG += link_pkgconfig
-    PKGCONFIG_PRIVATE += libsystemd-journal
+    packagesExist(libsystemd): \
+        PKGCONFIG_PRIVATE += libsystemd
+    else: \
+        PKGCONFIG_PRIVATE += libsystemd-journal
     DEFINES += QT_USE_JOURNALD
 }
 

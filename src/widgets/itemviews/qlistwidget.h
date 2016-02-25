@@ -207,6 +207,8 @@ public:
     explicit QListWidget(QWidget *parent = Q_NULLPTR);
     ~QListWidget();
 
+    void setSelectionModel(QItemSelectionModel *selectionModel) Q_DECL_OVERRIDE;
+
     QListWidgetItem *item(int row) const;
     int row(const QListWidgetItem *item) const;
     void insertItem(int row, QListWidgetItem *item);

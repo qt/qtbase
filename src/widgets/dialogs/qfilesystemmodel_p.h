@@ -268,16 +268,6 @@ public:
             delayedSortTimer.start(0);
     }
 
-    static bool caseInsensitiveLessThan(const QString &s1, const QString &s2)
-    {
-       return QString::compare(s1, s2, Qt::CaseInsensitive) < 0;
-    }
-
-    static bool nodeCaseInsensitiveLessThan(const QFileSystemModelPrivate::QFileSystemNode &s1, const QFileSystemModelPrivate::QFileSystemNode &s2)
-    {
-       return QString::compare(s1.fileName, s2.fileName, Qt::CaseInsensitive) < 0;
-    }
-
     QIcon icon(const QModelIndex &index) const;
     QString name(const QModelIndex &index) const;
     QString displayName(const QModelIndex &index) const;

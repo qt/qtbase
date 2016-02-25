@@ -1477,6 +1477,7 @@ void tst_QImageReader::readCorruptImage_data()
     QTest::newRow("corrupt gif") << QString("corrupt.gif") << true << QString("") << QByteArray("gif");
     QTest::newRow("corrupt png") << QString("corrupt.png") << true << QString("") << QByteArray("png");
     QTest::newRow("corrupt bmp") << QString("corrupt.bmp") << true << QString("") << QByteArray("bmp");
+    QTest::newRow("corrupt bmp (clut)") << QString("corrupt_clut.bmp") << true << QString("") << QByteArray("bmp");
     QTest::newRow("corrupt xpm (colors)") << QString("corrupt-colors.xpm") << true
                                           << QString("QImage: XPM color specification is missing: bla9an.n#x")
                                           << QByteArray("xpm");

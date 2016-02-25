@@ -349,6 +349,9 @@ public:
     void setSidebarUrls(const QList<QUrl> &urls);
     QList<QUrl> sidebarUrls() const;
 
+    bool useDefaultNameFilters() const;
+    void setUseDefaultNameFilters(bool d);
+
     void setNameFilters(const QStringList &filters);
     QStringList nameFilters() const;
 
@@ -376,6 +379,8 @@ public:
 
     void setSupportedSchemes(const QStringList &schemes);
     QStringList supportedSchemes() const;
+
+    static QString defaultNameFilterString();
 
 private:
     QSharedDataPointer<QFileDialogOptionsPrivate> d;

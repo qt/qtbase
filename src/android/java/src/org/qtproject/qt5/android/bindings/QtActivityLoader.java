@@ -166,15 +166,6 @@ public class QtActivityLoader extends QtLoader {
                 + "/\tQT_ANDROID_THEME_DISPLAY_DPI=" + m_displayDensity + "\t";
 
         if (null == m_activity.getLastNonConfigurationInstance()) {
-            // if splash screen is defined, then show it
-            // Note: QtActivityDelegate handles updating the splash screen
-            // in onConfigurationChanged, change that too if you are changing
-            // how the splash screen should be displayed
-            if (m_contextInfo.metaData.containsKey("android.app.splash_screen_drawable"))
-                m_activity.getWindow().setBackgroundDrawableResource(m_contextInfo.metaData.getInt("android.app.splash_screen_drawable"));
-            else
-                m_activity.getWindow().setBackgroundDrawable(new ColorDrawable(0xff000000));
-
             if (m_contextInfo.metaData.containsKey("android.app.background_running")
                     && m_contextInfo.metaData.getBoolean("android.app.background_running")) {
                 ENVIRONMENT_VARIABLES += "QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED=0\t";

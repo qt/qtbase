@@ -967,7 +967,7 @@ void tst_QMdiSubWindow::setSystemMenu()
     QMdiArea *mdiArea = new QMdiArea;
     mdiArea->addSubWindow(subWindow);
     mainWindow.setCentralWidget(mdiArea);
-    mainWindow.menuBar();
+    mainWindow.menuBar()->setNativeMenuBar(false);
     mainWindow.show();
     QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
     QTest::qWait(60);
@@ -1467,6 +1467,7 @@ void tst_QMdiSubWindow::hideAndShow()
     QMainWindow mainWindow;
     mainWindow.setGeometry(0, 0, 640, 480);
     QMenuBar *menuBar = mainWindow.menuBar();
+    menuBar->setNativeMenuBar(false);
     mainWindow.setCentralWidget(tabWidget);
     mainWindow.show();
     QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
@@ -1735,6 +1736,7 @@ void tst_QMdiSubWindow::replaceMenuBarWhileMaximized()
 
     mainWindow.setCentralWidget(mdiArea);
     QMenuBar *menuBar = mainWindow.menuBar();
+    menuBar->setNativeMenuBar(false);
     mainWindow.show();
     QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
 
@@ -1751,6 +1753,7 @@ void tst_QMdiSubWindow::replaceMenuBarWhileMaximized()
     // Replace.
     mainWindow.setMenuBar(new QMenuBar);
     menuBar = mainWindow.menuBar();
+    menuBar->setNativeMenuBar(false);
     qApp->processEvents();
 
     QVERIFY(subWindow->maximizedButtonsWidget());
