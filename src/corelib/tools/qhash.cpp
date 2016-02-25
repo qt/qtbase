@@ -137,7 +137,7 @@ static uint crc32(const Char *ptr, size_t len, uint h)
         h = _mm_crc32_u8(h, *p);
     return h;
 }
-#elif defined(Q_PROCESSOR_ARM_V8)
+#elif defined(__ARM_FEATURE_CRC32)
 static inline bool hasFastCrc32()
 {
     return qCpuHasFeature(CRC32);
