@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var ENVIRONMENT_IS_PTHREAD; // is set to true in pthread-main.js if we are in a worker
+if(!ENVIRONMENT_IS_PTHREAD) { 
+
 (function() {
 
   var getContext = function(c, params) {
+    // TODO we bypass this with Browser.createContext, except for in the test
     return c.getContext('webgl', params) || c.getContext("experimental-webgl", params);
   };
 
@@ -94,7 +98,7 @@
     return resources.register(GRAPHICS_3D_RESOURCE, {
       canvas: canvas,
       bound: false,
-      ctx: getContext(canvas, {
+      ctx: Browser.createContext(canvas, true, true, {
         "alpha": alpha_size > 0,
         "depth": depth_size > 0,
         "stencil": stencil_size > 0,
@@ -143,8 +147,10 @@
 
   var Graphics3D_SwapBuffers = function(context, callback) {
     // TODO double buffering.
+    // console.log("Graphics3D_SwapBuffers request received")
     var c = glue.getCompletionCallback(callback);
     Module.requestAnimationFrame(function() {
+      // console.log("Graphics3D_SwapBuffers calling back!")
       c(0);
     });
   };
@@ -162,3 +168,5 @@
       return !!getContext(document.createElement("canvas"));
   });
 })();
+
+}

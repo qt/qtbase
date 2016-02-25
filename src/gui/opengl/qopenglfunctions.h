@@ -565,7 +565,7 @@ struct QOpenGLFunctionsPrivate
 
 // GLES2 + OpenGL1 common subset
 
-#ifdef Q_OS_NACL
+#if defined(Q_OS_NACL) && !defined(Q_OS_NACL_EMSCRIPTEN)
 #include "qopenglfunctions_nacl.h"
 #else
 inline void QOpenGLFunctions::glBindTexture(GLenum target, GLuint texture)

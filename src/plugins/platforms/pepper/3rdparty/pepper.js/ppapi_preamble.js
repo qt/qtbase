@@ -5,6 +5,13 @@
 // TODO(ncbray): re-enable once Emscripten stops including code with octal values.
 //"use strict";
 
+var doCreateInstance = doCreateInstance || function () {
+    console.log("Please call QtLoader.load() instead of loading your application script.")
+}
+
+var ENVIRONMENT_IS_PTHREAD; // is set to true in pthread-main.js if we are in a worker
+if(!ENVIRONMENT_IS_PTHREAD) {
+
 var clamp = function(value, min, max) {
   if (value < min) {
     return min;
@@ -95,6 +102,8 @@ var GRAPHICS_3D_RESOURCE = 20;
 var ARRAY_RESOURCE = 21;
 var DICTIONARY_RESOURCE = 22;
 var WEB_SOCKET_RESOURCE = 23;
+
+var MESSAGE_LOOP_RESOURCE = 24;
 
 var ResourceManager = function() {
   this.lut = {};
@@ -296,10 +305,10 @@ var createInterface = function(name, functions) {
   interfaces[name] = ptr;
 };
 
-var Module = {
-  "noInitialRun": true,
-  "noExitRuntime": true,
-  "preInit": function() {
+var Module = Module || {};
+Module["noInitialRun"] = true;
+Module["noExitRuntime"] = true;
+Module["onRuntimeInitialized"] = function() {
     for (var i = 0; i < declaredInterfaces.length; i++) {
       var inf = declaredInterfaces[i];
       if (inf.supported === undefined || inf.supported()) {
@@ -309,7 +318,7 @@ var Module = {
       }
     }
     declaredInterfaces = [];
-  }
+    doCreateInstance();
 };
 
 var CreateInstance = function(width, height, shadow_instance) {
@@ -983,3 +992,5 @@ var _GetBrowserInterface = function(interface_name) {
   }
   return inf;
 };
+
+}

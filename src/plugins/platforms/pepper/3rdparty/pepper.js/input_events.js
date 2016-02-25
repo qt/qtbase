@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var ENVIRONMENT_IS_PTHREAD; // is set to true in pthread-main.js if we are in a worker
+if(!ENVIRONMENT_IS_PTHREAD) { 
+
 (function() {
 
   //Enums copied from ppb_input_event.h
@@ -191,7 +194,8 @@
           movement: GetMovement(event),
           delta: GetWheelScroll(event),
           scrollByPage: event.deltaMode === 2,
-          keyCode: event.keyCode
+          keyCode: event.keyCode,
+          charCode: event.charCode
         });
 
         var rval = _HandleInputEvent(instance, obj_uid);
@@ -426,16 +430,33 @@
     return res.keyCode;
   };
 
-  var KeyboardInputEvent_GetCharacterText = function(ptr, event) {
-    // TODO(grosse): Find way to implement this
-    glue.jsToMemoryVar(undefined, ptr);
+  var KeyboardInputEvent_GetCode = function(event) {
+    throw "KeyboardInputEvent_GetCode not implemented";
   };
 
-  registerInterface("PPB_KeyboardInputEvent;1.0", [
-    KeyboardInputEvent_Create,
-    KeyboardInputEvent_IsKeyboardInputEvent,
-    KeyboardInputEvent_GetKeyCode,
-    KeyboardInputEvent_GetCharacterText
-  ]);
+  var KeyboardInputEvent_GetCharacterText = function(ptr, event) {
+    var res = resources.resolve(event, INPUT_EVENT_RESOURCE);
+    if (res === undefined) {
+      return 0;
+    }
+    glue.jsToMemoryVar(String.fromCharCode(res.charCode), ptr);
+  };
+
+    registerInterface("PPB_KeyboardInputEvent;1.0", [
+      KeyboardInputEvent_Create,
+      KeyboardInputEvent_IsKeyboardInputEvent,
+      KeyboardInputEvent_GetKeyCode,
+      KeyboardInputEvent_GetCharacterText
+    ]);
+
+    registerInterface("PPB_KeyboardInputEvent;1.2", [
+      KeyboardInputEvent_Create,
+      KeyboardInputEvent_IsKeyboardInputEvent,
+      KeyboardInputEvent_GetKeyCode,
+      KeyboardInputEvent_GetCharacterText,
+      KeyboardInputEvent_GetCode,
+    ]);
 
 })();
+
+}

@@ -33,40 +33,43 @@
 **
 ****************************************************************************/
 
-#include "qpepperintegration.h"
+// TODO: Check if this is needed. Removed because it caused duplicate
+// symbol definition of qt_plugin_query_metadata for everything linking QtGui
 
-#include <QtCore/QDebug>
-#include <qpa/qplatformintegrationplugin.h>
-
-QT_BEGIN_NAMESPACE
-
-class QPepperIntegrationPlugin : public QPlatformIntegrationPlugin
-{
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.1" FILE
-                          "pepper.json")
-public:
-    QStringList keys() const;
-    QPlatformIntegration *create(const QString &, const QStringList &) Q_DECL_OVERRIDE;
-};
-
-QStringList QPepperIntegrationPlugin::keys() const
-{
-    QStringList list;
-    list << QStringLiteral("pepper");
-    return list;
-}
-
-QPlatformIntegration *QPepperIntegrationPlugin::create(const QString &system,
-                                                       const QStringList &paramList)
-{
-    Q_UNUSED(paramList);
-    // qDebug() << "QPepperIntegrationPlugin::create" << system;
-    if (system.toLower() == QStringLiteral("pepper"))
-        return new QPepperIntegration;
-    return 0;
-}
-
-QT_END_NAMESPACE
-
-#include "qpepperpluginmain.moc"
+// #include "qpepperintegration.h"
+//
+// #include <QtCore/QDebug>
+// #include <qpa/qplatformintegrationplugin.h>
+//
+// QT_BEGIN_NAMESPACE
+//
+// class QPepperIntegrationPlugin : public QPlatformIntegrationPlugin
+// {
+//     Q_OBJECT
+//     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.1" FILE
+//                           "pepper.json")
+// public:
+//     QStringList keys() const;
+//     QPlatformIntegration *create(const QString &, const QStringList &) Q_DECL_OVERRIDE;
+// };
+//
+// QStringList QPepperIntegrationPlugin::keys() const
+// {
+//     QStringList list;
+//     list << QStringLiteral("pepper");
+//     return list;
+// }
+//
+// QPlatformIntegration *QPepperIntegrationPlugin::create(const QString &system,
+//                                                        const QStringList &paramList)
+// {
+//     Q_UNUSED(paramList);
+//     // qDebug() << "QPepperIntegrationPlugin::create" << system;
+//     if (system.toLower() == QStringLiteral("pepper"))
+//         return new QPepperIntegration;
+//     return 0;
+// }
+//
+// QT_END_NAMESPACE
+//
+// #include "qpepperpluginmain.moc"

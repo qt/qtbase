@@ -640,6 +640,10 @@ int ffsll(quint64 i)
 # define ffsll __builtin_ffsll
 #endif
 
+#if defined(Q_OS_NACL_NEWLIB) || defined(Q_OS_NACL_EMSCRIPTEN)
+#  define ffsll __builtin_ffsll
+#endif
+
 #ifdef Q_ATOMIC_INT64_IS_SUPPORTED
 Q_CORE_EXPORT QBasicAtomicInteger<quint64> qt_cpu_features[1] = { Q_BASIC_ATOMIC_INITIALIZER(0) };
 #else

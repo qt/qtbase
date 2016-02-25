@@ -128,10 +128,10 @@ int setenv(const char *name, const char *value, int overwrite) __attribute__((we
 int unsetenv(const char *name) __attribute__((weak));
 #endif
 
-}
-
 int select(int nfds, fd_set * readfds, fd_set * writefds, fd_set * errorfds, struct timeval * timeout) __attribute__((weak));
 int pselect(int nfds, fd_set * readfds, fd_set * writefds, fd_set * errorfds, const struct timespec * timeout, const sigset_t * sigmask) __attribute__((weak));
+
+}
 
 QT_END_NAMESPACE
 

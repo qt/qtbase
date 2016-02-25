@@ -167,6 +167,62 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
     TexSubImage2D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLint , GLsizei , GLsizei , GLenum , GLenum , const GLvoid *)>(GetProcAddress(handle, QByteArrayLiteral("glTexSubImage2D")));
     TexSubImage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLenum , GLenum , const GLvoid *)>(GetProcAddress(handle, QByteArrayLiteral("glTexSubImage1D")));
 
+#elif defined(Q_OS_NACL_EMSCRIPTEN)
+    GetIntegerv = ::glGetIntegerv;
+    GetBooleanv = ::glGetBooleanv;
+    PixelStorei = ::glPixelStorei;
+    GetTexLevelParameteriv = 0;
+    GetTexLevelParameterfv = 0;
+    GetTexParameteriv = ::glGetTexParameteriv;
+    GetTexParameterfv = ::glGetTexParameterfv;
+    GetTexImage = 0;
+    TexImage2D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLsizei , GLint , GLenum , GLenum , const GLvoid *)>(::glTexImage2D);
+    TexImage1D = 0;
+    TexParameteriv = ::glTexParameteriv;
+    TexParameteri = ::glTexParameteri;
+    TexParameterfv = ::glTexParameterfv;
+    TexParameterf = ::glTexParameterf;
+
+    // OpenGL 1.1
+    GenTextures = ::glGenTextures;
+    DeleteTextures = ::glDeleteTextures;
+    BindTexture = ::glBindTexture;
+    TexSubImage2D = ::glTexSubImage2D;
+    TexSubImage1D = 0;
+
+    // OpenGL 1.3
+    GetCompressedTexImage = 0;
+    CompressedTexSubImage1D = 0;
+    CompressedTexSubImage2D = ::glCompressedTexSubImage2D;
+    CompressedTexImage1D = 0;
+    CompressedTexImage2D = ::glCompressedTexImage2D;
+    ActiveTexture = ::glActiveTexture;
+
+    // OpenGL 3.0
+    GenerateMipmap = ::glGenerateMipmap;
+
+    // OpenGL 3.2
+    TexImage3DMultisample = 0;
+    TexImage2DMultisample = 0;
+
+    // OpenGL 4.2
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    if (ctx->format().majorVersion() >= 3) {
+        // OpenGL ES 3.0+ has immutable storage for 2D and 3D at least.
+        QOpenGLES3Helper *es3 = static_cast<QOpenGLExtensions *>(ctx->functions())->gles3Helper();
+        TexStorage3D = es3->TexStorage3D;
+        TexStorage2D = es3->TexStorage2D;
+    } else {
+        TexStorage3D = 0;
+        TexStorage2D = 0;
+    }
+    TexStorage1D = 0;
+
+    // OpenGL 4.3
+    TexStorage3DMultisample = 0;
+    TexStorage2DMultisample = 0;
+    TexBufferRange = 0;
+    TextureView = 0;
 #elif defined(QT_OPENGL_ES_2)
     // Here we are targeting OpenGL ES 2.0+ only. This is likely using EGL, where,
     // similarly to WGL, non-extension functions (i.e. any function that is part of the

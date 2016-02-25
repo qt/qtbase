@@ -271,6 +271,12 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 */
 void QMutex::unlock() Q_DECL_NOTHROW
 {
+    // TODO replace this with using pthread stubs instead
+    // Note: Defining QT_NO_THREAD won't work because too many
+    // Qt internals (QFuture, QThreadPool, etc.) depend on threads
+#if defined(Q_OS_NACL_EMSCRIPTEN) && !defined(Q_OS_NACL_EMSCRIPTEN_PTHREADS)
+    return;
+#endif
     QMutexData *current;
     if (fastTryUnlock(current))
         return;

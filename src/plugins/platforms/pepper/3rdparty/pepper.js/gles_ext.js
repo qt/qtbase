@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var ENVIRONMENT_IS_PTHREAD; // is set to true in pthread-main.js if we are in a worker
+if(!ENVIRONMENT_IS_PTHREAD) { 
+
 (function() {
   // PPB_OpenGLES2InstancedArrays
 
@@ -212,5 +215,30 @@
     OpenGLES2Query_GetQueryivEXT,
     OpenGLES2Query_GetQueryObjectuivEXT,
   ]);
+  
+  var OpenGLES2VertexArrayObject_BindVertexArrayOES = function(context, x, y, width, height) {
+    throw "OpenGLES2_BindVertexArrayOES is not implemented"
+  }
+  var OpenGLES2VertexArrayObject_DeleteVertexArrayOES = function(context, x, y, width, height) {
+    throw "OpenGLES2_BindVertexArrayOES is not implemented"
+  }
+  var OpenGLES2VertexArrayObject_GenVertexArrayOES = function(context, x, y, width, height) {
+    throw "OpenGLES2_BindVertexArrayOES is not implemented"
+  }
+  var OpenGLES2VertexArrayObject_IsVertexArrayOES = function(context, x, y, width, height) {
+    throw "OpenGLES2_BindVertexArrayOES is not implemented"
+  }
+
+  registerInterface("PPB_OpenGLES2VertexArrayObject;1.0", [
+    OpenGLES2VertexArrayObject_BindVertexArrayOES,
+    OpenGLES2VertexArrayObject_DeleteVertexArrayOES,
+    OpenGLES2VertexArrayObject_GenVertexArrayOES,
+    OpenGLES2VertexArrayObject_IsVertexArrayOES
+  ]);
+
+  registerInterface("PPB_OpenGLES2DrawBuffers(Dev);1.0", [
+  ]);
 
 })();
+
+}

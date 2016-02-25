@@ -45,6 +45,7 @@ QPepperEventDispatcher::QPepperEventDispatcher(QObject *parent)
     , m_currentTimerSerial(0)
     , m_messageLoop(pp::MessageLoop::GetCurrent())
     , m_completionCallbackFactory(this)
+    , m_hasPendingProcessEvents(false)
 {
     qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "QPepperEventDispatcher()";
 }
@@ -54,9 +55,25 @@ QPepperEventDispatcher::~QPepperEventDispatcher() {}
 bool QPepperEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     bool processed = false;
+#ifdef Q_OS_NACL_EMSCRIPTEN
+    // We need to give the control back to the browser due to lack of PTHREADS
+    // Limit the number of events that may be processed at the time
+    // TODO: Set maxProcessedEvents to the actual number of pending events, the real issue is that events may spawn new events
+    int maxProcessedEvents = 2;
+    int processedCount = 0;
+    do {
+        processed = QUnixEventDispatcherQPA::processEvents(flags);
+        processedCount += 1;
+    } while (processed && hasPendingEvents() && processedCount < maxProcessedEvents);
+    // Schedule a new processing loop if we still have events pending
+    if (hasPendingEvents()) {
+        scheduleProcessEvents();
+    }
+#else
     do {
         processed = QUnixEventDispatcherQPA::processEvents(flags);
     } while (processed && hasPendingEvents());
+#endif
     return true;
 }
 
@@ -193,19 +210,23 @@ void QPepperEventDispatcher::timerCallback(int32_t result, int32_t timerSerial)
 
 void QPepperEventDispatcher::scheduleProcessEvents()
 {
-    qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "scheduleProcessEvents";
-    pp::CompletionCallback processEvents
-        = m_completionCallbackFactory.NewCallback(&QPepperEventDispatcher::processEventsCallback);
-    int32_t result = m_messageLoop.PostWork(processEvents);
-    if (result != PP_OK)
-        qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "scheduleProcessEvents PostWork error"
-                                                    << result;
+    qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "scheduleProcessEvents" << m_hasPendingProcessEvents;
+    if (!m_hasPendingProcessEvents) {
+        m_hasPendingProcessEvents = true;
+        pp::CompletionCallback processEvents
+            = m_completionCallbackFactory.NewCallback(&QPepperEventDispatcher::processEventsCallback);
+        int32_t result = m_messageLoop.PostWork(processEvents);
+        if (result != PP_OK)
+            qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "scheduleProcessEvents PostWork error"
+                                                        << result;
+    }
 }
 
 void QPepperEventDispatcher::processEventsCallback(int32_t status)
 {
     Q_UNUSED(status);
     qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "processEvents";
+    m_hasPendingProcessEvents = false;
 
     processEvents();
 }

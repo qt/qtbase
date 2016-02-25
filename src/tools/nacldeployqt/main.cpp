@@ -46,7 +46,7 @@ private:
     QString findPNaClTool(const QString &sdkRoot, const QString &toolName);
     QList<QByteArray> quote(const QList<QByteArray> &list);
     void runCommand(const QString &command);
-    bool copyRecursively(const QString &srcFilePath, const QString &tgtFilePath);
+    bool copyRecursively(const QString &srcFilePath, const QString &tgtFilePath, bool skipBinaries);
     QByteArray instantiateTemplate(const QByteArray &tmplate);
     void instantiateWriteTemplate(const QByteArray &tmplate, const QString &filePath);
 };
@@ -172,7 +172,11 @@ int QtNaclDeployer::deploy()
             QString target = targetBase + "/" + import;
 
             // TODO: Skip the binaries for static builds; they will be built into the main nexe
-            copyRecursively(source, target);
+            bool skipBinaries = false;
+            if (deploymentType == Emscripten) {
+                skipBinaries = true;
+            }
+            copyRecursively(source, target, skipBinaries);
         }
     }
 
@@ -390,7 +394,8 @@ void QtNaclDeployer::runCommand(const QString &command)
 }
 
 bool QtNaclDeployer::copyRecursively(const QString &srcFilePath,
-                                            const QString &tgtFilePath)
+                                            const QString &tgtFilePath,
+                                     bool skipBinaries)
 {
     QFileInfo srcFileInfo(srcFilePath);
     if (srcFileInfo.isDir()) {
@@ -402,11 +407,14 @@ bool QtNaclDeployer::copyRecursively(const QString &srcFilePath,
         QDir sourceDir(srcFilePath);
         QStringList fileNames = sourceDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
         foreach (const QString &fileName, fileNames) {
+            if (skipBinaries && (fileName.endsWith(".so") || fileName.endsWith(".a"))) {
+                continue;
+            }
             const QString newSrcFilePath
                     = srcFilePath + QLatin1Char('/') + fileName;
             const QString newTgtFilePath
                     = tgtFilePath + QLatin1Char('/') + fileName;
-            if (!copyRecursively(newSrcFilePath, newTgtFilePath))
+            if (!copyRecursively(newSrcFilePath, newTgtFilePath, skipBinaries))
                 return false;
         }
     } else {

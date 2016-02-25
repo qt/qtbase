@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var ENVIRONMENT_IS_PTHREAD; // is set to true in pthread-main.js if we are in a worker
+if(!ENVIRONMENT_IS_PTHREAD) { 
+
 (function() {
 
   var Testing_Dev_ReadImageData = function(device_context_2d, image, top_left) {
@@ -53,3 +56,5 @@
     Testing_Dev_SetMinimumArrayBufferSizeForShmem,
   ]);
 })();
+
+}

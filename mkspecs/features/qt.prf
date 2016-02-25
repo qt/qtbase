@@ -278,6 +278,31 @@ contains(qt_module_deps, qml): \
                     "rsync -r --exclude='*.a' --exclude='*.prl' --exclude='*.qmltypes' "
             macx-xcode: QMAKE_POST_LINK += "$p/ $$qmlTargetPath; done"
             else: QMAKE_POST_LINK += "\$\$p/ $$qmlTargetPath; done"
+        } else:emscripten {
+            isEmpty(QMAKE_QML_BUNDLE_PATH):QMAKE_QML_BUNDLE_PATH = "qt_qml"
+            qmlTargetPath = $$OUT_PWD/$$QMAKE_QML_BUNDLE_PATH
+            qtconfTargetPath = $$OUT_PWD/qt.conf
+
+            # set import path in qt.conf to point to the bundeled qml:
+            QT_CONF_CONTENTS = \
+                "[Paths]" \
+                "Imports = $$QMAKE_QML_BUNDLE_PATH" \
+                "Qml2Imports = $$QMAKE_QML_BUNDLE_PATH"
+            write_file("$$OUT_PWD/qt.conf", QT_CONF_CONTENTS)|error("Aborting.")
+
+            # write qt.conf and copy each qml import dir into the bundle.
+            # But strip away archives and other files that are not needed:
+            !isEmpty(QMAKE_POST_LINK): QMAKE_POST_LINK += ";"
+            QMAKE_POST_LINK += \
+                "test -d $$qmlTargetPath && rm -r $$qmlTargetPath; " \
+                "mkdir -p $$qmlTargetPath && " \
+                "for p in $$QMLPATHS; do" \
+                    "rsync -r --exclude='*.a' --exclude='*.so' --exclude='*.prl' --exclude='*.qmltypes' " \
+                    "\$\$p/ $$qmlTargetPath; done"
+
+            # Add the folder and qt.conf to be preloaded by emscripten
+            QMAKE_LFLAGS += --preload-file qt_qml
+            QMAKE_LFLAGS += --preload-file qt.conf
         }
     }
 }

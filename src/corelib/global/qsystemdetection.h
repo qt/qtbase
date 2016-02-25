@@ -330,7 +330,9 @@
 #  define Q_OS_PNACL
 #endif
 #ifdef __EMSCRIPTEN__
+#  ifndef Q_OS_NACL_EMSCRIPTEN
 #  define Q_OS_NACL_EMSCRIPTEN
+#  endif
 #endif
 #endif
 

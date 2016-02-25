@@ -44,7 +44,12 @@
 
 #include <ppapi/cpp/graphics_3d.h>
 #include <ppapi/cpp/graphics_3d_client.h>
+
+// Emscriptens GLES2 API is more complete than pepper.js
+#ifndef Q_OS_NACL_EMSCRIPTEN
 #include <ppapi/gles2/gl2ext_ppapi.h>
+#endif
+
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QThread>
@@ -109,15 +114,18 @@ bool QPepperGLContext::makeCurrent(QPlatformSurface *surface)
         }
         m_currentSize = newSize;
     }
-
+#ifndef Q_OS_NACL_EMSCRIPTEN
     glSetCurrentContextPPAPI(m_context.pp_resource());
+#endif
     return true;
 }
 
 void QPepperGLContext::doneCurrent()
 {
     qCDebug(QT_PLATFORM_PEPPER_GLCONTEXT) << "doneCurrent";
+#ifndef Q_OS_NACL_EMSCRIPTEN
     glSetCurrentContextPPAPI(0);
+#endif
 }
 
 QFunctionPointer QPepperGLContext::getProcAddress(const QByteArray &procName)
@@ -144,10 +152,12 @@ void QPepperGLContext::flushCallback(int32_t)
 bool QPepperGLContext::initGl()
 {
     qCDebug(QT_PLATFORM_PEPPER_GLCONTEXT) << "initGl";
+#ifndef Q_OS_NACL_EMSCRIPTEN
     if (!glInitializePPAPI(pp::Module::Get()->get_browser_interface())) {
         qWarning("Unable to initialize GL PPAPI!\n");
         return false;
     }
+#endif
     m_currentSize = QPepperInstancePrivate::get()->geometry().size();
     QSurfaceFormat f = format();
 
@@ -165,7 +175,9 @@ bool QPepperGLContext::initGl()
     if (!instance->BindGraphics(m_context)) {
         qWarning("Unable to bind 3d context!\n");
         m_context = pp::Graphics3D();
+#ifndef Q_OS_NACL_EMSCRIPTEN
         glSetCurrentContextPPAPI(0);
+#endif
         return false;
     }
 

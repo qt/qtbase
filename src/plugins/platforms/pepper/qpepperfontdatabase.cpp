@@ -49,6 +49,8 @@ void QPepperFontDatabase::populateFontDatabase()
     registerFont("Arial", "", QFont::Normal, QFont::StyleNormal, QFont::Unstretched, true, true, 12,
                  writingSystems, 0);
 #else
+    Q_INIT_RESOURCE(naclfonts);
+
     // Load font file from resources. Currently
     // all fonts needs to be bundled with the nexe
     // as Qt resources.

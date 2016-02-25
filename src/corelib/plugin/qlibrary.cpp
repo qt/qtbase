@@ -712,7 +712,7 @@ void QLibraryPrivate::updatePluginState()
     }
 #endif
 
-#if !defined (Q_OS_NACL)
+#if !defined (Q_OS_NACL) || defined (Q_OS_NACL_EMSCRIPTEN)
     if (!pHnd) {
         // scan for the plugin metadata without loading
         success = findPatternUnloaded(fileName, this);

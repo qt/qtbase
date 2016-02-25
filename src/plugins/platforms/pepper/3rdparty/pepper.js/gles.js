@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var ENVIRONMENT_IS_PTHREAD; // is set to true in pthread-main.js if we are in a worker
+if(!ENVIRONMENT_IS_PTHREAD) { 
+
 (function() {
 
   // (GLenum) => void
@@ -53,6 +56,10 @@
     if (_context === undefined) {
       return;
     }
+    if(buffer == 0) {
+      // TODO buffer = 0 should release previously bound buffers
+      return;
+    }
     var _buffer = resources.resolve(buffer, BUFFER_RESOURCE);
     if (_buffer === undefined) {
       return;
@@ -65,6 +72,12 @@
   var OpenGLES2_BindFramebuffer = function(context, target, framebuffer) {
     var _context = resources.resolve(context, GRAPHICS_3D_RESOURCE);
     if (_context === undefined) {
+      return;
+    }
+    if(framebuffer == 0) {
+      // framebuffer = 0 is the default framebuffer provided by the system
+      // and is translated to null in WebGL
+      _context.ctx.bindFramebuffer(target, null);
       return;
     }
     var _framebuffer = coerceFramebuffer(framebuffer);
@@ -561,7 +574,48 @@
   }
 
   var OpenGLES2_GetProgramiv = function(context, program, pname, params) {
-    throw "OpenGLES2_GetProgramiv not implemented";
+    if(pname == 35716 || pname == 35720) { 
+      // 35716 = GL_INFO_LOG_LENGTH (0x8B84)
+      // 35720 = GL_SHADER_SOURCE_LENGTH (0x8B88)
+      // These are not allowed in WebGL, but are allowed in GLES.
+      // Return 0 so that legacy code thinks there is no log or source to print
+      var result = 0
+      setValue(params, result, 'i32');
+      return
+    }
+    var _context = resources.resolve(context, GRAPHICS_3D_RESOURCE);
+    if (_context === undefined) {
+      return 0;
+    }
+    var _program = resources.resolve(program, PROGRAM_RESOURCE);
+    if (_program === undefined) {
+      return 0;
+    }
+    var result = _context.ctx.getProgramParameter(_program.native, pname);
+    switch(pname) {
+    case _context.ctx.DELETE_STATUS:
+      setValue(params, result, 'i8');
+      break;
+    case _context.ctx.LINK_STATUS:
+      setValue(params, result, 'i8');
+      break;
+    case _context.ctx.VALIDATE_STATUS:
+      setValue(params, result, 'i8');
+      break;
+    case _context.ctx.ATTACHED_SHADERS:
+      setValue(params, result, 'i32');
+      break;
+    case _context.ctx.ACTIVE_ATTRIBUTES:
+      setValue(params, result, 'i32');
+      break;
+    case _context.ctx.ACTIVE_UNIFORMS:
+      setValue(params, result, 'i32');
+      break;
+    default:
+      console.warn("OpenGLES2_GetProgramiv unknown parameter type, assume i32")
+      setValue(params, result, 'i32');
+      break;
+    }
   }
 
   var OpenGLES2_GetProgramInfoLog = function(context, program, bufsize, length, infolog) {
@@ -573,7 +627,16 @@
   }
 
   var OpenGLES2_GetShaderiv = function(context, shader, pname, params) {
-    throw "OpenGLES2_GetShaderiv not implemented";
+    var _context = resources.resolve(context, GRAPHICS_3D_RESOURCE);
+    if (_context === undefined) {
+      return 0;
+    }
+    var _shader = resources.resolve(shader, SHADER_RESOURCE);
+    if (_shader === undefined) {
+      return 0;
+    }
+    var result = _context.ctx.getShaderParameter(_shader.native, pname);
+    setValue(params, result, 'i32');
   }
 
   var OpenGLES2_GetShaderInfoLog = function(context, shader, bufsize, length, infolog) {
@@ -1091,11 +1154,21 @@
       return;
     }
     var _value = HEAPF32.subarray((value>>2), (value>>2) + 16 * count);
+    // TODO: This is temporary to cast SharedFloat32Array to a Float32Array. Remove this once https://bugzilla.mozilla.org/show_bug.cgi?id=1205390 lands.
+    _value = new Float32Array(_value);
     _context.ctx.uniformMatrix4fv(_location.native, transpose, _value);
   }
   // ppapi (GLuint) => void
   // webgl (WebGLProgram) => void
   var OpenGLES2_UseProgram = function(context, program) {
+    if(program === 0) {
+      // TODO Is useprogram(0) okay to call?
+      // OpenGLES2_UseProgram: Requested to use program 0. "
+      // This is not a defined operation in WebGL, but in legacy
+      // code it is a request to release the program.
+      // Here, nothing will be done when calling glUseProgram(0).
+      return
+    }
     var _context = resources.resolve(context, GRAPHICS_3D_RESOURCE);
     if (_context === undefined) {
       return;
@@ -1386,3 +1459,5 @@
 // UniformMatrix2fv: Cannot deal with overloads
 // UniformMatrix3fv: Cannot deal with overloads
 // 94:48
+
+}

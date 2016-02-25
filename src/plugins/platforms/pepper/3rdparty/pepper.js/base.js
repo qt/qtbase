@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var ENVIRONMENT_IS_PTHREAD; // is set to true in pthread-main.js if we are in a worker
+if(!ENVIRONMENT_IS_PTHREAD) { 
+
 (function() {
   var DoLog = function(level, value) {
     // TODO enum?
@@ -109,6 +112,65 @@
 
   registerInterface("PPB_Messaging;1.0", [
     Messaging_PostMessage
+  ]);
+
+  registerInterface("PPB_Messaging;1.2", [
+    Messaging_PostMessage
+  ]);
+
+  var MessageLoop_InstanceHandle = function(instance) {
+    // console.warn("MessageLoop_InstanceHandle is not implemented")
+    console.log("Returning MessageLoop instance")
+    return 1;
+  };
+
+  var MessageLoop_GetForMainThread = function() {
+    // console.warn("MessageLoop_GetForMainThread is not implemented")
+    console.log("Returning MessageLoop instance main")
+    return 1;
+  };
+
+  var MessageLoop_GetCurrent = function() {
+    // console.warn("MessageLoop_GetCurrent is not implemented")
+    console.log("Returning MessageLoop instance current")
+    return 1;
+  };
+
+  var MessageLoop_Run = function(resource) {
+    // console.warn("MessageLoop_Run is not implemented " + resource)
+    console.log("MessageLoop_Run called")
+    return 1;
+  };
+
+  var MessageLoop_AttachToCurrentThread = function(resource) {
+    // console.warn("MessageLoop_Run is not implemented " + resource)
+    console.log("Attach!")
+    return 1;
+  };
+
+  var MessageLoop_PostWork = function(resource, callback, delay_ms) {
+    // console.log("MessageLoop_PostWork received")
+    var c = glue.getCompletionCallback(callback);
+    Module.requestAnimationFrame(function() {
+      // console.log("MessageLoop_PostWork callback being called!")
+      c(0);
+    });
+    return 0;
+  };
+
+  var MessageLoop_PostQuit = function(resource, should_destroy) {
+    console.warn("MessageLoop_PostQuit is not implemented " + resource)
+    return 0;
+  };
+
+  registerInterface("PPB_MessageLoop;1.0", [
+    MessageLoop_InstanceHandle,
+    MessageLoop_GetForMainThread,
+    MessageLoop_GetCurrent,
+    MessageLoop_AttachToCurrentThread,
+    MessageLoop_Run,
+    MessageLoop_PostWork,
+    MessageLoop_PostQuit,
   ]);
 
   var Var_AddRef = function(v) {
@@ -407,3 +469,5 @@
   ]);
 
 })();
+
+}

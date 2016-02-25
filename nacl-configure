@@ -229,6 +229,10 @@ fi
 if [[ $TOOLCHAIN == emscripten ]]
   then
     NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -no-xlib -no-xcb-xlib -no-eglfs"
+    # emscripten needs to enforce OpenGL ES 2
+    NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -opengl es2"
+    # emscripten needs a static build for plugins to work properly
+    NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -static"
 fi
 
 # set release/debug build
@@ -247,4 +251,3 @@ echo $NACL_CONFIGURE_LINE
 
 # Run configure
 $NACL_CONFIGURE_LINE
-
