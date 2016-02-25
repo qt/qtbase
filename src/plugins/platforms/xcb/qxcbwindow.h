@@ -110,6 +110,7 @@ public:
     void windowEvent(QEvent *event) override;
 
     bool startSystemResize(const QPoint &pos, Qt::Corner corner) override;
+    bool startSystemMove(const QPoint &pos) override;
 
     void setOpacity(qreal level) override;
     void setMask(const QRegion &region) override;
@@ -177,7 +178,8 @@ public:
 
     QXcbScreen *xcbScreen() const;
 
-    bool doStartSystemResize(const QPoint &globalPos, Qt::Corner corner);
+    bool startSystemMoveResize(const QPoint &pos, int corner);
+    bool doStartSystemMoveResize(const QPoint &globalPos, int corner);
 
     virtual void create();
     virtual void destroy();

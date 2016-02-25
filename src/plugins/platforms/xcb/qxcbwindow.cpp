@@ -2640,18 +2640,28 @@ void QXcbWindow::windowEvent(QEvent *event)
 
 bool QXcbWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)
 {
+    return startSystemMoveResize(pos, corner);
+}
+
+bool QXcbWindow::startSystemMove(const QPoint &pos)
+{
+    return startSystemMoveResize(pos, 4);
+}
+
+bool QXcbWindow::startSystemMoveResize(const QPoint &pos, int corner)
+{
     const xcb_atom_t moveResize = connection()->atom(QXcbAtom::_NET_WM_MOVERESIZE);
     if (!connection()->wmSupport()->isSupportedByWM(moveResize))
         return false;
     const QPoint globalPos = QHighDpi::toNativePixels(window()->mapToGlobal(pos), window()->screen());
 #ifdef XCB_USE_XINPUT22
-    if (connection()->startSystemResizeForTouchBegin(m_window, globalPos, corner))
+    if (connection()->startSystemMoveResizeForTouchBegin(m_window, globalPos, corner))
         return true;
 #endif
-    return doStartSystemResize(globalPos, corner);
+    return doStartSystemMoveResize(globalPos, corner);
 }
 
-bool QXcbWindow::doStartSystemResize(const QPoint &globalPos, Qt::Corner corner)
+bool QXcbWindow::doStartSystemMoveResize(const QPoint &globalPos, int corner)
 {
     const xcb_atom_t moveResize = connection()->atom(QXcbAtom::_NET_WM_MOVERESIZE);
     xcb_client_message_event_t xev;
@@ -2662,12 +2672,16 @@ bool QXcbWindow::doStartSystemResize(const QPoint &globalPos, Qt::Corner corner)
     xev.format = 32;
     xev.data.data32[0] = globalPos.x();
     xev.data.data32[1] = globalPos.y();
-    const bool bottom = corner == Qt::BottomRightCorner || corner == Qt::BottomLeftCorner;
-    const bool left = corner == Qt::BottomLeftCorner || corner == Qt::TopLeftCorner;
-    if (bottom)
-        xev.data.data32[2] = left ? 6 : 4; // bottomleft/bottomright
-    else
-        xev.data.data32[2] = left ? 0 : 2; // topleft/topright
+    if (corner == 4) {
+        xev.data.data32[2] = 8; // move
+    } else {
+        const bool bottom = corner == Qt::BottomRightCorner || corner == Qt::BottomLeftCorner;
+        const bool left = corner == Qt::BottomLeftCorner || corner == Qt::TopLeftCorner;
+        if (bottom)
+            xev.data.data32[2] = left ? 6 : 4; // bottomleft/bottomright
+        else
+            xev.data.data32[2] = left ? 0 : 2; // topleft/topright
+    }
     xev.data.data32[3] = XCB_BUTTON_INDEX_1;
     xev.data.data32[4] = 0;
     xcb_ungrab_pointer(connection()->xcb_connection(), XCB_CURRENT_TIME);
