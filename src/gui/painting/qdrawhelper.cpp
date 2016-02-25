@@ -245,17 +245,36 @@ static const uint *QT_FASTCALL convertARGBPMToARGB32PM(uint *buffer, const uint 
     Q_CONSTEXPR uchar greenRightShift = 2 * greenWidth<Format>() - 8;
     Q_CONSTEXPR uchar blueRightShift = 2 * blueWidth<Format>() - 8;
 
-    for (int i = 0; i < count; ++i) {
-        uint alpha = (src[i] >> alphaShift<Format>()) & alphaMask;
-        uint red = (src[i] >> redShift<Format>()) & redMask;
-        uint green = (src[i] >> greenShift<Format>()) & greenMask;
-        uint blue = (src[i] >> blueShift<Format>()) & blueMask;
+    Q_CONSTEXPR bool mustMin = (alphaWidth<Format>() != redWidth<Format>()) ||
+                               (alphaWidth<Format>() != greenWidth<Format>()) ||
+                               (alphaWidth<Format>() != blueWidth<Format>());
 
-        alpha = (alpha << alphaLeftShift) | (alpha >> alphaRightShift);
-        red = qMin(alpha, (red << redLeftShift) | (red >> redRightShift));
-        green = qMin(alpha, (green << greenLeftShift) | (green >> greenRightShift));
-        blue = qMin(alpha, (blue << blueLeftShift) | (blue >> blueRightShift));
-        buffer[i] = (alpha << 24) | (red << 16) | (green << 8) | blue;
+    if (mustMin) {
+        for (int i = 0; i < count; ++i) {
+            uint alpha = (src[i] >> alphaShift<Format>()) & alphaMask;
+            uint red = (src[i] >> redShift<Format>()) & redMask;
+            uint green = (src[i] >> greenShift<Format>()) & greenMask;
+            uint blue = (src[i] >> blueShift<Format>()) & blueMask;
+
+            alpha = (alpha << alphaLeftShift) | (alpha >> alphaRightShift);
+            red = qMin(alpha, (red << redLeftShift) | (red >> redRightShift));
+            green = qMin(alpha, (green << greenLeftShift) | (green >> greenRightShift));
+            blue = qMin(alpha, (blue << blueLeftShift) | (blue >> blueRightShift));
+            buffer[i] = (alpha << 24) | (red << 16) | (green << 8) | blue;
+        }
+    } else {
+        for (int i = 0; i < count; ++i) {
+            uint alpha = (src[i] >> alphaShift<Format>()) & alphaMask;
+            uint red   = (src[i] >> redShift<Format>())   & redMask;
+            uint green = (src[i] >> greenShift<Format>()) & greenMask;
+            uint blue  = (src[i] >> blueShift<Format>())  & blueMask;
+
+            alpha = ((alpha << alphaLeftShift) | (alpha >> alphaRightShift)) << 24;
+            red   = ((red << redLeftShift) | (red >> redRightShift)) << 16;
+            green = ((green << greenLeftShift) | (green >> greenRightShift)) << 8;
+            blue  = (blue << blueLeftShift)  | (blue >> blueRightShift);
+            buffer[i] = alpha | red | green | blue;
+        }
     }
 
     return buffer;
@@ -280,17 +299,36 @@ static const QRgba64 *QT_FASTCALL convertARGBPMToARGB64PM(QRgba64 *buffer, const
     Q_CONSTEXPR uchar greenRightShift = 2 * greenWidth<Format>() - 8;
     Q_CONSTEXPR uchar blueRightShift = 2 * blueWidth<Format>() - 8;
 
-    for (int i = 0; i < count; ++i) {
-        uint alpha = (src[i] >> alphaShift<Format>()) & alphaMask;
-        uint red = (src[i] >> redShift<Format>()) & redMask;
-        uint green = (src[i] >> greenShift<Format>()) & greenMask;
-        uint blue = (src[i] >> blueShift<Format>()) & blueMask;
+    Q_CONSTEXPR bool mustMin = (alphaWidth<Format>() != redWidth<Format>()) ||
+                               (alphaWidth<Format>() != greenWidth<Format>()) ||
+                               (alphaWidth<Format>() != blueWidth<Format>());
 
-        alpha = (alpha << alphaLeftShift) | (alpha >> alphaRightShift);
-        red = qMin(alpha, (red << redLeftShift) | (red >> redRightShift));
-        green = qMin(alpha, (green << greenLeftShift) | (green >> greenRightShift));
-        blue = qMin(alpha, (blue << blueLeftShift) | (blue >> blueRightShift));
-        buffer[i] = QRgba64::fromRgba(red, green, blue, alpha);
+    if (mustMin) {
+        for (int i = 0; i < count; ++i) {
+            uint alpha = (src[i] >> alphaShift<Format>()) & alphaMask;
+            uint red = (src[i] >> redShift<Format>()) & redMask;
+            uint green = (src[i] >> greenShift<Format>()) & greenMask;
+            uint blue = (src[i] >> blueShift<Format>()) & blueMask;
+
+            alpha = (alpha << alphaLeftShift) | (alpha >> alphaRightShift);
+            red = qMin(alpha, (red << redLeftShift) | (red >> redRightShift));
+            green = qMin(alpha, (green << greenLeftShift) | (green >> greenRightShift));
+            blue = qMin(alpha, (blue << blueLeftShift) | (blue >> blueRightShift));
+            buffer[i] = QRgba64::fromRgba(red, green, blue, alpha);
+        }
+    } else {
+        for (int i = 0; i < count; ++i) {
+            uint alpha = (src[i] >> alphaShift<Format>()) & alphaMask;
+            uint red = (src[i] >> redShift<Format>()) & redMask;
+            uint green = (src[i] >> greenShift<Format>()) & greenMask;
+            uint blue = (src[i] >> blueShift<Format>()) & blueMask;
+
+            alpha = (alpha << alphaLeftShift) | (alpha >> alphaRightShift);
+            red = (red << redLeftShift) | (red >> redRightShift);
+            green = (green << greenLeftShift) | (green >> greenRightShift);
+            blue = (blue << blueLeftShift) | (blue >> blueRightShift);
+            buffer[i] = QRgba64::fromRgba(red, green, blue, alpha);
+        }
     }
 
     return buffer;
