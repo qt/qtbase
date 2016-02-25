@@ -267,6 +267,13 @@
 #  endif
 #endif
 
+// Clang compiler fix, see http://lists.llvm.org/pipermail/cfe-commits/Week-of-Mon-20160222/151168.html
+// This should be tweaked with an "upper version" of clang once we know which release fixes the
+// issue. At that point we can rely on __ARM_FEATURE_CRC32 again.
+#if defined(Q_CC_CLANG) && defined(Q_OS_DARWIN) && defined (__ARM_FEATURE_CRC32)
+#  undef __ARM_FEATURE_CRC32
+#endif
+
 // NEON intrinsics
 // note: as of GCC 4.9, does not support function targets for ARM
 #if defined(__ARM_NEON) || defined(__ARM_NEON__)
