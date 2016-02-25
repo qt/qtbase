@@ -83,6 +83,80 @@ private:
     };
 };
 
+class QStaticByteArrayMatcherBase {
+    struct Skiptable {
+        uchar data[256];
+    } m_skiptable;
+protected:
+    explicit Q_DECL_RELAXED_CONSTEXPR QStaticByteArrayMatcherBase(const char *pattern, uint n) Q_DECL_NOTHROW
+        : m_skiptable(generate(pattern, n)) {}
+    // compiler-generated copy/more ctors/assignment operators are ok!
+    // compiler-generated dtor is ok!
+
+    Q_CORE_EXPORT int indexOfIn(const char *needle, uint nlen, const char *haystack, int hlen, int from) const Q_DECL_NOTHROW;
+
+private:
+    static Q_DECL_RELAXED_CONSTEXPR Skiptable generate(const char *pattern, uint n) Q_DECL_NOTHROW
+    {
+        const auto uchar_max = (std::numeric_limits<uchar>::max)();
+        uchar max = n > uchar_max ? uchar_max : n;
+        Skiptable table = {
+            // this verbose initialization code aims to avoid some opaque error messages
+            // even on powerful compilers such as GCC 5.3. Even though for GCC a loop
+            // format can be found that v5.3 groks, it's probably better to go with this
+            // for the time being:
+            {
+                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
+                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
+                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
+                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
+                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
+                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
+                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
+                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
+
+                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
+                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
+                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
+                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
+                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
+                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
+                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
+                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
+            }
+        };
+        pattern += n - max;
+        while (max--)
+            table.data[uchar(*pattern++)] = max;
+        return table;
+    }
+};
+
+template <uint N>
+class QStaticByteArrayMatcher : QStaticByteArrayMatcherBase
+{
+    char m_pattern[N];
+    Q_STATIC_ASSERT_X(N > 2, "QStaticByteArrayMatcher makes no sense for finding a single-char pattern");
+public:
+    explicit Q_DECL_RELAXED_CONSTEXPR QStaticByteArrayMatcher(const char (&patternToMatch)[N]) Q_DECL_NOTHROW
+        : QStaticByteArrayMatcherBase(patternToMatch, N - 1), m_pattern()
+    {
+        for (uint i = 0; i < N; ++i)
+            m_pattern[i] = patternToMatch[i];
+    }
+
+    int indexIn(const QByteArray &haystack, int from = 0) const Q_DECL_NOTHROW
+    { return this->indexOfIn(m_pattern, N - 1, haystack.data(), haystack.size(), from); }
+    int indexIn(const char *haystack, int hlen, int from = 0) const Q_DECL_NOTHROW
+    { return this->indexOfIn(m_pattern, N - 1, haystack, hlen, from); }
+
+    QByteArray pattern() const { return QByteArray(m_pattern, int(N - 1)); }
+};
+
+template <uint N>
+Q_DECL_RELAXED_CONSTEXPR QStaticByteArrayMatcher<N> qMakeStaticByteArrayMatcher(const char (&pattern)[N]) Q_DECL_NOTHROW
+{ return QStaticByteArrayMatcher<N>(pattern); }
+
 QT_END_NAMESPACE
 
 #endif // QBYTEARRAYMATCHER_H

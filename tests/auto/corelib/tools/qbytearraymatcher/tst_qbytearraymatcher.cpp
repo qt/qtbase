@@ -43,9 +43,8 @@ class tst_QByteArrayMatcher : public QObject
 private slots:
     void interface();
     void indexIn();
+    void staticByteArrayMatcher();
 };
-
-static QByteArrayMatcher matcher1;
 
 void tst_QByteArrayMatcher::interface()
 {
@@ -55,6 +54,8 @@ void tst_QByteArrayMatcher::interface()
     haystack.insert(31, "abc");
     haystack.insert(42, "abc123");
     haystack.insert(84, "abc123");
+
+    QByteArrayMatcher matcher1;
 
     matcher1 = QByteArrayMatcher(QByteArray(needle));
     QByteArrayMatcher matcher2;
@@ -90,8 +91,10 @@ void tst_QByteArrayMatcher::interface()
     QCOMPARE(matcher7.indexIn(haystack), 42);
 }
 
-
-static QByteArrayMatcher matcher;
+#define LONG_STRING__32 "abcdefghijklmnopqrstuvwxyz012345"
+#define LONG_STRING__64 LONG_STRING__32 LONG_STRING__32
+#define LONG_STRING_128 LONG_STRING__64 LONG_STRING__64
+#define LONG_STRING_256 LONG_STRING_128 LONG_STRING_128
 
 void tst_QByteArrayMatcher::indexIn()
 {
@@ -100,6 +103,8 @@ void tst_QByteArrayMatcher::indexIn()
 
     QByteArray haystack(8, '\0');
     haystack[7] = 0x1;
+
+    QByteArrayMatcher matcher;
 
     matcher = QByteArrayMatcher(pattern);
     QCOMPARE(matcher.indexIn(haystack, 0), 5);
@@ -110,7 +115,103 @@ void tst_QByteArrayMatcher::indexIn()
     QCOMPARE(matcher.indexIn(haystack, 0), 5);
     QCOMPARE(matcher.indexIn(haystack, 1), 5);
     QCOMPARE(matcher.indexIn(haystack, 2), 5);
+
+    QByteArray allChars(256, Qt::Uninitialized);
+    for (int i = 0; i < 256; ++i)
+        allChars[i] = char(i);
+
+    matcher = QByteArrayMatcher(allChars);
+    haystack = LONG_STRING__32 "x" + matcher.pattern();
+    QCOMPARE(matcher.indexIn(haystack,  0), 33);
+    QCOMPARE(matcher.indexIn(haystack,  1), 33);
+    QCOMPARE(matcher.indexIn(haystack,  2), 33);
+    QCOMPARE(matcher.indexIn(haystack, 33), 33);
+    QCOMPARE(matcher.indexIn(haystack, 34), -1);
+
+    matcher = QByteArrayMatcher(LONG_STRING_256);
+    haystack = LONG_STRING__32 "x" + matcher.pattern();
+    QCOMPARE(matcher.indexIn(haystack,  0), 33);
+    QCOMPARE(matcher.indexIn(haystack,  1), 33);
+    QCOMPARE(matcher.indexIn(haystack,  2), 33);
+    QCOMPARE(matcher.indexIn(haystack, 33), 33);
+    QCOMPARE(matcher.indexIn(haystack, 34), -1);
 }
+
+void tst_QByteArrayMatcher::staticByteArrayMatcher()
+{
+    {
+        static Q_RELAXED_CONSTEXPR auto smatcher = qMakeStaticByteArrayMatcher("Hello");
+        QCOMPARE(smatcher.pattern(), QByteArrayLiteral("Hello"));
+
+        QCOMPARE(smatcher.indexIn(QByteArray("Hello, World!")),     0);
+        QCOMPARE(smatcher.indexIn(QByteArray("Hello, World!"), 0),  0);
+        QCOMPARE(smatcher.indexIn(QByteArray("Hello, World!"), 1), -1);
+        QCOMPARE(smatcher.indexIn(QByteArray("aHello, World!")),        1);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaHello, World!")),       2);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaHello, World!")),      3);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaaHello, World!")),     4);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaaaHello, World!")),    5);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaaaaHello, World!")),   6);
+        QCOMPARE(smatcher.indexIn(QByteArray("HHello, World!")),        1);
+        QCOMPARE(smatcher.indexIn(QByteArray("HeHello, World!")),       2);
+        QCOMPARE(smatcher.indexIn(QByteArray("HelHello, World!")),      3);
+        QCOMPARE(smatcher.indexIn(QByteArray("HellHello, World!")),     4);
+        QCOMPARE(smatcher.indexIn(QByteArray("HellaHello, World!")),    5);
+        QCOMPARE(smatcher.indexIn(QByteArray("HellauHello, World!")),   6);
+        QCOMPARE(smatcher.indexIn(QByteArray("aHella, World!")),       -1);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaHella, World!")),      -1);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaHella, World!")),     -1);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaaHella, World!")),    -1);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaaaHella, World!")),   -1);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaaaaHella, World!")),  -1);
+
+        QCOMPARE(smatcher.indexIn(QByteArray("aHello")),        1);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaHello")),       2);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaHello")),      3);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaaHello")),     4);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaaaHello")),    5);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaaaaHello")),   6);
+        QCOMPARE(smatcher.indexIn(QByteArray("HHello")),        1);
+        QCOMPARE(smatcher.indexIn(QByteArray("HeHello")),       2);
+        QCOMPARE(smatcher.indexIn(QByteArray("HelHello")),      3);
+        QCOMPARE(smatcher.indexIn(QByteArray("HellHello")),     4);
+        QCOMPARE(smatcher.indexIn(QByteArray("HellaHello")),    5);
+        QCOMPARE(smatcher.indexIn(QByteArray("HellauHello")),   6);
+        QCOMPARE(smatcher.indexIn(QByteArray("aHella")),       -1);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaHella")),      -1);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaHella")),     -1);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaaHella")),    -1);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaaaHella")),   -1);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaaaaHella")),  -1);
+    }
+
+    {
+        static Q_RELAXED_CONSTEXPR auto smatcher = qMakeStaticByteArrayMatcher(LONG_STRING_256);
+        QCOMPARE(smatcher.pattern(), QByteArrayLiteral(LONG_STRING_256));
+
+        QCOMPARE(smatcher.indexIn(QByteArray("a" LONG_STRING_256)),        1);
+        QCOMPARE(smatcher.indexIn(QByteArray("aa" LONG_STRING_256)),       2);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaa" LONG_STRING_256)),      3);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaa" LONG_STRING_256)),     4);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaaa" LONG_STRING_256)),    5);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaaaa" LONG_STRING_256)),   6);
+        QCOMPARE(smatcher.indexIn(QByteArray("a" LONG_STRING_256 "a")),        1);
+        QCOMPARE(smatcher.indexIn(QByteArray("aa" LONG_STRING_256 "a")),       2);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaa" LONG_STRING_256 "a")),      3);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaa" LONG_STRING_256 "a")),     4);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaaa" LONG_STRING_256 "a")),    5);
+        QCOMPARE(smatcher.indexIn(QByteArray("aaaaaa" LONG_STRING_256 "a")),   6);
+        QCOMPARE(smatcher.indexIn(QByteArray(LONG_STRING__32 "x" LONG_STRING_256)),  33);
+        QCOMPARE(smatcher.indexIn(QByteArray(LONG_STRING__64 "x" LONG_STRING_256)),  65);
+        QCOMPARE(smatcher.indexIn(QByteArray(LONG_STRING_128 "x" LONG_STRING_256)), 129);
+    }
+
+}
+
+#undef LONG_STRING_256
+#undef LONG_STRING_128
+#undef LONG_STRING__64
+#undef LONG_STRING__32
 
 QTEST_APPLESS_MAIN(tst_QByteArrayMatcher)
 #include "tst_qbytearraymatcher.moc"
