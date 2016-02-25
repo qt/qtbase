@@ -162,7 +162,7 @@ inline QRect toNative(const QRect &rect, qreal scaleFactor, const QPoint &origin
 
 inline QRect fromNative(const QRect &rect, const QScreen *screen, const QPoint &screenOrigin)
 {
-    return toNative(rect, QHighDpiScaling::factor(screen), screenOrigin);
+    return fromNative(rect, QHighDpiScaling::factor(screen), screenOrigin);
 }
 
 inline QRect fromNativeScreenGeometry(const QRect &nativeScreenGeometry, const QScreen *screen)
