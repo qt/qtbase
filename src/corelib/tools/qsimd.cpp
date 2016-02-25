@@ -117,13 +117,7 @@ static inline quint64 detectProcessorFeatures()
 {
     quint64 features = 0;
 
-#if defined(Q_OS_IOS)
-    features |= Q_UINT64_C(1) << CpuFeatureNEON; // On iOS, NEON is always available.
-#  ifdef Q_PROCESSOR_ARM_V8
-    features |= Q_UINT64_C(1) << CpuFeatureCRC32; // On iOS, crc32 is always available if the architecture is Aarch32/64.
-#  endif
-    return features;
-#elif defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX)
 #  if defined(Q_PROCESSOR_ARM_V8) && defined(Q_PROCESSOR_ARM_64)
     features |= Q_UINT64_C(1) << CpuFeatureNEON; // NEON is always available on ARMv8 64bit.
 #  endif
