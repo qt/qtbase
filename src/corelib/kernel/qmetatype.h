@@ -86,6 +86,7 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(UChar, 37, uchar) \
     F(Float, 38, float) \
     F(SChar, 40, signed char) \
+    F(Nullptr, 51, std::nullptr_t) \
 
 #define QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(F)\
     F(VoidStar, 31, void*) \
@@ -414,7 +415,7 @@ public:
         QT_FOR_EACH_STATIC_TYPE(QT_DEFINE_METATYPE_ID)
 
         FirstCoreType = Bool,
-        LastCoreType = QPersistentModelIndex,
+        LastCoreType = Nullptr,
         FirstGuiType = QFont,
         LastGuiType = QPolygonF,
         FirstWidgetsType = QSizePolicy,

@@ -669,6 +669,9 @@ template<> struct TestValueFactory<QMetaType::QModelIndex> {
 template<> struct TestValueFactory<QMetaType::QPersistentModelIndex> {
     static QPersistentModelIndex *create() { return new QPersistentModelIndex(); }
 };
+template<> struct TestValueFactory<QMetaType::Nullptr> {
+    static std::nullptr_t *create() { return new std::nullptr_t; }
+};
 template<> struct TestValueFactory<QMetaType::QRegExp> {
     static QRegExp *create()
     {
@@ -1798,6 +1801,7 @@ DECLARE_NONSTREAMABLE(QJsonArray)
 DECLARE_NONSTREAMABLE(QJsonDocument)
 DECLARE_NONSTREAMABLE(QObject*)
 DECLARE_NONSTREAMABLE(QWidget*)
+DECLARE_NONSTREAMABLE(std::nullptr_t)
 
 #define DECLARE_GUI_CLASS_NONSTREAMABLE(MetaTypeName, MetaTypeId, RealType) \
     DECLARE_NONSTREAMABLE(RealType)
