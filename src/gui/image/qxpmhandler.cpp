@@ -42,6 +42,7 @@
 #ifndef QT_NO_IMAGEFORMAT_XPM
 
 #include <private/qcolor_p.h>
+#include <qbytearraymatcher.h>
 #include <qimage.h>
 #include <qmap.h>
 #include <qtextstream.h>
@@ -1041,7 +1042,9 @@ bool qt_read_xpm_image_or_array(QIODevice *device, const char * const * source, 
         if ((readBytes = device->readLine(buf.data(), buf.size())) < 0)
             return false;
 
-        if (buf.indexOf("/* XPM") != 0) {
+        static Q_RELAXED_CONSTEXPR auto matcher = qMakeStaticByteArrayMatcher("/* XPM");
+
+        if (matcher.indexIn(buf) != 0) {
             while (readBytes > 0) {
                 device->ungetChar(buf.at(readBytes - 1));
                 --readBytes;

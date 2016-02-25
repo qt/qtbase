@@ -41,6 +41,7 @@
 #include "qwindowscontext.h"
 
 #include <QtGui/private/qdnd_p.h>
+#include <QtCore/QByteArrayMatcher>
 #include <QtCore/QTextCodec>
 #include <QtCore/QMap>
 #include <QtCore/QUrl>
@@ -955,9 +956,11 @@ QVariant QWindowsMimeHtml::convertToMime(const QString &mime, IDataObject *pData
     QVariant result;
     if (canConvertToMime(mime, pDataObj)) {
         QByteArray html = getData(CF_HTML, pDataObj);
+        static Q_RELAXED_CONSTEXPR auto startMatcher = qMakeStaticByteArrayMatcher("StartHTML:");
+        static Q_RELAXED_CONSTEXPR auto endMatcher   = qMakeStaticByteArrayMatcher("EndHTML:");
         qCDebug(lcQpaMime) << __FUNCTION__ << "raw:" << html;
-        int start = html.indexOf("StartHTML:");
-        int end = html.indexOf("EndHTML:");
+        int start = startMatcher.indexIn(html);
+        int end = endMatcher.indexIn(html);
 
         if (start != -1) {
             int startOffset = start + 10;
@@ -997,10 +1000,13 @@ bool QWindowsMimeHtml::convertFromMime(const FORMATETC &formatetc, const QMimeDa
             "StartFragment:0000000000\r\n"       // 56-81
             "EndFragment:0000000000\r\n\r\n";    // 82-107
 
-        if (data.indexOf("<!--StartFragment-->") == -1)
+        static Q_RELAXED_CONSTEXPR auto startFragmentMatcher = qMakeStaticByteArrayMatcher("<!--StartFragment-->");
+        static Q_RELAXED_CONSTEXPR auto endFragmentMatcher   = qMakeStaticByteArrayMatcher("<!--EndFragment-->");
+
+        if (startFragmentMatcher.indexIn(data) == -1)
             result += "<!--StartFragment-->";
         result += data;
-        if (data.indexOf("<!--EndFragment-->") == -1)
+        if (endFragmentMatcher.indexIn(data) == -1)
             result += "<!--EndFragment-->";
 
         // set the correct number for EndHTML
@@ -1008,9 +1014,9 @@ bool QWindowsMimeHtml::convertFromMime(const FORMATETC &formatetc, const QMimeDa
         memcpy(reinterpret_cast<char *>(result.data() + 53 - pos.length()), pos.constData(), size_t(pos.length()));
 
         // set correct numbers for StartFragment and EndFragment
-        pos = QByteArray::number(result.indexOf("<!--StartFragment-->") + 20);
+        pos = QByteArray::number(startFragmentMatcher.indexIn(result) + 20);
         memcpy(reinterpret_cast<char *>(result.data() + 79 - pos.length()), pos.constData(), size_t(pos.length()));
-        pos = QByteArray::number(result.indexOf("<!--EndFragment-->"));
+        pos = QByteArray::number(endFragmentMatcher.indexIn(result));
         memcpy(reinterpret_cast<char *>(result.data() + 103 - pos.length()), pos.constData(), size_t(pos.length()));
 
         return setData(result, pmedium);

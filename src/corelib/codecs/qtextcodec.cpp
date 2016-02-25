@@ -43,6 +43,7 @@
 
 #ifndef QT_NO_TEXTCODEC
 
+#include "qbytearraymatcher.h"
 #include "qlist.h"
 #include "qfile.h"
 #include "qstringlist.h"
@@ -1092,10 +1093,12 @@ QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba, QTextCodec *defaultCo
     // determine charset
     QTextCodec *c = QTextCodec::codecForUtfText(ba, 0);
     if (!c) {
+        static Q_RELAXED_CONSTEXPR auto matcher = qMakeStaticByteArrayMatcher("meta ");
         QByteArray header = ba.left(1024).toLower();
-        int pos = header.indexOf("meta ");
+        int pos = matcher.indexIn(header);
         if (pos != -1) {
-            pos = header.indexOf("charset=", pos);
+            static Q_RELAXED_CONSTEXPR auto matcher = qMakeStaticByteArrayMatcher("charset=");
+            pos = matcher.indexIn(header, pos);
             if (pos != -1) {
                 pos += qstrlen("charset=");
 
