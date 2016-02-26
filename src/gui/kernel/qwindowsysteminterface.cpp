@@ -857,7 +857,9 @@ Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF &local, const QP
 {
     bool wasSynchronous = QWindowSystemInterfacePrivate::synchronousWindowSystemEvents;
     QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
-    QWindowSystemInterface::handleMouseEvent(w, timestamp, local, global, b, mods);
+    const qreal factor = QHighDpiScaling::factor(w);
+    QWindowSystemInterface::handleMouseEvent(w, timestamp, local * factor,
+                                             global * factor, b, mods);
     QWindowSystemInterface::setSynchronousWindowSystemEvents(wasSynchronous);
 }
 
