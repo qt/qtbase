@@ -277,23 +277,7 @@ void QIBusText::deserializeFrom(const QDBusArgument &argument)
 }
 
 QIBusEngineDesc::QIBusEngineDesc()
-    : engine_name(""),
-      longname(""),
-      description(""),
-      language(""),
-      license(""),
-      author(""),
-      icon(""),
-      layout(""),
-      rank(0),
-      hotkeys(""),
-      symbol(""),
-      setup(""),
-      layout_variant(""),
-      layout_option(""),
-      version(""),
-      textdomain(""),
-      iconpropkey("")
+    : rank(0)
 {
     name = "IBusEngineDesc";
 }
