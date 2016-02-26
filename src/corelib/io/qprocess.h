@@ -243,7 +243,7 @@ Q_SIGNALS:
     void finished(int exitCode); // ### Qt 6: merge the two signals with a default value
     void finished(int exitCode, QProcess::ExitStatus exitStatus);
 #if QT_DEPRECATED_SINCE(5,6)
-    QT_MOC_COMPAT void error(QProcess::ProcessError error);
+    void error(QProcess::ProcessError error);
 #endif
     void errorOccurred(QProcess::ProcessError error);
     void stateChanged(QProcess::ProcessState state, QPrivateSignal);
