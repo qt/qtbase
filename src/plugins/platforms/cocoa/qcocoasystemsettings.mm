@@ -143,6 +143,7 @@ static QMacPaletteMap mac_widget_colors[] = {
     QMacPaletteMap(QPlatformTheme::LabelPalette, kThemeTextColorPlacardActive, kThemeTextColorPlacardInactive),
     QMacPaletteMap(QPlatformTheme::GroupBoxPalette, kThemeTextColorPlacardActive, kThemeTextColorPlacardInactive),
     QMacPaletteMap(QPlatformTheme::MenuPalette, kThemeTextColorMenuItemActive, kThemeTextColorMenuItemDisabled),
+    QMacPaletteMap(QPlatformTheme::MenuBarPalette, kThemeTextColorMenuItemActive, kThemeTextColorMenuItemDisabled),
     //### TODO: The zeros below gives white-on-black text.
     QMacPaletteMap(QPlatformTheme::TextEditPalette, 0, 0),
     QMacPaletteMap(QPlatformTheme::TextLineEditPalette, 0, 0),
@@ -167,7 +168,8 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
             pal.setColor(QPalette::Disabled, QPalette::WindowText, qc);
             pal.setColor(QPalette::Disabled, QPalette::HighlightedText, qc);
         }
-        if (mac_widget_colors[i].paletteRole == QPlatformTheme::MenuPalette) {
+        if (mac_widget_colors[i].paletteRole == QPlatformTheme::MenuPalette
+                || mac_widget_colors[i].paletteRole == QPlatformTheme::MenuBarPalette) {
             qc = qt_mac_colorForTheme(kThemeBrushMenuBackground);
             pal.setBrush(QPalette::Background, qc);
             qc = qt_mac_colorForThemeTextColor(kThemeTextColorMenuItemActive);
