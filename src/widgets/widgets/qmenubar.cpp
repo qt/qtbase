@@ -690,7 +690,8 @@ void QMenuBarPrivate::init()
     q->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     q->setAttribute(Qt::WA_CustomWhatsThis);
 
-    platformMenuBar = QGuiApplicationPrivate::platformTheme()->createPlatformMenuBar();
+    if (!QApplication::instance()->testAttribute(Qt::AA_DontUseNativeMenuBar))
+        platformMenuBar = QGuiApplicationPrivate::platformTheme()->createPlatformMenuBar();
 
     if (platformMenuBar)
         q->hide();
