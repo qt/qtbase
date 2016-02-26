@@ -54,9 +54,9 @@ QIBusSerializable::~QIBusSerializable()
 {
 }
 
-const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusSerializable &object)
+void QIBusSerializable::deserializeFrom(const QDBusArgument &argument)
 {
-    argument >> object.name;
+    argument >> name;
 
     argument.beginMap();
     while (!argument.atEnd()) {
@@ -66,19 +66,18 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusSerializable
         argument >> key;
         argument >> value;
         argument.endMapEntry();
-        object.attachments[key] = value.variant().value<QDBusArgument>();
+        attachments[key] = value.variant().value<QDBusArgument>();
     }
     argument.endMap();
-    return argument;
 }
 
-QDBusArgument &operator<<(QDBusArgument &argument, const QIBusSerializable &object)
+void QIBusSerializable::serializeTo(QDBusArgument &argument) const
 {
-    argument << object.name;
+    argument << name;
 
     argument.beginMap(qMetaTypeId<QString>(), qMetaTypeId<QDBusVariant>());
 
-    QHashIterator<QString, QDBusArgument> i(object.attachments);
+    QHashIterator<QString, QDBusArgument> i(attachments);
     while (i.hasNext()) {
         i.next();
 
@@ -91,7 +90,6 @@ QDBusArgument &operator<<(QDBusArgument &argument, const QIBusSerializable &obje
         argument.endMapEntry();
     }
     argument.endMap();
-    return argument;
 }
 
 QIBusAttribute::QIBusAttribute()
@@ -107,39 +105,35 @@ QIBusAttribute::~QIBusAttribute()
 {
 }
 
-QDBusArgument &operator<<(QDBusArgument &argument, const QIBusAttribute &attribute)
+void QIBusAttribute::serializeTo(QDBusArgument &argument) const
 {
     argument.beginStructure();
 
-    argument << static_cast<const QIBusSerializable &>(attribute);
+    QIBusSerializable::serializeTo(argument);
 
-    quint32 t = (quint32) attribute.type;
+    quint32 t = (quint32) type;
     argument << t;
-    argument << attribute.value;
-    argument << attribute.start;
-    argument << attribute.end;
+    argument << value;
+    argument << start;
+    argument << end;
 
     argument.endStructure();
-
-    return argument;
 }
 
-const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusAttribute &attribute)
+void QIBusAttribute::deserializeFrom(const QDBusArgument &argument)
 {
     argument.beginStructure();
 
-    argument >> static_cast<QIBusSerializable &>(attribute);
+    QIBusSerializable::deserializeFrom(argument);
 
     quint32 t;
     argument >> t;
-    attribute.type = (QIBusAttribute::Type) t;
-    argument >> attribute.value;
-    argument >> attribute.start;
-    argument >> attribute.end;
+    type = (QIBusAttribute::Type) t;
+    argument >> value;
+    argument >> start;
+    argument >> end;
 
     argument.endStructure();
-
-    return argument;
 }
 
 QTextCharFormat QIBusAttribute::format() const
@@ -191,30 +185,30 @@ QIBusAttributeList::~QIBusAttributeList()
 {
 }
 
-QDBusArgument &operator<<(QDBusArgument &argument, const QIBusAttributeList &attrList)
+void QIBusAttributeList::serializeTo(QDBusArgument &argument) const
 {
     argument.beginStructure();
 
-    argument << static_cast<const QIBusSerializable &>(attrList);
+    QIBusSerializable::serializeTo(argument);
 
     argument.beginArray(qMetaTypeId<QDBusVariant>());
-    for (int i = 0; i < attrList.attributes.size(); ++i) {
+    for (int i = 0; i < attributes.size(); ++i) {
         QVariant variant;
-        variant.setValue(attrList.attributes.at(i));
+        variant.setValue(attributes.at(i));
         argument << QDBusVariant (variant);
     }
     argument.endArray();
 
     argument.endStructure();
-    return argument;
 }
 
-const QDBusArgument &operator>>(const QDBusArgument &arg, QIBusAttributeList &attrList)
+void QIBusAttributeList::deserializeFrom(const QDBusArgument &arg)
 {
     qCDebug(qtQpaInputMethodsSerialize) << "QIBusAttributeList::fromDBusArgument()" << arg.currentSignature();
+
     arg.beginStructure();
 
-    arg >> static_cast<QIBusSerializable &>(attrList);
+    QIBusSerializable::deserializeFrom(arg);
 
     arg.beginArray();
     while (!arg.atEnd()) {
@@ -223,12 +217,11 @@ const QDBusArgument &operator>>(const QDBusArgument &arg, QIBusAttributeList &at
 
         QIBusAttribute attr;
         var.variant().value<QDBusArgument>() >> attr;
-        attrList.attributes.append(attr);
+        attributes.append(attr);
     }
     arg.endArray();
 
     arg.endStructure();
-    return arg;
 }
 
 QList<QInputMethodEvent::Attribute> QIBusAttributeList::imAttributes() const
@@ -273,31 +266,30 @@ QIBusText::~QIBusText()
 {
 }
 
-QDBusArgument &operator<<(QDBusArgument &argument, const QIBusText &text)
+void QIBusText::serializeTo(QDBusArgument &argument) const
 {
     argument.beginStructure();
 
-    argument << static_cast<const QIBusSerializable &>(text);
+    QIBusSerializable::serializeTo(argument);
 
-    argument << text.text << text.attributes;
+    argument << text << attributes;
     argument.endStructure();
-    return argument;
 }
 
-const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusText &text)
+void QIBusText::deserializeFrom(const QDBusArgument &argument)
 {
     qCDebug(qtQpaInputMethodsSerialize) << "QIBusText::fromDBusArgument()" << argument.currentSignature();
+
     argument.beginStructure();
 
-    argument >> static_cast<QIBusSerializable &>(text);
+    QIBusSerializable::deserializeFrom(argument);
 
-    argument >> text.text;
+    argument >> text;
     QDBusVariant variant;
     argument >> variant;
-    variant.variant().value<QDBusArgument>() >> text.attributes;
+    variant.variant().value<QDBusArgument>() >> attributes;
 
     argument.endStructure();
-    return argument;
 }
 
 QIBusEngineDesc::QIBusEngineDesc()
@@ -326,81 +318,79 @@ QIBusEngineDesc::~QIBusEngineDesc()
 {
 }
 
-QDBusArgument &operator<<(QDBusArgument &argument, const QIBusEngineDesc &desc)
+void QIBusEngineDesc::serializeTo(QDBusArgument &argument) const
 {
     argument.beginStructure();
 
-    argument << static_cast<const QIBusSerializable &>(desc);
+    QIBusSerializable::serializeTo(argument);
 
-    argument << desc.engine_name;
-    argument << desc.longname;
-    argument << desc.description;
-    argument << desc.language;
-    argument << desc.license;
-    argument << desc.author;
-    argument << desc.icon;
-    argument << desc.layout;
-    argument << desc.rank;
-    argument << desc.hotkeys;
-    argument << desc.symbol;
-    argument << desc.setup;
-    argument << desc.layout_variant;
-    argument << desc.layout_option;
-    argument << desc.version;
-    argument << desc.textdomain;
-    argument << desc.iconpropkey;
+    argument << engine_name;
+    argument << longname;
+    argument << description;
+    argument << language;
+    argument << license;
+    argument << author;
+    argument << icon;
+    argument << layout;
+    argument << rank;
+    argument << hotkeys;
+    argument << symbol;
+    argument << setup;
+    argument << layout_variant;
+    argument << layout_option;
+    argument << version;
+    argument << textdomain;
+    argument << iconpropkey;
 
     argument.endStructure();
-    return argument;
 }
 
-const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusEngineDesc &desc)
+void QIBusEngineDesc::deserializeFrom(const QDBusArgument &argument)
 {
     qCDebug(qtQpaInputMethodsSerialize) << "QIBusEngineDesc::fromDBusArgument()" << argument.currentSignature();
     argument.beginStructure();
 
-    argument >> static_cast<QIBusSerializable &>(desc);
+    QIBusSerializable::deserializeFrom(argument);
 
-    argument >> desc.engine_name;
-    argument >> desc.longname;
-    argument >> desc.description;
-    argument >> desc.language;
-    argument >> desc.license;
-    argument >> desc.author;
-    argument >> desc.icon;
-    argument >> desc.layout;
-    argument >> desc.rank;
-    argument >> desc.hotkeys;
-    argument >> desc.symbol;
-    argument >> desc.setup;
+    argument >> engine_name;
+    argument >> longname;
+    argument >> description;
+    argument >> language;
+    argument >> license;
+    argument >> author;
+    argument >> icon;
+    argument >> layout;
+    argument >> rank;
+    argument >> hotkeys;
+    argument >> symbol;
+    argument >> setup;
     // Previous IBusEngineDesc supports the arguments between engine_name
     // and setup.
     if (argument.currentSignature() == "") {
         argument.endStructure();
-        return argument;
+        return;
     }
-    argument >> desc.layout_variant;
-    argument >> desc.layout_option;
+    argument >> layout_variant;
+    argument >> layout_option;
     // Previous IBusEngineDesc supports the arguments between engine_name
     // and layout_option.
     if (argument.currentSignature() == "") {
         argument.endStructure();
-        return argument;
+        return;
     }
-    argument >> desc.version;
+    argument >> version;
     if (argument.currentSignature() == "") {
         argument.endStructure();
-        return argument;
+        return;
     }
-    argument >> desc.textdomain;
+    argument >> textdomain;
     if (argument.currentSignature() == "") {
         argument.endStructure();
-        return argument;
+        return;
     }
-    argument >> desc.iconpropkey;
+    argument >> iconpropkey;
 
     argument.endStructure();
-    return argument;
 }
 
 QT_END_NAMESPACE

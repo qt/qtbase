@@ -54,13 +54,16 @@ class QIBusSerializable
 {
 public:
     QIBusSerializable();
-    virtual ~QIBusSerializable();
+    ~QIBusSerializable();
+
+    void serializeTo(QDBusArgument &argument) const;
+    void deserializeFrom(const QDBusArgument &argument);
 
     QString name;
     QHash<QString, QDBusArgument>  attachments;
 };
 
-class QIBusAttribute : public QIBusSerializable
+class QIBusAttribute : private QIBusSerializable
 {
 public:
     enum Type {
@@ -83,13 +86,16 @@ public:
 
     QTextCharFormat format() const;
 
+    void serializeTo(QDBusArgument &argument) const;
+    void deserializeFrom(const QDBusArgument &argument);
+
     Type type;
     quint32 value;
     quint32 start;
     quint32 end;
 };
 
-class QIBusAttributeList : public QIBusSerializable
+class QIBusAttributeList : private QIBusSerializable
 {
 public:
     QIBusAttributeList();
@@ -97,24 +103,33 @@ public:
 
     QList<QInputMethodEvent::Attribute> imAttributes() const;
 
+    void serializeTo(QDBusArgument &argument) const;
+    void deserializeFrom(const QDBusArgument &argument);
+
     QVector<QIBusAttribute> attributes;
 };
 
-class QIBusText : public QIBusSerializable
+class QIBusText : private QIBusSerializable
 {
 public:
     QIBusText();
     ~QIBusText();
 
+    void serializeTo(QDBusArgument &argument) const;
+    void deserializeFrom(const QDBusArgument &argument);
+
     QString text;
     QIBusAttributeList attributes;
 };
 
-class QIBusEngineDesc : public QIBusSerializable
+class QIBusEngineDesc : private QIBusSerializable
 {
 public:
     QIBusEngineDesc();
     ~QIBusEngineDesc();
+
+    void serializeTo(QDBusArgument &argument) const;
+    void deserializeFrom(const QDBusArgument &argument);
 
     QString engine_name;
     QString longname;
@@ -135,24 +150,28 @@ public:
     QString iconpropkey;
 };
 
-QDBusArgument &operator<<(QDBusArgument &argument, const QIBusSerializable &object);
-const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusSerializable &object);
+inline QDBusArgument &operator<<(QDBusArgument &argument, const QIBusAttribute &attribute)
+{ attribute.serializeTo(argument); return argument; }
+inline const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusAttribute &attribute)
+{ attribute.deserializeFrom(argument); return argument; }
 
-QDBusArgument &operator<<(QDBusArgument &argument, const QIBusAttribute &attribute);
-const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusAttribute &attribute);
+inline QDBusArgument &operator<<(QDBusArgument &argument, const QIBusAttributeList &attributeList)
+{ attributeList.serializeTo(argument); return argument; }
+inline const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusAttributeList &attributeList)
+{ attributeList.deserializeFrom(argument); return argument; }
 
-QDBusArgument &operator<<(QDBusArgument &argument, const QIBusAttributeList &attributeList);
-const QDBusArgument &operator>>(const QDBusArgument &arg, QIBusAttributeList &attrList);
+inline QDBusArgument &operator<<(QDBusArgument &argument, const QIBusText &text)
+{ text.serializeTo(argument); return argument; }
+inline const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusText &text)
+{ text.deserializeFrom(argument); return argument; }
 
-QDBusArgument &operator<<(QDBusArgument &argument, const QIBusText &text);
-const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusText &text);
-
-QDBusArgument &operator<<(QDBusArgument &argument, const QIBusEngineDesc &desc);
-const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusEngineDesc &desc);
+inline QDBusArgument &operator<<(QDBusArgument &argument, const QIBusEngineDesc &desc)
+{ desc.serializeTo(argument); return argument; }
+inline const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusEngineDesc &desc)
+{ desc.deserializeFrom(argument); return argument; }
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QIBusSerializable)
 Q_DECLARE_METATYPE(QIBusAttribute)
 Q_DECLARE_METATYPE(QIBusAttributeList)
 Q_DECLARE_METATYPE(QIBusText)
