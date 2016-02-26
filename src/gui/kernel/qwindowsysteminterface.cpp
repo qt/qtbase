@@ -906,36 +906,14 @@ Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int 
 #endif
 }
 
-static QWindowSystemInterface::TouchPoint touchPoint(const QTouchEvent::TouchPoint& pt)
-{
-    QWindowSystemInterface::TouchPoint p;
-    p.id = pt.id();
-    p.flags = pt.flags();
-    p.normalPosition = pt.normalizedPos();
-    p.area = pt.screenRect();
-    p.pressure = pt.pressure();
-    p.state = pt.state();
-    p.velocity = pt.velocity();
-    p.rawPositions = pt.rawScreenPositions();
-    return p;
-}
-static QList<struct QWindowSystemInterface::TouchPoint> touchPointList(const QList<QTouchEvent::TouchPoint>& pointList)
-{
-    QList<struct QWindowSystemInterface::TouchPoint> newList;
-
-    Q_FOREACH (QTouchEvent::TouchPoint p, pointList)
-        newList.append(touchPoint(p));
-
-    return newList;
-}
-
 Q_GUI_EXPORT void qt_handleTouchEvent(QWindow *w, QTouchDevice *device,
                                 const QList<QTouchEvent::TouchPoint> &points,
                                 Qt::KeyboardModifiers mods = Qt::NoModifier)
 {
     bool wasSynchronous = QWindowSystemInterfacePrivate::synchronousWindowSystemEvents;
     QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
-    QWindowSystemInterface::handleTouchEvent(w, device, touchPointList(points), mods);
+    QWindowSystemInterface::handleTouchEvent(w, device,
+                                             QWindowSystemInterfacePrivate::toNativeTouchPoints(points, w), mods);
     QWindowSystemInterface::setSynchronousWindowSystemEvents(wasSynchronous);
 }
 
