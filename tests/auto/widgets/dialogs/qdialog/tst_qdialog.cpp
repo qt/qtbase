@@ -560,6 +560,11 @@ void tst_QDialog::reject()
     QCOMPARE(dialog.called, 4);
 }
 
+static QByteArray formatPoint(QPoint p)
+{
+    return QByteArray::number(p.x()) + ", " + QByteArray::number(p.y());
+}
+
 void tst_QDialog::snapToDefaultButton()
 {
 #ifdef QT_NO_CURSOR
@@ -568,9 +573,9 @@ void tst_QDialog::snapToDefaultButton()
     if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: Wayland does not support setting the cursor position.");
 
-    QPoint topLeftPos = QApplication::desktop()->availableGeometry().topLeft();
-    topLeftPos = QPoint(topLeftPos.x() + 100, topLeftPos.y() + 100);
-    QPoint startingPos(topLeftPos.x() + 250, topLeftPos.y() + 250);
+    const QRect dialogGeometry(QApplication::desktop()->availableGeometry().topLeft()
+                               + QPoint(100, 100), QSize(200, 200));
+    const QPoint startingPos = dialogGeometry.bottomRight() + QPoint(100, 100);
     QCursor::setPos(startingPos);
 #ifdef Q_OS_OSX
     // On OS X we use CGEventPost to move the cursor, it needs at least
@@ -581,17 +586,14 @@ void tst_QDialog::snapToDefaultButton()
     QDialog dialog;
     QPushButton *button = new QPushButton(&dialog);
     button->setDefault(true);
-    dialog.setGeometry(QRect(topLeftPos, QSize(200, 200)));
+    dialog.setGeometry(dialogGeometry);
     dialog.show();
     QVERIFY(QTest::qWaitForWindowExposed(&dialog));
-    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
-        if (theme->themeHint(QPlatformTheme::DialogSnapToDefaultButton).toBool()) {
-            QPoint localPos = button->mapFromGlobal(QCursor::pos());
-            QVERIFY(button->rect().contains(localPos));
-        } else {
-            QCOMPARE(startingPos, QCursor::pos());
-        }
-    }
+    const QPoint localPos = button->mapFromGlobal(QCursor::pos());
+    if (QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::DialogSnapToDefaultButton).toBool())
+        QVERIFY2(button->rect().contains(localPos), formatPoint(localPos).constData());
+    else
+        QVERIFY2(!button->rect().contains(localPos), formatPoint(localPos).constData());
 #endif // !QT_NO_CURSOR
 }
 
