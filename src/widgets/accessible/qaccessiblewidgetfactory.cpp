@@ -33,6 +33,7 @@
 
 #include "qaccessiblewidgets_p.h"
 #include "qaccessiblemenu_p.h"
+#include "private/qwidget_p.h"
 #include "simplewidgets_p.h"
 #include "rangecontrols_p.h"
 #include "complexwidgets_p.h"
@@ -53,7 +54,15 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     QAccessibleInterface *iface = 0;
     if (!object || !object->isWidgetType())
         return iface;
+
     QWidget *widget = static_cast<QWidget*>(object);
+    // QWidget emits destroyed() from its destructor instead of letting the QObject
+    // destructor do it, which means the QWidget is unregistered from the accessibillity
+    // cache. But QWidget destruction also emits enter and leave events, which may end
+    // up here, so we have to ensure that we don't fill the cache with an entry of
+    // a widget that is going away.
+    if (QWidgetPrivate::get(widget)->data.in_destructor)
+        return iface;
 
     if (false) {
 #ifndef QT_NO_LINEEDIT
