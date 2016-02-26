@@ -18,5 +18,11 @@ SUBDIRS=\
           qhttpnetworkconnection \
           qhttpnetworkreply \
           qftp \
-          hpack \
+          hpack
 
+contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
+    contains(QT_CONFIG, private_tests) {
+        SUBDIRS += \
+            http2
+    }
+}
