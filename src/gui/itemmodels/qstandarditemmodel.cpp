@@ -57,6 +57,11 @@
 
 QT_BEGIN_NAMESPACE
 
+static inline QString qStandardItemModelDataListMimeType()
+{
+    return QStringLiteral("application/x-qstandarditemmodeldatalist");
+}
+
 class QStandardItemModelLessThan
 {
 public:
@@ -2977,7 +2982,7 @@ void QStandardItemModel::sort(int column, Qt::SortOrder order)
 */
 QStringList QStandardItemModel::mimeTypes() const
 {
-    return QAbstractItemModel::mimeTypes() <<  QLatin1String("application/x-qstandarditemmodeldatalist");
+    return QAbstractItemModel::mimeTypes() << qStandardItemModelDataListMimeType();
 }
 
 /*!
@@ -2989,7 +2994,7 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
     if(!data)
         return 0;
 
-    QString format = QLatin1String("application/x-qstandarditemmodeldatalist");
+    const QString format = qStandardItemModelDataListMimeType();
     if (!mimeTypes().contains(format))
         return data;
     QByteArray encoded;
@@ -3084,7 +3089,7 @@ bool QStandardItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     if (!data || !(action == Qt::CopyAction || action == Qt::MoveAction))
         return false;
     // check if the format is supported
-    QString format = QLatin1String("application/x-qstandarditemmodeldatalist");
+    const QString format = qStandardItemModelDataListMimeType();
     if (!data->hasFormat(format))
         return QAbstractItemModel::dropMimeData(data, action, row, column, parent);
 
