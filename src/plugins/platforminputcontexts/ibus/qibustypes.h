@@ -54,7 +54,6 @@ class QIBusSerializable
 {
 public:
     QIBusSerializable();
-    ~QIBusSerializable();
 
     void serializeTo(QDBusArgument &argument) const;
     void deserializeFrom(const QDBusArgument &argument);
@@ -82,7 +81,6 @@ public:
     };
 
     QIBusAttribute();
-    ~QIBusAttribute();
 
     QTextCharFormat format() const;
 
@@ -94,12 +92,12 @@ public:
     quint32 start;
     quint32 end;
 };
+Q_DECLARE_TYPEINFO(QIBusAttribute, Q_MOVABLE_TYPE);
 
 class QIBusAttributeList : private QIBusSerializable
 {
 public:
     QIBusAttributeList();
-    ~QIBusAttributeList();
 
     QList<QInputMethodEvent::Attribute> imAttributes() const;
 
@@ -108,12 +106,12 @@ public:
 
     QVector<QIBusAttribute> attributes;
 };
+Q_DECLARE_TYPEINFO(QIBusAttributeList, Q_MOVABLE_TYPE);
 
 class QIBusText : private QIBusSerializable
 {
 public:
     QIBusText();
-    ~QIBusText();
 
     void serializeTo(QDBusArgument &argument) const;
     void deserializeFrom(const QDBusArgument &argument);
@@ -121,12 +119,12 @@ public:
     QString text;
     QIBusAttributeList attributes;
 };
+Q_DECLARE_TYPEINFO(QIBusText, Q_MOVABLE_TYPE);
 
 class QIBusEngineDesc : private QIBusSerializable
 {
 public:
     QIBusEngineDesc();
-    ~QIBusEngineDesc();
 
     void serializeTo(QDBusArgument &argument) const;
     void deserializeFrom(const QDBusArgument &argument);
@@ -149,6 +147,7 @@ public:
     QString textdomain;
     QString iconpropkey;
 };
+Q_DECLARE_TYPEINFO(QIBusEngineDesc, Q_MOVABLE_TYPE);
 
 inline QDBusArgument &operator<<(QDBusArgument &argument, const QIBusAttribute &attribute)
 { attribute.serializeTo(argument); return argument; }

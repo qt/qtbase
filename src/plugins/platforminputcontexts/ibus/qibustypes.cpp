@@ -50,10 +50,6 @@ QIBusSerializable::QIBusSerializable()
 {
 }
 
-QIBusSerializable::~QIBusSerializable()
-{
-}
-
 void QIBusSerializable::deserializeFrom(const QDBusArgument &argument)
 {
     argument >> name;
@@ -99,10 +95,6 @@ QIBusAttribute::QIBusAttribute()
       end(0)
 {
     name = "IBusAttribute";
-}
-
-QIBusAttribute::~QIBusAttribute()
-{
 }
 
 void QIBusAttribute::serializeTo(QDBusArgument &argument) const
@@ -181,10 +173,6 @@ QIBusAttributeList::QIBusAttributeList()
     name = "IBusAttrList";
 }
 
-QIBusAttributeList::~QIBusAttributeList()
-{
-}
-
 void QIBusAttributeList::serializeTo(QDBusArgument &argument) const
 {
     argument.beginStructure();
@@ -217,7 +205,7 @@ void QIBusAttributeList::deserializeFrom(const QDBusArgument &arg)
 
         QIBusAttribute attr;
         var.variant().value<QDBusArgument>() >> attr;
-        attributes.append(attr);
+        attributes.append(std::move(attr));
     }
     arg.endArray();
 
@@ -260,10 +248,6 @@ QList<QInputMethodEvent::Attribute> QIBusAttributeList::imAttributes() const
 QIBusText::QIBusText()
 {
     name = "IBusText";
-}
-
-QIBusText::~QIBusText()
-{
 }
 
 void QIBusText::serializeTo(QDBusArgument &argument) const
@@ -312,10 +296,6 @@ QIBusEngineDesc::QIBusEngineDesc()
       iconpropkey("")
 {
     name = "IBusEngineDesc";
-}
-
-QIBusEngineDesc::~QIBusEngineDesc()
-{
 }
 
 void QIBusEngineDesc::serializeTo(QDBusArgument &argument) const
