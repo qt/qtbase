@@ -416,8 +416,23 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
 #endif
     }
     if (snapToPixelGrid) {
-        for (int i = 0; i < n; ++i)
-            positions[i] = qround(positions[i]);
+        for (int i = 0; i < n; ++i) {
+            const qreal oldpos = positions[i];
+            positions[i] = qround(oldpos);
+            const qreal delta = positions[i] - oldpos;
+            sizes[i] -= delta;
+            if (i > 0)
+                sizes[i - 1] += delta;
+        }
+
+        sizes[n - 1] = targetSize - positions[n - 1];
+        // This loop serves two purposes:
+        // 1. round off the small epsilons produced by the above loop.
+        // 2. avoid that the above loop didn't make the cell width smaller than its minimum constraint.
+        for (int i = 0; i < n; ++i) {
+            const QGridLayoutBox &box = boxes.at(start + i);
+            sizes[i] = qMax(box.q_minimumSize, qround(sizes[i]));
+        }
     }
 
     if (descents) {
@@ -569,7 +584,7 @@ QLayoutPolicy::ControlTypes QGridLayoutItem::controlTypes(LayoutSide /*side*/) c
     return QLayoutPolicy::DefaultType;
 }
 
-QGridLayoutBox QGridLayoutItem::box(Qt::Orientation orientation, qreal constraint) const
+QGridLayoutBox QGridLayoutItem::box(Qt::Orientation orientation, bool snapToPixelGrid, qreal constraint) const
 {
     QGridLayoutBox result;
     QLayoutPolicy::Policy policy = sizePolicy(orientation);
@@ -584,6 +599,8 @@ QGridLayoutBox QGridLayoutItem::box(Qt::Orientation orientation, qreal constrain
         } else {
             result.q_minimumSize = result.q_preferredSize;
         }
+        if (snapToPixelGrid)
+            result.q_minimumSize = qCeil(result.q_minimumSize);
 
         if (policy & (QLayoutPolicy::GrowFlag | QLayoutPolicy::ExpandFlag)) {
             result.q_maximumSize = sizeHint(Qt::MaximumSize, constraintSize).width();
@@ -600,6 +617,8 @@ QGridLayoutBox QGridLayoutItem::box(Qt::Orientation orientation, qreal constrain
         } else {
             result.q_minimumSize = result.q_preferredSize;
         }
+        if (snapToPixelGrid)
+            result.q_minimumSize = qCeil(result.q_minimumSize);
 
         if (policy & (QLayoutPolicy::GrowFlag | QLayoutPolicy::ExpandFlag)) {
             result.q_maximumSize = sizeHint(Qt::MaximumSize, constraintSize).height();
@@ -623,7 +642,7 @@ QGridLayoutBox QGridLayoutItem::box(Qt::Orientation orientation, qreal constrain
 }
 
 QRectF QGridLayoutItem::geometryWithin(qreal x, qreal y, qreal width, qreal height,
-                                       qreal rowDescent, Qt::Alignment align) const
+                                       qreal rowDescent, Qt::Alignment align, bool snapToPixelGrid) const
 {
     const qreal cellWidth = width;
     const qreal cellHeight = height;
@@ -661,7 +680,7 @@ QRectF QGridLayoutItem::geometryWithin(qreal x, qreal y, qreal width, qreal heig
         break;
     case Qt::AlignBaseline: {
         width = qMin(effectiveMaxSize(QSizeF(-1,-1)).width(), width);
-        QGridLayoutBox vBox = box(Qt::Vertical);
+        QGridLayoutBox vBox = box(Qt::Vertical, snapToPixelGrid);
         const qreal descent = vBox.q_minimumDescent;
         const qreal ascent = vBox.q_minimumSize - descent;
         y += (cellHeight - rowDescent - ascent);
@@ -1027,7 +1046,7 @@ void QGridLayoutEngine::setGeometries(const QRectF &contentsGeometry, const QAbs
 
         const Qt::Alignment align = effectiveAlignment(item);
         QRectF geom = item->geometryWithin(contentsGeometry.x() + x, contentsGeometry.y() + y,
-                                               width, height, q_descents[item->lastRow()], align);
+                                               width, height, q_descents[item->lastRow()], align, m_snapToPixelGrid);
         if (m_snapToPixelGrid) {
             // x and y should already be rounded, but the call to geometryWithin() above might
             // result in a geom with x,y at half-pixels (due to centering within the cell)
@@ -1407,9 +1426,9 @@ void QGridLayoutEngine::fillRowData(QGridLayoutRowData *rowData,
                         qreal length = colSizes[item->lastColumn(orientation)];
                         if (item->columnSpan(orientation) != 1)
                             length += colPositions[item->lastColumn(orientation)] - colPositions[item->firstColumn(orientation)];
-                        box->combine(item->box(orientation, length));
+                        box->combine(item->box(orientation, m_snapToPixelGrid, length));
                     } else {
-                        box->combine(item->box(orientation));
+                        box->combine(item->box(orientation, m_snapToPixelGrid));
                     }
 
                     if (effectiveRowSpan == 1) {
@@ -1477,8 +1496,8 @@ void QGridLayoutEngine::fillRowData(QGridLayoutRowData *rowData,
                         if (orientation == Qt::Horizontal) {
                             qreal width1 = rowData->boxes.at(prevRow).q_minimumSize;
                             qreal width2 = rowData->boxes.at(row).q_minimumSize;
-                            QRectF rect1 = item1->geometryWithin(0.0, 0.0, width1, FLT_MAX, -1.0, effectiveAlignment(item1));
-                            QRectF rect2 = item2->geometryWithin(0.0, 0.0, width2, FLT_MAX, -1.0, effectiveAlignment(item2));
+                            QRectF rect1 = item1->geometryWithin(0.0, 0.0, width1, FLT_MAX, -1.0, effectiveAlignment(item1), m_snapToPixelGrid);
+                            QRectF rect2 = item2->geometryWithin(0.0, 0.0, width2, FLT_MAX, -1.0, effectiveAlignment(item2), m_snapToPixelGrid);
                             spacing -= (width1 - (rect1.x() + rect1.width())) + rect2.x();
                         } else {
                             const QGridLayoutBox &box1 = rowData->boxes.at(prevRow);
@@ -1490,9 +1509,9 @@ void QGridLayoutEngine::fillRowData(QGridLayoutRowData *rowData,
                             qreal rowDescent2 = fixedDescent(box2.q_minimumDescent,
                                                              box2.q_minimumAscent, height2);
                             QRectF rect1 = item1->geometryWithin(0.0, 0.0, FLT_MAX, height1,
-                                                                 rowDescent1, effectiveAlignment(item1));
+                                                                 rowDescent1, effectiveAlignment(item1), m_snapToPixelGrid);
                             QRectF rect2 = item2->geometryWithin(0.0, 0.0, FLT_MAX, height2,
-                                                                 rowDescent2, effectiveAlignment(item2));
+                                                                 rowDescent2, effectiveAlignment(item2), m_snapToPixelGrid);
                             spacing -= (height1 - (rect1.y() + rect1.height())) + rect2.y();
                         }
                         rowSpacing = qMax(spacing, rowSpacing);
