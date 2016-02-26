@@ -346,11 +346,11 @@ struct TypeAlignment
 void tst_QGuiMetaType::flags_data()
 {
     QTest::addColumn<int>("type");
-    QTest::addColumn<bool>("isMovable");
+    QTest::addColumn<bool>("isRelocatable");
     QTest::addColumn<bool>("isComplex");
 
 #define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
-    QTest::newRow(#RealType) << MetaTypeId << bool(!QTypeInfo<RealType>::isStatic) << bool(QTypeInfo<RealType>::isComplex);
+    QTest::newRow(#RealType) << MetaTypeId << bool(QTypeInfoQuery<RealType>::isRelocatable) << bool(QTypeInfoQuery<RealType>::isComplex);
 QT_FOR_EACH_STATIC_GUI_CLASS(ADD_METATYPE_TEST_ROW)
 #undef ADD_METATYPE_TEST_ROW
 }
@@ -358,12 +358,12 @@ QT_FOR_EACH_STATIC_GUI_CLASS(ADD_METATYPE_TEST_ROW)
 void tst_QGuiMetaType::flags()
 {
     QFETCH(int, type);
-    QFETCH(bool, isMovable);
+    QFETCH(bool, isRelocatable);
     QFETCH(bool, isComplex);
 
     QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::NeedsConstruction), isComplex);
     QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::NeedsDestruction), isComplex);
-    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::MovableType), isMovable);
+    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::MovableType), isRelocatable);
 }
 
 
