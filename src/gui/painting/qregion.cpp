@@ -723,12 +723,9 @@ bool QRegion::intersects(const QRegion &region) const
     if (rectCount() == 1 && region.rectCount() == 1)
         return true;
 
-    const QVector<QRect> myRects = rects();
-    const QVector<QRect> otherRects = region.rects();
-
-    for (QVector<QRect>::const_iterator i1 = myRects.constBegin(); i1 < myRects.constEnd(); ++i1)
-        for (QVector<QRect>::const_iterator i2 = otherRects.constBegin(); i2 < otherRects.constEnd(); ++i2)
-            if (rect_intersects(*i1, *i2))
+    for (const QRect &myRect : *this)
+        for (const QRect &otherRect : region)
+            if (rect_intersects(myRect, otherRect))
                 return true;
     return false;
 }
@@ -1152,13 +1149,11 @@ Q_GUI_EXPORT QPainterPath qt_regionToPath(const QRegion &region)
         return result;
     }
 
-    const QVector<QRect> rects = region.rects();
+    auto rect = region.begin();
+    const auto end = region.end();
 
     QVarLengthArray<Segment> segments;
-    segments.resize(4 * rects.size());
-
-    const QRect *rect = rects.constData();
-    const QRect *end = rect + rects.size();
+    segments.resize(4 * (end - rect));
 
     int lastRowSegmentCount = 0;
     Segment *lastRowSegments = 0;
@@ -4421,10 +4416,10 @@ bool QRegion::intersects(const QRect &rect) const
     if (d->qt_rgn->numRects == 1)
         return true;
 
-    const QVector<QRect> myRects = rects();
-    for (QVector<QRect>::const_iterator it = myRects.constBegin(); it < myRects.constEnd(); ++it)
-        if (rect_intersects(r, *it))
+    for (const QRect &rect : *this) {
+        if (rect_intersects(r, rect))
             return true;
+    }
     return false;
 }
 
