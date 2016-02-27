@@ -191,13 +191,6 @@ QStringList QGenericUnixTheme::xdgIconThemePaths()
 }
 
 #ifndef QT_NO_DBUS
-QPlatformMenu *QGenericUnixTheme::createPlatformMenu() const
-{
-    if (isDBusGlobalMenuAvailable())
-        return new QDBusPlatformMenu();
-    return nullptr;
-}
-
 QPlatformMenuBar *QGenericUnixTheme::createPlatformMenuBar() const
 {
     if (isDBusGlobalMenuAvailable())
@@ -594,13 +587,6 @@ QPlatformTheme *QKdeTheme::createKdeTheme()
 }
 
 #ifndef QT_NO_DBUS
-QPlatformMenu *QKdeTheme::createPlatformMenu() const
-{
-    if (isDBusGlobalMenuAvailable())
-        return new QDBusPlatformMenu();
-    return nullptr;
-}
-
 QPlatformMenuBar *QKdeTheme::createPlatformMenuBar() const
 {
     if (isDBusGlobalMenuAvailable())
@@ -706,13 +692,6 @@ QString QGnomeTheme::gtkFontName() const
 }
 
 #ifndef QT_NO_DBUS
-QPlatformMenu *QGnomeTheme::createPlatformMenu() const
-{
-    if (isDBusGlobalMenuAvailable())
-        return new QDBusPlatformMenu();
-    return nullptr;
-}
-
 QPlatformMenuBar *QGnomeTheme::createPlatformMenuBar() const
 {
     if (isDBusGlobalMenuAvailable())

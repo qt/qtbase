@@ -86,7 +86,6 @@ public:
 
     static QStringList xdgIconThemePaths();
 #ifndef QT_NO_DBUS
-    QPlatformMenu *createPlatformMenu() const Q_DECL_OVERRIDE;
     QPlatformMenuBar *createPlatformMenuBar() const Q_DECL_OVERRIDE;
 #endif
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
@@ -112,7 +111,6 @@ public:
 
     const QFont *font(Font type) const Q_DECL_OVERRIDE;
 #ifndef QT_NO_DBUS
-    QPlatformMenu *createPlatformMenu() const Q_DECL_OVERRIDE;
     QPlatformMenuBar *createPlatformMenuBar() const Q_DECL_OVERRIDE;
 #endif
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
@@ -136,7 +134,6 @@ public:
 
     virtual QString gtkFontName() const;
 #ifndef QT_NO_DBUS
-    QPlatformMenu *createPlatformMenu() const Q_DECL_OVERRIDE;
     QPlatformMenuBar *createPlatformMenuBar() const Q_DECL_OVERRIDE;
 #endif
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)

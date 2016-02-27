@@ -148,6 +148,7 @@ public:
     virtual void handleReparent(QWindow *newParentWindow) = 0;
 
     virtual QPlatformMenu *menuForTag(quintptr tag) const = 0;
+    virtual QPlatformMenu *createMenu() const { return nullptr; }
 };
 
 QT_END_NAMESPACE
