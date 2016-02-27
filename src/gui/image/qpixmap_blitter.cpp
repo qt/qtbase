@@ -298,10 +298,8 @@ QRectF QBlittablePlatformPixmap::clipAndTransformRect(const QRectF &rect) const
             if (clipData->hasRectClip) {
                 transformationRect &= clipData->clipRect;
             } else if (clipData->hasRegionClip) {
-                const QVector<QRect> rects = clipData->clipRegion.rects();
-                for (int i = 0; i < rects.size(); i++) {
-                    transformationRect &= rects.at(i);
-                }
+                for (const QRect &rect : clipData->clipRegion)
+                    transformationRect &= rect;
             }
         }
     }

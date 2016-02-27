@@ -1012,11 +1012,11 @@ void QOpenGL2PaintEngineExPrivate::fillStencilWithVertexArray(const float *data,
     funcs.glStencilMask(0xff); // Enable stencil writes
 
     if (dirtyStencilRegion.intersects(currentScissorBounds)) {
-        QVector<QRect> clearRegion = dirtyStencilRegion.intersected(currentScissorBounds).rects();
+        const QRegion clearRegion = dirtyStencilRegion.intersected(currentScissorBounds);
         funcs.glClearStencil(0); // Clear to zero
-        for (int i = 0; i < clearRegion.size(); ++i) {
+        for (const QRect &rect : clearRegion) {
 #ifndef QT_GL_NO_SCISSOR_TEST
-            setScissor(clearRegion.at(i));
+            setScissor(rect);
 #endif
             funcs.glClear(GL_STENCIL_BUFFER_BIT);
         }

@@ -1294,10 +1294,9 @@ void QPainterPath::addRegion(const QRegion &region)
     ensureData();
     detach();
 
-    QVector<QRect> rects = region.rects();
-    d_func()->elements.reserve(rects.size() * 5);
-    for (int i=0; i<rects.size(); ++i)
-        addRect(rects.at(i));
+    d_func()->elements.reserve(region.rectCount() * 5);
+    for (const QRect &rect : region)
+        addRect(rect);
 }
 
 

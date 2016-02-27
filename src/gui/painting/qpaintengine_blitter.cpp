@@ -374,9 +374,8 @@ void QBlitterPaintEnginePrivate::fillRect(const QRectF &rect, const QColor &colo
             else
                 pmData->blittable()->fillRect(targetRect & clipData->clipRect, color);
         } else if (clipData->hasRegionClip) {
-            QVector<QRect> rects = clipData->clipRegion.rects();
-            for (int i = 0; i < rects.size(); ++i) {
-                QRect intersectRect = rects.at(i).intersected(targetRect.toRect());
+            for (const QRect &rect : clipData->clipRegion) {
+                QRect intersectRect = rect.intersected(targetRect.toRect());
                 if (!intersectRect.isEmpty()) {
                     unlock();
                     if (alpha)
@@ -609,10 +608,8 @@ void QBlitterPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
                 }
             } else if (clipData->hasRegionClip) {
                 QRect unclippedTargetRect(x, y, blitWidth, blitHeight);
-                const QVector<QRect> intersectedRects = clipData->clipRegion.intersected(unclippedTargetRect).rects();
-                const int intersectedSize = intersectedRects.size();
-                for (int i = 0; i < intersectedSize; ++i) {
-                    const QRect &targetRect = intersectedRects.at(i);
+                const QRegion targetRegion = clipData->clipRegion.intersected(unclippedTargetRect);
+                for (const QRect &targetRect : targetRegion) {
                     if (!targetRect.isValid() || targetRect.isEmpty())
                         continue;
                     int tmpSrcX = srcX + (targetRect.x() - x);
@@ -686,9 +683,8 @@ void QBlitterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const Q
             if (clipData->hasRectClip) {
                 d->clipAndDrawPixmap(clipData->clipRect, targetRect, pm, sr, canDrawOpacity);
             } else if (clipData->hasRegionClip) {
-                QVector<QRect>rects = clipData->clipRegion.rects();
-                for (int i = 0; i<rects.size(); ++i)
-                    d->clipAndDrawPixmap(rects.at(i), targetRect, pm, sr, canDrawOpacity);
+                for (const QRect &rect : clipData->clipRegion)
+                    d->clipAndDrawPixmap(rect, targetRect, pm, sr, canDrawOpacity);
             }
         } else {
             QRectF deviceRect(0, 0, paintDevice()->width(), paintDevice()->height());

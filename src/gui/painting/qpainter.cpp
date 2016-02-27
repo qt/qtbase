@@ -2835,7 +2835,7 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
     QRect rect = r.boundingRect();
     if (qt_show_painter_debug_output)
         printf("QPainter::setClipRegion(), size=%d, [%d,%d,%d,%d]\n",
-           r.rects().size(), rect.x(), rect.y(), rect.width(), rect.height());
+           r.rectCount(), rect.x(), rect.y(), rect.width(), rect.height());
 #endif
     if (!d->engine) {
         qWarning("QPainter::setClipRegion: Painter not active");
