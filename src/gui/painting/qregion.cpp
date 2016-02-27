@@ -81,8 +81,8 @@ QT_BEGIN_NAMESPACE
     contains() a QPoint or QRect. The bounding rectangle can be found
     with boundingRect().
 
-    The function rects() gives a decomposition of the region into
-    rectangles.
+    Iteration over the region (with begin(), end()) gives a decomposition of
+    the region into rectangles. The same sequence of rectangles is returned by rects().
 
     Example of using complex regions:
     \snippet code/src_gui_painting_qregion.cpp 0
@@ -928,6 +928,100 @@ QRegion QRegion::intersect(const QRect &r) const
 */
 
 /*!
+    \typedef QRegion::const_iterator
+    \since 5.8
+
+    An iterator over the QRects that make up the region.
+
+    QRegion does not offer mutable iterators.
+
+    \sa begin(), end()
+*/
+
+/*!
+    \typedef QRegion::const_reverse_iterator
+    \since 5.8
+
+    A reverse iterator over the QRects that make up the region.
+
+    QRegion does not offer mutable iterators.
+
+    \sa rbegin(), rend()
+*/
+
+/*!
+    \fn QRegion::begin() const
+    \since 5.8
+
+    Returns a const_iterator pointing to the beginning of the range of
+    rectangles that make up this range, in the order in which rects()
+    returns them.
+
+    \sa rbegin(), cbegin(), end()
+*/
+
+/*!
+    \fn QRegion::cbegin() const
+    \since 5.8
+
+    Same as begin().
+*/
+
+/*!
+    \fn QRegion::end() const
+    \since 5.8
+
+    Returns a const_iterator pointing to one past the end of the range of
+    rectangles that make up this range, in the order in which rects()
+    returns them.
+
+    \sa rend(), cend(), begin()
+*/
+
+/*!
+    \fn QRegion::cend() const
+    \since 5.8
+
+    Same as end().
+*/
+
+/*!
+    \fn QRegion::rbegin() const
+    \since 5.8
+
+    Returns a const_reverse_iterator pointing to the beginning of the range of
+    rectangles that make up this range, in the reverse order in which rects()
+    returns them.
+
+    \sa begin(), crbegin(), rend()
+*/
+
+/*!
+    \fn QRegion::crbegin() const
+    \since 5.8
+
+    Same as rbegin().
+*/
+
+/*!
+    \fn QRegion::rend() const
+    \since 5.8
+
+    Returns a const_reverse_iterator pointing to one past the end of the range of
+    rectangles that make up this range, in the reverse order in which rects()
+    returns them.
+
+    \sa end(), crend(), rbegin()
+*/
+
+/*!
+    \fn QRegion::crend() const
+    \since 5.8
+
+    Same as rend().
+*/
+
+/*!
     \fn void QRegion::setRects(const QRect *rects, int number)
 
     Sets the region using the array of rectangles specified by \a rects and
@@ -1170,6 +1264,12 @@ struct QRegionPrivate {
             rects[0] = extents;
         }
     }
+
+    const QRect *begin() const Q_DECL_NOTHROW
+    { return numRects == 1 ? &extents : rects.data(); } // avoid vectorize()
+
+    const QRect *end() const Q_DECL_NOTHROW
+    { return begin() + numRects; }
 
     inline void append(const QRect *r);
     void append(const QRegionPrivate *r);
@@ -4246,6 +4346,16 @@ QVector<QRect> QRegion::rects() const
     } else {
         return QVector<QRect>();
     }
+}
+
+QRegion::const_iterator QRegion::begin() const Q_DECL_NOTHROW
+{
+    return d->qt_rgn ? d->qt_rgn->begin() : nullptr;
+}
+
+QRegion::const_iterator QRegion::end() const Q_DECL_NOTHROW
+{
+    return d->qt_rgn ? d->qt_rgn->end() : nullptr;
 }
 
 void QRegion::setRects(const QRect *rects, int num)

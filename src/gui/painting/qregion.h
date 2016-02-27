@@ -81,6 +81,18 @@ public:
     bool isEmpty() const;
     bool isNull() const;
 
+    typedef const QRect *const_iterator;
+    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+
+    const_iterator begin()  const Q_DECL_NOTHROW;
+    const_iterator cbegin() const Q_DECL_NOTHROW { return begin(); }
+    const_iterator end()    const Q_DECL_NOTHROW;
+    const_iterator cend()   const Q_DECL_NOTHROW { return end(); }
+    const_reverse_iterator rbegin()  const Q_DECL_NOTHROW { return const_reverse_iterator(end()); }
+    const_reverse_iterator crbegin() const Q_DECL_NOTHROW { return rbegin(); }
+    const_reverse_iterator rend()    const Q_DECL_NOTHROW { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crend()   const Q_DECL_NOTHROW { return rend(); }
+
     bool contains(const QPoint &p) const;
     bool contains(const QRect &r) const;
 

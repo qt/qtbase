@@ -47,6 +47,7 @@ public:
 private slots:
     void moveSemantics();
     void boundingRect();
+    void rangeFor();
     void rects();
     void swap();
     void setRects();
@@ -136,17 +137,34 @@ void tst_QRegion::boundingRect()
 
 }
 
+void tst_QRegion::rangeFor()
+{
+    // compile-only test for range-for over QRegion, so really useless
+    // content otherwise:
+    QRect rect(10, -20, 30, 40);
+    QRegion region(rect);
+    int equal = 0;
+    for (const QRect &r : region) // check this compiles
+        equal += int(r == rect); // can't use QCOMPARE here b/c of the
+                                 // MSVC 201272013 parse bug re:
+                                 // do-while in range-for loops
+    QCOMPARE(equal, 1);
+}
+
 void tst_QRegion::rects()
 {
     {
         QRect rect;
         QRegion region(rect);
         QVERIFY(region.isEmpty());
+        QCOMPARE(region.begin(), region.end());
         QVERIFY(region.rects().isEmpty());
     }
     {
         QRect rect(10, -20, 30, 40);
         QRegion region(rect);
+        QCOMPARE(region.end(), region.begin() + 1);
+        QCOMPARE(*region.begin(), rect);
         QCOMPARE(region.rects().count(), 1);
         QCOMPARE(region.rects()[0], rect);
     }
@@ -192,6 +210,7 @@ void tst_QRegion::setRects()
         region.setRects(&rect, 0);
         QVERIFY(region.isEmpty());
         QCOMPARE(region, QRegion());
+        QCOMPARE(region.begin(), region.end());
         QVERIFY(!region.boundingRect().isValid());
         QVERIFY(region.rects().isEmpty());
     }
@@ -199,6 +218,7 @@ void tst_QRegion::setRects()
         QRegion region;
         QRect rect;
         region.setRects(&rect, 1);
+        QCOMPARE(region.begin(), region.end());
         QVERIFY(!region.boundingRect().isValid());
         QVERIFY(region.rects().isEmpty());
     }
@@ -206,8 +226,10 @@ void tst_QRegion::setRects()
         QRegion region;
         QRect rect(10, -20, 30, 40);
         region.setRects(&rect, 1);
+        QCOMPARE(region.end(), region.begin() + 1);
         QCOMPARE(region.rects().count(), 1);
         QCOMPARE(region.rects()[0], rect);
+        QCOMPARE(*region.begin(), rect);
     }
 }
 
@@ -320,8 +342,12 @@ void tst_QRegion::emptyPolygonRegion()
 
     QRegion r(pa);
     QTEST(r.isEmpty(), "isEmpty");
+    QTEST(int(std::distance(r.begin(), r.end())), "numRects");
+    QVector<QRect> rects;
+    std::copy(r.begin(), r.end(), std::back_inserter(rects));
     QTEST(r.rects().count(), "numRects");
     QTEST(r.rects(), "rects");
+    QCOMPARE(r.rects(), rects);
 }
 
 
@@ -860,6 +886,7 @@ void tst_QRegion::isEmpty()
     QFETCH(QRegion, region);
 
     QVERIFY(region.isEmpty());
+    QCOMPARE(region.begin(), region.end());
     QCOMPARE(region, QRegion());
     QCOMPARE(region.rectCount(), 0);
     QCOMPARE(region.boundingRect(), QRect());
@@ -892,6 +919,11 @@ void tst_QRegion::regionFromPath()
         path.addRect(0, 100, 100, 1000);
 
         QRegion rgn(path.toFillPolygon().toPolygon());
+
+        QCOMPARE(rgn.end(), rgn.begin() + 2);
+        QCOMPARE(rgn.begin()[0], QRect(0, 0, 10, 10));
+        QCOMPARE(rgn.begin()[1], QRect(0, 100, 100, 1000));
+
         QCOMPARE(rgn.rects().size(), 2);
         QCOMPARE(rgn.rects().at(0), QRect(0, 0, 10, 10));
         QCOMPARE(rgn.rects().at(1), QRect(0, 100, 100, 1000));
@@ -905,8 +937,14 @@ void tst_QRegion::regionFromPath()
         path.addRect(10, 10, 80, 80);
 
         QRegion rgn(path.toFillPolygon().toPolygon());
-        QCOMPARE(rgn.rects().size(), 4);
 
+        QCOMPARE(rgn.end(), rgn.begin() + 4);
+        QCOMPARE(rgn.begin()[0], QRect(0, 0, 100, 10));
+        QCOMPARE(rgn.begin()[1], QRect(0, 10, 10, 80));
+        QCOMPARE(rgn.begin()[2], QRect(90, 10, 10, 80));
+        QCOMPARE(rgn.begin()[3], QRect(0, 90, 100, 10));
+
+        QCOMPARE(rgn.rects().size(), 4);
         QCOMPARE(rgn.rects().at(0), QRect(0, 0, 100, 10));
         QCOMPARE(rgn.rects().at(1), QRect(0, 10, 10, 80));
         QCOMPARE(rgn.rects().at(2), QRect(90, 10, 10, 80));
