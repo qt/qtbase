@@ -395,23 +395,24 @@ void QRegion::exec(const QByteArray &buffer, int ver, QDataStream::ByteOrder byt
 
 QDataStream &operator<<(QDataStream &s, const QRegion &r)
 {
-    QVector<QRect> a = r.rects();
-    if (a.isEmpty()) {
+    auto b = r.begin(), e = r.end();
+    if (b == e) {
         s << (quint32)0;
     } else {
+        const auto size = e - b;
         if (s.version() == 1) {
-            int i;
-            for (i = a.size() - 1; i > 0; --i) {
+            for (auto i = size - 1; i > 0; --i) {
                 s << (quint32)(12 + i * 24);
                 s << (int)QRGN_OR;
             }
-            for (i = 0; i < a.size(); ++i) {
-                s << (quint32)(4+8) << (int)QRGN_SETRECT << a[i];
-            }
+            for (auto it = b; it != e; ++it)
+                s << (quint32)(4+8) << (int)QRGN_SETRECT << *it;
         } else {
-            s << (quint32)(4 + 4 + 16 * a.size()); // 16: storage size of QRect
+            s << quint32(4 + 4 + 16 * size); // 16: storage size of QRect
             s << (qint32)QRGN_RECTS;
-            s << a;
+            s << quint32(size);
+            for (auto it = b; it != e; ++it)
+                s << *it;
         }
     }
     return s;
