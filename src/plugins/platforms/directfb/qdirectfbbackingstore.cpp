@@ -70,9 +70,7 @@ void QDirectFbBackingStore::flush(QWindow *, const QRegion &region, const QPoint
 {
     m_pmdata->blittable()->unlock();
 
-    QVector<QRect> rects = region.rects();
-    for (int i = 0 ; i < rects.size(); i++) {
-        const QRect rect = rects.at(i);
+    for (const QRect &rect : region) {
         DFBRegion dfbReg = { rect.x() + offset.x(),rect.y() + offset.y(),rect.right() + offset.x(),rect.bottom() + offset.y()};
         m_dfbSurface->Flip(m_dfbSurface.data(), &dfbReg, DFBSurfaceFlipFlags(DSFLIP_BLIT|DSFLIP_ONSYNC));
     }
@@ -108,11 +106,8 @@ bool QDirectFbBackingStore::scroll(const QRegion &area, int dx, int dy)
     if (area.rectCount() == 1) {
         scrollSurface(m_dfbSurface.data(), area.boundingRect(), dx, dy);
     } else {
-        const QVector<QRect> rects = area.rects();
-        const int n = rects.size();
-        for (int i=0; i<n; ++i) {
-            scrollSurface(m_dfbSurface.data(), rects.at(i), dx, dy);
-        }
+        for (const QRect &rect : area)
+            scrollSurface(m_dfbSurface.data(), rect, dx, dy);
     }
     return true;
 }

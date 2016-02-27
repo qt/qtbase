@@ -96,9 +96,8 @@ bool QCocoaBackingStore::scroll(const QRegion &area, int dx, int dy)
     extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
     const qreal devicePixelRatio = m_qImage.devicePixelRatio();
     QPoint qpoint(dx * devicePixelRatio, dy * devicePixelRatio);
-    const QVector<QRect> qrects = area.rects();
-    for (int i = 0; i < qrects.count(); ++i) {
-        const QRect &qrect = QRect(qrects.at(i).topLeft() * devicePixelRatio, qrects.at(i).size() * devicePixelRatio);
+    for (const QRect &rect : area) {
+        const QRect qrect(rect.topLeft() * devicePixelRatio, rect.size() * devicePixelRatio);
         qt_scrollRectInImage(m_qImage, qrect, qpoint);
     }
     return true;
@@ -109,10 +108,9 @@ void QCocoaBackingStore::beginPaint(const QRegion &region)
     if (m_qImage.hasAlphaChannel()) {
         QPainter p(&m_qImage);
         p.setCompositionMode(QPainter::CompositionMode_Source);
-        const QVector<QRect> rects = region.rects();
         const QColor blank = Qt::transparent;
-        for (QVector<QRect>::const_iterator it = rects.begin(), end = rects.end(); it != end; ++it)
-            p.fillRect(*it, blank);
+        for (const QRect &rect : region)
+            p.fillRect(rect, blank);
     }
 }
 

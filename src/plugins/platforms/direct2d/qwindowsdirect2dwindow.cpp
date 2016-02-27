@@ -122,7 +122,7 @@ void QWindowsDirect2DWindow::flush(QWindowsDirect2DBitmap *bitmap, const QRegion
             QRegion clipped = region;
             clipped &= QRect(QPoint(), size);
 
-            foreach (const QRect &rect, clipped.rects()) {
+            for (const QRect &rect : clipped) {
                 QRectF rectF(rect);
                 dc->DrawBitmap(bitmap->bitmap(),
                                to_d2d_rect_f(rectF),

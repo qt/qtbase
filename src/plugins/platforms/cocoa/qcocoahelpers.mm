@@ -200,15 +200,9 @@ NSImage *qt_mac_create_nsimage(const QIcon &icon)
 HIMutableShapeRef qt_mac_QRegionToHIMutableShape(const QRegion &region)
 {
     HIMutableShapeRef shape = HIShapeCreateMutable();
-    QVector<QRect> rects = region.rects();
-    if (!rects.isEmpty()) {
-        int n = rects.count();
-        const QRect *qt_r = rects.constData();
-        while (n--) {
-            CGRect cgRect = CGRectMake(qt_r->x(), qt_r->y(), qt_r->width(), qt_r->height());
-            HIShapeUnionWithRect(shape, &cgRect);
-            ++qt_r;
-        }
+    for (const QRect &rect : region) {
+        CGRect cgRect = CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
+        HIShapeUnionWithRect(shape, &cgRect);
     }
     return shape;
 }

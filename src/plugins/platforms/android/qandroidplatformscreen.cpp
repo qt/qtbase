@@ -379,9 +379,8 @@ void QAndroidPlatformScreen::doRedraw()
         }
     }
 
-    foreach (const QRect &rect, visibleRegion.rects()) {
+    for (const QRect &rect : visibleRegion)
         compositePainter.fillRect(rect, QColor(Qt::transparent));
-    }
 
     ret = ANativeWindow_unlockAndPost(m_nativeSurface);
     if (ret >= 0)

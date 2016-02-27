@@ -414,9 +414,8 @@ QRegion QLinuxFbScreen::doRedraw()
     if (!mBlitter)
         mBlitter = new QPainter(&mFbScreenImage);
 
-    QVector<QRect> rects = touched.rects();
-    for (int i = 0; i < rects.size(); i++)
-        mBlitter->drawImage(rects[i], *mScreenImage, rects[i]);
+    for (const QRect &rect : touched)
+        mBlitter->drawImage(rect, *mScreenImage, rect);
     return touched;
 }
 

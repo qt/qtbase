@@ -95,7 +95,7 @@ void QWindowsDirect2DBackingStore::beginPaint(const QRegion &region)
 
     painter.setCompositionMode(QPainter::CompositionMode_Source);
 
-    foreach (const QRect &r, region.rects())
+    for (const QRect &r, region)
         painter.fillRect(r, clear);
 }
 
@@ -127,9 +127,8 @@ void QWindowsDirect2DBackingStore::resize(const QSize &size, const QRegion &regi
     QPixmap *newPixmap = nativeWindow(window())->pixmap();
 
     if (!old.isNull()) {
-        foreach (const QRect &rect, region.rects()) {
+        for (const QRect &rect : region)
             platformPixmap(newPixmap)->copy(old.handle(), rect);
-        }
     }
 }
 

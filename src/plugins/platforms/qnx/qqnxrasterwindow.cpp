@@ -208,10 +208,9 @@ void QQnxRasterWindow::blitPreviousToCurrent(const QRegion &region, int dx, int 
     QQnxBuffer &previousBuffer = m_buffers[m_previousBufferIndex];
 
     // Break down region into non-overlapping rectangles
-    const QVector<QRect> rects = region.rects();
-    for (int i = rects.size() - 1; i >= 0; i--) {
+    for (auto rit = region.rbegin(), rend = region.rend(); rit != rend; ++rit) {
         // Clip rectangle to bounds of target
-        const QRect rect = rects[i].intersected(currentBuffer.rect());
+        const QRect rect = rit->intersected(currentBuffer.rect());
 
         if (rect.isEmpty())
             continue;

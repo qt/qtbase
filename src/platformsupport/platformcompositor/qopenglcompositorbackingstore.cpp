@@ -140,7 +140,7 @@ void QOpenGLCompositorBackingStore::updateTexture()
 
         QOpenGLContext *ctx = QOpenGLContext::currentContext();
         if (!ctx->isOpenGLES() || ctx->format().majorVersion() >= 3) {
-            foreach (const QRect &rect, m_dirty.rects()) {
+            for (const QRect &rect : m_dirty) {
                 QRect r = imageRect & rect;
                 glPixelStorei(GL_UNPACK_ROW_LENGTH, m_image.width());
                 glTexSubImage2D(GL_TEXTURE_2D, 0, r.x(), r.y(), r.width(), r.height(), GL_RGBA, GL_UNSIGNED_BYTE,
@@ -148,7 +148,7 @@ void QOpenGLCompositorBackingStore::updateTexture()
                 glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
             }
         } else {
-            foreach (const QRect &rect, m_dirty.rects()) {
+            for (const QRect &rect : m_dirty) {
                 // intersect with image rect to be sure
                 QRect r = imageRect & rect;
 
@@ -161,7 +161,7 @@ void QOpenGLCompositorBackingStore::updateTexture()
 
                 fixed |= r;
             }
-            foreach (const QRect &rect, fixed.rects()) {
+            for (const QRect &rect : fixed) {
                 // if the sub-rect is full-width we can pass the image data directly to
                 // OpenGL instead of copying, since there's no gap between scanlines
                 if (rect.width() == imageRect.width()) {
@@ -258,7 +258,7 @@ void QOpenGLCompositorBackingStore::beginPaint(const QRegion &region)
     if (m_image.hasAlphaChannel()) {
         QPainter p(&m_image);
         p.setCompositionMode(QPainter::CompositionMode_Source);
-        foreach (const QRect &r, region.rects())
+        for (const QRect &r : region)
             p.fillRect(r, Qt::transparent);
     }
 }

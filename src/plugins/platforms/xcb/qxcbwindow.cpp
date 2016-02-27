@@ -2741,9 +2741,8 @@ void QXcbWindow::setMask(const QRegion &region)
                        XCB_SHAPE_SK_BOUNDING, xcb_window(), 0, 0, XCB_NONE);
     } else {
         QVector<xcb_rectangle_t> rects;
-        const QVector<QRect> regionRects = region.rects();
-        rects.reserve(regionRects.count());
-        foreach (const QRect &r, regionRects)
+        rects.reserve(region.rectCount());
+        for (const QRect &r : region)
             rects.push_back(qRectToXCBRectangle(r));
         xcb_shape_rectangles(connection()->xcb_connection(), XCB_SHAPE_SO_SET,
                              XCB_SHAPE_SK_BOUNDING, XCB_CLIP_ORDERING_UNSORTED,

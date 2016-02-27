@@ -97,7 +97,7 @@ void QMirClientBackingStore::updateTexture()
     QRegion fixed;
     QRect imageRect = mImage.rect();
 
-    Q_FOREACH (const QRect &rect, mDirty.rects()) {
+    for (const QRect &rect : mDirty) {
         // intersect with image rect to be sure
         QRect r = imageRect & rect;
 
@@ -110,7 +110,7 @@ void QMirClientBackingStore::updateTexture()
         fixed |= r;
     }
 
-    Q_FOREACH (const QRect &rect, fixed.rects()) {
+    for (const QRect &rect : fixed) {
         // if the sub-rect is full-width we can pass the image data directly to
         // OpenGL instead of copying, since there is no gap between scanlines
         if (rect.width() == imageRect.width()) {

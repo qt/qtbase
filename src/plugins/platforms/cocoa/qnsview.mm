@@ -514,7 +514,7 @@ QT_WARNING_POP
 {
     m_backingStore = backingStore;
     m_backingStoreOffset = offset * m_backingStore->getBackingStoreDevicePixelRatio();
-    foreach (QRect rect, region.rects())
+    for (const QRect &rect : region)
         [self setNeedsDisplayInRect:NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height())];
 }
 

@@ -2047,15 +2047,13 @@ static inline void addRectToWinRegion(const QRect &rect, HRGN *winRegion)
 
 static HRGN qRegionToWinRegion(const QRegion &region)
 {
-    const QVector<QRect> rects = region.rects();
-    if (rects.isEmpty())
-        return NULL;
-    const int rectCount = rects.size();
-    if (rectCount == 1)
-        return createRectRegion(region.boundingRect());
-    HRGN hRegion = createRectRegion(rects.front());
-    for (int i = 1; i < rectCount; ++i)
-        addRectToWinRegion(rects.at(i), &hRegion);
+    auto it = region.begin();
+    const auto end = region.end();
+    if (it == end)
+        return nullptr;
+    HRGN hRegion = createRectRegion(*it);
+    while (++it != end)
+        addRectToWinRegion(*it, &hRegion);
     return hRegion;
 }
 

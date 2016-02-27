@@ -88,10 +88,7 @@ static void qt_mac_clip_cg(CGContextRef hd, const QRegion &rgn, CGAffineTransfor
     if (rgn.isEmpty()) {
         CGContextAddRect(hd, CGRectMake(0, 0, 0, 0));
     } else {
-        QVector<QRect> rects = rgn.rects();
-        const int count = rects.size();
-        for (int i = 0; i < count; i++) {
-            const QRect &r = rects[i];
+        for (const QRect &r : rgn) {
             CGRect mac_r = CGRectMake(r.x(), r.y(), r.width(), r.height());
             CGContextAddRect(hd, mac_r);
         }

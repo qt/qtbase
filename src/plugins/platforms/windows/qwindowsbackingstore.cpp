@@ -175,7 +175,7 @@ void QWindowsBackingStore::resize(const QSize &size, const QRegion &region)
             staticRegion &= QRect(0, 0, newimg.width(), newimg.height());
             QPainter painter(&newimg);
             painter.setCompositionMode(QPainter::CompositionMode_Source);
-            foreach (const QRect &rect, staticRegion.rects())
+            for (const QRect &rect : staticRegion)
                 painter.drawImage(rect, oldimg, rect);
         }
 
@@ -190,10 +190,9 @@ bool QWindowsBackingStore::scroll(const QRegion &area, int dx, int dy)
     if (m_image.isNull() || m_image->image().isNull())
         return false;
 
-    const QVector<QRect> rects = area.rects();
     const QPoint offset(dx, dy);
-    for (int i = 0; i < rects.size(); ++i)
-        qt_scrollRectInImage(m_image->image(), rects.at(i), offset);
+    for (const QRect &rect : area)
+        qt_scrollRectInImage(m_image->image(), rect, offset);
 
     return true;
 }
@@ -207,7 +206,7 @@ void QWindowsBackingStore::beginPaint(const QRegion &region)
         QPainter p(&m_image->image());
         p.setCompositionMode(QPainter::CompositionMode_Source);
         const QColor blank = Qt::transparent;
-        foreach (const QRect &r, region.rects())
+        for (const QRect &r : region)
             p.fillRect(r, blank);
     }
 }

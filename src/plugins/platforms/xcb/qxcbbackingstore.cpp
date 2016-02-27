@@ -335,11 +335,9 @@ void QXcbBackingStore::beginPaint(const QRegion &region)
     if (m_image->hasAlpha()) {
         QPainter p(paintDevice());
         p.setCompositionMode(QPainter::CompositionMode_Source);
-        const QVector<QRect> rects = m_paintRegion.rects();
         const QColor blank = Qt::transparent;
-        for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
-            p.fillRect(*it, blank);
-        }
+        for (const QRect &rect : m_paintRegion)
+            p.fillRect(rect, blank);
     }
 }
 
@@ -351,11 +349,12 @@ void QXcbBackingStore::endPaint()
 
     // Slow path: the paint device was m_rgbImage. Now copy with swapping red
     // and blue into m_image.
-    const QVector<QRect> rects = m_paintRegion.rects();
-    if (rects.isEmpty())
+    auto it = m_paintRegion.begin();
+    const auto end = m_paintRegion.end();
+    if (it == end)
         return;
     QPainter p(m_image->image());
-    for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
+    while (it != end) {
         const QRect rect = *it;
         p.drawImage(rect.topLeft(), m_rgbImage.copy(rect).rgbSwapped());
     }
@@ -397,9 +396,8 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
         return;
     }
 
-    QVector<QRect> rects = clipped.rects();
-    for (int i = 0; i < rects.size(); ++i) {
-        QRect rect = QRect(rects.at(i).topLeft(), rects.at(i).size());
+    for (const QRect &r : clipped) {
+        QRect rect = QRect(r.topLeft(), r.size());
         m_image->put(platformWindow->xcb_window(), rect.topLeft(), rect.translated(offset));
     }
 
@@ -463,9 +461,8 @@ bool QXcbBackingStore::scroll(const QRegion &area, int dx, int dy)
     m_image->preparePaint(area);
 
     QPoint delta(dx, dy);
-    const QVector<QRect> rects = area.rects();
-    for (int i = 0; i < rects.size(); ++i)
-        qt_scrollRectInImage(*m_image->image(), rects.at(i), delta);
+    for (const QRect &rect : area)
+        qt_scrollRectInImage(*m_image->image(), rect, delta);
     return true;
 }
 

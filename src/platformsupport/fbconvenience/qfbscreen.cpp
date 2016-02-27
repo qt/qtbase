@@ -206,15 +206,13 @@ void QFbScreen::generateRects()
             remainingScreen -= localGeometry;
             QRegion windowRegion(localGeometry);
             windowRegion -= remainingScreen;
-            foreach (const QRect &rect, windowRegion.rects()) {
+            for (const QRect &rect : windowRegion)
                 mCachedRects += QPair<QRect, int>(rect, i);
-            }
         }
 #endif
     }
-    const QVector<QRect> remainingScreenRects = remainingScreen.rects();
-    mCachedRects.reserve(mCachedRects.count() + remainingScreenRects.count());
-    foreach (const QRect &rect, remainingScreenRects)
+    mCachedRects.reserve(mCachedRects.count() + remainingScreen.rectCount());
+    for (const QRect &rect : remainingScreen)
         mCachedRects += QPair<QRect, int>(rect, -1);
     mIsUpToDate = true;
 }
@@ -253,7 +251,7 @@ QRegion QFbScreen::doRedraw()
             rectRegion -= intersect;
 
             // we only expect one rectangle, but defensive coding...
-            foreach (const QRect &rect, intersect.rects()) {
+            for (const QRect &rect : intersect) {
                 bool firstLayer = true;
                 if (layer == -1) {
                     mCompositePainter->fillRect(rect, Qt::black);

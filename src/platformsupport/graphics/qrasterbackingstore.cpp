@@ -89,7 +89,7 @@ bool QRasterBackingStore::scroll(const QRegion &region, int dx, int dy)
     const qreal devicePixelRatio = m_image.devicePixelRatio();
     const QPoint delta(dx * devicePixelRatio, dy * devicePixelRatio);
 
-    foreach (const QRect &rect, region.rects())
+    for (const QRect &rect : region)
         qt_scrollRectInImage(m_image, QRect(rect.topLeft() * devicePixelRatio, rect.size() * devicePixelRatio), delta);
 
     return true;
@@ -103,7 +103,7 @@ void QRasterBackingStore::beginPaint(const QRegion &region)
     QPainter painter(&m_image);
     painter.setCompositionMode(QPainter::CompositionMode_Source);
     const QColor blank = Qt::transparent;
-    foreach (const QRect &rect, region.rects())
+    for (const QRect &rect : region)
         painter.fillRect(rect, blank);
 }
 
