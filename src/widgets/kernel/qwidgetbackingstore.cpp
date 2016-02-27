@@ -158,7 +158,7 @@ static void showYellowThing_win(QWidget *widget, const QRegion &region, int msec
     }
     i = (i + 1) & 3;
 
-    foreach (const QRect &rect, region.rects()) {
+    for (const QRect &rect : region) {
         RECT winRect;
         SetRect(&winRect, rect.left(), rect.top(), rect.right(), rect.bottom());
         FillRect(hdc, &winRect, brush);
@@ -1311,9 +1311,8 @@ void QWidgetBackingStore::doSync()
         updateStaticContentsSize();
         dirty = QRegion();
         updateRequestSent = false;
-        const QVector<QRect> rects(toClean.rects());
-        for (int i = 0; i < rects.size(); ++i)
-            tlw->d_func()->extra->proxyWidget->update(rects.at(i));
+        for (const QRect &rect : toClean)
+            tlw->d_func()->extra->proxyWidget->update(rect);
         return;
     }
 #endif

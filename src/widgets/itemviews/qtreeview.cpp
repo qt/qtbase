@@ -1473,13 +1473,12 @@ void QTreeView::drawTree(QPainter *painter, const QRegion &region) const
     QPoint hoverPos = d->viewport->mapFromGlobal(QCursor::pos());
     d->hoverBranch = d->itemDecorationAt(hoverPos);
 
-    QVector<QRect> rects = region.rects();
     QVector<int> drawn;
-    bool multipleRects = (rects.size() > 1);
-    for (int a = 0; a < rects.size(); ++a) {
+    bool multipleRects = (region.rectCount() > 1);
+    for (const QRect &a : region) {
         const QRect area = (multipleRects
-                            ? QRect(0, rects.at(a).y(), viewportWidth, rects.at(a).height())
-                            : rects.at(a));
+                            ? QRect(0, a.y(), viewportWidth, a.height())
+                            : a);
         d->leftAndRight = d->startAndEndColumns(area);
 
         int i = firstVisibleItem; // the first item at the top of the viewport

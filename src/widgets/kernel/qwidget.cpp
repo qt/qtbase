@@ -2398,9 +2398,8 @@ static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QBrus
         painter->fillRect(0, 0, painter->device()->width(), painter->device()->height(), brush);
         painter->restore();
     } else {
-        const QVector<QRect> &rects = rgn.rects();
-        for (int i = 0; i < rects.size(); ++i)
-            painter->fillRect(rects.at(i), brush);
+        for (const QRect &rect : rgn)
+            painter->fillRect(rect, brush);
     }
 }
 
@@ -10748,10 +10747,8 @@ void QWidget::scroll(int dx, int dy)
         // Graphics View maintains its own dirty region as a list of rects;
         // until we can connect item updates directly to the view, we must
         // separately add a translated dirty region.
-        if (!d->dirty.isEmpty()) {
-            foreach (const QRect &rect, (d->dirty.translated(dx, dy)).rects())
-                proxy->update(rect);
-        }
+        for (const QRect &rect : d->dirty)
+            proxy->update(rect.translated(dx, dy));
         proxy->scroll(dx, dy, proxy->subWidgetRect(this));
         return;
     }
@@ -10791,7 +10788,7 @@ void QWidget::scroll(int dx, int dy, const QRect &r)
         // until we can connect item updates directly to the view, we must
         // separately add a translated dirty region.
         if (!d->dirty.isEmpty()) {
-            foreach (const QRect &rect, (d->dirty.translated(dx, dy) & r).rects())
+            for (const QRect &rect : d->dirty.translated(dx, dy) & r)
                 proxy->update(rect);
         }
         proxy->scroll(dx, dy, r.translated(proxy->subWidgetRect(this).topLeft().toPoint()));

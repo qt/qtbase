@@ -1439,9 +1439,8 @@ void QGraphicsItemPrivate::initStyleOption(QStyleOptionGraphicsItem *option, con
         // Determine the item's exposed area
         option->exposedRect = QRectF();
         const QTransform reverseMap = worldTransform.inverted();
-        const QVector<QRect> exposedRects(exposedRegion.rects());
-        for (int i = 0; i < exposedRects.size(); ++i) {
-            option->exposedRect |= reverseMap.mapRect(QRectF(exposedRects.at(i)));
+        for (const QRect &exposedRect : exposedRegion) {
+            option->exposedRect |= reverseMap.mapRect(QRectF(exposedRect));
             if (option->exposedRect.contains(brect))
                 break;
         }
@@ -5350,8 +5349,7 @@ QRegion QGraphicsItem::boundingRegion(const QTransform &itemToDeviceTransform) c
     QTransform unscale = QTransform::fromScale(1 / granularity, 1 / granularity);
     QRegion r;
     QBitmap colorMask = QBitmap::fromImage(mask.createMaskFromColor(0));
-    const auto rects = QRegion(colorMask).rects();
-    for (const QRect &rect : rects) {
+    for (const QRect &rect : QRegion(colorMask)) {
         QRect xrect = unscale.mapRect(rect).translated(deviceRect.topLeft() - QPoint(pad, pad));
         r += xrect.adjusted(-1, -1, 1, 1) & deviceRect;
     }
@@ -5915,9 +5913,8 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
     // Append newly exposed areas. Note that the exposed region is currently
     // in pixmap coordinates, so we have to translate it to item coordinates.
     exposed.translate(cache->boundingRect.topLeft());
-    const QVector<QRect> exposedRects = exposed.rects();
-    for (int i = 0; i < exposedRects.size(); ++i)
-        cache->exposed += exposedRects.at(i);
+    for (const QRect &exposedRect : exposed)
+        cache->exposed += exposedRect;
 
     // Trigger update. This will redraw the newly exposed area and make sure
     // the pixmap is re-blitted in case there are overlapping items.

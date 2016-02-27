@@ -2670,9 +2670,8 @@ void QMdiArea::paintEvent(QPaintEvent *paintEvent)
 {
     Q_D(QMdiArea);
     QPainter painter(d->viewport);
-    const QVector<QRect> &exposedRects = paintEvent->region().rects();
-    for (int i = 0; i < exposedRects.size(); ++i)
-        painter.fillRect(exposedRects.at(i), d->background);
+    for (const QRect &exposedRect : paintEvent->region())
+        painter.fillRect(exposedRect, d->background);
 }
 
 /*!

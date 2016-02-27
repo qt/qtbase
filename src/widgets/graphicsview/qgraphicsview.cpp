@@ -1029,9 +1029,7 @@ bool QGraphicsViewPrivate::updateRegion(const QRectF &rect, const QTransform &xf
     if (!intersectsViewport(viewRect, viewport->width(), viewport->height()))
         return false; // Update region for sure outside viewport.
 
-    const QVector<QRect> &rects = region.rects();
-    for (int i = 0; i < rects.size(); ++i) {
-        viewRect = rects.at(i);
+    for (QRect viewRect : region) {
         if (dontAdjustForAntialiasing)
             viewRect.adjust(-1, -1, 1, 1);
         else
@@ -1146,8 +1144,7 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
     // the expose region, convert it to a path, and then search for items
     // using QGraphicsScene::items(QPainterPath);
     QRegion adjustedRegion;
-    const auto rects = exposedRegion.rects();
-    for (const QRect &r : rects)
+    for (const QRect &r : exposedRegion)
         adjustedRegion += r.adjusted(-1, -1, 1, 1);
 
     const QPainterPath exposedScenePath(q->mapToScene(qt_regionToPath(adjustedRegion)));
@@ -2676,11 +2673,9 @@ void QGraphicsView::updateScene(const QList<QRectF> &rects)
 
     // Extract and reset dirty scene rect info.
     QVector<QRect> dirtyViewportRects;
-    const QVector<QRect> &dirtyRects = d->dirtyRegion.rects();
-    const int dirtyRectsCount = dirtyRects.size();
-    dirtyViewportRects.reserve(dirtyRectsCount + rects.count());
-    for (int i = 0; i < dirtyRectsCount; ++i)
-        dirtyViewportRects += dirtyRects.at(i);
+    dirtyViewportRects.reserve(d->dirtyRegion.rectCount() + rects.count());
+    for (const QRect &dirtyRect : d->dirtyRegion)
+        dirtyViewportRects += dirtyRect;
     d->dirtyRegion = QRegion();
     d->dirtyBoundingRect = QRect();
 

@@ -269,7 +269,7 @@ static HRGN qt_hrgn_from_qregion(const QRegion &region)
         qt_add_rect(hRegion, region.boundingRect());
         return hRegion;
     }
-    foreach (const QRect &rect, region.rects())
+    for (const QRect &rect : region)
         qt_add_rect(hRegion, rect);
     return hRegion;
 }
@@ -1087,11 +1087,8 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
         painter->setClipRegion(newRegion);
 #if defined(DEBUG_XP_STYLE) && 0
         printf("Using region:\n");
-        QVector<QRect> rects = newRegion.rects();
-        for (int i = 0; i < rects.count(); ++i) {
-            const QRect &r = rects.at(i);
+        for (const QRect &r : newRegion)
             printf("    (%d, %d, %d, %d)\n", r.x(), r.y(), r.right(), r.bottom());
-        }
 #endif
     }
 

@@ -1398,8 +1398,7 @@ void QTableView::paintEvent(QPaintEvent *event)
                              firstVisualRow, lastVisualRow, firstVisualColumn, lastVisualColumn);
     }
 
-    const QVector<QRect> rects = region.rects();
-    for (auto dirtyArea : rects) {
+    for (QRect dirtyArea : region) {
         dirtyArea.setBottom(qMin(dirtyArea.bottom(), int(y)));
         if (rightToLeft) {
             dirtyArea.setLeft(qMax(dirtyArea.left(), d->viewport->width() - int(x)));

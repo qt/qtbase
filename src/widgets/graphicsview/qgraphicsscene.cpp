@@ -4657,8 +4657,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
                 for (int i = 0; i < exposed.size(); ++i)
                     br |= exposed.at(i);
                 QTransform pixmapToItem = itemToPixmap.inverted();
-                const auto rects = scrollExposure.rects();
-                for (const QRect &r : rects)
+                for (const QRect &r : scrollExposure)
                     br |= pixmapToItem.mapRect(r);
             }
             styleOptionTmp = *option;

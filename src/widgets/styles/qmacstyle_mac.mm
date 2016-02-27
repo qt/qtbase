@@ -587,7 +587,7 @@ HIMutableShapeRef qt_mac_toHIMutableShape(const QRegion &region)
         CGRect cgRect = CGRectMake(qtRect.x(), qtRect.y(), qtRect.width(), qtRect.height());
         HIShapeUnionWithRect(shape, &cgRect);
     } else {
-        foreach (const QRect &qtRect, region.rects()) {
+        for (const QRect &qtRect : region) {
             CGRect cgRect = CGRectMake(qtRect.x(), qtRect.y(), qtRect.width(), qtRect.height());
             HIShapeUnionWithRect(shape, &cgRect);
         }
@@ -2203,9 +2203,7 @@ void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QBrush 
         CGContextSaveGState(cg);
         HIThemeSetFill(kThemeBrushDialogBackgroundActive, 0, cg, kHIThemeOrientationInverted);
 
-        const QVector<QRect> &rects = rgn.rects();
-        for (int i = 0; i < rects.size(); ++i) {
-            const QRect rect(rects.at(i));
+        for (const QRect &rect : rgn) {
             // Anchor the pattern to the top so it stays put when the window is resized.
             CGContextSetPatternPhase(cg, CGSizeMake(rect.width(), rect.height()));
             CGRect mac_rect = CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
@@ -7067,11 +7065,11 @@ void qt_mac_scale_region(QRegion *region, qreal scaleFactor)
         return;
 
     QVector<QRect> scaledRects;
-    scaledRects.reserve(region->rects().count());
+    scaledRects.reserve(region->rectCount());
 
-    foreach (const QRect &rect, region->rects()) {
+    for (const QRect &rect : *region)
         scaledRects.append(QRect(rect.topLeft() * scaleFactor, rect.size() * scaleFactor));
-    }
+
     region->setRects(&scaledRects[0], scaledRects.count());
 }
 
