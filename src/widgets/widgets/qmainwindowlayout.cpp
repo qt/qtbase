@@ -2386,7 +2386,7 @@ void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
                 }
             }
         }
-        foreach (QWidget *w, candidates) {
+        for (QWidget *w : candidates) {
             QWindow *handle1 = widget->windowHandle();
             QWindow *handle2 = w->windowHandle();
             if (handle1 && handle2 && handle1->screen() != handle2->screen())
