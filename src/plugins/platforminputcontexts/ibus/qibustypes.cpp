@@ -346,30 +346,34 @@ void QIBusEngineDesc::deserializeFrom(const QDBusArgument &argument)
     argument >> setup;
     // Previous IBusEngineDesc supports the arguments between engine_name
     // and setup.
-    if (argument.currentSignature() == "") {
-        argument.endStructure();
-        return;
-    }
+    if (argument.currentSignature() == "")
+        goto olderThanV2;
     argument >> layout_variant;
     argument >> layout_option;
     // Previous IBusEngineDesc supports the arguments between engine_name
     // and layout_option.
-    if (argument.currentSignature() == "") {
-        argument.endStructure();
-        return;
-    }
+    if (argument.currentSignature() == "")
+        goto olderThanV3;
     argument >> version;
-    if (argument.currentSignature() == "") {
-        argument.endStructure();
-        return;
-    }
+    if (argument.currentSignature() == "")
+        goto olderThanV4;
     argument >> textdomain;
-    if (argument.currentSignature() == "") {
-        argument.endStructure();
-        return;
-    }
+    if (argument.currentSignature() == "")
+        goto olderThanV5;
     argument >> iconpropkey;
-
+    // <-- insert new member streaming here (1/2)
+    goto newest;
+olderThanV2:
+    layout_variant.clear();
+    layout_option.clear();
+olderThanV3:
+    version.clear();
+olderThanV4:
+    textdomain.clear();
+olderThanV5:
+    iconpropkey.clear();
+    // <-- insert new members here (2/2)
+newest:
     argument.endStructure();
 }
 
