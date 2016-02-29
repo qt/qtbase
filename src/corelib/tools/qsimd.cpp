@@ -167,10 +167,10 @@ static inline quint64 detectProcessorFeatures()
 #endif
 
 #if defined(__ARM_NEON__)
-    features = Q_UINT64_C(1) << CpuFeatureNEON;
+    features |= Q_UINT64_C(1) << CpuFeatureNEON;
 #endif
 #if defined(__ARM_FEATURE_CRC32)
-    features = Q_UINT64_C(1) << CpuFeatureCRC32;
+    features |= Q_UINT64_C(1) << CpuFeatureCRC32;
 #endif
 
     return features;
