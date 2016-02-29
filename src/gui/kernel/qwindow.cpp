@@ -2335,7 +2335,7 @@ QPoint QWindow::mapToGlobal(const QPoint &pos) const
     // QTBUG-43252, prefer platform implementation for foreign windows.
     if (d->platformWindow
         && (type() == Qt::ForeignWindow || d->platformWindow->isEmbedded())) {
-        return d->platformWindow->mapToGlobal(pos);
+        return QHighDpi::fromNativeLocalPosition(d->platformWindow->mapToGlobal(QHighDpi::toNativeLocalPosition(pos, this)), this);
     }
     return pos + d->globalPosition();
 }
@@ -2355,7 +2355,7 @@ QPoint QWindow::mapFromGlobal(const QPoint &pos) const
     // QTBUG-43252, prefer platform implementation for foreign windows.
     if (d->platformWindow
         && (type() == Qt::ForeignWindow || d->platformWindow->isEmbedded())) {
-        return d->platformWindow->mapFromGlobal(pos);
+        return QHighDpi::fromNativeLocalPosition(d->platformWindow->mapFromGlobal(QHighDpi::toNativeLocalPosition(pos, this)), this);
     }
     return pos - d->globalPosition();
 }

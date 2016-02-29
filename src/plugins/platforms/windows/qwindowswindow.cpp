@@ -2203,14 +2203,15 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 
         // Documentation of MINMAXINFO states that it will only work for the primary screen
         if (screen && screen == QGuiApplication::primaryScreen()) {
-            mmi->ptMaxSize.y = screen->availableGeometry().height();
+            const QRect availableGeometry = QHighDpi::toNativePixels(screen->availableGeometry(), screen);
+            mmi->ptMaxSize.y = availableGeometry.height();
 
             // Width, because you can have the taskbar on the sides too.
-            mmi->ptMaxSize.x = screen->availableGeometry().width();
+            mmi->ptMaxSize.x = availableGeometry.width();
 
             // If you have the taskbar on top, or on the left you don't want it at (0,0):
-            mmi->ptMaxPosition.x = screen->availableGeometry().x();
-            mmi->ptMaxPosition.y = screen->availableGeometry().y();
+            mmi->ptMaxPosition.x = availableGeometry.x();
+            mmi->ptMaxPosition.y = availableGeometry.y();
         } else if (!screen){
             qWarning() << "window()->screen() returned a null screen";
         }

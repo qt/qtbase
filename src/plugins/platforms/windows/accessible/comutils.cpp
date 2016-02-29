@@ -64,15 +64,15 @@ static DATE QDateTimeToDATE(const QDateTime &dt)
     QDate date = dt.date();
     QTime time = dt.time();
     if (date.isValid() && !date.isNull()) {
-        stime.wDay = date.day();
-        stime.wMonth = date.month();
-        stime.wYear = date.year();
+        stime.wDay = WORD(date.day());
+        stime.wMonth = WORD(date.month());
+        stime.wYear = WORD(date.year());
     }
     if (time.isValid() && !time.isNull()) {
-        stime.wMilliseconds = time.msec();
-        stime.wSecond = time.second();
-        stime.wMinute = time.minute();
-        stime.wHour = time.hour();
+        stime.wMilliseconds = WORD(time.msec());
+        stime.wSecond = WORD(time.second());
+        stime.wMinute = WORD(time.minute());
+        stime.wHour = WORD(time.hour());
     }
 
     double vtime;
@@ -98,8 +98,8 @@ bool QVariant2VARIANT(const QVariant &var, VARIANT &arg, const QByteArray &typeN
             proptype = QVariant::Double;
     }
     if (proptype != QVariant::Invalid && proptype != QVariant::UserType && proptype != qvar.type()) {
-        if (qvar.canConvert(proptype))
-            qvar.convert(proptype);
+        if (qvar.canConvert(int(proptype)))
+            qvar.convert(int(proptype));
         else
             qvar = QVariant(proptype);
     }
