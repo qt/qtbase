@@ -110,25 +110,11 @@ QT_BEGIN_NAMESPACE
  */
 void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out) Q_DECL_NOTHROW
 {
-    if (len == -1) {
+    if (Q_UNLIKELY(len == -1)) {
         if (!a)
             return;
-        while (*a && uchar(*a) < 0x80U)
-            *out++ = QLatin1Char(*a++);
-        if (!*a)
-            return;
         len = int(strlen(a));
-    } else {
-        int i;
-        for (i = 0; i < len && uchar(a[i]) < 0x80U; ++i)
-            *out++ = QLatin1Char(a[i]);
-        if (i == len)
-            return;
-        a += i;
-        len -= i;
     }
-
-    // we need to complement with UTF-8 appending
     out = QUtf8::convertToUnicode(out, a, len);
 }
 
