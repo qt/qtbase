@@ -3372,14 +3372,6 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     mkdir -p "$outpath/mkspecs"
 fi
 
-# symlink fonts to be able to run application from build directory
-if [ ! -d "${outpath}/lib/fonts" ]; then
-    if [ "$PLATFORM" = "$XPLATFORM" ]; then
-        mkdir -p "${outpath}/lib"
-        ln -s "${relpath}/lib/fonts" "${outpath}/lib/fonts"
-    fi
-fi
-
 # detect build style
 if [ "$CFG_DEBUG" = "auto" ]; then
     if [ "$XPLATFORM_MAC" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
