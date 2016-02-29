@@ -55,7 +55,7 @@ QT_FORWARD_DECLARE_CLASS(QDialog)
 class DummyDialog : public QDialog
 {
 public:
-    DummyDialog(): QDialog(0, Qt::X11BypassWindowManagerHint) {}
+    DummyDialog(): QDialog() {}
     using QDialog::showExtension;
 };
 
@@ -65,10 +65,8 @@ class tst_QDialog : public QObject
 public:
     tst_QDialog();
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
 private slots:
+    void cleanup();
     void getSetCheck();
     void showExtension_data();
     void showExtension();
@@ -91,9 +89,6 @@ private slots:
     void transientParent_data();
     void transientParent();
     void dialogInGraphicsView();
-
-private:
-    DummyDialog *testWidget;
 };
 
 // Testing get/set functions
@@ -149,25 +144,12 @@ private:
 };
 
 tst_QDialog::tst_QDialog()
-
 {
 }
 
-void tst_QDialog::initTestCase()
+void tst_QDialog::cleanup()
 {
-    // Create the test class
-    testWidget = new DummyDialog;
-    testWidget->resize(200,200);
-    testWidget->show();
-    qApp->setActiveWindow(testWidget);
-}
-
-void tst_QDialog::cleanupTestCase()
-{
-    if (testWidget) {
-        delete testWidget;
-        testWidget = 0;
-    }
+    QVERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
 void tst_QDialog::showExtension_data()
@@ -190,44 +172,52 @@ void tst_QDialog::showExtension()
     QFETCH( QSize, extSize );
     QFETCH( bool, horizontal );
 
-    // set geometry of main dialog and extension widget
-    testWidget->setFixedSize( dlgSize );
-    QWidget *ext = new QWidget( testWidget );
-    ext->setFixedSize( extSize );
-    testWidget->setExtension( ext );
-    testWidget->setOrientation( horizontal ? Qt::Horizontal : Qt::Vertical );
+    DummyDialog testWidget;
+    testWidget.resize(200, 200);
+    testWidget.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1Char(':')
+                              + QLatin1String(QTest::currentDataTag()));
+    testWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&testWidget));
 
-    QCOMPARE( testWidget->size(), dlgSize );
-    QPoint oldPosition = testWidget->pos();
+    testWidget.setFixedSize( dlgSize );
+    QWidget *ext = new QWidget( &testWidget );
+    ext->setFixedSize( extSize );
+    testWidget.setExtension( ext );
+    testWidget.setOrientation( horizontal ? Qt::Horizontal : Qt::Vertical );
+
+    QCOMPARE( testWidget.size(), dlgSize );
+    QPoint oldPosition = testWidget.pos();
 
     // show
-    testWidget->showExtension( true );
+    testWidget.showExtension( true );
 //     while ( testWidget->size() == dlgSize )
 //         qApp->processEvents();
 
-    QTEST( testWidget->size(), "result"  );
+    QTEST( testWidget.size(), "result"  );
 
-    QCOMPARE(testWidget->pos(), oldPosition);
+    QCOMPARE(testWidget.pos(), oldPosition);
 
     // hide extension. back to old size ?
-    testWidget->showExtension( false );
-    QCOMPARE( testWidget->size(), dlgSize );
+    testWidget.showExtension( false );
+    QCOMPARE( testWidget.size(), dlgSize );
 
-    testWidget->setExtension( 0 );
+    testWidget.setExtension( 0 );
 }
 
 void tst_QDialog::defaultButtons()
 {
-    QLineEdit *lineEdit = new QLineEdit(testWidget);
-    QPushButton *push = new QPushButton("Button 1", testWidget);
-    QPushButton *pushTwo = new QPushButton("Button 2", testWidget);
-    QPushButton *pushThree = new QPushButton("Button 3", testWidget);
+    DummyDialog testWidget;
+    testWidget.resize(200, 200);
+    testWidget.setWindowTitle(QTest::currentTestFunction());
+    QLineEdit *lineEdit = new QLineEdit(&testWidget);
+    QPushButton *push = new QPushButton("Button 1", &testWidget);
+    QPushButton *pushTwo = new QPushButton("Button 2", &testWidget);
+    QPushButton *pushThree = new QPushButton("Button 3", &testWidget);
     pushThree->setAutoDefault(false);
 
-    //we need to show the buttons. Otherwise they won't get the focus
-    push->show();
-    pushTwo->show();
-    pushThree->show();
+    testWidget.show();
+    QApplication::setActiveWindow(&testWidget);
+    QVERIFY(QTest::qWaitForWindowActive(&testWidget));
 
     push->setDefault(true);
     QVERIFY(push->isDefault());
@@ -380,11 +370,15 @@ void tst_QDialog::showAsTool()
 #if defined(Q_OS_UNIX)
     QSKIP("Qt/X11: Skipped since activeWindow() is not respected by all window managers");
 #endif
-    ToolDialog dialog(testWidget);
-    testWidget->activateWindow();
+    DummyDialog testWidget;
+    testWidget.resize(200, 200);
+    testWidget.setWindowTitle(QTest::currentTestFunction());
+    ToolDialog dialog(&testWidget);
+    testWidget.show();
+    testWidget.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&testWidget));
     dialog.exec();
-    QTest::qWait(100);
-    if (testWidget->style()->styleHint(QStyle::SH_Widget_ShareActivation, 0, testWidget)) {
+    if (testWidget.style()->styleHint(QStyle::SH_Widget_ShareActivation, 0, &testWidget)) {
         QCOMPARE(dialog.wasActive(), true);
     } else {
         QCOMPARE(dialog.wasActive(), false);
@@ -607,7 +601,6 @@ void tst_QDialog::transientParent_data()
 void tst_QDialog::transientParent()
 {
     QFETCH(bool, nativewidgets);
-    testWidget->hide();
     QWidget topLevel;
     topLevel.resize(200, 200);
     topLevel.move(QGuiApplication::primaryScreen()->availableGeometry().center() - QPoint(100, 100));
