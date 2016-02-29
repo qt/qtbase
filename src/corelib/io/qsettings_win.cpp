@@ -484,6 +484,12 @@ bool QWinSettingsPrivate::readKey(HKEY parentHandle, const QString &rSubKey, QVa
         return false;
     }
 
+    // workaround for rare cases where trailing '\0' are missing in registry
+    if (dataType == REG_SZ || dataType == REG_EXPAND_SZ)
+        dataSize += 2;
+    else if (dataType == REG_MULTI_SZ)
+        dataSize += 4;
+
     // get the value
     QByteArray data(dataSize, 0);
     res = RegQueryValueEx(handle, reinterpret_cast<const wchar_t *>(rSubkeyName.utf16()), 0, 0,
