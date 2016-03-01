@@ -1409,6 +1409,8 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         m_scrolling = false;
     } else if (phase == NSEventPhaseNone && momentumPhase == NSEventPhaseNone) {
         ph = Qt::NoScrollPhase;
+        if (!QGuiApplicationPrivate::scrollNoPhaseAllowed)
+            ph = Qt::ScrollUpdate;
     }
 
     QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, currentWheelModifiers, ph, source);

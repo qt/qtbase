@@ -3341,7 +3341,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     res = d->notify_helper(w, &we);
                     eventAccepted = we.isAccepted();
                     if (res && eventAccepted) {
-                        if (spontaneous && phase != Qt::NoScrollPhase)
+                        if (spontaneous && phase != Qt::NoScrollPhase && QGuiApplicationPrivate::scrollNoPhaseAllowed)
                             QApplicationPrivate::wheel_widget = w;
                         break;
                     }

@@ -285,6 +285,9 @@ public:
 
     static void setApplicationState(Qt::ApplicationState state, bool forcePropagate = false);
 
+    // enable the fix for QTBUG-50199; TODO remove this check in 5.7
+    static bool scrollNoPhaseAllowed;
+
 protected:
     virtual void notifyThemeChanged();
     bool tryCloseRemainingWindows(QWindowList processedWindows);
