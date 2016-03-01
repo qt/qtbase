@@ -241,7 +241,7 @@ bool QLocalServerPrivate::listen(const QString &name)
 {
     Q_Q(QLocalServer);
 
-    QString pipePath = QLatin1String("\\\\.\\pipe\\");
+    const QLatin1String pipePath("\\\\.\\pipe\\");
     if (name.startsWith(pipePath))
         fullServerName = name;
     else

@@ -148,7 +148,7 @@ void QLocalSocket::connectToServer(OpenMode openMode)
         return;
     }
 
-    QString pipePath = QLatin1String("\\\\.\\pipe\\");
+    const QLatin1String pipePath("\\\\.\\pipe\\");
     if (d->serverName.startsWith(pipePath))
         d->fullServerName = d->serverName;
     else
