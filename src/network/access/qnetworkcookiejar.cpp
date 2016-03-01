@@ -331,7 +331,8 @@ bool QNetworkCookieJar::deleteCookie(const QNetworkCookie &cookie)
 bool QNetworkCookieJar::validateCookie(const QNetworkCookie &cookie, const QUrl &url) const
 {
     QString domain = cookie.domain();
-    if (!(isParentDomain(domain, url.host()) || isParentDomain(url.host(), domain)))
+    const QString host = url.host();
+    if (!isParentDomain(domain, host) && !isParentDomain(host, domain))
         return false; // not accepted
 
     // the check for effective TLDs makes the "embedded dot" rule from RFC 2109 section 4.3.2
