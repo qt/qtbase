@@ -202,15 +202,15 @@ public:
     static RECT toRECT(const QRect &qr);
     bool isValid();
 
-    QSize size();
-    QMargins margins(const QRect &rect, int propId = TMT_CONTENTMARGINS);
-    QMargins margins(int propId = TMT_CONTENTMARGINS);
+    QSizeF size();
+    QMarginsF margins(const QRect &rect, int propId = TMT_CONTENTMARGINS);
+    QMarginsF margins(int propId = TMT_CONTENTMARGINS);
 
-    static QSize themeSize(const QWidget *w = 0, QPainter *p = 0, int themeIn = -1, int part = 0, int state = 0);
-    static QMargins themeMargins(const QRect &rect, const QWidget *w = 0, QPainter *p = 0, int themeIn = -1,
-                                 int part = 0, int state = 0, int propId = TMT_CONTENTMARGINS);
-    static QMargins themeMargins(const QWidget *w = 0, QPainter *p = 0, int themeIn = -1,
-                                 int part = 0, int state = 0, int propId = TMT_CONTENTMARGINS);
+    static QSizeF themeSize(const QWidget *w = 0, QPainter *p = 0, int themeIn = -1, int part = 0, int state = 0);
+    static QMarginsF themeMargins(const QRect &rect, const QWidget *w = 0, QPainter *p = 0, int themeIn = -1,
+                                  int part = 0, int state = 0, int propId = TMT_CONTENTMARGINS);
+    static QMarginsF themeMargins(const QWidget *w = 0, QPainter *p = 0, int themeIn = -1,
+                                  int part = 0, int state = 0, int propId = TMT_CONTENTMARGINS);
 
     const QWidget *widget;
     QPainter *painter;
@@ -427,9 +427,9 @@ private:
     static HTHEME m_themes[NThemes];
 };
 
-inline QSize XPThemeData::size()
+inline QSizeF XPThemeData::size()
 {
-    QSize result(0, 0);
+    QSizeF result(0, 0);
     if (isValid()) {
         SIZE size;
         if (SUCCEEDED(QWindowsXPStylePrivate::pGetThemePartSize(handle(), 0, partId, stateId, 0, TS_TRUE, &size)))
@@ -438,9 +438,9 @@ inline QSize XPThemeData::size()
     return result;
 }
 
-inline QMargins XPThemeData::margins(const QRect &qRect, int propId)
+inline QMarginsF XPThemeData::margins(const QRect &qRect, int propId)
 {
-    QMargins result(0, 0, 0 ,0);
+    QMarginsF result(0, 0, 0 ,0);
     if (isValid()) {
         MARGINS margins;
         RECT rect = XPThemeData::toRECT(qRect);
@@ -450,9 +450,9 @@ inline QMargins XPThemeData::margins(const QRect &qRect, int propId)
     return result;
 }
 
-inline QMargins XPThemeData::margins(int propId)
+inline QMarginsF XPThemeData::margins(int propId)
 {
-    QMargins result(0, 0, 0 ,0);
+    QMarginsF result(0, 0, 0 ,0);
     if (isValid()) {
         MARGINS margins;
         if (SUCCEEDED(QWindowsXPStylePrivate::pGetThemeMargins(handle(), 0, partId, stateId, propId, NULL, &margins)))
@@ -461,21 +461,21 @@ inline QMargins XPThemeData::margins(int propId)
     return result;
 }
 
-inline QSize XPThemeData::themeSize(const QWidget *w, QPainter *p, int themeIn, int part, int state)
+inline QSizeF XPThemeData::themeSize(const QWidget *w, QPainter *p, int themeIn, int part, int state)
 {
     XPThemeData theme(w, p, themeIn, part, state);
     return theme.size();
 }
 
-inline QMargins XPThemeData::themeMargins(const QRect &rect, const QWidget *w, QPainter *p, int themeIn,
-                                          int part, int state, int propId)
+inline QMarginsF XPThemeData::themeMargins(const QRect &rect, const QWidget *w, QPainter *p, int themeIn,
+                                           int part, int state, int propId)
 {
     XPThemeData theme(w, p, themeIn, part, state);
     return theme.margins(rect, propId);
 }
 
-inline QMargins XPThemeData::themeMargins(const QWidget *w, QPainter *p, int themeIn,
-                                          int part, int state, int propId)
+inline QMarginsF XPThemeData::themeMargins(const QWidget *w, QPainter *p, int themeIn,
+                                           int part, int state, int propId)
 {
     XPThemeData theme(w, p, themeIn, part, state);
     return theme.margins(propId);

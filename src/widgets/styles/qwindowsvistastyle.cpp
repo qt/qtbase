@@ -419,8 +419,8 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                 XPThemeData themeSize = theme;
                 themeSize.partId = TVP_HOTGLYPH;
                 themeSize.stateId = GLPS_OPENED;
-                const QSize size = themeSize.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
-                decoration_size = qMax(size.width(), size.height());
+                const QSizeF size = themeSize.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
+                decoration_size = qRound(qMax(size.width(), size.height()));
             }
             int mid_h = option->rect.x() + option->rect.width() / 2;
             int mid_v = option->rect.y() + option->rect.height() / 2;
@@ -985,10 +985,10 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 XPThemeData theme(widget, 0, QWindowsXPStylePrivate::ToolBarTheme,
                                   TP_DROPDOWNBUTTON);
                 if (theme.isValid()) {
-                    const QSize size = theme.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
+                    const QSizeF size = theme.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
                     if (!size.isEmpty()) {
-                        mbiw = size.width();
-                        mbih = size.height();
+                        mbiw = qRound(size.width());
+                        mbih = qRound(size.height());
                     }
                 }
                 QRect ir = subElementRect(SE_PushButtonContents, option, 0);
@@ -1172,17 +1172,18 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
     case CE_MenuItem:
         if (const QStyleOptionMenuItem *menuitem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
             // windows always has a check column, regardless whether we have an icon or not
-            int checkcol = 25 / QWindowsXPStylePrivate::devicePixelRatio(widget);
-            const int gutterWidth = 3 / QWindowsXPStylePrivate::devicePixelRatio(widget);
+            const qreal devicePixelRatio = QWindowsXPStylePrivate::devicePixelRatio(widget);
+            int checkcol = qRound(qreal(25) / devicePixelRatio);
+            const int gutterWidth = qRound(qreal(3) / devicePixelRatio);
             {
                 XPThemeData theme(widget, 0, QWindowsXPStylePrivate::MenuTheme,
                                   MENU_POPUPCHECKBACKGROUND, MBI_HOT);
                 XPThemeData themeSize = theme;
                 themeSize.partId = MENU_POPUPCHECK;
                 themeSize.stateId = 0;
-                const QSize size = themeSize.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
-                const QMargins margins = themeSize.margins() / QWindowsXPStylePrivate::devicePixelRatio(widget);
-                checkcol = qMax(menuitem->maxIconWidth, gutterWidth + size.width() + margins.left() + margins.right());
+                const QSizeF size = themeSize.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
+                const QMarginsF margins = themeSize.margins() / QWindowsXPStylePrivate::devicePixelRatio(widget);
+                checkcol = qMax(menuitem->maxIconWidth, qRound(gutterWidth + size.width() + margins.left() + margins.right()));
             }
             QRect rect = option->rect;
 
@@ -1239,17 +1240,17 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 XPThemeData themeSize = theme;
                 themeSize.partId = MENU_POPUPCHECK;
                 themeSize.stateId = 0;
-                const QSize size = themeSize.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
-                const QMargins margins = themeSize.margins() / QWindowsXPStylePrivate::devicePixelRatio(widget);
-                QRect checkRect(0, 0, size.width() + margins.left() + margins.right(),
-                                size.height() + margins.bottom() + margins.top());
+                const QSizeF size = themeSize.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
+                const QMarginsF margins = themeSize.margins() / QWindowsXPStylePrivate::devicePixelRatio(widget);
+                QRect checkRect(0, 0, qRound(size.width() + margins.left() + margins.right()),
+                                qRound(size.height() + margins.bottom() + margins.top()));
                 checkRect.moveCenter(vCheckRect.center());
                 theme.rect = checkRect;
 
                 d->drawBackground(theme);
 
                 if (menuitem->icon.isNull()) {
-                    checkRect = QRect(QPoint(0, 0), size);
+                    checkRect = QRect(QPoint(0, 0), size.toSize());
                     checkRect.moveCenter(theme.rect.center());
                     theme.rect = checkRect;
 
@@ -1855,10 +1856,10 @@ QSize QWindowsVistaStyle::sizeFromContents(ContentsType type, const QStyleOption
             XPThemeData themeSize = theme;
             themeSize.partId = MENU_POPUPCHECK;
             themeSize.stateId = 0;
-            const QSize size = themeSize.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
-            const QMargins margins = themeSize.margins() / QWindowsXPStylePrivate::devicePixelRatio(widget);
-            minimumHeight = qMax(size.height() + margins.bottom() + margins.top(), sz.height());
-            sz.rwidth() += size.width() + margins.left() + margins.right();
+            const QSizeF size = themeSize.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
+            const QMarginsF margins = themeSize.margins() / QWindowsXPStylePrivate::devicePixelRatio(widget);
+            minimumHeight = qMax(qRound(size.height() + margins.bottom() + margins.top()), sz.height());
+            sz.rwidth() += qRound(size.width() + margins.left() + margins.right());
         }
 
         if (const QStyleOptionMenuItem *menuitem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
@@ -1966,10 +1967,10 @@ QRect QWindowsVistaStyle::subElementRect(SubElement element, const QStyleOption 
             int arrowWidth = 13;
             int arrowHeight = 5;
             if (theme.isValid()) {
-                const QSize size = theme.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
+                const QSizeF size = theme.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
                 if (!size.isEmpty()) {
-                    arrowWidth = size.width();
-                    arrowHeight = size.height();
+                    arrowWidth = qRound(size.width());
+                    arrowHeight = qRound(size.height());
                 }
             }
             if (option->state & State_Horizontal) {
@@ -2510,7 +2511,7 @@ QIcon QWindowsVistaStyle::standardIcon(StandardPixmap standardIcon,
                               QWindowsXPStylePrivate::ButtonTheme,
                               BP_COMMANDLINKGLYPH, CMDLGS_NORMAL);
             if (theme.isValid()) {
-                const QSize size = theme.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
+                const QSize size = (theme.size() / QWindowsXPStylePrivate::devicePixelRatio(widget)).toSize();
                 QIcon linkGlyph;
                 QPixmap pm(size);
                 pm.fill(Qt::transparent);

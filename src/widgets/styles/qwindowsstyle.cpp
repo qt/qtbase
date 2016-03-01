@@ -111,8 +111,6 @@ enum QSliderDirection { SlUp, SlDown, SlLeft, SlRight };
     \internal
 */
 
-int QWindowsStylePrivate::m_appDevicePixelRatio = 0;
-
 QWindowsStylePrivate::QWindowsStylePrivate()
     : alt_down(false), menuBarTimer(0)
 {
@@ -125,11 +123,9 @@ QWindowsStylePrivate::QWindowsStylePrivate()
 #endif
 }
 
-int QWindowsStylePrivate::appDevicePixelRatio()
+qreal QWindowsStylePrivate::appDevicePixelRatio()
 {
-    if (!QWindowsStylePrivate::m_appDevicePixelRatio)
-        QWindowsStylePrivate::m_appDevicePixelRatio = qRound(qApp->devicePixelRatio());
-    return QWindowsStylePrivate::m_appDevicePixelRatio;
+    return qApp->devicePixelRatio();
 }
 
 // Returns \c true if the toplevel parent of \a widget has seen the Alt-key
@@ -406,7 +402,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
 {
     int ret = QWindowsStylePrivate::pixelMetricFromSystemDp(pm, opt, widget);
     if (ret != QWindowsStylePrivate::InvalidMetric)
-        return ret / QWindowsStylePrivate::devicePixelRatio(widget);
+        return qRound(qreal(ret) / QWindowsStylePrivate::devicePixelRatio(widget));
 
     ret = QWindowsStylePrivate::fixedPixelMetric(pm);
     if (ret != QWindowsStylePrivate::InvalidMetric)
