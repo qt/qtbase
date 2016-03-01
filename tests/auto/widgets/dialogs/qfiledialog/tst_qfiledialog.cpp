@@ -569,6 +569,22 @@ void tst_QFiledialog::completer()
             if (expectedFile.startsWith(input, caseSensitivity))
                 ++expected;
         }
+        // The temporary dir may create a node in QFileSystemModel
+        // which will bypass filters. If the path to the temporary
+        // dir contains an element which should be a subdirectory
+        // of x dir, but which is not listed, then take it into
+        // accont.
+        if (!tempDir.isNull()) {
+            QString xPath = x.absolutePath();
+            if (!xPath.endsWith(QLatin1Char('/')))
+                xPath.append(QLatin1Char('/'));
+            QString tmpPath = tempDir->path();
+            if (tmpPath.startsWith(xPath)) {
+                QString bypassedDirName = tmpPath.mid(xPath.size()).section(QLatin1Char('/'), 0, 0);
+                if (!expectedFiles.contains(bypassedDirName))
+                    ++expected;
+            }
+        }
     }
 
     QTRY_COMPARE(cModel->rowCount(), expected);
