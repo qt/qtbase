@@ -43,6 +43,7 @@
 #include "qwindowsdrag.h"
 #include "qwindowsscreen.h"
 #include "qwindowsintegration.h"
+#include "qwindowsnativeinterface.h"
 #include "qwindowsopenglcontext.h"
 #ifdef QT_NO_CURSOR
 #  include "qwindowscursor.h"
@@ -2083,8 +2084,30 @@ void QWindowsWindow::requestActivateWindow()
     // 'Active' state handling is based in focus since it needs to work for
     // child windows as well.
     if (m_data.hwnd) {
+#ifndef Q_OS_WINCE
+        const DWORD currentThread = GetCurrentThreadId();
+        bool attached = false;
+        DWORD foregroundThread = 0;
+
+        // QTBUG-14062, QTBUG-37435: Windows normally only flashes the taskbar entry
+        // when activating windows of inactive applications. Attach to the input of the
+        // currently active window while setting the foreground window to always activate
+        // the window when desired.
+        if (QGuiApplication::applicationState() != Qt::ApplicationActive
+            && QWindowsNativeInterface::windowActivationBehavior() == QWindowsWindowFunctions::AlwaysActivateWindow) {
+            if (const HWND foregroundWindow = GetForegroundWindow()) {
+                foregroundThread = GetWindowThreadProcessId(foregroundWindow, NULL);
+                if (foregroundThread && foregroundThread != currentThread)
+                    attached = AttachThreadInput(foregroundThread, currentThread, TRUE) == TRUE;
+            }
+        }
+#endif // !Q_OS_WINCE
         SetForegroundWindow(m_data.hwnd);
         SetFocus(m_data.hwnd);
+#ifndef Q_OS_WINCE
+        if (attached)
+            AttachThreadInput(foregroundThread, currentThread, FALSE);
+#endif // !Q_OS_WINCE
     }
 }
 
@@ -2180,14 +2203,15 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 
         // Documentation of MINMAXINFO states that it will only work for the primary screen
         if (screen && screen == QGuiApplication::primaryScreen()) {
-            mmi->ptMaxSize.y = screen->availableGeometry().height();
+            const QRect availableGeometry = QHighDpi::toNativePixels(screen->availableGeometry(), screen);
+            mmi->ptMaxSize.y = availableGeometry.height();
 
             // Width, because you can have the taskbar on the sides too.
-            mmi->ptMaxSize.x = screen->availableGeometry().width();
+            mmi->ptMaxSize.x = availableGeometry.width();
 
             // If you have the taskbar on top, or on the left you don't want it at (0,0):
-            mmi->ptMaxPosition.x = screen->availableGeometry().x();
-            mmi->ptMaxPosition.y = screen->availableGeometry().y();
+            mmi->ptMaxPosition.x = availableGeometry.x();
+            mmi->ptMaxPosition.y = availableGeometry.y();
         } else if (!screen){
             qWarning() << "window()->screen() returned a null screen";
         }

@@ -128,6 +128,41 @@ static inline QColor getSysColor(int index)
     return COLORREFToQColor(GetSysColor(index));
 }
 
+#ifndef QT_NO_WINCE_SHELLSDK
+// QTBUG-48823/Windows 10: SHGetFileInfo() (as called by item views on file system
+// models has been observed to trigger a WM_PAINT on the mainwindow. Suppress the
+// behavior by running it in a thread.
+class ShGetFileInfoFunction
+{
+public:
+    explicit ShGetFileInfoFunction(const wchar_t *fn, DWORD a, SHFILEINFO *i, UINT f, bool *r) :
+        m_fileName(fn), m_attributes(a), m_flags(f), m_info(i), m_result(r) {}
+
+    void operator()() const { *m_result = SHGetFileInfo(m_fileName, m_attributes, m_info, sizeof(SHFILEINFO), m_flags); }
+
+private:
+    const wchar_t *m_fileName;
+    const DWORD m_attributes;
+    const UINT m_flags;
+    SHFILEINFO *const m_info;
+    bool *m_result;
+};
+
+static bool shGetFileInfoBackground(QWindowsThreadPoolRunner &r,
+                                    const wchar_t *fileName, DWORD attributes,
+                                    SHFILEINFO *info, UINT flags,
+                                    unsigned long  timeOutMSecs = 5000)
+{
+    bool result = false;
+    if (!r.run(ShGetFileInfoFunction(fileName, attributes, info, flags, &result), timeOutMSecs)) {
+        qWarning().noquote() << "ShGetFileInfoBackground() timed out for "
+            << QString::fromWCharArray(fileName);
+        return false;
+    }
+    return result;
+}
+#endif // !QT_NO_WINCE_SHELLSDK
+
 // from QStyle::standardPalette
 static inline QPalette standardPalette()
 {
@@ -725,23 +760,22 @@ QPixmap QWindowsTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &s
     }
 
     SHFILEINFO info;
-    unsigned int flags =
+    const unsigned int flags =
 #ifndef Q_OS_WINCE
         SHGFI_ICON|iconSize|SHGFI_SYSICONINDEX|SHGFI_ADDOVERLAYS|SHGFI_OVERLAYINDEX;
 #else
         iconSize|SHGFI_SYSICONINDEX;
 #endif // Q_OS_WINCE
-    unsigned long val = 0;
+
+
 #if !defined(QT_NO_WINCE_SHELLSDK)
-    if (cacheableDirIcon && useDefaultFolderIcon) {
-        flags |= SHGFI_USEFILEATTRIBUTES;
-        val = SHGetFileInfo(L"dummy",
-                            FILE_ATTRIBUTE_DIRECTORY,
-                            &info, sizeof(SHFILEINFO), flags);
-    } else {
-        val = SHGetFileInfo(reinterpret_cast<const wchar_t *>(filePath.utf16()), 0,
-                            &info, sizeof(SHFILEINFO), flags);
-    }
+    const bool val = cacheableDirIcon && useDefaultFolderIcon
+        ? shGetFileInfoBackground(m_threadPoolRunner, L"dummy", FILE_ATTRIBUTE_DIRECTORY,
+                                  &info, flags | SHGFI_USEFILEATTRIBUTES)
+        : shGetFileInfoBackground(m_threadPoolRunner, reinterpret_cast<const wchar_t *>(filePath.utf16()), 0,
+                                  &info, flags);
+#else
+    const bool val = false;
 #endif // !QT_NO_WINCE_SHELLSDK
 
     // Even if GetFileInfo returns a valid result, hIcon can be empty in some cases

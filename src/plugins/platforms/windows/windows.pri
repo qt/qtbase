@@ -62,7 +62,8 @@ HEADERS += \
     $$PWD/qplatformfunctions_wince.h \
     $$PWD/qwindowsnativeimage.h \
     $$PWD/qwindowsnativeinterface.h \
-    $$PWD/qwindowsopengltester.h
+    $$PWD/qwindowsopengltester.h \
+    $$PWD/qwindowsthreadpoolrunner.h
 
 INCLUDEPATH += $$PWD
 

@@ -115,13 +115,13 @@ QString QBenchmarkValgrindUtils::getNewestFileName()
     Q_ASSERT(!base.isEmpty());
 
     nameFilters << QString::fromLatin1("%1.*").arg(base);
-    QFileInfoList fiList = QDir().entryInfoList(nameFilters, QDir::Files | QDir::Readable);
+    const QFileInfoList fiList = QDir().entryInfoList(nameFilters, QDir::Files | QDir::Readable);
     Q_ASSERT(!fiList.empty());
     int hiSuffix = -1;
     QFileInfo lastFileInfo;
     const QString pattern = QString::fromLatin1("%1.(\\d+)").arg(base);
     QRegExp rx(pattern);
-    foreach (const QFileInfo &fileInfo, fiList) {
+    for (const QFileInfo &fileInfo : fiList) {
         const int index = rx.indexIn(fileInfo.fileName());
         Q_ASSERT(index == 0);
         Q_UNUSED(index);
@@ -151,8 +151,8 @@ void QBenchmarkValgrindUtils::cleanup()
     nameFilters
         << base // overall summary
         << QString::fromLatin1("%1.*").arg(base); // individual dumps
-    QFileInfoList fiList = QDir().entryInfoList(nameFilters, QDir::Files | QDir::Readable);
-    foreach (const QFileInfo &fileInfo, fiList) {
+    const QFileInfoList fiList = QDir().entryInfoList(nameFilters, QDir::Files | QDir::Readable);
+    for (const QFileInfo &fileInfo : fiList) {
         const bool removeOk = QFile::remove(fileInfo.fileName());
         Q_ASSERT(removeOk);
         Q_UNUSED(removeOk);

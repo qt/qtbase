@@ -84,6 +84,9 @@ static int resourceType(const QByteArray &key)
     return int(result - names);
 }
 
+QWindowsWindowFunctions::WindowActivationBehavior QWindowsNativeInterface::m_windowActivationBehavior =
+    QWindowsWindowFunctions::DefaultActivateWindow;
+
 void *QWindowsNativeInterface::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
 {
     if (!window || !window->handle()) {
@@ -253,6 +256,8 @@ QFunctionPointer QWindowsNativeInterface::platformFunction(const QByteArray &fun
         return QFunctionPointer(QWindowsWindow::setTouchWindowTouchTypeStatic);
     else if (function == QWindowsWindowFunctions::setHasBorderInFullScreenIdentifier())
         return QFunctionPointer(QWindowsWindow::setHasBorderInFullScreenStatic);
+    else if (function == QWindowsWindowFunctions::setWindowActivationBehaviorIdentifier())
+        return QFunctionPointer(QWindowsNativeInterface::setWindowActivationBehavior);
     return Q_NULLPTR;
 }
 

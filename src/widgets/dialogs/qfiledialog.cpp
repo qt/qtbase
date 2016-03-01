@@ -2689,7 +2689,7 @@ void QFileDialogPrivate::saveSettings()
     settings.beginGroup(QLatin1String("FileDialog"));
 
     if (usingWidgets()) {
-        settings.setValue(QLatin1String("sidebarWidth"), qFileDialogUi->splitter->sizes().first());
+        settings.setValue(QLatin1String("sidebarWidth"), qFileDialogUi->splitter->sizes().constFirst());
         settings.setValue(QLatin1String("shortcuts"), QUrl::toStringList(qFileDialogUi->sidebar->urls()));
         settings.setValue(QLatin1String("treeViewHeader"), qFileDialogUi->treeView->header()->saveState());
     }
@@ -3001,9 +3001,9 @@ void QFileDialogPrivate::createWidgets()
     q->selectNameFilter(options->initiallySelectedNameFilter());
     q->setDefaultSuffix(options->defaultSuffix());
     q->setHistory(options->history());
-    if (options->initiallySelectedFiles().count() == 1)
-        q->selectFile(options->initiallySelectedFiles().first().fileName());
     const auto initiallySelectedFiles = options->initiallySelectedFiles();
+    if (initiallySelectedFiles.size() == 1)
+        q->selectFile(initiallySelectedFiles.first().fileName());
     for (const QUrl &url : initiallySelectedFiles)
         q->selectUrl(url);
     lineEdit()->selectAll();
@@ -4095,7 +4095,7 @@ QStringList QFSCompleter::splitPath(const QString &path) const
                 parts.removeFirst();
                 currentLocationList.removeLast();
             }
-            if (!currentLocationList.isEmpty() && currentLocationList.last().isEmpty())
+            if (!currentLocationList.isEmpty() && currentLocationList.constLast().isEmpty())
                 currentLocationList.removeLast();
             return currentLocationList + parts;
         }

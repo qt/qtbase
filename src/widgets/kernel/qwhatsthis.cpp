@@ -375,11 +375,9 @@ class QWhatsThisPrivate : public QObject
 
 void QWhatsThisPrivate::notifyToplevels(QEvent *e)
 {
-    QWidgetList toplevels = QApplication::topLevelWidgets();
-    for (int i = 0; i < toplevels.count(); ++i) {
-        QWidget *w = toplevels.at(i);
+    const QWidgetList toplevels = QApplication::topLevelWidgets();
+    for (auto *w : toplevels)
         QApplication::sendEvent(w, e);
-    }
 }
 
 QWhatsThisPrivate *QWhatsThisPrivate::instance = 0;

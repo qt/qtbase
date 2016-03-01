@@ -44,6 +44,7 @@
 #include <QtCore/qlocale.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qlist.h>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_NAMESPACE
 

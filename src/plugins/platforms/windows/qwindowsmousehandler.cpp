@@ -430,7 +430,7 @@ bool QWindowsMouseHandler::translateMouseWheelEvent(QWindow *window, HWND,
 
     int delta;
     if (msg.message == WM_MOUSEWHEEL || msg.message == WM_MOUSEHWHEEL)
-        delta = HIWORD (msg.wParam);
+        delta = GET_WHEEL_DELTA_WPARAM(msg.wParam);
     else
         delta = int(msg.wParam);
 

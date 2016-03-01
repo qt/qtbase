@@ -200,7 +200,7 @@ void QMenuBarPrivate::updateGeometries()
     if(itemsDirty) {
         for(int j = 0; j < shortcutIndexMap.size(); ++j)
             q->releaseShortcut(shortcutIndexMap.value(j));
-        shortcutIndexMap.resize(0); // faster than clear
+        shortcutIndexMap.clear();
         const int actionsCount = actions.count();
         shortcutIndexMap.reserve(actionsCount);
         for (int i = 0; i < actionsCount; i++)

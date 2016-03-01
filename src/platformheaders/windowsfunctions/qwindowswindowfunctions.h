@@ -57,6 +57,11 @@ public:
 
     Q_DECLARE_FLAGS(TouchWindowTouchTypes, TouchWindowTouchType)
 
+    enum WindowActivationBehavior {
+        DefaultActivateWindow,
+        AlwaysActivateWindow
+    };
+
     typedef void (*SetTouchWindowTouchType)(QWindow *window, QWindowsWindowFunctions::TouchWindowTouchTypes touchType);
     static const QByteArray setTouchWindowTouchTypeIdentifier() { return QByteArrayLiteral("WindowsSetTouchWindowTouchType"); }
 
@@ -74,6 +79,16 @@ public:
         SetHasBorderInFullScreen func = reinterpret_cast<SetHasBorderInFullScreen>(QGuiApplication::platformFunction(setHasBorderInFullScreenIdentifier()));
         if (func)
             func(window, border);
+    }
+
+    typedef void (*SetWindowActivationBehaviorType)(WindowActivationBehavior);
+    static const QByteArray setWindowActivationBehaviorIdentifier() { return QByteArrayLiteral("WindowsSetWindowActivationBehavior"); }
+
+    static void setWindowActivationBehavior(WindowActivationBehavior behavior)
+    {
+        SetWindowActivationBehaviorType func = reinterpret_cast<SetWindowActivationBehaviorType>(QGuiApplication::platformFunction(setWindowActivationBehaviorIdentifier()));
+        if (func)
+            func(behavior);
     }
 };
 

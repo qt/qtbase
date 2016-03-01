@@ -472,6 +472,17 @@ QString QSqlDriver::stripDelimiters(const QString &identifier, IdentifierType ty
     This method can be used to manipulate tables without having to worry
     about database-dependent SQL dialects. For non-prepared statements,
     the values will be properly escaped.
+
+    In the WHERE statement, each non-null field of \a rec specifies a
+    filter condition of equality to the field value, or if prepared, a
+    placeholder. However, prepared or not, a null field specifies the
+    condition IS NULL and never introduces a placeholder. The
+    application must not attempt to bind data for the null field during
+    execution. The field must be set to some non-null value if a
+    placeholder is desired. Furthermore, since non-null fields specify
+    equality conditions and SQL NULL is not equal to anything, even
+    itself, it is generally not useful to bind a null to a placeholder.
+
 */
 QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
                                  const QSqlRecord &rec, bool preparedStatement) const

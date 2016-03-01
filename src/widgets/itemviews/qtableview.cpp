@@ -2016,8 +2016,8 @@ QRegion QTableView::visualRegionForSelection(const QItemSelection &selection) co
             if (viewportRect.intersects(rangeRect))
                 selectionRegion += rangeRect;
             if (d->hasSpans()) {
-                foreach (QSpanCollection::Span *s,
-                         d->spans.spansInRect(range.left(), range.top(), range.width(), range.height())) {
+                const auto spansInRect = d->spans.spansInRect(range.left(), range.top(), range.width(), range.height());
+                for (QSpanCollection::Span *s : spansInRect) {
                     if (range.contains(s->top(), s->left(), range.parent())) {
                         const QRect &visualSpanRect = d->visualSpanRect(*s);
                         if (viewportRect.intersects(visualSpanRect))

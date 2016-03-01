@@ -127,7 +127,7 @@ QMimeData *QUrlModel::mimeData(const QModelIndexList &indexes) const
 */
 bool QUrlModel::canDrop(QDragEnterEvent *event)
 {
-    if (!event->mimeData()->formats().contains(mimeTypes().first()))
+    if (!event->mimeData()->formats().contains(mimeTypes().constFirst()))
         return false;
 
     const QList<QUrl> list = event->mimeData()->urls();
@@ -145,7 +145,7 @@ bool QUrlModel::canDrop(QDragEnterEvent *event)
 bool QUrlModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
                                  int row, int column, const QModelIndex &parent)
 {
-    if (!data->formats().contains(mimeTypes().first()))
+    if (!data->formats().contains(mimeTypes().constFirst()))
         return false;
     Q_UNUSED(action);
     Q_UNUSED(column);

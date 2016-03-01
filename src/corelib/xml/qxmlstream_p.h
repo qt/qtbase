@@ -1020,10 +1020,8 @@ bool QXmlStreamReaderPrivate::parse()
         prefix.clear();
         qualifiedName.clear();
         namespaceUri.clear();
-        if (publicNamespaceDeclarations.size())
-            publicNamespaceDeclarations.clear();
-        if (attributes.size())
-            attributes.resize(0);
+        publicNamespaceDeclarations.clear();
+        attributes.clear();
         if (isEmptyElement) {
             setType(QXmlStreamReader::EndElement);
             Tag &tag = tagStack_pop();

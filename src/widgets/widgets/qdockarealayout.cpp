@@ -3096,7 +3096,7 @@ void QDockAreaLayout::addDockWidget(QInternal::DockPosition pos, QDockWidget *do
 
 void QDockAreaLayout::tabifyDockWidget(QDockWidget *first, QDockWidget *second)
 {
-    QList<int> path = indexOf(first);
+    const QList<int> path = indexOf(first);
     if (path.isEmpty())
         return;
 
@@ -3133,7 +3133,7 @@ void QDockAreaLayout::resizeDocks(const QList<QDockWidget *> &docks,
         while (path.size() > 1) {
             QDockAreaLayoutInfo *info = this->info(path);
             if (!info->tabbed && info->o == o) {
-                info->item_list[path.last()].size = size;
+                info->item_list[path.constLast()].size = size;
                 int totalSize = 0;
                 foreach (const QDockAreaLayoutItem &item, info->item_list) {
                     if (!item.skip()) {
@@ -3147,7 +3147,7 @@ void QDockAreaLayout::resizeDocks(const QList<QDockWidget *> &docks,
             path.removeLast();
         }
 
-        const int dockNum = path.first();
+        const int dockNum = path.constFirst();
         Q_ASSERT(dockNum < QInternal::DockCount);
         QRect &r = this->docks[dockNum].rect;
         QSize s = r.size();

@@ -1163,7 +1163,7 @@ void QMainWindowLayout::insertToolBar(QToolBar *before, QToolBar *toolbar)
             // copy the toolbar also in the saved state
             savedState.toolBarAreaLayout.insertItem(before, item);
         }
-        if (!currentGapPos.isEmpty() && currentGapPos.first() == 0) {
+        if (!currentGapPos.isEmpty() && currentGapPos.constFirst() == 0) {
             currentGapPos = layoutState.toolBarAreaLayout.currentGapIndex();
             if (!currentGapPos.isEmpty()) {
                 currentGapPos.prepend(0);
@@ -1501,7 +1501,7 @@ void QMainWindowLayout::splitDockWidget(QDockWidget *after,
 
 Qt::DockWidgetArea QMainWindowLayout::dockWidgetArea(QWidget *widget) const
 {
-    QList<int> pathToWidget = layoutState.dockAreaLayout.indexOf(widget);
+    const QList<int> pathToWidget = layoutState.dockAreaLayout.indexOf(widget);
     if (pathToWidget.isEmpty())
         return Qt::NoDockWidgetArea;
     return toDockWidgetArea(pathToWidget.first());
@@ -1783,7 +1783,7 @@ QLayoutItem *QMainWindowLayout::takeAt(int index)
         }
 
 #ifndef QT_NO_TOOLBAR
-        if (!currentGapPos.isEmpty() && currentGapPos.first() == 0) {
+        if (!currentGapPos.isEmpty() && currentGapPos.constFirst() == 0) {
             currentGapPos = layoutState.toolBarAreaLayout.currentGapIndex();
             if (!currentGapPos.isEmpty()) {
                 currentGapPos.prepend(0);
@@ -2057,7 +2057,7 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
 
             if (parentInfo->tabbed) {
                 // merge the two tab widgets
-                int idx = path.last();
+                int idx = path.constLast();
                 Q_ASSERT(parentInfo->item_list[idx].widgetItem->widget() == dwgw);
                 delete parentInfo->item_list[idx].widgetItem;
                 parentInfo->item_list.removeAt(idx);
@@ -2283,7 +2283,7 @@ QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, bool group)
 
 #ifndef QT_NO_DOCKWIDGET
     if (QDockWidget *dw = qobject_cast<QDockWidget*>(widget)) {
-        Q_ASSERT(path.first() == 1);
+        Q_ASSERT(path.constFirst() == 1);
         bool actualGroup = false;
 #ifndef QT_NO_TABBAR
         if (group && (dockOptions & QMainWindow::GroupedDragging) && path.size() > 3) {
@@ -2386,7 +2386,7 @@ void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
                 }
             }
         }
-        foreach (QWidget *w, candidates) {
+        for (QWidget *w : candidates) {
             QWindow *handle1 = widget->windowHandle();
             QWindow *handle2 = w->windowHandle();
             if (handle1 && handle2 && handle1->screen() != handle2->screen())

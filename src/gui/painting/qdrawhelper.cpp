@@ -961,7 +961,7 @@ const FetchPixelsFunc qFetchPixels[QPixelLayout::BPPCount] = {
     fetchPixels<QPixelLayout::BPP32> // BPP32
 };
 
-const StorePixelsFunc qStorePixels[QPixelLayout::BPPCount] = {
+StorePixelsFunc qStorePixels[QPixelLayout::BPPCount] = {
     0, // BPPNone
     storePixels<QPixelLayout::BPP1MSB>, // BPP1MSB
     storePixels<QPixelLayout::BPP1LSB>, // BPP1LSB
@@ -6375,10 +6375,12 @@ static void qInitDrawhelperFunctions()
                                                     int w, int h,
                                                     int const_alpha);
 
+        extern void QT_FASTCALL storePixelsBPP24_ssse3(uchar *dest, const uint *src, int index, int count);
         qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_ssse3;
         qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_ssse3;
         qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_ssse3;
         qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_ssse3;
+        qStorePixels[QPixelLayout::BPP24] = storePixelsBPP24_ssse3;
     }
 #endif // SSSE3
 

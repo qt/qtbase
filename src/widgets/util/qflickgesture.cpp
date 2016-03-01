@@ -581,7 +581,8 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
 
     // Check for an active scroller at globalPos
     if (inputType == QScroller::InputPress) {
-        foreach (QScroller *as, QScroller::activeScrollers()) {
+        const auto activeScrollers = QScroller::activeScrollers();
+        for (QScroller *as : activeScrollers) {
             if (as != scroller) {
                 QRegion scrollerRegion;
 
@@ -589,11 +590,13 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
                     scrollerRegion = QRect(w->mapToGlobal(QPoint(0, 0)), w->size());
 #ifndef QT_NO_GRAPHICSVIEW
                 } else if (QGraphicsObject *go = qobject_cast<QGraphicsObject *>(as->target())) {
-                    if (go->scene()) {
+                    if (const auto *scene = go->scene()) {
                         const auto goBoundingRectMappedToScene = go->mapToScene(go->boundingRect());
-                        foreach (QGraphicsView *gv, go->scene()->views())
+                        const auto views = scene->views();
+                        for (QGraphicsView *gv : views) {
                             scrollerRegion |= gv->mapFromScene(goBoundingRectMappedToScene)
                                               .translated(gv->mapToGlobal(QPoint(0, 0)));
+                        }
                     }
 #endif
                 }

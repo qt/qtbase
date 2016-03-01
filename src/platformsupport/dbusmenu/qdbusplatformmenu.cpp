@@ -274,7 +274,7 @@ void QDBusPlatformMenu::setContainingMenuItem(QDBusPlatformMenuItem *item)
 
 QPlatformMenuItem *QDBusPlatformMenu::menuItemAt(int position) const
 {
-    return m_items.at(position);
+    return m_items.value(position);
 }
 
 QPlatformMenuItem *QDBusPlatformMenu::menuItemForTag(quintptr tag) const

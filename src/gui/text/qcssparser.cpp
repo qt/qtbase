@@ -2166,7 +2166,7 @@ void Parser::init(const QString &css, bool isFile)
     }
 
     hasEscapeSequences = false;
-    symbols.resize(0);
+    symbols.clear();
     symbols.reserve(8);
     Scanner::scan(Scanner::preprocess(styleSheet, &hasEscapeSequences), &symbols);
     index = 0;
