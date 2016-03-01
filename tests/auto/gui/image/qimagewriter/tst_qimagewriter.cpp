@@ -117,7 +117,7 @@ void tst_QImageWriter::initTestCase()
     prefix = QFINDTESTDATA("images/");
     if (prefix.isEmpty())
         QFAIL("Can't find images directory!");
-    writePrefix = m_temporaryDir.path();
+    writePrefix = m_temporaryDir.path() + QLatin1Char('/');
 }
 
 // Testing get/set functions
