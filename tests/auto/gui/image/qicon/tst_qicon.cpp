@@ -31,6 +31,7 @@
 #include <QImageReader>
 #include <qicon.h>
 #include <qiconengine.h>
+#include <QtCore/QStandardPaths>
 
 #include <algorithm>
 
@@ -648,9 +649,20 @@ void tst_QIcon::fromTheme()
     QVERIFY(!fullPathIcon.isNull());
 }
 
+static inline QString findGtkUpdateIconCache()
+{
+    QString binary = QLatin1String("gtk-update-icon-cache");
+#ifdef Q_OS_WIN
+    binary += QLatin1String(".exe");
+#endif
+    return QStandardPaths::findExecutable(binary);
+}
+
 void tst_QIcon::fromThemeCache()
 {
     QTemporaryDir dir;
+    QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
+
     QVERIFY(QDir().mkpath(dir.path() + QLatin1String("/testcache/16x16/actions")));
     QVERIFY(QFile(QStringLiteral(":/styles/commonstyle/images/standardbutton-open-16.png"))
         .copy( dir.path() + QLatin1String("/testcache/16x16/actions/button-open.png")));
@@ -700,11 +712,20 @@ void tst_QIcon::fromThemeCache()
     QVERIFY(!QIcon::fromTheme("button-open").isNull());
 
     // Try to run the actual gtk-update-icon-cache and make sure that icons are still found
+    const QString gtkUpdateIconCache = findGtkUpdateIconCache();
+    if (gtkUpdateIconCache.isEmpty()) {
+        QIcon::setThemeSearchPaths(QStringList());
+        QSKIP("gtk-update-icon-cache not run (binary not found)");
+    }
     QProcess process;
-    process.start(QStringLiteral("gtk-update-icon-cache"),
+    process.start(gtkUpdateIconCache,
                   QStringList() << QStringLiteral("-f") << QStringLiteral("-t") << (dir.path() + QLatin1String("/testcache")));
-    if (!process.waitForFinished())
-        QSKIP("gtk-update-icon-cache not run");
+    QVERIFY2(process.waitForStarted(), qPrintable(QLatin1String("Unable to start: ")
+                                                  + gtkUpdateIconCache + QLatin1String(": ")
+                                                  + process.errorString()));
+    QVERIFY(process.waitForFinished());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
     QVERIFY(QFileInfo(cacheName).lastModified() >= QFileInfo(dir.path() + QLatin1String("/testcache/16x16/actions")).lastModified());
     QIcon::setThemeSearchPaths(QStringList() << dir.path()); // reload themes
     QVERIFY(!QIcon::fromTheme("button-open").isNull());
