@@ -10,7 +10,7 @@
 #
 
 load(qt_build_paths)
-force_independent|!isEmpty(MODULE_FWD_INCLUDES): \
+force_independent|split_incpath: \
     CONFIG += need_fwd_pri
 mod_work_pfx = $$MODULE_QMAKE_OUTDIR/mkspecs/modules
 need_fwd_pri: \
