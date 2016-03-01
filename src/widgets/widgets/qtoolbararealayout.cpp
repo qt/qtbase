@@ -347,7 +347,7 @@ void QToolBarAreaLayoutInfo::removeToolBar(QToolBar *toolBar)
 void QToolBarAreaLayoutInfo::insertToolBarBreak(QToolBar *before)
 {
     if (before == 0) {
-        if (!lines.isEmpty() && lines.last().toolBarItems.isEmpty())
+        if (!lines.isEmpty() && lines.constLast().toolBarItems.isEmpty())
             return;
         lines.append(QToolBarAreaLayoutLine(o));
         return;

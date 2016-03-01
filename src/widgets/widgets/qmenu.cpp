@@ -117,7 +117,7 @@ public:
     {
         Q_D(QTornOffMenu);
         // make the torn-off menu a sibling of p (instead of a child)
-        QWidget *parentWidget = d->causedStack.isEmpty() ? p : d->causedStack.last();
+        QWidget *parentWidget = d->causedStack.isEmpty() ? p : d->causedStack.constLast();
         if (parentWidget->parentWidget())
             parentWidget = parentWidget->parentWidget();
         setParent(parentWidget, Qt::Window | Qt::Tool);
@@ -1270,14 +1270,17 @@ void QMenuPrivate::_q_platformMenuAboutToShow()
     Q_Q(QMenu);
 
 #ifdef Q_OS_OSX
-    if (platformMenu)
-        Q_FOREACH (QAction *action, q->actions())
+    if (platformMenu) {
+        const auto actions = q->actions();
+        for (QAction *action : actions) {
             if (QWidget *widget = widgetItems.value(action))
                 if (widget->parent() == q) {
                     QPlatformMenuItem *menuItem = platformMenu->menuItemForTag(reinterpret_cast<quintptr>(action));
                     moveWidgetToPlatformItem(widget, menuItem);
                     platformMenu->syncMenuItem(menuItem);
                 }
+        }
+    }
 #endif
 
     emit q->aboutToShow();

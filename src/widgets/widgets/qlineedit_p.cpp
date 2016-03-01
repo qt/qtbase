@@ -427,7 +427,7 @@ QIcon QLineEditPrivate::clearButtonIcon() const
 
 void QLineEditPrivate::setClearButtonEnabled(bool enabled)
 {
-    foreach (const SideWidgetEntry &e, trailingSideWidgets) {
+    for (const SideWidgetEntry &e : trailingSideWidgets) {
         if (e.flags & SideWidgetClearButton) {
             e.action->setEnabled(enabled);
             break;
@@ -443,13 +443,13 @@ void QLineEditPrivate::positionSideWidgets()
         const QSize iconSize = QLineEditPrivate::iconSize();
         const int delta = QLineEditIconButton::IconMargin + iconSize.width();
         QRect widgetGeometry(QPoint(QLineEditIconButton::IconMargin, (contentRect.height() - iconSize.height()) / 2), iconSize);
-        foreach (const SideWidgetEntry &e, leftSideWidgetList()) {
+        for (const SideWidgetEntry &e : leftSideWidgetList()) {
             e.widget->setGeometry(widgetGeometry);
             if (e.action->isVisible())
                 widgetGeometry.moveLeft(widgetGeometry.left() + delta);
         }
         widgetGeometry.moveLeft(contentRect.width() - iconSize.width() - QLineEditIconButton::IconMargin);
-        foreach (const SideWidgetEntry &e, rightSideWidgetList()) {
+        for (const SideWidgetEntry &e : rightSideWidgetList()) {
             e.widget->setGeometry(widgetGeometry);
             if (e.action->isVisible())
                 widgetGeometry.moveLeft(widgetGeometry.left() - delta);

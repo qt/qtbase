@@ -588,9 +588,9 @@ void QUndoStack::push(QUndoCommand *cmd)
 
     QUndoCommand *cur = 0;
     if (macro) {
-        QUndoCommand *macro_cmd = d->macro_stack.last();
+        QUndoCommand *macro_cmd = d->macro_stack.constLast();
         if (!macro_cmd->d->child_list.isEmpty())
-            cur = macro_cmd->d->child_list.last();
+            cur = macro_cmd->d->child_list.constLast();
     } else {
         if (d->index > 0)
             cur = d->command_list.at(d->index - 1);
@@ -616,7 +616,7 @@ void QUndoStack::push(QUndoCommand *cmd)
         }
     } else {
         if (macro) {
-            d->macro_stack.last()->d->child_list.append(cmd);
+            d->macro_stack.constLast()->d->child_list.append(cmd);
         } else {
             d->command_list.append(cmd);
             d->checkUndoLimit();
@@ -963,7 +963,7 @@ void QUndoStack::beginMacro(const QString &text)
             d->clean_index = -1; // we've deleted the clean state
         d->command_list.append(cmd);
     } else {
-        d->macro_stack.last()->d->child_list.append(cmd);
+        d->macro_stack.constLast()->d->child_list.append(cmd);
     }
     d->macro_stack.append(cmd);
 

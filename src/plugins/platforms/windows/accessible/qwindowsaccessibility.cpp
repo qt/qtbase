@@ -173,7 +173,7 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
     QPlatformNativeInterface *platform = QGuiApplication::platformNativeInterface();
     if (!window->handle()) // Called before show(), no native window yet.
         return;
-    HWND hWnd = (HWND)platform->nativeResourceForWindow("handle", window);
+    const HWND hWnd = reinterpret_cast<HWND>(platform->nativeResourceForWindow("handle", window));
 
     if (event->type() != QAccessible::MenuCommand && // MenuCommand is faked
         event->type() != QAccessible::ObjectDestroyed) {
@@ -220,7 +220,7 @@ IAccessible *QWindowsAccessibility::wrap(QAccessibleInterface *acc)
     QWindowsIA2Accessible *wacc = new QWindowsIA2Accessible(acc);
 # endif
     IAccessible *iacc = 0;
-    wacc->QueryInterface(IID_IAccessible, (void**)&iacc);
+    wacc->QueryInterface(IID_IAccessible, reinterpret_cast<void **>(&iacc));
     return iacc;
 #endif // defined(Q_OS_WINCE)
 }
@@ -230,7 +230,7 @@ bool QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(HWND hwnd, W
 #if !defined(Q_OS_WINCE)
     if (static_cast<long>(lParam) == static_cast<long>(UiaRootObjectId)) {
         /* For UI Automation */
-    } else if ((DWORD)lParam == DWORD(OBJID_CLIENT)) {
+    } else if (DWORD(lParam) == DWORD(OBJID_CLIENT)) {
         // Start handling accessibility internally
         QGuiApplicationPrivate::platformIntegration()->accessibility()->setActive(true);
         // Ignoring all requests while starting up
@@ -244,7 +244,7 @@ bool QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(HWND hwnd, W
 
         if (!oleaccChecked) {
             oleaccChecked = true;
-            ptrLresultFromObject = (PtrLresultFromObject)QSystemLibrary::resolve(QLatin1String("oleacc"), "LresultFromObject");
+            ptrLresultFromObject = reinterpret_cast<PtrLresultFromObject>(QSystemLibrary::resolve(QLatin1String("oleacc"), "LresultFromObject"));
         }
 
         if (ptrLresultFromObject) {

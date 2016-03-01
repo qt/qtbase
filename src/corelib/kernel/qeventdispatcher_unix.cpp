@@ -286,7 +286,7 @@ void QEventDispatcherUNIXPrivate::markPendingSocketNotifiers()
         }
     }
 
-    pollfds.resize(0);
+    pollfds.clear();
 }
 
 int QEventDispatcherUNIXPrivate::activateSocketNotifiers()
@@ -480,8 +480,8 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
     if (!canWait || (include_timers && d->timerList.timerWait(wait_tm)))
         tm = &wait_tm;
 
+    d->pollfds.clear();
     d->pollfds.reserve(1 + (include_notifiers ? d->socketNotifiers.size() : 0));
-    d->pollfds.resize(0);
 
     if (include_notifiers)
         for (auto it = d->socketNotifiers.cbegin(); it != d->socketNotifiers.cend(); ++it)

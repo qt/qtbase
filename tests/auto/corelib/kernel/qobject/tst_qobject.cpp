@@ -5813,9 +5813,9 @@ class DispatcherWatcher : public QObject
     Q_OBJECT
 public:
     DispatcherWatcher(QEventLoop &e, int *statusAwake, int *statusAboutToBlock) :
-        m_statusAboutToBlock(statusAboutToBlock),
-        m_statusAwake(statusAwake),
         m_eventLoop(&e),
+        m_statusAwake(statusAwake),
+        m_statusAboutToBlock(statusAboutToBlock),
         m_aboutToBlocks(0),
         m_awakes(0)
     {

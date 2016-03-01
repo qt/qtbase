@@ -33,6 +33,7 @@ depends += \
     qtmultimedia \
     qtnetwork \
     qtopengl \
+    qtplatformheaders \
     qtsvg \
     qtqml \
     qtquick \

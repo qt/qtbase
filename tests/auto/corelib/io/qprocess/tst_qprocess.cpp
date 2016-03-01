@@ -40,15 +40,7 @@
 #include <QtNetwork/QHostInfo>
 #include <stdlib.h>
 
-#ifndef QT_NO_PROCESS
 # include <private/qprocess_p.h>    // only so we get QPROCESS_USE_SPAWN
-# if defined(Q_OS_WIN)
-#  include <windows.h>
-# endif
-
-Q_DECLARE_METATYPE(QProcess::ExitStatus);
-Q_DECLARE_METATYPE(QProcess::ProcessState);
-#endif
 
 typedef void (QProcess::*QProcessFinishedSignal1)(int);
 typedef void (QProcess::*QProcessFinishedSignal2)(int, QProcess::ExitStatus);
@@ -1052,24 +1044,33 @@ private:
 void tst_QProcess::softExitInSlots_data()
 {
     QTest::addColumn<QString>("appName");
+    QTest::addColumn<int>("signalToConnect");
 
+    QByteArray dataTagPrefix("gui app ");
 #ifndef QT_NO_WIDGETS
-    QTest::newRow("gui app") << "testGuiProcess/testGuiProcess";
+    for (int i = 0; i < 6; ++i) {
+        QTest::newRow(dataTagPrefix + QByteArray::number(i))
+                << "testGuiProcess/testGuiProcess" << i;
+    }
 #endif
-    QTest::newRow("console app") << "testProcessEcho2/testProcessEcho2";
+
+    dataTagPrefix = "console app ";
+    for (int i = 0; i < 6; ++i) {
+        QTest::newRow(dataTagPrefix + QByteArray::number(i))
+                << "testProcessEcho2/testProcessEcho2" << i;
+    }
 }
 
 void tst_QProcess::softExitInSlots()
 {
     QFETCH(QString, appName);
+    QFETCH(int, signalToConnect);
 
-    for (int i = 0; i < 6; ++i) {
-        SoftExitProcess proc(i);
-        proc.writeAfterStart("OLEBOLE", 8); // include the \0
-        proc.start(appName);
-        QTRY_VERIFY_WITH_TIMEOUT(proc.waitedForFinished, 10000);
-        QCOMPARE(proc.state(), QProcess::NotRunning);
-    }
+    SoftExitProcess proc(signalToConnect);
+    proc.writeAfterStart("OLEBOLE", 8); // include the \0
+    proc.start(appName);
+    QTRY_VERIFY_WITH_TIMEOUT(proc.waitedForFinished, 10000);
+    QCOMPARE(proc.state(), QProcess::NotRunning);
 }
 #endif
 

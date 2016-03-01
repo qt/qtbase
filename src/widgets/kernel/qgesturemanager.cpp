@@ -219,7 +219,8 @@ QGesture *QGestureManager::getState(QObject *object, QGestureRecognizer *recogni
     }
 
     // check if the QGesture for this recognizer has already been created
-    foreach (QGesture *state, m_objectGestures.value(QGestureManager::ObjectGesture(object, type))) {
+    const auto states = m_objectGestures.value(QGestureManager::ObjectGesture(object, type));
+    for (QGesture *state : states) {
         if (m_gestureToRecognizer.value(state) == recognizer)
             return state;
     }
@@ -684,7 +685,8 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
 
         QApplication::sendEvent(receiver, &event);
         bool eventAccepted = event.isAccepted();
-        foreach(QGesture *gesture, event.gestures()) {
+        const auto eventGestures = event.gestures();
+        for (QGesture *gesture : eventGestures) {
             if (eventAccepted || event.isAccepted(gesture)) {
                 QWidget *w = event.m_targetWidgets.value(gesture->gestureType(), 0);
                 Q_ASSERT(w);
@@ -710,7 +712,8 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
             QGestureEvent event(it.value());
             QApplication::sendEvent(it.key(), &event);
             bool eventAccepted = event.isAccepted();
-            foreach (QGesture *gesture, event.gestures()) {
+            const auto eventGestures = event.gestures();
+            for (QGesture *gesture : eventGestures) {
                 if (gesture->state() == Qt::GestureStarted &&
                     (eventAccepted || event.isAccepted(gesture))) {
                     QWidget *w = event.m_targetWidgets.value(gesture->gestureType(), 0);

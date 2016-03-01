@@ -2335,7 +2335,7 @@ QRegExpCharClass::QRegExpCharClass()
 void QRegExpCharClass::clear()
 {
     c = 0;
-    r.resize(0);
+    r.clear();
     n = false;
 }
 

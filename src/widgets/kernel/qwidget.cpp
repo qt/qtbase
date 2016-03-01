@@ -1417,7 +1417,8 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         win = topData()->window;
     }
 
-    foreach (const QByteArray &propertyName, q->dynamicPropertyNames()) {
+    const auto dynamicPropertyNames = q->dynamicPropertyNames();
+    for (const QByteArray &propertyName : dynamicPropertyNames) {
         if (!qstrncmp(propertyName, "_q_platform_", 12))
             win->setProperty(propertyName, q->property(propertyName));
     }
@@ -11984,7 +11985,9 @@ QWidget *QWidgetPrivate::widgetInNavigationDirection(Direction direction)
 
     QWidget *targetWidget = 0;
     int shortestDistance = INT_MAX;
-    foreach(QWidget *targetCandidate, QApplication::allWidgets()) {
+
+    const auto targetCandidates = QApplication::allWidgets();
+    for (QWidget *targetCandidate : targetCandidates) {
 
         const QRect targetCandidateRect = targetCandidate->rect().translated(targetCandidate->mapToGlobal(QPoint()));
 
@@ -12689,7 +12692,7 @@ QWidget *QWidget::keyboardGrabber()
     does not allow an application to interrupt what the user is currently
     doing in another application.
 
-    \sa isActiveWindow(), window(), show()
+    \sa isActiveWindow(), window(), show(), QWindowsWindowFunctions::setWindowActivationBehavior()
 */
 void QWidget::activateWindow()
 {

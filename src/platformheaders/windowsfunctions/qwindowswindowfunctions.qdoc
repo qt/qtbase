@@ -95,3 +95,52 @@
 
     See also \l [QtDoc] {Fullscreen OpenGL Based Windows}
 */
+
+/*!
+    \enum QWindowsWindowFunctions::WindowActivationBehavior
+
+    This enum specifies the behavior of QWidget::activateWindow() and
+    QWindow::requestActivate().
+
+    \value DefaultActivateWindow The window is activated according to the default
+        behavior of the Windows operating system. This means the window will not
+        be activated in some circumstances (most notably when the calling process
+        is not the active process); only the taskbar entry will be flashed.
+    \value AlwaysActivateWindow  The window is always activated, even when the
+        calling process is not the active process.
+
+    \sa QWidget::activateWindow(), QWindow::requestActivate()
+    \since 5.7
+*/
+
+/*!
+    \typedef QWindowsWindowFunctions::SetWindowActivationBehaviorType
+
+    This is the typedef for the function returned by QGuiApplication::platformFunction()
+    when passed setWindowActivationBehaviorIdentifier().
+
+    \sa QWidget::activateWindow(), QWindow::requestActivate()
+    \since 5.7
+*/
+
+/*!
+    \fn QByteArray setWindowActivationBehaviorIdentifier()
+
+    This function returns a bytearray that can be used to query
+    QGuiApplication::platformFunction() to retrieve the SetWindowActivationBehaviorType
+    function.
+
+    \sa QWidget::activateWindow(), QWindow::requestActivate()
+    \since 5.7
+*/
+
+/*!
+    \fn void QWindowsWindowFunctions::setWindowActivationBehavior(WindowActivationBehavior behavior)
+
+    This is a convenience function that can be used directly instead of resolving
+    the function pointer. \a behavior will be relayed to the function retrieved
+    by QGuiApplication.
+
+    \sa QWidget::activateWindow(), QWindow::requestActivate()
+    \since 5.7
+*/

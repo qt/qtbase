@@ -424,6 +424,7 @@ QWidget *QApplicationPrivate::hidden_focus_widget = 0; // will get keyboard inpu
 QWidget *QApplicationPrivate::active_window = 0;        // toplevel with keyboard focus
 #ifndef QT_NO_WHEELEVENT
 int QApplicationPrivate::wheel_scroll_lines;   // number of lines to scroll
+QWidget *QApplicationPrivate::wheel_widget = Q_NULLPTR;
 #endif
 bool qt_in_tab_key_event = false;
 int qt_antialiasing_threshold = -1;
@@ -786,7 +787,7 @@ void QApplicationPrivate::initializeWidgetFontHash()
 QWidget *QApplication::activePopupWidget()
 {
     return QApplicationPrivate::popupWidgets && !QApplicationPrivate::popupWidgets->isEmpty() ?
-        QApplicationPrivate::popupWidgets->last() : 0;
+        QApplicationPrivate::popupWidgets->constLast() : nullptr;
 }
 
 
@@ -1718,9 +1719,11 @@ QString QApplicationPrivate::desktopStyleKey()
     // first valid one.
     if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
         const QStringList availableKeys = QStyleFactory::keys();
-        foreach (const QString &style, theme->themeHint(QPlatformTheme::StyleNames).toStringList())
+        const auto styles = theme->themeHint(QPlatformTheme::StyleNames).toStringList();
+        for (const QString &style : styles) {
             if (availableKeys.contains(style, Qt::CaseInsensitive))
                 return style;
+        }
     }
     return QString();
 }
@@ -2225,10 +2228,13 @@ QWidget *qt_tlw_for_window(QWindow *wnd)
         else
             break;
     }
-    if (wnd)
-        foreach (QWidget *tlw, qApp->topLevelWidgets())
+    if (wnd) {
+        const auto tlws = qApp->topLevelWidgets();
+        for (QWidget *tlw : tlws) {
             if (tlw->windowHandle() == wnd)
                 return tlw;
+        }
+    }
     return 0;
 }
 
@@ -2391,7 +2397,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
         const QPoint globalPos = qIsInf(globalPosF.x())
             ? QPoint(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX)
             : globalPosF.toPoint();
-        const QPoint windowPos = enterList.back()->window()->mapFromGlobal(globalPos);
+        const QPoint windowPos = qAsConst(enterList).back()->window()->mapFromGlobal(globalPos);
         for (auto it = enterList.crbegin(), end = enterList.crend(); it != end; ++it) {
             auto *w = *it;
             if (!QApplication::activeModalWidget() || QApplicationPrivate::tryModalHelper(w, 0)) {
@@ -3302,7 +3308,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     case QEvent::Wheel:
         {
             QWidget* w = static_cast<QWidget *>(receiver);
-            QWheelEvent* wheel = static_cast<QWheelEvent*>(e);
 
             // QTBUG-40656, QTBUG-42731: ignore wheel events when a popup (QComboBox) is open.
             if (const QWidget *popup = QApplication::activePopupWidget()) {
@@ -3310,27 +3315,61 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     return true;
             }
 
-            QPoint relpos = wheel->pos();
-            bool eventAccepted = wheel->isAccepted();
+            QWheelEvent* wheel = static_cast<QWheelEvent*>(e);
+            const bool spontaneous = wheel->spontaneous();
+            const Qt::ScrollPhase phase = wheel->phase();
 
-            if (e->spontaneous() && wheel->phase() == Qt::ScrollUpdate)
-                QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, relpos);
+            if (phase == Qt::NoScrollPhase || phase == Qt::ScrollBegin
+                || (phase == Qt::ScrollUpdate && !QApplicationPrivate::wheel_widget)) {
 
-            while (w) {
+                if (spontaneous && phase == Qt::ScrollBegin)
+                    QApplicationPrivate::wheel_widget = Q_NULLPTR;
+
+                const QPoint &relpos = wheel->pos();
+
+                if (spontaneous && (phase == Qt::NoScrollPhase || phase == Qt::ScrollUpdate))
+                    QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, relpos);
+
                 QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
-                               wheel->modifiers(), wheel->phase(), wheel->source());
-                we.spont = wheel->spontaneous();
-                res = d->notify_helper(w, w == receiver ? wheel : &we);
-                eventAccepted = ((w == receiver) ? wheel : &we)->isAccepted();
-                e->spont = false;
-                if ((res && eventAccepted)
-                    || w->isWindow() || w->testAttribute(Qt::WA_NoMousePropagation))
-                    break;
+                               wheel->modifiers(), phase, wheel->source());
+                bool eventAccepted;
+                while (w) {
+                    we.spont = spontaneous && w == receiver;
+                    we.ignore();
+                    res = d->notify_helper(w, &we);
+                    eventAccepted = we.isAccepted();
+                    if (res && eventAccepted) {
+                        if (spontaneous && phase != Qt::NoScrollPhase)
+                            QApplicationPrivate::wheel_widget = w;
+                        break;
+                    }
+                    if (w->isWindow() || w->testAttribute(Qt::WA_NoMousePropagation))
+                        break;
 
-                relpos += w->pos();
-                w = w->parentWidget();
+                    we.p += w->pos();
+                    w = w->parentWidget();
+                }
+                wheel->setAccepted(eventAccepted);
+            } else if (QApplicationPrivate::wheel_widget) {
+                if (!spontaneous) {
+                    // wheel_widget may forward the wheel event to a delegate widget,
+                    // either directly or indirectly (e.g. QAbstractScrollArea will
+                    // forward to its QScrollBars through viewportEvent()). In that
+                    // case, the event will not be spontaneous but synthesized, so
+                    // we can send it straigth to the receiver.
+                    d->notify_helper(w, wheel);
+                } else {
+                    const QPoint &relpos = QApplicationPrivate::wheel_widget->mapFromGlobal(wheel->globalPos());
+                    QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
+                                   wheel->modifiers(), wheel->phase(), wheel->source());
+                    we.spont = true;
+                    we.ignore();
+                    d->notify_helper(QApplicationPrivate::wheel_widget, &we);
+                    wheel->setAccepted(we.isAccepted());
+                    if (phase == Qt::ScrollEnd)
+                        QApplicationPrivate::wheel_widget = Q_NULLPTR;
+                }
             }
-            wheel->setAccepted(eventAccepted);
         }
         break;
 #endif
@@ -3795,7 +3834,7 @@ void QApplicationPrivate::closePopup(QWidget *popup)
 
     } else {
         // A popup was closed, so the previous popup gets the focus.
-        QWidget* aw = QApplicationPrivate::popupWidgets->last();
+        QWidget* aw = QApplicationPrivate::popupWidgets->constLast();
         if (QWidget *fw = aw->focusWidget())
             fw->setFocus(Qt::PopupFocusReason);
 
@@ -3942,7 +3981,8 @@ void QApplication::alert(QWidget *widget, int duration)
         if (QWindow *window= QApplicationPrivate::windowForWidget(widget))
             window->alert(duration);
     } else {
-        foreach (QWidget *topLevel, topLevelWidgets())
+        const auto topLevels = topLevelWidgets();
+        for (QWidget *topLevel : topLevels)
             QApplication::alert(topLevel, duration);
     }
 }
