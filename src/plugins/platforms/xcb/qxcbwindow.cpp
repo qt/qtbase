@@ -201,6 +201,20 @@ static inline QImage::Format imageFormatForVisual(int depth, quint32 red_mask, q
     case 16:
         if (blue_mask == 0x1f)
             return QImage::Format_RGB16;
+        if (red_mask == 0x1f) {
+            if (rgbSwap)
+                *rgbSwap = true;
+            return QImage::Format_RGB16;
+        }
+        break;
+    case 15:
+        if (blue_mask == 0x1f)
+            return QImage::Format_RGB555;
+        if (red_mask == 0x1f) {
+            if (rgbSwap)
+                *rgbSwap = true;
+            return QImage::Format_RGB555;
+        }
         break;
     default:
         break;
