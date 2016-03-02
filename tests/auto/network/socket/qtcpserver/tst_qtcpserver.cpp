@@ -106,6 +106,8 @@ private slots:
 
     void eagainBlockingAccept();
 
+    void qtbug51288();
+
 private:
 #ifndef QT_NO_BEARERMANAGEMENT
     QNetworkSession *networkSession;
@@ -988,6 +990,23 @@ void tst_QTcpServer::eagainBlockingAccept()
     QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 2, 500);
     s.close();
     server.close();
+}
+
+class NonListeningTcpServer : public QTcpServer
+{
+public:
+    void addSocketFromOutside(QTcpSocket* s)
+    {
+        addPendingConnection(s);
+    }
+};
+
+void tst_QTcpServer::qtbug51288()
+{
+    NonListeningTcpServer server;
+    QTcpSocket socket;
+    server.addSocketFromOutside(&socket);
+    QCOMPARE(&socket, server.nextPendingConnection());
 }
 
 QTEST_MAIN(tst_QTcpServer)

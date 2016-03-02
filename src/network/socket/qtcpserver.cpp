@@ -543,8 +543,11 @@ QTcpSocket *QTcpServer::nextPendingConnection()
     if (d->pendingConnections.isEmpty())
         return 0;
 
-    if (!d->socketEngine->isReadNotificationEnabled())
+    if (!d->socketEngine) {
+        qWarning("QTcpServer::nextPendingConnection() called while not listening");
+    } else if (!d->socketEngine->isReadNotificationEnabled()) {
         d->socketEngine->setReadNotificationEnabled(true);
+    }
 
     return d->pendingConnections.takeFirst();
 }
