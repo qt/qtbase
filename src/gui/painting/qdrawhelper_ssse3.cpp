@@ -233,6 +233,16 @@ void QT_FASTCALL storePixelsBPP24_ssse3(uchar *dest, const uint *src, int index,
     store_uint24_ssse3(dest + index * 3, src, count);
 }
 
+extern void QT_FASTCALL qt_convert_rgb888_to_rgb32_ssse3(quint32 *dst, const uchar *src, int len);
+
+const uint * QT_FASTCALL qt_fetchUntransformed_888_ssse3(uint *buffer, const Operator *, const QSpanData *data,
+                                                         int y, int x, int length)
+{
+    const uchar *line = data->texture.scanLine(y) + x * 3;
+    qt_convert_rgb888_to_rgb32_ssse3(buffer, line, length);
+    return buffer;
+}
+
 QT_END_NAMESPACE
 
 #endif // QT_COMPILER_SUPPORTS_SSSE3

@@ -6382,11 +6382,15 @@ static void qInitDrawhelperFunctions()
                                                     int const_alpha);
 
         extern void QT_FASTCALL storePixelsBPP24_ssse3(uchar *dest, const uint *src, int index, int count);
+        extern const uint * QT_FASTCALL qt_fetchUntransformed_888_ssse3(uint *buffer, const Operator *, const QSpanData *data,
+                                                                        int y, int x, int length);
         qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_ssse3;
         qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_ssse3;
         qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_ssse3;
         qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_ssse3;
         qStorePixels[QPixelLayout::BPP24] = storePixelsBPP24_ssse3;
+        sourceFetch[BlendUntransformed][QImage::Format_RGB888] = qt_fetchUntransformed_888_ssse3;
+        sourceFetch[BlendTiled][QImage::Format_RGB888] = qt_fetchUntransformed_888_ssse3;
     }
 #endif // SSSE3
 
@@ -6448,6 +6452,9 @@ static void qInitDrawhelperFunctions()
                                                                   int y, int x, int length);
 
     qt_fetch_radial_gradient = qt_fetch_radial_gradient_neon;
+
+    sourceFetch[BlendUntransformed][QImage::Format_RGB888] = qt_fetchUntransformed_888_neon;
+    sourceFetch[BlendTiled][QImage::Format_RGB888] = qt_fetchUntransformed_888_neon;
 
 #if defined(ENABLE_PIXMAN_DRAWHELPERS)
     // The RGB16 helpers are using Arm32 assemblythat has not been ported to AArch64

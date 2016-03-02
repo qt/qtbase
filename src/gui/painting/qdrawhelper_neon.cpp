@@ -1061,6 +1061,16 @@ const uint * QT_FASTCALL qt_fetch_radial_gradient_neon(uint *buffer, const Opera
     return qt_fetch_radial_gradient_template<QRadialFetchSimd<QSimdNeon>,uint>(buffer, op, data, y, x, length);
 }
 
+extern void QT_FASTCALL qt_convert_rgb888_to_rgb32_neon(quint32 *dst, const uchar *src, int len);
+
+const uint * QT_FASTCALL qt_fetchUntransformed_888_neon(uint *buffer, const Operator *, const QSpanData *data,
+                                                       int y, int x, int length)
+{
+    const uchar *line = data->texture.scanLine(y) + x * 3;
+    qt_convert_rgb888_to_rgb32_neon(buffer, line, length);
+    return buffer;
+}
+
 QT_END_NAMESPACE
 
 #endif // __ARM_NEON__
