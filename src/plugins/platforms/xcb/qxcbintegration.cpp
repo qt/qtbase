@@ -203,7 +203,7 @@ QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
 {
     QXcbScreen *screen = static_cast<QXcbScreen *>(window->screen()->handle());
     QXcbGlIntegration *glIntegration = screen->connection()->glIntegration();
-    if (window->type() != Qt::Desktop) {
+    if (window->type() != Qt::Desktop && window->supportsOpenGL()) {
         if (glIntegration) {
             QXcbWindow *xcbWindow = glIntegration->createWindow(window);
             xcbWindow->create();
