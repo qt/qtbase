@@ -147,14 +147,8 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
 {
     Q_XCB_NOOP(connection());
 
-    const xcb_setup_t *setup = xcb_get_setup(xcb_connection());
-    xcb_format_t *fmt = xcb_setup_pixmap_formats(setup);
-    xcb_format_t *fmtend = fmt + xcb_setup_pixmap_formats_length(setup);
-    for (; fmt != fmtend; ++fmt)
-        if (fmt->depth == depth)
-            break;
-
-    Q_ASSERT(fmt != fmtend);
+    const xcb_format_t *fmt = connection()->formatForDepth(depth);
+    Q_ASSERT(fmt);
 
     m_xcb_image = xcb_image_create(size.width(), size.height(),
                                    XCB_IMAGE_FORMAT_Z_PIXMAP,
