@@ -67,7 +67,7 @@ void QDirectFbBackingStore::flush(QWindow *, const QRegion &region, const QPoint
     QVector<QRect> rects = region.rects();
     for (int i = 0 ; i < rects.size(); i++) {
         const QRect rect = rects.at(i);
-        DFBRegion dfbReg = { rect.x() + offset.x(),rect.y() + offset.y(),rect.right() + offset.x(),rect.bottom() + offset.y()};
+        DFBRegion dfbReg(rect.x() + offset.x(),rect.y() + offset.y(),rect.right() + offset.x(),rect.bottom() + offset.y());
         m_dfbSurface->Flip(m_dfbSurface.data(), &dfbReg, DFBSurfaceFlipFlags(DSFLIP_BLIT|DSFLIP_ONSYNC));
     }
 }
@@ -86,9 +86,9 @@ void QDirectFbBackingStore::resize(const QSize &size, const QRegion& reg)
 
 static inline void scrollSurface(IDirectFBSurface *surface, const QRect &r, int dx, int dy)
 {
-    const DFBRectangle rect = { r.x(), r.y(), r.width(), r.height() };
+    const DFBRectangle rect(r.x(), r.y(), r.width(), r.height());
     surface->Blit(surface, surface, &rect, r.x() + dx, r.y() + dy);
-    const DFBRegion region = { rect.x + dx, rect.y + dy, r.right() + dx, r.bottom() + dy };
+    const DFBRegion region(rect.x + dx, rect.y + dy, r.right() + dx, r.bottom() + dy);
     surface->Flip(surface, &region, DFBSurfaceFlipFlags(DSFLIP_BLIT));
 }
 
