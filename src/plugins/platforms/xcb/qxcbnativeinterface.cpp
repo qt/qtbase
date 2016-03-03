@@ -76,7 +76,7 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("startupid"), QByteArrayLiteral("traywindow"),
         QByteArrayLiteral("gettimestamp"), QByteArrayLiteral("x11screen"),
         QByteArrayLiteral("rootwindow"),
-        QByteArrayLiteral("subpixeltype"), QByteArrayLiteral("antialiasingEnabled"),
+        QByteArrayLiteral("subpixeltype"), QByteArrayLiteral("antialiasingenabled"),
         QByteArrayLiteral("nofonthinting"),
         QByteArrayLiteral("atspibus")
     };
