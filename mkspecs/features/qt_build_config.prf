@@ -72,6 +72,10 @@ CONFIG += \
     # However, testcases should be still built with exceptions.
     exceptions_off testcase_exceptions
 
+# Under Windows, this is neither necessary (transitive deps are automatically
+# resolved), nor functional (.res files end up in .prl files and break things).
+unix: CONFIG += explicitlib
+
 
 defineTest(qtBuildPart) {
     bp = $$eval($$upper($$section(_QMAKE_CONF_, /, -2, -2))_BUILD_PARTS)
