@@ -106,6 +106,9 @@
 #  if defined(WINCE) || defined(_WIN32_WCE)
 #    define Q_OS_WINCE
 #  elif defined(WINAPI_FAMILY)
+#    ifndef WINAPI_FAMILY_PC_APP
+#      define WINAPI_FAMILY_PC_APP WINAPI_FAMILY_APP
+#    endif
 #    if defined(WINAPI_FAMILY_PHONE_APP) && WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
 #      define Q_OS_WINPHONE
 #      define Q_OS_WINRT
