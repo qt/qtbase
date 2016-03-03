@@ -196,7 +196,7 @@ void QOpenWFDDevice::readEvents(WFDtime wait)
         qDebug("Pipeline bind mask event handling not implemented");
         break;
     default:
-        qDebug("Not recognised event type");
+        qDebug("Unrecognized event type: %lu", static_cast<long unsigned int>(type));
         break;
     }
 
