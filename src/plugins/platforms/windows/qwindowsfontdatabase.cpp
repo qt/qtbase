@@ -1765,14 +1765,14 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
         IDWriteFont *directWriteFont = 0;
         HRESULT hr = data->directWriteGdiInterop->CreateFontFromLOGFONT(&lf, &directWriteFont);
         if (FAILED(hr)) {
-            const QString errorString = qt_error_string(int(GetLastError()));
+            const QString errorString = qt_error_string(int(hr));
             qWarning().noquote().nospace() << "DirectWrite: CreateFontFromLOGFONT() failed ("
                 << errorString << ") for " << request << ' ' << lf << " dpi=" << dpi;
         } else {
             IDWriteFontFace *directWriteFontFace = NULL;
             hr = directWriteFont->CreateFontFace(&directWriteFontFace);
             if (FAILED(hr)) {
-                const QString errorString = qt_error_string(int(GetLastError()));
+                const QString errorString = qt_error_string(int(hr));
                 qWarning().noquote() << "DirectWrite: CreateFontFace() failed ("
                     << errorString << ") for " << request << ' ' << lf << " dpi=" << dpi;
             } else {
