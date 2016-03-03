@@ -139,8 +139,6 @@ public:
     QVector<QVariant> firstRow;
 };
 
-static const uint initial_cache_size = 128;
-
 QSQLite2ResultPrivate::QSQLite2ResultPrivate(QSQLite2Result* res) : q(res), access(0), currentTail(0),
     currentMachine(0), skippedStatus(false), skipRow(false), utf8(false)
 {
