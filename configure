@@ -7048,9 +7048,6 @@ if [ -n "$CFG_SYSROOT" ] && [ "$CFG_GCC_SYSROOT" = "yes" ]; then
     echo "}"
     echo
 fi
-if [ -n "$RPATH_FLAGS" ]; then
-    echo "QMAKE_RPATHDIR += $RPATH_FLAGS"
-fi
 echo "QT_COMPILER_STDCXX = $CFG_STDCXX_DEFAULT"
 if [ -n "$QT_GCC_MAJOR_VERSION" ]; then
     echo "QT_GCC_MAJOR_VERSION = $QT_GCC_MAJOR_VERSION"
