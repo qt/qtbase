@@ -38,10 +38,29 @@
 ****************************************************************************/
 
 #include "qbearerengine_p.h"
+#include <algorithm>
 
 #ifndef QT_NO_BEARERMANAGEMENT
 
 QT_BEGIN_NAMESPACE
+
+static void cleanUpConfigurations(QHash<QString, QNetworkConfigurationPrivatePointer> &configurations)
+{
+    for (const auto &ptr : qAsConst(configurations)) {
+        ptr->isValid = false;
+        ptr->id.clear();
+    }
+    configurations.clear();
+}
+
+static bool hasUsedConfiguration(const QHash<QString, QNetworkConfigurationPrivatePointer> &configurations)
+{
+    auto isUsed = [](const QNetworkConfigurationPrivatePointer &ptr) {
+        return ptr->ref.load() > 1;
+    };
+    const auto end = configurations.end();
+    return std::find_if(configurations.begin(), end, isUsed) != end;
+}
 
 QBearerEngine::QBearerEngine(QObject *parent)
     : QObject(parent), mutex(QMutex::Recursive)
@@ -50,28 +69,9 @@ QBearerEngine::QBearerEngine(QObject *parent)
 
 QBearerEngine::~QBearerEngine()
 {
-    QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator it;
-    QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator end;
-
-    for (it = snapConfigurations.begin(), end = snapConfigurations.end(); it != end; ++it) {
-        it.value()->isValid = false;
-        it.value()->id.clear();
-    }
-    snapConfigurations.clear();
-
-    for (it = accessPointConfigurations.begin(), end = accessPointConfigurations.end();
-         it != end; ++it) {
-        it.value()->isValid = false;
-        it.value()->id.clear();
-    }
-    accessPointConfigurations.clear();
-
-    for (it = userChoiceConfigurations.begin(), end = userChoiceConfigurations.end();
-         it != end; ++it) {
-        it.value()->isValid = false;
-        it.value()->id.clear();
-    }
-    userChoiceConfigurations.clear();
+    cleanUpConfigurations(snapConfigurations);
+    cleanUpConfigurations(accessPointConfigurations);
+    cleanUpConfigurations(userChoiceConfigurations);
 }
 
 bool QBearerEngine::requiresPolling() const
@@ -87,30 +87,10 @@ bool QBearerEngine::requiresPolling() const
 */
 bool QBearerEngine::configurationsInUse() const
 {
-    QHash<QString, QNetworkConfigurationPrivatePointer>::ConstIterator it;
-    QHash<QString, QNetworkConfigurationPrivatePointer>::ConstIterator end;
-
     QMutexLocker locker(&mutex);
-
-    for (it = accessPointConfigurations.constBegin(),
-         end = accessPointConfigurations.constEnd(); it != end; ++it) {
-        if (it.value()->ref.load() > 1)
-            return true;
-    }
-
-    for (it = snapConfigurations.constBegin(),
-         end = snapConfigurations.constEnd(); it != end; ++it) {
-        if (it.value()->ref.load() > 1)
-            return true;
-    }
-
-    for (it = userChoiceConfigurations.constBegin(),
-         end = userChoiceConfigurations.constEnd(); it != end; ++it) {
-        if (it.value()->ref.load() > 1)
-            return true;
-    }
-
-    return false;
+    return hasUsedConfiguration(accessPointConfigurations)
+        || hasUsedConfiguration(snapConfigurations)
+        || hasUsedConfiguration(userChoiceConfigurations);
 }
 
 #include "moc_qbearerengine_p.cpp"
