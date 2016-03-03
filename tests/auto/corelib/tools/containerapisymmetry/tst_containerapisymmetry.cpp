@@ -34,6 +34,7 @@
 #include "qstring.h"
 #include "qvarlengtharray.h"
 #include "qvector.h"
+#include "qhash.h"
 #include "qdebug.h"
 
 #include <algorithm>
@@ -41,6 +42,7 @@
 #include <vector> // for reference
 #include <list>
 #include <set>
+#include <map>
 
 // MSVC has these containers from the Standard Library, but it lacks
 // a __has_include mechanism (that we need to use for other stdlibs).
@@ -57,6 +59,9 @@
 #endif
 #if COMPILER_HAS_STDLIB_INCLUDE(<unordered_set>)
 #include <unordered_set>
+#endif
+#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_map>)
+#include <unordered_map>
 #endif
 
 struct Movable
@@ -255,6 +260,9 @@ private:
     template<template<typename ... T> class Container>
     void non_associative_container_duplicates_strategy() const;
 
+    template <typename Container>
+    void ranged_ctor_associative_impl() const;
+
 private Q_SLOTS:
     // non associative
     void ranged_ctor_std_vector_int() { ranged_ctor_non_associative_impl<std::vector<int>>(); }
@@ -402,6 +410,71 @@ private Q_SLOTS:
     void ranged_ctor_QSet_Movable() { ranged_ctor_non_associative_impl<QSet<Movable>>(); }
     void ranged_ctor_QSet_Complex() { ranged_ctor_non_associative_impl<QSet<Complex>>(); }
     void ranged_ctor_QSet_duplicates_strategy() { non_associative_container_duplicates_strategy<QSet>(); }
+
+    // associative
+    void ranged_ctor_std_map_int() { ranged_ctor_associative_impl<std::map<int, int>>(); }
+    void ranged_ctor_std_map_Movable() { ranged_ctor_associative_impl<std::map<Movable, int>>(); }
+    void ranged_ctor_std_map_Complex() { ranged_ctor_associative_impl<std::map<Complex, int>>(); }
+
+    void ranged_ctor_std_multimap_int() { ranged_ctor_associative_impl<std::multimap<int, int>>(); }
+    void ranged_ctor_std_multimap_Movable() { ranged_ctor_associative_impl<std::multimap<Movable, int>>(); }
+    void ranged_ctor_std_multimap_Complex() { ranged_ctor_associative_impl<std::multimap<Complex, int>>(); }
+
+    void ranged_ctor_unordered_map_int() {
+#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_map>)
+        ranged_ctor_associative_impl<std::unordered_map<int, int>>();
+#else
+        QSKIP("<unordered_map> is needed for this test");
+#endif
+    }
+
+    void ranged_ctor_unordered_map_Movable() {
+#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_map>)
+        ranged_ctor_associative_impl<std::unordered_map<Movable, Movable>>();
+#else
+        QSKIP("<unordered_map> is needed for this test");
+#endif
+    }
+
+    void ranged_ctor_unordered_map_Complex() {
+#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_map>)
+        ranged_ctor_associative_impl<std::unordered_map<Complex, Complex>>();
+#else
+        QSKIP("<unordered_map> is needed for this test");
+#endif
+    }
+
+    void ranged_ctor_QHash_int() { ranged_ctor_associative_impl<QHash<int, int>>(); }
+    void ranged_ctor_QHash_Movable() { ranged_ctor_associative_impl<QHash<Movable, int>>(); }
+    void ranged_ctor_QHash_Complex() { ranged_ctor_associative_impl<QHash<Complex, int>>(); }
+
+    void ranged_ctor_unordered_multimap_int() {
+#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_map>)
+        ranged_ctor_associative_impl<std::unordered_multimap<int, int>>();
+#else
+        QSKIP("<unordered_map> is needed for this test");
+#endif
+    }
+
+    void ranged_ctor_unordered_multimap_Movable() {
+#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_map>)
+        ranged_ctor_associative_impl<std::unordered_multimap<Movable, Movable>>();
+#else
+        QSKIP("<unordered_map> is needed for this test");
+#endif
+    }
+
+    void ranged_ctor_unordered_multimap_Complex() {
+#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_map>)
+        ranged_ctor_associative_impl<std::unordered_multimap<Complex, Complex>>();
+#else
+        QSKIP("<unordered_map> is needed for this test");
+#endif
+    }
+
+    void ranged_ctor_QMultiHash_int() { ranged_ctor_associative_impl<QMultiHash<int, int>>(); }
+    void ranged_ctor_QMultiHash_Movable() { ranged_ctor_associative_impl<QMultiHash<Movable, int>>(); }
+    void ranged_ctor_QMultiHash_Complex() { ranged_ctor_associative_impl<QMultiHash<Complex, int>>(); }
 
 private:
     template <typename Container>
@@ -650,6 +723,73 @@ void tst_ContainerApiSymmetry::non_associative_container_duplicates_strategy() c
     QSKIP("Test requires a better compiler");
 }
 #endif // Q_COMPILER_INITIALIZER_LISTS
+
+template <typename Container>
+void tst_ContainerApiSymmetry::ranged_ctor_associative_impl() const
+{
+    using K = typename Container::key_type;
+    using V = typename Container::mapped_type;
+
+    // The double K(0) is deliberate. The order of the elements matters:
+    // * for unique-key STL containers, the first one should be the one inserted (cf. LWG 2844)
+    // * for unique-key Qt containers, the last one should be the one inserted
+    // * for multi-key sorted containers, the order of insertion of identical keys is also the
+    //   iteration order (which establishes the equality of the containers)
+    // (although nothing of this is being tested here, that deserves its own testing)
+    const Container reference{
+        { K(0), V(1000) },
+        { K(1), V(1001) },
+        { K(2), V(1002) },
+        { K(0), V(1003) }
+    };
+
+    // Note that using anything not convertible to std::pair doesn't work for
+    // std containers. Their ranged construction is defined in terms of
+    // insert(value_type), which for std associative containers is
+    // std::pair<const K, T>.
+
+    // plain array
+    const std::pair<K, V> values1[] = {
+        std::make_pair(K(0), V(1000)),
+        std::make_pair(K(1), V(1001)),
+        std::make_pair(K(2), V(1002)),
+        std::make_pair(K(0), V(1003))
+    };
+
+    const Container c1(values1, values1 + sizeof(values1)/sizeof(values1[0]));
+
+    // from QList
+    QList<std::pair<K, V>> l2;
+    l2 << std::make_pair(K(0), V(1000))
+       << std::make_pair(K(1), V(1001))
+       << std::make_pair(K(2), V(1002))
+       << std::make_pair(K(0), V(1003));
+
+    const Container c2a(l2.begin(), l2.end());
+    const Container c2b(l2.cbegin(), l2.cend());
+
+    // from std::list
+    std::list<std::pair<K, V>> l3;
+    l3.push_back(std::make_pair(K(0), V(1000)));
+    l3.push_back(std::make_pair(K(1), V(1001)));
+    l3.push_back(std::make_pair(K(2), V(1002)));
+    l3.push_back(std::make_pair(K(0), V(1003)));
+    const Container c3a(l3.begin(), l3.end());
+
+    // from const std::list
+    const std::list<std::pair<K, V>> l3c = l3;
+    const Container c3b(l3c.begin(), l3c.end());
+
+    // from itself
+    const Container c4(reference.begin(), reference.end());
+
+    QCOMPARE(c1,  reference);
+    QCOMPARE(c2a, reference);
+    QCOMPARE(c2b, reference);
+    QCOMPARE(c3a, reference);
+    QCOMPARE(c3b, reference);
+    QCOMPARE(c4,  reference);
+}
 
 template <typename Container>
 Container make(int size)
