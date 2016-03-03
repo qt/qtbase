@@ -202,7 +202,7 @@ public:
     static QWidget *active_window;
 #ifndef QT_NO_WHEELEVENT
     static int  wheel_scroll_lines;
-    static QWidget *wheel_widget;
+    static QPointer<QWidget> wheel_widget;
 #endif
 
     static int enabledAnimations; // Combination of QPlatformTheme::UiEffect
