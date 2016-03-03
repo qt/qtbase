@@ -45,6 +45,7 @@
 #include <QtCore/qrefcount.h>
 #include <QtCore/qarraydata.h>
 #include <QtCore/qhashfunctions.h>
+#include <QtCore/qcontainertools_impl.h>
 
 #include <iterator>
 #include <vector>
@@ -81,6 +82,9 @@ public:
     inline QVector(std::initializer_list<T> args);
     QVector<T> &operator=(std::initializer_list<T> args);
 #endif
+    template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
+    inline QVector(InputIterator first, InputIterator last);
+
     bool operator==(const QVector<T> &v) const;
     inline bool operator!=(const QVector<T> &v) const { return !(*this == v); }
 
@@ -556,6 +560,15 @@ QVector<T> &QVector<T>::operator=(std::initializer_list<T> args)
 QT_WARNING_POP
 # endif // Q_CC_MSVC
 #endif // Q_COMPILER_INITIALIZER_LISTS
+
+template <typename T>
+template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator>>
+QVector<T>::QVector(InputIterator first, InputIterator last)
+    : QVector()
+{
+    QtPrivate::reserveIfForwardIterator(this, first, last);
+    std::copy(first, last, std::back_inserter(*this));
+}
 
 template <typename T>
 void QVector<T>::freeData(Data *x)

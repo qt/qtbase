@@ -43,6 +43,7 @@
 #include <QtCore/qcontainerfwd.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qalgorithms.h>
+#include <QtCore/qcontainertools_impl.h>
 
 #include <new>
 #include <string.h>
@@ -71,12 +72,18 @@ public:
 
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     QVarLengthArray(std::initializer_list<T> args)
-        : a(Prealloc), s(0), ptr(reinterpret_cast<T *>(array))
+        : QVarLengthArray(args.begin(), args.end())
     {
-        if (args.size())
-            append(args.begin(), int(args.size()));
     }
 #endif
+
+    template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
+    inline QVarLengthArray(InputIterator first, InputIterator last)
+        : QVarLengthArray()
+    {
+        QtPrivate::reserveIfForwardIterator(this, first, last);
+        std::copy(first, last, std::back_inserter(*this));
+    }
 
     inline ~QVarLengthArray() {
         if (QTypeInfo<T>::isComplex) {

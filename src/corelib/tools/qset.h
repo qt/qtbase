@@ -41,6 +41,8 @@
 #define QSET_H
 
 #include <QtCore/qhash.h>
+#include <QtCore/qcontainertools_impl.h>
+
 #ifdef Q_COMPILER_INITIALIZER_LISTS
 #include <initializer_list>
 #endif
@@ -59,12 +61,16 @@ public:
     inline QSet() noexcept {}
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QSet(std::initializer_list<T> list)
-    {
-        reserve(int(list.size()));
-        for (typename std::initializer_list<T>::const_iterator it = list.begin(); it != list.end(); ++it)
-            insert(*it);
-    }
+        : QSet(list.begin(), list.end()) {}
 #endif
+    template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
+    inline QSet(InputIterator first, InputIterator last)
+    {
+        QtPrivate::reserveIfForwardIterator(this, first, last);
+        for (; first != last; ++first)
+            insert(*first);
+    }
+
     // compiler-generated copy/move ctor/assignment operators are fine!
     // compiler-generated destructor is fine!
 

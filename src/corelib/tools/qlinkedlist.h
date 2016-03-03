@@ -42,6 +42,7 @@
 
 #include <QtCore/qiterator.h>
 #include <QtCore/qrefcount.h>
+#include <QtCore/qcontainertools_impl.h>
 
 #include <iterator>
 #include <list>
@@ -84,11 +85,14 @@ public:
     inline QLinkedList(const QLinkedList<T> &l) : d(l.d) { d->ref.ref(); if (!d->sharable) detach(); }
 #if defined(Q_COMPILER_INITIALIZER_LISTS)
     inline QLinkedList(std::initializer_list<T> list)
-        : d(const_cast<QLinkedListData *>(&QLinkedListData::shared_null))
-    {
-        std::copy(list.begin(), list.end(), std::back_inserter(*this));
-    }
+        : QLinkedList(list.begin(), list.end()) {}
 #endif
+    template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
+    inline QLinkedList(InputIterator first, InputIterator last)
+        : QLinkedList()
+    {
+        std::copy(first, last, std::back_inserter(*this));
+    }
     ~QLinkedList();
     QLinkedList<T> &operator=(const QLinkedList<T> &);
 #ifdef Q_COMPILER_RVALUE_REFS

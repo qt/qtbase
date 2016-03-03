@@ -847,5 +847,12 @@ int QtPrivate::QStringList_removeDuplicates(QStringList *that)
     lists.
 */
 
+ /*! \fn template<typename InputIterator> QStringList::QStringList(InputIterator first, InputIterator last)
+     \since 5.14
+
+     Constructs a QStringList with the contents in the iterator range [\a first, \a last).
+
+     The value type of \c InputIterator must be convertible to \c QString.
+ */
 
 QT_END_NAMESPACE

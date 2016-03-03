@@ -46,6 +46,7 @@
 #include <QtCore/qarraydata.h>
 #include <QtCore/qhashfunctions.h>
 #include <QtCore/qvector.h>
+#include <QtCore/qcontainertools_impl.h>
 
 #include <iterator>
 #include <list>
@@ -169,9 +170,11 @@ public:
     inline void swap(QList<T> &other) noexcept { qSwap(d, other.d); }
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QList(std::initializer_list<T> args)
-        : d(const_cast<QListData::Data *>(&QListData::shared_null))
-    { reserve(int(args.size())); std::copy(args.begin(), args.end(), std::back_inserter(*this)); }
+        : QList(args.begin(), args.end()) {}
 #endif
+    template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
+    QList(InputIterator first, InputIterator last);
+
     bool operator==(const QList<T> &l) const;
     inline bool operator!=(const QList<T> &l) const { return !(*this == l); }
 
@@ -840,6 +843,15 @@ Q_OUTOFLINE_TEMPLATE QList<T>::~QList()
 {
     if (!d->ref.deref())
         dealloc(d);
+}
+
+template <typename T>
+template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator>>
+QList<T>::QList(InputIterator first, InputIterator last)
+    : QList()
+{
+    QtPrivate::reserveIfForwardIterator(this, first, last);
+    std::copy(first, last, std::back_inserter(*this));
 }
 
 template <typename T>

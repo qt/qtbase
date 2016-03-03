@@ -113,6 +113,17 @@
     compiled in C++11 mode.
 */
 
+/*! \fn template <class T> template<typename InputIterator> QSet<T>::QSet(InputIterator first, InputIterator last)
+    \since 5.14
+
+    Constructs a set with the contents in the iterator range [\a first, \a last).
+
+    The value type of \c InputIterator must be convertible to \c T.
+
+    \note If the range [\a first, \a last) contains duplicate elements,
+    the first one is retained.
+*/
+
 /*!
     \fn template <class T> void QSet<T>::swap(QSet<T> &other)
 

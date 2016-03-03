@@ -44,6 +44,7 @@
 #define QSTRINGLIST_H
 
 #include <QtCore/qalgorithms.h>
+#include <QtCore/qcontainertools_impl.h>
 #include <QtCore/qregexp.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstringmatcher.h>
@@ -109,6 +110,9 @@ public:
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QStringList(std::initializer_list<QString> args) : QList<QString>(args) { }
 #endif
+    template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
+    inline QStringList(InputIterator first, InputIterator last)
+        : QList<QString>(first, last) { }
 
     QStringList &operator=(const QList<QString> &other)
     { QList<QString>::operator=(other); return *this; }

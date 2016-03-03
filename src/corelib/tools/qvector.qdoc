@@ -243,6 +243,13 @@
     lists.
 */
 
+/*! \fn template <typename T> template<typename InputIterator> QVector<T>::QVector(InputIterator first, InputIterator last)
+    \since 5.14
+
+    Constructs a vector with the contents in the iterator range [\a first, \a last).
+
+    The value type of \c InputIterator must be convertible to \c T.
+*/
 
 /*! \fn template <typename T> QVector<T>::~QVector()
 

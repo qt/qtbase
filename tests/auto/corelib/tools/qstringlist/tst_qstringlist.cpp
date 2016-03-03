@@ -30,13 +30,17 @@
 #include <qregexp.h>
 #include <qregularexpression.h>
 #include <qstringlist.h>
+#include <qvector.h>
 
 #include <locale.h>
+
+#include <algorithm>
 
 class tst_QStringList : public QObject
 {
     Q_OBJECT
 private slots:
+    void constructors();
     void sort();
     void filter();
     void replaceInStrings();
@@ -65,6 +69,39 @@ private slots:
 };
 
 extern const char email[];
+
+void tst_QStringList::constructors()
+{
+    {
+        QStringList list;
+        QVERIFY(list.isEmpty());
+        QCOMPARE(list.size(), 0);
+        QVERIFY(list == QStringList());
+    }
+    {
+        QString str = "abc";
+        QStringList list(str);
+        QVERIFY(!list.isEmpty());
+        QCOMPARE(list.size(), 1);
+        QCOMPARE(list.at(0), str);
+    }
+    {
+        QStringList list{ "a", "b", "c" };
+        QVERIFY(!list.isEmpty());
+        QCOMPARE(list.size(), 3);
+        QCOMPARE(list.at(0), "a");
+        QCOMPARE(list.at(1), "b");
+        QCOMPARE(list.at(2), "c");
+    }
+    {
+        const QVector<QString> reference{ "a", "b", "c" };
+        QCOMPARE(reference.size(), 3);
+
+        QStringList list(reference.cbegin(), reference.cend());
+        QCOMPARE(list.size(), reference.size());
+        QVERIFY(std::equal(list.cbegin(), list.cend(), reference.cbegin()));
+    }
+}
 
 void tst_QStringList::indexOf_regExp()
 {
