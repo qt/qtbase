@@ -731,10 +731,11 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
 
     QList<QByteArray> headers = newHttpRequest.rawHeaderList();
     if (resumeOffset != 0) {
-        if (headers.contains("Range")) {
+        const int rangeIndex = headers.indexOf("Range");
+        if (rangeIndex != -1) {
             // Need to adjust resume offset for user specified range
 
-            headers.removeOne("Range");
+            headers.removeAt(rangeIndex);
 
             // We've already verified that requestRange starts with "bytes=", see canResume.
             QByteArray requestRange = newHttpRequest.rawHeader("Range").mid(6);
@@ -2145,15 +2146,18 @@ void QNetworkReplyHttpImplPrivate::_q_metaDataChanged()
     Q_Q(QNetworkReplyHttpImpl);
     // 1. do we have cookies?
     // 2. are we allowed to set them?
-    if (cookedHeaders.contains(QNetworkRequest::SetCookieHeader) && manager
-        && (static_cast<QNetworkRequest::LoadControl>
-            (request.attribute(QNetworkRequest::CookieSaveControlAttribute,
-                               QNetworkRequest::Automatic).toInt()) == QNetworkRequest::Automatic)) {
-        QList<QNetworkCookie> cookies =
-            qvariant_cast<QList<QNetworkCookie> >(cookedHeaders.value(QNetworkRequest::SetCookieHeader));
-        QNetworkCookieJar *jar = manager->cookieJar();
-        if (jar)
-            jar->setCookiesFromUrl(cookies, url);
+    if (manager) {
+        const auto it = cookedHeaders.constFind(QNetworkRequest::SetCookieHeader);
+        if (it != cookedHeaders.cend()
+            && request.attribute(QNetworkRequest::CookieSaveControlAttribute,
+                                 QNetworkRequest::Automatic).toInt() == QNetworkRequest::Automatic) {
+            QNetworkCookieJar *jar = manager->cookieJar();
+            if (jar) {
+                QList<QNetworkCookie> cookies =
+                    qvariant_cast<QList<QNetworkCookie> >(it.value());
+                jar->setCookiesFromUrl(cookies, url);
+            }
+        }
     }
     emit q->metaDataChanged();
 }

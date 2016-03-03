@@ -370,9 +370,11 @@ bool QSocks5BindStore::contains(qintptr socketDescriptor)
 QSocks5BindData *QSocks5BindStore::retrieve(qintptr socketDescriptor)
 {
     QMutexLocker lock(&mutex);
-    if (!store.contains(socketDescriptor))
+    const auto it = store.constFind(socketDescriptor);
+    if (it == store.cend())
         return 0;
-    QSocks5BindData *bindData = store.take(socketDescriptor);
+    QSocks5BindData *bindData = it.value();
+    store.erase(it);
     if (bindData) {
         if (bindData->controlSocket->thread() != QThread::currentThread()) {
             qWarning("Can not access socks5 bind data from different thread");

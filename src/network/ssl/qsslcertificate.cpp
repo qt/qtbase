@@ -482,8 +482,9 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
     if (pos != -1) {
         // there was a special char in the path so cut of the part containing that char.
         pathPrefix = pathPrefix.left(pos);
-        if (pathPrefix.contains(QLatin1Char('/')))
-            pathPrefix = pathPrefix.left(pathPrefix.lastIndexOf(QLatin1Char('/')));
+        const int lastIndexOfSlash = pathPrefix.lastIndexOf(QLatin1Char('/'));
+        if (lastIndexOfSlash != -1)
+            pathPrefix = pathPrefix.left(lastIndexOfSlash);
         else
             pathPrefix.clear();
     } else {
