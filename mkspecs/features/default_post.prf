@@ -95,7 +95,10 @@ breakpad {
     !isEmpty(QMAKE_STRIP):QMAKE_POST_LINK = $$QMAKE_POST_LINK$$escape_expand(\\n\\t)$$quote($$QMAKE_STRIP $$DEBUGFILENAME)
 }
 
-c++11|c++14|c++1z {
+# Disable special compiler flags for host builds (needs to be changed for 5.7
+# to fall back to c++11 because since 5.7 c++11 is required everywhere,
+# including host builds).
+if(!host_build|!cross_compile):if(c++11|c++14|c++1z) {
     c++1z:       cxxstd = CXX1Z
     else: c++14: cxxstd = CXX14
     else:        cxxstd = CXX11
