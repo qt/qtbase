@@ -39,22 +39,14 @@
 #pragma qt_sync_stop_processing
 #endif
 
-#if defined(Q_CC_BOR)
-// Borland's windows.h does not set these correctly, resulting in
-// unusable WinSDK standard dialogs
-#ifndef WINVER
-#  define WINVER 0x0501
-#endif
-#ifndef _WIN32_WINNT
-#  define _WIN32_WINNT 0x0501
-#endif
-#endif
-
 #if defined(Q_CC_MINGW)
 // mingw's windows.h does not set _WIN32_WINNT, resulting breaking compilation
-#ifndef WINVER
-#  define WINVER 0x501
-#endif
+#  ifndef WINVER
+#    define WINVER 0x501
+#  endif
+#  ifndef _WIN32_WINNT
+#    define _WIN32_WINNT 0x0501
+#  endif
 #endif
 
 #ifndef NOMINMAX

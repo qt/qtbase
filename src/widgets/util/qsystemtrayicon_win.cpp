@@ -34,13 +34,6 @@
 #include "qsystemtrayicon_p.h"
 #ifndef QT_NO_SYSTEMTRAYICON
 
-#if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0600
-#  undef _WIN32_WINNT
-#endif
-#if !defined(_WIN32_WINNT)
-#  define _WIN32_WINNT 0x0600
-#endif
-
 #if defined(_WIN32_IE) && _WIN32_IE < 0x0600
 #  undef _WIN32_IE
 #endif

@@ -31,13 +31,6 @@
 **
 ****************************************************************************/
 
-#if !defined(WINAPI_FAMILY)
-#  if _WIN32_WINNT < 0x0500
-#    undef _WIN32_WINNT
-#    define _WIN32_WINNT 0x0500
-#  endif // _WIN32_WINNT < 0x500
-#endif // !WINAPI_FAMILY
-
 #include "qfilesystemiterator_p.h"
 #include "qfilesystemengine_p.h"
 #include "qplatformdefs.h"
