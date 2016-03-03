@@ -382,18 +382,6 @@ void QXcbWindow::create()
         return;
     }
 
-    const quint32 mask = XCB_CW_BACK_PIXMAP | XCB_CW_OVERRIDE_REDIRECT | XCB_CW_SAVE_UNDER | XCB_CW_EVENT_MASK;
-    const quint32 values[] = {
-        // XCB_CW_BACK_PIXMAP
-        XCB_NONE,
-        // XCB_CW_OVERRIDE_REDIRECT
-        type == Qt::Popup || type == Qt::ToolTip || (window()->flags() & Qt::BypassWindowManagerHint),
-        // XCB_CW_SAVE_UNDER
-        type == Qt::Popup || type == Qt::Tool || type == Qt::SplashScreen || type == Qt::ToolTip || type == Qt::Drawer,
-        // XCB_CW_EVENT_MASK
-        defaultEventMask
-    };
-
     // Parameters to XCreateWindow() are frame corner + inner size.
     // This fits in case position policy is frame inclusive. There is
     // currently no way to implement it for frame-exclusive geometries.
@@ -424,107 +412,75 @@ void QXcbWindow::create()
         }
     }
 
-    resolveFormat();
+    resolveFormat(platformScreen->surfaceFormatFor(window()->requestedFormat()));
 
-#ifdef XCB_USE_XLIB
-    if (window()->surfaceType() != QSurface::RasterSurface
-     && QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)) {
-        XVisualInfo *visualInfo = Q_NULLPTR;
-        if (connection()->hasDefaultVisualId())
-            visualInfo = CREATE_VISUALINFO_FROM_DEFAULT_VISUALID(this);
-        if (!visualInfo)
-            visualInfo = static_cast<XVisualInfo *>(createVisual());
+    const xcb_visualtype_t *visual = Q_NULLPTR;
 
-        if (Q_UNLIKELY(!visualInfo && window()->surfaceType() == QSurface::OpenGLSurface))
-            qFatal("Could not initialize OpenGL");
-
-        if (!visualInfo && window()->surfaceType() == QSurface::RasterGLSurface) {
-            qWarning("Could not initialize OpenGL for RasterGLSurface, reverting to RasterSurface.");
-            window()->setSurfaceType(QSurface::RasterSurface);
-        }
-
-        if (visualInfo) {
-            m_depth = visualInfo->depth;
-            m_imageFormat = imageFormatForVisual(visualInfo->depth, visualInfo->red_mask, visualInfo->blue_mask, &m_imageRgbSwap);
-            Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(this), xcb_parent_id, visualInfo->visual, AllocNone);
-
-            XSetWindowAttributes a;
-            a.background_pixel = WhitePixel(DISPLAY_FROM_XCB(this), platformScreen->screenNumber());
-            a.border_pixel = BlackPixel(DISPLAY_FROM_XCB(this), platformScreen->screenNumber());
-            a.colormap = cmap;
-
-            m_visualId = visualInfo->visualid;
-
-            m_window = XCreateWindow(DISPLAY_FROM_XCB(this), xcb_parent_id, rect.x(), rect.y(), rect.width(), rect.height(),
-                                      0, visualInfo->depth, InputOutput, visualInfo->visual,
-                                      CWBackPixel|CWBorderPixel|CWColormap, &a);
-
-            XFree(visualInfo);
-        }
+    if (connection()->hasDefaultVisualId()) {
+        visual = platformScreen->visualForId(connection()->defaultVisualId());
+        if (!visual)
+            qWarning() << "Failed to use requested visual id.";
     }
-#endif
 
-    if (!m_window)
-    {
-        m_window = xcb_generate_id(xcb_connection());
-        m_visualId = UINT_MAX;
-        const xcb_visualtype_t *visual = Q_NULLPTR;
-        m_depth = platformScreen->screen()->root_depth;
+    if (!visual)
+        visual = createVisual();
 
-        uint32_t mask = 0;
-        uint32_t values[3];
-
-        if (connection()->hasDefaultVisualId()) {
-            m_visualId = connection()->defaultVisualId();
-            visual = platformScreen->visualForId(m_visualId);
-        }
-
-        if (!visual) {
-            if (connection()->hasDefaultVisualId())
-                qWarning("Failed to use default visual id. Falling back to using screens root_visual");
-
-            m_visualId = platformScreen->screen()->root_visual;
-
-            if (m_format.alphaBufferSize() == 8) {
-                xcb_depth_iterator_t depthIter = xcb_screen_allowed_depths_iterator(platformScreen->screen());
-                while (depthIter.rem) {
-                    if (depthIter.data->depth == 32) {
-                        xcb_visualtype_iterator_t visualIter = xcb_depth_visuals_iterator(depthIter.data);
-                        if (visualIter.rem) {
-                            m_visualId = visualIter.data->visual_id;
-                            m_depth = 32;
-                            uint32_t colormap = xcb_generate_id(xcb_connection());
-                            xcb_create_colormap(xcb_connection(), XCB_COLORMAP_ALLOC_NONE, colormap,
-                                                xcb_parent_id, m_visualId);
-                            mask |= XCB_CW_BACK_PIXEL | XCB_CW_BORDER_PIXEL | XCB_CW_COLORMAP;
-                            values[0] = platformScreen->screen()->white_pixel;
-                            values[1] = platformScreen->screen()->black_pixel;
-                            values[2] = colormap;
-                            break;
-                        }
-                    }
-                    xcb_depth_next(&depthIter);
-                }
-            }
-
-            visual = platformScreen->visualForId(m_visualId);
-        }
-
-        m_imageFormat = imageFormatForVisual(m_depth, visual->red_mask, visual->blue_mask, &m_imageRgbSwap);
-        Q_XCB_CALL(xcb_create_window(xcb_connection(),
-                                     m_depth,
-                                     m_window,                        // window id
-                                     xcb_parent_id,                   // parent window id
-                                     rect.x(),
-                                     rect.y(),
-                                     rect.width(),
-                                     rect.height(),
-                                     0,                               // border width
-                                     XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
-                                     m_visualId,                      // visual
-                                     mask,
-                                     values));
+    if (!visual) {
+        qWarning() << "Falling back to using screens root_visual.";
+        visual = platformScreen->visualForId(platformScreen->screen()->root_visual);
     }
+
+    Q_ASSERT(visual);
+
+    m_visualId = visual->visual_id;
+    m_depth = platformScreen->depthOfVisual(m_visualId);
+    m_imageFormat = imageFormatForVisual(m_depth, visual->red_mask, visual->blue_mask, &m_imageRgbSwap);
+    xcb_colormap_t colormap = 0;
+
+    quint32 mask = XCB_CW_BACK_PIXMAP
+                 | XCB_CW_BORDER_PIXEL
+                 | XCB_CW_BIT_GRAVITY
+                 | XCB_CW_OVERRIDE_REDIRECT
+                 | XCB_CW_SAVE_UNDER
+                 | XCB_CW_EVENT_MASK;
+
+    static const bool haveOpenGL = QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL);
+
+    if ((window()->supportsOpenGL() && haveOpenGL) || m_format.hasAlpha()) {
+        colormap = xcb_generate_id(xcb_connection());
+        Q_XCB_CALL(xcb_create_colormap(xcb_connection(),
+                                       XCB_COLORMAP_ALLOC_NONE,
+                                       colormap,
+                                       xcb_parent_id,
+                                       m_visualId));
+
+        mask |= XCB_CW_COLORMAP;
+    }
+
+    quint32 values[] = {
+        XCB_BACK_PIXMAP_NONE,
+        platformScreen->screen()->black_pixel,
+        XCB_GRAVITY_NORTH_WEST,
+        type == Qt::Popup || type == Qt::ToolTip || (window()->flags() & Qt::BypassWindowManagerHint),
+        type == Qt::Popup || type == Qt::Tool || type == Qt::SplashScreen || type == Qt::ToolTip || type == Qt::Drawer,
+        defaultEventMask,
+        colormap
+    };
+
+    m_window = xcb_generate_id(xcb_connection());
+    Q_XCB_CALL(xcb_create_window(xcb_connection(),
+                                 m_depth,
+                                 m_window,                        // window id
+                                 xcb_parent_id,                   // parent window id
+                                 rect.x(),
+                                 rect.y(),
+                                 rect.width(),
+                                 rect.height(),
+                                 0,                               // border width
+                                 XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
+                                 m_visualId,                      // visual
+                                 mask,
+                                 values));
 
     connection()->addWindowEventListener(m_window, this);
 
@@ -2560,6 +2516,12 @@ void QXcbWindow::updateSyncRequestCounter()
     }
 }
 
+const xcb_visualtype_t *QXcbWindow::createVisual()
+{
+    return xcbScreen() ? xcbScreen()->visualForFormat(m_format)
+                       : nullptr;
+}
+
 bool QXcbWindow::setKeyboardGrabEnabled(bool grab)
 {
     if (grab && !connection()->canGrab())
@@ -2831,3 +2793,4 @@ QXcbScreen *QXcbWindow::xcbScreen() const
 }
 
 QT_END_NAMESPACE
+

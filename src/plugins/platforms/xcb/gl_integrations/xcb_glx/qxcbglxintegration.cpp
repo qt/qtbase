@@ -189,7 +189,7 @@ QXcbWindow *QXcbGlxIntegration::createWindow(QWindow *window) const
 QPlatformOpenGLContext *QXcbGlxIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     QXcbScreen *screen = static_cast<QXcbScreen *>(context->screen()->handle());
-    QGLXContext *platformContext = new QGLXContext(screen, context->format(),
+    QGLXContext *platformContext = new QGLXContext(screen, screen->surfaceFormatFor(context->format()),
                                                    context->shareHandle(), context->nativeHandle());
     context->setNativeHandle(platformContext->nativeHandle());
     return platformContext;

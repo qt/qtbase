@@ -715,8 +715,8 @@ bool QGLXContext::supportsThreading()
 
 QGLXPbuffer::QGLXPbuffer(QOffscreenSurface *offscreenSurface)
     : QPlatformOffscreenSurface(offscreenSurface)
-    , m_format(offscreenSurface->requestedFormat())
     , m_screen(static_cast<QXcbScreen *>(offscreenSurface->screen()->handle()))
+    , m_format(m_screen->surfaceFormatFor(offscreenSurface->requestedFormat()))
     , m_pbuffer(0)
 {
     GLXFBConfig config = qglx_findConfig(DISPLAY_FROM_XCB(m_screen), m_screen->screenNumber(), m_format);

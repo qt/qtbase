@@ -60,8 +60,11 @@ public:
 
 protected:
     void create() Q_DECL_OVERRIDE;
-    void resolveFormat() Q_DECL_OVERRIDE;
-    void *createVisual() Q_DECL_OVERRIDE;
+    void resolveFormat(const QSurfaceFormat &format) Q_DECL_OVERRIDE;
+
+#ifdef XCB_USE_XLIB
+    const xcb_visualtype_t *createVisual() Q_DECL_OVERRIDE;
+#endif
 
 private:
     QXcbEglIntegration *m_glIntegration;

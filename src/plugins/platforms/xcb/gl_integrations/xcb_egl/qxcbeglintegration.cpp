@@ -87,7 +87,7 @@ QXcbWindow *QXcbEglIntegration::createWindow(QWindow *window) const
 QPlatformOpenGLContext *QXcbEglIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     QXcbScreen *screen = static_cast<QXcbScreen *>(context->screen()->handle());
-    QXcbEglContext *platformContext = new QXcbEglContext(context->format(),
+    QXcbEglContext *platformContext = new QXcbEglContext(screen->surfaceFormatFor(context->format()),
                                                          context->shareHandle(),
                                                          eglDisplay(),
                                                          screen->connection(),
@@ -98,7 +98,8 @@ QPlatformOpenGLContext *QXcbEglIntegration::createPlatformOpenGLContext(QOpenGLC
 
 QPlatformOffscreenSurface *QXcbEglIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {
-    return new QEGLPbuffer(eglDisplay(), surface->requestedFormat(), surface);
+    QXcbScreen *screen = static_cast<QXcbScreen *>(surface->screen()->handle());
+    return new QEGLPbuffer(eglDisplay(), screen->surfaceFormatFor(surface->requestedFormat()), surface);
 }
 
 void *QXcbEglIntegration::xlib_display() const
