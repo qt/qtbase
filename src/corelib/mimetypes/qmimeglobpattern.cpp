@@ -182,10 +182,8 @@ void QMimeAllGlobPatterns::addGlob(const QMimeGlobPattern &glob)
 
 void QMimeAllGlobPatterns::removeMimeType(const QString &mimeType)
 {
-    QMutableHashIterator<QString, QStringList> it(m_fastPatterns);
-    while (it.hasNext()) {
-        it.next().value().removeAll(mimeType);
-    }
+    for (auto &x : m_fastPatterns)
+        x.removeAll(mimeType);
     m_highWeightGlobs.removeMimeType(mimeType);
     m_lowWeightGlobs.removeMimeType(mimeType);
 }
