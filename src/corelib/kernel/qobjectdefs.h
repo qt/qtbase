@@ -152,6 +152,12 @@ inline void qYouForgotTheQ_OBJECT_Macro(T1, T2) {}
 #  define Q_OBJECT_NO_OVERRIDE_WARNING
 #endif
 
+#if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 600
+#  define Q_OBJECT_NO_ATTRIBUTES_WARNING    QT_WARNING_DISABLE_GCC("-Wattributes")
+#else
+#  define Q_OBJECT_NO_ATTRIBUTES_WARNING
+#endif
+
 /* qmake ignore Q_OBJECT */
 #define Q_OBJECT \
 public: \
@@ -162,10 +168,11 @@ public: \
     virtual const QMetaObject *metaObject() const; \
     virtual void *qt_metacast(const char *); \
     virtual int qt_metacall(QMetaObject::Call, int, void **); \
-    QT_WARNING_POP \
     QT_TR_FUNCTIONS \
 private: \
+    Q_OBJECT_NO_ATTRIBUTES_WARNING \
     Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **); \
+    QT_WARNING_POP \
     struct QPrivateSignal {};
 
 /* qmake ignore Q_OBJECT */
@@ -179,7 +186,11 @@ public: \
     void qt_check_for_QGADGET_macro(); \
     typedef void QtGadgetHelper; \
 private: \
-    Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **);
+    QT_WARNING_PUSH \
+    Q_OBJECT_NO_ATTRIBUTES_WARNING \
+    Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **); \
+    QT_WARNING_POP \
+    /*end*/
 #endif // QT_NO_META_MACROS
 
 #else // Q_MOC_RUN

@@ -131,6 +131,33 @@ typedef struct {
     int doNotConfuseMoc;
 } OldStyleCStruct;
 
+namespace {
+
+    class GadgetInUnnamedNS
+    {
+        Q_GADGET
+        Q_PROPERTY(int x READ x WRITE setX)
+        Q_PROPERTY(int y READ y WRITE setY)
+    public:
+        explicit GadgetInUnnamedNS(int x, int y) : m_x(x), m_y(y) {}
+        int x() const { return m_x; }
+        int y() const { return m_y; }
+        void setX(int x) { m_x = x; }
+        void setY(int y) { m_y = y; }
+
+    private:
+        int m_x, m_y;
+    };
+
+    class ObjectInUnnamedNS : public QObject
+    {
+        Q_OBJECT
+    public:
+        explicit ObjectInUnnamedNS(QObject *parent = Q_NULLPTR) : QObject(parent) {}
+    };
+
+}
+
 class Sender : public QObject
 {
     Q_OBJECT
@@ -597,6 +624,7 @@ private slots:
     void relatedMetaObjectsNameConflict_data();
     void relatedMetaObjectsNameConflict();
     void strignLiteralsInMacroExtension();
+    void unnamedNamespaceObjectsAndGadgets();
     void veryLongStringData();
     void gadgetHierarchy();
 
@@ -3420,6 +3448,28 @@ class VeryLongStringData : public QObject
     #undef repeat32768
     #undef repeat65534
 };
+
+void tst_Moc::unnamedNamespaceObjectsAndGadgets()
+{
+    // these just test very basic functionality of gadgets and objects
+    // defined in unnamed namespaces.
+    {
+        GadgetInUnnamedNS gadget(21, 42);
+        QCOMPARE(gadget.x(), 21);
+        QCOMPARE(gadget.y(), 42);
+        gadget.staticMetaObject.property(0).writeOnGadget(&gadget, 12);
+        gadget.staticMetaObject.property(1).writeOnGadget(&gadget, 24);
+        QCOMPARE(gadget.x(), 12);
+        QCOMPARE(gadget.y(), 24);
+    }
+
+    {
+        ObjectInUnnamedNS object;
+        QObject *qObject = &object;
+        QCOMPARE(static_cast<ObjectInUnnamedNS *>(qObject),
+                 qobject_cast<ObjectInUnnamedNS *>(qObject));
+    }
+}
 
 void tst_Moc::veryLongStringData()
 {
