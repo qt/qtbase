@@ -102,6 +102,15 @@ bool canAnimate(const QStyleOption *option) {
             && !option->styleObject->property("_q_no_animation").toBool();
 }
 
+static inline QImage createAnimationBuffer(const QStyleOption *option, const QWidget *widget)
+{
+    const int devicePixelRatio = widget ? widget->devicePixelRatio() : 1;
+    QImage result(option->rect.size() * devicePixelRatio, QImage::Format_ARGB32_Premultiplied);
+    result.setDevicePixelRatio(devicePixelRatio);
+    result.fill(0);
+    return result;
+}
+
 /* \internal
     Used by animations to clone a styleoption and shift its offset
 */
@@ -314,12 +323,10 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
 
                     // We create separate images for the initial and final transition states and store them in the
                     // Transition object.
-                    QImage startImage(option->rect.size(), QImage::Format_ARGB32_Premultiplied);
-                    startImage.fill(0);
+                    QImage startImage = createAnimationBuffer(option, widget);
                     QPainter startPainter(&startImage);
 
-                    QImage endImage(option->rect.size(), QImage::Format_ARGB32_Premultiplied);
-                    endImage.fill(0);
+                    QImage endImage = createAnimationBuffer(option, widget);
                     QPainter endPainter(&endImage);
 
                     // If we have a running animation on the widget already, we will use that to paint the initial
@@ -867,8 +874,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 QStyleOption *styleOption = clonedAnimationStyleOption(option);
                 styleOption->state = (QStyle::State)oldState;
 
-                QImage startImage(option->rect.size(), QImage::Format_ARGB32_Premultiplied);
-                startImage.fill(0);
+                QImage startImage = createAnimationBuffer(option, widget);
                 QPainter startPainter(&startImage);
 
                 // Use current state of existing animation if already one is running
@@ -880,8 +886,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 }
 
                 t->setStartImage(startImage);
-                QImage endImage(option->rect.size(), QImage::Format_ARGB32_Premultiplied);
-                endImage.fill(0);
+                QImage endImage = createAnimationBuffer(option, widget);
                 QPainter endPainter(&endImage);
                 styleOption->state = option->state;
                 proxy()->drawControl(element, styleOption, &endPainter, widget);
@@ -943,10 +948,8 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                     QWindowsVistaAnimation *anim = qobject_cast<QWindowsVistaAnimation *>(d->animation(styleObject(option)));
 
                     if (!anim) {
-                        QImage startImage(option->rect.size(), QImage::Format_ARGB32_Premultiplied);
-                        startImage.fill(0);
-                        QImage alternateImage(option->rect.size(), QImage::Format_ARGB32_Premultiplied);
-                        alternateImage.fill(0);
+                        QImage startImage = createAnimationBuffer(option, widget);
+                        QImage alternateImage = createAnimationBuffer(option, widget);
 
                         QWindowsVistaPulse *pulse = new QWindowsVistaPulse(styleObject(option));
 
@@ -1544,13 +1547,10 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
             }
 
             if (doTransition) {
-
-                QImage startImage(option->rect.size(), QImage::Format_ARGB32_Premultiplied);
-                startImage.fill(0);
+                QImage startImage = createAnimationBuffer(option, widget);
                 QPainter startPainter(&startImage);
 
-                QImage endImage(option->rect.size(), QImage::Format_ARGB32_Premultiplied);
-                endImage.fill(0);
+                QImage endImage = createAnimationBuffer(option, widget);
                 QPainter endPainter(&endImage);
 
                 QWindowsVistaAnimation *anim = qobject_cast<QWindowsVistaAnimation *>(d->animation(styleObject));
