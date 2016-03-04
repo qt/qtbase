@@ -79,6 +79,22 @@ bool any_of(InputIt first, InputIt last, UnaryPredicate p)
 {
     return std::find_if(first, last, p) != last;
 }
+
+template <typename InputIt, typename OutputIt1, typename OutputIt2, typename UnaryPredicate>
+std::pair<OutputIt1, OutputIt2> separate_if(InputIt first, InputIt last, OutputIt1 dest1, OutputIt2 dest2, UnaryPredicate p)
+{
+    while (first != last) {
+        if (p(*first)) {
+            *dest1 = *first;
+            ++dest1;
+        } else {
+            *dest2 = *first;
+            ++dest2;
+        }
+        ++first;
+    }
+    return std::make_pair(dest1, dest2);
+}
 }
 
 /*!
@@ -587,46 +603,37 @@ void QHostInfoLookupManager::work()
         finishedLookups.clear();
     }
 
-    if (!postponedLookups.isEmpty()) {
-        // try to start the postponed ones
+    auto isAlreadyRunning = [this](QHostInfoRunnable *lookup) {
+        return any_of(currentLookups.cbegin(), currentLookups.cend(), ToBeLookedUpEquals(lookup->toBeLookedUp));
+    };
 
-        QMutableListIterator<QHostInfoRunnable*> iterator(postponedLookups);
-        while (iterator.hasNext()) {
-            QHostInfoRunnable* postponed = iterator.next();
+    // Transfer any postponed lookups that aren't currently running to the scheduled list, keeping already-running lookups:
+    postponedLookups.erase(separate_if(postponedLookups.begin(),
+                                       postponedLookups.end(),
+                                       postponedLookups.begin(),
+                                       std::front_inserter(scheduledLookups), // prepend! we want to finish it ASAP
+                                       isAlreadyRunning).first,
+                           postponedLookups.end());
 
-            // check if none of the postponed hostnames is currently running
-            const bool alreadyRunning = any_of(currentLookups.cbegin(), currentLookups.cend(), ToBeLookedUpEquals(postponed->toBeLookedUp));
-            if (!alreadyRunning) {
-                iterator.remove();
-                scheduledLookups.prepend(postponed); // prepend! we want to finish it ASAP
-            }
+    // Unschedule and postpone any that are currently running:
+    scheduledLookups.erase(separate_if(scheduledLookups.begin(),
+                                       scheduledLookups.end(),
+                                       std::back_inserter(postponedLookups),
+                                       scheduledLookups.begin(),
+                                       isAlreadyRunning).second,
+                           scheduledLookups.end());
+
+    const int availableThreads = threadPool.maxThreadCount() - currentLookups.size();
+    if (availableThreads > 0) {
+        int readyToStartCount = qMin(availableThreads, scheduledLookups.size());
+        auto it = scheduledLookups.begin();
+        while (readyToStartCount--) {
+            // runnable now running in new thread, track this in currentLookups
+            threadPool.start(*it);
+            currentLookups.push_back(std::move(*it));
+            ++it;
         }
-    }
-
-    if (!scheduledLookups.isEmpty()) {
-        // try to start the new ones
-        QMutableListIterator<QHostInfoRunnable*> iterator(scheduledLookups);
-        while (iterator.hasNext()) {
-            QHostInfoRunnable *scheduled = iterator.next();
-
-            // check if a lookup for this host is already running, then postpone
-            const bool alreadyRunning = any_of(currentLookups.cbegin(), currentLookups.cend(), ToBeLookedUpEquals(scheduled->toBeLookedUp));
-            if (alreadyRunning) {
-                iterator.remove();
-                postponedLookups.append(scheduled);
-                scheduled = 0;
-            }
-
-            if (scheduled && currentLookups.size() < threadPool.maxThreadCount()) {
-                // runnable now running in new thread, track this in currentLookups
-                threadPool.start(scheduled);
-                iterator.remove();
-                currentLookups.append(scheduled);
-            } else {
-                // was postponed, continue iterating
-                continue;
-            }
-        };
+        scheduledLookups.erase(scheduledLookups.begin(), it);
     }
 }
 

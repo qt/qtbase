@@ -384,25 +384,21 @@ QList<QNetworkConfiguration> QNetworkConfiguration::children() const
     if (d->type != QNetworkConfiguration::ServiceNetwork || !d->isValid)
         return results;
 
-    QMutableMapIterator<unsigned int, QNetworkConfigurationPrivatePointer> i(d->serviceNetworkMembers);
-    while (i.hasNext()) {
-        i.next();
-
-        QNetworkConfigurationPrivatePointer p = i.value();
-
+    for (auto it = d->serviceNetworkMembers.begin(), end = d->serviceNetworkMembers.end(); it != end;) {
+        QNetworkConfigurationPrivatePointer p = it.value();
         //if we have an invalid member get rid of it -> was deleted earlier on
         {
             QMutexLocker childLocker(&p->mutex);
 
             if (!p->isValid) {
-                i.remove();
+                it = d->serviceNetworkMembers.erase(it);
                 continue;
             }
         }
-
         QNetworkConfiguration item;
         item.d = p;
         results << item;
+        ++it;
     }
 
     return results;

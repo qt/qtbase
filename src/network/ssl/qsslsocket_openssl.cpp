@@ -747,9 +747,8 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
                 certFiles.insert(it.fileInfo().canonicalFilePath());
             }
         }
-        QSetIterator<QString> it(certFiles);
-        while (it.hasNext())
-            systemCerts.append(QSslCertificate::fromPath(it.next(), platformEncodingFormat));
+        for (const QString& file : qAsConst(certFiles))
+            systemCerts.append(QSslCertificate::fromPath(file, platformEncodingFormat));
 # ifndef Q_OS_ANDROID
         systemCerts.append(QSslCertificate::fromPath(QLatin1String("/etc/pki/tls/certs/ca-bundle.crt"), QSsl::Pem)); // Fedora, Mandriva
         systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/local/share/certs/ca-root-nss.crt"), QSsl::Pem)); // FreeBSD's ca_root_nss

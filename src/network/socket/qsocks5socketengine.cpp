@@ -396,12 +396,12 @@ void QSocks5BindStore::timerEvent(QTimerEvent * event)
     QMutexLocker lock(&mutex);
     if (event->timerId() == sweepTimerId) {
         QSOCKS5_DEBUG << "QSocks5BindStore performing sweep";
-        QMutableHashIterator<int, QSocks5BindData *> it(store);
-        while (it.hasNext()) {
-            it.next();
+        for (auto it = store.begin(), end = store.end(); it != end;) {
             if (it.value()->timeStamp.hasExpired(350000)) {
                 QSOCKS5_DEBUG << "QSocks5BindStore removing JJJJ";
-                it.remove();
+                it = store.erase(it);
+            } else {
+                ++it;
             }
         }
     }
