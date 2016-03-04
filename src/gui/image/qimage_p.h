@@ -57,7 +57,7 @@ class QImageWriter;
 struct Q_GUI_EXPORT QImageData {        // internal image data
     QImageData();
     ~QImageData();
-    static QImageData *create(const QSize &size, QImage::Format format, int numColors = 0);
+    static QImageData *create(const QSize &size, QImage::Format format);
     static QImageData *create(uchar *data, int w, int h,  int bpl, QImage::Format format, bool readOnly, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0);
 
     QAtomicInt ref;

@@ -197,6 +197,7 @@ private slots:
     void metadataPassthrough();
 
     void pixelColor();
+    void pixel();
 
 private:
     const QString m_prefix;
@@ -3036,6 +3037,34 @@ void tst_QImage::pixelColor()
 
     QImage t = argb32.convertToFormat(QImage::Format_ARGB32_Premultiplied);
     QCOMPARE(t.pixel(0,0), argb32pm.pixel(0,0));
+}
+
+void tst_QImage::pixel()
+{
+    {
+        QImage mono(1, 1, QImage::Format_Mono);
+        QImage monolsb(1, 1, QImage::Format_MonoLSB);
+        QImage indexed(1, 1, QImage::Format_Indexed8);
+
+        mono.fill(0);
+        monolsb.fill(0);
+        indexed.fill(0);
+
+        QCOMPARE(QColor(mono.pixel(0, 0)), QColor(Qt::black));
+        QCOMPARE(QColor(monolsb.pixel(0, 0)), QColor(Qt::black));
+        indexed.pixel(0, 0); // Don't crash
+    }
+
+    {
+        uchar a = 0;
+        QImage mono(&a, 1, 1, QImage::Format_Mono);
+        QImage monolsb(&a, 1, 1, QImage::Format_MonoLSB);
+        QImage indexed(&a, 1, 1, QImage::Format_Indexed8);
+
+        QCOMPARE(QColor(mono.pixel(0, 0)), QColor(Qt::black));
+        QCOMPARE(QColor(monolsb.pixel(0, 0)), QColor(Qt::black));
+        indexed.pixel(0, 0); // Don't crash
+    }
 }
 
 QTEST_GUILESS_MAIN(tst_QImage)
