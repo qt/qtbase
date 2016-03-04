@@ -356,6 +356,8 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     if (m_platformWindow->m_nsWindow && geometry == m_platformWindow->geometry())
         return;
 
+    const bool isResize = geometry.size() != m_platformWindow->geometry().size();
+
     // It can happen that self.window is nil (if we are changing
     // styleMask from/to borderless and content view is being re-parented)
     // - this results in an invalid coordinates.
@@ -385,7 +387,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         // calles, which Qt and Qt applications do not excpect.
         if (!m_platformWindow->m_inSetGeometry)
             QWindowSystemInterface::flushWindowSystemEvents();
-        else
+        else if (isResize)
             m_backingStore = 0;
     }
 }
