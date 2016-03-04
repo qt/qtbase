@@ -1762,28 +1762,35 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
             lf.lfFaceName[nameSubstituteLength] = 0;
         }
 
-        IDWriteFont *directWriteFont = 0;
-        HRESULT hr = data->directWriteGdiInterop->CreateFontFromLOGFONT(&lf, &directWriteFont);
-        if (FAILED(hr)) {
-            const QString errorString = qt_error_string(int(hr));
-            qWarning().noquote().nospace() << "DirectWrite: CreateFontFromLOGFONT() failed ("
-                << errorString << ") for " << request << ' ' << lf << " dpi=" << dpi;
+        HFONT hfont = CreateFontIndirect(&lf);
+        if (!hfont) {
+            qErrnoWarning("%s: CreateFontIndirect failed", __FUNCTION__);
         } else {
+            HGDIOBJ oldFont = SelectObject(data->hdc, hfont);
+
             IDWriteFontFace *directWriteFontFace = NULL;
-            hr = directWriteFont->CreateFontFace(&directWriteFontFace);
+            HRESULT hr = data->directWriteGdiInterop->CreateFontFaceFromHdc(data->hdc, &directWriteFontFace);
             if (FAILED(hr)) {
                 const QString errorString = qt_error_string(int(hr));
-                qWarning().noquote() << "DirectWrite: CreateFontFace() failed ("
+                qWarning().noquote().nospace() << "DirectWrite: CreateFontFaceFromHDC() failed ("
                     << errorString << ") for " << request << ' ' << lf << " dpi=" << dpi;
             } else {
                 QWindowsFontEngineDirectWrite *fedw = new QWindowsFontEngineDirectWrite(directWriteFontFace,
                                                                                         request.pixelSize,
                                                                                         data);
-                fedw->initFontInfo(request, dpi, directWriteFont);
+
+                wchar_t n[64];
+                GetTextFace(data->hdc, 64, n);
+
+                QFontDef fontDef = request;
+                fontDef.family = QString::fromWCharArray(n);
+
+                fedw->initFontInfo(fontDef, dpi);
                 fe = fedw;
             }
 
-            directWriteFont->Release();
+            SelectObject(data->hdc, oldFont);
+            DeleteObject(hfont);
         }
     }
 #endif // QT_NO_DIRECTWRITE

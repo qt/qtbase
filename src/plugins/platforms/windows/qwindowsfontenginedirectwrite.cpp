@@ -648,70 +648,10 @@ QFontEngine *QWindowsFontEngineDirectWrite::cloneWithSize(qreal pixelSize) const
     return fontEngine;
 }
 
-// Dynamically resolve GetUserDefaultLocaleName, which is available from Windows
-// Vista onwards. ### fixme 5.7: Consider reverting to direct linking.
-typedef int (WINAPI *GetUserDefaultLocaleNamePtr)(LPWSTR, int);
-
-static inline GetUserDefaultLocaleNamePtr resolveGetUserDefaultLocaleName()
-{
-    QSystemLibrary library(QStringLiteral("kernel32"));
-    return (GetUserDefaultLocaleNamePtr)library.resolve("GetUserDefaultLocaleName");
-}
-
 void QWindowsFontEngineDirectWrite::initFontInfo(const QFontDef &request,
-                                                 int dpi, IDWriteFont *font)
+                                                 int dpi)
 {
     fontDef = request;
-
-    IDWriteFontFamily *fontFamily = NULL;
-    HRESULT hr = font->GetFontFamily(&fontFamily);
-
-    IDWriteLocalizedStrings *familyNames = NULL;
-    if (SUCCEEDED(hr))
-        hr = fontFamily->GetFamilyNames(&familyNames);
-
-    UINT32 index = 0;
-
-    if (SUCCEEDED(hr)) {
-        BOOL exists = false;
-
-        wchar_t localeName[LOCALE_NAME_MAX_LENGTH];
-        static const GetUserDefaultLocaleNamePtr getUserDefaultLocaleName = resolveGetUserDefaultLocaleName();
-        const int defaultLocaleSuccess = getUserDefaultLocaleName
-            ? getUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) : 0;
-        if (defaultLocaleSuccess)
-            hr = familyNames->FindLocaleName(localeName, &index, &exists);
-
-        if (SUCCEEDED(hr) && !exists)
-            hr = familyNames->FindLocaleName(L"en-us", &index, &exists);
-
-        if (!exists)
-            index = 0;
-    }
-
-    // Get the family name.
-    if (SUCCEEDED(hr)) {
-        UINT32 length = 0;
-
-        hr = familyNames->GetStringLength(index, &length);
-
-        if (SUCCEEDED(hr)) {
-            QVarLengthArray<wchar_t, 128> name(length+1);
-
-            hr = familyNames->GetString(index, name.data(), name.size());
-
-            if (SUCCEEDED(hr))
-                fontDef.family = QString::fromWCharArray(name.constData());
-        }
-    }
-
-    if (familyNames != NULL)
-        familyNames->Release();
-    if (fontFamily)
-        fontFamily->Release();
-
-    if (FAILED(hr))
-        qErrnoWarning(hr, "initFontInfo: Failed to get family name");
 
     if (fontDef.pointSize < 0)
         fontDef.pointSize = fontDef.pixelSize * 72. / dpi;
