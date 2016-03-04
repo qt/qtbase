@@ -155,6 +155,8 @@ namespace QDBusUtil
     { return QStringLiteral(DBUS_SERVICE_DBUS); }
     inline QString dbusPath()
     { return QStringLiteral(DBUS_PATH_DBUS); }
+    inline QString dbusPathLocal()
+    { return QStringLiteral(DBUS_PATH_LOCAL); }
     inline QString dbusInterface()
     {
         // it's the same string, but just be sure

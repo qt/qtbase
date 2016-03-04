@@ -1218,6 +1218,27 @@ void tst_QDBusConnection::callVirtualObjectLocal()
     QCOMPARE(obj.replyArguments, subPathReply.arguments());
 }
 
+void tst_QDBusConnection::pendingCallWhenDisconnected()
+{
+    if (!QCoreApplication::instance())
+        QSKIP("Test requires a QCoreApplication");
+
+    QDBusServer *server = new QDBusServer;
+    QDBusConnection con = QDBusConnection::connectToPeer(server->address(), "disconnect");
+    QTestEventLoop::instance().enterLoop(2);
+    QVERIFY(con.isConnected());
+    QDBusMessage message = QDBusMessage::createMethodCall("", "/", QString(), "method");
+    QDBusPendingCall reply = con.asyncCall(message);
+
+    delete server;
+
+    QTestEventLoop::instance().enterLoop(2);
+    QVERIFY(!con.isConnected());
+    QVERIFY(reply.isFinished());
+    QVERIFY(reply.isError());
+    QVERIFY(reply.error().type() == QDBusError::Disconnected);
+}
+
 QString MyObject::path;
 QString MyObjectWithoutInterface::path;
 QString MyObjectWithoutInterface::interface;

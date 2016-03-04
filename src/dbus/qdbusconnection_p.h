@@ -260,6 +260,8 @@ private:
 
     QString getNameOwnerNoCache(const QString &service);
 
+    void watchForDBusDisconnection();
+
     void _q_newConnection(QDBusConnectionPrivate *newConnection);
 
 protected:
@@ -279,6 +281,7 @@ private slots:
     void serviceOwnerChangedNoLock(const QString &name, const QString &oldOwner, const QString &newOwner);
     void registerServiceNoLock(const QString &serviceName);
     void unregisterServiceNoLock(const QString &serviceName);
+    void handleDBusDisconnection();
 
 signals:
     void dispatchStatusChanged();
