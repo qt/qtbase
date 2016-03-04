@@ -2215,8 +2215,10 @@ int QPdfEnginePrivate::generateGradientShader(const QGradient *gradient, const Q
     case QGradient::RadialGradient:
         return generateRadialGradientShader(static_cast<const QRadialGradient *>(gradient), matrix, alpha);
     case QGradient::ConicalGradient:
-    default:
-        qWarning("Implement me!");
+        Q_UNIMPLEMENTED(); // ### Implement me!
+        break;
+    case QGradient::NoGradient:
+        break;
     }
     return 0;
 }
