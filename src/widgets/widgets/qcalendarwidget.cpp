@@ -654,7 +654,6 @@ public:
     int dateEditAcceptDelay() const;
     void setDateEditAcceptDelay(int delay);
 
-    QDate date() const;
     void setDate(const QDate &date);
 
     bool eventFilter(QObject *o, QEvent *e) Q_DECL_OVERRIDE;
@@ -688,11 +687,6 @@ QWidget *QCalendarTextNavigator::widget() const
 void QCalendarTextNavigator::setWidget(QWidget *widget)
 {
     m_widget = widget;
-}
-
-QDate QCalendarTextNavigator::date() const
-{
-    return m_date;
 }
 
 void QCalendarTextNavigator::setDate(const QDate &date)

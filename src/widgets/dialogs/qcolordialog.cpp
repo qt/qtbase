@@ -190,7 +190,6 @@ public:
     QSize sizeHint() const Q_DECL_OVERRIDE;
 
     virtual void setCellBrush(int row, int col, const QBrush &);
-    QBrush cellBrush(int row, int col);
 
     inline int cellWidth() const
         { return cellw; }
@@ -458,20 +457,6 @@ void QWellArray::setCellBrush(int row, int col, const QBrush &b)
     if (row >= 0 && row < numRows() && col >= 0 && col < numCols())
         d->brush[row*numCols()+col] = b;
 }
-
-/*
-  Returns the brush set for the cell at \a row, \a column. If no brush is
-  set, Qt::NoBrush is returned.
-*/
-
-QBrush QWellArray::cellBrush(int row, int col)
-{
-    if (d && row >= 0 && row < numRows() && col >= 0 && col < numCols())
-        return d->brush[row*numCols()+col];
-    return Qt::NoBrush;
-}
-
-
 
 /*!\reimp
 */

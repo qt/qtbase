@@ -252,8 +252,6 @@ class SegmentTree
 public:
     SegmentTree(QPathSegments &segments);
 
-    QRectF boundingRect() const;
-
     void produceIntersections(int segment);
 
 private:
@@ -302,12 +300,6 @@ SegmentTree::SegmentTree(QPathSegments &segments)
 
     TreeNode root = buildTree(0, m_index.size(), 0, m_bounds);
     m_tree[0] = root;
-}
-
-QRectF SegmentTree::boundingRect() const
-{
-    return QRectF(QPointF(m_bounds.x1, m_bounds.y1),
-                  QPointF(m_bounds.x2, m_bounds.y2));
 }
 
 static inline qreal coordinate(const QPointF &pos, int axis)
