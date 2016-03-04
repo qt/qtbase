@@ -687,8 +687,10 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
 
 static bool imageHasNarrowOutlines(const QImage &im)
 {
-    if (im.isNull())
+    if (im.isNull() || im.width() < 1 || im.height() < 1)
         return false;
+    else if (im.width() == 1 || im.height() == 1)
+        return true;
 
     int minHThick = 999;
     int minVThick = 999;
