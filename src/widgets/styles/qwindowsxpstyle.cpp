@@ -704,6 +704,19 @@ bool QWindowsXPStylePrivate::swapAlphaChannel(const QRect &rect, bool allPixels)
     return valueChange;
 }
 
+enum TransformType { SimpleTransform, HighDpiScalingTransform, ComplexTransform };
+
+static inline TransformType transformType(const QTransform &transform, qreal devicePixelRatio)
+{
+    if (transform.type() <= QTransform::TxTranslate)
+        return SimpleTransform;
+    if (transform.type() > QTransform::TxScale)
+        return ComplexTransform;
+    return qFuzzyCompare(transform.m11(), devicePixelRatio)
+        && qFuzzyCompare(transform.m22(), devicePixelRatio)
+        ? HighDpiScalingTransform : ComplexTransform;
+}
+
 /*! \internal
     Main theme drawing function.
     Determines the correct lowlevel drawing method depending on several
@@ -727,21 +740,22 @@ bool QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
 
     painter->save();
 
-    bool complexXForm = painter->deviceTransform().type() > QTransform::TxTranslate;
-
     // Access paintDevice via engine since the painter may
     // return the clip device which can still be a widget device in case of grabWidget().
 
     bool translucentToplevel = false;
     const QPaintDevice *paintDevice = painter->device();
+    const qreal aditionalDevicePixelRatio = themeData.widget ? themeData.widget->devicePixelRatio() : 1;
     if (paintDevice->devType() == QInternal::Widget) {
         const QWidget *window = static_cast<const QWidget *>(paintDevice)->window();
         translucentToplevel = window->testAttribute(Qt::WA_TranslucentBackground);
     }
 
+    const TransformType tt = transformType(painter->deviceTransform(), aditionalDevicePixelRatio);
+
     bool canDrawDirectly = false;
     if (themeData.widget && painter->opacity() == 1.0 && !themeData.rotate
-        && !complexXForm && !themeData.mirrorVertically
+        && tt != ComplexTransform && !themeData.mirrorVertically
         && (!themeData.mirrorHorizontally || pDrawThemeBackgroundEx)
         && !translucentToplevel) {
         // Draw on backing store DC only for real widgets or backing store images.
@@ -759,8 +773,29 @@ bool QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
     }
 
     const HDC dc = canDrawDirectly ? hdcForWidgetBackingStore(themeData.widget) : HDC(0);
-    const bool result = dc ? drawBackgroundDirectly(themeData) : drawBackgroundThruNativeBuffer(themeData);
+    const bool result = dc
+        ? drawBackgroundDirectly(themeData, qRound(aditionalDevicePixelRatio))
+        : drawBackgroundThruNativeBuffer(themeData, qRound(aditionalDevicePixelRatio));
     painter->restore();
+    return result;
+}
+
+static inline QRect scaleRect(const QRect &r, int factor)
+{
+    return r.isValid() && factor > 1
+        ? QRect(r.topLeft() * factor, r.size() * factor)
+        : r;
+}
+
+static QRegion scaleRegion(const QRegion &region, int factor)
+{
+    if (region.isEmpty() || factor == 1)
+        return region;
+    if (region.rectCount() == 1)
+        return QRegion(scaleRect(region.boundingRect(), factor));
+    QRegion result;
+    foreach (const QRect &rect, region.rects())
+        result += QRect(rect.topLeft() * factor, rect.size() * factor);
     return result;
 }
 
@@ -769,7 +804,7 @@ bool QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
     Do not use this if you need to perform other transformations on the
     resulting data.
 */
-bool QWindowsXPStylePrivate::drawBackgroundDirectly(XPThemeData &themeData)
+bool QWindowsXPStylePrivate::drawBackgroundDirectly(XPThemeData &themeData, int additionalDevicePixelRatio)
 {
     QPainter *painter = themeData.painter;
     HDC dc = 0;
@@ -778,7 +813,7 @@ bool QWindowsXPStylePrivate::drawBackgroundDirectly(XPThemeData &themeData)
 
     QPoint redirectionDelta(int(painter->deviceMatrix().dx()),
                             int(painter->deviceMatrix().dy()));
-    QRect area = themeData.rect.translated(redirectionDelta);
+    QRect area = scaleRect(themeData.rect, additionalDevicePixelRatio).translated(redirectionDelta);
 
     QRegion sysRgn = painter->paintEngine()->systemClip();
     if (sysRgn.isEmpty())
@@ -786,7 +821,7 @@ bool QWindowsXPStylePrivate::drawBackgroundDirectly(XPThemeData &themeData)
     else
         sysRgn &= area;
     if (painter->hasClipping())
-        sysRgn &= painter->clipRegion().translated(redirectionDelta);
+        sysRgn &= scaleRegion(painter->clipRegion(), additionalDevicePixelRatio).translated(redirectionDelta);
     HRGN hrgn = qt_hrgn_from_qregion(sysRgn);
     SelectClipRgn(dc, hrgn);
 
@@ -798,6 +833,7 @@ bool QWindowsXPStylePrivate::drawBackgroundDirectly(XPThemeData &themeData)
 
     RECT drawRECT = themeData.toRECT(area);
     DTBGOPTS drawOptions;
+    memset(&drawOptions, 0, sizeof(drawOptions));
     drawOptions.dwSize = sizeof(drawOptions);
     drawOptions.rcClip = themeData.toRECT(sysRgn.boundingRect());
     drawOptions.dwFlags = DTBG_CLIPRECT
@@ -855,10 +891,11 @@ bool QWindowsXPStylePrivate::drawBackgroundDirectly(XPThemeData &themeData)
     flips (horizonal mirroring only, vertical are handled by the theme
     engine).
 */
-bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeData)
+bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeData,
+                                                            int additionalDevicePixelRatio)
 {
     QPainter *painter = themeData.painter;
-    QRect rect = themeData.rect;
+    QRect rect = scaleRect(themeData.rect, additionalDevicePixelRatio);
 
     if ((themeData.rotate + 90) % 180 == 0) { // Catch 90,270,etc.. degree flips.
         rect = QRect(0, 0, rect.height(), rect.width());
@@ -890,6 +927,8 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
     pixmapCacheKey.append(QLatin1Char('w'));
     pixmapCacheKey.append(QString::number(h));
     pixmapCacheKey.append(QLatin1Char('h'));
+    pixmapCacheKey.append(QString::number(additionalDevicePixelRatio));
+    pixmapCacheKey.append(QLatin1Char('d'));
 
     QPixmap cachedPixmap;
     ThemeMapKey key(themeData);
@@ -1066,6 +1105,7 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
         printf("Image format is: %s\n", alphaType == RealAlpha ? "Real Alpha" : alphaType == MaskAlpha ? "Masked Alpha" : "No Alpha");
 #endif
         img = QImage(bufferPixels, bufferW, bufferH, format);
+        img.setDevicePixelRatio(additionalDevicePixelRatio);
     }
 
     // Blitting backing store
