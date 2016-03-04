@@ -1190,7 +1190,7 @@ void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(const QHostInfo &info)
 #endif // QT_NO_SSL
         else {
             // Should not happen
-            qWarning("QHttpNetworkConnectionPrivate::_q_hostLookupFinished could not dequeu request");
+            qWarning("QHttpNetworkConnectionPrivate::_q_hostLookupFinished could not de-queue request");
             networkLayerState = QHttpNetworkConnectionPrivate::Unknown;
         }
     }
