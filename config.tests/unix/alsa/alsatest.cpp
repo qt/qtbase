@@ -32,7 +32,7 @@
 ****************************************************************************/
 
 #include <alsa/asoundlib.h>
-#if(!(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 10))
+#if SND_LIB_VERSION < 0x1000a  // 1.0.10
 #error "Alsa version found too old, require >= 1.0.10"
 #endif
 
