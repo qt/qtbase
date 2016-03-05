@@ -51,9 +51,32 @@ class QObject;
 class Q_CORE_EXPORT QBasicTimer
 {
     int id;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    Q_DISABLE_COPY(QBasicTimer)
+#elif QT_DEPRECATED_SINCE(5, 14)
+public:
+    // Just here to preserve BC, we can't remove them yet
+    QT_DEPRECATED_X("copy-construction is unsupported; use move-construction instead")
+    QBasicTimer(const QBasicTimer &);
+    QT_DEPRECATED_X("copy-assignment is unsupported; use move-assignment instead")
+    QBasicTimer &operator=(const QBasicTimer &);
+#endif
+
 public:
     inline QBasicTimer() : id(0) {}
     inline ~QBasicTimer() { if (id) stop(); }
+
+    QBasicTimer(QBasicTimer &&other) noexcept
+        : id{qExchange(other.id, 0)}
+    {}
+
+    QBasicTimer& operator=(QBasicTimer &&other) noexcept
+    {
+        QBasicTimer{std::move(other)}.swap(*this);
+        return *this;
+    }
+
+    void swap(QBasicTimer &other) noexcept { qSwap(id, other.id); }
 
     inline bool isActive() const { return id != 0; }
     inline int timerId() const { return id; }
@@ -63,6 +86,8 @@ public:
     void stop();
 };
 Q_DECLARE_TYPEINFO(QBasicTimer, Q_MOVABLE_TYPE);
+
+inline void swap(QBasicTimer &lhs, QBasicTimer &rhs) noexcept { lhs.swap(rhs); }
 
 QT_END_NAMESPACE
 
