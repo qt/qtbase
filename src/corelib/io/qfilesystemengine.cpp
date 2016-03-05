@@ -258,7 +258,7 @@ void QFileSystemMetaData::fillFromStatBuf(const QT_STATBUF &statBuffer)
         entryFlags |= QFileSystemMetaData::FileType;
     else if ((statBuffer.st_mode & S_IFMT) == S_IFDIR)
         entryFlags |= QFileSystemMetaData::DirectoryType;
-    else
+    else if ((statBuffer.st_mode & S_IFMT) != S_IFBLK)
         entryFlags |= QFileSystemMetaData::SequentialType;
 
     // Attributes
@@ -341,6 +341,18 @@ void QFileSystemMetaData::fillFromDirEnt(const QT_DIRENT &entry)
         break;
 
     case DT_BLK:
+        knownFlagsMask = QFileSystemMetaData::LinkType
+            | QFileSystemMetaData::FileType
+            | QFileSystemMetaData::DirectoryType
+            | QFileSystemMetaData::BundleType
+            | QFileSystemMetaData::AliasType
+            | QFileSystemMetaData::SequentialType
+            | QFileSystemMetaData::ExistsAttribute;
+
+        entryFlags = QFileSystemMetaData::ExistsAttribute;
+
+        break;
+
     case DT_CHR:
     case DT_FIFO:
     case DT_SOCK:
