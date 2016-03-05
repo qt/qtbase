@@ -122,7 +122,7 @@ private:
 };
 
 struct QMatchData {
-    QMatchData() : exactMatchIndex(-1) { }
+    QMatchData() : exactMatchIndex(-1), partial(false) { }
     QMatchData(const QIndexMapper& indices, int em, bool p) :
         indices(indices), exactMatchIndex(em), partial(p) { }
     QIndexMapper indices;
