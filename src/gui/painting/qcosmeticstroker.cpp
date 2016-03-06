@@ -141,12 +141,14 @@ inline void drawPixel(QCosmeticStroker *stroker, int x, int y, int coverage)
     if (x < cl.x() || x > cl.right() || y < cl.y() || y > cl.bottom())
         return;
 
-    int lastx = stroker->spans[stroker->current_span-1].x + stroker->spans[stroker->current_span-1].len ;
-    int lasty = stroker->spans[stroker->current_span-1].y;
+    if (stroker->current_span > 0) {
+        const int lastx = stroker->spans[stroker->current_span-1].x + stroker->spans[stroker->current_span-1].len ;
+        const int lasty = stroker->spans[stroker->current_span-1].y;
 
-    if (stroker->current_span == QCosmeticStroker::NSPANS || y < lasty || (y == lasty && x < lastx)) {
-        stroker->blend(stroker->current_span, stroker->spans, &stroker->state->penData);
-        stroker->current_span = 0;
+        if (stroker->current_span == QCosmeticStroker::NSPANS || y < lasty || (y == lasty && x < lastx)) {
+            stroker->blend(stroker->current_span, stroker->spans, &stroker->state->penData);
+            stroker->current_span = 0;
+        }
     }
 
     stroker->spans[stroker->current_span].x = ushort(x);
