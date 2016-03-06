@@ -716,4 +716,26 @@ void qDumpCPUFeatures()
     puts("");
 }
 
+/*!
+    \internal
+    \fn T qUnalignedLoad(const void *ptr)
+    \since 5.6.1
+
+    Loads a \c{T} from address \a ptr, which may be misaligned.
+
+    Use of this function avoid the undefined behavior that the C++ standard
+    otherwise attributes to unaligned loads.
+*/
+
+/*!
+    \internal
+    \fn void qUnalignedStore(void *ptr, T t)
+    \since 5.6.1
+
+    Stores \a t to address \a ptr, which may be misaligned.
+
+    Use of this function avoid the undefined behavior that the C++ standard
+    otherwise attributes to unaligned stores.
+*/
+
 QT_END_NAMESPACE
