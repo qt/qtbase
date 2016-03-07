@@ -39,10 +39,10 @@
 ##
 #############################################################################
 
-booted_simulator=$(xcrun simctl list devices | grep -E "iPhone|iPad" | grep -v unavailable | grep Booted | perl -lne 'print $1 if /\((.*?)\)/')
-echo "IPHONESIMULATOR_DEVICES = $booted_simulator"
+booted_simulator=$(xcrun simctl list devices | grep -E '$1' | grep -v unavailable | grep Booted | perl -lne 'print $2 if /\((.*?)\)/')
+echo "SIMULATOR_DEVICES = $booted_simulator"
 
-xcodebuild test -scheme $1 -destination 'id=0' -destination-timeout 1 2>&1| sed -n 's/{ \(platform:.*\) }/\1/p' | while read destination; do
+xcodebuild test -scheme $2 -destination 'id=0' -destination-timeout 1 2>&1| sed -n 's/{ \(platform:.*\) }/\1/p' | while read destination; do
     id=$(echo $destination | sed -n -E 's/.*id:([^ ,]+).*/\1/p')
     echo $destination | tr ',' '\n' | while read keyval; do
         key=$(echo $keyval | cut -d ':' -f 1 | tr '[:lower:]' '[:upper:]')
@@ -51,9 +51,9 @@ xcodebuild test -scheme $1 -destination 'id=0' -destination-timeout 1 2>&1| sed 
 
         if [ $key = 'PLATFORM' ]; then
             if [ "$val" = "iOS" ]; then
-                echo "IPHONEOS_DEVICES += $id"
+                echo "HARDWARE_DEVICES += $id"
             elif [ "$val" = "iOS Simulator" -a "$id" != "$booted_simulator" ]; then
-                echo "IPHONESIMULATOR_DEVICES += $id"
+                echo "SIMULATOR_DEVICES += $id"
             fi
         fi
     done

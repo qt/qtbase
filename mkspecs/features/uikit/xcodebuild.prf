@@ -33,7 +33,13 @@ QMAKE_EXTRA_VARIABLES += SUBTARGETS
 
 CONFIG += no_default_goal_deps
 
-QMAKE_EXTRA_INCLUDES += $$shell_quote($$QMAKESPEC/xcodebuild.mk)
+DEVICE_SDK = $${device.sdk}
+SIMULATOR_SDK = $${simulator.sdk}
+DEVICE_FILTER = "iPhone|iPad"
+GENERIC_DEVICE_DESTINATION = "generic/platform=iOS"
+QMAKE_EXTRA_VARIABLES += DEVICE_SDK SIMULATOR_SDK DEVICE_FILTER GENERIC_DEVICE_DESTINATION
+
+QMAKE_EXTRA_INCLUDES += $$shell_quote($$PWD/xcodebuild.mk)
 
 # Distclean
 

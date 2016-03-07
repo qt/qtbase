@@ -49,8 +49,8 @@ simulator-install: ACTION = build
 %-simulator-check: check-simulator ;
 
 # SDK
-%-device: SDK = iphoneos
-%-simulator: SDK = iphonesimulator
+%-device: SDK = $(DEVICE_SDK)
+%-simulator: SDK = $(SIMULATOR_SDK)
 
 # Configuration
 release-%: CONFIGURATION = Release
@@ -61,19 +61,20 @@ ifneq ($(filter check%,$(MAKECMDGOALS)),)
   ifeq ($(DEVICES),)
     $(info Enumerating test destinations (you may override this by setting DEVICES explicitly), please wait...)
     SPECDIR := $(dir $(lastword $(MAKEFILE_LIST)))
-    DESTINATIONS_INCLUDE = /tmp/ios_destinations.mk
-    $(shell $(SPECDIR)/ios_destinations.sh $(TARGET) > $(DESTINATIONS_INCLUDE))
+    DESTINATIONS_INCLUDE = /tmp/device_destinations.mk
+    $(shell $(SPECDIR)/../features/uikit/device_destinations.sh '$(EXPORT_DEVICE_FILTER)' $(TARGET) > $(DESTINATIONS_INCLUDE))
     include $(DESTINATIONS_INCLUDE)
   endif
 endif
 
-%-simulator: DEVICES = $(firstword $(IPHONESIMULATOR_DEVICES))
-%-device: DEVICES = $(IPHONEOS_DEVICES)
+%-simulator: DEVICES = $(firstword $(SIMULATOR_DEVICES))
+%-device: DEVICES = $(HARDWARE_DEVICES)
 
-IPHONEOS_GENERIC_DESTINATION := "generic/platform=iOS"
-IPHONESIMULATOR_GENERIC_DESTINATION := "id=$(shell xcrun simctl list devices | grep -E 'iPhone|iPad' | grep -v unavailable | perl -lne 'print $$1 if /\((.*?)\)/' | tail -n 1)"
+GENERIC_DEVICE_DESTINATION := $(EXPORT_GENERIC_DEVICE_DESTINATION)
+GENERIC_SIMULATOR_DESTINATION := "id=$(shell xcrun simctl list devices | grep -E '$(EXPORT_DEVICE_FILTER)' | grep -v unavailable | perl -lne 'print $$1 if /\((.*?)\)/' | tail -n 1)"
 
-DESTINATION = $(if $(DESTINATION_ID),"id=$(DESTINATION_ID)",$(value $(call toupper,$(call basesdk,$(SDK)))_GENERIC_DESTINATION))
+%-simulator: DESTINATION = $(if $(DESTINATION_ID),"id=$(DESTINATION_ID)",$(GENERIC_SIMULATOR_DESTINATION))
+%-device: DESTINATION = $(if $(DESTINATION_ID),"id=$(DESTINATION_ID)",$(GENERIC_DEVICE_DESTINATION))
 
 # Xcodebuild
 
