@@ -106,7 +106,7 @@ private slots:
 
     void eagainBlockingAccept();
 
-    void qtbug51288();
+    void canAccessPendingConnectionsWhileNotListening();
 
 private:
 #ifndef QT_NO_BEARERMANAGEMENT
@@ -1001,7 +1001,7 @@ public:
     }
 };
 
-void tst_QTcpServer::qtbug51288()
+void tst_QTcpServer::canAccessPendingConnectionsWhileNotListening()
 {
     NonListeningTcpServer server;
     QTcpSocket socket;
