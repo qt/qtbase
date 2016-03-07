@@ -214,7 +214,6 @@ qint64 QLocalSocket::writeData(const char *data, qint64 maxSize)
         d->pipeWriter = new QWindowsPipeWriter(d->handle, this);
         connect(d->pipeWriter, SIGNAL(canWrite()), this, SLOT(_q_canWrite()));
         connect(d->pipeWriter, SIGNAL(bytesWritten(qint64)), this, SIGNAL(bytesWritten(qint64)));
-        d->pipeWriter->start();
     }
     return d->pipeWriter->write(data, maxSize);
 }

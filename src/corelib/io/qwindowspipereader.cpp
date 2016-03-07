@@ -65,7 +65,7 @@ QWindowsPipeReader::QWindowsPipeReader(QObject *parent)
             this, &QWindowsPipeReader::emitPendingReadyRead, Qt::QueuedConnection);
 }
 
-static bool qt_cancelIo(HANDLE handle, OVERLAPPED *overlapped)
+bool qt_cancelIo(HANDLE handle, OVERLAPPED *overlapped)
 {
     typedef BOOL (WINAPI *PtrCancelIoEx)(HANDLE, LPOVERLAPPED);
     static PtrCancelIoEx ptrCancelIoEx = 0;
