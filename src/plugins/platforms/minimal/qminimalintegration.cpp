@@ -37,7 +37,14 @@
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformwindow.h>
+
+#if defined(Q_OS_WIN)
+#include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
+#elif defined(QT_NO_FONTCONFIG)
 #include <qpa/qplatformfontdatabase.h>
+#else
+#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
+#endif
 
 #if !defined(Q_OS_WIN)
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
@@ -62,7 +69,7 @@ static inline unsigned parseOptions(const QStringList &paramList)
 }
 
 QMinimalIntegration::QMinimalIntegration(const QStringList &parameters)
-    : m_dummyFontDatabase(0)
+    : m_fontDatabase(0)
     , m_options(parseOptions(parameters))
 {
     if (qEnvironmentVariableIsSet(debugBackingStoreEnvironmentVariable)
@@ -81,7 +88,7 @@ QMinimalIntegration::QMinimalIntegration(const QStringList &parameters)
 
 QMinimalIntegration::~QMinimalIntegration()
 {
-    delete m_dummyFontDatabase;
+    delete m_fontDatabase;
 }
 
 bool QMinimalIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -104,11 +111,17 @@ public:
 
 QPlatformFontDatabase *QMinimalIntegration::fontDatabase() const
 {
-    if (m_options & EnableFonts)
+    if (m_options & EnableFonts) {
+#ifndef QT_NO_FONTCONFIG
+        if (!m_fontDatabase)
+            m_fontDatabase = new QGenericUnixFontDatabase;
+#else
         return QPlatformIntegration::fontDatabase();
-    if (!m_dummyFontDatabase)
-        m_dummyFontDatabase = new DummyFontDatabase;
-    return m_dummyFontDatabase;
+#endif
+    }
+    if (!m_fontDatabase)
+        m_fontDatabase = new DummyFontDatabase;
+    return m_fontDatabase;
 }
 
 QPlatformWindow *QMinimalIntegration::createPlatformWindow(QWindow *window) const

@@ -79,7 +79,7 @@ public:
     static QMinimalIntegration *instance();
 
 private:
-    mutable QPlatformFontDatabase *m_dummyFontDatabase;
+    mutable QPlatformFontDatabase *m_fontDatabase;
     unsigned m_options;
 };
 
