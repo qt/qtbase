@@ -562,13 +562,18 @@ QApplication::QApplication(int &argc, char **argv)
 QApplication::QApplication(int &argc, char **argv, int _internal)
 #endif
     : QGuiApplication(*new QApplicationPrivate(argc, argv, _internal))
-{ Q_D(QApplication); d->construct(); }
+{
+    Q_D(QApplication);
+    d->init();
+}
 
 /*!
     \internal
 */
-void QApplicationPrivate::construct()
+void QApplicationPrivate::init()
 {
+    QGuiApplicationPrivate::init();
+
     initResources();
 
     qt_is_gui_used = (application_type != QApplicationPrivate::Tty);

@@ -150,7 +150,7 @@ public:
 
     bool notify_helper(QObject *receiver, QEvent * e);
 
-    void construct(
+    void init(
 #ifdef Q_DEAD_CODE_FROM_QT4_X11
                    Display *dpy = 0, Qt::HANDLE visual = 0, Qt::HANDLE cmap = 0
 #endif

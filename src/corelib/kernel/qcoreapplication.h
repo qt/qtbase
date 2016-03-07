@@ -200,8 +200,6 @@ private:
     static bool notifyInternal2(QObject *receiver, QEvent *);
 #endif
 
-    void init();
-
     static QCoreApplication *self;
 
     Q_DISABLE_COPY(QCoreApplication)

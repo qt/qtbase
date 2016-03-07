@@ -74,6 +74,8 @@ public:
     QCoreApplicationPrivate(int &aargc,  char **aargv, uint flags);
     ~QCoreApplicationPrivate();
 
+    void init();
+
     QString appName() const;
 
 #ifdef Q_OS_MAC

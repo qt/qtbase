@@ -75,6 +75,8 @@ public:
     QGuiApplicationPrivate(int &argc, char **argv, int flags);
     ~QGuiApplicationPrivate();
 
+    void init();
+
     void createPlatformIntegration();
     void createEventDispatcher() Q_DECL_OVERRIDE;
     void eventDispatcherReady() Q_DECL_OVERRIDE;
@@ -297,8 +299,6 @@ protected:
 
 private:
     friend class QDragManager;
-
-    void init();
 
     static QGuiApplicationPrivate *self;
     static QTouchDevice *m_fakeTouchDevice;

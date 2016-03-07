@@ -577,7 +577,7 @@ QGuiApplication::QGuiApplication(int &argc, char **argv, int flags)
 QGuiApplication::QGuiApplication(QGuiApplicationPrivate &p)
     : QCoreApplication(p)
 {
-    d_func()->init(); }
+}
 
 /*!
     Destructs the application.
@@ -1260,6 +1260,8 @@ void QGuiApplicationPrivate::eventDispatcherReady()
 
 void QGuiApplicationPrivate::init()
 {
+    QCoreApplicationPrivate::init();
+
     QCoreApplicationPrivate::is_app_running = false; // Starting up.
 
     bool loadTestability = false;
