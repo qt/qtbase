@@ -7,7 +7,7 @@ TEMPLATE = subdirs
 
 #win32:SUBDIRS += nla
 win32:SUBDIRS += generic
-win32:!wince:!winrt: SUBDIRS += nativewifi
+win32:!winrt: SUBDIRS += nativewifi
 mac:contains(QT_CONFIG, corewlan):SUBDIRS += corewlan
 mac:SUBDIRS += generic
 android:!android-no-sdk:SUBDIRS += android

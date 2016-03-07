@@ -15,12 +15,6 @@ win32 {
     DESTDIR = ../
 }
 
-wince* {
-    addApp.files = ../clientserver/clientserver.exe
-    addApp.path = clientserver
-    DEPLOYMENT += addApp
-}
-
 TARGET = tst_qudpsocket
 
 CONFIG+=insignificant_test # QTBUG-25367, QTBUG-25368

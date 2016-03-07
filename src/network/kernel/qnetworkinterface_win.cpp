@@ -81,19 +81,11 @@ static void resolveLibs()
         HINSTANCE iphlpapiHnd = GetModuleHandle(L"iphlpapi");
         Q_ASSERT(iphlpapiHnd);
 
-#if defined(Q_OS_WINCE)
-        // since Windows Embedded Compact 7
-        ptrConvertInterfaceIndexToLuid = (PtrConvertInterfaceIndexToLuid)GetProcAddress(iphlpapiHnd, L"ConvertInterfaceIndexToLuid");
-        ptrConvertInterfaceLuidToName = (PtrConvertInterfaceLuidToName)GetProcAddress(iphlpapiHnd, L"ConvertInterfaceLuidToNameW");
-        ptrConvertInterfaceLuidToIndex = (PtrConvertInterfaceLuidToIndex)GetProcAddress(iphlpapiHnd, L"ConvertInterfaceLuidToIndex");
-        ptrConvertInterfaceNameToLuid = (PtrConvertInterfaceNameToLuid)GetProcAddress(iphlpapiHnd, L"ConvertInterfaceNameToLuidW");
-#else
         // since Windows Vista
         ptrConvertInterfaceIndexToLuid = (PtrConvertInterfaceIndexToLuid)GetProcAddress(iphlpapiHnd, "ConvertInterfaceIndexToLuid");
         ptrConvertInterfaceLuidToName = (PtrConvertInterfaceLuidToName)GetProcAddress(iphlpapiHnd, "ConvertInterfaceLuidToNameW");
         ptrConvertInterfaceLuidToIndex = (PtrConvertInterfaceLuidToIndex)GetProcAddress(iphlpapiHnd, "ConvertInterfaceLuidToIndex");
         ptrConvertInterfaceNameToLuid = (PtrConvertInterfaceNameToLuid)GetProcAddress(iphlpapiHnd, "ConvertInterfaceNameToLuidW");
-#endif
         done = true;
     }
 }

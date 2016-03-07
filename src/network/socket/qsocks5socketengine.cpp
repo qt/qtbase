@@ -64,11 +64,7 @@ static const int MaxWriteBufferSize = 128*1024;
 //#define QSOCKS5SOCKETLAYER_DEBUG
 
 #define MAX_DATA_DUMP 256
-#if !defined(Q_OS_WINCE)
 #define SOCKS5_BLOCKING_BIND_TIMEOUT 5000
-#else
-#define SOCKS5_BLOCKING_BIND_TIMEOUT 10000
-#endif
 
 #define Q_INIT_CHECK(returnValue) do { \
     if (!d->data) { \

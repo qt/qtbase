@@ -89,11 +89,7 @@ QT_BEGIN_NAMESPACE
 #endif
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-#if defined(Q_OS_WINCE)
-    typedef HCERTSTORE (WINAPI *PtrCertOpenSystemStoreW)(LPCSTR, DWORD, HCRYPTPROV_LEGACY, DWORD, const void*);
-#else
     typedef HCERTSTORE (WINAPI *PtrCertOpenSystemStoreW)(HCRYPTPROV_LEGACY, LPCWSTR);
-#endif
     typedef PCCERT_CONTEXT (WINAPI *PtrCertFindCertificateInStore)(HCERTSTORE, DWORD, DWORD, DWORD, const void*, PCCERT_CONTEXT);
     typedef BOOL (WINAPI *PtrCertCloseStore)(HCERTSTORE, DWORD);
 #endif // Q_OS_WIN && !Q_OS_WINRT

@@ -785,11 +785,7 @@ void tst_QSocks5SocketEngine::downloadBigFile()
     QTime stopWatch;
     stopWatch.start();
 
-#if !defined(Q_OS_WINCE)
     QTestEventLoop::instance().enterLoop(60);
-#else
-    QTestEventLoop::instance().enterLoop(180);
-#endif
     if (QTestEventLoop::instance().timeout())
         QFAIL("Network operation timed out");
 

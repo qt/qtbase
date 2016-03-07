@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
 // sockaddr_in6 size changed between old and new SDK
 // Only the new version is the correct one, so always
 // use this structure.
-#if defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
+#if defined(Q_OS_WINRT)
 #  if !defined(u_char)
 #    define u_char unsigned char
 #  endif

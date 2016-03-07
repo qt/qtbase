@@ -82,11 +82,7 @@ static void resolveLibrary()
 {
     // Attempt to resolve getaddrinfo(); without it we'll have to fall
     // back to gethostbyname(), which has no IPv6 support.
-#if defined(Q_OS_WINCE)
-    local_getaddrinfo = (getaddrinfoProto) QSystemLibrary::resolve(QLatin1String("ws2"), "getaddrinfo");
-    local_freeaddrinfo = (freeaddrinfoProto) QSystemLibrary::resolve(QLatin1String("ws2"), "freeaddrinfo");
-    local_getnameinfo = (getnameinfoProto) QSystemLibrary::resolve(QLatin1String("ws2"), "getnameinfo");
-#elif defined (Q_OS_WINRT)
+#if defined (Q_OS_WINRT)
     local_getaddrinfo = (getaddrinfoProto) &getaddrinfo;
     local_freeaddrinfo = (freeaddrinfoProto) &freeaddrinfo;
     local_getnameinfo = (getnameinfoProto) getnameinfo;
@@ -115,11 +111,6 @@ static void translateWSAError(int error, QHostInfo *results)
 
 QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 {
-#if defined(Q_OS_WINCE)
-    static QBasicMutex qPrivCEMutex;
-    QMutexLocker locker(&qPrivCEMutex);
-#endif
-
     QSysInfo::machineHostName();        // this initializes ws2_32.dll
 
     // Load res_init on demand.

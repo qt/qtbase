@@ -1,7 +1,7 @@
 CONFIG += testcase
 
 SOURCES += tst_qsslsocket.cpp
-win32:!wince: LIBS += -lws2_32
+win32:LIBS += -lws2_32
 QT = core core-private network-private testlib
 
 TARGET = tst_qsslsocket
@@ -20,14 +20,6 @@ contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
     LIBS += $$OPENSSL_LIBS
 }
 
-wince* {
-    DEFINES += SRCDIR=\\\"./\\\"
-
-    certFiles.files = certs ssl.tar.gz
-    certFiles.path    = .
-    DEPLOYMENT += certFiles
-} else {
-    DEFINES += SRCDIR=\\\"$$PWD/\\\"
-}
+DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 requires(contains(QT_CONFIG,private_tests))

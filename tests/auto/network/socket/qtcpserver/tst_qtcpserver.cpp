@@ -469,11 +469,7 @@ void tst_QTcpServer::waitForConnectionTest()
     ThreadConnector connector(findLocalIpSocket.localAddress(), server.serverPort());
     connector.start();
 
-#if defined(Q_OS_WINCE)
-    QVERIFY(server.waitForNewConnection(9000, &timeout));
-#else
     QVERIFY(server.waitForNewConnection(3000, &timeout));
-#endif
     QVERIFY(!timeout);
 }
 
@@ -564,21 +560,6 @@ void tst_QTcpServer::addressReusable()
         QSKIP("No proxy support");
 #endif // QT_NO_NETWORKPROXY
     }
-#if defined(Q_OS_WINCE)
-    QString signalName = QString::fromLatin1("/test_signal.txt");
-    QFile::remove(signalName);
-    // The crashingServer process will crash once it gets a connection.
-    QProcess process;
-    QString processExe = crashingServerDir + "/crashingServer";
-    process.start(processExe);
-    QVERIFY2(process.waitForStarted(), qPrintable(
-        QString::fromLatin1("Could not start %1: %2").arg(processExe, process.errorString())));
-    int waitCount = 5;
-    while (waitCount-- && !QFile::exists(signalName))
-        QTest::qWait(1000);
-    QVERIFY(QFile::exists(signalName));
-    QFile::remove(signalName);
-#else
     // The crashingServer process will crash once it gets a connection.
     QProcess process;
     QString processExe = crashingServerDir + "/crashingServer";
@@ -586,7 +567,6 @@ void tst_QTcpServer::addressReusable()
     QVERIFY2(process.waitForStarted(), qPrintable(
         QString::fromLatin1("Could not start %1: %2").arg(processExe, process.errorString())));
     QVERIFY(process.waitForReadyRead(5000));
-#endif
 
     QTcpSocket socket;
     socket.connectToHost(QHostAddress::LocalHost, 49199);

@@ -50,16 +50,9 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/private/qcoreapplication_p.h>
 
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN32)
 #include "../platformdefs_win.h"
 #endif
-
-#ifdef Q_OS_WINCE
-typedef ULONG NDIS_OID, *PNDIS_OID;
-#  ifndef QT_NO_WINCE_NUIOUSER
-#    include <nuiouser.h>
-#  endif
-#endif // Q_OS_WINCE
 
 #ifdef Q_OS_WINRT
 #include <qfunctions_winrt.h>
@@ -92,36 +85,22 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_NETWORKINTERFACE
 static QNetworkConfiguration::BearerType qGetInterfaceType(const QString &interface)
 {
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN32)
     DWORD bytesWritten;
     NDIS_MEDIUM medium;
     NDIS_PHYSICAL_MEDIUM physicalMedium;
 
-#if defined(Q_OS_WINCE) && !defined(QT_NO_WINCE_NUIOUSER)
-    NDISUIO_QUERY_OID nicGetOid;
-    HANDLE handle = CreateFile((PTCHAR)NDISUIO_DEVICE_NAME, 0,
-                               FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
-#else
     unsigned long oid;
     HANDLE handle = CreateFile((TCHAR *)QString::fromLatin1("\\\\.\\%1").arg(interface).utf16(), 0,
                                FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
-#endif
     if (handle == INVALID_HANDLE_VALUE)
         return QNetworkConfiguration::BearerUnknown;
 
     bytesWritten = 0;
 
-#if defined(Q_OS_WINCE) && !defined(QT_NO_WINCE_NUIOUSER)
-    ZeroMemory(&nicGetOid, sizeof(NDISUIO_QUERY_OID));
-    nicGetOid.Oid = OID_GEN_MEDIA_SUPPORTED;
-    nicGetOid.ptcDeviceName = (PTCHAR)interface.utf16();
-    bool result = DeviceIoControl(handle, IOCTL_NDISUIO_QUERY_OID_VALUE, &nicGetOid, sizeof(nicGetOid),
-                                  &nicGetOid, sizeof(nicGetOid), &bytesWritten, 0);
-#else
     oid = OID_GEN_MEDIA_SUPPORTED;
     bool result = DeviceIoControl(handle, IOCTL_NDIS_QUERY_GLOBAL_STATS, &oid, sizeof(oid),
                                   &medium, sizeof(medium), &bytesWritten, 0);
-#endif
     if (!result) {
         CloseHandle(handle);
         return QNetworkConfiguration::BearerUnknown;
@@ -129,22 +108,9 @@ static QNetworkConfiguration::BearerType qGetInterfaceType(const QString &interf
 
     bytesWritten = 0;
 
-#if defined(Q_OS_WINCE) && !defined(QT_NO_WINCE_NUIOUSER)
-    medium = NDIS_MEDIUM( *(LPDWORD)nicGetOid.Data );
-
-    ZeroMemory(&nicGetOid, sizeof(NDISUIO_QUERY_OID));
-    nicGetOid.Oid = OID_GEN_PHYSICAL_MEDIUM;
-    nicGetOid.ptcDeviceName = (PTCHAR)interface.utf16();
-
-    result = DeviceIoControl(handle, IOCTL_NDISUIO_QUERY_OID_VALUE, &nicGetOid, sizeof(nicGetOid),
-                             &nicGetOid, sizeof(nicGetOid), &bytesWritten, 0);
-
-    physicalMedium = NDIS_PHYSICAL_MEDIUM( *(LPDWORD)nicGetOid.Data );
-#else
     oid = OID_GEN_PHYSICAL_MEDIUM;
     result = DeviceIoControl(handle, IOCTL_NDIS_QUERY_GLOBAL_STATS, &oid, sizeof(oid),
                              &physicalMedium, sizeof(physicalMedium), &bytesWritten, 0);
-#endif
 
     if (!result) {
         CloseHandle(handle);

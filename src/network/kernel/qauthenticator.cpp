@@ -1453,15 +1453,9 @@ static bool q_NTLM_SSPI_library_load()
     if (pSecurityFunctionTable == NULL) {
         securityDLLHandle = LoadLibrary(L"secur32.dll");
         if (securityDLLHandle != NULL) {
-#if defined(Q_OS_WINCE)
-            INIT_SECURITY_INTERFACE pInitSecurityInterface =
-            (INIT_SECURITY_INTERFACE)GetProcAddress(securityDLLHandle,
-                                                    L"InitSecurityInterfaceW");
-#else
             INIT_SECURITY_INTERFACE pInitSecurityInterface =
             (INIT_SECURITY_INTERFACE)GetProcAddress(securityDLLHandle,
                                                     "InitSecurityInterfaceW");
-#endif
             if (pInitSecurityInterface != NULL)
                 pSecurityFunctionTable = pInitSecurityInterface();
         }

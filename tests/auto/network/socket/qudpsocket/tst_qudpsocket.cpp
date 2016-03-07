@@ -434,13 +434,8 @@ void tst_QUdpSocket::ipv6Loop()
 
     char peterBuffer[16*1024];
     char paulBuffer[16*1024];
-#if !defined(Q_OS_WINCE)
-        QVERIFY(peter.waitForReadyRead(5000));
-        QVERIFY(paul.waitForReadyRead(5000));
-#else
-        QVERIFY(peter.waitForReadyRead(15000));
-        QVERIFY(paul.waitForReadyRead(15000));
-#endif
+    QVERIFY(peter.waitForReadyRead(5000));
+    QVERIFY(paul.waitForReadyRead(5000));
     if (success) {
         QCOMPARE(peter.readDatagram(peterBuffer, sizeof(peterBuffer)), qint64(paulMessage.length()));
         QCOMPARE(paul.readDatagram(paulBuffer, sizeof(peterBuffer)), qint64(peterMessage.length()));
@@ -937,9 +932,6 @@ void tst_QUdpSocket::outOfProcessConnectedClientServerTest()
 #ifdef QT_NO_PROCESS
     QSKIP("No qprocess support", SkipAll);
 #else
-#if defined(Q_OS_WINCE)
-    QSKIP("This test depends on reading data from QProcess (not supported on Qt/WinCE).");
-#endif
     QProcess serverProcess;
     serverProcess.start(QLatin1String("clientserver/clientserver server 1 1"),
                         QIODevice::ReadWrite | QIODevice::Text);
@@ -1001,9 +993,6 @@ void tst_QUdpSocket::outOfProcessUnconnectedClientServerTest()
 #ifdef QT_NO_PROCESS
     QSKIP("No qprocess support", SkipAll);
 #else
-#if defined(Q_OS_WINCE)
-    QSKIP("This test depends on reading data from QProcess (not supported on Qt/WinCE).");
-#endif
     QProcess serverProcess;
     serverProcess.start(QLatin1String("clientserver/clientserver server 1 1"),
                         QIODevice::ReadWrite | QIODevice::Text);

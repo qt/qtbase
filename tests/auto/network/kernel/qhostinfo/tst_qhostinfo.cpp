@@ -66,11 +66,7 @@
 #include "private/qhostinfo_p.h"
 
 #if !defined(QT_NO_GETADDRINFO)
-# if !defined(Q_OS_WINCE)
 #  include <sys/types.h>
-# else
-#  include <types.h>
-# endif
 # if defined(Q_OS_UNIX)
 #  include <sys/socket.h>
 # endif
@@ -399,11 +395,7 @@ protected:
 void tst_QHostInfo::threadSafety()
 {
     const int nattempts = 5;
-#if defined(Q_OS_WINCE)
-    const int runs = 10;
-#else
     const int runs = 100;
-#endif
     LookupThread thr[nattempts];
     for (int j = 0; j < runs; ++j) {
         for (int i = 0; i < nattempts; ++i)

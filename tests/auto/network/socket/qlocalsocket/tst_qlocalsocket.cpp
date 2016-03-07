@@ -756,10 +756,8 @@ void tst_QLocalSocket::threadedConnection_data()
     QTest::newRow("1 client") << 1;
     QTest::newRow("2 clients") << 2;
     QTest::newRow("5 clients") << 5;
-#ifndef Q_OS_WINCE
     QTest::newRow("10 clients") << 10;
     QTest::newRow("20 clients") << 20;
-#endif
 }
 
 void tst_QLocalSocket::threadedConnection()

@@ -4335,9 +4335,6 @@ void tst_QNetworkReply::ioPutToFileFromProcess()
     QSKIP("No qprocess support", SkipAll);
 #else
 
-#if defined(Q_OS_WINCE)
-    QSKIP("Currently no stdin/out supported for Windows CE");
-#else
 #ifdef Q_OS_WIN
     if (qstrcmp(QTest::currentDataTag(), "small") == 0)
         QSKIP("When passing a CR-LF-LF sequence through Windows stdio, it gets converted, "
@@ -4371,7 +4368,6 @@ void tst_QNetworkReply::ioPutToFileFromProcess()
     QCOMPARE(file.size(), qint64(data.size()));
     QByteArray contents = file.readAll();
     QCOMPARE(contents, data);
-#endif
 
 #endif // QT_NO_PROCESS
 }
@@ -6577,12 +6573,7 @@ void tst_QNetworkReply::getFromHttpIntoBuffer2()
     QFETCH(bool, useDownloadBuffer);
 
     // On my Linux Desktop the results are already visible with 128 kB, however we use this to have good results.
-#if defined(Q_OS_WINCE_WM)
-    // Show some mercy to non-desktop platform/s
-    enum {UploadSize = 4*1024*1024}; // 4 MB
-#else
     enum {UploadSize = 32*1024*1024}; // 32 MB
-#endif
 
     GetFromHttpIntoBuffer2Server server(UploadSize, true, false);
 

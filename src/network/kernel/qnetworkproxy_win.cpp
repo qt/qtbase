@@ -122,7 +122,6 @@ static PtrWinHttpGetIEProxyConfigForCurrentUser ptrWinHttpGetIEProxyConfigForCur
 static PtrWinHttpCloseHandle ptrWinHttpCloseHandle = 0;
 
 
-#ifndef Q_OS_WINCE
 static bool currentProcessIsService()
 {
     typedef BOOL (WINAPI *PtrGetUserName)(LPTSTR lpBuffer, LPDWORD lpnSize);
@@ -152,7 +151,6 @@ static bool currentProcessIsService()
     }
     return false;
 }
-#endif // ! Q_OS_WINCE
 
 static QStringList splitSpaceSemicolon(const QString &source)
 {
@@ -358,7 +356,7 @@ static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, con
     return removeDuplicateProxies(result);
 }
 
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if !defined(Q_OS_WINRT)
 namespace {
 class QRegistryWatcher {
 public:
@@ -409,7 +407,7 @@ private:
     QVector<HKEY> m_registryHandles;
 };
 } // namespace
-#endif // !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#endif // !defined(Q_OS_WINRT)
 
 class QWindowsSystemProxy
 {
@@ -428,7 +426,7 @@ public:
     QStringList proxyServerList;
     QStringList proxyBypass;
     QList<QNetworkProxy> defaultResult;
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if !defined(Q_OS_WINRT)
     QRegistryWatcher proxySettingsWatcher;
 #endif
     bool initialized;
@@ -464,7 +462,7 @@ void QWindowsSystemProxy::reset()
 void QWindowsSystemProxy::init()
 {
     bool proxySettingsChanged = false;
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if !defined(Q_OS_WINRT)
     proxySettingsChanged = proxySettingsWatcher.hasChanged();
 #endif
 
@@ -474,12 +472,7 @@ void QWindowsSystemProxy::init()
 
     reset();
 
-#ifdef Q_OS_WINCE
-    // Windows CE does not have any of the following API
-    return;
-#else
-
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if !defined(Q_OS_WINRT)
     proxySettingsWatcher.clear(); // needs reset to trigger a new detection
     proxySettingsWatcher.addLocation(HKEY_CURRENT_USER,  QStringLiteral("Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings"));
     proxySettingsWatcher.addLocation(HKEY_LOCAL_MACHINE, QStringLiteral("Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings"));
@@ -567,7 +560,6 @@ void QWindowsSystemProxy::init()
     }
 
     functional = isAutoConfig || !proxyServerList.isEmpty();
-#endif
 }
 
 QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkProxyQuery &query)

@@ -626,11 +626,7 @@ void tst_QHttpSocketEngine::downloadBigFile()
     QTime stopWatch;
     stopWatch.start();
 
-#if defined(Q_OS_WINCE)
-    QTestEventLoop::instance().enterLoop(240);
-#else
     QTestEventLoop::instance().enterLoop(60);
-#endif
     if (QTestEventLoop::instance().timeout())
         QFAIL("Network operation timed out");
 

@@ -1,7 +1,7 @@
 CONFIG += testcase
 
 SOURCES += tst_qsslcertificate.cpp
-!wince:win32:LIBS += -lws2_32
+win32:LIBS += -lws2_32
 QT = core network testlib
 
 TARGET = tst_qsslcertificate

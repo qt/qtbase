@@ -40,16 +40,8 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-#if defined(Q_OS_WINCE)
-    QFile file(QLatin1String("/test_signal.txt"));
-    file.open(QIODevice::WriteOnly);
-    file.write("Listening\n");
-    file.flush();
-    file.close();
-#else
     printf("Listening\n");
     fflush(stdout);
-#endif
 
     server.waitForNewConnection(5000);
     qFatal("Crash");
