@@ -131,6 +131,22 @@ namespace MyNamespace {
         MyEnum m_enum;
         MyFlags m_flags;
     };
+
+    // Test inherits
+    class MyClassSubclass : public MyClass
+    {
+        Q_OBJECT
+    };
+
+    class MyClassSubclass2 : public MyClass2
+    {
+        Q_OBJECT
+    };
+
+    class MyClass2Subclass : public MyClass
+    {
+        Q_OBJECT
+    };
 }
 
 
@@ -221,6 +237,9 @@ private slots:
     void signalIndex_data();
     void signalIndex();
     void enumDebugStream();
+
+    void inherits_data();
+    void inherits();
 
 signals:
     void value6Changed();
@@ -1423,6 +1442,35 @@ void tst_QMetaObject::enumDebugStream()
     MyNamespace::MyClass::MyFlags f2 = MyNamespace::MyClass::MyFlag2 | MyNamespace::MyClass::MyFlag3;
     QTest::ignoreMessage(QtDebugMsg, "QFlags<MyNamespace::MyClass::MyFlags>(MyFlag1) QFlags<MyNamespace::MyClass::MyFlags>(MyFlag2|MyFlag3)");
     qDebug() << f1 << f2;
+}
+
+void tst_QMetaObject::inherits_data()
+{
+    QTest::addColumn<const QMetaObject *>("derivedMetaObject");
+    QTest::addColumn<const QMetaObject *>("baseMetaObject");
+    QTest::addColumn<bool>("inheritsResult");
+
+    QTest::newRow("MyClass inherits QObject")
+        << &MyNamespace::MyClass::staticMetaObject << &QObject::staticMetaObject << true;
+    QTest::newRow("QObject inherits MyClass")
+        << &QObject::staticMetaObject << &MyNamespace::MyClass::staticMetaObject << false;
+    QTest::newRow("MyClass inherits MyClass")
+        << &MyNamespace::MyClass::staticMetaObject << &MyNamespace::MyClass::staticMetaObject << true;
+    QTest::newRow("MyClassSubclass inherits QObject")
+        << &MyNamespace::MyClassSubclass::staticMetaObject << &QObject::staticMetaObject << true;
+    QTest::newRow("MyClassSubclass2 inherits QObject")
+        << &MyNamespace::MyClassSubclass2::staticMetaObject << &QObject::staticMetaObject << true;
+    QTest::newRow("MyClassSubclass2 inherits MyClass2")
+        << &MyNamespace::MyClassSubclass2::staticMetaObject << &MyNamespace::MyClass2Subclass::staticMetaObject << false;
+}
+
+void tst_QMetaObject::inherits()
+{
+    QFETCH(const QMetaObject *, derivedMetaObject);
+    QFETCH(const QMetaObject *, baseMetaObject);
+    QFETCH(bool, inheritsResult);
+
+    QCOMPARE(derivedMetaObject->inherits(baseMetaObject), inheritsResult);
 }
 
 QTEST_MAIN(tst_QMetaObject)

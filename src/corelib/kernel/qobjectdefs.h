@@ -327,6 +327,7 @@ struct Q_CORE_EXPORT QMetaObject
     const char *className() const;
     const QMetaObject *superClass() const;
 
+    bool inherits(const QMetaObject *metaObject) const Q_DECL_NOEXCEPT;
     QObject *cast(QObject *obj) const;
     const QObject *cast(const QObject *obj) const;
 
