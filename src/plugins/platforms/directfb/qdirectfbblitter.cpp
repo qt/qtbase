@@ -179,8 +179,8 @@ void QDirectFbBlitter::drawPixmapOpacity(const QRectF &rect, const QPixmap &pixm
 {
     QRect sQRect = subrect.toRect();
     QRect dQRect = rect.toRect();
-    DFBRectangle sRect = { sQRect.x(), sQRect.y(), sQRect.width(), sQRect.height() };
-    DFBRectangle dRect = { dQRect.x(), dQRect.y(), dQRect.width(), dQRect.height() };
+    DFBRectangle sRect(sQRect.x(), sQRect.y(), sQRect.width(), sQRect.height());
+    DFBRectangle dRect(dQRect.x(), dQRect.y(), dQRect.width(), dQRect.height());
     DFBResult result;
 
     // skip if dst too small

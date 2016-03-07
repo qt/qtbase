@@ -59,6 +59,10 @@ MainWindow::MainWindow()
     connect(textEdit->document(), &QTextDocument::contentsChanged,
             this, &MainWindow::documentWasModified);
 
+    QGuiApplication::setFallbackSessionManagementEnabled(false);
+    connect(qApp, &QGuiApplication::commitDataRequest,
+            this, &MainWindow::commitData);
+
     setCurrentFile(QString());
     setUnifiedTitleAndToolBarOnMac(true);
 }
@@ -383,3 +387,15 @@ QString MainWindow::strippedName(const QString &fullFileName)
     return QFileInfo(fullFileName).fileName();
 }
 //! [49]
+
+void MainWindow::commitData(QSessionManager &manager)
+{
+    if (manager.allowsInteraction()) {
+        if (!maybeSave())
+            manager.cancel();
+    } else {
+        // Non-interactive: save without asking
+        if (textEdit->document()->isModified())
+            save();
+    }
+}

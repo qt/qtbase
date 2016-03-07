@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 class QAction;
 class QMenu;
 class QPlainTextEdit;
+class QSessionManager;
 QT_END_NAMESPACE
 
 //! [0]
@@ -69,6 +70,7 @@ private slots:
     bool saveAs();
     void about();
     void documentWasModified();
+    void commitData(QSessionManager &);
 
 private:
     void createActions();
