@@ -45,6 +45,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcDistanceField, "qt.distanceField");
+
 namespace
 {
     enum FillHDir
@@ -732,8 +734,45 @@ static bool imageHasNarrowOutlines(const QImage &im)
     return minHThick == 1 || minVThick == 1;
 }
 
+static int QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE = 54;
+static int QT_DISTANCEFIELD_DEFAULT_TILESIZE = 64;
+static int QT_DISTANCEFIELD_DEFAULT_SCALE = 16;
+static int QT_DISTANCEFIELD_DEFAULT_RADIUS = 80;
+static int QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT = 2000;
+
+static void initialDistanceFieldFactor()
+{
+    static bool initialized = false;
+    if (initialized)
+        return;
+    initialized = true;
+
+    if (qEnvironmentVariableIsSet("QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE")) {
+        QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE = qEnvironmentVariableIntValue("QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE");
+        qCDebug(lcDistanceField) << "set the QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE:" << QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE;
+    }
+
+    if (qEnvironmentVariableIsSet("QT_DISTANCEFIELD_DEFAULT_TILESIZE")) {
+        QT_DISTANCEFIELD_DEFAULT_TILESIZE = qEnvironmentVariableIntValue("QT_DISTANCEFIELD_DEFAULT_TILESIZE");
+        qCDebug(lcDistanceField) << "set the QT_DISTANCEFIELD_DEFAULT_TILESIZE:" << QT_DISTANCEFIELD_DEFAULT_TILESIZE;
+    }
+    if (qEnvironmentVariableIsSet("QT_DISTANCEFIELD_DEFAULT_SCALE")) {
+        QT_DISTANCEFIELD_DEFAULT_SCALE = qEnvironmentVariableIntValue("QT_DISTANCEFIELD_DEFAULT_SCALE");
+        qCDebug(lcDistanceField) << "set the QT_DISTANCEFIELD_DEFAULT_SCALE:" << QT_DISTANCEFIELD_DEFAULT_SCALE;
+    }
+    if (qEnvironmentVariableIsSet("QT_DISTANCEFIELD_DEFAULT_RADIUS")) {
+        QT_DISTANCEFIELD_DEFAULT_RADIUS = qEnvironmentVariableIntValue("QT_DISTANCEFIELD_DEFAULT_RADIUS");
+        qDebug(lcDistanceField) << "set the QT_DISTANCEFIELD_DEFAULT_RADIUS:" << QT_DISTANCEFIELD_DEFAULT_RADIUS;
+    }
+    if (qEnvironmentVariableIsSet("QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT")) {
+        QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT = qEnvironmentVariableIntValue("QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT");
+        qCDebug(lcDistanceField) << "set the QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT:" << QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT;
+    }
+}
+
 bool qt_fontHasNarrowOutlines(QFontEngine *fontEngine)
 {
+    initialDistanceFieldFactor();
     QFontEngine *fe = fontEngine->cloneWithSize(QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE);
     if (!fe)
         return false;
@@ -753,6 +792,7 @@ bool qt_fontHasNarrowOutlines(QFontEngine *fontEngine)
 bool qt_fontHasNarrowOutlines(const QRawFont &f)
 {
     QRawFont font = f;
+    initialDistanceFieldFactor();
     font.setPixelSize(QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE);
     if (!font.isValid())
         return false;
@@ -765,6 +805,51 @@ bool qt_fontHasNarrowOutlines(const QRawFont &f)
                                                         QRawFont::PixelAntialiasing));
 }
 
+int QT_DISTANCEFIELD_BASEFONTSIZE(bool narrowOutlineFont)
+{
+    initialDistanceFieldFactor();
+
+    if (Q_UNLIKELY(narrowOutlineFont))
+        return QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE * 2;
+    else
+        return QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE;
+}
+
+int QT_DISTANCEFIELD_TILESIZE(bool narrowOutlineFont)
+{
+    initialDistanceFieldFactor();
+
+    if (Q_UNLIKELY(narrowOutlineFont))
+        return QT_DISTANCEFIELD_DEFAULT_TILESIZE * 2;
+    else
+        return QT_DISTANCEFIELD_DEFAULT_TILESIZE;
+}
+
+int QT_DISTANCEFIELD_SCALE(bool narrowOutlineFont)
+{
+    initialDistanceFieldFactor();
+
+    if (Q_UNLIKELY(narrowOutlineFont))
+        return QT_DISTANCEFIELD_DEFAULT_SCALE / 2;
+    else
+        return QT_DISTANCEFIELD_DEFAULT_SCALE;
+}
+
+int QT_DISTANCEFIELD_RADIUS(bool narrowOutlineFont)
+{
+    initialDistanceFieldFactor();
+
+    if (Q_UNLIKELY(narrowOutlineFont))
+        return QT_DISTANCEFIELD_DEFAULT_RADIUS / 2;
+    else
+        return QT_DISTANCEFIELD_DEFAULT_RADIUS;
+}
+
+int QT_DISTANCEFIELD_HIGHGLYPHCOUNT()
+{
+    initialDistanceFieldFactor();
+    return QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT;
+}
 
 QDistanceFieldData::QDistanceFieldData(const QDistanceFieldData &other)
     : QSharedData(other)

@@ -54,30 +54,19 @@
 #include <qrawfont.h>
 #include <private/qfontengine_p.h>
 #include <QtCore/qshareddata.h>
+#include <QtCore/qglobal.h>
+#include <QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
 
-#define QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE 54
-#define QT_DISTANCEFIELD_DEFAULT_TILESIZE 64
-#define QT_DISTANCEFIELD_DEFAULT_SCALE 16
-#define QT_DISTANCEFIELD_DEFAULT_RADIUS 80
-#define QT_DISTANCEFIELD_HIGHGLYPHCOUNT 2000
-
-#define QT_DISTANCEFIELD_BASEFONTSIZE(NarrowOutlineFont) \
-    (NarrowOutlineFont ? QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE * 2 : \
-                         QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE)
-#define QT_DISTANCEFIELD_TILESIZE(NarrowOutlineFont) \
-    (NarrowOutlineFont ? QT_DISTANCEFIELD_DEFAULT_TILESIZE * 2 : \
-                         QT_DISTANCEFIELD_DEFAULT_TILESIZE)
-#define QT_DISTANCEFIELD_SCALE(NarrowOutlineFont) \
-    (NarrowOutlineFont ? QT_DISTANCEFIELD_DEFAULT_SCALE / 2 : \
-                         QT_DISTANCEFIELD_DEFAULT_SCALE)
-#define QT_DISTANCEFIELD_RADIUS(NarrowOutlineFont) \
-    (NarrowOutlineFont ? QT_DISTANCEFIELD_DEFAULT_RADIUS / 2 : \
-                         QT_DISTANCEFIELD_DEFAULT_RADIUS)
-
 bool Q_GUI_EXPORT qt_fontHasNarrowOutlines(const QRawFont &f);
 bool Q_GUI_EXPORT qt_fontHasNarrowOutlines(QFontEngine *fontEngine);
+
+int Q_GUI_EXPORT QT_DISTANCEFIELD_BASEFONTSIZE(bool narrowOutlineFont);
+int Q_GUI_EXPORT QT_DISTANCEFIELD_TILESIZE(bool narrowOutlineFont);
+int Q_GUI_EXPORT QT_DISTANCEFIELD_SCALE(bool narrowOutlineFont);
+int Q_GUI_EXPORT QT_DISTANCEFIELD_RADIUS(bool narrowOutlineFont);
+int Q_GUI_EXPORT QT_DISTANCEFIELD_HIGHGLYPHCOUNT();
 
 class Q_GUI_EXPORT QDistanceFieldData : public QSharedData
 {
