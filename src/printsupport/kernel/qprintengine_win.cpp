@@ -1716,7 +1716,6 @@ static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC h
         }
     }
 
-#if !defined(Q_OS_WINCE)
     // Scale, rotate and translate here.
     XFORM win_xform;
     win_xform.eM11 = xform.m11();
@@ -1728,7 +1727,6 @@ static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC h
 
     SetGraphicsMode(hdc, GM_ADVANCED);
     SetWorldTransform(hdc, &win_xform);
-#endif
 
     if (fast) {
         // fast path
@@ -1781,11 +1779,9 @@ static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC h
         }
     }
 
-#if !defined(Q_OS_WINCE)
         win_xform.eM11 = win_xform.eM22 = 1.0;
         win_xform.eM12 = win_xform.eM21 = win_xform.eDx = win_xform.eDy = 0.0;
         SetWorldTransform(hdc, &win_xform);
-#endif
 
     SelectObject(hdc, old_font);
 }
