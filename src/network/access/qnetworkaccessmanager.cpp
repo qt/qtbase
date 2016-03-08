@@ -1119,7 +1119,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     Q_D(QNetworkAccessManager);
 
     bool isLocalFile = req.url().isLocalFile();
-    QString scheme = req.url().scheme().toLower();
+    QString scheme = req.url().scheme();
 
     // fast path for GET on file:// URLs
     // The QNetworkAccessFileBackend will right now only be used for PUT

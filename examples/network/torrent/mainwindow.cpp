@@ -702,7 +702,7 @@ void TorrentView::dragMoveEvent(QDragMoveEvent *event)
 {
     // Accept file actions with a '.torrent' extension.
     QUrl url(event->mimeData()->text());
-    if (url.isValid() && url.scheme().toLower() == "file"
+    if (url.isValid() && url.scheme() == "file"
             && url.path().toLower().endsWith(".torrent"))
         event->acceptProposedAction();
 }

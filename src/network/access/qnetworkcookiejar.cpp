@@ -218,7 +218,7 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
     Q_D(const QNetworkCookieJar);
     const QDateTime now = QDateTime::currentDateTimeUtc();
     QList<QNetworkCookie> result;
-    bool isEncrypted = url.scheme().toLower() == QLatin1String("https");
+    bool isEncrypted = url.scheme() == QLatin1String("https");
 
     // scan our cookies for something that matches
     QList<QNetworkCookie>::ConstIterator it = d->allCookies.constBegin(),
