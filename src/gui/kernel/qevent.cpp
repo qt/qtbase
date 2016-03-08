@@ -761,8 +761,6 @@ QWheelEvent::QWheelEvent(const QPointF &pos, int delta,
     : QInputEvent(Wheel, modifiers), p(pos), qt4D(delta), qt4O(orient), mouseState(buttons),
       ph(Qt::NoScrollPhase), src(Qt::MouseEventNotSynthesized), invertedScrolling(false)
 {
-    if (!QGuiApplicationPrivate::scrollNoPhaseAllowed)
-        ph = Qt::ScrollUpdate;
     g = QCursor::pos();
     if (orient == Qt::Vertical)
         angleD = QPoint(0, delta);
@@ -798,8 +796,6 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta
     : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), qt4D(delta), qt4O(orient), mouseState(buttons),
       ph(Qt::NoScrollPhase), src(Qt::MouseEventNotSynthesized), invertedScrolling(false)
 {
-    if (!QGuiApplicationPrivate::scrollNoPhaseAllowed)
-        ph = Qt::ScrollUpdate;
     if (orient == Qt::Vertical)
         angleD = QPoint(0, delta);
     else
@@ -836,10 +832,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
     : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), pixelD(pixelDelta),
       angleD(angleDelta), qt4D(qt4Delta), qt4O(qt4Orientation), mouseState(buttons), ph(Qt::NoScrollPhase),
       src(Qt::MouseEventNotSynthesized), invertedScrolling(false)
-{
-    if (!QGuiApplicationPrivate::scrollNoPhaseAllowed)
-        ph = Qt::ScrollUpdate;
-}
+{}
 
 /*!
     Constructs a wheel event object.

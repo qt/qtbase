@@ -318,9 +318,6 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPointF & local,
 void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, const QPointF & local, const QPointF & global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase,
                                               Qt::MouseEventSource source, bool invertedScrolling)
 {
-    if (!QGuiApplicationPrivate::scrollNoPhaseAllowed && phase == Qt::NoScrollPhase)
-        phase = Qt::ScrollUpdate;
-
     // Qt 4 sends two separate wheel events for horizontal and vertical
     // deltas. For Qt 5 we want to send the deltas in one event, but at the
     // same time preserve source and behavior compatibility with Qt 4.
@@ -944,9 +941,7 @@ bool QWindowSystemEventHandler::sendEvent(QWindowSystemInterfacePrivate::WindowS
 QWindowSystemInterfacePrivate::WheelEvent::WheelEvent(QWindow *w, ulong time, const QPointF &local, const QPointF &global, QPoint pixelD,
         QPoint angleD, int qt4D, Qt::Orientation qt4O, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase, Qt::MouseEventSource src, bool inverted)
     : InputEvent(w, time, Wheel, mods), pixelDelta(pixelD), angleDelta(angleD), qt4Delta(qt4D),
-      qt4Orientation(qt4O), localPos(local), globalPos(global),
-      phase(!QGuiApplicationPrivate::scrollNoPhaseAllowed && phase == Qt::NoScrollPhase ? Qt::ScrollUpdate : phase),
-      source(src), inverted(inverted)
+      qt4Orientation(qt4O), localPos(local), globalPos(global), phase(phase), source(src), inverted(inverted)
 {
 }
 

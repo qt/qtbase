@@ -3089,7 +3089,8 @@
 
     This enum describes the phase of scrolling.
 
-    \omitvalue NoScrollPhase The input device doesn't support scroll phase.
+    \value NoScrollPhase The input device doesn't support scroll phase.
+    This value was introduced in Qt 5.7.
 
     \value ScrollBegin Scrolling is about to begin, but the scrolling
     distance did not yet change.

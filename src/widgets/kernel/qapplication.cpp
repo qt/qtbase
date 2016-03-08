@@ -3370,7 +3370,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                         // A new scrolling sequence or partial sequence starts and w has accepted
                         // the event. Therefore, we can set wheel_widget, but only if it's not
                         // the end of a sequence.
-                        if (spontaneous && (phase == Qt::ScrollBegin || phase == Qt::ScrollUpdate) && QGuiApplicationPrivate::scrollNoPhaseAllowed)
+                        if (spontaneous && (phase == Qt::ScrollBegin || phase == Qt::ScrollUpdate))
                             QApplicationPrivate::wheel_widget = w;
                         break;
                     }

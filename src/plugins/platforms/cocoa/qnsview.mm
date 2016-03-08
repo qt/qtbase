@@ -1414,8 +1414,6 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         m_scrolling = false;
     } else if (phase == NSEventPhaseNone && momentumPhase == NSEventPhaseNone) {
         ph = Qt::NoScrollPhase;
-        if (!QGuiApplicationPrivate::scrollNoPhaseAllowed)
-            ph = Qt::ScrollUpdate;
     }
     // "isInverted": natural OS X scrolling, inverted from the Qt/other platform/Jens perspective.
     bool isInverted  = [theEvent isDirectionInvertedFromDevice];
