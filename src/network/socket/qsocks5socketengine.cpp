@@ -1112,7 +1112,9 @@ bool QSocks5SocketEngine::connectInternal()
     }
 
     if (d->socketState != QAbstractSocket::ConnectingState) {
-        if (d->socks5State == QSocks5SocketEnginePrivate::Uninitialized) {
+        if (d->socks5State == QSocks5SocketEnginePrivate::Uninitialized
+            // We may have new auth credentials since an earlier failure:
+         || d->socks5State == QSocks5SocketEnginePrivate::AuthenticatingError) {
             setState(QAbstractSocket::ConnectingState);
             //limit buffer in internal socket, data is buffered in the external socket under application control
             d->data->controlSocket->setReadBufferSize(65536);
