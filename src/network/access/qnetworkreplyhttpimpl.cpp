@@ -1788,10 +1788,6 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
     if (synchronous) {
         state = Finished;
         q_func()->setFinished(true);
-    } else {
-        if (state != Finished) {
-
-        }
     }
 }
 
