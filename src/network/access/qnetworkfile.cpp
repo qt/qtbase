@@ -41,6 +41,7 @@
 
 #include <QtCore/QDebug>
 #include <QNetworkReply>
+#include <QtCore/QDateTime>
 #include <QtCore/QFileInfo>
 #include <QtCore/QMetaObject>
 #include <QtCore/QCoreApplication>
