@@ -6,12 +6,5 @@ SOURCES += \
     tst_qglyphrun.cpp
 
 
-wince* {
-    additionalFiles.files = test.ttf
-    additionalFiles.path = ../../../shared/resources/
-    DEPLOYMENT += additionalFiles
-} else {
-    RESOURCES += \
-        testdata.qrc
-}
-
+RESOURCES += \
+    testdata.qrc

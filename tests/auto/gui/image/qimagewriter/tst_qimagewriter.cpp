@@ -508,9 +508,6 @@ void tst_QImageWriter::saveToTemporaryFile()
             QVERIFY(writer.write(image));
         else
             qWarning() << file.errorString();
-#if defined(Q_OS_WINCE)
-        file.reset();
-#endif
         QCOMPARE(QImage(writer.fileName()), image);
     }
     {
@@ -529,9 +526,6 @@ void tst_QImageWriter::saveToTemporaryFile()
         QVERIFY2(file.open(), qPrintable(file.errorString()));
         QImageWriter writer(&file, "PNG");
         QVERIFY(writer.write(image));
-#if defined(Q_OS_WINCE)
-        file.reset();
-#endif
         QCOMPARE(QImage(writer.fileName()), image);
     }
     {

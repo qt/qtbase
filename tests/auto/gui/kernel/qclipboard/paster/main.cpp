@@ -66,13 +66,9 @@ int main(int argc, char **argv)
         return 0;
     }
 
-#ifndef Q_OS_WINCE
     QString expected;
     if (parser.isSet(textOption))
         expected = parser.value(textOption);
-#else // !Q_OS_WINCE
-    const QString expected = QStringLiteral("testString.!");
-#endif // Q_OS_WINCE
     if (!expected.isEmpty()) {
 #ifndef QT_NO_CLIPBOARD
         const QString actual = QGuiApplication::clipboard()->text();

@@ -5758,7 +5758,7 @@ static inline void rgbBlendPixel(quint32 *dst, int coverage, int sr, int sg, int
     *dst = qRgb(nr, ng, nb);
 }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
 Q_GUI_EXPORT bool qt_needs_a8_gamma_correction = false;
 
 static inline void grayBlendPixel(quint32 *dst, int coverage, int sr, int sg, int sb, const uint *gamma, const uchar *invgamma)
@@ -5795,7 +5795,7 @@ static void qt_alphamapblit_uint32(QRasterBuffer *rasterBuffer,
     const quint32 c = color;
     const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint32);
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
     const QDrawHelperGammaTables *tables = QGuiApplicationPrivate::instance()->gammaTables();
     if (!tables)
         return;
@@ -5822,7 +5822,7 @@ static void qt_alphamapblit_uint32(QRasterBuffer *rasterBuffer,
                 } else if (coverage == 255) {
                     dest[i] = c;
                 } else {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
                     if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP && doGrayBlendPixel
                         && qAlpha(dest[i]) == 255) {
                         grayBlendPixel(dest+i, coverage, sr, sg, sb, gamma, invgamma);
@@ -5863,7 +5863,7 @@ static void qt_alphamapblit_uint32(QRasterBuffer *rasterBuffer,
                     } else if (coverage == 255) {
                         dest[xp] = c;
                     } else {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
                         if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP && doGrayBlendPixel
                             && qAlpha(dest[xp]) == 255) {
                             grayBlendPixel(dest+xp, coverage, sr, sg, sb, gamma, invgamma);

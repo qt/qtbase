@@ -289,17 +289,13 @@ void tst_QImage::swap()
 void tst_QImage::create()
 {
     bool cr = true;
-#if !defined(Q_OS_WINCE)
     QT_TRY {
-#endif
         //QImage image(7000000, 7000000, 8, 256, QImage::IgnoreEndian);
         QImage image(7000000, 7000000, QImage::Format_Indexed8);
         image.setColorCount(256);
         cr = !image.isNull();
-#if !defined(Q_OS_WINCE)
     } QT_CATCH (...) {
     }
-#endif
     QVERIFY( !cr );
 }
 
@@ -1784,11 +1780,7 @@ void tst_QImage::smoothScale4()
 
 void tst_QImage::smoothScaleBig()
 {
-#if defined(Q_OS_WINCE)
-    int bigValue = 2000;
-#else
     int bigValue = 200000;
-#endif
     QImage tall(4, bigValue, QImage::Format_ARGB32);
     tall.fill(0x0);
 

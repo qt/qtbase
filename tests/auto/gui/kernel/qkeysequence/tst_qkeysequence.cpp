@@ -725,7 +725,7 @@ void tst_QKeySequence::listFromString()
 
 void tst_QKeySequence::translated_data()
 {
-#if defined (Q_OS_MAC) || defined (Q_OS_WINCE)
+#if defined (Q_OS_DARWIN)
     QSKIP("Test not applicable");
 #endif
 
@@ -756,7 +756,7 @@ void tst_QKeySequence::translated_data()
 
 void tst_QKeySequence::translated()
 {
-#if !defined (Q_OS_MAC) && !defined (Q_OS_WINCE)
+#if !defined (Q_OS_DARWIN)
     QFETCH(QString, transKey);
     QFETCH(QString, compKey);
 

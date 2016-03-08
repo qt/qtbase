@@ -25,7 +25,7 @@ SUBDIRS=\
    qopenglwindow \
    qrasterwindow
 
-win32:!wince:!winrt:qtHaveModule(network): SUBDIRS += noqteventloop
+win32:!winrt:qtHaveModule(network): SUBDIRS += noqteventloop
 
 !qtHaveModule(widgets): SUBDIRS -= \
    qmouseevent_modal \

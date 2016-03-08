@@ -104,13 +104,13 @@
 
 #if defined(Q_OS_MAC)
 #  include "private/qcore_mac_p.h"
-#elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#elif defined(Q_OS_WIN)
 #  include <QtCore/qt_windows.h>
 #  include <QtCore/QLibraryInfo>
 # if defined(Q_OS_WINPHONE)
 #   include <Objbase.h>
 # endif
-#endif // Q_OS_WIN && !Q_OS_WINCE
+#endif // Q_OS_WIN
 
 #include <ctype.h>
 
@@ -1102,12 +1102,12 @@ static void init_platform(const QString &pluginArgument, const QString &platform
                         keys.join(QStringLiteral(", ")));
         }
         fatalMessage += QStringLiteral("Reinstalling the application may fix this problem.");
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
         // Windows: Display message box unless it is a console application
         // or debug build showing an assert box.
         if (!QLibraryInfo::isDebugBuild() && !GetConsoleWindow())
             MessageBox(0, (LPCTSTR)fatalMessage.utf16(), (LPCTSTR)(QCoreApplication::applicationName().utf16()), MB_OK | MB_ICONERROR);
-#endif // Q_OS_WIN && !Q_OS_WINCE && !Q_OS_WINRT
+#endif // Q_OS_WIN && !Q_OS_WINRT
         qFatal("%s", qPrintable(fatalMessage));
         return;
     }
@@ -1310,7 +1310,7 @@ void QGuiApplicationPrivate::init()
 #ifndef QT_NO_SESSIONMANAGER
     QString session_id;
     QString session_key;
-# if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+# if defined(Q_OS_WIN)
     wchar_t guidstr[40];
     GUID guid;
     CoCreateGuid(&guid);

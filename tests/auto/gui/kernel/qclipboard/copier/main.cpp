@@ -33,11 +33,9 @@ int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
     QString paste = QStringLiteral("testString.!");
-#ifndef Q_OS_WINCE
     const QStringList arguments = app.arguments();
     if (arguments.size() > 1)
         paste = arguments.at(1);
-#endif
 #ifndef QT_NO_CLIPBOARD
     QGuiApplication::clipboard()->setText(paste);
 #endif

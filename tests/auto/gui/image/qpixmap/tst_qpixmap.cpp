@@ -442,22 +442,16 @@ void tst_QPixmap::fill_data()
         QTest::newRow(("syscolor_" + QByteArray::number(color)).constData())
             << uint(color) << true << false;
 
-#if defined (Q_OS_WINCE)
-    QPixmap pixmap(1,1);
-    if (QApplication::desktop()->grab().depth() >= 24) {
-#else
-    QPixmap pixmap(1, 1); {
-#endif
-        QTest::newRow("alpha_7f_red")   << 0x7fff0000u << false << false;
-        QTest::newRow("alpha_3f_blue")  << 0x3f0000ffu << false << false;
-        QTest::newRow("alpha_b7_green") << 0xbf00ff00u << false << false;
-        QTest::newRow("alpha_7f_white") << 0x7fffffffu << false << false;
-        QTest::newRow("alpha_3f_white") << 0x3fffffffu << false << false;
-        QTest::newRow("alpha_b7_white") << 0xb7ffffffu << false << false;
-        QTest::newRow("alpha_7f_black") << 0x7f000000u << false << false;
-        QTest::newRow("alpha_3f_black") << 0x3f000000u << false << false;
-        QTest::newRow("alpha_b7_black") << 0xbf000000u << false << false;
-    }
+    QPixmap pixmap(1, 1);
+    QTest::newRow("alpha_7f_red")   << 0x7fff0000u << false << false;
+    QTest::newRow("alpha_3f_blue")  << 0x3f0000ffu << false << false;
+    QTest::newRow("alpha_b7_green") << 0xbf00ff00u << false << false;
+    QTest::newRow("alpha_7f_white") << 0x7fffffffu << false << false;
+    QTest::newRow("alpha_3f_white") << 0x3fffffffu << false << false;
+    QTest::newRow("alpha_b7_white") << 0xb7ffffffu << false << false;
+    QTest::newRow("alpha_7f_black") << 0x7f000000u << false << false;
+    QTest::newRow("alpha_3f_black") << 0x3f000000u << false << false;
+    QTest::newRow("alpha_b7_black") << 0xbf000000u << false << false;
 
     QTest::newRow("bitmap_color0") << uint(Qt::color0) << true << true;
     QTest::newRow("bitmap_color1") << uint(Qt::color1) << true << true;
@@ -891,9 +885,6 @@ void tst_QPixmap::fromWinHBITMAP()
     HGDIOBJ old_brush = SelectObject(bitmap_dc, CreateSolidBrush(RGB(red, green, blue)));
     Rectangle(bitmap_dc, 0, 0, 100, 100);
 
-#ifdef Q_OS_WINCE //the device context has to be deleted before QPixmap::fromWinHBITMAP()
-    DeleteDC(bitmap_dc);
-#endif
     QPixmap pixmap = qt_pixmapFromWinHBITMAP(bitmap);
     QCOMPARE(pixmap.width(), 100);
     QCOMPARE(pixmap.height(), 100);
@@ -906,9 +897,7 @@ void tst_QPixmap::fromWinHBITMAP()
 
     DeleteObject(SelectObject(bitmap_dc, old_brush));
     DeleteObject(SelectObject(bitmap_dc, bitmap));
-#ifndef Q_OS_WINCE
     DeleteDC(bitmap_dc);
-#endif
     ReleaseDC(0, display_dc);
 }
 
@@ -1010,7 +999,6 @@ void tst_QPixmap::fromWinHICON_data()
 
 void tst_QPixmap::fromWinHICON()
 {
-#ifndef Q_OS_WINCE
     QFETCH(int, width);
     QFETCH(int, height);
     QFETCH(QString, image);
@@ -1028,7 +1016,6 @@ void tst_QPixmap::fromWinHICON()
     // between QImage::Format_ARGB32 and QImage::Format_ARGB32_Premultiplied, or elsewhere
 
     QVERIFY(compareImages(imageFromHICON, imageFromFile));
-#endif // Q_OS_WINCE
 }
 
 #endif // Q_OS_WIN && !Q_OS_WINRT

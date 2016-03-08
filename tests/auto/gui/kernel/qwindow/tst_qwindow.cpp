@@ -40,7 +40,7 @@
 
 #if defined(Q_OS_QNX)
 #include <QOpenGLContext>
-#elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#elif defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 #  include <QtCore/qt_windows.h>
 #endif
 
@@ -2079,7 +2079,7 @@ void tst_QWindow::modalWindowEnterEventOnHide_QTBUG35109()
 
 static bool isNativeWindowVisible(const QWindow *window)
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     return IsWindowVisible(reinterpret_cast<HWND>(window->winId()));
 #else
     Q_UNIMPLEMENTED();

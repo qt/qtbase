@@ -313,10 +313,6 @@ void tst_QClipboard::setMimeData()
     QMimeData *mimeData = new QMimeData;
     const QString TestName(QLatin1String("tst_QClipboard::setMimeData() mimeData"));
     mimeData->setObjectName(TestName);
-#if defined(Q_OS_WINCE)
-    // need to set text on CE
-    mimeData->setText(QLatin1String("Qt/CE foo"));
-#endif
 
     QGuiApplication::clipboard()->setMimeData(mimeData);
     QCOMPARE(QGuiApplication::clipboard()->mimeData(), (const QMimeData *)mimeData);

@@ -393,7 +393,6 @@ void tst_QIcon::addFile()
     icon.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-save-32.png"), QSize(), QIcon::Selected);
     icon.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-save-128.png"), QSize(), QIcon::Selected);
 
-#ifndef Q_OS_WINCE
     QVERIFY(icon.pixmap(16, QIcon::Normal).toImage() ==
             QPixmap(QLatin1String(":/styles/commonstyle/images/standardbutton-open-16.png")).toImage());
     QVERIFY(icon.pixmap(32, QIcon::Normal).toImage() ==
@@ -406,13 +405,6 @@ void tst_QIcon::addFile()
             QPixmap(QLatin1String(":/styles/commonstyle/images/standardbutton-save-32.png")).toImage());
     QVERIFY(icon.pixmap(128, QIcon::Selected).toImage() ==
             QPixmap(QLatin1String(":/styles/commonstyle/images/standardbutton-save-128.png")).toImage());
-#else
-    // WinCE only includes the 16x16 images for size reasons
-    QVERIFY(icon.pixmap(16, QIcon::Normal).toImage() ==
-            QPixmap(QLatin1String(":/styles/commonstyle/images/standardbutton-open-16.png")).toImage());
-    QVERIFY(icon.pixmap(16, QIcon::Selected).toImage() ==
-            QPixmap(QLatin1String(":/styles/commonstyle/images/standardbutton-save-16.png")).toImage());
-#endif
 }
 
 static bool sizeLess(const QSize &a, const QSize &b)

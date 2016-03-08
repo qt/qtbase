@@ -5,4 +5,4 @@ QT += core-private network gui-private testlib
 
 SOURCES  += tst_noqteventloop.cpp
 
-contains(QT_CONFIG,dynamicgl):win32:!wince*:!winrt: LIBS += -luser32
+contains(QT_CONFIG,dynamicgl):win32:!winrt: LIBS += -luser32

@@ -845,7 +845,7 @@ static bool read_xpm_header(
     if (!read_xpm_string(buf, device, source, index, state))
         return false;
 
-#if defined(_MSC_VER) && _MSC_VER >= 1400 && !defined(Q_OS_WINCE)
+#ifdef Q_CC_MSVC
         if (sscanf_s(buf, "%d %d %d %d", w, h, ncols, cpp) < 4)
 #else
     if (sscanf(buf, "%d %d %d %d", w, h, ncols, cpp) < 4)

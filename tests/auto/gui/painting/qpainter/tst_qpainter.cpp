@@ -39,9 +39,7 @@
 #include <qimage.h>
 #include <qthread.h>
 #include <limits.h>
-#if !defined(Q_OS_WINCE)
 #include <math.h>
-#endif
 #include <qpaintengine.h>
 #ifndef QT_NO_WIDGETS
 #include <qdesktopwidget.h>

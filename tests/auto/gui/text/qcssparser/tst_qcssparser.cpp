@@ -27,9 +27,6 @@
 ****************************************************************************/
 #include <QtTest/QtTest>
 #include <QtXml/QtXml>
-#if defined(Q_OS_WINCE)
-#include <QtGui/QFontDatabase>
-#endif
 #include <QtGui/QFontInfo>
 #include <QtGui/QFontMetrics>
 
@@ -38,10 +35,6 @@
 class tst_QCssParser : public QObject
 {
     Q_OBJECT
-
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
 
 private slots:
     void scanner_data();
@@ -85,32 +78,7 @@ private slots:
     void extractBorder();
     void noTextDecoration();
     void quotedAndUnquotedIdentifiers();
-
-private:
-#if defined(Q_OS_WINCE)
-    int m_timesFontId;
-#endif
 };
-
-void tst_QCssParser::initTestCase()
-{
-#if defined(Q_OS_WINCE)
-    QFontDatabase fontDB;
-    m_timesFontId = -1;
-    if (!fontDB.families().contains("Times New Roman")) {
-        m_timesFontId = QFontDatabase::addApplicationFont("times.ttf");
-        QVERIFY(m_timesFontId != -1);
-    }
-#endif
-}
-
-void tst_QCssParser::cleanupTestCase()
-{
-#if defined(Q_OS_WINCE)
-    if (m_timesFontId != -1)
-        QFontDatabase::removeApplicationFont(m_timesFontId);
-#endif
-}
 
 void tst_QCssParser::scanner_data()
 {
@@ -119,7 +87,7 @@ void tst_QCssParser::scanner_data()
 
 #if defined(Q_OS_ANDROID)
     QDir d(":/");
-#elif !defined(Q_OS_IRIX) && !defined(Q_OS_WINCE)
+#elif !defined(Q_OS_IRIX)
     QDir d(SRCDIR);
 #else
     QDir d(QDir::current());
