@@ -676,18 +676,19 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     if (newHttpRequest.attribute(QNetworkRequest::FollowRedirectsAttribute).toBool())
         httpRequest.setFollowRedirects(true);
 
-    bool loadedFromCache = false;
     httpRequest.setPriority(convert(newHttpRequest.priority()));
 
     switch (operation) {
     case QNetworkAccessManager::GetOperation:
         httpRequest.setOperation(QHttpNetworkRequest::Get);
-        loadedFromCache = loadFromCacheIfAllowed(httpRequest);
+        if (loadFromCacheIfAllowed(httpRequest))
+            return; // no need to send the request! :)
         break;
 
     case QNetworkAccessManager::HeadOperation:
         httpRequest.setOperation(QHttpNetworkRequest::Head);
-        loadedFromCache = loadFromCacheIfAllowed(httpRequest);
+        if (loadFromCacheIfAllowed(httpRequest))
+            return; // no need to send the request! :)
         break;
 
     case QNetworkAccessManager::PostOperation:
@@ -717,10 +718,6 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
 
     default:
         break;                  // can't happen
-    }
-
-    if (loadedFromCache) {
-        return;    // no need to send the request! :)
     }
 
     QList<QByteArray> headers = newHttpRequest.rawHeaderList();
