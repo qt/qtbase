@@ -33,6 +33,9 @@
 
 
 #include <QtTest/QtTest>
+#include <QtCore/QBuffer>
+#include <QtCore/QByteArray>
+
 #include "private/qhttpnetworkconnection_p.h"
 
 class tst_QHttpNetworkReply: public QObject
@@ -46,6 +49,9 @@ private Q_SLOTS:
 
     void parseHeader_data();
     void parseHeader();
+
+    void parseEndOfHeader_data();
+    void parseEndOfHeader();
 };
 
 
@@ -120,6 +126,67 @@ void tst_QHttpNetworkReply::parseHeader()
         QString field = reply.headerField(fields.at(i).toLatin1());
         QCOMPARE(field, values.at(i));
     }
+}
+
+class TestHeaderSocket : public QAbstractSocket
+{
+public:
+    explicit TestHeaderSocket(const QByteArray &input) : QAbstractSocket(QAbstractSocket::TcpSocket, Q_NULLPTR)
+    {
+        inputBuffer.setData(input);
+        inputBuffer.open(QIODevice::ReadOnly | QIODevice::Unbuffered);
+        open(QIODevice::ReadOnly | QIODevice::Unbuffered);
+    }
+
+    qint64 readData(char *data, qint64 maxlen) { return inputBuffer.read(data, maxlen); }
+
+    QBuffer inputBuffer;
+};
+
+class TestHeaderReply : public QHttpNetworkReply
+{
+public:
+    QHttpNetworkReplyPrivate *replyPrivate() { return static_cast<QHttpNetworkReplyPrivate *>(d_ptr.data()); }
+};
+
+void tst_QHttpNetworkReply::parseEndOfHeader_data()
+{
+    QTest::addColumn<QByteArray>("headers");
+    QTest::addColumn<qint64>("lengths");
+
+    QTest::newRow("CRLFCRLF") << QByteArray("Content-Type: text/html; charset=utf-8\r\n"
+                                            "Content-Length:\r\n 1024\r\n"
+                                            "Content-Encoding: gzip\r\n\r\nHTTPBODY")
+                               << qint64(90);
+
+    QTest::newRow("CRLFLF") << QByteArray("Content-Type: text/html; charset=utf-8\r\n"
+                                          "Content-Length:\r\n 1024\r\n"
+                                          "Content-Encoding: gzip\r\n\nHTTPBODY")
+                            << qint64(89);
+
+    QTest::newRow("LFCRLF") << QByteArray("Content-Type: text/html; charset=utf-8\r\n"
+                                          "Content-Length:\r\n 1024\r\n"
+                                          "Content-Encoding: gzip\n\r\nHTTPBODY")
+                            << qint64(89);
+
+    QTest::newRow("LFLF") << QByteArray("Content-Type: text/html; charset=utf-8\r\n"
+                                        "Content-Length:\r\n 1024\r\n"
+                                        "Content-Encoding: gzip\n\nHTTPBODY")
+                          << qint64(88);
+}
+
+void tst_QHttpNetworkReply::parseEndOfHeader()
+{
+    QFETCH(QByteArray, headers);
+    QFETCH(qint64, lengths);
+
+    TestHeaderSocket socket(headers);
+
+    TestHeaderReply reply;
+
+    QHttpNetworkReplyPrivate *replyPrivate = reply.replyPrivate();
+    qint64 headerBytes = replyPrivate->readHeader(&socket);
+    QCOMPARE(headerBytes, lengths);
 }
 
 QTEST_MAIN(tst_QHttpNetworkReply)

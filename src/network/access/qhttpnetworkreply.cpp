@@ -554,9 +554,8 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
             if (c == '\n') {
                 // check for possible header endings. As per HTTP rfc,
                 // the header endings will be marked by CRLFCRLF. But
-                // we will allow CRLFCRLF, CRLFLF, LFLF
-                if (fragment.endsWith("\r\n\r\n")
-                    || fragment.endsWith("\r\n\n")
+                // we will allow CRLFCRLF, CRLFLF, LFCRLF, LFLF
+                if (fragment.endsWith("\n\r\n")
                     || fragment.endsWith("\n\n"))
                     allHeaders = true;
 

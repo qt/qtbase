@@ -175,7 +175,7 @@ private:
 };
 
 
-class QHttpNetworkReplyPrivate : public QObjectPrivate, public QHttpNetworkHeaderPrivate
+class Q_AUTOTEST_EXPORT QHttpNetworkReplyPrivate : public QObjectPrivate, public QHttpNetworkHeaderPrivate
 {
 public:
     QHttpNetworkReplyPrivate(const QUrl &newUrl = QUrl());
