@@ -747,10 +747,10 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     foreach (const QByteArray &header, headers)
         httpRequest.setHeaderField(header, newHttpRequest.rawHeader(header));
 
-    if (newHttpRequest.attribute(QNetworkRequest::HttpPipeliningAllowedAttribute).toBool() == true)
+    if (newHttpRequest.attribute(QNetworkRequest::HttpPipeliningAllowedAttribute).toBool())
         httpRequest.setPipeliningAllowed(true);
 
-    if (request.attribute(QNetworkRequest::SpdyAllowedAttribute).toBool() == true)
+    if (request.attribute(QNetworkRequest::SpdyAllowedAttribute).toBool())
         httpRequest.setSPDYAllowed(true);
 
     if (static_cast<QNetworkRequest::LoadControl>
@@ -758,7 +758,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
                              QNetworkRequest::Automatic).toInt()) == QNetworkRequest::Manual)
         httpRequest.setWithCredentials(false);
 
-    if (request.attribute(QNetworkRequest::EmitAllUploadProgressSignalsAttribute).toBool() == true)
+    if (request.attribute(QNetworkRequest::EmitAllUploadProgressSignalsAttribute).toBool())
         emitAllUploadProgressSignals = true;
 
 
