@@ -1746,10 +1746,8 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
         QMetaObject::invokeMethod(q, "_q_finished", synchronous ? Qt::DirectConnection : Qt::QueuedConnection);
         return;
     }
-#endif
 
     if (!start(request)) {
-#ifndef QT_NO_BEARERMANAGEMENT
         // backend failed to start because the session state is not Connected.
         // QNetworkAccessManager will call reply->backend->start() again for us when the session
         // state changes.
@@ -1771,21 +1769,21 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
             QMetaObject::invokeMethod(q, "_q_finished", synchronous ? Qt::DirectConnection : Qt::QueuedConnection);
             return;
         }
+    } else if (session) {
+        QObject::connect(session.data(), SIGNAL(stateChanged(QNetworkSession::State)),
+                         q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)),
+                         Qt::QueuedConnection);
+    }
 #else
+    if (!start(request)) {
         qWarning("Backend start failed");
         QMetaObject::invokeMethod(q, "_q_error", synchronous ? Qt::DirectConnection : Qt::QueuedConnection,
             Q_ARG(QNetworkReply::NetworkError, QNetworkReply::UnknownNetworkError),
             Q_ARG(QString, QCoreApplication::translate("QNetworkReply", "backend start error.")));
         QMetaObject::invokeMethod(q, "_q_finished", synchronous ? Qt::DirectConnection : Qt::QueuedConnection);
         return;
-#endif
-    } else {
-#ifndef QT_NO_BEARERMANAGEMENT
-        if (session)
-            QObject::connect(session.data(), SIGNAL(stateChanged(QNetworkSession::State)),
-                             q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)), Qt::QueuedConnection);
-#endif
     }
+#endif // QT_NO_BEARERMANAGEMENT
 
     if (synchronous) {
         state = Finished;
