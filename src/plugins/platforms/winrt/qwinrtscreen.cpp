@@ -1201,7 +1201,7 @@ HRESULT QWinRTScreen::onOrientationChanged(IDisplayInformation *, IInspectable *
     if (d->orientation != newOrientation) {
         d->orientation = newOrientation;
         qCDebug(lcQpaWindows) << "  New orientation:" << newOrientation;
-#ifdef Q_OS_WINPHONE
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
         onSizeChanged(nullptr, nullptr);
 #endif
         QWindowSystemInterface::handleScreenOrientationChange(screen(), d->orientation);
