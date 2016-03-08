@@ -59,7 +59,7 @@ Q_DECLARE_METATYPE(QPainterPath)
 
 #include "../../../qtest-config.h"
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 #include <windows.h>
 #define Q_CHECK_PAINTEVENTS \
     if (::SwitchDesktop(::GetThreadDesktop(::GetCurrentThreadId())) == 0) \
@@ -279,9 +279,6 @@ class tst_QGraphicsItem : public QObject
 {
     Q_OBJECT
 
-public slots:
-    void init();
-
 private slots:
     void construction();
     void constructionWithParent();
@@ -480,13 +477,6 @@ private slots:
 private:
     QList<QGraphicsItem *> paintedItems;
 };
-
-void tst_QGraphicsItem::init()
-{
-#ifdef Q_OS_WINCE //disable magic for WindowsCE
-    qApp->setAutoMaximizeThreshold(-1);
-#endif
-}
 
 void tst_QGraphicsItem::construction()
 {

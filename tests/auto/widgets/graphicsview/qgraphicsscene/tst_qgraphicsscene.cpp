@@ -28,9 +28,6 @@
 
 
 #include <QtTest/QtTest>
-#if defined(Q_OS_WINCE)
-#include <ceconfig.h>
-#endif
 
 #include <QtGui>
 #include <QtWidgets>
@@ -41,7 +38,7 @@
 #include "../../../shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 #include <windows.h>
 #define Q_CHECK_PAINTEVENTS \
     if (::SwitchDesktop(::GetThreadDesktop(::GetCurrentThreadId())) == 0) \
@@ -170,7 +167,6 @@ class tst_QGraphicsScene : public QObject
 {
     Q_OBJECT
 public slots:
-    void initTestCase();
     void cleanup();
 
 private slots:
@@ -272,13 +268,6 @@ private slots:
     void taskQTBUG_15977_renderWithDeviceCoordinateCache();
     void taskQTBUG_16401_focusItem();
 };
-
-void tst_QGraphicsScene::initTestCase()
-{
-#ifdef Q_OS_WINCE //disable magic for WindowsCE
-    qApp->setAutoMaximizeThreshold(-1);
-#endif
-}
 
 void tst_QGraphicsScene::cleanup()
 {
@@ -1250,7 +1239,7 @@ void tst_QGraphicsScene::addText()
 
 void tst_QGraphicsScene::removeItem()
 {
-#if (defined(Q_OS_WINCE) && !defined(GWES_ICONCURS)) || defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID)
     QSKIP("No mouse cursor support");
 #endif
     QGraphicsScene scene;
@@ -1587,11 +1576,7 @@ void tst_QGraphicsScene::hoverEvents_siblings()
 
     QGraphicsView view(&scene);
     view.setRenderHint(QPainter::Antialiasing, true);
-#if defined(Q_OS_WINCE)
-    view.setMinimumSize(230, 200);
-#else
     view.setMinimumSize(400, 300);
-#endif
     view.rotate(10);
     view.scale(1.7, 1.7);
     view.show();
@@ -1660,11 +1645,7 @@ void tst_QGraphicsScene::hoverEvents_parentChild()
 
     QGraphicsView view(&scene);
     view.setRenderHint(QPainter::Antialiasing, true);
-#if defined(Q_OS_WINCE)
-    view.setMinimumSize(230, 200);
-#else
     view.setMinimumSize(400, 300);
-#endif
     view.rotate(10);
     view.scale(1.7, 1.7);
     view.show();

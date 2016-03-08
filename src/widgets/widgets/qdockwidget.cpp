@@ -230,7 +230,7 @@ bool QDockWidgetLayout::nativeWindowDeco() const
  */
 bool QDockWidgetLayout::wmSupportsNativeWindowDeco()
 {
-#if defined(Q_OS_WINCE) || defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID)
     return false;
 #else
     static const bool xcb = !QGuiApplication::platformName().compare(QLatin1String("xcb"), Qt::CaseInsensitive);

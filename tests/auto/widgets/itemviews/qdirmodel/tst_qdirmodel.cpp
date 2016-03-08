@@ -575,7 +575,7 @@ void tst_QDirModel::filePath()
     model.setResolveSymlinks(false);
     QModelIndex index = model.index(SRCDIR "test.lnk");
     QVERIFY(index.isValid());
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_ANDROID)
+#if !defined(Q_OS_ANDROID)
     QString path = SRCDIR;
 #else
     QString path = QFileInfo(SRCDIR).absoluteFilePath();

@@ -90,11 +90,8 @@ extern Q_GUI_EXPORT bool qt_is_gui_used;
 extern QClipboard *qt_clipboard;
 #endif
 
-#if defined (Q_OS_WIN32) || defined (Q_OS_CYGWIN) || defined(Q_OS_WINCE)
+#if defined (Q_OS_WIN32) || defined (Q_OS_CYGWIN)
 extern QSysInfo::WinVersion qt_winver;
-# ifdef Q_OS_WINCE
-  extern DWORD qt_cever;
-# endif
 #elif defined (Q_OS_MAC)
 extern QSysInfo::MacVersion qt_macver;
 #endif
@@ -125,9 +122,6 @@ public:
     static bool x11_apply_settings();
 #endif
     static void reset_instance_pointer();
-#endif
-#ifdef Q_OS_WINCE
-    static int autoMaximizeThreshold;
 #endif
     static bool autoSipEnabled;
     static QString desktopStyleKey();

@@ -101,23 +101,13 @@
 
 #include "qdatetime.h"
 
-#ifdef Q_OS_WINCE
-extern bool qt_wince_is_smartphone(); //qguifunctions_wince.cpp
-extern bool qt_wince_is_mobile();     //qguifunctions_wince.cpp
-extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
-#endif
-
 #include <qpa/qplatformwindow.h>
 
 //#define ALIEN_DEBUG
 
 static void initResources()
 {
-#if defined(Q_OS_WINCE)
-    Q_INIT_RESOURCE(qstyle_wince);
-#else
     Q_INIT_RESOURCE(qstyle);
-#endif
     Q_INIT_RESOURCE(qmessagebox);
 
 }
@@ -171,12 +161,7 @@ static QByteArray nativeStyleClassName()
     return name;
 }
 
-#ifdef Q_OS_WINCE
-int QApplicationPrivate::autoMaximizeThreshold = -1;
-bool QApplicationPrivate::autoSipEnabled = false;
-#else
 bool QApplicationPrivate::autoSipEnabled = true;
-#endif
 
 QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, int flags)
     : QApplicationPrivateBase(argc, argv, flags)
@@ -654,17 +639,6 @@ void QApplicationPrivate::initialize()
     if (qEnvironmentVariableIntValue("QT_USE_NATIVE_WINDOWS") > 0)
         QCoreApplication::setAttribute(Qt::AA_NativeWindows);
 
-#ifdef Q_OS_WINCE
-#ifdef QT_AUTO_MAXIMIZE_THRESHOLD
-    autoMaximizeThreshold = QT_AUTO_MAXIMIZE_THRESHOLD;
-#else
-    if (qt_wince_is_mobile())
-        autoMaximizeThreshold = 50;
-    else
-        autoMaximizeThreshold = -1;
-#endif //QT_AUTO_MAXIMIZE_THRESHOLD
-#endif //Q_OS_WINCE
-
 #ifndef QT_NO_WHEELEVENT
     QApplicationPrivate::wheel_scroll_lines = 3;
 #endif
@@ -1058,19 +1032,6 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
 
     The default is platform dependent.
 */
-
-#ifdef Q_OS_WINCE
-void QApplication::setAutoMaximizeThreshold(const int threshold)
-{
-    QApplicationPrivate::autoMaximizeThreshold = threshold;
-}
-
-int QApplication::autoMaximizeThreshold() const
-{
-    return QApplicationPrivate::autoMaximizeThreshold;
-}
-#endif
-
 void QApplication::setAutoSipEnabled(const bool enabled)
 {
     QApplicationPrivate::autoSipEnabled = enabled;
@@ -3777,7 +3738,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
     if (receiver->isWidgetType()) {
         QWidget *widget = static_cast<QWidget *>(receiver);
 
-#if !defined(Q_OS_WINCE) || (defined(GWES_ICONCURS) && !defined(QT_NO_CURSOR))
+#if !defined(QT_NO_CURSOR)
         // toggle HasMouse widget state on enter and leave
         if ((e->type() == QEvent::Enter || e->type() == QEvent::DragEnter) &&
             (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == widget->window()))

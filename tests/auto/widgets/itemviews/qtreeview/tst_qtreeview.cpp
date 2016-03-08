@@ -118,8 +118,6 @@ public slots:
     void selectionOrderTest();
 
 private slots:
-    void initTestCase();
-
     void getSetCheck();
 
     // one test per QTreeView property
@@ -389,13 +387,6 @@ public:
     mutable bool wrongIndex;
     mutable QMap<QModelIndex,QModelIndex> parentHash;
 };
-
-void tst_QTreeView::initTestCase()
-{
-#ifdef Q_OS_WINCE //disable magic for WindowsCE
-    qApp->setAutoMaximizeThreshold(-1);
-#endif
-}
 
 // Testing get/set functions
 void tst_QTreeView::getSetCheck()

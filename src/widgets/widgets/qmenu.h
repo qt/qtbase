@@ -45,9 +45,6 @@
 #include <QtGui/qicon.h>
 #include <QtWidgets/qaction.h>
 
-#ifdef Q_OS_WINCE
-#include <windef.h> // for HMENU
-#endif
 #ifdef Q_OS_OSX
 Q_FORWARD_DECLARE_OBJC_CLASS(NSMenu);
 #endif
@@ -214,9 +211,6 @@ public:
     QPlatformMenu *platformMenu();
     void setPlatformMenu(QPlatformMenu *platformMenu);
 
-#ifdef Q_OS_WINCE
-    HMENU wceMenu();
-#endif
 #ifdef Q_OS_OSX
     NSMenu* toNSMenu();
     void setAsDockMenu();
@@ -254,10 +248,6 @@ protected:
     bool event(QEvent *) Q_DECL_OVERRIDE;
     bool focusNextPrevChild(bool next) Q_DECL_OVERRIDE;
     void initStyleOption(QStyleOptionMenuItem *option, const QAction *action) const;
-
-#ifdef Q_OS_WINCE
-    QAction* wceCommands(uint command);
-#endif
 
 private Q_SLOTS:
     void internalDelayedPopup();

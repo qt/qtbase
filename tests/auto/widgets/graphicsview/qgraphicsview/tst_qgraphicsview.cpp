@@ -143,7 +143,6 @@ public:
         : platformName(QGuiApplication::platformName().toLower())
     { }
 private slots:
-    void initTestCase();
     void cleanup();
     void construction();
     void renderHints();
@@ -272,13 +271,6 @@ public slots:
 private:
     QString platformName;
 };
-
-void tst_QGraphicsView::initTestCase()
-{
-#ifdef Q_OS_WINCE_WM
-    qApp->setAutoMaximizeThreshold(-1);
-#endif
-}
 
 void tst_QGraphicsView::cleanup()
 {
@@ -1383,20 +1375,9 @@ void tst_QGraphicsView::fitInView()
     items[0]->setTransform(QTransform().rotate(30), true);
     items[1]->setTransform(QTransform().rotate(-30), true);
 
-#if defined(Q_OS_WINCE)
-    //Is the standard scrollbar size
-    int scrollbarSize = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent) - 13;
-#endif
-
     QGraphicsView view(&scene);
     view.setSceneRect(-400, -400, 800, 800);
-
-#if defined(Q_OS_WINCE)
-    //We need to take in account the scrollbar size for the WindowsMobilStyle
-    view.setFixedSize(400 + scrollbarSize, 200 + scrollbarSize);
-#else
     view.setFixedSize(400, 200);
-#endif
 
     view.showNormal();
     view.fitInView(scene.itemsBoundingRect(), Qt::IgnoreAspectRatio);
@@ -1810,11 +1791,7 @@ void tst_QGraphicsView::mapToScene()
     QGraphicsView view(&topLevel);
     view.setScene(&scene);
     view.setSceneRect(-500, -500, 1000, 1000);
-#if defined(Q_OS_WINCE)
-    QSize viewSize(200,200);
-#else
     QSize viewSize(300,300);
-#endif
 
     view.setFixedSize(viewSize);
     topLevel.show();
@@ -4528,9 +4505,6 @@ void tst_QGraphicsView::task253415_reconnectUpdateSceneOnSceneChanged()
 
 void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("Qt/CE does not implement mouse tracking at this point");
-#endif
     QGraphicsScene scene(-100, -100, 200, 200);
     scene.addRect(QRectF(-50, -50, 100, 100), QPen(Qt::black), QBrush(Qt::blue));
 

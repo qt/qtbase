@@ -427,31 +427,6 @@ void QDialogPrivate::resetModalitySetByOpen()
     resetModalityTo = -1;
 }
 
-#if defined(Q_OS_WINCE)
-#ifdef Q_OS_WINCE_WM
-void QDialogPrivate::_q_doneAction()
-{
-    //Done...
-    QApplication::postEvent(q_func(), new QEvent(QEvent::OkRequest));
-}
-#endif
-
-/*!
-    \reimp
-*/
-bool QDialog::event(QEvent *e)
-{
-    bool result = QWidget::event(e);
-#ifdef Q_OS_WINCE
-    if (e->type() == QEvent::OkRequest) {
-        accept();
-        result = true;
-     }
-#endif
-    return result;
-}
-#endif
-
 /*!
   In general returns the modal dialog's result code, \c Accepted or
   \c Rejected.

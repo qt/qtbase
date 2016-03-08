@@ -51,9 +51,6 @@ class tst_QWizard : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QWizard();
-
 private slots:
     void cleanup();
     void buttonText();
@@ -127,13 +124,6 @@ private slots:
         8. Test mutual exclusiveness of Next and Commit buttons.
     */
 };
-
-tst_QWizard::tst_QWizard()
-{
-#ifdef Q_OS_WINCE //disable magic for WindowsCE
-    qApp->setAutoMaximizeThreshold(-1);
-#endif
-}
 
 void tst_QWizard::cleanup()
 {
@@ -962,9 +952,6 @@ void tst_QWizard::setOption_IndependentPages()
 
 void tst_QWizard::setOption_IgnoreSubTitles()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("Skipped because of limited resources and potential crash. (Task: 166824)");
-#endif
     const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
     const int kPixels = (availableGeometry.width() + 500) / 1000;
     const int frame = 50 * kPixels;
@@ -1073,9 +1060,6 @@ void tst_QWizard::setOption_IgnoreSubTitles()
 
 void tst_QWizard::setOption_ExtendedWatermarkPixmap()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("Skipped because of limited resources and potential crash. (Task: 166824)");
-#endif
     QPixmap watermarkPixmap(200, 400);
     watermarkPixmap.fill(Qt::black);
 
@@ -2062,10 +2046,6 @@ void tst_QWizard::combinations_data()
 
 void tst_QWizard::combinations()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Too much memory usage for testing on CE emulator");
-#endif
-
     QFETCH(bool, ref);
     QFETCH(bool, testEquality);
     QFETCH(QList<Operation *>, operations);

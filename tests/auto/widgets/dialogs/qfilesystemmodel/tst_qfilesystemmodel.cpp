@@ -40,7 +40,7 @@
 #include <QStyle>
 #include <QtGlobal>
 #include <QTemporaryDir>
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
 # include <qt_windows.h> // for SetFileAttributes
 #endif
 
@@ -104,7 +104,7 @@ private slots:
 
     void caseSensitivity();
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
     void Win32LongFileName();
 #endif
 
@@ -334,7 +334,7 @@ bool tst_QFileSystemModel::createFiles(const QString &test_path, const QStringLi
             return false;
         }
         file.close();
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
         if (initial_files.at(i)[0] == '.') {
             QString hiddenFile = QDir::toNativeSeparators(file.fileName());
             wchar_t nativeHiddenFile[MAX_PATH];
@@ -371,14 +371,9 @@ void tst_QFileSystemModel::rowCount()
     QSignalSpy spy2(model, SIGNAL(rowsInserted(QModelIndex,int,int)));
     QSignalSpy spy3(model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)));
 
-#if !defined(Q_OS_WINCE)
     QStringList files = QStringList() <<  "b" << "d" << "f" << "h" << "j" << ".a" << ".c" << ".e" << ".g";
     QString l = "b,d,f,h,j,.a,.c,.e,.g";
-#else
-    // Cannot hide them on CE
-    QStringList files = QStringList() <<  "b" << "d" << "f" << "h" << "j";
-    QString l = "b,d,f,h,j";
-#endif
+
     QVERIFY(createFiles(tmp, files));
 
     QModelIndex root = model->setRootPath(tmp);
@@ -406,9 +401,6 @@ static inline QString lastEntry(const QModelIndex &root)
 
 void tst_QFileSystemModel::rowsInserted()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("Watching directories does not work on CE(see #137910)");
-#endif
     QString tmp = flatDirTestPath;
     rowCount();
     QModelIndex root = model->index(model->rootPath());
@@ -463,9 +455,6 @@ void tst_QFileSystemModel::rowsRemoved_data()
 
 void tst_QFileSystemModel::rowsRemoved()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("Watching directories does not work on CE(see #137910)");
-#endif
     QString tmp = flatDirTestPath;
     rowCount();
     QModelIndex root = model->index(model->rootPath());
@@ -554,7 +543,6 @@ void tst_QFileSystemModel::filters_data()
     QTest::addColumn<int>("dirFilters");
     QTest::addColumn<QStringList>("nameFilters");
     QTest::addColumn<int>("rowCount");
-#if !defined(Q_OS_WINCE)
     QTest::newRow("no dirs") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs) << QStringList() << 2;
     QTest::newRow("no dirs - dot") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::NoDot) << QStringList() << 1;
     QTest::newRow("no dirs - dotdot") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::NoDotDot) << QStringList() << 1;
@@ -576,30 +564,6 @@ void tst_QFileSystemModel::filters_data()
                          (int)(QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::CaseSensitive) << (QStringList() << "a") << 1;
     QTest::newRow("dir+files+hid+dot+cas+alldir") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") <<
                          (int)(QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::CaseSensitive | QDir::AllDirs) << (QStringList() << "Z") << 1;
-#else
-    QTest::qWait(3000); // We need to calm down a bit...
-    QTest::newRow("no dirs") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs) << QStringList() << 0;
-    QTest::newRow("no dirs - dot") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::NoDot) << QStringList() << 1;
-    QTest::newRow("no dirs - dotdot") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::NoDotDot) << QStringList() << 1;
-    QTest::newRow("no dirs - dotanddotdot") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::NoDotAndDotDot) << QStringList() << 0;
-    QTest::newRow("one dir - dot") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") << (int)(QDir::Dirs | QDir::NoDot) << QStringList() << 2;
-    QTest::newRow("one dir - dotdot") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") << (int)(QDir::Dirs | QDir::NoDotDot) << QStringList() << 2;
-    QTest::newRow("one dir - dotanddotdot") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") << (int)(QDir::Dirs | QDir::NoDotAndDotDot) << QStringList() << 1;
-    QTest::newRow("one dir") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") << (int)(QDir::Dirs) << QStringList() << 1;
-    QTest::newRow("no dir + hidden") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::Hidden) << QStringList() << 0;
-    QTest::newRow("dir+hid+files") << (QStringList() << "a" << "b" << "c") << QStringList() <<
-                         (int)(QDir::Dirs | QDir::Files | QDir::Hidden) << QStringList() << 3;
-    QTest::newRow("dir+file+hid-dot .A") << (QStringList() << "a" << "b" << "c") << (QStringList() << ".A") <<
-                         (int)(QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot) << QStringList() << 4;
-    QTest::newRow("dir+files+hid+dot A") << (QStringList() << "a" << "b" << "c") << (QStringList() << "AFolder") <<
-                         (int)(QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot) << (QStringList() << "A*") << 2;
-    QTest::newRow("dir+files+hid+dot+cas1") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") <<
-                         (int)(QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::CaseSensitive) << (QStringList() << "Z") << 1;
-    QTest::newRow("dir+files+hid+dot+cas2") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") <<
-                         (int)(QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::CaseSensitive) << (QStringList() << "a") << 1;
-    QTest::newRow("dir+files+hid+dot+cas+alldir") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") <<
-                         (int)(QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::CaseSensitive | QDir::AllDirs) << (QStringList() << "Z") << 1;
-#endif
 
     QTest::newRow("case sensitive") << (QStringList() << "Antiguagdb" << "Antiguamtd"
         << "Antiguamtp" << "afghanistangdb" << "afghanistanmtd")
@@ -902,7 +866,7 @@ void tst_QFileSystemModel::caseSensitivity()
     }
 }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
 void tst_QFileSystemModel::Win32LongFileName()
 {
     QString tmp = flatDirTestPath;

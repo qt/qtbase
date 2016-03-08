@@ -52,10 +52,6 @@
 #include <QtWidgets/private/qapplication_p.h>
 #include <QtWidgets/QStyle>
 
-#ifdef Q_OS_WINCE
-#include <windows.h>
-#endif
-
 #include <qpa/qwindowsysteminterface.h>
 #include <private/qhighdpiscaling_p.h>
 
@@ -235,10 +231,6 @@ static  char *argv0;
 tst_QApplication::tst_QApplication()
     : quitApplicationTriggered(false)
 {
-#ifdef Q_OS_WINCE
-    // Clean up environment previously to launching test
-    qputenv("QT_PLUGIN_PATH", QByteArray());
-#endif
 }
 
 void tst_QApplication::cleanup()
@@ -897,19 +889,8 @@ bool isPathListIncluded(const QStringList &l, const QStringList &r)
 #define QT_TST_QAPP_DEBUG
 void tst_QApplication::libraryPaths()
 {
-#ifndef Q_OS_WINCE
         const QString testDir = QFileInfo(QFINDTESTDATA("test/test.pro")).absolutePath();
         QVERIFY(!testDir.isEmpty());
-#else // !Q_OS_WINCE
-        // On Windows CE we need QApplication object to have valid
-        // current Path. Therefore we need to identify it ourselves
-        // here for the test.
-        QFileInfo filePath;
-        wchar_t module_name[MAX_PATH];
-        GetModuleFileName(0, module_name, MAX_PATH);
-        filePath = QString::fromWCharArray(module_name);
-        const QString testDir = filePath.path() + "/test";
-#endif // Q_OS_WINCE
     {
         QApplication::setLibraryPaths(QStringList() << testDir);
         QCOMPARE(QApplication::libraryPaths(), (QStringList() << testDir));
@@ -1000,11 +981,7 @@ void tst_QApplication::libraryPaths()
         QString appDirPath = app.applicationDirPath();
 
         app.addLibraryPath(appDirPath);
-#ifdef Q_OS_WINCE
-        app.addLibraryPath(appDirPath + "/../..");
-#else
         app.addLibraryPath(appDirPath + "/..");
-#endif
 #ifdef QT_TST_QAPP_DEBUG
         qDebug() << "appDirPath" << appDirPath;
         qDebug() << "After adding appDirPath && appDirPath + /..:" << app.libraryPaths();
@@ -1044,15 +1021,9 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
     QByteArray nonExistentPath = "/nonexistent";
     QByteArray pluginPath = validPath + ':' + nonExistentPath;
 #elif defined(Q_OS_WIN)
-# ifdef Q_OS_WINCE
-    QByteArray validPath = "/Temp";
-    QByteArray nonExistentPath = "/nonexistent";
-    QByteArray pluginPath = validPath + ';' + nonExistentPath;
-# else
     QByteArray validPath = "C:\\windows";
     QByteArray nonExistentPath = "Z:\\nonexistent";
     QByteArray pluginPath = validPath + ';' + nonExistentPath;
-# endif
 #endif
 
     {
@@ -1069,9 +1040,7 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
             << QLibraryInfo::location(QLibraryInfo::PluginsPath)
             << QDir(app.applicationDirPath()).canonicalPath()
             << QDir(QDir::fromNativeSeparators(QString::fromLatin1(validPath))).canonicalPath();
-# ifdef Q_OS_WINCE
-        expected = QSet<QString>::fromList(expected).toList();
-# endif
+
         QVERIFY2(isPathListIncluded(app.libraryPaths(), expected),
                  qPrintable("actual:\n - " + app.libraryPaths().join("\n - ") +
                             "\nexpected:\n - " + expected.join("\n - ")));
@@ -1091,9 +1060,6 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
             QStringList()
             << QLibraryInfo::location(QLibraryInfo::PluginsPath)
             << app.applicationDirPath();
-# ifdef Q_OS_WINCE
-        expected = QSet<QString>::fromList(expected).toList();
-# endif
         QVERIFY(isPathListIncluded(app.libraryPaths(), expected));
 
         qputenv("QT_PLUGIN_PATH", QByteArray());
@@ -1479,10 +1445,6 @@ void tst_QApplication::desktopSettingsAware()
     }
     QVERIFY2(!path.isEmpty(), "Cannot locate desktopsettingsaware helper application");
     path += "desktopsettingsaware";
-#ifdef Q_OS_WINCE
-    int argc = 0;
-    QApplication tmpApp(argc, 0);
-#endif
     QProcess testProcess;
     testProcess.start(path);
     QVERIFY2(testProcess.waitForStarted(),

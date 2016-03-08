@@ -62,11 +62,7 @@ int main(int argc, char *argv[])
 
     QGraphicsScene scene;
     scene.setStickyFocus(true);
-#ifndef Q_OS_WINCE
     const int gridSize = 10;
-#else
-    const int gridSize = 5;
-#endif
 
     for (int y = 0; y < gridSize; ++y) {
         for (int x = 0; x < gridSize; ++x) {

@@ -56,7 +56,6 @@ class tst_QGridLayout : public QObject
 Q_OBJECT
 
 private slots:
-    void initTestCase();
     void cleanup();
     void getItemPosition();
     void itemAtPosition();
@@ -84,13 +83,6 @@ private slots:
     void replaceWidget();
     void dontCrashWhenExtendsToEnd();
 };
-
-void tst_QGridLayout::initTestCase()
-{
-#ifdef Q_OS_WINCE //disable magic for WindowsCE
-    qApp->setAutoMaximizeThreshold(-1);
-#endif
-}
 
 static inline int visibleTopLevelWidgetCount()
 {
@@ -603,19 +595,6 @@ void tst_QGridLayout::spacingsAndMargins_data()
                                         << QPoint( 20, child_offset_y)
                                         << QPoint( 20, child_offset_y + 100 + 6)
                                         );
-#if defined (Q_OS_WINCE) //There is not enough screenspace to run the test in original size on Windows CE. We use smaller widgets.
-    child_offset_y = 11 + 9 + 50 + 6 + 50 + 6 + 50 + 6;
-    QTest::newRow("1x3 grid") << 1 << 3 << QSize(50, 50)
-                       << (PointList()  // toplevel
-                                        << QPoint( 11, 11)
-                                        << QPoint( 11, 11 + 50 + 6)
-                                        << QPoint( 11, 11 + 50 + 6 + 50 + 6)
-                                        // children
-                                        << QPoint( 20, child_offset_y)
-                                        << QPoint( 20, child_offset_y + 50 + 6)
-                                        << QPoint( 20, child_offset_y + 50 + 6 + 50 + 6)
-                                        );
-#else
     child_offset_y = 11 + 9 + 100 + 6 + 100 + 6 + 100 + 6;
     QTest::newRow("1x3 grid") << 1 << 3 << QSize(100, 100)
                        << (PointList()  // toplevel
@@ -627,7 +606,6 @@ void tst_QGridLayout::spacingsAndMargins_data()
                                         << QPoint( 20, child_offset_y + 100 + 6)
                                         << QPoint( 20, child_offset_y + 100 + 6 + 100 + 6)
                                         );
-#endif
 
     child_offset_y = 11 + 9 + 100 + 6 + 100 + 6;
     QTest::newRow("2x2 grid") << 2 << 2 << QSize(100, 100)

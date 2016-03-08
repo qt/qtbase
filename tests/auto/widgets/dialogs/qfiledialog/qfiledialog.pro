@@ -8,18 +8,6 @@ QT += widgets widgets-private testlib
 QT += core-private gui-private
 SOURCES += tst_qfiledialog.cpp
 
-wince* {
-    addFiles.files = *.cpp
-    addFiles.path = .
-    filesInDir.files = *.pro
-    filesInDir.path = someDir
-    DEPLOYMENT += addFiles filesInDir
-}
-
-wince* {
-    DEFINES += SRCDIR=\\\"./\\\"
-} else {
-    DEFINES += SRCDIR=\\\"$$PWD/\\\"
-}
+DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 linux*: CONFIG += insignificant_test # Crashes on different Linux distros

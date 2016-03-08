@@ -75,7 +75,7 @@
 
 #include <QtTest/QTest>
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !Q_OS_WINRT
 #  include <QtCore/qt_windows.h>
 #  include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformnativeinterface.h>
@@ -91,49 +91,12 @@ static HWND winHandleOf(const QWidget *w)
     return 0;
 }
 
-#  ifdef Q_OS_WINCE
-#    define Q_CHECK_PAINTEVENTS
-#    ifdef Q_OS_WINCE_WM
-#      include <qguifunctions_wince.h>
-// taken from qguifunctions_wce.cpp
-#      define SPI_GETPLATFORMTYPE 257
-static bool qt_wince_is_platform(const QString &platformString) {
-    wchar_t tszPlatform[64];
-    if (SystemParametersInfo(SPI_GETPLATFORMTYPE,
-                             sizeof(tszPlatform)/sizeof(*tszPlatform),tszPlatform,0))
-      if (0 == _tcsicmp(reinterpret_cast<const wchar_t *> (platformString.utf16()), tszPlatform))
-            return true;
-    return false;
-}
-static inline bool qt_wince_is_smartphone() { return qt_wince_is_platform(QString::fromLatin1("Smartphone")); }
-#    endif // Q_OS_WINCE_WM
-#  elif !defined(Q_OS_WINRT) //  Q_OS_WINCE
-#    define Q_CHECK_PAINTEVENTS \
+#  define Q_CHECK_PAINTEVENTS \
     if (::SwitchDesktop(::GetThreadDesktop(::GetCurrentThreadId())) == 0) \
         QSKIP("desktop is not visible, this test would fail");
-#  else //  !Q_OS_WINCE && !Q_OS_WINRT
-#    define Q_CHECK_PAINTEVENTS
-#  endif // Q_OS_WINRT
-#else // Q_OS_WIN
+
+#else // Q_OS_WIN && !Q_OS_WINRT
 #  define Q_CHECK_PAINTEVENTS
-#endif // else Q_OS_WIN
-
-
-#if defined(Q_OS_WINCE_WM)
-#include <qguifunctions_wince.h>
-// taken from qguifunctions_wce.cpp
-#define SPI_GETPLATFORMTYPE 257
-bool qt_wince_is_platform(const QString &platformString) {
-    wchar_t tszPlatform[64];
-    if (SystemParametersInfo(SPI_GETPLATFORMTYPE,
-                             sizeof(tszPlatform)/sizeof(*tszPlatform),tszPlatform,0))
-      if (0 == _tcsicmp(reinterpret_cast<const wchar_t *> (platformString.utf16()), tszPlatform))
-            return true;
-    return false;
-}
-bool qt_wince_is_smartphone() {
-       return qt_wince_is_platform(QString::fromLatin1("Smartphone"));
-}
 #endif
 
 #ifdef Q_OS_MAC
@@ -163,7 +126,7 @@ static inline void centerOnScreen(QWidget *w)
     w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
 }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 static inline void setWindowsAnimationsEnabled(bool enabled)
 {
     ANIMATIONINFO animation = { sizeof(ANIMATIONINFO), enabled };
@@ -176,10 +139,10 @@ static inline bool windowsAnimationsEnabled()
     SystemParametersInfo(SPI_GETANIMATION, 0, &animation, 0);
     return animation.iMinAnimate;
 }
-#else // Q_OS_WIN && !Q_OS_WINCE && !Q_OS_WINRT
+#else // Q_OS_WIN  && !Q_OS_WINRT
 inline void setWindowsAnimationsEnabled(bool) {}
 static inline bool windowsAnimationsEnabled() { return false; }
-#endif // !Q_OS_WIN || Q_OS_WINCE || Q_OS_WINRT
+#endif // !Q_OS_WIN || Q_OS_WINRT
 
 template <class T>
 static QByteArray msgComparisonFailed(T v1, const char *op, T v2)
@@ -251,9 +214,7 @@ private slots:
     void hideWhenFocusWidgetIsChild();
     void normalGeometry();
     void setGeometry();
-#ifndef Q_OS_WINCE
     void windowOpacity();
-#endif
     void raise();
     void lower();
     void stackUnder();
@@ -315,7 +276,7 @@ private slots:
 
     void subtractOpaqueSiblings();
 
-#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined (Q_OS_WIN) && !defined(Q_OS_WINRT)
     void setGeometry_win();
 #endif
 
@@ -340,9 +301,7 @@ private slots:
     void render_task188133();
     void render_task211796();
     void render_task217815();
-#ifndef Q_OS_WINCE
     void render_windowOpacity();
-#endif
     void render_systemClip();
     void render_systemClip2_data();
     void render_systemClip2();
@@ -358,9 +317,7 @@ private slots:
 
     void repaintWhenChildDeleted();
     void hideOpaqueChildWhileHidden();
-#if !defined(Q_OS_WINCE)
     void updateWhileMinimized();
-#endif
     void alienWidgets();
     void adjustSize();
     void adjustSize_data();
@@ -408,9 +365,7 @@ private slots:
     void toplevelLineEditFocus();
 
     void focusWidget_task254563();
-#ifndef Q_OS_WINCE_WM
     void rectOutsideCoordinatesLimit_task144779();
-#endif
     void setGraphicsEffect();
 
 #ifdef QT_BUILD_INTERNAL
@@ -613,7 +568,7 @@ void tst_QWidget::getSetCheck()
     QCOMPARE(true, obj1.autoFillBackground());
 
     var1.reset();
-#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined (Q_OS_WIN) && !defined(Q_OS_WINRT)
     obj1.setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint);
     const HWND handle = reinterpret_cast<HWND>(obj1.winId());   // explicitly create window handle
     QVERIFY(GetWindowLong(handle, GWL_STYLE) & WS_POPUP);
@@ -657,9 +612,6 @@ private:
 
 void tst_QWidget::initTestCase()
 {
-#ifdef Q_OS_WINCE //disable magic for WindowsCE
-    qApp->setAutoMaximizeThreshold(-1);
-#endif
     // Size of reference widget, 200 for < 2000, scale up for larger screens
     // to avoid Windows warnings about minimum size for decorated windows.
     int width = 200;
@@ -1507,7 +1459,7 @@ void tst_QWidget::mapFromAndTo()
     subWindow2->setGeometry(75, 75, 100, 100);
     subSubWindow->setGeometry(10, 10, 10, 10);
 
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_QNX)
+#if !defined(Q_OS_QNX)
     //update visibility
     if (windowMinimized) {
         if (!windowHidden) {
@@ -1820,15 +1772,8 @@ void tst_QWidget::activation()
 {
     Q_CHECK_PAINTEVENTS
 
-#if defined(Q_OS_WINCE)
-    int waitTime = 1000;
-#else
     int waitTime = 100;
-#endif
 
-#ifdef Q_OS_WINCE
-    qApp->processEvents();
-#endif
     QWidget widget1;
     widget1.setObjectName("activation-Widget1");
     widget1.setWindowTitle(widget1.objectName());
@@ -1876,10 +1821,6 @@ void tst_QWidget::windowState()
         size = QGuiApplication::primaryScreen()->size();
     } else {
         pos = QPoint(10, 10);
-#ifdef Q_OS_WINCE_WM
-        if (qt_wince_is_smartphone()) { //small screen
-            size = QSize(100,100);
-#endif
     }
 
     QWidget widget1;
@@ -2407,11 +2348,7 @@ void tst_QWidget::reparent()
     childTLW.show();
     QVERIFY(QTest::qWaitForWindowExposed(&parent));
 
-#ifdef Q_OS_WINCE
-    parent.move(50, 50);
-#else
     parent.move(parentPosition);
-#endif
 
     QPoint childPos = parent.mapToGlobal(child.pos());
     QPoint tlwPos = childTLW.pos();
@@ -2618,8 +2555,6 @@ void tst_QWidget::setGeometry()
     QCOMPARE(tlw.geometry(), tr);
 }
 
-// Windows CE does not support windowOpacity.
-#ifndef Q_OS_WINCE
 void tst_QWidget::windowOpacity()
 {
     QWidget widget;
@@ -2650,7 +2585,6 @@ void tst_QWidget::windowOpacity()
     child.setWindowOpacity(-1.0);
     QCOMPARE(child.windowOpacity(), 1.0);
 }
-#endif
 
 class UpdateWidget : public QWidget
 {
@@ -2970,9 +2904,6 @@ void tst_QWidget::stackUnder()
     foreach (UpdateWidget *child, allChildren) {
         int expectedZOrderChangeEvents = child == child1 ? 1 : 0;
         if (child == child3) {
-#ifdef Q_OS_WINCE
-            qApp->processEvents();
-#endif
 #ifndef Q_OS_MAC
             QEXPECT_FAIL(0, "See QTBUG-493", Continue);
 #endif
@@ -3342,9 +3273,6 @@ void tst_QWidget::widgetAt()
     w2->setMask(rgn);
     qApp->processEvents();
     QTest::qWait(10);
-#if defined(Q_OS_WINCE)
-    QEXPECT_FAIL("", "Windows CE does only support rectangular regions", Continue); //See also task 147191
-#endif
 
     QTRY_VERIFY((wr = QApplication::widgetAt(testPos)));
     QTRY_COMPARE(wr->objectName(), w1->objectName());
@@ -3360,9 +3288,6 @@ void tst_QWidget::widgetAt()
     w2->setMask(bitmap);
     qApp->processEvents();
     QTest::qWait(10);
-#if defined(Q_OS_WINCE)
-    QEXPECT_FAIL("", "Windows CE does only support rectangular regions", Continue); //See also task 147191
-#endif
     QTRY_COMPARE(QApplication::widgetAt(testPos), w1.data());
     QTRY_VERIFY(QApplication::widgetAt(testPos + QPoint(1, 1)) == w2.data());
 }
@@ -3698,7 +3623,7 @@ void tst_QWidget::optimizedResize_topLevel()
     topLevel.partial = false;
     topLevel.paintedRegion = QRegion();
 
-#if !defined(Q_OS_WIN32) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_WIN32)
     topLevel.resize(topLevel.size() + QSize(10, 10));
 #else
     // Static contents does not work when programmatically resizing
@@ -3769,7 +3694,6 @@ void tst_QWidget::setMinimumSize()
 
     // Setting a minimum size larger than the desktop does not work on WinCE,
     // so skip this part of the test.
-#ifndef Q_OS_WINCE
     QSize nonDefaultSize = defaultSize + QSize(5,5);
     w.setMinimumSize(nonDefaultSize);
     w.showNormal();
@@ -3778,7 +3702,6 @@ void tst_QWidget::setMinimumSize()
              msgComparisonFailed(w.height(), ">=", nonDefaultSize.height()));
     QVERIFY2(w.width() >= nonDefaultSize.width(),
              msgComparisonFailed(w.width(), ">=", nonDefaultSize.width()));
-#endif
 }
 
 void tst_QWidget::setMaximumSize()
@@ -4714,7 +4637,7 @@ void tst_QWidget::setWindowGeometry()
     }
 }
 
-#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined (Q_OS_WIN) && !defined(Q_OS_WINRT)
 void tst_QWidget::setGeometry_win()
 {
     QWidget widget;
@@ -4735,7 +4658,7 @@ void tst_QWidget::setGeometry_win()
     QVERIFY2(rt.top <= m_availableTopLeft.y(),
              msgComparisonFailed(int(rt.top), "<=", m_availableTopLeft.y()));
 }
-#endif // defined (Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#endif // defined (Q_OS_WIN) && !defined(Q_OS_WINRT)
 
 // Since X11 WindowManager operation are all async, and we have no way to know if the window
 // manager has finished playing with the window geometry, this test can't be reliable on X11.
@@ -5060,12 +4983,8 @@ void tst_QWidget::moveChild()
     parent.setStyle(QStyleFactory::create(QLatin1String("Windows")));
     ColorWidget child(&parent, Qt::Widget, Qt::blue);
 
-#ifndef Q_OS_WINCE
     parent.setGeometry(QRect(QPoint(QApplication::desktop()->availableGeometry(&parent).topLeft()) + QPoint(50, 50),
                              QSize(200, 200)));
-#else
-    parent.setGeometry(60, 60, 150, 150);
-#endif
     child.setGeometry(25, 25, 50, 50);
 #ifndef QT_NO_CURSOR // Try to make sure the cursor is not in a taskbar area to prevent tooltips or window highlighting
     QCursor::setPos(parent.geometry().topRight() + QPoint(50 , 50));
@@ -5646,8 +5565,6 @@ void tst_QWidget::setToolTip()
     QCOMPARE(widget.toolTip(), QString());
     QCOMPARE(spy.count(), 2);
 
-    // Mouse over doesn't work on Windows mobile, so skip the rest of the test for that platform.
-#ifndef Q_OS_WINCE_WM
     for (int pass = 0; pass < 2; ++pass) {
         QCursor::setPos(0, 0);
         QScopedPointer<QWidget> popup(new QWidget(0, Qt::Popup));
@@ -5675,7 +5592,6 @@ void tst_QWidget::setToolTip()
             QTest::qWait(2200);     // delay is 2000
         QTest::mouseMove(popupWindow);
     }
-#endif
 }
 
 void tst_QWidget::testWindowIconChangeEventPropagation()
@@ -6754,7 +6670,6 @@ void tst_QWidget::render_task217815()
 }
 
 // Window Opacity is not supported on Windows CE.
-#ifndef Q_OS_WINCE
 void tst_QWidget::render_windowOpacity()
 {
     const qreal opacity = 0.5;
@@ -6827,7 +6742,6 @@ void tst_QWidget::render_windowOpacity()
     QCOMPARE(result, expected);
     }
 }
-#endif
 
 void tst_QWidget::render_systemClip()
 {
@@ -7285,14 +7199,10 @@ void tst_QWidget::repaintWhenChildDeleted()
     }
 #endif
     ColorWidget w(0, Qt::FramelessWindowHint, Qt::red);
-#if !defined(Q_OS_WINCE)
     QPoint startPoint = QApplication::desktop()->availableGeometry(&w).topLeft();
     startPoint.rx() += 50;
     startPoint.ry() += 50;
     w.setGeometry(QRect(startPoint, QSize(100, 100)));
-#else
-    w.setGeometry(60, 60, 110, 110);
-#endif
     w.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w));
     QTest::qWait(10);
@@ -7316,14 +7226,10 @@ void tst_QWidget::repaintWhenChildDeleted()
 void tst_QWidget::hideOpaqueChildWhileHidden()
 {
     ColorWidget w(0, Qt::FramelessWindowHint, Qt::red);
-#if !defined(Q_OS_WINCE)
     QPoint startPoint = QApplication::desktop()->availableGeometry(&w).topLeft();
     startPoint.rx() += 50;
     startPoint.ry() += 50;
     w.setGeometry(QRect(startPoint, QSize(100, 100)));
-#else
-    w.setGeometry(60, 60, 110, 110);
-#endif
 
     ColorWidget child(&w, Qt::Widget, Qt::blue);
     child.setGeometry(10, 10, 80, 80);
@@ -7352,7 +7258,6 @@ void tst_QWidget::hideOpaqueChildWhileHidden()
 }
 
 // This test doesn't make sense without support for showMinimized().
-#if !defined(Q_OS_WINCE)
 void tst_QWidget::updateWhileMinimized()
 {
     if (m_platform == QStringLiteral("wayland"))
@@ -7390,7 +7295,6 @@ void tst_QWidget::updateWhileMinimized()
     QTRY_COMPARE(widget.numPaintEvents, 1);
     QCOMPARE(widget.paintedRegion, QRegion(0, 0, 50, 50));
 }
-#endif
 
 class PaintOnScreenWidget: public QWidget
 {
@@ -7757,13 +7661,6 @@ void tst_QWidget::adjustSize()
         QVERIFY2(child->size().height() < sizeHint.height(),
                  msgComparisonFailed(child->size().height(), "<", sizeHint.height()));
     } else {
-#if defined (Q_OS_WINCE)
-        if (!haveParent) {
-            const QRect& desktopRect = qApp->desktop()->availableGeometry();
-            expectedSize.setWidth(qMin(expectedSize.width(), desktopRect.width()));
-            expectedSize.setHeight(qMin(expectedSize.height(), desktopRect.height()));
-        }
-#endif
         QCOMPARE(child->size(), expectedSize);
     }
     if (!haveParent)
@@ -9169,7 +9066,6 @@ QWidgetBackingStore* backingStore(QWidget &widget)
 }
 
 // Tables of 5000 elements do not make sense on Windows Mobile.
-#ifndef Q_OS_WINCE_WM
 void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 {
 #ifndef QTEST_NO_CURSOR
@@ -9211,7 +9107,6 @@ void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
     QApplication::restoreOverrideCursor();
 #endif
 }
-#endif
 
 void tst_QWidget::setGraphicsEffect()
 {

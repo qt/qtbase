@@ -64,10 +64,6 @@
 #include "qmenubar_p.h"
 #include "qdebug.h"
 
-#ifdef Q_OS_WINCE
-extern bool qt_wince_is_mobile(); //defined in qguifunctions_wce.cpp
-#endif
-
 QT_BEGIN_NAMESPACE
 
 class QMenuBarExtension : public QToolButton
@@ -701,16 +697,6 @@ void QMenuBarPrivate::init()
 
     if (platformMenuBar)
         q->hide();
-#ifdef Q_OS_WINCE
-    if (qt_wince_is_mobile()) {
-        wceCreateMenuBar(q->parentWidget());
-        if(wce_menubar)
-            q->hide();
-    }
-    else {
-        QApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, true);
-    }
-#endif
     q->setBackgroundRole(QPalette::Button);
     oldWindow = oldParent = 0;
     handleReparent();
@@ -761,11 +747,6 @@ QMenuBar::~QMenuBar()
     Q_D(QMenuBar);
     delete d->platformMenuBar;
     d->platformMenuBar = 0;
-
-#ifdef Q_OS_WINCE
-    if (qt_wince_is_mobile())
-        d->wceDestroyMenuBar();
-#endif
 }
 
 /*!
@@ -1017,7 +998,7 @@ void QMenuBar::paintEvent(QPaintEvent *e)
 */
 void QMenuBar::setVisible(bool visible)
 {
-#if defined(Q_OS_MAC) || defined(Q_OS_WINCE)
+#if defined(Q_OS_DARWIN)
     if (isNativeMenuBar()) {
         if (!visible)
             QWidget::setVisible(false);
@@ -1234,11 +1215,7 @@ void QMenuBar::actionEvent(QActionEvent *e)
     d->itemsDirty = true;
 
     if (d->platformMenuBar) {
-#if !defined(Q_OS_WINCE)
         QPlatformMenuBar *nativeMenuBar = d->platformMenuBar;
-#else
-        QMenuBarPrivate::QWceMenuBarPrivate *nativeMenuBar = d->wce_menubar;
-#endif
         if (!nativeMenuBar)
             return;
 
@@ -1379,11 +1356,6 @@ void QMenuBarPrivate::handleReparent()
             platformMenuBar->handleReparent(0);
         }
     }
-
-#ifdef Q_OS_WINCE
-    if (qt_wince_is_mobile() && wce_menubar)
-        wce_menubar->rebuild();
-#endif
 }
 
 /*!
@@ -1563,7 +1535,7 @@ QRect QMenuBar::actionGeometry(QAction *act) const
 QSize QMenuBar::minimumSizeHint() const
 {
     Q_D(const QMenuBar);
-#if defined(Q_OS_MAC) || defined(Q_OS_WINCE)
+#if defined(Q_OS_DARWIN)
     const bool as_gui_menubar = !isNativeMenuBar();
 #else
     const bool as_gui_menubar = true;
@@ -1619,7 +1591,7 @@ QSize QMenuBar::minimumSizeHint() const
 QSize QMenuBar::sizeHint() const
 {
     Q_D(const QMenuBar);
-#if defined(Q_OS_MAC) || defined(Q_OS_WINCE)
+#if defined(Q_OS_DARWIN)
     const bool as_gui_menubar = !isNativeMenuBar();
 #else
     const bool as_gui_menubar = true;
@@ -1677,7 +1649,7 @@ QSize QMenuBar::sizeHint() const
 int QMenuBar::heightForWidth(int) const
 {
     Q_D(const QMenuBar);
-#if defined(Q_OS_MAC) || defined(Q_OS_WINCE)
+#if defined(Q_OS_DARWIN)
     const bool as_gui_menubar = !isNativeMenuBar();
 #else
     const bool as_gui_menubar = true;
@@ -1860,55 +1832,6 @@ QPlatformMenuBar *QMenuBar::platformMenuBar()
     Q_D(const QMenuBar);
     return d->platformMenuBar;
 }
-
-/*!
-  \since 4.4
-
-  Sets the default action to \a act.
-
-  The default action is assigned to the left soft key. The menu is assigned
-  to the right soft key.
-
-  Currently there is only support for the default action on Windows
-  Mobile. On all other platforms this method is not available.
-
-  \sa defaultAction()
-*/
-
-#ifdef Q_OS_WINCE
-void QMenuBar::setDefaultAction(QAction *act)
-{
-    Q_D(QMenuBar);
-    if (d->defaultAction == act)
-        return;
-    if (qt_wince_is_mobile())
-        if (d->defaultAction) {
-            disconnect(d->defaultAction, SIGNAL(changed()), this, SLOT(_q_updateDefaultAction()));
-            disconnect(d->defaultAction, SIGNAL(destroyed()), this, SLOT(_q_updateDefaultAction()));
-        }
-    d->defaultAction = act;
-    if (qt_wince_is_mobile())
-        if (d->defaultAction) {
-            connect(d->defaultAction, SIGNAL(changed()), this, SLOT(_q_updateDefaultAction()));
-            connect(d->defaultAction, SIGNAL(destroyed()), this, SLOT(_q_updateDefaultAction()));
-        }
-    if (d->wce_menubar) {
-        d->wce_menubar->rebuild();
-    }
-}
-
-/*!
-  \since 4.4
-
-  Returns the current default action.
-
-  \sa setDefaultAction()
-*/
-QAction *QMenuBar::defaultAction() const
-{
-    return d_func()->defaultAction;
-}
-#endif
 
 /*!
     \fn void QMenuBar::triggered(QAction *action)

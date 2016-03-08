@@ -99,10 +99,6 @@ public:
     void hideDefault();
     void resetModalitySetByOpen();
 
-#ifdef Q_OS_WINCE_WM
-    void _q_doneAction();
-#endif
-
     int rescode;
     int resetModalityTo;
     bool wasModalitySet;

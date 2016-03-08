@@ -35,7 +35,7 @@
 #include <qlabel.h>
 #include <QtWidgets/qboxlayout.h>
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 #  include <qt_windows.h>
 #define Q_CHECK_PAINTEVENTS \
     if (::SwitchDesktop(::GetThreadDesktop(::GetCurrentThreadId())) == 0) \
@@ -553,9 +553,7 @@ void tst_QTabWidget::paintEventCount()
 
     // Mac, Windows and Windows CE get multiple repaints on the first show, so use those as a starting point.
     static const int MaxInitialPaintCount =
-#if defined(Q_OS_WINCE)
-        4;
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
         2;
 #elif defined(Q_OS_MAC)
         5;

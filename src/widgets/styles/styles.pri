@@ -33,11 +33,7 @@ SOURCES += \
         styles/qstylesheetstyle_default.cpp \
         styles/qpixmapstyle.cpp
 
-wince* {
-    RESOURCES += styles/qstyle_wince.qrc
-} else {
-    RESOURCES += styles/qstyle.qrc
-}
+RESOURCES += styles/qstyle.qrc
 
 contains( styles, all ) {
     styles = fusion mac windows windowsxp windowsvista

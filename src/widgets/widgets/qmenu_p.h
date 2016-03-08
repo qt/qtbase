@@ -68,15 +68,6 @@ QT_BEGIN_NAMESPACE
 class QTornOffMenu;
 class QEventLoop;
 
-#ifdef Q_OS_WINCE
-struct QWceMenuAction {
-    uint command;
-    QPointer<QAction> action;
-    HMENU menuHandle;
-    QWceMenuAction() : menuHandle(0), command(0) {}
-};
-#endif
-
 template <typename T>
 class QSetValueOnDestroy
 {
@@ -301,19 +292,13 @@ public:
 #endif
                       scroll(0), eventLoop(0), tearoff(0), tornoff(0), tearoffHighlighted(0),
                       hasCheckableItems(0), doChildEffects(false), platformMenu(0)
-
-#if defined(Q_OS_WINCE) && !defined(QT_NO_MENUBAR)
-                      ,wce_menu(0)
-#endif
     { }
+
     ~QMenuPrivate()
     {
         delete scroll;
         if (!platformMenu.isNull() && !platformMenu->parent())
             delete platformMenu.data();
-#if defined(Q_OS_WINCE) && !defined(QT_NO_MENUBAR)
-        delete wce_menu;
-#endif
     }
     void init();
     void setPlatformMenu(QPlatformMenu *menu);
@@ -473,31 +458,6 @@ public:
 
     QPointer<QAction> actionAboutToTrigger;
 
-#if defined(Q_OS_WINCE) && !defined(QT_NO_MENUBAR)
-    struct QWceMenuPrivate {
-        QList<QWceMenuAction*> actionItems;
-        HMENU menuHandle;
-        QWceMenuPrivate();
-        ~QWceMenuPrivate();
-        void addAction(QAction *, QWceMenuAction* =0);
-        void addAction(QWceMenuAction *, QWceMenuAction* =0);
-        void syncAction(QWceMenuAction *);
-        inline void syncAction(QAction *a) { syncAction(findAction(a)); }
-        void removeAction(QWceMenuAction *);
-        void rebuild();
-        inline void removeAction(QAction *a) { removeAction(findAction(a)); }
-        inline QWceMenuAction *findAction(QAction *a) {
-            for(int i = 0; i < actionItems.size(); i++) {
-                QWceMenuAction *act = actionItems[i];
-                if(a == act->action)
-                    return act;
-            }
-            return 0;
-        }
-    } *wce_menu;
-    HMENU wceMenu();
-    QAction* wceCommands(uint command);
-#endif
     QPointer<QWidget> noReplayFor;
     static QPointer<QMenu> previousMouseMenu;
 };

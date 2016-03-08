@@ -122,7 +122,7 @@ int QWindowsStylePrivate::m_appDevicePixelRatio = 0;
 QWindowsStylePrivate::QWindowsStylePrivate()
     : alt_down(false), menuBarTimer(0)
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
     if ((QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
         && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))) {
         QSystemLibrary shellLib(QLatin1String("shell32"));
@@ -308,25 +308,15 @@ int QWindowsStylePrivate::pixelMetricFromSystemDp(QStyle::PixelMetric pm, const 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     switch (pm) {
     case QStyle::PM_DockWidgetFrameWidth:
-#  ifndef Q_OS_WINCE
         return GetSystemMetrics(SM_CXFRAME);
-#  else
-        return GetSystemMetrics(SM_CXDLGFRAME);
-#  endif
-        break;
 
     case QStyle::PM_TitleBarHeight:
         if (widget && (widget->windowType() == Qt::Tool)) {
             // MS always use one less than they say
-#  ifndef Q_OS_WINCE
             return GetSystemMetrics(SM_CYSMCAPTION) - 1;
-#  else
-            return GetSystemMetrics(SM_CYCAPTION) - 1;
-#  endif
         }
         return GetSystemMetrics(SM_CYCAPTION) - 1;
 
-#  ifndef Q_OS_WINCE
     case QStyle::PM_ScrollBarExtent:
         {
             NONCLIENTMETRICS ncm;
@@ -335,14 +325,9 @@ int QWindowsStylePrivate::pixelMetricFromSystemDp(QStyle::PixelMetric pm, const 
                 return qMax(ncm.iScrollHeight, ncm.iScrollWidth);
         }
         break;
-#  endif // !Q_OS_WINCE
 
     case  QStyle::PM_MdiSubWindowFrameWidth:
-#  ifndef Q_OS_WINCE
         return GetSystemMetrics(SM_CYFRAME);
-#  else
-        return GetSystemMetrics(SM_CYDLGFRAME);
-#  endif
 
     default:
         break;
@@ -479,7 +464,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
 QPixmap QWindowsStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt,
                                       const QWidget *widget) const
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     QPixmap desktopIcon;
     switch(standardPixmap) {
     case SP_DriveCDIcon:
@@ -518,7 +503,7 @@ QPixmap QWindowsStyle::standardPixmap(StandardPixmap standardPixmap, const QStyl
     if (!desktopIcon.isNull()) {
         return desktopIcon;
     }
-#endif // Q_OS_WIN && !Q_OS_WINCE && !Q_OS_WINRT
+#endif // Q_OS_WIN && !Q_OS_WINRT
     return QCommonStyle::standardPixmap(standardPixmap, opt, widget);
 }
 
@@ -595,12 +580,12 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
 #endif // Q_OS_WIN && !Q_OS_WINRT
     case SH_Menu_SubMenuSloppyCloseTimeout:
     case SH_Menu_SubMenuPopupDelay: {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
         DWORD delay;
         if (SystemParametersInfo(SPI_GETMENUSHOWDELAY, 0, &delay, 0))
             ret = delay;
         else
-#endif // Q_OS_WIN && !Q_OS_WINCE && !Q_OS_WINRT
+#endif // Q_OS_WIN && !Q_OS_WINRT
             ret = 400;
         break;
     }

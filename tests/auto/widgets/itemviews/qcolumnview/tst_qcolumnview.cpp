@@ -183,9 +183,6 @@ void tst_QColumnView::initTestCase()
 void tst_QColumnView::init()
 {
     qApp->setLayoutDirection(Qt::LeftToRight);
-#ifdef Q_OS_WINCE //disable magic for WindowsCE
-    qApp->setAutoMaximizeThreshold(-1);
-#endif
 }
 
 void tst_QColumnView::rootIndex()

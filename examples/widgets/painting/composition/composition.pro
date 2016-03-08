@@ -15,7 +15,3 @@ QT += widgets
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/painting/composition
 INSTALLS += target
-
-wince* {
-    DEPLOYMENT_PLUGIN += qjpeg
-}

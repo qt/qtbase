@@ -197,7 +197,6 @@ public:
     void basic_tests(TestView *view);
 
 private slots:
-    void initTestCase();
     void cleanup();
     void getSetCheck();
     void emptyModels_data();
@@ -354,13 +353,6 @@ void tst_QAbstractItemView::getSetCheck()
     QCOMPARE(20, obj1->autoScrollMargin());
     obj1->setAutoScrollMargin(16);
     QCOMPARE(16, obj1->autoScrollMargin());
-}
-
-void tst_QAbstractItemView::initTestCase()
-{
-#ifdef Q_OS_WINCE_WM
-    qApp->setAutoMaximizeThreshold(-1);
-#endif
 }
 
 void tst_QAbstractItemView::cleanup()
@@ -1307,9 +1299,6 @@ void tst_QAbstractItemView::task250754_fontChange()
 
 void tst_QAbstractItemView::task200665_itemEntered()
 {
-#ifdef Q_OS_WINCE_WM
-    QSKIP("On Windows Mobile the mouse tracking is unavailable at the moment");
-#endif
     //we test that view will emit entered
     //when the scrollbar move but not the mouse itself
     QStandardItemModel model(1000,1);

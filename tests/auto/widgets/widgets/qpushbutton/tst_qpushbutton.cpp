@@ -526,12 +526,6 @@ void tst_QPushButton::sizeHint_data()
 #if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA)
     QTest::newRow("windowsvista") << QString::fromLatin1("windowsvista");
 #endif
-#if defined(Q_OS_WINCE) && !defined(QT_NO_STYLE_WINDOWSCE)
-    QTest::newRow("windowsce") << QString::fromLatin1("windowsce");
-#endif
-#if defined(Q_OS_WINCE_WM) && !defined(QT_NO_STYLE_WINDOWSCE)
-    QTest::newRow("windowsmobile") << QString::fromLatin1("windowsmobile");
-#endif
 }
 
 void tst_QPushButton::sizeHint()

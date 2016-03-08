@@ -395,11 +395,8 @@ void tst_QMessageBox::about()
     QVERIFY(closeHelper.done());
 #endif
 
-#if !defined(Q_OS_WINCE)
     const int keyToSend = Qt::Key_Enter;
-#else
-    const keyToSend = Qt::Key_Escape;
-#endif
+
     closeHelper.start(keyToSend);
     QMessageBox::aboutQt(0, "Caption");
 #ifdef Q_OS_MAC

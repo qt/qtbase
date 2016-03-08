@@ -38,7 +38,6 @@ class tst_QGraphicsGridLayout : public QObject
     Q_OBJECT
 
 private slots:
-    void initTestCase();
     void qgraphicsgridlayout_data();
     void qgraphicsgridlayout();
     void addItem_data();
@@ -293,16 +292,6 @@ typedef QList<ItemDesc> ItemList;
 Q_DECLARE_METATYPE(ItemList);
 
 typedef QList<QSizeF> SizeList;
-
-
-// This will be called before the first test function is executed.
-// It is only called once.
-void tst_QGraphicsGridLayout::initTestCase()
-{
-#ifdef Q_OS_WINCE //disable magic for WindowsCE
-    qApp->setAutoMaximizeThreshold(-1);
-#endif
-}
 
 void tst_QGraphicsGridLayout::qgraphicsgridlayout_data()
 {

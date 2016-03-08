@@ -95,13 +95,6 @@ public:
     void setCornerWidget(QWidget *w, Qt::Corner corner = Qt::TopRightCorner);
     QWidget *cornerWidget(Qt::Corner corner = Qt::TopRightCorner) const;
 
-#ifdef Q_OS_WINCE
-    void setDefaultAction(QAction *);
-    QAction *defaultAction() const;
-
-    static void wceCommands(uint command);
-    static void wceRefresh();
-#endif
 #ifdef Q_OS_OSX
     NSMenu* toNSMenu();
 #endif
@@ -140,10 +133,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_actionHovered())
     Q_PRIVATE_SLOT(d_func(), void _q_internalShortcutActivated(int))
     Q_PRIVATE_SLOT(d_func(), void _q_updateLayout())
-
-#ifdef Q_OS_WINCE
-    Q_PRIVATE_SLOT(d_func(), void _q_updateDefaultAction())
-#endif
 
     friend class QMenu;
     friend class QMenuPrivate;

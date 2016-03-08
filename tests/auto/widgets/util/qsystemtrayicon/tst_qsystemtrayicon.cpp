@@ -107,9 +107,6 @@ void tst_QSystemTrayIcon::getSetCheck()
 void tst_QSystemTrayIcon::supportsMessages()
 {
     // ### fixme: Check platforms.
-#if defined(Q_OS_WINCE)
-    QCOMPARE(QSystemTrayIcon::supportsMessages(), false);
-#else
     const QString platform = QGuiApplication::platformName();
     if (platform.compare(QStringLiteral("xcb"), Qt::CaseInsensitive)
         && platform.compare(QStringLiteral("windows"), Qt::CaseInsensitive)
@@ -117,7 +114,6 @@ void tst_QSystemTrayIcon::supportsMessages()
             QEXPECT_FAIL("", "QTBUG-20978 QSystemTrayIcon is unimplemented for this platform", Abort);
     }
     QCOMPARE(QSystemTrayIcon::supportsMessages(), true);
-#endif
 }
 
 void tst_QSystemTrayIcon::lastWindowClosed()

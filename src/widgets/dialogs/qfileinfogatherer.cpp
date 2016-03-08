@@ -263,7 +263,7 @@ QExtendedInformation QFileInfoGatherer::getInfo(const QFileInfo &fileInfo) const
 static QString translateDriveName(const QFileInfo &drive)
 {
     QString driveName = drive.absoluteFilePath();
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
     if (driveName.startsWith(QLatin1Char('/'))) // UNC host
         return drive.fileName();
     if (driveName.endsWith(QLatin1Char('/')))

@@ -3353,17 +3353,6 @@ void QMenu::actionEvent(QActionEvent *e)
         d->platformMenu->syncSeparatorsCollapsible(d->collapsibleSeparators);
     }
 
-#if defined(Q_OS_WINCE) && !defined(QT_NO_MENUBAR)
-    if (!d->wce_menu)
-        d->wce_menu = new QMenuPrivate::QWceMenuPrivate;
-    if (e->type() == QEvent::ActionAdded)
-        d->wce_menu->addAction(e->action(), d->wce_menu->findAction(e->before()));
-    else if (e->type() == QEvent::ActionRemoved)
-        d->wce_menu->removeAction(e->action());
-    else if (e->type() == QEvent::ActionChanged)
-        d->wce_menu->syncAction(e->action());
-#endif
-
     if (isVisible()) {
         d->updateActionRects();
         resize(sizeHint());

@@ -183,9 +183,6 @@ void tst_QFiledialog::init()
     QFileDialogPrivate::setLastVisitedDirectory(QUrl());
     // populate the sidebar with some default settings
     QNonNativeFileDialog fd;
-#if defined(Q_OS_WINCE)
-    QTest::qWait(1000);
-#endif
 }
 
 void tst_QFiledialog::cleanup()

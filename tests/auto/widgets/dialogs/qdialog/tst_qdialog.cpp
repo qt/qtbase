@@ -69,10 +69,8 @@ private slots:
     void showMaximized();
     void showMinimized();
     void showFullScreen();
-#ifndef Q_OS_WINCE
     void showAsTool();
     void toolDialogPosition();
-#endif
     void deleteMainDefault();
     void deleteInExec();
 #ifndef QT_NO_SIZEGRIP
@@ -358,8 +356,6 @@ void tst_QDialog::showFullScreen()
     QVERIFY(!dialog.isVisible());
 }
 
-// No real support for Qt::Tool on WinCE
-#ifndef Q_OS_WINCE
 void tst_QDialog::showAsTool()
 {
 #if defined(Q_OS_UNIX)
@@ -379,10 +375,7 @@ void tst_QDialog::showAsTool()
         QCOMPARE(dialog.wasActive(), false);
     }
 }
-#endif
 
-// No real support for Qt::Tool on WinCE
-#ifndef Q_OS_WINCE
 // Verify that pos() returns the same before and after show()
 // for a dialog with the Tool window type.
 void tst_QDialog::toolDialogPosition()
@@ -394,7 +387,6 @@ void tst_QDialog::toolDialogPosition()
     const QPoint afterShowPosition = dialog.pos();
     QCOMPARE(afterShowPosition, beforeShowPosition);
 }
-#endif
 
 class Dialog : public QDialog
 {

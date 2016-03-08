@@ -1769,7 +1769,7 @@ bool QMdiSubWindowPrivate::drawTitleBarWhenMaximized() const
     if (isChildOfTabbedQMdiArea(q))
         return false;
 
-#if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC) || defined(Q_OS_WINCE_WM)
+#if defined(Q_OS_DARWIN) && !defined(QT_NO_STYLE_MAC)
     Q_UNUSED(isChildOfQMdiSubWindow);
     return true;
 #else

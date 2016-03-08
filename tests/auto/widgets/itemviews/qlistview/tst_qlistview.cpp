@@ -45,13 +45,13 @@
 #include <QtWidgets/QStyledItemDelegate>
 #include <QtWidgets/QStyleFactory>
 
-#if defined(Q_OS_WIN) || defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
 #  include <windows.h>
 #  include <QtGui/QGuiApplication>
 #include <qpa/qplatformnativeinterface.h>
 #endif // Q_OS_WIN
 
-#if defined(Q_OS_WIN) || defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
 static inline HWND getHWNDForWidget(const QWidget *widget)
 {
     QWindow *window = widget->windowHandle();
@@ -83,7 +83,6 @@ class tst_QListView : public QObject
     Q_OBJECT
 
 private slots:
-    void initTestCase();
     void cleanup();
     void getSetCheck();
     void noDelegate();
@@ -111,7 +110,7 @@ private slots:
     void scrollBarAsNeeded();
     void moveItems();
     void wordWrap();
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && WINVER >= 0x0500
+#if defined(Q_OS_WIN) && WINVER >= 0x0500
     void setCurrentIndexAfterAppendRowCrash();
 #endif
     void emptyItemSize();
@@ -291,13 +290,6 @@ public:
         setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
     }
 };
-
-void tst_QListView::initTestCase()
-{
-#ifdef Q_OS_WINCE //disable magic for WindowsCE
-    qApp->setAutoMaximizeThreshold(-1);
-#endif
-}
 
 void tst_QListView::cleanup()
 {
@@ -983,25 +975,6 @@ void tst_QListView::selection_data()
         << QRect(300, 0, 1, 300)                // selection rectangle
         << IntList();                           // expected items
 
-#if defined(Q_OS_WINCE)
-    // depending on whether the display is double-pixeld, we need
-    // to click at a different position
-    bool doubledSize = false;
-    int dpi = GetDeviceCaps(GetDC(0), LOGPIXELSX);
-    if ((dpi < 1000) && (dpi > 0)) {
-        doubledSize = true;
-    }
-    QTest::newRow("select inside contents, (on viewport)")
-        << 35                                   // itemCount
-        << int(QListView::ListMode)
-        << int(QListView::TopToBottom)
-        << true                                 // wrapping
-        << 0                                    // spacing
-        << QSize()                              // gridSize
-        << IntList()                            // hiddenRows
-        << QRect(doubledSize?350:175,doubledSize?550:275, 1, 1)// selection rectangle
-        << IntList();                           // expected items
-#else
     QTest::newRow("select inside contents, (on viewport)")
         << 35                                   // itemCount
         << int(QListView::ListMode)
@@ -1012,7 +985,6 @@ void tst_QListView::selection_data()
         << IntList()                            // hiddenRows
         << QRect(175, 275, 1, 1)                // selection rectangle
         << IntList();                           // expected items
-#endif
 
     QTest::newRow("select a tall rect in LeftToRight flow, wrap items")
         << 70                                   // itemCount
@@ -1137,17 +1109,7 @@ void tst_QListView::selection()
         v.setRowHidden(hiddenRows.at(j), true);
     }
 
-#if defined(Q_OS_WINCE)
-    // If the device is double-pixeled then the scrollbars become
-    // 10 pixels wider than normal (Windows Style: 16, Windows Mobile Style: 26).
-    // So we have to make the window slightly bigger to have the same count of
-    // items in each row of the list view like in the other styles.
-    static const int dpi = ::GetDeviceCaps(GetDC(0), LOGPIXELSX);
-    if ((dpi < 1000) && (dpi > 0))
-        v.resize(535,535);
-#else
     v.resize(525,525);
-#endif
 
     topLevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
@@ -1449,7 +1411,7 @@ void tst_QListView::wordWrap()
     QTRY_COMPARE(lv.verticalScrollBar()->isVisible(), true);
 }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 class SetCurrentIndexAfterAppendRowCrashDialog : public QDialog
 {
     Q_OBJECT
@@ -1490,7 +1452,7 @@ private:
 };
 #endif
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT) && WINVER >= 0x0500
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) && WINVER >= 0x0500
 // This test only makes sense on windows 2000 and higher.
 void tst_QListView::setCurrentIndexAfterAppendRowCrash()
 {

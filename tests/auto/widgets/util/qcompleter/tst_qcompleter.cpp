@@ -585,10 +585,7 @@ void tst_QCompleter::directoryModel_data()
         if (i == 1)
             QTest::newRow("FILTERING_OFF") << "FILTERING_OFF" << "" << "" << "";
 
-#if defined(Q_OS_WINCE)
-        QTest::newRow("()") << "" << "" << "/" << "/";
-        QTest::newRow("()") << "\\Program" << "" << "Program Files" << "\\Program Files";
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
         QTest::newRow("()") << "C" << "" << "C:" << "C:";
         QTest::newRow("()") << "C:\\Program" << "" << "Program Files" << "C:\\Program Files";
 #elif defined (Q_OS_MAC)
@@ -634,10 +631,7 @@ void tst_QCompleter::fileSystemModel_data()
         if (i == 1)
             QTest::newRow("FILTERING_OFF") << "FILTERING_OFF" << "" << "" << "";
 
-#if defined(Q_OS_WINCE)
-        QTest::newRow("()") << "" << "" << "/" << "/";
-        QTest::newRow("()") << "\\Program" << "" << "Program Files" << "\\Program Files";
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
         QTest::newRow("()") << "C" << "" << "C:" << "C:";
         QTest::newRow("()") << "C:\\Program" << "" << "Program Files" << "C:\\Program Files";
 #elif defined (Q_OS_MAC)

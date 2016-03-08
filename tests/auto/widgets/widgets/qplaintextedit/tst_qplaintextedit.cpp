@@ -64,7 +64,6 @@ public:
     tst_QPlainTextEdit();
 
 public slots:
-    void initTestCase();
     void init();
     void cleanup();
 private slots:
@@ -208,16 +207,8 @@ void tst_QPlainTextEdit::getSetCheck()
     QCOMPARE(0, obj1.tabStopWidth());
     obj1.setTabStopWidth(INT_MIN);
     QCOMPARE(0, obj1.tabStopWidth()); // Makes no sense to set a negative tabstop value
-#if defined(Q_OS_WINCE)
-    // due to rounding error in qRound when qreal==float
-    // we cannot use INT_MAX for this check
-    obj1.setTabStopWidth(SHRT_MAX*2);
-    QCOMPARE(SHRT_MAX*2, obj1.tabStopWidth());
-#else
     obj1.setTabStopWidth(INT_MAX);
     QCOMPARE(INT_MAX, obj1.tabStopWidth());
-#endif
-
 }
 
 class QtTestDocumentLayout : public QAbstractTextDocumentLayout
@@ -250,13 +241,6 @@ public:
 
 tst_QPlainTextEdit::tst_QPlainTextEdit()
 {}
-
-void tst_QPlainTextEdit::initTestCase()
-{
-#ifdef Q_OS_WINCE //disable magic for WindowsCE
-    qApp->setAutoMaximizeThreshold(-1);
-#endif
-}
 
 void tst_QPlainTextEdit::init()
 {

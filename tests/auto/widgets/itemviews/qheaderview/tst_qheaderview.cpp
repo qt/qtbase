@@ -379,9 +379,6 @@ tst_QHeaderView::tst_QHeaderView()
 
 void tst_QHeaderView::initTestCase()
 {
-#ifdef Q_OS_WINCE //disable magic for WindowsCE
-    qApp->setAutoMaximizeThreshold(-1);
-#endif
     m_tableview = new QTableView();
 }
 
@@ -552,11 +549,7 @@ void tst_QHeaderView::hidden()
 void tst_QHeaderView::stretch()
 {
     // Show before resize and setStretchLastSection
-#if defined(Q_OS_WINCE)
-    QSize viewSize(200,300);
-#else
     QSize viewSize(500, 500);
-#endif
     view->resize(viewSize);
     view->setStretchLastSection(true);
     QCOMPARE(view->stretchLastSection(), true);
@@ -615,12 +608,6 @@ void tst_QHeaderView::sectionSize()
     QFETCH(int, initialDefaultSize);
     QFETCH(int, lastVisibleSectionSize);
     QFETCH(int, persistentSectionSize);
-
-#ifdef Q_OS_WINCE
-    // We test on a device with doubled pixels. Therefore we need to specify
-    // different boundaries.
-    initialDefaultSize = qMax(view->minimumSectionSize(), 30);
-#endif
 
     // bounds check
     foreach (int val, boundsCheck)
@@ -691,13 +678,7 @@ void tst_QHeaderView::visualIndexAt_data()
     QTest::addColumn<QList<int> >("visual");
 
     QList<int> coordinateList;
-#ifndef Q_OS_WINCE
     coordinateList << -1 << 0 << 31 << 91 << 99999;
-#else
-    // We test on a device with doubled pixels. Therefore we need to specify
-    // different boundaries.
-    coordinateList << -1 << 0 << 33 << 97 << 99999;
-#endif
 
     QTest::newRow("no hidden, no moved sections")
         << QList<int>()
@@ -750,10 +731,6 @@ void tst_QHeaderView::visualIndexAt()
 
 void tst_QHeaderView::length()
 {
-#if defined(Q_OS_WINCE)
-    QFont font(QLatin1String("Tahoma"), 7);
-    view->setFont(font);
-#endif
     view->setStretchLastSection(true);
     topLevel->show();
     QVERIFY(QTest::qWaitForWindowExposed(topLevel));

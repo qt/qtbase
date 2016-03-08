@@ -1112,9 +1112,7 @@ void tst_QGraphicsWidget::initStyleOption()
     bool hasFocus = option.state & QStyle::State_HasFocus;
     QCOMPARE(hasFocus, focus);
     bool isUnderMouse = option.state & QStyle::State_MouseOver;
-#ifndef Q_OS_WINCE
     QCOMPARE(isUnderMouse, underMouse);
-#endif
     // if (layoutDirection != Qt::LeftToRight)
     //QEXPECT_FAIL("", "QApplicaiton::layoutDirection doesn't propagate to QGraphicsWidget", Continue);
     //QCOMPARE(option.direction, layoutDirection);
@@ -2938,8 +2936,8 @@ protected:
 
 void tst_QGraphicsWidget::respectHFW()
 {
-#if defined(Q_OS_WINCE) || defined(Q_OS_MAC)
-    QSKIP("This test is platform dependent, it fails on wince and mac. Please fix.");
+#if defined(Q_OS_DARWIN)
+    QSKIP("This test is platform dependent, it fails on Apple platforms. Please fix.");
 #else
     QGraphicsScene scene;
     HFWWidget *window = new HFWWidget;

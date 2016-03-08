@@ -60,15 +60,7 @@
 #include <qmimedatabase.h>
 #include <qapplication.h>
 #include <qstylepainter.h>
-#if !defined(Q_OS_WINCE)
 #include "ui_qfiledialog.h"
-#else
-#define Q_EMBEDDED_SMALLSCREEN
-#include "ui_qfiledialog_embedded.h"
-#if defined(Q_OS_WINCE)
-extern bool qt_priv_ptr_valid;
-#endif
-#endif
 #if defined(Q_OS_UNIX)
 #include <pwd.h>
 #include <unistd.h> // for pathconf() on OS X
@@ -1750,7 +1742,7 @@ int QFileDialogPrivate::maxNameLength(const QString &path)
 {
 #if defined(Q_OS_UNIX)
     return ::pathconf(QFile::encodeName(path).data(), _PC_NAME_MAX);
-#elif defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
+#elif defined(Q_OS_WINRT)
     Q_UNUSED(path);
     return MAX_PATH;
 #elif defined(Q_OS_WIN)
@@ -4015,7 +4007,7 @@ QString QFSCompleter::pathFromIndex(const QModelIndex &index) const
     QString currentLocation = dirModel->rootPath();
     QString path = index.data(QFileSystemModel::FilePathRole).toString();
     if (!currentLocation.isEmpty() && path.startsWith(currentLocation)) {
-#if defined(Q_OS_UNIX) || defined(Q_OS_WINCE)
+#if defined(Q_OS_UNIX)
         if (currentLocation == QDir::separator())
             return path.mid(currentLocation.length());
 #endif

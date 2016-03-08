@@ -78,9 +78,6 @@ class tst_QComboBox : public QObject
 public:
     tst_QComboBox() {}
 
-public slots:
-    void init();
-
 private slots:
     void getSetCheck();
     void ensureReturnIsIgnored();
@@ -394,13 +391,6 @@ private:
 
 
 };
-
-void tst_QComboBox::init()
-{
-#ifdef Q_OS_WINCE //disable magic for WindowsCE
-    qApp->setAutoMaximizeThreshold(-1);
-#endif
-}
 
 void tst_QComboBox::setEditable()
 {
@@ -2752,7 +2742,7 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
     QCOMPARE(combo.currentText(), QLatin1String("0"));
 
     // When calling cursor function, Windows CE responds with: This function is not supported on this system.
-#if !defined Q_OS_WINCE && !defined Q_OS_QNX
+#if !defined Q_OS_QNX
     // Force cursor movement to prevent QCursor::setPos() from returning prematurely on QPA:
     centerCursor(combo.view());
     QTest::qWait(200);

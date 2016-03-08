@@ -1,5 +1,4 @@
 TARGET     = QtWidgets
-wince: ORIG_TARGET = $$TARGET
 QT = core-private gui-private
 MODULE_CONFIG = uic
 

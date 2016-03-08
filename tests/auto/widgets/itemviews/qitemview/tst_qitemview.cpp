@@ -32,42 +32,13 @@
 #include "viewstotest.cpp"
 #include <stdlib.h>
 
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX) || defined(Q_OS_WIN)
 #include <time.h>
 #endif
+
 #if defined(Q_OS_WIN)
-#include <time.h>
-#if defined(Q_OS_WINCE)
-#include <aygshell.h>
-#endif
-#define random rand
-#define srandom srand
-
-#if defined(Q_OS_WINCE)
-#ifndef SPI_GETPLATFORMTYPE
-#define SPI_GETPLATFORMTYPE 257
-#endif
-
-bool qt_wince_is_platform(const QString &platformString) {
-    wchar_t tszPlatform[64];
-    if (SystemParametersInfo(SPI_GETPLATFORMTYPE,
-                             sizeof(tszPlatform)/sizeof(*tszPlatform),tszPlatform,0))
-      if (0 == _tcsicmp(reinterpret_cast<const wchar_t *> (platformString.utf16()), tszPlatform))
-            return true;
-    return false;
-}
-
-bool qt_wince_is_pocket_pc() {
-    return qt_wince_is_platform(QString::fromLatin1("PocketPC"));
-}
-
-bool qt_wince_is_smartphone() {
-       return qt_wince_is_platform(QString::fromLatin1("Smartphone"));
-}
-bool qt_wince_is_mobile() {
-     return (qt_wince_is_smartphone() || qt_wince_is_pocket_pc());
-}
-#endif
+#  define random rand
+#  define srandom srand
 #endif
 
 /*!
@@ -305,10 +276,6 @@ void tst_QItemView::nonDestructiveBasicTest_data()
  */
 void tst_QItemView::nonDestructiveBasicTest()
 {
-#ifdef Q_OS_WINCE
-     QTest::qWait(400);
-#endif
-
     QFETCH(QString, viewType);
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
@@ -476,11 +443,7 @@ void tst_QItemView::spider()
     view->setModel(treeModel);
     view->show();
     QVERIFY(QTest::qWaitForWindowActive(view));
-#if defined(Q_OS_WINCE)
-    srandom(0);
-#else
     srandom(time(0));
-#endif
     touch(view->viewport(), Qt::NoModifier, Qt::Key_Left);
     touch(view->viewport(), Qt::ShiftModifier, Qt::Key_Enter);
     touch(view->viewport(), Qt::ControlModifier, Qt::Key_Backspace);

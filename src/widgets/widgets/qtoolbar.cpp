@@ -1186,17 +1186,6 @@ bool QToolBar::event(QEvent *event)
         if (d->mouseMoveEvent(static_cast<QMouseEvent*>(event)))
             return true;
         break;
-#ifdef Q_OS_WINCE
-    case QEvent::ContextMenu:
-        {
-            QContextMenuEvent* contextMenuEvent = static_cast<QContextMenuEvent*>(event);
-            QWidget* child = childAt(contextMenuEvent->pos());
-            QAbstractButton* button = qobject_cast<QAbstractButton*>(child);
-            if (button)
-                button->setDown(false);
-        }
-        break;
-#endif
     case QEvent::Leave:
         if (d->state != 0 && d->state->dragging) {
 #ifdef Q_OS_WIN

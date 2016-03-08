@@ -365,7 +365,7 @@ QIcon QFileIconProvider::icon(const QFileInfo &info) const
         return retIcon;
 
     if (info.isRoot())
-#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined (Q_OS_WIN) && !defined(Q_OS_WINRT)
     {
         UINT type = GetDriveType((wchar_t *)info.absoluteFilePath().utf16());
 

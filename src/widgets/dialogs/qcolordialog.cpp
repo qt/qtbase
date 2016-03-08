@@ -1203,14 +1203,10 @@ QColorShower::QColorShower(QColorDialog *parent)
     gl->setMargin(gl->spacing());
     lab = new QColorShowLabel(this);
 
-#ifndef Q_OS_WINCE
 #ifdef QT_SMALL_COLORDIALOG
     lab->setMinimumHeight(60);
 #endif
     lab->setMinimumWidth(60);
-#else
-    lab->setMinimumWidth(20);
-#endif
 
 // For QVGA screens only the comboboxes and color label are visible.
 // For nHD screens only color and luminence pickers and color label are visible.
@@ -1725,7 +1721,7 @@ void QColorDialogPrivate::initWidgets()
 
     leftLay = 0;
 
-#if defined(Q_OS_WINCE) || defined(QT_SMALL_COLORDIALOG)
+#if defined(QT_SMALL_COLORDIALOG)
     smallDisplay = true;
     const int lumSpace = 20;
 #else
@@ -1748,7 +1744,7 @@ void QColorDialogPrivate::initWidgets()
         leftLay->addWidget(lblBasicColors);
         leftLay->addWidget(standard);
 
-#if !defined(Q_OS_WINCE) && !defined(QT_SMALL_COLORDIALOG)
+#if !defined(QT_SMALL_COLORDIALOG)
         // The screen color picker button
         screenColorPickerButton = new QPushButton();
         leftLay->addWidget(screenColorPickerButton);
@@ -1757,9 +1753,7 @@ void QColorDialogPrivate::initWidgets()
         q->connect(screenColorPickerButton, SIGNAL(clicked()), SLOT(_q_pickScreenColor()));
 #endif
 
-#if !defined(Q_OS_WINCE)
         leftLay->addStretch();
-#endif
 
         custom = new QColorWell(q, customColorRows, colorColumns, QColorDialogOptions::customColors());
         custom->setAcceptDrops(true);

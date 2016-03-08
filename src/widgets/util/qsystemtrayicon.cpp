@@ -446,19 +446,11 @@ QBalloonTip::QBalloonTip(QSystemTrayIcon::MessageIcon icon, const QString& title
     titleLabel->setText(title);
     QFont f = titleLabel->font();
     f.setBold(true);
-#ifdef Q_OS_WINCE
-    f.setPointSize(f.pointSize() - 2);
-#endif
     titleLabel->setFont(f);
     titleLabel->setTextFormat(Qt::PlainText); // to maintain compat with windows
 
-#ifdef Q_OS_WINCE
-    const int iconSize = style()->pixelMetric(QStyle::PM_SmallIconSize);
-    const int closeButtonSize = style()->pixelMetric(QStyle::PM_SmallIconSize) - 2;
-#else
     const int iconSize = 18;
     const int closeButtonSize = 15;
-#endif
 
     QPushButton *closeButton = new QPushButton;
     closeButton->setIcon(style()->standardIcon(QStyle::SP_TitleBarCloseButton));
@@ -468,21 +460,13 @@ QBalloonTip::QBalloonTip(QSystemTrayIcon::MessageIcon icon, const QString& title
     QObject::connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
 
     QLabel *msgLabel = new QLabel;
-#ifdef Q_OS_WINCE
-    f.setBold(false);
-    msgLabel->setFont(f);
-#endif
     msgLabel->installEventFilter(this);
     msgLabel->setText(message);
     msgLabel->setTextFormat(Qt::PlainText);
     msgLabel->setAlignment(Qt::AlignTop | Qt::AlignLeft);
 
     // smart size for the message label
-#ifdef Q_OS_WINCE
-    int limit = QApplication::desktop()->availableGeometry(msgLabel).size().width() / 2;
-#else
     int limit = QApplication::desktop()->availableGeometry(msgLabel).size().width() / 3;
-#endif
     if (msgLabel->sizeHint().width() > limit) {
         msgLabel->setWordWrap(true);
         if (msgLabel->sizeHint().width() > limit) {
@@ -493,15 +477,9 @@ QBalloonTip::QBalloonTip(QSystemTrayIcon::MessageIcon icon, const QString& title
                 control->document()->setDefaultTextOption(opt);
             }
         }
-#ifdef Q_OS_WINCE
-        // Make sure that the text isn't wrapped "somewhere" in the balloon widget
-        // in the case that we have a long title label.
-        setMaximumWidth(limit);
-#else
         // Here we allow the text being much smaller than the balloon widget
         // to emulate the weird standard windows behavior.
         msgLabel->setFixedSize(limit, msgLabel->heightForWidth(limit));
-#endif
     }
 
     QIcon si;
