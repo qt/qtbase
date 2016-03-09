@@ -2077,8 +2077,11 @@ QVariant QWidgetTextControl::inputMethodQuery(Qt::InputMethodQuery property, QVa
         return d->rectForPosition(d->cursor.anchor());
     case Qt::ImFont:
         return QVariant(d->cursor.charFormat().font());
-    case Qt::ImCursorPosition:
-        return QVariant(d->cursor.position() - block.position());
+    case Qt::ImCursorPosition: {
+        const QPointF pt = argument.toPointF();
+        if (!pt.isNull())
+            return QVariant(cursorForPosition(pt).position() - block.position());
+        return QVariant(d->cursor.position() - block.position()); }
     case Qt::ImSurroundingText:
         return QVariant(block.text());
     case Qt::ImCurrentSelection:
@@ -2087,8 +2090,11 @@ QVariant QWidgetTextControl::inputMethodQuery(Qt::InputMethodQuery property, QVa
         return QVariant(); // No limit.
     case Qt::ImAnchorPosition:
         return QVariant(d->cursor.anchor() - block.position());
-    case Qt::ImAbsolutePosition:
-        return QVariant(d->cursor.position());
+    case Qt::ImAbsolutePosition: {
+        const QPointF pt = argument.toPointF();
+        if (!pt.isNull())
+            return QVariant(cursorForPosition(pt).position());
+        return QVariant(d->cursor.position()); }
     case Qt::ImTextAfterCursor:
     {
         int maxLength = argument.isValid() ? argument.toInt() : 1024;
