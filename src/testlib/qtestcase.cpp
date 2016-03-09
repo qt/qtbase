@@ -87,11 +87,9 @@
 #endif
 
 #ifdef Q_OS_WIN
-#ifndef Q_OS_WINCE
 # if !defined(Q_CC_MINGW) || (defined(Q_CC_MINGW) && defined(__MINGW64_VERSION_MAJOR))
 #  include <crtdbg.h>
 # endif
-#endif
 #include <windows.h> // for Sleep
 #endif
 #ifdef Q_OS_UNIX
@@ -1432,7 +1430,7 @@ FatalSignalHandler::~FatalSignalHandler()
 
 } // namespace
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 
 // Helper class for resolving symbol names by dynamically loading "dbghelp.dll".
 class DebugSymbolResolver
@@ -1570,7 +1568,7 @@ static LONG WINAPI windowsFaultHandler(struct _EXCEPTION_POINTERS *exInfo)
 
     return EXCEPTION_EXECUTE_HANDLER;
 }
-#endif // Q_OS_WIN) && !Q_OS_WINCE && !Q_OS_WINRT
+#endif // Q_OS_WIN) && !Q_OS_WINRT
 
 static void initEnvironment()
 {
@@ -1662,7 +1660,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 
     qtest_qParseArgs(argc, argv, false);
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
     if (!noCrashHandler) {
 # ifndef Q_CC_MINGW
         _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
@@ -1672,7 +1670,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
         SetUnhandledExceptionFilter(windowsFaultHandler);
 # endif
     } // !noCrashHandler
-#endif // Q_OS_WIN) && !Q_OS_WINCE && !Q_OS_WINRT
+#endif // Q_OS_WIN
 
 #ifdef QTESTLIB_USE_VALGRIND
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess) {

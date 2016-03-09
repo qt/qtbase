@@ -66,13 +66,6 @@ DEFINES *= QT_NO_CAST_TO_ASCII \
     QT_NO_CAST_FROM_ASCII \
     QT_NO_DATASTREAM
 embedded:QMAKE_CXXFLAGS += -fno-rtti
-wince: LIBS += \
-    ole32.lib \
-    oleaut32.lib \
-    uuid.lib \
-    commctrl.lib \
-    coredll.lib \
-    winsock.lib
 
 mac {
     LIBS += -framework Security

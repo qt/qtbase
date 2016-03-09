@@ -49,10 +49,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef Q_OS_WINCE
-#include <QtCore/QString>
-#endif
-
 #ifdef min // windows.h without NOMINMAX is included by the benchmark headers.
 #  undef min
 #endif
@@ -215,16 +211,7 @@ Q_CORE_EXPORT bool qt_logging_to_console(); // defined in qlogging.cpp
 
 void QPlainTestLogger::outputMessage(const char *str)
 {
-#if defined(Q_OS_WINCE)
-    QString strUtf16 = QString::fromLocal8Bit(str);
-    const int maxOutputLength = 255;
-    do {
-        QString tmp = strUtf16.left(maxOutputLength);
-        OutputDebugString((wchar_t*)tmp.utf16());
-        strUtf16.remove(0, maxOutputLength);
-    } while (!strUtf16.isEmpty());
-    if (stream != stdout)
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
     // log to system log only if output is not redirected, and no console is attached
     if (!qt_logging_to_console() && stream == stdout) {
         OutputDebugStringA(str);
