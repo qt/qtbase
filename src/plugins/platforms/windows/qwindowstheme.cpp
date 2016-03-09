@@ -490,7 +490,7 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) con
     const int scaleFactor = primaryScreen ? qRound(QHighDpiScaling::factor(primaryScreen)) : 1;
     const QSizeF pixmapSize = size * scaleFactor;
     int resourceId = -1;
-    int stockId = SIID_INVALID;
+    SHSTOCKICONID stockId = SIID_INVALID;
     UINT stockFlags = 0;
     LPCTSTR iconName = 0;
     switch (sp) {
@@ -577,20 +577,16 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) con
     }
 
     if (stockId != SIID_INVALID) {
-        if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
-            && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)
-            && QWindowsContext::shell32dll.sHGetStockIconInfo) {
-            QPixmap pixmap;
-            SHSTOCKICONINFO iconInfo;
-            memset(&iconInfo, 0, sizeof(iconInfo));
-            iconInfo.cbSize = sizeof(iconInfo);
-            stockFlags |= (pixmapSize.width() > 16 ? SHGFI_LARGEICON : SHGFI_SMALLICON);
-            if (QWindowsContext::shell32dll.sHGetStockIconInfo(stockId, SHGFI_ICON | stockFlags, &iconInfo) == S_OK) {
-                pixmap = qt_pixmapFromWinHICON(iconInfo.hIcon);
-                pixmap.setDevicePixelRatio(scaleFactor);
-                DestroyIcon(iconInfo.hIcon);
-                return pixmap;
-            }
+        QPixmap pixmap;
+        SHSTOCKICONINFO iconInfo;
+        memset(&iconInfo, 0, sizeof(iconInfo));
+        iconInfo.cbSize = sizeof(iconInfo);
+        stockFlags |= (pixmapSize.width() > 16 ? SHGFI_LARGEICON : SHGFI_SMALLICON);
+        if (SHGetStockIconInfo(stockId, SHGFI_ICON | stockFlags, &iconInfo) == S_OK) {
+            pixmap = qt_pixmapFromWinHICON(iconInfo.hIcon);
+            pixmap.setDevicePixelRatio(scaleFactor);
+            DestroyIcon(iconInfo.hIcon);
+            return pixmap;
         }
     }
 
@@ -669,14 +665,8 @@ static QPixmap pixmapFromShellImageList(int iImageList, const SHFILEINFO &info)
     // For MinGW:
     static const IID iID_IImageList = {0x46eb5926, 0x582e, 0x4017, {0x9f, 0xdf, 0xe8, 0x99, 0x8d, 0xaa, 0x9, 0x50}};
 
-    if (!QWindowsContext::shell32dll.sHGetImageList)
-        return result;
-    if (iImageList == sHIL_JUMBO && QSysInfo::WindowsVersion < QSysInfo::WV_VISTA)
-        return result;
-
     IImageList *imageList = 0;
-    HRESULT hr = QWindowsContext::shell32dll.sHGetImageList(iImageList, iID_IImageList,
-                                                            reinterpret_cast<void **>(&imageList));
+    HRESULT hr = SHGetImageList(iImageList, iID_IImageList, reinterpret_cast<void **>(&imageList));
     if (hr != S_OK)
         return result;
     HICON hIcon;

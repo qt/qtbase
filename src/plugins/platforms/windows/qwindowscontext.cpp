@@ -97,35 +97,26 @@ int QWindowsContext::verbose = 0;
 #    define LANG_SYRIAC 0x5a
 #endif
 
-static inline bool useRTL_Extensions(QSysInfo::WinVersion ver)
+static inline bool useRTL_Extensions()
 {
-    if ((ver & QSysInfo::WV_NT_based) && (ver >= QSysInfo::WV_VISTA)) {
-        // Since the IsValidLanguageGroup/IsValidLocale functions always return true on
-        // Vista, check the Keyboard Layouts for enabling RTL.
-        if (const int nLayouts = GetKeyboardLayoutList(0, 0)) {
-            QScopedArrayPointer<HKL> lpList(new HKL[nLayouts]);
-            GetKeyboardLayoutList(nLayouts, lpList.data());
-            for (int i = 0; i < nLayouts; ++i) {
-                switch (PRIMARYLANGID((quintptr)lpList[i])) {
-                case LANG_ARABIC:
-                case LANG_HEBREW:
-                case LANG_FARSI:
-                case LANG_SYRIAC:
-                    return true;
-                default:
-                    break;
-                }
+    // Since the IsValidLanguageGroup/IsValidLocale functions always return true on
+    // Vista, check the Keyboard Layouts for enabling RTL.
+    if (const int nLayouts = GetKeyboardLayoutList(0, 0)) {
+        QScopedArrayPointer<HKL> lpList(new HKL[nLayouts]);
+        GetKeyboardLayoutList(nLayouts, lpList.data());
+        for (int i = 0; i < nLayouts; ++i) {
+            switch (PRIMARYLANGID((quintptr)lpList[i])) {
+            case LANG_ARABIC:
+            case LANG_HEBREW:
+            case LANG_FARSI:
+            case LANG_SYRIAC:
+                return true;
+            default:
+                break;
             }
         }
-        return false;
-    } // NT/Vista
-    // Pre-NT: figure out whether a RTL language is installed
-    return IsValidLanguageGroup(LGRPID_ARABIC, LGRPID_INSTALLED)
-                            || IsValidLanguageGroup(LGRPID_HEBREW, LGRPID_INSTALLED)
-                            || IsValidLocale(MAKELCID(MAKELANGID(LANG_ARABIC, SUBLANG_DEFAULT), SORT_DEFAULT), LCID_INSTALLED)
-                            || IsValidLocale(MAKELCID(MAKELANGID(LANG_HEBREW, SUBLANG_DEFAULT), SORT_DEFAULT), LCID_INSTALLED)
-                            || IsValidLocale(MAKELCID(MAKELANGID(LANG_SYRIAC, SUBLANG_DEFAULT), SORT_DEFAULT), LCID_INSTALLED)
-                            || IsValidLocale(MAKELCID(MAKELANGID(LANG_FARSI, SUBLANG_DEFAULT), SORT_DEFAULT), LCID_INSTALLED);
+    }
+    return false;
 }
 
 #if !defined(QT_NO_SESSIONMANAGER)
@@ -152,9 +143,7 @@ static inline QWindowsSessionManager *platformSessionManager() {
     \ingroup qt-lighthouse-win
 */
 QWindowsUser32DLL::QWindowsUser32DLL() :
-    setLayeredWindowAttributes(0), updateLayeredWindow(0),
-    updateLayeredWindowIndirect(0),
-    isHungAppWindow(0), isTouchWindow(0),
+    isTouchWindow(0),
     registerTouchWindow(0), unregisterTouchWindow(0),
     getTouchInputInfo(0), closeTouchInputHandle(0), setProcessDPIAware(0),
     addClipboardFormatListener(0), removeClipboardFormatListener(0),
@@ -165,20 +154,11 @@ QWindowsUser32DLL::QWindowsUser32DLL() :
 void QWindowsUser32DLL::init()
 {
     QSystemLibrary library(QStringLiteral("user32"));
-    // MinGW (g++ 3.4.5) accepts only C casts.
-    setLayeredWindowAttributes = (SetLayeredWindowAttributes)(library.resolve("SetLayeredWindowAttributes"));
-    updateLayeredWindow = (UpdateLayeredWindow)(library.resolve("UpdateLayeredWindow"));
-    if (Q_UNLIKELY(!setLayeredWindowAttributes || !updateLayeredWindow))
-        qFatal("This version of Windows is not supported (User32.dll is missing the symbols 'SetLayeredWindowAttributes', 'UpdateLayeredWindow').");
-
-    updateLayeredWindowIndirect = (UpdateLayeredWindowIndirect)(library.resolve("UpdateLayeredWindowIndirect"));
-    isHungAppWindow = (IsHungAppWindow)library.resolve("IsHungAppWindow");
     setProcessDPIAware = (SetProcessDPIAware)library.resolve("SetProcessDPIAware");
 
-    if (QSysInfo::windowsVersion() >= QSysInfo::WV_VISTA) {
-        addClipboardFormatListener = (AddClipboardFormatListener)library.resolve("AddClipboardFormatListener");
-        removeClipboardFormatListener = (RemoveClipboardFormatListener)library.resolve("RemoveClipboardFormatListener");
-    }
+    addClipboardFormatListener = (AddClipboardFormatListener)library.resolve("AddClipboardFormatListener");
+    removeClipboardFormatListener = (RemoveClipboardFormatListener)library.resolve("RemoveClipboardFormatListener");
+
     getDisplayAutoRotationPreferences = (GetDisplayAutoRotationPreferences)library.resolve("GetDisplayAutoRotationPreferences");
     setDisplayAutoRotationPreferences = (SetDisplayAutoRotationPreferences)library.resolve("SetDisplayAutoRotationPreferences");
 }
@@ -194,38 +174,6 @@ bool QWindowsUser32DLL::initTouch()
         closeTouchInputHandle = (CloseTouchInputHandle)(library.resolve("CloseTouchInputHandle"));
     }
     return isTouchWindow && registerTouchWindow && unregisterTouchWindow && getTouchInputInfo && closeTouchInputHandle;
-}
-
-/*!
-    \class QWindowsShell32DLL
-    \brief Struct that contains dynamically resolved symbols of Shell32.dll.
-
-    The stub libraries shipped with the MinGW compiler miss some of the
-    functions. They need to be retrieved dynamically.
-
-    \sa QWindowsUser32DLL
-
-    \internal
-    \ingroup qt-lighthouse-win
-*/
-
-QWindowsShell32DLL::QWindowsShell32DLL()
-    : sHCreateItemFromParsingName(0)
-    , sHGetKnownFolderIDList(0)
-    , sHGetStockIconInfo(0)
-    , sHGetImageList(0)
-    , sHCreateItemFromIDList(0)
-{
-}
-
-void QWindowsShell32DLL::init()
-{
-    QSystemLibrary library(QStringLiteral("shell32"));
-    sHCreateItemFromParsingName = (SHCreateItemFromParsingName)(library.resolve("SHCreateItemFromParsingName"));
-    sHGetKnownFolderIDList = (SHGetKnownFolderIDList)(library.resolve("SHGetKnownFolderIDList"));
-    sHGetStockIconInfo = (SHGetStockIconInfo)library.resolve("SHGetStockIconInfo");
-    sHGetImageList = (SHGetImageList)library.resolve("SHGetImageList");
-    sHCreateItemFromIDList = (SHCreateItemFromIDList)library.resolve("SHCreateItemFromIDList");
 }
 
 QWindowsShcoreDLL::QWindowsShcoreDLL()
@@ -246,7 +194,6 @@ void QWindowsShcoreDLL::init()
 }
 
 QWindowsUser32DLL QWindowsContext::user32dll;
-QWindowsShell32DLL QWindowsContext::shell32dll;
 QWindowsShcoreDLL QWindowsContext::shcoredll;
 
 QWindowsContext *QWindowsContext::m_instance = 0;
@@ -292,16 +239,14 @@ QWindowsContextPrivate::QWindowsContextPrivate()
     , m_eventType(QByteArrayLiteral("windows_generic_MSG"))
     , m_lastActiveWindow(0), m_asyncExpose(0)
 {
-    const QSysInfo::WinVersion ver = QSysInfo::windowsVersion();
     QWindowsContext::user32dll.init();
-    QWindowsContext::shell32dll.init();
     QWindowsContext::shcoredll.init();
 
     if (m_mouseHandler.touchDevice() && QWindowsContext::user32dll.initTouch())
         m_systemInfo |= QWindowsContext::SI_SupportsTouch;
     m_displayContext = GetDC(0);
     m_defaultDPI = GetDeviceCaps(m_displayContext, LOGPIXELSY);
-    if (useRTL_Extensions(ver)) {
+    if (useRTL_Extensions()) {
         m_systemInfo |= QWindowsContext::SI_RTL_Extensions;
         m_keyMapper.setUseRTLExtensions(true);
     }

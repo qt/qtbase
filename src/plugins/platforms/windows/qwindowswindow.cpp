@@ -62,6 +62,8 @@
 
 #include <QtCore/QDebug>
 
+#include <dwmapi.h>
+
 QT_BEGIN_NAMESPACE
 
 enum {
@@ -258,55 +260,22 @@ static inline bool windowIsOpenGL(const QWindow *w)
 
 static bool applyBlurBehindWindow(HWND hwnd)
 {
-    enum { dwmBbEnable = 0x1, dwmBbBlurRegion = 0x2 };
-
-    struct DwmBlurBehind {
-        DWORD dwFlags;
-        BOOL  fEnable;
-        HRGN  hRgnBlur;
-        BOOL  fTransitionOnMaximized;
-    };
-
-    typedef HRESULT (WINAPI *PtrDwmEnableBlurBehindWindow)(HWND, const DwmBlurBehind*);
-    typedef HRESULT (WINAPI *PtrDwmIsCompositionEnabled)(BOOL *);
-
-    // DWM API is available only from Windows Vista
-    if (QSysInfo::windowsVersion() < QSysInfo::WV_VISTA)
-        return false;
-
-    static bool functionPointersResolved = false;
-    static PtrDwmEnableBlurBehindWindow dwmBlurBehind = 0;
-    static PtrDwmIsCompositionEnabled dwmIsCompositionEnabled = 0;
-
-    if (Q_UNLIKELY(!functionPointersResolved)) {
-        QSystemLibrary library(QStringLiteral("dwmapi"));
-        if (library.load()) {
-            dwmBlurBehind = (PtrDwmEnableBlurBehindWindow)(library.resolve("DwmEnableBlurBehindWindow"));
-            dwmIsCompositionEnabled = (PtrDwmIsCompositionEnabled)(library.resolve("DwmIsCompositionEnabled"));
-        }
-
-        functionPointersResolved = true;
-    }
-
-    if (Q_UNLIKELY(!dwmBlurBehind || !dwmIsCompositionEnabled))
-        return false;
-
     BOOL compositionEnabled;
-    if (dwmIsCompositionEnabled(&compositionEnabled) != S_OK)
+    if (DwmIsCompositionEnabled(&compositionEnabled) != S_OK)
         return false;
 
-    DwmBlurBehind blurBehind = {0, 0, 0, 0};
+    DWM_BLURBEHIND blurBehind = {0, 0, 0, 0};
 
     if (compositionEnabled) {
-        blurBehind.dwFlags = dwmBbEnable | dwmBbBlurRegion;
+        blurBehind.dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION;
         blurBehind.fEnable = TRUE;
         blurBehind.hRgnBlur = CreateRectRgn(0, 0, -1, -1);
     } else {
-        blurBehind.dwFlags = dwmBbEnable;
+        blurBehind.dwFlags = DWM_BB_ENABLE;
         blurBehind.fEnable = FALSE;
     }
 
-    const bool result = dwmBlurBehind(hwnd, &blurBehind) == S_OK;
+    const bool result = DwmEnableBlurBehindWindow(hwnd, &blurBehind) == S_OK;
 
     if (blurBehind.hRgnBlur)
         DeleteObject(blurBehind.hRgnBlur);
@@ -351,9 +320,9 @@ static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, bo
         if (hasAlpha && !openGL && (flags & Qt::FramelessWindowHint)) {
             // Non-GL windows with alpha: Use blend function to update.
             BLENDFUNCTION blend = {AC_SRC_OVER, 0, alpha, AC_SRC_ALPHA};
-            QWindowsContext::user32dll.updateLayeredWindow(hwnd, NULL, NULL, NULL, NULL, NULL, 0, &blend, ULW_ALPHA);
+            UpdateLayeredWindow(hwnd, NULL, NULL, NULL, NULL, NULL, 0, &blend, ULW_ALPHA);
         } else {
-            QWindowsContext::user32dll.setLayeredWindowAttributes(hwnd, 0, alpha, LWA_ALPHA);
+            SetLayeredWindowAttributes(hwnd, 0, alpha, LWA_ALPHA);
         }
     } else if (IsWindowVisible(hwnd)) { // Repaint when switching from layered.
         InvalidateRect(hwnd, NULL, TRUE);

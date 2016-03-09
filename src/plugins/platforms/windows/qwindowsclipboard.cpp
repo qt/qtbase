@@ -237,8 +237,7 @@ void QWindowsClipboard::propagateClipboardMessage(UINT message, WPARAM wParam, L
         return;
     // In rare cases, a clipboard viewer can hang (application crashed,
     // suspended by a shell prompt 'Select' or debugger).
-    if (QWindowsContext::user32dll.isHungAppWindow
-        && QWindowsContext::user32dll.isHungAppWindow(m_nextClipboardViewer)) {
+    if (IsHungAppWindow(m_nextClipboardViewer)) {
         qWarning("Cowardly refusing to send clipboard message to hung application...");
         return;
     }

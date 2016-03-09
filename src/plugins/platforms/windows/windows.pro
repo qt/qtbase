@@ -4,7 +4,7 @@ QT *= core-private
 QT *= gui-private
 QT *= platformsupport-private
 
-LIBS += -lgdi32
+LIBS += -lgdi32 -ldwmapi
 
 include(windows.pri)
 
