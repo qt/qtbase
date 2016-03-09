@@ -788,12 +788,8 @@ bool QAbstractSocketPrivate::canWriteNotification()
 #if defined (QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocketPrivate::canWriteNotification() flushing");
 #endif
-    bool dataWasWritten = writeToSocket();
 
-    if (socketEngine && writeBuffer.isEmpty() && socketEngine->bytesToWrite() == 0)
-        socketEngine->setWriteNotificationEnabled(false);
-
-    return dataWasWritten;
+    return writeToSocket();
 }
 
 /*! \internal
@@ -833,8 +829,12 @@ bool QAbstractSocketPrivate::writeToSocket()
 #endif
 
         // this covers the case when the buffer was empty, but we had to wait for the socket engine to finish
-        if (state == QAbstractSocket::ClosingState)
+        if (state == QAbstractSocket::ClosingState) {
             q->disconnectFromHost();
+        } else {
+            if (socketEngine)
+                socketEngine->setWriteNotificationEnabled(false);
+        }
 
         return false;
     }
