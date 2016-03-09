@@ -113,8 +113,8 @@ public:
     Q_INVOKABLE explicit QObject(QObject *parent=Q_NULLPTR);
     virtual ~QObject();
 
-    virtual bool event(QEvent *);
-    virtual bool eventFilter(QObject *, QEvent *);
+    virtual bool event(QEvent *event);
+    virtual bool eventFilter(QObject *watched, QEvent *event);
 
 #ifdef Q_QDOC
     static QString tr(const char *sourceText, const char *comment = Q_NULLPTR, int n = -1);
@@ -189,9 +189,9 @@ public:
 
     inline const QObjectList &children() const { return d_ptr->children; }
 
-    void setParent(QObject *);
-    void installEventFilter(QObject *);
-    void removeEventFilter(QObject *);
+    void setParent(QObject *parent);
+    void installEventFilter(QObject *filterObj);
+    void removeEventFilter(QObject *obj);
 
     static QMetaObject::Connection connect(const QObject *sender, const char *signal,
                         const QObject *receiver, const char *member, Qt::ConnectionType = Qt::AutoConnection);
@@ -430,9 +430,9 @@ protected:
     int receivers(const char* signal) const;
     bool isSignalConnected(const QMetaMethod &signal) const;
 
-    virtual void timerEvent(QTimerEvent *);
-    virtual void childEvent(QChildEvent *);
-    virtual void customEvent(QEvent *);
+    virtual void timerEvent(QTimerEvent *event);
+    virtual void childEvent(QChildEvent *event);
+    virtual void customEvent(QEvent *event);
 
     virtual void connectNotify(const QMetaMethod &signal);
     virtual void disconnectNotify(const QMetaMethod &signal);

@@ -605,43 +605,43 @@ Q_SIGNALS:
 
 protected:
     // Event handlers
-    bool event(QEvent *) Q_DECL_OVERRIDE;
-    virtual void mousePressEvent(QMouseEvent *);
-    virtual void mouseReleaseEvent(QMouseEvent *);
-    virtual void mouseDoubleClickEvent(QMouseEvent *);
-    virtual void mouseMoveEvent(QMouseEvent *);
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    virtual void mousePressEvent(QMouseEvent *event);
+    virtual void mouseReleaseEvent(QMouseEvent *event);
+    virtual void mouseDoubleClickEvent(QMouseEvent *event);
+    virtual void mouseMoveEvent(QMouseEvent *event);
 #ifndef QT_NO_WHEELEVENT
-    virtual void wheelEvent(QWheelEvent *);
+    virtual void wheelEvent(QWheelEvent *event);
 #endif
-    virtual void keyPressEvent(QKeyEvent *);
-    virtual void keyReleaseEvent(QKeyEvent *);
-    virtual void focusInEvent(QFocusEvent *);
-    virtual void focusOutEvent(QFocusEvent *);
-    virtual void enterEvent(QEvent *);
-    virtual void leaveEvent(QEvent *);
-    virtual void paintEvent(QPaintEvent *);
-    virtual void moveEvent(QMoveEvent *);
-    virtual void resizeEvent(QResizeEvent *);
-    virtual void closeEvent(QCloseEvent *);
+    virtual void keyPressEvent(QKeyEvent *event);
+    virtual void keyReleaseEvent(QKeyEvent *event);
+    virtual void focusInEvent(QFocusEvent *event);
+    virtual void focusOutEvent(QFocusEvent *event);
+    virtual void enterEvent(QEvent *event);
+    virtual void leaveEvent(QEvent *event);
+    virtual void paintEvent(QPaintEvent *event);
+    virtual void moveEvent(QMoveEvent *event);
+    virtual void resizeEvent(QResizeEvent *event);
+    virtual void closeEvent(QCloseEvent *event);
 #ifndef QT_NO_CONTEXTMENU
-    virtual void contextMenuEvent(QContextMenuEvent *);
+    virtual void contextMenuEvent(QContextMenuEvent *event);
 #endif
 #ifndef QT_NO_TABLETEVENT
-    virtual void tabletEvent(QTabletEvent *);
+    virtual void tabletEvent(QTabletEvent *event);
 #endif
 #ifndef QT_NO_ACTION
-    virtual void actionEvent(QActionEvent *);
+    virtual void actionEvent(QActionEvent *event);
 #endif
 
 #ifndef QT_NO_DRAGANDDROP
-    virtual void dragEnterEvent(QDragEnterEvent *);
-    virtual void dragMoveEvent(QDragMoveEvent *);
-    virtual void dragLeaveEvent(QDragLeaveEvent *);
-    virtual void dropEvent(QDropEvent *);
+    virtual void dragEnterEvent(QDragEnterEvent *event);
+    virtual void dragMoveEvent(QDragMoveEvent *event);
+    virtual void dragLeaveEvent(QDragLeaveEvent *event);
+    virtual void dropEvent(QDropEvent *event);
 #endif
 
-    virtual void showEvent(QShowEvent *);
-    virtual void hideEvent(QHideEvent *);
+    virtual void showEvent(QShowEvent *event);
+    virtual void hideEvent(QHideEvent *event);
     virtual bool nativeEvent(const QByteArray &eventType, void *message, long *result);
 
     // Misc. protected functions

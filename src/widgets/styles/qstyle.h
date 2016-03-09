@@ -66,13 +66,13 @@ public:
     QStyle();
     virtual ~QStyle();
 
-    virtual void polish(QWidget *);
-    virtual void unpolish(QWidget *);
+    virtual void polish(QWidget *widget);
+    virtual void unpolish(QWidget *widget);
 
-    virtual void polish(QApplication *);
-    virtual void unpolish(QApplication *);
+    virtual void polish(QApplication *application);
+    virtual void unpolish(QApplication *application);
 
-    virtual void polish(QPalette &);
+    virtual void polish(QPalette &palette);
 
     virtual QRect itemTextRect(const QFontMetrics &fm, const QRect &r,
                            int flags, bool enabled,
