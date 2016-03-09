@@ -28,4 +28,13 @@ LIBS += $$EXTRA_LIBS
 # Static libs need no rpaths
 static: return()
 
-QMAKE_RPATHDIR += $$EXTRA_RPATHS
+for (rp, EXTRA_RPATHS) {
+    absrp = $$absolute_path($$rp, $$[QT_INSTALL_LIBS])
+    !isEqual(absrp, $$rp) {
+        isEmpty(QMAKE_REL_RPATH_BASE)|!contains(INSTALLS, target): \
+            rp = $$absrp
+        else: \
+            rp = $$relative_path($$absrp, $$qtRelativeRPathBase())
+    }
+    QMAKE_RPATHDIR += $$rp
+}
