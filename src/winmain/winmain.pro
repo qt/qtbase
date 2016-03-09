@@ -21,7 +21,7 @@ winrt {
 } else {
     SOURCES = qtmain_win.cpp
 
-    !wince: LIBS += -lshell32
+    LIBS += -lshell32
 }
 
 load(qt_installs)
@@ -31,5 +31,3 @@ TARGET = $$qtLibraryTarget($$TARGET$$QT_LIBINFIX) #do this towards the end
 load(qt_targets)
 load(qt_build_paths)
 load(qt_common)
-
-wince: QMAKE_POST_LINK =
