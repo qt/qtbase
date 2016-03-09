@@ -698,9 +698,6 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     QString slnConf = _slnSolutionConf;
     if (!project->isEmpty("VCPROJ_ARCH")) {
         slnConf.replace(QLatin1String("|Win32"), "|" + project->first("VCPROJ_ARCH"));
-    } else if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH")) {
-        QString slnPlatform = QString("|") + project->values("CE_SDK").join(' ') + " (" + project->first("CE_ARCH") + ")";
-        slnConf.replace(QLatin1String("|Win32"), slnPlatform);
     } else if (is64Bit) {
         slnConf.replace(QLatin1String("|Win32"), QLatin1String("|x64"));
     }
@@ -715,8 +712,6 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
         QString xplatform = platform;
         if (!project->isEmpty("VCPROJ_ARCH")) {
             xplatform = project->first("VCPROJ_ARCH").toQString();
-        } else if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH")) {
-            xplatform = project->values("CE_SDK").join(' ') + " (" + project->first("CE_ARCH") + ")";
         }
         if (!project->isHostBuild())
             platform = xplatform;
@@ -970,10 +965,8 @@ void VcprojGenerator::initProject()
     vcProject.Keyword = project->first("VCPROJ_KEYWORD").toQString();
     if (!project->isEmpty("VCPROJ_ARCH")) {
         vcProject.PlatformName = project->first("VCPROJ_ARCH").toQString();
-    } else if (project->isHostBuild() || project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
+    } else if (project->isHostBuild()) {
         vcProject.PlatformName = (is64Bit ? "x64" : "Win32");
-    } else {
-        vcProject.PlatformName = project->values("CE_SDK").join(' ') + " (" + project->first("CE_ARCH") + ")";
     }
     vcProject.SdkVersion = project->first("WINSDK_VER").toQString();
     // These are not used by Qt, but may be used by customers
@@ -1054,10 +1047,8 @@ void VcprojGenerator::initConfiguration()
     conf.ConfigurationName = conf.Name;
     if (!project->isEmpty("VCPROJ_ARCH")) {
         conf.Name += "|" + project->first("VCPROJ_ARCH");
-    } else if (project->isHostBuild() || project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
+    } else if (project->isHostBuild()) {
         conf.Name += (is64Bit ? "|x64" : "|Win32");
-    } else {
-        conf.Name += "|" + project->values("CE_SDK").join(' ') + " (" + project->first("CE_ARCH") + ")";
     }
     conf.ATLMinimizesCRunTimeLibraryUsage = (project->first("ATLMinimizesCRunTimeLibraryUsage").isEmpty() ? _False : _True);
     conf.BuildBrowserInformation = triState(temp.isEmpty() ? (short)unset : temp.toShort());
@@ -1080,8 +1071,7 @@ void VcprojGenerator::initConfiguration()
     initPreBuildEventTools();
     initPostBuildEventTools();
     // Only deploy for CE and WinRT projects
-    if ((!project->isHostBuild() && !project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH"))
-            || conf.WinRT)
+    if (!project->isHostBuild() || conf.WinRT)
         initDeploymentTool();
     initWinDeployQtTool();
     initPreLinkEventTools();
@@ -1229,16 +1219,6 @@ void VcprojGenerator::initPostBuildEventTools()
         conf.postBuild.Description = cmdline.join(QLatin1String("\r\n"));
         conf.postBuild.ExcludedFromBuild = _False;
     }
-
-    QString signature = !project->isEmpty("SIGNATURE_FILE") ? var("SIGNATURE_FILE") : var("DEFAULT_SIGNATURE");
-    bool useSignature = !signature.isEmpty() && !project->isActiveConfig("staticlib") &&
-                        !project->isHostBuild() && !project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH");
-    if (useSignature) {
-        conf.postBuild.CommandLine.prepend(
-                QLatin1String("signtool sign /F ") + escapeFilePath(signature) + QLatin1String(" \"$(TargetPath)\""));
-        conf.postBuild.ExcludedFromBuild = _False;
-    }
-
     if (!project->values("MSVCPROJ_COPY_DLL").isEmpty()) {
         conf.postBuild.Description += var("MSVCPROJ_COPY_DLL_DESC");
         conf.postBuild.CommandLine += var("MSVCPROJ_COPY_DLL");
@@ -1298,45 +1278,6 @@ void VcprojGenerator::initDeploymentTool()
             } else {
                 conf.deployment.AdditionalFiles += info.fileName()
                         + "|" + QDir::toNativeSeparators(info.absolutePath())
-                        + "|" + targetPath
-                        + "|0;";
-            }
-        }
-    }
-
-    if (!conf.WinRT) {
-        // C-runtime deployment
-        QString runtime = project->values("QT_CE_C_RUNTIME").join(QLatin1Char(' '));
-        if (!runtime.isEmpty() && (runtime != QLatin1String("no"))) {
-            QString runtimeVersion = QLatin1String("msvcr");
-            ProString mkspec = project->first("QMAKESPEC");
-
-            if (!mkspec.isEmpty()) {
-                if (mkspec.endsWith("2008"))
-                    runtimeVersion.append("90");
-                else
-                    runtimeVersion.append("80");
-                if (project->isActiveConfig("debug"))
-                    runtimeVersion.append("d");
-                runtimeVersion.append(".dll");
-
-                if (runtime == "yes") {
-                    // Auto-find C-runtime
-                    QString vcInstallDir = qgetenv("VCINSTALLDIR");
-                    if (!vcInstallDir.isEmpty()) {
-                        vcInstallDir += "\\ce\\dll\\";
-                        vcInstallDir += project->values("CE_ARCH").join(QLatin1Char(' '));
-                        if (!QFileInfo::exists(vcInstallDir + QDir::separator() + runtimeVersion))
-                            runtime.clear();
-                        else
-                            runtime = vcInstallDir;
-                    }
-                }
-            }
-
-            if (!runtime.isEmpty() && runtime != QLatin1String("yes")) {
-                conf.deployment.AdditionalFiles += runtimeVersion
-                        + "|" + QDir::toNativeSeparators(runtime)
                         + "|" + targetPath
                         + "|0;";
             }

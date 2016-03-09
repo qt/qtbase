@@ -369,7 +369,7 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
 
         # The following block is currently broken, because qt_plugin_XXX.prf files
         # are not generated for dynamic builds.
-        false:isEqual(QT_CURRENT_VERIFY, DEPLOYMENT_PLUGIN):shared:if(wince*|winrt) {
+        false:isEqual(QT_CURRENT_VERIFY, DEPLOYMENT_PLUGIN):shared:winrt {
             QT_ITEM =
             debug: QT_ITEM = $${QTPLUG}d4.dll
             else: QT_ITEM = $${QTPLUG}4.dll

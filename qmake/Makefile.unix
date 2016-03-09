@@ -8,8 +8,7 @@ OBJS=project.o option.o property.o main.o ioutils.o proitems.o \
      makefile.o unixmake2.o unixmake.o  \
      mingw_make.o winmakefile.o projectgenerator.o \
      meta.o makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
-     msvc_vcproj.o msvc_vcxproj.o msvc_nmake.o msvc_objectmodel.o msbuild_objectmodel.o \
-     cesdkhandler.o
+     msvc_vcproj.o msvc_vcxproj.o msvc_nmake.o msvc_objectmodel.o msbuild_objectmodel.o
 
 #qt code
 QOBJS=qtextcodec.o qutfcodec.o qstring.o qstring_compat.o qstringbuilder.o qtextstream.o qiodevice.o \
@@ -36,7 +35,7 @@ DEPEND_SRC = \
 	   $(QMKGENSRC)/mac/pbuilder_pbx.cpp \
 	   $(QMKGENSRC)/win32/winmakefile.cpp \
 	   $(QMKGENSRC)/win32/mingw_make.cpp $(QMKGENSRC)/win32/msvc_nmake.cpp \
-	   $(QMKGENSRC)/win32/cesdkhandler.cpp $(QMKGENSRC)/mac/xmloutput.cpp  \
+	   $(QMKGENSRC)/mac/xmloutput.cpp \
 	   $(QMKGENSRC)/win32/msvc_vcproj.cpp $(QMKGENSRC)/win32/msvc_vcxproj.cpp \
 	   $(QMKGENSRC)/win32/msvc_objectmodel.cpp $(QMKGENSRC)/win32/msbuild_objectmodel.cpp \
 	   $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp \
@@ -205,9 +204,6 @@ msvc_vcxproj.o: $(QMKSRC)/generators/win32/msvc_vcxproj.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 msvc_nmake.o: $(QMKSRC)/generators/win32/msvc_nmake.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $<
-
-cesdkhandler.o: $(QMKSRC)/generators/win32/cesdkhandler.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 pbuilder_pbx.o: $(QMKSRC)/generators/mac/pbuilder_pbx.cpp

@@ -11,8 +11,7 @@ SOURCES += project.cpp property.cpp main.cpp \
            generators/win32/msvc_nmake.cpp generators/projectgenerator.cpp \
            generators/win32/msvc_vcproj.cpp \
            generators/win32/msvc_vcxproj.cpp \
-           generators/win32/msvc_objectmodel.cpp generators/win32/msbuild_objectmodel.cpp \
-           generators/win32/cesdkhandler.cpp
+           generators/win32/msvc_objectmodel.cpp generators/win32/msbuild_objectmodel.cpp
 
 HEADERS += project.h property.h \
            library/qmake_global.h library/ioutils.h library/proitems.h library/qmakevfs.h library/qmakeglobals.h \
@@ -24,8 +23,7 @@ HEADERS += project.h property.h \
            generators/xmloutput.h generators/win32/msvc_nmake.h \
            generators/win32/msvc_vcproj.h \
            generators/win32/msvc_vcxproj.h \
-           generators/win32/msvc_objectmodel.h generators/win32/msbuild_objectmodel.h \
-           generators/win32/cesdkhandler.h
+           generators/win32/msvc_objectmodel.h generators/win32/msbuild_objectmodel.h
 
 bootstrap { #Qt code
    SOURCES+= \
