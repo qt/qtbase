@@ -1267,7 +1267,10 @@ void WriteInitialization::writeProperties(const QString &varName,
         } else {
             setFunction = QLatin1String("->setProperty(\"");
             setFunction += propertyName;
-            setFunction += QLatin1String("\", QVariant(");
+            setFunction += QLatin1String("\", QVariant");
+            if (p->kind() == DomProperty::Enum)
+                setFunction += QLatin1String("::fromValue");
+            setFunction += QLatin1Char('(');
         }
 
         QString varNewName = varName;
