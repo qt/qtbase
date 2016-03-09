@@ -68,6 +68,8 @@ public:
     QXcbShmImage(QXcbScreen *connection, const QSize &size, uint depth, QImage::Format format);
     ~QXcbShmImage() { destroy(); }
 
+    bool scroll(const QRegion &area, int dx, int dy);
+
     QImage *image() { return &m_qimage; }
     QPlatformGraphicsBuffer *graphicsBuffer() { return m_graphics_buffer; }
 
@@ -76,12 +78,13 @@ public:
     bool hasAlpha() const { return m_hasAlpha; }
     bool hasShm() const { return m_shm_info.shmaddr != nullptr; }
 
-    void put(xcb_window_t window, const QRegion &region, const QPoint &offset);
+    void put(xcb_drawable_t dst, const QRegion &region, const QPoint &offset);
     void preparePaint(const QRegion &region);
 
 private:
     void destroy();
 
+    void ensureGC(xcb_drawable_t dst);
     void flushPixmap(const QRegion &region);
     void setClip(const QRegion &region);
 
@@ -93,7 +96,7 @@ private:
     QPlatformGraphicsBuffer *m_graphics_buffer;
 
     xcb_gcontext_t m_gc;
-    xcb_window_t m_gc_window;
+    xcb_drawable_t m_gc_drawable;
 
     // When using shared memory this is the region currently shared with the server
     QRegion m_dirtyShm;
@@ -142,7 +145,7 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
     : QXcbObject(screen->connection())
     , m_graphics_buffer(Q_NULLPTR)
     , m_gc(0)
-    , m_gc_window(0)
+    , m_gc_drawable(0)
     , m_xcb_pixmap(0)
 {
     Q_XCB_NOOP(connection());
@@ -207,6 +210,39 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
     }
 }
 
+extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
+
+bool QXcbShmImage::scroll(const QRegion &area, int dx, int dy)
+{
+    if (image()->isNull())
+        return false;
+
+    if (hasShm())
+        preparePaint(area);
+
+    const QPoint delta(dx, dy);
+    foreach (const QRect &rect, area.rects())
+        qt_scrollRectInImage(*image(), rect, delta);
+
+    if (m_xcb_pixmap) {
+        flushPixmap(area);
+        ensureGC(m_xcb_pixmap);
+        const QRect bounds(QPoint(0, 0), size());
+        foreach (const QRect &src, area.rects()) {
+            const QRect dst = src.translated(delta).intersected(bounds);
+            Q_XCB_CALL(xcb_copy_area(xcb_connection(),
+                                     m_xcb_pixmap,
+                                     m_xcb_pixmap,
+                                     m_gc,
+                                     src.x(), src.y(),
+                                     dst.x(), dst.y(),
+                                     dst.width(), dst.height()));
+        }
+    }
+
+    return true;
+}
+
 void QXcbShmImage::destroy()
 {
     const int segmentSize = m_xcb_image ? (m_xcb_image->stride * m_xcb_image->height) : 0;
@@ -232,6 +268,22 @@ void QXcbShmImage::destroy()
     if (m_xcb_pixmap) {
         Q_XCB_CALL(xcb_free_pixmap(xcb_connection(), m_xcb_pixmap));
         m_xcb_pixmap = 0;
+    }
+}
+
+void QXcbShmImage::ensureGC(xcb_drawable_t dst)
+{
+    if (m_gc_drawable != dst) {
+        if (m_gc)
+            Q_XCB_CALL(xcb_free_gc(xcb_connection(), m_gc));
+
+        static const uint32_t mask = XCB_GC_GRAPHICS_EXPOSURES;
+        static const uint32_t values[] = { 0 };
+
+        m_gc = xcb_generate_id(xcb_connection());
+        Q_XCB_CALL(xcb_create_gc(xcb_connection(), m_gc, dst, mask, values));
+
+        m_gc_drawable = dst;
     }
 }
 
@@ -320,25 +372,11 @@ void QXcbShmImage::setClip(const QRegion &region)
     }
 }
 
-void QXcbShmImage::put(xcb_window_t window, const QRegion &region, const QPoint &offset)
+void QXcbShmImage::put(xcb_drawable_t dst, const QRegion &region, const QPoint &offset)
 {
     Q_XCB_NOOP(connection());
 
-    if (m_gc_window != window) {
-        if (m_gc)
-            Q_XCB_CALL(xcb_free_gc(xcb_connection(), m_gc));
-
-        static const uint32_t mask = XCB_GC_GRAPHICS_EXPOSURES;
-        static const uint32_t values[] = { 0 };
-
-        m_gc = xcb_generate_id(xcb_connection());
-        Q_XCB_CALL(xcb_create_gc(xcb_connection(), m_gc, window, mask, values));
-
-        m_gc_window = window;
-    }
-
-    Q_XCB_NOOP(connection());
-
+    ensureGC(dst);
     setClip(region);
 
     const QRect bounds = region.boundingRect();
@@ -347,7 +385,7 @@ void QXcbShmImage::put(xcb_window_t window, const QRegion &region, const QPoint 
 
     if (hasShm()) {
         Q_XCB_CALL(xcb_shm_put_image(xcb_connection(),
-                                     window,
+                                     dst,
                                      m_gc,
                                      m_xcb_image->width,
                                      m_xcb_image->height,
@@ -364,7 +402,7 @@ void QXcbShmImage::put(xcb_window_t window, const QRegion &region, const QPoint 
         flushPixmap(region);
         Q_XCB_CALL(xcb_copy_area(xcb_connection(),
                                  m_xcb_pixmap,
-                                 window,
+                                 dst,
                                  m_gc,
                                  source.x(), source.y(),
                                  target.x(), target.y(),
@@ -533,20 +571,12 @@ void QXcbBackingStore::resize(const QSize &size, const QRegion &)
     Q_XCB_NOOP(connection());
 }
 
-extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
-
 bool QXcbBackingStore::scroll(const QRegion &area, int dx, int dy)
 {
-    if (!m_image || m_image->image()->isNull())
-        return false;
+    if (m_image)
+        return m_image->scroll(area, dx, dy);
 
-    m_image->preparePaint(area);
-
-    QPoint delta(dx, dy);
-    const QVector<QRect> rects = area.rects();
-    for (int i = 0; i < rects.size(); ++i)
-        qt_scrollRectInImage(*m_image->image(), rects.at(i), delta);
-    return true;
+    return false;
 }
 
 QT_END_NAMESPACE
