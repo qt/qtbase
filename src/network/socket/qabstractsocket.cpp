@@ -871,8 +871,7 @@ bool QAbstractSocketPrivate::writeToSocket()
         }
     }
 
-    if (writeBuffer.isEmpty() && socketEngine && socketEngine->isWriteNotificationEnabled()
-        && !socketEngine->bytesToWrite())
+    if (writeBuffer.isEmpty() && socketEngine && !socketEngine->bytesToWrite())
         socketEngine->setWriteNotificationEnabled(false);
     if (state == QAbstractSocket::ClosingState)
         q->disconnectFromHost();
@@ -2420,7 +2419,7 @@ qint64 QAbstractSocket::readData(char *data, qint64 maxSize)
         d->setError(d->socketEngine->error(), d->socketEngine->errorString());
         d->resetSocketLayer();
         d->state = QAbstractSocket::UnconnectedState;
-    } else if (!d->socketEngine->isReadNotificationEnabled()) {
+    } else {
         // Only do this when there was no error
         d->socketEngine->setReadNotificationEnabled(true);
     }
