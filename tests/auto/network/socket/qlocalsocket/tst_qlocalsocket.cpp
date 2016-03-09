@@ -525,6 +525,7 @@ void tst_QLocalSocket::sendData()
     // test creating a connection
     socket.connectToServer(name);
     bool timedOut = true;
+    int expectedReadyReadSignals = 0;
 
     QCOMPARE(server.waitForNewConnection(3000, &timedOut), canListen);
 
@@ -548,15 +549,17 @@ void tst_QLocalSocket::sendData()
         out << testLine << endl;
         bool wrote = serverSocket->waitForBytesWritten(3000);
 
-        if (!socket.canReadLine())
+        if (!socket.canReadLine()) {
+            expectedReadyReadSignals = 1;
             QVERIFY(socket.waitForReadyRead());
+        }
 
         QVERIFY(socket.bytesAvailable() >= 0);
         QCOMPARE(socket.bytesToWrite(), (qint64)0);
         QCOMPARE(socket.flush(), false);
         QCOMPARE(socket.isValid(), canListen);
         QCOMPARE(socket.readBufferSize(), (qint64)0);
-        QCOMPARE(spyReadyRead.count(), 1);
+        QCOMPARE(spyReadyRead.count(), expectedReadyReadSignals);
 
         QVERIFY(testLine.startsWith(in.readLine()));
 
@@ -571,7 +574,7 @@ void tst_QLocalSocket::sendData()
     QCOMPARE(spyDisconnected.count(), canListen ? 1 : 0);
     QCOMPARE(spyError.count(), canListen ? 0 : 1);
     QCOMPARE(spyStateChanged.count(), canListen ? 4 : 2);
-    QCOMPARE(spyReadyRead.count(), canListen ? 1 : 0);
+    QCOMPARE(spyReadyRead.count(), canListen ? expectedReadyReadSignals : 0);
 
     server.close();
 
