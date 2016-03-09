@@ -80,11 +80,17 @@ public:
     static void singleShot(int msec, Qt::TimerType timerType, const QObject *receiver, const char *member);
 
 #ifdef Q_QDOC
+    template<typename PointerToMemberFunction>
     static void singleShot(int msec, const QObject *receiver, PointerToMemberFunction method);
+    template<typename PointerToMemberFunction>
     static void singleShot(int msec, Qt::TimerType timerType, const QObject *receiver, PointerToMemberFunction method);
+    template<typename Functor>
     static void singleShot(int msec, Functor functor);
+    template<typename Functor>
     static void singleShot(int msec, Qt::TimerType timerType, Functor functor);
+    template<typename Functor, int>
     static void singleShot(int msec, const QObject *context, Functor functor);
+    template<typename Functor, int>
     static void singleShot(int msec, Qt::TimerType timerType, const QObject *context, Functor functor);
 #else
     // singleShot to a QObject slot

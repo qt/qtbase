@@ -100,11 +100,17 @@ public:
     QAction *addAction(const QIcon &icon, const QString &text,
                        const QObject *receiver, const char* member);
 #ifdef Q_QDOC
+    template<typename PointerToMemberFunction>
     QAction *addAction(const QString &text, const QObject *receiver, PointerToMemberFunction method);
+    template<typename Functor>
     QAction *addAction(const QString &text, Functor functor);
+    template<typename Functor>
     QAction *addAction(const QString &text, const QObject *context, Functor functor);
+    template<typename PointerToMemberFunction>
     QAction *addAction(const QIcon &icon, const QString &text, const QObject *receiver, PointerToMemberFunction method);
+    template<typename Functor>
     QAction *addAction(const QIcon &icon, const QString &text, Functor functor);
+    template<typename Functor>
     QAction *addAction(const QIcon &icon, const QString &text, const QObject *context, Functor functor);
 #else
     // addAction(QString): Connect to a QObject slot / functor or function pointer (with context)

@@ -168,19 +168,15 @@ public:
 
     inline bool isValid() const { return mobj != Q_NULLPTR; }
 
-#ifdef Q_QDOC
-    static QMetaMethod fromSignal(PointerToMemberFunction signal);
-#else
-    template <typename Func>
-    static inline QMetaMethod fromSignal(Func signal)
+    template <typename PointerToMemberFunction>
+    static inline QMetaMethod fromSignal(PointerToMemberFunction signal)
     {
-        typedef QtPrivate::FunctionPointer<Func> SignalType;
+        typedef QtPrivate::FunctionPointer<PointerToMemberFunction> SignalType;
         Q_STATIC_ASSERT_X(QtPrivate::HasQ_OBJECT_Macro<typename SignalType::Object>::Value,
                           "No Q_OBJECT in the class with the signal");
         return fromSignalImpl(&SignalType::Object::staticMetaObject,
                               reinterpret_cast<void **>(&signal));
     }
-#endif
 
 private:
 #if QT_DEPRECATED_SINCE(5,0)

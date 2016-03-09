@@ -85,11 +85,17 @@ public:
     QAction *addAction(const QIcon &icon, const QString &text, const QObject *receiver, const char* member, const QKeySequence &shortcut = 0);
 
 #ifdef Q_QDOC
+    template<typename PointerToMemberFunction>
     QAction *addAction(const QString &text, const QObject *receiver, PointerToMemberFunction method, const QKeySequence &shortcut = 0);
+    template<typename Functor>
     QAction *addAction(const QString &text, Functor functor, const QKeySequence &shortcut = 0);
+    template<typename Functor>
     QAction *addAction(const QString &text, const QObject *context, Functor functor, const QKeySequence &shortcut = 0);
+    template<typename PointerToMemberFunction>
     QAction *addAction(const QIcon &icon, const QString &text, const QObject *receiver, PointerToMemberFunction method, const QKeySequence &shortcut = 0);
+    template<typename Functor>
     QAction *addAction(const QIcon &icon, const QString &text, Functor functor, const QKeySequence &shortcut = 0);
+    template<typename Functor>
     QAction *addAction(const QIcon &icon, const QString &text, const QObject *context, Functor functor, const QKeySequence &shortcut = 0);
 #else
     // addAction(QString): Connect to a QObject slot / functor or function pointer (with context)

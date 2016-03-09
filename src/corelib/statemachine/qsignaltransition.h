@@ -60,6 +60,7 @@ public:
     QSignalTransition(const QObject *sender, const char *signal,
                       QState *sourceState = Q_NULLPTR);
 #ifdef Q_QDOC
+    template<typename PointerToMemberFunction>
     QSignalTransition(const QObject *object, PointerToMemberFunction signal,
                       QState *sourceState = Q_NULLPTR);
 #elif defined(Q_COMPILER_DELEGATING_CONSTRUCTORS)

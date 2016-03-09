@@ -82,6 +82,7 @@ public:
     void addTransition(QAbstractTransition *transition);
     QSignalTransition *addTransition(const QObject *sender, const char *signal, QAbstractState *target);
 #ifdef Q_QDOC
+    template<typename PointerToMemberFunction>
     QSignalTransition *addTransition(const QObject *sender, PointerToMemberFunction signal,
                        QAbstractState *target);
 #else

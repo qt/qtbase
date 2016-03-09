@@ -210,8 +210,11 @@ public:
                         const char *member, Qt::ConnectionType type = Qt::AutoConnection) const;
 
 #ifdef Q_QDOC
+    template<typename PointerToMemberFunction>
     static QMetaObject::Connection connect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method, Qt::ConnectionType type = Qt::AutoConnection);
+    template<typename PointerToMemberFunction, typename Functor>
     static QMetaObject::Connection connect(const QObject *sender, PointerToMemberFunction signal, Functor functor);
+    template<typename PointerToMemberFunction, typename Functor>
     static QMetaObject::Connection connect(const QObject *sender, PointerToMemberFunction signal, const QObject *context, Functor functor, Qt::ConnectionType type = Qt::AutoConnection);
 #else
     //Connect a signal to a pointer to qobject member function
@@ -360,6 +363,7 @@ public:
     static bool disconnect(const QMetaObject::Connection &);
 
 #ifdef Q_QDOC
+    template<typename PointerToMemberFunction>
     static bool disconnect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method);
 #else
     template <typename Func1, typename Func2>

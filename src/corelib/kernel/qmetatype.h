@@ -600,8 +600,11 @@ public:
     }
 
 #ifdef Q_QDOC
+    template<typename MemberFunction, int>
     static bool registerConverter(MemberFunction function);
+    template<typename MemberFunctionOk, char>
     static bool registerConverter(MemberFunctionOk function);
+    template<typename UnaryFunction>
     static bool registerConverter(UnaryFunction function);
 #else
     // member function as in "QString QFont::toString() const"
