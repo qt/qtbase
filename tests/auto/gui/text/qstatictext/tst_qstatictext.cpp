@@ -39,7 +39,9 @@
 #include <qstatictext.h>
 #include <qpaintengine.h>
 
+#ifdef QT_BUILD_INTERNAL
 #include <private/qstatictext_p.h>
+#endif
 
 // #define DEBUG_SAVE_IMAGE
 
@@ -90,8 +92,10 @@ private slots:
 
     void unprintableCharacter_qtbug12614();
 
+#ifdef QT_BUILD_INTERNAL
     void underlinedColor_qtbug20159();
     void textDocumentColor();
+#endif
 
 private:
     bool supportsTransformations() const;
@@ -829,6 +833,7 @@ void tst_QStaticText::unprintableCharacter_qtbug12614()
     QVERIFY(staticText.size().isValid()); // Force layout. Should not crash.
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QStaticText::underlinedColor_qtbug20159()
 {
     QString multiScriptText;
@@ -865,6 +870,7 @@ void tst_QStaticText::textDocumentColor()
 
     QCOMPARE(d->items[1].color, QColor(Qt::red));
 }
+#endif
 
 QTEST_MAIN(tst_QStaticText)
 #include "tst_qstatictext.moc"
