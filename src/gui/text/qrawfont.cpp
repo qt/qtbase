@@ -607,8 +607,7 @@ QByteArray QRawFont::fontTable(const char *tagName) const
     if (!d->isValid())
         return QByteArray();
 
-    const quint32 *tagId = reinterpret_cast<const quint32 *>(tagName);
-    return d->fontEngine->getSfntTable(qToBigEndian(*tagId));
+    return d->fontEngine->getSfntTable(MAKE_TAG(tagName[0], tagName[1], tagName[2], tagName[3]));
 }
 
 /*!
