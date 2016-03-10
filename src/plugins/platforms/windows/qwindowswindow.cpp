@@ -1668,11 +1668,11 @@ void QWindowsWindow::releaseDC()
 bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
                                          WPARAM, LPARAM)
 {
+    if (message == WM_ERASEBKGND) // Backing store - ignored.
+        return true;
     // Ignore invalid update bounding rectangles
     if (!GetUpdateRect(m_data.hwnd, 0, FALSE))
         return false;
-    if (message == WM_ERASEBKGND) // Backing store - ignored.
-        return true;
     PAINTSTRUCT ps;
 
     // Observed painting problems with Aero style disabled (QTBUG-7865).

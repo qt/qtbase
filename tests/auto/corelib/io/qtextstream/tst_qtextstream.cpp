@@ -223,6 +223,8 @@ private slots:
     void alignAccountingStyle();
     void setCodec();
 
+    void textModeOnEmptyRead();
+
 private:
     void generateLineData(bool for_QString);
     void generateAllData(bool for_QString);
@@ -3039,6 +3041,21 @@ void tst_QTextStream::int_write_with_locale()
     stream << input;
     QCOMPARE(result, output);
 }
+
+void tst_QTextStream::textModeOnEmptyRead()
+{
+    const QString filename("textmodetest.txt");
+    QFile::remove(filename); // Remove file if exists
+
+
+    QFile file(filename);
+    QVERIFY(file.open(QIODevice::ReadWrite | QIODevice::Text));
+    QTextStream stream(&file);
+    QVERIFY(file.isTextModeEnabled());
+    QString emptyLine = stream.readLine(); // Text mode flag cleared here
+    QVERIFY(file.isTextModeEnabled());
+}
+
 
 // ------------------------------------------------------------------------------
 

@@ -78,6 +78,18 @@
            "features": [
                "disable_rotation"
            ]
+        },
+        {
+           "id": 7,
+           "description": "AMD FirePro V5900 driver causes crashes in Direct3D on Windows.",
+           "vendor_id": "0x1002",
+           "device_id": ["0x6707"],
+           "os": {
+               "type": "win"
+           },
+           "features": [
+               "disable_angle"
+           ]
         }
     ]
 }

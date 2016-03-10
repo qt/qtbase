@@ -1,10 +1,5 @@
 TARGET = qios
 
-PLUGIN_TYPE = platforms
-PLUGIN_CLASS_NAME = QIOSIntegrationPlugin
-!equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN): PLUGIN_EXTENDS = -
-load(qt_plugin)
-
 QT += core-private gui-private platformsupport-private
 LIBS += -framework Foundation -framework UIKit -framework QuartzCore -framework AssetsLibrary -framework AudioToolbox
 
@@ -61,3 +56,8 @@ HEADERS = \
 OTHER_FILES = \
     quiview_textinput.mm \
     quiview_accessibility.mm
+
+PLUGIN_TYPE = platforms
+PLUGIN_CLASS_NAME = QIOSIntegrationPlugin
+!equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN): PLUGIN_EXTENDS = -
+load(qt_plugin)

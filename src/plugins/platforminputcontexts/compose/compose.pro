@@ -1,10 +1,5 @@
 TARGET = composeplatforminputcontextplugin
 
-PLUGIN_TYPE = platforminputcontexts
-PLUGIN_EXTENDS = -
-PLUGIN_CLASS_NAME = QComposePlatformInputContextPlugin
-load(qt_plugin)
-
 QT += core-private gui-private
 
 DEFINES += X11_PREFIX='\\"$$QMAKE_X11_PREFIX\\"'
@@ -27,3 +22,8 @@ contains(QT_CONFIG, xkbcommon-qt): {
 }
 
 OTHER_FILES += $$PWD/compose.json
+
+PLUGIN_TYPE = platforminputcontexts
+PLUGIN_EXTENDS = -
+PLUGIN_CLASS_NAME = QComposePlatformInputContextPlugin
+load(qt_plugin)

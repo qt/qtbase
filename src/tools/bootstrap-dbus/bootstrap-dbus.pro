@@ -9,8 +9,6 @@ DEFINES += \
 
 MODULE_INCNAME = QtDBus
 
-load(qt_module)
-
 QMAKE_CXXFLAGS += $$QT_HOST_CFLAGS_DBUS
 
 SOURCES = \
@@ -24,6 +22,8 @@ SOURCES = \
     ../../dbus/qdbusextratypes.cpp \
     ../../dbus/qdbus_symbols.cpp \
     ../../dbus/qdbusunixfiledescriptor.cpp
+
+load(qt_module)
 
 lib.CONFIG = dummy_install
 INSTALLS = lib

@@ -199,6 +199,9 @@ bool QGuiApplicationPrivate::obey_desktop_settings = true;
 
 QInputDeviceManager *QGuiApplicationPrivate::m_inputDeviceManager = 0;
 
+// enable the fix for QTBUG-50199; TODO remove this check in 5.7
+bool QGuiApplicationPrivate::scrollNoPhaseAllowed = false;
+
 static qreal fontSmoothingGamma = 1.7;
 
 extern void qRegisterGuiVariant();
@@ -587,7 +590,7 @@ QGuiApplication::QGuiApplication(int &argc, char **argv, int flags)
 QGuiApplication::QGuiApplication(QGuiApplicationPrivate &p)
     : QCoreApplication(p)
 {
-    d_func()->init(); }
+}
 
 /*!
     Destructs the application.
@@ -1300,6 +1303,8 @@ void QGuiApplicationPrivate::eventDispatcherReady()
 
 void QGuiApplicationPrivate::init()
 {
+    QCoreApplicationPrivate::init();
+
     QCoreApplicationPrivate::is_app_running = false; // Starting up.
 
     bool loadTestability = false;
@@ -1453,6 +1458,8 @@ void QGuiApplicationPrivate::init()
 
     if (layout_direction == Qt::LayoutDirectionAuto || force_reverse)
         QGuiApplication::setLayoutDirection(qt_detectRTLLanguage() ? Qt::RightToLeft : Qt::LeftToRight);
+
+    scrollNoPhaseAllowed = qEnvironmentVariableIsSet("QT_ENABLE_MOUSE_WHEEL_TRACKING");
 }
 
 extern void qt_cleanupFontDatabase();

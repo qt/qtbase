@@ -1,8 +1,6 @@
 TARGET     = QtXcbQpa
 CONFIG += no_module_headers internal_module
 
-load(qt_module)
-
 QT += core-private gui-private platformsupport-private
 
 SOURCES = \
@@ -105,3 +103,4 @@ contains(QT_CONFIG, xkbcommon-qt) {
     QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XKBCOMMON
 }
 
+load(qt_module)

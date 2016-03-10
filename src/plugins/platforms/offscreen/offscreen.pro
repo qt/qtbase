@@ -1,10 +1,5 @@
 TARGET = qoffscreen
 
-PLUGIN_TYPE = platforms
-PLUGIN_CLASS_NAME = QOffscreenIntegrationPlugin
-!equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN): PLUGIN_EXTENDS = -
-load(qt_plugin)
-
 QT += core-private gui-private platformsupport-private
 
 SOURCES =   main.cpp \
@@ -25,3 +20,8 @@ contains(QT_CONFIG, xlib):contains(QT_CONFIG, opengl):!contains(QT_CONFIG, openg
 } else {
     SOURCES += qoffscreenintegration_dummy.cpp
 }
+
+PLUGIN_TYPE = platforms
+PLUGIN_CLASS_NAME = QOffscreenIntegrationPlugin
+!equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN): PLUGIN_EXTENDS = -
+load(qt_plugin)

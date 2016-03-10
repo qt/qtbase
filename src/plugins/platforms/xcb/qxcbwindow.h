@@ -139,13 +139,14 @@ public:
     void handleFocusOutEvent(const xcb_focus_out_event_t *event) Q_DECL_OVERRIDE;
     void handlePropertyNotifyEvent(const xcb_property_notify_event_t *event) Q_DECL_OVERRIDE;
 #ifdef XCB_USE_XINPUT22
-    void handleXIMouseEvent(xcb_ge_event_t *) Q_DECL_OVERRIDE;
+    void handleXIMouseEvent(xcb_ge_event_t *, Qt::MouseEventSource source = Qt::MouseEventNotSynthesized) Q_DECL_OVERRIDE;
     void handleXIEnterLeave(xcb_ge_event_t *) Q_DECL_OVERRIDE;
 #endif
 
     QXcbWindow *toWindow() Q_DECL_OVERRIDE;
 
-    void handleMouseEvent(xcb_timestamp_t time, const QPoint &local, const QPoint &global, Qt::KeyboardModifiers modifiers);
+    void handleMouseEvent(xcb_timestamp_t time, const QPoint &local, const QPoint &global,
+                          Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source);
 
     void updateNetWmUserTime(xcb_timestamp_t timestamp);
 
@@ -214,13 +215,13 @@ protected:
     bool compressExposeEvent(QRegion &exposeRegion);
 
     void handleButtonPressEvent(int event_x, int event_y, int root_x, int root_y,
-                                int detail, Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp);
+                                int detail, Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp, Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
 
     void handleButtonReleaseEvent(int event_x, int event_y, int root_x, int root_y,
-                                  int detail, Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp);
+                                  int detail, Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp, Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
 
     void handleMotionNotifyEvent(int event_x, int event_y, int root_x, int root_y,
-                                 Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp);
+                                 Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp, Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
 
     void handleEnterNotifyEvent(int event_x, int event_y, int root_x, int root_y,
                                 quint8 mode, quint8 detail, xcb_timestamp_t timestamp);

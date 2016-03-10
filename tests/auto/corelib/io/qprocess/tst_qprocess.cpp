@@ -141,6 +141,8 @@ private slots:
     void startStopStartStop();
     void startStopStartStopBuffers_data();
     void startStopStartStopBuffers();
+    void processEventsInAReadyReadSlot_data();
+    void processEventsInAReadyReadSlot();
 
     // keep these at the end, since they use lots of processes and sometimes
     // caused obscure failures to occur in tests that followed them (esp. on the Mac)
@@ -153,6 +155,7 @@ private slots:
 protected slots:
     void readFromProcess();
     void exitLoopSlot();
+    void processApplicationEvents();
 #ifndef Q_OS_WINCE
     void restartProcess();
     void waitForReadyReadInAReadyReadSlotSlot();
@@ -471,6 +474,11 @@ void tst_QProcess::exitLoopSlot()
     QTestEventLoop::instance().exitLoop();
 }
 
+void tst_QProcess::processApplicationEvents()
+{
+    QCoreApplication::processEvents();
+}
+
 #ifndef Q_OS_WINCE
 // Reading and writing to a process is not supported on Qt/CE
 void tst_QProcess::echoTest2()
@@ -688,11 +696,7 @@ void tst_QProcess::waitForFinished()
 
     process.start("testProcessOutput/testProcessOutput");
 
-#if !defined(Q_OS_WINCE)
-    QVERIFY(process.waitForFinished(5000));
-#else
-    QVERIFY(process.waitForFinished(30000));
-#endif
+    QVERIFY(process.waitForFinished());
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
 
 #if defined (Q_OS_WINCE)
@@ -916,12 +920,7 @@ void tst_QProcess::hardExit()
     proc.start("testProcessEcho/testProcessEcho");
 #endif
 
-#ifndef Q_OS_WINCE
-    QVERIFY(proc.waitForStarted(5000));
-#else
-    QVERIFY(proc.waitForStarted(10000));
-#endif
-
+    QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));
     proc.kill();
 
     QVERIFY(proc.waitForFinished(5000));
@@ -1417,24 +1416,17 @@ void tst_QProcess::spaceArgsTest()
         QString program = programs.at(i);
         process.start(program, args);
 
-#if defined(Q_OS_WINCE)
-        const int timeOutMS = 10000;
-#else
-        const int timeOutMS = 5000;
-#endif
         QByteArray errorMessage;
-        bool started = process.waitForStarted(timeOutMS);
+        bool started = process.waitForStarted();
         if (!started)
             errorMessage = startFailMessage(program, process);
         QVERIFY2(started, errorMessage.constData());
-        QVERIFY(process.waitForFinished(timeOutMS));
+        QVERIFY(process.waitForFinished());
         QCOMPARE(process.exitStatus(), QProcess::NormalExit);
         QCOMPARE(process.exitCode(), 0);
 
 #if !defined(Q_OS_WINCE)
         QStringList actual = QString::fromLatin1(process.readAll()).split("|");
-#endif
-#if !defined(Q_OS_WINCE)
         QVERIFY(!actual.isEmpty());
         // not interested in the program name, it might be different.
         actual.removeFirst();
@@ -1459,8 +1451,6 @@ void tst_QProcess::spaceArgsTest()
 
 #if !defined(Q_OS_WINCE)
         actual = QString::fromLatin1(process.readAll()).split("|");
-#endif
-#if !defined(Q_OS_WINCE)
         QVERIFY(!actual.isEmpty());
         // not interested in the program name, it might be different.
         actual.removeFirst();
@@ -1482,13 +1472,8 @@ void tst_QProcess::nativeArguments()
 
     proc.start(QString::fromLatin1("testProcessSpacesArgs/nospace"), QStringList());
 
-#if !defined(Q_OS_WINCE)
-    QVERIFY(proc.waitForStarted(5000));
-    QVERIFY(proc.waitForFinished(5000));
-#else
-    QVERIFY(proc.waitForStarted(10000));
-    QVERIFY(proc.waitForFinished(10000));
-#endif
+    QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));
+    QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitStatus(), QProcess::NormalExit);
     QCOMPARE(proc.exitCode(), 0);
 
@@ -2548,6 +2533,31 @@ void tst_QProcess::startStopStartStopBuffers()
         if (channelMode2 == QProcess::SeparateChannels)
             QCOMPARE(process.readAllStandardError(), QByteArray("line3\n"));
     }
+}
+
+void tst_QProcess::processEventsInAReadyReadSlot_data()
+{
+    QTest::addColumn<bool>("callWaitForReadyRead");
+
+    QTest::newRow("no waitForReadyRead") << false;
+    QTest::newRow("waitForReadyRead") << true;
+}
+
+void tst_QProcess::processEventsInAReadyReadSlot()
+{
+    // Test whether processing events in a readyReadXXX slot crashes. (QTBUG-48697)
+    QFETCH(bool, callWaitForReadyRead);
+    QProcess process;
+    QObject::connect(&process, &QProcess::readyReadStandardOutput,
+                     this, &tst_QProcess::processApplicationEvents);
+    process.start("testProcessEcho/testProcessEcho");
+    QVERIFY(process.waitForStarted());
+    const QByteArray data(156, 'x');
+    process.write(data.constData(), data.size() + 1);
+    if (callWaitForReadyRead)
+        QVERIFY(process.waitForReadyRead());
+    if (process.state() == QProcess::Running)
+        QVERIFY(process.waitForFinished());
 }
 
 #endif //QT_NO_PROCESS

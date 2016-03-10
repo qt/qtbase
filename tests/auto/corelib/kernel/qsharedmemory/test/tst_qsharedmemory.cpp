@@ -133,7 +133,9 @@ tst_QSharedMemory::~tst_QSharedMemory()
 
 void tst_QSharedMemory::initTestCase()
 {
+#ifndef QT_NO_PROCESS
     QVERIFY2(!m_helperBinary.isEmpty(), "Could not find helper binary");
+#endif
 }
 
 void tst_QSharedMemory::init()

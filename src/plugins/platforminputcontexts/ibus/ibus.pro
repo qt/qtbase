@@ -1,10 +1,5 @@
 TARGET = ibusplatforminputcontextplugin
 
-PLUGIN_TYPE = platforminputcontexts
-PLUGIN_EXTENDS = -
-PLUGIN_CLASS_NAME = QIbusPlatformInputContextPlugin
-load(qt_plugin)
-
 QT += dbus gui-private
 SOURCES += $$PWD/qibusplatforminputcontext.cpp \
            $$PWD/qibusproxy.cpp \
@@ -18,3 +13,8 @@ HEADERS += $$PWD/qibusplatforminputcontext.h \
            $$PWD/qibustypes.h
 
 OTHER_FILES += $$PWD/ibus.json
+
+PLUGIN_TYPE = platforminputcontexts
+PLUGIN_EXTENDS = -
+PLUGIN_CLASS_NAME = QIbusPlatformInputContextPlugin
+load(qt_plugin)

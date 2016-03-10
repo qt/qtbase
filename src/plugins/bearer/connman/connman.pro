@@ -1,9 +1,5 @@
 TARGET = qconnmanbearer
 
-PLUGIN_TYPE = bearer
-PLUGIN_CLASS_NAME = QConnmanEnginePlugin
-load(qt_plugin)
-
 QT = core network-private dbus
 CONFIG += link_pkgconfig
 
@@ -21,3 +17,6 @@ SOURCES += main.cpp \
 
 OTHER_FILES += connman.json
 
+PLUGIN_TYPE = bearer
+PLUGIN_CLASS_NAME = QConnmanEnginePlugin
+load(qt_plugin)

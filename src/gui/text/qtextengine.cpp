@@ -2753,8 +2753,7 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
     QFixed ellipsisWidth;
     QString ellipsisText;
     {
-        QFontEngine *fe = fnt.d->engineForScript(QChar::Script_Common);
-        QFontEngine *engine = fe->type() == QFontEngine::Multi ? static_cast<QFontEngineMulti *>(fe)->engine(0) : fe;
+        QFontEngine *engine = fnt.d->engineForScript(QChar::Script_Common);
 
         QChar ellipsisChar(0x2026);
 

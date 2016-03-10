@@ -424,7 +424,7 @@ QWidget *QApplicationPrivate::hidden_focus_widget = 0; // will get keyboard inpu
 QWidget *QApplicationPrivate::active_window = 0;        // toplevel with keyboard focus
 #ifndef QT_NO_WHEELEVENT
 int QApplicationPrivate::wheel_scroll_lines;   // number of lines to scroll
-QWidget *QApplicationPrivate::wheel_widget = Q_NULLPTR;
+QPointer<QWidget> QApplicationPrivate::wheel_widget;
 #endif
 bool qt_in_tab_key_event = false;
 int qt_antialiasing_threshold = -1;
@@ -569,13 +569,18 @@ QApplication::QApplication(int &argc, char **argv)
 QApplication::QApplication(int &argc, char **argv, int _internal)
 #endif
     : QGuiApplication(*new QApplicationPrivate(argc, argv, _internal))
-{ Q_D(QApplication); d->construct(); }
+{
+    Q_D(QApplication);
+    d->init();
+}
 
 /*!
     \internal
 */
-void QApplicationPrivate::construct()
+void QApplicationPrivate::init()
 {
+    QGuiApplicationPrivate::init();
+
     initResources();
 
     qt_is_gui_used = (application_type != QApplicationPrivate::Tty);
@@ -3319,9 +3324,32 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             const bool spontaneous = wheel->spontaneous();
             const Qt::ScrollPhase phase = wheel->phase();
 
-            if (phase == Qt::NoScrollPhase || phase == Qt::ScrollBegin
-                || (phase == Qt::ScrollUpdate && !QApplicationPrivate::wheel_widget)) {
+            // Ideally, we should lock on a widget when it starts receiving wheel
+            // events. This avoids other widgets to start receiving those events
+            // as the mouse cursor hovers them. However, given the way common
+            // wheeled mice work, there's no certain way of connecting different
+            // wheel events as a stream. This results in the NoScrollPhase case,
+            // where we just send the event from the original receiver and up its
+            // hierarchy until the event gets accepted.
+            //
+            // In the case of more evolved input devices, like Apple's trackpad or
+            // Magic Mouse, we receive the scroll phase information. This helps us
+            // connect wheel events as a stream and therefore makes it easier to
+            // lock on the widget onto which the scrolling was initiated.
+            //
+            // We assume that, when supported, the phase cycle follows the pattern:
+            //
+            //         ScrollBegin (ScrollUpdate* ScrollEnd)+
+            //
+            // This means that we can have scrolling sequences (starting with ScrollBegin)
+            // or partial sequences (after a ScrollEnd and starting with ScrollUpdate).
+            // If wheel_widget is null because it was deleted, we also take the same
+            // code path as an initial sequence.
+            if (phase == Qt::NoScrollPhase || phase == Qt::ScrollBegin || !QApplicationPrivate::wheel_widget) {
 
+                // A system-generated ScrollBegin event starts a new user scrolling
+                // sequence, so we reset wheel_widget in case no one accepts the event
+                // or if we didn't get (or missed) a ScrollEnd previously.
                 if (spontaneous && phase == Qt::ScrollBegin)
                     QApplicationPrivate::wheel_widget = Q_NULLPTR;
 
@@ -3339,7 +3367,10 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     res = d->notify_helper(w, &we);
                     eventAccepted = we.isAccepted();
                     if (res && eventAccepted) {
-                        if (spontaneous && phase != Qt::NoScrollPhase)
+                        // A new scrolling sequence or partial sequence starts and w has accepted
+                        // the event. Therefore, we can set wheel_widget, but only if it's not
+                        // the end of a sequence.
+                        if (spontaneous && (phase == Qt::ScrollBegin || phase == Qt::ScrollUpdate) && QGuiApplicationPrivate::scrollNoPhaseAllowed)
                             QApplicationPrivate::wheel_widget = w;
                         break;
                     }
@@ -3350,25 +3381,27 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     w = w->parentWidget();
                 }
                 wheel->setAccepted(eventAccepted);
-            } else if (QApplicationPrivate::wheel_widget) {
-                if (!spontaneous) {
-                    // wheel_widget may forward the wheel event to a delegate widget,
-                    // either directly or indirectly (e.g. QAbstractScrollArea will
-                    // forward to its QScrollBars through viewportEvent()). In that
-                    // case, the event will not be spontaneous but synthesized, so
-                    // we can send it straigth to the receiver.
-                    d->notify_helper(w, wheel);
-                } else {
-                    const QPoint &relpos = QApplicationPrivate::wheel_widget->mapFromGlobal(wheel->globalPos());
-                    QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
-                                   wheel->modifiers(), wheel->phase(), wheel->source());
-                    we.spont = true;
-                    we.ignore();
-                    d->notify_helper(QApplicationPrivate::wheel_widget, &we);
-                    wheel->setAccepted(we.isAccepted());
-                    if (phase == Qt::ScrollEnd)
-                        QApplicationPrivate::wheel_widget = Q_NULLPTR;
-                }
+            } else if (!spontaneous) {
+                // wheel_widget may forward the wheel event to a delegate widget,
+                // either directly or indirectly (e.g. QAbstractScrollArea will
+                // forward to its QScrollBars through viewportEvent()). In that
+                // case, the event will not be spontaneous but synthesized, so
+                // we can send it straight to the receiver.
+                d->notify_helper(w, wheel);
+            } else {
+                // The phase is either ScrollUpdate or ScrollEnd, and wheel_widget
+                // is set. Since it accepted the wheel event previously, we continue
+                // sending those events until we get a ScrollEnd, which signifies
+                // the end of the natural scrolling sequence.
+                const QPoint &relpos = QApplicationPrivate::wheel_widget->mapFromGlobal(wheel->globalPos());
+                QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
+                               wheel->modifiers(), wheel->phase(), wheel->source());
+                we.spont = true;
+                we.ignore();
+                d->notify_helper(QApplicationPrivate::wheel_widget, &we);
+                wheel->setAccepted(we.isAccepted());
+                if (phase == Qt::ScrollEnd)
+                    QApplicationPrivate::wheel_widget = Q_NULLPTR;
             }
         }
         break;
@@ -3546,6 +3579,10 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QApplicationPrivate::giveFocusAccordingToFocusPolicy(widget, e, localPos);
         }
 
+#ifndef QT_NO_GESTURES
+        QPointer<QWidget> gesturePendingWidget;
+#endif
+
         while (widget) {
             // first, try to deliver the touch event
             acceptTouchEvents = widget->testAttribute(Qt::WA_AcceptTouchEvents);
@@ -3563,14 +3600,16 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             touchEvent->spont = false;
             if (res && eventAccepted) {
                 // the first widget to accept the TouchBegin gets an implicit grab.
-                for (int i = 0; i < touchEvent->touchPoints().count(); ++i) {
-                    const QTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().at(i);
-                    d->activeTouchPoints[QGuiApplicationPrivate::ActiveTouchPointsKey(touchEvent->device(), touchPoint.id())].target = widget;
-                }
-                break;
-            } else if (p.isNull() || widget->isWindow() || widget->testAttribute(Qt::WA_NoMousePropagation)) {
+                d->activateImplicitTouchGrab(widget, touchEvent);
                 break;
             }
+#ifndef QT_NO_GESTURES
+            if (gesturePendingWidget.isNull() && widget && QGestureManager::gesturePending(widget))
+                gesturePendingWidget = widget;
+#endif
+            if (p.isNull() || widget->isWindow() || widget->testAttribute(Qt::WA_NoMousePropagation))
+                break;
+
             QPoint offset = widget->pos();
             widget = widget->parentWidget();
             touchEvent->setTarget(widget);
@@ -3584,7 +3623,25 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             }
         }
 
+#ifndef QT_NO_GESTURES
+        if (!eventAccepted && !gesturePendingWidget.isNull()) {
+            // the first widget subscribed to a gesture gets an implicit grab
+            d->activateImplicitTouchGrab(gesturePendingWidget, touchEvent);
+        }
+#endif
+
         touchEvent->setAccepted(eventAccepted);
+        break;
+    }
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+    {
+        QWidget *widget = static_cast<QWidget *>(receiver);
+        // We may get here if the widget is subscribed to a gesture,
+        // but has not accepted TouchBegin. Propagate touch events
+        // only if TouchBegin has been accepted.
+        if (widget && widget->testAttribute(Qt::WA_WState_AcceptedTouchBeginEvent))
+            res = d->notify_helper(widget, e);
         break;
     }
     case QEvent::RequestSoftwareInputPanel:
@@ -4327,6 +4384,17 @@ QWidget *QApplicationPrivate::findClosestTouchPointTarget(QTouchDevice *device, 
     return static_cast<QWidget *>(closestTarget);
 }
 
+void QApplicationPrivate::activateImplicitTouchGrab(QWidget *widget, QTouchEvent *touchEvent)
+{
+    if (touchEvent->type() != QEvent::TouchBegin)
+        return;
+
+    for (int i = 0, tc = touchEvent->touchPoints().count(); i < tc; ++i) {
+        const QTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().at(i);
+        activeTouchPoints[QGuiApplicationPrivate::ActiveTouchPointsKey(touchEvent->device(), touchPoint.id())].target = widget;
+    }
+}
+
 bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                                                  QTouchDevice *device,
                                                  const QList<QTouchEvent::TouchPoint> &touchPoints,
@@ -4457,10 +4525,11 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                 || QGestureManager::gesturePending(widget)
 #endif
                 ) {
-                if (touchEvent.type() == QEvent::TouchEnd)
-                    widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent, false);
                 if (QApplication::sendSpontaneousEvent(widget, &touchEvent) && touchEvent.isAccepted())
                     accepted = true;
+                // widget can be deleted on TouchEnd
+                if (touchEvent.type() == QEvent::TouchEnd && !widget.isNull())
+                    widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent, false);
             }
             break;
         }

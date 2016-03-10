@@ -1931,11 +1931,14 @@ bool QODBCDriver::open(const QString & db,
     if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) {
         qSqlWarning(QLatin1String("QODBCDriver::open: Unable to allocate connection"), d);
         setOpenError(true);
+        cleanup();
         return false;
     }
 
-    if (!d->setConnectionOptions(connOpts))
+    if (!d->setConnectionOptions(connOpts)) {
+        cleanup();
         return false;
+    }
 
     // Create the connection string
     QString connQStr;
@@ -1968,6 +1971,7 @@ bool QODBCDriver::open(const QString & db,
     if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) {
         setLastError(qMakeError(tr("Unable to connect"), QSqlError::ConnectionError, d));
         setOpenError(true);
+        cleanup();
         return false;
     }
 
@@ -1975,6 +1979,7 @@ bool QODBCDriver::open(const QString & db,
         setLastError(qMakeError(tr("Unable to connect - Driver doesn't support all "
                      "functionality required"), QSqlError::ConnectionError, d));
         setOpenError(true);
+        cleanup();
         return false;
     }
 

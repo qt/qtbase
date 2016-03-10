@@ -151,6 +151,13 @@ public:
         return *this;
     }
 };
+} // namespace QJsonPrivate
+
+template <typename T>
+class QTypeInfo<QJsonPrivate::q_littleendian<T> >
+    : public QTypeInfoMerger<QJsonPrivate::q_littleendian<T>, T> {};
+
+namespace QJsonPrivate {
 
 typedef q_littleendian<short> qle_short;
 typedef q_littleendian<unsigned short> qle_ushort;
@@ -402,7 +409,7 @@ public:
             // pack with itself, we'll discard the high part anyway
             chunk = _mm_packus_epi16(chunk, chunk);
             // unaligned 64-bit store
-            *(quint64*)&l[i] = _mm_cvtsi128_si64(chunk);
+            qUnalignedStore(l + i, _mm_cvtsi128_si64(chunk));
             i += 8;
         }
 #  endif

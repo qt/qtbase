@@ -665,7 +665,8 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
             return false;
         if (WaitForSingleObjectEx(pid->hProcess, 0, false) == WAIT_OBJECT_0) {
             bool readyReadEmitted = drainOutputPipes();
-            _q_processDied();
+            if (pid)
+                _q_processDied();
             return readyReadEmitted;
         }
 
@@ -770,7 +771,8 @@ bool QProcessPrivate::waitForFinished(int msecs)
 
         if (WaitForSingleObject(pid->hProcess, timer.nextSleepTime()) == WAIT_OBJECT_0) {
             drainOutputPipes();
-            _q_processDied();
+            if (pid)
+                _q_processDied();
             return true;
         }
 

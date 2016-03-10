@@ -6,8 +6,6 @@
 TARGET = QtEglDeviceIntegration
 CONFIG += no_module_headers internal_module
 
-load(qt_module)
-
 QT += core-private gui-private platformsupport-private
 LIBS += $$QMAKE_LIBS_DYNLOAD
 
@@ -52,3 +50,5 @@ INCLUDEPATH += $$PWD
 CONFIG += egl qpa/genericunixfontdatabase
 
 !contains(DEFINES, QT_NO_CURSOR): RESOURCES += $$PWD/cursor.qrc
+
+load(qt_module)

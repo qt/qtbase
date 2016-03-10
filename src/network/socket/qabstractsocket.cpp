@@ -2180,8 +2180,10 @@ bool QAbstractSocket::waitForReadyRead(int msecs)
             return false;
     }
 
-    Q_ASSERT(d->socketEngine);
     do {
+        if (state() != ConnectedState)
+            return false;
+
         bool readyToRead = false;
         bool readyToWrite = false;
         if (!d->socketEngine->waitForReadOrWrite(&readyToRead, &readyToWrite, true, !d->writeBuffer.isEmpty(),
@@ -2203,9 +2205,6 @@ bool QAbstractSocket::waitForReadyRead(int msecs)
 
         if (readyToWrite)
             d->canWriteNotification();
-
-        if (state() != ConnectedState)
-            return false;
     } while (msecs == -1 || qt_subtract_from_timeout(msecs, stopWatch.elapsed()) > 0);
     return false;
 }

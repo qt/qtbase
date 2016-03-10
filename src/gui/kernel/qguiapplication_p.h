@@ -81,6 +81,8 @@ public:
     QGuiApplicationPrivate(int &argc, char **argv, int flags);
     ~QGuiApplicationPrivate();
 
+    void init();
+
     void createPlatformIntegration();
     void createEventDispatcher() Q_DECL_OVERRIDE;
     void eventDispatcherReady() Q_DECL_OVERRIDE;
@@ -300,6 +302,9 @@ public:
 
     static void setApplicationState(Qt::ApplicationState state, bool forcePropagate = false);
 
+    // enable the fix for QTBUG-50199; TODO remove this check in 5.7
+    static bool scrollNoPhaseAllowed;
+
 protected:
     virtual void notifyThemeChanged();
     bool tryCloseRemainingWindows(QWindowList processedWindows);
@@ -309,8 +314,6 @@ protected:
 
 private:
     friend class QDragManager;
-
-    void init();
 
     static QGuiApplicationPrivate *self;
     static QTouchDevice *m_fakeTouchDevice;

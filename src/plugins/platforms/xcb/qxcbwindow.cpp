@@ -40,6 +40,7 @@
 #include "qxcbwindow.h"
 
 #include <QtDebug>
+#include <QMetaEnum>
 #include <QScreen>
 #include <QtGui/QIcon>
 #include <QtGui/QRegion>
@@ -2063,8 +2064,9 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
     } else if (event->type == atom(QXcbAtom::_COMPIZ_DECOR_PENDING)
             || event->type == atom(QXcbAtom::_COMPIZ_DECOR_REQUEST)
             || event->type == atom(QXcbAtom::_COMPIZ_DECOR_DELETE_PIXMAP)
-            || event->type == atom(QXcbAtom::_COMPIZ_TOOLKIT_ACTION)) {
-        //silence the _COMPIZ messages for now
+            || event->type == atom(QXcbAtom::_COMPIZ_TOOLKIT_ACTION)
+            || event->type == atom(QXcbAtom::_GTK_LOAD_ICONTHEMES)) {
+        //silence the _COMPIZ and _GTK messages for now
     } else {
         qWarning() << "QXcbWindow: Unhandled client message:" << connection()->atomName(event->type);
     }
@@ -2185,7 +2187,7 @@ void QXcbWindow::handleUnmapNotifyEvent(const xcb_unmap_notify_event_t *event)
 }
 
 void QXcbWindow::handleButtonPressEvent(int event_x, int event_y, int root_x, int root_y,
-                                        int detail, Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp)
+                                        int detail, Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp, Qt::MouseEventSource source)
 {
     const bool isWheel = detail >= 4 && detail <= 7;
     if (!isWheel && window() != QGuiApplication::focusWindow()) {
@@ -2221,11 +2223,11 @@ void QXcbWindow::handleButtonPressEvent(int event_x, int event_y, int root_x, in
         return;
     }
 
-    handleMouseEvent(timestamp, local, global, modifiers);
+    handleMouseEvent(timestamp, local, global, modifiers, source);
 }
 
 void QXcbWindow::handleButtonReleaseEvent(int event_x, int event_y, int root_x, int root_y,
-                                          int detail, Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp)
+                                          int detail, Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp, Qt::MouseEventSource source)
 {
     QPoint local(event_x, event_y);
     QPoint global(root_x, root_y);
@@ -2235,7 +2237,7 @@ void QXcbWindow::handleButtonReleaseEvent(int event_x, int event_y, int root_x, 
         return;
     }
 
-    handleMouseEvent(timestamp, local, global, modifiers);
+    handleMouseEvent(timestamp, local, global, modifiers, source);
 }
 
 static bool ignoreLeaveEvent(quint8 mode, quint8 detail)
@@ -2318,11 +2320,11 @@ void QXcbWindow::handleLeaveNotifyEvent(int root_x, int root_y,
 }
 
 void QXcbWindow::handleMotionNotifyEvent(int event_x, int event_y, int root_x, int root_y,
-                                         Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp)
+                                         Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp, Qt::MouseEventSource source)
 {
     QPoint local(event_x, event_y);
     QPoint global(root_x, root_y);
-    handleMouseEvent(timestamp, local, global, modifiers);
+    handleMouseEvent(timestamp, local, global, modifiers, source);
 }
 
 // Handlers for plain xcb events. Used only when XI 2.2 or newer is not available.
@@ -2353,7 +2355,7 @@ static inline int fixed1616ToInt(FP1616 val)
 }
 
 // With XI 2.2+ press/release/motion comes here instead of the above handlers.
-void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event)
+void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event, Qt::MouseEventSource source)
 {
     QXcbConnection *conn = connection();
     xXIDeviceEvent *ev = reinterpret_cast<xXIDeviceEvent *>(event);
@@ -2373,20 +2375,27 @@ void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event)
             conn->setButton(conn->translateMouseButton(i), XIMaskIsSet(buttonMask, i));
     }
 
+    const char *sourceName = nullptr;
+    if (lcQpaXInput().isDebugEnabled()) {
+        const QMetaObject *metaObject = qt_getEnumMetaObject(source);
+        const QMetaEnum me = metaObject->enumerator(metaObject->indexOfEnumerator(qt_getEnumName(source)));
+        sourceName = me.valueToKey(source);
+    }
+
     switch (ev->evtype) {
     case XI_ButtonPress:
-        qCDebug(lcQpaXInput, "XI2 mouse press, button %d, time %d", button, ev->time);
+        qCDebug(lcQpaXInput, "XI2 mouse press, button %d, time %d, source %s", button, ev->time, sourceName);
         conn->setButton(button, true);
-        handleButtonPressEvent(event_x, event_y, root_x, root_y, ev->detail, modifiers, ev->time);
+        handleButtonPressEvent(event_x, event_y, root_x, root_y, ev->detail, modifiers, ev->time, source);
         break;
     case XI_ButtonRelease:
-        qCDebug(lcQpaXInput, "XI2 mouse release, button %d, time %d", button, ev->time);
+        qCDebug(lcQpaXInput, "XI2 mouse release, button %d, time %d, source %s", button, ev->time, sourceName);
         conn->setButton(button, false);
-        handleButtonReleaseEvent(event_x, event_y, root_x, root_y, ev->detail, modifiers, ev->time);
+        handleButtonReleaseEvent(event_x, event_y, root_x, root_y, ev->detail, modifiers, ev->time, source);
         break;
     case XI_Motion:
-        qCDebug(lcQpaXInput, "XI2 mouse motion %d,%d, time %d", event_x, event_y, ev->time);
-        handleMotionNotifyEvent(event_x, event_y, root_x, root_y, modifiers, ev->time);
+        qCDebug(lcQpaXInput, "XI2 mouse motion %d,%d, time %d, source %s", event_x, event_y, ev->time, sourceName);
+        handleMotionNotifyEvent(event_x, event_y, root_x, root_y, modifiers, ev->time, source);
         break;
     default:
         qWarning() << "Unrecognized XI2 mouse event" << ev->evtype;
@@ -2429,10 +2438,11 @@ void QXcbWindow::handleXIEnterLeave(xcb_ge_event_t *event)
 
 QXcbWindow *QXcbWindow::toWindow() { return this; }
 
-void QXcbWindow::handleMouseEvent(xcb_timestamp_t time, const QPoint &local, const QPoint &global, Qt::KeyboardModifiers modifiers)
+void QXcbWindow::handleMouseEvent(xcb_timestamp_t time, const QPoint &local, const QPoint &global,
+        Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source)
 {
     connection()->setTime(time);
-    QWindowSystemInterface::handleMouseEvent(window(), time, local, global, connection()->buttons(), modifiers);
+    QWindowSystemInterface::handleMouseEvent(window(), time, local, global, connection()->buttons(), modifiers, source);
 }
 
 void QXcbWindow::handleEnterNotifyEvent(const xcb_enter_notify_event_t *event)
