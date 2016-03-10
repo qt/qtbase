@@ -2388,22 +2388,6 @@ void Configure::autoDetection()
         }
     }
 
-    if (!dictionary["QMAKESPEC"].contains("msvc")) {
-        if (tryCompileProject("common/c++default", QString(), false)) {
-            QFile iiFile(buildPath + "/config.tests/common/c++default/c++default.ii");
-            if (iiFile.open(QIODevice::ReadOnly)) {
-                QString content = QString::fromUtf8(iiFile.readAll());
-                QRegExp expr("\\b([0-9]+)L\\b");
-                if (expr.indexIn(content) != -1)
-                    dictionary["CFG_STDCXX_DEFAULT"] = expr.cap(1);
-            }
-        }
-        if (dictionary["CFG_STDCXX_DEFAULT"].isEmpty()) {
-            cout << "Could not determine the C++ standard the compiler uses by default, assuming C++98." << endl;
-            dictionary["CFG_STDCXX_DEFAULT"] = "199711";
-        }
-    }
-
     if (dictionary["ATOMIC64"] == "auto")
         dictionary["ATOMIC64"] = checkAvailability("ATOMIC64") ? "yes" :
                                  checkAvailability("ATOMIC64-LIBATOMIC") ? "libatomic" : "no";
@@ -2756,8 +2740,6 @@ void Configure::generateOutputVars()
         qtConfig += "c++11 c++14";
     else if (dictionary[ "C++STD" ] == "c++1z")
         qtConfig += "c++11 c++14 c++1z";
-    if (!dictionary[ "CFG_STDCXX_DEFAULT" ].isEmpty())
-        qmakeVars += "QT_COMPILER_STDCXX = " + dictionary[ "CFG_STDCXX_DEFAULT" ];
 
     if (dictionary[ "USE_GOLD_LINKER" ] == "yes")
         qmakeConfig += "use_gold_linker";

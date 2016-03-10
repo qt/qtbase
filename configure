@@ -4427,21 +4427,6 @@ if $stdcxx_error && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
     exit 101
 fi
 
-# Detect which edition of the C++ standard the compiler defaults to
-CFG_STDCXX_DEFAULT=199711
-if compileTest common/c++default "default C++ standard edition"; then
-    if [ -e "$outpath/config.tests/common/c++default/c++default.ii" ]; then
-        CFG_STDCXX_DEFAULT=`sed -n '/^[0-9]/s/L//p' "$outpath/config.tests/common/c++default/c++default.ii"`
-    else
-        if [ "$OPT_VERBOSE" = "yes" ]; then
-            echo "Failed to run the preprocessor, something is wrong with your compiler"
-        fi
-        if [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-            exit 101
-        fi
-    fi
-fi
-
 # Detect whether 64-bit std::atomic works -- some 32-bit platforms require extra library support
 if compileTest common/atomic64 "64-bit std::atomic"; then
     CFG_ATOMIC64=yes
@@ -6941,7 +6926,6 @@ fi
 if [ -n "$RPATH_FLAGS" ]; then
     echo "QMAKE_RPATHDIR += $RPATH_FLAGS"
 fi
-echo "QT_COMPILER_STDCXX = $CFG_STDCXX_DEFAULT"
 if [ -n "$QT_GCC_MAJOR_VERSION" ]; then
     echo "QT_GCC_MAJOR_VERSION = $QT_GCC_MAJOR_VERSION"
     echo "QT_GCC_MINOR_VERSION = $QT_GCC_MINOR_VERSION"
