@@ -43,20 +43,6 @@
 #include <QtSql/private/qsqldriver_p.h>
 #include <QtTest/QtTest>
 
-#if defined(Q_OS_WIN)
-#  include <qt_windows.h>
-#  if defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
-#    include <winsock2.h>
-#  endif
-#else
-#include <unistd.h>
-#endif
-#if defined(Q_OS_WINRT)
-   static inline int qgethostname(char *name, int) { qstrcpy(name, "localhost"); return 9; }
-#else
-#  define qgethostname gethostname
-#endif
-
 #define CHECK_DATABASE( db ) \
     if ( !db.isValid() ) { qFatal( "db is Invalid" ); }
 
@@ -71,16 +57,10 @@ static QString qGetHostName()
 {
     static QString hostname;
 
-    if ( !hostname.isEmpty() )
-        return hostname;
-
-    char hn[257];
-
-    if ( qgethostname( hn, 255 ) == 0 ) {
-        hn[256] = '\0';
-        hostname = QString::fromLatin1( hn );
-        hostname.replace( QLatin1Char( '.' ), QLatin1Char( '_' ) );
-        hostname.replace( QLatin1Char( '-' ), QLatin1Char( '_' ) );
+    if (hostname.isEmpty()) {
+        hostname = QSysInfo::machineHostName();
+        hostname.replace(QLatin1Char( '.' ), QLatin1Char( '_' ));
+        hostname.replace(QLatin1Char( '-' ), QLatin1Char( '_' ));
     }
 
     return hostname;
