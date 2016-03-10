@@ -409,6 +409,7 @@ QCocoaWindow::~QCocoaWindow()
 #endif
 
     QMacAutoReleasePool pool;
+    [m_nsWindow makeFirstResponder:nil];
     [m_nsWindow setContentView:nil];
     [m_nsWindow.helper detachFromPlatformWindow];
     if (m_isNSWindowChild) {
@@ -990,7 +991,15 @@ void QCocoaWindow::raise()
             [parentNSWindow removeChildWindow:m_nsWindow];
             [parentNSWindow addChildWindow:m_nsWindow ordered:NSWindowAbove];
         } else {
-            [m_nsWindow orderFront: m_nsWindow];
+            {
+                // Clean up autoreleased temp objects from orderFront immediately.
+                // Failure to do so has been observed to cause leaks also beyond any outer
+                // autorelease pool (for example around a complete QWindow
+                // construct-show-raise-hide-delete cyle), counter to expected autoreleasepool
+                // behavior.
+                QMacAutoReleasePool pool;
+                [m_nsWindow orderFront: m_nsWindow];
+            }
             static bool raiseProcess = qt_mac_resolveOption(true, "QT_MAC_SET_RAISE_PROCESS");
             if (raiseProcess) {
                 ProcessSerialNumber psn;
