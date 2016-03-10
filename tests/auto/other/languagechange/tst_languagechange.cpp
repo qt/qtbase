@@ -281,9 +281,6 @@ void tst_languageChange::retranslatability()
         fooFile.write("test");
         fooFile.close();
         dlg.setDirectory(temporaryDir.path());
-#ifdef Q_OS_WINCE
-        dlg.setDirectory("\\Windows");
-#endif
         dlg.setFileMode(QFileDialog::ExistingFiles);
         dlg.setViewMode(QFileDialog::Detail);
         stateMachine.start();
@@ -295,13 +292,8 @@ void tst_languageChange::retranslatability()
     // In case we use a Color dialog, we do not want to test for
     // strings non existing in the dialog and which do not get
     // translated.
-    if ((dialogType == ColorDialog) &&
-#ifndef Q_OS_WINCE
-        (qApp->desktop()->width() < 480 || qApp->desktop()->height() < 350)
-#else
-        true // On Qt/WinCE we always use compact mode
-#endif
-        ) {
+    const QSize desktopSize = QApplication::desktop()->size();
+    if (dialogType == ColorDialog && (desktopSize.width() < 480 || desktopSize.height() < 350)) {
         expected.remove("QColorDialog::&Basic colors");
         expected.remove("QColorDialog::&Custom colors");
         expected.remove("QColorDialog::&Define Custom Colors >>");

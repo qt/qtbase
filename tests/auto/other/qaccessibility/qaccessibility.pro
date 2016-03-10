@@ -7,12 +7,6 @@ HEADERS += accessiblewidgets.h
 
 unix:!darwin:!haiku:!integity: LIBS += -lm
 
-wince {
-	accessneeded.files = $$QT_BUILD_TREE\\plugins\\accessible\\*.dll
-	accessneeded.path = accessible
-	DEPLOYMENT += accessneeded
-}
-
 win32 {
     !*g++:!winrt {
         include(../../../../src/3rdparty/iaccessible2/iaccessible2.pri)

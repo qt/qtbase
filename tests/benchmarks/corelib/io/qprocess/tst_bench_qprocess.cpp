@@ -33,7 +33,7 @@ class tst_QProcess : public QObject
 {
     Q_OBJECT
 
-#if !defined(QT_NO_PROCESS) && !defined(Q_OS_WINCE)
+#if !defined(QT_NO_PROCESS)
 private slots:
 
     void echoTest_performance();
@@ -41,8 +41,7 @@ private slots:
 #endif // QT_NO_PROCESS
 };
 
-#if !defined(QT_NO_PROCESS) && !defined(Q_OS_WINCE)
-// Reading and writing to a process is not supported on Qt/CE
+#if !defined(QT_NO_PROCESS)
 void tst_QProcess::echoTest_performance()
 {
     QProcess process;
@@ -88,7 +87,7 @@ void tst_QProcess::echoTest_performance()
     QVERIFY(process.waitForFinished());
 }
 
-#endif // QT_NO_PROCESS && Q_OS_WINCE
+#endif // QT_NO_PROCESS
 
 QTEST_MAIN(tst_QProcess)
 #include "tst_bench_qprocess.moc"

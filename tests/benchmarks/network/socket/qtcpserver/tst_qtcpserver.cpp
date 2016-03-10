@@ -166,9 +166,6 @@ void tst_QTcpServer::ipv6LoopbackPerformanceTest()
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
-#if defined(Q_OS_WINCE_WM)
-    QSKIP("WinCE WM: Not yet supported");
-#endif
 
     QTcpServer server;
     if (!server.listen(QHostAddress::LocalHostIPv6, 0)) {

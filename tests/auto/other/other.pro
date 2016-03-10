@@ -21,7 +21,6 @@ SUBDIRS=\
    qsharedpointer_and_qwidget \
    qprocess_and_guieventloop \
    qtokenautomaton \
-   windowsmobile \
    toolsupport \
 
 !qtHaveModule(widgets): SUBDIRS -= \
@@ -48,7 +47,7 @@ cross_compile: SUBDIRS -= \
    atwrapper \
    compiler
 
-wince*|!contains(QT_CONFIG, accessibility): SUBDIRS -= qaccessibility
+!contains(QT_CONFIG, accessibility): SUBDIRS -= qaccessibility
 
 !contains(QT_CONFIG, accessibility-atspi-bridge): SUBDIRS -= qaccessibilitylinux
 
@@ -58,7 +57,7 @@ wince*|!contains(QT_CONFIG, accessibility): SUBDIRS -= qaccessibility
            macplist \
            qaccessibilitymac
 
-!embedded|wince: SUBDIRS -= \
+!embedded: SUBDIRS -= \
            qdirectpainter
 
 winrt: SUBDIRS -= \

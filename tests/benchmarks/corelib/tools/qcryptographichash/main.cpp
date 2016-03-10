@@ -34,15 +34,6 @@
 
 #include <time.h>
 
-#ifdef Q_OS_WINCE
-// no C89 time() on Windows CE:
-// http://blogs.msdn.com/b/cenet/archive/2006/04/29/time-h-on-windows-ce.aspx
-uint time(void *)
-{
-    return uint(-1);
-}
-#endif
-
 class tst_bench_QCryptographicHash : public QObject
 {
     Q_OBJECT

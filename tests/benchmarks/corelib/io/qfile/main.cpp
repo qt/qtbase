@@ -591,12 +591,7 @@ void tst_qfile::createSmallFiles()
     dir.cd("tst");
     tmpDirName = dir.absolutePath();
 
-#if defined(Q_OS_WINCE)
-    for (int i = 0; i < 100; ++i)
-#else
-    for (int i = 0; i < 1000; ++i)
-#endif
-    {
+    for (int i = 0; i < 1000; ++i) {
         QFile f(tmpDirName + QLatin1Char('/') + QString::number(i));
         f.open(QIODevice::WriteOnly);
         f.seek(511);

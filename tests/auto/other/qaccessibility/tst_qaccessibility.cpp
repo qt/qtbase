@@ -68,20 +68,6 @@ static inline void setFrameless(QWidget *w)
     w->setWindowFlags(flags);
 }
 
-#if defined(Q_OS_WINCE)
-extern "C" bool SystemParametersInfo(UINT uiAction, UINT uiParam, PVOID pvParam, UINT fWinIni);
-#define SPI_GETPLATFORMTYPE 257
-inline bool IsValidCEPlatform() {
-    wchar_t tszPlatform[64];
-    if (SystemParametersInfo(SPI_GETPLATFORMTYPE, sizeof(tszPlatform) / sizeof(*tszPlatform), tszPlatform, 0)) {
-        QString platform = QString::fromWCharArray(tszPlatform);
-        if ((platform == QLatin1String("PocketPC")) || (platform == QLatin1String("Smartphone")))
-            return false;
-    }
-    return true;
-}
-#endif
-
 static inline bool verifyChild(QWidget *child, QAccessibleInterface *interface,
                                int index, const QRect &domain)
 {
@@ -1469,10 +1455,6 @@ void tst_QAccessibility::menuTest()
     QCOMPARE(iHelp->role(), QAccessible::MenuItem);
     QCOMPARE(iAction->role(), QAccessible::MenuItem);
 #ifndef Q_OS_MAC
-#ifdef Q_OS_WINCE
-    if (!IsValidCEPlatform())
-        QSKIP("Tests do not work on Mobile platforms due to native menus");
-#endif
     QCOMPARE(mw.mapFromGlobal(interface->rect().topLeft()), mw.menuBar()->geometry().topLeft());
     QCOMPARE(interface->rect().size(), mw.menuBar()->size());
 
@@ -3561,10 +3543,6 @@ void tst_QAccessibility::dockWidgetTest()
 
 void tst_QAccessibility::comboBoxTest()
 {
-#if defined(Q_OS_WINCE)
-    if (!IsValidCEPlatform())
-        QSKIP("Test skipped on Windows Mobile test hardware");
-#endif
     { // not editable combobox
     QComboBox combo;
     combo.addItems(QStringList() << "one" << "two" << "three");

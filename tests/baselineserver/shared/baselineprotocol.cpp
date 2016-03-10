@@ -94,9 +94,6 @@ PlatformInfo PlatformInfo::localHostInfo()
     uname.start(QLS("uname"), QStringList() << QLS("-r"));
     if (uname.waitForFinished(3000))
         pi.insert(PI_OSVersion, QString::fromLocal8Bit(uname.readAllStandardOutput().constData()).simplified());
-#elif defined(Q_OS_WINCE)
-    pi.insert(PI_OSName, QLS("WinCE"));
-    pi.insert(PI_OSVersion, QString::number(QSysInfo::windowsVersion()));
 #elif defined(Q_OS_WIN)
     pi.insert(PI_OSName, QLS("Windows"));
     pi.insert(PI_OSVersion, QString::number(QSysInfo::windowsVersion()));
