@@ -861,7 +861,7 @@ void QFontconfigDatabase::setupFontEngine(QFontEngineFT *engine, const QFontDef 
 
     const QPlatformServices *services = QGuiApplicationPrivate::platformIntegration()->services();
     bool useXftConf = (services && (services->desktopEnvironment() == "GNOME" || services->desktopEnvironment() == "UNITY"));
-    if (useXftConf) {
+    if (useXftConf && !forcedAntialiasSetting) {
         void *antialiasResource =
                 QGuiApplication::platformNativeInterface()->nativeResourceForScreen("antialiasingEnabled",
                                                                                     QGuiApplication::primaryScreen());
