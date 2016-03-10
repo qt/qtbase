@@ -637,10 +637,6 @@ CFG_XRANDR=runtime
 CFG_XRENDER=auto
 CFG_MITSHM=auto
 CFG_OPENGL=auto
-CFG_OPENVG=auto
-CFG_OPENVG_LC_INCLUDES=no
-CFG_OPENVG_SHIVA=auto
-CFG_OPENVG_ON_OPENGL=auto
 CFG_EGL=auto
 CFG_EGL_X=auto
 CFG_DOUBLECONVERSION=auto
@@ -998,16 +994,6 @@ while [ "$#" -gt 0 ]; do
             VAL=$1
         fi
 	;;
-    -openvg)
-        VAR=openvg
-        # this option may or may not be followed by an argument
-        if [ -z "$2" ] || echo "$2" | grep '^-' >/dev/null 2>&1; then
-            VAL=yes
-        else
-            shift;
-            VAL=$1
-        fi
-        ;;
     -gstreamer)
         VAR=gstreamer
         # this option may or may not be followed by an argument
@@ -1278,13 +1264,6 @@ while [ "$#" -gt 0 ]; do
             [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] ||
             [ "$VAL" = "es2" ]; then
             CFG_OPENGL="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    openvg)
-        if [ "$VAL" = "auto" ] || [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_OPENVG="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -6194,44 +6173,6 @@ if [ "$CFG_PCRE" != "qt" ]; then
     fi
 fi
 
-# detect OpenVG support
-if [ "$CFG_OPENVG" != "no" ]; then
-    if compileTest unix/openvg "OpenVG"; then
-        if [ "$CFG_OPENVG" = "auto" ]; then
-            CFG_OPENVG=yes
-        fi
-    elif compileTest unix/openvg "OpenVG" -config openvg_on_opengl; then
-        if [ "$CFG_OPENVG" = "auto" ]; then
-            CFG_OPENVG=yes
-        fi
-        CFG_OPENVG_ON_OPENGL=yes
-    elif compileTest unix/openvg "OpenVG (lc includes)" -config lower_case_includes; then
-        if [ "$CFG_OPENVG" = "auto" ]; then
-            CFG_OPENVG=yes
-        fi
-        CFG_OPENVG_LC_INCLUDES=yes
-    elif compileTest unix/openvg "OpenVG (lc includes)" -config "openvg_on_opengl lower_case_includes"; then
-        if [ "$CFG_OPENVG" = "auto" ]; then
-            CFG_OPENVG=yes
-        fi
-        CFG_OPENVG_LC_INCLUDES=yes
-        CFG_OPENVG_ON_OPENGL=yes
-    else
-        if [ "$CFG_OPENVG" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-            echo "$CFG_OPENVG was specified for OpenVG but cannot be enabled due to functionality tests!"
-            echo " Turn on verbose messaging (-v) to $0 to see the final report."
-            echo " If you believe this message is in error you may use the continue"
-            echo " switch (-continue) to $0 to continue."
-            exit 101
-        else
-            CFG_OPENVG=no
-        fi
-    fi
-    if [ "$CFG_OPENVG" = "yes" ] && compileTest unix/shivavg "ShivaVG"; then
-        CFG_OPENVG_SHIVA=yes
-    fi
-fi
-
 if [ "$CFG_ALSA" = "auto" ]; then
     if compileTest unix/alsa "alsa"; then
         CFG_ALSA=yes
@@ -6353,23 +6294,6 @@ if [ "$CFG_EGLFS_VIV" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG eglfs_viv"
     if [ "$CFG_EGLFS_VIV_WL" = "yes" ]; then
         QT_CONFIG="$QT_CONFIG eglfs_viv_wl"
-    fi
-fi
-
-# enable openvg
-if [ "$CFG_OPENVG" = "no" ]; then
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_OPENVG"
-else
-    QT_CONFIG="$QT_CONFIG openvg"
-    if [ "$CFG_OPENVG_LC_INCLUDES" = "yes" ]; then
-        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_LOWER_CASE_VG_INCLUDES"
-    fi
-    if [ "$CFG_OPENVG_ON_OPENGL" = "yes" ]; then
-        QT_CONFIG="$QT_CONFIG openvg_on_opengl"
-    fi
-    if [ "$CFG_OPENVG_SHIVA" = "yes" ]; then
-        QT_CONFIG="$QT_CONFIG shivavg"
-        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_SHIVAVG"
     fi
 fi
 
@@ -7309,7 +7233,6 @@ report_support "  NIS ...................." "$CFG_NIS"
 report_support "  OpenGL / OpenVG:"
 report_support "    EGL .................." "$CFG_EGL"
 report_support "    OpenGL ..............." "$CFG_OPENGL" yes "Desktop OpenGL" es2 "OpenGL ES 2.0+"
-report_support "    OpenVG ..............." "$CFG_OPENVG-$CFG_OPENVG_SHIVA" yes-yes "ShivaVG" yes-no "native"
 report_support "  PCRE ..................." "$CFG_PCRE" yes "system library" qt "bundled copy"
 if [ -n "$PKG_CONFIG" ]; then
     report_support "  pkg-config ............. yes"

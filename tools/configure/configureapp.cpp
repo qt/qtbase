@@ -264,7 +264,6 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     dictionary[ "ACCESSIBILITY" ]   = "yes";
     dictionary[ "OPENGL" ]          = "yes";
     dictionary[ "OPENGL_ES_2" ]     = "yes";
-    dictionary[ "OPENVG" ]          = "no";
     dictionary[ "SSL" ]             = "auto";
     dictionary[ "OPENSSL" ]         = "auto";
     dictionary[ "LIBPROXY" ]        = "auto";
@@ -744,13 +743,6 @@ void Configure::parseCmdLine()
                 dictionary[ "DONE" ] = "error";
                 break;
             }
-        }
-
-        // OpenVG Support -------------------------------------------
-        else if (configCmdLine.at(i) == "-openvg") {
-            dictionary[ "OPENVG" ]    = "yes";
-        } else if (configCmdLine.at(i) == "-no-openvg") {
-            dictionary[ "OPENVG" ]    = "no";
         }
 
         // Databases ------------------------------------------------
@@ -1680,7 +1672,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "FREETYPE" ]            = "yes";
         dictionary[ "OPENGL" ]              = "yes";
         dictionary[ "OPENGL_ES_2" ]         = "yes";
-        dictionary[ "OPENVG" ]              = "no";
         dictionary[ "SSL" ]                 = "yes";
         dictionary[ "OPENSSL" ]             = "no";
         dictionary[ "DBUS" ]                = "no";
@@ -1884,8 +1875,6 @@ bool Configure::displayHelp()
         desc("", "no", "",                              "  dynamic - Enable support for dynamically loaded OpenGL (either desktop or ES)", ' ');
         desc("OPENGL_ES_2",  "yes", "",                 "  es2 - Enable support for OpenGL ES 2.0\n", ' ');
 
-        desc("OPENVG", "no","-no-openvg",               "Disables OpenVG functionality.");
-        desc("OPENVG", "yes","-openvg",                 "Enables OpenVG functionality.\n");
         desc(                   "-force-asserts",       "Activate asserts in release mode.\n");
         desc(                   "-platform <spec>",     "The operating system and compiler you are building on.\n(default %QMAKESPEC%)\n");
         desc(                   "-xplatform <spec>",    "The operating system and compiler you are cross compiling to.\n");
@@ -2995,11 +2984,6 @@ void Configure::generateOutputVars()
         qtConfig += "egl";
     }
 
-    if (dictionary["OPENVG"] == "yes") {
-        qtConfig += "openvg";
-        qtConfig += "egl";
-    }
-
     if (dictionary[ "SSL" ] == "yes")
         qtConfig += "ssl";
 
@@ -3757,7 +3741,6 @@ void Configure::generateConfigfiles()
         if (dictionary["WIDGETS"] == "no")           qconfigList += "QT_NO_WIDGETS";
         if (dictionary["GUI"] == "no")               qconfigList += "QT_NO_GUI";
         if (dictionary["OPENGL"] == "no")            qconfigList += "QT_NO_OPENGL";
-        if (dictionary["OPENVG"] == "no")            qconfigList += "QT_NO_OPENVG";
         if (dictionary["SSL"] == "no")               qconfigList += "QT_NO_SSL";
         if (dictionary["OPENSSL"] == "no")           qconfigList += "QT_NO_OPENSSL";
         if (dictionary["OPENSSL"] == "linked")       qconfigList += "QT_LINKED_OPENSSL";
@@ -3917,7 +3900,6 @@ void Configure::displayConfig()
     sout << "eventfd(7) support.........." << dictionary[ "QT_EVENTFD" ] << endl;
     sout << "Glib support................" << dictionary[ "QT_GLIB" ] << endl;
     sout << "CUPS support................" << dictionary[ "QT_CUPS" ] << endl;
-    sout << "OpenVG support.............." << dictionary[ "OPENVG" ] << endl;
     sout << "SSL support................." << dictionary[ "SSL" ] << endl;
     sout << "OpenSSL support............." << dictionary[ "OPENSSL" ] << endl;
     sout << "libproxy support............" << dictionary[ "LIBPROXY" ] << endl;
