@@ -85,11 +85,8 @@ QT_BEGIN_NAMESPACE
 #define TT_PRIM_CSPLINE 3
 #endif
 
-#ifdef MAKE_TAG
-#undef MAKE_TAG
-#endif
 // GetFontData expects the tags in little endian ;(
-#define MAKE_TAG(ch1, ch2, ch3, ch4) (\
+#define MAKE_LITTLE_ENDIAN_TAG(ch1, ch2, ch3, ch4) (\
     (((quint32)(ch4)) << 24) | \
     (((quint32)(ch3)) << 16) | \
     (((quint32)(ch2)) << 8) | \
@@ -142,28 +139,28 @@ bool QWindowsFontEngine::hasCFFTable() const
 {
     HDC hdc = m_fontEngineData->hdc;
     SelectObject(hdc, hfont);
-    return GetFontData(hdc, MAKE_TAG('C', 'F', 'F', ' '), 0, 0, 0) != GDI_ERROR;
+    return GetFontData(hdc, MAKE_LITTLE_ENDIAN_TAG('C', 'F', 'F', ' '), 0, 0, 0) != GDI_ERROR;
 }
 
 bool QWindowsFontEngine::hasCMapTable() const
 {
     HDC hdc = m_fontEngineData->hdc;
     SelectObject(hdc, hfont);
-    return GetFontData(hdc, MAKE_TAG('c', 'm', 'a', 'p'), 0, 0, 0) != GDI_ERROR;
+    return GetFontData(hdc, MAKE_LITTLE_ENDIAN_TAG('c', 'm', 'a', 'p'), 0, 0, 0) != GDI_ERROR;
 }
 
 bool QWindowsFontEngine::hasGlyfTable() const
 {
     HDC hdc = m_fontEngineData->hdc;
     SelectObject(hdc, hfont);
-    return GetFontData(hdc, MAKE_TAG('g', 'l', 'y', 'f'), 0, 0, 0) != GDI_ERROR;
+    return GetFontData(hdc, MAKE_LITTLE_ENDIAN_TAG('g', 'l', 'y', 'f'), 0, 0, 0) != GDI_ERROR;
 }
 
 bool QWindowsFontEngine::hasEbdtTable() const
 {
     HDC hdc = m_fontEngineData->hdc;
     SelectObject(hdc, hfont);
-    return GetFontData(hdc, MAKE_TAG('E', 'B', 'D', 'T'), 0, 0, 0) != GDI_ERROR;
+    return GetFontData(hdc, MAKE_LITTLE_ENDIAN_TAG('E', 'B', 'D', 'T'), 0, 0, 0) != GDI_ERROR;
 }
 
 static inline QString stringFromOutLineTextMetric(const OUTLINETEXTMETRIC *otm, PSTR offset)
@@ -182,7 +179,7 @@ void QWindowsFontEngine::getCMap()
     SelectObject(hdc, hfont);
     bool symb = false;
     if (ttf) {
-        cmapTable = getSfntTable(qbswap<quint32>(MAKE_TAG('c', 'm', 'a', 'p')));
+        cmapTable = getSfntTable(MAKE_TAG('c', 'm', 'a', 'p'));
         cmap = QFontEngine::getCMap(reinterpret_cast<const uchar *>(cmapTable.constData()),
                        cmapTable.size(), &symb, &cmapSize);
     }
@@ -956,7 +953,7 @@ int QWindowsFontEngine::synthesized() const
     if(synthesized_flags == -1) {
         synthesized_flags = 0;
         if(ttf) {
-            const DWORD HEAD = MAKE_TAG('h', 'e', 'a', 'd');
+            const DWORD HEAD = MAKE_LITTLE_ENDIAN_TAG('h', 'e', 'a', 'd');
             HDC hdc = m_fontEngineData->hdc;
             SelectObject(hdc, hfont);
             uchar data[4];
