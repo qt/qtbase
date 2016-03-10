@@ -327,6 +327,15 @@ static void indexesFromRange(const QItemSelectionRange &range, ModelIndexContain
     }
 }
 
+template<typename ModelIndexContainer>
+static ModelIndexContainer qSelectionIndexes(const QItemSelection &selection)
+{
+    ModelIndexContainer result;
+    for (const auto &range : selection)
+        indexesFromRange(range, result);
+    return result;
+}
+
 /*!
     Returns \c true if the selection range contains no selectable item
     \since 4.7
@@ -469,20 +478,7 @@ bool QItemSelection::contains(const QModelIndex &index) const
 
 QModelIndexList QItemSelection::indexes() const
 {
-    QModelIndexList result;
-    QList<QItemSelectionRange>::const_iterator it = begin();
-    for (; it != end(); ++it)
-        indexesFromRange(*it, result);
-    return result;
-}
-
-static QVector<QPersistentModelIndex> qSelectionPersistentindexes(const QItemSelection &sel)
-{
-    QVector<QPersistentModelIndex> result;
-    QList<QItemSelectionRange>::const_iterator it = sel.constBegin();
-    for (; it != sel.constEnd(); ++it)
-        indexesFromRange(*it, result);
-    return result;
+    return qSelectionIndexes<QModelIndexList>(*this);
 }
 
 static QVector<QPair<QPersistentModelIndex, uint> > qSelectionPersistentRowLengths(const QItemSelection &sel)
@@ -892,8 +888,8 @@ void QItemSelectionModelPrivate::_q_layoutAboutToBeChanged(const QList<QPersiste
         savedPersistentRowLengths = qSelectionPersistentRowLengths(ranges);
         savedPersistentCurrentRowLengths = qSelectionPersistentRowLengths(currentSelection);
     } else {
-        savedPersistentIndexes = qSelectionPersistentindexes(ranges);
-        savedPersistentCurrentIndexes = qSelectionPersistentindexes(currentSelection);
+        savedPersistentIndexes = qSelectionIndexes<QVector<QPersistentModelIndex>>(ranges);
+        savedPersistentCurrentIndexes = qSelectionIndexes<QVector<QPersistentModelIndex>>(currentSelection);
     }
 }
 /*!
