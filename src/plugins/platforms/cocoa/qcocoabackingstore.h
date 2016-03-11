@@ -51,7 +51,11 @@ public:
 
     QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
     void flush(QWindow *widget, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
+#ifndef QT_NO_OPENGL
     QImage toImage() const Q_DECL_OVERRIDE;
+#else
+    QImage toImage() const; // No QPlatformBackingStore::toImage() for NO_OPENGL builds.
+#endif
     void resize (const QSize &size, const QRegion &) Q_DECL_OVERRIDE;
     bool scroll(const QRegion &area, int dx, int dy) Q_DECL_OVERRIDE;
     void beginPaint(const QRegion &region) Q_DECL_OVERRIDE;
