@@ -905,7 +905,8 @@ void tst_QXmlStream::testFalsePrematureError() const
 // Regression test for crash due to using empty QStack.
 void tst_QXmlStream::writerHangs() const
 {
-    QFile file("test.xml");
+    QTemporaryDir dir(QDir::tempPath() + QLatin1String("/tst_qxmlstream.XXXXXX"));
+    QFile file(dir.path() + "/test.xml");
 
     QVERIFY(file.open(QIODevice::WriteOnly));
 
