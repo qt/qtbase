@@ -155,6 +155,10 @@ void tst_QDoubleValidator::validate_data()
     QTest::newRow("data48")  << "C" << 0.0 << 100.0 << 1 << QString("0.0") << ACC << ACC;
     QTest::newRow("data49")  << "C" << 0.0 << 100.0 << 0 << QString(".") << ITM << ITM;
     QTest::newRow("data50")  << "C" << 0.0 << 100.0 << 1 << QString(".") << ITM << ITM;
+    QTest::newRow("data51")  << "C" << 0.0 << 2.0 << 2 << QString("9.99") << ITM << ITM;
+    QTest::newRow("data52")  << "C" << 100.0 << 200.0 << 4 << QString("999.9999") << ITM << ITM;
+    QTest::newRow("data53")  << "C" << 0.0 << 2.0 << 2 << QString("9.9999") << INV << INV;
+    QTest::newRow("data54")  << "C" << 100.0 << 200.0 << 4 << QString("9999.9999") << ITM << INV;
 
     QTest::newRow("data_de0")  << "de" << 0.0 << 100.0 << 1 << QString("50,0") << ACC << ACC;
     QTest::newRow("data_de1")  << "de" << 00.0 << 100.0 << 1 << QString("500,0") << ITM << ITM;
@@ -206,6 +210,10 @@ void tst_QDoubleValidator::validate_data()
     QTest::newRow("data_de43") << "de" << 0.01 << 0.09 << 2 << QString("0") << ITM << ITM;
     QTest::newRow("data_de44") << "de" << 0.0 << 10.0 << 1 << QString("11") << ITM << ITM;
     QTest::newRow("data_de45") << "de" << 0.0 << 10.0 << 2 << QString("11") << ITM << ITM;
+    QTest::newRow("data_de46") << "de" << 0.0 << 2.0 << 2 << QString("9,99") << ITM << ITM;
+    QTest::newRow("data_de47") << "de" << 100.0 << 200.0 << 4 << QString("999,9999") << ITM << ITM;
+    QTest::newRow("data_de48") << "de" << 0.0 << 2.0 << 2 << QString("9,9999") << INV << INV;
+    QTest::newRow("data_de49") << "de" << 100.0 << 200.0 << 4 << QString("9999,9999") << ITM << INV;
 
     QString arabicNum;
     arabicNum += QChar(1633); // "18.4" in arabic

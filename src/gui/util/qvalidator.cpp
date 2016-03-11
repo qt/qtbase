@@ -624,10 +624,10 @@ QDoubleValidator::~QDoubleValidator()
     that is within the valid range and is in the correct format.
 
     Returns \l Intermediate if \a input contains a double that is
-    outside the range or is in the wrong format; e.g. with too many
-    digits after the decimal point or is empty.
+    outside the range or is in the wrong format; e.g. is empty.
 
-    Returns \l Invalid if the \a input is not a double.
+    Returns \l Invalid if the \a input is not a double or with too many
+    digits after the decimal point.
 
     Note: If the valid range consists of just positive doubles (e.g. 0.0 to 100.0)
     and \a input is a negative double then \l Invalid is returned. If notation()
@@ -690,8 +690,16 @@ QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QL
     if (notation == QDoubleValidator::StandardNotation) {
         double max = qMax(qAbs(q->b), qAbs(q->t));
         if (max < LLONG_MAX) {
-            qlonglong n = pow10(numDigits(qlonglong(max))) - 1;
-            if (qAbs(i) > n)
+            qlonglong n = pow10(numDigits(qlonglong(max)));
+            // In order to get the highest possible number in the intermediate
+            // range we need to get 10 to the power of the number of digits
+            // after the decimal's and subtract that from the top number.
+            //
+            // For example, where q->dec == 2 and with a range of 0.0 - 9.0
+            // then the minimum possible number is 0.00 and the maximum
+            // possible is 9.99. Therefore 9.999 and 10.0 should be seen as
+            // invalid.
+            if (qAbs(i) > (n - std::pow(10, -q->dec)))
                 return QValidator::Invalid;
         }
     }
