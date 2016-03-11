@@ -1015,8 +1015,11 @@ Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
 #ifdef Q_QDOC
 
 // Just for documentation generation
+template<typename T>
 auto qOverload(T functionPointer);
+template<typename T>
 auto qConstOverload(T memberFunctionPointer);
+template<typename T>
 auto qNonConstOverload(T memberFunctionPointer);
 
 #elif defined(Q_COMPILER_VARIADIC_TEMPLATES)
