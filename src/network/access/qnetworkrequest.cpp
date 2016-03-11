@@ -798,10 +798,10 @@ static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVaria
     return QByteArray();
 }
 
-static QNetworkRequest::KnownHeaders parseHeaderName(const QByteArray &headerName)
+static int parseHeaderName(const QByteArray &headerName)
 {
     if (headerName.isEmpty())
-        return QNetworkRequest::KnownHeaders(-1);
+        return -1;
 
     switch (tolower(headerName.at(0))) {
     case 'c':
@@ -833,7 +833,7 @@ static QNetworkRequest::KnownHeaders parseHeaderName(const QByteArray &headerNam
         break;
     }
 
-    return QNetworkRequest::KnownHeaders(-1); // nothing found
+    return -1; // nothing found
 }
 
 static QVariant parseHttpDate(const QByteArray &raw)
@@ -1005,8 +1005,10 @@ void QNetworkHeadersPrivate::setRawHeaderInternal(const QByteArray &key, const Q
 void QNetworkHeadersPrivate::parseAndSetHeader(const QByteArray &key, const QByteArray &value)
 {
     // is it a known header?
-    QNetworkRequest::KnownHeaders parsedKey = parseHeaderName(key);
-    if (parsedKey != QNetworkRequest::KnownHeaders(-1)) {
+    const int parsedKeyAsInt = parseHeaderName(key);
+    if (parsedKeyAsInt != -1) {
+        const QNetworkRequest::KnownHeaders parsedKey
+                = static_cast<QNetworkRequest::KnownHeaders>(parsedKeyAsInt);
         if (value.isNull()) {
             cookedHeaders.remove(parsedKey);
         } else if (parsedKey == QNetworkRequest::ContentLengthHeader
