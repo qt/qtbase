@@ -21,3 +21,7 @@ TESTDATA += \
     ../tst_qtextstream.cpp \
     ../resources
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
+
+builtin_testdata {
+    DEFINES += BUILTIN_TESTDATA
+}
