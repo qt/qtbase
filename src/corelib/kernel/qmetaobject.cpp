@@ -363,14 +363,7 @@ QObject *QMetaObject::cast(QObject *obj) const
 */
 const QObject *QMetaObject::cast(const QObject *obj) const
 {
-    if (obj) {
-        const QMetaObject *m = obj->metaObject();
-        do {
-            if (m == this)
-                return obj;
-        } while ((m = m->d.superdata));
-    }
-    return 0;
+    return (obj && obj->metaObject()->inherits(this)) ? obj : nullptr;
 }
 
 #ifndef QT_NO_TRANSLATION
