@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 typedef int Q16Dot16;
 #define Q16Dot16ToFloat(i) ((i)/65536.)
 #define FloatToQ16Dot16(i) (int)((i) * 65536.)
-#define IntToQ16Dot16(i) ((i) << 16)
+#define IntToQ16Dot16(i) ((i) * (1 << 16))
 #define Q16Dot16ToInt(i) ((i) >> 16)
 #define Q16Dot16Factor 65536
 
@@ -606,7 +606,7 @@ void QScanConverter::mergeLine(QT_FT_Vector a, QT_FT_Vector b)
     int iBottom = qMin(m_bottom, int((b.y - 32 - rounding) >> 6));
 
     if (iTop <= iBottom) {
-        Q16Dot16 aFP = Q16Dot16Factor/2 + (a.x << 10) - rounding;
+        Q16Dot16 aFP = Q16Dot16Factor/2 + (a.x * (1 << 10)) - rounding;
 
         if (b.x == a.x) {
             Line line = { qBound(m_leftFP, aFP, m_rightFP), 0, iTop, iBottom, winding };
@@ -618,7 +618,7 @@ void QScanConverter::mergeLine(QT_FT_Vector a, QT_FT_Vector b)
 
             Q16Dot16 xFP = aFP + Q16Dot16Multiply(slopeFP,
                                                   IntToQ16Dot16(iTop)
-                                                  + Q16Dot16Factor/2 - (a.y << 10));
+                                                  + Q16Dot16Factor/2 - (a.y * (1 << 10)));
 
             if (clip(xFP, iTop, iBottom, slopeFP, m_leftFP, winding))
                 return;
