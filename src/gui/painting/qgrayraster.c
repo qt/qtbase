@@ -202,13 +202,13 @@
 #define ONE_PIXEL       ( 1L << PIXEL_BITS )
 #define PIXEL_MASK      ( -1L << PIXEL_BITS )
 #define TRUNC( x )      ( (TCoord)( (x) >> PIXEL_BITS ) )
-#define SUBPIXELS( x )  ( (TPos)(x) << PIXEL_BITS )
+#define SUBPIXELS( x )  ( (TPos)(x) * ( 1 << PIXEL_BITS ) )
 #define FLOOR( x )      ( (x) & -ONE_PIXEL )
 #define CEILING( x )    ( ( (x) + ONE_PIXEL - 1 ) & -ONE_PIXEL )
 #define ROUND( x )      ( ( (x) + ONE_PIXEL / 2 ) & -ONE_PIXEL )
 
 #if PIXEL_BITS >= 6
-#define UPSCALE( x )    ( (x) << ( PIXEL_BITS - 6 ) )
+#define UPSCALE( x )    ( (x) * ( 1 << ( PIXEL_BITS - 6 ) ) )
 #define DOWNSCALE( x )  ( (x) >> ( PIXEL_BITS - 6 ) )
 #else
 #define UPSCALE( x )    ( (x) >> ( 6 - PIXEL_BITS ) )
