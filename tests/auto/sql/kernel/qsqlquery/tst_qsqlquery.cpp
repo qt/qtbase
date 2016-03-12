@@ -1753,24 +1753,6 @@ void tst_QSqlQuery::synonyms()
     QCOMPARE( rec.field( 2 ).name().toLower(), QString( "t_varchar" ) );
 }
 
-// This class is used to test protected QSqlResult methods
-class ResultHelper: public QSqlResult
-{
-
-public:
-    ResultHelper(): QSqlResult( 0 ) {} // don't call, it's only for stupid compilers
-
-    bool execBatch( bool bindArray = false )
-    {
-        return QSqlResult::execBatch( bindArray );
-    }
-
-    QString boundValueName( int pos ) const
-    {
-        return QSqlResult::boundValueName( pos );
-    }
-};
-
 // It doesn't make sense to split this into several tests
 void tst_QSqlQuery::prepare_bind_exec()
 {
@@ -1895,81 +1877,81 @@ void tst_QSqlQuery::prepare_bind_exec()
         q.bindValue( 0, 0 );
         q.bindValue( 1, values[ 0 ] );
         QCOMPARE( q.boundValues().size(), 2 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 0 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[0] );
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(0)].toInt(), 0);
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(1)].toString(), values[0]);
         QVERIFY_SQL( q, exec() );
         QCOMPARE( q.boundValues().size(), 2 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 0 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[0] );
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(0)].toInt(), 0);
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(1)].toString(), values[0]);
 
         q.addBindValue( 1 );
         q.addBindValue( values[ 1 ] );
         QCOMPARE( q.boundValues().size(), 2 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 1 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[1] );
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(0)].toInt(), 1);
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(1)].toString(), values[1]);
         QVERIFY_SQL( q, exec() );
         QCOMPARE( q.boundValues().size(), 2 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 1 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[1] );
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(0)].toInt(), 1);
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(1)].toString(), values[1]);
 
         q.addBindValue( 2 );
         q.addBindValue( values[ 2 ] );
         QCOMPARE( q.boundValues().size(), 2 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 2 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[2] );
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(0)].toInt(), 2);
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(1)].toString(), values[2]);
         QVERIFY_SQL( q, exec() );
         QCOMPARE( q.boundValues().size(), 2 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 2 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[2] );
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(0)].toInt(), 2);
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(1)].toString(), values[2]);
 
         q.addBindValue( 3 );
         q.addBindValue( values[ 3 ] );
         QCOMPARE( q.boundValues().size(), 2 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 3 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[3] );
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(0)].toInt(), 3);
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(1)].toString(), values[3]);
         QVERIFY_SQL( q, exec() );
         QCOMPARE( q.boundValues().size(), 2 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 3 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[3] );
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(0)].toInt(), 3);
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(1)].toString(), values[3]);
 
         q.addBindValue( 4 );
         q.addBindValue( values[ 4 ] );
         QCOMPARE( q.boundValues().size(), 2 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 4 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[4] );
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(0)].toInt(), 4);
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(1)].toString(), values[4]);
         QVERIFY_SQL( q, exec() );
         QCOMPARE( q.boundValues().size(), 2 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 4 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[4] );
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(0)].toInt(), 4);
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(1)].toString(), values[4]);
 
         q.bindValue( 1, values[ 5 ] );
         q.bindValue( 0, 5 );
         QCOMPARE( q.boundValues().size(), 2 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 5 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[5] );
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(0)].toInt(), 5);
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(1)].toString(), values[5]);
         QVERIFY_SQL( q, exec() );
         QCOMPARE( q.boundValues().size(), 2 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 5 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[5] );
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(0)].toInt(), 5);
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(1)].toString(), values[5]);
 
         q.bindValue( 0, 6 );
         q.bindValue( 1, QString() );
         QCOMPARE( q.boundValues().size(), 2 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 6 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), QString() );
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(0)].toInt(), 6);
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(1)].toString(), QString());
         QVERIFY_SQL( q, exec() );
         QCOMPARE( q.boundValues().size(), 2 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 6 );
-        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), QString() );
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(0)].toInt(), 6);
+        QCOMPARE(q.boundValues()[q.result()->boundValueName(1)].toString(), QString());
 
         if ( db.driver()->hasFeature( QSqlDriver::Unicode ) ) {
             q.bindValue( 0, 7 );
             q.bindValue( 1, utf8str );
-            QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 7 );
-            QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), utf8str );
+            QCOMPARE(q.boundValues()[q.result()->boundValueName(0)].toInt(), 7);
+            QCOMPARE(q.boundValues()[q.result()->boundValueName(1)].toString(), utf8str);
             QVERIFY_SQL( q, exec() );
-            QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 7 );
-            QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), utf8str );
+            QCOMPARE(q.boundValues()[q.result()->boundValueName(0)].toInt(), 7);
+            QCOMPARE(q.boundValues()[q.result()->boundValueName(1)].toString(), utf8str);
         }
 
         QVERIFY_SQL( q, exec( "SELECT * FROM " + qtest_prepare + " order by id" ) );
