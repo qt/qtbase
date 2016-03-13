@@ -1050,9 +1050,9 @@ bool QOpenGLShaderProgram::link()
         if (!d->linked) {
             QString name = objectName();
             if (name.isEmpty())
-                qWarning() << "QOpenGLShader::link:" << d->log;
+                qWarning("QOpenGLShader::link: %ls", qUtf16Printable(d->log));
             else
-                qWarning() << "QOpenGLShader::link[" << name << "]:" << d->log;
+                qWarning("QOpenGLShader::link[%ls]: %ls", qUtf16Printable(name), qUtf16Printable(d->log));
         }
         delete [] logbuf;
     }
