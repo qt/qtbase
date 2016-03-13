@@ -1321,6 +1321,14 @@ void Configure::parseCmdLine()
             dictionary[ "ANDROID_PLATFORM" ] = configCmdLine.at(i);
         }
 
+        else if (configCmdLine.at(i) == "-android-ndk-host") {
+            ++i;
+            if (i == argCount)
+                break;
+
+            dictionary[ "ANDROID_HOST" ] = configCmdLine.at(i);
+        }
+
         else if (configCmdLine.at(i) == "-android-arch") {
             ++i;
             if (i == argCount)
@@ -3355,7 +3363,9 @@ void Configure::generateQDevicePri()
         deviceStream << "android_install {" << endl;
         deviceStream << "    DEFAULT_ANDROID_SDK_ROOT = " << formatPath(dictionary["ANDROID_SDK_ROOT"]) << endl;
         deviceStream << "    DEFAULT_ANDROID_NDK_ROOT = " << formatPath(dictionary["ANDROID_NDK_ROOT"]) << endl;
-        if (QSysInfo::WordSize == 64)
+        if (dictionary.contains("ANDROID_HOST"))
+            deviceStream << "    DEFAULT_ANDROID_NDK_HOST = " << dictionary["ANDROID_HOST"] << endl;
+        else if (QSysInfo::WordSize == 64)
             deviceStream << "    DEFAULT_ANDROID_NDK_HOST = windows-x86_64" << endl;
         else
             deviceStream << "    DEFAULT_ANDROID_NDK_HOST = windows" << endl;

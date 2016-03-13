@@ -137,7 +137,7 @@ void tst_QKeyEvent::modifiers_data()
     for (quint64 bitmask = 1; bitmask < (1 << kNumModifiers) ; ++bitmask) {
         QVector<int> modifierCombination;
         for (quint64 modifier = 0; modifier < kNumModifiers; ++modifier) {
-            if (bitmask & (1 << modifier))
+            if (bitmask & (quint64(1) << modifier))
                 modifierCombination.append(modifier);
         }
         modifierCombinations.append(modifierCombination);

@@ -7,8 +7,12 @@ CONFIG += \
 
 load(qt_helper_lib)
 
+# built-in shapers list configuration:
+SHAPERS += opentype       # HB's main shaper; enabling it should be enough most of the time
+mac: SHAPERS += coretext  # native shaper on OSX/iOS; could be used alone to handle both OT and AAT fonts
+
 DEFINES += HAVE_CONFIG_H
-DEFINES += HAVE_OT HB_NO_UNICODE_FUNCS HB_DISABLE_DEPRECATED
+DEFINES += HB_NO_UNICODE_FUNCS HB_DISABLE_DEPRECATED
 
 # platform/compiler specific definitions
 DEFINES += HAVE_ATEXIT
@@ -78,57 +82,59 @@ HEADERS += \
     $$PWD/src/hb-unicode.h \
     $$PWD/src/hb-version.h
 
-# Open Type
-SOURCES += \
-    $$PWD/src/hb-ot-font.cc \
-    $$PWD/src/hb-ot-layout.cc \
-    $$PWD/src/hb-ot-map.cc \
-    $$PWD/src/hb-ot-shape.cc \
-    $$PWD/src/hb-ot-shape-complex-arabic.cc \
-    $$PWD/src/hb-ot-shape-complex-default.cc \
-    $$PWD/src/hb-ot-shape-complex-hangul.cc \
-    $$PWD/src/hb-ot-shape-complex-hebrew.cc \
-    $$PWD/src/hb-ot-shape-complex-indic.cc \
-    $$PWD/src/hb-ot-shape-complex-indic-table.cc \
-    $$PWD/src/hb-ot-shape-complex-myanmar.cc \
-    $$PWD/src/hb-ot-shape-complex-thai.cc \
-    $$PWD/src/hb-ot-shape-complex-tibetan.cc \
-    $$PWD/src/hb-ot-shape-complex-use.cc \
-    $$PWD/src/hb-ot-shape-complex-use-table.cc \
-    $$PWD/src/hb-ot-shape-fallback.cc \
-    $$PWD/src/hb-ot-shape-normalize.cc
+contains(SHAPERS, opentype) {
+    DEFINES += HAVE_OT
 
-HEADERS += \
-    $$PWD/src/hb-ot-layout-common-private.hh \
-    $$PWD/src/hb-ot-layout-gdef-table.hh \
-    $$PWD/src/hb-ot-layout-gpos-table.hh \
-    $$PWD/src/hb-ot-layout-gsubgpos-private.hh \
-    $$PWD/src/hb-ot-layout-gsub-table.hh \
-    $$PWD/src/hb-ot-layout-jstf-table.hh \
-    $$PWD/src/hb-ot-layout-private.hh \
-    $$PWD/src/hb-ot-map-private.hh \
-    $$PWD/src/hb-ot-shape-complex-arabic-fallback.hh \
-    $$PWD/src/hb-ot-shape-complex-arabic-private.hh \
-    $$PWD/src/hb-ot-shape-complex-arabic-table.hh \
-    $$PWD/src/hb-ot-shape-complex-indic-machine.hh \
-    $$PWD/src/hb-ot-shape-complex-indic-private.hh \
-    $$PWD/src/hb-ot-shape-complex-myanmar-machine.hh \
-    $$PWD/src/hb-ot-shape-complex-private.hh \
-    $$PWD/src/hb-ot-shape-complex-use-machine.hh \
-    $$PWD/src/hb-ot-shape-complex-use-private.hh \
-    $$PWD/src/hb-ot-shape-fallback-private.hh \
-    $$PWD/src/hb-ot-shape-normalize-private.hh \
-    $$PWD/src/hb-ot-shape-private.hh
+    SOURCES += \
+        $$PWD/src/hb-ot-font.cc \
+        $$PWD/src/hb-ot-layout.cc \
+        $$PWD/src/hb-ot-map.cc \
+        $$PWD/src/hb-ot-shape.cc \
+        $$PWD/src/hb-ot-shape-complex-arabic.cc \
+        $$PWD/src/hb-ot-shape-complex-default.cc \
+        $$PWD/src/hb-ot-shape-complex-hangul.cc \
+        $$PWD/src/hb-ot-shape-complex-hebrew.cc \
+        $$PWD/src/hb-ot-shape-complex-indic.cc \
+        $$PWD/src/hb-ot-shape-complex-indic-table.cc \
+        $$PWD/src/hb-ot-shape-complex-myanmar.cc \
+        $$PWD/src/hb-ot-shape-complex-thai.cc \
+        $$PWD/src/hb-ot-shape-complex-tibetan.cc \
+        $$PWD/src/hb-ot-shape-complex-use.cc \
+        $$PWD/src/hb-ot-shape-complex-use-table.cc \
+        $$PWD/src/hb-ot-shape-fallback.cc \
+        $$PWD/src/hb-ot-shape-normalize.cc
 
-HEADERS += \
-    $$PWD/src/hb-ot.h \
-    $$PWD/src/hb-ot-font.h \
-    $$PWD/src/hb-ot-layout.h \
-    $$PWD/src/hb-ot-shape.h \
-    $$PWD/src/hb-ot-tag.h
+    HEADERS += \
+        $$PWD/src/hb-ot-layout-common-private.hh \
+        $$PWD/src/hb-ot-layout-gdef-table.hh \
+        $$PWD/src/hb-ot-layout-gpos-table.hh \
+        $$PWD/src/hb-ot-layout-gsubgpos-private.hh \
+        $$PWD/src/hb-ot-layout-gsub-table.hh \
+        $$PWD/src/hb-ot-layout-jstf-table.hh \
+        $$PWD/src/hb-ot-layout-private.hh \
+        $$PWD/src/hb-ot-map-private.hh \
+        $$PWD/src/hb-ot-shape-complex-arabic-fallback.hh \
+        $$PWD/src/hb-ot-shape-complex-arabic-private.hh \
+        $$PWD/src/hb-ot-shape-complex-arabic-table.hh \
+        $$PWD/src/hb-ot-shape-complex-indic-machine.hh \
+        $$PWD/src/hb-ot-shape-complex-indic-private.hh \
+        $$PWD/src/hb-ot-shape-complex-myanmar-machine.hh \
+        $$PWD/src/hb-ot-shape-complex-private.hh \
+        $$PWD/src/hb-ot-shape-complex-use-machine.hh \
+        $$PWD/src/hb-ot-shape-complex-use-private.hh \
+        $$PWD/src/hb-ot-shape-fallback-private.hh \
+        $$PWD/src/hb-ot-shape-normalize-private.hh \
+        $$PWD/src/hb-ot-shape-private.hh
 
-mac {
-    # Apple Advanced Typography
+    HEADERS += \
+        $$PWD/src/hb-ot.h \
+        $$PWD/src/hb-ot-font.h \
+        $$PWD/src/hb-ot-layout.h \
+        $$PWD/src/hb-ot-shape.h \
+        $$PWD/src/hb-ot-tag.h
+}
+
+contains(SHAPERS, coretext) {
     DEFINES += HAVE_CORETEXT
 
     SOURCES += \

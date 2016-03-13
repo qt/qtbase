@@ -318,6 +318,9 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPointF & local,
 void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, const QPointF & local, const QPointF & global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase,
                                               Qt::MouseEventSource source, bool invertedScrolling)
 {
+    if (!QGuiApplicationPrivate::scrollNoPhaseAllowed && phase == Qt::NoScrollPhase)
+        phase = Qt::ScrollUpdate;
+
     // Qt 4 sends two separate wheel events for horizontal and vertical
     // deltas. For Qt 5 we want to send the deltas in one event, but at the
     // same time preserve source and behavior compatibility with Qt 4.
@@ -865,7 +868,9 @@ Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF &local, const QP
 {
     bool wasSynchronous = QWindowSystemInterfacePrivate::synchronousWindowSystemEvents;
     QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
-    QWindowSystemInterface::handleMouseEvent(w, timestamp, local, global, b, mods);
+    const qreal factor = QHighDpiScaling::factor(w);
+    QWindowSystemInterface::handleMouseEvent(w, timestamp, local * factor,
+                                             global * factor, b, mods);
     QWindowSystemInterface::setSynchronousWindowSystemEvents(wasSynchronous);
 }
 
@@ -914,36 +919,14 @@ Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int 
 #endif
 }
 
-static QWindowSystemInterface::TouchPoint touchPoint(const QTouchEvent::TouchPoint& pt)
-{
-    QWindowSystemInterface::TouchPoint p;
-    p.id = pt.id();
-    p.flags = pt.flags();
-    p.normalPosition = pt.normalizedPos();
-    p.area = pt.screenRect();
-    p.pressure = pt.pressure();
-    p.state = pt.state();
-    p.velocity = pt.velocity();
-    p.rawPositions = pt.rawScreenPositions();
-    return p;
-}
-static QList<struct QWindowSystemInterface::TouchPoint> touchPointList(const QList<QTouchEvent::TouchPoint>& pointList)
-{
-    QList<struct QWindowSystemInterface::TouchPoint> newList;
-    newList.reserve(pointList.size());
-    for (const QTouchEvent::TouchPoint &p : pointList)
-        newList.append(touchPoint(p));
-
-    return newList;
-}
-
 Q_GUI_EXPORT void qt_handleTouchEvent(QWindow *w, QTouchDevice *device,
                                 const QList<QTouchEvent::TouchPoint> &points,
                                 Qt::KeyboardModifiers mods = Qt::NoModifier)
 {
     bool wasSynchronous = QWindowSystemInterfacePrivate::synchronousWindowSystemEvents;
     QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
-    QWindowSystemInterface::handleTouchEvent(w, device, touchPointList(points), mods);
+    QWindowSystemInterface::handleTouchEvent(w, device,
+                                             QWindowSystemInterfacePrivate::toNativeTouchPoints(points, w), mods);
     QWindowSystemInterface::setSynchronousWindowSystemEvents(wasSynchronous);
 }
 
@@ -958,5 +941,13 @@ bool QWindowSystemEventHandler::sendEvent(QWindowSystemInterfacePrivate::WindowS
     return true;
 }
 
+QWindowSystemInterfacePrivate::WheelEvent::WheelEvent(QWindow *w, ulong time, const QPointF &local, const QPointF &global, QPoint pixelD,
+        QPoint angleD, int qt4D, Qt::Orientation qt4O, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase, Qt::MouseEventSource src, bool inverted)
+    : InputEvent(w, time, Wheel, mods), pixelDelta(pixelD), angleDelta(angleD), qt4Delta(qt4D),
+      qt4Orientation(qt4O), localPos(local), globalPos(global),
+      phase(!QGuiApplicationPrivate::scrollNoPhaseAllowed && phase == Qt::NoScrollPhase ? Qt::ScrollUpdate : phase),
+      source(src), inverted(inverted)
+{
+}
 
 QT_END_NAMESPACE

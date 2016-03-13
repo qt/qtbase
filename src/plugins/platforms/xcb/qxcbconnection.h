@@ -294,6 +294,7 @@ namespace QXcbAtom {
         _COMPIZ_DECOR_REQUEST,
         _COMPIZ_DECOR_DELETE_PIXMAP,
         _COMPIZ_TOOLKIT_ACTION,
+        _GTK_LOAD_ICONTHEMES,
 
         NPredefinedAtoms,
 
@@ -355,7 +356,7 @@ public:
     virtual void handleFocusOutEvent(const xcb_focus_out_event_t *) {}
     virtual void handlePropertyNotifyEvent(const xcb_property_notify_event_t *) {}
 #ifdef XCB_USE_XINPUT22
-    virtual void handleXIMouseEvent(xcb_ge_event_t *) {}
+    virtual void handleXIMouseEvent(xcb_ge_event_t *, Qt::MouseEventSource = Qt::MouseEventNotSynthesized) {}
     virtual void handleXIEnterLeave(xcb_ge_event_t *) {}
 #endif
     virtual QXcbWindow *toWindow() { return 0; }

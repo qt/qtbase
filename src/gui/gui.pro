@@ -23,8 +23,6 @@ win32:contains(QT_CONFIG, angle)|contains(QT_CONFIG, dynamicgl) {
         \$\$QT_MODULE_INCLUDE_BASE/QtANGLE
 }
 
-load(qt_module)
-
 # Code coverage with TestCocoon
 # The following is required as extra compilers use $$QMAKE_CXX instead of $(CXX).
 # Without this, testcocoon.prf is read only after $$QMAKE_CXX is used by the
@@ -50,6 +48,7 @@ include(itemmodels/itemmodels.pri)
 
 QMAKE_LIBS += $$QMAKE_LIBS_GUI
 
+load(qt_module)
 load(cmake_functions)
 
 win32: CMAKE_WINDOWS_BUILD = True

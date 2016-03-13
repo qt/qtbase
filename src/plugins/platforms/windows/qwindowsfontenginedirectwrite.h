@@ -65,7 +65,7 @@ public:
                                     const QSharedPointer<QWindowsFontEngineData> &d);
     ~QWindowsFontEngineDirectWrite();
 
-    void initFontInfo(const QFontDef &request, int dpi, IDWriteFont *font);
+    void initFontInfo(const QFontDef &request, int dpi);
 
     QFixed lineThickness() const Q_DECL_OVERRIDE;
     QFixed underlinePosition() const Q_DECL_OVERRIDE;

@@ -251,7 +251,8 @@
     This example illustrates that objects can work together without needing to
     know any information about each other. To enable this, the objects only
     need to be connected together, and this can be achieved with some simple
-    QObject::connect() function calls, or with \c{uic}'s {automatic connections} feature.
+    QObject::connect() function calls, or with \c{uic}'s
+    \l{Automatic Connections}{automatic connections} feature.
 
 
     \section1 A Real Example

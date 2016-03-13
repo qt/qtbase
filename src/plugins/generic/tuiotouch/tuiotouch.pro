@@ -1,10 +1,5 @@
 TARGET = qtuiotouchplugin
 
-PLUGIN_TYPE = generic
-PLUGIN_EXTENDS = -
-PLUGIN_CLASS_NAME = QTuioTouchPlugin
-load(qt_plugin)
-
 QT += \
     core-private \
     gui-private \
@@ -24,3 +19,8 @@ HEADERS += \
 
 OTHER_FILES += \
     tuiotouch.json
+
+PLUGIN_TYPE = generic
+PLUGIN_EXTENDS = -
+PLUGIN_CLASS_NAME = QTuioTouchPlugin
+load(qt_plugin)

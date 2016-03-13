@@ -490,7 +490,11 @@ void tst_QLocalSocket::connectWithOldOpen()
 
 void tst_QLocalSocket::sendData_data()
 {
-    listenAndConnect_data();
+    QTest::addColumn<QString>("name");
+    QTest::addColumn<bool>("canListen");
+
+    QTest::newRow("null") << QString() << false;
+    QTest::newRow("tst_localsocket") << "tst_localsocket" << true;
 }
 
 void tst_QLocalSocket::sendData()

@@ -682,18 +682,19 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     if (newHttpRequest.attribute(QNetworkRequest::FollowRedirectsAttribute).toBool())
         httpRequest.setFollowRedirects(true);
 
-    bool loadedFromCache = false;
     httpRequest.setPriority(convert(newHttpRequest.priority()));
 
     switch (operation) {
     case QNetworkAccessManager::GetOperation:
         httpRequest.setOperation(QHttpNetworkRequest::Get);
-        loadedFromCache = loadFromCacheIfAllowed(httpRequest);
+        if (loadFromCacheIfAllowed(httpRequest))
+            return; // no need to send the request! :)
         break;
 
     case QNetworkAccessManager::HeadOperation:
         httpRequest.setOperation(QHttpNetworkRequest::Head);
-        loadedFromCache = loadFromCacheIfAllowed(httpRequest);
+        if (loadFromCacheIfAllowed(httpRequest))
+            return; // no need to send the request! :)
         break;
 
     case QNetworkAccessManager::PostOperation:
@@ -725,10 +726,6 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
         break;                  // can't happen
     }
 
-    if (loadedFromCache) {
-        return;    // no need to send the request! :)
-    }
-
     QList<QByteArray> headers = newHttpRequest.rawHeaderList();
     if (resumeOffset != 0) {
         const int rangeIndex = headers.indexOf("Range");
@@ -757,10 +754,10 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     foreach (const QByteArray &header, headers)
         httpRequest.setHeaderField(header, newHttpRequest.rawHeader(header));
 
-    if (newHttpRequest.attribute(QNetworkRequest::HttpPipeliningAllowedAttribute).toBool() == true)
+    if (newHttpRequest.attribute(QNetworkRequest::HttpPipeliningAllowedAttribute).toBool())
         httpRequest.setPipeliningAllowed(true);
 
-    if (request.attribute(QNetworkRequest::SpdyAllowedAttribute).toBool() == true)
+    if (request.attribute(QNetworkRequest::SpdyAllowedAttribute).toBool())
         httpRequest.setSPDYAllowed(true);
 
     if (static_cast<QNetworkRequest::LoadControl>
@@ -768,7 +765,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
                              QNetworkRequest::Automatic).toInt()) == QNetworkRequest::Manual)
         httpRequest.setWithCredentials(false);
 
-    if (request.attribute(QNetworkRequest::EmitAllUploadProgressSignalsAttribute).toBool() == true)
+    if (request.attribute(QNetworkRequest::EmitAllUploadProgressSignalsAttribute).toBool())
         emitAllUploadProgressSignals = true;
 
 
@@ -1755,10 +1752,8 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
         QMetaObject::invokeMethod(q, "_q_finished", synchronous ? Qt::DirectConnection : Qt::QueuedConnection);
         return;
     }
-#endif
 
     if (!start(request)) {
-#ifndef QT_NO_BEARERMANAGEMENT
         // backend failed to start because the session state is not Connected.
         // QNetworkAccessManager will call reply->backend->start() again for us when the session
         // state changes.
@@ -1780,29 +1775,25 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
             QMetaObject::invokeMethod(q, "_q_finished", synchronous ? Qt::DirectConnection : Qt::QueuedConnection);
             return;
         }
+    } else if (session) {
+        QObject::connect(session.data(), SIGNAL(stateChanged(QNetworkSession::State)),
+                         q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)),
+                         Qt::QueuedConnection);
+    }
 #else
+    if (!start(request)) {
         qWarning("Backend start failed");
         QMetaObject::invokeMethod(q, "_q_error", synchronous ? Qt::DirectConnection : Qt::QueuedConnection,
             Q_ARG(QNetworkReply::NetworkError, QNetworkReply::UnknownNetworkError),
             Q_ARG(QString, QCoreApplication::translate("QNetworkReply", "backend start error.")));
         QMetaObject::invokeMethod(q, "_q_finished", synchronous ? Qt::DirectConnection : Qt::QueuedConnection);
         return;
-#endif
-    } else {
-#ifndef QT_NO_BEARERMANAGEMENT
-        if (session)
-            QObject::connect(session.data(), SIGNAL(stateChanged(QNetworkSession::State)),
-                             q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)), Qt::QueuedConnection);
-#endif
     }
+#endif // QT_NO_BEARERMANAGEMENT
 
     if (synchronous) {
         state = Finished;
         q_func()->setFinished(true);
-    } else {
-        if (state != Finished) {
-
-        }
     }
 }
 

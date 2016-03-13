@@ -1,10 +1,5 @@
 TARGET = qxcb-glx-integration
 
-PLUGIN_CLASS_NAME = QXcbGlxIntegrationPlugin
-PLUGIN_TYPE = xcbglintegrations
-
-load(qt_plugin)
-
 include(../gl_integrations_plugin_base.pri)
 
 #should be removed from the sources
@@ -31,3 +26,7 @@ SOURCES += \
     qxcbglxwindow.cpp \
     qglxintegration.cpp \
     qxcbglxnativeinterfacehandler.cpp
+
+PLUGIN_CLASS_NAME = QXcbGlxIntegrationPlugin
+PLUGIN_TYPE = xcbglintegrations
+load(qt_plugin)

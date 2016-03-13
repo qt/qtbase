@@ -1,10 +1,4 @@
-TARGET = mirclient
-TEMPLATE = lib
-
-PLUGIN_TYPE = platforms
-PLUGIN_CLASS_NAME = MirServerIntegrationPlugin
-!equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN): PLUGIN_EXTENDS = -
-load(qt_plugin)
+TARGET = qmirclient
 
 QT += core-private gui-private platformsupport-private dbus
 
@@ -47,3 +41,8 @@ HEADERS = \
     qmirclientscreen.h \
     qmirclienttheme.h \
     qmirclientwindow.h
+
+PLUGIN_TYPE = platforms
+PLUGIN_CLASS_NAME = MirServerIntegrationPlugin
+!equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN): PLUGIN_EXTENDS = -
+load(qt_plugin)

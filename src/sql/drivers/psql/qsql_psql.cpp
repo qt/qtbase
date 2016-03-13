@@ -1421,8 +1421,10 @@ bool QPSQLDriver::subscribeToNotification(const QString &name)
         PGresult *result = d->exec(query);
         if (PQresultStatus(result) != PGRES_COMMAND_OK) {
             setLastError(qMakeError(tr("Unable to subscribe"), QSqlError::StatementError, d, result));
+            PQclear(result);
             return false;
         }
+        PQclear(result);
 
         if (!d->sn) {
             d->sn = new QSocketNotifier(socket, QSocketNotifier::Read);
@@ -1454,8 +1456,10 @@ bool QPSQLDriver::unsubscribeFromNotification(const QString &name)
     PGresult *result = d->exec(query);
     if (PQresultStatus(result) != PGRES_COMMAND_OK) {
         setLastError(qMakeError(tr("Unable to unsubscribe"), QSqlError::StatementError, d, result));
+        PQclear(result);
         return false;
     }
+    PQclear(result);
 
     d->seid.removeAll(name);
 

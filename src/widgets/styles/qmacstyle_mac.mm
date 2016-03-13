@@ -4584,7 +4584,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             HIRect menuRect = qt_hirectForQRect(mi->menuRect);
             HIRect itemRect = qt_hirectForQRect(mi->rect);
 
-            if ((opt->state & State_Selected) && (opt->state & State_Enabled) && (opt->state & State_Sunken)){
+            const bool selected = (opt->state & State_Selected) && (opt->state & State_Enabled) && (opt->state & State_Sunken);
+            if (selected) {
                 // Draw a selected menu item background:
                 HIThemeMenuItemDrawInfo mdi;
                 mdi.version = qt_mac_hitheme_version;
@@ -4612,7 +4613,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                                 Qt::AlignCenter | Qt::TextHideMnemonic | Qt::TextDontClip
                                 | Qt::TextSingleLine,
                                 mi->palette, mi->state & State_Enabled,
-                                mi->text, QPalette::ButtonText);
+                                mi->text, selected ? QPalette::HighlightedText : QPalette::ButtonText);
             }
         }
         break;

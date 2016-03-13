@@ -1473,7 +1473,7 @@ static QByteArray createTypeName(const char *begin, const char *va)
     }
     if (tn.endsWith('>'))
         tn += ' ';
-        tn += ">";
+    tn += '>';
     return tn;
 }
 #endif
