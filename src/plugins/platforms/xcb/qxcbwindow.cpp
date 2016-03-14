@@ -1224,6 +1224,7 @@ void QXcbWindow::changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two)
 
     event.response_type = XCB_CLIENT_MESSAGE;
     event.format = 32;
+    event.sequence = 0;
     event.window = m_window;
     event.type = atom(QXcbAtom::_NET_WM_STATE);
     event.data.data32[0] = set ? 1 : 0;
@@ -1265,6 +1266,7 @@ void QXcbWindow::setWindowState(Qt::WindowState state)
 
             event.response_type = XCB_CLIENT_MESSAGE;
             event.format = 32;
+            event.sequence = 0;
             event.window = m_window;
             event.type = atom(QXcbAtom::WM_CHANGE_STATE);
             event.data.data32[0] = XCB_WM_STATE_ICONIC;
@@ -1660,6 +1662,7 @@ void QXcbWindow::requestActivateWindow()
 
         event.response_type = XCB_CLIENT_MESSAGE;
         event.format = 32;
+        event.sequence = 0;
         event.window = m_window;
         event.type = atom(QXcbAtom::_NET_ACTIVE_WINDOW);
         event.data.data32[0] = 1;
@@ -2608,6 +2611,7 @@ bool QXcbWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)
     xcb_client_message_event_t xev;
     xev.response_type = XCB_CLIENT_MESSAGE;
     xev.type = moveResize;
+    xev.sequence = 0;
     xev.window = xcb_window();
     xev.format = 32;
     const QPoint globalPos = window()->mapToGlobal(pos);
@@ -2636,6 +2640,7 @@ void QXcbWindow::sendXEmbedMessage(xcb_window_t window, quint32 message,
 
     event.response_type = XCB_CLIENT_MESSAGE;
     event.format = 32;
+    event.sequence = 0;
     event.window = window;
     event.type = atom(QXcbAtom::_XEMBED);
     event.data.data32[0] = connection()->time();

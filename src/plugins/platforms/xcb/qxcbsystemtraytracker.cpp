@@ -94,9 +94,9 @@ xcb_window_t QXcbSystemTrayTracker::locateTrayWindow(const QXcbConnection *conne
 void QXcbSystemTrayTracker::requestSystemTrayWindowDock(xcb_window_t window) const
 {
     xcb_client_message_event_t trayRequest;
-    memset(&trayRequest, 0, sizeof(trayRequest));
     trayRequest.response_type = XCB_CLIENT_MESSAGE;
     trayRequest.format = 32;
+    trayRequest.sequence = 0;
     trayRequest.window = m_trayWindow;
     trayRequest.type = m_trayAtom;
     trayRequest.data.data32[0] = XCB_CURRENT_TIME;
