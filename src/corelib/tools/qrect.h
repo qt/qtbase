@@ -245,7 +245,7 @@ Q_DECL_CONSTEXPR inline QPoint QRect::bottomLeft() const Q_DECL_NOTHROW
 { return QPoint(x1, y2); }
 
 Q_DECL_CONSTEXPR inline QPoint QRect::center() const Q_DECL_NOTHROW
-{ return QPoint((x1+x2)/2, (y1+y2)/2); }
+{ return QPoint(int((qint64(x1)+x2)/2), int((qint64(y1)+y2)/2)); } // cast avoids overflow on addition
 
 Q_DECL_CONSTEXPR inline int QRect::width() const Q_DECL_NOTHROW
 { return  x2 - x1 + 1; }

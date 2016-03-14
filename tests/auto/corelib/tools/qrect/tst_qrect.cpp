@@ -2349,7 +2349,7 @@ void tst_QRect::center_data()
     QTest::newRow( "SmallestQRect" ) << getQRectCase( SmallestQRect ) << QPoint(1,1);
     QTest::newRow( "MiddleQRect" ) << getQRectCase( MiddleQRect ) << QPoint(0,0);
     QTest::newRow( "LargestQRect" ) << getQRectCase( LargestQRect ) << QPoint(INT_MAX/2,INT_MAX/2);
-    QTest::newRow( "SmallestCoordQRect" ) << getQRectCase( SmallestCoordQRect ) << QPoint(0,0);
+    QTest::newRow( "SmallestCoordQRect" ) << getQRectCase( SmallestCoordQRect ) << QPoint(INT_MIN, INT_MIN);
     QTest::newRow( "LargestCoordQRect" ) << getQRectCase( LargestCoordQRect ) << QPoint(0,0);
     QTest::newRow( "RandomQRect" ) << getQRectCase( RandomQRect ) << QPoint(105,207);
     QTest::newRow( "NegativeSizeQRect" ) << getQRectCase( NegativeSizeQRect ) << QPoint(-4,-4);
