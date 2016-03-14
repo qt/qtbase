@@ -3171,8 +3171,7 @@ void tst_QRect::newMoveTopLeft_data()
     }
 
     {
-        QTest::newRow("LargestCoordQRect_NullQPoint") << getQRectCase(LargestCoordQRect) << getQPointCase(NullQPoint)
-            << QRect(QPoint(0,0), QPoint(INT_MAX+(0-INT_MIN),INT_MAX+(0-INT_MIN)));
+        // QTest::newRow("LargestCoordQRect_NullQPoint") -- Not tested as it would cause an overflow
         QTest::newRow("LargestCoordQRect_SmallestCoordQPoint") << getQRectCase(LargestCoordQRect) << getQPointCase(SmallestCoordQPoint)
             << QRect(QPoint(INT_MIN,INT_MIN), QPoint(INT_MAX,INT_MAX));
         // QTest::newRow("LargestCoordQRect_MiddleNegCoordQPoint") -- Not tested as it would cause an overflow
