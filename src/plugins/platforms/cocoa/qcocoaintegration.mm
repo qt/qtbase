@@ -422,14 +422,18 @@ void QCocoaIntegration::updateScreens()
         }
         siblings << screen;
     }
+
+    // Set virtual siblings list. All screens in mScreens are siblings, because we ignored the
+    // mirrors. Note that some of the screens we update the siblings list for here may be deleted
+    // below, but update anyway to keep the to-be-deleted screens out of the siblings list.
+    foreach (QCocoaScreen* screen, mScreens)
+        screen->setVirtualSiblings(siblings);
+
     // Now the leftovers in remainingScreens are no longer current, so we can delete them.
     foreach (QCocoaScreen* screen, remainingScreens) {
         mScreens.removeOne(screen);
         destroyScreen(screen);
     }
-    // All screens in mScreens are siblings, because we ignored the mirrors.
-    foreach (QCocoaScreen* screen, mScreens)
-        screen->setVirtualSiblings(siblings);
 }
 
 QCocoaScreen *QCocoaIntegration::screenAtIndex(int index)
