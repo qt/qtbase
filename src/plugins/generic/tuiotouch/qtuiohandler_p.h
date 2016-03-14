@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 class QTouchDevice;
 class QOscMessage;
 class QTuioCursor;
+class QTuioToken;
 
 class QTuioHandler : public QObject
 {
@@ -69,14 +70,21 @@ private slots:
     void process2DCurAlive(const QOscMessage &message);
     void process2DCurSet(const QOscMessage &message);
     void process2DCurFseq(const QOscMessage &message);
+    void process2DObjSource(const QOscMessage &message);
+    void process2DObjAlive(const QOscMessage &message);
+    void process2DObjSet(const QOscMessage &message);
+    void process2DObjFseq(const QOscMessage &message);
 
 private:
     QWindowSystemInterface::TouchPoint cursorToTouchPoint(const QTuioCursor &tc, QWindow *win);
+    QWindowSystemInterface::TouchPoint tokenToTouchPoint(const QTuioToken &tc, QWindow *win);
 
     QTouchDevice *m_device;
     QUdpSocket m_socket;
     QMap<int, QTuioCursor> m_activeCursors;
     QVector<QTuioCursor> m_deadCursors;
+    QMap<int, QTuioToken> m_activeTokens;
+    QVector<QTuioToken> m_deadTokens;
     QTransform m_transform;
 };
 

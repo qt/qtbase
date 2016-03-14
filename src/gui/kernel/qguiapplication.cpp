@@ -2518,7 +2518,9 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
 
             // Stationary points might not be delivered down to the receiving item
             // and get their position transformed, keep the old values instead.
-            if (touchPoint.state() != Qt::TouchPointStationary)
+            if (touchPoint.state() == Qt::TouchPointStationary)
+                touchInfo.touchPoint.setVelocity(touchPoint.velocity());
+            else
                 touchInfo.touchPoint = touchPoint;
             break;
         }

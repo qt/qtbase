@@ -790,6 +790,22 @@ inline bool operator==(QKeyEvent *e, QKeySequence::StandardKey key){return (e ? 
 inline bool operator==(QKeySequence::StandardKey key, QKeyEvent *e){return (e ? e->matches(key) : false);}
 #endif // QT_NO_SHORTCUT
 
+class QPointerUniqueIdPrivate;
+class Q_GUI_EXPORT QPointerUniqueId
+{
+    Q_GADGET
+    Q_PROPERTY(qint64 numeric READ numeric CONSTANT)
+public:
+    explicit QPointerUniqueId(qint64 id = -1);
+
+    qint64 numeric();
+
+private:
+    // TODO for TUIO 2, or any other type of complex token ID, a d-pointer can replace
+    // m_numericId without changing the size of this class.
+    qint64 m_numericId;
+};
+
 class QTouchEventTouchPointPrivate;
 class Q_GUI_EXPORT QTouchEvent : public QInputEvent
 {
@@ -798,7 +814,8 @@ public:
     {
     public:
         enum InfoFlag {
-            Pen  = 0x0001
+            Pen  = 0x0001,
+            Token = 0x0002
         };
 #ifndef Q_MOC_RUN
         // otherwise moc gives
@@ -824,6 +841,7 @@ public:
         { qSwap(d, other.d); }
 
         int id() const;
+        QPointerUniqueId uniqueId() const;
 
         Qt::TouchPointState state() const;
 
@@ -848,12 +866,14 @@ public:
         QRectF screenRect() const;
 
         qreal pressure() const;
+        qreal rotation() const;
         QVector2D velocity() const;
         InfoFlags flags() const;
         QVector<QPointF> rawScreenPositions() const;
 
         // internal
         void setId(int id);
+        void setUniqueId(qint64 uid);
         void setState(Qt::TouchPointStates state);
         void setPos(const QPointF &pos);
         void setScenePos(const QPointF &scenePos);
@@ -871,6 +891,7 @@ public:
         void setSceneRect(const QRectF &sceneRect);
         void setScreenRect(const QRectF &screenRect);
         void setPressure(qreal pressure);
+        void setRotation(qreal angle);
         void setVelocity(const QVector2D &v);
         void setFlags(InfoFlags flags);
         void setRawScreenPositions(const QVector<QPointF> &positions);

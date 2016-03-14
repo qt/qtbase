@@ -117,11 +117,14 @@ public:
     static void handleWheelEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods = Qt::NoModifier);
 
     struct TouchPoint {
-        TouchPoint() : id(0), pressure(0), state(Qt::TouchPointStationary), flags(0) { }
+        TouchPoint() : id(0), uniqueId(-1), pressure(0), rotation(0), state(Qt::TouchPointStationary), flags(0) { }
         int id;                 // for application use
+        qint64 uniqueId;        // for TUIO: object/token ID; otherwise empty
+                                // TODO for TUIO 2.0: add registerPointerUniqueID(QPointerUniqueId)
         QPointF normalPosition; // touch device coordinates, (0 to 1, 0 to 1)
         QRectF area;            // the touched area, centered at position in screen coordinates
         qreal pressure;         // 0 to 1
+        qreal rotation;         // 0 means pointing straight up; 0 if unknown (like QTabletEvent::rotation)
         Qt::TouchPointState state; //Qt::TouchPoint{Pressed|Moved|Stationary|Released}
         QVector2D velocity;     // in screen coordinate system, pixels / seconds
         QTouchEvent::TouchPoint::InfoFlags flags;

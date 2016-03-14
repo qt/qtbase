@@ -4421,6 +4421,7 @@ QTouchEvent::~QTouchEvent()
     The values of this enum describe additional information about a touch point.
 
     \value Pen Indicates that the contact has been made by a designated pointing device (e.g. a pen) instead of a finger.
+    \value Token Indicates that the contact has been made by a fiducial object (e.g. a knob or other token) instead of a finger.
 */
 
 /*!
@@ -4464,6 +4465,22 @@ QTouchEvent::TouchPoint::~TouchPoint()
 int QTouchEvent::TouchPoint::id() const
 {
     return d->id;
+}
+
+/*!
+    \since 5.8
+    Returns the unique ID of this touch point or token, if any.
+
+    It is normally invalid (with a \l {QPointerUniqueId::numeric()} {numeric()} value of -1),
+    because touchscreens cannot uniquely identify fingers. But when the
+    \l {TouchPoint::InfoFlag} {Token} flag is set, it is expected to uniquely
+    identify a specific token (fiducial object).
+
+    \sa flags
+*/
+QPointerUniqueId QTouchEvent::TouchPoint::uniqueId() const
+{
+    return d->uniqueId;
 }
 
 /*!
@@ -4670,6 +4687,19 @@ qreal QTouchEvent::TouchPoint::pressure() const
 }
 
 /*!
+    \since 5.8
+    Returns the angular orientation of this touch point. The return value is in degrees,
+    where zero (the default) indicates the finger or token is pointing upwards,
+    a negative angle means it's rotated to the left, and a positive angle means
+    it's rotated to the right. Most touchscreens do not detect rotation, so
+    zero is the most common value.
+*/
+qreal QTouchEvent::TouchPoint::rotation() const
+{
+    return d->rotation;
+}
+
+/*!
     Returns a velocity vector for this touch point.
     The vector is in the screen's coordinate system, using pixels per seconds for the magnitude.
 
@@ -4717,6 +4747,14 @@ void QTouchEvent::TouchPoint::setId(int id)
     if (d->ref.load() != 1)
         d = d->detach();
     d->id = id;
+}
+
+/*! \internal */
+void QTouchEvent::TouchPoint::setUniqueId(qint64 uid)
+{
+    if (d->ref.load() != 1)
+        d = d->detach();
+    d->uniqueId = QPointerUniqueId(uid);
 }
 
 /*! \internal */
@@ -4853,6 +4891,14 @@ void QTouchEvent::TouchPoint::setPressure(qreal pressure)
     if (d->ref.load() != 1)
         d = d->detach();
     d->pressure = pressure;
+}
+
+/*! \internal */
+void QTouchEvent::TouchPoint::setRotation(qreal angle)
+{
+    if (d->ref.load() != 1)
+        d = d->detach();
+    d->rotation = angle;
 }
 
 /*! \internal */
@@ -5124,6 +5170,39 @@ QApplicationStateChangeEvent::QApplicationStateChangeEvent(Qt::ApplicationState 
 Qt::ApplicationState QApplicationStateChangeEvent::applicationState() const
 {
     return m_applicationState;
+}
+
+/*!
+    \class QPointerUniqueId
+    \since 5.8
+    \ingroup events
+    \inmodule QtGui
+
+    \brief QPointerUniqueId identifies a unique object, such as a tagged token
+    or stylus, which is used with a pointing device.
+
+    \sa QTouchEvent::TouchPoint
+*/
+
+/*!
+    Constructs a unique pointer ID with a numeric \a id provided by the hardware.
+    The default is -1, which means an invalid pointer ID.
+*/
+QPointerUniqueId::QPointerUniqueId(qint64 id)
+    : m_numericId(id)
+{
+}
+
+/*!
+    \property QPointerUniqueId::numeric
+    \brief the numeric unique ID of the token represented by a touchpoint
+
+    This is the numeric unique ID if the device provides that type of ID;
+    otherwise it is -1.
+*/
+qint64 QPointerUniqueId::numeric()
+{
+    return m_numericId;
 }
 
 QT_END_NAMESPACE

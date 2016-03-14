@@ -468,7 +468,10 @@ QList<QTouchEvent::TouchPoint>
     QList<QWindowSystemInterface::TouchPoint>::const_iterator end = points.constEnd();
     while (point != end) {
         p.setId(point->id);
+        if (point->uniqueId >= 0)
+            p.setUniqueId(point->uniqueId);
         p.setPressure(point->pressure);
+        p.setRotation(point->rotation);
         states |= point->state;
         p.setState(point->state);
 

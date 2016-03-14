@@ -79,12 +79,14 @@ public:
 
     QAtomicInt ref;
     int id;
+    QPointerUniqueId uniqueId;
     Qt::TouchPointStates state;
     QRectF rect, sceneRect, screenRect;
     QPointF normalizedPos,
             startPos, startScenePos, startScreenPos, startNormalizedPos,
             lastPos, lastScenePos, lastScreenPos, lastNormalizedPos;
     qreal pressure;
+    qreal rotation;
     QVector2D velocity;
     QTouchEvent::TouchPoint::InfoFlags flags;
     QVector<QPointF> rawScreenPositions;
