@@ -131,7 +131,7 @@ extern bool qt_is_gui_used;
 
 Q_GUI_EXPORT int qt_defaultDpiX()
 {
-    if (qApp->testAttribute(Qt::AA_Use96Dpi))
+    if (QCoreApplication::instance()->testAttribute(Qt::AA_Use96Dpi))
         return 96;
 
     if (!qt_is_gui_used)
@@ -146,7 +146,7 @@ Q_GUI_EXPORT int qt_defaultDpiX()
 
 Q_GUI_EXPORT int qt_defaultDpiY()
 {
-    if (qApp->testAttribute(Qt::AA_Use96Dpi))
+    if (QCoreApplication::instance()->testAttribute(Qt::AA_Use96Dpi))
         return 96;
 
     if (!qt_is_gui_used)
