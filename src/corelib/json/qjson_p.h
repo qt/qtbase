@@ -402,7 +402,7 @@ public:
             // pack with itself, we'll discard the high part anyway
             chunk = _mm_packus_epi16(chunk, chunk);
             // unaligned 64-bit store
-            qUnalignedStore(l + i, _mm_cvtsi128_si64(chunk));
+            qToUnaligned(_mm_cvtsi128_si64(chunk), l + i);
             i += 8;
         }
 #  endif

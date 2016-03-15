@@ -51,6 +51,7 @@
 #include <qbytearray.h>
 #include <qdatetime.h>
 #include <qbasicatomic.h>
+#include <qendian.h>
 #include <private/qsimd_p.h>
 
 #ifndef QT_BOOTSTRAPPED
@@ -105,24 +106,24 @@ static uint crc32(const Char *ptr, size_t len, uint h)
 
     p += 8;
     for ( ; p <= e; p += 8)
-        h2 = _mm_crc32_u64(h2, qUnalignedLoad<qlonglong>(p - 8));
+        h2 = _mm_crc32_u64(h2, qFromUnaligned<qlonglong>(p - 8));
     h = h2;
     p -= 8;
 
     len = e - p;
     if (len & 4) {
-        h = _mm_crc32_u32(h, qUnalignedLoad<uint>(p));
+        h = _mm_crc32_u32(h, qFromUnaligned<uint>(p));
         p += 4;
     }
 #  else
     p += 4;
     for ( ; p <= e; p += 4)
-        h = _mm_crc32_u32(h, qUnalignedLoad<uint>(p - 4));
+        h = _mm_crc32_u32(h, qFromUnaligned<uint>(p - 4));
     p -= 4;
     len = e - p;
 #  endif
     if (len & 2) {
-        h = _mm_crc32_u16(h, qUnalignedLoad<ushort>(p));
+        h = _mm_crc32_u16(h, qFromUnaligned<ushort>(p));
         p += 2;
     }
     if (sizeof(Char) == 1 && len & 1)

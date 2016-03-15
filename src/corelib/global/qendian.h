@@ -42,6 +42,11 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifdef __has_builtin
+#  define QT_HAS_BUILTIN(x)     __has_builtin(x)
+#else
+#  define QT_HAS_BUILTIN(x)     0
+#endif
 
 /*
  * ENDIAN FUNCTIONS
@@ -64,18 +69,29 @@ template <typename T> inline void qbswap(const T src, uchar *dest)
 
 // Used to implement a type-safe and alignment-safe copy operation
 // If you want to avoid the memcpy, you must write specializations for these functions
-template <typename T> inline void qToUnaligned(const T src, uchar *dest)
+template <typename T> Q_ALWAYS_INLINE void qToUnaligned(const T src, uchar *dest)
 {
     // Using sizeof(T) inside memcpy function produces internal compiler error with
     // MSVC2008/ARM in tst_endian -> use extra indirection to resolve size of T.
     const size_t size = sizeof(T);
-    memcpy(dest, &src, size);
+#if QT_HAS_BUILTIN(__builtin_memcpy)
+    __builtin_memcpy
+#else
+    memcpy
+#endif
+            (dest, &src, size);
 }
-template <typename T> inline T qFromUnaligned(const uchar *src)
+
+template <typename T> Q_ALWAYS_INLINE T qFromUnaligned(const uchar *src)
 {
     T dest;
     const size_t size = sizeof(T);
-    memcpy(&dest, src, size);
+#if QT_HAS_BUILTIN(__builtin_memcpy)
+    __builtin_memcpy
+#else
+    memcpy
+#endif
+            (&dest, src, size);
     return dest;
 }
 
@@ -86,12 +102,6 @@ template <typename T> inline T qFromUnaligned(const uchar *src)
  * and it is therefore a bit more convenient and in most cases more efficient.
 */
 template <typename T> T qbswap(T source);
-
-#ifdef __has_builtin
-#  define QT_HAS_BUILTIN(x)     __has_builtin(x)
-#else
-#  define QT_HAS_BUILTIN(x)     0
-#endif
 
 // GCC 4.3 implemented all the intrinsics, but the 16-bit one only got implemented in 4.8;
 // Clang 2.6 implemented the 32- and 64-bit but waited until 3.2 to implement the 16-bit one

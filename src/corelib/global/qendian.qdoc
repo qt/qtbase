@@ -34,6 +34,29 @@
 */
 
 /*!
+    \internal
+    \fn T qFromUnaligned(const uchar *ptr)
+    \since 5.5
+
+    Loads a \c{T} from address \a ptr, which may be misaligned.
+
+    Use of this function avoids the undefined behavior that the C++ standard
+    otherwise attributes to unaligned loads.
+*/
+
+/*!
+    \internal
+    \fn void qToUnaligned(T t, uchar *ptr)
+    \since 4.5
+
+    Stores \a t to address \a ptr, which may be misaligned.
+
+    Use of this function avoids the undefined behavior that the C++ standard
+    otherwise attributes to unaligned stores.
+*/
+
+
+/*!
     \fn T qFromBigEndian(const uchar *src)
     \since 4.3
     \relates <QtEndian>
