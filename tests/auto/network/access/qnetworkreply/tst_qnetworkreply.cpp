@@ -6814,9 +6814,9 @@ void tst_QNetworkReply::authenticationCacheAfterCancel()
         QTestEventLoop::instance().enterLoop(10);
         QVERIFY(!QTestEventLoop::instance().timeout());
 
-        if (reply->error() == QNetworkReply::HostNotFoundError)
-            QSKIP("skip because of quirk in the old test server");
-        QCOMPARE(reply->error(), QNetworkReply::ProxyAuthenticationRequiredError);
+        // Work round known quirk in the old test server:
+        if (reply->error() != QNetworkReply::HostNotFoundError)
+            QCOMPARE(reply->error(), QNetworkReply::ProxyAuthenticationRequiredError);
         QCOMPARE(authSpy.count(), 0);
         QVERIFY(proxyAuthSpy.count() > 0);
         proxyAuthSpy.clear();
