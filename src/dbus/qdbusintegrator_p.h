@@ -145,6 +145,7 @@ public:
     {}
     ~QDBusSpyCallEvent();
     void placeMetaCall(QObject *) Q_DECL_OVERRIDE;
+    static inline void invokeSpyHooks(const QDBusMessage &msg, const Hook *hooks, int hookCount);
 
     QDBusConnection conn;   // keeps the refcount in QDBusConnectionPrivate up
     QDBusMessage msg;

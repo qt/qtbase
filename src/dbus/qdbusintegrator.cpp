@@ -481,6 +481,11 @@ QDBusSpyCallEvent::~QDBusSpyCallEvent()
 
 void QDBusSpyCallEvent::placeMetaCall(QObject *)
 {
+    invokeSpyHooks(msg, hooks, hookCount);
+}
+
+inline void QDBusSpyCallEvent::invokeSpyHooks(const QDBusMessage &msg, const Hook *hooks, int hookCount)
+{
     // call the spy hook list
     for (int i = 0; i < hookCount; ++i)
         hooks[i](msg);
@@ -509,7 +514,12 @@ bool QDBusConnectionPrivate::handleMessage(const QDBusMessage &amsg)
 {
     if (!ref.load())
         return false;
-    if (!dispatchEnabled && !QDBusMessagePrivate::isLocal(amsg)) {
+
+    // local message are always delivered, regardless of filtering
+    // or whether the dispatcher is enabled
+    bool isLocal = QDBusMessagePrivate::isLocal(amsg);
+
+    if (!dispatchEnabled && !isLocal) {
         // queue messages only, we'll handle them later
         qDBusDebug() << this << "delivery is suspended";
         pendingMessages << amsg;
@@ -523,13 +533,23 @@ bool QDBusConnectionPrivate::handleMessage(const QDBusMessage &amsg)
         // let them see the signal too
         return false;
     case QDBusMessage::MethodCallMessage:
-        // run it through the spy filters (if any) before the regular processing
+        // run it through the spy filters (if any) before the regular processing:
+        // a) if it's a local message, we're in the caller's thread, so invoke the filter directly
+        // b) if it's an external message, post to the main thread
         if (Q_UNLIKELY(qDBusSpyHookList.exists()) && qApp) {
             const QDBusSpyHookList &list = *qDBusSpyHookList;
-            qDBusDebug() << this << "invoking message spies";
-            QCoreApplication::postEvent(qApp, new QDBusSpyCallEvent(this, QDBusConnection(this),
-                                                                    amsg, list.constData(), list.size()));
-            return true;
+            if (isLocal) {
+                Q_ASSERT(QThread::currentThread() != thread());
+                qDBusDebug() << this << "invoking message spies directly";
+                QDBusSpyCallEvent::invokeSpyHooks(amsg, list.constData(), list.size());
+            } else {
+                qDBusDebug() << this << "invoking message spies via event";
+                QCoreApplication::postEvent(qApp, new QDBusSpyCallEvent(this, QDBusConnection(this),
+                                                                        amsg, list.constData(), list.size()));
+
+                // we'll be called back, so return
+                return true;
+            }
         }
 
         handleObjectCall(amsg);
@@ -1451,9 +1471,9 @@ void QDBusConnectionPrivate::handleObjectCall(const QDBusMessage &msg)
     // that means the dispatchLock mutex is locked
     // must not call out to user code in that case
     //
-    // however, if the message is internal, handleMessage was called
-    // directly and no lock is in place. We can therefore call out to
-    // user code, if necessary
+    // however, if the message is internal, handleMessage was called directly
+    // (user's thread) and no lock is in place. We can therefore call out to
+    // user code, if necessary.
     ObjectTreeNode result;
     int usedLength;
     QThread *objThread = 0;
@@ -1492,12 +1512,14 @@ void QDBusConnectionPrivate::handleObjectCall(const QDBusMessage &msg)
                                                            usedLength, msg));
             return;
         } else if (objThread != QThread::currentThread()) {
-            // synchronize with other thread
+            // looped-back message, targeting another thread:
+            // synchronize with it
             postEventToThread(HandleObjectCallPostEventAction, result.obj,
                               new QDBusActivateObjectEvent(QDBusConnection(this), this, result,
                                                            usedLength, msg, &sem));
             semWait = true;
         } else {
+            // looped-back message, targeting current thread
             semWait = false;
         }
     } // release the lock
