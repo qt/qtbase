@@ -898,7 +898,7 @@ void tst_QTimeZone::macTest()
 
 void tst_QTimeZone::winTest()
 {
-#if defined(QT_BUILD_INTERNAL) && defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(QT_BUILD_INTERNAL) && defined(Q_OS_WIN)
     // Known datetimes
     qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
     qint64 dst = QDateTime(QDate(2012, 6, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();

@@ -147,9 +147,11 @@ else:unix {
     SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp tools/qtimezoneprivate_tz.cpp
 }
 else:win32 {
-    SOURCES += tools/qelapsedtimer_win.cpp tools/qlocale_win.cpp
-    !winrt: SOURCES += tools/qtimezoneprivate_win.cpp
+    SOURCES += tools/qelapsedtimer_win.cpp \
+               tools/qlocale_win.cpp \
+               tools/qtimezoneprivate_win.cpp
     winphone: LIBS_PRIVATE += -lWindowsPhoneGlobalizationUtil
+    winrt-*-msvc2013: LIBS += advapi32.lib
 } else:integrity:SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp
 else:SOURCES += tools/qelapsedtimer_generic.cpp
 

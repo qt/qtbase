@@ -42,6 +42,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef Q_OS_WINRT
+#define QT_USE_REGISTRY_TIMEZONE 1
+#endif
+
 /*
     Private
 
@@ -59,9 +63,10 @@ QT_BEGIN_NAMESPACE
 
 // Vista introduced support for historic data, see MSDN docs on DYNAMIC_TIME_ZONE_INFORMATION
 // http://msdn.microsoft.com/en-gb/library/windows/desktop/ms724253%28v=vs.85%29.aspx
-
+#ifdef QT_USE_REGISTRY_TIMEZONE
 static const char tzRegPath[] = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones";
 static const char currTzRegPath[] = "SYSTEM\\CurrentControlSet\\Control\\TimeZoneInformation";
+#endif
 
 enum {
     MIN_YEAR = -292275056,
@@ -123,6 +128,7 @@ static bool equalTzi(const TIME_ZONE_INFORMATION &tzi1, const TIME_ZONE_INFORMAT
            && wcscmp(tzi1.DaylightName, tzi2.DaylightName) == 0);
 }
 
+#ifdef QT_USE_REGISTRY_TIMEZONE
 static bool openRegistryKey(const QString &keyPath, HKEY *key)
 {
     return (RegOpenKeyEx(HKEY_LOCAL_MACHINE, (const wchar_t*)keyPath.utf16(), 0, KEY_READ, key)
@@ -197,9 +203,61 @@ static TIME_ZONE_INFORMATION getRegistryTzi(const QByteArray &windowsId, bool *o
 
     return tzi;
 }
+#else // QT_USE_REGISTRY_TIMEZONE
+struct QWinDynamicTimeZone
+{
+    QString standardName;
+    QString daylightName;
+    QString timezoneName;
+    qint32 bias;
+    bool daylightTime;
+};
+
+typedef QHash<QByteArray, QWinDynamicTimeZone> QWinRTTimeZoneHash;
+
+Q_GLOBAL_STATIC(QWinRTTimeZoneHash, gTimeZones)
+
+static void enumerateTimeZones()
+{
+    DYNAMIC_TIME_ZONE_INFORMATION dtzInfo;
+    quint32 index = 0;
+    QString prevTimeZoneKeyName;
+    while (SUCCEEDED(EnumDynamicTimeZoneInformation(index++, &dtzInfo))) {
+        QWinDynamicTimeZone item;
+        item.timezoneName = QString::fromWCharArray(dtzInfo.TimeZoneKeyName);
+        // As soon as key name repeats, break. Some systems continue to always
+        // return the last item independent of index being out of range
+        if (item.timezoneName == prevTimeZoneKeyName)
+            break;
+        item.standardName = QString::fromWCharArray(dtzInfo.StandardName);
+        item.daylightName = QString::fromWCharArray(dtzInfo.DaylightName);
+        item.daylightTime = !dtzInfo.DynamicDaylightTimeDisabled;
+        item.bias = dtzInfo.Bias;
+        gTimeZones->insert(item.timezoneName.toUtf8(), item);
+        prevTimeZoneKeyName = item.timezoneName;
+    }
+}
+
+static DYNAMIC_TIME_ZONE_INFORMATION dynamicInfoForId(const QByteArray &windowsId)
+{
+    DYNAMIC_TIME_ZONE_INFORMATION dtzInfo;
+    quint32 index = 0;
+    QString prevTimeZoneKeyName;
+    while (SUCCEEDED(EnumDynamicTimeZoneInformation(index++, &dtzInfo))) {
+        const QString timeZoneName = QString::fromWCharArray(dtzInfo.TimeZoneKeyName);
+        if (timeZoneName == QLatin1String(windowsId))
+            break;
+        if (timeZoneName == prevTimeZoneKeyName)
+            break;
+        prevTimeZoneKeyName = timeZoneName;
+    }
+    return dtzInfo;
+}
+#endif // QT_USE_REGISTRY_TIMEZONE
 
 static QList<QByteArray> availableWindowsIds()
 {
+#ifdef QT_USE_REGISTRY_TIMEZONE
     // TODO Consider caching results in a global static, very unlikely to change.
     QList<QByteArray> list;
     HKEY key = NULL;
@@ -217,10 +275,16 @@ static QList<QByteArray> availableWindowsIds()
         RegCloseKey(key);
     }
     return list;
+#else // QT_USE_REGISTRY_TIMEZONE
+    if (gTimeZones->isEmpty())
+        enumerateTimeZones();
+    return gTimeZones->keys();
+#endif // QT_USE_REGISTRY_TIMEZONE
 }
 
 static QByteArray windowsSystemZoneId()
 {
+#ifdef QT_USE_REGISTRY_TIMEZONE
     // On Vista and later is held in the value TimeZoneKeyName in key currTzRegPath
     QString id;
     HKEY key = NULL;
@@ -241,6 +305,11 @@ static QByteArray windowsSystemZoneId()
         if (equalTzi(getRegistryTzi(winId, &ok), sysTzi))
             return winId;
     }
+#else // QT_USE_REGISTRY_TIMEZONE
+    DYNAMIC_TIME_ZONE_INFORMATION dtzi;
+    if (SUCCEEDED(GetDynamicTimeZoneInformation(&dtzi)))
+        return QString::fromWCharArray(dtzi.TimeZoneKeyName).toLocal8Bit();
+#endif // QT_USE_REGISTRY_TIMEZONE
 
     // If we can't determine the current ID use UTC
     return QTimeZonePrivate::utcQByteArray();
@@ -361,6 +430,7 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
     }
 
     if (!m_windowsId.isEmpty()) {
+#ifdef QT_USE_REGISTRY_TIMEZONE
         // Open the base TZI for the time zone
         HKEY baseKey = NULL;
         const QString baseKeyPath = QString::fromUtf8(tzRegPath) + QLatin1Char('\\')
@@ -397,6 +467,34 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
             }
             RegCloseKey(baseKey);
         }
+#else // QT_USE_REGISTRY_TIMEZONE
+        if (gTimeZones->isEmpty())
+            enumerateTimeZones();
+        QWinRTTimeZoneHash::const_iterator it = gTimeZones->find(m_windowsId);
+        if (it != gTimeZones->constEnd()) {
+            m_displayName = it->timezoneName;
+            m_standardName = it->standardName;
+            m_daylightName = it->daylightName;
+            DWORD firstYear = 0;
+            DWORD lastYear = 0;
+            DYNAMIC_TIME_ZONE_INFORMATION dtzi = dynamicInfoForId(m_windowsId);
+            GetDynamicTimeZoneInformationEffectiveYears(&dtzi, &firstYear, &lastYear);
+            // If there is no dynamic information, you can still query for
+            // year 0, which helps simplifying following part
+            for (DWORD year = firstYear; year <= lastYear; ++year) {
+                TIME_ZONE_INFORMATION tzi;
+                if (!GetTimeZoneInformationForYear(year, &dtzi, &tzi))
+                    continue;
+                QWinTransitionRule rule;
+                rule.standardTimeBias = tzi.Bias + tzi.StandardBias;
+                rule.daylightTimeBias = tzi.Bias + tzi.DaylightBias - rule.standardTimeBias;
+                rule.standardTimeRule = tzi.StandardDate;
+                rule.daylightTimeRule = tzi.DaylightDate;
+                rule.startYear = year;
+                m_tranRules.append(rule);
+            }
+        }
+#endif // QT_USE_REGISTRY_TIMEZONE
     }
 
     // If there are no rules then we failed to find a windowsId or any tzi info

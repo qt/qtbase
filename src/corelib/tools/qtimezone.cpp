@@ -61,7 +61,7 @@ static QTimeZonePrivate *newBackendTimeZone()
 #elif defined Q_OS_UNIX
     return new QTzTimeZonePrivate();
     // Registry based timezone backend not available on WinRT
-#elif defined Q_OS_WIN && !defined Q_OS_WINRT
+#elif defined Q_OS_WIN
     return new QWinTimeZonePrivate();
 #elif defined QT_USE_ICU
     return new QIcuTimeZonePrivate();
@@ -88,7 +88,7 @@ static QTimeZonePrivate *newBackendTimeZone(const QByteArray &ianaId)
 #elif defined Q_OS_UNIX
     return new QTzTimeZonePrivate(ianaId);
     // Registry based timezone backend not available on WinRT
-#elif defined Q_OS_WIN && !defined Q_OS_WINRT
+#elif defined Q_OS_WIN
     return new QWinTimeZonePrivate(ianaId);
 #elif defined QT_USE_ICU
     return new QIcuTimeZonePrivate(ianaId);
