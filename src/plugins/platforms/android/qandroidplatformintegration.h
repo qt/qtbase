@@ -143,6 +143,8 @@ private:
 
     static Qt::ApplicationState m_defaultApplicationState;
 
+    static bool m_showPasswordEnabled;
+
     QPlatformFontDatabase *m_androidFDB;
     QAndroidPlatformNativeInterface *m_androidPlatformNativeInterface;
     QAndroidPlatformServices *m_androidPlatformServices;

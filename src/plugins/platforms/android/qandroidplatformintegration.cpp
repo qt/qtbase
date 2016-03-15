@@ -80,6 +80,8 @@ Qt::ScreenOrientation QAndroidPlatformIntegration::m_nativeOrientation = Qt::Pri
 
 Qt::ApplicationState QAndroidPlatformIntegration::m_defaultApplicationState = Qt::ApplicationActive;
 
+bool QAndroidPlatformIntegration::m_showPasswordEnabled = false;
+
 void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteArray &resource)
 {
     if (resource=="JavaVM")
@@ -191,6 +193,12 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
             }
             QWindowSystemInterface::registerTouchDevice(m_touchDevice);
         }
+
+        auto contentResolver = javaActivity.callObjectMethod("getContentResolver", "()Landroid/content/ContentResolver;");
+        Q_ASSERT(contentResolver.isValid());
+        m_showPasswordEnabled = QJNIObjectPrivate::callStaticMethod<jint>("android/provider/Settings$System", "getInt",
+                                    "(Landroid/content/ContentResolver;Ljava/lang/String;)I", contentResolver.object(),
+                                    QJNIObjectPrivate::getStaticObjectField("android/provider/Settings$System", "TEXT_SHOW_PASSWORD", "Ljava/lang/String;").object()) > 0;
     }
 
     QGuiApplicationPrivate::instance()->setApplicationState(m_defaultApplicationState);
@@ -313,6 +321,9 @@ QPlatformServices *QAndroidPlatformIntegration::services() const
 QVariant QAndroidPlatformIntegration::styleHint(StyleHint hint) const
 {
     switch (hint) {
+    case PasswordMaskDelay:
+        // this number is from a hard-coded value in Android code (cf. PasswordTransformationMethod)
+        return m_showPasswordEnabled ? 1500 : 0;
     case ShowIsMaximized:
         return true;
     default:
