@@ -186,6 +186,7 @@ void tst_QIpAddress::invalidParseIp4_data()
     QTest::newRow("..") << "..";
     QTest::newRow("...") << "...";
     QTest::newRow("....") << "....";
+    QTest::newRow(".1.2.3") << ".1.2.3";
     QTest::newRow("1.") << "1.";
     QTest::newRow("1.2.") << "1.2.";
     QTest::newRow("1.2.3.") << "1.2.3.";
@@ -214,9 +215,15 @@ void tst_QIpAddress::invalidParseIp4_data()
     QTest::newRow("-1.1") << "-1.1";
     QTest::newRow("1.-1") << "1.-1";
     QTest::newRow("1.1.1.-1") << "1.1.1.-1";
+    QTest::newRow("300-05") << "300-05";
+    QTest::newRow("127.-1") << "127.-1";
+    QTest::newRow("-127-10") << "-127-10";
+    QTest::newRow("198.-16") << "198-16";
+    QTest::newRow("-127.-0.") << "-127.-0.";
 
     // letters
     QTest::newRow("abc") << "abc";
+    QTest::newRow("localhost") << "localhost";
     QTest::newRow("1.2.3a.4") << "1.2.3a.4";
     QTest::newRow("a.2.3.4") << "a.2.3.4";
     QTest::newRow("1.2.3.4a") << "1.2.3.4a";
@@ -249,6 +256,7 @@ void tst_QIpAddress::ip4ToString_data()
 
     QTest::newRow("0.0.0.0") << 0u << "0.0.0.0";
     QTest::newRow("1.2.3.4") << 0x01020304u << "1.2.3.4";
+    QTest::newRow("127.0.0.1") << 0x7f000001u << "127.0.0.1";
     QTest::newRow("111.222.33.44") << 0x6fde212cu << "111.222.33.44";
     QTest::newRow("255.255.255.255") << 0xffffffffu << "255.255.255.255";
 }

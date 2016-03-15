@@ -111,6 +111,9 @@ static bool parseIp4Internal(IPv4Address &address, const char *ptr, bool acceptL
             return false;
         else if (dotCount == 3 || *endptr == '\0')
             return true;
+        if (*endptr != '.')
+            return false;
+
         ++dotCount;
         ptr = endptr + 1;
     }
