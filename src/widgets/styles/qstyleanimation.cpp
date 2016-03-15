@@ -359,4 +359,6 @@ void QScrollbarStyleAnimation::updateCurrentTime(int time)
 
 QT_END_NAMESPACE
 
+#include "moc_qstyleanimation_p.cpp"
+
 #endif //QT_NO_ANIMATION

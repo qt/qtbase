@@ -268,3 +268,4 @@ void QDesktopWidget::resizeEvent(QResizeEvent *)
 QT_END_NAMESPACE
 
 #include "moc_qdesktopwidget.cpp"
+#include "moc_qdesktopwidget_p.cpp"

@@ -1168,4 +1168,7 @@ bool QUndoStack::isActive() const
 
 QT_END_NAMESPACE
 
+#include "moc_qundostack.cpp"
+#include "moc_qundostack_p.cpp"
+
 #endif // QT_NO_UNDOSTACK

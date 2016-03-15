@@ -114,3 +114,5 @@ bool QWidgetAnimator::animating() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwidgetanimator_p.cpp"

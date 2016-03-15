@@ -3291,4 +3291,6 @@ QSize QListView::viewportSizeHint() const
 
 QT_END_NAMESPACE
 
+#include "moc_qlistview.cpp"
+
 #endif // QT_NO_LISTVIEW

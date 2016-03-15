@@ -738,4 +738,6 @@ Q_WIDGETS_EXPORT QStyleOptionSlider qt_qscrollbarStyleOption(QScrollBar *scrollb
 
 QT_END_NAMESPACE
 
+#include "moc_qscrollbar.cpp"
+
 #endif // QT_NO_SCROLLBAR

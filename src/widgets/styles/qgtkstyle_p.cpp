@@ -888,4 +888,7 @@ uint qHash(const QHashableLatin1Literal &key)
 
 QT_END_NAMESPACE
 
+#include "moc_qgtkstyle_p.cpp"
+#include "moc_qgtkstyle_p_p.cpp"
+
 #endif // !defined(QT_NO_STYLE_GTK)

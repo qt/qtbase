@@ -81,4 +81,6 @@ QSize QToolBarExtension::sizeHint() const
 
 QT_END_NAMESPACE
 
+#include "moc_qtoolbarextension_p.cpp"
+
 #endif // QT_NO_TOOLBUTTON

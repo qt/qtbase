@@ -520,4 +520,6 @@ void QLineEditPrivate::removeAction(QAction *action)
 
 QT_END_NAMESPACE
 
+#include "moc_qlineedit_p.cpp"
+
 #endif

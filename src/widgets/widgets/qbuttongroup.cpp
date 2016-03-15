@@ -261,3 +261,4 @@
     \sa setId()
 */
 
+#include "moc_qbuttongroup.cpp"

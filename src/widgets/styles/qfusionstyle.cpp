@@ -3739,4 +3739,6 @@ QPixmap QFusionStyle::standardPixmap(StandardPixmap standardPixmap, const QStyle
 
 QT_END_NAMESPACE
 
+#include "moc_qfusionstyle_p.cpp"
+
 #endif // QT_NO_STYLE_FUSION || QT_PLUGIN

@@ -2421,4 +2421,6 @@ void QGraphicsWidget::dumpFocusChain()
 
 QT_END_NAMESPACE
 
+#include "moc_qgraphicswidget.cpp"
+
 #endif //QT_NO_GRAPHICSVIEW

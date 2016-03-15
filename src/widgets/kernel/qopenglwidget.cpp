@@ -1343,3 +1343,5 @@ bool QOpenGLWidget::event(QEvent *e)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qopenglwidget.cpp"

@@ -2048,3 +2048,6 @@ qreal QScrollerPrivate::nextSnapPos(qreal p, int dir, Qt::Orientation orientatio
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qscroller.cpp"
+#include "moc_qscroller_p.cpp"

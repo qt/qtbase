@@ -652,3 +652,5 @@ bool QShortcut::event(QEvent *e)
 #endif // QT_NO_SHORTCUT
 
 QT_END_NAMESPACE
+
+#include "moc_qshortcut.cpp"

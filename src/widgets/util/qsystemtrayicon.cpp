@@ -766,3 +766,4 @@ QT_END_NAMESPACE
 #endif // QT_NO_SYSTEMTRAYICON
 
 #include "moc_qsystemtrayicon.cpp"
+#include "moc_qsystemtrayicon_p.cpp"

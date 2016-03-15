@@ -1229,4 +1229,7 @@ void QGraphicsOpacityEffect::draw(QPainter *painter)
 
 QT_END_NAMESPACE
 
+#include "moc_qgraphicseffect.cpp"
+#include "moc_qgraphicseffect_p.cpp"
+
 #endif //QT_NO_GRAPHICSEFFECT

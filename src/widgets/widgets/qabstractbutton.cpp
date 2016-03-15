@@ -1413,3 +1413,5 @@ void QAbstractButton::setIconSize(const QSize &size)
 
 
 QT_END_NAMESPACE
+
+#include "moc_qabstractbutton.cpp"

@@ -183,4 +183,6 @@ originalXLocation(-1)
 
 QT_END_NAMESPACE
 
+#include "moc_qcolumnviewgrip_p.cpp"
+
 #endif // QT_NO_QCOLUMNVIEW

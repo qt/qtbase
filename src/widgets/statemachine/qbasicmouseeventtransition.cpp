@@ -202,4 +202,6 @@ void QBasicMouseEventTransition::onTransition(QEvent *)
 
 QT_END_NAMESPACE
 
+#include "moc_qbasicmouseeventtransition_p.cpp"
+
 #endif //QT_NO_STATEMACHINE

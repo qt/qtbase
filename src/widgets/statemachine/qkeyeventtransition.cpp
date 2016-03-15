@@ -168,4 +168,6 @@ void QKeyEventTransition::onTransition(QEvent *event)
 
 QT_END_NAMESPACE
 
+#include "moc_qkeyeventtransition.cpp"
+
 #endif //QT_NO_STATEMACHINE

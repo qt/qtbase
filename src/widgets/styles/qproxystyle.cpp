@@ -423,4 +423,6 @@ int QProxyStyle::layoutSpacing(QSizePolicy::ControlType control1,
 
 QT_END_NAMESPACE
 
+#include "moc_qproxystyle.cpp"
+
 #endif // QT_NO_STYLE_PROXY

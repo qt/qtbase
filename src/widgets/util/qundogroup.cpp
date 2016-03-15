@@ -495,4 +495,6 @@ QAction *QUndoGroup::createRedoAction(QObject *parent, const QString &prefix) co
 
 QT_END_NAMESPACE
 
+#include "moc_qundogroup.cpp"
+
 #endif // QT_NO_UNDOGROUP

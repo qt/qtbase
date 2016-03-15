@@ -396,4 +396,6 @@ void QErrorMessagePrivate::retranslateStrings()
 
 QT_END_NAMESPACE
 
+#include "moc_qerrormessage.cpp"
+
 #endif // QT_NO_ERRORMESSAGE

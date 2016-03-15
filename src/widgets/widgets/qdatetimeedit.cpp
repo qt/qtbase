@@ -2686,5 +2686,6 @@ void QCalendarPopup::hideEvent(QHideEvent *)
 
 QT_END_NAMESPACE
 #include "moc_qdatetimeedit.cpp"
+#include "moc_qdatetimeedit_p.cpp"
 
 #endif // QT_NO_DATETIMEEDIT

@@ -80,4 +80,6 @@ void QToolBarSeparator::paintEvent(QPaintEvent *)
 
 QT_END_NAMESPACE
 
+#include "moc_qtoolbarseparator_p.cpp"
+
 #endif // QT_NO_TOOLBAR

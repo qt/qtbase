@@ -3449,5 +3449,6 @@ bool QTreeWidget::event(QEvent *e)
 QT_END_NAMESPACE
 
 #include "moc_qtreewidget.cpp"
+#include "moc_qtreewidget_p.cpp"
 
 #endif // QT_NO_TREEWIDGET

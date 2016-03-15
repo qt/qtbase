@@ -509,4 +509,6 @@ bool QSidebar::event(QEvent * event)
 
 QT_END_NAMESPACE
 
+#include "moc_qsidebar_p.cpp"
+
 #endif

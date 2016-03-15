@@ -339,3 +339,5 @@ void QFileInfoGatherer::fetch(const QFileInfo &fileInfo, QElapsedTimer &base, bo
 #endif // QT_NO_FILESYSTEMMODEL
 
 QT_END_NAMESPACE
+
+#include "moc_qfileinfogatherer_p.cpp"

@@ -606,4 +606,6 @@ QT_END_NAMESPACE
 #include "qitemeditorfactory.moc"
 #endif
 
+#include "moc_qitemeditorfactory_p.cpp"
+
 #endif // QT_NO_ITEMVIEWS

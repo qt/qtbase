@@ -506,3 +506,5 @@ QDebug operator<<(QDebug dbg, const QSizePolicy &p)
 #endif
 
 QT_END_NAMESPACE
+
+#include "moc_qsizepolicy.cpp"

@@ -333,3 +333,5 @@ bool QFocusFrame::event(QEvent *e)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qfocusframe.cpp"

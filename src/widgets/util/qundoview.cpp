@@ -466,5 +466,6 @@ QIcon QUndoView::cleanIcon() const
 QT_END_NAMESPACE
 
 #include "qundoview.moc"
+#include "moc_qundoview.cpp"
 
 #endif // QT_NO_UNDOVIEW

@@ -1880,4 +1880,6 @@ QT_END_NAMESPACE
 
 #include "moc_qcompleter.cpp"
 
+#include "moc_qcompleter_p.cpp"
+
 #endif // QT_NO_COMPLETER

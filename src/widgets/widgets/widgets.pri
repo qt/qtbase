@@ -84,6 +84,7 @@ HEADERS += \
         widgets/qplaintextedit_p.h
 
 SOURCES += \
+        widgets/qbuttongroup.cpp \
         widgets/qabstractbutton.cpp \
         widgets/qabstractslider.cpp \
         widgets/qabstractspinbox.cpp \

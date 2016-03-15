@@ -1471,3 +1471,5 @@ QSize QLayout::closestAcceptableSize(const QWidget *widget, const QSize &size)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qlayout.cpp"

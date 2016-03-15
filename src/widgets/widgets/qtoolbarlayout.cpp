@@ -742,4 +742,6 @@ QToolBarItem *QToolBarLayout::createItem(QAction *action)
 
 QT_END_NAMESPACE
 
+#include "moc_qtoolbarlayout_p.cpp"
+
 #endif // QT_NO_TOOLBAR
