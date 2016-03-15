@@ -662,7 +662,7 @@ CFG_SYSTEM_PROXIES=no
 CFG_ANDROID_STYLE_ASSETS=yes
 CFG_GSTREAMER=auto
 CFG_GSTREAMER_VERSION=""
-CFG_ATOMIC64=auto
+CFG_STD_ATOMIC64=auto
 
 # Target architecture
 CFG_ARCH=
@@ -4433,11 +4433,11 @@ fi
 
 # Detect whether 64-bit std::atomic works -- some 32-bit platforms require extra library support
 if compileTest common/atomic64 "64-bit std::atomic"; then
-    CFG_ATOMIC64=yes
+    CFG_STD_ATOMIC64=yes
 elif compileTest common/atomic64 "64-bit std::atomic in -latomic" -latomic; then
-    CFG_ATOMIC64=libatomic
+    CFG_STD_ATOMIC64=libatomic
 else
-    CFG_ATOMIC64=no
+    CFG_STD_ATOMIC64=no
 fi
 
 # detect sse2 support
@@ -6220,7 +6220,7 @@ if [ "$CFG_STDCXX" != "c++11" ]; then
     fi
 fi
 
-if [ "$CFG_ATOMIC64" = "libatomic" ]; then
+if [ "$CFG_STD_ATOMIC64" = "libatomic" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG atomic64-libatomic"
 fi
 
@@ -6662,7 +6662,7 @@ if [ "$CFG_FRAMEWORK" = "yes" ]; then
     echo "#define QT_MAC_FRAMEWORK_BUILD"
 fi
 
-if [ "$CFG_ATOMIC64" = "no" ]; then
+if [ "$CFG_STD_ATOMIC64" = "no" ]; then
     echo "#define QT_NO_STD_ATOMIC64"
 fi
 
