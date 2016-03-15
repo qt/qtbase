@@ -279,36 +279,30 @@ void tst_QTabBar::sizeHints()
 {
     QTabBar tabBar;
     tabBar.setFont(QFont("Arial", 10));
-    tabBar.addTab("tab 01");
-    tabBar.addTab("tab 02");
-    tabBar.addTab("tab 03");
-    tabBar.addTab("tab 04");
-    tabBar.addTab("tab 05");
-    tabBar.addTab("tab 06");
-    tabBar.addTab("This is tab7");
-    tabBar.addTab("This is tab8");
-    tabBar.addTab("This is tab9 with a very long title");
 
     // No eliding and no scrolling -> tabbar becomes very wide
     tabBar.setUsesScrollButtons(false);
     tabBar.setElideMode(Qt::ElideNone);
-//    qDebug() << tabBar.minimumSizeHint() << tabBar.sizeHint();
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-27230", Abort);
-#endif
+    tabBar.addTab("tab 01");
+
+    // Fetch the minimum size hint width and make sure that we create enough
+    // tabs.
+    int minimumSizeHintWidth = tabBar.minimumSizeHint().width();
+    for (int i = 0; i <= 700 / minimumSizeHintWidth; ++i)
+        tabBar.addTab(QString("tab 0%1").arg(i+2));
+
+    //qDebug() << tabBar.minimumSizeHint() << tabBar.sizeHint();
     QVERIFY(tabBar.minimumSizeHint().width() > 700);
     QVERIFY(tabBar.sizeHint().width() > 700);
 
     // Scrolling enabled -> no reason to become very wide
     tabBar.setUsesScrollButtons(true);
- //   qDebug() << tabBar.minimumSizeHint() << tabBar.sizeHint();
     QVERIFY(tabBar.minimumSizeHint().width() < 200);
     QVERIFY(tabBar.sizeHint().width() > 700); // unchanged
 
     // Eliding enabled -> no reason to become very wide
     tabBar.setUsesScrollButtons(false);
     tabBar.setElideMode(Qt::ElideRight);
-//    qDebug() << tabBar.minimumSizeHint() << tabBar.sizeHint();
 
     // The sizeHint is very much dependent on the screen DPI value
     // so we can not really predict it.
@@ -317,7 +311,7 @@ void tst_QTabBar::sizeHints()
     QVERIFY(tabBarMinSizeHintWidth < tabBarSizeHintWidth);
     QVERIFY(tabBarSizeHintWidth > 700); // unchanged
 
-    tabBar.addTab("This is tab10 with a very long title");
+    tabBar.addTab("This is tab with a very long title");
     QVERIFY(tabBar.minimumSizeHint().width() > tabBarMinSizeHintWidth);
     QVERIFY(tabBar.sizeHint().width() > tabBarSizeHintWidth);
 }
