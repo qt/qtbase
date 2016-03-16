@@ -149,6 +149,7 @@ public:
 
 Q_DECLARE_TYPEINFO(QStringList, Q_MOVABLE_TYPE);
 
+#ifndef Q_QDOC
 inline QStringList *QListSpecialMethods<QString>::self()
 { return static_cast<QStringList *>(this); }
 inline const QStringList *QListSpecialMethods<QString>::self() const
@@ -284,6 +285,7 @@ inline int QStringList::lastIndexOf(const QRegularExpression &rx, int from) cons
 }
 #endif // QT_NO_REGULAREXPRESSION
 #endif // QT_BOOTSTRAPPED
+#endif // Q_QDOC
 
 QT_END_NAMESPACE
 

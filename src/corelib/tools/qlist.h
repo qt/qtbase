@@ -118,7 +118,10 @@ struct Q_CORE_EXPORT QListData {
 };
 
 template <typename T>
-class QList : public QListSpecialMethods<T>
+class QList
+#ifndef Q_QDOC
+    : public QListSpecialMethods<T>
+#endif
 {
 public:
     struct MemoryLayout

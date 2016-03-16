@@ -50,11 +50,13 @@ QT_BEGIN_NAMESPACE
 
 typedef QListIterator<QByteArray> QByteArrayListIterator;
 typedef QMutableListIterator<QByteArray> QMutableByteArrayListIterator;
+#ifndef Q_QDOC
 typedef QList<QByteArray> QByteArrayList;
 
 namespace QtPrivate {
     QByteArray Q_CORE_EXPORT QByteArrayList_join(const QByteArrayList *that, const char *separator, int separatorLength);
 }
+#endif
 
 #ifdef Q_QDOC
 class QByteArrayList : public QList<QByteArray>
