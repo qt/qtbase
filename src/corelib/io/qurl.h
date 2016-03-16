@@ -164,6 +164,12 @@ public:
     };
     Q_DECLARE_FLAGS(ComponentFormattingOptions, ComponentFormattingOption)
 #ifdef Q_QDOC
+private:
+    // We need to let qdoc think that FormattingOptions is a normal QFlags, but
+    // it needs to be a QUrlTwoFlags for compiling default arguments of somme functions.
+    template<typename T> struct QFlags : QUrlTwoFlags<T, ComponentFormattingOption>
+    { using QUrlTwoFlags<T, ComponentFormattingOption>::QUrlTwoFlags; };
+public:
     Q_DECLARE_FLAGS(FormattingOptions, UrlFormattingOption)
 #else
     typedef QUrlTwoFlags<UrlFormattingOption, ComponentFormattingOption> FormattingOptions;
@@ -372,6 +378,7 @@ Q_DECLARE_SHARED(QUrl)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QUrl::ComponentFormattingOptions)
 //Q_DECLARE_OPERATORS_FOR_FLAGS(QUrl::FormattingOptions)
 
+#ifndef Q_QDOC
 Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption f1, QUrl::UrlFormattingOption f2)
 { return QUrl::FormattingOptions(f1) | f2; }
 Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption f1, QUrl::FormattingOptions f2)
@@ -399,6 +406,7 @@ Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::ComponentFormatt
 
 //inline QUrl::UrlFormattingOption &operator=(const QUrl::UrlFormattingOption &i, QUrl::ComponentFormattingOptions f)
 //{ i = int(f); f; }
+#endif // Q_QDOC
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QUrl &);
