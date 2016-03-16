@@ -111,8 +111,8 @@ public:
     typedef Enum enum_type;
     // compiler-generated copy/move ctor/assignment operators are fine!
 #ifdef Q_QDOC
-    inline QFlags(const QFlags &other);
-    inline QFlags &operator=(const QFlags &other);
+    Q_DECL_CONSTEXPR inline QFlags(const QFlags &other);
+    Q_DECL_CONSTEXPR inline QFlags &operator=(const QFlags &other);
 #endif
     Q_DECL_CONSTEXPR inline QFlags(Enum f) Q_DECL_NOTHROW : i(Int(f)) {}
     Q_DECL_CONSTEXPR inline QFlags(Zero = Q_NULLPTR) Q_DECL_NOTHROW : i(0) {}
