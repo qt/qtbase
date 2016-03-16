@@ -210,8 +210,10 @@ bool QEventDispatcherWinRT::processEvents(QEventLoop::ProcessEventsFlags flags)
         const QVector<HANDLE> timerHandles = d->timerIdToHandle.values().toVector();
         if (waitTime)
             emit aboutToBlock();
+        bool timerEventsSent = false;
         DWORD waitResult = WaitForMultipleObjectsEx(timerHandles.count(), timerHandles.constData(), FALSE, waitTime, TRUE);
-        if (waitResult >= WAIT_OBJECT_0 && waitResult < WAIT_OBJECT_0 + timerHandles.count()) {
+        while (waitResult >= WAIT_OBJECT_0 && waitResult < WAIT_OBJECT_0 + timerHandles.count()) {
+            timerEventsSent = true;
             const HANDLE handle = timerHandles.value(waitResult - WAIT_OBJECT_0);
             ResetEvent(handle);
             const int timerId = d->timerHandleToId.value(handle);
@@ -226,12 +228,10 @@ bool QEventDispatcherWinRT::processEvents(QEventLoop::ProcessEventsFlags flags)
             // Update timer's targetTime
             const quint64 targetTime = qt_msectime() + info.interval;
             info.targetTime = targetTime;
-            emit awake();
-            return true;
+            waitResult = WaitForMultipleObjectsEx(timerHandles.count(), timerHandles.constData(), FALSE, 0, TRUE);
         }
         emit awake();
-
-        if (userEventsSent)
+        if (timerEventsSent || userEventsSent)
             return true;
 
         // We cannot wait infinitely like on other platforms, as
