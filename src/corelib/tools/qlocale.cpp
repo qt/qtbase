@@ -62,7 +62,6 @@
 #include "qvariant.h"
 #include "qstringbuilder.h"
 #include "private/qnumeric_p.h"
-#include "private/qsystemlibrary_p.h"
 #ifdef Q_OS_WIN
 #   include <qt_windows.h>
 #   include <time.h>

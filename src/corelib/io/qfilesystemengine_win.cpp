@@ -176,8 +176,6 @@ typedef DWORD (WINAPI *PtrGetEffectiveRightsFromAclW)(PACL, PTRUSTEE_W, OUT PACC
 static PtrGetEffectiveRightsFromAclW ptrGetEffectiveRightsFromAclW = 0;
 typedef BOOL (WINAPI *PtrGetUserProfileDirectoryW)(HANDLE, LPWSTR, LPDWORD);
 static PtrGetUserProfileDirectoryW ptrGetUserProfileDirectoryW = 0;
-typedef BOOL (WINAPI *PtrGetVolumePathNamesForVolumeNameW)(LPCWSTR,LPWSTR,DWORD,PDWORD);
-static PtrGetVolumePathNamesForVolumeNameW ptrGetVolumePathNamesForVolumeNameW = 0;
 QT_END_INCLUDE_NAMESPACE
 
 static TRUSTEE_W currentUserTrusteeW;
@@ -272,9 +270,6 @@ static void resolveLibs()
         HINSTANCE userenvHnd = QSystemLibrary::load(L"userenv");
         if (userenvHnd)
             ptrGetUserProfileDirectoryW = (PtrGetUserProfileDirectoryW)GetProcAddress(userenvHnd, "GetUserProfileDirectoryW");
-        HINSTANCE kernel32 = LoadLibrary(L"kernel32");
-        if(kernel32)
-            ptrGetVolumePathNamesForVolumeNameW = (PtrGetVolumePathNamesForVolumeNameW)GetProcAddress(kernel32, "GetVolumePathNamesForVolumeNameW");
     }
 }
 #endif // QT_NO_LIBRARY
@@ -349,15 +344,13 @@ static QString readSymLink(const QFileSystemEntry &link)
 
 #if !defined(QT_NO_LIBRARY)
         resolveLibs();
-        if (ptrGetVolumePathNamesForVolumeNameW) {
-            QRegExp matchVolName(QLatin1String("^Volume\\{([a-z]|[0-9]|-)+\\}\\\\"), Qt::CaseInsensitive);
-            if(matchVolName.indexIn(result) == 0) {
-                DWORD len;
-                wchar_t buffer[MAX_PATH];
-                QString volumeName = result.mid(0, matchVolName.matchedLength()).prepend(QLatin1String("\\\\?\\"));
-                if(ptrGetVolumePathNamesForVolumeNameW((wchar_t*)volumeName.utf16(), buffer, MAX_PATH, &len) != 0)
-                    result.replace(0,matchVolName.matchedLength(), QString::fromWCharArray(buffer));
-            }
+        QRegExp matchVolName(QLatin1String("^Volume\\{([a-z]|[0-9]|-)+\\}\\\\"), Qt::CaseInsensitive);
+        if (matchVolName.indexIn(result) == 0) {
+            DWORD len;
+            wchar_t buffer[MAX_PATH];
+            QString volumeName = result.mid(0, matchVolName.matchedLength()).prepend(QLatin1String("\\\\?\\"));
+            if (GetVolumePathNamesForVolumeName(reinterpret_cast<LPCWSTR>(volumeName.utf16()), buffer, MAX_PATH, &len) != 0)
+                result.replace(0,matchVolName.matchedLength(), QString::fromWCharArray(buffer));
         }
 #endif // !Q_OS_WINRT
     }
@@ -583,23 +576,14 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
     return QFileSystemEntry(ret, QFileSystemEntry::FromInternalPath());
 }
 
-// FILE_INFO_BY_HANDLE_CLASS has been extended by FileIdInfo = 18 as of VS2012.
-typedef enum { Q_FileIdInfo = 18 } Q_FILE_INFO_BY_HANDLE_CLASS;
-
-#  if defined(Q_CC_MINGW) || (defined(Q_CC_MSVC) && (_MSC_VER < 1700 || WINVER <= 0x0601))
-
-// MinGW-64 defines FILE_ID_128 as of gcc-4.8.1 along with FILE_SUPPORTS_INTEGRITY_STREAMS
-#    if !(defined(Q_CC_MINGW) && defined(FILE_SUPPORTS_INTEGRITY_STREAMS))
-typedef struct _FILE_ID_128 {
-    BYTE  Identifier[16];
-} FILE_ID_128, *PFILE_ID_128;
-#    endif // !(Q_CC_MINGW && FILE_SUPPORTS_INTEGRITY_STREAMS)
+#if defined(Q_CC_MINGW) && WINVER < 0x0602 //  Windows 8 onwards
 
 typedef struct _FILE_ID_INFO {
     ULONGLONG VolumeSerialNumber;
     FILE_ID_128 FileId;
 } FILE_ID_INFO, *PFILE_ID_INFO;
-#  endif // if defined (Q_CC_MINGW) || (defined(Q_CC_MSVC) && (_MSC_VER < 1700 || WINVER <= 0x0601))
+
+#endif // if defined (Q_CC_MINGW) && WINVER < 0x0602
 
 // File ID for Windows up to version 7.
 static inline QByteArray fileId(HANDLE handle)
@@ -622,37 +606,21 @@ static inline QByteArray fileId(HANDLE handle)
 // File ID for Windows starting from version 8.
 QByteArray fileIdWin8(HANDLE handle)
 {
-#ifndef Q_OS_WINRT
-    typedef BOOL (WINAPI* GetFileInformationByHandleExType)(HANDLE, Q_FILE_INFO_BY_HANDLE_CLASS, void *, DWORD);
-
-    // Dynamically resolve  GetFileInformationByHandleEx (Vista onwards).
-    static GetFileInformationByHandleExType getFileInformationByHandleEx = 0;
-    if (!getFileInformationByHandleEx) {
-        QSystemLibrary library(QLatin1String("kernel32"));
-        getFileInformationByHandleEx = (GetFileInformationByHandleExType)library.resolve("GetFileInformationByHandleEx");
-    }
-    QByteArray result;
-    if (getFileInformationByHandleEx) {
-        FILE_ID_INFO infoEx;
-        if (getFileInformationByHandleEx(handle, Q_FileIdInfo,
-                                         &infoEx, sizeof(FILE_ID_INFO))) {
-            result = QByteArray::number(infoEx.VolumeSerialNumber, 16);
-            result += ':';
-            // Note: MinGW-64's definition of FILE_ID_128 differs from the MSVC one.
-            result += QByteArray((char *)&infoEx.FileId, sizeof(infoEx.FileId)).toHex();
-        }
-    }
-#else // !Q_OS_WINRT
+#if !defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE)
     QByteArray result;
     FILE_ID_INFO infoEx;
-    if (GetFileInformationByHandleEx(handle, FileIdInfo,
+    if (GetFileInformationByHandleEx(handle,
+                                     static_cast<FILE_INFO_BY_HANDLE_CLASS>(18), // FileIdInfo in Windows 8
                                      &infoEx, sizeof(FILE_ID_INFO))) {
         result = QByteArray::number(infoEx.VolumeSerialNumber, 16);
         result += ':';
-        result += QByteArray((char *)infoEx.FileId.Identifier, sizeof(infoEx.FileId.Identifier)).toHex();
+        // Note: MinGW-64's definition of FILE_ID_128 differs from the MSVC one.
+        result += QByteArray(reinterpret_cast<const char *>(&infoEx.FileId), int(sizeof(infoEx.FileId))).toHex();
     }
-#endif // Q_OS_WINRT
     return result;
+#else // !QT_BOOTSTRAPPED && !QT_BUILD_QMAKE
+    return fileId(handle);
+#endif
 }
 
 //static

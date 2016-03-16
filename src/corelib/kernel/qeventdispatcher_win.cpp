@@ -91,35 +91,13 @@ class QEventDispatcherWin32Private;
 #define DWORD_PTR DWORD
 #endif
 
-typedef MMRESULT(WINAPI *ptimeSetEvent)(UINT, UINT, LPTIMECALLBACK, DWORD_PTR, UINT);
-typedef MMRESULT(WINAPI *ptimeKillEvent)(UINT);
-
-static ptimeSetEvent qtimeSetEvent = 0;
-static ptimeKillEvent qtimeKillEvent = 0;
-
 LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp);
-
-static void resolveTimerAPI()
-{
-    static bool triedResolve = false;
-    if (!triedResolve) {
-#ifndef QT_NO_THREAD
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&triedResolve));
-        if (triedResolve)
-            return;
-#endif
-        triedResolve = true;
-        qtimeSetEvent = (ptimeSetEvent)QSystemLibrary::resolve(QLatin1String("winmm"), "timeSetEvent");
-        qtimeKillEvent = (ptimeKillEvent)QSystemLibrary::resolve(QLatin1String("winmm"), "timeKillEvent");
-    }
-}
 
 QEventDispatcherWin32Private::QEventDispatcherWin32Private()
     : threadId(GetCurrentThreadId()), interrupt(false), closingDown(false), internalHwnd(0),
       getMessageHook(0), serialNumber(0), lastSerialNumber(0), sendPostedEventsWindowsTimerId(0),
       wakeUps(0), activateNotifiersPosted(false)
 {
-    resolveTimerAPI();
 }
 
 QEventDispatcherWin32Private::~QEventDispatcherWin32Private()
@@ -394,24 +372,27 @@ void QEventDispatcherWin32Private::registerTimer(WinTimerInfo *t)
 
     Q_Q(QEventDispatcherWin32);
 
-    int ok = 0;
+    bool ok = false;
     calculateNextTimeout(t, qt_msectime());
     uint interval = t->interval;
     if (interval == 0u) {
         // optimization for single-shot-zero-timer
         QCoreApplication::postEvent(q, new QZeroTimerEvent(t->timerId));
-        ok = 1;
-    } else if ((interval < 20u || t->timerType == Qt::PreciseTimer) && qtimeSetEvent) {
-        ok = t->fastTimerId = qtimeSetEvent(interval, 1, qt_fast_timer_proc, (DWORD_PTR)t,
-                                            TIME_CALLBACK_FUNCTION | TIME_PERIODIC | TIME_KILL_SYNCHRONOUS);
+        ok = true;
+    } else if (interval < 20u || t->timerType == Qt::PreciseTimer) {
+        // 3/2016: Although MSDN states timeSetEvent() is deprecated, the function
+        // is still deemed to be the most reliable precision timer.
+        t->fastTimerId = timeSetEvent(interval, 1, qt_fast_timer_proc, DWORD_PTR(t),
+                                      TIME_CALLBACK_FUNCTION | TIME_PERIODIC | TIME_KILL_SYNCHRONOUS);
+        ok = t->fastTimerId;
     }
 
-    if (ok == 0) {
+    if (!ok) {
         // user normal timers for (Very)CoarseTimers, or if no more multimedia timers available
         ok = SetTimer(internalHwnd, t->timerId, interval, 0);
     }
 
-    if (ok == 0)
+    if (!ok)
         qErrnoWarning("QEventDispatcherWin32::registerTimer: Failed to create a timer");
 }
 
@@ -420,7 +401,7 @@ void QEventDispatcherWin32Private::unregisterTimer(WinTimerInfo *t)
     if (t->interval == 0) {
         QCoreApplicationPrivate::removePostedTimerEvent(t->dispatcher, t->timerId);
     } else if (t->fastTimerId != 0) {
-        qtimeKillEvent(t->fastTimerId);
+        timeKillEvent(t->fastTimerId);
         QCoreApplicationPrivate::removePostedTimerEvent(t->dispatcher, t->timerId);
     } else if (internalHwnd) {
         KillTimer(internalHwnd, t->timerId);

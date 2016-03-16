@@ -138,7 +138,7 @@ struct WinTimerInfo {                           // internal timer info
     quint64 timeout;                            // - when to actually fire
     QObject *obj;                               // - object to receive events
     bool inTimerEvent;
-    int fastTimerId;
+    UINT fastTimerId;
 };
 
 class QZeroTimerEvent : public QTimerEvent

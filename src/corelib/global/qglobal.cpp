@@ -47,7 +47,6 @@
 #include "qdatetime.h"
 #include <private/qlocale_tools_p.h>
 
-#include <private/qsystemlibrary_p.h>
 #include <qmutex.h>
 
 #ifndef QT_NO_QOBJECT
