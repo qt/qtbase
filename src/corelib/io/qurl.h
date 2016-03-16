@@ -48,9 +48,9 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qglobal.h>
 
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC) || defined(Q_QDOC)
 Q_FORWARD_DECLARE_CF_TYPE(CFURL);
-#  ifdef __OBJC__
+#  if defined(__OBJC__) || defined(Q_QDOC)
 Q_FORWARD_DECLARE_OBJC_CLASS(NSURL);
 #  endif
 #endif

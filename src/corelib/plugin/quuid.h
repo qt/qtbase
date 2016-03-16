@@ -55,9 +55,9 @@ typedef struct _GUID
 #endif
 #endif
 
-#ifdef Q_OS_DARWIN
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
 Q_FORWARD_DECLARE_CF_TYPE(CFUUID);
-#  ifdef __OBJC__
+#  if defined(__OBJC__) || defined(Q_QDOC)
 Q_FORWARD_DECLARE_OBJC_CLASS(NSUUID);
 #  endif
 #endif

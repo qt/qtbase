@@ -68,9 +68,9 @@ namespace std
 #error qstring.h must be included before any header file that defines truncate
 #endif
 
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC) || defined(Q_QDOC)
 Q_FORWARD_DECLARE_CF_TYPE(CFString);
-#  ifdef __OBJC__
+#  if defined(__OBJC__) || defined(Q_QDOC)
 Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
 #  endif
 #endif
