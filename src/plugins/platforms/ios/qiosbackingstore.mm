@@ -149,12 +149,12 @@ void QIOSBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
     }
 
     if (window->surfaceType() == QSurface::RasterGLSurface) {
-        QPainter painter(m_glDevice);
-        painter.drawImage(QPoint(), m_image);
+        static QPlatformTextureList emptyTextureList;
+        composeAndFlush(window, region, offset, &emptyTextureList, m_context, false);
+    } else {
+        m_context->makeCurrent(window);
+        m_context->swapBuffers(window);
     }
-
-    m_context->makeCurrent(window);
-    m_context->swapBuffers(window);
 }
 
 void QIOSBackingStore::resize(const QSize &size, const QRegion &staticContents)
