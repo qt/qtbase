@@ -354,11 +354,16 @@ QPlatformInputContext *QPlatformIntegration::inputContext() const
 /*!
   Returns the platforms accessibility.
 
-  The default implementation returns 0, implying no accessibility support.
+  The default implementation returns QPlatformAccessibility which
+  delegates handling of accessibility to accessiblebridge plugins.
 */
 QPlatformAccessibility *QPlatformIntegration::accessibility() const
 {
-    return 0;
+    static QPlatformAccessibility *accessibility = 0;
+    if (Q_UNLIKELY(!accessibility)) {
+        accessibility = new QPlatformAccessibility;
+    }
+    return accessibility;
 }
 
 #endif
