@@ -142,15 +142,9 @@ QT_DEPRECATED_X("Use std::count") inline void qCount(const Container &container,
 }
 
 #ifdef Q_QDOC
-template <typename T>
-LessThan qLess()
-{
-}
-
-template <typename T>
-LessThan qGreater()
-{
-}
+typedef void* LessThan;
+template <typename T> LessThan qLess();
+template <typename T> LessThan qGreater();
 #else
 template <typename T>
 class QT_DEPRECATED_X("Use std::less") qLess
