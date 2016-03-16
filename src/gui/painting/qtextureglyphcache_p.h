@@ -117,7 +117,9 @@ public:
     virtual void resizeTextureData(int width, int height) = 0;
     virtual int glyphPadding() const { return 0; }
 
+    virtual void beginFillTexture() { }
     virtual void fillTexture(const Coord &coord, glyph_t glyph, QFixed subPixelPosition) = 0;
+    virtual void endFillTexture() { }
 
     inline void createCache(int width, int height) {
         m_w = width;
