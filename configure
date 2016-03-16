@@ -682,7 +682,7 @@ CFG_EGLFS_EGLDEVICE=no
 CFG_EGLFS_MALI=no
 CFG_EGLFS_VIV=no
 CFG_EGLFS_VIV_WL=no
-CFG_DIRECTFB=auto
+CFG_DIRECTFB=no
 CFG_GBM=auto
 CFG_LINUXFB=auto
 CFG_KMS=auto
@@ -2688,8 +2688,8 @@ Additional options:
     -no-gbm ............ Do not compile backends for GBM.
  *  -gbm ............... Compile backends for GBM.
 
-    -no-directfb ....... Do not compile DirectFB support.
- *  -directfb .......... Compile DirectFB support.
+ *  -no-directfb ....... Do not compile DirectFB support.
+    -directfb .......... Compile DirectFB support.
 
     -no-linuxfb ........ Do not compile Linux Framebuffer support.
  *  -linuxfb ........... Compile Linux Framebuffer support.
