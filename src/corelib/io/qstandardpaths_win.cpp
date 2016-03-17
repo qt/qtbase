@@ -111,6 +111,7 @@ static inline void appendTestMode(QString &path)
 // Map QStandardPaths::StandardLocation to CLSID of SHGetSpecialFolderPath()
 static int writableSpecialFolderClsid(QStandardPaths::StandardLocation type)
 {
+#ifndef Q_OS_WINCE
     static const int clsids[] = {
         CSIDL_DESKTOPDIRECTORY, // DesktopLocation
         CSIDL_PERSONAL,         // DocumentsLocation
@@ -130,6 +131,27 @@ static int writableSpecialFolderClsid(QStandardPaths::StandardLocation type)
         CSIDL_APPDATA,          // AppDataLocation ("Roaming" path)
         CSIDL_LOCAL_APPDATA,    // AppConfigLocation ("Local" path)
     };
+#else // !Q_OS_WINCE
+    static const int clsids[] = {
+        CSIDL_DESKTOPDIRECTORY, // DesktopLocation
+        CSIDL_PERSONAL,         // DocumentsLocation
+        CSIDL_FONTS,            // FontsLocation
+        CSIDL_PROGRAMS,         // ApplicationsLocation
+        CSIDL_MYMUSIC,          // MusicLocation
+        CSIDL_MYVIDEO,          // MoviesLocation
+        CSIDL_MYPICTURES,       // PicturesLocation
+        -1, -1,                 // TempLocation/HomeLocation
+        CSIDL_APPDATA,          // AppLocalDataLocation, AppLocalDataLocation = DataLocation
+        -1,                     // CacheLocation
+        CSIDL_APPDATA,          // GenericDataLocation
+        -1,                     // RuntimeLocation
+        CSIDL_APPDATA,          // ConfigLocation
+        -1, -1,                 // DownloadLocation/GenericCacheLocation
+        CSIDL_APPDATA,          // GenericConfigLocation
+        CSIDL_APPDATA,          // AppDataLocation
+        CSIDL_APPDATA,          // AppConfigLocation
+    };
+#endif // Q_OS_WINCE
 
     Q_STATIC_ASSERT(sizeof(clsids) / sizeof(clsids[0]) == size_t(QStandardPaths::AppConfigLocation + 1));
     return size_t(type) < sizeof(clsids) / sizeof(clsids[0]) ? clsids[type] : -1;
