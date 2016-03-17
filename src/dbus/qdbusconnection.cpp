@@ -208,7 +208,7 @@ QDBusConnectionPrivate *QDBusConnectionManager::connectToBus(QDBusConnection::Bu
     data.suspendedDelivery = suspendedDelivery;
 
     emit connectionRequested(&data);
-    if (suspendedDelivery) {
+    if (suspendedDelivery && data.result->connection) {
         data.result->ref.ref();
         QDBusConnectionDispatchEnabler *o = new QDBusConnectionDispatchEnabler(data.result);
         QTimer::singleShot(0, o, SLOT(execute()));
@@ -291,7 +291,7 @@ void QDBusConnectionManager::executeConnectionRequest(QDBusConnectionManager::Co
         // will lock in QDBusConnectionPrivate::connectRelay()
         d->setConnection(c, error);
         d->createBusService();
-        if (data->suspendedDelivery)
+        if (c && data->suspendedDelivery)
             d->setDispatchEnabled(false);
     }
 }

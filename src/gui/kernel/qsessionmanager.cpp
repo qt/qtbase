@@ -64,22 +64,21 @@ QT_BEGIN_NAMESPACE
     settings.
 
     QSessionManager provides an interface between the application and the
-    session manager so that the program can work well with the session manager.
-    In Qt, session management requests for action are handled by the two
-    signals QGuiApplication::commitDataRequest() and
-    QGuiApplication::saveStateRequest(). Both provide a reference to a session
-    manager object as argument, to allow the application to communicate with
-    the session manager. The session manager can only be accessed through these
-    functions.
+    platform's session manager. In Qt, session management requests for action
+    are handled by the two signals QGuiApplication::commitDataRequest() and
+    QGuiApplication::saveStateRequest(). Both provide a reference to a
+    QSessionManager object as argument. The session manager can only be
+    accessed in slots invoked by these signals.
+
+    \warning If you use QSessionManager, you should disable fallback session
+    management: QGuiApplication::setFallbackSessionManagementEnabled().
 
     No user interaction is possible \e unless the application gets explicit
     permission from the session manager. You ask for permission by calling
     allowsInteraction() or, if it is really urgent, allowsErrorInteraction().
     Qt does not enforce this, but the session manager may.
 
-    You can try to abort the shutdown process by calling cancel(). The default
-    commitData() function does this if some top-level window rejected its
-    closeEvent().
+    You can try to abort the shutdown process by calling cancel().
 
     For sophisticated session managers provided on Unix/X11, QSessionManager
     offers further possibilities to fine-tune an application's session
