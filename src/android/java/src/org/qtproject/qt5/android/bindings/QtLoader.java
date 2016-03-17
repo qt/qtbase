@@ -90,6 +90,7 @@ public abstract class QtLoader {
     public static final String STATIC_INIT_CLASSES_KEY = "static.init.classes";
     public static final String NECESSITAS_API_LEVEL_KEY = "necessitas.api.level";
     public static final String EXTRACT_STYLE_KEY = "extract.android.style";
+    private static final String EXTRACT_STYLE_MINIMAL_KEY = "extract.android.style.option";
 
     /// Ministro server parameter keys
     public static final String REQUIRED_MODULES_KEY = "required.modules";
@@ -111,12 +112,11 @@ public abstract class QtLoader {
     // and must be separated with "\t"
     // e.g "-param1\t-param2=value2\t-param3\tvalue3"
 
-    public String ENVIRONMENT_VARIABLES = "QT_USE_ANDROID_NATIVE_STYLE=1\tQT_USE_ANDROID_NATIVE_DIALOGS=1\t";
+    public String ENVIRONMENT_VARIABLES = "QT_USE_ANDROID_NATIVE_DIALOGS=1";
     // use this variable to add any environment variables to your application.
     // the env vars must be separated with "\t"
     // e.g. "ENV_VAR1=1\tENV_VAR2=2\t"
     // Currently the following vars are used by the android plugin:
-    // * QT_USE_ANDROID_NATIVE_STYLE - 1 to use the android widget style if available.
     // * QT_USE_ANDROID_NATIVE_DIALOGS -1 to use the android native dialogs.
 
     public String[] QT_ANDROID_THEMES = null;     // A list with all themes that your application want to use.
@@ -593,8 +593,22 @@ public abstract class QtLoader {
 
                 String themePath = m_context.getApplicationInfo().dataDir + "/qt-reserved-files/android-style/";
                 String stylePath = themePath + m_displayDensity + "/";
-                if (!(new File(stylePath)).exists())
+
+                String extractOption = "full";
+                if (m_contextInfo.metaData.containsKey("android.app.extract_android_style")) {
+                    extractOption = m_contextInfo.metaData.getString("android.app.extract_android_style");
+                    if (!extractOption.equals("full") && !extractOption.equals("minimal") && !extractOption.equals("none")) {
+                        Log.e(QtApplication.QtTAG, "Invalid extract_android_style option \"" + extractOption + "\", defaulting to full");
+                        extractOption = "full";
+                   }
+                }
+
+                if (!(new File(stylePath)).exists() && !extractOption.equals("none")) {
                     loaderParams.putString(EXTRACT_STYLE_KEY, stylePath);
+                    loaderParams.putBoolean(EXTRACT_STYLE_MINIMAL_KEY, extractOption.equals("minimal"));
+                    if (extractOption.equals("full"))
+                        ENVIRONMENT_VARIABLES += "\tQT_USE_ANDROID_NATIVE_STYLE=1";
+                }
                 ENVIRONMENT_VARIABLES += "\tMINISTRO_ANDROID_STYLE_PATH=" + stylePath
                         + "\tQT_ANDROID_THEMES_ROOT_PATH=" + themePath;
 

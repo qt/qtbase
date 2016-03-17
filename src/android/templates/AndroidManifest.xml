@@ -52,7 +52,16 @@
             <!-- auto screen scale factor -->
             <meta-data android:name="android.app.auto_screen_scale_factor" android:value="false"/>
             <!-- auto screen scale factor -->
-        </activity>
+
+            <!-- extract android style -->
+            <!-- available android:values :
+                * full - useful QWidget & Quick Controls 1 apps
+                * minimal - useful for Quick Controls 2 apps, it is much faster than "full"
+                * none - useful for apps that don't use any of the above Qt modules
+                -->
+            <meta-data android:name="android.app.extract_android_style" android:value="full"/>
+            <!-- extract android style -->
+    </activity>
 
         <!--service android:process=":qt" android:name="org.qtproject.qt5.android.bindings.QtService"-->
         <!-- android:process=":qt" is needed to force the service to run on a separate process than the Activity -->
