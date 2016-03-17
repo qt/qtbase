@@ -34,7 +34,7 @@ import sys
 import subprocess
 import re
 
-formats = ['xml', 'txt', 'xunitxml', 'lightxml']
+formats = ['xml', 'txt', 'xunitxml', 'lightxml', 'teamcity']
 
 qtver = subprocess.check_output(['qmake', '-query', 'QT_VERSION']).strip().decode('utf-8')
 rootPath = os.getcwd()
