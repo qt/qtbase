@@ -135,7 +135,6 @@ public:
     virtual void configureCreatedSocket();
     void startConnectingByName(const QString &host);
     void fetchConnectionParameters();
-    void setupSocketNotifiers();
     bool readFromSocket();
     bool writeToSocket();
     void emitReadyRead();
