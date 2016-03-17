@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -31,8 +31,8 @@
 **
 ****************************************************************************/
 
-#ifndef QABSTRACTBUTTON_P_H
-#define QABSTRACTBUTTON_P_H
+#ifndef QBUTTONGROUP_P_H
+#define QBUTTONGROUP_P_H
 
 //
 //  W A R N I N G
@@ -45,61 +45,36 @@
 // We mean it.
 //
 
-#include "qabstractbutton.h"
+#include <QtWidgets/qbuttongroup.h>
 
-#include "QtCore/qbasictimer.h"
-#include "private/qwidget_p.h"
+#ifndef QT_NO_BUTTONGROUP
+
+#include <QtCore/private/qobject_p.h>
+
+#include <QtCore/qlist.h>
+#include <QtCore/qpointer.h>
+#include <QtCore/qhash.h>
 
 QT_BEGIN_NAMESPACE
 
-class QAbstractButtonPrivate : public QWidgetPrivate
+class QButtonGroupPrivate: public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QAbstractButton)
+    Q_DECLARE_PUBLIC(QButtonGroup)
+
 public:
-    QAbstractButtonPrivate(QSizePolicy::ControlType type = QSizePolicy::DefaultType);
+    QButtonGroupPrivate() : exclusive(true) {}
 
-    QString text;
-    QIcon icon;
-    QSize iconSize;
-#ifndef QT_NO_SHORTCUT
-    QKeySequence shortcut;
-    int shortcutId;
-#endif
-    uint checkable :1;
-    uint checked :1;
-    uint autoRepeat :1;
-    uint autoExclusive :1;
-    uint down :1;
-    uint blockRefresh :1;
-    uint pressed : 1;
+    QList<QAbstractButton *> buttonList;
+    QPointer<QAbstractButton> checkedButton;
+    void detectCheckedButton();
+    void notifyChecked(QAbstractButton *button);
 
-#ifndef QT_NO_BUTTONGROUP
-    QButtonGroup* group;
-#endif
-    QBasicTimer repeatTimer;
-    QBasicTimer animateTimer;
-
-    int autoRepeatDelay, autoRepeatInterval;
-
-    QSizePolicy::ControlType controlType;
-    mutable QSize sizeHint;
-
-    void init();
-    void click();
-    void refresh();
-
-    QList<QAbstractButton *>queryButtonList() const;
-    QAbstractButton *queryCheckedButton() const;
-    void notifyChecked();
-    void moveFocus(int key);
-    void fixFocusPolicy();
-
-    void emitPressed();
-    void emitReleased();
-    void emitClicked();
-    void emitToggled(bool checked);
+    bool exclusive;
+    QHash<QAbstractButton*, int> mapping;
 };
 
 QT_END_NAMESPACE
 
-#endif // QABSTRACTBUTTON_P_H
+#endif // QT_NO_BUTTONGROUP
+
+#endif // QBUTTONGROUP_P_H

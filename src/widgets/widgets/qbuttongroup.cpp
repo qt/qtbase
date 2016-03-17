@@ -31,7 +31,28 @@
 **
 ****************************************************************************/
 
+#include "private/qbuttongroup_p.h"
 
+#ifndef QT_NO_BUTTONGROUP
+
+#include "private/qabstractbutton_p.h"
+
+QT_BEGIN_NAMESPACE
+
+// detect a checked button other than the current one
+void QButtonGroupPrivate::detectCheckedButton()
+{
+    QAbstractButton *previous = checkedButton;
+    checkedButton = 0;
+    if (exclusive)
+        return;
+    for (int i = 0; i < buttonList.count(); i++) {
+        if (buttonList.at(i) != previous && buttonList.at(i)->isChecked()) {
+            checkedButton = buttonList.at(i);
+            return;
+        }
+    }
+}
 
 /*!
     \class QButtonGroup
@@ -78,18 +99,24 @@
 */
 
 /*!
-    \fn QButtonGroup::QButtonGroup(QObject *parent)
-
     Constructs a new, empty button group with the given \a parent.
 
     \sa addButton(), setExclusive()
 */
+QButtonGroup::QButtonGroup(QObject *parent)
+    : QObject(*new QButtonGroupPrivate, parent)
+{
+}
 
 /*!
-    \fn QButtonGroup::~QButtonGroup()
-
     Destroys the button group.
 */
+QButtonGroup::~QButtonGroup()
+{
+    Q_D(QButtonGroup);
+    for (int i = 0; i < d->buttonList.count(); ++i)
+        d->buttonList.at(i)->d_func()->group = 0;
+}
 
 /*!
     \property QButtonGroup::exclusive
@@ -105,6 +132,19 @@
 
     By default, this property is \c true.
 */
+bool QButtonGroup::exclusive() const
+{
+    Q_D(const QButtonGroup);
+    return d->exclusive;
+}
+
+void QButtonGroup::setExclusive(bool exclusive)
+{
+    Q_D(QButtonGroup);
+    d->exclusive = exclusive;
+}
+
+
 
 /*!
     \fn void QButtonGroup::buttonClicked(QAbstractButton *button)
@@ -187,8 +227,6 @@
 
 
 /*!
-    \fn void QButtonGroup::addButton(QAbstractButton *button, int id = -1);
-
     Adds the given \a button to the button group. If \a id is -1,
     an id will be assigned to the button.
     Automatically assigned ids are guaranteed to be negative,
@@ -197,42 +235,82 @@
 
     \sa removeButton(), buttons()
 */
+void QButtonGroup::addButton(QAbstractButton *button, int id)
+{
+    Q_D(QButtonGroup);
+    if (QButtonGroup *previous = button->d_func()->group)
+        previous->removeButton(button);
+    button->d_func()->group = this;
+    d->buttonList.append(button);
+    if (id == -1) {
+        const QHash<QAbstractButton*, int>::const_iterator it
+                = std::min_element(d->mapping.cbegin(), d->mapping.cend());
+        if (it == d->mapping.cend())
+            d->mapping[button] = -2;
+        else
+            d->mapping[button] = *it - 1;
+    } else {
+        d->mapping[button] = id;
+    }
+
+    if (d->exclusive && button->isChecked())
+        button->d_func()->notifyChecked();
+}
 
 /*!
-    \fn void QButtonGroup::removeButton(QAbstractButton *button);
-
     Removes the given \a button from the button group.
 
     \sa addButton(), buttons()
 */
+void QButtonGroup::removeButton(QAbstractButton *button)
+{
+    Q_D(QButtonGroup);
+    if (d->checkedButton == button) {
+        d->detectCheckedButton();
+    }
+    if (button->d_func()->group == this) {
+        button->d_func()->group = 0;
+        d->buttonList.removeAll(button);
+        d->mapping.remove(button);
+    }
+}
 
 /*!
-    \fn QList<QAbstractButton*> QButtonGroup::buttons() const
-
     Returns the button group's list of buttons. This may be empty.
 
     \sa addButton(), removeButton()
 */
+QList<QAbstractButton*> QButtonGroup::buttons() const
+{
+    Q_D(const QButtonGroup);
+    return d->buttonList;
+}
 
 /*!
-    \fn QAbstractButton *QButtonGroup::checkedButton() const;
-
     Returns the button group's checked button, or 0 if no buttons are
     checked.
 
     \sa buttonClicked()
 */
+QAbstractButton *QButtonGroup::checkedButton() const
+{
+    Q_D(const QButtonGroup);
+    return d->checkedButton;
+}
 
 /*!
-    \fn QAbstractButton *QButtonGroup::button(int id) const;
     \since 4.1
 
     Returns the button with the specified \a id, or 0 if no such button
     exists.
 */
+QAbstractButton *QButtonGroup::button(int id) const
+{
+    Q_D(const QButtonGroup);
+    return d->mapping.key(id);
+}
 
 /*!
-    \fn void QButtonGroup::setId(QAbstractButton *button, int id)
     \since 4.1
 
     Sets the \a id for the specified \a button. Note that \a id cannot
@@ -240,9 +318,14 @@
 
     \sa id()
 */
+void QButtonGroup::setId(QAbstractButton *button, int id)
+{
+    Q_D(QButtonGroup);
+    if (button && id != -1)
+        d->mapping[button] = id;
+}
 
 /*!
-    \fn int QButtonGroup::id(QAbstractButton *button) const;
     \since 4.1
 
     Returns the id for the specified \a button, or -1 if no such button
@@ -251,14 +334,27 @@
 
     \sa setId()
 */
+int QButtonGroup::id(QAbstractButton *button) const
+{
+    Q_D(const QButtonGroup);
+    return d->mapping.value(button, -1);
+}
 
 /*!
-    \fn int QButtonGroup::checkedId() const;
     \since 4.1
 
     Returns the id of the checkedButton(), or -1 if no button is checked.
 
     \sa setId()
 */
+int QButtonGroup::checkedId() const
+{
+    Q_D(const QButtonGroup);
+    return d->mapping.value(d->checkedButton, -1);
+}
+
+QT_END_NAMESPACE
 
 #include "moc_qbuttongroup.cpp"
+
+#endif // QT_NO_BUTTONGROUP

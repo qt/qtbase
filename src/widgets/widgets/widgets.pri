@@ -2,6 +2,7 @@
 
 HEADERS += \
         widgets/qbuttongroup.h \
+        widgets/qbuttongroup_p.h \
         widgets/qabstractbutton.h \
         widgets/qabstractbutton_p.h \
         widgets/qabstractslider.h \
