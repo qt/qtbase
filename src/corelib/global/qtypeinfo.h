@@ -111,14 +111,14 @@ public:
 */
 // apply defaults for a generic QTypeInfo<T> that didn't provide the new values
 template <typename T, typename = void>
-struct QTypeInfoQuery : QTypeInfo<T>
+struct QTypeInfoQuery : public QTypeInfo<T>
 {
     enum { isRelocatable = !QTypeInfo<T>::isStatic };
 };
 
 // if QTypeInfo<T>::isRelocatable exists, use it
 template <typename T>
-struct QTypeInfoQuery<T, typename QtPrivate::QEnableIf<QTypeInfo<T>::isRelocatable || true>::Type> : QTypeInfo<T>
+struct QTypeInfoQuery<T, typename QtPrivate::QEnableIf<QTypeInfo<T>::isRelocatable || true>::Type> : public QTypeInfo<T>
 {};
 
 /*!
