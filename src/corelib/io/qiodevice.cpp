@@ -1171,22 +1171,8 @@ QByteArray QIODevice::read(qint64 maxSize)
         maxSize = MaxByteArraySize - 1;
     }
 
-    qint64 readBytes = 0;
-    if (maxSize) {
-        result.resize(int(maxSize));
-        if (!result.size()) {
-            // If resize fails, read incrementally.
-            qint64 readResult;
-            do {
-                result.resize(int(qMin(maxSize, qint64(result.size() + d->readBufferChunkSize))));
-                readResult = read(result.data() + readBytes, result.size() - readBytes);
-                if (readResult > 0 || readBytes == 0)
-                    readBytes += readResult;
-            } while (readResult == d->readBufferChunkSize);
-        } else {
-            readBytes = read(result.data(), result.size());
-        }
-    }
+    result.resize(int(maxSize));
+    qint64 readBytes = read(result.data(), result.size());
 
     if (readBytes <= 0)
         result.clear();
