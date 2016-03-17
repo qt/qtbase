@@ -55,6 +55,7 @@
 #include <QtTest/qtesttouch.h>
 #include <QtTest/qtestkeyboard.h>
 
+#include <QtGui/qcolor.h>
 #include <QtGui/qpixmap.h>
 #include <QtGui/qimage.h>
 
@@ -72,6 +73,11 @@ QT_BEGIN_NAMESPACE
 
 namespace QTest
 {
+
+template<> inline char *toString(const QColor &color)
+{
+    return qstrdup(color.name().toLocal8Bit().constData());
+}
 
 inline bool qCompare(QIcon const &t1, QIcon const &t2, const char *actual, const char *expected,
                     const char *file, int line)
