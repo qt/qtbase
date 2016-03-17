@@ -619,9 +619,6 @@ CFG_FORCEDEBUGINFO=no
 CFG_RELEASE_TOOLS=no
 CFG_SHARED=yes
 CFG_SM=auto
-CFG_XSHAPE=auto
-CFG_XSYNC=auto
-CFG_XFIXES=runtime
 CFG_SYSTEM_ZLIB=auto
 CFG_MTDEV=auto
 CFG_JOURNALD=no
@@ -632,10 +629,7 @@ CFG_PNG=yes
 CFG_LIBPNG=auto
 CFG_JPEG=yes
 CFG_LIBJPEG=auto
-CFG_XCURSOR=runtime
-CFG_XRANDR=runtime
 CFG_XRENDER=auto
-CFG_MITSHM=auto
 CFG_OPENGL=auto
 CFG_EGL=auto
 CFG_EGL_X=auto
@@ -1506,20 +1500,6 @@ while [ "$#" -gt 0 ]; do
         fi
 
         ;;
-    xshape)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_XSHAPE="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    xsync)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_XSYNC="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
      xinput2)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_XINPUT2="$VAL"
@@ -1702,37 +1682,9 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    xcursor)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] || [ "$VAL" = "runtime" ]; then
-            CFG_XCURSOR="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    xfixes)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] || [ "$VAL" = "runtime" ]; then
-            CFG_XFIXES="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    xrandr)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] || [ "$VAL" = "runtime" ]; then
-            CFG_XRANDR="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
     xrender)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_XRENDER="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    mitshm)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_MITSHM="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -6639,19 +6591,10 @@ QMakeVar set sql-drivers "$SQL_DRIVERS"
 
 [ "$CFG_SM" = "no" ]         && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SESSIONMANAGER"
 [ "$CFG_TSLIB" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_TSLIB"
-[ "$CFG_XCURSOR" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XCURSOR"
-[ "$CFG_XFIXES" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XFIXES"
 [ "$CFG_FONTCONFIG" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_FONTCONFIG"
 [ "$CFG_XKB" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XKB"
-[ "$CFG_XRANDR" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XRANDR"
 [ "$CFG_XRENDER" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XRENDER"
-[ "$CFG_MITSHM" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MITSHM"
-[ "$CFG_XSHAPE" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SHAPE"
-[ "$CFG_XSYNC" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XSYNC"
 
-[ "$CFG_XCURSOR" = "runtime" ]   && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XCURSOR"
-[ "$CFG_XFIXES" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XFIXES"
-[ "$CFG_XRANDR" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XRANDR"
 [ "$CFG_ALSA" = "no" ]           && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ALSA"
 [ "$CFG_PULSEAUDIO" = "no" ]          && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_PULSEAUDIO"
 [ "$CFG_COREWLAN" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_COREWLAN"
@@ -7128,16 +7071,10 @@ report_support "    XCB .................." "$CFG_XCB" system "system library" q
 if [ "$CFG_XCB" != "no" ]; then
     report_support "      EGL on X ..........." "$CFG_EGL_X"
     report_support "      GLX ................" "$CFG_XCB_GLX"
-    report_support "      MIT-SHM ............" "$CFG_MITSHM"
     report_support "      Xcb-Xlib ..........." "$CFG_XCB_XLIB"
-    report_support "      Xcursor ............" "$CFG_XCURSOR" runtime "loaded at runtime"
-    report_support "      Xfixes ............." "$CFG_XFIXES" runtime "loaded at runtime"
     report_support "      Xi2 ................" "$CFG_XINPUT2" runtime "loaded at runtime"
-    report_support "      Xrandr ............." "$CFG_XRANDR" runtime "loaded at runtime"
     report_support "      Xrender ............" "$CFG_XRENDER"
     report_support "      XKB ................" "$CFG_XKB"
-    report_support "      XShape ............." "$CFG_XSHAPE"
-    report_support "      XSync .............." "$CFG_XSYNC"
 fi
 report_support "  Session management ....." "$CFG_SM"
 if [ "$XPLATFORM_QNX" = "yes" ]; then
