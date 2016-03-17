@@ -5820,7 +5820,9 @@ QString QString::toUpper_helper(QString &str)
 }
 
 /*!
-    \obsolete Use asprintf(), arg() or QTextStream instead.
+    \obsolete
+
+    Use asprintf(), arg() or QTextStream instead.
 */
 QString &QString::sprintf(const char *cformat, ...)
 {
@@ -5876,7 +5878,9 @@ QString QString::asprintf(const char *cformat, ...)
 }
 
 /*!
-    \obsolete Use vasprintf(), arg() or QTextStream instead.
+    \obsolete
+
+    Use vasprintf(), arg() or QTextStream instead.
 */
 QString &QString::vsprintf(const char *cformat, va_list ap)
 {
@@ -10487,7 +10491,7 @@ float QStringRef::toFloat(bool *ok) const
     \obsolete
     \fn QString Qt::escape(const QString &plain)
 
-    \sa QString::toHtmlEscaped()
+    Use QString::toHtmlEscaped() instead.
 */
 
 /*!
