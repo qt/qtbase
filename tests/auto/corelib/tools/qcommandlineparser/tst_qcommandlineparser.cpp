@@ -450,6 +450,13 @@ void tst_QCommandLineParser::testSingleDashWordOptionModes_data()
                                << QStringList("abc") << QStringList("val");
     QTest::newRow("implicitlylong_with_space") << QCommandLineParser::ParseAsCompactedShortOptions << (QStringList() << "-c" << "val")
                                << QStringList("c") << QStringList("val");
+
+    QTest::newRow("forceshort_detached") << QCommandLineParser::ParseAsLongOptions << (QStringList() << "-I" << "45")
+                               << QStringList("I") << QStringList("45");
+    QTest::newRow("forceshort_attached") << QCommandLineParser::ParseAsLongOptions << (QStringList() << "-I46")
+                               << QStringList("I") << QStringList("46");
+    QTest::newRow("forceshort_mixed") << QCommandLineParser::ParseAsLongOptions << (QStringList() << "-I45" << "-nn")
+                               << (QStringList() << "I" << "nn") << QStringList("45");
 }
 
 void tst_QCommandLineParser::testSingleDashWordOptionModes()
@@ -468,6 +475,10 @@ void tst_QCommandLineParser::testSingleDashWordOptionModes()
     parser.addOption(QCommandLineOption("b", QStringLiteral("b option.")));
     parser.addOption(QCommandLineOption(QStringList() << "c" << "abc", QStringLiteral("c option."), QStringLiteral("value")));
     parser.addOption(QCommandLineOption("nn", QStringLiteral("nn option.")));
+    QCommandLineOption forceShort(QStringLiteral("I"), QStringLiteral("always short option"),
+                                  QStringLiteral("path"), QStringLiteral("default"));
+    forceShort.setFlags(QCommandLineOption::ShortOptionStyle);
+    parser.addOption(forceShort);
     QVERIFY(parser.parse(commandLine));
     QCOMPARE(parser.optionNames(), expectedOptionNames);
     for (int i = 0; i < expectedOptionValues.count(); ++i)

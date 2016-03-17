@@ -295,7 +295,9 @@ QCommandLineParser::~QCommandLineParser()
     i.e. as the long option named \c{abc}. This is how Qt's own tools
     (uic, rcc...) have always been parsing arguments. This mode should be
     used for preserving compatibility in applications that were parsing
-    arguments in such a way.
+    arguments in such a way. There is an exception if the \c{a} option has the
+    QCommandLineOption::ShortOptionStyle flag set, in which case it is still
+    interpreted as \c{-a bc}.
 
     \sa setSingleDashWordOptionMode()
 */
@@ -762,6 +764,18 @@ bool QCommandLineParserPrivate::parse(const QStringList &args)
             }
             case QCommandLineParser::ParseAsLongOptions:
             {
+                if (argument.size() > 2) {
+                    const QString possibleShortOptionStyleName = argument.mid(1, 1);
+                    const auto shortOptionIt = nameHash.constFind(possibleShortOptionStyleName);
+                    if (shortOptionIt != nameHash.constEnd()) {
+                        const auto &arg = commandLineOptionList.at(*shortOptionIt);
+                        if (arg.flags() & QCommandLineOption::ShortOptionStyle) {
+                            registerFoundOption(possibleShortOptionStyleName);
+                            optionValuesHash[*shortOptionIt].append(argument.mid(2));
+                            break;
+                        }
+                    }
+                }
                 const QString optionName = argument.mid(1).section(assignChar, 0, 0);
                 if (registerFoundOption(optionName)) {
                     if (!parseOptionValue(optionName, argument, &argumentIterator, args.end()))
@@ -1097,7 +1111,7 @@ QString QCommandLineParserPrivate::helpText() const
     optionNameList.reserve(commandLineOptionList.size());
     int longestOptionNameString = 0;
     for (const QCommandLineOption &option : commandLineOptionList) {
-        if (option.isHidden())
+        if (option.flags() & QCommandLineOption::HiddenFromHelp)
             continue;
         const QStringList optionNames = option.names();
         QString optionNamesString;
@@ -1116,7 +1130,7 @@ QString QCommandLineParserPrivate::helpText() const
     ++longestOptionNameString;
     auto optionNameIterator = optionNameList.cbegin();
     for (const QCommandLineOption &option : commandLineOptionList) {
-        if (option.isHidden())
+        if (option.flags() & QCommandLineOption::HiddenFromHelp)
             continue;
         text += wrapText(*optionNameIterator, longestOptionNameString, option.description());
         ++optionNameIterator;

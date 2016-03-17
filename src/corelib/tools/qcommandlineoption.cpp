@@ -49,14 +49,12 @@ class QCommandLineOptionPrivate : public QSharedData
 public:
     Q_NEVER_INLINE
     explicit QCommandLineOptionPrivate(const QString &name)
-        : names(removeInvalidNames(QStringList(name))),
-          hidden(false)
+        : names(removeInvalidNames(QStringList(name)))
     { }
 
     Q_NEVER_INLINE
     explicit QCommandLineOptionPrivate(const QStringList &names)
-        : names(removeInvalidNames(names)),
-          hidden(false)
+        : names(removeInvalidNames(names))
     { }
 
     static QStringList removeInvalidNames(QStringList nameList);
@@ -74,8 +72,7 @@ public:
     //! The list of default values used for this option.
     QStringList defaultValues;
 
-    //! Show or hide in --help
-    bool hidden;
+    QCommandLineOption::Flags flags;
 };
 
 /*!
@@ -394,6 +391,7 @@ QStringList QCommandLineOption::defaultValues() const
     return d->defaultValues;
 }
 
+#if QT_DEPRECATED_SINCE(5, 8)
 /*!
     Sets whether to hide this option in the user-visible help output.
 
@@ -401,11 +399,12 @@ QStringList QCommandLineOption::defaultValues() const
     a particular option makes it internal, i.e. not listed in the help output.
 
     \since 5.6
+    \obsolete Use setFlags(QCommandLineOption::HiddenFromHelp), QCommandLineOption::HiddenFromHelp
     \sa isHidden
  */
 void QCommandLineOption::setHidden(bool hide)
 {
-    d->hidden = hide;
+    d->flags.setFlag(HiddenFromHelp, hide);
 }
 
 /*!
@@ -413,11 +412,52 @@ void QCommandLineOption::setHidden(bool hide)
     false if the option is listed.
 
     \since 5.6
-    \sa setHidden()
+    \obsolete Use flags() & QCommandLineOption::HiddenFromHelp
+    \sa setHidden(), QCommandLineOption::HiddenFromHelp
  */
 bool QCommandLineOption::isHidden() const
 {
-    return d->hidden;
+    return d->flags & HiddenFromHelp;
 }
+#endif
+
+/*!
+    Returns a set of flags that affect this command-line option.
+
+    \since 5.8
+    \sa setFlags(), QCommandLineOption::Flags
+ */
+QCommandLineOption::Flags QCommandLineOption::flags() const
+{
+    return d->flags;
+}
+
+/*!
+    Set the set of flags that affect this command-line option.
+
+    \since 5.8
+    \sa flags(), QCommandLineOption::Flags
+ */
+void QCommandLineOption::setFlags(Flags flags)
+{
+    d->flags = flags;
+}
+
+/*!
+    \enum QCommandLineOption::Flag
+
+    \value HiddenFromHelp Hide this option in the user-visible help output. All
+    options are visible by default. Setting this flag for a particular
+    option makes it internal, i.e. not listed in the help output.
+
+    \value ShortOptionStyle The option will always be understood as a short
+    option, regardless of what was set by
+    QCommandLineParser::setSingleDashWordOptionMode.
+    This allows flags such as \c{-DDEFINE=VALUE} or \c{-I/include/path} to be
+    interpreted as short flags even when the parser is in
+    QCommandLineParser::ParseAsLongOptions mode.
+
+    \sa QCommandLineOption::setFlags(), QCommandLineOption::flags()
+*/
 
 QT_END_NAMESPACE

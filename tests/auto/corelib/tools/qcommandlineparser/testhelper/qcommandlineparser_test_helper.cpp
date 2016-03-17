@@ -71,8 +71,12 @@ int main(int argc, char *argv[])
     // A hidden option
     QCommandLineOption hiddenOption(QStringList() << QStringLiteral("hidden"));
     hiddenOption.setDescription(QStringLiteral("THIS SHOULD NEVER APPEAR"));
-    hiddenOption.setHidden(true);
+    hiddenOption.setFlags(QCommandLineOption::HiddenFromHelp);
     parser.addOption(hiddenOption);
+    QCommandLineOption hiddenOption2(QStringList() << QStringLiteral("hidden2"));
+    hiddenOption2.setDescription(QStringLiteral("NEITHER SHOULD THIS"));
+    hiddenOption2.setHidden(true);
+    parser.addOption(hiddenOption2);
 
     // This program supports different options depending on the "command" (first argument).
     // Call parse() to find out the positional arguments.

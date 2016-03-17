@@ -50,6 +50,12 @@ class QCommandLineOptionPrivate;
 class Q_CORE_EXPORT QCommandLineOption
 {
 public:
+    enum Flag {
+        HiddenFromHelp = 0x1,
+        ShortOptionStyle = 0x2
+    };
+    Q_DECLARE_FLAGS(Flags, Flag)
+
     explicit QCommandLineOption(const QString &name);
     explicit QCommandLineOption(const QStringList &names);
     /*implicit*/ QCommandLineOption(const QString &name, const QString &description,
@@ -82,14 +88,24 @@ public:
     void setDefaultValues(const QStringList &defaultValues);
     QStringList defaultValues() const;
 
+    Flags flags() const;
+    void setFlags(Flags aflags);
+
+#if QT_DEPRECATED_SINCE(5, 8)
+    QT_DEPRECATED_X("Use setFlags() with HiddenFromHelp)")
     void setHidden(bool hidden);
+    QT_DEPRECATED_X("Use flags() and HiddenFromHelp")
     bool isHidden() const;
+#endif
+
 
 private:
     QSharedDataPointer<QCommandLineOptionPrivate> d;
 };
 
 Q_DECLARE_SHARED(QCommandLineOption)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QCommandLineOption::Flags)
+
 
 QT_END_NAMESPACE
 
