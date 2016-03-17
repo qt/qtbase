@@ -55,6 +55,7 @@ class QOpenGLPixelTransferOptions;
 
 class Q_GUI_EXPORT QOpenGLTexture
 {
+    Q_GADGET
 public:
     enum Target {
         Target1D                   = 0x0DE0,    // GL_TEXTURE_1D
@@ -69,6 +70,7 @@ public:
         TargetRectangle            = 0x84F5,    // GL_TEXTURE_RECTANGLE
         TargetBuffer               = 0x8C2A     // GL_TEXTURE_BUFFER
     };
+    Q_ENUM(Target)
 
     enum BindingTarget {
         BindingTarget1D                    = 0x8068,   // GL_TEXTURE_BINDING_1D
@@ -83,16 +85,19 @@ public:
         BindingTargetRectangle             = 0x84F6,   // GL_TEXTURE_BINDING_RECTANGLE
         BindingTargetBuffer                = 0x8C2C    // GL_TEXTURE_BINDING_BUFFER
     };
+    Q_ENUM(BindingTarget)
 
     enum MipMapGeneration {
         GenerateMipMaps,
         DontGenerateMipMaps
     };
+    Q_ENUM(MipMapGeneration)
 
     enum TextureUnitReset {
         ResetTextureUnit,
         DontResetTextureUnit
     };
+    Q_ENUM(TextureUnitReset)
 
     enum TextureFormat {
         NoFormat               = 0,         // GL_NONE
@@ -222,6 +227,7 @@ public:
         LuminanceAlphaFormat   = 0x190A
 
     };
+    Q_ENUM(TextureFormat)
 
     // This is not used externally yet but is reserved to allow checking of
     // compatibility between texture formats
@@ -256,6 +262,7 @@ public:
         CubeMapPositiveZ = 0x8519,  // GL_TEXTURE_CUBE_MAP_POSITIVE_Z
         CubeMapNegativeZ = 0x851A   // GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
     };
+    Q_ENUM(CubeMapFace)
 
     enum PixelFormat {
         NoSourceFormat = 0,         // GL_NONE
@@ -278,6 +285,7 @@ public:
         Luminance      = 0x1909,    // GL_LUMINANCE
         LuminanceAlpha = 0x190A     // GL_LUMINANCE_ALPHA
     };
+    Q_ENUM(PixelFormat)
 
     enum PixelType {
         NoPixelType        = 0,         // GL_NONE
@@ -307,6 +315,7 @@ public:
         UInt32_D24S8       = 0x84FA,    // GL_UNSIGNED_INT_24_8
         Float32_D32_UInt32_S8_X24 = 0x8DAD // GL_FLOAT_32_UNSIGNED_INT_24_8_REV
     };
+    Q_ENUM(PixelType)
 
     enum SwizzleComponent {
         SwizzleRed   = 0x8E42,  // GL_TEXTURE_SWIZZLE_R
@@ -314,6 +323,7 @@ public:
         SwizzleBlue  = 0x8E44,  // GL_TEXTURE_SWIZZLE_B
         SwizzleAlpha = 0x8E45   // GL_TEXTURE_SWIZZLE_A
     };
+    Q_ENUM(SwizzleComponent)
 
     enum SwizzleValue {
         RedValue   = 0x1903, // GL_RED
@@ -323,6 +333,7 @@ public:
         ZeroValue  = 0,      // GL_ZERO
         OneValue   = 1       // GL_ONE
     };
+    Q_ENUM(SwizzleValue)
 
     enum WrapMode {
         Repeat         = 0x2901, // GL_REPEAT
@@ -330,12 +341,14 @@ public:
         ClampToEdge    = 0x812F, // GL_CLAMP_TO_EDGE
         ClampToBorder  = 0x812D  // GL_CLAMP_TO_BORDER
     };
+    Q_ENUM(WrapMode)
 
     enum CoordinateDirection {
         DirectionS = 0x2802, // GL_TEXTURE_WRAP_S
         DirectionT = 0x2803, // GL_TEXTURE_WRAP_T
         DirectionR = 0x8072  // GL_TEXTURE_WRAP_R
     };
+    Q_ENUM(CoordinateDirection)
 
     // Features
     enum Feature {
@@ -360,6 +373,7 @@ public:
 #endif
     };
     Q_DECLARE_FLAGS(Features, Feature)
+    Q_ENUM(Feature)
 
     explicit QOpenGLTexture(Target target);
     explicit QOpenGLTexture(const QImage& image, MipMapGeneration genMipMaps = GenerateMipMaps);
@@ -493,6 +507,7 @@ public:
         DepthMode   = 0x1902,   // GL_DEPTH_COMPONENT
         StencilMode = 0x1901    // GL_STENCIL_INDEX
     };
+    Q_ENUM(DepthStencilMode)
 
     void setDepthStencilMode(DepthStencilMode mode);
     DepthStencilMode depthStencilMode() const;
@@ -507,6 +522,7 @@ public:
         CompareAlways       = 0x0207,   // GL_ALWAYS
         CompareNever        = 0x0200    // GL_NEVER
     };
+    Q_ENUM(ComparisonFunction)
 
     void setComparisonFunction(ComparisonFunction function);
     ComparisonFunction comparisonFunction() const;
@@ -528,6 +544,7 @@ public:
         LinearMipMapNearest     = 0x2701,   // GL_LINEAR_MIPMAP_NEAREST
         LinearMipMapLinear      = 0x2703    // GL_LINEAR_MIPMAP_LINEAR
     };
+    Q_ENUM(Filter)
 
     void setMinificationFilter(Filter filter);
     Filter minificationFilter() const;
