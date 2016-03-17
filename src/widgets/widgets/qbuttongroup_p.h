@@ -67,7 +67,6 @@ public:
     QList<QAbstractButton *> buttonList;
     QPointer<QAbstractButton> checkedButton;
     void detectCheckedButton();
-    void notifyChecked(QAbstractButton *button);
 
     bool exclusive;
     QHash<QAbstractButton*, int> mapping;
