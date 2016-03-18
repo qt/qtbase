@@ -314,7 +314,7 @@ void QCocoaMenuBar::updateMenuBarImmediately()
             continue;
         NSMenuItem *item = mb->nativeItemForMenu(menu);
         menu->setAttachedItem(item);
-        SET_COCOA_MENU_ANCESTOR(menu, mb);
+        menu->setMenuParent(mb);
         // force a sync?
         mb->syncMenu(menu);
         menu->syncModalState(disableForModal);

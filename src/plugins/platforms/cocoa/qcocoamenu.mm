@@ -265,8 +265,8 @@ QCocoaMenu::QCocoaMenu() :
 QCocoaMenu::~QCocoaMenu()
 {
     foreach (QCocoaMenuItem *item, m_menuItems) {
-        if (COCOA_MENU_ANCESTOR(item) == this)
-            SET_COCOA_MENU_ANCESTOR(item, 0);
+        if (item->menuParent() == this)
+            item->setMenuParent(0);
     }
 
     QMacAutoReleasePool pool;
@@ -344,7 +344,7 @@ void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
     } else {
         [m_nativeMenu addItem: item->nsItem()];
     }
-    SET_COCOA_MENU_ANCESTOR(item, this);
+    item->setMenuParent(this);
 }
 
 void QCocoaMenu::removeMenuItem(QPlatformMenuItem *menuItem)
@@ -356,8 +356,8 @@ void QCocoaMenu::removeMenuItem(QPlatformMenuItem *menuItem)
         return;
     }
 
-    if (COCOA_MENU_ANCESTOR(menuItem) == this)
-        SET_COCOA_MENU_ANCESTOR(menuItem, 0);
+    if (cocoaItem->menuParent() == this)
+        cocoaItem->setMenuParent(0);
 
     m_menuItems.removeOne(cocoaItem);
     if (!cocoaItem->isMerged()) {
