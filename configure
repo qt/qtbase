@@ -4042,8 +4042,8 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             done
         fi
         if [ "$BUILD_ON_MSYS" = "yes" ]; then
-            EXTRA_CFLAGS="-DUNICODE"
-            EXTRA_CXXFLAGS="-DUNICODE"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS -DUNICODE"
+            EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS -DUNICODE"
             EXTRA_OBJS="qfilesystemengine_win.o \
                         qfilesystemiterator_win.o \
                         qfsfileengine_win.o \
@@ -4058,7 +4058,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
                         \"\$(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp\" \
                         \"\$(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp\" \
                         \"\$(SOURCE_PATH)/tools/shared/windows/registry.cpp\""
-            EXTRA_LFLAGS="-static -s -lole32 -luuid -ladvapi32 -lkernel32"
+            EXTRA_LFLAGS="$EXTRA_LFLAGS -static -s -lole32 -luuid -ladvapi32 -lkernel32"
             EXEEXT=".exe"
         else
             EXTRA_OBJS="qfilesystemengine_unix.o \
