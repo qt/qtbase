@@ -97,7 +97,6 @@ protected:
 private:
     Q_DISABLE_COPY(QWindowsStyle)
     Q_DECLARE_PRIVATE(QWindowsStyle)
-    void *reserved;
 };
 
 #endif // QT_NO_STYLE_WINDOWS
