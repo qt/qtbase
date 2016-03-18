@@ -35,11 +35,7 @@
 #include <QtCore/qatomic.h>
 #include "qprocess_p.h"
 
-#ifdef QPROCESS_USE_SPAWN
-#  define FORKFD_NO_FORKFD
-#else
-#  define FORKFD_NO_SPAWNFD
-#endif
+#define FORKFD_NO_SPAWNFD
 
 #if defined(QT_NO_DEBUG) && !defined(NDEBUG)
 #  define NDEBUG
