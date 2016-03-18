@@ -230,7 +230,7 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     dictionary[ "BUILD" ]           = "debug";
     dictionary[ "BUILDALL" ]        = "auto"; // Means yes, but not explicitly
     dictionary[ "FORCEDEBUGINFO" ]  = "no";
-    dictionary[ "OPTIMIZED_TOOLS" ] = "no";
+    dictionary[ "RELEASE_TOOLS" ]   = "no";
 
     dictionary[ "BUILDTYPE" ]      = "none";
 
