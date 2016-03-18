@@ -236,6 +236,7 @@ public:
 #endif
 
 #ifndef QT_NO_SESSIONMANAGER
+    static bool is_fallback_session_management_enabled;
     QSessionManager *session_manager;
     bool is_session_restored;
     bool is_saving_session;
