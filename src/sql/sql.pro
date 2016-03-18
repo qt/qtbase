@@ -11,7 +11,6 @@ PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
 SQL_P = sql
 
 include(kernel/kernel.pri)
-include(drivers/drivers.pri)
 include(models/models.pri)
 
 MODULE_PLUGIN_TYPES = \

@@ -845,11 +845,6 @@ CFG_DEFAULT_ANDROID_NDK_HOST=$ANDROID_NDK_HOST
 # check SQL drivers available in this package
 #-------------------------------------------------------------------------------
 
-# opensource version removes some drivers, so force them to be off
-CFG_SQL_tds=no
-CFG_SQL_oci=no
-CFG_SQL_db2=no
-
 CFG_SQL_AVAILABLE=
 if [ -d "$relpath/src/plugins/sqldrivers" ]; then
   for a in "$relpath/src/plugins/sqldrivers/"*; do
@@ -2073,11 +2068,10 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     sql-*)
-        # if Qt style options were used, $VAL can be "no", "qt", or "plugin"
-        # if autoconf style options were used, $VAL can be "yes" or "no"
-        [ "$VAL" = "yes" ] && VAL=qt
-        # now $VAL should be "no", "qt", or "plugin"... double-check
-        if [ "$VAL" != "no" ] && [ "$VAL" != "qt" ] && [ "$VAL" != "plugin" ]; then
+        # if Qt style options were used, $VAL can be "no", "yes", or "plugin", plugin for backwards compatibility
+        [ "$VAL" = "plugin" ] && VAL=yes
+        # now $VAL should be "yes" or "no"... double-check
+        if [ "$VAL" != "no" ] && [ "$VAL" != "yes" ]; then
             UNKNOWN_OPT=yes
         fi
         # now $VAL is "no", "qt", or "plugin"
@@ -2399,11 +2393,8 @@ Configure options:
                          which is unsupported.
  +  -accessibility ..... Compile Accessibility support.
 
-    -no-sql-<driver> ... Disable SQL <driver> entirely.
-    -qt-sql-<driver> ... Enable a SQL <driver> in the Qt SQL module, by default
-                         none are turned on.
-    -plugin-sql-<driver> Enable SQL <driver> as a plugin to be linked to
-                         at run time.
+    -no-sql-<driver> ... Disable SQL <driver>.
+    -sql-<driver>        Enable SQL <driver> plugin.
 
                          Possible values for <driver>:
                          [$CFG_SQL_AVAILABLE ]
@@ -4747,14 +4738,10 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
                 else
                     if compileTest unix/mysql_r "MySQL (thread-safe)" $QT_LFLAGS_MYSQL_R $QT_CFLAGS_MYSQL; then
                         QMakeVar add CONFIG use_libmysqlclient_r
-                        if [ "$CFG_SQL_mysql" = "auto" ]; then
-                            CFG_SQL_mysql=plugin
-                        fi
+                        CFG_SQL_mysql=yes
                         QT_LFLAGS_MYSQL="$QT_LFLAGS_MYSQL_R"
                     elif compileTest unix/mysql "MySQL (thread-unsafe)" $QT_LFLAGS_MYSQL $QT_CFLAGS_MYSQL; then
-                        if [ "$CFG_SQL_mysql" = "auto" ]; then
-                            CFG_SQL_mysql=plugin
-                        fi
+                        CFG_SQL_mysql=yes
                     else
                         if [ "$CFG_SQL_mysql" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
                             echo "MySQL support cannot be enabled due to functionality tests!"
@@ -4785,9 +4772,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
                 # But, respect PSQL_LIBS if set
                 [ -z "$PSQL_LIBS" ] || QT_LFLAGS_PSQL="$PSQL_LIBS"
                 if compileTest unix/psql "PostgreSQL" $QT_LFLAGS_PSQL $QT_CFLAGS_PSQL; then
-                    if [ "$CFG_SQL_psql" = "auto" ]; then
-                        CFG_SQL_psql=plugin
-                    fi
+                    CFG_SQL_psql=yes
                 else
                     if [ "$CFG_SQL_psql" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
                         echo "PostgreSQL support cannot be enabled due to functionality tests!"
@@ -4806,15 +4791,11 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
         odbc)
             if [ "$CFG_SQL_odbc" != "no" ]; then
                 if [ "$XPLATFORM_MAC" != "yes" ] && compileTest unix/odbc "ODBC"; then
-                    if [ "$CFG_SQL_odbc" = "auto" ]; then
-                        CFG_SQL_odbc=plugin
-                    fi
+                    CFG_SQL_odbc=yes
                 else
                     if compileTest unix/iodbc "iODBC"; then
                         QT_LFLAGS_ODBC="-liodbc"
-                        if [ "$CFG_SQL_odbc" = "auto" ]; then
-                            CFG_SQL_odbc=plugin
-                        fi
+                        CFG_SQL_odbc=yes
                     else
                         if [ "$CFG_SQL_odbc" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
                             echo "ODBC support cannot be enabled due to functionality tests!"
@@ -4832,9 +4813,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
         oci)
             if [ "$CFG_SQL_oci" != "no" ]; then
                 if compileTest unix/oci "OCI"; then
-                    if [ "$CFG_SQL_oci" = "auto" ]; then
-                        CFG_SQL_oci=plugin
-                    fi
+                    CFG_SQL_oci=yes
                 else
                     if [ "$CFG_SQL_oci" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
                         echo "Oracle (OCI) support cannot be enabled due to functionality tests!"
@@ -4853,9 +4832,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
                 [ -z "$SYBASE" ] || QT_LFLAGS_TDS="-L$SYBASE/lib"
                 [ -z "$SYBASE_LIBS" ] || QT_LFLAGS_TDS="$QT_LFLAGS_TDS $SYBASE_LIBS"
                 if compileTest unix/tds "TDS" $QT_LFLAGS_TDS; then
-                    if [ "$CFG_SQL_tds" = "auto" ]; then
-                        CFG_SQL_tds=plugin
-                    fi
+                    CFG_SQL_tds=yes
                 else
                     if [ "$CFG_SQL_tds" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
                         echo "TDS support cannot be enabled due to functionality tests!"
@@ -4872,9 +4849,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
         db2)
             if [ "$CFG_SQL_db2" != "no" ]; then
                 if compileTest unix/db2 "DB2"; then
-                    if [ "$CFG_SQL_db2" = "auto" ]; then
-                        CFG_SQL_db2=plugin
-                    fi
+                    CFG_SQL_db2=yes
                 else
                     if [ "$CFG_SQL_db2" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
                         echo "ODBC support cannot be enabled due to functionality tests!"
@@ -4891,9 +4866,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
         ibase)
             if [ "$CFG_SQL_ibase" != "no" ]; then
                 if compileTest unix/ibase "InterBase"; then
-                    if [ "$CFG_SQL_ibase" = "auto" ]; then
-                        CFG_SQL_ibase=plugin
-                    fi
+                    CFG_SQL_ibase=yes
                 else
                     if [ "$CFG_SQL_ibase" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
                         echo "InterBase support cannot be enabled due to functionality tests!"
@@ -4910,9 +4883,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
         sqlite2)
             if [ "$CFG_SQL_sqlite2" != "no" ]; then
                 if compileTest unix/sqlite2 "SQLite2"; then
-                    if [ "$CFG_SQL_sqlite2" = "auto" ]; then
-                        CFG_SQL_sqlite2=plugin
-                    fi
+                    CFG_SQL_sqlite2=yes
                 else
                     if [ "$CFG_SQL_sqlite2" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
                         echo "SQLite2 support cannot be enabled due to functionality tests!"
@@ -4938,18 +4909,14 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
                         QT_LFLAGS_SQLITE="-lsqlite3 -lz"
                     fi
                     if compileTest unix/sqlite "SQLite" $QT_LFLAGS_SQLITE $QT_CFLAGS_SQLITE; then
-                        if [ "$CFG_SQL_sqlite" = "auto" ]; then
-                            CFG_SQL_sqlite=plugin
-                        fi
+                        CFG_SQL_sqlite=yes
                         QMAKE_CONFIG="$QMAKE_CONFIG system-sqlite"
                     else
                         SQLITE_AUTODETECT_FAILED="yes"
                         CFG_SQL_sqlite=no
                     fi
                 elif [ -f "$relpath/src/3rdparty/sqlite/sqlite3.h" ]; then
-                    if [ "$CFG_SQL_sqlite" = "auto" ]; then
-                            CFG_SQL_sqlite=plugin
-                    fi
+                    CFG_SQL_sqlite=yes
                 else
                     SQLITE_AUTODETECT_FAILED="yes"
                     CFG_SQL_sqlite=no
@@ -6636,20 +6603,12 @@ QCONFIG_FLAGS="$QCONFIG_FLAGS"
 # Add turned on SQL drivers
 for DRIVER in $CFG_SQL_AVAILABLE; do
     eval "VAL=\$CFG_SQL_$DRIVER"
-    case "$VAL" in
-    qt)
-        ONDRIVER=`echo $DRIVER | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
-        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_SQL_$ONDRIVER"
+    if [ "$VAL" = "yes" ]; then
         SQL_DRIVERS="$SQL_DRIVERS $DRIVER"
-    ;;
-    plugin)
-        SQL_PLUGINS="$SQL_PLUGINS $DRIVER"
-    ;;
-    esac
+    fi
 done
 
 QMakeVar set sql-drivers "$SQL_DRIVERS"
-QMakeVar set sql-plugins "$SQL_PLUGINS"
 
 # Add other configuration options to the qconfig.h file
 [ "$CFG_GIF" != "yes" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IMAGEFORMAT_GIF"
@@ -7188,15 +7147,15 @@ if [ "$XPLATFORM_QNX" = "yes" ]; then
     report_support "  LGMON .................." "$CFG_LGMON"
 fi
 report_support "  SQL drivers:"
-report_support "    DB2 .................." "$CFG_SQL_db2" plugin "plugin" yes "built into QtSql"
-report_support "    InterBase ............" "$CFG_SQL_ibase" plugin "plugin" yes "built into QtSql"
-report_support "    MySQL ................" "$CFG_SQL_mysql" plugin "plugin" yes "built into QtSql"
-report_support "    OCI .................." "$CFG_SQL_oci" plugin "plugin" yes "built into QtSql"
-report_support "    ODBC ................." "$CFG_SQL_odbc" plugin "plugin" yes "built into QtSql"
-report_support "    PostgreSQL ..........." "$CFG_SQL_psql" plugin "plugin" yes "built into QtSql"
-report_support "    SQLite 2 ............." "$CFG_SQL_sqlite2" plugin "plugin" yes "built into QtSql"
+report_support "    DB2 .................." "$CFG_SQL_db2"
+report_support "    InterBase ............" "$CFG_SQL_ibase"
+report_support "    MySQL ................" "$CFG_SQL_mysql"
+report_support "    OCI .................." "$CFG_SQL_oci"
+report_support "    ODBC ................." "$CFG_SQL_odbc"
+report_support "    PostgreSQL ..........." "$CFG_SQL_psql"
+report_support "    SQLite 2 ............." "$CFG_SQL_sqlite2"
 report_support_plugin "    SQLite ..............." "$CFG_SQL_sqlite" "$CFG_SQLITE" QtSql
-report_support "    TDS .................." "$CFG_SQL_tds" plugin "plugin" yes "built into QtSql"
+report_support "    TDS .................." "$CFG_SQL_tds"
 report_support "  tslib .................." "$CFG_TSLIB"
 report_support "  udev ..................." "$CFG_LIBUDEV"
 report_support "  xkbcommon-x11..........." "$CFG_XKBCOMMON" system "system library" qt "bundled copy, XKB config root: $CFG_XKB_CONFIG_ROOT"

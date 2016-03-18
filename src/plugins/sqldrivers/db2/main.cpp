@@ -39,7 +39,7 @@
 
 #include <qsqldriverplugin.h>
 #include <qstringlist.h>
-#include "../../../sql/drivers/db2/qsql_db2_p.h"
+#include "qsql_db2_p.h"
 
 QT_BEGIN_NAMESPACE
 

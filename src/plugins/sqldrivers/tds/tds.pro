@@ -1,8 +1,17 @@
 TARGET = qsqltds
 
-SOURCES = main.cpp
+HEADERS += $$PWD/qsql_tds_p.h
+SOURCES += $$PWD/qsql_tds.cpp $$PWD/main.cpp
+
+unix|mingw: {
+    LIBS += $$QT_LFLAGS_TDS
+    !contains(LIBS, .*sybdb.*):LIBS += -lsybdb
+    QMAKE_CXXFLAGS *= $$QT_CFLAGS_TDS
+} else {
+    LIBS *= -lNTWDBLIB
+}
+
 OTHER_FILES += tds.json
-include(../../../sql/drivers/tds/qsql_tds.pri)
 
 PLUGIN_CLASS_NAME = QTDSDriverPlugin
 include(../qsqldriverbase.pri)

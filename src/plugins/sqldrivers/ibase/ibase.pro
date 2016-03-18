@@ -1,8 +1,17 @@
 TARGET = qsqlibase
 
-SOURCES = main.cpp
+HEADERS += $$PWD/qsql_ibase_p.h
+SOURCES += $$PWD/qsql_ibase.cpp $$PWD/main.cpp
+
+unix {
+    !contains(LIBS, .*gds.*):!contains(LIBS, .*libfb.*):LIBS += -lgds
+} else {
+    !contains(LIBS, .*gds.*):!contains(LIBS, .*fbclient.*) {
+        LIBS += -lgds32_ms
+    }
+}
+
 OTHER_FILES += ibase.json
-include(../../../sql/drivers/ibase/qsql_ibase.pri)
 
 PLUGIN_CLASS_NAME = QIBaseDriverPlugin
 include(../qsqldriverbase.pri)

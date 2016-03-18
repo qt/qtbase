@@ -39,7 +39,7 @@
 
 #include <qsqldriverplugin.h>
 #include <qstringlist.h>
-#include "../../../sql/drivers/oci/qsql_oci_p.h"
+#include "qsql_oci_p.h"
 
 QT_BEGIN_NAMESPACE
 

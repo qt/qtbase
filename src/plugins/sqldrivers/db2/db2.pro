@@ -1,8 +1,15 @@
 TARGET = qsqldb2
 
-SOURCES = main.cpp
+HEADERS += $$PWD/qsql_db2_p.h
+SOURCES += $$PWD/qsql_db2.cpp $$PWD/main.cpp
+
+unix {
+    !contains(LIBS, .*db2.*):LIBS += -ldb2
+} else {
+    !contains(LIBS, .*db2.*):LIBS += -ldb2cli
+}
+
 OTHER_FILES += db2.json
-include(../../../sql/drivers/db2/qsql_db2.pri)
 
 PLUGIN_CLASS_NAME = QDB2DriverPlugin
 include(../qsqldriverbase.pri)

@@ -39,51 +39,6 @@
 
 #include "qsqldatabase.h"
 #include "qsqlquery.h"
-
-#ifdef Q_OS_WIN32
-// Conflicting declarations of LPCBYTE in sqlfront.h and winscard.h
-#define _WINSCARD_H_
-#endif
-
-#ifdef QT_SQL_PSQL
-#include "../drivers/psql/qsql_psql_p.h"
-#endif
-#ifdef QT_SQL_MYSQL
-#include "../drivers/mysql/qsql_mysql_p.h"
-#endif
-#ifdef QT_SQL_ODBC
-#include "../drivers/odbc/qsql_odbc_p.h"
-#endif
-#ifdef QT_SQL_OCI
-#include "../drivers/oci/qsql_oci_p.h"
-#endif
-#ifdef QT_SQL_TDS
-// conflicting RETCODE typedef between odbc and freetds
-#define RETCODE DBRETCODE
-#include "../drivers/tds/qsql_tds_p.h"
-#undef RETCODE
-#endif
-#ifdef QT_SQL_DB2
-#include "../drivers/db2/qsql_db2_p.h"
-#endif
-#ifdef QT_SQL_SQLITE
-#include "../drivers/sqlite/qsql_sqlite_p.h"
-#endif
-#ifdef QT_SQL_SQLITE2
-#include "../drivers/sqlite2/qsql_sqlite2_p.h"
-#endif
-#ifdef QT_SQL_IBASE
-#undef SQL_FLOAT  // avoid clash with ODBC
-#undef SQL_DOUBLE
-#undef SQL_TIMESTAMP
-#undef SQL_TYPE_TIME
-#undef SQL_TYPE_DATE
-#undef SQL_DATE
-#define SCHAR IBASE_SCHAR  // avoid clash with ODBC (older versions of ibase.h with Firebird)
-#include "../drivers/ibase/qsql_ibase_p.h"
-#undef SCHAR
-#endif
-
 #include "qdebug.h"
 #include "qcoreapplication.h"
 #include "qreadwritelock.h"
@@ -542,39 +497,6 @@ QStringList QSqlDatabase::drivers()
 {
     QStringList list;
 
-#ifdef QT_SQL_PSQL
-    list << QLatin1String("QPSQL7");
-    list << QLatin1String("QPSQL");
-#endif
-#ifdef QT_SQL_MYSQL
-    list << QLatin1String("QMYSQL3");
-    list << QLatin1String("QMYSQL");
-#endif
-#ifdef QT_SQL_ODBC
-    list << QLatin1String("QODBC3");
-    list << QLatin1String("QODBC");
-#endif
-#ifdef QT_SQL_OCI
-    list << QLatin1String("QOCI8");
-    list << QLatin1String("QOCI");
-#endif
-#ifdef QT_SQL_TDS
-    list << QLatin1String("QTDS7");
-    list << QLatin1String("QTDS");
-#endif
-#ifdef QT_SQL_DB2
-    list << QLatin1String("QDB2");
-#endif
-#ifdef QT_SQL_SQLITE
-    list << QLatin1String("QSQLITE");
-#endif
-#ifdef QT_SQL_SQLITE2
-    list << QLatin1String("QSQLITE2");
-#endif
-#ifdef QT_SQL_IBASE
-    list << QLatin1String("QIBASE");
-#endif
-
     if (QFactoryLoader *fl = loader()) {
         typedef QMultiMap<int, QString> PluginKeyMap;
         typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
@@ -724,45 +646,6 @@ QSqlDatabase &QSqlDatabase::operator=(const QSqlDatabase &other)
 void QSqlDatabasePrivate::init(const QString &type)
 {
     drvName = type;
-
-    if (!driver) {
-#ifdef QT_SQL_PSQL
-        if (type == QLatin1String("QPSQL") || type == QLatin1String("QPSQL7"))
-            driver = new QPSQLDriver();
-#endif
-#ifdef QT_SQL_MYSQL
-        if (type == QLatin1String("QMYSQL") || type == QLatin1String("QMYSQL3"))
-            driver = new QMYSQLDriver();
-#endif
-#ifdef QT_SQL_ODBC
-        if (type == QLatin1String("QODBC") || type == QLatin1String("QODBC3"))
-            driver = new QODBCDriver();
-#endif
-#ifdef QT_SQL_OCI
-        if (type == QLatin1String("QOCI") || type == QLatin1String("QOCI8"))
-            driver = new QOCIDriver();
-#endif
-#ifdef QT_SQL_TDS
-        if (type == QLatin1String("QTDS") || type == QLatin1String("QTDS7"))
-            driver = new QTDSDriver();
-#endif
-#ifdef QT_SQL_DB2
-        if (type == QLatin1String("QDB2"))
-            driver = new QDB2Driver();
-#endif
-#ifdef QT_SQL_SQLITE
-        if (type == QLatin1String("QSQLITE"))
-            driver = new QSQLiteDriver();
-#endif
-#ifdef QT_SQL_SQLITE2
-        if (type == QLatin1String("QSQLITE2"))
-            driver = new QSQLite2Driver();
-#endif
-#ifdef QT_SQL_IBASE
-        if (type == QLatin1String("QIBASE"))
-            driver = new QIBaseDriver();
-#endif
-    }
 
     if (!driver) {
         DriverDict dict = QSqlDatabasePrivate::driverDict();

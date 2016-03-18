@@ -680,67 +680,51 @@ void Configure::parseCmdLine()
         }
 
         // Databases ------------------------------------------------
-        else if (configCmdLine.at(i) == "-qt-sql-mysql")
+        else if (configCmdLine.at(i) == "-sql-mysql" || configCmdLine.at(i) == "-plugin-sql-mysql")
             dictionary[ "SQL_MYSQL" ] = "yes";
-        else if (configCmdLine.at(i) == "-plugin-sql-mysql")
-            dictionary[ "SQL_MYSQL" ] = "plugin";
         else if (configCmdLine.at(i) == "-no-sql-mysql")
             dictionary[ "SQL_MYSQL" ] = "no";
 
-        else if (configCmdLine.at(i) == "-qt-sql-odbc")
+        else if (configCmdLine.at(i) == "-sql-odbc" || configCmdLine.at(i) == "-plugin-sql-odbc")
             dictionary[ "SQL_ODBC" ] = "yes";
-        else if (configCmdLine.at(i) == "-plugin-sql-odbc")
-            dictionary[ "SQL_ODBC" ] = "plugin";
         else if (configCmdLine.at(i) == "-no-sql-odbc")
             dictionary[ "SQL_ODBC" ] = "no";
 
-        else if (configCmdLine.at(i) == "-qt-sql-oci")
+        else if (configCmdLine.at(i) == "-sql-oci" || configCmdLine.at(i) == "-plugin-sql-oci")
             dictionary[ "SQL_OCI" ] = "yes";
-        else if (configCmdLine.at(i) == "-plugin-sql-oci")
-            dictionary[ "SQL_OCI" ] = "plugin";
         else if (configCmdLine.at(i) == "-no-sql-oci")
             dictionary[ "SQL_OCI" ] = "no";
 
-        else if (configCmdLine.at(i) == "-qt-sql-psql")
+        else if (configCmdLine.at(i) == "-sql-psql" || configCmdLine.at(i) == "-plugin-sql-psql")
             dictionary[ "SQL_PSQL" ] = "yes";
-        else if (configCmdLine.at(i) == "-plugin-sql-psql")
-            dictionary[ "SQL_PSQL" ] = "plugin";
         else if (configCmdLine.at(i) == "-no-sql-psql")
             dictionary[ "SQL_PSQL" ] = "no";
 
-        else if (configCmdLine.at(i) == "-qt-sql-tds")
+        else if (configCmdLine.at(i) == "-sql-tds" || configCmdLine.at(i) == "-plugin-sql-tds")
             dictionary[ "SQL_TDS" ] = "yes";
-        else if (configCmdLine.at(i) == "-plugin-sql-tds")
-            dictionary[ "SQL_TDS" ] = "plugin";
         else if (configCmdLine.at(i) == "-no-sql-tds")
             dictionary[ "SQL_TDS" ] = "no";
 
-        else if (configCmdLine.at(i) == "-qt-sql-db2")
+        else if (configCmdLine.at(i) == "-sql-db2")
             dictionary[ "SQL_DB2" ] = "yes";
         else if (configCmdLine.at(i) == "-plugin-sql-db2")
             dictionary[ "SQL_DB2" ] = "plugin";
         else if (configCmdLine.at(i) == "-no-sql-db2")
             dictionary[ "SQL_DB2" ] = "no";
 
-        else if (configCmdLine.at(i) == "-qt-sql-sqlite")
+        else if (configCmdLine.at(i) == "-sql-sqlite" || configCmdLine.at(i) == "-plugin-sql-sqlite")
             dictionary[ "SQL_SQLITE" ] = "yes";
-        else if (configCmdLine.at(i) == "-plugin-sql-sqlite")
-            dictionary[ "SQL_SQLITE" ] = "plugin";
         else if (configCmdLine.at(i) == "-no-sql-sqlite")
             dictionary[ "SQL_SQLITE" ] = "no";
         else if (configCmdLine.at(i) == "-system-sqlite")
             dictionary[ "SQL_SQLITE_LIB" ] = "system";
-        else if (configCmdLine.at(i) == "-qt-sql-sqlite2")
+        else if (configCmdLine.at(i) == "-sql-sqlite2" || configCmdLine.at(i) == "-plugin-sql-sqlite2")
             dictionary[ "SQL_SQLITE2" ] = "yes";
-        else if (configCmdLine.at(i) == "-plugin-sql-sqlite2")
-            dictionary[ "SQL_SQLITE2" ] = "plugin";
         else if (configCmdLine.at(i) == "-no-sql-sqlite2")
             dictionary[ "SQL_SQLITE2" ] = "no";
 
-        else if (configCmdLine.at(i) == "-qt-sql-ibase")
+        else if (configCmdLine.at(i) == "-sql-ibase" || configCmdLine.at(i) == "-plugin-sql-ibase")
             dictionary[ "SQL_IBASE" ] = "yes";
-        else if (configCmdLine.at(i) == "-plugin-sql-ibase")
-            dictionary[ "SQL_IBASE" ] = "plugin";
         else if (configCmdLine.at(i) == "-no-sql-ibase")
             dictionary[ "SQL_IBASE" ] = "no";
 
@@ -2000,7 +1984,7 @@ QString Configure::defaultTo(const QString &option)
             || option == "SQL_SQLITE"
             || option == "SQL_SQLITE2"
             || option == "SQL_IBASE")
-            return "plugin";
+            return "yes";
     }
 
     // By default we do not want to compile OCI driver when compiling with
@@ -2691,51 +2675,25 @@ void Configure::generateOutputVars()
     // Databases ----------------------------------------------------
     if (dictionary[ "SQL_MYSQL" ] == "yes")
         qmakeSql += "mysql";
-    else if (dictionary[ "SQL_MYSQL" ] == "plugin")
-        qmakeSqlPlugins += "mysql";
-
     if (dictionary[ "SQL_ODBC" ] == "yes")
         qmakeSql += "odbc";
-    else if (dictionary[ "SQL_ODBC" ] == "plugin")
-        qmakeSqlPlugins += "odbc";
-
     if (dictionary[ "SQL_OCI" ] == "yes")
         qmakeSql += "oci";
-    else if (dictionary[ "SQL_OCI" ] == "plugin")
-        qmakeSqlPlugins += "oci";
-
     if (dictionary[ "SQL_PSQL" ] == "yes")
         qmakeSql += "psql";
-    else if (dictionary[ "SQL_PSQL" ] == "plugin")
-        qmakeSqlPlugins += "psql";
-
     if (dictionary[ "SQL_TDS" ] == "yes")
         qmakeSql += "tds";
-    else if (dictionary[ "SQL_TDS" ] == "plugin")
-        qmakeSqlPlugins += "tds";
-
     if (dictionary[ "SQL_DB2" ] == "yes")
         qmakeSql += "db2";
-    else if (dictionary[ "SQL_DB2" ] == "plugin")
-        qmakeSqlPlugins += "db2";
-
+    if (dictionary[ "SQL_SQLITE2" ] == "yes")
+        qmakeSql += "sqlite2";
+    if (dictionary[ "SQL_IBASE" ] == "yes")
+        qmakeSql += "ibase";
     if (dictionary[ "SQL_SQLITE" ] == "yes")
         qmakeSql += "sqlite";
-    else if (dictionary[ "SQL_SQLITE" ] == "plugin")
-        qmakeSqlPlugins += "sqlite";
 
     if (dictionary[ "SQL_SQLITE_LIB" ] == "system")
         qmakeConfig += "system-sqlite";
-
-    if (dictionary[ "SQL_SQLITE2" ] == "yes")
-        qmakeSql += "sqlite2";
-    else if (dictionary[ "SQL_SQLITE2" ] == "plugin")
-        qmakeSqlPlugins += "sqlite2";
-
-    if (dictionary[ "SQL_IBASE" ] == "yes")
-        qmakeSql += "ibase";
-    else if (dictionary[ "SQL_IBASE" ] == "plugin")
-        qmakeSqlPlugins += "ibase";
 
     // Other options ------------------------------------------------
     if (dictionary[ "BUILDALL" ] == "yes") {
@@ -2944,8 +2902,6 @@ void Configure::generateOutputVars()
 
     if (!qmakeSql.isEmpty())
         qmakeVars += QString("sql-drivers    += ") + qmakeSql.join(' ');
-    if (!qmakeSqlPlugins.isEmpty())
-        qmakeVars += QString("sql-plugins    += ") + qmakeSqlPlugins.join(' ');
     if (!qmakeStyles.isEmpty())
         qmakeVars += QString("styles         += ") + qmakeStyles.join(' ');
     if (!qmakeStylePlugins.isEmpty())
@@ -3545,15 +3501,6 @@ void Configure::generateConfigfiles()
         if (dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES";
         if (dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES_2";
         if (dictionary["DYNAMICGL"] == "yes")        qconfigList += "QT_OPENGL_DYNAMIC";
-        if (dictionary["SQL_MYSQL"] == "yes")        qconfigList += "QT_SQL_MYSQL";
-        if (dictionary["SQL_ODBC"] == "yes")         qconfigList += "QT_SQL_ODBC";
-        if (dictionary["SQL_OCI"] == "yes")          qconfigList += "QT_SQL_OCI";
-        if (dictionary["SQL_PSQL"] == "yes")         qconfigList += "QT_SQL_PSQL";
-        if (dictionary["SQL_TDS"] == "yes")          qconfigList += "QT_SQL_TDS";
-        if (dictionary["SQL_DB2"] == "yes")          qconfigList += "QT_SQL_DB2";
-        if (dictionary["SQL_SQLITE"] == "yes")       qconfigList += "QT_SQL_SQLITE";
-        if (dictionary["SQL_SQLITE2"] == "yes")      qconfigList += "QT_SQL_SQLITE2";
-        if (dictionary["SQL_IBASE"] == "yes")        qconfigList += "QT_SQL_IBASE";
 
         if (dictionary["POSIX_IPC"] == "yes")
             qconfigList += "QT_POSIX_IPC";
