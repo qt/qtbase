@@ -2135,18 +2135,9 @@ while [ "$#" -gt 0 ]; do
             VAL="`echo $VAL |tr a-z A-Z`"
             eval "CFG_$VAL=$OPT"
             continue
-        fi
-
-        if [ "$OPT" = "plugin" ] || [ "$OPT" = "qt" ]; then
-            if [ "$OPT" = "plugin" ]; then
-                VAR="${VAR}-${OPT}"
-            fi
-	    QMakeVar add "${VAR}s" "${VAL}"
-        elif [ "$OPT" = "no" ]; then
-            PLUG_VAR="${VAR}-plugin"
-            IN_VAR="${VAR}"
-	    QMakeVar del "${IN_VAR}s" "$VAL"
-	    QMakeVar del "${PLUG_VAR}s" "$VAL"
+        else
+            echo "Internal error resolving command line arguments."
+            exit 1
         fi
         ;;
     v|verbose)
