@@ -1225,10 +1225,6 @@ void Configure::parseCmdLine()
             dictionary["QT_INOTIFY"] = "no";
         }
 
-        else if (configCmdLine.at(i) == "-largefile") {
-            dictionary["LARGE_FILE"] = "yes";
-        }
-
         else if (configCmdLine.at(i) == "-fontconfig") {
             dictionary["FONT_CONFIG"] = "yes";
         } else if (configCmdLine.at(i) == "-no-fontconfig") {
@@ -1775,8 +1771,6 @@ bool Configure::displayHelp()
 
         desc("QT_EVENTFD",  "yes",     "-eventfd",      "Enable eventfd(7) support in the UNIX event loop.");
         desc("QT_EVENTFD",  "no",      "-no-eventfd",   "Disable eventfd(7) support in the UNIX event loop.\n");
-
-        desc("LARGE_FILE",  "yes",     "-largefile",    "Enables Qt to access files larger than 4 GB.\n");
 
         desc("POSIX_IPC",   "yes",     "-posix-ipc",    "Enable POSIX IPC.\n");
 
@@ -3630,7 +3624,6 @@ void Configure::displayConfig()
          << (dictionary[ "AVX512" ].isEmpty() ? QString("<none>") : dictionary[ "AVX512" ].toUpper()) << endl;
     sout << "NEON support................" << dictionary[ "NEON" ] << endl;
     sout << "OpenGL support.............." << dictionary[ "OPENGL" ] << endl;
-    sout << "Large File support.........." << dictionary[ "LARGE_FILE" ] << endl;
     sout << "NIS support................." << dictionary[ "NIS" ] << endl;
     sout << "Iconv support..............." << dictionary[ "QT_ICONV" ] << endl;
     sout << "Evdev support..............." << dictionary[ "QT_EVDEV" ] << endl;

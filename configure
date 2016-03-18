@@ -699,7 +699,7 @@ CFG_ICONV=auto
 CFG_DBUS=auto
 CFG_GLIB=auto
 CFG_GTK=auto
-CFG_LARGEFILE=auto
+CFG_LARGEFILE=yes
 CFG_OPENSSL=auto
 CFG_LIBPROXY=auto
 CFG_SECURETRANSPORT=auto
@@ -1959,13 +1959,6 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    largefile)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_LARGEFILE="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
     openssl)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_OPENSSL="$VAL"
@@ -2334,9 +2327,6 @@ Configure options:
 
  *  -shared ............ Create and use shared Qt libraries.
     -static ............ Create and use static Qt libraries.
-
-    -no-largefile ...... Disables large file support.
- +  -largefile ......... Enables Qt to access files larger than 4 GB.
 
     -no-accessibility .. Do not compile Accessibility support.
                          Disabling accessibility is not recommended, as it will break QStyle
@@ -4619,11 +4609,6 @@ if [ "$CFG_SYSLOG" != "no" ]; then
     fi
 fi
 
-if [ "$CFG_LARGEFILE" = "auto" ]; then
-    #Large files should be enabled for all Linux systems
-    CFG_LARGEFILE=yes
-fi
-
 if [ "$CFG_GUI" = "no" ]; then
     QPA_PLATFORM_GUARD=no
 fi
@@ -6063,11 +6048,6 @@ elif [ "$CFG_GSTREAMER" = "1.0" ]; then
     fi
 fi
 
-if [ "$CFG_LARGEFILE" != "yes" ] && [ "$XPLATFORM_MINGW" = "yes" ]; then
-    echo "Warning: largefile support cannot be disabled for win32."
-    CFG_LARGEFILE="yes"
-fi
-
 #-------------------------------------------------------------------------------
 # ask for all that hasn't been auto-detected or specified in the arguments
 #-------------------------------------------------------------------------------
@@ -6998,7 +6978,6 @@ report_support "  Qt D-Bus ..............." "$CFG_DBUS" runtime "loading dbus-1 
 report_support "  Qt Concurrent .........." "$CFG_CONCURRENT"
 report_support "  Qt GUI ................." "$CFG_GUI"
 report_support "  Qt Widgets ............." "$CFG_WIDGETS"
-report_support "  Large File ............." "$CFG_LARGEFILE"
 report_support "  QML debugging .........." "$CFG_QML_DEBUG"
 report_support "  Use system proxies ....." "$CFG_SYSTEM_PROXIES"
 
