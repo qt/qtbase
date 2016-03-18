@@ -54,7 +54,6 @@ QT_BEGIN_NAMESPACE
 class Q_AUTOTEST_EXPORT QToolBarExtension : public QToolButton
 {
     Q_OBJECT
-    Qt::Orientation orientation;
 
 public:
     explicit QToolBarExtension(QWidget *parent);
