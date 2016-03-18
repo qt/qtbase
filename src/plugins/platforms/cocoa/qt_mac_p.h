@@ -58,6 +58,7 @@
 #include "QtCore/qvariant.h"
 #include "QtCore/qmimedata.h"
 #include "QtCore/qpointer.h"
+#include "QtCore/qloggingcategory.h"
 #include "private/qcore_mac_p.h"
 
 
