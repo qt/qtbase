@@ -1994,7 +1994,7 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
     QWindow *window = e->window.data();
     modifier_buttons = e->modifiers;
     if (e->nullWindow()
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#if defined(Q_OS_ANDROID)
            || e->key == Qt::Key_Back || e->key == Qt::Key_Menu
 #endif
             ) {
@@ -2020,7 +2020,7 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
 
     if (window && !window->d_func()->blockedByModalWindow)
         QGuiApplication::sendSpontaneousEvent(window, &ev);
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#if defined(Q_OS_ANDROID)
     else
         ev.setAccepted(false);
 

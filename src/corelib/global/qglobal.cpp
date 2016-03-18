@@ -79,7 +79,7 @@
 #  include <envLib.h>
 #endif
 
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#if defined(Q_OS_ANDROID)
 #include <private/qjni_p.h>
 #endif
 
@@ -2731,10 +2731,8 @@ QString QSysInfo::productVersion()
     // fall through
 
 // Android should not fall through to the Unix code
-#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#elif defined(Q_OS_ANDROID)
     return QJNIObjectPrivate::getStaticObjectField("android/os/Build$VERSION", "RELEASE", "Ljava/lang/String;").toString();
-#elif defined(Q_OS_ANDROID) // Q_OS_ANDROID_NO_SDK
-    // TBD
 #elif defined(USE_ETC_OS_RELEASE) // Q_OS_UNIX
     QUnixOSVersion unixOsVersion;
     findUnixOsVersion(unixOsVersion);
@@ -3423,7 +3421,7 @@ typedef uint SeedStorageType;
 typedef QThreadStorage<SeedStorageType *> SeedStorage;
 Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
 
-#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#elif defined(Q_OS_ANDROID)
 typedef QThreadStorage<QJNIObjectPrivate> AndroidRandomStorage;
 Q_GLOBAL_STATIC(AndroidRandomStorage, randomTLS)
 #endif
@@ -3459,7 +3457,7 @@ void qsrand(uint seed)
         //global static object, fallback to srand(seed)
         srand(seed);
     }
-#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#elif defined(Q_OS_ANDROID)
     if (randomTLS->hasLocalData()) {
         randomTLS->localData().callMethod<void>("setSeed", "(J)V", jlong(seed));
         return;
@@ -3515,7 +3513,7 @@ int qrand()
         //global static object, fallback to rand()
         return rand();
     }
-#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#elif defined(Q_OS_ANDROID)
     AndroidRandomStorage *randomStorage = randomTLS();
     if (!randomStorage)
         return rand();

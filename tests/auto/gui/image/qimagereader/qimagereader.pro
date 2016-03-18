@@ -5,7 +5,7 @@ MOC_DIR=tmp
 QT += core-private gui-private network testlib
 RESOURCES += qimagereader.qrc
 
-android: !android-no-sdk {
+android {
     RESOURCES += android_testdata.qrc
 }
 

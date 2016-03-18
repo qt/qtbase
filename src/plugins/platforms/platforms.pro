@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
-android:!android-no-sdk: SUBDIRS += android
+android: SUBDIRS += android
 
 SUBDIRS += minimal
 

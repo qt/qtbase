@@ -66,7 +66,7 @@ private:
 
 void tst_QIODevice::initTestCase()
 {
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#if defined(Q_OS_ANDROID)
     QVERIFY(QFileInfo(QStringLiteral("./tst_qiodevice.cpp")).exists()
             || QFile::copy(QStringLiteral(":/tst_qiodevice.cpp"), QStringLiteral("./tst_qiodevice.cpp")));
 #endif

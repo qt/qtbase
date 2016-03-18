@@ -160,7 +160,7 @@ win32 {
             } else:ios {
                 LIBS += -framework MobileCoreServices
             }
-        } else:android:!android-no-sdk {
+        } else:android {
             SOURCES += \
                 io/qstandardpaths_android.cpp \
                 io/qstorageinfo_unix.cpp

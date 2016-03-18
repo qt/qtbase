@@ -184,7 +184,7 @@ SUBDIRS += src_plugins
 
 nacl: SUBDIRS -= src_network src_testlib
 
-android:!android-no-sdk: SUBDIRS += src_android
+android: SUBDIRS += src_android
 
 TR_EXCLUDE = \
     src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_uic src_tools_qlalr \

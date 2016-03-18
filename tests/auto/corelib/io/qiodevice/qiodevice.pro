@@ -6,7 +6,7 @@ SOURCES = tst_qiodevice.cpp
 TESTDATA += tst_qiodevice.cpp
 MOC_DIR=tmp
 
-android:!android-no-sdk: {
+android {
     RESOURCES += \
         android_testdata.qrc
 }

@@ -194,7 +194,7 @@ qqnx_pps {
                 kernel/qppsobjectprivate_p.h
 }
 
-android:!android-no-sdk {
+android {
         SOURCES += \
                    kernel/qjnionload.cpp \
                    kernel/qjnihelpers.cpp \

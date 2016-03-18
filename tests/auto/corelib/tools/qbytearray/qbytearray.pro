@@ -10,7 +10,7 @@ mac {
     LIBS += -framework Foundation
 }
 
-android: !android-no-sdk {
+android {
     RESOURCES += \
         android_testdata.qrc
 }

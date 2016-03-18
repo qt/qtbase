@@ -42,7 +42,7 @@ void tst_QProcess_and_GuiEventLoop::waitForAndEventLoop()
 {
 #if defined(QT_NO_PROCESS)
     QSKIP("QProcess not supported");
-#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#elif defined(Q_OS_ANDROID)
     QSKIP("Not supported on Android");
 #else
 

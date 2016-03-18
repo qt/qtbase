@@ -504,7 +504,7 @@ void tst_QCommandLineParser::testVersionOption()
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE");
 #endif
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#if defined(Q_OS_ANDROID)
     QSKIP("Deploying executable applications to file system on Android not supported.");
 #endif
 
@@ -573,7 +573,7 @@ void tst_QCommandLineParser::testHelpOption()
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE");
 #endif
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#if defined(Q_OS_ANDROID)
     QSKIP("Deploying executable applications to file system on Android not supported.");
 #endif
 
@@ -620,7 +620,7 @@ void tst_QCommandLineParser::testQuoteEscaping()
 {
 #ifdef QT_NO_PROCESS
     QSKIP("This test requires QProcess support");
-#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#elif defined(Q_OS_ANDROID)
     QSKIP("Deploying executable applications to file system on Android not supported.");
 #else
     QCoreApplication app(empty_argc, empty_argv);

@@ -5,7 +5,7 @@ SOURCES = tst_qchar.cpp
 
 TESTDATA += data/NormalizationTest.txt
 
-android: !android-no-sdk {
+android {
     RESOURCES += \
         testdata.qrc
 }

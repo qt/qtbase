@@ -5,6 +5,6 @@ SOURCES = tst_qtemporaryfile.cpp
 TESTDATA += tst_qtemporaryfile.cpp
 RESOURCES += qtemporaryfile.qrc
 
-android:!android-no-sdk {
+android {
     RESOURCES += android_testdata.qrc
 }

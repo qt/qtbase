@@ -74,13 +74,13 @@
 #include <QtPlatformSupport/private/qlibinputhandler_p.h>
 #endif
 
-#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+#if !defined(QT_NO_EVDEV) && !defined(Q_OS_ANDROID)
 #include <QtPlatformSupport/private/qevdevmousemanager_p.h>
 #include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
 #include <QtPlatformSupport/private/qevdevtouchmanager_p.h>
 #endif
 
-#if !defined(QT_NO_TSLIB) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+#if !defined(QT_NO_TSLIB) && !defined(Q_OS_ANDROID)
 #include <QtPlatformSupport/private/qtslib_p.h>
 #endif
 
@@ -388,7 +388,7 @@ QPlatformNativeInterface::NativeResourceForContextFunction QEglFSIntegration::na
 
 QFunctionPointer QEglFSIntegration::platformFunction(const QByteArray &function) const
 {
-#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+#if !defined(QT_NO_EVDEV) && !defined(Q_OS_ANDROID)
     if (function == QEglFSFunctions::loadKeymapTypeIdentifier())
         return QFunctionPointer(loadKeymapStatic);
 #else
@@ -400,7 +400,7 @@ QFunctionPointer QEglFSIntegration::platformFunction(const QByteArray &function)
 
 void QEglFSIntegration::loadKeymapStatic(const QString &filename)
 {
-#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+#if !defined(QT_NO_EVDEV) && !defined(Q_OS_ANDROID)
     QEglFSIntegration *self = static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration());
     if (self->m_kbdMgr)
         self->m_kbdMgr->loadKeymap(filename);
@@ -420,7 +420,7 @@ void QEglFSIntegration::createInputHandlers()
     }
 #endif
 
-#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+#if !defined(QT_NO_EVDEV) && !defined(Q_OS_ANDROID)
     m_kbdMgr = new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
     new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
 #ifndef QT_NO_TSLIB
