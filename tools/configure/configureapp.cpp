@@ -152,6 +152,7 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     dictionary[ "GUI" ]             = "yes";
     dictionary[ "RTTI" ]            = "yes";
     dictionary[ "STRIP" ]           = "yes";
+    dictionary[ "PCH" ]             = "yes";
     dictionary[ "SEPARATE_DEBUG_INFO" ] = "no";
     dictionary[ "SSE2" ]            = "auto";
     dictionary[ "SSE3" ]            = "auto";
@@ -858,6 +859,11 @@ void Configure::parseCmdLine()
             dictionary[ "STRIP" ] = "yes";
         else if (configCmdLine.at(i) == "-no-strip")
             dictionary[ "STRIP" ] = "no";
+
+        else if (configCmdLine.at(i) == "-pch")
+            dictionary[ "PCH" ] = "yes";
+        else if (configCmdLine.at(i) == "-no-pch")
+            dictionary[ "PCH" ] = "no";
 
         else if (configCmdLine.at(i) == "-accessibility")
             dictionary[ "ACCESSIBILITY" ] = "yes";
@@ -1941,6 +1947,9 @@ bool Configure::displayHelp()
         desc(                   "-L <librarypath>",     "Add an explicit library path.");
         desc(                   "-l <libraryname>",     "Add an explicit library name, residing in a librarypath.\n");
 
+        desc("PCH",   "no",     "-no-pch",              "Do not use precompiled header support.");
+        desc("PCH",   "yes",    "-pch",                 "Use precopmiled header support.\n");
+
         desc(                   "-help, -h, -?",        "Display this information.\n");
 
         // 3rd party stuff options go below here --------------------------------------------------------------------------------
@@ -2747,6 +2756,11 @@ void Configure::generateOutputVars()
     }
     if (dictionary[ "RELEASE_TOOLS" ] == "yes")
         qtConfig += "release_tools";
+
+    if (dictionary[ "PCH" ] == "yes")
+        qmakeConfig += "precompile_header";
+    else
+        qmakeVars += "CONFIG -= precompile_header";
 
     if (dictionary[ "C++STD" ] == "c++11")
         qtConfig += "c++11";
@@ -3854,6 +3868,7 @@ void Configure::displayConfig()
         sout << "Force optimized tools......." << dictionary[ "RELEASE_TOOLS" ] << endl;
     sout << "C++ language standard......." << dictionary[ "C++STD" ] << endl;
     sout << "Link Time Code Generation..." << dictionary[ "LTCG" ] << endl;
+    sout << "Using PCH .................." << dictionary[ "PCH" ] << endl;
     sout << "Accessibility support......." << dictionary[ "ACCESSIBILITY" ] << endl;
     sout << "RTTI support................" << dictionary[ "RTTI" ] << endl;
     sout << "SSE2 support................" << dictionary[ "SSE2" ] << endl;
