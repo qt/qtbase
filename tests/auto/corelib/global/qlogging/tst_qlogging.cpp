@@ -779,6 +779,17 @@ void tst_qmessagehandler::qMessagePattern_data()
         << true << (QList<QByteArray>()
             << ('/' + QDateTime::currentDateTime().toString("yyyy - MM - d").toUtf8() + "/qDebug"));
 
+    QTest::newRow("time-time") << "/%{time yyyy - MM - d}/%{time dd-MM-yy}/%{message}"
+        << true << (QList<QByteArray>()
+            << ('/' + QDateTime::currentDateTime().toString("yyyy - MM - d").toUtf8()
+                + '/' + QDateTime::currentDateTime().toString("dd-MM-yy").toUtf8()
+                + "/qDebug"));
+
+    QTest::newRow("skipped-time-shown-time")
+            << "/%{if-warning}%{time yyyy - MM - d}%{endif}%{if-debug}%{time dd-MM-yy}%{endif}/%{message}"
+            << true << (QList<QByteArray>()
+            << ('/' + QDateTime::currentDateTime().toString("dd-MM-yy").toUtf8() + "/qDebug"));
+
     // %{time}  should have a padding of 6 so if it takes less than 10 seconds to show
     // the first message, there should be 5 spaces
     QTest::newRow("time-process") << "<%{time process}>%{message}" << true << (QList<QByteArray>()
