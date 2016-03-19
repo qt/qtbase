@@ -691,6 +691,7 @@ bool QAbstractSocketPrivate::canReadNotification()
     if (isBuffered) {
         // Return if there is no space in the buffer
         if (readBufferMaxSize && buffer.size() >= readBufferMaxSize) {
+            socketEngine->setReadNotificationEnabled(false);
 #if defined (QABSTRACTSOCKET_DEBUG)
             qDebug("QAbstractSocketPrivate::canReadNotification() buffer is full");
 #endif
@@ -708,11 +709,6 @@ bool QAbstractSocketPrivate::canReadNotification()
             return false;
         }
         newBytes = buffer.size() - newBytes;
-
-        // If read buffer is full, disable the read socket notifier.
-        if (readBufferMaxSize && buffer.size() == readBufferMaxSize) {
-            socketEngine->setReadNotificationEnabled(false);
-        }
     }
 
     // Only emit readyRead() if there is data available.
@@ -727,10 +723,6 @@ bool QAbstractSocketPrivate::canReadNotification()
 #endif
         return true;
     }
-
-    // turn the socket engine off if we've reached the buffer size limit
-    if (socketEngine && isBuffered)
-        socketEngine->setReadNotificationEnabled(readBufferMaxSize == 0 || readBufferMaxSize > q->bytesAvailable());
 
     return true;
 }
@@ -2784,12 +2776,12 @@ void QAbstractSocket::setReadBufferSize(qint64 size)
     if (d->readBufferMaxSize == size)
         return;
     d->readBufferMaxSize = size;
-    if (!d->emittedReadyRead && d->socketEngine) {
-        // ensure that the read notification is enabled if we've now got
-        // room in the read buffer
-        // but only if we're not inside canReadNotification -- that will take care on its own
-        if ((size == 0 || d->buffer.size() < size) && d->state == QAbstractSocket::ConnectedState) // Do not change the notifier unless we are connected.
-            d->socketEngine->setReadNotificationEnabled(true);
+
+    // Do not change the notifier unless we are connected.
+    if (d->socketEngine && d->state == QAbstractSocket::ConnectedState) {
+        // Ensure that the read notification is enabled if we've now got
+        // room in the read buffer.
+        d->socketEngine->setReadNotificationEnabled(size == 0 || d->buffer.size() < size);
     }
 }
 
