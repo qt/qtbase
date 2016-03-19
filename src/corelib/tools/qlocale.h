@@ -416,6 +416,27 @@ public:
         Mono = 337,
         TedimChin = 338,
         Maithili = 339,
+        Ahom = 340,
+        AmericanSignLanguage = 341,
+        ArdhamagadhiPrakrit = 342,
+        Bhojpuri = 343,
+        HieroglyphicLuwian = 344,
+        LiteraryChinese = 345,
+        Mazanderani = 346,
+        Mru = 347,
+        Newari = 348,
+        NorthernLuri = 349,
+        Palauan = 350,
+        Papiamento = 351,
+        Saraiki = 352,
+        TokelauLanguage = 353,
+        TokPisin = 354,
+        TuvaluLanguage = 355,
+        UncodedLanguages = 356,
+        Cantonese = 357,
+        Osage = 358,
+        Tangut = 359,
+
         Norwegian = NorwegianBokmal,
         Moldavian = Romanian,
         SerboCroatian = Serbian,
@@ -430,7 +451,8 @@ public:
         Chewa = Nyanja,
         Frisian = WesternFrisian,
         Uigur = Uighur,
-        LastLanguage = Maithili
+
+        LastLanguage = Tangut
     };
 
     enum Script {
@@ -562,9 +584,25 @@ public:
         KhudawadiScript = 125,
         TirhutaScript = 126,
         VarangKshitiScript = 127,
+        AhomScript = 128,
+        AnatolianHieroglyphsScript = 129,
+        HatranScript = 130,
+        MultaniScript = 131,
+        OldHungarianScript = 132,
+        SignWritingScript = 133,
+        AdlamScript = 134,
+        BhaiksukiScript = 135,
+        MarchenScript = 136,
+        NewaScript = 137,
+        OsageScript = 138,
+        TangutScript = 139,
+        HanWithBopomofoScript = 140,
+        JamoScript = 141,
+
         SimplifiedChineseScript = SimplifiedHanScript,
         TraditionalChineseScript = TraditionalHanScript,
-        LastScript = VarangKshitiScript
+
+        LastScript = JamoScript
     };
     enum Country {
         AnyCountry = 0,
@@ -780,14 +818,14 @@ public:
         Tanzania = 210,
         Thailand = 211,
         Togo = 212,
-        Tokelau = 213,
+        TokelauCountry = 213,
         Tonga = 214,
         TrinidadAndTobago = 215,
         Tunisia = 216,
         Turkey = 217,
         Turkmenistan = 218,
         TurksAndCaicosIslands = 219,
-        Tuvalu = 220,
+        TuvaluCountry = 220,
         Uganda = 221,
         Ukraine = 222,
         UnitedArabEmirates = 223,
@@ -825,13 +863,19 @@ public:
         Bonaire = 255,
         SintMaarten = 256,
         Kosovo = 257,
+        EuropeanUnion = 258,
+        OutlyingOceania = 259,
+
+        Tokelau = TokelauCountry,
+        Tuvalu = TuvaluCountry,
         DemocraticRepublicOfCongo = CongoKinshasa,
         PeoplesRepublicOfCongo = CongoBrazzaville,
         DemocraticRepublicOfKorea = NorthKorea,
         RepublicOfKorea = SouthKorea,
         RussianFederation = Russia,
         SyrianArabRepublic = Syria,
-        LastCountry = Kosovo
+
+        LastCountry = OutlyingOceania
     };
 // GENERATED PART ENDS HERE
 

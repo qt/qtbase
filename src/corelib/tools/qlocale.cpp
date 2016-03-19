@@ -2390,9 +2390,11 @@ QLocale::MeasurementSystem QLocale::measurementSystem() const
 Qt::LayoutDirection QLocale::textDirection() const
 {
     switch (script()) {
+    case QLocale::AdlamScript:
     case QLocale::ArabicScript:
     case QLocale::AvestanScript:
     case QLocale::CypriotScript:
+    case QLocale::HatranScript:
     case QLocale::HebrewScript:
     case QLocale::ImperialAramaicScript:
     case QLocale::InscriptionalPahlaviScript:
@@ -2406,6 +2408,7 @@ Qt::LayoutDirection QLocale::textDirection() const
     case QLocale::MeroiticScript:
     case QLocale::NabataeanScript:
     case QLocale::NkoScript:
+    case QLocale::OldHungarianScript:
     case QLocale::OldNorthArabianScript:
     case QLocale::OldSouthArabianScript:
     case QLocale::OrkhonScript:
