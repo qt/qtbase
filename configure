@@ -664,8 +664,6 @@ CFG_CPUFEATURES=
 # Host architecture, same as CFG_ARCH when not cross-compiling
 CFG_HOST_ARCH=
 CFG_HOST_CPUFEATURES=
-# Set when the -arch or -host-arch arguments are used
-OPT_OBSOLETE_HOST_ARG=no
 
 CFG_USE_GNUMAKE=no
 CFG_XINPUT2=auto
@@ -690,7 +688,6 @@ CFG_KMS=auto
 CFG_MIRCLIENT=auto
 CFG_LIBUDEV=auto
 CFG_LIBINPUT=auto
-CFG_OBSOLETE_WAYLAND=no
 CFG_EVDEV=auto
 CFG_TSLIB=auto
 CFG_NIS=auto
@@ -1290,9 +1287,6 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
 	;;
-    arch|host-arch)
-        OPT_OBSOLETE_HOST_ARG=yes
-        ;;
     harfbuzz)
         [ "$VAL" = "yes" ] && VAL=qt
         if [ "$VAL" = "qt" ] || [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
@@ -1748,9 +1742,6 @@ while [ "$#" -gt 0 ]; do
         else
             UNKNOWN_OPT=yes
         fi
-        ;;
-    wayland)
-        CFG_OBSOLETE_WAYLAND=yes
         ;;
     eglfs)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -7170,33 +7161,6 @@ cat <<EOF
         pthread_mutex_t to protect all atomic operations. This
         implementation is the slow (but safe) fallback implementation
         for architectures Qt does not yet support.
-EOF
-fi
-
-#-------------------------------------------------------------------------------
-# check if the user passed the obsoleted -wayland or -no-wayland flag
-#-------------------------------------------------------------------------------
-if [ "$CFG_OBSOLETE_WAYLAND" = "yes" ]; then
-cat <<EOF
-
-        NOTICE: The -wayland and -no-wayland flags are now obsolete
-
-        All configuring of QtWayland plugin and QtCompositor happens in the module
-EOF
-fi
-
-#-------------------------------------------------------------------------------
-# check if the user passed the obsoleted -arch or -host-arch options
-#-------------------------------------------------------------------------------
-if [ "$OPT_OBSOLETE_HOST_ARG" = "yes" ]; then
-cat <<EOF
-
-        NOTICE: The -arch and -host-arch options are obsolete.
-
-        Qt now detects the target and host architectures based on compiler
-        output. Qt will be built using $CFG_ARCH for the target architecture
-        and $CFG_HOST_ARCH for the host architecture (note that these two
-        will be the same unless you are cross-compiling).
 EOF
 fi
 
