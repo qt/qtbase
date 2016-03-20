@@ -17,6 +17,6 @@ HEADERS +=\
 contains(QT_CONFIG, glib) {
     SOURCES +=$$PWD/qeventdispatcher_glib.cpp
     HEADERS +=$$PWD/qeventdispatcher_glib_p.h
-    QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
-    LIBS_PRIVATE += $$QT_LIBS_GLIB
+    QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_GLIB
+    LIBS_PRIVATE += $$QMAKE_LIBS_GLIB
 }

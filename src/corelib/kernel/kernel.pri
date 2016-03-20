@@ -148,8 +148,8 @@ unix|integrity {
             kernel/qeventdispatcher_glib.cpp
         HEADERS += \
             kernel/qeventdispatcher_glib_p.h
-        QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
-        LIBS_PRIVATE +=$$QT_LIBS_GLIB
+        QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_GLIB
+        LIBS_PRIVATE +=$$QMAKE_LIBS_GLIB
     }
 
    contains(QT_CONFIG, clock-gettime):include($$QT_SOURCE_TREE/config.tests/unix/clock-gettime/clock-gettime.pri)

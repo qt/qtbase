@@ -2124,11 +2124,11 @@ bool Configure::checkAvailability(const QString &part)
         if (dictionary[ "SQL_SQLITE_LIB" ] == "system") {
             if (platform() == QNX) {
                 available = true;
-                dictionary[ "QT_LFLAGS_SQLITE" ] += "-lsqlite3 -lz";
+                dictionary[ "QMAKE_LIBS_SQLITE" ] += "-lsqlite3 -lz";
             } else {
                 available = findFile("sqlite3.h") && findFile("sqlite3.lib");
                 if (available)
-                    dictionary[ "QT_LFLAGS_SQLITE" ] += "sqlite3.lib";
+                    dictionary[ "QMAKE_LIBS_SQLITE" ] += "sqlite3.lib";
             }
         } else {
             available = true;
@@ -2733,8 +2733,8 @@ void Configure::generateOutputVars()
     if (!qmakeLibs.isEmpty())
         qmakeVars += "LIBS           += " + formatPaths(qmakeLibs);
 
-    if (!dictionary["QT_LFLAGS_SQLITE"].isEmpty())
-        qmakeVars += "QT_LFLAGS_SQLITE += " + dictionary["QT_LFLAGS_SQLITE"];
+    if (!dictionary["QMAKE_LIBS_SQLITE"].isEmpty())
+        qmakeVars += "QMAKE_LIBS_SQLITE += " + dictionary["QMAKE_LIBS_SQLITE"];
 
     if (dictionary[ "OPENGL" ] == "yes")
         qtConfig += "opengl";
@@ -2867,8 +2867,8 @@ void Configure::generateOutputVars()
     }
     if (dictionary[ "DBUS" ] == "linked") {
        if (!dbusPath.isEmpty()) {
-           qmakeVars += QString("QT_CFLAGS_DBUS = -I%1/include").arg(dbusPath);
-           qmakeVars += QString("QT_LIBS_DBUS = -L%1/lib").arg(dbusPath);
+           qmakeVars += QString("QMAKE_CFLAGS_DBUS = -I%1/include").arg(dbusPath);
+           qmakeVars += QString("QMAKE_LIBS_DBUS = -L%1/lib").arg(dbusPath);
            if (dbusHostPath.isEmpty())
                qmakeVars += QString("QT_HOST_CFLAGS_DBUS = -I%1/include").arg(dbusPath);
        }
@@ -2876,11 +2876,11 @@ void Configure::generateOutputVars()
            qmakeVars += QString("QT_HOST_CFLAGS_DBUS = -I%1/include").arg(dbusHostPath);
     }
     if (dictionary[ "SQL_MYSQL" ] != "no" && !mysqlPath.isEmpty()) {
-        qmakeVars += QString("QT_CFLAGS_MYSQL = -I%1/include").arg(mysqlPath);
-        qmakeVars += QString("QT_LFLAGS_MYSQL = -L%1/lib").arg(mysqlPath);
+        qmakeVars += QString("QMAKE_CFLAGS_MYSQL = -I%1/include").arg(mysqlPath);
+        qmakeVars += QString("QMAKE_LIBS_MYSQL = -L%1/lib").arg(mysqlPath);
     }
     if (!psqlLibs.isEmpty())
-        qmakeVars += QString("QT_LFLAGS_PSQL=") + psqlLibs.section("=", 1);
+        qmakeVars += QString("QMAKE_LIBS_PSQL=") + psqlLibs.section("=", 1);
     if (!zlibLibs.isEmpty())
         qmakeVars += zlibLibs;
 
@@ -2891,7 +2891,7 @@ void Configure::generateOutputVars()
         if (!sybaseLibs.isEmpty())
             lflagsTDS += sybaseLibs.section("=", 1);
         if (!lflagsTDS.isEmpty())
-            qmakeVars += QString("QT_LFLAGS_TDS=") + lflagsTDS.join(' ');
+            qmakeVars += QString("QMAKE_LIBS_TDS=") + lflagsTDS.join(' ');
     }
 
     if (!qmakeSql.isEmpty())

@@ -81,7 +81,7 @@ CONFIG += qpa/genericunixfontdatabase
 
 contains(QT_CONFIG, dbus-linked) {
     QT += dbus
-    LIBS += $$QT_LIBS_DBUS
+    LIBS += $$QMAKE_LIBS_DBUS
 }
 
 contains(QT_CONFIG, xcb-qt) {

@@ -803,23 +803,23 @@ QT_HOST_DATA=
 QT_EXT_PREFIX=
 
 #flags for SQL drivers
-QT_CFLAGS_PSQL=
-QT_LFLAGS_PSQL=
-QT_CFLAGS_MYSQL=
-QT_LFLAGS_MYSQL=
-QT_LFLAGS_MYSQL_R=
-QT_CFLAGS_SQLITE=
-QT_LFLAGS_SQLITE=
-QT_LFLAGS_ODBC="-lodbc"
-QT_LFLAGS_TDS=
+QMAKE_CFLAGS_PSQL=
+QMAKE_LIBS_PSQL=
+QMAKE_CFLAGS_MYSQL=
+QMAKE_LIBS_MYSQL=
+QMAKE_LIBS_MYSQL_R=
+QMAKE_CFLAGS_SQLITE=
+QMAKE_LIBS_SQLITE=
+QMAKE_LIBS_ODBC="-lodbc"
+QMAKE_LIBS_TDS=
 
 # flags for libdbus-1
-QT_CFLAGS_DBUS=
-QT_LIBS_DBUS=
+QMAKE_CFLAGS_DBUS=
+QMAKE_LIBS_DBUS=
 
 # flags for Glib (X11 only)
-QT_CFLAGS_GLIB=
-QT_LIBS_GLIB=
+QMAKE_CFLAGS_GLIB=
+QMAKE_LIBS_GLIB=
 
 # default qpa platform
 QT_QPA_DEFAULT_PLATFORM=
@@ -4643,10 +4643,10 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
             if [ "$CFG_SQL_mysql" != "no" ]; then
 		[ -z "$CFG_MYSQL_CONFIG" ] && CFG_MYSQL_CONFIG=`"$WHICH" mysql_config`
                 if [ -x "$CFG_MYSQL_CONFIG" ]; then
-                    QT_CFLAGS_MYSQL=`$CFG_MYSQL_CONFIG --include 2>/dev/null | filterIncludeOptions`
+                    QMAKE_CFLAGS_MYSQL=`$CFG_MYSQL_CONFIG --include 2>/dev/null | filterIncludeOptions`
                     # -rdynamic should not be returned by mysql_config, but is on RHEL 6.6
-                    QT_LFLAGS_MYSQL_R=`$CFG_MYSQL_CONFIG --libs_r 2>/dev/null | filterLibraryOptions | sed "s/-rdynamic//"`
-                    QT_LFLAGS_MYSQL=`$CFG_MYSQL_CONFIG --libs 2>/dev/null | filterLibraryOptions | sed "s/-rdynamic//"`
+                    QMAKE_LIBS_MYSQL_R=`$CFG_MYSQL_CONFIG --libs_r 2>/dev/null | filterLibraryOptions | sed "s/-rdynamic//"`
+                    QMAKE_LIBS_MYSQL=`$CFG_MYSQL_CONFIG --libs 2>/dev/null | filterLibraryOptions | sed "s/-rdynamic//"`
 		    QT_MYSQL_VERSION=`$CFG_MYSQL_CONFIG --version 2>/dev/null`
                     QT_MYSQL_VERSION_MAJOR=`echo $QT_MYSQL_VERSION | cut -d . -f 1`
                 fi
@@ -4659,16 +4659,16 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
                         exit 101
                     else
                         CFG_SQL_mysql="no"
-			QT_LFLAGS_MYSQL=""
-			QT_LFLAGS_MYSQL_R=""
-			QT_CFLAGS_MYSQL=""
+                        QMAKE_LIBS_MYSQL=""
+                        QMAKE_LIBS_MYSQL_R=""
+                        QMAKE_CFLAGS_MYSQL=""
                     fi
                 else
-                    if compileTest unix/mysql_r "MySQL (thread-safe)" $QT_LFLAGS_MYSQL_R $QT_CFLAGS_MYSQL; then
+                    if compileTest unix/mysql_r "MySQL (thread-safe)" $QMAKE_LIBS_MYSQL_R $QMAKE_CFLAGS_MYSQL; then
                         QMakeVar add CONFIG use_libmysqlclient_r
                         CFG_SQL_mysql=yes
-                        QT_LFLAGS_MYSQL="$QT_LFLAGS_MYSQL_R"
-                    elif compileTest unix/mysql "MySQL (thread-unsafe)" $QT_LFLAGS_MYSQL $QT_CFLAGS_MYSQL; then
+                        QMAKE_LIBS_MYSQL="$QMAKE_LIBS_MYSQL_R"
+                    elif compileTest unix/mysql "MySQL (thread-unsafe)" $QMAKE_LIBS_MYSQL $QMAKE_CFLAGS_MYSQL; then
                         CFG_SQL_mysql=yes
                     else
                         if [ "$CFG_SQL_mysql" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
@@ -4679,9 +4679,9 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
                             exit 101
                         else
                             CFG_SQL_mysql=no
-			    QT_LFLAGS_MYSQL=""
-			    QT_LFLAGS_MYSQL_R=""
-			    QT_CFLAGS_MYSQL=""
+                            QMAKE_LIBS_MYSQL=""
+                            QMAKE_LIBS_MYSQL_R=""
+                            QMAKE_CFLAGS_MYSQL=""
                         fi
                     fi
                 fi
@@ -4692,14 +4692,14 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
                 [ -z "$CFG_PSQL_CONFIG" ] && CFG_PSQL_CONFIG=`"$WHICH" pg_config`
                 # Be careful not to use native pg_config when cross building.
                 if [ "$XPLATFORM_MINGW" != "yes" ] && [ -x "$CFG_PSQL_CONFIG" ]; then
-                    QT_CFLAGS_PSQL=`$CFG_PSQL_CONFIG --includedir 2>/dev/null | filterIncludePath`
-                    QT_LFLAGS_PSQL=`$CFG_PSQL_CONFIG --libdir 2>/dev/null | filterLibraryPath`
+                    QMAKE_CFLAGS_PSQL=`$CFG_PSQL_CONFIG --includedir 2>/dev/null | filterIncludePath`
+                    QMAKE_LIBS_PSQL=`$CFG_PSQL_CONFIG --libdir 2>/dev/null | filterLibraryPath`
                 fi
-                [ -z "$QT_CFLAGS_PSQL" ] || QT_CFLAGS_PSQL="-I$QT_CFLAGS_PSQL"
-                [ -z "$QT_LFLAGS_PSQL" ] || QT_LFLAGS_PSQL="-L$QT_LFLAGS_PSQL"
+                [ -z "$QMAKE_CFLAGS_PSQL" ] || QMAKE_CFLAGS_PSQL="-I$QMAKE_CFLAGS_PSQL"
+                [ -z "$QMAKE_LIBS_PSQL" ] || QMAKE_LIBS_PSQL="-L$QMAKE_LIBS_PSQL"
                 # But, respect PSQL_LIBS if set
-                [ -z "$PSQL_LIBS" ] || QT_LFLAGS_PSQL="$PSQL_LIBS"
-                if compileTest unix/psql "PostgreSQL" $QT_LFLAGS_PSQL $QT_CFLAGS_PSQL; then
+                [ -z "$PSQL_LIBS" ] || QMAKE_LIBS_PSQL="$PSQL_LIBS"
+                if compileTest unix/psql "PostgreSQL" $QMAKE_LIBS_PSQL $QMAKE_CFLAGS_PSQL; then
                     CFG_SQL_psql=yes
                 else
                     if [ "$CFG_SQL_psql" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
@@ -4710,8 +4710,8 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
                         exit 101
                     else
                         CFG_SQL_psql=no
-                        QT_CFLAGS_PSQL=""
-                        QT_LFLAGS_PSQL=""
+                        QMAKE_CFLAGS_PSQL=""
+                        QMAKE_LIBS_PSQL=""
                     fi
                 fi
             fi
@@ -4722,7 +4722,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
                     CFG_SQL_odbc=yes
                 else
                     if compileTest unix/iodbc "iODBC"; then
-                        QT_LFLAGS_ODBC="-liodbc"
+                        QMAKE_LIBS_ODBC="-liodbc"
                         CFG_SQL_odbc=yes
                     else
                         if [ "$CFG_SQL_odbc" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
@@ -4757,9 +4757,9 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
             ;;
         tds)
             if [ "$CFG_SQL_tds" != "no" ]; then
-                [ -z "$SYBASE" ] || QT_LFLAGS_TDS="-L$SYBASE/lib"
-                [ -z "$SYBASE_LIBS" ] || QT_LFLAGS_TDS="$QT_LFLAGS_TDS $SYBASE_LIBS"
-                if compileTest unix/tds "TDS" $QT_LFLAGS_TDS; then
+                [ -z "$SYBASE" ] || QMAKE_LIBS_TDS="-L$SYBASE/lib"
+                [ -z "$SYBASE_LIBS" ] || QMAKE_LIBS_TDS="$QMAKE_LIBS_TDS $SYBASE_LIBS"
+                if compileTest unix/tds "TDS" $QMAKE_LIBS_TDS; then
                     CFG_SQL_tds=yes
                 else
                     if [ "$CFG_SQL_tds" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
@@ -4830,13 +4830,13 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
                 SQLITE_AUTODETECT_FAILED="no"
                 if [ "$CFG_SQLITE" = "system" ]; then
                     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists sqlite3 2>/dev/null; then
-                        QT_CFLAGS_SQLITE=`$PKG_CONFIG --cflags sqlite3 2>/dev/null`
-                        QT_LFLAGS_SQLITE=`$PKG_CONFIG --libs sqlite3 2>/dev/null`
+                        QMAKE_CFLAGS_SQLITE=`$PKG_CONFIG --cflags sqlite3 2>/dev/null`
+                        QMAKE_LIBS_SQLITE=`$PKG_CONFIG --libs sqlite3 2>/dev/null`
                     else
-                        QT_CFLAGS_SQLITE=
-                        QT_LFLAGS_SQLITE="-lsqlite3 -lz"
+                        QMAKE_CFLAGS_SQLITE=
+                        QMAKE_LIBS_SQLITE="-lsqlite3 -lz"
                     fi
-                    if compileTest unix/sqlite "SQLite" $QT_LFLAGS_SQLITE $QT_CFLAGS_SQLITE; then
+                    if compileTest unix/sqlite "SQLite" $QMAKE_LIBS_SQLITE $QMAKE_CFLAGS_SQLITE; then
                         CFG_SQL_sqlite=yes
                         QMAKE_CONFIG="$QMAKE_CONFIG system-sqlite"
                     else
@@ -4930,20 +4930,20 @@ fi
 # runtime: no detection (cannot fail), load libdbus-1 at runtime
 if [ "$CFG_DBUS" = "auto" ] || [ "$CFG_DBUS" = "linked" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --atleast-version="$MIN_DBUS_1_VERSION" dbus-1 2>/dev/null; then
-        QT_CFLAGS_DBUS=`$PKG_CONFIG --cflags dbus-1 2>/dev/null`
-        QT_LIBS_DBUS=`$PKG_CONFIG --libs dbus-1 2>/dev/null`
+        QMAKE_CFLAGS_DBUS=`$PKG_CONFIG --cflags dbus-1 2>/dev/null`
+        QMAKE_LIBS_DBUS=`$PKG_CONFIG --libs dbus-1 2>/dev/null`
     else
-        QT_LIBS_DBUS="-ldbus-1"
+        QMAKE_LIBS_DBUS="-ldbus-1"
     fi
-    if compileTest unix/dbus "D-Bus" $QT_CFLAGS_DBUS $QT_LIBS_DBUS; then
-        QMakeVar set QT_LIBS_DBUS "$QT_LIBS_DBUS"
-        QMakeVar set QT_CFLAGS_DBUS "$QT_CFLAGS_DBUS"
+    if compileTest unix/dbus "D-Bus" $QMAKE_CFLAGS_DBUS $QMAKE_LIBS_DBUS; then
+        QMakeVar set QMAKE_LIBS_DBUS "$QMAKE_LIBS_DBUS"
+        QMakeVar set QMAKE_CFLAGS_DBUS "$QMAKE_CFLAGS_DBUS"
         # Try find correct host configuration for dbus tools when cross-compiling
         if [ "$QT_CROSS_COMPILE" = "yes" ] && env -i PATH="$PATH" \
                 pkg-config --atleast-version="$MIN_DBUS_1_VERSION" dbus-1 2>/dev/null; then
-            QT_CFLAGS_DBUS=`env -i PATH="$PATH" pkg-config --cflags dbus-1 2>/dev/null`
+            QMAKE_CFLAGS_DBUS=`env -i PATH="$PATH" pkg-config --cflags dbus-1 2>/dev/null`
         fi
-        QMakeVar set QT_HOST_CFLAGS_DBUS "$QT_CFLAGS_DBUS"
+        QMakeVar set QT_HOST_CFLAGS_DBUS "$QMAKE_CFLAGS_DBUS"
         CFG_DBUS=linked
     else
         # Failed to compile the test, so it's an error if CFG_DBUS is "linked"
@@ -4982,13 +4982,13 @@ fi
 # auto-detect Glib support
 if [ "$CFG_GLIB" != "no" ]; then
     if [ -n "$PKG_CONFIG" ]; then
-        QT_CFLAGS_GLIB=`$PKG_CONFIG --cflags glib-2.0 gthread-2.0 2>/dev/null`
-        QT_LIBS_GLIB=`$PKG_CONFIG --libs glib-2.0 gthread-2.0 2>/dev/null`
+        QMAKE_CFLAGS_GLIB=`$PKG_CONFIG --cflags glib-2.0 gthread-2.0 2>/dev/null`
+        QMAKE_LIBS_GLIB=`$PKG_CONFIG --libs glib-2.0 gthread-2.0 2>/dev/null`
     fi
-    if compileTest unix/glib "Glib" $QT_CFLAGS_GLIB $QT_LIBS_GLIB; then
+    if compileTest unix/glib "Glib" $QMAKE_CFLAGS_GLIB $QMAKE_LIBS_GLIB; then
         CFG_GLIB=yes
-        QMakeVar set QT_CFLAGS_GLIB "$QT_CFLAGS_GLIB"
-        QMakeVar set QT_LIBS_GLIB "$QT_LIBS_GLIB"
+        QMakeVar set QMAKE_CFLAGS_GLIB "$QMAKE_CFLAGS_GLIB"
+        QMakeVar set QMAKE_LIBS_GLIB "$QMAKE_LIBS_GLIB"
     else
         if [ "$CFG_GLIB" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo "Glib support cannot be enabled due to functionality tests!"
@@ -5006,15 +5006,15 @@ fi
 # auto-detect GTK style support
 if [ "$CFG_GLIB" = "yes" -a "$CFG_GTK" != "no" ]; then
     if [ -n "$PKG_CONFIG" ]; then
-        QT_CFLAGS_QGTK3=`$PKG_CONFIG --cflags gtk+-3.0 2>/dev/null`
-        QT_LIBS_QGTK3=`$PKG_CONFIG --libs gtk+-3.0 2>/dev/null`
-        QT_LIBS_QGOBJECT=`$PKG_CONFIG --libs gobject-2.0 2>/dev/null`
+        QMAKE_CFLAGS_QGTK3=`$PKG_CONFIG --cflags gtk+-3.0 2>/dev/null`
+        QMAKE_LIBS_QGTK3=`$PKG_CONFIG --libs gtk+-3.0 2>/dev/null`
+        QMAKE_LIBS_QGOBJECT=`$PKG_CONFIG --libs gobject-2.0 2>/dev/null`
     fi
-    if [ -n "$QT_CFLAGS_QGTK3" ] ; then
+    if [ -n "$QMAKE_CFLAGS_QGTK3" ] ; then
         CFG_GTK=yes
         QT_CONFIG="$QT_CONFIG gtk3"
-        QMakeVar set QT_CFLAGS_QGTK3 "$QT_CFLAGS_QGTK3"
-        QMakeVar set QT_LIBS_QGTK3 "$QT_LIBS_QGTK3"
+        QMakeVar set QMAKE_CFLAGS_QGTK3 "$QMAKE_CFLAGS_QGTK3"
+        QMakeVar set QMAKE_LIBS_QGTK3 "$QMAKE_LIBS_QGTK3"
     else
         if [ "$CFG_GTK" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo "GTK theme support cannot be enabled due to functionality tests!"
@@ -5053,13 +5053,13 @@ fi
 # Auto-detect PulseAudio support
 if [ "$CFG_PULSEAUDIO" != "no" ]; then
     if [ -n "$PKG_CONFIG" ]; then
-        QT_CFLAGS_PULSEAUDIO=`$PKG_CONFIG --cflags libpulse '>=' 0.9.10 libpulse-mainloop-glib 2>/dev/null`
-        QT_LIBS_PULSEAUDIO=`$PKG_CONFIG --libs libpulse '>=' 0.9.10 libpulse-mainloop-glib 2>/dev/null`
+        QMAKE_CFLAGS_PULSEAUDIO=`$PKG_CONFIG --cflags libpulse '>=' 0.9.10 libpulse-mainloop-glib 2>/dev/null`
+        QMAKE_LIBS_PULSEAUDIO=`$PKG_CONFIG --libs libpulse '>=' 0.9.10 libpulse-mainloop-glib 2>/dev/null`
     fi
-    if compileTest unix/pulseaudio "PulseAudio" $QT_CFLAGS_PULSEAUDIO $QT_LIBS_PULSEAUDIO; then
+    if compileTest unix/pulseaudio "PulseAudio" $QMAKE_CFLAGS_PULSEAUDIO $QMAKE_LIBS_PULSEAUDIO; then
         CFG_PULSEAUDIO=yes
-        QMakeVar set QT_CFLAGS_PULSEAUDIO "$QT_CFLAGS_PULSEAUDIO"
-        QMakeVar set QT_LIBS_PULSEAUDIO "$QT_LIBS_PULSEAUDIO"
+        QMakeVar set QMAKE_CFLAGS_PULSEAUDIO "$QMAKE_CFLAGS_PULSEAUDIO"
+        QMakeVar set QMAKE_LIBS_PULSEAUDIO "$QMAKE_LIBS_PULSEAUDIO"
     else
         if [ "$CFG_PULSEAUDIO" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo "PulseAudio support cannot be enabled due to functionality tests!"
@@ -5217,16 +5217,16 @@ fi
 # auto-detect FontConfig support
 if [ "$CFG_FONTCONFIG" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists fontconfig --exists freetype2 2>/dev/null; then
-        QT_CFLAGS_FONTCONFIG=`$PKG_CONFIG --cflags fontconfig --cflags freetype2 2>/dev/null`
-        QT_LIBS_FONTCONFIG=`$PKG_CONFIG --libs fontconfig --libs freetype2 2>/dev/null`
+        QMAKE_CFLAGS_FONTCONFIG=`$PKG_CONFIG --cflags fontconfig --cflags freetype2 2>/dev/null`
+        QMAKE_LIBS_FONTCONFIG=`$PKG_CONFIG --libs fontconfig --libs freetype2 2>/dev/null`
     else
-        QT_CFLAGS_FONTCONFIG=
-        QT_LIBS_FONTCONFIG="-lfreetype -lfontconfig"
+        QMAKE_CFLAGS_FONTCONFIG=
+        QMAKE_LIBS_FONTCONFIG="-lfreetype -lfontconfig"
     fi
-    if compileTest unix/fontconfig "FontConfig" $QT_CFLAGS_FONTCONFIG $QT_LIBS_FONTCONFIG; then
+    if compileTest unix/fontconfig "FontConfig" $QMAKE_CFLAGS_FONTCONFIG $QMAKE_LIBS_FONTCONFIG; then
         QT_CONFIG="$QT_CONFIG fontconfig"
-        QMakeVar set QMAKE_CFLAGS_FONTCONFIG "$QT_CFLAGS_FONTCONFIG"
-        QMakeVar set QMAKE_LIBS_FONTCONFIG "$QT_LIBS_FONTCONFIG"
+        QMakeVar set QMAKE_CFLAGS_FONTCONFIG "$QMAKE_CFLAGS_FONTCONFIG"
+        QMakeVar set QMAKE_LIBS_FONTCONFIG "$QMAKE_LIBS_FONTCONFIG"
         CFG_FONTCONFIG=yes
         CFG_FREETYPE=system
     else
@@ -6809,29 +6809,29 @@ host_build {
 EOF
 echo "QT_COORD_TYPE = $CFG_QREAL"
 
-if [ -n "$QT_CFLAGS_PSQL" ]; then
-    echo "QT_CFLAGS_PSQL   = $QT_CFLAGS_PSQL"
+if [ -n "$QMAKE_CFLAGS_PSQL" ]; then
+    echo "QMAKE_CFLAGS_PSQL   = $QMAKE_CFLAGS_PSQL"
 fi
-if [ -n "$QT_LFLAGS_PSQL" ]; then
-    echo "QT_LFLAGS_PSQL   = $QT_LFLAGS_PSQL"
+if [ -n "$QMAKE_LIBS_PSQL" ]; then
+    echo "QMAKE_LIBS_PSQL   = $QMAKE_LIBS_PSQL"
 fi
-if [ -n "$QT_CFLAGS_MYSQL" ]; then
-    echo "QT_CFLAGS_MYSQL   = $QT_CFLAGS_MYSQL"
+if [ -n "$QMAKE_CFLAGS_MYSQL" ]; then
+    echo "QMAKE_CFLAGS_MYSQL   = $QMAKE_CFLAGS_MYSQL"
 fi
-if [ -n "$QT_LFLAGS_MYSQL" ]; then
-    echo "QT_LFLAGS_MYSQL   = $QT_LFLAGS_MYSQL"
+if [ -n "$QMAKE_LIBS_MYSQL" ]; then
+    echo "QMAKE_LIBS_MYSQL   = $QMAKE_LIBS_MYSQL"
 fi
-if [ -n "$QT_CFLAGS_SQLITE" ]; then
-    echo "QT_CFLAGS_SQLITE   = $QT_CFLAGS_SQLITE"
+if [ -n "$QMAKE_CFLAGS_SQLITE" ]; then
+    echo "QMAKE_CFLAGS_SQLITE   = $QMAKE_CFLAGS_SQLITE"
 fi
-if [ -n "$QT_LFLAGS_SQLITE" ]; then
-    echo "QT_LFLAGS_SQLITE   = $QT_LFLAGS_SQLITE"
+if [ -n "$QMAKE_LIBS_SQLITE" ]; then
+    echo "QMAKE_LIBS_SQLITE   = $QMAKE_LIBS_SQLITE"
 fi
-if [ -n "$QT_LFLAGS_ODBC" ]; then
-    echo "QT_LFLAGS_ODBC   = $QT_LFLAGS_ODBC"
+if [ -n "$QMAKE_LIBS_ODBC" ]; then
+    echo "QMAKE_LIBS_ODBC   = $QMAKE_LIBS_ODBC"
 fi
-if [ -n "$QT_LFLAGS_TDS" ]; then
-    echo "QT_LFLAGS_TDS   = $QT_LFLAGS_TDS"
+if [ -n "$QMAKE_LIBS_TDS" ]; then
+    echo "QMAKE_LIBS_TDS   = $QMAKE_LIBS_TDS"
 fi
 
 #dump in the OPENSSL_LIBS info

@@ -8,8 +8,8 @@ load(qt_plugin)
 QT += core-private gui-private platformsupport-private
 
 CONFIG += X11
-QMAKE_CXXFLAGS += $$QT_CFLAGS_QGTK3
-LIBS += $$QT_LIBS_QGTK3
+QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_QGTK3
+LIBS += $$QMAKE_LIBS_QGTK3
 
 HEADERS += \
         qgtk3dialoghelpers.h \

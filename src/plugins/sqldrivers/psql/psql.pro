@@ -4,9 +4,9 @@ HEADERS += $$PWD/qsql_psql_p.h
 SOURCES += $$PWD/qsql_psql.cpp $$PWD/main.cpp
 
 unix|mingw {
-    LIBS += $$QT_LFLAGS_PSQL
+    LIBS += $$QMAKE_LIBS_PSQL
     !contains(LIBS, .*pq.*):LIBS += -lpq
-    QMAKE_CXXFLAGS *= $$QT_CFLAGS_PSQL
+    QMAKE_CXXFLAGS *= $$QMAKE_CFLAGS_PSQL
 } else {
     !contains(LIBS, .*pq.*):LIBS += -llibpq -lws2_32 -ladvapi32
 }

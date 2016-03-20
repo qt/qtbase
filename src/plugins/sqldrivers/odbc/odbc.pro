@@ -7,7 +7,7 @@ unix {
     DEFINES += UNICODE
     !contains(LIBS, .*odbc.*) {
         osx:LIBS += -liodbc
-        else:LIBS += $$QT_LFLAGS_ODBC
+        else:LIBS += $$QMAKE_LIBS_ODBC
     }
 } else {
     LIBS *= -lodbc32
