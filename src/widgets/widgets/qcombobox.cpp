@@ -192,7 +192,21 @@ void QComboBoxPrivate::_q_completerActivated(const QModelIndex &index)
     if (index.isValid() && q->completer()) {
         QAbstractProxyModel *proxy = qobject_cast<QAbstractProxyModel *>(q->completer()->completionModel());
         if (proxy) {
-            q->setCurrentIndex(proxy->mapToSource(index).row());
+            const QModelIndex &completerIndex = proxy->mapToSource(index);
+            int row = -1;
+            if (completerIndex.model() == model) {
+                row = completerIndex.row();
+            } else {
+                // if QCompleter uses a proxy model to host widget's one - map again
+                QAbstractProxyModel *completerProxy = qobject_cast<QAbstractProxyModel *>(q->completer()->model());
+                if (completerProxy && completerProxy->sourceModel() == model) {
+                    row = completerProxy->mapToSource(completerIndex).row();
+                } else {
+                    QString match = q->completer()->model()->data(completerIndex).toString();
+                    row = q->findText(match, matchFlags());
+                }
+            }
+            q->setCurrentIndex(row);
             emitActivated(currentIndex);
         }
     }
