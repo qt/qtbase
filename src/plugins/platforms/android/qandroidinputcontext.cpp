@@ -39,6 +39,7 @@
 #include "androidjniinput.h"
 #include "qandroideventdispatcher.h"
 #include "androiddeadlockprotector.h"
+#include "qandroidplatformintegration.h"
 #include <QDebug>
 #include <qevent.h>
 #include <qguiapplication.h>
@@ -47,6 +48,7 @@
 #include <qinputmethod.h>
 #include <qwindow.h>
 #include <QtCore/private/qjni_p.h>
+#include <private/qhighdpiscaling_p.h>
 
 #include <QTextCharFormat>
 
@@ -541,10 +543,13 @@ void QAndroidInputContext::showInputPanel()
     if (window)
         rect = QRect(window->mapToGlobal(rect.topLeft()), rect.size());
 
-    QtAndroidInput::showSoftwareKeyboard(rect.left(),
-                                         rect.top(),
-                                         rect.width(),
-                                         rect.height(),
+    double pixelDensity = window ? QHighDpiScaling::factor(window)
+                                 : QHighDpiScaling::factor(QtAndroid::androidPlatformIntegration()->screen());
+
+    QtAndroidInput::showSoftwareKeyboard(rect.left() * pixelDensity,
+                                         rect.top() * pixelDensity,
+                                         rect.width() * pixelDensity,
+                                         rect.height() * pixelDensity,
                                          query->value(Qt::ImHints).toUInt(),
                                          query->value(Qt::ImEnterKeyType).toUInt()
                                         );
