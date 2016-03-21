@@ -1283,6 +1283,7 @@ void VcprojGenerator::initDeploymentTool()
         !(conf.WinRT && project->first("MSVC_VER").toQString() == "14.0")) {
         // FIXME: This code should actually resolve the libraries from all Qt modules.
         ProStringList arg = project->values("QMAKE_LIBS") + project->values("QMAKE_LIBS_PRIVATE");
+        bool qpaPluginDeployed = false;
         for (ProStringList::ConstIterator it = arg.constBegin(); it != arg.constEnd(); ++it) {
             QString dllName = (*it).toQString();
             dllName.replace(QLatin1Char('\\'), QLatin1Char('/'));
@@ -1315,6 +1316,32 @@ void VcprojGenerator::initDeploymentTool()
                         + "|" + QDir::toNativeSeparators(info.absolutePath())
                         + "|" + targetPath
                         + "|0;";
+                if (!qpaPluginDeployed) {
+                    QChar debugInfixChar;
+                    bool foundGuid = false;
+                    if (foundGuid = dllName.contains(QLatin1String("Guid")))
+                        debugInfixChar = QLatin1Char('d');
+
+                    if (foundGuid || dllName.contains(QLatin1String("Gui"))) {
+                        QFileInfo info2;
+                        foreach (const ProString &dllPath, dllPaths) {
+                            QString absoluteDllFilePath = dllPath.toQString();
+                            if (!absoluteDllFilePath.endsWith(QLatin1Char('/')))
+                                absoluteDllFilePath += QLatin1Char('/');
+                            absoluteDllFilePath += QLatin1String("../plugins/platforms/qwindows") + debugInfixChar + QLatin1String(".dll");
+                            info2 = QFileInfo(absoluteDllFilePath);
+                            if (info2.exists())
+                                break;
+                        }
+                        if (info2.exists()) {
+                            conf.deployment.AdditionalFiles += QLatin1String("qwindows") + debugInfixChar + QLatin1String(".dll")
+                                                        + QLatin1Char('|') + QDir::toNativeSeparators(info2.absolutePath())
+                                                        + QLatin1Char('|') + targetPath + QLatin1String("\\platforms")
+                                                        + QLatin1String("|0;");
+                            qpaPluginDeployed = true;
+                        }
+                    }
+                }
             }
         }
     }
