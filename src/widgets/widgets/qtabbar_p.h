@@ -61,6 +61,19 @@
 
 QT_BEGIN_NAMESPACE
 
+class QMovableTabWidget : public QWidget
+{
+public:
+    explicit QMovableTabWidget(QWidget *parent = Q_NULLPTR);
+    void setPixmap(const QPixmap &pixmap);
+
+protected:
+    void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE;
+
+private:
+    QPixmap m_pixmap;
+};
+
 class QTabBarPrivate  : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QTabBar)
@@ -201,7 +214,7 @@ public:
     int switchTabCurrentIndex;
     int switchTabTimerId;
 
-    QWidget *movingTab;
+    QMovableTabWidget *movingTab;
 #ifdef Q_DEAD_CODE_FROM_QT4_MAC
     int previousPressedIndex;
 #endif

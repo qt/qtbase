@@ -64,6 +64,23 @@
 
 QT_BEGIN_NAMESPACE
 
+QMovableTabWidget::QMovableTabWidget(QWidget *parent)
+    : QWidget(parent)
+{
+}
+
+void QMovableTabWidget::setPixmap(const QPixmap &pixmap)
+{
+    m_pixmap = pixmap;
+    update();
+}
+
+void QMovableTabWidget::paintEvent(QPaintEvent *e)
+{
+    Q_UNUSED(e);
+    QPainter p(this);
+    p.drawPixmap(0, 0, m_pixmap);
+}
 
 inline static bool verticalTabs(QTabBar::Shape shape)
 {
@@ -1906,13 +1923,14 @@ void QTabBarPrivate::setupMovableTab()
 {
     Q_Q(QTabBar);
     if (!movingTab)
-        movingTab = new QWidget(q);
+        movingTab = new QMovableTabWidget(q);
 
     int taboverlap = q->style()->pixelMetric(QStyle::PM_TabBarTabOverlap, 0 ,q);
     QRect grabRect = q->tabRect(pressedIndex);
     grabRect.adjust(-taboverlap, 0, taboverlap, 0);
 
-    QPixmap grabImage(grabRect.size());
+    QPixmap grabImage(grabRect.size() * q->devicePixelRatioF());
+    grabImage.setDevicePixelRatio(q->devicePixelRatioF());
     grabImage.fill(Qt::transparent);
     QStylePainter p(&grabImage, q);
     p.initFrom(q);
@@ -1923,11 +1941,8 @@ void QTabBarPrivate::setupMovableTab()
     p.drawControl(QStyle::CE_TabBarTab, tab);
     p.end();
 
-    QPalette pal;
-    pal.setBrush(QPalette::All, QPalette::Window, grabImage);
-    movingTab->setPalette(pal);
+    movingTab->setPixmap(grabImage);
     movingTab->setGeometry(grabRect);
-    movingTab->setAutoFillBackground(true);
     movingTab->raise();
 
     // Re-arrange widget order to avoid overlaps
