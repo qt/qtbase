@@ -2073,6 +2073,8 @@ QVariant QWidgetTextControl::inputMethodQuery(Qt::InputMethodQuery property, QVa
     switch(property) {
     case Qt::ImCursorRectangle:
         return cursorRect();
+    case Qt::ImAnchorRectangle:
+        return d->rectForPosition(d->cursor.anchor());
     case Qt::ImFont:
         return QVariant(d->cursor.charFormat().font());
     case Qt::ImCursorPosition:
