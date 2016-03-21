@@ -102,6 +102,28 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaMenuDelegate);
     return self;
 }
 
+- (NSInteger)numberOfItemsInMenu:(NSMenu *)menu
+{
+    Q_ASSERT(m_menu->nsMenu() == menu);
+    return m_menu->items().count();
+}
+
+- (BOOL)menu:(NSMenu *)menu updateItem:(NSMenuItem *)item atIndex:(NSInteger)index shouldCancel:(BOOL)shouldCancel
+{
+    Q_UNUSED(index);
+    Q_ASSERT(m_menu->nsMenu() == menu);
+    if (shouldCancel) {
+        // TODO detach all submenus
+        return NO;
+    }
+
+    QCocoaMenuItem *menuItem = reinterpret_cast<QCocoaMenuItem *>(item.tag);
+    if (m_menu->items().contains(menuItem)) {
+        if (QCocoaMenu *itemSubmenu = menuItem->menu())
+            itemSubmenu->setAttachedItem(item);
+    }
+    return YES;
+}
 
 - (void)menu:(NSMenu*)menu willHighlightItem:(NSMenuItem*)item
 {
@@ -234,20 +256,16 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaMenuDelegate);
 QT_BEGIN_NAMESPACE
 
 QCocoaMenu::QCocoaMenu() :
+    m_attachedItem(0),
     m_enabled(true),
     m_visible(true),
-    m_tag(0),
-    m_menuBar(0),
-    m_containingMenuItem(0)
+    m_tag(0)
 {
     QMacAutoReleasePool pool;
 
-    m_delegate = [[QCocoaMenuDelegate alloc] initWithMenu:this];
-    m_nativeItem = [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""];
     m_nativeMenu = [[NSMenu alloc] initWithTitle:@"Untitled"];
     [m_nativeMenu setAutoenablesItems:YES];
-    m_nativeMenu.delegate = (QCocoaMenuDelegate *) m_delegate;
-    [m_nativeItem setSubmenu:m_nativeMenu];
+    m_nativeMenu.delegate = [[QCocoaMenuDelegate alloc] initWithMenu:this];
 }
 
 QCocoaMenu::~QCocoaMenu()
@@ -257,14 +275,11 @@ QCocoaMenu::~QCocoaMenu()
             SET_COCOA_MENU_ANCESTOR(item, 0);
     }
 
-    if (m_containingMenuItem)
-        m_containingMenuItem->clearMenu(this);
-
     QMacAutoReleasePool pool;
-    [m_nativeItem setSubmenu:nil];
+    NSObject *delegate = m_nativeMenu.delegate;
+    m_nativeMenu.delegate = nil;
+    [delegate release];
     [m_nativeMenu release];
-    [m_delegate release];
-    [m_nativeItem release];
 }
 
 void QCocoaMenu::setText(const QString &text)
@@ -272,7 +287,6 @@ void QCocoaMenu::setText(const QString &text)
     QMacAutoReleasePool pool;
     QString stripped = qt_mac_removeAmpersandEscapes(text);
     [m_nativeMenu setTitle:QCFString::toNSString(stripped)];
-    [m_nativeItem setTitle:QCFString::toNSString(stripped)];
 }
 
 void QCocoaMenu::setMinimumWidth(int width)
@@ -313,17 +327,13 @@ void QCocoaMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *
 
 void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
 {
-    [item->nsItem() setTarget:m_delegate];
+    item->nsItem().target = m_nativeMenu.delegate;
     if (!item->menu())
         [item->nsItem() setAction:@selector(itemFired:)];
 
     if (item->isMerged())
         return;
 
-    if ([item->nsItem() menu]) {
-        qWarning("Menu item is already in a menu, remove it from the other menu first before inserting");
-        return;
-    }
     // if the item we're inserting before is merged, skip along until
     // we find a non-merged real item to insert ahead of.
     while (beforeItem && beforeItem->isMerged()) {
@@ -451,12 +461,11 @@ void QCocoaMenu::setEnabled(bool enabled)
 
 bool QCocoaMenu::isEnabled() const
 {
-    return [m_nativeItem isEnabled];
+    return m_attachedItem ? [m_attachedItem isEnabled] : m_enabled;
 }
 
 void QCocoaMenu::setVisible(bool visible)
 {
-    [m_nativeItem setSubmenu:(visible ? m_nativeMenu : nil)];
     m_visible = visible;
 }
 
@@ -593,8 +602,6 @@ void QCocoaMenu::syncModalState(bool modal)
     if (!m_enabled)
         modal = true;
 
-    [m_nativeItem setEnabled:!modal];
-
     foreach (QCocoaMenuItem *item, m_menuItems) {
         if (item->menu()) { // recurse into submenus
             item->menu()->syncModalState(modal);
@@ -605,25 +612,24 @@ void QCocoaMenu::syncModalState(bool modal)
     }
 }
 
-void QCocoaMenu::setMenuBar(QCocoaMenuBar *menuBar)
+void QCocoaMenu::setAttachedItem(NSMenuItem *item)
 {
-    m_menuBar = menuBar;
-    SET_COCOA_MENU_ANCESTOR(this, menuBar);
+    if (item == m_attachedItem)
+        return;
+
+    if (m_attachedItem)
+        m_attachedItem.submenu = nil;
+
+    m_attachedItem = item;
+
+    if (m_attachedItem)
+        m_attachedItem.submenu = m_nativeMenu;
+
 }
 
-QCocoaMenuBar *QCocoaMenu::menuBar() const
+NSMenuItem *QCocoaMenu::attachedItem() const
 {
-    return m_menuBar;
-}
-
-void QCocoaMenu::setContainingMenuItem(QCocoaMenuItem *menuItem)
-{
-    m_containingMenuItem = menuItem;
-}
-
-QCocoaMenuItem *QCocoaMenu::containingMenuItem() const
-{
-    return m_containingMenuItem;
+    return m_attachedItem;
 }
 
 QT_END_NAMESPACE

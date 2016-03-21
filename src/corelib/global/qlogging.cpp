@@ -98,6 +98,11 @@ extern char *__progname;
 
 #if defined(Q_OS_LINUX) && (defined(__GLIBC__) || QT_HAS_INCLUDE(<sys/syscall.h>))
 #  include <sys/syscall.h>
+
+# if defined(Q_OS_ANDROID) && !defined(SYS_gettid)
+#  define SYS_gettid __NR_gettid
+# endif
+
 static long qt_gettid()
 {
     // no error handling

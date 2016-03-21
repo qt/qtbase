@@ -2114,3 +2114,5 @@ void QFormLayout::dump() const
 #endif
 
 QT_END_NAMESPACE
+
+#include "moc_qformlayout.cpp"

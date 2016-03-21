@@ -2604,4 +2604,6 @@ void QMainWindowLayout::timerEvent(QTimerEvent *e)
 
 QT_END_NAMESPACE
 
+#include "moc_qmainwindowlayout_p.cpp"
+
 #endif // QT_NO_MAINWINDOW

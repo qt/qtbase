@@ -1975,5 +1975,6 @@ bool QListWidget::event(QEvent *e)
 QT_END_NAMESPACE
 
 #include "moc_qlistwidget.cpp"
+#include "moc_qlistwidget_p.cpp"
 
 #endif // QT_NO_LISTWIDGET

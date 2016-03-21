@@ -6553,9 +6553,9 @@ fi
 [ "$CFG_SYSTEM_PROXIES" = "yes" ] && QT_CONFIG="$QT_CONFIG system-proxies"
 [ "$CFG_DIRECTWRITE" = "yes" ] && QT_CONFIG="$QT_CONFIG directwrite"
 
-[ '!' -z "$DEFINES" ] && QMakeVar add DEFINES "$DEFINES"
-[ '!' -z "$INCLUDES" ] && QMakeVar add INCLUDEPATH "$INCLUDES"
-[ '!' -z "$L_FLAGS" ] && QMakeVar add LIBS "$L_FLAGS"
+[ '!' -z "$DEFINES" ] && QMakeVar add EXTRA_DEFINES "$DEFINES"
+[ '!' -z "$INCLUDES" ] && QMakeVar add EXTRA_INCLUDEPATH "$INCLUDES"
+[ '!' -z "$L_FLAGS" ] && QMakeVar add EXTRA_LIBS "$L_FLAGS"
 
 if [ -z "`getXQMakeConf 'QMAKE_(LFLAGS_)?RPATH'`" ]; then
     if [ -n "$RPATH_FLAGS" ]; then
@@ -6571,7 +6571,7 @@ if [ -z "`getXQMakeConf 'QMAKE_(LFLAGS_)?RPATH'`" ]; then
 else
     if [ -n "$RPATH_FLAGS" ]; then
         # add the user defined rpaths
-	QMakeVar add QMAKE_RPATHDIR "$RPATH_FLAGS"
+        QMakeVar add EXTRA_RPATHS "$RPATH_FLAGS"
     fi
 fi
 if [ "$CFG_RPATH" = "yes" ]; then
@@ -7158,9 +7158,6 @@ if [ -n "$CFG_SYSROOT" ] && [ "$CFG_GCC_SYSROOT" = "yes" ]; then
     echo "    QMAKE_LFLAGS    += --sysroot=\$\$[QT_SYSROOT]"
     echo "}"
     echo
-fi
-if [ -n "$RPATH_FLAGS" ]; then
-    echo "QMAKE_RPATHDIR += $RPATH_FLAGS"
 fi
 echo "QT_COMPILER_STDCXX = $CFG_STDCXX_DEFAULT"
 if [ -n "$QT_GCC_MAJOR_VERSION" ]; then

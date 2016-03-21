@@ -1692,3 +1692,5 @@ void QGridLayout::invalidate()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qgridlayout.cpp"

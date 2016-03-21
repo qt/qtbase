@@ -520,8 +520,8 @@ png_set_PLTE(png_structrp png_ptr, png_inforp info_ptr,
    if (png_ptr == NULL || info_ptr == NULL)
       return;
 
-   max_palette_length = (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE) ?
-      (1 << png_ptr->bit_depth) : PNG_MAX_PALETTE_LENGTH;
+   max_palette_length = (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE) ?
+      (1 << info_ptr->bit_depth) : PNG_MAX_PALETTE_LENGTH;
 
    if (num_palette < 0 || num_palette > (int) max_palette_length)
    {
@@ -1573,7 +1573,7 @@ png_set_user_limits (png_structrp png_ptr, png_uint_32 user_width_max,
 {
    /* Images with dimensions larger than these limits will be
     * rejected by png_set_IHDR().  To accept any PNG datastream
-    * regardless of dimensions, set both limits to 0x7ffffff.
+    * regardless of dimensions, set both limits to 0x7fffffff.
     */
    if (png_ptr == NULL)
       return;

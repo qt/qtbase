@@ -258,12 +258,9 @@ void NmakeMakefileGenerator::writeSubMakeCall(QTextStream &t, const QString &cal
 
 QString NmakeMakefileGenerator::defaultInstall(const QString &t)
 {
-    if((t != "target" && t != "dlltarget") ||
-       (t == "dlltarget" && (project->first("TEMPLATE") != "lib" || !project->isActiveConfig("shared"))) ||
-        project->first("TEMPLATE") == "subdirs")
-       return QString();
-
     QString ret = Win32MakefileGenerator::defaultInstall(t);
+    if (ret.isEmpty())
+        return ret;
 
     const QString root = installRoot();
     ProStringList &uninst = project->values(ProKey(t + ".uninstall"));

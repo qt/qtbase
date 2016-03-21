@@ -93,7 +93,6 @@ public:
     inline bool isSeparator() const { return m_isSeparator; }
 
     QCocoaMenu *menu() const { return m_menu; }
-    void clearMenu(QCocoaMenu *menu);
     MenuRole effectiveRole() const;
 
 private:
@@ -105,7 +104,7 @@ private:
     QString m_text;
     bool m_textSynced;
     QIcon m_icon;
-    QCocoaMenu *m_menu;
+    QPointer<QCocoaMenu> m_menu;
     bool m_isVisible;
     bool m_enabled;
     bool m_isSeparator;

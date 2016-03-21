@@ -203,4 +203,6 @@ void QBasicKeyEventTransition::onTransition(QEvent *)
 
 QT_END_NAMESPACE
 
+#include "moc_qbasickeyeventtransition_p.cpp"
+
 #endif //QT_NO_STATEMACHINE
