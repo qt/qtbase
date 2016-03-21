@@ -155,7 +155,7 @@ bool QProgressBarPrivate::repaintRequired() const
     QStyleOptionProgressBar opt;
     q->initStyleOption(&opt);
     int cw = q->style()->pixelMetric(QStyle::PM_ProgressBarChunkWidth, &opt, q);
-    QRect groove  = q->style()->subElementRect(QStyle::SE_ProgressBarGroove, &opt, q);
+    QRect groove = q->style()->subElementRect(QStyle::SE_ProgressBarGroove, &opt, q);
     // This expression is basically
     // (valueDifference / (maximum - minimum) > cw / groove.width())
     // transformed to avoid integer division.
