@@ -1709,15 +1709,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "STYLE_FUSION" ]        = "no";
         dictionary[ "STYLE_WINDOWSCE" ]     = "yes";
         dictionary[ "STYLE_WINDOWSMOBILE" ] = "yes";
-        dictionary[ "OPENGL" ]              = "no";
-        dictionary[ "RTTI" ]                = "no";
-        dictionary[ "SSE2" ]                = "no";
-        dictionary[ "SSE3" ]                = "no";
-        dictionary[ "SSSE3" ]               = "no";
-        dictionary[ "SSE4_1" ]              = "no";
-        dictionary[ "SSE4_2" ]              = "no";
-        dictionary[ "AVX" ]                 = "no";
-        dictionary[ "AVX2" ]                = "no";
         dictionary[ "CE_CRT" ]              = "yes";
         dictionary[ "LARGE_FILE" ]          = "no";
         dictionary[ "ANGLE" ]               = "no";
