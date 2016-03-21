@@ -1111,21 +1111,37 @@ QXcbWindow::NetWmStates QXcbWindow::netWmStates()
 void QXcbWindow::setNetWmStates(NetWmStates states)
 {
     QVector<xcb_atom_t> atoms;
-    if (states & NetWmStateAbove)
+
+    xcb_get_property_cookie_t get_cookie =
+        xcb_get_property_unchecked(xcb_connection(), 0, m_window, atom(QXcbAtom::_NET_WM_STATE),
+                         XCB_ATOM_ATOM, 0, 1024);
+
+    xcb_get_property_reply_t *reply =
+        xcb_get_property_reply(xcb_connection(), get_cookie, NULL);
+
+    if (reply && reply->format == 32 && reply->type == XCB_ATOM_ATOM && reply->value_len > 0) {
+        const xcb_atom_t *data = static_cast<const xcb_atom_t *>(xcb_get_property_value(reply));
+        atoms.resize(reply->value_len);
+        memcpy((void *)&atoms.first(), (void *)data, reply->value_len * sizeof(xcb_atom_t));
+    }
+
+    free(reply);
+
+    if (states & NetWmStateAbove && !atoms.contains(atom(QXcbAtom::_NET_WM_STATE_ABOVE)))
         atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_ABOVE));
-    if (states & NetWmStateBelow)
+    if (states & NetWmStateBelow && !atoms.contains(atom(QXcbAtom::_NET_WM_STATE_BELOW)))
         atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_BELOW));
-    if (states & NetWmStateFullScreen)
+    if (states & NetWmStateFullScreen && !atoms.contains(atom(QXcbAtom::_NET_WM_STATE_FULLSCREEN)))
         atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_FULLSCREEN));
-    if (states & NetWmStateMaximizedHorz)
+    if (states & NetWmStateMaximizedHorz && !atoms.contains(atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_HORZ)))
         atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_HORZ));
-    if (states & NetWmStateMaximizedVert)
+    if (states & NetWmStateMaximizedVert && !atoms.contains(atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_VERT)))
         atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_VERT));
-    if (states & NetWmStateModal)
+    if (states & NetWmStateModal && !atoms.contains(atom(QXcbAtom::_NET_WM_STATE_MODAL)))
         atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_MODAL));
-    if (states & NetWmStateStaysOnTop)
+    if (states & NetWmStateStaysOnTop && !atoms.contains(atom(QXcbAtom::_NET_WM_STATE_STAYS_ON_TOP)))
         atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_STAYS_ON_TOP));
-    if (states & NetWmStateDemandsAttention)
+    if (states & NetWmStateDemandsAttention && !atoms.contains(atom(QXcbAtom::_NET_WM_STATE_DEMANDS_ATTENTION)))
         atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_DEMANDS_ATTENTION));
 
     if (atoms.isEmpty()) {
@@ -1245,6 +1261,7 @@ void QXcbWindow::changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two)
 
     event.response_type = XCB_CLIENT_MESSAGE;
     event.format = 32;
+    event.sequence = 0;
     event.window = m_window;
     event.type = atom(QXcbAtom::_NET_WM_STATE);
     event.data.data32[0] = set ? 1 : 0;
@@ -1286,6 +1303,7 @@ void QXcbWindow::setWindowState(Qt::WindowState state)
 
             event.response_type = XCB_CLIENT_MESSAGE;
             event.format = 32;
+            event.sequence = 0;
             event.window = m_window;
             event.type = atom(QXcbAtom::WM_CHANGE_STATE);
             event.data.data32[0] = XCB_WM_STATE_ICONIC;
@@ -1690,6 +1708,7 @@ void QXcbWindow::requestActivateWindow()
 
         event.response_type = XCB_CLIENT_MESSAGE;
         event.format = 32;
+        event.sequence = 0;
         event.window = m_window;
         event.type = atom(QXcbAtom::_NET_ACTIVE_WINDOW);
         event.data.data32[0] = 1;
@@ -2636,6 +2655,7 @@ bool QXcbWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)
     xcb_client_message_event_t xev;
     xev.response_type = XCB_CLIENT_MESSAGE;
     xev.type = moveResize;
+    xev.sequence = 0;
     xev.window = xcb_window();
     xev.format = 32;
     const QPoint globalPos = window()->mapToGlobal(pos);
@@ -2664,6 +2684,7 @@ void QXcbWindow::sendXEmbedMessage(xcb_window_t window, quint32 message,
 
     event.response_type = XCB_CLIENT_MESSAGE;
     event.format = 32;
+    event.sequence = 0;
     event.window = window;
     event.type = atom(QXcbAtom::_XEMBED);
     event.data.data32[0] = connection()->time();

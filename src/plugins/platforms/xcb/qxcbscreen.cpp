@@ -367,6 +367,7 @@ void QXcbScreen::sendStartupMessage(const QByteArray &message) const
     ev.response_type = XCB_CLIENT_MESSAGE;
     ev.format = 8;
     ev.type = connection()->atom(QXcbAtom::_NET_STARTUP_INFO_BEGIN);
+    ev.sequence = 0;
     ev.window = rootWindow;
     int sent = 0;
     int length = message.length() + 1; // include NUL byte

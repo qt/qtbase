@@ -19,3 +19,7 @@ TESTDATA += \
     ../qtextstream.qrc \
     ../tst_qtextstream.cpp \
     ../resources
+
+builtin_testdata {
+    DEFINES += BUILTIN_TESTDATA
+}

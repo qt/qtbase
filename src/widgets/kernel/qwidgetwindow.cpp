@@ -1007,3 +1007,5 @@ void QWidgetWindow::updateObjectName()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwidgetwindow_p.cpp"

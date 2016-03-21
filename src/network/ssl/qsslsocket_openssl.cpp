@@ -399,6 +399,10 @@ bool QSslSocketBackendPrivate::initSslContext()
         if (!ace.isEmpty()
             && !QHostAddress().setAddress(tlsHostName)
             && !(configuration.sslOptions & QSsl::SslOptionDisableServerNameIndication)) {
+            // We don't send the trailing dot from the host header if present see
+            // https://tools.ietf.org/html/rfc6066#section-3
+            if (ace.endsWith('.'))
+                ace.chop(1);
             if (!q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, ace.data()))
                 qCWarning(lcSsl, "could not set SSL_CTRL_SET_TLSEXT_HOSTNAME, Server Name Indication disabled");
         }
@@ -632,10 +636,12 @@ void QSslSocketPrivate::resetDefaultCiphers()
                 // Unconditionally exclude ADH and AECDH ciphers since they offer no MITM protection
                 if (!ciph.name().toLower().startsWith(QLatin1String("adh")) &&
                     !ciph.name().toLower().startsWith(QLatin1String("exp-adh")) &&
-                    !ciph.name().toLower().startsWith(QLatin1String("aecdh")))
+                    !ciph.name().toLower().startsWith(QLatin1String("aecdh"))) {
                     ciphers << ciph;
-                if (ciph.usedBits() >= 128)
-                    defaultCiphers << ciph;
+
+                    if (ciph.usedBits() >= 128)
+                        defaultCiphers << ciph;
+                }
             }
         }
     }

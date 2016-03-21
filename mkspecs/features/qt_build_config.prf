@@ -52,6 +52,9 @@ QMAKE_DIR_REPLACE_SANE = PRECOMPILED_DIR OBJECTS_DIR MOC_DIR RCC_DIR UI_DIR
     unset(modpath)
 }
 
+# Apply extra compiler flags passed via configure last.
+CONFIG = qt_build_extra $$CONFIG
+
 # Don't actually try to install anything in non-prefix builds.
 # This is much easier and safer than making every single INSTALLS
 # assignment conditional.
@@ -71,6 +74,10 @@ CONFIG += \
     # Qt modules get compiled without exceptions enabled by default.
     # However, testcases should be still built with exceptions.
     exceptions_off testcase_exceptions
+
+# Under Windows, this is neither necessary (transitive deps are automatically
+# resolved), nor functional (.res files end up in .prl files and break things).
+unix: CONFIG += explicitlib
 
 
 defineTest(qtBuildPart) {

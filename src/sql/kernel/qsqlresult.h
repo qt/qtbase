@@ -44,6 +44,9 @@
 #include <QtCore/qvector.h>
 #include <QtSql/qsql.h>
 
+// for testing:
+class tst_QSqlQuery;
+
 QT_BEGIN_NAMESPACE
 
 
@@ -60,6 +63,8 @@ class Q_SQL_EXPORT QSqlResult
     Q_DECLARE_PRIVATE(QSqlResult)
     friend class QSqlQuery;
     friend class QSqlTableModelPrivate;
+    // for testing:
+    friend class ::tst_QSqlQuery;
 
 public:
     virtual ~QSqlResult();

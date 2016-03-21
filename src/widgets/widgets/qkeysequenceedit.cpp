@@ -324,3 +324,5 @@ void QKeySequenceEdit::timerEvent(QTimerEvent *e)
 #endif // QT_NO_KEYSEQUENCEEDIT
 
 QT_END_NAMESPACE
+
+#include "moc_qkeysequenceedit.cpp"

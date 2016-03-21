@@ -2403,4 +2403,6 @@ QIcon QWindowsStyle::standardIcon(StandardPixmap standardIcon, const QStyleOptio
 
 QT_END_NAMESPACE
 
+#include "moc_qwindowsstyle_p.cpp"
+
 #endif // QT_NO_STYLE_WINDOWS

@@ -962,3 +962,5 @@ void QAbstractSliderPrivate::itemviewChangeSingleStep(int step)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qabstractslider.cpp"

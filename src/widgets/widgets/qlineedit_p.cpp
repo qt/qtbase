@@ -553,4 +553,6 @@ int QLineEditPrivate::effectiveRightTextMargin() const
 
 QT_END_NAMESPACE
 
+#include "moc_qlineedit_p.cpp"
+
 #endif

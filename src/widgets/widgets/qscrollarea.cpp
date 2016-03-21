@@ -538,4 +538,6 @@ Qt::Alignment QScrollArea::alignment() const
 
 QT_END_NAMESPACE
 
+#include "moc_qscrollarea.cpp"
+
 #endif // QT_NO_SCROLLAREA

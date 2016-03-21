@@ -634,7 +634,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     httpRequest.setUrl(url);
     httpRequest.setRedirectCount(newHttpRequest.maximumRedirectsAllowed());
 
-    QString scheme = url.scheme().toLower();
+    QString scheme = url.scheme();
     bool ssl = (scheme == QLatin1String("https")
                 || scheme == QLatin1String("preconnect-https"));
     q->setAttribute(QNetworkRequest::ConnectionEncryptedAttribute, ssl);

@@ -2,6 +2,7 @@ TEMPLATE=subdirs
 
 SUBDIRS = bearerex \
 filetest \
+foreignwindows \
 gestures \
 inputmethodhints \
 keypadnavigation \
@@ -62,4 +63,5 @@ win32 {
 }
 
 lessThan(QT_MAJOR_VERSION, 5): SUBDIRS -= bearerex lance qnetworkaccessmanager/qget qmimedatabase qnetworkreply \
-qpainfo qscreen  socketengine xembed-raster xembed-widgets windowtransparency
+qpainfo qscreen  socketengine xembed-raster xembed-widgets windowtransparency \
+foreignwindows

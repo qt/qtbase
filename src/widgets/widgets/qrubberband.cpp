@@ -333,4 +333,6 @@ bool QRubberBand::event(QEvent *e)
 
 QT_END_NAMESPACE
 
+#include "moc_qrubberband.cpp"
+
 #endif // QT_NO_RUBBERBAND
