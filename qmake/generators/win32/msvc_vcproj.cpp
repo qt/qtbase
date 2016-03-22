@@ -187,8 +187,10 @@ const char _slnProjDepEnd[]     = "\n\tEndProjectSection";
 const char _slnProjConfBeg[]    = "\n\tGlobalSection(ProjectConfigurationPlatforms) = postSolution";
 const char _slnProjRelConfTag1[]= ".Release|%1.ActiveCfg = Release|";
 const char _slnProjRelConfTag2[]= ".Release|%1.Build.0 = Release|";
+const char _slnProjRelConfTag3[]= ".Release|%1.Deploy.0 = Release|";
 const char _slnProjDbgConfTag1[]= ".Debug|%1.ActiveCfg = Debug|";
 const char _slnProjDbgConfTag2[]= ".Debug|%1.Build.0 = Debug|";
+const char _slnProjDbgConfTag3[]= ".Debug|%1.Deploy.0 = Debug|";
 const char _slnProjConfEnd[]    = "\n\tEndGlobalSection";
 const char _slnExtSections[]    = "\n\tGlobalSection(ExtensibilityGlobals) = postSolution"
                                   "\n\tEndGlobalSection"
@@ -729,8 +731,12 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
             platform = xplatform;
         t << "\n\t\t" << (*it)->uuid << QString(_slnProjDbgConfTag1).arg(xplatform) << platform;
         t << "\n\t\t" << (*it)->uuid << QString(_slnProjDbgConfTag2).arg(xplatform) << platform;
+        if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH"))
+            t << "\n\t\t" << (*it)->uuid << QString(_slnProjDbgConfTag3).arg(xplatform) << platform;
         t << "\n\t\t" << (*it)->uuid << QString(_slnProjRelConfTag1).arg(xplatform) << platform;
         t << "\n\t\t" << (*it)->uuid << QString(_slnProjRelConfTag2).arg(xplatform) << platform;
+        if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH"))
+            t << "\n\t\t" << (*it)->uuid << QString(_slnProjRelConfTag3).arg(xplatform) << platform;
     }
     t << _slnProjConfEnd;
     t << _slnExtSections;
@@ -1269,6 +1275,7 @@ void VcprojGenerator::initDeploymentTool()
             targetPath = QString("%CSIDL_PROGRAM_FILES%\\") + project->first("TARGET");
         if (targetPath.endsWith("/") || targetPath.endsWith("\\"))
             targetPath.chop(1);
+        conf.deployment.RemoteDirectory = targetPath;
     }
     ProStringList dllPaths = project->values("QMAKE_DLL_PATHS");
     // Only deploy Qt libs for shared build

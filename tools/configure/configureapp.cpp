@@ -3176,9 +3176,6 @@ void Configure::generateCachefile()
             moduleStream << "QT_CE_RAPI_LIB  = " << formatPath(dictionary["QT_CE_RAPI_LIB"]) << endl;
         }
 
-        moduleStream << "#Qt for Windows CE c-runtime deployment" << endl
-                     << "QT_CE_C_RUNTIME = " << formatPath(dictionary["CE_CRT"]) << endl;
-
         if (dictionary["CE_SIGNATURE"] != QLatin1String("no"))
             moduleStream << "DEFAULT_SIGNATURE=" << dictionary["CE_SIGNATURE"] << endl;
 
@@ -3592,6 +3589,11 @@ void Configure::generateQConfigPri()
             configStream << "QT_GCC_MAJOR_VERSION = " << dictionary["QT_GCC_MAJOR_VERSION"] << endl
                          << "QT_GCC_MINOR_VERSION = " << dictionary["QT_GCC_MINOR_VERSION"] << endl
                          << "QT_GCC_PATCH_VERSION = " << dictionary["QT_GCC_PATCH_VERSION"] << endl;
+        }
+
+        if (dictionary.value("XQMAKESPEC").startsWith("wince")) {
+            configStream << "#Qt for Windows CE c-runtime deployment" << endl
+                         << "QT_CE_C_RUNTIME = " << formatPath(dictionary["CE_CRT"]) << endl;
         }
 
         if (!configStream.flush())
