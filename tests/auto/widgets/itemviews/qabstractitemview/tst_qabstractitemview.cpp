@@ -37,6 +37,7 @@
 #include <qabstractitemview.h>
 #include <qstandarditemmodel.h>
 #include <qapplication.h>
+#include <qevent.h>
 #include <qlistview.h>
 #include <qlistwidget.h>
 #include <qtableview.h>
@@ -251,6 +252,7 @@ private slots:
     void sizeHintChangeTriggersLayout();
     void shiftSelectionAfterChangingModelContents();
     void QTBUG48968_reentrant_updateEditorGeometries();
+    void QTBUG50535_update_on_new_selection_model();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -2026,6 +2028,58 @@ void tst_QAbstractItemView::QTBUG48968_reentrant_updateEditorGeometries()
     }
 
     // No crash, all fine.
+}
+
+void tst_QAbstractItemView::QTBUG50535_update_on_new_selection_model()
+{
+    QStandardItemModel model;
+    for (int i = 0; i < 10; ++i)
+        model.appendRow(new QStandardItem(QStringLiteral("%1").arg(i)));
+
+    class ListView : public QListView
+    {
+    public:
+        ListView()
+            : m_paintEventsCount(0)
+        {
+        }
+
+        int m_paintEventsCount;
+
+    protected:
+        bool viewportEvent(QEvent *event) Q_DECL_OVERRIDE
+        {
+            if (event->type() == QEvent::Paint)
+                ++m_paintEventsCount;
+            return QListView::viewportEvent(event);
+        }
+    };
+
+    // keep the current/selected row in the "low range", i.e. be sure it's visible, otherwise we
+    // don't get updates and the test fails.
+
+    ListView view;
+    view.setModel(&model);
+    view.selectionModel()->setCurrentIndex(model.index(1, 0), QItemSelectionModel::SelectCurrent);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+
+    QItemSelectionModel selectionModel(&model);
+    selectionModel.setCurrentIndex(model.index(2, 0), QItemSelectionModel::Current);
+
+    int oldPaintEventsCount = view.m_paintEventsCount;
+    view.setSelectionModel(&selectionModel);
+    QTRY_VERIFY(view.m_paintEventsCount > oldPaintEventsCount);
+
+
+    QItemSelectionModel selectionModel2(&model);
+    selectionModel2.select(model.index(0, 0), QItemSelectionModel::ClearAndSelect);
+    selectionModel2.setCurrentIndex(model.index(1, 0), QItemSelectionModel::Current);
+
+    oldPaintEventsCount = view.m_paintEventsCount;
+    view.setSelectionModel(&selectionModel2);
+    QTRY_VERIFY(view.m_paintEventsCount > oldPaintEventsCount);
 }
 
 QTEST_MAIN(tst_QAbstractItemView)
