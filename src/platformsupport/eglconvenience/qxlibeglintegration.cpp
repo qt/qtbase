@@ -88,19 +88,19 @@ VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay
 
     // Manually search the configurations while looking for a valid match
     EGLint  idFound(0);
-    EGLBoolean no_error(false);
+    EGLBoolean noError(false);
     EGLint red(0),green(0),blue(0);
-    for(int index(0); index < (configCount && !no_error); index++)
+    for(int index(0); index < (configCount && !noError); index++)
     {
-        no_error = eglGetConfigAttrib(eglDisplay,matchingConfigs[index],EGL_RED_SIZE, &red);
-        no_error &= eglGetConfigAttrib(eglDisplay,matchingConfigs[index],EGL_BLUE_SIZE, &blue);
-        no_error &= eglGetConfigAttrib(eglDisplay,matchingConfigs[index],EGL_GREEN_SIZE, &green);
-        if((no_error == EGL_TRUE) && (red == configRedSize) && (green == configGreenSize) && (blue == configBlueSize))
+        noError = eglGetConfigAttrib(eglDisplay,matchingConfigs[index],EGL_RED_SIZE, &red);
+        noError &= eglGetConfigAttrib(eglDisplay,matchingConfigs[index],EGL_BLUE_SIZE, &blue);
+        noError &= eglGetConfigAttrib(eglDisplay,matchingConfigs[index],EGL_GREEN_SIZE, &green);
+        if((noError == EGL_TRUE) && (red == configRedSize) && (green == configGreenSize) && (blue == configBlueSize))
         {
             eglGetConfigAttrib(eglDisplay,matchingConfigs[index],EGL_NATIVE_VISUAL_ID, &idFound);
         }
         else
-            no_error = false;
+            noError = false;
     }
     delete []matchingConfigs;
 
