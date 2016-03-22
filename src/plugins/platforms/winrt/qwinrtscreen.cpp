@@ -885,7 +885,7 @@ HRESULT QWinRTScreen::onKeyDown(ABI::Windows::UI::Core::ICoreWindow *, ABI::Wind
                 virtualKey,
                 0,
                 QString(),
-                status.RepeatCount > 1,
+                status.WasKeyDown,
                 !status.RepeatCount ? 1 : status.RepeatCount,
                 false);
     return S_OK;
@@ -912,7 +912,7 @@ HRESULT QWinRTScreen::onKeyUp(ABI::Windows::UI::Core::ICoreWindow *, ABI::Window
                 virtualKey,
                 0,
                 info.text,
-                status.RepeatCount > 1,
+                status.WasKeyDown,
                 !status.RepeatCount ? 1 : status.RepeatCount,
                 false);
     return S_OK;
@@ -945,7 +945,7 @@ HRESULT QWinRTScreen::onCharacterReceived(ICoreWindow *, ICharacterReceivedEvent
                 virtualKey,
                 0,
                 text,
-                status.RepeatCount > 1,
+                status.WasKeyDown,
                 !status.RepeatCount ? 1 : status.RepeatCount,
                 false);
     d->activeKeys.insert(key, KeyInfo(text, virtualKey));
