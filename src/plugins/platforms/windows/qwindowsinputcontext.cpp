@@ -48,6 +48,8 @@
 #include <QtGui/QPalette>
 #include <QtGui/QGuiApplication>
 
+#include <private/qhighdpiscaling_p.h>
+
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE
@@ -159,7 +161,8 @@ Q_CORE_EXPORT QLocale qt_localeFromLCID(LCID id); // from qlocale_win.cpp
 HIMC QWindowsInputContext::m_defaultContext = 0;
 
 QWindowsInputContext::CompositionContext::CompositionContext() :
-    hwnd(0), haveCaret(false), position(0), isComposing(false)
+    hwnd(0), haveCaret(false), position(0), isComposing(false),
+    factor(1)
 {
 }
 
@@ -270,9 +273,12 @@ void QWindowsInputContext::cursorRectChanged()
     if (!m_compositionContext.hwnd)
         return;
     const QInputMethod *inputMethod = QGuiApplication::inputMethod();
-    const QRect cursorRectangle = inputMethod->cursorRectangle().toRect();
-    if (!cursorRectangle.isValid())
+    const QRectF cursorRectangleF = inputMethod->cursorRectangle();
+    if (!cursorRectangleF.isValid())
         return;
+    const QRect cursorRectangle =
+        QRectF(cursorRectangleF.topLeft() * m_compositionContext.factor,
+               cursorRectangleF.size() * m_compositionContext.factor).toRect();
 
     qCDebug(lcQpaInputMethods) << __FUNCTION__<< cursorRectangle;
 
@@ -390,7 +396,7 @@ bool QWindowsInputContext::startComposition(HWND hwnd)
     qCDebug(lcQpaInputMethods) << __FUNCTION__ << fo << window << "language=" << m_languageId;
     if (!fo || QWindowsWindow::handleOf(window) != hwnd)
         return false;
-    initContext(hwnd, fo);
+    initContext(hwnd, QHighDpiScaling::factor(window), fo);
     startContextComposition();
     return true;
 }
@@ -522,12 +528,13 @@ bool QWindowsInputContext::endComposition(HWND hwnd)
     return true;
 }
 
-void QWindowsInputContext::initContext(HWND hwnd, QObject *focusObject)
+void QWindowsInputContext::initContext(HWND hwnd, qreal factor, QObject *focusObject)
 {
     if (m_compositionContext.hwnd)
         doneContext();
     m_compositionContext.hwnd = hwnd;
     m_compositionContext.focusObject = focusObject;
+    m_compositionContext.factor = factor;
     // Create a hidden caret which is kept at the microfocus
     // position in update(). This is important for some
     // Chinese input methods.
