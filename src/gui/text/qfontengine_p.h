@@ -229,6 +229,8 @@ public:
 
     virtual QFontEngine *cloneWithSize(qreal /*pixelSize*/) const { return 0; }
 
+    virtual Qt::HANDLE handle() const;
+
     void *harfbuzzFont() const;
     void *harfbuzzFace() const;
     bool supportsScript(QChar::Script script) const;

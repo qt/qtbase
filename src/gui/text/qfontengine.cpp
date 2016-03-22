@@ -1229,6 +1229,11 @@ int QFontEngine::glyphCount() const
     return count;
 }
 
+Qt::HANDLE QFontEngine::handle() const
+{
+    return Q_NULLPTR;
+}
+
 const uchar *QFontEngine::getCMap(const uchar *table, uint tableSize, bool *isSymbolFont, int *cmapSize)
 {
     const uchar *header = table;

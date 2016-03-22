@@ -1256,6 +1256,11 @@ QFontEngine *QWindowsFontEngine::cloneWithSize(qreal pixelSize) const
     return fontEngine;
 }
 
+Qt::HANDLE QWindowsFontEngine::handle() const
+{
+    return hfont;
+}
+
 void QWindowsFontEngine::initFontInfo(const QFontDef &request,
                                       int dpi)
 {

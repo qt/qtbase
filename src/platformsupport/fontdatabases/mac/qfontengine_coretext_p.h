@@ -101,6 +101,7 @@ public:
     bool supportsTransformation(const QTransform &transform) const Q_DECL_OVERRIDE;
 
     QFontEngine *cloneWithSize(qreal pixelSize) const Q_DECL_OVERRIDE;
+    Qt::HANDLE handle() const Q_DECL_OVERRIDE;
     int glyphMargin(QFontEngine::GlyphFormat format) Q_DECL_OVERRIDE { Q_UNUSED(format); return 0; }
 
     QFontEngine::Properties properties() const Q_DECL_OVERRIDE;

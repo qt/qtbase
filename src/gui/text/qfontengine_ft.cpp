@@ -2005,6 +2005,11 @@ QFontEngine *QFontEngineFT::cloneWithSize(qreal pixelSize) const
     }
 }
 
+Qt::HANDLE QFontEngineFT::handle() const
+{
+    return non_locked_face();
+}
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_FREETYPE

@@ -108,6 +108,7 @@ public:
     glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed, const QTransform &matrix, GlyphFormat) Q_DECL_OVERRIDE;
 
     QFontEngine *cloneWithSize(qreal pixelSize) const Q_DECL_OVERRIDE;
+    Qt::HANDLE handle() const Q_DECL_OVERRIDE;
     bool supportsTransformation(const QTransform &transform) const Q_DECL_OVERRIDE;
 
 #ifndef Q_CC_MINGW
