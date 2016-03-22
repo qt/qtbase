@@ -91,7 +91,7 @@ void QShapedPixmapWindow::updateGeometry(const QPoint &pos)
 {
     QSize size(1, 1);
     if (!m_pixmap.isNull()) {
-        size = qFuzzyCompare(m_pixmap.devicePixelRatio(), 1.0)
+        size = qFuzzyCompare(m_pixmap.devicePixelRatio(), qreal(1.0))
             ? m_pixmap.size()
             : (QSizeF(m_pixmap.size()) / m_pixmap.devicePixelRatio()).toSize();
     }
