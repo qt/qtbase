@@ -436,8 +436,6 @@ Qt::NavigationMode QApplicationPrivate::navigationMode = Qt::NavigationModeKeypa
 QWidget *QApplicationPrivate::oldEditFocus = 0;
 #endif
 
-bool qt_tabletChokeMouse = false;
-
 inline bool QApplicationPrivate::isAlien(QWidget *widget)
 {
     return widget && !widget->isWindow();
@@ -3459,7 +3457,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 w = w->parentWidget();
             }
             tablet->setAccepted(eventAccepted);
-            qt_tabletChokeMouse = tablet->isAccepted();
         }
         break;
 #endif // QT_NO_TABLETEVENT
