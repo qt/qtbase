@@ -684,6 +684,16 @@ QT_WARNING_POP
     return YES;
 }
 
+- (NSView *)hitTest:(NSPoint)aPoint
+{
+    NSView *candidate = [super hitTest:aPoint];
+    if (candidate == self) {
+        if (m_window && (m_window->flags() & Qt::WindowTransparentForInput))
+            return nil;
+    }
+    return candidate;
+}
+
 - (void)convertFromScreen:(NSPoint)mouseLocation toWindowPoint:(QPointF *)qtWindowPoint andScreenPoint:(QPointF *)qtScreenPoint
 {
     // Calculate the mouse position in the QWindow and Qt screen coordinate system,
