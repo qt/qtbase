@@ -305,6 +305,8 @@ QLibraryInfo::buildDate()
 #  else
 #    define COMPILER_STRING "Clang " __clang_version__
 #  endif
+#elif defined(Q_CC_GHS)
+#  define COMPILER_STRING "GHS " QT_STRINGIFY(__GHS_VERSION_NUMBER)
 #elif defined(Q_CC_GNU)
 #  define COMPILER_STRING "GCC " __VERSION__
 #elif defined(Q_CC_MSVC)

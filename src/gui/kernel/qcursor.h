@@ -87,9 +87,12 @@ public:
     QCursor &operator=(const QCursor &cursor);
 #ifdef Q_COMPILER_RVALUE_REFS
     QCursor(QCursor &&other) Q_DECL_NOTHROW : d(other.d) { other.d = Q_NULLPTR; }
-    inline QCursor &operator=(QCursor &&other)
-    { qSwap(d, other.d); return *this; }
+    inline QCursor &operator=(QCursor &&other) Q_DECL_NOTHROW
+    { swap(other); return *this; }
 #endif
+
+    void swap(QCursor &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+
     operator QVariant() const;
 
     Qt::CursorShape shape() const;
@@ -110,6 +113,7 @@ public:
 private:
     QCursorData *d;
 };
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QCursor)
 
 /*****************************************************************************
   QCursor stream functions

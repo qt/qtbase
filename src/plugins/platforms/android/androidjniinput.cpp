@@ -98,7 +98,7 @@ namespace QtAndroidInput
     {
         QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "resetSoftwareKeyboard");
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-        qDebug() << "@@@ RESETSOFTWAREKEYBOARD";
+        qDebug("@@@ RESETSOFTWAREKEYBOARD");
 #endif
     }
 
@@ -106,7 +106,7 @@ namespace QtAndroidInput
     {
         QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "hideSoftwareKeyboard");
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-        qDebug() << "@@@ HIDESOFTWAREKEYBOARD";
+        qDebug("@@@ HIDESOFTWAREKEYBOARD");
 #endif
     }
 

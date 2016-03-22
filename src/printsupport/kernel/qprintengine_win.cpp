@@ -169,7 +169,7 @@ bool QWin32PrintEngine::begin(QPaintDevice *pdev)
         cleanUp();
 
 #ifdef QT_DEBUG_METRICS
-    qDebug() << "QWin32PrintEngine::begin()";
+    qDebug("QWin32PrintEngine::begin()");
     d->debugMetrics();
 #endif // QT_DEBUG_METRICS
 
@@ -236,7 +236,7 @@ bool QWin32PrintEngine::newPage()
         SetBkMode(d->hdc, TRANSPARENT);
 
 #ifdef QT_DEBUG_METRICS
-    qDebug() << "QWin32PrintEngine::newPage()";
+    qDebug("QWin32PrintEngine::newPage()");
     d->debugMetrics();
 #endif // QT_DEBUG_METRICS
 
@@ -930,7 +930,7 @@ void QWin32PrintEnginePrivate::initialize()
     initHDC();
 
 #if defined QT_DEBUG_DRAW || defined QT_DEBUG_METRICS
-    qDebug() << "QWin32PrintEngine::initialize()";
+    qDebug("QWin32PrintEngine::initialize()");
     debugMetrics();
 #endif // QT_DEBUG_DRAW || QT_DEBUG_METRICS
 }
@@ -1007,7 +1007,7 @@ void QWin32PrintEnginePrivate::doReinit()
 bool QWin32PrintEnginePrivate::resetDC()
 {
     if (!hdc) {
-        qWarning() << "ResetDC() called with null hdc.";
+        qWarning("ResetDC() called with null hdc.");
         return false;
     }
     const HDC oldHdc = hdc;
@@ -1593,7 +1593,7 @@ void QWin32PrintEngine::setGlobalDevMode(HGLOBAL globalDevNames, HGLOBAL globalD
         d->initHDC();
 
 #if defined QT_DEBUG_DRAW || defined QT_DEBUG_METRICS
-    qDebug() << "QWin32PrintEngine::setGlobalDevMode()";
+    qDebug("QWin32PrintEngine::setGlobalDevMode()");
     debugMetrics();
 #endif // QT_DEBUG_DRAW || QT_DEBUG_METRICS
 }

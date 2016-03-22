@@ -234,7 +234,7 @@ bool QHttpNetworkConnectionPrivate::shouldEmitChannelError(QAbstractSocket *sock
                 emitError = false;
             }
             if (networkLayerState == QHttpNetworkConnectionPrivate::Unknown)
-                qWarning() << "We got a connection error when networkLayerState is Unknown";
+                qWarning("We got a connection error when networkLayerState is Unknown");
         }
     }
     return emitError;
@@ -1180,10 +1180,9 @@ void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(const QHostInfo &info)
         }
 #ifndef QT_NO_SSL
         else if (connectionType == QHttpNetworkConnection::ConnectionTypeSPDY) {
-            QList<HttpMessagePair> spdyPairs = channels[0].spdyRequestsToSend.values();
-            for (int a = 0; a < spdyPairs.count(); ++a) {
+            for (const HttpMessagePair &spdyPair : qAsConst(channels[0].spdyRequestsToSend)) {
                 // emit error for all replies
-                QHttpNetworkReply *currentReply = spdyPairs.at(a).second;
+                QHttpNetworkReply *currentReply = spdyPair.second;
                 Q_ASSERT(currentReply);
                 emitReplyError(channels[0].socket, currentReply, QNetworkReply::HostNotFoundError);
             }
@@ -1191,7 +1190,7 @@ void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(const QHostInfo &info)
 #endif // QT_NO_SSL
         else {
             // Should not happen
-            qWarning() << "QHttpNetworkConnectionPrivate::_q_hostLookupFinished could not dequeu request";
+            qWarning("QHttpNetworkConnectionPrivate::_q_hostLookupFinished could not de-queue request");
             networkLayerState = QHttpNetworkConnectionPrivate::Unknown;
         }
     }

@@ -1962,7 +1962,9 @@ static const char * xcb_atomnames = {
     "_COMPIZ_DECOR_PENDING\0"
     "_COMPIZ_DECOR_REQUEST\0"
     "_COMPIZ_DECOR_DELETE_PIXMAP\0"
-    "_COMPIZ_TOOLKIT_ACTION\0" // \0\0 terminates loop.
+    "_COMPIZ_TOOLKIT_ACTION\0"
+    "_GTK_LOAD_ICONTHEMES\0"
+    // \0\0 terminates loop.
 };
 
 QXcbAtom::Atom QXcbConnection::qatom(xcb_atom_t xatom) const
@@ -2173,7 +2175,7 @@ void QXcbConnection::initializeXKB()
 #ifndef QT_NO_XKB
     const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_connection, &xcb_xkb_id);
     if (!reply || !reply->present) {
-        qWarning() << "Qt: XKEYBOARD extension not present on the X server.";
+        qWarning("Qt: XKEYBOARD extension not present on the X server.");
         xkb_first_event = 0;
         return;
     }
@@ -2227,7 +2229,7 @@ void QXcbConnection::initializeXKB()
     xcb_generic_error_t *error = xcb_request_check(c, select);
     if (error) {
         free(error);
-        qWarning() << "Qt: failed to select notify events from xcb-xkb";
+        qWarning("Qt: failed to select notify events from xcb-xkb");
         return;
     }
 #endif

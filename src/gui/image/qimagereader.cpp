@@ -505,7 +505,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
 
     if (!handler) {
 #ifdef QIMAGEREADER_DEBUG
-        qDebug() << "QImageReader::createReadHandler: no handlers found. giving up.";
+        qDebug("QImageReader::createReadHandler: no handlers found. giving up.");
 #endif
         // no handler: give up.
         return 0;

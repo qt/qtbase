@@ -1,6 +1,6 @@
 libpng-manual.txt - A description on how to use and modify libpng
 
- libpng version 1.6.19 - November 12, 2015
+ libpng version 1.6.20 - December 3, 2015
  Updated and distributed by Glenn Randers-Pehrson
  <glennrp at users.sourceforge.net>
  Copyright (c) 1998-2015 Glenn Randers-Pehrson
@@ -11,7 +11,7 @@ libpng-manual.txt - A description on how to use and modify libpng
 
  Based on:
 
- libpng versions 0.97, January 1998, through 1.6.19 - November 12, 2015
+ libpng versions 0.97, January 1998, through 1.6.20 - December 3, 2015
  Updated and distributed by Glenn Randers-Pehrson
  Copyright (c) 1998-2015 Glenn Randers-Pehrson
 
@@ -2960,6 +2960,7 @@ width, height, bit_depth, and color_type must be the same in each call.
                      (array of png_color)
     num_palette    - number of entries in the palette
 
+
     png_set_gAMA(png_ptr, info_ptr, file_gamma);
     png_set_gAMA_fixed(png_ptr, info_ptr, int_file_gamma);
 
@@ -4897,7 +4898,7 @@ a set of "safe" limits is applied in pngpriv.h.  These can be overridden by
 application calls to png_set_user_limits(), png_set_user_chunk_cache_max(),
 and/or png_set_user_malloc_max() that increase or decrease the limits.  Also,
 in libpng-1.5.10 the default width and height limits were increased
-from 1,000,000 to 0x7ffffff (i.e., made unlimited).  Therefore, the
+from 1,000,000 to 0x7fffffff (i.e., made unlimited).  Therefore, the
 limits are now
                                default      safe
    png_user_width_max        0x7fffffff    1,000,000
@@ -5323,7 +5324,7 @@ Since the PNG Development group is an ad-hoc body, we can't make
 an official declaration.
 
 This is your unofficial assurance that libpng from version 0.71 and
-upward through 1.6.19 are Y2K compliant.  It is my belief that earlier
+upward through 1.6.20 are Y2K compliant.  It is my belief that earlier
 versions were also Y2K compliant.
 
 Libpng only has two year fields.  One is a 2-byte unsigned integer

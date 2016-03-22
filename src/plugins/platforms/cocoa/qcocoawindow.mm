@@ -376,9 +376,8 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_bottomContentBorderThickness(0)
     , m_normalGeometry(QRect(0,0,-1,-1))
 {
-#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
-    qDebug() << "QCocoaWindow::QCocoaWindow" << this;
-#endif
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::QCocoaWindow" << window();
+
     QMacAutoReleasePool pool;
 
     if (tlw->type() == Qt::ForeignWindow) {
@@ -411,11 +410,10 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
 
 QCocoaWindow::~QCocoaWindow()
 {
-#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
-    qDebug() << "QCocoaWindow::~QCocoaWindow" << this;
-#endif
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::~QCocoaWindow" << window();
 
     QMacAutoReleasePool pool;
+    [m_nsWindow makeFirstResponder:nil];
     [m_nsWindow setContentView:nil];
     [m_nsWindow.helper detachFromPlatformWindow];
     if (m_isNSWindowChild) {
@@ -470,6 +468,8 @@ QSurfaceFormat QCocoaWindow::format() const
 
 void QCocoaWindow::setGeometry(const QRect &rectIn)
 {
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::setGeometry" << window() << rectIn;
+
     QBoolBlocker inSetGeometry(m_inSetGeometry, true);
 
     QRect rect = rectIn;
@@ -482,9 +482,7 @@ void QCocoaWindow::setGeometry(const QRect &rectIn)
     }
     if (geometry() == rect)
         return;
-#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
-    qDebug() << "QCocoaWindow::setGeometry" << this << rect;
-#endif
+
     setCocoaGeometry(rect);
 }
 
@@ -507,6 +505,7 @@ QRect QCocoaWindow::geometry() const
 
 void QCocoaWindow::setCocoaGeometry(const QRect &rect)
 {
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::setCocoaGeometry" << window() << rect;
     QMacAutoReleasePool pool;
 
     if (m_contentViewIsEmbedded) {
@@ -630,6 +629,8 @@ void QCocoaWindow::show(bool becauseOfAncestor)
 
 void QCocoaWindow::setVisible(bool visible)
 {
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::setVisible" << window() << visible;
+
     if (m_isNSWindowChild && m_hiddenByClipping)
         return;
 
@@ -639,9 +640,7 @@ void QCocoaWindow::setVisible(bool visible)
     QCocoaWindow *parentCocoaWindow = 0;
     if (window()->transientParent())
         parentCocoaWindow = static_cast<QCocoaWindow *>(window()->transientParent()->handle());
-#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
-    qDebug() << "QCocoaWindow::setVisible" << window() << visible;
-#endif
+
     if (visible) {
         // We need to recreate if the modality has changed as the style mask will need updating
         if (m_windowModality != window()->modality())
@@ -862,9 +861,6 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     if (m_drawContentBorderGradient)
         styleMask |= NSTexturedBackgroundWindowMask;
 
-#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
-    qDebug("windowStyleMask of '%s': flags %X -> styleMask %lX", qPrintable(window()->title()), (int)flags, styleMask);
-#endif
     return styleMask;
 }
 
@@ -986,7 +982,8 @@ bool QCocoaWindow::isAlertState() const
 
 void QCocoaWindow::raise()
 {
-    //qDebug() << "raise" << this;
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::raise" << window();
+
     // ### handle spaces (see Qt 4 raise_sys in qwidget_mac.mm)
     if (!m_nsWindow)
         return;
@@ -1006,7 +1003,15 @@ void QCocoaWindow::raise()
             [parentNSWindow removeChildWindow:m_nsWindow];
             [parentNSWindow addChildWindow:m_nsWindow ordered:NSWindowAbove];
         } else {
-            [m_nsWindow orderFront: m_nsWindow];
+            {
+                // Clean up autoreleased temp objects from orderFront immediately.
+                // Failure to do so has been observed to cause leaks also beyond any outer
+                // autorelease pool (for example around a complete QWindow
+                // construct-show-raise-hide-delete cyle), counter to expected autoreleasepool
+                // behavior.
+                QMacAutoReleasePool pool;
+                [m_nsWindow orderFront: m_nsWindow];
+            }
             static bool raiseProcess = qt_mac_resolveOption(true, "QT_MAC_SET_RAISE_PROCESS");
             if (raiseProcess) {
                 ProcessSerialNumber psn;
@@ -1019,6 +1024,7 @@ void QCocoaWindow::raise()
 
 void QCocoaWindow::lower()
 {
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::lower" << window();
     if (!m_nsWindow)
         return;
     if (m_isNSWindowChild) {
@@ -1071,13 +1077,11 @@ void QCocoaWindow::propagateSizeHints()
     if (!m_nsWindow)
         return;
 
-#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
-    qDebug() << "QCocoaWindow::propagateSizeHints" << this;
-    qDebug() << "       min/max" << windowMinimumSize() << windowMaximumSize();
-    qDebug() << "size increment" << windowSizeIncrement();
-    qDebug() << "      basesize" << windowBaseSize();
-    qDebug() << "      geometry" << windowGeometry();
-#endif
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::propagateSizeHints" << window() << "\n"
+                              << "       min/max" << windowMinimumSize() << windowMaximumSize()
+                              << "size increment" << windowSizeIncrement()
+                              << "      basesize" << windowBaseSize()
+                              << "      geometry" << windowGeometry();
 
     // Set the minimum content size.
     const QSize minimumSize = windowMinimumSize();
@@ -1109,6 +1113,7 @@ void QCocoaWindow::propagateSizeHints()
 
 void QCocoaWindow::setOpacity(qreal level)
 {
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::setOpacity" << level;
     if (m_nsWindow) {
         [m_nsWindow setAlphaValue:level];
         [m_nsWindow setOpaque: isOpaque()];
@@ -1117,6 +1122,7 @@ void QCocoaWindow::setOpacity(qreal level)
 
 void QCocoaWindow::setMask(const QRegion &region)
 {
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::setMask" << window() << region;
     if (m_nsWindow)
         [m_nsWindow setBackgroundColor:[NSColor clearColor]];
 
@@ -1126,6 +1132,7 @@ void QCocoaWindow::setMask(const QRegion &region)
 
 bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
 {
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::setKeyboardGrabEnabled" << window() << grab;
     if (!m_nsWindow)
         return false;
 
@@ -1138,6 +1145,7 @@ bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
 
 bool QCocoaWindow::setMouseGrabEnabled(bool grab)
 {
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::setMouseGrabEnabled" << window() << grab;
     if (!m_nsWindow)
         return false;
 
@@ -1155,6 +1163,8 @@ WId QCocoaWindow::winId() const
 
 void QCocoaWindow::setParent(const QPlatformWindow *parentWindow)
 {
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::setParent" << window() << (parentWindow ? parentWindow->window() : 0);
+
     // recreate the window for compatibility
     bool unhideAfterRecreate = parentWindow && !m_contentViewIsToBeEmbedded && ![m_contentView isHidden];
     recreateWindow(parentWindow);
@@ -1238,6 +1248,7 @@ void QCocoaWindow::windowDidEndLiveResize()
 
 bool QCocoaWindow::windowShouldClose()
 {
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::windowShouldClose" << window();
    // This callback should technically only determine if the window
    // should (be allowed to) close, but since our QPA API to determine
    // that also involves actually closing the window we do both at the
@@ -1278,6 +1289,9 @@ QCocoaGLContext *QCocoaWindow::currentContext() const
 
 void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
 {
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::recreateWindow" << window()
+                              << "parent" << (parentWindow ? parentWindow->window() : 0);
+
     bool wasNSWindowChild = m_isNSWindowChild;
     BOOL requestNSWindowChild = qt_mac_resolveOption(NO, window(), "_q_platform_MacUseNSWindow",
                                                                    "QT_MAC_USE_NSWINDOW");
@@ -1614,10 +1628,6 @@ void QCocoaWindow::syncWindowState(Qt::WindowState newState)
         }
     }
 
-#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
-    qDebug() << "QCocoaWindow::syncWindowState" << newState << "actual" << predictedState << "was" << m_synchedWindowState << "effectively maximized" << m_effectivelyMaximized;
-#endif
-
     // New state is now the current synched state
     m_synchedWindowState = predictedState;
 }
@@ -1810,7 +1820,9 @@ void QCocoaWindow::exposeWindow()
         m_isExposed = true;
         m_exposedGeometry = geometry();
         m_exposedDevicePixelRatio = devicePixelRatio();
-        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), m_exposedGeometry.size()));
+        QRect geometry(QPoint(0, 0), m_exposedGeometry.size());
+        qCDebug(lcQpaCocoaWindow) << "QCocoaWindow: exposeWindow" << window() << geometry;
+        QWindowSystemInterface::handleExposeEvent(window(), geometry);
     }
 }
 
@@ -1820,6 +1832,8 @@ void QCocoaWindow::obscureWindow()
     if (m_isExposed) {
         m_geometryUpdateExposeAllowed = false;
         m_isExposed = false;
+
+        qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::obscureWindow" << window();
         QWindowSystemInterface::handleExposeEvent(window(), QRegion());
     }
 }
@@ -1846,7 +1860,10 @@ void QCocoaWindow::updateExposedGeometry()
     m_isExposed = true;
     m_exposedGeometry = geometry();
     m_exposedDevicePixelRatio = devicePixelRatio();
-    QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), m_exposedGeometry.size()));
+
+    QRect geometry(QPoint(0, 0), m_exposedGeometry.size());
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::updateExposedGeometry" << window() << geometry;
+    QWindowSystemInterface::handleExposeEvent(window(), geometry);
 }
 
 QWindow *QCocoaWindow::childWindowAt(QPoint windowPoint)

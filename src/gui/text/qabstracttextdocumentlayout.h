@@ -131,6 +131,8 @@ private:
     Q_PRIVATE_SLOT(d_func(), int _q_dynamicPageCountSlot())
     Q_PRIVATE_SLOT(d_func(), QSizeF _q_dynamicDocumentSizeSlot())
 };
+Q_DECLARE_TYPEINFO(QAbstractTextDocumentLayout::Selection,    Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QAbstractTextDocumentLayout::PaintContext, Q_RELOCATABLE_TYPE);
 
 class Q_GUI_EXPORT QTextObjectInterface
 {

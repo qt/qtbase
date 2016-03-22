@@ -198,6 +198,9 @@ bool QLocalServerPrivate::addListener()
 
     memset(&listener.overlapped, 0, sizeof(listener.overlapped));
     listener.overlapped.hEvent = eventHandle;
+
+    // Beware! ConnectNamedPipe will reset the eventHandle to non-signaled.
+    // Callers of addListener must check all listeners for connections.
     if (!ConnectNamedPipe(listener.handle, &listener.overlapped)) {
         switch (GetLastError()) {
         case ERROR_IO_PENDING:
@@ -205,7 +208,6 @@ bool QLocalServerPrivate::addListener()
             break;
         case ERROR_PIPE_CONNECTED:
             listener.connected = true;
-            SetEvent(eventHandle);
             break;
         default:
             CloseHandle(listener.handle);
@@ -241,7 +243,7 @@ bool QLocalServerPrivate::listen(const QString &name)
 {
     Q_Q(QLocalServer);
 
-    QString pipePath = QLatin1String("\\\\.\\pipe\\");
+    const QLatin1String pipePath("\\\\.\\pipe\\");
     if (name.startsWith(pipePath))
         fullServerName = name;
     else
@@ -257,6 +259,8 @@ bool QLocalServerPrivate::listen(const QString &name)
     for (int i = 0; i < SYSTEM_MAX_PENDING_SOCKETS; ++i)
         if (!addListener())
             return false;
+
+    _q_onNewConnection();
     return true;
 }
 
@@ -270,37 +274,43 @@ void QLocalServerPrivate::_q_onNewConnection()
 {
     Q_Q(QLocalServer);
     DWORD dummy;
+    bool tryAgain;
+    do {
+        tryAgain = false;
 
-    // Reset first, otherwise we could reset an event which was asserted
-    // immediately after we checked the conn status.
-    ResetEvent(eventHandle);
+        // Reset first, otherwise we could reset an event which was asserted
+        // immediately after we checked the conn status.
+        ResetEvent(eventHandle);
 
-    // Testing shows that there is indeed absolutely no guarantee which listener gets
-    // a client connection first, so there is no way around polling all of them.
-    for (int i = 0; i < listeners.size(); ) {
-        HANDLE handle = listeners[i].handle;
-        if (listeners[i].connected
-            || GetOverlappedResult(handle, &listeners[i].overlapped, &dummy, FALSE))
-        {
-            listeners.removeAt(i);
+        // Testing shows that there is indeed absolutely no guarantee which listener gets
+        // a client connection first, so there is no way around polling all of them.
+        for (int i = 0; i < listeners.size(); ) {
+            HANDLE handle = listeners[i].handle;
+            if (listeners[i].connected
+                || GetOverlappedResult(handle, &listeners[i].overlapped, &dummy, FALSE))
+            {
+                listeners.removeAt(i);
 
-            addListener();
+                addListener();
 
-            if (pendingConnections.size() > maxPendingConnections)
-                connectionEventNotifier->setEnabled(false);
+                if (pendingConnections.size() > maxPendingConnections)
+                    connectionEventNotifier->setEnabled(false);
+                else
+                    tryAgain = true;
 
-            // Make this the last thing so connected slots can wreak the least havoc
-            q->incomingConnection((quintptr)handle);
-        } else {
-            if (GetLastError() != ERROR_IO_INCOMPLETE) {
-                q->close();
-                setError(QLatin1String("QLocalServerPrivate::_q_onNewConnection"));
-                return;
+                // Make this the last thing so connected slots can wreak the least havoc
+                q->incomingConnection((quintptr)handle);
+            } else {
+                if (GetLastError() != ERROR_IO_INCOMPLETE) {
+                    q->close();
+                    setError(QLatin1String("QLocalServerPrivate::_q_onNewConnection"));
+                    return;
+                }
+
+                ++i;
             }
-
-            ++i;
         }
-    }
+    } while (tryAgain);
 }
 
 void QLocalServerPrivate::closeServer()

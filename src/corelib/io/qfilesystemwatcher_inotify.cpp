@@ -344,7 +344,7 @@ QStringList QInotifyFileSystemWatcherEngine::removePaths(const QStringList &path
 
 void QInotifyFileSystemWatcherEngine::readFromInotify()
 {
-    // qDebug() << "QInotifyFileSystemWatcherEngine::readFromInotify";
+    // qDebug("QInotifyFileSystemWatcherEngine::readFromInotify");
 
     int buffSize = 0;
     ioctl(inotifyFd, FIONREAD, (char *) &buffSize);

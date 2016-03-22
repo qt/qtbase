@@ -596,3 +596,5 @@ void QStackedLayout::setStackingMode(StackingMode stackingMode)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qstackedlayout.cpp"

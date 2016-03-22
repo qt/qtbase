@@ -352,7 +352,7 @@ void QSocks5BindStore::add(qintptr socketDescriptor, QSocks5BindData *bindData)
 {
     QMutexLocker lock(&mutex);
     if (store.contains(socketDescriptor)) {
-        // qDebug() << "delete it";
+        // qDebug("delete it");
     }
     bindData->timeStamp.start();
     store.insert(socketDescriptor, bindData);
@@ -370,9 +370,11 @@ bool QSocks5BindStore::contains(qintptr socketDescriptor)
 QSocks5BindData *QSocks5BindStore::retrieve(qintptr socketDescriptor)
 {
     QMutexLocker lock(&mutex);
-    if (!store.contains(socketDescriptor))
+    const auto it = store.constFind(socketDescriptor);
+    if (it == store.cend())
         return 0;
-    QSocks5BindData *bindData = store.take(socketDescriptor);
+    QSocks5BindData *bindData = it.value();
+    store.erase(it);
     if (bindData) {
         if (bindData->controlSocket->thread() != QThread::currentThread()) {
             qWarning("Can not access socks5 bind data from different thread");
@@ -887,6 +889,7 @@ void QSocks5SocketEnginePrivate::parseRequestMethodReply()
         localPort = port;
 
         if (mode == ConnectMode) {
+            inboundStreamCount = outboundStreamCount = 1;
             socks5State = Connected;
             // notify the upper layer that we're done
             q->setState(QAbstractSocket::ConnectedState);
@@ -1047,6 +1050,7 @@ bool QSocks5SocketEngine::initialize(qintptr socketDescriptor, QAbstractSocket::
         d->localAddress = bindData->localAddress;
         d->peerPort = bindData->peerPort;
         d->peerAddress = bindData->peerAddress;
+        d->inboundStreamCount = d->outboundStreamCount = 1;
         delete bindData;
 
         QObject::connect(d->data->controlSocket, SIGNAL(connected()), this, SLOT(_q_controlSocketConnected()),
@@ -1187,7 +1191,7 @@ void QSocks5SocketEnginePrivate::_q_controlSocketReadNotification()
         case Connected: {
             QByteArray buf;
             if (!data->authenticator->unSeal(data->controlSocket, &buf)) {
-                // qDebug() << "unseal error maybe need to wait for more data";
+                // qDebug("unseal error maybe need to wait for more data");
             }
             if (buf.size()) {
                 QSOCKS5_DEBUG << dump(buf);
@@ -1486,6 +1490,7 @@ void QSocks5SocketEngine::close()
         }
         d->data->controlSocket->close();
     }
+    d->inboundStreamCount = d->outboundStreamCount = 0;
 #ifndef QT_NO_UDPSOCKET
     if (d->udpData && d->udpData->udpSocket)
         d->udpData->udpSocket->close();

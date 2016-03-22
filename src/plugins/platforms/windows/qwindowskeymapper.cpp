@@ -1253,7 +1253,12 @@ QList<int> QWindowsKeyMapper::possibleKeys(const QKeyEvent *e) const
 {
     QList<int> result;
 
-    const KeyboardLayoutItem &kbItem = keyLayout[e->nativeVirtualKey()];
+
+    const quint32 nativeVirtualKey = e->nativeVirtualKey();
+    if (nativeVirtualKey > 255)
+        return result;
+
+    const KeyboardLayoutItem &kbItem = keyLayout[nativeVirtualKey];
     if (!kbItem.exists)
         return result;
 

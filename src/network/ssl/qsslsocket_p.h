@@ -179,7 +179,9 @@ public:
     void _q_stateChangedSlot(QAbstractSocket::SocketState);
     void _q_errorSlot(QAbstractSocket::SocketError);
     void _q_readyReadSlot();
+    void _q_channelReadyReadSlot(int);
     void _q_bytesWrittenSlot(qint64);
+    void _q_channelBytesWrittenSlot(int, qint64);
     void _q_flushWriteBuffer();
     void _q_flushReadBuffer();
     void _q_resumeImplementation();

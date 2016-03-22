@@ -227,9 +227,9 @@ void QOffscreenX11GLXContext::swapBuffers(QPlatformSurface *)
 {
 }
 
-void (*QOffscreenX11GLXContext::getProcAddress(const QByteArray &procName)) ()
+QFunctionPointer QOffscreenX11GLXContext::getProcAddress(const char *procName)
 {
-    return (void (*)())glXGetProcAddressARB(reinterpret_cast<const GLubyte *>(procName.constData()));
+    return (QFunctionPointer)glXGetProcAddressARB(reinterpret_cast<const GLubyte *>(procName));
 }
 
 QSurfaceFormat QOffscreenX11GLXContext::format() const

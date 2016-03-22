@@ -164,7 +164,7 @@ bool QMimeTypeParserBase::parseNumber(const QStringRef &n, int *target, QString 
 {
     bool ok;
     *target = n.toInt(&ok);
-    if (!ok) {
+    if (Q_UNLIKELY(!ok)) {
         *errorMessage = QLatin1String("Not a number '") + n + QLatin1String("'.");
         return false;
     }
@@ -325,9 +325,13 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
         }
     }
 
-    if (reader.hasError()) {
-        if (errorMessage)
-            *errorMessage = QString::fromLatin1("An error has been encountered at line %1 of %2: %3:").arg(reader.lineNumber()).arg(fileName, reader.errorString());
+    if (Q_UNLIKELY(reader.hasError())) {
+        if (errorMessage) {
+            *errorMessage = QString::asprintf("An error has been encountered at line %lld of %ls: %ls:",
+                                              reader.lineNumber(),
+                                              qUtf16Printable(fileName),
+                                              qUtf16Printable(reader.errorString()));
+        }
         return false;
     }
 

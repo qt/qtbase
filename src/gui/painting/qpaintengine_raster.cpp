@@ -1163,7 +1163,7 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
         if (s->matrix.type() <= QTransform::TxScale
             && path.isRect()) {
 #ifdef QT_DEBUG_DRAW
-            qDebug() << " --- optimizing vector clip to rect clip...";
+            qDebug(" --- optimizing vector clip to rect clip...");
 #endif
             const qreal *points = path.points();
             QRectF r(points[0], points[1], points[4]-points[0], points[5]-points[1]);

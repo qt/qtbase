@@ -1102,17 +1102,67 @@ static QAquaWidgetSize qt_aqua_guess_size(const QWidget *widg, QSize large, QSiz
 }
 #endif
 
-static void qt_drawFocusRingOnPath(CGContextRef cg, NSBezierPath *focusRingPath)
+void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, qreal radius) const
 {
-    CGContextSaveGState(cg);
-    [NSGraphicsContext saveGraphicsState];
-    [NSGraphicsContext setCurrentContext:[NSGraphicsContext
-         graphicsContextWithGraphicsPort:(CGContextRef)cg flipped:NO]];
-    NSSetFocusRingStyle(NSFocusRingOnly);
-    [focusRingPath setClip]; // Clear clip path to avoid artifacts when rendering the cursor at zero pos
-    [focusRingPath fill];
-    [NSGraphicsContext restoreGraphicsState];
-    CGContextRestoreGState(cg);
+    qreal pixelRatio = p->device()->devicePixelRatioF();
+    static const QString keyFormat = QLatin1String("$qt_focusring%1-%2-%3-%4");
+    const QString &key = keyFormat.arg(hMargin).arg(vMargin).arg(radius).arg(pixelRatio);
+    QPixmap focusRingPixmap;
+    const qreal size = radius * 2 + 5;
+
+    if (!QPixmapCache::find(key, focusRingPixmap)) {
+        focusRingPixmap = QPixmap((QSize(size, size) + 2 * QSize(hMargin, vMargin)) * pixelRatio);
+        focusRingPixmap.fill(Qt::transparent);
+        focusRingPixmap.setDevicePixelRatio(pixelRatio);
+        {
+            QMacAutoReleasePool pool;
+            NSBezierPath *focusRingPath;
+            if (radius > 0)
+                focusRingPath = [NSBezierPath bezierPathWithRoundedRect:NSMakeRect(hMargin, vMargin, size, size)
+                                                                xRadius:radius
+                                                                yRadius:radius];
+            else
+                focusRingPath = [NSBezierPath bezierPathWithRect:NSMakeRect(hMargin, vMargin, size, size)];
+            [NSGraphicsContext saveGraphicsState];
+            QMacCGContext gc(&focusRingPixmap);
+            [NSGraphicsContext setCurrentContext:[NSGraphicsContext graphicsContextWithGraphicsPort:(CGContextRef)gc
+                                                                                            flipped:NO]];
+            NSSetFocusRingStyle(NSFocusRingOnly);
+            [focusRingPath fill];
+            [NSGraphicsContext restoreGraphicsState];
+        }
+        QPixmapCache::insert(key, focusRingPixmap);
+    }
+
+    // Add 2 for the actual ring tickness going inwards
+    const qreal hCornerSize = 2 + hMargin + radius;
+    const qreal vCornerSize = 2 + vMargin + radius;
+    const qreal shCornerSize = hCornerSize * pixelRatio;
+    const qreal svCornerSize = vCornerSize * pixelRatio;
+    // top-left corner
+    p->drawPixmap(QPointF(targetRect.left(), targetRect.top()), focusRingPixmap,
+                  QRectF(0, 0, shCornerSize, svCornerSize));
+    // top-right corner
+    p->drawPixmap(QPointF(targetRect.right() - hCornerSize + 1, targetRect.top()), focusRingPixmap,
+                  QRectF(focusRingPixmap.width() - shCornerSize, 0, shCornerSize, svCornerSize));
+    // bottom-left corner
+    p->drawPixmap(QPointF(targetRect.left(), targetRect.bottom() - vCornerSize + 1), focusRingPixmap,
+                  QRectF(0, focusRingPixmap.height() - svCornerSize, shCornerSize, svCornerSize));
+    // bottom-right corner
+    p->drawPixmap(QPointF(targetRect.right() - hCornerSize + 1, targetRect.bottom() - vCornerSize + 1), focusRingPixmap,
+                  QRect(focusRingPixmap.width() - shCornerSize, focusRingPixmap.height() - svCornerSize, shCornerSize, svCornerSize));
+    // top edge
+    p->drawPixmap(QRectF(targetRect.left() + hCornerSize, targetRect.top(), targetRect.width() - 2 * hCornerSize, vCornerSize), focusRingPixmap,
+                  QRect(shCornerSize, 0, focusRingPixmap.width() - 2 * shCornerSize, svCornerSize));
+    // bottom edge
+    p->drawPixmap(QRectF(targetRect.left() + hCornerSize, targetRect.bottom() - vCornerSize + 1, targetRect.width() - 2 * hCornerSize, vCornerSize), focusRingPixmap,
+                  QRect(shCornerSize, focusRingPixmap.height() - svCornerSize, focusRingPixmap.width() - 2 * shCornerSize, svCornerSize));
+    // left edge
+    p->drawPixmap(QRectF(targetRect.left(), targetRect.top() + vCornerSize, hCornerSize, targetRect.height() - 2 * vCornerSize), focusRingPixmap,
+                  QRect(0, svCornerSize, shCornerSize, focusRingPixmap.width() - 2 * svCornerSize));
+    // right edge
+    p->drawPixmap(QRectF(targetRect.right() - hCornerSize + 1, targetRect.top() + vCornerSize, hCornerSize, targetRect.height() - 2 * vCornerSize), focusRingPixmap,
+                  QRect(focusRingPixmap.width() - shCornerSize, svCornerSize, shCornerSize, focusRingPixmap.width() - 2 * svCornerSize));
 }
 
 QAquaWidgetSize QMacStylePrivate::effectiveAquaSizeConstrain(const QStyleOption *option,
@@ -3922,12 +3972,11 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     }
                 }
 
-                NSBezierPath *pushButtonFocusRingPath;
-                if (bdi.kind == kThemeBevelButton)
-                    pushButtonFocusRingPath = [NSBezierPath bezierPathWithRect:NSRectFromCGRect(focusRect)];
-                else
-                    pushButtonFocusRingPath = [NSBezierPath bezierPathWithRoundedRect:NSRectFromCGRect(focusRect) xRadius:4 yRadius:4];
-                qt_drawFocusRingOnPath(cg, pushButtonFocusRingPath);
+                const qreal radius = bdi.kind == kThemeBevelButton ? 0 : 4;
+                const int hMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameHMargin, btn, w);
+                const int vMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameVMargin, btn, w);
+                const QRect focusTargetRect(focusRect.origin.x, focusRect.origin.y, focusRect.size.width, focusRect.size.height);
+                d->drawFocusRing(p, focusTargetRect.adjusted(-hMargin, -vMargin, hMargin, vMargin), hMargin, vMargin, radius);
             }
 
             if (hasMenu && (!usingYosemiteOrLater || bdi.kind == kThemeBevelButton)) {
@@ -4365,12 +4414,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         }
         break;
     case CE_FocusFrame: {
-        int xOff = proxy()->pixelMetric(PM_FocusFrameHMargin, opt, w);
-        int yOff = proxy()->pixelMetric(PM_FocusFrameVMargin, opt, w);
-        NSRect rect = NSMakeRect(xOff+opt->rect.x(), yOff+opt->rect.y(), opt->rect.width() - 2 * xOff,
-                                 opt->rect.height() - 2 * yOff);
-        NSBezierPath *focusFramePath = [NSBezierPath bezierPathWithRect:rect];
-        qt_drawFocusRingOnPath(cg, focusFramePath);
+        const int hMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameHMargin, opt, w);
+        const int vMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameVMargin, opt, w);
+        d->drawFocusRing(p, opt->rect, hMargin, vMargin);
         break; }
     case CE_MenuItem:
     case CE_MenuEmptyArea:
@@ -4582,7 +4628,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             HIRect menuRect = qt_hirectForQRect(mi->menuRect);
             HIRect itemRect = qt_hirectForQRect(mi->rect);
 
-            if ((opt->state & State_Selected) && (opt->state & State_Enabled) && (opt->state & State_Sunken)){
+            const bool selected = (opt->state & State_Selected) && (opt->state & State_Enabled) && (opt->state & State_Sunken);
+            if (selected) {
                 // Draw a selected menu item background:
                 HIThemeMenuItemDrawInfo mdi;
                 mdi.version = qt_mac_hitheme_version;
@@ -4610,7 +4657,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                                 Qt::AlignCenter | Qt::TextHideMnemonic | Qt::TextDontClip
                                 | Qt::TextSingleLine,
                                 mi->palette, mi->state & State_Enabled,
-                                mi->text, QPalette::ButtonText);
+                                mi->text, selected ? QPalette::HighlightedText : QPalette::ButtonText);
             }
         }
         break;

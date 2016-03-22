@@ -1635,7 +1635,7 @@ public:
     };
 
     enum ScrollPhase {
-        NoScrollPhase = 0, // Make public in 5.7 or asap
+        NoScrollPhase = 0,
         ScrollBegin,
         ScrollUpdate,
         ScrollEnd

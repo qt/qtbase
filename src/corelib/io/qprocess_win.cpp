@@ -665,7 +665,8 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
             return false;
         if (WaitForSingleObjectEx(pid->hProcess, 0, false) == WAIT_OBJECT_0) {
             bool readyReadEmitted = drainOutputPipes();
-            _q_processDied();
+            if (pid)
+                _q_processDied();
             return readyReadEmitted;
         }
 
@@ -683,10 +684,7 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
     QIncrementalSleepTimer timer(msecs);
 
     forever {
-        // Check if we have any data pending: the pipe writer has
-        // bytes waiting to written, or it has written data since the
-        // last time we called stdinChannel.writer->waitForWrite().
-        bool pendingDataInPipe = stdinChannel.writer && (stdinChannel.writer->bytesToWrite() || stdinChannel.writer->hadWritten());
+        bool pendingDataInPipe = stdinChannel.writer && stdinChannel.writer->bytesToWrite();
 
         // If we don't have pending data, and our write buffer is
         // empty, we fail.
@@ -770,7 +768,8 @@ bool QProcessPrivate::waitForFinished(int msecs)
 
         if (WaitForSingleObject(pid->hProcess, timer.nextSleepTime()) == WAIT_OBJECT_0) {
             drainOutputPipes();
-            _q_processDied();
+            if (pid)
+                _q_processDied();
             return true;
         }
 
@@ -813,7 +812,6 @@ qint64 QProcessPrivate::writeToStdin(const char *data, qint64 maxlen)
         stdinChannel.writer = new QWindowsPipeWriter(stdinChannel.pipe[1], q);
         QObjectPrivate::connect(stdinChannel.writer, &QWindowsPipeWriter::canWrite,
                                 this, &QProcessPrivate::_q_canWrite);
-        stdinChannel.writer->start();
     }
 
     return stdinChannel.writer->write(data, maxlen);

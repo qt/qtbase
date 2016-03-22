@@ -26,4 +26,6 @@ contains(QT_CONFIG,egl) {
         LIBS_PRIVATE += $$QMAKE_LIBS_X11
     }
     CONFIG += egl
+
+    LIBS_PRIVATE += $$QMAKE_LIBS_DYNLOAD
 }

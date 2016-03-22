@@ -1746,4 +1746,6 @@ QMenu *QMainWindow::createPopupMenu()
 
 QT_END_NAMESPACE
 
+#include "moc_qmainwindow.cpp"
+
 #endif // QT_NO_MAINWINDOW

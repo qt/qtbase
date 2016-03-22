@@ -216,7 +216,7 @@ QJsonObject AndroidStyle::loadStyleData()
     }
 
     if (Q_UNLIKELY(!document.isObject())) {
-        qCritical() << "Style.json does not contain a valid style.";
+        qCritical("Style.json does not contain a valid style.");
         return QJsonObject();
     }
     return document.object();

@@ -144,9 +144,11 @@ else:unix {
     SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp tools/qtimezoneprivate_tz.cpp
 }
 else:win32 {
-    SOURCES += tools/qelapsedtimer_win.cpp tools/qlocale_win.cpp
-    !winrt: SOURCES += tools/qtimezoneprivate_win.cpp
+    SOURCES += tools/qelapsedtimer_win.cpp \
+               tools/qlocale_win.cpp \
+               tools/qtimezoneprivate_win.cpp
     winphone: LIBS_PRIVATE += -lWindowsPhoneGlobalizationUtil
+    winrt-*-msvc2013: LIBS += advapi32.lib
 } else:integrity:SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp
 else:SOURCES += tools/qelapsedtimer_generic.cpp
 
@@ -204,7 +206,7 @@ contains(QT_CONFIG, doubleconversion) {
 }
 
 # Note: libm should be present by default becaue this is C++
-!macx-icc:!vxworks:!haiku:unix:LIBS_PRIVATE += -lm
+unix:!macx-icc:!vxworks:!haiku:!integrity: LIBS_PRIVATE += -lm
 
 TR_EXCLUDE += ../3rdparty/*
 

@@ -30,6 +30,7 @@
 #include <QtCore/QCoreApplication>
 #include <QtTest/QtTest>
 #ifdef QT_GUI_LIB
+#include <QtGui/QColor>
 #include <QtGui/QImage>
 #include <QtGui/QPixmap>
 #endif
@@ -135,6 +136,7 @@ private slots:
     void compareQListInt();
     void compareQListDouble();
 #ifdef QT_GUI_LIB
+    void compareQColor();
     void compareQPixmaps();
     void compareQPixmaps_data();
     void compareQImages();
@@ -346,6 +348,15 @@ void tst_Cmptest::compareQListDouble()
 }
 
 #ifdef QT_GUI_LIB
+void tst_Cmptest::compareQColor()
+{
+    const QColor yellow(Qt::yellow);
+    const QColor yellowFromName(QStringLiteral("yellow"));
+    const QColor green(Qt::green);
+    QCOMPARE(yellow, yellowFromName);
+    QCOMPARE(yellow, green);
+}
+
 void tst_Cmptest::compareQPixmaps_data()
 {
     QTest::addColumn<QPixmap>("opA");

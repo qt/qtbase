@@ -480,6 +480,7 @@ void QNativeSocketEngine::close()
     d->localAddress.clear();
     d->peerPort = 0;
     d->peerAddress.clear();
+    d->inboundStreamCount = d->outboundStreamCount = 0;
 }
 
 bool QNativeSocketEngine::joinMulticastGroup(const QHostAddress &groupAddress, const QNetworkInterface &iface)
@@ -1082,6 +1083,7 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
     localAddress.clear();
     peerPort = 0;
     peerAddress.clear();
+    inboundStreamCount = outboundStreamCount = 0;
 
     HRESULT hr;
     if (socketType == QAbstractSocket::TcpSocket) {
@@ -1117,6 +1119,7 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
             hr = info->get_RemotePort(tmpHString.GetAddressOf());
             Q_ASSERT_SUCCEEDED(hr);
             peerPort = qt_QStringFromHString(tmpHString).toInt();
+            inboundStreamCount = outboundStreamCount = 1;
         }
     } else if (socketType == QAbstractSocket::UdpSocket) {
         ComPtr<IHostName> hostName;
@@ -1144,6 +1147,7 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
             hr = info->get_RemotePort(tmpHString.GetAddressOf());
             Q_ASSERT_SUCCEEDED(hr);
             peerPort = qt_QStringFromHString(tmpHString).toInt();
+            inboundStreamCount = outboundStreamCount = 1;
         }
     }
     return true;

@@ -56,7 +56,7 @@ public:
 
     void swapBuffers(QPlatformSurface *surface);
 
-    void (*getProcAddress(const QByteArray &procName)) ();
+    QFunctionPointer getProcAddress(const char *procName);
 
     EGLContext eglContext() const;
 private:

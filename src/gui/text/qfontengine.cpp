@@ -246,8 +246,8 @@ Q_AUTOTEST_EXPORT QList<QFontEngine *> QFontEngine_stopCollectingEngines()
 
 QFontEngine::QFontEngine(Type type)
     : m_type(type), ref(0),
-      font_(0), font_destroy_func(0),
-      face_(0), face_destroy_func(0),
+      font_(),
+      face_(),
       m_minLeftBearing(kBearingNotInitialized),
       m_minRightBearing(kBearingNotInitialized)
 {
@@ -269,17 +269,6 @@ QFontEngine::QFontEngine(Type type)
 
 QFontEngine::~QFontEngine()
 {
-    m_glyphCaches.clear();
-
-    if (font_ && font_destroy_func) {
-        font_destroy_func(font_);
-        font_ = 0;
-    }
-    if (face_ && face_destroy_func) {
-        face_destroy_func(face_);
-        face_ = 0;
-    }
-
 #ifdef QT_BUILD_INTERNAL
     if (enginesCollector)
         enginesCollector->removeOne(this);
@@ -334,10 +323,9 @@ void *QFontEngine::harfbuzzFont() const
         hbFont->x_scale = (((qint64)hbFont->x_ppem << 6) * 0x10000L + (emSquare >> 1)) / emSquare;
         hbFont->y_scale = (((qint64)hbFont->y_ppem << 6) * 0x10000L + (emSquare >> 1)) / emSquare;
 
-        font_ = (void *)hbFont;
-        font_destroy_func = free;
+        font_ = Holder(hbFont, free);
     }
-    return font_;
+    return font_.get();
 }
 
 void *QFontEngine::harfbuzzFace() const
@@ -357,10 +345,9 @@ void *QFontEngine::harfbuzzFace() const
         Q_CHECK_PTR(hbFace);
         hbFace->isSymbolFont = symbol;
 
-        face_ = (void *)hbFace;
-        face_destroy_func = hb_freeFace;
+        face_ = Holder(hbFace, hb_freeFace);
     }
-    return face_;
+    return face_.get();
 }
 
 bool QFontEngine::supportsScript(QChar::Script script) const

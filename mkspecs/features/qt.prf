@@ -160,21 +160,8 @@ qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
         contains(qt_module_deps, core) {
     relative_qt_rpath:!isEmpty(QMAKE_REL_RPATH_BASE):contains(INSTALLS, target):\
             isEmpty(target.files):isEmpty(target.commands):isEmpty(target.extra) {
-        mac {
-            if(equals(TEMPLATE, app):app_bundle)|\
-                    if(equals(TEMPLATE, lib):plugin:plugin_bundle) {
-                ios:  binpath = $$target.path/$${TARGET}.app
-                else: binpath = $$target.path/$${TARGET}.app/Contents/MacOS
-            } else: equals(TEMPLATE, lib):!plugin:lib_bundle {
-                binpath = $$target.path/$${TARGET}.framework/Versions/Current
-            } else {
-                binpath = $$target.path
-            }
-        } else {
-            binpath = $$target.path
-        }
         # NOT the /dev property, as INSTALLS use host paths
-        QMAKE_RPATHDIR += $$relative_path($$[QT_INSTALL_LIBS], $$binpath)
+        QMAKE_RPATHDIR += $$relative_path($$[QT_INSTALL_LIBS], $$qtRelativeRPathBase())
     } else {
         QMAKE_RPATHDIR += $$[QT_INSTALL_LIBS/dev]
     }

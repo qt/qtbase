@@ -909,7 +909,7 @@ template <class Key, class T>
 void QMap<Key, T>::dump() const
 {
     const_iterator it = begin();
-    qDebug() << "map dump:";
+    qDebug("map dump:");
     while (it != end()) {
         const QMapNodeBase *n = it.i;
         int depth = 0;
@@ -922,7 +922,7 @@ void QMap<Key, T>::dump() const
                  << it.key() << it.value();
         ++it;
     }
-    qDebug() << "---------";
+    qDebug("---------");
 }
 #endif
 

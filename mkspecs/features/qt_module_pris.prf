@@ -10,7 +10,7 @@
 #
 
 load(qt_build_paths)
-force_independent|!isEmpty(MODULE_FWD_INCLUDES): \
+force_independent|split_incpath: \
     CONFIG += need_fwd_pri
 mod_work_pfx = $$MODULE_QMAKE_OUTDIR/mkspecs/modules
 need_fwd_pri: \
@@ -42,8 +42,11 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         module_libs = "\$\$QT_MODULE_HOST_LIB_BASE"
     else: \
         module_libs = "\$\$QT_MODULE_LIB_BASE"
-    !isEmpty(QT_PRIVATE): \
-        module_rundep = "QT.$${MODULE_ID}.run_depends = $$replace(QT_PRIVATE, -private$, _private)"
+    # In addition to the library's private deps, the private module's deps
+    # are logically runtime deps of the public module.
+    runtime_deps = $$QT_PRIVATE $$QT_FOR_PRIVATE
+    !isEmpty(runtime_deps): \
+        module_rundep = "QT.$${MODULE_ID}.run_depends = $$replace(runtime_deps, -private$, _private)"
     else: \
         module_rundep =
     module_build_type = v2

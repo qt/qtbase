@@ -553,7 +553,7 @@ void QQnxScreenEventHandler::handleDisplayEvent(screen_event_t event)
             if (val[0] == 0 && val[1] == 0) //If screen size is invalid, wait for the next event
                 return;
 
-            qScreenEventDebug() << "creating new QQnxScreen for newly attached display";
+            qScreenEventDebug("creating new QQnxScreen for newly attached display");
             m_qnxIntegration->createDisplay(nativeDisplay, false /* not primary, we assume */);
         }
     } else if (!isAttached) {
@@ -566,7 +566,7 @@ void QQnxScreenEventHandler::handleDisplayEvent(screen_event_t event)
 
         if (!screen->isPrimaryScreen()) {
             // libscreen display is deactivated, let's remove the QQnxScreen / QScreen
-            qScreenEventDebug() << "removing display";
+            qScreenEventDebug("removing display");
             m_qnxIntegration->removeDisplay(screen);
         }
     }

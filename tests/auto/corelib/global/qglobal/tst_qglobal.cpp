@@ -732,8 +732,8 @@ void tst_QGlobal::testqOverload()
     QVERIFY(qOverload<QByteArray>(&freeOverloaded) ==
              static_cast<void (*)(QByteArray)>(&freeOverloaded));
 
-    QVERIFY((qOverload<QByteArray, const QString &>(&freeOverloaded)),
-             static_cast<void (*)(QByteArray, const QString &)>(&freeOverloaded));
+    QVERIFY((qOverload<QByteArray, const QString &>(&freeOverloaded) ==
+             static_cast<void (*)(QByteArray, const QString &)>(&freeOverloaded)));
 
     // value returning free overloaded functions
     QVERIFY(qOverload<>(&freeOverloadedGet) ==

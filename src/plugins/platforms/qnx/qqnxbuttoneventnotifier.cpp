@@ -162,7 +162,7 @@ void QQnxButtonEventNotifier::updateButtonStates()
                     break;
 
                 default:
-                    qButtonDebug() << "Unknown hardware button";
+                    qButtonDebug("Unknown hardware button");
                     continue;
             }
 

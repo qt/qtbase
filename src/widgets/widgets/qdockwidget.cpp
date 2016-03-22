@@ -1682,5 +1682,6 @@ QT_END_NAMESPACE
 
 #include "qdockwidget.moc"
 #include "moc_qdockwidget.cpp"
+#include "moc_qdockwidget_p.cpp"
 
 #endif // QT_NO_DOCKWIDGET

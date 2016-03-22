@@ -55,11 +55,11 @@ QOpenWFDDevice::QOpenWFDDevice(QOpenWFDIntegration *integration, WFDint device_e
 {
     mDevice = wfdCreateDevice(WFD_DEFAULT_DEVICE_ID,WFD_NONE);
     if (mDevice == WFD_INVALID_HANDLE)
-        qDebug() << "failed to create device";
+        qDebug("failed to create device");
 
     mEvent = wfdCreateEvent(mDevice,0);
     if (mEvent == WFD_INVALID_HANDLE)
-        qDebug() << "failed to create event handle";
+        qDebug("failed to create event handle");
 
     //initialize pipelines for device.
     wfdEnumeratePipelines(mDevice,WFD_NONE,0,WFD_NONE);
@@ -181,22 +181,22 @@ void QOpenWFDDevice::readEvents(WFDtime wait)
     case WFD_EVENT_NONE:
         return;
     case WFD_EVENT_DESTROYED:
-        qDebug() << "Event or Device destoryed!";
+        qDebug("Event or Device destoryed!");
         return;
     case WFD_EVENT_PORT_ATTACH_DETACH:
         handlePortAttachDetach();
         break;
     case WFD_EVENT_PORT_PROTECTION_FAILURE:
-        qDebug() << "Port protection event handling not implemented";
+        qDebug("Port protection event handling not implemented");
         break;
     case WFD_EVENT_PIPELINE_BIND_SOURCE_COMPLETE:
         handlePipelineBindSourceComplete();
         break;
     case WFD_EVENT_PIPELINE_BIND_MASK_COMPLETE:
-        qDebug() << "Pipeline bind mask event handling not implemented";
+        qDebug("Pipeline bind mask event handling not implemented");
         break;
     default:
-        qDebug() << "Not recognised event type";
+        qDebug("Unrecognized event type: %lu", static_cast<long unsigned int>(type));
         break;
     }
 
@@ -206,10 +206,10 @@ void QOpenWFDDevice::readEvents(WFDtime wait)
 void QOpenWFDDevice::initializeGbmAndEgl()
 {
 
-    qDebug() << "initializing GBM and EGL";
+    qDebug("initializing GBM and EGL");
     int fd = wfdGetDeviceAttribi(mDevice,WFD_DEVICE_ID);
     if (fd < 0) {
-        qDebug() << "failed to get WFD_DEVICE_ID";
+        qDebug("failed to get WFD_DEVICE_ID");
     }
 
     mGbmDevice = gbm_create_device(fd);
@@ -221,12 +221,12 @@ void QOpenWFDDevice::initializeGbmAndEgl()
     EGLint minor, major;
 
     if (!eglInitialize(mEglDisplay,&major,&minor)) {
-        qDebug() << "failed to initialize egl";
+        qDebug("failed to initialize egl");
     }
 
     QByteArray eglExtensions = eglQueryString(mEglDisplay, EGL_EXTENSIONS);
     if (!eglExtensions.contains("EGL_KHR_surfaceless_opengl")) {
-        qDebug() << "This egl implementation does not have the required EGL extension EGL_KHR_surfaceless_opengl";
+        qDebug("This egl implementation does not have the required EGL extension EGL_KHR_surfaceless_opengl");
     }
 
     eglBindAPI(EGL_OPENGL_ES_API);
@@ -238,7 +238,7 @@ void QOpenWFDDevice::initializeGbmAndEgl()
 
     mEglContext = eglCreateContext(mEglDisplay,NULL,EGL_NO_CONTEXT,contextAttribs);
     if (mEglContext == EGL_NO_CONTEXT) {
-        qDebug() << "Failed to create EGL context";
+        qDebug("Failed to create EGL context");
     }
 
     eglCreateImage = (PFNEGLCREATEIMAGEKHRPROC) eglGetProcAddress("eglCreateImageKHR");
@@ -269,7 +269,7 @@ void QOpenWFDDevice::handlePortAttachDetach()
         for (int i = 0; i < mPorts.size(); i++) {
             if (mPorts.at(i)->portId() == id) {
                 indexToAdd = i;
-                qDebug() << "found index to attach";
+                qDebug("found index to attach");
                 break;
             }
         }
@@ -301,7 +301,7 @@ void QOpenWFDDevice::handlePipelineBindSourceComplete()
 
     WFDint overflow = wfdGetEventAttribi(mDevice,mEvent, WFD_EVENT_PIPELINE_BIND_QUEUE_OVERFLOW);
     if (overflow == WFD_TRUE) {
-        qDebug() << "PIPELINE_BIND_QUEUE_OVERFLOW event occurred";
+        qDebug("PIPELINE_BIND_QUEUE_OVERFLOW event occurred");
     }
 
     WFDint pipelineId = wfdGetEventAttribi(mDevice,mEvent,WFD_EVENT_PIPELINE_BIND_PIPELINE_ID);

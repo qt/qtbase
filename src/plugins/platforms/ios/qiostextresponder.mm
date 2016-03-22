@@ -261,7 +261,7 @@
         // as well, as the IM state that we were based on may have been invalidated when
         // IM was switched off.
 
-        qImDebug() << "IM was turned on, we need to check hints and platform data as well";
+        qImDebug("IM was turned on, we need to check hints and platform data as well");
         updatedProperties |= (Qt::ImHints | Qt::ImPlatformData);
     }
 
@@ -311,7 +311,7 @@
     // Don't allow activation events of the window that we're doing text on behalf on
     // to steal responder.
     if (FirstResponderCandidate::currentCandidate() == [self nextResponder]) {
-        qImDebug() << "not allowing parent window to steal responder";
+        qImDebug("not allowing parent window to steal responder");
         return NO;
     }
 
@@ -334,7 +334,7 @@
         if ([self currentImeState:Qt::ImEnabled].toBool()) {
             // The current focus object expects text input, but there
             // is no keyboard to get input from. So we clear focus.
-            qImDebug() << "no keyboard available, clearing focus object";
+            qImDebug("no keyboard available, clearing focus object");
             m_inputContext->clearCurrentFocusObject();
         }
     } else {
@@ -342,7 +342,7 @@
         // another QIOSTextResponder was made first-responder, another UIView was
         // made first-responder, or the first-responder was cleared globally. In
         // either of these cases we don't have to do anything.
-        qImDebug() << "lost first responder, but not clearing focus object";
+        qImDebug("lost first responder, but not clearing focus object");
     }
 
     return YES;

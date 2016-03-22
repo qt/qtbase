@@ -7,8 +7,6 @@ win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x66000000
 
 QMAKE_DOCS = $$PWD/doc/qtconcurrent.qdocconf
 
-load(qt_module)
-
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
 
 SOURCES += \
@@ -41,3 +39,5 @@ HEADERS += \
 contains(QT_CONFIG, clock-gettime) {
     linux-*|hpux-*|solaris-*: LIBS_PRIVATE *= -lrt
 }
+
+load(qt_module)

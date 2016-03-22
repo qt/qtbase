@@ -41,6 +41,7 @@
 
 #include "qopenwfdwindow.h"
 #include "qopenwfdscreen.h"
+#include <dlfcn.h>
 
 QOpenWFDGLContext::QOpenWFDGLContext(QOpenWFDDevice *device)
     : QPlatformOpenGLContext()
@@ -60,7 +61,7 @@ bool QOpenWFDGLContext::makeCurrent(QPlatformSurface *surface)
     EGLDisplay display = mWfdDevice->eglDisplay();
     EGLContext context = mWfdDevice->eglContext();
     if (!eglMakeCurrent(display,EGL_NO_SURFACE,EGL_NO_SURFACE,context)) {
-        qDebug() << "GLContext: eglMakeCurrent FAILED!";
+        qDebug("GLContext: eglMakeCurrent FAILED!");
     }
 
     QPlatformWindow *window = static_cast<QPlatformWindow *>(surface);
@@ -84,9 +85,12 @@ void QOpenWFDGLContext::swapBuffers(QPlatformSurface *surface)
     screen->swapBuffers();
 }
 
-void (*QOpenWFDGLContext::getProcAddress(const QByteArray &procName)) ()
+QFunctionPointer QOpenWFDGLContext::getProcAddress(const char *procName)
 {
-    return eglGetProcAddress(procName.data());
+    QFunctionPointer proc = (QFunctionPointer) eglGetProcAddress(procName);
+    if (!proc)
+        proc = (QFunctionPointer) dlsym(RTLD_DEFAULT, procName);
+    return proc;
 }
 
 EGLContext QOpenWFDGLContext::eglContext() const

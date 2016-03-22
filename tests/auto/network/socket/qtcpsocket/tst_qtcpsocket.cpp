@@ -197,6 +197,7 @@ private slots:
     void clientSendDataOnDelayedDisconnect();
     void serverDisconnectWithBuffered();
     void socketDiscardDataInWriteMode();
+    void writeOnReadBufferOverflow();
     void readNotificationsAfterBind();
 
 protected slots:
@@ -478,6 +479,8 @@ void tst_QTcpSocket::constructing()
     QCOMPARE(socket->localAddress(), QHostAddress());
     QCOMPARE((int) socket->peerPort(), 0);
     QCOMPARE(socket->peerAddress(), QHostAddress());
+    QCOMPARE(socket->readChannelCount(), 0);
+    QCOMPARE(socket->writeChannelCount(), 0);
     QCOMPARE(socket->error(), QTcpSocket::UnknownSocketError);
     QCOMPARE(socket->errorString(), QString("Unknown error"));
 
@@ -594,6 +597,8 @@ void tst_QTcpSocket::bind()
         } while (randomPort && attemptsLeft);
 
         QCOMPARE(socket->state(), QAbstractSocket::BoundState);
+        QCOMPARE(socket->readChannelCount(), 0);
+        QCOMPARE(socket->writeChannelCount(), 0);
         boundPort = socket->localPort();
         if (port)
             QCOMPARE(int(boundPort), port);
@@ -729,6 +734,8 @@ void tst_QTcpSocket::setSocketDescriptor()
     QCOMPARE(socket->socketDescriptor(), (qintptr)sock);
     QVERIFY(socket->waitForConnected(10000));
     QCOMPARE(socket->socketDescriptor(), (qintptr)sock);
+    QCOMPARE(socket->readChannelCount(), 1);
+    QCOMPARE(socket->writeChannelCount(), 1);
     delete socket;
 #ifdef Q_OS_WIN
     delete dummy;
@@ -764,6 +771,8 @@ void tst_QTcpSocket::blockingIMAP()
     QVERIFY(socket->waitForConnected(10000));
     QCOMPARE(socket->state(), QTcpSocket::ConnectedState);
     QVERIFY(socket->isValid());
+    QCOMPARE(socket->readChannelCount(), 1);
+    QCOMPARE(socket->writeChannelCount(), 1);
 
     // Read greeting
     QVERIFY(socket->waitForReadyRead(5000));
@@ -820,6 +829,8 @@ void tst_QTcpSocket::blockingIMAP()
 
     // Check that it's closed
     QCOMPARE(socket->state(), QTcpSocket::UnconnectedState);
+    QCOMPARE(socket->readChannelCount(), 0);
+    QCOMPARE(socket->writeChannelCount(), 0);
 
     delete socket;
 }
@@ -860,6 +871,8 @@ void tst_QTcpSocket::timeoutConnect()
     QVERIFY(!socket->waitForConnected(1000)); //200ms is too short when using SOCKS proxy authentication
     QCOMPARE(socket->state(), QTcpSocket::UnconnectedState);
     QCOMPARE(int(socket->error()), int(QTcpSocket::SocketTimeoutError));
+    QCOMPARE(socket->readChannelCount(), 0);
+    QCOMPARE(socket->writeChannelCount(), 0);
 
     timer.start();
     socket->connectToHost(address, 1357);
@@ -906,6 +919,8 @@ void tst_QTcpSocket::nonBlockingIMAP()
     }
 
     QCOMPARE(socket->state(), QTcpSocket::ConnectedState);
+    QCOMPARE(socket->readChannelCount(), 1);
+    QCOMPARE(socket->writeChannelCount(), 1);
 
     enterLoop(30);
     if (timeout()) {
@@ -971,6 +986,8 @@ void tst_QTcpSocket::nonBlockingIMAP()
 
     // Check that it's closed
     QCOMPARE(socket->state(), QTcpSocket::UnconnectedState);
+    QCOMPARE(socket->readChannelCount(), 0);
+    QCOMPARE(socket->writeChannelCount(), 0);
 
     delete socket;
 }
@@ -3048,6 +3065,40 @@ void tst_QTcpSocket::socketDiscardDataInWriteMode()
     QVERIFY(socket->waitForReadyRead(5000)); // discard input
     QVERIFY(socket->atEnd());
 
+    delete socket;
+}
+
+// Test waitForBytesWritten() does not fail on read buffer overflow
+void tst_QTcpSocket::writeOnReadBufferOverflow()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QTcpServer tcpServer;
+    QTcpSocket *socket = newSocket();
+
+    QVERIFY(tcpServer.listen(QHostAddress::LocalHost));
+    socket->setReadBufferSize(1);
+    socket->connectToHost(tcpServer.serverAddress(), tcpServer.serverPort());
+    QVERIFY(socket->waitForConnected(5000));
+    QCOMPARE(socket->state(), QAbstractSocket::ConnectedState);
+
+    // Accept connection on server side
+    QVERIFY2(tcpServer.waitForNewConnection(5000), "Network timeout");
+    QTcpSocket *newConnection = tcpServer.nextPendingConnection();
+    QVERIFY(newConnection != nullptr);
+    QCOMPARE(newConnection->write("1", 2), Q_INT64_C(2));
+    QVERIFY(newConnection->flush());
+
+    // Wait for buffer overflow
+    QVERIFY(socket->waitForReadyRead(5000));
+    QCOMPARE(socket->bytesAvailable(), Q_INT64_C(1));
+    // Write data and wait for successful send
+    QVERIFY(socket->putChar(0));
+    QVERIFY(socket->waitForBytesWritten(5000));
+
+    delete newConnection;
     delete socket;
 }
 

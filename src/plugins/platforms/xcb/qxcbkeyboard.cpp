@@ -676,13 +676,13 @@ void QXcbKeyboard::printKeymapError(const char *error) const
 {
     qWarning() << error;
     if (xkb_context) {
-        qWarning() << "Current XKB configuration data search paths are: ";
+        qWarning("Current XKB configuration data search paths are: ");
         for (unsigned int i = 0; i < xkb_context_num_include_paths(xkb_context); ++i)
             qWarning() << xkb_context_include_path_get(xkb_context, i);
     }
-    qWarning() << "Use QT_XKB_CONFIG_ROOT environmental variable to provide an additional search path, "
-                  "add ':' as separator to provide several search paths and/or make sure that XKB configuration data "
-                  "directory contains recent enough contents, to update please see http://cgit.freedesktop.org/xkeyboard-config/ .";
+    qWarning("Use QT_XKB_CONFIG_ROOT environmental variable to provide an additional search path, "
+             "add ':' as separator to provide several search paths and/or make sure that XKB configuration data "
+             "directory contains recent enough contents, to update please see http://cgit.freedesktop.org/xkeyboard-config/ .");
 }
 
 void QXcbKeyboard::updateKeymap()

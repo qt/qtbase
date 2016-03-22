@@ -1027,6 +1027,7 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
     localAddress.clear();
     peerPort = 0;
     peerAddress.clear();
+    inboundStreamCount = outboundStreamCount = 0;
 
     if (socketDescriptor == -1)
         return false;
@@ -1077,8 +1078,10 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
 #endif
 
     // Determine the remote address
-    if (!::getpeername(socketDescriptor, &sa.a, &sockAddrSize))
+    if (!::getpeername(socketDescriptor, &sa.a, &sockAddrSize)) {
         qt_socket_getPortAndAddress(&sa, &peerPort, &peerAddress);
+        inboundStreamCount = outboundStreamCount = 1;
+    }
 
     // Determine the socket type (UDP/TCP)
     int value = 0;
@@ -1101,10 +1104,10 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
     else if (socketType == QAbstractSocket::UdpSocket) socketTypeStr = QStringLiteral("UdpSocket");
 
     qDebug("QNativeSocketEnginePrivate::fetchConnectionParameters() local == %s:%i,"
-           " peer == %s:%i, socket == %s - %s",
+           " peer == %s:%i, socket == %s - %s, inboundStreamCount == %i, outboundStreamCount == %i",
            localAddress.toString().toLatin1().constData(), localPort,
            peerAddress.toString().toLatin1().constData(), peerPort,socketTypeStr.toLatin1().constData(),
-           socketProtocolStr.toLatin1().constData());
+           socketProtocolStr.toLatin1().constData(), inboundStreamCount, outboundStreamCount);
 #endif
     return true;
 }

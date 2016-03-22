@@ -475,7 +475,7 @@ void QQnxWindow::setParent(const QPlatformWindow *window)
         return;
 
     if (screen()->rootWindow() == this) {
-        qWarning() << "Application window cannot be reparented";
+        qWarning("Application window cannot be reparented");
         return;
     }
 

@@ -403,3 +403,5 @@ void QWindowContainer::parentWasLowered(QWidget *parent)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwindowcontainer_p.cpp"

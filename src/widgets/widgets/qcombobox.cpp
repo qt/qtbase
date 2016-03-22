@@ -3440,5 +3440,6 @@ void QComboBox::setModelColumn(int visibleColumn)
 QT_END_NAMESPACE
 
 #include "moc_qcombobox.cpp"
+#include "moc_qcombobox_p.cpp"
 
 #endif // QT_NO_COMBOBOX

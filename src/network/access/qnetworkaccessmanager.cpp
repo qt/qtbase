@@ -1125,42 +1125,40 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     Q_D(QNetworkAccessManager);
 
     bool isLocalFile = req.url().isLocalFile();
-    QString scheme = req.url().scheme().toLower();
+    QString scheme = req.url().scheme();
 
     // fast path for GET on file:// URLs
     // The QNetworkAccessFileBackend will right now only be used for PUT
-    if ((op == QNetworkAccessManager::GetOperation || op == QNetworkAccessManager::HeadOperation)
-        && (isLocalFile || scheme == QLatin1String("qrc")
-#if defined(Q_OS_ANDROID)
+    if (op == QNetworkAccessManager::GetOperation
+     || op == QNetworkAccessManager::HeadOperation) {
+        if (isLocalFile
+#ifdef Q_OS_ANDROID
             || scheme == QLatin1String("assets")
 #endif
-            )) {
-        return new QNetworkReplyFileImpl(this, req, op);
-    }
+            || scheme == QLatin1String("qrc")) {
+            return new QNetworkReplyFileImpl(this, req, op);
+        }
 
-    if ((op == QNetworkAccessManager::GetOperation || op == QNetworkAccessManager::HeadOperation)
-            && scheme == QLatin1String("data")) {
-        return new QNetworkReplyDataImpl(this, req, op);
-    }
+        if (scheme == QLatin1String("data"))
+            return new QNetworkReplyDataImpl(this, req, op);
 
-    // A request with QNetworkRequest::AlwaysCache does not need any bearer management
-    QNetworkRequest::CacheLoadControl mode =
-        static_cast<QNetworkRequest::CacheLoadControl>(
-            req.attribute(QNetworkRequest::CacheLoadControlAttribute,
+        // A request with QNetworkRequest::AlwaysCache does not need any bearer management
+        QNetworkRequest::CacheLoadControl mode =
+            static_cast<QNetworkRequest::CacheLoadControl>(
+                req.attribute(QNetworkRequest::CacheLoadControlAttribute,
                               QNetworkRequest::PreferNetwork).toInt());
-    if (mode == QNetworkRequest::AlwaysCache
-        && (op == QNetworkAccessManager::GetOperation
-        || op == QNetworkAccessManager::HeadOperation)) {
-        // FIXME Implement a QNetworkReplyCacheImpl instead, see QTBUG-15106
-        QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
-        QNetworkReplyImplPrivate *priv = reply->d_func();
-        priv->manager = this;
-        priv->backend = new QNetworkAccessCacheBackend();
-        priv->backend->manager = this->d_func();
-        priv->backend->setParent(reply);
-        priv->backend->reply = priv;
-        priv->setup(op, req, outgoingData);
-        return reply;
+        if (mode == QNetworkRequest::AlwaysCache) {
+            // FIXME Implement a QNetworkReplyCacheImpl instead, see QTBUG-15106
+            QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
+            QNetworkReplyImplPrivate *priv = reply->d_func();
+            priv->manager = this;
+            priv->backend = new QNetworkAccessCacheBackend();
+            priv->backend->manager = this->d_func();
+            priv->backend->setParent(reply);
+            priv->backend->reply = priv;
+            priv->setup(op, req, outgoingData);
+            return reply;
+        }
     }
 
 #ifndef QT_NO_BEARERMANAGEMENT

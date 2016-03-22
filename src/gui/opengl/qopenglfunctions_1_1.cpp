@@ -76,22 +76,18 @@ QOpenGLFunctions_1_1::QOpenGLFunctions_1_1()
 
 QOpenGLFunctions_1_1::~QOpenGLFunctions_1_1()
 {
-    if (d_1_0_Core && !d_1_0_Core->refs.deref()) {
-        QAbstractOpenGLFunctionsPrivate::removeFunctionsBackend(d_1_0_Core->context, QOpenGLFunctions_1_0_CoreBackend::versionStatus());
-        delete d_1_0_Core;
-    }
-    if (d_1_1_Core && !d_1_1_Core->refs.deref()) {
-        QAbstractOpenGLFunctionsPrivate::removeFunctionsBackend(d_1_1_Core->context, QOpenGLFunctions_1_1_CoreBackend::versionStatus());
-        delete d_1_1_Core;
-    }
-    if (d_1_0_Deprecated && !d_1_0_Deprecated->refs.deref()) {
-        QAbstractOpenGLFunctionsPrivate::removeFunctionsBackend(d_1_0_Deprecated->context, QOpenGLFunctions_1_0_DeprecatedBackend::versionStatus());
-        delete d_1_0_Deprecated;
-    }
-    if (d_1_1_Deprecated && !d_1_1_Deprecated->refs.deref()) {
-        QAbstractOpenGLFunctionsPrivate::removeFunctionsBackend(d_1_1_Deprecated->context, QOpenGLFunctions_1_1_DeprecatedBackend::versionStatus());
-        delete d_1_1_Deprecated;
-    }
+    if (d_1_0_Core)
+        d_1_0_Core->refs.deref();
+    Q_ASSERT(d_1_0_Core->refs.load());
+    if (d_1_1_Core)
+        d_1_1_Core->refs.deref();
+    Q_ASSERT(d_1_1_Core->refs.load());
+    if (d_1_0_Deprecated)
+        d_1_0_Deprecated->refs.deref();
+    Q_ASSERT(d_1_0_Deprecated->refs.load());
+    if (d_1_1_Deprecated)
+        d_1_1_Deprecated->refs.deref();
+    Q_ASSERT(d_1_1_Deprecated->refs.load());
 }
 
 bool QOpenGLFunctions_1_1::initializeOpenGLFunctions()
@@ -110,34 +106,18 @@ bool QOpenGLFunctions_1_1::initializeOpenGLFunctions()
         // Function pointers in the backends are resolved at creation time
         QOpenGLVersionFunctionsBackend* d = 0;
         d = QAbstractOpenGLFunctionsPrivate::functionsBackend(context, QOpenGLFunctions_1_0_CoreBackend::versionStatus());
-        if (!d) {
-            d = new QOpenGLFunctions_1_0_CoreBackend(context);
-            QAbstractOpenGLFunctionsPrivate::insertFunctionsBackend(context, QOpenGLFunctions_1_0_CoreBackend::versionStatus(), d);
-        }
         d_1_0_Core = static_cast<QOpenGLFunctions_1_0_CoreBackend*>(d);
         d->refs.ref();
 
         d = QAbstractOpenGLFunctionsPrivate::functionsBackend(context, QOpenGLFunctions_1_1_CoreBackend::versionStatus());
-        if (!d) {
-            d = new QOpenGLFunctions_1_1_CoreBackend(context);
-            QAbstractOpenGLFunctionsPrivate::insertFunctionsBackend(context, QOpenGLFunctions_1_1_CoreBackend::versionStatus(), d);
-        }
         d_1_1_Core = static_cast<QOpenGLFunctions_1_1_CoreBackend*>(d);
         d->refs.ref();
 
         d = QAbstractOpenGLFunctionsPrivate::functionsBackend(context, QOpenGLFunctions_1_0_DeprecatedBackend::versionStatus());
-        if (!d) {
-            d = new QOpenGLFunctions_1_0_DeprecatedBackend(context);
-            QAbstractOpenGLFunctionsPrivate::insertFunctionsBackend(context, QOpenGLFunctions_1_0_DeprecatedBackend::versionStatus(), d);
-        }
         d_1_0_Deprecated = static_cast<QOpenGLFunctions_1_0_DeprecatedBackend*>(d);
         d->refs.ref();
 
         d = QAbstractOpenGLFunctionsPrivate::functionsBackend(context, QOpenGLFunctions_1_1_DeprecatedBackend::versionStatus());
-        if (!d) {
-            d = new QOpenGLFunctions_1_1_DeprecatedBackend(context);
-            QAbstractOpenGLFunctionsPrivate::insertFunctionsBackend(context, QOpenGLFunctions_1_1_DeprecatedBackend::versionStatus(), d);
-        }
         d_1_1_Deprecated = static_cast<QOpenGLFunctions_1_1_DeprecatedBackend*>(d);
         d->refs.ref();
 

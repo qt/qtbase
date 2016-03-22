@@ -162,6 +162,9 @@ public:
     QString sessionId() const;
     QString sessionKey() const;
     bool isSavingSession() const;
+
+    static bool isFallbackSessionManagementEnabled();
+    static void setFallbackSessionManagementEnabled(bool);
 #endif
 
     static void sync();

@@ -102,7 +102,7 @@ public class QtService extends Service
     {
         QtApplication.InvokeResult res = QtApplication.invokeDelegate(intent, flags, startId);
         if (res.invoked)
-            return (int) res.methodReturns;
+            return (Integer) res.methodReturns;
         else
             return super.onStartCommand(intent, flags, startId);
     }
@@ -141,7 +141,7 @@ public class QtService extends Service
     {
         QtApplication.InvokeResult res = QtApplication.invokeDelegate(intent);
         if (res.invoked)
-            return (boolean) res.methodReturns;
+            return (Boolean) res.methodReturns;
         else
             return super.onUnbind(intent);
     }

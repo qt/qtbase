@@ -1379,7 +1379,7 @@ bool QOpenGLDebugLogger::initialize()
 
 #define GET_DEBUG_PROC_ADDRESS(procName) \
     d->procName = reinterpret_cast< qt_ ## procName ## _t >( \
-        d->context->getProcAddress(QByteArrayLiteral( #procName )) \
+        d->context->getProcAddress(#procName) \
     );
 
     GET_DEBUG_PROC_ADDRESS(glDebugMessageControl);
@@ -1388,19 +1388,7 @@ bool QOpenGLDebugLogger::initialize()
     GET_DEBUG_PROC_ADDRESS(glGetDebugMessageLog);
     GET_DEBUG_PROC_ADDRESS(glPushDebugGroup);
     GET_DEBUG_PROC_ADDRESS(glPopDebugGroup);
-
-    // Windows' Desktop GL doesn't allow resolution of "basic GL entry points"
-    // through wglGetProcAddress
-#if defined(Q_OS_WIN) && !defined(QT_OPENGL_ES_2)
-    {
-        HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
-        if (!handle)
-            handle = GetModuleHandleA("opengl32.dll");
-        d->glGetPointerv = reinterpret_cast<qt_glGetPointerv_t>(GetProcAddress(handle, QByteArrayLiteral("glGetPointerv")));
-    }
-#else
     GET_DEBUG_PROC_ADDRESS(glGetPointerv)
-#endif
 
 #undef GET_DEBUG_PROC_ADDRESS
 

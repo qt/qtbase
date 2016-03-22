@@ -145,6 +145,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         m_shouldInvalidateWindowShadow = false;
         m_window = 0;
         m_buttons = Qt::NoButton;
+        m_acceptedMouseDowns = Qt::NoButton;
         m_frameStrutButtons = Qt::NoButton;
         m_sendKeyEvent = false;
         m_subscribesForGlobalFrameNotifications = false;
@@ -361,15 +362,16 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     if (m_platformWindow->m_nsWindow && geometry == m_platformWindow->geometry())
         return;
 
+    const bool isResize = geometry.size() != m_platformWindow->geometry().size();
+
     // It can happen that self.window is nil (if we are changing
     // styleMask from/to borderless and content view is being re-parented)
     // - this results in an invalid coordinates.
     if (m_platformWindow->m_inSetStyleMask && !self.window)
         return;
 
-#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
-    qDebug() << "QNSView::udpateGeometry" << m_platformWindow << geometry;
-#endif
+     qCDebug(lcQpaCocoaWindow) << "[QNSView udpateGeometry:]" << m_window
+                               << "current" << m_platformWindow->geometry() << "new" << geometry;
 
     // Call setGeometry on QPlatformWindow. (not on QCocoaWindow,
     // doing that will initiate a geometry change it and possibly create
@@ -390,7 +392,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         // calles, which Qt and Qt applications do not excpect.
         if (!m_platformWindow->m_inSetGeometry)
             QWindowSystemInterface::flushWindowSystemEvents();
-        else
+        else if (isResize)
             m_backingStore = 0;
     }
 }
@@ -512,6 +514,8 @@ QT_WARNING_POP
 
 - (void) flushBackingStore:(QCocoaBackingStore *)backingStore region:(const QRegion &)region offset:(QPoint)offset
 {
+    qCDebug(lcQpaCocoaWindow) << "[QNSView flushBackingStore:]" << m_window << region.rectCount() << region.boundingRect() << offset;
+
     m_backingStore = backingStore;
     m_backingStoreOffset = offset * m_backingStore->getBackingStoreDevicePixelRatio();
     for (const QRect &rect : region)
@@ -526,7 +530,7 @@ QT_WARNING_POP
 
 - (BOOL) hasMask
 {
-    return m_maskImage != 0;
+    return !m_maskRegion.isEmpty();
 }
 
 - (BOOL) isOpaque
@@ -539,6 +543,7 @@ QT_WARNING_POP
 - (void) setMaskRegion:(const QRegion *)region
 {
     m_shouldInvalidateWindowShadow = true;
+    m_maskRegion = *region;
     if (m_maskImage)
         CGImageRelease(m_maskImage);
     if (region->isEmpty()) {
@@ -574,6 +579,8 @@ QT_WARNING_POP
 
 - (void) drawRect:(NSRect)dirtyRect
 {
+    qCDebug(lcQpaCocoaWindow) << "[QNSView drawRect:]" << m_window << qt_mac_toQRect(dirtyRect);
+
 #ifndef QT_NO_OPENGL
     if (m_glContext && m_shouldSetGLContextinDrawRect) {
         [m_glContext->nsOpenGLContext() setView:self];
@@ -813,6 +820,82 @@ QT_WARNING_POP
     QWindowSystemInterface::handleFrameStrutMouseEvent(m_window, timestamp, qtWindowPoint, qtScreenPoint, m_frameStrutButtons);
 }
 
+- (bool)handleMouseDownEvent:(NSEvent *)theEvent
+{
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput))
+        return false;
+
+    Qt::MouseButton button = cocoaButton2QtButton([theEvent buttonNumber]);
+
+    QPointF qtWindowPoint;
+    QPointF qtScreenPoint;
+    [self convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
+    Q_UNUSED(qtScreenPoint);
+
+    // Maintain masked state for the button for use by MouseDragged and MouseUp.
+    const bool masked = m_maskRegion.contains(qtWindowPoint.toPoint());
+    if (masked)
+        m_acceptedMouseDowns &= ~button;
+    else
+        m_acceptedMouseDowns |= button;
+
+    // Forward masked out events to the next responder
+    if (masked)
+        return false;
+
+    if (button == Qt::RightButton)
+        m_sendUpAsRightButton = true;
+
+    m_buttons |= button;
+
+    [self handleMouseEvent:theEvent];
+    return true;
+}
+
+- (bool)handleMouseDraggedEvent:(NSEvent *)theEvent
+{
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput))
+        return false;
+
+    Qt::MouseButton button = cocoaButton2QtButton([theEvent buttonNumber]);
+
+    // Forward the event to the next responder if Qt did not accept the
+    // corresponding mouse down for this button
+    if (!(m_acceptedMouseDowns & button) == button)
+        return false;
+
+    if (!(m_buttons & (m_sendUpAsRightButton ? Qt::RightButton : Qt::LeftButton))) {
+        qCWarning(lcQpaCocoaWindow) << "QNSView mouseDragged: Internal mouse button tracking"
+                                    << "invalid (missing Qt::LeftButton)";
+    }
+
+    [self handleMouseEvent:theEvent];
+    return true;
+}
+
+- (bool)handleMouseUpEvent:(NSEvent *)theEvent
+{
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput))
+        return false;
+
+    Qt::MouseButton button = cocoaButton2QtButton([theEvent buttonNumber]);
+
+    // Forward the event to the next responder if Qt did not accept the
+    // corresponding mouse down for this button
+    if (!(m_acceptedMouseDowns & button) == button)
+        return false;
+
+    if (m_sendUpAsRightButton && button == Qt::LeftButton)
+        button = Qt::RightButton;
+    if (button == Qt::RightButton)
+        m_sendUpAsRightButton = false;
+
+    m_buttons &= ~button;
+
+    [self handleMouseEvent:theEvent];
+    return true;
+}
+
 - (void)mouseDown:(NSEvent *)theEvent
 {
     if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
@@ -851,6 +934,25 @@ QT_WARNING_POP
         }
     }
 
+    QPointF qtWindowPoint;
+    QPointF qtScreenPoint;
+    [self convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
+    Q_UNUSED(qtScreenPoint);
+
+    bool masked = m_maskRegion.contains(qtWindowPoint.toPoint());
+
+    // Maintain masked state for the button for use by MouseDragged and Up.
+    if (masked)
+        m_acceptedMouseDowns &= ~Qt::LeftButton;
+    else
+        m_acceptedMouseDowns |= Qt::LeftButton;
+
+    // Forward masked out events to the next responder
+    if (masked) {
+        [super mouseDown:theEvent];
+        return;
+    }
+
     if ([self hasMarkedText]) {
         [[NSTextInputContext currentInputContext] handleEvent:theEvent];
     } else {
@@ -866,24 +968,58 @@ QT_WARNING_POP
 
 - (void)mouseDragged:(NSEvent *)theEvent
 {
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
-        return [super mouseDragged:theEvent];
-    if (!(m_buttons & (m_sendUpAsRightButton ? Qt::RightButton : Qt::LeftButton)))
-        qWarning("QNSView mouseDragged: Internal mouse button tracking invalid (missing Qt::LeftButton)");
-    [self handleMouseEvent:theEvent];
+    const bool accepted = [self handleMouseDraggedEvent:theEvent];
+    if (!accepted)
+        [super mouseDragged:theEvent];
 }
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
-        return [super mouseUp:theEvent];
-    if (m_sendUpAsRightButton) {
-        m_buttons &= ~Qt::RightButton;
-        m_sendUpAsRightButton = false;
-    } else {
-        m_buttons &= ~Qt::LeftButton;
-    }
-    [self handleMouseEvent:theEvent];
+    const bool accepted = [self handleMouseUpEvent:theEvent];
+    if (!accepted)
+        [super mouseUp:theEvent];
+}
+
+- (void)rightMouseDown:(NSEvent *)theEvent
+{
+    const bool accepted = [self handleMouseDownEvent:theEvent];
+    if (!accepted)
+        [super rightMouseDown:theEvent];
+}
+
+- (void)rightMouseDragged:(NSEvent *)theEvent
+{
+    const bool accepted = [self handleMouseDraggedEvent:theEvent];
+    if (!accepted)
+        [super rightMouseDragged:theEvent];
+}
+
+- (void)rightMouseUp:(NSEvent *)theEvent
+{
+    const bool accepted = [self handleMouseUpEvent:theEvent];
+    if (!accepted)
+        [super rightMouseUp:theEvent];
+}
+
+- (void)otherMouseDown:(NSEvent *)theEvent
+{
+    const bool accepted = [self handleMouseDownEvent:theEvent];
+    if (!accepted)
+        [super otherMouseDown:theEvent];
+}
+
+- (void)otherMouseDragged:(NSEvent *)theEvent
+{
+    const bool accepted = [self handleMouseDraggedEvent:theEvent];
+    if (!accepted)
+        [super otherMouseDragged:theEvent];
+}
+
+- (void)otherMouseUp:(NSEvent *)theEvent
+{
+    const bool accepted = [self handleMouseUpEvent:theEvent];
+    if (!accepted)
+        [super otherMouseUp:theEvent];
 }
 
 - (void)updateTrackingAreas
@@ -992,58 +1128,6 @@ QT_WARNING_POP
 
     QWindowSystemInterface::handleLeaveEvent(m_platformWindow->m_enterLeaveTargetWindow);
     m_platformWindow->m_enterLeaveTargetWindow = 0;
-}
-
-- (void)rightMouseDown:(NSEvent *)theEvent
-{
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
-        return [super rightMouseDown:theEvent];
-    m_buttons |= Qt::RightButton;
-    m_sendUpAsRightButton = true;
-    [self handleMouseEvent:theEvent];
-}
-
-- (void)rightMouseDragged:(NSEvent *)theEvent
-{
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
-        return [super rightMouseDragged:theEvent];
-    if (!(m_buttons & Qt::RightButton))
-        qWarning("QNSView rightMouseDragged: Internal mouse button tracking invalid (missing Qt::RightButton)");
-    [self handleMouseEvent:theEvent];
-}
-
-- (void)rightMouseUp:(NSEvent *)theEvent
-{
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
-        return [super rightMouseUp:theEvent];
-    m_buttons &= ~Qt::RightButton;
-    m_sendUpAsRightButton = false;
-    [self handleMouseEvent:theEvent];
-}
-
-- (void)otherMouseDown:(NSEvent *)theEvent
-{
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
-        return [super otherMouseDown:theEvent];
-    m_buttons |= cocoaButton2QtButton([theEvent buttonNumber]);
-    [self handleMouseEvent:theEvent];
-}
-
-- (void)otherMouseDragged:(NSEvent *)theEvent
-{
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
-        return [super otherMouseDragged:theEvent];
-    if (!(m_buttons & ~(Qt::LeftButton | Qt::RightButton)))
-        qWarning("QNSView otherMouseDragged: Internal mouse button tracking invalid (missing Qt::MiddleButton or Qt::ExtraButton*)");
-    [self handleMouseEvent:theEvent];
-}
-
-- (void)otherMouseUp:(NSEvent *)theEvent
-{
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
-        return [super otherMouseUp:theEvent];
-    m_buttons &= ~cocoaButton2QtButton([theEvent buttonNumber]);
-    [self handleMouseEvent:theEvent];
 }
 
 struct QCocoaTabletDeviceData
@@ -1413,8 +1497,10 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     } else if (phase == NSEventPhaseNone && momentumPhase == NSEventPhaseNone) {
         ph = Qt::NoScrollPhase;
     }
+    // "isInverted": natural OS X scrolling, inverted from the Qt/other platform/Jens perspective.
+    bool isInverted  = [theEvent isDirectionInvertedFromDevice];
 
-    QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, currentWheelModifiers, ph, source);
+    QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, currentWheelModifiers, ph, source, isInverted);
 }
 #endif //QT_NO_WHEELEVENT
 
@@ -1439,7 +1525,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     return qtMods;
 }
 
-- (void)handleKeyEvent:(NSEvent *)nsevent eventType:(int)eventType
+- (bool)handleKeyEvent:(NSEvent *)nsevent eventType:(int)eventType
 {
     ulong timestamp = [nsevent timestamp] * 1000;
     ulong nativeModifiers = [nsevent modifierFlags];
@@ -1509,26 +1595,46 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
             m_sendKeyEvent = true;
     }
 
-    if (m_sendKeyEvent && m_composingText.isEmpty())
+    bool accepted = true;
+    if (m_sendKeyEvent && m_composingText.isEmpty()) {
         QWindowSystemInterface::handleExtendedKeyEvent(window, timestamp, QEvent::Type(eventType), keyCode, modifiers,
                                                        nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat], 1, false);
-
+        accepted = QWindowSystemInterface::flushWindowSystemEvents();
+    }
     m_sendKeyEvent = false;
     m_resendKeyEvent = false;
+    return accepted;
 }
 
 - (void)keyDown:(NSEvent *)nsevent
 {
     if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super keyDown:nsevent];
-    [self handleKeyEvent:nsevent eventType:int(QEvent::KeyPress)];
+
+    const bool accepted = [self handleKeyEvent:nsevent eventType:int(QEvent::KeyPress)];
+
+    // Track keyDown acceptance state for later acceptance of the keyUp.
+    if (accepted)
+        m_acceptedKeyDowns.insert([nsevent keyCode]);
+
+    // Propagate the keyDown to the next responder if Qt did not accept it.
+    if (!accepted)
+        [super keyDown:nsevent];
 }
 
 - (void)keyUp:(NSEvent *)nsevent
 {
     if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super keyUp:nsevent];
-    [self handleKeyEvent:nsevent eventType:int(QEvent::KeyRelease)];
+
+    const bool keyUpAccepted = [self handleKeyEvent:nsevent eventType:int(QEvent::KeyRelease)];
+
+    // Propagate the keyUp if neither Qt accepted it nor the corresponding KeyDown was
+    // accepted. Qt text controls wil often not use and ignore keyUp events, but we
+    // want to avoid propagating unmatched keyUps.
+    const bool keyDownAccepted = m_acceptedKeyDowns.remove([nsevent keyCode]);
+    if (!keyUpAccepted && !keyDownAccepted)
+        [super keyUp:nsevent];
 }
 
 - (void)cancelOperation:(id)sender

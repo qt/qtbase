@@ -72,6 +72,7 @@ public:
     void syncMenu(QPlatformMenu *menu) Q_DECL_OVERRIDE;
     void handleReparent(QWindow *newParentWindow) Q_DECL_OVERRIDE;
     QPlatformMenu *menuForTag(quintptr tag) const Q_DECL_OVERRIDE;
+    QPlatformMenu *createMenu() const Q_DECL_OVERRIDE;
 
 private:
     QDBusPlatformMenu *m_menu;

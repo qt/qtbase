@@ -58,6 +58,7 @@
 #include "qopengl.h"
 #include "qopenglpixeltransferoptions.h"
 #include "qopengltexture.h"
+#include "qopenglfunctions.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -472,54 +473,8 @@ private:
 
 public:
     // Raw OpenGL functions, resolved and used by our DSA-like static functions if no EXT_direct_state_access is available
+
     // OpenGL 1.0
-    inline void glGetIntegerv(GLenum pname, GLint *params)
-    {
-        GetIntegerv(pname, params);
-    }
-
-    inline void glGetBooleanv(GLenum pname, GLboolean *params)
-    {
-        GetBooleanv(pname, params);
-    }
-
-    inline void glPixelStorei(GLenum pname, GLint param)
-    {
-        PixelStorei(pname, param);
-    }
-
-    inline void glGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint *params)
-    {
-        GetTexLevelParameteriv(target, level, pname, params);
-    }
-
-    inline void glGetTexLevelParameterfv(GLenum target, GLint level, GLenum pname, GLfloat *params)
-    {
-        GetTexLevelParameterfv(target, level, pname, params);
-    }
-
-    inline void glGetTexParameteriv(GLenum target, GLenum pname, GLint *params)
-    {
-        GetTexParameteriv(target, pname, params);
-    }
-
-    inline void glGetTexParameterfv(GLenum target, GLenum pname, GLfloat *params)
-    {
-        GetTexParameterfv(target, pname, params);
-    }
-
-    inline void glGetTexImage(GLenum target, GLint level, GLenum format, GLenum type, GLvoid *pixels)
-    {
-        GetTexImage(target, level, format, type, pixels);
-    }
-
-    inline void glTexImage2D(GLenum target, GLint level, GLint internalFormat,
-                             GLsizei width, GLsizei height, GLint border,
-                             GLenum format, GLenum type, const GLvoid *pixels)
-    {
-        TexImage2D(target, level, internalFormat, width, height, border, format, type, pixels);
-    }
-
     inline void glTexImage1D(GLenum target, GLint level, GLint internalFormat,
                              GLsizei width, GLint border,
                              GLenum format, GLenum type, const GLvoid *pixels)
@@ -527,48 +482,7 @@ public:
         TexImage1D(target, level, internalFormat, width, border, format, type, pixels);
     }
 
-    inline void glTexParameteriv(GLenum target, GLenum pname, const GLint *params)
-    {
-        TexParameteriv(target, pname, params);
-    }
-
-    inline void glTexParameteri(GLenum target, GLenum pname, GLint param)
-    {
-        TexParameteri(target, pname, param);
-    }
-
-    inline void glTexParameterfv(GLenum target, GLenum pname, const GLfloat *params)
-    {
-        TexParameterfv(target, pname, params);
-    }
-
-    inline void glTexParameterf(GLenum target, GLenum pname, GLfloat param)
-    {
-        TexParameterf(target, pname, param);
-    }
-
     // OpenGL 1.1
-    inline void glGenTextures(GLsizei n, GLuint *textures)
-    {
-        GenTextures(n, textures);
-    }
-
-    inline void glDeleteTextures(GLsizei n, const GLuint *textures)
-    {
-        DeleteTextures(n, textures);
-    }
-
-    inline void glBindTexture(GLenum target, GLuint texture)
-    {
-        BindTexture(target, texture);
-    }
-
-    inline void glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-                                GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels)
-    {
-        TexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
-    }
-
     inline void glTexSubImage1D(GLenum target, GLint level, GLint xoffset, GLsizei width,
                                 GLenum format, GLenum type, const GLvoid *pixels)
     {
@@ -704,23 +618,23 @@ public:
     {
         QOpenGLPixelTransferOptions options;
         int val = 0;
-        glGetIntegerv(GL_UNPACK_ALIGNMENT, &val);
+        functions->glGetIntegerv(GL_UNPACK_ALIGNMENT, &val);
         options.setAlignment(val);
 #if !defined(QT_OPENGL_ES_2)
-        glGetIntegerv(GL_UNPACK_SKIP_IMAGES, &val);
+        functions->glGetIntegerv(GL_UNPACK_SKIP_IMAGES, &val);
         options.setSkipImages(val);
-        glGetIntegerv(GL_UNPACK_SKIP_ROWS, &val);
+        functions->glGetIntegerv(GL_UNPACK_SKIP_ROWS, &val);
         options.setSkipRows(val);
-        glGetIntegerv(GL_UNPACK_SKIP_PIXELS, &val);
+        functions->glGetIntegerv(GL_UNPACK_SKIP_PIXELS, &val);
         options.setSkipPixels(val);
-        glGetIntegerv(GL_UNPACK_IMAGE_HEIGHT, &val);
+        functions->glGetIntegerv(GL_UNPACK_IMAGE_HEIGHT, &val);
         options.setImageHeight(val);
-        glGetIntegerv(GL_UNPACK_ROW_LENGTH, &val);
+        functions->glGetIntegerv(GL_UNPACK_ROW_LENGTH, &val);
         options.setRowLength(val);
         GLboolean b = GL_FALSE;
-        glGetBooleanv(GL_UNPACK_LSB_FIRST, &b);
+        functions->glGetBooleanv(GL_UNPACK_LSB_FIRST, &b);
         options.setLeastSignificantByteFirst(b);
-        glGetBooleanv(GL_UNPACK_SWAP_BYTES, &b);
+        functions->glGetBooleanv(GL_UNPACK_SWAP_BYTES, &b);
         options.setSwapBytesEnabled(b);
 #endif
         return options;
@@ -728,18 +642,19 @@ public:
 
     inline void setPixelUploadOptions(const QOpenGLPixelTransferOptions &options)
     {
-        glPixelStorei(GL_UNPACK_ALIGNMENT, options.alignment());
+        functions->glPixelStorei(GL_UNPACK_ALIGNMENT, options.alignment());
 #if !defined(QT_OPENGL_ES_2)
-        glPixelStorei(GL_UNPACK_SKIP_IMAGES, options.skipImages());
-        glPixelStorei(GL_UNPACK_SKIP_ROWS, options.skipRows());
-        glPixelStorei(GL_UNPACK_SKIP_PIXELS, options.skipPixels());
-        glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, options.imageHeight());
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, options.rowLength());
-        glPixelStorei(GL_UNPACK_LSB_FIRST, options.isLeastSignificantBitFirst());
-        glPixelStorei(GL_UNPACK_SWAP_BYTES, options.isSwapBytesEnabled());
+        functions->glPixelStorei(GL_UNPACK_SKIP_IMAGES, options.skipImages());
+        functions->glPixelStorei(GL_UNPACK_SKIP_ROWS, options.skipRows());
+        functions->glPixelStorei(GL_UNPACK_SKIP_PIXELS, options.skipPixels());
+        functions->glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, options.imageHeight());
+        functions->glPixelStorei(GL_UNPACK_ROW_LENGTH, options.rowLength());
+        functions->glPixelStorei(GL_UNPACK_LSB_FIRST, options.isLeastSignificantBitFirst());
+        functions->glPixelStorei(GL_UNPACK_SWAP_BYTES, options.isSwapBytesEnabled());
 #endif
     }
 
+    QOpenGLFunctions *functions;
 private:
     // Typedefs and pointers to member functions used to switch between EXT_direct_state_access and our own emulated DSA.
     // The argument match the corresponding GL function, but there's an extra "GLenum bindingTarget" which gets used with
@@ -827,26 +742,9 @@ private:
     void (QOPENGLF_APIENTRYP TextureImage2DMultisampleNV)(GLuint texture, GLenum target, GLsizei samples, GLint internalFormat, GLsizei width, GLsizei height, GLboolean fixedSampleLocations);
 
     // OpenGL 1.0
-    void (QOPENGLF_APIENTRYP GetIntegerv)(GLenum pname, GLint *params);
-    void (QOPENGLF_APIENTRYP GetBooleanv)(GLenum pname, GLboolean *params);
-    void (QOPENGLF_APIENTRYP PixelStorei)(GLenum pname, GLint param);
-    void (QOPENGLF_APIENTRYP GetTexLevelParameteriv)(GLenum target, GLint level, GLenum pname, GLint *params);
-    void (QOPENGLF_APIENTRYP GetTexLevelParameterfv)(GLenum target, GLint level, GLenum pname, GLfloat *params);
-    void (QOPENGLF_APIENTRYP GetTexParameteriv)(GLenum target, GLenum pname, GLint *params);
-    void (QOPENGLF_APIENTRYP GetTexParameterfv)(GLenum target, GLenum pname, GLfloat *params);
-    void (QOPENGLF_APIENTRYP GetTexImage)(GLenum target, GLint level, GLenum format, GLenum type, GLvoid *pixels);
-    void (QOPENGLF_APIENTRYP TexImage2D)(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
     void (QOPENGLF_APIENTRYP TexImage1D)(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
-    void (QOPENGLF_APIENTRYP TexParameteriv)(GLenum target, GLenum pname, const GLint *params);
-    void (QOPENGLF_APIENTRYP TexParameteri)(GLenum target, GLenum pname, GLint param);
-    void (QOPENGLF_APIENTRYP TexParameterfv)(GLenum target, GLenum pname, const GLfloat *params);
-    void (QOPENGLF_APIENTRYP TexParameterf)(GLenum target, GLenum pname, GLfloat param);
 
     // OpenGL 1.1
-    void (QOPENGLF_APIENTRYP GenTextures)(GLsizei n, GLuint *textures);
-    void (QOPENGLF_APIENTRYP DeleteTextures)(GLsizei n, const GLuint *textures);
-    void (QOPENGLF_APIENTRYP BindTexture)(GLenum target, GLuint texture);
-    void (QOPENGLF_APIENTRYP TexSubImage2D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels);
     void (QOPENGLF_APIENTRYP TexSubImage1D)(GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const GLvoid *pixels);
 
     // OpenGL 1.2

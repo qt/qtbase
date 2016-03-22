@@ -56,7 +56,7 @@ public:
     void swapBuffers(QPlatformSurface *windowSurface) Q_DECL_OVERRIDE;
 
     QSurfaceFormat format() const Q_DECL_OVERRIDE;
-    QFunctionPointer getProcAddress(const QByteArray &procName) Q_DECL_OVERRIDE;
+    QFunctionPointer getProcAddress(const char *procName) Q_DECL_OVERRIDE;
 
     static EGLDisplay display();
 private:

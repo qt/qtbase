@@ -131,7 +131,7 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
         const int transitionframe = (direction == QTimeLine::Forward ? endFrame : startFrame);
         if (looping && !finished && transitionframe != currentFrame) {
 #ifdef QTIMELINE_DEBUG
-            qDebug() << "QTimeLinePrivate::setCurrentTime: transitionframe";
+            qDebug("QTimeLinePrivate::setCurrentTime: transitionframe");
 #endif
             emit q->frameChanged(transitionframe, QTimeLine::QPrivateSignal());
         }

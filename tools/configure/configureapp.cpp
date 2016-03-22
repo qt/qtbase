@@ -52,7 +52,6 @@ QT_BEGIN_NAMESPACE
 
 enum Platforms {
     WINDOWS,
-    WINDOWS_CE,
     WINDOWS_RT,
     QNX,
     ANDROID,
@@ -156,9 +155,6 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     dictionary[ "AVX2" ]            = "auto";
     dictionary[ "AVX512" ]          = "auto";
     dictionary[ "SYNCQT" ]          = "auto";
-    dictionary[ "CE_CRT" ]          = "no";
-    dictionary[ "CETEST" ]          = "auto";
-    dictionary[ "CE_SIGNATURE" ]    = "no";
     dictionary[ "AUDIO_BACKEND" ]   = "auto";
     dictionary[ "WMF_BACKEND" ]     = "no";
     dictionary[ "WMSDK" ]           = "auto";
@@ -273,8 +269,6 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     dictionary[ "STYLE_WINDOWSXP" ] = "auto";
     dictionary[ "STYLE_WINDOWSVISTA" ] = "auto";
     dictionary[ "STYLE_FUSION" ]    = "yes";
-    dictionary[ "STYLE_WINDOWSCE" ] = "no";
-    dictionary[ "STYLE_WINDOWSMOBILE" ] = "no";
 
     dictionary[ "SQL_MYSQL" ]       = "no";
     dictionary[ "SQL_ODBC" ]        = "no";
@@ -632,57 +626,11 @@ void Configure::parseCmdLine()
         else if (configCmdLine.at(i) == "-system-harfbuzz")
             dictionary[ "HARFBUZZ" ] = "system";
 
-        // CE- C runtime --------------------------------------------
-        else if (configCmdLine.at(i) == "-crt") {
-            ++i;
-            if (i == argCount)
-                break;
-            QDir cDir(configCmdLine.at(i));
-            if (!cDir.exists())
-                cout << "WARNING: Could not find directory (" << qPrintable(configCmdLine.at(i)) << ")for C runtime deployment" << endl;
-            else
-                dictionary[ "CE_CRT" ] = QDir::toNativeSeparators(cDir.absolutePath());
-        } else if (configCmdLine.at(i) == "-qt-crt") {
-            dictionary[ "CE_CRT" ] = "yes";
-        } else if (configCmdLine.at(i) == "-no-crt") {
-            dictionary[ "CE_CRT" ] = "no";
-        }
-        // cetest ---------------------------------------------------
-        else if (configCmdLine.at(i) == "-no-cetest") {
-            dictionary[ "CETEST" ] = "no";
-            dictionary[ "CETEST_REQUESTED" ] = "no";
-        } else if (configCmdLine.at(i) == "-cetest") {
-            // although specified to use it, we stay at "auto" state
-            // this is because checkAvailability() adds variables
-            // we need for crosscompilation; but remember if we asked
-            // for it.
-            dictionary[ "CETEST_REQUESTED" ] = "yes";
-        }
-        // Qt/CE - signing tool -------------------------------------
-        else if (configCmdLine.at(i) == "-signature") {
-            ++i;
-            if (i == argCount)
-                break;
-            QFileInfo info(configCmdLine.at(i));
-            if (!info.exists())
-                cout << "WARNING: Could not find signature file (" << qPrintable(configCmdLine.at(i)) << ")" << endl;
-            else
-                dictionary[ "CE_SIGNATURE" ] = QDir::toNativeSeparators(info.absoluteFilePath());
-        }
         // Styles ---------------------------------------------------
         else if (configCmdLine.at(i) == "-qt-style-windows")
             dictionary[ "STYLE_WINDOWS" ] = "yes";
         else if (configCmdLine.at(i) == "-no-style-windows")
             dictionary[ "STYLE_WINDOWS" ] = "no";
-
-        else if (configCmdLine.at(i) == "-qt-style-windowsce")
-            dictionary[ "STYLE_WINDOWSCE" ] = "yes";
-        else if (configCmdLine.at(i) == "-no-style-windowsce")
-            dictionary[ "STYLE_WINDOWSCE" ] = "no";
-        else if (configCmdLine.at(i) == "-qt-style-windowsmobile")
-            dictionary[ "STYLE_WINDOWSMOBILE" ] = "yes";
-        else if (configCmdLine.at(i) == "-no-style-windowsmobile")
-            dictionary[ "STYLE_WINDOWSMOBILE" ] = "no";
 
         else if (configCmdLine.at(i) == "-qt-style-windowsxp")
             dictionary[ "STYLE_WINDOWSXP" ] = "yes";
@@ -1352,6 +1300,14 @@ void Configure::parseCmdLine()
             dictionary[ "ANDROID_PLATFORM" ] = configCmdLine.at(i);
         }
 
+        else if (configCmdLine.at(i) == "-android-ndk-host") {
+            ++i;
+            if (i == argCount)
+                break;
+
+            dictionary[ "ANDROID_HOST" ] = configCmdLine.at(i);
+        }
+
         else if (configCmdLine.at(i) == "-android-arch") {
             ++i;
             if (i == argCount)
@@ -1445,28 +1401,6 @@ void Configure::parseCmdLine()
                 !mkspecs.contains(dictionary["XQMAKESPEC"], Qt::CaseInsensitive)) {
             dictionary[ "DONE" ] = "error";
             cout << "Invalid option \"" << dictionary["XQMAKESPEC"] << "\" for -xplatform." << endl;
-        }
-    }
-
-    // Ensure that the crt to be deployed can be found
-    if (dictionary["CE_CRT"] != QLatin1String("yes") && dictionary["CE_CRT"] != QLatin1String("no")) {
-        QDir cDir(dictionary["CE_CRT"]);
-        QStringList entries = cDir.entryList();
-        bool hasDebug = entries.contains("msvcr80.dll");
-        bool hasRelease = entries.contains("msvcr80d.dll");
-        if ((dictionary["BUILDALL"] == "auto") && (!hasDebug || !hasRelease)) {
-            cout << "Could not find debug and release c-runtime." << endl;
-            cout << "You need to have msvcr80.dll and msvcr80d.dll in" << endl;
-            cout << "the path specified. Setting to -no-crt";
-            dictionary[ "CE_CRT" ] = "no";
-        } else if ((dictionary["BUILD"] == "debug") && !hasDebug) {
-            cout << "Could not find debug c-runtime (msvcr80d.dll) in the directory specified." << endl;
-            cout << "Setting c-runtime automatic deployment to -no-crt" << endl;
-            dictionary[ "CE_CRT" ] = "no";
-        } else if ((dictionary["BUILD"] == "release") && !hasRelease) {
-            cout << "Could not find release c-runtime (msvcr80.dll) in the directory specified." << endl;
-            cout << "Setting c-runtime automatic deployment to -no-crt" << endl;
-            dictionary[ "CE_CRT" ] = "no";
         }
     }
 
@@ -1665,33 +1599,9 @@ void Configure::applySpecSpecifics()
         dictionary[ "SYSTEM_ZLIB" ]         = "no";
         dictionary[ "PCRE" ]                = "qt";
         dictionary[ "ICU" ]                 = "qt";
-        dictionary[ "CE_CRT" ]              = "yes";
         dictionary[ "LARGE_FILE" ]          = "no";
         dictionary[ "ANGLE" ]               = "yes";
         dictionary[ "DYNAMICGL" ]           = "no";
-    } else if (dictionary.value("XQMAKESPEC").startsWith("wince")) {
-        dictionary[ "STYLE_WINDOWSXP" ]     = "no";
-        dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
-        dictionary[ "STYLE_FUSION" ]        = "no";
-        dictionary[ "STYLE_WINDOWSCE" ]     = "yes";
-        dictionary[ "STYLE_WINDOWSMOBILE" ] = "yes";
-        dictionary[ "OPENGL" ]              = "no";
-        dictionary[ "RTTI" ]                = "no";
-        dictionary[ "SSE2" ]                = "no";
-        dictionary[ "SSE3" ]                = "no";
-        dictionary[ "SSSE3" ]               = "no";
-        dictionary[ "SSE4_1" ]              = "no";
-        dictionary[ "SSE4_2" ]              = "no";
-        dictionary[ "AVX" ]                 = "no";
-        dictionary[ "AVX2" ]                = "no";
-        dictionary[ "AVX512" ]              = "no";
-        dictionary[ "CE_CRT" ]              = "yes";
-        dictionary[ "LARGE_FILE" ]          = "no";
-        dictionary[ "ANGLE" ]               = "no";
-        dictionary[ "DYNAMICGL" ]           = "no";
-        if (dictionary[ "XQMAKESPEC" ].startsWith("wincewm")) {
-            dictionary[ "MMX" ]    = "yes";
-        }
     } else if (dictionary.value("XQMAKESPEC").startsWith("linux")) { //TODO actually wrong.
       //TODO
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
@@ -2040,8 +1950,6 @@ bool Configure::displayHelp()
         desc("STYLE_WINDOWSXP", "auto", "",             "  windowsxp", ' ');
         desc("STYLE_WINDOWSVISTA", "auto", "",          "  windowsvista", ' ');
         desc("STYLE_FUSION", "yes", "",                 "  fusion", ' ');
-        desc("STYLE_WINDOWSCE", "yes", "",              "  windowsce", ' ');
-        desc("STYLE_WINDOWSMOBILE" , "yes", "",         "  windowsmobile\n", ' ');
         desc("NATIVE_GESTURES", "no", "-no-native-gestures", "Do not use native gestures on Windows 7.");
         desc("NATIVE_GESTURES", "yes", "-native-gestures", "Use native gestures on Windows 7.\n");
         desc("MSVC_MP", "no", "-no-mp",                 "Do not use multiple processors for compiling with MSVC");
@@ -2051,15 +1959,6 @@ bool Configure::displayHelp()
         desc(                   "-saveconfig <config>", "Run configure and save the parameters in file configure_<config>.cache.");
         desc(                   "-redo",                "Run configure with the same parameters as last time.\n");
         desc(                   "-v, -verbose",         "Run configure tests with verbose output.\n");
-
-        // Qt\Windows CE only options go below here -----------------------------------------------------------------------------
-        desc("Qt for Windows CE only:\n\n");
-        desc("CE_CRT", "no",       "-no-crt" ,             "Do not add the C runtime to default deployment rules.");
-        desc("CE_CRT", "yes",      "-qt-crt",              "Qt identifies C runtime during project generation.");
-        desc(                      "-crt <path>",          "Specify path to C runtime used for project generation.\n");
-        desc("CETEST", "no",       "-no-cetest",           "Do not compile Windows CE remote test application.");
-        desc("CETEST", "yes",      "-cetest",              "Compile Windows CE remote test application.\n");
-        desc(                      "-signature <file>",    "Use <file> for signing the target project.");
         return true;
     }
     return false;
@@ -2280,8 +2179,6 @@ bool Configure::checkAvailability(const QString &part)
         available = findFile("sqlite.h") && findFile("sqlite.lib");
     else if (part == "SQL_IBASE")
         available = findFile("ibase.h") && (findFile("gds32_ms.lib") || findFile("gds32.lib"));
-    else if (part == "OPENGL_ES_2")
-        available = (dictionary.value("XQMAKESPEC").startsWith("wince"));
     else if (part == "SSE2")
         available = tryCompileProject("common/sse2");
     else if (part == "SSE3")
@@ -2302,20 +2199,7 @@ bool Configure::checkAvailability(const QString &part)
         available = dictionary.contains("XQMAKESPEC") && tryCompileProject("common/libproxy");
     else if (part == "DBUS")
         available = findFile("dbus\\dbus.h");
-    else if (part == "CETEST") {
-        const QString rapiHeader = QDir::toNativeSeparators(locateFile("rapi.h"));
-        const QString rapiLib = QDir::toNativeSeparators(locateFile("rapi.lib"));
-        available = (dictionary.value("XQMAKESPEC").startsWith("wince")) && !rapiHeader.isEmpty() && !rapiLib.isEmpty();
-        if (available) {
-            dictionary[ "QT_CE_RAPI_INC" ] += QLatin1String("\"") + rapiHeader + QLatin1String("\"");
-            dictionary[ "QT_CE_RAPI_LIB" ] += QLatin1String("\"") + rapiLib + QLatin1String("\"");
-        }
-        else if (dictionary[ "CETEST_REQUESTED" ] == "yes") {
-            cout << "cetest could not be enabled: rapi.h and rapi.lib could not be found." << endl;
-            cout << "Make sure the environment is set up for compiling with ActiveSync." << endl;
-            dictionary[ "DONE" ] = "error";
-        }
-    } else if (part == "INCREDIBUILD_XGE") {
+    else if (part == "INCREDIBUILD_XGE") {
         available = !QStandardPaths::findExecutable(QStringLiteral("BuildConsole.exe")).isEmpty()
                     && !QStandardPaths::findExecutable(QStringLiteral("xgConsole.exe")).isEmpty();
     } else if (part == "WMSDK") {
@@ -2341,7 +2225,7 @@ bool Configure::checkAvailability(const QString &part)
     } else if (part == "QT_EVENTFD") {
         available = tryCompileProject("unix/eventfd");
     } else if (part == "CUPS") {
-        available = (platform() != WINDOWS) && (platform() != WINDOWS_CE) && (platform() != WINDOWS_RT) && tryCompileProject("unix/cups");
+        available = (platform() != WINDOWS) && (platform() != WINDOWS_RT) && tryCompileProject("unix/cups");
     } else if (part == "STACK_PROTECTOR_STRONG") {
         available = (platform() == QNX) && compilerSupportsFlag("qcc -fstack-protector-strong");
     } else if (part == "SLOG2") {
@@ -2502,10 +2386,6 @@ void Configure::autoDetection()
         dictionary["WMF_BACKEND"] = checkAvailability("WMF_BACKEND") ? "yes" : "no";
     if (dictionary["WMSDK"] == "auto")
         dictionary["WMSDK"] = checkAvailability("WMSDK") ? "yes" : "no";
-
-    // Qt/WinCE remote test application
-    if (dictionary["CETEST"] == "auto")
-        dictionary["CETEST"] = checkAvailability("CETEST") ? "yes" : "no";
 
     // Detection of IncrediBuild buildconsole
     if (dictionary["INCREDIBUILD_XGE"] == "auto")
@@ -2837,12 +2717,6 @@ void Configure::generateOutputVars()
     if (dictionary[ "STYLE_WINDOWSVISTA" ] == "yes")
         qmakeStyles += "windowsvista";
 
-    if (dictionary[ "STYLE_WINDOWSCE" ] == "yes")
-    qmakeStyles += "windowsce";
-
-    if (dictionary[ "STYLE_WINDOWSMOBILE" ] == "yes")
-    qmakeStyles += "windowsmobile";
-
     if (dictionary[ "STYLE_ANDROID" ] == "yes")
         qmakeStyles += "android";
 
@@ -2965,9 +2839,6 @@ void Configure::generateOutputVars()
         qtConfig += "dbus";
     else if (dictionary[ "DBUS" ] == "linked")
         qtConfig += "dbus dbus-linked";
-
-    if (dictionary[ "CETEST" ] == "yes")
-        qtConfig += "cetest";
 
     // ### Vestige
     if (dictionary["AUDIO_BACKEND"] == "yes")
@@ -3158,17 +3029,6 @@ void Configure::generateCachefile()
 
         if (dictionary["QT_XKBCOMMON"] == "no")
             moduleStream << "DEFINES += QT_NO_XKBCOMMON" << endl;
-
-        if (dictionary["CETEST"] == "yes") {
-            moduleStream << "QT_CE_RAPI_INC  = " << formatPath(dictionary["QT_CE_RAPI_INC"]) << endl;
-            moduleStream << "QT_CE_RAPI_LIB  = " << formatPath(dictionary["QT_CE_RAPI_LIB"]) << endl;
-        }
-
-        moduleStream << "#Qt for Windows CE c-runtime deployment" << endl
-                     << "QT_CE_C_RUNTIME = " << formatPath(dictionary["CE_CRT"]) << endl;
-
-        if (dictionary["CE_SIGNATURE"] != QLatin1String("no"))
-            moduleStream << "DEFAULT_SIGNATURE=" << dictionary["CE_SIGNATURE"] << endl;
 
         // embedded
         if (!dictionary["KBD_DRIVERS"].isEmpty())
@@ -3453,7 +3313,9 @@ void Configure::generateQDevicePri()
         deviceStream << "android_install {" << endl;
         deviceStream << "    DEFAULT_ANDROID_SDK_ROOT = " << formatPath(dictionary["ANDROID_SDK_ROOT"]) << endl;
         deviceStream << "    DEFAULT_ANDROID_NDK_ROOT = " << formatPath(dictionary["ANDROID_NDK_ROOT"]) << endl;
-        if (QSysInfo::WordSize == 64)
+        if (dictionary.contains("ANDROID_HOST"))
+            deviceStream << "    DEFAULT_ANDROID_NDK_HOST = " << dictionary["ANDROID_HOST"] << endl;
+        else if (QSysInfo::WordSize == 64)
             deviceStream << "    DEFAULT_ANDROID_NDK_HOST = windows-x86_64" << endl;
         else
             deviceStream << "    DEFAULT_ANDROID_NDK_HOST = windows" << endl;
@@ -3528,7 +3390,7 @@ void Configure::generateQConfigPri()
         configStream << "    QT_TARGET_ARCH = " << dictionary["QT_ARCH"] << endl;
         configStream << "} else {" << endl;
         configStream << "    QT_ARCH = " << dictionary["QT_ARCH"] << endl;
-        if (dictionary.contains("XQMAKESPEC") && !dictionary["XQMAKESPEC"].startsWith("wince")) {
+        if (dictionary.contains("XQMAKESPEC")) {
             // FIXME: add detection
             configStream << "    QMAKE_DEFAULT_LIBDIRS = /lib /usr/lib" << endl;
             configStream << "    QMAKE_DEFAULT_INCDIRS = /usr/include /usr/local/include" << endl;
@@ -3692,8 +3554,6 @@ void Configure::generateConfigfiles()
         if (dictionary["STYLE_WINDOWSXP"] != "yes" && dictionary["STYLE_WINDOWSVISTA"] != "yes")
             qconfigList += "QT_NO_STYLE_WINDOWSXP";
         if (dictionary["STYLE_WINDOWSVISTA"] != "yes")   qconfigList += "QT_NO_STYLE_WINDOWSVISTA";
-        if (dictionary["STYLE_WINDOWSCE"] != "yes")   qconfigList += "QT_NO_STYLE_WINDOWSCE";
-        if (dictionary["STYLE_WINDOWSMOBILE"] != "yes")   qconfigList += "QT_NO_STYLE_WINDOWSMOBILE";
 
         if (dictionary["GIF"] == "yes")              qconfigList += "QT_BUILTIN_GIF_READER=1";
         if (dictionary["PNG"] != "yes")              qconfigList += "QT_NO_IMAGEFORMAT_PNG";
@@ -3726,8 +3586,7 @@ void Configure::generateConfigfiles()
 
         if (dictionary["POSIX_IPC"] == "yes")
             qconfigList += "QT_POSIX_IPC";
-        else if ((platform() != ANDROID) && (platform() != WINDOWS) && (platform() != WINDOWS_CE)
-                    && (platform() != WINDOWS_RT))
+        else if ((platform() != ANDROID) && (platform() != WINDOWS) && (platform() != WINDOWS_RT))
             qconfigList << "QT_NO_SYSTEMSEMAPHORE" << "QT_NO_SHAREDMEMORY";
 
         if (dictionary["FONT_CONFIG"] == "no")       qconfigList += "QT_NO_FONTCONFIG";
@@ -3904,8 +3763,6 @@ void Configure::displayConfig()
     sout << "    Windows XP.............." << dictionary[ "STYLE_WINDOWSXP" ] << endl;
     sout << "    Windows Vista..........." << dictionary[ "STYLE_WINDOWSVISTA" ] << endl;
     sout << "    Fusion.................." << dictionary[ "STYLE_FUSION" ] << endl;
-    sout << "    Windows CE.............." << dictionary[ "STYLE_WINDOWSCE" ] << endl;
-    sout << "    Windows Mobile.........." << dictionary[ "STYLE_WINDOWSMOBILE" ] << endl;
     sout << endl;
 
     sout << "Sql Drivers:" << endl;
@@ -3936,13 +3793,6 @@ void Configure::displayConfig()
     sout << "Translations installed to..." << formatConfigPath("QT_REL_INSTALL_TRANSLATIONS") << endl;
     sout << "Examples installed to......." << formatConfigPath("QT_REL_INSTALL_EXAMPLES") << endl;
     sout << "Tests installed to.........." << formatConfigPath("QT_REL_INSTALL_TESTS") << endl;
-
-    if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith(QLatin1String("wince"))) {
-        sout << "Using c runtime detection..." << dictionary[ "CE_CRT" ] << endl;
-        sout << "Cetest support.............." << dictionary[ "CETEST" ] << endl;
-        sout << "Signature..................." << dictionary[ "CE_SIGNATURE"] << endl;
-        sout << endl;
-    }
 
     if (checkAvailability("INCREDIBUILD_XGE"))
         sout << "Using IncrediBuild XGE......" << dictionary["INCREDIBUILD_XGE"] << endl;
@@ -4236,7 +4086,7 @@ void Configure::generateQConfigCpp()
                   << confStrings[1] << "#endif\n"
                   << ";\n"
                   << endl;
-        if ((platform() != WINDOWS) && (platform() != WINDOWS_CE) && (platform() != WINDOWS_RT))
+        if ((platform() != WINDOWS) && (platform() != WINDOWS_RT))
             tmpStream << "#define QT_CONFIGURE_SETTINGS_PATH \"" << dictionary["QT_REL_INSTALL_SETTINGS"] << "\"" << endl;
 
         tmpStream << endl
@@ -4477,7 +4327,6 @@ bool Configure::showLicense(QString orgLicenseFile)
     QString theLicense;
     if (dictionary["EDITION"] == "OpenSource") {
         if (platform() != WINDOWS_RT
-                && platform() != WINDOWS_CE
                 && (platform() != ANDROID || dictionary["ANDROID_STYLE_ASSETS"] == "no")) {
             theLicense = "GNU Lesser General Public License (LGPL) version 3\n"
                          "or the GNU General Public License (GPL) version 2";
@@ -4644,8 +4493,6 @@ QString Configure::platformName() const
     default:
     case WINDOWS:
         return QStringLiteral("Qt for Windows");
-    case WINDOWS_CE:
-        return QStringLiteral("Qt for Windows CE");
     case WINDOWS_RT:
         return QStringLiteral("Qt for Windows Runtime");
     case QNX:
@@ -4662,7 +4509,6 @@ QString Configure::qpaPlatformName() const
     switch (platform()) {
     default:
     case WINDOWS:
-    case WINDOWS_CE:
         return QStringLiteral("windows");
     case WINDOWS_RT:
         return QStringLiteral("winrt");
@@ -4682,9 +4528,6 @@ int Configure::platform() const
 
     if ((xQMakeSpec.startsWith("winphone") || xQMakeSpec.startsWith("winrt")))
         return WINDOWS_RT;
-
-    if ((qMakeSpec.startsWith("wince") || xQMakeSpec.startsWith("wince")))
-        return WINDOWS_CE;
 
     if (xQMakeSpec.contains("qnx"))
         return QNX;

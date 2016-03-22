@@ -629,4 +629,6 @@ QString QProgressBar::format() const
 
 QT_END_NAMESPACE
 
+#include "moc_qprogressbar.cpp"
+
 #endif // QT_NO_PROGRESSBAR

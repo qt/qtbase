@@ -715,4 +715,6 @@ void QFlickGestureRecognizer::reset(QGesture *state)
 
 QT_END_NAMESPACE
 
+#include "moc_qflickgesture_p.cpp"
+
 #endif // QT_NO_GESTURES

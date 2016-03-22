@@ -246,7 +246,7 @@ QFontEngineQPF2::QFontEngineQPF2(const QFontDef &def, const QByteArray &data)
 
     if (!verifyHeader(fontData, dataSize)) {
 #if defined(DEBUG_FONTENGINE)
-        qDebug() << "verifyHeader failed!";
+        qDebug("verifyHeader failed!");
 #endif
         return;
     }

@@ -153,7 +153,7 @@ void QSystemSemaphorePrivate::cleanHandle()
             if (-1 == semctl(semaphore, 0, IPC_RMID, 0)) {
                 setErrorString(QLatin1String("QSystemSemaphore::cleanHandle"));
 #if defined QSYSTEMSEMAPHORE_DEBUG
-                qDebug() << QLatin1String("QSystemSemaphore::cleanHandle semctl failed.");
+                qDebug("QSystemSemaphore::cleanHandle semctl failed.");
 #endif
             }
             semaphore = -1;

@@ -48,6 +48,7 @@
 #include <QtCore/QList>
 #include <QtCore/QDebug>
 #include <qendian.h>
+#include <private/qsimd_p.h> // for qUnalignedLoad
 
 QT_BEGIN_NAMESPACE
 
@@ -163,7 +164,7 @@ bool QMimeMagicRule::matchNumber(const QByteArray &data) const
     const char *p = data.constData() + m_startPos;
     const char *e = data.constData() + qMin(data.size() - int(sizeof(T)), m_endPos + 1);
     for ( ; p <= e; ++p) {
-        if ((*reinterpret_cast<const T*>(p) & mask) == (value & mask))
+        if ((qUnalignedLoad<T>(p) & mask) == (value & mask))
             return true;
     }
 
@@ -233,7 +234,7 @@ QMimeMagicRule::QMimeMagicRule(const QString &type,
       m_mask(mask),
       m_matchFunction(nullptr)
 {
-    if (m_type == Invalid)
+    if (Q_UNLIKELY(m_type == Invalid))
         *errorString = QLatin1String("Type ") + type + QLatin1String(" is not supported");
 
     // Parse for offset as "1" or "1:10"
@@ -246,7 +247,7 @@ QMimeMagicRule::QMimeMagicRule(const QString &type,
         return;
     }
 
-    if (m_value.isEmpty()) {
+    if (Q_UNLIKELY(m_value.isEmpty())) {
         m_type = Invalid;
         if (errorString)
             *errorString = QStringLiteral("Invalid empty magic rule value");
@@ -256,7 +257,7 @@ QMimeMagicRule::QMimeMagicRule(const QString &type,
     if (m_type >= Host16 && m_type <= Byte) {
         bool ok;
         m_number = m_value.toUInt(&ok, 0); // autodetect base
-        if (!ok) {
+        if (Q_UNLIKELY(!ok)) {
             m_type = Invalid;
             if (errorString)
                 *errorString = QLatin1String("Invalid magic rule value \"") + QLatin1String(m_value) + QLatin1Char('"');
@@ -270,7 +271,7 @@ QMimeMagicRule::QMimeMagicRule(const QString &type,
         m_pattern = makePattern(m_value);
         m_pattern.squeeze();
         if (!m_mask.isEmpty()) {
-            if (m_mask.size() < 4 || !m_mask.startsWith("0x")) {
+            if (Q_UNLIKELY(m_mask.size() < 4 || !m_mask.startsWith("0x"))) {
                 m_type = Invalid;
                 if (errorString)
                     *errorString = QLatin1String("Invalid magic rule mask \"") + QLatin1String(m_mask) + QLatin1Char('"');
@@ -278,7 +279,7 @@ QMimeMagicRule::QMimeMagicRule(const QString &type,
             }
             const QByteArray &tempMask = QByteArray::fromHex(QByteArray::fromRawData(
                                                      m_mask.constData() + 2, m_mask.size() - 2));
-            if (tempMask.size() != m_pattern.size()) {
+            if (Q_UNLIKELY(tempMask.size() != m_pattern.size())) {
                 m_type = Invalid;
                 if (errorString)
                     *errorString = QLatin1String("Invalid magic rule mask size \"") + QLatin1String(m_mask) + QLatin1Char('"');

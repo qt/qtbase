@@ -55,7 +55,6 @@
 #include "QtCore/qbytearray.h"
 #include "QtCore/qlist.h"
 #include "QtCore/qtimer.h"
-#include "private/qringbuffer_p.h"
 #include "private/qiodevice_p.h"
 #include "private/qabstractsocketengine_p.h"
 #include "qnetworkproxy.h"
@@ -143,8 +142,6 @@ public:
     void setErrorAndEmit(QAbstractSocket::SocketError errorCode, const QString &errorString);
 
     qint64 readBufferMaxSize;
-    QRingBuffer writeBuffer;
-
     bool isBuffered;
 
     QTimer *connectTimer;

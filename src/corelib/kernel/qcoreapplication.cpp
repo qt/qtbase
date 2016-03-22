@@ -674,7 +674,7 @@ QCoreApplication::QCoreApplication(QCoreApplicationPrivate &p)
     : QObject(p, 0)
 #endif
 {
-    init();
+    d_func()->q_ptr = this;
     // note: it is the subclasses' job to call
     // QCoreApplicationPrivate::eventDispatcher->startingUp();
 }
@@ -723,27 +723,26 @@ QCoreApplication::QCoreApplication(int &argc, char **argv
     : QObject(*new QCoreApplicationPrivate(argc, argv, _internal))
 #endif
 {
-    init();
+    d_func()->q_ptr = this;
+    d_func()->init();
 #ifndef QT_NO_QOBJECT
     QCoreApplicationPrivate::eventDispatcher->startingUp();
 #endif
 }
 
 
-// ### move to QCoreApplicationPrivate constructor?
-void QCoreApplication::init()
+void QCoreApplicationPrivate::init()
 {
-    d_ptr->q_ptr = this;
-    Q_D(QCoreApplication);
+    Q_Q(QCoreApplication);
 
-    QCoreApplicationPrivate::initLocale();
+    initLocale();
 
-    Q_ASSERT_X(!self, "QCoreApplication", "there should be only one application object");
-    QCoreApplication::self = this;
+    Q_ASSERT_X(!QCoreApplication::self, "QCoreApplication", "there should be only one application object");
+    QCoreApplication::self = q;
 
     // Store app name (so it's still available after QCoreApplication is destroyed)
     if (!coreappdata()->applicationNameSet)
-        coreappdata()->application = d_func()->appName();
+        coreappdata()->application = appName();
 
     QLoggingRegistry::instance()->init();
 
@@ -759,7 +758,7 @@ void QCoreApplication::init()
             // anywhere in the list, we can just linearly scan the lists and find the items that
             // have been removed. Once the original list is exhausted we know all the remaining
             // items have been added.
-            QStringList newPaths(libraryPaths());
+            QStringList newPaths(q->libraryPaths());
             for (int i = manualPaths->length(), j = appPaths->length(); i > 0 || j > 0; qt_noop()) {
                 if (--j < 0) {
                     newPaths.prepend((*manualPaths)[--i]);
@@ -779,28 +778,28 @@ void QCoreApplication::init()
 
 #ifndef QT_NO_QOBJECT
     // use the event dispatcher created by the app programmer (if any)
-    if (!QCoreApplicationPrivate::eventDispatcher)
-        QCoreApplicationPrivate::eventDispatcher = d->threadData->eventDispatcher.load();
+    if (!eventDispatcher)
+        eventDispatcher = threadData->eventDispatcher.load();
     // otherwise we create one
-    if (!QCoreApplicationPrivate::eventDispatcher)
-        d->createEventDispatcher();
-    Q_ASSERT(QCoreApplicationPrivate::eventDispatcher != 0);
+    if (!eventDispatcher)
+        createEventDispatcher();
+    Q_ASSERT(eventDispatcher);
 
-    if (!QCoreApplicationPrivate::eventDispatcher->parent()) {
-        QCoreApplicationPrivate::eventDispatcher->moveToThread(d->threadData->thread);
-        QCoreApplicationPrivate::eventDispatcher->setParent(this);
+    if (!eventDispatcher->parent()) {
+        eventDispatcher->moveToThread(threadData->thread);
+        eventDispatcher->setParent(q);
     }
 
-    d->threadData->eventDispatcher = QCoreApplicationPrivate::eventDispatcher;
-    d->eventDispatcherReady();
+    threadData->eventDispatcher = eventDispatcher;
+    eventDispatcherReady();
 #endif
 
 #ifdef QT_EVAL
     extern void qt_core_eval_init(QCoreApplicationPrivate::Type);
-    qt_core_eval_init(d->application_type);
+    qt_core_eval_init(application_type);
 #endif
 
-    d->processCommandLineArguments();
+    processCommandLineArguments();
 
     qt_call_pre_routines();
     qt_startup_hook();
@@ -810,7 +809,7 @@ void QCoreApplication::init()
 #endif
 
 #ifndef QT_NO_QOBJECT
-    QCoreApplicationPrivate::is_app_running = true; // No longer starting up.
+    is_app_running = true; // No longer starting up.
 #endif
 }
 

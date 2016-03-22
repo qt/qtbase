@@ -2583,4 +2583,4 @@ QT_END_NAMESPACE
 
 #endif // QT_NO_TABBAR
 
-
+#include "moc_qtabbar_p.cpp"

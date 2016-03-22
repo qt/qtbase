@@ -174,6 +174,7 @@ public:
 
     void swapBuffers(QSurface *surface);
     QFunctionPointer getProcAddress(const QByteArray &procName) const;
+    QFunctionPointer getProcAddress(const char *procName) const;
 
     QSurface *surface() const;
 
@@ -236,10 +237,7 @@ private:
     void setQGLContextHandle(void *handle,void (*qGLContextDeleteFunction)(void *));
     void deleteQGLContext();
 
-    QOpenGLVersionFunctionsBackend* functionsBackend(const QOpenGLVersionStatus &v) const;
-    void insertFunctionsBackend(const QOpenGLVersionStatus &v,
-                                QOpenGLVersionFunctionsBackend *backend);
-    void removeFunctionsBackend(const QOpenGLVersionStatus &v);
+    QOpenGLVersionFunctionsStorage* functionsBackendStorage() const;
     void insertExternalFunctions(QAbstractOpenGLFunctions *f);
     void removeExternalFunctions(QAbstractOpenGLFunctions *f);
 

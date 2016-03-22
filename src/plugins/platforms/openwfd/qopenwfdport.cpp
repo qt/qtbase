@@ -80,7 +80,7 @@ void QOpenWFDPort::attach()
     Q_ASSERT(actualNumberOfPortModes == numberOfPortModes);
 
     if (!actualNumberOfPortModes) {
-        qDebug() << "didn't find any available port modes";
+        qDebug("didn't find any available port modes");
         return;
     }
 
@@ -94,7 +94,7 @@ void QOpenWFDPort::attach()
 
     mPixelSize = setNativeResolutionMode();
     if (mPixelSize.isEmpty()) {
-        qDebug() << "Could not set native resolution mode in QOpenWFPort";
+        qDebug("Could not set native resolution mode in QOpenWFPort");
     }
 
     WFDfloat physicalWFDSize[2];

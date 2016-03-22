@@ -822,7 +822,7 @@ void QListView::wheelEvent(QWheelEvent *e)
             QPoint pixelDelta(e->pixelDelta().y(), e->pixelDelta().x());
             QPoint angleDelta(e->angleDelta().y(), e->angleDelta().x());
             QWheelEvent hwe(e->pos(), e->globalPos(), pixelDelta, angleDelta, e->delta(),
-                            Qt::Horizontal, e->buttons(), e->modifiers(), e->phase());
+                            Qt::Horizontal, e->buttons(), e->modifiers(), e->phase(), e->source(), e->inverted());
             if (e->spontaneous())
                 qt_sendSpontaneousEvent(d->hbar, &hwe);
             else
@@ -1989,6 +1989,11 @@ int QCommonListViewBase::horizontalScrollToValue(const int /*index*/, QListView:
 /*
  * ListMode ListView Implementation
 */
+QListModeViewBase::QListModeViewBase(QListView *q, QListViewPrivate *d)
+    : QCommonListViewBase(q, d)
+{
+    dd->defaultDropAction = Qt::CopyAction;
+}
 
 #ifndef QT_NO_DRAGANDDROP
 QAbstractItemView::DropIndicatorPosition QListModeViewBase::position(const QPoint &pos, const QRect &rect, const QModelIndex &index) const
@@ -2755,7 +2760,7 @@ bool QIconModeViewBase::filterStartDrag(Qt::DropActions supportedActions)
         drag->setMimeData(dd->model->mimeData(indexes));
         drag->setPixmap(pixmap);
         drag->setHotSpot(dd->pressedPosition - rect.topLeft());
-        Qt::DropAction action = drag->exec(supportedActions, Qt::CopyAction);
+        Qt::DropAction action = drag->exec(supportedActions, dd->defaultDropAction);
         draggedItems.clear();
         if (action == Qt::MoveAction)
             dd->clearOrRemove();
@@ -3295,5 +3300,7 @@ QSize QListView::viewportSizeHint() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qlistview.cpp"
 
 #endif // QT_NO_LISTVIEW

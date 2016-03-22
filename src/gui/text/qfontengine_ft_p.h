@@ -121,8 +121,7 @@ private:
     QMutex _lock;
     QByteArray fontData;
 
-    void *hbFace;
-    qt_destroy_func_t hbFace_destroy_func;
+    QFontEngine::Holder hbFace;
 };
 
 // If this is exported this breaks compilation of the windows

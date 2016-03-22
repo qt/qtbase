@@ -55,6 +55,7 @@
 
 #include <QtPlatformHeaders/qxcbwindowfunctions.h>
 #include <QtPlatformHeaders/qxcbintegrationfunctions.h>
+#include <QtPlatformHeaders/qxcbscreenfunctions.h>
 
 #ifndef QT_NO_DBUS
 #include "QtPlatformSupport/private/qdbusmenuconnection_p.h"
@@ -83,9 +84,10 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("startupid"), QByteArrayLiteral("traywindow"),
         QByteArrayLiteral("gettimestamp"), QByteArrayLiteral("x11screen"),
         QByteArrayLiteral("rootwindow"),
-        QByteArrayLiteral("subpixeltype"), QByteArrayLiteral("antialiasingEnabled"),
+        QByteArrayLiteral("subpixeltype"), QByteArrayLiteral("antialiasingenabled"),
         QByteArrayLiteral("nofonthinting"),
-        QByteArrayLiteral("atspibus")
+        QByteArrayLiteral("atspibus"),
+        QByteArrayLiteral("compositingenabled")
     };
     const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
     const QByteArray *result = std::find(names, end, key);
@@ -202,7 +204,7 @@ void *QXcbNativeInterface::nativeResourceForContext(const QByteArray &resourceSt
 void *QXcbNativeInterface::nativeResourceForScreen(const QByteArray &resourceString, QScreen *screen)
 {
     if (!screen) {
-        qWarning() << "nativeResourceForScreen: null screen";
+        qWarning("nativeResourceForScreen: null screen");
         return Q_NULLPTR;
     }
 
@@ -245,6 +247,10 @@ void *QXcbNativeInterface::nativeResourceForScreen(const QByteArray &resourceStr
         break;
     case RootWindow:
         result = reinterpret_cast<void *>(xcbScreen->root());
+        break;
+    case CompositingEnabled:
+        if (QXcbVirtualDesktop *vd = xcbScreen->virtualDesktop())
+            result = vd->compositingActive() ? this : Q_NULLPTR;
         break;
     default:
         break;
@@ -376,6 +382,10 @@ QFunctionPointer QXcbNativeInterface::platformFunction(const QByteArray &functio
     if (function == QXcbWindowFunctions::visualIdIdentifier()) {
         return QFunctionPointer(QXcbWindowFunctions::VisualId(QXcbWindow::visualIdStatic));
     }
+
+    if (function == QXcbScreenFunctions::virtualDesktopNumberIdentifier())
+        return QFunctionPointer(QXcbScreenFunctions::VirtualDesktopNumber(QXcbScreen::virtualDesktopNumberStatic));
+
     return Q_NULLPTR;
 }
 

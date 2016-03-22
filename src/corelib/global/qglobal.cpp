@@ -426,7 +426,7 @@ Q_STATIC_ASSERT_X(QT_POINTER_SIZE == sizeof(void *), "QT_POINTER_SIZE defined in
 */
 
 /*!
-    \fn QFlags QFlags::setFlag(Enum flag, bool on) const
+    \fn QFlags QFlags::setFlag(Enum flag, bool on)
     \since 5.7
 
     Sets the indicated \a flag if \a on is \c true or unsets it if

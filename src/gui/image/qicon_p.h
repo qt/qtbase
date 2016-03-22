@@ -96,6 +96,7 @@ struct QPixmapIconEngineEntry
     QIcon::State state;
     bool isNull() const {return (fileName.isEmpty() && pixmap.isNull()); }
 };
+Q_DECLARE_TYPEINFO(QPixmapIconEngineEntry, Q_MOVABLE_TYPE);
 
 inline QPixmapIconEngineEntry::QPixmapIconEngineEntry(const QString &file, const QImage &image, QIcon::Mode m, QIcon::State s)
     : fileName(file), size(image.size()), mode(m), state(s)

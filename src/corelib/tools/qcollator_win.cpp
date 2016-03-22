@@ -73,7 +73,7 @@ void QCollatorPrivate::init()
         if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7)
             collator |= SORT_DIGITSASNUMBERS;
         else
-            qWarning() << "Numeric sorting unsupported on Windows versions older than Windows 7.";
+            qWarning("Numeric sorting unsupported on Windows versions older than Windows 7.");
     }
 
     if (ignorePunctuation)

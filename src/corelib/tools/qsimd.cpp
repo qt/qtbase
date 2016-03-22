@@ -117,13 +117,7 @@ static inline quint64 detectProcessorFeatures()
 {
     quint64 features = 0;
 
-#if defined(Q_OS_IOS)
-    features |= Q_UINT64_C(1) << CpuFeatureNEON; // On iOS, NEON is always available.
-#  ifdef Q_PROCESSOR_ARM_V8
-    features |= Q_UINT64_C(1) << CpuFeatureCRC32; // On iOS, crc32 is always available if the architecture is Aarch32/64.
-#  endif
-    return features;
-#elif defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX)
 #  if defined(Q_PROCESSOR_ARM_V8) && defined(Q_PROCESSOR_ARM_64)
     features |= Q_UINT64_C(1) << CpuFeatureNEON; // NEON is always available on ARMv8 64bit.
 #  endif
@@ -167,10 +161,10 @@ static inline quint64 detectProcessorFeatures()
 #endif
 
 #if defined(__ARM_NEON__)
-    features = Q_UINT64_C(1) << CpuFeatureNEON;
+    features |= Q_UINT64_C(1) << CpuFeatureNEON;
 #endif
 #if defined(__ARM_FEATURE_CRC32)
-    features = Q_UINT64_C(1) << CpuFeatureCRC32;
+    features |= Q_UINT64_C(1) << CpuFeatureCRC32;
 #endif
 
     return features;
@@ -752,5 +746,27 @@ void qDumpCPUFeatures()
     }
     puts("");
 }
+
+/*!
+    \internal
+    \fn T qUnalignedLoad(const void *ptr)
+    \since 5.6.1
+
+    Loads a \c{T} from address \a ptr, which may be misaligned.
+
+    Use of this function avoid the undefined behavior that the C++ standard
+    otherwise attributes to unaligned loads.
+*/
+
+/*!
+    \internal
+    \fn void qUnalignedStore(void *ptr, T t)
+    \since 5.6.1
+
+    Stores \a t to address \a ptr, which may be misaligned.
+
+    Use of this function avoid the undefined behavior that the C++ standard
+    otherwise attributes to unaligned stores.
+*/
 
 QT_END_NAMESPACE

@@ -196,7 +196,7 @@ public:
 class QListModeViewBase : public QCommonListViewBase
 {
 public:
-    QListModeViewBase(QListView *q, QListViewPrivate *d) : QCommonListViewBase(q, d) {}
+    QListModeViewBase(QListView *q, QListViewPrivate *d);
 
     QVector<int> flowPositions;
     QVector<int> segmentPositions;

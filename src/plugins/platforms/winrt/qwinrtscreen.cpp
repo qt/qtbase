@@ -39,8 +39,10 @@
 #include "qwinrtbackingstore.h"
 #include "qwinrtinputcontext.h"
 #include "qwinrtcursor.h"
+#include "qwinrtwindow.h"
 #include <private/qeventdispatcher_winrt_p.h>
 
+#include <QtCore/QLoggingCategory>
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QGuiApplication>
 #include <qpa/qwindowsysteminterface.h>
@@ -469,6 +471,7 @@ QWinRTScreen::QWinRTScreen()
     : d_ptr(new QWinRTScreenPrivate)
 {
     Q_D(QWinRTScreen);
+    qCDebug(lcQpaWindows) << __FUNCTION__;
     d->orientation = Qt::PrimaryOrientation;
     d->touchDevice = Q_NULLPTR;
 
@@ -553,6 +556,7 @@ QWinRTScreen::QWinRTScreen()
 QWinRTScreen::~QWinRTScreen()
 {
     Q_D(QWinRTScreen);
+    qCDebug(lcQpaWindows) << __FUNCTION__ << this;
 
     // Unregister callbacks
     HRESULT hr;
@@ -631,6 +635,12 @@ QDpi QWinRTScreen::logicalDpi() const
     return QDpi(d->logicalDpi, d->logicalDpi);
 }
 
+qreal QWinRTScreen::pixelDensity() const
+{
+    Q_D(const QWinRTScreen);
+    return qRound(d->logicalDpi / 96);
+}
+
 qreal QWinRTScreen::scaleFactor() const
 {
     Q_D(const QWinRTScreen);
@@ -697,6 +707,8 @@ Xaml::IDependencyObject *QWinRTScreen::canvas() const
 void QWinRTScreen::setStatusBarVisibility(bool visible, QWindow *window)
 {
     Q_D(QWinRTScreen);
+    qCDebug(lcQpaWindows) << __FUNCTION__ << window << visible;
+
     const Qt::WindowFlags windowType = window->flags() & Qt::WindowType_Mask;
     if (!window || (windowType != Qt::Window && windowType != Qt::Dialog))
         return;
@@ -768,6 +780,7 @@ QWindow *QWinRTScreen::topWindow() const
 void QWinRTScreen::addWindow(QWindow *window)
 {
     Q_D(QWinRTScreen);
+    qCDebug(lcQpaWindows) << __FUNCTION__ << window;
     if (window == topWindow())
         return;
 
@@ -785,6 +798,7 @@ void QWinRTScreen::addWindow(QWindow *window)
 void QWinRTScreen::removeWindow(QWindow *window)
 {
     Q_D(QWinRTScreen);
+    qCDebug(lcQpaWindows) << __FUNCTION__ << window;
 
 #ifdef Q_OS_WINPHONE
     if (window->visibility() == QWindow::Minimized)
@@ -1131,6 +1145,7 @@ HRESULT QWinRTScreen::onSizeChanged(ICoreWindow *, IWindowSizeChangedEventArgs *
     hr = d->coreWindow->get_Bounds(&size);
     RETURN_OK_IF_FAILED("Failed to get window bounds");
     d->logicalSize = QSizeF(size.Width, size.Height);
+    qCDebug(lcQpaWindows) << __FUNCTION__ << d->logicalSize;
     QWindowSystemInterface::handleScreenGeometryChange(screen(), geometry(), availableGeometry());
     QPlatformScreen::resizeMaximizedWindows();
     handleExpose();
@@ -1140,6 +1155,7 @@ HRESULT QWinRTScreen::onSizeChanged(ICoreWindow *, IWindowSizeChangedEventArgs *
 HRESULT QWinRTScreen::onActivated(ICoreWindow *, IWindowActivatedEventArgs *args)
 {
     Q_D(QWinRTScreen);
+    qCDebug(lcQpaWindows) << __FUNCTION__;
 
     CoreWindowActivationState activationState;
     args->get_WindowActivationState(&activationState);
@@ -1159,6 +1175,8 @@ HRESULT QWinRTScreen::onActivated(ICoreWindow *, IWindowActivatedEventArgs *args
 
 HRESULT QWinRTScreen::onClosed(ICoreWindow *, ICoreWindowEventArgs *)
 {
+    qCDebug(lcQpaWindows) << __FUNCTION__;
+
     foreach (QWindow *w, QGuiApplication::topLevelWindows())
         QWindowSystemInterface::handleCloseEvent(w);
     return S_OK;
@@ -1170,6 +1188,7 @@ HRESULT QWinRTScreen::onVisibilityChanged(ICoreWindow *, IVisibilityChangedEvent
     boolean visible;
     HRESULT hr = args ? args->get_Visible(&visible) : d->coreWindow->get_Visible(&visible);
     RETURN_OK_IF_FAILED("Failed to get visibility.");
+    qCDebug(lcQpaWindows) << __FUNCTION__ << visible;
     QWindowSystemInterface::handleApplicationStateChanged(visible ? Qt::ApplicationActive : Qt::ApplicationHidden);
     if (visible)
         handleExpose();
@@ -1179,7 +1198,7 @@ HRESULT QWinRTScreen::onVisibilityChanged(ICoreWindow *, IVisibilityChangedEvent
 HRESULT QWinRTScreen::onOrientationChanged(IDisplayInformation *, IInspectable *)
 {
     Q_D(QWinRTScreen);
-
+    qCDebug(lcQpaWindows) << __FUNCTION__;
     DisplayOrientations displayOrientation;
     HRESULT hr = d->displayInformation->get_CurrentOrientation(&displayOrientation);
     RETURN_OK_IF_FAILED("Failed to get current orientations.");
@@ -1187,7 +1206,8 @@ HRESULT QWinRTScreen::onOrientationChanged(IDisplayInformation *, IInspectable *
     Qt::ScreenOrientation newOrientation = static_cast<Qt::ScreenOrientation>(static_cast<int>(qtOrientationsFromNative(displayOrientation)));
     if (d->orientation != newOrientation) {
         d->orientation = newOrientation;
-#ifdef Q_OS_WINPHONE
+        qCDebug(lcQpaWindows) << "  New orientation:" << newOrientation;
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
         onSizeChanged(nullptr, nullptr);
 #endif
         QWindowSystemInterface::handleScreenOrientationChange(screen(), d->orientation);
@@ -1211,6 +1231,8 @@ HRESULT QWinRTScreen::onDpiChanged(IDisplayInformation *, IInspectable *)
     hr = d->displayInformation->get_ResolutionScale(&resolutionScale);
     d->scaleFactor = qreal(resolutionScale) / 100;
 #endif
+    qCDebug(lcQpaWindows) << __FUNCTION__ << "Scale Factor:" << d->scaleFactor;
+
     RETURN_OK_IF_FAILED("Failed to get scale factor");
 
     FLOAT dpi;
@@ -1225,6 +1247,8 @@ HRESULT QWinRTScreen::onDpiChanged(IDisplayInformation *, IInspectable *)
     hr = d->displayInformation->get_RawDpiY(&dpi);
     RETURN_OK_IF_FAILED("Failed to get y raw DPI.");
     d->physicalDpi.second = dpi ? dpi : 96.0;
+    qCDebug(lcQpaWindows) << __FUNCTION__ << "Logical DPI:" << d->logicalDpi
+                          << "Physical DPI:" << d->physicalDpi;
 
     return S_OK;
 }
@@ -1232,12 +1256,14 @@ HRESULT QWinRTScreen::onDpiChanged(IDisplayInformation *, IInspectable *)
 #ifdef Q_OS_WINPHONE
 HRESULT QWinRTScreen::onStatusBarShowing(IStatusBar *, IInspectable *)
 {
+    qCDebug(lcQpaWindows) << __FUNCTION__;
     onSizeChanged(nullptr, nullptr);
     return S_OK;
 }
 
 HRESULT QWinRTScreen::onStatusBarHiding(IStatusBar *, IInspectable *)
 {
+    qCDebug(lcQpaWindows) << __FUNCTION__;
     onSizeChanged(nullptr, nullptr);
     return S_OK;
 }

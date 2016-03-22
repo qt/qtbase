@@ -872,7 +872,8 @@ void QSpdyProtocolHandler::handleSYN_REPLY(char flags, quint32 /*length*/, const
 void QSpdyProtocolHandler::parseHttpHeaders(char flags, const QByteArray &frameData)
 {
     qint32 streamID = getStreamID(frameData.constData());
-    if (!m_inFlightStreams.contains(streamID)) {
+    const auto it = m_inFlightStreams.constFind(streamID);
+    if (it == m_inFlightStreams.cend()) {
         sendRST_STREAM(streamID, RST_STREAM_INVALID_STREAM);
         return;
     }
@@ -882,7 +883,7 @@ void QSpdyProtocolHandler::parseHttpHeaders(char flags, const QByteArray &frameD
 
     QByteArray headerValuePairs = frameData.mid(4);
 
-    HttpMessagePair pair = m_inFlightStreams.value(streamID);
+    HttpMessagePair pair = it.value();
     QHttpNetworkReply *httpReply = pair.second;
     Q_ASSERT(httpReply != 0);
 
@@ -1152,12 +1153,13 @@ void QSpdyProtocolHandler::handleWINDOW_UPDATE(char /*flags*/, quint32 /*length*
     qint32 streamID = getStreamID(frameData.constData());
     qint32 deltaWindowSize = fourBytesToInt(frameData.constData() + 4);
 
-    if (!m_inFlightStreams.contains(streamID)) {
+    const auto it = m_inFlightStreams.constFind(streamID);
+    if (it == m_inFlightStreams.cend()) {
         sendRST_STREAM(streamID, RST_STREAM_INVALID_STREAM);
         return;
     }
 
-    QHttpNetworkReply *reply = m_inFlightStreams.value(streamID).second;
+    QHttpNetworkReply *reply = it.value().second;
     Q_ASSERT(reply);
     QHttpNetworkReplyPrivate *replyPrivate = reply->d_func();
     Q_ASSERT(replyPrivate);
@@ -1176,7 +1178,8 @@ void QSpdyProtocolHandler::handleDataFrame(const QByteArray &frameHeaders)
     Q_ASSERT(frameHeaders.count() >= 8);
 
     qint32 streamID = getStreamID(frameHeaders.constData());
-    if (!m_inFlightStreams.contains(streamID)) {
+    const auto it = m_inFlightStreams.constFind(streamID);
+    if (it == m_inFlightStreams.cend()) {
         sendRST_STREAM(streamID, RST_STREAM_INVALID_STREAM);
         return;
     }
@@ -1198,7 +1201,7 @@ void QSpdyProtocolHandler::handleDataFrame(const QByteArray &frameHeaders)
         m_waitingForCompleteStream = false;
     }
 
-    HttpMessagePair pair = m_inFlightStreams.value(streamID);
+    HttpMessagePair pair = it.value();
     QHttpNetworkRequest httpRequest = pair.first;
     QHttpNetworkReply *httpReply = pair.second;
     Q_ASSERT(httpReply != 0);

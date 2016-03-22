@@ -783,7 +783,7 @@ void AtSpiAdaptor::updateEventListeners()
         }
         m_applicationAdaptor->sendEvents(!evList.isEmpty());
     } else {
-        qAtspiDebug() << "Could not query active accessibility event listeners.";
+        qAtspiDebug("Could not query active accessibility event listeners.");
     }
 }
 
@@ -944,7 +944,7 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
         if (sendObject || sendObject_text_changed) {
             QAccessibleInterface * iface = event->accessibleInterface();
             if (!iface || !iface->textInterface()) {
-                qAtspiDebug() << "Received text event for invalid interface.";
+                qAtspiDebug("Received text event for invalid interface.");
                 return;
             }
             QString path = pathForInterface(iface);
@@ -1030,7 +1030,7 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
         if (sendObject || sendObject_value_changed || sendObject_property_change_accessible_value) {
             QAccessibleInterface * iface = event->accessibleInterface();
             if (!iface) {
-                qWarning() << "ValueChanged event from invalid accessible.";
+                qWarning("ValueChanged event from invalid accessible.");
                 return;
             }
             if (iface->valueInterface()) {
@@ -1059,7 +1059,7 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
     case QAccessible::Selection: {
         QAccessibleInterface * iface = event->accessibleInterface();
         if (!iface) {
-            qWarning() << "Selection event from invalid accessible.";
+            qWarning("Selection event from invalid accessible.");
             return;
         }
         QString path = pathForInterface(iface);
@@ -1076,7 +1076,7 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
             if (stateChange.checked) {
                 QAccessibleInterface * iface = event->accessibleInterface();
                 if (!iface) {
-                    qWarning() << "StateChanged event from invalid accessible.";
+                    qWarning("StateChanged event from invalid accessible.");
                     return;
                 }
                 int checked = iface->state().checked;
@@ -1481,7 +1481,7 @@ QStringList AtSpiAdaptor::accessibleInterfaces(QAccessibleInterface *interface) 
         }
 #ifdef ACCESSIBLE_CREATION_DEBUG
     else {
-        qAtspiDebug() << " IS NOT a component";
+        qAtspiDebug(" IS NOT a component");
     }
 #endif
     if (interface->role() == QAccessible::Application)
@@ -1538,7 +1538,7 @@ QString AtSpiAdaptor::pathForObject(QObject *object) const
     Q_ASSERT(object);
 
     if (inheritsQAction(object)) {
-        qAtspiDebug() << "AtSpiAdaptor::pathForObject: warning: creating path with QAction as object.";
+        qAtspiDebug("AtSpiAdaptor::pathForObject: warning: creating path with QAction as object.");
     }
 
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(object);
@@ -1669,18 +1669,18 @@ bool AtSpiAdaptor::componentInterface(QAccessibleInterface *interface, const QSt
 //        int width = message.arguments().at(2).toInt();
 //        int height = message.arguments().at(3).toInt();
 //        uint coordinateType = message.arguments().at(4).toUInt();
-        qAtspiDebug() << "SetExtents is not implemented.";
+        qAtspiDebug("SetExtents is not implemented.");
         sendReply(connection, message, false);
     } else if (function == QLatin1String("SetPosition")) {
 //        int x = message.arguments().at(0).toInt();
 //        int y = message.arguments().at(1).toInt();
 //        uint coordinateType = message.arguments().at(2).toUInt();
-        qAtspiDebug() << "SetPosition is not implemented.";
+        qAtspiDebug("SetPosition is not implemented.");
         sendReply(connection, message, false);
     } else if (function == QLatin1String("SetSize")) {
 //        int width = message.arguments().at(0).toInt();
 //        int height = message.arguments().at(1).toInt();
-        qAtspiDebug() << "SetSize is not implemented.";
+        qAtspiDebug("SetSize is not implemented.");
         sendReply(connection, message, false);
     } else {
         qAtspiDebug() << "WARNING: AtSpiAdaptor::componentInterface does not implement " << function << message.path();

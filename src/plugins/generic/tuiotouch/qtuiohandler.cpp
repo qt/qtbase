@@ -165,7 +165,7 @@ void QTuioHandler::processPackets()
 
             QList<QVariant> arguments = message.arguments();
             if (arguments.count() == 0) {
-                qWarning() << "Ignoring TUIO message with no arguments";
+                qWarning("Ignoring TUIO message with no arguments");
                 continue;
             }
 
@@ -195,7 +195,7 @@ void QTuioHandler::process2DCurSource(const QOscMessage &message)
     }
 
     if (QMetaType::Type(arguments.at(1).type()) != QMetaType::QByteArray) {
-        qWarning() << "Ignoring malformed TUIO source message (bad argument type)";
+        qWarning("Ignoring malformed TUIO source message (bad argument type)");
         return;
     }
 

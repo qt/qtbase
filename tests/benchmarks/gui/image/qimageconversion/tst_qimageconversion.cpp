@@ -199,6 +199,7 @@ void tst_QImageConversion::convertRgb32_data()
     QTest::newRow("argb32 -> rgb666") << argb32 << QImage::Format_RGB666;
     QTest::newRow("argb32 -> argb8565pm") << argb32 << QImage::Format_ARGB8565_Premultiplied;
     QTest::newRow("argb32 -> argb4444pm") << argb32 << QImage::Format_ARGB4444_Premultiplied;
+    QTest::newRow("argb32 -> argb6666pm") << argb32 << QImage::Format_ARGB6666_Premultiplied;
 
     QTest::newRow("argb32pm -> rgb16") << argb32pm << QImage::Format_RGB16;
     QTest::newRow("argb32pm -> rgb32") << argb32pm << QImage::Format_RGB32;
@@ -212,6 +213,7 @@ void tst_QImageConversion::convertRgb32_data()
     QTest::newRow("argb32pm -> rgb666") << argb32pm << QImage::Format_RGB666;
     QTest::newRow("argb32pm -> argb8565pm") << argb32pm << QImage::Format_ARGB8565_Premultiplied;
     QTest::newRow("argb32pm -> argb4444pm") << argb32pm << QImage::Format_ARGB4444_Premultiplied;
+    QTest::newRow("argb32pm -> argb6666pm") << argb32pm << QImage::Format_ARGB6666_Premultiplied;
 }
 
 void tst_QImageConversion::convertRgb32()
@@ -235,6 +237,7 @@ void tst_QImageConversion::convertGeneric_data()
     QImage bgr30 = rgb32.convertToFormat(QImage::Format_BGR30);
     QImage a2rgb30 = argb32.convertToFormat(QImage::Format_A2RGB30_Premultiplied);
     QImage rgb666 = rgb32.convertToFormat(QImage::Format_RGB666);
+    QImage argb4444 = argb32.convertToFormat(QImage::Format_ARGB4444_Premultiplied);
 
     QTest::newRow("rgba8888 -> rgb32") << rgba32 << QImage::Format_RGB32;
     QTest::newRow("rgba8888 -> argb32") << rgba32 << QImage::Format_ARGB32;
@@ -271,6 +274,14 @@ void tst_QImageConversion::convertGeneric_data()
     QTest::newRow("rgb666 -> rgb16") << rgb666 << QImage::Format_RGB16;
     QTest::newRow("rgb666 -> rgb555") << rgb666 << QImage::Format_RGB555;
     QTest::newRow("rgb666 -> rgb30") << rgb666 << QImage::Format_RGB30;
+
+    QTest::newRow("argb4444pm -> rgb32") << argb4444 << QImage::Format_RGB32;
+    QTest::newRow("argb4444pm -> argb32") << argb4444 << QImage::Format_ARGB32;
+    QTest::newRow("argb4444pm -> argb32pm") << argb4444 << QImage::Format_ARGB32_Premultiplied;
+    QTest::newRow("argb4444pm -> rgbx8888") << argb4444 << QImage::Format_RGBX8888;
+    QTest::newRow("argb4444pm -> rgba8888pm") << argb4444 << QImage::Format_RGBA8888_Premultiplied;
+    QTest::newRow("argb4444pm -> rgb30") << argb4444 << QImage::Format_RGB30;
+    QTest::newRow("argb4444pm -> a2bgr30") << argb4444 << QImage::Format_A2BGR30_Premultiplied;
 }
 
 void tst_QImageConversion::convertGeneric()

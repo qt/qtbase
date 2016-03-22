@@ -189,6 +189,7 @@ sub shouldMasterInclude {
     if (open(F, "<$iheader")) {
         while (<F>) {
             chomp;
+            chop if /\r$/;
             return 0 if (/^\#pragma qt_no_master_include$/);
         }
         close(F);

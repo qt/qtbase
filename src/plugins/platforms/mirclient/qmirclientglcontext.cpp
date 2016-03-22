@@ -40,6 +40,7 @@
 #include "qmirclientlogging.h"
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtGui/private/qopenglcontext_p.h>
+#include <dlfcn.h>
 
 #if !defined(QT_NO_DEBUG)
 static void printOpenGLESConfig() {
@@ -143,12 +144,15 @@ void QMirClientOpenGLContext::swapBuffers(QPlatformSurface* surface)
     ubuntuWindow->onSwapBuffersDone();
 }
 
-void (*QMirClientOpenGLContext::getProcAddress(const QByteArray& procName)) ()
+QFunctionPointer QMirClientOpenGLContext::getProcAddress(const char *procName)
 {
 #if defined(QT_NO_DEBUG)
     eglBindAPI(api_in_use());
 #else
     ASSERT(eglBindAPI(api_in_use()) == EGL_TRUE);
 #endif
-    return eglGetProcAddress(procName.constData());
+    QFunctionPointer proc = (QFunctionPointer) eglGetProcAddress(procName);
+    if (!proc)
+        proc = (QFunctionPointer) dlsym(RTLD_DEFAULT, procName);
+    return proc;
 }

@@ -44,6 +44,7 @@
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtPlatformSupport/private/cglconvenience_p.h>
 #include <QtPlatformHeaders/qcocoanativecontext.h>
+#include <dlfcn.h>
 
 #import <AppKit/AppKit.h>
 
@@ -335,9 +336,9 @@ void QCocoaGLContext::doneCurrent()
     [NSOpenGLContext clearCurrentContext];
 }
 
-void (*QCocoaGLContext::getProcAddress(const QByteArray &procName))()
+QFunctionPointer QCocoaGLContext::getProcAddress(const char *procName)
 {
-    return qcgl_getProcAddress(procName);
+    return (QFunctionPointer)dlsym(RTLD_DEFAULT, procName);
 }
 
 void QCocoaGLContext::update()

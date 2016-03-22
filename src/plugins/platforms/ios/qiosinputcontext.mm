@@ -227,7 +227,7 @@ static QUIView *focusView()
     Q_UNUSED(sender);
 
     if (self.state == UIGestureRecognizerStateBegan) {
-        qImDebug() << "hide keyboard gesture was triggered";
+        qImDebug("hide keyboard gesture was triggered");
         UIResponder *firstResponder = [UIResponder currentFirstResponder];
         Q_ASSERT([firstResponder isKindOfClass:[QIOSTextInputResponder class]]);
         [firstResponder resignFirstResponder];
@@ -239,12 +239,12 @@ static QUIView *focusView()
     [super reset];
 
     if (!m_context->isInputPanelVisible()) {
-        qImDebug() << "keyboard was hidden, disabling hide-keyboard gesture";
+        qImDebug("keyboard was hidden, disabling hide-keyboard gesture");
         self.enabled = NO;
     } else {
-        qImDebug() << "gesture completed without triggering";
+        qImDebug("gesture completed without triggering");
         if (self.hasDeferredScrollToCursor) {
-            qImDebug() << "applying deferred scroll to cursor";
+            qImDebug("applying deferred scroll to cursor");
             m_context->scrollToCursor();
         }
     }
@@ -313,22 +313,22 @@ QIOSInputContext::~QIOSInputContext()
 void QIOSInputContext::showInputPanel()
 {
     // No-op, keyboard controlled fully by platform based on focus
-    qImDebug() << "can't show virtual keyboard without a focus object, ignoring";
+    qImDebug("can't show virtual keyboard without a focus object, ignoring");
 }
 
 void QIOSInputContext::hideInputPanel()
 {
     if (![m_textResponder isFirstResponder]) {
-        qImDebug() << "QIOSTextInputResponder is not first responder, ignoring";
+        qImDebug("QIOSTextInputResponder is not first responder, ignoring");
         return;
     }
 
     if (qGuiApp->focusObject() != m_imeState.focusObject) {
-        qImDebug() << "current focus object does not match IM state, likely hiding from focusOut event, so ignoring";
+        qImDebug("current focus object does not match IM state, likely hiding from focusOut event, so ignoring");
         return;
     }
 
-    qImDebug() << "hiding VKB as requested by QInputMethod::hide()";
+    qImDebug("hiding VKB as requested by QInputMethod::hide()");
     [m_textResponder resignFirstResponder];
 }
 
@@ -380,7 +380,7 @@ void QIOSInputContext::updateKeyboardState(NSNotification *notification)
         qImDebug() << qPrintable(QString::fromNSString(notification.name)) << "from" << fromCGRect(frameBegin) << "to" << fromCGRect(frameEnd)
                    << "(curve =" << m_keyboardState.animationCurve << "duration =" << m_keyboardState.animationDuration << "s)";
     } else {
-        qImDebug() << "No notification to update keyboard state based on, just updating keyboard rect";
+        qImDebug("No notification to update keyboard state based on, just updating keyboard rect");
     }
 
     if (!focusView() || CGRectIsEmpty(currentKeyboardRect))
@@ -434,7 +434,7 @@ void QIOSInputContext::scrollToCursor()
     if (m_keyboardHideGesture.state == UIGestureRecognizerStatePossible && m_keyboardHideGesture.numberOfTouches == 1) {
         // Don't scroll to the cursor if the user is touching the screen and possibly
         // trying to trigger the hide-keyboard gesture.
-        qImDebug() << "deferring scrolling to cursor as we're still waiting for a possible gesture";
+        qImDebug("deferring scrolling to cursor as we're still waiting for a possible gesture");
         m_keyboardHideGesture.hasDeferredScrollToCursor = YES;
         return;
     }
@@ -451,7 +451,7 @@ void QIOSInputContext::scrollToCursor()
 
     // We only support auto-scroll for docked keyboards for now, so make sure that's the case
     if (CGRectGetMaxY(m_keyboardState.keyboardEndRect) != CGRectGetMaxY([UIScreen mainScreen].bounds)) {
-        qImDebug() << "Keyboard not docked, ignoring request to scroll to reveal cursor";
+        qImDebug("Keyboard not docked, ignoring request to scroll to reveal cursor");
         return;
     }
 
@@ -550,7 +550,7 @@ void QIOSInputContext::setFocusObject(QObject *focusObject)
         clearCurrentFocusObject();
         return;
     } else if (focusObject == m_imeState.focusObject) {
-        qImDebug() << "same focus object as last update, skipping reset";
+        qImDebug("same focus object as last update, skipping reset");
         return;
     }
 
@@ -594,23 +594,23 @@ void QIOSInputContext::update(Qt::InputMethodQueries updatedProperties)
 
     if (inputMethodAccepted()) {
         if (!m_textResponder || [m_textResponder needsKeyboardReconfigure:changedProperties]) {
-            qImDebug() << "creating new text responder";
+            qImDebug("creating new text responder");
             [m_textResponder autorelease];
             m_textResponder = [[QIOSTextInputResponder alloc] initWithInputContext:this];
         } else {
-            qImDebug() << "no need to reconfigure keyboard, just notifying input delegate";
+            qImDebug("no need to reconfigure keyboard, just notifying input delegate");
             [m_textResponder notifyInputDelegate:changedProperties];
         }
 
         if (![m_textResponder isFirstResponder]) {
-            qImDebug() << "IM enabled, making text responder first responder";
+            qImDebug("IM enabled, making text responder first responder");
             [m_textResponder becomeFirstResponder];
         }
 
         if (changedProperties & Qt::ImCursorRectangle)
             scrollToCursor();
     } else if ([m_textResponder isFirstResponder]) {
-        qImDebug() << "IM not enabled, resigning text responder as first responder";
+        qImDebug("IM not enabled, resigning text responder as first responder");
         [m_textResponder resignFirstResponder];
     }
 }
@@ -640,7 +640,7 @@ bool QIOSInputContext::inputMethodAccepted() const
 */
 void QIOSInputContext::reset()
 {
-    qImDebug() << "updating Qt::ImQueryAll and unmarking text";
+    qImDebug("updating Qt::ImQueryAll and unmarking text");
 
     update(Qt::ImQueryAll);
 
@@ -658,7 +658,7 @@ void QIOSInputContext::reset()
 */
 void QIOSInputContext::commit()
 {
-    qImDebug() << "unmarking text";
+    qImDebug("unmarking text");
 
     [m_textResponder unmarkText];
     [m_textResponder notifyInputDelegate:Qt::ImSurroundingText];

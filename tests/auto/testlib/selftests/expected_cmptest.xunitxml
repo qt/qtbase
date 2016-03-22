@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="27" tests="17" name="tst_Cmptest">
+<testsuite errors="0" failures="28" tests="18" name="tst_Cmptest">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -61,6 +61,11 @@
     <failure message="Compared lists differ at index 0.
    Actual   (double1): 1.5
    Expected (double2): 1" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="compareQColor">
+    <failure message="Compared values are not the same
+   Actual   (yellow): #ffff00
+   Expected (green) : #00ff00" result="fail"/>
   </testcase>
   <testcase result="fail" name="compareQPixmaps">
     <failure tag="one null" message="Compared QPixmaps differ.

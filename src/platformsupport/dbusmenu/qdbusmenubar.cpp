@@ -133,6 +133,11 @@ QPlatformMenu *QDBusMenuBar::menuForTag(quintptr tag) const
     return nullptr;
 }
 
+QPlatformMenu *QDBusMenuBar::createMenu() const
+{
+    return new QDBusPlatformMenu;
+}
+
 void QDBusMenuBar::registerMenuBar()
 {
     static uint menuBarId = 0;

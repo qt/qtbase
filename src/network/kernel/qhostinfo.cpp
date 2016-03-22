@@ -49,6 +49,8 @@
 #include <qurl.h>
 #include <private/qnetworksession_p.h>
 
+#include <algorithm>
+
 #ifdef Q_OS_UNIX
 #  include <unistd.h>
 #endif
@@ -58,6 +60,26 @@ QT_BEGIN_NAMESPACE
 //#define QHOSTINFO_DEBUG
 
 Q_GLOBAL_STATIC(QHostInfoLookupManager, theHostInfoLookupManager)
+
+namespace {
+struct ToBeLookedUpEquals {
+    typedef bool result_type;
+    explicit ToBeLookedUpEquals(const QString &toBeLookedUp) Q_DECL_NOTHROW : m_toBeLookedUp(toBeLookedUp) {}
+    result_type operator()(QHostInfoRunnable* lookup) const Q_DECL_NOTHROW
+    {
+        return m_toBeLookedUp == lookup->toBeLookedUp;
+    }
+private:
+    QString m_toBeLookedUp;
+};
+
+// ### C++11: remove once we can use std::any_of()
+template<class InputIt, class UnaryPredicate>
+bool any_of(InputIt first, InputIt last, UnaryPredicate p)
+{
+    return std::find_if(first, last, p) != last;
+}
+}
 
 /*!
     \class QHostInfo
@@ -496,17 +518,17 @@ void QHostInfoRunnable::run()
     // now also iterate through the postponed ones
     {
         QMutexLocker locker(&manager->mutex);
-        QMutableListIterator<QHostInfoRunnable*> iterator(manager->postponedLookups);
-        while (iterator.hasNext()) {
-            QHostInfoRunnable* postponed = iterator.next();
-            if (toBeLookedUp == postponed->toBeLookedUp) {
-                // we can now emit
-                iterator.remove();
-                hostInfo.setLookupId(postponed->id);
-                postponed->resultEmitter.emitResultsReady(hostInfo);
-                delete postponed;
-            }
+        const auto partitionBegin = std::stable_partition(manager->postponedLookups.rbegin(), manager->postponedLookups.rend(),
+                                                          ToBeLookedUpEquals(toBeLookedUp)).base();
+        const auto partitionEnd = manager->postponedLookups.end();
+        for (auto it = partitionBegin; it != partitionEnd; ++it) {
+            QHostInfoRunnable* postponed = *it;
+            // we can now emit
+            hostInfo.setLookupId(postponed->id);
+            postponed->resultEmitter.emitResultsReady(hostInfo);
+            delete postponed;
         }
+        manager->postponedLookups.erase(partitionBegin, partitionEnd);
     }
 
     manager->lookupFinished(this);
@@ -573,13 +595,7 @@ void QHostInfoLookupManager::work()
             QHostInfoRunnable* postponed = iterator.next();
 
             // check if none of the postponed hostnames is currently running
-            bool alreadyRunning = false;
-            for (int i = 0; i < currentLookups.length(); i++) {
-                if (currentLookups.at(i)->toBeLookedUp == postponed->toBeLookedUp) {
-                    alreadyRunning = true;
-                    break;
-                }
-            }
+            const bool alreadyRunning = any_of(currentLookups.cbegin(), currentLookups.cend(), ToBeLookedUpEquals(postponed->toBeLookedUp));
             if (!alreadyRunning) {
                 iterator.remove();
                 scheduledLookups.prepend(postponed); // prepend! we want to finish it ASAP
@@ -594,13 +610,11 @@ void QHostInfoLookupManager::work()
             QHostInfoRunnable *scheduled = iterator.next();
 
             // check if a lookup for this host is already running, then postpone
-            for (int i = 0; i < currentLookups.size(); i++) {
-                if (currentLookups.at(i)->toBeLookedUp == scheduled->toBeLookedUp) {
-                    iterator.remove();
-                    postponedLookups.append(scheduled);
-                    scheduled = 0;
-                    break;
-                }
+            const bool alreadyRunning = any_of(currentLookups.cbegin(), currentLookups.cend(), ToBeLookedUpEquals(scheduled->toBeLookedUp));
+            if (alreadyRunning) {
+                iterator.remove();
+                postponedLookups.append(scheduled);
+                scheduled = 0;
             }
 
             if (scheduled && currentLookups.size() < threadPool.maxThreadCount()) {

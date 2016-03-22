@@ -263,6 +263,7 @@ private:
     friend QDataStream &operator<<(QDataStream &, const QTextFormat &);
     friend QDataStream &operator>>(QDataStream &, QTextFormat &);
 };
+Q_DECLARE_TYPEINFO(QTextFormatPrivate::Property, Q_MOVABLE_TYPE);
 
 static inline uint hash(const QColor &color)
 {

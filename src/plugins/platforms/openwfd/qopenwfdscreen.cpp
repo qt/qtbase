@@ -65,7 +65,7 @@ QOpenWFDScreen::QOpenWFDScreen(QOpenWFDPort *port)
     EGLContext context = mPort->device()->eglContext();
 
     if (!eglMakeCurrent(display,EGL_NO_SURFACE,EGL_NO_SURFACE,context)) {
-        qDebug() << "screen: eglMakeCurrent FAILED";
+        qDebug("screen: eglMakeCurrent FAILED");
     }
 
     glGenFramebuffers(1,&mFbo);

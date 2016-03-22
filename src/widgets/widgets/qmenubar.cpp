@@ -696,7 +696,8 @@ void QMenuBarPrivate::init()
     q->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     q->setAttribute(Qt::WA_CustomWhatsThis);
 
-    platformMenuBar = QGuiApplicationPrivate::platformTheme()->createPlatformMenuBar();
+    if (!QApplication::instance()->testAttribute(Qt::AA_DontUseNativeMenuBar))
+        platformMenuBar = QGuiApplicationPrivate::platformTheme()->createPlatformMenuBar();
 
     if (platformMenuBar)
         q->hide();
@@ -1209,12 +1210,19 @@ void QMenuBar::leaveEvent(QEvent *)
         d->setCurrentAction(0);
 }
 
-QPlatformMenu *getPlatformMenu(QAction *action)
+QPlatformMenu *QMenuBarPrivate::getPlatformMenu(QAction *action)
 {
     if (!action || !action->menu())
         return 0;
 
-    return action->menu()->platformMenu();
+    QPlatformMenu *platformMenu = action->menu()->platformMenu();
+    if (!platformMenu && platformMenuBar) {
+        platformMenu = platformMenuBar->createMenu();
+        if (platformMenu)
+            action->menu()->setPlatformMenu(platformMenu);
+    }
+
+    return platformMenu;
 }
 
 /*!
@@ -1235,14 +1243,14 @@ void QMenuBar::actionEvent(QActionEvent *e)
             return;
 
         if (e->type() == QEvent::ActionAdded) {
-            QPlatformMenu *menu = getPlatformMenu(e->action());
+            QPlatformMenu *menu = d->getPlatformMenu(e->action());
             if (menu) {
                 QPlatformMenu* beforeMenu = NULL;
                 for (int beforeIndex = d->indexOf(e->action()) + 1;
                      !beforeMenu && (beforeIndex < actions().size());
                      ++beforeIndex)
                 {
-                    beforeMenu = getPlatformMenu(actions().at(beforeIndex));
+                    beforeMenu = d->getPlatformMenu(actions().at(beforeIndex));
                 }
 
                 menu->setTag(reinterpret_cast<quintptr>(e->action()));
@@ -1250,12 +1258,12 @@ void QMenuBar::actionEvent(QActionEvent *e)
                 d->platformMenuBar->insertMenu(menu, beforeMenu);
             }
         } else if (e->type() == QEvent::ActionRemoved) {
-            QPlatformMenu *menu = getPlatformMenu(e->action());
+            QPlatformMenu *menu = d->getPlatformMenu(e->action());
             if (menu)
                 d->platformMenuBar->removeMenu(menu);
         } else if (e->type() == QEvent::ActionChanged) {
             QPlatformMenu* cur = d->platformMenuBar->menuForTag(reinterpret_cast<quintptr>(e->action()));
-            QPlatformMenu *menu = getPlatformMenu(e->action());
+            QPlatformMenu *menu = d->getPlatformMenu(e->action());
 
             // the menu associated with the action can change, need to
             // remove and/or insert the new platform menu
@@ -1270,7 +1278,7 @@ void QMenuBar::actionEvent(QActionEvent *e)
                          !beforeMenu && (beforeIndex < actions().size());
                          ++beforeIndex)
                     {
-                        beforeMenu = getPlatformMenu(actions().at(beforeIndex));
+                        beforeMenu = d->getPlatformMenu(actions().at(beforeIndex));
                     }
                     d->platformMenuBar->insertMenu(menu, beforeMenu);
                 }

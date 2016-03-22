@@ -1924,4 +1924,6 @@ bool QWidgetLineControl::isRedoAvailable() const
 
 QT_END_NAMESPACE
 
+#include "moc_qwidgetlinecontrol_p.cpp"
+
 #endif

@@ -113,31 +113,31 @@ static uint crc32(const Char *ptr, size_t len, uint h)
 
     p += 8;
     for ( ; p <= e; p += 8)
-        h2 = _mm_crc32_u64(h2, *reinterpret_cast<const qlonglong *>(p - 8));
+        h2 = _mm_crc32_u64(h2, qUnalignedLoad<qlonglong>(p - 8));
     h = h2;
     p -= 8;
 
     len = e - p;
     if (len & 4) {
-        h = _mm_crc32_u32(h, *reinterpret_cast<const uint *>(p));
+        h = _mm_crc32_u32(h, qUnalignedLoad<uint>(p));
         p += 4;
     }
 #  else
     p += 4;
     for ( ; p <= e; p += 4)
-        h = _mm_crc32_u32(h, *reinterpret_cast<const uint *>(p - 4));
+        h = _mm_crc32_u32(h, qUnalignedLoad<uint>(p - 4));
     p -= 4;
     len = e - p;
 #  endif
     if (len & 2) {
-        h = _mm_crc32_u16(h, *reinterpret_cast<const ushort *>(p));
+        h = _mm_crc32_u16(h, qUnalignedLoad<ushort>(p));
         p += 2;
     }
     if (sizeof(Char) == 1 && len & 1)
         h = _mm_crc32_u8(h, *p);
     return h;
 }
-#elif defined(Q_PROCESSOR_ARM_V8)
+#elif defined(__ARM_FEATURE_CRC32)
 static inline bool hasFastCrc32()
 {
     return qCpuHasFeature(CRC32);

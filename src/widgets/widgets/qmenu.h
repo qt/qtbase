@@ -171,6 +171,8 @@ public:
     bool isTearOffEnabled() const;
 
     bool isTearOffMenuVisible() const;
+    void showTearOffMenu();
+    void showTearOffMenu(const QPoint &pos);
     void hideTearOffMenu();
 
     void setDefaultAction(QAction *);

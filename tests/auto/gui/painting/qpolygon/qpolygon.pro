@@ -3,6 +3,6 @@ TARGET = tst_qpolygon
 QT += testlib
 SOURCES  += tst_qpolygon.cpp
 
-unix:!mac:!haiku:LIBS+=-lm
+unix:!darwin:!haiku:!integrity: LIBS += -lm
 
 

@@ -385,15 +385,11 @@ bool QNetworkAccessBackend::start()
             // Session not ready, but can skip for loopback connections
 
             // This is not ideal.
-            const QString host = reply->url.host();
-
-            if (host == QLatin1String("localhost") ||
-                QHostAddress(host).isLoopback() ||
-                reply->url.isLocalFile()) {
-                // Don't need an open session for localhost access.
-            } else {
-                // need to wait for session to be opened
-                return false;
+            // Don't need an open session for localhost access.
+            if (!reply->url.isLocalFile()) {
+                const QString host = reply->url.host();
+                if (host != QLatin1String("localhost") && !QHostAddress(host).isLoopback())
+                    return false; // need to wait for session to be opened
             }
         }
     }

@@ -678,14 +678,10 @@ hb_face_t *hb_qt_face_get_for_engine(QFontEngine *fe)
 {
     Q_ASSERT(fe && fe->type() != QFontEngine::Multi);
 
-    if (Q_UNLIKELY(!fe->face_)) {
-        fe->face_ = _hb_qt_face_create(fe);
-        if (Q_UNLIKELY(!fe->face_))
-            return NULL;
-        fe->face_destroy_func = _hb_qt_face_release;
-    }
+    if (Q_UNLIKELY(!fe->face_))
+        fe->face_ = QFontEngine::Holder(_hb_qt_face_create(fe), _hb_qt_face_release);
 
-    return static_cast<hb_face_t *>(fe->face_);
+    return static_cast<hb_face_t *>(fe->face_.get());
 }
 
 
@@ -728,14 +724,10 @@ hb_font_t *hb_qt_font_get_for_engine(QFontEngine *fe)
 {
     Q_ASSERT(fe && fe->type() != QFontEngine::Multi);
 
-    if (Q_UNLIKELY(!fe->font_)) {
-        fe->font_ = _hb_qt_font_create(fe);
-        if (Q_UNLIKELY(!fe->font_))
-            return NULL;
-        fe->font_destroy_func = _hb_qt_font_release;
-    }
+    if (Q_UNLIKELY(!fe->font_))
+        fe->font_ = QFontEngine::Holder(_hb_qt_font_create(fe), _hb_qt_font_release);
 
-    return static_cast<hb_font_t *>(fe->font_);
+    return static_cast<hb_font_t *>(fe->font_.get());
 }
 
 QT_END_NAMESPACE

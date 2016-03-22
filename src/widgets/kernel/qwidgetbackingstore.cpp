@@ -1630,3 +1630,5 @@ void QWidgetPrivate::repaint_sys(const QRegion &rgn)
 
 
 QT_END_NAMESPACE
+
+#include "moc_qwidgetbackingstore_p.cpp"

@@ -852,6 +852,25 @@ static QList<T> findChildrenHelper(const QObject *o)
     return result;
 }
 
+#ifndef QT_NO_DOCKWIDGET
+static QList<QDockWidget*> allMyDockWidgets(const QWidget *mainWindow)
+{
+    QList<QDockWidget*> result;
+    for (QObject *c : mainWindow->children()) {
+        if (auto *dw = qobject_cast<QDockWidget*>(c)) {
+            result.append(dw);
+        } else if (auto *gw = qobject_cast<QDockWidgetGroupWindow*>(c)) {
+            for (QObject *c : gw->children()) {
+                if (auto *dw = qobject_cast<QDockWidget*>(c))
+                    result.append(dw);
+            }
+        }
+    }
+
+    return result;
+}
+#endif // QT_NO_DOCKWIDGET
+
 //pre4.3 tests the format that was used before 4.3
 bool QMainWindowLayoutState::checkFormat(QDataStream &stream)
 {
@@ -875,9 +894,7 @@ bool QMainWindowLayoutState::checkFormat(QDataStream &stream)
 #ifndef QT_NO_DOCKWIDGET
             case QDockAreaLayout::DockWidgetStateMarker:
                 {
-                    QList<QDockWidget *> dockWidgets = findChildrenHelper<QDockWidget*>(mainWindow);
-                    foreach (QDockWidgetGroupWindow *floating, findChildrenHelper<QDockWidgetGroupWindow*>(mainWindow))
-                        dockWidgets += findChildrenHelper<QDockWidget*>(floating);
+                    const auto dockWidgets = allMyDockWidgets(mainWindow);
                     if (!dockAreaLayout.restoreState(stream, dockWidgets, true /*testing*/)) {
                         return false;
                     }
@@ -889,9 +906,7 @@ bool QMainWindowLayoutState::checkFormat(QDataStream &stream)
                     QRect geom;
                     stream >> geom;
                     QDockAreaLayoutInfo info;
-                    QList<QDockWidget *> dockWidgets = findChildrenHelper<QDockWidget*>(mainWindow);
-                    foreach (QDockWidgetGroupWindow *floating, findChildrenHelper<QDockWidgetGroupWindow*>(mainWindow))
-                        dockWidgets += findChildrenHelper<QDockWidget*>(floating);
+                    auto dockWidgets = allMyDockWidgets(mainWindow);
                     if (!info.restoreState(stream, dockWidgets, true /* testing*/))
                         return false;
                 }
@@ -935,9 +950,7 @@ bool QMainWindowLayoutState::restoreState(QDataStream &_stream,
 #ifndef QT_NO_DOCKWIDGET
             case QDockAreaLayout::DockWidgetStateMarker:
                 {
-                    QList<QDockWidget *> dockWidgets = findChildrenHelper<QDockWidget*>(mainWindow);
-                    foreach (QDockWidgetGroupWindow *floating, findChildrenHelper<QDockWidgetGroupWindow*>(mainWindow))
-                        dockWidgets += findChildrenHelper<QDockWidget*>(floating);
+                    const auto dockWidgets = allMyDockWidgets(mainWindow);
                     if (!dockAreaLayout.restoreState(stream, dockWidgets))
                         return false;
 
@@ -961,9 +974,7 @@ bool QMainWindowLayoutState::restoreState(QDataStream &_stream,
 #ifndef QT_NO_TABBAR
             case QDockAreaLayout::FloatingDockWidgetTabMarker:
             {
-                QList<QDockWidget *> dockWidgets = findChildrenHelper<QDockWidget*>(mainWindow);
-                foreach (QDockWidgetGroupWindow *floating, findChildrenHelper<QDockWidgetGroupWindow*>(mainWindow))
-                    dockWidgets += findChildrenHelper<QDockWidget*>(floating);
+                auto dockWidgets = allMyDockWidgets(mainWindow);
                 QDockWidgetGroupWindow* floatingTab = qt_mainwindow_layout(mainWindow)->createTabbedDockWindow();
                 *floatingTab->layoutInfo() = QDockAreaLayoutInfo(&dockAreaLayout.sep, QInternal::LeftDock,
                                                                  Qt::Horizontal, QTabBar::RoundedSouth, mainWindow);
@@ -2592,5 +2603,7 @@ void QMainWindowLayout::timerEvent(QTimerEvent *e)
 
 
 QT_END_NAMESPACE
+
+#include "moc_qmainwindowlayout_p.cpp"
 
 #endif // QT_NO_MAINWINDOW

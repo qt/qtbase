@@ -119,7 +119,7 @@ void QSystemSemaphorePrivate::cleanHandle()
         if (::sem_close(semaphore) == -1) {
             setErrorString(QLatin1String("QSystemSemaphore::cleanHandle (sem_close)"));
 #if defined QSYSTEMSEMAPHORE_DEBUG
-            qDebug() << QLatin1String("QSystemSemaphore::cleanHandle sem_close failed.");
+            qDebug("QSystemSemaphore::cleanHandle sem_close failed.");
 #endif
         }
         semaphore = SEM_FAILED;
@@ -129,7 +129,7 @@ void QSystemSemaphorePrivate::cleanHandle()
         if (::sem_unlink(QFile::encodeName(fileName).constData()) == -1 && errno != ENOENT) {
             setErrorString(QLatin1String("QSystemSemaphore::cleanHandle (sem_unlink)"));
 #if defined QSYSTEMSEMAPHORE_DEBUG
-            qDebug() << QLatin1String("QSystemSemaphore::cleanHandle sem_unlink failed.");
+            qDebug("QSystemSemaphore::cleanHandle sem_unlink failed.");
 #endif
         }
         createdSemaphore = false;

@@ -246,9 +246,6 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
         }
         newFreetype->face = face;
 
-        newFreetype->hbFace = 0;
-        newFreetype->hbFace_destroy_func = 0;
-
         newFreetype->ref.store(1);
         newFreetype->xsize = 0;
         newFreetype->ysize = 0;
@@ -300,10 +297,7 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
 
 void QFreetypeFace::cleanup()
 {
-    if (hbFace && hbFace_destroy_func) {
-        hbFace_destroy_func(hbFace);
-        hbFace = 0;
-    }
+    hbFace.reset();
     FT_Done_Face(face);
     face = 0;
 }
@@ -686,6 +680,8 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
     return init(faceId, antialias, format, QFreetypeFace::getFace(faceId, fontData));
 }
 
+static void dont_delete(void*) {}
+
 bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
                          QFreetypeFace *freetypeFace)
 {
@@ -776,13 +772,13 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
     if (!freetype->hbFace) {
         faceData.user_data = face;
         faceData.get_font_table = ft_getSfntTable;
-        freetype->hbFace = harfbuzzFace();
-        freetype->hbFace_destroy_func = face_destroy_func;
+        (void)harfbuzzFace(); // populates face_
+        freetype->hbFace = std::move(face_);
     } else {
         Q_ASSERT(!face_);
-        face_ = freetype->hbFace;
     }
-    face_destroy_func = 0; // we share the HB face in QFreeTypeFace, so do not let ~QFontEngine() destroy it
+    // we share the HB face in QFreeTypeFace, so do not let ~QFontEngine() destroy it
+    face_ = Holder(freetype->hbFace.get(), dont_delete);
 
     unlockFace();
 
@@ -1079,8 +1075,8 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     if (glyph_buffer_size < pitch * info.height) {
         glyph_buffer_size = pitch * info.height;
         glyph_buffer.reset(new uchar[glyph_buffer_size]);
+        memset(glyph_buffer.data(), 0, glyph_buffer_size);
     }
-    memset(glyph_buffer.data(), 0, glyph_buffer_size);
 
     if (slot->format == FT_GLYPH_FORMAT_OUTLINE) {
         FT_Bitmap bitmap;

@@ -524,9 +524,6 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
         if (&CTFontCopyDefaultCascadeListForLanguages)
   #endif
         {
-            if (fallbackLists.contains(family))
-                return fallbackLists.value(family);
-
             QCFType<CFMutableDictionaryRef> attributes = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
             CFDictionaryAddValue(attributes, kCTFontFamilyNameAttribute, QCFString(family));
             if (QCFType<CTFontDescriptorRef> fontDescriptor = CTFontDescriptorCreateWithAttributes(attributes)) {
@@ -554,12 +551,9 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
                             fallbackList.append(QStringLiteral("Arial Unicode MS"));
 #endif
 
-                        fallbackLists[family] = fallbackList;
+                        return fallbackList;
                     }
                 }
-
-                if (fallbackLists.contains(family))
-                    return fallbackLists.value(family);
             }
         }
 #endif
@@ -1003,7 +997,7 @@ QFontEngine *QCoreTextFontDatabase::freeTypeFontEngine(const QFontDef &fontDef, 
     }
 
     if (!engine->init(faceId, antialias, format, fontData) || engine->invalid()) {
-        qWarning() << "QCoreTextFontDatabase::freeTypefontEngine Failed to create engine";
+        qWarning("QCoreTextFontDatabase::freeTypefontEngine Failed to create engine");
         return Q_NULLPTR;
     }
     engine->setQtDefaultHintStyle(static_cast<QFont::HintingPreference>(fontDef.hintingPreference));

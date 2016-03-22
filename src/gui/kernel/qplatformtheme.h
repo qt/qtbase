@@ -172,6 +172,7 @@ public:
         FixedFont,
         GroupBoxTitleFont,
         TabButtonFont,
+        EditorFont,
         NFonts
     };
 

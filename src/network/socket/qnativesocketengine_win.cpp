@@ -528,6 +528,7 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
     localAddress.clear();
     peerPort = 0;
     peerAddress.clear();
+    inboundStreamCount = outboundStreamCount = 0;
 
     if (socketDescriptor == -1)
        return false;
@@ -576,6 +577,7 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
     memset(&sa, 0, sizeof(sa));
     if (::getpeername(socketDescriptor, &sa.a, &sockAddrSize) == 0) {
         qt_socket_getPortAndAddress(socketDescriptor, &sa, &peerPort, &peerAddress);
+        inboundStreamCount = outboundStreamCount = 1;
     } else {
         WS_ERROR_DEBUG(WSAGetLastError());
     }

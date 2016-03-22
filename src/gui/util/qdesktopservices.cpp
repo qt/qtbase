@@ -328,17 +328,17 @@ QString QDesktopServices::storageLocationImpl(QStandardPaths::StandardLocation t
         // * Unix data location is under the "data/" subdirectory
         const QString compatAppName = qt_applicationName_noFallback();
         const QString baseDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+        const QString organizationName = QCoreApplication::organizationName();
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)
         QString result = baseDir;
-        if (!QCoreApplication::organizationName().isEmpty())
-            result += QLatin1Char('/') + QCoreApplication::organizationName();
+        if (!organizationName.isEmpty())
+            result += QLatin1Char('/') + organizationName;
         if (!compatAppName.isEmpty())
             result += QLatin1Char('/') + compatAppName;
         return result;
 #elif defined(Q_OS_UNIX)
         return baseDir + QLatin1String("/data/")
-            + QCoreApplication::organizationName() + QLatin1Char('/')
-            + compatAppName;
+            + organizationName + QLatin1Char('/') + compatAppName;
 #endif
     }
     return QStandardPaths::writableLocation(type);

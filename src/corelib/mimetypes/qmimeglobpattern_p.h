@@ -130,11 +130,10 @@ public:
      */
     void removeMimeType(const QString &mimeType)
     {
-        QMutableListIterator<QMimeGlobPattern> it(*this);
-        while (it.hasNext()) {
-            if (it.next().mimeType() == mimeType)
-                it.remove();
-        }
+        auto isMimeTypeEqual = [&mimeType](const QMimeGlobPattern &pattern) {
+            return pattern.mimeType() == mimeType;
+        };
+        erase(std::remove_if(begin(), end(), isMimeTypeEqual), end());
     }
 
     void match(QMimeGlobMatchResult &result, const QString &fileName) const;

@@ -661,8 +661,6 @@ void QOpenGLContext::destroy()
     d->externalVersionFunctions.clear();
     qDeleteAll(d->versionFunctions);
     d->versionFunctions.clear();
-    qDeleteAll(d->versionFunctionsBackend);
-    d->versionFunctionsBackend.clear();
 
     delete d->textureFunctions;
     d->textureFunctions = 0;
@@ -1035,19 +1033,19 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
         return;
 
     if (!surface) {
-        qWarning() << "QOpenGLContext::swapBuffers() called with null argument";
+        qWarning("QOpenGLContext::swapBuffers() called with null argument");
         return;
     }
 
     if (!surface->supportsOpenGL()) {
-        qWarning() << "QOpenGLContext::swapBuffers() called with non-opengl surface";
+        qWarning("QOpenGLContext::swapBuffers() called with non-opengl surface");
         return;
     }
 
     if (surface->surfaceClass() == QSurface::Window
         && !qt_window_private(static_cast<QWindow *>(surface))->receivedExpose)
     {
-        qWarning() << "QOpenGLContext::swapBuffers() called with non-exposed window, behavior is undefined";
+        qWarning("QOpenGLContext::swapBuffers() called with non-exposed window, behavior is undefined");
     }
 
     QPlatformSurface *surfaceHandle = surface->surfaceHandle();
@@ -1056,7 +1054,7 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
 
 #if !defined(QT_NO_DEBUG)
     if (!QOpenGLContextPrivate::toggleMakeCurrentTracker(this, false))
-        qWarning() << "QOpenGLContext::swapBuffers() called without corresponding makeCurrent()";
+        qWarning("QOpenGLContext::swapBuffers() called without corresponding makeCurrent()");
 #endif
     if (surface->format().swapBehavior() == QSurfaceFormat::SingleBuffer)
         functions()->glFlush();
@@ -1070,9 +1068,18 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
 */
 QFunctionPointer QOpenGLContext::getProcAddress(const QByteArray &procName) const
 {
+    return getProcAddress(procName.constData());
+}
+
+/*!
+  \overload
+  \since 5.8
+ */
+QFunctionPointer QOpenGLContext::getProcAddress(const char *procName) const
+{
     Q_D(const QOpenGLContext);
     if (!d->platformGLContext)
-        return 0;
+        return nullptr;
     return d->platformGLContext->getProcAddress(procName);
 }
 
@@ -1293,29 +1300,10 @@ QOpenGLContext *QOpenGLContext::globalShareContext()
 /*!
     \internal
 */
-QOpenGLVersionFunctionsBackend *QOpenGLContext::functionsBackend(const QOpenGLVersionStatus &v) const
+QOpenGLVersionFunctionsStorage *QOpenGLContext::functionsBackendStorage() const
 {
     Q_D(const QOpenGLContext);
-    return d->versionFunctionsBackend.value(v, 0);
-}
-
-/*!
-    \internal
-*/
-void QOpenGLContext::insertFunctionsBackend(const QOpenGLVersionStatus &v,
-                                            QOpenGLVersionFunctionsBackend *backend)
-{
-    Q_D(QOpenGLContext);
-    d->versionFunctionsBackend.insert(v, backend);
-}
-
-/*!
-    \internal
-*/
-void QOpenGLContext::removeFunctionsBackend(const QOpenGLVersionStatus &v)
-{
-    Q_D(QOpenGLContext);
-    d->versionFunctionsBackend.remove(v);
+    return &d->versionFunctionsStorage;
 }
 
 /*!

@@ -559,7 +559,7 @@ QList<QMimeType> QMimeBinaryProvider::allMimeTypes()
 void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
 {
 #ifdef QT_NO_XMLSTREAMREADER
-    qWarning() << "Cannot load mime type since QXmlStreamReader is not available.";
+    qWarning("Cannot load mime type since QXmlStreamReader is not available.");
     return;
 #else
     if (data.loaded)
@@ -597,9 +597,8 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
             const QStringRef name = xml.attributes().value(QLatin1String("type"));
             if (name.isEmpty())
                 continue;
-            if (name != data.name) {
+            if (name.compare(data.name, Qt::CaseInsensitive))
                 qWarning() << "Got name" << name << "in file" << file << "expected" << data.name;
-            }
 
             while (xml.readNextStartElement()) {
                 const QStringRef tag = xml.name();

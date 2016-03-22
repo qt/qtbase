@@ -510,7 +510,7 @@ void QHttpSocketEngine::slotSocketConnected()
     data += "\r\n";
 //     qDebug() << ">>>>>>>> sending request" << this;
 //     qDebug() << data;
-//     qDebug() << ">>>>>>>";
+//     qDebug(">>>>>>>");
     d->socket->write(data);
     d->state = ConnectSent;
 }
@@ -576,6 +576,7 @@ void QHttpSocketEngine::slotSocketReadNotification()
         d->state = Connected;
         setLocalAddress(d->socket->localAddress());
         setLocalPort(d->socket->localPort());
+        d->inboundStreamCount = d->outboundStreamCount = 1;
         setState(QAbstractSocket::ConnectedState);
         d->authenticator.detach();
         priv = QAuthenticatorPrivate::getPrivate(d->authenticator);

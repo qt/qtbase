@@ -136,7 +136,7 @@ bool QNetworkManagerInterface::setConnections()
 QList <QDBusObjectPath> QNetworkManagerInterface::getDevices()
 {
     if (devicesPathList.isEmpty()) {
-        //qWarning() << "using blocking call!";
+        //qWarning("using blocking call!");
         QDBusReply<QList<QDBusObjectPath> > reply = call(QLatin1String("GetDevices"));
         devicesPathList = reply.value();
     }
@@ -639,7 +639,7 @@ void QNetworkManagerInterfaceDeviceWireless::accessPointsFinished(QDBusPendingCa
 QList <QDBusObjectPath> QNetworkManagerInterfaceDeviceWireless::getAccessPoints()
 {
     if (accessPointsList.isEmpty()) {
-        //qWarning() << "Using blocking call!";
+        //qWarning("Using blocking call!");
         QDBusReply<QList<QDBusObjectPath> > reply
                 = call(QLatin1String("GetAccessPoints"));
         accessPointsList = reply.value();
@@ -802,7 +802,7 @@ bool QNetworkManagerSettings::setConnections()
 QList <QDBusObjectPath> QNetworkManagerSettings::listConnections()
 {
     if (connectionsList.isEmpty()) {
-        //qWarning() << "Using blocking call!";
+        //qWarning("Using blocking call!");
         QDBusReply<QList<QDBusObjectPath> > reply
                 = call(QLatin1String("ListConnections"));
         connectionsList = reply.value();
@@ -874,7 +874,7 @@ void QNetworkManagerSettingsConnection::slotSettingsRemoved()
 QNmSettingsMap QNetworkManagerSettingsConnection::getSettings()
 {
     if (settingsMap.isEmpty()) {
-        //qWarning() << "Using blocking call!";
+        //qWarning("Using blocking call!");
         QDBusReply<QNmSettingsMap> reply = call(QLatin1String("GetSettings"));
         settingsMap = reply.value();
     }

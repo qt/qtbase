@@ -98,6 +98,7 @@ public:
     QPolygon intersected(const QPolygon &r) const Q_REQUIRED_RESULT;
     QPolygon subtracted(const QPolygon &r) const Q_REQUIRED_RESULT;
 };
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QPolygon)
 
 inline QPolygon::QPolygon(int asize) : QVector<QPoint>(asize) {}
 
@@ -174,6 +175,7 @@ public:
     QPolygonF intersected(const QPolygonF &r) const Q_REQUIRED_RESULT;
     QPolygonF subtracted(const QPolygonF &r) const Q_REQUIRED_RESULT;
 };
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QPolygonF)
 
 inline QPolygonF::QPolygonF(int asize) : QVector<QPointF>(asize) {}
 

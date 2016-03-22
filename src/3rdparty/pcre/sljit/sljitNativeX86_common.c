@@ -289,7 +289,7 @@ static void get_cpu_features(void)
 	__cpuid(CPUInfo, 1);
 	features = (sljit_ui)CPUInfo[3];
 
-#elif defined(__GNUC__) || defined(__INTEL_COMPILER) || defined(__SUNPRO_C)
+#elif defined(__GNUC__) || defined(__INTEL_COMPILER) || defined(__SUNPRO_C) || defined(__ghs)
 
 	/* AT&T syntax. */
 	__asm__ (

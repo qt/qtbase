@@ -252,9 +252,10 @@ void QOpenGLWindowPrivate::beginPaint(const QRegion &region)
         if (!fbo || fbo->size() != deviceSize) {
             QOpenGLFramebufferObjectFormat fboFormat;
             fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-            if (q->requestedFormat().samples() > 0) {
+            const int samples = q->requestedFormat().samples();
+            if (samples > 0) {
                 if (updateBehavior != QOpenGLWindow::PartialUpdateBlend)
-                    fboFormat.setSamples(q->requestedFormat().samples());
+                    fboFormat.setSamples(samples);
                 else
                     qWarning("QOpenGLWindow: PartialUpdateBlend does not support multisampling");
             }

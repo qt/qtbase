@@ -60,6 +60,7 @@ public:
 public slots:
     void initTestCase();
     void cleanup();
+    void cleanupTestCase();
 
 private slots:
     void getSetCheck();
@@ -223,6 +224,8 @@ private slots:
     void alignAccountingStyle();
     void setCodec();
 
+    void textModeOnEmptyRead();
+
 private:
     void generateLineData(bool for_QString);
     void generateAllData(bool for_QString);
@@ -234,6 +237,9 @@ private:
 
     QTemporaryDir tempDir;
     QString testFileName;
+#ifdef BUILTIN_TESTDATA
+    QSharedPointer<QTemporaryDir> m_dataDir;
+#endif
     const QString m_rfc3261FilePath;
     const QString m_shiftJisFilePath;
 };
@@ -260,9 +266,14 @@ void tst_QTextStream::initTestCase()
 
     testFileName = tempDir.path() + "/testfile";
 
+#ifdef BUILTIN_TESTDATA
+    m_dataDir = QEXTRACTTESTDATA("/");
+    QVERIFY2(QDir::setCurrent(m_dataDir->path()), qPrintable("Could not chdir to " + m_dataDir->path()));
+#else
     // chdir into the testdata dir and refer to our helper apps with relative paths
     QString testdata_dir = QFileInfo(QFINDTESTDATA("stdinProcess")).absolutePath();
     QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
+#endif
 }
 
 // Testing get/set functions
@@ -383,6 +394,13 @@ void tst_QTextStream::getSetCheck()
 void tst_QTextStream::cleanup()
 {
     QCoreApplication::instance()->processEvents();
+}
+
+void tst_QTextStream::cleanupTestCase()
+{
+#ifdef BUILTIN_TESTDATA
+    QDir::setCurrent(QCoreApplication::applicationDirPath());
+#endif
 }
 
 // ------------------------------------------------------------------------------
@@ -3039,6 +3057,19 @@ void tst_QTextStream::int_write_with_locale()
     stream << input;
     QCOMPARE(result, output);
 }
+
+void tst_QTextStream::textModeOnEmptyRead()
+{
+    const QString filename(tempDir.path() + QLatin1String("/textmodetest.txt"));
+
+    QFile file(filename);
+    QVERIFY2(file.open(QIODevice::ReadWrite | QIODevice::Text), qPrintable(file.errorString()));
+    QTextStream stream(&file);
+    QVERIFY(file.isTextModeEnabled());
+    QString emptyLine = stream.readLine(); // Text mode flag cleared here
+    QVERIFY(file.isTextModeEnabled());
+}
+
 
 // ------------------------------------------------------------------------------
 

@@ -1354,3 +1354,5 @@ QVBoxLayout::~QVBoxLayout()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qboxlayout.cpp"

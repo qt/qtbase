@@ -98,6 +98,11 @@ extern char *__progname;
 
 #if defined(Q_OS_LINUX) && (defined(__GLIBC__) || QT_HAS_INCLUDE(<sys/syscall.h>))
 #  include <sys/syscall.h>
+
+# if defined(Q_OS_ANDROID) && !defined(SYS_gettid)
+#  define SYS_gettid __NR_gettid
+# endif
+
 static long qt_gettid()
 {
     // no error handling
@@ -1191,7 +1196,7 @@ static void slog2_default_handler(QtMsgType msgType, const char *message)
 
         buffer_config.buffer_set_name = __progname;
         buffer_config.num_buffers = 1;
-        buffer_config.verbosity_level = SLOG2_INFO;
+        buffer_config.verbosity_level = SLOG2_DEBUG1;
         buffer_config.buffer_config[0].buffer_name = "default";
         buffer_config.buffer_config[0].num_pages = 8;
 

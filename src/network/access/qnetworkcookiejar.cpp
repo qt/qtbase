@@ -224,7 +224,7 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
     Q_D(const QNetworkCookieJar);
     const QDateTime now = QDateTime::currentDateTimeUtc();
     QList<QNetworkCookie> result;
-    bool isEncrypted = url.scheme().toLower() == QLatin1String("https");
+    bool isEncrypted = url.scheme() == QLatin1String("https");
 
     // scan our cookies for something that matches
     QList<QNetworkCookie>::ConstIterator it = d->allCookies.constBegin(),
@@ -331,7 +331,8 @@ bool QNetworkCookieJar::deleteCookie(const QNetworkCookie &cookie)
 bool QNetworkCookieJar::validateCookie(const QNetworkCookie &cookie, const QUrl &url) const
 {
     QString domain = cookie.domain();
-    if (!(isParentDomain(domain, url.host()) || isParentDomain(url.host(), domain)))
+    const QString host = url.host();
+    if (!isParentDomain(domain, host) && !isParentDomain(host, domain))
         return false; // not accepted
 
     // the check for effective TLDs makes the "embedded dot" rule from RFC 2109 section 4.3.2

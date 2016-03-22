@@ -52,6 +52,8 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qglobal.h>
 
+#include <utility>
+
 
 #ifndef QT_NO_BEARERMANAGEMENT
 
@@ -263,17 +265,18 @@ QNetworkConfiguration QNetworkConfigurationManagerPrivate::configurationFromIden
 
     foreach (QBearerEngine *engine, sessionEngines) {
         QMutexLocker locker(&engine->mutex);
-
-        if (engine->accessPointConfigurations.contains(identifier))
-            item.d = engine->accessPointConfigurations[identifier];
-        else if (engine->snapConfigurations.contains(identifier))
-            item.d = engine->snapConfigurations[identifier];
-        else if (engine->userChoiceConfigurations.contains(identifier))
-            item.d = engine->userChoiceConfigurations[identifier];
-        else
-            continue;
-
-        return item;
+        if (auto ptr = engine->accessPointConfigurations.value(identifier)) {
+            item.d = std::move(ptr);
+            break;
+        }
+        if (auto ptr = engine->snapConfigurations.value(identifier)) {
+            item.d = std::move(ptr);
+            break;
+        }
+        if (auto ptr = engine->userChoiceConfigurations.value(identifier)) {
+            item.d = std::move(ptr);
+            break;
+        }
     }
 
     return item;

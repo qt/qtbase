@@ -737,24 +737,17 @@ Q_IPV6ADDR QHostAddress::toIPv6Address() const
 QString QHostAddress::toString() const
 {
     QT_ENSURE_PARSED(this);
+    QString s;
     if (d->protocol == QAbstractSocket::IPv4Protocol
         || d->protocol == QAbstractSocket::AnyIPProtocol) {
         quint32 i = toIPv4Address();
-        QString s;
         QIPAddressUtils::toString(s, i);
-        return s;
-    }
-
-    if (d->protocol == QAbstractSocket::IPv6Protocol) {
-        QString s;
+    } else if (d->protocol == QAbstractSocket::IPv6Protocol) {
         QIPAddressUtils::toString(s, d->a6.c);
-
         if (!d->scopeId.isEmpty())
             s.append(QLatin1Char('%') + d->scopeId);
-        return s;
     }
-
-    return QString();
+    return s;
 }
 
 /*!

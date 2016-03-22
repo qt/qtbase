@@ -871,16 +871,20 @@ void QNetworkReplyImplPrivate::metaDataChanged()
     Q_Q(QNetworkReplyImpl);
     // 1. do we have cookies?
     // 2. are we allowed to set them?
-    if (cookedHeaders.contains(QNetworkRequest::SetCookieHeader) && !manager.isNull()
-        && (static_cast<QNetworkRequest::LoadControl>
-            (request.attribute(QNetworkRequest::CookieSaveControlAttribute,
-                               QNetworkRequest::Automatic).toInt()) == QNetworkRequest::Automatic)) {
-        QList<QNetworkCookie> cookies =
-            qvariant_cast<QList<QNetworkCookie> >(cookedHeaders.value(QNetworkRequest::SetCookieHeader));
-        QNetworkCookieJar *jar = manager->cookieJar();
-        if (jar)
-            jar->setCookiesFromUrl(cookies, url);
+    if (!manager.isNull()) {
+        const auto it = cookedHeaders.constFind(QNetworkRequest::SetCookieHeader);
+        if (it != cookedHeaders.cend()
+            && request.attribute(QNetworkRequest::CookieSaveControlAttribute,
+                                 QNetworkRequest::Automatic).toInt() == QNetworkRequest::Automatic) {
+            QNetworkCookieJar *jar = manager->cookieJar();
+            if (jar) {
+                QList<QNetworkCookie> cookies =
+                    qvariant_cast<QList<QNetworkCookie> >(it.value());
+                jar->setCookiesFromUrl(cookies, url);
+            }
+        }
     }
+
     emit q->metaDataChanged();
 }
 

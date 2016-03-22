@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Klaralvdalens Datakonsult AB (KDAB)
+** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -389,1534 +390,1534 @@ private:
 // OpenGL 1.0 core functions
 inline void QOpenGLFunctions_1_0::glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
 {
-    d_1_0_Core->Viewport(x, y, width, height);
+    d_1_0_Core->f.Viewport(x, y, width, height);
 }
 
 inline void QOpenGLFunctions_1_0::glDepthRange(GLdouble nearVal, GLdouble farVal)
 {
-    d_1_0_Core->DepthRange(nearVal, farVal);
+    d_1_0_Core->f.DepthRange(nearVal, farVal);
 }
 
 inline GLboolean QOpenGLFunctions_1_0::glIsEnabled(GLenum cap)
 {
-    return d_1_0_Core->IsEnabled(cap);
+    return d_1_0_Core->f.IsEnabled(cap);
 }
 
 inline void QOpenGLFunctions_1_0::glGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint *params)
 {
-    d_1_0_Core->GetTexLevelParameteriv(target, level, pname, params);
+    d_1_0_Core->f.GetTexLevelParameteriv(target, level, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glGetTexLevelParameterfv(GLenum target, GLint level, GLenum pname, GLfloat *params)
 {
-    d_1_0_Core->GetTexLevelParameterfv(target, level, pname, params);
+    d_1_0_Core->f.GetTexLevelParameterfv(target, level, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glGetTexParameteriv(GLenum target, GLenum pname, GLint *params)
 {
-    d_1_0_Core->GetTexParameteriv(target, pname, params);
+    d_1_0_Core->f.GetTexParameteriv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glGetTexParameterfv(GLenum target, GLenum pname, GLfloat *params)
 {
-    d_1_0_Core->GetTexParameterfv(target, pname, params);
+    d_1_0_Core->f.GetTexParameterfv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glGetTexImage(GLenum target, GLint level, GLenum format, GLenum type, GLvoid *pixels)
 {
-    d_1_0_Core->GetTexImage(target, level, format, type, pixels);
+    d_1_0_Core->f.GetTexImage(target, level, format, type, pixels);
 }
 
 inline const GLubyte * QOpenGLFunctions_1_0::glGetString(GLenum name)
 {
-    return d_1_0_Core->GetString(name);
+    return d_1_0_Core->f.GetString(name);
 }
 
 inline void QOpenGLFunctions_1_0::glGetIntegerv(GLenum pname, GLint *params)
 {
-    d_1_0_Core->GetIntegerv(pname, params);
+    d_1_0_Core->f.GetIntegerv(pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glGetFloatv(GLenum pname, GLfloat *params)
 {
-    d_1_0_Core->GetFloatv(pname, params);
+    d_1_0_Core->f.GetFloatv(pname, params);
 }
 
 inline GLenum QOpenGLFunctions_1_0::glGetError()
 {
-    return d_1_0_Core->GetError();
+    return d_1_0_Core->f.GetError();
 }
 
 inline void QOpenGLFunctions_1_0::glGetDoublev(GLenum pname, GLdouble *params)
 {
-    d_1_0_Core->GetDoublev(pname, params);
+    d_1_0_Core->f.GetDoublev(pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glGetBooleanv(GLenum pname, GLboolean *params)
 {
-    d_1_0_Core->GetBooleanv(pname, params);
+    d_1_0_Core->f.GetBooleanv(pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels)
 {
-    d_1_0_Core->ReadPixels(x, y, width, height, format, type, pixels);
+    d_1_0_Core->f.ReadPixels(x, y, width, height, format, type, pixels);
 }
 
 inline void QOpenGLFunctions_1_0::glReadBuffer(GLenum mode)
 {
-    d_1_0_Core->ReadBuffer(mode);
+    d_1_0_Core->f.ReadBuffer(mode);
 }
 
 inline void QOpenGLFunctions_1_0::glPixelStorei(GLenum pname, GLint param)
 {
-    d_1_0_Core->PixelStorei(pname, param);
+    d_1_0_Core->f.PixelStorei(pname, param);
 }
 
 inline void QOpenGLFunctions_1_0::glPixelStoref(GLenum pname, GLfloat param)
 {
-    d_1_0_Core->PixelStoref(pname, param);
+    d_1_0_Core->f.PixelStoref(pname, param);
 }
 
 inline void QOpenGLFunctions_1_0::glDepthFunc(GLenum func)
 {
-    d_1_0_Core->DepthFunc(func);
+    d_1_0_Core->f.DepthFunc(func);
 }
 
 inline void QOpenGLFunctions_1_0::glStencilOp(GLenum fail, GLenum zfail, GLenum zpass)
 {
-    d_1_0_Core->StencilOp(fail, zfail, zpass);
+    d_1_0_Core->f.StencilOp(fail, zfail, zpass);
 }
 
 inline void QOpenGLFunctions_1_0::glStencilFunc(GLenum func, GLint ref, GLuint mask)
 {
-    d_1_0_Core->StencilFunc(func, ref, mask);
+    d_1_0_Core->f.StencilFunc(func, ref, mask);
 }
 
 inline void QOpenGLFunctions_1_0::glLogicOp(GLenum opcode)
 {
-    d_1_0_Core->LogicOp(opcode);
+    d_1_0_Core->f.LogicOp(opcode);
 }
 
 inline void QOpenGLFunctions_1_0::glBlendFunc(GLenum sfactor, GLenum dfactor)
 {
-    d_1_0_Core->BlendFunc(sfactor, dfactor);
+    d_1_0_Core->f.BlendFunc(sfactor, dfactor);
 }
 
 inline void QOpenGLFunctions_1_0::glFlush()
 {
-    d_1_0_Core->Flush();
+    d_1_0_Core->f.Flush();
 }
 
 inline void QOpenGLFunctions_1_0::glFinish()
 {
-    d_1_0_Core->Finish();
+    d_1_0_Core->f.Finish();
 }
 
 inline void QOpenGLFunctions_1_0::glEnable(GLenum cap)
 {
-    d_1_0_Core->Enable(cap);
+    d_1_0_Core->f.Enable(cap);
 }
 
 inline void QOpenGLFunctions_1_0::glDisable(GLenum cap)
 {
-    d_1_0_Core->Disable(cap);
+    d_1_0_Core->f.Disable(cap);
 }
 
 inline void QOpenGLFunctions_1_0::glDepthMask(GLboolean flag)
 {
-    d_1_0_Core->DepthMask(flag);
+    d_1_0_Core->f.DepthMask(flag);
 }
 
 inline void QOpenGLFunctions_1_0::glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha)
 {
-    d_1_0_Core->ColorMask(red, green, blue, alpha);
+    d_1_0_Core->f.ColorMask(red, green, blue, alpha);
 }
 
 inline void QOpenGLFunctions_1_0::glStencilMask(GLuint mask)
 {
-    d_1_0_Core->StencilMask(mask);
+    d_1_0_Core->f.StencilMask(mask);
 }
 
 inline void QOpenGLFunctions_1_0::glClearDepth(GLdouble depth)
 {
-    d_1_0_Core->ClearDepth(depth);
+    d_1_0_Core->f.ClearDepth(depth);
 }
 
 inline void QOpenGLFunctions_1_0::glClearStencil(GLint s)
 {
-    d_1_0_Core->ClearStencil(s);
+    d_1_0_Core->f.ClearStencil(s);
 }
 
 inline void QOpenGLFunctions_1_0::glClearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
 {
-    d_1_0_Core->ClearColor(red, green, blue, alpha);
+    d_1_0_Core->f.ClearColor(red, green, blue, alpha);
 }
 
 inline void QOpenGLFunctions_1_0::glClear(GLbitfield mask)
 {
-    d_1_0_Core->Clear(mask);
+    d_1_0_Core->f.Clear(mask);
 }
 
 inline void QOpenGLFunctions_1_0::glDrawBuffer(GLenum mode)
 {
-    d_1_0_Core->DrawBuffer(mode);
+    d_1_0_Core->f.DrawBuffer(mode);
 }
 
 inline void QOpenGLFunctions_1_0::glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    d_1_0_Core->TexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
+    d_1_0_Core->f.TexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
 }
 
 inline void QOpenGLFunctions_1_0::glTexImage1D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    d_1_0_Core->TexImage1D(target, level, internalformat, width, border, format, type, pixels);
+    d_1_0_Core->f.TexImage1D(target, level, internalformat, width, border, format, type, pixels);
 }
 
 inline void QOpenGLFunctions_1_0::glTexParameteriv(GLenum target, GLenum pname, const GLint *params)
 {
-    d_1_0_Core->TexParameteriv(target, pname, params);
+    d_1_0_Core->f.TexParameteriv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glTexParameteri(GLenum target, GLenum pname, GLint param)
 {
-    d_1_0_Core->TexParameteri(target, pname, param);
+    d_1_0_Core->f.TexParameteri(target, pname, param);
 }
 
 inline void QOpenGLFunctions_1_0::glTexParameterfv(GLenum target, GLenum pname, const GLfloat *params)
 {
-    d_1_0_Core->TexParameterfv(target, pname, params);
+    d_1_0_Core->f.TexParameterfv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glTexParameterf(GLenum target, GLenum pname, GLfloat param)
 {
-    d_1_0_Core->TexParameterf(target, pname, param);
+    d_1_0_Core->f.TexParameterf(target, pname, param);
 }
 
 inline void QOpenGLFunctions_1_0::glScissor(GLint x, GLint y, GLsizei width, GLsizei height)
 {
-    d_1_0_Core->Scissor(x, y, width, height);
+    d_1_0_Core->f.Scissor(x, y, width, height);
 }
 
 inline void QOpenGLFunctions_1_0::glPolygonMode(GLenum face, GLenum mode)
 {
-    d_1_0_Core->PolygonMode(face, mode);
+    d_1_0_Core->f.PolygonMode(face, mode);
 }
 
 inline void QOpenGLFunctions_1_0::glPointSize(GLfloat size)
 {
-    d_1_0_Core->PointSize(size);
+    d_1_0_Core->f.PointSize(size);
 }
 
 inline void QOpenGLFunctions_1_0::glLineWidth(GLfloat width)
 {
-    d_1_0_Core->LineWidth(width);
+    d_1_0_Core->f.LineWidth(width);
 }
 
 inline void QOpenGLFunctions_1_0::glHint(GLenum target, GLenum mode)
 {
-    d_1_0_Core->Hint(target, mode);
+    d_1_0_Core->f.Hint(target, mode);
 }
 
 inline void QOpenGLFunctions_1_0::glFrontFace(GLenum mode)
 {
-    d_1_0_Core->FrontFace(mode);
+    d_1_0_Core->f.FrontFace(mode);
 }
 
 inline void QOpenGLFunctions_1_0::glCullFace(GLenum mode)
 {
-    d_1_0_Core->CullFace(mode);
+    d_1_0_Core->f.CullFace(mode);
 }
 
 
 // OpenGL 1.0 deprecated functions
 inline void QOpenGLFunctions_1_0::glTranslatef(GLfloat x, GLfloat y, GLfloat z)
 {
-    d_1_0_Deprecated->Translatef(x, y, z);
+    d_1_0_Deprecated->f.Translatef(x, y, z);
 }
 
 inline void QOpenGLFunctions_1_0::glTranslated(GLdouble x, GLdouble y, GLdouble z)
 {
-    d_1_0_Deprecated->Translated(x, y, z);
+    d_1_0_Deprecated->f.Translated(x, y, z);
 }
 
 inline void QOpenGLFunctions_1_0::glScalef(GLfloat x, GLfloat y, GLfloat z)
 {
-    d_1_0_Deprecated->Scalef(x, y, z);
+    d_1_0_Deprecated->f.Scalef(x, y, z);
 }
 
 inline void QOpenGLFunctions_1_0::glScaled(GLdouble x, GLdouble y, GLdouble z)
 {
-    d_1_0_Deprecated->Scaled(x, y, z);
+    d_1_0_Deprecated->f.Scaled(x, y, z);
 }
 
 inline void QOpenGLFunctions_1_0::glRotatef(GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
 {
-    d_1_0_Deprecated->Rotatef(angle, x, y, z);
+    d_1_0_Deprecated->f.Rotatef(angle, x, y, z);
 }
 
 inline void QOpenGLFunctions_1_0::glRotated(GLdouble angle, GLdouble x, GLdouble y, GLdouble z)
 {
-    d_1_0_Deprecated->Rotated(angle, x, y, z);
+    d_1_0_Deprecated->f.Rotated(angle, x, y, z);
 }
 
 inline void QOpenGLFunctions_1_0::glPushMatrix()
 {
-    d_1_0_Deprecated->PushMatrix();
+    d_1_0_Deprecated->f.PushMatrix();
 }
 
 inline void QOpenGLFunctions_1_0::glPopMatrix()
 {
-    d_1_0_Deprecated->PopMatrix();
+    d_1_0_Deprecated->f.PopMatrix();
 }
 
 inline void QOpenGLFunctions_1_0::glOrtho(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar)
 {
-    d_1_0_Deprecated->Ortho(left, right, bottom, top, zNear, zFar);
+    d_1_0_Deprecated->f.Ortho(left, right, bottom, top, zNear, zFar);
 }
 
 inline void QOpenGLFunctions_1_0::glMultMatrixd(const GLdouble *m)
 {
-    d_1_0_Deprecated->MultMatrixd(m);
+    d_1_0_Deprecated->f.MultMatrixd(m);
 }
 
 inline void QOpenGLFunctions_1_0::glMultMatrixf(const GLfloat *m)
 {
-    d_1_0_Deprecated->MultMatrixf(m);
+    d_1_0_Deprecated->f.MultMatrixf(m);
 }
 
 inline void QOpenGLFunctions_1_0::glMatrixMode(GLenum mode)
 {
-    d_1_0_Deprecated->MatrixMode(mode);
+    d_1_0_Deprecated->f.MatrixMode(mode);
 }
 
 inline void QOpenGLFunctions_1_0::glLoadMatrixd(const GLdouble *m)
 {
-    d_1_0_Deprecated->LoadMatrixd(m);
+    d_1_0_Deprecated->f.LoadMatrixd(m);
 }
 
 inline void QOpenGLFunctions_1_0::glLoadMatrixf(const GLfloat *m)
 {
-    d_1_0_Deprecated->LoadMatrixf(m);
+    d_1_0_Deprecated->f.LoadMatrixf(m);
 }
 
 inline void QOpenGLFunctions_1_0::glLoadIdentity()
 {
-    d_1_0_Deprecated->LoadIdentity();
+    d_1_0_Deprecated->f.LoadIdentity();
 }
 
 inline void QOpenGLFunctions_1_0::glFrustum(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar)
 {
-    d_1_0_Deprecated->Frustum(left, right, bottom, top, zNear, zFar);
+    d_1_0_Deprecated->f.Frustum(left, right, bottom, top, zNear, zFar);
 }
 
 inline GLboolean QOpenGLFunctions_1_0::glIsList(GLuint list)
 {
-    return d_1_0_Deprecated->IsList(list);
+    return d_1_0_Deprecated->f.IsList(list);
 }
 
 inline void QOpenGLFunctions_1_0::glGetTexGeniv(GLenum coord, GLenum pname, GLint *params)
 {
-    d_1_0_Deprecated->GetTexGeniv(coord, pname, params);
+    d_1_0_Deprecated->f.GetTexGeniv(coord, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glGetTexGenfv(GLenum coord, GLenum pname, GLfloat *params)
 {
-    d_1_0_Deprecated->GetTexGenfv(coord, pname, params);
+    d_1_0_Deprecated->f.GetTexGenfv(coord, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glGetTexGendv(GLenum coord, GLenum pname, GLdouble *params)
 {
-    d_1_0_Deprecated->GetTexGendv(coord, pname, params);
+    d_1_0_Deprecated->f.GetTexGendv(coord, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glGetTexEnviv(GLenum target, GLenum pname, GLint *params)
 {
-    d_1_0_Deprecated->GetTexEnviv(target, pname, params);
+    d_1_0_Deprecated->f.GetTexEnviv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glGetTexEnvfv(GLenum target, GLenum pname, GLfloat *params)
 {
-    d_1_0_Deprecated->GetTexEnvfv(target, pname, params);
+    d_1_0_Deprecated->f.GetTexEnvfv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glGetPolygonStipple(GLubyte *mask)
 {
-    d_1_0_Deprecated->GetPolygonStipple(mask);
+    d_1_0_Deprecated->f.GetPolygonStipple(mask);
 }
 
 inline void QOpenGLFunctions_1_0::glGetPixelMapusv(GLenum map, GLushort *values)
 {
-    d_1_0_Deprecated->GetPixelMapusv(map, values);
+    d_1_0_Deprecated->f.GetPixelMapusv(map, values);
 }
 
 inline void QOpenGLFunctions_1_0::glGetPixelMapuiv(GLenum map, GLuint *values)
 {
-    d_1_0_Deprecated->GetPixelMapuiv(map, values);
+    d_1_0_Deprecated->f.GetPixelMapuiv(map, values);
 }
 
 inline void QOpenGLFunctions_1_0::glGetPixelMapfv(GLenum map, GLfloat *values)
 {
-    d_1_0_Deprecated->GetPixelMapfv(map, values);
+    d_1_0_Deprecated->f.GetPixelMapfv(map, values);
 }
 
 inline void QOpenGLFunctions_1_0::glGetMaterialiv(GLenum face, GLenum pname, GLint *params)
 {
-    d_1_0_Deprecated->GetMaterialiv(face, pname, params);
+    d_1_0_Deprecated->f.GetMaterialiv(face, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glGetMaterialfv(GLenum face, GLenum pname, GLfloat *params)
 {
-    d_1_0_Deprecated->GetMaterialfv(face, pname, params);
+    d_1_0_Deprecated->f.GetMaterialfv(face, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glGetMapiv(GLenum target, GLenum query, GLint *v)
 {
-    d_1_0_Deprecated->GetMapiv(target, query, v);
+    d_1_0_Deprecated->f.GetMapiv(target, query, v);
 }
 
 inline void QOpenGLFunctions_1_0::glGetMapfv(GLenum target, GLenum query, GLfloat *v)
 {
-    d_1_0_Deprecated->GetMapfv(target, query, v);
+    d_1_0_Deprecated->f.GetMapfv(target, query, v);
 }
 
 inline void QOpenGLFunctions_1_0::glGetMapdv(GLenum target, GLenum query, GLdouble *v)
 {
-    d_1_0_Deprecated->GetMapdv(target, query, v);
+    d_1_0_Deprecated->f.GetMapdv(target, query, v);
 }
 
 inline void QOpenGLFunctions_1_0::glGetLightiv(GLenum light, GLenum pname, GLint *params)
 {
-    d_1_0_Deprecated->GetLightiv(light, pname, params);
+    d_1_0_Deprecated->f.GetLightiv(light, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glGetLightfv(GLenum light, GLenum pname, GLfloat *params)
 {
-    d_1_0_Deprecated->GetLightfv(light, pname, params);
+    d_1_0_Deprecated->f.GetLightfv(light, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glGetClipPlane(GLenum plane, GLdouble *equation)
 {
-    d_1_0_Deprecated->GetClipPlane(plane, equation);
+    d_1_0_Deprecated->f.GetClipPlane(plane, equation);
 }
 
 inline void QOpenGLFunctions_1_0::glDrawPixels(GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels)
 {
-    d_1_0_Deprecated->DrawPixels(width, height, format, type, pixels);
+    d_1_0_Deprecated->f.DrawPixels(width, height, format, type, pixels);
 }
 
 inline void QOpenGLFunctions_1_0::glCopyPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum type)
 {
-    d_1_0_Deprecated->CopyPixels(x, y, width, height, type);
+    d_1_0_Deprecated->f.CopyPixels(x, y, width, height, type);
 }
 
 inline void QOpenGLFunctions_1_0::glPixelMapusv(GLenum map, GLint mapsize, const GLushort *values)
 {
-    d_1_0_Deprecated->PixelMapusv(map, mapsize, values);
+    d_1_0_Deprecated->f.PixelMapusv(map, mapsize, values);
 }
 
 inline void QOpenGLFunctions_1_0::glPixelMapuiv(GLenum map, GLint mapsize, const GLuint *values)
 {
-    d_1_0_Deprecated->PixelMapuiv(map, mapsize, values);
+    d_1_0_Deprecated->f.PixelMapuiv(map, mapsize, values);
 }
 
 inline void QOpenGLFunctions_1_0::glPixelMapfv(GLenum map, GLint mapsize, const GLfloat *values)
 {
-    d_1_0_Deprecated->PixelMapfv(map, mapsize, values);
+    d_1_0_Deprecated->f.PixelMapfv(map, mapsize, values);
 }
 
 inline void QOpenGLFunctions_1_0::glPixelTransferi(GLenum pname, GLint param)
 {
-    d_1_0_Deprecated->PixelTransferi(pname, param);
+    d_1_0_Deprecated->f.PixelTransferi(pname, param);
 }
 
 inline void QOpenGLFunctions_1_0::glPixelTransferf(GLenum pname, GLfloat param)
 {
-    d_1_0_Deprecated->PixelTransferf(pname, param);
+    d_1_0_Deprecated->f.PixelTransferf(pname, param);
 }
 
 inline void QOpenGLFunctions_1_0::glPixelZoom(GLfloat xfactor, GLfloat yfactor)
 {
-    d_1_0_Deprecated->PixelZoom(xfactor, yfactor);
+    d_1_0_Deprecated->f.PixelZoom(xfactor, yfactor);
 }
 
 inline void QOpenGLFunctions_1_0::glAlphaFunc(GLenum func, GLfloat ref)
 {
-    d_1_0_Deprecated->AlphaFunc(func, ref);
+    d_1_0_Deprecated->f.AlphaFunc(func, ref);
 }
 
 inline void QOpenGLFunctions_1_0::glEvalPoint2(GLint i, GLint j)
 {
-    d_1_0_Deprecated->EvalPoint2(i, j);
+    d_1_0_Deprecated->f.EvalPoint2(i, j);
 }
 
 inline void QOpenGLFunctions_1_0::glEvalMesh2(GLenum mode, GLint i1, GLint i2, GLint j1, GLint j2)
 {
-    d_1_0_Deprecated->EvalMesh2(mode, i1, i2, j1, j2);
+    d_1_0_Deprecated->f.EvalMesh2(mode, i1, i2, j1, j2);
 }
 
 inline void QOpenGLFunctions_1_0::glEvalPoint1(GLint i)
 {
-    d_1_0_Deprecated->EvalPoint1(i);
+    d_1_0_Deprecated->f.EvalPoint1(i);
 }
 
 inline void QOpenGLFunctions_1_0::glEvalMesh1(GLenum mode, GLint i1, GLint i2)
 {
-    d_1_0_Deprecated->EvalMesh1(mode, i1, i2);
+    d_1_0_Deprecated->f.EvalMesh1(mode, i1, i2);
 }
 
 inline void QOpenGLFunctions_1_0::glEvalCoord2fv(const GLfloat *u)
 {
-    d_1_0_Deprecated->EvalCoord2fv(u);
+    d_1_0_Deprecated->f.EvalCoord2fv(u);
 }
 
 inline void QOpenGLFunctions_1_0::glEvalCoord2f(GLfloat u, GLfloat v)
 {
-    d_1_0_Deprecated->EvalCoord2f(u, v);
+    d_1_0_Deprecated->f.EvalCoord2f(u, v);
 }
 
 inline void QOpenGLFunctions_1_0::glEvalCoord2dv(const GLdouble *u)
 {
-    d_1_0_Deprecated->EvalCoord2dv(u);
+    d_1_0_Deprecated->f.EvalCoord2dv(u);
 }
 
 inline void QOpenGLFunctions_1_0::glEvalCoord2d(GLdouble u, GLdouble v)
 {
-    d_1_0_Deprecated->EvalCoord2d(u, v);
+    d_1_0_Deprecated->f.EvalCoord2d(u, v);
 }
 
 inline void QOpenGLFunctions_1_0::glEvalCoord1fv(const GLfloat *u)
 {
-    d_1_0_Deprecated->EvalCoord1fv(u);
+    d_1_0_Deprecated->f.EvalCoord1fv(u);
 }
 
 inline void QOpenGLFunctions_1_0::glEvalCoord1f(GLfloat u)
 {
-    d_1_0_Deprecated->EvalCoord1f(u);
+    d_1_0_Deprecated->f.EvalCoord1f(u);
 }
 
 inline void QOpenGLFunctions_1_0::glEvalCoord1dv(const GLdouble *u)
 {
-    d_1_0_Deprecated->EvalCoord1dv(u);
+    d_1_0_Deprecated->f.EvalCoord1dv(u);
 }
 
 inline void QOpenGLFunctions_1_0::glEvalCoord1d(GLdouble u)
 {
-    d_1_0_Deprecated->EvalCoord1d(u);
+    d_1_0_Deprecated->f.EvalCoord1d(u);
 }
 
 inline void QOpenGLFunctions_1_0::glMapGrid2f(GLint un, GLfloat u1, GLfloat u2, GLint vn, GLfloat v1, GLfloat v2)
 {
-    d_1_0_Deprecated->MapGrid2f(un, u1, u2, vn, v1, v2);
+    d_1_0_Deprecated->f.MapGrid2f(un, u1, u2, vn, v1, v2);
 }
 
 inline void QOpenGLFunctions_1_0::glMapGrid2d(GLint un, GLdouble u1, GLdouble u2, GLint vn, GLdouble v1, GLdouble v2)
 {
-    d_1_0_Deprecated->MapGrid2d(un, u1, u2, vn, v1, v2);
+    d_1_0_Deprecated->f.MapGrid2d(un, u1, u2, vn, v1, v2);
 }
 
 inline void QOpenGLFunctions_1_0::glMapGrid1f(GLint un, GLfloat u1, GLfloat u2)
 {
-    d_1_0_Deprecated->MapGrid1f(un, u1, u2);
+    d_1_0_Deprecated->f.MapGrid1f(un, u1, u2);
 }
 
 inline void QOpenGLFunctions_1_0::glMapGrid1d(GLint un, GLdouble u1, GLdouble u2)
 {
-    d_1_0_Deprecated->MapGrid1d(un, u1, u2);
+    d_1_0_Deprecated->f.MapGrid1d(un, u1, u2);
 }
 
 inline void QOpenGLFunctions_1_0::glMap2f(GLenum target, GLfloat u1, GLfloat u2, GLint ustride, GLint uorder, GLfloat v1, GLfloat v2, GLint vstride, GLint vorder, const GLfloat *points)
 {
-    d_1_0_Deprecated->Map2f(target, u1, u2, ustride, uorder, v1, v2, vstride, vorder, points);
+    d_1_0_Deprecated->f.Map2f(target, u1, u2, ustride, uorder, v1, v2, vstride, vorder, points);
 }
 
 inline void QOpenGLFunctions_1_0::glMap2d(GLenum target, GLdouble u1, GLdouble u2, GLint ustride, GLint uorder, GLdouble v1, GLdouble v2, GLint vstride, GLint vorder, const GLdouble *points)
 {
-    d_1_0_Deprecated->Map2d(target, u1, u2, ustride, uorder, v1, v2, vstride, vorder, points);
+    d_1_0_Deprecated->f.Map2d(target, u1, u2, ustride, uorder, v1, v2, vstride, vorder, points);
 }
 
 inline void QOpenGLFunctions_1_0::glMap1f(GLenum target, GLfloat u1, GLfloat u2, GLint stride, GLint order, const GLfloat *points)
 {
-    d_1_0_Deprecated->Map1f(target, u1, u2, stride, order, points);
+    d_1_0_Deprecated->f.Map1f(target, u1, u2, stride, order, points);
 }
 
 inline void QOpenGLFunctions_1_0::glMap1d(GLenum target, GLdouble u1, GLdouble u2, GLint stride, GLint order, const GLdouble *points)
 {
-    d_1_0_Deprecated->Map1d(target, u1, u2, stride, order, points);
+    d_1_0_Deprecated->f.Map1d(target, u1, u2, stride, order, points);
 }
 
 inline void QOpenGLFunctions_1_0::glPushAttrib(GLbitfield mask)
 {
-    d_1_0_Deprecated->PushAttrib(mask);
+    d_1_0_Deprecated->f.PushAttrib(mask);
 }
 
 inline void QOpenGLFunctions_1_0::glPopAttrib()
 {
-    d_1_0_Deprecated->PopAttrib();
+    d_1_0_Deprecated->f.PopAttrib();
 }
 
 inline void QOpenGLFunctions_1_0::glAccum(GLenum op, GLfloat value)
 {
-    d_1_0_Deprecated->Accum(op, value);
+    d_1_0_Deprecated->f.Accum(op, value);
 }
 
 inline void QOpenGLFunctions_1_0::glIndexMask(GLuint mask)
 {
-    d_1_0_Deprecated->IndexMask(mask);
+    d_1_0_Deprecated->f.IndexMask(mask);
 }
 
 inline void QOpenGLFunctions_1_0::glClearIndex(GLfloat c)
 {
-    d_1_0_Deprecated->ClearIndex(c);
+    d_1_0_Deprecated->f.ClearIndex(c);
 }
 
 inline void QOpenGLFunctions_1_0::glClearAccum(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
 {
-    d_1_0_Deprecated->ClearAccum(red, green, blue, alpha);
+    d_1_0_Deprecated->f.ClearAccum(red, green, blue, alpha);
 }
 
 inline void QOpenGLFunctions_1_0::glPushName(GLuint name)
 {
-    d_1_0_Deprecated->PushName(name);
+    d_1_0_Deprecated->f.PushName(name);
 }
 
 inline void QOpenGLFunctions_1_0::glPopName()
 {
-    d_1_0_Deprecated->PopName();
+    d_1_0_Deprecated->f.PopName();
 }
 
 inline void QOpenGLFunctions_1_0::glPassThrough(GLfloat token)
 {
-    d_1_0_Deprecated->PassThrough(token);
+    d_1_0_Deprecated->f.PassThrough(token);
 }
 
 inline void QOpenGLFunctions_1_0::glLoadName(GLuint name)
 {
-    d_1_0_Deprecated->LoadName(name);
+    d_1_0_Deprecated->f.LoadName(name);
 }
 
 inline void QOpenGLFunctions_1_0::glInitNames()
 {
-    d_1_0_Deprecated->InitNames();
+    d_1_0_Deprecated->f.InitNames();
 }
 
 inline GLint QOpenGLFunctions_1_0::glRenderMode(GLenum mode)
 {
-    return d_1_0_Deprecated->RenderMode(mode);
+    return d_1_0_Deprecated->f.RenderMode(mode);
 }
 
 inline void QOpenGLFunctions_1_0::glSelectBuffer(GLsizei size, GLuint *buffer)
 {
-    d_1_0_Deprecated->SelectBuffer(size, buffer);
+    d_1_0_Deprecated->f.SelectBuffer(size, buffer);
 }
 
 inline void QOpenGLFunctions_1_0::glFeedbackBuffer(GLsizei size, GLenum type, GLfloat *buffer)
 {
-    d_1_0_Deprecated->FeedbackBuffer(size, type, buffer);
+    d_1_0_Deprecated->f.FeedbackBuffer(size, type, buffer);
 }
 
 inline void QOpenGLFunctions_1_0::glTexGeniv(GLenum coord, GLenum pname, const GLint *params)
 {
-    d_1_0_Deprecated->TexGeniv(coord, pname, params);
+    d_1_0_Deprecated->f.TexGeniv(coord, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glTexGeni(GLenum coord, GLenum pname, GLint param)
 {
-    d_1_0_Deprecated->TexGeni(coord, pname, param);
+    d_1_0_Deprecated->f.TexGeni(coord, pname, param);
 }
 
 inline void QOpenGLFunctions_1_0::glTexGenfv(GLenum coord, GLenum pname, const GLfloat *params)
 {
-    d_1_0_Deprecated->TexGenfv(coord, pname, params);
+    d_1_0_Deprecated->f.TexGenfv(coord, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glTexGenf(GLenum coord, GLenum pname, GLfloat param)
 {
-    d_1_0_Deprecated->TexGenf(coord, pname, param);
+    d_1_0_Deprecated->f.TexGenf(coord, pname, param);
 }
 
 inline void QOpenGLFunctions_1_0::glTexGendv(GLenum coord, GLenum pname, const GLdouble *params)
 {
-    d_1_0_Deprecated->TexGendv(coord, pname, params);
+    d_1_0_Deprecated->f.TexGendv(coord, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glTexGend(GLenum coord, GLenum pname, GLdouble param)
 {
-    d_1_0_Deprecated->TexGend(coord, pname, param);
+    d_1_0_Deprecated->f.TexGend(coord, pname, param);
 }
 
 inline void QOpenGLFunctions_1_0::glTexEnviv(GLenum target, GLenum pname, const GLint *params)
 {
-    d_1_0_Deprecated->TexEnviv(target, pname, params);
+    d_1_0_Deprecated->f.TexEnviv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glTexEnvi(GLenum target, GLenum pname, GLint param)
 {
-    d_1_0_Deprecated->TexEnvi(target, pname, param);
+    d_1_0_Deprecated->f.TexEnvi(target, pname, param);
 }
 
 inline void QOpenGLFunctions_1_0::glTexEnvfv(GLenum target, GLenum pname, const GLfloat *params)
 {
-    d_1_0_Deprecated->TexEnvfv(target, pname, params);
+    d_1_0_Deprecated->f.TexEnvfv(target, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glTexEnvf(GLenum target, GLenum pname, GLfloat param)
 {
-    d_1_0_Deprecated->TexEnvf(target, pname, param);
+    d_1_0_Deprecated->f.TexEnvf(target, pname, param);
 }
 
 inline void QOpenGLFunctions_1_0::glShadeModel(GLenum mode)
 {
-    d_1_0_Deprecated->ShadeModel(mode);
+    d_1_0_Deprecated->f.ShadeModel(mode);
 }
 
 inline void QOpenGLFunctions_1_0::glPolygonStipple(const GLubyte *mask)
 {
-    d_1_0_Deprecated->PolygonStipple(mask);
+    d_1_0_Deprecated->f.PolygonStipple(mask);
 }
 
 inline void QOpenGLFunctions_1_0::glMaterialiv(GLenum face, GLenum pname, const GLint *params)
 {
-    d_1_0_Deprecated->Materialiv(face, pname, params);
+    d_1_0_Deprecated->f.Materialiv(face, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glMateriali(GLenum face, GLenum pname, GLint param)
 {
-    d_1_0_Deprecated->Materiali(face, pname, param);
+    d_1_0_Deprecated->f.Materiali(face, pname, param);
 }
 
 inline void QOpenGLFunctions_1_0::glMaterialfv(GLenum face, GLenum pname, const GLfloat *params)
 {
-    d_1_0_Deprecated->Materialfv(face, pname, params);
+    d_1_0_Deprecated->f.Materialfv(face, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glMaterialf(GLenum face, GLenum pname, GLfloat param)
 {
-    d_1_0_Deprecated->Materialf(face, pname, param);
+    d_1_0_Deprecated->f.Materialf(face, pname, param);
 }
 
 inline void QOpenGLFunctions_1_0::glLineStipple(GLint factor, GLushort pattern)
 {
-    d_1_0_Deprecated->LineStipple(factor, pattern);
+    d_1_0_Deprecated->f.LineStipple(factor, pattern);
 }
 
 inline void QOpenGLFunctions_1_0::glLightModeliv(GLenum pname, const GLint *params)
 {
-    d_1_0_Deprecated->LightModeliv(pname, params);
+    d_1_0_Deprecated->f.LightModeliv(pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glLightModeli(GLenum pname, GLint param)
 {
-    d_1_0_Deprecated->LightModeli(pname, param);
+    d_1_0_Deprecated->f.LightModeli(pname, param);
 }
 
 inline void QOpenGLFunctions_1_0::glLightModelfv(GLenum pname, const GLfloat *params)
 {
-    d_1_0_Deprecated->LightModelfv(pname, params);
+    d_1_0_Deprecated->f.LightModelfv(pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glLightModelf(GLenum pname, GLfloat param)
 {
-    d_1_0_Deprecated->LightModelf(pname, param);
+    d_1_0_Deprecated->f.LightModelf(pname, param);
 }
 
 inline void QOpenGLFunctions_1_0::glLightiv(GLenum light, GLenum pname, const GLint *params)
 {
-    d_1_0_Deprecated->Lightiv(light, pname, params);
+    d_1_0_Deprecated->f.Lightiv(light, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glLighti(GLenum light, GLenum pname, GLint param)
 {
-    d_1_0_Deprecated->Lighti(light, pname, param);
+    d_1_0_Deprecated->f.Lighti(light, pname, param);
 }
 
 inline void QOpenGLFunctions_1_0::glLightfv(GLenum light, GLenum pname, const GLfloat *params)
 {
-    d_1_0_Deprecated->Lightfv(light, pname, params);
+    d_1_0_Deprecated->f.Lightfv(light, pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glLightf(GLenum light, GLenum pname, GLfloat param)
 {
-    d_1_0_Deprecated->Lightf(light, pname, param);
+    d_1_0_Deprecated->f.Lightf(light, pname, param);
 }
 
 inline void QOpenGLFunctions_1_0::glFogiv(GLenum pname, const GLint *params)
 {
-    d_1_0_Deprecated->Fogiv(pname, params);
+    d_1_0_Deprecated->f.Fogiv(pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glFogi(GLenum pname, GLint param)
 {
-    d_1_0_Deprecated->Fogi(pname, param);
+    d_1_0_Deprecated->f.Fogi(pname, param);
 }
 
 inline void QOpenGLFunctions_1_0::glFogfv(GLenum pname, const GLfloat *params)
 {
-    d_1_0_Deprecated->Fogfv(pname, params);
+    d_1_0_Deprecated->f.Fogfv(pname, params);
 }
 
 inline void QOpenGLFunctions_1_0::glFogf(GLenum pname, GLfloat param)
 {
-    d_1_0_Deprecated->Fogf(pname, param);
+    d_1_0_Deprecated->f.Fogf(pname, param);
 }
 
 inline void QOpenGLFunctions_1_0::glColorMaterial(GLenum face, GLenum mode)
 {
-    d_1_0_Deprecated->ColorMaterial(face, mode);
+    d_1_0_Deprecated->f.ColorMaterial(face, mode);
 }
 
 inline void QOpenGLFunctions_1_0::glClipPlane(GLenum plane, const GLdouble *equation)
 {
-    d_1_0_Deprecated->ClipPlane(plane, equation);
+    d_1_0_Deprecated->f.ClipPlane(plane, equation);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex4sv(const GLshort *v)
 {
-    d_1_0_Deprecated->Vertex4sv(v);
+    d_1_0_Deprecated->f.Vertex4sv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex4s(GLshort x, GLshort y, GLshort z, GLshort w)
 {
-    d_1_0_Deprecated->Vertex4s(x, y, z, w);
+    d_1_0_Deprecated->f.Vertex4s(x, y, z, w);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex4iv(const GLint *v)
 {
-    d_1_0_Deprecated->Vertex4iv(v);
+    d_1_0_Deprecated->f.Vertex4iv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex4i(GLint x, GLint y, GLint z, GLint w)
 {
-    d_1_0_Deprecated->Vertex4i(x, y, z, w);
+    d_1_0_Deprecated->f.Vertex4i(x, y, z, w);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex4fv(const GLfloat *v)
 {
-    d_1_0_Deprecated->Vertex4fv(v);
+    d_1_0_Deprecated->f.Vertex4fv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex4f(GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 {
-    d_1_0_Deprecated->Vertex4f(x, y, z, w);
+    d_1_0_Deprecated->f.Vertex4f(x, y, z, w);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex4dv(const GLdouble *v)
 {
-    d_1_0_Deprecated->Vertex4dv(v);
+    d_1_0_Deprecated->f.Vertex4dv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex4d(GLdouble x, GLdouble y, GLdouble z, GLdouble w)
 {
-    d_1_0_Deprecated->Vertex4d(x, y, z, w);
+    d_1_0_Deprecated->f.Vertex4d(x, y, z, w);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex3sv(const GLshort *v)
 {
-    d_1_0_Deprecated->Vertex3sv(v);
+    d_1_0_Deprecated->f.Vertex3sv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex3s(GLshort x, GLshort y, GLshort z)
 {
-    d_1_0_Deprecated->Vertex3s(x, y, z);
+    d_1_0_Deprecated->f.Vertex3s(x, y, z);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex3iv(const GLint *v)
 {
-    d_1_0_Deprecated->Vertex3iv(v);
+    d_1_0_Deprecated->f.Vertex3iv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex3i(GLint x, GLint y, GLint z)
 {
-    d_1_0_Deprecated->Vertex3i(x, y, z);
+    d_1_0_Deprecated->f.Vertex3i(x, y, z);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex3fv(const GLfloat *v)
 {
-    d_1_0_Deprecated->Vertex3fv(v);
+    d_1_0_Deprecated->f.Vertex3fv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex3f(GLfloat x, GLfloat y, GLfloat z)
 {
-    d_1_0_Deprecated->Vertex3f(x, y, z);
+    d_1_0_Deprecated->f.Vertex3f(x, y, z);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex3dv(const GLdouble *v)
 {
-    d_1_0_Deprecated->Vertex3dv(v);
+    d_1_0_Deprecated->f.Vertex3dv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex3d(GLdouble x, GLdouble y, GLdouble z)
 {
-    d_1_0_Deprecated->Vertex3d(x, y, z);
+    d_1_0_Deprecated->f.Vertex3d(x, y, z);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex2sv(const GLshort *v)
 {
-    d_1_0_Deprecated->Vertex2sv(v);
+    d_1_0_Deprecated->f.Vertex2sv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex2s(GLshort x, GLshort y)
 {
-    d_1_0_Deprecated->Vertex2s(x, y);
+    d_1_0_Deprecated->f.Vertex2s(x, y);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex2iv(const GLint *v)
 {
-    d_1_0_Deprecated->Vertex2iv(v);
+    d_1_0_Deprecated->f.Vertex2iv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex2i(GLint x, GLint y)
 {
-    d_1_0_Deprecated->Vertex2i(x, y);
+    d_1_0_Deprecated->f.Vertex2i(x, y);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex2fv(const GLfloat *v)
 {
-    d_1_0_Deprecated->Vertex2fv(v);
+    d_1_0_Deprecated->f.Vertex2fv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex2f(GLfloat x, GLfloat y)
 {
-    d_1_0_Deprecated->Vertex2f(x, y);
+    d_1_0_Deprecated->f.Vertex2f(x, y);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex2dv(const GLdouble *v)
 {
-    d_1_0_Deprecated->Vertex2dv(v);
+    d_1_0_Deprecated->f.Vertex2dv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glVertex2d(GLdouble x, GLdouble y)
 {
-    d_1_0_Deprecated->Vertex2d(x, y);
+    d_1_0_Deprecated->f.Vertex2d(x, y);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord4sv(const GLshort *v)
 {
-    d_1_0_Deprecated->TexCoord4sv(v);
+    d_1_0_Deprecated->f.TexCoord4sv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord4s(GLshort s, GLshort t, GLshort r, GLshort q)
 {
-    d_1_0_Deprecated->TexCoord4s(s, t, r, q);
+    d_1_0_Deprecated->f.TexCoord4s(s, t, r, q);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord4iv(const GLint *v)
 {
-    d_1_0_Deprecated->TexCoord4iv(v);
+    d_1_0_Deprecated->f.TexCoord4iv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord4i(GLint s, GLint t, GLint r, GLint q)
 {
-    d_1_0_Deprecated->TexCoord4i(s, t, r, q);
+    d_1_0_Deprecated->f.TexCoord4i(s, t, r, q);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord4fv(const GLfloat *v)
 {
-    d_1_0_Deprecated->TexCoord4fv(v);
+    d_1_0_Deprecated->f.TexCoord4fv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord4f(GLfloat s, GLfloat t, GLfloat r, GLfloat q)
 {
-    d_1_0_Deprecated->TexCoord4f(s, t, r, q);
+    d_1_0_Deprecated->f.TexCoord4f(s, t, r, q);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord4dv(const GLdouble *v)
 {
-    d_1_0_Deprecated->TexCoord4dv(v);
+    d_1_0_Deprecated->f.TexCoord4dv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord4d(GLdouble s, GLdouble t, GLdouble r, GLdouble q)
 {
-    d_1_0_Deprecated->TexCoord4d(s, t, r, q);
+    d_1_0_Deprecated->f.TexCoord4d(s, t, r, q);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord3sv(const GLshort *v)
 {
-    d_1_0_Deprecated->TexCoord3sv(v);
+    d_1_0_Deprecated->f.TexCoord3sv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord3s(GLshort s, GLshort t, GLshort r)
 {
-    d_1_0_Deprecated->TexCoord3s(s, t, r);
+    d_1_0_Deprecated->f.TexCoord3s(s, t, r);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord3iv(const GLint *v)
 {
-    d_1_0_Deprecated->TexCoord3iv(v);
+    d_1_0_Deprecated->f.TexCoord3iv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord3i(GLint s, GLint t, GLint r)
 {
-    d_1_0_Deprecated->TexCoord3i(s, t, r);
+    d_1_0_Deprecated->f.TexCoord3i(s, t, r);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord3fv(const GLfloat *v)
 {
-    d_1_0_Deprecated->TexCoord3fv(v);
+    d_1_0_Deprecated->f.TexCoord3fv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord3f(GLfloat s, GLfloat t, GLfloat r)
 {
-    d_1_0_Deprecated->TexCoord3f(s, t, r);
+    d_1_0_Deprecated->f.TexCoord3f(s, t, r);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord3dv(const GLdouble *v)
 {
-    d_1_0_Deprecated->TexCoord3dv(v);
+    d_1_0_Deprecated->f.TexCoord3dv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord3d(GLdouble s, GLdouble t, GLdouble r)
 {
-    d_1_0_Deprecated->TexCoord3d(s, t, r);
+    d_1_0_Deprecated->f.TexCoord3d(s, t, r);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord2sv(const GLshort *v)
 {
-    d_1_0_Deprecated->TexCoord2sv(v);
+    d_1_0_Deprecated->f.TexCoord2sv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord2s(GLshort s, GLshort t)
 {
-    d_1_0_Deprecated->TexCoord2s(s, t);
+    d_1_0_Deprecated->f.TexCoord2s(s, t);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord2iv(const GLint *v)
 {
-    d_1_0_Deprecated->TexCoord2iv(v);
+    d_1_0_Deprecated->f.TexCoord2iv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord2i(GLint s, GLint t)
 {
-    d_1_0_Deprecated->TexCoord2i(s, t);
+    d_1_0_Deprecated->f.TexCoord2i(s, t);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord2fv(const GLfloat *v)
 {
-    d_1_0_Deprecated->TexCoord2fv(v);
+    d_1_0_Deprecated->f.TexCoord2fv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord2f(GLfloat s, GLfloat t)
 {
-    d_1_0_Deprecated->TexCoord2f(s, t);
+    d_1_0_Deprecated->f.TexCoord2f(s, t);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord2dv(const GLdouble *v)
 {
-    d_1_0_Deprecated->TexCoord2dv(v);
+    d_1_0_Deprecated->f.TexCoord2dv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord2d(GLdouble s, GLdouble t)
 {
-    d_1_0_Deprecated->TexCoord2d(s, t);
+    d_1_0_Deprecated->f.TexCoord2d(s, t);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord1sv(const GLshort *v)
 {
-    d_1_0_Deprecated->TexCoord1sv(v);
+    d_1_0_Deprecated->f.TexCoord1sv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord1s(GLshort s)
 {
-    d_1_0_Deprecated->TexCoord1s(s);
+    d_1_0_Deprecated->f.TexCoord1s(s);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord1iv(const GLint *v)
 {
-    d_1_0_Deprecated->TexCoord1iv(v);
+    d_1_0_Deprecated->f.TexCoord1iv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord1i(GLint s)
 {
-    d_1_0_Deprecated->TexCoord1i(s);
+    d_1_0_Deprecated->f.TexCoord1i(s);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord1fv(const GLfloat *v)
 {
-    d_1_0_Deprecated->TexCoord1fv(v);
+    d_1_0_Deprecated->f.TexCoord1fv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord1f(GLfloat s)
 {
-    d_1_0_Deprecated->TexCoord1f(s);
+    d_1_0_Deprecated->f.TexCoord1f(s);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord1dv(const GLdouble *v)
 {
-    d_1_0_Deprecated->TexCoord1dv(v);
+    d_1_0_Deprecated->f.TexCoord1dv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glTexCoord1d(GLdouble s)
 {
-    d_1_0_Deprecated->TexCoord1d(s);
+    d_1_0_Deprecated->f.TexCoord1d(s);
 }
 
 inline void QOpenGLFunctions_1_0::glRectsv(const GLshort *v1, const GLshort *v2)
 {
-    d_1_0_Deprecated->Rectsv(v1, v2);
+    d_1_0_Deprecated->f.Rectsv(v1, v2);
 }
 
 inline void QOpenGLFunctions_1_0::glRects(GLshort x1, GLshort y1, GLshort x2, GLshort y2)
 {
-    d_1_0_Deprecated->Rects(x1, y1, x2, y2);
+    d_1_0_Deprecated->f.Rects(x1, y1, x2, y2);
 }
 
 inline void QOpenGLFunctions_1_0::glRectiv(const GLint *v1, const GLint *v2)
 {
-    d_1_0_Deprecated->Rectiv(v1, v2);
+    d_1_0_Deprecated->f.Rectiv(v1, v2);
 }
 
 inline void QOpenGLFunctions_1_0::glRecti(GLint x1, GLint y1, GLint x2, GLint y2)
 {
-    d_1_0_Deprecated->Recti(x1, y1, x2, y2);
+    d_1_0_Deprecated->f.Recti(x1, y1, x2, y2);
 }
 
 inline void QOpenGLFunctions_1_0::glRectfv(const GLfloat *v1, const GLfloat *v2)
 {
-    d_1_0_Deprecated->Rectfv(v1, v2);
+    d_1_0_Deprecated->f.Rectfv(v1, v2);
 }
 
 inline void QOpenGLFunctions_1_0::glRectf(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2)
 {
-    d_1_0_Deprecated->Rectf(x1, y1, x2, y2);
+    d_1_0_Deprecated->f.Rectf(x1, y1, x2, y2);
 }
 
 inline void QOpenGLFunctions_1_0::glRectdv(const GLdouble *v1, const GLdouble *v2)
 {
-    d_1_0_Deprecated->Rectdv(v1, v2);
+    d_1_0_Deprecated->f.Rectdv(v1, v2);
 }
 
 inline void QOpenGLFunctions_1_0::glRectd(GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2)
 {
-    d_1_0_Deprecated->Rectd(x1, y1, x2, y2);
+    d_1_0_Deprecated->f.Rectd(x1, y1, x2, y2);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos4sv(const GLshort *v)
 {
-    d_1_0_Deprecated->RasterPos4sv(v);
+    d_1_0_Deprecated->f.RasterPos4sv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos4s(GLshort x, GLshort y, GLshort z, GLshort w)
 {
-    d_1_0_Deprecated->RasterPos4s(x, y, z, w);
+    d_1_0_Deprecated->f.RasterPos4s(x, y, z, w);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos4iv(const GLint *v)
 {
-    d_1_0_Deprecated->RasterPos4iv(v);
+    d_1_0_Deprecated->f.RasterPos4iv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos4i(GLint x, GLint y, GLint z, GLint w)
 {
-    d_1_0_Deprecated->RasterPos4i(x, y, z, w);
+    d_1_0_Deprecated->f.RasterPos4i(x, y, z, w);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos4fv(const GLfloat *v)
 {
-    d_1_0_Deprecated->RasterPos4fv(v);
+    d_1_0_Deprecated->f.RasterPos4fv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos4f(GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 {
-    d_1_0_Deprecated->RasterPos4f(x, y, z, w);
+    d_1_0_Deprecated->f.RasterPos4f(x, y, z, w);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos4dv(const GLdouble *v)
 {
-    d_1_0_Deprecated->RasterPos4dv(v);
+    d_1_0_Deprecated->f.RasterPos4dv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos4d(GLdouble x, GLdouble y, GLdouble z, GLdouble w)
 {
-    d_1_0_Deprecated->RasterPos4d(x, y, z, w);
+    d_1_0_Deprecated->f.RasterPos4d(x, y, z, w);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos3sv(const GLshort *v)
 {
-    d_1_0_Deprecated->RasterPos3sv(v);
+    d_1_0_Deprecated->f.RasterPos3sv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos3s(GLshort x, GLshort y, GLshort z)
 {
-    d_1_0_Deprecated->RasterPos3s(x, y, z);
+    d_1_0_Deprecated->f.RasterPos3s(x, y, z);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos3iv(const GLint *v)
 {
-    d_1_0_Deprecated->RasterPos3iv(v);
+    d_1_0_Deprecated->f.RasterPos3iv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos3i(GLint x, GLint y, GLint z)
 {
-    d_1_0_Deprecated->RasterPos3i(x, y, z);
+    d_1_0_Deprecated->f.RasterPos3i(x, y, z);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos3fv(const GLfloat *v)
 {
-    d_1_0_Deprecated->RasterPos3fv(v);
+    d_1_0_Deprecated->f.RasterPos3fv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos3f(GLfloat x, GLfloat y, GLfloat z)
 {
-    d_1_0_Deprecated->RasterPos3f(x, y, z);
+    d_1_0_Deprecated->f.RasterPos3f(x, y, z);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos3dv(const GLdouble *v)
 {
-    d_1_0_Deprecated->RasterPos3dv(v);
+    d_1_0_Deprecated->f.RasterPos3dv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos3d(GLdouble x, GLdouble y, GLdouble z)
 {
-    d_1_0_Deprecated->RasterPos3d(x, y, z);
+    d_1_0_Deprecated->f.RasterPos3d(x, y, z);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos2sv(const GLshort *v)
 {
-    d_1_0_Deprecated->RasterPos2sv(v);
+    d_1_0_Deprecated->f.RasterPos2sv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos2s(GLshort x, GLshort y)
 {
-    d_1_0_Deprecated->RasterPos2s(x, y);
+    d_1_0_Deprecated->f.RasterPos2s(x, y);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos2iv(const GLint *v)
 {
-    d_1_0_Deprecated->RasterPos2iv(v);
+    d_1_0_Deprecated->f.RasterPos2iv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos2i(GLint x, GLint y)
 {
-    d_1_0_Deprecated->RasterPos2i(x, y);
+    d_1_0_Deprecated->f.RasterPos2i(x, y);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos2fv(const GLfloat *v)
 {
-    d_1_0_Deprecated->RasterPos2fv(v);
+    d_1_0_Deprecated->f.RasterPos2fv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos2f(GLfloat x, GLfloat y)
 {
-    d_1_0_Deprecated->RasterPos2f(x, y);
+    d_1_0_Deprecated->f.RasterPos2f(x, y);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos2dv(const GLdouble *v)
 {
-    d_1_0_Deprecated->RasterPos2dv(v);
+    d_1_0_Deprecated->f.RasterPos2dv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glRasterPos2d(GLdouble x, GLdouble y)
 {
-    d_1_0_Deprecated->RasterPos2d(x, y);
+    d_1_0_Deprecated->f.RasterPos2d(x, y);
 }
 
 inline void QOpenGLFunctions_1_0::glNormal3sv(const GLshort *v)
 {
-    d_1_0_Deprecated->Normal3sv(v);
+    d_1_0_Deprecated->f.Normal3sv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glNormal3s(GLshort nx, GLshort ny, GLshort nz)
 {
-    d_1_0_Deprecated->Normal3s(nx, ny, nz);
+    d_1_0_Deprecated->f.Normal3s(nx, ny, nz);
 }
 
 inline void QOpenGLFunctions_1_0::glNormal3iv(const GLint *v)
 {
-    d_1_0_Deprecated->Normal3iv(v);
+    d_1_0_Deprecated->f.Normal3iv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glNormal3i(GLint nx, GLint ny, GLint nz)
 {
-    d_1_0_Deprecated->Normal3i(nx, ny, nz);
+    d_1_0_Deprecated->f.Normal3i(nx, ny, nz);
 }
 
 inline void QOpenGLFunctions_1_0::glNormal3fv(const GLfloat *v)
 {
-    d_1_0_Deprecated->Normal3fv(v);
+    d_1_0_Deprecated->f.Normal3fv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glNormal3f(GLfloat nx, GLfloat ny, GLfloat nz)
 {
-    d_1_0_Deprecated->Normal3f(nx, ny, nz);
+    d_1_0_Deprecated->f.Normal3f(nx, ny, nz);
 }
 
 inline void QOpenGLFunctions_1_0::glNormal3dv(const GLdouble *v)
 {
-    d_1_0_Deprecated->Normal3dv(v);
+    d_1_0_Deprecated->f.Normal3dv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glNormal3d(GLdouble nx, GLdouble ny, GLdouble nz)
 {
-    d_1_0_Deprecated->Normal3d(nx, ny, nz);
+    d_1_0_Deprecated->f.Normal3d(nx, ny, nz);
 }
 
 inline void QOpenGLFunctions_1_0::glNormal3bv(const GLbyte *v)
 {
-    d_1_0_Deprecated->Normal3bv(v);
+    d_1_0_Deprecated->f.Normal3bv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glNormal3b(GLbyte nx, GLbyte ny, GLbyte nz)
 {
-    d_1_0_Deprecated->Normal3b(nx, ny, nz);
+    d_1_0_Deprecated->f.Normal3b(nx, ny, nz);
 }
 
 inline void QOpenGLFunctions_1_0::glIndexsv(const GLshort *c)
 {
-    d_1_0_Deprecated->Indexsv(c);
+    d_1_0_Deprecated->f.Indexsv(c);
 }
 
 inline void QOpenGLFunctions_1_0::glIndexs(GLshort c)
 {
-    d_1_0_Deprecated->Indexs(c);
+    d_1_0_Deprecated->f.Indexs(c);
 }
 
 inline void QOpenGLFunctions_1_0::glIndexiv(const GLint *c)
 {
-    d_1_0_Deprecated->Indexiv(c);
+    d_1_0_Deprecated->f.Indexiv(c);
 }
 
 inline void QOpenGLFunctions_1_0::glIndexi(GLint c)
 {
-    d_1_0_Deprecated->Indexi(c);
+    d_1_0_Deprecated->f.Indexi(c);
 }
 
 inline void QOpenGLFunctions_1_0::glIndexfv(const GLfloat *c)
 {
-    d_1_0_Deprecated->Indexfv(c);
+    d_1_0_Deprecated->f.Indexfv(c);
 }
 
 inline void QOpenGLFunctions_1_0::glIndexf(GLfloat c)
 {
-    d_1_0_Deprecated->Indexf(c);
+    d_1_0_Deprecated->f.Indexf(c);
 }
 
 inline void QOpenGLFunctions_1_0::glIndexdv(const GLdouble *c)
 {
-    d_1_0_Deprecated->Indexdv(c);
+    d_1_0_Deprecated->f.Indexdv(c);
 }
 
 inline void QOpenGLFunctions_1_0::glIndexd(GLdouble c)
 {
-    d_1_0_Deprecated->Indexd(c);
+    d_1_0_Deprecated->f.Indexd(c);
 }
 
 inline void QOpenGLFunctions_1_0::glEnd()
 {
-    d_1_0_Deprecated->End();
+    d_1_0_Deprecated->f.End();
 }
 
 inline void QOpenGLFunctions_1_0::glEdgeFlagv(const GLboolean *flag)
 {
-    d_1_0_Deprecated->EdgeFlagv(flag);
+    d_1_0_Deprecated->f.EdgeFlagv(flag);
 }
 
 inline void QOpenGLFunctions_1_0::glEdgeFlag(GLboolean flag)
 {
-    d_1_0_Deprecated->EdgeFlag(flag);
+    d_1_0_Deprecated->f.EdgeFlag(flag);
 }
 
 inline void QOpenGLFunctions_1_0::glColor4usv(const GLushort *v)
 {
-    d_1_0_Deprecated->Color4usv(v);
+    d_1_0_Deprecated->f.Color4usv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glColor4us(GLushort red, GLushort green, GLushort blue, GLushort alpha)
 {
-    d_1_0_Deprecated->Color4us(red, green, blue, alpha);
+    d_1_0_Deprecated->f.Color4us(red, green, blue, alpha);
 }
 
 inline void QOpenGLFunctions_1_0::glColor4uiv(const GLuint *v)
 {
-    d_1_0_Deprecated->Color4uiv(v);
+    d_1_0_Deprecated->f.Color4uiv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glColor4ui(GLuint red, GLuint green, GLuint blue, GLuint alpha)
 {
-    d_1_0_Deprecated->Color4ui(red, green, blue, alpha);
+    d_1_0_Deprecated->f.Color4ui(red, green, blue, alpha);
 }
 
 inline void QOpenGLFunctions_1_0::glColor4ubv(const GLubyte *v)
 {
-    d_1_0_Deprecated->Color4ubv(v);
+    d_1_0_Deprecated->f.Color4ubv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glColor4ub(GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha)
 {
-    d_1_0_Deprecated->Color4ub(red, green, blue, alpha);
+    d_1_0_Deprecated->f.Color4ub(red, green, blue, alpha);
 }
 
 inline void QOpenGLFunctions_1_0::glColor4sv(const GLshort *v)
 {
-    d_1_0_Deprecated->Color4sv(v);
+    d_1_0_Deprecated->f.Color4sv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glColor4s(GLshort red, GLshort green, GLshort blue, GLshort alpha)
 {
-    d_1_0_Deprecated->Color4s(red, green, blue, alpha);
+    d_1_0_Deprecated->f.Color4s(red, green, blue, alpha);
 }
 
 inline void QOpenGLFunctions_1_0::glColor4iv(const GLint *v)
 {
-    d_1_0_Deprecated->Color4iv(v);
+    d_1_0_Deprecated->f.Color4iv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glColor4i(GLint red, GLint green, GLint blue, GLint alpha)
 {
-    d_1_0_Deprecated->Color4i(red, green, blue, alpha);
+    d_1_0_Deprecated->f.Color4i(red, green, blue, alpha);
 }
 
 inline void QOpenGLFunctions_1_0::glColor4fv(const GLfloat *v)
 {
-    d_1_0_Deprecated->Color4fv(v);
+    d_1_0_Deprecated->f.Color4fv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glColor4f(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
 {
-    d_1_0_Deprecated->Color4f(red, green, blue, alpha);
+    d_1_0_Deprecated->f.Color4f(red, green, blue, alpha);
 }
 
 inline void QOpenGLFunctions_1_0::glColor4dv(const GLdouble *v)
 {
-    d_1_0_Deprecated->Color4dv(v);
+    d_1_0_Deprecated->f.Color4dv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glColor4d(GLdouble red, GLdouble green, GLdouble blue, GLdouble alpha)
 {
-    d_1_0_Deprecated->Color4d(red, green, blue, alpha);
+    d_1_0_Deprecated->f.Color4d(red, green, blue, alpha);
 }
 
 inline void QOpenGLFunctions_1_0::glColor4bv(const GLbyte *v)
 {
-    d_1_0_Deprecated->Color4bv(v);
+    d_1_0_Deprecated->f.Color4bv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glColor4b(GLbyte red, GLbyte green, GLbyte blue, GLbyte alpha)
 {
-    d_1_0_Deprecated->Color4b(red, green, blue, alpha);
+    d_1_0_Deprecated->f.Color4b(red, green, blue, alpha);
 }
 
 inline void QOpenGLFunctions_1_0::glColor3usv(const GLushort *v)
 {
-    d_1_0_Deprecated->Color3usv(v);
+    d_1_0_Deprecated->f.Color3usv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glColor3us(GLushort red, GLushort green, GLushort blue)
 {
-    d_1_0_Deprecated->Color3us(red, green, blue);
+    d_1_0_Deprecated->f.Color3us(red, green, blue);
 }
 
 inline void QOpenGLFunctions_1_0::glColor3uiv(const GLuint *v)
 {
-    d_1_0_Deprecated->Color3uiv(v);
+    d_1_0_Deprecated->f.Color3uiv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glColor3ui(GLuint red, GLuint green, GLuint blue)
 {
-    d_1_0_Deprecated->Color3ui(red, green, blue);
+    d_1_0_Deprecated->f.Color3ui(red, green, blue);
 }
 
 inline void QOpenGLFunctions_1_0::glColor3ubv(const GLubyte *v)
 {
-    d_1_0_Deprecated->Color3ubv(v);
+    d_1_0_Deprecated->f.Color3ubv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glColor3ub(GLubyte red, GLubyte green, GLubyte blue)
 {
-    d_1_0_Deprecated->Color3ub(red, green, blue);
+    d_1_0_Deprecated->f.Color3ub(red, green, blue);
 }
 
 inline void QOpenGLFunctions_1_0::glColor3sv(const GLshort *v)
 {
-    d_1_0_Deprecated->Color3sv(v);
+    d_1_0_Deprecated->f.Color3sv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glColor3s(GLshort red, GLshort green, GLshort blue)
 {
-    d_1_0_Deprecated->Color3s(red, green, blue);
+    d_1_0_Deprecated->f.Color3s(red, green, blue);
 }
 
 inline void QOpenGLFunctions_1_0::glColor3iv(const GLint *v)
 {
-    d_1_0_Deprecated->Color3iv(v);
+    d_1_0_Deprecated->f.Color3iv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glColor3i(GLint red, GLint green, GLint blue)
 {
-    d_1_0_Deprecated->Color3i(red, green, blue);
+    d_1_0_Deprecated->f.Color3i(red, green, blue);
 }
 
 inline void QOpenGLFunctions_1_0::glColor3fv(const GLfloat *v)
 {
-    d_1_0_Deprecated->Color3fv(v);
+    d_1_0_Deprecated->f.Color3fv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glColor3f(GLfloat red, GLfloat green, GLfloat blue)
 {
-    d_1_0_Deprecated->Color3f(red, green, blue);
+    d_1_0_Deprecated->f.Color3f(red, green, blue);
 }
 
 inline void QOpenGLFunctions_1_0::glColor3dv(const GLdouble *v)
 {
-    d_1_0_Deprecated->Color3dv(v);
+    d_1_0_Deprecated->f.Color3dv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glColor3d(GLdouble red, GLdouble green, GLdouble blue)
 {
-    d_1_0_Deprecated->Color3d(red, green, blue);
+    d_1_0_Deprecated->f.Color3d(red, green, blue);
 }
 
 inline void QOpenGLFunctions_1_0::glColor3bv(const GLbyte *v)
 {
-    d_1_0_Deprecated->Color3bv(v);
+    d_1_0_Deprecated->f.Color3bv(v);
 }
 
 inline void QOpenGLFunctions_1_0::glColor3b(GLbyte red, GLbyte green, GLbyte blue)
 {
-    d_1_0_Deprecated->Color3b(red, green, blue);
+    d_1_0_Deprecated->f.Color3b(red, green, blue);
 }
 
 inline void QOpenGLFunctions_1_0::glBitmap(GLsizei width, GLsizei height, GLfloat xorig, GLfloat yorig, GLfloat xmove, GLfloat ymove, const GLubyte *bitmap)
 {
-    d_1_0_Deprecated->Bitmap(width, height, xorig, yorig, xmove, ymove, bitmap);
+    d_1_0_Deprecated->f.Bitmap(width, height, xorig, yorig, xmove, ymove, bitmap);
 }
 
 inline void QOpenGLFunctions_1_0::glBegin(GLenum mode)
 {
-    d_1_0_Deprecated->Begin(mode);
+    d_1_0_Deprecated->f.Begin(mode);
 }
 
 inline void QOpenGLFunctions_1_0::glListBase(GLuint base)
 {
-    d_1_0_Deprecated->ListBase(base);
+    d_1_0_Deprecated->f.ListBase(base);
 }
 
 inline GLuint QOpenGLFunctions_1_0::glGenLists(GLsizei range)
 {
-    return d_1_0_Deprecated->GenLists(range);
+    return d_1_0_Deprecated->f.GenLists(range);
 }
 
 inline void QOpenGLFunctions_1_0::glDeleteLists(GLuint list, GLsizei range)
 {
-    d_1_0_Deprecated->DeleteLists(list, range);
+    d_1_0_Deprecated->f.DeleteLists(list, range);
 }
 
 inline void QOpenGLFunctions_1_0::glCallLists(GLsizei n, GLenum type, const GLvoid *lists)
 {
-    d_1_0_Deprecated->CallLists(n, type, lists);
+    d_1_0_Deprecated->f.CallLists(n, type, lists);
 }
 
 inline void QOpenGLFunctions_1_0::glCallList(GLuint list)
 {
-    d_1_0_Deprecated->CallList(list);
+    d_1_0_Deprecated->f.CallList(list);
 }
 
 inline void QOpenGLFunctions_1_0::glEndList()
 {
-    d_1_0_Deprecated->EndList();
+    d_1_0_Deprecated->f.EndList();
 }
 
 inline void QOpenGLFunctions_1_0::glNewList(GLuint list, GLenum mode)
 {
-    d_1_0_Deprecated->NewList(list, mode);
+    d_1_0_Deprecated->f.NewList(list, mode);
 }
 
 

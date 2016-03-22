@@ -267,6 +267,13 @@
 #  endif
 #endif
 
+// Clang compiler fix, see http://lists.llvm.org/pipermail/cfe-commits/Week-of-Mon-20160222/151168.html
+// This should be tweaked with an "upper version" of clang once we know which release fixes the
+// issue. At that point we can rely on __ARM_FEATURE_CRC32 again.
+#if defined(Q_CC_CLANG) && defined(Q_OS_DARWIN) && defined (__ARM_FEATURE_CRC32)
+#  undef __ARM_FEATURE_CRC32
+#endif
+
 // NEON intrinsics
 // note: as of GCC 4.9, does not support function targets for ARM
 #if defined(__ARM_NEON) || defined(__ARM_NEON__)
@@ -513,6 +520,32 @@ unsigned _bit_scan_forward(unsigned val)
 
 #define ALIGNMENT_PROLOGUE_16BYTES(ptr, i, length) \
     for (; i < static_cast<int>(qMin(static_cast<quintptr>(length), ((4 - ((reinterpret_cast<quintptr>(ptr) >> 2) & 0x3)) & 0x3))); ++i)
+
+template <typename T>
+Q_ALWAYS_INLINE
+T qUnalignedLoad(const void *ptr) Q_DECL_NOTHROW
+{
+    T result;
+#if QT_HAS_BUILTIN(__builtin_memcpy)
+    __builtin_memcpy
+#else
+    memcpy
+#endif
+    /*memcpy*/(&result, ptr, sizeof result);
+    return result;
+}
+
+template <typename T>
+Q_ALWAYS_INLINE
+void qUnalignedStore(void *ptr, T t) Q_DECL_NOTHROW
+{
+#if QT_HAS_BUILTIN(__builtin_memcpy)
+    __builtin_memcpy
+#else
+    memcpy
+#endif
+    /*memcpy*/(ptr, &t, sizeof t);
+}
 
 QT_END_NAMESPACE
 

@@ -81,6 +81,8 @@ public:
     QGuiApplicationPrivate(int &argc, char **argv, int flags);
     ~QGuiApplicationPrivate();
 
+    void init();
+
     void createPlatformIntegration();
     void createEventDispatcher() Q_DECL_OVERRIDE;
     void eventDispatcherReady() Q_DECL_OVERRIDE;
@@ -248,6 +250,7 @@ public:
 #endif
 
 #ifndef QT_NO_SESSIONMANAGER
+    static bool is_fallback_session_management_enabled;
     QSessionManager *session_manager;
     bool is_session_restored;
     bool is_saving_session;
@@ -308,8 +311,6 @@ protected:
 
 private:
     friend class QDragManager;
-
-    void init();
 
     static QGuiApplicationPrivate *self;
     static QTouchDevice *m_fakeTouchDevice;

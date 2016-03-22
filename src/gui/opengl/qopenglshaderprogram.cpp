@@ -250,7 +250,7 @@ bool QOpenGLShaderPrivate::create()
         shader = glfuncs->glCreateShader(GL_FRAGMENT_SHADER);
     }
     if (!shader) {
-        qWarning() << "QOpenGLShader: could not create shader";
+        qWarning("QOpenGLShader: could not create shader");
         return false;
     }
     shaderGuard = new QOpenGLSharedResourceGuard(context, shader, freeShaderFunc);
@@ -798,7 +798,7 @@ bool QOpenGLShaderProgram::init()
 
     GLuint program = d->glfuncs->glCreateProgram();
     if (!program) {
-        qWarning() << "QOpenGLShaderProgram: could not create shader program";
+        qWarning("QOpenGLShaderProgram: could not create shader program");
         return false;
     }
     if (d->programGuard)
@@ -1050,9 +1050,9 @@ bool QOpenGLShaderProgram::link()
         if (!d->linked) {
             QString name = objectName();
             if (name.isEmpty())
-                qWarning() << "QOpenGLShader::link:" << d->log;
+                qWarning("QOpenGLShader::link: %ls", qUtf16Printable(d->log));
             else
-                qWarning() << "QOpenGLShader::link[" << name << "]:" << d->log;
+                qWarning("QOpenGLShader::link[%ls]: %ls", qUtf16Printable(name), qUtf16Printable(d->log));
         }
         delete [] logbuf;
     }

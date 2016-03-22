@@ -112,16 +112,17 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
 
     if (!proxy_env.isEmpty()) {
         QUrl url = QUrl(QString::fromLocal8Bit(proxy_env));
-        if (url.scheme() == QLatin1String("socks5")) {
+        const QString scheme = url.scheme();
+        if (scheme == QLatin1String("socks5")) {
             QNetworkProxy proxy(QNetworkProxy::Socks5Proxy, url.host(),
                     url.port() ? url.port() : 1080, url.userName(), url.password());
             proxyList << proxy;
-        } else if (url.scheme() == QLatin1String("socks5h")) {
+        } else if (scheme == QLatin1String("socks5h")) {
             QNetworkProxy proxy(QNetworkProxy::Socks5Proxy, url.host(),
                     url.port() ? url.port() : 1080, url.userName(), url.password());
             proxy.setCapabilities(QNetworkProxy::HostNameLookupCapability);
             proxyList << proxy;
-        } else if ((url.scheme() == QLatin1String("http") || url.scheme().isEmpty())
+        } else if ((scheme.isEmpty() || scheme == QLatin1String("http"))
                   && query.queryType() != QNetworkProxyQuery::UdpSocket
                   && query.queryType() != QNetworkProxyQuery::TcpServer) {
             QNetworkProxy proxy(QNetworkProxy::HttpProxy, url.host(),

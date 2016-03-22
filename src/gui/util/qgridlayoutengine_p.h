@@ -314,8 +314,8 @@ public:
 
     virtual QLayoutPolicy::ControlTypes controlTypes(LayoutSide side) const;
 
-    QRectF geometryWithin(qreal x, qreal y, qreal width, qreal height, qreal rowDescent, Qt::Alignment align) const;
-    QGridLayoutBox box(Qt::Orientation orientation, qreal constraint = -1.0) const;
+    QRectF geometryWithin(qreal x, qreal y, qreal width, qreal height, qreal rowDescent, Qt::Alignment align, bool snapToPixelGrid) const;
+    QGridLayoutBox box(Qt::Orientation orientation, bool snapToPixelGrid, qreal constraint = -1.0) const;
 
 
     void transpose();

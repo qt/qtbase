@@ -78,7 +78,7 @@ static jboolean beginBatchEdit(JNIEnv */*env*/, jobject /*thiz*/)
         return JNI_FALSE;
 
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-    qDebug() << "@@@ BEGINBATCH";
+    qDebug("@@@ BEGINBATCH");
 #endif
 
     return m_androidInputContext->beginBatchEdit();
@@ -92,7 +92,7 @@ static jboolean endBatchEdit(JNIEnv */*env*/, jobject /*thiz*/)
         return JNI_FALSE;
 
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-    qDebug() << "@@@ ENDBATCH";
+    qDebug("@@@ ENDBATCH");
 #endif
 
     return m_androidInputContext->endBatchEdit();
@@ -134,7 +134,7 @@ static jboolean finishComposingText(JNIEnv */*env*/, jobject /*thiz*/)
         return JNI_FALSE;
 
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-    qDebug() << "@@@ FINISH";
+    qDebug("@@@ FINISH");
 #endif
     return m_androidInputContext->finishComposingText();
 }
@@ -256,7 +256,7 @@ static jboolean selectAll(JNIEnv */*env*/, jobject /*thiz*/)
         return JNI_FALSE;
 
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-    qDebug() << "@@@ SELALL";
+    qDebug("@@@ SELALL");
 #endif
     return m_androidInputContext->selectAll();
 }
@@ -267,7 +267,7 @@ static jboolean cut(JNIEnv */*env*/, jobject /*thiz*/)
         return JNI_FALSE;
 
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-    qDebug() << "@@@";
+    qDebug("@@@");
 #endif
     return m_androidInputContext->cut();
 }
@@ -278,7 +278,7 @@ static jboolean copy(JNIEnv */*env*/, jobject /*thiz*/)
         return JNI_FALSE;
 
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-    qDebug() << "@@@";
+    qDebug("@@@");
 #endif
     return m_androidInputContext->copy();
 }
@@ -289,7 +289,7 @@ static jboolean copyURL(JNIEnv */*env*/, jobject /*thiz*/)
         return JNI_FALSE;
 
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-    qDebug() << "@@@";
+    qDebug("@@@");
 #endif
     return m_androidInputContext->copyURL();
 }
@@ -300,7 +300,7 @@ static jboolean paste(JNIEnv */*env*/, jobject /*thiz*/)
         return JNI_FALSE;
 
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-    qDebug() << "@@@";
+    qDebug("@@@");
 #endif
     return m_androidInputContext->paste();
 }
@@ -311,7 +311,7 @@ static jboolean updateCursorPosition(JNIEnv */*env*/, jobject /*thiz*/)
         return JNI_FALSE;
 
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-    qDebug() << "@@@ UPDATECURSORPOS";
+    qDebug("@@@ UPDATECURSORPOS");
 #endif
     m_androidInputContext->updateCursorPosition();
     return true;
@@ -371,43 +371,43 @@ QAndroidInputContext::QAndroidInputContext()
     m_extractedTextClass = static_cast<jclass>(env->NewGlobalRef(clazz));
     m_classConstructorMethodID = env->GetMethodID(m_extractedTextClass, "<init>", "()V");
     if (Q_UNLIKELY(!m_classConstructorMethodID)) {
-        qCritical() << "GetMethodID failed";
+        qCritical("GetMethodID failed");
         return;
     }
 
     m_partialEndOffsetFieldID = env->GetFieldID(m_extractedTextClass, "partialEndOffset", "I");
     if (Q_UNLIKELY(!m_partialEndOffsetFieldID)) {
-        qCritical() << "Can't find field partialEndOffset";
+        qCritical("Can't find field partialEndOffset");
         return;
     }
 
     m_partialStartOffsetFieldID = env->GetFieldID(m_extractedTextClass, "partialStartOffset", "I");
     if (Q_UNLIKELY(!m_partialStartOffsetFieldID)) {
-        qCritical() << "Can't find field partialStartOffset";
+        qCritical("Can't find field partialStartOffset");
         return;
     }
 
     m_selectionEndFieldID = env->GetFieldID(m_extractedTextClass, "selectionEnd", "I");
     if (Q_UNLIKELY(!m_selectionEndFieldID)) {
-        qCritical() << "Can't find field selectionEnd";
+        qCritical("Can't find field selectionEnd");
         return;
     }
 
     m_selectionStartFieldID = env->GetFieldID(m_extractedTextClass, "selectionStart", "I");
     if (Q_UNLIKELY(!m_selectionStartFieldID)) {
-        qCritical() << "Can't find field selectionStart";
+        qCritical("Can't find field selectionStart");
         return;
     }
 
     m_startOffsetFieldID = env->GetFieldID(m_extractedTextClass, "startOffset", "I");
     if (Q_UNLIKELY(!m_startOffsetFieldID)) {
-        qCritical() << "Can't find field startOffset";
+        qCritical("Can't find field startOffset");
         return;
     }
 
     m_textFieldID = env->GetFieldID(m_extractedTextClass, "text", "Ljava/lang/String;");
     if (Q_UNLIKELY(!m_textFieldID)) {
-        qCritical() << "Can't find field text";
+        qCritical("Can't find field text");
         return;
     }
     qRegisterMetaType<QInputMethodEvent *>("QInputMethodEvent*");

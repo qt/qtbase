@@ -69,7 +69,7 @@ QOpenWFDOutputBuffer::~QOpenWFDOutputBuffer()
 {
     wfdDestroySource(mPort->device()->handle(),mWfdSource);
     if (!mPort->device()->eglDestroyImage(mPort->device()->eglDisplay(),mEglImage)) {
-        qDebug() << "could not delete eglImage";
+        qDebug("could not delete eglImage");
     }
     gbm_bo_destroy(mGbm_buffer);
 
@@ -83,6 +83,6 @@ void QOpenWFDOutputBuffer::bindToCurrentFbo()
                               GL_RENDERBUFFER,
                               mRbo);
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        qDebug() << "framebuffer not ready!";
+        qDebug("framebuffer not ready!");
     }
 }

@@ -174,6 +174,8 @@ public:
     quint16 localPort() const;
     QHostAddress peerAddress() const;
     quint16 peerPort() const;
+    int inboundStreamCount() const;
+    int outboundStreamCount() const;
 
     virtual bool isReadNotificationEnabled() const = 0;
     virtual void setReadNotificationEnabled(bool enable) = 0;
@@ -227,6 +229,8 @@ public:
     quint16 localPort;
     QHostAddress peerAddress;
     quint16 peerPort;
+    int inboundStreamCount;
+    int outboundStreamCount;
     QAbstractSocketEngineReceiver *receiver;
 };
 

@@ -385,7 +385,7 @@ static int32_t ic_perform_editor_action(input_session_t *ic, int32_t editor_acti
     Q_UNUSED(ic);
     Q_UNUSED(editor_action);
 
-    qCritical() << "ic_perform_editor_action not implemented";
+    qCritical("ic_perform_editor_action not implemented");
     return 0;
 }
 
@@ -395,7 +395,7 @@ static int32_t ic_report_fullscreen_mode(input_session_t *ic, int32_t enabled)
     Q_UNUSED(ic);
     Q_UNUSED(enabled);
 
-    qCritical() << "ic_report_fullscreen_mode not implemented";
+    qCritical("ic_report_fullscreen_mode not implemented");
     return 0;
 }
 
@@ -406,7 +406,7 @@ static extracted_text_t *ic_get_extracted_text(input_session_t *ic, extracted_te
     Q_UNUSED(request);
     Q_UNUSED(flags);
 
-    qCritical() << "ic_get_extracted_text not implemented";
+    qCritical("ic_get_extracted_text not implemented");
     return 0;
 }
 
@@ -416,7 +416,7 @@ static spannable_string_t *ic_get_selected_text(input_session_t *ic, int32_t fla
     Q_UNUSED(ic);
     Q_UNUSED(flags);
 
-    qCritical() << "ic_get_selected_text not implemented";
+    qCritical("ic_get_selected_text not implemented");
     return 0;
 }
 
@@ -426,7 +426,7 @@ static int32_t ic_get_cursor_caps_mode(input_session_t *ic, int32_t req_modes)
     Q_UNUSED(ic);
     Q_UNUSED(req_modes);
 
-    qCritical() << "ic_get_cursor_caps_mode not implemented";
+    qCritical("ic_get_cursor_caps_mode not implemented");
     return 0;
 }
 
@@ -436,7 +436,7 @@ static int32_t ic_clear_meta_key_states(input_session_t *ic, int32_t states)
     Q_UNUSED(ic);
     Q_UNUSED(states);
 
-    qCritical() << "ic_clear_meta_key_states not implemented";
+    qCritical("ic_clear_meta_key_states not implemented");
     return 0;
 }
 
@@ -447,7 +447,7 @@ static int32_t ic_set_selection(input_session_t *ic, int32_t start, int32_t end)
     Q_UNUSED(start);
     Q_UNUSED(end);
 
-    qCritical() << "ic_set_selection not implemented";
+    qCritical("ic_set_selection not implemented");
     return 0;
 }
 

@@ -62,7 +62,7 @@ QMinimalBackingStore::~QMinimalBackingStore()
 QPaintDevice *QMinimalBackingStore::paintDevice()
 {
     if (mDebug)
-        qDebug() << "QMinimalBackingStore::paintDevice";
+        qDebug("QMinimalBackingStore::paintDevice");
 
     return &mImage;
 }

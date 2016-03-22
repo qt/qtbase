@@ -195,7 +195,7 @@ QSurfaceFormat QWinRTEGLContext::format() const
     return d->format;
 }
 
-QFunctionPointer QWinRTEGLContext::getProcAddress(const QByteArray &procName)
+QFunctionPointer QWinRTEGLContext::getProcAddress(const char *procName)
 {
     static QHash<QByteArray, QFunctionPointer> standardFuncs;
     if (standardFuncs.isEmpty()) {
@@ -347,7 +347,7 @@ QFunctionPointer QWinRTEGLContext::getProcAddress(const QByteArray &procName)
     if (i != standardFuncs.end())
         return i.value();
 
-    return eglGetProcAddress(procName.constData());
+    return eglGetProcAddress(procName);
 }
 
 EGLDisplay QWinRTEGLContext::display()

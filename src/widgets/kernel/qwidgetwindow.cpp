@@ -776,7 +776,7 @@ void QWidgetWindow::handleWheelEvent(QWheelEvent *event)
 
     QPoint mapped = widget->mapFrom(rootWidget, pos);
 
-    QWheelEvent translated(mapped, event->globalPos(), event->pixelDelta(), event->angleDelta(), event->delta(), event->orientation(), event->buttons(), event->modifiers(), event->phase(), event->source());
+    QWheelEvent translated(mapped, event->globalPos(), event->pixelDelta(), event->angleDelta(), event->delta(), event->orientation(), event->buttons(), event->modifiers(), event->phase(), event->source(), event->inverted());
     QGuiApplication::sendSpontaneousEvent(widget, &translated);
 }
 
@@ -1007,3 +1007,5 @@ void QWidgetWindow::updateObjectName()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwidgetwindow_p.cpp"

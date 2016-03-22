@@ -325,6 +325,24 @@ const char *QMetaObject::className() const
     \sa className()
 */
 
+/*
+    Returns \c true if the class described by this QMetaObject inherits
+    the type described by \a metaObject; otherwise returns false.
+
+    A type is considered to inherit itself.
+
+    \since 5.7
+*/
+bool QMetaObject::inherits(const QMetaObject *metaObject) const Q_DECL_NOEXCEPT
+{
+    const QMetaObject *m = this;
+    do {
+        if (metaObject == m)
+            return true;
+    } while ((m = m->d.superdata));
+    return false;
+}
+
 /*!
     \internal
 
@@ -345,14 +363,7 @@ QObject *QMetaObject::cast(QObject *obj) const
 */
 const QObject *QMetaObject::cast(const QObject *obj) const
 {
-    if (obj) {
-        const QMetaObject *m = obj->metaObject();
-        do {
-            if (m == this)
-                return obj;
-        } while ((m = m->d.superdata));
-    }
-    return 0;
+    return (obj && obj->metaObject()->inherits(this)) ? obj : nullptr;
 }
 
 #ifndef QT_NO_TRANSLATION

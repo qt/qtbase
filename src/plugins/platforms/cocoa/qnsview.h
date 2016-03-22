@@ -43,6 +43,7 @@
 #include <AppKit/AppKit.h>
 
 #include <QtCore/QPointer>
+#include <QtCore/QSet>
 #include <QtGui/QImage>
 #include <QtGui/QAccessible>
 
@@ -59,6 +60,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 @interface QT_MANGLE_NAMESPACE(QNSView) : NSView <NSTextInputClient> {
     QCocoaBackingStore* m_backingStore;
     QPoint m_backingStoreOffset;
+    QRegion m_maskRegion;
     CGImageRef m_maskImage;
     uchar *m_maskData;
     bool m_shouldInvalidateWindowShadow;
@@ -66,6 +68,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
     QCocoaWindow *m_platformWindow;
     NSTrackingArea *m_trackingArea;
     Qt::MouseButtons m_buttons;
+    Qt::MouseButtons m_acceptedMouseDowns;
     Qt::MouseButtons m_frameStrutButtons;
     QString m_composingText;
     bool m_sendKeyEvent;
@@ -85,6 +88,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
     bool m_exposedOnMoveToWindow;
     NSEvent *m_currentlyInterpretedKeyEvent;
     bool m_isMenuView;
+    QSet<quint32> m_acceptedKeyDowns;
 }
 
 - (id)init;
@@ -118,6 +122,9 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 - (void)resetMouseButtons;
 
 - (void)handleMouseEvent:(NSEvent *)theEvent;
+- (bool)handleMouseDownEvent:(NSEvent *)theEvent;
+- (bool)handleMouseDraggedEvent:(NSEvent *)theEvent;
+- (bool)handleMouseUpEvent:(NSEvent *)theEvent;
 - (void)mouseDown:(NSEvent *)theEvent;
 - (void)mouseDragged:(NSEvent *)theEvent;
 - (void)mouseUp:(NSEvent *)theEvent;
@@ -139,7 +146,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 
 - (int) convertKeyCode : (QChar)keyCode;
 + (Qt::KeyboardModifiers) convertKeyModifiers : (ulong)modifierFlags;
-- (void)handleKeyEvent:(NSEvent *)theEvent eventType:(int)eventType;
+- (bool)handleKeyEvent:(NSEvent *)theEvent eventType:(int)eventType;
 - (void)keyDown:(NSEvent *)theEvent;
 - (void)keyUp:(NSEvent *)theEvent;
 

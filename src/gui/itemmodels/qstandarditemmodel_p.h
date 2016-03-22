@@ -72,6 +72,7 @@ public:
     QVariant value;
     inline bool operator==(const QStandardItemData &other) const { return role == other.role && value == other.value; }
 };
+Q_DECLARE_TYPEINFO(QStandardItemData, Q_MOVABLE_TYPE);
 
 #ifndef QT_NO_DATASTREAM
 

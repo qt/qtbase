@@ -1,12 +1,8 @@
 TARGET = qtforandroid
 
-PLUGIN_TYPE = platforms
-
 # STATICPLUGIN needed because there's a Q_IMPORT_PLUGIN in androidjnimain.cpp
 # Yes, the plugin imports itself statically
 DEFINES += QT_STATICPLUGIN
-
-load(qt_plugin)
 
 LIBS += -ljnigraphics -landroid
 
@@ -78,6 +74,9 @@ HEADERS += $$PWD/qandroidplatformintegration.h \
 
 android-style-assets: SOURCES += $$PWD/extract.cpp
 else: SOURCES += $$PWD/extract-dummy.cpp
+
+PLUGIN_TYPE = platforms
+load(qt_plugin)
 
 #Non-standard install directory, QTBUG-29859
 DESTDIR = $$DESTDIR/android

@@ -1,8 +1,5 @@
 TARGET = cupsprintersupport
 MODULE = cupsprintersupport
-PLUGIN_TYPE = printsupport
-PLUGIN_CLASS_NAME = QCupsPrinterSupportPlugin
-load(qt_plugin)
 
 QT += core-private gui-private printsupport printsupport-private
 
@@ -20,3 +17,7 @@ HEADERS += qcupsprintersupport_p.h \
     qcupsprintengine_p.h
 
 OTHER_FILES += cups.json
+
+PLUGIN_TYPE = printsupport
+PLUGIN_CLASS_NAME = QCupsPrinterSupportPlugin
+load(qt_plugin)

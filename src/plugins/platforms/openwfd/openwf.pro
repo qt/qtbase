@@ -1,10 +1,5 @@
 TARGET = qopenwf
 
-PLUGIN_TYPE = platforms
-PLUGIN_CLASS_NAME = QOpenWFDIntegrationPlugin
-!equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN): PLUGIN_EXTENDS = -
-load(qt_plugin)
-
 QT += core-private gui-private platformsupport-private
 
 CONFIG += qpa/genericunixfontdatabase
@@ -38,3 +33,7 @@ SOURCES += \
 
 LIBS += -lWFD -lgbm -lGLESv2 -lEGL
 
+PLUGIN_TYPE = platforms
+PLUGIN_CLASS_NAME = QOpenWFDIntegrationPlugin
+!equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN): PLUGIN_EXTENDS = -
+load(qt_plugin)
