@@ -1738,7 +1738,9 @@ void qErrnoWarning(int code, const char *msg, ...)
 
     \brief Changes the output of the default message handler.
 
-    Allows to tweak the output of qDebug(), qWarning(), qCritical() and qFatal().
+    Allows to tweak the output of qDebug(), qInfo(), qWarning(), qCritical(),
+    and qFatal(). The category logging output of qCDebug(), qCInfo(),
+    qCWarning(), and qCCritical() is formatted, too.
 
     Following placeholders are supported:
 
@@ -1791,7 +1793,7 @@ void qErrnoWarning(int code, const char *msg, ...)
 
     Custom message handlers can use qFormatLogMessage() to take \a pattern into account.
 
-    \sa qInstallMessageHandler(), {Debugging Techniques}
+    \sa qInstallMessageHandler(), {Debugging Techniques}, {QLoggingCategory}
  */
 
 QtMessageHandler qInstallMessageHandler(QtMessageHandler h)

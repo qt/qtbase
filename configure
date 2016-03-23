@@ -4657,7 +4657,7 @@ if ! compileTest unix/ipc_sysv "ipc_sysv" ; then
     if compileTest unix/ipc_posix "ipc_posix" ; then
         QCONFIG_FLAGS="$QCONFIG_FLAGS QT_POSIX_IPC"
     else
-        if [ "$XPLATFORM_ANDROID" = "no" ] ; then
+        if [ "$XPLATFORM_ANDROID" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] ; then
             QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SYSTEMSEMAPHORE QT_NO_SHAREDMEMORY"
         fi
     fi
