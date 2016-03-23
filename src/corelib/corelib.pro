@@ -47,8 +47,14 @@ include(statemachine/statemachine.pri)
 include(mimetypes/mimetypes.pri)
 include(xml/xml.pri)
 
-# otherwise mingw headers do not declare common functions like putenv
-mingw: CONFIG -= strict_c++
+win32 {
+    mingw {
+        # otherwise mingw headers do not declare common functions like putenv
+        CONFIG -= strict_c++
+        # Override MinGW's definition in _mingw.h
+        DEFINES += WINVER=0x600 _WIN32_WINNT=0x0600
+    }
+}
 
 mac|darwin {
     !ios {

@@ -48,10 +48,10 @@
 #if defined(Q_CC_MINGW)
 // mingw's windows.h does not set _WIN32_WINNT, resulting breaking compilation
 #  ifndef WINVER
-#    define WINVER 0x501
+#    define WINVER 0x600
 #  endif
 #  ifndef _WIN32_WINNT
-#    define _WIN32_WINNT 0x0501
+#    define _WIN32_WINNT 0x600
 #  endif
 #endif
 
