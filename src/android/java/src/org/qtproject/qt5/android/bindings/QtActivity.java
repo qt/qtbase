@@ -1067,7 +1067,7 @@ public class QtActivity extends Activity
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event)
     {
-        if (QtApplication.m_delegateObject != null  && QtApplication.onKeyDown != null)
+        if (QtApplication.m_delegateObject != null  && QtApplication.onKeyUp != null)
             return (Boolean) QtApplication.invokeDelegateMethod(QtApplication.onKeyUp, keyCode, event);
         else
             return super.onKeyUp(keyCode, event);
