@@ -109,6 +109,7 @@ public:
     qint64 write(const char *data, qint64 maxlen);
     void stop();
     bool waitForWrite(int msecs);
+    bool isWriteOperationActive() const { return writeSequenceStarted; }
     qint64 bytesToWrite() const;
 
 Q_SIGNALS:
