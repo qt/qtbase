@@ -996,11 +996,7 @@ void tst_QHash::rehash_isnt_quadratic()
     // this test should be incredibly slow if rehash() is quadratic
     for (int j = 0; j < 5; ++j) {
         QHash<int, int> testHash;
-#if defined(Q_OS_WINCE) // mobiles do not have infinite mem...
-        for (int i = 0; i < 50000; ++i)
-#else
         for (int i = 0; i < 500000; ++i)
-#endif
             testHash.insertMulti(1, 1);
     }
 }

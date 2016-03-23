@@ -609,16 +609,12 @@ HKEY QWinSettingsPrivate::writeHandle() const
 QWinSettingsPrivate::~QWinSettingsPrivate()
 {
     if (deleteWriteHandleOnExit && writeHandle() != 0) {
-#if defined(Q_OS_WINCE)
-        remove(regList.at(0).key());
-#else
         QString emptyKey;
         DWORD res = RegDeleteKey(writeHandle(), reinterpret_cast<const wchar_t *>(emptyKey.utf16()));
         if (res != ERROR_SUCCESS) {
             qWarning("QSettings: Failed to delete key \"%s\": %s",
                     regList.at(0).key().toLatin1().data(), errorCodeToString(res).toLatin1().data());
         }
-#endif
     }
 
     for (int i = 0; i < regList.size(); ++i)
@@ -660,10 +656,6 @@ void QWinSettingsPrivate::remove(const QString &uKey)
                 }
             }
         } else {
-#if defined(Q_OS_WINCE)
-            // For WinCE always Close the handle first.
-            RegCloseKey(handle);
-#endif
             res = RegDeleteKey(writeHandle(), reinterpret_cast<const wchar_t *>(rKey.utf16()));
 
             if (res != ERROR_SUCCESS) {

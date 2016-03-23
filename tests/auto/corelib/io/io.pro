@@ -35,7 +35,7 @@ SUBDIRS=\
     qurlquery \
     qwinoverlappedionotifier \
 
-!win32|wince* {
+!win32 {
     SUBDIRS -=\
         qwinoverlappedionotifier
 }

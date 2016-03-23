@@ -95,9 +95,7 @@ private slots:
 
     void requestTermination();
 
-#ifndef Q_OS_WINCE
     void stressTest();
-#endif
 
     void quitLock();
 };
@@ -664,7 +662,7 @@ void NativeThreadWrapper::start(FunctionPointer functionPointer, void *data)
 #if defined Q_OS_UNIX
     const int state = pthread_create(&nativeThreadHandle, 0, NativeThreadWrapper::runUnix, this);
     Q_UNUSED(state);
-#elif defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
+#elif defined(Q_OS_WINRT)
         nativeThreadHandle = CreateThread(NULL, 0 , (LPTHREAD_START_ROUTINE)NativeThreadWrapper::runWin , this, 0, NULL);
 #elif defined Q_OS_WIN
     unsigned thrdid = 0;
@@ -684,11 +682,7 @@ void NativeThreadWrapper::join()
 #if defined Q_OS_UNIX
     pthread_join(nativeThreadHandle, 0);
 #elif defined Q_OS_WIN
-#ifndef Q_OS_WINCE
     WaitForSingleObjectEx(nativeThreadHandle, INFINITE, FALSE);
-#else
-    WaitForSingleObject(nativeThreadHandle, INFINITE);
-#endif
     CloseHandle(nativeThreadHandle);
 #endif
 }
@@ -874,13 +868,8 @@ void tst_QThread::adoptedThreadExecFinished()
 void tst_QThread::adoptMultipleThreads()
 {
 #if defined(Q_OS_WIN)
-    // Windows CE is not capable of handling that many threads. On the emulator it is dead with 26 threads already.
-#  if defined(Q_OS_WINCE)
-    const int numThreads = 20;
-#  else
     // need to test lots of threads, so that we exceed MAXIMUM_WAIT_OBJECTS in qt_adopted_thread_watcher()
     const int numThreads = 200;
-#  endif
 #else
     const int numThreads = 5;
 #endif
@@ -911,13 +900,8 @@ void tst_QThread::adoptMultipleThreads()
 void tst_QThread::adoptMultipleThreadsOverlap()
 {
 #if defined(Q_OS_WIN)
-    // Windows CE is not capable of handling that many threads. On the emulator it is dead with 26 threads already.
-#  if defined(Q_OS_WINCE)
-    const int numThreads = 20;
-#  else
     // need to test lots of threads, so that we exceed MAXIMUM_WAIT_OBJECTS in qt_adopted_thread_watcher()
     const int numThreads = 200;
-#  endif
 #else
     const int numThreads = 5;
 #endif
@@ -950,7 +934,6 @@ void tst_QThread::adoptMultipleThreadsOverlap()
     QCOMPARE(recorder.activationCount.load(), numThreads);
 }
 
-#ifndef Q_OS_WINCE
 // Disconnects on WinCE
 void tst_QThread::stressTest()
 {
@@ -962,7 +945,6 @@ void tst_QThread::stressTest()
         t.wait(one_minute);
     }
 }
-#endif
 
 class Syncronizer : public QObject
 { Q_OBJECT

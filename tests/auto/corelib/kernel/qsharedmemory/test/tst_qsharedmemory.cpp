@@ -90,7 +90,7 @@ private slots:
 
     // extreme cases
     void useTooMuchMemory();
-#if !defined(Q_OS_HPUX) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_HPUX)
     void attachTooMuch();
 #endif
 
@@ -516,8 +516,7 @@ void tst_QSharedMemory::useTooMuchMemory()
     attach before the system runs out of resources.
  */
 // HPUX doesn't allow for multiple attaches per process.
-// For WinCE, this test nearly kills the system, so skip it.
-#if !defined(Q_OS_HPUX) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_HPUX)
 void tst_QSharedMemory::attachTooMuch()
 {
     QSKIP("disabled");
@@ -576,9 +575,7 @@ void tst_QSharedMemory::simpleProducerConsumer()
     char *get = (char*)consumer.data();
     // On Windows CE you always have ReadWrite access. Thus
     // ViewMapOfFile returns the same pointer
-#if !defined(Q_OS_WINCE)
     QVERIFY(put != get);
-#endif
     for (int i = 0; i < size; ++i) {
         put[i] = 'Q';
         QCOMPARE(get[i], 'Q');

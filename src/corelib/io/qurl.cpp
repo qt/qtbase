@@ -413,9 +413,6 @@
 #include "qtldurl_p.h"
 #include "private/qipaddress_p.h"
 #include "qurlquery.h"
-#if defined(Q_OS_WINCE_WM)
-#pragma optimize("g", off)
-#endif
 
 QT_BEGIN_NAMESPACE
 extern QString qt_normalizePathSegments(const QString &name, bool allowUncPaths); // qdir.cpp

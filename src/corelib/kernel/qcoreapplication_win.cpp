@@ -81,16 +81,12 @@ Q_CORE_EXPORT HINSTANCE qWinAppPrevInst()                // get Windows prev app
 
 Q_CORE_EXPORT int qWinAppCmdShow()                        // get main window show command
 {
-#if defined(Q_OS_WINCE)
-    return appCmdShow;
-#else
     STARTUPINFO startupInfo;
     GetStartupInfo(&startupInfo);
 
     return (startupInfo.dwFlags & STARTF_USESHOWWINDOW)
         ? startupInfo.wShowWindow
         : SW_SHOWDEFAULT;
-#endif
 }
 
 Q_CORE_EXPORT QString qAppFileName()                // get application file name
@@ -143,7 +139,7 @@ QString QCoreApplicationPrivate::appName() const
   qWinMain() - Initializes Windows. Called from WinMain() in qtmain_win.cpp
  *****************************************************************************/
 
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if !defined(Q_OS_WINRT)
 
 // ### Qt6: FIXME: Consider removing this function. It is here for Active Qt
 // servers and for binary for compatibility to applications built with Qt 5.3
@@ -164,30 +160,7 @@ void qWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdParam,
         argv.append(_strdup(wArg.toLocal8Bit().constData()));
 }
 
-#elif defined(Q_OS_WINCE)
-
-Q_CORE_EXPORT void __cdecl qWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdParam,
-               int cmdShow, int &argc, QVector<char *> &argv)
-{
-    static bool already_called = false;
-
-    if (already_called) {
-        qWarning("Qt: Internal error: qWinMain should be called only once");
-        return;
-    }
-    already_called = true;
-
-    // Create command line
-    argv = qWinCmdLine<char>(cmdParam, int(strlen(cmdParam)), argc);
-
-    appCmdShow = cmdShow;
-
-    // Ignore Windows parameters
-    Q_UNUSED(instance);
-    Q_UNUSED(prevInstance);
-}
-
-#endif // Q_OS_WINCE
+#endif // !Q_OS_WINRT
 
 #ifndef QT_NO_QOBJECT
 

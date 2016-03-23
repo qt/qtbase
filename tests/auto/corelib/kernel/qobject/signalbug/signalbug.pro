@@ -2,9 +2,6 @@ CONFIG -= app_bundle debug_and_release
 CONFIG += console
 DESTDIR = ./
 QT = core
-wince {
-   LIBS += coredll.lib
-}
 
 HEADERS += signalbug.h
 SOURCES += signalbug.cpp

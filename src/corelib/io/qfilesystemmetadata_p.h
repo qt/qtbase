@@ -331,13 +331,10 @@ inline void QFileSystemMetaData::fillFromFindData(WIN32_FIND_DATA &findData, boo
     if (setLinkType) {
         knownFlagsMask |=  LinkType;
         entryFlags &= ~LinkType;
-#if !defined(Q_OS_WINCE)
         if ((fileAttribute_ & FILE_ATTRIBUTE_REPARSE_POINT)
             && (findData.dwReserved0 == IO_REPARSE_TAG_SYMLINK)) {
             entryFlags |= LinkType;
         }
-#endif
-
     }
 }
 

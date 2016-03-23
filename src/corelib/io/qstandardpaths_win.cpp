@@ -51,13 +51,7 @@ const GUID qCLSID_FOLDERID_Downloads = { 0x374de290, 0x123f, 0x4565, { 0x91, 0x6
 
 #include <qt_windows.h>
 #include <shlobj.h>
-#if !defined(Q_OS_WINCE)
-#  include <intshcut.h>
-#else
-#  if !defined(STANDARDSHELL_UI_MODEL)
-#    include <winx.h>
-#  endif
-#endif
+#include <intshcut.h>
 
 #ifndef CSIDL_MYMUSIC
 #define CSIDL_MYMUSIC 13
@@ -117,7 +111,6 @@ static inline void appendTestMode(QString &path)
 // Map QStandardPaths::StandardLocation to CLSID of SHGetSpecialFolderPath()
 static int writableSpecialFolderClsid(QStandardPaths::StandardLocation type)
 {
-#ifndef Q_OS_WINCE
     static const int clsids[] = {
         CSIDL_DESKTOPDIRECTORY, // DesktopLocation
         CSIDL_PERSONAL,         // DocumentsLocation
@@ -137,27 +130,6 @@ static int writableSpecialFolderClsid(QStandardPaths::StandardLocation type)
         CSIDL_APPDATA,          // AppDataLocation ("Roaming" path)
         CSIDL_LOCAL_APPDATA,    // AppConfigLocation ("Local" path)
     };
-#else // !Q_OS_WINCE
-    static const int clsids[] = {
-        CSIDL_DESKTOPDIRECTORY, // DesktopLocation
-        CSIDL_PERSONAL,         // DocumentsLocation
-        CSIDL_FONTS,            // FontsLocation
-        CSIDL_PROGRAMS,         // ApplicationsLocation
-        CSIDL_MYMUSIC,          // MusicLocation
-        CSIDL_MYVIDEO,          // MoviesLocation
-        CSIDL_MYPICTURES,       // PicturesLocation
-        -1, -1,                 // TempLocation/HomeLocation
-        CSIDL_APPDATA,          // AppLocalDataLocation, AppLocalDataLocation = DataLocation
-        -1,                     // CacheLocation
-        CSIDL_APPDATA,          // GenericDataLocation
-        -1,                     // RuntimeLocation
-        CSIDL_APPDATA,          // ConfigLocation
-        -1, -1,                 // DownloadLocation/GenericCacheLocation
-        CSIDL_APPDATA,          // GenericConfigLocation
-        CSIDL_APPDATA,          // AppDataLocation
-        CSIDL_APPDATA,          // AppConfigLocation
-    };
-#endif // Q_OS_WINCE
 
     Q_STATIC_ASSERT(sizeof(clsids) / sizeof(clsids[0]) == size_t(QStandardPaths::AppConfigLocation + 1));
     return size_t(type) < sizeof(clsids) / sizeof(clsids[0]) ? clsids[type] : -1;
@@ -183,7 +155,6 @@ static QString sHGetSpecialFolderPath(int clsid, QStandardPaths::StandardLocatio
 static QString sHGetKnownFolderPath(const GUID &clsid, QStandardPaths::StandardLocation type, bool warn = false)
 {
     QString result;
-#ifndef Q_OS_WINCE
     typedef HRESULT (WINAPI *GetKnownFolderPath)(const GUID&, DWORD, HANDLE, LPWSTR*);
 
     static const GetKnownFolderPath sHGetKnownFolderPath = // Vista onwards.
@@ -199,11 +170,6 @@ static QString sHGetKnownFolderPath(const GUID &clsid, QStandardPaths::StandardL
                           qPrintable(displayName(type)));
         }
     }
-#else // !Q_OS_WINCE
-    Q_UNUSED(clsid)
-    Q_UNUSED(type)
-    Q_UNUSED(warn)
-#endif
     return result;
 }
 
@@ -266,7 +232,6 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
         dirs.append(localDir);
 
     // type-specific handling goes here
-#ifndef Q_OS_WINCE
     if (isConfigLocation(type)) {
         QString programData = sHGetSpecialFolderPath(CSIDL_COMMON_APPDATA, type);
         if (!programData.isEmpty()) {
@@ -274,12 +239,11 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
                 appendOrganizationAndApp(programData);
             dirs.append(programData);
         }
-#  ifndef QT_BOOTSTRAPPED
+#ifndef QT_BOOTSTRAPPED
         dirs.append(QCoreApplication::applicationDirPath());
         dirs.append(QCoreApplication::applicationDirPath() + QLatin1String("/data"));
-#  endif // !QT_BOOTSTRAPPED
+#endif // !QT_BOOTSTRAPPED
     } // isConfigLocation()
-#endif // !Q_OS_WINCE
 
     return dirs;
 }

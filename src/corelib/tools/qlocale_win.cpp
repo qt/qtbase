@@ -1161,19 +1161,16 @@ static QByteArray getWinLocaleName(LPWSTR id)
         }
     }
 
-#if defined(Q_OS_WINCE)
-    result = winLangCodeToIsoName(id != LOCALE_USER_DEFAULT ? id : GetUserDefaultLCID());
-#else // !Q_OS_WINCE
-#  ifndef Q_OS_WINRT
+#ifndef Q_OS_WINRT
     if (id == LOCALE_USER_DEFAULT)
         id = GetUserDefaultLCID();
-#  else // !Q_OS_WINRT
+#else // !Q_OS_WINRT
     WCHAR lcName[LOCALE_NAME_MAX_LENGTH];
     if (QString::fromWCharArray(id) == QString::fromWCharArray(LOCALE_NAME_USER_DEFAULT)) {
         GetUserDefaultLocaleName(lcName, LOCALE_NAME_MAX_LENGTH);
         id = lcName;
     }
-#  endif // Q_OS_WINRT
+#endif // Q_OS_WINRT
     QString resultuage = winIso639LangName(id);
     QString country = winIso3116CtryName(id);
     result = resultuage.toLatin1();
@@ -1181,7 +1178,6 @@ static QByteArray getWinLocaleName(LPWSTR id)
         result += '_';
         result += country.toLatin1();
     }
-#endif // !Q_OS_WINCE
 
     return result;
 }

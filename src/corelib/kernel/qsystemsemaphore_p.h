@@ -56,9 +56,7 @@
 #ifndef QT_NO_SYSTEMSEMAPHORE
 
 #include "qsharedmemory_p.h"
-#ifndef Q_OS_WINCE
-#   include <sys/types.h>
-#endif
+#include <sys/types.h>
 #ifdef QT_POSIX_IPC
 #   include <semaphore.h>
 #endif

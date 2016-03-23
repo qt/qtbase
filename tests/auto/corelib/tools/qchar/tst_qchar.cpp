@@ -31,9 +31,6 @@
 #include <qfile.h>
 #include <qstringlist.h>
 #include <private/qunicodetables_p.h>
-#if defined(Q_OS_WINCE)
-#include <qcoreapplication.h>
-#endif
 
 class tst_QChar : public QObject
 {

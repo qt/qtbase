@@ -56,7 +56,6 @@
      OS2      - OS/2
      OS2EMX   - XFree86 on OS/2 (not PM)
      WIN32    - Win32 (Windows 2000/XP/Vista/7 and Windows Server 2003/2008)
-     WINCE    - WinCE (Windows CE 5.0)
      WINRT    - WinRT (Windows 8 Runtime)
      CYGWIN   - Cygwin
      SOLARIS  - Sun Solaris
@@ -128,9 +127,7 @@
 #  define Q_OS_WIN32
 #  define Q_OS_WIN64
 #elif !defined(SAG_COM) && (defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__))
-#  if defined(WINCE) || defined(_WIN32_WCE)
-#    define Q_OS_WINCE
-#  elif defined(WINAPI_FAMILY)
+#  if defined(WINAPI_FAMILY)
 #    ifndef WINAPI_FAMILY_PC_APP
 #      define WINAPI_FAMILY_PC_APP WINAPI_FAMILY_APP
 #    endif
@@ -205,7 +202,7 @@
 #  error "Qt has not been ported to this OS - see http://www.qt-project.org/"
 #endif
 
-#if defined(Q_OS_WIN32) || defined(Q_OS_WIN64) || defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN32) || defined(Q_OS_WIN64) || defined(Q_OS_WINRT)
 #  define Q_OS_WIN
 #endif
 

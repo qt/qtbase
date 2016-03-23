@@ -139,7 +139,7 @@
  *      }
  */
 
-#if defined(__MINGW64_VERSION_MAJOR) || (defined(Q_CC_MSVC) && !defined(Q_OS_WINCE))
+#if defined(__MINGW64_VERSION_MAJOR) || defined(Q_CC_MSVC)
 #include <intrin.h>
 #endif
 
@@ -483,7 +483,7 @@ static Q_ALWAYS_INLINE unsigned _bit_scan_forward(unsigned val)
 }
 #elif defined(Q_PROCESSOR_X86)
 // Bit scan functions for x86
-#  if defined(Q_CC_MSVC) && !defined(Q_OS_WINCE)
+#  if defined(Q_CC_MSVC)
 // MSVC calls it _BitScanReverse and returns the carry flag, which we don't need
 static __forceinline unsigned long _bit_scan_reverse(uint val)
 {

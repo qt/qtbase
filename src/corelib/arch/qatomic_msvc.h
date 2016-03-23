@@ -45,8 +45,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef Q_OS_WINCE
-
 // use compiler intrinsics for all atomic functions
 # define QT_INTERLOCKED_PREFIX _
 # define QT_INTERLOCKED_PROTOTYPE
@@ -57,36 +55,6 @@
 # ifdef _WIN64
 #  define Q_ATOMIC_INT64_IS_SUPPORTED
 # endif
-
-#else // Q_OS_WINCE
-
-# if _WIN32_WCE < 0x600 && defined(_X86_)
-// For X86 Windows CE, include winbase.h to catch inline functions which
-// override the regular definitions inside of coredll.dll.
-// Though one could use the original version of Increment/Decrement, others are
-// not exported at all.
-#  include <winbase.h>
-
-// It's safer to remove the volatile and let the compiler add it as needed.
-#  define QT_INTERLOCKED_VOLATILE
-
-# else // _WIN32_WCE >= 0x600 || !_X86_
-
-#  define QT_INTERLOCKED_PROTOTYPE __cdecl
-#  define QT_INTERLOCKED_DECLARE_PROTOTYPES
-
-#  if _WIN32_WCE >= 0x600
-#   if defined(_X86_)
-#    define QT_INTERLOCKED_PREFIX _
-#    define QT_INTERLOCKED_INTRINSIC
-#   endif
-#  else
-#   define QT_INTERLOCKED_VOLATILE
-#  endif
-
-# endif // _WIN32_WCE >= 0x600 || !_X86_
-
-#endif // Q_OS_WINCE
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Prototype declaration
@@ -128,7 +96,7 @@ extern "C" {
     long QT_INTERLOCKED_PROTOTYPE QT_INTERLOCKED_FUNCTION( Exchange )(long QT_INTERLOCKED_VOLATILE *, long);
     long QT_INTERLOCKED_PROTOTYPE QT_INTERLOCKED_FUNCTION( ExchangeAdd )(long QT_INTERLOCKED_VOLATILE *, long);
 
-# if !defined(Q_OS_WINCE) && !defined(__i386__) && !defined(_M_IX86)
+# if !defined(__i386__) && !defined(_M_IX86)
     void * QT_INTERLOCKED_FUNCTION( CompareExchangePointer )(void * QT_INTERLOCKED_VOLATILE *, void *, void *);
     void * QT_INTERLOCKED_FUNCTION( ExchangePointer )(void * QT_INTERLOCKED_VOLATILE *, void *);
     __int64 QT_INTERLOCKED_FUNCTION( ExchangeAdd64 )(__int64 QT_INTERLOCKED_VOLATILE *, __int64);
@@ -165,7 +133,7 @@ extern "C" {
 # pragma intrinsic (_InterlockedCompareExchange)
 # pragma intrinsic (_InterlockedExchangeAdd)
 
-# if !defined(Q_OS_WINCE) && !defined(_M_IX86)
+# if !defined(_M_IX86)
 #  pragma intrinsic (_InterlockedCompareExchangePointer)
 #  pragma intrinsic (_InterlockedExchangePointer)
 #  pragma intrinsic (_InterlockedExchangeAdd64)
@@ -176,7 +144,7 @@ extern "C" {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Interlocked* replacement macros
 
-#if defined(Q_OS_WINCE) || defined(__i386__) || defined(_M_IX86)
+#if defined(__i386__) || defined(_M_IX86)
 
 # define QT_INTERLOCKED_COMPARE_EXCHANGE_POINTER(value, newValue, expectedValue) \
     reinterpret_cast<void *>( \
@@ -195,7 +163,7 @@ extern "C" {
             reinterpret_cast<long QT_INTERLOCKED_VOLATILE *>(value), \
             (valueToAdd))
 
-#else // !defined(Q_OS_WINCE) && !defined(__i386__) && !defined(_M_IX86)
+#else // !defined(__i386__) && !defined(_M_IX86)
 
 # define QT_INTERLOCKED_COMPARE_EXCHANGE_POINTER(value, newValue, expectedValue) \
     QT_INTERLOCKED_FUNCTION(CompareExchangePointer)( \
@@ -213,7 +181,7 @@ extern "C" {
             reinterpret_cast<qint64 QT_INTERLOCKED_VOLATILE *>(value), \
             (valueToAdd))
 
-#endif // !defined(Q_OS_WINCE) && !defined(__i386__) && !defined(_M_IX86)
+#endif // !defined(__i386__) && !defined(_M_IX86)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

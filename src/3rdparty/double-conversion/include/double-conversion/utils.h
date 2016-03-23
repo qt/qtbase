@@ -74,8 +74,6 @@
 #else
 #undef DOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS
 #endif  // _WIN32
-#elif defined(WINCE) || defined(_WIN32_WCE)
-#define DOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS 1
 #else
 #error Target architecture was not detected as supported by Double-Conversion.
 #endif

@@ -64,8 +64,8 @@ void QSharedMemoryPrivate::setErrorString(QLatin1String function)
         errorString = QSharedMemory::tr("%1: already exists").arg(function);
     break;
     case ERROR_FILE_NOT_FOUND:
-#if defined(Q_OS_WINCE) || (defined(Q_OS_WINRT) && _MSC_VER < 1900)
-        // This happens on CE only if no file is present as CreateFileMappingW
+#if defined(Q_OS_WINRT) && _MSC_VER < 1900
+        // This happens on WinRT only if no file is present as CreateFileMappingW
         // bails out with this error code
     case ERROR_INVALID_PARAMETER:
 #endif
@@ -112,10 +112,6 @@ HANDLE QSharedMemoryPrivate::handle()
 #else
         hand = CreateFileMappingFromApp(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0, (PCWSTR)nativeKey.utf16());
 #endif
-#elif defined(Q_OS_WINCE)
-        // This works for opening a mapping too, but always opens it with read/write access in
-        // attach as it seems.
-        hand = CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0, 0, (wchar_t*)nativeKey.utf16());
 #else
         hand = OpenFileMapping(FILE_MAP_ALL_ACCESS, false, (wchar_t*)nativeKey.utf16());
 #endif

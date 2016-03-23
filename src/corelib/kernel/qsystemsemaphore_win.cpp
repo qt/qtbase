@@ -121,11 +121,7 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
             return false;
         }
     } else {
-#if !defined(Q_OS_WINCE)
         if (WAIT_OBJECT_0 != WaitForSingleObjectEx(semaphore, INFINITE, FALSE)) {
-#else
-        if (WAIT_OBJECT_0 != WaitForSingleObject(semaphore, INFINITE)) {
-#endif
             setErrorString(QLatin1String("QSystemSemaphore::modifySemaphore"));
 #if defined QSYSTEMSEMAPHORE_DEBUG
             qDebug("QSystemSemaphore::modifySemaphore WaitForSingleObject failed");

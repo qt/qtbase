@@ -48,16 +48,8 @@
 #endif
 
 #if defined(Q_OS_WIN)
-#  if defined(Q_OS_WINCE)
-#    include <qt_windows.h>
-#    if _WIN32_WCE < 0x800
-#      include <cmnintrin.h>
-#    endif
-#  endif
 #  if !defined(Q_CC_GNU)
-#    ifndef Q_OS_WINCE
-#      include <intrin.h>
-#    endif
+#    include <intrin.h>
 #  endif
 #elif defined(Q_OS_LINUX) && (defined(Q_PROCESSOR_ARM) || defined(Q_PROCESSOR_MIPS_32))
 #include "private/qcore_unix_p.h"
@@ -93,25 +85,6 @@ static inline uint detectProcessorFeatures()
 {
     return 0;
 }
-#elif defined (Q_OS_WINCE)
-static inline quint64 detectProcessorFeatures()
-{
-    quint64 features = 0;
-
-#if defined (ARM)
-#  ifdef PF_ARM_NEON
-    if (IsProcessorFeaturePresent(PF_ARM_NEON))
-        features |= Q_UINT64_C(1) << CpuFeatureNEON;
-#  endif
-#elif defined(_X86_)
-    if (IsProcessorFeaturePresent(PF_XMMI64_INSTRUCTIONS_AVAILABLE))
-        features |= Q_UINT64_C(1) << CpuFeatureSSE2;
-    if (IsProcessorFeaturePresent(PF_SSE3_INSTRUCTIONS_AVAILABLE))
-        features |= Q_UINT64_C(1) << CpuFeatureSSE3;
-#endif
-    return features;
-}
-
 #elif defined(Q_PROCESSOR_ARM)
 static inline quint64 detectProcessorFeatures()
 {

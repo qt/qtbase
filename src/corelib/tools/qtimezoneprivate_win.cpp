@@ -383,17 +383,11 @@ static void calculateTransitionsForYear(const QWinTimeZonePrivate::QWinTransitio
 
 static QLocale::Country userCountry()
 {
-#if defined(Q_OS_WINCE)
-    // Guess that the syslem locale country is the right one to use
-    // TODO Find if WinCE has equivalent api
-    return QLocale::system().country();
-#else
     const GEOID id = GetUserGeoID(GEOCLASS_NATION);
     wchar_t code[3];
     const int size = GetGeoInfo(id, GEO_ISO2, code, 3, 0);
     return (size == 3) ? QLocalePrivate::codeToCountry(QString::fromWCharArray(code))
                        : QLocale::AnyCountry;
-#endif // Q_OS_WINCE
 }
 
 // Create the system default time zone

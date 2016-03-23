@@ -239,18 +239,10 @@ QModelIndex ModelsToTest::populateTestArea(QAbstractItemModel *model)
         // Basic tree StandardItemModel
         QModelIndex parent;
         QVariant blue = QVariant(QColor(Qt::blue));
-#ifndef Q_OS_WINCE
         for (int i = 0; i < 4; ++i) {
-#else
-        for (int i = 0; i < 2; ++i) {
-#endif
             parent = model->index(0, 0, parent);
             model->insertRows(0, 26 + i, parent);
-#ifndef Q_OS_WINCE
-            model->insertColumns(0, 26 + i, parent);
-#else
             model->insertColumns(0, 4 + i, parent);
-#endif
             // Fill in some values to make it easier to debug
             /*
             for (int x = 0; x < 26 + i; ++x) {
@@ -272,18 +264,10 @@ QModelIndex ModelsToTest::populateTestArea(QAbstractItemModel *model)
         // Basic tree StandardItemModel
         QModelIndex parent;
         QVariant blue = QVariant(QColor(Qt::blue));
-#ifndef Q_OS_WINCE
         for (int i = 0; i < 4; ++i) {
-#else
-        for (int i = 0; i < 2; ++i) {
-#endif
             parent = realModel->index(0, 0, parent);
             realModel->insertRows(0, 26+i, parent);
-#ifndef Q_OS_WINCE
-            realModel->insertColumns(0, 26+i, parent);
-#else
             realModel->insertColumns(0, 4, parent);
-#endif
             // Fill in some values to make it easier to debug
             /*
             for (int x = 0; x < 26+i; ++x) {
@@ -324,11 +308,7 @@ QModelIndex ModelsToTest::populateTestArea(QAbstractItemModel *model)
         QSqlQuery q;
         q.exec("CREATE TABLE test(id int primary key, name varchar(30))");
         q.prepare("INSERT INTO test(id, name) values (?, ?)");
-#ifndef Q_OS_WINCE
         for (int i = 0; i < 1024; ++i) {
-#else
-        for (int i = 0; i < 512; ++i) {
-#endif
             q.addBindValue(i);
             q.addBindValue("Mr. Smith" + QString::number(i));
             q.exec();
@@ -344,11 +324,7 @@ QModelIndex ModelsToTest::populateTestArea(QAbstractItemModel *model)
     }
 
     if (QListWidget *listWidget = qobject_cast<QListWidget *>(model->parent())) {
-#ifndef Q_OS_WINCE
-        int items = 100;
-#else
         int items = 50;
-#endif
         while (items--)
             listWidget->addItem(QLatin1String("item ") + QString::number(items));
         return QModelIndex();

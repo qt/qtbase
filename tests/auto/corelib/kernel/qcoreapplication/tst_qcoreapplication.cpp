@@ -155,7 +155,7 @@ void tst_QCoreApplication::qAppName()
 
 void tst_QCoreApplication::argc()
 {
-#if defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
+#if defined(Q_OS_WINRT)
     QSKIP("QCoreApplication::arguments() parses arguments from actual command line on this platform.");
 #endif
     {

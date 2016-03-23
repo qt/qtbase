@@ -34,9 +34,6 @@
 #include <qhash.h>
 #include <limits.h>
 #include <private/qtools_p.h>
-#if defined(Q_OS_WINCE)
-#include <qcoreapplication.h>
-#endif
 
 class tst_QByteArray : public QObject
 {
@@ -246,11 +243,7 @@ void tst_QByteArray::qCompress_data()
 {
     QTest::addColumn<QByteArray>("ba");
 
-#ifndef Q_OS_WINCE
     const int size1 = 1024*1024;
-#else
-    const int size1 = 1024;
-#endif
     QByteArray ba1( size1, 0 );
 
     QTest::newRow( "00" ) << QByteArray();
@@ -267,11 +260,6 @@ void tst_QByteArray::qCompress_data()
     ba1.fill( 'A' );
     QTest::newRow( "03" ) << ba1;
 
-#if defined(Q_OS_WINCE)
-    int tmpArgc = 0;
-    char** tmpArgv = 0;
-    QCoreApplication app(tmpArgc, tmpArgv);
-#endif
     QFile file( QFINDTESTDATA("rfc3252.txt") );
     QVERIFY( file.open(QIODevice::ReadOnly) );
     QTest::newRow( "04" ) << file.readAll();
@@ -728,7 +716,7 @@ void tst_QByteArray::qvsnprintf()
     memset(buf, 42, sizeof(buf));
 #ifdef Q_OS_WIN
     // VS 2005 uses the Qt implementation of vsnprintf.
-# if defined(_MSC_VER) && _MSC_VER >= 1400 && !defined(Q_OS_WINCE)
+# if defined(_MSC_VER)
     QCOMPARE(::qsnprintf(buf, 3, "%s", "bubu"), -1);
     QCOMPARE(static_cast<const char*>(buf), "bu");
 # else

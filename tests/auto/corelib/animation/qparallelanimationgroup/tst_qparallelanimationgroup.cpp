@@ -62,8 +62,8 @@ private slots:
 void tst_QParallelAnimationGroup::initTestCase()
 {
     qRegisterMetaType<QAbstractAnimation::State>("QAbstractAnimation::State");
-#if defined(Q_OS_MAC) || defined(Q_OS_WINCE)
-    // give the mac/wince app start event queue time to clear
+#if defined(Q_OS_DARWIN)
+    // give the Darwin app start event queue time to clear
     QTest::qWait(1000);
 #endif
 }

@@ -169,7 +169,7 @@ static bool isFatal(QtMsgType msgType)
 
 static bool willLogToConsole()
 {
-#if defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
+#if defined(Q_OS_WINRT)
     // these systems have no stderr, so always log to the system log
     return false;
 #elif defined(QT_BOOTSTRAPPED)
@@ -1165,7 +1165,7 @@ void QMessagePattern::setPattern(const QString &pattern)
     else if (inIf)
         error += QStringLiteral("QT_MESSAGE_PATTERN: missing %{endif}\n");
     if (!error.isEmpty()) {
-#if defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
+#if defined(Q_OS_WINRT)
         OutputDebugString(reinterpret_cast<const wchar_t*>(error.utf16()));
         if (0)
 #elif defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)

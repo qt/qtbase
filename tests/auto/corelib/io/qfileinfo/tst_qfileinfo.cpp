@@ -49,13 +49,13 @@
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
 #include <qlibrary.h>
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if !defined(Q_OS_WINRT)
 #include <lm.h>
 #endif
 #endif
 #include <qplatformdefs.h>
 #include <qdebug.h>
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
 #include "../../../network-settings.h"
 #endif
 #include <private/qfileinfo_p.h>
@@ -256,7 +256,7 @@ private slots:
 
     void refresh();
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     void ntfsJunctionPointsAndSymlinks_data();
     void ntfsJunctionPointsAndSymlinks();
     void brokenShortcut();
@@ -273,7 +273,7 @@ private slots:
 
     void detachingOperations();
 
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if !defined(Q_OS_WINRT)
     void owner();
 #endif
     void group();
@@ -354,17 +354,8 @@ void tst_QFileInfo::copy()
     file.flush();
 
     QTest::qWait(250);
-#if defined(Q_OS_WIN) || defined(Q_OS_WINCE)
-    if (QSysInfo::windowsVersion() & QSysInfo::WV_VISTA ||
-                QSysInfo::windowsVersion() & QSysInfo::WV_CE_based)
-        file.close();
-#endif
-#if defined(Q_OS_WINCE)
-    // On Windows CE we need to close the file.
-    // Otherwise the content will be cached and not
-    // flushed to the storage, although we flushed it
-    // manually!!! CE has interim cache, we cannot influence.
-    QTest::qWait(5000);
+#if defined(Q_OS_WIN)
+    file.close();
 #endif
     info3.refresh();
     privateInfo3 = getPrivate(info3);
@@ -422,12 +413,12 @@ void tst_QFileInfo::isDir_data()
 
     QTest::newRow("broken link") << "brokenlink.lnk" << false;
 
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT))
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINRT))
     QTest::newRow("drive 1") << "c:" << true;
     QTest::newRow("drive 2") << "c:/" << true;
     //QTest::newRow("drive 2") << "t:s" << false;
 #endif
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     const QString uncRoot = QStringLiteral("//") + QtNetworkSettings::winServerName();
     QTest::newRow("unc 1") << uncRoot << true;
     QTest::newRow("unc 2") << uncRoot + QLatin1Char('/') << true;
@@ -464,13 +455,13 @@ void tst_QFileInfo::isRoot_data()
 
     QTest::newRow("simple dir") << m_resourcesDir << false;
     QTest::newRow("simple dir with slash") << (m_resourcesDir + QLatin1Char('/')) << false;
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT))
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINRT))
     QTest::newRow("drive 1") << "c:" << false;
     QTest::newRow("drive 2") << "c:/" << true;
     QTest::newRow("drive 3") << "p:/" << false;
 #endif
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     const QString uncRoot = QStringLiteral("//") + QtNetworkSettings::winServerName();
     QTest::newRow("unc 1") << uncRoot << true;
     QTest::newRow("unc 2") << uncRoot + QLatin1Char('/') << true;
@@ -519,7 +510,7 @@ void tst_QFileInfo::exists_data()
     QTest::newRow("simple dir") << m_resourcesDir << true;
     QTest::newRow("simple dir with slash") << (m_resourcesDir + QLatin1Char('/')) << true;
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     const QString uncRoot = QStringLiteral("//") + QtNetworkSettings::winServerName();
     QTest::newRow("unc 1") << uncRoot << true;
     QTest::newRow("unc 2") << uncRoot + QLatin1Char('/') << true;
@@ -554,7 +545,7 @@ void tst_QFileInfo::absolutePath_data()
     QTest::addColumn<QString>("filename");
 
     QString drivePrefix;
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT))
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINRT))
     drivePrefix = QDir::currentPath().left(2);
     QString nonCurrentDrivePrefix =
         drivePrefix.left(1).compare("X", Qt::CaseInsensitive) == 0 ? QString("Y:") : QString("X:");
@@ -573,7 +564,7 @@ void tst_QFileInfo::absolutePath_data()
     QTest::newRow("3") << "/usr/local/bin/" << drivePrefix + "/usr/local/bin" << "";
     QTest::newRow("/test") << "/test" << drivePrefix + "/" << "test";
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     QTest::newRow("c:\\autoexec.bat") << "c:\\autoexec.bat" << "C:/"
                                       << "autoexec.bat";
     QTest::newRow("c:autoexec.bat") << QDir::currentPath().left(2) + "autoexec.bat" << QDir::currentPath()
@@ -606,7 +597,7 @@ void tst_QFileInfo::absFilePath_data()
     QTest::newRow("relativeFile") << "tmp.txt" << QDir::currentPath() + "/tmp.txt";
     QTest::newRow("relativeFileInSubDir") << "temp/tmp.txt" << QDir::currentPath() + "/" + "temp/tmp.txt";
     QString drivePrefix;
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
+#if defined(Q_OS_WIN)
     QString curr = QDir::currentPath();
 
     curr.remove(0, 2);   // Make it a absolute path with no drive specifier: \depot\qt-4.2\tests\auto\qfileinfo
@@ -774,7 +765,7 @@ void tst_QFileInfo::fileName_data()
 
     QTest::newRow("relativeFile") << "tmp.txt" << "tmp.txt";
     QTest::newRow("relativeFileInSubDir") << "temp/tmp.txt" << "tmp.txt";
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
+#if defined(Q_OS_WIN)
     QTest::newRow("absFilePath") << "c:\\home\\andy\\tmp.txt" << "tmp.txt";
     QTest::newRow("driveWithNoSlash") << "c:tmp.txt" << "tmp.txt";
 #else
@@ -1024,7 +1015,7 @@ void tst_QFileInfo::size()
 
 void tst_QFileInfo::systemFiles()
 {
-#if !defined(Q_OS_WIN) || defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
+#if !defined(Q_OS_WIN) || defined(Q_OS_WINRT)
     QSKIP("This is a Windows only test");
 #endif
     QFileInfo fi("c:\\pagefile.sys");
@@ -1121,11 +1112,7 @@ void tst_QFileInfo::fileTimes_data()
 
 void tst_QFileInfo::fileTimes()
 {
-#if defined(Q_OS_WINCE)
-    int sleepTime = 3000;
-#else
     int sleepTime = 2000;
-#endif
     QFETCH(QString, fileName);
     if (QFile::exists(fileName)) {
         QVERIFY(QFile::remove(fileName));
@@ -1133,10 +1120,6 @@ void tst_QFileInfo::fileTimes()
     QTest::qSleep(sleepTime);
     {
         QFile file(fileName);
-#if defined(Q_OS_WINCE)
-        QEXPECT_FAIL("longfile", "No long filenames on WinCE", Abort);
-        QEXPECT_FAIL("longfile absolutepath", "No long filenames on WinCE", Abort);
-#endif
         QVERIFY(file.open(QFile::WriteOnly | QFile::Text));
 #if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
         if (qIsLikelyToBeNfs(file.handle()))
@@ -1162,7 +1145,7 @@ void tst_QFileInfo::fileTimes()
     {
         QFileInfo fileInfo(fileName);
 // On unix created() returns the same as lastModified().
-#if !defined(Q_OS_UNIX) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_UNIX)
         QVERIFY(fileInfo.created() < beforeWrite);
 #endif
         QVERIFY(fileInfo.lastModified() > beforeWrite);
@@ -1174,7 +1157,7 @@ void tst_QFileInfo::fileTimes()
     }
 
     QFileInfo fileInfo(fileName);
-#if !defined(Q_OS_UNIX) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_UNIX)
     QVERIFY(fileInfo.created() < beforeWrite);
 #endif
     //In Vista the last-access timestamp is not updated when the file is accessed/touched (by default).
@@ -1193,9 +1176,7 @@ void tst_QFileInfo::fileTimes()
             RegCloseKey(key);
     }
 #endif
-#if defined(Q_OS_WINCE)
-    QEXPECT_FAIL("simple", "WinCE only stores date of access data, not the time", Continue);
-#elif defined(Q_OS_WINRT)
+#if defined(Q_OS_WINRT)
     QEXPECT_FAIL("", "WinRT does not allow timestamp handling change in the filesystem due to sandboxing", Continue);
 #elif defined(Q_OS_QNX)
     QEXPECT_FAIL("", "QNX uses the noatime filesystem option", Continue);
@@ -1211,8 +1192,8 @@ void tst_QFileInfo::fileTimes()
 
 void tst_QFileInfo::fileTimes_oldFile()
 {
-    // This is not supported on WinCE or WinRT
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+    // This is not supported on WinRT
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     // All files are opened in share mode (both read and write).
     DWORD shareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
 
@@ -1310,7 +1291,7 @@ void tst_QFileInfo::isHidden_data()
         QTest::newRow(qPrintable("drive." + info.path())) << info.path() << false;
     }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
     QVERIFY(QDir("./hidden-directory").exists() || QDir().mkdir("./hidden-directory"));
     QVERIFY(SetFileAttributesW(reinterpret_cast<LPCWSTR>(QString("./hidden-directory").utf16()),FILE_ATTRIBUTE_HIDDEN));
     QTest::newRow("C:/path/to/hidden-directory") << QDir::currentPath() + QString::fromLatin1("/hidden-directory") << true;
@@ -1413,7 +1394,7 @@ void tst_QFileInfo::isNativePath()
 
 void tst_QFileInfo::refresh()
 {
-#if defined(Q_OS_WINCE) || defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
     int sleepTime = 3000;
 #else
     int sleepTime = 2000;
@@ -1436,17 +1417,8 @@ void tst_QFileInfo::refresh()
     QCOMPARE(info.lastModified(), lastModified);
 
     QCOMPARE(info.size(), qint64(7));
-#if defined(Q_OS_WIN) || defined(Q_OS_WINCE)
-    if (QSysInfo::windowsVersion() & QSysInfo::WV_VISTA ||
-                QSysInfo::windowsVersion() & QSysInfo::WV_CE_based)
-        file.close();
-#endif
-#if defined(Q_OS_WINCE)
-    // On Windows CE we need to close the file.
-    // Otherwise the content will be cached and not
-    // flushed to the storage, although we flushed it
-    // manually!!! CE has interim cache, we cannot influence.
-    QTest::qWait(5000);
+#if defined(Q_OS_WIN)
+    file.close();
 #endif
     info.refresh();
     QCOMPARE(info.size(), qint64(13));
@@ -1459,7 +1431,7 @@ void tst_QFileInfo::refresh()
     QCOMPARE(info2.size(), info.size());
 }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
 {
     QTest::addColumn<QString>("path");
@@ -1633,11 +1605,7 @@ void tst_QFileInfo::isWritable()
     tempfile.remove();
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-#ifdef Q_OS_WINCE
-    QFileInfo fi("\\Windows\\wince.nls");
-#else
     QFileInfo fi("c:\\pagefile.sys");
-#endif
     QVERIFY2(fi.exists(), msgDoesNotExist(fi.absoluteFilePath()).constData());
     QVERIFY(!fi.isWritable());
 #endif
@@ -1813,8 +1781,7 @@ void tst_QFileInfo::detachingOperations()
     QVERIFY(!info1.caching());
 }
 
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
-#if defined (Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 BOOL IsUserAdmin()
 {
     BOOL b;
@@ -1835,14 +1802,14 @@ BOOL IsUserAdmin()
 
     return(b);
 }
-#endif
 
-#if defined(Q_OS_WIN)
 QT_BEGIN_NAMESPACE
 extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
 QT_END_NAMESPACE
-#endif
 
+#endif // Q_OS_WIN && !Q_OS_WINRT
+
+#ifndef Q_OS_WINRT
 void tst_QFileInfo::owner()
 {
     QString userName;
@@ -1904,7 +1871,7 @@ void tst_QFileInfo::owner()
     qt_ntfs_permission_lookup = 0;
 #endif
 }
-#endif
+#endif // !Q_OS_WINRT
 
 void tst_QFileInfo::group()
 {

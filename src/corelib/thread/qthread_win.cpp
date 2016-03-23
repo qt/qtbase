@@ -55,15 +55,10 @@
 #include <qt_windows.h>
 
 #ifndef Q_OS_WINRT
-#ifndef Q_OS_WINCE
-#ifndef _MT
-#define _MT
-#endif // _MT
-#include <process.h>
-#else   // !Q_OS_WINCE
-#include "qfunctions_wince.h"
-#endif // Q_OS_WINCE
-#else // !Q_OS_WINRT
+#  ifndef _MT
+#    define _MT
+#  endif // _MT
+#  include <process.h>
 #endif // Q_OS_WINRT
 
 #ifndef QT_NO_THREAD
@@ -150,7 +145,6 @@ QThreadData *QThreadData::current(bool createIfNecessary)
             // WinRT API?
         } else {
             HANDLE realHandle = INVALID_HANDLE_VALUE;
-#if !defined(Q_OS_WINCE) || (defined(_WIN32_WCE) && (_WIN32_WCE>=0x600))
             DuplicateHandle(GetCurrentProcess(),
                     GetCurrentThread(),
                     GetCurrentProcess(),
@@ -158,9 +152,6 @@ QThreadData *QThreadData::current(bool createIfNecessary)
                     0,
                     FALSE,
                     DUPLICATE_SAME_ACCESS);
-#else
-                        realHandle = reinterpret_cast<HANDLE>(GetCurrentThreadId());
-#endif
             qt_watch_adopted_thread(realHandle, threadData->thread);
         }
     }
@@ -190,9 +181,7 @@ void qt_watch_adopted_thread(const HANDLE adoptedThreadHandle, QThread *qthread)
     QMutexLocker lock(&qt_adopted_thread_watcher_mutex);
 
     if (GetCurrentThreadId() == qt_adopted_thread_watcher_id) {
-#if !defined(Q_OS_WINCE) || (defined(_WIN32_WCE) && (_WIN32_WCE>=0x600))
         CloseHandle(adoptedThreadHandle);
-#endif
         return;
     }
 
@@ -291,9 +280,7 @@ DWORD WINAPI qt_adopted_thread_watcher_function(LPVOID)
             data->deref();
 
             QMutexLocker lock(&qt_adopted_thread_watcher_mutex);
-#if !defined(Q_OS_WINCE) || (defined(_WIN32_WCE) && (_WIN32_WCE>=0x600))
             CloseHandle(qt_adopted_thread_handles.at(handleIndex));
-#endif
             qt_adopted_thread_handles.remove(handleIndex);
             qt_adopted_qthreads.remove(qthreadIndex);
         }
@@ -306,7 +293,7 @@ DWORD WINAPI qt_adopted_thread_watcher_function(LPVOID)
     return 0;
 }
 
-#if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC) && !defined(Q_OS_WINRT)
 
 #ifndef Q_OS_WIN64
 #  define ULONG_PTR DWORD
@@ -336,7 +323,7 @@ void qt_set_thread_name(HANDLE threadId, LPCSTR threadName)
     {
     }
 }
-#endif // !QT_NO_DEBUG && Q_CC_MSVC && !Q_OS_WINCE && !Q_OS_WINRT
+#endif // !QT_NO_DEBUG && Q_CC_MSVC && !Q_OS_WINRT
 
 /**************************************************************************
  ** QThreadPrivate
@@ -378,7 +365,7 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
     else
         createEventDispatcher(data);
 
-#if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC) && !defined(Q_OS_WINRT)
     // sets the name of the current thread.
     QByteArray objectName = thr->objectName().toLocal8Bit();
     qt_set_thread_name((HANDLE)-1,
@@ -453,7 +440,7 @@ int QThread::idealThreadCount() Q_DECL_NOTHROW
 
 void QThread::yieldCurrentThread()
 {
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if !defined(Q_OS_WINRT)
     SwitchToThread();
 #else
     ::Sleep(0);

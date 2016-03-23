@@ -68,23 +68,11 @@
 
     DLL Safe search mode is documented in the "Dynamic-Link Library Search
     Order" document on MSDN.
-
-    Since library loading code is sometimes shared between Windows and WinCE,
-    this class can also be used on WinCE. However, its implementation just
-    calls the LoadLibrary() function. This is ok since it is documented as not
-    loading from the current directory on WinCE. This behaviour is documented
-    in the documentation for LoadLibrary for Windows CE at MSDN.
-    (http://msdn.microsoft.com/en-us/library/ms886736.aspx)
 */
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_WINCE)
-HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirectory /* = true */)
-{
-    return ::LoadLibrary(libraryName);
-}
-#elif defined(Q_OS_WINRT)
+#if defined(Q_OS_WINRT)
 HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirectory /* = true */)
 {
     Q_UNUSED(onlySystemDirectory);
@@ -141,6 +129,6 @@ HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirect
 
 }
 
-#endif  //Q_OS_WINCE
+#endif // Q_OS_WINRT
 
 QT_END_NAMESPACE

@@ -47,7 +47,7 @@ extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
 QT_END_NAMESPACE
 #endif
 
-#if !defined(Q_OS_WINCE) && !defined(QT_NO_NETWORK)
+#if !defined(QT_NO_NETWORK)
 #include <QHostInfo>
 #endif
 #include <QProcess>
@@ -66,8 +66,6 @@ QT_END_NAMESPACE
 # include <sys/mount.h>
 #elif defined(Q_OS_IRIX)
 # include <sys/statfs.h>
-#elif defined(Q_OS_WINCE)
-# include <qplatformdefs.h>
 #elif defined(Q_OS_VXWORKS)
 # include <fcntl.h>
 #if defined(_WRS_KERNEL)
@@ -85,7 +83,7 @@ QT_END_NAMESPACE
 #include <stdio.h>
 #include <errno.h>
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
 #include "../../../network-settings.h"
 #endif
 
@@ -135,11 +133,9 @@ private slots:
     void readAll_data();
     void readAll();
     void readAllBuffer();
-#if !defined(Q_OS_WINCE)
     void readAllStdin();
     void readLineStdin();
     void readLineStdin_lineByLine();
-#endif
     void text();
     void missingEndOfLine();
     void readBlock();
@@ -169,7 +165,7 @@ private slots:
     void writeTextFile_data();
     void writeTextFile();
     /* void largeFileSupport(); */
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     void largeUncFileSupport();
 #endif
     void flush();
@@ -225,10 +221,8 @@ private slots:
     void mapWrittenFile_data();
     void mapWrittenFile();
 
-#ifndef Q_OS_WINCE
     void openStandardStreamsFileDescriptors();
     void openStandardStreamsBufferedStreams();
-#endif
 
     void resize_data();
     void resize();
@@ -491,7 +485,7 @@ void tst_QFile::exists()
     file.remove();
     QVERIFY(!file.exists());
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     const QString uncPath = "//" + QtNetworkSettings::winServerName() + "/testshare/readme.txt";
     QFile unc(uncPath);
     QVERIFY2(unc.exists(), msgFileDoesNotExist(uncPath).constData());
@@ -539,7 +533,7 @@ void tst_QFile::open_data()
                                   << false << QFile::OpenError;
     QTest::newRow("noreadfile") << QString::fromLatin1(noReadFile) << int(QIODevice::ReadOnly)
                                 << false << QFile::OpenError;
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     //opening devices requires administrative privileges (and elevation).
     HANDLE hTest = CreateFile(_T("\\\\.\\PhysicalDrive0"), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
     if (hTest != INVALID_HANDLE_VALUE) {
@@ -570,7 +564,7 @@ void tst_QFile::open()
         QSKIP("Running this test as root doesn't make sense");
 #endif
 
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN32)
     QEXPECT_FAIL("noreadfile", "Windows does not currently support non-readable files.", Abort);
 #endif
     if (filename.isEmpty())
@@ -622,7 +616,7 @@ void tst_QFile::size_data()
     QTest::addColumn<qint64>("size");
 
     QTest::newRow( "exist01" ) << m_testFile << (qint64)245;
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     // Only test UNC on Windows./
     QTest::newRow("unc") << "//" + QString(QtNetworkSettings::winServerName() + "/testshare/test.pri") << (qint64)34;
 #endif
@@ -632,10 +626,6 @@ void tst_QFile::size()
 {
     QFETCH( QString, filename );
     QFETCH( qint64, size );
-
-#ifdef Q_OS_WINCE
-        filename = QFileInfo(filename).absoluteFilePath();
-#endif
 
     {
         QFile f( filename );
@@ -656,9 +646,6 @@ void tst_QFile::size()
         fclose(stream);
     }
 
-    // Currently low level file I/O is not well supported on Windows CE, so
-    // skip this part of the test.
-#ifndef Q_OS_WINCE
     {
         QFile f;
 
@@ -671,7 +658,6 @@ void tst_QFile::size()
         f.close();
         QT_CLOSE(fd);
     }
-#endif
 }
 
 void tst_QFile::sizeNoExist()
@@ -916,7 +902,6 @@ private:
 };
 #endif // !QT_NO_PROCESS
 
-#if !defined(Q_OS_WINCE)
 void tst_QFile::readAllStdin()
 {
 #ifdef QT_NO_PROCESS
@@ -1007,7 +992,6 @@ void tst_QFile::readLineStdin_lineByLine()
     }
 #endif
 }
-#endif
 
 void tst_QFile::text()
 {
@@ -1108,7 +1092,7 @@ void tst_QFile::ungetChar()
     QCOMPARE(buf[2], '4');
 }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 QString driveLetters()
 {
     wchar_t volumeName[MAX_PATH];
@@ -1145,7 +1129,7 @@ void tst_QFile::invalidFile_data()
 #if !defined(Q_OS_WIN)
     QTest::newRow( "x11" ) << QString( "qwe//" );
 #else
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if !defined(Q_OS_WINRT)
     QTest::newRow( "colon2" ) << invalidDriveLetter() + QString::fromLatin1(":ail:invalid");
 #endif
     QTest::newRow( "colon3" ) << QString( ":failinvalid" );
@@ -1207,13 +1191,11 @@ void tst_QFile::permissions_data()
     QTest::newRow("data0") << QCoreApplication::instance()->applicationFilePath() << uint(QFile::ExeUser) << true << false;
     QTest::newRow("data1") << m_testSourceFile << uint(QFile::ReadUser) << true << false;
     QTest::newRow("readonly") << QString::fromLatin1("readonlyfile") << uint(QFile::WriteUser) << false << false;
-#ifndef Q_OS_WINCE
     QTest::newRow("longfile") << QString::fromLatin1("longFileNamelongFileNamelongFileNamelongFileName"
                                                     "longFileNamelongFileNamelongFileNamelongFileName"
                                                     "longFileNamelongFileNamelongFileNamelongFileName"
                                                     "longFileNamelongFileNamelongFileNamelongFileName"
                                                     "longFileNamelongFileNamelongFileNamelongFileName.txt") << uint(QFile::ReadUser) << true << true;
-#endif
     QTest::newRow("resource1") << ":/tst_qfileinfo/resources/file1.ext1" << uint(QFile::ReadUser) << true << false;
     QTest::newRow("resource2") << ":/tst_qfileinfo/resources/file1.ext1" << uint(QFile::WriteUser) << false << false;
     QTest::newRow("resource3") << ":/tst_qfileinfo/resources/file1.ext1" << uint(QFile::ExeUser) << false << false;
@@ -1365,15 +1347,9 @@ void tst_QFile::copyFallback()
     QVERIFY(QFile::exists("file-copy-destination.txt"));
     QVERIFY(!file.isOpen());
 
-#ifdef Q_OS_WINCE
-    // Need to reset permissions on Windows to be able to delete
-    QVERIFY(QFile::setPermissions("file-copy-destination.txt",
-            QFile::WriteOther));
-#else
      // Need to reset permissions on Windows to be able to delete
     QVERIFY(QFile::setPermissions("file-copy-destination.txt",
            QFile::ReadOwner | QFile::WriteOwner));
-#endif
     QVERIFY(QFile::remove("file-copy-destination.txt"));
 
     // Fallback copy of open file.
@@ -1394,7 +1370,7 @@ void tst_QFile::copyFallback()
 #endif
 #endif
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 static QString getWorkingDirectoryForLink(const QString &linkFileName)
 {
     bool neededCoInit = false;
@@ -1453,7 +1429,7 @@ void tst_QFile::link()
 
     QCOMPARE(QFile::symLinkTarget("myLink.lnk"), referenceTarget);
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     QString wd = getWorkingDirectoryForLink(info2.absoluteFilePath());
     QCOMPARE(QDir::fromNativeSeparators(wd), QDir::cleanPath(info1.absolutePath()));
 #endif
@@ -1591,7 +1567,7 @@ void tst_QFile::writeTextFile()
     QCOMPARE(file.readAll(), out);
 }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 void tst_QFile::largeUncFileSupport()
 {
     qint64 size = Q_INT64_C(8589934592);
@@ -1670,11 +1646,7 @@ void tst_QFile::bufferedRead()
     file.write("abcdef");
     file.close();
 
-#if defined(Q_OS_WINCE)
-    FILE *stdFile = fopen((QCoreApplication::applicationDirPath() + "/stdfile.txt").toLatin1() , "r");
-#else
     FILE *stdFile = fopen("stdfile.txt", "r");
-#endif
     QVERIFY(stdFile);
     char c;
     QCOMPARE(int(fread(&c, 1, 1, stdFile)), 1);
@@ -1819,11 +1791,7 @@ void tst_QFile::FILEReadWrite()
         f.close();
     }
 
-#ifdef Q_OS_WINCE
-    FILE *fp = fopen(qPrintable(QCoreApplication::applicationDirPath() + "\\FILEReadWrite.txt"), "r+b");
-#else
     FILE *fp = fopen("FILEReadWrite.txt", "r+b");
-#endif
     QVERIFY(fp);
     QFile file;
     QVERIFY2(file.open(fp, QFile::ReadWrite), msgOpenFailed(file).constData());
@@ -2028,10 +1996,6 @@ void tst_QFile::longFileName()
     }
     {
         QFile file(fileName);
-#if defined(Q_OS_WINCE)
-        QEXPECT_FAIL("244 chars", "Full pathname must be less than 260 chars", Abort);
-        QEXPECT_FAIL("244 chars to absolutepath", "Full pathname must be less than 260 chars", Abort);
-#endif
         QVERIFY2(file.open(QFile::WriteOnly | QFile::Text), msgOpenFailed(file).constData());
         QTextStream ts(&file);
         ts << fileName << endl;
@@ -2299,7 +2263,7 @@ void tst_QFile::writeLargeDataBlock_data()
     QTest::newRow("localfile-Fd")     << "./largeblockfile.txt" << (int)OpenFd;
     QTest::newRow("localfile-Stream") << "./largeblockfile.txt" << (int)OpenStream;
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT) && !defined(QT_NO_NETWORK)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) && !defined(QT_NO_NETWORK)
     // Some semi-randomness to avoid collisions.
     QTest::newRow("unc file")
         << QString("//" + QtNetworkSettings::winServerName() + "/TESTSHAREWRITABLE/largefile-%1-%2.txt")
@@ -2314,8 +2278,8 @@ static QByteArray getLargeDataBlock()
 
     if (array.isNull())
     {
-#if defined(Q_OS_WINCE) || defined(Q_OS_VXWORKS)
-        int resizeSize = 1024 * 1024; // WinCE does not have much space
+#if defined(Q_OS_VXWORKS)
+        int resizeSize = 1024 * 1024; // VxWorks does not have much space
 #else
         int resizeSize = 64 * 1024 * 1024;
 #endif
@@ -2443,9 +2407,7 @@ void tst_QFile::virtualFile()
 
 void tst_QFile::textFile()
 {
-#if defined(Q_OS_WINCE)
-    FILE *fs = ::fopen((QCoreApplication::applicationDirPath() + "/writeabletextfile").toLatin1() , "wt");
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
     FILE *fs = ::fopen("writeabletextfile", "wt");
 #else
     FILE *fs = ::fopen("writeabletextfile", "w");
@@ -2658,7 +2620,7 @@ void tst_QFile::appendAndRead()
 
 void tst_QFile::miscWithUncPathAsCurrentDir()
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     QString current = QDir::currentPath();
     const QString path = QLatin1String("//") + QtNetworkSettings::winServerName()
         + QLatin1String("/testshare");
@@ -2682,7 +2644,6 @@ void tst_QFile::standarderror()
 void tst_QFile::handle()
 {
     int fd;
-#if !defined(Q_OS_WINCE)
     QFile file(m_testSourceFile);
     QVERIFY2(file.open(QIODevice::ReadOnly), msgOpenFailed(file).constData());
     fd = int(file.handle());
@@ -2710,7 +2671,6 @@ void tst_QFile::handle()
 #endif
 
     QCOMPARE(c, '*');
-#endif
 
     //test round trip of adopted stdio file handle
     QFile file2;
@@ -2953,10 +2913,6 @@ void tst_QFile::map()
 
     QString fileName = QDir::currentPath() + '/' + "qfile_map_testfile";
 
-#ifdef Q_OS_WINCE
-     fileName = QFileInfo(fileName).absoluteFilePath();
-#endif
-
     if (QFile::exists(fileName)) {
         QVERIFY(QFile::setPermissions(fileName,
             QFile::WriteOwner | QFile::ReadOwner | QFile::WriteUser | QFile::ReadUser));
@@ -2998,7 +2954,7 @@ void tst_QFile::map()
     QCOMPARE(file.error(), QFile::NoError);
 
     // hpux won't let you map multiple times.
-#if !defined(Q_OS_HPUX) && !defined(Q_USE_DEPRECATED_MAP_API) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_HPUX) && !defined(Q_USE_DEPRECATED_MAP_API)
     // exotic test to make sure that multiple maps work
 
     // note: windows ce does not reference count mutliple maps
@@ -3121,10 +3077,6 @@ void tst_QFile::mapOpenMode()
     QVERIFY2(file.open(om), msgOpenFailed(om, file).constData());
 
     uchar *memory = file.map(0, fileSize, QFileDevice::MemoryMapFlags(flags));
-#if defined(Q_OS_WINCE)
-    QEXPECT_FAIL("ReadOnly + MapPrivate" , "Windows CE does not support MapPrivateOption.", Abort);
-    QEXPECT_FAIL("ReadWrite + MapPrivate", "Windows CE does not support MapPrivateOption.", Abort);
-#endif
     QVERIFY(memory);
     QVERIFY(memcmp(memory, pattern, fileSize) == 0);
 
@@ -3156,10 +3108,6 @@ void tst_QFile::mapWrittenFile()
     QFETCH(int, mode);
 
     QString fileName = QDir::currentPath() + '/' + "qfile_map_testfile";
-
-#ifdef Q_OS_WINCE
-     fileName = QFileInfo(fileName).absoluteFilePath();
-#endif
 
     if (QFile::exists(fileName)) {
         QVERIFY(QFile::setPermissions(fileName,
@@ -3259,10 +3207,6 @@ protected:
 bool MessageHandler::ok = true;
 QtMessageHandler MessageHandler::oldMessageHandler = 0;
 
-    //allthough Windows CE (not mobile!) has functions that allow redirecting
-    //the standard file descriptors to a file (see SetStdioPathW/GetStdioPathW)
-    //it does not have functions to simply open them like below .
-#ifndef Q_OS_WINCE
 void tst_QFile::openStandardStreamsFileDescriptors()
 {
 
@@ -3322,7 +3266,6 @@ void tst_QFile::openStandardStreamsBufferedStreams()
 
     QVERIFY(msgHandler.testPassed());
 }
-#endif
 
 void tst_QFile::writeNothing()
 {

@@ -2259,14 +2259,6 @@ QStringList QCoreApplication::arguments()
     // classes by index.
     QString cmdline = QString::fromWCharArray(GetCommandLine());
 
-#if defined(Q_OS_WINCE)
-    wchar_t tempFilename[MAX_PATH+1];
-    if (GetModuleFileName(0, tempFilename, MAX_PATH)) {
-        tempFilename[MAX_PATH] = 0;
-        cmdline.prepend(QLatin1Char('\"') + QString::fromWCharArray(tempFilename) + QLatin1String("\" "));
-    }
-#endif // Q_OS_WINCE
-
     const QCoreApplicationPrivate *d = self->d_func();
     if (d->origArgv) {
         const QStringList allArguments = qWinCmdArgs(cmdline);

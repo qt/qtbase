@@ -34,7 +34,7 @@
 #include <qsysinfo.h>
 #if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
 #include <unistd.h>
-#elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#elif defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 #  include <qt_windows.h>
 #endif
 
@@ -281,7 +281,7 @@ void tst_QLockFile::staleLockFromCrashedProcessReusedPid()
 {
 #if defined(QT_NO_PROCESS)
     QSKIP("This test requires QProcess support");
-#elif defined(Q_OS_WINRT) || defined(Q_OS_WINCE) || defined(Q_OS_IOS)
+#elif defined(Q_OS_WINRT) || defined(Q_OS_IOS)
     QSKIP("We cannot retrieve information about other processes on this platform.");
 #else
     const QString fileName = dir.path() + "/staleLockFromCrashedProcessReusedPid";
@@ -455,7 +455,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(ProcessProperties)
 static inline ProcessProperties processProperties()
 {
     ProcessProperties result;
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     HANDLE processToken = NULL;
     if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &processToken)) {
         DWORD elevation; // struct containing a DWORD, not present in some MinGW headers.
@@ -484,7 +484,7 @@ void tst_QLockFile::noPermissionsWindows()
 {
     // Windows: Do the permissions test in a system directory in which
     // files cannot be created.
-#if !defined(Q_OS_WIN) || defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
+#if !defined(Q_OS_WIN) || defined(Q_OS_WINRT)
     QSKIP("This test is for desktop Windows only");
 #endif
 #ifdef Q_OS_WIN

@@ -31,21 +31,10 @@
 
 int main(int argc, char ** argv)
 {
-#if defined(WINCE) || defined(_WIN32_WCE)
-    // No pipes on this "OS"
-    FILE* file = fopen("\\temp\\qprocess_args_test.txt","w+");
-    for (int i = 0; i < argc; ++i) {
-        if (i)
-            fprintf(file, "|");
-        fprintf(file, argv[i]);
-    }
-    fclose(file);
-#else
     for (int i = 0; i < argc; ++i) {
         if (i)
             printf("|");
         printf("%s", argv[i]);
     }
-#endif
     return 0;
 }

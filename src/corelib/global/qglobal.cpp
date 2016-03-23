@@ -64,11 +64,9 @@
 #  include <exception>
 #endif
 
-#if !defined(Q_OS_WINCE)
-#  include <errno.h>
-#  if defined(Q_CC_MSVC)
-#    include <crtdbg.h>
-#  endif
+#include <errno.h>
+#if defined(Q_CC_MSVC)
+#  include <crtdbg.h>
 #endif
 
 #ifdef Q_OS_WINRT
@@ -1262,7 +1260,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \relates <QtGlobal>
 
     Defined on all supported versions of Windows. That is, if
-    \l Q_OS_WIN32, \l Q_OS_WIN64, \l Q_OS_WINCE or \l Q_OS_WINRT is defined.
+    \l Q_OS_WIN32, \l Q_OS_WIN64 or \l Q_OS_WINRT is defined.
 */
 
 /*!
@@ -1277,13 +1275,6 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \relates <QtGlobal>
 
     Defined on 64-bit versions of Windows.
-*/
-
-/*!
-    \macro Q_OS_WINCE
-    \relates <QtGlobal>
-
-    Defined on Windows CE.
 */
 
 /*!
@@ -1922,7 +1913,7 @@ QSysInfo::MacVersion QSysInfo::macVersion()
 }
 const QSysInfo::MacVersion QSysInfo::MacintoshVersion = QSysInfo::macVersion();
 
-#elif defined(Q_OS_WIN) || defined(Q_OS_CYGWIN) || defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
+#elif defined(Q_OS_WIN) || defined(Q_OS_CYGWIN) || defined(Q_OS_WINRT)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "qt_windows.h"
@@ -1975,9 +1966,7 @@ static inline OSVERSIONINFOEX determineWinOsVersion()
 {
     OSVERSIONINFOEX result = { sizeof(OSVERSIONINFOEX), 0, 0, 0, 0, {'\0'}, 0, 0, 0, 0, 0};
 
-#ifndef Q_OS_WINCE
 #define GetProcAddressA GetProcAddress
-#endif
 
     // GetModuleHandle is not supported in WinRT and linking to it at load time
     // will not pass the Windows App Certification Kit... but it exists and is functional,
@@ -2048,11 +2037,6 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
     const OSVERSIONINFOEX osver = winOsVersion();
     if (osver.dwMajorVersion == 0)
         return QSysInfo::WV_None;
-#ifdef Q_OS_WINCE
-    DWORD qt_cever = 0;
-    qt_cever = osver.dwMajorVersion * 100;
-    qt_cever += osver.dwMinorVersion * 10;
-#endif
     switch (osver.dwPlatformId) {
     case VER_PLATFORM_WIN32s:
         winver = QSysInfo::WV_32s;
@@ -2066,18 +2050,6 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
         else
             winver = QSysInfo::WV_95;
         break;
-#ifdef Q_OS_WINCE
-    case VER_PLATFORM_WIN32_CE:
-        if (qt_cever >= 600)
-            winver = QSysInfo::WV_CE_6;
-        if (qt_cever >= 500)
-            winver = QSysInfo::WV_CE_5;
-        else if (qt_cever >= 400)
-            winver = QSysInfo::WV_CENET;
-        else
-            winver = QSysInfo::WV_CE;
-        break;
-#endif
     default: // VER_PLATFORM_WIN32_NT
         if (osver.dwMajorVersion < 5) {
             winver = QSysInfo::WV_NT;
@@ -2168,15 +2140,6 @@ static const char *winVer_helper()
         return workstation ? "8.1" : "Server 2012 R2";
     case QSysInfo::WV_WINDOWS10:
         return workstation ? "10" : "Server 2016";
-
-    case QSysInfo::WV_CE:
-        return "CE";
-    case QSysInfo::WV_CENET:
-        return "CENET";
-    case QSysInfo::WV_CE_5:
-        return "CE5";
-    case QSysInfo::WV_CE_6:
-        return "CE6";
     }
     // unknown, future version
     return 0;
@@ -2434,7 +2397,7 @@ QString QSysInfo::buildCpuArchitecture()
  */
 QString QSysInfo::currentCpuArchitecture()
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
     // We don't need to catch all the CPU architectures in this function;
     // only those where the host CPU might be different than the build target
     // (usually, 64-bit platforms).
@@ -2586,9 +2549,7 @@ static QString unknownText()
 */
 QString QSysInfo::kernelType()
 {
-#if defined(Q_OS_WINCE)
-    return QStringLiteral("wince");
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
     return QStringLiteral("winnt");
 #elif defined(Q_OS_UNIX)
     struct utsname u;
@@ -2652,8 +2613,7 @@ QString QSysInfo::kernelVersion()
     "unknown" otherwise.
 
     \b{Windows note}: this function returns "winphone" for builds for Windows
-    Phone, "winrt" for WinRT builds, "wince" for Windows CE and Embedded
-    Compact builds, and "windows" for normal desktop builds.
+    Phone, "winrt" for WinRT builds and "windows" for normal desktop builds.
 
     For other Unix-type systems, this function usually returns "unknown".
 
@@ -2666,8 +2626,6 @@ QString QSysInfo::productType()
     return QStringLiteral("winphone");
 #elif defined(Q_OS_WINRT)
     return QStringLiteral("winrt");
-#elif defined(Q_OS_WINCE)
-    return QStringLiteral("wince");
 #elif defined(Q_OS_WIN)
     return QStringLiteral("windows");
 

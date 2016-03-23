@@ -8,7 +8,7 @@ SUBDIRS += testProcessSpacesArgs/nospace.pro \
            testProcessSpacesArgs/twospaces.pro \
            testSpaceInName
 
-win32:!wince* {
+win32 {
     SUBDIRS += \
         testProcessEchoGui \
         testSetNamedPipeHandleState

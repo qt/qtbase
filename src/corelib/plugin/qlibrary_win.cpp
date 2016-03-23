@@ -71,15 +71,6 @@ bool QLibraryPrivate::load_sys()
 #endif
     // We make the following attempts at locating the library:
     //
-    // WinCE
-    // if (absolute)
-    //     fileName
-    //     fileName + ".dll"
-    // else
-    //     fileName + ".dll"
-    //     fileName
-    //     QFileInfo(fileName).absoluteFilePath()
-    //
     // Windows
     // if (absolute)
     //     fileName
@@ -97,14 +88,10 @@ bool QLibraryPrivate::load_sys()
     // If the fileName is an absolute path we try that first, otherwise we
     // use the system-specific suffix first
     QFileSystemEntry fsEntry(fileName);
-    if (fsEntry.isAbsolute()) {
+    if (fsEntry.isAbsolute())
         attempts.prepend(fileName);
-    } else {
+    else
         attempts.append(fileName);
-#if defined(Q_OS_WINCE)
-        attempts.append(QFileInfo(fileName).absoluteFilePath());
-#endif
-    }
 #ifdef Q_OS_WINRT
     if (fileName.startsWith(QLatin1Char('/')))
         attempts.prepend(QDir::rootPath() + fileName);
@@ -165,11 +152,7 @@ bool QLibraryPrivate::unload_sys()
 
 QFunctionPointer QLibraryPrivate::resolve_sys(const char* symbol)
 {
-#ifdef Q_OS_WINCE
-    FARPROC address = GetProcAddress(pHnd, (const wchar_t*)QString::fromLatin1(symbol).utf16());
-#else
     FARPROC address = GetProcAddress(pHnd, symbol);
-#endif
     if (!address) {
         errorString = QLibrary::tr("Cannot resolve symbol \"%1\" in %2: %3").arg(
             QString::fromLatin1(symbol)).arg(

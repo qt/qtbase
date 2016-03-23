@@ -40,10 +40,8 @@
 #include <pthread.h>
 #endif
 #ifdef Q_OS_WIN
-#ifndef Q_OS_WINCE
-#include <process.h>
-#endif
-#include <windows.h>
+#  include <process.h>
+#  include <qt_windows.h>
 #endif
 
 class tst_QThreadStorage : public QObject
@@ -221,11 +219,7 @@ void tst_QThreadStorage::adoptedThreads()
         pthread_join(thread, 0);
 #elif defined Q_OS_WIN && !defined(Q_OS_WINRT)
         HANDLE thread;
-#if defined(Q_OS_WINCE)
-        thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)testAdoptedThreadStorageWin, &pointers, 0, NULL);
-#else
         thread = (HANDLE)_beginthread(testAdoptedThreadStorageWin, 0, &pointers);
-#endif
         QVERIFY(thread);
         WaitForSingleObject(thread, INFINITE);
 #endif

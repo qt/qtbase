@@ -35,7 +35,7 @@
 #include <qregexp.h>
 #include <qstringlist.h>
 
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
+#if defined(Q_OS_WIN)
 #include <QtCore/private/qfsfileengine_p.h>
 #include "../../../network-settings.h"
 #endif
@@ -163,9 +163,8 @@ private slots:
 
     void operator_eq();
 
-#ifndef Q_OS_WINCE
     void dotAndDotDot();
-#endif
+
     void homePath();
     void tempPath();
     void rootPath();
@@ -316,7 +315,7 @@ void tst_QDir::setPath_data()
     QTest::addColumn<QString>("dir2");
 
     QTest::newRow("data0") << QString(".") << QString("..");
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
+#if defined(Q_OS_WIN)
     QTest::newRow("data1") << QString("c:/") << QDir::currentPath();
 #endif
 }
@@ -543,7 +542,7 @@ void tst_QDir::exists_data()
 
     QTest::newRow("simple dir") << (m_dataPath + "/resources") << true;
     QTest::newRow("simple dir with slash") << (m_dataPath + "/resources/") << true;
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     const QString uncRoot = QStringLiteral("//") + QtNetworkSettings::winServerName();
     QTest::newRow("unc 1") << uncRoot << true;
     QTest::newRow("unc 2") << uncRoot + QLatin1Char('/') << true;
@@ -555,7 +554,7 @@ void tst_QDir::exists_data()
     QTest::newRow("unc 8") << uncRoot + "/asharethatshouldnotexist" << false;
     QTest::newRow("unc 9") << "//ahostthatshouldnotexist" << false;
 #endif
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT))
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINRT))
     QTest::newRow("This drive should exist") <<  "C:/" << true;
     // find a non-existing drive and check if it does not exist
 #ifdef QT_BUILD_INTERNAL
@@ -596,7 +595,7 @@ void tst_QDir::isRelativePath_data()
     QTest::addColumn<bool>("relative");
 
     QTest::newRow("data0") << "../somedir" << true;
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
+#if defined(Q_OS_WIN)
     QTest::newRow("data1") << "C:/sOmedir" << false;
 #endif
     QTest::newRow("data2") << "somedir" << true;
@@ -802,12 +801,6 @@ void tst_QDir::entryList()
     QFile::remove(entrylistPath + "brokenlink.lnk");
     QFile::remove(entrylistPath + "brokenlink");
 
-    // WinCE does not have . and .. in the directory listing
-#if defined(Q_OS_WINCE)
-    expected.removeAll(".");
-    expected.removeAll("..");
-#endif
-
 #ifndef Q_NO_SYMLINKS
 #if defined(Q_OS_WIN)
     // ### Sadly, this is a platform difference right now.
@@ -900,15 +893,10 @@ void tst_QDir::entryListSimple_data()
     QTest::addColumn<int>("countMin");
 
     QTest::newRow("data2") << "do_not_expect_this_path_to_exist/" << 0;
-#if defined(Q_OS_WINCE)
-    QTest::newRow("simple dir") << (m_dataPath + "/resources") << 0;
-    QTest::newRow("simple dir with slash") << (m_dataPath + "/resources/") << 0;
-#else
     QTest::newRow("simple dir") << (m_dataPath + "/resources") << 2;
     QTest::newRow("simple dir with slash") << (m_dataPath + "/resources/") << 2;
-#endif
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     const QString uncRoot = QStringLiteral("//") + QtNetworkSettings::winServerName();
     QTest::newRow("unc 1") << uncRoot << 2;
     QTest::newRow("unc 2") << uncRoot + QLatin1Char('/') << 2;
@@ -1170,7 +1158,6 @@ tst_QDir::cleanPath_data()
     QTest::newRow("data2") << "/" << "/";
     QTest::newRow("data3") << QDir::cleanPath("../.") << "..";
     QTest::newRow("data4") << QDir::cleanPath("../..") << "../..";
-#if !defined(Q_OS_WINCE)
 #if defined(Q_OS_WIN)
     QTest::newRow("data5") << "d:\\a\\bc\\def\\.." << "d:/a/bc";
     QTest::newRow("data6") << "d:\\a\\bc\\def\\../../.." << "d:/";
@@ -1178,16 +1165,13 @@ tst_QDir::cleanPath_data()
     QTest::newRow("data5") << "d:\\a\\bc\\def\\.." << "d:\\a\\bc\\def\\..";
     QTest::newRow("data6") << "d:\\a\\bc\\def\\../../.." << "..";
 #endif
-#endif
     QTest::newRow("data7") << ".//file1.txt" << "file1.txt";
     QTest::newRow("data8") << "/foo/bar/..//file1.txt" << "/foo/file1.txt";
     QTest::newRow("data9") << "//" << "/";
-#if !defined(Q_OS_WINCE)
 #if defined Q_OS_WIN
     QTest::newRow("data10") << "c:\\" << "c:/";
 #else
     QTest::newRow("data10") << "/:/" << "/:";
-#endif
 #endif
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     QTest::newRow("data11") << "//foo//bar" << "//foo/bar";
@@ -1350,7 +1334,7 @@ void tst_QDir::absolutePath_data()
     QTest::addColumn<QString>("expectedPath");
 
     QTest::newRow("0") << "/machine/share/dir1" << "/machine/share/dir1";
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT))
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINRT))
     QTest::newRow("1") << "\\machine\\share\\dir1" << "/machine/share/dir1";
     QTest::newRow("2") << "//machine/share/dir1" << "//machine/share/dir1";
     QTest::newRow("3") << "\\\\machine\\share\\dir1" << "//machine/share/dir1";
@@ -1399,7 +1383,7 @@ void tst_QDir::relativeFilePath_data()
     QTest::newRow("same path 1") << "/tmp" << "/tmp" << ".";
     QTest::newRow("same path 2") << "//tmp" << "/tmp/" << ".";
 
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
+#if defined(Q_OS_WIN)
     QTest::newRow("12") << "C:/foo/bar" << "ding" << "ding";
     QTest::newRow("13") << "C:/foo/bar" << "C:/ding/dong" << "../../ding/dong";
     QTest::newRow("14") << "C:/foo/bar" << "/ding/dong" << "../../ding/dong";
@@ -1575,7 +1559,6 @@ void tst_QDir::operator_eq()
     dir1.setPath("..");
 }
 
-#ifndef Q_OS_WINCE
 // WinCE does not have . nor ..
 void tst_QDir::dotAndDotDot()
 {
@@ -1585,7 +1568,6 @@ void tst_QDir::dotAndDotDot()
     entryList = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
     QCOMPARE(entryList, QStringList() << QString("dir") << QString("spaces"));
 }
-#endif
 
 void tst_QDir::homePath()
 {
@@ -1829,16 +1811,9 @@ void tst_QDir::updateFileLists()
 
     QDir dir(fs.absoluteFilePath(dirName));
 
-#if defined(Q_OS_WINCE)
-    //no . and .. on these OS.
-    QCOMPARE(dir.count(), uint(4));
-    QCOMPARE(dir.entryList().size(), 4);
-    QCOMPARE(dir.entryInfoList().size(), 4);
-#else
     QCOMPARE(dir.count(), uint(6));
     QCOMPARE(dir.entryList().size(), 6);
     QCOMPARE(dir.entryInfoList().size(), 6);
-#endif
 
     dir.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot);
 

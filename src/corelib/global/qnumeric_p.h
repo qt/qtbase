@@ -56,7 +56,7 @@
 #include <cmath>
 #include <limits>
 
-#if defined(Q_CC_MSVC) && !defined(Q_OS_WINCE)
+#if defined(Q_CC_MSVC)
 #  include <intrin.h>
 #elif defined(Q_CC_INTEL)
 #  include <immintrin.h>    // for _addcarry_u<nn>

@@ -106,25 +106,21 @@ win32 {
         SOURCES += io/qfilesystemiterator_win.cpp
 
     !winrt {
-        SOURCES += io/qsettings_win.cpp
-        SOURCES += io/qstandardpaths_win.cpp
+        HEADERS += \
+            io/qwindowspipereader_p.h \
+            io/qwindowspipewriter_p.h \
+            io/qwinoverlappedionotifier_p.h
 
-        wince* {
-            SOURCES += io/qprocess_wince.cpp \
-                io/qstorageinfo_stub.cpp
-        } else {
-            HEADERS += \
-                io/qwinoverlappedionotifier_p.h \
-                io/qwindowspipereader_p.h \
-                io/qwindowspipewriter_p.h
-            SOURCES += \
-                io/qprocess_win.cpp \
-                io/qwinoverlappedionotifier.cpp \
-                io/qwindowspipereader.cpp \
-                io/qwindowspipewriter.cpp \
-                io/qstorageinfo_win.cpp
-            LIBS += -lmpr
-        }
+        SOURCES += \
+            io/qprocess_win.cpp \
+            io/qsettings_win.cpp \
+            io/qstandardpaths_win.cpp \
+            io/qstorageinfo_win.cpp \
+            io/qwindowspipereader.cpp \
+            io/qwindowspipewriter.cpp \
+            io/qwinoverlappedionotifier.cpp
+
+        LIBS += -lmpr
     } else {
         SOURCES += \
                 io/qstandardpaths_winrt.cpp \

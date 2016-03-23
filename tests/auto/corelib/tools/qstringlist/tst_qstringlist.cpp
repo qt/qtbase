@@ -32,9 +32,6 @@
 #include <qstringlist.h>
 
 #include <locale.h>
-#ifdef Q_OS_WINCE
-#include <windows.h> // needed for GetUserDefaultLCID
-#endif
 
 class tst_QStringList : public QObject
 {
@@ -205,13 +202,7 @@ void tst_QStringList::sort()
     list2 << "BETA" << "Gamma" << "alpha" << "beta" << "epsilon" << "gAmma" << "gamma";
     QCOMPARE( list1, list2 );
 
-#ifdef Q_OS_WINCE
-    DWORD oldLcid = GetUserDefaultLCID();
-    // Assume c locale to be english
-    SetUserDefaultLCID(MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT));
-#else
     char *current_locale = setlocale(LC_ALL, "C");
-#endif
     QStringList list3, list4;
     list3 << "alpha" << "beta" << "BETA" << "gamma" << "Gamma" << "gAmma" << "epsilon";
     list3.sort(Qt::CaseInsensitive);
@@ -224,11 +215,7 @@ void tst_QStringList::sort()
     QCOMPARE(list4.at(0), QString("alpha"));
     QVERIFY(list4.indexOf("epsilon") > 0);
     QVERIFY(list4.indexOf("epsilon") < (list4.count() - 1));
-#ifdef Q_OS_WINCE
-    SetUserDefaultLCID(oldLcid);
-#else
     setlocale(LC_ALL, current_locale);
-#endif
 }
 
 void tst_QStringList::replaceInStrings()

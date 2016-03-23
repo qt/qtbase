@@ -350,15 +350,9 @@ const int AlphabetSize = sizeof(alphabet) - 1;
 const int BufferSize = 4096; // GCD of BufferSize and alphabet size must be 1
 char buffer[BufferSize];
 
-#ifndef Q_OS_WINCE
 const int ProducerChunkSize = 3;
 const int ConsumerChunkSize = 7;
 const int Multiplier = 10;
-#else
-const int ProducerChunkSize = 2;
-const int ConsumerChunkSize = 5;
-const int Multiplier = 3;
-#endif
 
 // note: the code depends on the fact that DataSize is a multiple of
 // ProducerChunkSize, ConsumerChunkSize, and BufferSize

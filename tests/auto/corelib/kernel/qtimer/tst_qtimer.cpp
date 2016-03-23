@@ -295,9 +295,6 @@ void tst_QTimer::livelock()
     QTRY_COMPARE(tester.timeoutsForFirst, 1);
     QCOMPARE(tester.timeoutsForExtra, 0);
     QTRY_COMPARE(tester.timeoutsForSecond, 1);
-#if defined(Q_OS_WINCE)
-    QEXPECT_FAIL("non-zero timer", "Windows CE devices often too slow", Continue);
-#endif
     QVERIFY(tester.postEventAtRightTime);
 }
 

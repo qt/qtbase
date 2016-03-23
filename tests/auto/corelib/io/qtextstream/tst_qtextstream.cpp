@@ -175,20 +175,16 @@ private slots:
     void octTest();
     void zeroTermination();
     void ws_manipulator();
-#ifndef Q_OS_WINCE
     void stillOpenWhenAtEnd();
-#endif
     void readNewlines_data();
     void readNewlines();
     void seek();
     void pos();
     void pos2();
     void pos3LargeFile();
-#if !defined(Q_OS_WINCE)
     void readStdin();
     void readAllFromStdin();
     void readLineFromStdin();
-#endif
     void read();
     void qbool();
     void forcePoint();
@@ -1207,8 +1203,6 @@ void tst_QTextStream::ws_manipulator()
 }
 
 // ------------------------------------------------------------------------------
-#ifndef Q_OS_WINCE
-// Qt/CE: Cannot test network on emulator
 void tst_QTextStream::stillOpenWhenAtEnd()
 {
     QFile file(QFINDTESTDATA("tst_qtextstream.cpp"));
@@ -1229,7 +1223,6 @@ void tst_QTextStream::stillOpenWhenAtEnd()
     while (!stream2.readLine().isNull()) {}
     QVERIFY(socket.isOpen());
 }
-#endif
 
 // ------------------------------------------------------------------------------
 void tst_QTextStream::readNewlines_data()
@@ -1498,8 +1491,6 @@ void tst_QTextStream::pos3LargeFile()
 }
 
 // ------------------------------------------------------------------------------
-// Qt/CE has no stdin/out support for processes
-#if !defined(Q_OS_WINCE)
 void tst_QTextStream::readStdin()
 {
 #ifdef QT_NO_PROCESS
@@ -1527,7 +1518,6 @@ void tst_QTextStream::readStdin()
 }
 
 // ------------------------------------------------------------------------------
-// Qt/CE has no stdin/out support for processes
 void tst_QTextStream::readAllFromStdin()
 {
 #ifdef QT_NO_PROCESS
@@ -1549,7 +1539,6 @@ void tst_QTextStream::readAllFromStdin()
 }
 
 // ------------------------------------------------------------------------------
-// Qt/CE has no stdin/out support for processes
 void tst_QTextStream::readLineFromStdin()
 {
 #ifdef QT_NO_PROCESS
@@ -1572,7 +1561,6 @@ void tst_QTextStream::readLineFromStdin()
     QVERIFY(stdinProcess.waitForFinished(5000));
 #endif
 }
-#endif
 
 // ------------------------------------------------------------------------------
 void tst_QTextStream::read()
@@ -2799,12 +2787,7 @@ void tst_QTextStream::status_real_read()
 
 void tst_QTextStream::status_integer_read()
 {
-#ifdef Q_OS_WINCE
-    QString text = QLatin1String("123 abc   ");
-    QTextStream s(&text);
-#else
     QTextStream s("123 abc   ");
-#endif
     int i;
     QString w;
     s >> i;
@@ -2822,12 +2805,7 @@ void tst_QTextStream::status_integer_read()
 
 void tst_QTextStream::status_word_read()
 {
-#ifdef Q_OS_WINCE
-    QString text = QLatin1String("abc ");
-    QTextStream s(&text);
-#else
     QTextStream s("abc ");
-#endif
     QString w;
     s >> w;
     QCOMPARE(s.status(), QTextStream::Ok);

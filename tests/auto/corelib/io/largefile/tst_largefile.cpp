@@ -39,18 +39,12 @@
 #include <cstdio>
 
 #ifdef Q_OS_WIN
-
-#include <windows.h>
-
-#ifndef Q_OS_WINCE
-#include <io.h>
-#endif
-
-#ifndef FSCTL_SET_SPARSE
+#  include <qt_windows.h>
+#  include <io.h>
+#  ifndef FSCTL_SET_SPARSE
 // MinGW doesn't define this.
-#define FSCTL_SET_SPARSE (0x900C4)
-#endif
-
+#    define FSCTL_SET_SPARSE (0x900C4)
+#  endif
 #endif // Q_OS_WIN
 
 class tst_LargeFile

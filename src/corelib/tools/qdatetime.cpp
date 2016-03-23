@@ -57,9 +57,6 @@
 #include <time.h>
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
-#  ifdef Q_OS_WINCE
-#    include "qfunctions_wince.h"
-#  endif
 #  ifdef Q_OS_WINRT
 #    include "qfunctions_winrt.h"
 #  endif
@@ -1682,9 +1679,6 @@ QString QTime::toString(const QString& format) const
 
 bool QTime::setHMS(int h, int m, int s, int ms)
 {
-#if defined(Q_OS_WINCE)
-    startTick = NullTime;
-#endif
     if (!isValid(h,m,s,ms)) {
         mds = NullTime;                // make this invalid
         return false;
@@ -1764,10 +1758,6 @@ QTime QTime::addMSecs(int ms) const
             t.mds = (ds() + ms) % MSECS_PER_DAY;
         }
     }
-#if defined(Q_OS_WINCE)
-    if (startTick > NullTime)
-        t.startTick = (startTick + ms) % MSECS_PER_DAY;
-#endif
     return t;
 }
 
@@ -1789,13 +1779,7 @@ int QTime::msecsTo(const QTime &t) const
 {
     if (!isValid() || !t.isValid())
         return 0;
-#if defined(Q_OS_WINCE)
-    // GetLocalTime() for Windows CE has no milliseconds resolution
-    if (t.startTick > NullTime && startTick > NullTime)
-        return t.startTick - startTick;
-    else
-#endif
-        return t.ds() - ds();
+    return t.ds() - ds();
 }
 
 
@@ -2137,10 +2121,7 @@ int QTime::elapsed() const
 // Calls the platform variant of tzset
 static void qt_tzset()
 {
-#if defined(Q_OS_WINCE)
-    // WinCE doesn't use tzset
-    return;
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
     _tzset();
 #else
     tzset();
@@ -2154,12 +2135,7 @@ static void qt_tzset()
 // Relies on tzset, mktime, or localtime having been called to populate timezone
 static int qt_timezone()
 {
-#if defined(Q_OS_WINCE)
-        TIME_ZONE_INFORMATION tzi;
-        GetTimeZoneInformation(&tzi);
-        // Expressed in minutes, convert to seconds
-        return (tzi.Bias + tzi.StandardBias) * 60;
-#elif defined(_MSC_VER) && _MSC_VER >= 1400
+#if defined(_MSC_VER)
         long offset;
         _get_timezone(&offset);
         return offset;
@@ -2186,16 +2162,6 @@ static int qt_timezone()
 // Returns the tzname, assume tzset has been called already
 static QString qt_tzname(QDateTimePrivate::DaylightStatus daylightStatus)
 {
-#if defined(Q_OS_WINCE)
-    TIME_ZONE_INFORMATION tzi;
-    DWORD res = GetTimeZoneInformation(&tzi);
-    if (res == TIME_ZONE_ID_UNKNOWN)
-        return QString();
-    else if (daylightStatus == QDateTimePrivate::DaylightTime)
-        return QString::fromWCharArray(tzi.DaylightName);
-    else
-        return QString::fromWCharArray(tzi.StandardName);
-#else
     int isDst = (daylightStatus == QDateTimePrivate::DaylightTime) ? 1 : 0;
 #if defined(_MSC_VER) && _MSC_VER >= 1400
     size_t s = 0;
@@ -2206,7 +2172,6 @@ static QString qt_tzname(QDateTimePrivate::DaylightStatus daylightStatus)
 #else
     return QString::fromLocal8Bit(tzname[isDst]);
 #endif // Q_OS_WIN
-#endif // Q_OS_WINCE
 }
 
 // Calls the platform variant of mktime for the given date, time and daylightStatus,
@@ -2221,48 +2186,6 @@ static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStat
     int yy, mm, dd;
     date->getDate(&yy, &mm, &dd);
 
-#if defined(Q_OS_WINCE)
-    // WinCE doesn't provide standard C library time functions
-    SYSTEMTIME st;
-    memset(&st, 0, sizeof(SYSTEMTIME));
-    st.wSecond = time->second();
-    st.wMinute = time->minute();
-    st.wHour = time->hour();
-    st.wDay = dd;
-    st.wMonth = mm;
-    st.wYear = yy;
-    FILETIME lft;
-    bool valid = SystemTimeToFileTime(&st, &lft);
-    FILETIME ft;
-    if (valid)
-        valid = LocalFileTimeToFileTime(&lft, &ft);
-    const time_t secsSinceEpoch = ftToTime_t(ft);
-    const time_t localSecs = ftToTime_t(lft);
-    TIME_ZONE_INFORMATION tzi;
-    GetTimeZoneInformation(&tzi);
-    bool isDaylight = false;
-    // Check for overflow
-    qint64 localDiff = qAbs(localSecs - secsSinceEpoch);
-    int daylightOffset = qAbs(tzi.Bias + tzi.DaylightBias) * 60;
-    if (localDiff > daylightOffset)
-        valid = false;
-    else
-        isDaylight = (localDiff == daylightOffset);
-    if (daylightStatus) {
-        if (isDaylight)
-            *daylightStatus = QDateTimePrivate::DaylightTime;
-        else
-            *daylightStatus = QDateTimePrivate::StandardTime;
-    }
-    if (abbreviation) {
-        if (isDaylight)
-            *abbreviation = QString::fromWCharArray(tzi.DaylightName);
-        else
-            *abbreviation = QString::fromWCharArray(tzi.StandardName);
-    }
-    if (ok)
-        *ok = valid;
-#else
     // All other platforms provide standard C library time functions
     tm local;
     memset(&local, 0, sizeof(local)); // tm_[wy]day plus any non-standard fields
@@ -2324,7 +2247,6 @@ static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStat
         if (ok)
             *ok = false;
     }
-#endif // Q_OS_WINCE
 
     return ((qint64)secsSinceEpoch * 1000) + msec;
 }
@@ -2340,23 +2262,7 @@ static bool qt_localtime(qint64 msecsSinceEpoch, QDate *localDate, QTime *localT
     tm local;
     bool valid = false;
 
-#if defined(Q_OS_WINCE)
-    FILETIME utcTime = time_tToFt(secsSinceEpoch);
-    FILETIME resultTime;
-    valid = FileTimeToLocalFileTime(&utcTime , &resultTime);
-    SYSTEMTIME sysTime;
-    if (valid)
-        valid = FileTimeToSystemTime(&resultTime , &sysTime);
-
-    if (valid) {
-        local.tm_sec = sysTime.wSecond;
-        local.tm_min = sysTime.wMinute;
-        local.tm_hour = sysTime.wHour;
-        local.tm_mday = sysTime.wDay;
-        local.tm_mon = sysTime.wMonth - 1;
-        local.tm_year = sysTime.wYear - 1900;
-    }
-#elif !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
+#if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // localtime() is required to work as if tzset() was called before it.
     // localtime_r() does not have this requirement, so make an explicit call.
     qt_tzset();
@@ -4104,9 +4010,6 @@ QTime QTime::currentTime()
     memset(&st, 0, sizeof(SYSTEMTIME));
     GetLocalTime(&st);
     ct.setHMS(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
-#if defined(Q_OS_WINCE)
-    ct.startTick = GetTickCount() % MSECS_PER_DAY;
-#endif
     return ct;
 }
 

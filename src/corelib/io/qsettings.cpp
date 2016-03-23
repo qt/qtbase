@@ -986,21 +986,12 @@ static QString windowsConfigPath(int type)
 
     if (result.isEmpty()) {
         switch (type) {
-#ifndef Q_OS_WINCE
         case CSIDL_COMMON_APPDATA:
             result = QLatin1String("C:\\temp\\qt-common");
             break;
         case CSIDL_APPDATA:
             result = QLatin1String("C:\\temp\\qt-user");
             break;
-#else
-        case CSIDL_COMMON_APPDATA:
-            result = QLatin1String("\\Temp\\qt-common");
-            break;
-        case CSIDL_APPDATA:
-            result = QLatin1String("\\Temp\\qt-user");
-            break;
-#endif
         default:
             ;
         }

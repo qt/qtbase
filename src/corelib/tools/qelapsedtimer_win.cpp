@@ -58,13 +58,13 @@ static void resolveLibs()
     if (done)
         return;
 
-#if !defined(Q_OS_WINRT) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_WINRT)
     // try to get GetTickCount64 from the system
     HMODULE kernel32 = GetModuleHandleW(L"kernel32");
     if (!kernel32)
         return;
     ptrGetTickCount64 = (PtrGetTickCount64)GetProcAddress(kernel32, "GetTickCount64");
-#endif // !Q_OS_WINRT && !Q_OS_WINCE
+#endif // !Q_OS_WINRT
 
     // Retrieve the number of high-resolution performance counter ticks per second
     LARGE_INTEGER frequency;

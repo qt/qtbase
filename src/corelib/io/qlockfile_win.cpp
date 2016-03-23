@@ -163,7 +163,7 @@ bool QLockFilePrivate::isApparentlyStale() const
 
 QString QLockFilePrivate::processNameByPid(qint64 pid)
 {
-#if !defined(Q_OS_WINRT) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_WINRT)
     typedef DWORD (WINAPI *GetModuleFileNameExFunc)(HANDLE, HMODULE, LPTSTR, DWORD);
 
     HMODULE hPsapi = LoadLibraryA("psapi");

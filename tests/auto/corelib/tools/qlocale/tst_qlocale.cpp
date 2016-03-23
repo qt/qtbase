@@ -52,15 +52,6 @@
 #    include <fenv.h>
 #endif
 
-#ifdef Q_OS_WINCE
-#include <windows.h> // needed for GetUserDefaultLCID
-#define _control87 _controlfp
-extern "C" DWORD GetThreadLocale(void) {
-    return GetUserDefaultLCID();
-}
-
-#endif
-
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
 #    include <stdlib.h>
 #endif
@@ -85,9 +76,7 @@ private slots:
 #endif
 
     void ctor();
-#if !defined(Q_OS_WINCE)
     void emptyCtor();
-#endif
     void legacyNames();
     void unixLocaleName();
     void matchingLocales();
@@ -394,10 +383,7 @@ void tst_QLocale::ctor()
 #undef TEST_CTOR
 }
 
-#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
-// Not when Q_OS_WINCE is defined because the test uses unsupported
-// Windows CE QProcess functionality (std streams, env)
-// Also Qt needs to be compiled without QT_NO_PROCESS
+#if !defined(QT_NO_PROCESS)
 static inline bool runSysApp(const QString &binary,
                              const QStringList &env,
                              QString *output,
@@ -447,7 +433,6 @@ static inline bool runSysAppTest(const QString &binary,
 }
 #endif
 
-#if !defined(Q_OS_WINCE)
 void tst_QLocale::emptyCtor()
 {
 #ifdef QT_NO_PROCESS
@@ -517,7 +502,6 @@ void tst_QLocale::emptyCtor()
 #undef TEST_CTOR
 #endif
 }
-#endif
 
 void tst_QLocale::legacyNames()
 {

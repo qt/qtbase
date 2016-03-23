@@ -1,6 +1,6 @@
 win32 {
    SOURCES = main_win.cpp
-   !wince: LIBS += -luser32
+   LIBS += -luser32
 }
 unix {
    SOURCES = main_unix.cpp

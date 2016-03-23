@@ -1572,11 +1572,7 @@ Q_DECLARE_METATYPE(PropertyObject::Priority)
 
 void tst_QObject::threadSignalEmissionCrash()
 {
-#if defined(Q_OS_WINCE)
-    int loopCount = 100;
-#else
     int loopCount = 1000;
-#endif
     for (int i = 0; i < loopCount; ++i) {
         QTcpSocket socket;
         socket.connectToHost("localhost", 80);

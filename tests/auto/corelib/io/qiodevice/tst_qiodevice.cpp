@@ -100,9 +100,6 @@ void tst_QIODevice::getSetCheck()
 //----------------------------------------------------------------------------------
 void tst_QIODevice::constructing_QTcpSocket()
 {
-#if defined(Q_OS_WINCE) && defined(WINCE_EMULATOR_TEST)
-    QSKIP("Networking tests in a WinCE emulator are unstable");
-#endif
     if (!QtNetworkSettings::verifyTestNetworkSettings())
         QSKIP("No network test server available");
 
@@ -205,9 +202,6 @@ void tst_QIODevice::read_QByteArray()
 //--------------------------------------------------------------------
 void tst_QIODevice::unget()
 {
-#if defined(Q_OS_WINCE) && defined(WINCE_EMULATOR_TEST)
-    QSKIP("Networking tests in a WinCE emulator are unstable");
-#endif
 #if defined(Q_OS_MAC)
     QSKIP("The unget network test is unstable on Mac. See QTBUG-39983.");
 #endif

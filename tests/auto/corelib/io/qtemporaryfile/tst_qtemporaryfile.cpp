@@ -374,9 +374,7 @@ void tst_QTemporaryFile::size()
     // On CE it takes more time for the filesystem to update
     // the information. Usually you have to close it or seek
     // to get latest information. flush() does not help either.
-#if !defined(Q_OS_WINCE)
     QCOMPARE(file.size(), qint64(6));
-#endif
     file.seek(0);
     QCOMPARE(file.size(), qint64(6));
 }
@@ -395,7 +393,7 @@ void tst_QTemporaryFile::resize()
 
 void tst_QTemporaryFile::openOnRootDrives()
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     unsigned int lastErrorMode = SetErrorMode(SEM_FAILCRITICALERRORS);
 #endif
     // If it's possible to create a file in the root directory, it
@@ -409,19 +407,14 @@ void tst_QTemporaryFile::openOnRootDrives()
             QVERIFY(file.open());
         }
     }
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     SetErrorMode(lastErrorMode);
 #endif
 }
 
 void tst_QTemporaryFile::stressTest()
 {
-#if defined(Q_OS_WINCE)
-    // 200 is still ok, first colision happens after ~30
-    const int iterations = 200;
-#else
     const int iterations = 1000;
-#endif
 
     QSet<QString> names;
     for (int i = 0; i < iterations; ++i) {

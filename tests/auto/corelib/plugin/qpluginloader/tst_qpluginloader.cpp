@@ -140,11 +140,6 @@ void tst_QPluginLoader::cleanup()
 
 void tst_QPluginLoader::errorString()
 {
-#if defined(Q_OS_WINCE)
-    // On WinCE we need an QCoreApplication object for current dir
-    int argc = 0;
-    QCoreApplication app(argc,0);
-#endif
     const QString unknown(QLatin1String("Unknown error"));
 
     {

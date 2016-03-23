@@ -28,10 +28,7 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#ifndef Q_OS_WINCE
 #include <time.h>
-#endif
-
 #include <qdatetime.h>
 #include <private/qdatetime_p.h>
 
@@ -108,10 +105,8 @@ private slots:
     void msecsTo();
     void operator_eqeq_data();
     void operator_eqeq();
-#ifndef Q_OS_WINCE
     void operator_insert_extract_data();
     void operator_insert_extract();
-#endif
     void currentDateTime();
     void currentDateTimeUtc();
     void currentDateTimeUtc2();
@@ -259,9 +254,7 @@ void tst_QDateTime::initTestCase()
 
 void tst_QDateTime::init()
 {
-#if defined(Q_OS_WINCE)
-    SetUserDefaultLCID(MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT));
-#elif defined(Q_OS_WIN32)
+#if defined(Q_OS_WIN32)
     SetThreadLocale(MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT));
 #endif
 }
@@ -1429,13 +1422,8 @@ void tst_QDateTime::msecsTo()
 
 void tst_QDateTime::currentDateTime()
 {
-#if defined(Q_OS_WINCE)
-    __time64_t buf1, buf2;
-    ::_time64(&buf1);
-#else
     time_t buf1, buf2;
     ::time(&buf1);
-#endif
     QDateTime lowerBound;
     lowerBound.setTime_t(buf1);
 
@@ -1443,11 +1431,8 @@ void tst_QDateTime::currentDateTime()
     QDateTime dt2 = QDateTime::currentDateTime().toLocalTime();
     QDateTime dt3 = QDateTime::currentDateTime().toUTC();
 
-#if defined(Q_OS_WINCE)
-    ::_time64(&buf2);
-#else
     ::time(&buf2);
-#endif
+
     QDateTime upperBound;
     upperBound.setTime_t(buf2);
     // Note we must add 2 seconds here because time() may return up to
@@ -1482,13 +1467,9 @@ void tst_QDateTime::currentDateTime()
 
 void tst_QDateTime::currentDateTimeUtc()
 {
-#if defined(Q_OS_WINCE)
-    __time64_t buf1, buf2;
-    ::_time64(&buf1);
-#else
     time_t buf1, buf2;
     ::time(&buf1);
-#endif
+
     QDateTime lowerBound;
     lowerBound.setTime_t(buf1);
 
@@ -1496,11 +1477,8 @@ void tst_QDateTime::currentDateTimeUtc()
     QDateTime dt2 = QDateTime::currentDateTimeUtc().toLocalTime();
     QDateTime dt3 = QDateTime::currentDateTimeUtc().toUTC();
 
-#if defined(Q_OS_WINCE)
-    ::_time64(&buf2);
-#else
     ::time(&buf2);
-#endif
+
     QDateTime upperBound;
     upperBound.setTime_t(buf2);
     // Note we must add 2 seconds here because time() may return up to
@@ -1859,7 +1837,6 @@ void tst_QDateTime::operator_eqeq()
     }
 }
 
-#ifndef Q_OS_WINCE
 Q_DECLARE_METATYPE(QDataStream::Version)
 
 void tst_QDateTime::operator_insert_extract_data()
@@ -1988,7 +1965,6 @@ void tst_QDateTime::operator_insert_extract()
         qputenv("TZ", previousTimeZone.constData());
     tzset();
 }
-#endif
 
 void tst_QDateTime::toString_strformat()
 {

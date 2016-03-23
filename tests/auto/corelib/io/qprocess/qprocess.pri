@@ -10,13 +10,12 @@ SUBPROGRAMS = \
           testProcessDeadWhileReading \
           testProcessEOF \
           testExitCodes \
+          testForwarding \
           testGuiProcess \
           testDetached \
           fileWriterProcess \
           testSetWorkingDirectory \
           testSoftExit
-
-!contains(QMAKE_PLATFORM, wince): SUBPROGRAMS += testForwarding
 
 !qtHaveModule(widgets): SUBPROGRAMS -= \
           testGuiProcess

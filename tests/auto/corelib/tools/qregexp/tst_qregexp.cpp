@@ -927,11 +927,7 @@ void tst_QRegExp::rainersSlowRegExpCopyBug()
 {
     // this test should take an extreme amount of time if QRegExp is broken
     QRegExp original(email);
-#if defined(Q_OS_WINCE)
-    for (int i = 0; i < 100; ++i) {
-#else
     for (int i = 0; i < 100000; ++i) {
-#endif
         QRegExp copy = original;
         (void)copy.exactMatch("~");
         QRegExp copy2 = original;
@@ -980,13 +976,9 @@ void Thread::run()
     str += "abbbdekcz";
     int x;
 
-#if defined(Q_OS_WINCE)
-    for (int j = 0; j < 100; ++j) {
-#else
-    for (int j = 0; j < 10000; ++j) {
-#endif
+    for (int j = 0; j < 10000; ++j)
         x = rx.indexIn(str);
-    }
+
     QCOMPARE(x, 3072);
 }
 
@@ -1022,13 +1014,9 @@ void Thread2::run()
     str += "abbbdekcz";
     int x;
 
-#if defined(Q_OS_WINCE)
-    for (int j = 0; j < 100; ++j) {
-#else
-    for (int j = 0; j < 10000; ++j) {
-#endif
+    for (int j = 0; j < 10000; ++j)
         x = rx.indexIn(str);
-    }
+
     QCOMPARE(x, 3072);
 }
 

@@ -68,11 +68,7 @@ protected:
 
 void tst_QTimeLine::range()
 {
-#ifdef Q_OS_WINCE //On WinCE timer resolution is bad - using longer times instead
-    QTimeLine timeLine(2000);
-#else
     QTimeLine timeLine(200);
-#endif
     QCOMPARE(timeLine.startFrame(), 0);
     QCOMPARE(timeLine.endFrame(), 0);
     timeLine.setFrameRange(0, 1);

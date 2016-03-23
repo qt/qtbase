@@ -44,9 +44,7 @@ private slots:
 
     void caseSensitivity();
     void systemEnvironment();
-#ifndef Q_OS_WINCE
     void putenv();
-#endif
 };
 
 void tst_QProcessEnvironment::operator_eq()
@@ -257,12 +255,6 @@ void tst_QProcessEnvironment::systemEnvironment()
 
     QVERIFY(nonexistant.isNull());
 
-#ifdef Q_OS_WINCE
-    // Windows CE has no environment
-    QVERIFY(path.isEmpty());
-    QVERIFY(!system.contains("PATH"));
-    QVERIFY(system.isEmpty());
-#else
     // all other system have environments
     if (path.isEmpty())
         QFAIL("Could not find the PATH environment variable -- please correct the test environment");
@@ -272,18 +264,15 @@ void tst_QProcessEnvironment::systemEnvironment()
 
     QVERIFY(!system.contains(envname));
 
-# ifdef Q_OS_WIN
+#ifdef Q_OS_WIN
     // check case-insensitive too
     QVERIFY(system.contains("path"));
     QCOMPARE(system.value("path"), QString::fromLocal8Bit(path));
 
     QVERIFY(!system.contains(QString(envname).toLower()));
-# endif
 #endif
 }
 
-#ifndef Q_OS_WINCE
-//Windows CE has no environment
 void tst_QProcessEnvironment::putenv()
 {
     static const char envname[] = "WE_RE_SETTING_THIS_ENVIRONMENT_VARIABLE";
@@ -317,7 +306,6 @@ void tst_QProcessEnvironment::putenv()
     QCOMPARE(eAfter.value(lower), QString("Hello, World"));
 # endif
 }
-#endif
 
 QTEST_MAIN(tst_QProcessEnvironment)
 
