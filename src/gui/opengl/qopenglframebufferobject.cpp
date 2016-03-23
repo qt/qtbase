@@ -1281,9 +1281,13 @@ static inline QImage qt_gl_read_framebuffer_rgba8(const QSize &size, bool includ
     const char *renderer = reinterpret_cast<const char *>(funcs->glGetString(GL_RENDERER));
     const char *ver = reinterpret_cast<const char *>(funcs->glGetString(GL_VERSION));
 
-    // Blacklist PowerVR Rogue G6200 as it has problems with its BGRA support.
+    // Blacklist GPU chipsets that have problems with their BGRA support.
     const bool blackListed = (qstrcmp(renderer, "PowerVR Rogue G6200") == 0
-                             && ::strstr(ver, "1.3") != 0);
+                             && ::strstr(ver, "1.3") != 0) ||
+                             (qstrcmp(renderer, "Mali-T760") == 0
+                             && ::strstr(ver, "3.1") != 0) ||
+                             (qstrcmp(renderer, "Mali-T720") == 0
+                             && ::strstr(ver, "3.1") != 0);
 
     const bool supports_bgra = has_bgra_ext && !blackListed;
 
