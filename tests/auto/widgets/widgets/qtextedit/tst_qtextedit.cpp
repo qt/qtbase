@@ -191,6 +191,7 @@ private slots:
     void inputMethodQuery();
     void inputMethodQueryImHints_data();
     void inputMethodQueryImHints();
+    void inputMethodCursorRect();
 
     void highlightLongLine();
 
@@ -2471,6 +2472,18 @@ void tst_QTextEdit::inputMethodQueryImHints()
 
     QVariant value = ed->inputMethodQuery(Qt::ImHints);
     QCOMPARE(static_cast<Qt::InputMethodHints>(value.toInt()), hints);
+}
+
+// QTBUG-51923: Verify that the cursor rectangle returned by the input
+// method query correctly reflects the viewport offset.
+void tst_QTextEdit::inputMethodCursorRect()
+{
+    ed->setPlainText("Line1\nLine2Line3\nLine3");
+    ed->moveCursor(QTextCursor::End);
+    const QRectF cursorRect = ed->cursorRect();
+    const QVariant cursorRectV = ed->inputMethodQuery(Qt::ImCursorRectangle);
+    QCOMPARE(cursorRectV.type(), QVariant::RectF);
+    QCOMPARE(cursorRectV.toRect(), cursorRect.toRect());
 }
 
 void tst_QTextEdit::highlightLongLine()

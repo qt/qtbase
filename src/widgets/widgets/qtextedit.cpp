@@ -1726,15 +1726,15 @@ QVariant QTextEdit::inputMethodQuery(Qt::InputMethodQuery query, QVariant argume
         break;
     default:
         v = d->control->inputMethodQuery(query, argument);
-        const QPoint offset(-d->horizontalOffset(), -d->verticalOffset());
+        const QPointF offset(-d->horizontalOffset(), -d->verticalOffset());
         if (v.type() == QVariant::RectF)
-            v = v.toRectF().toRect().translated(offset);
+            v = v.toRectF().translated(offset);
         else if (v.type() == QVariant::PointF)
-            v = v.toPointF().toPoint() + offset;
+            v = v.toPointF() + offset;
         else if (v.type() == QVariant::Rect)
-            v = v.toRect().translated(offset);
+            v = v.toRect().translated(offset.toPoint());
         else if (v.type() == QVariant::Point)
-            v = v.toPoint() + offset;
+            v = v.toPoint() + offset.toPoint();
     }
 
     return v;
