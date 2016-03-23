@@ -116,12 +116,17 @@ endif()
 
 set(qt_module_includes
   Core QObject
-  Gui QImage
   Network QHostInfo
   Sql QSqlError
   Test QTestEventList
   Xml QDomDocument
 )
+
+if (NOT NO_GUI)
+  list(APPEND qt_module_includes
+    Gui QImage
+  )
+endif()
 
 if (NOT NO_WIDGETS)
   list(APPEND qt_module_includes
