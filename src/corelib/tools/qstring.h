@@ -605,7 +605,7 @@ public:
                               Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW
     { return -s2.compare(s1, cs); }
 
-    int compare(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW;
+    inline int compare(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW;
     static int compare(const QString &s1, const QStringRef &s2,
                        Qt::CaseSensitivity = Qt::CaseSensitive) Q_DECL_NOTHROW;
 
