@@ -178,7 +178,7 @@ QLocalServer::SocketOptions QLocalServer::socketOptions() const
 
 /*!
     Stop listening for incoming connections.  Existing connections are not
-    effected, but any new connections will be refused.
+    affected, but any new connections will be refused.
 
     \sa isListening(), listen()
  */
