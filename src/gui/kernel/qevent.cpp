@@ -4417,6 +4417,8 @@ QTouchEvent::~QTouchEvent()
     \brief The TouchPoint class provides information about a touch point in a QTouchEvent.
     \since 4.6
     \inmodule QtGui
+
+    \image touchpoint-metrics.png
 */
 
 /*! \enum TouchPoint::InfoFlag
@@ -4502,7 +4504,7 @@ Qt::TouchPointState QTouchEvent::TouchPoint::state() const
 */
 QPointF QTouchEvent::TouchPoint::pos() const
 {
-    return d->rect.center();
+    return d->pos;
 }
 
 /*!
@@ -4517,7 +4519,7 @@ QPointF QTouchEvent::TouchPoint::pos() const
 */
 QPointF QTouchEvent::TouchPoint::scenePos() const
 {
-    return d->sceneRect.center();
+    return d->scenePos;
 }
 
 /*!
@@ -4527,7 +4529,7 @@ QPointF QTouchEvent::TouchPoint::scenePos() const
 */
 QPointF QTouchEvent::TouchPoint::screenPos() const
 {
-    return d->screenRect.center();
+    return d->screenPos;
 }
 
 /*!
@@ -4650,10 +4652,19 @@ QPointF QTouchEvent::TouchPoint::lastNormalizedPos() const
     around the point returned by pos().
 
     \note This function returns an empty rect if the device does not report touch point sizes.
+
+    \obsolete This function is deprecated in 5.9 because it returns the outer bounds
+    of the touchpoint regardless of rotation, whereas a touchpoint is more correctly
+    modeled as an ellipse at position pos() with horizontalDiameter() and
+    verticalDiameter() which are independent of rotation().
+
+    \sa scenePos(), horizontalDiameter(), verticalDiameter()
 */
 QRectF QTouchEvent::TouchPoint::rect() const
 {
-    return d->rect;
+    QRectF ret(0, 0, d->horizontalDiameter, d->verticalDiameter);
+    ret.moveCenter(d->pos);
+    return ret;
 }
 
 /*!
@@ -4661,11 +4672,18 @@ QRectF QTouchEvent::TouchPoint::rect() const
 
     \note This function returns an empty rect if the device does not report touch point sizes.
 
-    \sa scenePos(), rect()
+    \obsolete This function is deprecated in 5.9 because it returns the outer bounds
+    of the touchpoint regardless of rotation, whereas a touchpoint is more correctly
+    modeled as an ellipse at position scenePos() with horizontalDiameter() and
+    verticalDiameter() which are independent of rotation().
+
+    \sa scenePos(), horizontalDiameter(), verticalDiameter()
 */
 QRectF QTouchEvent::TouchPoint::sceneRect() const
 {
-    return d->sceneRect;
+    QRectF ret(0, 0, d->horizontalDiameter, d->verticalDiameter);
+    ret.moveCenter(d->scenePos);
+    return ret;
 }
 
 /*!
@@ -4673,11 +4691,18 @@ QRectF QTouchEvent::TouchPoint::sceneRect() const
 
     \note This function returns an empty rect if the device does not report touch point sizes.
 
-    \sa screenPos(), rect()
+    \obsolete This function is deprecated because it returns the outer bounds of the
+    touchpoint regardless of rotation, whereas a touchpoint is more correctly
+    modeled as an ellipse at position screenPos() with horizontalDiameter() and
+    verticalDiameter() which are independent of rotation().
+
+    \sa screenPos(), horizontalDiameter(), verticalDiameter()
 */
 QRectF QTouchEvent::TouchPoint::screenRect() const
 {
-    return d->screenRect;
+    QRectF ret(0, 0, d->horizontalDiameter, d->verticalDiameter);
+    ret.moveCenter(d->screenPos);
+    return ret;
 }
 
 /*!
@@ -4700,6 +4725,30 @@ qreal QTouchEvent::TouchPoint::pressure() const
 qreal QTouchEvent::TouchPoint::rotation() const
 {
     return d->rotation;
+}
+
+/*!
+    \since 5.9
+    Returns the width of the bounding ellipse of this touch point.
+    The return value is in logical pixels, along the horizontal axis
+    when rotation() is zero. Most touchscreens do not detect the shape of the
+    contact point, so zero is the most common value.
+*/
+qreal QTouchEvent::TouchPoint::horizontalDiameter() const
+{
+    return d->horizontalDiameter;
+}
+
+/*!
+    \since 5.9
+    Returns the height of the bounding ellipse of this touch point.
+    The return value is in logical pixels, along the vertical axis
+    when rotation() is zero. Most touchscreens do not detect the shape
+    of the contact point, so zero is the most common value.
+*/
+qreal QTouchEvent::TouchPoint::verticalDiameter() const
+{
+    return d->verticalDiameter;
 }
 
 /*!
@@ -4773,7 +4822,7 @@ void QTouchEvent::TouchPoint::setPos(const QPointF &pos)
 {
     if (d->ref.load() != 1)
         d = d->detach();
-    d->rect.moveCenter(pos);
+    d->pos = pos;
 }
 
 /*! \internal */
@@ -4781,7 +4830,7 @@ void QTouchEvent::TouchPoint::setScenePos(const QPointF &scenePos)
 {
     if (d->ref.load() != 1)
         d = d->detach();
-    d->sceneRect.moveCenter(scenePos);
+    d->scenePos = scenePos;
 }
 
 /*! \internal */
@@ -4789,7 +4838,7 @@ void QTouchEvent::TouchPoint::setScreenPos(const QPointF &screenPos)
 {
     if (d->ref.load() != 1)
         d = d->detach();
-    d->screenRect.moveCenter(screenPos);
+    d->screenPos = screenPos;
 }
 
 /*! \internal */
@@ -4864,28 +4913,35 @@ void QTouchEvent::TouchPoint::setLastNormalizedPos(const QPointF &lastNormalized
     d->lastNormalizedPos = lastNormalizedPos;
 }
 
-/*! \internal */
+// ### remove the following 3 setRect functions and their usages soon
+/*! \internal \obsolete */
 void QTouchEvent::TouchPoint::setRect(const QRectF &rect)
 {
     if (d->ref.load() != 1)
         d = d->detach();
-    d->rect = rect;
+    d->pos = rect.center();
+    d->verticalDiameter = rect.height();
+    d->horizontalDiameter = rect.width();
 }
 
-/*! \internal */
+/*! \internal \obsolete */
 void QTouchEvent::TouchPoint::setSceneRect(const QRectF &sceneRect)
 {
     if (d->ref.load() != 1)
         d = d->detach();
-    d->sceneRect = sceneRect;
+    d->scenePos = sceneRect.center();
+    d->verticalDiameter = sceneRect.height();
+    d->horizontalDiameter = sceneRect.width();
 }
 
-/*! \internal */
+/*! \internal \obsolete */
 void QTouchEvent::TouchPoint::setScreenRect(const QRectF &screenRect)
 {
     if (d->ref.load() != 1)
         d = d->detach();
-    d->screenRect = screenRect;
+    d->screenPos = screenRect.center();
+    d->verticalDiameter = screenRect.height();
+    d->horizontalDiameter = screenRect.width();
 }
 
 /*! \internal */
@@ -4902,6 +4958,22 @@ void QTouchEvent::TouchPoint::setRotation(qreal angle)
     if (d->ref.load() != 1)
         d = d->detach();
     d->rotation = angle;
+}
+
+/*! \internal */
+void QTouchEvent::TouchPoint::setVerticalDiameter(qreal dia)
+{
+    if (d->ref.load() != 1)
+        d = d->detach();
+    d->verticalDiameter = dia;
+}
+
+/*! \internal */
+void QTouchEvent::TouchPoint::setHorizontalDiameter(qreal dia)
+{
+    if (d->ref.load() != 1)
+        d = d->detach();
+    d->horizontalDiameter = dia;
 }
 
 /*! \internal */

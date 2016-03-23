@@ -3552,7 +3552,9 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 QTouchEvent::TouchPoint &pt = touchEvent->_touchPoints[i];
                 QRectF rect = pt.rect();
                 rect.translate(offset);
-                pt.d->rect = rect;
+                pt.d->pos = rect.center();
+                pt.d->verticalDiameter = rect.height();
+                pt.d->horizontalDiameter = rect.width();
                 pt.d->startPos = pt.startPos() + offset;
                 pt.d->lastPos = pt.lastPos() + offset;
             }
@@ -4254,7 +4256,9 @@ bool QApplicationPrivate::updateTouchPointsForWidget(QWidget *widget, QTouchEven
         const QPointF delta = screenPos - screenPos.toPoint();
 
         rect.moveCenter(widget->mapFromGlobal(screenPos.toPoint()) + delta);
-        touchPoint.d->rect = rect;
+        touchPoint.d->pos = rect.center();
+        touchPoint.d->verticalDiameter = rect.height();
+        touchPoint.d->horizontalDiameter = rect.width();
         touchPoint.d->startPos = widget->mapFromGlobal(touchPoint.startScreenPos().toPoint()) + delta;
         touchPoint.d->lastPos = widget->mapFromGlobal(touchPoint.lastScreenPos().toPoint()) + delta;
 

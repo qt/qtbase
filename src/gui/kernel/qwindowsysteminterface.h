@@ -131,9 +131,11 @@ public:
         qint64 uniqueId;        // for TUIO: object/token ID; otherwise empty
                                 // TODO for TUIO 2.0: add registerPointerUniqueID(QPointerUniqueId)
         QPointF normalPosition; // touch device coordinates, (0 to 1, 0 to 1)
-        QRectF area;            // the touched area, centered at position in screen coordinates
+        QRectF area;            // dimensions of the elliptical contact patch, unrotated, and centered at position in screen coordinates
+                                // width is the horizontal diameter, height is the vertical diameter
         qreal pressure;         // 0 to 1
-        qreal rotation;         // 0 means pointing straight up; 0 if unknown (like QTabletEvent::rotation)
+        qreal rotation;         // rotation applied to the elliptical contact patch
+                                // 0 means pointing straight up; 0 if unknown (like QTabletEvent::rotation)
         Qt::TouchPointState state; //Qt::TouchPoint{Pressed|Moved|Stationary|Released}
         QVector2D velocity;     // in screen coordinate system, pixels / seconds
         QTouchEvent::TouchPoint::InfoFlags flags;

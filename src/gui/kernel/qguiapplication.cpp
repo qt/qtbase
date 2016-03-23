@@ -2564,7 +2564,9 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         Q_ASSERT(w.data() != 0);
 
         // make the *scene* functions return the same as the *screen* functions
-        touchPoint.d->sceneRect = touchPoint.screenRect();
+        touchPoint.d->scenePos = touchPoint.screenPos();
+        touchPoint.d->verticalDiameter = touchPoint.screenRect().height();
+        touchPoint.d->horizontalDiameter = touchPoint.screenRect().width();
         touchPoint.d->startScenePos = touchPoint.startScreenPos();
         touchPoint.d->lastScenePos = touchPoint.lastScreenPos();
 
@@ -2634,8 +2636,9 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             const QPointF screenPos = rect.center();
             const QPointF delta = screenPos - screenPos.toPoint();
 
-            rect.moveCenter(w->mapFromGlobal(screenPos.toPoint()) + delta);
-            touchPoint.d->rect = rect;
+            touchPoint.d->pos = w->mapFromGlobal(screenPos.toPoint()) + delta;
+            touchPoint.d->verticalDiameter = rect.height();
+            touchPoint.d->horizontalDiameter = rect.width();
             if (touchPoint.state() == Qt::TouchPointPressed) {
                 touchPoint.d->startPos = w->mapFromGlobal(touchPoint.startScreenPos().toPoint()) + delta;
                 touchPoint.d->lastPos = w->mapFromGlobal(touchPoint.lastScreenPos().toPoint()) + delta;
