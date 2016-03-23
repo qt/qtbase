@@ -87,7 +87,6 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
     QWindowsWindow *rw = QWindowsWindow::windowsWindowOf(window);
     Q_ASSERT(rw);
 
-#ifndef Q_OS_WINCE
     const bool hasAlpha = rw->format().hasAlpha();
     const Qt::WindowFlags flags = window->flags();
     if ((flags & Qt::FramelessWindowHint) && QWindowsWindow::setWindowLayered(rw->handle(), flags, hasAlpha, rw->opacity()) && hasAlpha) {
@@ -115,7 +114,6 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
             QWindowsContext::user32dll.updateLayeredWindow(rw->handle(), NULL, &ptDst, &size, m_image->hdc(), &ptSrc, 0, &blend, ULW_ALPHA);
         }
     } else {
-#endif
         const HDC dc = rw->getDC();
         if (!dc) {
             qErrnoWarning("%s: GetDC failed", __FUNCTION__);
@@ -129,9 +127,7 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
                 qErrnoWarning(int(lastError), "%s: BitBlt failed", __FUNCTION__);
         }
         rw->releaseDC();
-#ifndef Q_OS_WINCE
     }
-#endif
 
     // Write image for debug purposes.
     if (QWindowsContext::verbose > 2 && lcQpaBackingStore().isDebugEnabled()) {

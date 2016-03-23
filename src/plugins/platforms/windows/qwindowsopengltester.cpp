@@ -54,17 +54,14 @@
 #include <private/qopengl_p.h>
 #endif
 
-#ifndef Q_OS_WINCE
-#  include <QtCore/qt_windows.h>
-#  include <private/qsystemlibrary_p.h>
-#  include <d3d9.h>
-#endif
+#include <QtCore/qt_windows.h>
+#include <private/qsystemlibrary_p.h>
+#include <d3d9.h>
 
 QT_BEGIN_NAMESPACE
 
 GpuDescription GpuDescription::detect()
 {
-#ifndef Q_OS_WINCE
     typedef IDirect3D9 * (WINAPI *PtrDirect3DCreate9)(UINT);
 
     GpuDescription result;
@@ -95,13 +92,6 @@ GpuDescription GpuDescription::detect()
         result.description = adapterIdentifier.Description;
     }
     return result;
-#else // !Q_OS_WINCE
-    GpuDescription result;
-    result.vendorId = result.deviceId = result.revision =1;
-    result.driverVersion = QVersionNumber(1, 1, 1);
-    result.driverName = result.description = QByteArrayLiteral("Generic");
-    return result;
-#endif
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -155,7 +145,6 @@ QVariant GpuDescription::toVariant() const
 
 QWindowsOpenGLTester::Renderer QWindowsOpenGLTester::requestedGlesRenderer()
 {
-#ifndef Q_OS_WINCE
     const char platformVar[] = "QT_ANGLE_PLATFORM";
     if (qEnvironmentVariableIsSet(platformVar)) {
         const QByteArray anglePlatform = qgetenv(platformVar);
@@ -167,13 +156,11 @@ QWindowsOpenGLTester::Renderer QWindowsOpenGLTester::requestedGlesRenderer()
             return QWindowsOpenGLTester::AngleRendererD3d11Warp;
         qCWarning(lcQpaGl) << "Invalid value set for " << platformVar << ": " << anglePlatform;
     }
-#endif // !Q_OS_WINCE
     return QWindowsOpenGLTester::InvalidRenderer;
 }
 
 QWindowsOpenGLTester::Renderer QWindowsOpenGLTester::requestedRenderer()
 {
-#ifndef Q_OS_WINCE
     const char openGlVar[] = "QT_OPENGL";
     if (QCoreApplication::testAttribute(Qt::AA_UseOpenGLES)) {
         const Renderer glesRenderer = QWindowsOpenGLTester::requestedGlesRenderer();
@@ -195,11 +182,8 @@ QWindowsOpenGLTester::Renderer QWindowsOpenGLTester::requestedRenderer()
             return QWindowsOpenGLTester::SoftwareRasterizer;
         qCWarning(lcQpaGl) << "Invalid value set for " << openGlVar << ": " << requested;
     }
-#endif // !Q_OS_WINCE
     return QWindowsOpenGLTester::InvalidRenderer;
 }
-
-#ifndef Q_OS_WINCE
 
 static inline QString resolveBugListFile(const QString &fileName)
 {
@@ -216,12 +200,10 @@ static inline QString resolveBugListFile(const QString &fileName)
     return QStandardPaths::locate(QStandardPaths::ConfigLocation, fileName);
 }
 
-#  ifndef QT_NO_OPENGL
+#ifndef QT_NO_OPENGL
 typedef QHash<QOpenGLConfig::Gpu, QWindowsOpenGLTester::Renderers> SupportedRenderersCache;
 Q_GLOBAL_STATIC(SupportedRenderersCache, supportedRenderersCache)
-#  endif
-
-#endif // !Q_OS_WINCE
+#endif
 
 QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::detectSupportedRenderers(const GpuDescription &gpu, bool glesOnly)
 {
@@ -229,8 +211,6 @@ QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::detectSupportedRenderers(c
     Q_UNUSED(glesOnly)
 #if defined(QT_NO_OPENGL)
     return 0;
-#elif defined(Q_OS_WINCE)
-    return QWindowsOpenGLTester::Gles;
 #else
     QOpenGLConfig::Gpu qgpu = QOpenGLConfig::Gpu::fromDevice(gpu.vendorId, gpu.deviceId, gpu.driverVersion, gpu.description);
     SupportedRenderersCache *srCache = supportedRenderersCache();
@@ -280,7 +260,7 @@ QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::detectSupportedRenderers(c
     }
     srCache->insert(qgpu, result);
     return result;
-#endif // !Q_OS_WINCE && !QT_NO_OPENGL
+#endif // !QT_NO_OPENGL
 }
 
 QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::supportedGlesRenderers()
@@ -301,7 +281,7 @@ QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::supportedRenderers()
 
 bool QWindowsOpenGLTester::testDesktopGL()
 {
-#if !defined(QT_NO_OPENGL) && !defined(Q_OS_WINCE)
+#if !defined(QT_NO_OPENGL)
     HMODULE lib = 0;
     HWND wnd = 0;
     HDC dc = 0;
@@ -428,7 +408,7 @@ cleanup:
     return result;
 #else
     return false;
-#endif // !QT_NO_OPENGL && !Q_OS_WINCE
+#endif // !QT_NO_OPENGL
 }
 
 QT_END_NAMESPACE

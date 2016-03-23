@@ -56,7 +56,7 @@
 
 static bool initResources()
 {
-#if !defined (Q_OS_WINCE) && !defined (QT_NO_IMAGEFORMAT_PNG)
+#if !defined (QT_NO_IMAGEFORMAT_PNG)
     Q_INIT_RESOURCE(cursors);
 #endif
     return true;
@@ -143,7 +143,6 @@ static HCURSOR createBitmapCursor(const QImage &bbits, const QImage &mbits,
     if (hotSpot.y() < 0)
         hotSpot.setY(height / 2);
     const int n = qMax(1, width / 8);
-#if !defined(Q_OS_WINCE)
     QScopedArrayPointer<uchar> xBits(new uchar[height * n]);
     QScopedArrayPointer<uchar> xMask(new uchar[height * n]);
     int x = 0;
@@ -164,54 +163,6 @@ static HCURSOR createBitmapCursor(const QImage &bbits, const QImage &mbits,
     }
     return CreateCursor(GetModuleHandle(0), hotSpot.x(), hotSpot.y(), width, height,
                         xBits.data(), xMask.data());
-#elif defined(GWES_ICONCURS) // Q_OS_WINCE
-    // Windows CE only supports fixed cursor size.
-    int sysW = GetSystemMetrics(SM_CXCURSOR);
-    int sysH = GetSystemMetrics(SM_CYCURSOR);
-    int sysN = qMax(1, sysW / 8);
-    uchar* xBits = new uchar[sysH * sysN];
-    uchar* xMask = new uchar[sysH * sysN];
-    int x = 0;
-    for (int i = 0; i < sysH; ++i) {
-        if (i >= height) {
-            memset(&xBits[x] , 255, sysN);
-            memset(&xMask[x] ,   0, sysN);
-            x += sysN;
-        } else {
-            int fillWidth = n > sysN ? sysN : n;
-            const uchar *bits = bbits.constScanLine(i);
-            const uchar *mask = mbits.constScanLine(i);
-            for (int j = 0; j < fillWidth; ++j) {
-                uchar b = bits[j];
-                uchar m = mask[j];
-                if (invb)
-                    b ^= 0xFF;
-                if (invm)
-                    m ^= 0xFF;
-                xBits[x] = ~m;
-                xMask[x] = b ^ m;
-                ++x;
-            }
-            for (int j = fillWidth; j < sysN; ++j ) {
-                xBits[x] = 255;
-                xMask[x] = 0;
-                ++x;
-            }
-        }
-    }
-
-    HCURSOR hcurs = CreateCursor(qWinAppInst(), hotSpot.x(), hotSpot.y(), sysW, sysH,
-                                 xBits, xMask);
-    delete [] xBits;
-    delete [] xMask;
-    return hcurs;
-#else
-    Q_UNUSED(n);
-    Q_UNUSED(invm);
-    Q_UNUSED(invb);
-    Q_UNUSED(mbits);
-    return 0;
-#endif
 }
 
 // Create a cursor from image and mask of the format QImage::Format_Mono.
@@ -252,7 +203,7 @@ static QSize systemCursorSize(const QPlatformScreen *screen = Q_NULLPTR)
     return primaryScreenCursorSize;
 }
 
-#if defined (Q_OS_WINCE) || defined (QT_NO_IMAGEFORMAT_PNG)
+#if defined (QT_NO_IMAGEFORMAT_PNG)
 
 static inline QSize standardCursorSize() { return QSize(32, 32); }
 
@@ -468,7 +419,7 @@ QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursor
 
     return QWindowsCursor::PixmapCursor();
 }
-#else // Q_OS_WINCE || QT_NO_IMAGEFORMAT_PNG
+#else // QT_NO_IMAGEFORMAT_PNG
 struct QWindowsCustomPngCursor {
     Qt::CursorShape shape;
     int size;
@@ -526,7 +477,7 @@ QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursor
                            QString::fromLatin1(bestFit->fileName));
     return PixmapCursor(rawImage, QPoint(bestFit->hotSpotX, bestFit->hotSpotY));
 }
-#endif // Q_OS_WINCE || QT_NO_IMAGEFORMAT_PNG
+#endif // !QT_NO_IMAGEFORMAT_PNG
 
 struct QWindowsStandardCursorMapping {
     Qt::CursorShape shape;
@@ -575,13 +526,8 @@ HCURSOR QWindowsCursor::createCursorFromShape(Qt::CursorShape cursorShape, const
     // Load available standard cursors from resources
     const QWindowsStandardCursorMapping *sEnd = standardCursors + sizeof(standardCursors) / sizeof(standardCursors[0]);
     for (const QWindowsStandardCursorMapping *s = standardCursors; s < sEnd; ++s) {
-        if (s->shape == cursorShape) {
-#ifndef Q_OS_WINCE
+        if (s->shape == cursorShape)
             return static_cast<HCURSOR>(LoadImage(0, s->resource, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED));
-#else
-            return LoadCursor(0, s->resource);
-#endif
-        }
     }
 
     qWarning("%s: Invalid cursor shape %d", __FUNCTION__, cursorShape);
@@ -677,7 +623,6 @@ QPoint QWindowsCursor::mousePosition()
 
 QWindowsCursor::CursorState QWindowsCursor::cursorState()
 {
-#ifndef Q_OS_WINCE
     enum { cursorShowing = 0x1, cursorSuppressed = 0x2 }; // Windows 8: CURSOR_SUPPRESSED
     CURSORINFO cursorInfo;
     cursorInfo.cbSize = sizeof(CURSORINFO);
@@ -687,7 +632,6 @@ QWindowsCursor::CursorState QWindowsCursor::cursorState()
         if (cursorInfo.flags & cursorSuppressed)
             return CursorSuppressed;
     }
-#endif // !Q_OS_WINCE
     return CursorHidden;
 }
 
@@ -758,7 +702,6 @@ QPixmap QWindowsCursor::dragDefaultCursor(Qt::DropAction action) const
     "...............XXXX....."};
 
     if (m_ignoreDragCursor.isNull()) {
-#if !defined (Q_OS_WINCE)
         HCURSOR cursor = LoadCursor(NULL, IDC_NO);
         ICONINFO iconInfo = {0, 0, 0, 0, 0};
         GetIconInfo(cursor, &iconInfo);
@@ -782,9 +725,6 @@ QPixmap QWindowsCursor::dragDefaultCursor(Qt::DropAction action) const
         DeleteObject(iconInfo.hbmMask);
         DeleteObject(iconInfo.hbmColor);
         DestroyCursor(cursor);
-#else // !Q_OS_WINCE
-        m_ignoreDragCursor = QPixmap(ignoreDragCursorXpmC);
-#endif // !Q_OS_WINCE
     }
     return m_ignoreDragCursor;
 }

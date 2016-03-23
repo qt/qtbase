@@ -49,17 +49,12 @@
 #include "qwindowsintegration.h"
 #include "qt_windows.h"
 #include "qwindowsfontdatabase.h"
-#ifdef Q_OS_WINCE
-#  include "qplatformfunctions_wince.h"
-#  include "winuser.h"
-#else
-#  include <commctrl.h>
-#  include <objbase.h>
-#  ifndef Q_CC_MINGW
-#    include <commoncontrols.h>
-#  endif
-#  include <shellapi.h>
+#include <commctrl.h>
+#include <objbase.h>
+#ifndef Q_CC_MINGW
+#  include <commoncontrols.h>
 #endif
+#include <shellapi.h>
 
 #include <QtCore/QVariant>
 #include <QtCore/QCoreApplication>
@@ -128,7 +123,6 @@ static inline QColor getSysColor(int index)
     return COLORREFToQColor(GetSysColor(index));
 }
 
-#ifndef QT_NO_WINCE_SHELLSDK
 // QTBUG-48823/Windows 10: SHGetFileInfo() (as called by item views on file system
 // models has been observed to trigger a WM_PAINT on the mainwindow. Suppress the
 // behavior by running it in a thread.
@@ -161,7 +155,6 @@ static bool shGetFileInfoBackground(QWindowsThreadPoolRunner &r,
     }
     return result;
 }
-#endif // !QT_NO_WINCE_SHELLSDK
 
 // from QStyle::standardPalette
 static inline QPalette standardPalette()
@@ -272,14 +265,9 @@ static inline QPalette menuPalette(const QPalette &systemPalette)
     result.setColor(QPalette::Active, QPalette::ButtonText, menuTextColor);
     result.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
     result.setColor(QPalette::Disabled, QPalette::Text, disabled);
-#ifndef Q_OS_WINCE
     const bool isFlat = booleanSystemParametersInfo(SPI_GETFLATMENU, false);
     result.setColor(QPalette::Disabled, QPalette::Highlight,
                     getSysColor(isFlat ? COLOR_MENUHILIGHT : COLOR_HIGHLIGHT));
-#else
-    result.setColor(QPalette::Disabled, QPalette::Highlight,
-                    getSysColor(COLOR_HIGHLIGHT));
-#endif
     result.setColor(QPalette::Disabled, QPalette::HighlightedText, disabled);
     result.setColor(QPalette::Disabled, QPalette::Button,
                     result.color(QPalette::Active, QPalette::Button));
@@ -305,11 +293,7 @@ static inline QPalette *menuBarPalette(const QPalette &menuPalette)
     QPalette *result = 0;
     if (booleanSystemParametersInfo(SPI_GETFLATMENU, false)) {
         result = new QPalette(menuPalette);
-#ifndef Q_OS_WINCE
         const QColor menubar(getSysColor(COLOR_MENUBAR));
-#else
-        const QColor menubar(getSysColor(COLOR_MENU));
-#endif
         result->setColor(QPalette::Active, QPalette::Button, menubar);
         result->setColor(QPalette::Disabled, QPalette::Button, menubar);
         result->setColor(QPalette::Inactive, QPalette::Button, menubar);
@@ -379,12 +363,10 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
         return QVariant(iconThemeSearchPaths());
     case StyleNames:
         return QVariant(styleNames());
-#ifndef Q_OS_WINCE
     case TextCursorWidth:
         return QVariant(int(dWordSystemParametersInfo(SPI_GETCARETWIDTH, 1u)));
     case DropShadow:
         return QVariant(booleanSystemParametersInfo(SPI_GETDROPSHADOW, false));
-#endif // !Q_OS_WINCE
     case MaximumScrollBarDragDistance:
         return QVariant(qRound(qreal(QWindowsContext::instance()->defaultDPI()) * 1.375));
     case KeyboardScheme:
@@ -438,7 +420,6 @@ void QWindowsTheme::clearFonts()
 
 void QWindowsTheme::refreshFonts()
 {
-#ifndef Q_OS_WINCE // ALL THIS FUNCTIONALITY IS MISSING ON WINCE
     clearFonts();
     if (!QGuiApplication::desktopSettingsAware())
         return;
@@ -467,7 +448,6 @@ void QWindowsTheme::refreshFonts()
     m_fonts[DockWidgetTitleFont] = new QFont(titleFont);
     m_fonts[ItemViewFont] = new QFont(iconTitleFont);
     m_fonts[FixedFont] = new QFont(fixedFont);
-#endif // !Q_OS_WINCE
 }
 
 bool QWindowsTheme::usePlatformNativeDialog(DialogType type) const
@@ -491,12 +471,7 @@ Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
 
 static QPixmap loadIconFromShell32(int resourceId, QSizeF size)
 {
-#ifdef Q_OS_WINCE
-    HMODULE hmod = LoadLibrary(L"ceshell");
-#else
-    HMODULE hmod = QSystemLibrary::load(L"shell32");
-#endif
-    if (hmod) {
+    if (const HMODULE hmod = QSystemLibrary::load(L"shell32")) {
         HICON iconHandle =
             static_cast<HICON>(LoadImage(hmod, MAKEINTRESOURCE(resourceId),
                                          IMAGE_ICON, int(size.width()), int(size.height()), 0));
@@ -578,7 +553,6 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) con
         stockId = SIID_RECYCLER;
         resourceId = 191;
         break;
-#ifndef Q_OS_WINCE
     case MessageBoxInformation:
         stockId = SIID_INFO;
         iconName = IDI_INFORMATION;
@@ -598,12 +572,10 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) con
     case VistaShield:
         stockId = SIID_SHIELD;
         break;
-#endif
     default:
         break;
     }
 
-#ifndef Q_OS_WINCE
     if (stockId != SIID_INVALID) {
         if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
             && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)
@@ -621,7 +593,6 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) con
             }
         }
     }
-#endif
 
     if (resourceId != -1) {
         QPixmap pixmap = loadIconFromShell32(resourceId, pixmapSize);
@@ -761,22 +732,13 @@ QPixmap QWindowsTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &s
 
     SHFILEINFO info;
     const unsigned int flags =
-#ifndef Q_OS_WINCE
         SHGFI_ICON|iconSize|SHGFI_SYSICONINDEX|SHGFI_ADDOVERLAYS|SHGFI_OVERLAYINDEX;
-#else
-        iconSize|SHGFI_SYSICONINDEX;
-#endif // Q_OS_WINCE
 
-
-#if !defined(QT_NO_WINCE_SHELLSDK)
     const bool val = cacheableDirIcon && useDefaultFolderIcon
         ? shGetFileInfoBackground(m_threadPoolRunner, L"dummy", FILE_ATTRIBUTE_DIRECTORY,
                                   &info, flags | SHGFI_USEFILEATTRIBUTES)
         : shGetFileInfoBackground(m_threadPoolRunner, reinterpret_cast<const wchar_t *>(filePath.utf16()), 0,
                                   &info, flags);
-#else
-    const bool val = false;
-#endif // !QT_NO_WINCE_SHELLSDK
 
     // Even if GetFileInfo returns a valid result, hIcon can be empty in some cases
     if (val && info.hIcon) {

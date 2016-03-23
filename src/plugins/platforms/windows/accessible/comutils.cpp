@@ -170,7 +170,6 @@ bool QVariant2VARIANT(const QVariant &var, VARIANT &arg, const QByteArray &typeN
     case QVariant::LongLong:
         if (out && arg.vt == (VT_CY|VT_BYREF)) {
             arg.pcyVal->int64 = qvar.toLongLong();
-#if !defined(Q_OS_WINCE) && defined(_MSC_VER) && _MSC_VER >= 1400
         } else if (out && arg.vt == (VT_I8|VT_BYREF)) {
             *arg.pllVal = qvar.toLongLong();
         } else {
@@ -181,22 +180,11 @@ bool QVariant2VARIANT(const QVariant &var, VARIANT &arg, const QByteArray &typeN
                 arg.vt |= VT_BYREF;
             }
         }
-#else
-        } else {
-            arg.vt = VT_CY;
-            arg.cyVal.int64 = qvar.toLongLong();
-            if (out) {
-                arg.pcyVal = new CY(arg.cyVal);
-                arg.vt |= VT_BYREF;
-            }
-        }
-#endif
         break;
 
     case QVariant::ULongLong:
         if (out && arg.vt == (VT_CY|VT_BYREF)) {
             arg.pcyVal->int64 = qvar.toULongLong();
-#if !defined(Q_OS_WINCE) && defined(_MSC_VER) && _MSC_VER >= 1400
         } else if (out && arg.vt == (VT_UI8|VT_BYREF)) {
             *arg.pullVal = qvar.toULongLong();
         } else {
@@ -207,18 +195,6 @@ bool QVariant2VARIANT(const QVariant &var, VARIANT &arg, const QByteArray &typeN
                 arg.vt |= VT_BYREF;
             }
         }
-#else
-        } else {
-            arg.vt = VT_CY;
-            arg.cyVal.int64 = qvar.toULongLong();
-            if (out) {
-                arg.pcyVal = new CY(arg.cyVal);
-                arg.vt |= VT_BYREF;
-            }
-        }
-
-#endif
-
         break;
 
     case QVariant::Bool:

@@ -56,12 +56,10 @@
 #include <QtGui/qguiapplication.h>
 
 #include "qwindowsaccessibility.h"
-#if !defined(Q_OS_WINCE)
-# ifdef Q_CC_MINGW
-#  include "qwindowsmsaaaccessible.h"
-# else
-#  include "iaccessible2.h"
-# endif
+#ifdef Q_CC_MINGW
+#   include "qwindowsmsaaaccessible.h"
+#else
+#   include "iaccessible2.h"
 #endif
 #include "comutils.h"
 
@@ -74,11 +72,7 @@
 
 #include <winuser.h>
 #if !defined(WINABLEAPI)
-#  if defined(Q_OS_WINCE)
-#    include <bldver.h>
-#  else
-#    include <winable.h>
-#  endif
+#  include <winable.h>
 #endif
 
 #include <servprov.h>
@@ -153,10 +147,6 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
         }
     }
 
-#if defined(Q_OS_WINCE) // ### TODO: check for NotifyWinEvent in CE 6.0
-    // There is no user32.lib nor NotifyWinEvent for CE
-    return;
-#else
     // An event has to be associated with a window,
     // so find the first parent that is a widget and that has a WId
     QAccessibleInterface *iface = event->accessibleInterface();
@@ -179,7 +169,6 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
         event->type() != QAccessible::ObjectDestroyed) {
         ::NotifyWinEvent(event->type(), hWnd, OBJID_CLIENT, QAccessible::uniqueId(iface));
     }
-#endif // Q_OS_WINCE
 }
 
 QWindow *QWindowsAccessibility::windowHelper(const QAccessibleInterface *iface)
@@ -202,11 +191,6 @@ QWindow *QWindowsAccessibility::windowHelper(const QAccessibleInterface *iface)
 */
 IAccessible *QWindowsAccessibility::wrap(QAccessibleInterface *acc)
 {
-#if defined(Q_OS_WINCE)
-    Q_UNUSED(acc);
-
-    return 0;
-#else
     if (!acc)
         return 0;
 
@@ -222,12 +206,10 @@ IAccessible *QWindowsAccessibility::wrap(QAccessibleInterface *acc)
     IAccessible *iacc = 0;
     wacc->QueryInterface(IID_IAccessible, reinterpret_cast<void **>(&iacc));
     return iacc;
-#endif // defined(Q_OS_WINCE)
 }
 
 bool QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(HWND hwnd, WPARAM wParam, LPARAM lParam, LRESULT *lResult)
 {
-#if !defined(Q_OS_WINCE)
     if (static_cast<long>(lParam) == static_cast<long>(UiaRootObjectId)) {
         /* For UI Automation */
     } else if (DWORD(lParam) == DWORD(OBJID_CLIENT)) {
@@ -263,12 +245,6 @@ bool QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(HWND hwnd, W
             }
         }
     }
-#else
-    Q_UNUSED(hwnd);
-    Q_UNUSED(wParam);
-    Q_UNUSED(lParam);
-    Q_UNUSED(lResult);
-#endif // !defined(Q_OS_WINCE)
     return false;
 }
 

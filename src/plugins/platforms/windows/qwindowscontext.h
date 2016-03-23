@@ -79,7 +79,6 @@ class QPoint;
 class QKeyEvent;
 class QTouchDevice;
 
-#ifndef Q_OS_WINCE
 struct QWindowsUser32DLL
 {
     QWindowsUser32DLL();
@@ -163,8 +162,6 @@ struct QWindowsShcoreDLL {
     GetDpiForMonitor getDpiForMonitor;
 };
 
-#endif // Q_OS_WINCE
-
 class QWindowsContext
 {
     Q_DISABLE_COPY(QWindowsContext)
@@ -236,11 +233,10 @@ public:
     QWindowsMimeConverter &mimeConverter() const;
     QWindowsScreenManager &screenManager();
     QWindowsTabletSupport *tabletSupport() const;
-#ifndef Q_OS_WINCE
+
     static QWindowsUser32DLL user32dll;
     static QWindowsShell32DLL shell32dll;
     static QWindowsShcoreDLL shcoredll;
-#endif
 
     static QByteArray comErrorString(HRESULT hr);
     bool asyncExpose() const;

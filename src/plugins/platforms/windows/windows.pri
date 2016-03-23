@@ -1,14 +1,11 @@
 # Note: OpenGL32 must precede Gdi32 as it overwrites some functions.
-LIBS *= -lole32
-!wince: LIBS *= -luser32 -lwinspool -limm32 -lwinmm -loleaut32
+LIBS += -lole32 -luser32 -lwinspool -limm32 -lwinmm -loleaut32
 
 contains(QT_CONFIG, opengl):!contains(QT_CONFIG, opengles2):!contains(QT_CONFIG, dynamicgl): LIBS *= -lopengl32
 
 mingw: LIBS *= -luuid
 # For the dialog helpers:
-!wince: LIBS *= -lshlwapi -lshell32
-!wince: LIBS *= -ladvapi32
-wince: DEFINES *= QT_LIBINFIX=L"\"\\\"$${QT_LIBINFIX}\\\"\""
+LIBS += -lshlwapi -lshell32 -ladvapi32
 
 DEFINES *= QT_NO_CAST_FROM_ASCII
 
@@ -59,7 +56,6 @@ HEADERS += \
     $$PWD/qwindowstheme.h \
     $$PWD/qwindowsdialoghelpers.h \
     $$PWD/qwindowsservices.h \
-    $$PWD/qplatformfunctions_wince.h \
     $$PWD/qwindowsnativeimage.h \
     $$PWD/qwindowsnativeinterface.h \
     $$PWD/qwindowsopengltester.h \
@@ -98,22 +94,20 @@ contains(QT_CONFIG,dynamicgl) {
     }
 }
 
-!wince:!contains( DEFINES, QT_NO_TABLETEVENT ) {
+!contains( DEFINES, QT_NO_TABLETEVENT ) {
     INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty/wintab
     HEADERS += $$PWD/qwindowstabletsupport.h
     SOURCES += $$PWD/qwindowstabletsupport.cpp
 }
 
-!wince:!contains( DEFINES, QT_NO_SESSIONMANAGER ) {
+!contains( DEFINES, QT_NO_SESSIONMANAGER ) {
     SOURCES += $$PWD/qwindowssessionmanager.cpp
     HEADERS += $$PWD/qwindowssessionmanager.h
 }
 
-!wince:!contains( DEFINES, QT_NO_IMAGEFORMAT_PNG ) {
-    RESOURCES += $$PWD/cursors.qrc
-}
+!contains( DEFINES, QT_NO_IMAGEFORMAT_PNG ):RESOURCES += $$PWD/cursors.qrc
 
-!wince: RESOURCES += $$PWD/openglblacklists.qrc
+RESOURCES += $$PWD/openglblacklists.qrc
 
 contains(QT_CONFIG, freetype) {
     DEFINES *= QT_NO_FONTCONFIG

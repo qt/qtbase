@@ -68,8 +68,6 @@ static inline QDpi deviceDPI(HDC hdc)
     return QDpi(GetDeviceCaps(hdc, LOGPIXELSX), GetDeviceCaps(hdc, LOGPIXELSY));
 }
 
-#ifndef Q_OS_WINCE
-
 static inline QDpi monitorDPI(HMONITOR hMonitor)
 {
     if (QWindowsContext::shcoredll.isValid()) {
@@ -80,8 +78,6 @@ static inline QDpi monitorDPI(HMONITOR hMonitor)
     }
     return QDpi(0, 0);
 }
-
-#endif // !Q_OS_WINCE
 
 typedef QList<QWindowsScreenData> WindowsScreenDataList;
 
@@ -99,20 +95,9 @@ static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
     if (data->name == QLatin1String("WinDisc")) {
         data->flags |= QWindowsScreenData::LockScreen;
     } else {
-#ifdef Q_OS_WINCE
-        //Windows CE, just supports one Display and expects to get only DISPLAY,
-        //instead of DISPLAY0 and so on, which are passed by info.szDevice
-        HDC hdc = CreateDC(TEXT("DISPLAY"), NULL, NULL, NULL);
-#else
-        HDC hdc = CreateDC(info.szDevice, NULL, NULL, NULL);
-#endif
-        if (hdc) {
-#ifndef Q_OS_WINCE
+        if (const HDC hdc = CreateDC(info.szDevice, NULL, NULL, NULL)) {
             const QDpi dpi = monitorDPI(hMonitor);
             data->dpi = dpi.first ? dpi : deviceDPI(hdc);
-#else
-            data->dpi = deviceDPI(hdc);
-#endif
             data->depth = GetDeviceCaps(hdc, BITSPIXEL);
             data->format = data->depth == 16 ? QImage::Format_RGB16 : QImage::Format_RGB32;
             data->physicalSizeMM = QSizeF(GetDeviceCaps(hdc, HORZSIZE), GetDeviceCaps(hdc, VERTSIZE));
@@ -330,7 +315,6 @@ enum OrientationPreference // matching Win32 API ORIENTATION_PREFERENCE
 bool QWindowsScreen::setOrientationPreference(Qt::ScreenOrientation o)
 {
     bool result = false;
-#ifndef Q_OS_WINCE
     if (QWindowsContext::user32dll.setDisplayAutoRotationPreferences) {
         DWORD orientationPreference = 0;
         switch (o) {
@@ -352,14 +336,12 @@ bool QWindowsScreen::setOrientationPreference(Qt::ScreenOrientation o)
         }
         result = QWindowsContext::user32dll.setDisplayAutoRotationPreferences(orientationPreference);
     }
-#endif // !Q_OS_WINCE
     return result;
 }
 
 Qt::ScreenOrientation QWindowsScreen::orientationPreference()
 {
     Qt::ScreenOrientation result = Qt::PrimaryOrientation;
-#ifndef Q_OS_WINCE
     if (QWindowsContext::user32dll.getDisplayAutoRotationPreferences) {
         DWORD orientationPreference = 0;
         if (QWindowsContext::user32dll.getDisplayAutoRotationPreferences(&orientationPreference)) {
@@ -379,7 +361,6 @@ Qt::ScreenOrientation QWindowsScreen::orientationPreference()
             }
         }
     }
-#endif // !Q_OS_WINCE
     return result;
 }
 
@@ -388,7 +369,7 @@ Qt::ScreenOrientation QWindowsScreen::orientationPreference()
 */
 QPlatformScreen::SubpixelAntialiasingType QWindowsScreen::subpixelAntialiasingTypeHint() const
 {
-#if defined(Q_OS_WINCE) || !defined(FT_LCD_FILTER_H) || !defined(FT_CONFIG_OPTION_SUBPIXEL_RENDERING)
+#if !defined(FT_LCD_FILTER_H) || !defined(FT_CONFIG_OPTION_SUBPIXEL_RENDERING)
     return QPlatformScreen::Subpixel_None;
 #else
     QPlatformScreen::SubpixelAntialiasingType type = QPlatformScreen::subpixelAntialiasingTypeHint();

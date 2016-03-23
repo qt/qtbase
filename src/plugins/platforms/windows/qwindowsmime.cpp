@@ -403,11 +403,9 @@ QDebug operator<<(QDebug d, const FORMATETC &tc)
     case CF_UNICODETEXT:
         d << "CF_UNICODETEXT";
         break;
-#ifndef Q_OS_WINCE
     case CF_ENHMETAFILE:
         d << "CF_ENHMETAFILE";
         break;
-#endif // !Q_OS_WINCE
     default:
         d << QWindowsMimeConverter::clipboardFormatName(tc.cfFormat);
         break;

@@ -4,7 +4,7 @@ QT *= core-private
 QT *= gui-private
 QT *= platformsupport-private
 
-!wince:LIBS *= -lgdi32
+LIBS += -lgdi32
 
 include(windows.pri)
 

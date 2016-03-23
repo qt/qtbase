@@ -41,9 +41,6 @@
 #define QWINDOWSSCREEN_H
 
 #include "qtwindowsglobal.h"
-#ifdef Q_OS_WINCE
-#  include "qplatformfunctions_wince.h"
-#endif
 
 #include <QtCore/QList>
 #include <QtCore/QVector>

@@ -41,9 +41,6 @@
 #define QWINDOWSWINDOW_H
 
 #include "qtwindows_additional.h"
-#ifdef Q_OS_WINCE
-#  include "qplatformfunctions_wince.h"
-#endif
 #include "qwindowscursor.h"
 
 #include <qpa/qplatformwindow.h>
@@ -60,10 +57,8 @@ struct QWindowsGeometryHint
     explicit QWindowsGeometryHint(const QWindow *w, const QMargins &customMargins);
     static QMargins frame(DWORD style, DWORD exStyle);
     static bool handleCalculateSize(const QMargins &customMargins, const MSG &msg, LRESULT *result);
-#ifndef Q_OS_WINCE //MinMax maybe define struct if not available
     void applyToMinMaxInfo(DWORD style, DWORD exStyle, MINMAXINFO *mmi) const;
     void applyToMinMaxInfo(HWND hwnd, MINMAXINFO *mmi) const;
-#endif
     bool validSize(const QSize &s) const;
 
     static inline QPoint mapToGlobal(HWND hwnd, const QPoint &);
@@ -83,10 +78,8 @@ struct QWindowCreationContext
     QWindowCreationContext(const QWindow *w, const QRect &r,
                            const QMargins &customMargins,
                            DWORD style, DWORD exStyle);
-#ifndef Q_OS_WINCE //MinMax maybe define struct if not available
     void applyToMinMaxInfo(MINMAXINFO *mmi) const
         { geometryHint.applyToMinMaxInfo(style, exStyle, mmi); }
-#endif
 
     QWindowsGeometryHint geometryHint;
     const QWindow *window;
@@ -293,10 +286,8 @@ public:
 
     HDC getDC();
     void releaseDC();
-#ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO
     void getSizeHints(MINMAXINFO *mmi) const;
     bool handleNonClientHitTest(const QPoint &globalPos, LRESULT *result) const;
-#endif // !Q_OS_WINCE
 
 #ifndef QT_NO_CURSOR
     CursorHandlePtr cursor() const { return m_cursor; }
@@ -316,12 +307,10 @@ public:
     void invalidateSurface() Q_DECL_OVERRIDE;
     void aboutToMakeCurrent();
 
-#ifndef Q_OS_WINCE
     void setAlertState(bool enabled) Q_DECL_OVERRIDE;
     bool isAlertState() const Q_DECL_OVERRIDE { return testFlag(AlertState); }
     void alertWindow(int durationMs = 0);
     void stopAlertWindow();
-#endif
 
     static void setTouchWindowTouchTypeStatic(QWindow *window, QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes);
     void registerTouchWindow(QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes = QWindowsWindowFunctions::NormalTouch);
@@ -355,9 +344,6 @@ private:
     unsigned m_savedStyle;
     QRect m_savedFrameGeometry;
     const QSurfaceFormat m_format;
-#ifdef Q_OS_WINCE
-    bool m_previouslyHidden;
-#endif
     HICON m_iconSmall;
     HICON m_iconBig;
     void *m_surface;
@@ -366,11 +352,9 @@ private:
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const RECT &r);
 QDebug operator<<(QDebug d, const POINT &);
-#  ifndef Q_OS_WINCE
 QDebug operator<<(QDebug d, const MINMAXINFO &i);
 QDebug operator<<(QDebug d, const NCCALCSIZE_PARAMS &p);
 QDebug operator<<(QDebug d, const WINDOWPLACEMENT &);
-#  endif // !Q_OS_WINCE
 #endif // !QT_NO_DEBUG_STREAM
 
 // ---------- QWindowsGeometryHint inline functions.
@@ -434,11 +418,7 @@ inline void QWindowsWindow::destroyIcon()
 
 inline bool QWindowsWindow::isLayered() const
 {
-#ifndef Q_OS_WINCE
     return GetWindowLongPtr(m_data.hwnd, GWL_EXSTYLE) & WS_EX_LAYERED;
-#else
-    return false;
-#endif
 }
 
 QT_END_NAMESPACE

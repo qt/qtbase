@@ -637,7 +637,6 @@ void QWindowsDialogHelperBase<BaseClass>::stopTimer()
     }
 }
 
-#ifndef Q_OS_WINCE
 // Find a file dialog window created by IFileDialog by process id, window
 // title and class, which starts with a hash '#'.
 
@@ -673,7 +672,6 @@ static inline HWND findDialogWindow(const QString &title)
     EnumWindows(findDialogEnumWindowsProc, reinterpret_cast<LPARAM>(&context));
     return context.hwnd;
 }
-#endif // !Q_OS_WINCE
 
 template <class BaseClass>
 void QWindowsDialogHelperBase<BaseClass>::hide()
@@ -989,7 +987,6 @@ void QWindowsNativeFileDialogBase::setWindowTitle(const QString &title)
 
 IShellItem *QWindowsNativeFileDialogBase::shellItem(const QUrl &url)
 {
-#ifndef Q_OS_WINCE
     if (url.isLocalFile()) {
         if (!QWindowsContext::shell32dll.sHCreateItemFromParsingName)
             return Q_NULLPTR;
@@ -1032,9 +1029,6 @@ IShellItem *QWindowsNativeFileDialogBase::shellItem(const QUrl &url)
     } else {
         qWarning() << __FUNCTION__ << ": Unhandled scheme: " << url.scheme();
     }
-#else // !Q_OS_WINCE
-    Q_UNUSED(url)
-#endif
     return 0;
 }
 
@@ -1050,11 +1044,9 @@ void QWindowsNativeFileDialogBase::setDirectory(const QUrl &directory)
 
 QString QWindowsNativeFileDialogBase::directory() const
 {
-#ifndef Q_OS_WINCE
     IShellItem *item = 0;
     if (m_fileDialog && SUCCEEDED(m_fileDialog->GetFolder(&item)) && item)
         return QWindowsNativeFileDialogBase::itemPath(item);
-#endif
     return QString();
 }
 
@@ -1106,7 +1098,7 @@ void QWindowsNativeFileDialogBase::setMode(QFileDialogOptions::FileMode mode,
         qErrnoWarning("%s: SetOptions() failed", __FUNCTION__);
 }
 
-#if !defined(Q_OS_WINCE) && defined(__IShellLibrary_INTERFACE_DEFINED__) // Windows SDK 7
+#if defined(__IShellLibrary_INTERFACE_DEFINED__) // Windows SDK 7
 
 // Helper for "Libraries": collections of folders appearing from Windows 7
 // on, visible in the file dialogs.
@@ -1159,7 +1151,7 @@ QString QWindowsNativeFileDialogBase::libraryItemDefaultSaveFolder(IShellItem *i
     return result;
 }
 
-#else // !Q_OS_WINCE && __IShellLibrary_INTERFACE_DEFINED__
+#else // __IShellLibrary_INTERFACE_DEFINED__
 
 QList<QUrl> QWindowsNativeFileDialogBase::libraryItemFolders(IShellItem *)
 {
@@ -1171,7 +1163,7 @@ QString QWindowsNativeFileDialogBase::libraryItemDefaultSaveFolder(IShellItem *)
     return QString();
 }
 
-#endif // Q_OS_WINCE || !__IShellLibrary_INTERFACE_DEFINED__
+#endif // !__IShellLibrary_INTERFACE_DEFINED__
 
 QString QWindowsNativeFileDialogBase::itemPath(IShellItem *item)
 {
@@ -1417,14 +1409,12 @@ bool QWindowsNativeFileDialogBase::onFileOk()
 void QWindowsNativeFileDialogBase::close()
 {
     m_fileDialog->Close(S_OK);
-#ifndef Q_OS_WINCE
     // IFileDialog::Close() does not work unless invoked from a callback.
     // Try to find the window and send it a WM_CLOSE in addition.
     const HWND hwnd = findDialogWindow(m_title);
     qCDebug(lcQpaDialogs) << __FUNCTION__ << "closing" << hwnd;
     if (hwnd && IsWindowVisible(hwnd))
         PostMessageW(hwnd, WM_CLOSE, 0, 0);
-#endif // !Q_OS_WINCE
 }
 
 HRESULT QWindowsNativeFileDialogEventHandler::OnFolderChanging(IFileDialog *, IShellItem *item)
@@ -1724,8 +1714,6 @@ QString QWindowsFileDialogHelper::selectedNameFilter() const
 {
     return m_data.selectedNameFilter();
 }
-
-#ifndef Q_OS_WINCE
 
 /*!
     \class QWindowsXpNativeFileDialog
@@ -2050,8 +2038,6 @@ QString QWindowsXpFileDialogHelper::selectedNameFilter() const
     return m_data.selectedNameFilter();
 }
 
-#endif // Q_OS_WINCE
-
 /*!
     \class QWindowsNativeColorDialog
     \brief Native Windows color dialog.
@@ -2204,17 +2190,13 @@ QPlatformDialogHelper *createHelper(QPlatformTheme::DialogType type)
     if (QWindowsIntegration::instance()->options() & QWindowsIntegration::NoNativeDialogs)
         return 0;
     switch (type) {
-    case QPlatformTheme::FileDialog:
-#ifndef Q_OS_WINCE // Note: "Windows XP Professional x64 Edition has version number WV_5_2 (WV_2003).
+    case QPlatformTheme::FileDialog: // Note: "Windows XP Professional x64 Edition has version number WV_5_2 (WV_2003).
         if (QWindowsIntegration::instance()->options() & QWindowsIntegration::XpNativeDialogs
             || QSysInfo::windowsVersion() <= QSysInfo::WV_2003) {
             return new QWindowsXpFileDialogHelper();
         }
         if (QSysInfo::windowsVersion() > QSysInfo::WV_2003)
             return new QWindowsFileDialogHelper();
-#else
-        return new QWindowsFileDialogHelper();
-#endif // Q_OS_WINCE
     case QPlatformTheme::ColorDialog:
 #ifdef USE_NATIVE_COLOR_DIALOG
         return new QWindowsColorDialogHelper();

@@ -42,7 +42,7 @@
 
 #include "qtwindowsglobal.h"
 
-#if !defined(QT_NO_TABLETEVENT) && !defined(Q_OS_WINCE)
+#if !defined(QT_NO_TABLETEVENT)
 
 #include <QtCore/QVector>
 #include <QtCore/QPointF>
@@ -143,5 +143,5 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // !QT_NO_TABLETEVENT && !Q_OS_WINCE
+#endif // !QT_NO_TABLETEVENT
 #endif // QWINDOWSTABLETSUPPORT_H

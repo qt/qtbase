@@ -39,7 +39,6 @@
 
 #include "qwindowsinternalmimedata.h"
 #include "qwindowscontext.h"
-#include "qplatformfunctions_wince.h"
 #include "qwindowsmime.h"
 #include <QDebug>
 /*!

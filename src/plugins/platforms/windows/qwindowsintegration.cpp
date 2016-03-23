@@ -64,7 +64,7 @@
 
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qwindowsysteminterface.h>
-#if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
+#ifndef QT_NO_SESSIONMANAGER
 #  include "qwindowssessionmanager.h"
 #endif
 #include <QtGui/qtouchdevice.h>
@@ -102,7 +102,7 @@ QT_BEGIN_NAMESPACE
 
     It should compile with:
     \list
-    \li Microsoft Visual Studio 2008 or later (using the Microsoft Windows SDK,
+    \li Microsoft Visual Studio 2013 or later (using the Microsoft Windows SDK,
         (\c Q_CC_MSVC).
     \li Stock \l{http://mingw.org/}{MinGW} (\c Q_CC_MINGW).
         This version ships with headers that are missing a lot of WinAPI.
@@ -112,7 +112,6 @@ QT_BEGIN_NAMESPACE
         (\c Q_CC_MINGW and \c __MINGW64_VERSION_MAJOR indicating the version).
         MinGW-w64 provides more complete headers (compared to stock MinGW from mingw.org),
         including a considerable part of the Windows SDK.
-    \li Visual Studio 2008 for Windows Embedded (\c Q_OS_WINCE).
     \endlist
 
     The file \c qtwindows_additional.h contains defines and declarations that
@@ -214,9 +213,7 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
     : m_options(0)
     , m_fontDatabase(0)
 {
-#ifndef Q_OS_WINCE
     Q_INIT_RESOURCE(openglblacklists);
-#endif
 
     static bool dpiAwarenessSet = false;
     int tabletAbsoluteRange = -1;
@@ -467,46 +464,16 @@ QWindowsStaticOpenGLContext *QWindowsIntegration::staticOpenGLContext()
 }
 #endif // !QT_NO_OPENGL
 
-/* Workaround for QTBUG-24205: In 'Auto', pick the FreeType engine for
- * QML2 applications. */
-
-#ifdef Q_OS_WINCE
-// It's not easy to detect if we are running a QML application
-// Let's try to do so by checking if the Qt Quick module is loaded.
-inline bool isQMLApplication()
-{
-    // check if the Qt Quick module is loaded
-#ifdef _DEBUG
-    HMODULE handle = GetModuleHandle(L"Qt5Quick" QT_LIBINFIX L"d.dll");
-#else
-    HMODULE handle = GetModuleHandle(L"Qt5Quick" QT_LIBINFIX L".dll");
-#endif
-    return (handle != NULL);
-}
-#endif
-
 QPlatformFontDatabase *QWindowsIntegration::fontDatabase() const
 {
     if (!d->m_fontDatabase) {
 #ifdef QT_NO_FREETYPE
         d->m_fontDatabase = new QWindowsFontDatabase();
 #else // QT_NO_FREETYPE
-        if (d->m_options & QWindowsIntegration::FontDatabaseFreeType) {
+        if (d->m_options & QWindowsIntegration::FontDatabaseFreeType)
             d->m_fontDatabase = new QWindowsFontDatabaseFT;
-        } else if (d->m_options & QWindowsIntegration::FontDatabaseNative){
+        else
             d->m_fontDatabase = new QWindowsFontDatabase;
-        } else {
-#ifndef Q_OS_WINCE
-            d->m_fontDatabase = new QWindowsFontDatabase;
-#else
-            if (isQMLApplication()) {
-                qCDebug(lcQpaFonts) << "QML application detected, using FreeType rendering";
-                d->m_fontDatabase = new QWindowsFontDatabaseFT;
-            }
-            else
-                d->m_fontDatabase = new QWindowsFontDatabase;
-#endif
-        }
 #endif // QT_NO_FREETYPE
     }
     return d->m_fontDatabase;
@@ -594,7 +561,7 @@ unsigned QWindowsIntegration::options() const
     return d->m_options;
 }
 
-#if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
+#if !defined(QT_NO_SESSIONMANAGER)
 QPlatformSessionManager *QWindowsIntegration::createPlatformSessionManager(const QString &id, const QString &key) const
 {
     return new QWindowsSessionManager(id, key);

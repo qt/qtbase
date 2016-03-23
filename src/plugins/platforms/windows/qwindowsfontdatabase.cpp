@@ -57,10 +57,6 @@
 
 #include <wchar.h>
 
-#ifdef Q_OS_WINCE
-#  include "qplatformfunctions_wince.h"
-#endif
-
 #if !defined(QT_NO_DIRECTWRITE)
 #  include <dwrite.h>
 #  include <d2d1.h>
@@ -931,17 +927,6 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
         quint32 codePageRange[2] = {
             signature->fsCsb[0], signature->fsCsb[1]
         };
-#ifdef Q_OS_WINCE
-        if (signature->fsUsb[0] == 0) {
-            // If the unicode ranges bit mask is zero then
-            // EnumFontFamiliesEx failed to determine it properly.
-            // In this case we just pretend that the font supports all languages.
-            unicodeRange[0] = 0xbfffffff;   // second most significant bit must be zero
-            unicodeRange[1] = 0xffffffff;
-            unicodeRange[2] = 0xffffffff;
-            unicodeRange[3] = 0xffffffff;
-        }
-#endif
         writingSystems = QPlatformFontDatabase::writingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
         // ### Hack to work around problem with Thai text on Windows 7. Segoe UI contains
         // the symbol for Baht, and Windows thus reports that it supports the Thai script.
@@ -1101,9 +1086,8 @@ QWindowsFontEngineDataPtr sharedFontData()
 }
 #endif // QT_NO_THREAD
 
-#ifndef Q_OS_WINCE
 extern Q_GUI_EXPORT bool qt_needs_a8_gamma_correction;
-#endif
+
 QWindowsFontDatabase::QWindowsFontDatabase()
 {
     // Properties accessed by QWin32PrintEngine (Qt Print Support)
@@ -1117,9 +1101,7 @@ QWindowsFontDatabase::QWindowsFontDatabase()
         qCDebug(lcQpaFonts) << __FUNCTION__ << "Clear type: "
             << data->clearTypeEnabled << "gamma: " << data->fontSmoothingGamma;
     }
-#ifndef Q_OS_WINCE
     qt_needs_a8_gamma_correction = true;
-#endif
 }
 
 QWindowsFontDatabase::~QWindowsFontDatabase()
@@ -1570,14 +1552,12 @@ LOGFONT QWindowsFontDatabase::fontDefToLOGFONT(const QFontDef &request)
     int strat = OUT_DEFAULT_PRECIS;
     if (request.styleStrategy & QFont::PreferBitmap) {
         strat = OUT_RASTER_PRECIS;
-#ifndef Q_OS_WINCE
     } else if (request.styleStrategy & QFont::PreferDevice) {
         strat = OUT_DEVICE_PRECIS;
     } else if (request.styleStrategy & QFont::PreferOutline) {
         strat = OUT_OUTLINE_PRECIS;
     } else if (request.styleStrategy & QFont::ForceOutline) {
         strat = OUT_TT_ONLY_PRECIS;
-#endif
     }
 
     lf.lfOutPrecision   = strat;
@@ -1586,10 +1566,8 @@ LOGFONT QWindowsFontDatabase::fontDefToLOGFONT(const QFontDef &request)
 
     if (request.styleStrategy & QFont::PreferMatch)
         qual = DRAFT_QUALITY;
-#ifndef Q_OS_WINCE
     else if (request.styleStrategy & QFont::PreferQuality)
         qual = PROOF_QUALITY;
-#endif
 
     if (request.styleStrategy & QFont::PreferAntialias) {
         if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP && !(request.styleStrategy & QFont::NoSubpixelAntialias)) {

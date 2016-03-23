@@ -95,13 +95,9 @@ static void *resolveFunc(HMODULE lib, const char *name)
     return proc;
 }
 #else
-static void *resolveFunc(HMODULE lib, const char *name)
+static inline void *resolveFunc(HMODULE lib, const char *name)
 {
-# ifndef Q_OS_WINCE
-    return (void *) ::GetProcAddress(lib, name);
-# else
-    return (void *) ::GetProcAddress(lib, (const wchar_t *) QString::fromLatin1(name).utf16());
-# endif // Q_OS_WINCE
+    return ::GetProcAddress(lib, name);
 }
 #endif // Q_CC_MINGW
 
@@ -121,7 +117,7 @@ void *QWindowsLibEGL::resolve(const char *name)
 bool QWindowsLibEGL::init()
 {
     const char dllName[] = QT_STRINGIFY(LIBEGL_NAME)
-#if defined(QT_DEBUG) && !defined(Q_OS_WINCE)
+#if defined(QT_DEBUG)
     "d"
 #endif
     "";
@@ -178,7 +174,7 @@ bool QWindowsLibGLESv2::init()
 {
 
     const char dllName[] = QT_STRINGIFY(LIBGLESV2_NAME)
-#if defined(QT_DEBUG) && !defined(Q_OS_WINCE)
+#if defined(QT_DEBUG)
     "d"
 #endif
     "";

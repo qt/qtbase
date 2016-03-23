@@ -149,15 +149,9 @@ QT_BEGIN_NAMESPACE
 
 QWindowsOpengl32DLL QOpenGLStaticContext::opengl32;
 
-void *QWindowsOpengl32DLL::resolve(const char *name)
+FARPROC QWindowsOpengl32DLL::resolve(const char *name)
 {
-#ifndef Q_OS_WINCE
-    void *proc = m_lib ? (void *) ::GetProcAddress(m_lib, name) : 0;
-#else
-    void *proc = m_lib ? (void *) ::GetProcAddress(m_lib, (const wchar_t *) QString::fromLatin1(name).utf16()) : 0;
-#endif
-
-    return proc;
+    return m_lib ? ::GetProcAddress(m_lib, name) : nullptr;
 }
 
 bool QWindowsOpengl32DLL::init(bool softwareRendering)
