@@ -327,7 +327,7 @@ public:
     QT_ASCII_CAST_WARN int indexOf(const QString &s, int from = 0) const;
     QT_ASCII_CAST_WARN int lastIndexOf(const QString &s, int from = -1) const;
 #endif
-#ifndef QT_NO_CAST_FROM_ASCII
+#if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
     inline QT_ASCII_CAST_WARN bool operator==(const QString &s2) const;
     inline QT_ASCII_CAST_WARN bool operator!=(const QString &s2) const;
     inline QT_ASCII_CAST_WARN bool operator<(const QString &s2) const;
