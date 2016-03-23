@@ -210,6 +210,7 @@ bool QSslConfiguration::operator==(const QSslConfiguration &other) const
         d->privateKey == other.d->privateKey &&
         d->sessionCipher == other.d->sessionCipher &&
         d->sessionProtocol == other.d->sessionProtocol &&
+        d->preSharedKeyIdentityHint == other.d->preSharedKeyIdentityHint &&
         d->ciphers == other.d->ciphers &&
         d->ellipticCurves == other.d->ellipticCurves &&
         d->caCertificates == other.d->caCertificates &&
@@ -260,6 +261,7 @@ bool QSslConfiguration::isNull() const
             d->sslOptions == QSslConfigurationPrivate::defaultSslOptions &&
             d->sslSession.isNull() &&
             d->sslSessionTicketLifeTimeHint == -1 &&
+            d->preSharedKeyIdentityHint.isNull() &&
             d->nextAllowedProtocols.isEmpty() &&
             d->nextNegotiatedProtocol.isNull() &&
             d->nextProtocolNegotiationStatus == QSslConfiguration::NextProtocolNegotiationNone);
@@ -807,6 +809,32 @@ void QSslConfiguration::setEllipticCurves(const QVector<QSslEllipticCurve> &curv
 QVector<QSslEllipticCurve> QSslConfiguration::supportedEllipticCurves()
 {
     return QSslSocketPrivate::supportedEllipticCurves();
+}
+
+/*!
+    \since 5.8
+
+    Returns the identity hint.
+
+    \sa setPreSharedKeyIdentityHint()
+*/
+QByteArray QSslConfiguration::preSharedKeyIdentityHint() const
+{
+    return d->preSharedKeyIdentityHint;
+}
+
+/*!
+    \since 5.8
+
+    Sets the identity hint for a preshared key authentication. This will affect the next
+    initiated handshake; calling this function on an already-encrypted socket
+    will not affect the socket's identity hint.
+
+    The identity hint is used in QSslSocket::SslServerMode only!
+*/
+void QSslConfiguration::setPreSharedKeyIdentityHint(const QByteArray &hint)
+{
+    d->preSharedKeyIdentityHint = hint;
 }
 
 /*!

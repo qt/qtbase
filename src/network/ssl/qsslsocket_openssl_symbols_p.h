@@ -376,6 +376,9 @@ void *q_SSL_get_ex_data(const SSL *ssl, int idx);
 #ifndef OPENSSL_NO_PSK
 typedef unsigned int (*q_psk_client_callback_t)(SSL *ssl, const char *hint, char *identity, unsigned int max_identity_len, unsigned char *psk, unsigned int max_psk_len);
 void q_SSL_set_psk_client_callback(SSL *ssl, q_psk_client_callback_t callback);
+typedef unsigned int (*q_psk_server_callback_t)(SSL *ssl, const char *identity, unsigned char *psk, unsigned int max_psk_len);
+void q_SSL_set_psk_server_callback(SSL *ssl, q_psk_server_callback_t callback);
+int q_SSL_CTX_use_psk_identity_hint(SSL_CTX *ctx, const char *hint);
 #endif // OPENSSL_NO_PSK
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
 #ifndef OPENSSL_NO_SSL2

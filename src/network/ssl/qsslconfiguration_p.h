@@ -88,6 +88,7 @@ public:
           peerSessionShared(false),
           sslOptions(QSslConfigurationPrivate::defaultSslOptions),
           sslSessionTicketLifeTimeHint(-1),
+          preSharedKeyIdentityHint(),
           nextProtocolNegotiationStatus(QSslConfiguration::NextProtocolNegotiationNone)
     { }
 
@@ -120,6 +121,8 @@ public:
     int sslSessionTicketLifeTimeHint;
 
     QSslKey ephemeralServerKey;
+
+    QByteArray preSharedKeyIdentityHint;
 
     QList<QByteArray> nextAllowedProtocols;
     QByteArray nextNegotiatedProtocol;

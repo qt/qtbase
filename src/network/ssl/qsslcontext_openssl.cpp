@@ -344,6 +344,11 @@ init_context:
     }
 #endif // OPENSSL_NO_EC
 
+#ifndef OPENSSL_NO_PSK
+    if (!client)
+        q_SSL_CTX_use_psk_identity_hint(sslContext->ctx, sslContext->sslConfiguration.preSharedKeyIdentityHint().constData());
+#endif // OPENSSL_NO_PSK
+
     const QVector<QSslEllipticCurve> qcurves = sslContext->sslConfiguration.ellipticCurves();
     if (!qcurves.isEmpty()) {
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_EC)

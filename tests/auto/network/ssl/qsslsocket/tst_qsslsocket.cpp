@@ -230,6 +230,7 @@ private slots:
     void ephemeralServerKey_data();
     void ephemeralServerKey();
     void allowedProtocolNegotiation();
+    void pskServer();
 #endif
 
     static void exitLoop()
@@ -3036,8 +3037,12 @@ class PskProvider : public QObject
     Q_OBJECT
 
 public:
+    bool m_server;
+    QByteArray m_identity;
+    QByteArray m_psk;
+
     explicit PskProvider(QObject *parent = 0)
-        : QObject(parent)
+        : QObject(parent), m_server(false)
     {
     }
 
@@ -3056,7 +3061,11 @@ public slots:
     {
         QVERIFY(authenticator);
         QCOMPARE(authenticator->identityHint(), PSK_SERVER_IDENTITY_HINT);
-        QVERIFY(authenticator->maximumIdentityLength() > 0);
+        if (m_server)
+            QCOMPARE(authenticator->maximumIdentityLength(), 0);
+        else
+            QVERIFY(authenticator->maximumIdentityLength() > 0);
+
         QVERIFY(authenticator->maximumPreSharedKeyLength() > 0);
 
         if (!m_identity.isEmpty()) {
@@ -3069,12 +3078,61 @@ public slots:
             QCOMPARE(authenticator->preSharedKey(), m_psk);
         }
     }
-
-private:
-    QByteArray m_identity;
-    QByteArray m_psk;
 };
 
+class PskServer : public QTcpServer
+{
+    Q_OBJECT
+public:
+    PskServer()
+        : socket(0),
+          config(QSslConfiguration::defaultConfiguration()),
+          ignoreSslErrors(true),
+          peerVerifyMode(QSslSocket::AutoVerifyPeer),
+          protocol(QSsl::TlsV1_0),
+          m_pskProvider()
+    {
+        m_pskProvider.m_server = true;
+    }
+    QSslSocket *socket;
+    QSslConfiguration config;
+    bool ignoreSslErrors;
+    QSslSocket::PeerVerifyMode peerVerifyMode;
+    QSsl::SslProtocol protocol;
+    QString ciphers;
+    PskProvider m_pskProvider;
+
+protected:
+    void incomingConnection(qintptr socketDescriptor)
+    {
+        socket = new QSslSocket(this);
+        socket->setSslConfiguration(config);
+        socket->setPeerVerifyMode(peerVerifyMode);
+        socket->setProtocol(protocol);
+        if (ignoreSslErrors)
+            connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
+
+        if (!ciphers.isEmpty()) {
+            socket->setCiphers(ciphers);
+        }
+
+        QVERIFY(socket->setSocketDescriptor(socketDescriptor, QAbstractSocket::ConnectedState));
+        QVERIFY(!socket->peerAddress().isNull());
+        QVERIFY(socket->peerPort() != 0);
+        QVERIFY(!socket->localAddress().isNull());
+        QVERIFY(socket->localPort() != 0);
+
+        connect(socket, &QSslSocket::preSharedKeyAuthenticationRequired, &m_pskProvider, &PskProvider::providePsk);
+
+        socket->startServerEncryption();
+    }
+
+protected slots:
+    void ignoreErrorSlot()
+    {
+        socket->ignoreSslErrors();
+    }
+};
 void tst_QSslSocket::simplePskConnect_data()
 {
     QTest::addColumn<PskConnectTestType>("pskTestType");
@@ -3413,6 +3471,90 @@ void tst_QSslSocket::allowedProtocolNegotiation()
     QVERIFY(server.socket->sslConfiguration().nextNegotiatedProtocol() == expectedNegotiated);
 
 #endif // OPENSSL_VERSION_NUMBER
+}
+
+void tst_QSslSocket::pskServer()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (!QSslSocket::supportsSsl() || setProxy)
+        return;
+
+    QSslSocket socket;
+    this->socket = &socket;
+
+    QSignalSpy connectedSpy(&socket, SIGNAL(connected()));
+    QVERIFY(connectedSpy.isValid());
+
+    QSignalSpy disconnectedSpy(&socket, SIGNAL(disconnected()));
+    QVERIFY(disconnectedSpy.isValid());
+
+    QSignalSpy connectionEncryptedSpy(&socket, SIGNAL(encrypted()));
+    QVERIFY(connectionEncryptedSpy.isValid());
+
+    QSignalSpy pskAuthenticationRequiredSpy(&socket, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)));
+    QVERIFY(pskAuthenticationRequiredSpy.isValid());
+
+    connect(&socket, SIGNAL(connected()), this, SLOT(exitLoop()));
+    connect(&socket, SIGNAL(disconnected()), this, SLOT(exitLoop()));
+    connect(&socket, SIGNAL(modeChanged(QSslSocket::SslMode)), this, SLOT(exitLoop()));
+    connect(&socket, SIGNAL(encrypted()), this, SLOT(exitLoop()));
+    connect(&socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(exitLoop()));
+    connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(exitLoop()));
+    connect(&socket, SIGNAL(peerVerifyError(QSslError)), this, SLOT(exitLoop()));
+    connect(&socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(exitLoop()));
+
+    // force a PSK cipher w/o auth
+    socket.setCiphers(PSK_CIPHER_WITHOUT_AUTH);
+
+    PskProvider provider;
+    provider.setIdentity(PSK_CLIENT_IDENTITY);
+    provider.setPreSharedKey(PSK_CLIENT_PRESHAREDKEY);
+    connect(&socket, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)), &provider, SLOT(providePsk(QSslPreSharedKeyAuthenticator*)));
+    socket.setPeerVerifyMode(QSslSocket::VerifyNone);
+
+    PskServer server;
+    server.m_pskProvider.setIdentity(provider.m_identity);
+    server.m_pskProvider.setPreSharedKey(provider.m_psk);
+    server.config.setPreSharedKeyIdentityHint(PSK_SERVER_IDENTITY_HINT);
+    QVERIFY(server.listen());
+
+    // Start connecting
+    socket.connectToHost(QHostAddress(QHostAddress::LocalHost).toString(), server.serverPort());
+    enterLoop(5);
+
+    // Entered connected state
+    QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
+    QCOMPARE(socket.mode(), QSslSocket::UnencryptedMode);
+    QVERIFY(!socket.isEncrypted());
+    QCOMPARE(connectedSpy.count(), 1);
+    QCOMPARE(disconnectedSpy.count(), 0);
+
+    // Enter encrypted mode
+    socket.startClientEncryption();
+    QCOMPARE(socket.mode(), QSslSocket::SslClientMode);
+    QVERIFY(!socket.isEncrypted());
+    QCOMPARE(connectionEncryptedSpy.count(), 0);
+
+    // Start handshake.
+    enterLoop(10);
+
+    // We must get the PSK signal in all cases
+    QCOMPARE(pskAuthenticationRequiredSpy.count(), 1);
+
+    QCOMPARE(connectionEncryptedSpy.count(), 1);
+    QVERIFY(socket.isEncrypted());
+    QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
+
+    // check writing
+    socket.write("Hello from Qt TLS/PSK!");
+    QVERIFY(socket.waitForBytesWritten());
+
+    // disconnect
+    socket.disconnectFromHost();
+    enterLoop(10);
+
+    QCOMPARE(socket.state(), QAbstractSocket::UnconnectedState);
+    QCOMPARE(disconnectedSpy.count(), 1);
 }
 
 #endif // QT_NO_OPENSSL

@@ -141,6 +141,9 @@ public:
     void setEllipticCurves(const QVector<QSslEllipticCurve> &curves);
     static QVector<QSslEllipticCurve> supportedEllipticCurves();
 
+    QByteArray preSharedKeyIdentityHint() const;
+    void setPreSharedKeyIdentityHint(const QByteArray &hint);
+
     static QSslConfiguration defaultConfiguration();
     static void setDefaultConfiguration(const QSslConfiguration &configuration);
 

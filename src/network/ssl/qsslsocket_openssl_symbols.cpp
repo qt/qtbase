@@ -300,6 +300,8 @@ DEFINEFUNC2(void *, SSL_get_ex_data, const SSL *ssl, ssl, int idx, idx, return N
 #endif
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L && !defined(OPENSSL_NO_PSK)
 DEFINEFUNC2(void, SSL_set_psk_client_callback, SSL* ssl, ssl, q_psk_client_callback_t callback, callback, return, DUMMYARG)
+DEFINEFUNC2(void, SSL_set_psk_server_callback, SSL* ssl, ssl, q_psk_server_callback_t callback, callback, return, DUMMYARG)
+DEFINEFUNC2(int, SSL_CTX_use_psk_identity_hint, SSL_CTX* ctx, ctx, const char *hint, hint, return 0, return)
 #endif
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
 #ifndef OPENSSL_NO_SSL2
@@ -901,6 +903,8 @@ bool q_resolveOpenSslSymbols()
 #endif
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L && !defined(OPENSSL_NO_PSK)
     RESOLVEFUNC(SSL_set_psk_client_callback)
+    RESOLVEFUNC(SSL_set_psk_server_callback)
+    RESOLVEFUNC(SSL_CTX_use_psk_identity_hint)
 #endif
     RESOLVEFUNC(SSL_write)
 #ifndef OPENSSL_NO_SSL2

@@ -201,6 +201,15 @@ static unsigned int q_ssl_psk_client_callback(SSL *ssl,
     Q_ASSERT(d);
     return d->tlsPskClientCallback(hint, identity, max_identity_len, psk, max_psk_len);
 }
+
+static unsigned int q_ssl_psk_server_callback(SSL *ssl,
+                                              const char *identity,
+                                              unsigned char *psk, unsigned int max_psk_len)
+{
+    QSslSocketBackendPrivate *d = reinterpret_cast<QSslSocketBackendPrivate *>(q_SSL_get_ex_data(ssl, QSslSocketBackendPrivate::s_indexForSSLExtraData));
+    Q_ASSERT(d);
+    return d->tlsPskServerCallback(identity, psk, max_psk_len);
+}
 #endif
 } // extern "C"
 
@@ -436,8 +445,12 @@ bool QSslSocketBackendPrivate::initSslContext()
 
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L && !defined(OPENSSL_NO_PSK)
     // Set the client callback for PSK
-    if (q_SSLeay() >= 0x10001000L && mode == QSslSocket::SslClientMode)
-        q_SSL_set_psk_client_callback(ssl, &q_ssl_psk_client_callback);
+    if (q_SSLeay() >= 0x10001000L) {
+        if (mode == QSslSocket::SslClientMode)
+            q_SSL_set_psk_client_callback(ssl, &q_ssl_psk_client_callback);
+        else if (mode == QSslSocket::SslServerMode)
+            q_SSL_set_psk_server_callback(ssl, &q_ssl_psk_server_callback);
+    }
 #endif
 
     return true;
@@ -1255,6 +1268,31 @@ unsigned int QSslSocketBackendPrivate::tlsPskClientCallback(const char *hint,
     ::memcpy(identity, authenticator.identity().constData(), identityLength);
     identity[identityLength] = 0;
 
+    const int pskLength = qMin(authenticator.preSharedKey().length(), authenticator.maximumPreSharedKeyLength());
+    ::memcpy(psk, authenticator.preSharedKey().constData(), pskLength);
+    return pskLength;
+}
+
+unsigned int QSslSocketBackendPrivate::tlsPskServerCallback(const char *identity,
+                                                            unsigned char *psk, unsigned int max_psk_len)
+{
+    QSslPreSharedKeyAuthenticator authenticator;
+
+    // Fill in some read-only fields (for the user)
+    authenticator.d->identityHint = configuration.preSharedKeyIdentityHint;
+    authenticator.d->identity = identity;
+    authenticator.d->maximumIdentityLength = 0; // user cannot set an identity
+    authenticator.d->maximumPreSharedKeyLength = int(max_psk_len);
+
+    // Let the client provide the remaining bits...
+    Q_Q(QSslSocket);
+    emit q->preSharedKeyAuthenticationRequired(&authenticator);
+
+    // No PSK set? Return now to make the handshake fail
+    if (authenticator.preSharedKey().isEmpty())
+        return 0;
+
+    // Copy data back into OpenSSL
     const int pskLength = qMin(authenticator.preSharedKey().length(), authenticator.maximumPreSharedKeyLength());
     ::memcpy(psk, authenticator.preSharedKey().constData(), pskLength);
     return pskLength;
