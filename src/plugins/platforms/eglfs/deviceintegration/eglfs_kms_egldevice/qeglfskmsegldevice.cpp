@@ -1,6 +1,5 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
 ** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
 **
@@ -38,44 +37,43 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSKMSEGLDEVICEINTEGRATION_H
-#define QEGLFSKMSEGLDEVICEINTEGRATION_H
+#include "qeglfskmsegldevice.h"
+#include "qeglfskmsegldevicescreen.h"
 
-#include <qeglfskmsintegration.h>
+#include <QtCore/private/qcore_unix_p.h>
 
-#include <xf86drm.h>
-#include <xf86drmMode.h>
-
-#include <QtPlatformSupport/private/qeglstreamconvenience_p.h>
-
-QT_BEGIN_NAMESPACE
-
-class QEglFSKmsEglDeviceIntegration : public QEglFSKmsIntegration
+QEglFSKmsEglDevice::QEglFSKmsEglDevice(QEglFSKmsIntegration *integration, const QString &path)
+    : QEglFSKmsDevice(integration, path)
 {
-public:
-    QEglFSKmsEglDeviceIntegration();
+}
 
-    EGLint surfaceType() const Q_DECL_OVERRIDE;
-    EGLDisplay createDisplay(EGLNativeDisplayType nativeDisplay) Q_DECL_OVERRIDE;
-    bool supportsSurfacelessContexts() const Q_DECL_OVERRIDE;
-    bool supportsPBuffers() const Q_DECL_OVERRIDE;
-    QEglFSWindow *createWindow(QWindow *window) const Q_DECL_OVERRIDE;
+bool QEglFSKmsEglDevice::open()
+{
+    Q_ASSERT(fd() == -1);
 
-    virtual bool separateScreens() const Q_DECL_OVERRIDE;
-protected:
-    QEglFSKmsDevice *createDevice(const QString &devicePath) Q_DECL_OVERRIDE;
+    int fd = drmOpen(devicePath().toLocal8Bit().constData(), Q_NULLPTR);
+    if (Q_UNLIKELY(fd < 0))
+        qFatal("Could not open DRM device");
 
-private:
-    bool setup_kms();
-    bool query_egl_device();
+    setFd(fd);
 
-    EGLDeviceEXT m_egl_device;
+    return true;
+}
 
-    friend class QEglJetsonTK1Window;
-    // EGLStream infrastructure
-    QEGLStreamConvenience *m_funcs;
-};
+void QEglFSKmsEglDevice::close()
+{
+    if (qt_safe_close(fd()) == -1)
+        qErrnoWarning("Could not close DRM device");
 
-QT_END_NAMESPACE
+    setFd(-1);
+}
 
-#endif
+EGLNativeDisplayType QEglFSKmsEglDevice::device() const
+{
+    return 0;
+}
+
+QEglFSKmsScreen *QEglFSKmsEglDevice::createScreen(QEglFSKmsIntegration *integration, QEglFSKmsDevice *device, QEglFSKmsOutput output, QPoint position)
+{
+    return new QEglFSKmsEglDeviceScreen(integration, device, output, position);
+}

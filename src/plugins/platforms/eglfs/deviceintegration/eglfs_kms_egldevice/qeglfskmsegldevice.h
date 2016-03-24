@@ -1,6 +1,5 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
 ** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
 **
@@ -38,44 +37,25 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSKMSEGLDEVICEINTEGRATION_H
-#define QEGLFSKMSEGLDEVICEINTEGRATION_H
+#ifndef QEGLFSKMSEGLDEVICE_H
+#define QEGLFSKMSEGLDEVICE_H
 
-#include <qeglfskmsintegration.h>
+#include <qeglfskmsdevice.h>
 
-#include <xf86drm.h>
-#include <xf86drmMode.h>
-
-#include <QtPlatformSupport/private/qeglstreamconvenience_p.h>
-
-QT_BEGIN_NAMESPACE
-
-class QEglFSKmsEglDeviceIntegration : public QEglFSKmsIntegration
+class QEglFSKmsEglDevice: public QEglFSKmsDevice
 {
 public:
-    QEglFSKmsEglDeviceIntegration();
+    QEglFSKmsEglDevice(QEglFSKmsIntegration *integration, const QString &path);
 
-    EGLint surfaceType() const Q_DECL_OVERRIDE;
-    EGLDisplay createDisplay(EGLNativeDisplayType nativeDisplay) Q_DECL_OVERRIDE;
-    bool supportsSurfacelessContexts() const Q_DECL_OVERRIDE;
-    bool supportsPBuffers() const Q_DECL_OVERRIDE;
-    QEglFSWindow *createWindow(QWindow *window) const Q_DECL_OVERRIDE;
+    virtual bool open() Q_DECL_OVERRIDE;
+    virtual void close() Q_DECL_OVERRIDE;
 
-    virtual bool separateScreens() const Q_DECL_OVERRIDE;
-protected:
-    QEglFSKmsDevice *createDevice(const QString &devicePath) Q_DECL_OVERRIDE;
+    virtual EGLNativeDisplayType device() const Q_DECL_OVERRIDE;
 
-private:
-    bool setup_kms();
-    bool query_egl_device();
-
-    EGLDeviceEXT m_egl_device;
-
-    friend class QEglJetsonTK1Window;
-    // EGLStream infrastructure
-    QEGLStreamConvenience *m_funcs;
+    virtual QEglFSKmsScreen *createScreen(QEglFSKmsIntegration *integration,
+                                          QEglFSKmsDevice *device,
+                                          QEglFSKmsOutput output,
+                                          QPoint position) Q_DECL_OVERRIDE;
 };
 
-QT_END_NAMESPACE
-
-#endif
+#endif // QEGLFSKMSEGLDEVICE_H

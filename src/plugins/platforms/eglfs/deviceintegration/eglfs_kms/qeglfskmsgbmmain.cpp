@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -38,54 +38,20 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSKMSINTEGRATION_H
-#define QEGLFSKMSINTEGRATION_H
-
 #include "qeglfsdeviceintegration.h"
-#include <QtCore/QMap>
-#include <QtCore/QVariant>
+#include "qeglfskmsgbmintegration.h"
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSKmsDevice;
-
-class QEglFSKmsIntegration : public QEGLDeviceIntegration
+class QEglFSKmsGbmIntegrationPlugin : public QEGLDeviceIntegrationPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID QEGLDeviceIntegrationFactoryInterface_iid FILE "eglfs_kms.json")
+
 public:
-    QEglFSKmsIntegration();
-
-    void platformInit() Q_DECL_OVERRIDE;
-    void platformDestroy() Q_DECL_OVERRIDE;
-    EGLNativeDisplayType platformDisplay() const Q_DECL_OVERRIDE;
-    bool usesDefaultScreen() Q_DECL_OVERRIDE;
-    void screenInit() Q_DECL_OVERRIDE;
-    QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const Q_DECL_OVERRIDE;
-    EGLNativeWindowType createNativeWindow(QPlatformWindow *platformWindow,
-                                           const QSize &size,
-                                           const QSurfaceFormat &format) Q_DECL_OVERRIDE;
-    EGLNativeWindowType createNativeOffscreenWindow(const QSurfaceFormat &format) Q_DECL_OVERRIDE;
-    void destroyNativeWindow(EGLNativeWindowType window) Q_DECL_OVERRIDE;
-    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
-    QPlatformCursor *createCursor(QPlatformScreen *screen) const Q_DECL_OVERRIDE;
-    void waitForVSync(QPlatformSurface *surface) const Q_DECL_OVERRIDE;
-    void presentBuffer(QPlatformSurface *surface) Q_DECL_OVERRIDE;
-    bool supportsPBuffers() const Q_DECL_OVERRIDE;
-
-    bool hwCursor() const;
-    bool separateScreens() const;
-    QMap<QString, QVariantMap> outputSettings() const;
-
-private:
-    void loadConfig();
-
-    QEglFSKmsDevice *m_device;
-    bool m_hwCursor;
-    bool m_pbuffers;
-    bool m_separateScreens;
-    QString m_devicePath;
-    QMap<QString, QVariantMap> m_outputSettings;
+    QEGLDeviceIntegration *create() Q_DECL_OVERRIDE { return new QEglFSKmsGbmIntegration; }
 };
 
 QT_END_NAMESPACE
 
-#endif
+#include "qeglfskmsgbmmain.moc"

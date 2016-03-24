@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
@@ -38,42 +39,58 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSKMSEGLDEVICEINTEGRATION_H
-#define QEGLFSKMSEGLDEVICEINTEGRATION_H
+#ifndef QEGLFSKMSDEVICE_H
+#define QEGLFSKMSDEVICE_H
 
-#include <qeglfskmsintegration.h>
+#include "qeglfskmsintegration.h"
+#include "qeglfskmsscreen.h"
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
-#include <QtPlatformSupport/private/qeglstreamconvenience_p.h>
-
 QT_BEGIN_NAMESPACE
 
-class QEglFSKmsEglDeviceIntegration : public QEglFSKmsIntegration
+class Q_EGLFS_EXPORT QEglFSKmsDevice
 {
 public:
-    QEglFSKmsEglDeviceIntegration();
+    QEglFSKmsDevice(QEglFSKmsIntegration *integration, const QString &path);
+    virtual ~QEglFSKmsDevice();
 
-    EGLint surfaceType() const Q_DECL_OVERRIDE;
-    EGLDisplay createDisplay(EGLNativeDisplayType nativeDisplay) Q_DECL_OVERRIDE;
-    bool supportsSurfacelessContexts() const Q_DECL_OVERRIDE;
-    bool supportsPBuffers() const Q_DECL_OVERRIDE;
-    QEglFSWindow *createWindow(QWindow *window) const Q_DECL_OVERRIDE;
+    virtual bool open() = 0;
+    virtual void close() = 0;
 
-    virtual bool separateScreens() const Q_DECL_OVERRIDE;
+    virtual void createScreens();
+
+    virtual EGLNativeDisplayType device() const = 0;
+    int fd() const;
+    QString devicePath() const;
+
 protected:
-    QEglFSKmsDevice *createDevice(const QString &devicePath) Q_DECL_OVERRIDE;
+    virtual QEglFSKmsScreen *createScreen(QEglFSKmsIntegration *integration,
+                                          QEglFSKmsDevice *device,
+                                          QEglFSKmsOutput output,
+                                          QPoint position);
+    void setFd(int fd);
 
 private:
-    bool setup_kms();
-    bool query_egl_device();
+    Q_DISABLE_COPY(QEglFSKmsDevice)
 
-    EGLDeviceEXT m_egl_device;
+    QEglFSKmsIntegration *m_integration;
+    QString m_path;
+    int m_dri_fd;
 
-    friend class QEglJetsonTK1Window;
-    // EGLStream infrastructure
-    QEGLStreamConvenience *m_funcs;
+    quint32 m_crtc_allocator;
+    quint32 m_connector_allocator;
+
+    int crtcForConnector(drmModeResPtr resources, drmModeConnectorPtr connector);
+    QEglFSKmsScreen *screenForConnector(drmModeResPtr resources, drmModeConnectorPtr connector, QPoint pos);
+    drmModePropertyPtr connectorProperty(drmModeConnectorPtr connector, const QByteArray &name);
+
+    static void pageFlipHandler(int fd,
+                                unsigned int sequence,
+                                unsigned int tv_sec,
+                                unsigned int tv_usec,
+                                void *user_data);
 };
 
 QT_END_NAMESPACE

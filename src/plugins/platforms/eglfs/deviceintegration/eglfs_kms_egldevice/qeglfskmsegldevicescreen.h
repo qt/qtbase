@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the qmake spec of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,20 +37,20 @@
 **
 ****************************************************************************/
 
-#include "qeglfsdeviceintegration.h"
-#include "qeglfskmsintegration.h"
+#ifndef QEGLFSKMSEGLDEVICESCREEN_H
+#define QEGLFSKMSEGLDEVICESCREEN_H
 
-QT_BEGIN_NAMESPACE
+#include <qeglfskmsscreen.h>
 
-class QEglFSKmsIntegrationPlugin : public QEGLDeviceIntegrationPlugin
+class QEglFSKmsEglDeviceScreen : public QEglFSKmsScreen
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID QEGLDeviceIntegrationFactoryInterface_iid FILE "eglfs_kms.json")
-
 public:
-    QEGLDeviceIntegration *create() Q_DECL_OVERRIDE { return new QEglFSKmsIntegration; }
+    QEglFSKmsEglDeviceScreen(QEglFSKmsIntegration *integration,
+                             QEglFSKmsDevice *device,
+                             QEglFSKmsOutput output,
+                             QPoint position);
+
+    void waitForFlip() Q_DECL_OVERRIDE;
 };
 
-QT_END_NAMESPACE
-
-#include "qeglfskmsmain.moc"
+#endif // QEGLFSKMSEGLDEVICESCREEN_H

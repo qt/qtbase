@@ -2,6 +2,7 @@
 **
 ** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -38,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qeglfskmscursor.h"
-#include "qeglfskmsscreen.h"
-#include "qeglfskmsdevice.h"
+#include "qeglfskmsgbmcursor.h"
+#include "qeglfskmsgbmscreen.h"
+#include "qeglfskmsgbmdevice.h"
 
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
@@ -63,7 +64,7 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(qLcEglfsKmsDebug)
 
-QEglFSKmsCursor::QEglFSKmsCursor(QEglFSKmsScreen *screen)
+QEglFSKmsGbmCursor::QEglFSKmsGbmCursor(QEglFSKmsGbmScreen *screen)
     : m_screen(screen)
     , m_cursorSize(64, 64) // 64x64 is the old standard size, we now try to query the real size below
     , m_bo(Q_NULLPTR)
@@ -83,7 +84,7 @@ QEglFSKmsCursor::QEglFSKmsCursor(QEglFSKmsScreen *screen)
         m_cursorSize.setHeight(height);
     }
 
-    m_bo = gbm_bo_create(m_screen->device()->device(), m_cursorSize.width(), m_cursorSize.height(),
+    m_bo = gbm_bo_create(static_cast<QEglFSKmsGbmDevice *>(m_screen->device())->gbmDevice(), m_cursorSize.width(), m_cursorSize.height(),
                          GBM_FORMAT_ARGB8888, GBM_BO_USE_CURSOR_64X64 | GBM_BO_USE_WRITE);
     if (!m_bo) {
         qWarning("Could not create buffer for cursor!");
@@ -98,7 +99,7 @@ QEglFSKmsCursor::QEglFSKmsCursor(QEglFSKmsScreen *screen)
     setPos(QPoint(0, 0));
 }
 
-QEglFSKmsCursor::~QEglFSKmsCursor()
+QEglFSKmsGbmCursor::~QEglFSKmsGbmCursor()
 {
     Q_FOREACH (QPlatformScreen *screen, m_screen->virtualSiblings()) {
         QEglFSKmsScreen *kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
@@ -110,13 +111,13 @@ QEglFSKmsCursor::~QEglFSKmsCursor()
     m_bo = Q_NULLPTR;
 }
 
-void QEglFSKmsCursor::pointerEvent(const QMouseEvent &event)
+void QEglFSKmsGbmCursor::pointerEvent(const QMouseEvent &event)
 {
     setPos(event.screenPos().toPoint());
 }
 
 #ifndef QT_NO_CURSOR
-void QEglFSKmsCursor::changeCursor(QCursor *windowCursor, QWindow *window)
+void QEglFSKmsGbmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
 {
     Q_UNUSED(window);
 
@@ -171,12 +172,12 @@ void QEglFSKmsCursor::changeCursor(QCursor *windowCursor, QWindow *window)
 }
 #endif // QT_NO_CURSOR
 
-QPoint QEglFSKmsCursor::pos() const
+QPoint QEglFSKmsGbmCursor::pos() const
 {
     return m_pos;
 }
 
-void QEglFSKmsCursor::setPos(const QPoint &pos)
+void QEglFSKmsGbmCursor::setPos(const QPoint &pos)
 {
     Q_FOREACH (QPlatformScreen *screen, m_screen->virtualSiblings()) {
         QEglFSKmsScreen *kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
@@ -192,7 +193,7 @@ void QEglFSKmsCursor::setPos(const QPoint &pos)
     }
 }
 
-void QEglFSKmsCursor::initCursorAtlas()
+void QEglFSKmsGbmCursor::initCursorAtlas()
 {
     static QByteArray json = qgetenv("QT_QPA_EGLFS_CURSOR");
     if (json.isEmpty())

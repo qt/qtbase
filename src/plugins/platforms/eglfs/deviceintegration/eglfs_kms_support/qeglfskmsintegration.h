@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
@@ -38,42 +39,53 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSKMSEGLDEVICEINTEGRATION_H
-#define QEGLFSKMSEGLDEVICEINTEGRATION_H
+#ifndef QEGLFSKMSINTEGRATION_H
+#define QEGLFSKMSINTEGRATION_H
 
-#include <qeglfskmsintegration.h>
-
-#include <xf86drm.h>
-#include <xf86drmMode.h>
-
-#include <QtPlatformSupport/private/qeglstreamconvenience_p.h>
+#include "qeglfsdeviceintegration.h"
+#include <QtCore/QMap>
+#include <QtCore/QVariant>
+#include <QtCore/QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSKmsEglDeviceIntegration : public QEglFSKmsIntegration
+class QEglFSKmsDevice;
+
+Q_EGLFS_EXPORT Q_DECLARE_LOGGING_CATEGORY(qLcEglfsKmsDebug)
+
+class Q_EGLFS_EXPORT QEglFSKmsIntegration : public QEGLDeviceIntegration
 {
 public:
-    QEglFSKmsEglDeviceIntegration();
+    QEglFSKmsIntegration();
 
-    EGLint surfaceType() const Q_DECL_OVERRIDE;
-    EGLDisplay createDisplay(EGLNativeDisplayType nativeDisplay) Q_DECL_OVERRIDE;
-    bool supportsSurfacelessContexts() const Q_DECL_OVERRIDE;
+    void platformInit() Q_DECL_OVERRIDE;
+    void platformDestroy() Q_DECL_OVERRIDE;
+    EGLNativeDisplayType platformDisplay() const Q_DECL_OVERRIDE;
+    bool usesDefaultScreen() Q_DECL_OVERRIDE;
+    void screenInit() Q_DECL_OVERRIDE;
+    QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const Q_DECL_OVERRIDE;
+    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
+    void waitForVSync(QPlatformSurface *surface) const Q_DECL_OVERRIDE;
     bool supportsPBuffers() const Q_DECL_OVERRIDE;
-    QEglFSWindow *createWindow(QWindow *window) const Q_DECL_OVERRIDE;
 
-    virtual bool separateScreens() const Q_DECL_OVERRIDE;
+    virtual bool hwCursor() const;
+    virtual bool separateScreens() const;
+    QMap<QString, QVariantMap> outputSettings() const;
+
+    QEglFSKmsDevice *device() const;
+
 protected:
-    QEglFSKmsDevice *createDevice(const QString &devicePath) Q_DECL_OVERRIDE;
+    virtual QEglFSKmsDevice *createDevice(const QString &devicePath) = 0;
 
 private:
-    bool setup_kms();
-    bool query_egl_device();
+    void loadConfig();
 
-    EGLDeviceEXT m_egl_device;
-
-    friend class QEglJetsonTK1Window;
-    // EGLStream infrastructure
-    QEGLStreamConvenience *m_funcs;
+    QEglFSKmsDevice *m_device;
+    bool m_hwCursor;
+    bool m_pbuffers;
+    bool m_separateScreens;
+    QString m_devicePath;
+    QMap<QString, QVariantMap> m_outputSettings;
 };
 
 QT_END_NAMESPACE

@@ -1,7 +1,6 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -38,44 +37,56 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSKMSEGLDEVICEINTEGRATION_H
-#define QEGLFSKMSEGLDEVICEINTEGRATION_H
+#ifndef QEGLFSKMSGBMCURSOR_H
+#define QEGLFSKMSGBMCURSOR_H
 
-#include <qeglfskmsintegration.h>
+#include <qpa/qplatformcursor.h>
+#include <QtCore/QList>
+#include <QtGui/QImage>
 
-#include <xf86drm.h>
-#include <xf86drmMode.h>
-
-#include <QtPlatformSupport/private/qeglstreamconvenience_p.h>
+#include <gbm.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSKmsEglDeviceIntegration : public QEglFSKmsIntegration
+class QEglFSKmsGbmScreen;
+
+class QEglFSKmsGbmCursor : public QPlatformCursor
 {
+    Q_OBJECT
+
 public:
-    QEglFSKmsEglDeviceIntegration();
+    QEglFSKmsGbmCursor(QEglFSKmsGbmScreen *screen);
+    ~QEglFSKmsGbmCursor();
 
-    EGLint surfaceType() const Q_DECL_OVERRIDE;
-    EGLDisplay createDisplay(EGLNativeDisplayType nativeDisplay) Q_DECL_OVERRIDE;
-    bool supportsSurfacelessContexts() const Q_DECL_OVERRIDE;
-    bool supportsPBuffers() const Q_DECL_OVERRIDE;
-    QEglFSWindow *createWindow(QWindow *window) const Q_DECL_OVERRIDE;
-
-    virtual bool separateScreens() const Q_DECL_OVERRIDE;
-protected:
-    QEglFSKmsDevice *createDevice(const QString &devicePath) Q_DECL_OVERRIDE;
+    // input methods
+    void pointerEvent(const QMouseEvent & event) Q_DECL_OVERRIDE;
+#ifndef QT_NO_CURSOR
+    void changeCursor(QCursor * windowCursor, QWindow * window) Q_DECL_OVERRIDE;
+#endif
+    QPoint pos() const Q_DECL_OVERRIDE;
+    void setPos(const QPoint &pos) Q_DECL_OVERRIDE;
 
 private:
-    bool setup_kms();
-    bool query_egl_device();
+    void initCursorAtlas();
 
-    EGLDeviceEXT m_egl_device;
+    QEglFSKmsGbmScreen *m_screen;
+    QSize m_cursorSize;
+    gbm_bo *m_bo;
+    QPoint m_pos;
+    QPlatformCursorImage m_cursorImage;
+    bool m_visible;
 
-    friend class QEglJetsonTK1Window;
-    // EGLStream infrastructure
-    QEGLStreamConvenience *m_funcs;
+    // cursor atlas information
+    struct CursorAtlas {
+        CursorAtlas() : cursorsPerRow(0), cursorWidth(0), cursorHeight(0) { }
+        int cursorsPerRow;
+        int width, height; // width and height of the atlas
+        int cursorWidth, cursorHeight; // width and height of cursors inside the atlas
+        QList<QPoint> hotSpots;
+        QImage image;
+    } m_cursorAtlas;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QEGLFSKMSGBMCURSOR_H

@@ -2,6 +2,7 @@
 **
 ** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -38,61 +39,37 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSKMSDEVICE_H
-#define QEGLFSKMSDEVICE_H
+#ifndef QEGLFSKMSGBMINTEGRATION_H
+#define QEGLFSKMSGBMINTEGRATION_H
 
-#include "qeglfskmscursor.h"
 #include "qeglfskmsintegration.h"
-
-#include <xf86drm.h>
-#include <xf86drmMode.h>
-#include <gbm.h>
+#include <QtCore/QMap>
+#include <QtCore/QVariant>
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSKmsScreen;
+class QEglFSKmsDevice;
 
-class QEglFSKmsDevice
+class QEglFSKmsGbmIntegration : public QEglFSKmsIntegration
 {
 public:
-    QEglFSKmsDevice(QEglFSKmsIntegration *integration, const QString &path);
+    QEglFSKmsGbmIntegration();
 
-    bool open();
-    void close();
+    EGLNativeWindowType createNativeWindow(QPlatformWindow *platformWindow,
+                                           const QSize &size,
+                                           const QSurfaceFormat &format) Q_DECL_OVERRIDE;
+    EGLNativeWindowType createNativeOffscreenWindow(const QSurfaceFormat &format) Q_DECL_OVERRIDE;
+    void destroyNativeWindow(EGLNativeWindowType window) Q_DECL_OVERRIDE;
 
-    void createScreens();
+    QPlatformCursor *createCursor(QPlatformScreen *screen) const Q_DECL_OVERRIDE;
+    void presentBuffer(QPlatformSurface *surface) Q_DECL_OVERRIDE;
 
-    gbm_device *device() const;
-    int fd() const;
-
-    QPlatformCursor *globalCursor() const;
-
-    void handleDrmEvent();
+protected:
+    QEglFSKmsDevice *createDevice(const QString &devicePath) Q_DECL_OVERRIDE;
 
 private:
-    Q_DISABLE_COPY(QEglFSKmsDevice)
-
-    QEglFSKmsIntegration *m_integration;
-    QString m_path;
-    int m_dri_fd;
-    gbm_device *m_gbm_device;
-
-    quint32 m_crtc_allocator;
-    quint32 m_connector_allocator;
-
-    QEglFSKmsCursor *m_globalCursor;
-
-    int crtcForConnector(drmModeResPtr resources, drmModeConnectorPtr connector);
-    QEglFSKmsScreen *screenForConnector(drmModeResPtr resources, drmModeConnectorPtr connector, QPoint pos);
-    drmModePropertyPtr connectorProperty(drmModeConnectorPtr connector, const QByteArray &name);
-
-    static void pageFlipHandler(int fd,
-                                unsigned int sequence,
-                                unsigned int tv_sec,
-                                unsigned int tv_usec,
-                                void *user_data);
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QEGLFSKMSGBMINTEGRATION_H

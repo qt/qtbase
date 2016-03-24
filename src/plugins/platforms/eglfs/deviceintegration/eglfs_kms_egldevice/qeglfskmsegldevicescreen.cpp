@@ -1,6 +1,5 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
 ** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
 **
@@ -38,44 +37,42 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSKMSEGLDEVICEINTEGRATION_H
-#define QEGLFSKMSEGLDEVICEINTEGRATION_H
+#include "qeglfskmsegldevicescreen.h"
+#include "qeglfskmsegldevice.h"
 
-#include <qeglfskmsintegration.h>
-
-#include <xf86drm.h>
-#include <xf86drmMode.h>
-
-#include <QtPlatformSupport/private/qeglstreamconvenience_p.h>
-
-QT_BEGIN_NAMESPACE
-
-class QEglFSKmsEglDeviceIntegration : public QEglFSKmsIntegration
+QEglFSKmsEglDeviceScreen::QEglFSKmsEglDeviceScreen(QEglFSKmsIntegration *integration, QEglFSKmsDevice *device, QEglFSKmsOutput output, QPoint position)
+    : QEglFSKmsScreen(integration, device, output, position)
 {
-public:
-    QEglFSKmsEglDeviceIntegration();
+}
 
-    EGLint surfaceType() const Q_DECL_OVERRIDE;
-    EGLDisplay createDisplay(EGLNativeDisplayType nativeDisplay) Q_DECL_OVERRIDE;
-    bool supportsSurfacelessContexts() const Q_DECL_OVERRIDE;
-    bool supportsPBuffers() const Q_DECL_OVERRIDE;
-    QEglFSWindow *createWindow(QWindow *window) const Q_DECL_OVERRIDE;
+void QEglFSKmsEglDeviceScreen::waitForFlip()
+{
+    if (!output().mode_set) {
+        output().mode_set = true;
 
-    virtual bool separateScreens() const Q_DECL_OVERRIDE;
-protected:
-    QEglFSKmsDevice *createDevice(const QString &devicePath) Q_DECL_OVERRIDE;
+        drmModeCrtcPtr currentMode = drmModeGetCrtc(device()->fd(), output().crtc_id);
+        const bool alreadySet = currentMode
+            && currentMode->width == output().modes[output().mode].hdisplay
+            && currentMode->height == output().modes[output().mode].vdisplay;
+        if (currentMode)
+            drmModeFreeCrtc(currentMode);
+        if (alreadySet) {
+            // Maybe detecting the DPMS mode could help here, but there are no properties
+            // exposed on the connector apparently. So rely on an env var for now.
+            static bool alwaysDoSet = qEnvironmentVariableIntValue("QT_QPA_EGLFS_ALWAYS_SET_MODE");
+            if (!alwaysDoSet) {
+                qCDebug(qLcEglfsKmsDebug, "Mode already set");
+                return;
+            }
+        }
 
-private:
-    bool setup_kms();
-    bool query_egl_device();
+        qCDebug(qLcEglfsKmsDebug, "Setting mode");
+        int ret = drmModeSetCrtc(device()->fd(), output().crtc_id,
+                                 -1, 0, 0,
+                                 &output().connector_id, 1,
+                                 &output().modes[output().mode]);
+        if (ret)
+            qFatal("drmModeSetCrtc failed");
+    }
 
-    EGLDeviceEXT m_egl_device;
-
-    friend class QEglJetsonTK1Window;
-    // EGLStream infrastructure
-    QEGLStreamConvenience *m_funcs;
-};
-
-QT_END_NAMESPACE
-
-#endif
+}

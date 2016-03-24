@@ -2,6 +2,7 @@
 **
 ** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -38,99 +39,44 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSKMSSCREEN_H
-#define QEGLFSKMSSCREEN_H
+#ifndef QEGLFSKMSGBMSCREEN_H
+#define QEGLFSKMSGBMSCREEN_H
 
-#include "qeglfskmsintegration.h"
-#include "qeglfsscreen.h"
-#include <QtCore/QList>
+#include "qeglfskmsscreen.h"
 #include <QtCore/QMutex>
 
-#include <xf86drm.h>
-#include <xf86drmMode.h>
 #include <gbm.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSKmsDevice;
-class QEglFSKmsCursor;
-class QEglFSKmsInterruptHandler;
+class QEglFSKmsGbmCursor;
 
-struct QEglFSKmsOutput
-{
-    QString name;
-    uint32_t connector_id;
-    uint32_t crtc_id;
-    QSizeF physical_size;
-    int mode; // index of selected mode in list below
-    bool mode_set;
-    drmModeCrtcPtr saved_crtc;
-    QList<drmModeModeInfo> modes;
-    int subpixel;
-    drmModePropertyPtr dpms_prop;
-};
-
-class QEglFSKmsScreen : public QEglFSScreen
+class QEglFSKmsGbmScreen : public QEglFSKmsScreen
 {
 public:
-    QEglFSKmsScreen(QEglFSKmsIntegration *integration,
+    QEglFSKmsGbmScreen(QEglFSKmsIntegration *integration,
                     QEglFSKmsDevice *device,
                     QEglFSKmsOutput output,
                     QPoint position);
-    ~QEglFSKmsScreen();
-
-    QRect geometry() const Q_DECL_OVERRIDE;
-    int depth() const Q_DECL_OVERRIDE;
-    QImage::Format format() const Q_DECL_OVERRIDE;
-
-    QSizeF physicalSize() const Q_DECL_OVERRIDE;
-    QDpi logicalDpi() const Q_DECL_OVERRIDE;
-    Qt::ScreenOrientation nativeOrientation() const Q_DECL_OVERRIDE;
-    Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE;
-
-    QString name() const Q_DECL_OVERRIDE;
+    ~QEglFSKmsGbmScreen();
 
     QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
-
-    qreal refreshRate() const Q_DECL_OVERRIDE;
-
-    QList<QPlatformScreen *> virtualSiblings() const Q_DECL_OVERRIDE { return m_siblings; }
-    void setVirtualSiblings(QList<QPlatformScreen *> sl) { m_siblings = sl; }
-
-    QEglFSKmsIntegration *integration() const { return m_integration; }
-    QEglFSKmsDevice *device() const { return m_device; }
 
     gbm_surface *surface() const { return m_gbm_surface; }
     gbm_surface *createSurface();
     void destroySurface();
 
-    void waitForFlip();
-    void flip();
-    void flipFinished();
-
-    QEglFSKmsOutput &output() { return m_output; }
-    void restoreMode();
-
-    SubpixelAntialiasingType subpixelAntialiasingTypeHint() const Q_DECL_OVERRIDE;
-
-    QPlatformScreen::PowerState powerState() const Q_DECL_OVERRIDE;
-    void setPowerState(QPlatformScreen::PowerState state) Q_DECL_OVERRIDE;
+    void waitForFlip() Q_DECL_OVERRIDE;
+    void flip() Q_DECL_OVERRIDE;
+    void flipFinished() Q_DECL_OVERRIDE;
 
 private:
-    QEglFSKmsIntegration *m_integration;
-    QEglFSKmsDevice *m_device;
     gbm_surface *m_gbm_surface;
 
     gbm_bo *m_gbm_bo_current;
     gbm_bo *m_gbm_bo_next;
 
-    QEglFSKmsOutput m_output;
-    QPoint m_pos;
-    QScopedPointer<QEglFSKmsCursor> m_cursor;
-
-    QList<QPlatformScreen *> m_siblings;
-
-    PowerState m_powerState;
+    QScopedPointer<QEglFSKmsGbmCursor> m_cursor;
 
     struct FrameBuffer {
         FrameBuffer() : fb(0) {}
@@ -140,10 +86,8 @@ private:
     FrameBuffer *framebufferForBufferObject(gbm_bo *bo);
 
     static QMutex m_waitForFlipMutex;
-
-    QEglFSKmsInterruptHandler *m_interruptHandler;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QEGLFSKMSGBMSCREEN_H
