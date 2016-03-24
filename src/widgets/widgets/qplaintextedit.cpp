@@ -2188,27 +2188,25 @@ QVariant QPlainTextEdit::inputMethodQuery(Qt::InputMethodQuery property) const
 
 /*!\internal
  */
-QVariant QPlainTextEdit::inputMethodQuery(Qt::InputMethodQuery property, QVariant argument) const
+QVariant QPlainTextEdit::inputMethodQuery(Qt::InputMethodQuery query, QVariant argument) const
 {
     Q_D(const QPlainTextEdit);
-    QVariant v;
-    switch (property) {
-    case Qt::ImHints:
-        v = QWidget::inputMethodQuery(property);
-        break;
+    if (query == Qt::ImHints)
+        return QWidget::inputMethodQuery(query);
+    const QVariant v = d->control->inputMethodQuery(query, argument);
+    const QPointF offset = contentOffset();
+    switch (v.type()) {
+    case QVariant::RectF:
+        return v.toRectF().translated(offset);
+    case QVariant::PointF:
+        return v.toPointF() + offset;
+    case QVariant::Rect:
+        return v.toRect().translated(offset.toPoint());
+    case QVariant::Point:
+        return v.toPoint() + offset.toPoint();
     default:
-        v = d->control->inputMethodQuery(property, argument);
-        const QPointF offset = contentOffset();
-        if (v.type() == QVariant::RectF)
-            v = v.toRectF().translated(offset);
-        else if (v.type() == QVariant::PointF)
-            v = v.toPointF() + offset;
-        else if (v.type() == QVariant::Rect)
-            v = v.toRect().translated(offset.toPoint());
-        else if (v.type() == QVariant::Point)
-            v = v.toPoint() + offset.toPoint();
+        break;
     }
-
     return v;
 }
 
