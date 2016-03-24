@@ -432,7 +432,13 @@ static inline quint64 qCpuFeatures()
 
 #ifdef Q_PROCESSOR_X86
 // Bit scan functions for x86
-#  if defined(Q_CC_MSVC) && !defined(Q_OS_WINCE)
+#  if defined(Q_CC_MSVC)
+#    if defined _WIN32_WCE && _WIN32_WCE < 0x800
+extern "C" unsigned char _BitScanForward(unsigned long* Index, unsigned long Mask);
+extern "C" unsigned char _BitScanReverse(unsigned long* Index, unsigned long Mask);
+#       pragma intrinsic(_BitScanForward)
+#       pragma intrinsic(_BitScanReverse)
+#    endif
 // MSVC calls it _BitScanReverse and returns the carry flag, which we don't need
 static __forceinline unsigned long _bit_scan_reverse(uint val)
 {
