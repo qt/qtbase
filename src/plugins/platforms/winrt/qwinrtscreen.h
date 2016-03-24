@@ -62,7 +62,7 @@ namespace ABI {
                 struct IWindow;
             }
             namespace ViewManagement {
-                struct IStatusBar;
+                struct IApplicationView;
             }
         }
         namespace Graphics {
@@ -85,10 +85,9 @@ class QWinRTScreen : public QPlatformScreen
 public:
     explicit QWinRTScreen();
     ~QWinRTScreen();
+
     QRect geometry() const Q_DECL_OVERRIDE;
-#ifdef Q_OS_WINPHONE
     QRect availableGeometry() const Q_DECL_OVERRIDE;
-#endif
     int depth() const Q_DECL_OVERRIDE;
     QImage::Format format() const Q_DECL_OVERRIDE;
     QSizeF physicalSize() const Q_DECL_OVERRIDE;
@@ -112,10 +111,6 @@ public:
     ABI::Windows::UI::Core::ICoreWindow *coreWindow() const;
     ABI::Windows::UI::Xaml::IDependencyObject *canvas() const;
 
-#ifdef Q_OS_WINPHONE
-    void setStatusBarVisibility(bool visible, QWindow *window);
-#endif
-
     void initialize();
 
 private:
@@ -127,7 +122,6 @@ private:
     HRESULT onPointerEntered(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IPointerEventArgs *);
     HRESULT onPointerExited(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IPointerEventArgs *);
     HRESULT onPointerUpdated(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IPointerEventArgs *);
-    HRESULT onSizeChanged(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IWindowSizeChangedEventArgs *);
 
     HRESULT onActivated(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IWindowActivatedEventArgs *);
 
@@ -136,10 +130,10 @@ private:
 
     HRESULT onOrientationChanged(ABI::Windows::Graphics::Display::IDisplayInformation *, IInspectable *);
     HRESULT onDpiChanged(ABI::Windows::Graphics::Display::IDisplayInformation *, IInspectable *);
-
-#ifdef Q_OS_WINPHONE
-    HRESULT onStatusBarShowing(ABI::Windows::UI::ViewManagement::IStatusBar *, IInspectable *);
-    HRESULT onStatusBarHiding(ABI::Windows::UI::ViewManagement::IStatusBar *, IInspectable *);
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
+    HRESULT onWindowSizeChanged(ABI::Windows::UI::ViewManagement::IApplicationView *, IInspectable *);
+#else
+    HRESULT onWindowSizeChanged(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IWindowSizeChangedEventArgs *);
 #endif
 
     QScopedPointer<QWinRTScreenPrivate> d_ptr;

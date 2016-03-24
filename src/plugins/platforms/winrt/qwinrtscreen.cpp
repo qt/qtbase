@@ -85,9 +85,9 @@ typedef ITypedEventHandler<CoreWindow*, PointerEventArgs*> PointerHandler;
 typedef ITypedEventHandler<CoreWindow*, WindowSizeChangedEventArgs*> SizeChangedHandler;
 typedef ITypedEventHandler<CoreWindow*, VisibilityChangedEventArgs*> VisibilityChangedHandler;
 typedef ITypedEventHandler<DisplayInformation*, IInspectable*> DisplayInformationHandler;
-#ifdef Q_OS_WINPHONE
-typedef ITypedEventHandler<StatusBar*, IInspectable*> StatusBarHandler;
-#endif
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
+typedef ITypedEventHandler<ApplicationView*, IInspectable*> VisibleBoundsChangedHandler;
+#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
 
 QT_BEGIN_NAMESPACE
 
@@ -448,10 +448,10 @@ typedef HRESULT (__stdcall ICoreWindow::*CoreWindowCallbackRemover)(EventRegistr
 uint qHash(CoreWindowCallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
 typedef HRESULT (__stdcall IDisplayInformation::*DisplayCallbackRemover)(EventRegistrationToken);
 uint qHash(DisplayCallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
-#ifdef Q_OS_WINPHONE
-typedef HRESULT (__stdcall IStatusBar::*StatusBarCallbackRemover)(EventRegistrationToken);
-uint qHash(StatusBarCallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
-#endif
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
+typedef HRESULT (__stdcall IApplicationView2::*ApplicationView2CallbackRemover)(EventRegistrationToken);
+uint qHash(ApplicationView2CallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
+#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
 
 class QWinRTScreenPrivate
 {
@@ -461,13 +461,11 @@ public:
     ComPtr<Xaml::IDependencyObject> canvas;
     ComPtr<IApplicationView> view;
     ComPtr<IDisplayInformation> displayInformation;
-#ifdef Q_OS_WINPHONE
-    ComPtr<IStatusBar> statusBar;
-#endif
 
     QScopedPointer<QWinRTCursor> cursor;
     QHash<quint32, QWindowSystemInterface::TouchPoint> touchPoints;
-    QSizeF logicalSize;
+    QRectF logicalRect;
+    QRectF visibleRect;
     QSurfaceFormat surfaceFormat;
     qreal logicalDpi;
     QDpi physicalDpi;
@@ -478,9 +476,10 @@ public:
     QHash<Qt::Key, KeyInfo> activeKeys;
     QHash<CoreWindowCallbackRemover, EventRegistrationToken> windowTokens;
     QHash<DisplayCallbackRemover, EventRegistrationToken> displayTokens;
-#ifdef Q_OS_WINPHONE
-    QHash<StatusBarCallbackRemover, EventRegistrationToken> statusBarTokens;
-#endif
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
+    QHash<ApplicationView2CallbackRemover, EventRegistrationToken> view2Tokens;
+    ComPtr<IApplicationView2> view2;
+#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
 };
 
 // To be called from the XAML thread
@@ -511,7 +510,8 @@ QWinRTScreen::QWinRTScreen()
     Rect rect;
     hr = d->coreWindow->get_Bounds(&rect);
     Q_ASSERT_SUCCEEDED(hr);
-    d->logicalSize = QSizeF(rect.Width, rect.Height);
+    d->logicalRect = QRectF(0.0f, 0.0f, rect.Width, rect.Height);
+    d->visibleRect = QRectF(0.0f, 0.0f, rect.Width, rect.Height);
 
     // Orientation handling
     ComPtr<IDisplayInformationStatics> displayInformationStatics;
@@ -546,9 +546,9 @@ QWinRTScreen::QWinRTScreen()
     ComPtr<Xaml::IFrameworkElement> frameworkElement;
     hr = canvas.As(&frameworkElement);
     Q_ASSERT_SUCCEEDED(hr);
-    hr = frameworkElement->put_Width(d->logicalSize.width());
+    hr = frameworkElement->put_Width(d->logicalRect.width());
     Q_ASSERT_SUCCEEDED(hr);
-    hr = frameworkElement->put_Height(d->logicalSize.height());
+    hr = frameworkElement->put_Height(d->logicalRect.height());
     Q_ASSERT_SUCCEEDED(hr);
     ComPtr<Xaml::IUIElement> uiElement;
     hr = canvas.As(&uiElement);
@@ -560,14 +560,10 @@ QWinRTScreen::QWinRTScreen()
 
     d->cursor.reset(new QWinRTCursor);
 
-#ifdef Q_OS_WINPHONE
-    ComPtr<IStatusBarStatics> statusBarStatics;
-    hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_ViewManagement_StatusBar).Get(),
-                                IID_PPV_ARGS(&statusBarStatics));
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
+    hr = d->view.As(&d->view2);
     Q_ASSERT_SUCCEEDED(hr);
-    hr = statusBarStatics->GetForCurrentView(&d->statusBar);
-    Q_ASSERT_SUCCEEDED(hr);
-#endif // Q_OS_WINPHONE
+#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
 }
 
 QWinRTScreen::~QWinRTScreen()
@@ -587,12 +583,12 @@ QWinRTScreen::~QWinRTScreen()
             hr = (d->displayInformation.Get()->*i.key())(i.value());
             Q_ASSERT_SUCCEEDED(hr);
         }
-#ifdef Q_OS_WINPHONE
-        for (QHash<StatusBarCallbackRemover, EventRegistrationToken>::const_iterator i = d->statusBarTokens.begin(); i != d->statusBarTokens.end(); ++i) {
-            hr = (d->statusBar.Get()->*i.key())(i.value());
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
+        for (QHash<ApplicationView2CallbackRemover, EventRegistrationToken>::const_iterator i = d->view2Tokens.begin(); i != d->view2Tokens.end(); ++i) {
+            hr = (d->view2.Get()->*i.key())(i.value());
             Q_ASSERT_SUCCEEDED(hr);
         }
-#endif //Q_OS_WINPHONE
+#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
         return hr;
     });
     RETURN_VOID_IF_FAILED("Failed to unregister screen event callbacks");
@@ -601,33 +597,17 @@ QWinRTScreen::~QWinRTScreen()
 QRect QWinRTScreen::geometry() const
 {
     Q_D(const QWinRTScreen);
-    return QRect(QPoint(), (d->logicalSize * d->scaleFactor).toSize());
+    return QRect(QPoint(), QSizeF(d->logicalRect.size() * d->scaleFactor).toSize());
 }
 
-#ifdef Q_OS_WINPHONE
 QRect QWinRTScreen::availableGeometry() const
 {
     Q_D(const QWinRTScreen);
-    QRect statusBar;
-    QEventDispatcherWinRT::runOnXamlThread([d, &statusBar]() {
-        HRESULT hr;
-        Rect rect;
-        hr = d->statusBar->get_OccludedRect(&rect);
-        Q_ASSERT_SUCCEEDED(hr);
-        statusBar.setRect(qRound(rect.X * d->scaleFactor),
-                          qRound(rect.Y * d->scaleFactor),
-                          qRound(rect.Width * d->scaleFactor),
-                          qRound(rect.Height * d->scaleFactor));
-        return S_OK;
-    });
-
-    return geometry().adjusted(
-                d->orientation == Qt::LandscapeOrientation ? statusBar.width() : 0,
-                d->orientation == Qt::PortraitOrientation ? statusBar.height() : 0,
-                d->orientation == Qt::InvertedLandscapeOrientation ? -statusBar.width() : 0,
-                0);
+    return QRectF((d->visibleRect.x() - d->logicalRect.x())* d->scaleFactor,
+                  (d->visibleRect.y() - d->logicalRect.y()) * d->scaleFactor,
+                  d->visibleRect.width() * d->scaleFactor,
+                  d->visibleRect.height() * d->scaleFactor).toRect();
 }
-#endif //Q_OS_WINPHONE
 
 int QWinRTScreen::depth() const
 {
@@ -642,8 +622,8 @@ QImage::Format QWinRTScreen::format() const
 QSizeF QWinRTScreen::physicalSize() const
 {
     Q_D(const QWinRTScreen);
-    return QSizeF(d->logicalSize.width() * d->scaleFactor / d->physicalDpi.first * qreal(25.4),
-                  d->logicalSize.height() * d->scaleFactor / d->physicalDpi.second * qreal(25.4));
+    return QSizeF(d->logicalRect.width() * d->scaleFactor / d->physicalDpi.first * qreal(25.4),
+                  d->logicalRect.height() * d->scaleFactor / d->physicalDpi.second * qreal(25.4));
 }
 
 QDpi QWinRTScreen::logicalDpi() const
@@ -720,29 +700,6 @@ Xaml::IDependencyObject *QWinRTScreen::canvas() const
     return d->canvas.Get();
 }
 
-#ifdef Q_OS_WINPHONE
-void QWinRTScreen::setStatusBarVisibility(bool visible, QWindow *window)
-{
-    Q_D(QWinRTScreen);
-    qCDebug(lcQpaWindows) << __FUNCTION__ << window << visible;
-
-    const Qt::WindowFlags windowType = window->flags() & Qt::WindowType_Mask;
-    if (!window || (windowType != Qt::Window && windowType != Qt::Dialog))
-        return;
-
-    QEventDispatcherWinRT::runOnXamlThread([d, visible]() {
-        HRESULT hr;
-        ComPtr<IAsyncAction> op;
-        if (visible)
-            hr = d->statusBar->ShowAsync(&op);
-        else
-            hr = d->statusBar->HideAsync(&op);
-        Q_ASSERT_SUCCEEDED(hr);
-        return S_OK;
-    });
-}
-#endif //Q_OS_WINPHONE
-
 void QWinRTScreen::initialize()
 {
     Q_D(QWinRTScreen);
@@ -765,15 +722,14 @@ void QWinRTScreen::initialize()
     Q_ASSERT_SUCCEEDED(hr);
     hr = d->coreWindow->add_PointerWheelChanged(Callback<PointerHandler>(this, &QWinRTScreen::onPointerUpdated).Get(), &d->windowTokens[&ICoreWindow::remove_PointerWheelChanged]);
     Q_ASSERT_SUCCEEDED(hr);
-#ifndef Q_OS_WINPHONE
-    hr = d->coreWindow->add_SizeChanged(Callback<SizeChangedHandler>(this, &QWinRTScreen::onSizeChanged).Get(), &d->windowTokens[&ICoreWindow::remove_SizeChanged]);
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
+    hr = d->view2->add_VisibleBoundsChanged(Callback<VisibleBoundsChangedHandler>(this, &QWinRTScreen::onWindowSizeChanged).Get(), &d->view2Tokens[&IApplicationView2::remove_VisibleBoundsChanged]);
     Q_ASSERT_SUCCEEDED(hr);
 #else
-    hr = d->statusBar->add_Showing(Callback<StatusBarHandler>(this, &QWinRTScreen::onStatusBarShowing).Get(), &d->statusBarTokens[&IStatusBar::remove_Showing]);
-    Q_ASSERT_SUCCEEDED(hr);
-    hr = d->statusBar->add_Hiding(Callback<StatusBarHandler>(this, &QWinRTScreen::onStatusBarHiding).Get(), &d->statusBarTokens[&IStatusBar::remove_Hiding]);
-    Q_ASSERT_SUCCEEDED(hr);
-#endif
+    hr = d->coreWindow->add_SizeChanged(Callback<SizeChangedHandler>(this, &QWinRTScreen::onWindowSizeChanged).Get(), &d->windowTokens[&ICoreWindow::remove_SizeChanged]);
+    Q_ASSERT_SUCCEEDED(hr)
+#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
+
     hr = d->coreWindow->add_Activated(Callback<ActivatedHandler>(this, &QWinRTScreen::onActivated).Get(), &d->windowTokens[&ICoreWindow::remove_Activated]);
     Q_ASSERT_SUCCEEDED(hr);
     hr = d->coreWindow->add_Closed(Callback<ClosedHandler>(this, &QWinRTScreen::onClosed).Get(), &d->windowTokens[&ICoreWindow::remove_Closed]);
@@ -801,11 +757,6 @@ void QWinRTScreen::addWindow(QWindow *window)
     if (window == topWindow())
         return;
 
-#ifdef Q_OS_WINPHONE
-    if (window->visibility() != QWindow::Maximized && window->visibility() != QWindow::Windowed)
-        setStatusBarVisibility(false, window);
-#endif
-
     d->visibleWindows.prepend(window);
     QWindowSystemInterface::handleWindowActivated(window, Qt::OtherFocusReason);
     handleExpose();
@@ -816,11 +767,6 @@ void QWinRTScreen::removeWindow(QWindow *window)
 {
     Q_D(QWinRTScreen);
     qCDebug(lcQpaWindows) << __FUNCTION__ << window;
-
-#ifdef Q_OS_WINPHONE
-    if (window->visibility() == QWindow::Minimized)
-        setStatusBarVisibility(false, window);
-#endif
 
     const bool wasTopWindow = window == topWindow();
     if (!d->visibleWindows.removeAll(window))
@@ -1125,7 +1071,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
         }
         it.value().area = QRectF(area.X * d->scaleFactor, area.Y * d->scaleFactor,
                                  area.Width * d->scaleFactor, area.Height * d->scaleFactor);
-        it.value().normalPosition = QPointF(point.X/d->logicalSize.width(), point.Y/d->logicalSize.height());
+        it.value().normalPosition = QPointF(point.X/d->logicalRect.width(), point.Y/d->logicalRect.height());
         it.value().pressure = pressure;
 
         QWindowSystemInterface::handleTouchEvent(topWindow(), d->touchDevice, d->touchPoints.values(), mods);
@@ -1174,22 +1120,6 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
     return S_OK;
 }
 
-HRESULT QWinRTScreen::onSizeChanged(ICoreWindow *, IWindowSizeChangedEventArgs *)
-{
-    Q_D(QWinRTScreen);
-
-    Rect size;
-    HRESULT hr;
-    hr = d->coreWindow->get_Bounds(&size);
-    RETURN_OK_IF_FAILED("Failed to get window bounds");
-    d->logicalSize = QSizeF(size.Width, size.Height);
-    qCDebug(lcQpaWindows) << __FUNCTION__ << d->logicalSize;
-    QWindowSystemInterface::handleScreenGeometryChange(screen(), geometry(), availableGeometry());
-    QPlatformScreen::resizeMaximizedWindows();
-    handleExpose();
-    return S_OK;
-}
-
 HRESULT QWinRTScreen::onActivated(ICoreWindow *, IWindowActivatedEventArgs *args)
 {
     Q_D(QWinRTScreen);
@@ -1228,8 +1158,10 @@ HRESULT QWinRTScreen::onVisibilityChanged(ICoreWindow *, IVisibilityChangedEvent
     RETURN_OK_IF_FAILED("Failed to get visibility.");
     qCDebug(lcQpaWindows) << __FUNCTION__ << visible;
     QWindowSystemInterface::handleApplicationStateChanged(visible ? Qt::ApplicationActive : Qt::ApplicationHidden);
-    if (visible)
+    if (visible) {
         handleExpose();
+        onWindowSizeChanged(nullptr, nullptr);
+    }
     return S_OK;
 }
 
@@ -1245,9 +1177,7 @@ HRESULT QWinRTScreen::onOrientationChanged(IDisplayInformation *, IInspectable *
     if (d->orientation != newOrientation) {
         d->orientation = newOrientation;
         qCDebug(lcQpaWindows) << "  New orientation:" << newOrientation;
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
-        onSizeChanged(nullptr, nullptr);
-#endif
+        onWindowSizeChanged(nullptr, nullptr);
         QWindowSystemInterface::handleScreenOrientationChange(screen(), d->orientation);
         handleExpose(); // Clean broken frames caused by race between Qt and ANGLE
     }
@@ -1291,20 +1221,35 @@ HRESULT QWinRTScreen::onDpiChanged(IDisplayInformation *, IInspectable *)
     return S_OK;
 }
 
-#ifdef Q_OS_WINPHONE
-HRESULT QWinRTScreen::onStatusBarShowing(IStatusBar *, IInspectable *)
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
+HRESULT QWinRTScreen::onWindowSizeChanged(IApplicationView *, IInspectable *)
+#else
+HRESULT QWinRTScreen::onWindowSizeChanged(ICoreWindow *, IWindowSizeChangedEventArgs *)
+#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
 {
-    qCDebug(lcQpaWindows) << __FUNCTION__;
-    onSizeChanged(nullptr, nullptr);
-    return S_OK;
-}
+    Q_D(QWinRTScreen);
 
-HRESULT QWinRTScreen::onStatusBarHiding(IStatusBar *, IInspectable *)
-{
-    qCDebug(lcQpaWindows) << __FUNCTION__;
-    onSizeChanged(nullptr, nullptr);
+    HRESULT hr;
+    Rect windowSize;
+
+    hr = d->coreWindow->get_Bounds(&windowSize);
+    RETURN_OK_IF_FAILED("Failed to get window bounds");
+    d->logicalRect = QRectF(windowSize.X, windowSize.Y, windowSize.Width, windowSize.Height);
+
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
+    Rect visibleRect;
+    hr = d->view2->get_VisibleBounds(&visibleRect);
+    RETURN_OK_IF_FAILED("Failed to get window visible bounds");
+    d->visibleRect = QRectF(visibleRect.X, visibleRect.Y, visibleRect.Width, visibleRect.Height);
+#else
+    d->visibleRect = QRectF(windowSize.X, windowSize.Y, windowSize.Width, windowSize.Height);
+#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
+
+    qCDebug(lcQpaWindows) << __FUNCTION__ << d->logicalRect;
+    QWindowSystemInterface::handleScreenGeometryChange(screen(), geometry(), availableGeometry());
+    QPlatformScreen::resizeMaximizedWindows();
+    handleExpose();
     return S_OK;
 }
-#endif //Q_OS_WINPHONE
 
 QT_END_NAMESPACE
