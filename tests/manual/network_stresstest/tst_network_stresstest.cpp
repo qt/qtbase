@@ -135,7 +135,7 @@ void tst_NetworkStressTest::init()
 {
     // clear the internal cache
 #ifndef QT_BUILD_INTERNAL
-    if (strncmp(QTest::currentTestFunction(), "nam") == 0)
+    if (strncmp(QTest::currentTestFunction(), "nam", 3) == 0)
         QSKIP("QNetworkAccessManager tests disabled");
 #endif
 }
