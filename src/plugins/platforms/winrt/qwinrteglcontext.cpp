@@ -138,6 +138,7 @@ void QWinRTEGLContext::initialize()
         EGL_CONTEXT_CLIENT_VERSION, d->format.majorVersion(),
         EGL_CONTEXT_MINOR_VERSION_KHR, d->format.minorVersion(),
         EGL_CONTEXT_FLAGS_KHR, flags,
+        EGL_CONTEXT_OPENGL_NO_ERROR_KHR, true,
         EGL_NONE
     };
     d->eglContext = eglCreateContext(g->eglDisplay, d->eglConfig, d->eglShareContext, attributes);
