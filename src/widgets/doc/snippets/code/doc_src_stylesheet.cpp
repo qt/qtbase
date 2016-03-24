@@ -140,5 +140,5 @@ ageSpinBox->setProperty("mandatoryField", true);
 //! [95]
 
 //! [96]
-qApp->setAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles, true);
-//! [97]
+QCoreApplication::setAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles, true);
+//! [96]
