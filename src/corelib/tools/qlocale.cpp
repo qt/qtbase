@@ -3487,7 +3487,13 @@ QString QLocale::toCurrencyString(double value, const QString &symbol) const
 
 /*!
     \since 5.7
-    \overload
+    \overload toCurrencyString()
+
+    Returns a localized string representation of \a value as a currency.
+    If the \a symbol is provided it is used instead of the default currency symbol.
+    If the \a precision is provided it is used to set the precision of the currency value.
+
+    \sa currencySymbol()
  */
 QString QLocale::toCurrencyString(double value, const QString &symbol, int precision) const
 {
