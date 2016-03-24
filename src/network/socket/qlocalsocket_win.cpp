@@ -213,15 +213,21 @@ qint64 QLocalSocket::readData(char *data, qint64 maxSize)
     }
 }
 
-qint64 QLocalSocket::writeData(const char *data, qint64 maxSize)
+qint64 QLocalSocket::writeData(const char *data, qint64 len)
 {
     Q_D(QLocalSocket);
+    if (len == 0)
+        return 0;
+    char *dest = d->writeBuffer.reserve(len);
+    memcpy(dest, data, len);
     if (!d->pipeWriter) {
         d->pipeWriter = new QWindowsPipeWriter(d->handle, this);
-        connect(d->pipeWriter, SIGNAL(canWrite()), this, SLOT(_q_canWrite()));
-        connect(d->pipeWriter, SIGNAL(bytesWritten(qint64)), this, SIGNAL(bytesWritten(qint64)));
+        QObjectPrivate::connect(d->pipeWriter, &QWindowsPipeWriter::bytesWritten,
+                                d, &QLocalSocketPrivate::_q_bytesWritten);
     }
-    return d->pipeWriter->write(data, maxSize);
+    if (!d->pipeWriter->isWriteOperationActive())
+        d->startNextWrite();
+    return len;
 }
 
 void QLocalSocket::abort()
@@ -230,6 +236,7 @@ void QLocalSocket::abort()
     if (d->pipeWriter) {
         delete d->pipeWriter;
         d->pipeWriter = 0;
+        d->writeBuffer.clear();
     }
     close();
 }
@@ -272,7 +279,7 @@ qint64 QLocalSocket::bytesAvailable() const
 qint64 QLocalSocket::bytesToWrite() const
 {
     Q_D(const QLocalSocket);
-    return (d->pipeWriter) ? d->pipeWriter->bytesToWrite() : 0;
+    return d->writeBuffer.size();
 }
 
 bool QLocalSocket::canReadLine() const
@@ -304,9 +311,12 @@ void QLocalSocket::close()
 bool QLocalSocket::flush()
 {
     Q_D(QLocalSocket);
-    if (d->pipeWriter)
-        return d->pipeWriter->waitForWrite(0);
-    return false;
+    bool written = false;
+    if (d->pipeWriter) {
+        while (d->pipeWriter->waitForWrite(0))
+            written = true;
+    }
+    return written;
 }
 
 void QLocalSocket::disconnectFromServer()
@@ -319,10 +329,11 @@ void QLocalSocket::disconnectFromServer()
         // It must be destroyed before close() to prevent an infinite loop.
         delete d->pipeWriter;
         d->pipeWriter = 0;
+        d->writeBuffer.clear();
     }
 
     flush();
-    if (d->pipeWriter && d->pipeWriter->bytesToWrite() != 0) {
+    if (bytesToWrite() != 0) {
         d->state = QLocalSocket::ClosingState;
         emit stateChanged(d->state);
     } else {
@@ -351,11 +362,24 @@ bool QLocalSocket::setSocketDescriptor(qintptr socketDescriptor,
     return true;
 }
 
-void QLocalSocketPrivate::_q_canWrite()
+void QLocalSocketPrivate::startNextWrite()
 {
     Q_Q(QLocalSocket);
-    if (state == QLocalSocket::ClosingState)
-        q->close();
+    if (writeBuffer.isEmpty()) {
+        if (state == QLocalSocket::ClosingState)
+            q->close();
+    } else {
+        Q_ASSERT(pipeWriter);
+        pipeWriter->write(writeBuffer.readPointer(), writeBuffer.nextDataBlockSize());
+    }
+}
+
+void QLocalSocketPrivate::_q_bytesWritten(qint64 bytes)
+{
+    Q_Q(QLocalSocket);
+    writeBuffer.free(bytes);
+    startNextWrite();
+    emit q->bytesWritten(bytes);
 }
 
 qintptr QLocalSocket::socketDescriptor() const

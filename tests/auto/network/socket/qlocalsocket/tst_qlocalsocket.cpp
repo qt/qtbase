@@ -97,7 +97,10 @@ private slots:
 
     void multiConnect();
     void writeOnlySocket();
+
+    void writeToClientAndDisconnect_data();
     void writeToClientAndDisconnect();
+
     void debug();
     void bytesWrittenSignal();
     void syncDisconnectNotify();
@@ -1026,8 +1029,16 @@ void tst_QLocalSocket::writeOnlySocket()
     QCOMPARE(client.state(), QLocalSocket::ConnectedState);
 }
 
+void tst_QLocalSocket::writeToClientAndDisconnect_data()
+{
+    QTest::addColumn<int>("chunks");
+    QTest::newRow("one chunk") << 1;
+    QTest::newRow("several chunks") << 20;
+}
+
 void tst_QLocalSocket::writeToClientAndDisconnect()
 {
+    QFETCH(int, chunks);
     QLocalServer server;
     QLocalSocket client;
     QSignalSpy readChannelFinishedSpy(&client, SIGNAL(readChannelFinished()));
@@ -1041,14 +1052,17 @@ void tst_QLocalSocket::writeToClientAndDisconnect()
 
     char buffer[100];
     memset(buffer, 0, sizeof(buffer));
-    QCOMPARE(clientSocket->write(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
-    clientSocket->waitForBytesWritten();
+    for (int i = 0; i < chunks; ++i)
+        QCOMPARE(clientSocket->write(buffer, sizeof(buffer)), qint64(sizeof(buffer)));
+    while (clientSocket->bytesToWrite())
+        QVERIFY(clientSocket->waitForBytesWritten());
     clientSocket->close();
     server.close();
 
     client.waitForDisconnected();
     QCOMPARE(readChannelFinishedSpy.count(), 1);
-    QCOMPARE(client.read(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
+    const QByteArray received = client.readAll();
+    QCOMPARE(received.size(), qint64(sizeof(buffer) * chunks));
     QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
 }
 

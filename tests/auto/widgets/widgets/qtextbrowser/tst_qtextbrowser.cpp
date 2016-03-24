@@ -83,6 +83,7 @@ private slots:
     void clearHistory();
     void sourceInsideLoadResource();
     void textInteractionFlags_vs_readOnly();
+    void inputMethodAttribute_vs_readOnly();
     void anchorsWithSelfBuiltHtml();
     void relativeNonLocalUrls();
     void adjacentAnchors();
@@ -436,6 +437,16 @@ void tst_QTextBrowser::textInteractionFlags_vs_readOnly()
     QCOMPARE(browser->textInteractionFlags(), Qt::TextEditorInteraction);
     browser->setReadOnly(true);
     QCOMPARE(browser->textInteractionFlags(), Qt::TextBrowserInteraction);
+}
+
+void tst_QTextBrowser::inputMethodAttribute_vs_readOnly()
+{
+    QVERIFY(browser->isReadOnly());
+    QVERIFY(!browser->testAttribute(Qt::WA_InputMethodEnabled));
+    browser->setReadOnly(false);
+    QVERIFY(browser->testAttribute(Qt::WA_InputMethodEnabled));
+    browser->setReadOnly(true);
+    QVERIFY(!browser->testAttribute(Qt::WA_InputMethodEnabled));
 }
 
 void tst_QTextBrowser::anchorsWithSelfBuiltHtml()

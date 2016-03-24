@@ -634,18 +634,18 @@ QList<QFontDatabase::WritingSystem> QRawFont::supportedWritingSystems() const
     if (d->isValid()) {
         QByteArray os2Table = fontTable("OS/2");
         if (os2Table.size() > 86) {
-            char *data = os2Table.data();
-            quint32 *bigEndianUnicodeRanges = reinterpret_cast<quint32 *>(data + 42);
-            quint32 *bigEndianCodepageRanges = reinterpret_cast<quint32 *>(data + 78);
+            const uchar * const data = reinterpret_cast<const uchar *>(os2Table.constData());
+            const uchar * const bigEndianUnicodeRanges  = data + 42;
+            const uchar * const bigEndianCodepageRanges = data + 78;
 
             quint32 unicodeRanges[4];
             quint32 codepageRanges[2];
 
-            for (int i=0; i<4; ++i) {
-                if (i < 2)
-                    codepageRanges[i] = qFromBigEndian(bigEndianCodepageRanges[i]);
-                unicodeRanges[i] = qFromBigEndian(bigEndianUnicodeRanges[i]);
-            }
+            for (size_t i = 0; i < sizeof unicodeRanges / sizeof *unicodeRanges; ++i)
+                unicodeRanges[i] = qFromBigEndian<quint32>(bigEndianUnicodeRanges + i * sizeof(quint32));
+
+            for (size_t i = 0; i < sizeof codepageRanges / sizeof *codepageRanges; ++i)
+                codepageRanges[i] = qFromBigEndian<quint32>(bigEndianCodepageRanges + i * sizeof(quint32));
 
             QSupportedWritingSystems ws = QPlatformFontDatabase::writingSystemsFromTrueTypeBits(unicodeRanges, codepageRanges);
             for (int i = 0; i < QFontDatabase::WritingSystemsCount; ++i) {
