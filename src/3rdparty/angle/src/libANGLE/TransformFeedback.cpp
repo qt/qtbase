@@ -5,67 +5,146 @@
 //
 
 #include "libANGLE/TransformFeedback.h"
+
+#include "libANGLE/Buffer.h"
+#include "libANGLE/Caps.h"
 #include "libANGLE/renderer/TransformFeedbackImpl.h"
 
 namespace gl
 {
 
-TransformFeedback::TransformFeedback(rx::TransformFeedbackImpl* impl, GLuint id)
+TransformFeedback::TransformFeedback(rx::TransformFeedbackImpl *impl, GLuint id, const Caps &caps)
     : RefCountObject(id),
-      mTransformFeedback(impl),
-      mStarted(GL_FALSE),
+      mImplementation(impl),
+      mLabel(),
+      mActive(false),
       mPrimitiveMode(GL_NONE),
-      mPaused(GL_FALSE)
+      mPaused(false),
+      mGenericBuffer(),
+      mIndexedBuffers(caps.maxTransformFeedbackSeparateAttributes)
 {
     ASSERT(impl != NULL);
 }
 
 TransformFeedback::~TransformFeedback()
 {
-    SafeDelete(mTransformFeedback);
+    mGenericBuffer.set(nullptr);
+    for (size_t i = 0; i < mIndexedBuffers.size(); i++)
+    {
+        mIndexedBuffers[i].set(nullptr);
+    }
+
+    SafeDelete(mImplementation);
 }
 
-void TransformFeedback::start(GLenum primitiveMode)
+void TransformFeedback::setLabel(const std::string &label)
 {
-    mStarted = GL_TRUE;
+    mLabel = label;
+}
+
+const std::string &TransformFeedback::getLabel() const
+{
+    return mLabel;
+}
+
+void TransformFeedback::begin(GLenum primitiveMode)
+{
+    mActive = true;
     mPrimitiveMode = primitiveMode;
-    mPaused = GL_FALSE;
-    mTransformFeedback->begin(primitiveMode);
+    mPaused = false;
+    mImplementation->begin(primitiveMode);
 }
 
-void TransformFeedback::stop()
+void TransformFeedback::end()
 {
-    mStarted = GL_FALSE;
+    mActive = false;
     mPrimitiveMode = GL_NONE;
-    mPaused = GL_FALSE;
-    mTransformFeedback->end();
-}
-
-GLboolean TransformFeedback::isStarted() const
-{
-    return mStarted;
-}
-
-GLenum TransformFeedback::getDrawMode() const
-{
-    return mPrimitiveMode;
+    mPaused = false;
+    mImplementation->end();
 }
 
 void TransformFeedback::pause()
 {
-    mPaused = GL_TRUE;
-    mTransformFeedback->pause();
+    mPaused = true;
+    mImplementation->pause();
 }
 
 void TransformFeedback::resume()
 {
-    mPaused = GL_FALSE;
-    mTransformFeedback->resume();
+    mPaused = false;
+    mImplementation->resume();
 }
 
-GLboolean TransformFeedback::isPaused() const
+bool TransformFeedback::isActive() const
+{
+    return mActive;
+}
+
+bool TransformFeedback::isPaused() const
 {
     return mPaused;
+}
+
+GLenum TransformFeedback::getPrimitiveMode() const
+{
+    return mPrimitiveMode;
+}
+
+void TransformFeedback::bindGenericBuffer(Buffer *buffer)
+{
+    mGenericBuffer.set(buffer);
+    mImplementation->bindGenericBuffer(mGenericBuffer);
+}
+
+void TransformFeedback::detachBuffer(GLuint bufferName)
+{
+    for (size_t index = 0; index < mIndexedBuffers.size(); index++)
+    {
+        if (mIndexedBuffers[index].id() == bufferName)
+        {
+            mIndexedBuffers[index].set(nullptr);
+            mImplementation->bindIndexedBuffer(index, mIndexedBuffers[index]);
+        }
+    }
+
+    if (mGenericBuffer.id() == bufferName)
+    {
+        mGenericBuffer.set(nullptr);
+        mImplementation->bindGenericBuffer(mGenericBuffer);
+    }
+}
+
+const BindingPointer<Buffer> &TransformFeedback::getGenericBuffer() const
+{
+    return mGenericBuffer;
+}
+
+void TransformFeedback::bindIndexedBuffer(size_t index, Buffer *buffer, size_t offset, size_t size)
+{
+    ASSERT(index < mIndexedBuffers.size());
+    mIndexedBuffers[index].set(buffer, offset, size);
+    mImplementation->bindIndexedBuffer(index, mIndexedBuffers[index]);
+}
+
+const OffsetBindingPointer<Buffer> &TransformFeedback::getIndexedBuffer(size_t index) const
+{
+    ASSERT(index < mIndexedBuffers.size());
+    return mIndexedBuffers[index];
+}
+
+size_t TransformFeedback::getIndexedBufferCount() const
+{
+    return mIndexedBuffers.size();
+}
+
+rx::TransformFeedbackImpl *TransformFeedback::getImplementation()
+{
+    return mImplementation;
+}
+
+const rx::TransformFeedbackImpl *TransformFeedback::getImplementation() const
+{
+    return mImplementation;
 }
 
 }

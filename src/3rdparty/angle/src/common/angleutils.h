@@ -25,16 +25,15 @@ namespace angle
 
 class NonCopyable
 {
-#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
   public:
     NonCopyable() = default;
     ~NonCopyable() = default;
   protected:
     NonCopyable(const NonCopyable&) = delete;
     void operator=(const NonCopyable&) = delete;
-#endif
 };
 
+extern const uintptr_t DirtyPointer;
 }
 
 template <typename T, size_t N>
@@ -72,9 +71,9 @@ void SafeDelete(T*& resource)
 template <typename T>
 void SafeDeleteContainer(T& resource)
 {
-    for (typename T::iterator i = resource.begin(); i != resource.end(); i++)
+    for (auto &element : resource)
     {
-        SafeDelete(*i);
+        SafeDelete(element);
     }
     resource.clear();
 }

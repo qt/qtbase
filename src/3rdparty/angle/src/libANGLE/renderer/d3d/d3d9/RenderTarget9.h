@@ -22,10 +22,12 @@ class RenderTarget9 : public RenderTargetD3D
   public:
     RenderTarget9() { }
     virtual ~RenderTarget9() { }
+    // Retrieve the texture that backs this render target, may be null for swap chain render
+    // targets.
+    virtual IDirect3DBaseTexture9 *getTexture() const = 0;
+    virtual size_t getTextureLevel() const = 0;
 
-    static RenderTarget9 *makeRenderTarget9(RenderTargetD3D *renderTarget);
-
-    virtual IDirect3DSurface9 *getSurface() = 0;
+    virtual IDirect3DSurface9 *getSurface() const = 0;
 
     virtual D3DFORMAT getD3DFormat() const = 0;
 };
@@ -33,7 +35,13 @@ class RenderTarget9 : public RenderTargetD3D
 class TextureRenderTarget9 : public RenderTarget9
 {
   public:
-    TextureRenderTarget9(IDirect3DSurface9 *surface, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth,
+    TextureRenderTarget9(IDirect3DBaseTexture9 *texture,
+                         size_t textureLevel,
+                         IDirect3DSurface9 *surface,
+                         GLenum internalFormat,
+                         GLsizei width,
+                         GLsizei height,
+                         GLsizei depth,
                          GLsizei samples);
     virtual ~TextureRenderTarget9();
 
@@ -43,7 +51,9 @@ class TextureRenderTarget9 : public RenderTarget9
     GLenum getInternalFormat() const override;
     GLsizei getSamples() const override;
 
-    IDirect3DSurface9 *getSurface() override;
+    IDirect3DBaseTexture9 *getTexture() const override;
+    size_t getTextureLevel() const override;
+    IDirect3DSurface9 *getSurface() const override;
 
     D3DFORMAT getD3DFormat() const override;
 
@@ -55,6 +65,8 @@ class TextureRenderTarget9 : public RenderTarget9
     D3DFORMAT mD3DFormat;
     GLsizei mSamples;
 
+    IDirect3DBaseTexture9 *mTexture;
+    size_t mTextureLevel;
     IDirect3DSurface9 *mRenderTarget;
 };
 
@@ -70,7 +82,9 @@ class SurfaceRenderTarget9 : public RenderTarget9
     GLenum getInternalFormat() const override;
     GLsizei getSamples() const override;
 
-    IDirect3DSurface9 *getSurface() override;
+    IDirect3DBaseTexture9 *getTexture() const override;
+    size_t getTextureLevel() const override;
+    IDirect3DSurface9 *getSurface() const override;
 
     D3DFORMAT getD3DFormat() const override;
 

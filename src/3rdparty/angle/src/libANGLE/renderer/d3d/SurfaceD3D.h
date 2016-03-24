@@ -25,19 +25,27 @@ class RendererD3D;
 class SurfaceD3D : public SurfaceImpl
 {
   public:
-    static SurfaceD3D *createFromWindow(RendererD3D *renderer, egl::Display *display, const egl::Config *config,
-                                        EGLNativeWindowType window, EGLint fixedSize, EGLint width, EGLint height);
+    static SurfaceD3D *createFromWindow(RendererD3D *renderer,
+                                        egl::Display *display,
+                                        const egl::Config *config,
+                                        EGLNativeWindowType window,
+                                        EGLint fixedSize,
+                                        EGLint directComposition,
+                                        EGLint width,
+                                        EGLint height,
+                                        EGLint orientation);
     static SurfaceD3D *createOffscreen(RendererD3D *renderer, egl::Display *display, const egl::Config *config,
                                        EGLClientBuffer shareHandle, EGLint width, EGLint height);
     ~SurfaceD3D() override;
     void releaseSwapChain();
 
     egl::Error initialize() override;
+    FramebufferImpl *createDefaultFramebuffer(const gl::Framebuffer::Data &data) override;
 
     egl::Error swap() override;
     egl::Error postSubBuffer(EGLint x, EGLint y, EGLint width, EGLint height) override;
     egl::Error querySurfacePointerANGLE(EGLint attribute, void **value) override;
-    egl::Error bindTexImage(EGLint buffer) override;
+    egl::Error bindTexImage(gl::Texture *texture, EGLint buffer) override;
     egl::Error releaseTexImage(EGLint buffer) override;
     void setSwapInterval(EGLint interval) override;
 
@@ -45,6 +53,7 @@ class SurfaceD3D : public SurfaceImpl
     EGLint getHeight() const override;
 
     EGLint isPostSubBufferSupported() const override;
+    EGLint getSwapBehavior() const override;
 
     // D3D implementations
     SwapChainD3D *getSwapChain() const;
@@ -54,28 +63,36 @@ class SurfaceD3D : public SurfaceImpl
     // Returns true if swapchain changed due to resize or interval update
     bool checkForOutOfDateSwapChain();
 
+    gl::Error getAttachmentRenderTarget(const gl::FramebufferAttachment::Target &target,
+                                        FramebufferAttachmentRenderTarget **rtOut) override;
+
   private:
-    SurfaceD3D(RendererD3D *renderer, egl::Display *display, const egl::Config *config, EGLint width, EGLint height,
-               EGLint fixedSize, EGLClientBuffer shareHandle, EGLNativeWindowType window);
+    SurfaceD3D(RendererD3D *renderer,
+               egl::Display *display,
+               const egl::Config *config,
+               EGLint width,
+               EGLint height,
+               EGLint fixedSize,
+               EGLint orientation,
+               EGLint directComposition,
+               EGLClientBuffer shareHandle,
+               EGLNativeWindowType window);
 
     egl::Error swapRect(EGLint x, EGLint y, EGLint width, EGLint height);
     egl::Error resetSwapChain(int backbufferWidth, int backbufferHeight);
     egl::Error resizeSwapChain(int backbufferWidth, int backbufferHeight);
 
-    void subclassWindow();
-    void unsubclassWindow();
-
     RendererD3D *mRenderer;
     egl::Display *mDisplay;
 
     bool mFixedSize;
+    GLint mOrientation;
 
     GLenum mRenderTargetFormat;
     GLenum mDepthStencilFormat;
 
     SwapChainD3D *mSwapChain;
     bool mSwapIntervalDirty;
-    bool mWindowSubclassed;        // Indicates whether we successfully subclassed mWindow for WM_RESIZE hooking
 
     NativeWindow mNativeWindow;   // Handler for the Window that the surface is created for.
     EGLint mWidth;

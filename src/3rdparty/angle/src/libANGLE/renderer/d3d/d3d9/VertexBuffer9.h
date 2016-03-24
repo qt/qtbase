@@ -23,10 +23,13 @@ class VertexBuffer9 : public VertexBuffer
 
     virtual gl::Error initialize(unsigned int size, bool dynamicUsage);
 
-    static VertexBuffer9 *makeVertexBuffer9(VertexBuffer *vertexBuffer);
-
-    virtual gl::Error storeVertexAttributes(const gl::VertexAttribute &attrib, const gl::VertexAttribCurrentValueData &currentValue,
-                                            GLint start, GLsizei count, GLsizei instances, unsigned int offset);
+    gl::Error storeVertexAttributes(const gl::VertexAttribute &attrib,
+                                    GLenum currentValueType,
+                                    GLint start,
+                                    GLsizei count,
+                                    GLsizei instances,
+                                    unsigned int offset,
+                                    const uint8_t *sourceData) override;
 
     virtual gl::Error getSpaceRequired(const gl::VertexAttribute &attrib, GLsizei count, GLsizei instances, unsigned int *outSpaceRequired) const;
 

@@ -13,7 +13,8 @@
 #include "libANGLE/RefCountObject.h"
 
 #include <stdint.h>
-#include <float.h>
+
+#include <bitset>
 
 namespace gl
 {
@@ -22,6 +23,20 @@ class State;
 class Program;
 struct VertexAttribute;
 struct VertexAttribCurrentValueData;
+
+enum PrimitiveType
+{
+    PRIMITIVE_POINTS,
+    PRIMITIVE_LINES,
+    PRIMITIVE_LINE_STRIP,
+    PRIMITIVE_LINE_LOOP,
+    PRIMITIVE_TRIANGLES,
+    PRIMITIVE_TRIANGLE_STRIP,
+    PRIMITIVE_TRIANGLE_FAN,
+    PRIMITIVE_TYPE_MAX,
+};
+
+PrimitiveType GetPrimitiveType(GLenum drawMode);
 
 enum SamplerType
 {
@@ -42,19 +57,10 @@ struct Color
 };
 
 template <typename T>
-bool operator==(const Color<T> &a, const Color<T> &b)
-{
-    return a.red == b.red &&
-           a.green == b.green &&
-           a.blue == b.blue &&
-           a.alpha == b.alpha;
-}
+bool operator==(const Color<T> &a, const Color<T> &b);
 
 template <typename T>
-bool operator!=(const Color<T> &a, const Color<T> &b)
-{
-    return !(a == b);
-}
+bool operator!=(const Color<T> &a, const Color<T> &b);
 
 typedef Color<float> ColorF;
 typedef Color<int> ColorI;
@@ -62,13 +68,21 @@ typedef Color<unsigned int> ColorUI;
 
 struct Rectangle
 {
+    Rectangle() : x(0), y(0), width(0), height(0) {}
+    Rectangle(int x_in, int y_in, int width_in, int height_in)
+        : x(x_in), y(y_in), width(width_in), height(height_in)
+    {
+    }
+
+    int x0() const { return x; }
+    int y0() const { return y; }
+    int x1() const { return x + width; }
+    int y1() const { return y + height; }
+
     int x;
     int y;
     int width;
     int height;
-
-    Rectangle() : x(0), y(0), width(0), height(0) { }
-    Rectangle(int x_in, int y_in, int width_in, int height_in) : x(x_in), y(y_in), width(width_in), height(height_in) { }
 };
 
 bool operator==(const Rectangle &a, const Rectangle &b);
@@ -97,6 +111,9 @@ struct Extents
 
     bool empty() const { return (width * height * depth) == 0; }
 };
+
+bool operator==(const Extents &lhs, const Extents &rhs);
+bool operator!=(const Extents &lhs, const Extents &rhs);
 
 struct Box
 {
@@ -172,35 +189,57 @@ struct DepthStencilState
     GLuint stencilBackWritemask;
 };
 
+// State from Table 6.10 (state per sampler object)
 struct SamplerState
 {
     SamplerState();
 
     GLenum minFilter;
     GLenum magFilter;
+
     GLenum wrapS;
     GLenum wrapT;
     GLenum wrapR;
+
+    // From EXT_texture_filter_anisotropic
     float maxAnisotropy;
 
-    GLint baseLevel;
-    GLint maxLevel;
     GLfloat minLod;
     GLfloat maxLod;
 
     GLenum compareMode;
     GLenum compareFunc;
+};
+
+bool operator==(const SamplerState &a, const SamplerState &b);
+bool operator!=(const SamplerState &a, const SamplerState &b);
+
+// State from Table 6.9 (state per texture object) in the OpenGL ES 3.0.2 spec.
+struct TextureState
+{
+    TextureState();
 
     GLenum swizzleRed;
     GLenum swizzleGreen;
     GLenum swizzleBlue;
     GLenum swizzleAlpha;
 
-    bool swizzleRequired() const;
+    SamplerState samplerState;
 
-    bool operator==(const SamplerState &other) const;
-    bool operator!=(const SamplerState &other) const;
+    GLuint baseLevel;
+    GLuint maxLevel;
+
+    bool immutableFormat;
+    GLuint immutableLevels;
+
+    // From GL_ANGLE_texture_usage
+    GLenum usage;
+
+    bool swizzleRequired() const;
 };
+
+bool operator==(const TextureState &a, const TextureState &b);
+bool operator!=(const TextureState &a, const TextureState &b);
 
 struct PixelUnpackState
 {
@@ -257,53 +296,55 @@ struct PixelPackState
     {}
 };
 
-struct VertexFormat
-{
-    GLenum      mType;
-    GLboolean   mNormalized;
-    GLuint      mComponents;
-    bool        mPureInteger;
+// Used in Program and VertexArray.
+typedef std::bitset<MAX_VERTEX_ATTRIBS> AttributesMask;
 
-    VertexFormat();
-    VertexFormat(GLenum type, GLboolean normalized, GLuint components, bool pureInteger);
-    explicit VertexFormat(const VertexAttribute &attribute);
-    VertexFormat(const VertexAttribute &attribute, GLenum currentValueType);
-
-    static void GetInputLayout(VertexFormat *inputLayout,
-                               Program *program,
-                               const State& currentValues);
-
-    bool operator==(const VertexFormat &other) const;
-    bool operator!=(const VertexFormat &other) const;
-    bool operator<(const VertexFormat& other) const;
-};
-
+// Use in Program
+typedef std::bitset<IMPLEMENTATION_MAX_COMBINED_SHADER_UNIFORM_BUFFERS> UniformBlockBindingMask;
 }
 
 namespace rx
 {
-
 enum VendorID : uint32_t
 {
-    VENDOR_ID_AMD = 0x1002,
-    VENDOR_ID_INTEL = 0x8086,
-    VENDOR_ID_NVIDIA = 0x10DE,
+    VENDOR_ID_UNKNOWN = 0x0,
+    VENDOR_ID_AMD     = 0x1002,
+    VENDOR_ID_INTEL   = 0x8086,
+    VENDOR_ID_NVIDIA  = 0x10DE,
 };
+
+// A macro that determines whether an object has a given runtime type.
+#if defined(__clang__)
+#if __has_feature(cxx_rtti)
+#define ANGLE_HAS_DYNAMIC_CAST 1
+#endif
+#elif !defined(NDEBUG) && (!defined(_MSC_VER) || defined(_CPPRTTI)) && (!defined(__GNUC__) || __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 3) || defined(__GXX_RTTI))
+#define ANGLE_HAS_DYNAMIC_CAST 1
+#endif
+
+#ifdef ANGLE_HAS_DYNAMIC_CAST
+#define ANGLE_HAS_DYNAMIC_TYPE(type, obj) (dynamic_cast<type >(obj) != nullptr)
+#undef ANGLE_HAS_DYNAMIC_CAST
+#else
+#define ANGLE_HAS_DYNAMIC_TYPE(type, obj) (obj != nullptr)
+#endif
 
 // Downcast a base implementation object (EG TextureImpl to TextureD3D)
 template <typename DestT, typename SrcT>
 inline DestT *GetAs(SrcT *src)
 {
-    ASSERT(HAS_DYNAMIC_TYPE(DestT*, src));
+    ASSERT(ANGLE_HAS_DYNAMIC_TYPE(DestT*, src));
     return static_cast<DestT*>(src);
 }
 
 template <typename DestT, typename SrcT>
 inline const DestT *GetAs(const SrcT *src)
 {
-    ASSERT(HAS_DYNAMIC_TYPE(const DestT*, src));
+    ASSERT(ANGLE_HAS_DYNAMIC_TYPE(const DestT*, src));
     return static_cast<const DestT*>(src);
 }
+
+#undef ANGLE_HAS_DYNAMIC_TYPE
 
 // Downcast a GL object to an Impl (EG gl::Texture to rx::TextureD3D)
 template <typename DestT, typename SrcT>
@@ -318,6 +359,54 @@ inline const DestT *GetImplAs(const SrcT *src)
     return GetAs<const DestT>(src->getImplementation());
 }
 
+}
+
+#include "angletypes.inl"
+
+namespace angle
+{
+// Zero-based for better array indexing
+enum FramebufferBinding
+{
+    FramebufferBindingRead = 0,
+    FramebufferBindingDraw,
+    FramebufferBindingSingletonMax,
+    FramebufferBindingBoth = FramebufferBindingSingletonMax,
+    FramebufferBindingMax,
+    FramebufferBindingUnknown = FramebufferBindingMax,
+};
+
+inline FramebufferBinding EnumToFramebufferBinding(GLenum enumValue)
+{
+    switch (enumValue)
+    {
+        case GL_READ_FRAMEBUFFER:
+            return FramebufferBindingRead;
+        case GL_DRAW_FRAMEBUFFER:
+            return FramebufferBindingDraw;
+        case GL_FRAMEBUFFER:
+            return FramebufferBindingBoth;
+        default:
+            UNREACHABLE();
+            return FramebufferBindingUnknown;
+    }
+}
+
+inline GLenum FramebufferBindingToEnum(FramebufferBinding binding)
+{
+    switch (binding)
+    {
+        case FramebufferBindingRead:
+            return GL_READ_FRAMEBUFFER;
+        case FramebufferBindingDraw:
+            return GL_DRAW_FRAMEBUFFER;
+        case FramebufferBindingBoth:
+            return GL_FRAMEBUFFER;
+        default:
+            UNREACHABLE();
+            return GL_NONE;
+    }
+}
 }
 
 #endif // LIBANGLE_ANGLETYPES_H_

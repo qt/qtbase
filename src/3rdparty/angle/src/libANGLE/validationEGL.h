@@ -23,7 +23,9 @@ namespace egl
 
 class AttributeMap;
 struct Config;
+class Device;
 class Display;
+class Image;
 class Surface;
 
 // Object validation
@@ -31,6 +33,7 @@ Error ValidateDisplay(const Display *display);
 Error ValidateSurface(const Display *display, Surface *surface);
 Error ValidateConfig(const Display *display, const Config *config);
 Error ValidateContext(const Display *display, gl::Context *context);
+Error ValidateImage(const Display *display, const Image *image);
 
 // Entry point validation
 Error ValidateCreateContext(Display *display, Config *configuration, gl::Context *shareContext,
@@ -43,7 +46,24 @@ Error ValidateCreatePbufferSurface(Display *display, Config *config, const Attri
 Error ValidateCreatePbufferFromClientBuffer(Display *display, EGLenum buftype, EGLClientBuffer buffer,
                                             Config *config, const AttributeMap& attributes);
 
+Error ValidateCreateImageKHR(const Display *display,
+                             gl::Context *context,
+                             EGLenum target,
+                             EGLClientBuffer buffer,
+                             const AttributeMap &attributes);
+Error ValidateDestroyImageKHR(const Display *display, const Image *image);
 
+Error ValidateCreateDeviceANGLE(EGLint device_type,
+                                void *native_device,
+                                const EGLAttrib *attrib_list);
+Error ValidateReleaseDeviceANGLE(Device *device);
+
+// Other validation
+Error ValidateCompatibleConfigs(const Display *display,
+                                const Config *config1,
+                                const Surface *surface,
+                                const Config *config2,
+                                EGLint surfaceType);
 }
 
 #endif // LIBANGLE_VALIDATIONEGL_H_

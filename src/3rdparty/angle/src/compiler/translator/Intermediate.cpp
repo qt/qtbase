@@ -57,19 +57,10 @@ TIntermTyped *TIntermediate::addBinaryMath(
     if (!node->promote(mInfoSink))
         return NULL;
 
-    //
     // See if we can fold constants.
-    //
-    TIntermConstantUnion *leftTempConstant = left->getAsConstantUnion();
-    TIntermConstantUnion *rightTempConstant = right->getAsConstantUnion();
-    if (leftTempConstant && rightTempConstant)
-    {
-        TIntermTyped *typedReturnNode =
-            leftTempConstant->fold(node->getOp(), rightTempConstant, mInfoSink);
-
-        if (typedReturnNode)
-            return typedReturnNode;
-    }
+    TIntermTyped *foldedNode = node->fold(mInfoSink);
+    if (foldedNode)
+        return foldedNode;
 
     return node;
 }
@@ -129,10 +120,6 @@ TIntermTyped *TIntermediate::addIndex(
 TIntermTyped *TIntermediate::addUnaryMath(
     TOperator op, TIntermTyped *child, const TSourceLoc &line, const TType *funcReturnType)
 {
-    TIntermConstantUnion *childTempConstant = 0;
-    if (child->getAsConstantUnion())
-        childTempConstant = child->getAsConstantUnion();
-
     //
     // Make a new node for the operator.
     //
@@ -141,13 +128,9 @@ TIntermTyped *TIntermediate::addUnaryMath(
     node->setOperand(child);
     node->promote(funcReturnType);
 
-    if (childTempConstant)
-    {
-        TIntermTyped *newChild = childTempConstant->fold(op, 0, mInfoSink);
-
-        if (newChild)
-            return newChild;
-    }
+    TIntermTyped *foldedNode = node->fold(mInfoSink);
+    if (foldedNode)
+        return foldedNode;
 
     return node;
 }
@@ -246,6 +229,22 @@ TIntermAggregate *TIntermediate::makeAggregate(
     return aggNode;
 }
 
+// If the input node is nullptr, return nullptr.
+// If the input node is a sequence (block) node, return it.
+// If the input node is not a sequence node, put it inside a sequence node and return that.
+TIntermAggregate *TIntermediate::ensureSequence(TIntermNode *node)
+{
+    if (node == nullptr)
+        return nullptr;
+    TIntermAggregate *aggNode = node->getAsAggregate();
+    if (aggNode != nullptr && aggNode->getOp() == EOpSequence)
+        return aggNode;
+
+    aggNode = makeAggregate(node, node->getLine());
+    aggNode->setOp(EOpSequence);
+    return aggNode;
+}
+
 //
 // For "if" test nodes.  There are three children; a condition,
 // a true path, and a false path.  The two paths are in the
@@ -261,7 +260,7 @@ TIntermNode *TIntermediate::addSelection(
     // test now.
     //
 
-    if (cond->getAsTyped() && cond->getAsTyped()->getAsConstantUnion())
+    if (cond->getAsConstantUnion())
     {
         if (cond->getAsConstantUnion()->getBConst(0) == true)
         {
@@ -276,28 +275,38 @@ TIntermNode *TIntermediate::addSelection(
     }
 
     TIntermSelection *node = new TIntermSelection(
-        cond, nodePair.node1, nodePair.node2);
+        cond, ensureSequence(nodePair.node1), ensureSequence(nodePair.node2));
     node->setLine(line);
 
     return node;
 }
 
-TIntermTyped *TIntermediate::addComma(
-    TIntermTyped *left, TIntermTyped *right, const TSourceLoc &line)
+TIntermTyped *TIntermediate::addComma(TIntermTyped *left,
+                                      TIntermTyped *right,
+                                      const TSourceLoc &line,
+                                      int shaderVersion)
 {
-    if (left->getType().getQualifier() == EvqConst &&
-        right->getType().getQualifier() == EvqConst)
+    TQualifier resultQualifier = EvqConst;
+    // ESSL3.00 section 12.43: The result of a sequence operator is not a constant-expression.
+    if (shaderVersion >= 300 || left->getQualifier() != EvqConst ||
+        right->getQualifier() != EvqConst)
     {
-        return right;
+        resultQualifier = EvqTemporary;
+    }
+
+    TIntermTyped *commaNode = nullptr;
+    if (!left->hasSideEffects())
+    {
+        commaNode = right;
     }
     else
     {
-        TIntermTyped *commaAggregate = growAggregate(left, right, line);
-        commaAggregate->getAsAggregate()->setOp(EOpComma);
-        commaAggregate->setType(right->getType());
-        commaAggregate->getTypePointer()->setQualifier(EvqTemporary);
-        return commaAggregate;
+        commaNode = growAggregate(left, right, line);
+        commaNode->getAsAggregate()->setOp(EOpComma);
+        commaNode->setType(right->getType());
     }
+    commaNode->getTypePointer()->setQualifier(resultQualifier);
+    return commaNode;
 }
 
 //
@@ -305,38 +314,38 @@ TIntermTyped *TIntermediate::addComma(
 // a true path, and a false path.  The two paths are specified
 // as separate parameters.
 //
-// Returns the selection node created, or 0 if one could not be.
+// Returns the selection node created, or one of trueBlock and falseBlock if the expression could be folded.
 //
-TIntermTyped *TIntermediate::addSelection(
-    TIntermTyped *cond, TIntermTyped *trueBlock, TIntermTyped *falseBlock,
-    const TSourceLoc &line)
+TIntermTyped *TIntermediate::addSelection(TIntermTyped *cond, TIntermTyped *trueBlock, TIntermTyped *falseBlock,
+                                          const TSourceLoc &line)
 {
-    if (!cond || !trueBlock || !falseBlock ||
-        trueBlock->getType() != falseBlock->getType())
+    TQualifier resultQualifier = EvqTemporary;
+    if (cond->getQualifier() == EvqConst && trueBlock->getQualifier() == EvqConst &&
+        falseBlock->getQualifier() == EvqConst)
     {
-        return NULL;
+        resultQualifier = EvqConst;
     }
-
-    //
-    // See if all the operands are constant, then fold it otherwise not.
-    //
-
-    if (cond->getAsConstantUnion() &&
-        trueBlock->getAsConstantUnion() &&
-        falseBlock->getAsConstantUnion())
+    // Note that the node resulting from here can be a constant union without being qualified as
+    // constant.
+    if (cond->getAsConstantUnion())
     {
         if (cond->getAsConstantUnion()->getBConst(0))
+        {
+            trueBlock->getTypePointer()->setQualifier(resultQualifier);
             return trueBlock;
+        }
         else
+        {
+            falseBlock->getTypePointer()->setQualifier(resultQualifier);
             return falseBlock;
+        }
     }
 
     //
     // Make a selection node.
     //
-    TIntermSelection *node = new TIntermSelection(
-        cond, trueBlock, falseBlock, trueBlock->getType());
-    node->getTypePointer()->setQualifier(EvqTemporary);
+    TIntermSelection *node = new TIntermSelection(cond, trueBlock, falseBlock, trueBlock->getType());
+    node->getTypePointer()->setQualifier(resultQualifier);
     node->setLine(line);
 
     return node;
@@ -366,10 +375,11 @@ TIntermCase *TIntermediate::addCase(
 // Returns the constant union node created.
 //
 
-TIntermConstantUnion *TIntermediate::addConstantUnion(
-    ConstantUnion *unionArrayPointer, const TType &t, const TSourceLoc &line)
+TIntermConstantUnion *TIntermediate::addConstantUnion(const TConstantUnion *constantUnion,
+                                                      const TType &type,
+                                                      const TSourceLoc &line)
 {
-    TIntermConstantUnion *node = new TIntermConstantUnion(unionArrayPointer, t);
+    TIntermConstantUnion *node = new TIntermConstantUnion(constantUnion, type);
     node->setLine(line);
 
     return node;
@@ -384,11 +394,11 @@ TIntermTyped *TIntermediate::addSwizzle(
     node->setLine(line);
     TIntermConstantUnion *constIntNode;
     TIntermSequence *sequenceVector = node->getSequence();
-    ConstantUnion *unionArray;
+    TConstantUnion *unionArray;
 
     for (int i = 0; i < fields.num; i++)
     {
-        unionArray = new ConstantUnion[1];
+        unionArray = new TConstantUnion[1];
         unionArray->setIConst(fields.offsets[i]);
         constIntNode = addConstantUnion(
             unionArray, TType(EbtInt, EbpUndefined, EvqConst), line);
@@ -405,7 +415,7 @@ TIntermNode *TIntermediate::addLoop(
     TLoopType type, TIntermNode *init, TIntermTyped *cond, TIntermTyped *expr,
     TIntermNode *body, const TSourceLoc &line)
 {
-    TIntermNode *node = new TIntermLoop(type, init, cond, expr, body);
+    TIntermNode *node = new TIntermLoop(type, init, cond, expr, ensureSequence(body));
     node->setLine(line);
 
     return node;
@@ -433,17 +443,66 @@ TIntermBranch* TIntermediate::addBranch(
 // This is to be executed once the final root is put on top by the parsing
 // process.
 //
-bool TIntermediate::postProcess(TIntermNode *root)
+TIntermAggregate *TIntermediate::postProcess(TIntermNode *root)
 {
-    if (root == NULL)
-        return true;
+    if (root == nullptr)
+        return nullptr;
 
     //
-    // First, finish off the top level sequence, if any
+    // Finish off the top level sequence, if any
     //
     TIntermAggregate *aggRoot = root->getAsAggregate();
-    if (aggRoot && aggRoot->getOp() == EOpNull)
+    if (aggRoot != nullptr && aggRoot->getOp() == EOpNull)
+    {
         aggRoot->setOp(EOpSequence);
+    }
+    else if (aggRoot == nullptr || aggRoot->getOp() != EOpSequence)
+    {
+        aggRoot = new TIntermAggregate(EOpSequence);
+        aggRoot->setLine(root->getLine());
+        aggRoot->getSequence()->push_back(root);
+    }
 
-    return true;
+    return aggRoot;
+}
+
+TIntermTyped *TIntermediate::foldAggregateBuiltIn(TIntermAggregate *aggregate)
+{
+    switch (aggregate->getOp())
+    {
+        case EOpAtan:
+        case EOpPow:
+        case EOpMod:
+        case EOpMin:
+        case EOpMax:
+        case EOpClamp:
+        case EOpMix:
+        case EOpStep:
+        case EOpSmoothStep:
+        case EOpMul:
+        case EOpOuterProduct:
+        case EOpLessThan:
+        case EOpLessThanEqual:
+        case EOpGreaterThan:
+        case EOpGreaterThanEqual:
+        case EOpVectorEqual:
+        case EOpVectorNotEqual:
+        case EOpDistance:
+        case EOpDot:
+        case EOpCross:
+        case EOpFaceForward:
+        case EOpReflect:
+        case EOpRefract:
+            return aggregate->fold(mInfoSink);
+        default:
+            // TODO: Add support for folding array constructors
+            if (aggregate->isConstructor() && !aggregate->isArray())
+            {
+                return aggregate->fold(mInfoSink);
+            }
+            // Constant folding not supported for the built-in.
+            return nullptr;
+    }
+
+    return nullptr;
 }

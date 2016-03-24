@@ -12,34 +12,34 @@
 #define LIBANGLE_RENDERBUFFER_H_
 
 #include "angle_gl.h"
-
-#include "libANGLE/Error.h"
-#include "libANGLE/RefCountObject.h"
-
 #include "common/angleutils.h"
-
-namespace rx
-{
-class RenderbufferImpl;
-}
+#include "libANGLE/Debug.h"
+#include "libANGLE/Error.h"
+#include "libANGLE/FramebufferAttachment.h"
+#include "libANGLE/Image.h"
+#include "libANGLE/renderer/RenderbufferImpl.h"
 
 namespace gl
 {
-class FramebufferAttachment;
-
 // A GL renderbuffer object is usually used as a depth or stencil buffer attachment
 // for a framebuffer object. The renderbuffer itself is a distinct GL object, see
 // FramebufferAttachment and Framebuffer for how they are applied to an FBO via an
 // attachment point.
 
-class Renderbuffer : public RefCountObject
+class Renderbuffer final : public egl::ImageSibling,
+                           public gl::FramebufferAttachmentObject,
+                           public LabeledObject
 {
   public:
     Renderbuffer(rx::RenderbufferImpl *impl, GLuint id);
     virtual ~Renderbuffer();
 
+    void setLabel(const std::string &label) override;
+    const std::string &getLabel() const override;
+
     Error setStorage(GLenum internalformat, size_t width, size_t height);
     Error setStorageMultisample(size_t samples, GLenum internalformat, size_t width, size_t height);
+    Error setStorageEGLImageTarget(egl::Image *imageTarget);
 
     rx::RenderbufferImpl *getImplementation();
     const rx::RenderbufferImpl *getImplementation() const;
@@ -55,8 +55,21 @@ class Renderbuffer : public RefCountObject
     GLuint getDepthSize() const;
     GLuint getStencilSize() const;
 
+    // FramebufferAttachmentObject Impl
+    Extents getAttachmentSize(const FramebufferAttachment::Target &target) const override;
+    GLenum getAttachmentInternalFormat(const FramebufferAttachment::Target &/*target*/) const override { return getInternalFormat(); }
+    GLsizei getAttachmentSamples(const FramebufferAttachment::Target &/*target*/) const override { return getSamples(); }
+
+    void onAttach() override;
+    void onDetach() override;
+    GLuint getId() const override;
+
   private:
+    rx::FramebufferAttachmentObjectImpl *getAttachmentImpl() const override { return mRenderbuffer; }
+
     rx::RenderbufferImpl *mRenderbuffer;
+
+    std::string mLabel;
 
     GLsizei mWidth;
     GLsizei mHeight;

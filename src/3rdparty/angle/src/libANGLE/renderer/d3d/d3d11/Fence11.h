@@ -20,11 +20,11 @@ class FenceNV11 : public FenceNVImpl
 {
   public:
     explicit FenceNV11(Renderer11 *renderer);
-    virtual ~FenceNV11();
+    ~FenceNV11() override;
 
-    gl::Error set();
-    gl::Error test(bool flushCommandBuffer, GLboolean *outFinished);
-    gl::Error finishFence(GLboolean *outFinished);
+    gl::Error set(GLenum condition) override;
+    gl::Error test(GLboolean *outFinished) override;
+    gl::Error finish() override;
 
   private:
     template<class T> friend gl::Error FenceSetHelper(T *fence);
@@ -38,12 +38,12 @@ class FenceSync11 : public FenceSyncImpl
 {
   public:
     explicit FenceSync11(Renderer11 *renderer);
-    virtual ~FenceSync11();
+    ~FenceSync11() override;
 
-    gl::Error set();
-    gl::Error clientWait(GLbitfield flags, GLuint64 timeout, GLenum *outResult);
-    gl::Error serverWait(GLbitfield flags, GLuint64 timeout);
-    gl::Error getStatus(GLint *outResult);
+    gl::Error set(GLenum condition, GLbitfield flags) override;
+    gl::Error clientWait(GLbitfield flags, GLuint64 timeout, GLenum *outResult) override;
+    gl::Error serverWait(GLbitfield flags, GLuint64 timeout) override;
+    gl::Error getStatus(GLint *outResult) override;
 
   private:
     template<class T> friend gl::Error FenceSetHelper(T *fence);

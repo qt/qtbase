@@ -28,8 +28,6 @@ class Image9 : public ImageD3D
     Image9(Renderer9 *renderer);
     ~Image9();
 
-    static Image9 *makeImage9(ImageD3D *img);
-
     static gl::Error generateMipmap(Image9 *dest, Image9 *source);
     static gl::Error generateMip(IDirect3DSurface9 *destSurface, IDirect3DSurface9 *sourceSurface);
     static gl::Error copyLockableSurfaces(IDirect3DSurface9 *dest, IDirect3DSurface9 *source);
@@ -47,9 +45,10 @@ class Image9 : public ImageD3D
     virtual gl::Error loadData(const gl::Box &area, const gl::PixelUnpackState &unpack, GLenum type, const void *input);
     virtual gl::Error loadCompressedData(const gl::Box &area, const void *input);
 
-    virtual gl::Error copy(const gl::Offset &destOffset, const gl::Rectangle &sourceArea, RenderTargetD3D *source);
-    virtual gl::Error copy(const gl::Offset &destOffset, const gl::Box &sourceArea,
-                           const gl::ImageIndex &sourceIndex, TextureStorage *source);
+    gl::Error copyFromTexStorage(const gl::ImageIndex &imageIndex, TextureStorage *source) override;
+    gl::Error copyFromFramebuffer(const gl::Offset &destOffset,
+                                  const gl::Rectangle &sourceArea,
+                                  const gl::Framebuffer *source) override;
 
   private:
     gl::Error getSurface(IDirect3DSurface9 **outSurface);
@@ -60,6 +59,10 @@ class Image9 : public ImageD3D
 
     gl::Error lock(D3DLOCKED_RECT *lockedRect, const RECT &rect);
     void unlock();
+
+    gl::Error copyFromRTInternal(const gl::Offset &destOffset,
+                                 const gl::Rectangle &sourceArea,
+                                 RenderTargetD3D *source);
 
     Renderer9 *mRenderer;
 

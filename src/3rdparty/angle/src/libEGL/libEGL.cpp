@@ -242,6 +242,47 @@ EGLDisplay EGLAPIENTRY eglGetPlatformDisplayEXT(EGLenum platform, void *native_d
     return egl::GetPlatformDisplayEXT(platform, native_display, attrib_list);
 }
 
+EGLBoolean EGLAPIENTRY eglQueryDisplayAttribEXT(EGLDisplay dpy, EGLint attribute, EGLAttrib *value)
+{
+    return egl::QueryDisplayAttribEXT(dpy, attribute, value);
+}
+
+EGLBoolean EGLAPIENTRY eglQueryDeviceAttribEXT(EGLDeviceEXT device, EGLint attribute, EGLAttrib *value)
+{
+    return egl::QueryDeviceAttribEXT(device, attribute, value);
+}
+
+const char * EGLAPIENTRY eglQueryDeviceStringEXT(EGLDeviceEXT device, EGLint name)
+{
+    return egl::QueryDeviceStringEXT(device, name);
+}
+
+EGLImageKHR EGLAPIENTRY eglCreateImageKHR(EGLDisplay dpy,
+                                          EGLContext ctx,
+                                          EGLenum target,
+                                          EGLClientBuffer buffer,
+                                          const EGLint *attrib_list)
+{
+    return egl::CreateImageKHR(dpy, ctx, target, buffer, attrib_list);
+}
+
+EGLBoolean EGLAPIENTRY eglDestroyImageKHR(EGLDisplay dpy, EGLImageKHR image)
+{
+    return egl::DestroyImageKHR(dpy, image);
+}
+
+EGLDeviceEXT EGLAPIENTRY eglCreateDeviceANGLE(EGLint device_type,
+                                              void *native_device,
+                                              const EGLAttrib *attrib_list)
+{
+    return egl::CreateDeviceANGLE(device_type, native_device, attrib_list);
+}
+
+EGLBoolean EGLAPIENTRY eglReleaseDeviceANGLE(EGLDeviceEXT device)
+{
+    return egl::ReleaseDeviceANGLE(device);
+}
+
 __eglMustCastToProperFunctionPointerType EGLAPIENTRY eglGetProcAddress(const char *procname)
 {
     return egl::GetProcAddress(procname);

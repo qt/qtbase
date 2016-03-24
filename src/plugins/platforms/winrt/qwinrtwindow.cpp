@@ -42,7 +42,6 @@
 #include <private/qeventdispatcher_winrt_p.h>
 
 #include <EGL/egl.h>
-#define EGL_EGLEXT_PROTOTYPES
 #include <EGL/eglext.h>
 
 #include <qfunctions_winrt.h>

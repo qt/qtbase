@@ -10,23 +10,25 @@
 //
 
 #include "libANGLE/renderer/d3d/d3d11/PixelTransfer11.h"
-#include "libANGLE/renderer/d3d/d3d11/Renderer11.h"
-#include "libANGLE/renderer/d3d/d3d11/renderer11_utils.h"
-#include "libANGLE/renderer/d3d/d3d11/formatutils11.h"
-#include "libANGLE/renderer/d3d/d3d11/Buffer11.h"
-#include "libANGLE/renderer/d3d/d3d11/TextureStorage11.h"
-#include "libANGLE/renderer/d3d/d3d11/RenderTarget11.h"
-#include "libANGLE/formatutils.h"
-#include "libANGLE/Texture.h"
+
 #include "libANGLE/Buffer.h"
 #include "libANGLE/Context.h"
+#include "libANGLE/formatutils.h"
+#include "libANGLE/renderer/d3d/d3d11/Buffer11.h"
+#include "libANGLE/renderer/d3d/d3d11/formatutils11.h"
+#include "libANGLE/renderer/d3d/d3d11/Renderer11.h"
+#include "libANGLE/renderer/d3d/d3d11/renderer11_utils.h"
+#include "libANGLE/renderer/d3d/d3d11/RenderTarget11.h"
+#include "libANGLE/renderer/d3d/d3d11/texture_format_table.h"
+#include "libANGLE/renderer/d3d/d3d11/TextureStorage11.h"
+#include "libANGLE/Texture.h"
 
 // Precompiled shaders
-#include "libANGLE/renderer/d3d/d3d11/shaders/compiled/buffertotexture11_vs.h"
 #include "libANGLE/renderer/d3d/d3d11/shaders/compiled/buffertotexture11_gs.h"
 #include "libANGLE/renderer/d3d/d3d11/shaders/compiled/buffertotexture11_ps_4f.h"
 #include "libANGLE/renderer/d3d/d3d11/shaders/compiled/buffertotexture11_ps_4i.h"
 #include "libANGLE/renderer/d3d/d3d11/shaders/compiled/buffertotexture11_ps_4ui.h"
+#include "libANGLE/renderer/d3d/d3d11/shaders/compiled/buffertotexture11_vs.h"
 
 namespace rx
 {
@@ -202,14 +204,14 @@ gl::Error PixelTransfer11::copyBufferToTexture(const gl::PixelUnpackState &unpac
     GLenum unsizedFormat = gl::GetInternalFormatInfo(destinationFormat).format;
     GLenum sourceFormat = gl::GetSizedInternalFormat(unsizedFormat, sourcePixelsType);
 
-    const d3d11::TextureFormat &sourceFormatInfo = d3d11::GetTextureFormatInfo(sourceFormat, mRenderer->getFeatureLevel());
+    const d3d11::TextureFormat &sourceFormatInfo = d3d11::GetTextureFormatInfo(sourceFormat, mRenderer->getRenderer11DeviceCaps());
     DXGI_FORMAT srvFormat = sourceFormatInfo.srvFormat;
     ASSERT(srvFormat != DXGI_FORMAT_UNKNOWN);
-    Buffer11 *bufferStorage11 = Buffer11::makeBuffer11(sourceBuffer.getImplementation());
+    Buffer11 *bufferStorage11 = GetAs<Buffer11>(sourceBuffer.getImplementation());
     ID3D11ShaderResourceView *bufferSRV = bufferStorage11->getSRV(srvFormat);
     ASSERT(bufferSRV != NULL);
 
-    ID3D11RenderTargetView *textureRTV = RenderTarget11::makeRenderTarget11(destRenderTarget)->getRenderTargetView();
+    ID3D11RenderTargetView *textureRTV = GetAs<RenderTarget11>(destRenderTarget)->getRenderTargetView();
     ASSERT(textureRTV != NULL);
 
     CopyShaderParams shaderParams;
@@ -222,11 +224,12 @@ gl::Error PixelTransfer11::copyBufferToTexture(const gl::PixelUnpackState &unpac
 
     // Are we doing a 2D or 3D copy?
     ID3D11GeometryShader *geometryShader = ((destSize.depth > 1) ? mBufferToTextureGS : NULL);
+    auto stateManager                    = mRenderer->getStateManager();
 
     deviceContext->VSSetShader(mBufferToTextureVS, NULL, 0);
     deviceContext->GSSetShader(geometryShader, NULL, 0);
     deviceContext->PSSetShader(pixelShader, NULL, 0);
-    mRenderer->setShaderResource(gl::SAMPLER_PIXEL, 0, bufferSRV);
+    stateManager->setShaderResource(gl::SAMPLER_PIXEL, 0, bufferSRV);
     deviceContext->IASetInputLayout(NULL);
     deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 
@@ -249,8 +252,8 @@ gl::Error PixelTransfer11::copyBufferToTexture(const gl::PixelUnpackState &unpac
     D3D11_VIEWPORT viewport;
     viewport.TopLeftX = 0;
     viewport.TopLeftY = 0;
-    viewport.Width = destSize.width;
-    viewport.Height = destSize.height;
+    viewport.Width = static_cast<FLOAT>(destSize.width);
+    viewport.Height = static_cast<FLOAT>(destSize.height);
     viewport.MinDepth = 0.0f;
     viewport.MaxDepth = 1.0f;
     deviceContext->RSSetViewports(1, &viewport);
@@ -259,7 +262,7 @@ gl::Error PixelTransfer11::copyBufferToTexture(const gl::PixelUnpackState &unpac
     deviceContext->Draw(numPixels, 0);
 
     // Unbind textures and render targets and vertex buffer
-    mRenderer->setShaderResource(gl::SAMPLER_PIXEL, 0, NULL);
+    stateManager->setShaderResource(gl::SAMPLER_PIXEL, 0, NULL);
     deviceContext->VSSetConstantBuffers(0, 1, &nullBuffer);
 
     mRenderer->markAllStateDirty();

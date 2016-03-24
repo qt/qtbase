@@ -177,6 +177,31 @@ EXPORTS
     glGetBufferPointervOES@12                @287
     glMapBufferRangeEXT@16                   @288
     glFlushMappedBufferRangeEXT@12           @289
+    glDiscardFramebufferEXT@12               @293
+    glInsertEventMarkerEXT@8                 @294
+    glPushGroupMarkerEXT@8                   @295
+    glPopGroupMarkerEXT@0                    @296
+    glEGLImageTargetTexture2DOES@8           @297
+    glEGLImageTargetRenderbufferStorageOES@8 @298
+    glBindVertexArrayOES@4                   @299
+    glDeleteVertexArraysOES@8                @300
+    glGenVertexArraysOES@8                   @301
+    glIsVertexArrayOES@4                     @302
+    glDebugMessageControlKHR@24              @303
+    glDebugMessageInsertKHR@24               @304
+    glDebugMessageCallbackKHR@8              @305
+    glGetDebugMessageLogKHR@32               @306
+    glPushDebugGroupKHR@16                   @307
+    glPopDebugGroupKHR@0                     @308
+    glObjectLabelKHR@16                      @309
+    glGetObjectLabelKHR@20                   @310
+    glObjectPtrLabelKHR@12                   @311
+    glGetObjectPtrLabelKHR@16                @312
+    glGetPointervKHR@8                       @313
+    glQueryCounterEXT@8                      @314
+    glGetQueryObjectivEXT@12                 @315
+    glGetQueryObjecti64vEXT@12               @316
+    glGetQueryObjectui64vEXT@12              @317
 
     ; GLES 3.0 Functions
     glReadBuffer@4                           @180
@@ -284,5 +309,8 @@ EXPORTS
     glTexStorage3D@24                        @282
     glGetInternalformativ@20                 @283
 
-    ; Setting up TRACE macro callbacks
-    SetTraceFunctionPointers@8               @284
+    ; ANGLE Platform Implementation
+    ANGLEPlatformCurrent@0            @290
+    ANGLEPlatformInitialize@4         @291
+    ANGLEPlatformShutdown@0           @292
+    

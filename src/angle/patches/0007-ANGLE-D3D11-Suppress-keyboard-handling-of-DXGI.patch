@@ -1,0 +1,45 @@
+From 955357382b1bb02043ec744ef3b5929e29c4f8cc Mon Sep 17 00:00:00 2001
+From: Oliver Wolff <oliver.wolff@theqtcompany.com>
+Date: Tue, 12 Apr 2016 14:44:26 +0200
+Subject: [PATCH 7/7] ANGLE/D3D11: Suppress keyboard handling of DXGI.
+
+Set the DXGI_MWA_NO_ALT_ENTER to suppress the Alt-Enter shortcut
+causing the window to become full screen.
+
+Task-number: QTBUG-44904
+Change-Id: If24c32df69a5a47e29d14be8f2624abfac5cd634
+---
+ .../src/libANGLE/renderer/d3d/d3d11/win32/NativeWindow.cpp     | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/win32/NativeWindow.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/win32/NativeWindow.cpp
+index 7da7f31..da6460b 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/win32/NativeWindow.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/win32/NativeWindow.cpp
+@@ -171,6 +171,8 @@ HRESULT NativeWindow::createSwapChain(ID3D11Device* device, DXGIFactory* factory
+         HRESULT result = factory2->CreateSwapChainForHwnd(device, mWindow, &swapChainDesc, nullptr, nullptr, &swapChain1);
+         if (SUCCEEDED(result))
+         {
++            const HRESULT makeWindowAssociationResult = factory->MakeWindowAssociation(mWindow, DXGI_MWA_NO_ALT_ENTER);
++            UNUSED_VARIABLE(makeWindowAssociationResult);
+             *swapChain = static_cast<DXGISwapChain*>(swapChain1);
+         }
+         SafeRelease(factory2);
+@@ -196,7 +198,13 @@ HRESULT NativeWindow::createSwapChain(ID3D11Device* device, DXGIFactory* factory
+     swapChainDesc.Windowed = TRUE;
+     swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+ 
+-    return factory->CreateSwapChain(device, &swapChainDesc, swapChain);;
++    const HRESULT result = factory->CreateSwapChain(device, &swapChainDesc, swapChain);
++    if (SUCCEEDED(result))
++    {
++        const HRESULT makeWindowAssociationResult = factory->MakeWindowAssociation(mWindow, DXGI_MWA_NO_ALT_ENTER);
++        UNUSED_VARIABLE(makeWindowAssociationResult);
++    }
++    return result;
+ }
+ #endif
+ 
+-- 
+2.7.0.windows.1
+
