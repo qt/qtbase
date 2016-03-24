@@ -957,7 +957,7 @@ Q_STATIC_ASSERT_X(QT_POINTER_SIZE == sizeof(void *), "QT_POINTER_SIZE defined in
     \relates <QtGlobal>
     \since 5.7
 
-    Returns the \a memberFunctionPointer pointer to a constant member function:
+    Returns the \a memberFunctionPointer pointer to a non-constant member function:
 
     \snippet code/src_corelib_global_qglobal.cpp 54
 
