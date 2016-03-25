@@ -461,6 +461,8 @@ private slots:
 
     void qmlSetParentHelper();
 
+    void testForOutsideWSRangeFlag();
+
 private:
     bool ensureScreenSize(int width, int height);
     QWidget *testWidget;
@@ -10547,6 +10549,70 @@ void tst_QWidget::qmlSetParentHelper()
 #else
     QSKIP("Needs QT_BUILD_INTERNAL");
 #endif
+}
+
+void tst_QWidget::testForOutsideWSRangeFlag()
+{
+    // QTBUG-49445
+    {
+        QWidget widget;
+        widget.resize(0, 0);
+        widget.show();
+        QTest::qWait(100); // Wait for a while...
+        QVERIFY(!widget.windowHandle()->isExposed()); // The window should not be visible
+        QVERIFY(widget.isVisible()); // The widget should be in visible state
+    }
+    {
+        QWidget widget;
+
+        QWidget native(&widget);
+        native.setAttribute(Qt::WA_NativeWindow);
+        native.resize(0, 0);
+
+        widget.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&widget));
+        QVERIFY(!native.windowHandle()->isExposed());
+    }
+    {
+        QWidget widget;
+        QWidget native(&widget);
+
+        widget.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&widget));
+        QVERIFY(native.isVisible());
+
+        native.resize(0, 0);
+        native.setAttribute(Qt::WA_NativeWindow);
+        QTest::qWait(100); // Wait for a while...
+        QVERIFY(!native.windowHandle()->isExposed());
+    }
+
+    // QTBUG-48321
+    {
+        QWidget widget;
+
+        QWidget native(&widget);
+        native.setAttribute(Qt::WA_NativeWindow);
+
+        widget.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&widget));
+        QVERIFY(native.windowHandle()->isExposed());
+
+        native.resize(0, 0);
+        QTest::qWait(100); // Wait for a while...
+        QVERIFY(!native.windowHandle()->isExposed());
+    }
+
+    // QTBUG-51788
+    {
+        QWidget widget;
+        widget.setLayout(new QGridLayout);
+        widget.layout()->addWidget(new QLineEdit);
+        widget.resize(0, 0);
+        widget.show();
+        // The layout should change the size, so the widget must be visible!
+        QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    }
 }
 
 QTEST_MAIN(tst_QWidget)
