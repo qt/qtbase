@@ -640,7 +640,7 @@ qint64 QProcessPrivate::writeToStdin(const char *data, qint64 maxlen)
 void QProcessPrivate::terminateProcess()
 {
 #if defined (QPROCESS_DEBUG)
-    qDebug("QProcessPrivate::killProcess()");
+    qDebug("QProcessPrivate::terminateProcess()");
 #endif
     if (pid)
         ::kill(pid_t(pid), SIGTERM);
