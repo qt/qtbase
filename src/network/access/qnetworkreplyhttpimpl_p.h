@@ -240,12 +240,11 @@ public:
     quint64 resumeOffset;
     qint64 preMigrationDownloaded;
 
-    // Used for normal downloading. For "zero copy" the downloadZerocopyBuffer is used
-    QByteDataBuffer downloadMultiBuffer;
     QByteDataBuffer pendingDownloadData; // For signal compression
     qint64 bytesDownloaded;
+    qint64 bytesBuffered;
 
-    // only used when the "zero copy" style is used. Else downloadMultiBuffer is used.
+    // Only used when the "zero copy" style is used.
     // Please note that the whole "zero copy" download buffer API is private right now. Do not use it.
     qint64 downloadBufferReadPosition;
     qint64 downloadBufferCurrentSize;

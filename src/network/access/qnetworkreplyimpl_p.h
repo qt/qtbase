@@ -81,7 +81,6 @@ public:
     virtual void close() Q_DECL_OVERRIDE;
     virtual qint64 bytesAvailable() const Q_DECL_OVERRIDE;
     virtual void setReadBufferSize(qint64 size) Q_DECL_OVERRIDE;
-    virtual bool canReadLine () const Q_DECL_OVERRIDE;
 
     virtual qint64 readData(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
     virtual bool event(QEvent *) Q_DECL_OVERRIDE;
@@ -187,8 +186,6 @@ public:
     QList<QNetworkProxy> proxyList;
 #endif
 
-    // Used for normal downloading. For "zero copy" the downloadBuffer is used
-    QByteDataBuffer readBuffer;
     qint64 bytesDownloaded;
     qint64 lastBytesDownloaded;
     qint64 bytesUploaded;
@@ -199,7 +196,7 @@ public:
 
     State state;
 
-    // only used when the "zero copy" style is used. Else readBuffer is used.
+    // Only used when the "zero copy" style is used.
     // Please note that the whole "zero copy" download buffer API is private right now. Do not use it.
     qint64 downloadBufferReadPosition;
     qint64 downloadBufferCurrentSize;

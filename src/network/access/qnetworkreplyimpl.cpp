@@ -184,17 +184,13 @@ void QNetworkReplyImplPrivate::_q_copyReadyRead()
             break;
 
         bytesToRead = qBound<qint64>(1, bytesToRead, copyDevice->bytesAvailable());
-        QByteArray byteData;
-        byteData.resize(bytesToRead);
-        qint64 bytesActuallyRead = copyDevice->read(byteData.data(), byteData.size());
+        qint64 bytesActuallyRead = copyDevice->read(buffer.reserve(bytesToRead), bytesToRead);
         if (bytesActuallyRead == -1) {
-            byteData.clear();
+            buffer.chop(bytesToRead);
             backendNotify(NotifyCopyFinished);
             break;
         }
-
-        byteData.resize(bytesActuallyRead);
-        readBuffer.append(byteData);
+        buffer.chop(bytesToRead - bytesActuallyRead);
 
         if (!copyDevice->isSequential() && copyDevice->atEnd()) {
             backendNotify(NotifyCopyFinished);
@@ -582,7 +578,7 @@ qint64 QNetworkReplyImplPrivate::nextDownstreamBlockSize() const
     if (readBufferMaxSize == 0)
         return DesiredBufferSize;
 
-    return qMax<qint64>(0, readBufferMaxSize - readBuffer.byteAmount());
+    return qMax<qint64>(0, readBufferMaxSize - buffer.size());
 }
 
 void QNetworkReplyImplPrivate::initCacheSaveDevice()
@@ -624,7 +620,7 @@ void QNetworkReplyImplPrivate::initCacheSaveDevice()
 }
 
 // we received downstream data and send this to the cache
-// and to our readBuffer (which in turn gets read by the user of QNetworkReply)
+// and to our buffer (which in turn gets read by the user of QNetworkReply)
 void QNetworkReplyImplPrivate::appendDownstreamData(QByteDataBuffer &data)
 {
     Q_Q(QNetworkReplyImpl);
@@ -641,7 +637,7 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QByteDataBuffer &data)
 
         if (cacheSaveDevice)
             cacheSaveDevice->write(item.constData(), item.size());
-        readBuffer.append(item);
+        buffer.append(item);
 
         bytesWritten += item.size();
     }
@@ -975,13 +971,6 @@ void QNetworkReplyImpl::close()
     d->finished();
 }
 
-bool QNetworkReplyImpl::canReadLine () const
-{
-    Q_D(const QNetworkReplyImpl);
-    return QNetworkReply::canReadLine() || d->readBuffer.canReadLine();
-}
-
-
 /*!
     Returns the number of bytes available for reading with
     QIODevice::read(). The number of bytes available may grow until
@@ -996,14 +985,14 @@ qint64 QNetworkReplyImpl::bytesAvailable() const
         return QNetworkReply::bytesAvailable() + maxAvail;
     }
 
-    return QNetworkReply::bytesAvailable() + d_func()->readBuffer.byteAmount();
+    return QNetworkReply::bytesAvailable();
 }
 
 void QNetworkReplyImpl::setReadBufferSize(qint64 size)
 {
     Q_D(QNetworkReplyImpl);
     if (size > d->readBufferMaxSize &&
-        size > d->readBuffer.byteAmount())
+        size > d->buffer.size())
         d->backendNotify(QNetworkReplyImplPrivate::NotifyDownstreamReadyWrite);
 
     QNetworkReply::setReadBufferSize(size);
@@ -1061,19 +1050,12 @@ qint64 QNetworkReplyImpl::readData(char *data, qint64 maxlen)
     }
 
 
-    if (d->readBuffer.isEmpty())
-        return d->state == QNetworkReplyPrivate::Finished ? -1 : 0;
     // FIXME what about "Aborted" state?
+    if (d->state == QNetworkReplyPrivate::Finished)
+        return -1;
 
     d->backendNotify(QNetworkReplyImplPrivate::NotifyDownstreamReadyWrite);
-    if (maxlen == 1) {
-        // optimization for getChar()
-        *data = d->readBuffer.getChar();
-        return 1;
-    }
-
-    maxlen = qMin<qint64>(maxlen, d->readBuffer.byteAmount());
-    return d->readBuffer.read(data, maxlen);
+    return 0;
 }
 
 /*!
