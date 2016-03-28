@@ -66,7 +66,7 @@ public:
     inline QDBusArgumentPrivate(int flags = 0)
         : message(0), ref(1), capabilities(flags)
     { }
-    ~QDBusArgumentPrivate();
+    virtual ~QDBusArgumentPrivate();
 
     static bool checkRead(QDBusArgumentPrivate *d);
     static bool checkReadAndDetach(QDBusArgumentPrivate *&d);
