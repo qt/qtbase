@@ -362,6 +362,9 @@ QAndroidPlatformTheme::QAndroidPlatformTheme(QAndroidPlatformNativeInterface *an
 
     // default in case the style has not set a font
     m_systemFont = QFont(QLatin1String("Roboto"), 14.0 * 100 / 72); // keep default size the same after changing from 100 dpi to 72 dpi
+
+    // by default use native menu bar
+    QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, false);
 }
 
 QPlatformMenuBar *QAndroidPlatformTheme::createPlatformMenuBar() const
