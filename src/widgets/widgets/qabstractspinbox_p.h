@@ -122,6 +122,8 @@ public:
     static int variantCompare(const QVariant &arg1, const QVariant &arg2);
     static QVariant variantBound(const QVariant &min, const QVariant &value, const QVariant &max);
 
+    virtual QVariant calculateAdaptiveDecimalStep(int steps) const;
+
     QLineEdit *edit;
     QString prefix, suffix, specialValueText;
     QVariant value, minimum, maximum, singleStep;
@@ -143,6 +145,7 @@ public:
     uint cleared : 1;
     uint ignoreUpdateEdit : 1;
     QAbstractSpinBox::CorrectionMode correctionMode;
+    QAbstractSpinBox::StepType stepType = QAbstractSpinBox::StepType::DefaultStepType;
     int acceleration;
     QStyle::SubControl hoverControl;
     QRect hoverRect;

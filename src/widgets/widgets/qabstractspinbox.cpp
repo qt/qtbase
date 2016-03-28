@@ -639,7 +639,15 @@ void QAbstractSpinBox::stepBy(int steps)
             e = AlwaysEmit;
     }
     if (!dontstep) {
-        d->setValue(d->bound(d->value + (d->singleStep * steps), old, steps), e);
+        QVariant singleStep;
+        switch (d->stepType) {
+        case QAbstractSpinBox::StepType::AdaptiveDecimalStepType:
+            singleStep = d->calculateAdaptiveDecimalStep(steps);
+            break;
+        default:
+            singleStep = d->singleStep;
+        }
+        d->setValue(d->bound(d->value + (singleStep * steps), old, steps), e);
     } else if (e == AlwaysEmit) {
         d->emitSignals(e, old);
     }
@@ -1898,6 +1906,11 @@ void QAbstractSpinBoxPrivate::clearCache() const
     cachedState = QValidator::Acceptable;
 }
 
+QVariant QAbstractSpinBoxPrivate::calculateAdaptiveDecimalStep(int steps) const
+{
+    Q_UNUSED(steps)
+    return singleStep;
+}
 
 // --- QSpinBoxValidator ---
 

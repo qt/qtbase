@@ -31,6 +31,7 @@
 #include <qapplication.h>
 #include <limits.h>
 
+#include <cmath>
 #include <float.h>
 
 #include <qspinbox.h>
@@ -134,6 +135,8 @@ private slots:
 
     void setGroupSeparatorShown_data();
     void setGroupSeparatorShown();
+
+    void adaptiveDecimalStep();
 
 public slots:
     void valueChangedHelper(const QString &);
@@ -1137,6 +1140,134 @@ void tst_QDoubleSpinBox::setGroupSeparatorShown()
 
     spinBox.lineEdit()->setText(spinBox.locale().toString(32000.44, 'f', 2));
     QCOMPARE(spinBox.value()+1000, 33000.44);
+}
+
+void tst_QDoubleSpinBox::adaptiveDecimalStep()
+{
+    DoubleSpinBox spinBox;
+    spinBox.setRange(-100000, 100000);
+    spinBox.setDecimals(4);
+    spinBox.setStepType(DoubleSpinBox::StepType::AdaptiveDecimalStepType);
+
+    // Positive values
+
+    spinBox.setValue(0);
+
+    // Go from 0 to 0.01
+    for (double i = 0; i < 0.00999; i += 0.0001) {
+        QVERIFY(qFuzzyCompare(spinBox.value(), i));
+        spinBox.stepBy(1);
+    }
+
+    // Go from 0.01 to 0.1
+    for (double i = 0.01; i < 0.0999; i += 0.001) {
+        QVERIFY(qFuzzyCompare(spinBox.value(), i));
+        spinBox.stepBy(1);
+    }
+
+    // Go from 0.1 to 1
+    for (double i = 0.1; i < 0.999; i += 0.01) {
+        QVERIFY(qFuzzyCompare(spinBox.value(), i));
+        spinBox.stepBy(1);
+    }
+
+    // Go from 1 to 10
+    for (double i = 1; i < 9.99; i += 0.1) {
+        QVERIFY(qFuzzyCompare(spinBox.value(), i));
+        spinBox.stepBy(1);
+    }
+
+    // Go from 10 to 100
+    for (int i = 10; i < 100; i++) {
+        QVERIFY(qFuzzyCompare(spinBox.value(), i));
+        spinBox.stepBy(1);
+    }
+
+    // Go from 100 to 1000
+    for (int i = 100; i < 1000; i += 10) {
+        QVERIFY(qFuzzyCompare(spinBox.value(), i));
+        spinBox.stepBy(1);
+    }
+
+    // Go from 1000 to 10000
+    for (int i = 1000; i < 10000; i += 100) {
+        QVERIFY(qFuzzyCompare(spinBox.value(), i));
+        spinBox.stepBy(1);
+    }
+
+    // Test decreasing the values now
+
+    // Go from 10000 down to 1000
+    for (int i = 10000; i > 1000; i -= 100) {
+        QVERIFY(qFuzzyCompare(spinBox.value(), i));
+        spinBox.stepBy(-1);
+    }
+
+    // Go from 1000 down to 100
+    for (int i = 1000; i > 100; i -= 10) {
+        QVERIFY(qFuzzyCompare(spinBox.value(), i));
+        spinBox.stepBy(-1);
+    }
+
+    // Negative values
+
+    spinBox.setValue(0);
+
+    // Go from 0 to -0.01
+    for (double i = 0; i > -0.00999; i -= 0.0001) {
+        QVERIFY(qFuzzyCompare(spinBox.value(), i));
+        spinBox.stepBy(-1);
+    }
+
+    // Go from -0.01 to -0.1
+    for (double i = -0.01; i > -0.0999; i -= 0.001) {
+        QVERIFY(qFuzzyCompare(spinBox.value(), i));
+        spinBox.stepBy(-1);
+    }
+
+    // Go from -0.1 to -1
+    for (double i = -0.1; i > -0.999; i -= 0.01) {
+        QVERIFY(qFuzzyCompare(spinBox.value(), i));
+        spinBox.stepBy(-1);
+    }
+
+    // Go from -1 to -10
+    for (double i = -1; i > -9.99; i -= 0.1) {
+        QVERIFY(qFuzzyCompare(spinBox.value(), i));
+        spinBox.stepBy(-1);
+    }
+
+    // Go from -10 to -100
+    for (int i = -10; i > -100; i--) {
+        QVERIFY(qFuzzyCompare(spinBox.value(), i));
+        spinBox.stepBy(-1);
+    }
+
+    // Go from -100 to -1000
+    for (int i = -100; i > -1000; i -= 10) {
+        QVERIFY(qFuzzyCompare(spinBox.value(), i));
+        spinBox.stepBy(-1);
+    }
+
+    // Go from 1000 to 10000
+    for (int i = -1000; i > -10000; i -= 100) {
+        QVERIFY(qFuzzyCompare(spinBox.value(), i));
+        spinBox.stepBy(-1);
+    }
+
+    // Test increasing the values now
+
+    // Go from -10000 up to -1000
+    for (int i = -10000; i < -1000; i += 100) {
+        QVERIFY(qFuzzyCompare(spinBox.value(), i));
+        spinBox.stepBy(1);
+    }
+
+    // Go from -1000 up to -100
+    for (int i = -1000; i < -100; i += 10) {
+        QVERIFY(qFuzzyCompare(spinBox.value(), i));
+        spinBox.stepBy(1);
+    }
 }
 
 QTEST_MAIN(tst_QDoubleSpinBox)

@@ -58,6 +58,7 @@ class Q_WIDGETS_EXPORT QSpinBox : public QAbstractSpinBox
     Q_PROPERTY(int minimum READ minimum WRITE setMinimum)
     Q_PROPERTY(int maximum READ maximum WRITE setMaximum)
     Q_PROPERTY(int singleStep READ singleStep WRITE setSingleStep)
+    Q_PROPERTY(StepType stepType READ stepType WRITE setStepType)
     Q_PROPERTY(int value READ value WRITE setValue NOTIFY valueChanged USER true)
     Q_PROPERTY(int displayIntegerBase READ displayIntegerBase WRITE setDisplayIntegerBase)
 
@@ -85,6 +86,9 @@ public:
     void setMaximum(int max);
 
     void setRange(int min, int max);
+
+    StepType stepType() const;
+    void setStepType(StepType stepType);
 
     int displayIntegerBase() const;
     void setDisplayIntegerBase(int base);
@@ -121,6 +125,7 @@ class Q_WIDGETS_EXPORT QDoubleSpinBox : public QAbstractSpinBox
     Q_PROPERTY(double minimum READ minimum WRITE setMinimum)
     Q_PROPERTY(double maximum READ maximum WRITE setMaximum)
     Q_PROPERTY(double singleStep READ singleStep WRITE setSingleStep)
+    Q_PROPERTY(StepType stepType READ stepType WRITE setStepType)
     Q_PROPERTY(double value READ value WRITE setValue NOTIFY valueChanged USER true)
 public:
     explicit QDoubleSpinBox(QWidget *parent = nullptr);
@@ -146,6 +151,9 @@ public:
     void setMaximum(double max);
 
     void setRange(double min, double max);
+
+    StepType stepType() const;
+    void setStepType(StepType stepType);
 
     int decimals() const;
     void setDecimals(int prec);
