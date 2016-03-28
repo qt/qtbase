@@ -63,16 +63,42 @@ import android.view.accessibility.AccessibilityEvent;
 
 public class QtActivity extends Activity
 {
-    QtActivityLoader m_loader;
+    public String APPLICATION_PARAMETERS = null; // use this variable to pass any parameters to your application,
+                                                               // the parameters must not contain any white spaces
+                                                               // and must be separated with "\t"
+                                                               // e.g "-param1\t-param2=value2\t-param3\tvalue3"
+
+    public String ENVIRONMENT_VARIABLES = "QT_USE_ANDROID_NATIVE_DIALOGS=1";
+                                                               // use this variable to add any environment variables to your application.
+                                                               // the env vars must be separated with "\t"
+                                                               // e.g. "ENV_VAR1=1\tENV_VAR2=2\t"
+                                                               // Currently the following vars are used by the android plugin:
+                                                               // * QT_USE_ANDROID_NATIVE_DIALOGS - 1 to use the android native dialogs.
+
+    public String[] QT_ANDROID_THEMES = null;     // A list with all themes that your application want to use.
+                                                  // The name of the theme must be the same with any theme from
+                                                  // http://developer.android.com/reference/android/R.style.html
+                                                  // The most used themes are:
+                                                  //  * "Theme" - (fallback) check http://developer.android.com/reference/android/R.style.html#Theme
+                                                  //  * "Theme_Black" - check http://developer.android.com/reference/android/R.style.html#Theme_Black
+                                                  //  * "Theme_Light" - (default for API <=10) check http://developer.android.com/reference/android/R.style.html#Theme_Light
+                                                  //  * "Theme_Holo" - check http://developer.android.com/reference/android/R.style.html#Theme_Holo
+                                                  //  * "Theme_Holo_Light" - (default for API 11-13) check http://developer.android.com/reference/android/R.style.html#Theme_Holo_Light
+                                                  //  * "Theme_DeviceDefault" - check http://developer.android.com/reference/android/R.style.html#Theme_DeviceDefault
+                                                  //  * "Theme_DeviceDefault_Light" - (default for API 14+) check http://developer.android.com/reference/android/R.style.html#Theme_DeviceDefault_Light
+
+    public String QT_ANDROID_DEFAULT_THEME = null; // sets the default theme.
+
+    private QtActivityLoader m_loader;
     public QtActivity()
     {
         m_loader = new QtActivityLoader(this);
         if (Build.VERSION.SDK_INT >= 21) {
-            m_loader.QT_ANDROID_THEMES = new String[] {"Theme_Holo_Light"};
-            m_loader.QT_ANDROID_DEFAULT_THEME = "Theme_Holo_Light";
+            QT_ANDROID_THEMES = new String[] {"Theme_Holo_Light"};
+            QT_ANDROID_DEFAULT_THEME = "Theme_Holo_Light";
         } else {
-            m_loader.QT_ANDROID_THEMES = new String[] {"Theme_DeviceDefault_Light"};
-            m_loader.QT_ANDROID_DEFAULT_THEME = "Theme_DeviceDefault_Light";
+            QT_ANDROID_THEMES = new String[] {"Theme_DeviceDefault_Light"};
+            QT_ANDROID_DEFAULT_THEME = "Theme_DeviceDefault_Light";
         }
     }
 
@@ -236,6 +262,10 @@ public class QtActivity extends Activity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        m_loader.APPLICATION_PARAMETERS = APPLICATION_PARAMETERS;
+        m_loader.ENVIRONMENT_VARIABLES = ENVIRONMENT_VARIABLES;
+        m_loader.QT_ANDROID_THEMES = QT_ANDROID_THEMES;
+        m_loader.QT_ANDROID_DEFAULT_THEME = QT_ANDROID_DEFAULT_THEME;
         m_loader.onCreate(savedInstanceState);
     }
     //---------------------------------------------------------------------------
