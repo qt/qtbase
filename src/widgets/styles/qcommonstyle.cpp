@@ -784,10 +784,8 @@ static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbut
     default:
         return;
     }
-    QStyleOption arrowOpt;
+    QStyleOption arrowOpt = *toolbutton;
     arrowOpt.rect = rect;
-    arrowOpt.palette = toolbutton->palette;
-    arrowOpt.state = toolbutton->state;
     style->drawPrimitive(pe, &arrowOpt, painter, widget);
 }
 #endif // QT_NO_TOOLBUTTON
@@ -3309,8 +3307,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 mflags |= State_Sunken;
             }
 
-            QStyleOption tool(0);
-            tool.palette = toolbutton->palette;
+            QStyleOption tool = *toolbutton;
             if (toolbutton->subControls & SC_ToolButton) {
                 if (bflags & (State_Sunken | State_On | State_Raised)) {
                     tool.rect = button;
@@ -3379,8 +3376,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             bool down = false;
             QPixmap pm;
 
-            QStyleOption tool(0);
-            tool.palette = tb->palette;
+            QStyleOption tool = *tb;
             if (tb->subControls & SC_TitleBarCloseButton && tb->titleBarFlags & Qt::WindowSystemMenuHint) {
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarCloseButton, widget);
                 down = tb->activeSubControls & SC_TitleBarCloseButton && (opt->state & State_Sunken);
