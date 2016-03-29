@@ -2632,22 +2632,20 @@ void Configure::generateOutputVars()
         qtConfig += "system-png";
 
     // Double conversion -----------------------------------------------
-    if (dictionary[ "DOUBLECONVERSION" ] == "qt")
+    if (dictionary[ "DOUBLECONVERSION" ] != "no")
         qtConfig += "doubleconversion";
-    else if (dictionary[ "DOUBLECONVERSION" ] == "system")
+    if (dictionary[ "DOUBLECONVERSION" ] == "system")
         qtConfig += "system-doubleconversion";
-    else if (dictionary[ "DOUBLECONVERSION" ] == "no")
-        qtConfig += "no-doubleconversion";
 
     // Text rendering --------------------------------------------------
-    if (dictionary[ "FREETYPE" ] == "yes")
+    if (dictionary[ "FREETYPE" ] != "no")
         qtConfig += "freetype";
-    else if (dictionary[ "FREETYPE" ] == "system")
+    if (dictionary[ "FREETYPE" ] == "system")
         qtConfig += "system-freetype";
 
-    if (dictionary[ "HARFBUZZ" ] == "qt")
+    if (dictionary[ "HARFBUZZ" ] != "no")
         qtConfig += "harfbuzz";
-    else if (dictionary[ "HARFBUZZ" ] == "system")
+    if (dictionary[ "HARFBUZZ" ] == "system")
         qtConfig += "system-harfbuzz";
 
     // Styles -------------------------------------------------------
@@ -2787,9 +2785,9 @@ void Configure::generateOutputVars()
     if (dictionary["QT_CUPS"] == "yes")
         qtConfig += "cups";
 
-    if (dictionary["QT_ICONV"] == "yes")
+    if (dictionary["QT_ICONV"] != "no")
         qtConfig += "iconv";
-    else if (dictionary["QT_ICONV"] == "sun")
+    if (dictionary["QT_ICONV"] == "sun")
         qtConfig += "sun-libiconv";
     else if (dictionary["QT_ICONV"] == "gnu")
         qtConfig += "gnu-libiconv";

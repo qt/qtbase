@@ -149,7 +149,7 @@ contains(QT_CONFIG, dbus) {
 }
 contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
 !contains(QT_CONFIG, no-gui) {
-    contains(QT_CONFIG, harfbuzz) {
+    contains(QT_CONFIG, harfbuzz):!contains(QT_CONFIG, system-harfbuzz) {
         SUBDIRS += src_3rdparty_harfbuzzng
         src_gui.depends += src_3rdparty_harfbuzzng
     }
@@ -157,7 +157,7 @@ contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
         SUBDIRS += src_angle
         src_gui.depends += src_angle
     }
-    contains(QT_CONFIG, freetype) {
+    contains(QT_CONFIG, freetype):!contains(QT_CONFIG, system-freetype) {
         SUBDIRS += src_3rdparty_freetype
         src_platformsupport.depends += src_3rdparty_freetype
     }

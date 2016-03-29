@@ -197,12 +197,10 @@ INCLUDEPATH += ../3rdparty/md5 \
                ../3rdparty/md4 \
                ../3rdparty/sha3
 
-contains(QT_CONFIG, doubleconversion) {
-    include($$PWD/../../3rdparty/double-conversion/double-conversion.pri)
-} else:contains(QT_CONFIG, system-doubleconversion) {
+contains(QT_CONFIG, system-doubleconversion) {
     LIBS_PRIVATE += -ldouble-conversion
-} else {
-    DEFINES += QT_NO_DOUBLECONVERSION
+} else: contains(QT_CONFIG, doubleconversion) {
+    include($$PWD/../../3rdparty/double-conversion/double-conversion.pri)
 }
 
 # Note: libm should be present by default becaue this is C++

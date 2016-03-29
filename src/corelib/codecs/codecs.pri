@@ -41,19 +41,16 @@ contains(QT_CONFIG,icu) {
         codecs/qbig5codec.cpp
 
     unix:!qnx:!mac:!ios:!linux-android-* {
-            contains(QT_CONFIG,iconv) {
-                    HEADERS += codecs/qiconvcodec_p.h
-                    SOURCES += codecs/qiconvcodec.cpp
-            } else:contains(QT_CONFIG,gnu-libiconv) {
-                    HEADERS += codecs/qiconvcodec_p.h
-                    SOURCES += codecs/qiconvcodec.cpp
-                    DEFINES += GNU_LIBICONV
-                    LIBS_PRIVATE *= -liconv
-            } else:contains(QT_CONFIG,sun-libiconv) {
-                    HEADERS += codecs/qiconvcodec_p.h
-                    SOURCES += codecs/qiconvcodec.cpp
-                    DEFINES += GNU_LIBICONV
+        contains(QT_CONFIG, iconv) {
+            HEADERS += codecs/qiconvcodec_p.h
+            SOURCES += codecs/qiconvcodec.cpp
+            contains(QT_CONFIG, gnu-libiconv) {
+                DEFINES += GNU_LIBICONV
+                LIBS_PRIVATE *= -liconv
+            } else: contains(QT_CONFIG, sun-libiconv) {
+                DEFINES += GNU_LIBICONV
             }
+        }
     } else:!win32-msvc* {
         DEFINES += QT_NO_ICONV
     }

@@ -110,18 +110,14 @@ contains(QT_CONFIG,dynamicgl) {
 RESOURCES += $$PWD/openglblacklists.qrc
 
 contains(QT_CONFIG, freetype) {
-    DEFINES *= QT_NO_FONTCONFIG
-    include($$QT_SOURCE_TREE/src/3rdparty/freetype_dependency.pri)
-    HEADERS += \
-               $$PWD/qwindowsfontdatabase_ft.h
-    SOURCES += \
-               $$PWD/qwindowsfontdatabase_ft.cpp
-} else:contains(QT_CONFIG, system-freetype) {
-    include($$QT_SOURCE_TREE/src/platformsupport/fontdatabases/basic/basic.pri)
-    HEADERS += \
-               $$PWD/qwindowsfontdatabase_ft.h
-    SOURCES += \
-               $$PWD/qwindowsfontdatabase_ft.cpp
+    HEADERS += $$PWD/qwindowsfontdatabase_ft.h
+    SOURCES += $$PWD/qwindowsfontdatabase_ft.cpp
+    contains(QT_CONFIG, system-freetype) {
+        include($$QT_SOURCE_TREE/src/platformsupport/fontdatabases/basic/basic.pri)
+    } else {
+        DEFINES *= QT_NO_FONTCONFIG
+        include($$QT_SOURCE_TREE/src/3rdparty/freetype_dependency.pri)
+    }
 }
 
 contains(QT_CONFIG, accessibility):include($$PWD/accessible/accessible.pri)

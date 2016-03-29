@@ -6207,26 +6207,22 @@ fi
 if [ "$CFG_GIF" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG gif"
 fi
-if [ "$CFG_DOUBLECONVERSION" = "no" ]; then
-    QT_CONFIG="$QT_CONFIG no-doubleconversion"
-elif [ "$CFG_DOUBLECONVERSION" = "system" ]; then
-    QT_CONFIG="$QT_CONFIG system-doubleconversion"
+if [ "$CFG_DOUBLECONVERSION" = "system" ]; then
+    QT_CONFIG="$QT_CONFIG doubleconversion system-doubleconversion"
 else
     QT_CONFIG="$QT_CONFIG doubleconversion"
 fi
 if [ "$CFG_FREETYPE" = "no" ]; then
-    QT_CONFIG="$QT_CONFIG no-freetype"
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_FREETYPE"
 elif [ "$CFG_FREETYPE" = "system" ]; then
-    QT_CONFIG="$QT_CONFIG system-freetype"
+    QT_CONFIG="$QT_CONFIG freetype system-freetype"
 else
     QT_CONFIG="$QT_CONFIG freetype"
 fi
 if [ "$CFG_HARFBUZZ" = "no" ]; then
-    QT_CONFIG="$QT_CONFIG no-harfbuzz"
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_HARFBUZZ"
 elif [ "$CFG_HARFBUZZ" = "system" ]; then
-    QT_CONFIG="$QT_CONFIG system-harfbuzz"
+    QT_CONFIG="$QT_CONFIG harfbuzz system-harfbuzz"
 else
     QT_CONFIG="$QT_CONFIG harfbuzz"
 fi
@@ -6254,7 +6250,7 @@ fi
 [ "$CFG_MTDEV" = "yes" ] && QT_CONFIG="$QT_CONFIG mtdev"
 [ "$CFG_NIS" = "yes" ] && QT_CONFIG="$QT_CONFIG nis"
 [ "$CFG_CUPS" = "yes" ] && QT_CONFIG="$QT_CONFIG cups"
-[ "$CFG_ICONV" = "yes" ] && QT_CONFIG="$QT_CONFIG iconv"
+[ "$CFG_ICONV" != "no" ] && QT_CONFIG="$QT_CONFIG iconv"
 [ "$CFG_ICONV" = "sun" ] && QT_CONFIG="$QT_CONFIG sun-libiconv"
 [ "$CFG_ICONV" = "gnu" ] && QT_CONFIG="$QT_CONFIG gnu-libiconv"
 [ "$CFG_GLIB" = "yes" ] && QT_CONFIG="$QT_CONFIG glib"
