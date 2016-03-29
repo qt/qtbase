@@ -5004,15 +5004,14 @@ fi
 # auto-detect GTK style support
 if [ "$CFG_GLIB" = "yes" -a "$CFG_GTK" != "no" ]; then
     if [ -n "$PKG_CONFIG" ]; then
-        QMAKE_CFLAGS_QGTK3=`$PKG_CONFIG --cflags gtk+-3.0 2>/dev/null`
-        QMAKE_LIBS_QGTK3=`$PKG_CONFIG --libs gtk+-3.0 2>/dev/null`
-        QMAKE_LIBS_QGOBJECT=`$PKG_CONFIG --libs gobject-2.0 2>/dev/null`
+        QMAKE_CFLAGS_GTK3=`$PKG_CONFIG --cflags gtk+-3.0 2>/dev/null`
+        QMAKE_LIBS_GTK3=`$PKG_CONFIG --libs gtk+-3.0 2>/dev/null`
     fi
-    if [ -n "$QMAKE_CFLAGS_QGTK3" ] ; then
+    if [ -n "$QMAKE_CFLAGS_GTK3" ] ; then
         CFG_GTK=yes
         QT_CONFIG="$QT_CONFIG gtk3"
-        QMakeVar set QMAKE_CFLAGS_QGTK3 "$QMAKE_CFLAGS_QGTK3"
-        QMakeVar set QMAKE_LIBS_QGTK3 "$QMAKE_LIBS_QGTK3"
+        QMakeVar set QMAKE_CFLAGS_GTK3 "$QMAKE_CFLAGS_GTK3"
+        QMakeVar set QMAKE_LIBS_GTK3 "$QMAKE_LIBS_GTK3"
     else
         if [ "$CFG_GTK" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo "GTK theme support cannot be enabled due to functionality tests!"
