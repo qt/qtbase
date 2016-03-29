@@ -309,6 +309,8 @@ QList<QTextOption::Tab> QTextOption::tabs() const
                                this width is excluded.
   \value ShowTabsAndSpaces Visualize spaces with little dots, and tabs with little arrows.
   \value ShowLineAndParagraphSeparators Visualize line and paragraph separators with appropriate symbol characters.
+  \value ShowDocumentTerminator Visualize the end of the document with a section sign. This enum value was added
+            in Qt 5.7.
   \value AddSpaceForLineAndParagraphSeparators While determining the line-break positions take into account the
             space added for drawing a separator character.
   \value SuppressColors Suppress all color changes in the character formats (except the main selection).

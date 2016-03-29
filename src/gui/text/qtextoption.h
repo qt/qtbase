@@ -109,6 +109,7 @@ public:
         ShowLineAndParagraphSeparators = 0x2,
         AddSpaceForLineAndParagraphSeparators = 0x4,
         SuppressColors = 0x8,
+        ShowDocumentTerminator = 0x10,
         IncludeTrailingSpaces = 0x80000000
     };
     Q_DECLARE_FLAGS(Flags, Flag)
