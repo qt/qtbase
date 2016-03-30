@@ -1135,12 +1135,10 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
 */
 void QAbstractSocketPrivate::_q_testConnection()
 {
-    if (socketEngine) {
-        if (threadData->hasEventDispatcher()) {
-            if (connectTimer)
-                connectTimer->stop();
-        }
+    if (connectTimer)
+        connectTimer->stop();
 
+    if (socketEngine) {
         if (socketEngine->state() == QAbstractSocket::ConnectedState) {
             // Fetch the parameters if our connection is completed;
             // otherwise, fall out and try the next address.
@@ -1155,11 +1153,6 @@ void QAbstractSocketPrivate::_q_testConnection()
         // don't retry the other addresses if we had a proxy error
         if (isProxyError(socketEngine->error()))
             addresses.clear();
-    }
-
-    if (threadData->hasEventDispatcher()) {
-        if (connectTimer)
-            connectTimer->stop();
     }
 
 #if defined(QABSTRACTSOCKET_DEBUG)
@@ -2370,11 +2363,6 @@ void QAbstractSocket::abort()
         return;
     }
 #endif
-    if (d->connectTimer) {
-        d->connectTimer->stop();
-        delete d->connectTimer;
-        d->connectTimer = 0;
-    }
 
     d->abortCalled = true;
     close();
