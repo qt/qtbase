@@ -391,7 +391,7 @@ static QLocale::Country userCountry()
     const GEOID id = GetUserGeoID(GEOCLASS_NATION);
     wchar_t code[3];
     const int size = GetGeoInfo(id, GEO_ISO2, code, 3, 0);
-    return (size == 3) ? QLocalePrivate::codeToCountry(QString::fromWCharArray(code))
+    return (size == 3) ? QLocalePrivate::codeToCountry(reinterpret_cast<const QChar*>(code), size)
                        : QLocale::AnyCountry;
 #endif // Q_OS_WINCE
 }
