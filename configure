@@ -3041,28 +3041,18 @@ fi
 
 # update QT_CONFIG to show our current predefined configuration
 CFG_QCONFIG_PATH=$relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h
-case "$CFG_QCONFIG" in
-minimal|small|medium|large|full)
-    # these are a sequence of increasing functionality
-    for c in minimal small medium large full; do
-        QT_CONFIG="$QT_CONFIG $c-config"
-        [ "$CFG_QCONFIG" = $c ] && break
-    done
-    [ "$CFG_QCONFIG" = full ] && CFG_QCONFIG_PATH=
-    ;;
-*)
-    # not known to be sufficient for anything
+if [ "$CFG_QCONFIG" = full ]; then
+    CFG_QCONFIG_PATH=
+elif [ ! -f "$CFG_QCONFIG_PATH" ]; then
+    CFG_QCONFIG_PATH=`makeabs "${CFG_QCONFIG}"`
     if [ ! -f "$CFG_QCONFIG_PATH" ]; then
-        CFG_QCONFIG_PATH=`makeabs "${CFG_QCONFIG}"`
-        if [ ! -f "$CFG_QCONFIG_PATH" ]; then
-            echo >&2 "Error: configuration file not found:"
-            echo >&2 "  $relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h"
-            echo >&2 "  or"
-            echo >&2 "  $CFG_QCONFIG_PATH"
-            exit 1
-        fi
+        echo >&2 "Error: configuration file not found:"
+        echo >&2 "  $relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h"
+        echo >&2 "  or"
+        echo >&2 "  $CFG_QCONFIG_PATH"
+        exit 1
     fi
-esac
+fi
 
 if [ "$XPLATFORM_MAC" = "no" -a "$CFG_DEBUG_RELEASE" = "yes" ]; then
     echo
