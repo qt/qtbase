@@ -135,8 +135,8 @@ void MimetypeModel::populate()
         // append the items to parent and truncate the list.
         const QString &parentName = nameIndexIt.key();
         const Iterator start =
-            std::stable_partition(allTypes.begin(), end,
-                                  [parentName](const QMimeType &t) { return !t.inherits(parentName); });
+            std::stable_partition(allTypes.begin(), end, [parentName](const QMimeType &t)
+                                  { return !t.parentMimeTypes().contains(parentName); });
         std::stable_sort(start, end);
         QStandardItem *parentItem = itemFromIndex(nameIndexIt.value());
         for (Iterator it = start; it != end; ++it) {
