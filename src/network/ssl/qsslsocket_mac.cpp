@@ -867,7 +867,7 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSLCipherSuite(SSLCipherSui
         ciph.d->protocolString = QLatin1String("TLSv1.2");
     }
 
-    const QStringList bits = ciph.d->name.split('-');
+    const auto bits = ciph.d->name.splitRef(QLatin1Char('-'));
     if (bits.size() >= 2) {
         if (bits.size() == 2 || bits.size() == 3) {
             ciph.d->keyExchangeMethod = QLatin1String("RSA");

@@ -1041,11 +1041,11 @@ QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
         return invalid;         // invalid netmask
 
     // parse the address manually
-    QStringList parts = netStr.split(QLatin1Char('.'));
+    auto parts = netStr.splitRef(QLatin1Char('.'));
     if (parts.isEmpty() || parts.count() > 4)
         return invalid;         // invalid IPv4 address
 
-    if (parts.last().isEmpty())
+    if (parts.constLast().isEmpty())
         parts.removeLast();
 
     quint32 addr = 0;

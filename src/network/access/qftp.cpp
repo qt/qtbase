@@ -587,10 +587,10 @@ static void _q_parseDosDir(const QStringList &tokens, const QString &userName, Q
     int permissions = QUrlInfo::ReadOwner | QUrlInfo::WriteOwner
                       | QUrlInfo::ReadGroup | QUrlInfo::WriteGroup
                       | QUrlInfo::ReadOther | QUrlInfo::WriteOther;
-    QString ext;
+    QStringRef ext;
     int extIndex = name.lastIndexOf(QLatin1Char('.'));
     if (extIndex != -1)
-        ext = name.mid(extIndex + 1);
+        ext = name.midRef(extIndex + 1);
     if (ext == QLatin1String("exe") || ext == QLatin1String("bat") || ext == QLatin1String("com"))
         permissions |= QUrlInfo::ExeOwner | QUrlInfo::ExeGroup | QUrlInfo::ExeOther;
     info->setPermissions(permissions);
@@ -961,19 +961,19 @@ void QFtpPI::readyRead()
         endOfMultiLine[3] = QLatin1Char(' ');
         QString lineCont(endOfMultiLine);
         lineCont[3] = QLatin1Char('-');
-        QString lineLeft4 = line.left(4);
+        QStringRef lineLeft4 = line.leftRef(4);
 
         while (lineLeft4 != endOfMultiLine) {
             if (lineLeft4 == lineCont)
-                replyText += line.mid(4); // strip 'xyz-'
+                replyText += line.midRef(4); // strip 'xyz-'
             else
                 replyText += line;
             if (!commandSocket.canReadLine())
                 return;
             line = QString::fromLatin1(commandSocket.readLine());
-            lineLeft4 = line.left(4);
+            lineLeft4 = line.leftRef(4);
         }
-        replyText += line.mid(4); // strip reply code 'xyz '
+        replyText += line.midRef(4); // strip reply code 'xyz '
         if (replyText.endsWith(QLatin1String("\r\n")))
             replyText.chop(2);
 
@@ -1089,7 +1089,7 @@ bool QFtpPI::processReply()
         } else {
             ++portPos;
             QChar delimiter = replyText.at(portPos);
-            QStringList epsvParameters = replyText.mid(portPos).split(delimiter);
+            const auto epsvParameters = replyText.midRef(portPos).split(delimiter);
 
             waitForDtpToConnect = true;
             dtp.connectToHost(commandSocket.peerAddress().toString(),

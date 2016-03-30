@@ -226,13 +226,13 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSL_CIPHER(SSL_CIPHER *ciph
     char buf [256];
     QString descriptionOneLine = QString::fromLatin1(q_SSL_CIPHER_description(cipher, buf, sizeof(buf)));
 
-    QStringList descriptionList = descriptionOneLine.split(QLatin1Char(' '), QString::SkipEmptyParts);
+    const auto descriptionList = descriptionOneLine.splitRef(QLatin1Char(' '), QString::SkipEmptyParts);
     if (descriptionList.size() > 5) {
         // ### crude code.
         ciph.d->isNull = false;
-        ciph.d->name = descriptionList.at(0);
+        ciph.d->name = descriptionList.at(0).toString();
 
-        QString protoString = descriptionList.at(1);
+        QString protoString = descriptionList.at(1).toString();
         ciph.d->protocolString = protoString;
         ciph.d->protocol = QSsl::UnknownProtocol;
         if (protoString == QLatin1String("SSLv3"))
@@ -247,11 +247,11 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSL_CIPHER(SSL_CIPHER *ciph
             ciph.d->protocol = QSsl::TlsV1_2;
 
         if (descriptionList.at(2).startsWith(QLatin1String("Kx=")))
-            ciph.d->keyExchangeMethod = descriptionList.at(2).mid(3);
+            ciph.d->keyExchangeMethod = descriptionList.at(2).mid(3).toString();
         if (descriptionList.at(3).startsWith(QLatin1String("Au=")))
-            ciph.d->authenticationMethod = descriptionList.at(3).mid(3);
+            ciph.d->authenticationMethod = descriptionList.at(3).mid(3).toString();
         if (descriptionList.at(4).startsWith(QLatin1String("Enc=")))
-            ciph.d->encryptionMethod = descriptionList.at(4).mid(4);
+            ciph.d->encryptionMethod = descriptionList.at(4).mid(4).toString();
         ciph.d->exportable = (descriptionList.size() > 6 && descriptionList.at(6) == QLatin1String("export"));
 
         ciph.d->bits = q_SSL_CIPHER_get_bits(cipher, &ciph.d->supportedBits);
