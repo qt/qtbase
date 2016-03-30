@@ -45,6 +45,7 @@
 #include "qwinrtfontdatabase.h"
 #include "qwinrttheme.h"
 #include "qwinrtclipboard.h"
+#include "qwinrtdrag.h"
 
 #include <QtGui/QOffscreenSurface>
 #include <QtGui/QOpenGLContext>
@@ -307,6 +308,15 @@ QPlatformClipboard *QWinRTIntegration::clipboard() const
 {
     Q_D(const QWinRTIntegration);
     return d->clipboard;
+}
+
+QPlatformDrag *QWinRTIntegration::drag() const
+{
+#if _MSC_VER >= 1900
+    return QWinRTDrag::instance();
+#else
+    return QPlatformIntegration::drag();
+#endif
 }
 
 Qt::KeyboardModifiers QWinRTIntegration::queryKeyboardModifiers() const

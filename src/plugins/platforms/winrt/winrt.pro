@@ -14,6 +14,7 @@ SOURCES = \
     qwinrtbackingstore.cpp \
     qwinrtclipboard.cpp \
     qwinrtcursor.cpp \
+    qwinrtdrag.cpp \
     qwinrteglcontext.cpp \
     qwinrteventdispatcher.cpp \
     qwinrtfiledialoghelper.cpp \
@@ -32,6 +33,7 @@ HEADERS = \
     qwinrtbackingstore.h \
     qwinrtclipboard.h \
     qwinrtcursor.h \
+    qwinrtdrag.h \
     qwinrteglcontext.h \
     qwinrteventdispatcher.h \
     qwinrtfiledialoghelper.h \
@@ -46,6 +48,11 @@ HEADERS = \
     qwinrtwindow.h
 
 OTHER_FILES += winrt.json
+
+*-msvc2013 {
+    SOURCES -= qwinrtdrag.cpp
+    HEADERS -= qwinrtdrag.h
+}
 
 PLUGIN_TYPE = platforms
 PLUGIN_CLASS_NAME = QWinRTIntegrationPlugin

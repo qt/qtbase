@@ -39,6 +39,7 @@
 #include "qwinrtbackingstore.h"
 #include "qwinrtinputcontext.h"
 #include "qwinrtcursor.h"
+#include "qwinrtdrag.h"
 #include "qwinrtwindow.h"
 #include <private/qeventdispatcher_winrt_p.h>
 
@@ -553,6 +554,9 @@ QWinRTScreen::QWinRTScreen()
     ComPtr<Xaml::IUIElement> uiElement;
     hr = canvas.As(&uiElement);
     Q_ASSERT_SUCCEEDED(hr);
+#if _MSC_VER >= 1900
+    QWinRTDrag::instance()->setUiElement(uiElement);
+#endif
     hr = window->put_Content(uiElement.Get());
     Q_ASSERT_SUCCEEDED(hr);
     hr = canvas.As(&d->canvas);
@@ -761,6 +765,10 @@ void QWinRTScreen::addWindow(QWindow *window)
     QWindowSystemInterface::handleWindowActivated(window, Qt::OtherFocusReason);
     handleExpose();
     QWindowSystemInterface::flushWindowSystemEvents();
+
+#if _MSC_VER >= 1900
+    QWinRTDrag::instance()->setDropTarget(window);
+#endif
 }
 
 void QWinRTScreen::removeWindow(QWindow *window)
@@ -775,6 +783,10 @@ void QWinRTScreen::removeWindow(QWindow *window)
         QWindowSystemInterface::handleWindowActivated(window, Qt::OtherFocusReason);
     handleExpose();
     QWindowSystemInterface::flushWindowSystemEvents();
+#if _MSC_VER >= 1900
+    if (wasTopWindow)
+        QWinRTDrag::instance()->setDropTarget(topWindow());
+#endif
 }
 
 void QWinRTScreen::raise(QWindow *window)
