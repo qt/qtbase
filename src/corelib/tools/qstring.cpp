@@ -2488,19 +2488,19 @@ QString &QString::replace(const QChar *before, int blen,
             if (index == -1)
                 break;
             indices[pos++] = index;
-            index += blen;
-            // avoid infinite loop
-            if (!blen)
+            if (blen) // Step over before:
+                index += blen;
+            else // Only count one instance of empty between any two characters:
                 index++;
         }
-        if (!pos)
+        if (!pos) // Nothing to replace
             break;
 
         replace_helper(indices, pos, blen, after, alen);
 
-        if (index == -1)
+        if (index == -1) // Nothing left to replace
             break;
-        // index has to be adjusted in case we get back into the loop above.
+        // The call to replace_helper just moved what index points at:
         index += pos*(alen-blen);
     }
 
@@ -2545,14 +2545,14 @@ QString& QString::replace(QChar ch, const QString &after, Qt::CaseSensitivity cs
                 index++;
             }
         }
-        if (!pos)
+        if (!pos) // Nothing to replace
             break;
 
         replace_helper(indices, pos, 1, after.constData(), after.d->size);
 
-        if (index == -1)
+        if (index == -1) // Nothing left to replace
             break;
-        // index has to be adjusted in case we get back into the loop above.
+        // The call to replace_helper just moved what index points at:
         index += pos*(after.d->size - 1);
     }
     return *this;
