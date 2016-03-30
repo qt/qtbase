@@ -2176,7 +2176,6 @@ void QLineEdit::changeEvent(QEvent *ev)
             d->control->setPasswordCharacter(style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, this));
             d->control->setPasswordMaskDelay(style()->styleHint(QStyle::SH_LineEdit_PasswordMaskDelay, &opt, this));
         }
-        d->m_iconSize = QSize();
         update();
         break;
     case QEvent::LayoutDirectionChange:
