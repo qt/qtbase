@@ -189,6 +189,7 @@ enum Property {
     QtListNumberPrefix,
     QtListNumberSuffix,
     LineHeight,
+    QtLineHeightType,
     NumProperties
 };
 

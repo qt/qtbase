@@ -492,7 +492,7 @@ static QString quoteNewline(const QString &s)
 
 QTextHtmlParserNode::QTextHtmlParserNode()
     : parent(0), id(Html_unknown),
-      cssFloat(QTextFrameFormat::InFlow), hasOwnListStyle(false),
+      cssFloat(QTextFrameFormat::InFlow), hasOwnListStyle(false), hasOwnLineHeightType(false),
       hasCssListIndent(false), isEmptyParagraph(false), isTextFrame(false), isRootFrame(false),
       displayMode(QTextHtmlElement::DisplayInline), hasHref(false),
       listStyle(QTextListFormat::ListStyleUndefined), imageWidth(-1), imageHeight(-1), tableBorder(0),
@@ -1198,20 +1198,48 @@ void QTextHtmlParserNode::applyCssDeclarations(const QVector<QCss::Declaration> 
         case QCss::QtBlockIndent:
             blockFormat.setIndent(decl.d->values.first().variant.toInt());
             break;
-       case QCss::LineHeight: {
+        case QCss::QtLineHeightType: {
+            QString lineHeightTypeName = decl.d->values.first().variant.toString();
+            QTextBlockFormat::LineHeightTypes lineHeightType;
+            if (lineHeightTypeName.compare(QLatin1String("proportional"), Qt::CaseInsensitive) == 0)
+                lineHeightType = QTextBlockFormat::ProportionalHeight;
+            else if (lineHeightTypeName.compare(QLatin1String("fixed"), Qt::CaseInsensitive) == 0)
+                lineHeightType = QTextBlockFormat::FixedHeight;
+            else if (lineHeightTypeName.compare(QLatin1String("minimum"), Qt::CaseInsensitive) == 0)
+                lineHeightType = QTextBlockFormat::MinimumHeight;
+            else if (lineHeightTypeName.compare(QLatin1String("line-distance"), Qt::CaseInsensitive) == 0)
+                lineHeightType = QTextBlockFormat::LineDistanceHeight;
+            else
+                lineHeightType = QTextBlockFormat::SingleHeight;
+
+            blockFormat.setProperty(QTextBlockFormat::LineHeightType, lineHeightType);
+            hasOwnLineHeightType = true;
+        }
+        break;
+        case QCss::LineHeight: {
             qreal lineHeight;
+            QTextBlockFormat::LineHeightTypes lineHeightType;
             if (decl.realValue(&lineHeight, "px")) {
-                blockFormat.setLineHeight(lineHeight, QTextBlockFormat::FixedHeight);
+                lineHeightType = QTextBlockFormat::MinimumHeight;
             } else {
                 bool ok;
                 QString value = decl.d->values.first().toString();
                 lineHeight = value.toDouble(&ok);
-                if (ok)
-                    blockFormat.setLineHeight(lineHeight, QTextBlockFormat::ProportionalHeight);
-                else
-                    blockFormat.setLineHeight(0, QTextBlockFormat::SingleHeight);
+                if (ok) {
+                    lineHeightType = QTextBlockFormat::ProportionalHeight;
+                } else {
+                    lineHeight = 0.0;
+                    lineHeightType = QTextBlockFormat::SingleHeight;
+                }
             }
-            break; }
+
+            // Only override line height type if specified in same node
+            if (hasOwnLineHeightType)
+                lineHeightType = QTextBlockFormat::LineHeightTypes(blockFormat.lineHeightType());
+
+            blockFormat.setLineHeight(lineHeight, lineHeightType);
+            break;
+        }
         case QCss::TextIndent: {
             qreal indent = 0;
             if (decl.realValue(&indent, "px"))
