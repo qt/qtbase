@@ -282,6 +282,8 @@ int runMoc(int argc, char **argv)
             QStringLiteral("Read additional options from option-file."));
 
     const QStringList arguments = argumentsFromCommandLineAndFile(app.arguments());
+    if (arguments.isEmpty())
+        return 1;
 
     parser.process(arguments);
 
