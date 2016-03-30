@@ -510,8 +510,10 @@ void QOpenGLContext::setScreen(QScreen *screen)
 void QOpenGLContextPrivate::_q_screenDestroyed(QObject *object)
 {
     Q_Q(QOpenGLContext);
-    if (object == static_cast<QObject *>(screen))
+    if (object == static_cast<QObject *>(screen)) {
+        screen = 0;
         q->setScreen(0);
+    }
 }
 
 /*!
