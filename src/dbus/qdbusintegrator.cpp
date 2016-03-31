@@ -586,7 +586,7 @@ static void huntAndDestroy(QObject *needle, QDBusConnectionPrivate::ObjectTreeNo
     }
 }
 
-static void huntAndUnregister(const QStringList &pathComponents, int i, QDBusConnection::UnregisterMode mode,
+static void huntAndUnregister(const QVector<QStringRef> &pathComponents, int i, QDBusConnection::UnregisterMode mode,
                               QDBusConnectionPrivate::ObjectTreeNode *node)
 {
     if (pathComponents.count() == i) {
@@ -2335,12 +2335,12 @@ void QDBusConnectionPrivate::registerObject(const ObjectTreeNode *node)
 void QDBusConnectionPrivate::unregisterObject(const QString &path, QDBusConnection::UnregisterMode mode)
 {
     QDBusConnectionPrivate::ObjectTreeNode *node = &rootNode;
-    QStringList pathComponents;
+    QVector<QStringRef> pathComponents;
     int i;
     if (path == QLatin1String("/")) {
         i = 0;
     } else {
-        pathComponents = path.split(QLatin1Char('/'));
+        pathComponents = path.splitRef(QLatin1Char('/'));
         i = 1;
     }
 

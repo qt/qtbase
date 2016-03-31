@@ -44,6 +44,7 @@
 #include <qdebug.h>
 #include <qcoreapplication.h>
 #include <qstringlist.h>
+#include <qvector.h>
 #include <qtimer.h>
 #include <qthread.h>
 
@@ -909,8 +910,8 @@ bool QDBusConnection::registerObject(const QString &path, const QString &interfa
     if (!d || !d->connection || !object || !options || !QDBusUtil::isValidObjectPath(path))
         return false;
 
-    QStringList pathComponents = path.split(QLatin1Char('/'));
-    if (pathComponents.last().isEmpty())
+    auto pathComponents = path.splitRef(QLatin1Char('/'));
+    if (pathComponents.constLast().isEmpty())
         pathComponents.removeLast();
     QDBusWriteLocker locker(RegisterObjectAction, d);
 
@@ -965,7 +966,7 @@ bool QDBusConnection::registerObject(const QString &path, const QString &interfa
             }
         } else {
             // add entry
-            node = node->children.insert(it, pathComponents.at(i));
+            node = node->children.insert(it, pathComponents.at(i).toString());
         }
 
         // iterate
@@ -1017,8 +1018,8 @@ QObject *QDBusConnection::objectRegisteredAt(const QString &path) const
     if (!d || !d->connection || !QDBusUtil::isValidObjectPath(path))
         return 0;
 
-    QStringList pathComponents = path.split(QLatin1Char('/'));
-    if (pathComponents.last().isEmpty())
+    auto pathComponents = path.splitRef(QLatin1Char('/'));
+    if (pathComponents.constLast().isEmpty())
         pathComponents.removeLast();
 
     // lower-bound search for where this object should enter in the tree
