@@ -697,15 +697,15 @@ static QStringList familyList(const QFontDef &req)
     if (req.family.isEmpty())
         return family_list;
 
-    QStringList list = req.family.split(QLatin1Char(','));
+    const auto list = req.family.splitRef(QLatin1Char(','));
     const int numFamilies = list.size();
     family_list.reserve(numFamilies);
     for (int i = 0; i < numFamilies; ++i) {
-        QString str = list.at(i).trimmed();
+        QStringRef str = list.at(i).trimmed();
         if ((str.startsWith(QLatin1Char('"')) && str.endsWith(QLatin1Char('"')))
             || (str.startsWith(QLatin1Char('\'')) && str.endsWith(QLatin1Char('\''))))
             str = str.mid(1, str.length() - 2);
-        family_list << str;
+        family_list << str.toString();
     }
 
     // append the substitute list for each family in family_list
