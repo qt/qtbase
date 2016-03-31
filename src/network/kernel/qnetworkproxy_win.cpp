@@ -41,6 +41,7 @@
 #include <qurl.h>
 #include <private/qsystemlibrary_p.h>
 #include <qnetworkinterface.h>
+#include <qdebug.h>
 
 #include <string.h>
 #include <qt_windows.h>
@@ -590,8 +591,16 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
             url.setScheme(QLatin1String("https"));
         }
 
+        QString urlQueryString = url.toString();
+        if (urlQueryString.size() > 2083) {
+            // calls to WinHttpGetProxyForUrl with urls longer than 2083 characters
+            // fail with error code ERROR_INVALID_PARAMETER(87), so we truncate it
+            qWarning("Proxy query URL too long for windows API, try with truncated URL");
+            urlQueryString = url.toString().left(2083);
+        }
+
         bool getProxySucceeded = ptrWinHttpGetProxyForUrl(sp->hHttpSession,
-                                                (LPCWSTR)url.toString().utf16(),
+                                                (LPCWSTR)urlQueryString.utf16(),
                                                 &sp->autoProxyOptions,
                                                 &proxyInfo);
         DWORD getProxyError = GetLastError();
@@ -608,7 +617,7 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
                 sp->autoProxyOptions.dwFlags = WINHTTP_AUTOPROXY_CONFIG_URL;
                 sp->autoProxyOptions.lpszAutoConfigUrl = (LPCWSTR)sp->autoConfigUrl.utf16();
                 getProxySucceeded = ptrWinHttpGetProxyForUrl(sp->hHttpSession,
-                                                (LPCWSTR)url.toString().utf16(),
+                                                (LPCWSTR)urlQueryString.utf16(),
                                                 &sp->autoProxyOptions,
                                                 &proxyInfo);
                 getProxyError = GetLastError();
@@ -621,7 +630,7 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
             // But now we've to enable it (http://msdn.microsoft.com/en-us/library/aa383153%28v=VS.85%29.aspx)
             sp->autoProxyOptions.fAutoLogonIfChallenged = TRUE;
             getProxySucceeded = ptrWinHttpGetProxyForUrl(sp->hHttpSession,
-                                               (LPCWSTR)url.toString().utf16(),
+                                               (LPCWSTR)urlQueryString.utf16(),
                                                 &sp->autoProxyOptions,
                                                 &proxyInfo);
             getProxyError = GetLastError();
