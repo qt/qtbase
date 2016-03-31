@@ -116,6 +116,7 @@
 #include "qgraphicswidget.h"
 #include "qgraphicsgridlayoutengine_p.h"
 #include "qgraphicslayoutstyleinfo_p.h"
+#include "qscopedpointer.h"
 #ifdef QT_DEBUG
 #include <QtCore/qdebug.h>
 #endif
@@ -126,8 +127,7 @@ class QGraphicsLinearLayoutPrivate : public QGraphicsLayoutPrivate
 {
 public:
     QGraphicsLinearLayoutPrivate(Qt::Orientation orientation)
-        : orientation(orientation),
-          m_styleInfo(0)
+        : orientation(orientation)
     { }
 
     void removeGridItem(QGridLayoutItem *gridItem);
@@ -137,7 +137,7 @@ public:
     int gridColumn(int index) const;
 
     Qt::Orientation orientation;
-    mutable QGraphicsLayoutStyleInfo *m_styleInfo;
+    mutable QScopedPointer<QGraphicsLayoutStyleInfo> m_styleInfo;
     QGraphicsGridLayoutEngine engine;
 };
 
@@ -172,8 +172,8 @@ int QGraphicsLinearLayoutPrivate::gridColumn(int index) const
 QGraphicsLayoutStyleInfo *QGraphicsLinearLayoutPrivate::styleInfo() const
 {
     if (!m_styleInfo)
-        m_styleInfo = new QGraphicsLayoutStyleInfo(this);
-    return m_styleInfo;
+        m_styleInfo.reset(new QGraphicsLayoutStyleInfo(this));
+    return m_styleInfo.data();
 }
 
 /*!
