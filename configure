@@ -1629,8 +1629,6 @@ while [ "$#" -gt 0 ]; do
         else
             UNKNOWN_OPT=yes
         fi
-        # No longer supported:
-        #[ "$VAL" = "no" ] && CFG_LIBPNG=no
         ;;
     mtdev)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
