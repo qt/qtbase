@@ -532,7 +532,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
             reg_var.setMinimal(true);
             while((rep = reg_var.indexIn(ret)) != -1) {
                 ret.replace(rep, reg_var.matchedLength(),
-                            QString::fromLocal8Bit(qgetenv(ret.mid(rep + 2,
+                            QString::fromLocal8Bit(qgetenv(ret.midRef(rep + 2,
                                 reg_var.matchedLength() - 3).toLatin1().constData()).constData()));
             }
 

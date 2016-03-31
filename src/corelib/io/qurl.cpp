@@ -3784,13 +3784,13 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
     } else if (deslashified.startsWith(QLatin1String("//"))) {
         // magic for shared drive on windows
         int indexOfPath = deslashified.indexOf(QLatin1Char('/'), 2);
-        QString hostSpec = deslashified.mid(2, indexOfPath - 2);
+        QStringRef hostSpec = deslashified.midRef(2, indexOfPath - 2);
         // Check for Windows-specific WebDAV specification: "//host@SSL/path".
         if (hostSpec.endsWith(webDavSslTag(), Qt::CaseInsensitive)) {
-            hostSpec.chop(4);
+            hostSpec.truncate(hostSpec.size() - 4);
             scheme = webDavScheme();
         }
-        url.setHost(hostSpec);
+        url.setHost(hostSpec.toString());
 
         if (indexOfPath > 2)
             deslashified = deslashified.right(deslashified.length() - indexOfPath);
@@ -4255,8 +4255,8 @@ QUrl QUrl::fromUserInput(const QString &userInput)
     if (urlPrepended.isValid() && (!urlPrepended.host().isEmpty() || !urlPrepended.path().isEmpty()))
     {
         int dotIndex = trimmedString.indexOf(QLatin1Char('.'));
-        const QString hostscheme = trimmedString.left(dotIndex).toLower();
-        if (hostscheme == ftpScheme())
+        const QStringRef hostscheme = trimmedString.leftRef(dotIndex);
+        if (hostscheme.compare(ftpScheme(), Qt::CaseInsensitive) == 0)
             urlPrepended.setScheme(ftpScheme());
         return adjustFtpPath(urlPrepended);
     }

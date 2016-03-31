@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 
 static QString fallbackParent(const QString &mimeTypeName)
 {
-    const QString myGroup = mimeTypeName.left(mimeTypeName.indexOf(QLatin1Char('/')));
+    const QStringRef myGroup = mimeTypeName.leftRef(mimeTypeName.indexOf(QLatin1Char('/')));
     // All text/* types are subclasses of text/plain.
     if (myGroup == QLatin1String("text") && mimeTypeName != QLatin1String("text/plain"))
         return QLatin1String("text/plain");
@@ -363,7 +363,8 @@ bool QMimeBinaryProvider::matchSuffixTree(QMimeGlobMatchResult &result, QMimeBin
                     const int weight = flagsAndWeight & 0xff;
                     const bool caseSensitive = flagsAndWeight & 0x100;
                     if (caseSensitiveCheck || !caseSensitive) {
-                        result.addMatch(QLatin1String(mimeType), weight, QLatin1Char('*') + fileName.mid(charPos+1));
+                        result.addMatch(QLatin1String(mimeType), weight,
+                                        QLatin1Char('*') + fileName.midRef(charPos + 1));
                         success = true;
                     }
                 }

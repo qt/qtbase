@@ -91,7 +91,7 @@ QString QFileSystemEngine::slowCanonicalized(const QString &path)
                 if (separatorPos != -1) {
                     if (fi.isDir() && !target.endsWith(slash))
                         target.append(slash);
-                    target.append(tmpPath.mid(separatorPos));
+                    target.append(tmpPath.midRef(separatorPos));
                 }
                 tmpPath = QDir::cleanPath(target);
                 separatorPos = 0;

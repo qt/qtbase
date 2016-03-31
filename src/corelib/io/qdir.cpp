@@ -146,9 +146,11 @@ inline QStringList QDirPrivate::splitFilters(const QString &nameFilter, QChar se
 {
     if (sep.isNull())
         sep = getFilterSepChar(nameFilter);
-    QStringList ret = nameFilter.split(sep);
-    for (int i = 0; i < ret.count(); ++i)
-        ret[i] = ret[i].trimmed();
+    const QVector<QStringRef> split = nameFilter.splitRef(sep);
+    QStringList ret;
+    ret.reserve(split.size());
+    for (const auto &e : split)
+        ret.append(e.trimmed().toString());
     return ret;
 }
 

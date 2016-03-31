@@ -286,11 +286,12 @@ QString QMimeType::genericIconName() const
         // then the mimetype is used to generate the generic icon by using the top-level
         // media type (e.g.  "video" in "video/ogg") and appending "-x-generic"
         // (i.e. "video-x-generic" in the previous example).
-        QString group = name();
-        const int slashindex = group.indexOf(QLatin1Char('/'));
+        const QString group = name();
+        QStringRef groupRef(&group);
+        const int slashindex = groupRef.indexOf(QLatin1Char('/'));
         if (slashindex != -1)
-            group = group.left(slashindex);
-        return group + QLatin1String("-x-generic");
+            groupRef = groupRef.left(slashindex);
+        return groupRef + QLatin1String("-x-generic");
     }
     return d->genericIconName;
 }

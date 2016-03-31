@@ -616,12 +616,12 @@ bool QLibrary::isLibrary(const QString &fileName)
     QString completeSuffix = QFileInfo(fileName).completeSuffix();
     if (completeSuffix.isEmpty())
         return false;
-    QStringList suffixes = completeSuffix.split(QLatin1Char('.'));
+    const QVector<QStringRef> suffixes = completeSuffix.splitRef(QLatin1Char('.'));
 # if defined(Q_OS_DARWIN)
 
     // On Mac, libs look like libmylib.1.0.0.dylib
-    const QString lastSuffix = suffixes.at(suffixes.count() - 1);
-    const QString firstSuffix = suffixes.at(0);
+    const QStringRef &lastSuffix = suffixes.at(suffixes.count() - 1);
+    const QStringRef &firstSuffix = suffixes.at(0);
 
     bool valid = (lastSuffix == QLatin1String("dylib")
             || firstSuffix == QLatin1String("so")
@@ -657,7 +657,7 @@ bool QLibrary::isLibrary(const QString &fileName)
     int suffix;
     int suffixPos = -1;
     for (suffix = 0; suffix < validSuffixList.count() && suffixPos == -1; ++suffix)
-        suffixPos = suffixes.indexOf(validSuffixList.at(suffix));
+        suffixPos = suffixes.indexOf(QStringRef(&validSuffixList.at(suffix)));
 
     bool valid = suffixPos != -1;
     for (int i = suffixPos + 1; i < suffixes.count() && valid; ++i)

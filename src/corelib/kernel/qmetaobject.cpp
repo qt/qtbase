@@ -2652,15 +2652,16 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
         return -1;
     if (ok != 0)
         *ok = true;
-    QStringList l = QString::fromLatin1(keys).split(QLatin1Char('|'));
-    if (l.isEmpty())
+    const QString keysString = QString::fromLatin1(keys);
+    const QVector<QStringRef> splitKeys = keysString.splitRef(QLatin1Char('|'));
+    if (splitKeys.isEmpty())
         return 0;
-    //#### TODO write proper code, do not use QStringList
+    // ### TODO write proper code: do not allocate memory, so we can go nothrow
     int value = 0;
     int count = mobj->d.data[handle + 2];
     int data = mobj->d.data[handle + 3];
-    for (int li = 0; li < l.size(); ++li) {
-        QString trimmed = l.at(li).trimmed();
+    for (const QStringRef &untrimmed : splitKeys) {
+        const QStringRef trimmed = untrimmed.trimmed();
         QByteArray qualified_key = trimmed.toLatin1();
         const char *key = qualified_key.constData();
         uint scope = 0;

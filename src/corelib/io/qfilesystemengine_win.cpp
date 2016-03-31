@@ -52,6 +52,7 @@
 #include "qvarlengtharray.h"
 #include "qdatetime.h"
 #include "qt_windows.h"
+#include "qvector.h"
 
 #include <sys/types.h>
 #include <direct.h>
@@ -407,11 +408,11 @@ static QString readLink(const QFileSystemEntry &link)
 static bool uncShareExists(const QString &server)
 {
     // This code assumes the UNC path is always like \\?\UNC\server...
-    QStringList parts = server.split(QLatin1Char('\\'), QString::SkipEmptyParts);
+    const QVector<QStringRef> parts = server.splitRef(QLatin1Char('\\'), QString::SkipEmptyParts);
     if (parts.count() >= 3) {
         QStringList shares;
         if (QFileSystemEngine::uncListSharesOnServer(QLatin1String("\\\\") + parts.at(2), &shares))
-            return parts.count() >= 4 ? shares.contains(parts.at(3), Qt::CaseInsensitive) : true;
+            return parts.count() < 4 || shares.contains(parts.at(3).toString(), Qt::CaseInsensitive);
     }
     return false;
 }
@@ -1106,9 +1107,10 @@ bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool remo
     if (removeEmptyParents) {
         dirName = QDir::toNativeSeparators(QDir::cleanPath(dirName));
         for (int oldslash = 0, slash=dirName.length(); slash > 0; oldslash = slash) {
-            QString chunk = dirName.left(slash);
-            if (chunk.length() == 2 && chunk.at(0).isLetter() && chunk.at(1) == QLatin1Char(':'))
+            const QStringRef chunkRef = dirName.leftRef(slash);
+            if (chunkRef.length() == 2 && chunkRef.at(0).isLetter() && chunkRef.at(1) == QLatin1Char(':'))
                 break;
+            const QString chunk = chunkRef.toString();
             if (!isDirPath(chunk, 0))
                 return false;
             if (!rmDir(chunk))

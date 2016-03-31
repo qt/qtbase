@@ -182,8 +182,9 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link, 
 #endif
 
         if (!ret.startsWith(QLatin1Char('/'))) {
-            if (link.filePath().startsWith(QLatin1Char('/'))) {
-                ret.prepend(link.filePath().left(link.filePath().lastIndexOf(QLatin1Char('/')))
+            const QString linkFilePath = link.filePath();
+            if (linkFilePath.startsWith(QLatin1Char('/'))) {
+                ret.prepend(linkFilePath.leftRef(linkFilePath.lastIndexOf(QLatin1Char('/')))
                             + QLatin1Char('/'));
             } else {
                 ret.prepend(QDir::currentPath() + QLatin1Char('/'));

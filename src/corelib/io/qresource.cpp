@@ -303,12 +303,12 @@ QResourcePrivate::ensureInitialized() const
     if(!that->absoluteFilePath.startsWith(QLatin1Char(':')))
         that->absoluteFilePath.prepend(QLatin1Char(':'));
 
-    QString path = fileName;
+    QStringRef path(&fileName);
     if(path.startsWith(QLatin1Char(':')))
         path = path.mid(1);
 
     if(path.startsWith(QLatin1Char('/'))) {
-        that->load(path);
+        that->load(path.toString());
     } else {
         QMutexLocker lock(resourceMutex());
         QStringList searchPaths = *resourceSearchPaths();
