@@ -143,6 +143,7 @@ public:
 
     qint64 readBufferMaxSize;
     bool isBuffered;
+    bool hasPendingData;
 
     QTimer *connectTimer;
     QTimer *disconnectTimer;

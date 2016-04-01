@@ -563,6 +563,7 @@ QAbstractSocketPrivate::QAbstractSocketPrivate()
       cachedSocketDescriptor(-1),
       readBufferMaxSize(0),
       isBuffered(false),
+      hasPendingData(false),
       connectTimer(0),
       disconnectTimer(0),
       hostLookupId(-1),
@@ -593,6 +594,7 @@ void QAbstractSocketPrivate::resetSocketLayer()
     qDebug("QAbstractSocketPrivate::resetSocketLayer()");
 #endif
 
+    hasPendingData = false;
     if (socketEngine) {
         socketEngine->close();
         socketEngine->disconnect();
@@ -683,8 +685,13 @@ bool QAbstractSocketPrivate::canReadNotification()
     qDebug("QAbstractSocketPrivate::canReadNotification()");
 #endif
 
-    if (!isBuffered)
-        socketEngine->setReadNotificationEnabled(false);
+    if (!isBuffered) {
+        if (hasPendingData) {
+            socketEngine->setReadNotificationEnabled(false);
+            return true;
+        }
+        hasPendingData = true;
+    }
 
     // If buffered, read data from the socket into the read buffer
     qint64 newBytes = 0;
@@ -2434,6 +2441,7 @@ qint64 QAbstractSocket::readData(char *data, qint64 maxSize)
         d->state = QAbstractSocket::UnconnectedState;
     } else {
         // Only do this when there was no error
+        d->hasPendingData = false;
         d->socketEngine->setReadNotificationEnabled(true);
     }
 

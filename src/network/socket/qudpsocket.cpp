@@ -398,7 +398,8 @@ qint64 QUdpSocket::readDatagram(char *data, qint64 maxSize, QHostAddress *addres
         readBytes = d->socketEngine->readDatagram(data, maxSize);
     }
 
-    d_func()->socketEngine->setReadNotificationEnabled(true);
+    d->hasPendingData = false;
+    d->socketEngine->setReadNotificationEnabled(true);
     if (readBytes < 0)
         d->setErrorAndEmit(d->socketEngine->error(), d->socketEngine->errorString());
     return readBytes;
