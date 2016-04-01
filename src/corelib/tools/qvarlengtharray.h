@@ -96,7 +96,8 @@ public:
     QVarLengthArray<T, Prealloc> &operator=(std::initializer_list<T> list)
     {
         resize(list.size());
-        std::copy(list.begin(), list.end(), this->begin());
+        std::copy(list.begin(), list.end(),
+                  QT_MAKE_CHECKED_ARRAY_ITERATOR(this->begin(), this->size()));
         return *this;
     }
 #endif
@@ -467,7 +468,7 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
     int l = int(aend - ptr);
     int n = l - f;
     if (QTypeInfo<T>::isComplex) {
-        std::copy(ptr + l, ptr + s, ptr + f);
+        std::copy(ptr + l, ptr + s, QT_MAKE_CHECKED_ARRAY_ITERATOR(ptr + f, s - f));
         T *i = ptr + s;
         T *b = ptr + s - n;
         while (i != b) {
@@ -489,7 +490,7 @@ bool operator==(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T,
     const T *rb = r.begin();
     const T *b  = l.begin();
     const T *e  = l.end();
-    return std::equal(b, e, rb);
+    return std::equal(b, e, QT_MAKE_CHECKED_ARRAY_ITERATOR(rb, r.size()));
 }
 
 template <typename T, int Prealloc1, int Prealloc2>

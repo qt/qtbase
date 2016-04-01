@@ -1637,7 +1637,7 @@ QDataStream &operator>>(QDataStream &s, QKeySequence &keysequence)
         s >> keys[i];
     }
     qAtomicDetach(keysequence.d);
-    std::copy(keys, keys + MaxKeys, keysequence.d->key);
+    std::copy(keys, keys + MaxKeys, QT_MAKE_CHECKED_ARRAY_ITERATOR(keysequence.d->key, MaxKeys));
     return s;
 }
 

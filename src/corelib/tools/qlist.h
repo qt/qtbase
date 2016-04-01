@@ -846,7 +846,7 @@ inline bool QList<T>::op_eq_impl(const QList &l, QListData::ArrayCompatibleLayou
     const T *lb = reinterpret_cast<const T*>(l.p.begin());
     const T *b  = reinterpret_cast<const T*>(p.begin());
     const T *e  = reinterpret_cast<const T*>(p.end());
-    return std::equal(b, e, lb);
+    return std::equal(b, e, QT_MAKE_CHECKED_ARRAY_ITERATOR(lb, l.p.size()));
 }
 
 template <typename T>

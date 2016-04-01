@@ -444,7 +444,7 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
     if (!isArgvModified(argc, argv)) {
         origArgc = argc;
         origArgv = new char *[argc];
-        std::copy(argv, argv + argc, origArgv);
+        std::copy(argv, argv + argc, QT_MAKE_CHECKED_ARRAY_ITERATOR(origArgv, argc));
     }
 #endif // Q_OS_WIN && !Q_OS_WINRT
 

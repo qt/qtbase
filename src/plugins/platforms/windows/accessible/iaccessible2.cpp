@@ -602,7 +602,8 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_keyBinding(long actionIndex
             // The IDL documents that the client must free with CoTaskMemFree
             arrayOfBindingsToReturn = coTaskMemAllocArray<BSTR>(numBindings);
             std::transform(keyBindings.constBegin(), keyBindings.constEnd(),
-                           arrayOfBindingsToReturn, QStringToBSTR);
+                           QT_MAKE_CHECKED_ARRAY_ITERATOR(arrayOfBindingsToReturn, numBindings),
+                           QStringToBSTR);
         }
     }
     *keyBindings = arrayOfBindingsToReturn;
@@ -986,7 +987,8 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_selectedColumns(long **sele
         *selectedColumns = Q_NULLPTR;
         if (count) {
             *selectedColumns = coTaskMemAllocArray<long>(count);
-            std::copy(selectedIndices.constBegin(), selectedIndices.constEnd(), *selectedColumns);
+            std::copy(selectedIndices.constBegin(), selectedIndices.constEnd(),
+                      QT_MAKE_CHECKED_ARRAY_ITERATOR(*selectedColumns, count));
         }
         return count ? S_OK : S_FALSE;
     }
@@ -1008,7 +1010,8 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_selectedRows(long **selecte
         *selectedRows = Q_NULLPTR;
         if (count) {
             *selectedRows = coTaskMemAllocArray<long>(count);
-            std::copy(selectedIndices.constBegin(), selectedIndices.constEnd(), *selectedRows);
+            std::copy(selectedIndices.constBegin(), selectedIndices.constEnd(),
+                      QT_MAKE_CHECKED_ARRAY_ITERATOR(*selectedRows, count));
         }
         return count ? S_OK : S_FALSE;
     }
@@ -1677,7 +1680,8 @@ HRESULT QWindowsIA2Accessible::wrapListOfCells(const QList<QAccessibleInterface*
     if (count) {
         *outputAccessibles = coTaskMemAllocArray<IUnknown *>(count);
         std::transform(inputCells.constBegin(), inputCells.constEnd(),
-                       *outputAccessibles, QWindowsAccessibility::wrap);
+                       QT_MAKE_CHECKED_ARRAY_ITERATOR(*outputAccessibles, count),
+                       QWindowsAccessibility::wrap);
     }
     return count > 0 ? S_OK : S_FALSE;
 }

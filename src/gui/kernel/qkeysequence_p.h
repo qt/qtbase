@@ -70,7 +70,8 @@ public:
     }
     inline QKeySequencePrivate(const QKeySequencePrivate &copy) : ref(1)
     {
-        std::copy(copy.key, copy.key + MaxKeyCount, key);
+        std::copy(copy.key, copy.key + MaxKeyCount,
+                  QT_MAKE_CHECKED_ARRAY_ITERATOR(key, MaxKeyCount));
     }
     QAtomicInt ref;
     int key[MaxKeyCount];
