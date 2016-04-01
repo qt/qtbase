@@ -73,6 +73,7 @@ static QNetworkInterfacePrivate *interfaceFromProfile(IConnectionProfile *profil
     Q_ASSERT_SUCCEEDED(hr);
     if (connectivityLevel != NetworkConnectivityLevel_None)
         iface->flags = QNetworkInterface::IsUp | QNetworkInterface::IsRunning;
+    iface->flags |= QNetworkInterface::CanBroadcast;
 
     ComPtr<INetworkAdapter> adapter;
     hr = profile->get_NetworkAdapter(&adapter);
