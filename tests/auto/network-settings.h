@@ -71,7 +71,12 @@ public:
 #ifdef QT_NETWORK_LIB
     static QHostAddress serverIP()
     {
-        return QHostInfo::fromName(serverName()).addresses().first();
+        const QHostInfo info = QHostInfo::fromName(serverName());
+        if (info.error()) {
+            QTest::qFail(qPrintable(info.errorString()), __FILE__, __LINE__);
+            return QHostAddress();
+        }
+        return info.addresses().constFirst();
     }
 #endif
 
