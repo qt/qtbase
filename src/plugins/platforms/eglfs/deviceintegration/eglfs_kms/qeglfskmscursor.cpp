@@ -64,6 +64,12 @@ QEglFSKmsCursor::QEglFSKmsCursor(QEglFSKmsScreen *screen)
     , m_cursorImage(0, 0, 0, 0, 0, 0)
     , m_visible(true)
 {
+    QByteArray hideCursorVal = qgetenv("QT_QPA_EGLFS_HIDECURSOR");
+    if (!hideCursorVal.isEmpty())
+        m_visible = hideCursorVal.toInt() == 0;
+    if (!m_visible)
+        return;
+
     uint64_t width, height;
     if ((drmGetCap(m_screen->device()->fd(), DRM_CAP_CURSOR_WIDTH, &width) == 0)
         && (drmGetCap(m_screen->device()->fd(), DRM_CAP_CURSOR_HEIGHT, &height) == 0)) {
