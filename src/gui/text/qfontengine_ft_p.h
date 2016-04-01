@@ -96,6 +96,7 @@ public:
     FT_Face face;
     int xsize; // 26.6
     int ysize; // 26.6
+    QFixed scalableBitmapScaleFactor;
     FT_Matrix matrix;
     FT_CharMap unicode_map;
     FT_CharMap symbol_map;
@@ -106,6 +107,8 @@ public:
     int fsType() const;
 
     int getPointInOutline(glyph_t glyph, int flags, quint32 point, QFixed *xpos, QFixed *ypos, quint32 *nPoints);
+
+    bool isScalableBitmap() const;
 
     static void addGlyphToPath(FT_Face face, FT_GlyphSlot g, const QFixedPoint &point, QPainterPath *path, FT_Fixed x_scale, FT_Fixed y_scale);
     static void addBitmapToPath(FT_GlyphSlot slot, const QFixedPoint &point, QPainterPath *path);
@@ -239,6 +242,7 @@ private:
     QImage alphaMapForGlyph(glyph_t, QFixed) Q_DECL_OVERRIDE;
     QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t) Q_DECL_OVERRIDE;
     QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) Q_DECL_OVERRIDE;
+    QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) Q_DECL_OVERRIDE;
     glyph_metrics_t alphaMapBoundingBox(glyph_t glyph,
                                         QFixed subPixelPosition,
                                         const QTransform &matrix,
@@ -266,6 +270,7 @@ private:
     inline bool drawAntialiased() const { return antialias; }
     inline bool invalid() const { return xsize == 0 && ysize == 0; }
     inline bool isBitmapFont() const { return defaultFormat == Format_Mono; }
+    inline bool isScalableBitmap() const { return freetype->isScalableBitmap(); }
 
     inline Glyph *loadGlyph(uint glyph, QFixed subPixelPosition, GlyphFormat format = Format_None, bool fetchMetricsOnly = false) const
     { return loadGlyph(cacheEnabled ? &defaultGlyphSet : 0, glyph, subPixelPosition, format, fetchMetricsOnly); }
@@ -316,6 +321,8 @@ private:
 
     int loadFlags(QGlyphSet *set, GlyphFormat format, int flags, bool &hsubpixel, int &vfactor) const;
     bool shouldUseDesignMetrics(ShaperFlags flags) const;
+    QFixed scaledBitmapMetrics(QFixed m) const;
+    glyph_metrics_t scaledBitmapMetrics(const glyph_metrics_t &m) const;
 
     GlyphFormat defaultFormat;
     FT_Matrix matrix;
