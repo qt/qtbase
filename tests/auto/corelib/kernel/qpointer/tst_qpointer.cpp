@@ -59,6 +59,7 @@ private slots:
 
     void qvariantCast();
     void constPointer();
+    void constQPointer();
 };
 
 void tst_QPointer::constructors()
@@ -400,6 +401,21 @@ void tst_QPointer::constPointer()
     // Compile-time test that QPointer<const T> works.
     QPointer<const QFile> fp = new QFile;
     delete fp.data();
+}
+
+void tst_QPointer::constQPointer()
+{
+    // Check that const QPointers work. It's a bit weird to mark a pointer
+    // const if its value can change, but the shallow-const principle in C/C++
+    // allows this, and people use it, so document it with a test.
+    //
+    // It's unlikely that this test will fail in and out of itself, but it
+    // presents the use-case to static and dynamic checkers that can raise
+    // a warning (hopefully) should this become an issue.
+    QObject *o = new QObject(this);
+    const QPointer<QObject> p = o;
+    delete o;
+    QVERIFY(!p);
 }
 
 
