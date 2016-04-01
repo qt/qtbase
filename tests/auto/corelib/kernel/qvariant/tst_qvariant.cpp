@@ -280,6 +280,8 @@ private slots:
     void compareSanity_data();
     void compareSanity();
 
+    void accessSequentialContainerKey();
+
 private:
     void dataStream_data(QDataStream::Version version);
     void loadQVariantFromDataStream(QDataStream::Version version);
@@ -4732,6 +4734,31 @@ void tst_QVariant::compareSanity()
         QVERIFY((value1 < value2) || (value1 > value2));
     }
 }
+
+void tst_QVariant::accessSequentialContainerKey()
+{
+    QString nameResult;
+
+    {
+    QMap<QString, QObject*> mapping;
+    QString name = QString::fromLatin1("Seven");
+    mapping.insert(name, Q_NULLPTR);
+
+    QVariant variant = QVariant::fromValue(mapping);
+
+    QAssociativeIterable iterable = variant.value<QAssociativeIterable>();
+    QAssociativeIterable::const_iterator iit = iterable.begin();
+    const QAssociativeIterable::const_iterator end = iterable.end();
+    for ( ; iit != end; ++iit) {
+        nameResult += iit.key().toString();
+    }
+    } // Destroy mapping
+    // Regression test for QTBUG-52246 - no memory corruption/double deletion
+    // of the string key.
+
+    QCOMPARE(nameResult, QStringLiteral("Seven"));
+}
+
 
 QTEST_MAIN(tst_QVariant)
 #include "tst_qvariant.moc"
