@@ -75,7 +75,8 @@ public:
     // Returns \c true if the lock belongs to dead PID, or is old.
     // The attempt to delete it will tell us if it was really stale or not, though.
     bool isApparentlyStale() const;
-    static QString processNameByPid(qint64 pid);
+    // used in dbusmenu
+    Q_CORE_EXPORT static QString processNameByPid(qint64 pid);
 
 #ifdef Q_OS_UNIX
     static int checkFcntlWorksAfterFlock(const QString &fn);

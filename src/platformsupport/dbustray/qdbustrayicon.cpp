@@ -47,13 +47,19 @@
 #include <qloggingcategory.h>
 #include <qplatformintegration.h>
 #include <qplatformservices.h>
+#include <qdbusconnectioninterface.h>
+#include <private/qlockfile_p.h>
 #include <private/qguiapplication_p.h>
+
+// Defined in Windows headers which get included by qlockfile_p.h
+#undef interface
 
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(qLcTray, "qt.qpa.tray")
 
 static const QString KDEItemFormat = QStringLiteral("org.kde.StatusNotifierItem-%1-%2");
+static const QString KDEWatcherService = QStringLiteral("org.kde.StatusNotifierWatcher");
 static const QString TempFileTemplate =  QDir::tempPath() + QStringLiteral("/qt-trayicon-XXXXXX.png");
 static const QString XdgNotificationService = QStringLiteral("org.freedesktop.Notifications");
 static const QString XdgNotificationPath = QStringLiteral("/org/freedesktop/Notifications");
@@ -136,9 +142,17 @@ void QDBusTrayIcon::setStatus(const QString &status)
 
 QTemporaryFile *QDBusTrayIcon::tempIcon(const QIcon &icon)
 {
-    // Hack for Unity, which doesn't handle icons sent across D-Bus:
+    // Hack for indicator-application, which doesn't handle icons sent across D-Bus:
     // save the icon to a temp file and set the icon name to that filename.
-    static bool necessary = (QGuiApplicationPrivate::platformIntegration()->services()->desktopEnvironment().split(':').contains("UNITY"));
+    static bool necessity_checked = false;
+    static bool necessary = false;
+    if (!necessity_checked) {
+        QDBusConnection session = QDBusConnection::sessionBus();
+        uint pid = session.interface()->servicePid(KDEWatcherService).value();
+        QString processName = QLockFilePrivate::processNameByPid(pid);
+        necessary = processName.endsWith(QStringLiteral("indicator-application-service"));
+        necessity_checked = true;
+    }
     if (!necessary)
         return Q_NULLPTR;
     QTemporaryFile *ret = new QTemporaryFile(TempFileTemplate, this);
