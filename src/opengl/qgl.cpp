@@ -1264,7 +1264,7 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
     QGLFormat::OpenGLVersionFlags versionFlags = QGLFormat::OpenGL_Version_None;
 
     if (versionString.startsWith(QLatin1String("OpenGL ES"))) {
-        QStringList parts = versionString.split(QLatin1Char(' '));
+        const auto parts = versionString.splitRef(QLatin1Char(' '));
         if (parts.size() >= 3) {
             if (parts[2].startsWith(QLatin1String("1."))) {
                 if (parts[1].endsWith(QLatin1String("-CM"))) {
