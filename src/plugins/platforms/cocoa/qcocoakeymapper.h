@@ -40,7 +40,7 @@
 #ifndef QCOCOAKEYMAPPER_H
 #define QCOCOAKEYMAPPER_H
 
-#include <qcocoahelpers.h>
+#include "qcocoahelpers.h"
 
 #include <AppKit/AppKit.h>
 #include <Carbon/Carbon.h>

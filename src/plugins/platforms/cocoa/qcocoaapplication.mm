@@ -71,11 +71,11 @@
 **
 ****************************************************************************/
 
-#include <qcocoaapplication.h>
+#include "qcocoaapplication.h"
 
-#include <qcocoaintrospection.h>
-#include <qcocoaapplicationdelegate.h>
-#include <qcocoahelpers.h>
+#include "qcocoaintrospection.h"
+#include "qcocoaapplicationdelegate.h"
+#include "qcocoahelpers.h"
 #include <qguiapplication.h>
 #include <qdebug.h>
 
