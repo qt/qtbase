@@ -162,16 +162,10 @@ class QWindowsVistaStylePrivate :  public QWindowsXPStylePrivate
 
 public:
     QWindowsVistaStylePrivate();
-    ~QWindowsVistaStylePrivate();
+
     static int fixedPixelMetric(QStyle::PixelMetric pm);
     static inline bool useVista();
     bool transitionsEnabled() const;
-
-private:
-    bool initTreeViewTheming();
-    void cleanupTreeViewTheming();
-
-    HWND m_treeViewHelper;
 };
 
 QT_END_NAMESPACE
