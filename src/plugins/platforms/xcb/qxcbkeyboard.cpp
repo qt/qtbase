@@ -996,7 +996,6 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
     Q_ASSERT(shiftMod < 32);
     Q_ASSERT(altMod < 32);
     Q_ASSERT(controlMod < 32);
-    Q_ASSERT(metaMod < 32);
 
     xkb_mod_mask_t depressed;
     int qtKey = 0;
@@ -1017,7 +1016,7 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
                     depressed |= (1 << shiftMod);
                 if (neededMods & Qt::ControlModifier)
                     depressed |= (1 << controlMod);
-                if (neededMods & Qt::MetaModifier)
+                if (metaMod < 32 && neededMods & Qt::MetaModifier)
                     depressed |= (1 << metaMod);
                 xkb_state_update_mask(kb_state, depressed, latchedMods, lockedMods, 0, 0, lockedLayout);
                 sym = xkb_state_key_get_one_sym(kb_state, keycode);
