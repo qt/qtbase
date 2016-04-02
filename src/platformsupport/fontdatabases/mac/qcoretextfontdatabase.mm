@@ -638,7 +638,7 @@ static CFArrayRef createDescriptorArrayForFont(CTFontRef font, const QString &fi
             // QUrl::fromLocalFile() doesn't accept qrc pseudo-paths like ":/fonts/myfont.ttf".
             // Therefore construct from QString with the qrc:// scheme -> "qrc:///fonts/myfont.ttf".
             fontURL = QUrl(QStringLiteral("qrc://") + fileName.mid(1)).toCFURL();
-        } else if (!fileName.isEmpty()) {
+        } else {
             // At this point we hope that filename is in a format that QUrl can handle.
             fontURL = QUrl::fromLocalFile(fileName).toCFURL();
         }
