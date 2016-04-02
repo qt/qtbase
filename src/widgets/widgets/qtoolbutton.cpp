@@ -62,6 +62,7 @@ public:
     void init();
 #ifndef QT_NO_MENU
     void _q_buttonPressed();
+    void _q_buttonReleased();
     void popupTimerDone();
     void _q_updateButtonDown();
     void _q_menuTriggered(QAction *);
@@ -211,6 +212,7 @@ void QToolButtonPrivate::init()
 
 #ifndef QT_NO_MENU
     QObject::connect(q, SIGNAL(pressed()), q, SLOT(_q_buttonPressed()));
+    QObject::connect(q, SIGNAL(released()), q, SLOT(_q_buttonReleased()));
 #endif
 
     setLayoutItemMargins(QStyle::SE_ToolButtonLayoutItem);
@@ -698,10 +700,15 @@ void QToolButtonPrivate::_q_buttonPressed()
         return; // no menu to show
     if (popupMode == QToolButton::MenuButtonPopup)
         return;
-    else if (delay > 0 && !popupTimer.isActive() && popupMode == QToolButton::DelayedPopup)
+    else if (delay > 0 && popupMode == QToolButton::DelayedPopup)
         popupTimer.start(delay, q);
     else if (delay == 0 || popupMode == QToolButton::InstantPopup)
         q->showMenu();
+}
+
+void QToolButtonPrivate::_q_buttonReleased()
+{
+    popupTimer.stop();
 }
 
 void QToolButtonPrivate::popupTimerDone()

@@ -119,6 +119,7 @@ private:
     Q_DECLARE_PRIVATE(QToolButton)
 #ifndef QT_NO_MENU
     Q_PRIVATE_SLOT(d_func(), void _q_buttonPressed())
+    Q_PRIVATE_SLOT(d_func(), void _q_buttonReleased())
     Q_PRIVATE_SLOT(d_func(), void _q_updateButtonDown())
     Q_PRIVATE_SLOT(d_func(), void _q_menuTriggered(QAction*))
 #endif
