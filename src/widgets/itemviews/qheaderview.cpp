@@ -1473,6 +1473,8 @@ bool QHeaderView::stretchLastSection() const
 void QHeaderView::setStretchLastSection(bool stretch)
 {
     Q_D(QHeaderView);
+    if (d->stretchLastSection == stretch)
+        return;
     d->stretchLastSection = stretch;
     if (d->state != QHeaderViewPrivate::NoState)
         return;
