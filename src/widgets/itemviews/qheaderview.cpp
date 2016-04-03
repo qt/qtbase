@@ -2957,30 +2957,42 @@ QRegion QHeaderView::visualRegionForSelection(const QItemSelection &selection) c
 {
     Q_D(const QHeaderView);
     const int max = d->modelSectionCount();
+
     if (d->orientation == Qt::Horizontal) {
-        int left = max;
-        int right = 0;
-        int rangeLeft, rangeRight;
+        int logicalLeft = max;
+        int logicalRight = 0;
 
-        for (int i = 0; i < selection.count(); ++i) {
-            QItemSelectionRange r = selection.at(i);
-            if (r.parent().isValid() || !r.isValid())
-                continue; // we only know about toplevel items and we don't want invalid ranges
-            // FIXME an item inside the range may be the leftmost or rightmost
-            rangeLeft = visualIndex(r.left());
-            if (rangeLeft == -1) // in some cases users may change the selections
-                continue;        // before we have a chance to do the layout
-            rangeRight = visualIndex(r.right());
-            if (rangeRight == -1) // in some cases users may change the selections
-                continue;         // before we have a chance to do the layout
-            if (rangeLeft < left)
-                left = rangeLeft;
-            if (rangeRight > right)
-                right = rangeRight;
+        if (d->visualIndices.empty()) {
+            // If no reordered sections, skip redundant visual-to-logical transformations
+            for (int i = 0; i < selection.count(); ++i) {
+                const QItemSelectionRange &r = selection.at(i);
+                if (r.parent().isValid() || !r.isValid())
+                    continue; // we only know about toplevel items and we don't want invalid ranges
+                if (r.left() < logicalLeft)
+                    logicalLeft = r.left();
+                if (r.right() > logicalRight)
+                    logicalRight = r.right();
+            }
+        } else {
+            int left = max;
+            int right = 0;
+            for (int i = 0; i < selection.count(); ++i) {
+                const QItemSelectionRange &r = selection.at(i);
+                if (r.parent().isValid() || !r.isValid())
+                    continue; // we only know about toplevel items and we don't want invalid ranges
+                for (int k = r.left(); k <= r.right(); ++k) {
+                    int visual = visualIndex(k);
+                    if (visual == -1)   // in some cases users may change the selections
+                        continue;       // before we have a chance to do the layout
+                    if (visual < left)
+                        left = visual;
+                    if (visual > right)
+                        right = visual;
+                }
+            }
+            logicalLeft = logicalIndex(left);
+            logicalRight = logicalIndex(right);
         }
-
-        int logicalLeft = logicalIndex(left);
-        int logicalRight = logicalIndex(right);
 
         if (logicalLeft < 0  || logicalLeft >= count() ||
             logicalRight < 0 || logicalRight >= count())
@@ -2992,32 +3004,46 @@ QRegion QHeaderView::visualRegionForSelection(const QItemSelection &selection) c
         return QRect(leftPos, 0, rightPos - leftPos, height());
     }
     // orientation() == Qt::Vertical
-    int top = max;
-    int bottom = 0;
-    int rangeTop, rangeBottom;
+    int logicalTop = max;
+    int logicalBottom = 0;
 
-    for (int i = 0; i < selection.count(); ++i) {
-        QItemSelectionRange r = selection.at(i);
-        if (r.parent().isValid() || !r.isValid())
-            continue; // we only know about toplevel items
-        // FIXME an item inside the range may be the leftmost or rightmost
-        rangeTop = visualIndex(r.top());
-        if (rangeTop == -1) // in some cases users may change the selections
-            continue;       // before we have a chance to do the layout
-        rangeBottom = visualIndex(r.bottom());
-        if (rangeBottom == -1) // in some cases users may change the selections
-            continue;          // before we have a chance to do the layout
-        if (rangeTop < top)
-            top = rangeTop;
-        if (rangeBottom > bottom)
-            bottom = rangeBottom;
+    if (d->visualIndices.empty()) {
+        // If no reordered sections, skip redundant visual-to-logical transformations
+        for (int i = 0; i < selection.count(); ++i) {
+            const QItemSelectionRange &r = selection.at(i);
+            if (r.parent().isValid() || !r.isValid())
+                continue; // we only know about toplevel items and we don't want invalid ranges
+            if (r.top() < logicalTop)
+                logicalTop = r.top();
+            if (r.bottom() > logicalBottom)
+                logicalBottom = r.bottom();
+        }
+    } else {
+        int top = max;
+        int bottom = 0;
+
+        for (int i = 0; i < selection.count(); ++i) {
+            const QItemSelectionRange &r = selection.at(i);
+            if (r.parent().isValid() || !r.isValid())
+                continue; // we only know about toplevel items and we don't want invalid ranges
+            for (int k = r.top(); k <= r.bottom(); ++k) {
+                int visual = visualIndex(k);
+                if (visual == -1)   // in some cases users may change the selections
+                    continue;       // before we have a chance to do the layout
+                if (visual < top)
+                    top = visual;
+                if (visual > bottom)
+                    bottom = visual;
+            }
+        }
+
+        logicalTop = logicalIndex(top);
+        logicalBottom = logicalIndex(bottom);
     }
 
-    int logicalTop = logicalIndex(top);
-    int logicalBottom = logicalIndex(bottom);
-
-    if (logicalTop == -1 || logicalBottom == -1)
-        return QRect();
+    if (logicalTop < 0 || logicalTop >= count() ||
+        logicalBottom < 0 || logicalBottom >= count())
+        return QRegion();
 
     int topPos = sectionViewportPosition(logicalTop);
     int bottomPos = sectionViewportPosition(logicalBottom) + sectionSize(logicalBottom);
