@@ -546,5 +546,15 @@ bool tst_QLockFile::overwritePidInLockFile(const QString &filePath, qint64 pid)
     return f.write(buf) == buf.size();
 }
 
+struct LockFileUsageInGlobalDtor
+{
+    ~LockFileUsageInGlobalDtor() {
+        QLockFile lockFile(QDir::currentPath() + "/lastlock");
+        QVERIFY(lockFile.lock());
+        QVERIFY(lockFile.isLocked());
+    }
+};
+LockFileUsageInGlobalDtor s_instance;
+
 QTEST_MAIN(tst_QLockFile)
 #include "tst_qlockfile.moc"

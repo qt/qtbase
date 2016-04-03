@@ -136,6 +136,8 @@ static QBasicMutex fcntlLock;
 static bool fcntlWorksAfterFlock(const QString &fn)
 {
     QMutexLocker lock(&fcntlLock);
+    if (fcntlOK.isDestroyed())
+        return QLockFilePrivate::checkFcntlWorksAfterFlock(fn);
     bool *worksPtr = fcntlOK->object(fn);
     if (!worksPtr) {
         worksPtr = new bool(QLockFilePrivate::checkFcntlWorksAfterFlock(fn));
