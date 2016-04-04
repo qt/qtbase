@@ -1024,7 +1024,11 @@ void QTreeView::keyboardSearch(const QString &search)
 
     bool skipRow = false;
     bool keyboardTimeWasValid = d->keyboardInputTime.isValid();
-    qint64 keyboardInputTimeElapsed = d->keyboardInputTime.restart();
+    qint64 keyboardInputTimeElapsed;
+    if (keyboardTimeWasValid)
+        keyboardInputTimeElapsed = d->keyboardInputTime.restart();
+    else
+        d->keyboardInputTime.start();
     if (search.isEmpty() || !keyboardTimeWasValid
         || keyboardInputTimeElapsed > QApplication::keyboardInputInterval()) {
         d->keyboardInput = search;

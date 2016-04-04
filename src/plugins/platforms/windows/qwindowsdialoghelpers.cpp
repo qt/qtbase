@@ -1331,7 +1331,7 @@ void QWindowsNativeFileDialogBase::setLabelText(QFileDialogOptions::DialogLabel 
 static inline bool isClsid(const QString &s)
 {
     // detect "374DE290-123F-4565-9164-39C4925E467B".
-   static const QRegularExpression pattern(QLatin1String("[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{8}"));
+   static const QRegularExpression pattern(QLatin1String("\\A[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\\z"));
    Q_ASSERT(pattern.isValid());
    return pattern.match(s).hasMatch();
 }
@@ -2179,6 +2179,7 @@ namespace QWindowsDialogs {
 // QWindowsDialogHelperBase creation functions
 bool useHelper(QPlatformTheme::DialogType type)
 {
+#if !defined(_WIN32_WCE) || _WIN32_WCE < 0x800
     if (QWindowsIntegration::instance()->options() & QWindowsIntegration::NoNativeDialogs)
         return false;
     switch (type) {
@@ -2197,10 +2198,14 @@ bool useHelper(QPlatformTheme::DialogType type)
         break;
     }
     return false;
+#else
+    return false;
+#endif // !defined(_WIN32_WCE) || _WIN32_WCE < 0x800
 }
 
 QPlatformDialogHelper *createHelper(QPlatformTheme::DialogType type)
 {
+#if !defined(_WIN32_WCE) || _WIN32_WCE < 0x800
     if (QWindowsIntegration::instance()->options() & QWindowsIntegration::NoNativeDialogs)
         return 0;
     switch (type) {
@@ -2228,6 +2233,9 @@ QPlatformDialogHelper *createHelper(QPlatformTheme::DialogType type)
         break;
     }
     return 0;
+#else
+    return 0;
+#endif // !defined(_WIN32_WCE) || _WIN32_WCE < 0x800
 }
 
 } // namespace QWindowsDialogs

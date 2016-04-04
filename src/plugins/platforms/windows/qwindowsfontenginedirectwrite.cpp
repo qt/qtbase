@@ -645,6 +645,11 @@ QFontEngine *QWindowsFontEngineDirectWrite::cloneWithSize(qreal pixelSize) const
     return fontEngine;
 }
 
+Qt::HANDLE QWindowsFontEngineDirectWrite::handle() const
+{
+    return m_directWriteFontFace;
+}
+
 void QWindowsFontEngineDirectWrite::initFontInfo(const QFontDef &request,
                                                  int dpi)
 {

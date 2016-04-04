@@ -746,6 +746,11 @@ QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
     return new QCoreTextFontEngine(cgFont, newFontDef);
 }
 
+Qt::HANDLE QCoreTextFontEngine::handle() const
+{
+    return (Qt::HANDLE)ctfont;
+}
+
 bool QCoreTextFontEngine::supportsTransformation(const QTransform &transform) const
 {
     if (transform.type() < QTransform::TxScale)

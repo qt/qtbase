@@ -2981,7 +2981,11 @@ void QAbstractItemView::keyboardSearch(const QString &search)
                         : d->model->index(0, 0, d->root);
     bool skipRow = false;
     bool keyboardTimeWasValid = d->keyboardInputTime.isValid();
-    qint64 keyboardInputTimeElapsed = d->keyboardInputTime.restart();
+    qint64 keyboardInputTimeElapsed;
+    if (keyboardTimeWasValid)
+        keyboardInputTimeElapsed = d->keyboardInputTime.restart();
+    else
+        d->keyboardInputTime.start();
     if (search.isEmpty() || !keyboardTimeWasValid
         || keyboardInputTimeElapsed > QApplication::keyboardInputInterval()) {
         d->keyboardInput = search;

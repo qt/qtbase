@@ -603,7 +603,7 @@ void tst_QLocalSocket::readBufferOverflow()
     serverSocket->write(buffer, dataBufferSize);
 #ifndef Q_OS_WIN
     // The data is not immediately sent, but buffered.
-    // On Windows, the flushing is done asynchronously by a separate thread.
+    // On Windows, the flushing is done by an asynchronous write operation.
     // However, this operation will never complete as long as the data is not
     // read by the other end, so the call below always times out.
     // On Unix, the flushing is synchronous and thus needs to be done before

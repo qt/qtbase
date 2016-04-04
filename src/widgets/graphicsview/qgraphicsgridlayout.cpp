@@ -89,6 +89,7 @@
 #include "qgraphicswidget.h"
 #include "qgraphicsgridlayoutengine_p.h"
 #include "qgraphicslayoutstyleinfo_p.h"
+#include "qscopedpointer.h"
 #ifdef QT_DEBUG
 # include <QtCore/qdebug.h>
 #endif
@@ -98,10 +99,10 @@ QT_BEGIN_NAMESPACE
 class QGraphicsGridLayoutPrivate : public QGraphicsLayoutPrivate
 {
 public:
-    QGraphicsGridLayoutPrivate(): m_styleInfo(0) { }
+    QGraphicsGridLayoutPrivate() { }
     QGraphicsLayoutStyleInfo *styleInfo() const;
 
-    mutable QGraphicsLayoutStyleInfo *m_styleInfo;
+    mutable QScopedPointer<QGraphicsLayoutStyleInfo> m_styleInfo;
     QGraphicsGridLayoutEngine engine;
 
 #ifdef QGRIDLAYOUTENGINE_DEBUG
@@ -113,8 +114,8 @@ public:
 QGraphicsLayoutStyleInfo *QGraphicsGridLayoutPrivate::styleInfo() const
 {
     if (!m_styleInfo)
-        m_styleInfo = new QGraphicsLayoutStyleInfo(this);
-    return m_styleInfo;
+        m_styleInfo.reset(new QGraphicsLayoutStyleInfo(this));
+    return m_styleInfo.data();
 }
 
 /*!

@@ -1616,7 +1616,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                         if (!hasArrow) {
                             proxy()->drawItemPixmap(p, pr, Qt::AlignCenter, pm);
                         } else {
-                            drawArrow(this, toolbutton, pr, p, widget);
+                            drawArrow(proxy(), toolbutton, pr, p, widget);
                         }
                         alignment |= Qt::AlignCenter;
                     } else {
@@ -1626,7 +1626,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                         if (!hasArrow) {
                             proxy()->drawItemPixmap(p, QStyle::visualRect(opt->direction, rect, pr), Qt::AlignCenter, pm);
                         } else {
-                            drawArrow(this, toolbutton, pr, p, widget);
+                            drawArrow(proxy(), toolbutton, pr, p, widget);
                         }
                         alignment |= Qt::AlignLeft | Qt::AlignVCenter;
                     }
@@ -1637,7 +1637,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 } else {
                     rect.translate(shiftX, shiftY);
                     if (hasArrow) {
-                        drawArrow(this, toolbutton, rect, p, widget);
+                        drawArrow(proxy(), toolbutton, rect, p, widget);
                     } else {
                         proxy()->drawItemPixmap(p, rect, Qt::AlignCenter, pm);
                     }

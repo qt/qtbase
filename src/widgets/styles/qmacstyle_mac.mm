@@ -4954,6 +4954,9 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         break;
     }
     case SE_ProgressBarGroove:
+        // Wrong in the secondary dimension, but accurate enough in the main dimension.
+        rect  = opt->rect;
+        break;
     case SE_ProgressBarLabel:
         break;
     case SE_ProgressBarContents:

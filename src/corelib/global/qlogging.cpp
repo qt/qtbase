@@ -982,13 +982,16 @@ struct QMessagePattern {
     // 0 terminated arrays of literal tokens / literal or placeholder tokens
     const char **literals;
     const char **tokens;
-    QString timeFormat;
+    QList<QString> timeArgs;   // timeFormats in sequence of %{time
 #ifndef QT_BOOTSTRAPPED
     QElapsedTimer timer;
 #endif
 #ifdef QLOGGING_HAVE_BACKTRACE
-    QString backtraceSeparator;
-    int backtraceDepth;
+    struct BacktraceParams {
+            QString backtraceSeparator;
+            int backtraceDepth;
+    };
+    QList<BacktraceParams> backtraceArgs; // backtrace argumens in sequence of %{backtrace
 #endif
 
     bool fromEnvironment;
@@ -1000,10 +1003,6 @@ QBasicMutex QMessagePattern::mutex;
 QMessagePattern::QMessagePattern()
     : literals(0)
     , tokens(0)
-#ifdef QLOGGING_HAVE_BACKTRACE
-    , backtraceSeparator(QLatin1Char('|'))
-    , backtraceDepth(5)
-#endif
     , fromEnvironment(false)
 {
 #ifndef QT_BOOTSTRAPPED
@@ -1106,10 +1105,14 @@ void QMessagePattern::setPattern(const QString &pattern)
                 tokens[i] = timeTokenC;
                 int spaceIdx = lexeme.indexOf(QChar::fromLatin1(' '));
                 if (spaceIdx > 0)
-                    timeFormat = lexeme.mid(spaceIdx + 1, lexeme.length() - spaceIdx - 2);
+                    timeArgs.append(lexeme.mid(spaceIdx + 1, lexeme.length() - spaceIdx - 2));
+                else
+                    timeArgs.append(QString());
             } else if (lexeme.startsWith(QLatin1String(backtraceTokenC))) {
 #ifdef QLOGGING_HAVE_BACKTRACE
                 tokens[i] = backtraceTokenC;
+                QString backtraceSeparator = QStringLiteral("|");
+                int backtraceDepth = 5;
                 QRegularExpression depthRx(QStringLiteral(" depth=(?|\"([^\"]*)\"|([^ }]*))"));
                 QRegularExpression separatorRx(QStringLiteral(" separator=(?|\"([^\"]*)\"|([^ }]*))"));
                 QRegularExpressionMatch m = depthRx.match(lexeme);
@@ -1123,6 +1126,10 @@ void QMessagePattern::setPattern(const QString &pattern)
                 m = separatorRx.match(lexeme);
                 if (m.hasMatch())
                     backtraceSeparator = m.captured(1);
+                BacktraceParams backtraceParams;
+                backtraceParams.backtraceDepth = backtraceDepth;
+                backtraceParams.backtraceSeparator = backtraceSeparator;
+                backtraceArgs.append(backtraceParams);
 #else
                 error += QStringLiteral("QT_MESSAGE_PATTERN: %{backtrace} is not supported by this Qt build\n");
 #endif
@@ -1265,13 +1272,29 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
 
     bool skip = false;
 
+#ifndef QT_BOOTSTRAPPED
+    int timeArgsIdx = 0;
+#ifdef QLOGGING_HAVE_BACKTRACE
+    int backtraceArgsIdx = 0;
+#endif
+#endif
+
     // we do not convert file, function, line literals to local encoding due to overhead
     for (int i = 0; pattern->tokens[i] != 0; ++i) {
         const char *token = pattern->tokens[i];
         if (token == endifTokenC) {
             skip = false;
         } else if (skip) {
-            // do nothing
+            // we skip adding messages, but we have to iterate over
+            // timeArgsIdx and backtraceArgsIdx anyway
+#ifndef QT_BOOTSTRAPPED
+            if (token == timeTokenC)
+                timeArgsIdx++;
+#ifdef QLOGGING_HAVE_BACKTRACE
+            else if (token == backtraceTokenC)
+                backtraceArgsIdx++;
+#endif
+#endif
         } else if (token == messageTokenC) {
             message.append(str);
         } else if (token == categoryTokenC) {
@@ -1309,11 +1332,15 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
             message.append(QString::number(qlonglong(QThread::currentThread()->currentThread()), 16));
 #ifdef QLOGGING_HAVE_BACKTRACE
         } else if (token == backtraceTokenC) {
-            QVarLengthArray<void*, 32> buffer(7 + pattern->backtraceDepth);
+            QMessagePattern::BacktraceParams backtraceParams = pattern->backtraceArgs.at(backtraceArgsIdx);
+            QString backtraceSeparator = backtraceParams.backtraceSeparator;
+            int backtraceDepth = backtraceParams.backtraceDepth;
+            backtraceArgsIdx++;
+            QVarLengthArray<void*, 32> buffer(7 + backtraceDepth);
             int n = backtrace(buffer.data(), buffer.size());
             if (n > 0) {
                 int numberPrinted = 0;
-                for (int i = 0; i < n && numberPrinted < pattern->backtraceDepth; ++i) {
+                for (int i = 0; i < n && numberPrinted < backtraceDepth; ++i) {
                     QScopedPointer<char*, QScopedPointerPodDeleter> strings(backtrace_symbols(buffer.data() + i, 1));
                     QString trace = QString::fromLatin1(strings.data()[0]);
                     // The results of backtrace_symbols looks like this:
@@ -1343,7 +1370,7 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
                         }
 
                         if (numberPrinted > 0)
-                            message.append(pattern->backtraceSeparator);
+                            message.append(backtraceSeparator);
 
                         if (function.isEmpty()) {
                             if (numberPrinted == 0 && context.function)
@@ -1357,27 +1384,29 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
                     } else {
                         if (numberPrinted == 0)
                             continue;
-                        message += pattern->backtraceSeparator + QLatin1String("???");
+                        message += backtraceSeparator + QLatin1String("???");
                     }
                     numberPrinted++;
                 }
             }
 #endif
         } else if (token == timeTokenC) {
-            if (pattern->timeFormat == QLatin1String("process")) {
-                quint64 ms = pattern->timer.elapsed();
-                message.append(QString::asprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
-            } else if (pattern->timeFormat == QLatin1String("boot")) {
+            QString timeFormat = pattern->timeArgs.at(timeArgsIdx);
+            timeArgsIdx++;
+            if (timeFormat == QLatin1String("process")) {
+                    quint64 ms = pattern->timer.elapsed();
+                    message.append(QString::asprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
+            } else if (timeFormat ==  QLatin1String("boot")) {
                 // just print the milliseconds since the elapsed timer reference
                 // like the Linux kernel does
                 QElapsedTimer now;
                 now.start();
                 uint ms = now.msecsSinceReference();
                 message.append(QString::asprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
-            } else if (pattern->timeFormat.isEmpty()) {
-                message.append(QDateTime::currentDateTime().toString(Qt::ISODate));
+            } else if (timeFormat.isEmpty()) {
+                    message.append(QDateTime::currentDateTime().toString(Qt::ISODate));
             } else {
-                message.append(QDateTime::currentDateTime().toString(pattern->timeFormat));
+                message.append(QDateTime::currentDateTime().toString(timeFormat));
             }
 #endif
         } else if (token == ifCategoryTokenC) {

@@ -622,6 +622,8 @@ private slots:
     void unnamedNamespaceObjectsAndGadgets();
     void veryLongStringData();
     void gadgetHierarchy();
+    void optionsFileError_data();
+    void optionsFileError();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -3495,6 +3497,31 @@ void tst_Moc::gadgetHierarchy()
 {
     QCOMPARE(NonGadgetParent::Derived::staticMetaObject.superClass(), static_cast<const QMetaObject*>(Q_NULLPTR));
     QCOMPARE(GrandParentGadget::DerivedGadget::staticMetaObject.superClass(), &GrandParentGadget::BaseGadget::staticMetaObject);
+}
+
+void tst_Moc::optionsFileError_data()
+{
+    QTest::addColumn<QString>("optionsArgument");
+    QTest::newRow("no filename") << QStringLiteral("@");
+    QTest::newRow("nonexistent file") << QStringLiteral("@letshuntasnark");
+}
+
+void tst_Moc::optionsFileError()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if !defined(QT_NO_PROCESS)
+    QFETCH(QString, optionsArgument);
+    QProcess p;
+    p.start(m_moc, QStringList(optionsArgument));
+    QVERIFY(p.waitForFinished());
+    QCOMPARE(p.exitCode(), 1);
+    QVERIFY(p.readAllStandardOutput().isEmpty());
+    const QByteArray err = p.readAllStandardError();
+    QVERIFY(err.contains("moc: "));
+    QVERIFY(!err.contains("QCommandLineParser"));
+#endif
 }
 
 QTEST_MAIN(tst_Moc)
