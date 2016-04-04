@@ -59,6 +59,7 @@
 #endif
 
 #include <sqlite3.h>
+#include <functional>
 
 Q_DECLARE_OPAQUE_POINTER(sqlite3*)
 Q_DECLARE_METATYPE(sqlite3*)
@@ -140,6 +141,7 @@ public:
     inline QSQLiteDriverPrivate() : QSqlDriverPrivate(), access(0) { dbmsType = QSqlDriver::SQLite; }
     sqlite3 *access;
     QList <QSQLiteResult *> results;
+    QStringList notificationid;
 };
 
 
@@ -571,6 +573,7 @@ QSQLiteDriver::QSQLiteDriver(sqlite3 *connection, QObject *parent)
 
 QSQLiteDriver::~QSQLiteDriver()
 {
+    close();
 }
 
 bool QSQLiteDriver::hasFeature(DriverFeature f) const
@@ -585,11 +588,11 @@ bool QSQLiteDriver::hasFeature(DriverFeature f) const
     case SimpleLocking:
     case FinishQuery:
     case LowPrecisionNumbers:
+    case EventNotifications:
         return true;
     case QuerySize:
     case NamedPlaceholders:
     case BatchOperations:
-    case EventNotifications:
     case MultipleResultSets:
     case CancelQuery:
         return false;
@@ -664,9 +667,13 @@ void QSQLiteDriver::close()
         for (QSQLiteResult *result : qAsConst(d->results))
             result->d_func()->finalize();
 
+        if (d->access && (d->notificationid.count() > 0)) {
+            d->notificationid.clear();
+            sqlite3_update_hook(d->access, NULL, NULL);
+        }
+
         if (sqlite3_close(d->access) != SQLITE_OK)
-            setLastError(qMakeError(d->access, tr("Error closing database"),
-                                    QSqlError::ConnectionError));
+            setLastError(qMakeError(d->access, tr("Error closing database"), QSqlError::ConnectionError));
         d->access = 0;
         setOpen(false);
         setOpenError(false);
@@ -823,6 +830,74 @@ QString QSQLiteDriver::escapeIdentifier(const QString &identifier, IdentifierTyp
 {
     Q_UNUSED(type);
     return _q_escapeIdentifier(identifier);
+}
+
+static void handle_sqlite_callback(void *qobj,int aoperation, char const *adbname, char const *atablename,
+                                   sqlite3_int64 arowid)
+{
+    Q_UNUSED(aoperation);
+    Q_UNUSED(adbname);
+    QSQLiteDriver *driver = static_cast<QSQLiteDriver *>(qobj);
+    if (driver) {
+        QMetaObject::invokeMethod(driver, "handleNotification", Qt::QueuedConnection,
+                                  Q_ARG(QString, QString::fromUtf8(atablename)), Q_ARG(qint64, arowid));
+    }
+}
+
+bool QSQLiteDriver::subscribeToNotification(const QString &name)
+{
+    Q_D(QSQLiteDriver);
+    if (!isOpen()) {
+        qWarning("Database not open.");
+        return false;
+    }
+
+    if (d->notificationid.contains(name)) {
+        qWarning("Already subscribing to '%s'.", qPrintable(name));
+        return false;
+    }
+
+    //sqlite supports only one notification callback, so only the first is registered
+    d->notificationid << name;
+    if (d->notificationid.count() == 1)
+        sqlite3_update_hook(d->access, &handle_sqlite_callback, reinterpret_cast<void *> (this));
+
+    return true;
+}
+
+bool QSQLiteDriver::unsubscribeFromNotification(const QString &name)
+{
+    Q_D(QSQLiteDriver);
+    if (!isOpen()) {
+        qWarning("Database not open.");
+        return false;
+    }
+
+    if (!d->notificationid.contains(name)) {
+        qWarning("Not subscribed to '%s'.", qPrintable(name));
+        return false;
+    }
+
+    d->notificationid.removeAll(name);
+    if (d->notificationid.isEmpty())
+        sqlite3_update_hook(d->access, NULL, NULL);
+
+    return true;
+}
+
+QStringList QSQLiteDriver::subscribedToNotifications() const
+{
+    Q_D(const QSQLiteDriver);
+    return d->notificationid;
+}
+
+void QSQLiteDriver::handleNotification(const QString &tableName, qint64 rowid)
+{
+    Q_D(const QSQLiteDriver);
+    if (d->notificationid.contains(tableName)) {
+        emit notification(tableName);
+        emit notification(tableName, QSqlDriver::UnknownSource, QVariant(rowid));
+    }
 }
 
 QT_END_NAMESPACE

@@ -93,6 +93,12 @@ public:
     QSqlIndex primaryIndex(const QString &table) const Q_DECL_OVERRIDE;
     QVariant handle() const Q_DECL_OVERRIDE;
     QString escapeIdentifier(const QString &identifier, IdentifierType) const Q_DECL_OVERRIDE;
+
+    bool subscribeToNotification(const QString &name) Q_DECL_OVERRIDE;
+    bool unsubscribeFromNotification(const QString &name) Q_DECL_OVERRIDE;
+    QStringList subscribedToNotifications() const Q_DECL_OVERRIDE;
+private Q_SLOTS:
+    void handleNotification(const QString &tableName, qint64 rowid);
 };
 
 QT_END_NAMESPACE
