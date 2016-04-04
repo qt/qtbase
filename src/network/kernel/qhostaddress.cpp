@@ -821,12 +821,29 @@ bool QHostAddress::operator==(const QHostAddress &other) const
     QT_ENSURE_PARSED(&other);
 
     if (d->protocol == QAbstractSocket::IPv4Protocol)
-        return other.d->protocol == QAbstractSocket::IPv4Protocol && d->a == other.d->a;
-    if (d->protocol == QAbstractSocket::IPv6Protocol) {
-        return other.d->protocol == QAbstractSocket::IPv6Protocol
-               && memcmp(&d->a6, &other.d->a6, sizeof(Q_IPV6ADDR)) == 0;
+    {
+	    if (other.d->protocol == QAbstractSocket::IPv4Protocol)
+	    {
+		    return d->a == other.d->a;
+	    }
+	    else
+	    {
+		    qint32 a4;
+		    return convertToIpv4(a4, other.d->a6) && d->a == a4;
+	    }
     }
-    return d->protocol == other.d->protocol;
+    else
+    {
+	    if (other.d->protocol == QAbstractSocket::IPv6Protocol)
+	    {
+		  return  memcmp(&d->a6, &other.d->a6, sizeof(Q_IPV6ADDR)) == 0;
+	    }
+	    else
+	    {
+		    qint32 a4;
+		    return convertToIpv4(a4, d->a6) && other.d->a == a4;
+	    }
+    }
 }
 
 /*!
