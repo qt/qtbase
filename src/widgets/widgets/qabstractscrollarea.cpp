@@ -269,6 +269,7 @@ void QAbstractScrollAreaPrivate::replaceScrollBar(QScrollBar *scrollBar,
     scrollBar->setOrientation(oldBar->orientation());
     scrollBar->setPageStep(oldBar->pageStep());
     scrollBar->setSingleStep(oldBar->singleStep());
+    scrollBar->d_func()->viewMayChangeSingleStep = oldBar->d_func()->viewMayChangeSingleStep;
     scrollBar->setSliderDown(oldBar->isSliderDown());
     scrollBar->setSliderPosition(oldBar->sliderPosition());
     scrollBar->setTracking(oldBar->hasTracking());
