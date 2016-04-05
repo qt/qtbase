@@ -341,7 +341,7 @@ void tst_QLayout::adjustSizeShouldMakeSureLayoutIsActivated()
 
 void tst_QLayout::testRetainSizeWhenHidden()
 {
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#if defined(Q_OS_ANDROID)
     QSKIP("Test does not work on platforms which default to showMaximized()");
 #endif
 

@@ -5,7 +5,7 @@ SOURCES = tst_qdatastream.cpp
 
 TESTDATA += datastream.q42
 
-android: !android-no-sdk {
+android {
     RESOURCES += \
         testdata.qrc
 }

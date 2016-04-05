@@ -193,7 +193,7 @@ class QScrollTimer : public QAbstractAnimation
 {
 public:
     QScrollTimer(QScrollerPrivate *_d)
-        : d(_d), ignoreUpdate(false), skip(0)
+        : QAbstractAnimation(_d), d(_d), ignoreUpdate(false), skip(0)
     { }
 
     int duration() const Q_DECL_OVERRIDE

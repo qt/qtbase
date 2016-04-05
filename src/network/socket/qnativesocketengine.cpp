@@ -111,7 +111,7 @@
     \value WantAll              this is a catch-all value to indicate the caller is
                                 interested in all the available information
 
-    \sa readDatagram(), QUdpDatagram
+    \sa readDatagram()
 */
 
 #include "qnativesocketengine_p.h"

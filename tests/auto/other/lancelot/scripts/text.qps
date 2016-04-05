@@ -77,16 +77,16 @@ save
     rotate 185
 
     setFont "sansserif" 10 normal
-    drawText 0 20 "scaled sansserif 10pt, normal"
+    drawText 0 20 "rotated sansserif 10pt, normal"
 
     setFont "sansserif" 12 normal
-    drawText 0 40 "scaled sansserif 12pt, normal"
+    drawText 0 40 "rotated sansserif 12pt, normal"
 
     setFont "sansserif" 12 bold
-    drawText 0 60 "scaled sansserif 12pt, bold"
+    drawText 0 60 "rotated sansserif 12pt, bold"
 
     setFont "sansserif" 10 bold italic
-    drawText 0 80 "scaled sansserif 10pt, bold italic"
+    drawText 0 80 "rotated sansserif 10pt, bold italic"
   restore
 
   translate 0 100

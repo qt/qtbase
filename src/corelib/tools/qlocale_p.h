@@ -353,9 +353,15 @@ public:
     static QString languageToCode(QLocale::Language language);
     static QString scriptToCode(QLocale::Script script);
     static QString countryToCode(QLocale::Country country);
-    static QLocale::Language codeToLanguage(const QString &code);
-    static QLocale::Script codeToScript(const QString &code);
-    static QLocale::Country codeToCountry(const QString &code);
+    static QLocale::Language codeToLanguage(const QChar *code, int len) Q_DECL_NOTHROW;
+    static QLocale::Language codeToLanguage(const QString &code) Q_DECL_NOTHROW { return codeToLanguage(code.data(), code.size()); }
+    static QLocale::Language codeToLanguage(const QStringRef &code) Q_DECL_NOTHROW { return codeToLanguage(code.data(), code.size()); }
+    static QLocale::Script codeToScript(const QChar *code, int len) Q_DECL_NOTHROW;
+    static QLocale::Script codeToScript(const QString &code) Q_DECL_NOTHROW { return codeToScript(code.data(), code.size()); }
+    static QLocale::Script codeToScript(const QStringRef &code) Q_DECL_NOTHROW { return codeToScript(code.data(), code.size()); }
+    static QLocale::Country codeToCountry(const QChar *code, int len) Q_DECL_NOTHROW;
+    static QLocale::Country codeToCountry(const QString &code) Q_DECL_NOTHROW { return codeToCountry(code.data(), code.size()); }
+    static QLocale::Country codeToCountry(const QStringRef &code) Q_DECL_NOTHROW { return codeToCountry(code.data(), code.size()); }
     static void getLangAndCountry(const QString &name, QLocale::Language &lang,
                                   QLocale::Script &script, QLocale::Country &cntry);
 

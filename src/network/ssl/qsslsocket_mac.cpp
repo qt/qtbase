@@ -867,13 +867,13 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSLCipherSuite(SSLCipherSui
         ciph.d->protocolString = QLatin1String("TLSv1.2");
     }
 
-    const QStringList bits = ciph.d->name.split('-');
+    const auto bits = ciph.d->name.splitRef(QLatin1Char('-'));
     if (bits.size() >= 2) {
         if (bits.size() == 2 || bits.size() == 3) {
             ciph.d->keyExchangeMethod = QLatin1String("RSA");
-        } else if (ciph.d->name.startsWith("DH-") || ciph.d->name.startsWith("DHE-")) {
+        } else if (bits.front() == QLatin1String("DH") || bits.front() == QLatin1String("DHE")) {
             ciph.d->keyExchangeMethod = QLatin1String("DH");
-        } else if (ciph.d->name.startsWith("ECDH-") || ciph.d->name.startsWith("ECDHE-")) {
+        } else if (bits.front() == QLatin1String("ECDH") || bits.front() == QLatin1String("ECDHE")) {
             ciph.d->keyExchangeMethod = QLatin1String("ECDH");
         } else {
             qCWarning(lcSsl) << "Unknown Kx" << ciph.d->name;
@@ -881,35 +881,35 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSLCipherSuite(SSLCipherSui
 
         if (bits.size() == 2 || bits.size() == 3) {
             ciph.d->authenticationMethod = QLatin1String("RSA");
-        } else if (ciph.d->name.contains("-ECDSA-")) {
+        } else if (ciph.d->name.contains(QLatin1String("-ECDSA-"))) {
             ciph.d->authenticationMethod = QLatin1String("ECDSA");
-        } else if (ciph.d->name.contains("-RSA-")) {
+        } else if (ciph.d->name.contains(QLatin1String("-RSA-"))) {
             ciph.d->authenticationMethod = QLatin1String("RSA");
         } else {
             qCWarning(lcSsl) << "Unknown Au" << ciph.d->name;
         }
 
-        if (ciph.d->name.contains("RC4-")) {
+        if (ciph.d->name.contains(QLatin1String("RC4-"))) {
             ciph.d->encryptionMethod = QLatin1String("RC4(128)");
             ciph.d->bits = 128;
             ciph.d->supportedBits = 128;
-        } else if (ciph.d->name.contains("DES-CBC3-")) {
+        } else if (ciph.d->name.contains(QLatin1String("DES-CBC3-"))) {
             ciph.d->encryptionMethod = QLatin1String("3DES(168)");
             ciph.d->bits = 168;
             ciph.d->supportedBits = 168;
-        } else if (ciph.d->name.contains("AES128-")) {
+        } else if (ciph.d->name.contains(QLatin1String("AES128-"))) {
             ciph.d->encryptionMethod = QLatin1String("AES(128)");
             ciph.d->bits = 128;
             ciph.d->supportedBits = 128;
-        } else if (ciph.d->name.contains("AES256-GCM")) {
+        } else if (ciph.d->name.contains(QLatin1String("AES256-GCM"))) {
             ciph.d->encryptionMethod = QLatin1String("AESGCM(256)");
             ciph.d->bits = 256;
             ciph.d->supportedBits = 256;
-        } else if (ciph.d->name.contains("AES256-")) {
+        } else if (ciph.d->name.contains(QLatin1String("AES256-"))) {
             ciph.d->encryptionMethod = QLatin1String("AES(256)");
             ciph.d->bits = 256;
             ciph.d->supportedBits = 256;
-        } else if (ciph.d->name.contains("NULL-")) {
+        } else if (ciph.d->name.contains(QLatin1String("NULL-"))) {
             ciph.d->encryptionMethod = QLatin1String("NULL");
         } else {
             qCWarning(lcSsl) << "Unknown Enc" << ciph.d->name;

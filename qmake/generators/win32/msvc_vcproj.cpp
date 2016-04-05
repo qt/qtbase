@@ -182,8 +182,10 @@ const char _slnProjDepEnd[]     = "\n\tEndProjectSection";
 const char _slnProjConfBeg[]    = "\n\tGlobalSection(ProjectConfigurationPlatforms) = postSolution";
 const char _slnProjRelConfTag1[]= ".Release|%1.ActiveCfg = Release|";
 const char _slnProjRelConfTag2[]= ".Release|%1.Build.0 = Release|";
+const char _slnProjRelConfTag3[]= ".Release|%1.Deploy.0 = Release|";
 const char _slnProjDbgConfTag1[]= ".Debug|%1.ActiveCfg = Debug|";
 const char _slnProjDbgConfTag2[]= ".Debug|%1.Build.0 = Debug|";
+const char _slnProjDbgConfTag3[]= ".Debug|%1.Deploy.0 = Debug|";
 const char _slnProjConfEnd[]    = "\n\tEndGlobalSection";
 const char _slnExtSections[]    = "\n\tGlobalSection(ExtensibilityGlobals) = postSolution"
                                   "\n\tEndGlobalSection"
@@ -717,8 +719,12 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
             platform = xplatform;
         t << "\n\t\t" << (*it)->uuid << QString(_slnProjDbgConfTag1).arg(xplatform) << platform;
         t << "\n\t\t" << (*it)->uuid << QString(_slnProjDbgConfTag2).arg(xplatform) << platform;
+        if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH"))
+            t << "\n\t\t" << (*it)->uuid << QString(_slnProjDbgConfTag3).arg(xplatform) << platform;
         t << "\n\t\t" << (*it)->uuid << QString(_slnProjRelConfTag1).arg(xplatform) << platform;
         t << "\n\t\t" << (*it)->uuid << QString(_slnProjRelConfTag2).arg(xplatform) << platform;
+        if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH"))
+            t << "\n\t\t" << (*it)->uuid << QString(_slnProjRelConfTag3).arg(xplatform) << platform;
     }
     t << _slnProjConfEnd;
     t << _slnExtSections;
@@ -1241,6 +1247,7 @@ void VcprojGenerator::initDeploymentTool()
             targetPath = QString("%CSIDL_PROGRAM_FILES%\\") + project->first("TARGET");
         if (targetPath.endsWith("/") || targetPath.endsWith("\\"))
             targetPath.chop(1);
+        conf.deployment.RemoteDirectory = targetPath;
     }
     const ProStringList dllPaths = project->values("QMAKE_DLL_PATHS");
     // Only deploy Qt libs for shared build
@@ -1248,6 +1255,7 @@ void VcprojGenerator::initDeploymentTool()
         !(conf.WinRT && project->first("MSVC_VER").toQString() == "14.0")) {
         // FIXME: This code should actually resolve the libraries from all Qt modules.
         ProStringList arg = project->values("QMAKE_LIBS") + project->values("QMAKE_LIBS_PRIVATE");
+        bool qpaPluginDeployed = false;
         for (ProStringList::ConstIterator it = arg.constBegin(); it != arg.constEnd(); ++it) {
             QString dllName = (*it).toQString();
             dllName.replace(QLatin1Char('\\'), QLatin1Char('/'));
@@ -1280,6 +1288,32 @@ void VcprojGenerator::initDeploymentTool()
                         + "|" + QDir::toNativeSeparators(info.absolutePath())
                         + "|" + targetPath
                         + "|0;";
+                if (!qpaPluginDeployed) {
+                    QChar debugInfixChar;
+                    bool foundGuid = false;
+                    if (foundGuid = dllName.contains(QLatin1String("Guid")))
+                        debugInfixChar = QLatin1Char('d');
+
+                    if (foundGuid || dllName.contains(QLatin1String("Gui"))) {
+                        QFileInfo info2;
+                        foreach (const ProString &dllPath, dllPaths) {
+                            QString absoluteDllFilePath = dllPath.toQString();
+                            if (!absoluteDllFilePath.endsWith(QLatin1Char('/')))
+                                absoluteDllFilePath += QLatin1Char('/');
+                            absoluteDllFilePath += QLatin1String("../plugins/platforms/qwindows") + debugInfixChar + QLatin1String(".dll");
+                            info2 = QFileInfo(absoluteDllFilePath);
+                            if (info2.exists())
+                                break;
+                        }
+                        if (info2.exists()) {
+                            conf.deployment.AdditionalFiles += QLatin1String("qwindows") + debugInfixChar + QLatin1String(".dll")
+                                                        + QLatin1Char('|') + QDir::toNativeSeparators(info2.absolutePath())
+                                                        + QLatin1Char('|') + targetPath + QLatin1String("\\platforms")
+                                                        + QLatin1String("|0;");
+                            qpaPluginDeployed = true;
+                        }
+                    }
+                }
             }
         }
     }

@@ -288,6 +288,7 @@ private:
     void setDefaultHintStyle(HintStyle style) Q_DECL_OVERRIDE;
 
     QFontEngine *cloneWithSize(qreal pixelSize) const Q_DECL_OVERRIDE;
+    Qt::HANDLE handle() const Q_DECL_OVERRIDE;
     bool initFromFontEngine(const QFontEngineFT *fontEngine);
 
     HintStyle defaultHintStyle() const { return default_hint_style; }

@@ -40,8 +40,6 @@
 #include <QtNetwork/QHostInfo>
 #include <stdlib.h>
 
-# include <private/qprocess_p.h>    // only so we get QPROCESS_USE_SPAWN
-
 typedef void (QProcess::*QProcessFinishedSignal1)(int);
 typedef void (QProcess::*QProcessFinishedSignal2)(int, QProcess::ExitStatus);
 typedef void (QProcess::*QProcessErrorSignal)(QProcess::ProcessError);
@@ -317,9 +315,6 @@ void tst_QProcess::startDetached()
 {
     QVERIFY(QProcess::startDetached("testProcessNormal/testProcessNormal",
                                     QStringList() << "arg1" << "arg2"));
-#ifdef QPROCESS_USE_SPAWN
-    QEXPECT_FAIL("", "QProcess cannot detect failure to start when using posix_spawn()", Continue);
-#endif
     QCOMPARE(QProcess::startDetached("nonexistingexe"), false);
 }
 
@@ -685,9 +680,6 @@ void tst_QProcess::waitForFinished()
     QCOMPARE(output.count("\n"), 10*1024);
 
     process.start("blurdybloop");
-#if defined(QPROCESS_USE_SPAWN) && !defined(Q_OS_QNX)
-    QEXPECT_FAIL("", "QProcess cannot detect failure to start when using posix_spawn()", Abort);
-#endif
     QVERIFY(!process.waitForFinished());
     QCOMPARE(process.error(), QProcess::FailedToStart);
 }
@@ -878,6 +870,16 @@ void tst_QProcess::hardExit()
     proc.start("testProcessEcho/testProcessEcho");
 
     QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));
+
+#if defined(Q_OS_QNX)
+    // QNX may lose the kill if it's delivered while the forked process
+    // is doing the exec that morphs it into testProcessEcho.  It's very
+    // unlikely that a normal application would do such a thing.  Make
+    // sure the test doesn't accidentally try to do it.
+    proc.write("A");
+    QVERIFY(proc.waitForReadyRead(5000));
+#endif
+
     proc.kill();
 
     QVERIFY(proc.waitForFinished(5000));
@@ -1431,11 +1433,6 @@ void tst_QProcess::createProcessArgumentsModifier()
 void tst_QProcess::exitCodeTest()
 {
     for (int i = 0; i < 255; ++i) {
-#ifdef QPROCESS_USE_SPAWN
-        // POSIX reserves exit code 127 when using posix_spawn
-        if (i == 127)
-            continue;
-#endif
         QProcess process;
         process.start("testExitCodes/testExitCodes " + QString::number(i));
         QVERIFY(process.waitForFinished(5000));
@@ -1446,9 +1443,6 @@ void tst_QProcess::exitCodeTest()
 
 void tst_QProcess::failToStart()
 {
-#if defined(QPROCESS_USE_SPAWN) && !defined(Q_OS_QNX)
-    QSKIP("QProcess cannot detect failure to start when using posix_spawn()");
-#endif
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
     qRegisterMetaType<QProcess::ProcessState>("QProcess::ProcessState");
@@ -1519,9 +1513,6 @@ void tst_QProcess::failToStart()
 
 void tst_QProcess::failToStartWithWait()
 {
-#if defined(QPROCESS_USE_SPAWN) && !defined(Q_OS_QNX)
-    QSKIP("QProcess cannot detect failure to start when using posix_spawn()");
-#endif
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
 
@@ -1551,9 +1542,6 @@ void tst_QProcess::failToStartWithWait()
 
 void tst_QProcess::failToStartWithEventLoop()
 {
-#if defined(QPROCESS_USE_SPAWN) && !defined(Q_OS_QNX)
-    QSKIP("QProcess cannot detect failure to start when using posix_spawn()");
-#endif
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
 
@@ -1821,9 +1809,6 @@ void tst_QProcess::waitForReadyReadForNonexistantProcess()
     QVERIFY(!process.waitForReadyRead()); // used to crash
     process.start("doesntexist");
     QVERIFY(!process.waitForReadyRead());
-#if defined(QPROCESS_USE_SPAWN) && !defined(Q_OS_QNX)
-    QEXPECT_FAIL("", "QProcess cannot detect failure to start when using posix_spawn()", Abort);
-#endif
     QCOMPARE(errorSpy.count(), 1);
     QCOMPARE(errorSpy.at(0).at(0).toInt(), 0);
     QCOMPARE(errorSpy2.count(), 1);
@@ -2167,9 +2152,6 @@ void tst_QProcess::setNonExistentWorkingDirectory()
     // while on Unix with fork it's relative to the child's (with posix_spawn, it could be either).
     process.start(QFileInfo("testSetWorkingDirectory/testSetWorkingDirectory").absoluteFilePath());
     QVERIFY(!process.waitForFinished());
-#ifdef QPROCESS_USE_SPAWN
-    QEXPECT_FAIL("", "QProcess cannot detect failure to start when using posix_spawn()", Continue);
-#endif
     QCOMPARE(int(process.error()), int(QProcess::FailedToStart));
 
 #ifdef Q_OS_UNIX

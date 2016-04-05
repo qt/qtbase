@@ -3826,7 +3826,7 @@ QTransform QGraphicsView::transform() const
 }
 
 /*!
-    Returns a matrix that maps viewport coordinates to scene coordinates.
+    Returns a matrix that maps scene coordinates to viewport coordinates.
 
     \sa mapToScene(), mapFromScene()
 */

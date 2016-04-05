@@ -323,7 +323,11 @@ QSurfaceFormat qglx_reduceSurfaceFormat(const QSurfaceFormat &format, bool *redu
     QSurfaceFormat retFormat = format;
     *reduced = true;
 
-    if (retFormat.redBufferSize() > 1) {
+    if (retFormat.depthBufferSize() >= 32) {
+        retFormat.setDepthBufferSize(24);
+    } else if (retFormat.depthBufferSize() > 0) {
+        retFormat.setDepthBufferSize(0);
+    } else if (retFormat.redBufferSize() > 1) {
         retFormat.setRedBufferSize(1);
     } else if (retFormat.greenBufferSize() > 1) {
         retFormat.setGreenBufferSize(1);
@@ -337,8 +341,6 @@ QSurfaceFormat qglx_reduceSurfaceFormat(const QSurfaceFormat &format, bool *redu
         retFormat.setStencilBufferSize(0);
     }else if (retFormat.hasAlpha()) {
         retFormat.setAlphaBufferSize(0);
-    }else if (retFormat.depthBufferSize() > 0) {
-        retFormat.setDepthBufferSize(0);
     }else if (retFormat.swapBehavior() != QSurfaceFormat::SingleBuffer) {
         retFormat.setSwapBehavior(QSurfaceFormat::SingleBuffer);
     }else{

@@ -165,7 +165,7 @@ void tst_QCollator::compare()
 
     QCollator collator(locale);
 
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#if defined(Q_OS_ANDROID)
     if (collator.locale() != QLocale())
         QSKIP("Posix implementation of collation only supports default locale");
 #endif

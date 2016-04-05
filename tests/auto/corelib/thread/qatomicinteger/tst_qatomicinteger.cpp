@@ -174,9 +174,6 @@ private Q_SLOTS:
     void fetchAndSub_data() { addData(); }
     void fetchAndSub();
 
-    void addSub_data() { addData(); }
-    void addSub();
-
     void fetchAndOr_data() { addData(); }
     void fetchAndOr();
 
@@ -654,96 +651,6 @@ void tst_QAtomicIntegerXX::fetchAndSub()
     QCOMPARE(atomic -= parcel2, newValue2);
     QCOMPARE(atomic -= parcel1, T(value));
     }
-}
-
-void tst_QAtomicIntegerXX::addSub()
-{
-    QFETCH(LargeInt, value);
-    QAtomicInteger<T> atomic(value);
-
-    // note: this test has undefined behavior for signed max and min
-    T parcel1 = 42;
-    T parcel2 = T(0-parcel1);
-    T newValue1 = T(value) + parcel1;
-    T newValue2 = T(value) - parcel1;
-
-    QCOMPARE(atomic.fetchAndAddRelaxed(parcel1), T(value));
-    QCOMPARE(atomic.load(), newValue1);
-    QCOMPARE(atomic.fetchAndSubRelaxed(parcel1), newValue1);
-    QCOMPARE(atomic.load(), T(value));
-    QCOMPARE(atomic.fetchAndSubRelaxed(parcel1), T(value));
-    QCOMPARE(atomic.load(), newValue2);
-    QCOMPARE(atomic.fetchAndAddRelaxed(parcel1), newValue2);
-    QCOMPARE(atomic.load(), T(value));
-    QCOMPARE(atomic.fetchAndAddRelaxed(parcel2), T(value));
-    QCOMPARE(atomic.load(), newValue2);
-    QCOMPARE(atomic.fetchAndSubRelaxed(parcel2), newValue2);
-    QCOMPARE(atomic.load(), T(value));
-    QCOMPARE(atomic.fetchAndSubRelaxed(parcel2), T(value));
-    QCOMPARE(atomic.load(), newValue1);
-    QCOMPARE(atomic.fetchAndAddRelaxed(parcel2), newValue1);
-    QCOMPARE(atomic.load(), T(value));
-
-    QCOMPARE(atomic.fetchAndAddAcquire(parcel1), T(value));
-    QCOMPARE(atomic.load(), newValue1);
-    QCOMPARE(atomic.fetchAndSubAcquire(parcel1), newValue1);
-    QCOMPARE(atomic.load(), T(value));
-    QCOMPARE(atomic.fetchAndSubAcquire(parcel1), T(value));
-    QCOMPARE(atomic.load(), newValue2);
-    QCOMPARE(atomic.fetchAndAddAcquire(parcel1), newValue2);
-    QCOMPARE(atomic.load(), T(value));
-    QCOMPARE(atomic.fetchAndAddAcquire(parcel2), T(value));
-    QCOMPARE(atomic.load(), newValue2);
-    QCOMPARE(atomic.fetchAndSubAcquire(parcel2), newValue2);
-    QCOMPARE(atomic.load(), T(value));
-    QCOMPARE(atomic.fetchAndSubAcquire(parcel2), T(value));
-    QCOMPARE(atomic.load(), newValue1);
-    QCOMPARE(atomic.fetchAndAddAcquire(parcel2), newValue1);
-    QCOMPARE(atomic.load(), T(value));
-
-    QCOMPARE(atomic.fetchAndAddRelease(parcel1), T(value));
-    QCOMPARE(atomic.load(), newValue1);
-    QCOMPARE(atomic.fetchAndSubRelease(parcel1), newValue1);
-    QCOMPARE(atomic.load(), T(value));
-    QCOMPARE(atomic.fetchAndSubRelease(parcel1), T(value));
-    QCOMPARE(atomic.load(), newValue2);
-    QCOMPARE(atomic.fetchAndAddRelease(parcel1), newValue2);
-    QCOMPARE(atomic.load(), T(value));
-    QCOMPARE(atomic.fetchAndAddRelease(parcel2), T(value));
-    QCOMPARE(atomic.load(), newValue2);
-    QCOMPARE(atomic.fetchAndSubRelease(parcel2), newValue2);
-    QCOMPARE(atomic.load(), T(value));
-    QCOMPARE(atomic.fetchAndSubRelease(parcel2), T(value));
-    QCOMPARE(atomic.load(), newValue1);
-    QCOMPARE(atomic.fetchAndAddRelease(parcel2), newValue1);
-    QCOMPARE(atomic.load(), T(value));
-
-    QCOMPARE(atomic.fetchAndAddOrdered(parcel1), T(value));
-    QCOMPARE(atomic.load(), newValue1);
-    QCOMPARE(atomic.fetchAndSubOrdered(parcel1), newValue1);
-    QCOMPARE(atomic.load(), T(value));
-    QCOMPARE(atomic.fetchAndSubOrdered(parcel1), T(value));
-    QCOMPARE(atomic.load(), newValue2);
-    QCOMPARE(atomic.fetchAndAddOrdered(parcel1), newValue2);
-    QCOMPARE(atomic.load(), T(value));
-    QCOMPARE(atomic.fetchAndAddOrdered(parcel2), T(value));
-    QCOMPARE(atomic.load(), newValue2);
-    QCOMPARE(atomic.fetchAndSubOrdered(parcel2), newValue2);
-    QCOMPARE(atomic.load(), T(value));
-    QCOMPARE(atomic.fetchAndSubOrdered(parcel2), T(value));
-    QCOMPARE(atomic.load(), newValue1);
-    QCOMPARE(atomic.fetchAndAddOrdered(parcel2), newValue1);
-    QCOMPARE(atomic.load(), T(value));
-
-    // operator+= and operator-=
-    QCOMPARE(atomic += parcel1, newValue1);
-    QCOMPARE(atomic -= parcel1, T(value));
-    QCOMPARE(atomic -= parcel1, newValue2);
-    QCOMPARE(atomic += parcel1, T(value));
-    QCOMPARE(atomic += parcel2, newValue2);
-    QCOMPARE(atomic -= parcel2, T(value));
-    QCOMPARE(atomic -= parcel2, newValue1);
-    QCOMPARE(atomic += parcel2, T(value));
 }
 
 void tst_QAtomicIntegerXX::fetchAndOr()

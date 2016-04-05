@@ -5,6 +5,7 @@ contains(QT_CONFIG, posix_fallocate):DEFINES += HAVE_POSIX_FALLOCATE=1
 winrt: DEFINES += SQLITE_OS_WINRT
 winphone: DEFINES += SQLITE_WIN32_FILEMAPPING_API=1
 qnx: DEFINES += _QNX_SOURCE
+integrity: QMAKE_CFLAGS += -include qplatformdefs.h
 INCLUDEPATH +=  $$PWD/sqlite
 SOURCES +=      $$PWD/sqlite/sqlite3.c
 

@@ -8,7 +8,7 @@ SOURCES += tst_qloggingregistry.cpp
 OTHER_FILES += qtlogging.ini
 TESTDATA += qtlogging.ini
 
-android:!android-no-sdk: {
+android {
     RESOURCES += \
         android_testdata.qrc
 }

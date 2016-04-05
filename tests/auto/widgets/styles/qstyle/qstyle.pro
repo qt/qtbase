@@ -9,7 +9,7 @@ wince* {
    DEPLOYMENT += addPixmap
 }
 
-android: !android-no-sdk {
+android {
     RESOURCES += \
         testdata.qrc
 }

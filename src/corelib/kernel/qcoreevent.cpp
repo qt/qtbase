@@ -191,6 +191,7 @@ QT_BEGIN_NAMESPACE
     \value ParentChange                     The widget parent has changed.
     \value PlatformPanel                    A platform specific panel has been requested.
     \value PlatformSurface                  A native platform surface has been created or is about to be destroyed (QPlatformSurfaceEvent).
+    \omitvalue Pointer
     \value Polish                           The widget is polished.
     \value PolishRequest                    The widget should be polished.
     \value QueryWhatsThis                   The widget should accept the event if it has "What's This?" help.

@@ -85,7 +85,7 @@ QT_BEGIN_NAMESPACE
     \internal
 */
 /*!
-    \fn virtual bool QNonContiguousByteDevice::atEnd()
+    \fn virtual bool QNonContiguousByteDevice::atEnd() const
 
      Returns \c true if everything has been read and the read
      pointer cannot be advanced anymore.
@@ -105,7 +105,7 @@ QT_BEGIN_NAMESPACE
     \internal
 */
 /*!
-    \fn virtual qint64 QNonContiguousByteDevice::size()
+    \fn virtual qint64 QNonContiguousByteDevice::size() const
 
     Returns the size of the complete device or -1 if unknown.
     May also return less/more than what can be actually read with readPointer()

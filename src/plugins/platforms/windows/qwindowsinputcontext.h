@@ -65,6 +65,7 @@ class QWindowsInputContext : public QPlatformInputContext
         int position;
         bool isComposing;
         QPointer<QObject> focusObject;
+        qreal factor;
     };
 public:
     explicit QWindowsInputContext();
@@ -94,7 +95,7 @@ private slots:
     void cursorRectChanged();
 
 private:
-    void initContext(HWND hwnd, QObject *focusObject);
+    void initContext(HWND hwnd, qreal factor, QObject *focusObject);
     void doneContext();
     void startContextComposition();
     void endContextComposition();

@@ -19,7 +19,7 @@ android|wince {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 
-android: !android-no-sdk {
+android {
     RESOURCES += \
         testdata.qrc
 }

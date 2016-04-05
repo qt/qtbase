@@ -172,6 +172,17 @@ bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes)
         return true;
     }
 
+    i = configAttributes->indexOf(EGL_DEPTH_SIZE);
+    if (i >= 0) {
+        if (configAttributes->at(i + 1) >= 32)
+            configAttributes->replace(i + 1, 24);
+        else if (configAttributes->at(i + 1) > 1)
+            configAttributes->replace(i + 1, 1);
+        else
+            configAttributes->remove(i, 2);
+        return true;
+    }
+
     i = configAttributes->indexOf(EGL_ALPHA_SIZE);
     if (i >= 0) {
         configAttributes->remove(i,2);
@@ -195,14 +206,6 @@ bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes)
         return true;
     }
 
-    i = configAttributes->indexOf(EGL_DEPTH_SIZE);
-    if (i >= 0) {
-        if (configAttributes->at(i + 1) > 1)
-            configAttributes->replace(i + 1, 1);
-        else
-            configAttributes->remove(i, 2);
-        return true;
-    }
 #ifdef EGL_BIND_TO_TEXTURE_RGB
     i = configAttributes->indexOf(EGL_BIND_TO_TEXTURE_RGB);
     if (i >= 0) {

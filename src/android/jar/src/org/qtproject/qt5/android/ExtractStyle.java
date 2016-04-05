@@ -270,6 +270,7 @@ public class ExtractStyle {
     Context m_context;
     final int defaultBackgroundColor;
     final int defaultTextColor;
+    final boolean m_minimal;
 
     class SimpleJsonWriter
     {
@@ -984,7 +985,7 @@ public class ExtractStyle {
 
     public JSONObject getDrawable(Object drawable, String filename, Rect padding)
     {
-        if (drawable == null)
+        if (drawable == null || m_minimal)
             return null;
 
         DrawableCache dc = m_drawableCache.get(filename);
@@ -1986,9 +1987,10 @@ public class ExtractStyle {
         return json;
     }
 
-    public ExtractStyle(Context context, String extractPath)
+    public ExtractStyle(Context context, String extractPath, boolean minimal)
     {
 //        Log.i(MinistroService.TAG, "Extract " + extractPath);
+        m_minimal = minimal;
         m_extractPath = extractPath + "/";
         new File(m_extractPath).mkdirs();
 //        MinistroActivity.nativeChmode(m_extractPath, 0755);
