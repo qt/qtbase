@@ -67,9 +67,9 @@ INCREDIBUILD_XGE += moc_source
 INCLUDEPATH += $$absolute_path($$MOC_DIR, $$OUT_PWD)
 
 #auto depend on moc
-unix:!no_mocdepend {
-     moc_source.depends += $$first(QMAKE_MOC)
-     moc_header.depends += $$first(QMAKE_MOC)
+!no_mocdepend {
+     moc_source.depends += $$QMAKE_MOC_EXE
+     moc_header.depends += $$QMAKE_MOC_EXE
 }
 
 #generate a mocclean

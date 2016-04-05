@@ -103,6 +103,7 @@ rcc.clean += $$RCC_CPP $$RCC_TMP
 
 }
 
+rcc.depends = $$QMAKE_RCC_EXE
 silent:rcc.commands = @echo rcc ${QMAKE_FILE_IN} && $$rcc.commands
 else:rcc.commands ~= s/&&/$$escape_expand(\\n\\t)/g
 QMAKE_EXTRA_COMPILERS += rcc
