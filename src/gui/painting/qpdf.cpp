@@ -1556,6 +1556,7 @@ void QPdfEnginePrivate::embedFont(QFontSubset *font)
     int toUnicode = requestObject();
 
     QFontEngine::Properties properties = font->fontEngine->properties();
+    QByteArray postscriptName = properties.postscriptName.replace(' ', '_');
 
     {
         qreal scale = 1000/properties.emSquare.toReal();
@@ -1569,7 +1570,7 @@ void QPdfEnginePrivate::embedFont(QFontSubset *font)
             s << (char)('A' + (tag % 26));
             tag /= 26;
         }
-        s <<  '+' << properties.postscriptName << "\n"
+        s <<  '+' << postscriptName << "\n"
             "/Flags " << 4 << "\n"
             "/FontBBox ["
           << properties.boundingBox.x()*scale
@@ -1612,7 +1613,7 @@ void QPdfEnginePrivate::embedFont(QFontSubset *font)
         QPdf::ByteStream s(&cid);
         s << "<< /Type /Font\n"
             "/Subtype /CIDFontType2\n"
-            "/BaseFont /" << properties.postscriptName << "\n"
+            "/BaseFont /" << postscriptName << "\n"
             "/CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >>\n"
             "/FontDescriptor " << fontDescriptor << "0 R\n"
             "/CIDToGIDMap /Identity\n"
@@ -1636,7 +1637,7 @@ void QPdfEnginePrivate::embedFont(QFontSubset *font)
         QPdf::ByteStream s(&font);
         s << "<< /Type /Font\n"
             "/Subtype /Type0\n"
-            "/BaseFont /" << properties.postscriptName << "\n"
+            "/BaseFont /" << postscriptName << "\n"
             "/Encoding /Identity-H\n"
             "/DescendantFonts [" << cidfont << "0 R]\n"
             "/ToUnicode " << toUnicode << "0 R"
