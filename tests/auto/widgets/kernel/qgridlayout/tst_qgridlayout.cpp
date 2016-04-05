@@ -80,6 +80,7 @@ private slots:
     void taskQTBUG_27420_takeAtShouldUnparentLayout();
     void taskQTBUG_40609_addingWidgetToItsOwnLayout();
     void taskQTBUG_40609_addingLayoutToItself();
+    void taskQTBUG_52357_spacingWhenItemIsHidden();
     void replaceWidget();
     void dontCrashWhenExtendsToEnd();
 };
@@ -1648,6 +1649,26 @@ void tst_QGridLayout::taskQTBUG_40609_addingLayoutToItself(){
     QTest::ignoreMessage(QtWarningMsg, "QLayout: Cannot add layout QGridLayout/5d79e1b0aed83f100e3c2 to itself");
     layout.addLayout(&layout, 0, 0);
     QCOMPARE(layout.count(), 0);
+}
+
+void tst_QGridLayout::taskQTBUG_52357_spacingWhenItemIsHidden()
+{
+    QWidget widget;
+    setFrameless(&widget);
+    QGridLayout layout(&widget);
+    layout.setMargin(0);
+    layout.setSpacing(5);
+    QPushButton button1;
+    layout.addWidget(&button1, 0, 0);
+    QPushButton button2;
+    layout.addWidget(&button2, 0, 1);
+    QPushButton button3;
+    layout.addWidget(&button3, 0, 2);
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    int tempWidth = button1.width() + button2.width() + button3.width() + 2 * layout.spacing();
+    button2.hide();
+    QTRY_COMPARE_WITH_TIMEOUT(tempWidth, button1.width() + button3.width() + layout.spacing(), 1000);
 }
 
 void tst_QGridLayout::replaceWidget()

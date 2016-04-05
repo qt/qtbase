@@ -746,9 +746,13 @@ void QGridLayoutPrivate::setupSpacings(QVector<QLayoutStruct> &chain,
                     if (orientation == Qt::Vertical) {
                         QGridBox *sibling = vReversed ? previousBox : box;
                         if (sibling) {
-                            QWidget *wid = sibling->item()->widget();
-                            if (wid)
-                                spacing = qMax(spacing, sibling->item()->geometry().top() - wid->geometry().top() );
+                            if (sibling->item()->isEmpty()) {
+                                spacing = 0;
+                            } else {
+                                QWidget *wid = sibling->item()->widget();
+                                if (wid)
+                                    spacing = qMax(spacing, sibling->item()->geometry().top() - wid->geometry().top());
+                            }
                         }
                     }
                 }
