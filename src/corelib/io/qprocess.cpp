@@ -1183,17 +1183,6 @@ bool QProcessPrivate::_q_processDied()
     if (crashed) {
         exitStatus = QProcess::CrashExit;
         setErrorAndEmit(QProcess::Crashed);
-    } else {
-#ifdef QPROCESS_USE_SPAWN
-        // if we're using posix_spawn, waitForStarted always succeeds.
-        // POSIX documents that the sub-process launched by posix_spawn will exit with code
-        // 127 if anything prevents the target program from starting.
-        // http://pubs.opengroup.org/onlinepubs/009695399/functions/posix_spawn.html
-        if (exitStatus == QProcess::NormalExit && exitCode == 127) {
-            setError(QProcess::FailedToStart,
-                     QProcess::tr("Process failed to start (spawned process exited with code 127)"));
-        }
-#endif
     }
 
     bool wasRunning = (processState == QProcess::Running);

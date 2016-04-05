@@ -87,7 +87,7 @@ tst_QFileSystemWatcher::tst_QFileSystemWatcher()
     m_tempDirPattern += QStringLiteral("tst_qfilesystemwatcherXXXXXX");
 #endif // QT_NO_FILESYSTEMWATCHER
 
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#if defined(Q_OS_ANDROID)
     QDir::setCurrent(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
 #endif
 }

@@ -91,9 +91,8 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "qlocale_data_p.h"
 QT_END_INCLUDE_NAMESPACE
 
-QLocale::Language QLocalePrivate::codeToLanguage(const QString &code)
+QLocale::Language QLocalePrivate::codeToLanguage(const QChar *code, int len) Q_DECL_NOTHROW
 {
-    int len = code.length();
     if (len != 2 && len != 3)
         return QLocale::C;
     ushort uc1 = code[0].toLower().unicode();
@@ -134,17 +133,16 @@ QLocale::Language QLocalePrivate::codeToLanguage(const QString &code)
     return QLocale::C;
 }
 
-QLocale::Script QLocalePrivate::codeToScript(const QString &code)
+QLocale::Script QLocalePrivate::codeToScript(const QChar *code, int len) Q_DECL_NOTHROW
 {
-    int len = code.length();
     if (len != 4)
         return QLocale::AnyScript;
 
     // script is titlecased in our data
-    unsigned char c0 = code.at(0).toUpper().toLatin1();
-    unsigned char c1 = code.at(1).toLower().toLatin1();
-    unsigned char c2 = code.at(2).toLower().toLatin1();
-    unsigned char c3 = code.at(3).toLower().toLatin1();
+    unsigned char c0 = code[0].toUpper().toLatin1();
+    unsigned char c1 = code[1].toLower().toLatin1();
+    unsigned char c2 = code[2].toLower().toLatin1();
+    unsigned char c3 = code[3].toLower().toLatin1();
 
     const unsigned char *c = script_code_list;
     for (int i = 0; i < QLocale::LastScript; ++i, c += 4) {
@@ -154,9 +152,8 @@ QLocale::Script QLocalePrivate::codeToScript(const QString &code)
     return QLocale::AnyScript;
 }
 
-QLocale::Country QLocalePrivate::codeToCountry(const QString &code)
+QLocale::Country QLocalePrivate::codeToCountry(const QChar *code, int len) Q_DECL_NOTHROW
 {
-    int len = code.length();
     if (len != 2 && len != 3)
         return QLocale::AnyCountry;
     ushort uc1 = code[0].toUpper().unicode();

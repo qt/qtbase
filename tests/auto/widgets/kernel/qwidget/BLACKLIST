@@ -32,7 +32,6 @@ osx
 osx
 [widgetAt]
 osx
-rhel-7.1
 [sheetOpacity]
 osx
 [resizeEvent]
@@ -65,10 +64,8 @@ osx
 osx
 [taskQTBUG_4055_sendSyntheticEnterLeave]
 osx
-rhel-7.1
 [syntheticEnterLeave]
 osx
-rhel-7.1
 [maskedUpdate]
 osx
 [hideWhenFocusWidgetIsChild]

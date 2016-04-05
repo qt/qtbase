@@ -17,6 +17,6 @@ TESTDATA += \
     testqrc/*
 GENERATED_TESTDATA = $${runtime_resource.target}
 
-android:!android-no-sdk {
+android {
     RESOURCES += android_testdata.qrc
 }

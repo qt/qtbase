@@ -153,12 +153,12 @@ QSignalTransition::QSignalTransition(const QObject *sender, const char *signal,
 
 /*!
   \fn QSignalTransition::QSignalTransition(const QObject *sender,
-                       PointerToMemberFunction signal, QState *sourceState);
+                       PointerToMemberFunction signal, QState *sourceState)
   \since 5.7
   \overload
 
   Constructs a new signal transition associated with the given \a signal of
-  the given \a sender object and with the given \a sourceSate.
+  the given \a sender object and with the given \a sourceState.
   This constructor is enabled if compiler supports delegating constructor.
 
   \sa Q_COMPILER_DELEGATING_CONSTRUCTORS

@@ -8,7 +8,7 @@ TESTDATA += testdir testData searchdir resources entrylist types tst_qdir.cpp
 
 contains(CONFIG, builtin_testdata): DEFINES += BUILTIN_TESTDATA
 
-android:!android-no-sdk {
+android {
     RESOURCES += android_testdata.qrc
 }
 

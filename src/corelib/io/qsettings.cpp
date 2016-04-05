@@ -2373,8 +2373,6 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
        10.8 (Mountain Lion), only root can. However, 10.9 (Mavericks) changes
        that rule again but only for the native format (plist files).
 
-       \endlist
-
     \endlist
 
     \sa QVariant, QSessionManager, {Settings Editor Example}, {Application Example}

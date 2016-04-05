@@ -1,3 +1,3 @@
 SOURCES = libdl.cpp
 CONFIG -= qt dylib
-LIBS += -ldl
+!qnx: LIBS += -ldl

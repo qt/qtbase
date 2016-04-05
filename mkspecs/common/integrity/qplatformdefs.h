@@ -75,7 +75,7 @@
 // INTEGRITY doesn't have getpagesize()
 inline int getpagesize()
 {
-    return ::sysconf(_SC_PAGESIZE);
+    return sysconf(_SC_PAGESIZE);
 }
 
 // geteuid() is only available with multi-process posix, but we do not want
@@ -97,4 +97,4 @@ inline uid_t getuid(void)
 #define QT_OPEN_LARGEFILE 0
 #define PATH_MAX 1024
 
-#endif // Q_QNX_PLATFORMDEFS_H
+#endif // Q_INTEGRITY_PLATFORMDEFS_H

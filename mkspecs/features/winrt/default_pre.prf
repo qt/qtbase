@@ -9,4 +9,6 @@
         QMAKE_LIBS = ucrt.lib $$QMAKE_LIBS
 }
 
+equals(TEMPLATE, "vcapp"): CONFIG += windeployqt
+
 load(default_pre)

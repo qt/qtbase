@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
-android:!android-no-sdk: SUBDIRS += android
+android: SUBDIRS += android
 
 SUBDIRS += minimal
 
@@ -42,3 +42,5 @@ haiku {
 }
 
 contains(QT_CONFIG, mirclient): SUBDIRS += mirclient
+
+contains(QT_CONFIG, integrityfb): SUBDIRS += integrity

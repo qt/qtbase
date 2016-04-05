@@ -1,4 +1,4 @@
-contains(TEMPLATE, ".*app"):!build_pass:!android-no-sdk {
+contains(TEMPLATE, ".*app"):!build_pass: {
 
     defineReplace(emitString) {
         return("\"$$replace(1, \\\\, \\\\)\"")

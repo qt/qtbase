@@ -9,7 +9,7 @@ save
   setFont "sansserif" 12 normal
   drawStaticText 0 40 "sansserif 12pt, normal"
 
-  setFont "sansserif" 10 bold
+  setFont "sansserif" 12 bold
   drawStaticText 0 60 "sansserif 12pt, bold"
 
   setFont "sansserif" 10 bold italic
@@ -25,7 +25,7 @@ save
   setFont "sansserif" 12 normal
   drawStaticText 0 40 "alpha sansserif 12pt, normal"
 
-  setFont "sansserif" 10 bold
+  setFont "sansserif" 12 bold
   drawStaticText 0 60 "alpha sansserif 12pt, bold"
 
   setFont "sansserif" 10 bold italic
@@ -43,7 +43,7 @@ save
     setFont "sansserif" 12 normal
     drawStaticText 0 40 "scaled sansserif 12pt, normal"
 
-    setFont "sansserif" 10 bold
+    setFont "sansserif" 12 bold
     drawStaticText 0 60 "scaled sansserif 12pt, bold"
 
     setFont "sansserif" 10 bold italic
@@ -61,7 +61,7 @@ save
     setFont "sansserif" 12 normal
     drawStaticText 0 40 "flipped sansserif 12pt, normal"
 
-    setFont "sansserif" 10 bold
+    setFont "sansserif" 12 bold
     drawStaticText 0 60 "flipped sansserif 12pt, bold"
 
     setFont "sansserif" 10 bold italic
@@ -75,16 +75,16 @@ save
     rotate 185
 
     setFont "sansserif" 10 normal
-    drawStaticText 0 20 "scaled sansserif 10pt, normal"
+    drawStaticText 0 20 "rotated sansserif 10pt, normal"
 
     setFont "sansserif" 12 normal
-    drawStaticText 0 40 "scaled sansserif 12pt, normal"
+    drawStaticText 0 40 "rotated sansserif 12pt, normal"
 
-    setFont "sansserif" 10 bold
-    drawStaticText 0 60 "scaled sansserif 12pt, bold"
+    setFont "sansserif" 12 bold
+    drawStaticText 0 60 "rotated sansserif 12pt, bold"
 
     setFont "sansserif" 10 bold italic
-    drawStaticText 0 80 "scaled sansserif 10pt, bold italic"
+    drawStaticText 0 80 "rotated sansserif 10pt, bold italic"
   restore
 
   translate 0 100
@@ -100,7 +100,7 @@ save
   setFont "sansserif" 12 normal
   drawStaticText 0 20 "gradient sansserif 12pt, normal"
 
-  setFont "sansserif" 10 bold
+  setFont "sansserif" 12 bold
   drawStaticText 0 40 "gradient sansserif 12pt, bold"
 
   setFont "sansserif" 10 bold italic

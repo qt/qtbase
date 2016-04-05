@@ -512,7 +512,7 @@ void tst_QCommandLineParser::testVersionOption()
 #ifdef QT_NO_PROCESS
     QSKIP("This test requires QProcess support");
 #else
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#if defined(Q_OS_ANDROID)
     QSKIP("Deploying executable applications to file system on Android not supported.");
 #endif
 
@@ -578,7 +578,7 @@ void tst_QCommandLineParser::testHelpOption()
 #ifdef QT_NO_PROCESS
     QSKIP("This test requires QProcess support");
 #else
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#if defined(Q_OS_ANDROID)
     QSKIP("Deploying executable applications to file system on Android not supported.");
 #endif
 
@@ -625,7 +625,7 @@ void tst_QCommandLineParser::testQuoteEscaping()
 {
 #ifdef QT_NO_PROCESS
     QSKIP("This test requires QProcess support");
-#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#elif defined(Q_OS_ANDROID)
     QSKIP("Deploying executable applications to file system on Android not supported.");
 #else
     QCoreApplication app(empty_argc, empty_argv);

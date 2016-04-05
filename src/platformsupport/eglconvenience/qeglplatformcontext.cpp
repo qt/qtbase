@@ -447,7 +447,7 @@ QFunctionPointer QEGLPlatformContext::getProcAddress(const char *procName)
 {
     eglBindAPI(m_api);
     QFunctionPointer proc = (QFunctionPointer) eglGetProcAddress(procName);
-#ifndef Q_OS_WIN
+#if !defined(Q_OS_WIN) && !defined(Q_OS_INTEGRITY)
     if (!proc)
         proc = (QFunctionPointer) dlsym(RTLD_DEFAULT, procName);
 #endif

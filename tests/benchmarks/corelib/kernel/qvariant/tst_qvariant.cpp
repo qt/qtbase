@@ -27,7 +27,9 @@
 ****************************************************************************/
 
 #include <QtCore>
-#include <QtGui/QPixmap>
+#ifdef QT_GUI_LIB
+#  include <QtGui/QPixmap>
+#endif
 #include <qtest.h>
 
 #define ITERATION_COUNT 1e5
@@ -42,7 +44,9 @@ private slots:
     void floatVariantCreation();
     void rectVariantCreation();
     void stringVariantCreation();
+#ifdef QT_GUI_LIB
     void pixmapVariantCreation();
+#endif
     void stringListVariantCreation();
     void bigClassVariantCreation();
     void smallClassVariantCreation();
@@ -153,10 +157,12 @@ void tst_qvariant::stringVariantCreation()
     variantCreation<QString>(QString());
 }
 
+#ifdef QT_GUI_LIB
 void tst_qvariant::pixmapVariantCreation()
 {
     variantCreation<QPixmap>(QPixmap());
 }
+#endif
 
 void tst_qvariant::stringListVariantCreation()
 {

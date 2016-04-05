@@ -113,6 +113,7 @@ public class QtActivityDelegate
     private static final String STATIC_INIT_CLASSES_KEY = "static.init.classes";
     private static final String NECESSITAS_API_LEVEL_KEY = "necessitas.api.level";
     private static final String EXTRACT_STYLE_KEY = "extract.android.style";
+    private static final String EXTRACT_STYLE_MINIMAL_KEY = "extract.android.style.option";
 
     private static String m_environmentVariables = null;
     private static String m_applicationParameters = null;
@@ -509,7 +510,8 @@ public class QtActivityDelegate
 
         if (loaderParams.containsKey(EXTRACT_STYLE_KEY)) {
             String path = loaderParams.getString(EXTRACT_STYLE_KEY);
-            new ExtractStyle(m_activity, path);
+            new ExtractStyle(m_activity, path, loaderParams.containsKey(EXTRACT_STYLE_MINIMAL_KEY) &&
+                                               loaderParams.getBoolean(EXTRACT_STYLE_MINIMAL_KEY));
         }
 
         try {

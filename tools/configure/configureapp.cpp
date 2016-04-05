@@ -221,7 +221,7 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     dictionary[ "BUILD" ]           = "debug";
     dictionary[ "BUILDALL" ]        = "auto"; // Means yes, but not explicitly
     dictionary[ "FORCEDEBUGINFO" ]  = "no";
-    dictionary[ "OPTIMIZED_TOOLS" ] = "no";
+    dictionary[ "RELEASE_TOOLS" ]   = "no";
 
     dictionary[ "BUILDTYPE" ]      = "none";
 
@@ -3442,6 +3442,11 @@ void Configure::generateQConfigPri()
             configStream << "QT_GCC_MAJOR_VERSION = " << dictionary["QT_GCC_MAJOR_VERSION"] << endl
                          << "QT_GCC_MINOR_VERSION = " << dictionary["QT_GCC_MINOR_VERSION"] << endl
                          << "QT_GCC_PATCH_VERSION = " << dictionary["QT_GCC_PATCH_VERSION"] << endl;
+        }
+
+        if (dictionary.value("XQMAKESPEC").startsWith("wince")) {
+            configStream << "#Qt for Windows CE c-runtime deployment" << endl
+                         << "QT_CE_C_RUNTIME = " << formatPath(dictionary["CE_CRT"]) << endl;
         }
 
         if (!configStream.flush())

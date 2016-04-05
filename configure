@@ -691,6 +691,7 @@ CFG_EGLFS_VIV_WL=no
 CFG_DIRECTFB=auto
 CFG_GBM=auto
 CFG_LINUXFB=auto
+CFG_INTEGRITYFB=no
 CFG_KMS=auto
 CFG_MIRCLIENT=auto
 CFG_LIBUDEV=auto
@@ -3915,8 +3916,8 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         fi
         case `basename "$PLATFORM"` in
         win32-g++*)
-            EXTRA_CFLAGS="-DUNICODE"
-            EXTRA_CXXFLAGS="-DUNICODE"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS -DUNICODE"
+            EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS -DUNICODE"
             EXTRA_OBJS="qfilesystemengine_win.o \
                         qfilesystemiterator_win.o \
                         qfsfileengine_win.o \
@@ -3931,7 +3932,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
                         \"\$(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp\" \
                         \"\$(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp\" \
                         \"\$(SOURCE_PATH)/tools/shared/windows/registry.cpp\""
-            EXTRA_LFLAGS="-static -s -lole32 -luuid -ladvapi32 -lkernel32"
+            EXTRA_LFLAGS="$EXTRA_LFLAGS -static -s -lole32 -luuid -ladvapi32 -lkernel32"
             EXEEXT=".exe"
             ;;
         *)
@@ -4612,7 +4613,7 @@ if ! compileTest unix/ipc_sysv "ipc_sysv" ; then
     if compileTest unix/ipc_posix "ipc_posix" ; then
         QCONFIG_FLAGS="$QCONFIG_FLAGS QT_POSIX_IPC"
     else
-        if [ "$XPLATFORM_ANDROID" = "no" ] ; then
+        if [ "$XPLATFORM_ANDROID" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] ; then
             QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SYSTEMSEMAPHORE QT_NO_SHAREDMEMORY"
         fi
     fi
@@ -4655,6 +4656,7 @@ if [ "$XPLATFORM_QNX" = "yes" ]; then
 fi
 
 if [ "$XPLATFORM_INTEGRITY" = "yes" ]; then
+    CFG_INTEGRITYFB=yes
     CFG_SHARED=no
     CFG_LARGEFILE=no
 fi
@@ -5860,6 +5862,8 @@ if [ -z "$QT_QPA_DEFAULT_PLATFORM" ]; then
             QT_QPA_DEFAULT_PLATFORM="cocoa"
         elif [ "$UNAME_SYSTEM" = "QNX" ]; then
             QT_QPA_DEFAULT_PLATFORM="qnx"
+        elif [ "$XPLATFORM_INTEGRITY" = "yes" ]; then
+            QT_QPA_DEFAULT_PLATFORM="integrityfb"
         else
             QT_QPA_DEFAULT_PLATFORM="xcb"
         fi
@@ -5881,6 +5885,9 @@ if [ "$CFG_GBM" = "yes" ]; then
 fi
 if [ "$CFG_LINUXFB" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG linuxfb"
+fi
+if [ "$CFG_INTEGRITYFB" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG integrityfb"
 fi
 if [ "$CFG_KMS" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG kms"
@@ -7215,6 +7222,9 @@ report_support "      EGLFS GBM .........." "$CFG_EGLFS_GBM"
 report_support "      EGLFS Mali ........." "$CFG_EGLFS_MALI"
 report_support "      EGLFS Raspberry Pi ." "$CFG_EGLFS_BRCM"
 report_support "      EGLFS X11 .........." "$CFG_EGL_X"
+if [ "$XPLATFORM_INTEGRITY" = "yes" ]; then
+    report_support "    INTEGRITY Framebuffer " "$CFG_INTEGRITYFB"
+fi
 report_support "    LinuxFB .............." "$CFG_LINUXFB"
 report_support "    Mir client............" "$CFG_MIRCLIENT"
 report_support "    XCB .................." "$CFG_XCB" system "system library" qt "bundled copy"

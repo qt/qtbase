@@ -127,18 +127,20 @@ win32 {
                 io/qsettings_winrt.cpp \
                 io/qstorageinfo_stub.cpp
     }
-} else:unix|integrity {
+} else:unix {
         SOURCES += \
                 io/qfsfileengine_unix.cpp \
                 io/qfilesystemengine_unix.cpp \
                 io/qlockfile_unix.cpp \
                 io/qprocess_unix.cpp \
-                io/qfilesystemiterator_unix.cpp \
-                io/forkfd_qt.cpp
-        HEADERS += \
-                ../3rdparty/forkfd/forkfd.h
-        INCLUDEPATH += ../3rdparty/forkfd
+                io/qfilesystemiterator_unix.cpp
 
+        !integrity {
+            SOURCES += io/forkfd_qt.cpp
+            HEADERS += \
+                     ../3rdparty/forkfd/forkfd.h
+            INCLUDEPATH += ../3rdparty/forkfd
+        }
         !nacl:mac: {
             SOURCES += io/qsettings_mac.cpp
             OBJECTIVE_SOURCES += io/qurl_mac.mm
@@ -154,7 +156,7 @@ win32 {
             } else:ios {
                 LIBS += -framework MobileCoreServices
             }
-        } else:android:!android-no-sdk {
+        } else:android {
             SOURCES += \
                 io/qstandardpaths_android.cpp \
                 io/qstorageinfo_unix.cpp

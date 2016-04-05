@@ -1296,7 +1296,7 @@ void tst_QGraphicsProxyWidget::paintEvent()
     proxy.paintCount = 0;
 
     w->update();
-    QTRY_COMPARE(proxy.paintCount, 1); //the widget should have been painted now
+    QTRY_VERIFY(proxy.paintCount >= 1); //the widget should have been painted now
 }
 
 

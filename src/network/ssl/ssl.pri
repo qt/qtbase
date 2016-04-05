@@ -65,7 +65,7 @@ contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
 
     darwin:SOURCES += ssl/qsslsocket_mac_shared.cpp
 
-    android:!android-no-sdk: SOURCES += ssl/qsslsocket_openssl_android.cpp
+    android: SOURCES += ssl/qsslsocket_openssl_android.cpp
 
     # Add optional SSL libs
     # Static linking of OpenSSL with msvc:

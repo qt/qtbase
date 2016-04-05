@@ -149,6 +149,7 @@ private slots:
 #ifndef QT_NO_CONTEXTMENU
     void contextMenu();
 #endif
+    void inputMethodCursorRect();
 
 private:
     void createSelection();
@@ -1721,6 +1722,18 @@ void tst_QPlainTextEdit::contextMenu()
     QVERIFY(!ed->findChild<QAction *>(QStringLiteral("link-copy")));
 }
 #endif // QT_NO_CONTEXTMENU
+
+// QTBUG-51923: Verify that the cursor rectangle returned by the input
+// method query correctly reflects the viewport offset.
+void tst_QPlainTextEdit::inputMethodCursorRect()
+{
+    ed->setPlainText("Line1\nLine2Line3\nLine3");
+    ed->moveCursor(QTextCursor::End);
+    const QRectF cursorRect = ed->cursorRect();
+    const QVariant cursorRectV = ed->inputMethodQuery(Qt::ImCursorRectangle);
+    QCOMPARE(cursorRectV.type(), QVariant::RectF);
+    QCOMPARE(cursorRectV.toRect(), cursorRect.toRect());
+}
 
 QTEST_MAIN(tst_QPlainTextEdit)
 #include "tst_qplaintextedit.moc"

@@ -68,9 +68,6 @@ typedef HANDLE Q_PIPE;
 #else
 typedef int Q_PIPE;
 #define INVALID_Q_PIPE -1
-#  ifdef Q_OS_QNX
-#    define QPROCESS_USE_SPAWN
-#  endif
 #endif
 
 #ifndef QT_NO_PROCESS
@@ -352,10 +349,8 @@ public:
 
     void start(QIODevice::OpenMode mode);
     void startProcess();
-#if defined(Q_OS_UNIX) && !defined(QPROCESS_USE_SPAWN)
+#if defined(Q_OS_UNIX)
     void execChild(const char *workingDirectory, char **path, char **argv, char **envp);
-#elif defined(QPROCESS_USE_SPAWN)
-    pid_t spawnChild(pid_t *ppid, const char *workingDirectory, char **argv, char **envp);
 #endif
     bool processStarted(QString *errorMessage = Q_NULLPTR);
     void terminateProcess();

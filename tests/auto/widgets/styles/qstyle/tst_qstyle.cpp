@@ -124,6 +124,8 @@ private slots:
     void defaultFont();
     void testDrawingShortcuts();
     void testFrameOnlyAroundContents();
+
+    void testProxyCalled();
 private:
     void lineUpLayoutTest(QStyle *);
     QWidget *testWidget;
@@ -788,6 +790,52 @@ void tst_QStyle::testFrameOnlyAroundContents()
     delete winStyle;
 }
 
+
+class ProxyTest: public QProxyStyle
+{
+    Q_OBJECT
+public:
+    ProxyTest(QStyle *style = 0)
+        :QProxyStyle(style)
+        , called(false)
+    {}
+
+    void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p, const QWidget *w) const Q_DECL_OVERRIDE {
+        called = true;
+        return QProxyStyle::drawPrimitive(pe, opt, p, w);
+    }
+    mutable bool called;
+};
+
+
+void tst_QStyle::testProxyCalled()
+{
+    QToolButton b;
+    b.setArrowType(Qt::DownArrow);
+    QStyleOptionToolButton opt;
+    opt.init(&b);
+    opt.features |= QStyleOptionToolButton::Arrow;
+    QPixmap surface(QSize(200, 200));
+    QPainter painter(&surface);
+
+    QStringList keys = QStyleFactory::keys();
+    QVector<QStyle*> styles;
+    styles.reserve(keys.size() + 1);
+
+    styles << new QCommonStyle();
+
+    Q_FOREACH (const QString &key, keys) {
+        styles << QStyleFactory::create(key);
+    }
+
+    Q_FOREACH (QStyle *style, styles) {
+        ProxyTest testStyle;
+        testStyle.setBaseStyle(style);
+        style->drawControl(QStyle::CE_ToolButtonLabel, &opt, &painter, &b);
+        QVERIFY(testStyle.called);
+        delete style;
+    }
+}
 
 QTEST_MAIN(tst_QStyle)
 #include "tst_qstyle.moc"

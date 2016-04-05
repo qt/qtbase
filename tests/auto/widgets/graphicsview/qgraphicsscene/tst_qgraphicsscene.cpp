@@ -2675,7 +2675,7 @@ void tst_QGraphicsScene::render()
 
 void tst_QGraphicsScene::renderItemsWithNegativeWidthOrHeight()
 {
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#if defined(Q_OS_ANDROID)
     QSKIP("Test only works on platforms with resizable windows");
 #endif
 
@@ -2754,7 +2754,7 @@ protected:
 
 void tst_QGraphicsScene::contextMenuEvent_ItemIgnoresTransformations()
 {
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#if defined(Q_OS_ANDROID)
     QSKIP("Test fails on some Android devices (QTBUG-44430)");
 #endif
 
@@ -4027,7 +4027,7 @@ void tst_QGraphicsScene::polishItems2()
 
 void tst_QGraphicsScene::isActive()
 {
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#if defined(Q_OS_ANDROID)
     QSKIP("Fails on Android (QTBUG-44430)");
 #endif
 

@@ -325,7 +325,7 @@ const char *QMetaObject::className() const
     \sa className()
 */
 
-/*
+/*!
     Returns \c true if the class described by this QMetaObject inherits
     the type described by \a metaObject; otherwise returns false.
 
