@@ -199,7 +199,8 @@ public:
     }
 
     int signalIndex(const char *signalName, const QMetaObject **meta = 0) const;
-    inline bool isSignalConnected(uint signalIdx) const;
+    inline bool isSignalConnected(uint signalIdx, bool checkDeclarative = true) const;
+    inline bool isDeclarativeSignalConnected(uint signalIdx) const;
 
     // To allow abitrary objects to call connectNotify()/disconnectNotify() without making
     // the API public in QObject. This is used by QQmlNotifierEndpoint.
@@ -250,12 +251,17 @@ public:
 
   \a signal_index must be the index returned by QObjectPrivate::signalIndex;
 */
-inline bool QObjectPrivate::isSignalConnected(uint signal_index) const
+inline bool QObjectPrivate::isSignalConnected(uint signal_index, bool checkDeclarative) const
 {
     return signal_index >= sizeof(connectedSignals) * 8
         || (connectedSignals[signal_index >> 5] & (1 << (signal_index & 0x1f))
-        || (declarativeData && QAbstractDeclarativeData::isSignalConnected
-            && QAbstractDeclarativeData::isSignalConnected(declarativeData, q_func(), signal_index)));
+        || (checkDeclarative && isDeclarativeSignalConnected(signal_index)));
+}
+
+inline bool QObjectPrivate::isDeclarativeSignalConnected(uint signal_index) const
+{
+    return declarativeData && QAbstractDeclarativeData::isSignalConnected
+            && QAbstractDeclarativeData::isSignalConnected(declarativeData, q_func(), signal_index);
 }
 
 inline QObjectPrivate::Sender *QObjectPrivate::setCurrentSender(QObject *receiver,

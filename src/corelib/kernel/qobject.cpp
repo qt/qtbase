@@ -3609,18 +3609,21 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
 {
     int signal_index = signalOffset + local_signal_index;
 
-    if (!sender->d_func()->isSignalConnected(signal_index)
-        && !qt_signal_spy_callback_set.signal_begin_callback
-        && !qt_signal_spy_callback_set.signal_end_callback) {
-        return; // nothing connected to these signals, and no spy
-    }
-
     if (sender->d_func()->blockSig)
         return;
 
-    if (sender->d_func()->declarativeData && QAbstractDeclarativeData::signalEmitted)
+    if (sender->d_func()->isDeclarativeSignalConnected(signal_index)
+            && QAbstractDeclarativeData::signalEmitted) {
         QAbstractDeclarativeData::signalEmitted(sender->d_func()->declarativeData, sender,
                                                 signal_index, argv);
+    }
+
+    if (!sender->d_func()->isSignalConnected(signal_index, /*checkDeclarative =*/ false)
+        && !qt_signal_spy_callback_set.signal_begin_callback
+        && !qt_signal_spy_callback_set.signal_end_callback) {
+        // The possible declarative connection is done, and nothing else is connected, so:
+        return;
+    }
 
     void *empty_argv[] = { 0 };
     if (qt_signal_spy_callback_set.signal_begin_callback != 0) {
