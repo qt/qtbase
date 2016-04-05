@@ -3628,8 +3628,6 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
                                                          argv ? argv : empty_argv);
     }
 
-    Qt::HANDLE currentThreadId = QThread::currentThreadId();
-
     {
     QMutexLocker locker(signalSlotLock(sender));
     struct ConnectionListsRef {
@@ -3667,6 +3665,8 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
         list = &connectionLists->at(signal_index);
     else
         list = &connectionLists->allsignals;
+
+    Qt::HANDLE currentThreadId = QThread::currentThreadId();
 
     do {
         QObjectPrivate::Connection *c = list->first;
