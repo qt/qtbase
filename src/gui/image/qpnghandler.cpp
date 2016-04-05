@@ -49,6 +49,8 @@
 #include <qvariant.h>
 #include <qvector.h>
 
+#include <private/qimage_p.h> // for qt_getImageText
+
 #include <png.h>
 #include <pngconf.h>
 
@@ -718,27 +720,10 @@ void QPNGImageWriter::setGamma(float g)
     gamma = g;
 }
 
-
 static void set_text(const QImage &image, png_structp png_ptr, png_infop info_ptr,
                      const QString &description)
 {
-    QMap<QString, QString> text;
-    foreach (const QString &key, image.textKeys()) {
-        if (!key.isEmpty())
-            text.insert(key, image.text(key));
-    }
-    foreach (const QString &pair, description.split(QLatin1String("\n\n"))) {
-        int index = pair.indexOf(QLatin1Char(':'));
-        if (index >= 0 && pair.indexOf(QLatin1Char(' ')) < index) {
-            QString s = pair.simplified();
-            if (!s.isEmpty())
-                text.insert(QLatin1String("Description"), s);
-        } else {
-            QString key = pair.left(index);
-            if (!key.simplified().isEmpty())
-                text.insert(key, pair.mid(index + 2).simplified());
-        }
-    }
+    const QMap<QString, QString> text = qt_getImageText(image, description);
 
     if (text.isEmpty())
         return;

@@ -1,6 +1,6 @@
 TARGET  = qjpeg
 
-QT += core-private
+QT += core-private gui-private
 
 SOURCES += main.cpp qjpeghandler.cpp
 HEADERS += main.h qjpeghandler_p.h

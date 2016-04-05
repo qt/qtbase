@@ -147,6 +147,9 @@
 #include <private/qfactoryloader_p.h>
 #include <QMutexLocker>
 
+// for qt_getImageText
+#include <private/qimage_p.h>
+
 // image handlers
 #include <private/qbmphandler_p.h>
 #include <private/qppmhandler_p.h>
@@ -592,18 +595,8 @@ bool QImageReaderPrivate::initHandler()
 */
 void QImageReaderPrivate::getText()
 {
-    if (!text.isEmpty() || (!handler && !initHandler()) || !handler->supportsOption(QImageIOHandler::Description))
-        return;
-    foreach (const QString &pair, handler->option(QImageIOHandler::Description).toString().split(
-                QLatin1String("\n\n"))) {
-        int index = pair.indexOf(QLatin1Char(':'));
-        if (index >= 0 && pair.indexOf(QLatin1Char(' ')) < index) {
-            text.insert(QLatin1String("Description"), pair.simplified());
-        } else {
-            QString key = pair.left(index);
-            text.insert(key, pair.mid(index + 2).simplified());
-        }
-    }
+    if (text.isEmpty() && (handler || initHandler()) && handler->supportsOption(QImageIOHandler::Description))
+        text = qt_getImageTextFromDescription(handler->option(QImageIOHandler::Description).toString());
 }
 
 /*!

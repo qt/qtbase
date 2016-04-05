@@ -45,6 +45,7 @@
 #include <qbuffer.h>
 #include <qmath.h>
 #include <private/qsimd_p.h>
+#include <private/qimage_p.h>   // for qt_getImageText
 
 #include <stdio.h>      // jpeglib needs this to be pre-included
 #include <setjmp.h>
@@ -491,30 +492,10 @@ inline my_jpeg_destination_mgr::my_jpeg_destination_mgr(QIODevice *device)
     free_in_buffer = max_buf;
 }
 
-
 static inline void set_text(const QImage &image, j_compress_ptr cinfo, const QString &description)
 {
-    QMap<QString, QString> text;
-    foreach (const QString &key, image.textKeys()) {
-        if (!key.isEmpty())
-            text.insert(key, image.text(key));
-    }
-    foreach (const QString &pair, description.split(QLatin1String("\n\n"))) {
-        int index = pair.indexOf(QLatin1Char(':'));
-        if (index >= 0 && pair.indexOf(QLatin1Char(' ')) < index) {
-            QString s = pair.simplified();
-            if (!s.isEmpty())
-                text.insert(QLatin1String("Description"), s);
-        } else {
-            QString key = pair.left(index);
-            if (!key.simplified().isEmpty())
-                text.insert(key, pair.mid(index + 2).simplified());
-        }
-    }
-    if (text.isEmpty())
-        return;
-
-    for (QMap<QString, QString>::ConstIterator it = text.constBegin(); it != text.constEnd(); ++it) {
+    const QMap<QString, QString> text = qt_getImageText(image, description);
+    for (auto it = text.begin(), end = text.end(); it != end; ++it) {
         QByteArray comment = it.key().toLatin1();
         if (!comment.isEmpty())
             comment += ": ";

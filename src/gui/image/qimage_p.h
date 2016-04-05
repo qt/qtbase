@@ -212,6 +212,9 @@ inline QImage::Format qt_alphaVersionForPainting(QImage::Format format)
     return toFormat;
 }
 
+Q_GUI_EXPORT QMap<QString, QString> qt_getImageText(const QImage &image, const QString &description);
+Q_GUI_EXPORT QMap<QString, QString> qt_getImageTextFromDescription(const QString &description);
+
 QT_END_NAMESPACE
 
 #endif // QIMAGE_P_H

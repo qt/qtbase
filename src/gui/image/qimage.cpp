@@ -5216,4 +5216,33 @@ Q_GUI_EXPORT void qt_imageTransform(QImage &src, QImageIOHandler::Transformation
     }
 }
 
+QMap<QString, QString> qt_getImageText(const QImage &image, const QString &description)
+{
+    QMap<QString, QString> text = qt_getImageTextFromDescription(description);
+    const auto textKeys = image.textKeys();
+    for (const QString &key : textKeys) {
+        if (!key.isEmpty() && !text.contains(key))
+            text.insert(key, image.text(key));
+    }
+    return text;
+}
+
+QMap<QString, QString> qt_getImageTextFromDescription(const QString &description)
+{
+    QMap<QString, QString> text;
+    const auto pairs = description.splitRef(QLatin1String("\n\n"));
+    for (const QStringRef &pair : pairs) {
+        int index = pair.indexOf(QLatin1Char(':'));
+        if (index >= 0 && pair.indexOf(QLatin1Char(' ')) < index) {
+            if (!pair.trimmed().isEmpty())
+                text.insert(QLatin1String("Description"), pair.toString().simplified());
+        } else {
+            const QStringRef key = pair.left(index);
+            if (!key.trimmed().isEmpty())
+                text.insert(key.toString(), pair.mid(index + 2).toString().simplified());
+        }
+    }
+    return text;
+}
+
 QT_END_NAMESPACE
