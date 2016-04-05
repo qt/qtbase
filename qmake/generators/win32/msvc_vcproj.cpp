@@ -1318,8 +1318,8 @@ void VcprojGenerator::initDeploymentTool()
                         + "|0;";
                 if (!qpaPluginDeployed) {
                     QChar debugInfixChar;
-                    bool foundGuid = false;
-                    if (foundGuid = dllName.contains(QLatin1String("Guid")))
+                    bool foundGuid = dllName.contains(QLatin1String("Guid"));
+                    if (foundGuid)
                         debugInfixChar = QLatin1Char('d');
 
                     if (foundGuid || dllName.contains(QLatin1String("Gui"))) {
