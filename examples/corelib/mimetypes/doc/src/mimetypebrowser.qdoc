@@ -1,0 +1,54 @@
+/****************************************************************************
+**
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example mimetypes/mimetypebrowser
+    \ingroup examples-mimetype
+    \title MIME Type Browser Example
+
+    \brief Shows the hierarchy of MIME types and
+    can be used to determine the MIME type of a file.
+
+    \image mimetypebrowser.png Screenshot of the MIME Type Browser Example
+
+    \e {MIME Type Browser} is intended to be a tool for exploring MIME types
+    rather than an example showing the typical usage of Qt's MIME API.
+
+    \include examples-run.qdocinc
+
+    \section1 Main Window
+
+    The main window consists of a tree view displaying the hierarchy of MIME types
+    based on the model MimetypeModel inheriting QStandardItemModel on the left and
+    a QTextBrowser for showing detailed information about the selected MIME type
+    on the right.
+
+    It has a main menu with an option \uicontrol{File/Detect File Type}, which
+    lets you pick a file and then displays its MIME type.
+
+    For more information, see QMimeType and QMimeDatabase.
+*/
