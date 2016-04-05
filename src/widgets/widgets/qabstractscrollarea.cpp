@@ -1315,7 +1315,7 @@ void QAbstractScrollArea::mouseMoveEvent(QMouseEvent *e)
 void QAbstractScrollArea::wheelEvent(QWheelEvent *e)
 {
     Q_D(QAbstractScrollArea);
-    if (static_cast<QWheelEvent*>(e)->orientation() == Qt::Horizontal)
+    if (e->orientation() == Qt::Horizontal)
         QApplication::sendEvent(d->hbar, e);
     else
         QApplication::sendEvent(d->vbar, e);
