@@ -1198,7 +1198,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
             QRect textRect(xpos, y + QWindowsStylePrivate::windowsItemVMargin,
                            w - xm - QWindowsStylePrivate::windowsRightBorder - tab + 1, h - 2 * QWindowsStylePrivate::windowsItemVMargin);
             QRect vTextRect = visualRect(opt->direction, menuitem->rect, textRect);
-            QString s = menuitem->text;
+            QStringRef s(&menuitem->text);
             if (!s.isEmpty()) {                     // draw text
                 p->save();
                 int t = s.indexOf(QLatin1Char('\t'));
@@ -1209,24 +1209,26 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 if (t >= 0) {
                     QRect vShortcutRect = visualRect(opt->direction, menuitem->rect,
                         QRect(textRect.topRight(), QPoint(menuitem->rect.right(), textRect.bottom())));
+                    const QString textToDraw = s.mid(t + 1).toString();
                     if (dis && !act && proxy()->styleHint(SH_EtchDisabledText, opt, widget)) {
                         p->setPen(menuitem->palette.light().color());
-                        p->drawText(vShortcutRect.adjusted(1,1,1,1), text_flags, s.mid(t + 1));
+                        p->drawText(vShortcutRect.adjusted(1, 1, 1, 1), text_flags, textToDraw);
                         p->setPen(discol);
                     }
-                    p->drawText(vShortcutRect, text_flags, s.mid(t + 1));
+                    p->drawText(vShortcutRect, text_flags, textToDraw);
                     s = s.left(t);
                 }
                 QFont font = menuitem->font;
                 if (menuitem->menuItemType == QStyleOptionMenuItem::DefaultItem)
                     font.setBold(true);
                 p->setFont(font);
+                const QString textToDraw = s.left(t).toString();
                 if (dis && !act && proxy()->styleHint(SH_EtchDisabledText, opt, widget)) {
                     p->setPen(menuitem->palette.light().color());
-                    p->drawText(vTextRect.adjusted(1,1,1,1), text_flags, s.left(t));
+                    p->drawText(vTextRect.adjusted(1, 1, 1, 1), text_flags, textToDraw);
                     p->setPen(discol);
                 }
-                p->drawText(vTextRect, text_flags, s.left(t));
+                p->drawText(vTextRect, text_flags, textToDraw);
                 p->restore();
             }
             if (menuitem->menuItemType == QStyleOptionMenuItem::SubMenu) {// draw sub menu arrow

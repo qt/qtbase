@@ -554,7 +554,7 @@ void QCalendarDateValidator::setFormat(const QString &format)
     bool quoting = false;
     QString separator;
     while (pos < format.size()) {
-        QString mid = format.mid(pos);
+        const QStringRef mid = format.midRef(pos);
         int offset = 1;
 
         if (mid.startsWith(quote)) {
