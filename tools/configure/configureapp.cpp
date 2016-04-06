@@ -248,9 +248,9 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     dictionary[ "ANGLE" ]           = "auto";
     dictionary[ "DYNAMICGL" ]       = "auto";
 
-    dictionary[ "GIF" ]             = "auto";
-    dictionary[ "JPEG" ]            = "auto";
-    dictionary[ "PNG" ]             = "auto";
+    dictionary[ "GIF" ]             = "yes";
+    dictionary[ "JPEG" ]            = "yes";
+    dictionary[ "PNG" ]             = "yes";
     dictionary[ "LIBJPEG" ]         = "auto";
     dictionary[ "LIBPNG" ]          = "auto";
     dictionary[ "DOUBLECONVERSION" ] = "auto";
@@ -361,7 +361,6 @@ void Configure::parseCmdLine()
 
     int argCount = configCmdLine.size();
     int i = 0;
-    const QStringList imageFormats = QStringList() << "gif" << "png" << "jpeg";
 
     if (argCount < 1) // skip rest if no arguments
         ;
@@ -744,17 +743,6 @@ void Configure::parseCmdLine()
             dictionary[ "SQL_IBASE" ] = "plugin";
         else if (configCmdLine.at(i) == "-no-sql-ibase")
             dictionary[ "SQL_IBASE" ] = "no";
-
-        // Image formats --------------------------------------------
-        else if (configCmdLine.at(i).startsWith("-qt-imageformat-") &&
-                 imageFormats.contains(configCmdLine.at(i).section('-', 3)))
-            dictionary[ configCmdLine.at(i).section('-', 3).toUpper() ] = "yes";
-        else if (configCmdLine.at(i).startsWith("-plugin-imageformat-") &&
-                 imageFormats.contains(configCmdLine.at(i).section('-', 3)))
-            dictionary[ configCmdLine.at(i).section('-', 3).toUpper() ] = "plugin";
-        else if (configCmdLine.at(i).startsWith("-no-imageformat-") &&
-                 imageFormats.contains(configCmdLine.at(i).section('-', 3)))
-            dictionary[ configCmdLine.at(i).section('-', 3).toUpper() ] = "no";
 
         else if (configCmdLine.at(i) == "-no-incredibuild-xge")
             dictionary[ "INCREDIBUILD_XGE" ] = "no";
@@ -1586,8 +1574,6 @@ void Configure::applySpecSpecifics()
     if (dictionary.value("XQMAKESPEC").startsWith("winphone") || dictionary.value("XQMAKESPEC").startsWith("winrt")) {
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
         dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
-        dictionary[ "GIF" ]                 = "qt";
-        dictionary[ "JPEG" ]                = "qt";
         dictionary[ "LIBJPEG" ]             = "qt";
         dictionary[ "LIBPNG" ]              = "qt";
         dictionary[ "FREETYPE" ]            = "yes";
@@ -2001,10 +1987,6 @@ QString Configure::defaultTo(const QString &option)
         || option == "LIBPNG")
         return "system";
 
-    // PNG is always built-in, never a plugin
-    if (option == "PNG")
-        return "yes";
-
     // These database drivers and image formats can be built-in or plugins.
     // Prefer plugins when Qt is shared.
     if (dictionary[ "SHARED" ] == "yes") {
@@ -2017,9 +1999,7 @@ QString Configure::defaultTo(const QString &option)
             || option == "SQL_DB2"
             || option == "SQL_SQLITE"
             || option == "SQL_SQLITE2"
-            || option == "SQL_IBASE"
-            || option == "JPEG"
-            || option == "GIF")
+            || option == "SQL_IBASE")
             return "plugin";
     }
 
@@ -2309,12 +2289,6 @@ void Configure::autoDetection()
         dictionary["DYNAMICGL"] = "no";
 
     // Image format detection
-    if (dictionary["GIF"] == "auto")
-        dictionary["GIF"] = defaultTo("GIF");
-    if (dictionary["JPEG"] == "auto")
-        dictionary["JPEG"] = defaultTo("JPEG");
-    if (dictionary["PNG"] == "auto")
-        dictionary["PNG"] = defaultTo("PNG");
     if (dictionary["LIBJPEG"] == "auto")
         dictionary["LIBJPEG"] = checkAvailability("LIBJPEG") ? defaultTo("LIBJPEG") : "qt";
     if (dictionary["LIBPNG"] == "auto")
@@ -2666,21 +2640,15 @@ void Configure::generateOutputVars()
     }
 
     // Image formates -----------------------------------------------
-    if (dictionary[ "GIF" ] == "no")
-        qtConfig += "no-gif";
-    else if (dictionary[ "GIF" ] == "yes")
+    if (dictionary[ "GIF" ] == "yes")
         qtConfig += "gif";
 
-    if (dictionary[ "JPEG" ] == "no")
-        qtConfig += "no-jpeg";
-    else if (dictionary[ "JPEG" ] == "yes")
+    if (dictionary[ "JPEG" ] == "yes")
         qtConfig += "jpeg";
     if (dictionary[ "LIBJPEG" ] == "system")
         qtConfig += "system-jpeg";
 
-    if (dictionary[ "PNG" ] == "no")
-        qtConfig += "no-png";
-    else if (dictionary[ "PNG" ] == "yes")
+    if (dictionary[ "PNG" ] == "yes")
         qtConfig += "png";
     if (dictionary[ "LIBPNG" ] == "system")
         qtConfig += "system-png";
@@ -3560,9 +3528,7 @@ void Configure::generateConfigfiles()
             qconfigList += "QT_NO_STYLE_WINDOWSXP";
         if (dictionary["STYLE_WINDOWSVISTA"] != "yes")   qconfigList += "QT_NO_STYLE_WINDOWSVISTA";
 
-        if (dictionary["GIF"] == "yes")              qconfigList += "QT_BUILTIN_GIF_READER=1";
         if (dictionary["PNG"] != "yes")              qconfigList += "QT_NO_IMAGEFORMAT_PNG";
-        if (dictionary["JPEG"] != "yes")             qconfigList += "QT_NO_IMAGEFORMAT_JPEG";
 
         if (dictionary["ACCESSIBILITY"] == "no")     qconfigList += "QT_NO_ACCESSIBILITY";
         if (dictionary["WIDGETS"] == "no")           qconfigList += "QT_NO_WIDGETS";
@@ -3745,8 +3711,8 @@ void Configure::displayConfig()
     sout << "Third Party Libraries:" << endl;
     sout << "    ZLIB support............" << (dictionary[ "SYSTEM_ZLIB" ] == QLatin1String("yes") ? QLatin1String("system") : QLatin1String("qt")) << endl;
     sout << "    GIF support............." << dictionary[ "GIF" ] << endl;
-    sout << "    JPEG support............" << dictionary[ "JPEG" ] << endl;
-    sout << "    PNG support............." << dictionary[ "PNG" ] << endl;
+    sout << "    JPEG support............" << dictionary[ "JPEG" ] << " (" << dictionary[ "LIBJPEG" ] << ")" << endl;
+    sout << "    PNG support............." << dictionary[ "PNG" ] << " (" << dictionary[ "LIBPNG" ] << ")" << endl;
     sout << "    DoubleConversion........" << dictionary[ "DOUBLECONVERSION" ] << endl;
     sout << "    FreeType support........" << dictionary[ "FREETYPE" ] << endl;
     sout << "    Fontconfig support......" << dictionary[ "FONT_CONFIG" ] << endl;

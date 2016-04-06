@@ -155,12 +155,6 @@
 #ifndef QT_NO_IMAGEFORMAT_PNG
 #include <private/qpnghandler_p.h>
 #endif
-#ifndef QT_NO_IMAGEFORMAT_JPEG
-#include <private/qjpeghandler_p.h>
-#endif
-#ifdef QT_BUILTIN_GIF_READER
-#include <private/qgifhandler_p.h>
-#endif
 
 #include <algorithm>
 
@@ -174,13 +168,6 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 enum _qt_BuiltInFormatType {
 #ifndef QT_NO_IMAGEFORMAT_PNG
     _qt_PngFormat,
-#endif
-#ifndef QT_NO_IMAGEFORMAT_JPEG
-    _qt_JpgFormat,
-    _qt_JpegFormat,
-#endif
-#ifdef QT_BUILTIN_GIF_READER
-    _qt_GifFormat,
 #endif
 #ifndef QT_NO_IMAGEFORMAT_BMP
     _qt_BmpFormat,
@@ -209,13 +196,6 @@ struct _qt_BuiltInFormatStruct
 static const _qt_BuiltInFormatStruct _qt_BuiltInFormats[] = {
 #ifndef QT_NO_IMAGEFORMAT_PNG
     {"png", "image/png"},
-#endif
-#ifndef QT_NO_IMAGEFORMAT_JPEG
-    {"jpg", "image/jpeg"},
-    {"jpeg", "image/jpeg"},
-#endif
-#ifdef QT_BUILTIN_GIF_READER
-    {"gif", "image/gif"},
 #endif
 #ifndef QT_NO_IMAGEFORMAT_BMP
     {"bmp", "image/bmp"},
@@ -357,14 +337,6 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
         } else if (testFormat == "png") {
             handler = new QPngHandler;
 #endif
-#ifndef QT_NO_IMAGEFORMAT_JPEG
-        } else if (testFormat == "jpg" || testFormat == "jpeg") {
-            handler = new QJpegHandler;
-#endif
-#ifdef QT_BUILTIN_GIF_READER
-        } else if (testFormat == "gif") {
-            handler = new QGifHandler;
-#endif
 #ifndef QT_NO_IMAGEFORMAT_BMP
         } else if (testFormat == "bmp") {
             handler = new QBmpHandler;
@@ -440,19 +412,6 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
             case _qt_PngFormat:
                 if (QPngHandler::canRead(device))
                     handler = new QPngHandler;
-                break;
-#endif
-#ifndef QT_NO_IMAGEFORMAT_JPEG
-            case _qt_JpgFormat:
-            case _qt_JpegFormat:
-                if (QJpegHandler::canRead(device))
-                    handler = new QJpegHandler;
-                break;
-#endif
-#ifdef QT_BUILTIN_GIF_READER
-            case _qt_GifFormat:
-                if (QGifHandler::canRead(device))
-                    handler = new QGifHandler;
                 break;
 #endif
 #ifndef QT_NO_IMAGEFORMAT_BMP

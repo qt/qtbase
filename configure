@@ -627,10 +627,10 @@ CFG_MTDEV=auto
 CFG_JOURNALD=no
 CFG_SYSLOG=no
 CFG_SQLITE=qt
-CFG_GIF=auto
+CFG_GIF=yes
 CFG_PNG=yes
 CFG_LIBPNG=auto
-CFG_JPEG=auto
+CFG_JPEG=yes
 CFG_LIBJPEG=auto
 CFG_XCURSOR=runtime
 CFG_XRANDR=runtime
@@ -859,16 +859,6 @@ if [ -d "$relpath/src/plugins/sqldrivers" ]; then
 	 eval "CFG_SQL_${base_a}=auto"
      fi
   done
-fi
-
-CFG_IMAGEFORMAT_PLUGIN_AVAILABLE=
-if [ -d "$relpath/src/plugins/imageformats" ]; then
-    for a in "$relpath/src/plugins/imageformats/"*; do
-        if [ -d "$a" ]; then
-            base_a=`basename "$a"`
-            CFG_IMAGEFORMAT_PLUGIN_AVAILABLE="${CFG_IMAGEFORMAT_PLUGIN_AVAILABLE} ${base_a}"
-        fi
-    done
 fi
 
 #-------------------------------------------------------------------------------
@@ -2082,7 +2072,7 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    sql-*|imageformat-*)
+    sql-*)
         # if Qt style options were used, $VAL can be "no", "qt", or "plugin"
         # if autoconf style options were used, $VAL can be "yes" or "no"
         [ "$VAL" = "yes" ] && VAL=qt
@@ -2095,27 +2085,9 @@ while [ "$#" -gt 0 ]; do
         VAL=`echo $VAR | sed 's,^[^-]*-\([^-]*\).*,\1,'`
         VAR=`echo $VAR | sed 's,^\([^-]*\).*,\1,'`
 
-        # Grab the available values
-        case "$VAR" in
-        sql)
-            avail="$CFG_SQL_AVAILABLE"
-            ;;
-        imageformat)
-            avail="$CFG_IMAGEFORMAT_PLUGIN_AVAILABLE"
-            if [ "$OPT" != "plugin" ]; then
-                # png is always built in
-                avail="$avail png"
-            fi
-            ;;
-        *)
-            avail=""
-            echo "BUG: Unhandled type $VAR used in $CURRENT_OPT"
-            ;;
-        esac
-
         # Check that that user's value is available.
         found=no
-        for d in $avail; do
+        for d in $CFG_SQL_AVAILABLE; do
             if [ "$VAL" = "$d" ]; then
                 found=yes
                 break
@@ -2127,19 +2099,8 @@ while [ "$#" -gt 0 ]; do
             continue
         fi
 
-        if [ "$VAR" = "sql" ]; then
-            # set the CFG_SQL_driver
-            eval "CFG_SQL_$VAL=\$OPT"
-            continue
-        elif [ "$VAR" = "imageformat" ]; then
-            [ "$OPT" = "qt" ] && OPT=yes
-            VAL="`echo $VAL |tr a-z A-Z`"
-            eval "CFG_$VAL=$OPT"
-            continue
-        else
-            echo "Internal error resolving command line arguments."
-            exit 1
-        fi
+        # set the CFG_SQL_driver
+        eval "CFG_SQL_$VAL=\$OPT"
         ;;
     v|verbose)
         if [ "$VAL" = "yes" ]; then
@@ -4724,29 +4685,12 @@ if [ "$CFG_GUI" = "no" ]; then
     QPA_PLATFORM_GUARD=no
 fi
 
-# detect how jpeg should be built
-if [ "$CFG_JPEG" = "auto" ]; then
-    if [ "$CFG_SHARED" = "yes" ]; then
-        CFG_JPEG=plugin
-    else
-        CFG_JPEG=yes
-    fi
-fi
 # detect jpeg
 if [ "$CFG_LIBJPEG" = "auto" ]; then
     if compileTest unix/libjpeg "libjpeg"; then
        CFG_LIBJPEG=system
     else
        CFG_LIBJPEG=qt
-    fi
-fi
-
-# detect how gif should be built
-if [ "$CFG_GIF" = "auto" ]; then
-    if [ "$CFG_SHARED" = "yes" ]; then
-        CFG_GIF=plugin
-    else
-        CFG_GIF=yes
     fi
 fi
 
@@ -6371,9 +6315,7 @@ if [ "$CFG_LIBJPEG" = "no" ]; then
 elif [ "$CFG_LIBJPEG" = "system" ]; then
     QT_CONFIG="$QT_CONFIG system-jpeg"
 fi
-if [ "$CFG_JPEG" = "no" ]; then
-    QT_CONFIG="$QT_CONFIG no-jpeg"
-elif [ "$CFG_JPEG" = "yes" ]; then
+if [ "$CFG_JPEG" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG jpeg"
 fi
 if [ "$CFG_LIBPNG" = "no" ]; then
@@ -6382,14 +6324,10 @@ fi
 if [ "$CFG_LIBPNG" = "system" ]; then
     QT_CONFIG="$QT_CONFIG system-png"
 fi
-if [ "$CFG_PNG" = "no" ]; then
-    QT_CONFIG="$QT_CONFIG no-png"
-elif [ "$CFG_PNG" = "yes" ]; then
+if [ "$CFG_PNG" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG png"
 fi
-if [ "$CFG_GIF" = "no" ]; then
-    QT_CONFIG="$QT_CONFIG no-gif"
-elif [ "$CFG_GIF" = "yes" ]; then
+if [ "$CFG_GIF" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG gif"
 fi
 if [ "$CFG_DOUBLECONVERSION" = "no" ]; then
@@ -6714,7 +6652,7 @@ QMakeVar set sql-drivers "$SQL_DRIVERS"
 QMakeVar set sql-plugins "$SQL_PLUGINS"
 
 # Add other configuration options to the qconfig.h file
-[ "$CFG_GIF" = "yes" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_BUILTIN_GIF_READER=1"
+[ "$CFG_GIF" != "yes" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IMAGEFORMAT_GIF"
 [ "$CFG_PNG" != "yes" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IMAGEFORMAT_PNG"
 [ "$CFG_JPEG" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IMAGEFORMAT_JPEG"
 [ "$CFG_DBUS" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_DBUS"

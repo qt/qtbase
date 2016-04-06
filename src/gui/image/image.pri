@@ -71,11 +71,11 @@ SOURCES += \
         image/qxbmhandler.cpp \
         image/qxpmhandler.cpp
 
-!contains(QT_CONFIG, no-png):include($$PWD/qpnghandler.pri)
-else:DEFINES *= QT_NO_IMAGEFORMAT_PNG
-
-contains(QT_CONFIG, jpeg):include($$PWD/qjpeghandler.pri)
-contains(QT_CONFIG, gif):include($$PWD/qgifhandler.pri)
+contains(QT_CONFIG, png) {
+    HEADERS += image/qpnghandler_p.h
+    SOURCES += image/qpnghandler.cpp
+    include($$PWD/../../3rdparty/png_dependency.pri)
+}
 
 # SIMD
 SSE2_SOURCES += image/qimage_sse2.cpp
