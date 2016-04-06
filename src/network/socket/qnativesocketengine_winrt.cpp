@@ -1246,7 +1246,7 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
     // that the connection was closed. The socket cannot be closed here, as the subsequent read
     // might fail then.
     if (status == Error || status == Canceled) {
-        setError(QAbstractSocket::NetworkError, RemoteHostClosedErrorString);
+        setError(QAbstractSocket::RemoteHostClosedError, RemoteHostClosedErrorString);
         socketState = QAbstractSocket::UnconnectedState;
         if (notifyOnRead)
             emit q->readReady();
@@ -1265,7 +1265,7 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
     // the closing of the socket won't be communicated to the caller. So only the error is set. The
     // actual socket close happens inside of read.
     if (!bufferLength) {
-        setError(QAbstractSocket::NetworkError, RemoteHostClosedErrorString);
+        setError(QAbstractSocket::RemoteHostClosedError, RemoteHostClosedErrorString);
         socketState = QAbstractSocket::UnconnectedState;
         if (notifyOnRead)
             emit q->readReady();
