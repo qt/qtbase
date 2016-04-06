@@ -8759,7 +8759,20 @@ QDataStream &operator>>(QDataStream &in, QString &str)
 
 /*!
     \typedef QStringRef::const_iterator
-    \internal
+    \since 5.4
+
+    This typedef provides an STL-style const iterator for QStringRef.
+
+    \sa QStringRef::const_reverse_iterator
+*/
+
+/*!
+    \typedef QStringRef::const_reverse_iterator
+    \since 5.7
+
+    This typedef provides an STL-style const reverse iterator for QStringRef.
+
+    \sa QStringRef::const_iterator
 */
 
 /*!
@@ -8883,39 +8896,85 @@ ownership of it, no memory is freed when instances are destroyed.
 */
 
 /*!
-    \fn const QChar *QStringRef::begin() const
-    \since 5.4
-
-    Same as unicode().
-*/
-
-/*!
-    \fn const QChar *QStringRef::cbegin() const
-    \since 5.4
-
-    Same as unicode().
-*/
-
-/*!
-    \fn const QChar *QStringRef::end() const
-    \since 5.4
-
-    Returns a pointer to one character past the last one in this string.
-    (It is the same as \c {unicode() + size()}.)
-*/
-
-/*!
-    \fn const QChar *QStringRef::cend() const
-    \since 5.4
-
-    Returns a pointer to one character past the last one in this string.
-    (It is the same as \c {unicode() + size()}.)
-*/
-
-/*!
     \fn const QChar *QStringRef::constData() const
 
     Same as unicode().
+*/
+
+/*!
+    \fn QStringRef::const_iterator QStringRef::begin() const
+    \since 5.4
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first character in
+    the string.
+
+    \sa cbegin(), end(), rbegin(), rend()
+*/
+
+/*!
+    \fn QStringRef::const_iterator QStringRef::cbegin() const
+    \since 5.4
+
+    Same as begin().
+
+    \sa begin(), cend(), rbegin(), rend()
+*/
+
+/*!
+    \fn QStringRef::const_iterator QStringRef::end() const
+    \since 5.4
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
+    character after the last character in the list.
+
+    \sa cbegin(), end(), rbegin(), rend()
+*/
+
+/*! \fn QStringRef::const_iterator QStringRef::cend() const
+    \since 5.4
+
+    Same as end().
+
+    \sa end(), cbegin(), rbegin(), rend()
+*/
+
+/*!
+    \fn QStringRef::const_reverse_iterator QStringRef::rbegin() const
+    \since 5.7
+
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
+    character in the string, in reverse order.
+
+    \sa begin(), crbegin(), rend()
+*/
+
+/*!
+    \fn QStringRef::const_reverse_iterator QStringRef::crbegin() const
+    \since 5.7
+
+    Same as rbegin().
+
+    \sa begin(), rbegin(), rend()
+*/
+
+/*!
+    \fn QStringRef::const_reverse_iterator QStringRef::rend() const
+    \since 5.7
+
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
+    the last character in the string, in reverse order.
+
+    \sa end(), crend(), rbegin()
+*/
+
+
+/*!
+    \fn QStringRef::const_reverse_iterator QStringRef::crend() const
+    \since 5.7
+
+    Same as rend().
+
+    \sa end(), rend(), rbegin()
 */
 
 /*!

@@ -1360,7 +1360,8 @@ class Q_CORE_EXPORT QStringRef {
 public:
     typedef QString::size_type size_type;
     typedef QString::value_type value_type;
-    typedef QString::const_iterator const_iterator;
+    typedef const QChar *const_iterator;
+    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
     typedef QString::const_pointer const_pointer;
     typedef QString::const_reference const_reference;
 
@@ -1439,10 +1440,15 @@ public:
     }
     inline const QChar *data() const { return unicode(); }
     inline const QChar *constData() const {  return unicode(); }
-    inline const QChar *begin() const { return unicode(); }
-    inline const QChar *cbegin() const { return unicode(); }
-    inline const QChar *end() const { return unicode() + size(); }
-    inline const QChar *cend() const { return unicode() + size(); }
+
+    inline const_iterator begin() const { return unicode(); }
+    inline const_iterator cbegin() const { return unicode(); }
+    inline const_iterator end() const { return unicode() + size(); }
+    inline const_iterator cend() const { return unicode() + size(); }
+    inline const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+    inline const_reverse_iterator crbegin() const { return rbegin(); }
+    inline const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
+    inline const_reverse_iterator crend() const { return rend(); }
 
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED QByteArray toAscii() const Q_REQUIRED_RESULT
