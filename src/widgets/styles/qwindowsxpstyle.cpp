@@ -774,7 +774,7 @@ bool QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
 
     const HDC dc = canDrawDirectly ? hdcForWidgetBackingStore(themeData.widget) : HDC(0);
     const bool result = dc
-        ? drawBackgroundDirectly(themeData, qRound(aditionalDevicePixelRatio))
+        ? drawBackgroundDirectly(dc, themeData, qRound(aditionalDevicePixelRatio))
         : drawBackgroundThruNativeBuffer(themeData, qRound(aditionalDevicePixelRatio));
     painter->restore();
     return result;
@@ -804,12 +804,9 @@ static QRegion scaleRegion(const QRegion &region, int factor)
     Do not use this if you need to perform other transformations on the
     resulting data.
 */
-bool QWindowsXPStylePrivate::drawBackgroundDirectly(XPThemeData &themeData, int additionalDevicePixelRatio)
+bool QWindowsXPStylePrivate::drawBackgroundDirectly(HDC dc, XPThemeData &themeData, int additionalDevicePixelRatio)
 {
     QPainter *painter = themeData.painter;
-    HDC dc = 0;
-    if (themeData.widget)
-        dc = hdcForWidgetBackingStore(themeData.widget);
 
     QPoint redirectionDelta(int(painter->deviceMatrix().dx()),
                             int(painter->deviceMatrix().dy()));
@@ -841,8 +838,9 @@ bool QWindowsXPStylePrivate::drawBackgroundDirectly(XPThemeData &themeData, int 
                           | (themeData.noContent ? DTBG_OMITCONTENT : 0)
                           | (themeData.mirrorHorizontally ? DTBG_MIRRORDC : 0);
 
+    HRESULT result = S_FALSE;
     if (pDrawThemeBackgroundEx != 0) {
-        pDrawThemeBackgroundEx(themeData.handle(), dc, themeData.partId, themeData.stateId, &(drawRECT), &drawOptions);
+        result = pDrawThemeBackgroundEx(themeData.handle(), dc, themeData.partId, themeData.stateId, &(drawRECT), &drawOptions);
     } else {
         // We are running on a system where the uxtheme.dll does not have
         // the DrawThemeBackgroundEx function, so we need to clip away
@@ -876,11 +874,11 @@ bool QWindowsXPStylePrivate::drawBackgroundDirectly(XPThemeData &themeData, int 
             }
         }
 
-        pDrawThemeBackground(themeData.handle(), dc, themeData.partId, themeData.stateId, &(drawRECT), &(drawOptions.rcClip));
+        result = pDrawThemeBackground(themeData.handle(), dc, themeData.partId, themeData.stateId, &(drawRECT), &(drawOptions.rcClip));
     }
     SelectClipRgn(dc, 0);
     DeleteObject(hrgn);
-    return true;
+    return SUCCEEDED(result);
 }
 
 /*! \internal

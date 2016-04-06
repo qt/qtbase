@@ -388,7 +388,7 @@ public:
     void setTransparency(QWidget *widget, XPThemeData &themeData);
     bool drawBackground(XPThemeData &themeData);
     bool drawBackgroundThruNativeBuffer(XPThemeData &themeData, int aditionalDevicePixelRatio);
-    bool drawBackgroundDirectly(XPThemeData &themeData, int aditionalDevicePixelRatio);
+    bool drawBackgroundDirectly(HDC dc, XPThemeData &themeData, int aditionalDevicePixelRatio);
 
     bool hasAlphaChannel(const QRect &rect);
     bool fixAlphaChannel(const QRect &rect);
