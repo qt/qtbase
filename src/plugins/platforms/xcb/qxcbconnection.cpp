@@ -653,17 +653,19 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
         }
     }
 
-    qCDebug(QT_XCB_GLINTEGRATION) << "Choosing xcb gl-integration based on following priority\n" << glIntegrationNames;
-    for (int i = 0; i < glIntegrationNames.size() && !m_glIntegration; i++) {
-        m_glIntegration = QXcbGlIntegrationFactory::create(glIntegrationNames.at(i));
-        if (m_glIntegration && !m_glIntegration->initialize(this)) {
-            qCDebug(QT_XCB_GLINTEGRATION) << "Failed to initialize xcb gl-integration" << glIntegrationNames.at(i);
-            delete m_glIntegration;
-            m_glIntegration = Q_NULLPTR;
+    if (!glIntegrationNames.isEmpty()) {
+        qCDebug(QT_XCB_GLINTEGRATION) << "Choosing xcb gl-integration based on following priority\n" << glIntegrationNames;
+        for (int i = 0; i < glIntegrationNames.size() && !m_glIntegration; i++) {
+            m_glIntegration = QXcbGlIntegrationFactory::create(glIntegrationNames.at(i));
+            if (m_glIntegration && !m_glIntegration->initialize(this)) {
+                qCDebug(QT_XCB_GLINTEGRATION) << "Failed to initialize xcb gl-integration" << glIntegrationNames.at(i);
+                delete m_glIntegration;
+                m_glIntegration = Q_NULLPTR;
+            }
         }
+        if (!m_glIntegration)
+            qCDebug(QT_XCB_GLINTEGRATION) << "Failed to create xcb gl-integration";
     }
-    if (!m_glIntegration)
-        qCDebug(QT_XCB_GLINTEGRATION) << "Failed to create xcb gl-integration";
 
     sync();
 }
