@@ -75,14 +75,25 @@ public:
     void emitSignals(EmitPolicy ep, const QVariant &old);
     QString textFromValue(const QVariant &f) const;
     QVariant valueFromText(const QString &f) const;
-    virtual void _q_editorCursorPositionChanged(int oldpos, int newpos);
-    virtual void interpret(EmitPolicy ep);
-    virtual void clearCache() const;
 
     QDateTime validateAndInterpret(QString &input, int &, QValidator::State &state,
                                    bool fixup = false) const;
     void clearSection(int index);
-    virtual QString displayText() const { return edit->text(); } // this is from QDateTimeParser
+
+    // Override QAbstractSpinBoxPrivate:
+    void _q_editorCursorPositionChanged(int oldpos, int newpos) Q_DECL_OVERRIDE;
+    void interpret(EmitPolicy ep) Q_DECL_OVERRIDE;
+    void clearCache() const Q_DECL_OVERRIDE;
+    QStyle::SubControl newHoverControl(const QPoint &pos) Q_DECL_OVERRIDE;
+    void updateEditFieldGeometry() Q_DECL_OVERRIDE;
+    QVariant getZeroVariant() const Q_DECL_OVERRIDE;
+    void setRange(const QVariant &min, const QVariant &max) Q_DECL_OVERRIDE;
+
+    // Override QDateTimePraser:
+    QString displayText() const Q_DECL_OVERRIDE { return edit->text(); }
+    QDateTime getMinimum() const Q_DECL_OVERRIDE { return minimum.toDateTime(); }
+    QDateTime getMaximum() const Q_DECL_OVERRIDE { return maximum.toDateTime(); }
+    QLocale locale() const Q_DECL_OVERRIDE { return q_func()->locale(); }
 
     int absoluteIndex(QDateTimeEdit::Section s, int index) const;
     int absoluteIndex(const SectionNode &s) const;
@@ -96,17 +107,9 @@ public:
     void updateCache(const QVariant &val, const QString &str) const;
 
     void updateTimeSpec();
-    virtual QDateTime getMinimum() const { return minimum.toDateTime(); }
-    virtual QDateTime getMaximum() const { return maximum.toDateTime(); }
-    virtual QLocale locale() const { return q_func()->locale(); }
     QString valueToText(const QVariant &var) const { return textFromValue(var); }
     QString getAmPmText(AmPm ap, Case cs) const;
     int cursorPosition() const { return edit ? edit->cursorPosition() : -1; }
-
-    virtual QStyle::SubControl newHoverControl(const QPoint &pos);
-    virtual void updateEditFieldGeometry();
-    virtual QVariant getZeroVariant() const;
-    virtual void setRange(const QVariant &min, const QVariant &max);
 
     void _q_resetButton();
     void updateArrow(QStyle::StateFlag state);
