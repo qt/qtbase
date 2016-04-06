@@ -123,7 +123,7 @@ QWidgetWindow::QWidgetWindow(QWidget *widget)
         && !QApplication::testAttribute(Qt::AA_ForceRasterWidgets)) {
         setSurfaceType(QSurface::RasterGLSurface);
     }
-    connect(m_widget, &QObject::objectNameChanged, this, &QWidgetWindow::updateObjectName);
+    connect(widget, &QObject::objectNameChanged, this, &QWidgetWindow::updateObjectName);
     connect(this, SIGNAL(screenChanged(QScreen*)), this, SLOT(handleScreenChange()));
 }
 
@@ -174,6 +174,9 @@ static inline bool shouldBePropagatedToWidget(QEvent *event)
 
 bool QWidgetWindow::event(QEvent *event)
 {
+    if (!m_widget)
+        return QWindow::event(event);
+
     if (m_widget->testAttribute(Qt::WA_DontShowOnScreen)) {
         // \a event is uninteresting for QWidgetWindow, the event was probably
         // generated before WA_DontShowOnScreen was set
@@ -375,7 +378,7 @@ void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
     } else {
         const QEnterEvent *ee = static_cast<QEnterEvent *>(event);
         QWidget *child = m_widget->childAt(ee->pos());
-        QWidget *receiver = child ? child : m_widget;
+        QWidget *receiver = child ? child : m_widget.data();
         QApplicationPrivate::dispatchEnterLeave(receiver, 0, ee->screenPos());
         qt_last_mouse_receiver = receiver;
     }
