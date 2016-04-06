@@ -106,11 +106,13 @@ QT_BEGIN_NAMESPACE
     \macro QT_NO_PROCESS_COMBINED_ARGUMENT_START
     \relates QProcess
 
-    Disables the QProcess::start() overload taking a single string.
+    Disables the
+    \l {QProcess::start(const QString &, OpenMode)}{QProcess::start()}
+    overload taking a single string.
     In most cases where it is used, the user intends for the first argument
     to be treated atomically as per the other overload.
 
-    \sa QProcess::start()
+    \sa QProcess::start(const QString &command, OpenMode mode)
 */
 
 /*!
@@ -2538,7 +2540,7 @@ bool QProcess::startDetached(const QString &program,
     After the \a command string has been split and unquoted, this function
     behaves like the overload which takes the arguments as a string list.
 
-    \sa start()
+    \sa start(const QString &command, OpenMode mode)
 */
 bool QProcess::startDetached(const QString &command)
 {
