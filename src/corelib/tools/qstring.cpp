@@ -9397,6 +9397,24 @@ QStringRef QStringRef::appendTo(QString *string) const
 */
 
 /*!
+    \overload
+    \fn int QStringRef::compare(const QByteArray &other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \since 5.8
+
+    Compares this string with \a other and returns an
+    integer less than, equal to, or greater than zero if this string
+    is less than, equal to, or greater than the \a other byte array,
+    interpreted as a UTF-8 sequence.
+
+    If \a cs is Qt::CaseSensitive, the comparison is case sensitive;
+    otherwise the comparison is case insensitive.
+
+    Equivalent to \c {compare(*this, other, cs)}.
+
+    \sa QString::compare()
+*/
+
+/*!
     \fn int QStringRef::localeAwareCompare(const QStringRef &s1, const QString & s2)
     \since 4.5
 

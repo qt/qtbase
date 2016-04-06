@@ -58,9 +58,6 @@ QString toQString(const QStringRef &ref) { return ref.toString(); }
     MAKE_RELOP(>=, A1, A2) \
     /*end*/
 
-MAKE_ALL(QStringRef, QByteArray)
-MAKE_ALL(QByteArray, QStringRef)
-
 MAKE_ALL(QByteArray, QChar)
 MAKE_ALL(QByteArray, QLatin1String)
 
