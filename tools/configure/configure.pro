@@ -3,7 +3,7 @@ DESTDIR   = $$PWD/../..  # build directly in source dir
 
 CONFIG   += console flat stl rtti_off
 CONFIG   -= moc qt
-DEFINES  = UNICODE QT_NO_CODECS QT_NO_TEXTCODEC QT_NO_UNICODETABLES QT_LITE_COMPONENT QT_NO_COMPRESS QT_NO_THREAD QT_NO_QOBJECT QT_NO_GEOM_VARIANT _CRT_SECURE_NO_DEPRECATE
+DEFINES  = UNICODE QT_NO_CODECS QT_NO_TEXTCODEC QT_NO_UNICODETABLES QT_LITE_COMPONENT QT_NO_COMPRESS QT_NO_THREAD QT_NO_QOBJECT QT_NO_GEOM_VARIANT _CRT_SECURE_NO_DEPRECATE QT_USE_QSTRINGBUILDER
 DEFINES  += QT_BOOTSTRAPPED QT_BUILD_CONFIGURE
 
 win32 : LIBS += -lole32 -ladvapi32
@@ -70,6 +70,7 @@ HEADERS  = configureapp.h environment.h tools.h\
            $$QT_SOURCE_TREE/src/corelib/tools/qregexp.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qringbuffer_p.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qstring.h \
+           $$QT_SOURCE_TREE/src/corelib/tools/qstringbuilder.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qstringlist.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qstringmatcher.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qunicodetables_p.h \
@@ -122,6 +123,7 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qregexp.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qringbuffer.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qstring.cpp \
+           $$QT_SOURCE_TREE/src/corelib/tools/qstringbuilder.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qstring_compat.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qstringlist.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qvsnprintf.cpp \
