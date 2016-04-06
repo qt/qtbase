@@ -95,7 +95,7 @@ void QWindowsDirect2DBackingStore::beginPaint(const QRegion &region)
 
     painter.setCompositionMode(QPainter::CompositionMode_Source);
 
-    for (const QRect &r, region)
+    for (const QRect &r : region)
         painter.fillRect(r, clear);
 }
 
