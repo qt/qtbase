@@ -138,8 +138,10 @@ void *QWindowsNativeInterface::nativeResourceForIntegration(const QByteArray &re
 #ifdef QT_NO_OPENGL
     Q_UNUSED(resource)
 #else
-    if (resourceType(resource) == GlHandleType)
-        return QWindowsIntegration::staticOpenGLContext()->moduleHandle();
+    if (resourceType(resource) == GlHandleType) {
+        if (const QWindowsStaticOpenGLContext *sc = QWindowsIntegration::staticOpenGLContext())
+            return sc->moduleHandle();
+    }
 #endif
 
     return 0;
