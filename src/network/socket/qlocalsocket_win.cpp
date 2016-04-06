@@ -214,8 +214,7 @@ qint64 QLocalSocket::writeData(const char *data, qint64 len)
     Q_D(QLocalSocket);
     if (len == 0)
         return 0;
-    char *dest = d->writeBuffer.reserve(len);
-    memcpy(dest, data, len);
+    d->writeBuffer.append(data, len);
     if (!d->pipeWriter) {
         d->pipeWriter = new QWindowsPipeWriter(d->handle, this);
         connect(d->pipeWriter, &QWindowsPipeWriter::bytesWritten,
