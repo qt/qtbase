@@ -44,37 +44,37 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_DECL_CONSTEXPR inline D2D1_RECT_U to_d2d_rect_u(const QRect &qrect)
+inline D2D1_RECT_U to_d2d_rect_u(const QRect &qrect)
 {
     return D2D1::RectU(qrect.x(), qrect.y(), qrect.x() + qrect.width(), qrect.y() + qrect.height());
 }
 
-Q_DECL_CONSTEXPR inline D2D1_RECT_F to_d2d_rect_f(const QRectF &qrect)
+inline D2D1_RECT_F to_d2d_rect_f(const QRectF &qrect)
 {
     return D2D1::RectF(qrect.x(), qrect.y(), qrect.x() + qrect.width(), qrect.y() + qrect.height());
 }
 
-Q_DECL_CONSTEXPR inline D2D1_SIZE_U to_d2d_size_u(const QSizeF &qsize)
+inline D2D1_SIZE_U to_d2d_size_u(const QSizeF &qsize)
 {
     return D2D1::SizeU(qsize.width(), qsize.height());
 }
 
-Q_DECL_CONSTEXPR inline D2D1_SIZE_U to_d2d_size_u(const QSize &qsize)
+inline D2D1_SIZE_U to_d2d_size_u(const QSize &qsize)
 {
     return D2D1::SizeU(qsize.width(), qsize.height());
 }
 
-Q_DECL_CONSTEXPR inline D2D1_POINT_2F to_d2d_point_2f(const QPointF &qpoint)
+inline D2D1_POINT_2F to_d2d_point_2f(const QPointF &qpoint)
 {
     return D2D1::Point2F(qpoint.x(), qpoint.y());
 }
 
-Q_DECL_CONSTEXPR inline D2D1::ColorF to_d2d_color_f(const QColor &c)
+inline D2D1::ColorF to_d2d_color_f(const QColor &c)
 {
     return D2D1::ColorF(c.redF(), c.greenF(), c.blueF(), c.alphaF());
 }
 
-Q_DECL_CONSTEXPR inline D2D1_MATRIX_3X2_F to_d2d_matrix_3x2_f(const QTransform &transform)
+inline D2D1_MATRIX_3X2_F to_d2d_matrix_3x2_f(const QTransform &transform)
 {
     return D2D1::Matrix3x2F(transform.m11(), transform.m12(),
                             transform.m21(), transform.m22(),
