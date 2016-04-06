@@ -113,18 +113,21 @@ void tst_QFontComboBox::qfontcombobox()
 void tst_QFontComboBox::currentFont_data()
 {
     QTest::addColumn<QFont>("currentFont");
+    QFontDatabase db;
     // Normalize the names
     QFont defaultFont;
     QFontInfo fi(defaultFont);
     defaultFont = QFont(fi.family()); // make sure we have a real font name and not something like 'Sans Serif'.
-    QTest::newRow("default") << defaultFont;
+    if (!db.isPrivateFamily(defaultFont.family()))
+        QTest::newRow("default") << defaultFont;
     defaultFont.setPointSize(defaultFont.pointSize() + 10);
-    QTest::newRow("default2") << defaultFont;
-    QFontDatabase db;
+    if (!db.isPrivateFamily(defaultFont.family()))
+        QTest::newRow("default2") << defaultFont;
     QStringList list = db.families();
     for (int i = 0; i < list.count(); ++i) {
         QFont f = QFont(QFontInfo(QFont(list.at(i))).family());
-        QTest::newRow(qPrintable(list.at(i))) << f;
+        if (!db.isPrivateFamily(f.family()))
+            QTest::newRow(qPrintable(list.at(i))) << f;
     }
 }
 
@@ -201,6 +204,8 @@ void tst_QFontComboBox::fontFilters()
         fontFilters &= ~spacingMask;
 
     for (int i = 0; i < list.count(); ++i) {
+        if (db.isPrivateFamily(list[i]))
+            continue;
         if (fontFilters & QFontComboBox::ScalableFonts) {
             if (!db.isSmoothlyScalable(list[i]))
                 continue;
@@ -265,7 +270,12 @@ void tst_QFontComboBox::writingSystem()
 
     QFontDatabase db;
     QStringList list = db.families(writingSystem);
-    QCOMPARE(box.model()->rowCount(), list.count());
+    int c = list.count();
+    for (int i = 0; i < list.count(); ++i) {
+        if (db.isPrivateFamily(list[i]))
+            c--;
+    }
+    QCOMPARE(box.model()->rowCount(), c);
 
     if (list.count() == 0)
         QCOMPARE(box.currentFont(), QFont());
