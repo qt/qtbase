@@ -164,6 +164,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         }
 
         m_isMenuView = false;
+        self.focusRingType = NSFocusRingTypeNone;
     }
     return self;
 }
