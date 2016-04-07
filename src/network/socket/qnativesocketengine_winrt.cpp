@@ -499,7 +499,6 @@ void QNativeSocketEngine::close()
         if (socket) {
             hr = socket->Close();
             Q_ASSERT_SUCCEEDED(hr);
-            d->socketDescriptor = -1;
         }
         d->socketDescriptor = -1;
     }
