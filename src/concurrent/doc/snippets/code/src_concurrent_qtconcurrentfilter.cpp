@@ -103,9 +103,9 @@ QSet<QString> dictionary = QtConcurrent::blockingFilteredReduced(strings, allLow
 //! [7]
 // keep only images with an alpha channel
 QList<QImage> images = ...;
-QFuture<void> alphaImages = QtConcurrent::filter(strings, &QImage::hasAlphaChannel);
+QFuture<void> alphaImages = QtConcurrent::filter(images, &QImage::hasAlphaChannel);
 
-// keep only gray scale images
+// retrieve gray scale images
 QList<QImage> images = ...;
 QFuture<QImage> grayscaleImages = QtConcurrent::filtered(images, &QImage::isGrayscale);
 
