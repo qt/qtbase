@@ -114,6 +114,7 @@ static void stackTrace()
     char cmd[512];
     qsnprintf(cmd, 512, "gdb --pid %d 2>/dev/null <<EOF\n"
                          "set prompt\n"
+                         "set height 0\n"
                          "thread apply all where full\n"
                          "detach\n"
                          "quit\n"
