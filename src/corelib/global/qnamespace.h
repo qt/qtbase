@@ -1343,7 +1343,7 @@ public:
 
         ImPlatformData = 0x80000000,
         ImQueryInput = ImCursorRectangle | ImCursorPosition | ImSurroundingText |
-                       ImCurrentSelection | ImAnchorPosition,
+                       ImCurrentSelection | ImAnchorRectangle | ImAnchorPosition,
         ImQueryAll = 0xffffffff
     };
     Q_DECLARE_FLAGS(InputMethodQueries, InputMethodQuery)
