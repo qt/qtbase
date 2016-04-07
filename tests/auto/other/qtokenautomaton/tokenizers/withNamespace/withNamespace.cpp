@@ -36,7 +36,7 @@ using namespace TheNamespace;
 WithNamespace::Token WithNamespace::classifier3(const QChar *data)
 
         {
-            if (data[0] == 100)
+            if (data[0].unicode() == 100)
 
 
                     {
@@ -52,7 +52,7 @@ WithNamespace::Token WithNamespace::classifier3(const QChar *data)
             
                     }
 
-                else if (data[0] == 97)
+                else if (data[0].unicode() == 97)
 
 
                     {
@@ -68,7 +68,7 @@ WithNamespace::Token WithNamespace::classifier3(const QChar *data)
             
                     }
 
-                else if (data[0] == 103)
+                else if (data[0].unicode() == 103)
 
 
                     {
@@ -91,19 +91,19 @@ WithNamespace::Token WithNamespace::classifier3(const QChar *data)
     WithNamespace::Token WithNamespace::classifier4(const QChar *data)
 
         {
-            if (data[0] == 70)
+            if (data[0].unicode() == 70)
 
 
                     {
-                    if (data[1] == 70)
+                    if (data[1].unicode() == 70)
 
 
                     {
-                    if (data[2] == 70)
+                    if (data[2].unicode() == 70)
 
 
                     {
-                    if (data[3] == 70)
+                    if (data[3].unicode() == 70)
 
 
                     {
@@ -113,7 +113,7 @@ WithNamespace::Token WithNamespace::classifier3(const QChar *data)
             
                     }
 
-                else if (data[3] == 71)
+                else if (data[3].unicode() == 71)
 
 
                     {
@@ -126,11 +126,11 @@ WithNamespace::Token WithNamespace::classifier3(const QChar *data)
                 
                     }
 
-                else if (data[2] == 71)
+                else if (data[2].unicode() == 71)
 
 
                     {
-                    if (data[3] == 70)
+                    if (data[3].unicode() == 70)
 
 
                     {
@@ -140,7 +140,7 @@ WithNamespace::Token WithNamespace::classifier3(const QChar *data)
             
                     }
 
-                else if (data[3] == 71)
+                else if (data[3].unicode() == 71)
 
 
                     {
@@ -153,12 +153,12 @@ WithNamespace::Token WithNamespace::classifier3(const QChar *data)
                 
                     }
 
-                else if (data[2] == 76)
+                else if (data[2].unicode() == 76)
 
 
                     {
                     
-                            if(data[3] == 77)
+                            if (data[3].unicode() == 77)
                         
 
                 return FFLM;
@@ -178,7 +178,7 @@ WithNamespace::Token WithNamespace::classifier3(const QChar *data)
     WithNamespace::Token WithNamespace::classifier14(const QChar *data)
 
         {
-            if (data[0] == 119)
+            if (data[0].unicode() == 119)
 
 
                     {
@@ -194,7 +194,7 @@ WithNamespace::Token WithNamespace::classifier3(const QChar *data)
             
                     }
 
-                else if (data[0] == 99)
+                else if (data[0].unicode() == 99)
 
 
                     {
