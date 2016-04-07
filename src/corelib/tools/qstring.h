@@ -1546,9 +1546,9 @@ inline QT_ASCII_CAST_WARN bool QStringRef::operator!=(const char *s) const
 inline QT_ASCII_CAST_WARN bool QStringRef::operator<(const char *s) const
 { return QString::compare_helper(constData(), size(), s, -1) < 0; }
 inline QT_ASCII_CAST_WARN bool QStringRef::operator<=(const char *s) const
-{ return QString::compare_helper(constData(), size(), s, -1) > 0; }
-inline QT_ASCII_CAST_WARN bool QStringRef::operator>(const char *s) const
 { return QString::compare_helper(constData(), size(), s, -1) <= 0; }
+inline QT_ASCII_CAST_WARN bool QStringRef::operator>(const char *s) const
+{ return QString::compare_helper(constData(), size(), s, -1) > 0; }
 inline QT_ASCII_CAST_WARN bool QStringRef::operator>=(const char *s) const
 { return QString::compare_helper(constData(), size(), s, -1) >= 0; }
 
@@ -1557,13 +1557,13 @@ inline QT_ASCII_CAST_WARN bool operator==(const char *s1, const QStringRef &s2)
 inline QT_ASCII_CAST_WARN bool operator!=(const char *s1, const QStringRef &s2)
 { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) != 0; }
 inline QT_ASCII_CAST_WARN bool operator<(const char *s1, const QStringRef &s2)
-{ return QString::compare_helper(s2.constData(), s2.size(), s1, -1) < 0; }
-inline QT_ASCII_CAST_WARN bool operator<=(const char *s1, const QStringRef &s2)
 { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) > 0; }
-inline QT_ASCII_CAST_WARN bool operator>(const char *s1, const QStringRef &s2)
-{ return QString::compare_helper(s2.constData(), s2.size(), s1, -1) <= 0; }
-inline QT_ASCII_CAST_WARN bool operator>=(const char *s1, const QStringRef &s2)
+inline QT_ASCII_CAST_WARN bool operator<=(const char *s1, const QStringRef &s2)
 { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) >= 0; }
+inline QT_ASCII_CAST_WARN bool operator>(const char *s1, const QStringRef &s2)
+{ return QString::compare_helper(s2.constData(), s2.size(), s1, -1) < 0; }
+inline QT_ASCII_CAST_WARN bool operator>=(const char *s1, const QStringRef &s2)
+{ return QString::compare_helper(s2.constData(), s2.size(), s1, -1) <= 0; }
 #endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 
 inline int QString::compare(const QStringRef &s, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW

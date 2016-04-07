@@ -39,10 +39,6 @@
 
 #include "qlocalsocket_p.h"
 
-#include <private/qthread_p.h>
-#include <qcoreapplication.h>
-#include <qdebug.h>
-
 QT_BEGIN_NAMESPACE
 
 void QLocalSocketPrivate::init()

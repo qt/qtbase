@@ -97,8 +97,6 @@ gcc {
                             -Wno-strict-aliasing -Wno-type-limits -Wno-unused-local-typedefs
 
     QMAKE_CXXFLAGS_WARN_ON = $$QMAKE_CFLAGS_WARN_ON -Wno-reorder -Wno-conversion-null -Wno-delete-non-virtual-dtor
-
-    sse2: QMAKE_CXXFLAGS += -march=native
 }
 
 QMAKE_CXXFLAGS_DEBUG = $$QMAKE_CFLAGS_DEBUG

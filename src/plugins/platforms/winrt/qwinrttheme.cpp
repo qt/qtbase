@@ -358,7 +358,7 @@ QVariant QWinRTTheme::styleHint(QPlatformIntegration::StyleHint hint)
     case QPlatformIntegration::PasswordMaskCharacter:
         return defaultThemeHint(PasswordMaskCharacter);
     case QPlatformIntegration::SetFocusOnTouchRelease:
-        return false;
+        return true;
     case QPlatformIntegration::ShowIsMaximized:
         return true;
     case QPlatformIntegration::MousePressAndHoldInterval:

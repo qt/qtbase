@@ -1010,8 +1010,6 @@ Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
 
 #endif // QT_NO_TRANSLATION
 
-#define QDOC_PROPERTY(text)
-
 /*
    When RTTI is not available, define this macro to force any uses of
    dynamic_cast to cause a compile failure.

@@ -1,11 +1,6 @@
-body {
-  font-size: 10.5pt;
-}
-
 pre {
   background-color: #f0f0f0;
   font-family: Courier, monospace;
-  font-size: 11pt;
   font-weight: 600;
   vertical-align: top;
   margin: 15px 85px 15px 35px;
@@ -41,7 +36,6 @@ a[href|="http://"], a[href|="https://"] {
 h1.title {
   margin-top: 30px;
   margin-left: 6px;
-  font-size: 24pt;
   padding: 6px;
 }
 
@@ -52,7 +46,6 @@ h2, p.h2 {
 }
 
 h3 {
-  font-size: 12pt;
   margin: 30px 0px 30px 6px;
 }
 
@@ -82,7 +75,6 @@ h3.fn, span.fn {
   padding: 5px;
   text-decoration: none;
   font-weight: 400;
-  font-size: 12pt;
   margin: 45px 0px 0px 6px;
 }
 
@@ -107,7 +99,6 @@ table tr.odd {
 table.qmlname td {
   padding: 0px;
   margin-left: 6px;
-  font-size: 12pt;
 }
 
 table.qmlname p .name,
@@ -124,13 +115,8 @@ h3.fn .name, h3.fn .type {
   margin-right: 6px;
 }
 
-tr > td > pre {
-  font-size: 10.5pt;
-}
-
 code {
   font-family: Courier, monospace;
-  font-size: 12pt;
   font-weight: 400;
 }
 
@@ -167,7 +153,7 @@ td#buildversion {
 .footer, .footer p {
   padding: 5px 0px 5px 0px;
   margin: 45px 15px 5px 15px;
-  font-size: 7.5pt;
+  font-size: 8.5pt;
   background-color: #cccccc;
 }
 

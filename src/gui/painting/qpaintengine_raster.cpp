@@ -3893,7 +3893,7 @@ void QClipData::setClipRect(const QRect &rect)
 void QClipData::setClipRegion(const QRegion &region)
 {
     if (region.rectCount() == 1) {
-        setClipRect(region.rects().at(0));
+        setClipRect(region.boundingRect());
         return;
     }
 
