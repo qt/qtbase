@@ -4362,7 +4362,7 @@ fi
 #-------------------------------------------------------------------------------
 
 # Detect objcopy support
-if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
+if [ "$XPLATFORM_MAC" = "no" ] && [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
     if ! compileTest unix/objcopy "objcopy"; then
         echo "ERROR: -separate-debug-info was requested but this binutils does not support it."
         echo "Re-run configure with -v for more information"
