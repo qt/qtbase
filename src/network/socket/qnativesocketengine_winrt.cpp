@@ -1197,7 +1197,8 @@ HRESULT QNativeSocketEnginePrivate::handleClientConnection(IStreamSocketListener
     args->get_Socket(&socket);
     pendingConnections.append(socket);
     emit q->connectionReady();
-    emit q->readReady();
+    if (notifyOnRead)
+        emit q->readReady();
     return S_OK;
 }
 
@@ -1381,7 +1382,8 @@ HRESULT QNativeSocketEnginePrivate::handleNewDatagram(IDatagramSocket *socket, I
     hr = reader->ReadBytes(length, reinterpret_cast<BYTE *>(datagram.data.data()));
     RETURN_OK_IF_FAILED("Could not read datagram");
     pendingDatagrams.append(datagram);
-    emit q->readReady();
+    if (notifyOnRead)
+        emit q->readReady();
 
     return S_OK;
 }
