@@ -257,7 +257,7 @@ static QString toOffsetString(Qt::DateFormat format, int offset)
 }
 
 // Parse offset in [+-]HH[[:]mm] format
-static int fromOffsetString(const QStringRef &offsetString, bool *valid)
+static int fromOffsetString(const QStringRef &offsetString, bool *valid) Q_DECL_NOTHROW
 {
     *valid = false;
 
@@ -278,19 +278,22 @@ static int fromOffsetString(const QStringRef &offsetString, bool *valid)
         return 0;
 
     // Split the hour and minute parts
-    QVector<QStringRef> parts = offsetString.mid(1).split(QLatin1Char(':'));
-    if (parts.count() == 1) {
-        // [+-]HHmm or [+-]HH format
-        parts.append(parts.first().mid(2));
-        parts[0] = parts.first().left(2);
-    }
+    const QStringRef time = offsetString.mid(1);
+    int hhLen = time.indexOf(QLatin1Char(':'));
+    int mmIndex;
+    if (hhLen == -1)
+        mmIndex = hhLen = 2; // [+-]HHmm or [+-]HH format
+    else
+        mmIndex = hhLen + 1;
 
+    const QStringRef hhRef = time.left(hhLen);
     bool ok = false;
-    const int hour = parts.first().toInt(&ok);
+    const int hour = hhRef.toInt(&ok);
     if (!ok)
         return 0;
 
-    const int minute = (parts.at(1).isEmpty()) ? 0 : parts.at(1).toInt(&ok);
+    const QStringRef mmRef = time.mid(mmIndex);
+    const int minute = mmRef.isEmpty() ? 0 : mmRef.toInt(&ok);
     if (!ok || minute < 0 || minute > 59)
         return 0;
 
