@@ -239,7 +239,8 @@ bool QNativeSocketEngine::initialize(qintptr socketDescriptor, QAbstractSocket::
         close();
 
     // Currently, only TCP sockets are initialized this way.
-    d->socketDescriptor = qintptr(gSocketHandler->pendingTcpSockets.take(socketDescriptor));
+    IStreamSocket *socket = gSocketHandler->pendingTcpSockets.take(socketDescriptor);
+    d->socketDescriptor = qintptr(socket);
     d->socketType = QAbstractSocket::TcpSocket;
 
     if (!d->socketDescriptor || !d->fetchConnectionParameters()) {
@@ -247,6 +248,36 @@ bool QNativeSocketEngine::initialize(qintptr socketDescriptor, QAbstractSocket::
             d->InvalidSocketErrorString);
         d->socketDescriptor = -1;
         return false;
+    }
+
+    // Start processing incoming data
+    if (d->socketType == QAbstractSocket::TcpSocket) {
+        HRESULT hr;
+        hr = QEventDispatcherWinRT::runOnXamlThread([d, socket, this]() {
+            ComPtr<IBuffer> buffer;
+            HRESULT hr = g->bufferFactory->Create(READ_BUFFER_SIZE, &buffer);
+            RETURN_HR_IF_FAILED("initialize(): Could not create buffer");
+
+            ComPtr<IInputStream> stream;
+            hr = socket->get_InputStream(&stream);
+            RETURN_HR_IF_FAILED("initialize(): Could not obtain input stream");
+            hr = stream->ReadAsync(buffer.Get(), READ_BUFFER_SIZE, InputStreamOptions_Partial, d->readOp.GetAddressOf());
+            if (FAILED(hr)) {
+                qErrnoWarning(hr, "initialize(): Failed to read from the socket buffer (%s).",
+                              socketDescription(this).constData());
+                return E_FAIL;
+            }
+            hr = d->readOp->put_Completed(Callback<SocketReadCompletedHandler>(d, &QNativeSocketEnginePrivate::handleReadyRead).Get());
+            if (FAILED(hr)) {
+                qErrnoWarning(hr, "initialize(): Failed to set socket read callback (%s).",
+                              socketDescription(this).constData());
+                return E_FAIL;
+            }
+            return S_OK;
+        });
+        if (hr == E_FAIL)
+            return false;
+        Q_ASSERT_SUCCEEDED(hr);
     }
 
     d->socketState = socketState;
@@ -390,36 +421,8 @@ int QNativeSocketEngine::accept()
         return -1;
     }
 
-    // Start processing incoming data
     if (d->socketType == QAbstractSocket::TcpSocket) {
         IStreamSocket *socket = d->pendingConnections.takeFirst();
-
-        HRESULT hr;
-        hr = QEventDispatcherWinRT::runOnXamlThread([d, socket, this]() {
-            ComPtr<IBuffer> buffer;
-            HRESULT hr = g->bufferFactory->Create(READ_BUFFER_SIZE, &buffer);
-            RETURN_HR_IF_FAILED("accept(): Could not create buffer");
-            ComPtr<IInputStream> stream;
-            hr = socket->get_InputStream(&stream);
-            RETURN_HR_IF_FAILED("accept(): Could not obtain input stream");
-            hr = stream->ReadAsync(buffer.Get(), READ_BUFFER_SIZE, InputStreamOptions_Partial, &d->readOp);
-            if (FAILED(hr)) {
-                qErrnoWarning(hr, "accept(): Failed to read from the socket buffer (%s).",
-                              socketDescription(this).constData());
-                return E_FAIL;
-            }
-            hr = d->readOp->put_Completed(Callback<SocketReadCompletedHandler>(d, &QNativeSocketEnginePrivate::handleReadyRead).Get());
-            if (FAILED(hr)) {
-                qErrnoWarning(hr, "accept(): Failed to set socket read callback (%s).",
-                              socketDescription(this).constData());
-                return E_FAIL;
-            }
-            return S_OK;
-        });
-        if (hr == E_FAIL)
-            return -1;
-        Q_ASSERT_SUCCEEDED(hr);
-        d->currentConnections.append(socket);
 
         SocketHandler *handler = gSocketHandler();
         handler->pendingTcpSockets.insert(++handler->socketCount, socket);
