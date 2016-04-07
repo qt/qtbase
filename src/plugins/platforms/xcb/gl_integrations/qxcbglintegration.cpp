@@ -41,7 +41,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(QT_XCB_GLINTEGRATION, "qt.xcb.glintegration")
+Q_LOGGING_CATEGORY(lcQpaGl, "qt.qpa.gl")
 
 QXcbGlIntegration::QXcbGlIntegration()
 {
