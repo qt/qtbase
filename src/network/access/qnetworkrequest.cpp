@@ -263,6 +263,7 @@ QT_BEGIN_NAMESPACE
         Indicates whether the Network Access API should automatically follow a
         HTTP redirect response or not. Currently redirects that are insecure,
         that is redirecting from "https" to "http" protocol, are not allowed.
+        (This value was introduced in 5.6.)
 
     \value User
         Special type. Additional information can be passed in

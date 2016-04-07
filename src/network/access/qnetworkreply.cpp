@@ -135,10 +135,12 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     \value TooManyRedirectsError       while following redirects, the maximum
     limit was reached. The limit is by default set to 50 or as set by
     QNetworkRequest::setMaxRedirectsAllowed().
+    (This value was introduced in 5.6.)
 
     \value InsecureRedirectError       while following redirects, the network
     access API detected a redirect from a encrypted protocol (https) to an
     unencrypted one (http).
+    (This value was introduced in 5.6.)
 
     \value ProxyConnectionRefusedError the connection to the proxy
     server was refused (the proxy server is not accepting requests)
