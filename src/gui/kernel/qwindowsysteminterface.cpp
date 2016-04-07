@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 
 QElapsedTimer QWindowSystemInterfacePrivate::eventTime;
 bool QWindowSystemInterfacePrivate::synchronousWindowSystemEvents = false;
+bool QWindowSystemInterfacePrivate::TabletEvent::platformSynthesizesMouse = true;
 QWaitCondition QWindowSystemInterfacePrivate::eventsFlushed;
 QMutex QWindowSystemInterfacePrivate::flushEventMutex;
 QAtomicInt QWindowSystemInterfacePrivate::eventAccepted;
@@ -943,6 +944,11 @@ QWindowSystemInterfacePrivate::WheelEvent::WheelEvent(QWindow *w, ulong time, co
     : InputEvent(w, time, Wheel, mods), pixelDelta(pixelD), angleDelta(angleD), qt4Delta(qt4D),
       qt4Orientation(qt4O), localPos(local), globalPos(global), phase(phase), source(src), inverted(inverted)
 {
+}
+
+void QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(bool v)
+{
+    platformSynthesizesMouse = v;
 }
 
 QT_END_NAMESPACE

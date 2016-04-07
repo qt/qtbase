@@ -352,6 +352,7 @@ public:
                                       int device, int pointerType, Qt::MouseButtons buttons, qreal pressure, int xTilt, int yTilt,
                                       qreal tangentialPressure, qreal rotation, int z, qint64 uid,
                                       Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+        static void setPlatformSynthesizesMouse(bool v);
 
         TabletEvent(QWindow *w, ulong time, const QPointF &local, const QPointF &global,
                     int device, int pointerType, Qt::MouseButtons b, qreal pressure, int xTilt, int yTilt, qreal tpressure,
@@ -372,6 +373,7 @@ public:
         qreal rotation;
         int z;
         qint64 uid;
+        static bool platformSynthesizesMouse;
     };
 
     class TabletEnterProximityEvent : public InputEvent {
