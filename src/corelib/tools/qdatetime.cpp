@@ -4531,7 +4531,7 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
         int second = 0;
         int millisecond = 0;
         if (timeParts.count() > 2) {
-            QVector<QStringRef> secondParts = timeParts.at(2).split(QLatin1Char('.'));
+            const QVector<QStringRef> secondParts = timeParts.at(2).split(QLatin1Char('.'));
             if (secondParts.size() > 2) {
                 return QDateTime();
             }

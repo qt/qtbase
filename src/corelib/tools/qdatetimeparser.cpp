@@ -890,7 +890,7 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
     QDTPDEBUG << "parse" << input;
     {
         int year, month, day;
-        QDate currentDate = currentValue.date();
+        const QDate currentDate = currentValue.date();
         const QTime currentTime = currentValue.time();
         currentDate.getDate(&year, &month, &day);
         int year2digits = year % 100;
