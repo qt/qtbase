@@ -675,8 +675,10 @@ void tst_QTcpSocket::bindThenResolveHost()
 
     dummySocket.close();
 
-    socket->connectToHost(hostName, 80);
-    QVERIFY2(socket->waitForConnected(), "Network timeout");
+    const quint16 port = 80;
+    socket->connectToHost(hostName, port);
+    QVERIFY2(socket->waitForConnected(), (hostName.toLocal8Bit() + ": " + QByteArray::number(port) + ' '
+                                          + QtNetworkSettings::msgSocketError(*socket)).constData());
 
     QCOMPARE(socket->localPort(), boundPort);
     QCOMPARE(socket->socketDescriptor(), fd);

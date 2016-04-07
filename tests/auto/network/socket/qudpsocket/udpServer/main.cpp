@@ -36,18 +36,21 @@ class Server : public QObject
 {
     Q_OBJECT
 public:
-    Server(int port)
+
+    Server() { connect(&serverSocket, &QIODevice::readyRead, this, &Server::sendEcho); }
+
+    bool bind(quint16 port)
     {
-        connect(&serverSocket, SIGNAL(readyRead()),
-                this, SLOT(sendEcho()));
-        if (serverSocket.bind(QHostAddress::Any, port,
-                              QUdpSocket::ReuseAddressHint
-                              | QUdpSocket::ShareAddress)) {
+        const bool result = serverSocket.bind(QHostAddress::Any, port,
+                                              QUdpSocket::ReuseAddressHint
+                                              | QUdpSocket::ShareAddress);
+        if (result) {
             printf("OK\n");
         } else {
-            printf("FAILED\n");
+            printf("FAILED: %s\n", qPrintable(serverSocket.errorString()));
         }
         fflush(stdout);
+        return result;
     }
 
 private slots:
@@ -73,8 +76,19 @@ private:
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
+    QStringList arguments = QCoreApplication::arguments();
+    arguments.pop_front();
+    quint16 port = 0;
+    if (!arguments.isEmpty())
+        port = arguments.constFirst().toUShort();
+    if (!port) {
+        printf("Specify port number\n");
+        return -1;
+    }
 
-    Server server(app.arguments().at(1).toInt());
+    Server server;
+    if (!server.bind(port))
+        return -2;
 
     return app.exec();
 }
