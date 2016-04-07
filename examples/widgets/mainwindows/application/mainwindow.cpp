@@ -59,9 +59,11 @@ MainWindow::MainWindow()
     connect(textEdit->document(), &QTextDocument::contentsChanged,
             this, &MainWindow::documentWasModified);
 
+#ifndef QT_NO_SESSIONMANAGER
     QGuiApplication::setFallbackSessionManagementEnabled(false);
     connect(qApp, &QGuiApplication::commitDataRequest,
             this, &MainWindow::commitData);
+#endif
 
     setCurrentFile(QString());
     setUnifiedTitleAndToolBarOnMac(true);
@@ -387,7 +389,7 @@ QString MainWindow::strippedName(const QString &fullFileName)
     return QFileInfo(fullFileName).fileName();
 }
 //! [49]
-
+#ifndef QT_NO_SESSIONMANAGER
 void MainWindow::commitData(QSessionManager &manager)
 {
     if (manager.allowsInteraction()) {
@@ -399,3 +401,4 @@ void MainWindow::commitData(QSessionManager &manager)
             save();
     }
 }
+#endif

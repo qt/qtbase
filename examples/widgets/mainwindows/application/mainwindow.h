@@ -70,7 +70,9 @@ private slots:
     bool saveAs();
     void about();
     void documentWasModified();
+#ifndef QT_NO_SESSIONMANAGER
     void commitData(QSessionManager &);
+#endif
 
 private:
     void createActions();
