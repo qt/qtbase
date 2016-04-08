@@ -1686,7 +1686,11 @@ void QMainWindowLayout::tabChanged()
     QDockAreaLayoutInfo *info = dockInfo(tb);
     if (info == 0)
         return;
-    info->apply(false);
+
+    QDockWidget *activated = info->apply(false);
+
+    if (activated)
+        emit static_cast<QMainWindow *>(parentWidget())->tabifiedDockWidgetActivated(activated);
 
     if (QWidget *w = centralWidget())
         w->raise();

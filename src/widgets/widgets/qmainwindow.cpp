@@ -377,6 +377,18 @@ void QMainWindowPrivate::init()
     \sa setToolButtonStyle()
 */
 
+#ifndef QT_NO_DOCKWIDGET
+/*!
+    \fn void QMainWindow::tabifiedDockWidgetActivated(QDockWidget *dockWidget)
+
+    This signal is emitted when the tabified dock widget is activated by
+    selecting the tab. The activated dock widget is passed in \a dockWidget.
+
+    \since 5.8
+    \sa tabifyDockWidget(), tabifiedDockWidgets()
+*/
+#endif
+
 /*!
     Constructs a QMainWindow with the given \a parent and the specified
     widget \a flags.

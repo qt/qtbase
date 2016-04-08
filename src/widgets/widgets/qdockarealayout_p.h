@@ -174,7 +174,7 @@ public:
     QList<int> indexOf(QWidget *widget) const;
     QList<int> indexOfPlaceHolder(const QString &objectName) const;
 
-    void apply(bool animate);
+    QDockWidget *apply(bool animate);
 
     void paintSeparators(QPainter *p, QWidget *widget, const QRegion &clip,
                             const QPoint &mouse) const;

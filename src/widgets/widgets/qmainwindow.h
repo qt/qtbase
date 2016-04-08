@@ -195,6 +195,9 @@ public Q_SLOTS:
 Q_SIGNALS:
     void iconSizeChanged(const QSize &iconSize);
     void toolButtonStyleChanged(Qt::ToolButtonStyle toolButtonStyle);
+#ifndef QT_NO_DOCKWIDGET
+    void tabifiedDockWidgetActivated(QDockWidget *dockWidget);
+#endif
 
 protected:
 #ifndef QT_NO_CONTEXTMENU

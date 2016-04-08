@@ -1493,8 +1493,10 @@ bool QDockAreaLayoutInfo::hasFixedSize() const
     return perp(o, minimumSize()) == perp(o, maximumSize());
 }
 
-
-void QDockAreaLayoutInfo::apply(bool animate)
+/*! \internal
+    Applies the layout and returns the activated QDockWidget or nullptr.
+ */
+QDockWidget *QDockAreaLayoutInfo::apply(bool animate)
 {
     QWidgetAnimator &widgetAnimator = mainWindowLayout()->widgetAnimator;
 
@@ -1533,6 +1535,8 @@ void QDockAreaLayoutInfo::apply(bool animate)
     }
 #endif // QT_NO_TABBAR
 
+    QDockWidget *activated = nullptr;
+
     for (int i = 0; i < item_list.size(); ++i) {
         QDockAreaLayoutItem &item = item_list[i];
 
@@ -1561,6 +1565,7 @@ void QDockAreaLayoutInfo::apply(bool animate)
             } else if (r.isValid()
                         && (geo.right() < 0 || geo.bottom() < 0)) {
                 emit dw->visibilityChanged(true);
+                activated = dw;
             }
         }
     }
@@ -1568,6 +1573,8 @@ void QDockAreaLayoutInfo::apply(bool animate)
     if (*sep == 1)
         updateSeparatorWidgets();
 #endif //QT_NO_TABBAR
+
+    return activated;
 }
 
 static void paintSep(QPainter *p, QWidget *w, const QRect &r, Qt::Orientation o, bool mouse_over)
