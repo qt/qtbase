@@ -341,6 +341,7 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
 
     QMacInternalPasteboardMime::initializeMimeTypes();
     QCocoaMimeTypes::initializeMimeTypes();
+    QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
 }
 
 QCocoaIntegration::~QCocoaIntegration()
