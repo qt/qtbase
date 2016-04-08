@@ -503,6 +503,7 @@ public:
         AA_UseStyleSheetPropagationInWidgetStyles = 22, // ### Qt 6: remove me
         AA_DontUseNativeDialogs = 23,
         AA_SynthesizeMouseForUnhandledTabletEvents = 24,
+        AA_DontCheckOpenGLContextThreadAffinity = 25,
 
         // Add new attributes before this line
         AA_AttributeCount

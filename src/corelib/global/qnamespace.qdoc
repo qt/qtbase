@@ -234,6 +234,13 @@
            set to true won't use the native dialogs provided by the platform.
            This value has been added in Qt 5.7.
 
+    \value AA_DontCheckOpenGLContextThreadAffinity When making a context
+           current using QOpenGLContext, do not check that the
+           \l{QObject#Thread Affinity}{QObject thread affinity}
+           of the QOpenGLContext object is the same thread calling
+           \l{QOpenGLContext::makeCurrent}{makeCurrent()}. This value has been
+           added in Qt 5.8.
+
     The following values are obsolete:
 
     \value AA_ImmediateWidgetCreation This attribute is no longer fully

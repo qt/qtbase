@@ -940,13 +940,20 @@ GLuint QOpenGLContext::defaultFramebufferObject() const
 
     If \a surface is 0 this is equivalent to calling doneCurrent().
 
-    Do not call this function from a different thread than the one the
+    Avoid calling this function from a different thread than the one the
     QOpenGLContext instance lives in. If you wish to use QOpenGLContext from a
     different thread you should first call make sure it's not current in the
     current thread, by calling doneCurrent() if necessary. Then call
     moveToThread(otherThread) before using it in the other thread.
 
-    \sa functions(), doneCurrent()
+    By default Qt employs a check that enforces the above condition on the
+    thread affinity. It is still possible to disable this check by setting the
+    \c{Qt::AA_DontCheckOpenGLContextThreadAffinity} application attribute. Be
+    sure to understand the consequences of using QObjects from outside
+    the thread they live in, as explained in the
+    \l{QObject#Thread Affinity}{QObject thread affinity} documentation.
+
+    \sa functions(), doneCurrent(), Qt::AA_DontCheckOpenGLContextThreadAffinity
 */
 bool QOpenGLContext::makeCurrent(QSurface *surface)
 {
@@ -954,8 +961,10 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
     if (!isValid())
         return false;
 
-    if (Q_UNLIKELY(thread() != QThread::currentThread()))
+    if (Q_UNLIKELY(!qApp->testAttribute(Qt::AA_DontCheckOpenGLContextThreadAffinity)
+                   && thread() != QThread::currentThread())) {
         qFatal("Cannot make QOpenGLContext current in a different thread");
+    }
 
     if (!surface) {
         doneCurrent();
