@@ -50,6 +50,7 @@ using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
 using namespace ABI::Windows::System::Threading;
 using namespace ABI::Windows::Foundation;
+using namespace ABI::Windows::Foundation::Collections;
 using namespace ABI::Windows::UI::Core;
 using namespace ABI::Windows::ApplicationModel::Core;
 
@@ -179,8 +180,34 @@ HRESULT QEventDispatcherWinRT::runOnXamlThread(const std::function<HRESULT ()> &
         ComPtr<ICoreWindow> window;
         hr = view->get_CoreWindow(&window);
         Q_ASSERT_SUCCEEDED(hr);
-        hr = window->get_Dispatcher(&dispatcher);
-        Q_ASSERT_SUCCEEDED(hr);
+        if (!window) {
+            // In case the application is launched via activation
+            // there might not be a main view (eg ShareTarget).
+            // Hence iterate through the available views and try to find
+            // a dispatcher in there
+            ComPtr<IVectorView<CoreApplicationView*>> appViews;
+            hr = application->get_Views(&appViews);
+            Q_ASSERT_SUCCEEDED(hr);
+            quint32 count;
+            hr = appViews->get_Size(&count);
+            Q_ASSERT_SUCCEEDED(hr);
+            for (quint32 i = 0; i < count; ++i) {
+                hr = appViews->GetAt(i, &view);
+                Q_ASSERT_SUCCEEDED(hr);
+                hr = view->get_CoreWindow(&window);
+                Q_ASSERT_SUCCEEDED(hr);
+                if (window) {
+                    hr = window->get_Dispatcher(&dispatcher);
+                    Q_ASSERT_SUCCEEDED(hr);
+                    if (dispatcher)
+                        break;
+                }
+            }
+            Q_ASSERT(dispatcher);
+        } else {
+            hr = window->get_Dispatcher(&dispatcher);
+            Q_ASSERT_SUCCEEDED(hr);
+        }
     }
 
     HRESULT hr;
