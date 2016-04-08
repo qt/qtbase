@@ -417,7 +417,7 @@ void QEglFSKmsDevice::createScreens()
         Q_FOREACH (QPlatformScreen *screen, siblings)
             static_cast<QEglFSKmsScreen *>(screen)->setVirtualSiblings(siblings);
 
-        if (primaryScreen)
+        if (primaryScreen && m_integration->hwCursor())
             m_globalCursor = new QEglFSKmsCursor(primaryScreen);
     }
 }
