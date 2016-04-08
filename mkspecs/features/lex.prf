@@ -11,9 +11,13 @@
         lex.variable_out = GENERATED_SOURCES
     }
 
+    isEmpty(QMAKE_LEXFLAGS_MANGLE):QMAKE_LEXFLAGS_MANGLE = -P${QMAKE_FILE_BASE}
+    QMAKE_LEXEXTRAFLAGS = $$QMAKE_LEXFLAGS
+    !yacc_no_name_mangle:QMAKE_LEXEXTRAFLAGS += $$QMAKE_LEXFLAGS_MANGLE
+
     contains(QMAKE_LEX, .*flex) {
         # GNU flex, we can use -o outfile
-        lex.commands = $$QMAKE_LEX $$QMAKE_LEXFLAGS --nounistd -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
+        lex.commands = $$QMAKE_LEX $$QMAKE_LEXEXTRAFLAGS --nounistd -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
     } else {
         # stupid POSIX lex, it only generates a file called lex.yy.c
         # or lex.prefix.c if the -P<prefix> option is active
