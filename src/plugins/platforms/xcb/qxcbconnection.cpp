@@ -2248,7 +2248,7 @@ bool QXcbConnection::xi2MouseEvents() const
 #endif
 
 #if defined(XCB_USE_XINPUT2)
-static int xi2ValuatorOffset(unsigned char *maskPtr, int maskLen, int number)
+static int xi2ValuatorOffset(const unsigned char *maskPtr, int maskLen, int number)
 {
     int offset = 0;
     for (int i = 0; i < maskLen; i++) {
@@ -2267,11 +2267,11 @@ static int xi2ValuatorOffset(unsigned char *maskPtr, int maskLen, int number)
     return -1;
 }
 
-bool QXcbConnection::xi2GetValuatorValueIfSet(void *event, int valuatorNum, double *value)
+bool QXcbConnection::xi2GetValuatorValueIfSet(const void *event, int valuatorNum, double *value)
 {
-    xXIDeviceEvent *xideviceevent = static_cast<xXIDeviceEvent *>(event);
-    unsigned char *buttonsMaskAddr = (unsigned char*)&xideviceevent[1];
-    unsigned char *valuatorsMaskAddr = buttonsMaskAddr + xideviceevent->buttons_len * 4;
+    const xXIDeviceEvent *xideviceevent = static_cast<const xXIDeviceEvent *>(event);
+    const unsigned char *buttonsMaskAddr = (const unsigned char*)&xideviceevent[1];
+    const unsigned char *valuatorsMaskAddr = buttonsMaskAddr + xideviceevent->buttons_len * 4;
     FP3232 *valuatorsValuesAddr = (FP3232*)(valuatorsMaskAddr + xideviceevent->valuators_len * 4);
 
     int valuatorOffset = xi2ValuatorOffset(valuatorsMaskAddr, xideviceevent->valuators_len, valuatorNum);

@@ -579,8 +579,8 @@ private:
         };
         QHash<int, ValuatorClassInfo> valuatorInfo;
     };
-    bool xi2HandleTabletEvent(void *event, TabletData *tabletData, QXcbWindowEventListener *eventListener);
-    void xi2ReportTabletEvent(TabletData &tabletData, void *event);
+    bool xi2HandleTabletEvent(const void *event, TabletData *tabletData);
+    void xi2ReportTabletEvent(const void *event, TabletData *tabletData);
     QVector<TabletData> m_tabletData;
 #endif // !QT_NO_TABLETEVENT
     struct ScrollingDevice {
@@ -596,7 +596,7 @@ private:
     void xi2HandleScrollEvent(void *event, ScrollingDevice &scrollingDevice);
     QHash<int, ScrollingDevice> m_scrollingDevices;
 
-    static bool xi2GetValuatorValueIfSet(void *event, int valuatorNum, double *value);
+    static bool xi2GetValuatorValueIfSet(const void *event, int valuatorNum, double *value);
     static void xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event);
 #endif
 
