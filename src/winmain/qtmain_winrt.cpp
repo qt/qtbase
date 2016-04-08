@@ -187,12 +187,43 @@ public:
     }
 
 private:
+    HRESULT activatedLaunch(IInspectable *activateArgs) {
+        QCoreApplication *app = QCoreApplication::instance();
+
+        // Check whether the app already runs
+        if (!app) {
+#if _MSC_VER >= 1900
+            // I*EventArgs have no launch arguments, hence we
+            // need to prepend the application binary manually
+            wchar_t fn[513];
+            DWORD res = GetModuleFileName(0, fn, 512);
+
+            if (SUCCEEDED(res))
+                args.prepend(QString::fromWCharArray(fn, res).toUtf8().data());
+#endif _MSC_VER >= 1900
+
+            ResumeThread(mainThread);
+
+            // We give main() a max of 100ms to create an application object.
+            // No eventhandling needs to happen at that point, all we want is
+            // append our activation event
+            int iterations = 0;
+            while (true) {
+                app = QCoreApplication::instance();
+                if (app || iterations++ > 10)
+                    break;
+                Sleep(10);
+            }
+        }
+
+        if (app)
+            QCoreApplication::postEvent(app, new QActivationEvent(activateArgs));
+        return S_OK;
+    }
+
     HRESULT __stdcall OnActivated(IActivatedEventArgs *args) Q_DECL_OVERRIDE
     {
-        QAbstractEventDispatcher *dispatcher = QCoreApplication::eventDispatcher();
-        if (dispatcher)
-            QCoreApplication::postEvent(dispatcher, new QActivationEvent(args));
-        return S_OK;
+        return activatedLaunch(args);
     }
 
     HRESULT __stdcall OnLaunched(ILaunchActivatedEventArgs *launchArgs) Q_DECL_OVERRIDE
@@ -290,8 +321,7 @@ private:
 
     HRESULT __stdcall OnFileActivated(IFileActivatedEventArgs *args) Q_DECL_OVERRIDE
     {
-        Q_UNUSED(args);
-        return S_OK;
+        return activatedLaunch(args);
     }
 
     HRESULT __stdcall OnSearchActivated(ISearchActivatedEventArgs *args) Q_DECL_OVERRIDE
@@ -302,8 +332,7 @@ private:
 
     HRESULT __stdcall OnShareTargetActivated(IShareTargetActivatedEventArgs *args) Q_DECL_OVERRIDE
     {
-        Q_UNUSED(args);
-        return S_OK;
+        return activatedLaunch(args);
     }
 
     HRESULT __stdcall OnFileOpenPickerActivated(IFileOpenPickerActivatedEventArgs *args) Q_DECL_OVERRIDE
@@ -334,7 +363,7 @@ private:
     ComPtr<Xaml::IApplication> core;
     QByteArray commandLine;
     QVarLengthArray<char *> args;
-    HANDLE mainThread;
+    HANDLE mainThread{0};
     HANDLE pidFile;
 };
 
