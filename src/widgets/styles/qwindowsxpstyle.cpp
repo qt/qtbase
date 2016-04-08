@@ -3793,10 +3793,12 @@ QSize QWindowsXPStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt
         {
             XPThemeData buttontheme(widget, 0, QWindowsXPStylePrivate::ButtonTheme, BP_PUSHBUTTON, PBS_NORMAL);
             if (buttontheme.isValid()) {
-                const QMarginsF borderSize = buttontheme.margins() / QWindowsXPStylePrivate::devicePixelRatio(widget);
+                const qreal devicePixelRatio = QWindowsXPStylePrivate::devicePixelRatio(widget);
+                const QMarginsF borderSize = buttontheme.margins() / devicePixelRatio;
                 if (!borderSize.isNull()) {
-                    sz.rwidth() += qRound(borderSize.left() + borderSize.right() - 2);
-                    sz.rheight() += qRound(borderSize.bottom() + borderSize.top() - 2);
+                    const qreal margin = qreal(2) / devicePixelRatio;
+                    sz.rwidth() += qRound(borderSize.left() + borderSize.right() - margin);
+                    sz.rheight() += int(borderSize.bottom() + borderSize.top() - margin + devicePixelRatio - 1);
                 }
                 const int textMargins = 2*(proxy()->pixelMetric(PM_FocusFrameHMargin) + 1);
                 sz += QSize(qMax(pixelMetric(QStyle::PM_ScrollBarExtent, option, widget)
