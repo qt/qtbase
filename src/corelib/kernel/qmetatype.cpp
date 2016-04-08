@@ -870,8 +870,7 @@ const char *QMetaType::typeName(int typeId)
     return result;
 }
 
-/*!
-    \internal
+/*
     Similar to QMetaType::type(), but only looks in the static set of types.
 */
 static inline int qMetaTypeStaticType(const char *typeName, int length)
@@ -884,8 +883,7 @@ static inline int qMetaTypeStaticType(const char *typeName, int length)
     return types[i].type;
 }
 
-/*!
-    \internal
+/*
     Similar to QMetaType::type(), but only looks in the custom set of
     types, and doesn't lock the mutex.
     The extra \a firstInvalidIndex parameter is an easy way to avoid
