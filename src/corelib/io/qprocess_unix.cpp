@@ -620,21 +620,36 @@ qint64 QProcessPrivate::readFromChannel(const Channel *channel, char *data, qint
     return bytesRead;
 }
 
-qint64 QProcessPrivate::writeToStdin(const char *data, qint64 maxlen)
+bool QProcessPrivate::writeToStdin()
 {
-    qint64 written = qt_safe_write_nosignal(stdinChannel.pipe[1], data, maxlen);
+    const char *data = stdinChannel.buffer.readPointer();
+    const qint64 bytesToWrite = stdinChannel.buffer.nextDataBlockSize();
+
+    qint64 written = qt_safe_write_nosignal(stdinChannel.pipe[1], data, bytesToWrite);
 #if defined QPROCESS_DEBUG
-    qDebug("QProcessPrivate::writeToStdin(%p \"%s\", %lld) == %lld",
-           data, qt_prettyDebug(data, maxlen, 16).constData(), maxlen, written);
+    qDebug("QProcessPrivate::writeToStdin(), write(%p \"%s\", %lld) == %lld",
+           data, qt_prettyDebug(data, bytesToWrite, 16).constData(), bytesToWrite, written);
     if (written == -1)
         qDebug("QProcessPrivate::writeToStdin(), failed to write (%s)", qPrintable(qt_error_string(errno)));
 #endif
-    // If the O_NONBLOCK flag is set and If some data can be written without blocking
-    // the process, write() will transfer what it can and return the number of bytes written.
-    // Otherwise, it will return -1 and set errno to EAGAIN
-    if (written == -1 && errno == EAGAIN)
-        written = 0;
-    return written;
+    if (written == -1) {
+        // If the O_NONBLOCK flag is set and If some data can be written without blocking
+        // the process, write() will transfer what it can and return the number of bytes written.
+        // Otherwise, it will return -1 and set errno to EAGAIN
+        if (errno == EAGAIN)
+            return true;
+
+        closeChannel(&stdinChannel);
+        setErrorAndEmit(QProcess::WriteError);
+        return false;
+    }
+    stdinChannel.buffer.free(written);
+    if (!emittedBytesWritten && written != 0) {
+        emittedBytesWritten = true;
+        emit q_func()->bytesWritten(written);
+        emittedBytesWritten = false;
+    }
+    return true;
 }
 
 void QProcessPrivate::terminateProcess()

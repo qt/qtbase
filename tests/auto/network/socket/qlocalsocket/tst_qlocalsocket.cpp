@@ -35,6 +35,7 @@
 #include <QtTest/QtTest>
 
 #include <qtextstream.h>
+#include <qdatastream.h>
 #include <QtNetwork/qlocalsocket.h>
 #include <QtNetwork/qlocalserver.h>
 
@@ -77,6 +78,9 @@ private slots:
     void sendData();
 
     void readBufferOverflow();
+
+    void simpleCommandProtocol1();
+    void simpleCommandProtocol2();
 
     void fullPath();
 
@@ -628,6 +632,110 @@ void tst_QLocalSocket::readBufferOverflow()
     QCOMPARE(client.read(buffer, readBufferSize), qint64(readBufferSize));
     // no more bytes available
     QCOMPARE(client.bytesAvailable(), 0);
+}
+
+static qint64 writeCommand(const QVariant &command, QIODevice *device, int commandCounter)
+{
+    QByteArray block;
+    QDataStream out(&block, QIODevice::WriteOnly);
+    out << qint64(0);
+    out << commandCounter;
+    out << command;
+    out.device()->seek(0);
+    out << qint64(block.size() - sizeof(qint64));
+    return device->write(block);
+}
+
+static QVariant readCommand(QIODevice *ioDevice, int *readCommandCounter, bool readSize = true)
+{
+    QDataStream in(ioDevice);
+    qint64 blockSize;
+    int commandCounter;
+    if (readSize)
+        in >> blockSize;
+    in >> commandCounter;
+    *readCommandCounter = commandCounter;
+
+    QVariant command;
+    in >> command;
+
+    return command;
+}
+
+void tst_QLocalSocket::simpleCommandProtocol1()
+{
+    QLocalServer server;
+    server.listen(QStringLiteral("simpleProtocol"));
+
+    QLocalSocket localSocketWrite;
+    localSocketWrite.connectToServer(server.serverName());
+    QVERIFY(server.waitForNewConnection());
+    QLocalSocket *localSocketRead = server.nextPendingConnection();
+    QVERIFY(localSocketRead);
+
+    int readCounter = 0;
+    for (int i = 0; i < 2000; ++i) {
+        const QVariant command(QRect(readCounter, i, 10, 10));
+        const qint64 blockSize = writeCommand(command, &localSocketWrite, i);
+        while (localSocketWrite.bytesToWrite())
+            QVERIFY(localSocketWrite.waitForBytesWritten());
+        while (localSocketRead->bytesAvailable() < blockSize) {
+            QVERIFY(localSocketRead->waitForReadyRead(1000));
+        }
+        const QVariant variant = readCommand(localSocketRead, &readCounter);
+        QCOMPARE(readCounter, i);
+        QCOMPARE(variant, command);
+    }
+}
+
+void tst_QLocalSocket::simpleCommandProtocol2()
+{
+    QLocalServer server;
+    server.listen(QStringLiteral("simpleProtocol"));
+
+    QLocalSocket localSocketWrite;
+    localSocketWrite.connectToServer(server.serverName());
+    QVERIFY(server.waitForNewConnection());
+    QLocalSocket* localSocketRead = server.nextPendingConnection();
+    QVERIFY(localSocketRead);
+
+    int readCounter = 0;
+    qint64 writtenBlockSize = 0;
+    qint64 blockSize = 0;
+
+    QObject::connect(localSocketRead, &QLocalSocket::readyRead, [&] {
+        forever {
+            if (localSocketRead->bytesAvailable() < sizeof(qint64))
+                return;
+
+            if (blockSize == 0) {
+                QDataStream in(localSocketRead);
+                in >> blockSize;
+            }
+
+            if (localSocketRead->bytesAvailable() < blockSize)
+                return;
+
+            int commandNumber = 0;
+            const QVariant variant = readCommand(localSocketRead, &commandNumber, false);
+            QCOMPARE(writtenBlockSize, blockSize);
+            QCOMPARE(readCounter, commandNumber);
+            QCOMPARE(variant.userType(), (int)QMetaType::QRect);
+
+            readCounter++;
+            blockSize = 0;
+        }
+    });
+
+    for (int i = 0; i < 500; ++i) {
+        const QVariant command(QRect(readCounter, i, 10, 10));
+        writtenBlockSize = writeCommand(command, &localSocketWrite, i) - sizeof(qint64);
+        if (i % 10 == 0)
+            QTest::qWait(1);
+    }
+
+    localSocketWrite.abort();
+    QVERIFY(localSocketRead->waitForDisconnected(1000));
 }
 
 // QLocalSocket/Server can take a name or path, check that it works as expected

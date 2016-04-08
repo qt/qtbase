@@ -787,17 +787,23 @@ qint64 QProcessPrivate::pipeWriterBytesToWrite() const
     return stdinChannel.writer ? stdinChannel.writer->bytesToWrite() : qint64(0);
 }
 
-qint64 QProcessPrivate::writeToStdin(const char *data, qint64 maxlen)
+bool QProcessPrivate::writeToStdin()
 {
     Q_Q(QProcess);
 
     if (!stdinChannel.writer) {
         stdinChannel.writer = new QWindowsPipeWriter(stdinChannel.pipe[1], q);
+        QObject::connect(stdinChannel.writer, &QWindowsPipeWriter::bytesWritten,
+                         q, &QProcess::bytesWritten);
         QObjectPrivate::connect(stdinChannel.writer, &QWindowsPipeWriter::canWrite,
                                 this, &QProcessPrivate::_q_canWrite);
+    } else {
+        if (stdinChannel.writer->isWriteOperationActive())
+            return true;
     }
 
-    return stdinChannel.writer->write(data, maxlen);
+    stdinChannel.writer->write(stdinChannel.buffer.read());
+    return true;
 }
 
 bool QProcessPrivate::waitForWrite(int msecs)

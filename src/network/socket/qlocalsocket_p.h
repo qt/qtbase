@@ -124,8 +124,7 @@ public:
     ~QLocalSocketPrivate();
     void destroyPipeHandles();
     void setErrorString(const QString &function);
-    void startNextWrite();
-    void _q_bytesWritten(qint64 bytes);
+    void _q_canWrite();
     void _q_pipeClosed();
     void _q_winError(ulong windowsError, const QString &function);
     HANDLE handle;
