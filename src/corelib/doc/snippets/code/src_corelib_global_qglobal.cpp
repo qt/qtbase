@@ -131,26 +131,46 @@ absoluteValue = qAbs(myValue);
 //! [10]
 
 
-//! [11]
-qreal valueA = 2.3;
-qreal valueB = 2.7;
+//! [11A]
+double valueA = 2.3;
+double valueB = 2.7;
 
 int roundedValueA = qRound(valueA);
 // roundedValueA = 2
 int roundedValueB = qRound(valueB);
 // roundedValueB = 3
-//! [11]
+//! [11A]
+
+//! [11B]
+float valueA = 2.3;
+float valueB = 2.7;
+
+int roundedValueA = qRound(valueA);
+// roundedValueA = 2
+int roundedValueB = qRound(valueB);
+// roundedValueB = 3
+//! [11B]
 
 
-//! [12]
-qreal valueA = 42949672960.3;
-qreal valueB = 42949672960.7;
+//! [12A]
+double valueA = 42949672960.3;
+double valueB = 42949672960.7;
 
 qint64 roundedValueA = qRound64(valueA);
 // roundedValueA = 42949672960
 qint64 roundedValueB = qRound64(valueB);
 // roundedValueB = 42949672961
-//! [12]
+//! [12A]
+
+//! [12B]
+float valueA = 42949672960.3;
+float valueB = 42949672960.7;
+
+qint64 roundedValueA = qRound64(valueA);
+// roundedValueA = 42949672960
+qint64 roundedValueB = qRound64(valueB);
+// roundedValueB = 42949672961
+//! [12B]
 
 
 //! [13]
