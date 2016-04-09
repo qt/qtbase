@@ -309,7 +309,10 @@ static void resolveTimerAPI()
 QEventDispatcherWin32Private::QEventDispatcherWin32Private()
     : threadId(GetCurrentThreadId()), interrupt(false), closingDown(false), internalHwnd(0),
       getMessageHook(0), serialNumber(0), lastSerialNumber(0), sendPostedEventsWindowsTimerId(0),
-      wakeUps(0), activateNotifiersPosted(false)
+      wakeUps(0)
+#ifndef Q_OS_WINCE
+    , activateNotifiersPosted(false)
+#endif
 {
     resolveTimerAPI();
 }
@@ -391,9 +394,11 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
 
             QSockNot *sn = dict ? dict->value(wp) : 0;
             if (sn) {
+#ifndef Q_OS_WINCE
                 d->doWsaAsyncSelect(sn->fd, 0);
                 d->active_fd[sn->fd].selected = false;
                 d->postActivateSocketNotifiers();
+#endif
                 if (type < 3) {
                     QEvent event(QEvent::SockAct);
                     QCoreApplication::sendEvent(sn->obj, &event);
@@ -404,6 +409,7 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
             }
         }
         return 0;
+#ifndef Q_OS_WINCE
     } else if (message == WM_QT_ACTIVATENOTIFIERS) {
         Q_ASSERT(d != 0);
 
@@ -418,6 +424,7 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
         }
         d->activateNotifiersPosted = false;
         return 0;
+#endif // !Q_OS_WINCE
     } else if (message == WM_QT_SENDPOSTEDEVENTS
                // we also use a Windows timer to send posted events when the message queue is full
                || (message == WM_TIMER
@@ -658,11 +665,13 @@ void QEventDispatcherWin32Private::doWsaAsyncSelect(int socket, long event)
     WSAAsyncSelect(socket, internalHwnd, event ? int(WM_QT_SOCKETNOTIFIER) : 0, event);
 }
 
+#ifndef Q_OS_WINCE
 void QEventDispatcherWin32Private::postActivateSocketNotifiers()
 {
     if (!activateNotifiersPosted)
         activateNotifiersPosted = PostMessage(internalHwnd, WM_QT_ACTIVATENOTIFIERS, 0, 0);
 }
+#endif // !Q_OS_WINCE
 
 void QEventDispatcherWin32::createInternalHwnd()
 {
@@ -920,16 +929,22 @@ void QEventDispatcherWin32::registerSocketNotifier(QSocketNotifier *notifier)
     QSFDict::iterator it = d->active_fd.find(sockfd);
     if (it != d->active_fd.end()) {
         QSockFd &sd = it.value();
+#ifndef Q_OS_WINCE
         if (sd.selected) {
             d->doWsaAsyncSelect(sockfd, 0);
             sd.selected = false;
         }
+#endif // !Q_OS_WINCE
         sd.event |= event;
     } else {
         d->active_fd.insert(sockfd, QSockFd(event));
     }
 
+#ifndef Q_OS_WINCE
     d->postActivateSocketNotifiers();
+#else
+    d->doWsaAsyncSelect(sockfd, event);
+#endif
 }
 
 void QEventDispatcherWin32::unregisterSocketNotifier(QSocketNotifier *notifier)
@@ -958,6 +973,7 @@ void QEventDispatcherWin32::doUnregisterSocketNotifier(QSocketNotifier *notifier
     QSFDict::iterator it = d->active_fd.find(sockfd);
     if (it != d->active_fd.end()) {
         QSockFd &sd = it.value();
+#ifndef Q_OS_WINCE
         if (sd.selected)
             d->doWsaAsyncSelect(sockfd, 0);
         const long event[3] = { FD_READ | FD_CLOSE | FD_ACCEPT, FD_WRITE | FD_CONNECT, FD_OOB };
@@ -968,6 +984,13 @@ void QEventDispatcherWin32::doUnregisterSocketNotifier(QSocketNotifier *notifier
             sd.selected = false;
             d->postActivateSocketNotifiers();
         }
+#else
+        const long event[3] = { FD_READ | FD_CLOSE | FD_ACCEPT, FD_WRITE | FD_CONNECT, FD_OOB };
+        sd.event ^= event[type];
+        d->doWsaAsyncSelect(sockfd, sd.event);
+        if (sd.event == 0)
+            d->active_fd.erase(it);
+#endif // !Q_OS_WINCE
     }
 
     QSNDict *sn_vec[3] = { &d->sn_read, &d->sn_write, &d->sn_except };
