@@ -924,7 +924,7 @@ QAction *QUndoStack::createRedoAction(QObject *parent, const QString &prefix) co
     Calls to beginMacro() and endMacro() may be nested, but every call to
     beginMacro() must have a matching call to endMacro().
 
-    While a macro is composed, the stack is disabled. This means that:
+    While a macro is being composed, the stack is disabled. This means that:
     \list
     \li indexChanged() and cleanChanged() are not emitted,
     \li canUndo() and canRedo() return false,
