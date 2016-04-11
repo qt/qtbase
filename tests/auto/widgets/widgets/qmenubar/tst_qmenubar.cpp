@@ -1119,7 +1119,7 @@ void tst_QMenuBar::check_menuPosition()
         menu.close();
     }
 
-#  ifndef QTEST_NO_CURSOR
+#  ifndef QT_NO_CURSOR
     // QTBUG-28031: Click at bottom-right corner.
     {
         w.move(400, 200);
@@ -1133,7 +1133,7 @@ void tst_QMenuBar::check_menuPosition()
         QCOMPARE(menu.geometry().right() - 1, globalPos.x());
         menu.close();
     }
-#  endif // QTEST_NO_CURSOR
+#  endif // QT_NO_CURSOR
 }
 #endif
 

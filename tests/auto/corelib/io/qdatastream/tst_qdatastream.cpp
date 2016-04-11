@@ -35,8 +35,6 @@
 #include <QtGui/QPainter>
 #include <QtGui/QPen>
 
-#include "../../../qtest-config.h"
-
 class tst_QDataStream : public QObject
 {
 Q_OBJECT
@@ -65,7 +63,7 @@ private slots:
     void stream_QByteArray_data();
     void stream_QByteArray();
 
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
     void stream_QCursor_data();
     void stream_QCursor();
 #endif
@@ -189,7 +187,7 @@ private:
     void writeQBrush(QDataStream *s);
     void writeQColor(QDataStream *s);
     void writeQByteArray(QDataStream *s);
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
     void writeQCursor(QDataStream *s);
 #endif
     void writeQWaitCursor(QDataStream *s);
@@ -218,7 +216,7 @@ private:
     void readQBrush(QDataStream *s);
     void readQColor(QDataStream *s);
     void readQByteArray(QDataStream *s);
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
     void readQCursor(QDataStream *s);
 #endif
     void readQDate(QDataStream *s);
@@ -1019,7 +1017,7 @@ void tst_QDataStream::readQByteArray(QDataStream *s)
 }
 
 // ************************************
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
 static QCursor qCursorData(int index)
 {
     switch (index) {
@@ -1038,21 +1036,21 @@ static QCursor qCursorData(int index)
 }
 #endif
 
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
 void tst_QDataStream::stream_QCursor_data()
 {
     stream_data(9);
 }
 #endif
 
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
 void tst_QDataStream::stream_QCursor()
 {
     STREAM_IMPL(QCursor);
 }
 #endif
 
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
 void tst_QDataStream::writeQCursor(QDataStream *s)
 {
     QCursor d5(qCursorData(dataIndex(QTest::currentDataTag())));
@@ -1060,7 +1058,7 @@ void tst_QDataStream::writeQCursor(QDataStream *s)
 }
 #endif
 
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
 void tst_QDataStream::readQCursor(QDataStream *s)
 {
     QCursor test(qCursorData(dataIndex(QTest::currentDataTag())));

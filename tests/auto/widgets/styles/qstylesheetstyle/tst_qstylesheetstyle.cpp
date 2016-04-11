@@ -34,8 +34,6 @@
 
 #include <private/qstylesheetstyle_p.h>
 
-#include "../../../qtest-config.h"
-
 static inline void centerOnScreen(QWidget *w)
 {
     const QPoint offset = QPoint(w->width() / 2, w->height() / 2);
@@ -76,7 +74,7 @@ private slots:
     void onWidgetDestroyed();
     void fontPrecedence();
     void focusColors();
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
     void hoverColors();
 #endif
     void background();
@@ -887,7 +885,7 @@ void tst_QStyleSheetStyle::focusColors()
     }
 }
 
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
 void tst_QStyleSheetStyle::hoverColors()
 {
 #ifdef Q_OS_OSX

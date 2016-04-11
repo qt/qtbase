@@ -57,8 +57,6 @@
 
 Q_DECLARE_METATYPE(QPainterPath)
 
-#include "../../../qtest-config.h"
-
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 #include <windows.h>
 #define Q_CHECK_PAINTEVENTS \
@@ -352,7 +350,7 @@ private slots:
     void filtersChildEvents();
     void filtersChildEvents2();
     void ensureVisible();
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
     void cursor();
 #endif
     //void textControlGetterSetter();
@@ -4177,7 +4175,7 @@ void tst_QGraphicsItem::ensureVisible()
     QTest::qWait(25);
 }
 
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
 void tst_QGraphicsItem::cursor()
 {
     QGraphicsScene scene;
@@ -4525,7 +4523,7 @@ protected:
         case QGraphicsItem::ItemSceneHasChanged:
             break;
         case QGraphicsItem::ItemCursorChange:
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
             oldValues << cursor();
 #endif
             break;

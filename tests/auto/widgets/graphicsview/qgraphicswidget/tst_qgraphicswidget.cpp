@@ -42,8 +42,6 @@
 #include <qstylefactory.h>
 #include <qscreen.h>
 
-#include "../../../qtest-config.h"
-
 typedef QList<QGraphicsItem *> QGraphicsItemList;
 
 class EventSpy : public QObject
@@ -3182,7 +3180,7 @@ void tst_QGraphicsWidget::itemChangeEvents()
                 valueDuringEvents.insert(QEvent::ParentChange, QVariant::fromValue(parentItem()));
                 break;
             }
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
             case QEvent::CursorChange: {
                 valueDuringEvents.insert(QEvent::CursorChange, int(cursor().shape()));
                 break;
@@ -3233,7 +3231,7 @@ void tst_QGraphicsWidget::itemChangeEvents()
     QVERIFY(!item->isVisible());
     QTRY_VERIFY(!item->valueDuringEvents.value(QEvent::Hide).toBool());
 
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
     // CursorChange should be triggered after the cursor has changed
     item->setCursor(Qt::PointingHandCursor);
     QTRY_COMPARE(item->valueDuringEvents.value(QEvent::CursorChange).toInt(), int(item->cursor().shape()));

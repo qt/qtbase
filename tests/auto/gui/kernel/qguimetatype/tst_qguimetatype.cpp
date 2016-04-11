@@ -31,8 +31,6 @@
 #include <QtGui>
 #include <QtTest/QtTest>
 
-#include "../../../qtest-config.h"
-
 Q_DECLARE_METATYPE(QMetaType::Type)
 
 class tst_QGuiMetaType: public QObject
@@ -75,14 +73,14 @@ private slots:
     F(QVector4D, QVector4D) \
     F(QQuaternion, QQuaternion)
 
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
 #   define FOR_EACH_GUI_METATYPE(F) \
         FOR_EACH_GUI_METATYPE_BASE(F) \
         F(QCursor, QCursor)
-#else // !QTEST_NO_CURSOR
+#else // !QT_NO_CURSOR
 #   define FOR_EACH_GUI_METATYPE(F) \
         FOR_EACH_GUI_METATYPE_BASE(F)
-#endif // !QTEST_NO_CURSOR
+#endif // !QT_NO_CURSOR
 
 
 namespace {
@@ -131,7 +129,7 @@ template<> struct TypeComparator<QMetaType::QBitmap>
     { return v1.size() == v2.size(); }
 };
 
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
 template<> struct TypeComparator<QMetaType::QCursor>
 {
     static bool equal(const QCursor &v1, const QCursor &v2)
@@ -176,7 +174,7 @@ template<> struct TestValueFactory<QMetaType::QRegion> {
 template<> struct TestValueFactory<QMetaType::QBitmap> {
     static QBitmap *create() { return new QBitmap(16, 32); }
 };
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
 template<> struct TestValueFactory<QMetaType::QCursor> {
     static QCursor *create() { return new QCursor(Qt::WaitCursor); }
 };

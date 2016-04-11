@@ -67,8 +67,6 @@
 #include <QtGui/qwindow.h>
 #include <qtimer.h>
 
-#include "../../../qtest-config.h"
-
 #if defined(Q_OS_MAC)
 #include "tst_qwidget_mac_helpers.h"  // Abstract the ObjC stuff out so not everyone must run an ObjC++ compile.
 #endif
@@ -284,7 +282,7 @@ private slots:
     void deleteStyle();
     void multipleToplevelFocusCheck();
     void setFocus();
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
     void setCursor();
 #endif
     void setToolTip();
@@ -353,7 +351,7 @@ private slots:
 
     void setClearAndResizeMask();
     void maskedUpdate();
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
     void syntheticEnterLeave();
     void taskQTBUG_4055_sendSyntheticEnterLeave();
     void underMouse();
@@ -5422,7 +5420,7 @@ private:
     int m_count;
 };
 
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
 void tst_QWidget::setCursor()
 {
     {
@@ -8745,7 +8743,7 @@ void tst_QWidget::maskedUpdate()
     QTRY_COMPARE(grandChild.paintedRegion, QRegion(grandChild.rect())); // Full update.
 }
 
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
 void tst_QWidget::syntheticEnterLeave()
 {
     if (m_platform == QStringLiteral("wayland"))
@@ -8851,7 +8849,7 @@ void tst_QWidget::syntheticEnterLeave()
 }
 #endif
 
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
 void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
 {
     if (m_platform == QStringLiteral("wayland"))
@@ -9068,7 +9066,7 @@ QWidgetBackingStore* backingStore(QWidget &widget)
 // Tables of 5000 elements do not make sense on Windows Mobile.
 void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 {
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
     QApplication::setOverrideCursor(Qt::BlankCursor); //keep the cursor out of screen grabs
 #endif
     QWidget main(0,Qt::FramelessWindowHint); //don't get confused by the size of the window frame
@@ -9103,7 +9101,7 @@ void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 
     QTRY_COMPARE(mainPixmap.toImage().convertToFormat(QImage::Format_RGB32),
                  correct.toImage().convertToFormat(QImage::Format_RGB32));
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
     QApplication::restoreOverrideCursor();
 #endif
 }
@@ -10050,7 +10048,7 @@ void tst_QWidget::destroyedSignal()
 
 }
 
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
 void tst_QWidget::underMouse()
 {
     // Move the mouse cursor to a safe location
@@ -10334,7 +10332,7 @@ void tst_QWidget::taskQTBUG_27643_enterEvents()
     // Must only register only single enter on modal dialog's button after all said and done
     QCOMPARE(dialog.enters, 1);
 }
-#endif // QTEST_NO_CURSOR
+#endif // QT_NO_CURSOR
 
 class KeyboardWidget : public QWidget
 {

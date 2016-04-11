@@ -48,8 +48,6 @@
 #include <QScreen>
 #include <QSizeGrip>
 
-#include "../../../qtest-config.h"
-
 QT_BEGIN_NAMESPACE
 #if !defined(Q_DEAD_CODE_FROM_QT4_WIN)
 extern bool qt_tab_all_widgets();
@@ -161,7 +159,7 @@ private slots:
     void showShaded();
     void showNormal_data();
     void showNormal();
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
     void setOpaqueResizeAndMove_data();
     void setOpaqueResizeAndMove();
 #endif
@@ -666,7 +664,7 @@ private:
     int _count;
 };
 
-#ifndef QTEST_NO_CURSOR
+#ifndef QT_NO_CURSOR
 void tst_QMdiSubWindow::setOpaqueResizeAndMove_data()
 {
     QTest::addColumn<bool>("opaqueMode");
