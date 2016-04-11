@@ -273,6 +273,7 @@ static QImage blendedImage(const QImage &start, const QImage &end, float alpha)
     case 32:
         {
             blended = QImage(sw, sh, start.format());
+            blended.setDevicePixelRatio(start.devicePixelRatio());
             uchar *mixed_data = blended.bits();
             const uchar *back_data = start.bits();
             const uchar *front_data = end.bits();

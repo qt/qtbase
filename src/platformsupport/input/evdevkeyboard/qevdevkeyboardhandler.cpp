@@ -101,10 +101,10 @@ QEvdevKeyboardHandler *QEvdevKeyboardHandler::create(const QString &device,
     bool enableCompose = false;
     int grab = 0;
 
-    QStringList args = specification.split(QLatin1Char(':'));
-    foreach (const QString &arg, args) {
+    const auto args = specification.splitRef(QLatin1Char(':'));
+    for (const QStringRef &arg : args) {
         if (arg.startsWith(QLatin1String("keymap=")))
-            keymapFile = arg.mid(7);
+            keymapFile = arg.mid(7).toString();
         else if (arg == QLatin1String("disable-zap"))
             disableZap = true;
         else if (arg == QLatin1String("enable-compose"))

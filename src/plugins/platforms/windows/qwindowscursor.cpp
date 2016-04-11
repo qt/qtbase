@@ -103,9 +103,9 @@ QWindowsPixmapCursorCacheKey::QWindowsPixmapCursorCacheKey(const QCursor &c)
 HCURSOR QWindowsCursor::createPixmapCursor(QPixmap pixmap, const QPoint &hotSpot, qreal scaleFactor)
 {
     HCURSOR cur = 0;
-    scaleFactor /= pixmap.devicePixelRatioF();
-    if (!qFuzzyCompare(scaleFactor, 1)) {
-        pixmap = pixmap.scaled((scaleFactor * QSizeF(pixmap.size())).toSize(),
+    const qreal pixmapScaleFactor = scaleFactor / pixmap.devicePixelRatioF();
+    if (!qFuzzyCompare(pixmapScaleFactor, 1)) {
+        pixmap = pixmap.scaled((pixmapScaleFactor * QSizeF(pixmap.size())).toSize(),
                                Qt::KeepAspectRatio, Qt::SmoothTransformation);
     }
     QBitmap mask = pixmap.mask();
@@ -119,8 +119,8 @@ HCURSOR QWindowsCursor::createPixmapCursor(QPixmap pixmap, const QPoint &hotSpot
 
     ICONINFO ii;
     ii.fIcon     = 0;
-    ii.xHotspot  = DWORD(hotSpot.x());
-    ii.yHotspot  = DWORD(hotSpot.y());
+    ii.xHotspot  = DWORD(qRound(hotSpot.x() * scaleFactor));
+    ii.yHotspot  = DWORD(qRound(hotSpot.y() * scaleFactor));
     ii.hbmMask   = im;
     ii.hbmColor  = ic;
 

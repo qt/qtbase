@@ -507,6 +507,7 @@ public:
         AA_DisableHighDpiScaling = 21,
         AA_UseStyleSheetPropagationInWidgetStyles = 22, // ### Qt 6: remove me
         AA_DontUseNativeDialogs = 23,
+        AA_SynthesizeMouseForUnhandledTabletEvents = 24,
 
         // Add new attributes before this line
         AA_AttributeCount
@@ -1338,6 +1339,7 @@ public:
         ImTextBeforeCursor = 0x800,
         ImTextAfterCursor = 0x1000,
         ImEnterKeyType = 0x2000,
+        ImAnchorRectangle = 0x4000,
 
         ImPlatformData = 0x80000000,
         ImQueryInput = ImCursorRectangle | ImCursorPosition | ImSurroundingText |

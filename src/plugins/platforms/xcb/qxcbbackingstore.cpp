@@ -58,6 +58,7 @@
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <qpa/qplatformgraphicsbuffer.h>
 #include <private/qimage_p.h>
+#include <qendian.h>
 
 #include <algorithm>
 QT_BEGIN_NAMESPACE
@@ -107,6 +108,7 @@ private:
     // do a server-side copy on expose instead of sending the pixels every time
     xcb_pixmap_t m_xcb_pixmap;
     QRegion m_pendingFlush;
+    QByteArray m_flushBuffer;
 
     bool m_hasAlpha;
 };
@@ -287,10 +289,83 @@ void QXcbShmImage::ensureGC(xcb_drawable_t dst)
     }
 }
 
+static inline void copy_unswapped(char *dst, int dstBytesPerLine, const QImage &img, const QRect &rect)
+{
+    const uchar *srcData = img.constBits();
+    const int srcBytesPerLine = img.bytesPerLine();
+
+    const int leftOffset = rect.left() * img.depth() >> 3;
+    const int bottom = rect.bottom() + 1;
+
+    for (int yy = rect.top(); yy < bottom; ++yy) {
+        const uchar *src = srcData + yy * srcBytesPerLine + leftOffset;
+        ::memmove(dst, src, dstBytesPerLine);
+        dst += dstBytesPerLine;
+    }
+}
+
+template <class Pixel>
+static inline void copy_swapped(Pixel *dst, const QImage &img, const QRect &rect)
+{
+    const uchar *srcData = img.constBits();
+    const int srcBytesPerLine = img.bytesPerLine();
+
+    const int left = rect.left();
+    const int right = rect.right() + 1;
+    const int bottom = rect.bottom() + 1;
+
+    for (int yy = rect.top(); yy < bottom; ++yy) {
+        const Pixel *src = reinterpret_cast<const Pixel *>(srcData + yy * srcBytesPerLine) + left;
+
+        for (int xx = left; xx < right; ++xx)
+            *dst++ = qbswap<Pixel>(*src++);
+    }
+}
+
+static QImage native_sub_image(QByteArray *buffer, const QImage &src, int x, int y, int w, int h, bool swap)
+{
+    const QRect rect(x, y, w, h);
+
+    if (!swap && src.rect() == rect)
+        return src;
+
+    const int dstStride = w * src.depth() >> 3;
+    buffer->resize(h * dstStride);
+
+    if (swap) {
+        switch (src.depth()) {
+        case 32:
+            copy_swapped(reinterpret_cast<quint32 *>(buffer->data()), src, rect);
+            break;
+        case 16:
+            copy_swapped(reinterpret_cast<quint16 *>(buffer->data()), src, rect);
+            break;
+        }
+    } else {
+        copy_unswapped(buffer->data(), dstStride, src, rect);
+    }
+
+    return QImage(reinterpret_cast<const uchar *>(buffer->constData()), w, h, dstStride, src.format());
+}
+
 void QXcbShmImage::flushPixmap(const QRegion &region)
 {
     const QVector<QRect> rects = m_pendingFlush.intersected(region).rects();
     m_pendingFlush -= region;
+
+    xcb_image_t xcb_subimage;
+    memset(&xcb_subimage, 0, sizeof(xcb_image_t));
+
+    xcb_subimage.format = m_xcb_image->format;
+    xcb_subimage.scanline_pad = m_xcb_image->scanline_pad;
+    xcb_subimage.depth = m_xcb_image->depth;
+    xcb_subimage.bpp = m_xcb_image->bpp;
+    xcb_subimage.unit = m_xcb_image->unit;
+    xcb_subimage.plane_mask = m_xcb_image->plane_mask;
+    xcb_subimage.byte_order = (xcb_image_order_t) connection()->setup()->image_byte_order;
+    xcb_subimage.bit_order = m_xcb_image->bit_order;
+
+    const bool needsByteSwap = xcb_subimage.byte_order != m_xcb_image->byte_order;
 
     for (const QRect &rect : rects) {
         // We must make sure that each request is not larger than max_req_size.
@@ -308,37 +383,29 @@ void QXcbShmImage::flushPixmap(const QRegion &region)
         // larger than the server's maximum request size and stuff breaks.
         // To work around that, we upload the image in chunks where each chunk
         // is small enough for a single request.
-        int src_x = rect.x();
-        int src_y = rect.y();
-        int target_x = rect.x();
-        int target_y = rect.y();
-        int width = rect.width();
+        const int x = rect.x();
+        int y = rect.y();
+        const int width = rect.width();
         int height = rect.height();
 
         while (height > 0) {
-            int rows = std::min(height, rows_per_put);
+            const int rows = std::min(height, rows_per_put);
+            const QImage subImage = native_sub_image(&m_flushBuffer, m_qimage, x, y, width, rows, needsByteSwap);
 
-            xcb_image_t *subimage = xcb_image_subimage(m_xcb_image, src_x, src_y, width, rows,
-                                                       0, 0, 0);
-
-            // Convert the image to the native byte order.
-            xcb_image_t *native_subimage = xcb_image_native(xcb_connection(), subimage, 1);
+            xcb_subimage.width = width;
+            xcb_subimage.height = rows;
+            xcb_subimage.data = const_cast<uint8_t *>(subImage.constBits());
+            xcb_image_annotate(&xcb_subimage);
 
             xcb_image_put(xcb_connection(),
                           m_xcb_pixmap,
                           m_gc,
-                          native_subimage,
-                          target_x,
-                          target_y,
+                          &xcb_subimage,
+                          x,
+                          y,
                           0);
 
-            if (native_subimage != subimage)
-                xcb_image_destroy(native_subimage);
-
-            xcb_image_destroy(subimage);
-
-            src_y += rows;
-            target_y += rows;
+            y += rows;
             height -= rows;
         }
     }

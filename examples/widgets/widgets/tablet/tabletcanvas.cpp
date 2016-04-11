@@ -131,6 +131,7 @@ void TabletCanvas::tabletEvent(QTabletEvent *event)
         default:
             break;
     }
+    event->accept();
     update();
 }
 //! [3]

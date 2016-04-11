@@ -53,17 +53,15 @@ QXcbGlxWindow::~QXcbGlxWindow()
 {
 }
 
-void QXcbGlxWindow::resolveFormat()
-{
-    m_format = window()->requestedFormat(); //qglx_findVisualInfo sets the resovled format
-}
-
-void *QXcbGlxWindow::createVisual()
+const xcb_visualtype_t *QXcbGlxWindow::createVisual()
 {
     QXcbScreen *scr = xcbScreen();
     if (!scr)
         return Q_NULLPTR;
-    return qglx_findVisualInfo(DISPLAY_FROM_XCB(scr), scr->screenNumber(), &m_format);
+    XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(scr), scr->screenNumber(), &m_format);
+    const xcb_visualtype_t *xcb_visualtype = scr->visualForId(visualInfo->visualid);
+    XFree(visualInfo);
+    return xcb_visualtype;
 }
 
 QT_END_NAMESPACE

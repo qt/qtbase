@@ -50,7 +50,7 @@ class QPlatformOffscreenSurface;
 class QOffscreenSurface;
 class QXcbNativeInterfaceHandler;
 
-Q_XCB_EXPORT Q_DECLARE_LOGGING_CATEGORY(QT_XCB_GLINTEGRATION)
+Q_XCB_EXPORT Q_DECLARE_LOGGING_CATEGORY(lcQpaGl)
 
 class Q_XCB_EXPORT QXcbGlIntegration
 {

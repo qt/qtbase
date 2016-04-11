@@ -3679,7 +3679,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
 
                 QRect textRect = subRule.contentsRect(opt->rect);
                 textRect.setWidth(textRect.width() - mi.tabWidth);
-                QString s = mi.text;
+                QStringRef s(&mi.text);
                 p->setPen(mi.palette.buttonText().color());
                 if (!s.isEmpty()) {
                     int text_flags = Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
@@ -3689,10 +3689,10 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                     if (t >= 0) {
                         QRect vShortcutRect = visualRect(opt->direction, mi.rect,
                             QRect(textRect.topRight(), QPoint(mi.rect.right(), textRect.bottom())));
-                        p->drawText(vShortcutRect, text_flags, s.mid(t + 1));
+                        p->drawText(vShortcutRect, text_flags, s.mid(t + 1).toString());
                         s = s.left(t);
                     }
-                    p->drawText(textRect, text_flags, s.left(t));
+                    p->drawText(textRect, text_flags, s.left(t).toString());
                 }
 
                 if (mi.menuItemType == QStyleOptionMenuItem::SubMenu) {// draw sub menu arrow

@@ -182,8 +182,8 @@ public Q_SLOTS:
     void updateSyncRequestCounter();
 
 protected:
-    virtual void resolveFormat() { m_format = window()->requestedFormat(); }
-    virtual void *createVisual() { return Q_NULLPTR; }
+    virtual void resolveFormat(const QSurfaceFormat &format) { m_format = format; }
+    virtual const xcb_visualtype_t *createVisual();
 
     QXcbScreen *parentScreen();
 

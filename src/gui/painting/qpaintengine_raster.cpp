@@ -1693,8 +1693,12 @@ void QRasterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 
     // ### Optimize for non transformed ellipses and rectangles...
     QRectF cpRect = path.controlPointRect();
-    const QRect deviceRect = s->matrix.mapRect(cpRect).toRect();
-    ProcessSpans blend = d->getBrushFunc(deviceRect, &s->brushData);
+    const QRect pathDeviceRect = s->matrix.mapRect(cpRect).toRect();
+    // Skip paths that by conservative estimates are completely outside the paint device.
+    if (!pathDeviceRect.intersects(d->deviceRect))
+        return;
+
+    ProcessSpans blend = d->getBrushFunc(pathDeviceRect, &s->brushData);
 
         // ### Falcon
 //         const bool do_clip = (deviceRect.left() < -QT_RASTER_COORD_LIMIT
@@ -3893,7 +3897,7 @@ void QClipData::setClipRect(const QRect &rect)
 void QClipData::setClipRegion(const QRegion &region)
 {
     if (region.rectCount() == 1) {
-        setClipRect(*region.begin());
+        setClipRect(region.boundingRect());
         return;
     }
 

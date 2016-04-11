@@ -52,6 +52,7 @@ private slots:
     void indexOf();
     void indexOf2_data();
     void indexOf2();
+    void iteration();
     void length_data();
     void length();
     void isEmpty();
@@ -444,6 +445,38 @@ void tst_QStringRef::indexOf2()
         got = haystackRef.lastIndexOf(needleRef, -1, Qt::CaseInsensitive);
         QVERIFY(got == resultpos || (resultpos >= 0 && got >= resultpos));
     }
+}
+
+void tst_QStringRef::iteration()
+{
+    QString hello = "Hello";
+    QString olleh = "olleH";
+
+    QStringRef ref(&hello);
+    QStringRef rref(&olleh);
+
+    const QStringRef &cref = ref;
+    const QStringRef &crref = rref;
+
+    QVERIFY(std::equal(  ref.begin(),   ref.end(), hello.begin()));
+    QVERIFY(std::equal( rref.begin(),  rref.end(), olleh.begin()));
+    QVERIFY(std::equal( cref.begin(),  cref.end(), hello.begin()));
+    QVERIFY(std::equal(crref.begin(), crref.end(), olleh.begin()));
+
+    QVERIFY(std::equal(  ref.cbegin(),   ref.cend(), hello.begin()));
+    QVERIFY(std::equal( rref.cbegin(),  rref.cend(), olleh.begin()));
+    QVERIFY(std::equal( cref.cbegin(),  cref.cend(), hello.begin()));
+    QVERIFY(std::equal(crref.cbegin(), crref.cend(), olleh.begin()));
+
+    QVERIFY(std::equal(  ref.rbegin(),   ref.rend(), hello.rbegin()));
+    QVERIFY(std::equal( rref.rbegin(),  rref.rend(), olleh.rbegin()));
+    QVERIFY(std::equal( cref.rbegin(),  cref.rend(), hello.rbegin()));
+    QVERIFY(std::equal(crref.rbegin(), crref.rend(), olleh.rbegin()));
+
+    QVERIFY(std::equal(  ref.crbegin(),   ref.crend(), hello.rbegin()));
+    QVERIFY(std::equal( rref.crbegin(),  rref.crend(), olleh.rbegin()));
+    QVERIFY(std::equal( cref.crbegin(),  cref.crend(), hello.rbegin()));
+    QVERIFY(std::equal(crref.crbegin(), crref.crend(), olleh.rbegin()));
 }
 
 void tst_QStringRef::lastIndexOf_data()

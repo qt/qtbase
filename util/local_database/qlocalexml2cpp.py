@@ -552,7 +552,7 @@ def main():
             cmnt_to = cmnt_to + country_map[to_country][1]
 
         data_temp_file.write("    ")
-        data_temp_file.write("{ %3d, %2d, %3d }, { %3d, %2d, %3d }" % (from_language, from_script, from_country, to_language, to_script, to_country))
+        data_temp_file.write("{ %3d, %3d, %3d }, { %3d, %3d, %3d }" % (from_language, from_script, from_country, to_language, to_script, to_country))
         index += 1
         if index != len(likely_subtags_map):
             data_temp_file.write(",")
@@ -872,6 +872,7 @@ def main():
         language = fixedLanguageName(language_map[key][0], dupes)
         qlocaleh_temp_file.write("        " + language + " = " + str(key) + ",\n")
     # legacy. should disappear at some point
+    qlocaleh_temp_file.write("\n")
     qlocaleh_temp_file.write("        Norwegian = NorwegianBokmal,\n")
     qlocaleh_temp_file.write("        Moldavian = Romanian,\n")
     qlocaleh_temp_file.write("        SerboCroatian = Serbian,\n")
@@ -887,6 +888,7 @@ def main():
     qlocaleh_temp_file.write("        Chewa = Nyanja,\n")
     qlocaleh_temp_file.write("        Frisian = WesternFrisian,\n")
     qlocaleh_temp_file.write("        Uigur = Uighur,\n")
+    qlocaleh_temp_file.write("\n")
     qlocaleh_temp_file.write("        LastLanguage = " + language + "\n")
     qlocaleh_temp_file.write("    };\n")
 
@@ -899,8 +901,10 @@ def main():
         script = fixedScriptName(script_map[key][0], dupes)
         qlocaleh_temp_file.write("        " + script + " = " + str(key) + ",\n")
     # renamings
+    qlocaleh_temp_file.write("\n")
     qlocaleh_temp_file.write("        SimplifiedChineseScript = SimplifiedHanScript,\n")
     qlocaleh_temp_file.write("        TraditionalChineseScript = TraditionalHanScript,\n")
+    qlocaleh_temp_file.write("\n")
     qlocaleh_temp_file.write("        LastScript = " + script + "\n")
     qlocaleh_temp_file.write("    };\n")
 
@@ -910,6 +914,10 @@ def main():
     for key in country_map.keys():
         country = fixedCountryName(country_map[key][0], dupes)
         qlocaleh_temp_file.write("        " + country + " = " + str(key) + ",\n")
+    # deprecated
+    qlocaleh_temp_file.write("\n")
+    qlocaleh_temp_file.write("        Tokelau = TokelauCountry,\n")
+    qlocaleh_temp_file.write("        Tuvalu = TuvaluCountry,\n")
     # renamings
     qlocaleh_temp_file.write("        DemocraticRepublicOfCongo = CongoKinshasa,\n")
     qlocaleh_temp_file.write("        PeoplesRepublicOfCongo = CongoBrazzaville,\n")
@@ -917,6 +925,7 @@ def main():
     qlocaleh_temp_file.write("        RepublicOfKorea = SouthKorea,\n")
     qlocaleh_temp_file.write("        RussianFederation = Russia,\n")
     qlocaleh_temp_file.write("        SyrianArabRepublic = Syria,\n")
+    qlocaleh_temp_file.write("\n")
     qlocaleh_temp_file.write("        LastCountry = " + country + "\n")
     qlocaleh_temp_file.write("    };\n")
 

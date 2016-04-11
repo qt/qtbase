@@ -106,8 +106,8 @@ public:
     GLXPbuffer pbuffer() const { return m_pbuffer; }
 
 private:
-    QSurfaceFormat m_format;
     QXcbScreen *m_screen;
+    QSurfaceFormat m_format;
     GLXPbuffer m_pbuffer;
 };
 

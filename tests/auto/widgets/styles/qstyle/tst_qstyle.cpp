@@ -106,6 +106,7 @@ private slots:
     void testFrameOnlyAroundContents();
 
     void testProxyCalled();
+    void testStyleOptionInit();
 private:
     void lineUpLayoutTest(QStyle *);
     QWidget *testWidget;
@@ -785,6 +786,112 @@ void tst_QStyle::testProxyCalled()
         testStyle.setBaseStyle(style);
         style->drawControl(QStyle::CE_ToolButtonLabel, &opt, &painter, &b);
         QVERIFY(testStyle.called);
+        delete style;
+    }
+}
+
+
+class TestStyleOptionInitProxy: public QProxyStyle
+{
+    Q_OBJECT
+public:
+    mutable bool invalidOptionsDetected;
+    explicit TestStyleOptionInitProxy(QStyle *style = Q_NULLPTR)
+        : QProxyStyle(style),
+          invalidOptionsDetected(false)
+    {}
+
+    void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p, const QWidget *w) const Q_DECL_OVERRIDE {
+        checkStyleEnum<QStyle::PrimitiveElement>(pe, opt);
+        return QProxyStyle::drawPrimitive(pe, opt, p, w);
+    }
+
+    void drawControl(ControlElement element, const QStyleOption *opt, QPainter *p, const QWidget *w) const Q_DECL_OVERRIDE {
+        checkStyleEnum<QStyle::ControlElement>(element, opt);
+        return QProxyStyle::drawControl(element, opt, p, w);
+    }
+
+    QRect subElementRect(SubElement subElement, const QStyleOption *option, const QWidget *widget) const Q_DECL_OVERRIDE {
+        checkStyleEnum<QStyle::SubElement>(subElement, option);
+        return QProxyStyle::subElementRect(subElement, option, widget);
+    }
+
+    void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p, const QWidget *widget) const Q_DECL_OVERRIDE {
+        checkStyleEnum<QStyle::ComplexControl>(cc, opt);
+        return QProxyStyle::drawComplexControl(cc, opt, p, widget);
+    }
+
+    QRect subControlRect(ComplexControl cc, const QStyleOptionComplex *opt, SubControl sc, const QWidget *widget) const Q_DECL_OVERRIDE {
+        checkStyleEnum<QStyle::ComplexControl>(cc, opt);
+        return QProxyStyle::subControlRect(cc, opt, sc, widget);
+    }
+
+    int pixelMetric(PixelMetric metric, const QStyleOption *option, const QWidget *widget) const Q_DECL_OVERRIDE {
+        checkStyleEnum<QStyle::PixelMetric>(metric, option);
+        return QProxyStyle::pixelMetric(metric, option, widget);
+    }
+
+    QSize sizeFromContents(ContentsType ct, const QStyleOption *opt, const QSize &contentsSize, const QWidget *w) const Q_DECL_OVERRIDE {
+        checkStyleEnum<QStyle::ContentsType>(ct, opt);
+        return QProxyStyle::sizeFromContents(ct, opt, contentsSize, w);
+    }
+
+    int styleHint(StyleHint stylehint, const QStyleOption *opt, const QWidget *widget, QStyleHintReturn *returnData) const Q_DECL_OVERRIDE {
+        checkStyleEnum<QStyle::StyleHint>(stylehint, opt);
+        return QProxyStyle::styleHint(stylehint, opt, widget, returnData);
+    }
+
+    QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt, const QWidget *widget) const  Q_DECL_OVERRIDE {
+        checkStyleEnum<QStyle::StandardPixmap>(standardPixmap, opt);
+        return QProxyStyle::standardPixmap(standardPixmap, opt, widget);
+    }
+
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option, const QWidget *widget) const Q_DECL_OVERRIDE {
+        checkStyleEnum<QStyle::StandardPixmap>(standardIcon, option);
+        return QProxyStyle::standardIcon(standardIcon, option, widget);
+    }
+
+    QPixmap generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap, const QStyleOption *opt) const  Q_DECL_OVERRIDE {
+        checkStyle(QString::asprintf("QIcon::Mode(%i)", iconMode).toLatin1(), opt);
+        return QProxyStyle::generatedIconPixmap(iconMode, pixmap, opt);
+    }
+
+    int layoutSpacing(QSizePolicy::ControlType control1, QSizePolicy::ControlType control2, Qt::Orientation orientation, const QStyleOption *option, const QWidget *widget) const Q_DECL_OVERRIDE {
+        checkStyle(QString::asprintf("QSizePolicy::ControlType(%i), QSizePolicy::ControlType(%i)", control1, control2).toLatin1(), option);
+        return QProxyStyle::layoutSpacing(control1, control2, orientation, option, widget);
+    }
+
+private:
+    void checkStyle(const QByteArray &info, const QStyleOption *opt) const {
+        if (opt && (opt->version == 0 || opt->styleObject == Q_NULLPTR) ) {
+            invalidOptionsDetected = true;
+            qWarning() << baseStyle()->metaObject()->className()
+                       << "Invalid QStyleOption found for"
+                       << info;
+            qWarning() << "Version:" << opt->version << "StyleObject:" << opt->styleObject;
+        }
+    }
+
+    template<typename MEnum>
+    void checkStyleEnum(MEnum element, const QStyleOption *opt) const {
+        static QMetaEnum _enum = QMetaEnum::fromType<MEnum>();
+        checkStyle(_enum.valueToKey(element), opt);
+    }
+};
+
+void tst_QStyle::testStyleOptionInit()
+{
+    QStringList keys = QStyleFactory::keys();
+    QVector<QStyle*> styles;
+    styles.reserve(keys.size() + 1);
+
+    styles << new QCommonStyle();
+
+    Q_FOREACH (QStyle *style, styles) {
+        TestStyleOptionInitProxy testStyle;
+        testStyle.setBaseStyle(style);
+        testAllFunctions(style);
+        QVERIFY(!testStyle.invalidOptionsDetected);
         delete style;
     }
 }

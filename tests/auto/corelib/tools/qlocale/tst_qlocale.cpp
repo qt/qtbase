@@ -1923,8 +1923,8 @@ void tst_QLocale::standaloneDayName_data()
     QTest::newRow("C short")  << QString("C") << QString("Sun") << 7 << QLocale::ShortFormat;
     QTest::newRow("C narrow")  << QString("C") << QString("S") << 7 << QLocale::NarrowFormat;
 
-    QTest::newRow("ru_RU long")  << QString("ru_RU") << QString::fromUtf8("\320\222\320\276\321\201\320\272\321\200\320\265\321\201\320\265\320\275\321\214\320\265") << 7 << QLocale::LongFormat;
-    QTest::newRow("ru_RU short")  << QString("ru_RU") << QString::fromUtf8("\320\222\321\201") << 7 << QLocale::ShortFormat;
+    QTest::newRow("ru_RU long")  << QString("ru_RU") << QString::fromUtf8("\320\262\320\276\321\201\320\272\321\200\320\265\321\201\320\265\320\275\321\214\320\265") << 7 << QLocale::LongFormat;
+    QTest::newRow("ru_RU short")  << QString("ru_RU") << QString::fromUtf8("\320\262\321\201") << 7 << QLocale::ShortFormat;
     QTest::newRow("ru_RU narrow")  << QString("ru_RU") << QString::fromUtf8("\320\222") << 7 << QLocale::NarrowFormat;
 }
 
@@ -2183,10 +2183,10 @@ void tst_QLocale::currency()
     QCOMPARE(en_US.toCurrencyString(double(-1234.56), NULL, 4), QString("$-1,234.5600"));
 
     const QLocale ru_RU("ru_RU");
-    QCOMPARE(ru_RU.toCurrencyString(qulonglong(1234)), QString::fromUtf8("1" "\xc2\xa0" "234\xc2\xa0\xd1\x80\xd1\x83\xd0\xb1."));
-    QCOMPARE(ru_RU.toCurrencyString(qlonglong(-1234)), QString::fromUtf8("-1" "\xc2\xa0" "234\xc2\xa0\xd1\x80\xd1\x83\xd0\xb1."));
-    QCOMPARE(ru_RU.toCurrencyString(double(1234.56)), QString::fromUtf8("1" "\xc2\xa0" "234,56\xc2\xa0\xd1\x80\xd1\x83\xd0\xb1."));
-    QCOMPARE(ru_RU.toCurrencyString(double(-1234.56)), QString::fromUtf8("-1" "\xc2\xa0" "234,56\xc2\xa0\xd1\x80\xd1\x83\xd0\xb1."));
+    QCOMPARE(ru_RU.toCurrencyString(qulonglong(1234)), QString::fromUtf8("1" "\xc2\xa0" "234\xc2\xa0\xe2\x82\xbd"));
+    QCOMPARE(ru_RU.toCurrencyString(qlonglong(-1234)), QString::fromUtf8("-1" "\xc2\xa0" "234\xc2\xa0\xe2\x82\xbd"));
+    QCOMPARE(ru_RU.toCurrencyString(double(1234.56)), QString::fromUtf8("1" "\xc2\xa0" "234,56\xc2\xa0\xe2\x82\xbd"));
+    QCOMPARE(ru_RU.toCurrencyString(double(-1234.56)), QString::fromUtf8("-1" "\xc2\xa0" "234,56\xc2\xa0\xe2\x82\xbd"));
 
     const QLocale de_DE("de_DE");
     QCOMPARE(de_DE.toCurrencyString(qulonglong(1234)), QString::fromUtf8("1.234\xc2\xa0\xe2\x82\xac"));
@@ -2346,14 +2346,20 @@ void tst_QLocale::textDirection_data()
         case QLocale::CentralKurdish:
         case QLocale::ClassicalMandaic:
         case QLocale::Divehi:
+//        case QLocale::Fulah:
+//        case QLocale::Hausa:
         case QLocale::Hebrew:
+//        case QLocale::Hungarian:
         case QLocale::Kashmiri:
+//        case QLocale::Kurdish:
         case QLocale::Lydian:
         case QLocale::Mandingo:
         case QLocale::ManichaeanMiddlePersian:
+        case QLocale::Mazanderani:
         case QLocale::Mende:
         case QLocale::Meroitic:
         case QLocale::Nko:
+        case QLocale::NorthernLuri:
         case QLocale::OldTurkish:
         case QLocale::Pahlavi:
         case QLocale::Parthian:
@@ -2367,6 +2373,7 @@ void tst_QLocale::textDirection_data()
         case QLocale::Syriac:
         case QLocale::Uighur:
         case QLocale::Urdu:
+        case QLocale::Yiddish:
             rightToLeft = QLocale(QLocale::Language(language)).language() == QLocale::Language(language); // false if there is no locale data for language
             break;
         default:

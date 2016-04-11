@@ -118,7 +118,7 @@ void QWidgetLineControl::updateDisplayText(bool forceUpdate)
     // characters)
     QChar* uc = str.data();
     for (int i = 0; i < (int)str.length(); ++i) {
-        if ((uc[i] < 0x20 && uc[i] != 0x09)
+        if ((uc[i].unicode() < 0x20 && uc[i].unicode() != 0x09)
             || uc[i] == QChar::LineSeparator
             || uc[i] == QChar::ParagraphSeparator
             || uc[i] == QChar::ObjectReplacementCharacter)
@@ -1180,14 +1180,14 @@ QString QWidgetLineControl::maskString(uint pos, const QString &str, bool clear)
                     int n = findInMask(i, true, true, str[(int)strIndex]);
                     if (n != -1) {
                         if (str.length() != 1 || i == 0 || (i > 0 && (!m_maskData[i-1].separator || m_maskData[i-1].maskChar != str[(int)strIndex]))) {
-                            s += fill.mid(i, n-i+1);
+                            s += fill.midRef(i, n - i + 1);
                             i = n + 1; // update i to find + 1
                         }
                     } else {
                         // search for valid m_blank if not
                         n = findInMask(i, true, false, str[(int)strIndex]);
                         if (n != -1) {
-                            s += fill.mid(i, n-i);
+                            s += fill.midRef(i, n - i);
                             switch (m_maskData[n].caseMode) {
                             case MaskInputData::Upper:
                                 s += str[(int)strIndex].toUpper();

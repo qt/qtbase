@@ -52,8 +52,7 @@ public:
     ~QXcbGlxWindow();
 
 protected:
-    void resolveFormat() Q_DECL_OVERRIDE;
-    void *createVisual() Q_DECL_OVERRIDE;
+    const xcb_visualtype_t *createVisual() Q_DECL_OVERRIDE;
 };
 
 QT_END_NAMESPACE

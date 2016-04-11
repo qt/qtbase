@@ -71,8 +71,8 @@ QEvdevMouseHandler *QEvdevMouseHandler::create(const QString &device, const QStr
     int grab = 0;
     bool abs = false;
 
-    QStringList args = specification.split(QLatin1Char(':'));
-    foreach (const QString &arg, args) {
+    const auto args = specification.splitRef(QLatin1Char(':'));
+    for (const QStringRef &arg : args) {
         if (arg == QLatin1String("nocompress"))
             compression = false;
         else if (arg.startsWith(QLatin1String("dejitter=")))

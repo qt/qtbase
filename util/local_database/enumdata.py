@@ -371,7 +371,27 @@ language_list = {
     336 : [ "Bassa",              "bsq" ],
     337 : [ "Mono",               "mru" ],
     338 : [ "Tedim Chin",         "ctd" ],
-    339 : [ "Maithili",           "mai" ]
+    339 : [ "Maithili",           "mai" ],
+    340 : [ "Ahom",               "aho" ],
+    341 : [ "American Sign Language", "ase" ],
+    342 : [ "Ardhamagadhi Prakrit", "pka" ],
+    343 : [ "Bhojpuri",           "bho" ],
+    344 : [ "Hieroglyphic Luwian", "hlu" ],
+    345 : [ "Literary Chinese",   "lzh" ],
+    346 : [ "Mazanderani",        "mzn" ],
+    347 : [ "Mru",                "mro" ],
+    348 : [ "Newari",             "new" ],
+    349 : [ "Northern Luri",      "lrc" ],
+    350 : [ "Palauan",            "pau" ],
+    351 : [ "Papiamento",         "pap" ],
+    352 : [ "Saraiki",            "skr" ],
+    353 : [ "Tokelau",            "tkl" ],
+    354 : [ "Tok Pisin",          "tpi" ],
+    355 : [ "Tuvalu",             "tvl" ],
+    356 : [ "UncodedLanguages",   "mis" ],
+    357 : [ "Cantonese",          "yue" ],
+    358 : [ "Osage",              "osa" ],
+    359 : [ "Tangut",             "txg" ]
 }
 
 country_list = {
@@ -632,7 +652,9 @@ country_list = {
     254 : [ "SouthSudan",                               "SS"  ],
     255 : [ "Bonaire",                                  "BQ"  ],
     256 : [ "SintMaarten",                              "SX"  ],
-    257 : [ "Kosovo",                                   "XK"  ]
+    257 : [ "Kosovo",                                   "XK"  ],
+    258 : [ "European Union",                           "EU"  ],
+    259 : [ "Outlying Oceania",                         "QO"  ]
 }
 
 script_list = {
@@ -763,10 +785,21 @@ script_list = {
     124 : [ "Siddham",                "Sidd" ],
     125 : [ "Khudawadi",              "Sind" ],
     126 : [ "Tirhuta",                "Tirh" ],
-    127 : [ "Varang Kshiti",          "Wara" ]
-
-#    ### : [ "Blissymbols",            "Blis" ],
-#    ### : [ "Naxi Geba",              "Nkgb" ],
+    127 : [ "Varang Kshiti",          "Wara" ],
+    128 : [ "Ahom",                   "Ahom" ],
+    129 : [ "Anatolian Hieroglyphs",  "Hluw" ],
+    130 : [ "Hatran",                 "Hatr" ],
+    131 : [ "Multani",                "Mult" ],
+    132 : [ "Old Hungarian",          "Hung" ],
+    133 : [ "SignWriting",            "Sgnw" ],
+    134 : [ "Adlam",                  "Adlm" ],
+    135 : [ "Bhaiksuki",              "Bhks" ],
+    136 : [ "Marchen",                "Marc" ],
+    137 : [ "Newa",                   "Newa" ],
+    138 : [ "Osage",                  "Osge" ],
+    139 : [ "Tangut",                 "Tang" ],
+    140 : [ "Han With Bopomofo",      "Hanb" ],
+    141 : [ "Jamo",                   "Jamo" ]
 }
 
 def countryCodeToId(code):

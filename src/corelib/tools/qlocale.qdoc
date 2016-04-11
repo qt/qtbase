@@ -92,7 +92,7 @@
     \note For the current keyboard input locale take a look at
     QInputMethod::locale().
 
-    QLocale's data is based on Common Locale Data Repository v27.
+    QLocale's data is based on Common Locale Data Repository v29.
 
     The double-to-string and string-to-double conversion functions are
     covered by the following licenses:
@@ -483,6 +483,26 @@
     \value Maithili Since Qt 5.5
     \value LowerSorbian Since Qt 5.5
     \value UpperSorbian Since Qt 5.5
+    \value Ahom Since Qt 5.7
+    \value AmericanSignLanguage Since Qt 5.7
+    \value ArdhamagadhiPrakrit Since Qt 5.7
+    \value Bhojpuri Since Qt 5.7
+    \value Cantonese Since Qt 5.7
+    \value HieroglyphicLuwian Since Qt 5.7
+    \value LiteraryChinese Since Qt 5.7
+    \value Mazanderani Since Qt 5.7
+    \value Mru Since Qt 5.7
+    \value Newari Since Qt 5.7
+    \value NorthernLuri Since Qt 5.7
+    \value Osage Since Qt 5.7
+    \value Palauan Since Qt 5.7
+    \value Papiamento Since Qt 5.7
+    \value Saraiki Since Qt 5.7
+    \value Tangut Since Qt 5.7
+    \value TokelauLanguage Since Qt 5.7
+    \value TokPisin Since Qt 5.7
+    \value TuvaluLanguage Since Qt 5.7
+    \value UncodedLanguages Since Qt 5.7
     \omitvalue LastLanguage
 
     \sa language(), languageToString()
@@ -567,6 +587,7 @@
     \value Eritrea
     \value Estonia
     \value Ethiopia
+    \value EuropeanUnion Since Qt 5.7
     \value FalklandIslands
     \value FaroeIslands
     \value Fiji
@@ -662,6 +683,7 @@
     \value NorthernMarianaIslands
     \value Norway
     \value Oman
+    \value OutlyingOceania Since Qt 5.7
     \value Pakistan
     \value Palau
     \value PalestinianTerritories
@@ -714,14 +736,16 @@
     \value Tanzania
     \value Thailand
     \value Togo
-    \value Tokelau
+    \value TokelauCountry
+    \value Tokelau Obsolete, please use TokelauCountry
     \value Tonga
     \value TrinidadAndTobago
     \value Tunisia
     \value Turkey
     \value Turkmenistan
     \value TurksAndCaicosIslands
-    \value Tuvalu
+    \value TuvaluCountry
+    \value Tuvalu Obsolete, please use TuvaluCountry
     \value Uganda
     \value Ukraine
     \value UnitedArabEmirates
@@ -768,6 +792,9 @@
     This enumerated type is used to specify a script.
 
     \value AnyScript
+    \value AdlamScript Since Qt 5.7
+    \value AhomScript Since Qt 5.7
+    \value AnatolianHieroglyphsScript Since Qt 5.7
     \value ArabicScript
     \value ArmenianScript
     \value AvestanScript
@@ -776,6 +803,7 @@
     \value BassaVahScript Since Qt 5.5
     \value BatakScript
     \value BengaliScript
+    \value BhaiksukiScript Since Qt 5.7
     \value BopomofoScript
     \value BrahmiScript
     \value BrailleScript
@@ -807,11 +835,14 @@
     \value HanScript
     \value HangulScript
     \value HanunooScript
+    \value HanWithBopomofoScript Since Qt 5.7
+    \value HatranScript Since Qt 5.7
     \value HebrewScript
     \value HiraganaScript
     \value ImperialAramaicScript
     \value InscriptionalPahlaviScript
     \value InscriptionalParthianScript
+    \value JamoScript Since Qt 5.7
     \value JapaneseScript
     \value JavaneseScript
     \value KaithiScript
@@ -836,6 +867,7 @@
     \value MalayalamScript
     \value MandaeanScript
     \value ManichaeanScript Since Qt 5.5
+    \value MarchenScript Since Qt 5.7
     \value MeiteiMayekScript
     \value MendeKikakuiScript Since Qt 5.5
     \value MeroiticScript
@@ -843,19 +875,23 @@
     \value ModiScript Since Qt 5.5
     \value MongolianScript
     \value MroScript Since Qt 5.5
+    \value MultaniScript Since Qt 5.7
     \value MyanmarScript
     \value NabataeanScript Since Qt 5.5
     \value NkoScript
+    \value NewaScript Since Qt 5.7
     \value NewTaiLueScript
     \value OghamScript
     \value OlChikiScript
     \value OldItalicScript
+    \value OldHungarianScript Since Qt 5.7
     \value OldNorthArabianScript Since Qt 5.5
     \value OldPermicScript Since Qt 5.5
     \value OldPersianScript
     \value OldSouthArabianScript
     \value OriyaScript
     \value OrkhonScript
+    \value OsageScript Since Qt 5.7
     \value OsmanyaScript
     \value PahawhHmongScript Since Qt 5.5
     \value PalmyreneScript Since Qt 5.5
@@ -871,6 +907,7 @@
     \value SharadaScript
     \value ShavianScript
     \value SiddhamScript Since Qt 5.5
+    \value SignWritingScript Since Qt 5.7
     \value SimplifiedHanScript same as SimplifiedChineseScript
     \value SimplifiedChineseScript same as SimplifiedHanScript
     \value SinhalaScript
@@ -885,6 +922,7 @@
     \value TaiVietScript
     \value TakriScript
     \value TamilScript
+    \value TangutScript Since Qt 5.7
     \value TeluguScript
     \value ThaanaScript
     \value ThaiScript

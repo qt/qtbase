@@ -57,11 +57,11 @@
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 
-XVisualInfo *qglx_findVisualInfo(Display *display, int screen, QSurfaceFormat *format);
-GLXFBConfig qglx_findConfig(Display *display, int screen, const QSurfaceFormat &format, int drawableBit = GLX_WINDOW_BIT);
+QVector<int> qglx_buildSpec(const QSurfaceFormat &format, int drawableBit = GLX_WINDOW_BIT);
+XVisualInfo *qglx_findVisualInfo(Display *display, int screen, QSurfaceFormat *format, int drawableBit = GLX_WINDOW_BIT);
+GLXFBConfig qglx_findConfig(Display *display, int screen, QSurfaceFormat format, bool highestPixelFormat = false, int drawableBit = GLX_WINDOW_BIT);
 void qglx_surfaceFormatFromGLXFBConfig(QSurfaceFormat *format, Display *display, GLXFBConfig config);
 void qglx_surfaceFormatFromVisualInfo(QSurfaceFormat *format, Display *display, XVisualInfo *visualInfo);
-QVector<int> qglx_buildSpec(const QSurfaceFormat &format, int drawableBit = GLX_WINDOW_BIT);
-QSurfaceFormat qglx_reduceSurfaceFormat(const QSurfaceFormat &format, bool *reduced);
+bool qglx_reduceFormat(QSurfaceFormat *format);
 
 #endif // QGLXCONVENIENCE_H

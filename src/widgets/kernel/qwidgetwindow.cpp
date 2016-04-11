@@ -956,6 +956,7 @@ void QWidgetWindow::handleTabletEvent(QTabletEvent *event)
                         event->rotation(), event->z(), event->modifiers(), event->uniqueId(), event->button(), event->buttons());
         ev.setTimestamp(event->timestamp());
         QGuiApplication::sendSpontaneousEvent(qt_tablet_target, &ev);
+        event->setAccepted(ev.isAccepted());
     }
 
     if (event->type() == QEvent::TabletRelease && event->buttons() == Qt::NoButton)

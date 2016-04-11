@@ -2300,9 +2300,17 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
                     e->device, e->pointerType, e->pressure, e->xTilt, e->yTilt,
                     e->tangentialPressure, e->rotation, e->z,
                     e->modifiers, e->uid, button, e->buttons);
+    ev.setAccepted(false);
     ev.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(window, &ev);
     pointData.state = e->buttons;
+    if (!ev.isAccepted() && !QWindowSystemInterfacePrivate::TabletEvent::platformSynthesizesMouse
+            && qApp->testAttribute(Qt::AA_SynthesizeMouseForUnhandledTabletEvents)) {
+        QWindowSystemInterfacePrivate::MouseEvent fake(window, e->timestamp, e->local, e->global,
+                                                       e->buttons, e->modifiers, Qt::MouseEventSynthesizedByQt);
+        fake.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
+        processMouseEvent(&fake);
+    }
 #else
     Q_UNUSED(e)
 #endif

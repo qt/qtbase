@@ -47,6 +47,7 @@
 #include <stdio.h>
 
 #include <QDebug>
+#include <QtAlgorithms>
 
 #include <qpa/qwindowsysteminterface.h>
 #include <private/qmath_p.h>
@@ -359,6 +360,69 @@ void QXcbScreen::windowShown(QXcbWindow *window)
     }
 }
 
+QSurfaceFormat QXcbScreen::surfaceFormatFor(const QSurfaceFormat &format) const
+{
+    const xcb_visualid_t xcb_visualid = connection()->hasDefaultVisualId() ? connection()->defaultVisualId()
+                                                                           : screen()->root_visual;
+    const xcb_visualtype_t *xcb_visualtype = visualForId(xcb_visualid);
+
+    const int redSize = qPopulationCount(xcb_visualtype->red_mask);
+    const int greenSize = qPopulationCount(xcb_visualtype->green_mask);
+    const int blueSize = qPopulationCount(xcb_visualtype->blue_mask);
+
+    QSurfaceFormat result = format;
+
+    if (result.redBufferSize() < 0)
+        result.setRedBufferSize(redSize);
+
+    if (result.greenBufferSize() < 0)
+        result.setGreenBufferSize(greenSize);
+
+    if (result.blueBufferSize() < 0)
+        result.setBlueBufferSize(blueSize);
+
+    return result;
+}
+
+const xcb_visualtype_t *QXcbScreen::visualForFormat(const QSurfaceFormat &format) const
+{
+    QVector<const xcb_visualtype_t *> candidates;
+
+    for (auto ii = m_visuals.constBegin(); ii != m_visuals.constEnd(); ++ii) {
+        const xcb_visualtype_t &xcb_visualtype = ii.value();
+
+        const int redSize = qPopulationCount(xcb_visualtype.red_mask);
+        const int greenSize = qPopulationCount(xcb_visualtype.green_mask);
+        const int blueSize = qPopulationCount(xcb_visualtype.blue_mask);
+        const int alphaSize = depthOfVisual(xcb_visualtype.visual_id) - redSize - greenSize - blueSize;
+
+        if (format.redBufferSize() != -1 && redSize != format.redBufferSize())
+            continue;
+
+        if (format.greenBufferSize() != -1 && greenSize != format.greenBufferSize())
+            continue;
+
+        if (format.blueBufferSize() != -1 && blueSize != format.blueBufferSize())
+            continue;
+
+        if (format.alphaBufferSize() != -1 && alphaSize != format.alphaBufferSize())
+            continue;
+
+        candidates.append(&xcb_visualtype);
+    }
+
+    if (candidates.isEmpty())
+        return nullptr;
+
+    // Try to find a RGB visual rather than e.g. BGR or GBR
+    for (const xcb_visualtype_t *candidate : qAsConst(candidates))
+        if (qCountTrailingZeroBits(candidate->blue_mask) == 0)
+            return candidate;
+
+    // Did not find anything we like, just grab the first one and hope for the best
+    return candidates.first();
+}
+
 void QXcbScreen::sendStartupMessage(const QByteArray &message) const
 {
     xcb_window_t rootWindow = root();
@@ -403,7 +467,7 @@ quint8 QXcbScreen::depthOfVisual(xcb_visualid_t visualid) const
 
 QImage::Format QXcbScreen::format() const
 {
-    return QImage::Format_RGB32;
+    return qt_xcb_imageFormatForVisual(connection(), screen()->root_depth, visualForId(screen()->root_visual));
 }
 
 QDpi QXcbScreen::virtualDpi() const

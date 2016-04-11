@@ -205,7 +205,6 @@ SOURCES += \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/IndexBuffer.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/IndexDataManager.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/loadimage.cpp \
-    $$ANGLE_DIR/src/libANGLE/renderer/d3d/loadimageSSE2.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/ProgramD3D.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/RenderbufferD3D.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/RendererD3D.cpp \
@@ -227,6 +226,7 @@ SOURCES += \
     $$ANGLE_DIR/src/libGLESv2/global_state.cpp \
     $$ANGLE_DIR/src/libGLESv2/libGLESv2.cpp
 
+SSE2_SOURCES += $$ANGLE_DIR/src/libANGLE/renderer/d3d/loadimageSSE2.cpp
 
 angle_d3d11 {
     HEADERS += \

@@ -1569,8 +1569,12 @@ void QTextEngine::validate() const
     layoutData = new LayoutData();
     if (block.docHandle()) {
         layoutData->string = block.text();
-        if (option.flags() & QTextOption::ShowLineAndParagraphSeparators)
-            layoutData->string += QLatin1Char(block.next().isValid() ? 0xb6 : 0xA7);
+        if (block.next().isValid()) {
+            if (option.flags() & QTextOption::ShowLineAndParagraphSeparators)
+                layoutData->string += QChar(0xb6);
+        } else if (option.flags() & QTextOption::ShowDocumentTerminator) {
+            layoutData->string += QChar(0xA7);
+        }
     } else {
         layoutData->string = text;
     }

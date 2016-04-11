@@ -325,7 +325,9 @@ Qt::HANDLE qt_application_thread_id = 0;
 #endif // QT_NO_QOBJECT
 
 QCoreApplication *QCoreApplication::self = 0;
-uint QCoreApplicationPrivate::attribs = (1 << Qt::AA_SynthesizeMouseForUnhandledTouchEvents);
+uint QCoreApplicationPrivate::attribs =
+    (1 << Qt::AA_SynthesizeMouseForUnhandledTouchEvents) |
+    (1 << Qt::AA_SynthesizeMouseForUnhandledTabletEvents);
 
 struct QCoreApplicationData {
     QCoreApplicationData() Q_DECL_NOTHROW {

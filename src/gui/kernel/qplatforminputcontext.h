@@ -95,6 +95,8 @@ public:
     virtual void setFocusObject(QObject *object);
     bool inputMethodAccepted() const;
 
+    static void setSelectionOnFocusObject(const QPointF &anchorPos, const QPointF &cursorPos);
+
 private:
     friend class QGuiApplication;
     friend class QGuiApplicationPrivate;

@@ -155,6 +155,9 @@ public:
     QString windowManagerName() const { return m_windowManagerName; }
     bool syncRequestSupported() const { return m_syncRequestSupported; }
 
+    QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &format) const;
+
+    const xcb_visualtype_t *visualForFormat(const QSurfaceFormat &format) const;
     const xcb_visualtype_t *visualForId(xcb_visualid_t) const;
     quint8 depthOfVisual(xcb_visualid_t) const;
 

@@ -59,15 +59,19 @@ QXcbEglWindow::~QXcbEglWindow()
     eglDestroySurface(m_glIntegration->eglDisplay(), m_surface);
 }
 
-void QXcbEglWindow::resolveFormat()
+void QXcbEglWindow::resolveFormat(const QSurfaceFormat &format)
 {
-    m_config = q_configFromGLFormat(m_glIntegration->eglDisplay(), window()->requestedFormat(), true);
-    m_format = q_glFormatFromConfig(m_glIntegration->eglDisplay(), m_config, m_format);
+    m_config = q_configFromGLFormat(m_glIntegration->eglDisplay(), format);
+    m_format = q_glFormatFromConfig(m_glIntegration->eglDisplay(), m_config, format);
 }
 
-void *QXcbEglWindow::createVisual()
-{
 #ifdef XCB_USE_XLIB
+const xcb_visualtype_t *QXcbEglWindow::createVisual()
+{
+    QXcbScreen *scr = xcbScreen();
+    if (!scr)
+        return QXcbWindow::createVisual();
+
     Display *xdpy = static_cast<Display *>(m_glIntegration->xlib_display());
     VisualID id = QXlibEglIntegration::getCompatibleVisualId(xdpy, m_glIntegration->eglDisplay(), m_config);
 
@@ -78,11 +82,12 @@ void *QXcbEglWindow::createVisual()
     XVisualInfo *visualInfo;
     int matchingCount = 0;
     visualInfo = XGetVisualInfo(xdpy, VisualIDMask, &visualInfoTemplate, &matchingCount);
-    return visualInfo;
-#else
-    return QXcbWindow::createVisual();
-#endif
+    const xcb_visualtype_t *xcb_visualtype = scr->visualForId(visualInfo->visualid);
+    XFree(visualInfo);
+
+    return xcb_visualtype;
 }
+#endif
 
 void QXcbEglWindow::create()
 {

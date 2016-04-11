@@ -71,6 +71,8 @@
 #include <private/qstylehelper_p.h>
 #include <private/qstyleanimation_p.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_OS_WIN)
@@ -117,8 +119,6 @@ enum QSliderDirection { SlUp, SlDown, SlLeft, SlRight };
     \internal
 */
 
-int QWindowsStylePrivate::m_appDevicePixelRatio = 0;
-
 QWindowsStylePrivate::QWindowsStylePrivate()
     : alt_down(false), menuBarTimer(0)
 {
@@ -131,11 +131,9 @@ QWindowsStylePrivate::QWindowsStylePrivate()
 #endif
 }
 
-int QWindowsStylePrivate::appDevicePixelRatio()
+qreal QWindowsStylePrivate::appDevicePixelRatio()
 {
-    if (!QWindowsStylePrivate::m_appDevicePixelRatio)
-        QWindowsStylePrivate::m_appDevicePixelRatio = qRound(qApp->devicePixelRatio());
-    return QWindowsStylePrivate::m_appDevicePixelRatio;
+    return qApp->devicePixelRatio();
 }
 
 // Returns \c true if the toplevel parent of \a widget has seen the Alt-key
@@ -163,12 +161,11 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
 
             // Alt has been pressed - find all widgets that care
             QList<QWidget *> l = widget->findChildren<QWidget *>();
-            for (int pos=0 ; pos < l.size() ; ++pos) {
-                QWidget *w = l.at(pos);
-                if (w->isWindow() || !w->isVisible() ||
-                    w->style()->styleHint(SH_UnderlineShortcut, 0, w))
-                    l.removeAt(pos);
-            }
+            auto ignorable = [](QWidget *w) {
+                return w->isWindow() || !w->isVisible()
+                        || w->style()->styleHint(SH_UnderlineShortcut, 0, w);
+            };
+            l.erase(std::remove_if(l.begin(), l.end(), ignorable), l.end());
             // Update states before repainting
             d->seenAlt.append(widget);
             d->alt_down = true;
@@ -397,7 +394,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
 {
     int ret = QWindowsStylePrivate::pixelMetricFromSystemDp(pm, opt, widget);
     if (ret != QWindowsStylePrivate::InvalidMetric)
-        return ret / QWindowsStylePrivate::devicePixelRatio(widget);
+        return qRound(qreal(ret) / QWindowsStylePrivate::devicePixelRatio(widget));
 
     ret = QWindowsStylePrivate::fixedPixelMetric(pm);
     if (ret != QWindowsStylePrivate::InvalidMetric)
@@ -1183,7 +1180,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
             QRect textRect(xpos, y + QWindowsStylePrivate::windowsItemVMargin,
                            w - xm - QWindowsStylePrivate::windowsRightBorder - tab + 1, h - 2 * QWindowsStylePrivate::windowsItemVMargin);
             QRect vTextRect = visualRect(opt->direction, menuitem->rect, textRect);
-            QString s = menuitem->text;
+            QStringRef s(&menuitem->text);
             if (!s.isEmpty()) {                     // draw text
                 p->save();
                 int t = s.indexOf(QLatin1Char('\t'));
@@ -1194,24 +1191,26 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 if (t >= 0) {
                     QRect vShortcutRect = visualRect(opt->direction, menuitem->rect,
                         QRect(textRect.topRight(), QPoint(menuitem->rect.right(), textRect.bottom())));
+                    const QString textToDraw = s.mid(t + 1).toString();
                     if (dis && !act && proxy()->styleHint(SH_EtchDisabledText, opt, widget)) {
                         p->setPen(menuitem->palette.light().color());
-                        p->drawText(vShortcutRect.adjusted(1,1,1,1), text_flags, s.mid(t + 1));
+                        p->drawText(vShortcutRect.adjusted(1, 1, 1, 1), text_flags, textToDraw);
                         p->setPen(discol);
                     }
-                    p->drawText(vShortcutRect, text_flags, s.mid(t + 1));
+                    p->drawText(vShortcutRect, text_flags, textToDraw);
                     s = s.left(t);
                 }
                 QFont font = menuitem->font;
                 if (menuitem->menuItemType == QStyleOptionMenuItem::DefaultItem)
                     font.setBold(true);
                 p->setFont(font);
+                const QString textToDraw = s.left(t).toString();
                 if (dis && !act && proxy()->styleHint(SH_EtchDisabledText, opt, widget)) {
                     p->setPen(menuitem->palette.light().color());
-                    p->drawText(vTextRect.adjusted(1,1,1,1), text_flags, s.left(t));
+                    p->drawText(vTextRect.adjusted(1, 1, 1, 1), text_flags, textToDraw);
                     p->setPen(discol);
                 }
-                p->drawText(vTextRect, text_flags, s.left(t));
+                p->drawText(vTextRect, text_flags, textToDraw);
                 p->restore();
             }
             if (menuitem->menuItemType == QStyleOptionMenuItem::SubMenu) {// draw sub menu arrow

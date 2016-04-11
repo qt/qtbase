@@ -45,6 +45,8 @@
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtCore/qthreadstorage.h>
 
+#include <algorithm>
+
 #if defined(QT_DEBUG)
 #include <QMetaEnum>
 #endif
@@ -475,15 +477,16 @@ QOpenGLEngineShaderProg *QOpenGLEngineSharedShaders::findProgramInCache(const QO
 
 void QOpenGLEngineSharedShaders::cleanupCustomStage(QOpenGLCustomShaderStage* stage)
 {
-    // Remove any shader programs which has this as the custom shader src:
-    for (int i = 0; i < cachedPrograms.size(); ++i) {
-        QOpenGLEngineShaderProg *cachedProg = cachedPrograms[i];
+    auto hasStageAsCustomShaderSouce = [stage](QOpenGLEngineShaderProg *cachedProg) -> bool {
         if (cachedProg->customStageSource == stage->source()) {
             delete cachedProg;
-            cachedPrograms.removeAt(i);
-            i--;
+            return true;
         }
-    }
+        return false;
+    };
+    cachedPrograms.erase(std::remove_if(cachedPrograms.begin(), cachedPrograms.end(),
+                                        hasStageAsCustomShaderSouce),
+                         cachedPrograms.end());
 }
 
 

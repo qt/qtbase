@@ -55,10 +55,12 @@ typedef QList<QStandardItem *> StandardItemList;
 
 enum { mimeTypeRole = Qt::UserRole + 1, iconQueriedRole = Qt::UserRole + 2 };
 
+QT_BEGIN_NAMESPACE
 bool operator<(const QMimeType &t1, const QMimeType &t2)
 {
     return t1.name() < t2.name();
 }
+QT_END_NAMESPACE
 
 static StandardItemList createRow(const QMimeType &t)
 {

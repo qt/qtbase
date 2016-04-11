@@ -51,7 +51,7 @@ QXcbEglIntegration::QXcbEglIntegration()
     : m_connection(Q_NULLPTR)
     , m_egl_display(EGL_NO_DISPLAY)
 {
-    qCDebug(QT_XCB_GLINTEGRATION) << "Xcb EGL gl-integration created";
+    qCDebug(lcQpaGl) << "Xcb EGL gl-integration created";
 }
 
 QXcbEglIntegration::~QXcbEglIntegration()
@@ -69,13 +69,13 @@ bool QXcbEglIntegration::initialize(QXcbConnection *connection)
     bool success = eglInitialize(m_egl_display, &major, &minor);
     if (!success) {
         m_egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-        qCDebug(QT_XCB_GLINTEGRATION) << "Xcb EGL gl-integration retrying with display" << m_egl_display;
+        qCDebug(lcQpaGl) << "Xcb EGL gl-integration retrying with display" << m_egl_display;
         success = eglInitialize(m_egl_display, &major, &minor);
     }
 
     m_native_interface_handler.reset(new QXcbEglNativeInterfaceHandler(connection->nativeInterface()));
 
-    qCDebug(QT_XCB_GLINTEGRATION) << "Xcb EGL gl-integration successfully initialized";
+    qCDebug(lcQpaGl) << "Xcb EGL gl-integration successfully initialized";
     return success;
 }
 
@@ -87,7 +87,7 @@ QXcbWindow *QXcbEglIntegration::createWindow(QWindow *window) const
 QPlatformOpenGLContext *QXcbEglIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     QXcbScreen *screen = static_cast<QXcbScreen *>(context->screen()->handle());
-    QXcbEglContext *platformContext = new QXcbEglContext(context->format(),
+    QXcbEglContext *platformContext = new QXcbEglContext(screen->surfaceFormatFor(context->format()),
                                                          context->shareHandle(),
                                                          eglDisplay(),
                                                          screen->connection(),
@@ -98,7 +98,8 @@ QPlatformOpenGLContext *QXcbEglIntegration::createPlatformOpenGLContext(QOpenGLC
 
 QPlatformOffscreenSurface *QXcbEglIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {
-    return new QEGLPbuffer(eglDisplay(), surface->requestedFormat(), surface);
+    QXcbScreen *screen = static_cast<QXcbScreen *>(surface->screen()->handle());
+    return new QEGLPbuffer(eglDisplay(), screen->surfaceFormatFor(surface->requestedFormat()), surface);
 }
 
 void *QXcbEglIntegration::xlib_display() const

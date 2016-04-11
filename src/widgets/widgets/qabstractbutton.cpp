@@ -188,15 +188,16 @@ QList<QAbstractButton *>QAbstractButtonPrivate::queryButtonList() const
 
     QList<QAbstractButton*>candidates = parent->findChildren<QAbstractButton *>();
     if (autoExclusive) {
-        for (int i = candidates.count() - 1; i >= 0; --i) {
-            QAbstractButton *candidate = candidates.at(i);
-            if (!candidate->autoExclusive()
+        auto isNoMemberOfMyAutoExclusiveGroup = [](QAbstractButton *candidate) {
+            return !candidate->autoExclusive()
 #ifndef QT_NO_BUTTONGROUP
                 || candidate->group()
 #endif
-                )
-                candidates.removeAt(i);
-        }
+                ;
+        };
+        candidates.erase(std::remove_if(candidates.begin(), candidates.end(),
+                                        isNoMemberOfMyAutoExclusiveGroup),
+                         candidates.end());
     }
     return candidates;
 }

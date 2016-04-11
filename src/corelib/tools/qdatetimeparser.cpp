@@ -606,19 +606,20 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
         // fall through
 #endif
     case MonthSection:
-        if (count <= 2)
-            return 2;
-
 #ifdef QT_NO_TEXTDATE
         return 2;
 #else
+        if (count <= 2)
+            return 2;
+
         {
             int ret = 0;
             const QLocale l = locale();
+            const QLocale::FormatType format = count == 4 ? QLocale::LongFormat : QLocale::ShortFormat;
             for (int i=1; i<=mcount; ++i) {
                 const QString str = (s == MonthSection
-                                     ? l.monthName(i, count == 4 ? QLocale::LongFormat : QLocale::ShortFormat)
-                                     : l.dayName(i, count == 4 ? QLocale::LongFormat : QLocale::ShortFormat));
+                                     ? l.monthName(i, format)
+                                     : l.dayName(i, format));
                 ret = qMax(str.size(), ret);
             }
             return ret;
@@ -889,7 +890,7 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
     QDTPDEBUG << "parse" << input;
     {
         int year, month, day;
-        QDate currentDate = currentValue.date();
+        const QDate currentDate = currentValue.date();
         const QTime currentTime = currentValue.time();
         currentDate.getDate(&year, &month, &day);
         int year2digits = year % 100;

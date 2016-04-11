@@ -93,7 +93,7 @@ QXcbGlxIntegration::QXcbGlxIntegration()
     : m_connection(Q_NULLPTR)
     , m_glx_first_event(0)
 {
-    qCDebug(QT_XCB_GLINTEGRATION) << "Xcb GLX gl-integration created";
+    qCDebug(lcQpaGl) << "Xcb GLX gl-integration created";
 }
 
 QXcbGlxIntegration::~QXcbGlxIntegration()
@@ -118,7 +118,7 @@ bool QXcbGlxIntegration::initialize(QXcbConnection *connection)
     xcb_glx_query_version_reply_t *xglx_query = xcb_glx_query_version_reply(m_connection->xcb_connection(),
                                                                             xglx_query_cookie, &error);
     if (!xglx_query || error) {
-        qCWarning(QT_XCB_GLINTEGRATION) << "QXcbConnection: Failed to initialize GLX";
+        qCWarning(lcQpaGl) << "QXcbConnection: Failed to initialize GLX";
         free(error);
         return false;
     }
@@ -127,7 +127,7 @@ bool QXcbGlxIntegration::initialize(QXcbConnection *connection)
 
     m_native_interface_handler.reset(new QXcbGlxNativeInterfaceHandler(connection->nativeInterface()));
 
-    qCDebug(QT_XCB_GLINTEGRATION) << "Xcb GLX gl-integration successfully initialized";
+    qCDebug(lcQpaGl) << "Xcb GLX gl-integration successfully initialized";
     return true;
 }
 
@@ -189,7 +189,7 @@ QXcbWindow *QXcbGlxIntegration::createWindow(QWindow *window) const
 QPlatformOpenGLContext *QXcbGlxIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     QXcbScreen *screen = static_cast<QXcbScreen *>(context->screen()->handle());
-    QGLXContext *platformContext = new QGLXContext(screen, context->format(),
+    QGLXContext *platformContext = new QGLXContext(screen, screen->surfaceFormatFor(context->format()),
                                                    context->shareHandle(), context->nativeHandle());
     context->setNativeHandle(platformContext->nativeHandle());
     return platformContext;
