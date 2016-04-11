@@ -210,7 +210,6 @@ private:
     QAbstractSocket *sslSocket;
     EventRegistrationToken connectionToken;
 
-    HRESULT handleBindCompleted(ABI::Windows::Foundation::IAsyncAction *, ABI::Windows::Foundation::AsyncStatus);
     HRESULT handleNewDatagram(ABI::Windows::Networking::Sockets::IDatagramSocket *socket,
                               ABI::Windows::Networking::Sockets::IDatagramSocketMessageReceivedEventArgs *args);
     HRESULT handleClientConnection(ABI::Windows::Networking::Sockets::IStreamSocketListener *tcpListener,

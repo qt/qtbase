@@ -383,8 +383,6 @@ bool QNativeSocketEngine::bind(const QHostAddress &address, quint16 port)
         }
         RETURN_HR_IF_FAILED("QNativeSocketEngine::bind: Unable to bind socket");
 
-        hr = op->put_Completed(Callback<IAsyncActionCompletedHandler>(d, &QNativeSocketEnginePrivate::handleBindCompleted).Get());
-        RETURN_HR_IF_FAILED("QNativeSocketEngine::bind: Could not register bind callback");
         hr = QWinRTFunctions::await(op);
         RETURN_HR_IF_FAILED("QNativeSocketEngine::bind: Could not wait for bind to finish");
         return S_OK;
@@ -1184,11 +1182,6 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
         }
     }
     return true;
-}
-
-HRESULT QNativeSocketEnginePrivate::handleBindCompleted(IAsyncAction *, AsyncStatus)
-{
-    return S_OK;
 }
 
 HRESULT QNativeSocketEnginePrivate::handleClientConnection(IStreamSocketListener *listener, IStreamSocketListenerConnectionReceivedEventArgs *args)
