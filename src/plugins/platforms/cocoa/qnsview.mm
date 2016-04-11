@@ -47,6 +47,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QTextFormat>
 #include <QtCore/QDebug>
+#include <QtCore/qsysinfo.h>
 #include <private/qguiapplication_p.h>
 #include "qcocoabackingstore.h"
 #ifndef QT_NO_OPENGL
@@ -1252,8 +1253,29 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 }
 
 #ifndef QT_NO_GESTURES
+
+- (bool)handleGestureAsBeginEnd:(NSEvent *)event
+{
+    if (QSysInfo::QSysInfo::MacintoshVersion < QSysInfo::MV_10_11)
+        return false;
+
+    if ([event phase] == NSEventPhaseBegan) {
+        [self beginGestureWithEvent:event];
+        return true;
+    }
+
+    if ([event phase] == NSEventPhaseEnded) {
+        [self endGestureWithEvent:event];
+        return true;
+    }
+
+    return false;
+}
 - (void)magnifyWithEvent:(NSEvent *)event
 {
+    if ([self handleGestureAsBeginEnd:event])
+        return;
+
     qCDebug(lcQpaGestures) << "magnifyWithEvent" << [event magnification];
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
@@ -1280,7 +1302,9 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (void)rotateWithEvent:(NSEvent *)event
 {
-    qCDebug(lcQpaGestures) << "rotateWithEvent" << [event rotation];
+    if ([self handleGestureAsBeginEnd:event])
+        return;
+
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;
