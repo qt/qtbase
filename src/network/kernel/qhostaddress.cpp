@@ -152,20 +152,37 @@ void QHostAddressPrivate::setAddress(quint32 a_)
 
 /// parses v4-mapped addresses or the AnyIPv6 address and stores in \a a;
 /// returns true if the address was one of those
-static bool convertToIpv4(quint32& a, const Q_IPV6ADDR &a6)
+static bool convertToIpv4(quint32& a, const Q_IPV6ADDR &a6, const QHostAddress::ConversionMode mode)
 {
+    if (mode == QHostAddress::StrictConversion)
+        return false;
+
     const uchar *ptr = a6.c;
     if (qFromUnaligned<quint64>(ptr) != 0)
         return false;
-    if (qFromBigEndian<quint32>(ptr + 8) == 0) {
-        // is it AnyIPv6?
-        a = 0;
-        return qFromBigEndian<quint32>(ptr + 12) == 0;
+
+    const quint32 mid = qFromBigEndian<quint32>(ptr + 8);
+    if ((mid == 0xffff) && (mode & QHostAddress::ConvertV4MappedToIPv4)) {
+        a = qFromBigEndian<quint32>(ptr + 12);
+        return true;
     }
-    if (qFromBigEndian<quint32>(ptr + 8) != 0xFFFF)
+    if (mid != 0)
         return false;
-    a = qFromBigEndian<quint32>(ptr + 12);
-    return true;
+
+    const quint32 low = qFromBigEndian<quint32>(ptr + 12);
+    if ((low == 0) && (mode & QHostAddress::ConvertUnspecifiedAddress)) {
+        a = 0;
+        return true;
+    }
+    if ((low == 1) && (mode & QHostAddress::ConvertLocalHost)) {
+        a = INADDR_LOOPBACK;
+        return true;
+    }
+    if ((low != 1) && (mode & QHostAddress::ConvertV4CompatToIPv4)) {
+        a = low;
+        return true;
+    }
+    return false;
 }
 
 void QHostAddressPrivate::setAddress(const quint8 *a_)
@@ -174,7 +191,8 @@ void QHostAddressPrivate::setAddress(const quint8 *a_)
     isParsed = true;
     memcpy(a6.c, a_, sizeof(a6));
     a = 0;
-    convertToIpv4(a, a6);
+    convertToIpv4(a, a6, (QHostAddress::ConvertV4MappedToIPv4
+                          | QHostAddress::ConvertUnspecifiedAddress));
 }
 
 void QHostAddressPrivate::setAddress(const Q_IPV6ADDR &a_)
@@ -385,6 +403,20 @@ void QNetmaskAddress::setPrefixLength(QAbstractSocket::NetworkLayerProtocol prot
     \value AnyIPv6 The IPv6 any-address. Equivalent to QHostAddress("::"). A socket bound with this address will listen only on IPv6 interaces.
     \value Any The dual stack any-address. A socket bound with this address will listen on both IPv4 and IPv6 interfaces.
 */
+
+/*! \enum QHostAddress::ConversionModeFlag
+
+    \since 5.8
+
+    \value StrictConversion Don't convert IPv6 addresses to IPv4 when comparing two QHostAddress objects of different protocols, so they will always be considered different.
+    \value ConvertV4MappedToIPv4 Convert IPv4-mapped IPv6 addresses (RFC 4291 sect. 2.5.5.2) when comparing. Therefore QHostAddress("::ffff:192.168.1.1") will compare equal to QHostAddress("192.168.1.1").
+    \value ConvertV4CompatToIPv4 Convert IPv4-compatible IPv6 addresses (RFC 4291 sect. 2.5.5.1) when comparing. Therefore QHostAddress("::192.168.1.1") will compare equal to QHostAddress("192.168.1.1").
+    \value ConvertLocalHost Convert the IPv6 loopback addresses to its IPv4 equivalent when comparing. Therefore e.g. QHostAddress("::1") will compare equal to QHostAddress("127.0.0.1").
+    \value ConvertUnspecifiedAddress All unspecified addresses will compare equal, namely AnyIPv4, AnyIPv6 and Any.
+    \value TolerantConversion Sets all three preceding flags.
+
+    \sa isEqual()
+ */
 
 /*!  Constructs a null host address object, i.e. an address which is not valid for any host or interface.
 
@@ -691,7 +723,9 @@ quint32 QHostAddress::toIPv4Address(bool *ok) const
     quint32 dummy;
     if (ok)
         *ok = d->protocol == QAbstractSocket::IPv4Protocol || d->protocol == QAbstractSocket::AnyIPProtocol
-              || (d->protocol == QAbstractSocket::IPv6Protocol && convertToIpv4(dummy, d->a6));
+              || (d->protocol == QAbstractSocket::IPv6Protocol
+                  && convertToIpv4(dummy, d->a6, ConversionMode(QHostAddress::ConvertV4MappedToIPv4
+                                                                | QHostAddress::ConvertUnspecifiedAddress)));
     return d->a;
 }
 
@@ -813,19 +847,73 @@ void QHostAddress::setScopeId(const QString &id)
 
 /*!
     Returns \c true if this host address is the same as the \a other address
-    given; otherwise returns \c false.
+    given; otherwise returns \c false. This operator just calls isEqual(other, StrictConversion).
+
+    \sa isEqual()
 */
 bool QHostAddress::operator==(const QHostAddress &other) const
+{
+    return isEqual(other, StrictConversion);
+}
+
+/*!
+    \since 5.8
+
+    Returns \c true if this host address is the same as the \a other address
+    given; otherwise returns \c false.
+
+    The parameter \a mode controls which conversions are preformed between addresses
+    of differing protocols. If no \a mode is given, \c TolerantConversion is performed
+    by default.
+
+    \sa ConversionMode, operator==()
+ */
+bool QHostAddress::isEqual(const QHostAddress &other, ConversionMode mode) const
 {
     QT_ENSURE_PARSED(this);
     QT_ENSURE_PARSED(&other);
 
-    if (d->protocol == QAbstractSocket::IPv4Protocol)
-        return other.d->protocol == QAbstractSocket::IPv4Protocol && d->a == other.d->a;
-    if (d->protocol == QAbstractSocket::IPv6Protocol) {
-        return other.d->protocol == QAbstractSocket::IPv6Protocol
-               && memcmp(&d->a6, &other.d->a6, sizeof(Q_IPV6ADDR)) == 0;
+    if (d->protocol == QAbstractSocket::IPv4Protocol) {
+        switch (other.d->protocol) {
+        case QAbstractSocket::IPv4Protocol:
+            return d->a == other.d->a;
+        case QAbstractSocket::IPv6Protocol:
+            quint32 a4;
+            return convertToIpv4(a4, other.d->a6, mode) && (a4 == d->a);
+        case QAbstractSocket::AnyIPProtocol:
+            return (mode & QHostAddress::ConvertUnspecifiedAddress) && d->a == 0;
+        case QAbstractSocket::UnknownNetworkLayerProtocol:
+            return false;
+        }
     }
+
+    if (d->protocol == QAbstractSocket::IPv6Protocol) {
+        switch (other.d->protocol) {
+        case QAbstractSocket::IPv4Protocol:
+            quint32 a4;
+            return convertToIpv4(a4, d->a6, mode) && (a4 == other.d->a);
+        case QAbstractSocket::IPv6Protocol:
+            return memcmp(&d->a6, &other.d->a6, sizeof(Q_IPV6ADDR)) == 0;
+        case QAbstractSocket::AnyIPProtocol:
+            return (mode & QHostAddress::ConvertUnspecifiedAddress)
+                    && (other.d->a6_64.c[0] == 0) && (other.d->a6_64.c[1] == 0);
+        case QAbstractSocket::UnknownNetworkLayerProtocol:
+            return false;
+        }
+    }
+
+    if ((d->protocol == QAbstractSocket::AnyIPProtocol)
+            && (mode & QHostAddress::ConvertUnspecifiedAddress)) {
+        switch (other.d->protocol) {
+        case QAbstractSocket::IPv4Protocol:
+            return other.d->a == 0;
+        case QAbstractSocket::IPv6Protocol:
+            return (other.d->a6_64.c[0] == 0) && (other.d->a6_64.c[1] == 0);
+        default:
+            break;
+        }
+    }
+
     return d->protocol == other.d->protocol;
 }
 

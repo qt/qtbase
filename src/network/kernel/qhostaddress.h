@@ -79,6 +79,16 @@ public:
         AnyIPv6,
         AnyIPv4
     };
+    enum ConversionModeFlag {
+        ConvertV4MappedToIPv4 = 1,
+        ConvertV4CompatToIPv4 = 2,
+        ConvertUnspecifiedAddress = 4,
+        ConvertLocalHost = 8,
+        TolerantConversion = 0xff,
+
+        StrictConversion = 0
+    };
+    Q_DECLARE_FLAGS(ConversionMode, ConversionModeFlag)
 
     QHostAddress();
     explicit QHostAddress(quint32 ip4Addr);
@@ -118,6 +128,7 @@ public:
     QString scopeId() const;
     void setScopeId(const QString &id);
 
+    bool isEqual(const QHostAddress &address, ConversionMode mode = TolerantConversion) const;
     bool operator ==(const QHostAddress &address) const;
     bool operator ==(SpecialAddress address) const;
     inline bool operator !=(const QHostAddress &address) const
@@ -139,6 +150,7 @@ public:
 protected:
     QScopedPointer<QHostAddressPrivate> d;
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(QHostAddress::ConversionMode)
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QHostAddress)
 
 inline bool operator ==(QHostAddress::SpecialAddress address1, const QHostAddress &address2)
