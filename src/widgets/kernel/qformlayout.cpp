@@ -185,6 +185,7 @@ public:
 
     int insertRow(int row);
     void insertRows(int row, int count);
+    void removeRow(int row);
     void setItem(int row, QFormLayout::ItemRole role, QLayoutItem *item);
     void setLayout(int row, QFormLayout::ItemRole role, QLayout *layout);
     void setWidget(int row, QFormLayout::ItemRole role, QWidget *widget);
@@ -947,6 +948,12 @@ void QFormLayoutPrivate::insertRows(int row, int count)
     }
 }
 
+void QFormLayoutPrivate::removeRow(int row)
+{
+    if (uint(row) < uint(m_matrix.rowCount()))
+        m_matrix.removeRow(row);
+}
+
 void QFormLayoutPrivate::setItem(int row, QFormLayout::ItemRole role, QLayoutItem *item)
 {
     const bool fullRow = role == QFormLayout::SpanningRole;
@@ -1178,6 +1185,28 @@ QLayoutItem* QFormLayoutPrivate::replaceAt(int index, QLayoutItem *newitem)
 */
 
 /*!
+    \since 5.8
+
+    \struct QFormLayout::TakeRowResult
+
+    \brief Contains the result of a QFormLayout::takeRow() call.
+
+    \sa QFormLayout::takeRow()
+*/
+
+/*!
+    \variable QFormLayout::TakeRowResult::labelItem
+
+    Contains the layout item corresponding to the label of the row.
+*/
+
+/*!
+    \variable QFormLayout::TakeRowResult::fieldItem
+
+    Contains the layout item corresponding to the field of the row.
+*/
+
+/*!
     Constructs a new form layout with the given \a parent widget.
 
     \sa QWidget::setLayout()
@@ -1380,6 +1409,287 @@ void QFormLayout::insertRow(int row, QLayout *layout)
     invalidate();
 }
 
+static QLayoutItem *ownershipCleanedItem(QFormLayoutItem *item, QFormLayout *layout)
+{
+    if (!item)
+        return nullptr;
+
+    // grab ownership back from the QFormLayoutItem
+    QLayoutItem *i = item->item;
+    item->item = nullptr;
+    delete item;
+
+    if (QLayout *l = i->layout()) {
+        // sanity check in case the user passed something weird to QObject::setParent()
+        if (l->parent() == layout)
+            l->setParent(nullptr);
+    }
+
+    return i;
+}
+
+static void clearQLayoutItem(QLayoutItem *item)
+{
+    if (Q_LIKELY(item)) {
+        if (QLayout *layout = item->layout()) {
+            while (QLayoutItem *child = layout->takeAt(0)) {
+                clearQLayoutItem(child);
+                delete child;
+            }
+            delete layout;
+        }
+        delete item->widget();
+        delete item->spacerItem();
+    }
+}
+
+/*!
+    \since 5.8
+
+    Deletes row \a row from this form layout.
+
+    \a row must be non-negative and less than rowCount().
+
+    After this call, rowCount() is decremented by one. All widgets and
+    nested layouts that occupied this row are deleted. That includes both
+    the field widget(s) and the label, if any. All following rows are shifted
+    up one row and the freed vertical space is redistributed amongst the remaining rows.
+
+    You can use this function to undo a previous addRow() or insertRow():
+    \code
+    QFormLayout *flay = ...;
+    QPointer<QLineEdit> le = new QLineEdit;
+    flay->insertRow(2, "User:", le);
+    // later:
+    flay->removeRow(2); // le == nullptr at this point
+    \endcode
+
+    If you want to remove the row from the layout without deleting the widgets, use takeRow() instead.
+
+    \sa takeRow()
+*/
+void QFormLayout::removeRow(int row)
+{
+    TakeRowResult result = takeRow(row);
+    clearQLayoutItem(result.labelItem);
+    clearQLayoutItem(result.fieldItem);
+}
+
+/*!
+    \since 5.8
+
+    \overload
+
+    Deletes the row corresponding to \a widget from this form layout.
+
+    After this call, rowCount() is decremented by one. All widgets and
+    nested layouts that occupied this row are deleted. That includes both
+    the field widget(s) and the label, if any. All following rows are shifted
+    up one row and the freed vertical space is redistributed amongst the remaining rows.
+
+    You can use this function to undo a previous addRow() or insertRow():
+    \code
+    QFormLayout *flay = ...;
+    QPointer<QLineEdit> le = new QLineEdit;
+    flay->insertRow(2, "User:", le);
+    // later:
+    flay->removeRow(le); // le == nullptr at this point
+    \endcode
+
+    If you want to remove the row from the layout without deleting the widgets, use takeRow() instead.
+
+    \sa takeRow()
+*/
+void QFormLayout::removeRow(QWidget *widget)
+{
+    TakeRowResult result = takeRow(widget);
+    clearQLayoutItem(result.labelItem);
+    clearQLayoutItem(result.fieldItem);
+}
+
+/*!
+    \since 5.8
+
+    \overload
+
+    Deletes the row corresponding to \a layout from this form layout.
+
+    After this call, rowCount() is decremented by one. All widgets and
+    nested layouts that occupied this row are deleted. That includes both
+    the field widget(s) and the label, if any. All following rows are shifted
+    up one row and the freed vertical space is redistributed amongst the remaining rows.
+
+    You can use this function to undo a previous addRow() or insertRow():
+    \code
+    QFormLayout *flay = ...;
+    QPointer<QVBoxLayout> vbl = new QVBoxLayout;
+    flay->insertRow(2, "User:", vbl);
+    // later:
+    flay->removeRow(layout); // vbl == nullptr at this point
+    \endcode
+
+    If you want to remove the row from the form layout without deleting the inserted layout,
+    use takeRow() instead.
+
+    \sa takeRow()
+*/
+void QFormLayout::removeRow(QLayout *layout)
+{
+    TakeRowResult result = takeRow(layout);
+    clearQLayoutItem(result.labelItem);
+    clearQLayoutItem(result.fieldItem);
+}
+
+/*!
+    \since 5.8
+
+    Removes the specified \a row from this form layout.
+
+    \a row must be non-negative and less than rowCount().
+
+    \note This function doesn't delete anything.
+
+    After this call, rowCount() is decremented by one. All following rows are shifted
+    up one row and the freed vertical space is redistributed amongst the remaining rows.
+
+    You can use this function to undo a previous addRow() or insertRow():
+    \code
+    QFormLayout *flay = ...;
+    QPointer<QLineEdit> le = new QLineEdit;
+    flay->insertRow(2, "User:", le);
+    // later:
+    QFormLayout::TakeRowResult result = flay->takeRow(2);
+    \endcode
+
+    If you want to remove the row from the layout and delete the widgets, use removeRow() instead.
+
+    \return A structure containing both the widget and
+    corresponding label layout items
+
+    \sa removeRow()
+*/
+QFormLayout::TakeRowResult QFormLayout::takeRow(int row)
+{
+    Q_D(QFormLayout);
+
+    const int storageIndex = storageIndexFromLayoutItem(d->m_matrix, d->m_things.value(row));
+    if (Q_UNLIKELY(storageIndex == -1)) {
+        qWarning("QFormLayout::takeRow: Invalid row %d", row);
+        return TakeRowResult();
+    }
+
+    int storageRow, dummy;
+    QFormLayoutPrivate::ItemMatrix::storageIndexToPosition(storageIndex, &storageRow, &dummy);
+    Q_ASSERT(d->m_matrix(storageRow, dummy));
+
+    QFormLayoutItem *label = d->m_matrix(storageRow, 0);
+    QFormLayoutItem *field = d->m_matrix(storageRow, 1);
+
+    Q_ASSERT(field);
+
+    d->m_things.removeOne(label);
+    d->m_things.removeOne(field);
+    d->m_matrix.removeRow(storageRow);
+
+    invalidate();
+
+    TakeRowResult result;
+    result.labelItem = ownershipCleanedItem(label, this);
+    result.fieldItem = ownershipCleanedItem(field, this);
+    return result;
+}
+
+/*!
+    \since 5.8
+
+    \overload
+
+    Removes the specified \a widget from this form layout.
+
+    \note This function doesn't delete anything.
+
+    After this call, rowCount() is decremented by one. All following rows are shifted
+    up one row and the freed vertical space is redistributed amongst the remaining rows.
+
+    \code
+    QFormLayout *flay = ...;
+    QPointer<QLineEdit> le = new QLineEdit;
+    flay->insertRow(2, "User:", le);
+    // later:
+    QFormLayout::TakeRowResult result = flay->takeRow(widget);
+    \endcode
+
+    If you want to remove the row from the layout and delete the widgets, use removeRow() instead.
+
+    \return A structure containing both the widget and
+    corresponding label layout items
+
+    \sa removeRow()
+*/
+QFormLayout::TakeRowResult QFormLayout::takeRow(QWidget *widget)
+{
+    Q_D(QFormLayout);
+    if (Q_UNLIKELY(!d->checkWidget(widget)))
+        return TakeRowResult();
+
+    int row;
+    ItemRole role;
+    getWidgetPosition(widget, &row, &role);
+
+    if (Q_UNLIKELY(row < 0)) {
+        qWarning("QFormLayout::takeRow: Invalid widget");
+        return TakeRowResult();
+    }
+
+    return takeRow(row);
+}
+
+/*!
+    \since 5.8
+
+    \overload
+
+    Removes the specified \a layout from this form layout.
+
+    \note This function doesn't delete anything.
+
+    After this call, rowCount() is decremented by one. All following rows are shifted
+    up one row and the freed vertical space is redistributed amongst the remaining rows.
+
+    \code
+    QFormLayout *flay = ...;
+    QPointer<QVBoxLayout> vbl = new QVBoxLayout;
+    flay->insertRow(2, "User:", vbl);
+    // later:
+    QFormLayout::TakeRowResult result = flay->takeRow(widget);
+    \endcode
+
+    If you want to remove the row from the form layout and delete the inserted layout,
+    use removeRow() instead.
+
+    \return A structure containing both the widget and
+    corresponding label layout items
+
+    \sa removeRow()
+*/
+QFormLayout::TakeRowResult QFormLayout::takeRow(QLayout *layout)
+{
+    Q_D(QFormLayout);
+    if (Q_UNLIKELY(!d->checkLayout(layout)))
+        return TakeRowResult();
+
+    int row;
+    ItemRole role;
+    getLayoutPosition(layout, &row, &role);
+
+    if (Q_UNLIKELY(row < 0)) {
+        qWarning("QFormLayout::takeRow: Invalid layout");
+        return TakeRowResult();
+    }
+
+    return takeRow(row);
+}
+
 /*!
     \reimp
 */
@@ -1436,18 +1746,7 @@ QLayoutItem *QFormLayout::takeAt(int index)
 
     invalidate();
 
-    // grab ownership back from the QFormLayoutItem
-    QLayoutItem *i = item->item;
-    item->item = 0;
-    delete item;
-
-    if (QLayout *l = i->layout()) {
-        // sanity check in case the user passed something weird to QObject::setParent()
-        if (l->parent() == this)
-            l->setParent(0);
-    }
-
-    return i;
+    return ownershipCleanedItem(item, this);
 }
 
 /*!

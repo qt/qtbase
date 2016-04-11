@@ -84,6 +84,12 @@ private slots:
     void insertRow_QString_QLayout();
     void insertRow_QWidget();
     void insertRow_QLayout();
+    void removeRow();
+    void removeRow_QWidget();
+    void removeRow_QLayout();
+    void takeRow();
+    void takeRow_QWidget();
+    void takeRow_QLayout();
     void setWidget();
     void setLayout();
 
@@ -685,6 +691,237 @@ void tst_QFormLayout::insertRow_QWidget()
 void tst_QFormLayout::insertRow_QLayout()
 {
     // ### come back to this later
+}
+
+void tst_QFormLayout::removeRow()
+{
+    QWidget topLevel;
+    QFormLayout *layout = new QFormLayout(&topLevel);
+
+    QCOMPARE(layout->count(), 0);
+    QCOMPARE(layout->rowCount(), 0);
+
+    QPointer<QWidget> w1 = new QWidget;
+    QPointer<QWidget> w2 = new QWidget;
+
+    layout->addRow("test1", w1);
+    layout->addRow(w2);
+
+    QCOMPARE(layout->count(), 3);
+    QCOMPARE(layout->rowCount(), 2);
+
+    layout->removeRow(1);
+
+    QVERIFY(!w1);
+    QCOMPARE(layout->count(), 1);
+    QCOMPARE(layout->rowCount(), 1);
+
+    layout->removeRow(0);
+
+    QVERIFY(!w2);
+    QCOMPARE(layout->count(), 0);
+    QCOMPARE(layout->rowCount(), 0);
+}
+
+void tst_QFormLayout::removeRow_QWidget()
+{
+    QWidget topLevel;
+    QFormLayout *layout = new QFormLayout(&topLevel);
+
+    QCOMPARE(layout->count(), 0);
+    QCOMPARE(layout->rowCount(), 0);
+
+    QPointer<QWidget> w1 = new QWidget;
+    QPointer<QWidget> w2 = new QWidget;
+
+    layout->addRow("test1", w1);
+    layout->addRow(w2);
+
+    QCOMPARE(layout->count(), 3);
+    QCOMPARE(layout->rowCount(), 2);
+
+    layout->removeRow(w1);
+
+    QVERIFY(!w1);
+    QCOMPARE(layout->count(), 1);
+    QCOMPARE(layout->rowCount(), 1);
+
+    layout->removeRow(w2);
+
+    QVERIFY(!w2);
+    QCOMPARE(layout->count(), 0);
+    QCOMPARE(layout->rowCount(), 0);
+
+    QWidget *w3 = new QWidget;
+    layout->removeRow(w3);
+    delete w3;
+}
+
+void tst_QFormLayout::removeRow_QLayout()
+{
+    QWidget topLevel;
+    QFormLayout *layout = new QFormLayout(&topLevel);
+
+    QCOMPARE(layout->count(), 0);
+    QCOMPARE(layout->rowCount(), 0);
+
+    QPointer<QHBoxLayout> l1 = new QHBoxLayout;
+    QPointer<QWidget> w1 = new QWidget;
+    l1->addWidget(w1);
+    QPointer<QHBoxLayout> l2 = new QHBoxLayout;
+    QPointer<QWidget> w2 = new QWidget;
+    l2->addWidget(w2);
+
+    layout->addRow("test1", l1);
+    layout->addRow(l2);
+
+    QCOMPARE(layout->count(), 3);
+    QCOMPARE(layout->rowCount(), 2);
+
+    layout->removeRow(l1);
+
+    QVERIFY(!l1);
+    QVERIFY(!w1);
+    QCOMPARE(layout->count(), 1);
+    QCOMPARE(layout->rowCount(), 1);
+
+    layout->removeRow(l2);
+
+    QVERIFY(!l2);
+    QVERIFY(!w2);
+    QCOMPARE(layout->count(), 0);
+    QCOMPARE(layout->rowCount(), 0);
+
+    QHBoxLayout *l3 = new QHBoxLayout;
+    layout->removeRow(l3);
+    delete l3;
+}
+
+void tst_QFormLayout::takeRow()
+{
+    QWidget topLevel;
+    QFormLayout *layout = new QFormLayout(&topLevel);
+
+    QCOMPARE(layout->count(), 0);
+    QCOMPARE(layout->rowCount(), 0);
+
+    QPointer<QWidget> w1 = new QWidget;
+    QPointer<QWidget> w2 = new QWidget;
+
+    layout->addRow("test1", w1);
+    layout->addRow(w2);
+
+    QCOMPARE(layout->count(), 3);
+    QCOMPARE(layout->rowCount(), 2);
+
+    QFormLayout::TakeRowResult result = layout->takeRow(1);
+
+    QVERIFY(w2);
+    QVERIFY(result.fieldItem);
+    QVERIFY(result.labelItem);
+    QCOMPARE(layout->count(), 1);
+    QCOMPARE(layout->rowCount(), 1);
+
+    result = layout->takeRow(0);
+
+    QVERIFY(w1);
+    QVERIFY(result.fieldItem);
+    QVERIFY(!result.labelItem);
+    QCOMPARE(layout->count(), 0);
+    QCOMPARE(layout->rowCount(), 0);
+
+    result = layout->takeRow(0);
+
+    QVERIFY(!result.fieldItem);
+    QVERIFY(!result.labelItem);
+}
+
+void tst_QFormLayout::takeRow_QWidget()
+{
+    QWidget topLevel;
+    QFormLayout *layout = new QFormLayout(&topLevel);
+
+    QCOMPARE(layout->count(), 0);
+    QCOMPARE(layout->rowCount(), 0);
+
+    QPointer<QWidget> w1 = new QWidget;
+    QPointer<QWidget> w2 = new QWidget;
+
+    layout->addRow("test1", w1);
+    layout->addRow(w2);
+
+    QCOMPARE(layout->count(), 3);
+    QCOMPARE(layout->rowCount(), 2);
+
+    QFormLayout::TakeRowResult result = layout->takeRow(w1);
+
+    QVERIFY(w1);
+    QVERIFY(result.fieldItem);
+    QVERIFY(result.labelItem);
+    QCOMPARE(layout->count(), 1);
+    QCOMPARE(layout->rowCount(), 1);
+
+    result = layout->takeRow(w2);
+
+    QVERIFY(w2);
+    QVERIFY(result.fieldItem);
+    QVERIFY(!result.labelItem);
+    QCOMPARE(layout->count(), 0);
+    QCOMPARE(layout->rowCount(), 0);
+
+    QWidget *w3 = new QWidget;
+    result = layout->takeRow(w3);
+    delete w3;
+
+    QVERIFY(!result.fieldItem);
+    QVERIFY(!result.labelItem);
+}
+
+void tst_QFormLayout::takeRow_QLayout()
+{
+    QWidget topLevel;
+    QFormLayout *layout = new QFormLayout(&topLevel);
+
+    QCOMPARE(layout->count(), 0);
+    QCOMPARE(layout->rowCount(), 0);
+
+    QPointer<QHBoxLayout> l1 = new QHBoxLayout;
+    QPointer<QWidget> w1 = new QWidget;
+    l1->addWidget(w1);
+    QPointer<QHBoxLayout> l2 = new QHBoxLayout;
+    QPointer<QWidget> w2 = new QWidget;
+    l2->addWidget(w2);
+
+    layout->addRow("test1", l1);
+    layout->addRow(l2);
+
+    QCOMPARE(layout->count(), 3);
+    QCOMPARE(layout->rowCount(), 2);
+
+    QFormLayout::TakeRowResult result = layout->takeRow(l1);
+
+    QVERIFY(l1);
+    QVERIFY(w1);
+    QVERIFY(result.fieldItem);
+    QVERIFY(result.labelItem);
+    QCOMPARE(layout->count(), 1);
+    QCOMPARE(layout->rowCount(), 1);
+
+    result = layout->takeRow(l2);
+
+    QVERIFY(l2);
+    QVERIFY(w2);
+    QVERIFY(result.fieldItem);
+    QVERIFY(!result.labelItem);
+    QCOMPARE(layout->count(), 0);
+    QCOMPARE(layout->rowCount(), 0);
+
+    QHBoxLayout *l3 = new QHBoxLayout;
+    result = layout->takeRow(l3);
+    delete l3;
+
+    QVERIFY(!result.fieldItem);
+    QVERIFY(!result.labelItem);
 }
 
 void tst_QFormLayout::setWidget()

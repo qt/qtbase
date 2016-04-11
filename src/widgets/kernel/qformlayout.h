@@ -80,6 +80,11 @@ public:
     };
     Q_ENUM(ItemRole)
 
+    struct TakeRowResult {
+        QLayoutItem *labelItem;
+        QLayoutItem *fieldItem;
+    };
+
     explicit QFormLayout(QWidget *parent = Q_NULLPTR);
     ~QFormLayout();
 
@@ -113,6 +118,14 @@ public:
     void insertRow(int row, const QString &labelText, QLayout *field);
     void insertRow(int row, QWidget *widget);
     void insertRow(int row, QLayout *layout);
+
+    void removeRow(int row);
+    void removeRow(QWidget *widget);
+    void removeRow(QLayout *layout);
+
+    TakeRowResult takeRow(int row);
+    TakeRowResult takeRow(QWidget *widget);
+    TakeRowResult takeRow(QLayout *layout);
 
     void setItem(int row, ItemRole role, QLayoutItem *item);
     void setWidget(int row, ItemRole role, QWidget *widget);
@@ -152,6 +165,8 @@ private:
     void resetLabelAlignment();
     void resetFormAlignment();
 };
+
+Q_DECLARE_TYPEINFO(QFormLayout::TakeRowResult, Q_PRIMITIVE_TYPE);
 
 QT_END_NAMESPACE
 
