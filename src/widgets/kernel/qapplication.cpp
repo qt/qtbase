@@ -3575,7 +3575,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         // We may get here if the widget is subscribed to a gesture,
         // but has not accepted TouchBegin. Propagate touch events
         // only if TouchBegin has been accepted.
-        if (widget && widget->testAttribute(Qt::WA_WState_AcceptedTouchBeginEvent))
+        if (widget->testAttribute(Qt::WA_WState_AcceptedTouchBeginEvent))
             res = d->notify_helper(widget, e);
         break;
     }
