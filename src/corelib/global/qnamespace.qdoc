@@ -234,6 +234,11 @@
            set to true won't use the native dialogs provided by the platform.
            This value has been added in Qt 5.7.
 
+    \value AA_SynthesizeMouseForUnhandledTabletEvents All tablet events
+           that are not accepted by the application will be translated
+           to mouse events instead. This attribute is enabled
+           by default. This value has been added in Qt 5.7.
+
     The following values are obsolete:
 
     \value AA_ImmediateWidgetCreation This attribute is no longer fully
@@ -2576,6 +2581,8 @@
     \value ImTextAfterCursor    The plain text after the cursor. The widget can decide how much text to return,
                                 but \b{must} not return an empty string unless the cursor is at the end of the document.
     \value ImEnterKeyType       The Enter key type.
+    \value ImAnchorRectangle    The bounding rectangle of the selection anchor.
+                                This value has been added in Qt 5.7.
 
     Masks:
 
