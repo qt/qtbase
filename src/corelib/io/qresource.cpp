@@ -1252,8 +1252,10 @@ bool QResourceFileEngine::open(QIODevice::OpenMode flags)
     }
     if(flags & QIODevice::WriteOnly)
         return false;
-    if(!d->resource.isValid())
-       return false;
+    if (!d->resource.isValid()) {
+        d->errorString = qt_error_string(ENOENT);
+        return false;
+    }
     return true;
 }
 

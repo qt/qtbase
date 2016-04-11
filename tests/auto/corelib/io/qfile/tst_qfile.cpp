@@ -543,6 +543,10 @@ void tst_QFile::open_data()
                                   << false << QFile::OpenError;
     QTest::newRow("noreadfile") << QString::fromLatin1(noReadFile) << int(QIODevice::ReadOnly)
                                 << false << QFile::OpenError;
+    QTest::newRow("resource_file") << QString::fromLatin1(":/does/not/exist")
+                                   << int(QIODevice::ReadOnly)
+                                   << false
+                                   << QFile::OpenError;
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     //opening devices requires administrative privileges (and elevation).
     HANDLE hTest = CreateFile(_T("\\\\.\\PhysicalDrive0"), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
