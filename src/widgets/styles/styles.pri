@@ -91,22 +91,6 @@ contains( styles, fusion ) {
     DEFINES += QT_NO_STYLE_FUSION
 }
 
-contains( styles, windowsce ) {
-    HEADERS += styles/qwindowscestyle_p.h
-    HEADERS += styles/qwindowscestyle_p_p.h
-    SOURCES += styles/qwindowscestyle.cpp
-} else {
-    DEFINES += QT_NO_STYLE_WINDOWSCE
-}
-
-contains( styles, windowsmobile ) {
-    HEADERS += styles/qwindowsmobilestyle_p.h
-    HEADERS += styles/qwindowsmobilestyle_p_p.h
-    SOURCES += styles/qwindowsmobilestyle.cpp
-} else {
-    DEFINES += QT_NO_STYLE_WINDOWSMOBILE
-}
-
 contains( styles, android ) {
     HEADERS += styles/qandroidstyle_p.h
     SOURCES += styles/qandroidstyle.cpp

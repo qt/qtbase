@@ -144,13 +144,4 @@
 #define CLEARTYPE_QUALITY 5
 #endif
 
-#ifdef Q_OS_WINCE
-#ifndef LR_DEFAULTSIZE
-#define LR_DEFAULTSIZE 0
-#endif
-#ifndef LR_SHARED
-#define LR_SHARED 0
-#endif
-#endif // Q_OS_WINCE
-
 #endif // QT_WINDOWS_H

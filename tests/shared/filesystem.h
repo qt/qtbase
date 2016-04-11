@@ -36,7 +36,7 @@
 #include <QDir>
 #include <QFile>
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
 #include <windows.h>
 #include <winioctl.h>
 #ifndef IO_REPARSE_TAG_MOUNT_POINT

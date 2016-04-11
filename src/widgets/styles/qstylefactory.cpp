@@ -56,12 +56,6 @@
 #ifndef QT_NO_STYLE_WINDOWSVISTA
 #include "qwindowsvistastyle_p.h"
 #endif
-#ifndef QT_NO_STYLE_WINDOWSCE
-#include "qwindowscestyle_p.h"
-#endif
-#ifndef QT_NO_STYLE_WINDOWSMOBILE
-#include "qwindowsmobilestyle_p.h"
-#endif
 
 #if !defined(QT_NO_STYLE_MAC) && defined(Q_OS_MAC)
 #  include "qmacstyle_mac_p.h"
@@ -112,16 +106,6 @@ QStyle *QStyleFactory::create(const QString& key)
 #ifndef QT_NO_STYLE_WINDOWS
     if (style == QLatin1String("windows"))
         ret = new QWindowsStyle;
-    else
-#endif
-#ifndef QT_NO_STYLE_WINDOWSCE
-    if (style == QLatin1String("windowsce"))
-        ret = new QWindowsCEStyle;
-    else
-#endif
-#ifndef QT_NO_STYLE_WINDOWSMOBILE
-    if (style == QLatin1String("windowsmobile"))
-        ret = new QWindowsMobileStyle;
     else
 #endif
 #ifndef QT_NO_STYLE_WINDOWSXP
@@ -179,14 +163,6 @@ QStringList QStyleFactory::keys()
 #ifndef QT_NO_STYLE_WINDOWS
     if (!list.contains(QLatin1String("Windows")))
         list << QLatin1String("Windows");
-#endif
-#ifndef QT_NO_STYLE_WINDOWSCE
-    if (!list.contains(QLatin1String("WindowsCE")))
-        list << QLatin1String("WindowsCE");
-#endif
-#ifndef QT_NO_STYLE_WINDOWSMOBILE
-    if (!list.contains(QLatin1String("WindowsMobile")))
-        list << QLatin1String("WindowsMobile");
 #endif
 #ifndef QT_NO_STYLE_WINDOWSXP
     if (!list.contains(QLatin1String("WindowsXP")) &&
