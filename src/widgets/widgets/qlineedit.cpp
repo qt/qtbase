@@ -1758,6 +1758,8 @@ QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property, QVariant arg
     switch(property) {
     case Qt::ImCursorRectangle:
         return d->cursorRect();
+    case Qt::ImAnchorRectangle:
+        return d->adjustedControlRect(d->control->anchorRect());
     case Qt::ImFont:
         return font();
     case Qt::ImCursorPosition: {

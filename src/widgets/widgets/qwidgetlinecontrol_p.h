@@ -212,7 +212,9 @@ public:
     void end(bool mark) { moveCursor(text().length(), mark); }
 
     int xToPos(int x, QTextLine::CursorPosition = QTextLine::CursorBetweenCharacters) const;
+    QRect rectForPos(int pos) const;
     QRect cursorRect() const;
+    QRect anchorRect() const;
 
     qreal cursorToX(int cursor) const { return m_textLayout.lineAt(0).cursorToX(cursor); }
     qreal cursorToX() const

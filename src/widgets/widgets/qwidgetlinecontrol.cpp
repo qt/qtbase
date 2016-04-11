@@ -407,20 +407,41 @@ int QWidgetLineControl::xToPos(int x, QTextLine::CursorPosition betweenOrOn) con
 /*!
     \internal
 
+    Returns the bounds of the given text position.
+*/
+QRect QWidgetLineControl::rectForPos(int pos) const
+{
+    QTextLine l = textLayout()->lineAt(0);
+    if (m_preeditCursor != -1)
+        pos += m_preeditCursor;
+    int cix = qRound(l.cursorToX(pos));
+    int w = m_cursorWidth;
+    int ch = l.height() + 1;
+
+    return QRect(cix-5, 0, w+9, ch);
+}
+
+/*!
+    \internal
+
     Returns the bounds of the current cursor, as defined as a
     between characters cursor.
 */
 QRect QWidgetLineControl::cursorRect() const
 {
-    QTextLine l = textLayout()->lineAt(0);
-    int c = m_cursor;
-    if (m_preeditCursor != -1)
-        c += m_preeditCursor;
-    int cix = qRound(l.cursorToX(c));
-    int w = m_cursorWidth;
-    int ch = l.height() + 1;
+    return rectForPos(m_cursor);
+}
 
-    return QRect(cix-5, 0, w+9, ch);
+/*!
+    \internal
+
+    Returns the bounds of the current anchor
+*/
+QRect QWidgetLineControl::anchorRect() const
+{
+    if (!hasSelectedText())
+        return cursorRect();
+    return rectForPos(m_selstart < m_selend ? m_selstart : m_selend);
 }
 
 /*!
