@@ -2568,7 +2568,7 @@ void QTreeView::rowsInserted(const QModelIndex &parent, int start, int end)
     if (((parentItem != -1) && d->viewItems.at(parentItem).expanded)
         || (parent == d->root)) {
         d->doDelayedItemsLayout();
-    } else if (parentItem != -1 && (d->model->rowCount(parent) == end - start + 1)) {
+    } else if (parentItem != -1 && parentRowCount == delta) {
         // the parent just went from 0 children to more. update to re-paint the decoration
         d->viewItems[parentItem].hasChildren = true;
         viewport()->update();
