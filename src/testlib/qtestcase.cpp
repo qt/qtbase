@@ -645,6 +645,7 @@ static void stackTrace()
     \value Press    The key is pressed.
     \value Release  The key is released.
     \value Click    The key is clicked (pressed and released).
+    \value Shortcut A shortcut is activated. This value has been added in Qt 5.6.
 */
 
 /*! \enum QTest::MouseAction
