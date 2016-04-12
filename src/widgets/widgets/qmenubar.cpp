@@ -1113,11 +1113,13 @@ void QMenuBar::keyPressEvent(QKeyEvent *e)
         key_consumed = false;
     }
 
+#ifndef QT_NO_SHORTCUT
     if (!key_consumed && e->matches(QKeySequence::Cancel)) {
         d->setCurrentAction(0);
         d->setKeyboardMode(false);
         key_consumed = true;
     }
+#endif
 
     if(!key_consumed &&
        (!e->modifiers() ||
@@ -1425,6 +1427,7 @@ bool QMenuBar::event(QEvent *e)
     case QEvent::Show:
         d->_q_updateLayout();
     break;
+#ifndef QT_NO_SHORTCUT
     case QEvent::ShortcutOverride: {
         QKeyEvent *kev = static_cast<QKeyEvent*>(e);
         //we only filter out escape if there is a current action
@@ -1434,8 +1437,7 @@ bool QMenuBar::event(QEvent *e)
         }
     }
     break;
-
-
+#endif
 #ifndef QT_NO_WHATSTHIS
     case QEvent::QueryWhatsThis:
         e->setAccepted(d->whatsThis.size());

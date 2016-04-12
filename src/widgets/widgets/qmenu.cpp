@@ -2731,7 +2731,10 @@ QMenu::event(QEvent *e)
             if (kev->key() == Qt::Key_Up || kev->key() == Qt::Key_Down
                 || kev->key() == Qt::Key_Left || kev->key() == Qt::Key_Right
                 || kev->key() == Qt::Key_Enter || kev->key() == Qt::Key_Return
-                || kev->matches(QKeySequence::Cancel)) {
+#ifndef QT_NO_SHORTCUT
+                || kev->matches(QKeySequence::Cancel)
+#endif
+                    ) {
                 e->accept();
                 return true;
             }
@@ -3059,7 +3062,11 @@ void QMenu::keyPressEvent(QKeyEvent *e)
         key_consumed = false;
     }
 
-    if (!key_consumed && (e->matches(QKeySequence::Cancel)
+    if (!key_consumed && (
+        false
+#ifndef QT_NO_SHORTCUT
+        || e->matches(QKeySequence::Cancel)
+#endif
 #ifdef QT_KEYPAD_NAVIGATION
         || e->key() == Qt::Key_Back
 #endif
@@ -3275,7 +3282,9 @@ static void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem *i
         item->setIcon(QIcon());
     }
     item->setVisible(action->isVisible());
+#ifndef QT_NO_SHORTCUT
     item->setShortcut(action->shortcut());
+#endif
     item->setCheckable(action->isCheckable());
     item->setChecked(action->isChecked());
     item->setHasExclusiveGroup(action->actionGroup() && action->actionGroup()->isExclusive());

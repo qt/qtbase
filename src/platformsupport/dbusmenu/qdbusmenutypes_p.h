@@ -74,7 +74,9 @@ public:
 
     static QDBusMenuItemList items(const QList<int> &ids, const QStringList &propertyNames);
     static QString convertMnemonic(const QString &label);
+#ifndef QT_NO_SHORTCUT
     static QDBusMenuShortcut convertKeySequence(const QKeySequence &sequence);
+#endif
     static void registerDBusTypes();
 
     int m_id;

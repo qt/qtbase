@@ -68,6 +68,7 @@ static quint32 constructModifierMask(quint32 accel_key)
     return ret;
 }
 
+#ifndef QT_NO_SHORTCUT
 // return an autoreleased string given a QKeySequence (currently only looks at the first one).
 NSString *keySequenceToKeyEqivalent(const QKeySequence &accel)
 {
@@ -86,6 +87,7 @@ NSUInteger keySequenceModifierMask(const QKeySequence &accel)
 {
     return constructModifierMask(accel[0]);
 }
+#endif
 
 QCocoaMenuItem::QCocoaMenuItem() :
     m_native(NULL),
@@ -174,10 +176,12 @@ void QCocoaMenuItem::setRole(MenuRole role)
     m_role = role;
 }
 
+#ifndef QT_NO_SHORTCUT
 void QCocoaMenuItem::setShortcut(const QKeySequence& shortcut)
 {
     m_shortcut = shortcut;
 }
+#endif
 
 void QCocoaMenuItem::setChecked(bool isChecked)
 {
@@ -301,11 +305,13 @@ NSMenuItem *QCocoaMenuItem::sync()
     [m_native setView:m_itemView];
 
     QString text = mergeText();
+#ifndef QT_NO_SHORTCUT
     QKeySequence accel = mergeAccel();
 
     // Show multiple key sequences as part of the menu text.
     if (accel.count() > 1)
         text += QLatin1String(" (") + accel.toString(QKeySequence::NativeText) + QLatin1String(")");
+#endif
 
     QString finalString = QPlatformTheme::removeMnemonics(text);
     bool useAttributedTitle = false;
@@ -327,10 +333,13 @@ NSMenuItem *QCocoaMenuItem::sync()
        [m_native setTitle: QCFString::toNSString(finalString)];
     }
 
+#ifndef QT_NO_SHORTCUT
     if (accel.count() == 1) {
         [m_native setKeyEquivalent:keySequenceToKeyEqivalent(accel)];
         [m_native setKeyEquivalentModifierMask:keySequenceModifierMask(accel)];
-    } else {
+    } else
+#endif
+    {
         [m_native setKeyEquivalent:@""];
         [m_native setKeyEquivalentModifierMask:NSCommandKeyMask];
     }
@@ -371,6 +380,7 @@ QString QCocoaMenuItem::mergeText()
     return m_text;
 }
 
+#ifndef QT_NO_SHORTCUT
 QKeySequence QCocoaMenuItem::mergeAccel()
 {
     QCocoaMenuLoader *loader = [QCocoaMenuLoader sharedMenuLoader];
@@ -383,6 +393,7 @@ QKeySequence QCocoaMenuItem::mergeAccel()
 
     return m_shortcut;
 }
+#endif
 
 void QCocoaMenuItem::syncMerged()
 {

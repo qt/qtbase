@@ -145,6 +145,7 @@ private:
     QAccessible::Role m_role;
 };
 
+#ifndef QT_NO_TREEVIEW
 class QAccessibleTree :public QAccessibleTable
 {
 public:
@@ -172,6 +173,7 @@ private:
 
     inline int logicalIndex(const QModelIndex &index) const;
 };
+#endif
 
 class QAccessibleTableCell: public QAccessibleInterface, public QAccessibleTableCellInterface, public QAccessibleActionInterface
 {
@@ -221,7 +223,9 @@ private:
     void unselectCell();
 
 friend class QAccessibleTable;
+#ifndef QT_NO_TREEVIEW
 friend class QAccessibleTree;
+#endif
 };
 
 
@@ -255,7 +259,9 @@ private:
     Qt::Orientation orientation;
 
 friend class QAccessibleTable;
+#ifndef QT_NO_TREEVIEW
 friend class QAccessibleTree;
+#endif
 };
 
 // This is the corner button on the top left of a table.

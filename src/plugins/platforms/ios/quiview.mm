@@ -551,5 +551,7 @@
 
 @end
 
+#ifndef QT_NO_ACCESSIBILITY
 // Include category as an alternative to using -ObjC (Apple QA1490)
 #include "quiview_accessibility.mm"
+#endif

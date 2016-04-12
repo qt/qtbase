@@ -39,6 +39,8 @@
 
 #include "qiosclipboard.h"
 
+#ifndef QT_NO_CLIPBOARD
+
 #include <QtPlatformSupport/private/qmacmime_p.h>
 #include <QtCore/QMimeData>
 #include <QtGui/QGuiApplication>
@@ -247,3 +249,5 @@ bool QIOSClipboard::ownsMode(QClipboard::Mode mode) const
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_CLIPBOARD

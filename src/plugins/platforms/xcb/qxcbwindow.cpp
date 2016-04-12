@@ -258,6 +258,7 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
         free_prop = true;
     }
 
+#ifndef QT_NO_TEXTCODEC
     static const QTextCodec* mapper = QTextCodec::codecForLocale();
     int errCode = 0;
     if (mapper) {
@@ -281,6 +282,7 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
         tp.nitems = qcs.length();
         free_prop = false;
     }
+#endif
     return &tp;
 }
 #endif // XCB_USE_XLIB

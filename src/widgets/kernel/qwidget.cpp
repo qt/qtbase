@@ -9441,10 +9441,13 @@ void QWidget::tabletEvent(QTabletEvent *event)
 
 void QWidget::keyPressEvent(QKeyEvent *event)
 {
+#ifndef QT_NO_SHORTCUT
     if ((windowType() == Qt::Popup) && event->matches(QKeySequence::Cancel)) {
         event->accept();
         close();
-    } else {
+    } else
+#endif
+    {
         event->ignore();
     }
 }

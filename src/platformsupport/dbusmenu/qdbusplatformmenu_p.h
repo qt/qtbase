@@ -99,8 +99,10 @@ public:
     void setChecked(bool isChecked) Q_DECL_OVERRIDE;
     bool hasExclusiveGroup() const { return m_hasExclusiveGroup; }
     void setHasExclusiveGroup(bool hasExclusiveGroup) Q_DECL_OVERRIDE;
+#ifndef QT_NO_SHORTCUT
     QKeySequence shortcut() const { return m_shortcut; }
     void setShortcut(const QKeySequence& shortcut) Q_DECL_OVERRIDE;
+#endif
     void setIconSize(int size) Q_DECL_OVERRIDE { Q_UNUSED(size); }
     void setNativeContents(WId item) Q_DECL_OVERRIDE { Q_UNUSED(item); }
 

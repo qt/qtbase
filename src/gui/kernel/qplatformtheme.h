@@ -306,7 +306,9 @@ public:
                            QPlatformTheme::IconOptions iconOptions = 0) const;
     virtual QIconEngine *createIconEngine(const QString &iconName) const;
 
+#ifndef QT_NO_SHORTCUT
     virtual QList<QKeySequence> keyBindings(QKeySequence::StandardKey key) const;
+#endif
 
     virtual QString standardButtonText(int button) const;
 

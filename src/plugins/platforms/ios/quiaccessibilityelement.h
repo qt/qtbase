@@ -43,6 +43,8 @@
 #import <UIKit/UIKit.h>
 #import <QtGui/QtGui>
 
+#ifndef QT_NO_ACCESSIBILITY
+
 @interface QMacAccessibilityElement : UIAccessibilityElement
 {}
 
@@ -53,4 +55,5 @@
 
 @end
 
+#endif
 #endif

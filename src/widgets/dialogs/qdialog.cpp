@@ -634,12 +634,14 @@ void QDialog::contextMenuEvent(QContextMenuEvent *e)
 /*! \reimp */
 void QDialog::keyPressEvent(QKeyEvent *e)
 {
+#ifndef QT_NO_SHORTCUT
     //   Calls reject() if Escape is pressed. Simulates a button
     //   click for the default button if Enter is pressed. Move focus
     //   for the arrow keys. Ignore the rest.
     if (e->matches(QKeySequence::Cancel)) {
         reject();
     } else
+#endif
     if (!e->modifiers() || (e->modifiers() & Qt::KeypadModifier && e->key() == Qt::Key_Enter)) {
         switch (e->key()) {
         case Qt::Key_Enter:

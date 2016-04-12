@@ -190,11 +190,13 @@ QDBusMenuItem::QDBusMenuItem(const QDBusPlatformMenuItem *item)
             m_properties.insert(QLatin1String("toggle-type"), toggleType);
             m_properties.insert(QLatin1String("toggle-state"), item->isChecked() ? 1 : 0);
         }
+#ifndef QT_NO_SHORTCUT
         const QKeySequence &scut = item->shortcut();
         if (!scut.isEmpty()) {
             QDBusMenuShortcut shortcut = convertKeySequence(scut);
             m_properties.insert(QLatin1String("shortcut"), QVariant::fromValue(shortcut));
         }
+#endif
         const QIcon &icon = item->icon();
         if (!icon.name().isEmpty()) {
             m_properties.insert(QLatin1String("icon-name"), icon.name());
@@ -230,6 +232,7 @@ QString QDBusMenuItem::convertMnemonic(const QString &label)
     return ret;
 }
 
+#ifndef QT_NO_SHORTCUT
 QDBusMenuShortcut QDBusMenuItem::convertKeySequence(const QKeySequence &sequence)
 {
     QDBusMenuShortcut shortcut;
@@ -258,6 +261,7 @@ QDBusMenuShortcut QDBusMenuItem::convertKeySequence(const QKeySequence &sequence
     }
     return shortcut;
 }
+#endif
 
 const QDBusArgument &operator<<(QDBusArgument &arg, const QDBusMenuEvent &ev)
 {

@@ -97,11 +97,14 @@ public:
         }
         QWidget *p = q->parentWidget();
         while (p) {
-            if (
+            if (false
 #ifndef QT_NO_MDIAREA
-                qobject_cast<QMdiSubWindow *>(p) != 0 ||
+                || qobject_cast<QMdiSubWindow *>(p) != 0
 #endif
-                qobject_cast<QAbstractScrollArea *>(p) != 0) {
+#ifndef QT_NO_SCROLLAREA
+                || qobject_cast<QAbstractScrollArea *>(p) != 0
+#endif
+                    ) {
                 q->winId();
                 usesNativeWidgets = true;
                 break;

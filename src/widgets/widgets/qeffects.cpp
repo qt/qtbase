@@ -202,10 +202,13 @@ bool QAlphaWidget::eventFilter(QObject *o, QEvent *e)
         render();
         break;
     case QEvent::KeyPress: {
+#ifndef QT_NO_SHORTCUT
        QKeyEvent *ke = (QKeyEvent*)e;
        if (ke->matches(QKeySequence::Cancel)) {
            showWidget = false;
-       } else {
+       } else
+#endif
+       {
            duration = 0;
        }
        render();

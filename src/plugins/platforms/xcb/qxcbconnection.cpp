@@ -1719,11 +1719,13 @@ void QXcbConnection::processXcbEvents()
                 compressEvent(event, i, eventqueue))
             continue;
 
+#ifndef QT_NO_CLIPBOARD
         bool accepted = false;
         if (clipboard()->processIncr())
             clipboard()->incrTransactionPeeker(event, accepted);
         if (accepted)
             continue;
+#endif
 
         auto isWaitingFor = [=](PeekFunc peekFunc) {
             // These callbacks return true if the event is what they were

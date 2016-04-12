@@ -53,6 +53,8 @@
 
 #include "private/qabstractstate_p.h"
 
+#ifndef QT_NO_STATEMACHINE
+
 #include <QtCore/qabstracttransition.h>
 #include <QtCore/qhistorystate.h>
 #include <QtCore/qlist.h>
@@ -93,4 +95,6 @@ protected:
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QT_NO_STATEMACHINE
+
+#endif // QHISTORYSTATE_P_H

@@ -67,8 +67,10 @@ public:
 
     void initializeSystemPalette();
 
+#ifndef QT_NO_SHORTCUT
     static const QKeyBinding keyBindings[];
     static const uint numberOfKeyBindings;
+#endif
 
     static unsigned currentKeyPlatforms();
 

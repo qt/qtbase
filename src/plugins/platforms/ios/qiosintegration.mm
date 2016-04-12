@@ -74,7 +74,7 @@ QIOSIntegration *QIOSIntegration::instance()
 
 QIOSIntegration::QIOSIntegration()
     : m_fontDatabase(new QCoreTextFontDatabase)
-#ifndef Q_OS_TVOS
+#if !defined(Q_OS_TVOS) && !defined(QT_NO_CLIPBOARD)
     , m_clipboard(new QIOSClipboard)
 #endif
     , m_inputContext(0)
@@ -131,7 +131,7 @@ QIOSIntegration::~QIOSIntegration()
     delete m_fontDatabase;
     m_fontDatabase = 0;
 
-#ifndef Q_OS_TVOS
+#if !defined(Q_OS_TVOS) && !defined(QT_NO_CLIPBOARD)
     delete m_clipboard;
     m_clipboard = 0;
 #endif
@@ -221,6 +221,7 @@ QPlatformFontDatabase * QIOSIntegration::fontDatabase() const
     return m_fontDatabase;
 }
 
+#ifndef QT_NO_CLIPBOARD
 QPlatformClipboard *QIOSIntegration::clipboard() const
 {
 #ifndef Q_OS_TVOS
@@ -229,6 +230,7 @@ QPlatformClipboard *QIOSIntegration::clipboard() const
     return 0;
 #endif
 }
+#endif
 
 QPlatformInputContext *QIOSIntegration::inputContext() const
 {
@@ -276,12 +278,14 @@ QTouchDevice *QIOSIntegration::touchDevice()
     return m_touchDevice;
 }
 
+#ifndef QT_NO_ACCESSIBILITY
 QPlatformAccessibility *QIOSIntegration::accessibility() const
 {
     if (!m_accessibility)
         m_accessibility = new QIOSPlatformAccessibility;
     return m_accessibility;
 }
+#endif
 
 QPlatformNativeInterface *QIOSIntegration::nativeInterface() const
 {

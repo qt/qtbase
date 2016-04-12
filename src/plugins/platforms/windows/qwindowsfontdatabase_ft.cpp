@@ -122,7 +122,11 @@ static FontKeys &fontKeys()
                                      QSettings::NativeFormat);
         const QStringList allKeys = fontRegistry.allKeys();
         const QString trueType = QStringLiteral("(TrueType)");
+#ifndef QT_NO_REGULAREXPRESSION
         const QRegularExpression sizeListMatch(QStringLiteral("\\s(\\d+,)+\\d+"));
+#else
+        const QRegExp sizeListMatch(QLatin1String("\\s(\\d+,)+\\d+"));
+#endif
         Q_ASSERT(sizeListMatch.isValid());
         const int size = allKeys.size();
         result.reserve(size);

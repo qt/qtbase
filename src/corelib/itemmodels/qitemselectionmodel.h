@@ -40,15 +40,16 @@
 #ifndef QITEMSELECTIONMODEL_H
 #define QITEMSELECTIONMODEL_H
 
+#include <QtCore/qglobal.h>
+
+#ifndef QT_NO_ITEMVIEWS
+
 #include <QtCore/qset.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qabstractitemmodel.h>
 
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_ITEMVIEWS
 
 class Q_CORE_EXPORT QItemSelectionRange
 {
@@ -272,11 +273,11 @@ Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QItemSelection)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QItemSelectionRange &);
 #endif
 
-#endif // QT_NO_ITEMVIEWS
-
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QItemSelectionRange)
 Q_DECLARE_METATYPE(QItemSelection)
+
+#endif // QT_NO_ITEMVIEWS
 
 #endif // QITEMSELECTIONMODEL_H

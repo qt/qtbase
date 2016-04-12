@@ -75,6 +75,9 @@
 #define QT_MAC_SYSTEMTRAY_USE_GROWL
 
 #include "qcocoasystemtrayicon.h"
+
+#ifndef QT_NO_SYSTEMTRAYICON
+
 #include <qtemporaryfile.h>
 #include <qimagewriter.h>
 #include <qdebug.h>
@@ -464,3 +467,5 @@ private:
     return qmenu;
 }
 @end
+
+#endif // QT_NO_SYSTEMTRAYICON

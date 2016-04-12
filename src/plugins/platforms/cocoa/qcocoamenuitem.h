@@ -90,7 +90,9 @@ public:
     void setIsSeparator(bool isSeparator) Q_DECL_OVERRIDE;
     void setFont(const QFont &font) Q_DECL_OVERRIDE;
     void setRole(MenuRole role) Q_DECL_OVERRIDE;
+#ifndef QT_NO_SHORTCUT
     void setShortcut(const QKeySequence& shortcut) Q_DECL_OVERRIDE;
+#endif
     void setCheckable(bool checkable) Q_DECL_OVERRIDE { Q_UNUSED(checkable) }
     void setChecked(bool isChecked) Q_DECL_OVERRIDE;
     void setEnabled(bool isEnabled) Q_DECL_OVERRIDE;
@@ -128,7 +130,9 @@ private:
     QFont m_font;
     MenuRole m_role;
     MenuRole m_detectedRole;
+#ifndef QT_NO_SHORTCUT
     QKeySequence m_shortcut;
+#endif
     bool m_checked;
     bool m_merged;
     quintptr m_tag;

@@ -236,7 +236,7 @@ bool QWindowSystemInterface::handleShortcutEvent(QWindow *window, ulong timestam
 #else
     Q_UNUSED(window)
     Q_UNUSED(timestamp)
-    Q_UNUSED(key)
+    Q_UNUSED(keyCode)
     Q_UNUSED(modifiers)
     Q_UNUSED(nativeScanCode)
     Q_UNUSED(nativeVirtualKey)

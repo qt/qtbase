@@ -132,10 +132,12 @@ void QDBusPlatformMenuItem::setHasExclusiveGroup(bool hasExclusiveGroup)
     m_hasExclusiveGroup = hasExclusiveGroup;
 }
 
+#ifndef QT_NO_SHORTCUT
 void QDBusPlatformMenuItem::setShortcut(const QKeySequence &shortcut)
 {
     m_shortcut = shortcut;
 }
+#endif
 
 void QDBusPlatformMenuItem::trigger()
 {
