@@ -104,16 +104,7 @@ public:
     */
     void setMatrix(const QTransform &m)
     {
-        m_m11 = m.m11();
-        m_m12 = m.m12();
-        m_m13 = m.m13();
-        m_m21 = m.m21();
-        m_m22 = m.m22();
-        m_m23 = m.m23();
-        m_m33 = m.m33();
-        m_dx = m.dx();
-        m_dy = m.dy();
-        m_txop = m.type();
+        m_transform = m;
 
         qreal scale;
         qt_scaleForTransform(m, &scale);
@@ -207,20 +198,10 @@ public:
     QRectF controlPointRect; // only valid after endOutline()
 
     QT_FT_Outline m_outline;
-    uint m_txop;
 
     int m_subpath_start;
 
-    // Matrix
-    qreal m_m11;
-    qreal m_m12;
-    qreal m_m13;
-    qreal m_m21;
-    qreal m_m22;
-    qreal m_m23;
-    qreal m_m33;
-    qreal m_dx;
-    qreal m_dy;
+    QTransform m_transform;
 
     qreal m_curve_threshold;
 
