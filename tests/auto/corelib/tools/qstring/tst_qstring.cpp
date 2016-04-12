@@ -503,6 +503,8 @@ private slots:
     void fromLocal8Bit();
     void local8Bit_data();
     void local8Bit();
+    void invalidToLocal8Bit_data();
+    void invalidToLocal8Bit();
     void nullFromLocal8Bit();
     void fromLatin1Roundtrip_data();
     void fromLatin1Roundtrip();
@@ -4275,6 +4277,66 @@ void tst_QString::local8Bit()
     QFETCH(QByteArray, result);
 
     QCOMPARE(local8Bit.toLocal8Bit(), QByteArray(result));
+}
+
+void tst_QString::invalidToLocal8Bit_data()
+{
+    QTest::addColumn<QString>("unicode");
+    QTest::addColumn<QByteArray>("expect"); // Initial validly-converted prefix
+
+    {
+        const QChar malformed[] = { 'A', 0xd800, 'B', 0 };
+        const char expected[] = "A";
+        QTest::newRow("LoneHighSurrogate")
+            << QString(malformed, sizeof(malformed) / sizeof(QChar))
+            // Don't include the terminating '\0' of expected:
+            << QByteArray(expected, sizeof(expected) / sizeof(char) - 1);
+    }
+    {
+        const QChar malformed[] = { 'A', 0xdc00, 'B', 0 };
+        const char expected[] = "A";
+        QTest::newRow("LoneLowSurrogate")
+            << QString(malformed, sizeof(malformed) / sizeof(QChar))
+            << QByteArray(expected, sizeof(expected) / sizeof(char) - 1);
+    }
+    {
+        const QChar malformed[] = { 'A', 0xd800, 0xd801, 'B', 0 };
+        const char expected[] = "A";
+        QTest::newRow("DoubleHighSurrogate")
+            << QString(malformed, sizeof(malformed) / sizeof(QChar))
+            << QByteArray(expected, sizeof(expected) / sizeof(char) - 1);
+    }
+    {
+        const QChar malformed[] = { 'A', 0xdc00, 0xdc01, 'B', 0 };
+        const char expected[] = "A";
+        QTest::newRow("DoubleLowSurrogate")
+            << QString(malformed, sizeof(malformed) / sizeof(QChar))
+            << QByteArray(expected, sizeof(expected) / sizeof(char) - 1);
+    }
+    {
+        const QChar malformed[] = { 'A', 0xdc00, 0xd800, 'B', 0 };
+        const char expected[] = "A";
+        QTest::newRow("ReversedSurrogates") // low before high
+            << QString(malformed, sizeof(malformed) / sizeof(QChar))
+            << QByteArray(expected, sizeof(expected) / sizeof(char) - 1);
+    }
+}
+
+void tst_QString::invalidToLocal8Bit()
+{
+    QFETCH(QString, unicode);
+    QFETCH(QByteArray, expect);
+    QByteArray local = unicode.toLocal8Bit();
+    /*
+      The main concern of this test is to check that any error-reporting that
+      toLocal8Bit() prompts on failure isn't dependent on outputting the data
+      it's converting via toLocal8Bit(), which would be apt to recurse.  So the
+      real purpose of this QVERIFY(), for all that we should indeed check we get
+      the borked output that matches what we can reliably expect (despite
+      variation in how codecs respond to errors), is to verify that we got here
+      - i.e. we didn't crash in such a recursive stack over-flow.
+     */
+    QVERIFY(local.startsWith(expect));
 }
 
 void tst_QString::nullFromLocal8Bit()
