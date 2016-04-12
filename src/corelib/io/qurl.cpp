@@ -1176,7 +1176,7 @@ inline void QUrlPrivate::appendHost(QString &appendTo, QUrl::FormattingOptions o
     } else {
         // this is either an IPv4Address or a reg-name
         // if it is a reg-name, it is already stored in Unicode form
-        if (options == QUrl::EncodeUnicode)
+        if (options & QUrl::EncodeUnicode && !(options & 0x4000000))
             appendTo += qt_ACE_do(host, ToAceOnly, AllowLeadingDot);
         else
             appendTo += host;

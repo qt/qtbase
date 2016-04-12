@@ -1749,6 +1749,9 @@ void tst_QUrl::symmetry()
     QUrl url(QString::fromUtf8("http://www.räksmörgås.se/pub?a=b&a=dø&a=f#vræl"));
     QCOMPARE(url.scheme(), QString::fromLatin1("http"));
     QCOMPARE(url.host(), QString::fromUtf8("www.räksmörgås.se"));
+    QCOMPARE(url.host(QUrl::EncodeSpaces), QString::fromUtf8("www.räksmörgås.se"));
+    QCOMPARE(url.host(QUrl::EncodeUnicode), QString::fromUtf8("www.xn--rksmrgs-5wao1o.se"));
+    QCOMPARE(url.host(QUrl::EncodeUnicode | QUrl::EncodeSpaces), QString::fromUtf8("www.xn--rksmrgs-5wao1o.se"));
     QCOMPARE(url.path(), QString::fromLatin1("/pub"));
     // this will be encoded ...
     QCOMPARE(url.encodedQuery().constData(), QString::fromLatin1("a=b&a=d%C3%B8&a=f").toLatin1().constData());
