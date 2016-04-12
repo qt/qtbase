@@ -152,9 +152,11 @@ public abstract class QtLoader {
     public int m_displayDensity = -1;
     private ContextWrapper m_context;
     protected ComponentInfo m_contextInfo;
+    private Class<?> m_delegateClass;
 
-    QtLoader(ContextWrapper context) {
+    QtLoader(ContextWrapper context, Class<?> clazz) {
         m_context = context;
+        m_delegateClass = clazz;
     }
 
     // Implement in subclass
@@ -235,7 +237,7 @@ public abstract class QtLoader {
             if (!(Boolean)prepareAppMethod.invoke(qtLoader, m_context, classLoader, loaderParams))
                 throw new Exception("");
 
-            QtApplication.setQtContextDelegate(m_context.getClass(), qtLoader);
+            QtApplication.setQtContextDelegate(m_delegateClass, qtLoader);
 
             // now load the application library so it's accessible from this class loader
             if (libName != null)
