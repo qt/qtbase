@@ -634,6 +634,8 @@ Q_INLINE_TEMPLATE void QMap<Key, T>::clear()
     *this = QMap<Key, T>();
 }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wreturn-stack-address")
 
 template <class Key, class T>
 Q_INLINE_TEMPLATE const T QMap<Key, T>::value(const Key &akey, const T &adefaultValue) const
@@ -641,6 +643,8 @@ Q_INLINE_TEMPLATE const T QMap<Key, T>::value(const Key &akey, const T &adefault
     Node *n = d->findNode(akey);
     return n ? n->value : adefaultValue;
 }
+
+QT_WARNING_POP
 
 template <class Key, class T>
 Q_INLINE_TEMPLATE const T QMap<Key, T>::operator[](const Key &akey) const
