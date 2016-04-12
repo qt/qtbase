@@ -1046,7 +1046,7 @@ inline void QUrlPrivate::setAuthority(const QString &auth, int from, int end, QU
 
         if (colonIndex == end - 1) {
             // found a colon but no digits after it
-            setError(PortEmptyError, auth, colonIndex + 1);
+            port = -1;
         } else if (uint(colonIndex) < uint(end)) {
             unsigned long x = 0;
             for (int i = colonIndex + 1; i < end; ++i) {
