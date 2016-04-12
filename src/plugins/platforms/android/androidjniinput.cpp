@@ -206,7 +206,8 @@ namespace QtAndroidInput
         m_touchPoints.clear();
     }
 
-    static void touchAdd(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint id, jint action, jboolean /*primary*/, jint x, jint y, jfloat size, jfloat pressure)
+    static void touchAdd(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint id, jint action, jboolean /*primary*/, jint x, jint y,
+        jfloat major, jfloat minor, jfloat rotation, jfloat pressure)
     {
         Qt::TouchPointState state = Qt::TouchPointStationary;
         switch (action) {
@@ -229,12 +230,13 @@ namespace QtAndroidInput
         QWindowSystemInterface::TouchPoint touchPoint;
         touchPoint.id = id;
         touchPoint.pressure = pressure;
+        touchPoint.rotation = rotation * 180 / M_PI;
         touchPoint.normalPosition = QPointF(double(x / dw), double(y / dh));
         touchPoint.state = state;
-        touchPoint.area = QRectF(x - double(dw*size) / 2.0,
-                                 y - double(dh*size) / 2.0,
-                                 double(dw*size),
-                                 double(dh*size));
+        touchPoint.area = QRectF(x - double(minor),
+                                 y - double(major),
+                                 double(minor * 2),
+                                 double(major * 2));
         m_touchPoints.push_back(touchPoint);
 
         if (state == Qt::TouchPointPressed) {
@@ -817,7 +819,7 @@ namespace QtAndroidInput
 
     static JNINativeMethod methods[] = {
         {"touchBegin","(I)V",(void*)touchBegin},
-        {"touchAdd","(IIIZIIFF)V",(void*)touchAdd},
+        {"touchAdd","(IIIZIIFFFF)V",(void*)touchAdd},
         {"touchEnd","(II)V",(void*)touchEnd},
         {"mouseDown", "(III)V", (void *)mouseDown},
         {"mouseUp", "(III)V", (void *)mouseUp},

@@ -411,7 +411,9 @@ public class QtNative
                              i == 0,
                              (int)event.getX(i),
                              (int)event.getY(i),
-                             event.getSize(i),
+                             event.getTouchMajor(i),
+                             event.getTouchMinor(i),
+                             event.getOrientation(i),
                              event.getPressure(i));
             }
 
@@ -779,7 +781,7 @@ public class QtNative
     public static native void mouseUp(int winId, int x, int y);
     public static native void mouseMove(int winId, int x, int y);
     public static native void touchBegin(int winId);
-    public static native void touchAdd(int winId, int pointerId, int action, boolean primary, int x, int y, float size, float pressure);
+    public static native void touchAdd(int winId, int pointerId, int action, boolean primary, int x, int y, float major, float minor, float rotation, float pressure);
     public static native void touchEnd(int winId, int action);
     public static native void longPress(int winId, int x, int y);
     // pointer methods
