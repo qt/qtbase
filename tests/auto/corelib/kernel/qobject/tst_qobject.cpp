@@ -147,6 +147,7 @@ private slots:
     void qmlConnect();
     void exceptions();
     void noDeclarativeParentChangedOnDestruction();
+    void mutableFunctor();
 };
 
 struct QObjectCreatedOnShutdown
@@ -6418,6 +6419,24 @@ void tst_QObject::noDeclarativeParentChangedOnDestruction()
 #else
     QSKIP("Needs QT_BUILD_INTERNAL");
 #endif
+}
+
+struct MutableFunctor {
+    int count;
+    MutableFunctor() : count(0) {}
+    int operator()() { return ++count; }
+};
+
+void tst_QObject::mutableFunctor()
+{
+    ReturnValue o;
+    MutableFunctor functor;
+    QCOMPARE(functor.count, 0);
+    connect(&o, &ReturnValue::returnInt, functor);
+    QCOMPARE(emit o.returnInt(0), 1);
+    QCOMPARE(emit o.returnInt(0), 2); // each emit should increase the internal count
+
+    QCOMPARE(functor.count, 0); // but the original object should have been copied at connect time
 }
 
 // Test for QtPrivate::HasQ_OBJECT_Macro

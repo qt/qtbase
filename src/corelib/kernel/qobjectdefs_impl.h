@@ -491,7 +491,7 @@ namespace QtPrivate {
     template <typename, typename, typename, typename> struct FunctorCall;
     template <int... II, typename... SignalArgs, typename R, typename Function>
     struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, Function> {
-        static void call(Function f, void **arg) {
+        static void call(Function &f, void **arg) {
             f((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...), ApplyReturnValue<R>(arg[0]);
         }
     };
