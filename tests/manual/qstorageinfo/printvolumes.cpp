@@ -31,34 +31,28 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QCoreApplication>
+#include <QtCore/QStorageInfo>
 
-#include <stdio.h>
-
-#include "printvolumes.cpp"
-
-int main(int argc, char *argv[])
+void printVolumes(const QList<QStorageInfo> &volumes, int (*printer)(const char *, ...))
 {
-    QCoreApplication a(argc, argv);
+    // Sample output:
+    //  Filesystem (Type)            Size  Available BSize  Label            Mounted on
+    //  /dev/sda2 (ext4)    RO     388480     171218  1024                   /boot
+    //  /dev/mapper/system-root (btrfs) RW
+    //                          214958080   39088272  4096                   /
+    //  /dev/disk1s2 (hfs)  RW  488050672  419909696  4096  Macintosh HD2    /Volumes/Macintosh HD2
 
-    QList<QStorageInfo> volumes;
-    QStringList args = a.arguments();
-    args.takeFirst();   // skip application name
+    printf("Filesystem (Type)            Size  Available BSize  Label            Mounted on\n");
+    foreach (const QStorageInfo &info, volumes) {
+        QByteArray fsAndType = info.device();
+        if (info.fileSystemType() != fsAndType)
+            fsAndType += " (" + info.fileSystemType() + ')';
 
-    foreach (const QString &path, args) {
-        QStorageInfo info(path);
-        if (!info.isValid()) {
-            // no error string...
-            fprintf(stderr, "Could not get info on %s\n", qPrintable(path));
-            return 1;
-        }
-        volumes << info;
+        printf("%-19s R%c ", fsAndType.constData(), info.isReadOnly() ? 'O' : 'W');
+        if (fsAndType.size() > 19)
+            printf("\n%23s", "");
+
+        printf("%10llu %10llu %5u  ", info.bytesTotal() / 1024, info.bytesFree() / 1024, info.blockSize());
+        printf("%-16s %s\n", qPrintable(info.name()), qPrintable(info.rootPath()));
     }
-
-    if (volumes.isEmpty())
-        volumes = QStorageInfo::mountedVolumes();
-
-    printVolumes(volumes, printf);
-
-    return 0;
 }
