@@ -484,8 +484,7 @@ qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
         }
 
         // is this a valid reply?
-        if (fragment.length() >= 5 && !fragment.startsWith("HTTP/"))
-        {
+        if (fragment.length() == 5 && !fragment.startsWith("HTTP/")) {
             fragment.clear();
             return -1;
         }
