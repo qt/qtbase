@@ -78,10 +78,23 @@ void QOutlineMapper::curveTo(const QPointF &cp1, const QPointF &cp2, const QPoin
 #endif
 
     QBezier bezier = QBezier::fromPoints(m_elements.last(), cp1, cp2, ep);
-    bezier.addToPolygon(m_elements, m_curve_threshold);
-    m_element_types.reserve(m_elements.size());
-    for (int i = m_elements.size() - m_element_types.size(); i; --i)
-        m_element_types << QPainterPath::LineToElement;
+
+    bool outsideClip = false;
+    // Test one point first before doing a full intersection test.
+    if (!QRectF(m_clip_rect).contains(m_transform.map(ep))) {
+        QRectF potentialCurveArea = m_transform.mapRect(bezier.bounds());
+        outsideClip = !potentialCurveArea.intersects(m_clip_rect);
+    }
+    if (outsideClip) {
+        // The curve is entirely outside the clip rect, so just
+        // approximate it with a line that closes the path.
+        lineTo(ep);
+    } else {
+        bezier.addToPolygon(m_elements, m_curve_threshold);
+        m_element_types.reserve(m_elements.size());
+        for (int i = m_elements.size() - m_element_types.size(); i; --i)
+            m_element_types << QPainterPath::LineToElement;
+    }
     Q_ASSERT(m_elements.size() == m_element_types.size());
 }
 
