@@ -150,7 +150,7 @@ QMacAutoReleasePool::~QMacAutoReleasePool()
     // Drain behaves the same as release, with the advantage that
     // if we're ever used in a garbage-collected environment, the
     // drain acts as a hint to the garbage collector to collect.
-    [pool drain];
+    [static_cast<NSAutoreleasePool*>(pool) drain];
 }
 
 // -------------------------------------------------------------------------
