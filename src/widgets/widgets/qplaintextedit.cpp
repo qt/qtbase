@@ -795,7 +795,7 @@ void QPlainTextEditPrivate::init(const QString &txt)
 
     viewport->setBackgroundRole(QPalette::Base);
     q->setAcceptDrops(true);
-    q->setFocusPolicy(Qt::WheelFocus);
+    q->setFocusPolicy(Qt::StrongFocus);
     q->setAttribute(Qt::WA_KeyCompression);
     q->setAttribute(Qt::WA_InputMethodEnabled);
     q->setInputMethodHints(Qt::ImhMultiLine);

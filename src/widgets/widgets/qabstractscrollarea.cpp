@@ -303,7 +303,7 @@ void QAbstractScrollAreaPrivate::init()
     viewportFilter.reset(new QAbstractScrollAreaFilter(this));
     viewport->installEventFilter(viewportFilter.data());
     viewport->setFocusProxy(q);
-    q->setFocusPolicy(Qt::WheelFocus);
+    q->setFocusPolicy(Qt::StrongFocus);
     q->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     q->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     layoutChildren();
