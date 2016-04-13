@@ -305,47 +305,52 @@ static inline void copy_unswapped(char *dst, int dstBytesPerLine, const QImage &
 }
 
 template <class Pixel>
-static inline void copy_swapped(Pixel *dst, const QImage &img, const QRect &rect)
+static inline void copy_swapped(char *dst, const int dstStride, const QImage &img, const QRect &rect)
 {
     const uchar *srcData = img.constBits();
     const int srcBytesPerLine = img.bytesPerLine();
 
     const int left = rect.left();
-    const int right = rect.right() + 1;
+    const int width = rect.width();
     const int bottom = rect.bottom() + 1;
 
     for (int yy = rect.top(); yy < bottom; ++yy) {
-        const Pixel *src = reinterpret_cast<const Pixel *>(srcData + yy * srcBytesPerLine) + left;
+        Pixel *dstPixels = reinterpret_cast<Pixel *>(dst);
+        const Pixel *srcPixels = reinterpret_cast<const Pixel *>(srcData + yy * srcBytesPerLine) + left;
 
-        for (int xx = left; xx < right; ++xx)
-            *dst++ = qbswap<Pixel>(*src++);
+        for (int i = 0; i < width; ++i)
+            dstPixels[i] = qbswap<Pixel>(*srcPixels++);
+
+        dst += dstStride;
     }
 }
 
-static QImage native_sub_image(QByteArray *buffer, const QImage &src, int x, int y, int w, int h, bool swap)
+static QImage native_sub_image(QByteArray *buffer, const int dstStride, const QImage &src, const QRect &rect, bool swap)
 {
-    const QRect rect(x, y, w, h);
-
-    if (!swap && src.rect() == rect)
+    if (!swap && src.rect() == rect && src.bytesPerLine() == dstStride)
         return src;
 
-    const int dstStride = w * src.depth() >> 3;
-    buffer->resize(h * dstStride);
+    buffer->resize(rect.height() * dstStride);
 
     if (swap) {
         switch (src.depth()) {
         case 32:
-            copy_swapped(reinterpret_cast<quint32 *>(buffer->data()), src, rect);
+            copy_swapped<quint32>(buffer->data(), dstStride, src, rect);
             break;
         case 16:
-            copy_swapped(reinterpret_cast<quint16 *>(buffer->data()), src, rect);
+            copy_swapped<quint16>(buffer->data(), dstStride, src, rect);
             break;
         }
     } else {
         copy_unswapped(buffer->data(), dstStride, src, rect);
     }
 
-    return QImage(reinterpret_cast<const uchar *>(buffer->constData()), w, h, dstStride, src.format());
+    return QImage(reinterpret_cast<const uchar *>(buffer->constData()), rect.width(), rect.height(), dstStride, src.format());
+}
+
+static inline quint32 round_up_scanline(quint32 base, quint32 pad)
+{
+    return (base + pad - 1) & -pad;
 }
 
 void QXcbShmImage::flushPixmap(const QRegion &region)
@@ -390,7 +395,9 @@ void QXcbShmImage::flushPixmap(const QRegion &region)
 
         while (height > 0) {
             const int rows = std::min(height, rows_per_put);
-            const QImage subImage = native_sub_image(&m_flushBuffer, m_qimage, x, y, width, rows, needsByteSwap);
+            const QRect subRect(x, y, width, rows);
+            const quint32 stride = round_up_scanline(width * m_qimage.depth(), xcb_subimage.scanline_pad) >> 3;
+            const QImage subImage = native_sub_image(&m_flushBuffer, stride, m_qimage, subRect, needsByteSwap);
 
             xcb_subimage.width = width;
             xcb_subimage.height = rows;
