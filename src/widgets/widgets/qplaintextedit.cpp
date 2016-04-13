@@ -667,6 +667,7 @@ void QPlainTextEditPrivate::setTopBlock(int blockNumber, int lineNumber, int dx)
 
         if (dx || dy) {
             viewport->scroll(q->isRightToLeft() ? -dx : dx, dy);
+            QGuiApplication::inputMethod()->update(Qt::ImCursorRectangle | Qt::ImAnchorRectangle);
         } else {
             viewport->update();
             topLineFracture = 0;

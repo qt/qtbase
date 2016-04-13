@@ -1713,6 +1713,7 @@ void QTextEdit::scrollContentsBy(int dx, int dy)
     if (isRightToLeft())
         dx = -dx;
     d->viewport->scroll(dx, dy);
+    QGuiApplication::inputMethod()->update(Qt::ImCursorRectangle | Qt::ImAnchorRectangle);
 }
 
 /*!\reimp
