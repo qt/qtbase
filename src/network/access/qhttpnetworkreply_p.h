@@ -139,6 +139,7 @@ public:
     bool isPipeliningUsed() const;
     bool isSpdyUsed() const;
     void setSpdyWasUsed(bool spdy);
+    qint64 removedContentLength() const;
 
     bool isRedirecting() const;
 
@@ -255,6 +256,7 @@ public:
     qint32 currentlyReceivedDataInWindow; // only for SPDY
     qint32 currentlyUploadedDataInWindow; // only for SPDY
     qint64 totallyUploadedData; // only for SPDY
+    qint64 removedContentLength;
     QPointer<QHttpNetworkConnection> connection;
     QPointer<QHttpNetworkConnectionChannel> connectionChannel;
 

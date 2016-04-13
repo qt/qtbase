@@ -299,6 +299,11 @@ void QHttpNetworkReply::setSpdyWasUsed(bool spdy)
     d_func()->spdyUsed = spdy;
 }
 
+qint64 QHttpNetworkReply::removedContentLength() const
+{
+    return d_func()->removedContentLength;
+}
+
 bool QHttpNetworkReply::isRedirecting() const
 {
     return d_func()->isRedirecting();
@@ -326,6 +331,7 @@ QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
       currentlyReceivedDataInWindow(0),
       currentlyUploadedDataInWindow(0),
       totallyUploadedData(0),
+      removedContentLength(-1),
       connection(0),
       autoDecompress(false), responseData(), requestIsPrepared(false)
       ,pipeliningUsed(false), spdyUsed(false), downstreamLimited(false)
@@ -398,12 +404,12 @@ void QHttpNetworkReplyPrivate::removeAutoDecompressHeader()
                                                    end = fields.end();
     while (it != end) {
         if (qstricmp(name.constData(), it->first.constData()) == 0) {
+            removedContentLength = strtoull(it->second.constData(), nullptr, 0);
             fields.erase(it);
             break;
         }
         ++it;
     }
-
 }
 
 bool QHttpNetworkReplyPrivate::findChallenge(bool forProxy, QByteArray &challenge) const

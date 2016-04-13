@@ -114,7 +114,7 @@ public:
     Q_PRIVATE_SLOT(d_func(), void replyFinished())
     Q_PRIVATE_SLOT(d_func(), void replyDownloadMetaData(QList<QPair<QByteArray,QByteArray> >,
                                                         int, QString, bool, QSharedPointer<char>,
-                                                        qint64, bool))
+                                                        qint64, qint64, bool))
     Q_PRIVATE_SLOT(d_func(), void replyDownloadProgressSlot(qint64,qint64))
     Q_PRIVATE_SLOT(d_func(), void httpAuthenticationRequired(const QHttpNetworkRequest &, QAuthenticator *))
     Q_PRIVATE_SLOT(d_func(), void httpError(QNetworkReply::NetworkError, const QString &))
@@ -280,7 +280,7 @@ public:
     void replyDownloadData(QByteArray);
     void replyFinished();
     void replyDownloadMetaData(const QList<QPair<QByteArray,QByteArray> > &, int, const QString &,
-                               bool, QSharedPointer<char>, qint64, bool);
+                               bool, QSharedPointer<char>, qint64, qint64, bool);
     void replyDownloadProgressSlot(qint64,qint64);
     void httpAuthenticationRequired(const QHttpNetworkRequest &request, QAuthenticator *auth);
     void httpError(QNetworkReply::NetworkError error, const QString &errorString);

@@ -282,6 +282,13 @@ QT_BEGIN_NAMESPACE
         that is redirecting from "https" to "http" protocol, are not allowed.
         (This value was introduced in 5.6.)
 
+    \value OriginalContentLengthAttribute
+        Replies only, type QMetaType::Int
+        Holds the original content-length attribute before being invalidated and
+        removed from the header when the data is compressed and the request was
+        marked to be decompressed automatically.
+        (This value was introduced in 5.9.)
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default

@@ -234,6 +234,7 @@ QHttpThreadDelegate::QHttpThreadDelegate(QObject *parent) :
     , isPipeliningUsed(false)
     , isSpdyUsed(false)
     , incomingContentLength(-1)
+    , removedContentLength(-1)
     , incomingErrorCode(QNetworkReply::NoError)
     , downloadBuffer()
     , httpConnection(0)
@@ -623,6 +624,7 @@ void QHttpThreadDelegate::headerChangedSlot()
     incomingReasonPhrase = httpReply->reasonPhrase();
     isPipeliningUsed = httpReply->isPipeliningUsed();
     incomingContentLength = httpReply->contentLength();
+    removedContentLength = httpReply->removedContentLength();
     isSpdyUsed = httpReply->isSpdyUsed();
 
     emit downloadMetaData(incomingHeaders,
@@ -631,6 +633,7 @@ void QHttpThreadDelegate::headerChangedSlot()
                           isPipeliningUsed,
                           downloadBuffer,
                           incomingContentLength,
+                          removedContentLength,
                           isSpdyUsed);
 }
 

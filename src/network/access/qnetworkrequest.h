@@ -91,6 +91,7 @@ public:
         HTTP2WasUsedAttribute,
         EmitAllUploadProgressSignalsAttribute,
         FollowRedirectsAttribute,
+        OriginalContentLengthAttribute,
 
         User = 1000,
         UserMax = 32767

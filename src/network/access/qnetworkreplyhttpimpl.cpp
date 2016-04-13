@@ -805,10 +805,11 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
                 Qt::QueuedConnection);
         QObject::connect(delegate, SIGNAL(downloadMetaData(QList<QPair<QByteArray,QByteArray> >,
                                                            int, QString, bool,
-                                                           QSharedPointer<char>, qint64, bool)),
+                                                           QSharedPointer<char>, qint64, qint64,
+                                                           bool)),
                 q, SLOT(replyDownloadMetaData(QList<QPair<QByteArray,QByteArray> >,
                                               int, QString, bool,
-                                              QSharedPointer<char>, qint64, bool)),
+                                              QSharedPointer<char>, qint64, qint64, bool)),
                 Qt::QueuedConnection);
         QObject::connect(delegate, SIGNAL(downloadProgress(qint64,qint64)),
                 q, SLOT(replyDownloadProgressSlot(qint64,qint64)),
@@ -913,6 +914,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
                      delegate->isPipeliningUsed,
                      QSharedPointer<char>(),
                      delegate->incomingContentLength,
+                     delegate->removedContentLength,
                      delegate->isSpdyUsed);
             replyDownloadData(delegate->synchronousDownloadData);
             httpError(delegate->incomingErrorCode, delegate->incomingErrorDetail);
@@ -924,6 +926,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
                      delegate->isPipeliningUsed,
                      QSharedPointer<char>(),
                      delegate->incomingContentLength,
+                     delegate->removedContentLength,
                      delegate->isSpdyUsed);
             replyDownloadData(delegate->synchronousDownloadData);
         }
@@ -1151,7 +1154,9 @@ void QNetworkReplyHttpImplPrivate::checkForRedirect(const int statusCode)
 void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByteArray,QByteArray> > &hm,
                                                          int sc, const QString &rp, bool pu,
                                                          QSharedPointer<char> db,
-                                                         qint64 contentLength, bool spdyWasUsed)
+                                                         qint64 contentLength,
+                                                         qint64 removedContentLength,
+                                                         bool spdyWasUsed)
 {
     Q_Q(QNetworkReplyHttpImpl);
     Q_UNUSED(contentLength);
@@ -1197,6 +1202,8 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByte
 
     q->setAttribute(QNetworkRequest::HttpStatusCodeAttribute, statusCode);
     q->setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, reasonPhrase);
+    if (removedContentLength != -1)
+        q->setAttribute(QNetworkRequest::OriginalContentLengthAttribute, removedContentLength);
 
     // is it a redirection?
     if (!isHttpRedirectResponse())
