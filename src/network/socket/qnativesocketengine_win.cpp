@@ -936,7 +936,7 @@ static bool multicastMembershipHelper(QNativeSocketEnginePrivate *d,
         mreq4.imr_multiaddr.s_addr = htonl(groupAddress.toIPv4Address());
 
         if (iface.isValid()) {
-            QList<QNetworkAddressEntry> addressEntries = iface.addressEntries();
+            const QList<QNetworkAddressEntry> addressEntries = iface.addressEntries();
             if (!addressEntries.isEmpty()) {
                 QHostAddress firstIP = addressEntries.first().ip();
                 mreq4.imr_interface.s_addr = htonl(firstIP.toIPv4Address());

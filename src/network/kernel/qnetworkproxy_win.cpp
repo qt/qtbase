@@ -332,7 +332,7 @@ static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, con
 
         result << QNetworkProxy(proxyType, entry.mid(server, pos - server), port);
         if (!protocolTag.isEmpty())
-            taggedProxies.insert(protocolTag.toString(), result.last());
+            taggedProxies.insert(protocolTag.toString(), result.constLast());
     }
 
     if (checkTags && taggedProxies.contains(requiredTag)) {

@@ -691,7 +691,7 @@ bool QHttpNetworkConnectionPrivate::dequeueRequest(QAbstractSocket *socket)
     return false;
 }
 
-QHttpNetworkRequest QHttpNetworkConnectionPrivate::predictNextRequest()
+QHttpNetworkRequest QHttpNetworkConnectionPrivate::predictNextRequest() const
 {
     if (!highPriorityQueue.isEmpty())
         return highPriorityQueue.last().first;

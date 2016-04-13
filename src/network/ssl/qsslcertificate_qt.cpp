@@ -197,7 +197,7 @@ QString QSslCertificate::toText() const
 void QSslCertificatePrivate::init(const QByteArray &data, QSsl::EncodingFormat format)
 {
     if (!data.isEmpty()) {
-        QList<QSslCertificate> certs = (format == QSsl::Pem)
+        const QList<QSslCertificate> certs = (format == QSsl::Pem)
             ? certificatesFromPem(data, 1)
             : certificatesFromDer(data, 1);
         if (!certs.isEmpty()) {
@@ -309,7 +309,7 @@ bool QSslCertificatePrivate::parse(const QByteArray &data)
         if (!elem.read(versionStream) || elem.type() != QAsn1Element::IntegerType)
             return false;
 
-        versionString = QByteArray::number(elem.value()[0] + 1);
+        versionString = QByteArray::number(elem.value().at(0) + 1);
         if (!elem.read(certStream))
             return false;
     } else {

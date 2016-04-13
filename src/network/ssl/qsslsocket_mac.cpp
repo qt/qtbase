@@ -442,7 +442,7 @@ void QSslSocketPrivate::ensureInitialized()
         SSLGetSupportedCiphers(context, cfCiphers.data(), &numCiphers);
 
         for (size_t i = 0; i < size_t(cfCiphers.size()); ++i) {
-            const QSslCipher ciph(QSslSocketBackendPrivate::QSslCipher_from_SSLCipherSuite(cfCiphers[i]));
+            const QSslCipher ciph(QSslSocketBackendPrivate::QSslCipher_from_SSLCipherSuite(cfCiphers.at(i)));
             if (!ciph.isNull()) {
                 ciphers << ciph;
                 if (ciph.usedBits() >= 128)
@@ -1033,7 +1033,7 @@ bool QSslSocketBackendPrivate::setSessionCertificate(QString &errorDescription, 
 
     QSslCertificate localCertificate;
     if (!configuration.localCertificateChain.isEmpty())
-        localCertificate = configuration.localCertificateChain[0];
+        localCertificate = configuration.localCertificateChain.at(0);
 
     if (!localCertificate.isNull()) {
         // Require a private key as well.
@@ -1327,7 +1327,7 @@ bool QSslSocketBackendPrivate::checkSslErrors()
             paused = true;
         } else {
             setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
-                            sslErrors.first().errorString());
+                            sslErrors.constFirst().errorString());
             plainSocket->disconnectFromHost();
         }
         return false;

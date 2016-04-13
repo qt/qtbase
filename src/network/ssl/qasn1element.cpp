@@ -192,7 +192,7 @@ QAsn1Element QAsn1Element::fromObjectId(const QByteArray &id)
 {
     QAsn1Element elem;
     elem.mType = ObjectIdentifierType;
-    QList<QByteArray> bits = id.split('.');
+    const QList<QByteArray> bits = id.split('.');
     Q_ASSERT(bits.size() > 2);
     elem.mValue += quint8((bits[0].toUInt() * 40 + bits[1].toUInt()));
     for (int i = 2; i < bits.size(); ++i) {
@@ -311,11 +311,11 @@ QByteArray QAsn1Element::toObjectId() const
 {
     QByteArray key;
     if (mType == ObjectIdentifierType && !mValue.isEmpty()) {
-        quint8 b = mValue[0];
+        quint8 b = mValue.at(0);
         key += QByteArray::number(b / 40) + '.' + QByteArray::number (b % 40);
         unsigned int val = 0;
         for (int i = 1; i < mValue.size(); ++i) {
-            b = mValue[i];
+            b = mValue.at(i);
             val = (val << 7) | (b & 0x7f);
             if (!(b & 0x80)) {
                 key += '.' + QByteArray::number(val);

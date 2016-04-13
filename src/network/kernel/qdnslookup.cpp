@@ -76,11 +76,11 @@ static void qt_qdnsmailexchangerecord_sort(QList<QDnsMailExchangeRecord> &record
 
         // Determine the slice of records with the current preference.
         QList<QDnsMailExchangeRecord> slice;
-        const quint16 slicePreference = records[i].preference();
+        const quint16 slicePreference = records.at(i).preference();
         for (int j = i; j < records.size(); ++j) {
-            if (records[j].preference() != slicePreference)
+            if (records.at(j).preference() != slicePreference)
                 break;
-            slice << records[j];
+            slice << records.at(j);
         }
 
         // Randomize the slice of records.
@@ -119,13 +119,13 @@ static void qt_qdnsservicerecord_sort(QList<QDnsServiceRecord> &records)
 
         // Determine the slice of records with the current priority.
         QList<QDnsServiceRecord> slice;
-        const quint16 slicePriority = records[i].priority();
+        const quint16 slicePriority = records.at(i).priority();
         unsigned int sliceWeight = 0;
         for (int j = i; j < records.size(); ++j) {
-            if (records[j].priority() != slicePriority)
+            if (records.at(j).priority() != slicePriority)
                 break;
-            sliceWeight += records[j].weight();
-            slice << records[j];
+            sliceWeight += records.at(j).weight();
+            slice << records.at(j);
         }
 #ifdef QDNSLOOKUP_DEBUG
         qDebug("qt_qdnsservicerecord_sort() : priority %i (size: %i, total weight: %i)",
@@ -137,15 +137,15 @@ static void qt_qdnsservicerecord_sort(QList<QDnsServiceRecord> &records)
             const unsigned int weightThreshold = qrand() % (sliceWeight + 1);
             unsigned int summedWeight = 0;
             for (int j = 0; j < slice.size(); ++j) {
-                summedWeight += slice[j].weight();
+                summedWeight += slice.at(j).weight();
                 if (summedWeight >= weightThreshold) {
 #ifdef QDNSLOOKUP_DEBUG
                     qDebug("qt_qdnsservicerecord_sort() : adding %s %i (weight: %i)",
-                           qPrintable(slice[j].target()), slice[j].port(),
-                           slice[j].weight());
+                           qPrintable(slice.at(j).target()), slice.at(j).port(),
+                           slice.at(j).weight());
 #endif
                     // Adjust the slice weight and take the current record.
-                    sliceWeight -= slice[j].weight();
+                    sliceWeight -= slice.at(j).weight();
                     records[i++] = slice.takeAt(j);
                     break;
                 }

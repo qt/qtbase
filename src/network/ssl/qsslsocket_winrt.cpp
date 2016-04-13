@@ -626,7 +626,7 @@ HRESULT QSslSocketBackendPrivate::onSslUpgrade(IAsyncAction *action, AsyncStatus
 
     if (!sslErrors.isEmpty()) {
         emit q->sslErrors(sslErrors);
-        setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError, sslErrors.first().errorString());
+        setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError, sslErrors.constFirst().errorString());
 
         // Disconnect if there are any non-ignorable errors
         for (const QSslError &error : qAsConst(sslErrors)) {
