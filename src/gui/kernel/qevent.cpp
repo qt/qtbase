@@ -3888,11 +3888,14 @@ QDebug operator<<(QDebug dbg, const QTouchEvent::TouchPoint &tp)
     QDebugStateSaver saver(dbg);
     dbg.nospace();
     dbg << "TouchPoint(" << hex << tp.id() << dec << " (";
-    QtDebugUtils::formatQRect(dbg, tp.rect());
+    QtDebugUtils::formatQPoint(dbg, tp.pos());
     dbg << ") ";
     QtDebugUtils::formatQEnum(dbg, tp.state());
-    dbg << " press " << tp.pressure() << " vel " << tp.velocity()
-        << " start (";
+    dbg << " pressure " << tp.pressure() << " ellipse ("
+        << tp.ellipseDiameters().width() << " x " << tp.ellipseDiameters().height()
+        << " angle " << tp.rotation() << ") vel (";
+    QtDebugUtils::formatQPoint(dbg, tp.velocity().toPointF());
+    dbg << ") start (";
     QtDebugUtils::formatQPoint(dbg, tp.startPos());
     dbg << ") last (";
     QtDebugUtils::formatQPoint(dbg, tp.lastPos());

@@ -50,20 +50,20 @@
 bool optIgnoreTouch = false;
 QVector<Qt::GestureType> optGestures;
 
-static inline void drawCircle(const QPointF &center, qreal radius, const QColor &color, QPainter &painter)
+static inline void drawEllipse(const QPointF &center, qreal hDiameter, qreal vDiameter, const QColor &color, QPainter &painter)
 {
     const QPen oldPen = painter.pen();
     QPen pen = oldPen;
     pen.setColor(color);
     painter.setPen(pen);
-    painter.drawEllipse(center, radius, radius);
+    painter.drawEllipse(center, hDiameter / 2, vDiameter / 2);
     painter.setPen(oldPen);
 }
 
-static inline void fillCircle(const QPointF &center, qreal radius, const QColor &color, QPainter &painter)
+static inline void fillEllipse(const QPointF &center, qreal hDiameter, qreal vDiameter, const QColor &color, QPainter &painter)
 {
     QPainterPath painterPath;
-    painterPath.addEllipse(center, radius, radius);
+    painterPath.addEllipse(center, hDiameter / 2, vDiameter / 2);
     painter.fillPath(painterPath, color);
 }
 
@@ -236,11 +236,15 @@ enum PointType {
 struct Point
 {
     Point(const QPointF &p = QPoint(), PointType t = TouchPoint,
-          Qt::MouseEventSource s = Qt::MouseEventNotSynthesized) : pos(p), type(t), source(s) {}
+          Qt::MouseEventSource s = Qt::MouseEventNotSynthesized, QSizeF diameters = QSizeF(4, 4)) :
+            pos(p), horizontalDiameter(qMax(2., diameters.width())),
+            verticalDiameter(qMax(2., diameters.height())), type(t), source(s) {}
 
     QColor color() const;
 
     QPointF pos;
+    qreal horizontalDiameter;
+    qreal verticalDiameter;
     PointType type;
     Qt::MouseEventSource source;
 };
@@ -334,7 +338,7 @@ bool TouchTestWidget::event(QEvent *event)
     case QEvent::TouchUpdate:
         if (m_drawPoints) {
             foreach (const QTouchEvent::TouchPoint &p, static_cast<const QTouchEvent *>(event)->touchPoints())
-                m_points.append(Point(p.pos(), TouchPoint));
+                m_points.append(Point(p.pos(), TouchPoint, Qt::MouseEventNotSynthesized, p.ellipseDiameters()));
             update();
         }
     case QEvent::TouchEnd:
@@ -387,11 +391,10 @@ void TouchTestWidget::paintEvent(QPaintEvent *)
     painter.drawRect(QRectF(geom.topLeft(), geom.bottomRight() - QPointF(1, 1)));
     foreach (const Point &point, m_points) {
         if (geom.contains(point.pos)) {
-            const qreal radius = point.type == TouchPoint ? 1 : 4;
-            if (point.type == MouseRelease) {
-                drawCircle(point.pos, radius, point.color(), painter);
-            } else
-                fillCircle(point.pos, radius, point.color(), painter);
+            if (point.type == MouseRelease)
+                drawEllipse(point.pos, point.horizontalDiameter, point.verticalDiameter, point.color(), painter);
+            else
+                fillEllipse(point.pos, point.horizontalDiameter, point.verticalDiameter, point.color(), painter);
         }
     }
     foreach (const GesturePtr &gp, m_gestures)
