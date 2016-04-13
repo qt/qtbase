@@ -420,6 +420,8 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
         if (generic) {
             if (!envOK || skipGeneric <= 0)
                 sessionEngines.append(generic);
+            else
+                delete generic;
         }
     }
 

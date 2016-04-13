@@ -85,7 +85,8 @@ void QElapsedTimer::start() Q_DECL_NOTHROW
     and then starting the timer again with start(), but it does so in one
     single operation, avoiding the need to obtain the clock value twice.
 
-    Restarting the timer makes it valid again.
+    Calling this function on a QElapsedTimer that is invalid
+    results in undefined behavior.
 
     The following example illustrates how to use this function to calibrate a
     parameter to a slow operation (for example, an iteration count) so that
@@ -93,7 +94,7 @@ void QElapsedTimer::start() Q_DECL_NOTHROW
 
     \snippet qelapsedtimer/main.cpp 3
 
-    \sa start(), invalidate(), elapsed()
+    \sa start(), invalidate(), elapsed(), isValid()
 */
 qint64 QElapsedTimer::restart() Q_DECL_NOTHROW
 {
@@ -106,8 +107,10 @@ qint64 QElapsedTimer::restart() Q_DECL_NOTHROW
 /*! \since 4.8
 
     Returns the number of nanoseconds since this QElapsedTimer was last
-    started. Calling this function in a QElapsedTimer that was invalidated
-    will result in undefined results.
+    started.
+
+    Calling this function on a QElapsedTimer that is invalid
+    results in undefined behavior.
 
     On platforms that do not provide nanosecond resolution, the value returned
     will be the best estimate available.
@@ -121,10 +124,12 @@ qint64 QElapsedTimer::nsecsElapsed() const Q_DECL_NOTHROW
 
 /*!
     Returns the number of milliseconds since this QElapsedTimer was last
-    started. Calling this function in a QElapsedTimer that was invalidated
-    will result in undefined results.
+    started.
 
-    \sa start(), restart(), hasExpired(), invalidate()
+    Calling this function on a QElapsedTimer that is invalid
+    results in undefined behavior.
+
+    \sa start(), restart(), hasExpired(), isValid(), invalidate()
 */
 qint64 QElapsedTimer::elapsed() const Q_DECL_NOTHROW
 {
@@ -172,7 +177,8 @@ qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
     \a other was started before this object, the returned value will be
     negative. If it was started later, the returned value will be positive.
 
-    The return value is undefined if this object or \a other were invalidated.
+    Calling this function on or with a QElapsedTimer that is invalid
+    results in undefined behavior.
 
     \sa msecsTo(), elapsed()
 */

@@ -167,7 +167,7 @@ bool QDateTimeParser::setDigit(QDateTime &v, int index, int newVal) const
         break;
     }
 
-    if (!(node.type & (DaySection|DayOfWeekSectionShort|DayOfWeekSectionLong))) {
+    if (!(node.type & DaySectionMask)) {
         if (day < cachedDay)
             day = cachedDay;
         const int max = QDate(year, month, 1).daysInMonth();
@@ -633,6 +633,10 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
     case Internal:
     case TimeSectionMask:
     case DateSectionMask:
+    case HourSectionMask:
+    case YearSectionMask:
+    case DayOfWeekSectionMask:
+    case DaySectionMask:
         qWarning("QDateTimeParser::sectionMaxSize: Invalid section %s",
                  SectionNode::name(s).toLatin1().constData());
 
@@ -987,33 +991,27 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
 
         if (state != Invalid) {
             if (parserType != QVariant::Time) {
-                if (year % 100 != year2digits) {
-                    switch (isSet & (YearSection2Digits|YearSection)) {
-                    case YearSection2Digits:
+                if (year % 100 != year2digits && (isSet & YearSection2Digits)) {
+                    if (!(isSet & YearSection)) {
                         year = (year / 100) * 100;
                         year += year2digits;
-                        break;
-                    case ((uint)YearSection2Digits|(uint)YearSection): {
+                    } else {
                         conflicts = true;
                         const SectionNode &sn = sectionNode(currentSectionIndex);
                         if (sn.type == YearSection2Digits) {
                             year = (year / 100) * 100;
                             year += year2digits;
                         }
-                        break; }
-                    default:
-                        break;
                     }
                 }
 
                 const QDate date(year, month, day);
                 const int diff = dayofweek - date.dayOfWeek();
-                if (diff != 0 && state == Acceptable
-                 && isSet & (DayOfWeekSectionShort | DayOfWeekSectionLong)) {
+                if (diff != 0 && state == Acceptable && isSet & DayOfWeekSectionMask) {
                     if (isSet & DaySection)
                         conflicts = true;
                     const SectionNode &sn = sectionNode(currentSectionIndex);
-                    if (sn.type & (DayOfWeekSectionShort|DayOfWeekSectionLong) || currentSectionIndex == -1) {
+                    if (sn.type & DayOfWeekSectionMask || currentSectionIndex == -1) {
                         // dayofweek should be preferred
                         day += diff;
                         if (day <= 0) {
@@ -1025,8 +1023,9 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
                                   << diff << QDate(year, month, day).dayOfWeek();
                     }
                 }
+
                 bool needfixday = false;
-                if (sectionType(currentSectionIndex) & (DaySection|DayOfWeekSectionShort|DayOfWeekSectionLong)) {
+                if (sectionType(currentSectionIndex) & DaySectionMask) {
                     cachedDay = day;
                 } else if (cachedDay > day) {
                     day = cachedDay;
@@ -1054,7 +1053,7 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
                             const SectionNode sn = sectionNode(i);
                             if (sn.type & DaySection) {
                                 input.replace(sectionPos(sn), sectionSize(i), loc.toString(day));
-                            } else if (sn.type & (DayOfWeekSectionShort | DayOfWeekSectionLong)) {
+                            } else if (sn.type & DayOfWeekSectionMask) {
                                 const int dayOfWeek = QDate(year, month, day).dayOfWeek();
                                 const QLocale::FormatType dayFormat =
                                     (sn.type == DayOfWeekSectionShort
@@ -1313,7 +1312,7 @@ int QDateTimeParser::findDay(const QString &str1, int startDay, int sectionIndex
     int bestCount = 0;
     if (!str1.isEmpty()) {
         const SectionNode &sn = sectionNode(sectionIndex);
-        if (!(sn.type & (DaySection|DayOfWeekSectionShort|DayOfWeekSectionLong))) {
+        if (!(sn.type & DaySectionMask)) {
             qWarning("QDateTimeParser::findDay Internal error");
             return -1;
         }

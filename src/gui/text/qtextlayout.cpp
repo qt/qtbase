@@ -2147,7 +2147,6 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine,
     QGlyphRunPrivate *d = QGlyphRunPrivate::get(glyphRun);
 
     int rangeStart = textPosition;
-    logClusters += textPosition;
     while (*logClusters != glyphsStart && rangeStart < textPosition + textLength) {
         ++logClusters;
         ++rangeStart;
@@ -2356,9 +2355,9 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
                                                       width,
                                                       glyphsStart + start,
                                                       glyphsStart + end,
-                                                      logClusters,
-                                                      iterator.itemStart,
-                                                      iterator.itemLength));
+                                                      logClusters + relativeFrom,
+                                                      relativeFrom + si.position,
+                                                      relativeTo - relativeFrom + 1));
                     for (int i = 0; i < subLayout.numGlyphs; ++i) {
                         QFixed justification = QFixed::fromFixed(subLayout.justifications[i].space_18d6);
                         pos.rx() += (subLayout.advances[i] + justification).toReal();
@@ -2386,9 +2385,9 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
                                                       width,
                                                       glyphsStart + start,
                                                       glyphsStart + end,
-                                                      logClusters,
-                                                      iterator.itemStart,
-                                                      iterator.itemLength);
+                                                      logClusters + relativeFrom,
+                                                      relativeFrom + si.position,
+                                                      relativeTo - relativeFrom + 1);
                 if (!glyphRun.isEmpty())
                     glyphRuns.append(glyphRun);
             } else {
@@ -2402,9 +2401,9 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
                                                       width,
                                                       glyphsStart,
                                                       glyphsEnd,
-                                                      logClusters,
-                                                      iterator.itemStart,
-                                                      iterator.itemLength);
+                                                      logClusters + relativeFrom,
+                                                      relativeFrom + si.position,
+                                                      relativeTo - relativeFrom + 1);
                 if (!glyphRun.isEmpty())
                     glyphRuns.append(glyphRun);
             }

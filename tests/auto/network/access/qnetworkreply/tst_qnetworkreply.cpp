@@ -6829,19 +6829,19 @@ void tst_QNetworkReply::authenticationCacheAfterCancel()
         QTestEventLoop::instance().enterLoop(10);
         QVERIFY(!QTestEventLoop::instance().timeout());
 
-        if (reply->error() == QNetworkReply::HostNotFoundError)
-            QSKIP("skip because of quirk in the old test server");
-        QCOMPARE(reply->error(), QNetworkReply::ProxyAuthenticationRequiredError);
+        // Work round known quirk in the old test server (danted -v < v1.1.19):
+        if (reply->error() != QNetworkReply::HostNotFoundError)
+            QCOMPARE(reply->error(), QNetworkReply::ProxyAuthenticationRequiredError);
         QCOMPARE(authSpy.count(), 0);
         QVERIFY(proxyAuthSpy.count() > 0);
         proxyAuthSpy.clear();
 
-        //QTBUG-23136 workaround
+        // QTBUG-23136 workaround (needed even with danted v1.1.19):
         if (proxy.port() == 1081) {
 #ifdef QT_BUILD_INTERNAL
             QNetworkAccessManagerPrivate::clearCache(&manager);
 #else
-            return; //XFAIL result above
+            return;
 #endif
         }
 
