@@ -1832,7 +1832,7 @@ QTime QLocale::toTime(const QString &string, const QString &format) const
     QTime time;
 #ifndef QT_BOOTSTRAPPED
     QDateTimeParser dt(QVariant::Time, QDateTimeParser::FromString);
-    dt.defaultLocale = *this;
+    dt.setDefaultLocale(*this);
     if (dt.parseFormat(format))
         dt.fromString(string, 0, &time);
 #else
@@ -1863,7 +1863,7 @@ QDate QLocale::toDate(const QString &string, const QString &format) const
     QDate date;
 #ifndef QT_BOOTSTRAPPED
     QDateTimeParser dt(QVariant::Date, QDateTimeParser::FromString);
-    dt.defaultLocale = *this;
+    dt.setDefaultLocale(*this);
     if (dt.parseFormat(format))
         dt.fromString(string, &date, 0);
 #else
@@ -1896,7 +1896,7 @@ QDateTime QLocale::toDateTime(const QString &string, const QString &format) cons
     QDate date;
 
     QDateTimeParser dt(QVariant::DateTime, QDateTimeParser::FromString);
-    dt.defaultLocale = *this;
+    dt.setDefaultLocale(*this);
     if (dt.parseFormat(format) && dt.fromString(string, &date, &time))
         return QDateTime(date, time);
 #else

@@ -32,6 +32,10 @@ MODULE_PLUGIN_TYPES = \
 ANDROID_PERMISSIONS += \
     android.permission.ACCESS_NETWORK_STATE
 
+MODULE_WINRT_CAPABILITIES = \
+    internetClient \
+    internetClientServer
+
 MODULE_PLUGIN_TYPES = \
     bearer
 load(qt_module)

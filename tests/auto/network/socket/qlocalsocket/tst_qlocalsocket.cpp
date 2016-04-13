@@ -839,7 +839,8 @@ void tst_QLocalSocket::processConnection()
     const QString exeSuffix;
 #endif
 
-    QString socketProcess = QStringLiteral("socketprocess/socketprocess") + exeSuffix;
+    const QString socketProcess
+            = QFINDTESTDATA(QStringLiteral("socketprocess/socketprocess") + exeSuffix);
     QVERIFY(QFile::exists(socketProcess));
 
     QFETCH(int, processes);
