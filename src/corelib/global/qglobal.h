@@ -55,6 +55,9 @@
 #include <QtCore/qfeatures.h>
 #endif
 
+// The QT_SUPPORTS macro is deprecated. Don't use it in new code.
+// Instead, use #ifdef/ndef QT_NO_feature.
+// ### Qt6: remove macro
 #ifdef _MSC_VER
 #  define QT_SUPPORTS(FEATURE) (!defined QT_NO_##FEATURE)
 #else

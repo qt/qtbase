@@ -47,7 +47,7 @@ class RefCount
 public:
     inline bool ref() Q_DECL_NOTHROW {
         int count = atomic.load();
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
         if (count == 0) // !isSharable
             return false;
 #endif
@@ -58,7 +58,7 @@ public:
 
     inline bool deref() Q_DECL_NOTHROW {
         int count = atomic.load();
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
         if (count == 0) // !isSharable
             return false;
 #endif
@@ -67,7 +67,7 @@ public:
         return atomic.deref();
     }
 
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     bool setSharable(bool sharable) Q_DECL_NOTHROW
     {
         Q_ASSERT(!isShared());

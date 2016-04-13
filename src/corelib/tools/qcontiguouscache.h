@@ -96,7 +96,7 @@ public:
 
     inline void detach() { if (d->ref.load() != 1) detach_helper(); }
     inline bool isDetached() const { return d->ref.load() == 1; }
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     inline void setSharable(bool sharable) { if (!sharable) detach(); d->sharable = sharable; }
 #endif
 

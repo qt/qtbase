@@ -359,7 +359,7 @@ public:
 
     inline void detach() { if (d->ref.isShared()) detach_helper(); }
     inline bool isDetached() const { return !d->ref.isShared(); }
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     inline void setSharable(bool sharable)
     {
         if (sharable == d->ref.isSharable())

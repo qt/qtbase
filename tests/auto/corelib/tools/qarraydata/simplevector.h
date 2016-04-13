@@ -93,7 +93,7 @@ public:
     bool isStatic() const { return d->ref.isStatic(); }
     bool isShared() const { return d->ref.isShared(); }
     bool isSharedWith(const SimpleVector &other) const { return d == other.d; }
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     bool isSharable() const { return d->ref.isSharable(); }
     void setSharable(bool sharable) { d.setSharable(sharable); }
 #endif

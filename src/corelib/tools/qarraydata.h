@@ -72,7 +72,7 @@ struct Q_CORE_EXPORT QArrayData
 
     enum AllocationOption {
         CapacityReserved    = 0x1,
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
         Unsharable          = 0x2,
 #endif
         RawData             = 0x4,
@@ -249,7 +249,7 @@ struct QTypedArrayData
         return allocate(/* capacity */ 0);
     }
 
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     static QTypedArrayData *unsharableEmpty()
     {
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));

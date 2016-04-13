@@ -100,7 +100,7 @@ public:
 
     inline void detach();
     inline bool isDetached() const { return !d->ref.isShared(); }
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     inline void setSharable(bool sharable)
     {
         if (sharable == d->ref.isSharable())
@@ -376,7 +376,7 @@ template <typename T>
 void QVector<T>::detach()
 {
     if (!isDetached()) {
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
         if (!d->alloc)
             d = Data::unsharableEmpty();
         else
@@ -533,7 +533,7 @@ void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::Allo
                 x = Data::allocate(aalloc, options);
                 Q_CHECK_PTR(x);
                 // aalloc is bigger then 0 so it is not [un]sharedEmpty
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
                 Q_ASSERT(x->ref.isSharable() || options.testFlag(QArrayData::Unsharable));
 #endif
                 Q_ASSERT(!x->ref.isStatic());
@@ -601,7 +601,7 @@ void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::Allo
 
     Q_ASSERT(d->data());
     Q_ASSERT(uint(d->size) <= d->alloc);
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     Q_ASSERT(d != Data::unsharableEmpty());
 #endif
     Q_ASSERT(aalloc ? d != Data::sharedNull() : d == Data::sharedNull());
