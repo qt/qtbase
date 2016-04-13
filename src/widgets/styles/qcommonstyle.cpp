@@ -4872,6 +4872,8 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             QRect decorationRect, displayRect, checkRect;
             d->viewItemLayout(vopt, &checkRect, &decorationRect, &displayRect, true);
             sz = (decorationRect|displayRect|checkRect).size();
+            if (decorationRect.isValid() && sz.height() == decorationRect.height())
+                sz.rheight() += 2; // Prevent icons from overlapping.
                       }
         break;
 #endif // QT_NO_ITEMVIEWS
