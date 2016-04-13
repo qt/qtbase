@@ -554,7 +554,14 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
         InCode // after directive, parsing non-#include directive or in actual code
     } cpp_state = AtStart;
 
-    for(int x = 0; x < buffer_len; ++x) {
+    int x = 0;
+    if (buffer_len >= 3) {
+        const unsigned char *p = (unsigned char *)buffer;
+        // skip UTF-8 BOM, if present
+        if (p[0] == 0xEF && p[1] == 0xBB && p[2] == 0xBF)
+            x += 3;
+    }
+    for (; x < buffer_len; ++x) {
         bool try_local = true;
         char *inc = 0;
         if(file->type == QMakeSourceFileInfo::TYPE_UI) {
