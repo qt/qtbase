@@ -121,7 +121,7 @@ public:
     void addEvent(const QPostEvent &ev) {
         int priority = ev.priority;
         if (isEmpty() ||
-            last().priority >= priority ||
+            constLast().priority >= priority ||
             insertionOffset >= size()) {
             // optimization: we can simply append if the last event in
             // the queue has higher or equal priority

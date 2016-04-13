@@ -59,12 +59,12 @@ int appCmdShow = 0;
 
 Q_CORE_EXPORT QString qAppFileName()
 {
-    return QFileInfo(QCoreApplication::arguments().first()).filePath();
+    return QFileInfo(QCoreApplication::arguments().constFirst()).filePath();
 }
 
 QString QCoreApplicationPrivate::appName() const
 {
-    return QFileInfo(QCoreApplication::arguments().first()).baseName();
+    return QFileInfo(QCoreApplication::arguments().constFirst()).baseName();
 }
 
 #else

@@ -406,7 +406,7 @@ QMimeType QMimeDatabase::mimeTypeForFile(const QString &fileName, MatchMode mode
 {
     if (mode == MatchExtension) {
         QMutexLocker locker(&d->mutex);
-        QStringList matches = d->mimeTypeForFileName(fileName);
+        const QStringList matches = d->mimeTypeForFileName(fileName);
         const int matchCount = matches.count();
         if (matchCount == 0) {
             return d->mimeTypeForName(d->defaultMimeType());

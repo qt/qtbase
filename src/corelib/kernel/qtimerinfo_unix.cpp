@@ -591,7 +591,7 @@ int QTimerInfoList::activateTimers()
         if (isEmpty())
             break;
 
-        QTimerInfo *currentTimerInfo = first();
+        QTimerInfo *currentTimerInfo = constFirst();
         if (currentTime < currentTimerInfo->timeout)
             break; // no timer has expired
 

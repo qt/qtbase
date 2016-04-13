@@ -273,7 +273,7 @@ QString QStandardPaths::displayName(StandardLocation type)
         return QCoreApplication::translate("QStandardPaths", "Applications");
 
     if (QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
-            standardLocations(type).first().toCFString(),
+            standardLocations(type).constFirst().toCFString(),
             kCFURLPOSIXPathStyle, true)) {
         QCFString name;
         CFURLCopyResourcePropertyForKey(url, kCFURLLocalizedNameKey, &name, NULL);

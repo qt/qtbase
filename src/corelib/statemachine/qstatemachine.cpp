@@ -692,7 +692,7 @@ void QStateMachinePrivate::microstep(QEvent *event, const QList<QAbstractTransit
         // Add "implicit" assignments for restored properties to the first
         // (outermost) entered state
         Q_ASSERT(!enteredStates.isEmpty());
-        QAbstractState *s = enteredStates.first();
+        QAbstractState *s = enteredStates.constFirst();
         assignmentsForEnteredStates[s] << restorablesToPropertyList(pendingRestorables);
     }
 

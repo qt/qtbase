@@ -887,7 +887,8 @@ QStringList QCommandLineParser::values(const QString &optionName) const
 bool QCommandLineParser::isSet(const QCommandLineOption &option) const
 {
     // option.names() might be empty if the constructor failed
-    return !option.names().isEmpty() && isSet(option.names().first());
+    const auto names = option.names();
+    return !names.isEmpty() && isSet(names.first());
 }
 
 /*!
@@ -905,7 +906,7 @@ bool QCommandLineParser::isSet(const QCommandLineOption &option) const
 */
 QString QCommandLineParser::value(const QCommandLineOption &option) const
 {
-    return value(option.names().first());
+    return value(option.names().constFirst());
 }
 
 /*!
@@ -923,7 +924,7 @@ QString QCommandLineParser::value(const QCommandLineOption &option) const
 */
 QStringList QCommandLineParser::values(const QCommandLineOption &option) const
 {
-    return values(option.names().first());
+    return values(option.names().constFirst());
 }
 
 /*!

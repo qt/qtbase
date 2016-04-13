@@ -149,7 +149,7 @@ static QCFType<CFPropertyListRef> macValue(const QVariant &value)
 
                 bool singleton = (values.count() == 1);
                 if (singleton) {
-                    switch (values.first().type()) {
+                    switch (values.constFirst().type()) {
                     // should be same as above (look for LIST)
                     case QVariant::List:
                     case QVariant::StringList:
@@ -161,7 +161,7 @@ static QCFType<CFPropertyListRef> macValue(const QVariant &value)
                 }
 
                 cfkeys[numUniqueKeys] = QCFString::toCFStringRef(key);
-                cfvalues[numUniqueKeys] = singleton ? macValue(values.first()) : macList(values);
+                cfvalues[numUniqueKeys] = singleton ? macValue(values.constFirst()) : macList(values);
                 ++numUniqueKeys;
             }
 
