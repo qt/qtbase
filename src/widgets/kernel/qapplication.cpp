@@ -1127,7 +1127,7 @@ QStyle *QApplication::style()
         QString style;
         QString envStyle = QString::fromLocal8Bit(qgetenv("QT_STYLE_OVERRIDE"));
         if (!QApplicationPrivate::styleOverride.isEmpty()) {
-            style = QApplicationPrivate::styleOverride;
+            style = QApplicationPrivate::styleOverride.toLower();
         } else if (!envStyle.isEmpty()) {
             style = envStyle;
         } else {

@@ -1366,9 +1366,9 @@ void QGuiApplicationPrivate::init()
         } else if (strcmp(arg, "-testability") == 0) {
             loadTestability = true;
         } else if (strncmp(arg, "-style=", 7) == 0) {
-            s = QString::fromLocal8Bit(arg + 7).toLower();
+            s = QString::fromLocal8Bit(arg + 7);
         } else if (strcmp(arg, "-style") == 0 && i < argc - 1) {
-            s = QString::fromLocal8Bit(argv[++i]).toLower();
+            s = QString::fromLocal8Bit(argv[++i]);
         } else {
             argv[j++] = argv[i];
         }
