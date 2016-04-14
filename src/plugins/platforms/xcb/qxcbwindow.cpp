@@ -821,9 +821,9 @@ void QXcbWindow::show()
         propagateSizeHints();
 
         // update WM_TRANSIENT_FOR
-        const QWindow *tp = window()->transientParent();
-        if (isTransient(window()) || tp != 0) {
-            xcb_window_t transientXcbParent = 0;
+        xcb_window_t transientXcbParent = 0;
+        if (isTransient(window())) {
+            const QWindow *tp = window()->transientParent();
             if (tp && tp->handle())
                 transientXcbParent = static_cast<const QXcbWindow *>(tp->handle())->winId();
             // Default to client leader if there is no transient parent, else modal dialogs can
@@ -836,6 +836,8 @@ void QXcbWindow::show()
                                                1, &transientXcbParent));
             }
         }
+        if (!transientXcbParent)
+            Q_XCB_CALL(xcb_delete_property(xcb_connection(), m_window, XCB_ATOM_WM_TRANSIENT_FOR));
 
         // update _MOTIF_WM_HINTS
         updateMotifWmHintsBeforeMap();
@@ -1195,9 +1197,11 @@ void QXcbWindow::setMotifWindowFlags(Qt::WindowFlags flags)
         mwmhints.flags |= MWM_HINTS_DECORATIONS;
 
         bool customize = flags & Qt::CustomizeWindowHint;
-        if (type == Qt::Window && !customize)
-            flags |= Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint;
-
+        if (type == Qt::Window && !customize) {
+            const Qt::WindowFlags defaultFlags = Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint;
+            if (!(flags & defaultFlags))
+                flags |= defaultFlags;
+        }
         if (!(flags & Qt::FramelessWindowHint) && !(customize && !(flags & Qt::WindowTitleHint))) {
             mwmhints.decorations |= MWM_DECOR_BORDER;
             mwmhints.decorations |= MWM_DECOR_RESIZEH;
