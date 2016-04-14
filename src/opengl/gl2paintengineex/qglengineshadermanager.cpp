@@ -333,7 +333,7 @@ QByteArray QGLEngineSharedShaders::snippetNameStr(SnippetName name)
 QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineShaderProg &prog)
 {
     for (int i = 0; i < cachedPrograms.size(); ++i) {
-        QGLEngineShaderProg *cachedProg = cachedPrograms[i];
+        QGLEngineShaderProg *cachedProg = cachedPrograms.at(i);
         if (*cachedProg == prog) {
             // Move the program to the top of the list as a poor-man's cache algo
             cachedPrograms.move(i, 0);

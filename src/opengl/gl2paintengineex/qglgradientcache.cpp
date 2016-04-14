@@ -102,7 +102,7 @@ GLuint QGL2GradientCache::getBuffer(const QGradient &gradient, qreal opacity)
     QMutexLocker lock(&m_mutex);
     quint64 hash_val = 0;
 
-    QGradientStops stops = gradient.stops();
+    const QGradientStops stops = gradient.stops();
     for (int i = 0; i < stops.size() && i <= 2; i++)
         hash_val += stops[i].second.rgba();
 
@@ -172,16 +172,12 @@ static inline uint qtToGlColor(uint c)
 void QGL2GradientCache::generateGradientColorTable(const QGradient& gradient, uint *colorTable, int size, qreal opacity) const
 {
     int pos = 0;
-    QGradientStops s = gradient.stops();
-    QVector<uint> colors(s.size());
-
-    for (int i = 0; i < s.size(); ++i)
-        colors[i] = s[i].second.rgba(); // Qt LIES! It returns ARGB (on little-endian AND on big-endian)
-
+    const QGradientStops s = gradient.stops();
     bool colorInterpolation = (gradient.interpolationMode() == QGradient::ColorInterpolation);
 
     uint alpha = qRound(opacity * 256);
-    uint current_color = ARGB_COMBINE_ALPHA(colors[0], alpha);
+    // Qt LIES! It returns ARGB (on little-endian AND on big-endian)
+    uint current_color = ARGB_COMBINE_ALPHA(s[0].second.rgba(), alpha);
     qreal incr = 1.0 / qreal(size);
     qreal fpos = 1.5 * incr;
     colorTable[pos++] = qtToGlColor(qPremultiply(current_color));
@@ -195,9 +191,10 @@ void QGL2GradientCache::generateGradientColorTable(const QGradient& gradient, ui
     if (colorInterpolation)
         current_color = qPremultiply(current_color);
 
-    for (int i = 0; i < s.size() - 1; ++i) {
+    const int sLast = s.size() - 1;
+    for (int i = 0; i < sLast; ++i) {
         qreal delta = 1/(s[i+1].first - s[i].first);
-        uint next_color = ARGB_COMBINE_ALPHA(colors[i+1], alpha);
+        uint next_color = ARGB_COMBINE_ALPHA(s[i + 1].second.rgba(), alpha);
         if (colorInterpolation)
             next_color = qPremultiply(next_color);
 
@@ -216,7 +213,7 @@ void QGL2GradientCache::generateGradientColorTable(const QGradient& gradient, ui
 
     Q_ASSERT(s.size() > 0);
 
-    uint last_color = qtToGlColor(qPremultiply(ARGB_COMBINE_ALPHA(colors[s.size() - 1], alpha)));
+    uint last_color = qtToGlColor(qPremultiply(ARGB_COMBINE_ALPHA(s[sLast].second.rgba(), alpha)));
     for (;pos < size; ++pos)
         colorTable[pos] = last_color;
 
