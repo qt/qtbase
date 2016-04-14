@@ -849,9 +849,11 @@ bool QFileSystemModel::setData(const QModelIndex &idx, const QVariant &value, in
     if (newName == idx.data().toString())
         return true;
 
+    const QString parentPath = filePath(parent(idx));
+
     if (newName.isEmpty()
         || QDir::toNativeSeparators(newName).contains(QDir::separator())
-        || !QDir(filePath(parent(idx))).rename(oldName, newName)) {
+        || !QDir(parentPath).rename(oldName, newName)) {
 #ifndef QT_NO_MESSAGEBOX
         QMessageBox::information(0, QFileSystemModel::tr("Invalid filename"),
                                 QFileSystemModel::tr("<b>The name \"%1\" can not be used.</b><p>Try using another name, with fewer characters or no punctuations marks.")
@@ -878,7 +880,7 @@ bool QFileSystemModel::setData(const QModelIndex &idx, const QVariant &value, in
         parentNode->visibleChildren.removeAt(visibleLocation);
         QFileSystemModelPrivate::QFileSystemNode * oldValue = parentNode->children.value(oldName);
         parentNode->children[newName] = oldValue;
-        QFileInfo info(d->rootDir, newName);
+        QFileInfo info(parentPath, newName);
         oldValue->fileName = newName;
         oldValue->parent = parentNode;
 #ifndef QT_NO_FILESYSTEMWATCHER
@@ -890,7 +892,7 @@ bool QFileSystemModel::setData(const QModelIndex &idx, const QVariant &value, in
         parentNode->visibleChildren.insert(visibleLocation, newName);
 
         d->delayedSort();
-        emit fileRenamed(filePath(idx.parent()), oldName, newName);
+        emit fileRenamed(parentPath, oldName, newName);
     }
     return true;
 }

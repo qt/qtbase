@@ -697,6 +697,7 @@ void tst_QFileSystemModel::nameFilters()
 }
 void tst_QFileSystemModel::setData_data()
 {
+    QTest::addColumn<QString>("subdirName");
     QTest::addColumn<QStringList>("files");
     QTest::addColumn<QString>("oldFileName");
     QTest::addColumn<QString>("newFileName");
@@ -706,7 +707,15 @@ void tst_QFileSystemModel::setData_data()
               << QDir::temp().absolutePath() + '/' + "a"
               << false;
     */
-    QTest::newRow("in current dir") << (QStringList() << "a" << "b" << "c")
+    QTest::newRow("in current dir")
+              << QString()
+              << (QStringList() << "a" << "b" << "c")
+              << "a"
+              << "d"
+              << true;
+    QTest::newRow("in subdir")
+              << "s"
+              << (QStringList() << "a" << "b" << "c")
               << "a"
               << "d"
               << true;
@@ -715,15 +724,25 @@ void tst_QFileSystemModel::setData_data()
 void tst_QFileSystemModel::setData()
 {
     QSignalSpy spy(model, SIGNAL(fileRenamed(QString,QString,QString)));
-    QString tmp = flatDirTestPath;
+    QFETCH(QString, subdirName);
     QFETCH(QStringList, files);
     QFETCH(QString, oldFileName);
     QFETCH(QString, newFileName);
     QFETCH(bool, success);
 
+    QString tmp = flatDirTestPath;
+    if (!subdirName.isEmpty()) {
+        QDir dir(tmp);
+        QVERIFY(dir.mkdir(subdirName));
+        tmp.append('/' + subdirName);
+    }
     QVERIFY(createFiles(tmp, files));
-    QModelIndex root = model->setRootPath(tmp);
-    QTRY_COMPARE(model->rowCount(root), files.count());
+    QModelIndex tmpIdx = model->setRootPath(flatDirTestPath);
+    if (!subdirName.isEmpty()) {
+        tmpIdx = model->index(tmp);
+        model->fetchMore(tmpIdx);
+    }
+    QTRY_COMPARE(model->rowCount(tmpIdx), files.count());
 
     QModelIndex idx = model->index(tmp + '/' + oldFileName);
     QCOMPARE(idx.isValid(), true);
@@ -731,16 +750,21 @@ void tst_QFileSystemModel::setData()
 
     model->setReadOnly(false);
     QCOMPARE(model->setData(idx, newFileName), success);
+    model->setReadOnly(true);
     if (success) {
         QCOMPARE(spy.count(), 1);
         QList<QVariant> arguments = spy.takeFirst();
         QCOMPARE(model->data(idx, QFileSystemModel::FileNameRole).toString(), newFileName);
+        QCOMPARE(model->fileInfo(idx).filePath(), tmp + '/' + newFileName);
         QCOMPARE(model->index(arguments.at(0).toString()), model->index(tmp));
         QCOMPARE(arguments.at(1).toString(), oldFileName);
         QCOMPARE(arguments.at(2).toString(), newFileName);
         QCOMPARE(QFile::rename(tmp + '/' + newFileName, tmp + '/' + oldFileName), true);
     }
-    QTRY_COMPARE(model->rowCount(root), files.count());
+    QTRY_COMPARE(model->rowCount(tmpIdx), files.count());
+    // cleanup
+    if (!subdirName.isEmpty())
+        QVERIFY(QDir(tmp).removeRecursively());
 }
 
 void tst_QFileSystemModel::sortPersistentIndex()
