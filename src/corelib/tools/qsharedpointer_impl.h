@@ -313,15 +313,21 @@ public:
     inline T &operator*() const { return *data(); }
     inline T *operator->() const { return data(); }
 
-    QSharedPointer() Q_DECL_NOTHROW : value(Q_NULLPTR), d(Q_NULLPTR) {}
+    Q_DECL_CONSTEXPR QSharedPointer() Q_DECL_NOTHROW : value(nullptr), d(nullptr) { }
     ~QSharedPointer() { deref(); }
 
-    inline explicit QSharedPointer(T *ptr) : value(ptr) // noexcept
+    Q_DECL_CONSTEXPR QSharedPointer(std::nullptr_t) Q_DECL_NOTHROW : value(nullptr), d(nullptr) { }
+
+    template <class X>
+    inline explicit QSharedPointer(X *ptr) : value(ptr) // noexcept
     { internalConstruct(ptr, QtSharedPointer::NormalDeleter()); }
 
-    template <typename Deleter>
-    inline QSharedPointer(T *ptr, Deleter deleter) : value(ptr) // throws
+    template <class X, typename Deleter>
+    inline QSharedPointer(X *ptr, Deleter deleter) : value(ptr) // throws
     { internalConstruct(ptr, deleter); }
+
+    template <typename Deleter>
+    QSharedPointer(std::nullptr_t, Deleter) : value(nullptr), d(nullptr) { }
 
     QSharedPointer(const QSharedPointer &other) Q_DECL_NOTHROW : value(other.value), d(other.d)
     { if (d) ref(); }

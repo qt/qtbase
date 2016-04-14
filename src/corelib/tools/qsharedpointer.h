@@ -67,9 +67,10 @@ public:
 
     // constructors
     QSharedPointer();
-    explicit QSharedPointer(T *ptr);
-    template<typename Deleter>
-    QSharedPointer(T *ptr, Deleter d);
+    template <typename X> explicit QSharedPointer(X *ptr);
+    template <typename X, typename Deleter> QSharedPointer(X *ptr, Deleter d);
+    QSharedPointer(std::nullptr_t);
+    template <typename Deleter> QSharedPointer(std::nullptr_t, Deleter d);
     QSharedPointer(const QSharedPointer<T> &other);
     QSharedPointer(const QWeakPointer<T> &other);
 

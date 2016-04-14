@@ -57,6 +57,7 @@ private slots:
     void basics_data();
     void basics();
     void operators();
+    void nullptrOps();
     void swap();
     void moveSemantics();
     void useOfForwardDeclared();
@@ -360,6 +361,30 @@ void tst_QSharedPointer::operators()
     // qHash
     QCOMPARE(qHash(p1), qHash(p1.data()));
     QCOMPARE(qHash(p2), qHash(p2.data()));
+}
+
+void tst_QSharedPointer::nullptrOps()
+{
+    QSharedPointer<char> p1(nullptr);
+    QSharedPointer<char> p2 = nullptr;
+    QSharedPointer<char> null;
+
+    QVERIFY(p1 == null);
+    QVERIFY(p2 == null);
+    QVERIFY(!p1.data());
+    QVERIFY(!p2.data());
+
+    QSharedPointer<char> p3 = p1;
+    QVERIFY(p3 == null);
+    QVERIFY(!p3.data());
+
+    p3 = nullptr;
+
+    // check for non-ambiguity
+    QSharedPointer<char> p1_zero(0);
+    QSharedPointer<char> p2_zero = 0;
+
+    p3 = 0;
 }
 
 void tst_QSharedPointer::swap()
@@ -1309,6 +1334,18 @@ template<typename T> int CustomDeleter<T>::callCount = 0;
 
 void tst_QSharedPointer::customDeleter()
 {
+    {
+        QSharedPointer<Data> ptr(0, &Data::doDelete);
+        QSharedPointer<Data> ptr2(0, &Data::alsoDelete);
+        QSharedPointer<Data> ptr3(0, &Data::virtualDelete);
+    }
+    safetyCheck();
+    {
+        QSharedPointer<Data> ptr(nullptr, &Data::doDelete);
+        QSharedPointer<Data> ptr2(nullptr, &Data::alsoDelete);
+        QSharedPointer<Data> ptr3(nullptr, &Data::virtualDelete);
+    }
+    safetyCheck();
     {
         QSharedPointer<Data> ptr(new Data, &Data::doDelete);
         QSharedPointer<Data> ptr2(new Data, &Data::alsoDelete);

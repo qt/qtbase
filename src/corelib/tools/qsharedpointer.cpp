@@ -442,7 +442,7 @@
 */
 
 /*!
-    \fn QSharedPointer::QSharedPointer(T *ptr)
+    \fn QSharedPointer::QSharedPointer(X *ptr)
 
     Creates a QSharedPointer that points to \a ptr. The pointer \a ptr
     becomes managed by this QSharedPointer and must not be passed to
@@ -450,7 +450,7 @@
 */
 
 /*!
-    \fn QSharedPointer::QSharedPointer(T *ptr, Deleter deleter)
+    \fn QSharedPointer::QSharedPointer(X *ptr, Deleter deleter)
 
     Creates a QSharedPointer that points to \a ptr. The pointer \a ptr
     becomes managed by this QSharedPointer and must not be passed to
@@ -484,6 +484,22 @@
     \endcode
 
     \sa clear()
+*/
+
+/*!
+    \fn QSharedPointer::QSharedPointer(std::nullptr_t)
+    \since 5.8
+
+    Creates a QSharedPointer that is null. This is equivalent to the
+    QSharedPointer default constructor.
+*/
+
+/*!
+    \fn QSharedPointer::QSharedPointer(std::nullptr_t, Deleter)
+    \since 5.8
+
+    Creates a QSharedPointer that is null. This is equivalent to the
+    QSharedPointer default constructor.
 */
 
 /*!
