@@ -96,6 +96,7 @@ for i in "$@"; do
 done
 
 # initialize global variables
+CONFIG_SEPARATORS=`printf ' \t'`
 QMAKE_SWITCHES=
 QMAKE_VARS=
 QMAKE_CONFIG=
@@ -349,6 +350,21 @@ getXQMakeConf()
         if [ "$XPLATFORM_MAC" = "yes" ]; then xspecvals=$(macSDKify "$xspecvals"); fi
     fi
     getSingleQMakeVariable "$1" "$xspecvals"
+}
+
+testXConfig()
+{
+    # Put a space on each end of the CONFIG value so that searching for the
+    # target with whitespace on either side will work even when it's the
+    # first/last/only item in the CONFIG value.
+    case \ `getXQMakeConf CONFIG`\  in
+    *[${CONFIG_SEPARATORS}]$1[${CONFIG_SEPARATORS}]*)
+        return 0
+        ;;
+    *)
+        return 1
+        ;;
+    esac
 }
 
 compilerSupportsFlag()
@@ -6308,7 +6324,11 @@ fi
 [ "$CFG_STACK_PROTECTOR_STRONG" = "yes" ] && QT_CONFIG="$QT_CONFIG stack-protector-strong"
 [ "$CFG_REDUCE_RELOCATIONS" = "yes" ] && QT_CONFIG="$QT_CONFIG reduce_relocations"
 [ "$CFG_STRIP" = "no" ] && QMAKE_CONFIG="$QMAKE_CONFIG nostrip"
-[ "$CFG_PRECOMPILE" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG precompile_header"
+if testXConfig precompile_header; then
+    [ "$CFG_PRECOMPILE" = "no" ] && QMakeVar del CONFIG precompile_header
+else
+    [ "$CFG_PRECOMPILE" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG precompile_header"
+fi
 [ "$CFG_USE_GOLD_LINKER" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG use_gold_linker"
 [ "$CFG_ENABLE_NEW_DTAGS" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG enable_new_dtags"
 if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
