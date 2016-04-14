@@ -115,7 +115,8 @@ QMacPinchGestureRecognizer::recognize(QGesture *gesture, QObject *obj, QEvent *e
         case Qt::ZoomNativeGesture:
             g->setLastScaleFactor(g->scaleFactor());
             g->setLastRotationAngle(g->rotationAngle());
-            g->setScaleFactor(g->scaleFactor() * (1 + ev->value()));
+            g->setScaleFactor(1 + ev->value());
+            g->setTotalScaleFactor(g->totalScaleFactor() * g->scaleFactor());
             g->setChangeFlags(QPinchGesture::ScaleFactorChanged);
             g->setTotalChangeFlags(g->totalChangeFlags() | g->changeFlags());
             g->setHotSpot(ev->screenPos());
