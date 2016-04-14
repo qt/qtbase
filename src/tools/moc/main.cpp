@@ -360,7 +360,7 @@ int runMoc(int argc, char **argv)
         int spos = filename.lastIndexOf(QDir::separator());
         int ppos = filename.lastIndexOf(QLatin1Char('.'));
         // spos >= -1 && ppos > spos => ppos >= 0
-        moc.noInclude = (ppos > spos && filename[ppos + 1].toLower() != QLatin1Char('h'));
+        moc.noInclude = (ppos > spos && filename.at(ppos + 1).toLower() != QLatin1Char('h'));
     }
     if (defaultInclude) {
         if (moc.includePath.isEmpty()) {

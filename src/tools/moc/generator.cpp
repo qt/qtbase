@@ -79,7 +79,7 @@ Generator::Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, con
     , knownGadgets(knownGadgets)
 {
     if (cdef->superclassList.size())
-        purestSuperClass = cdef->superclassList.first().first;
+        purestSuperClass = cdef->superclassList.constFirst().first;
 }
 
 static inline int lengthOfEscapeSequence(const QByteArray &s, int i)
