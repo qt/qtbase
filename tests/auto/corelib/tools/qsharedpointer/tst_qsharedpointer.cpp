@@ -63,6 +63,7 @@ private slots:
     void useOfForwardDeclared();
     void memoryManagement();
     void dropLastReferenceOfForwardDeclared();
+    void nonVirtualDestructors();
     void lock();
     void downCast();
     void functionCallDownCast();
@@ -601,6 +602,56 @@ void tst_QSharedPointer::dropLastReferenceOfForwardDeclared()
     forwardDeclaredDestructorRunCount = 0;
     delete forwardPointer();
     QCOMPARE(forwardDeclaredDestructorRunCount, 1);
+}
+
+// NVD for "non-virtual destructor"
+struct NVDData
+{
+    static int destructorCounter;
+    ~NVDData() { ++destructorCounter; }
+
+    int dummy;
+};
+int NVDData::destructorCounter;
+
+struct NVDDerivedData : NVDData
+{
+    static int destructorCounter;
+    ~NVDDerivedData() { ++destructorCounter; }
+};
+int NVDDerivedData::destructorCounter;
+
+void tst_QSharedPointer::nonVirtualDestructors()
+{
+    NVDData::destructorCounter = NVDDerivedData::destructorCounter = 0;
+    {
+        QSharedPointer<NVDData> ptr(new NVDData);
+    }
+    QCOMPARE(NVDData::destructorCounter, 1);
+    QCOMPARE(NVDDerivedData::destructorCounter, 0);
+
+    NVDData::destructorCounter = NVDDerivedData::destructorCounter = 0;
+    {
+        QSharedPointer<NVDDerivedData> ptr(new NVDDerivedData);
+    }
+    QCOMPARE(NVDData::destructorCounter, 1);
+    QCOMPARE(NVDDerivedData::destructorCounter, 1);
+
+    NVDData::destructorCounter = NVDDerivedData::destructorCounter = 0;
+    {
+        QSharedPointer<NVDData> bptr;
+        QSharedPointer<NVDDerivedData> ptr(new NVDDerivedData);
+        bptr = ptr;
+    }
+    QCOMPARE(NVDData::destructorCounter, 1);
+    QCOMPARE(NVDDerivedData::destructorCounter, 1);
+
+    NVDData::destructorCounter = NVDDerivedData::destructorCounter = 0;
+    {
+        QSharedPointer<NVDData> ptr(new NVDDerivedData);
+    }
+    QCOMPARE(NVDData::destructorCounter, 1);
+    QCOMPARE(NVDDerivedData::destructorCounter, 1);
 }
 
 void tst_QSharedPointer::lock()
@@ -1527,6 +1578,33 @@ void tst_QSharedPointer::customDeleter()
     QCOMPARE(dataDeleter.callCount, 0);
     QCOMPARE(derivedDataDeleter.callCount, 1);
     QCOMPARE(refcount, 2);
+    safetyCheck();
+
+    CustomDeleter<NVDData> nvdeleter;
+    nvdeleter.callCount = 0;
+    {
+        QSharedPointer<NVDData> ptr(new NVDData, nvdeleter);
+    }
+    QCOMPARE(nvdeleter.callCount, 1);
+    safetyCheck();
+
+    CustomDeleter<NVDDerivedData> nvderiveddeleter;
+    nvdeleter.callCount = 0;
+    nvderiveddeleter.callCount = 0;
+    {
+        QSharedPointer<NVDDerivedData> ptr(new NVDDerivedData, nvderiveddeleter);
+    }
+    QCOMPARE(nvdeleter.callCount, 0);
+    QCOMPARE(nvderiveddeleter.callCount, 1);
+    safetyCheck();
+
+    nvdeleter.callCount = 0;
+    nvderiveddeleter.callCount = 0;
+    {
+        QSharedPointer<NVDData> ptr(new NVDDerivedData, nvderiveddeleter);
+    }
+    QCOMPARE(nvdeleter.callCount, 0);
+    QCOMPARE(nvderiveddeleter.callCount, 1);
     safetyCheck();
 
     // a custom deleter with a different pointer parameter

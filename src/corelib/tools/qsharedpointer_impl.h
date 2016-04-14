@@ -518,15 +518,15 @@ private:
 
     inline void enableSharedFromThis(...) {}
 
-    template <typename Deleter>
-    inline void internalConstruct(T *ptr, Deleter deleter)
+    template <typename X, typename Deleter>
+    inline void internalConstruct(X *ptr, Deleter deleter)
     {
         if (!ptr) {
             d = Q_NULLPTR;
             return;
         }
 
-        typedef QtSharedPointer::ExternalRefCountWithCustomDeleter<T, Deleter> Private;
+        typedef QtSharedPointer::ExternalRefCountWithCustomDeleter<X, Deleter> Private;
 # ifdef QT_SHAREDPOINTER_TRACK_POINTERS
         typename Private::DestroyerFn actualDeleter = &Private::safetyCheckDeleter;
 # else

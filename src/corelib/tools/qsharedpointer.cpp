@@ -447,6 +447,11 @@
     Creates a QSharedPointer that points to \a ptr. The pointer \a ptr
     becomes managed by this QSharedPointer and must not be passed to
     another QSharedPointer object or deleted outside this object.
+
+    Since Qt 5.8, when the last reference to this QSharedPointer gets
+    destroyed, \a ptr will be deleted by calling \c X's destructor (even if \c
+    X is not the same as QSharedPointer's template parameter \c T). Previously,
+    the destructor for \c T was called.
 */
 
 /*!
@@ -476,6 +481,9 @@
         obj.clear();    // calls obj->deleteLater();
     }
     \endcode
+
+    Note that the custom deleter function will be called with a pointer to type
+    \c X, even if the QSharedPointer template parameter \c T is not the same.
 
     It is also possible to specify a member function directly, as in:
     \code
