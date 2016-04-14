@@ -188,9 +188,27 @@ void QOutlineMapper::endOutline()
     QPointF *elements = m_elements.data();
 
     // Transform the outline
-    if (!m_in_clip_elements) {
+    if (m_transform.isIdentity()) {
+        // Nothing to do
+    } else if (m_transform.type() < QTransform::TxProject) {
         for (int i = 0; i < m_elements.size(); ++i)
             elements[i] = m_transform.map(elements[i]);
+    } else {
+        const QVectorPath vp((qreal *)elements, m_elements.size(),
+                             m_element_types.size() ? m_element_types.data() : 0);
+        QPainterPath path = vp.convertToPainterPath();
+        path = m_transform.map(path);
+        if (!(m_outline.flags & QT_FT_OUTLINE_EVEN_ODD_FILL))
+            path.setFillRule(Qt::WindingFill);
+        if (path.isEmpty()) {
+            m_valid = false;
+        } else {
+            QTransform oldTransform = m_transform;
+            m_transform.reset();
+            convertPath(path);
+            m_transform = oldTransform;
+        }
+        return;
     }
 
     controlPointRect = boundingRect(elements, m_elements.size());
@@ -358,10 +376,14 @@ void QOutlineMapper::clipElements(const QPointF *elements,
     QPainterPath clipPath;
     clipPath.addRect(m_clip_rect);
     QPainterPath clippedPath = path.intersected(clipPath);
-    if (clippedPath.isEmpty())
+    if (clippedPath.isEmpty()) {
         m_valid = false;
-    else
+    } else {
+        QTransform oldTransform = m_transform;
+        m_transform.reset();
         convertPath(clippedPath);
+        m_transform = oldTransform;
+    }
 
     m_in_clip_elements = false;
 }
