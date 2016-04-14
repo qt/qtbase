@@ -1507,7 +1507,7 @@ QRect Declaration::rectValue() const
     const QCss::Value &v = d->values.at(0);
     if (v.type != Value::Function)
         return QRect();
-    QStringList func = v.variant.toStringList();
+    const QStringList func = v.variant.toStringList();
     if (func.count() != 2 || func.at(0).compare(QLatin1String("rect")) != 0)
         return QRect();
     QStringList args = func[1].split(QLatin1Char(' '), QString::SkipEmptyParts);
@@ -1653,6 +1653,7 @@ Qt::Alignment Declaration::alignmentValue() const
 void Declaration::borderImageValue(QString *image, int *cuts,
                                    TileMode *h, TileMode *v) const
 {
+    const DeclarationData *d = this->d.data(); // make it const and shadow d
     *image = uriValue();
     for (int i = 0; i < 4; i++)
         cuts[i] = -1;

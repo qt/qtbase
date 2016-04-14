@@ -474,11 +474,11 @@ void QPlatformIntegration::screenAdded(QPlatformScreen *ps, bool isPrimary)
 
 void QPlatformIntegration::removeScreen(QScreen *screen)
 {
-    const bool wasPrimary = (!QGuiApplicationPrivate::screen_list.isEmpty() && QGuiApplicationPrivate::screen_list[0] == screen);
+    const bool wasPrimary = (!QGuiApplicationPrivate::screen_list.isEmpty() && QGuiApplicationPrivate::screen_list.at(0) == screen);
     QGuiApplicationPrivate::screen_list.removeOne(screen);
 
     if (wasPrimary && qGuiApp && !QGuiApplicationPrivate::screen_list.isEmpty())
-        emit qGuiApp->primaryScreenChanged(QGuiApplicationPrivate::screen_list[0]);
+        emit qGuiApp->primaryScreenChanged(QGuiApplicationPrivate::screen_list.at(0));
 }
 
 /*!

@@ -218,8 +218,9 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
     qreal sumAvailable;
 
     for (int i = 0; i < n; ++i) {
-        if (stretches[start + i] > 0)
-            sumStretches += stretches[start + i];
+        const int stretch = stretches.at(start + i);
+        if (stretch > 0)
+            sumStretches += stretch;
     }
 
     if (targetSize < totalBox.q_preferredSize) {
@@ -1034,19 +1035,19 @@ void QGridLayoutEngine::setGeometries(const QRectF &contentsGeometry, const QAbs
     for (int i = q_items.count() - 1; i >= 0; --i) {
         QGridLayoutItem *item = q_items.at(i);
 
-        qreal x = q_xx[item->firstColumn()];
-        qreal y = q_yy[item->firstRow()];
-        qreal width = q_widths[item->lastColumn()];
-        qreal height = q_heights[item->lastRow()];
+        qreal x = q_xx.at(item->firstColumn());
+        qreal y = q_yy.at(item->firstRow());
+        qreal width = q_widths.at(item->lastColumn());
+        qreal height = q_heights.at(item->lastRow());
 
         if (item->columnSpan() != 1)
-            width += q_xx[item->lastColumn()] - x;
+            width += q_xx.at(item->lastColumn()) - x;
         if (item->rowSpan() != 1)
-            height += q_yy[item->lastRow()] - y;
+            height += q_yy.at(item->lastRow()) - y;
 
         const Qt::Alignment align = effectiveAlignment(item);
         QRectF geom = item->geometryWithin(contentsGeometry.x() + x, contentsGeometry.y() + y,
-                                               width, height, q_descents[item->lastRow()], align, m_snapToPixelGrid);
+                                               width, height, q_descents.at(item->lastRow()), align, m_snapToPixelGrid);
         if (m_snapToPixelGrid) {
             // x and y should already be rounded, but the call to geometryWithin() above might
             // result in a geom with x,y at half-pixels (due to centering within the cell)

@@ -3274,7 +3274,7 @@ int QTextEngine::endOfLine(int lineNum)
     insertionPointsForLine(lineNum, insertionPoints);
 
     if (insertionPoints.size() > 0)
-        return insertionPoints.last();
+        return insertionPoints.constLast();
     return 0;
 }
 
@@ -3284,7 +3284,7 @@ int QTextEngine::beginningOfLine(int lineNum)
     insertionPointsForLine(lineNum, insertionPoints);
 
     if (insertionPoints.size() > 0)
-        return insertionPoints.first();
+        return insertionPoints.constFirst();
     return 0;
 }
 

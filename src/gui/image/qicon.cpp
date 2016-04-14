@@ -284,7 +284,7 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
     if (pm.isNull()) {
         int idx = pixmaps.count();
         while (--idx >= 0) {
-            if (pe == &pixmaps[idx]) {
+            if (pe == &pixmaps.at(idx)) {
                 pixmaps.remove(idx);
                 break;
             }

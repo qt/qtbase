@@ -882,7 +882,7 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
             if (at(cell).isTableCell()) {
                 // skip all columns with spans from previous rows
                 while (colsInRow < rowColSpanForColumn.size()) {
-                    const RowColSpanInfo &spanInfo = rowColSpanForColumn[colsInRow];
+                    const RowColSpanInfo &spanInfo = rowColSpanForColumn.at(colsInRow);
 
                     if (spanInfo.row + spanInfo.rowSpan > effectiveRow) {
                         Q_ASSERT(spanInfo.col == colsInRow);
@@ -1081,8 +1081,8 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processBlockNode()
         && indent != 0
         && (lists.isEmpty()
             || !hasBlock
-            || !lists.last().list
-            || lists.last().list->itemNumber(cursor.block()) == -1
+            || !lists.constLast().list
+            || lists.constLast().list->itemNumber(cursor.block()) == -1
            )
        ) {
         block.setIndent(indent);

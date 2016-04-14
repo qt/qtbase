@@ -265,7 +265,7 @@ void QTextTableData::updateTableSize()
     const QFixed effectiveLeftMargin = this->leftMargin + border + padding;
     const QFixed effectiveRightMargin = this->rightMargin + border + padding;
     size.height = contentsHeight == -1
-                   ? rowPositions.last() + heights.last() + padding + border + cellSpacing + effectiveBottomMargin
+                   ? rowPositions.constLast() + heights.constLast() + padding + border + cellSpacing + effectiveBottomMargin
                    : effectiveTopMargin + contentsHeight + effectiveBottomMargin;
     size.width = effectiveLeftMargin + contentsWidth + effectiveRightMargin;
 }
@@ -1238,7 +1238,7 @@ void QTextDocumentLayoutPrivate::drawFlow(const QPointF &offset, QPainter *paint
 
             // if we're past what is already laid out then we're better off
             // not trying to draw things that may not be positioned correctly yet
-            if (currentPosInDoc >= checkPoints.last().positionInFrame)
+            if (currentPosInDoc >= checkPoints.constLast().positionInFrame)
                 break;
 
             if (lastVisibleCheckPoint != checkPoints.end()
@@ -1798,7 +1798,7 @@ recalc_minmax_widths:
         td->columnPositions[i] = td->columnPositions.at(i-1) + td->widths.at(i-1) + 2 * td->border + cellSpacing;
 
     // - margin to compensate the + margin in columnPositions[0]
-    const QFixed contentsWidth = td->columnPositions.last() + td->widths.last() + td->padding + td->border + cellSpacing - leftMargin;
+    const QFixed contentsWidth = td->columnPositions.constLast() + td->widths.constLast() + td->padding + td->border + cellSpacing - leftMargin;
 
     // if the table is too big and causes an overflow re-do the layout with WrapAnywhere as wrap
     // mode
@@ -1845,14 +1845,14 @@ recalc_minmax_widths:
         td->calcRowPosition(r);
 
         const int tableStartPage = (absoluteTableY / pageHeight).truncate();
-        const int currentPage = ((td->rowPositions[r] + absoluteTableY) / pageHeight).truncate();
+        const int currentPage = ((td->rowPositions.at(r) + absoluteTableY) / pageHeight).truncate();
         const QFixed pageBottom = (currentPage + 1) * pageHeight - td->effectiveBottomMargin - absoluteTableY - cellSpacing - td->border;
         const QFixed pageTop = currentPage * pageHeight + td->effectiveTopMargin - absoluteTableY + cellSpacing + td->border;
         const QFixed nextPageTop = pageTop + pageHeight;
 
-        if (td->rowPositions[r] > pageBottom)
+        if (td->rowPositions.at(r) > pageBottom)
             td->rowPositions[r] = nextPageTop;
-        else if (td->rowPositions[r] < pageTop)
+        else if (td->rowPositions.at(r) < pageTop)
             td->rowPositions[r] = pageTop;
 
         bool dropRowToNextPage = true;
@@ -1863,7 +1863,7 @@ recalc_minmax_widths:
         QFixed dropDistance = 0;
 
 relayout:
-        const int rowStartPage = ((td->rowPositions[r] + absoluteTableY) / pageHeight).truncate();
+        const int rowStartPage = ((td->rowPositions.at(r) + absoluteTableY) / pageHeight).truncate();
         // if any of the header rows or the first non-header row start on the next page
         // then the entire header should be dropped
         if (r <= headerRowCount && rowStartPage > tableStartPage && !hasDroppedTable) {
@@ -1927,13 +1927,13 @@ relayout:
         }
 
         if (rowCellCount > 0 && dropRowToNextPage) {
-            dropDistance = nextPageTop - td->rowPositions[r];
+            dropDistance = nextPageTop - td->rowPositions.at(r);
             td->rowPositions[r] = nextPageTop;
             td->heights[r] = 0;
             dropRowToNextPage = false;
             cellHeights.resize(cellCountBeforeRow);
             if (r > headerRowCount)
-                td->heights[r-1] = pageBottom - td->rowPositions[r-1];
+                td->heights[r - 1] = pageBottom - td->rowPositions.at(r - 1);
             goto relayout;
         }
 
@@ -1944,7 +1944,7 @@ relayout:
         }
 
         if (r == headerRowCount - 1) {
-            td->headerHeight = td->rowPositions[r] + td->heights[r] - td->rowPositions[0] + td->cellSpacing + 2 * td->border;
+            td->headerHeight = td->rowPositions.at(r) + td->heights.at(r) - td->rowPositions.at(0) + td->cellSpacing + 2 * td->border;
             td->headerHeight -= td->headerHeight * (td->headerHeight / pageHeight).truncate();
             td->effectiveTopMargin += td->headerHeight;
         }
@@ -2304,7 +2304,7 @@ void QTextDocumentLayoutPrivate::layoutFlow(QTextFrame::Iterator it, QTextLayout
             docPos = it.currentBlock().position();
 
         if (inRootFrame) {
-            if (qAbs(layoutStruct->y - checkPoints.last().y) > 2000) {
+            if (qAbs(layoutStruct->y - checkPoints.constLast().y) > 2000) {
                 QFixed left, right;
                 floatMargins(layoutStruct->y, layoutStruct, &left, &right);
                 if (left == layoutStruct->x_left && right == layoutStruct->x_right) {
@@ -2554,7 +2554,7 @@ void QTextDocumentLayoutPrivate::layoutFlow(QTextFrame::Iterator it, QTextLayout
             checkPoints.append(cp);
             checkPoints.reserve(checkPoints.size());
         } else {
-            currentLazyLayoutPosition = checkPoints.last().positionInFrame;
+            currentLazyLayoutPosition = checkPoints.constLast().positionInFrame;
             // #######
             //checkPoints.last().positionInFrame = q->document()->docHandle()->length();
         }

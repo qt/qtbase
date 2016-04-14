@@ -1160,15 +1160,15 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
     int fnum = 0;
     if (accel.length() == 1) {
 #if defined(Q_OS_MACX)
-        int qtKey = qtkeyForMacSymbol(accel[0]);
+        int qtKey = qtkeyForMacSymbol(accel.at(0));
         if (qtKey != -1) {
             ret |= qtKey;
         } else
 #endif
         {
-            ret |= accel[0].toUpper().unicode();
+            ret |= accel.at(0).toUpper().unicode();
         }
-    } else if (accel[0] == QLatin1Char('f') && (fnum = accel.mid(1).toInt()) && (fnum >= 1) && (fnum <= 35)) {
+    } else if (accel.at(0) == QLatin1Char('f') && (fnum = accel.mid(1).toInt()) >= 1 && fnum <= 35) {
         ret |= Qt::Key_F1 + fnum - 1;
     } else {
         // For NativeText, check the traslation table first,

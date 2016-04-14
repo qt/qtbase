@@ -3462,7 +3462,7 @@ void QTextFormatCollection::setDefaultFont(const QFont &f)
 {
     defaultFnt = f;
     for (int i = 0; i < formats.count(); ++i)
-        if (formats[i].d)
+        if (formats.at(i).d)
             formats[i].d->resolveFont(defaultFnt);
 }
 

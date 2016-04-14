@@ -690,7 +690,7 @@ void QPainterPath::moveTo(const QPointF &p)
 
     d->require_moveTo = false;
 
-    if (d->elements.last().type == MoveToElement) {
+    if (d->elements.constLast().type == MoveToElement) {
         d->elements.last().x = p.x();
         d->elements.last().y = p.y();
     } else {
@@ -738,7 +738,7 @@ void QPainterPath::lineTo(const QPointF &p)
     QPainterPathData *d = d_func();
     Q_ASSERT(!d->elements.isEmpty());
     d->maybeMoveTo();
-    if (p == QPointF(d->elements.last()))
+    if (p == QPointF(d->elements.constLast()))
         return;
     Element elm = { p.x(), p.y(), LineToElement };
     d->elements.append(elm);
@@ -801,7 +801,7 @@ void QPainterPath::cubicTo(const QPointF &c1, const QPointF &c2, const QPointF &
 
     // Abort on empty curve as a stroker cannot handle this and the
     // curve is irrelevant anyway.
-    if (d->elements.last() == c1 && c1 == c2 && c2 == e)
+    if (d->elements.constLast() == c1 && c1 == c2 && c2 == e)
         return;
 
     d->maybeMoveTo();
@@ -984,7 +984,7 @@ QPointF QPainterPath::currentPosition() const
 {
     return !d_ptr || d_func()->elements.isEmpty()
         ? QPointF()
-        : QPointF(d_func()->elements.last().x, d_func()->elements.last().y);
+        : QPointF(d_func()->elements.constLast().x, d_func()->elements.constLast().y);
 }
 
 
@@ -1073,7 +1073,7 @@ void QPainterPath::addPolygon(const QPolygonF &polygon)
 
     d_func()->elements.reserve(d_func()->elements.size() + polygon.size());
 
-    moveTo(polygon.first());
+    moveTo(polygon.constFirst());
     for (int i=1; i<polygon.size(); ++i) {
         Element elm = { polygon.at(i).x(), polygon.at(i).y(), LineToElement };
         d_func()->elements << elm;
@@ -1178,12 +1178,12 @@ void QPainterPath::addText(const QPointF &point, const QFont &f, const QString &
     QVarLengthArray<int> visualOrder(nItems);
     QVarLengthArray<uchar> levels(nItems);
     for (int i = 0; i < nItems; ++i)
-        levels[i] = eng->layoutData->items[i].analysis.bidiLevel;
+        levels[i] = eng->layoutData->items.at(i).analysis.bidiLevel;
     QTextEngine::bidiReorder(nItems, levels.data(), visualOrder.data());
 
     for (int i = 0; i < nItems; ++i) {
         int item = visualOrder[i];
-        QScriptItem &si = eng->layoutData->items[item];
+        const QScriptItem &si = eng->layoutData->items.at(item);
 
         if (si.analysis.flags < QScriptAnalysis::TabOrObject) {
             QGlyphLayout glyphs = eng->shapedGlyphs(&si);
@@ -1230,7 +1230,7 @@ void QPainterPath::addPath(const QPainterPath &other)
 
     QPainterPathData *d = reinterpret_cast<QPainterPathData *>(d_func());
     // Remove last moveto so we don't get multiple moveto's
-    if (d->elements.last().type == MoveToElement)
+    if (d->elements.constLast().type == MoveToElement)
         d->elements.remove(d->elements.size()-1);
 
     // Locate where our own current subpath will start after the other path is added.
@@ -1261,7 +1261,7 @@ void QPainterPath::connectPath(const QPainterPath &other)
 
     QPainterPathData *d = reinterpret_cast<QPainterPathData *>(d_func());
     // Remove last moveto so we don't get multiple moveto's
-    if (d->elements.last().type == MoveToElement)
+    if (d->elements.constLast().type == MoveToElement)
         d->elements.remove(d->elements.size()-1);
 
     // Locate where our own current subpath will start after the other path is added.
@@ -1273,7 +1273,7 @@ void QPainterPath::connectPath(const QPainterPath &other)
         d->elements[first].type = LineToElement;
 
     // avoid duplicate points
-    if (first > 0 && QPointF(d->elements[first]) == QPointF(d->elements[first - 1])) {
+    if (first > 0 && QPointF(d->elements.at(first)) == QPointF(d->elements.at(first - 1))) {
         d->elements.remove(first--);
         --cStart;
     }
@@ -1686,8 +1686,9 @@ QList<QPolygonF> QPainterPath::toFillPolygons(const QTransform &matrix) const
             int isect_j = current_isects.at(j);
             if (isect_j == i)
                 continue;
-            for (int k=0; k<isects[isect_j].size(); ++k) {
-                int isect_k = isects[isect_j][k];
+            const QVector<int> &isects_j = isects.at(isect_j);
+            for (int k = 0, size = isects_j.size(); k < size; ++k) {
+                int isect_k = isects_j.at(k);
                 if (isect_k != i && !isects.at(i).contains(isect_k)) {
                     isects[i] += isect_k;
                 }
@@ -1709,7 +1710,7 @@ QList<QPolygonF> QPainterPath::toFillPolygons(const QTransform &matrix) const
 
     // Join the intersected subpaths as rewinded polygons
     for (int i=0; i<count; ++i) {
-        const QVector<int> &subpath_list = isects[i];
+        const QVector<int> &subpath_list = isects.at(i);
         if (!subpath_list.isEmpty()) {
             QPolygonF buildUp;
             for (int j=0; j<subpath_list.size(); ++j) {
@@ -1718,7 +1719,7 @@ QList<QPolygonF> QPainterPath::toFillPolygons(const QTransform &matrix) const
                 if (!subpath.isClosed())
                     buildUp += subpath.first();
                 if (!buildUp.isClosed())
-                    buildUp += buildUp.first();
+                    buildUp += buildUp.constFirst();
             }
             polys += buildUp;
         }
@@ -2790,7 +2791,7 @@ void QPainterPathStroker::setDashOffset(qreal offset)
 QPolygonF QPainterPath::toFillPolygon(const QTransform &matrix) const
 {
 
-    QList<QPolygonF> flats = toSubpathPolygons(matrix);
+    const QList<QPolygonF> flats = toSubpathPolygons(matrix);
     QPolygonF polygon;
     if (flats.isEmpty())
         return polygon;

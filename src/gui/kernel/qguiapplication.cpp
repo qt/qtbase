@@ -1024,7 +1024,7 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
         // may repeat. Find only when there is more than one virtual desktop.
         if (!windowScreen && screens.count() != primaryScreens.count()) {
             for (int i = 1; i < screens.size(); ++i) {
-                QScreen *screen = screens[i];
+                QScreen *screen = screens.at(i);
                 if (screen->geometry().contains(pos)) {
                     windowScreen = screen;
                     break;
@@ -2617,7 +2617,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                 if (b == Qt::NoButton)
                     self->synthesizedMousePoints.clear();
 
-                QList<QTouchEvent::TouchPoint> touchPoints = touchEvent.touchPoints();
+                const QList<QTouchEvent::TouchPoint> &touchPoints = touchEvent.touchPoints();
                 if (eventType == QEvent::TouchBegin)
                     m_fakeMouseSourcePointId = touchPoints.first().id();
 
