@@ -90,6 +90,9 @@ macro(QT5_GET_MOC_FLAGS _moc_flags)
     if(WIN32)
         set(${_moc_flags} ${${_moc_flags}} -DWIN32)
     endif()
+    if (MSVC)
+        set(${_moc_flags} --compiler-flavor=msvc)
+    endif()
 endmacro()
 
 

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -242,6 +243,11 @@ int runMoc(int argc, char **argv)
     metadataOption.setFlags(QCommandLineOption::ShortOptionStyle);
     parser.addOption(metadataOption);
 
+    QCommandLineOption compilerFlavorOption(QStringLiteral("compiler-flavor"));
+    compilerFlavorOption.setDescription(QStringLiteral("Set the compiler flavor: either \"msvc\" or \"unix\"."));
+    compilerFlavorOption.setValueName(QStringLiteral("flavor"));
+    parser.addOption(compilerFlavorOption);
+
     QCommandLineOption noIncludeOption(QStringLiteral("i"));
     noIncludeOption.setDescription(QStringLiteral("Do not generate an #include statement."));
     parser.addOption(noIncludeOption);
@@ -328,9 +334,32 @@ int runMoc(int argc, char **argv)
         if (parser.isSet(pathPrefixOption))
             moc.includePath = QFile::encodeName(parser.value(pathPrefixOption));
     }
+
     const auto includePaths = parser.values(includePathOption);
     for (const QString &path : includePaths)
         pp.includes += Preprocessor::IncludePath(QFile::encodeName(path));
+    QString compilerFlavor = parser.value(compilerFlavorOption);
+    if (compilerFlavor.isEmpty() || compilerFlavor == QLatin1String("unix")) {
+        // traditional Unix compilers use both CPATH and CPLUS_INCLUDE_PATH
+        // $CPATH feeds to #include <...> and #include "...", whereas
+        // CPLUS_INCLUDE_PATH is equivalent to GCC's -isystem, so we parse later
+        const auto cpath = qgetenv("CPATH").split(QDir::listSeparator().toLatin1());
+        for (const QByteArray &p : cpath)
+            pp.includes += Preprocessor::IncludePath(p);
+        const auto cplus_include_path = qgetenv("CPLUS_INCLUDE_PATH").split(QDir::listSeparator().toLatin1());
+        for (const QByteArray &p : cplus_include_path)
+            pp.includes += Preprocessor::IncludePath(p);
+    } else if (compilerFlavor == QLatin1String("msvc")) {
+        // MSVC uses one environment variable: INCLUDE
+        const auto include = qgetenv("INCLUDE").split(QDir::listSeparator().toLatin1());
+        for (const QByteArray &p : include)
+            pp.includes += Preprocessor::IncludePath(p);
+    } else {
+        error(qPrintable(QLatin1String("Unknown compiler flavor '") + compilerFlavor +
+                         QLatin1String("'; valid values are: msvc, unix.")));
+        parser.showHelp(1);
+    }
+
     const auto macFrameworks = parser.values(macFrameworkOption);
     for (const QString &path : macFrameworks) {
         // minimalistic framework support for the mac

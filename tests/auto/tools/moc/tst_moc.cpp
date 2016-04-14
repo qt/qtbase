@@ -577,6 +577,8 @@ private slots:
     void defineMacroViaCmdline();
     void defineMacroViaForcedInclude();
     void defineMacroViaForcedIncludeRelative();
+    void environmentIncludePaths_data();
+    void environmentIncludePaths();
     void specifyMetaTagsFromCmdline();
     void invokable();
     void singleFunctionKeywordSignalAndSlot();
@@ -1284,6 +1286,52 @@ void tst_Moc::defineMacroViaForcedIncludeRelative()
     args << "--include" << QStringLiteral("extradefines.h") << "-I" + m_sourceDirectory + "/subdir";
     args << m_sourceDirectory + QStringLiteral("/macro-on-cmdline.h");
 
+    proc.start(m_moc, args);
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 0);
+    QCOMPARE(proc.readAllStandardError(), QByteArray());
+    QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY(!mocOut.isEmpty());
+#else
+    QSKIP("Only tested on linux/gcc");
+#endif
+}
+
+
+void tst_Moc::environmentIncludePaths_data()
+{
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
+    QTest::addColumn<QString>("cmdline");
+    QTest::addColumn<QString>("varname");
+
+    QTest::newRow("INCLUDE") << "--compiler-flavor=msvc" << "INCLUDE";
+    QTest::newRow("CPATH1") << QString() << "CPATH";
+    QTest::newRow("CPATH2") << "--compiler-flavor=unix" << "CPATH";
+    QTest::newRow("CPLUS_INCLUDE_PATH1") << QString() << "CPLUS_INCLUDE_PATH";
+    QTest::newRow("CPLUS_INCLUDE_PATH2") << "--compiler-flavor=unix" << "CPLUS_INCLUDE_PATH";
+#endif
+}
+
+void tst_Moc::environmentIncludePaths()
+{
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
+    QFETCH(QString, cmdline);
+    QFETCH(QString, varname);
+
+    QStringList args;
+    if (!cmdline.isEmpty())
+        args << cmdline;
+    args << "--include" << QStringLiteral("extradefines.h")
+         << m_sourceDirectory + QStringLiteral("/macro-on-cmdline.h");
+
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.remove("INCLUDE");
+    env.remove("CPATH");
+    env.remove("CPLUS_INCLUDE_PATH");
+    env.insert(varname, m_sourceDirectory + "/subdir");
+
+    QProcess proc;
+    proc.setProcessEnvironment(env);
     proc.start(m_moc, args);
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);

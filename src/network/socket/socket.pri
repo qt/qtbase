@@ -39,6 +39,10 @@ unix: {
 unix:HEADERS += \
                 socket/qnet_unix_p.h
 
+# Suppress deprecation warnings with moc because MS headers have
+# invalid C/C++ code otherwise.
+msvc: QMAKE_MOC_OPTIONS += -D_WINSOCK_DEPRECATED_NO_WARNINGS
+
 win32:!winrt:SOURCES += socket/qnativesocketengine_win.cpp \
                 socket/qlocalsocket_win.cpp \
                 socket/qlocalserver_win.cpp

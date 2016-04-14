@@ -51,6 +51,7 @@ defineReplace(mocCmdBase) {
     }
 
     RET = $$QMAKE_MOC $(DEFINES)
+    msvc: RET += --compiler-flavor=msvc
 
     isEmpty(MOC_PREDEF_FILE): RET += $$join(QMAKE_COMPILER_DEFINES, " -D", -D)
     else: RET += --include $$moc_predefs.output
