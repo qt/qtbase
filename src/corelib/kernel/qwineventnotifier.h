@@ -48,8 +48,8 @@ class Q_CORE_EXPORT QWinEventNotifier : public QObject
     typedef Qt::HANDLE HANDLE;
 
 public:
-    explicit QWinEventNotifier(QObject *parent = 0);
-    explicit QWinEventNotifier(HANDLE hEvent, QObject *parent = 0);
+    explicit QWinEventNotifier(QObject *parent = Q_NULLPTR);
+    explicit QWinEventNotifier(HANDLE hEvent, QObject *parent = Q_NULLPTR);
     ~QWinEventNotifier();
 
     void setHandle(HANDLE hEvent);
