@@ -499,9 +499,9 @@ void Generator::generateCode()
     // QTBUG-20639 - Accept non-local enums for QML signal/slot parameters.
     // Look for any scoped enum declarations, and add those to the list
     // of extra/related metaobjects for this object.
-    QList<QByteArray> enumKeys = cdef->enumDeclarations.keys();
-    for (int i = 0; i < enumKeys.count(); ++i) {
-        const QByteArray &enumKey = enumKeys[i];
+    for (auto it = cdef->enumDeclarations.keyBegin(),
+         end = cdef->enumDeclarations.keyEnd(); it != end; ++it) {
+        const QByteArray &enumKey = *it;
         int s = enumKey.lastIndexOf("::");
         if (s > 0) {
             QByteArray scope = enumKey.left(s);
