@@ -986,15 +986,18 @@ struct QMessagePattern {
 #endif
 #ifdef QLOGGING_HAVE_BACKTRACE
     struct BacktraceParams {
-            QString backtraceSeparator;
-            int backtraceDepth;
+        QString backtraceSeparator;
+        int backtraceDepth;
     };
-    QList<BacktraceParams> backtraceArgs; // backtrace argumens in sequence of %{backtrace
+    QVector<BacktraceParams> backtraceArgs; // backtrace argumens in sequence of %{backtrace
 #endif
 
     bool fromEnvironment;
     static QBasicMutex mutex;
 };
+#ifdef QLOGGING_HAVE_BACKTRACE
+Q_DECLARE_TYPEINFO(QMessagePattern::BacktraceParams, Q_MOVABLE_TYPE);
+#endif
 
 QBasicMutex QMessagePattern::mutex;
 
