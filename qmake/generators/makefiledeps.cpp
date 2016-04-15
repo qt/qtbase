@@ -409,9 +409,9 @@ static bool matchWhileUnsplitting(const char *buffer, int buffer_len, int start,
                                   int *matchlen, int *lines)
 {
     int x = start;
-    for (int n = 0; n < needle_len && x < buffer_len;
+    for (int n = 0; n < needle_len;
          n++, x = skipEscapedLineEnds(buffer, buffer_len, x + 1, lines)) {
-        if (buffer[x] != needle[n])
+        if (x >= buffer_len || buffer[x] != needle[n])
             return false;
     }
     // That also skipped any remaining BSNLs immediately after the match.
@@ -572,24 +572,29 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                 ++x;
                 if (buffer_len >= x + 12 && !strncmp(buffer + x, "includehint", 11) &&
                     (buffer[x + 11] == ' ' || buffer[x + 11] == '>')) {
-                    for (x += 11; buffer[x] != '>'; ++x) {} // skip
+                    for (x += 11; x < buffer_len && buffer[x] != '>'; ++x) {} // skip
                     int inc_len = 0;
-                    for (x += 1 ; buffer[x + inc_len] != '<'; ++inc_len) {} // skip
-                    buffer[x + inc_len] = '\0';
-                    inc = buffer + x;
+                    for (++x; x + inc_len < buffer_len && buffer[x + inc_len] != '<'; ++inc_len) {} // skip
+                    if (x + inc_len < buffer_len) {
+                        buffer[x + inc_len] = '\0';
+                        inc = buffer + x;
+                    }
                 } else if (buffer_len >= x + 13 && !strncmp(buffer + x, "customwidget", 12) &&
                            (buffer[x + 12] == ' ' || buffer[x + 12] == '>')) {
-                    for (x += 13; buffer[x] != '>'; ++x) {} // skip up to >
+                    for (x += 13; x < buffer_len && buffer[x] != '>'; ++x) {} // skip up to >
                     while(x < buffer_len) {
-                        for (x++; buffer[x] != '<'; ++x) {} // skip up to <
+                        while (++x < buffer_len && buffer[x] != '<') {} // skip up to <
                         x++;
                         if(buffer_len >= x + 7 && !strncmp(buffer+x, "header", 6) &&
                            (buffer[x + 6] == ' ' || buffer[x + 6] == '>')) {
-                            for (x += 7; buffer[x] != '>'; ++x) {} // skip up to >
+                            for (x += 7; x < buffer_len && buffer[x] != '>'; ++x) {} // skip up to >
                             int inc_len = 0;
-                            for (x += 1 ; buffer[x + inc_len] != '<'; ++inc_len) {} // skip
-                            buffer[x + inc_len] = '\0';
-                            inc = buffer + x;
+                            for (++x; x + inc_len < buffer_len && buffer[x + inc_len] != '<';
+                                 ++inc_len) {} // skip
+                            if (x + inc_len < buffer_len) {
+                                buffer[x + inc_len] = '\0';
+                                inc = buffer + x;
+                            }
                             break;
                         } else if(buffer_len >= x + 14 && !strncmp(buffer+x, "/customwidget", 13) &&
                                   (buffer[x + 13] == ' ' || buffer[x + 13] == '>')) {
@@ -599,20 +604,18 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                     }
                 } else if(buffer_len >= x + 8 && !strncmp(buffer + x, "include", 7) &&
                           (buffer[x + 7] == ' ' || buffer[x + 7] == '>')) {
-                    for (x += 8; buffer[x] != '>'; ++x) {
+                    for (x += 8; x < buffer_len && buffer[x] != '>'; ++x) {
                         if (buffer_len >= x + 9 && buffer[x] == 'i' &&
                             !strncmp(buffer + x, "impldecl", 8)) {
-                            for (x += 8; buffer[x] != '='; ++x) {} // skip
-                            if (buffer[x] != '=')
-                                continue;
-                            for (++x; buffer[x] == '\t' || buffer[x] == ' '; ++x) {} // skip
+                            for (x += 8; x < buffer_len && buffer[x] != '='; ++x) {} // skip
+                            while (++x < buffer_len && (buffer[x] == '\t' || buffer[x] == ' ')) {} // skip
                             char quote = 0;
-                            if (buffer[x] == '\'' || buffer[x] == '"') {
+                            if (x < buffer_len && (buffer[x] == '\'' || buffer[x] == '"')) {
                                 quote = buffer[x];
                                 ++x;
                             }
                             int val_len;
-                            for(val_len = 0; true; ++val_len) {
+                            for (val_len = 0; x + val_len < buffer_len; ++val_len) {
                                 if(quote) {
                                     if (buffer[x + val_len] == quote)
                                         break;
@@ -622,16 +625,22 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                                 }
                             }
 //?                            char saved = buffer[x + val_len];
-                            buffer[x + val_len] = '\0';
-                            if(!strcmp(buffer+x, "in implementation")) {
-                                //### do this
+                            if (x + val_len < buffer_len) {
+                                buffer[x + val_len] = '\0';
+                                if (!strcmp(buffer + x, "in implementation")) {
+                                    //### do this
+                                }
                             }
                         }
                     }
                     int inc_len = 0;
-                    for (x += 1 ; buffer[x + inc_len] != '<'; ++inc_len) {} // skip
-                    buffer[x + inc_len] = '\0';
-                    inc = buffer + x;
+                    for (++x; x + inc_len < buffer_len && buffer[x + inc_len] != '<';
+                         ++inc_len) {} // skip
+
+                    if (x + inc_len < buffer_len) {
+                        buffer[x + inc_len] = '\0';
+                        inc = buffer + x;
+                    }
                 }
             }
             //read past new line now..
@@ -645,14 +654,16 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
 #define SKIP_BSNL(pos) skipEscapedLineEnds(buffer, buffer_len, (pos), &line_count)
 
                 // Seek code or directive, skipping comments and space:
-                for(; x < buffer_len; ++x) {
-                    x = SKIP_BSNL(x);
+                for (; (x = SKIP_BSNL(x)) < buffer_len; ++x) {
                     if (buffer[x] == ' ' || buffer[x] == '\t') {
                         // keep going
                     } else if (buffer[x] == '/') {
                         int extralines = 0;
                         int y = skipEscapedLineEnds(buffer, buffer_len, x + 1, &extralines);
-                        if (buffer[y] == '/') { // C++-style comment
+                        if (y >= buffer_len) {
+                            x = y;
+                            break;
+                        } else if (buffer[y] == '/') { // C++-style comment
                             line_count += extralines;
                             x = SKIP_BSNL(y + 1);
                             while (x < buffer_len && !qmake_endOfLine(buffer[x]))
@@ -663,8 +674,7 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                         } else if (buffer[y] == '*') { // C-style comment
                             line_count += extralines;
                             x = y;
-                            while (++x < buffer_len) {
-                                x = SKIP_BSNL(x);
+                            while ((x = SKIP_BSNL(++x)) < buffer_len) {
                                 if (buffer[x] == '*') {
                                     extralines = 0;
                                     y = skipEscapedLineEnds(buffer, buffer_len,
