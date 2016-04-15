@@ -7125,29 +7125,6 @@ rm -f "$QMAKE_VARS_FILE" 2>/dev/null
 ) || exit
 
 #-------------------------------------------------------------------------------
-# check for platforms that we don't yet know about
-#-------------------------------------------------------------------------------
-if [ "$CFG_ARCH" = "unknown" ]; then
-cat <<EOF
-
-        NOTICE: configure was unable to determine the architecture
-        for the $XQMAKESPEC target.
-
-        Qt will not use a specialized implementation for any atomic
-        operations. Instead a generic implemention based on either GCC
-        intrinsics or C++11 std::atomic<T> will be used (when
-        available). The generic implementations are generally as fast
-        as and always as safe as a specialized implementation.
-
-        If no generic implementation is available, Qt will use a
-        fallback UNIX implementation which uses a single
-        pthread_mutex_t to protect all atomic operations. This
-        implementation is the slow (but safe) fallback implementation
-        for architectures Qt does not yet support.
-EOF
-fi
-
-#-------------------------------------------------------------------------------
 # finally save the executed command to another script
 #-------------------------------------------------------------------------------
 if [ `basename $0` != "config.status" ]; then
