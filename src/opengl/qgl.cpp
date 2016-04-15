@@ -1918,7 +1918,8 @@ void QGLTextureCache::insert(QGLContext* ctx, qint64 key, QGLTexture* texture, i
 {
     QWriteLocker locker(&m_lock);
     const QGLTextureCacheKey cacheKey = {key, QGLContextPrivate::contextGroup(ctx)};
-    m_cache.insert(cacheKey, texture, cost);
+    const bool inserted = m_cache.insert(cacheKey, texture, cost);
+    Q_UNUSED(inserted) Q_ASSERT(inserted);
 }
 
 void QGLTextureCache::remove(qint64 key)
