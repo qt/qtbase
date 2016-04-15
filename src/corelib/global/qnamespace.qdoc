@@ -2203,12 +2203,6 @@
            the bottom.  This window hint is currently not implemented
            for OS X.
 
-    \value WindowOkButtonHint Adds an OK button to the window decoration of a dialog.
-           Only supported for Windows CE.
-
-    \value WindowCancelButtonHint Adds a Cancel button to the window decoration of a dialog.
-           Only supported for Windows CE.
-
     \value WindowTransparentForInput Informs the window system that this window
            is used only for output (displaying something) and does not take input.
            Therefore input events should pass through as if it wasn't there.

@@ -113,8 +113,6 @@ void formatWindowFlags(QTextStream &str, const Qt::WindowFlags flags)
     debugFlag(str, flags, Qt::WindowStaysOnBottomHint)
     debugFlag(str, flags, Qt::MacWindowToolBarButtonHint)
     debugFlag(str, flags, Qt::BypassGraphicsProxyWidget)
-    debugFlag(str, flags, Qt::WindowOkButtonHint)
-    debugFlag(str, flags, Qt::WindowCancelButtonHint)
 }
 
 #if QT_VERSION > 0x050000
