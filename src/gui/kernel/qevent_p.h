@@ -65,7 +65,8 @@ public:
         : ref(1),
           id(id),
           state(Qt::TouchPointReleased),
-          pressure(qreal(-1.))
+          pressure(qreal(-1.)),
+          rotation(qreal(0.))
     { }
 
     inline QTouchEventTouchPointPrivate *detach()
