@@ -200,20 +200,24 @@ int runMoc(int argc, char **argv)
                                      .arg(mocOutputRevision).arg(QString::fromLatin1(QT_VERSION_STR)));
     parser.addHelpOption();
     parser.addVersionOption();
+    parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
 
     QCommandLineOption outputOption(QStringLiteral("o"));
     outputOption.setDescription(QStringLiteral("Write output to file rather than stdout."));
     outputOption.setValueName(QStringLiteral("file"));
+    outputOption.setFlags(QCommandLineOption::ShortOptionStyle);
     parser.addOption(outputOption);
 
     QCommandLineOption includePathOption(QStringLiteral("I"));
     includePathOption.setDescription(QStringLiteral("Add dir to the include path for header files."));
     includePathOption.setValueName(QStringLiteral("dir"));
+    includePathOption.setFlags(QCommandLineOption::ShortOptionStyle);
     parser.addOption(includePathOption);
 
     QCommandLineOption macFrameworkOption(QStringLiteral("F"));
     macFrameworkOption.setDescription(QStringLiteral("Add Mac framework to the include path for header files."));
     macFrameworkOption.setValueName(QStringLiteral("framework"));
+    macFrameworkOption.setFlags(QCommandLineOption::ShortOptionStyle);
     parser.addOption(macFrameworkOption);
 
     QCommandLineOption preprocessOption(QStringLiteral("E"));
@@ -223,16 +227,19 @@ int runMoc(int argc, char **argv)
     QCommandLineOption defineOption(QStringLiteral("D"));
     defineOption.setDescription(QStringLiteral("Define macro, with optional definition."));
     defineOption.setValueName(QStringLiteral("macro[=def]"));
+    defineOption.setFlags(QCommandLineOption::ShortOptionStyle);
     parser.addOption(defineOption);
 
     QCommandLineOption undefineOption(QStringLiteral("U"));
     undefineOption.setDescription(QStringLiteral("Undefine macro."));
     undefineOption.setValueName(QStringLiteral("macro"));
+    undefineOption.setFlags(QCommandLineOption::ShortOptionStyle);
     parser.addOption(undefineOption);
 
     QCommandLineOption metadataOption(QStringLiteral("M"));
     metadataOption.setDescription(QStringLiteral("Add key/value pair to plugin meta data"));
     metadataOption.setValueName(QStringLiteral("key=value"));
+    metadataOption.setFlags(QCommandLineOption::ShortOptionStyle);
     parser.addOption(metadataOption);
 
     QCommandLineOption noIncludeOption(QStringLiteral("i"));
@@ -242,11 +249,13 @@ int runMoc(int argc, char **argv)
     QCommandLineOption pathPrefixOption(QStringLiteral("p"));
     pathPrefixOption.setDescription(QStringLiteral("Path prefix for included file."));
     pathPrefixOption.setValueName(QStringLiteral("path"));
+    pathPrefixOption.setFlags(QCommandLineOption::ShortOptionStyle);
     parser.addOption(pathPrefixOption);
 
     QCommandLineOption forceIncludeOption(QStringLiteral("f"));
     forceIncludeOption.setDescription(QStringLiteral("Force #include <file> (overwrite default)."));
     forceIncludeOption.setValueName(QStringLiteral("file"));
+    forceIncludeOption.setFlags(QCommandLineOption::ShortOptionStyle);
     parser.addOption(forceIncludeOption);
 
     QCommandLineOption prependIncludeOption(QStringLiteral("b"));
@@ -257,6 +266,7 @@ int runMoc(int argc, char **argv)
     QCommandLineOption noNotesWarningsCompatOption(QStringLiteral("n"));
     noNotesWarningsCompatOption.setDescription(QStringLiteral("Do not display notes (-nn) or warnings (-nw). Compatibility option."));
     noNotesWarningsCompatOption.setValueName(QStringLiteral("which"));
+    noNotesWarningsCompatOption.setFlags(QCommandLineOption::ShortOptionStyle);
     parser.addOption(noNotesWarningsCompatOption);
 
     QCommandLineOption noNotesOption(QStringLiteral("no-notes"));
