@@ -137,7 +137,6 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
         dictionary[ "QMAKESPEC_FROM" ] = "env";
     }
 
-    dictionary[ "QCONFIG" ]         = "full";
     dictionary[ "EMBEDDED" ]        = "no";
     dictionary[ "BUILD_QMAKE" ]     = "yes";
     dictionary[ "QMAKE_INTERNAL" ]  = "no";
@@ -411,12 +410,6 @@ void Configure::parseCmdLine()
             ++verbose;
         }
 
-        else if (configCmdLine.at(i) == "-qconfig") {
-            ++i;
-            if (i == argCount)
-                break;
-            dictionary[ "QCONFIG" ] = configCmdLine.at(i);
-        }
         else if (configCmdLine.at(i) == "-qreal") {
             ++i;
             if (i == argCount)
@@ -1408,35 +1401,6 @@ void Configure::parseCmdLine()
 
 void Configure::validateArgs()
 {
-    // Validate the specified config
-    QString cfgpath = sourcePath + "/src/corelib/global/qconfig-" + dictionary["QCONFIG"] + ".h";
-
-    // Try internal configurations first.
-    QStringList possible_configs = QStringList()
-        << "minimal"
-        << "small"
-        << "medium"
-        << "large"
-        << "full";
-    int index = possible_configs.indexOf(dictionary["QCONFIG"]);
-    if (index >= 0) {
-        for (int c = 0; c <= index; c++) {
-            qtConfig += possible_configs[c] + "-config";
-        }
-        if (dictionary["QCONFIG"] != "full")
-            dictionary["QCONFIG_PATH"] = cfgpath;
-        return;
-    }
-
-    if (!QFileInfo::exists(cfgpath)) {
-        cfgpath = QFileInfo(dictionary["QCONFIG"]).absoluteFilePath();
-        if (!QFileInfo::exists(cfgpath)) {
-            dictionary[ "DONE" ] = "error";
-            cout << "No such configuration \"" << qPrintable(dictionary["QCONFIG"]) << "\"" << endl ;
-            return;
-        }
-    }
-    dictionary["QCONFIG_PATH"] = cfgpath;
 }
 
 // Output helper functions --------------------------------[ Start ]-
@@ -2927,11 +2891,6 @@ void Configure::generateCachefile()
         moduleStream << "QT_BUILD_PARTS += " << buildParts.join(' ') << endl;
         if (!skipModules.isEmpty())
             moduleStream << "QT_SKIP_MODULES += " << skipModules.join(' ') << endl;
-        QString qcpath = dictionary["QCONFIG_PATH"];
-        QString qlpath = sourcePath + "/src/corelib/global/";
-        if (qcpath.startsWith(qlpath))
-            qcpath.remove(0, qlpath.length());
-        moduleStream << "QT_QCONFIG_PATH = " << qcpath << endl;
         moduleStream << endl;
 
         moduleStream << "host_build {" << endl;
@@ -3412,18 +3371,6 @@ void Configure::generateConfigfiles()
                   << "#define QT_VERSION_PATCH    " << dictionary["VERSION_PATCH"] << endl
                   << "#define QT_VERSION_STR      \"" << dictionary["VERSION"] << "\"\n"
                   << endl;
-
-        if (dictionary[ "QCONFIG" ] == "full") {
-            tmpStream << "/* Everything */" << endl;
-        } else {
-            tmpStream << "#ifndef QT_BOOTSTRAPPED" << endl;
-            QFile inFile(dictionary["QCONFIG_PATH"]);
-            if (inFile.open(QFile::ReadOnly)) {
-                tmpStream << QTextStream(&inFile).readAll();
-                inFile.close();
-            }
-            tmpStream << "#endif // QT_BOOTSTRAPPED" << endl;
-        }
         tmpStream << endl;
 
         if (dictionary[ "SHARED" ] == "no") {

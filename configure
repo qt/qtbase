@@ -610,7 +610,6 @@ CFG_PROFILE=no
 CFG_STRIP=yes
 CFG_GUI=auto # (yes|no|auto)
 CFG_WIDGETS=yes
-CFG_QCONFIG=full
 CFG_DEBUG=auto
 CFG_MYSQL_CONFIG=
 CFG_PSQL_CONFIG=
@@ -1178,9 +1177,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     testsdir)
         QT_INSTALL_TESTS="$VAL"
-        ;;
-    qconfig)
-        CFG_QCONFIG="$VAL"
         ;;
     qreal)
         CFG_QREAL="$VAL"
@@ -2582,9 +2578,6 @@ Additional options:
     -feature-<feature> .. Compile in <feature>. The available features
                           are described in src/corelib/global/qfeatures.txt
 
-    -qconfig local ...... Use src/corelib/global/qconfig-local.h rather than the
-                          default ($CFG_QCONFIG).
-
     -qreal [double|float] typedef qreal to the specified type. The default is double.
                           Note that changing this flag affects binary compatibility.
 
@@ -3038,21 +3031,6 @@ fi
 #-------------------------------------------------------------------------------
 # command line and environment validation
 #-------------------------------------------------------------------------------
-
-# update QT_CONFIG to show our current predefined configuration
-CFG_QCONFIG_PATH=$relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h
-if [ "$CFG_QCONFIG" = full ]; then
-    CFG_QCONFIG_PATH=
-elif [ ! -f "$CFG_QCONFIG_PATH" ]; then
-    CFG_QCONFIG_PATH=`makeabs "${CFG_QCONFIG}"`
-    if [ ! -f "$CFG_QCONFIG_PATH" ]; then
-        echo >&2 "Error: configuration file not found:"
-        echo >&2 "  $relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h"
-        echo >&2 "  or"
-        echo >&2 "  $CFG_QCONFIG_PATH"
-        exit 1
-    fi
-fi
 
 if [ "$XPLATFORM_MAC" = "no" -a "$CFG_DEBUG_RELEASE" = "yes" ]; then
     echo
@@ -6434,17 +6412,6 @@ cat <<EOF
 
 EOF
 
-case "$CFG_QCONFIG" in
-full)
-    echo "/* Everything */"
-    ;;
-*)
-    echo "#ifndef QT_BOOTSTRAPPED"
-    cat "$CFG_QCONFIG_PATH"
-    echo "#endif"
-    ;;
-esac
-
 echo '/* Compile time features */'
 [ '!' -z "$LicenseKeyExt" ] && echo "#define QT_PRODUCT_LICENSEKEY \"$LicenseKeyExt\""
 
@@ -6781,7 +6748,6 @@ done
 if [ -n "$DISABLED_FEATURES" ]; then
     echo "QT_NO_DEFINES = $DISABLED_FEATURES"
 fi
-echo "QT_QCONFIG_PATH = ${CFG_QCONFIG_PATH#$relpath/src/corelib/global/}"
 
 cat <<EOF
 host_build {
