@@ -132,7 +132,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
 - (void)setDialogHelper:(QCocoaColorDialogHelper *)helper
 {
     mHelper = helper;
-    [mColorPanel setShowsAlpha:mHelper->options()->testOption(QColorDialogOptions::ShowAlphaChannel)];
+
     if (mHelper->options()->testOption(QColorDialogOptions::NoButtons)) {
         [self restoreOriginalContentView];
     } else if (!mStolenContentView) {
@@ -483,6 +483,14 @@ bool QCocoaColorDialogHelper::show(Qt::WindowFlags, Qt::WindowModality windowMod
 {
     if (windowModality == Qt::WindowModal)
         windowModality = Qt::ApplicationModal;
+
+    // Workaround for Apple rdar://25792119: If you invoke
+    // -setShowsAlpha: multiple times before showing the color
+    // picker, its height grows irrevocably.  Instead, only
+    // invoke it once, when we show the dialog.
+    [[NSColorPanel sharedColorPanel] setShowsAlpha:
+            options()->testOption(QColorDialogOptions::ShowAlphaChannel)];
+
     sharedColorPanel()->init(this);
     return sharedColorPanel()->show(windowModality, parent);
 }
