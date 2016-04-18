@@ -1950,7 +1950,7 @@ void QNetworkReplyHttpImplPrivate::_q_networkSessionConnected()
 void QNetworkReplyHttpImplPrivate::_q_networkSessionStateChanged(QNetworkSession::State sessionState)
 {
     if (sessionState == QNetworkSession::Disconnected
-            && (state != Idle || state != Reconnecting)) {
+        && state != Idle && state != Reconnecting) {
         error(QNetworkReplyImpl::NetworkSessionFailedError,
               QCoreApplication::translate("QNetworkReply", "Network session error."));
         finished();
