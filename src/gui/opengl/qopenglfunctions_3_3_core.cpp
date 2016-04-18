@@ -84,42 +84,54 @@ QOpenGLFunctions_3_3_Core::QOpenGLFunctions_3_3_Core()
 
 QOpenGLFunctions_3_3_Core::~QOpenGLFunctions_3_3_Core()
 {
-    if (d_1_0_Core)
+    if (d_1_0_Core) {
         d_1_0_Core->refs.deref();
-    Q_ASSERT(d_1_0_Core->refs.load());
-    if (d_1_1_Core)
+        Q_ASSERT(d_1_0_Core->refs.load());
+    }
+    if (d_1_1_Core) {
         d_1_1_Core->refs.deref();
-    Q_ASSERT(d_1_1_Core->refs.load());
-    if (d_1_2_Core)
+        Q_ASSERT(d_1_1_Core->refs.load());
+    }
+    if (d_1_2_Core) {
         d_1_2_Core->refs.deref();
-    Q_ASSERT(d_1_2_Core->refs.load());
-    if (d_1_3_Core)
+        Q_ASSERT(d_1_2_Core->refs.load());
+    }
+    if (d_1_3_Core) {
         d_1_3_Core->refs.deref();
-    Q_ASSERT(d_1_3_Core->refs.load());
-    if (d_1_4_Core)
+        Q_ASSERT(d_1_3_Core->refs.load());
+    }
+    if (d_1_4_Core) {
         d_1_4_Core->refs.deref();
-    Q_ASSERT(d_1_4_Core->refs.load());
-    if (d_1_5_Core)
+        Q_ASSERT(d_1_4_Core->refs.load());
+    }
+    if (d_1_5_Core) {
         d_1_5_Core->refs.deref();
-    Q_ASSERT(d_1_5_Core->refs.load());
-    if (d_2_0_Core)
+        Q_ASSERT(d_1_5_Core->refs.load());
+    }
+    if (d_2_0_Core) {
         d_2_0_Core->refs.deref();
-    Q_ASSERT(d_2_0_Core->refs.load());
-    if (d_2_1_Core)
+        Q_ASSERT(d_2_0_Core->refs.load());
+    }
+    if (d_2_1_Core) {
         d_2_1_Core->refs.deref();
-    Q_ASSERT(d_2_1_Core->refs.load());
-    if (d_3_0_Core)
+        Q_ASSERT(d_2_1_Core->refs.load());
+    }
+    if (d_3_0_Core) {
         d_3_0_Core->refs.deref();
-    Q_ASSERT(d_3_0_Core->refs.load());
-    if (d_3_1_Core)
+        Q_ASSERT(d_3_0_Core->refs.load());
+    }
+    if (d_3_1_Core) {
         d_3_1_Core->refs.deref();
-    Q_ASSERT(d_3_1_Core->refs.load());
-    if (d_3_2_Core)
+        Q_ASSERT(d_3_1_Core->refs.load());
+    }
+    if (d_3_2_Core) {
         d_3_2_Core->refs.deref();
-    Q_ASSERT(d_3_2_Core->refs.load());
-    if (d_3_3_Core)
+        Q_ASSERT(d_3_2_Core->refs.load());
+    }
+    if (d_3_3_Core) {
         d_3_3_Core->refs.deref();
-    Q_ASSERT(d_3_3_Core->refs.load());
+        Q_ASSERT(d_3_3_Core->refs.load());
+    }
 }
 
 bool QOpenGLFunctions_3_3_Core::initializeOpenGLFunctions()

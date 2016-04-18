@@ -78,24 +78,30 @@ QOpenGLFunctions_1_2::QOpenGLFunctions_1_2()
 
 QOpenGLFunctions_1_2::~QOpenGLFunctions_1_2()
 {
-    if (d_1_0_Core)
+    if (d_1_0_Core) {
         d_1_0_Core->refs.deref();
-    Q_ASSERT(d_1_0_Core->refs.load());
-    if (d_1_1_Core)
+        Q_ASSERT(d_1_0_Core->refs.load());
+    }
+    if (d_1_1_Core) {
         d_1_1_Core->refs.deref();
-    Q_ASSERT(d_1_1_Core->refs.load());
-    if (d_1_2_Core)
+        Q_ASSERT(d_1_1_Core->refs.load());
+    }
+    if (d_1_2_Core) {
         d_1_2_Core->refs.deref();
-    Q_ASSERT(d_1_2_Core->refs.load());
-    if (d_1_0_Deprecated)
+        Q_ASSERT(d_1_2_Core->refs.load());
+    }
+    if (d_1_0_Deprecated) {
         d_1_0_Deprecated->refs.deref();
-    Q_ASSERT(d_1_0_Deprecated->refs.load());
-    if (d_1_1_Deprecated)
+        Q_ASSERT(d_1_0_Deprecated->refs.load());
+    }
+    if (d_1_1_Deprecated) {
         d_1_1_Deprecated->refs.deref();
-    Q_ASSERT(d_1_1_Deprecated->refs.load());
-    if (d_1_2_Deprecated)
+        Q_ASSERT(d_1_1_Deprecated->refs.load());
+    }
+    if (d_1_2_Deprecated) {
         d_1_2_Deprecated->refs.deref();
-    Q_ASSERT(d_1_2_Deprecated->refs.load());
+        Q_ASSERT(d_1_2_Deprecated->refs.load());
+    }
 }
 
 bool QOpenGLFunctions_1_2::initializeOpenGLFunctions()

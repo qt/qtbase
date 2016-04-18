@@ -74,12 +74,14 @@ QOpenGLFunctions_1_0::QOpenGLFunctions_1_0()
 
 QOpenGLFunctions_1_0::~QOpenGLFunctions_1_0()
 {
-    if (d_1_0_Core)
+    if (d_1_0_Core) {
         d_1_0_Core->refs.deref();
-    Q_ASSERT(d_1_0_Core->refs.load());
-    if (d_1_0_Deprecated)
+        Q_ASSERT(d_1_0_Core->refs.load());
+    }
+    if (d_1_0_Deprecated) {
         d_1_0_Deprecated->refs.deref();
-    Q_ASSERT(d_1_0_Deprecated->refs.load());
+        Q_ASSERT(d_1_0_Deprecated->refs.load());
+    }
 }
 
 bool QOpenGLFunctions_1_0::initializeOpenGLFunctions()
