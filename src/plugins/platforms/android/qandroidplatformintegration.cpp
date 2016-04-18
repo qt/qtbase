@@ -196,9 +196,16 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
 
         auto contentResolver = javaActivity.callObjectMethod("getContentResolver", "()Landroid/content/ContentResolver;");
         Q_ASSERT(contentResolver.isValid());
-        m_showPasswordEnabled = QJNIObjectPrivate::callStaticMethod<jint>("android/provider/Settings$System", "getInt",
-                                    "(Landroid/content/ContentResolver;Ljava/lang/String;)I", contentResolver.object(),
-                                    QJNIObjectPrivate::getStaticObjectField("android/provider/Settings$System", "TEXT_SHOW_PASSWORD", "Ljava/lang/String;").object()) > 0;
+        QJNIObjectPrivate txtShowPassValue = QJNIObjectPrivate::callStaticObjectMethod("android/provider/Settings$System",
+                                                                                       "getString",
+                                                                                       "(Landroid/content/ContentResolver;Ljava/lang/String;)Ljava/lang/String;",
+                                                                                       contentResolver.object(),
+                                                                                       QJNIObjectPrivate::getStaticObjectField("android/provider/Settings$System", "TEXT_SHOW_PASSWORD", "Ljava/lang/String;").object());
+        if (txtShowPassValue.isValid()) {
+            bool ok = false;
+            const int txtShowPass = txtShowPassValue.toString().toInt(&ok);
+            m_showPasswordEnabled = ok ? (txtShowPass == 1) : false;
+        }
     }
 
     QGuiApplicationPrivate::instance()->setApplicationState(m_defaultApplicationState);
