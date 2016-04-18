@@ -56,6 +56,7 @@ public:
     QModelIndex mapFromSource(const QModelIndex& sourceIndex) const Q_DECL_OVERRIDE;
     QModelIndex mapToSource(const QModelIndex& proxyIndex) const Q_DECL_OVERRIDE;
     QModelIndex parent(const QModelIndex& child) const Q_DECL_OVERRIDE;
+    using QObject::parent;
     int rowCount(const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) Q_DECL_OVERRIDE;
