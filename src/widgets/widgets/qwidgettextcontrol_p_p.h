@@ -112,6 +112,7 @@ public:
     void _q_contentsChanged(int from, int charsRemoved, int charsAdded);
 
     void setBlinkingCursorEnabled(bool enable);
+    void updateCursorBlinking();
 
     void extendWordwiseSelection(int suggestedNewPosition, qreal mouseXPosition);
     void extendBlockwiseSelection(int suggestedNewPosition);
@@ -175,6 +176,7 @@ public:
 
     QTextDocument *doc;
     bool cursorOn;
+    bool blinkingEnabled;
     QTextCursor cursor;
     bool cursorIsFocusIndicator;
     QTextCharFormat lastCharFormat;
