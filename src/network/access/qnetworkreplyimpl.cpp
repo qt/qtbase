@@ -1100,21 +1100,17 @@ bool QNetworkReplyImplPrivate::migrateBackend()
         return true;
 
     // Backend does not support resuming download.
-    if (!backend->canResume())
+    if (backend && !backend->canResume())
         return false;
 
     state = QNetworkReplyPrivate::Reconnecting;
-
-    if (backend) {
-        delete backend;
-        backend = 0;
-    }
 
     cookedHeaders.clear();
     rawHeaders.clear();
 
     preMigrationDownloaded = bytesDownloaded;
 
+    delete backend;
     backend = manager->d_func()->findBackend(operation, request);
 
     if (backend) {
