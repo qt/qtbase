@@ -1865,36 +1865,7 @@ bool QStandardItem::operator<(const QStandardItem &other) const
 {
     const int role = model() ? model()->sortRole() : Qt::DisplayRole;
     const QVariant l = data(role), r = other.data(role);
-    // this code is copied from QSortFilterProxyModel::lessThan()
-    if (l.userType() == QVariant::Invalid)
-        return false;
-    if (r.userType() == QVariant::Invalid)
-        return true;
-    switch (l.userType()) {
-    case QVariant::Int:
-        return l.toInt() < r.toInt();
-    case QVariant::UInt:
-        return l.toUInt() < r.toUInt();
-    case QVariant::LongLong:
-        return l.toLongLong() < r.toLongLong();
-    case QVariant::ULongLong:
-        return l.toULongLong() < r.toULongLong();
-    case QMetaType::Float:
-        return l.toFloat() < r.toFloat();
-    case QVariant::Double:
-        return l.toDouble() < r.toDouble();
-    case QVariant::Char:
-        return l.toChar() < r.toChar();
-    case QVariant::Date:
-        return l.toDate() < r.toDate();
-    case QVariant::Time:
-        return l.toTime() < r.toTime();
-    case QVariant::DateTime:
-        return l.toDateTime() < r.toDateTime();
-    case QVariant::String:
-    default:
-        return l.toString().compare(r.toString()) < 0;
-    }
+    return QAbstractItemModelPrivate::isVariantLessThan(l, r);
 }
 
 /*!

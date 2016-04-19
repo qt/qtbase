@@ -150,6 +150,8 @@ public:
 
     QHash<int,QByteArray> roleNames;
     static const QHash<int,QByteArray> &defaultRoleNames();
+    static bool isVariantLessThan(const QVariant &left, const QVariant &right,
+                                  Qt::CaseSensitivity cs = Qt::CaseSensitive, bool isLocaleAware = false);
 };
 Q_DECLARE_TYPEINFO(QAbstractItemModelPrivate::Change, Q_MOVABLE_TYPE);
 

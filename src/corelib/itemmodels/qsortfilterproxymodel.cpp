@@ -2652,40 +2652,7 @@ bool QSortFilterProxyModel::lessThan(const QModelIndex &source_left, const QMode
     Q_D(const QSortFilterProxyModel);
     QVariant l = (source_left.model() ? source_left.model()->data(source_left, d->sort_role) : QVariant());
     QVariant r = (source_right.model() ? source_right.model()->data(source_right, d->sort_role) : QVariant());
-    // Duplicated in QStandardItem::operator<()
-    if (l.userType() == QVariant::Invalid)
-        return false;
-    if (r.userType() == QVariant::Invalid)
-        return true;
-    switch (l.userType()) {
-    case QVariant::Int:
-        return l.toInt() < r.toInt();
-    case QVariant::UInt:
-        return l.toUInt() < r.toUInt();
-    case QVariant::LongLong:
-        return l.toLongLong() < r.toLongLong();
-    case QVariant::ULongLong:
-        return l.toULongLong() < r.toULongLong();
-    case QMetaType::Float:
-        return l.toFloat() < r.toFloat();
-    case QVariant::Double:
-        return l.toDouble() < r.toDouble();
-    case QVariant::Char:
-        return l.toChar() < r.toChar();
-    case QVariant::Date:
-        return l.toDate() < r.toDate();
-    case QVariant::Time:
-        return l.toTime() < r.toTime();
-    case QVariant::DateTime:
-        return l.toDateTime() < r.toDateTime();
-    case QVariant::String:
-    default:
-        if (d->sort_localeaware)
-            return l.toString().localeAwareCompare(r.toString()) < 0;
-        else
-            return l.toString().compare(r.toString(), d->sort_casesensitivity) < 0;
-    }
-    return false;
+    return QAbstractItemModelPrivate::isVariantLessThan(l, r, d->sort_casesensitivity, d->sort_localeaware);
 }
 
 /*!
