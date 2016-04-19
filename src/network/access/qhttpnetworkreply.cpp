@@ -738,6 +738,8 @@ qint64 QHttpNetworkReplyPrivate::readBody(QAbstractSocket *socket, QByteDataBuff
 #ifndef QT_NO_COMPRESS
 int QHttpNetworkReplyPrivate::initializeInflateStream()
 {
+    Q_ASSERT(inflateStrm);
+
     inflateStrm->zalloc = Z_NULL;
     inflateStrm->zfree = Z_NULL;
     inflateStrm->opaque = Z_NULL;
