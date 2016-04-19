@@ -766,7 +766,6 @@ CFG_SANITIZE_THREAD=no
 CFG_SANITIZE_MEMORY=no
 CFG_SANITIZE_UNDEFINED=no
 CFG_PCRE=auto
-QPA_PLATFORM_GUARD=yes
 CFG_STDCXX=auto
 CFG_DIRECTWRITE=no
 CFG_WERROR=auto
@@ -1908,7 +1907,7 @@ while [ "$#" -gt 0 ]; do
         ;;
     qpa-platform-guard)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            QPA_PLATFORM_GUARD="$VAL"
+            echo "WARNING: The [-no]-qpa-platform-guard argument is deprecated and has no effect."
         else
             UNKNOWN_OPT=yes
         fi
@@ -4566,10 +4565,6 @@ if [ "$CFG_SYSLOG" != "no" ]; then
     fi
 fi
 
-if [ "$CFG_GUI" = "no" ]; then
-    QPA_PLATFORM_GUARD=no
-fi
-
 # detect jpeg
 if [ "$CFG_LIBJPEG" = "auto" ]; then
     if compileTest unix/libjpeg "libjpeg"; then
@@ -5200,13 +5195,6 @@ if [ "$CFG_FONTCONFIG" != "no" ]; then
 
 fi
 
-# Save these for a check later
-ORIG_CFG_XCB="$CFG_XCB"
-ORIG_CFG_EGLFS="$CFG_EGLFS"
-ORIG_CFG_DIRECTFB="$CFG_DIRECTFB"
-ORIG_CFG_LINUXFB="$CFG_LINUXFB"
-ORIG_CFG_MIRCLIENT="$CFG_MIRCLIENT"
-
 if [ "$CFG_LIBUDEV" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists libudev 2>/dev/null; then
         QMAKE_INCDIR_LIBUDEV=`$PKG_CONFIG --cflags-only-I libudev 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
@@ -5699,21 +5687,6 @@ fi
 if [ "$CFG_MIRCLIENT" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG mirclient"
 fi
-
-if [ "$XPLATFORM_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM_QNX" = "no" ] && [ "$XPLATFORM_ANDROID" = "no" ] && [ "$XPLATFORM_HAIKU" = "no" ] && [ "$XPLATFORM_INTEGRITY" = "no" ]; then
-    if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ] && [ "$CFG_DIRECTFB" = "no" ] && [ "$CFG_LINUXFB" = "no" ] && [ "$CFG_MIRCLIENT" = "no" ]; then
-        if [ "$QPA_PLATFORM_GUARD" = "yes" ] &&
-            ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] || [ "$ORIG_CFG_DIRECTFB" = "auto" ] || [ "$ORIG_CFG_LINUXFB" = "auto" ] || [ "$ORIG_CFG_MIRCLIENT" = "auto" ] ); then
-        echo "No QPA platform plugin enabled!"
-        echo " If you really want to build without a QPA platform plugin you must pass"
-        echo " -no-qpa-platform-guard to configure. Doing this will"
-        echo " produce a Qt that can not run GUI applications."
-        echo " The dependencies needed for xcb to build are listed in"
-        echo " src/plugins/platforms/xcb/README"
-        exit 1
-    fi
-fi
-    fi
 
 # double-conversion support
 if [ "$CFG_DOUBLECONVERSION" = "no" ]; then
@@ -7055,6 +7028,14 @@ if [ "$CFG_RELEASE_TOOLS" = "yes" -a \( "$CFG_DEBUG" = "no" -o "$CFG_DEBUG_RELEA
     echo
     echo "NOTE: -optimized-tools is not useful in -release mode."
     echo
+fi
+if [ "$CFG_GUI" = "yes" ] && [ "$XPLATFORM_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM_QNX" = "no" ] && [ "$XPLATFORM_ANDROID" = "no" ] && [ "$XPLATFORM_HAIKU" = "no" ] && [ "$XPLATFORM_INTEGRITY" = "no" ]; then
+    if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ] && [ "$CFG_DIRECTFB" = "no" ] && [ "$CFG_LINUXFB" = "no" ] && [ "$CFG_MIRCLIENT" = "no" ]; then
+        echo
+        echo "No QPA platform plugin enabled! This will"
+        echo "produce a Qt that cannot run GUI applications."
+        echo
+    fi
 fi
 
 exec 1>&3 3>&- # restore stdout
