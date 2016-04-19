@@ -636,7 +636,7 @@ void QWidgetLineControl::draw(QPainter *painter, const QPoint &offset, const QRe
             o.format.setForeground(m_palette.brush(QPalette::HighlightedText));
         } else {
             // mask selection
-            if(!m_blinkPeriod || m_blinkStatus){
+            if (m_blinkStatus){
                 o.start = m_cursor;
                 o.length = 1;
                 o.format.setBackground(m_palette.brush(QPalette::Text));
@@ -653,7 +653,7 @@ void QWidgetLineControl::draw(QPainter *painter, const QPoint &offset, const QRe
         int cursor = m_cursor;
         if (m_preeditCursor != -1)
             cursor += m_preeditCursor;
-        if (!m_hideCursor && (!m_blinkPeriod || m_blinkStatus))
+        if (!m_hideCursor && m_blinkStatus)
             textLayout()->drawCursor(painter, offset, cursor, m_cursorWidth);
     }
 }
@@ -1486,38 +1486,55 @@ void QWidgetLineControl::complete(int key)
 
 void QWidgetLineControl::setReadOnly(bool enable)
 {
+    if (m_readOnly == enable)
+        return;
+
     m_readOnly = enable;
-    if (enable)
-        setCursorBlinkPeriod(0);
-    else
-        setCursorBlinkPeriod(QApplication::cursorFlashTime());
+    updateCursorBlinking();
 }
 
-void QWidgetLineControl::setCursorBlinkPeriod(int msec)
+void QWidgetLineControl::setBlinkingCursorEnabled(bool enable)
 {
-    if (msec == m_blinkPeriod)
+    if (m_blinkEnabled == enable)
         return;
+
+    m_blinkEnabled = enable;
+
+    if (enable)
+        connect(qApp->styleHints(), &QStyleHints::cursorFlashTimeChanged, this, &QWidgetLineControl::updateCursorBlinking);
+    else
+        disconnect(qApp->styleHints(), &QStyleHints::cursorFlashTimeChanged, this, &QWidgetLineControl::updateCursorBlinking);
+
+    updateCursorBlinking();
+}
+
+void QWidgetLineControl::updateCursorBlinking()
+{
     if (m_blinkTimer) {
         killTimer(m_blinkTimer);
-    }
-    if (msec > 0 && !m_readOnly) {
-        m_blinkTimer = startTimer(msec / 2);
-        m_blinkStatus = 1;
-    } else {
         m_blinkTimer = 0;
-        if (m_blinkStatus == 1)
-            emit updateNeeded(inputMask().isEmpty() ? cursorRect() : QRect());
     }
-    m_blinkPeriod = msec;
+
+    if (m_blinkEnabled && !m_readOnly) {
+        int flashTime = QGuiApplication::styleHints()->cursorFlashTime();
+        if (flashTime >= 2)
+            m_blinkTimer = startTimer(flashTime / 2);
+    }
+
+    m_blinkStatus = 1;
+    emit updateNeeded(inputMask().isEmpty() ? cursorRect() : QRect());
 }
 
 // This is still used by QDeclarativeTextInput in the qtquick1 repo
 void QWidgetLineControl::resetCursorBlinkTimer()
 {
-    if (m_blinkPeriod == 0 || m_blinkTimer == 0)
+    if (!m_blinkEnabled || m_blinkTimer == 0)
         return;
     killTimer(m_blinkTimer);
-    m_blinkTimer = startTimer(m_blinkPeriod / 2);
+    m_blinkTimer = 0;
+    int flashTime = QGuiApplication::styleHints()->cursorFlashTime();
+    if (flashTime >= 2)
+        m_blinkTimer = startTimer(flashTime / 2);
     m_blinkStatus = 1;
 }
 
