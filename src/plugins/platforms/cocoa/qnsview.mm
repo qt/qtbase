@@ -741,7 +741,7 @@ QT_WARNING_POP
         if (theEvent.type == NSLeftMouseDragged || theEvent.type == NSLeftMouseUp)
             targetView = m_platformWindow->m_forwardWindow->m_qtView;
         else
-            m_platformWindow->m_forwardWindow = 0;
+            m_platformWindow->m_forwardWindow.clear();
     }
 
     // Popups implicitly grap mouse events; forward to the active popup if there is one
