@@ -1282,7 +1282,7 @@
 /*!
     \fn T *QAtomicPointer::loadAcquire() const
 
-    Atomically loads the value of this QAtomicPointerusing the "Acquire" memory
+    Atomically loads the value of this QAtomicPointer using the "Acquire" memory
     ordering. The value is not modified in any way, but note that there's no
     guarantee that it remains so.
 
