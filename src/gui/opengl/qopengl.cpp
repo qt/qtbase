@@ -64,6 +64,10 @@ typedef const GLubyte * (QOPENGLF_APIENTRYP qt_glGetStringi)(GLenum, GLuint);
 QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    if (!ctx) {
+        qWarning("QOpenGLExtensionMatcher::QOpenGLExtensionMatcher: No context");
+        return;
+    }
     QOpenGLFunctions *funcs = ctx->functions();
     const char *extensionStr = 0;
 
@@ -79,19 +83,17 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
         // clear error state
         while (funcs->glGetError()) {}
 
-        if (ctx) {
-            qt_glGetStringi glGetStringi = (qt_glGetStringi)ctx->getProcAddress("glGetStringi");
+        qt_glGetStringi glGetStringi = (qt_glGetStringi)ctx->getProcAddress("glGetStringi");
 
-            if (!glGetStringi)
-                return;
+        if (!glGetStringi)
+            return;
 
-            GLint numExtensions = 0;
-            funcs->glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
+        GLint numExtensions = 0;
+        funcs->glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
 
-            for (int i = 0; i < numExtensions; ++i) {
-                const char *str = reinterpret_cast<const char *>(glGetStringi(GL_EXTENSIONS, i));
-                m_extensions.insert(str);
-            }
+        for (int i = 0; i < numExtensions; ++i) {
+            const char *str = reinterpret_cast<const char *>(glGetStringi(GL_EXTENSIONS, i));
+            m_extensions.insert(str);
         }
 #endif // QT_OPENGL_3
     }
