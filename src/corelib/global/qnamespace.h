@@ -1340,6 +1340,7 @@ public:
         ImTextAfterCursor = 0x1000,
         ImEnterKeyType = 0x2000,
         ImAnchorRectangle = 0x4000,
+        ImInputItemClipRectangle = 0x8000,
 
         ImPlatformData = 0x80000000,
         ImQueryInput = ImCursorRectangle | ImCursorPosition | ImSurroundingText |
