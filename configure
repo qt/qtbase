@@ -2676,27 +2676,7 @@ if [ -z "$PLATFORM" ]; then
     PLATFORM_NOTES=
     case "$UNAME_SYSTEM:$UNAME_RELEASE" in
      Darwin:*)
-        # Select compiler. Use g++ unless we find a usable Clang version. Note that
-        # we are checking the "Apple" clang/LLVM version number, not the actual
-        # clang/LLVM version number that the Apple version was based on. We look
-        # for Apple clang version 3.0 or higher, which was branched off LLVM 3.0
-        # from SVN, and first included in Xcode 4.2. Also note that we do not care
-        # about the OS version, since we're not using the clang version that comes
-        # with the system. We use 'xcrun' to check the clang version that's part of
-        # the Xcode installation.
-        XCRUN=`/usr/bin/xcrun -sdk macosx clang -v 2>&1`
-        CLANGVERSION=`echo "$XCRUN" | sed -n 's/.*version \([0-9]\).*/\1/p'`
-        expr "$CLANGVERSION" : '[0-9]' > /dev/null || { echo "Unable to determine CLANG version from output of xcrun: $XCRUN" ; exit 2 ; }
-        if [ "$CLANGVERSION" -ge 3 ]; then
-            PLATFORM=macx-clang
-
-            # Advertise g++ as an alternative on Lion and below
-            if [ "$(uname -r | cut -d. -f1)" -le 11 ]; then
-                PLATFORM_NOTES="\n    - Also available for Mac OS X: macx-g++\n"
-            fi
-        else
-            PLATFORM=macx-g++
-        fi
+        PLATFORM=macx-clang
         ;;
      AIX:*)
         #PLATFORM=aix-g++
