@@ -98,6 +98,8 @@ protected:
     void checkForLatinLayout();
 
 private:
+    void updateXKBStateFromState(struct xkb_state *kb_state, quint16 state);
+
     bool m_config;
     xcb_keycode_t m_autorepeat_code;
 
