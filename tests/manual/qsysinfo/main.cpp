@@ -57,13 +57,6 @@ QByteArray windowsVersionToString(QSysInfo::WinVersion v)
     CASE_VERSION(WV_WINDOWS10);
     case QSysInfo::WV_NT_based: // shouldn't happen
         break;
-
-    CASE_VERSION(WV_CE);
-    CASE_VERSION(WV_CENET);
-    CASE_VERSION(WV_CE_5);
-    CASE_VERSION(WV_CE_6);
-    case QSysInfo::WV_CE_based: // shouldn't happen
-        break;
     }
 
     return "WinVersion(0x" + QByteArray::number(v, 16) + ')';

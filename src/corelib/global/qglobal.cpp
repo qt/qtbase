@@ -1164,19 +1164,11 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value WV_6_3   Operating system version 6.3, corresponds to Windows 8.1, introduced in Qt 5.2
     \value WV_10_0  Operating system version 10.0, corresponds to Windows 10, introduced in Qt 5.5
 
-    CE-based versions:
-
-    \value WV_CE    Windows CE
-    \value WV_CENET Windows CE .NET
-    \value WV_CE_5  Windows CE 5.x
-    \value WV_CE_6  Windows CE 6.x
-
     The following masks can be used for testing whether a Windows
     version is MS-DOS-based, NT-based, or CE-based:
 
     \value WV_DOS_based MS-DOS-based version of Windows
     \value WV_NT_based  NT-based version of Windows
-    \value WV_CE_based  CE-based version of Windows
 
     \value WV_None Operating system other than Windows.
 
