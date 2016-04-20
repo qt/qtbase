@@ -100,6 +100,20 @@ probase = $$relative_path($$_PRO_FILE_PWD_, $$dirname(_QMAKE_CONF_)/examples)
         !isEmpty(allfiles): warning("remaining files in $$_PRO_FILE_PWD_: $$allfiles")
     }
 
+    equals(TEMPLATE, app)|equals(TEMPLATE, lib) {
+        !contains(INSTALLS, target) {
+            !install_ok: \
+                error("$$_PRO_FILE_ is lacking an install target.")
+            else: check_examples: \
+                warning("$$_PRO_FILE_ is lacking an install target.")
+        } else: !equals(target.path, $$sources.path) {
+            !install_ok: \
+                error("$$_PRO_FILE_ installs target to unexpected location.")
+            else: check_examples: \
+                warning("$$_PRO_FILE_ installs target to unexpected location.")
+        }
+    }
+
     !equals(TEMPLATE, subdirs):!compile_examples {
         TEMPLATE = aux
         CONFIG -= have_target qt staticlib dll
