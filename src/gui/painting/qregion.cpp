@@ -4288,7 +4288,7 @@ QRegion QRegion::xored(const QRegion &r) const
     }
 }
 
-QRect QRegion::boundingRect() const
+QRect QRegion::boundingRect() const Q_DECL_NOTHROW
 {
     if (isEmpty())
         return QRect();
@@ -4386,7 +4386,7 @@ void QRegion::setRects(const QRect *rects, int num)
     }
 }
 
-int QRegion::rectCount() const
+int QRegion::rectCount() const Q_DECL_NOTHROW
 {
     return (d->qt_rgn ? d->qt_rgn->numRects : 0);
 }

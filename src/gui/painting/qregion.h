@@ -120,10 +120,10 @@ public:
     bool intersects(const QRegion &r) const;
     bool intersects(const QRect &r) const;
 
-    QRect boundingRect() const;
+    QRect boundingRect() const Q_DECL_NOTHROW;
     QVector<QRect> rects() const;
     void setRects(const QRect *rect, int num);
-    int rectCount() const;
+    int rectCount() const Q_DECL_NOTHROW;
 #ifdef Q_COMPILER_MANGLES_RETURN_TYPE
     // ### Qt 6: remove these, they're kept for MSVC compat
     const QRegion operator|(const QRegion &r) const;
