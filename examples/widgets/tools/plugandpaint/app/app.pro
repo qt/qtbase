@@ -24,3 +24,5 @@ if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tools/plugandpaint
 INSTALLS += target
+
+CONFIG += install_ok  # Do not cargo-cult this!
