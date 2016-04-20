@@ -1745,12 +1745,14 @@ void QLineEdit::inputMethodEvent(QInputMethodEvent *e)
 #endif
 }
 
+/*!\reimp
+*/
 QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property) const
 {
     return inputMethodQuery(property, QVariant());
 }
 
-/*!\reimp
+/*!\internal
 */
 QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property, QVariant argument) const
 {

@@ -3352,6 +3352,8 @@ QVariant QComboBox::inputMethodQuery(Qt::InputMethodQuery query) const
     return QWidget::inputMethodQuery(query);
 }
 
+/*!\internal
+*/
 QVariant QComboBox::inputMethodQuery(Qt::InputMethodQuery query, const QVariant &argument) const
 {
     Q_D(const QComboBox);
