@@ -50,10 +50,12 @@
 #include <QPushButton>
 #include <QTextEdit>
 #include <QSplitter>
+#include <QGuiApplication>
 #include <QSurfaceFormat>
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 #include <QDebug>
+#include <QTextStream>
 
 struct Version {
     const char *str;
@@ -224,6 +226,24 @@ Widget::Widget(QWidget *parent)
 
     m_renderWindowContainer = new QWidget;
     addRenderWindow();
+
+    QString description;
+    QTextStream str(&description);
+    str << "Qt " << QT_VERSION_STR << ' ' << QGuiApplication::platformName();
+    const char *openGlVariables[] =
+        {"QT_ANGLE_PLATFORM", "QT_OPENGL", "QT_OPENGL_BUGLIST", "QT_OPENGL_DLL"};
+    const size_t variableCount = sizeof(openGlVariables) / sizeof(openGlVariables[0]);
+    for (size_t v = 0; v < variableCount; ++v) {
+        if (qEnvironmentVariableIsSet(openGlVariables[v]))
+            str << ' ' << openGlVariables[v] << '=' << qgetenv(openGlVariables[v]);
+    }
+    if (QCoreApplication::testAttribute(Qt::AA_UseOpenGLES))
+        str << " Qt::AA_UseOpenGLES";
+    if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
+        str << " Qt::AA_UseSoftwareOpenGL";
+    if (QCoreApplication::testAttribute(Qt::AA_UseDesktopOpenGL))
+        str << " Qt::AA_UseSoftwareOpenGL";
+    layout->addWidget(new QLabel(description));
 
     setLayout(layout);
 }
