@@ -261,7 +261,7 @@ QT_BEGIN_NAMESPACE
     alpha-channel to feature \l {QColor#Alpha-Blended
     Drawing}{alpha-blended drawing}.
 
-    \sa QPalette, QBrush, QApplication::setColorSpec()
+    \sa QPalette, QBrush
 */
 
 #define QCOLOR_INT_RANGE_CHECK(fn, var) \

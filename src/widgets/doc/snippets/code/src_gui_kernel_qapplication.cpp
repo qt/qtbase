@@ -77,6 +77,7 @@ QApplication::setStyle(QStyleFactory::create("Fusion"));
 //! [1]
 
 
+// ### fixme: Qt 6: Remove [2]
 //! [2]
 int main(int argc, char *argv[])
 {

@@ -183,7 +183,6 @@ public:
     static QWidgetList *popupWidgets;
     static QStyle *app_style;
     static bool overrides_native_style;
-    static int app_cspec;
     static QPalette *sys_pal;
     static QPalette *set_pal;
 

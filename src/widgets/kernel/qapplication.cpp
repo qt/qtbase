@@ -337,8 +337,10 @@ void QApplicationPrivate::createEventDispatcher()
     \sa QCoreApplication, QAbstractEventDispatcher, QEventLoop, QSettings
 */
 
+// ### fixme: Qt 6: Remove ColorSpec and accessors.
 /*!
     \enum QApplication::ColorSpec
+    \obsolete
 
     \value NormalColor the default color allocation policy
     \value CustomColor the same as NormalColor for X11; allocates colors
@@ -394,8 +396,6 @@ bool QApplicationPrivate::overrides_native_style = false; // whether native QApp
 QString QApplicationPrivate::styleSheet;           // default application stylesheet
 #endif
 QPointer<QWidget> QApplicationPrivate::leaveAfterRelease = 0;
-
-int QApplicationPrivate::app_cspec = QApplication::NormalColor;
 
 QPalette *QApplicationPrivate::sys_pal = 0;        // default system palette
 QPalette *QApplicationPrivate::set_pal = 0;        // default palette set by programmer
@@ -1275,17 +1275,21 @@ QStyle* QApplication::setStyle(const QString& style)
 
 /*!
     Returns the color specification.
+    \obsolete
 
     \sa QApplication::setColorSpec()
 */
 
 int QApplication::colorSpec()
 {
-    return QApplicationPrivate::app_cspec;
+    return QApplication::NormalColor;
 }
 
 /*!
     Sets the color specification for the application to \a spec.
+    \obsolete
+
+    This call has no effect.
 
     The color specification controls how the application allocates colors when
     run on a display with a limited amount of colors, e.g. 8 bit / 256 color
@@ -1341,10 +1345,7 @@ int QApplication::colorSpec()
 
 void QApplication::setColorSpec(int spec)
 {
-    if (Q_UNLIKELY(qApp))
-        qWarning("QApplication::setColorSpec: This function must be "
-                 "called before the QApplication object is created");
-    QApplicationPrivate::app_cspec = spec;
+    Q_UNUSED(spec)
 }
 
 /*!
