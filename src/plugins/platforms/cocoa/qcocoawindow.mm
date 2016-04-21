@@ -94,6 +94,7 @@ static bool isMouseEvent(NSEvent *ev)
         // make sure that m_nsWindow stays valid until the
         // QCocoaWindow is deleted by Qt.
         [_window setReleasedWhenClosed:NO];
+        _watcher = &_platformWindow->sentinel;
     }
 
     return self;
@@ -102,7 +103,7 @@ static bool isMouseEvent(NSEvent *ev)
 - (void)handleWindowEvent:(NSEvent *)theEvent
 {
     QCocoaWindow *pw = self.platformWindow;
-    if (pw && pw->m_forwardWindow) {
+    if (_watcher && pw && pw->m_forwardWindow) {
         if (theEvent.type == NSLeftMouseUp || theEvent.type == NSLeftMouseDragged) {
             QNSView *forwardView = pw->m_qtView;
             if (theEvent.type == NSLeftMouseUp) {
@@ -141,7 +142,7 @@ static bool isMouseEvent(NSEvent *ev)
     if (!self.window.delegate)
         return; // Already detached, pending NSAppKitDefined event
 
-    if (pw && pw->frameStrutEventsEnabled() && isMouseEvent(theEvent)) {
+    if (_watcher && pw && pw->frameStrutEventsEnabled() && isMouseEvent(theEvent)) {
         NSPoint loc = [theEvent locationInWindow];
         NSRect windowFrame = [self.window convertRectFromScreen:[self.window frame]];
         NSRect contentFrame = [[self.window contentView] frame];
@@ -157,6 +158,7 @@ static bool isMouseEvent(NSEvent *ev)
 - (void)detachFromPlatformWindow
 {
     _platformWindow = 0;
+    _watcher.clear();
     [self.window.delegate release];
     self.window.delegate = nil;
 }
