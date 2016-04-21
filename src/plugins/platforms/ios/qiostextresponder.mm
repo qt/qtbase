@@ -329,7 +329,7 @@
     // a regular responder transfer to another window. In the former case, iOS
     // will set the new first-responder to our next-responder, and in the latter
     // case we'll have an active responder candidate.
-    if (![UIResponder currentFirstResponder]) {
+    if (![UIResponder currentFirstResponder] && !FirstResponderCandidate::currentCandidate()) {
         // No first responder set anymore, sync this with Qt by clearing the
         // focus object.
         m_inputContext->clearCurrentFocusObject();
