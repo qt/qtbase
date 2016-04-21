@@ -234,6 +234,30 @@ static void ensureDetached(QString &result, ushort *&output, const ushort *begin
 namespace {
 struct QUrlUtf8Traits : public QUtf8BaseTraitsNoAscii
 {
+    // From RFC 3987:
+    //    iunreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~" / ucschar
+    //
+    //    ucschar        = %xA0-D7FF / %xF900-FDCF / %xFDF0-FFEF
+    //                   / %x10000-1FFFD / %x20000-2FFFD / %x30000-3FFFD
+    //                   / %x40000-4FFFD / %x50000-5FFFD / %x60000-6FFFD
+    //                   / %x70000-7FFFD / %x80000-8FFFD / %x90000-9FFFD
+    //                   / %xA0000-AFFFD / %xB0000-BFFFD / %xC0000-CFFFD
+    //                   / %xD0000-DFFFD / %xE1000-EFFFD
+    //
+    //    iprivate       = %xE000-F8FF / %xF0000-FFFFD / %x100000-10FFFD
+    //
+    // That RFC allows iprivate only as part of iquery, but we don't know here
+    // whether we're looking at a query or another part of an URI, so we accept
+    // them too. The definition above excludes U+FFF0 to U+FFFD from appearing
+    // unencoded, but we see no reason for its exclusion, so we allow them to
+    // be decoded (and we need U+FFFD the replacement character to indicate
+    // failure to decode).
+    //
+    // That means we must disallow:
+    //  * unpaired surrogates (QUtf8Functions takes care of that for us)
+    //  * non-characters
+    static const bool allowNonCharacters = false;
+
     // override: our "bytes" are three percent-encoded UTF-16 characters
     static void appendByte(ushort *&ptr, uchar b)
     {

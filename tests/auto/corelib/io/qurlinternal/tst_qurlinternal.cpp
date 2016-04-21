@@ -998,7 +998,9 @@ void tst_QUrlInternal::encodingRecodeInvalidUtf8_data()
     QTest::addColumn<QString>("utf16");
 
     extern void loadInvalidUtf8Rows();
+    extern void loadNonCharactersRows();
     loadInvalidUtf8Rows();
+    loadNonCharactersRows();
 
     QTest::newRow("utf8-mix-4") << QByteArray("\xE0.A2\x80");
     QTest::newRow("utf8-mix-5") << QByteArray("\xE0\xA2.80");
