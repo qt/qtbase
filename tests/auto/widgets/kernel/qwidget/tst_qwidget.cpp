@@ -3035,8 +3035,23 @@ protected:
     QSize sizeHint() const { return QSize(500, 500); }
 };
 
+// Scale to remove devicePixelRatio should scaling be active.
+static QPixmap grabFromWidget(QWidget *w, const QRect &rect)
+{
+    QPixmap pixmap = w->grab(rect);
+    const qreal devicePixelRatio = pixmap.devicePixelRatioF();
+    if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
+        pixmap = pixmap.scaled((QSizeF(pixmap.size()) / devicePixelRatio).toSize(),
+                               Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        pixmap.setDevicePixelRatio(1);
+    }
+    return pixmap;
+}
+
 void tst_QWidget::testContentsPropagation()
 {
+    if (!qFuzzyCompare(qApp->devicePixelRatio(), qreal(1)))
+        QSKIP("This test does not work with scaling.");
     ContentsPropagationWidget widget;
     widget.setFixedSize(500, 500);
     widget.setContentsPropagation(false);
@@ -9208,7 +9223,7 @@ void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 
     QPixmap correct(main.size());
     correct.fill(Qt::green);
-    const QPixmap mainPixmap = main.grab(QRect(QPoint(0, 0), QSize(-1, -1)));
+    const QPixmap mainPixmap = grabFromWidget(&main, QRect(QPoint(0, 0), QSize(-1, -1)));
 
     QTRY_COMPARE(mainPixmap.toImage().convertToFormat(QImage::Format_RGB32),
                  correct.toImage().convertToFormat(QImage::Format_RGB32));
@@ -9672,10 +9687,10 @@ void tst_QWidget::grab()
         p.drawTiledPixmap(0, 0, 128, 128, pal.brush(QPalette::Window).texture(), 0, 0);
         p.end();
 
-        QPixmap actual = widget.grab(QRect(64, 64, 64, 64));
+        QPixmap actual = grabFromWidget(&widget, QRect(64, 64, 64, 64));
         QVERIFY(lenientCompare(actual, expected));
 
-        actual = widget.grab(QRect(64, 64, -1, -1));
+        actual = grabFromWidget(&widget, QRect(64, 64, -1, -1));
         QVERIFY(lenientCompare(actual, expected));
 
         // Make sure a widget that is not yet shown is grabbed correctly.
