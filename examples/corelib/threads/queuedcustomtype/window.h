@@ -44,8 +44,10 @@
 #include <QWidget>
 #include "renderthread.h"
 
+QT_BEGIN_NAMESPACE
 class QLabel;
 class QPushButton;
+QT_END_NAMESPACE
 
 //! [Window class definition]
 class Window : public QWidget
