@@ -173,8 +173,6 @@ public:
 
 public slots:
     void initTestCase();
-    void cleanupTestCase();
-    void init();
     void cleanup();
 private slots:
     void getSetCheck();
@@ -413,7 +411,6 @@ private slots:
 
 private:
     bool ensureScreenSize(int width, int height);
-    QWidget *testWidget;
 
     const QString m_platform;
     QSize m_testWidgetSize;
@@ -590,8 +587,6 @@ tst_QWidget::tst_QWidget()
     palette.setColor(QPalette::ToolTipBase, QColor(12, 13, 14));
     palette.setColor(QPalette::Text, QColor(21, 22, 23));
     qApp->setPalette(palette, "QPropagationTestWidget");
-
-    testWidget = 0;
 }
 
 tst_QWidget::~tst_QWidget()
@@ -627,122 +622,23 @@ void tst_QWidget::initTestCase()
     if (screenWidth > 2000)
         width = 100 * ((screenWidth + 500) / 1000);
     m_testWidgetSize = QSize(width, width);
-  // Create the test class
-    testWidget = new BezierViewer;
-    testWidget->setWindowTitle(QStringLiteral("BezierViewer"));
-    testWidget->move(m_availableTopLeft + QPoint(screenWidth / 3, 50));
-    testWidget->resize(m_testWidgetSize);
-    testWidget->show();
-    QVERIFY(QTest::qWaitForWindowExposed(testWidget));
-}
-
-void tst_QWidget::cleanupTestCase()
-{
-    delete testWidget;
-    testWidget = 0;
-}
-
-void tst_QWidget::init()
-{
-// TODO: Add initialization code here.
-// This will be executed immediately before each test is run.
-    testWidget->setFont(QFont());
-    testWidget->setPalette(QPalette());
 }
 
 void tst_QWidget::cleanup()
 {
-    // Only 'testwidget', do not leak any other widgets.
-    QCOMPARE(QApplication::topLevelWidgets().size(), 1);
-}
-
-// Helper class...
-
-BezierViewer::BezierViewer( QWidget* parent)
-    : QWidget(parent)
-{
-    setObjectName(QLatin1String("TestWidget"));
-    setWindowTitle(objectName());
-    QPalette pal;
-    pal.setColor(backgroundRole(), Qt::white);
-    setPalette(pal);
-}
-
-
-void BezierViewer::setPoints( const QPolygonF& a )
-{
-    points = a;
-}
-
-#include "private/qbezier_p.h"
-void BezierViewer::paintEvent( QPaintEvent* )
-{
-    if ( points.size() != 4 ) {
-#if defined(QT_CHECK_RANGE)
-        qWarning( "QPolygon::bezier: The array must have 4 control points" );
-#endif
-        return;
-    }
-
-    /* Calculate Bezier curve */
-    QPolygonF bezier = QBezier::fromPoints(points.at(0),points.at(1),points.at(2),points.at(3)).toPolygon();
-
-    QPainter painter( this );
-
-    /* Calculate scale to fit in window */
-    QRectF br = bezier.boundingRect() | points.boundingRect();
-    QRectF pr = rect();
-    int scl = qMax( qMin(pr.width()/br.width(), pr.height()/br.height()), qreal(1.) );
-    int border = scl-1;
-
-    /* Scale Bezier curve vertices */
-    for ( QPolygonF::Iterator it = bezier.begin(); it != bezier.end(); ++it ) {
-        it->setX( (it->x()-br.x()) * scl + border );
-        it->setY( (it->y()-br.y()) * scl + border );
-    }
-
-    /* Draw grid */
-    painter.setPen( Qt::lightGray );
-    int i;
-    for ( i = border; i <= pr.width(); i += scl ) {
-        painter.drawLine( i, 0, i, pr.height() );
-    }
-    for ( int j = border; j <= pr.height(); j += scl ) {
-        painter.drawLine( 0, j, pr.width(), j );
-    }
-
-    /* Write number of vertices */
-    painter.setPen( Qt::red );
-    painter.setFont( QFont("Helvetica", 14, QFont::DemiBold, true ) );
-    QString caption;
-    caption.setNum( bezier.size() );
-    caption += QString::fromLatin1( " vertices" );
-    painter.drawText( 10, pr.height()-10, caption );
-
-    /* Draw Bezier curve */
-    painter.setPen( Qt::black );
-    painter.drawPolyline( bezier );
-
-    /* Scale and draw control points */
-    painter.setPen( Qt::darkGreen );
-    for ( QPolygonF::Iterator p1 = points.begin(); p1 != points.end(); ++p1 ) {
-        int x = (p1->x()-br.x()) * scl + border;
-        int y = (p1->y()-br.y()) * scl + border;
-        painter.drawLine( x-4, y-4, x+4, y+4 );
-        painter.drawLine( x+4, y-4, x-4, y+4 );
-    }
-
-    /* Draw vertices */
-    painter.setPen( Qt::red );
-    painter.setBrush( Qt::red );
-    for ( QPolygonF::Iterator p2 = bezier.begin(); p2 != bezier.end(); ++p2 )
-        painter.drawEllipse( p2->x()-1, p2->y()-1, 3, 3 );
+    QVERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
 void tst_QWidget::fontPropagation()
 {
+    QScopedPointer<QWidget> testWidget(new QWidget);
+    testWidget->resize(m_testWidgetSize);
+    testWidget->setWindowTitle(__FUNCTION__);
+    centerOnScreen(testWidget.data());
+    testWidget->show();
+    QVERIFY(QTest::qWaitForWindowExposed(testWidget.data()));
     QFont font = testWidget->font();
-    QWidget* childWidget = new QWidget( testWidget );
+    QWidget* childWidget = new QWidget( testWidget.data() );
     childWidget->show();
     QCOMPARE( font, childWidget->font() );
 
@@ -773,7 +669,7 @@ void tst_QWidget::fontPropagation()
     font.setPointSize(font.pointSize() + 2);
     testWidget->setFont(font);
 
-    QWidget *one   = new QWidget(testWidget);
+    QWidget *one   = new QWidget(testWidget.data());
     QWidget *two   = new QWidget(one);
     QWidget *three = new QWidget(two);
     QWidget *four  = new QWidget(two);
@@ -929,8 +825,15 @@ void tst_QWidget::fontPropagation2()
 
 void tst_QWidget::palettePropagation()
 {
+    QScopedPointer<QWidget> testWidget(new QWidget);
+    testWidget->resize(m_testWidgetSize);
+    testWidget->setWindowTitle(__FUNCTION__);
+    centerOnScreen(testWidget.data());
+    testWidget->show();
+    QVERIFY(QTest::qWaitForWindowExposed(testWidget.data()));
+
     QPalette palette = testWidget->palette();
-    QWidget* childWidget = new QWidget( testWidget );
+    QWidget* childWidget = new QWidget( testWidget.data() );
     childWidget->show();
     QCOMPARE( palette, childWidget->palette() );
 
@@ -1063,7 +966,13 @@ void tst_QWidget::palettePropagation2()
 
 void tst_QWidget::enabledPropagation()
 {
-    QWidget* childWidget = new QWidget( testWidget );
+    QScopedPointer<QWidget> testWidget(new QWidget);
+    testWidget->resize(m_testWidgetSize);
+    testWidget->setWindowTitle(__FUNCTION__);
+    centerOnScreen(testWidget.data());
+    testWidget->show();
+    QVERIFY(QTest::qWaitForWindowExposed(testWidget.data()));
+    QWidget* childWidget = new QWidget( testWidget.data() );
     childWidget->show();
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( childWidget->isEnabled() );
@@ -1146,7 +1055,13 @@ void tst_QWidget::properTabHandlingWhenDisabled_QTBUG27417()
 #ifndef QT_NO_DRAGANDDROP
 void tst_QWidget::acceptDropsPropagation()
 {
-    QWidget *childWidget = new QWidget(testWidget);
+    QScopedPointer<QWidget> testWidget(new QWidget);
+    testWidget->resize(m_testWidgetSize);
+    testWidget->setWindowTitle(__FUNCTION__);
+    centerOnScreen(testWidget.data());
+    testWidget->show();
+    QVERIFY(QTest::qWaitForWindowExposed(testWidget.data()));
+    QWidget *childWidget = new QWidget(testWidget.data());
     childWidget->show();
     QVERIFY(!testWidget->acceptDrops());
     QVERIFY(!childWidget->acceptDrops());
@@ -1193,32 +1108,38 @@ void tst_QWidget::acceptDropsPropagation()
 
 void tst_QWidget::isEnabledTo()
 {
-    QWidget* childWidget = new QWidget( testWidget );
+    QWidget testWidget;
+    testWidget.resize(m_testWidgetSize);
+    testWidget.setWindowTitle(__FUNCTION__);
+    centerOnScreen(&testWidget);
+    testWidget.show();
+    QWidget* childWidget = new QWidget( &testWidget );
     QWidget* grandChildWidget = new QWidget( childWidget );
 
-    QVERIFY( childWidget->isEnabledTo( testWidget ) );
-    QVERIFY( grandChildWidget->isEnabledTo( testWidget ) );
+    QVERIFY( childWidget->isEnabledTo( &testWidget ) );
+    QVERIFY( grandChildWidget->isEnabledTo( &testWidget ) );
 
     childWidget->setEnabled( false );
-    QVERIFY( !childWidget->isEnabledTo( testWidget ) );
+    QVERIFY( !childWidget->isEnabledTo( &testWidget ) );
     QVERIFY( grandChildWidget->isEnabledTo( childWidget ) );
-    QVERIFY( !grandChildWidget->isEnabledTo( testWidget ) );
+    QVERIFY( !grandChildWidget->isEnabledTo( &testWidget ) );
 
-    QScopedPointer<QMainWindow> childDialog(new QMainWindow(testWidget));
-    testWidget->setEnabled(false);
+    QScopedPointer<QMainWindow> childDialog(new QMainWindow(&testWidget));
+    testWidget.setEnabled(false);
     QVERIFY(!childDialog->isEnabled());
     QVERIFY(childDialog->isEnabledTo(0));
-    testWidget->setEnabled(true);
 }
 
 void tst_QWidget::visible()
 {
     // Ensure that the testWidget is hidden for this test at the
     // start
-
-    testWidget->hide();
+    QScopedPointer<QWidget> testWidget(new QWidget);
+    testWidget->resize(m_testWidgetSize);
+    testWidget->setWindowTitle(__FUNCTION__);
+    centerOnScreen(testWidget.data());
     QVERIFY( !testWidget->isVisible() );
-    QWidget* childWidget = new QWidget( testWidget );
+    QWidget* childWidget = new QWidget( testWidget.data() );
     QVERIFY( !childWidget->isVisible() );
 
     testWidget->show();
@@ -1284,11 +1205,16 @@ void tst_QWidget::setLocale()
 
 void tst_QWidget::visible_setWindowOpacity()
 {
-    testWidget->hide();
+    QScopedPointer<QWidget> testWidget(new QWidget);
+    testWidget->resize(m_testWidgetSize);
+    testWidget->setWindowTitle(__FUNCTION__);
+    centerOnScreen(testWidget.data());
+    testWidget->winId();
+
     QVERIFY( !testWidget->isVisible() );
     testWidget->setWindowOpacity(0.5);
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-    QVERIFY(!::IsWindowVisible(winHandleOf(testWidget)));
+    QVERIFY(!::IsWindowVisible(winHandleOf(testWidget.data())));
 #endif
     testWidget->setWindowOpacity(1.0);
 }
@@ -1297,35 +1223,40 @@ void tst_QWidget::isVisibleTo()
 {
     // Ensure that the testWidget is hidden for this test at the
     // start
+    QWidget testWidget;
+    testWidget.resize(m_testWidgetSize);
+    testWidget.setWindowTitle(__FUNCTION__);
+    centerOnScreen(&testWidget);
 
-    testWidget->hide();
-    QWidget* childWidget = new QWidget( testWidget );
-    QVERIFY( childWidget->isVisibleTo( testWidget ) );
+    QWidget* childWidget = new QWidget( &testWidget );
+    QVERIFY( childWidget->isVisibleTo( &testWidget ) );
     childWidget->hide();
-    QVERIFY( !childWidget->isVisibleTo( testWidget ) );
+    QVERIFY( !childWidget->isVisibleTo( &testWidget ) );
 
     QWidget* grandChildWidget = new QWidget( childWidget );
-    QVERIFY( !grandChildWidget->isVisibleTo( testWidget ) );
+    QVERIFY( !grandChildWidget->isVisibleTo( &testWidget ) );
     QVERIFY( grandChildWidget->isVisibleTo( childWidget ) );
 
-    testWidget->show();
+    testWidget.show();
     childWidget->show();
 
-    QVERIFY( childWidget->isVisibleTo( testWidget ) );
+    QVERIFY( childWidget->isVisibleTo( &testWidget ) );
     grandChildWidget->hide();
     QVERIFY( !grandChildWidget->isVisibleTo( childWidget ) );
-    QVERIFY( !grandChildWidget->isVisibleTo( testWidget ) );
-
+    QVERIFY( !grandChildWidget->isVisibleTo( &testWidget ) );
 }
 
 void tst_QWidget::isHidden()
 {
     // Ensure that the testWidget is hidden for this test at the
     // start
+    QScopedPointer<QWidget> testWidget(new QWidget);
+    testWidget->resize(m_testWidgetSize);
+    testWidget->setWindowTitle(__FUNCTION__);
+    centerOnScreen(testWidget.data());
 
-    testWidget->hide();
     QVERIFY( testWidget->isHidden() );
-    QWidget* childWidget = new QWidget( testWidget );
+    QWidget* childWidget = new QWidget( testWidget.data() );
     QVERIFY( !childWidget->isHidden() );
 
     testWidget->show();
@@ -1358,8 +1289,15 @@ void tst_QWidget::isHidden()
 
 void tst_QWidget::fonts()
 {
+    QWidget testWidget;
+    testWidget.resize(m_testWidgetSize);
+    testWidget.setWindowTitle(__FUNCTION__);
+    centerOnScreen(&testWidget);
+    testWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&testWidget));
+
     // Tests setFont(), ownFont() and unsetFont()
-    QWidget* cleanTestWidget = new QWidget( testWidget );
+    QWidget* cleanTestWidget = new QWidget( &testWidget );
     QFont originalFont = cleanTestWidget->font();
 
     QVERIFY( !cleanTestWidget->testAttribute(Qt::WA_SetFont) );
@@ -1368,7 +1306,7 @@ void tst_QWidget::fonts()
 
     QFont newFont( "times", 18 );
     cleanTestWidget->setFont( newFont );
-    newFont = newFont.resolve( testWidget->font() );
+    newFont = newFont.resolve( testWidget.font() );
 
     QVERIFY( cleanTestWidget->testAttribute(Qt::WA_SetFont) );
     QVERIFY2( cleanTestWidget->font() == newFont,
@@ -1645,7 +1583,6 @@ void tst_QWidget::focusChainOnReparent()
 
 void tst_QWidget::focusChainOnHide()
 {
-    testWidget->hide(); // We do not want to get disturbed by other widgets
     // focus should move to the next widget in the focus chain when we hide it.
     QScopedPointer<QWidget> parent(new QWidget());
     parent->setObjectName(QLatin1String("focusChainOnHide"));
@@ -1669,8 +1606,6 @@ void tst_QWidget::focusChainOnHide()
 
     QTRY_COMPARE(parent->hasFocus(), true);
     QCOMPARE(parent.data(), qApp->focusWidget());
-
-    testWidget->show(); //don't disturb later tests
 }
 
 class Container : public QWidget
@@ -2379,6 +2314,12 @@ void tst_QWidget::icon()
 {
     QPixmap p(20,20);
     p.fill(Qt::red);
+    QScopedPointer<QWidget> testWidget(new QWidget);
+    testWidget->resize(m_testWidgetSize);
+    testWidget->setWindowTitle(__FUNCTION__);
+    centerOnScreen(testWidget.data());
+    testWidget->show();
+    QVERIFY(QTest::qWaitForWindowExposed(testWidget.data()));
     testWidget->setWindowIcon(p);
 
     QVERIFY(!testWidget->windowIcon().isNull());
@@ -2394,22 +2335,27 @@ void tst_QWidget::hideWhenFocusWidgetIsChild()
 {
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
-    testWidget->activateWindow();
-    QScopedPointer<QWidget> parentWidget(new QWidget(testWidget));
+
+    QScopedPointer<QWidget> testWidget(new QWidget);
+    testWidget->setWindowTitle(__FUNCTION__);
+    testWidget->resize(m_testWidgetSize);
+    centerOnScreen(testWidget.data());
+    QWidget *parentWidget(new QWidget(testWidget.data()));
     parentWidget->setObjectName("parentWidget");
     parentWidget->setGeometry(0, 0, 100, 100);
-    QLineEdit *edit = new QLineEdit(parentWidget.data());
+    QLineEdit *edit = new QLineEdit(parentWidget);
     edit->setObjectName("edit1");
-    QLineEdit *edit3 = new QLineEdit(parentWidget.data());
+    QLineEdit *edit3 = new QLineEdit(parentWidget);
     edit3->setObjectName("edit3");
     edit3->move(0,50);
-    parentWidget->show();
-    QLineEdit *edit2 = new QLineEdit(testWidget);
+    QLineEdit *edit2 = new QLineEdit(testWidget.data());
     edit2->setObjectName("edit2");
-    edit2->show();
     edit2->move(110, 100);
     edit->setFocus();
-    qApp->processEvents();
+    testWidget->show();
+    testWidget->activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(testWidget.data()));
+
     QString actualFocusWidget, expectedFocusWidget;
     if (!qApp->focusWidget() && m_platform == QStringLiteral("xcb"))
         QSKIP("X11: Your window manager is too broken for this test");
@@ -3487,8 +3433,6 @@ bool verifyWidgetMask(QWidget *widget, QRect mask)
 
 void tst_QWidget::setMask()
 {
-    testWidget->hide(); // get this out of the way.
-
     {
         MaskedPainter w;
         w.resize(200, 200);
@@ -5224,11 +5168,18 @@ public:
 
 void tst_QWidget::setFocus()
 {
+    QScopedPointer<QWidget> testWidget(new QWidget);
+    testWidget->resize(m_testWidgetSize);
+    testWidget->setWindowTitle(__FUNCTION__);
+    centerOnScreen(testWidget.data());
+    testWidget->show();
+    QVERIFY(QTest::qWaitForWindowExposed(testWidget.data()));
+
     const QPoint windowPos = testWidget->geometry().topRight() + QPoint(50, 0);
     {
         // move focus to another window
         testWidget->activateWindow();
-        QApplication::setActiveWindow(testWidget);
+        QApplication::setActiveWindow(testWidget.data());
         if (testWidget->focusWidget())
             testWidget->focusWidget()->clearFocus();
         else
@@ -5274,7 +5225,7 @@ void tst_QWidget::setFocus()
 
         // note: window may be active, but we don't want it to be
         testWidget->activateWindow();
-        QApplication::setActiveWindow(testWidget);
+        QApplication::setActiveWindow(testWidget.data());
         if (testWidget->focusWidget())
             testWidget->focusWidget()->clearFocus();
         else
@@ -9020,8 +8971,6 @@ void tst_QWidget::updateOnDestroyedSignal()
 
 void tst_QWidget::toplevelLineEditFocus()
 {
-    testWidget->hide();
-
     QLineEdit w;
     w.setMinimumWidth(m_testWidgetSize.width());
     w.show();
