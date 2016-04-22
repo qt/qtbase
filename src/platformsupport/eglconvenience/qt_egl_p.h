@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -31,20 +31,37 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSHOOKS_H
-#define QEGLFSHOOKS_H
+#ifndef QT_EGL_P_H
+#define QT_EGL_P_H
 
-#include "qeglfsglobal.h"
-#include "qeglfsdeviceintegration.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+
+#undef Status
+#undef None
+#undef Bool
+#undef CursorShape
+#undef KeyPress
+#undef KeyRelease
+#undef FocusIn
+#undef FocusOut
+#undef FontChange
+#undef Expose
+#undef Unsorted
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSHooks : public QEGLDeviceIntegration
-{
-};
-
-Q_EGLFS_EXPORT QEGLDeviceIntegration *qt_egl_device_integration();
-
 QT_END_NAMESPACE
 
-#endif // QEGLFSHOOKS_H
+#endif // QT_EGL_P_H

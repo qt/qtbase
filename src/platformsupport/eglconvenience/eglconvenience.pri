@@ -1,7 +1,8 @@
 contains(QT_CONFIG,egl) {
     HEADERS += \
         $$PWD/qeglconvenience_p.h \
-        $$PWD/qeglstreamconvenience_p.h
+        $$PWD/qeglstreamconvenience_p.h \
+        $$PWD/qt_egl_p.h
 
     SOURCES += \
         $$PWD/qeglconvenience.cpp \
