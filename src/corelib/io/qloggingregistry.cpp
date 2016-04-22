@@ -359,9 +359,6 @@ void QLoggingRegistry::setApiRules(const QString &content)
 */
 void QLoggingRegistry::updateRules()
 {
-    if (categoryFilter != defaultCategoryFilter)
-        return;
-
     rules = qtConfigRules + configRules + apiRules + envRules;
 
     foreach (QLoggingCategory *cat, categories.keys())
