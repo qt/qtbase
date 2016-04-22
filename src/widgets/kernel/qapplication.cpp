@@ -469,6 +469,9 @@ QDesktopWidget *qt_desktopWidget = 0;                // root window widgets
 */
 void QApplicationPrivate::process_cmdline()
 {
+    if (styleOverride.isEmpty() && qEnvironmentVariableIsSet("QT_STYLE_OVERRIDE"))
+        styleOverride = QString::fromLocal8Bit(qgetenv("QT_STYLE_OVERRIDE"));
+
     if (!styleOverride.isEmpty()) {
         if (app_style) {
             delete app_style;
@@ -1125,11 +1128,8 @@ QStyle *QApplication::style()
         // Compile-time search for default style
         //
         QString style;
-        QString envStyle = QString::fromLocal8Bit(qgetenv("QT_STYLE_OVERRIDE"));
         if (!QApplicationPrivate::styleOverride.isEmpty()) {
             style = QApplicationPrivate::styleOverride.toLower();
-        } else if (!envStyle.isEmpty()) {
-            style = envStyle;
         } else {
             style = QApplicationPrivate::desktopStyleKey();
         }

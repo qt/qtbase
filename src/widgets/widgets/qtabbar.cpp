@@ -971,6 +971,9 @@ void QTabBar::removeTab(int index)
 {
     Q_D(QTabBar);
     if (d->validIndex(index)) {
+        if (d->dragInProgress)
+            d->moveTabFinished(d->pressedIndex);
+
 #ifndef QT_NO_SHORTCUT
         releaseShortcut(d->tabList.at(index).shortcutId);
 #endif

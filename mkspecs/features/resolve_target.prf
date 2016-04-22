@@ -28,7 +28,7 @@ win32 {
     }
     QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_TARGET}$${TARGET}$${TARGET_VERSION_EXT}$${TARGET_EXT}
 } else {
-    contains(TEMPLATE, .*lib):LIBPREFIX = lib
+    contains(TEMPLATE, .*lib):!if(plugin:no_plugin_name_prefix): LIBPREFIX = lib
 
     mac {
         equals(TEMPLATE, lib) {

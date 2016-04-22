@@ -143,6 +143,8 @@ private slots:
     void hostFlags_data();
     void hostFlags();
     void setPort();
+    void port_data();
+    void port();
     void toEncoded_data();
     void toEncoded();
     void setAuthority_data();
@@ -1742,6 +1744,9 @@ void tst_QUrl::symmetry()
     QUrl url(QString::fromUtf8("http://www.räksmörgås.se/pub?a=b&a=dø&a=f#vræl"));
     QCOMPARE(url.scheme(), QString::fromLatin1("http"));
     QCOMPARE(url.host(), QString::fromUtf8("www.räksmörgås.se"));
+    QCOMPARE(url.host(QUrl::EncodeSpaces), QString::fromUtf8("www.räksmörgås.se"));
+    QCOMPARE(url.host(QUrl::EncodeUnicode), QString::fromUtf8("www.xn--rksmrgs-5wao1o.se"));
+    QCOMPARE(url.host(QUrl::EncodeUnicode | QUrl::EncodeSpaces), QString::fromUtf8("www.xn--rksmrgs-5wao1o.se"));
     QCOMPARE(url.path(), QString::fromLatin1("/pub"));
     // this will be encoded ...
     QCOMPARE(url.encodedQuery().constData(), QString::fromLatin1("a=b&a=d%C3%B8&a=f").toLatin1().constData());
@@ -2200,8 +2205,6 @@ void tst_QUrl::strictParser_data()
     // FIXME: add some tests for prohibited BiDi (RFC 3454 section 6)
 
     // port errors happen in TolerantMode too
-    QTest::newRow("empty-port-1") << "http://example.com:" << "Port field was empty";
-    QTest::newRow("empty-port-2") << "http://example.com:/" << "Port field was empty";
     QTest::newRow("invalid-port-1") << "http://example.com:-1" << "Invalid port";
     QTest::newRow("invalid-port-2") << "http://example.com:abc" << "Invalid port";
     QTest::newRow("invalid-port-3") << "http://example.com:9a" << "Invalid port";
@@ -2776,6 +2779,31 @@ void tst_QUrl::setPort()
         QCOMPARE(url.port(), -1);
         QVERIFY(url.errorString().contains("out of range"));
     }
+}
+
+void tst_QUrl::port_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<int>("port");
+
+    QTest::newRow("no-port-1")    << "http://example.com" << -1;
+    QTest::newRow("no-port-2")    << "http://example.com/" << -1;
+    QTest::newRow("empty-port-1") << "http://example.com:" << -1;
+    QTest::newRow("empty-port-2") << "http://example.com:/" << -1;
+    QTest::newRow("zero-port-1") << "http://example.com:0" << 0;
+    QTest::newRow("zero-port-2") << "http://example.com:0/" << 0;
+    QTest::newRow("set-port-1")   << "http://example.com:80" << 80;
+    QTest::newRow("set-port-2")   << "http://example.com:80/" << 80;
+}
+
+void tst_QUrl::port()
+{
+    QFETCH(QString, input);
+    QFETCH(int, port);
+
+    QUrl url(input);
+    QVERIFY(url.isValid());
+    QCOMPARE(url.port(), port);
 }
 
 void tst_QUrl::toEncoded_data()

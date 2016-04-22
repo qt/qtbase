@@ -494,6 +494,8 @@ static inline void fixTopLevelWindowFlags(Qt::WindowFlags &flags)
     default:
         break;
     }
+    if ((flags & Qt::WindowType_Mask) == Qt::SplashScreen)
+        flags |= Qt::FramelessWindowHint;
 }
 
 void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flagsIn,

@@ -322,10 +322,6 @@ void QWinRTWindow::setWindowState(Qt::WindowState state)
     if (d->state == state)
         return;
 
-#ifdef Q_OS_WINPHONE
-    d->screen->setStatusBarVisibility(state == Qt::WindowMaximized || state == Qt::WindowNoState, window());
-#endif
-
     if (state == Qt::WindowMinimized)
         setUIElementVisibility(d->uiElement.Get(), false);
 
