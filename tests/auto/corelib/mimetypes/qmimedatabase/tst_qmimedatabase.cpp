@@ -518,6 +518,8 @@ void tst_QMimeDatabase::mimeTypeForUrl()
     QVERIFY(db.mimeTypeForUrl(QUrl::fromEncoded("http://foo/bar.png")).isDefault()); // HTTP can't know before downloading
     QCOMPARE(db.mimeTypeForUrl(QUrl::fromEncoded("ftp://foo/bar.png")).name(), QString::fromLatin1("image/png"));
     QCOMPARE(db.mimeTypeForUrl(QUrl::fromEncoded("ftp://foo/bar")).name(), QString::fromLatin1("application/octet-stream")); // unknown extension
+    QCOMPARE(db.mimeTypeForUrl(QUrl("mailto:something@example.com")).name(), QString::fromLatin1("application/octet-stream")); // unknown
+    QCOMPARE(db.mimeTypeForUrl(QUrl("mailto:something@polish.pl")).name(), QString::fromLatin1("application/octet-stream")); // unknown, NOT perl ;)
 }
 
 void tst_QMimeDatabase::mimeTypeForData_data()
