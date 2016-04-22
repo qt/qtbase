@@ -17,9 +17,6 @@ fq_qml_files = $$_PRO_FILE_PWD_/qmldir
 
 for(qmlf, QML_FILES): fq_qml_files += $$absolute_path($$qmlf, $$_PRO_FILE_PWD_)
 
-# Only for Qt Creator's project view
-OTHER_FILES += $$fq_qml_files
-
 qml1_target: \
     instbase = $$[QT_INSTALL_IMPORTS]
 else: \
