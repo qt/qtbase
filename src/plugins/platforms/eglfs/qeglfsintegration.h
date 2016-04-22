@@ -34,12 +34,11 @@
 #ifndef QEGLFSINTEGRATION_H
 #define QEGLFSINTEGRATION_H
 
+#include "qeglfsglobal.h"
 #include <QtCore/QVariant>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformscreen.h>
-#include <EGL/egl.h>
-#include "qeglfsglobal.h"
 
 QT_BEGIN_NAMESPACE
 

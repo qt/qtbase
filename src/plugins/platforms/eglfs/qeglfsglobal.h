@@ -42,4 +42,17 @@
 #define Q_EGLFS_EXPORT Q_DECL_IMPORT
 #endif
 
+#include <EGL/egl.h>
+#undef Status
+#undef None
+#undef Bool
+#undef CursorShape
+#undef KeyPress
+#undef KeyRelease
+#undef FocusIn
+#undef FocusOut
+#undef FontChange
+#undef Expose
+#undef Unsorted
+
 #endif

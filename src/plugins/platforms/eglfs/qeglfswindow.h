@@ -34,13 +34,12 @@
 #ifndef QEGLFSWINDOW_H
 #define QEGLFSWINDOW_H
 
+#include "qeglfsglobal.h"
 #include "qeglfsintegration.h"
 #include "qeglfsscreen.h"
-#include "qeglfsglobal.h"
 
 #include <qpa/qplatformwindow.h>
 #include <QtPlatformSupport/private/qopenglcompositor_p.h>
-#include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 

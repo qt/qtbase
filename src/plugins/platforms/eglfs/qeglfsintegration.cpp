@@ -79,8 +79,6 @@
 
 #include <QtPlatformHeaders/qeglfsfunctions.h>
 
-#include <EGL/egl.h>
-
 static void initResources()
 {
 #ifndef QT_NO_CURSOR
