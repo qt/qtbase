@@ -99,7 +99,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaMenuDelegate);
 - (NSInteger)numberOfItemsInMenu:(NSMenu *)menu
 {
     Q_ASSERT(m_menu->nsMenu() == menu);
-    return m_menu->items().count();
+    return menu.numberOfItems;
 }
 
 - (BOOL)menu:(NSMenu *)menu updateItem:(NSMenuItem *)item atIndex:(NSInteger)index shouldCancel:(BOOL)shouldCancel
