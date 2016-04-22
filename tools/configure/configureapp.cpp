@@ -2125,7 +2125,7 @@ QString Configure::checkAvx512Availability()
         return QString();
 
     QString available = "avx512f";
-    for (int i = 0; i < sizeof(avx512features)/sizeof(avx512features[0]); ++i) {
+    for (size_t i = 0; i < sizeof(avx512features)/sizeof(avx512features[0]); ++i) {
         if (tryCompileProject("common/avx512", QStringLiteral("AVX512=%0").arg(avx512features[i]).toUpper())) {
             available += " avx512";
             available += avx512features[i];
