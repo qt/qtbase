@@ -2856,27 +2856,19 @@ void tst_QSettings::isWritable()
 
         if (s1.contains("foo")) {
 #if defined(Q_OS_MACX)
-            if (QSysInfo::macVersion() >= QSysInfo::MV_10_9) {
-                QVERIFY(s1.isWritable());
-                if (format == QSettings::NativeFormat) {
-                    QVERIFY(!s2.isWritable());
-                    QVERIFY(!s3.isWritable());
-                } else {
-                    QVERIFY(s2.isWritable());
-                    QVERIFY(s3.isWritable());
-                }
-            } else if (QSysInfo::macVersion() >= QSysInfo::MV_10_7 &&
-                       format == QSettings::NativeFormat) {
-                QVERIFY(!s1.isWritable());
+            QVERIFY(s1.isWritable());
+            if (format == QSettings::NativeFormat) {
                 QVERIFY(!s2.isWritable());
                 QVERIFY(!s3.isWritable());
-            } else
-#endif
-            {
-                QVERIFY(s1.isWritable());
+            } else {
                 QVERIFY(s2.isWritable());
                 QVERIFY(s3.isWritable());
             }
+#else
+            QVERIFY(s1.isWritable());
+            QVERIFY(s2.isWritable());
+            QVERIFY(s3.isWritable());
+#endif
         } else {
             QVERIFY(!s1.isWritable());
             QVERIFY(!s2.isWritable());

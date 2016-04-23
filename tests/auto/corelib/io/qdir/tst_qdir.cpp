@@ -987,15 +987,7 @@ void tst_QDir::canonicalPath_data()
     QTest::newRow("nonexistant") << "testd" << QString();
 
     QTest::newRow("rootPath") << QDir::rootPath() << QDir::rootPath();
-
-#ifdef Q_OS_MAC
-    // On Mac OS X 10.5 and earlier, canonicalPath depends on cleanPath which
-    // is itself very broken and fundamentally wrong on "/./" which, this would
-    // exercise
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6)
-#endif
-        QTest::newRow("rootPath + ./") << QDir::rootPath().append("./") << QDir::rootPath();
-
+    QTest::newRow("rootPath + ./") << QDir::rootPath().append("./") << QDir::rootPath();
     QTest::newRow("rootPath + ../.. ") << QDir::rootPath().append("../..") << QDir::rootPath();
 #if defined(Q_OS_WIN)
     QTest::newRow("drive:\\") << QDir::toNativeSeparators(QDir::rootPath()) << QDir::rootPath();
@@ -1994,13 +1986,7 @@ void tst_QDir::isRoot_data()
     QTest::newRow(QString("./ appended " + test).toLatin1()) << test << false;
 
     test = QDir(QDir::rootPath().append("./")).canonicalPath();
-#ifdef Q_OS_MAC
-    // On Mac OS X 10.5 and earlier, canonicalPath depends on cleanPath which
-    // is itself very broken and fundamentally wrong on "/./", which this would
-    // exercise
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6)
-#endif
-        QTest::newRow(QString("canonicalPath " + test).toLatin1()) << test << true;
+    QTest::newRow(QString("canonicalPath " + test).toLatin1()) << test << true;
 
 #if defined(Q_OS_WIN)
     test = QDir::rootPath().left(2);

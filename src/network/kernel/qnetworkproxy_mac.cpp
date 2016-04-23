@@ -234,60 +234,55 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
             QCFType<CFStringRef> cfPacLocation = CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, pacLocationSetting, NULL, NULL,
                 kCFStringEncodingUTF8);
 
-            if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
-                QCFType<CFDataRef> pacData;
-                QCFType<CFURLRef> pacUrl = CFURLCreateWithString(kCFAllocatorDefault, cfPacLocation, NULL);
-                if (!pacUrl) {
-                    qWarning("Invalid PAC URL \"%s\"", qPrintable(QCFString::toQString(cfPacLocation)));
-                    return result;
-                }
-                SInt32 errorCode;
-                if (!CFURLCreateDataAndPropertiesFromResource(kCFAllocatorDefault, pacUrl, &pacData, NULL, NULL, &errorCode)) {
-                    QString pacLocation = QCFString::toQString(cfPacLocation);
-                    qWarning("Unable to get the PAC script at \"%s\" (%s)", qPrintable(pacLocation), cfurlErrorDescription(errorCode));
-                    return result;
-                }
-                if (!pacData) {
-                    qWarning("\"%s\" returned an empty PAC script", qPrintable(QCFString::toQString(cfPacLocation)));
-                    return result;
-                }
-                QCFType<CFStringRef> pacScript = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, pacData, kCFStringEncodingISOLatin1);
-                if (!pacScript) {
-                    // This should never happen, but the documentation says it may return NULL if there was a problem creating the object.
-                    QString pacLocation = QCFString::toQString(cfPacLocation);
-                    qWarning("Unable to read the PAC script at \"%s\"", qPrintable(pacLocation));
-                    return result;
-                }
-
-                QByteArray encodedURL = query.url().toEncoded(); // converted to UTF-8
-                if (encodedURL.isEmpty()) {
-                    return result; // Invalid URL, abort
-                }
-
-                QCFType<CFURLRef> targetURL = CFURLCreateWithBytes(kCFAllocatorDefault, (UInt8*)encodedURL.data(), encodedURL.size(), kCFStringEncodingUTF8, NULL);
-                if (!targetURL) {
-                    return result; // URL creation problem, abort
-                }
-
-                QCFType<CFErrorRef> pacError;
-                QCFType<CFArrayRef> proxies = CFNetworkCopyProxiesForAutoConfigurationScript(pacScript, targetURL, &pacError);
-                if (!proxies) {
-                    QString pacLocation = QCFString::toQString(cfPacLocation);
-                    QCFType<CFStringRef> pacErrorDescription = CFErrorCopyDescription(pacError);
-                    qWarning("Execution of PAC script at \"%s\" failed: %s", qPrintable(pacLocation), qPrintable(QCFString::toQString(pacErrorDescription)));
-                    return result;
-                }
-
-                CFIndex size = CFArrayGetCount(proxies);
-                for (CFIndex i = 0; i < size; ++i) {
-                    CFDictionaryRef proxy = (CFDictionaryRef)CFArrayGetValueAtIndex(proxies, i);
-                    result << proxyFromDictionary(proxy);
-                }
+            QCFType<CFDataRef> pacData;
+            QCFType<CFURLRef> pacUrl = CFURLCreateWithString(kCFAllocatorDefault, cfPacLocation, NULL);
+            if (!pacUrl) {
+                qWarning("Invalid PAC URL \"%s\"", qPrintable(QCFString::toQString(cfPacLocation)));
                 return result;
-            } else {
-                QString pacLocation = QCFString::toQString(cfPacLocation);
-                qWarning("Mac system proxy: PAC script at \"%s\" not handled", qPrintable(pacLocation));
             }
+            SInt32 errorCode;
+            if (!CFURLCreateDataAndPropertiesFromResource(kCFAllocatorDefault, pacUrl, &pacData, NULL, NULL, &errorCode)) {
+                QString pacLocation = QCFString::toQString(cfPacLocation);
+                qWarning("Unable to get the PAC script at \"%s\" (%s)", qPrintable(pacLocation), cfurlErrorDescription(errorCode));
+                return result;
+            }
+            if (!pacData) {
+                qWarning("\"%s\" returned an empty PAC script", qPrintable(QCFString::toQString(cfPacLocation)));
+                return result;
+            }
+            QCFType<CFStringRef> pacScript = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, pacData, kCFStringEncodingISOLatin1);
+            if (!pacScript) {
+                // This should never happen, but the documentation says it may return NULL if there was a problem creating the object.
+                QString pacLocation = QCFString::toQString(cfPacLocation);
+                qWarning("Unable to read the PAC script at \"%s\"", qPrintable(pacLocation));
+                return result;
+            }
+
+            QByteArray encodedURL = query.url().toEncoded(); // converted to UTF-8
+            if (encodedURL.isEmpty()) {
+                return result; // Invalid URL, abort
+            }
+
+            QCFType<CFURLRef> targetURL = CFURLCreateWithBytes(kCFAllocatorDefault, (UInt8*)encodedURL.data(), encodedURL.size(), kCFStringEncodingUTF8, NULL);
+            if (!targetURL) {
+                return result; // URL creation problem, abort
+            }
+
+            QCFType<CFErrorRef> pacError;
+            QCFType<CFArrayRef> proxies = CFNetworkCopyProxiesForAutoConfigurationScript(pacScript, targetURL, &pacError);
+            if (!proxies) {
+                QString pacLocation = QCFString::toQString(cfPacLocation);
+                QCFType<CFStringRef> pacErrorDescription = CFErrorCopyDescription(pacError);
+                qWarning("Execution of PAC script at \"%s\" failed: %s", qPrintable(pacLocation), qPrintable(QCFString::toQString(pacErrorDescription)));
+                return result;
+            }
+
+            CFIndex size = CFArrayGetCount(proxies);
+            for (CFIndex i = 0; i < size; ++i) {
+                CFDictionaryRef proxy = (CFDictionaryRef)CFArrayGetValueAtIndex(proxies, i);
+                result << proxyFromDictionary(proxy);
+            }
+            return result;
         }
     }
 

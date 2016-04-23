@@ -541,31 +541,7 @@ void QMacSettingsPrivate::sync()
                                                   domains[i].userName, hostNames[j]);
             // only report failures for the primary file (the one we write to)
             if (!ok && i == 0 && hostNames[j] == hostName && status == QSettings::NoError) {
-#if 1
-                if (QSysInfo::macVersion() < QSysInfo::MV_10_7) {
-                    // work around what seems to be a bug in CFPreferences:
-                    // don't report an error if there are no preferences for the application
-                    QCFType<CFArrayRef> appIds = CFPreferencesCopyApplicationList(domains[i].userName,
-                                                                                  hostNames[j]);
-
-                    // iterate through all the applications and see if we're there
-                    CFIndex size = CFArrayGetCount(appIds);
-                    for (CFIndex k = 0; k < size; ++k) {
-                        const void *cfvalue = CFArrayGetValueAtIndex(appIds, k);
-                        if (CFGetTypeID(cfvalue) == CFStringGetTypeID()) {
-                            if (CFStringCompare(static_cast<CFStringRef>(cfvalue),
-                                                domains[i].applicationOrSuiteId,
-                                                kCFCompareCaseInsensitive) == kCFCompareEqualTo) {
-                                setStatus(QSettings::AccessError);
-                                break;
-                            }
-                        }
-                    }
-                } else
-#endif
-                {
-                    setStatus(QSettings::AccessError);
-                }
+                setStatus(QSettings::AccessError);
             }
         }
     }

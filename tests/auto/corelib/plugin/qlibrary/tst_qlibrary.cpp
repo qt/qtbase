@@ -223,10 +223,6 @@ void tst_QLibrary::unload_data()
     QString appDir = QCoreApplication::applicationDirPath();
 
     QTest::newRow( "mylib" ) << appDir + "/mylib" << true;
-#ifdef Q_OS_MAC
-    if (QSysInfo::MacintoshVersion <= QSysInfo::MV_10_3)
-        QEXPECT_FAIL("mylib", "dlcompat cannot unload libraries", Continue);
-#endif
     QTest::newRow( "ok01" ) << appDir + "/nolib" << false;
 }
 

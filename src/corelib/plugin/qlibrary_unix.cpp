@@ -171,9 +171,6 @@ bool QLibraryPrivate::load_sys()
     }
 #if !defined(Q_OS_CYGWIN)
     else {
-#if defined(Q_OS_MAC)
-        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4)
-#endif
         dlFlags |= RTLD_LOCAL;
     }
 #endif

@@ -5086,10 +5086,6 @@ public:
 
 void tst_QGraphicsItem::paint()
 {
-#ifdef Q_OS_MACX
-    if (QSysInfo::MacintoshVersion == QSysInfo::MV_10_7)
-        QSKIP("QTBUG-31454 - Unstable auto-test");
-#endif
     QGraphicsScene scene;
 
     PaintTester paintTester;
@@ -6574,12 +6570,6 @@ public:
 
 void tst_QGraphicsItem::ensureUpdateOnTextItem()
 {
-#ifdef Q_OS_MAC
-    if (QSysInfo::MacintoshVersion == QSysInfo::MV_10_7) {
-        QSKIP("This test is unstable on 10.7 in CI");
-    }
-#endif
-
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();

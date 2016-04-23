@@ -39,8 +39,6 @@
 
 #include <QtCore/qglobal.h>
 
-#include <dlfcn.h>
-
 #include "qnsview.h"
 #include "qcocoawindow.h"
 #include "qcocoahelpers.h"
@@ -71,9 +69,6 @@ Q_LOGGING_CATEGORY(lcQpaGestures, "qt.qpa.input.gestures")
 Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
 static QTouchDevice *touchDevice = 0;
-
-// ### HACK Remove once 10.8 is unsupported
-static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 
 static bool _q_dontOverrideCtrlLMB = false;
 
@@ -134,10 +129,6 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 + (void)initialize
 {
-    NSString **notificationNameVar = (NSString **)dlsym(RTLD_NEXT, "NSWindowDidChangeOcclusionStateNotification");
-    if (notificationNameVar)
-        _q_NSWindowDidChangeOcclusionStateNotification = *notificationNameVar;
-
     _q_dontOverrideCtrlLMB = qt_mac_resolveOption(false, "QT_MAC_DONT_OVERRIDE_CTRL_LMB");
 }
 
@@ -291,18 +282,6 @@ static bool _q_dontOverrideCtrlLMB = false;
 - (void)viewDidMoveToWindow
 {
     m_backingStore = Q_NULLPTR;
-    m_isMenuView = [self.window.className isEqualToString:@"NSCarbonMenuWindow"];
-    if (self.window) {
-        // This is the case of QWidgetAction's generated QWidget inserted in an NSMenu.
-        // 10.9 and newer get the NSWindowDidChangeOcclusionStateNotification
-        if (!_q_NSWindowDidChangeOcclusionStateNotification && m_isMenuView) {
-            m_exposedOnMoveToWindow = true;
-            m_platformWindow->exposeWindow();
-        }
-    } else if (m_exposedOnMoveToWindow) {
-        m_exposedOnMoveToWindow = false;
-        m_platformWindow->obscureWindow();
-    }
 }
 
 - (void)viewWillMoveToWindow:(NSWindow *)newWindow
@@ -446,14 +425,7 @@ static bool _q_dontOverrideCtrlLMB = false;
         m_platformWindow->obscureWindow();
     } else if ([notificationName isEqualToString: @"NSWindowDidOrderOnScreenAndFinishAnimatingNotification"]) {
         m_platformWindow->exposeWindow();
-    } else if (_q_NSWindowDidChangeOcclusionStateNotification
-               && [notificationName isEqualToString:_q_NSWindowDidChangeOcclusionStateNotification]) {
-#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_9
-// ### HACK Remove the enum declaration, the warning disabling and the cast further down once 10.8 is unsupported
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_CLANG("-Wobjc-method-access")
-        enum { NSWindowOcclusionStateVisible = 1UL << 1 };
-#endif
+    } else if ([notificationName isEqualToString:NSWindowDidChangeOcclusionStateNotification]) {
         // Several unit tests expect paint and/or expose events for windows that are
         // sometimes (unpredictably) occluded and some unit tests depend on QWindow::isExposed -
         // don't send Expose/Obscure events when running under QTestLib.
@@ -466,9 +438,6 @@ QT_WARNING_DISABLE_CLANG("-Wobjc-method-access")
                 m_platformWindow->obscureWindow();
             }
         }
-#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_9
-QT_WARNING_POP
-#endif
     } else if (notificationName == NSWindowDidChangeScreenNotification) {
         if (m_window) {
             NSUInteger screenIndex = [[NSScreen screens] indexOfObject:self.window.screen];
@@ -1389,7 +1358,6 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
                                                             [event magnification], windowPoint, screenPoint);
 }
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8
 - (void)smartMagnifyWithEvent:(NSEvent *)event
 {
     static bool zoomIn = true;
@@ -1402,7 +1370,6 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
                                                             zoomIn ? 1.0f : 0.0f, windowPoint, screenPoint);
     zoomIn = !zoomIn;
 }
-#endif
 
 - (void)rotateWithEvent:(NSEvent *)event
 {
@@ -1518,16 +1485,12 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
     NSEventPhase phase = [theEvent phase];
     Qt::ScrollPhase ph = Qt::ScrollUpdate;
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8
-    if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_8) {
-        // On 10.8 and above, MayBegin is likely to happen.  We treat it the same as an actual begin.
-        if (phase == NSEventPhaseMayBegin) {
-            m_scrolling = true;
-            ph = Qt::ScrollBegin;
-        }
-    }
-#endif
-    if (phase == NSEventPhaseBegan) {
+
+    // MayBegin is likely to happen.  We treat it the same as an actual begin.
+    if (phase == NSEventPhaseMayBegin) {
+        m_scrolling = true;
+        ph = Qt::ScrollBegin;
+    } else if (phase == NSEventPhaseBegan) {
         // If MayBegin did not happen, Began is the actual beginning.
         if (!m_scrolling)
             ph = Qt::ScrollBegin;

@@ -198,7 +198,7 @@ void QFseventsFileSystemWatcherEngine::processEvent(ConstFSEventStreamRef stream
                                                     const FSEventStreamEventFlags eventFlags[],
                                                     const FSEventStreamEventId eventIds[])
 {
-#if defined(Q_OS_OSX) && MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_6
+#if defined(Q_OS_OSX)
     Q_UNUSED(streamRef);
 
     bool needsRestart = false;
@@ -256,12 +256,6 @@ void QFseventsFileSystemWatcherEngine::processEvent(ConstFSEventStreamRef stream
     if (needsRestart)
         emit scheduleStreamRestart();
 #else
-    // This is a work-around for moc: when we put the version check at the top of the header file,
-    // moc will still see the Q_OBJECT macro and generate a meta-object when compiling for 10.6,
-    // which obviously won't link.
-    //
-    // So the trick is to still compile this class on 10.6, but never instantiate it.
-
     Q_UNUSED(streamRef);
     Q_UNUSED(numEvents);
     Q_UNUSED(eventPaths);

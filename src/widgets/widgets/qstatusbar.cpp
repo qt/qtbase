@@ -749,9 +749,6 @@ bool QStatusBar::event(QEvent *e)
 #ifndef Q_DEAD_CODE_FROM_QT4_MAC
     return QWidget::event(e);
 #else
-    if (QSysInfo::MacintoshVersion <= QSysInfo::MV_10_4)
-        return QWidget::event(e);
-
     // Enable drag-click only if the status bar is the status bar for a
     // QMainWindow with a unifed toolbar.
     if (parent() == 0 || qobject_cast<QMainWindow *>(parent()) == 0 ||

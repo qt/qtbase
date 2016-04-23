@@ -68,57 +68,18 @@ QT_BEGIN_NAMESPACE
 static SSLContextRef qt_createSecureTransportContext(QSslSocket::SslMode mode)
 {
     const bool isServer = mode == QSslSocket::SslServerMode;
-    SSLContextRef context = Q_NULLPTR;
-
-#ifndef Q_OS_OSX
     const SSLProtocolSide side = isServer ? kSSLServerSide : kSSLClientSide;
     // We never use kSSLDatagramType, so it's kSSLStreamType unconditionally.
-    context = SSLCreateContext(Q_NULLPTR, side, kSSLStreamType);
+    SSLContextRef context = SSLCreateContext(Q_NULLPTR, side, kSSLStreamType);
     if (!context)
         qCWarning(lcSsl) << "SSLCreateContext failed";
-#else // Q_OS_OSX
-
-#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_8, __IPHONE_NA)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_8) {
-        const SSLProtocolSide side = isServer ? kSSLServerSide : kSSLClientSide;
-        // We never use kSSLDatagramType, so it's kSSLStreamType unconditionally.
-        context = SSLCreateContext(Q_NULLPTR, side, kSSLStreamType);
-        if (!context)
-            qCWarning(lcSsl) << "SSLCreateContext failed";
-    } else {
-#else
-    {
-#endif
-        const OSStatus errCode = SSLNewContext(isServer, &context);
-        if (errCode != noErr || !context)
-            qCWarning(lcSsl) << "SSLNewContext failed with error:" << errCode;
-    }
-#endif // !Q_OS_OSX
-
     return context;
 }
 
 static void qt_releaseSecureTransportContext(SSLContextRef context)
 {
-    if (!context)
-        return;
-
-#ifndef Q_OS_OSX
-    CFRelease(context);
-#else
-
-#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_8, __IPHONE_NA)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_8) {
+    if (context)
         CFRelease(context);
-    } else {
-#else
-    {
-#endif // QT_MAC_PLATFORM_...
-        const OSStatus errCode = SSLDisposeContext(context);
-        if (errCode != noErr)
-            qCWarning(lcSsl) << "SSLDisposeContext failed with error:" << errCode;
-    }
-#endif // !Q_OS_OSX
 }
 
 static bool qt_setSessionProtocol(SSLContextRef context, const QSslConfigurationPrivate &configuration,
@@ -132,7 +93,6 @@ static bool qt_setSessionProtocol(SSLContextRef context, const QSslConfiguration
 
     OSStatus err = noErr;
 
-#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_8, __IPHONE_5_0)
     if (configuration.protocol == QSsl::SslV3) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << plainSocket << "requesting : SSLv3";
@@ -210,116 +170,9 @@ static bool qt_setSessionProtocol(SSLContextRef context, const QSslConfiguration
     #endif
         return false;
     }
-#endif
 
     return err == noErr;
 }
-
-#ifdef Q_OS_OSX
-
-static bool qt_setSessionProtocolOSX(SSLContextRef context, const QSslConfigurationPrivate &configuration,
-                                     QTcpSocket *plainSocket)
-{
-    // This function works with (now) deprecated API that does not even exist on
-    // iOS but is the only API we have on OS X below 10.8
-
-    // Without SSLSetProtocolVersionMin/Max functions it's quite difficult
-    // to have the required result:
-    // If we use SSLSetProtocolVersion - any constant except the ones with 'Only' suffix -
-    // allows a negotiation and we can not set the lower limit.
-    // SSLSetProtocolVersionEnabled supports only a limited subset of constants, if you believe their docs:
-    // kSSLProtocol2
-    // kSSLProtocol3
-    // kTLSProtocol1
-    // kSSLProtocolAll
-    // Here we can only have a look into the SecureTransport's code and hope that what we see there
-    // and what we have on 10.7 is similar:
-    // SSLSetProtocoLVersionEnabled actually accepts other constants also,
-    // called twice with two different protocols it sets a range,
-    // called once with a protocol (when all protocols were disabled)
-    // - only this protocol is enabled (without a lower limit negotiation).
-
-    Q_ASSERT(context);
-
-#ifndef QSSLSOCKET_DEBUG
-    Q_UNUSED(plainSocket)
-#endif
-
-    OSStatus err = noErr;
-
-    // First, disable ALL:
-    if (SSLSetProtocolVersionEnabled(context, kSSLProtocolAll, false) != noErr)
-        return false;
-
-    if (configuration.protocol == QSsl::SslV3) {
-    #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcSsl) << plainSocket << "requesting : SSLv3";
-    #endif
-        err = SSLSetProtocolVersion(context, kSSLProtocol3Only);
-    } else if (configuration.protocol == QSsl::TlsV1_0) {
-    #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcSsl) << plainSocket << "requesting : TLSv1.0";
-    #endif
-        err = SSLSetProtocolVersion(context, kTLSProtocol1Only);
-    } else if (configuration.protocol == QSsl::TlsV1_1) {
-    #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcSsl) << plainSocket << "requesting : TLSv1.1";
-    #endif
-        err = SSLSetProtocolVersionEnabled(context, kTLSProtocol11, true);
-    } else if (configuration.protocol == QSsl::TlsV1_2) {
-    #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcSsl) << plainSocket << "requesting : TLSv1.2";
-    #endif
-        err = SSLSetProtocolVersionEnabled(context, kTLSProtocol12, true);
-    } else if (configuration.protocol == QSsl::AnyProtocol) {
-    #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcSsl) << plainSocket << "requesting : any";
-    #endif
-        err = SSLSetProtocolVersionEnabled(context, kSSLProtocolAll, true);
-    } else if (configuration.protocol == QSsl::TlsV1SslV3) {
-    #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcSsl) << plainSocket << "requesting : SSLv3 - TLSv1.2";
-    #endif
-        err = SSLSetProtocolVersionEnabled(context, kTLSProtocol12, true);
-        if (err == noErr)
-            err = SSLSetProtocolVersionEnabled(context, kSSLProtocol3, true);
-    } else if (configuration.protocol == QSsl::SecureProtocols) {
-    #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcSsl) << plainSocket << "requesting : TLSv1 - TLSv1.2";
-    #endif
-        err = SSLSetProtocolVersionEnabled(context, kTLSProtocol12, true);
-        if (err == noErr)
-            err = SSLSetProtocolVersionEnabled(context, kTLSProtocol1, true);
-    } else if (configuration.protocol == QSsl::TlsV1_0OrLater) {
-    #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcSsl) << plainSocket << "requesting : TLSv1 - TLSv1.2";
-    #endif
-        err = SSLSetProtocolVersionEnabled(context, kTLSProtocol12, true);
-        if (err == noErr)
-            err = SSLSetProtocolVersionEnabled(context, kTLSProtocol1, true);
-    } else if (configuration.protocol == QSsl::TlsV1_1OrLater) {
-    #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcSsl) << plainSocket << "requesting : TLSv1.1 - TLSv1.2";
-    #endif
-        err = SSLSetProtocolVersionEnabled(context, kTLSProtocol12, true);
-        if (err == noErr)
-            err = SSLSetProtocolVersionEnabled(context, kTLSProtocol11, true);
-    } else if (configuration.protocol == QSsl::TlsV1_2OrLater) {
-    #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcSsl) << plainSocket << "requesting : TLSv1.2";
-    #endif
-        err = SSLSetProtocolVersionEnabled(context, kTLSProtocol12, true);
-    } else {
-    #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcSsl) << plainSocket << "no protocol version found in the configuration";
-    #endif
-        return false;
-    }
-
-    return err == noErr;
-}
-
-#endif // Q_OS_OSX
 
 QSecureTransportContext::QSecureTransportContext(SSLContextRef c)
     : context(c)
@@ -959,21 +812,6 @@ bool QSslSocketBackendPrivate::initSslContext()
         return false;
     }
 
-#ifdef Q_OS_OSX
-    if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_8) {
-        // Starting from OS X 10.8 SSLSetSessionOption with kSSLSessionOptionBreakOnServerAuth/
-        // kSSLSessionOptionBreakOnClientAuth disables automatic certificate validation.
-        // But for OS X versions below 10.8 we have to do it explicitly:
-        const OSStatus err = SSLSetEnableCertVerify(context, false);
-        if (err != noErr) {
-            destroySslContext();
-            setErrorAndEmit(QSslSocket::SslInternalError,
-                     QStringLiteral("SSLSetEnableCertVerify failed: %1").arg(err));
-            return false;
-        }
-    }
-#endif
-
     if (mode == QSslSocket::SslClientMode) {
         // enable Server Name Indication (SNI)
         QString tlsHostName(verificationPeerName.isEmpty() ? q->peerName() : verificationPeerName);
@@ -1128,20 +966,7 @@ bool QSslSocketBackendPrivate::setSessionProtocol()
         return false;
     }
 
-#ifndef Q_OS_OSX
     return qt_setSessionProtocol(context, configuration, plainSocket);
-#else
-
-#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_8, __IPHONE_NA)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_8) {
-        return qt_setSessionProtocol(context, configuration, plainSocket);
-    } else {
-#else
-    {
-#endif
-        return qt_setSessionProtocolOSX(context, configuration, plainSocket);
-    }
-#endif
 }
 
 bool QSslSocketBackendPrivate::canIgnoreTrustVerificationFailure() const

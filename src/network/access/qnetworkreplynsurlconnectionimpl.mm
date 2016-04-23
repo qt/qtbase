@@ -99,9 +99,7 @@ public:
 }
 
 - (id)initWithQNetworkReplyNSURLConnectionImplPrivate:(QNetworkReplyNSURLConnectionImplPrivate *)a_replyPrivate ;
-#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_7, __IPHONE_3_0)
 - (void)connection:(NSURLConnection *)connection willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge;
-#endif
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError*)error;
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse*)response;
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData*)data;
@@ -209,7 +207,6 @@ void QNetworkReplyNSURLConnectionImpl::readyReadOutgoingData()
     [super dealloc];
 }
 
-#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_7, __IPHONE_3_0)
 - (void)connection:(NSURLConnection *)connection willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge
 {
     Q_UNUSED(connection)
@@ -236,7 +233,6 @@ void QNetworkReplyNSURLConnectionImpl::readyReadOutgoingData()
 
     [challenge.sender performDefaultHandlingForAuthenticationChallenge:challenge];
 }
-#endif
 
 - (void)connection:(NSURLConnection*)connection didFailWithError:(NSError*)error
 {

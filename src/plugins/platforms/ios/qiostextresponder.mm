@@ -679,11 +679,7 @@
     if (markedTextFormat.isEmpty()) {
         // There seems to be no way to query how the preedit text
         // should be drawn. So we need to hard-code the color.
-        QSysInfo::MacVersion iosVersion = QSysInfo::MacintoshVersion;
-        if (iosVersion < QSysInfo::MV_IOS_7_0)
-            markedTextFormat.setBackground(QColor(235, 239, 247));
-        else
-            markedTextFormat.setBackground(QColor(206, 221, 238));
+        markedTextFormat.setBackground(QColor(206, 221, 238));
     }
 
     QList<QInputMethodEvent::Attribute> attrs;

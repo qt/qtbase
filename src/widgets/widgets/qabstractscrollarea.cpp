@@ -493,9 +493,6 @@ void QAbstractScrollAreaPrivate::layoutChildren()
             horizontalScrollBarRect.adjust(vsbExt, 0, 0, 0);
 #endif
         if (!hasCornerWidget && htransient)
-#ifdef Q_OS_MAC
-            if (QSysInfo::macVersion() >= QSysInfo::MV_10_8)
-#endif
             horizontalScrollBarRect.adjust(0, 0, cornerOffset.x(), 0);
         scrollBarContainers[Qt::Horizontal]->setGeometry(QStyle::visualRect(opt.direction, opt.rect, horizontalScrollBarRect));
         scrollBarContainers[Qt::Horizontal]->raise();
@@ -504,9 +501,6 @@ void QAbstractScrollAreaPrivate::layoutChildren()
     if (needv) {
         QRect verticalScrollBarRect  (QPoint(cornerPoint.x(), controlsRect.top() + hHeaderBottom),  QPoint(controlsRect.right(), cornerPoint.y() - 1));
         if (!hasCornerWidget && vtransient)
-#ifdef Q_OS_MAC
-            if (QSysInfo::macVersion() >= QSysInfo::MV_10_8)
-#endif
             verticalScrollBarRect.adjust(0, 0, 0, cornerOffset.y());
         scrollBarContainers[Qt::Vertical]->setGeometry(QStyle::visualRect(opt.direction, opt.rect, verticalScrollBarRect));
         scrollBarContainers[Qt::Vertical]->raise();

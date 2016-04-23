@@ -390,9 +390,6 @@ static QString macFormatCurrency(const QSystemLocale::CurrencyToStringArgument &
 
 static QVariant macQuoteString(QSystemLocale::QueryType type, const QStringRef &str)
 {
-    if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_6)
-        return QVariant();
-
     QString begin, end;
     QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
     switch (type) {

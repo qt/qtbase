@@ -334,38 +334,8 @@ QBrush qt_mac_toQBrush(const NSColor *color, QPalette::ColorGroup colorGroup)
     // (and providing no public API to get the underlying color without this insanity)
     if (qt_mac_isSystemColorOrInstance(color, @"controlColor", @"NSGradientPatternColor") ||
         qt_mac_isSystemColorOrInstance(color, @"windowBackgroundColor", @"NSGradientPatternColor")) {
-        static QColor newColor;
-        if (!newColor.isValid()) {
-#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_8, __IPHONE_NA)
-            if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_8) {
-                newColor = qt_mac_toQColor(color.CGColor);
-            } else
-#endif
-            {
-                NSBitmapImageRep *offscreenRep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:nil
-                                                                                         pixelsWide:1
-                                                                                         pixelsHigh:1
-                                                                                      bitsPerSample:8
-                                                                                    samplesPerPixel:4
-                                                                                           hasAlpha:YES
-                                                                                           isPlanar:NO
-                                                                                     colorSpaceName:NSDeviceRGBColorSpace
-                                                                                        bytesPerRow:4
-                                                                                       bitsPerPixel:32];
-                [NSGraphicsContext saveGraphicsState];
-                [NSGraphicsContext setCurrentContext:[NSGraphicsContext graphicsContextWithBitmapImageRep:offscreenRep]];
-                NSEraseRect(NSMakeRect(0, 0, 1, 1));
-                [color drawSwatchInRect:NSMakeRect(0, 0, 1, 1)];
-                [NSGraphicsContext restoreGraphicsState];
-                NSUInteger pixel[4];
-                [offscreenRep getPixel:pixel atX:0 y:0];
-                [offscreenRep release];
-                newColor = QColor(pixel[0], pixel[1], pixel[2], pixel[3]);
-            }
-        }
-
         qtBrush.setStyle(Qt::SolidPattern);
-        qtBrush.setColor(newColor);
+        qtBrush.setColor(qt_mac_toQColor(color.CGColor));
         return qtBrush;
     }
 

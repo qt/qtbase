@@ -119,10 +119,8 @@ typedef char GLchar;
 #else // non-ES2 platforms
 # if defined(Q_OS_MAC)
 #  include <OpenGL/gl.h>
-#  if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-#   define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
-#   include <OpenGL/gl3.h>
-#  endif
+#  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
+#  include <OpenGL/gl3.h>
 #  include <OpenGL/glext.h>
 # else
 #  define GL_GLEXT_LEGACY // Prevents GL/gl.h from #including system glext.h
@@ -131,16 +129,11 @@ typedef char GLchar;
 # endif // Q_OS_MAC
 #endif // QT_OPENGL_ES_2
 
-// Desktops, apart from Mac OS X prior to 10.7 can support OpenGL 3.
-// Desktops, apart from Mac OS X prior to 10.9 can support OpenGL 4.
+// Desktops can support OpenGL 4.
 #if !defined(QT_OPENGL_ES_2)
-# if !defined(Q_OS_MAC) || (defined(Q_OS_MAC) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7)
-#  define QT_OPENGL_3
-#  define QT_OPENGL_3_2
-# endif
-# if !defined(Q_OS_MAC) || (defined(Q_OS_MAC) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_9)
-#  define QT_OPENGL_4
-# endif
+#define QT_OPENGL_3
+#define QT_OPENGL_3_2
+#define QT_OPENGL_4
 # if !defined(Q_OS_MAC)
 #  define QT_OPENGL_4_3
 # endif

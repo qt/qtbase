@@ -52,8 +52,6 @@
 //
 
 #include <qglobal.h>
-#define HAVE_CORETEXT QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_8, __IPHONE_4_1)
-#define HAVE_ATS QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_5, __IPHONE_NA)
 
 #include <qpa/qplatformfontdatabase.h>
 #include <qpa/qplatformtheme.h>
@@ -66,13 +64,8 @@
 #include <CoreGraphics/CoreGraphics.h>
 #endif
 
-#if HAVE_CORETEXT
 Q_DECLARE_METATYPE(QCFType<CGFontRef>);
 Q_DECLARE_METATYPE(QCFType<CFURLRef>);
-#endif
-#if HAVE_ATS
-Q_DECLARE_METATYPE(ATSFontContainerRef);
-#endif
 
 QT_BEGIN_NAMESPACE
 

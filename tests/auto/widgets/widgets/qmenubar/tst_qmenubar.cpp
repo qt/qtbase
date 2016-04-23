@@ -1209,7 +1209,7 @@ void tst_QMenuBar::task256322_highlight()
     QTRY_VERIFY(!menu2.isVisible());
     QVERIFY(!menu.isVisible());
 #ifdef Q_OS_MAC
-    if ((QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) && (win.menuBar()->activeAction() != nothing))
+    if (win.menuBar()->activeAction() != nothing)
         QEXPECT_FAIL("", "QTBUG-30565: Unstable test", Continue);
 #endif
     QTRY_COMPARE(win.menuBar()->activeAction(), nothing);

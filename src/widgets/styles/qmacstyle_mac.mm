@@ -1400,7 +1400,7 @@ void QMacStylePrivate::initComboboxBdi(const QStyleOptionComboBox *combo, HIThem
         bdi->adornment = kThemeAdornmentFocus;
     if (combo->activeSubControls & QStyle::SC_ComboBoxArrow)
         bdi->state = kThemeStatePressed;
-    else if (tds == kThemeStateInactive && QSysInfo::MacintoshVersion <= QSysInfo::MV_10_9)
+    else if (tds == kThemeStateInactive && QSysInfo::MacintoshVersion < QSysInfo::MV_10_10)
         bdi->state = kThemeStateActive;
     else
         bdi->state = tds;
@@ -1719,7 +1719,7 @@ void QMacStylePrivate::getSliderInfo(QStyle::ComplexControl cc, const QStyleOpti
             || slider->tickPosition == QSlider::TicksBothSides;
 
     tdi->bounds = qt_hirectForQRect(slider->rect);
-    if (isScrollbar || QSysInfo::MacintoshVersion <= QSysInfo::MV_10_9) {
+    if (isScrollbar || QSysInfo::MacintoshVersion < QSysInfo::MV_10_10) {
         tdi->min = slider->minimum;
         tdi->max = slider->maximum;
         tdi->value = slider->sliderPosition;
@@ -4020,7 +4020,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             bool hasIcon = !btn.icon.isNull();
             bool hasText = !btn.text.isEmpty();
 
-            if (!hasMenu && QSysInfo::QSysInfo::MacintoshVersion > QSysInfo::MV_10_9) {
+            if (!hasMenu && QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_10) {
                 if (tds == kThemeStatePressed
                     || (tds == kThemeStateActive
                         && ((btn.features & QStyleOptionButton::DefaultButton && !d->autoDefaultButton)
@@ -4125,8 +4125,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             QStyleOptionComboBox comboCopy = *cb;
             comboCopy.direction = Qt::LeftToRight;
             if (opt->state & QStyle::State_Small)
-                comboCopy.rect.translate(0, w ? (QSysInfo::macVersion() > QSysInfo::MV_10_8 ? 0 : -1) :
-                                                (QSysInfo::macVersion() > QSysInfo::MV_10_9 ? 0 : -2)); // Supports Qt Quick Controls
+                comboCopy.rect.translate(0, w ? 0 : (QSysInfo::macVersion() >= QSysInfo::MV_10_10 ? 0 : -2)); // Supports Qt Quick Controls
             else if (QSysInfo::macVersion() == QSysInfo::MV_10_9)
                 comboCopy.rect.translate(0, 1);
             QCommonStyle::drawControl(CE_ComboBoxLabel, &comboCopy, p, w);
@@ -5465,7 +5464,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                         opacity = anim->currentValue();
                     }
 
-                    shouldExpand = (opt->activeSubControls || wasActive) && QSysInfo::macVersion() >= QSysInfo::MV_10_8;
+                    shouldExpand = (opt->activeSubControls || wasActive);
                     if (shouldExpand) {
                         if (!anim && !oldActiveControls) {
                             // Start expand animation only once and when entering
@@ -5964,7 +5963,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     drawToolbarButtonArrow(tb->rect, tds, cg);
                 }
                 if (tb->state & State_On) {
-                    if (QSysInfo::MacintoshVersion > QSysInfo::MV_MAVERICKS) {
+                    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_10) {
                         QWindow *window = 0;
                         if (widget && widget->window())
                             window = widget->window()->windowHandle();
@@ -6326,7 +6325,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
             switch (sc) {
             case SC_ComboBoxEditField:{
                 ret = QMacStylePrivate::comboboxEditBounds(combo->rect, bdi);
-                if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_9)
+                if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_10)
                     ret.setHeight(ret.height() - 1);
                 break; }
             case SC_ComboBoxArrow:{

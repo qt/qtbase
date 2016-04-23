@@ -80,6 +80,7 @@ QByteArray macVersionToString(QSysInfo::MacVersion v)
     CASE_VERSION(MV_10_8);
     CASE_VERSION(MV_10_9);
     CASE_VERSION(MV_10_10);
+    CASE_VERSION(MV_10_11);
 
     CASE_VERSION(MV_IOS_4_3);
     CASE_VERSION(MV_IOS_5_0);
@@ -89,6 +90,11 @@ QByteArray macVersionToString(QSysInfo::MacVersion v)
     CASE_VERSION(MV_IOS_7_0);
     CASE_VERSION(MV_IOS_7_1);
     CASE_VERSION(MV_IOS_8_0);
+    CASE_VERSION(MV_IOS_8_1);
+    CASE_VERSION(MV_IOS_8_2);
+    CASE_VERSION(MV_IOS_8_3);
+    CASE_VERSION(MV_IOS_8_4);
+    CASE_VERSION(MV_IOS_9_0);
     case QSysInfo::MV_IOS:      // shouldn't happen:
         break;
     }

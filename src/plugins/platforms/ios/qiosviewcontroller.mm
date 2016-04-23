@@ -234,25 +234,6 @@
     if (self = [self init]) {
         m_screen = screen;
 
-#if QT_IOS_DEPLOYMENT_TARGET_BELOW(__IPHONE_7_0)
-        QSysInfo::MacVersion iosVersion = QSysInfo::MacintoshVersion;
-
-        // We prefer to keep the root viewcontroller in fullscreen layout, so that
-        // we don't have to compensate for the viewcontroller position. This also
-        // gives us the same behavior on iOS 5/6 as on iOS 7, where full screen layout
-        // is the only way.
-        if (iosVersion < QSysInfo::MV_IOS_7_0)
-            self.wantsFullScreenLayout = YES;
-
-        // Use translucent statusbar by default on iOS6 iPhones (unless the user changed
-        // the default in the Info.plist), so that windows placed under the stausbar are
-        // still visible, just like on iOS7.
-        if (screen->uiScreen() == [UIScreen mainScreen]
-            && iosVersion >= QSysInfo::MV_IOS_6_0 && iosVersion < QSysInfo::MV_IOS_7_0
-            && [UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone
-            && [UIApplication sharedApplication].statusBarStyle == UIStatusBarStyleDefault)
-            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent];
-#endif
 
         self.changingOrientation = NO;
 #ifndef Q_OS_TVOS
@@ -316,7 +297,6 @@
 #endif
 }
 
-#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_6_0)
 - (NSUInteger)supportedInterfaceOrientations
 {
     // As documented by Apple in the iOS 6.0 release notes, setStatusBarOrientation:animated:
@@ -327,15 +307,6 @@
     // supportedInterfaceOrientations says, which states that the method should not return 0.
     return [self shouldAutorotate] ? UIInterfaceOrientationMaskAll : 0;
 }
-#endif
-
-#if QT_IOS_DEPLOYMENT_TARGET_BELOW(__IPHONE_6_0)
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
-{
-    Q_UNUSED(interfaceOrientation);
-    return [self shouldAutorotate];
-}
-#endif
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)orientation duration:(NSTimeInterval)duration
 {
@@ -454,30 +425,16 @@
     if (focusWindow->flags() & Qt::MaximizeUsingFullscreenGeometryHint)
         self.preferredStatusBarStyle = UIStatusBarStyleDefault;
     else
-        self.preferredStatusBarStyle = QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_7_0 ?
-            UIStatusBarStyleLightContent : UIStatusBarStyleBlackTranslucent;
+        self.preferredStatusBarStyle = UIStatusBarStyleLightContent;
 
-    if (self.preferredStatusBarStyle != oldStatusBarStyle) {
-        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_7_0)
-            [self setNeedsStatusBarAppearanceUpdate];
-        else
-            [uiApplication setStatusBarStyle:self.preferredStatusBarStyle];
-    }
+    if (self.preferredStatusBarStyle != oldStatusBarStyle)
+        [self setNeedsStatusBarAppearanceUpdate];
 
     bool currentStatusBarVisibility = self.prefersStatusBarHidden;
     self.prefersStatusBarHidden = focusWindow->windowState() == Qt::WindowFullScreen;
 
     if (self.prefersStatusBarHidden != currentStatusBarVisibility) {
-#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_7_0)
-        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_7_0) {
-            [self setNeedsStatusBarAppearanceUpdate];
-        } else
-#endif
-        {
-            [uiApplication setStatusBarHidden:self.prefersStatusBarHidden
-                withAnimation:self.preferredStatusBarUpdateAnimation];
-        }
-
+        [self setNeedsStatusBarAppearanceUpdate];
         [self.view setNeedsLayout];
     }
 

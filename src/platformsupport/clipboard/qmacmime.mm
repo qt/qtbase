@@ -522,11 +522,6 @@ QString QMacPasteboardMimeRtfText::mimeFor(QString flav)
 
 bool QMacPasteboardMimeRtfText::canConvert(const QString &mime, QString flav)
 {
-#if defined(Q_OS_IOS)
-    if (QSysInfo::MacintoshVersion < QSysInfo::MV_IOS_7_0)
-        return false;
-#endif
-
     return mime == mimeFor(flav);
 }
 
