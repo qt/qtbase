@@ -1926,6 +1926,24 @@ QSysInfo::MacVersion QSysInfo::macVersion()
 }
 const QSysInfo::MacVersion QSysInfo::MacintoshVersion = QSysInfo::macVersion();
 
+#ifdef Q_OS_OSX
+static const char *osxVer_helper(QAppleOperatingSystemVersion version = qt_apple_os_version())
+{
+    if (version.major == 10) {
+        switch (version.minor) {
+        case 9:
+            return "Mavericks";
+        case 10:
+            return "Yosemite";
+        case 11:
+            return "El Capitan";
+        }
+    }
+    // unknown, future version
+    return 0;
+}
+#endif
+
 #elif defined(Q_OS_WIN) || defined(Q_OS_CYGWIN) || defined(Q_OS_WINRT)
 
 QT_BEGIN_INCLUDE_NAMESPACE
@@ -2028,8 +2046,66 @@ static inline OSVERSIONINFOEX determineWinOsVersion()
 
 static OSVERSIONINFOEX winOsVersion()
 {
-    static OSVERSIONINFOEX result = determineWinOsVersion();
-    return result;
+    OSVERSIONINFOEX realResult = determineWinOsVersion();
+#ifdef QT_DEBUG
+    {
+        if (Q_UNLIKELY(qEnvironmentVariableIsSet("QT_WINVER_OVERRIDE"))) {
+            OSVERSIONINFOEX result = realResult;
+            result.dwMajorVersion = 0;
+            result.dwMinorVersion = 0;
+
+            // Erase any build number and service pack information
+            result.dwBuildNumber = 0;
+            result.szCSDVersion[0] = L'\0';
+            result.wServicePackMajor = 0;
+            result.wServicePackMinor = 0;
+
+            const QByteArray winVerOverride = qgetenv("QT_WINVER_OVERRIDE");
+            if (winVerOverride == "NT") {
+                result.dwMajorVersion = 4;
+            } else if (winVerOverride == "2000") {
+                result.dwMajorVersion = 5;
+            } else if (winVerOverride == "XP") {
+                result.dwMajorVersion = 5;
+                result.dwMinorVersion = 1;
+            } else if (winVerOverride == "XP_PRO_64" || winVerOverride == "2003") {
+                result.dwMajorVersion = 5;
+                result.dwMinorVersion = 2;
+            } else if (winVerOverride == "VISTA" || winVerOverride == "2008") {
+                result.dwMajorVersion = 6;
+            } else if (winVerOverride == "WINDOWS7" || winVerOverride == "2008_R2") {
+                result.dwMajorVersion = 6;
+                result.dwMinorVersion = 1;
+            } else if (winVerOverride == "WINDOWS8" || winVerOverride == "2012") {
+                result.dwMajorVersion = 6;
+                result.dwMinorVersion = 2;
+            } else if (winVerOverride == "WINDOWS8_1" || winVerOverride == "2012_R2") {
+                result.dwMajorVersion = 6;
+                result.dwMinorVersion = 3;
+            } else if (winVerOverride == "WINDOWS10" || winVerOverride == "2016") {
+                result.dwMajorVersion = 10;
+            } else {
+                return realResult;
+            }
+
+            if (winVerOverride == "2003"
+                || winVerOverride == "2008"
+                || winVerOverride == "2008_R2"
+                || winVerOverride == "2012"
+                || winVerOverride == "2012_R2"
+                || winVerOverride == "2016") {
+                // If the current host OS is a domain controller and the override OS
+                // is also a server type OS, preserve that information
+                if (result.wProductType == VER_NT_WORKSTATION)
+                    result.wProductType = VER_NT_SERVER;
+            } else if (winVerOverride != "2000") {
+                // Any other OS except Windows 2000 must be a workstation OS type
+                result.wProductType = VER_NT_WORKSTATION;
+            }
+        }
+    }
+#endif
+    return realResult;
 }
 
 QSysInfo::WinVersion QSysInfo::windowsVersion()
@@ -2136,28 +2212,31 @@ static QString winSp_helper()
 
 static const char *winVer_helper()
 {
-    const bool workstation = winOsVersion().wProductType == VER_NT_WORKSTATION;
+    const OSVERSIONINFOEX osver = winOsVersion();
+    const bool workstation = osver.wProductType == VER_NT_WORKSTATION;
 
-    switch (int(QSysInfo::WindowsVersion)) {
-    case QSysInfo::WV_NT:
+#define Q_WINVER(major, minor) (major << 8 | minor)
+    switch (Q_WINVER(osver.dwMajorVersion, osver.dwMinorVersion)) {
+    case Q_WINVER(4, 0):
         return "NT";
-    case QSysInfo::WV_2000:
+    case Q_WINVER(5, 0):
         return "2000";
-    case QSysInfo::WV_XP:
+    case Q_WINVER(5, 1):
         return "XP";
-    case QSysInfo::WV_2003:
+    case Q_WINVER(5, 2):
         return "2003";
-    case QSysInfo::WV_VISTA:
+    case Q_WINVER(6, 0):
         return workstation ? "Vista" : "Server 2008";
-    case QSysInfo::WV_WINDOWS7:
+    case Q_WINVER(6, 1):
         return workstation ? "7" : "Server 2008 R2";
-    case QSysInfo::WV_WINDOWS8:
+    case Q_WINVER(6, 2):
         return workstation ? "8" : "Server 2012";
-    case QSysInfo::WV_WINDOWS8_1:
+    case Q_WINVER(6, 3):
         return workstation ? "8.1" : "Server 2012 R2";
-    case QSysInfo::WV_WINDOWS10:
+    case Q_WINVER(10, 0):
         return workstation ? "10" : "Server 2016";
     }
+#undef Q_WINVER
     // unknown, future version
     return 0;
 }
@@ -2742,45 +2821,18 @@ QString QSysInfo::prettyProductName()
 #elif defined(Q_OS_TVOS)
     return QLatin1String("tvOS ") + productVersion();
 #elif defined(Q_OS_OSX)
-    // get the known codenames
-    const char *basename = 0;
-    switch (int(MacintoshVersion)) {
-    case MV_CHEETAH:
-    case MV_PUMA:
-    case MV_JAGUAR:
-    case MV_PANTHER:
-    case MV_TIGER:
-        // This version of Qt does not run on those versions of OS X
-        // so this case label will never be reached
-        Q_UNREACHABLE();
-        break;
-    case MV_LEOPARD:
-        basename = "Mac OS X Leopard (";
-        break;
-    case MV_SNOWLEOPARD:
-        basename = "Mac OS X Snow Leopard (";
-        break;
-    case MV_LION:
-        basename = "OS X Lion (";
-        break;
-    case MV_MOUNTAINLION:
-        basename = "OS X Mountain Lion (";
-        break;
-    case MV_MAVERICKS:
-        basename = "OS X Mavericks (";
-        break;
-    case MV_YOSEMITE:
-        basename = "OS X Yosemite (";
-        break;
-    case MV_ELCAPITAN:
-        basename = "OS X El Capitan (";
-        break;
+    const QAppleOperatingSystemVersion version = qt_apple_os_version();
+    const char *name = osxVer_helper(version);
+    if (name) {
+        return QLatin1String("OS X ") + QLatin1String(name)
+            + QLatin1String(" (") + QString::number(version.major)
+            + QLatin1Char('.') + QString::number(version.minor)
+            + QLatin1Char(')');
+    } else {
+        return QLatin1String("OS X ")
+            + QString::number(version.major) + QLatin1Char('.')
+            + QString::number(version.minor);
     }
-    if (basename)
-        return QLatin1String(basename) + productVersion() + QLatin1Char(')');
-
-    // a future version of OS X
-    return QLatin1String("OS X ") + productVersion();
 #elif defined(Q_OS_WINPHONE)
     return QLatin1String("Windows Phone ") + QLatin1String(winVer_helper());
 #elif defined(Q_OS_WIN)
