@@ -122,6 +122,7 @@ QT_BEGIN_NAMESPACE
     Other measurements have shown a slightly bigger binary size than a compact text
     representation where all possible whitespace was stripped out.
 */
+#define Q_DECLARE_JSONPRIVATE_TYPEINFO(Class, Flags) } Q_DECLARE_TYPEINFO(QJsonPrivate::Class, Flags); namespace QJsonPrivate {
 namespace QJsonPrivate {
 
 class Array;
@@ -619,6 +620,7 @@ public:
     static uint valueToStore(const QJsonValue &v, uint offset);
     static void copyData(const QJsonValue &v, char *dest, bool compressed);
 };
+Q_DECLARE_JSONPRIVATE_TYPEINFO(Value, Q_PRIMITIVE_TYPE)
 
 inline Value Array::at(int i) const
 {
