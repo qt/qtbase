@@ -45,6 +45,8 @@
 #include "qthreadstorage.h"
 #include "qdir.h"
 #include "qdatetime.h"
+#include "qoperatingsystemversion.h"
+#include "qoperatingsystemversion_p.h"
 #include <private/qlocale_tools_p.h>
 
 #include <qmutex.h>
@@ -1939,15 +1941,15 @@ QT_END_INCLUDE_NAMESPACE
 
 QSysInfo::MacVersion QSysInfo::macVersion()
 {
-    const QAppleOperatingSystemVersion version = qt_apple_os_version(); // qtcore_mac_objc.mm
+    const auto version = QOperatingSystemVersion::current();
 #if defined(Q_OS_OSX)
-    return QSysInfo::MacVersion(Q_MV_OSX(version.major, version.minor));
+    return QSysInfo::MacVersion(Q_MV_OSX(version.majorVersion(), version.minorVersion()));
 #elif defined(Q_OS_IOS)
-    return QSysInfo::MacVersion(Q_MV_IOS(version.major, version.minor));
+    return QSysInfo::MacVersion(Q_MV_IOS(version.majorVersion(), version.minorVersion()));
 #elif defined(Q_OS_TVOS)
-    return QSysInfo::MacVersion(Q_MV_TVOS(version.major, version.minor));
+    return QSysInfo::MacVersion(Q_MV_TVOS(version.majorVersion(), version.minorVersion()));
 #elif defined(Q_OS_WATCHOS)
-    return QSysInfo::MacVersion(Q_MV_WATCHOS(version.major, version.minor));
+    return QSysInfo::MacVersion(Q_MV_WATCHOS(version.majorVersion(), version.minorVersion()));
 #else
     return QSysInfo::MV_Unknown;
 #endif
@@ -1955,10 +1957,10 @@ QSysInfo::MacVersion QSysInfo::macVersion()
 const QSysInfo::MacVersion QSysInfo::MacintoshVersion = QSysInfo::macVersion();
 
 #ifdef Q_OS_OSX
-static const char *osxVer_helper(QAppleOperatingSystemVersion version = qt_apple_os_version())
+static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSystemVersion::current())
 {
-    if (version.major == 10) {
-        switch (version.minor) {
+    if (version.majorVersion() == 10) {
+        switch (version.minorVersion()) {
         case 9:
             return "Mavericks";
         case 10:
@@ -2010,140 +2012,27 @@ QWindowsSockInit::~QWindowsSockInit()
 Q_GLOBAL_STATIC(QWindowsSockInit, winsockInit)
 #  endif // QT_BOOTSTRAPPED
 
-#ifdef Q_OS_WINRT
-static inline HMODULE moduleHandleForFunction(LPCVOID address)
-{
-    // This is a widely used, decades-old technique for retrieving the handle
-    // of a module and is effectively equivalent to GetModuleHandleEx
-    // (which is unavailable on WinRT)
-    MEMORY_BASIC_INFORMATION mbi = { 0, 0, 0, 0, 0, 0, 0 };
-    if (VirtualQuery(address, &mbi, sizeof(mbi)) == 0)
-        return 0;
-    return reinterpret_cast<HMODULE>(mbi.AllocationBase);
-}
-#endif
-
-static inline OSVERSIONINFOEX determineWinOsVersion()
-{
-    OSVERSIONINFOEX result = { sizeof(OSVERSIONINFOEX), 0, 0, 0, 0, {'\0'}, 0, 0, 0, 0, 0};
-
-#define GetProcAddressA GetProcAddress
-
-    // GetModuleHandle is not supported in WinRT and linking to it at load time
-    // will not pass the Windows App Certification Kit... but it exists and is functional,
-    // so use some unusual but widely used techniques to get a pointer to it
-#ifdef Q_OS_WINRT
-    // 1. Get HMODULE of kernel32.dll, using the address of some function exported by that DLL
-    HMODULE kernelModule = moduleHandleForFunction(reinterpret_cast<LPCVOID>(VirtualQuery));
-    if (Q_UNLIKELY(!kernelModule))
-        return result;
-
-    // 2. Get pointer to GetModuleHandle so we can then load other arbitrary modules (DLLs)
-    typedef HMODULE(WINAPI *GetModuleHandleFunction)(LPCWSTR);
-    GetModuleHandleFunction pGetModuleHandle = reinterpret_cast<GetModuleHandleFunction>(
-        GetProcAddressA(kernelModule, "GetModuleHandleW"));
-    if (Q_UNLIKELY(!pGetModuleHandle))
-        return result;
-#else
-#define pGetModuleHandle GetModuleHandleW
-#endif
-
-#ifndef Q_OS_WINCE
-    HMODULE ntdll = pGetModuleHandle(L"ntdll.dll");
-    if (Q_UNLIKELY(!ntdll))
-        return result;
-
-    // NTSTATUS is not defined on WinRT
-    typedef LONG NTSTATUS;
-    typedef NTSTATUS (NTAPI *RtlGetVersionFunction)(LPOSVERSIONINFO);
-
-    // RtlGetVersion is documented public API but we must load it dynamically
-    // because linking to it at load time will not pass the Windows App Certification Kit
-    // https://msdn.microsoft.com/en-us/library/windows/hardware/ff561910.aspx
-    RtlGetVersionFunction pRtlGetVersion = reinterpret_cast<RtlGetVersionFunction>(
-        GetProcAddressA(ntdll, "RtlGetVersion"));
-    if (Q_UNLIKELY(!pRtlGetVersion))
-        return result;
-
-    // GetVersionEx() has been deprecated in Windows 8.1 and will return
-    // only Windows 8 from that version on, so use the kernel API function.
-    pRtlGetVersion((LPOSVERSIONINFO) &result); // always returns STATUS_SUCCESS
-#else // !Q_OS_WINCE
-    GetVersionEx(&result);
-#endif
-    return result;
-}
-
-static OSVERSIONINFOEX winOsVersion()
-{
-    OSVERSIONINFOEX realResult = determineWinOsVersion();
-#ifdef QT_DEBUG
-    {
-        if (Q_UNLIKELY(qEnvironmentVariableIsSet("QT_WINVER_OVERRIDE"))) {
-            OSVERSIONINFOEX result = realResult;
-            result.dwMajorVersion = 0;
-            result.dwMinorVersion = 0;
-
-            // Erase any build number and service pack information
-            result.dwBuildNumber = 0;
-            result.szCSDVersion[0] = L'\0';
-            result.wServicePackMajor = 0;
-            result.wServicePackMinor = 0;
-
-            const QByteArray winVerOverride = qgetenv("QT_WINVER_OVERRIDE");
-            if (winVerOverride == "WINDOWS7" || winVerOverride == "2008_R2") {
-                result.dwMajorVersion = 6;
-                result.dwMinorVersion = 1;
-            } else if (winVerOverride == "WINDOWS8" || winVerOverride == "2012") {
-                result.dwMajorVersion = 6;
-                result.dwMinorVersion = 2;
-            } else if (winVerOverride == "WINDOWS8_1" || winVerOverride == "2012_R2") {
-                result.dwMajorVersion = 6;
-                result.dwMinorVersion = 3;
-            } else if (winVerOverride == "WINDOWS10" || winVerOverride == "2016") {
-                result.dwMajorVersion = 10;
-            } else {
-                return realResult;
-            }
-
-            if (winVerOverride == "2008_R2"
-                || winVerOverride == "2012"
-                || winVerOverride == "2012_R2"
-                || winVerOverride == "2016") {
-                // If the current host OS is a domain controller and the override OS
-                // is also a server type OS, preserve that information
-                if (result.wProductType == VER_NT_WORKSTATION)
-                    result.wProductType = VER_NT_SERVER;
-            } else {
-                // Any other OS must be a workstation OS type
-                result.wProductType = VER_NT_WORKSTATION;
-            }
-        }
-    }
-#endif
-    return realResult;
-}
-
 QSysInfo::WinVersion QSysInfo::windowsVersion()
 {
-    const OSVERSIONINFOEX osver = winOsVersion();
-    if (osver.dwMajorVersion == 6 && osver.dwMinorVersion == 1)
+    const auto version = QOperatingSystemVersion::current();
+    if (version.majorVersion() == 6 && version.minorVersion() == 1)
         return QSysInfo::WV_WINDOWS7;
-    if (osver.dwMajorVersion == 6 && osver.dwMinorVersion == 2)
+    if (version.majorVersion() == 6 && version.minorVersion() == 2)
         return QSysInfo::WV_WINDOWS8;
-    if (osver.dwMajorVersion == 6 && osver.dwMinorVersion == 3)
+    if (version.majorVersion() == 6 && version.minorVersion() == 3)
         return QSysInfo::WV_WINDOWS8_1;
-    if (osver.dwMajorVersion == 10 && osver.dwMinorVersion == 0)
+    if (version.majorVersion() == 10 && version.minorVersion() == 0)
         return QSysInfo::WV_WINDOWS10;
     return QSysInfo::WV_NT_based;
 }
 
 static QString winSp_helper()
 {
-    const qint16 major = winOsVersion().wServicePackMajor;
+    const auto osv = qWindowsVersionInfo();
+    const qint16 major = osv.wServicePackMajor;
     if (major) {
         QString sp = QStringLiteral(" SP ") + QString::number(major);
-        const qint16 minor = winOsVersion().wServicePackMinor;
+        const qint16 minor = osv.wServicePackMinor;
         if (minor)
             sp += QLatin1Char('.') + QString::number(minor);
 
@@ -2152,9 +2041,10 @@ static QString winSp_helper()
     return QString();
 }
 
-static const char *winVer_helper()
+static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSystemVersion::current())
 {
-    const OSVERSIONINFOEX osver = winOsVersion();
+    Q_UNUSED(version);
+    const OSVERSIONINFOEX osver = qWindowsVersionInfo();
     const bool workstation = osver.wProductType == VER_NT_WORKSTATION;
 
 #define Q_WINVER(major, minor) (major << 8 | minor)
@@ -2603,9 +2493,9 @@ QString QSysInfo::kernelType()
 QString QSysInfo::kernelVersion()
 {
 #ifdef Q_OS_WIN
-    const OSVERSIONINFOEX osver = winOsVersion();
-    return QString::number(int(osver.dwMajorVersion)) + QLatin1Char('.') + QString::number(int(osver.dwMinorVersion))
-            + QLatin1Char('.') + QString::number(int(osver.dwBuildNumber));
+    const auto osver = QOperatingSystemVersion::current();
+    return QString::number(osver.majorVersion()) + QLatin1Char('.') + QString::number(osver.minorVersion())
+            + QLatin1Char('.') + QString::number(osver.microVersion());
 #else
     struct utsname u;
     if (uname(&u) == 0)
@@ -2673,8 +2563,8 @@ QString QSysInfo::productType()
 #elif defined(Q_OS_WATCHOS)
     return QStringLiteral("watchos");
 #elif defined(Q_OS_MACOS)
-    const QAppleOperatingSystemVersion version = qt_apple_os_version();
-    if (version.major == 10 && version.minor < 12)
+    const auto version = QOperatingSystemVersion::current();
+    if (version.majorVersion() == 10 && version.minorVersion() < 12)
         return QStringLiteral("osx");
     return QStringLiteral("macos");
 #elif defined(Q_OS_DARWIN)
@@ -2714,11 +2604,11 @@ QString QSysInfo::productType()
 */
 QString QSysInfo::productVersion()
 {
-#if defined(Q_OS_MAC)
-    const QAppleOperatingSystemVersion version = qt_apple_os_version();
-    return QString::number(version.major) + QLatin1Char('.') + QString::number(version.minor);
+#if defined(Q_OS_DARWIN)
+    const auto version = QOperatingSystemVersion::current();
+    return QString::number(version.majorVersion()) + QLatin1Char('.') + QString::number(version.minorVersion());
 #elif defined(Q_OS_WIN)
-    const char *version = winVer_helper();
+    const char *version = osVer_helper();
     if (version) {
         const QLatin1Char spaceChar(' ');
         return QString::fromLatin1(version).remove(spaceChar).toLower() + winSp_helper().remove(spaceChar).toLower();
@@ -2755,44 +2645,27 @@ QString QSysInfo::productVersion()
 */
 QString QSysInfo::prettyProductName()
 {
-#if defined(Q_OS_IOS)
-    return QLatin1String("iOS ") + productVersion();
-#elif defined(Q_OS_TVOS)
-    return QLatin1String("tvOS ") + productVersion();
-#elif defined(Q_OS_WATCHOS)
-    return QLatin1String("watchOS ") + productVersion();
-#elif defined(Q_OS_MACOS)
-    const QAppleOperatingSystemVersion version = qt_apple_os_version();
-    const char *name = osxVer_helper(version);
-    if (name) {
-        return (version.major == 10 && version.minor < 12
-                ? QLatin1String("OS X ")
-                : QLatin1String("macOS "))
-            + QLatin1String(name)
-            + QLatin1String(" (") + QString::number(version.major)
-            + QLatin1Char('.') + QString::number(version.minor)
-            + QLatin1Char(')');
-    } else {
-        return QLatin1String("macOS ")
-            + QString::number(version.major) + QLatin1Char('.')
-            + QString::number(version.minor);
-    }
-#elif defined(Q_OS_WINPHONE)
-    return QLatin1String("Windows Phone ") + QLatin1String(winVer_helper());
-#elif defined(Q_OS_WIN)
-    const char *name = winVer_helper();
-    const OSVERSIONINFOEX osver = winOsVersion();
+#if defined(Q_OS_WINPHONE)
+    return QLatin1String("Windows Phone ") + QLatin1String(osVer_helper());
+#elif defined(Q_OS_ANDROID) || defined(Q_OS_DARWIN) || defined(Q_OS_WIN)
+    const auto version = QOperatingSystemVersion::current();
+#  if defined(Q_OS_MACOS) || defined(Q_OS_WIN)
+    const char *name = osVer_helper(version);
     if (name)
-        return QLatin1String("Windows ") + QLatin1String(name) + winSp_helper()
-            + QLatin1String(" (") + QString::number(osver.dwMajorVersion)
-            + QLatin1Char('.') + QString::number(osver.dwMinorVersion)
+        return version.name() + QLatin1Char(' ') + QLatin1String(name)
+#    if defined(Q_OS_WIN)
+            + winSp_helper()
+#    endif
+            + QLatin1String(" (") + QString::number(version.majorVersion())
+            + QLatin1Char('.') + QString::number(version.minorVersion())
             + QLatin1Char(')');
-    else
-        return QLatin1String("Windows ")
-            + QString::number(osver.dwMajorVersion) + QLatin1Char('.')
-            + QString::number(osver.dwMinorVersion);
-#elif defined(Q_OS_ANDROID)
-    return QLatin1String("Android ") + productVersion();
+      else
+        return version.name() + QLatin1Char(' ')
+            + QString::number(version.majorVersion()) + QLatin1Char('.')
+            + QString::number(version.minorVersion());
+#  else
+    return version.name() + QLatin1Char(' ') + productVersion();
+#  endif
 #elif defined(Q_OS_HAIKU)
     return QLatin1String("Haiku ") + productVersion();
 #elif defined(Q_OS_UNIX)

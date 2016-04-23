@@ -18,7 +18,7 @@ QOBJS=qtextcodec.o qutfcodec.o qstring.o qstring_compat.o qstringbuilder.o qtext
       qbitarray.o qdir.o qdiriterator.o quuid.o qhash.o qfileinfo.o qdatetime.o qstringlist.o \
       qabstractfileengine.o qtemporaryfile.o qmap.o qmetatype.o qsettings.o qsystemerror.o qlibraryinfo.o \
       qvariant.o qvsnprintf.o qlocale.o qlocale_tools.o qlinkedlist.o qnumeric.o \
-      qcryptographichash.o qxmlstream.o qxmlutils.o qlogging.o \
+      qcryptographichash.o qxmlstream.o qxmlutils.o qlogging.o qoperatingsystemversion.o \
       qjson.o qjsondocument.o qjsonparser.o qjsonarray.o qjsonobject.o qjsonvalue.o \
       $(QTOBJS)
 
@@ -271,6 +271,15 @@ qmetatype.o: $(SOURCE_PATH)/src/corelib/kernel/qmetatype.cpp
 
 qcore_mac.o: $(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp
+
+qoperatingsystemversion.o: $(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion.cpp
+
+qoperatingsystemversion_win.o: $(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion_win.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion_win.cpp
+
+qoperatingsystemversion_darwin.o: $(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion_darwin.mm
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion_darwin.mm
 
 qcore_mac_objc.o: $(SOURCE_PATH)/src/corelib/kernel/qcore_mac_objc.mm
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/kernel/qcore_mac_objc.mm

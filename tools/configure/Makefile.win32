@@ -37,6 +37,8 @@ OBJECTS = \
     qtextcodec.obj \
     qglobal.obj \
     qnumeric.obj \
+    qoperatingsystemversion.obj \
+    qoperatingsystemversion_win.obj \
     qbuffer.obj \
     qdatastream.obj \
     qdir.obj \
@@ -114,6 +116,8 @@ qutfcodec.obj: $(CORESRC)\codecs\qutfcodec.cpp $(PCH)
 qtextcodec.obj: $(CORESRC)\codecs\qtextcodec.cpp $(PCH)
 qglobal.obj: $(CORESRC)\global\qglobal.cpp $(PCH)
 qnumeric.obj: $(CORESRC)\global\qnumeric.cpp $(PCH)
+qoperatingsystemversion.obj: $(CORESRC)\global\qoperatingsystemversion.cpp $(PCH)
+qoperatingsystemversion_win.obj: $(CORESRC)\global\qoperatingsystemversion_win.cpp $(PCH)
 qbuffer.obj: $(CORESRC)\io\qbuffer.cpp $(PCH)
 qdatastream.obj: $(CORESRC)\io\qdatastream.cpp $(PCH)
 qdir.obj: $(CORESRC)\io\qdir.cpp $(PCH)

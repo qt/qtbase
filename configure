@@ -1696,9 +1696,11 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
                         qfsfileengine_win.o \
                         qlocale_win.o \
                         qsettings_win.o \
+                        qoperatingsystemversion_win.o \
                         qsystemlibrary.o \
                         registry.o"
             EXTRA_SRCS="\"\$(SOURCE_PATH)/src/corelib/corelib/io/qfilesystemengine_win.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion_win.cpp\" \
                         \"\$(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win.cpp\" \
                         \"\$(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp\" \
                         \"\$(SOURCE_PATH)/src/corelib/io/qsettings_win.cpp\" \
@@ -1731,12 +1733,12 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             EXTRA_OBJS="$EXTRA_OBJS \
                         qsettings_mac.o \
                         qcore_mac.o \
-                        qcore_mac_objc.o \
+                        qoperatingsystemversion_darwin.o \
                         qcore_foundation.o"
             EXTRA_SRCS="$EXTRA_SRCS \
                         \"\$(SOURCE_PATH)/src/corelib/io/qsettings_mac.cpp\" \
                         \"\$(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp\" \
-                        \"\$(SOURCE_PATH)/src/corelib/kernel/qcore_mac_objc.mm\" \
+                        \"\$(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion_darwin.mm\" \
                         \"\$(SOURCE_PATH)/src/corelib/kernel/qcore_foundation.mm\""
         fi
 

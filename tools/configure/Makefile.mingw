@@ -48,6 +48,8 @@ OBJECTS = \
     qfsfileengine_win.o \
     qfsfileengine_iterator.o \
     qiodevice.o \
+    qoperatingsystemversion.o \
+    qoperatingsystemversion_win.o \
     qringbuffer.o \
     qdebug.o \
     qtextstream.o \

@@ -47,13 +47,7 @@
 
 #include <qdebug.h>
 
-#if defined(Q_OS_IOS)
-#import <UIKit/UIKit.h>
-#endif
-
 QT_BEGIN_NAMESPACE
-
-typedef qint16 (*GestaltFunction)(quint32 selector, qint32 *response);
 
 NSString *QCFString::toNSString(const QString &string)
 {
@@ -95,54 +89,6 @@ QT_FOR_EACH_CORE_FOUNDATION_TYPE(QT_DECLARE_WEAK_QDEBUG_OPERATOR_FOR_CF_TYPE);
 QT_FOR_EACH_MUTABLE_CORE_FOUNDATION_TYPE(QT_DECLARE_WEAK_QDEBUG_OPERATOR_FOR_CF_TYPE);
 QT_FOR_EACH_CORE_GRAPHICS_TYPE(QT_DECLARE_WEAK_QDEBUG_OPERATOR_FOR_CF_TYPE);
 QT_FOR_EACH_MUTABLE_CORE_GRAPHICS_TYPE(QT_DECLARE_WEAK_QDEBUG_OPERATOR_FOR_CF_TYPE);
-
-// -------------------------------------------------------------------------
-
-QAppleOperatingSystemVersion qt_apple_os_version()
-{
-    QAppleOperatingSystemVersion v = {0, 0, 0};
-#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_10, __IPHONE_8_0) || defined(Q_OS_TVOS) || defined(Q_OS_WATCHOS)
-    if ([NSProcessInfo instancesRespondToSelector:@selector(operatingSystemVersion)]) {
-        NSOperatingSystemVersion osv = NSProcessInfo.processInfo.operatingSystemVersion;
-        v.major = osv.majorVersion;
-        v.minor = osv.minorVersion;
-        v.patch = osv.patchVersion;
-        return v;
-    }
-#endif
-    // Use temporary variables so we can return 0.0.0 (unknown version)
-    // in case of an error partway through determining the OS version
-    qint32 major = 0, minor = 0, patch = 0;
-#if QT_MAC_DEPLOYMENT_TARGET_BELOW(__MAC_10_10, __IPHONE_8_0)
-#if defined(Q_OS_IOS)
-    @autoreleasepool {
-        NSArray *parts = [UIDevice.currentDevice.systemVersion componentsSeparatedByString:@"."];
-        major = parts.count > 0 ? [[parts objectAtIndex:0] intValue] : 0;
-        minor = parts.count > 1 ? [[parts objectAtIndex:1] intValue] : 0;
-        patch = parts.count > 2 ? [[parts objectAtIndex:2] intValue] : 0;
-    }
-#elif defined(Q_OS_OSX)
-    static GestaltFunction pGestalt = 0;
-    if (!pGestalt) {
-        CFBundleRef b = CFBundleGetBundleWithIdentifier(CFSTR("com.apple.CoreServices"));
-        pGestalt = reinterpret_cast<GestaltFunction>(CFBundleGetFunctionPointerForName(b,
-                                                     CFSTR("Gestalt")));
-    }
-    if (!pGestalt)
-        return v;
-    if (pGestalt('sys1', &major) != 0)
-        return v;
-    if (pGestalt('sys2', &minor) != 0)
-        return v;
-    if (pGestalt('sys3', &patch) != 0)
-        return v;
-#endif
-#endif
-    v.major = major;
-    v.minor = minor;
-    v.patch = patch;
-    return v;
-}
 
 // -------------------------------------------------------------------------
 

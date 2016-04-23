@@ -105,6 +105,8 @@ QTOBJS= \
 	qlocale_win.obj \
 	qmalloc.obj \
 	qmap.obj \
+	qoperatingsystemversion.obj \
+	qoperatingsystemversion_win.obj \
 	qregexp.obj \
 	qtextcodec.obj \
 	qutfcodec.obj \

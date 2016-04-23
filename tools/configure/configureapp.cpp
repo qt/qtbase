@@ -895,10 +895,12 @@ void Configure::buildQmake()
                            << "         qfilesystemiterator_win.o \\" << endl
                            << "         qfsfileengine_win.o \\" << endl
                            << "         qlocale_win.o \\" << endl
+                           << "         qoperatingsystemversion_win.o \\" << endl
                            << "         qsettings_win.o \\" << endl
                            << "         qsystemlibrary.o \\" << endl
                            << "         registry.o" << endl
-                           << "QTSRCS=\"$(SOURCE_PATH)/src/corelib/io/qfilesystemengine_win.cpp\" \\" << endl
+                           << "QTSRCS=\"$(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion_win.cpp\" \\" << endl
+                           << "       \"$(SOURCE_PATH)/src/corelib/io/qfilesystemengine_win.cpp\" \\" << endl
                            << "       \"$(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win.cpp\" \\" << endl
                            << "       \"$(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp\" \\" << endl
                            << "       \"$(SOURCE_PATH)/src/corelib/io/qsettings_win.cpp\" \\" << endl

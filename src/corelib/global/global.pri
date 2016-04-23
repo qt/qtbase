@@ -2,6 +2,8 @@
 
 HEADERS +=  \
 	global/qglobal.h \
+        global/qoperatingsystemversion.h \
+        global/qoperatingsystemversion_p.h \
         global/qsystemdetection.h \
         global/qcompilerdetection.h \
         global/qprocessordetection.h \
@@ -27,10 +29,14 @@ SOURCES += \
         global/qlibraryinfo.cpp \
 	global/qmalloc.cpp \
         global/qnumeric.cpp \
+        global/qoperatingsystemversion.cpp \
         global/qlogging.cpp \
         global/qhooks.cpp
 
 VERSIONTAGGING_SOURCES = global/qversiontagging.cpp
+
+darwin: SOURCES += global/qoperatingsystemversion_darwin.mm
+win32: SOURCES += global/qoperatingsystemversion_win.cpp
 
 # qlibraryinfo.cpp includes qconfig.cpp
 INCLUDEPATH += $$QT_BUILD_TREE/src/corelib/global

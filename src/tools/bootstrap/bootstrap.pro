@@ -40,6 +40,7 @@ SOURCES += \
            ../../corelib/global/qlogging.cpp \
            ../../corelib/global/qmalloc.cpp \
            ../../corelib/global/qnumeric.cpp \
+           ../../corelib/global/qoperatingsystemversion.cpp \
            ../../corelib/io/qabstractfileengine.cpp \
            ../../corelib/io/qbuffer.cpp \
            ../../corelib/io/qdatastream.cpp \
@@ -108,7 +109,8 @@ unix:SOURCES += ../../corelib/io/qfilesystemengine_unix.cpp \
                 ../../corelib/io/qfilesystemiterator_unix.cpp \
                 ../../corelib/io/qfsfileengine_unix.cpp
 
-win32:SOURCES += ../../corelib/io/qfilesystemengine_win.cpp \
+win32:SOURCES += ../../corelib/global/qoperatingsystemversion_win.cpp \
+                 ../../corelib/io/qfilesystemengine_win.cpp \
                  ../../corelib/io/qfilesystemiterator_win.cpp \
                  ../../corelib/io/qfsfileengine_win.cpp \
                  ../../corelib/kernel/qcoreapplication_win.cpp \
@@ -119,6 +121,7 @@ mac {
         ../../corelib/kernel/qcoreapplication_mac.cpp \
         ../../corelib/kernel/qcore_mac.cpp
     OBJECTIVE_SOURCES += \
+        ../../corelib/global/qoperatingsystemversion_darwin.mm \
         ../../corelib/kernel/qcore_mac_objc.mm \
         ../../corelib/kernel/qcore_foundation.mm
 
