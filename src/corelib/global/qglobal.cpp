@@ -2782,7 +2782,17 @@ QString QSysInfo::prettyProductName()
 #elif defined(Q_OS_WINPHONE)
     return QLatin1String("Windows Phone ") + QLatin1String(winVer_helper());
 #elif defined(Q_OS_WIN)
-    return QLatin1String("Windows ") + QLatin1String(winVer_helper()) + winSp_helper();
+    const char *name = winVer_helper();
+    const OSVERSIONINFOEX osver = winOsVersion();
+    if (name)
+        return QLatin1String("Windows ") + QLatin1String(name) + winSp_helper()
+            + QLatin1String(" (") + QString::number(osver.dwMajorVersion)
+            + QLatin1Char('.') + QString::number(osver.dwMinorVersion)
+            + QLatin1Char(')');
+    else
+        return QLatin1String("Windows ")
+            + QString::number(osver.dwMajorVersion) + QLatin1Char('.')
+            + QString::number(osver.dwMinorVersion);
 #elif defined(Q_OS_ANDROID)
     return QLatin1String("Android ") + productVersion();
 #elif defined(Q_OS_HAIKU)
