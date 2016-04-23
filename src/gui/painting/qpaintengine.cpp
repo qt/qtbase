@@ -310,6 +310,7 @@ struct QT_Point {
     int x;
     int y;
 };
+Q_DECLARE_TYPEINFO(QT_Point, Q_PRIMITIVE_TYPE);
 
 /*!
     \fn void QPaintEngine::drawPolygon(const QPointF *points, int pointCount,
@@ -340,6 +341,8 @@ struct QT_PointF {
     qreal x;
     qreal y;
 };
+Q_DECLARE_TYPEINFO(QT_PointF, Q_PRIMITIVE_TYPE);
+
 /*!
     \overload
 

@@ -180,6 +180,7 @@ struct QGlyphAttributes {
     uchar reserved      : 2;
 };
 Q_STATIC_ASSERT(sizeof(QGlyphAttributes) == 1);
+Q_DECLARE_TYPEINFO(QGlyphAttributes, Q_PRIMITIVE_TYPE);
 
 struct QGlyphLayout
 {

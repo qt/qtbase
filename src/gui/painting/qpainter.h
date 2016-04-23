@@ -486,6 +486,7 @@ private:
     friend class QPreviewPaintEngine;
     friend class QTextEngine;
 };
+Q_DECLARE_TYPEINFO(QPainter::PixmapFragment, Q_RELOCATABLE_TYPE);
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QPainter::RenderHints)
 
