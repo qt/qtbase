@@ -87,10 +87,12 @@ void PathStrokeControls::createCommonControls(QWidget* parent)
     m_joinGroup->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
     QRadioButton *bevelJoin = new QRadioButton(m_joinGroup);
     QRadioButton *miterJoin = new QRadioButton(m_joinGroup);
+    QRadioButton *svgMiterJoin = new QRadioButton(m_joinGroup);
     QRadioButton *roundJoin = new QRadioButton(m_joinGroup);
     m_joinGroup->setTitle(tr("Join Style"));
     bevelJoin->setText(tr("Bevel"));
     miterJoin->setText(tr("Miter"));
+    svgMiterJoin->setText(tr("SvgMiter"));
     roundJoin->setText(tr("Round"));
 
     m_styleGroup = new QGroupBox(parent);
@@ -145,6 +147,7 @@ void PathStrokeControls::createCommonControls(QWidget* parent)
     QVBoxLayout *joinGroupLayout = new QVBoxLayout(m_joinGroup);
     joinGroupLayout->addWidget(bevelJoin);
     joinGroupLayout->addWidget(miterJoin);
+    joinGroupLayout->addWidget(svgMiterJoin);
     joinGroupLayout->addWidget(roundJoin);
 
     QVBoxLayout *styleGroupLayout = new QVBoxLayout(m_styleGroup);
@@ -167,6 +170,7 @@ void PathStrokeControls::createCommonControls(QWidget* parent)
 
     connect(bevelJoin, SIGNAL(clicked()), m_renderer, SLOT(setBevelJoin()));
     connect(miterJoin, SIGNAL(clicked()), m_renderer, SLOT(setMiterJoin()));
+    connect(svgMiterJoin, SIGNAL(clicked()), m_renderer, SLOT(setSvgMiterJoin()));
     connect(roundJoin, SIGNAL(clicked()), m_renderer, SLOT(setRoundJoin()));
 
     connect(curveMode, SIGNAL(clicked()), m_renderer, SLOT(setCurveMode()));
