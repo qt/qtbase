@@ -1055,6 +1055,11 @@
 #  define Q_ALIGNOF(x)  alignof(x)
 #endif
 
+#if defined(Q_COMPILER_ALIGNAS)
+#  undef Q_DECL_ALIGN
+#  define Q_DECL_ALIGN(n)   alignas(n)
+#endif
+
 /*
  * Fallback macros to certain compiler features
  */
