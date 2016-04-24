@@ -1956,9 +1956,10 @@ QSysInfo::MacVersion QSysInfo::macVersion()
 }
 const QSysInfo::MacVersion QSysInfo::MacintoshVersion = QSysInfo::macVersion();
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_DARWIN
 static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSystemVersion::current())
 {
+#ifdef Q_OS_MACOS
     if (version.majorVersion() == 10) {
         switch (version.minorVersion()) {
         case 9:
@@ -1972,6 +1973,9 @@ static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSyst
         }
     }
     // unknown, future version
+#else
+    Q_UNUSED(version);
+#endif
     return 0;
 }
 #endif
@@ -2245,6 +2249,67 @@ static bool findUnixOsVersion(QUnixOSVersion &v)
 #  endif // USE_ETC_OS_RELEASE
 #endif // Q_OS_UNIX
 
+#ifdef Q_OS_ANDROID
+static const char *osVer_helper(QOperatingSystemVersion)
+{
+/* Data:
+
+
+
+Cupcake
+Donut
+Eclair
+Eclair
+Eclair
+Froyo
+Gingerbread
+Gingerbread
+Honeycomb
+Honeycomb
+Honeycomb
+Ice Cream Sandwich
+Ice Cream Sandwich
+Jelly Bean
+Jelly Bean
+Jelly Bean
+KitKat
+KitKat
+Lollipop
+Lollipop
+Marshmallow
+Nougat
+ */
+    static const char versions_string[] =
+        "\0"
+        "Cupcake\0"
+        "Donut\0"
+        "Eclair\0"
+        "Froyo\0"
+        "Gingerbread\0"
+        "Honeycomb\0"
+        "Ice Cream Sandwich\0"
+        "Jelly Bean\0"
+        "KitKat\0"
+        "Lollipop\0"
+        "Marshmallow\0"
+        "Nougat\0"
+        "\0";
+
+    static const int versions_indices[] = {
+           0,    0,    0,    1,    9,   15,   15,   15,
+          22,   28,   28,   40,   40,   40,   50,   50,
+          69,   69,   69,   80,   80,   87,   87,   96,
+         108,   -1
+    };
+
+    static const int versions_count = (sizeof versions_indices) / (sizeof versions_indices[0]);
+
+    // https://source.android.com/source/build-numbers.html
+    // https://developer.android.com/guide/topics/manifest/uses-sdk-element.html#ApiLevels
+    const int sdk_int = QJNIObjectPrivate::getStaticField<jint>("android/os/Build$VERSION", "SDK_INT");
+    return &versions_string[versions_indices[qBound(0, sdk_int, versions_count - 1)]];
+}
+#endif
 
 /*!
     \since 5.4
@@ -2649,7 +2714,6 @@ QString QSysInfo::prettyProductName()
     return QLatin1String("Windows Phone ") + QLatin1String(osVer_helper());
 #elif defined(Q_OS_ANDROID) || defined(Q_OS_DARWIN) || defined(Q_OS_WIN)
     const auto version = QOperatingSystemVersion::current();
-#  if defined(Q_OS_MACOS) || defined(Q_OS_WIN)
     const char *name = osVer_helper(version);
     if (name)
         return version.name() + QLatin1Char(' ') + QLatin1String(name)
@@ -2663,9 +2727,6 @@ QString QSysInfo::prettyProductName()
         return version.name() + QLatin1Char(' ')
             + QString::number(version.majorVersion()) + QLatin1Char('.')
             + QString::number(version.minorVersion());
-#  else
-    return version.name() + QLatin1Char(' ') + productVersion();
-#  endif
 #elif defined(Q_OS_HAIKU)
     return QLatin1String("Haiku ") + productVersion();
 #elif defined(Q_OS_UNIX)
