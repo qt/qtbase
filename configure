@@ -1009,16 +1009,6 @@ while [ "$#" -gt 0 ]; do
             VAL=`echo $1 | sed 's,-D,,'`
         fi
         ;;
-    -fpu)
-        VAR="fpu"
-        # this option may or may not be followed by an argument
-        if [ -z "$2" ] || echo "$2" | grep '^-' >/dev/null 2>&1; then
-            VAL=no
-        else
-            shift
-            VAL=$1
-        fi
-        ;;
     -I?*|-I)
         VAR="add_ipath"
         if [ "$1" = "-I" ]; then
