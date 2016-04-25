@@ -1877,6 +1877,10 @@ void tst_QWidget::activation()
 
 void tst_QWidget::windowState()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974");
+#endif
+
     if (m_platform == QStringLiteral("xcb"))
         QSKIP("X11: Many window managers do not support window state properly, which causes this test to fail.");
     if (m_platform == QStringLiteral("wayland"))
@@ -2088,6 +2092,10 @@ void tst_QWidget::showMaximized()
 
 void tst_QWidget::showFullScreen()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974");
+#endif
+
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
     QWidget plain;
@@ -2447,6 +2455,10 @@ void tst_QWidget::reparent()
 // Qt/Embedded does it differently.
 void tst_QWidget::icon()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974");
+#endif
+
     QPixmap p(20,20);
     p.fill(Qt::red);
     testWidget->setWindowIcon(p);
@@ -2498,6 +2510,10 @@ void tst_QWidget::hideWhenFocusWidgetIsChild()
 
 void tst_QWidget::normalGeometry()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974");
+#endif
+
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
     QWidget parent;
@@ -2848,8 +2864,6 @@ void tst_QWidget::raise()
     }
 }
 
-// Cocoa has no Z-Order for views, we hack it, but it results in paint events.
-#ifndef QT_OS_MAC
 void tst_QWidget::lower()
 {
     QScopedPointer<QWidget> parent(new QWidget);
@@ -2911,12 +2925,13 @@ void tst_QWidget::lower()
     list2 << child4 << child1 << child2 << child3;
     QCOMPARE(parent->children(), list2);
 }
-#endif
 
-// Cocoa has no Z-Order for views, we hack it, but it results in paint events.
-#ifndef QT_OS_MAC
 void tst_QWidget::stackUnder()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974: Cocoa has no Z-Order for views, we hack it, but it results in paint events.");
+#endif
+
     QScopedPointer<QWidget> parent(new QWidget);
     parent->setObjectName(QLatin1String("stackUnder"));
     parent->setWindowTitle(parent->objectName());
@@ -2997,7 +3012,6 @@ void tst_QWidget::stackUnder()
         child->reset();
     }
 }
-#endif
 
 void drawPolygon(QPaintDevice *dev, int w, int h)
 {
@@ -3086,6 +3100,10 @@ void tst_QWidget::testContentsPropagation()
 
 void tst_QWidget::saveRestoreGeometry()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974");
+#endif
+
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
     const QPoint position = m_availableTopLeft + QPoint(100, 100);
@@ -3311,6 +3329,10 @@ void tst_QWidget::restoreVersion1Geometry()
 
 void tst_QWidget::widgetAt()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974");
+#endif
+
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
     Q_CHECK_PAINTEVENTS
@@ -3526,6 +3548,7 @@ void tst_QWidget::testDeletionInEventHandlers()
 #ifdef Q_OS_OSX
 void tst_QWidget::sheetOpacity()
 {
+    QSKIP("QTBUG-52974: this test will most probably be deleted - to be investigated.");
     QWidget tmpWindow;
     QWidget sheet(&tmpWindow, Qt::Sheet);
     tmpWindow.show();
@@ -4176,6 +4199,10 @@ void tst_QWidget::showHideEventWhileMinimize()
 
 void tst_QWidget::update()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974");
+#endif
+
     QTest::qWait(10);  // Wait for the initStuff to do it's stuff.
     Q_CHECK_PAINTEVENTS
 
@@ -5165,10 +5192,13 @@ void tst_QWidget::showAndMoveChild()
     VERIFY_COLOR(parent, QRegion(parent.rect()) - child.geometry(), Qt::red);
 }
 
-// Cocoa only has rect granularity.
-#ifndef QT_OS_MAC
+
 void tst_QWidget::subtractOpaqueSiblings()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974: Cocoa only has rect granularity.");
+#endif
+
     QWidget w;
     w.setGeometry(50, 50, 300, 300);
 
@@ -5201,7 +5231,6 @@ void tst_QWidget::subtractOpaqueSiblings()
              QRegion(medium->geometry().translated(large->pos()))
              - tall->geometry());
 }
-#endif
 
 void tst_QWidget::deleteStyle()
 {
@@ -5243,6 +5272,10 @@ public slots:
 
 void tst_QWidget::multipleToplevelFocusCheck()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974");
+#endif
+
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
     TopLevelFocusCheck w1;
@@ -7916,6 +7949,10 @@ void tst_QWidget::sendUpdateRequestImmediately()
 
 void tst_QWidget::doubleRepaint()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974");
+#endif
+
 #if defined(Q_OS_OSX)
     if (!macHasAccessToWindowsServer())
         QSKIP("Not having window server access causes the wrong number of repaints to be issues");
@@ -9580,6 +9617,10 @@ void tst_QWidget::childAt_unifiedToolBar()
 
 void tst_QWidget::taskQTBUG_11373()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974");
+#endif
+
     QScopedPointer<QMainWindow> myWindow(new QMainWindow);
     QWidget * center = new QWidget();
     myWindow -> setCentralWidget(center);
@@ -10442,6 +10483,9 @@ public:
 // when mousing over it.
 void tst_QWidget::taskQTBUG_27643_enterEvents()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974: this test can crash!");
+#endif
     // Move the mouse cursor to a safe location so it won't interfere
     QCursor::setPos(m_safeCursorPos);
 
