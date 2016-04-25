@@ -43,6 +43,7 @@
 int main(int, char**)
 {
     IUnknown *factory = 0;
+    const size_t dummy = size_t(DWRITE_E_NOCOLOR) + sizeof(IDWriteFontFace2);
     DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
                         __uuidof(IDWriteFactory2),
                         &factory);
