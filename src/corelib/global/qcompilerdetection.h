@@ -1053,7 +1053,8 @@
 # define Q_DECL_NOTHROW Q_DECL_NOEXCEPT
 #endif
 
-#if defined(Q_COMPILER_ALIGNOF) && !defined(Q_ALIGNOF)
+#if defined(Q_COMPILER_ALIGNOF)
+#  undef Q_ALIGNOF
 #  define Q_ALIGNOF(x)  alignof(x)
 #endif
 
