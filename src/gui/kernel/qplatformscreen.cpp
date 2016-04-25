@@ -194,6 +194,20 @@ QDpi QPlatformScreen::logicalDpi() const
 }
 
 /*!
+    Reimplement to return the base logical DPI for the platform. This
+    DPI value should correspond to a standard-DPI (1x) display. The
+    default implementation returns 96.
+
+    QtGui will use this value (together with logicalDpi) to compute
+    the scale factor when high-DPI scaling is enabled:
+        factor = logicalDPI / baseDPI
+*/
+QDpi QPlatformScreen::logicalBaseDpi() const
+{
+    return QDpi(96, 96);
+}
+
+/*!
     Reimplement this function in subclass to return the device pixel ratio
     for the screen. This is the ratio between physical pixels and the
     device-independent pixels of the windowing system. The default
