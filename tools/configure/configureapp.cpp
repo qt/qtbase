@@ -2500,7 +2500,9 @@ void Configure::autoDetection()
     if (dictionary["DIRECTWRITE"] == "auto")
         dictionary["DIRECTWRITE"] = checkAvailability("DIRECTWRITE") ? "yes" : "no";
 
-    if (dictionary["DIRECTWRITE2"] == "auto")
+    if (dictionary["DIRECTWRITE"] == "no")
+        dictionary["DIRECTWRITE2"] = "no";
+    else if (dictionary["DIRECTWRITE2"] == "auto")
         dictionary["DIRECTWRITE2"] = checkAvailability("DIRECTWRITE2") ? "yes" : "no";
 
     // Mark all unknown "auto" to the default value..
