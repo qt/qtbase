@@ -6179,7 +6179,8 @@ static QPixmap generateWavyPixmap(qreal maxRadius, const QPen &pen)
 
     QString key = QLatin1String("WaveUnderline-")
                   % pen.color().name()
-                  % HexString<qreal>(radiusBase);
+                  % HexString<qreal>(radiusBase)
+                  % HexString<qreal>(pen.widthF());
 
     QPixmap pixmap;
     if (QPixmapCache::find(key, pixmap))
@@ -6187,7 +6188,7 @@ static QPixmap generateWavyPixmap(qreal maxRadius, const QPen &pen)
 
     const qreal halfPeriod = qMax(qreal(2), qreal(radiusBase * 1.61803399)); // the golden ratio
     const int width = qCeil(100 / (2 * halfPeriod)) * (2 * halfPeriod);
-    const int radius = qFloor(radiusBase);
+    const qreal radius = qFloor(radiusBase * 2) / 2.;
 
     QPainterPath path;
 
@@ -6210,7 +6211,7 @@ static QPixmap generateWavyPixmap(qreal maxRadius, const QPen &pen)
         // due to it having a rather thick width for the regular underline.
         const qreal maxPenWidth = .8 * radius;
         if (wavePen.widthF() > maxPenWidth)
-            wavePen.setWidth(maxPenWidth);
+            wavePen.setWidthF(maxPenWidth);
 
         QPainter imgPainter(&pixmap);
         imgPainter.setPen(wavePen);
@@ -6263,14 +6264,15 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
     if (underlineStyle == QTextCharFormat::WaveUnderline) {
         painter->save();
         painter->translate(0, pos.y() + 1);
+        qreal maxHeight = fe->descent().toReal() - qreal(1);
 
         QColor uc = charFormat.underlineColor();
         if (uc.isValid())
             pen.setColor(uc);
 
         // Adapt wave to underlineOffset or pen width, whatever is larger, to make it work on all platforms
-        const QPixmap wave = generateWavyPixmap(qMax(underlineOffset, pen.widthF()), pen);
-        const int descent = (int) fe->descent().toReal();
+        const QPixmap wave = generateWavyPixmap(qMin(qMax(underlineOffset, pen.widthF()), maxHeight / 2.), pen);
+        const int descent = qFloor(maxHeight);
 
         painter->setBrushOrigin(painter->brushOrigin().x(), 0);
         painter->fillRect(pos.x(), 0, qCeil(width), qMin(wave.height(), descent), wave);
