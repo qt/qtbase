@@ -226,7 +226,6 @@ bool QHighDpiScaling::m_usePixelDensity = false; // use scale factor from platfo
 bool QHighDpiScaling::m_pixelDensityScalingActive = false; // pixel density scale factor > 1
 bool QHighDpiScaling::m_globalScalingActive = false; // global scale factor is active
 bool QHighDpiScaling::m_screenFactorSet = false; // QHighDpiScaling::setScreenFactor has been used
-QDpi QHighDpiScaling::m_logicalDpi = QDpi(-1,-1); // The scaled logical DPI of the primary screen
 
 /*
     Initializes the QHighDpiScaling global variables. Called before the
@@ -314,14 +313,6 @@ void QHighDpiScaling::updateHighDpiScaling()
         }
     }
     m_active = m_globalScalingActive || m_screenFactorSet || m_pixelDensityScalingActive;
-
-    QScreen *primaryScreen = QGuiApplication::primaryScreen();
-    if (!primaryScreen)
-        return;
-    QPlatformScreen *platformScreen = primaryScreen->handle();
-    qreal sf = screenSubfactor(platformScreen);
-    QDpi primaryDpi = platformScreen->logicalDpi();
-    m_logicalDpi = QDpi(primaryDpi.first / sf, primaryDpi.second / sf);
 }
 
 /*
@@ -447,9 +438,16 @@ qreal QHighDpiScaling::screenSubfactor(const QPlatformScreen *screen)
     return factor;
 }
 
-QDpi QHighDpiScaling::logicalDpi()
+QDpi QHighDpiScaling::logicalDpi(const QScreen *screen)
 {
-    return m_logicalDpi;
+    // (Note: m_active test is performed at call site.)
+    if (!screen)
+        return QDpi(96, 96);
+
+    qreal platformScreenfactor = screenSubfactor(screen->handle());
+    QDpi platformScreenDpi = screen->handle()->logicalDpi();
+    return QDpi(platformScreenDpi.first / platformScreenfactor,
+                platformScreenDpi.second / platformScreenfactor);
 }
 
 QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QPlatformScreen *platformScreen, QPoint *nativePosition)

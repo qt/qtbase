@@ -98,7 +98,7 @@ public:
     static QPoint mapPositionToNative(const QPoint &pos, const QPlatformScreen *platformScreen);
     static QPoint mapPositionToGlobal(const QPoint &pos, const QPoint &windowGlobalPosition, const QWindow *window);
     static QPoint mapPositionFromGlobal(const QPoint &pos, const QPoint &windowGlobalPosition, const QWindow *window);
-    static QDpi logicalDpi();
+    static QDpi logicalDpi(const QScreen *screen);
 
 private:
     static qreal screenSubfactor(const QPlatformScreen *screen);
