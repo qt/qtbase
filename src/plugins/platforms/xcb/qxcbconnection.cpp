@@ -287,7 +287,7 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
             }
         }
 
-        qCDebug(lcQpaScreen) << "primary output is" << m_screens.first()->name();
+        qCDebug(lcQpaScreen) << "primary output is" << qAsConst(m_screens).first()->name();
     }
 }
 
@@ -322,7 +322,7 @@ void QXcbConnection::updateScreen(QXcbScreen *screen, const xcb_randr_output_cha
             // If the screen became primary, reshuffle the order in QGuiApplicationPrivate
             const int idx = m_screens.indexOf(screen);
             if (idx > 0) {
-                m_screens.first()->setPrimary(false);
+                qAsConst(m_screens).first()->setPrimary(false);
                 m_screens.swap(0, idx);
             }
             screen->virtualDesktop()->setPrimaryScreen(screen);
@@ -342,7 +342,7 @@ QXcbScreen *QXcbConnection::createScreen(QXcbVirtualDesktop *virtualDesktop,
 
     if (screen->isPrimary()) {
         if (!m_screens.isEmpty())
-            m_screens.first()->setPrimary(false);
+            qAsConst(m_screens).first()->setPrimary(false);
 
         m_screens.prepend(screen);
     } else {
@@ -529,7 +529,7 @@ void QXcbConnection::initializeScreens()
     } else {
         // Ensure the primary screen is first on the list
         if (primaryScreen) {
-            if (m_screens.first() != primaryScreen) {
+            if (qAsConst(m_screens).first() != primaryScreen) {
                 m_screens.removeOne(primaryScreen);
                 m_screens.prepend(primaryScreen);
             }
@@ -541,7 +541,7 @@ void QXcbConnection::initializeScreens()
             QXcbIntegration::instance()->screenAdded(screen, screen->isPrimary());
         }
 
-        qCDebug(lcQpaScreen) << "primary output is" << m_screens.first()->name();
+        qCDebug(lcQpaScreen) << "primary output is" << qAsConst(m_screens).first()->name();
     }
 }
 
@@ -1013,8 +1013,8 @@ void QXcbConnection::handleXcbError(xcb_generic_error_t *error)
         }
     }
     if (i == m_callLog.size() && !m_callLog.isEmpty())
-        qDebug("Caused some time after: %s:%d", m_callLog.first().file.constData(),
-               m_callLog.first().line);
+        qDebug("Caused some time after: %s:%d", qAsConst(m_callLog).first().file.constData(),
+               qAsConst(m_callLog).first().line);
 #endif
 }
 
