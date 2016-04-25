@@ -304,6 +304,7 @@ QVariantHash QJsonObject::toVariantHash() const
 {
     QVariantHash hash;
     if (o) {
+        hash.reserve(o->length);
         for (uint i = 0; i < o->length; ++i) {
             QJsonPrivate::Entry *e = o->entryAt(i);
             hash.insert(e->key(), QJsonValue(d, o, e->value).toVariant());
