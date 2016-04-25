@@ -18,12 +18,14 @@ typedef struct D3D11_QUERY_DATA_SO_STATISTICS {
   UINT64 NumPrimitivesWritten;
   UINT64 PrimitivesStorageNeeded;
 } D3D11_QUERY_DATA_SO_STATISTICS;
+#endif // ANGLE_MINGW32_COMPAT
 
+#ifdef __MINGW32__
 typedef struct D3D11_QUERY_DATA_TIMESTAMP_DISJOINT {
   UINT64 Frequency;
   BOOL   Disjoint;
 } D3D11_QUERY_DATA_TIMESTAMP_DISJOINT;
-#endif
+#endif // MINGW32
 
 namespace rx
 {

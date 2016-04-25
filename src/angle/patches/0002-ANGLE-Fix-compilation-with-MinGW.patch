@@ -16,7 +16,7 @@ Change-Id: I254c208209c0071fae5efb6727f2b3cfd5542da6
  .../renderer/d3d/d3d11/DebugAnnotator11.cpp        | 10 +++
  .../libANGLE/renderer/d3d/d3d11/DebugAnnotator11.h |  2 +
  .../libANGLE/renderer/d3d/d3d11/Framebuffer11.cpp  |  2 +
- .../src/libANGLE/renderer/d3d/d3d11/Query11.cpp    | 12 +++
+ .../src/libANGLE/renderer/d3d/d3d11/Query11.cpp    | 14 ++++++++++++++
  .../src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp | 32 +++++++-
  .../src/libANGLE/renderer/d3d/d3d11/Renderer11.h   |  4 +
  .../libANGLE/renderer/d3d/d3d11/SwapChain11.cpp    | 10 +++
@@ -210,9 +210,10 @@ index beffa30..186a035 100644
  }
 diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Query11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Query11.cpp
 index c015ff4..c0bed2b 100644
+index c015ff4..972c289 100644
 --- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Query11.cpp
 +++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Query11.cpp
-@@ -13,6 +13,18 @@
+@@ -13,6 +13,20 @@
  
  #include <GLES2/gl2ext.h>
  
@@ -221,12 +222,14 @@ index c015ff4..c0bed2b 100644
 +  UINT64 NumPrimitivesWritten;
 +  UINT64 PrimitivesStorageNeeded;
 +} D3D11_QUERY_DATA_SO_STATISTICS;
++#endif // ANGLE_MINGW32_COMPAT
 +
++#ifdef __MINGW32__
 +typedef struct D3D11_QUERY_DATA_TIMESTAMP_DISJOINT {
 +  UINT64 Frequency;
 +  BOOL   Disjoint;
 +} D3D11_QUERY_DATA_TIMESTAMP_DISJOINT;
-+#endif
++#endif // MINGW32
 +
  namespace rx
  {
