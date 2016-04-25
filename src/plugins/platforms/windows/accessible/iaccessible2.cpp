@@ -39,6 +39,7 @@
 #include <QtGui/qaccessible.h>
 #include <QtGui/qclipboard.h>
 #include <QtGui/qguiapplication.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtCore/qdebug.h>
 
 #include <algorithm>
@@ -660,9 +661,11 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_locationInParent(long *x, l
     QAccessibleInterface *parentIface = accessible->parent();
     if (parentIface && parentIface->isValid())
         topLeft -= parentIface->rect().topLeft();
+    const QPoint nativeTopLeft = QHighDpi::toNativeLocalPosition(topLeft, accessible->window());
 
-    *x = topLeft.x();
-    *y = topLeft.y();
+
+    *x = nativeTopLeft.x();
+    *y = nativeTopLeft.y();
     return S_OK;
 }
 
