@@ -166,7 +166,7 @@ static int ioErrorHandler(Display *dpy)
 }
 #endif
 
-QXcbScreen* QXcbConnection::findScreenForCrtc(xcb_window_t rootWindow, xcb_randr_crtc_t crtc)
+QXcbScreen* QXcbConnection::findScreenForCrtc(xcb_window_t rootWindow, xcb_randr_crtc_t crtc) const
 {
     foreach (QXcbScreen *screen, m_screens) {
         if (screen->root() == rootWindow && screen->crtc() == crtc)
@@ -176,7 +176,7 @@ QXcbScreen* QXcbConnection::findScreenForCrtc(xcb_window_t rootWindow, xcb_randr
     return 0;
 }
 
-QXcbScreen* QXcbConnection::findScreenForOutput(xcb_window_t rootWindow, xcb_randr_output_t output)
+QXcbScreen* QXcbConnection::findScreenForOutput(xcb_window_t rootWindow, xcb_randr_output_t output) const
 {
     foreach (QXcbScreen *screen, m_screens) {
         if (screen->root() == rootWindow && screen->output() == output)
@@ -186,7 +186,7 @@ QXcbScreen* QXcbConnection::findScreenForOutput(xcb_window_t rootWindow, xcb_ran
     return 0;
 }
 
-QXcbVirtualDesktop* QXcbConnection::virtualDesktopForRootWindow(xcb_window_t rootWindow)
+QXcbVirtualDesktop* QXcbConnection::virtualDesktopForRootWindow(xcb_window_t rootWindow) const
 {
     foreach (QXcbVirtualDesktop *virtualDesktop, m_virtualDesktops) {
         if (virtualDesktop->screen()->root == rootWindow)

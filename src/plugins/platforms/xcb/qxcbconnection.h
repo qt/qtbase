@@ -533,9 +533,9 @@ private:
     void initializeXShape();
     void initializeXKB();
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
-    QXcbScreen* findScreenForCrtc(xcb_window_t rootWindow, xcb_randr_crtc_t crtc);
-    QXcbScreen* findScreenForOutput(xcb_window_t rootWindow, xcb_randr_output_t output);
-    QXcbVirtualDesktop* virtualDesktopForRootWindow(xcb_window_t rootWindow);
+    QXcbScreen* findScreenForCrtc(xcb_window_t rootWindow, xcb_randr_crtc_t crtc) const;
+    QXcbScreen* findScreenForOutput(xcb_window_t rootWindow, xcb_randr_output_t output) const;
+    QXcbVirtualDesktop* virtualDesktopForRootWindow(xcb_window_t rootWindow) const;
     void updateScreens(const xcb_randr_notify_event_t *event);
     bool checkOutputIsPrimary(xcb_window_t rootWindow, xcb_randr_output_t output);
     void updateScreen(QXcbScreen *screen, const xcb_randr_output_change_t &outputChange);
