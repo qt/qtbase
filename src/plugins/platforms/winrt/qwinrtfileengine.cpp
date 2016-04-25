@@ -463,14 +463,20 @@ qint64 QWinRTFileEngine::read(char *data, qint64 maxlen)
     hr = stream->ReadAsync(buffer.Get(), length, InputStreamOptions_None, &op);
     RETURN_AND_SET_ERROR_IF_FAILED(QFileDevice::ReadError, -1);
 
-    hr = QWinRTFunctions::await(op, buffer.GetAddressOf());
+    // Quoting MSDN IInputStream::ReadAsync() documentation:
+    // "Depending on the implementation, the data that's read might be placed
+    // into the input buffer, or it might be returned in a different buffer."
+    // Using GetAddressOf can cause ref counting errors leaking the original
+    // buffer.
+    ComPtr<IBuffer> effectiveBuffer;
+    hr = QWinRTFunctions::await(op, effectiveBuffer.GetAddressOf());
     RETURN_AND_SET_ERROR_IF_FAILED(QFileDevice::ReadError, -1);
 
-    hr = buffer->get_Length(&length);
+    hr = effectiveBuffer->get_Length(&length);
     RETURN_AND_SET_ERROR_IF_FAILED(QFileDevice::ReadError, -1);
 
     ComPtr<Windows::Storage::Streams::IBufferByteAccess> byteArrayAccess;
-    hr = buffer.As(&byteArrayAccess);
+    hr = effectiveBuffer.As(&byteArrayAccess);
     RETURN_AND_SET_ERROR_IF_FAILED(QFileDevice::ReadError, -1);
 
     byte *bytes;
