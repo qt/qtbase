@@ -727,7 +727,7 @@ QT_WARNING_POP
 
 - (void)handleMouseEvent:(NSEvent *)theEvent
 {
-    [self handleTabletEvent: theEvent];
+    bool isTabletEvent = [self handleTabletEvent: theEvent];
 
     QPointF qtWindowPoint;
     QPointF qtScreenPoint;
@@ -756,7 +756,8 @@ QT_WARNING_POP
     nativeDrag->setLastMouseEvent(theEvent, self);
 
     Qt::KeyboardModifiers keyboardModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
-    QWindowSystemInterface::handleMouseEvent(targetView->m_window, timestamp, qtWindowPoint, qtScreenPoint, m_buttons, keyboardModifiers);
+    QWindowSystemInterface::handleMouseEvent(targetView->m_window, timestamp, qtWindowPoint, qtScreenPoint, m_buttons, keyboardModifiers,
+                                             isTabletEvent ? Qt::MouseEventSynthesizedByQt : Qt::MouseEventNotSynthesized);
 }
 
 - (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent
@@ -1056,11 +1057,11 @@ struct QCocoaTabletDeviceData
 typedef QHash<uint, QCocoaTabletDeviceData> QCocoaTabletDeviceDataHash;
 Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
 
-- (void)handleTabletEvent: (NSEvent *)theEvent
+- (bool)handleTabletEvent: (NSEvent *)theEvent
 {
     NSEventType eventType = [theEvent type];
     if (eventType != NSTabletPoint && [theEvent subtype] != NSTabletPointEventSubtype)
-        return; // Not a tablet event.
+        return false; // Not a tablet event.
 
     ulong timestamp = [theEvent timestamp] * 1000;
 
@@ -1073,7 +1074,7 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
         // Error: Unknown tablet device. Qt also gets into this state
         // when running on a VM. This appears to be harmless; don't
         // print a warning.
-        return;
+        return false;
     }
     const QCocoaTabletDeviceData &deviceData = tabletDeviceDataHash->value(deviceId);
 
@@ -1114,6 +1115,7 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
                                               deviceData.device, deviceData.pointerType, buttons, pressure, xTilt, yTilt,
                                               tangentialPressure, rotation, z, deviceData.uid,
                                               keyboardModifiers);
+    return true;
 }
 
 - (void)tabletPoint: (NSEvent *)theEvent

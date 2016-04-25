@@ -127,7 +127,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 - (void)otherMouseUp:(NSEvent *)theEvent;
 - (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent;
 
-- (void)handleTabletEvent: (NSEvent *)theEvent;
+- (bool)handleTabletEvent: (NSEvent *)theEvent;
 - (void)tabletPoint: (NSEvent *)theEvent;
 - (void)tabletProximity: (NSEvent *)theEvent;
 
