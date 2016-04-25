@@ -1211,9 +1211,19 @@ void QWidgetBackingStore::doSync()
         // We know for sure that the widget isn't overlapped if 'isMoved' is true.
         if (!wd->isMoved)
             wd->subtractOpaqueSiblings(wd->dirty, &hasDirtySiblingsAbove);
+
+        // Make a copy of the widget's dirty region, to restore it in case there is an opaque
+        // render-to-texture child that completely covers the widget, because otherwise the
+        // render-to-texture child won't be visible, due to its parent widget not being redrawn
+        // with a proper blending mask.
+        const QRegion dirtyBeforeSubtractedOpaqueChildren = wd->dirty;
+
         // Scrolled and moved widgets must draw all children.
         if (!wd->isScrolled && !wd->isMoved)
             wd->subtractOpaqueChildren(wd->dirty, w->rect());
+
+        if (wd->dirty.isEmpty() && wd->textureChildSeen)
+            wd->dirty = dirtyBeforeSubtractedOpaqueChildren;
 
         if (wd->dirty.isEmpty()) {
             resetWidget(w);

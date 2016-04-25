@@ -34,11 +34,14 @@
 #include <QtWidgets/QOpenGLWidget>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QPainter>
+#include <QtGui/QScreen>
+#include <QtWidgets/QDesktopWidget>
 #include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QGraphicsScene>
 #include <QtWidgets/QGraphicsRectItem>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QStackedWidget>
 #include <QtTest/QtTest>
 #include <QSignalSpy>
 
@@ -59,6 +62,7 @@ private slots:
     void fboRedirect();
     void showHide();
     void nativeWindow();
+    void stackWidgetOpaqueChildIsVisible();
 };
 
 void tst_QOpenGLWidget::create()
@@ -423,6 +427,135 @@ void tst_QOpenGLWidget::nativeWindow()
     QCOMPARE(image.width(), child->width());
     QCOMPARE(image.height(), child->height());
     QVERIFY(image.pixel(30, 40) == qRgb(0, 255, 0));
+}
+
+static inline QString msgRgbMismatch(unsigned actual, unsigned expected)
+{
+    return QString::asprintf("Color mismatch, %#010x != %#010x", actual, expected);
+}
+
+static QPixmap grabWidgetWithoutRepaint(const QWidget *widget, QRect clipArea)
+{
+    const QWidget *targetWidget = widget;
+#ifdef Q_OS_WIN
+    // OpenGL content is not properly grabbed on Windows when passing a top level widget window,
+    // because GDI functions can't grab OpenGL layer content.
+    // Instead the whole screen should be captured, with an adjusted clip area, which contains
+    // the final composited content.
+    QDesktopWidget *desktopWidget = QApplication::desktop();
+    const QWidget *mainScreenWidget = desktopWidget->screen();
+    targetWidget = mainScreenWidget;
+    clipArea = QRect(widget->mapToGlobal(clipArea.topLeft()),
+                     widget->mapToGlobal(clipArea.bottomRight()));
+#endif
+
+    const QWindow *window = targetWidget->window()->windowHandle();
+    Q_ASSERT(window);
+    WId windowId = window->winId();
+
+    QScreen *screen = window->screen();
+    Q_ASSERT(screen);
+
+    const QSize size = clipArea.size();
+    const QPixmap result = screen->grabWindow(windowId,
+                                              clipArea.x(),
+                                              clipArea.y(),
+                                              size.width(),
+                                              size.height());
+    return result;
+}
+
+#define VERIFY_COLOR(child, region, color) verifyColor(child, region, color, __LINE__)
+
+bool verifyColor(const QWidget *widget, const QRect &clipArea, const QColor &color, int callerLine)
+{
+    for (int t = 0; t < 6; t++) {
+        const QPixmap pixmap = grabWidgetWithoutRepaint(widget, clipArea);
+        if (!QTest::qCompare(pixmap.size(),
+                             clipArea.size(),
+                             "pixmap.size()",
+                             "rect.size()",
+                             __FILE__,
+                             callerLine))
+            return false;
+
+
+        const QImage image = pixmap.toImage();
+        QPixmap expectedPixmap(pixmap); /* ensure equal formats */
+        expectedPixmap.detach();
+        expectedPixmap.fill(color);
+
+        uint alphaCorrection = image.format() == QImage::Format_RGB32 ? 0xff000000 : 0;
+        uint firstPixel = image.pixel(0,0) | alphaCorrection;
+
+        // Retry a couple of times. Some window managers have transparency animation, or are
+        // just slow to render.
+        if (t < 5) {
+            if (firstPixel == QColor(color).rgb()
+                && image == expectedPixmap.toImage())
+                return true;
+            else
+                QTest::qWait(200);
+        } else {
+            if (!QTest::qVerify(firstPixel == QColor(color).rgb(),
+                               "firstPixel == QColor(color).rgb()",
+                                qPrintable(msgRgbMismatch(firstPixel, QColor(color).rgb())),
+                                __FILE__, callerLine)) {
+                return false;
+            }
+            if (!QTest::qVerify(image == expectedPixmap.toImage(),
+                                "image == expectedPixmap.toImage()",
+                                "grabbed pixmap differs from expected pixmap",
+                                __FILE__, callerLine)) {
+                return false;
+            }
+        }
+    }
+
+    return false;
+}
+
+void tst_QOpenGLWidget::stackWidgetOpaqueChildIsVisible()
+{
+#ifdef Q_OS_OSX
+    QSKIP("QScreen::grabWindow() doesn't work properly on OSX HighDPI screen: QTBUG-46803");
+    return;
+#endif
+
+    QStackedWidget stack;
+
+    QWidget* emptyWidget = new QWidget(&stack);
+    stack.addWidget(emptyWidget);
+
+    // Create an opaque red QOpenGLWidget.
+    const int dimensionSize = 400;
+    ClearWidget* clearWidget = new ClearWidget(&stack, dimensionSize, dimensionSize);
+    clearWidget->setAttribute(Qt::WA_OpaquePaintEvent);
+    stack.addWidget(clearWidget);
+
+    // Show initial QWidget.
+    stack.setCurrentIndex(0);
+    stack.resize(dimensionSize, dimensionSize);
+    stack.show();
+    QTest::qWaitForWindowExposed(&stack);
+    QTest::qWaitForWindowActive(&stack);
+
+    // Switch to the QOpenGLWidget.
+    stack.setCurrentIndex(1);
+    QTRY_COMPARE(clearWidget->m_paintCalled, true);
+
+    // Resize the tested region to be half size in the middle, because some OSes make the widget
+    // have rounded corners (e.g. OSX), and the grabbed window pixmap will not coincide perfectly
+    // with what was actually painted.
+    QRect clipArea = stack.rect();
+    clipArea.setSize(clipArea.size() / 2);
+    const int translationOffsetToMiddle = dimensionSize / 4;
+    clipArea.translate(translationOffsetToMiddle, translationOffsetToMiddle);
+
+    // Verify that the QOpenGLWidget was actually painted AND displayed.
+    const QColor red(255, 0, 0, 255);
+    VERIFY_COLOR(&stack, clipArea, red);
+    #undef VERIFY_COLOR
 }
 
 QTEST_MAIN(tst_QOpenGLWidget)
