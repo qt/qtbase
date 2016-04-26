@@ -42,6 +42,7 @@
 
 #include <QtCore/qstring.h>
 #include <QtCore/qdatetime.h>
+#include <QtCore/qversionnumber.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -62,6 +63,10 @@ public:
     static const char * build() Q_DECL_NOTHROW;
 
     static bool isDebugBuild();
+
+#ifndef QT_BOOTSTRAPPED
+    static QVersionNumber version() Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
+#endif
 
     enum LibraryLocation
     {

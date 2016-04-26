@@ -29,6 +29,7 @@
 
 #include <QtTest/QtTest>
 #include <QtCore/qversionnumber.h>
+#include <QtCore/qlibraryinfo.h>
 
 class tst_QVersionNumber : public QObject
 {
@@ -79,6 +80,7 @@ private slots:
     void serialize_data();
     void serialize();
     void moveSemantics();
+    void qtVersion();
 };
 
 void tst_QVersionNumber::singleInstanceData()
@@ -634,6 +636,17 @@ void tst_QVersionNumber::moveSemantics()
 #elif defined(Q_MSVC_2010)
     QSKIP("This test requires compiler generated move constructors and operators.");
 #endif
+}
+
+void tst_QVersionNumber::qtVersion()
+{
+    QVersionNumber v = QLibraryInfo::version();
+    QVERIFY(!v.isNull());
+    QCOMPARE(v.majorVersion(), QT_VERSION_MAJOR);
+    // we can't compare the minor and micro version:
+    // the library may change without the test being recompiled
+
+    QCOMPARE(v.toString(), QString(qVersion()));
 }
 
 QTEST_APPLESS_MAIN(tst_QVersionNumber)

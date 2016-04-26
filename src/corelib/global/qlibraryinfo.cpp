@@ -366,6 +366,19 @@ QLibraryInfo::isDebugBuild()
 #endif
 }
 
+#ifndef QT_BOOTSTRAPPED
+/*!
+    \since 5.8
+    Returns the version of the Qt library.
+
+    \sa qVersion()
+*/
+QVersionNumber QLibraryInfo::version() Q_DECL_NOTHROW
+{
+    return QVersionNumber(QT_VERSION_MAJOR, QT_VERSION_MINOR, QT_VERSION_PATCH);
+}
+#endif // QT_BOOTSTRAPPED
+
 #endif // QT_BUILD_QMAKE
 
 /*

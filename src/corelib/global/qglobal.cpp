@@ -1033,7 +1033,7 @@ Q_STATIC_ASSERT_X(QT_POINTER_SIZE == sizeof(void *), "QT_POINTER_SIZE defined in
     example, "4.1.2"). This may be a different version than the
     version the application was compiled against.
 
-    \sa QT_VERSION_STR
+    \sa QT_VERSION_STR, QLibraryInfo::version()
 */
 
 const char *qVersion() Q_DECL_NOTHROW
