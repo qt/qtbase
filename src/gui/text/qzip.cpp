@@ -816,9 +816,8 @@ void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const 
 QZipReader::QZipReader(const QString &archive, QIODevice::OpenMode mode)
 {
     QScopedPointer<QFile> f(new QFile(archive));
-    f->open(mode);
     QZipReader::Status status;
-    if (f->error() == QFile::NoError)
+    if (f->open(mode) && f->error() == QFile::NoError)
         status = NoError;
     else {
         if (f->error() == QFile::ReadError)
@@ -1112,9 +1111,8 @@ void QZipReader::close()
 QZipWriter::QZipWriter(const QString &fileName, QIODevice::OpenMode mode)
 {
     QScopedPointer<QFile> f(new QFile(fileName));
-    f->open(mode);
     QZipWriter::Status status;
-    if (f->error() == QFile::NoError)
+    if (f->open(mode) && f->error() == QFile::NoError)
         status = QZipWriter::NoError;
     else {
         if (f->error() == QFile::WriteError)
