@@ -5,7 +5,6 @@ SUBDIRS       = \
                 customcompleter \
                 echoplugin \
                 i18n \
-                plugandpaintplugins \
                 plugandpaint \
                 regexp \
                 regularexpression \
@@ -16,5 +15,3 @@ SUBDIRS       = \
                 undoframework
 
 contains(DEFINES, QT_NO_TRANSLATION): SUBDIRS -= i18n
-
-plugandpaint.depends = plugandpaintplugins

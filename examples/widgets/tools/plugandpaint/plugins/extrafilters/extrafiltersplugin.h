@@ -38,54 +38,28 @@
 **
 ****************************************************************************/
 
-#ifndef BASICTOOLSPLUGIN_H
-#define BASICTOOLSPLUGIN_H
+#ifndef EXTRAFILTERSPLUGIN_H
+#define EXTRAFILTERSPLUGIN_H
 
-#include <QRect>
+//! [0]
+#include <interfaces.h>
+
 #include <QObject>
 #include <QtPlugin>
 #include <QStringList>
-#include <QPainterPath>
 #include <QImage>
 
-//! [0]
-#include <plugandpaint/interfaces.h>
-
-//! [1]
-class BasicToolsPlugin : public QObject,
-                         public BrushInterface,
-                         public ShapeInterface,
-                         public FilterInterface
+class ExtraFiltersPlugin : public QObject, public FilterInterface
 {
     Q_OBJECT
-//! [4]
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.Examples.PlugAndPaint.BrushInterface" FILE "basictools.json")
-//! [4]
-    Q_INTERFACES(BrushInterface ShapeInterface FilterInterface)
-//! [0]
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.Examples.PlugAndPaint.FilterInterface" FILE "extrafilters.json")
+    Q_INTERFACES(FilterInterface)
 
-//! [2]
 public:
-//! [1]
-    // BrushInterface
-    QStringList brushes() const Q_DECL_OVERRIDE;
-    QRect mousePress(const QString &brush, QPainter &painter,
-                     const QPoint &pos) Q_DECL_OVERRIDE;
-    QRect mouseMove(const QString &brush, QPainter &painter,
-                    const QPoint &oldPos, const QPoint &newPos) Q_DECL_OVERRIDE;
-    QRect mouseRelease(const QString &brush, QPainter &painter,
-                       const QPoint &pos) Q_DECL_OVERRIDE;
-
-    // ShapeInterface
-    QStringList shapes() const Q_DECL_OVERRIDE;
-    QPainterPath generateShape(const QString &shape, QWidget *parent) Q_DECL_OVERRIDE;
-
-    // FilterInterface
     QStringList filters() const Q_DECL_OVERRIDE;
     QImage filterImage(const QString &filter, const QImage &image,
                        QWidget *parent) Q_DECL_OVERRIDE;
-//! [3]
 };
-//! [2] //! [3]
+//! [0]
 
 #endif

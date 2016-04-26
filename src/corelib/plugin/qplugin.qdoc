@@ -44,11 +44,11 @@
     to the interface class called \a ClassName. The \a Identifier must
     be unique. For example:
 
-    \snippet plugandpaint/interfaces.h 3
+    \snippet plugandpaint/app/interfaces.h 3
 
     This macro is normally used right after the class definition for
     \a ClassName, in a header file. See the
-    \l{tools/plugandpaint}{Plug & Paint} example for details.
+    \l{tools/plugandpaint/app}{Plug & Paint} example for details.
 
     If you want to use Q_DECLARE_INTERFACE with interface classes
     declared in a namespace then you have to make sure the Q_DECLARE_INTERFACE
@@ -76,7 +76,7 @@
 
     \snippet code/doc_src_qplugin.cpp 1
 
-    See the \l{tools/plugandpaint}{Plug & Paint} example for details.
+    See the \l{tools/plugandpaint/app}{Plug & Paint} example for details.
 
     Note that the class this macro appears on must be default-constructible.
 

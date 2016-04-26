@@ -1123,7 +1123,7 @@ QObjectPrivate::Connection::~Connection()
     RTTI support and it works across dynamic library boundaries.
 
     qobject_cast() can also be used in conjunction with interfaces;
-    see the \l{tools/plugandpaint}{Plug & Paint} example for details.
+    see the \l{tools/plugandpaint/app}{Plug & Paint} example for details.
 
     \warning If T isn't declared with the Q_OBJECT macro, this
     function's return value is undefined.
@@ -4150,11 +4150,11 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 
     Example:
 
-    \snippet ../widgets/tools/plugandpaintplugins/basictools/basictoolsplugin.h 1
+    \snippet ../widgets/tools/plugandpaint/plugins/basictools/basictoolsplugin.h 1
     \dots
-    \snippet ../widgets/tools/plugandpaintplugins/basictools/basictoolsplugin.h 3
+    \snippet ../widgets/tools/plugandpaint/plugins/basictools/basictoolsplugin.h 3
 
-    See the \l{tools/plugandpaintplugins/basictools}{Plug & Paint
+    See the \l{tools/plugandpaint/plugins/basictools}{Plug & Paint
     Basic Tools} example for details.
 
     \sa Q_DECLARE_INTERFACE(), Q_PLUGIN_METADATA(), {How to Create Qt Plugins}

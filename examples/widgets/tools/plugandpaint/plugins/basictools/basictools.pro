@@ -2,11 +2,11 @@
 TEMPLATE      = lib
 CONFIG       += plugin static
 QT           += widgets
-INCLUDEPATH  += ../..
+INCLUDEPATH  += ../../app
 HEADERS       = basictoolsplugin.h
 SOURCES       = basictoolsplugin.cpp
 TARGET        = $$qtLibraryTarget(pnp_basictools)
-DESTDIR       = ../../plugandpaint/plugins
+DESTDIR       = ../../plugins
 #! [0]
 
 # install

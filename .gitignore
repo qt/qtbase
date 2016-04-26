@@ -226,7 +226,6 @@ config.tests/unix/sse2/sse2
 # ---------------------
 
 debug
-examples/tools/plugandpaint/plugins
 include/*
 include/*/*
 lib/*
