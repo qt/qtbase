@@ -1564,7 +1564,9 @@ void QSslSocketBackendPrivate::continueHandshake()
                 // Client does not have a callback that sets it ...
                 configuration.nextProtocolNegotiationStatus = QSslConfiguration::NextProtocolNegotiationNegotiated;
             }
-        } else {
+        }
+
+        if (!proto_len) { // Test if NPN was more lucky ...
 #else
         {
 #endif

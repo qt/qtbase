@@ -470,12 +470,11 @@ SSL* QSslContext::createSsl()
             q_SSL_CTX_set_alpn_select_cb(ctx, alpn_callback_t(next_proto_cb), &m_npnContext);
             // Client:
             q_SSL_set_alpn_protos(ssl, m_npnContext.data, m_npnContext.len);
-        } else {
-#else
-        {
-#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L ...
-            q_SSL_CTX_set_next_proto_select_cb(ctx, next_proto_cb, &m_npnContext);
         }
+#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L ...
+
+        // And in case our peer does not support ALPN, but supports NPN:
+        q_SSL_CTX_set_next_proto_select_cb(ctx, next_proto_cb, &m_npnContext);
     }
 #endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
 
