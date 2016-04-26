@@ -456,6 +456,18 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_animation
         animation/qvariantanimation.cpp animation/qvariantanimation.h animation/qvariantanimation_p.h
 )
 
+# This needs to be done before one below adds kernel32 because the symbols we use
+# from synchronization also appears in kernel32 in the version of MinGW we use in CI.
+# However, when picking the symbols from libkernel32.a it will try to load the symbols
+# from the wrong DLL at runtime and crash!
+qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND WIN32
+    SOURCES
+        thread/qmutex_win.cpp
+        thread/qwaitcondition_win.cpp
+    LIBRARIES
+        synchronization
+)
+
 qt_internal_extend_target(Core CONDITION WIN32
     SOURCES
         global/qoperatingsystemversion_win.cpp global/qoperatingsystemversion_win_p.h
@@ -659,12 +671,6 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_thread
         thread/qthreadstorage.cpp
 )
 
-qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND WIN32
-    SOURCES
-        thread/qmutex_win.cpp
-        thread/qwaitcondition_win.cpp
-)
-
 qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND UNIX
     SOURCES
         thread/qwaitcondition_unix.cpp
@@ -673,11 +679,6 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND UNIX
 qt_internal_extend_target(Core CONDITION APPLE AND QT_FEATURE_thread
     SOURCES
         thread/qmutex_mac.cpp
-)
-
-qt_internal_extend_target(Core CONDITION LINUX AND QT_FEATURE_thread
-    SOURCES
-        thread/qmutex_linux.cpp
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND UNIX AND NOT APPLE AND NOT LINUX
@@ -1301,7 +1302,6 @@ else()
 endif()
 
 set_source_files_properties(
-    thread/qmutex_linux.cpp
     thread/qmutex_mac.cpp
     thread/qmutex_unix.cpp
     thread/qmutex_win.cpp

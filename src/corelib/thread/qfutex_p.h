@@ -160,6 +160,36 @@ namespace QtLinuxFutex {
 namespace QtFutex = QtLinuxFutex;
 QT_END_NAMESPACE
 
+#elif defined(Q_OS_WIN)
+#  include <qt_windows.h>
+
+QT_BEGIN_NAMESPACE
+namespace QtWindowsFutex {
+#define QT_ALWAYS_USE_FUTEX
+constexpr inline bool futexAvailable() { return true; }
+
+template <typename Atomic>
+inline void futexWait(Atomic &futex, typename Atomic::Type expectedValue)
+{
+    WaitOnAddress(&futex, &expectedValue, sizeof(expectedValue), INFINITE);
+}
+template <typename Atomic>
+inline bool futexWait(Atomic &futex, typename Atomic::Type expectedValue, qint64 nstimeout)
+{
+    BOOL r = WaitOnAddress(&futex, &expectedValue, sizeof(expectedValue), DWORD(nstimeout / 1000 / 1000));
+    return r || GetLastError() != ERROR_TIMEOUT;
+}
+template <typename Atomic> inline void futexWakeAll(Atomic &futex)
+{
+    WakeByAddressAll(&futex);
+}
+template <typename Atomic> inline void futexWakeOne(Atomic &futex)
+{
+    WakeByAddressSingle(&futex);
+}
+}
+namespace QtFutex = QtWindowsFutex;
+QT_END_NAMESPACE
 #else
 
 QT_BEGIN_NAMESPACE
