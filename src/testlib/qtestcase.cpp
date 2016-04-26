@@ -1455,6 +1455,7 @@ namespace QTest
     static int keyDelay = -1;
     static int mouseDelay = -1;
     static int eventDelay = -1;
+    static int timeout = -1;
     static bool noCrashHandler = false;
 
 /*! \internal
@@ -1504,6 +1505,18 @@ int Q_TESTLIB_EXPORT defaultKeyDelay()
             keyDelay = defaultEventDelay();
     }
     return keyDelay;
+}
+
+static int defaultTimeout()
+{
+    if (timeout == -1) {
+        bool ok = false;
+        timeout = qEnvironmentVariableIntValue("QTEST_FUNCTION_TIMEOUT", &ok);
+
+        if (!ok || timeout <= 0)
+            timeout = 5*60*1000;
+    }
+    return timeout;
 }
 
 static bool isValidSlot(const QMetaMethod &sl)
@@ -2119,7 +2132,7 @@ public:
 
     void beginTest() {
         QMutexLocker locker(&mutex);
-        timeout.store(5*60*1000);
+        timeout.store(defaultTimeout());
         waitCondition.wakeAll();
     }
 
