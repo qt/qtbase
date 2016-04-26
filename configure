@@ -1318,48 +1318,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     platform)
         PLATFORM="$VAL"
-        # keep compatibility with old platform names
-        case $PLATFORM in
-        aix-64)
-            PLATFORM=aix-xlc-64
-            ;;
-        hpux-o64)
-            PLATFORM=hpux-acc-o64
-            ;;
-        hpux-n64)
-            PLATFORM=hpux-acc-64
-            ;;
-        hpux-acc-n64)
-            PLATFORM=hpux-acc-64
-            ;;
-        irix-n32)
-            PLATFORM=irix-cc
-            ;;
-        irix-64)
-            PLATFORM=irix-cc-64
-            ;;
-        irix-cc-n64)
-            PLATFORM=irix-cc-64
-            ;;
-        reliant-64)
-            PLATFORM=reliant-cds-64
-            ;;
-        solaris-64)
-            PLATFORM=solaris-cc-64
-            ;;
-        openunix-cc)
-            PLATFORM=unixware-cc
-            ;;
-        openunix-g++)
-            PLATFORM=unixware-g++
-            ;;
-        unixware7-cc)
-            PLATFORM=unixware-cc
-            ;;
-        unixware7-g++)
-            PLATFORM=unixware-g++
-            ;;
-        esac
         ;;
     xplatform)
         XPLATFORM="$VAL"
