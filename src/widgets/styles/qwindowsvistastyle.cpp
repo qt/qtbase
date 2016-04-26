@@ -426,9 +426,9 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
 
     case PE_IndicatorBranch:
         {
-            XPThemeData theme(widget, painter, QWindowsXPStylePrivate::TreeViewTheme);
+            XPThemeData theme(widget, painter, QWindowsXPStylePrivate::VistaTreeViewTheme);
             static int decoration_size = 0;
-            if (!decoration_size && d->initTreeViewTheming() && theme.isValid()) {
+            if (!decoration_size && theme.isValid()) {
                 XPThemeData themeSize = theme;
                 themeSize.partId = TVP_HOTGLYPH;
                 themeSize.stateId = GLPS_OPENED;
@@ -728,9 +728,9 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
 
                             QPainter pixmapPainter(&pixmap);
                             XPThemeData theme(widget, &pixmapPainter,
-                                              QWindowsXPStylePrivate::TreeViewTheme,
+                                              QWindowsXPStylePrivate::VistaTreeViewTheme,
                                 LVP_LISTITEM, state, QRect(0, 0, sectionSize.width(), sectionSize.height()));
-                            if (d->initTreeViewTheming() && theme.isValid()) {
+                            if (theme.isValid()) {
                                 d->drawBackground(theme);
                             } else {
                                 QWindowsXPStyle::drawPrimitive(PE_PanelItemViewItem, option, painter, widget);
@@ -2357,10 +2357,6 @@ void QWindowsVistaStyle::unpolish(QWidget *widget)
     QWindowsXPStyle::unpolish(widget);
 
     QWindowsVistaStylePrivate *d = d_func();
-    // Delete the tree view helper in case the XP style cleaned the
-    // theme handle map due to a theme or QStyle change (QProxyStyle).
-    if (!QWindowsXPStylePrivate::hasTheme(QWindowsXPStylePrivate::TreeViewTheme))
-        d->cleanupTreeViewTheming();
 
     d->stopAnimation(widget);
 
@@ -2426,13 +2422,8 @@ QPixmap QWindowsVistaStyle::standardPixmap(StandardPixmap standardPixmap, const 
 }
 
 QWindowsVistaStylePrivate::QWindowsVistaStylePrivate() :
-    QWindowsXPStylePrivate(), m_treeViewHelper(0)
+    QWindowsXPStylePrivate()
 {
-}
-
-QWindowsVistaStylePrivate::~QWindowsVistaStylePrivate()
-{
-    cleanupTreeViewTheming();
 }
 
 bool QWindowsVistaStylePrivate::transitionsEnabled() const
@@ -2444,58 +2435,6 @@ bool QWindowsVistaStylePrivate::transitionsEnabled() const
             return true;
     }
     return false;
-}
-
-/*
- * We need to set the windows "explorer" theme explicitly on a native
- * window and open the "TREEVIEW" theme handle passing its window handle
- * in order to get Vista-style item view themes (particulary drawBackground()
- * for selected items needs this).
- * We invoke a service of the native Windows interface to create
- * a non-visible window handle, open the theme on it and insert it into
- * the cache so that it is found by XPThemeData::handle() first.
- */
-
-static inline HWND createTreeViewHelperWindow()
-{
-    if (QPlatformNativeInterface *ni = QGuiApplication::platformNativeInterface()) {
-        void *hwnd = 0;
-        void *wndProc = reinterpret_cast<void *>(DefWindowProc);
-        if (QMetaObject::invokeMethod(ni, "createMessageWindow", Qt::DirectConnection,
-                                  Q_RETURN_ARG(void *, hwnd),
-                                  Q_ARG(QString, QStringLiteral("QTreeViewThemeHelperWindowClass")),
-                                  Q_ARG(QString, QStringLiteral("QTreeViewThemeHelperWindow")),
-                                  Q_ARG(void *, wndProc)) && hwnd) {
-            return reinterpret_cast<HWND>(hwnd);
-        }
-    }
-    return 0;
-}
-
-bool QWindowsVistaStylePrivate::initTreeViewTheming()
-{
-    if (m_treeViewHelper)
-        return true;
-
-    m_treeViewHelper = createTreeViewHelperWindow();
-    if (Q_UNLIKELY(!m_treeViewHelper)) {
-        qWarning("Unable to create the treeview helper window.");
-        return false;
-    }
-    const HRESULT hr = QWindowsXPStylePrivate::pSetWindowTheme(m_treeViewHelper, L"explorer", NULL);
-    if (Q_UNLIKELY(hr != S_OK)) {
-        qErrnoWarning("SetWindowTheme() failed.");
-        return false;
-    }
-    return QWindowsXPStylePrivate::createTheme(QWindowsXPStylePrivate::TreeViewTheme, m_treeViewHelper);
-}
-
-void QWindowsVistaStylePrivate::cleanupTreeViewTheming()
-{
-    if (m_treeViewHelper) {
-        DestroyWindow(m_treeViewHelper);
-        m_treeViewHelper = 0;
-    }
 }
 
 /*!

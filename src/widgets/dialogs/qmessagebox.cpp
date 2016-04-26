@@ -2677,8 +2677,17 @@ QPixmap QMessageBoxPrivate::standardIcon(QMessageBox::Icon icon, QMessageBox *mb
     default:
         break;
     }
-    if (!tmpIcon.isNull())
-        return tmpIcon.pixmap(iconSize, iconSize);
+    if (!tmpIcon.isNull()) {
+        QWindow *window = Q_NULLPTR;
+        if (mb) {
+            window = mb->windowHandle();
+            if (!window) {
+                if (const QWidget *nativeParent = mb->nativeParentWidget())
+                    window = nativeParent->windowHandle();
+            }
+        }
+        return tmpIcon.pixmap(window, QSize(iconSize, iconSize));
+    }
     return QPixmap();
 }
 

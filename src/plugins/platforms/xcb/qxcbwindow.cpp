@@ -2350,7 +2350,7 @@ void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event, Qt::MouseEventSource 
             conn->setButton(conn->translateMouseButton(i), XIMaskIsSet(buttonMask, i));
     }
 
-    const char *sourceName = nullptr;
+    const char *sourceName = 0;
     if (lcQpaXInput().isDebugEnabled()) {
         const QMetaObject *metaObject = qt_getEnumMetaObject(source);
         const QMetaEnum me = metaObject->enumerator(metaObject->indexOfEnumerator(qt_getEnumName(source)));

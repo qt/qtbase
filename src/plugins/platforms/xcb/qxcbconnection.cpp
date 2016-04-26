@@ -215,6 +215,9 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
         // CRTC with node mode could mean that output has been disabled, and we'll
         // get RRNotifyOutputChange notification for that.
         if (screen && crtc.mode) {
+            if (crtc.rotation == XCB_RANDR_ROTATION_ROTATE_90 ||
+                crtc.rotation == XCB_RANDR_ROTATION_ROTATE_270)
+                std::swap(crtc.width, crtc.height);
             screen->updateGeometry(QRect(crtc.x, crtc.y, crtc.width, crtc.height), crtc.rotation);
             if (screen->mode() != crtc.mode)
                 screen->updateRefreshRate(crtc.mode);
