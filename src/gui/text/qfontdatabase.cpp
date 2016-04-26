@@ -2669,7 +2669,7 @@ QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
 
     QtFontDesc desc;
     QList<int> blackListed;
-    int index = match(script, request, family_name, foundry_name, &desc, blackListed);
+    int index = match(multi ? QChar::Script_Common : script, request, family_name, foundry_name, &desc, blackListed);
     if (index >= 0) {
         engine = loadEngine(script, request, desc.family, desc.foundry, desc.style, desc.size);
         if (engine)
@@ -2702,7 +2702,7 @@ QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
                 if (!engine) {
                     QtFontDesc desc;
                     do {
-                        index = match(script, def, def.family, QLatin1String(""), &desc, blackListed);
+                        index = match(multi ? QChar::Script_Common : script, def, def.family, QLatin1String(""), &desc, blackListed);
                         if (index >= 0) {
                             QFontDef loadDef = def;
                             if (loadDef.family.isEmpty())
