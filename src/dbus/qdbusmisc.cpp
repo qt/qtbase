@@ -99,9 +99,14 @@ QString qDBusInterfaceFromMetaObject(const QMetaObject *mo)
             if (domainName.isEmpty()) {
                  interface.prepend(QLatin1String("local."));
             } else {
-                interface.reserve(interface.size() + organizationDomain.size());
-                for (const QStringRef &x : domainName)
-                    interface.prepend(QLatin1Char('.')).prepend(x);
+                QString composedDomain;
+                // + 1 for additional dot, e.g. organizationDomain equals "example.com",
+                // then composedDomain will be equal "com.example."
+                composedDomain.reserve(organizationDomain.size() + 1);
+                for (auto it = domainName.rbegin(), end = domainName.rend(); it != end; ++it)
+                    composedDomain += *it + QLatin1Char('.');
+
+                interface.prepend(composedDomain);
             }
          }
      }
