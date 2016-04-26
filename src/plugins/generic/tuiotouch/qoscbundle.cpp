@@ -89,9 +89,9 @@ QOscBundle::QOscBundle(const QByteArray &data)
     // (editor's note: one may wonder how a 64bit big-endian number can also be
     // two 32bit numbers, without specifying in which order they occur or
     // anything, and one may indeed continue to wonder.)
-    quint32 oscTimeEpoch = qFromBigEndian<quint32>((const uchar*)data.constData() + parsedBytes);
+    quint32 oscTimeEpoch = qFromBigEndian<quint32>(data.constData() + parsedBytes);
     parsedBytes += sizeof(quint32);
-    quint32 oscTimePico = qFromBigEndian<quint32>((const uchar*)data.constData() + parsedBytes);
+    quint32 oscTimePico = qFromBigEndian<quint32>(data.constData() + parsedBytes);
     parsedBytes += sizeof(quint32);
 
     bool isImmediate = false;

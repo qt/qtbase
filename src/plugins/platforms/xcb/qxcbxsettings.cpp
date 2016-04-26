@@ -158,8 +158,8 @@ public:
 
 #define ADJUST_BO(b, t, x) \
         ((b == LSBFirst) ?                          \
-         qFromLittleEndian<t>((const uchar *)(x)) : \
-         qFromBigEndian<t>((const uchar *)(x)))
+         qFromLittleEndian<t>(x) : \
+         qFromBigEndian<t>(x))
 #define VALIDATE_LENGTH(x)    \
         if ((size_t)xSettings.length() < (offset + local_offset + 12 + x)) { \
             qWarning("Length %d runs past end of data", x); \

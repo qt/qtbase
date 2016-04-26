@@ -35,7 +35,7 @@
 
 /*!
     \internal
-    \fn T qFromUnaligned(const uchar *ptr)
+    \fn T qFromUnaligned(const void *ptr)
     \since 5.5
 
     Loads a \c{T} from address \a ptr, which may be misaligned.
@@ -46,7 +46,7 @@
 
 /*!
     \internal
-    \fn void qToUnaligned(T t, uchar *ptr)
+    \fn void qToUnaligned(T t, void *ptr)
     \since 4.5
 
     Stores \a t to address \a ptr, which may be misaligned.
@@ -57,7 +57,7 @@
 
 
 /*!
-    \fn T qFromBigEndian(const uchar *src)
+    \fn T qFromBigEndian(const void *src)
     \since 4.3
     \relates <QtEndian>
 
@@ -68,6 +68,8 @@
 
     \note Template type \c{T} can either be a qint16, qint32 or qint64. Other types of
     integers, e.g., qlong, are not applicable.
+
+    \note Since Qt 5.7, the type of the \a src parameter is a void pointer.
 
     There are no data alignment constraints for \a src.
 
@@ -88,7 +90,7 @@
     unmodified.
 */
 /*!
-    \fn T qFromLittleEndian(const uchar *src)
+    \fn T qFromLittleEndian(const void *src)
     \since 4.3
     \relates <QtEndian>
 
@@ -99,6 +101,8 @@
 
     \note Template type \c{T} can either be a qint16, qint32 or qint64. Other types of
     integers, e.g., qlong, are not applicable.
+
+    \note Since Qt 5.7, the type of the \a src parameter is a void pointer.
 
     There are no data alignment constraints for \a src.
 
@@ -119,7 +123,7 @@
     unmodified.
 */
 /*!
-    \fn void qToBigEndian(T src, uchar *dest)
+    \fn void qToBigEndian(T src, void *dest)
     \since 4.3
     \relates <QtEndian>
 
@@ -129,6 +133,8 @@
     Note that template type \c{T} can only be an integer data type (signed or unsigned).
 
     There are no data alignment constraints for \a dest.
+
+    \note Since Qt 5.7, the type of the \a dest parameter is a void pointer.
 
     \sa qFromBigEndian()
     \sa qFromLittleEndian()
@@ -147,7 +153,7 @@
     unmodified.
 */
 /*!
-    \fn void qToLittleEndian(T src, uchar *dest)
+    \fn void qToLittleEndian(T src, void *dest)
     \since 4.3
     \relates <QtEndian>
 
@@ -157,6 +163,8 @@
     Note that template type \c{T} can only be an integer data type (signed or unsigned).
 
     There are no data alignment constraints for \a dest.
+
+    \note Since Qt 5.7, the type of the \a dest parameter is a void pointer.
 
     \sa qFromBigEndian()
     \sa qFromLittleEndian()
