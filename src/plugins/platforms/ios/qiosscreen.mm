@@ -180,18 +180,18 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
 
         if (deviceIdentifier.contains(QRegularExpression("^iPhone(7,1|8,2)$"))) {
             // iPhone 6 Plus or iPhone 6S Plus
-            m_pixelDensity = 401;
+            m_physicalDpi = 401;
         } else if (deviceIdentifier.contains(QRegularExpression("^iPad(1,1|2,[1-4]|3,[1-6]|4,[1-3]|5,[3-4]|6,[7-8])$"))) {
             // All iPads except the iPad Mini series
-            m_pixelDensity = 132 * devicePixelRatio();
+            m_physicalDpi = 132 * devicePixelRatio();
         } else {
             // All non-Plus iPhones, and iPad Minis
-            m_pixelDensity = 163 * devicePixelRatio();
+            m_physicalDpi = 163 * devicePixelRatio();
         }
     } else {
         // External display, hard to say
         m_depth = 24;
-        m_pixelDensity = 96;
+        m_physicalDpi = 96;
     }
 
     for (UIWindow *existingWindow in [[UIApplication sharedApplication] windows]) {
@@ -253,8 +253,23 @@ void QIOSScreen::updateProperties()
     }
 
     if (m_geometry != previousGeometry) {
-        const qreal millimetersPerInch = 25.4;
-        m_physicalSize = QSizeF(m_geometry.size() * devicePixelRatio()) / m_pixelDensity * millimetersPerInch;
+        QRectF physicalGeometry;
+        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_8_0) {
+             // We can't use the primaryOrientation of screen(), as we haven't reported the new geometry yet
+            Qt::ScreenOrientation primaryOrientation = m_geometry.width() >= m_geometry.height() ?
+                Qt::LandscapeOrientation : Qt::PortraitOrientation;
+
+            // On iPhone 6+ devices, or when display zoom is enabled, the render buffer is scaled
+            // before being output on the physical display. We have to take this into account when
+            // computing the physical size. Note that unlike the native bounds, the physical size
+            // follows the primary orientation of the screen.
+            physicalGeometry = mapBetween(nativeOrientation(), primaryOrientation, fromCGRect(m_uiScreen.nativeBounds).toRect());
+        } else {
+            physicalGeometry = QRectF(0, 0, m_geometry.width() * devicePixelRatio(), m_geometry.height() * devicePixelRatio());
+        }
+
+        static const qreal millimetersPerInch = 25.4;
+        m_physicalSize = physicalGeometry.size() / m_physicalDpi * millimetersPerInch;
     }
 
     // At construction time, we don't yet have an associated QScreen, but we still want
