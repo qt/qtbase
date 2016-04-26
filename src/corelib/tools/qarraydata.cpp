@@ -32,6 +32,7 @@
 ****************************************************************************/
 
 #include <QtCore/qarraydata.h>
+#include <QtCore/private/qnumeric_p.h>
 #include <QtCore/private/qtools_p.h>
 
 #include <stdlib.h>
@@ -87,16 +88,22 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
         if (capacity > std::numeric_limits<size_t>::max() / objectSize)
             return 0;
 
-        size_t alloc = objectSize * capacity;
+        size_t alloc;
+        if (mul_overflow(objectSize, capacity, &alloc))
+            return 0;
 
-        // Make sure qAllocMore won't overflow.
+        // Make sure qAllocMore won't overflow qAllocMore.
         if (headerSize > size_t(MaxAllocSize) || alloc > size_t(MaxAllocSize) - headerSize)
             return 0;
 
         capacity = qAllocMore(int(alloc), int(headerSize)) / int(objectSize);
     }
 
-    size_t allocSize = headerSize + objectSize * capacity;
+    size_t allocSize;
+    if (mul_overflow(objectSize, capacity, &allocSize))
+        return 0;
+    if (add_overflow(allocSize, headerSize, &allocSize))
+        return 0;
 
     QArrayData *header = static_cast<QArrayData *>(::malloc(allocSize));
     if (header) {
