@@ -44,6 +44,10 @@ contains(TEMPLATE, .*lib) {
     QMAKE_PRL_INSTALL_REPLACE += lib_replace
 }
 
+# The remainder of this file must not apply to bootstrapped tools,
+# as the host compiler's version and capabilities are not checked.
+host_build:force_bootstrap: return()
+
 warnings_are_errors:warning_clean {
     # If the module declares that it has does its clean-up of warnings, enable -Werror.
     # This setting is compiler-dependent anyway because it depends on the version of the
