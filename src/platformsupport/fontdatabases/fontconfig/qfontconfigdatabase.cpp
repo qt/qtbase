@@ -441,7 +441,7 @@ static void populateFromPattern(FcPattern *pattern)
             && requiresOpenType(j) && openType[j]) {
             FcChar8 *cap;
             res = FcPatternGetString (pattern, FC_CAPABILITY, 0, &cap);
-            if (res != FcResultMatch || !strstr((const char *)cap, openType[j]))
+            if (res == FcResultMatch && strstr(reinterpret_cast<const char *>(cap), openType[j]) == 0)
                 writingSystems.setSupported(QFontDatabase::WritingSystem(j),false);
         }
     }
