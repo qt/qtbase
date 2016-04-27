@@ -773,7 +773,6 @@ CFG_HEADERSCLEAN=auto
 CFG_QREAL=double
 OPT_MAC_SDK=
 COMMERCIAL_USER=ask
-LICENSE_FILE=
 CFG_DEV=no
 
 # initalize variables used for installation
@@ -1085,9 +1084,6 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    license)
-	LICENSE_FILE="$VAL"
-	;;
     gnumake)
         CFG_USE_GNUMAKE="$VAL"
         ;;
