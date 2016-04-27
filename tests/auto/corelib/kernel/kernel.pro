@@ -1,6 +1,7 @@
 TEMPLATE=subdirs
 SUBDIRS=\
     qcoreapplication \
+    qelapsedtimer \
     qeventdispatcher \
     qeventloop \
     qmath \

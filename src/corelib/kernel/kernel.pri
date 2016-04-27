@@ -4,6 +4,7 @@ HEADERS += \
         kernel/qabstracteventdispatcher.h \
         kernel/qabstractnativeeventfilter.h \
         kernel/qbasictimer.h \
+        kernel/qelapsedtimer.h \
         kernel/qeventloop.h\
         kernel/qpointer.h \
         kernel/qcorecmdlineargs_p.h \
@@ -45,6 +46,7 @@ SOURCES += \
         kernel/qabstracteventdispatcher.cpp \
         kernel/qabstractnativeeventfilter.cpp \
         kernel/qbasictimer.cpp \
+        kernel/qelapsedtimer.cpp \
         kernel/qeventloop.cpp \
         kernel/qcoreapplication.cpp \
         kernel/qcoreevent.cpp \
@@ -69,6 +71,7 @@ SOURCES += \
 win32 {
         SOURCES += \
                 kernel/qcoreapplication_win.cpp \
+                kernel/qelapsedtimer_win.cpp \
                 kernel/qwineventnotifier.cpp \
                 kernel/qsharedmemory_win.cpp \
                 kernel/qsystemsemaphore_win.cpp
@@ -103,6 +106,7 @@ mac {
         kernel/qcoreapplication_mac.cpp \
         kernel/qcore_mac.cpp \
         kernel/qcore_foundation.mm
+    !nacl: SOURCES += kernel/qelapsedtimer_mac.cpp
 
     OBJECTIVE_SOURCES += \
         kernel/qcore_mac_objc.mm \
@@ -131,6 +135,7 @@ unix|integrity {
             kernel/qcrashhandler.cpp \
             kernel/qeventdispatcher_unix.cpp \
             kernel/qtimerinfo_unix.cpp
+    !darwin|nacl: SOURCES += kernel/qelapsedtimer_unix.cpp
 
     HEADERS += \
             kernel/qcore_unix_p.h \
@@ -196,3 +201,5 @@ android {
                    kernel/qjnihelpers_p.h \
                    kernel/qjni_p.h
 }
+
+!darwin:!unix:!win32: SOURCES += kernel/qelapsedtimer_generic.cpp

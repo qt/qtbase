@@ -71,7 +71,6 @@ HEADERS +=  \
         tools/qtimezoneprivate_p.h \
         tools/qtimezoneprivate_data_p.h \
         tools/qtools_p.h \
-        tools/qelapsedtimer.h \
         tools/qunicodetables_p.h \
         tools/qunicodetools_p.h \
         tools/qvarlengtharray.h \
@@ -92,7 +91,6 @@ SOURCES += \
         tools/qdatetime.cpp \
         tools/qdatetimeparser.cpp \
         tools/qeasingcurve.cpp \
-        tools/qelapsedtimer.cpp \
         tools/qfreelist.cpp \
         tools/qhash.cpp \
         tools/qline.cpp \
@@ -130,24 +128,23 @@ msvc: NO_PCH_SOURCES += tools/qvector_msvc.cpp
 false: SOURCES += $$NO_PCH_SOURCES # Hack for QtCreator
 
 !nacl:mac: {
-    SOURCES += tools/qelapsedtimer_mac.cpp
     OBJECTIVE_SOURCES += tools/qlocale_mac.mm \
                          tools/qtimezoneprivate_mac.mm \
 }
 else:android {
-    SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp tools/qtimezoneprivate_android.cpp
+    SOURCES += tools/qlocale_unix.cpp tools/qtimezoneprivate_android.cpp
 }
 else:unix {
-    SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp tools/qtimezoneprivate_tz.cpp
+    SOURCES += tools/qlocale_unix.cpp tools/qtimezoneprivate_tz.cpp
 }
 else:win32 {
-    SOURCES += tools/qelapsedtimer_win.cpp \
-               tools/qlocale_win.cpp \
+    SOURCES += tools/qlocale_win.cpp \
                tools/qtimezoneprivate_win.cpp
     winphone: LIBS_PRIVATE += -lWindowsPhoneGlobalizationUtil
     winrt-*-msvc2013: LIBS += advapi32.lib
-} else:integrity:SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp
-else:SOURCES += tools/qelapsedtimer_generic.cpp
+} else:integrity {
+    SOURCES += tools/qlocale_unix.cpp
+}
 
 contains(QT_CONFIG, system-zlib) {
     include($$PWD/../../3rdparty/zlib_dependency.pri)

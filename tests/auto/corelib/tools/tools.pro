@@ -18,7 +18,6 @@ SUBDIRS=\
     qdate \
     qdatetime \
     qeasingcurve \
-    qelapsedtimer \
     qexplicitlyshareddatapointer \
     qfreelist \
     qhash \
