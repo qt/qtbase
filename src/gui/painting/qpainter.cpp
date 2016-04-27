@@ -2182,11 +2182,10 @@ void QPainter::setBrushOrigin(const QPointF &p)
     destination pixel in such a way that the alpha component of the
     source defines the translucency of the pixel.
 
-    When the paint device is a QImage, the image format must be set to
-    \l {QImage::Format}{Format_ARGB32_Premultiplied} or
-    \l {QImage::Format}{Format_ARGB32} for the composition modes to have
-    any effect. For performance the premultiplied version is the preferred
-    format.
+    Several composition modes require an alpha channel in the source or
+    target images to have an effect. For optimal performance the
+    image format \l {QImage::Format}{Format_ARGB32_Premultiplied} is
+    preferred.
 
     When a composition mode is set it applies to all painting
     operator, pens, brushes, gradients and pixmap/image drawing.
