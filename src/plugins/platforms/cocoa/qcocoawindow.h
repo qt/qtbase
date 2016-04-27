@@ -72,6 +72,7 @@ typedef NSWindow<QNSWindowProtocol> QCocoaNSWindow;
     QCocoaWindow *_platformWindow;
     BOOL _grabbingMouse;
     BOOL _releaseOnMouseUp;
+    QPointer<QObject> _watcher;
 }
 
 @property (nonatomic, readonly) QCocoaNSWindow *window;
@@ -321,6 +322,11 @@ public: // for QNSView
     };
     QHash<quintptr, BorderRange> m_contentBorderAreas; // identifer -> uppper/lower
     QHash<quintptr, bool> m_enabledContentBorderAreas; // identifer -> enabled state (true/false)
+
+    // This object is tracked by a 'watcher'
+    // object in a window helper, preventing use of dangling
+    // pointers.
+    QObject sentinel;
 };
 
 QT_END_NAMESPACE

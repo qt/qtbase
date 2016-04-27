@@ -73,6 +73,7 @@ public:
     void testEvent();
     void testhorizontalOffset();
     void testverticalOffset();
+    void testVisualRegionForSelection();
     friend class tst_QHeaderView;
 };
 
@@ -204,6 +205,7 @@ private slots:
     void QTBUG8650_crashOnInsertSections();
     void QTBUG12268_hiddenMovedSectionSorting();
     void QTBUG14242_hideSectionAutoSize();
+    void QTBUG50171_visualRegionForSwappedItems();
     void ensureNoIndexAtLength();
     void offsetConsistent();
 
@@ -2279,6 +2281,24 @@ void tst_QHeaderView::QTBUG14242_hideSectionAutoSize()
         calced_length += hv->sectionSize(u);
 
     QCOMPARE(calced_length, afterlength);
+}
+
+void tst_QHeaderView::QTBUG50171_visualRegionForSwappedItems()
+{
+    protected_QHeaderView headerView(Qt::Horizontal);
+    QtTestModel model;
+    model.rows = 2;
+    model.cols = 3;
+    headerView.setModel(&model);
+    headerView.swapSections(1, 2);
+    headerView.hideSection(0);
+    headerView.testVisualRegionForSelection();
+}
+
+void protected_QHeaderView::testVisualRegionForSelection()
+{
+    QRegion r = visualRegionForSelection(QItemSelection(model()->index(1, 0), model()->index(1, 2)));
+    QCOMPARE(r.boundingRect().contains(QRect(1, 1, length() - 2, 1)), true);
 }
 
 void tst_QHeaderView::ensureNoIndexAtLength()
