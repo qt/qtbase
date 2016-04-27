@@ -284,6 +284,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (void)viewDidMoveToWindow
 {
+    m_backingStore = Q_NULLPTR;
     m_isMenuView = [self.window.className isEqualToString:@"NSCarbonMenuWindow"];
     if (self.window) {
         // This is the case of QWidgetAction's generated QWidget inserted in an NSMenu.
