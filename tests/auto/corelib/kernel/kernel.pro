@@ -1,6 +1,7 @@
 TEMPLATE=subdirs
 SUBDIRS=\
     qcoreapplication \
+    qdeadlinetimer \
     qelapsedtimer \
     qeventdispatcher \
     qeventloop \

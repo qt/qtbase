@@ -4,6 +4,8 @@ HEADERS += \
         kernel/qabstracteventdispatcher.h \
         kernel/qabstractnativeeventfilter.h \
         kernel/qbasictimer.h \
+        kernel/qdeadlinetimer.h \
+        kernel/qdeadlinetimer_p.h \
         kernel/qelapsedtimer.h \
         kernel/qeventloop.h\
         kernel/qpointer.h \
@@ -46,6 +48,7 @@ SOURCES += \
         kernel/qabstracteventdispatcher.cpp \
         kernel/qabstractnativeeventfilter.cpp \
         kernel/qbasictimer.cpp \
+        kernel/qdeadlinetimer.cpp \
         kernel/qelapsedtimer.cpp \
         kernel/qeventloop.cpp \
         kernel/qcoreapplication.cpp \

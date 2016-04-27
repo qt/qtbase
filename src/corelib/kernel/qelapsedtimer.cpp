@@ -83,6 +83,9 @@ QT_BEGIN_NAMESPACE
 
     \snippet qelapsedtimer/main.cpp 2
 
+    It is often more convenient to use \ref{QDeadlineTimer} in this case, which
+    counts towards a timeout in the future instead of tracking elapsed time.
+
     \section1 Reference Clocks
 
     QElapsedTimer will use the platform's monotonic reference clock in all
@@ -120,7 +123,7 @@ QT_BEGIN_NAMESPACE
     The information on which clocks types may overflow and how to remedy that
     issue is documented along with the clock types.
 
-    \sa QTime, QTimer
+    \sa QTime, QTimer, QDeadlineTimer
 */
 
 /*!
@@ -255,7 +258,7 @@ bool QElapsedTimer::isValid() const Q_DECL_NOTHROW
     The value of \a timeout can be -1 to indicate that this timer does not
     expire, in which case this function will always return false.
 
-    \sa elapsed()
+    \sa elapsed(), QDeadlineTimer
 */
 bool QElapsedTimer::hasExpired(qint64 timeout) const Q_DECL_NOTHROW
 {

@@ -39,6 +39,8 @@
 ****************************************************************************/
 
 #include "qelapsedtimer.h"
+#include "qdeadlinetimer.h"
+#include "qdeadlinetimer_p.h"
 #if defined(Q_OS_VXWORKS)
 #include "qfunctions_vxworks.h"
 #else
@@ -246,6 +248,18 @@ qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
 bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2) Q_DECL_NOTHROW
 {
     return v1.t1 < v2.t1 || (v1.t1 == v2.t1 && v1.t2 < v2.t2);
+}
+
+QDeadlineTimer QDeadlineTimer::current(Qt::TimerType timerType) Q_DECL_NOTHROW
+{
+    Q_STATIC_ASSERT(QDeadlineTimerNanosecondsInT2);
+    QDeadlineTimer result;
+    qint64 cursec, curnsec;
+    do_gettime(&cursec, &curnsec);
+    result.t1 = cursec;
+    result.t2 = curnsec;
+    result.type = timerType;
+    return result;
 }
 
 QT_END_NAMESPACE
