@@ -1416,8 +1416,9 @@ bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSyst
     COPYFILE2_EXTENDED_PARAMETERS copyParams = {
         sizeof(copyParams), COPY_FILE_FAIL_IF_EXISTS, NULL, NULL, NULL
     };
-    bool ret = ::CopyFile2((const wchar_t*)source.nativeFilePath().utf16(),
-                           (const wchar_t*)target.nativeFilePath().utf16(), &copyParams) != 0;
+    HRESULT hres = ::CopyFile2((const wchar_t*)source.nativeFilePath().utf16(),
+                           (const wchar_t*)target.nativeFilePath().utf16(), &copyParams);
+    bool ret = SUCCEEDED(hres);
 #endif // Q_OS_WINRT
     if(!ret)
         error = QSystemError(::GetLastError(), QSystemError::NativeError);
