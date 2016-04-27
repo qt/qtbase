@@ -409,11 +409,23 @@ static void populateFromPattern(FcPattern *pattern)
     FcResult res = FcPatternGetLangSet(pattern, FC_LANG, 0, &langset);
     if (res == FcResultMatch) {
         bool hasLang = false;
+#if FC_VERSION >= 20297
+        FcChar8 *cap = Q_NULLPTR;
+        FcResult capRes = FcResultNoMatch;
+#endif
         for (int j = 1; j < QFontDatabase::WritingSystemsCount; ++j) {
             const FcChar8 *lang = (const FcChar8*) languageForWritingSystem[j];
             if (lang) {
                 FcLangResult langRes = FcLangSetHasLang(langset, lang);
                 if (langRes != FcLangDifferentLang) {
+#if FC_VERSION >= 20297
+                    if (capabilityForWritingSystem[j] != Q_NULLPTR) {
+                        if (cap == Q_NULLPTR)
+                            capRes = FcPatternGetString(pattern, FC_CAPABILITY, 0, &cap);
+                        if (capRes == FcResultMatch && strstr(reinterpret_cast<const char *>(cap), capabilityForWritingSystem[j]) == 0)
+                            continue;
+                    }
+#endif
                     writingSystems.setSupported(QFontDatabase::WritingSystem(j));
                     hasLang = true;
                 }
@@ -428,18 +440,6 @@ static void populateFromPattern(FcPattern *pattern)
         // special in a way.
         writingSystems.setSupported(QFontDatabase::Other);
     }
-
-#if FC_VERSION >= 20297
-    FcChar8 *cap = Q_NULLPTR;
-    for (int j = 1; j < QFontDatabase::WritingSystemsCount; ++j) {
-        if (capabilityForWritingSystem[j] && writingSystems.supported(QFontDatabase::WritingSystem(j))) {
-            if (cap == Q_NULLPTR)
-                res = FcPatternGetString(pattern, FC_CAPABILITY, 0, &cap);
-            if (res == FcResultMatch && strstr(reinterpret_cast<const char *>(cap), capabilityForWritingSystem[j]) == 0)
-                writingSystems.setSupported(QFontDatabase::WritingSystem(j),false);
-        }
-    }
-#endif
 
     FontFile *fontFile = new FontFile;
     fontFile->fileName = QString::fromLocal8Bit((const char *)file_value);
