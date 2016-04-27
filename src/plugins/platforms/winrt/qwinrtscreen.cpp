@@ -952,8 +952,20 @@ HRESULT QWinRTScreen::onPointerEntered(ICoreWindow *, IPointerEventArgs *args)
     return S_OK;
 }
 
-HRESULT QWinRTScreen::onPointerExited(ICoreWindow *, IPointerEventArgs *)
+HRESULT QWinRTScreen::onPointerExited(ICoreWindow *, IPointerEventArgs *args)
 {
+    Q_D(QWinRTScreen);
+
+    ComPtr<IPointerPoint> pointerPoint;
+    if (FAILED(args->get_CurrentPoint(&pointerPoint)))
+        return E_INVALIDARG;
+
+    quint32 id;
+    if (FAILED(pointerPoint->get_PointerId(&id)))
+        return E_INVALIDARG;
+
+    d->touchPoints.remove(id);
+
     QWindowSystemInterface::handleLeaveEvent(0);
     return S_OK;
 }
@@ -1037,6 +1049,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
 
         break;
     }
+    case PointerDeviceType_Pen:
     case PointerDeviceType_Touch: {
         if (!d->touchDevice) {
             d->touchDevice = new QTouchDevice;
@@ -1055,50 +1068,44 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
         float pressure;
         properties->get_Pressure(&pressure);
 
-        QHash<quint32, QWindowSystemInterface::TouchPoint>::iterator it = d->touchPoints.find(id);
-        if (it != d->touchPoints.end()) {
-            boolean isPressed;
+        boolean isPressed;
 #ifndef Q_OS_WINPHONE
-            pointerPoint->get_IsInContact(&isPressed);
+        pointerPoint->get_IsInContact(&isPressed);
 #else
-            properties->get_IsLeftButtonPressed(&isPressed); // IsInContact not reliable on phone
+        properties->get_IsLeftButtonPressed(&isPressed); // IsInContact not reliable on phone
 #endif
-            it.value().state = isPressed ? Qt::TouchPointMoved : Qt::TouchPointReleased;
-        } else {
+
+        const QRectF areaRect(area.X * d->scaleFactor, area.Y * d->scaleFactor,
+                        area.Width * d->scaleFactor, area.Height * d->scaleFactor);
+
+        QHash<quint32, QWindowSystemInterface::TouchPoint>::iterator it = d->touchPoints.find(id);
+        if (it == d->touchPoints.end()) {
             it = d->touchPoints.insert(id, QWindowSystemInterface::TouchPoint());
-            it.value().state = Qt::TouchPointPressed;
             it.value().id = id;
         }
-        it.value().area = QRectF(area.X * d->scaleFactor, area.Y * d->scaleFactor,
-                                 area.Width * d->scaleFactor, area.Height * d->scaleFactor);
+
+        if (isPressed && it.value().pressure == 0.)
+            it.value().state = Qt::TouchPointPressed;
+        else if (!isPressed && it.value().pressure > 0.)
+            it.value().state = Qt::TouchPointReleased;
+        else if (it.value().area == areaRect)
+            it.value().state = Qt::TouchPointStationary;
+        else
+            it.value().state = Qt::TouchPointMoved;
+
+        it.value().area = areaRect;
         it.value().normalPosition = QPointF(point.X/d->logicalRect.width(), point.Y/d->logicalRect.height());
         it.value().pressure = pressure;
 
         QWindowSystemInterface::handleTouchEvent(topWindow(), d->touchDevice, d->touchPoints.values(), mods);
 
-        // Remove released points, station others
-        for (QHash<quint32, QWindowSystemInterface::TouchPoint>::iterator i = d->touchPoints.begin(); i != d->touchPoints.end();) {
-            if (i.value().state == Qt::TouchPointReleased)
-                i = d->touchPoints.erase(i);
-            else
-                (i++).value().state = Qt::TouchPointStationary;
-        }
-
-        break;
-    }
-    case PointerDeviceType_Pen: {
-        quint32 id;
-        pointerPoint->get_PointerId(&id);
-
-        boolean isPressed;
-        pointerPoint->get_IsInContact(&isPressed);
+        // Fall-through for pen to generate tablet event
+        if (pointerDeviceType != PointerDeviceType_Pen)
+            break;
 
         boolean isEraser;
         properties->get_IsEraser(&isEraser);
         int pointerType = isEraser ? 3 : 1;
-
-        float pressure;
-        properties->get_Pressure(&pressure);
 
         float xTilt;
         properties->get_XTilt(&xTilt);
