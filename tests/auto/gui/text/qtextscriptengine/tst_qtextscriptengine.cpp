@@ -1075,8 +1075,6 @@ void tst_QTextScriptEngine::mirroredChars()
 
 void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
 {
-    QSKIP("Result differs for HarfBuzz-NG, skip test.");
-
     QFontDatabase db;
     if (!db.families().contains(QStringLiteral("Aparajita")))
         QSKIP("couldn't find 'Aparajita' font");
@@ -1101,13 +1099,13 @@ void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
     QCOMPARE(fe->fontDef.family, font.family());
 
     e->shape(0);
-    QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(2));
+    QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(3));
 
     const ushort *log_clusters = e->logClusters(&e->layoutData->items[0]);
     QCOMPARE(log_clusters[0], ushort(0));
     QCOMPARE(log_clusters[1], ushort(0));
-    QCOMPARE(log_clusters[2], ushort(0));
-    QCOMPARE(log_clusters[3], ushort(0));
+    QCOMPARE(log_clusters[2], ushort(1));
+    QCOMPARE(log_clusters[3], ushort(2));
 }
 
 void tst_QTextScriptEngine::combiningMarks_qtbug15675_data()
