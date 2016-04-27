@@ -1135,6 +1135,8 @@ HRESULT QWinRTScreen::onActivated(ICoreWindow *, IWindowActivatedEventArgs *args
         return S_OK;
     }
 
+    QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationActive);
+
     // Activate topWindow
     if (!d->visibleWindows.isEmpty()) {
         Qt::FocusReason focusReason = activationState == CoreWindowActivationState_PointerActivated

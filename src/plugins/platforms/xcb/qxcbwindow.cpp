@@ -592,8 +592,12 @@ QXcbWindow::~QXcbWindow()
 {
     if (window()->type() != Qt::ForeignWindow)
         destroy();
-    else if (connection()->mouseGrabber() == this)
-        connection()->setMouseGrabber(Q_NULLPTR);
+    else {
+        if (connection()->mouseGrabber() == this)
+            connection()->setMouseGrabber(Q_NULLPTR);
+        if (connection()->mousePressWindow() == this)
+            connection()->setMousePressWindow(Q_NULLPTR);
+    }
 }
 
 void QXcbWindow::destroy()
@@ -851,6 +855,16 @@ void QXcbWindow::hide()
 
     if (connection()->mouseGrabber() == this)
         connection()->setMouseGrabber(Q_NULLPTR);
+    if (QPlatformWindow *w = connection()->mousePressWindow()) {
+        // Unset mousePressWindow when it (or one of its parents) is unmapped
+        while (w) {
+            if (w == this) {
+                connection()->setMousePressWindow(Q_NULLPTR);
+                break;
+            }
+            w = w->parent();
+        }
+    }
 
     m_mapped = false;
 
@@ -2199,6 +2213,8 @@ void QXcbWindow::handleButtonPressEvent(int event_x, int event_y, int root_x, in
         return;
     }
 
+    connection()->setMousePressWindow(this);
+
     handleMouseEvent(timestamp, local, global, modifiers, source);
 }
 
@@ -2213,19 +2229,44 @@ void QXcbWindow::handleButtonReleaseEvent(int event_x, int event_y, int root_x, 
         return;
     }
 
+    if (connection()->buttons() == Qt::NoButton)
+        connection()->setMousePressWindow(Q_NULLPTR);
+
     handleMouseEvent(timestamp, local, global, modifiers, source);
 }
 
-static bool ignoreLeaveEvent(quint8 mode, quint8 detail)
+static inline bool doCheckUnGrabAncestor(QXcbConnection *conn)
 {
-    return (mode == XCB_NOTIFY_MODE_GRAB && detail == XCB_NOTIFY_DETAIL_ANCESTOR) // Check for AwesomeWM
-            || detail == XCB_NOTIFY_DETAIL_VIRTUAL
-            || detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL;
+    /* Checking for XCB_NOTIFY_MODE_GRAB and XCB_NOTIFY_DETAIL_ANCESTOR prevents unwanted
+     * enter/leave events on AwesomeWM on mouse button press. It also ignores duplicated
+     * enter/leave events on Alt+Tab switching on some WMs with XInput2 events.
+     * Without XInput2 events the (Un)grabAncestor cannot be checked when mouse button is
+     * not pressed, otherwise (e.g. on Alt+Tab) it can igonre important enter/leave events.
+    */
+    if (conn) {
+        const bool mouseButtonsPressed = (conn->buttons() != Qt::NoButton);
+#ifdef XCB_USE_XINPUT22
+        return mouseButtonsPressed || (conn->isAtLeastXI22() && conn->xi2MouseEvents());
+#else
+        return mouseButtonsPressed;
+#endif
+    }
+    return true;
 }
 
-static bool ignoreEnterEvent(quint8 mode, quint8 detail)
+static bool ignoreLeaveEvent(quint8 mode, quint8 detail, QXcbConnection *conn = Q_NULLPTR)
 {
-    return ((mode == XCB_NOTIFY_MODE_UNGRAB && detail == XCB_NOTIFY_DETAIL_ANCESTOR) // Check for AwesomeWM
+    return ((doCheckUnGrabAncestor(conn)
+             && mode == XCB_NOTIFY_MODE_GRAB && detail == XCB_NOTIFY_DETAIL_ANCESTOR)
+            || (mode == XCB_NOTIFY_MODE_UNGRAB && detail == XCB_NOTIFY_DETAIL_INFERIOR)
+            || detail == XCB_NOTIFY_DETAIL_VIRTUAL
+            || detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL);
+}
+
+static bool ignoreEnterEvent(quint8 mode, quint8 detail, QXcbConnection *conn = Q_NULLPTR)
+{
+    return ((doCheckUnGrabAncestor(conn)
+             && mode == XCB_NOTIFY_MODE_UNGRAB && detail == XCB_NOTIFY_DETAIL_ANCESTOR)
             || (mode != XCB_NOTIFY_MODE_NORMAL && mode != XCB_NOTIFY_MODE_UNGRAB)
             || detail == XCB_NOTIFY_DETAIL_VIRTUAL
             || detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL);
@@ -2259,9 +2300,7 @@ void QXcbWindow::handleEnterNotifyEvent(int event_x, int event_y, int root_x, in
 
     const QPoint global = QPoint(root_x, root_y);
 
-    if (ignoreEnterEvent(mode, detail)
-            || (connection()->buttons() != Qt::NoButton
-                && QGuiApplicationPrivate::lastCursorPosition != global))
+    if (ignoreEnterEvent(mode, detail, connection()) || connection()->mousePressWindow())
         return;
 
     const QPoint local(event_x, event_y);
@@ -2273,11 +2312,7 @@ void QXcbWindow::handleLeaveNotifyEvent(int root_x, int root_y,
 {
     connection()->setTime(timestamp);
 
-    const QPoint global(root_x, root_y);
-
-    if (ignoreLeaveEvent(mode, detail)
-            || (connection()->buttons() != Qt::NoButton
-                && QGuiApplicationPrivate::lastCursorPosition != global))
+    if (ignoreLeaveEvent(mode, detail, connection()) || connection()->mousePressWindow())
         return;
 
     EnterEventChecker checker;
@@ -2300,6 +2335,11 @@ void QXcbWindow::handleMotionNotifyEvent(int event_x, int event_y, int root_x, i
 {
     QPoint local(event_x, event_y);
     QPoint global(root_x, root_y);
+
+    // "mousePressWindow" can be NULL i.e. if a window will be grabbed or umnapped, so set it again here
+    if (connection()->buttons() != Qt::NoButton && connection()->mousePressWindow() == Q_NULLPTR)
+        connection()->setMousePressWindow(this);
+
     handleMouseEvent(timestamp, local, global, modifiers, source);
 }
 
