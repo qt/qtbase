@@ -1104,7 +1104,7 @@ void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
     const ushort *log_clusters = e->logClusters(&e->layoutData->items[0]);
     QCOMPARE(log_clusters[0], ushort(0));
     QCOMPARE(log_clusters[1], ushort(0));
-    QCOMPARE(log_clusters[2], ushort(1));
+    QCOMPARE(log_clusters[2], ushort(0));
     QCOMPARE(log_clusters[3], ushort(2));
 }
 
@@ -1236,20 +1236,22 @@ void tst_QTextScriptEngine::thaiWithZWJ()
     QCOMPARE(e->layoutData->items[2].num_glyphs, ushort(2)); // Thai: Thai character followed by superscript "a" which is of inherited type
 
     //A quick sanity check - check all the characters are individual clusters
+    // A thai implementation could either remove the ZWJ and ZWNJ characters, or hide them.
+    // The current implementation hides them, so we test for that.
     unsigned short *logClusters = e->layoutData->logClustersPtr;
-    for (int i = 0; i < 15; i++)
+    QCOMPARE(logClusters[0], ushort(0));
+    QCOMPARE(logClusters[1], ushort(0));
+    QCOMPARE(logClusters[2], ushort(2));
+    QCOMPARE(logClusters[3], ushort(2));
+    for (int i = 4; i < 15; i++)
         QCOMPARE(logClusters[i], ushort(i));
     for (int i = 0; i < 3; i++)
         QCOMPARE(logClusters[i+15], ushort(0));
 
-    // A thai implementation could either remove the ZWJ and ZWNJ characters, or hide them.
-    // The current implementation hides them, so we test for that.
     // The only characters that we should be hiding are the ZWJ and ZWNJ characters in position 1 and 3.
     const QGlyphLayout glyphLayout = e->layoutData->glyphLayout;
     for (int i = 0; i < 18; i++) {
-        if (i == 17)
-            QCOMPARE(glyphLayout.advances[i].toInt(), 0);
-        else if (i == 1 || i == 3)
+        if (i == 1 || i == 3)
             QCOMPARE(glyphLayout.advances[i].toInt(), 0);
         else
             QVERIFY(glyphLayout.advances[i].toInt() != 0);
