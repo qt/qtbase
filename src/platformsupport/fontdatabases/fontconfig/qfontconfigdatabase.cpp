@@ -436,11 +436,12 @@ static void populateFromPattern(FcPattern *pattern)
     }
 
 #if FC_VERSION >= 20297
+    FcChar8 *cap = Q_NULLPTR;
     for (int j = 1; j < QFontDatabase::WritingSystemsCount; ++j) {
         if (writingSystems.supported(QFontDatabase::WritingSystem(j))
             && requiresOpenType(j) && openType[j]) {
-            FcChar8 *cap;
-            res = FcPatternGetString (pattern, FC_CAPABILITY, 0, &cap);
+            if (cap == Q_NULLPTR)
+                res = FcPatternGetString(pattern, FC_CAPABILITY, 0, &cap);
             if (res == FcResultMatch && strstr(reinterpret_cast<const char *>(cap), openType[j]) == 0)
                 writingSystems.setSupported(QFontDatabase::WritingSystem(j),false);
         }
