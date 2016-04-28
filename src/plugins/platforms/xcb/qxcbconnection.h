@@ -578,6 +578,7 @@ private:
     bool xi2HandleTabletEvent(void *event, TabletData *tabletData, QXcbWindowEventListener *eventListener);
     void xi2ReportTabletEvent(TabletData &tabletData, void *event);
     QVector<TabletData> m_tabletData;
+    TabletData *tabletDataForDevice(int id);
 #endif // !QT_NO_TABLETEVENT
     struct ScrollingDevice {
         ScrollingDevice() : deviceId(0), verticalIndex(0), horizontalIndex(0), orientations(0), legacyOrientations(0) { }
