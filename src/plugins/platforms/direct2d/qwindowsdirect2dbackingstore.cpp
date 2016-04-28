@@ -132,4 +132,9 @@ void QWindowsDirect2DBackingStore::resize(const QSize &size, const QRegion &regi
     }
 }
 
+QImage QWindowsDirect2DBackingStore::toImage() const
+{
+    return nativeWindow(window())->pixmap()->toImage();
+}
+
 QT_END_NAMESPACE

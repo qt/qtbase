@@ -72,6 +72,7 @@ public:
     void resize(const QSize &size, const QRegion &region) Q_DECL_OVERRIDE;
 
     const QImage image();
+    QImage toImage() const override;
 
     void lock();
     void unlock();

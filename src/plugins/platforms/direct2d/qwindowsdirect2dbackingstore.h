@@ -60,6 +60,8 @@ public:
     QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
     void flush(QWindow *targetWindow, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
     void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
+
+    QImage toImage() const override;
 };
 
 QT_END_NAMESPACE

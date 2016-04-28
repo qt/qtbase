@@ -549,12 +549,10 @@ void QXcbBackingStore::endPaint()
     }
 }
 
-#ifndef QT_NO_OPENGL
 QImage QXcbBackingStore::toImage() const
 {
     return m_image && m_image->image() ? *m_image->image() : QImage();
 }
-#endif
 
 QPlatformGraphicsBuffer *QXcbBackingStore::graphicsBuffer() const
 {

@@ -80,6 +80,12 @@ const QImage QFbBackingStore::image()
     return mImage;
 }
 
+
+QImage QFbBackingStore::toImage() const
+{
+    return mImage;
+}
+
 void QFbBackingStore::lock()
 {
     mImageMutex.lock();
@@ -101,4 +107,3 @@ void QFbBackingStore::endPaint()
 }
 
 QT_END_NAMESPACE
-

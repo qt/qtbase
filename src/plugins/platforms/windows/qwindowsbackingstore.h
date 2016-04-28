@@ -65,9 +65,7 @@ public:
 
     HDC getDC() const;
 
-#ifndef QT_NO_OPENGL
     QImage toImage() const Q_DECL_OVERRIDE;
-#endif
 
 private:
     QScopedPointer<QWindowsNativeImage> m_image;

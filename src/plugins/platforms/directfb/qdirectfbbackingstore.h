@@ -59,6 +59,8 @@ public:
     void resize (const QSize &size, const QRegion &staticContents);
     bool scroll(const QRegion &area, int dx, int dy);
 
+    QImage toImage() const override;
+
 private:
     void lockSurfaceToImage();
 

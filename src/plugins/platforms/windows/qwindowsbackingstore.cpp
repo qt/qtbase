@@ -210,8 +210,6 @@ HDC QWindowsBackingStore::getDC() const
     return 0;
 }
 
-#ifndef QT_NO_OPENGL
-
 QImage QWindowsBackingStore::toImage() const
 {
     if (m_image.isNull()) {
@@ -220,7 +218,5 @@ QImage QWindowsBackingStore::toImage() const
     }
     return m_image.data()->image();
 }
-
-#endif // !QT_NO_OPENGL
 
 QT_END_NAMESPACE

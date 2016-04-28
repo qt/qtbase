@@ -112,4 +112,9 @@ bool QDirectFbBackingStore::scroll(const QRegion &area, int dx, int dy)
     return true;
 }
 
+QImage QDirectFbBackingStore::toImage() const
+{
+    return m_pixmap.data()->toImage();
+}
+
 QT_END_NAMESPACE
