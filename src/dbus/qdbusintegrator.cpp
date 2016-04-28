@@ -1036,7 +1036,6 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
         qdbusThreadDebug = qdbusDefaultThreadDebug;
 #endif
 
-    QDBusMetaTypeId::init();
     connect(this, &QDBusConnectionPrivate::dispatchStatusChanged,
             this, &QDBusConnectionPrivate::doDispatch, Qt::QueuedConnection);
     connect(this, &QDBusConnectionPrivate::spyHooksFinished,

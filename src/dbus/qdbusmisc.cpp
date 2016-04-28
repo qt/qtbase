@@ -144,8 +144,9 @@ int qDBusParametersForMethod(const QMetaMethod &mm, QVector<int> &metaTypes, QSt
 
 int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QVector<int>& metaTypes, QString &errorMsg)
 {
-    QDBusMetaTypeId::init();
     metaTypes.clear();
+    if (!QDBusMetaTypeId::instance())
+        return -1;
 
     metaTypes.append(0);        // return type
     int inputCount = 0;

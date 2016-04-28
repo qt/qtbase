@@ -190,6 +190,7 @@ void QDBusConnectionManager::run()
         }
     }
     connectionHash.clear();
+    customTypes.clear();
 
     // allow deletion from any thread without warning
     moveToThread(Q_NULLPTR);
