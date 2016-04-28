@@ -723,9 +723,10 @@ bool QAbstractSliderPrivate::scrollByDelta(Qt::Orientation orientation, Qt::Keyb
         if (stepsToScroll == 0) {
             // We moved less than a line, but might still have accumulated partial scroll,
             // unless we already are at one of the ends.
-            if (offset_accumulated > 0.f && value < maximum)
+            const float effective_offset = invertedControls ? -offset_accumulated : offset_accumulated;
+            if (effective_offset > 0.f && value < maximum)
                 return true;
-            if (offset_accumulated < 0.f && value > minimum)
+            if (effective_offset < 0.f && value > minimum)
                 return true;
             offset_accumulated = 0;
             return false;

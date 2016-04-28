@@ -82,6 +82,8 @@ private slots:
 #ifndef QT_NO_WHEELEVENT
     void wheelEvent_data();
     void wheelEvent();
+    void fineGrainedWheelEvent_data();
+    void fineGrainedWheelEvent();
 #endif
     void sliderPressedReleased_data();
     void sliderPressedReleased();
@@ -897,6 +899,55 @@ void tst_QAbstractSlider::wheelEvent()
     if (expectedSignalCount)
         QVERIFY(actionTriggeredTimeStamp < valueChangedTimeStamp);
 }
+
+void tst_QAbstractSlider::fineGrainedWheelEvent_data()
+{
+    QTest::addColumn<bool>("invertedControls");
+    QTest::newRow("invertedControls=false") << false;
+    QTest::newRow("invertedControls=true") << true;
+}
+
+void tst_QAbstractSlider::fineGrainedWheelEvent()
+{
+    QFETCH(bool, invertedControls);
+
+    QCoreApplication *applicationInstance = QCoreApplication::instance();
+    QVERIFY(applicationInstance != 0);
+    QApplication::setWheelScrollLines(3);
+
+    slider->setRange(0, 10);
+    slider->setSingleStep(1);
+    slider->setPageStep(10);
+    slider->setInvertedControls(invertedControls);
+    slider->setOrientation(Qt::Vertical);
+    slider->setSliderPosition(0);
+
+    const int singleStepDelta = invertedControls ? (-WHEEL_DELTA / 3) : (WHEEL_DELTA / 3);
+
+    QWheelEvent eventDown(slider->rect().bottomRight(), singleStepDelta / 2,
+                      Qt::NoButton, Qt::NoModifier, Qt::Vertical);
+    QVERIFY(applicationInstance->sendEvent(slider,&eventDown));
+    QCOMPARE(slider->sliderPosition(), 0);
+    QVERIFY(applicationInstance->sendEvent(slider,&eventDown));
+    QCOMPARE(slider->sliderPosition(), 1);
+
+    QWheelEvent eventUp(slider->rect().bottomRight(), -singleStepDelta / 2,
+                        Qt::NoButton, Qt::NoModifier, Qt::Vertical);
+    QVERIFY(applicationInstance->sendEvent(slider,&eventUp));
+    QCOMPARE(slider->sliderPosition(), 1);
+    QVERIFY(applicationInstance->sendEvent(slider,&eventUp));
+    QCOMPARE(slider->sliderPosition(), 0);
+    QVERIFY(applicationInstance->sendEvent(slider,&eventUp));
+    QCOMPARE(slider->sliderPosition(), 0);
+    QVERIFY(applicationInstance->sendEvent(slider,&eventUp));
+    QCOMPARE(slider->sliderPosition(), 0);
+
+    QVERIFY(applicationInstance->sendEvent(slider,&eventDown));
+    QCOMPARE(slider->sliderPosition(), 0);
+    QVERIFY(applicationInstance->sendEvent(slider,&eventDown));
+    QCOMPARE(slider->sliderPosition(), 1);
+}
+
 #endif // !QT_NO_WHEELEVENT
 
 void tst_QAbstractSlider::sliderPressedReleased_data()
