@@ -140,9 +140,9 @@ public:
         short linearAdvance;
         unsigned char width;
         unsigned char height;
-        signed char x;
-        signed char y;
-        signed char advance;
+        short x;
+        short y;
+        short advance;
         signed char format;
         uchar *data;
     };
