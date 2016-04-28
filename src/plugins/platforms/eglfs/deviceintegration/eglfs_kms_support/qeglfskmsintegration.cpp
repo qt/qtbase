@@ -183,12 +183,12 @@ void QEglFSKmsIntegration::loadConfig()
 
     const QJsonObject object = doc.object();
 
-    m_hwCursor = object.value(QStringLiteral("hwcursor")).toBool(m_hwCursor);
-    m_pbuffers = object.value(QStringLiteral("pbuffers")).toBool(m_pbuffers);
-    m_devicePath = object.value(QStringLiteral("device")).toString();
-    m_separateScreens = object.value(QStringLiteral("separateScreens")).toBool(m_separateScreens);
+    m_hwCursor = object.value(QLatin1String("hwcursor")).toBool(m_hwCursor);
+    m_pbuffers = object.value(QLatin1String("pbuffers")).toBool(m_pbuffers);
+    m_devicePath = object.value(QLatin1String("device")).toString();
+    m_separateScreens = object.value(QLatin1String("separateScreens")).toBool(m_separateScreens);
 
-    const QJsonArray outputs = object.value(QStringLiteral("outputs")).toArray();
+    const QJsonArray outputs = object.value(QLatin1String("outputs")).toArray();
     for (int i = 0; i < outputs.size(); i++) {
         const QVariantMap outputSettings = outputs.at(i).toObject().toVariantMap();
 
