@@ -1728,8 +1728,13 @@ QVariant QTextEdit::inputMethodQuery(Qt::InputMethodQuery property) const
 QVariant QTextEdit::inputMethodQuery(Qt::InputMethodQuery query, QVariant argument) const
 {
     Q_D(const QTextEdit);
-    if (query == Qt::ImHints)
+    switch (query) {
+        case Qt::ImHints:
+        case Qt::ImInputItemClipRectangle:
         return QWidget::inputMethodQuery(query);
+    default:
+        break;
+    }
 
     const QPointF offset(-d->horizontalOffset(), -d->verticalOffset());
     switch (argument.type()) {

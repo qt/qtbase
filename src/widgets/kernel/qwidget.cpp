@@ -385,6 +385,7 @@ void QWidgetPrivate::updateWidgetTransform(QEvent *event)
         t.translate(p.x(), p.y());
         QGuiApplication::inputMethod()->setInputItemTransform(t);
         QGuiApplication::inputMethod()->setInputItemRectangle(q->rect());
+        QGuiApplication::inputMethod()->update(Qt::ImInputItemClipRectangle);
     }
 }
 
@@ -9774,6 +9775,8 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
         return inputMethodQuery(Qt::ImCursorPosition);
     case Qt::ImHints:
         return (int)inputMethodHints();
+    case Qt::ImInputItemClipRectangle:
+        return d_func()->clipRect();
     default:
         return QVariant();
     }
