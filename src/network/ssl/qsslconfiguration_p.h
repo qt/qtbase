@@ -88,6 +88,7 @@ public:
           peerSessionShared(false),
           sslOptions(QSslConfigurationPrivate::defaultSslOptions),
           sslSessionTicketLifeTimeHint(-1),
+          ephemeralServerKey(),
           nextProtocolNegotiationStatus(QSslConfiguration::NextProtocolNegotiationNone)
     { }
 
