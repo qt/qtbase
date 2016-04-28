@@ -6251,9 +6251,6 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
         painter->setRenderHint(QPainter::Qt4CompatiblePainting, false);
 
     const qreal underlineOffset = fe->underlinePosition().toReal();
-    // deliberately ceil the offset to avoid the underline coming too close to
-    // the text above it.
-    const qreal underlinePos = pos.y() + qCeil(underlineOffset) + 0.5;
 
     if (underlineStyle == QTextCharFormat::SpellCheckUnderline) {
         QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
@@ -6278,6 +6275,12 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
         painter->fillRect(pos.x(), 0, qCeil(width), qMin(wave.height(), descent), wave);
         painter->restore();
     } else if (underlineStyle != QTextCharFormat::NoUnderline) {
+        // Deliberately ceil the offset to avoid the underline coming too close to
+        // the text above it, but limit it to stay within descent.
+        qreal adjustedUnderlineOffset = std::ceil(underlineOffset) + 0.5;
+        if (underlineOffset <= fe->descent().toReal())
+            adjustedUnderlineOffset = qMin(adjustedUnderlineOffset, fe->descent().toReal() - 0.5);
+        const qreal underlinePos = pos.y() + adjustedUnderlineOffset;
         QColor uc = charFormat.underlineColor();
         if (uc.isValid())
             pen.setColor(uc);
