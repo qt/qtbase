@@ -86,12 +86,16 @@ public:
     bool isEmpty() const;
 
     QJsonValue value(const QString &key) const;
+    QJsonValue value(QLatin1String key) const;
     QJsonValue operator[] (const QString &key) const;
+    QJsonValue operator[] (QLatin1String key) const { return value(key); }
     QJsonValueRef operator[] (const QString &key);
+    QJsonValueRef operator[] (QLatin1String key);
 
     void remove(const QString &key);
     QJsonValue take(const QString &key);
     bool contains(const QString &key) const;
+    bool contains(QLatin1String key) const;
 
     bool operator==(const QJsonObject &other) const;
     bool operator!=(const QJsonObject &other) const;
@@ -200,8 +204,11 @@ public:
     typedef iterator Iterator;
     typedef const_iterator ConstIterator;
     iterator find(const QString &key);
+    iterator find(QLatin1String key);
     const_iterator find(const QString &key) const { return constFind(key); }
+    const_iterator find(QLatin1String key) const { return constFind(key); }
     const_iterator constFind(const QString &key) const;
+    const_iterator constFind(QLatin1String key) const;
     iterator insert(const QString &key, const QJsonValue &value);
 
     // STL compatibility

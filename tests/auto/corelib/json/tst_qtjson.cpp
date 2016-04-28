@@ -374,12 +374,13 @@ void tst_QtJson::testObjectSimple()
     QJsonObject object;
     object.insert("number", 999.);
     QCOMPARE(object.value("number").type(), QJsonValue::Double);
-    QCOMPARE(object.value("number").toDouble(), 999.);
+    QCOMPARE(object.value(QLatin1String("number")).toDouble(), 999.);
     object.insert("string", QString::fromLatin1("test"));
     QCOMPARE(object.value("string").type(), QJsonValue::String);
-    QCOMPARE(object.value("string").toString(), QString("test"));
+    QCOMPARE(object.value(QLatin1String("string")).toString(), QString("test"));
     object.insert("boolean", true);
     QCOMPARE(object.value("boolean").toBool(), true);
+    QCOMPARE(object.value(QLatin1String("boolean")).toBool(), true);
 
     QStringList keys = object.keys();
     QVERIFY2(keys.contains("number"), "key number not found");
@@ -403,7 +404,7 @@ void tst_QtJson::testObjectSimple()
 
     QString before = object.value("string").toString();
     object.insert("string", QString::fromLatin1("foo"));
-    QVERIFY2(object.value("string").toString() != before, "value should have been updated");
+    QVERIFY2(object.value(QLatin1String("string")).toString() != before, "value should have been updated");
 
     size = object.size();
     QJsonObject subobject;
@@ -678,7 +679,7 @@ void tst_QtJson::testValueRef()
     QCOMPARE(object.value(QLatin1String("null")), QJsonValue());
     object[QLatin1String("null")] = 100.;
     QCOMPARE(object.value(QLatin1String("null")).type(), QJsonValue::Double);
-    QJsonValue val = object[QLatin1String("null")];
+    QJsonValue val = qAsConst(object)[QLatin1String("null")];
     QCOMPARE(val.toDouble(), 100.);
     QCOMPARE(object.size(), 2);
 
@@ -843,13 +844,13 @@ void tst_QtJson::testObjectFind()
 
     QJsonObject::iterator it = object.find(QLatin1String("1"));
     QCOMPARE((*it).toDouble(), 1.);
-    it = object.find(QLatin1String("11"));
+    it = object.find(QString("11"));
     QCOMPARE((*it).type(), QJsonValue::Undefined);
     QCOMPARE(it, object.end());
 
     QJsonObject::const_iterator cit = object.constFind(QLatin1String("1"));
     QCOMPARE((*cit).toDouble(), 1.);
-    cit = object.constFind(QLatin1String("11"));
+    cit = object.constFind(QString("11"));
     QCOMPARE((*it).type(), QJsonValue::Undefined);
     QCOMPARE(it, object.end());
 }
@@ -911,7 +912,7 @@ void tst_QtJson::testDocument()
     doc3.setObject(outer.value(QLatin1String("innter")).toObject());
     QCOMPARE(doc3.isArray(), false);
     QCOMPARE(doc3.isObject(), true);
-    QVERIFY(doc3.object().contains(QLatin1String("innerKey")));
+    QVERIFY(doc3.object().contains(QString("innerKey")));
     QCOMPARE(doc3.object().value(QLatin1String("innerKey")), QJsonValue(42));
 
     QJsonDocument doc4(outer.value(QLatin1String("innterArray")).toArray());
@@ -938,9 +939,9 @@ void tst_QtJson::nullValues()
 
     QJsonObject object;
     object.insert(QString("key"), QJsonValue());
-    QCOMPARE(object.contains("key"), true);
+    QCOMPARE(object.contains(QLatin1String("key")), true);
     QCOMPARE(object.size(), 1);
-    QCOMPARE(object.value("key"), QJsonValue());
+    QCOMPARE(object.value(QString("key")), QJsonValue());
 }
 
 void tst_QtJson::nullArrays()

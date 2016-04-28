@@ -375,6 +375,22 @@ QJsonValue QJsonObject::value(const QString &key) const
 }
 
 /*!
+    \overload
+    \since 5.7
+*/
+QJsonValue QJsonObject::value(QLatin1String key) const
+{
+    if (!d)
+        return QJsonValue(QJsonValue::Undefined);
+
+    bool keyExists;
+    int i = o->indexOf(key, &keyExists);
+    if (!keyExists)
+        return QJsonValue(QJsonValue::Undefined);
+    return QJsonValue(d, o, o->entryAt(i)->value);
+}
+
+/*!
     Returns a QJsonValue representing the value for the key \a key.
 
     This does the same as value().
@@ -387,6 +403,13 @@ QJsonValue QJsonObject::operator [](const QString &key) const
 {
     return value(key);
 }
+
+/*!
+    \fn QJsonValue QJsonObject::operator [](QLatin1String key) const
+
+    \overload
+    \since 5.7
+*/
 
 /*!
     Returns a reference to the value for \a key.
@@ -409,6 +432,16 @@ QJsonValueRef QJsonObject::operator [](const QString &key)
         index = i.i;
     }
     return QJsonValueRef(this, index);
+}
+
+/*!
+    \overload
+    \since 5.7
+*/
+QJsonValueRef QJsonObject::operator [](QLatin1String key)
+{
+    // ### optimize me
+    return operator[](QString(key));
 }
 
 /*!
@@ -536,6 +569,20 @@ bool QJsonObject::contains(const QString &key) const
 }
 
 /*!
+    \overload
+    \since 5.7
+*/
+bool QJsonObject::contains(QLatin1String key) const
+{
+    if (!o)
+        return false;
+
+    bool keyExists;
+    o->indexOf(key, &keyExists);
+    return keyExists;
+}
+
+/*!
     Returns \c true if \a other is equal to this object.
  */
 bool QJsonObject::operator==(const QJsonObject &other) const
@@ -609,9 +656,29 @@ QJsonObject::iterator QJsonObject::find(const QString &key)
     return iterator(this, index);
 }
 
+/*!
+    \overload
+    \since 5.7
+*/
+QJsonObject::iterator QJsonObject::find(QLatin1String key)
+{
+    bool keyExists = false;
+    int index = o ? o->indexOf(key, &keyExists) : 0;
+    if (!keyExists)
+        return end();
+    detach2();
+    return iterator(this, index);
+}
+
 /*! \fn QJsonObject::const_iterator QJsonObject::find(const QString &key) const
 
     \overload
+*/
+
+/*! \fn QJsonObject::const_iterator QJsonObject::find(QLatin1String key) const
+
+    \overload
+    \since 5.7
 */
 
 /*!
@@ -622,6 +689,19 @@ QJsonObject::iterator QJsonObject::find(const QString &key)
     returns constEnd().
  */
 QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
+{
+    bool keyExists = false;
+    int index = o ? o->indexOf(key, &keyExists) : 0;
+    if (!keyExists)
+        return end();
+    return const_iterator(this, index);
+}
+
+/*!
+    \overload
+    \since 5.7
+*/
+QJsonObject::const_iterator QJsonObject::constFind(QLatin1String key) const
 {
     bool keyExists = false;
     int index = o ? o->indexOf(key, &keyExists) : 0;
