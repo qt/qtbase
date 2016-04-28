@@ -497,6 +497,7 @@ void tst_QMdiArea::subWindowActivated2()
     spy.clear();
 
     mdiArea.show();
+    mdiArea.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&mdiArea));
     QTRY_COMPARE(spy.count(), 1);
     QVERIFY(mdiArea.currentSubWindow());
