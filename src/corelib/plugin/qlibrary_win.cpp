@@ -148,6 +148,16 @@ bool QLibraryPrivate::load_sys()
         else
             qualifiedFileName = dir.filePath(moduleFileName);
 #endif // !Q_OS_WINRT
+
+        if (loadHints() & QLibrary::PreventUnloadHint) {
+            // prevent the unloading of this component
+            HMODULE hmod;
+            bool ok = GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_PIN |
+                                        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+                                        reinterpret_cast<const wchar_t *>(pHnd),
+                                        &hmod);
+            Q_ASSERT(!ok || hmod == pHnd);
+        }
     }
     return (pHnd != 0);
 }
