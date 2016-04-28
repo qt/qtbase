@@ -121,7 +121,9 @@ public:
     virtual void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
                                  QPlatformTextureList *textures, QOpenGLContext *context,
                                  bool translucentBackground);
+#endif
     virtual QImage toImage() const;
+#ifndef QT_NO_OPENGL
     enum TextureFlag {
         TextureSwizzle = 0x01,
         TextureFlip = 0x02,

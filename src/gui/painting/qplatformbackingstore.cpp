@@ -411,7 +411,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
 
     context->swapBuffers(window);
 }
-
+#endif
 /*!
   Implemented in subclasses to return the content of the backingstore as a QImage.
 
@@ -424,7 +424,7 @@ QImage QPlatformBackingStore::toImage() const
 {
     return QImage();
 }
-
+#ifndef QT_NO_OPENGL
 /*!
   May be reimplemented in subclasses to return the content of the
   backingstore as an OpenGL texture. \a dirtyRegion is the part of the
