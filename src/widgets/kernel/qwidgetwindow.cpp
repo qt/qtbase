@@ -87,7 +87,7 @@ QRectF QWidgetWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const
 {
     Q_Q(const QWidgetWindow);
     const QWidget *widget = q->widget();
-    if (!widget->isWindow() || !widget->hasHeightForWidth())
+    if (!widget || !widget->isWindow() || !widget->hasHeightForWidth())
         return QRect();
     const QSize oldSize = rect.size().toSize();
     const QSize newSize = QLayout::closestAcceptableSize(widget, oldSize);
@@ -142,16 +142,18 @@ QAccessibleInterface *QWidgetWindow::accessibleRoot() const
 
 QObject *QWidgetWindow::focusObject() const
 {
-    QWidget *widget = m_widget->focusWidget();
+    QWidget *windowWidget = m_widget;
+    if (!windowWidget)
+        return Q_NULLPTR;
+
+    QWidget *widget = windowWidget->focusWidget();
 
     if (!widget)
-        widget = m_widget;
+        widget = windowWidget;
 
-    if (widget) {
-        QObject *focusObj = QWidgetPrivate::get(widget)->focusObject();
-        if (focusObj)
-            return focusObj;
-    }
+    QObject *focusObj = QWidgetPrivate::get(widget)->focusObject();
+    if (focusObj)
+        return focusObj;
 
     return widget;
 }
@@ -204,7 +206,7 @@ bool QWidgetWindow::event(QEvent *event)
 #ifndef QT_NO_ACCESSIBILITY
         QAccessible::State state;
         state.active = true;
-        QAccessibleStateChangeEvent ev(widget(), state);
+        QAccessibleStateChangeEvent ev(m_widget, state);
         QAccessible::updateAccessibility(&ev);
 #endif
         return false; }
