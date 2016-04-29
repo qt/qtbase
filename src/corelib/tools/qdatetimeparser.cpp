@@ -553,19 +553,20 @@ int QDateTimeParser::sectionSize(int sectionIndex) const
         // is the previous value and displayText() is the new value.
         // The size difference is always due to leading zeroes.
         int sizeAdjustment = 0;
-        if (displayText().size() != text.size()) {
+        const int displayTextSize = displayText().size();
+        if (displayTextSize != text.size()) {
             // Any zeroes added before this section will affect our size.
             int preceedingZeroesAdded = 0;
             if (sectionNodes.size() > 1 && context == DateTimeEdit) {
-                for (QVector<SectionNode>::ConstIterator sectionIt = sectionNodes.constBegin();
-                    sectionIt != sectionNodes.constBegin() + sectionIndex; ++sectionIt) {
+                const auto begin = sectionNodes.cbegin();
+                const auto end = begin + sectionIndex;
+                for (auto sectionIt = begin; sectionIt != end; ++sectionIt)
                     preceedingZeroesAdded += sectionIt->zeroesAdded;
-                }
             }
             sizeAdjustment = preceedingZeroesAdded;
         }
 
-        return displayText().size() + sizeAdjustment - sectionPos(sectionIndex) - separators.last().size();
+        return displayTextSize + sizeAdjustment - sectionPos(sectionIndex) - separators.last().size();
     } else {
         return sectionPos(sectionIndex + 1) - sectionPos(sectionIndex)
             - separators.at(sectionIndex + 1).size();
@@ -1164,11 +1165,12 @@ end:
                             if (newCurrentValue.daysTo(minimum) != 0) {
                                 break;
                             }
-                            toMin = newCurrentValue.time().msecsTo(minimum.time());
+                            const QTime time = newCurrentValue.time();
+                            toMin = time.msecsTo(minimum.time());
                             if (newCurrentValue.daysTo(maximum) > 0) {
                                 toMax = -1; // can't get to max
                             } else {
-                                toMax = newCurrentValue.time().msecsTo(maximum.time());
+                                toMax = time.msecsTo(maximum.time());
                             }
                         } else {
                             toMin = newCurrentValue.daysTo(minimum);
