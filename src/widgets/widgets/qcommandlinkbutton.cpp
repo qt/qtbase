@@ -281,23 +281,18 @@ QCommandLinkButton::QCommandLinkButton(QWidget *parent)
 */
 
 QCommandLinkButton::QCommandLinkButton(const QString &text, QWidget *parent)
-    : QPushButton(*new QCommandLinkButtonPrivate, parent)
+    : QCommandLinkButton(parent)
 {
-    Q_D(QCommandLinkButton);
     setText(text);
-    d->init();
 }
 
 /*!
     Constructs a command link with a \a text, a \a description, and a \a parent.
 */
 QCommandLinkButton::QCommandLinkButton(const QString &text, const QString &description, QWidget *parent)
-    : QPushButton(*new QCommandLinkButtonPrivate, parent)
+    : QCommandLinkButton(text, parent)
 {
-    Q_D(QCommandLinkButton);
-    setText(text);
     setDescription(description);
-    d->init();
 }
 
 /*!

@@ -168,10 +168,8 @@ QFontDialog::QFontDialog(QWidget *parent)
     \a initial color.
 */
 QFontDialog::QFontDialog(const QFont &initial, QWidget *parent)
-    : QDialog(*new QFontDialogPrivate, parent, DefaultWindowFlags)
+    : QFontDialog(parent)
 {
-    Q_D(QFontDialog);
-    d->init();
     setCurrentFont(initial);
 }
 

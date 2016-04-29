@@ -348,10 +348,8 @@ void QScrollBar::initStyleOption(QStyleOptionSlider *option) const
     initial \l {QAbstractSlider::value} {value} of 0.
 */
 QScrollBar::QScrollBar(QWidget *parent)
-    : QAbstractSlider(*new QScrollBarPrivate, parent)
+    : QScrollBar(Qt::Vertical, parent)
 {
-    d_func()->orientation = Qt::Vertical;
-    d_func()->init();
 }
 
 /*!

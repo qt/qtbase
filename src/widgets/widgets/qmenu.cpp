@@ -1481,10 +1481,9 @@ QMenu::QMenu(QWidget *parent)
     \sa title
 */
 QMenu::QMenu(const QString &title, QWidget *parent)
-    : QWidget(*new QMenuPrivate, parent, Qt::Popup)
+    : QMenu(parent)
 {
     Q_D(QMenu);
-    d->init();
     d->menuAction->setText(title);
 }
 

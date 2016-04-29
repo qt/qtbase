@@ -284,10 +284,8 @@ QStyle::SubControl QSliderPrivate::newHoverControl(const QPoint &pos)
     Constructs a vertical slider with the given \a parent.
 */
 QSlider::QSlider(QWidget *parent)
-    : QAbstractSlider(*new QSliderPrivate, parent)
+    : QSlider(Qt::Vertical, parent)
 {
-    d_func()->orientation = Qt::Vertical;
-    d_func()->init();
 }
 
 /*!

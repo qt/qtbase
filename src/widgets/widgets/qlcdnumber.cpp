@@ -338,11 +338,8 @@ static const char *getSegments(char ch)               // gets list of segments f
 */
 
 QLCDNumber::QLCDNumber(QWidget *parent)
-        : QFrame(*new QLCDNumberPrivate, parent)
+    : QLCDNumber(5, parent)
 {
-    Q_D(QLCDNumber);
-    d->ndigits = 5;
-    d->init();
 }
 
 

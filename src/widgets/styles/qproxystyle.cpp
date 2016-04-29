@@ -131,16 +131,9 @@ QProxyStyle::QProxyStyle(QStyle *style) :
 
     \sa QStyleFactory::create()
 */
-QProxyStyle::QProxyStyle(const QString &key) :
-    QCommonStyle(*new QProxyStylePrivate())
+QProxyStyle::QProxyStyle(const QString &key)
+    : QProxyStyle(QStyleFactory::create(key))
 {
-    Q_D(QProxyStyle);
-    QStyle *style = QStyleFactory::create(key);
-    if (style) {
-        d->baseStyle = style;
-        style->setProxy(this);
-        style->setParent(this); // Take ownership
-    }
 }
 
 /*!

@@ -194,10 +194,8 @@ QGroupBox::QGroupBox(QWidget *parent)
 */
 
 QGroupBox::QGroupBox(const QString &title, QWidget *parent)
-    : QWidget(*new QGroupBoxPrivate, parent, 0)
+    : QGroupBox(parent)
 {
-    Q_D(QGroupBox);
-    d->init();
     setTitle(title);
 }
 

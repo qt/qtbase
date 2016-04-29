@@ -456,12 +456,11 @@ QShortcut::QShortcut(QWidget *parent)
 QShortcut::QShortcut(const QKeySequence &key, QWidget *parent,
                      const char *member, const char *ambiguousMember,
                      Qt::ShortcutContext context)
-    : QObject(*new QShortcutPrivate, parent)
+    : QShortcut(parent)
 {
     QAPP_CHECK("QShortcut");
 
     Q_D(QShortcut);
-    Q_ASSERT(parent != 0);
     d->sc_context = context;
     d->sc_sequence = key;
     d->redoGrab(qApp->d_func()->shortcutMap);

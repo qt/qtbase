@@ -462,9 +462,8 @@ void QDialogButtonBoxPrivate::retranslateStrings()
     \sa orientation, addButton()
 */
 QDialogButtonBox::QDialogButtonBox(QWidget *parent)
-    : QWidget(*new QDialogButtonBoxPrivate(Qt::Horizontal), parent, 0)
+    : QDialogButtonBox(Qt::Horizontal, parent)
 {
-    d_func()->initLayout();
 }
 
 /*!
@@ -487,10 +486,8 @@ QDialogButtonBox::QDialogButtonBox(Qt::Orientation orientation, QWidget *parent)
     \sa orientation, addButton()
 */
 QDialogButtonBox::QDialogButtonBox(StandardButtons buttons, QWidget *parent)
-    : QWidget(*new QDialogButtonBoxPrivate(Qt::Horizontal), parent, 0)
+    : QDialogButtonBox(buttons, Qt::Horizontal, parent)
 {
-    d_func()->initLayout();
-    d_func()->createStandardButtons(buttons);
 }
 
 /*!
@@ -501,9 +498,8 @@ QDialogButtonBox::QDialogButtonBox(StandardButtons buttons, QWidget *parent)
 */
 QDialogButtonBox::QDialogButtonBox(StandardButtons buttons, Qt::Orientation orientation,
                                    QWidget *parent)
-    : QWidget(*new QDialogButtonBoxPrivate(orientation), parent, 0)
+    : QDialogButtonBox(orientation, parent)
 {
-    d_func()->initLayout();
     d_func()->createStandardButtons(buttons);
 }
 

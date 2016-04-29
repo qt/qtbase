@@ -1224,10 +1224,8 @@ QDockWidget::QDockWidget(QWidget *parent, Qt::WindowFlags flags)
     \sa setWindowTitle()
 */
 QDockWidget::QDockWidget(const QString &title, QWidget *parent, Qt::WindowFlags flags)
-    : QWidget(*new QDockWidgetPrivate, parent, flags)
+    : QDockWidget(parent, flags)
 {
-    Q_D(QDockWidget);
-    d->init();
     setWindowTitle(title);
 }
 

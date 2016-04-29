@@ -279,12 +279,8 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
     group the action will be automatically inserted into the group.
 */
 QAction::QAction(QObject* parent)
-    : QObject(*(new QActionPrivate), parent)
+    : QAction(*new QActionPrivate, parent)
 {
-    Q_D(QAction);
-    d->group = qobject_cast<QActionGroup *>(parent);
-    if (d->group)
-        d->group->addAction(this);
 }
 
 
@@ -302,13 +298,10 @@ QAction::QAction(QObject* parent)
 
 */
 QAction::QAction(const QString &text, QObject* parent)
-    : QObject(*(new QActionPrivate), parent)
+    : QAction(parent)
 {
     Q_D(QAction);
     d->text = text;
-    d->group = qobject_cast<QActionGroup *>(parent);
-    if (d->group)
-        d->group->addAction(this);
 }
 
 /*!
@@ -324,14 +317,10 @@ QAction::QAction(const QString &text, QObject* parent)
     setToolTip().
 */
 QAction::QAction(const QIcon &icon, const QString &text, QObject* parent)
-    : QObject(*(new QActionPrivate), parent)
+    : QAction(text, parent)
 {
     Q_D(QAction);
     d->icon = icon;
-    d->text = text;
-    d->group = qobject_cast<QActionGroup *>(parent);
-    if (d->group)
-        d->group->addAction(this);
 }
 
 /*!

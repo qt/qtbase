@@ -941,11 +941,8 @@ QSplitterLayoutStruct *QSplitterPrivate::insertWidget(int index, QWidget *w)
     \sa setOrientation()
 */
 QSplitter::QSplitter(QWidget *parent)
-    : QFrame(*new QSplitterPrivate, parent)
+    : QSplitter(Qt::Horizontal, parent)
 {
-    Q_D(QSplitter);
-    d->orient = Qt::Horizontal;
-    d->init();
 }
 
 

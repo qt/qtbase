@@ -204,10 +204,8 @@ QCheckBox::QCheckBox(QWidget *parent)
 */
 
 QCheckBox::QCheckBox(const QString &text, QWidget *parent)
-    : QAbstractButton (*new QCheckBoxPrivate, parent)
+    : QCheckBox(parent)
 {
-    Q_D(QCheckBox);
-    d->init();
     setText(text);
 }
 

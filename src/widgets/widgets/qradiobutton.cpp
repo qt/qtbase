@@ -155,10 +155,8 @@ QRadioButton::~QRadioButton()
 */
 
 QRadioButton::QRadioButton(const QString &text, QWidget *parent)
-    : QAbstractButton(*new QRadioButtonPrivate, parent)
+    : QRadioButton(parent)
 {
-    Q_D(QRadioButton);
-    d->init();
     setText(text);
 }
 

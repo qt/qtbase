@@ -141,7 +141,7 @@ QSystemTrayIcon::QSystemTrayIcon(QObject *parent)
     \sa visible
 */
 QSystemTrayIcon::QSystemTrayIcon(const QIcon &icon, QObject *parent)
-: QObject(*new QSystemTrayIconPrivate(), parent)
+    : QSystemTrayIcon(parent)
 {
     setIcon(icon);
 }

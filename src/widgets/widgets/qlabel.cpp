@@ -233,10 +233,8 @@ QLabel::QLabel(QWidget *parent, Qt::WindowFlags f)
     \sa setText(), setAlignment(), setFrameStyle(), setIndent()
 */
 QLabel::QLabel(const QString &text, QWidget *parent, Qt::WindowFlags f)
-        : QFrame(*new QLabelPrivate(), parent, f)
+    : QLabel(parent, f)
 {
-    Q_D(QLabel);
-    d->init();
     setText(text);
 }
 

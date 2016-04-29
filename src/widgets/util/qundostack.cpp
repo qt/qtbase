@@ -110,10 +110,8 @@ QT_BEGIN_NAMESPACE
 */
 
 QUndoCommand::QUndoCommand(const QString &text, QUndoCommand *parent)
+    : QUndoCommand(parent)
 {
-    d = new QUndoCommandPrivate;
-    if (parent != 0)
-        parent->d->child_list.append(this);
     setText(text);
 }
 

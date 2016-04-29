@@ -254,11 +254,9 @@ QPushButton::QPushButton(QWidget *parent)
 */
 
 QPushButton::QPushButton(const QString &text, QWidget *parent)
-    : QAbstractButton(*new QPushButtonPrivate, parent)
+    : QPushButton(parent)
 {
-    Q_D(QPushButton);
     setText(text);
-    d->init();
 }
 
 
@@ -270,12 +268,10 @@ QPushButton::QPushButton(const QString &text, QWidget *parent)
 
 */
 QPushButton::QPushButton(const QIcon& icon, const QString &text, QWidget *parent)
-    : QAbstractButton(*new QPushButtonPrivate, parent)
+    : QPushButton(*new QPushButtonPrivate, parent)
 {
-    Q_D(QPushButton);
     setText(text);
     setIcon(icon);
-    d->init();
 }
 
 /*! \internal

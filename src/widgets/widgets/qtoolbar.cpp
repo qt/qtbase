@@ -520,10 +520,8 @@ QToolBar::QToolBar(QWidget *parent)
     \sa setWindowTitle()
 */
 QToolBar::QToolBar(const QString &title, QWidget *parent)
-    : QWidget(*new QToolBarPrivate, parent, 0)
+    : QToolBar(parent)
 {
-    Q_D(QToolBar);
-    d->init();
     setWindowTitle(title);
 }
 
