@@ -692,7 +692,7 @@ CFG_EGLFS_EGLDEVICE=no
 CFG_EGLFS_MALI=no
 CFG_EGLFS_VIV=no
 CFG_EGLFS_VIV_WL=no
-CFG_DIRECTFB=auto
+CFG_DIRECTFB=no
 CFG_GBM=auto
 CFG_LINUXFB=auto
 CFG_INTEGRITYFB=no
@@ -2706,8 +2706,8 @@ Additional options:
     -no-gbm ............ Do not compile backends for GBM.
  *  -gbm ............... Compile backends for GBM.
 
-    -no-directfb ....... Do not compile DirectFB support.
- *  -directfb .......... Compile DirectFB support.
+ *  -no-directfb ....... Do not compile DirectFB support.
+    -directfb .......... Compile DirectFB support.
 
     -no-linuxfb ........ Do not compile Linux Framebuffer support.
  *  -linuxfb ........... Compile Linux Framebuffer support.
@@ -3931,7 +3931,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             setBootstrapVariable QMAKE_CXXFLAGS_RELEASE
             EXTRA_CFLAGS="$EXTRA_CFLAGS \$(QMAKE_CFLAGS_RELEASE)"
             EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(QMAKE_CXXFLAGS_RELEASE)"
-        elif [ "$CFG_DEBUG" = "yes" ]; then
+        else
             setBootstrapVariable QMAKE_CFLAGS_DEBUG
             setBootstrapVariable QMAKE_CXXFLAGS_DEBUG
             EXTRA_CFLAGS="$EXTRA_CFLAGS \$(QMAKE_CFLAGS_DEBUG)"

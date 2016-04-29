@@ -2151,8 +2151,8 @@ void QObject::deleteLater()
 
     Returns a translated version of \a sourceText, optionally based on a
     \a disambiguation string and value of \a n for strings containing plurals;
-    otherwise returns \a sourceText itself if no appropriate translated string
-    is available.
+    otherwise returns QString::fromUtf8(\a sourceText) if no appropriate
+    translated string is available.
 
     Example:
     \snippet ../widgets/mainwindows/sdi/mainwindow.cpp implicit tr context
@@ -2178,7 +2178,7 @@ void QObject::deleteLater()
     translators while performing translations is not supported. Doing
     so will probably result in crashes or other undesirable behavior.
 
-    \sa trUtf8(), QCoreApplication::translate(), {Internationalization with Qt}
+    \sa QCoreApplication::translate(), {Internationalization with Qt}
 */
 
 /*!

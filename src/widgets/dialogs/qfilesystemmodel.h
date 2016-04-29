@@ -81,6 +81,7 @@ public:
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
     QModelIndex index(const QString &path, int column = 0) const;
     QModelIndex parent(const QModelIndex &child) const Q_DECL_OVERRIDE;
+    using QObject::parent;
     QModelIndex sibling(int row, int column, const QModelIndex &idx) const Q_DECL_OVERRIDE;
     bool hasChildren(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
     bool canFetchMore(const QModelIndex &parent) const Q_DECL_OVERRIDE;

@@ -69,12 +69,6 @@ static inline int mapToQtWeightForRange(int fcweight, int fcLower, int fcUpper, 
     return qtLower + ((fcweight - fcLower) * (qtUpper - qtLower)) / (fcUpper - fcLower);
 }
 
-static inline bool requiresOpenType(int writingSystem)
-{
-    return ((writingSystem >= QFontDatabase::Syriac && writingSystem <= QFontDatabase::Sinhala)
-            || writingSystem == QFontDatabase::Khmer || writingSystem == QFontDatabase::Nko);
-}
-
 static inline int weightFromFcWeight(int fcweight)
 {
     // Font Config uses weights from 0 to 215 (the highest enum value) while QFont ranges from
@@ -300,10 +294,10 @@ static const char *languageForWritingSystem[] = {
 Q_STATIC_ASSERT(sizeof(languageForWritingSystem) / sizeof(const char *) == QFontDatabase::WritingSystemsCount);
 
 #if FC_VERSION >= 20297
-// Newer FontConfig let's us sort out fonts that contain certain glyphs, but no
-// open type tables for is directly. Do this so we don't pick some strange
-// pseudo unicode font
-static const char *openType[] = {
+// Newer FontConfig let's us sort out fonts that report certain scripts support,
+// but no open type tables for handling them correctly.
+// Check the reported script presence in the FC_CAPABILITY's "otlayout:" section.
+static const char *capabilityForWritingSystem[] = {
     0,     // Any
     0,  // Latin
     0,  // Greek
@@ -339,7 +333,7 @@ static const char *openType[] = {
     0, // Runic
     "nko " // N'Ko
 };
-Q_STATIC_ASSERT(sizeof(openType) / sizeof(const char *) == QFontDatabase::WritingSystemsCount);
+Q_STATIC_ASSERT(sizeof(capabilityForWritingSystem) / sizeof(*capabilityForWritingSystem) == QFontDatabase::WritingSystemsCount);
 #endif
 
 static const char *getFcFamilyForStyleHint(const QFont::StyleHint style)
@@ -422,11 +416,23 @@ static void populateFromPattern(FcPattern *pattern)
     FcResult res = FcPatternGetLangSet(pattern, FC_LANG, 0, &langset);
     if (res == FcResultMatch) {
         bool hasLang = false;
+#if FC_VERSION >= 20297
+        FcChar8 *cap = Q_NULLPTR;
+        FcResult capRes = FcResultNoMatch;
+#endif
         for (int j = 1; j < QFontDatabase::WritingSystemsCount; ++j) {
             const FcChar8 *lang = (const FcChar8*) languageForWritingSystem[j];
             if (lang) {
                 FcLangResult langRes = FcLangSetHasLang(langset, lang);
                 if (langRes != FcLangDifferentLang) {
+#if FC_VERSION >= 20297
+                    if (capabilityForWritingSystem[j] != Q_NULLPTR) {
+                        if (cap == Q_NULLPTR)
+                            capRes = FcPatternGetString(pattern, FC_CAPABILITY, 0, &cap);
+                        if (capRes == FcResultMatch && strstr(reinterpret_cast<const char *>(cap), capabilityForWritingSystem[j]) == 0)
+                            continue;
+                    }
+#endif
                     writingSystems.setSupported(QFontDatabase::WritingSystem(j));
                     hasLang = true;
                 }
@@ -441,18 +447,6 @@ static void populateFromPattern(FcPattern *pattern)
         // special in a way.
         writingSystems.setSupported(QFontDatabase::Other);
     }
-
-#if FC_VERSION >= 20297
-    for (int j = 1; j < QFontDatabase::WritingSystemsCount; ++j) {
-        if (writingSystems.supported(QFontDatabase::WritingSystem(j))
-            && requiresOpenType(j) && openType[j]) {
-            FcChar8 *cap;
-            res = FcPatternGetString (pattern, FC_CAPABILITY, 0, &cap);
-            if (res != FcResultMatch || !strstr((const char *)cap, openType[j]))
-                writingSystems.setSupported(QFontDatabase::WritingSystem(j),false);
-        }
-    }
-#endif
 
     FontFile *fontFile = new FontFile;
     fontFile->fileName = QString::fromLocal8Bit((const char *)file_value);

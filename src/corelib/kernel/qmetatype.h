@@ -1189,6 +1189,7 @@ public:
 public:
     template<class T> QAssociativeIterableImpl(const T*p)
       : _iterable(p)
+      , _iterator(Q_NULLPTR)
       , _metaType_id_key(qMetaTypeId<typename T::key_type>())
       , _metaType_flags_key(QTypeInfo<typename T::key_type>::isPointer)
       , _metaType_id_value(qMetaTypeId<typename T::mapped_type>())
@@ -1208,6 +1209,7 @@ public:
 
     QAssociativeIterableImpl()
       : _iterable(Q_NULLPTR)
+      , _iterator(Q_NULLPTR)
       , _metaType_id_key(QMetaType::UnknownType)
       , _metaType_flags_key(0)
       , _metaType_id_value(QMetaType::UnknownType)
