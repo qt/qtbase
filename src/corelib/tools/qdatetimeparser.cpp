@@ -713,7 +713,7 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
 
     QDTPDEBUG << "sectionValue for" << sn.name()
               << "with text" << text << "and st" << sectiontext
-              << text.mid(index, sectionmaxsize)
+              << text.midRef(index, sectionmaxsize)
               << index;
 
     int used = 0;
@@ -743,9 +743,8 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
             QDTPDEBUGN("This should never happen (findAmPm returned %d)", ampm);
             break;
         }
-        if (state != Invalid) {
-            text.replace(index, used, sectiontext.left(used));
-        }
+        if (state != Invalid)
+            text.replace(index, used, sectiontext.constData(), used);
         break; }
     case MonthSection:
     case DayOfWeekSectionShort:
@@ -764,7 +763,7 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
 
             if (num != -1) {
                 state = (used == sectiontext.size() ? Acceptable : Intermediate);
-                text.replace(index, used, sectiontext.left(used));
+                text.replace(index, used, sectiontext.constData(), used);
             } else {
                 state = Intermediate;
             }
@@ -810,7 +809,7 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
                     }
                 }
                 if (ok && tmp <= absMax) {
-                    QDTPDEBUG << sectiontext.left(digits) << tmp << digits;
+                    QDTPDEBUG << sectiontext.leftRef(digits) << tmp << digits;
                     last = tmp;
                     used = digits;
                     break;
@@ -911,7 +910,7 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
 
         for (int index=0; state != Invalid && index<sectionNodesCount; ++index) {
             if (QStringRef(&input, pos, separators.at(index).size()) != separators.at(index)) {
-                QDTPDEBUG << "invalid because" << input.mid(pos, separators.at(index).size())
+                QDTPDEBUG << "invalid because" << input.midRef(pos, separators.at(index).size())
                           << "!=" << separators.at(index)
                           << index << pos << currentSectionIndex;
                 state = Invalid;
@@ -983,7 +982,7 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
         }
 
         if (state != Invalid && QStringRef(&input, pos, input.size() - pos) != separators.last()) {
-            QDTPDEBUG << "invalid because" << input.mid(pos)
+            QDTPDEBUG << "invalid because" << input.midRef(pos)
                       << "!=" << separators.last() << pos;
             state = Invalid;
         }
@@ -1384,7 +1383,7 @@ QDateTimeParser::AmPmFinder QDateTimeParser::findAmPm(QString &str, int sectionI
     }
     if (used)
         *used = str.size();
-    if (str.trimmed().isEmpty()) {
+    if (QStringRef(&str).trimmed().isEmpty()) {
         return PossibleBoth;
     }
     const QLatin1Char space(' ');
