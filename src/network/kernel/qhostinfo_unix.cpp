@@ -43,7 +43,6 @@
 #include <qbasicatomic.h>
 #include <qurl.h>
 #include <qfile.h>
-#include <private/qmutexpool_p.h>
 #include <private/qnet_unix_p.h>
 
 #include <sys/types.h>
@@ -86,7 +85,7 @@ typedef void (*res_nclose_proto)(res_state_ptr);
 static res_nclose_proto local_res_nclose = 0;
 static res_state_ptr local_res = 0;
 
-static void resolveLibrary()
+static bool resolveLibraryInternal()
 {
 #if !defined(QT_NO_LIBRARY) && !defined(Q_OS_QNX)
     QLibrary lib;
@@ -97,7 +96,7 @@ static void resolveLibrary()
     {
         lib.setFileName(QLatin1String("resolv"));
         if (!lib.load())
-            return;
+            return false;
     }
 
     local_res_init = res_init_proto(lib.resolve("__res_init"));
@@ -119,7 +118,10 @@ static void resolveLibrary()
             local_res_ninit = 0;
     }
 #endif
+
+    return true;
 }
+Q_GLOBAL_STATIC_WITH_ARGS(bool, resolveLibrary, (resolveLibraryInternal()))
 
 QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 {
@@ -131,14 +133,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 #endif
 
     // Load res_init on demand.
-    static QBasicAtomicInt triedResolve = Q_BASIC_ATOMIC_INITIALIZER(false);
-    if (!triedResolve.loadAcquire()) {
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&local_res_init));
-        if (!triedResolve.load()) {
-            resolveLibrary();
-            triedResolve.storeRelease(true);
-        }
-    }
+    resolveLibrary();
 
     // If res_init is available, poll it.
     if (local_res_init)

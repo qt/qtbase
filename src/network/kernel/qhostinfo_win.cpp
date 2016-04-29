@@ -39,7 +39,6 @@
 #include <qmutex.h>
 #include <qbasicatomic.h>
 #include <qurl.h>
-#include <private/qmutexpool_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -72,7 +71,7 @@ static getnameinfoProto local_getnameinfo = 0;
 static getaddrinfoProto local_getaddrinfo = 0;
 static freeaddrinfoProto local_freeaddrinfo = 0;
 
-static void resolveLibrary()
+static bool resolveLibraryInternal()
 {
     // Attempt to resolve getaddrinfo(); without it we'll have to fall
     // back to gethostbyname(), which has no IPv6 support.
@@ -89,7 +88,9 @@ static void resolveLibrary()
     local_freeaddrinfo = (freeaddrinfoProto) QSystemLibrary::resolve(QLatin1String("ws2_32"), "freeaddrinfo");
     local_getnameinfo = (getnameinfoProto) QSystemLibrary::resolve(QLatin1String("ws2_32"), "getnameinfo");
 #endif
+    return true;
 }
+Q_GLOBAL_STATIC_WITH_ARGS(bool, resolveLibrary, (resolveLibraryInternal()))
 
 static void translateWSAError(int error, QHostInfo *results)
 {
@@ -117,14 +118,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     QSysInfo::machineHostName();        // this initializes ws2_32.dll
 
     // Load res_init on demand.
-    static QBasicAtomicInt triedResolve = Q_BASIC_ATOMIC_INITIALIZER(false);
-    if (!triedResolve.loadAcquire()) {
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&local_getaddrinfo));
-        if (!triedResolve.load()) {
-            resolveLibrary();
-            triedResolve.storeRelease(true);
-        }
-    }
+    resolveLibrary();
 
     QHostInfo results;
 
