@@ -90,6 +90,7 @@ private slots:
     void mouseActivation();
 #endif
     void tearOff();
+    void submenuTearOffDontClose();
     void layoutDirection();
 
     void task208001_stylesheet();
@@ -629,6 +630,51 @@ void tst_QMenu::tearOff()
     menu->hideTearOffMenu();
     QVERIFY(!menu->isTearOffMenuVisible());
     QVERIFY(!torn->isVisible());
+}
+
+void tst_QMenu::submenuTearOffDontClose()
+{
+    QWidget widget;
+    QMenu *menu = new QMenu(&widget);
+    QVERIFY(!menu->isTearOffEnabled()); //default value
+    menu->setTearOffEnabled(true);
+    QVERIFY(menu->isTearOffEnabled());
+    QMenu *submenu = new QMenu(&widget);
+    submenu->addAction("aaa");
+    submenu->addAction("bbb");
+    QVERIFY(!submenu->isTearOffEnabled()); //default value
+    submenu->setTearOffEnabled(true);
+    QVERIFY(submenu->isTearOffEnabled());
+    menu->addMenu(submenu);
+
+    widget.resize(300, 200);
+    centerOnScreen(&widget);
+    widget.show();
+    widget.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
+    // Show parent menu
+    menu->popup(widget.geometry().topRight() + QPoint(50, 0));
+    QVERIFY(QTest::qWaitForWindowActive(menu));
+    // Then its submenu
+    const QRect submenuRect = menu->actionGeometry(menu->actions().at(0));
+    const QPoint submenuPos(submenuRect.topLeft() + QPoint(3, 3));
+    // Move then click to avoid the submenu moves from causing it to close
+    QTest::mouseMove(menu, submenuPos, 100);
+    QTest::mouseClick(menu, Qt::LeftButton, 0, submenuPos, 100);
+    QTRY_VERIFY(QTest::qWaitForWindowActive(submenu));
+    // Make sure we enter the submenu frame directly on the tear-off area
+    QTest::mouseMove(submenu, QPoint(10, 3), 100);
+    if (submenu->style()->styleHint(QStyle::SH_Menu_SubMenuDontStartSloppyOnLeave)) {
+        qWarning("Sloppy menu timer disabled by the style: %s", qPrintable(QApplication::style()->objectName()));
+        // Submenu must get the enter event
+        QTRY_VERIFY(submenu->underMouse());
+    } else {
+        const int closeTimeout = submenu->style()->styleHint(QStyle::SH_Menu_SubMenuSloppyCloseTimeout);
+        QTest::qWait(closeTimeout + 100);
+        // Menu must not disappear and it must get the enter event
+        QVERIFY(submenu->isVisible());
+        QVERIFY(submenu->underMouse());
+    }
 }
 
 void tst_QMenu::layoutDirection()
