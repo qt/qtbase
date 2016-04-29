@@ -169,7 +169,6 @@ public:
     static QThread *threadForId(int id);
 
 #ifdef Q_OS_UNIX
-    pthread_t thread_id;
     QWaitCondition thread_done;
 
     static void *start(void *arg);
