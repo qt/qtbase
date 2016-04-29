@@ -48,7 +48,6 @@
 
 #include "qfile.h"
 #include "qdir.h"
-#include "private/qmutexpool_p.h"
 #include "qvarlengtharray.h"
 #include "qdatetime.h"
 #include "qt_windows.h"
@@ -178,6 +177,7 @@ static TRUSTEE_W worldTrusteeW;
 static PSID currentUserSID = 0;
 static PSID worldSID = 0;
 
+namespace {
 /*
     Deletes the allocated SIDs during global static cleanup
 */
@@ -201,25 +201,10 @@ SidCleanup::~SidCleanup()
 
 Q_GLOBAL_STATIC(SidCleanup, initSidCleanup)
 
-static void resolveLibs()
+struct LibResolver
 {
-    static bool triedResolve = false;
-    if (!triedResolve) {
-        // need to resolve the security info functions
-
-        // protect initialization
-#ifndef QT_NO_THREAD
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&triedResolve));
-        // check triedResolve again, since another thread may have already
-        // done the initialization
-        if (triedResolve) {
-            // another thread did initialize the security function pointers,
-            // so we shouldn't do it again.
-            return;
-        }
-#endif
-
-        triedResolve = true;
+    LibResolver()
+    {
         HINSTANCE advapiHnd = QSystemLibrary::load(L"advapi32");
         if (advapiHnd) {
             ptrGetNamedSecurityInfoW = (PtrGetNamedSecurityInfoW)GetProcAddress(advapiHnd, "GetNamedSecurityInfoW");
@@ -266,9 +251,13 @@ static void resolveLibs()
         if (userenvHnd)
             ptrGetUserProfileDirectoryW = (PtrGetUserProfileDirectoryW)GetProcAddress(userenvHnd, "GetUserProfileDirectoryW");
     }
-}
+};
+Q_GLOBAL_STATIC(LibResolver, resolveLibs)
+
+} // anonymous namespace
 #endif // QT_NO_LIBRARY
 
+QT_BEGIN_INCLUDE_NAMESPACE
 typedef DWORD (WINAPI *PtrNetShareEnum)(LPWSTR, DWORD, LPBYTE*, DWORD, LPDWORD, LPDWORD, LPDWORD);
 static PtrNetShareEnum ptrNetShareEnum = 0;
 typedef DWORD (WINAPI *PtrNetApiBufferFree)(LPVOID);
@@ -278,19 +267,13 @@ typedef struct _SHARE_INFO_1 {
     DWORD shi1_type;
     LPWSTR shi1_remark;
 } SHARE_INFO_1;
+QT_END_INCLUDE_NAMESPACE
 
-
-static bool resolveUNCLibs()
+namespace {
+struct UNCLibResolver
 {
-    static bool triedResolve = false;
-    if (!triedResolve) {
-#ifndef QT_NO_THREAD
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&triedResolve));
-        if (triedResolve) {
-            return ptrNetShareEnum && ptrNetApiBufferFree;
-        }
-#endif
-        triedResolve = true;
+    UNCLibResolver()
+    {
 #if !defined(Q_OS_WINRT)
         HINSTANCE hLib = QSystemLibrary::load(L"Netapi32");
         if (hLib) {
@@ -300,6 +283,13 @@ static bool resolveUNCLibs()
         }
 #endif // !Q_OS_WINRT
     }
+};
+Q_GLOBAL_STATIC(UNCLibResolver, uncLibResolver)
+} // anonymous namespace
+
+static bool resolveUNCLibs()
+{
+    uncLibResolver();
     return ptrNetShareEnum && ptrNetApiBufferFree;
 }
 
