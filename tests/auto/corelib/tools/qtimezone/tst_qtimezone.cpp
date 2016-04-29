@@ -847,6 +847,16 @@ void tst_QTimeZone::tzTest()
     QTzTimeZonePrivate::Data datatz2 = tztz2.data(std);
     QTzTimeZonePrivate::Data datautc2 = tzutc2.data(std);
     QCOMPARE(datatz2.offsetFromUtc, datautc2.offsetFromUtc);
+
+    // Test a timezone with a name that isn't all letters
+    QTzTimeZonePrivate tzBarnaul("Asia/Barnaul");
+    if (tzBarnaul.isValid()) {
+        QCOMPARE(tzBarnaul.data(std).abbreviation, QString("+07"));
+
+        // first full day of the new rule (tzdata2016b)
+        QDateTime dt(QDate(2016, 3, 28), QTime(0, 0, 0), Qt::UTC);
+        QCOMPARE(tzBarnaul.data(dt.toMSecsSinceEpoch()).abbreviation, QString("+07"));
+    }
 #endif // Q_OS_UNIX
 }
 
