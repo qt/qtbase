@@ -1437,8 +1437,7 @@ void QWindowsCEStyle::drawComplexControl(ComplexControl control, const QStyleOpt
             if (toolbutton->activeSubControls & SC_ToolButtonMenu)
                 mflags |= State_Sunken;
 
-            QStyleOption tool(0);
-            tool.palette = toolbutton->palette;
+            QStyleOption tool = *toolbutton;
             if (toolbutton->subControls & SC_ToolButton) {
                     tool.rect = button;
                     tool.state = bflags;
@@ -1620,9 +1619,8 @@ void QWindowsCEStyle::drawComplexControl(ComplexControl control, const QStyleOpt
 
                 if (cmb->activeSubControls == SC_ComboBoxArrow)
                     flags |= State_Sunken;
-                QStyleOption arrowOpt(0);
+                QStyleOption arrowOpt = *cmb;
                 arrowOpt.rect = ar;
-                arrowOpt.palette = cmb->palette;
                 arrowOpt.state = flags;
                 drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, painter, widget);
             }

@@ -3044,8 +3044,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                 }
             }
 
-            QStyleOption tool(0);
-            tool.palette = toolbutton->palette;
+            QStyleOption tool = *toolbutton;
             if (toolbutton->subControls & SC_ToolButton) {
                 if (flags & (State_Sunken | State_On | State_Raised) || !autoRaise) {
                     if (toolbutton->features & QStyleOptionToolButton::MenuButtonPopup && autoRaise) {
