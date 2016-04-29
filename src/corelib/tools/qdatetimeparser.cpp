@@ -313,7 +313,7 @@ int QDateTimeParser::sectionPos(const SectionNode &sn) const
 
 */
 
-static QString unquote(const QString &str)
+static QString unquote(const QStringRef &str)
 {
     const QChar quote(QLatin1Char('\''));
     const QChar slash(QLatin1Char('\\'));
@@ -357,10 +357,8 @@ static inline int countRepeat(const QString &str, int index, int maxCount)
 
 static inline void appendSeparator(QStringList *list, const QString &string, int from, int size, int lastQuote)
 {
-    QString str(string.mid(from, size));
-    if (lastQuote >= from)
-        str = unquote(str);
-    list->append(str);
+    const QStringRef separator = string.midRef(from, size);
+    list->append(lastQuote >= from ? unquote(separator) : separator.toString());
 }
 
 
@@ -471,7 +469,7 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
                 if (parserType != QVariant::Time) {
                     const SectionNode sn = { MonthSection, i - add, countRepeat(newFormat, i, 4), 0 };
                     newSectionNodes.append(sn);
-                    newSeparators.append(unquote(newFormat.mid(index, i - index)));
+                    newSeparators.append(unquote(newFormat.midRef(index, i - index)));
                     i += sn.count - 1;
                     index = i + 1;
                     newDisplay |= MonthSection;
