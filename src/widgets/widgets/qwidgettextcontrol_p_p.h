@@ -111,6 +111,7 @@ public:
     void _q_emitCursorPosChanged(const QTextCursor &someCursor);
     void _q_contentsChanged(int from, int charsRemoved, int charsAdded);
 
+    void setCursorVisible(bool visible);
     void setBlinkingCursorEnabled(bool enable);
     void updateCursorBlinking();
 
@@ -177,6 +178,7 @@ public:
     QTextDocument *doc;
     bool cursorOn;
     bool blinkingEnabled;
+    bool cursorVisible;
     QTextCursor cursor;
     bool cursorIsFocusIndicator;
     QTextCharFormat lastCharFormat;
