@@ -4699,7 +4699,7 @@ QDateTime QDateTime::fromString(const QString &string, const QString &format)
     Q_UNUSED(string);
     Q_UNUSED(format);
 #endif
-    return QDateTime(QDate(), QTime(-1, -1, -1));
+    return QDateTime();
 }
 
 #endif // QT_NO_DATESTRING
