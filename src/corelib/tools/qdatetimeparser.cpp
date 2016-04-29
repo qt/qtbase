@@ -1555,10 +1555,7 @@ QString QDateTimeParser::SectionNode::format() const
         qWarning("QDateTimeParser::sectionFormat Internal error 2");
         return QString();
     }
-
-    QString str;
-    str.fill(fillChar, count);
-    return str;
+    return QString(count, fillChar);
 }
 
 
