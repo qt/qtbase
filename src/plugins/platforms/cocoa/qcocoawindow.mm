@@ -1135,8 +1135,7 @@ bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
 
     if (grab && ![m_nsWindow isKeyWindow])
         [m_nsWindow makeKeyWindow];
-    else if (!grab && [m_nsWindow isKeyWindow])
-        [m_nsWindow resignKeyWindow];
+
     return true;
 }
 
@@ -1147,8 +1146,7 @@ bool QCocoaWindow::setMouseGrabEnabled(bool grab)
 
     if (grab && ![m_nsWindow isKeyWindow])
         [m_nsWindow makeKeyWindow];
-    else if (!grab && [m_nsWindow isKeyWindow])
-        [m_nsWindow resignKeyWindow];
+
     return true;
 }
 
