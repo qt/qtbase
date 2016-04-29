@@ -36,7 +36,6 @@
 #include <QtCore/qlibrary.h>
 #endif
 #include <QtCore/qmutex.h>
-#include <private/qmutexpool_p.h>
 
 #ifndef QT_NO_DBUS
 
@@ -74,8 +73,10 @@ bool qdbus_loadLibDBus()
 
     static bool triedToLoadLibrary = false;
 #ifndef QT_NO_THREAD
-    QMutexLocker locker(QMutexPool::globalInstanceGet((void *)&qdbus_resolve_me));
+    static QBasicMutex mutex;
+    QMutexLocker locker(&mutex);
 #endif
+
     QLibrary *&lib = qdbus_libdbus;
     if (triedToLoadLibrary)
         return lib && lib->isLoaded();
