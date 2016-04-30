@@ -249,8 +249,8 @@ public:
 
     AtomicType _q_value;
 
-    Type load() const Q_DECL_NOTHROW { return _q_value; }
-    void store(Type newValue) Q_DECL_NOTHROW { _q_value = newValue; }
+    Type load() const Q_DECL_NOTHROW { return Ops::load(_q_value); }
+    void store(Type newValue) Q_DECL_NOTHROW { Ops::store(_q_value, newValue); }
     operator Type() const Q_DECL_NOTHROW { return loadAcquire(); }
     Type operator=(Type newValue) Q_DECL_NOTHROW { storeRelease(newValue); return newValue; }
 
