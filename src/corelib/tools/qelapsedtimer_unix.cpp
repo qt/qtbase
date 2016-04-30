@@ -115,7 +115,11 @@ static inline void qt_clock_gettime(clockid_t clock, struct timespec *ts)
 
 static int unixCheckClockType()
 {
-#if (_POSIX_MONOTONIC_CLOCK-0 == 0) && defined(_SC_MONOTONIC_CLOCK)
+#ifdef Q_OS_LINUX
+    // Despite glibc claiming that we should check at runtime, the Linux kernel
+    // always supports the monotonic clock
+    return CLOCK_MONOTONIC;
+#elif (_POSIX_MONOTONIC_CLOCK-0 == 0) && defined(_SC_MONOTONIC_CLOCK)
     // we need a value we can store in a clockid_t that isn't a valid clock
     // check if the valid ones are both non-negative or both non-positive
 #  if CLOCK_MONOTONIC >= 0 && CLOCK_REALTIME >= 0
