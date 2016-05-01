@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -83,21 +84,30 @@ public:
 
     // Status of date/time
     enum StatusFlag {
-        NullDate            = 0x01,
-        NullTime            = 0x02,
-        ValidDate           = 0x04, // just the date field
-        ValidTime           = 0x08, // just the time field
-        ValidDateTime       = 0x10, // the whole object (including timezone)
+        ShortData           = 0x01,
+
+        ValidDate           = 0x02,
+        ValidTime           = 0x04,
+        ValidDateTime       = 0x08,
+
+        TimeSpecMask        = 0x30,
+
         SetToStandardTime   = 0x40,
         SetToDaylightTime   = 0x80
     };
     Q_DECLARE_FLAGS(StatusFlags, StatusFlag)
 
+    enum {
+        TimeSpecShift = 4,
+        ValidityMask        = ValidDate | ValidTime | ValidDateTime,
+        DaylightMask        = SetToStandardTime | SetToDaylightTime
+    };
+
     QDateTimePrivate() : m_msecs(0),
-                         m_spec(Qt::LocalTime),
-                         m_offsetFromUtc(0),
-                         m_status(NullDate | NullTime)
-    {}
+                         m_status(StatusFlag(Qt::LocalTime << TimeSpecShift)),
+                         m_offsetFromUtc(0)
+    {
+    }
 
     QDateTimePrivate(const QDate &toDate, const QTime &toTime, Qt::TimeSpec toSpec,
                      int offsetSeconds);
@@ -110,12 +120,11 @@ public:
     // 4 bytes padding
 
     qint64 m_msecs;
-    Qt::TimeSpec m_spec;
+    StatusFlags m_status;
     int m_offsetFromUtc;
 #ifndef QT_BOOTSTRAPPED
     QTimeZone m_timeZone;
 #endif // QT_BOOTSTRAPPED
-    StatusFlags m_status;
 
     void setTimeSpec(Qt::TimeSpec spec, int offsetSeconds);
     void setDateTime(const QDate &date, const QTime &time);
@@ -139,6 +148,10 @@ public:
     inline void setValidDateTime() { m_status |= ValidDateTime; }
     inline void clearValidDateTime() { m_status &= ~ValidDateTime; }
     inline void clearSetToDaylightStatus() { m_status &= ~(SetToStandardTime | SetToDaylightTime); }
+
+    inline Qt::TimeSpec spec() const { return Qt::TimeSpec((m_status & TimeSpecMask) >> TimeSpecShift); }
+    inline void setSpec(Qt::TimeSpec spec)
+    { m_status  &= ~TimeSpecMask; m_status |= StatusFlag(uint(spec) << TimeSpecShift); }
 
 #ifndef QT_BOOTSTRAPPED
     static qint64 zoneMSecsToEpochMSecs(qint64 msecs, const QTimeZone &zone,

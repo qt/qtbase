@@ -129,29 +129,14 @@ void tst_toolsupport::offsets_data()
 #endif
 
     {
-#ifdef Q_OS_WIN
         QTest::newRow("QDateTimePrivate::m_msecs")
-            << pmm_to_offsetof(&QDateTimePrivate::m_msecs) << 8 << 8;
-        QTest::newRow("QDateTimePrivate::m_spec")
-            << pmm_to_offsetof(&QDateTimePrivate::m_spec) << 16 << 16;
-        QTest::newRow("QDateTimePrivate::m_offsetFromUtc")
-            << pmm_to_offsetof(&QDateTimePrivate::m_offsetFromUtc) << 20 << 20;
-        QTest::newRow("QDateTimePrivate::m_timeZone")
-            << pmm_to_offsetof(&QDateTimePrivate::m_timeZone) << 24 << 24;
+            << pmm_to_offsetof(&QDateTimePrivate::m_msecs) << 0 << 0;
         QTest::newRow("QDateTimePrivate::m_status")
-            << pmm_to_offsetof(&QDateTimePrivate::m_status) << 28 << 32;
-#else
-        QTest::newRow("QDateTimePrivate::m_msecs")
-            << pmm_to_offsetof(&QDateTimePrivate::m_msecs) << 4 << 8;
-        QTest::newRow("QDateTimePrivate::m_spec")
-            << pmm_to_offsetof(&QDateTimePrivate::m_spec) << 12 << 16;
+            << pmm_to_offsetof(&QDateTimePrivate::m_status) << 8 << 8;
         QTest::newRow("QDateTimePrivate::m_offsetFromUtc")
-            << pmm_to_offsetof(&QDateTimePrivate::m_offsetFromUtc) << 16 << 20;
+            << pmm_to_offsetof(&QDateTimePrivate::m_offsetFromUtc) << 12 << 12;
         QTest::newRow("QDateTimePrivate::m_timeZone")
             << pmm_to_offsetof(&QDateTimePrivate::m_timeZone) << 20 << 24;
-        QTest::newRow("QDateTimePrivate::m_status")
-            << pmm_to_offsetof(&QDateTimePrivate::m_status) << 24 << 32;
-#endif
     }
 #endif // RUN_MEMBER_OFFSET_TEST
 }
