@@ -131,8 +131,8 @@ public:
     void refreshDateTime();
 
     // Get/set date and time status
-    inline bool isNullDate() const { return m_status & NullDate; }
-    inline bool isNullTime() const { return m_status & NullTime; }
+    inline bool isNullDate() const { return !(m_status & ValidDate); }
+    inline bool isNullTime() const { return !(m_status & ValidTime); }
     inline bool isValidDate() const { return m_status & ValidDate; }
     inline bool isValidTime() const { return m_status & ValidTime; }
     inline bool isValidDateTime() const { return m_status & ValidDateTime; }
