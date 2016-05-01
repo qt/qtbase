@@ -64,6 +64,10 @@ QT_BEGIN_NAMESPACE
 class QDateTimePrivate
 {
 public:
+    // forward the declarations from QDateTime (this makes them public)
+    typedef QDateTime::ShortData QDateTimeShortData;
+    typedef QDateTime::Data QDateTimeData;
+
     // Never change or delete this enum, it is required for backwards compatible
     // serialization of QDateTime before 5.2, so is essentially public API
     enum Spec {
@@ -110,11 +114,11 @@ public:
     {
     }
 
-    QDateTimePrivate(const QDate &toDate, const QTime &toTime, Qt::TimeSpec toSpec,
-                     int offsetSeconds);
+    static QDateTime::Data create(const QDate &toDate, const QTime &toTime, Qt::TimeSpec toSpec,
+                                  int offsetSeconds);
 
 #ifndef QT_BOOTSTRAPPED
-    QDateTimePrivate(const QDate &toDate, const QTime &toTime, const QTimeZone & timeZone);
+    static QDateTime::Data create(const QDate &toDate, const QTime &toTime, const QTimeZone & timeZone);
 #endif // QT_BOOTSTRAPPED
 
     qint64 m_msecs;

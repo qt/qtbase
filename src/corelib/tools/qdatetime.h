@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -208,8 +209,45 @@ class QDateTimePrivate;
 
 class Q_CORE_EXPORT QDateTime
 {
+    // ### Qt 6: revisit the optimization
+    struct ShortData {
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+        quintptr status : 8;
+#endif
+        // note: this is only 24 bits on 32-bit systems...
+        qintptr msecs : sizeof(void *) * 8 - 8;
+
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+        quintptr status : 8;
+#endif
+    };
+
+    union Data {
+        enum {
+            // To be of any use, we need at least 60 years around 1970, which
+            // is 1,893,456,000,000 ms. That requires 41 bits to store, plus
+            // the sign bit. With the status byte, the minimum size is 50 bits.
+            CanBeSmall = sizeof(ShortData) * 8 > 50
+        };
+
+        Data(Qt::TimeSpec);
+        Data(const Data &other);
+        Data &operator=(const Data &other);
+        // no move semantics (would be the same as copy)
+        ~Data();
+
+        bool isShort() const;
+        void detach();
+
+        const QDateTimePrivate *operator->() const;
+        QDateTimePrivate *operator->();
+
+        QDateTimePrivate *d;
+        ShortData data;
+    };
+
 public:
-    QDateTime();
+    QDateTime() Q_DECL_NOEXCEPT_EXPR(Data::CanBeSmall);
     explicit QDateTime(const QDate &);
     QDateTime(const QDate &, const QTime &, Qt::TimeSpec spec = Qt::LocalTime);
     // ### Qt 6: Merge with above with default offsetSeconds = 0
@@ -217,15 +255,15 @@ public:
 #ifndef QT_BOOTSTRAPPED
     QDateTime(const QDate &date, const QTime &time, const QTimeZone &timeZone);
 #endif // QT_BOOTSTRAPPED
-    QDateTime(const QDateTime &other);
+    QDateTime(const QDateTime &other) Q_DECL_NOTHROW;
     ~QDateTime();
 
 #ifdef Q_COMPILER_RVALUE_REFS
     QDateTime &operator=(QDateTime &&other) Q_DECL_NOTHROW { swap(other); return *this; }
 #endif
-    QDateTime &operator=(const QDateTime &other);
+    QDateTime &operator=(const QDateTime &other) Q_DECL_NOTHROW;
 
-    void swap(QDateTime &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    void swap(QDateTime &other) Q_DECL_NOTHROW { qSwap(d.d, other.d.d); }
 
     bool isNull() const;
     bool isValid() const;
@@ -321,10 +359,7 @@ public:
 private:
     friend class QDateTimePrivate;
 
-    // ### Qt6: Using a private here has high impact on runtime
-    // on users such as QFileInfo. In Qt 6, the data members
-    // should be inlined.
-    QSharedDataPointer<QDateTimePrivate> d;
+    Data d;
 
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QDateTime &);
