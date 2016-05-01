@@ -214,6 +214,14 @@ QT_BEGIN_NAMESPACE
     Returns this line translated the distance specified by \a dx and \a dy.
 */
 
+/*!
+    \fn QPoint QLine::center() const
+
+    \since 5.8
+
+    Returns the center point of this line. This is equivalent to
+    (p1() + p2()) / 2, except it will never overflow.
+*/
 
 /*!
     \fn void QLine::setP1(const QPoint &p1)
@@ -350,6 +358,12 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
     Finally, the line can be translated a given offset using the
     translate() function, and can be traversed using the pointAt()
     function.
+
+    \section1 Constraints
+
+    QLine is limited to the minimum and maximum values for the
+    \c int type. Operations on a QLine that could potentially result
+    in values outside this range will result in undefined behavior.
 
     \sa QLine, QPolygonF, QRectF
 */
@@ -708,6 +722,15 @@ QLineF::IntersectType QLineF::intersect(const QLineF &l, QPointF *intersectionPo
     \since 4.4
 
     Returns this line translated the distance specified by \a dx and \a dy.
+*/
+
+/*!
+    \fn QPointF QLineF::center() const
+
+    \since 5.8
+
+    Returns the center point of this line. This is equivalent to
+    0.5 * p1() + 0.5 * p2().
 */
 
 /*!

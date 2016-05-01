@@ -44,6 +44,12 @@ private slots:
     void testLength();
     void testLength_data();
 
+    void testCenter();
+    void testCenter_data();
+
+    void testCenterF();
+    void testCenterF_data();
+
     void testNormalVector();
     void testNormalVector_data();
 
@@ -268,6 +274,77 @@ void tst_QLine::testLength()
     QCOMPARE(l.dy(), qreal(vy));
 }
 
+void tst_QLine::testCenter()
+{
+    QFETCH(int, x1);
+    QFETCH(int, y1);
+    QFETCH(int, x2);
+    QFETCH(int, y2);
+    QFETCH(int, centerX);
+    QFETCH(int, centerY);
+
+    const QPoint c = QLine(x1, y1, x2, y2).center();
+    QCOMPARE(centerX, c.x());
+    QCOMPARE(centerY, c.y());
+}
+
+void tst_QLine::testCenter_data()
+{
+    QTest::addColumn<int>("x1");
+    QTest::addColumn<int>("y1");
+    QTest::addColumn<int>("x2");
+    QTest::addColumn<int>("y2");
+    QTest::addColumn<int>("centerX");
+    QTest::addColumn<int>("centerY");
+
+    QTest::newRow("[0, 0]") << 0 << 0 << 0 << 0 << 0 << 0;
+    QTest::newRow("top") << 0 << 0 << 2 << 0 << 1 << 0;
+    QTest::newRow("right") << 0 << 0 << 0 << 2 << 0 << 1;
+    QTest::newRow("bottom") << 0 << 0 << -2 << 0 << -1 << 0;
+    QTest::newRow("left") << 0 << 0 << 0 << -2 << 0 << -1;
+
+    QTest::newRow("precision+") << 0 << 0 << 1 << 1 << 0 << 0;
+    QTest::newRow("precision-") << -1 << -1 << 0 << 0 << 0 << 0;
+
+    const int max = std::numeric_limits<int>::max();
+    const int min = std::numeric_limits<int>::min();
+    QTest::newRow("max") << max << max << max << max << max << max;
+    QTest::newRow("min") << min << min << min << min << min << min;
+    QTest::newRow("minmax") << min << min << max << max << 0 << 0;
+}
+
+void tst_QLine::testCenterF()
+{
+    QFETCH(double, x1);
+    QFETCH(double, y1);
+    QFETCH(double, x2);
+    QFETCH(double, y2);
+    QFETCH(double, centerX);
+    QFETCH(double, centerY);
+
+    const QPointF c = QLineF(x1, y1, x2, y2).center();
+    QCOMPARE(centerX, c.x());
+    QCOMPARE(centerY, c.y());
+}
+
+void tst_QLine::testCenterF_data()
+{
+    QTest::addColumn<double>("x1");
+    QTest::addColumn<double>("y1");
+    QTest::addColumn<double>("x2");
+    QTest::addColumn<double>("y2");
+    QTest::addColumn<double>("centerX");
+    QTest::addColumn<double>("centerY");
+
+    QTest::newRow("[0, 0]") << 0.0 << 0.0 << 0.0 << 0.0 << 0.0 << 0.0;
+    QTest::newRow("top") << 0.0 << 0.0 << 1.0 << 0.0 << 0.5 << 0.0;
+    QTest::newRow("right") << 0.0 << 0.0 << 0.0 << 1.0 << 0.0 << 0.5;
+    QTest::newRow("bottom") << 0.0 << 0.0 << -1.0 << 0.0 << -0.5 << 0.0;
+    QTest::newRow("left") << 0.0 << 0.0 << 0.0 << -1.0 << 0.0 << -0.5;
+
+    const double max = std::numeric_limits<qreal>::max();
+    QTest::newRow("max") << max << max << max << max << max << max;
+}
 
 void tst_QLine::testNormalVector_data()
 {

@@ -76,6 +76,8 @@ public:
     Q_DECL_CONSTEXPR inline QLine translated(const QPoint &p) const Q_REQUIRED_RESULT;
     Q_DECL_CONSTEXPR inline QLine translated(int dx, int dy) const Q_REQUIRED_RESULT;
 
+    Q_DECL_CONSTEXPR inline QPoint center() const Q_REQUIRED_RESULT;
+
     inline void setP1(const QPoint &p1);
     inline void setP2(const QPoint &p2);
     inline void setPoints(const QPoint &p1, const QPoint &p2);
@@ -165,6 +167,11 @@ Q_DECL_CONSTEXPR inline QLine QLine::translated(int adx, int ady) const
     return translated(QPoint(adx, ady));
 }
 
+Q_DECL_CONSTEXPR inline QPoint QLine::center() const
+{
+    return QPoint(int((qint64(pt1.x()) + pt2.x()) / 2), int((qint64(pt1.y()) + pt2.y()) / 2));
+}
+
 inline void QLine::setP1(const QPoint &aP1)
 {
     pt1 = aP1;
@@ -252,6 +259,8 @@ public:
 
     Q_DECL_CONSTEXPR inline QLineF translated(const QPointF &p) const Q_REQUIRED_RESULT;
     Q_DECL_CONSTEXPR inline QLineF translated(qreal dx, qreal dy) const Q_REQUIRED_RESULT;
+
+    Q_DECL_CONSTEXPR inline QPointF center() const Q_REQUIRED_RESULT;
 
     inline void setP1(const QPointF &p1);
     inline void setP2(const QPointF &p2);
@@ -355,6 +364,11 @@ Q_DECL_CONSTEXPR inline QLineF QLineF::translated(const QPointF &p) const
 Q_DECL_CONSTEXPR inline QLineF QLineF::translated(qreal adx, qreal ady) const
 {
     return translated(QPointF(adx, ady));
+}
+
+Q_DECL_CONSTEXPR inline QPointF QLineF::center() const
+{
+    return QPointF(0.5 * pt1.x() + 0.5 * pt2.x(), 0.5 * pt1.y() + 0.5 * pt2.y());
 }
 
 inline void QLineF::setLength(qreal len)
