@@ -61,7 +61,6 @@
 #include "QtCore/qdatetime.h"
 #include "QtCore/qvariant.h"
 #include "private/qwidget_p.h"
-#include "private/qdatetime_p.h"
 
 QT_BEGIN_NAMESPACE
 
