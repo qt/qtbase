@@ -76,7 +76,6 @@ public:
 
     // Daylight Time Status
     enum DaylightStatus {
-        NoDaylightTime = -2,
         UnknownDaylightTime = -1,
         StandardTime = 0,
         DaylightTime = 1
