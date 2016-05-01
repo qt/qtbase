@@ -1134,10 +1134,10 @@ void QXcbDrag::handleSelectionRequest(const xcb_selection_request_event_t *event
             at = findTransactionByWindow(event->requestor);
         }
 
-        if (at == -1 && event->time == XCB_CURRENT_TIME) {
+        if (at == -1) {
             xcb_window_t target = findXdndAwareParent(connection(), event->requestor);
             if (target) {
-                if (current_target == target)
+                if (event->time == XCB_CURRENT_TIME && current_target == target)
                     at = -2;
                 else
                     at = findTransactionByWindow(target);
