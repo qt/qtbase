@@ -256,15 +256,15 @@ static int openTtyDevice(const QString &device)
     return fd;
 }
 
-static bool switchToGraphicsMode(int ttyfd, int *oldMode)
+static void switchToGraphicsMode(int ttyfd, bool doSwitch, int *oldMode)
 {
-    ioctl(ttyfd, KDGETMODE, oldMode);
-    if (*oldMode != KD_GRAPHICS) {
-       if (ioctl(ttyfd, KDSETMODE, KD_GRAPHICS) != 0)
-            return false;
+    // Do not warn if the switch fails: the ioctl fails when launching from a
+    // remote console and there is nothing we can do about it.  The matching
+    // call in resetTty should at least fail then, too, so we do no harm.
+    if (ioctl(ttyfd, KDGETMODE, oldMode) == 0) {
+        if (doSwitch && *oldMode != KD_GRAPHICS)
+            ioctl(ttyfd, KDSETMODE, KD_GRAPHICS);
     }
-
-    return true;
 }
 
 static void resetTty(int ttyfd, int oldMode)
@@ -280,21 +280,21 @@ static void blankScreen(int fd, bool on)
 }
 
 QLinuxFbScreen::QLinuxFbScreen(const QStringList &args)
-    : mArgs(args), mFbFd(-1), mBlitter(0)
+    : mArgs(args), mFbFd(-1), mTtyFd(-1), mBlitter(0)
 {
+    mMmap.data = 0;
 }
 
 QLinuxFbScreen::~QLinuxFbScreen()
 {
     if (mFbFd != -1) {
-        munmap(mMmap.data - mMmap.offset, mMmap.size);
+        if (mMmap.data)
+            munmap(mMmap.data - mMmap.offset, mMmap.size);
         close(mFbFd);
     }
 
-    if (mTtyFd != -1) {
+    if (mTtyFd != -1)
         resetTty(mTtyFd, mOldTtyMode);
-        close(mTtyFd);
-    }
 
     delete mBlitter;
 }
@@ -389,11 +389,7 @@ bool QLinuxFbScreen::initialize()
     if (mTtyFd == -1)
         qErrnoWarning(errno, "Failed to open tty");
 
-    if (doSwitchToGraphicsMode)
-        switchToGraphicsMode(mTtyFd, &mOldTtyMode);
-        // Do not warn if the switch fails: the ioctl fails when launching from
-        // a remote console and there is nothing we can do about it.
-
+    switchToGraphicsMode(mTtyFd, doSwitchToGraphicsMode, &mOldTtyMode);
     blankScreen(mFbFd, false);
 
     return true;
