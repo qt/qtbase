@@ -43,6 +43,13 @@
 
 QT_BEGIN_NAMESPACE
 
+/*! \fn QString QString::fromCFString(CFStringRef string)
+    \since 5.2
+
+    Constructs a new QString containing a copy of the \a string CFString.
+
+    \note this function is only available on OS X and iOS.
+*/
 QString QString::fromCFString(CFStringRef string)
 {
     if (!string)
@@ -60,11 +67,26 @@ QString QString::fromCFString(CFStringRef string)
     return ret;
 }
 
+/*! \fn CFStringRef QString::toCFString() const
+    \since 5.2
+
+    Creates a CFString from a QString. The caller owns the CFString and is
+    responsible for releasing it.
+
+    \note this function is only available on OS X and iOS.
+*/
 CFStringRef QString::toCFString() const
 {
     return CFStringCreateWithCharacters(0, reinterpret_cast<const UniChar *>(unicode()), length());
 }
 
+/*! \fn QString QString::fromNSString(const NSString *string)
+    \since 5.2
+
+    Constructs a new QString containing a copy of the \a string NSString.
+
+    \note this function is only available on OS X and iOS.
+*/
 QString QString::fromNSString(const NSString *string)
 {
     if (!string)
@@ -75,6 +97,13 @@ QString QString::fromNSString(const NSString *string)
    return qstring;
 }
 
+/*! \fn NSString QString::toNSString() const
+    \since 5.2
+
+    Creates a NSString from a QString. The NSString is autoreleased.
+
+    \note this function is only available on OS X and iOS.
+*/
 NSString *QString::toNSString() const
 {
     return [NSString stringWithCharacters: reinterpret_cast<const UniChar*>(unicode()) length: length()];

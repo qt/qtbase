@@ -43,6 +43,13 @@
 
 QT_BEGIN_NAMESPACE
 
+/*! \fn QUuid QUuid::fromCFUUID(CFUUIDRef uuid)
+    \since 5.7
+
+    Constructs a new QUuid containing a copy of the \a uuid CFUUID.
+
+    \note this function is only available on Apple platforms.
+*/
 QUuid QUuid::fromCFUUID(CFUUIDRef uuid)
 {
     if (!uuid)
@@ -51,12 +58,27 @@ QUuid QUuid::fromCFUUID(CFUUIDRef uuid)
     return QUuid::fromRfc4122(QByteArray::fromRawData(reinterpret_cast<const char *>(&bytes), sizeof(bytes)));
 }
 
+/*! \fn CFUUIDRef QUuid::toCFUUID() const
+    \since 5.7
+
+    Creates a CFUUID from a QUuid. The caller owns the CFUUID and is
+    responsible for releasing it.
+
+    \note this function is only available on Apple platforms.
+*/
 CFUUIDRef QUuid::toCFUUID() const
 {
     const QByteArray bytes = toRfc4122();
     return CFUUIDCreateFromUUIDBytes(0, *reinterpret_cast<const CFUUIDBytes *>(bytes.constData()));
 }
 
+/*! \fn QUuid QUuid::fromNSUUID(const NSUUID *uuid)
+    \since 5.7
+
+    Constructs a new QUuid containing a copy of the \a uuid NSUUID.
+
+    \note this function is only available on Apple platforms.
+*/
 QUuid QUuid::fromNSUUID(const NSUUID *uuid)
 {
     if (!uuid)
@@ -66,6 +88,13 @@ QUuid QUuid::fromNSUUID(const NSUUID *uuid)
     return QUuid::fromRfc4122(QByteArray::fromRawData(reinterpret_cast<const char *>(bytes), sizeof(bytes)));
 }
 
+/*! \fn NSUUID QUuid::toNSUUID() const
+    \since 5.7
+
+    Creates a NSUUID from a QUuid. The NSUUID is autoreleased.
+
+    \note this function is only available on Apple platforms.
+*/
 NSUUID *QUuid::toNSUUID() const
 {
     const QByteArray bytes = toRfc4122();

@@ -44,6 +44,13 @@
 
 QT_BEGIN_NAMESPACE
 
+/*! \fn QDateTime QDateTime::fromCFDate(CFDateRef date)
+    \since 5.5
+
+    Constructs a new QDateTime containing a copy of the CFDate \a date.
+
+    \sa toCFDate()
+*/
 QDateTime QDateTime::fromCFDate(CFDateRef date)
 {
     if (!date)
@@ -52,12 +59,27 @@ QDateTime QDateTime::fromCFDate(CFDateRef date)
                                                     + kCFAbsoluteTimeIntervalSince1970) * 1000));
 }
 
+/*! \fn CFDateRef QDateTime::toCFDate() const
+    \since 5.5
+
+    Creates a CFDate from a QDateTime. The caller owns the CFDate object
+    and is responsible for releasing it.
+
+    \sa fromCFDate()
+*/
 CFDateRef QDateTime::toCFDate() const
 {
     return CFDateCreate(kCFAllocatorDefault, (static_cast<CFAbsoluteTime>(toMSecsSinceEpoch())
                                                     / 1000) - kCFAbsoluteTimeIntervalSince1970);
 }
 
+/*! \fn QDateTime QDateTime::fromNSDate(const NSDate *date)
+    \since 5.5
+
+    Constructs a new QDateTime containing a copy of the NSDate \a date.
+
+    \sa toNSDate()
+*/
 QDateTime QDateTime::fromNSDate(const NSDate *date)
 {
     if (!date)
@@ -65,6 +87,13 @@ QDateTime QDateTime::fromNSDate(const NSDate *date)
     return QDateTime::fromMSecsSinceEpoch(static_cast<qint64>([date timeIntervalSince1970] * 1000));
 }
 
+/*! \fn NSDate QDateTime::toNSDate() const
+    \since 5.5
+
+    Creates an NSDate from a QDateTime. The NSDate object is autoreleased.
+
+    \sa fromNSDate()
+*/
 NSDate *QDateTime::toNSDate() const
 {
     return [NSDate

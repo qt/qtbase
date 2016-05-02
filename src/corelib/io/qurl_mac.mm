@@ -45,11 +45,22 @@
 
 QT_BEGIN_NAMESPACE
 
+/*! \fn QUrl QUrl::fromCFURL(CFURLRef url)
+    \since 5.2
+
+    Constructs a QUrl containing a copy of the CFURL \a url.
+*/
 QUrl QUrl::fromCFURL(CFURLRef url)
 {
     return QUrl(QString::fromCFString(CFURLGetString(url)));
 }
 
+/*! \fn CFURLRef QUrl::toCFURL() const
+    \since 5.2
+
+    Creates a CFURL from a QUrl. The caller owns the CFURL and is
+    responsible for releasing it.
+*/
 CFURLRef QUrl::toCFURL() const
 {
     CFURLRef url = 0;
@@ -61,11 +72,23 @@ CFURLRef QUrl::toCFURL() const
     return url;
 }
 
+/*!
+    \fn QUrl QUrl::fromNSURL(const NSURL *url)
+    \since 5.2
+
+    Constructs a QUrl containing a copy of the NSURL \a url.
+*/
 QUrl QUrl::fromNSURL(const NSURL *url)
 {
     return QUrl(QString::fromNSString([url absoluteString]));
 }
 
+/*!
+    \fn NSURL* QUrl::toNSURL() const
+    \since 5.2
+
+    Creates a NSURL from a QUrl. The NSURL is autoreleased.
+*/
 NSURL *QUrl::toNSURL() const
 {
     return [NSURL URLWithString:toString(FullyEncoded).toNSString()];
