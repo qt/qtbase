@@ -46,11 +46,9 @@
 
 #include <limits>
 
-#if defined(Q_OS_MAC) || defined(Q_QDOC)
+#if defined(Q_OS_MAC)
 Q_FORWARD_DECLARE_CF_TYPE(CFDate);
-#  if defined(__OBJC__) || defined(Q_QDOC)
 Q_FORWARD_DECLARE_OBJC_CLASS(NSDate);
-#  endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -316,10 +314,8 @@ public:
 #if defined(Q_OS_MAC) || defined(Q_QDOC)
     static QDateTime fromCFDate(CFDateRef date);
     CFDateRef toCFDate() const Q_DECL_CF_RETURNS_RETAINED;
-#  if defined(__OBJC__) || defined(Q_QDOC)
     static QDateTime fromNSDate(const NSDate *date);
     NSDate *toNSDate() const Q_DECL_NS_RETURNS_AUTORELEASED;
-#  endif
 #endif
 
 private:
