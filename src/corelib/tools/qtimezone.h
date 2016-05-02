@@ -74,7 +74,7 @@ public:
     };
     typedef QVector<OffsetData> OffsetDataList;
 
-    QTimeZone();
+    QTimeZone() Q_DECL_NOTHROW;
     explicit QTimeZone(const QByteArray &ianaId);
     explicit QTimeZone(int offsetSeconds);
     /*implicit*/ QTimeZone(const QByteArray &zoneId, int offsetSeconds, const QString &name,

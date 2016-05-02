@@ -325,7 +325,7 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     Create a null/invalid time zone instance.
 */
 
-QTimeZone::QTimeZone()
+QTimeZone::QTimeZone() Q_DECL_NOTHROW
     : d(0)
 {
 }
