@@ -3496,11 +3496,6 @@ void Configure::generateQConfigPri()
         configStream << "    QT_TARGET_ARCH = " << dictionary["QT_ARCH"] << endl;
         configStream << "} else {" << endl;
         configStream << "    QT_ARCH = " << dictionary["QT_ARCH"] << endl;
-        if (dictionary.contains("XQMAKESPEC")) {
-            // FIXME: add detection
-            configStream << "    QMAKE_DEFAULT_LIBDIRS = /lib /usr/lib" << endl;
-            configStream << "    QMAKE_DEFAULT_INCDIRS = /usr/include /usr/local/include" << endl;
-        }
         configStream << "}" << endl;
         configStream << "QT_CONFIG += " << qtConfig.join(' ') << endl;
 
