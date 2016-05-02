@@ -1078,6 +1078,40 @@ void QXcbDrag::cancel()
         send_leave();
 }
 
+// find an ancestor with XdndAware on it
+static xcb_window_t findXdndAwareParent(QXcbConnection *c, xcb_window_t window)
+{
+    xcb_window_t target = 0;
+    forever {
+        // check if window has XdndAware
+        xcb_get_property_cookie_t gpCookie = Q_XCB_CALL(
+            xcb_get_property(c->xcb_connection(), false, window,
+                             c->atom(QXcbAtom::XdndAware), XCB_GET_PROPERTY_TYPE_ANY, 0, 0));
+        xcb_get_property_reply_t *gpReply = xcb_get_property_reply(
+            c->xcb_connection(), gpCookie, 0);
+        bool aware = gpReply && gpReply->type != XCB_NONE;
+        free(gpReply);
+        if (aware) {
+            target = window;
+            break;
+        }
+
+        // try window's parent
+        xcb_query_tree_cookie_t qtCookie = Q_XCB_CALL(
+            xcb_query_tree_unchecked(c->xcb_connection(), window));
+        xcb_query_tree_reply_t *qtReply = xcb_query_tree_reply(
+            c->xcb_connection(), qtCookie, NULL);
+        if (!qtReply)
+            break;
+        xcb_window_t root = qtReply->root;
+        xcb_window_t parent = qtReply->parent;
+        free(qtReply);
+        if (window == root)
+            break;
+        window = parent;
+    }
+    return target;
+}
 
 void QXcbDrag::handleSelectionRequest(const xcb_selection_request_event_t *event)
 {
@@ -1105,17 +1139,16 @@ void QXcbDrag::handleSelectionRequest(const xcb_selection_request_event_t *event
             // xcb_convert_selection() that we sent the XdndDrop event to.
             at = findTransactionByWindow(event->requestor);
         }
-//        if (at == -1 && event->time == XCB_CURRENT_TIME) {
-//            // previous Qt versions always requested the data on a child of the target window
-//            // using CurrentTime... but it could be asking for either drop data or the current drag's data
-//            Window target = findXdndAwareParent(event->requestor);
-//            if (target) {
-//                if (current_target && current_target == target)
-//                    at = -2;
-//                else
-//                    at = findXdndDropTransactionByWindow(target);
-//            }
-//        }
+
+        if (at == -1 && event->time == XCB_CURRENT_TIME) {
+            xcb_window_t target = findXdndAwareParent(connection(), event->requestor);
+            if (target) {
+                if (current_target == target)
+                    at = -2;
+                else
+                    at = findTransactionByWindow(target);
+            }
+        }
     }
 
     QDrag *transactionDrag = 0;

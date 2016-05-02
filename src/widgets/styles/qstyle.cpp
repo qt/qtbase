@@ -157,10 +157,10 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
 
     Qt's built-in widgets use QStyle to perform nearly all of their
     drawing, ensuring that they look exactly like the equivalent
-    native widgets. The diagram below shows a QComboBox in eight
+    native widgets. The diagram below shows a QComboBox in nine
     different styles.
 
-    \image qstyle-comboboxes.png Eight combo boxes
+    \image qstyle-comboboxes.png Nine combo boxes
 
     Topics:
 

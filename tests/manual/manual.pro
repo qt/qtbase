@@ -31,6 +31,7 @@ qsysinfo \
 qtabletevent \
 qtexteditlist \
 qtbug-8933 \
+qtbug-52641 \
 qtouchevent \
 touch \
 qwidget_zorder \

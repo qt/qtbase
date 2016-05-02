@@ -762,16 +762,22 @@ void tst_QTimeZone::tzTest()
     // Warning: This could vary depending on age of TZ file!
 
     // Test low date uses first rule found
+    // Note: Depending on the OS in question, the database may be carrying the
+    // Local Mean Time. which for Berlin is 0:53:28
     QTimeZonePrivate::Data dat = tzp.data(-9999999999999);
     QCOMPARE(dat.atMSecsSinceEpoch, (qint64)-9999999999999);
-    QCOMPARE(dat.standardTimeOffset, 3600);
     QCOMPARE(dat.daylightTimeOffset, 0);
+    if (dat.abbreviation == "LMT") {
+        QCOMPARE(dat.standardTimeOffset, 3208);
+    } else {
+        QCOMPARE(dat.standardTimeOffset, 3600);
 
-    // Test previous to low value is invalid
-    dat = tzp.previousTransition(-9999999999999);
-    QCOMPARE(dat.atMSecsSinceEpoch, std::numeric_limits<qint64>::min());
-    QCOMPARE(dat.standardTimeOffset, std::numeric_limits<int>::min());
-    QCOMPARE(dat.daylightTimeOffset, std::numeric_limits<int>::min());
+        // Test previous to low value is invalid
+        dat = tzp.previousTransition(-9999999999999);
+        QCOMPARE(dat.atMSecsSinceEpoch, std::numeric_limits<qint64>::min());
+        QCOMPARE(dat.standardTimeOffset, std::numeric_limits<int>::min());
+        QCOMPARE(dat.daylightTimeOffset, std::numeric_limits<int>::min());
+    }
 
     dat = tzp.nextTransition(-9999999999999);
     QCOMPARE(dat.atMSecsSinceEpoch, (qint64)-2422054408000);

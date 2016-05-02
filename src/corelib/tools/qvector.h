@@ -773,7 +773,7 @@ bool QVector<T>::operator==(const QVector<T> &v) const
     const T *vb = v.d->begin();
     const T *b  = d->begin();
     const T *e  = d->end();
-    return std::equal(b, e, vb);
+    return std::equal(b, e, QT_MAKE_CHECKED_ARRAY_ITERATOR(vb, v.d->size));
 }
 
 template <typename T>

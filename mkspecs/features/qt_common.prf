@@ -44,6 +44,10 @@ contains(TEMPLATE, .*lib) {
     QMAKE_PRL_INSTALL_REPLACE += lib_replace
 }
 
+# The remainder of this file must not apply to bootstrapped tools,
+# as the host compiler's version and capabilities are not checked.
+host_build:force_bootstrap: return()
+
 # Extra warnings for Qt non-example code, to ensure cleanliness of the sources.
 # The block below may turn these warnings into errors for some Qt targets.
 # -Wdate-time: warn if we use __DATE__ or __TIME__ (we want to be able to reproduce the exact same binary)

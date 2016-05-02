@@ -465,6 +465,7 @@ private:
     const QString m_platform;
     QSize m_testWidgetSize;
     QPoint m_availableTopLeft;
+    QPoint m_safeCursorPos;
     const bool m_windowsAnimationsEnabled;
 };
 
@@ -622,6 +623,7 @@ void tst_QWidget::getSetCheck()
 
 tst_QWidget::tst_QWidget()
     : m_platform(QGuiApplication::platformName().toLower())
+    , m_safeCursorPos(0, 0)
     , m_windowsAnimationsEnabled(windowsAnimationsEnabled())
 {
     if (m_windowsAnimationsEnabled) // Disable animations which can interfere with screen grabbing in moveChild(), showAndMoveChild()
@@ -664,7 +666,13 @@ void tst_QWidget::initTestCase()
     // to avoid Windows warnings about minimum size for decorated windows.
     int width = 200;
     const QScreen *screen = QGuiApplication::primaryScreen();
-    m_availableTopLeft = screen->availableGeometry().topLeft();
+    const QRect availableGeometry = screen->availableGeometry();
+    m_availableTopLeft = availableGeometry.topLeft();
+    // XCB: Determine "safe" cursor position at bottom/right corner of screen.
+    // Pushing the mouse rapidly to the top left corner can trigger KDE / KWin's
+    // "Present all Windows" (Ctrl+F9) feature also programmatically.
+    if (m_platform == QLatin1String("xcb"))
+        m_safeCursorPos = availableGeometry.bottomRight() - QPoint(40, 40);
     const int screenWidth = screen->geometry().width();
     if (screenWidth > 2000)
         width = 100 * ((screenWidth + 500) / 1000);
@@ -5664,7 +5672,7 @@ void tst_QWidget::setToolTip()
     // Mouse over doesn't work on Windows mobile, so skip the rest of the test for that platform.
 #ifndef Q_OS_WINCE_WM
     for (int pass = 0; pass < 2; ++pass) {
-        QCursor::setPos(0, 0);
+        QCursor::setPos(m_safeCursorPos);
         QScopedPointer<QWidget> popup(new QWidget(0, Qt::Popup));
         popup->setObjectName(QLatin1String("tst_qwidget setToolTip #") + QString::number(pass));
         popup->setWindowTitle(popup->objectName());
@@ -6015,7 +6023,7 @@ void tst_QWidget::childEvents()
 
     // Move away the cursor; otherwise it might result in an enter event if it's
     // inside the widget when the widget is shown.
-    QCursor::setPos(qApp->desktop()->availableGeometry().bottomRight());
+    QCursor::setPos(m_safeCursorPos);
     QTest::qWait(100);
 
     {
@@ -8878,7 +8886,7 @@ void tst_QWidget::syntheticEnterLeave()
         int numLeaveEvents;
     };
 
-    QCursor::setPos(QPoint(0,0));
+    QCursor::setPos(m_safeCursorPos);
 
     MyWidget window;
     window.setWindowFlags(Qt::WindowStaysOnTopHint);
@@ -8998,7 +9006,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
          int numEnterEvents, numMouseMoveEvents;
      };
 
-     QCursor::setPos(QPoint(0,0));
+     QCursor::setPos(m_safeCursorPos);
 
      SELParent parent;
      parent.move(200, 200);
@@ -10174,7 +10182,7 @@ void tst_QWidget::destroyedSignal()
 void tst_QWidget::underMouse()
 {
     // Move the mouse cursor to a safe location
-    QCursor::setPos(0,0);
+    QCursor::setPos(m_safeCursorPos);
 
     ColorWidget topLevelWidget(0, Qt::FramelessWindowHint, Qt::blue);
     ColorWidget childWidget1(&topLevelWidget, Qt::Widget, Qt::yellow);
@@ -10430,7 +10438,7 @@ public:
 void tst_QWidget::taskQTBUG_27643_enterEvents()
 {
     // Move the mouse cursor to a safe location so it won't interfere
-    QCursor::setPos(0,0);
+    QCursor::setPos(m_safeCursorPos);
 
     EnterTestMainDialog dialog;
     QPushButton button(&dialog);

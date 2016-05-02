@@ -55,6 +55,7 @@
 #include <QtGui/qguiapplication.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <QtGui/qwindow.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 //#include <uiautomationcoreapi.h>
 #ifndef UiaRootObjectId
@@ -503,7 +504,8 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::accHitTest(long xLeft, long yT
     if (!accessible)
         return E_FAIL;
 
-    QAccessibleInterface *child = accessible->childAt(xLeft, yTop);
+    const QPoint pos = QHighDpi::fromNativeLocalPosition(QPoint(xLeft, yTop), accessible->window());
+    QAccessibleInterface *child = accessible->childAt(pos.x(), pos.y());
     if (child == 0) {
         // no child found, return this item if it contains the coordinates
         if (accessible->rect().contains(xLeft, yTop)) {
@@ -545,7 +547,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::accLocation(long *pxLeft, long
     QAccessibleInterface *acc = childPointer(accessible, varID);
     if (!acc || !acc->isValid())
         return E_FAIL;
-    const QRect rect = acc->rect();
+    const QRect rect = QHighDpi::toNativePixels(acc->rect(), accessible->window());
 
     *pxLeft = rect.x();
     *pyTop = rect.y();
