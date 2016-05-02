@@ -131,7 +131,7 @@ void QWindowsPipeWriter::notified(DWORD errorCode, DWORD numberOfBytesWritten)
     notifiedCalled = true;
     writeSequenceStarted = false;
     numberOfBytesToWrite = 0;
-    Q_ASSERT(errorCode != ERROR_SUCCESS || numberOfBytesWritten == buffer.size());
+    Q_ASSERT(errorCode != ERROR_SUCCESS || numberOfBytesWritten == DWORD(buffer.size()));
     buffer.clear();
 
     switch (errorCode) {
