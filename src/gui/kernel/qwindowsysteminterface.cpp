@@ -920,6 +920,17 @@ Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int 
 #endif
 }
 
+namespace QTest
+{
+    Q_GUI_EXPORT QTouchDevice * createTouchDevice(QTouchDevice::DeviceType devType = QTouchDevice::TouchScreen)
+    {
+        QTouchDevice *ret = new QTouchDevice();
+        ret->setType(devType);
+        QWindowSystemInterface::registerTouchDevice(ret);
+        return ret;
+    }
+}
+
 Q_GUI_EXPORT void qt_handleTouchEvent(QWindow *w, QTouchDevice *device,
                                 const QList<QTouchEvent::TouchPoint> &points,
                                 Qt::KeyboardModifiers mods = Qt::NoModifier)

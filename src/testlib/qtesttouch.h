@@ -65,6 +65,7 @@ Q_GUI_EXPORT  void qt_handleTouchEvent(QWindow *w, QTouchDevice *device,
 
 namespace QTest
 {
+    Q_GUI_EXPORT QTouchDevice * createTouchDevice(QTouchDevice::DeviceType devType = QTouchDevice::TouchScreen);
 
     class QTouchEventSequence
     {
