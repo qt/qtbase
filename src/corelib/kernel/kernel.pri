@@ -101,7 +101,8 @@ mac {
     SOURCES += \
         kernel/qcfsocketnotifier.cpp \
         kernel/qcoreapplication_mac.cpp \
-        kernel/qcore_mac.cpp
+        kernel/qcore_mac.cpp \
+        kernel/qcore_foundation.mm
 
     OBJECTIVE_SOURCES += \
         kernel/qcore_mac_objc.mm \

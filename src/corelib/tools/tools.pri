@@ -133,9 +133,6 @@ false: SOURCES += $$NO_PCH_SOURCES # Hack for QtCreator
     SOURCES += tools/qelapsedtimer_mac.cpp
     OBJECTIVE_SOURCES += tools/qlocale_mac.mm \
                          tools/qtimezoneprivate_mac.mm \
-                         tools/qstring_mac.mm \
-                         tools/qbytearray_mac.mm \
-                         tools/qdatetime_mac.mm
 }
 else:android {
     SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp tools/qtimezoneprivate_android.cpp
