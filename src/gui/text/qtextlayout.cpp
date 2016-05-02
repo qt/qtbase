@@ -1654,6 +1654,7 @@ namespace {
         int maxGlyphs;
         int currentPosition;
         glyph_t previousGlyph;
+        QFontEngine *previousGlyphFontEngine;
 
         QFixed minw;
         QFixed softHyphenWidth;
@@ -1687,13 +1688,14 @@ namespace {
             if (currentPosition > 0 &&
                 logClusters[currentPosition - 1] < glyphs.numGlyphs) {
                 previousGlyph = currentGlyph(); // needed to calculate right bearing later
+                previousGlyphFontEngine = fontEngine;
             }
         }
 
-        inline void calculateRightBearing(glyph_t glyph)
+        inline void calculateRightBearing(QFontEngine *engine, glyph_t glyph)
         {
             qreal rb;
-            fontEngine->getGlyphBearings(glyph, 0, &rb);
+            engine->getGlyphBearings(glyph, 0, &rb);
 
             // We only care about negative right bearings, so we limit the range
             // of the bearing here so that we can assume it's negative in the rest
@@ -1706,13 +1708,13 @@ namespace {
         {
             if (currentPosition <= 0)
                 return;
-            calculateRightBearing(currentGlyph());
+            calculateRightBearing(fontEngine, currentGlyph());
         }
 
         inline void calculateRightBearingForPreviousGlyph()
         {
             if (previousGlyph > 0)
-                calculateRightBearing(previousGlyph);
+                calculateRightBearing(previousGlyphFontEngine, previousGlyph);
         }
 
         static const QFixed RightBearingNotCalculated;
