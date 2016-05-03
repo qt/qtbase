@@ -228,6 +228,7 @@ protected:
     void initStyleOption(QStyleOptionFrame *option) const;
 public:
     QVariant inputMethodQuery(Qt::InputMethodQuery) const Q_DECL_OVERRIDE;
+    Q_INVOKABLE QVariant inputMethodQuery(Qt::InputMethodQuery property, QVariant argument) const;
     bool event(QEvent *) Q_DECL_OVERRIDE;
 protected:
     QRect cursorRect() const;

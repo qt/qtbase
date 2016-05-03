@@ -122,7 +122,7 @@ QLocale QSystemLocale::fallbackUiLocale() const
     // the first part of LANGUAGE if LANGUAGE is set and has a first part:
     QByteArray language = qgetenv("LANGUAGE");
     if (!language.isEmpty()) {
-        language = language.split(':').first();
+        language = language.split(':').constFirst();
         if (!language.isEmpty())
             return QLocale(QString::fromLatin1(language));
     }

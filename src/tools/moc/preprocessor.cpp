@@ -205,13 +205,13 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                     // STRING_LITERAL handling in moc
                     if (!Preprocessor::preprocessOnly
                         && !symbols.isEmpty()
-                        && symbols.last().token == STRING_LITERAL) {
+                        && symbols.constLast().token == STRING_LITERAL) {
 
-                        QByteArray newString = symbols.last().unquotedLexem();
+                        QByteArray newString = symbols.constLast().unquotedLexem();
                         newString += input.mid(lexem - begin + 1, data - lexem - 2);
                         newString.prepend('\"');
                         newString.append('\"');
-                        symbols.last() = Symbol(symbols.last().lineNum,
+                        symbols.last() = Symbol(symbols.constLast().lineNum,
                                                 STRING_LITERAL,
                                                 newString);
                         continue;
@@ -679,7 +679,7 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
                 if (s.token == WHITESPACE)
                     continue;
 
-                while (expansion.size() && expansion.last().token == PP_WHITESPACE)
+                while (expansion.size() && expansion.constLast().token == PP_WHITESPACE)
                     expansion.pop_back();
 
                 Symbol next = s;
@@ -692,8 +692,8 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
                     next = arg.at(0);
                 }
 
-                if (!expansion.isEmpty() && expansion.last().token == s.token) {
-                    Symbol last = expansion.last();
+                if (!expansion.isEmpty() && expansion.constLast().token == s.token) {
+                    Symbol last = expansion.constLast();
                     expansion.pop_back();
 
                     if (last.token == STRING_LITERAL || s.token == STRING_LITERAL)
@@ -1127,12 +1127,12 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
             }
             // remove trailing whitespace
             while (!macro.symbols.isEmpty() &&
-                   (macro.symbols.last().token == PP_WHITESPACE || macro.symbols.last().token == WHITESPACE))
+                   (macro.symbols.constLast().token == PP_WHITESPACE || macro.symbols.constLast().token == WHITESPACE))
                 macro.symbols.pop_back();
 
             if (!macro.symbols.isEmpty()) {
-                if (macro.symbols.first().token == PP_HASHHASH ||
-                    macro.symbols.last().token == PP_HASHHASH) {
+                if (macro.symbols.constFirst().token == PP_HASHHASH ||
+                    macro.symbols.constLast().token == PP_HASHHASH) {
                     error("'##' cannot appear at either end of a macro expansion");
                 }
             }

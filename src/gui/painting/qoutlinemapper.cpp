@@ -38,9 +38,10 @@
 ****************************************************************************/
 
 #include "qoutlinemapper_p.h"
-#include <private/qpainterpath_p.h>
+
+#include "qbezier_p.h"
 #include "qmath.h"
-#include <private/qbezier_p.h>
+#include "qpainterpath_p.h"
 
 #include <stdlib.h>
 
@@ -187,38 +188,26 @@ void QOutlineMapper::endOutline()
     QPointF *elements = m_elements.data();
 
     // Transform the outline
-    if (m_txop == QTransform::TxNone) {
-        // Nothing to do.
-    } else if (m_txop == QTransform::TxTranslate) {
-        for (int i = 0; i < m_elements.size(); ++i) {
-            QPointF &e = elements[i];
-            e = QPointF(e.x() + m_dx, e.y() + m_dy);
-        }
-    } else if (m_txop == QTransform::TxScale) {
-        for (int i = 0; i < m_elements.size(); ++i) {
-            QPointF &e = elements[i];
-            e = QPointF(m_m11 * e.x() + m_dx, m_m22 * e.y() + m_dy);
-        }
-    } else if (m_txop < QTransform::TxProject) {
-        for (int i = 0; i < m_elements.size(); ++i) {
-            QPointF &e = elements[i];
-            e = QPointF(m_m11 * e.x() + m_m21 * e.y() + m_dx,
-                        m_m22 * e.y() + m_m12 * e.x() + m_dy);
-        }
+    if (m_transform.isIdentity()) {
+        // Nothing to do
+    } else if (m_transform.type() < QTransform::TxProject) {
+        for (int i = 0; i < m_elements.size(); ++i)
+            elements[i] = m_transform.map(elements[i]);
     } else {
         const QVectorPath vp((qreal *)elements, m_elements.size(),
                              m_element_types.size() ? m_element_types.data() : 0);
         QPainterPath path = vp.convertToPainterPath();
-        path = QTransform(m_m11, m_m12, m_m13, m_m21, m_m22, m_m23, m_dx, m_dy, m_m33).map(path);
+        path = m_transform.map(path);
         if (!(m_outline.flags & QT_FT_OUTLINE_EVEN_ODD_FILL))
             path.setFillRule(Qt::WindingFill);
-        uint old_txop = m_txop;
-        m_txop = QTransform::TxNone;
-        if (path.isEmpty())
+        if (path.isEmpty()) {
             m_valid = false;
-        else
+        } else {
+            QTransform oldTransform = m_transform;
+            m_transform.reset();
             convertPath(path);
-        m_txop = old_txop;
+            m_transform = oldTransform;
+        }
         return;
     }
 
@@ -387,13 +376,14 @@ void QOutlineMapper::clipElements(const QPointF *elements,
     QPainterPath clipPath;
     clipPath.addRect(m_clip_rect);
     QPainterPath clippedPath = path.intersected(clipPath);
-    uint old_txop = m_txop;
-    m_txop = QTransform::TxNone;
-    if (clippedPath.isEmpty())
+    if (clippedPath.isEmpty()) {
         m_valid = false;
-    else
+    } else {
+        QTransform oldTransform = m_transform;
+        m_transform.reset();
         convertPath(clippedPath);
-    m_txop = old_txop;
+        m_transform = oldTransform;
+    }
 
     m_in_clip_elements = false;
 }

@@ -43,6 +43,6 @@
 
 int main(int, char **)
 {
-    fbGetDisplayByIndex(0);
+    fbGetDisplay();
     return 0;
 }

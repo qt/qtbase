@@ -23,6 +23,7 @@ for (s, QLALRSOURCES) {
     $${base}.input = $$invar
     $${base}.output = $$QLALR_DIR/$${parser}.cpp
     $${base}.variable_out = GENERATED_SOURCES
+    $${base}.depends = $$QMAKE_QLALR_EXE
     $${base}.commands = $$QMAKE_QLALR $$QMAKE_QLALRFLAGS ${QMAKE_FILE_IN}
     silent: $${base}.commands = @echo qlalr ${QMAKE_FILE_IN} && $${base}.commands
     $${base}.name = QLALR ${QMAKE_FILE_IN}

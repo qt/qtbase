@@ -112,10 +112,19 @@
     # capability anymore and is assumed to be standard.
     *-msvc2015: WINRT_MANIFEST.capabilities += internetClient
 
+    contains(WINRT_MANIFEST.capabilities, defaults) {
+        WINRT_MANIFEST.capabilities -= defaults
+        WINRT_MANIFEST.capabilities += $$WINRT_MANIFEST.capabilities_default
+    }
+
+    contains(WINRT_MANIFEST.capabilities_device, defaults) {
+        WINRT_MANIFEST.capabilities_device -= defaults
+        WINRT_MANIFEST.capabilities_device += $$WINRT_MANIFEST.capabilities_device_default
+    }
+
     # Capabilities are given as a string list and may change with the configuration (network, sensors, etc.)
     WINRT_MANIFEST.capabilities = $$unique(WINRT_MANIFEST.capabilities)
     WINRT_MANIFEST.capabilities_device = $$unique(WINRT_MANIFEST.capabilities_device)
-
     !isEmpty(WINRT_MANIFEST.capabilities)|!isEmpty(WINRT_MANIFEST.capabilities_device) {
         MANIFEST_CAPABILITIES += "<Capabilities>"
         for(CAPABILITY, WINRT_MANIFEST.capabilities): \

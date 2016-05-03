@@ -228,7 +228,7 @@ int QThreadPoolPrivate::activeThreadCount() const
 void QThreadPoolPrivate::tryToStartMoreThreads()
 {
     // try to push tasks on the queue to any available threads
-    while (!queue.isEmpty() && tryStart(queue.first().first))
+    while (!queue.isEmpty() && tryStart(queue.constFirst().first))
         queue.removeFirst();
 }
 

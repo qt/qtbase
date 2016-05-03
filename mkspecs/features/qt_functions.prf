@@ -73,16 +73,24 @@ defineTest(qtPrepareTool) {
     isEmpty(cmd) {
         cmd = $$[QT_HOST_BINS]/$$2
         exists($${cmd}.pl) {
+            $${1}_EXE = $${cmd}.pl
             cmd = perl -w $$system_path($${cmd}.pl)
         } else: contains(QMAKE_HOST.os, Windows) {
+            $${1}_EXE = $${cmd}.exe
             cmd = $$system_path($${cmd}.exe)
         } else:contains(QMAKE_HOST.os, Darwin) {
             BUNDLENAME = $${cmd}.app/Contents/MacOS/$$2
             exists($$BUNDLENAME) {
                 cmd = $$BUNDLENAME
             }
+            $${1}_EXE = $$cmd
+        } else {
+            $${1}_EXE = $$cmd
         }
+    } else {
+        $${1}_EXE = $$last(cmd)
     }
+    export($${1}_EXE)
     QT_TOOL_ENV += $$eval(QT_TOOL.$${2}.envvars)
     QT_TOOL_NAME = $$2
     !isEmpty(3)|!isEmpty(4) {

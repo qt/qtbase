@@ -202,6 +202,7 @@ public:
 
     bool event(QEvent *event) Q_DECL_OVERRIDE;
     QVariant inputMethodQuery(Qt::InputMethodQuery) const Q_DECL_OVERRIDE;
+    Q_INVOKABLE QVariant inputMethodQuery(Qt::InputMethodQuery query, const QVariant &argument) const;
 
 public Q_SLOTS:
     void clear();

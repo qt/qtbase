@@ -1674,12 +1674,7 @@ QDateTimeEditPrivate::QDateTimeEditPrivate()
     cachedDay = -1;
     currentSectionIndex = FirstSectionIndex;
 
-    first.type = FirstSection;
-    last.type = LastSection;
-    none.type = NoSection;
     first.pos = 0;
-    last.pos = -1;
-    none.pos = -1;
     sections = 0;
     calendarPopup = false;
     minimum = QDATETIMEEDIT_COMPAT_DATETIME_MIN;
@@ -2053,7 +2048,7 @@ QDateTime QDateTimeEditPrivate::stepBy(int sectionIndex, int steps, bool test) c
             // doesn't mean that we hit the floor in the other
             if (steps > 0) {
                 setDigit(v, sectionIndex, min);
-                if (!(sn.type & (DaySection|DayOfWeekSectionShort|DayOfWeekSectionLong)) && sections & DateSectionMask) {
+                if (!(sn.type & DaySectionMask) && sections & DateSectionMask) {
                     const int daysInMonth = v.date().daysInMonth();
                     if (v.date().day() < oldDay && v.date().day() < daysInMonth) {
                         const int adds = qMin(oldDay, daysInMonth);
@@ -2068,7 +2063,7 @@ QDateTime QDateTimeEditPrivate::stepBy(int sectionIndex, int steps, bool test) c
                 }
             } else {
                 setDigit(v, sectionIndex, max);
-                if (!(sn.type & (DaySection|DayOfWeekSectionShort|DayOfWeekSectionLong)) && sections & DateSectionMask) {
+                if (!(sn.type & DaySectionMask) && sections & DateSectionMask) {
                     const int daysInMonth = v.date().daysInMonth();
                     if (v.date().day() < oldDay && v.date().day() < daysInMonth) {
                         const int adds = qMin(oldDay, daysInMonth);
@@ -2086,7 +2081,7 @@ QDateTime QDateTimeEditPrivate::stepBy(int sectionIndex, int steps, bool test) c
             setDigit(v, sectionIndex, (steps > 0 ? localmax : localmin));
         }
     }
-    if (!test && oldDay != v.date().day() && !(sn.type & (DaySection|DayOfWeekSectionShort|DayOfWeekSectionLong))) {
+    if (!test && oldDay != v.date().day() && !(sn.type & DaySectionMask)) {
         // this should not happen when called from stepEnabled
         cachedDay = qMax<int>(oldDay, cachedDay);
     }
@@ -2278,15 +2273,15 @@ QDateTimeEdit::Sections QDateTimeEditPrivate::convertSections(QDateTimeParser::S
         ret |= QDateTimeEdit::SecondSection;
     if (s & QDateTimeParser::MinuteSection)
         ret |= QDateTimeEdit::MinuteSection;
-    if (s & (QDateTimeParser::Hour24Section|QDateTimeParser::Hour12Section))
+    if (s & (QDateTimeParser::HourSectionMask))
         ret |= QDateTimeEdit::HourSection;
     if (s & QDateTimeParser::AmPmSection)
         ret |= QDateTimeEdit::AmPmSection;
-    if (s & (QDateTimeParser::DaySection|QDateTimeParser::DayOfWeekSectionShort|QDateTimeParser::DayOfWeekSectionLong))
+    if (s & (QDateTimeParser::DaySectionMask))
         ret |= QDateTimeEdit::DaySection;
     if (s & QDateTimeParser::MonthSection)
         ret |= QDateTimeEdit::MonthSection;
-    if (s & (QDateTimeParser::YearSection|QDateTimeParser::YearSection2Digits))
+    if (s & (QDateTimeParser::YearSectionMask))
         ret |= QDateTimeEdit::YearSection;
 
     return ret;

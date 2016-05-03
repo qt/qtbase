@@ -120,11 +120,15 @@ static int framebuffer = -1;
 
 QByteArray QEGLDeviceIntegration::fbDeviceName() const
 {
+#ifdef Q_OS_LINUX
     QByteArray fbDev = qgetenv("QT_QPA_EGLFS_FB");
     if (fbDev.isEmpty())
         fbDev = QByteArrayLiteral("/dev/fb0");
 
     return fbDev;
+#else
+    return QByteArray();
+#endif
 }
 
 int QEGLDeviceIntegration::framebufferIndex() const
@@ -141,6 +145,7 @@ int QEGLDeviceIntegration::framebufferIndex() const
 
 void QEGLDeviceIntegration::platformInit()
 {
+#ifdef Q_OS_LINUX
     QByteArray fbDev = fbDeviceName();
 
     framebuffer = qt_safe_open(fbDev, O_RDONLY);
@@ -153,12 +158,15 @@ void QEGLDeviceIntegration::platformInit()
 #ifdef FBIOBLANK
     ioctl(framebuffer, FBIOBLANK, VESA_NO_BLANKING);
 #endif
+#endif
 }
 
 void QEGLDeviceIntegration::platformDestroy()
 {
+#ifdef Q_OS_LINUX
     if (framebuffer != -1)
         close(framebuffer);
+#endif
 }
 
 EGLNativeDisplayType QEGLDeviceIntegration::platformDisplay() const
@@ -307,7 +315,7 @@ void QEGLDeviceIntegration::waitForVSync(QPlatformSurface *surface) const
 {
     Q_UNUSED(surface);
 
-#if defined(FBIO_WAITFORVSYNC)
+#if defined(Q_OS_LINUX) && defined(FBIO_WAITFORVSYNC)
     static const bool forceSync = qEnvironmentVariableIntValue("QT_QPA_EGLFS_FORCEVSYNC");
     if (forceSync && framebuffer != -1) {
         int arg = 0;

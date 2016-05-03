@@ -863,7 +863,7 @@ void QItemSelectionModelPrivate::_q_layoutAboutToBeChanged(const QList<QPersiste
     // optimization for when all indexes are selected
     // (only if there is lots of items (1000) because this is not entirely correct)
     if (ranges.isEmpty() && currentSelection.count() == 1) {
-        QItemSelectionRange range = currentSelection.first();
+        QItemSelectionRange range = currentSelection.constFirst();
         QModelIndex parent = range.parent();
         tableRowCount = model->rowCount(parent);
         tableColCount = model->columnCount(parent);

@@ -173,6 +173,9 @@ template<> inline char *toString(const QVariant &v)
 }
 
 #ifdef QT_NETWORK_LIB
+/*!
+    \internal
+ */
 template<> inline char *toString(const QHostAddress &addr)
 {
     switch (addr.protocol()) {

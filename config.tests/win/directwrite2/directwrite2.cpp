@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the qmake spec of the Qt Toolkit.
+** This file is part of the config.tests of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,20 +37,14 @@
 **
 ****************************************************************************/
 
-#include "qeglfsdeviceintegration.h"
-#include "qeglfskmsintegration.h"
+#include <dwrite_2.h>
+#include <d2d1.h>
 
-QT_BEGIN_NAMESPACE
-
-class QEglFSKmsIntegrationPlugin : public QEGLDeviceIntegrationPlugin
+int main(int, char**)
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID QEGLDeviceIntegrationFactoryInterface_iid FILE "eglfs_kms.json")
-
-public:
-    QEGLDeviceIntegration *create() Q_DECL_OVERRIDE { return new QEglFSKmsIntegration; }
-};
-
-QT_END_NAMESPACE
-
-#include "qeglfskmsmain.moc"
+    IUnknown *factory = 0;
+    DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
+                        __uuidof(IDWriteFactory2),
+                        &factory);
+    return 0;
+}

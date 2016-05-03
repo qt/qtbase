@@ -2,6 +2,7 @@
 **
 ** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -38,53 +39,44 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSKMSDEVICE_H
-#define QEGLFSKMSDEVICE_H
+#ifndef QEGLFSKMSGBMDEVICE_H
+#define QEGLFSKMSGBMDEVICE_H
 
-#include "qeglfskmscursor.h"
-#include "qeglfskmsintegration.h"
+#include "qeglfskmsgbmcursor.h"
+#include "qeglfskmsdevice.h"
 
-#include <xf86drm.h>
-#include <xf86drmMode.h>
 #include <gbm.h>
 
 QT_BEGIN_NAMESPACE
 
 class QEglFSKmsScreen;
 
-class QEglFSKmsDevice
+class QEglFSKmsGbmDevice: public QEglFSKmsDevice
 {
 public:
-    QEglFSKmsDevice(QEglFSKmsIntegration *integration, const QString &path);
+    QEglFSKmsGbmDevice(QEglFSKmsIntegration *integration, const QString &path);
 
-    bool open();
-    void close();
+    bool open() Q_DECL_OVERRIDE;
+    void close() Q_DECL_OVERRIDE;
 
-    void createScreens();
-
-    gbm_device *device() const;
-    int fd() const;
+    EGLNativeDisplayType device() const Q_DECL_OVERRIDE;
+    gbm_device *gbmDevice() const;
 
     QPlatformCursor *globalCursor() const;
 
     void handleDrmEvent();
 
-private:
-    Q_DISABLE_COPY(QEglFSKmsDevice)
+    virtual QEglFSKmsScreen *createScreen(QEglFSKmsIntegration *integration,
+                                          QEglFSKmsDevice *device,
+                                          QEglFSKmsOutput output,
+                                          QPoint position) Q_DECL_OVERRIDE;
 
-    QEglFSKmsIntegration *m_integration;
-    QString m_path;
-    int m_dri_fd;
+private:
+    Q_DISABLE_COPY(QEglFSKmsGbmDevice)
+
     gbm_device *m_gbm_device;
 
-    quint32 m_crtc_allocator;
-    quint32 m_connector_allocator;
-
-    QEglFSKmsCursor *m_globalCursor;
-
-    int crtcForConnector(drmModeResPtr resources, drmModeConnectorPtr connector);
-    QEglFSKmsScreen *screenForConnector(drmModeResPtr resources, drmModeConnectorPtr connector, QPoint pos);
-    drmModePropertyPtr connectorProperty(drmModeConnectorPtr connector, const QByteArray &name);
+    QEglFSKmsGbmCursor *m_globalCursor;
 
     static void pageFlipHandler(int fd,
                                 unsigned int sequence,
@@ -95,4 +87,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QEGLFSKMSGBMDEVICE_H

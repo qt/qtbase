@@ -170,6 +170,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         }
 
         m_isMenuView = false;
+        self.focusRingType = NSFocusRingTypeNone;
     }
     return self;
 }
@@ -843,7 +844,7 @@ QT_WARNING_POP
     Q_UNUSED(qtScreenPoint);
 
     // Maintain masked state for the button for use by MouseDragged and MouseUp.
-    const bool masked = m_maskRegion.contains(qtWindowPoint.toPoint());
+    const bool masked = [self hasMask] && !m_maskRegion.contains(qtWindowPoint.toPoint());
     if (masked)
         m_acceptedMouseDowns &= ~button;
     else
@@ -949,7 +950,7 @@ QT_WARNING_POP
     [self convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
     Q_UNUSED(qtScreenPoint);
 
-    bool masked = m_maskRegion.contains(qtWindowPoint.toPoint());
+    const bool masked = [self hasMask] && !m_maskRegion.contains(qtWindowPoint.toPoint());
 
     // Maintain masked state for the button for use by MouseDragged and Up.
     if (masked)

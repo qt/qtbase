@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -40,17 +41,7 @@
 #ifndef QEGLFSKMSEGLDEVICEINTEGRATION_H
 #define QEGLFSKMSEGLDEVICEINTEGRATION_H
 
-#include "qeglfsdeviceintegration.h"
-#include "qeglfswindow.h"
-#include "qeglfsintegration.h"
-
-#include <QtPlatformSupport/private/qdevicediscovery_p.h>
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
-#include <QtCore/private/qcore_unix_p.h>
-#include <QtCore/QScopedPointer>
-#include <QtGui/qpa/qplatformwindow.h>
-#include <QtGui/qguiapplication.h>
-#include <QDebug>
+#include <qeglfskmsintegration.h>
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
@@ -59,41 +50,28 @@
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSKmsEglDeviceIntegration : public QEGLDeviceIntegration
+class QEglFSKmsEglDeviceIntegration : public QEglFSKmsIntegration
 {
 public:
     QEglFSKmsEglDeviceIntegration();
 
-    void platformInit() Q_DECL_OVERRIDE;
-    void platformDestroy() Q_DECL_OVERRIDE;
-    EGLNativeDisplayType platformDisplay() const Q_DECL_OVERRIDE;
-    EGLDisplay createDisplay(EGLNativeDisplayType nativeDisplay) Q_DECL_OVERRIDE;
-    QSizeF physicalScreenSize() const Q_DECL_OVERRIDE;
-    QSize screenSize() const Q_DECL_OVERRIDE;
-    int screenDepth() const Q_DECL_OVERRIDE;
-    qreal refreshRate() const Q_DECL_OVERRIDE;
-    QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const Q_DECL_OVERRIDE;
     EGLint surfaceType() const Q_DECL_OVERRIDE;
-    QEglFSWindow *createWindow(QWindow *window) const Q_DECL_OVERRIDE;
-    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
-    void waitForVSync(QPlatformSurface *surface) const Q_DECL_OVERRIDE;
+    EGLDisplay createDisplay(EGLNativeDisplayType nativeDisplay) Q_DECL_OVERRIDE;
     bool supportsSurfacelessContexts() const Q_DECL_OVERRIDE;
+    bool supportsPBuffers() const Q_DECL_OVERRIDE;
+    QEglFSWindow *createWindow(QWindow *window) const Q_DECL_OVERRIDE;
 
+    virtual bool separateScreens() const Q_DECL_OVERRIDE;
+protected:
+    QEglFSKmsDevice *createDevice(const QString &devicePath) Q_DECL_OVERRIDE;
+
+private:
     bool setup_kms();
     bool query_egl_device();
 
-    // device bits
-    QByteArray m_device;
-    int m_dri_fd;
     EGLDeviceEXT m_egl_device;
-    EGLDisplay m_egl_display;
 
-    // KMS bits
-    drmModeConnector *m_drm_connector;
-    drmModeEncoder *m_drm_encoder;
-    drmModeModeInfo m_drm_mode;
-    quint32 m_drm_crtc;
-
+    friend class QEglJetsonTK1Window;
     // EGLStream infrastructure
     QEGLStreamConvenience *m_funcs;
 };

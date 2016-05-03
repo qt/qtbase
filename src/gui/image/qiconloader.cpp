@@ -158,7 +158,6 @@ QStringList QIconLoader::themeSearchPaths() const
 }
 
 /*!
-    \class QIconCacheGtkReader
     \internal
     Helper class that reads and looks up into the icon-theme.cache generated with
     gtk-update-icon-cache. If at any point we detect a corruption in the file

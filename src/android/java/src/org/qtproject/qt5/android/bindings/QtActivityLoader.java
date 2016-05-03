@@ -55,7 +55,7 @@ public class QtActivityLoader extends QtLoader {
 
     QtActivityLoader(QtActivity activity)
     {
-        super(activity);
+        super(activity, QtActivity.class);
         m_activity = activity;
     }
     @Override

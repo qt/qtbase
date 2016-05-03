@@ -3377,8 +3377,7 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
                 }
                 section_sizes.removeFirst();
             } else {
-                newSectionLength = section_sizes.front();
-                section_sizes.removeFirst();
+                newSectionLength = section_sizes.takeFirst();
             }
         }
 

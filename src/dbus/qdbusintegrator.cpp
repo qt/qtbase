@@ -1055,7 +1055,6 @@ QDBusConnectionPrivate::~QDBusConnectionPrivate()
                  qPrintable(name));
 
     closeConnection();
-    rootNode.children.clear();  // free resources
     qDeleteAll(cachedMetaObjects);
 
     if (mode == ClientMode || mode == PeerMode) {
@@ -1075,6 +1074,19 @@ QDBusConnectionPrivate::~QDBusConnectionPrivate()
             q_dbus_server_unref(server);
         server = 0;
     }
+}
+
+void QDBusConnectionPrivate::disconnectObjectTree(QDBusConnectionPrivate::ObjectTreeNode &haystack)
+{
+    QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it = haystack.children.begin();
+
+    while (it != haystack.children.end()) {
+        disconnectObjectTree(*it);
+        it++;
+    }
+
+    if (haystack.obj)
+        haystack.obj->disconnect(this);
 }
 
 void QDBusConnectionPrivate::closeConnection()
@@ -1100,6 +1112,18 @@ void QDBusConnectionPrivate::closeConnection()
     }
 
     qDeleteAll(pendingCalls);
+
+    // Disconnect all signals from signal hooks and from the object tree to
+    // avoid QObject::destroyed being sent to dbus daemon thread which has
+    // already quit.
+    SignalHookHash::iterator sit = signalHooks.begin();
+    while (sit != signalHooks.end()) {
+        sit.value().obj->disconnect(this);
+        sit++;
+    }
+
+    disconnectObjectTree(rootNode);
+    rootNode.children.clear();  // free resources
 }
 
 void QDBusConnectionPrivate::checkThread()

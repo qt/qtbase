@@ -17,7 +17,7 @@ rcc_test.input = RCCINPUT
 rcc_test.variable_out = SOURCES
 rcc_test.name = RCC_TEST
 rcc_test.CONFIG += no_link
-rcc_test.depends = $$QMAKE_RCC
+rcc_test.depends = $$QMAKE_RCC_EXE
 
 QMAKE_EXTRA_COMPILERS += rcc_test
 

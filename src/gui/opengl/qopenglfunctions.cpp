@@ -47,6 +47,10 @@
 #include <qpa/qplatformintegration.h>
 #include <QtCore/qloggingcategory.h>
 
+#ifdef Q_OS_INTEGRITY
+#include <EGL/egl.h>
+#endif
+
 #ifndef GL_FRAMEBUFFER_SRGB_CAPABLE_EXT
 #define GL_FRAMEBUFFER_SRGB_CAPABLE_EXT   0x8DBA
 #endif

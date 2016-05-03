@@ -209,6 +209,11 @@ QAbstractState *QHistoryState::defaultState() const
     return d->defaultTransition ? d->defaultTransition->targetState() : Q_NULLPTR;
 }
 
+static inline bool isSoleEntry(const QList<QAbstractState*> &states, const QAbstractState * state)
+{
+    return states.size() == 1 && states.first() == state;
+}
+
 /*!
   Sets this history state's default state to be the given \a state.
   \a state must be a sibling of this history state.
@@ -224,9 +229,7 @@ void QHistoryState::setDefaultState(QAbstractState *state)
                  "to this history state's group (%p)", state, parentState());
         return;
     }
-    if (!d->defaultTransition
-            || d->defaultTransition->targetStates().size() != 1
-            || d->defaultTransition->targetStates().first() != state) {
+    if (!d->defaultTransition || !isSoleEntry(d->defaultTransition->targetStates(), state)) {
         if (!d->defaultTransition || !qobject_cast<DefaultStateTransition*>(d->defaultTransition)) {
             d->defaultTransition = new DefaultStateTransition(this, state);
             emit defaultTransitionChanged(QHistoryState::QPrivateSignal());

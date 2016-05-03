@@ -2,6 +2,7 @@
 **
 ** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -41,11 +42,10 @@
 #include "qeglfskmsintegration.h"
 #include "qeglfskmsdevice.h"
 #include "qeglfskmsscreen.h"
-#include "qeglfskmscursor.h"
+#include "qeglfswindow.h"
 #include "qeglfscursor.h"
 
-#include <QtPlatformSupport/private/qdevicediscovery_p.h>
-#include <QtCore/QLoggingCategory>
+#include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 #include <QtCore/QJsonArray>
@@ -55,17 +55,14 @@
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
-#include <gbm.h>
 
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(qLcEglfsKmsDebug, "qt.qpa.eglfs.kms")
 
-QMutex QEglFSKmsScreen::m_waitForFlipMutex;
-
 QEglFSKmsIntegration::QEglFSKmsIntegration()
     : m_device(Q_NULLPTR)
-    , m_hwCursor(true)
+    , m_hwCursor(false)
     , m_pbuffers(false)
     , m_separateScreens(false)
 {}
@@ -76,21 +73,9 @@ void QEglFSKmsIntegration::platformInit()
 
     if (!m_devicePath.isEmpty()) {
         qCDebug(qLcEglfsKmsDebug) << "Using DRM device" << m_devicePath << "specified in config file";
-    } else {
-
-        QDeviceDiscovery *d = QDeviceDiscovery::create(QDeviceDiscovery::Device_VideoMask);
-        QStringList devices = d->scanConnectedDevices();
-        qCDebug(qLcEglfsKmsDebug) << "Found the following video devices:" << devices;
-        d->deleteLater();
-
-        if (Q_UNLIKELY(devices.isEmpty()))
-            qFatal("Could not find DRM device!");
-
-        m_devicePath = devices.first();
-        qCDebug(qLcEglfsKmsDebug) << "Using" << m_devicePath;
     }
 
-    m_device = new QEglFSKmsDevice(this, m_devicePath);
+    m_device = createDevice(m_devicePath);
     if (Q_UNLIKELY(!m_device->open()))
         qFatal("Could not open device %s - aborting!", qPrintable(m_devicePath));
 }
@@ -129,42 +114,6 @@ QSurfaceFormat QEglFSKmsIntegration::surfaceFormatFor(const QSurfaceFormat &inpu
     return format;
 }
 
-EGLNativeWindowType QEglFSKmsIntegration::createNativeWindow(QPlatformWindow *platformWindow,
-                                                     const QSize &size,
-                                                     const QSurfaceFormat &format)
-{
-    Q_UNUSED(size);
-    Q_UNUSED(format);
-
-    QEglFSKmsScreen *screen = static_cast<QEglFSKmsScreen *>(platformWindow->screen());
-    if (screen->surface()) {
-        qWarning("Only single window per screen supported!");
-        return 0;
-    }
-
-    return reinterpret_cast<EGLNativeWindowType>(screen->createSurface());
-}
-
-EGLNativeWindowType QEglFSKmsIntegration::createNativeOffscreenWindow(const QSurfaceFormat &format)
-{
-    Q_UNUSED(format);
-    Q_ASSERT(m_device);
-
-    qCDebug(qLcEglfsKmsDebug) << "Creating native off screen window";
-    gbm_surface *surface = gbm_surface_create(m_device->device(),
-                                              1, 1,
-                                              GBM_FORMAT_XRGB8888,
-                                              GBM_BO_USE_RENDERING);
-
-    return reinterpret_cast<EGLNativeWindowType>(surface);
-}
-
-void QEglFSKmsIntegration::destroyNativeWindow(EGLNativeWindowType window)
-{
-    gbm_surface *surface = reinterpret_cast<gbm_surface *>(window);
-    gbm_surface_destroy(surface);
-}
-
 bool QEglFSKmsIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
@@ -177,28 +126,12 @@ bool QEglFSKmsIntegration::hasCapability(QPlatformIntegration::Capability cap) c
     }
 }
 
-QPlatformCursor *QEglFSKmsIntegration::createCursor(QPlatformScreen *screen) const
-{
-    if (m_hwCursor)
-        return Q_NULLPTR;
-    else
-        return new QEglFSCursor(screen);
-}
-
 void QEglFSKmsIntegration::waitForVSync(QPlatformSurface *surface) const
 {
     QWindow *window = static_cast<QWindow *>(surface->surface());
     QEglFSKmsScreen *screen = static_cast<QEglFSKmsScreen *>(window->screen()->handle());
 
     screen->waitForFlip();
-}
-
-void QEglFSKmsIntegration::presentBuffer(QPlatformSurface *surface)
-{
-    QWindow *window = static_cast<QWindow *>(surface->surface());
-    QEglFSKmsScreen *screen = static_cast<QEglFSKmsScreen *>(window->screen()->handle());
-
-    screen->flip();
 }
 
 bool QEglFSKmsIntegration::supportsPBuffers() const
@@ -219,6 +152,11 @@ bool QEglFSKmsIntegration::separateScreens() const
 QMap<QString, QVariantMap> QEglFSKmsIntegration::outputSettings() const
 {
     return m_outputSettings;
+}
+
+QEglFSKmsDevice *QEglFSKmsIntegration::device() const
+{
+    return m_device;
 }
 
 void QEglFSKmsIntegration::loadConfig()

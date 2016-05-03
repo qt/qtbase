@@ -205,7 +205,7 @@ bool QMimeBinaryProvider::isValid()
         return false;
 
     // We found exactly one file; is it the user-modified mimes, or a system file?
-    const QString foundFile = m_cacheFiles.first()->file.fileName();
+    const QString foundFile = m_cacheFiles.constFirst()->file.fileName();
     const QString localCacheFile = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + QLatin1String("/mime/mime.cache");
 
     return foundFile != localCacheFile;
@@ -629,7 +629,7 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
     // Let's assume that shared-mime-info is at least version 0.70
     // Otherwise we would need 1) a version check, and 2) code for parsing patterns from the globs file.
 #if 1
-    if (!mainPattern.isEmpty() && (data.globPatterns.isEmpty() || data.globPatterns.first() != mainPattern)) {
+    if (!mainPattern.isEmpty() && (data.globPatterns.isEmpty() || data.globPatterns.constFirst() != mainPattern)) {
         // ensure it's first in the list of patterns
         data.globPatterns.removeAll(mainPattern);
         data.globPatterns.prepend(mainPattern);
@@ -637,7 +637,7 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
 #else
     const bool globsInXml = sharedMimeInfoVersion() >= QT_VERSION_CHECK(0, 70, 0);
     if (globsInXml) {
-        if (!mainPattern.isEmpty() && data.globPatterns.first() != mainPattern) {
+        if (!mainPattern.isEmpty() && data.globPatterns.constFirst() != mainPattern) {
             // ensure it's first in the list of patterns
             data.globPatterns.removeAll(mainPattern);
             data.globPatterns.prepend(mainPattern);
