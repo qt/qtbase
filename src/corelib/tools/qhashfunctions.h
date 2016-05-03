@@ -58,6 +58,9 @@ class QString;
 class QStringRef;
 class QLatin1String;
 
+Q_CORE_EXPORT int qGlobalQHashSeed();
+Q_CORE_EXPORT void qSetGlobalQHashSeed(int newSeed);
+
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHashBits(const void *p, size_t size, uint seed = 0) Q_DECL_NOTHROW;
 
 Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(char key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
