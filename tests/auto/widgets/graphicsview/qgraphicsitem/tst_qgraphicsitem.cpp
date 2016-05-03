@@ -11017,9 +11017,7 @@ void tst_QGraphicsItem::touchEventPropagation()
     touchPoints << tp;
 
     sendMousePress(&scene, tp.scenePos());
-    QTouchDevice *device = new QTouchDevice;
-    device->setType(QTouchDevice::TouchScreen);
-    QWindowSystemInterface::registerTouchDevice(device);
+    QTouchDevice *device = QTest::createTouchDevice();
     QTouchEvent touchBegin(QEvent::TouchBegin, device, Qt::NoModifier, Qt::TouchPointPressed, touchPoints);
 
     qApp->sendEvent(&scene, &touchBegin);

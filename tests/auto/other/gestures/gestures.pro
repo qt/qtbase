@@ -1,4 +1,4 @@
 CONFIG += testcase
 TARGET = tst_gestures
-QT += widgets testlib gui-private
+QT += widgets testlib
 SOURCES  += tst_gestures.cpp

@@ -105,7 +105,7 @@ private slots:
 private:
     QPoint m_availableTopLeft;
     QSize m_testWindowSize;
-    QTouchDevice *touchDevice;
+    QTouchDevice *touchDevice = QTest::createTouchDevice();
 };
 
 void tst_QWindow::initTestCase()
@@ -119,9 +119,6 @@ void tst_QWindow::initTestCase()
     if (screenWidth > 2000)
         width = 100 * ((screenWidth + 500) / 1000);
     m_testWindowSize = QSize(width, width);
-    touchDevice = new QTouchDevice;
-    touchDevice->setType(QTouchDevice::TouchScreen);
-    QWindowSystemInterface::registerTouchDevice(touchDevice);
 }
 
 void tst_QWindow::cleanup()

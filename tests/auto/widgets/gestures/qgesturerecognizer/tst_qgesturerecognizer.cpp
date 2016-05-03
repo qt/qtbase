@@ -38,8 +38,6 @@
 #include <QtCore/QHash>
 #include <QtCore/QDebug>
 
-#include <qpa/qwindowsysteminterface.h>
-
 class tst_QGestureRecognizer : public QObject
 {
     Q_OBJECT
@@ -64,15 +62,13 @@ private:
 
 tst_QGestureRecognizer::tst_QGestureRecognizer()
     : m_fingerDistance(qRound(QGuiApplication::primaryScreen()->physicalDotsPerInch() / 2.0))
-    , m_touchDevice(new QTouchDevice)
+    , m_touchDevice(QTest::createTouchDevice())
 {
     qputenv("QT_PAN_TOUCHPOINTS", "2"); // Prevent device detection of pan touch point count.
 }
 
 void tst_QGestureRecognizer::initTestCase()
 {
-    m_touchDevice->setType(QTouchDevice::TouchScreen);
-    QWindowSystemInterface::registerTouchDevice(m_touchDevice);
 }
 
 #ifndef QT_NO_GESTURES

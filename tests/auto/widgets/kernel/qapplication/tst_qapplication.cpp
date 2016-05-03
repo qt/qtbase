@@ -1934,9 +1934,7 @@ void tst_QApplication::touchEventPropagation()
     release.setState(Qt::TouchPointReleased);
     releasedTouchPoints << release;
 
-    QTouchDevice *device = new QTouchDevice;
-    device->setType(QTouchDevice::TouchScreen);
-    QWindowSystemInterface::registerTouchDevice(device);
+    QTouchDevice *device = QTest::createTouchDevice();
 
     {
         // touch event behavior on a window

@@ -3797,9 +3797,7 @@ void tst_QGraphicsProxyWidget::forwardTouchEvent()
 
     EventSpy eventSpy(widget);
 
-    QTouchDevice *device = new QTouchDevice;
-    device->setType(QTouchDevice::TouchScreen);
-    QWindowSystemInterface::registerTouchDevice(device);
+    QTouchDevice *device = QTest::createTouchDevice();
 
     QCOMPARE(eventSpy.counts[QEvent::TouchBegin], 0);
     QCOMPARE(eventSpy.counts[QEvent::TouchUpdate], 0);

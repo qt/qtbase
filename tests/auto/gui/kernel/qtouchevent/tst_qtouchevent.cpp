@@ -213,11 +213,10 @@ private:
     QTouchDevice *touchPadDevice;
 };
 
-tst_QTouchEvent::tst_QTouchEvent() : touchScreenDevice(new QTouchDevice), touchPadDevice(new QTouchDevice)
+tst_QTouchEvent::tst_QTouchEvent()
+  : touchScreenDevice(QTest::createTouchDevice())
+  , touchPadDevice(QTest::createTouchDevice(QTouchDevice::TouchPad))
 {
-    touchPadDevice->setType(QTouchDevice::TouchPad);
-    QWindowSystemInterface::registerTouchDevice(touchScreenDevice);
-    QWindowSystemInterface::registerTouchDevice(touchPadDevice);
 }
 
 void tst_QTouchEvent::cleanup()
@@ -1490,10 +1489,6 @@ bool WindowTouchEventFilter::eventFilter(QObject *, QEvent *event)
 
 void tst_QTouchEvent::testQGuiAppDelivery()
 {
-    QTouchDevice *device = new QTouchDevice;
-    device->setType(QTouchDevice::TouchScreen);
-    QWindowSystemInterface::registerTouchDevice(device);
-
     QWindow w;
     w.setGeometry(100, 100, 100, 100);
     w.show();
@@ -1521,38 +1516,33 @@ void tst_QTouchEvent::testQGuiAppDelivery()
     QCOMPARE(filter.d.isEmpty(), true);
 
     // Now the real thing.
-    QWindowSystemInterface::handleTouchEvent(&w, device, points); // TouchBegin
+    QWindowSystemInterface::handleTouchEvent(&w, touchScreenDevice, points); // TouchBegin
     QCoreApplication::processEvents();
     QCOMPARE(filter.d.count(), 1);
-    QCOMPARE(filter.d.contains(device), true);
-    QCOMPARE(filter.d.value(device).points.count(), 1);
-    QCOMPARE(filter.d.value(device).lastSeenType, QEvent::TouchBegin);
+    QCOMPARE(filter.d.contains(touchScreenDevice), true);
+    QCOMPARE(filter.d.value(touchScreenDevice).points.count(), 1);
+    QCOMPARE(filter.d.value(touchScreenDevice).lastSeenType, QEvent::TouchBegin);
 
     points[0].state = Qt::TouchPointMoved;
-    QWindowSystemInterface::handleTouchEvent(&w, device, points); // TouchUpdate
+    QWindowSystemInterface::handleTouchEvent(&w, touchScreenDevice, points); // TouchUpdate
     QCoreApplication::processEvents();
     QCOMPARE(filter.d.count(), 1);
-    QCOMPARE(filter.d.contains(device), true);
-    QCOMPARE(filter.d.value(device).points.count(), 2);
-    QCOMPARE(filter.d.value(device).lastSeenType, QEvent::TouchUpdate);
+    QCOMPARE(filter.d.contains(touchScreenDevice), true);
+    QCOMPARE(filter.d.value(touchScreenDevice).points.count(), 2);
+    QCOMPARE(filter.d.value(touchScreenDevice).lastSeenType, QEvent::TouchUpdate);
 
     points[0].state = Qt::TouchPointReleased;
-    QWindowSystemInterface::handleTouchEvent(&w, device, points); // TouchEnd
+    QWindowSystemInterface::handleTouchEvent(&w, touchScreenDevice, points); // TouchEnd
     QCoreApplication::processEvents();
     QCOMPARE(filter.d.count(), 1);
-    QCOMPARE(filter.d.contains(device), true);
-    QCOMPARE(filter.d.value(device).points.count(), 3);
-    QCOMPARE(filter.d.value(device).lastSeenType, QEvent::TouchEnd);
+    QCOMPARE(filter.d.contains(touchScreenDevice), true);
+    QCOMPARE(filter.d.value(touchScreenDevice).points.count(), 3);
+    QCOMPARE(filter.d.value(touchScreenDevice).lastSeenType, QEvent::TouchEnd);
 }
 
 void tst_QTouchEvent::testMultiDevice()
 {
-    QTouchDevice *deviceOne = new QTouchDevice;
-    deviceOne->setType(QTouchDevice::TouchScreen);
-    QWindowSystemInterface::registerTouchDevice(deviceOne);
-    QTouchDevice *deviceTwo = new QTouchDevice;
-    deviceTwo->setType(QTouchDevice::TouchScreen);
-    QWindowSystemInterface::registerTouchDevice(deviceTwo);
+    QTouchDevice *deviceTwo = QTest::createTouchDevice();
 
     QWindow w;
     w.setGeometry(100, 100, 100, 100);
@@ -1564,7 +1554,7 @@ void tst_QTouchEvent::testMultiDevice()
 
     QList<QWindowSystemInterface::TouchPoint> pointsOne, pointsTwo;
 
-    // deviceOne reports a single point, deviceTwo reports the beginning of a multi-point sequence.
+    // touchScreenDevice reports a single point, deviceTwo reports the beginning of a multi-point sequence.
     // Even though there is a point with id 0 for both devices, they should be delivered cleanly, independently.
     QWindowSystemInterface::TouchPoint tp;
     tp.id = 0;
@@ -1580,20 +1570,20 @@ void tst_QTouchEvent::testMultiDevice()
     tp.area = QHighDpi::toNative(area1, QHighDpiScaling::factor(&w), screenOrigin);
     pointsTwo.append(tp);
 
-    QWindowSystemInterface::handleTouchEvent(&w, deviceOne, pointsOne);
+    QWindowSystemInterface::handleTouchEvent(&w, touchScreenDevice, pointsOne);
     QWindowSystemInterface::handleTouchEvent(&w, deviceTwo, pointsTwo);
     QCoreApplication::processEvents();
 
-    QCOMPARE(filter.d.contains(deviceOne), true);
+    QCOMPARE(filter.d.contains(touchScreenDevice), true);
     QCOMPARE(filter.d.contains(deviceTwo), true);
 
-    QCOMPARE(filter.d.value(deviceOne).lastSeenType, QEvent::TouchBegin);
+    QCOMPARE(filter.d.value(touchScreenDevice).lastSeenType, QEvent::TouchBegin);
     QCOMPARE(filter.d.value(deviceTwo).lastSeenType, QEvent::TouchBegin);
-    QCOMPARE(filter.d.value(deviceOne).points.count(), 1);
+    QCOMPARE(filter.d.value(touchScreenDevice).points.count(), 1);
     QCOMPARE(filter.d.value(deviceTwo).points.count(), 2);
 
-    QCOMPARE(filter.d.value(deviceOne).points.at(0).screenRect(), QRectF(area0));
-    QCOMPARE(filter.d.value(deviceOne).points.at(0).state(), pointsOne[0].state);
+    QCOMPARE(filter.d.value(touchScreenDevice).points.at(0).screenRect(), QRectF(area0));
+    QCOMPARE(filter.d.value(touchScreenDevice).points.at(0).state(), pointsOne[0].state);
 
     QCOMPARE(filter.d.value(deviceTwo).points.at(0).screenRect(), QRectF(area0));
     QCOMPARE(filter.d.value(deviceTwo).points.at(0).state(), pointsTwo[0].state);
