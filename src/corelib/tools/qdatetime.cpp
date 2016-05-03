@@ -2488,7 +2488,8 @@ QDateTimePrivate::QDateTimePrivate(const QDate &toDate, const QTime &toTime, Qt:
                                    int offsetSeconds)
     : m_msecs(0),
       m_status(0),
-      m_offsetFromUtc(0)
+      m_offsetFromUtc(0),
+      ref(0)
 {
     setTimeSpec(toSpec, offsetSeconds);
     setDateTime(toDate, toTime);
@@ -2499,6 +2500,7 @@ QDateTimePrivate::QDateTimePrivate(const QDate &toDate, const QTime &toTime,
                                    const QTimeZone &toTimeZone)
     : m_status(0),
       m_offsetFromUtc(0),
+      ref(0),
       m_timeZone(toTimeZone)
 {
     setSpec(Qt::TimeZone);

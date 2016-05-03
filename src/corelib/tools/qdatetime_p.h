@@ -61,7 +61,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDateTimePrivate : public QSharedData
+class QDateTimePrivate
 {
 public:
     // Never change or delete this enum, it is required for backwards compatible
@@ -105,7 +105,8 @@ public:
 
     QDateTimePrivate() : m_msecs(0),
                          m_status(StatusFlag(Qt::LocalTime << TimeSpecShift)),
-                         m_offsetFromUtc(0)
+                         m_offsetFromUtc(0),
+                         ref(0)
     {
     }
 
@@ -116,12 +117,10 @@ public:
     QDateTimePrivate(const QDate &toDate, const QTime &toTime, const QTimeZone & timeZone);
 #endif // QT_BOOTSTRAPPED
 
-    // ### XXX: when the tooling situation improves, look at fixing the padding.
-    // 4 bytes padding
-
     qint64 m_msecs;
     StatusFlags m_status;
     int m_offsetFromUtc;
+    mutable QAtomicInt ref;
 #ifndef QT_BOOTSTRAPPED
     QTimeZone m_timeZone;
 #endif // QT_BOOTSTRAPPED
