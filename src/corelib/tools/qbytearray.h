@@ -604,41 +604,41 @@ inline bool QByteArray::contains(const QByteArray &a) const
 { return indexOf(a) != -1; }
 inline bool QByteArray::contains(char c) const
 { return indexOf(c) != -1; }
-inline bool operator==(const QByteArray &a1, const QByteArray &a2)
+inline bool operator==(const QByteArray &a1, const QByteArray &a2) Q_DECL_NOTHROW
 { return (a1.size() == a2.size()) && (memcmp(a1.constData(), a2.constData(), a1.size())==0); }
-inline bool operator==(const QByteArray &a1, const char *a2)
+inline bool operator==(const QByteArray &a1, const char *a2) Q_DECL_NOTHROW
 { return a2 ? qstrcmp(a1,a2) == 0 : a1.isEmpty(); }
-inline bool operator==(const char *a1, const QByteArray &a2)
+inline bool operator==(const char *a1, const QByteArray &a2) Q_DECL_NOTHROW
 { return a1 ? qstrcmp(a1,a2) == 0 : a2.isEmpty(); }
-inline bool operator!=(const QByteArray &a1, const QByteArray &a2)
+inline bool operator!=(const QByteArray &a1, const QByteArray &a2) Q_DECL_NOTHROW
 { return !(a1==a2); }
-inline bool operator!=(const QByteArray &a1, const char *a2)
+inline bool operator!=(const QByteArray &a1, const char *a2) Q_DECL_NOTHROW
 { return a2 ? qstrcmp(a1,a2) != 0 : !a1.isEmpty(); }
-inline bool operator!=(const char *a1, const QByteArray &a2)
+inline bool operator!=(const char *a1, const QByteArray &a2) Q_DECL_NOTHROW
 { return a1 ? qstrcmp(a1,a2) != 0 : !a2.isEmpty(); }
-inline bool operator<(const QByteArray &a1, const QByteArray &a2)
+inline bool operator<(const QByteArray &a1, const QByteArray &a2) Q_DECL_NOTHROW
 { return qstrcmp(a1, a2) < 0; }
- inline bool operator<(const QByteArray &a1, const char *a2)
+ inline bool operator<(const QByteArray &a1, const char *a2) Q_DECL_NOTHROW
 { return qstrcmp(a1, a2) < 0; }
-inline bool operator<(const char *a1, const QByteArray &a2)
+inline bool operator<(const char *a1, const QByteArray &a2) Q_DECL_NOTHROW
 { return qstrcmp(a1, a2) < 0; }
-inline bool operator<=(const QByteArray &a1, const QByteArray &a2)
+inline bool operator<=(const QByteArray &a1, const QByteArray &a2) Q_DECL_NOTHROW
 { return qstrcmp(a1, a2) <= 0; }
-inline bool operator<=(const QByteArray &a1, const char *a2)
+inline bool operator<=(const QByteArray &a1, const char *a2) Q_DECL_NOTHROW
 { return qstrcmp(a1, a2) <= 0; }
-inline bool operator<=(const char *a1, const QByteArray &a2)
+inline bool operator<=(const char *a1, const QByteArray &a2) Q_DECL_NOTHROW
 { return qstrcmp(a1, a2) <= 0; }
-inline bool operator>(const QByteArray &a1, const QByteArray &a2)
+inline bool operator>(const QByteArray &a1, const QByteArray &a2) Q_DECL_NOTHROW
 { return qstrcmp(a1, a2) > 0; }
-inline bool operator>(const QByteArray &a1, const char *a2)
+inline bool operator>(const QByteArray &a1, const char *a2) Q_DECL_NOTHROW
 { return qstrcmp(a1, a2) > 0; }
-inline bool operator>(const char *a1, const QByteArray &a2)
+inline bool operator>(const char *a1, const QByteArray &a2) Q_DECL_NOTHROW
 { return qstrcmp(a1, a2) > 0; }
-inline bool operator>=(const QByteArray &a1, const QByteArray &a2)
+inline bool operator>=(const QByteArray &a1, const QByteArray &a2) Q_DECL_NOTHROW
 { return qstrcmp(a1, a2) >= 0; }
-inline bool operator>=(const QByteArray &a1, const char *a2)
+inline bool operator>=(const QByteArray &a1, const char *a2) Q_DECL_NOTHROW
 { return qstrcmp(a1, a2) >= 0; }
-inline bool operator>=(const char *a1, const QByteArray &a2)
+inline bool operator>=(const char *a1, const QByteArray &a2) Q_DECL_NOTHROW
 { return qstrcmp(a1, a2) >= 0; }
 #if !defined(QT_USE_QSTRINGBUILDER)
 inline const QByteArray operator+(const QByteArray &a1, const QByteArray &a2)

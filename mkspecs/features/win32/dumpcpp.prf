@@ -1,5 +1,6 @@
 qtPrepareTool(QMAKE_DUMPCPP, dumpcpp)
 
+dumpcpp_decl.depends = $$QMAKE_DUMPCPP_EXE
 dumpcpp_decl.commands = $$QMAKE_DUMPCPP ${QMAKE_FILE_IN} -o ${QMAKE_FILE_BASE}
 qaxcontainer_compat: dumpcpp_decl.commands += -compat
 dumpcpp_decl.output = ${QMAKE_FILE_BASE}.h

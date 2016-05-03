@@ -15,6 +15,7 @@ QTCONF=$9
 shift 9
 LFLAGS="$SYSROOT_FLAG"
 INCLUDEPATH=""
+CFLAGS="$SYSROOT_FLAG"
 CXXFLAGS="$SYSROOT_FLAG"
 MAC_ARCH_CXXFLAGS=""
 MAC_ARCH_LFLAGS=""
@@ -31,12 +32,14 @@ while [ "$#" -gt 0 ]; do
         shift
         ;;
     -arch)
+        MAC_ARCH_CFLAGS="$MAC_ARCH_CFLAGS -arch $2"
         MAC_ARCH_CXXFLAGS="$MAC_ARCH_CXXFLAGS -arch $2"
         MAC_ARCH_LFLAGS="$MAC_ARCH_LFLAGS -arch $2"
         shift
         ;;
     -F*|-m*|-x*)
         LFLAGS="$LFLAGS \"$PARAM\""
+        CFLAGS="$CFLAGS \"$PARAM\""
         CXXFLAGS="$CXXFLAGS \"$PARAM\""
         ;;
     -L*|-l*|-pthread)
@@ -47,10 +50,12 @@ while [ "$#" -gt 0 ]; do
         INCLUDEPATH="$INCLUDEPATH \"$INC\""
         ;;
     -f*|-D*)
+        CFLAGS="$CFLAGS \"$PARAM\""
         CXXFLAGS="$CXXFLAGS \"$PARAM\""
         ;;
     -Qoption)
 	# Two-argument form for the Sun Compiler
+        CFLAGS="$CFLAGS $PARAM \"$2\""
 	CXXFLAGS="$CXXFLAGS $PARAM \"$2\""
 	shift
 	;;
@@ -72,7 +77,7 @@ test -r Makefile && $MAKE distclean >/dev/null 2>&1
 # Make sure output from possible previous tests is gone
 rm -f "$EXE" "${EXE}.exe"
 
-set -- "$QMAKE" -qtconf "$QTCONF" -nocache -spec "$QMKSPEC" "CONFIG+=$QMAKE_CONFIG" "CONFIG+=android_app" "CONFIG-=debug_and_release app_bundle lib_bundle" "LIBS+=$LFLAGS" "LIBS+=$MAC_ARCH_LFLAGS" "INCLUDEPATH*=$INCLUDEPATH" "QMAKE_CXXFLAGS*=$CXXFLAGS" "QMAKE_CXXFLAGS+=$MAC_ARCH_CXXFLAGS" $QMAKE_ARGS "$SRCDIR/$TEST/$EXE.pro" -o "$OUTDIR/$TEST/Makefile"
+set -- "$QMAKE" -qtconf "$QTCONF" -nocache -spec "$QMKSPEC" "CONFIG+=$QMAKE_CONFIG" "CONFIG+=android_app" "CONFIG-=debug_and_release app_bundle lib_bundle" "LIBS+=$LFLAGS" "LIBS+=$MAC_ARCH_LFLAGS" "INCLUDEPATH*=$INCLUDEPATH" "QMAKE_CFLAGS*=$CFLAGS" "QMAKE_CFLAGS+=$MAC_ARCH_CFLAGS" "QMAKE_CXXFLAGS*=$CXXFLAGS" "QMAKE_CXXFLAGS+=$MAC_ARCH_CXXFLAGS" $QMAKE_ARGS "$SRCDIR/$TEST/$EXE.pro" -o "$OUTDIR/$TEST/Makefile"
 if [ "$VERBOSE" = "yes" ]; then
     OUTDIR=$OUTDIR "$@" && $MAKE && SUCCESS=yes
 else

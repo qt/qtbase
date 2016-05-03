@@ -159,9 +159,8 @@ QSignalTransition::QSignalTransition(const QObject *sender, const char *signal,
 
   Constructs a new signal transition associated with the given \a signal of
   the given \a sender object and with the given \a sourceState.
-  This constructor is enabled if compiler supports delegating constructor.
-
-  \sa Q_COMPILER_DELEGATING_CONSTRUCTORS
+  This constructor is enabled if the compiler supports delegating constructors,
+  as indicated by the presence of the macro Q_COMPILER_DELEGATING_CONSTRUCTORS.
 */
 
 /*!

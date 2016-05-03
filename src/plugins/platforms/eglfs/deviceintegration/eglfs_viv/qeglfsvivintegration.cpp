@@ -41,6 +41,10 @@
 #include <EGL/eglvivante.h>
 #include <QDebug>
 
+#ifdef Q_OS_INTEGRITY
+extern "C" void VivanteInit(void);
+#endif
+
 QT_BEGIN_NAMESPACE
 
 void QEglFSVivIntegration::platformInit()
@@ -56,6 +60,10 @@ void QEglFSVivIntegration::platformInit()
                    << "If this is not desired, you can override this via: export QT_EGLFS_IMX6_NO_FB_MULTI_BUFFER=1";
         qputenv("FB_MULTI_BUFFER", "2");
     }
+
+#ifdef Q_OS_INTEGRITY
+    VivanteInit();
+#endif
 
     mNativeDisplay = fbGetDisplayByIndex(framebufferIndex());
     fbGetDisplayGeometry(mNativeDisplay, &width, &height);

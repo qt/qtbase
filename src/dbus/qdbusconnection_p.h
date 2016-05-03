@@ -259,6 +259,7 @@ private:
                      const QVector<int> &metaTypes, int slotIdx);
 
     SignalHookHash::Iterator removeSignalHookNoLock(SignalHookHash::Iterator it);
+    void disconnectObjectTree(ObjectTreeNode &node);
 
     bool isServiceRegisteredByThread(const QString &serviceName);
 

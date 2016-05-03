@@ -136,7 +136,7 @@ bool Moc::parseClassHead(ClassDef *def)
         } while (test(COMMA));
 
         if (!def->superclassList.isEmpty()
-            && knownGadgets.contains(def->superclassList.first().first)) {
+            && knownGadgets.contains(def->superclassList.constFirst().first)) {
             // Q_GADGET subclasses are treated as Q_GADGETs
             knownGadgets.insert(def->classname, def->qualified);
             knownGadgets.insert(def->qualified, def->qualified);
@@ -312,7 +312,7 @@ void Moc::parseFunctionArguments(FunctionDef *def)
     }
 
     if (!def->arguments.isEmpty()
-        && def->arguments.last().normalizedType == "QPrivateSignal") {
+        && def->arguments.constLast().normalizedType == "QPrivateSignal") {
         def->arguments.removeLast();
         def->isPrivateSignal = true;
     }
@@ -730,7 +730,7 @@ void Moc::parse()
                         if (funcDef.isConstructor) {
                             if ((access == FunctionDef::Public) && funcDef.isInvokable) {
                                 def.constructorList += funcDef;
-                                while (funcDef.arguments.size() > 0 && funcDef.arguments.last().isDefault) {
+                                while (funcDef.arguments.size() > 0 && funcDef.arguments.constLast().isDefault) {
                                     funcDef.wasCloned = true;
                                     funcDef.arguments.removeLast();
                                     def.constructorList += funcDef;
@@ -743,7 +743,7 @@ void Moc::parse()
                                 def.publicList += funcDef;
                             if (funcDef.isSlot) {
                                 def.slotList += funcDef;
-                                while (funcDef.arguments.size() > 0 && funcDef.arguments.last().isDefault) {
+                                while (funcDef.arguments.size() > 0 && funcDef.arguments.constLast().isDefault) {
                                     funcDef.wasCloned = true;
                                     funcDef.arguments.removeLast();
                                     def.slotList += funcDef;
@@ -752,7 +752,7 @@ void Moc::parse()
                                     ++def.revisionedMethods;
                             } else if (funcDef.isSignal) {
                                 def.signalList += funcDef;
-                                while (funcDef.arguments.size() > 0 && funcDef.arguments.last().isDefault) {
+                                while (funcDef.arguments.size() > 0 && funcDef.arguments.constLast().isDefault) {
                                     funcDef.wasCloned = true;
                                     funcDef.arguments.removeLast();
                                     def.signalList += funcDef;
@@ -761,7 +761,7 @@ void Moc::parse()
                                     ++def.revisionedMethods;
                             } else if (funcDef.isInvokable) {
                                 def.methodList += funcDef;
-                                while (funcDef.arguments.size() > 0 && funcDef.arguments.last().isDefault) {
+                                while (funcDef.arguments.size() > 0 && funcDef.arguments.constLast().isDefault) {
                                     funcDef.wasCloned = true;
                                     funcDef.arguments.removeLast();
                                     def.methodList += funcDef;
@@ -863,7 +863,7 @@ void Moc::generate(FILE *out)
 {
     QByteArray fn = filename;
     int i = filename.length()-1;
-    while (i>0 && filename[i-1] != '/' && filename[i-1] != '\\')
+    while (i > 0 && filename.at(i - 1) != '/' && filename.at(i - 1) != '\\')
         --i;                                // skip path
     if (i >= 0)
         fn = filename.mid(i);
@@ -879,7 +879,7 @@ void Moc::generate(FILE *out)
             includePath += '/';
         for (int i = 0; i < includeFiles.size(); ++i) {
             QByteArray inc = includeFiles.at(i);
-            if (inc[0] != '<' && inc[0] != '"') {
+            if (inc.at(0) != '<' && inc.at(0) != '"') {
                 if (includePath.size() && includePath != "./")
                     inc.prepend(includePath);
                 inc = '\"' + inc + '\"';
@@ -887,7 +887,7 @@ void Moc::generate(FILE *out)
             fprintf(out, "#include %s\n", inc.constData());
         }
     }
-    if (classList.size() && classList.first().classname == "Qt")
+    if (classList.size() && classList.constFirst().classname == "Qt")
         fprintf(out, "#include <QtCore/qobject.h>\n");
 
     fprintf(out, "#include <QtCore/qbytearray.h>\n"); // For QByteArrayData
@@ -965,7 +965,7 @@ void Moc::parseSlots(ClassDef *def, FunctionDef::Access access)
             ++def->revisionedMethods;
         }
         def->slotList += funcDef;
-        while (funcDef.arguments.size() > 0 && funcDef.arguments.last().isDefault) {
+        while (funcDef.arguments.size() > 0 && funcDef.arguments.constLast().isDefault) {
             funcDef.wasCloned = true;
             funcDef.arguments.removeLast();
             def->slotList += funcDef;
@@ -1021,7 +1021,7 @@ void Moc::parseSignals(ClassDef *def)
             ++def->revisionedMethods;
         }
         def->signalList += funcDef;
-        while (funcDef.arguments.size() > 0 && funcDef.arguments.last().isDefault) {
+        while (funcDef.arguments.size() > 0 && funcDef.arguments.constLast().isDefault) {
             funcDef.wasCloned = true;
             funcDef.arguments.removeLast();
             def->signalList += funcDef;
@@ -1059,7 +1059,7 @@ void Moc::createPropertyDef(PropertyDef &propDef)
     next();
     propDef.name = lexem();
     while (test(IDENTIFIER)) {
-        QByteArray l = lexem();
+        const QByteArray l = lexem();
         if (l[0] == 'C' && l == "CONSTANT") {
             propDef.constant = true;
             continue;
@@ -1395,7 +1395,7 @@ void Moc::parseSlotInPrivate(ClassDef *def, FunctionDef::Access access)
     funcDef.access = access;
     parseFunction(&funcDef, true);
     def->slotList += funcDef;
-    while (funcDef.arguments.size() > 0 && funcDef.arguments.last().isDefault) {
+    while (funcDef.arguments.size() > 0 && funcDef.arguments.constLast().isDefault) {
         funcDef.wasCloned = true;
         funcDef.arguments.removeLast();
         def->slotList += funcDef;
@@ -1539,7 +1539,7 @@ void Moc::checkSuperClasses(ClassDef *def)
         if (interface2IdMap.contains(superClass)) {
             bool registeredInterface = false;
             for (int i = 0; i < def->interfaceList.count(); ++i)
-                if (def->interfaceList.at(i).first().className == superClass) {
+                if (def->interfaceList.at(i).constFirst().className == superClass) {
                     registeredInterface = true;
                     break;
                 }

@@ -33,7 +33,18 @@ win32 {
     mac {
         equals(TEMPLATE, lib) {
             lib_bundle {
-                QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_TARGET}$${TARGET}.framework/$${TARGET}
+                !isEmpty(QMAKE_FRAMEWORK_BUNDLE_NAME): \
+                    framework_target = $$QMAKE_FRAMEWORK_BUNDLE_NAME
+                else: \
+                    framework_target = $$TARGET
+                QMAKE_RESOLVED_BUNDLE = $${QMAKE_RESOLVED_TARGET}$${framework_target}.framework
+                !shallow_bundle {
+                    TEMP_VERSION = $$section(VERSION, ., 0, 0)
+                    isEmpty(TEMP_VERSION):TEMP_VERSION = A
+                    QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_BUNDLE}/Versions/$${TEMP_VERSION}/$${TARGET}
+                } else {
+                    QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_BUNDLE}/$${TARGET}
+                }
             } else {
                 QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_TARGET}$${LIBPREFIX}$${TARGET}
                 !plugin {
@@ -46,7 +57,15 @@ win32 {
             }
         } else {
             app_bundle {
-                QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_TARGET}$${TARGET}.app/Contents/MacOS/$${TARGET}
+                !isEmpty(QMAKE_APPLICATION_BUNDLE_NAME): \
+                    app_target = $$QMAKE_APPLICATION_BUNDLE_NAME
+                else: \
+                    app_target = $$TARGET
+                QMAKE_RESOLVED_BUNDLE = $${QMAKE_RESOLVED_TARGET}$${app_target}.app
+                !shallow_bundle: \
+                    QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_BUNDLE}/Contents/MacOS/$${TARGET}
+                else: \
+                    QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_BUNDLE}/$${TARGET}
             } else {
                 QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_TARGET}$${TARGET}
             }

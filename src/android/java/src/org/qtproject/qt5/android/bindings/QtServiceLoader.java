@@ -42,7 +42,7 @@ import android.content.pm.PackageManager;
 public class QtServiceLoader extends QtLoader {
     QtService m_service;
     QtServiceLoader(QtService service) {
-        super(service);
+        super(service, QtService.class);
         m_service = service;
     }
 

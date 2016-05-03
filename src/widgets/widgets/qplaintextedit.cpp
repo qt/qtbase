@@ -667,6 +667,7 @@ void QPlainTextEditPrivate::setTopBlock(int blockNumber, int lineNumber, int dx)
 
         if (dx || dy) {
             viewport->scroll(q->isRightToLeft() ? -dx : dx, dy);
+            QGuiApplication::inputMethod()->update(Qt::ImCursorRectangle | Qt::ImAnchorRectangle);
         } else {
             viewport->update();
             topLineFracture = 0;
@@ -2199,8 +2200,26 @@ QVariant QPlainTextEdit::inputMethodQuery(Qt::InputMethodQuery query, QVariant a
     Q_D(const QPlainTextEdit);
     if (query == Qt::ImHints)
         return QWidget::inputMethodQuery(query);
-    const QVariant v = d->control->inputMethodQuery(query, argument);
+
     const QPointF offset = contentOffset();
+    switch (argument.type()) {
+    case QVariant::RectF:
+        argument = argument.toRectF().translated(-offset);
+        break;
+    case QVariant::PointF:
+        argument = argument.toPointF() - offset;
+        break;
+    case QVariant::Rect:
+        argument = argument.toRect().translated(-offset.toPoint());
+        break;
+    case QVariant::Point:
+        argument = argument.toPoint() - offset;
+        break;
+    default:
+        break;
+    }
+
+    const QVariant v = d->control->inputMethodQuery(query, argument);
     switch (v.type()) {
     case QVariant::RectF:
         return v.toRectF().translated(offset);

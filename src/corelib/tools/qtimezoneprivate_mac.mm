@@ -243,7 +243,7 @@ QTimeZonePrivate::Data QMacTimeZonePrivate::previousTransition(qint64 beforeMSec
         }
     }
     if (secsList.size() >= 1)
-        return data(qint64(secsList.last()) * 1000);
+        return data(qint64(secsList.constLast()) * 1000);
     else
         return invalidData();
 }

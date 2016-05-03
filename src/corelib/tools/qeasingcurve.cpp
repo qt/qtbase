@@ -444,7 +444,7 @@ struct BezierEase : public QEasingCurveFunction
 
     void init()
     {
-        if (_bezierCurves.last() == QPointF(1.0, 1.0)) {
+        if (_bezierCurves.constLast() == QPointF(1.0, 1.0)) {
             _init = true;
             _curveCount = _bezierCurves.count() / 3;
 

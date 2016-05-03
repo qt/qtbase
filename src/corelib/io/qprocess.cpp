@@ -2297,8 +2297,7 @@ void QProcess::start(const QString &command, OpenMode mode)
         return;
     }
 
-    QString prog = args.first();
-    args.removeFirst();
+    const QString prog = args.takeFirst();
 
     start(prog, args, mode);
 }
@@ -2540,8 +2539,7 @@ bool QProcess::startDetached(const QString &command)
     if (args.isEmpty())
         return false;
 
-    QString prog = args.first();
-    args.removeFirst();
+    const QString prog = args.takeFirst();
 
     return QProcessPrivate::startDetached(prog, args);
 }

@@ -9,5 +9,7 @@ ubuntu-14.04
 *
 [authenticationCacheAfterCancel:http+socksauth]
 rhel-7.1
+rhel-7.2
 [authenticationCacheAfterCancel:https+socksauth]
 rhel-7.1
+rhel-7.2

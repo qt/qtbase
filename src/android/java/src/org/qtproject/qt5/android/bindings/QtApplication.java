@@ -133,8 +133,11 @@ public class QtApplication extends Application
                     break;
                 }
         }
+        if (-1 == stackDeep)
+            return result;
+
         final String methodName=elements[stackDeep].getMethodName();
-        if (-1 == stackDeep || !m_delegateMethods.containsKey(methodName))
+        if (!m_delegateMethods.containsKey(methodName))
             return result;
 
         for (Method m : m_delegateMethods.get(methodName)) {

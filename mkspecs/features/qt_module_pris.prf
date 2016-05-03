@@ -104,6 +104,9 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         "QT.$${MODULE_ID}.DEFINES = $$val_escape(MODULE_DEFINES)" \
         "" \
         "QT_MODULES += $$MODULE"
+    winrt: MODULE_PRI_CONT += \
+        "QT.$${MODULE_ID}.winrt_capabilities =$$join(MODULE_WINRT_CAPABILITIES, " ", " ")" \
+        "QT.$${MODULE_ID}.winrt_capabilities_device =$$join(MODULE_WINRT_CAPABILITIES_DEVICE, " ", " ")"
     write_file($$MODULE_PRI, MODULE_PRI_CONT)|error("Aborting.")
     !internal_module:!no_private_module {
         module_build_type += internal_module
@@ -186,6 +189,7 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         for(var, $$list(VERSION MAJOR_VERSION MINOR_VERSION PATCH_VERSION \
                         name module depends run_depends plugin_types module_config CONFIG DEFINES \
                         priority includes bins libs frameworks libexecs plugins imports qml \
+                        winrt_capabilities winrt_capabilities_device \
                 )):defined(QT.$${mod}.$$var, var):cache(QT.$${mod}.$$var, transient)
     }
     cache(QT_MODULES, transient)

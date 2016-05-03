@@ -136,7 +136,7 @@ void QWaitConditionPrivate::post(QWaitConditionEvent *wce, bool ret)
 
     // wakeups delivered after the timeout should be forwarded to the next waiter
     if (!ret && wce->wokenUp && !queue.isEmpty()) {
-        QWaitConditionEvent *other = queue.first();
+        QWaitConditionEvent *other = queue.constFirst();
         SetEvent(other->event);
         other->wokenUp = true;
     }

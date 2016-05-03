@@ -1743,18 +1743,28 @@ void QLineEdit::inputMethodEvent(QInputMethodEvent *e)
 #endif
 }
 
+QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property) const
+{
+    return inputMethodQuery(property, QVariant());
+}
+
 /*!\reimp
 */
-QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property) const
+QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property, QVariant argument) const
 {
     Q_D(const QLineEdit);
     switch(property) {
     case Qt::ImCursorRectangle:
         return d->cursorRect();
+    case Qt::ImAnchorRectangle:
+        return d->adjustedControlRect(d->control->anchorRect());
     case Qt::ImFont:
         return font();
-    case Qt::ImCursorPosition:
-        return QVariant(d->control->cursor());
+    case Qt::ImCursorPosition: {
+        const QPointF pt = argument.toPointF();
+        if (!pt.isNull())
+            return QVariant(d->xToPos(pt.x(), QTextLine::CursorBetweenCharacters));
+        return QVariant(d->control->cursor()); }
     case Qt::ImSurroundingText:
         return QVariant(d->control->text());
     case Qt::ImCurrentSelection:

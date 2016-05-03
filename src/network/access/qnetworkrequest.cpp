@@ -146,11 +146,12 @@ QT_BEGIN_NAMESPACE
         Replies only, type: QMetaType::QUrl (no default)
         If present, it indicates that the server is redirecting the
         request to a different URL. The Network Access API does not by
-        default follow redirections: it's up to the application to
+        default follow redirections: the application can
         determine if the requested redirection should be allowed,
-        according to its security policies. However, if
-        QNetworkRequest::FollowRedirectsAttribute is set, then this attribute
-        will not be present in the reply.
+        according to its security policies, or it can set
+        QNetworkRequest::FollowRedirectsAttribute to true (in which case
+        the redirection will be followed and this attribute will not
+        be present in the reply).
         The returned URL might be relative. Use QUrl::resolved()
         to create an absolute URL out of it.
 
@@ -271,6 +272,7 @@ QT_BEGIN_NAMESPACE
         Indicates whether the Network Access API should automatically follow a
         HTTP redirect response or not. Currently redirects that are insecure,
         that is redirecting from "https" to "http" protocol, are not allowed.
+        (This value was introduced in 5.6.)
 
     \value User
         Special type. Additional information can be passed in

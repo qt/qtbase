@@ -74,6 +74,9 @@
 #else
 #undef DOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS
 #endif  // _WIN32
+#elif defined(__ghs)
+// Green Hills toolchain uses a 64bit wide floating point stack
+#define DOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS 1
 #else
 #error Target architecture was not detected as supported by Double-Conversion.
 #endif

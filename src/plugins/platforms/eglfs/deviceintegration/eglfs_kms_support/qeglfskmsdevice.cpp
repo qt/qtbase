@@ -2,6 +2,7 @@
 **
 ** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -309,7 +310,7 @@ QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, dr
     m_crtc_allocator |= (1 << output.crtc_id);
     m_connector_allocator |= (1 << output.connector_id);
 
-    return new QEglFSKmsScreen(m_integration, this, output, pos);
+    return createScreen(m_integration, this, output, pos);
 }
 
 drmModePropertyPtr QEglFSKmsDevice::connectorProperty(drmModeConnectorPtr connector, const QByteArray &name)
@@ -328,68 +329,17 @@ drmModePropertyPtr QEglFSKmsDevice::connectorProperty(drmModeConnectorPtr connec
     return Q_NULLPTR;
 }
 
-void QEglFSKmsDevice::pageFlipHandler(int fd, unsigned int sequence, unsigned int tv_sec, unsigned int tv_usec, void *user_data)
-{
-    Q_UNUSED(fd);
-    Q_UNUSED(sequence);
-    Q_UNUSED(tv_sec);
-    Q_UNUSED(tv_usec);
-
-    QEglFSKmsScreen *screen = static_cast<QEglFSKmsScreen *>(user_data);
-    screen->flipFinished();
-}
-
 QEglFSKmsDevice::QEglFSKmsDevice(QEglFSKmsIntegration *integration, const QString &path)
     : m_integration(integration)
     , m_path(path)
     , m_dri_fd(-1)
-    , m_gbm_device(Q_NULLPTR)
     , m_crtc_allocator(0)
     , m_connector_allocator(0)
-    , m_globalCursor(Q_NULLPTR)
 {
 }
 
-bool QEglFSKmsDevice::open()
+QEglFSKmsDevice::~QEglFSKmsDevice()
 {
-    Q_ASSERT(m_dri_fd == -1);
-    Q_ASSERT(m_gbm_device == Q_NULLPTR);
-
-    qCDebug(qLcEglfsKmsDebug) << "Opening device" << m_path;
-    m_dri_fd = qt_safe_open(m_path.toLocal8Bit().constData(), O_RDWR | O_CLOEXEC);
-    if (m_dri_fd == -1) {
-        qErrnoWarning("Could not open DRM device %s", qPrintable(m_path));
-        return false;
-    }
-
-    qCDebug(qLcEglfsKmsDebug) << "Creating GBM device for file descriptor" << m_dri_fd
-                              << "obtained from" << m_path;
-    m_gbm_device = gbm_create_device(m_dri_fd);
-    if (!m_gbm_device) {
-        qErrnoWarning("Could not create GBM device");
-        qt_safe_close(m_dri_fd);
-        m_dri_fd = -1;
-        return false;
-    }
-
-    return true;
-}
-
-void QEglFSKmsDevice::close()
-{
-    if (m_gbm_device) {
-        gbm_device_destroy(m_gbm_device);
-        m_gbm_device = Q_NULLPTR;
-    }
-
-    if (m_dri_fd != -1) {
-        qt_safe_close(m_dri_fd);
-        m_dri_fd = -1;
-    }
-
-    if (m_globalCursor)
-        m_globalCursor->deleteLater();
-    m_globalCursor = Q_NULLPTR;
 }
 
 void QEglFSKmsDevice::createScreens()
@@ -428,15 +378,7 @@ void QEglFSKmsDevice::createScreens()
     if (!m_integration->separateScreens()) {
         Q_FOREACH (QPlatformScreen *screen, siblings)
             static_cast<QEglFSKmsScreen *>(screen)->setVirtualSiblings(siblings);
-
-        if (primaryScreen)
-            m_globalCursor = new QEglFSKmsCursor(primaryScreen);
     }
-}
-
-gbm_device *QEglFSKmsDevice::device() const
-{
-    return m_gbm_device;
 }
 
 int QEglFSKmsDevice::fd() const
@@ -444,20 +386,19 @@ int QEglFSKmsDevice::fd() const
     return m_dri_fd;
 }
 
-QPlatformCursor *QEglFSKmsDevice::globalCursor() const
+QString QEglFSKmsDevice::devicePath() const
 {
-    return m_globalCursor;
+    return m_path;
 }
 
-void QEglFSKmsDevice::handleDrmEvent()
+QEglFSKmsScreen *QEglFSKmsDevice::createScreen(QEglFSKmsIntegration *integration, QEglFSKmsDevice *device, QEglFSKmsOutput output, QPoint position)
 {
-    drmEventContext drmEvent = {
-        DRM_EVENT_CONTEXT_VERSION,
-        Q_NULLPTR,      // vblank handler
-        pageFlipHandler // page flip handler
-    };
+    return new QEglFSKmsScreen(integration, device, output, position);
+}
 
-    drmHandleEvent(m_dri_fd, &drmEvent);
+void QEglFSKmsDevice::setFd(int fd)
+{
+    m_dri_fd = fd;
 }
 
 QT_END_NAMESPACE

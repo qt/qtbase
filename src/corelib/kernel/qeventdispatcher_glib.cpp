@@ -143,7 +143,7 @@ static gboolean timerSourceCheckHelper(GTimerSource *src)
         || (src->processEventsFlags & QEventLoop::X11ExcludeTimers))
         return false;
 
-    if (src->timerList.updateCurrentTime() < src->timerList.first()->timeout)
+    if (src->timerList.updateCurrentTime() < src->timerList.constFirst()->timeout)
         return false;
 
     return true;

@@ -419,6 +419,23 @@ static inline Qt::Key qKeyFromVirtual(VirtualKey key)
     }
 }
 
+// Some keys like modifiers, caps lock etc. should not be automatically repeated if the key is held down
+static inline bool shouldAutoRepeat(Qt::Key key)
+{
+    switch (key) {
+    case Qt::Key_Shift:
+    case Qt::Key_Control:
+    case Qt::Key_Alt:
+    case Qt::Key_Meta:
+    case Qt::Key_CapsLock:
+    case Qt::Key_NumLock:
+    case Qt::Key_ScrollLock:
+        return false;
+    default:
+        return true;
+    }
+}
+
 static inline Qt::Key qKeyFromCode(quint32 code, int mods)
 {
     if (code >= 'a' && code <= 'z')
@@ -873,11 +890,32 @@ HRESULT QWinRTScreen::onKeyDown(ABI::Windows::UI::Core::ICoreWindow *, ABI::Wind
     Q_ASSERT_SUCCEEDED(hr);
 
     Qt::Key key = qKeyFromVirtual(virtualKey);
-    // Defer character key presses to onCharacterReceived
-    if (key == Qt::Key_unknown || (key >= Qt::Key_Space && key <= Qt::Key_ydiaeresis)) {
+
+    const bool wasPressed =  d->activeKeys.contains(key);
+    if (wasPressed) {
+        if (!shouldAutoRepeat(key))
+            return S_OK;
+
+        // If the key was pressed before trigger a key release before the next key press
+        QWindowSystemInterface::handleExtendedKeyEvent(
+                    topWindow(),
+                    QEvent::KeyRelease,
+                    key,
+                    keyboardModifiers(),
+                    !status.ScanCode ? -1 : status.ScanCode,
+                    virtualKey,
+                    0,
+                    QString(),
+                    status.WasKeyDown,
+                    !status.RepeatCount ? 1 : status.RepeatCount,
+                    false);
+    } else {
         d->activeKeys.insert(key, KeyInfo(virtualKey));
-        return S_OK;
     }
+
+    // Defer character key presses to onCharacterReceived
+    if (key == Qt::Key_unknown || (key >= Qt::Key_Space && key <= Qt::Key_ydiaeresis))
+        return S_OK;
 
     QWindowSystemInterface::handleExtendedKeyEvent(
                 topWindow(),
@@ -888,7 +926,7 @@ HRESULT QWinRTScreen::onKeyDown(ABI::Windows::UI::Core::ICoreWindow *, ABI::Wind
                 virtualKey,
                 0,
                 QString(),
-                status.RepeatCount > 1,
+                status.WasKeyDown,
                 !status.RepeatCount ? 1 : status.RepeatCount,
                 false);
     return S_OK;
@@ -915,7 +953,7 @@ HRESULT QWinRTScreen::onKeyUp(ABI::Windows::UI::Core::ICoreWindow *, ABI::Window
                 virtualKey,
                 0,
                 info.text,
-                status.RepeatCount > 1,
+                false, // The final key release does not have autoRepeat set on Windows
                 !status.RepeatCount ? 1 : status.RepeatCount,
                 false);
     return S_OK;
@@ -948,7 +986,7 @@ HRESULT QWinRTScreen::onCharacterReceived(ICoreWindow *, ICharacterReceivedEvent
                 virtualKey,
                 0,
                 text,
-                status.RepeatCount > 1,
+                status.WasKeyDown,
                 !status.RepeatCount ? 1 : status.RepeatCount,
                 false);
     d->activeKeys.insert(key, KeyInfo(text, virtualKey));

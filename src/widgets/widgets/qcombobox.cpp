@@ -3352,6 +3352,14 @@ QVariant QComboBox::inputMethodQuery(Qt::InputMethodQuery query) const
     return QWidget::inputMethodQuery(query);
 }
 
+QVariant QComboBox::inputMethodQuery(Qt::InputMethodQuery query, const QVariant &argument) const
+{
+    Q_D(const QComboBox);
+    if (d->lineEdit)
+        return d->lineEdit->inputMethodQuery(query, argument);
+    return QWidget::inputMethodQuery(query);
+}
+
 /*!
     \fn void QComboBox::addItem(const QString &text, const QVariant &userData)
 

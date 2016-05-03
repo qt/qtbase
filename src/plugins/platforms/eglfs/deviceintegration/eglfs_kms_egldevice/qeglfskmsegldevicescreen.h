@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,56 +37,20 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSKMSCURSOR_H
-#define QEGLFSKMSCURSOR_H
+#ifndef QEGLFSKMSEGLDEVICESCREEN_H
+#define QEGLFSKMSEGLDEVICESCREEN_H
 
-#include <qpa/qplatformcursor.h>
-#include <QtCore/QList>
-#include <QtGui/QImage>
+#include <qeglfskmsscreen.h>
 
-#include <gbm.h>
-
-QT_BEGIN_NAMESPACE
-
-class QEglFSKmsScreen;
-
-class QEglFSKmsCursor : public QPlatformCursor
+class QEglFSKmsEglDeviceScreen : public QEglFSKmsScreen
 {
-    Q_OBJECT
-
 public:
-    QEglFSKmsCursor(QEglFSKmsScreen *screen);
-    ~QEglFSKmsCursor();
+    QEglFSKmsEglDeviceScreen(QEglFSKmsIntegration *integration,
+                             QEglFSKmsDevice *device,
+                             QEglFSKmsOutput output,
+                             QPoint position);
 
-    // input methods
-    void pointerEvent(const QMouseEvent & event) Q_DECL_OVERRIDE;
-#ifndef QT_NO_CURSOR
-    void changeCursor(QCursor * windowCursor, QWindow * window) Q_DECL_OVERRIDE;
-#endif
-    QPoint pos() const Q_DECL_OVERRIDE;
-    void setPos(const QPoint &pos) Q_DECL_OVERRIDE;
-
-private:
-    void initCursorAtlas();
-
-    QEglFSKmsScreen *m_screen;
-    QSize m_cursorSize;
-    gbm_bo *m_bo;
-    QPoint m_pos;
-    QPlatformCursorImage m_cursorImage;
-    bool m_visible;
-
-    // cursor atlas information
-    struct CursorAtlas {
-        CursorAtlas() : cursorsPerRow(0), cursorWidth(0), cursorHeight(0) { }
-        int cursorsPerRow;
-        int width, height; // width and height of the atlas
-        int cursorWidth, cursorHeight; // width and height of cursors inside the atlas
-        QList<QPoint> hotSpots;
-        QImage image;
-    } m_cursorAtlas;
+    void waitForFlip() Q_DECL_OVERRIDE;
 };
 
-QT_END_NAMESPACE
-
-#endif
+#endif // QEGLFSKMSEGLDEVICESCREEN_H

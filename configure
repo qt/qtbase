@@ -768,6 +768,7 @@ CFG_SANITIZE_UNDEFINED=no
 CFG_PCRE=auto
 CFG_STDCXX=auto
 CFG_DIRECTWRITE=no
+CFG_DIRECTWRITE2=auto
 CFG_WERROR=auto
 CFG_HEADERSCLEAN=auto
 CFG_QREAL=double
@@ -5463,6 +5464,18 @@ elif [ "$CFG_GSTREAMER" = "1.0" ]; then
     fi
 fi
 
+# Detect DirectWrite 2 support on Windows
+if [ "$CFG_DIRECTWRITE" = "no" ]; then
+    CFG_DIRECTWRITE2=no
+fi
+if [ "$CFG_DIRECTWRITE2" = "auto" ]; then
+    if compileTest win/directwrite2 "directwrite2"; then
+       CFG_DIRECTWRITE2=yes
+    else
+       CFG_DIRECTWRITE2=no
+    fi
+fi
+
 #-------------------------------------------------------------------------------
 # ask for all that hasn't been auto-detected or specified in the arguments
 #-------------------------------------------------------------------------------
@@ -5701,6 +5714,7 @@ fi
 [ "$CFG_XINPUT2" = "yes" ] && QT_CONFIG="$QT_CONFIG xinput2"
 [ "$CFG_SYSTEM_PROXIES" = "yes" ] && QT_CONFIG="$QT_CONFIG system-proxies"
 [ "$CFG_DIRECTWRITE" = "yes" ] && QT_CONFIG="$QT_CONFIG directwrite"
+[ "$CFG_DIRECTWRITE2" = "yes" ] && QT_CONFIG="$QT_CONFIG directwrite2"
 
 [ '!' -z "$DEFINES" ] && QMakeVar add EXTRA_DEFINES "$DEFINES"
 [ '!' -z "$INCLUDES" ] && QMakeVar add EXTRA_INCLUDEPATH "$INCLUDES"
