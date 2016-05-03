@@ -420,7 +420,7 @@ static void stackTrace()
    row of test data, so an unconditional call to QSKIP will produce one skip
    message in the test log for each row of test data.
 
-   If called from an _data function, the QSKIP() macro will stop execution of
+   If called from a _data function, the QSKIP() macro will stop execution of
    the _data function and will prevent execution of the associated test
    function.
 
