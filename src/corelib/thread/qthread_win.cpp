@@ -482,7 +482,6 @@ void QThread::start(Priority priority)
     d->returnCode = 0;
     d->interruptionRequested = false;
 
-#ifndef Q_OS_WINRT
     /*
       NOTE: we create the thread in the suspended state, set the
       priority and then resume the thread.
@@ -493,9 +492,21 @@ void QThread::start(Priority priority)
       less than NormalPriority), but the newly created thread preempts
       its 'parent' and runs at normal priority.
     */
+#if defined(Q_CC_MSVC) && !defined(_DLL) // && !defined(Q_OS_WINRT)
+#  ifdef Q_OS_WINRT
+    // If you wish to accept the memory leaks, uncomment the part above.
+    // See:
+    //  https://support.microsoft.com/en-us/kb/104641
+    //  https://msdn.microsoft.com/en-us/library/kdzttdcb.aspx
+#    error "Microsoft documentation says this combination leaks memory every time a thread is started. " \
+    "Please change your build back to -MD/-MDd or, if you understand this issue and want to continue, " \
+    "edit this source file."
+#  endif
+    // MSVC -MT or -MTd build
     d->handle = (Qt::HANDLE) _beginthreadex(NULL, d->stackSize, QThreadPrivate::start,
                                             this, CREATE_SUSPENDED, &(d->id));
-#else // !Q_OS_WINRT
+#else
+    // MSVC -MD or -MDd or MinGW build
     d->handle = (Qt::HANDLE) CreateThread(NULL, d->stackSize, (LPTHREAD_START_ROUTINE)QThreadPrivate::start,
                                             this, CREATE_SUSPENDED, reinterpret_cast<LPDWORD>(&d->id));
 #endif // Q_OS_WINRT
