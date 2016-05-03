@@ -147,6 +147,7 @@ private slots:
     void verify2();
     void tryVerify();
     void tryVerify2();
+    void verifyExplicitOperatorBool();
 };
 
 enum MyUnregisteredEnum { MyUnregisteredEnumValue1, MyUnregisteredEnumValue2 };
@@ -456,6 +457,22 @@ void tst_Cmptest::tryVerify2()
 {
     QTRY_VERIFY2(opaqueFunc() > 2, QByteArray::number(opaqueFunc()).constData());
     QTRY_VERIFY2_WITH_TIMEOUT(opaqueFunc() < 2, QByteArray::number(opaqueFunc()).constData(), 1);
+}
+
+void tst_Cmptest::verifyExplicitOperatorBool()
+{
+    struct ExplicitOperatorBool {
+        int m_i;
+        explicit ExplicitOperatorBool(int i) : m_i(i) {}
+        explicit operator bool() const { return m_i > 0; }
+        bool operator !() const { return !bool(*this); }
+    };
+
+    ExplicitOperatorBool val1(42);
+    QVERIFY(val1);
+
+    ExplicitOperatorBool val2(-273);
+    QVERIFY(!val2);
 }
 
 QTEST_MAIN(tst_Cmptest)

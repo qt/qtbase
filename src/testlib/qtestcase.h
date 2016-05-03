@@ -63,7 +63,7 @@ class QRegularExpression;
 
 #define QVERIFY(statement) \
 do {\
-    if (!QTest::qVerify((statement), #statement, "", __FILE__, __LINE__))\
+    if (!QTest::qVerify(static_cast<bool>(statement), #statement, "", __FILE__, __LINE__))\
         return;\
 } while (0)
 
