@@ -65,6 +65,9 @@
 #if defined(HAVE_XCTEST)
 #include <QtTest/private/qxctestlogger_p.h>
 #endif
+#if defined Q_OS_MACOS
+#include <QtTest/private/qtestutil_macos_p.h>
+#endif
 
 #include <numeric>
 #include <algorithm>
@@ -2915,6 +2918,9 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 #if defined(Q_OS_MACX)
     bool macNeedsActivate = qApp && (qstrcmp(qApp->metaObject()->className(), "QApplication") == 0);
     IOPMAssertionID powerID;
+
+    // Don't restore saved window state for auto tests.
+    QTestPrivate::disableWindowRestore();
 #endif
 #ifndef QT_NO_EXCEPTIONS
     try {

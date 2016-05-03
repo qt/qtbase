@@ -75,7 +75,12 @@ wince: LIBS += \
 
 mac {
     LIBS += -framework Security
-    osx: LIBS += -framework ApplicationServices -framework IOKit
+
+    macos {
+        HEADERS += qtestutil_macos_p.h
+        OBJECTIVE_SOURCES += qtestutil_macos.mm
+        LIBS += -framework Foundation -framework ApplicationServices -framework IOKit
+    }
 
     # XCTest support
     !lessThan(QMAKE_XCODE_VERSION, "6.0") {
