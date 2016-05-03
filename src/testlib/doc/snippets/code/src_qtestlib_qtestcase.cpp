@@ -241,17 +241,18 @@ QTest::qWaitForWindowShown(&widget);
 //! [24]
 
 //! [25]
+QTouchDevice *dev = QTest::createTouchDevice();
 QWidget widget;
 
-QTest::touchEvent(&widget)
+QTest::touchEvent(&widget, dev)
     .press(0, QPoint(10, 10));
-QTest::touchEvent(&widget)
+QTest::touchEvent(&widget, dev)
     .stationary(0)
     .press(1, QPoint(40, 10));
-QTest::touchEvent(&widget)
+QTest::touchEvent(&widget, dev)
     .move(0, QPoint(12, 12))
     .move(1, QPoint(45, 5));
-QTest::touchEvent(&widget)
+QTest::touchEvent(&widget, dev)
     .release(0, QPoint(12, 12))
     .release(1, QPoint(45, 5));
 //! [25]

@@ -1122,6 +1122,20 @@
 */
 
 /*!
+    \fn QTest::createTouchDevice()
+    \since 5.8
+
+    Creates a dummy touch device for simulation of touch events.
+
+    The touch device will be registered with the QPA window system interface,
+    and deleted automatically when the QCoreApplication is deleted. So you
+    should typically use createTouchDevice() to initialize a QTouchDevice
+    member variable in your test case class, and use the same instance for all tests.
+
+    \sa QTest::QTouchEventSequence
+*/
+
+/*!
     \class QTest::QTouchEventSequence
     \inmodule QtTest
     \since 4.6
