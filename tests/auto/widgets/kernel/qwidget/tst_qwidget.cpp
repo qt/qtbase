@@ -9455,10 +9455,6 @@ void tst_QWidget::taskQTBUG_7532_tabOrderWithFocusProxy()
 
 void tst_QWidget::movedAndResizedAttributes()
 {
-#if defined (Q_OS_OSX)
-    QEXPECT_FAIL("", "FixMe, QTBUG-8941 and QTBUG-8977", Abort);
-    QVERIFY(false);
-#else
     // Use Qt::Tool as fully decorated windows have a minimum width of 160 on
     QWidget w(0, Qt::Tool);
     w.show();
@@ -9504,7 +9500,6 @@ void tst_QWidget::movedAndResizedAttributes()
     w.resize(100, 100);
     QVERIFY(w.testAttribute(Qt::WA_Moved));
     QVERIFY(w.testAttribute(Qt::WA_Resized));
-#endif
 }
 
 void tst_QWidget::childAt()
