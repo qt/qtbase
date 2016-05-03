@@ -40,8 +40,6 @@ osx
 osx
 [render_systemClip]
 osx
-[childAt_unifiedToolBar]
-osx
 [showMinimizedKeepsFocus]
 osx-10.10
 [moveWindowInShowEvent:1]

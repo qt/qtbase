@@ -435,7 +435,6 @@ private slots:
     void movedAndResizedAttributes();
     void childAt();
 #ifdef Q_OS_OSX
-    void childAt_unifiedToolBar();
     void taskQTBUG_11373();
 #endif
     void taskQTBUG_17333_ResizeInfiniteRecursion();
@@ -9577,49 +9576,10 @@ void tst_QWidget::childAt()
 }
 
 #ifdef Q_OS_OSX
-void tst_QWidget::childAt_unifiedToolBar()
-{
-    QLabel *label = new QLabel(QLatin1String("foo"));
-    QToolBar *toolBar = new QToolBar;
-    toolBar->addWidget(new QLabel("dummy"));
-    toolBar->addWidget(label);
-
-    QMainWindow mainWindow;
-    mainWindow.addToolBar(toolBar);
-    mainWindow.show();
-
-    // Calculate the top-left corner of the tool bar and the label (in mainWindow's coordinates).
-    QPoint labelTopLeft = label->mapTo(&mainWindow, QPoint());
-    QPoint toolBarTopLeft = toolBar->mapTo(&mainWindow, QPoint());
-
-    QCOMPARE(mainWindow.childAt(toolBarTopLeft), static_cast<QWidget *>(toolBar));
-    QCOMPARE(mainWindow.childAt(labelTopLeft), static_cast<QWidget *>(label));
-
-    // Enable unified tool bars.
-    mainWindow.setUnifiedTitleAndToolBarOnMac(true);
-    QTest::qWait(50);
-
-    // The tool bar is now in the "non-client" area of QMainWindow, i.e.
-    // outside the mainWindow's rect(), and since mapTo et al. doesn't work
-    // in that case (see commit 35667fd45ada49269a5987c235fdedfc43e92bb8),
-    // we use mapToGlobal/mapFromGlobal to re-calculate the corners.
-    QPoint oldToolBarTopLeft = toolBarTopLeft;
-    toolBarTopLeft = mainWindow.mapFromGlobal(toolBar->mapToGlobal(QPoint()));
-    QVERIFY2(toolBarTopLeft != oldToolBarTopLeft,
-             msgComparisonFailed(toolBarTopLeft, "!=", oldToolBarTopLeft));
-    QVERIFY2(toolBarTopLeft.y() < 0,
-             msgComparisonFailed(toolBarTopLeft.y(), "<", 0));
-    labelTopLeft = mainWindow.mapFromGlobal(label->mapToGlobal(QPoint()));
-
-    QCOMPARE(mainWindow.childAt(toolBarTopLeft), static_cast<QWidget *>(toolBar));
-    QCOMPARE(mainWindow.childAt(labelTopLeft), static_cast<QWidget *>(label));
-}
 
 void tst_QWidget::taskQTBUG_11373()
 {
-#ifdef Q_OS_OSX
     QSKIP("QTBUG-52974");
-#endif
 
     QScopedPointer<QMainWindow> myWindow(new QMainWindow);
     QWidget * center = new QWidget();
@@ -9636,6 +9596,7 @@ void tst_QWidget::taskQTBUG_11373()
     // The drawer should still not be visible, since we haven't shown it.
     QCOMPARE(drawer->isVisible(), false);
 }
+
 #endif
 
 void tst_QWidget::taskQTBUG_17333_ResizeInfiniteRecursion()
