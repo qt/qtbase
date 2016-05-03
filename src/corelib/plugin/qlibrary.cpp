@@ -312,7 +312,7 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
     }
 
     if (!ret && lib)
-        lib->errorString = QLibrary::tr("Plugin verification data mismatch in '%1'").arg(library);
+        lib->errorString = QLibrary::tr("Failed to extract plugin meta data from '%1'").arg(library);
     file.close();
     return ret;
 }
