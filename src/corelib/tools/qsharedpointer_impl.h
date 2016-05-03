@@ -822,6 +822,54 @@ bool operator!=(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2) Q_DE
     return ptr2 != ptr1;
 }
 
+template<class T>
+inline bool operator==(const QSharedPointer<T> &lhs, std::nullptr_t) Q_DECL_NOTHROW
+{
+    return lhs.isNull();
+}
+
+template<class T>
+inline bool operator!=(const QSharedPointer<T> &lhs, std::nullptr_t) Q_DECL_NOTHROW
+{
+    return !lhs.isNull();
+}
+
+template<class T>
+inline bool operator==(std::nullptr_t, const QSharedPointer<T> &rhs) Q_DECL_NOTHROW
+{
+    return rhs.isNull();
+}
+
+template<class T>
+inline bool operator!=(std::nullptr_t, const QSharedPointer<T> &rhs) Q_DECL_NOTHROW
+{
+    return !rhs.isNull();
+}
+
+template<class T>
+inline bool operator==(const QWeakPointer<T> &lhs, std::nullptr_t) Q_DECL_NOTHROW
+{
+    return lhs.isNull();
+}
+
+template<class T>
+inline bool operator!=(const QWeakPointer<T> &lhs, std::nullptr_t) Q_DECL_NOTHROW
+{
+    return !lhs.isNull();
+}
+
+template<class T>
+inline bool operator==(std::nullptr_t, const QWeakPointer<T> &rhs) Q_DECL_NOTHROW
+{
+    return rhs.isNull();
+}
+
+template<class T>
+inline bool operator!=(std::nullptr_t, const QWeakPointer<T> &rhs) Q_DECL_NOTHROW
+{
+    return !rhs.isNull();
+}
+
 //
 // operator-
 //

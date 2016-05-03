@@ -149,6 +149,14 @@ template<class T, class X> bool operator==(const QWeakPointer<T> &ptr1, const QS
 template<class T, class X> bool operator!=(const QWeakPointer<T> &ptr1, const QSharedPointer<X> &ptr2);
 template<class T, class X> bool operator==(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2);
 template<class T, class X> bool operator!=(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2);
+template<class T> bool operator==(const QSharedPointer<T> &lhs, std::nullptr_t);
+template<class T> bool operator!=(const QSharedPointer<T> &lhs, std::nullptr_t);
+template<class T> bool operator==(std::nullptr_t, const QSharedPointer<T> &rhs);
+template<class T> bool operator!=(std::nullptr_t, const QSharedPointer<T> &rhs);
+template<class T> bool operator==(const QWeakPointer<T> &lhs, std::nullptr_t);
+template<class T> bool operator!=(const QWeakPointer<T> &lhs, std::nullptr_t);
+template<class T> bool operator==(std::nullptr_t, const QWeakPointer<T> &rhs);
+template<class T> bool operator!=(std::nullptr_t, const QWeakPointer<T> &rhs);
 
 template <class X, class T> QSharedPointer<X> qSharedPointerCast(const QSharedPointer<T> &other);
 template <class X, class T> QSharedPointer<X> qSharedPointerCast(const QWeakPointer<T> &other);

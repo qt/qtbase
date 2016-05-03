@@ -371,12 +371,22 @@ void tst_QSharedPointer::nullptrOps()
     QSharedPointer<char> null;
 
     QVERIFY(p1 == null);
-    QVERIFY(p2 == null);
+    QVERIFY(p1 == nullptr);
+    QVERIFY(nullptr == p1);
+    QVERIFY(!p1);
     QVERIFY(!p1.data());
+    QVERIFY(p2 == null);
+    QVERIFY(p2 == nullptr);
+    QVERIFY(nullptr == p2);
+    QVERIFY(!p2);
     QVERIFY(!p2.data());
+    QVERIFY(p1 == p2);
 
     QSharedPointer<char> p3 = p1;
+    QVERIFY(p3 == p1);
     QVERIFY(p3 == null);
+    QVERIFY(p3 == nullptr);
+    QVERIFY(nullptr == p3);
     QVERIFY(!p3.data());
 
     p3 = nullptr;
@@ -386,6 +396,16 @@ void tst_QSharedPointer::nullptrOps()
     QSharedPointer<char> p2_zero = 0;
 
     p3 = 0;
+
+    QSharedPointer<char> p4(new char);
+    QVERIFY(p4);
+    QVERIFY(p4.data());
+    QVERIFY(p4 != nullptr);
+    QVERIFY(nullptr != p4);
+    QVERIFY(p4 != p1);
+    QVERIFY(p4 != p2);
+    QVERIFY(p4 != null);
+    QVERIFY(p4 != p3);
 }
 
 void tst_QSharedPointer::swap()

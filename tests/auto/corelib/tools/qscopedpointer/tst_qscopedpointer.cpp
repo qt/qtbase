@@ -278,12 +278,16 @@ void tst_QScopedPointer::isNull()
     {
         QScopedPointer<int> p;
         QVERIFY(p.isNull());
+        QVERIFY(p == nullptr);
+        QVERIFY(nullptr == p);
     }
 
     /* Invoke on a set value. */
     {
         QScopedPointer<int> p(new int(69));
         QVERIFY(!p.isNull());
+        QVERIFY(p != nullptr);
+        QVERIFY(nullptr != p);
     }
 }
 

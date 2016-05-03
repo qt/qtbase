@@ -1148,6 +1148,90 @@
 */
 
 /*!
+    \fn bool operator==(const QSharedPointer<T> &lhs, std::nullptr_t)
+    \relates QSharedPointer
+    \since 5.8
+
+    Returns \c true if the pointer referenced by \a lhs is a null pointer.
+
+    \sa QSharedPointer::isNull()
+*/
+
+/*!
+    \fn bool operator==(std::nullptr_t, const QSharedPointer<T> &rhs)
+    \relates QSharedPointer
+    \since 5.8
+
+    Returns \c true if the pointer referenced by \a rhs is a null pointer.
+
+    \sa QSharedPointer::isNull()
+*/
+
+/*!
+    \fn bool operator!=(const QSharedPointer<T> &lhs, std::nullptr_t)
+    \relates QSharedPointer
+    \since 5.8
+
+    Returns \c true if the pointer referenced by \a lhs is a valid (i.e.
+    non-null) pointer.
+
+    \sa QSharedPointer::isNull()
+*/
+
+/*!
+    \fn bool operator!=(std::nullptr_t, const QSharedPointer<T> &rhs)
+    \relates QSharedPointer
+    \since 5.8
+
+    Returns \c true if the pointer referenced by \a rhs is a valid (i.e.
+    non-null) pointer.
+
+    \sa QSharedPointer::isNull()
+*/
+
+/*!
+    \fn bool operator==(const QWeakPointer<T> &lhs, std::nullptr_t)
+    \relates QWeakPointer
+    \since 5.8
+
+    Returns \c true if the pointer referenced by \a lhs is a null pointer.
+
+    \sa QWeakPointer::isNull()
+*/
+
+/*!
+    \fn bool operator==(std::nullptr_t, const QWeakPointer<T> &rhs)
+    \relates QWeakPointer
+    \since 5.8
+
+    Returns \c true if the pointer referenced by \a rhs is a null pointer.
+
+    \sa QWeakPointer::isNull()
+*/
+
+/*!
+    \fn bool operator!=(const QWeakPointer<T> &lhs, std::nullptr_t)
+    \relates QWeakPointer
+    \since 5.8
+
+    Returns \c true if the pointer referenced by \a lhs is a valid (i.e.
+    non-null) pointer.
+
+    \sa QWeakPointer::isNull()
+*/
+
+/*!
+    \fn bool operator!=(std::nullptr_t, const QWeakPointer<T> &rhs)
+    \relates QWeakPointer
+    \since 5.8
+
+    Returns \c true if the pointer referenced by \a rhs is a valid (i.e.
+    non-null) pointer.
+
+    \sa QWeakPointer::isNull()
+*/
+
+/*!
     \fn bool operator!=(const QWeakPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
     \relates QWeakPointer
 

@@ -188,6 +188,30 @@ inline bool operator!=(const QScopedPointer<T, Cleanup> &lhs, const QScopedPoint
 }
 
 template <class T, class Cleanup>
+inline bool operator==(const QScopedPointer<T, Cleanup> &lhs, std::nullptr_t) Q_DECL_NOTHROW
+{
+    return lhs.isNull();
+}
+
+template <class T, class Cleanup>
+inline bool operator==(std::nullptr_t, const QScopedPointer<T, Cleanup> &rhs) Q_DECL_NOTHROW
+{
+    return rhs.isNull();
+}
+
+template <class T, class Cleanup>
+inline bool operator!=(const QScopedPointer<T, Cleanup> &lhs, std::nullptr_t) Q_DECL_NOTHROW
+{
+    return !lhs.isNull();
+}
+
+template <class T, class Cleanup>
+inline bool operator!=(std::nullptr_t, const QScopedPointer<T, Cleanup> &rhs) Q_DECL_NOTHROW
+{
+    return !rhs.isNull();
+}
+
+template <class T, class Cleanup>
 inline void swap(QScopedPointer<T, Cleanup> &p1, QScopedPointer<T, Cleanup> &p2) Q_DECL_NOTHROW
 { p1.swap(p2); }
 
