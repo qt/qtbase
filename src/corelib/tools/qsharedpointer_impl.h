@@ -305,12 +305,12 @@ public:
     typedef const value_type &const_reference;
     typedef qptrdiff difference_type;
 
-    inline T *data() const { return value; }
-    inline bool isNull() const { return !data(); }
-    inline operator RestrictedBool() const { return isNull() ? Q_NULLPTR : &QSharedPointer::value; }
-    inline bool operator !() const { return isNull(); }
-    inline T &operator*() const { return *data(); }
-    inline T *operator->() const { return data(); }
+    T *data() const Q_DECL_NOTHROW { return value; }
+    bool isNull() const Q_DECL_NOTHROW { return !data(); }
+    operator RestrictedBool() const Q_DECL_NOTHROW { return isNull() ? Q_NULLPTR : &QSharedPointer::value; }
+    bool operator !() const Q_DECL_NOTHROW { return isNull(); }
+    T &operator*() const { return *data(); }
+    T *operator->() const Q_DECL_NOTHROW { return data(); }
 
     Q_DECL_CONSTEXPR QSharedPointer() Q_DECL_NOTHROW : value(nullptr), d(nullptr) { }
     ~QSharedPointer() { deref(); }
@@ -369,7 +369,7 @@ public:
 #endif
 
     template <class X>
-    inline QSharedPointer(const QSharedPointer<X> &other) : value(other.value), d(other.d)
+    QSharedPointer(const QSharedPointer<X> &other) Q_DECL_NOTHROW : value(other.value), d(other.d)
     { if (d) ref(); }
 
     template <class X>
@@ -604,10 +604,10 @@ public:
     typedef const value_type &const_reference;
     typedef qptrdiff difference_type;
 
-    inline bool isNull() const { return d == Q_NULLPTR || d->strongref.load() == 0 || value == Q_NULLPTR; }
-    inline operator RestrictedBool() const { return isNull() ? Q_NULLPTR : &QWeakPointer::value; }
-    inline bool operator !() const { return isNull(); }
-    inline T *data() const { return d == Q_NULLPTR || d->strongref.load() == 0 ? Q_NULLPTR : value; }
+    bool isNull() const Q_DECL_NOTHROW { return d == Q_NULLPTR || d->strongref.load() == 0 || value == Q_NULLPTR; }
+    operator RestrictedBool() const Q_DECL_NOTHROW { return isNull() ? Q_NULLPTR : &QWeakPointer::value; }
+    bool operator !() const Q_DECL_NOTHROW { return isNull(); }
+    T *data() const Q_DECL_NOTHROW { return d == Q_NULLPTR || d->strongref.load() == 0 ? Q_NULLPTR : value; }
 
     inline QWeakPointer() Q_DECL_NOTHROW : d(Q_NULLPTR), value(Q_NULLPTR) { }
     inline ~QWeakPointer() { if (d && !d->weakref.deref()) delete d; }
@@ -674,11 +674,11 @@ public:
     }
 
     template <class X>
-    inline bool operator==(const QWeakPointer<X> &o) const
+    bool operator==(const QWeakPointer<X> &o) const Q_DECL_NOTHROW
     { return d == o.d && value == static_cast<const T *>(o.value); }
 
     template <class X>
-    inline bool operator!=(const QWeakPointer<X> &o) const
+    bool operator!=(const QWeakPointer<X> &o) const Q_DECL_NOTHROW
     { return !(*this == o); }
 
     template <class X>
@@ -694,11 +694,11 @@ public:
     }
 
     template <class X>
-    inline bool operator==(const QSharedPointer<X> &o) const
+    bool operator==(const QSharedPointer<X> &o) const Q_DECL_NOTHROW
     { return d == o.d; }
 
     template <class X>
-    inline bool operator!=(const QSharedPointer<X> &o) const
+    bool operator!=(const QSharedPointer<X> &o) const Q_DECL_NOTHROW
     { return !(*this == o); }
 
     inline void clear() { *this = QWeakPointer(); }
@@ -780,44 +780,44 @@ public:
 // operator== and operator!=
 //
 template <class T, class X>
-bool operator==(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
+bool operator==(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2) Q_DECL_NOTHROW
 {
     return ptr1.data() == ptr2.data();
 }
 template <class T, class X>
-bool operator!=(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
+bool operator!=(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2) Q_DECL_NOTHROW
 {
     return ptr1.data() != ptr2.data();
 }
 
 template <class T, class X>
-bool operator==(const QSharedPointer<T> &ptr1, const X *ptr2)
+bool operator==(const QSharedPointer<T> &ptr1, const X *ptr2) Q_DECL_NOTHROW
 {
     return ptr1.data() == ptr2;
 }
 template <class T, class X>
-bool operator==(const T *ptr1, const QSharedPointer<X> &ptr2)
+bool operator==(const T *ptr1, const QSharedPointer<X> &ptr2) Q_DECL_NOTHROW
 {
     return ptr1 == ptr2.data();
 }
 template <class T, class X>
-bool operator!=(const QSharedPointer<T> &ptr1, const X *ptr2)
+bool operator!=(const QSharedPointer<T> &ptr1, const X *ptr2) Q_DECL_NOTHROW
 {
     return !(ptr1 == ptr2);
 }
 template <class T, class X>
-bool operator!=(const T *ptr1, const QSharedPointer<X> &ptr2)
+bool operator!=(const T *ptr1, const QSharedPointer<X> &ptr2) Q_DECL_NOTHROW
 {
     return !(ptr2 == ptr1);
 }
 
 template <class T, class X>
-bool operator==(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2)
+bool operator==(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2) Q_DECL_NOTHROW
 {
     return ptr2 == ptr1;
 }
 template <class T, class X>
-bool operator!=(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2)
+bool operator!=(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2) Q_DECL_NOTHROW
 {
     return ptr2 != ptr1;
 }
