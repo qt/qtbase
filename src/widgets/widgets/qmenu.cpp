@@ -70,22 +70,6 @@
 QT_BEGIN_NAMESPACE
 
 QMenu *QMenuPrivate::mouseDown = 0;
-QPointer<QMenu> QMenuPrivate::previousMouseMenu(Q_NULLPTR);
-static void handleEnterLeaveEvents(QPointer<QMenu> *previous_ptr, QMenu *next)
-{
-    QWidget *previous = previous_ptr->data();
-    if (previous != next) {
-        if (previous) {
-            QEvent leaveEvent(QEvent::Leave);
-            QApplication::sendEvent(previous, &leaveEvent);
-        }
-        if (next) {
-            QEvent enterEvent(QEvent::Enter);
-            QApplication::sendEvent(next, &enterEvent);
-        }
-    }
-    *previous_ptr = next;
-}
 
 /* QMenu code */
 // internal class used for the torn off popup
@@ -504,8 +488,6 @@ void QMenuPrivate::hideMenu(QMenu *menu)
     menu->d_func()->causedPopup.action = 0;
     menu->close();
     menu->d_func()->causedPopup.widget = 0;
-    if (previousMouseMenu.data() == menu)
-        handleEnterLeaveEvents(&previousMouseMenu, Q_NULLPTR);
 }
 
 void QMenuPrivate::popupAction(QAction *action, int delay, bool activateFirst)
@@ -671,10 +653,26 @@ void QMenuSloppyState::enter()
         m_parent->childEnter();
 }
 
+void QMenuSloppyState::childEnter()
+{
+    stopTimer();
+    if (m_parent)
+        m_parent->childEnter();
+}
+
+void QMenuSloppyState::leave()
+{
+    if (!m_dont_start_time_on_leave) {
+        if (m_parent)
+            m_parent->childLeave();
+        startTimerIfNotRunning();
+    }
+}
+
 void QMenuSloppyState::childLeave()
 {
     if (m_enabled && !QMenuPrivate::get(m_menu)->hasReceievedEnter) {
-        startTimer();
+        startTimerIfNotRunning();
         if (m_parent)
             m_parent->childLeave();
     }
@@ -720,8 +718,17 @@ public:
 void QMenuSloppyState::timeout()
 {
     QMenuPrivate *menu_priv = QMenuPrivate::get(m_menu);
+
+    bool reallyHasMouse = menu_priv->hasReceievedEnter;
+    if (!reallyHasMouse) {
+        // Check whether the menu really has a mouse, because only active popup
+        // menu gets the enter/leave events. Currently Cocoa is an exception.
+        const QPoint lastCursorPos = QGuiApplicationPrivate::lastCursorPosition.toPoint();
+        reallyHasMouse = m_menu->frameGeometry().contains(lastCursorPos);
+    }
+
     if (menu_priv->currentAction == m_reset_action
-            && menu_priv->hasReceievedEnter
+            && reallyHasMouse
             && (menu_priv->currentAction
                 && menu_priv->currentAction->menu() == menu_priv->activeMenu)) {
         return;
@@ -729,13 +736,13 @@ void QMenuSloppyState::timeout()
 
     ResetOnDestroy resetState(this, &m_init_guard);
 
-    if (hasParentActiveDelayTimer() || !m_menu || !m_menu->isVisible())
+    if (hasParentActiveDelayTimer() || !m_menu->isVisible())
         return;
 
     if (m_sub_menu)
         menu_priv->hideMenu(m_sub_menu);
 
-    if (menu_priv->hasReceievedEnter)
+    if (reallyHasMouse)
         menu_priv->setCurrentAction(m_reset_action,0);
     else
         menu_priv->setCurrentAction(Q_NULLPTR, 0);
@@ -1089,10 +1096,8 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
         tearoffHighlighted = 0;
     }
 
-    if (q->frameGeometry().contains(e->globalPos())) { //otherwise if the event is in our rect we want it..
-        handleEnterLeaveEvents(&previousMouseMenu, q);
-        return false;
-    }
+    if (q->frameGeometry().contains(e->globalPos()))
+        return false; //otherwise if the event is in our rect we want it..
 
     for(QWidget *caused = causedPopup.widget; caused;) {
         bool passOnEvent = false;
@@ -1108,17 +1113,16 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
             next_widget = m->d_func()->causedPopup.widget;
         }
         if (passOnEvent) {
-            handleEnterLeaveEvents(&previousMouseMenu,qobject_cast<QMenu *>(caused));
-            if(e->type() != QEvent::MouseButtonRelease || mouseDown == caused) {
-            QMouseEvent new_e(e->type(), cpos, caused->mapTo(caused->topLevelWidget(), cpos), e->screenPos(),
-                              e->button(), e->buttons(), e->modifiers(), e->source());
-            QApplication::sendEvent(caused, &new_e);
-            return true;
+            if (e->type() != QEvent::MouseButtonRelease || mouseDown == caused) {
+                QMouseEvent new_e(e->type(), cpos, caused->mapTo(caused->topLevelWidget(), cpos), e->screenPos(),
+                                  e->button(), e->buttons(), e->modifiers(), e->source());
+                QApplication::sendEvent(caused, &new_e);
+                return true;
             }
         }
         caused = next_widget;
         if (!caused)
-            handleEnterLeaveEvents(&previousMouseMenu, Q_NULLPTR);
+            sloppyState.leave(); // Start timers
     }
     return false;
 }
@@ -3169,7 +3173,6 @@ void QMenu::enterEvent(QEvent *)
     Q_D(QMenu);
     d->hasReceievedEnter = true;
     d->sloppyState.enter();
-    d->sloppyState.startTimer();
     d->motions = -1; // force us to ignore the generate mouse move in mouseMoveEvent()
 }
 
@@ -3180,7 +3183,6 @@ void QMenu::leaveEvent(QEvent *)
 {
     Q_D(QMenu);
     d->hasReceievedEnter = false;
-    d->sloppyState.leave();
     if (!d->activeMenu && d->currentAction)
         setActiveAction(0);
 }
@@ -3352,10 +3354,18 @@ void QMenu::internalDelayedPopup()
     const QRect actionRect(d->actionRect(d->currentAction));
     const QPoint rightPos(mapToGlobal(QPoint(actionRect.right() + subMenuOffset + 1, actionRect.top())));
 
-    QPoint pos(rightPos);
-
-    d->activeMenu->popup(pos);
+    d->activeMenu->popup(rightPos);
     d->sloppyState.setSubMenuPopup(actionRect, d->currentAction, d->activeMenu);
+
+#if !defined(Q_OS_DARWIN)
+    // Send the leave event to the current menu - only active popup menu gets
+    // mouse enter/leave events. Currently Cocoa is an exception, so disable
+    // it there to avoid event duplication.
+    if (underMouse()) {
+        QEvent leaveEvent(QEvent::Leave);
+        QCoreApplication::sendEvent(this, &leaveEvent);
+    }
+#endif
 }
 
 /*!
