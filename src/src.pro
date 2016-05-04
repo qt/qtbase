@@ -129,7 +129,12 @@ src_plugins.depends = src_sql src_xml src_network
 src_android.subdir = $$PWD/android
 
 # this order is important
-contains(QT_CONFIG, zlib)|cross_compile: SUBDIRS += src_qtzlib
+contains(QT_CONFIG, zlib)|cross_compile {
+    SUBDIRS += src_qtzlib
+    contains(QT_CONFIG, zlib) {
+        src_3rdparty_freetype.depends += src_corelib
+    }
+}
 SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc
 !contains(QT_DISABLED_FEATURES, regularexpression):pcre {
     SUBDIRS += src_3rdparty_pcre
