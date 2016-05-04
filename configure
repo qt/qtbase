@@ -5360,6 +5360,7 @@ if [ "$CFG_OPENGL" = "es2" ]; then
 fi
 
 # auto-detect FontConfig support
+ORIG_CFG_FREETYPE="$CFG_FREETYPE"
 if [ "$CFG_FONTCONFIG" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists fontconfig --exists freetype2 2>/dev/null; then
         QT_CFLAGS_FONTCONFIG=`$PKG_CONFIG --cflags fontconfig --cflags freetype2 2>/dev/null`
@@ -7404,6 +7405,15 @@ if [ "$CFG_SHARED" = "no" ]; then
     echo "WARNING: Using static linking will disable the use of dynamically"
     echo "loaded plugins. Make sure to import all needed static plugins,"
     echo "or compile needed modules into the library."
+fi
+if [ "$CFG_FREETYPE" = "system" ]; then
+    if [ "$ORIG_CFG_FREETYPE" = "qt" ]; then
+        echo
+        echo "WARNING: Bundled FreeType can't be used. FontConfig use requires system FreeType."
+    elif [ "$ORIG_CFG_FREETYPE" = "no" ]; then
+        echo
+        echo "WARNING: FreeType can't be disabled. FontConfig use requires system FreeType."
+    fi
 fi
 if [ "$CFG_OPENSSL" = "linked" ] && [ "$OPENSSL_LIBS" = "" ]; then
     echo
