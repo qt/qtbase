@@ -560,7 +560,7 @@ QFunctionPointer QWindowsEGLContext::getProcAddress(const char *procName)
     // return a function pointer for standard GLES2 functions too. These are not
     // guaranteed to be queryable via eglGetProcAddress().
     if (!procAddress) {
-#if defined(QT_STATIC)
+#if defined(QT_STATIC) && !defined(QT_OPENGL_DYNAMIC)
         static struct StdFunc {
             const char *name;
             void *func;
