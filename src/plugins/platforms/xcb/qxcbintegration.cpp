@@ -59,7 +59,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 
 #ifdef XCB_USE_EGL
-#include <QtPlatformSupport/private/qt_egl_p.h>
+#include <EGL/egl.h>
 #endif
 
 #ifdef XCB_USE_XLIB

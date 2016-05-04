@@ -34,8 +34,8 @@
 #ifndef QEGLFSHOOKS_H
 #define QEGLFSHOOKS_H
 
-#include "qeglfsglobal.h"
 #include "qeglfsdeviceintegration.h"
+#include "qeglfsglobal.h"
 
 QT_BEGIN_NAMESPACE
 

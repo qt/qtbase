@@ -35,7 +35,6 @@
 #define QEGLFSGLOBAL_H
 
 #include <qglobal.h>
-#include <QtPlatformSupport/private/qt_egl_p.h>
 
 #ifdef QT_BUILD_EGL_DEVICE_LIB
 #define Q_EGLFS_EXPORT Q_DECL_EXPORT

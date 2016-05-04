@@ -34,8 +34,9 @@
 #ifndef QEGLFSOFFSCREENWINDOW_H
 #define QEGLFSOFFSCREENWINDOW_H
 
-#include "qeglfsglobal.h"
+#include <EGL/egl.h>
 #include <qpa/qplatformoffscreensurface.h>
+#include "qeglfsglobal.h"
 
 QT_BEGIN_NAMESPACE
 

@@ -45,12 +45,13 @@
 // We mean it.
 //
 
-#include "qeglfsglobal.h"
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformscreen.h>
 #include <QtCore/QString>
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QImage>
+#include <EGL/egl.h>
+#include "qeglfsglobal.h"
 
 QT_BEGIN_NAMESPACE
 
