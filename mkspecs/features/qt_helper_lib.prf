@@ -13,6 +13,7 @@ load(qt_build_paths)
 
 TEMPLATE = lib
 CONFIG -= qt
+QT =  # In case qt is re-added.
 
 CONFIG -= warning_clean  # Don't presume 3rd party code to be clean
 load(qt_common)
