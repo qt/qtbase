@@ -2216,7 +2216,7 @@ QOpenGLTexture::QOpenGLTexture(Target target)
     OpenGL context.
 */
 QOpenGLTexture::QOpenGLTexture(const QImage& image, MipMapGeneration genMipMaps)
-    : d_ptr(new QOpenGLTexturePrivate(QOpenGLTexture::Target2D, this))
+    : QOpenGLTexture(QOpenGLTexture::Target2D)
 {
     setData(image, genMipMaps);
 }

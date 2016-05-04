@@ -326,12 +326,9 @@ QImageWriter::QImageWriter(QIODevice *device, const QByteArray &format)
     by inspecting the extension of \a fileName.
 */
 QImageWriter::QImageWriter(const QString &fileName, const QByteArray &format)
-    : d(new QImageWriterPrivate(this))
+    : QImageWriter(new QFile(fileName), format)
 {
-    QFile *file = new QFile(fileName);
-    d->device = file;
     d->deleteDevice = true;
-    d->format = format;
 }
 
 /*!

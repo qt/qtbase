@@ -125,12 +125,8 @@ QPixmap::QPixmap()
 */
 
 QPixmap::QPixmap(int w, int h)
-    : QPaintDevice()
+    : QPixmap(QSize(w, h))
 {
-    if (!qt_pixmap_thread_test())
-        doInit(0, 0, QPlatformPixmap::PixmapType);
-    else
-        doInit(w, h, QPlatformPixmap::PixmapType);
 }
 
 /*!
@@ -144,12 +140,8 @@ QPixmap::QPixmap(int w, int h)
 */
 
 QPixmap::QPixmap(const QSize &size)
-    : QPaintDevice()
+    : QPixmap(size, QPlatformPixmap::PixmapType)
 {
-    if (!qt_pixmap_thread_test())
-        doInit(0, 0, QPlatformPixmap::PixmapType);
-    else
-        doInit(size.width(), size.height(), QPlatformPixmap::PixmapType);
 }
 
 /*!

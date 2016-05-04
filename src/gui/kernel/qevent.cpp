@@ -289,7 +289,7 @@ QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, Qt::MouseButton but
 QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &screenPos,
                          Qt::MouseButton button, Qt::MouseButtons buttons,
                          Qt::KeyboardModifiers modifiers)
-    : QInputEvent(type, modifiers), l(localPos), w(localPos), s(screenPos), b(button), mouseState(buttons), caps(0)
+    : QMouseEvent(type, localPos, localPos, screenPos, button, buttons, modifiers)
 {}
 
 /*!
@@ -342,7 +342,7 @@ QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &wind
 QMouseEvent::QMouseEvent(QEvent::Type type, const QPointF &localPos, const QPointF &windowPos, const QPointF &screenPos,
                          Qt::MouseButton button, Qt::MouseButtons buttons,
                          Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source)
-    : QInputEvent(type, modifiers), l(localPos), w(windowPos), s(screenPos), b(button), mouseState(buttons), caps(0)
+    : QMouseEvent(type, localPos, windowPos, screenPos, button, buttons, modifiers)
 {
     QGuiApplicationPrivate::setMouseEventSource(this, source);
 }
@@ -829,9 +829,8 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta
 QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
             QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
             Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
-    : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), pixelD(pixelDelta),
-      angleD(angleDelta), qt4D(qt4Delta), qt4O(qt4Orientation), mouseState(buttons), ph(Qt::NoScrollPhase),
-      src(Qt::MouseEventNotSynthesized), invertedScrolling(false)
+    : QWheelEvent(pos, globalPos, pixelDelta, angleDelta, qt4Delta, qt4Orientation,
+                  buttons, modifiers, Qt::NoScrollPhase)
 {}
 
 /*!
@@ -860,9 +859,8 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
 QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
             QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
             Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase)
-    : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), pixelD(pixelDelta),
-      angleD(angleDelta), qt4D(qt4Delta), qt4O(qt4Orientation), mouseState(buttons), ph(phase),
-      src(Qt::MouseEventNotSynthesized), invertedScrolling(false)
+    : QWheelEvent(pos, globalPos, pixelDelta, angleDelta, qt4Delta, qt4Orientation,
+                  buttons, modifiers, phase, Qt::MouseEventNotSynthesized)
 {}
 
 /*!
@@ -896,9 +894,8 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
 QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
             QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
             Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase, Qt::MouseEventSource source)
-    : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), pixelD(pixelDelta),
-      angleD(angleDelta), qt4D(qt4Delta), qt4O(qt4Orientation), mouseState(buttons), ph(phase), src(source),
-      invertedScrolling(false)
+    : QWheelEvent(pos, globalPos, pixelDelta, angleDelta, qt4Delta, qt4Orientation,
+                  buttons, modifiers, phase, source, false)
 {}
 
 /*!
@@ -1767,7 +1764,7 @@ QIconDragEvent::~QIconDragEvent()
     coordinates.
 */
 QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos, const QPoint &globalPos)
-    : QInputEvent(ContextMenu), p(pos), gp(globalPos), reas(reason)
+    : QContextMenuEvent(reason, pos, globalPos, Qt::NoModifier)
 {}
 
 /*!
@@ -2450,19 +2447,8 @@ QTabletEvent::QTabletEvent(Type type, const QPointF &pos, const QPointF &globalP
                            int device, int pointerType,
                            qreal pressure, int xTilt, int yTilt, qreal tangentialPressure,
                            qreal rotation, int z, Qt::KeyboardModifiers keyState, qint64 uniqueID)
-    : QInputEvent(type, keyState),
-      mPos(pos),
-      mGPos(globalPos),
-      mDev(device),
-      mPointerType(pointerType),
-      mXT(xTilt),
-      mYT(yTilt),
-      mZ(z),
-      mPress(pressure),
-      mTangential(tangentialPressure),
-      mRot(rotation),
-      mUnique(uniqueID),
-      mExtra(new QTabletEventPrivate(Qt::NoButton, Qt::NoButton))
+    : QTabletEvent(type, pos, globalPos, device, pointerType, pressure, xTilt, yTilt,
+                   tangentialPressure, rotation, z, keyState, uniqueID, Qt::NoButton, Qt::NoButton)
 {
 }
 

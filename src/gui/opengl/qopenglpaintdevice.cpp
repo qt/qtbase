@@ -137,7 +137,7 @@ QOpenGLPaintDevice::QOpenGLPaintDevice(const QSize &size)
     \sa QOpenGLContext::currentContext()
 */
 QOpenGLPaintDevice::QOpenGLPaintDevice(int width, int height)
-    : d_ptr(new QOpenGLPaintDevicePrivate(QSize(width, height)))
+    : QOpenGLPaintDevice(QSize(width, height))
 {
 }
 

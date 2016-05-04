@@ -856,10 +856,8 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(const QSize &size, GLenum tar
     \sa size(), texture()
 */
 QOpenGLFramebufferObject::QOpenGLFramebufferObject(int width, int height, GLenum target)
-    : d_ptr(new QOpenGLFramebufferObjectPrivate)
+    : QOpenGLFramebufferObject(QSize(width, height), target)
 {
-    Q_D(QOpenGLFramebufferObject);
-    d->init(this, QSize(width, height), NoAttachment, target, effectiveInternalFormat(0));
 }
 
 /*! \overload
@@ -883,11 +881,8 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(const QSize &size, const QOpe
 */
 
 QOpenGLFramebufferObject::QOpenGLFramebufferObject(int width, int height, const QOpenGLFramebufferObjectFormat &format)
-    : d_ptr(new QOpenGLFramebufferObjectPrivate)
+    : QOpenGLFramebufferObject(QSize(width, height), format)
 {
-    Q_D(QOpenGLFramebufferObject);
-    d->init(this, QSize(width, height), format.attachment(), format.textureTarget(),
-            format.internalTextureFormat(), format.samples(), format.mipmap());
 }
 
 /*! \overload

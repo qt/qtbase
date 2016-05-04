@@ -458,13 +458,8 @@ QBrush::QBrush(const QImage &image)
 */
 
 QBrush::QBrush(Qt::BrushStyle style)
+    : QBrush(QColor(Qt::black), style)
 {
-    if (qbrush_check_type(style))
-        init(Qt::black, style);
-    else {
-        d.reset(nullBrushInstance());
-        d->ref.ref();
-    }
 }
 
 /*!
@@ -491,13 +486,8 @@ QBrush::QBrush(const QColor &color, Qt::BrushStyle style)
     \sa setColor(), setStyle()
 */
 QBrush::QBrush(Qt::GlobalColor color, Qt::BrushStyle style)
+    : QBrush(QColor(color), style)
 {
-    if (qbrush_check_type(style))
-        init(color, style);
-    else {
-        d.reset(nullBrushInstance());
-        d->ref.ref();
-    }
 }
 
 /*!
@@ -1673,13 +1663,8 @@ QLinearGradient::QLinearGradient(const QPointF &start, const QPointF &finalStop)
     \sa QGradient::setColorAt(), QGradient::setStops()
 */
 QLinearGradient::QLinearGradient(qreal xStart, qreal yStart, qreal xFinalStop, qreal yFinalStop)
+    : QLinearGradient(QPointF(xStart, yStart), QPointF(xFinalStop, yFinalStop))
 {
-    m_type = LinearGradient;
-    m_spread = PadSpread;
-    m_data.linear.x1 = xStart;
-    m_data.linear.y1 = yStart;
-    m_data.linear.x2 = xFinalStop;
-    m_data.linear.y2 = yFinalStop;
 }
 
 
@@ -1882,19 +1867,8 @@ QRadialGradient::QRadialGradient(const QPointF &center, qreal radius)
 */
 
 QRadialGradient::QRadialGradient(qreal cx, qreal cy, qreal radius, qreal fx, qreal fy)
+    : QRadialGradient(QPointF(cx, cy), radius, QPointF(fx, fy))
 {
-    m_type = RadialGradient;
-    m_spread = PadSpread;
-    m_data.radial.cx = cx;
-    m_data.radial.cy = cy;
-    m_data.radial.cradius = radius;
-
-    QPointF adapted_focal = qt_radial_gradient_adapt_focal_point(QPointF(cx, cy),
-                                                                 radius,
-                                                                 QPointF(fx, fy));
-
-    m_data.radial.fx = adapted_focal.x();
-    m_data.radial.fy = adapted_focal.y();
 }
 
 /*!
@@ -1904,14 +1878,8 @@ QRadialGradient::QRadialGradient(qreal cx, qreal cy, qreal radius, qreal fx, qre
     \sa QGradient::setColorAt(), QGradient::setStops()
  */
 QRadialGradient::QRadialGradient(qreal cx, qreal cy, qreal radius)
+    : QRadialGradient(QPointF(cx, cy), radius)
 {
-    m_type = RadialGradient;
-    m_spread = PadSpread;
-    m_data.radial.cx = cx;
-    m_data.radial.cy = cy;
-    m_data.radial.cradius = radius;
-    m_data.radial.fx = cx;
-    m_data.radial.fy = cy;
 }
 
 
@@ -2211,12 +2179,8 @@ QConicalGradient::QConicalGradient(const QPointF &center, qreal angle)
 */
 
 QConicalGradient::QConicalGradient(qreal cx, qreal cy, qreal angle)
+    : QConicalGradient(QPointF(cx, cy), angle)
 {
-    m_type = ConicalGradient;
-    m_spread = PadSpread;
-    m_data.conical.cx = cx;
-    m_data.conical.cy = cy;
-    m_data.conical.angle = angle;
 }
 
 

@@ -139,12 +139,9 @@ QTextDocumentWriter::QTextDocumentWriter(QIODevice *device, const QByteArray &fo
     format by inspecting the extension of \a fileName.
 */
 QTextDocumentWriter::QTextDocumentWriter(const QString &fileName, const QByteArray &format)
-    : d(new QTextDocumentWriterPrivate(this))
+    : QTextDocumentWriter(new QFile(fileName), format)
 {
-    QFile *file = new QFile(fileName);
-    d->device = file;
     d->deleteDevice = true;
-    d->format = format;
 }
 
 /*!

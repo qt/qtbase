@@ -767,9 +767,8 @@ QImage::QImage() Q_DECL_NOEXCEPT
     drawing onto it with QPainter.
 */
 QImage::QImage(int width, int height, Format format)
-    : QPaintDevice()
+    : QImage(QSize(width, height), format)
 {
-    d = QImageData::create(QSize(width, height), format);
 }
 
 /*!

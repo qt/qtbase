@@ -705,20 +705,16 @@ void QStandardItemModelPrivate::columnsRemoved(QStandardItem *parent,
     Constructs an item.
 */
 QStandardItem::QStandardItem()
-    : d_ptr(new QStandardItemPrivate)
+    : QStandardItem(*new QStandardItemPrivate)
 {
-    Q_D(QStandardItem);
-    d->q_ptr = this;
 }
 
 /*!
     Constructs an item with the given \a text.
 */
 QStandardItem::QStandardItem(const QString &text)
-    : d_ptr(new QStandardItemPrivate)
+    : QStandardItem(*new QStandardItemPrivate)
 {
-    Q_D(QStandardItem);
-    d->q_ptr = this;
     setText(text);
 }
 
@@ -726,22 +722,17 @@ QStandardItem::QStandardItem(const QString &text)
     Constructs an item with the given \a icon and \a text.
 */
 QStandardItem::QStandardItem(const QIcon &icon, const QString &text)
-    : d_ptr(new QStandardItemPrivate)
+    : QStandardItem(text)
 {
-    Q_D(QStandardItem);
-    d->q_ptr = this;
     setIcon(icon);
-    setText(text);
 }
 
 /*!
    Constructs an item with \a rows rows and \a columns columns of child items.
 */
 QStandardItem::QStandardItem(int rows, int columns)
-    : d_ptr(new QStandardItemPrivate)
+    : QStandardItem(*new QStandardItemPrivate)
 {
-    Q_D(QStandardItem);
-    d->q_ptr = this;
     setRowCount(rows);
     setColumnCount(columns);
 }
