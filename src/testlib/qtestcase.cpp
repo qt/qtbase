@@ -2548,8 +2548,13 @@ static void qInvokeTestMethods(QObject *testObject)
     invokeMethod(testObject, "initTestCase_data()");
 
     QScopedPointer<WatchDog> watchDog;
-    if (!debuggerPresent())
+    if (!debuggerPresent()
+#ifdef QTESTLIB_USE_VALGRIND
+        && QBenchmarkGlobalData::current->mode() != QBenchmarkGlobalData::CallgrindChildProcess
+#endif
+       ) {
         watchDog.reset(new WatchDog);
+    }
 
     if (!QTestResult::skipCurrentTest() && !QTest::currentTestFailed()) {
         invokeMethod(testObject, "initTestCase()");
