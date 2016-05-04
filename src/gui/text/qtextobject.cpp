@@ -412,9 +412,12 @@ QTextFrame::QTextFrame(QTextDocument *doc)
 {
 }
 
-// ### DOC: What does this do to child frames?
 /*!
-    Destroys the frame, and removes it from the document's layout.
+    Destroys the text frame.
+
+    \warning Text frames are owned by the document, so you should
+    never destroy them yourself. In order to remove a frame from
+    its document, remove its contents using a \c QTextCursor.
 */
 QTextFrame::~QTextFrame()
 {
