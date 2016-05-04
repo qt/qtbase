@@ -489,13 +489,6 @@ public:
     Q_ENUMS(EnumSourceClass::TestEnum)
 };
 
-#if defined(Q_MOC_RUN)
-// Task #119503
-#define _TASK_119503
-#if !_TASK_119503
-#endif
-#endif
-
 class CtorTestClass : public QObject
 {
     Q_OBJECT
