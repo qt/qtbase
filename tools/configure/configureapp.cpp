@@ -1674,6 +1674,7 @@ void Configure::applySpecSpecifics()
         dictionary["ANDROID_STYLE_ASSETS"]  = "yes";
         dictionary[ "STYLE_ANDROID" ]       = "yes";
         dictionary[ "POLL" ]                = "poll";
+        dictionary[ "ZLIB" ]                = "system";
     }
 }
 
