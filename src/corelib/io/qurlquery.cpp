@@ -43,6 +43,8 @@
 #include <QtCore/qhashfunctions.h>
 #include <QtCore/qstringlist.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -754,14 +756,12 @@ void QUrlQuery::removeQueryItem(const QString &key)
 void QUrlQuery::removeAllQueryItems(const QString &key)
 {
     if (d.constData()) {
-        QString encodedKey = d->recodeFromUser(key);
-        Map::iterator it = d->itemList.begin();
-        while (it != d->itemList.end()) {
-            if (it->first == encodedKey)
-                it = d->itemList.erase(it);
-            else
-                ++it;
-        }
+        const QString encodedKey = d->recodeFromUser(key);
+        auto firstEqualsEncodedKey = [&encodedKey](const QPair<QString, QString> &item) {
+            return item.first == encodedKey;
+        };
+        const auto end = d->itemList.end();
+        d->itemList.erase(std::remove_if(d->itemList.begin(), end, firstEqualsEncodedKey), end);
     }
 }
 
