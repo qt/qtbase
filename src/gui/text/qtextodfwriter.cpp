@@ -295,7 +295,7 @@ void QTextOdfWriter::writeBlock(QXmlStreamWriter &writer, const QTextBlock &bloc
         writer.writeStartElement(textNS, QString::fromLatin1("span"));
 
         QString fragmentText = frag.fragment().text();
-        if (fragmentText.length() == 1 && fragmentText[0] == 0xFFFC) { // its an inline character.
+        if (fragmentText.length() == 1 && fragmentText[0] == QChar(0xFFFC)) { // its an inline character.
             writeInlineCharacter(writer, frag.fragment());
             writer.writeEndElement(); // span
             continue;
@@ -510,7 +510,7 @@ void QTextOdfWriter::writeBlockFormat(QXmlStreamWriter &writer, QTextBlockFormat
             case QTextOption::CenterTab: type = QString::fromLatin1("center"); break;
             }
             writer.writeAttribute(styleNS, QString::fromLatin1("type"), type);
-            if (iterator->delimiter != 0)
+            if (!iterator->delimiter.isNull())
                 writer.writeAttribute(styleNS, QString::fromLatin1("char"), iterator->delimiter);
             ++iterator;
         }

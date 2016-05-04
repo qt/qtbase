@@ -150,7 +150,7 @@ static void doShapingTests()
         }
     } else {
         // decomposed shaping
-        if (string.at(0) == 0x1fc1 || string.at(0) == 0x1fed)
+        if (string.at(0) == QChar(0x1fc1) || string.at(0) == QChar(0x1fed))
             return;
         if (string.normalized(QString::NormalizationForm_D).normalized(QString::NormalizationForm_C) != string)
             return;
