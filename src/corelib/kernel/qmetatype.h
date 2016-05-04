@@ -1855,6 +1855,7 @@ inline int qRegisterMetaTypeStreamOperators()
     } QT_END_NAMESPACE                                                  \
     /**/
 
+#ifndef Q_MOC_RUN
 #define Q_DECLARE_METATYPE(TYPE) Q_DECLARE_METATYPE_IMPL(TYPE)
 #define Q_DECLARE_METATYPE_IMPL(TYPE)                                   \
     QT_BEGIN_NAMESPACE                                                  \
@@ -1874,7 +1875,7 @@ inline int qRegisterMetaTypeStreamOperators()
             }                                                           \
     };                                                                  \
     QT_END_NAMESPACE
-
+#endif // Q_MOC_RUN
 
 #define Q_DECLARE_BUILTIN_METATYPE(TYPE, METATYPEID, NAME) \
     QT_BEGIN_NAMESPACE \

@@ -163,8 +163,10 @@ private:
     Int i;
 };
 
+#ifndef Q_MOC_RUN
 #define Q_DECLARE_FLAGS(Flags, Enum)\
 typedef QFlags<Enum> Flags;
+#endif
 
 #define Q_DECLARE_INCOMPATIBLE_FLAGS(Flags) \
 Q_DECL_CONSTEXPR inline QIncompatibleFlag operator|(Flags::enum_type f1, int f2) Q_DECL_NOTHROW \
@@ -179,8 +181,11 @@ Q_DECL_CONSTEXPR inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, 
 
 #else /* Q_NO_TYPESAFE_FLAGS */
 
+#ifndef Q_MOC_RUN
 #define Q_DECLARE_FLAGS(Flags, Enum)\
 typedef uint Flags;
+#endif
+
 #define Q_DECLARE_OPERATORS_FOR_FLAGS(Flags)
 
 #endif /* Q_NO_TYPESAFE_FLAGS */
