@@ -107,7 +107,8 @@ public:
     bool toBool(bool defaultValue = false) const;
     int toInt(int defaultValue = 0) const;
     double toDouble(double defaultValue = 0) const;
-    QString toString(const QString &defaultValue = QString()) const;
+    QString toString() const;
+    QString toString(const QString &defaultValue) const;
     QJsonArray toArray() const;
     QJsonArray toArray(const QJsonArray &defaultValue) const;
     QJsonObject toObject() const;
