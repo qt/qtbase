@@ -5862,7 +5862,7 @@ public:
         startTimer(1000);
     }
 
-    void timerEvent(QTimerEvent *)
+    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE
     {
         switch (state++) {
         case 0:
@@ -5885,7 +5885,7 @@ public:
         return false;
     }
 
-    bool nativeEvent(const QByteArray &eventType, void *message, long *)
+    bool nativeEvent(const QByteArray &eventType, void *message, long *) Q_DECL_OVERRIDE
     {
         if (isMapNotify(eventType, message))
             gotExpectedMapNotify = true;
@@ -5893,7 +5893,7 @@ public:
     }
 
     // QAbstractNativeEventFilter interface
-    virtual bool nativeEventFilter(const QByteArray &eventType, void *message, long *) Q_DECL_OVERRIDE
+    bool nativeEventFilter(const QByteArray &eventType, void *message, long *) Q_DECL_OVERRIDE
     {
         if (isMapNotify(eventType, message))
             gotExpectedGlobalEvent = true;
