@@ -111,16 +111,17 @@ bool QXcbMime::mimeDataForAtom(QXcbConnection *connection, xcb_atom_t a, QMimeDa
     QString atomName = mimeAtomToString(connection, a);
     if (QInternalMimeData::hasFormatHelper(atomName, mimeData)) {
         *data = QInternalMimeData::renderDataHelper(atomName, mimeData);
-        if (atomName == QLatin1String("application/x-color"))
+        // mimeAtomToString() converts "text/x-moz-url" to "text/uri-list",
+        // so QXcbConnection::atomName() has to be used.
+        if (atomName == QLatin1String("text/uri-list")
+            && connection->atomName(a) == "text/x-moz-url") {
+            const QByteArray uri = data->split('\n').first();
+            QString mozUri = QString::fromLatin1(uri, uri.size());
+            mozUri += QLatin1Char('\n');
+            *data = QByteArray(reinterpret_cast<const char *>(mozUri.utf16()),
+                               mozUri.length() * 2);
+        } else if (atomName == QLatin1String("application/x-color"))
             *dataFormat = 16;
-        ret = true;
-    } else if (atomName == QLatin1String("text/x-moz-url") &&
-               QInternalMimeData::hasFormatHelper(QLatin1String("text/uri-list"), mimeData)) {
-        QByteArray uri = QInternalMimeData::renderDataHelper(
-                         QLatin1String("text/uri-list"), mimeData).split('\n').first();
-        QString mozUri = QString::fromLatin1(uri, uri.size());
-        mozUri += QLatin1Char('\n');
-        *data = QByteArray(reinterpret_cast<const char *>(mozUri.utf16()), mozUri.length() * 2);
         ret = true;
     } else if ((a == XCB_ATOM_PIXMAP || a == XCB_ATOM_BITMAP) && mimeData->hasImage()) {
         ret = true;
