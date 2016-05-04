@@ -1533,6 +1533,7 @@ void QWidgetLineControl::processShortcutOverrideEvent(QKeyEvent *ke)
         || ke == QKeySequence::Undo
         || ke == QKeySequence::MoveToNextWord
         || ke == QKeySequence::MoveToPreviousWord
+        || ke == QKeySequence::MoveToStartOfLine
         || ke == QKeySequence::MoveToEndOfLine
         || ke == QKeySequence::MoveToStartOfDocument
         || ke == QKeySequence::MoveToEndOfDocument
