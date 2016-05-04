@@ -70,9 +70,9 @@ private:
     double slots;
 };
 
-#define signals public
-#define slots
-#define emit
+#define signals Q_SIGNALS
+#define slots Q_SLOTS
+#define emit Q_EMIT
 #undef QT_NO_KEYWORDS
 
 #endif // NO_KEYWORDS_H
