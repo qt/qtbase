@@ -1725,6 +1725,23 @@ inline bool QStringRef::contains(const QStringRef &s, Qt::CaseSensitivity cs) co
 inline QString &QString::insert(int i, const QStringRef &s)
 { return insert(i, s.constData(), s.length()); }
 
+#if !defined(QT_USE_FAST_OPERATOR_PLUS) && !defined(QT_USE_QSTRINGBUILDER)
+inline QString operator+(const QString &s1, const QStringRef &s2)
+{ QString t; t.reserve(s1.size() + s2.size()); t += s1; t += s2; return t; }
+inline QString operator+(const QStringRef &s1, const QString &s2)
+{ QString t; t.reserve(s1.size() + s2.size()); t += s1; t += s2; return t; }
+inline QString operator+(const QStringRef &s1, QLatin1String s2)
+{ QString t; t.reserve(s1.size() + s2.size()); t += s1; t += s2; return t; }
+inline QString operator+(QLatin1String s1, const QStringRef &s2)
+{ QString t; t.reserve(s1.size() + s2.size()); t += s1; t += s2; return t; }
+inline QString operator+(const QStringRef &s1, const QStringRef &s2)
+{ QString t; t.reserve(s1.size() + s2.size()); t += s1; t += s2; return t; }
+inline QString operator+(const QStringRef &s1, QChar s2)
+{ QString t; t.reserve(s1.size() + 1); t += s1; t += s2; return t; }
+inline QString operator+(QChar s1, const QStringRef &s2)
+{ QString t; t.reserve(1 + s2.size()); t += s1; t += s2; return t; }
+#endif // !(QT_USE_FAST_OPERATOR_PLUS || QT_USE_QSTRINGBUILDER)
+
 namespace Qt {
 #if QT_DEPRECATED_SINCE(5, 0)
 QT_DEPRECATED inline QString escape(const QString &plain) {
