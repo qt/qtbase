@@ -75,12 +75,12 @@ QFont::Weight QCoreTextFontEngine::qtWeightFromCFWeight(float value)
         return QFont::Medium;
     if (value == 0.0)
         return QFont::Normal;
-    if (value <= -0.4)
-        return QFont::Light;
-    if (value <= -0.6)
-        return QFont::ExtraLight;
     if (value <= -0.8)
         return QFont::Thin;
+    if (value <= -0.6)
+        return QFont::ExtraLight;
+    if (value <= -0.4)
+        return QFont::Light;
     return QFont::Normal;
 }
 
