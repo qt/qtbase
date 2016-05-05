@@ -367,7 +367,7 @@ static QByteArray filenameForCFUrl(CFURLRef url)
 
     if (!CFURLGetFileSystemRepresentation(url, true, buffer, sizeof(buffer))) {
         qWarning("QCoreTextFontDatabase::filenameForCFUrl: could not resolve file for URL %s",
-                 qPrintable(QString::fromCFString(CFURLGetString(url))));
+                 url ? qPrintable(QString::fromCFString(CFURLGetString(url))) : "(null)");
     } else {
         QCFType<CFStringRef> scheme = CFURLCopyScheme(url);
         if (QString::fromCFString(scheme) == QLatin1String("qrc"))
