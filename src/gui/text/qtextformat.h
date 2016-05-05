@@ -424,9 +424,9 @@ public:
     { return doubleProperty(FontPointSize); }
 
     inline void setFontWeight(int weight)
-    { if (weight == QFont::Normal) weight = 0; setProperty(FontWeight, weight); }
+    { setProperty(FontWeight, weight); }
     inline int fontWeight() const
-    { int weight = intProperty(FontWeight); if (weight == 0) weight = QFont::Normal; return weight; }
+    { return hasProperty(FontWeight) ? intProperty(FontWeight) : QFont::Normal; }
     inline void setFontItalic(bool italic)
     { setProperty(FontItalic, italic); }
     inline bool fontItalic() const

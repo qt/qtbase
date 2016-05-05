@@ -106,8 +106,6 @@ void tst_QFontCache::engineData()
     }
     if (req.pointSize < 0)
         req.pointSize = req.pixelSize*72.0/d->dpi;
-    if (req.weight == 0)
-        req.weight = QFont::Normal;
     if (req.stretch == 0)
         req.stretch = 100;
 
