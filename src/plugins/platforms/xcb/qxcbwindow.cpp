@@ -2351,9 +2351,14 @@ void QXcbWindow::handleMotionNotifyEvent(int event_x, int event_y, int root_x, i
     QPoint local(event_x, event_y);
     QPoint global(root_x, root_y);
 
-    // "mousePressWindow" can be NULL i.e. if a window will be grabbed or umnapped, so set it again here
-    if (connection()->buttons() != Qt::NoButton && connection()->mousePressWindow() == Q_NULLPTR)
+    // "mousePressWindow" can be NULL i.e. if a window will be grabbed or unmapped, so set it again here.
+    // Unset "mousePressWindow" when mouse button isn't pressed - in some cases the release event won't arrive.
+    const bool isMouseButtonPressed = (connection()->buttons() != Qt::NoButton);
+    const bool hasMousePressWindow = (connection()->mousePressWindow() != Q_NULLPTR);
+    if (isMouseButtonPressed && !hasMousePressWindow)
         connection()->setMousePressWindow(this);
+    else if (hasMousePressWindow && !isMouseButtonPressed)
+        connection()->setMousePressWindow(Q_NULLPTR);
 
     handleMouseEvent(timestamp, local, global, modifiers, source);
 }
