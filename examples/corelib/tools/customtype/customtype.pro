@@ -4,5 +4,5 @@ SOURCES   = main.cpp \
 QT += widgets
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/corelib/tools/customcompleter
+target.path = $$[QT_INSTALL_EXAMPLES]/corelib/tools/customtype
 INSTALLS += target

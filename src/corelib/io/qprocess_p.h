@@ -379,7 +379,7 @@ public:
 
     qint64 bytesAvailableInChannel(const Channel *channel) const;
     qint64 readFromChannel(const Channel *channel, char *data, qint64 maxlen);
-    qint64 writeToStdin(const char *data, qint64 maxlen);
+    bool writeToStdin();
 
     void cleanup();
     void setError(QProcess::ProcessError error, const QString &description = QString());

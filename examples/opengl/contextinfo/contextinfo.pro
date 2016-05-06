@@ -7,3 +7,7 @@ SOURCES += main.cpp \
 
 HEADERS += widget.h \
            renderwindow.h
+
+# install
+target.path = $$[QT_INSTALL_EXAMPLES]/opengl/contextinfo
+INSTALLS += target

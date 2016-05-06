@@ -75,6 +75,8 @@ static QTouchDevice *touchDevice = 0;
 // ### HACK Remove once 10.8 is unsupported
 static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 
+static bool _q_dontOverrideCtrlLMB = false;
+
 @interface NSEvent (Qt_Compile_Leopard_DeviceDelta)
   - (CGFloat)deviceDeltaX;
   - (CGFloat)deviceDeltaY;
@@ -135,6 +137,8 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     NSString **notificationNameVar = (NSString **)dlsym(RTLD_NEXT, "NSWindowDidChangeOcclusionStateNotification");
     if (notificationNameVar)
         _q_NSWindowDidChangeOcclusionStateNotification = *notificationNameVar;
+
+    _q_dontOverrideCtrlLMB = qt_mac_resolveOption(false, "QT_MAC_DONT_OVERRIDE_CTRL_LMB");
 }
 
 - (id) init
@@ -969,7 +973,7 @@ QT_WARNING_POP
     if ([self hasMarkedText]) {
         [[NSTextInputContext currentInputContext] handleEvent:theEvent];
     } else {
-        if ([QNSView convertKeyModifiers:[theEvent modifierFlags]] & Qt::MetaModifier) {
+        if (!_q_dontOverrideCtrlLMB && [QNSView convertKeyModifiers:[theEvent modifierFlags]] & Qt::MetaModifier) {
             m_buttons |= Qt::RightButton;
             m_sendUpAsRightButton = true;
         } else {

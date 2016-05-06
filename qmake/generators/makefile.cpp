@@ -1612,7 +1612,7 @@ MakefileGenerator::replaceExtraCompilerVariables(
                 const ProKey funcname = var.mid(19).toKey();
                 val += project->expand(funcname, QList<ProStringList>() << ProStringList(in));
             } else if(var == QLatin1String("QMAKE_FILE_BASE") || var == QLatin1String("QMAKE_FILE_IN_BASE")) {
-                //filePath = true;
+                filePath = true;
                 for(int i = 0; i < in.size(); ++i) {
                     QFileInfo fi(fileInfo(Option::normalizePath(in.at(i))));
                     QString base = fi.completeBaseName();
@@ -1620,7 +1620,7 @@ MakefileGenerator::replaceExtraCompilerVariables(
                         base = fi.fileName();
                     val += base;
                 }
-            } else if(var == QLatin1String("QMAKE_FILE_EXT")) {
+            } else if (var == QLatin1String("QMAKE_FILE_EXT") || var == QLatin1String("QMAKE_FILE_IN_EXT")) {
                 filePath = true;
                 for(int i = 0; i < in.size(); ++i) {
                     QFileInfo fi(fileInfo(Option::normalizePath(in.at(i))));
@@ -1633,6 +1633,10 @@ MakefileGenerator::replaceExtraCompilerVariables(
                         ext = fi.fileName().remove(0, baseLen);
                     val += ext;
                 }
+            } else if (var == QLatin1String("QMAKE_FILE_IN_NAME")) {
+                filePath = true;
+                for (int i = 0; i < in.size(); ++i)
+                    val += fileInfo(Option::normalizePath(in.at(i))).fileName();
             } else if(var == QLatin1String("QMAKE_FILE_PATH") || var == QLatin1String("QMAKE_FILE_IN_PATH")) {
                 filePath = true;
                 for(int i = 0; i < in.size(); ++i)
@@ -1649,12 +1653,16 @@ MakefileGenerator::replaceExtraCompilerVariables(
                 filePath = true;
                 const ProKey funcname = var.mid(20).toKey();
                 val += project->expand(funcname, QList<ProStringList>() << ProStringList(out));
+            } else if (var == QLatin1String("QMAKE_FILE_OUT_PATH")) {
+                filePath = true;
+                for (int i = 0; i < out.size(); ++i)
+                    val += fileInfo(Option::normalizePath(out.at(i))).path();
             } else if(var == QLatin1String("QMAKE_FILE_OUT")) {
                 filePath = true;
                 for(int i = 0; i < out.size(); ++i)
                     val += fileInfo(Option::normalizePath(out.at(i))).filePath();
             } else if(var == QLatin1String("QMAKE_FILE_OUT_BASE")) {
-                //filePath = true;
+                filePath = true;
                 for(int i = 0; i < out.size(); ++i) {
                     QFileInfo fi(fileInfo(Option::normalizePath(out.at(i))));
                     QString base = fi.completeBaseName();

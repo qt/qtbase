@@ -53,6 +53,7 @@
 
 #include <qelapsedtimer.h>
 #include <qobject.h>
+#include <qbytearray.h>
 #include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
@@ -112,7 +113,7 @@ public:
     explicit QWindowsPipeWriter(HANDLE pipeWriteEnd, QObject *parent = 0);
     ~QWindowsPipeWriter();
 
-    qint64 write(const char *data, qint64 maxlen);
+    bool write(const QByteArray &ba);
     void stop();
     bool waitForWrite(int msecs);
     bool isWriteOperationActive() const { return writeSequenceStarted; }
@@ -142,6 +143,7 @@ private:
 
     HANDLE handle;
     Overlapped overlapped;
+    QByteArray buffer;
     qint64 numberOfBytesToWrite;
     qint64 pendingBytesWrittenValue;
     bool stopped;

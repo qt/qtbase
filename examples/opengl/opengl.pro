@@ -16,3 +16,6 @@ qtHaveModule(widgets) {
                 textures \
                 hellogles3
 }
+
+EXAMPLE_FILES += \
+    legacy

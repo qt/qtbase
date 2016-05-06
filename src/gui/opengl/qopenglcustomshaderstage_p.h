@@ -52,6 +52,7 @@
 //
 
 #include <QOpenGLShaderProgram>
+#include <QtGlobal>
 
 QT_BEGIN_NAMESPACE
 
@@ -78,6 +79,8 @@ protected:
 
 private:
     QOpenGLCustomShaderStagePrivate* d_ptr;
+
+    Q_DISABLE_COPY(QOpenGLCustomShaderStage)
 };
 
 

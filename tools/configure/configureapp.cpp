@@ -1651,6 +1651,7 @@ void Configure::applySpecSpecifics()
 
         dictionary["DECORATIONS"]           = "default windows styled";
     } else if (platform() == QNX) {
+        dictionary[ "REDUCE_EXPORTS" ]      = "yes";
         dictionary["STACK_PROTECTOR_STRONG"] = "auto";
         dictionary["SLOG2"]                 = "auto";
         dictionary["QNX_IMF"]               = "auto";
@@ -1660,6 +1661,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "ANGLE" ]               = "no";
         dictionary[ "DYNAMICGL" ]           = "no";
         dictionary[ "FONT_CONFIG" ]         = "auto";
+        dictionary[ "ICU" ]                 = "auto";
         dictionary[ "POLL" ]                = "poll";
     } else if (platform() == ANDROID) {
         dictionary[ "REDUCE_EXPORTS" ]      = "yes";
