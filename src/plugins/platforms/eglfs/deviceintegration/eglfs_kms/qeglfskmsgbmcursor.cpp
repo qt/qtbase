@@ -107,8 +107,10 @@ QEglFSKmsGbmCursor::~QEglFSKmsGbmCursor()
         drmModeMoveCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, 0, 0);
     }
 
-    gbm_bo_destroy(m_bo);
-    m_bo = Q_NULLPTR;
+    if (m_bo) {
+        gbm_bo_destroy(m_bo);
+        m_bo = Q_NULLPTR;
+    }
 }
 
 void QEglFSKmsGbmCursor::pointerEvent(const QMouseEvent &event)
@@ -120,6 +122,9 @@ void QEglFSKmsGbmCursor::pointerEvent(const QMouseEvent &event)
 void QEglFSKmsGbmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
 {
     Q_UNUSED(window);
+
+    if (!m_bo)
+        return;
 
     if (!m_visible)
         return;

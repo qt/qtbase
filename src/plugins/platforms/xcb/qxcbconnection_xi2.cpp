@@ -119,7 +119,7 @@ void QXcbConnection::xi2SetupDevices()
         // Only non-master pointing devices are relevant here.
         if (devices[i].use != XISlavePointer)
             continue;
-        qCDebug(lcQpaXInputDevices) << "input device "<< devices[i].name;
+        qCDebug(lcQpaXInputDevices) << "input device " << devices[i].name << "ID" << devices[i].deviceid;
 #ifndef QT_NO_TABLETEVENT
         TabletData tabletData;
 #endif
@@ -537,12 +537,9 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
 
 #ifndef QT_NO_TABLETEVENT
     if (!xiEnterEvent) {
-        for (int i = 0; i < m_tabletData.count(); ++i) {
-            if (m_tabletData.at(i).deviceId == sourceDeviceId) {
-                if (xi2HandleTabletEvent(xiEvent, &m_tabletData[i]))
-                    return;
-            }
-        }
+        QXcbConnection::TabletData *tablet = tabletDataForDevice(sourceDeviceId);
+        if (tablet && xi2HandleTabletEvent(xiEvent, tablet))
+            return;
     }
 #endif // QT_NO_TABLETEVENT
 
@@ -1195,6 +1192,16 @@ void QXcbConnection::xi2ReportTabletEvent(const void *event, TabletData *tabletD
                                               xTilt, yTilt, tangentialPressure,
                                               rotation, 0, tabletData->serialId);
 }
+
+QXcbConnection::TabletData *QXcbConnection::tabletDataForDevice(int id)
+{
+    for (int i = 0; i < m_tabletData.count(); ++i) {
+        if (m_tabletData.at(i).deviceId == id)
+            return &m_tabletData[i];
+    }
+    return Q_NULLPTR;
+}
+
 #endif // QT_NO_TABLETEVENT
 
 #endif // XCB_USE_XINPUT2

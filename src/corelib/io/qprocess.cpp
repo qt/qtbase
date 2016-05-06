@@ -1103,7 +1103,6 @@ bool QProcessPrivate::_q_canReadStandardError()
 */
 bool QProcessPrivate::_q_canWrite()
 {
-    Q_Q(QProcess);
     if (stdinChannel.notifier)
         stdinChannel.notifier->setEnabled(false);
 
@@ -1114,31 +1113,13 @@ bool QProcessPrivate::_q_canWrite()
         return false;
     }
 
-    qint64 written = writeToStdin(writeBuffer.readPointer(), writeBuffer.nextDataBlockSize());
-    if (written < 0) {
-        closeChannel(&stdinChannel);
-        setErrorAndEmit(QProcess::WriteError);
-        return false;
-    }
+    const bool writeSucceeded = writeToStdin();
 
-#if defined QPROCESS_DEBUG
-    qDebug("QProcessPrivate::canWrite(), wrote %d bytes to the process input", int(written));
-#endif
-
-    if (written != 0) {
-        writeBuffer.free(written);
-        if (!emittedBytesWritten) {
-            emittedBytesWritten = true;
-            emit q->bytesWritten(written);
-            emittedBytesWritten = false;
-        }
-        emit q->channelBytesWritten(0, written);
-    }
     if (stdinChannel.notifier && !writeBuffer.isEmpty())
         stdinChannel.notifier->setEnabled(true);
     if (writeBuffer.isEmpty() && stdinChannel.closed)
         closeWriteChannel();
-    return true;
+    return writeSucceeded;
 }
 
 /*!

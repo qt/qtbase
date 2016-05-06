@@ -116,6 +116,23 @@ static bool orderByModifier(const QVector<int> &v1, const QVector<int> &v2)
     return true;
 }
 
+static QByteArray modifiersTestRowName(const QString &keySequence)
+{
+    QByteArray result;
+    QTextStream str(&result);
+    for (int i = 0, size = keySequence.size(); i < size; ++i) {
+        const QChar &c = keySequence.at(i);
+        const ushort uc = c.unicode();
+        if (uc > 32 && uc < 128)
+            str << '"' << c << '"';
+        else
+            str << "U+" << hex << uc << dec;
+        if (i < size - 1)
+            str << ',';
+    }
+    return result;
+}
+
 void tst_QKeyEvent::modifiers_data()
 {
     struct Modifier
@@ -155,7 +172,8 @@ void tst_QKeyEvent::modifiers_data()
             mods |= modifier.modifier;
         }
         QKeySequence keySequence(keys[0], keys[1], keys[2], keys[3]);
-        QTest::newRow(keySequence.toString(QKeySequence::NativeText).toUtf8().constData()) << mods;
+        QTest::newRow(modifiersTestRowName(keySequence.toString(QKeySequence::NativeText)).constData())
+            << mods;
     }
 }
 

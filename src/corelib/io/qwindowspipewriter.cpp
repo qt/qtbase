@@ -79,21 +79,19 @@ QWindowsPipeWriter::~QWindowsPipeWriter()
 
 bool QWindowsPipeWriter::waitForWrite(int msecs)
 {
-    if (!writeSequenceStarted)
-        return false;
-
     if (bytesWrittenPending) {
-        if (!inBytesWritten)
-            emitPendingBytesWrittenValue();
+        emitPendingBytesWrittenValue();
         return true;
     }
+
+    if (!writeSequenceStarted)
+        return false;
 
     if (!waitForNotification(msecs))
         return false;
 
     if (bytesWrittenPending) {
-        if (!inBytesWritten)
-            emitPendingBytesWrittenValue();
+        emitPendingBytesWrittenValue();
         return true;
     }
 
@@ -102,20 +100,24 @@ bool QWindowsPipeWriter::waitForWrite(int msecs)
 
 qint64 QWindowsPipeWriter::bytesToWrite() const
 {
-    return numberOfBytesToWrite;
+    return numberOfBytesToWrite + pendingBytesWrittenValue;
 }
 
 void QWindowsPipeWriter::emitPendingBytesWrittenValue()
 {
     if (bytesWrittenPending) {
+        // Reset the state even if we don't emit bytesWritten().
+        // It's a defined behavior to not re-emit this signal recursively.
         bytesWrittenPending = false;
         const qint64 bytes = pendingBytesWrittenValue;
         pendingBytesWrittenValue = 0;
 
-        inBytesWritten = true;
-        emit bytesWritten(bytes);
-        inBytesWritten = false;
         emit canWrite();
+        if (!inBytesWritten) {
+            inBytesWritten = true;
+            emit bytesWritten(bytes);
+            inBytesWritten = false;
+        }
     }
 }
 
@@ -135,6 +137,8 @@ void QWindowsPipeWriter::notified(DWORD errorCode, DWORD numberOfBytesWritten)
     notifiedCalled = true;
     writeSequenceStarted = false;
     numberOfBytesToWrite = 0;
+    Q_ASSERT(errorCode != ERROR_SUCCESS || numberOfBytesWritten == DWORD(buffer.size()));
+    buffer.clear();
 
     switch (errorCode) {
     case ERROR_SUCCESS:
@@ -179,21 +183,26 @@ bool QWindowsPipeWriter::waitForNotification(int timeout)
     return notifiedCalled;
 }
 
-qint64 QWindowsPipeWriter::write(const char *ptr, qint64 maxlen)
+bool QWindowsPipeWriter::write(const QByteArray &ba)
 {
     if (writeSequenceStarted)
-        return 0;
+        return false;
 
     overlapped.clear();
-    numberOfBytesToWrite = maxlen;
+    buffer = ba;
+    numberOfBytesToWrite = buffer.size();
     stopped = false;
     writeSequenceStarted = true;
-    if (!WriteFileEx(handle, ptr, maxlen, &overlapped, &writeFileCompleted)) {
+    if (!WriteFileEx(handle, buffer.constData(), numberOfBytesToWrite,
+                     &overlapped, &writeFileCompleted)) {
         writeSequenceStarted = false;
+        numberOfBytesToWrite = 0;
+        buffer.clear();
         qErrnoWarning("QWindowsPipeWriter::write failed.");
+        return false;
     }
 
-    return maxlen;
+    return true;
 }
 
 void QWindowsPipeWriter::stop()

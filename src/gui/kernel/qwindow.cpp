@@ -2146,6 +2146,17 @@ bool QWindow::event(QEvent *ev)
         break;
     }
 
+    case QEvent::PlatformSurface: {
+        if ((static_cast<QPlatformSurfaceEvent *>(ev))->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed) {
+#ifndef QT_NO_OPENGL
+            QOpenGLContext *context = QOpenGLContext::currentContext();
+            if (context && context->surface() == static_cast<QSurface *>(this))
+                context->doneCurrent();
+#endif
+        }
+        break;
+    }
+
     default:
         return QObject::event(ev);
     }

@@ -116,7 +116,7 @@ QT_BEGIN_NAMESPACE
                         guard.store(QtGlobalStatic::Destroyed);         \
                     }                                                   \
                 } cleanup;                                              \
-                guard.store(QtGlobalStatic::Initialized);               \
+                guard.storeRelease(QtGlobalStatic::Initialized);        \
             }                                                           \
         }                                                               \
         return d;                                                       \

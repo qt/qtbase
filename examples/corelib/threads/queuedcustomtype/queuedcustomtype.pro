@@ -8,7 +8,7 @@ SOURCES   = main.cpp \
 QT += widgets
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/corelib/threads/mandelbrot
+target.path = $$[QT_INSTALL_EXAMPLES]/corelib/threads/queuedcustomtype
 INSTALLS += target
 
 

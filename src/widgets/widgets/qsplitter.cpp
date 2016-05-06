@@ -1099,6 +1099,8 @@ void QSplitter::resizeEvent(QResizeEvent *)
 
     If \a widget is already in the splitter, it will be moved to the new position.
 
+    \note The splitter takes ownership of the widget.
+
     \sa insertWidget(), widget(), indexOf()
 */
 void QSplitter::addWidget(QWidget *widget)
@@ -1113,7 +1115,9 @@ void QSplitter::addWidget(QWidget *widget)
 
     If \a widget is already in the splitter, it will be moved to the new position.
 
-    if \a index is an invalid index, then the widget will be inserted at the end.
+    If \a index is an invalid index, then the widget will be inserted at the end.
+
+    \note The splitter takes ownership of the widget.
 
     \sa addWidget(), indexOf(), widget()
 */

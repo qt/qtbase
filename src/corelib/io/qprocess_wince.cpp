@@ -271,11 +271,9 @@ qint64 QProcessPrivate::pipeWriterBytesToWrite() const
     return 0;
 }
 
-qint64 QProcessPrivate::writeToStdin(const char *data, qint64 maxlen)
+bool QProcessPrivate::writeToStdin()
 {
-    Q_UNUSED(data);
-    Q_UNUSED(maxlen);
-    return -1;
+    return false;
 }
 
 bool QProcessPrivate::startDetached(const QString &program, const QStringList &arguments, const QString &workingDir, qint64 *pid)
