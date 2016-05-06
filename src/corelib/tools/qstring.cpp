@@ -1148,7 +1148,7 @@ const QString::Null QString::null = { };
     has a ref count of 1, whereas QString::append() needs an extra
     test).
 
-    There are three ways you can access this improved method of string
+    There are two ways you can access this improved method of string
     construction. The straightforward way is to include
     \c{QStringBuilder} wherever you want to use it, and use the
     \c{'%'} operator instead of \c{'+'} when concatenating strings:
