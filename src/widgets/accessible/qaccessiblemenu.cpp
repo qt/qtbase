@@ -225,6 +225,20 @@ QObject *QAccessibleMenuItem::object() const
     return m_action;
 }
 
+/*! \reimp */
+QWindow *QAccessibleMenuItem::window() const
+{
+    QWindow *result = Q_NULLPTR;
+    if (!m_owner.isNull()) {
+        result = m_owner->windowHandle();
+        if (!result) {
+            if (const QWidget *nativeParent = m_owner->nativeParentWidget())
+                result = nativeParent->windowHandle();
+        }
+    }
+    return result;
+}
+
 QRect QAccessibleMenuItem::rect() const
 {
     QRect rect;
