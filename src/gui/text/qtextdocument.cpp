@@ -1760,6 +1760,10 @@ QTextBlock QTextDocument::lastBlock() const
     \property QTextDocument::pageSize
     \brief the page size that should be used for laying out the document
 
+    The units are determined by the underlying paint device. The size is
+    measured in logical pixels when painting to the screen, and in points
+    (1/72 inch) when painting to a printer.
+
     By default, for a newly-created, empty document, this property contains
     an undefined size.
 
