@@ -41,6 +41,11 @@
 #include <QtDBus/private/qdbusconnection_p.h>
 #include <QtDBus/private/qdbus_symbols_p.h>
 
+#ifndef DBUS_TYPE_UNIX_FD
+#  define DBUS_TYPE_UNIX_FD int('h')
+#  define DBUS_TYPE_UNIX_FD_AS_STRING "h"
+#endif
+
 static const char serviceName[] = "org.qtproject.autotests.qpong";
 static const char objectPath[] = "/org/qtproject/qpong";
 static const char *interfaceName = serviceName;
@@ -1088,9 +1093,6 @@ static bool canSendUnixFd(DBusConnection *connection)
     can_send_type = (can_send_type_t)qdbus_resolve_conditionally("dbus_connection_can_send_type");
 #endif
 
-#ifndef DBUS_TYPE_UNIX_FD
-# define DBUS_TYPE_UNIX_FD int('h')
-#endif
     return can_send_type && can_send_type(connection, DBUS_TYPE_UNIX_FD);
 }
 
