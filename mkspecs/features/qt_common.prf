@@ -61,6 +61,8 @@ clang {
     QMAKE_CXXFLAGS_WARN_ON += -Wvla
     # GCC 5 introduced -Wdate-time
     greaterThan(QT_GCC_MAJOR_VERSION, 4): QMAKE_CXXFLAGS_WARN_ON += -Wdate-time
+    # GCC 6 introduced these
+    greaterThan(QT_GCC_MAJOR_VERSION, 5): QMAKE_CXXFLAGS_WARN_ON += -Wshift-overflow=2 -Wduplicated-cond
 }
 
 warnings_are_errors:warning_clean {
