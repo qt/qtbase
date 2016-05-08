@@ -2061,19 +2061,7 @@ static OSVERSIONINFOEX winOsVersion()
             result.wServicePackMinor = 0;
 
             const QByteArray winVerOverride = qgetenv("QT_WINVER_OVERRIDE");
-            if (winVerOverride == "NT") {
-                result.dwMajorVersion = 4;
-            } else if (winVerOverride == "2000") {
-                result.dwMajorVersion = 5;
-            } else if (winVerOverride == "XP") {
-                result.dwMajorVersion = 5;
-                result.dwMinorVersion = 1;
-            } else if (winVerOverride == "XP_PRO_64" || winVerOverride == "2003") {
-                result.dwMajorVersion = 5;
-                result.dwMinorVersion = 2;
-            } else if (winVerOverride == "VISTA" || winVerOverride == "2008") {
-                result.dwMajorVersion = 6;
-            } else if (winVerOverride == "WINDOWS7" || winVerOverride == "2008_R2") {
+            if (winVerOverride == "WINDOWS7" || winVerOverride == "2008_R2") {
                 result.dwMajorVersion = 6;
                 result.dwMinorVersion = 1;
             } else if (winVerOverride == "WINDOWS8" || winVerOverride == "2012") {
@@ -2088,9 +2076,7 @@ static OSVERSIONINFOEX winOsVersion()
                 return realResult;
             }
 
-            if (winVerOverride == "2003"
-                || winVerOverride == "2008"
-                || winVerOverride == "2008_R2"
+            if (winVerOverride == "2008_R2"
                 || winVerOverride == "2012"
                 || winVerOverride == "2012_R2"
                 || winVerOverride == "2016") {
@@ -2098,8 +2084,8 @@ static OSVERSIONINFOEX winOsVersion()
                 // is also a server type OS, preserve that information
                 if (result.wProductType == VER_NT_WORKSTATION)
                     result.wProductType = VER_NT_SERVER;
-            } else if (winVerOverride != "2000") {
-                // Any other OS except Windows 2000 must be a workstation OS type
+            } else {
+                // Any other OS must be a workstation OS type
                 result.wProductType = VER_NT_WORKSTATION;
             }
         }
@@ -2110,90 +2096,16 @@ static OSVERSIONINFOEX winOsVersion()
 
 QSysInfo::WinVersion QSysInfo::windowsVersion()
 {
-#ifndef VER_PLATFORM_WIN32s
-#define VER_PLATFORM_WIN32s            0
-#endif
-#ifndef VER_PLATFORM_WIN32_WINDOWS
-#define VER_PLATFORM_WIN32_WINDOWS  1
-#endif
-#ifndef VER_PLATFORM_WIN32_NT
-#define VER_PLATFORM_WIN32_NT            2
-#endif
-#ifndef VER_PLATFORM_WIN32_CE
-#define VER_PLATFORM_WIN32_CE            3
-#endif
-
-    static QSysInfo::WinVersion winver;
-    if (winver)
-        return winver;
-    winver = QSysInfo::WV_NT;
     const OSVERSIONINFOEX osver = winOsVersion();
-    if (osver.dwMajorVersion == 0)
-        return QSysInfo::WV_None;
-    switch (osver.dwPlatformId) {
-    case VER_PLATFORM_WIN32s:
-        winver = QSysInfo::WV_32s;
-        break;
-    case VER_PLATFORM_WIN32_WINDOWS:
-        // We treat Windows Me (minor 90) the same as Windows 98
-        if (osver.dwMinorVersion == 90)
-            winver = QSysInfo::WV_Me;
-        else if (osver.dwMinorVersion == 10)
-            winver = QSysInfo::WV_98;
-        else
-            winver = QSysInfo::WV_95;
-        break;
-    default: // VER_PLATFORM_WIN32_NT
-        if (osver.dwMajorVersion < 5) {
-            winver = QSysInfo::WV_NT;
-        } else if (osver.dwMajorVersion == 5 && osver.dwMinorVersion == 0) {
-            winver = QSysInfo::WV_2000;
-        } else if (osver.dwMajorVersion == 5 && osver.dwMinorVersion == 1) {
-            winver = QSysInfo::WV_XP;
-        } else if (osver.dwMajorVersion == 5 && osver.dwMinorVersion == 2) {
-            winver = QSysInfo::WV_2003;
-        } else if (osver.dwMajorVersion == 6 && osver.dwMinorVersion == 0) {
-            winver = QSysInfo::WV_VISTA;
-        } else if (osver.dwMajorVersion == 6 && osver.dwMinorVersion == 1) {
-            winver = QSysInfo::WV_WINDOWS7;
-        } else if (osver.dwMajorVersion == 6 && osver.dwMinorVersion == 2) {
-            winver = QSysInfo::WV_WINDOWS8;
-        } else if (osver.dwMajorVersion == 6 && osver.dwMinorVersion == 3) {
-            winver = QSysInfo::WV_WINDOWS8_1;
-        } else if (osver.dwMajorVersion == 10 && osver.dwMinorVersion == 0) {
-            winver = QSysInfo::WV_WINDOWS10;
-        } else {
-            winver = QSysInfo::WV_NT_based;
-        }
-    }
-
-#ifdef QT_DEBUG
-    {
-        if (Q_UNLIKELY(qEnvironmentVariableIsSet("QT_WINVER_OVERRIDE"))) {
-            const QByteArray winVerOverride = qgetenv("QT_WINVER_OVERRIDE");
-            if (winVerOverride == "NT")
-                winver = QSysInfo::WV_NT;
-            else if (winVerOverride == "2000")
-                winver = QSysInfo::WV_2000;
-            else if (winVerOverride == "2003")
-                winver = QSysInfo::WV_2003;
-            else if (winVerOverride == "XP")
-                winver = QSysInfo::WV_XP;
-            else if (winVerOverride == "VISTA")
-                winver = QSysInfo::WV_VISTA;
-            else if (winVerOverride == "WINDOWS7")
-                winver = QSysInfo::WV_WINDOWS7;
-            else if (winVerOverride == "WINDOWS8")
-                winver = QSysInfo::WV_WINDOWS8;
-            else if (winVerOverride == "WINDOWS8_1")
-                winver = QSysInfo::WV_WINDOWS8_1;
-            else if (winVerOverride == "WINDOWS10")
-                winver = QSysInfo::WV_WINDOWS10;
-        }
-    }
-#endif
-
-    return winver;
+    if (osver.dwMajorVersion == 6 && osver.dwMinorVersion == 1)
+        return QSysInfo::WV_WINDOWS7;
+    if (osver.dwMajorVersion == 6 && osver.dwMinorVersion == 2)
+        return QSysInfo::WV_WINDOWS8;
+    if (osver.dwMajorVersion == 6 && osver.dwMinorVersion == 3)
+        return QSysInfo::WV_WINDOWS8_1;
+    if (osver.dwMajorVersion == 10 && osver.dwMinorVersion == 0)
+        return QSysInfo::WV_WINDOWS10;
+    return QSysInfo::WV_NT_based;
 }
 
 static QString winSp_helper()
@@ -2217,16 +2129,6 @@ static const char *winVer_helper()
 
 #define Q_WINVER(major, minor) (major << 8 | minor)
     switch (Q_WINVER(osver.dwMajorVersion, osver.dwMinorVersion)) {
-    case Q_WINVER(4, 0):
-        return "NT";
-    case Q_WINVER(5, 0):
-        return "2000";
-    case Q_WINVER(5, 1):
-        return "XP";
-    case Q_WINVER(5, 2):
-        return "2003";
-    case Q_WINVER(6, 0):
-        return workstation ? "Vista" : "Server 2008";
     case Q_WINVER(6, 1):
         return workstation ? "7" : "Server 2008 R2";
     case Q_WINVER(6, 2):
