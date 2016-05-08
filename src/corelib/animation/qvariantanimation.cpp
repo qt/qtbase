@@ -48,15 +48,13 @@ QT_BEGIN_NAMESPACE
     \class QVariantAnimation
     \inmodule QtCore
     \ingroup animation
-    \brief The QVariantAnimation class provides an abstract base class for animations.
+    \brief The QVariantAnimation class provides a base class for animations.
     \since 4.6
 
     This class is part of \l{The Animation Framework}. It serves as a
     base class for property and item animations, with functions for
     shared functionality.
 
-    QVariantAnimation cannot be used directly as it is an abstract
-    class; it has a pure virtual method called updateCurrentValue().
     The class performs interpolation over
     \l{QVariant}s, but leaves using the interpolated values to its
     subclasses. Currently, Qt provides QPropertyAnimation, which
@@ -69,7 +67,7 @@ QT_BEGIN_NAMESPACE
     start the animation. QVariantAnimation will interpolate the
     property of the target object and emit valueChanged(). To react to
     a change in the current value you have to reimplement the
-    updateCurrentValue() virtual function.
+    updateCurrentValue() virtual function or connect to said signal.
 
     It is also possible to set values at specified steps situated
     between the start and end value. The interpolation will then
