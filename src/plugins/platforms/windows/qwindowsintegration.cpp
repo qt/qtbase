@@ -139,7 +139,8 @@ struct QWindowsIntegrationPrivate
 #  endif
 #endif
 #ifndef QT_NO_OPENGL
-    QSharedPointer<QWindowsStaticOpenGLContext> m_staticOpenGLContext;
+    QMutex m_staticContextLock;
+    QScopedPointer<QWindowsStaticOpenGLContext> m_staticOpenGLContext;
 #endif // QT_NO_OPENGL
     QScopedPointer<QPlatformInputContext> m_inputContext;
 #ifndef QT_NO_ACCESSIBILITY
@@ -435,8 +436,9 @@ QWindowsStaticOpenGLContext *QWindowsIntegration::staticOpenGLContext()
     if (!integration)
         return 0;
     QWindowsIntegrationPrivate *d = integration->d.data();
+    QMutexLocker lock(&d->m_staticContextLock);
     if (d->m_staticOpenGLContext.isNull())
-        d->m_staticOpenGLContext = QSharedPointer<QWindowsStaticOpenGLContext>(QWindowsStaticOpenGLContext::create());
+        d->m_staticOpenGLContext.reset(QWindowsStaticOpenGLContext::create());
     return d->m_staticOpenGLContext.data();
 }
 #endif // !QT_NO_OPENGL
