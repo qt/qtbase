@@ -177,7 +177,6 @@ public:
 
     QTextDocument *doc;
     bool cursorOn;
-    bool blinkingEnabled;
     bool cursorVisible;
     QTextCursor cursor;
     bool cursorIsFocusIndicator;

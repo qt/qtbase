@@ -112,7 +112,7 @@ static QTextLine currentTextLine(const QTextCursor &cursor)
 }
 
 QWidgetTextControlPrivate::QWidgetTextControlPrivate()
-    : doc(0), cursorOn(false), blinkingEnabled(true), cursorVisible(false), cursorIsFocusIndicator(false),
+    : doc(0), cursorOn(false), cursorVisible(false), cursorIsFocusIndicator(false),
 #ifndef Q_OS_ANDROID
       interactionFlags(Qt::TextEditorInteraction),
 #else
@@ -691,29 +691,18 @@ void QWidgetTextControlPrivate::setCursorVisible(bool visible)
         return;
 
     cursorVisible = visible;
-
     updateCursorBlinking();
-}
 
-void QWidgetTextControlPrivate::setBlinkingCursorEnabled(bool enable)
-{
-    if (blinkingEnabled == enable)
-        return;
-
-    blinkingEnabled = enable;
-
-    if (enable)
+    if (cursorVisible)
         connect(qApp->styleHints(), &QStyleHints::cursorFlashTimeChanged, this, &QWidgetTextControlPrivate::updateCursorBlinking);
     else
         disconnect(qApp->styleHints(), &QStyleHints::cursorFlashTimeChanged, this, &QWidgetTextControlPrivate::updateCursorBlinking);
-
-    updateCursorBlinking();
 }
 
 void QWidgetTextControlPrivate::updateCursorBlinking()
 {
     cursorBlinkTimer.stop();
-    if (cursorVisible && blinkingEnabled) {
+    if (cursorVisible) {
         int flashTime = QGuiApplication::styleHints()->cursorFlashTime();
         if (flashTime >= 2)
             cursorBlinkTimer.start(flashTime / 2, q_func());
