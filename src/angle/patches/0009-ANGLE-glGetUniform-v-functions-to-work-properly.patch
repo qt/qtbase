@@ -1,0 +1,31 @@
+From 2d4a7aec7957e507cbf0b4b8dcf68abb26667e33 Mon Sep 17 00:00:00 2001
+From: Miikka Heikkinen <miikka.heikkinen@qt.io>
+Date: Mon, 9 May 2016 13:13:20 +0300
+Subject: [PATCH] Fix ANGLE glGetUniform*v functions to work properly array
+ uniforms
+
+glGetUniform*v functions are supposed to return just a single
+array element, so returning the whole array is always incorrect.
+
+Task-number: QTBUG-53072
+Change-Id: I22f05d420082d4d9de06d975b3d0f5e64d3e0c41
+---
+ src/3rdparty/angle/src/libANGLE/Program.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/3rdparty/angle/src/libANGLE/Program.cpp b/src/3rdparty/angle/src/libANGLE/Program.cpp
+index 748ceae..69497c4 100644
+--- a/src/3rdparty/angle/src/libANGLE/Program.cpp
++++ b/src/3rdparty/angle/src/libANGLE/Program.cpp
+@@ -2510,7 +2510,7 @@ void Program::getUniformInternal(GLint location, DestT *dataOut) const
+         return;
+     }
+ 
+-    int components = VariableComponentCount(uniform.type) * uniform.elementCount();
++    int components = VariableComponentCount(uniform.type);
+ 
+     switch (componentType)
+     {
+-- 
+2.6.3.windows.1
+
