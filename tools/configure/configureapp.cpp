@@ -1663,6 +1663,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "FONT_CONFIG" ]         = "auto";
         dictionary[ "ICU" ]                 = "auto";
         dictionary[ "POLL" ]                = "poll";
+        dictionary[ "ZLIB" ]                = "system";
     } else if (platform() == ANDROID) {
         dictionary[ "REDUCE_EXPORTS" ]      = "yes";
         dictionary[ "BUILD" ]               = "release";
