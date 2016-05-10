@@ -147,7 +147,6 @@ bool QLibraryPrivate::load_sys()
             qualifiedFileName = moduleFileName;
         else
             qualifiedFileName = dir.filePath(moduleFileName);
-#endif // !Q_OS_WINRT
 
         if (loadHints() & QLibrary::PreventUnloadHint) {
             // prevent the unloading of this component
@@ -157,7 +156,9 @@ bool QLibraryPrivate::load_sys()
                                         reinterpret_cast<const wchar_t *>(pHnd),
                                         &hmod);
             Q_ASSERT(!ok || hmod == pHnd);
+            Q_UNUSED(ok);
         }
+#endif // !Q_OS_WINRT
     }
     return (pHnd != 0);
 }
