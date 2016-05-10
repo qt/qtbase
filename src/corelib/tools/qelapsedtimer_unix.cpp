@@ -31,9 +31,6 @@
 **
 ****************************************************************************/
 
-// ask for the latest POSIX, just in case
-#define _POSIX_C_SOURCE 200809L
-
 #include "qelapsedtimer.h"
 #if defined(Q_OS_VXWORKS)
 #include "qfunctions_vxworks.h"
