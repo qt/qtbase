@@ -64,6 +64,8 @@ private slots:
     void nextImageDelay();
     void pngCompression_data();
     void pngCompression();
+    void write_data();
+    void write();
 
 private:
     QString m_IconPath;
@@ -333,6 +335,51 @@ void tst_QIcoImageFormat::pngCompression()
 
     QCOMPARE(image.width(), width);
     QCOMPARE(image.height(), height);
+}
+
+void tst_QIcoImageFormat::write_data()
+{
+    QTest::addColumn<QSize>("inSize");
+    QTest::addColumn<QSize>("outSize");
+
+    QTest::newRow("64x64") << QSize(64, 64) << QSize(64, 64);
+    QTest::newRow("128x200") << QSize(128, 200) << QSize(128, 200);
+    QTest::newRow("256x256") << QSize(256, 256) << QSize(256, 256);
+    QTest::newRow("400x400") << QSize(400, 400) << QSize(256, 256);
+}
+
+void tst_QIcoImageFormat::write()
+{
+    QFETCH(QSize, inSize);
+    QFETCH(QSize, outSize);
+
+    QImage inImg;
+    {
+        QImageReader reader(m_IconPath + "/valid/Qt.ico");
+        reader.jumpToImage(4);
+        reader.setScaledSize(inSize);
+        inImg = reader.read();
+        QVERIFY(!inImg.isNull());
+        QCOMPARE(inImg.size(), inSize);
+    }
+
+    QBuffer buf;
+    {
+        buf.open(QIODevice::WriteOnly);
+        QImageWriter writer(&buf, "ico");
+        QVERIFY(writer.write(inImg));
+        buf.close();
+    }
+    {
+        buf.open(QIODevice::ReadOnly);
+        QImageReader reader(&buf);
+        QVERIFY(reader.canRead());
+        QCOMPARE(reader.format(), QByteArray("ico"));
+        QImage outImg = reader.read();
+        QVERIFY(!outImg.isNull());
+        QCOMPARE(outImg.size(), outSize);
+        buf.close();
+    }
 }
 
 QTEST_MAIN(tst_QIcoImageFormat)
