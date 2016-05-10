@@ -269,7 +269,6 @@ private slots:
 
     void widgetAt();
 #ifdef Q_OS_OSX
-    void sheetOpacity();
     void setMask();
 #endif
     void optimizedResizeMove();
@@ -3545,18 +3544,6 @@ void tst_QWidget::testDeletionInEventHandlers()
 }
 
 #ifdef Q_OS_OSX
-void tst_QWidget::sheetOpacity()
-{
-    QSKIP("QTBUG-52974: this test will most probably be deleted - to be investigated.");
-    QWidget tmpWindow;
-    QWidget sheet(&tmpWindow, Qt::Sheet);
-    tmpWindow.show();
-    sheet.show();
-    QCOMPARE(int(sheet.windowOpacity() * 255), 242);  // 95%
-    sheet.setParent(0, Qt::Dialog);
-    QCOMPARE(int(sheet.windowOpacity() * 255), 255);
-}
-
 class MaskedPainter : public QWidget
 {
 public:
