@@ -44,6 +44,7 @@
 #include <QTimer>
 #include <QAuthenticator>
 #include <QEventLoop>
+#include <QCryptographicHash>
 
 #include "private/qhttpnetworkreply_p.h"
 #include "private/qnetworkaccesscache_p.h"
@@ -158,7 +159,10 @@ static QByteArray makeCacheKey(QUrl &url, QNetworkProxy *proxy)
         }
 
         if (!key.scheme().isEmpty()) {
+            const QByteArray obfuscatedPassword = QCryptographicHash::hash(proxy->password().toUtf8(),
+                                                                           QCryptographicHash::Sha1).toHex();
             key.setUserName(proxy->user());
+            key.setPassword(QString::fromUtf8(obfuscatedPassword));
             key.setHost(proxy->hostName());
             key.setPort(proxy->port());
             key.setQuery(result);
