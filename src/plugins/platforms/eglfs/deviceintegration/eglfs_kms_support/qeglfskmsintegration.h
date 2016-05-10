@@ -77,7 +77,6 @@ public:
 protected:
     virtual QEglFSKmsDevice *createDevice(const QString &devicePath) = 0;
 
-private:
     void loadConfig();
 
     QEglFSKmsDevice *m_device;

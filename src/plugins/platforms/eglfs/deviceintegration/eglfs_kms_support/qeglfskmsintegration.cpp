@@ -90,7 +90,7 @@ void QEglFSKmsIntegration::platformDestroy()
 EGLNativeDisplayType QEglFSKmsIntegration::platformDisplay() const
 {
     Q_ASSERT(m_device);
-    return reinterpret_cast<EGLNativeDisplayType>(m_device->device());
+    return m_device->nativeDisplay();
 }
 
 bool QEglFSKmsIntegration::usesDefaultScreen()
