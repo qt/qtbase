@@ -2455,10 +2455,16 @@ QColor QImage::pixelColor(int x, int y) const
 */
 void QImage::setPixelColor(int x, int y, const QColor &color)
 {
-    if (!d || x < 0 || x >= width() || y < 0 || y >= height() || !color.isValid()) {
+    if (!d || x < 0 || x >= width() || y < 0 || y >= height()) {
         qWarning("QImage::setPixelColor: coordinate (%d,%d) out of range", x, y);
         return;
     }
+
+    if (!color.isValid()) {
+        qWarning("QImage::setPixelColor: color is invalid");
+        return;
+    }
+
     // QColor is always unpremultiplied
     QRgba64 c = color.rgba64();
     if (!hasAlphaChannel())

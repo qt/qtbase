@@ -3084,6 +3084,14 @@ void tst_QImage::pixelColor()
 
     QImage t = argb32.convertToFormat(QImage::Format_ARGB32_Premultiplied);
     QCOMPARE(t.pixel(0,0), argb32pm.pixel(0,0));
+
+    // Try specifying an invalid position.
+    QTest::ignoreMessage(QtWarningMsg, "QImage::setPixelColor: coordinate (-1,-1) out of range");
+    argb32.setPixelColor(-1, -1, QColor(Qt::red));
+
+    // Try setting an invalid color.
+    QTest::ignoreMessage(QtWarningMsg, "QImage::setPixelColor: color is invalid");
+    argb32.setPixelColor(0, 0, QColor());
 }
 
 void tst_QImage::pixel()
