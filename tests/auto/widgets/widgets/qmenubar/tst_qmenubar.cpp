@@ -132,10 +132,12 @@ private slots:
     void closeOnSecondClickAndOpenOnThirdClick();
     void cornerWidgets_data();
     void cornerWidgets();
+    void taskQTBUG53205_crashReparentNested();
 
 protected slots:
     void onSimpleActivated( QAction*);
     void onComplexActionTriggered();
+    void slotForTaskQTBUG53205();
 
 private:
     TestMenu initSimpleMenuBar(QMenuBar *mb);
@@ -148,6 +150,7 @@ private:
     QAction* m_lastSimpleAcceleratorId;
     int m_simpleActivatedCount;
     int m_complexTriggerCount[int('k')];
+    QMenuBar* taskQTBUG53205MenuBar;
 };
 
 // Testing get/set functions
@@ -1437,6 +1440,62 @@ void tst_QMenuBar::cornerWidgets()
     QVERIFY(!menuBar->cornerWidget(corner));
     delete cornerLabel;
 }
+
+
+void tst_QMenuBar::taskQTBUG53205_crashReparentNested()
+{
+    // This test was largely inspired by the test case submitted for the bug
+    QMainWindow mainWindow;
+    mainWindow.resize(300, 200);
+    centerOnScreen(&mainWindow);
+    const TestMenu testMenus = initWindowWithComplexMenuBar(mainWindow);
+    QApplication::setActiveWindow(&mainWindow);
+
+    // they can't be windows
+    QWidget hiddenParent(&mainWindow, 0);
+    //this one is going to be moved around
+    QWidget movingParent(&hiddenParent, 0);
+
+    //set up the container widget
+    QWidget containerWidget(&movingParent,0);
+
+    //set the new parent, a window
+    QScopedPointer<QWidget> windowedParent;
+    windowedParent.reset(new QWidget(Q_NULLPTR, Qt::WindowFlags()));
+    windowedParent->setGeometry(400, 10, 300, 300);
+
+    windowedParent->show();
+    QVERIFY(QTest::qWaitForWindowExposed(windowedParent.data()));
+
+    //set the "container", can't be a window
+    QWidget containedWidget(&containerWidget, 0);
+
+    taskQTBUG53205MenuBar = new QMenuBar(&containedWidget);
+
+    connect(testMenus.actions[0], &QAction::triggered, this, &tst_QMenuBar::slotForTaskQTBUG53205);
+    //now, move things around
+    //from : QMainWindow<-hiddenParent<-movingParent<-containerWidget<-containedWidget<-menuBar
+    //to windowedParent<-movingParent<-containerWidget<-containedWidget<-menuBar
+    movingParent.setParent(windowedParent.data(),0);
+    // this resets the parenting and the menu bar's window
+    taskQTBUG53205MenuBar->setParent(Q_NULLPTR);
+    taskQTBUG53205MenuBar->setParent(&containedWidget);
+    //from windowedParent<-movingParent<-containerWidget<-containedWidget<-menuBar
+    //to : QMainWindow<-hiddenParent<-movingParent<-containerWidget<-containedWidget<-menuBar
+    movingParent.setParent(&hiddenParent,0);
+    windowedParent.reset(); //make the old window invalid
+    // trigger the aciton,  reset the menu bar's window, this used to crash here.
+    testMenus.actions[0]->trigger();
+}
+
+void tst_QMenuBar::slotForTaskQTBUG53205()
+{
+    QWidget *parent = taskQTBUG53205MenuBar->parentWidget();
+    taskQTBUG53205MenuBar->setParent(Q_NULLPTR);
+    taskQTBUG53205MenuBar->setParent(parent);
+}
+
+
 
 QTEST_MAIN(tst_QMenuBar)
 #include "tst_qmenubar.moc"
