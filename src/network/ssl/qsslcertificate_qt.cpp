@@ -499,9 +499,11 @@ bool QSslCertificatePrivate::parseExtension(const QByteArray &data, QSslCertific
         const auto elems = val.toVector();
         for (const QAsn1Element &el : elems) {
             if (el.type() == 0x80) {
-                result[QStringLiteral("keyid")] = el.value().toHex();
+                const QString key = QStringLiteral("keyid");
+                result[key] = el.value().toHex();
             } else if (el.type() == 0x82) {
-                result[QStringLiteral("serial")] = colonSeparatedHex(el.value());
+                const QString serial = QStringLiteral("serial");
+                result[serial] = colonSeparatedHex(el.value());
             }
         }
         value = result;
