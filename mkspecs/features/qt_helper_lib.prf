@@ -17,8 +17,7 @@ CONFIG -= qt
 CONFIG -= warning_clean  # Don't presume 3rd party code to be clean
 load(qt_common)
 
-contains(QT_CONFIG, debug_and_release): CONFIG += debug_and_release
-contains(QT_CONFIG, build_all): CONFIG += build_all
+contains(QT_CONFIG, debug_and_release): CONFIG += debug_and_release build_all
 
 DESTDIR = $$MODULE_BASE_OUTDIR/lib
 DLLDESTDIR = $$MODULE_BASE_OUTDIR/bin
