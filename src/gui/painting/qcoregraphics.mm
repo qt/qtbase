@@ -133,7 +133,7 @@ NSImage *qt_mac_create_nsimage(const QIcon &icon, int defaultSize)
     QList<QSize> availableSizes = icon.availableSizes();
     if (availableSizes.isEmpty() && defaultSize > 0)
         availableSizes << QSize(defaultSize, defaultSize);
-    foreach (QSize size, availableSizes) {
+    for (QSize size : qAsConst(availableSizes)) {
         QPixmap pm = icon.pixmap(size);
         if (pm.isNull())
             continue;
