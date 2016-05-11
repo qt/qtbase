@@ -770,7 +770,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     //
     // Special handling for qtableview/qtreeview fake header attributes
     //
-    static QStringList realPropertyNames =
+    static const QStringList realPropertyNames =
             (QStringList() << QLatin1String("visible")
                            << QLatin1String("cascadingSectionResizes")
                            << QLatin1String("defaultSectionSize")
@@ -782,7 +782,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QTreeView"))
                || m_uic->customWidgetsInfo()->extends(className, QLatin1String("QTreeWidget"))) {
         DomPropertyList headerProperties;
-        foreach (const QString &realPropertyName, realPropertyNames) {
+        for (const QString &realPropertyName : realPropertyNames) {
             const QString upperPropertyName = realPropertyName.at(0).toUpper()
                                               + realPropertyName.mid(1);
             const QString fakePropertyName = QLatin1String("header") + upperPropertyName;
@@ -797,13 +797,13 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     } else if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QTableView"))
                || m_uic->customWidgetsInfo()->extends(className, QLatin1String("QTableWidget"))) {
 
-        static QStringList headerPrefixes =
+        static const QStringList headerPrefixes =
                 (QStringList() << QLatin1String("horizontalHeader")
                                << QLatin1String("verticalHeader"));
 
-        foreach (const QString &headerPrefix, headerPrefixes) {
+        for (const QString &headerPrefix : headerPrefixes) {
             DomPropertyList headerProperties;
-            foreach (const QString &realPropertyName, realPropertyNames) {
+            for (const QString &realPropertyName : realPropertyNames) {
                 const QString upperPropertyName = realPropertyName.at(0).toUpper()
                                                   + realPropertyName.mid(1);
                 const QString fakePropertyName = headerPrefix + upperPropertyName;

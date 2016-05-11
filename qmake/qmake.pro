@@ -7,6 +7,7 @@ CONFIG += console bootstrap
 CONFIG -= qt
 DEFINES += \
     QT_BUILD_QMAKE \
+    QT_NO_FOREACH \
     PROEVALUATOR_FULL
 
 VPATH += \
