@@ -298,7 +298,7 @@ private:
 
         bool develMode = false;
         bool debugWait = false;
-        foreach (const char *arg, args) {
+        for (const char *arg : args) {
             if (strcmp(arg, "-qdevel") == 0)
                 develMode = true;
             if (strcmp(arg, "-qdebug") == 0)
