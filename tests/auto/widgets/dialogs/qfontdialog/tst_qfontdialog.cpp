@@ -193,11 +193,14 @@ void tst_QFontDialog::task256466_wrongStyle()
     for (int i = 0; i < familyList->model()->rowCount(); ++i) {
         QModelIndex currentFamily = familyList->model()->index(i, 0);
         familyList->setCurrentIndex(currentFamily);
+        int expectedSize = sizeList->currentIndex().data().toInt();
         const QFont current = dialog.currentFont(),
                     expected = fdb.font(currentFamily.data().toString(),
-            styleList->currentIndex().data().toString(), sizeList->currentIndex().data().toInt());
+            styleList->currentIndex().data().toString(), expectedSize);
         QCOMPARE(current.family(), expected.family());
         QCOMPARE(current.style(), expected.style());
+        if (expectedSize == 0 && !QFontDatabase().isScalable(current.family(), current.styleName()))
+            QEXPECT_FAIL("", "QTBUG-53299: Smooth sizes for unscalable font contains unsupported size", Continue);
         QCOMPARE(current.pointSizeF(), expected.pointSizeF());
     }
 }
