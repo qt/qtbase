@@ -748,7 +748,7 @@ bool QMacPasteboardMimeVCard::canConvert(const QString &mime, QString flav)
 
 QString QMacPasteboardMimeVCard::flavorFor(const QString &mime)
 {
-    if (mime.startsWith(QLatin1String("text/plain")))
+    if (mime.startsWith(QLatin1String("text/vcard")))
         return QLatin1String("public.vcard");
     return QString();
 }
@@ -756,14 +756,14 @@ QString QMacPasteboardMimeVCard::flavorFor(const QString &mime)
 QString QMacPasteboardMimeVCard::mimeFor(QString flav)
 {
     if (flav == QLatin1String("public.vcard"))
-        return QLatin1String("text/plain");
+        return QLatin1String("text/vcard");
     return QString();
 }
 
 QVariant QMacPasteboardMimeVCard::convertToMime(const QString &mime, QList<QByteArray> data, QString)
 {
     QByteArray cards;
-    if (mime == QLatin1String("text/plain")) {
+    if (mime == QLatin1String("text/vcard")) {
         for (int i=0; i<data.size(); ++i)
             cards += data[i];
     }
@@ -773,7 +773,7 @@ QVariant QMacPasteboardMimeVCard::convertToMime(const QString &mime, QList<QByte
 QList<QByteArray> QMacPasteboardMimeVCard::convertFromMime(const QString &mime, QVariant data, QString)
 {
     QList<QByteArray> ret;
-    if (mime == QLatin1String("text/plain"))
+    if (mime == QLatin1String("text/vcard"))
         ret.append(data.toString().toUtf8());
     return ret;
 }
