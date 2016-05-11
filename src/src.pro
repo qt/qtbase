@@ -140,7 +140,8 @@ TOOLS = src_tools_moc src_tools_rcc src_tools_qlalr
 win32:SUBDIRS += src_winmain
 SUBDIRS += src_network src_sql src_xml src_testlib
 contains(QT_CONFIG, dbus) {
-    force_bootstrap: SUBDIRS += src_tools_bootstrap_dbus
+    force_bootstrap|contains(QT_CONFIG, private_tests): \
+        SUBDIRS += src_tools_bootstrap_dbus
     SUBDIRS += src_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
     TOOLS += src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
     contains(QT_CONFIG, accessibility-atspi-bridge): \
