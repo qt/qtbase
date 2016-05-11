@@ -4051,12 +4051,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(QMAKE_CXXFLAGS_DEBUG)"
         fi
 
-        if [ -n "$RPATH_FLAGS" ] && [ -n "`getQMakeConf 'QMAKE_(LFLAGS_)?RPATH'`" ]; then
-            setBootstrapVariable "QMAKE_(LFLAGS_)?RPATH" QMAKE_LFLAGS_RPATH
-            for rpath in $RPATH_FLAGS; do
-                EXTRA_LFLAGS="\$(QMAKE_LFLAGS_RPATH)\"$rpath\" $EXTRA_LFLAGS"
-            done
-        fi
         if [ "$BUILD_ON_MSYS" = "yes" ]; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS -DUNICODE"
             EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS -DUNICODE"
@@ -4103,9 +4097,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
                         \"\$(SOURCE_PATH)/src/corelib/io/qsettings_mac.cpp\" \
                         \"\$(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp\" \
                         \"\$(SOURCE_PATH)/src/corelib/kernel/qcore_mac_objc.mm\""
-        fi
-        if [ '!' -z "$D_FLAGS" ]; then
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $D_FLAGS"
         fi
         echo >>"$mkfile"
 	adjrelpath=`echo "$relpath" | sed 's/ /\\\\\\\\ /g'`
