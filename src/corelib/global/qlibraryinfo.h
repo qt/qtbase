@@ -51,8 +51,10 @@ class QStringList;
 class Q_CORE_EXPORT QLibraryInfo
 {
 public:
-    static QString licensee();
-    static QString licensedProducts();
+#if QT_DEPRECATED_SINCE(5, 8)
+    static QT_DEPRECATED QString licensee();
+    static QT_DEPRECATED QString licensedProducts();
+#endif
 
 #ifndef QT_NO_DATESTRING
 #if QT_DEPRECATED_SINCE(5, 5)

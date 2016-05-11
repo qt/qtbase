@@ -229,30 +229,30 @@ QLibraryInfo::QLibraryInfo()
 { }
 
 /*!
-  Returns the person to whom this build of Qt is licensed.
-
-  \sa licensedProducts()
+  \deprecated
+  This function used to return the person to whom this build of Qt is licensed, now returns an empty string.
 */
 
+#if QT_DEPRECATED_SINCE(5, 8)
 QString
 QLibraryInfo::licensee()
 {
-    const char * volatile str = QT_CONFIGURE_LICENSEE;
-    return QString::fromLocal8Bit(str);
+    return QString();
 }
+#endif
 
 /*!
-  Returns the products that the license for this build of Qt has access to.
-
-  \sa licensee()
+  \deprecated
+  This function used to return the products that the license for this build of Qt has access to, now returns an empty string.
 */
 
+#if QT_DEPRECATED_SINCE(5, 8)
 QString
 QLibraryInfo::licensedProducts()
 {
-    const char * volatile str = QT_CONFIGURE_LICENSED_PRODUCTS;
-    return QString::fromLatin1(str);
+    return QString();
 }
+#endif
 
 /*!
     \since 4.6

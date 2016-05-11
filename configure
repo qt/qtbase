@@ -3122,10 +3122,6 @@ addConfStr "$shortspec"
 [ -d "$outpath/src/corelib/global" ] || mkdir -p "$outpath/src/corelib/global"
 
 cat > "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
-/* License Info */
-static const char qt_configure_licensee_str          [256 + 12] = "qt_lcnsuser=$Licensee";
-static const char qt_configure_licensed_products_str [256 + 12] = "qt_lcnsprod=$Edition";
-
 /* Installation date */
 static const char qt_configure_installation          [12+11]    = "qt_instdate=2012-12-20";
 
@@ -3152,10 +3148,6 @@ $QT_CONFIGURE_STRS#endif
 #ifdef QT_BUILD_QMAKE
 # define QT_CONFIGURE_SYSROOTIFY_PREFIX $QMAKE_SYSROOTIFY
 #endif
-
-/* strlen( "qt_lcnsxxxx" ) == 12 */
-#define QT_CONFIGURE_LICENSEE qt_configure_licensee_str + 12
-#define QT_CONFIGURE_LICENSED_PRODUCTS qt_configure_licensed_products_str + 12
 
 #define QT_CONFIGURE_PREFIX_PATH qt_configure_prefix_path_str + 12
 #ifdef QT_BUILD_QMAKE

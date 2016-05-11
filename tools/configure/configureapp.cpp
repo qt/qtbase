@@ -3951,11 +3951,7 @@ void Configure::generateQConfigCpp()
     // Generate the new qconfig.cpp file
     {
         FileWriter tmpStream(buildPath + "/src/corelib/global/qconfig.cpp");
-        tmpStream << "/* Licensed */" << endl
-                  << "static const char qt_configure_licensee_str          [512 + 12] = \"qt_lcnsuser=" << dictionary["LICENSEE"] << "\";" << endl
-                  << "static const char qt_configure_licensed_products_str [512 + 12] = \"qt_lcnsprod=" << dictionary["EDITION"] << "\";" << endl
-                  << endl
-                  << "/* Build date */" << endl
+        tmpStream << "/* Build date */" << endl
                   << "static const char qt_configure_installation          [11  + 12] = \"qt_instdate=2012-12-20\";" << endl
                   << endl
                   << "/* Installation Info */" << endl
@@ -3983,9 +3979,6 @@ void Configure::generateQConfigCpp()
                   << "#ifdef QT_BUILD_QMAKE\n"
                   << "# define QT_CONFIGURE_SYSROOTIFY_PREFIX " << (sysrootifyPrefix ? "true" : "false") << endl
                   << "#endif\n\n"
-                  << "/* strlen( \"qt_lcnsxxxx\") == 12 */" << endl
-                  << "#define QT_CONFIGURE_LICENSEE qt_configure_licensee_str + 12" << endl
-                  << "#define QT_CONFIGURE_LICENSED_PRODUCTS qt_configure_licensed_products_str + 12" << endl
                   << endl
                   << "#define QT_CONFIGURE_PREFIX_PATH qt_configure_prefix_path_str + 12\n"
                   << "#ifdef QT_BUILD_QMAKE\n"
