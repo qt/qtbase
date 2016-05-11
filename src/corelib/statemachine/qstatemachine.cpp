@@ -1778,7 +1778,11 @@ void QStateMachinePrivate::_q_start()
 {
     Q_Q(QStateMachine);
     Q_ASSERT(state == Starting);
-    foreach (QAbstractState *state, configuration) {
+    // iterate over a copy, since we emit signals which may cause
+    // 'configuration' to change, resulting in undefined behavior when
+    // iterating at the same time:
+    const auto config = configuration;
+    for (QAbstractState *state : config) {
         QAbstractStatePrivate *abstractStatePrivate = QAbstractStatePrivate::get(state);
         abstractStatePrivate->active = false;
         emit state->activeChanged(false);

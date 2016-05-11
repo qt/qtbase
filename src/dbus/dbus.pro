@@ -23,6 +23,8 @@ win32 {
         -luser32
 }
 
+DEFINES += QT_NO_FOREACH
+
 QMAKE_DOCS = $$PWD/doc/qtdbus.qdocconf
 
 PUB_HEADERS = qdbusargument.h \
