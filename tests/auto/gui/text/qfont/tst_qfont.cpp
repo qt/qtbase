@@ -115,13 +115,10 @@ void tst_QFont::exactMatch()
     QSKIP("Exact matching on windows misses a lot because of the sample chars");
 #endif
 
-
-    if (!QGuiApplication::platformName().compare("xcb", Qt::CaseInsensitive)) {
-        QVERIFY(QFont("sans").exactMatch());
-        QVERIFY(QFont("sans-serif").exactMatch());
-        QVERIFY(QFont("serif").exactMatch());
-        QVERIFY(QFont("monospace").exactMatch());
-    }
+    QVERIFY(!QFont("sans").exactMatch());
+    QVERIFY(!QFont("sans-serif").exactMatch());
+    QVERIFY(!QFont("serif").exactMatch());
+    QVERIFY(!QFont("monospace").exactMatch());
 
     QSKIP("This test is bogus on Unix with support for font aliases in fontconfig");
 
