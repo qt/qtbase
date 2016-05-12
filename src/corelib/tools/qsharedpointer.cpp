@@ -1299,17 +1299,6 @@
     compile. Use qSharedPointerConstCast to cast away the constness.
 */
 
-/*!
-    \fn QDebug operator<<(QDebug debug, const QSharedPointer<T> &ptr)
-    \relates QSharedPointer
-    \since 5.7
-
-    Writes the pointer tracked by \a ptr into the debug object \a debug for
-    debugging purposes.
-
-    \sa {Debugging Techniques}
-*/
-
 #include <qset.h>
 #include <qmutex.h>
 
