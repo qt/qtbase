@@ -125,13 +125,6 @@ public:
     QTimeZone m_timeZone;
 #endif // QT_BOOTSTRAPPED
 
-    void setTimeSpec(Qt::TimeSpec spec, int offsetSeconds);
-    void setDateTime(const QDate &date, const QTime &time);
-    QPair<QDate, QTime> getDateTime() const;
-
-    void checkValidDateTime();
-    void refreshDateTime();
-
 #ifndef QT_BOOTSTRAPPED
     static qint64 zoneMSecsToEpochMSecs(qint64 msecs, const QTimeZone &zone,
                                         QDate *localDate = 0, QTime *localTime = 0);
