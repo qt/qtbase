@@ -1218,7 +1218,7 @@ bool QFtpPI::startNextCmd()
 
     pendingCommands.pop_front();
 #if defined(QFTPPI_DEBUG)
-    qDebug("QFtpPI send: %s", currentCmd.left(currentCmd.length()-2).toLatin1().constData());
+    qDebug("QFtpPI send: %s", currentCmd.leftRef(currentCmd.length() - 2).toLatin1().constData());
 #endif
     state = Waiting;
     commandSocket.write(currentCmd.toUtf8());
