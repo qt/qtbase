@@ -2513,31 +2513,26 @@ void QDateTimePrivate::setTimeSpec(Qt::TimeSpec spec, int offsetSeconds)
     clearValidDateTime();
     clearSetToDaylightStatus();
 
-#ifndef QT_BOOTSTRAPPED
-    m_timeZone = QTimeZone();
-#endif // QT_BOOTSTRAPPED
-
     switch (spec) {
     case Qt::OffsetFromUTC:
-        if (offsetSeconds == 0) {
-            setSpec(Qt::UTC);
-            m_offsetFromUtc = 0;
-        } else {
-            setSpec(Qt::OffsetFromUTC);
-            m_offsetFromUtc = offsetSeconds;
-        }
+        if (offsetSeconds == 0)
+            spec = Qt::UTC;
         break;
     case Qt::TimeZone:
         // Use system time zone instead
-        setSpec(Qt::LocalTime);
-        m_offsetFromUtc = 0;
-        break;
+        spec = Qt::LocalTime;
+        // fallthrough
     case Qt::UTC:
     case Qt::LocalTime:
-        setSpec(spec);
-        m_offsetFromUtc = 0;
+        offsetSeconds = 0;
         break;
     }
+
+    setSpec(spec);
+    m_offsetFromUtc = offsetSeconds;
+#ifndef QT_BOOTSTRAPPED
+    m_timeZone = QTimeZone();
+#endif // QT_BOOTSTRAPPED
 }
 
 void QDateTimePrivate::setDateTime(const QDate &date, const QTime &time)
