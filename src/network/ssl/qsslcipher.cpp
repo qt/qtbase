@@ -90,7 +90,8 @@ QSslCipher::QSslCipher()
 QSslCipher::QSslCipher(const QString &name)
     : d(new QSslCipherPrivate)
 {
-    foreach (const QSslCipher &cipher, QSslConfiguration::supportedCiphers()) {
+    const auto ciphers = QSslConfiguration::supportedCiphers();
+    for (const QSslCipher &cipher : ciphers) {
         if (cipher.name() == name) {
             *this = cipher;
             return;
@@ -111,7 +112,8 @@ QSslCipher::QSslCipher(const QString &name)
 QSslCipher::QSslCipher(const QString &name, QSsl::SslProtocol protocol)
     : d(new QSslCipherPrivate)
 {
-    foreach (const QSslCipher &cipher, QSslConfiguration::supportedCiphers()) {
+    const auto ciphers = QSslConfiguration::supportedCiphers();
+    for (const QSslCipher &cipher : ciphers) {
         if (cipher.name() == name && cipher.protocol() == protocol) {
             *this = cipher;
             return;

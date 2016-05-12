@@ -822,12 +822,12 @@ void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const 
 QZipReader::QZipReader(const QString &archive, QIODevice::OpenMode mode)
 {
     QScopedPointer<QFile> f(new QFile(archive));
-    f->open(mode);
+    const bool result = f->open(mode);
     QZipReader::Status status;
     const QFileDevice::FileError error = f->error();
-    if (error == QFile::NoError)
+    if (result && error == QFile::NoError) {
         status = NoError;
-    else {
+    } else {
         if (error == QFile::ReadError)
             status = FileReadError;
         else if (error == QFile::OpenError)
@@ -1119,9 +1119,8 @@ void QZipReader::close()
 QZipWriter::QZipWriter(const QString &fileName, QIODevice::OpenMode mode)
 {
     QScopedPointer<QFile> f(new QFile(fileName));
-    f->open(mode);
     QZipWriter::Status status;
-    if (f->error() == QFile::NoError)
+    if (f->open(mode) && f->error() == QFile::NoError)
         status = QZipWriter::NoError;
     else {
         if (f->error() == QFile::WriteError)

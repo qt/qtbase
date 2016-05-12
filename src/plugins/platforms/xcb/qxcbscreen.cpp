@@ -76,7 +76,8 @@ QXcbVirtualDesktop::~QXcbVirtualDesktop()
 
 QXcbScreen *QXcbVirtualDesktop::screenAt(const QPoint &pos) const
 {
-    foreach (QXcbScreen *screen, connection()->screens()) {
+    const auto screens = connection()->screens();
+    for (QXcbScreen *screen : screens) {
         if (screen->virtualDesktop() == this && screen->geometry().contains(pos))
             return screen;
     }
@@ -157,7 +158,7 @@ void QXcbVirtualDesktop::updateWorkArea()
     QRect workArea = getWorkArea();
     if (m_workArea != workArea) {
         m_workArea = workArea;
-        foreach (QPlatformScreen *screen, m_screens)
+        for (QPlatformScreen *screen : qAsConst(m_screens))
             ((QXcbScreen *)screen)->updateAvailableGeometry();
     }
 }
@@ -386,10 +387,9 @@ QSurfaceFormat QXcbScreen::surfaceFormatFor(const QSurfaceFormat &format) const
 
 const xcb_visualtype_t *QXcbScreen::visualForFormat(const QSurfaceFormat &format) const
 {
-    QVector<const xcb_visualtype_t *> candidates;
+    const xcb_visualtype_t *candidate = nullptr;
 
-    for (auto ii = m_visuals.constBegin(); ii != m_visuals.constEnd(); ++ii) {
-        const xcb_visualtype_t &xcb_visualtype = ii.value();
+    for (const xcb_visualtype_t &xcb_visualtype : m_visuals) {
 
         const int redSize = qPopulationCount(xcb_visualtype.red_mask);
         const int greenSize = qPopulationCount(xcb_visualtype.green_mask);
@@ -408,19 +408,17 @@ const xcb_visualtype_t *QXcbScreen::visualForFormat(const QSurfaceFormat &format
         if (format.alphaBufferSize() != -1 && alphaSize != format.alphaBufferSize())
             continue;
 
-        candidates.append(&xcb_visualtype);
+        // Try to find a RGB visual rather than e.g. BGR or GBR
+        if (qCountTrailingZeroBits(xcb_visualtype.blue_mask) == 0)
+            return &xcb_visualtype;
+
+        // In case we do not find anything we like, just remember the first one
+        // and hope for the best:
+        if (!candidate)
+            candidate = &xcb_visualtype;
     }
 
-    if (candidates.isEmpty())
-        return nullptr;
-
-    // Try to find a RGB visual rather than e.g. BGR or GBR
-    for (const xcb_visualtype_t *candidate : qAsConst(candidates))
-        if (qCountTrailingZeroBits(candidate->blue_mask) == 0)
-            return candidate;
-
-    // Did not find anything we like, just grab the first one and hope for the best
-    return candidates.first();
+    return candidate;
 }
 
 void QXcbScreen::sendStartupMessage(const QByteArray &message) const

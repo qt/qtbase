@@ -250,17 +250,25 @@ QPlatformOffscreenSurface *QXcbIntegration::createPlatformOffscreenSurface(QOffs
 bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
-    case ThreadedPixmaps: return true;
-    case OpenGL: return m_connections.first()->glIntegration();
-    case ThreadedOpenGL: return m_connections.at(0)->threadedEventHandling()
-                         && m_connections.at(0)->glIntegration()
-                             && m_connections.at(0)->glIntegration()->supportsThreadedOpenGL();
-    case WindowMasks: return true;
-    case MultipleWindows: return true;
-    case ForeignWindows: return true;
-    case SyncState: return true;
-    case RasterGLSurface: return true;
-    case SwitchableWidgetComposition: return true;
+    case OpenGL:
+    case ThreadedOpenGL:
+    {
+        const auto *connection = qAsConst(m_connections).first();
+        if (const auto *integration = connection->glIntegration())
+            return cap != ThreadedOpenGL
+                || (connection->threadedEventHandling() && integration->supportsThreadedOpenGL());
+        return false;
+    }
+
+    case ThreadedPixmaps:
+    case WindowMasks:
+    case MultipleWindows:
+    case ForeignWindows:
+    case SyncState:
+    case RasterGLSurface:
+    case SwitchableWidgetComposition:
+        return true;
+
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }

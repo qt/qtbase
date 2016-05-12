@@ -18,6 +18,7 @@
 #include "libANGLE/Caps.h"
 #include "libANGLE/Config.h"
 #include "libANGLE/AttributeMap.h"
+#include "libANGLE/renderer/Renderer.h"
 
 namespace gl
 {
@@ -31,6 +32,8 @@ class DisplayImpl;
 
 namespace egl
 {
+class Device;
+class Image;
 class Surface;
 
 class Display final : angle::NonCopyable
@@ -41,7 +44,8 @@ class Display final : angle::NonCopyable
     Error initialize();
     void terminate();
 
-    static egl::Display *getDisplay(EGLNativeDisplayType displayId, const AttributeMap &attribMap);
+    static egl::Display *GetDisplayFromDevice(void *native_display);
+    static egl::Display *GetDisplayFromAttribs(void *native_display, const AttributeMap &attribMap);
 
     static const ClientExtensions &getClientExtensions();
     static const std::string &getClientExtensionString();
@@ -57,26 +61,38 @@ class Display final : angle::NonCopyable
     Error createPixmapSurface(const Config *configuration, NativePixmapType nativePixmap, const AttributeMap &attribs,
                               Surface **outSurface);
 
+    Error createImage(gl::Context *context,
+                      EGLenum target,
+                      EGLClientBuffer buffer,
+                      const AttributeMap &attribs,
+                      Image **outImage);
+
     Error createContext(const Config *configuration, gl::Context *shareContext, const AttributeMap &attribs,
                         gl::Context **outContext);
 
     Error makeCurrent(egl::Surface *drawSurface, egl::Surface *readSurface, gl::Context *context);
 
     void destroySurface(egl::Surface *surface);
+    void destroyImage(egl::Image *image);
     void destroyContext(gl::Context *context);
 
     bool isInitialized() const;
     bool isValidConfig(const Config *config) const;
     bool isValidContext(gl::Context *context) const;
     bool isValidSurface(egl::Surface *surface) const;
+    bool isValidImage(const Image *image) const;
     bool isValidNativeWindow(EGLNativeWindowType window) const;
 
+    static bool isValidDisplay(const egl::Display *display);
     static bool isValidNativeDisplay(EGLNativeDisplayType display);
     static bool hasExistingWindowSurface(EGLNativeWindowType window);
 
     bool isDeviceLost() const;
     bool testDeviceLost();
     void notifyDeviceLost();
+
+    Error waitClient() const;
+    Error waitNative(EGLint engine, egl::Surface *drawSurface, egl::Surface *readSurface) const;
 
     const Caps &getCaps() const;
 
@@ -88,9 +104,11 @@ class Display final : angle::NonCopyable
     EGLNativeDisplayType getNativeDisplayId() const { return mDisplayId; }
 
     rx::DisplayImpl *getImplementation() { return mImplementation; }
+    Device *getDevice() const;
+    EGLenum getPlatform() const { return mPlatform; }
 
   private:
-    Display(EGLNativeDisplayType displayId);
+    Display(EGLenum platform, EGLNativeDisplayType displayId, Device *eglDevice);
 
     void setAttributes(rx::DisplayImpl *impl, const AttributeMap &attribMap);
 
@@ -109,6 +127,9 @@ class Display final : angle::NonCopyable
     typedef std::set<gl::Context*> ContextSet;
     ContextSet mContextSet;
 
+    typedef std::set<Image *> ImageSet;
+    ImageSet mImageSet;
+
     bool mInitialized;
 
     Caps mCaps;
@@ -117,6 +138,9 @@ class Display final : angle::NonCopyable
     std::string mDisplayExtensionString;
 
     std::string mVendorString;
+
+    Device *mDevice;
+    EGLenum mPlatform;
 };
 
 }

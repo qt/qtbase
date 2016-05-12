@@ -20,3 +20,5 @@ EXAMPLE_FILES += simplestyle.json
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tools/styleplugin/styles
 INSTALLS += target
+
+CONFIG += install_ok  # Do not cargo-cult this!

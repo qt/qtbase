@@ -183,6 +183,18 @@ QRectF QInputMethod::keyboardRectangle() const
 }
 
 /*!
+    \property QInputMethod::inputItemClipRectangle
+    \brief Input item's clipped rectangle in window coordinates.
+
+    The clipped input rectangle is often used by various input methods to determine
+    how much screen real estate is available for the input method (e.g. Virtual Keyboard).
+*/
+QRectF QInputMethod::inputItemClipRectangle() const
+{
+    Q_D(const QInputMethod);
+    return inputMethodQueryRectangle_helper(Qt::ImInputItemClipRectangle, d->inputItemTransform);
+}
+/*!
     Requests virtual keyboard to open. If the platform
     doesn't provide virtual keyboard the visibility
     remains false.
@@ -320,6 +332,8 @@ void QInputMethod::update(Qt::InputMethodQueries queries)
     if (queries & (Qt::ImAnchorRectangle))
         emit anchorRectangleChanged();
 
+    if (queries & (Qt::ImInputItemClipRectangle))
+        emit inputItemClipRectangleChanged();
 }
 
 /*!

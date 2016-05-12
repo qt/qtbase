@@ -166,9 +166,9 @@ static int ioErrorHandler(Display *dpy)
 }
 #endif
 
-QXcbScreen* QXcbConnection::findScreenForCrtc(xcb_window_t rootWindow, xcb_randr_crtc_t crtc)
+QXcbScreen* QXcbConnection::findScreenForCrtc(xcb_window_t rootWindow, xcb_randr_crtc_t crtc) const
 {
-    foreach (QXcbScreen *screen, m_screens) {
+    for (QXcbScreen *screen : m_screens) {
         if (screen->root() == rootWindow && screen->crtc() == crtc)
             return screen;
     }
@@ -176,9 +176,9 @@ QXcbScreen* QXcbConnection::findScreenForCrtc(xcb_window_t rootWindow, xcb_randr
     return 0;
 }
 
-QXcbScreen* QXcbConnection::findScreenForOutput(xcb_window_t rootWindow, xcb_randr_output_t output)
+QXcbScreen* QXcbConnection::findScreenForOutput(xcb_window_t rootWindow, xcb_randr_output_t output) const
 {
-    foreach (QXcbScreen *screen, m_screens) {
+    for (QXcbScreen *screen : m_screens) {
         if (screen->root() == rootWindow && screen->output() == output)
             return screen;
     }
@@ -186,9 +186,9 @@ QXcbScreen* QXcbConnection::findScreenForOutput(xcb_window_t rootWindow, xcb_ran
     return 0;
 }
 
-QXcbVirtualDesktop* QXcbConnection::virtualDesktopForRootWindow(xcb_window_t rootWindow)
+QXcbVirtualDesktop* QXcbConnection::virtualDesktopForRootWindow(xcb_window_t rootWindow) const
 {
-    foreach (QXcbVirtualDesktop *virtualDesktop, m_virtualDesktops) {
+    for (QXcbVirtualDesktop *virtualDesktop : m_virtualDesktops) {
         if (virtualDesktop->screen()->root == rootWindow)
             return virtualDesktop;
     }
@@ -215,6 +215,9 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
         // CRTC with node mode could mean that output has been disabled, and we'll
         // get RRNotifyOutputChange notification for that.
         if (screen && crtc.mode) {
+            if (crtc.rotation == XCB_RANDR_ROTATION_ROTATE_90 ||
+                crtc.rotation == XCB_RANDR_ROTATION_ROTATE_270)
+                std::swap(crtc.width, crtc.height);
             screen->updateGeometry(QRect(crtc.x, crtc.y, crtc.width, crtc.height), crtc.rotation);
             if (screen->mode() != crtc.mode)
                 screen->updateRefreshRate(crtc.mode);
@@ -242,7 +245,8 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
                     xcb_randr_get_output_info_reply(xcb_connection(), outputInfoCookie, NULL));
 
                 // Find a fake screen
-                foreach (QPlatformScreen *scr, virtualDesktop->screens()) {
+                const auto scrs = virtualDesktop->screens();
+                for (QPlatformScreen *scr : scrs) {
                     QXcbScreen *xcbScreen = (QXcbScreen *)scr;
                     if (xcbScreen->output() == XCB_NONE) {
                         screen = xcbScreen;
@@ -284,7 +288,7 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
             }
         }
 
-        qCDebug(lcQpaScreen) << "primary output is" << m_screens.first()->name();
+        qCDebug(lcQpaScreen) << "primary output is" << qAsConst(m_screens).first()->name();
     }
 }
 
@@ -319,7 +323,7 @@ void QXcbConnection::updateScreen(QXcbScreen *screen, const xcb_randr_output_cha
             // If the screen became primary, reshuffle the order in QGuiApplicationPrivate
             const int idx = m_screens.indexOf(screen);
             if (idx > 0) {
-                m_screens.first()->setPrimary(false);
+                qAsConst(m_screens).first()->setPrimary(false);
                 m_screens.swap(0, idx);
             }
             screen->virtualDesktop()->setPrimaryScreen(screen);
@@ -339,7 +343,7 @@ QXcbScreen *QXcbConnection::createScreen(QXcbVirtualDesktop *virtualDesktop,
 
     if (screen->isPrimary()) {
         if (!m_screens.isEmpty())
-            m_screens.first()->setPrimary(false);
+            qAsConst(m_screens).first()->setPrimary(false);
 
         m_screens.prepend(screen);
     } else {
@@ -518,7 +522,7 @@ void QXcbConnection::initializeScreens()
         ++xcbScreenNumber;
     } // for each xcb screen
 
-    foreach (QXcbVirtualDesktop *virtualDesktop, m_virtualDesktops)
+    for (QXcbVirtualDesktop *virtualDesktop : qAsConst(m_virtualDesktops))
         virtualDesktop->subscribeToXFixesSelectionNotify();
 
     if (m_virtualDesktops.isEmpty()) {
@@ -526,19 +530,19 @@ void QXcbConnection::initializeScreens()
     } else {
         // Ensure the primary screen is first on the list
         if (primaryScreen) {
-            if (m_screens.first() != primaryScreen) {
+            if (qAsConst(m_screens).first() != primaryScreen) {
                 m_screens.removeOne(primaryScreen);
                 m_screens.prepend(primaryScreen);
             }
         }
 
         // Push the screens to QGuiApplication
-        foreach (QXcbScreen *screen, m_screens) {
+        for (QXcbScreen *screen : qAsConst(m_screens)) {
             qCDebug(lcQpaScreen) << "adding" << screen << "(Primary:" << screen->isPrimary() << ")";
             QXcbIntegration::instance()->screenAdded(screen, screen->isPrimary());
         }
 
-        qCDebug(lcQpaScreen) << "primary output is" << m_screens.first()->name();
+        qCDebug(lcQpaScreen) << "primary output is" << qAsConst(m_screens).first()->name();
     }
 }
 
@@ -563,6 +567,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     , m_buttons(0)
     , m_focusWindow(0)
     , m_mouseGrabber(0)
+    , m_mousePressWindow(0)
     , m_clientLeader(0)
     , m_systemTrayTracker(0)
     , m_glIntegration(Q_NULLPTR)
@@ -1010,8 +1015,8 @@ void QXcbConnection::handleXcbError(xcb_generic_error_t *error)
         }
     }
     if (i == m_callLog.size() && !m_callLog.isEmpty())
-        qDebug("Caused some time after: %s:%d", m_callLog.first().file.constData(),
-               m_callLog.first().line);
+        qDebug("Caused some time after: %s:%d", qAsConst(m_callLog).first().file.constData(),
+               qAsConst(m_callLog).first().line);
 #endif
 }
 
@@ -1231,7 +1236,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
 #ifndef QT_NO_CLIPBOARD
             m_clipboard->handleXFixesSelectionRequest(notify_event);
 #endif
-            foreach (QXcbVirtualDesktop *virtualDesktop, m_virtualDesktops)
+            for (QXcbVirtualDesktop *virtualDesktop : qAsConst(m_virtualDesktops))
                 virtualDesktop->handleXFixesSelectionNotify(notify_event);
 
             handled = true;
@@ -1240,7 +1245,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             handled = true;
         } else if (has_randr_extension && response_type == xrandr_first_event + XCB_RANDR_SCREEN_CHANGE_NOTIFY) {
             xcb_randr_screen_change_notify_event_t *change_event = (xcb_randr_screen_change_notify_event_t *)event;
-            foreach (QXcbScreen *s, m_screens) {
+            for (QXcbScreen *s : qAsConst(m_screens)) {
                 if (s->root() == change_event->root )
                     s->handleScreenChange(change_event);
             }
@@ -1375,6 +1380,11 @@ void QXcbConnection::setFocusWindow(QXcbWindow *w)
 void QXcbConnection::setMouseGrabber(QXcbWindow *w)
 {
     m_mouseGrabber = w;
+    m_mousePressWindow = Q_NULLPTR;
+}
+void QXcbConnection::setMousePressWindow(QXcbWindow *w)
+{
+    m_mousePressWindow = w;
 }
 
 void QXcbConnection::grabServer()
@@ -1628,8 +1638,13 @@ bool QXcbConnection::compressEvent(xcb_generic_event_t *event, int currentIndex,
         if (!m_xi2Enabled)
             return false;
 
-        // compress XI_Motion
+        // compress XI_Motion, but not from tablet devices
         if (isXIType(event, m_xiOpCode, XI_Motion)) {
+#ifndef QT_NO_TABLETEVENT
+            xXIDeviceEvent *xdev = reinterpret_cast<xXIDeviceEvent *>(event);
+            if (const_cast<QXcbConnection *>(this)->tabletDataForDevice(xdev->sourceid))
+                return false;
+#endif // QT_NO_TABLETEVENT
             for (int j = nextIndex; j < eventqueue->size(); ++j) {
                 xcb_generic_event_t *next = eventqueue->at(j);
                 if (!isValid(next))
@@ -1726,7 +1741,7 @@ void QXcbConnection::processXcbEvents()
 
     // Indicate with a null event that the event the callbacks are waiting for
     // is not in the queue currently.
-    Q_FOREACH (PeekFunc f, m_peekFuncs)
+    for (PeekFunc f : qAsConst(m_peekFuncs))
         f(this, 0);
     m_peekFuncs.clear();
 
@@ -2248,7 +2263,7 @@ bool QXcbConnection::xi2MouseEvents() const
 #endif
 
 #if defined(XCB_USE_XINPUT2)
-static int xi2ValuatorOffset(unsigned char *maskPtr, int maskLen, int number)
+static int xi2ValuatorOffset(const unsigned char *maskPtr, int maskLen, int number)
 {
     int offset = 0;
     for (int i = 0; i < maskLen; i++) {
@@ -2267,11 +2282,11 @@ static int xi2ValuatorOffset(unsigned char *maskPtr, int maskLen, int number)
     return -1;
 }
 
-bool QXcbConnection::xi2GetValuatorValueIfSet(void *event, int valuatorNum, double *value)
+bool QXcbConnection::xi2GetValuatorValueIfSet(const void *event, int valuatorNum, double *value)
 {
-    xXIDeviceEvent *xideviceevent = static_cast<xXIDeviceEvent *>(event);
-    unsigned char *buttonsMaskAddr = (unsigned char*)&xideviceevent[1];
-    unsigned char *valuatorsMaskAddr = buttonsMaskAddr + xideviceevent->buttons_len * 4;
+    const xXIDeviceEvent *xideviceevent = static_cast<const xXIDeviceEvent *>(event);
+    const unsigned char *buttonsMaskAddr = (const unsigned char*)&xideviceevent[1];
+    const unsigned char *valuatorsMaskAddr = buttonsMaskAddr + xideviceevent->buttons_len * 4;
     FP3232 *valuatorsValuesAddr = (FP3232*)(valuatorsMaskAddr + xideviceevent->valuators_len * 4);
 
     int valuatorOffset = xi2ValuatorOffset(valuatorsMaskAddr, xideviceevent->valuators_len, valuatorNum);

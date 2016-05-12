@@ -525,28 +525,36 @@ void QXcbBackingStore::beginPaint(const QRegion &region)
     if (!m_image)
         return;
 
-    m_paintRegion = region;
-    m_image->preparePaint(m_paintRegion);
+    m_paintRegions.push(region);
+    m_image->preparePaint(region);
 
     if (m_image->hasAlpha()) {
         QPainter p(paintDevice());
         p.setCompositionMode(QPainter::CompositionMode_Source);
         const QColor blank = Qt::transparent;
-        for (const QRect &rect : m_paintRegion)
+        for (const QRect &rect : region)
             p.fillRect(rect, blank);
     }
 }
 
 void QXcbBackingStore::endPaint()
 {
+    if (Q_UNLIKELY(m_paintRegions.isEmpty())) {
+        qWarning("%s: paint regions empty!", Q_FUNC_INFO);
+        return;
+    }
+
+    const QRegion region = m_paintRegions.pop();
+    m_image->preparePaint(region);
+
     QXcbWindow *platformWindow = static_cast<QXcbWindow *>(window()->handle());
     if (!platformWindow || !platformWindow->imageNeedsRgbSwap())
         return;
 
     // Slow path: the paint device was m_rgbImage. Now copy with swapping red
     // and blue into m_image.
-    auto it = m_paintRegion.begin();
-    const auto end = m_paintRegion.end();
+    auto it = region.begin();
+    const auto end = region.end();
     if (it == end)
         return;
     QPainter p(m_image->image());

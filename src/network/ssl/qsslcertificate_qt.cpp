@@ -197,7 +197,7 @@ QString QSslCertificate::toText() const
 void QSslCertificatePrivate::init(const QByteArray &data, QSsl::EncodingFormat format)
 {
     if (!data.isEmpty()) {
-        QList<QSslCertificate> certs = (format == QSsl::Pem)
+        const QList<QSslCertificate> certs = (format == QSsl::Pem)
             ? certificatesFromPem(data, 1)
             : certificatesFromDer(data, 1);
         if (!certs.isEmpty()) {
@@ -309,7 +309,7 @@ bool QSslCertificatePrivate::parse(const QByteArray &data)
         if (!elem.read(versionStream) || elem.type() != QAsn1Element::IntegerType)
             return false;
 
-        versionString = QByteArray::number(elem.value()[0] + 1);
+        versionString = QByteArray::number(elem.value().at(0) + 1);
         if (!elem.read(certStream))
             return false;
     } else {
@@ -451,7 +451,8 @@ bool QSslCertificatePrivate::parseExtension(const QByteArray &data, QSslCertific
         if (!val.read(valElem.value()) || val.type() != QAsn1Element::SequenceType)
             return false;
         QVariantMap result;
-        foreach (const QAsn1Element &el, val.toVector()) {
+        const auto elems = val.toVector();
+        for (const QAsn1Element &el : elems) {
             QVector<QAsn1Element> items = el.toVector();
             if (items.size() != 2)
                 return false;
@@ -495,11 +496,14 @@ bool QSslCertificatePrivate::parseExtension(const QByteArray &data, QSslCertific
         if (!val.read(valElem.value()) || val.type() != QAsn1Element::SequenceType)
             return false;
         QVariantMap result;
-        foreach (const QAsn1Element &el, val.toVector()) {
+        const auto elems = val.toVector();
+        for (const QAsn1Element &el : elems) {
             if (el.type() == 0x80) {
-                result[QStringLiteral("keyid")] = el.value().toHex();
+                const QString key = QStringLiteral("keyid");
+                result[key] = el.value().toHex();
             } else if (el.type() == 0x82) {
-                result[QStringLiteral("serial")] = colonSeparatedHex(el.value());
+                const QString serial = QStringLiteral("serial");
+                result[serial] = colonSeparatedHex(el.value());
             }
         }
         value = result;

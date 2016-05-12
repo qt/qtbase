@@ -274,7 +274,7 @@ bool QLocalSocket::setSocketDescriptor(qintptr socketDescriptor,
     // Is our parent a localServer? Then it wants us to use its remote socket.
     QLocalServer* localServer = qobject_cast<QLocalServer*>( parent() );
     if (localServer) {
-        foreach (QObject* child, localServer->children()) {
+        for (QObject* child : localServer->children()) {
             QTcpSocket* childTcpSocket = qobject_cast<QTcpSocket*>(child);
             if (childTcpSocket && childTcpSocket->socketDescriptor() == socketDescriptor) {
                 d->setSocket( static_cast<QLocalUnixSocket*>(childTcpSocket) );

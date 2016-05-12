@@ -4985,7 +4985,11 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         break;
 
     case SH_BlinkCursorWhenTextSelected:
+#if defined(Q_OS_DARWIN)
+        ret = 0;
+#else
         ret = 1;
+#endif
         break;
 
     case SH_Table_GridLineColor:

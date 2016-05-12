@@ -73,7 +73,7 @@ QEglFSKmsScreen::QEglFSKmsScreen(QEglFSKmsIntegration *integration,
                                  QEglFSKmsDevice *device,
                                  QEglFSKmsOutput output,
                                  QPoint position)
-    : QEglFSScreen(eglGetDisplay(reinterpret_cast<EGLNativeDisplayType>(device->device())))
+    : QEglFSScreen(eglGetDisplay(device->nativeDisplay()))
     , m_integration(integration)
     , m_device(device)
     , m_output(output)

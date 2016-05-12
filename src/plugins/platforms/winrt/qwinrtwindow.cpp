@@ -42,7 +42,6 @@
 #include <private/qeventdispatcher_winrt_p.h>
 
 #include <EGL/egl.h>
-#define EGL_EGLEXT_PROTOTYPES
 #include <EGL/eglext.h>
 
 #include <qfunctions_winrt.h>
@@ -321,10 +320,6 @@ void QWinRTWindow::setWindowState(Qt::WindowState state)
 
     if (d->state == state)
         return;
-
-#ifdef Q_OS_WINPHONE
-    d->screen->setStatusBarVisibility(state == Qt::WindowMaximized || state == Qt::WindowNoState, window());
-#endif
 
     if (state == Qt::WindowMinimized)
         setUIElementVisibility(d->uiElement.Get(), false);

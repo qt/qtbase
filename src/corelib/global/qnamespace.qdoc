@@ -2582,6 +2582,9 @@
     \value ImEnterKeyType       The Enter key type.
     \value ImAnchorRectangle    The bounding rectangle of the selection anchor.
                                 This value has been added in Qt 5.7.
+    \value ImInputItemClipRectangle The actual exposed input item rectangle. Parts of the input item might be
+                                clipped. This value will take clipping into consideration and return the actual painted
+                                item rectangle. The rectangle is in widget coordinates.
 
     Masks:
 

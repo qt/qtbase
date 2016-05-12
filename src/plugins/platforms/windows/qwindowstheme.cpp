@@ -484,11 +484,8 @@ static QPixmap loadIconFromShell32(int resourceId, QSizeF size)
     return QPixmap();
 }
 
-QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
+QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &pixmapSize) const
 {
-    const QScreen *primaryScreen = QGuiApplication::primaryScreen();
-    const int scaleFactor = primaryScreen ? qRound(QHighDpiScaling::factor(primaryScreen)) : 1;
-    const QSizeF pixmapSize = size * scaleFactor;
     int resourceId = -1;
     SHSTOCKICONID stockId = SIID_INVALID;
     UINT stockFlags = 0;
@@ -584,7 +581,6 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) con
         stockFlags |= (pixmapSize.width() > 16 ? SHGFI_LARGEICON : SHGFI_SMALLICON);
         if (SHGetStockIconInfo(stockId, SHGFI_ICON | stockFlags, &iconInfo) == S_OK) {
             pixmap = qt_pixmapFromWinHICON(iconInfo.hIcon);
-            pixmap.setDevicePixelRatio(scaleFactor);
             DestroyIcon(iconInfo.hIcon);
             return pixmap;
         }
@@ -598,7 +594,6 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) con
                 QPixmap link = loadIconFromShell32(30, pixmapSize);
                 painter.drawPixmap(0, 0, int(pixmapSize.width()), int(pixmapSize.height()), link);
             }
-            pixmap.setDevicePixelRatio(scaleFactor);
             return pixmap;
         }
     }
@@ -606,13 +601,12 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) con
     if (iconName) {
         HICON iconHandle = LoadIcon(NULL, iconName);
         QPixmap pixmap = qt_pixmapFromWinHICON(iconHandle);
-        pixmap.setDevicePixelRatio(scaleFactor);
         DestroyIcon(iconHandle);
         if (!pixmap.isNull())
             return pixmap;
     }
 
-    return QPlatformTheme::standardPixmap(sp, size);
+    return QPlatformTheme::standardPixmap(sp, pixmapSize);
 }
 
 enum { // Shell image list ids

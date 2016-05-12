@@ -5235,7 +5235,7 @@ void QGLContextGroup::removeShare(const QGLContext *context) {
     // Update context group representative.
     Q_ASSERT(group->m_shares.size() != 0);
     if (group->m_context == context)
-        group->m_context = group->m_shares[0];
+        group->m_context = group->m_shares.at(0);
 
     // If there is only one context left, then make the list empty.
     if (group->m_shares.size() == 1)

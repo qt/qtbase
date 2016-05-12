@@ -297,7 +297,7 @@ public:
 
     QNetworkProxy applicationProxy()
     {
-        return proxyForQuery(QNetworkProxyQuery()).first();
+        return proxyForQuery(QNetworkProxyQuery()).constFirst();
     }
 
     QList<QNetworkProxy> proxyForQuery(const QNetworkProxyQuery &query);

@@ -116,9 +116,9 @@ void QEglFSKmsGbmDevice::close()
     m_globalCursor = Q_NULLPTR;
 }
 
-EGLNativeDisplayType QEglFSKmsGbmDevice::device() const
+EGLNativeDisplayType QEglFSKmsGbmDevice::nativeDisplay() const
 {
-    return 0;
+    return reinterpret_cast<EGLNativeDisplayType>(m_gbm_device);
 }
 
 gbm_device * QEglFSKmsGbmDevice::gbmDevice() const

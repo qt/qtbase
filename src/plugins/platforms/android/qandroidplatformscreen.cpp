@@ -117,7 +117,7 @@ QAndroidPlatformScreen::~QAndroidPlatformScreen()
 
 QWindow *QAndroidPlatformScreen::topWindow() const
 {
-    foreach (QAndroidPlatformWindow *w, m_windowStack) {
+    for (QAndroidPlatformWindow *w : m_windowStack) {
         if (w->window()->type() == Qt::Window ||
                 w->window()->type() == Qt::Popup ||
                 w->window()->type() == Qt::Dialog) {
@@ -129,7 +129,7 @@ QWindow *QAndroidPlatformScreen::topWindow() const
 
 QWindow *QAndroidPlatformScreen::topLevelAt(const QPoint &p) const
 {
-    foreach (QAndroidPlatformWindow *w, m_windowStack) {
+    for (QAndroidPlatformWindow *w : m_windowStack) {
         if (w->geometry().contains(p, false) && w->window()->isVisible())
             return w->window();
     }
@@ -263,7 +263,7 @@ void QAndroidPlatformScreen::setAvailableGeometry(const QRect &rect)
 
 void QAndroidPlatformScreen::applicationStateChanged(Qt::ApplicationState state)
 {
-    foreach (QAndroidPlatformWindow *w, m_windowStack)
+    for (QAndroidPlatformWindow *w : qAsConst(m_windowStack))
         w->applicationStateChanged(state);
 
     if (state <=  Qt::ApplicationHidden) {
@@ -304,7 +304,7 @@ void QAndroidPlatformScreen::doRedraw()
     // windows that have renderToTexture children (i.e. they need the OpenGL path) then
     // we do not need an overlay surface.
     bool hasVisibleRasterWindows = false;
-    foreach (QAndroidPlatformWindow *window, m_windowStack) {
+    for (QAndroidPlatformWindow *window : qAsConst(m_windowStack)) {
         if (window->window()->isVisible() && window->isRaster() && !qt_window_private(window->window())->compositing) {
             hasVisibleRasterWindows = true;
             break;
@@ -357,14 +357,14 @@ void QAndroidPlatformScreen::doRedraw()
     compositePainter.setCompositionMode(QPainter::CompositionMode_Source);
 
     QRegion visibleRegion(m_dirtyRect);
-    foreach (QAndroidPlatformWindow *window, m_windowStack) {
+    for (QAndroidPlatformWindow *window : qAsConst(m_windowStack)) {
         if (!window->window()->isVisible()
                 || qt_window_private(window->window())->compositing
                 || !window->isRaster())
             continue;
 
-        QVector<QRect> visibleRects = visibleRegion.rects();
-        foreach (const QRect &rect, visibleRects) {
+        const QVector<QRect> visibleRects = visibleRegion.rects();
+        for (const QRect &rect : visibleRects) {
             QRect targetRect = window->geometry();
             targetRect &= rect;
 

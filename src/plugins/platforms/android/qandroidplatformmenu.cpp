@@ -159,7 +159,7 @@ QPlatformMenuItem *QAndroidPlatformMenu::menuItemAt(int position) const
 
 QPlatformMenuItem *QAndroidPlatformMenu::menuItemForTag(quintptr tag) const
 {
-    foreach (QPlatformMenuItem *menuItem, m_menuItems) {
+    for (QPlatformMenuItem *menuItem : m_menuItems) {
         if (menuItem->tag() == tag)
             return menuItem;
     }

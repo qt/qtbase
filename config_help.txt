@@ -325,8 +325,8 @@ Additional options:
     -no-gbm .............. Do not compile backends for GBM.
  *  -gbm ................. Compile backends for GBM.
 
-    -no-directfb ......... Do not compile DirectFB support.
- *  -directfb ............ Compile DirectFB support.
+ *  -no-directfb ......... Do not compile DirectFB support.
+    -directfb ............ Compile DirectFB support.
 
     -no-linuxfb .......... Do not compile Linux Framebuffer support.
  *  -linuxfb ............. Compile Linux Framebuffer support.

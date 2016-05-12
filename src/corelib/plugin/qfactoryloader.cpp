@@ -56,18 +56,6 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace {
-
-// avoid duplicate QStringLiteral data:
-inline QString iidKeyLiteral() { return QStringLiteral("IID"); }
-#ifdef QT_SHARED
-inline QString versionKeyLiteral() { return QStringLiteral("version"); }
-#endif
-inline QString metaDataKeyLiteral() { return QStringLiteral("MetaData"); }
-inline QString keysKeyLiteral() { return QStringLiteral("Keys"); }
-
-}
-
 class QFactoryLoaderPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QFactoryLoader)
@@ -167,12 +155,12 @@ void QFactoryLoader::update()
             QStringList keys;
             bool metaDataOk = false;
 
-            QString iid = library->metaData.value(iidKeyLiteral()).toString();
+            QString iid = library->metaData.value(QLatin1String("IID")).toString();
             if (iid == QLatin1String(d->iid.constData(), d->iid.size())) {
-                QJsonObject object = library->metaData.value(metaDataKeyLiteral()).toObject();
+                QJsonObject object = library->metaData.value(QLatin1String("MetaData")).toObject();
                 metaDataOk = true;
 
-                QJsonArray k = object.value(keysKeyLiteral()).toArray();
+                QJsonArray k = object.value(QLatin1String("Keys")).toArray();
                 for (int i = 0; i < k.size(); ++i)
                     keys += d->cs ? k.at(i).toString() : k.at(i).toString().toLower();
             }
@@ -195,9 +183,9 @@ void QFactoryLoader::update()
                 QLibraryPrivate *previous = d->keyMap.value(key);
                 int prev_qt_version = 0;
                 if (previous) {
-                    prev_qt_version = (int)previous->metaData.value(versionKeyLiteral()).toDouble();
+                    prev_qt_version = (int)previous->metaData.value(QLatin1String("version")).toDouble();
                 }
-                int qt_version = (int)library->metaData.value(versionKeyLiteral()).toDouble();
+                int qt_version = (int)library->metaData.value(QLatin1String("version")).toDouble();
                 if (!previous || (prev_qt_version > QT_VERSION && qt_version <= QT_VERSION)) {
                     d->keyMap[key] = library;
                     ++keyUsageCount;
@@ -280,7 +268,7 @@ QList<QJsonObject> QFactoryLoader::metaData() const
     const auto staticPlugins = QPluginLoader::staticPlugins();
     for (const QStaticPlugin &plugin : staticPlugins) {
         const QJsonObject object = plugin.metaData();
-        if (object.value(iidKeyLiteral()) != QLatin1String(d->iid.constData(), d->iid.size()))
+        if (object.value(QLatin1String("IID")) != QLatin1String(d->iid.constData(), d->iid.size()))
             continue;
         metaData.append(object);
     }
@@ -314,7 +302,7 @@ QObject *QFactoryLoader::instance(int index) const
     QVector<QStaticPlugin> staticPlugins = QPluginLoader::staticPlugins();
     for (int i = 0; i < staticPlugins.count(); ++i) {
         const QJsonObject object = staticPlugins.at(i).metaData();
-        if (object.value(iidKeyLiteral()) != QLatin1String(d->iid.constData(), d->iid.size()))
+        if (object.value(QLatin1String("IID")) != QLatin1String(d->iid.constData(), d->iid.size()))
             continue;
 
         if (index == 0)
@@ -328,12 +316,10 @@ QObject *QFactoryLoader::instance(int index) const
 QMultiMap<int, QString> QFactoryLoader::keyMap() const
 {
     QMultiMap<int, QString> result;
-    const QString metaDataKey = metaDataKeyLiteral();
-    const QString keysKey = keysKeyLiteral();
     const QList<QJsonObject> metaDataList = metaData();
     for (int i = 0; i < metaDataList.size(); ++i) {
-        const QJsonObject metaData = metaDataList.at(i).value(metaDataKey).toObject();
-        const QJsonArray keys = metaData.value(keysKey).toArray();
+        const QJsonObject metaData = metaDataList.at(i).value(QLatin1String("MetaData")).toObject();
+        const QJsonArray keys = metaData.value(QLatin1String("Keys")).toArray();
         const int keyCount = keys.size();
         for (int k = 0; k < keyCount; ++k)
             result.insert(i, keys.at(k).toString());
@@ -343,12 +329,10 @@ QMultiMap<int, QString> QFactoryLoader::keyMap() const
 
 int QFactoryLoader::indexOf(const QString &needle) const
 {
-    const QString metaDataKey = metaDataKeyLiteral();
-    const QString keysKey = keysKeyLiteral();
     const QList<QJsonObject> metaDataList = metaData();
     for (int i = 0; i < metaDataList.size(); ++i) {
-        const QJsonObject metaData = metaDataList.at(i).value(metaDataKey).toObject();
-        const QJsonArray keys = metaData.value(keysKey).toArray();
+        const QJsonObject metaData = metaDataList.at(i).value(QLatin1String("MetaData")).toObject();
+        const QJsonArray keys = metaData.value(QLatin1String("Keys")).toArray();
         const int keyCount = keys.size();
         for (int k = 0; k < keyCount; ++k) {
             if (!keys.at(k).toString().compare(needle, Qt::CaseInsensitive))

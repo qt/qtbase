@@ -266,7 +266,7 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
           << "\t\t\t" << writeSettings("isa", "PBXGroup", SettingsNoQuote) << ";\n"
           << "\t\t\t" << writeSettings("children", grp_it.value(), SettingsAsList, 4) << ";\n"
           << "\t\t\t" << writeSettings("name", grp_it.key().section(Option::dir_sep, -1)) << ";\n"
-          << "\t\t\t" << writeSettings("sourceTree", "<Group>") << ";\n"
+          << "\t\t\t" << writeSettings("sourceTree", "<group>") << ";\n"
           << "\t\t};\n";
     }
 
@@ -694,7 +694,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("isa", "PBXGroup", SettingsNoQuote) << ";\n"
           << "\t\t\t" << writeSettings("children", grp_it.value(), SettingsAsList, 4) << ";\n"
           << "\t\t\t" << writeSettings("name", grp_it.key().section(Option::dir_sep, -1)) << ";\n"
-          << "\t\t\t" << writeSettings("sourceTree", "<Group>") << ";\n"
+          << "\t\t\t" << writeSettings("sourceTree", "<group>") << ";\n"
           << "\t\t};\n";
     }
 
@@ -1032,7 +1032,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
               << "\t\t\t" << writeSettings("children", project->values("QMAKE_PBX_LIBRARIES"), SettingsAsList, 4) << ";\n"
               << "\t\t\t" << writeSettings("isa", "PBXGroup", SettingsNoQuote) << ";\n"
               << "\t\t\t" << writeSettings("name", grp) << ";\n"
-              << "\t\t\t" << writeSettings("sourceTree", "<Group>") << ";\n"
+              << "\t\t\t" << writeSettings("sourceTree", "<group>") << ";\n"
               << "\t\t};\n";
         }
     }
@@ -1146,7 +1146,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("children", bundle_file_refs, SettingsAsList, 4) << ";\n"
           << "\t\t\t" << writeSettings("isa", "PBXGroup", SettingsNoQuote) << ";\n"
           << "\t\t\t" << writeSettings("name", "Bundle Data") << ";\n"
-          << "\t\t\t" << writeSettings("sourceTree", "<Group>") << ";\n"
+          << "\t\t\t" << writeSettings("sourceTree", "<group>") << ";\n"
           << "\t\t};\n";
     }
 
@@ -1231,7 +1231,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("children", project->values("QMAKE_PBX_PRODUCTS"), SettingsAsList, 4) << ";\n"
           << "\t\t\t" << writeSettings("isa", "PBXGroup", SettingsNoQuote) << ";\n"
           << "\t\t\t" << writeSettings("name", "Products") << ";\n"
-          << "\t\t\t" << writeSettings("sourceTree", "<Group>") << ";\n"
+          << "\t\t\t" << writeSettings("sourceTree", "<group>") << ";\n"
           << "\t\t};\n";
     }
 
@@ -1241,7 +1241,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
       << "\t\t\t" << writeSettings("children", project->values("QMAKE_PBX_GROUPS"), SettingsAsList, 4) << ";\n"
       << "\t\t\t" << writeSettings("isa", "PBXGroup", SettingsNoQuote) << ";\n"
       << "\t\t\t" << writeSettings("name", project->first("QMAKE_ORIG_TARGET")) << ";\n"
-      << "\t\t\t" << writeSettings("sourceTree", "<Group>") << ";\n"
+      << "\t\t\t" << writeSettings("sourceTree", "<group>") << ";\n"
       << "\t\t};\n";
 
     {

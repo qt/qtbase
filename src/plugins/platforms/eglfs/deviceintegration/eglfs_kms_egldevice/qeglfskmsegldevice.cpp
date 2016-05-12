@@ -39,6 +39,7 @@
 
 #include "qeglfskmsegldevice.h"
 #include "qeglfskmsegldevicescreen.h"
+#include "qeglfskmsegldeviceintegration.h"
 
 #include <QtCore/private/qcore_unix_p.h>
 
@@ -68,9 +69,9 @@ void QEglFSKmsEglDevice::close()
     setFd(-1);
 }
 
-EGLNativeDisplayType QEglFSKmsEglDevice::device() const
+EGLNativeDisplayType QEglFSKmsEglDevice::nativeDisplay() const
 {
-    return 0;
+    return static_cast<QEglFSKmsEglDeviceIntegration *>(m_integration)->eglDevice();
 }
 
 QEglFSKmsScreen *QEglFSKmsEglDevice::createScreen(QEglFSKmsIntegration *integration, QEglFSKmsDevice *device, QEglFSKmsOutput output, QPoint position)

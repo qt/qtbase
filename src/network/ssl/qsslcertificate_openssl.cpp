@@ -507,7 +507,7 @@ QString QSslCertificate::toText() const
 void QSslCertificatePrivate::init(const QByteArray &data, QSsl::EncodingFormat format)
 {
     if (!data.isEmpty()) {
-        QList<QSslCertificate> certs = (format == QSsl::Pem)
+        const QList<QSslCertificate> certs = (format == QSsl::Pem)
             ? certificatesFromPem(data, 1)
             : certificatesFromDer(data, 1);
         if (!certs.isEmpty()) {

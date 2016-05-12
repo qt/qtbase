@@ -37,13 +37,21 @@ void TOutputGLSL::visitSymbol(TIntermSymbol *node)
     {
         out << "gl_FragDepth";
     }
-    else if (symbol == "gl_FragColor" && getShaderOutput() == SH_GLSL_CORE_OUTPUT)
+    else if (symbol == "gl_FragColor" && IsGLSL130OrNewer(getShaderOutput()))
     {
         out << "webgl_FragColor";
     }
-    else if (symbol == "gl_FragData" && getShaderOutput() == SH_GLSL_CORE_OUTPUT)
+    else if (symbol == "gl_FragData" && IsGLSL130OrNewer(getShaderOutput()))
     {
         out << "webgl_FragData";
+    }
+    else if (symbol == "gl_SecondaryFragColorEXT")
+    {
+        out << "angle_SecondaryFragColor";
+    }
+    else if (symbol == "gl_SecondaryFragDataEXT")
+    {
+        out << "angle_SecondaryFragData";
     }
     else
     {
@@ -67,6 +75,7 @@ TString TOutputGLSL::translateTextureFunction(TString &name)
         "texture2DProj", "textureProj",
         "texture2DLod", "textureLod",
         "texture2DProjLod", "textureProjLod",
+        "texture2DRect", "texture",
         "textureCube", "texture",
         "textureCubeLod", "textureLod",
         // Extensions
@@ -78,7 +87,7 @@ TString TOutputGLSL::translateTextureFunction(TString &name)
         "textureCubeGradEXT", "textureGrad",
         NULL, NULL
     };
-    const char **mapping = (getShaderOutput() == SH_GLSL_CORE_OUTPUT) ?
+    const char **mapping = (IsGLSL130OrNewer(getShaderOutput())) ?
         legacyToCoreRename : simpleRename;
 
     for (int i = 0; mapping[i] != NULL; i += 2)

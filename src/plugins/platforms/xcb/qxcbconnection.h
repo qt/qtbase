@@ -481,6 +481,8 @@ public:
     void setFocusWindow(QXcbWindow *);
     QXcbWindow *mouseGrabber() const { return m_mouseGrabber; }
     void setMouseGrabber(QXcbWindow *);
+    QXcbWindow *mousePressWindow() const { return m_mousePressWindow; }
+    void setMousePressWindow(QXcbWindow *);
 
     QByteArray startupId() const { return m_startupId; }
     void setStartupId(const QByteArray &nextId) { m_startupId = nextId; }
@@ -533,9 +535,9 @@ private:
     void initializeXShape();
     void initializeXKB();
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
-    QXcbScreen* findScreenForCrtc(xcb_window_t rootWindow, xcb_randr_crtc_t crtc);
-    QXcbScreen* findScreenForOutput(xcb_window_t rootWindow, xcb_randr_output_t output);
-    QXcbVirtualDesktop* virtualDesktopForRootWindow(xcb_window_t rootWindow);
+    QXcbScreen* findScreenForCrtc(xcb_window_t rootWindow, xcb_randr_crtc_t crtc) const;
+    QXcbScreen* findScreenForOutput(xcb_window_t rootWindow, xcb_randr_output_t output) const;
+    QXcbVirtualDesktop* virtualDesktopForRootWindow(xcb_window_t rootWindow) const;
     void updateScreens(const xcb_randr_notify_event_t *event);
     bool checkOutputIsPrimary(xcb_window_t rootWindow, xcb_randr_output_t output);
     void updateScreen(QXcbScreen *screen, const xcb_randr_output_change_t &outputChange);
@@ -579,9 +581,10 @@ private:
         };
         QHash<int, ValuatorClassInfo> valuatorInfo;
     };
-    bool xi2HandleTabletEvent(void *event, TabletData *tabletData, QXcbWindowEventListener *eventListener);
-    void xi2ReportTabletEvent(TabletData &tabletData, void *event);
+    bool xi2HandleTabletEvent(const void *event, TabletData *tabletData);
+    void xi2ReportTabletEvent(const void *event, TabletData *tabletData);
     QVector<TabletData> m_tabletData;
+    TabletData *tabletDataForDevice(int id);
 #endif // !QT_NO_TABLETEVENT
     struct ScrollingDevice {
         ScrollingDevice() : deviceId(0), verticalIndex(0), horizontalIndex(0), orientations(0), legacyOrientations(0) { }
@@ -596,7 +599,7 @@ private:
     void xi2HandleScrollEvent(void *event, ScrollingDevice &scrollingDevice);
     QHash<int, ScrollingDevice> m_scrollingDevices;
 
-    static bool xi2GetValuatorValueIfSet(void *event, int valuatorNum, double *value);
+    static bool xi2GetValuatorValueIfSet(const void *event, int valuatorNum, double *value);
     static void xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event);
 #endif
 
@@ -668,6 +671,7 @@ private:
 
     QXcbWindow *m_focusWindow;
     QXcbWindow *m_mouseGrabber;
+    QXcbWindow *m_mousePressWindow;
 
     xcb_window_t m_clientLeader;
     QByteArray m_startupId;

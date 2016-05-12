@@ -10,10 +10,10 @@
 #define LIBANGLE_ERROR_H_
 
 #include "angle_gl.h"
-#include "common/platform.h"
 #include <EGL/egl.h>
 
 #include <string>
+#include <memory>
 
 namespace gl
 {
@@ -23,27 +23,48 @@ class Error final
   public:
     explicit inline Error(GLenum errorCode);
     Error(GLenum errorCode, const char *msg, ...);
+    Error(GLenum errorCode, GLuint id, const char *msg, ...);
     inline Error(const Error &other);
     inline Error(Error &&other);
-
-    inline ~Error();
 
     inline Error &operator=(const Error &other);
     inline Error &operator=(Error &&other);
 
     inline GLenum getCode() const;
+    inline GLuint getID() const;
     inline bool isError() const;
 
     const std::string &getMessage() const;
+
+    // Useful for mocking and testing
+    bool operator==(const Error &other) const;
+    bool operator!=(const Error &other) const;
 
   private:
     void createMessageString() const;
 
     GLenum mCode;
-    mutable std::string *mMessage;
+    GLuint mID;
+    mutable std::unique_ptr<std::string> mMessage;
 };
 
-}
+template <typename T>
+class ErrorOrResult
+{
+  public:
+    ErrorOrResult(const gl::Error &error) : mError(error) {}
+    ErrorOrResult(T &&result) : mError(GL_NO_ERROR), mResult(std::move(result)) {}
+
+    bool isError() const { return mError.isError(); }
+    const gl::Error &getError() const { return mError; }
+    T &&getResult() { return std::move(mResult); }
+
+  private:
+    Error mError;
+    T mResult;
+};
+
+}  // namespace gl
 
 namespace egl
 {
@@ -56,8 +77,6 @@ class Error final
     Error(EGLint errorCode, EGLint id, const char *msg, ...);
     inline Error(const Error &other);
     inline Error(Error &&other);
-
-    inline ~Error();
 
     inline Error &operator=(const Error &other);
     inline Error &operator=(Error &&other);
@@ -73,10 +92,10 @@ class Error final
 
     EGLint mCode;
     EGLint mID;
-    mutable std::string *mMessage;
+    mutable std::unique_ptr<std::string> mMessage;
 };
 
-}
+}  // namespace egl
 
 #include "Error.inl"
 

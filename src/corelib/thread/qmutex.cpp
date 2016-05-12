@@ -282,18 +282,21 @@ void QMutex::unlock() Q_DECL_NOTHROW
         unlockInternal();
 }
 
-/*!
-    \fn void QMutex::isRecursive()
-    \since 5.0
-
-    Returns \c true if the mutex is recursive
-
-*/
-bool QBasicMutex::isRecursive()
+bool QBasicMutex::isRecursive() Q_DECL_NOTHROW
 {
     return QT_PREPEND_NAMESPACE(isRecursive)(d_ptr.loadAcquire());
 }
 
+/*!
+    \overload
+    \since 5.7
+
+    Returns \c true if the mutex is recursive
+*/
+bool QBasicMutex::isRecursive() const Q_DECL_NOTHROW
+{
+    return QT_PREPEND_NAMESPACE(isRecursive)(d_ptr.loadAcquire());
+}
 
 /*!
     \class QMutexLocker

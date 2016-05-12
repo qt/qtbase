@@ -700,6 +700,20 @@ QRawFont QRawFont::fromFont(const QFont &font, QFontDatabase::WritingSystem writ
     if (fe != 0 && fe->type() == QFontEngine::Multi) {
         QFontEngineMulti *multiEngine = static_cast<QFontEngineMulti *>(fe);
         fe = multiEngine->engine(0);
+
+        if (script > QChar::Script_Latin) {
+            // keep in sync with QFontEngineMulti::loadEngine()
+            QFontDef request(multiEngine->fontDef);
+            request.styleStrategy |= QFont::NoFontMerging;
+
+            if (QFontEngine *engine = QFontDatabase::findFont(request, script)) {
+                if (request.weight > QFont::Normal)
+                    engine->fontDef.weight = request.weight;
+                if (request.style > QFont::StyleNormal)
+                    engine->fontDef.style = request.style;
+                fe = engine;
+            }
+        }
         Q_ASSERT(fe);
     }
 

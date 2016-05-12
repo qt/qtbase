@@ -564,6 +564,22 @@ QString QJsonValue::toString(const QString &defaultValue) const
 }
 
 /*!
+    Converts the value to a QString and returns it.
+
+    If type() is not String, a null QString will be returned.
+
+    \sa QString::isNull()
+ */
+QString QJsonValue::toString() const
+{
+    if (t != String)
+        return QString();
+    stringData->ref.ref(); // the constructor below doesn't add a ref.
+    QStringDataPtr holder = { stringData };
+    return QString(holder);
+}
+
+/*!
     Converts the value to an array and returns it.
 
     If type() is not Array, the \a defaultValue will be returned.

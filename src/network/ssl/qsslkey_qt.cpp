@@ -169,7 +169,7 @@ void QSslKeyPrivate::decodeDer(const QByteArray &der, bool deepClear)
         QDataStream keyStream(elem.value());
         if (!elem.read(keyStream) || elem.type() != QAsn1Element::SequenceType)
             return;
-        QVector<QAsn1Element> infoItems = elem.toVector();
+        const QVector<QAsn1Element> infoItems = elem.toVector();
         if (infoItems.size() < 2 || infoItems[0].type() != QAsn1Element::ObjectIdentifierType)
             return;
         if (algorithm == QSsl::Rsa) {
@@ -189,7 +189,7 @@ void QSslKeyPrivate::decodeDer(const QByteArray &der, bool deepClear)
             if (infoItems[1].type() != QAsn1Element::SequenceType)
                 return;
             // key params
-            QVector<QAsn1Element> params = infoItems[1].toVector();
+            const QVector<QAsn1Element> params = infoItems[1].toVector();
             if (params.isEmpty() || params[0].type() != QAsn1Element::IntegerType)
                 return;
             keyLength = numberOfBits(params[0].value());
@@ -202,7 +202,7 @@ void QSslKeyPrivate::decodeDer(const QByteArray &der, bool deepClear)
         }
 
     } else {
-        QVector<QAsn1Element> items = elem.toVector();
+        const QVector<QAsn1Element> items = elem.toVector();
         if (items.isEmpty())
             return;
 
@@ -249,7 +249,7 @@ void QSslKeyPrivate::decodePem(const QByteArray &pem, const QByteArray &passPhra
     QMap<QByteArray, QByteArray> headers;
     QByteArray data = derFromPem(pem, &headers);
     if (headers.value("Proc-Type") == "4,ENCRYPTED") {
-        QList<QByteArray> dekInfo = headers.value("DEK-Info").split(',');
+        const QList<QByteArray> dekInfo = headers.value("DEK-Info").split(',');
         if (dekInfo.size() != 2) {
             clear(deepClear);
             return;

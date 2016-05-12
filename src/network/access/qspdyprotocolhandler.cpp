@@ -935,19 +935,7 @@ void QSpdyProtocolHandler::parseHttpHeaders(char flags, const QByteArray &frameD
         } else if (name == "content-length") {
             httpReply->setContentLength(value.toLongLong());
         } else {
-            if (value.contains('\0')) {
-                QList<QByteArray> values = value.split('\0');
-                QByteArray binder(", ");
-                if (name == "set-cookie")
-                    binder = "\n";
-                value.clear();
-                Q_FOREACH (const QByteArray& ivalue, values) {
-                    if (value.isEmpty())
-                        value = ivalue;
-                    else
-                        value += binder + ivalue;
-                }
-            }
+            value.replace('\0', name == "set-cookie" ? "\n" : ", ");
             httpReply->setHeaderField(name, value);
         }
     }

@@ -112,7 +112,7 @@ static QTextLine currentTextLine(const QTextCursor &cursor)
 }
 
 QWidgetTextControlPrivate::QWidgetTextControlPrivate()
-    : doc(0), cursorOn(false), cursorIsFocusIndicator(false),
+    : doc(0), cursorOn(false), cursorVisible(false), cursorIsFocusIndicator(false),
 #ifndef Q_OS_ANDROID
       interactionFlags(Qt::TextEditorInteraction),
 #else
@@ -685,17 +685,30 @@ void QWidgetTextControlPrivate::_q_documentLayoutChanged()
 
 }
 
-void QWidgetTextControlPrivate::setBlinkingCursorEnabled(bool enable)
+void QWidgetTextControlPrivate::setCursorVisible(bool visible)
 {
-    Q_Q(QWidgetTextControl);
+    if (cursorVisible == visible)
+        return;
 
-    if (enable && QApplication::cursorFlashTime() > 0)
-        cursorBlinkTimer.start(QApplication::cursorFlashTime() / 2, q);
+    cursorVisible = visible;
+    updateCursorBlinking();
+
+    if (cursorVisible)
+        connect(qApp->styleHints(), &QStyleHints::cursorFlashTimeChanged, this, &QWidgetTextControlPrivate::updateCursorBlinking);
     else
-        cursorBlinkTimer.stop();
+        disconnect(qApp->styleHints(), &QStyleHints::cursorFlashTimeChanged, this, &QWidgetTextControlPrivate::updateCursorBlinking);
+}
 
-    cursorOn = enable;
+void QWidgetTextControlPrivate::updateCursorBlinking()
+{
+    cursorBlinkTimer.stop();
+    if (cursorVisible) {
+        int flashTime = QGuiApplication::styleHints()->cursorFlashTime();
+        if (flashTime >= 2)
+            cursorBlinkTimer.start(flashTime / 2, q_func());
+    }
 
+    cursorOn = cursorVisible;
     repaintCursor();
 }
 
@@ -2156,13 +2169,13 @@ void QWidgetTextControlPrivate::focusEvent(QFocusEvent *e)
 #endif
         cursorOn = (interactionFlags & (Qt::TextSelectableByKeyboard | Qt::TextEditable));
         if (interactionFlags & Qt::TextEditable) {
-            setBlinkingCursorEnabled(true);
+            setCursorVisible(true);
         }
 #ifdef QT_KEYPAD_NAVIGATION
         }
 #endif
     } else {
-        setBlinkingCursorEnabled(false);
+        setCursorVisible(false);
 
         if (cursorIsFocusIndicator
             && e->reason() != Qt::ActiveWindowFocusReason
@@ -2971,7 +2984,7 @@ void QWidgetTextControl::setTextInteractionFlags(Qt::TextInteractionFlags flags)
     d->interactionFlags = flags;
 
     if (d->hasFocus)
-        d->setBlinkingCursorEnabled(flags & Qt::TextEditable);
+        d->setCursorVisible(flags & Qt::TextEditable);
 }
 
 Qt::TextInteractionFlags QWidgetTextControl::textInteractionFlags() const

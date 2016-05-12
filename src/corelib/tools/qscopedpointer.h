@@ -162,7 +162,7 @@ public:
         return oldD;
     }
 
-    inline void swap(QScopedPointer<T, Cleanup> &other)
+    void swap(QScopedPointer<T, Cleanup> &other) Q_DECL_NOTHROW
     {
         qSwap(d, other.d);
     }
@@ -189,17 +189,8 @@ inline bool operator!=(const QScopedPointer<T, Cleanup> &lhs, const QScopedPoint
 }
 
 template <class T, class Cleanup>
-Q_INLINE_TEMPLATE void qSwap(QScopedPointer<T, Cleanup> &p1, QScopedPointer<T, Cleanup> &p2)
+inline void swap(QScopedPointer<T, Cleanup> &p1, QScopedPointer<T, Cleanup> &p2) Q_DECL_NOTHROW
 { p1.swap(p2); }
-
-QT_END_NAMESPACE
-namespace std {
-    template <class T, class Cleanup>
-    Q_INLINE_TEMPLATE void swap(QT_PREPEND_NAMESPACE(QScopedPointer)<T, Cleanup> &p1, QT_PREPEND_NAMESPACE(QScopedPointer)<T, Cleanup> &p2)
-    { p1.swap(p2); }
-}
-QT_BEGIN_NAMESPACE
-
 
 
 namespace QtPrivate {
@@ -230,6 +221,9 @@ public:
         return this->d[i];
     }
 
+    void swap(QScopedArrayPointer &other) Q_DECL_NOTHROW // prevent QScopedPointer <->QScopedArrayPointer swaps
+    { QScopedPointer<T, Cleanup>::swap(other); }
+
 private:
     explicit inline QScopedArrayPointer(void *) {
         // Enforce the same type.
@@ -244,6 +238,10 @@ private:
 
     Q_DISABLE_COPY(QScopedArrayPointer)
 };
+
+template <typename T, typename Cleanup>
+inline void swap(QScopedArrayPointer<T, Cleanup> &lhs, QScopedArrayPointer<T, Cleanup> &rhs) Q_DECL_NOTHROW
+{ lhs.swap(rhs); }
 
 QT_END_NAMESPACE
 

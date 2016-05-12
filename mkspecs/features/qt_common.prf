@@ -44,6 +44,10 @@ contains(TEMPLATE, .*lib) {
     QMAKE_PRL_INSTALL_REPLACE += lib_replace
 }
 
+# The remainder of this file must not apply to bootstrapped tools,
+# as the host compiler's version and capabilities are not checked.
+host_build:force_bootstrap: return()
+
 # Extra warnings for Qt non-example code, to ensure cleanliness of the sources.
 # The block below may turn these warnings into errors for some Qt targets.
 # -Wdate-time: warn if we use __DATE__ or __TIME__ (we want to be able to reproduce the exact same binary)
@@ -65,16 +69,16 @@ warnings_are_errors:warning_clean {
     # compiler.
     clang:!ios {
         # Apple clang 4.0-4.2,5.0-5.1,6.0-6.4
-        # Regular clang 3.3-3.7
+        # Regular clang 3.3-3.8
         apple_ver = $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}
         reg_ver = $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}
-        contains(apple_ver, "4\\.[012]|5\\.[01]|6\\.[01234]")|contains(reg_ver, "3\\.[3-7]") {
+        contains(apple_ver, "4\\.[012]|5\\.[01]|6\\.[01234]")|contains(reg_ver, "3\\.[3-8]") {
             QMAKE_CXXFLAGS_WARN_ON += -Werror -Wno-error=\\$${LITERAL_HASH}warnings -Wno-error=deprecated-declarations $$WERROR
         }
     } else:intel_icc:linux {
-        # Intel CC 13.0 - 16.0, on Linux only
+        # Intel CC 13.0 - 17.0, on Linux only
         ver = $${QT_ICC_MAJOR_VERSION}.$${QT_ICC_MINOR_VERSION}
-        linux:contains(ver, "(1[345]\\.|16\\.0)") {
+        linux:contains(ver, "(1[3456]\\.|17\\.0)") {
             # 177: function "entity" was declared but never referenced
             #      (too aggressive; ICC reports even for functions created due to template instantiation)
             # 1224: #warning directive

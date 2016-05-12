@@ -313,7 +313,7 @@ int QDateTimeParser::sectionPos(const SectionNode &sn) const
 
 */
 
-static QString unquote(const QString &str)
+static QString unquote(const QStringRef &str)
 {
     const QChar quote(QLatin1Char('\''));
     const QChar slash(QLatin1Char('\\'));
@@ -357,10 +357,8 @@ static inline int countRepeat(const QString &str, int index, int maxCount)
 
 static inline void appendSeparator(QStringList *list, const QString &string, int from, int size, int lastQuote)
 {
-    QString str(string.mid(from, size));
-    if (lastQuote >= from)
-        str = unquote(str);
-    list->append(str);
+    const QStringRef separator = string.midRef(from, size);
+    list->append(lastQuote >= from ? unquote(separator) : separator.toString());
 }
 
 
@@ -471,7 +469,7 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
                 if (parserType != QVariant::Time) {
                     const SectionNode sn = { MonthSection, i - add, countRepeat(newFormat, i, 4), 0 };
                     newSectionNodes.append(sn);
-                    newSeparators.append(unquote(newFormat.mid(index, i - index)));
+                    newSeparators.append(unquote(newFormat.midRef(index, i - index)));
                     i += sn.count - 1;
                     index = i + 1;
                     newDisplay |= MonthSection;
@@ -553,19 +551,20 @@ int QDateTimeParser::sectionSize(int sectionIndex) const
         // is the previous value and displayText() is the new value.
         // The size difference is always due to leading zeroes.
         int sizeAdjustment = 0;
-        if (displayText().size() != text.size()) {
+        const int displayTextSize = displayText().size();
+        if (displayTextSize != text.size()) {
             // Any zeroes added before this section will affect our size.
             int preceedingZeroesAdded = 0;
             if (sectionNodes.size() > 1 && context == DateTimeEdit) {
-                for (QVector<SectionNode>::ConstIterator sectionIt = sectionNodes.constBegin();
-                    sectionIt != sectionNodes.constBegin() + sectionIndex; ++sectionIt) {
+                const auto begin = sectionNodes.cbegin();
+                const auto end = begin + sectionIndex;
+                for (auto sectionIt = begin; sectionIt != end; ++sectionIt)
                     preceedingZeroesAdded += sectionIt->zeroesAdded;
-                }
             }
             sizeAdjustment = preceedingZeroesAdded;
         }
 
-        return displayText().size() + sizeAdjustment - sectionPos(sectionIndex) - separators.last().size();
+        return displayTextSize + sizeAdjustment - sectionPos(sectionIndex) - separators.last().size();
     } else {
         return sectionPos(sectionIndex + 1) - sectionPos(sectionIndex)
             - separators.at(sectionIndex + 1).size();
@@ -847,7 +846,7 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
                     if (skipToNextSection(sectionIndex, currentValue, digitsStr)) {
                         state = Acceptable;
                         const int missingZeroes = sectionmaxsize - digitsStr.size();
-                        text.insert(index, QString().fill(QLatin1Char('0'), missingZeroes));
+                        text.insert(index, QString(missingZeroes, QLatin1Char('0')));
                         used = sectionmaxsize;
                         cursorPosition += missingZeroes;
                         ++(const_cast<QDateTimeParser*>(this)->sectionNodes[sectionIndex].zeroesAdded);
@@ -1164,11 +1163,12 @@ end:
                             if (newCurrentValue.daysTo(minimum) != 0) {
                                 break;
                             }
-                            toMin = newCurrentValue.time().msecsTo(minimum.time());
+                            const QTime time = newCurrentValue.time();
+                            toMin = time.msecsTo(minimum.time());
                             if (newCurrentValue.daysTo(maximum) > 0) {
                                 toMax = -1; // can't get to max
                             } else {
-                                toMax = newCurrentValue.time().msecsTo(maximum.time());
+                                toMax = time.msecsTo(maximum.time());
                             }
                         } else {
                             toMin = newCurrentValue.daysTo(minimum);
@@ -1555,10 +1555,7 @@ QString QDateTimeParser::SectionNode::format() const
         qWarning("QDateTimeParser::sectionFormat Internal error 2");
         return QString();
     }
-
-    QString str;
-    str.fill(fillChar, count);
-    return str;
+    return QString(count, fillChar);
 }
 
 

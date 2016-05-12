@@ -24,6 +24,7 @@ class AttributeMap;
 class Display;
 struct Config;
 class Surface;
+class ImageSibling;
 }
 
 namespace gl
@@ -34,7 +35,9 @@ class Context;
 namespace rx
 {
 class SurfaceImpl;
+class ImageImpl;
 struct ConfigDesc;
+class DeviceImpl;
 
 class DisplayImpl : angle::NonCopyable
 {
@@ -45,16 +48,25 @@ class DisplayImpl : angle::NonCopyable
     virtual egl::Error initialize(egl::Display *display) = 0;
     virtual void terminate() = 0;
 
-    virtual egl::Error createWindowSurface(const egl::Config *configuration, EGLNativeWindowType window, const egl::AttributeMap &attribs,
-                                           SurfaceImpl **outSurface) = 0;
-    virtual egl::Error createPbufferSurface(const egl::Config *configuration, const egl::AttributeMap &attribs,
-                                            SurfaceImpl **outSurface) = 0;
-    virtual egl::Error createPbufferFromClientBuffer(const egl::Config *configuration, EGLClientBuffer shareHandle,
-                                                     const egl::AttributeMap &attribs, SurfaceImpl **outSurface) = 0;
-    virtual egl::Error createPixmapSurface(const egl::Config *configuration, NativePixmapType nativePixmap,
-                                           const egl::AttributeMap &attribs, SurfaceImpl **outSurface) = 0;
-    virtual egl::Error createContext(const egl::Config *config, const gl::Context *shareContext, const egl::AttributeMap &attribs,
-                                     gl::Context **outContext) = 0;
+    virtual SurfaceImpl *createWindowSurface(const egl::Config *configuration,
+                                             EGLNativeWindowType window,
+                                             const egl::AttributeMap &attribs) = 0;
+    virtual SurfaceImpl *createPbufferSurface(const egl::Config *configuration,
+                                              const egl::AttributeMap &attribs) = 0;
+    virtual SurfaceImpl *createPbufferFromClientBuffer(const egl::Config *configuration,
+                                                       EGLClientBuffer shareHandle,
+                                                       const egl::AttributeMap &attribs) = 0;
+    virtual SurfaceImpl *createPixmapSurface(const egl::Config *configuration,
+                                             NativePixmapType nativePixmap,
+                                             const egl::AttributeMap &attribs) = 0;
+
+    virtual ImageImpl *createImage(EGLenum target,
+                                   egl::ImageSibling *buffer,
+                                   const egl::AttributeMap &attribs) = 0;
+
+    virtual gl::Context *createContext(const egl::Config *config,
+                                       const gl::Context *shareContext,
+                                       const egl::AttributeMap &attribs) = 0;
 
     virtual egl::Error makeCurrent(egl::Surface *drawSurface, egl::Surface *readSurface, gl::Context *context) = 0;
 
@@ -67,6 +79,13 @@ class DisplayImpl : angle::NonCopyable
     virtual bool isValidNativeWindow(EGLNativeWindowType window) const = 0;
 
     virtual std::string getVendorString() const = 0;
+
+    virtual egl::Error getDevice(DeviceImpl **device) = 0;
+
+    virtual egl::Error waitClient() const = 0;
+    virtual egl::Error waitNative(EGLint engine,
+                                  egl::Surface *drawSurface,
+                                  egl::Surface *readSurface) const = 0;
 
     const egl::Caps &getCaps() const;
 

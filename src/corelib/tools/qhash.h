@@ -554,11 +554,15 @@ QHash<Key, T>::createNode(uint ah, const Key &akey, const T &avalue, Node **anex
 template <class Key, class T>
 Q_INLINE_TEMPLATE QHash<Key, T> &QHash<Key, T>::unite(const QHash &other)
 {
-    QHash copy(other);
-    const_iterator it = copy.constEnd();
-    while (it != copy.constBegin()) {
-        --it;
-        insertMulti(it.key(), it.value());
+    if (d == &QHashData::shared_null) {
+        *this = other;
+    } else {
+        QHash copy(other);
+        const_iterator it = copy.constEnd();
+        while (it != copy.constBegin()) {
+            --it;
+            insertMulti(it.key(), it.value());
+        }
     }
     return *this;
 }

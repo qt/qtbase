@@ -256,6 +256,9 @@ QColor Point::color() const
         case Qt::MouseEventSynthesizedByQt:
             globalColor = Qt::blue;
             break;
+        case Qt::MouseEventSynthesizedByApplication:
+            globalColor = Qt::green;
+            break;
         case Qt::MouseEventNotSynthesized:
             break;
         }

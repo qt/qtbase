@@ -94,14 +94,20 @@ QString qDBusInterfaceFromMetaObject(const QMetaObject *mo)
             interface.prepend(QLatin1String("local."));
          } else {
             interface.prepend(QLatin1Char('.')).prepend(QCoreApplication::instance()->applicationName());
-            QStringList domainName =
-                QCoreApplication::instance()->organizationDomain().split(QLatin1Char('.'),
-                                                                         QString::SkipEmptyParts);
-            if (domainName.isEmpty())
+            const QString organizationDomain = QCoreApplication::instance()->organizationDomain();
+            const auto domainName = organizationDomain.splitRef(QLatin1Char('.'), QString::SkipEmptyParts);
+            if (domainName.isEmpty()) {
                  interface.prepend(QLatin1String("local."));
-            else
-                for (int i = 0; i < domainName.count(); ++i)
-                    interface.prepend(QLatin1Char('.')).prepend(domainName.at(i));
+            } else {
+                QString composedDomain;
+                // + 1 for additional dot, e.g. organizationDomain equals "example.com",
+                // then composedDomain will be equal "com.example."
+                composedDomain.reserve(organizationDomain.size() + 1);
+                for (auto it = domainName.rbegin(), end = domainName.rend(); it != end; ++it)
+                    composedDomain += *it + QLatin1Char('.');
+
+                interface.prepend(composedDomain);
+            }
          }
      }
 

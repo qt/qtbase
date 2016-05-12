@@ -100,6 +100,9 @@ typedef void* GLeglImageOES;
 #  elif defined(QT_OPENGL_ES_3)
 #   include <GLES3/gl3.h>
 #  else
+#   ifndef GL_GLEXT_PROTOTYPES
+#     define GL_GLEXT_PROTOTYPES
+#   endif
 #   include <GLES2/gl2.h>
 #endif
 

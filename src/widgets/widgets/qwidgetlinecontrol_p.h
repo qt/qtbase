@@ -83,7 +83,7 @@ public:
         : m_cursor(0), m_preeditCursor(0), m_cursorWidth(0), m_layoutDirection(Qt::LayoutDirectionAuto),
         m_hideCursor(false), m_separator(0), m_readOnly(0),
         m_dragEnabled(0), m_echoMode(0), m_textDirty(0), m_selDirty(0),
-        m_validInput(1), m_blinkStatus(0), m_blinkPeriod(0), m_blinkTimer(0), m_deleteAllTimer(0),
+        m_validInput(1), m_blinkStatus(0), m_blinkEnabled(false), m_blinkTimer(0), m_deleteAllTimer(0),
         m_ascent(0), m_maxLength(32767), m_lastCursorPos(-1),
         m_tripleClickTimer(0), m_maskData(0), m_modifiedState(0), m_undoState(0),
         m_selstart(0), m_selend(0), m_passwordEchoEditing(false)
@@ -354,8 +354,8 @@ public:
     void processInputMethodEvent(QInputMethodEvent *event);
     void processKeyEvent(QKeyEvent* ev);
 
-    int cursorBlinkPeriod() const { return m_blinkPeriod; }
-    void setCursorBlinkPeriod(int msec);
+    void setBlinkingCursorEnabled(bool enable);
+    void updateCursorBlinking();
     void resetCursorBlinkTimer();
 
     bool cursorBlinkStatus() const { return m_blinkStatus; }
@@ -433,7 +433,7 @@ private:
     uint m_selDirty : 1;
     uint m_validInput : 1;
     uint m_blinkStatus : 1;
-    int m_blinkPeriod; // 0 for non-blinking cursor
+    uint m_blinkEnabled : 1;
     int m_blinkTimer;
     int m_deleteAllTimer;
     int m_ascent;

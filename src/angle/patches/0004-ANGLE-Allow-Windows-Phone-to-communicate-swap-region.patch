@@ -1,0 +1,146 @@
+From a0c84bec77dd2dab4dd87add17dd1f21e6d8087d Mon Sep 17 00:00:00 2001
+From: Oliver Wolff <oliver.wolff@theqtcompany.com>
+Date: Tue, 1 Mar 2016 13:39:06 +0100
+Subject: [PATCH 4/7] ANGLE: Allow Windows Phone to communicate swap region
+
+eglPostSubBufferNV is used to communicate the size of the window, as
+otherwise there is no way for the renderer to know if the last frame was
+rendered in landscape or portrait, causing rendering glitches when the
+orientation changes. The rotation flags are utilized in a few additional
+places now to fix some corner cases where the rotation was not applied.
+
+This patch should be squashed into "ANGLE-Improve-Windows-Phone-Support"
+during the next ANGLE rebase.
+
+Task-number: QTBUG-44333
+Task-number: QTBUG-43502
+
+Change-Id: I2b35c41ed17004524f383350253a936e6bf85117
+---
+ .../angle/src/libANGLE/renderer/d3d/SurfaceD3D.cpp |  2 ++
+ .../libANGLE/renderer/d3d/d3d11/SwapChain11.cpp    | 28 +++++++++++++---------
+ .../d3d/d3d11/winrt/CoreWindowNativeWindow.cpp     |  5 ++--
+ .../angle/src/libGLESv2/entry_points_egl_ext.cpp   |  2 ++
+ 4 files changed, 24 insertions(+), 13 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/SurfaceD3D.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/SurfaceD3D.cpp
+index 0347828..3d27548 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/SurfaceD3D.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/SurfaceD3D.cpp
+@@ -211,6 +211,7 @@ egl::Error SurfaceD3D::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
+         return egl::Error(EGL_SUCCESS);
+     }
+ 
++#if !defined(ANGLE_ENABLE_WINDOWS_STORE) || (defined(ANGLE_ENABLE_WINDOWS_STORE) && WINAPI_FAMILY == WINAPI_FAMILY_PC_APP) // Qt WP: eglPostSubBufferNV comes here
+     if (x + width > mWidth)
+     {
+         width = mWidth - x;
+@@ -220,6 +221,7 @@ egl::Error SurfaceD3D::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
+     {
+         height = mHeight - y;
+     }
++#endif
+ 
+     if (width != 0 && height != 0)
+     {
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp
+index 5a6f202..f669f56 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp
+@@ -717,18 +717,18 @@ EGLint SwapChain11::copyOffscreenToBackbuffer(EGLint x, EGLint y, EGLint width,
+ 
+     d3d11::PositionTexCoordVertex *vertices = static_cast<d3d11::PositionTexCoordVertex*>(mappedResource.pData);
+ 
++#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+     // Create a quad in homogeneous coordinates
+-    float x1 = (x / float(mWidth)) * 2.0f - 1.0f;
+-    float y1 = (y / float(mHeight)) * 2.0f - 1.0f;
+-    float x2 = ((x + width) / float(mWidth)) * 2.0f - 1.0f;
+-    float y2 = ((y + height) / float(mHeight)) * 2.0f - 1.0f;
++    float x1 = -1.0f;
++    float y1 = -1.0f;
++    float x2 = 1.0f;
++    float y2 = 1.0f;
+ 
+-#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+     const float dim = std::max(mWidth, mHeight);
+-    float u1 = x / dim;
+-    float v1 = y / dim;
+-    float u2 = (x + width) / dim;
+-    float v2 = (y + height) / dim;
++    float u1 = 0;
++    float v1 = 0;
++    float u2 = float(width) / dim;
++    float v2 = float(height) / dim;
+ 
+     const NativeWindow::RotationFlags flags = mNativeWindow.rotationFlags();
+     const bool rotateL = flags == NativeWindow::RotateLeft;
+@@ -738,6 +738,12 @@ EGLint SwapChain11::copyOffscreenToBackbuffer(EGLint x, EGLint y, EGLint width,
+     d3d11::SetPositionTexCoordVertex(&vertices[2], x2, y1, rotateR ? u1 : u2, rotateL ? v2 : v1);
+     d3d11::SetPositionTexCoordVertex(&vertices[3], x2, y2, rotateL ? u1 : u2, rotateR ? v1 : v2);
+ #else
++    // Create a quad in homogeneous coordinates
++    float x1 = (x / float(mWidth)) * 2.0f - 1.0f;
++    float y1 = (y / float(mHeight)) * 2.0f - 1.0f;
++    float x2 = ((x + width) / float(mWidth)) * 2.0f - 1.0f;
++    float y2 = ((y + height) / float(mHeight)) * 2.0f - 1.0f;
++
+     float u1 = x / float(mWidth);
+     float v1 = y / float(mHeight);
+     float u2 = (x + width) / float(mWidth);
+@@ -788,8 +794,8 @@ EGLint SwapChain11::copyOffscreenToBackbuffer(EGLint x, EGLint y, EGLint width,
+     viewport.TopLeftX = 0;
+     viewport.TopLeftY = 0;
+ #if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+-    viewport.Width = (rotateL || rotateR) ? mHeight : mWidth;
+-    viewport.Height = (rotateL || rotateR) ? mWidth : mHeight;
++    viewport.Width = (rotateL || rotateR) ? height : width;
++    viewport.Height = (rotateL || rotateR) ? width : height;
+ #else
+     viewport.Width = static_cast<FLOAT>(mWidth);
+     viewport.Height = static_cast<FLOAT>(mHeight);
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.cpp
+index 6a4795a..b074e8c 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.cpp
+@@ -132,6 +132,7 @@ bool CoreWindowNativeWindow::registerForSizeChangeEvents()
+     if (SUCCEEDED(result))
+     {
+         result = mDisplayInformation->add_OrientationChanged(orientationChangedHandler.Get(), &mOrientationChangedEventToken);
++        orientationChangedHandler->Invoke(mDisplayInformation.Get(), nullptr);
+     }
+ #endif
+ 
+@@ -175,8 +176,8 @@ HRESULT CoreWindowNativeWindow::createSwapChain(ID3D11Device *device,
+     }
+ 
+     DXGI_SWAP_CHAIN_DESC1 swapChainDesc = { 0 };
+-    swapChainDesc.Width = width;
+-    swapChainDesc.Height = height;
++    swapChainDesc.Width = mRotationFlags ? height : width;
++    swapChainDesc.Height = mRotationFlags ? width : height;
+     swapChainDesc.Format = format;
+     swapChainDesc.Stereo = FALSE;
+     swapChainDesc.SampleDesc.Count = 1;
+diff --git a/src/3rdparty/angle/src/libGLESv2/entry_points_egl_ext.cpp b/src/3rdparty/angle/src/libGLESv2/entry_points_egl_ext.cpp
+index 7536b19..e3c35d5 100644
+--- a/src/3rdparty/angle/src/libGLESv2/entry_points_egl_ext.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/entry_points_egl_ext.cpp
+@@ -108,12 +108,14 @@ EGLBoolean EGLAPIENTRY PostSubBufferNV(EGLDisplay dpy, EGLSurface surface, EGLin
+         return EGL_FALSE;
+     }
+ 
++#if !defined(ANGLE_ENABLE_WINDOWS_STORE) || (defined(ANGLE_ENABLE_WINDOWS_STORE) && WINAPI_FAMILY == WINAPI_FAMILY_PC_APP) // Qt WP: Allow this entry point as a workaround
+     if (!display->getExtensions().postSubBuffer)
+     {
+         // Spec is not clear about how this should be handled.
+         SetGlobalError(Error(EGL_SUCCESS));
+         return EGL_TRUE;
+     }
++#endif
+ 
+     error = eglSurface->postSubBuffer(x, y, width, height);
+     if (error.isError())
+-- 
+2.7.0.windows.1
+

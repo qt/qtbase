@@ -47,8 +47,13 @@ probase = $$relative_path($$_PRO_FILE_PWD_, $$dirname(_QMAKE_CONF_)/examples)
                 sourcefiles += $$resrc
         }
     }
+    sourcefiles += \
+        $$ANDROID_PACKAGE_SOURCE_DIR \
+        $$QMAKE_INFO_PLIST \
+        $$DISTFILES
     extras = \
         $$_PRO_FILE_PWD_/README \
+        $$_PRO_FILE_PWD_/README.TXT \
         $$files($$_PRO_FILE_PWD_/*.pri) \
         $$replace(_PRO_FILE_, \\.pro$, .qmlproject) \
         $$replace(_PRO_FILE_, \\.pro$, .json) \

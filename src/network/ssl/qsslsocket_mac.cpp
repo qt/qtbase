@@ -442,7 +442,7 @@ void QSslSocketPrivate::ensureInitialized()
         SSLGetSupportedCiphers(context, cfCiphers.data(), &numCiphers);
 
         for (size_t i = 0; i < size_t(cfCiphers.size()); ++i) {
-            const QSslCipher ciph(QSslSocketBackendPrivate::QSslCipher_from_SSLCipherSuite(cfCiphers[i]));
+            const QSslCipher ciph(QSslSocketBackendPrivate::QSslCipher_from_SSLCipherSuite(cfCiphers.at(i)));
             if (!ciph.isNull()) {
                 ciphers << ciph;
                 if (ciph.usedBits() >= 128)
@@ -1033,7 +1033,7 @@ bool QSslSocketBackendPrivate::setSessionCertificate(QString &errorDescription, 
 
     QSslCertificate localCertificate;
     if (!configuration.localCertificateChain.isEmpty())
-        localCertificate = configuration.localCertificateChain[0];
+        localCertificate = configuration.localCertificateChain.at(0);
 
     if (!localCertificate.isNull()) {
         // Require a private key as well.
@@ -1227,7 +1227,7 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
     }
 
     // check the whole chain for blacklisting (including root, as we check for subjectInfo and issuer)
-    foreach (const QSslCertificate &cert, configuration.peerCertificateChain) {
+    for (const QSslCertificate &cert : qAsConst(configuration.peerCertificateChain)) {
         if (QSslCertificatePrivate::isBlacklisted(cert) && !canIgnoreVerify) {
             const QSslError error(QSslError::CertificateBlacklisted, cert);
             errors << error;
@@ -1271,7 +1271,7 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
 
     // verify certificate chain
     QCFType<CFMutableArrayRef> certArray = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
-    foreach (const QSslCertificate &cert, configuration.caCertificates) {
+    for (const QSslCertificate &cert : qAsConst(configuration.caCertificates)) {
         QCFType<CFDataRef> certData = cert.d->derData.toCFData();
         QCFType<SecCertificateRef> certRef = SecCertificateCreateWithData(NULL, certData);
         CFArrayAppendValue(certArray, certRef);
@@ -1327,7 +1327,7 @@ bool QSslSocketBackendPrivate::checkSslErrors()
             paused = true;
         } else {
             setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
-                            sslErrors.first().errorString());
+                            sslErrors.constFirst().errorString());
             plainSocket->disconnectFromHost();
         }
         return false;

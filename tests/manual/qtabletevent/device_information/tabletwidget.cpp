@@ -33,7 +33,7 @@
 #include <QMetaObject>
 #include <QMetaEnum>
 
-TabletWidget::TabletWidget(bool mouseToo) : mMouseToo(mouseToo)
+TabletWidget::TabletWidget(bool mouseToo) : mMouseToo(mouseToo), mWheelEventCount(0)
 {
     QPalette newPalette = palette();
     newPalette.setColor(QPalette::Window, Qt::white);
@@ -82,6 +82,10 @@ bool TabletWidget::eventFilter(QObject *, QEvent *ev)
             mGPos = event->globalPos();
             mTimestamp = event->timestamp();
         }
+        break;
+    case QEvent::Wheel:
+        ++mWheelEventCount;
+        break;
     default:
         break;
     }
@@ -176,6 +180,8 @@ void TabletWidget::paintEvent(QPaintEvent *)
         eventInfo << QString("z: %1").arg(QString::number(mZ));
 
         eventInfo << QString("Unique Id: %1").arg(QString::number(mUnique));
+
+        eventInfo << QString("Total wheel events: %1").arg(QString::number(mWheelEventCount));
     }
 
     QString text = eventInfo.join("\n");

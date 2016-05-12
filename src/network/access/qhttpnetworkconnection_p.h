@@ -213,7 +213,7 @@ public:
     void requeueRequest(const HttpMessagePair &pair); // e.g. after pipeline broke
     bool dequeueRequest(QAbstractSocket *socket);
     void prepareRequest(HttpMessagePair &request);
-    QHttpNetworkRequest predictNextRequest();
+    QHttpNetworkRequest predictNextRequest() const;
 
     void fillPipeline(QAbstractSocket *socket);
     bool fillPipeline(QList<HttpMessagePair> &queue, QHttpNetworkConnectionChannel &channel);

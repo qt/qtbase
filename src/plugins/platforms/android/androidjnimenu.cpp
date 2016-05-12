@@ -152,7 +152,7 @@ namespace QtAndroidMenu
 
         visibleMenuBar = 0;
         activeTopLevelWindow = window;
-        foreach (QAndroidPlatformMenuBar *menuBar, menuBars) {
+        for (QAndroidPlatformMenuBar *menuBar : qAsConst(menuBars)) {
             if (menuBar->parentWindow() == window) {
                 visibleMenuBar = menuBar;
                 resetMenuBar();
@@ -218,7 +218,8 @@ namespace QtAndroidMenu
     static int addAllMenuItemsToMenu(JNIEnv *env, jobject menu, QAndroidPlatformMenu *platformMenu) {
          int order = 0;
          QMutexLocker lock(platformMenu->menuItemsMutex());
-         foreach (QAndroidPlatformMenuItem *item, platformMenu->menuItems()) {
+         const auto items = platformMenu->menuItems();
+         for (QAndroidPlatformMenuItem *item : items) {
              if (item->isSeparator())
                  continue;
              QString itemText = removeAmpersandEscapes(item->text());
@@ -257,7 +258,7 @@ namespace QtAndroidMenu
         if (menus.size() == 1) { // Expand the menu
             order = addAllMenuItemsToMenu(env, menu, static_cast<QAndroidPlatformMenu *>(menus.front()));
         } else {
-            foreach (QAndroidPlatformMenu *item, menus) {
+            for (QAndroidPlatformMenu *item : menus) {
                 QString itemText = removeAmpersandEscapes(item->text());
                 jstring jtext = env->NewString(reinterpret_cast<const jchar *>(itemText.data()),
                                                itemText.length());
@@ -350,7 +351,7 @@ namespace QtAndroidMenu
                 item->activated();
                 visibleMenu->aboutToHide();
                 visibleMenu = 0;
-                foreach (QAndroidPlatformMenu *menu, pendingContextMenus) {
+                for (QAndroidPlatformMenu *menu : qAsConst(pendingContextMenus)) {
                     if (menu->isVisible())
                         menu->aboutToHide();
                 }

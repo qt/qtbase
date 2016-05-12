@@ -146,7 +146,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
         PCWSTR rawString = name.GetRawBuffer(&length);
         addresses.insert(QHostAddress(QString::fromWCharArray(rawString, length)));
     }
-    foreach (const QHostAddress &address, addresses) {
+    for (const QHostAddress &address : qAsConst(addresses)) {
         QDnsHostAddressRecord record;
         record.d->name = aceHostname;
         record.d->value = address;

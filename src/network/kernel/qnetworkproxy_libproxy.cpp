@@ -122,10 +122,10 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
         return proxyList;
     }
 
-    QList<QUrl> rawProxies = libProxyWrapper()->getProxies(queryUrl);
+    const QList<QUrl> rawProxies = libProxyWrapper()->getProxies(queryUrl);
 
     bool haveDirectConnection = false;
-    foreach (const QUrl& url, rawProxies) {
+    for (const QUrl& url : rawProxies) {
         QNetworkProxy::ProxyType type;
         const QString scheme = url.scheme();
         if (scheme == QLatin1String("http")) {

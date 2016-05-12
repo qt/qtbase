@@ -1049,7 +1049,7 @@ inline void QUrlPrivate::setAuthority(const QString &auth, int from, int end, QU
 
         if (colonIndex == end - 1) {
             // found a colon but no digits after it
-            setError(PortEmptyError, auth, colonIndex + 1);
+            port = -1;
         } else if (uint(colonIndex) < uint(end)) {
             unsigned long x = 0;
             for (int i = colonIndex + 1; i < end; ++i) {
@@ -1179,7 +1179,7 @@ inline void QUrlPrivate::appendHost(QString &appendTo, QUrl::FormattingOptions o
     } else {
         // this is either an IPv4Address or a reg-name
         // if it is a reg-name, it is already stored in Unicode form
-        if (options == QUrl::EncodeUnicode)
+        if (options & QUrl::EncodeUnicode && !(options & 0x4000000))
             appendTo += qt_ACE_do(host, ToAceOnly, AllowLeadingDot);
         else
             appendTo += host;
@@ -2043,14 +2043,15 @@ void QUrl::setAuthority(const QString &authority, ParsingMode mode)
 */
 QString QUrl::authority(ComponentFormattingOptions options) const
 {
-    if (!d) return QString();
+    QString result;
+    if (!d)
+        return result;
 
     if (options == QUrl::FullyDecoded) {
         qWarning("QUrl::authority(): QUrl::FullyDecoded is not permitted in this function");
-        return QString();
+        return result;
     }
 
-    QString result;
     d->appendAuthority(result, options, QUrlPrivate::Authority);
     return result;
 }
@@ -2116,14 +2117,15 @@ void QUrl::setUserInfo(const QString &userInfo, ParsingMode mode)
 */
 QString QUrl::userInfo(ComponentFormattingOptions options) const
 {
-    if (!d) return QString();
+    QString result;
+    if (!d)
+        return result;
 
     if (options == QUrl::FullyDecoded) {
         qWarning("QUrl::userInfo(): QUrl::FullyDecoded is not permitted in this function");
-        return QString();
+        return result;
     }
 
-    QString result;
     d->appendUserInfo(result, options, QUrlPrivate::UserInfo);
     return result;
 }
@@ -2185,10 +2187,9 @@ void QUrl::setUserName(const QString &userName, ParsingMode mode)
 */
 QString QUrl::userName(ComponentFormattingOptions options) const
 {
-    if (!d) return QString();
-
     QString result;
-    d->appendUserName(result, options);
+    if (d)
+        d->appendUserName(result, options);
     return result;
 }
 
@@ -2278,10 +2279,9 @@ void QUrl::setPassword(const QString &password, ParsingMode mode)
 */
 QString QUrl::password(ComponentFormattingOptions options) const
 {
-    if (!d) return QString();
-
     QString result;
-    d->appendPassword(result, options);
+    if (d)
+        d->appendPassword(result, options);
     return result;
 }
 
@@ -2386,12 +2386,12 @@ void QUrl::setHost(const QString &host, ParsingMode mode)
 */
 QString QUrl::host(ComponentFormattingOptions options) const
 {
-    if (!d) return QString();
-
     QString result;
-    d->appendHost(result, options);
-    if (result.startsWith(QLatin1Char('[')))
-        return result.mid(1, result.length() - 2);
+    if (d) {
+        d->appendHost(result, options);
+        if (result.startsWith(QLatin1Char('[')))
+            result = result.mid(1, result.length() - 2);
+    }
     return result;
 }
 
@@ -2531,10 +2531,9 @@ void QUrl::setPath(const QString &path, ParsingMode mode)
 */
 QString QUrl::path(ComponentFormattingOptions options) const
 {
-    if (!d) return QString();
-
     QString result;
-    d->appendPath(result, options, QUrlPrivate::Path);
+    if (d)
+        d->appendPath(result, options, QUrlPrivate::Path);
     return result;
 }
 
@@ -2974,12 +2973,12 @@ void QUrl::setQuery(const QUrlQuery &query)
 */
 QString QUrl::query(ComponentFormattingOptions options) const
 {
-    if (!d) return QString();
-
     QString result;
-    d->appendQuery(result, options, QUrlPrivate::Query);
-    if (d->hasQuery() && result.isNull())
-        result.detach();
+    if (d) {
+        d->appendQuery(result, options, QUrlPrivate::Query);
+        if (d->hasQuery() && result.isNull())
+            result.detach();
+    }
     return result;
 }
 
@@ -3047,12 +3046,12 @@ void QUrl::setFragment(const QString &fragment, ParsingMode mode)
 */
 QString QUrl::fragment(ComponentFormattingOptions options) const
 {
-    if (!d) return QString();
-
     QString result;
-    d->appendFragment(result, options, QUrlPrivate::Fragment);
-    if (d->hasFragment() && result.isNull())
-        result.detach();
+    if (d) {
+        d->appendFragment(result, options, QUrlPrivate::Fragment);
+        if (d->hasFragment() && result.isNull())
+            result.detach();
+    }
     return result;
 }
 
@@ -3269,9 +3268,10 @@ QString QUrl::url(FormattingOptions options) const
 */
 QString QUrl::toString(FormattingOptions options) const
 {
+    QString url;
     if (!isValid()) {
         // also catches isEmpty()
-        return QString();
+        return url;
     }
     if (options == QUrl::FullyDecoded) {
         qWarning("QUrl: QUrl::FullyDecoded is not permitted when reconstructing the full URL");
@@ -3288,10 +3288,9 @@ QString QUrl::toString(FormattingOptions options) const
             && (!d->hasQuery() || options.testFlag(QUrl::RemoveQuery))
             && (!d->hasFragment() || options.testFlag(QUrl::RemoveFragment))
             && isLocalFile()) {
-        return d->toLocalFile(options);
+        url = d->toLocalFile(options);
+        return url;
     }
-
-    QString url;
 
     // for the full URL, we consider that the reserved characters are prettier if encoded
     if (options & DecodeReserved)
@@ -4006,16 +4005,17 @@ static inline void appendComponentIfPresent(QString &msg, bool present, const ch
 */
 QString QUrl::errorString() const
 {
+    QString msg;
     if (!d)
-        return QString();
+        return msg;
 
     QString errorSource;
     int errorPosition = 0;
     QUrlPrivate::ErrorCode errorCode = d->validityError(&errorSource, &errorPosition);
     if (errorCode == QUrlPrivate::NoError)
-        return QString();
+        return msg;
 
-    QString msg = errorMessage(errorCode, errorSource, errorPosition);
+    msg += errorMessage(errorCode, errorSource, errorPosition);
     msg += QLatin1String("; source was \"");
     msg += errorSource;
     msg += QLatin1String("\";");

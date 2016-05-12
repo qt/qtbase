@@ -497,9 +497,9 @@ void QHttpSocketEngine::slotSocketConnected()
     data += "Host: " + peerAddress + "\r\n";
     if (!d->proxy.hasRawHeader("User-Agent"))
         data += "User-Agent: Mozilla/5.0\r\n";
-    foreach (const QByteArray &header, d->proxy.rawHeaderList()) {
+    const auto headers = d->proxy.rawHeaderList();
+    for (const QByteArray &header : headers)
         data += header + ": " + d->proxy.rawHeader(header) + "\r\n";
-    }
     QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(d->authenticator);
     //qDebug() << "slotSocketConnected: priv=" << priv << (priv ? (int)priv->method : -1);
     if (priv && priv->method != QAuthenticatorPrivate::None) {

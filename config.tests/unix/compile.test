@@ -77,7 +77,24 @@ test -r Makefile && $MAKE distclean >/dev/null 2>&1
 # Make sure output from possible previous tests is gone
 rm -f "$EXE" "${EXE}.exe"
 
-set -- "$QMAKE" -qtconf "$QTCONF" -nocache -spec "$QMKSPEC" "CONFIG+=$QMAKE_CONFIG" "CONFIG+=android_app" "CONFIG-=debug_and_release app_bundle lib_bundle" "LIBS+=$LFLAGS" "LIBS+=$MAC_ARCH_LFLAGS" "INCLUDEPATH*=$INCLUDEPATH" "QMAKE_CFLAGS*=$CFLAGS" "QMAKE_CFLAGS+=$MAC_ARCH_CFLAGS" "QMAKE_CXXFLAGS*=$CXXFLAGS" "QMAKE_CXXFLAGS+=$MAC_ARCH_CXXFLAGS" $QMAKE_ARGS "$SRCDIR/$TEST/$EXE.pro" -o "$OUTDIR/$TEST/Makefile"
+set -- \
+    "$QMAKE" \
+     -qtconf "$QTCONF" \
+     -nocache \
+     -spec "$QMKSPEC" \
+     "CONFIG+=$QMAKE_CONFIG" \
+     "CONFIG+=android_app" \
+     "CONFIG-=debug_and_release app_bundle lib_bundle" \
+     "LIBS+=$LFLAGS" \
+     "LIBS+=$MAC_ARCH_LFLAGS" \
+     "INCLUDEPATH*=$INCLUDEPATH" \
+     "QMAKE_CFLAGS*=$CFLAGS" \
+     "QMAKE_CFLAGS+=$MAC_ARCH_CFLAGS" \
+     "QMAKE_CXXFLAGS*=$CXXFLAGS" \
+     "QMAKE_CXXFLAGS+=$MAC_ARCH_CXXFLAGS" \
+     $QMAKE_ARGS \
+     "$SRCDIR/$TEST/$EXE.pro" \
+     -o "$OUTDIR/$TEST/Makefile"
 if [ "$VERBOSE" = "yes" ]; then
     OUTDIR=$OUTDIR "$@" && $MAKE && SUCCESS=yes
 else

@@ -773,7 +773,7 @@ bool QVector<T>::operator==(const QVector<T> &v) const
     const T *vb = v.d->begin();
     const T *b  = d->begin();
     const T *e  = d->end();
-    return std::equal(b, e, vb);
+    return std::equal(b, e, QT_MAKE_CHECKED_ARRAY_ITERATOR(vb, v.d->size));
 }
 
 template <typename T>
@@ -793,24 +793,28 @@ QVector<T> &QVector<T>::fill(const T &from, int asize)
 template <typename T>
 QVector<T> &QVector<T>::operator+=(const QVector &l)
 {
-    uint newSize = d->size + l.d->size;
-    const bool isTooSmall = newSize > d->alloc;
-    if (!isDetached() || isTooSmall) {
-        QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
-        reallocData(d->size, isTooSmall ? newSize : d->alloc, opt);
-    }
-
-    if (d->alloc) {
-        T *w = d->begin() + newSize;
-        T *i = l.d->end();
-        T *b = l.d->begin();
-        while (i != b) {
-            if (QTypeInfo<T>::isComplex)
-                new (--w) T(*--i);
-            else
-                *--w = *--i;
+    if (d == Data::sharedNull()) {
+        *this = l;
+    } else {
+        uint newSize = d->size + l.d->size;
+        const bool isTooSmall = newSize > d->alloc;
+        if (!isDetached() || isTooSmall) {
+            QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
+            reallocData(d->size, isTooSmall ? newSize : d->alloc, opt);
         }
-        d->size = newSize;
+
+        if (d->alloc) {
+            T *w = d->begin() + newSize;
+            T *i = l.d->end();
+            T *b = l.d->begin();
+            while (i != b) {
+                if (QTypeInfo<T>::isComplex)
+                    new (--w) T(*--i);
+                else
+                    *--w = *--i;
+            }
+            d->size = newSize;
+        }
     }
     return *this;
 }

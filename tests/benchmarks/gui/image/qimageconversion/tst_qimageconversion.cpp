@@ -233,11 +233,18 @@ void tst_QImageConversion::convertGeneric_data()
     QTest::addColumn<QImage::Format>("outputFormat");
     QImage rgb32 = generateImageRgb32(1000, 1000);
     QImage argb32 = generateImageArgb32(1000, 1000);
+    QImage i8 = argb32.convertToFormat(QImage::Format_Indexed8);
     QImage rgba32 = argb32.convertToFormat(QImage::Format_RGBA8888);
     QImage bgr30 = rgb32.convertToFormat(QImage::Format_BGR30);
     QImage a2rgb30 = argb32.convertToFormat(QImage::Format_A2RGB30_Premultiplied);
     QImage rgb666 = rgb32.convertToFormat(QImage::Format_RGB666);
     QImage argb4444 = argb32.convertToFormat(QImage::Format_ARGB4444_Premultiplied);
+
+    QTest::newRow("indexed8 -> rgb32") << i8 << QImage::Format_RGB32;
+    QTest::newRow("indexed8 -> argb32") << i8 << QImage::Format_ARGB32;
+    QTest::newRow("indexed8 -> argb32pm") << i8 << QImage::Format_ARGB32_Premultiplied;
+    QTest::newRow("indexed8 -> rgbx8888") << i8 << QImage::Format_RGBX8888;
+    QTest::newRow("indexed8 -> rgb16") << i8 << QImage::Format_RGB16;
 
     QTest::newRow("rgba8888 -> rgb32") << rgba32 << QImage::Format_RGB32;
     QTest::newRow("rgba8888 -> argb32") << rgba32 << QImage::Format_ARGB32;

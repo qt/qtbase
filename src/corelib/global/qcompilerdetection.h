@@ -105,6 +105,12 @@
 #  endif
 #  define Q_DECL_EXPORT __declspec(dllexport)
 #  define Q_DECL_IMPORT __declspec(dllimport)
+#  if _MSC_VER >= 1800
+#    define QT_MAKE_UNCHECKED_ARRAY_ITERATOR(x) stdext::make_unchecked_array_iterator(x)
+#  endif
+#  if _MSC_VER >= 1500
+#    define QT_MAKE_CHECKED_ARRAY_ITERATOR(x, N) stdext::make_checked_array_iterator(x, size_t(N))
+#  endif
 /* Intel C++ disguising as Visual C++: the `using' keyword avoids warnings */
 #  if defined(__INTEL_COMPILER)
 #    define Q_DECL_VARIABLE_DEPRECATED
@@ -1017,9 +1023,15 @@
 // Also disable <atomic>, since it's clearly not there
 #  undef Q_COMPILER_ATOMICS
 # endif
-# if defined(_LIBCPP_VERSION)
+# if defined(Q_CC_CLANG) && defined(Q_CC_INTEL) && Q_CC_INTEL >= 1500
+// ICC 15.x and 16.0 have their own implementation of std::atomic, which is activated when in Clang mode
+// (probably because libc++'s <atomic> on OS X failed to compile), but they're missing some
+// critical definitions. (Reported as Intel Issue ID 6000117277)
+#  define __USE_CONSTEXPR 1
+#  define __USE_NOEXCEPT 1
+# elif defined(_LIBCPP_VERSION)
 // libc++ uses __has_feature(cxx_atomic), so disable the feature if the compiler
-// doesn't support it. That's required for the Intel compiler on OS X, for example.
+// doesn't support it. That's required for the Intel compiler 14.x or earlier on OS X, for example.
 #  if !__has_feature(cxx_atomic)
 #   undef Q_COMPILER_ATOMICS
 #  endif
@@ -1108,6 +1120,11 @@
 #  define Q_ALIGNOF(x)  alignof(x)
 #endif
 
+#if defined(Q_COMPILER_ALIGNAS)
+#  undef Q_DECL_ALIGN
+#  define Q_DECL_ALIGN(n)   alignas(n)
+#endif
+
 /*
  * Fallback macros to certain compiler features
  */
@@ -1175,6 +1192,12 @@
 #endif
 #ifndef Q_DECL_CONST_FUNCTION
 #  define Q_DECL_CONST_FUNCTION Q_DECL_PURE_FUNCTION
+#endif
+#ifndef QT_MAKE_UNCHECKED_ARRAY_ITERATOR
+#  define QT_MAKE_UNCHECKED_ARRAY_ITERATOR(x) (x)
+#endif
+#ifndef QT_MAKE_CHECKED_ARRAY_ITERATOR
+#  define QT_MAKE_CHECKED_ARRAY_ITERATOR(x, N) (x)
 #endif
 
 /*

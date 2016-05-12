@@ -207,10 +207,11 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                         && !symbols.isEmpty()
                         && symbols.constLast().token == STRING_LITERAL) {
 
-                        QByteArray newString = symbols.constLast().unquotedLexem();
-                        newString += input.mid(lexem - begin + 1, data - lexem - 2);
-                        newString.prepend('\"');
-                        newString.append('\"');
+                        const QByteArray newString
+                                = '\"'
+                                + symbols.constLast().unquotedLexem()
+                                + input.mid(lexem - begin + 1, data - lexem - 2)
+                                + '\"';
                         symbols.last() = Symbol(symbols.constLast().lineNum,
                                                 STRING_LITERAL,
                                                 newString);
@@ -1034,9 +1035,8 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
                     const int slashPos = include.indexOf('/');
                     if (slashPos == -1)
                         continue;
-                    QByteArray frameworkCandidate = include.left(slashPos);
-                    frameworkCandidate.append(".framework/Headers/");
-                    fi.setFile(QString::fromLocal8Bit(QByteArray(p.path + '/' + frameworkCandidate).constData()), QString::fromLocal8Bit(include.mid(slashPos + 1).constData()));
+                    fi.setFile(QString::fromLocal8Bit(p.path + '/' + include.left(slashPos) + ".framework/Headers/"),
+                               QString::fromLocal8Bit(include.mid(slashPos + 1).constData()));
                 } else {
                     fi.setFile(QString::fromLocal8Bit(p.path.constData()), QString::fromLocal8Bit(include.constData()));
                 }

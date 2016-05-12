@@ -917,7 +917,7 @@ void QAbstractSocketPrivate::resolveProxy(const QString &hostname, quint16 port)
     }
 
     // return the first that we can use
-    foreach (const QNetworkProxy &p, proxies) {
+    for (const QNetworkProxy &p : qAsConst(proxies)) {
         if (socketType == QAbstractSocket::UdpSocket &&
             (p.capabilities() & QNetworkProxy::UdpTunnelingCapability) == 0)
             continue;
@@ -997,9 +997,11 @@ void QAbstractSocketPrivate::_q_startConnecting(const QHostInfo &hostInfo)
     if (preferredNetworkLayerProtocol == QAbstractSocket::UnknownNetworkLayerProtocol || preferredNetworkLayerProtocol == QAbstractSocket::AnyIPProtocol) {
         addresses = hostInfo.addresses();
     } else {
-        foreach (const QHostAddress &address, hostInfo.addresses())
+        const auto candidates = hostInfo.addresses();
+        for (const QHostAddress &address : candidates) {
             if (address.protocol() == preferredNetworkLayerProtocol)
                 addresses += address;
+        }
     }
 
 
@@ -2172,7 +2174,7 @@ bool QAbstractSocket::waitForReadyRead(int msecs)
     }
 
     do {
-        if (state() != ConnectedState)
+        if (state() != ConnectedState && state() != BoundState)
             return false;
 
         bool readyToRead = false;

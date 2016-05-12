@@ -1096,8 +1096,6 @@ QString QLibrary::errorString() const
     to the library \c shr_64.o in the archive file named \c libGL.a. This
     is only supported on the AIX platform.
 
-    Setting PreventUnloadHint will only apply on Unix platforms.
-
     The interpretation of the load hints is platform dependent, and if
     you use it you are probably making some assumptions on which platform
     you are compiling for, so use them only if you understand the consequences

@@ -2763,26 +2763,25 @@ void QTextHtmlExporter::emitBlockAttributes(const QTextBlock &block)
     }
 
     if (format.lineHeightType() != QTextBlockFormat::SingleHeight) {
+        html += QLatin1String(" line-height:")
+             + QString::number(format.lineHeight());
         switch (format.lineHeightType()) {
             case QTextBlockFormat::ProportionalHeight:
+                html += QLatin1String("%;");
+                break;
             case QTextBlockFormat::FixedHeight:
-                html += QLatin1String(" line-height:");
+                html += QLatin1String("; -qt-line-height-type: fixed;");
                 break;
             case QTextBlockFormat::MinimumHeight:
-                html += QLatin1String(" min-height:");
+                html += QLatin1String("px;");
                 break;
             case QTextBlockFormat::LineDistanceHeight:
-                html += QLatin1String(" line-spacing:");
+                html += QLatin1String("; -qt-line-height-type: line-distance;");
                 break;
-            case QTextBlockFormat::SingleHeight:
             default:
+                html += QLatin1String(";");
                 break; // Should never reach here
         }
-        html += QString::number(format.lineHeight());
-        if (format.lineHeightType() == QTextBlockFormat::ProportionalHeight)
-            html += QLatin1String("%;");
-        else
-            html += QLatin1String("px;");
     }
 
     emitPageBreakPolicy(format.pageBreakPolicy());

@@ -50,7 +50,7 @@ public:
     virtual bool open() Q_DECL_OVERRIDE;
     virtual void close() Q_DECL_OVERRIDE;
 
-    virtual EGLNativeDisplayType device() const Q_DECL_OVERRIDE;
+    virtual EGLNativeDisplayType nativeDisplay() const Q_DECL_OVERRIDE;
 
     virtual QEglFSKmsScreen *createScreen(QEglFSKmsIntegration *integration,
                                           QEglFSKmsDevice *device,

@@ -188,7 +188,7 @@ bool QNetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieLis
                                           const QUrl &url)
 {
     bool added = false;
-    foreach (QNetworkCookie cookie, cookieList) {
+    for (QNetworkCookie cookie : cookieList) {
         cookie.normalize(url);
         if (validateCookie(cookie, url) && insertCookie(cookie))
             added = true;

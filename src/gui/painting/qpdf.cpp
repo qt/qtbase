@@ -1201,7 +1201,7 @@ void QPdfEngine::setPen()
     switch(d->pen.joinStyle()) {
     case Qt::MiterJoin:
     case Qt::SvgMiterJoin:
-        *d->currentPage << d->pen.miterLimit() << "M ";
+        *d->currentPage << qMax(qreal(1.0), d->pen.miterLimit()) << "M ";
         pdfJoinStyle = 0;
         break;
     case Qt::BevelJoin:
@@ -2214,8 +2214,10 @@ int QPdfEnginePrivate::generateGradientShader(const QGradient *gradient, const Q
     case QGradient::RadialGradient:
         return generateRadialGradientShader(static_cast<const QRadialGradient *>(gradient), matrix, alpha);
     case QGradient::ConicalGradient:
-    default:
-        qWarning("Implement me!");
+        Q_UNIMPLEMENTED(); // ### Implement me!
+        break;
+    case QGradient::NoGradient:
+        break;
     }
     return 0;
 }

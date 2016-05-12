@@ -586,7 +586,7 @@ static void huntAndDestroy(QObject *needle, QDBusConnectionPrivate::ObjectTreeNo
     }
 }
 
-static void huntAndUnregister(const QStringList &pathComponents, int i, QDBusConnection::UnregisterMode mode,
+static void huntAndUnregister(const QVector<QStringRef> &pathComponents, int i, QDBusConnection::UnregisterMode mode,
                               QDBusConnectionPrivate::ObjectTreeNode *node)
 {
     if (pathComponents.count() == i) {
@@ -1126,6 +1126,12 @@ void QDBusConnectionPrivate::closeConnection()
     rootNode.children.clear();  // free resources
 }
 
+void QDBusConnectionPrivate::handleDBusDisconnection()
+{
+    while (!pendingCalls.isEmpty())
+        processFinishedCall(pendingCalls.first());
+}
+
 void QDBusConnectionPrivate::checkThread()
 {
     Q_ASSERT(thread() == QDBusConnectionManager::instance());
@@ -1651,6 +1657,19 @@ void QDBusConnectionPrivate::handleSignal(const QDBusMessage& msg)
     handleSignal(key, msg);                  // third try
 }
 
+void QDBusConnectionPrivate::watchForDBusDisconnection()
+{
+    SignalHook hook;
+    // Initialize the hook for Disconnected signal
+    hook.service.clear(); // org.freedesktop.DBus.Local.Disconnected uses empty service name
+    hook.path = QDBusUtil::dbusPathLocal();
+    hook.obj = this;
+    hook.params << QMetaType::Void;
+    hook.midx = staticMetaObject.indexOfSlot("handleDBusDisconnection()");
+    Q_ASSERT(hook.midx != -1);
+    signalHooks.insert(QLatin1String("Disconnected:" DBUS_INTERFACE_LOCAL), hook);
+}
+
 void QDBusConnectionPrivate::setServer(QDBusServer *object, DBusServer *s, const QDBusErrorInternal &error)
 {
     mode = ServerMode;
@@ -1715,6 +1734,8 @@ void QDBusConnectionPrivate::setPeer(DBusConnection *c, const QDBusErrorInternal
     q_dbus_connection_add_filter(connection,
                                qDBusSignalFilter,
                                this, 0);
+
+    watchForDBusDisconnection();
 
     QMetaObject::invokeMethod(this, "doDispatch", Qt::QueuedConnection);
 }
@@ -1792,6 +1813,8 @@ void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusError
     Q_ASSERT(hook.midx != -1);
     signalHooks.insert(QLatin1String("NameOwnerChanged:" DBUS_INTERFACE_DBUS), hook);
 
+    watchForDBusDisconnection();
+
     qDBusDebug() << this << ": connected successfully";
 
     // schedule a dispatch:
@@ -1818,10 +1841,16 @@ void QDBusConnectionPrivate::processFinishedCall(QDBusPendingCallPrivate *call)
 
     QDBusMessage &msg = call->replyMessage;
     if (call->pending) {
-        // decode the message
-        DBusMessage *reply = q_dbus_pending_call_steal_reply(call->pending);
-        msg = QDBusMessagePrivate::fromDBusMessage(reply, connection->capabilities);
-        q_dbus_message_unref(reply);
+        // when processFinishedCall is called and pending call is not completed,
+        // it means we received disconnected signal from libdbus
+        if (q_dbus_pending_call_get_completed(call->pending)) {
+            // decode the message
+            DBusMessage *reply = q_dbus_pending_call_steal_reply(call->pending);
+            msg = QDBusMessagePrivate::fromDBusMessage(reply, connection->capabilities);
+            q_dbus_message_unref(reply);
+        } else {
+            msg = QDBusMessage::createError(QDBusError::Disconnected, QDBusUtil::disconnectedErrorMessage());
+        }
     }
     qDBusDebug() << connection << "got message reply:" << msg;
 
@@ -2121,8 +2150,8 @@ void QDBusConnectionPrivate::sendInternal(QDBusPendingCallPrivate *pcall, void *
             pcall->pending = pending;
             q_dbus_pending_call_set_notify(pending, qDBusResultReceived, pcall, 0);
 
-            // DBus won't notify us when a peer disconnects so we need to track these ourselves
-            if (mode == QDBusConnectionPrivate::PeerMode)
+            // DBus won't notify us when a peer disconnects or server terminates so we need to track these ourselves
+            if (mode == QDBusConnectionPrivate::PeerMode || mode == QDBusConnectionPrivate::ClientMode)
                 pendingCalls.append(pcall);
 
             return;
@@ -2335,12 +2364,12 @@ void QDBusConnectionPrivate::registerObject(const ObjectTreeNode *node)
 void QDBusConnectionPrivate::unregisterObject(const QString &path, QDBusConnection::UnregisterMode mode)
 {
     QDBusConnectionPrivate::ObjectTreeNode *node = &rootNode;
-    QStringList pathComponents;
+    QVector<QStringRef> pathComponents;
     int i;
     if (path == QLatin1String("/")) {
         i = 0;
     } else {
-        pathComponents = path.split(QLatin1Char('/'));
+        pathComponents = path.splitRef(QLatin1Char('/'));
         i = 1;
     }
 

@@ -233,6 +233,8 @@ QPlatformServices *QIOSIntegration::services() const
 QVariant QIOSIntegration::styleHint(StyleHint hint) const
 {
     switch (hint) {
+    case StartDragTime:
+        return 300;
     case PasswordMaskDelay:
         // this number is based on timing the native delay
         // since there is no API to get it

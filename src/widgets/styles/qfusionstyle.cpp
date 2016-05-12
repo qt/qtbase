@@ -3414,12 +3414,28 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
             QSize textSize = option->fontMetrics.boundingRect(groupBox->text).size() + QSize(2, 2);
             int indicatorWidth = proxy()->pixelMetric(PM_IndicatorWidth, option, widget);
             int indicatorHeight = proxy()->pixelMetric(PM_IndicatorHeight, option, widget);
+
+            const int width = textSize.width()
+                + (option->subControls & QStyle::SC_GroupBoxCheckBox ? indicatorWidth + 5 : 0);
+
             rect = QRect();
+
+            if (option->rect.width() > width) {
+                switch (groupBox->textAlignment & Qt::AlignHorizontal_Mask) {
+                case Qt::AlignHCenter:
+                    rect.moveLeft((option->rect.width() - width) / 2);
+                    break;
+                case Qt::AlignRight:
+                    rect.moveLeft(option->rect.width() - width);
+                    break;
+                }
+            }
+
             if (subControl == SC_GroupBoxCheckBox) {
                 rect.setWidth(indicatorWidth);
                 rect.setHeight(indicatorHeight);
                 rect.moveTop(textSize.height() > indicatorHeight ? (textSize.height() - indicatorHeight) / 2 : 0);
-                rect.moveLeft(1);
+                rect.translate(1, 0);
             } else if (subControl == SC_GroupBoxLabel) {
                 rect.setSize(textSize);
                 rect.moveTop(1);

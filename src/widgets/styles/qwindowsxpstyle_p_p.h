@@ -356,9 +356,10 @@ public:
         ToolBarTheme,
         ToolTipTheme,
         TrackBarTheme,
-        TreeViewTheme,
+        XpTreeViewTheme, // '+'/'-' shape treeview indicators (XP)
         WindowTheme,
         StatusTheme,
+        VistaTreeViewTheme, // arrow shape treeview indicators (Vista) obtained from "explorer" theme.
         NThemes
     };
 
@@ -419,6 +420,9 @@ private:
     void showProperties(XPThemeData &themeData);
 #endif
 
+    static bool initVistaTreeViewTheming();
+    static void cleanupVistaTreeViewTheming();
+
     static QBasicAtomicInt ref;
     static bool use_xp;
     static QPixmap *tabbody;
@@ -430,6 +434,7 @@ private:
     uchar *bufferPixels;
     int bufferW, bufferH;
 
+    static HWND m_vistaTreeViewHelper;
     static HTHEME m_themes[NThemes];
 };
 

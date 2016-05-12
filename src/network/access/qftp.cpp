@@ -542,7 +542,7 @@ static void _q_parseUnixDir(const QStringList &tokens, const QString &userName, 
 
     // Resolve permissions
     int permissions = 0;
-    QString p = tokens.at(2);
+    const QString &p = tokens.at(2);
     permissions |= (p[0] == QLatin1Char('r') ? QUrlInfo::ReadOwner : 0);
     permissions |= (p[1] == QLatin1Char('w') ? QUrlInfo::WriteOwner : 0);
     permissions |= (p[2] == QLatin1Char('x') ? QUrlInfo::ExeOwner : 0);
@@ -947,7 +947,7 @@ void QFtpPI::readyRead()
             const int lowerLimit[3] = {1,0,0};
             const int upperLimit[3] = {5,5,9};
             for (int i=0; i<3; i++) {
-                replyCode[i] = line[i].digitValue();
+                replyCode[i] = line.at(i).digitValue();
                 if (replyCode[i]<lowerLimit[i] || replyCode[i]>upperLimit[i]) {
                     // protocol error
                     return;
@@ -1072,7 +1072,7 @@ bool QFtpPI::processReply()
 #endif
             // this error should be reported
         } else {
-            QStringList lst = addrPortPattern.capturedTexts();
+            const QStringList lst = addrPortPattern.capturedTexts();
             QString host = lst[1] + QLatin1Char('.') + lst[2] + QLatin1Char('.') + lst[3] + QLatin1Char('.') + lst[4];
             quint16 port = (lst[5].toUInt() << 8) + lst[6].toUInt();
             waitForDtpToConnect = true;
@@ -1098,7 +1098,7 @@ bool QFtpPI::processReply()
 
     } else if (replyCodeInt == 230) {
         if (currentCmd.startsWith(QLatin1String("USER ")) && pendingCommands.count()>0 &&
-            pendingCommands.first().startsWith(QLatin1String("PASS "))) {
+            pendingCommands.constFirst().startsWith(QLatin1String("PASS "))) {
             // no need to send the PASS -- we are already logged in
             pendingCommands.pop_front();
         }
@@ -1177,7 +1177,7 @@ bool QFtpPI::startNextCmd()
         emit finished(replyText);
         return false;
     }
-    currentCmd = pendingCommands.first();
+    currentCmd = pendingCommands.constFirst();
 
     // PORT and PASV are edited in-place, depending on whether we
     // should try the extended transfer connection commands EPRT and
@@ -2241,7 +2241,7 @@ void QFtpPrivate::_q_startNextCommand()
     Q_Q(QFtp);
     if (pending.isEmpty())
         return;
-    QFtpCommand *c = pending.first();
+    QFtpCommand *c = pending.constFirst();
 
     error = QFtp::NoError;
     errorString = QT_TRANSLATE_NOOP(QFtp, QLatin1String("Unknown error"));
@@ -2253,7 +2253,7 @@ void QFtpPrivate::_q_startNextCommand()
     // Proxy support, replace the Login argument in place, then fall
     // through.
     if (c->command == QFtp::Login && !proxyHost.isEmpty()) {
-        QString loginString = c->rawCmds.first().trimmed();
+        QString loginString = c->rawCmds.constFirst().trimmed();
         loginString += QLatin1Char('@') + host;
         if (port && port != 21)
             loginString += QLatin1Char(':') + QString::number(port);
@@ -2264,8 +2264,8 @@ void QFtpPrivate::_q_startNextCommand()
     if (c->command == QFtp::SetTransferMode) {
         _q_piFinished(QLatin1String("Transfer mode set"));
     } else if (c->command == QFtp::SetProxy) {
-        proxyHost = c->rawCmds[0];
-        proxyPort = c->rawCmds[1].toUInt();
+        proxyHost = c->rawCmds.at(0);
+        proxyPort = c->rawCmds.at(1).toUInt();
         c->rawCmds.clear();
         _q_piFinished(QLatin1String("Proxy set to ") + proxyHost + QLatin1Char(':') + QString::number(proxyPort));
     } else if (c->command == QFtp::ConnectToHost) {
@@ -2274,11 +2274,11 @@ void QFtpPrivate::_q_startNextCommand()
         pi.setProperty("_q_networksession", q->property("_q_networksession"));
 #endif
         if (!proxyHost.isEmpty()) {
-            host = c->rawCmds[0];
-            port = c->rawCmds[1].toUInt();
+            host = c->rawCmds.at(0);
+            port = c->rawCmds.at(1).toUInt();
             pi.connectToHost(proxyHost, proxyPort);
         } else {
-            pi.connectToHost(c->rawCmds[0], c->rawCmds[1].toUInt());
+            pi.connectToHost(c->rawCmds.at(0), c->rawCmds.at(1).toUInt());
         }
     } else {
         if (c->command == QFtp::Put) {
@@ -2313,7 +2313,7 @@ void QFtpPrivate::_q_piFinished(const QString&)
 {
     if (pending.isEmpty())
         return;
-    QFtpCommand *c = pending.first();
+    QFtpCommand *c = pending.constFirst();
 
     if (c->command == QFtp::Close) {
         // The order of in which the slots are called is arbitrary, so
@@ -2348,7 +2348,7 @@ void QFtpPrivate::_q_piError(int errorCode, const QString &text)
         return;
     }
 
-    QFtpCommand *c = pending.first();
+    QFtpCommand *c = pending.constFirst();
 
     // non-fatal errors
     if (c->command == QFtp::Get && pi.currentCommand().startsWith(QLatin1String("SIZE "))) {

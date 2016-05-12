@@ -77,6 +77,10 @@ struct ScriptItem
     int script;
 };
 
+} // namespace QUnicodeTools
+Q_DECLARE_TYPEINFO(QUnicodeTools::ScriptItem, Q_PRIMITIVE_TYPE);
+namespace QUnicodeTools {
+
 enum CharAttributeOption {
     GraphemeBreaks = 0x01,
     WordBreaks = 0x02,

@@ -62,7 +62,8 @@ void QAndroidPlatformFontDatabase::populateFontDatabase()
     nameFilters << QLatin1String("*.ttf")
                 << QLatin1String("*.otf");
 
-    foreach (const QFileInfo &fi, dir.entryInfoList(nameFilters, QDir::Files)) {
+    const auto entries = dir.entryInfoList(nameFilters, QDir::Files);
+    for (const QFileInfo &fi : entries) {
         const QByteArray file = QFile::encodeName(fi.absoluteFilePath());
         QBasicFontDatabase::addTTFile(QByteArray(), file);
     }

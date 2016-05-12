@@ -122,6 +122,7 @@ QT_BEGIN_NAMESPACE
     Other measurements have shown a slightly bigger binary size than a compact text
     representation where all possible whitespace was stripped out.
 */
+#define Q_DECLARE_JSONPRIVATE_TYPEINFO(Class, Flags) } Q_DECLARE_TYPEINFO(QJsonPrivate::Class, Flags); namespace QJsonPrivate {
 namespace QJsonPrivate {
 
 class Array;
@@ -572,7 +573,8 @@ public:
     Entry *entryAt(int i) const {
         return reinterpret_cast<Entry *>(((char *)this) + table()[i]);
     }
-    int indexOf(const QString &key, bool *exists);
+    int indexOf(const QString &key, bool *exists) const;
+    int indexOf(QLatin1String key, bool *exists) const;
 
     bool isValid() const;
 };
@@ -619,6 +621,7 @@ public:
     static uint valueToStore(const QJsonValue &v, uint offset);
     static void copyData(const QJsonValue &v, char *dest, bool compressed);
 };
+Q_DECLARE_JSONPRIVATE_TYPEINFO(Value, Q_PRIMITIVE_TYPE)
 
 inline Value Array::at(int i) const
 {
@@ -673,6 +676,10 @@ public:
     inline bool operator !=(const QString &key) const { return !operator ==(key); }
     inline bool operator >=(const QString &key) const;
 
+    bool operator==(QLatin1String key) const;
+    inline bool operator!=(QLatin1String key) const { return !operator ==(key); }
+    inline bool operator>=(QLatin1String key) const;
+
     bool operator ==(const Entry &other) const;
     bool operator >=(const Entry &other) const;
 };
@@ -685,7 +692,18 @@ inline bool Entry::operator >=(const QString &key) const
         return (shallowKey() >= key);
 }
 
+inline bool Entry::operator >=(QLatin1String key) const
+{
+    if (value.latinKey)
+        return shallowLatin1Key() >= key;
+    else
+        return shallowKey() >= key;
+}
+
 inline bool operator <(const QString &key, const Entry &e)
+{ return e >= key; }
+
+inline bool operator<(QLatin1String key, const Entry &e)
 { return e >= key; }
 
 

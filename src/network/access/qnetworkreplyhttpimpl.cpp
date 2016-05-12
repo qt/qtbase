@@ -641,7 +641,8 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     QNetworkProxy transparentProxy, cacheProxy;
 
     // FIXME the proxy stuff should be done in the HTTP thread
-    foreach (const QNetworkProxy &p, managerPrivate->queryProxy(QNetworkProxyQuery(newHttpRequest.url()))) {
+    const auto proxies = managerPrivate->queryProxy(QNetworkProxyQuery(newHttpRequest.url()));
+    for (const QNetworkProxy &p : proxies) {
         // use the first proxy that works
         // for non-encrypted connections, any transparent or HTTP proxy
         // for encrypted, only transparent proxies
@@ -744,7 +745,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
         }
     }
 
-    foreach (const QByteArray &header, headers)
+    for (const QByteArray &header : qAsConst(headers))
         httpRequest.setHeaderField(header, newHttpRequest.rawHeader(header));
 
     if (newHttpRequest.attribute(QNetworkRequest::HttpPipeliningAllowedAttribute).toBool())
@@ -1505,8 +1506,8 @@ QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNe
     cacheHeaders.setAllRawHeaders(metaData.rawHeaders());
     QNetworkHeadersPrivate::RawHeadersList::ConstIterator it;
 
-    QList<QByteArray> newHeaders = q->rawHeaderList();
-    foreach (QByteArray header, newHeaders) {
+    const QList<QByteArray> newHeaders = q->rawHeaderList();
+    for (QByteArray header : newHeaders) {
         QByteArray originalHeader = header;
         header = header.toLower();
         bool hop_by_hop =
@@ -1949,7 +1950,7 @@ void QNetworkReplyHttpImplPrivate::_q_networkSessionConnected()
 void QNetworkReplyHttpImplPrivate::_q_networkSessionStateChanged(QNetworkSession::State sessionState)
 {
     if (sessionState == QNetworkSession::Disconnected
-            && (state != Idle || state != Reconnecting)) {
+        && state != Idle && state != Reconnecting) {
         error(QNetworkReplyImpl::NetworkSessionFailedError,
               QCoreApplication::translate("QNetworkReply", "Network session error."));
         finished();

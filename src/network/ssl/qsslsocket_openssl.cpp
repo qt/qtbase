@@ -295,8 +295,8 @@ int q_X509Callback(int ok, X509_STORE_CTX *ctx)
         qCDebug(lcSsl) << "verification error: dumping bad certificate";
         qCDebug(lcSsl) << QSslCertificatePrivate::QSslCertificate_from_X509(q_X509_STORE_CTX_get_current_cert(ctx)).toPem();
         qCDebug(lcSsl) << "dumping chain";
-        foreach (QSslCertificate cert, QSslSocketBackendPrivate::STACKOFX509_to_QSslCertificates(q_X509_STORE_CTX_get_chain(ctx))) {
-            QString certFormat(QStringLiteral("O=%1 CN=%2 L=%3 OU=%4 C=%5 ST=%6"));
+        const auto certs = QSslSocketBackendPrivate::STACKOFX509_to_QSslCertificates(q_X509_STORE_CTX_get_chain(ctx));
+        for (const QSslCertificate &cert : certs) {
             qCDebug(lcSsl) << "Issuer:" << "O=" << cert.issuerInfo(QSslCertificate::Organization)
                 << "CN=" << cert.issuerInfo(QSslCertificate::CommonName)
                 << "L=" << cert.issuerInfo(QSslCertificate::LocalityName)
@@ -746,9 +746,8 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
                 certFiles.insert(it.fileInfo().canonicalFilePath());
             }
         }
-        QSetIterator<QString> it(certFiles);
-        while (it.hasNext())
-            systemCerts.append(QSslCertificate::fromPath(it.next(), platformEncodingFormat));
+        for (const QString& file : qAsConst(certFiles))
+            systemCerts.append(QSslCertificate::fromPath(file, platformEncodingFormat));
 # ifndef Q_OS_ANDROID
         systemCerts.append(QSslCertificate::fromPath(QLatin1String("/etc/pki/tls/certs/ca-bundle.crt"), QSsl::Pem)); // Fedora, Mandriva
         systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/local/share/certs/ca-root-nss.crt"), QSsl::Pem)); // FreeBSD's ca_root_nss
@@ -1101,7 +1100,7 @@ bool QSslSocketBackendPrivate::startHandshake()
     QList<QSslError> errors;
 
     // check the whole chain for blacklisting (including root, as we check for subjectInfo and issuer)
-    foreach (const QSslCertificate &cert, configuration.peerCertificateChain) {
+    for (const QSslCertificate &cert : qAsConst(configuration.peerCertificateChain)) {
         if (QSslCertificatePrivate::isBlacklisted(cert)) {
             QSslError error(QSslError::CertificateBlacklisted, cert);
             errors << error;
@@ -1234,7 +1233,7 @@ bool QSslSocketBackendPrivate::checkSslErrors()
             pauseSocketNotifiers(q);
             paused = true;
         } else {
-            setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError, sslErrors.first().errorString());
+            setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError, sslErrors.constFirst().errorString());
             plainSocket->disconnectFromHost();
         }
         return false;
@@ -1666,7 +1665,8 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
     }
 
     const QDateTime now = QDateTime::currentDateTimeUtc();
-    foreach (const QSslCertificate &caCertificate, QSslConfiguration::defaultConfiguration().caCertificates()) {
+    const auto caCertificates = QSslConfiguration::defaultConfiguration().caCertificates();
+    for (const QSslCertificate &caCertificate : caCertificates) {
         // From https://www.openssl.org/docs/ssl/SSL_CTX_load_verify_locations.html:
         //
         // If several CA certificates matching the name, key identifier, and
@@ -1700,7 +1700,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
         }
 
         bool first = true;
-        foreach (const QSslCertificate &cert, certificateChain) {
+        for (const QSslCertificate &cert : certificateChain) {
             if (first) {
                 first = false;
                 continue;

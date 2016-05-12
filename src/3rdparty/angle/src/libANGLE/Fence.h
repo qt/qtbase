@@ -10,6 +10,7 @@
 #ifndef LIBANGLE_FENCE_H_
 #define LIBANGLE_FENCE_H_
 
+#include "libANGLE/Debug.h"
 #include "libANGLE/Error.h"
 #include "libANGLE/RefCountObject.h"
 
@@ -30,11 +31,11 @@ class FenceNV final : angle::NonCopyable
     explicit FenceNV(rx::FenceNVImpl *impl);
     virtual ~FenceNV();
 
-    GLboolean isFence() const;
-    Error setFence(GLenum condition);
-    Error testFence(GLboolean *outResult);
-    Error finishFence();
+    Error set(GLenum condition);
+    Error test(GLboolean *outResult);
+    Error finish();
 
+    bool isSet() const { return mIsSet; }
     GLboolean getStatus() const { return mStatus; }
     GLenum getCondition() const { return mCondition; }
 
@@ -47,23 +48,30 @@ class FenceNV final : angle::NonCopyable
     GLenum mCondition;
 };
 
-class FenceSync final : public RefCountObject
+class FenceSync final : public RefCountObject, public LabeledObject
 {
   public:
-    explicit FenceSync(rx::FenceSyncImpl *impl, GLuint id);
+    FenceSync(rx::FenceSyncImpl *impl, GLuint id);
     virtual ~FenceSync();
 
-    Error set(GLenum condition);
+    void setLabel(const std::string &label) override;
+    const std::string &getLabel() const override;
+
+    Error set(GLenum condition, GLbitfield flags);
     Error clientWait(GLbitfield flags, GLuint64 timeout, GLenum *outResult);
     Error serverWait(GLbitfield flags, GLuint64 timeout);
     Error getStatus(GLint *outResult) const;
 
     GLenum getCondition() const { return mCondition; }
+    GLbitfield getFlags() const { return mFlags; }
 
   private:
     rx::FenceSyncImpl *mFence;
 
+    std::string mLabel;
+
     GLenum mCondition;
+    GLbitfield mFlags;
 };
 
 }

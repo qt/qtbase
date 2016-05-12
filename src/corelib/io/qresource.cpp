@@ -1194,9 +1194,10 @@ protected:
 private:
     uchar *map(qint64 offset, qint64 size, QFile::MemoryMapFlags flags);
     bool unmap(uchar *ptr);
+    void uncompress() const;
     qint64 offset;
     QResource resource;
-    QByteArray uncompressed;
+    mutable QByteArray uncompressed;
 protected:
     QResourceFileEnginePrivate() : offset(0) { }
 };
@@ -1231,13 +1232,6 @@ QResourceFileEngine::QResourceFileEngine(const QString &file) :
 {
     Q_D(QResourceFileEngine);
     d->resource.setFileName(file);
-    if(d->resource.isCompressed() && d->resource.size()) {
-#ifndef QT_NO_COMPRESS
-        d->uncompressed = qUncompress(d->resource.data(), d->resource.size());
-#else
-        Q_ASSERT(!"QResourceFileEngine::open: Qt built without support for compression");
-#endif
-    }
 }
 
 QResourceFileEngine::~QResourceFileEngine()
@@ -1259,6 +1253,7 @@ bool QResourceFileEngine::open(QIODevice::OpenMode flags)
     }
     if(flags & QIODevice::WriteOnly)
         return false;
+    d->uncompress();
     if (!d->resource.isValid()) {
         d->errorString = qt_error_string(ENOENT);
         return false;
@@ -1324,8 +1319,10 @@ qint64 QResourceFileEngine::size() const
     Q_D(const QResourceFileEngine);
     if(!d->resource.isValid())
         return 0;
-    if(d->resource.isCompressed())
+    if (d->resource.isCompressed()) {
+        d->uncompress();
         return d->uncompressed.size();
+    }
     return d->resource.size();
 }
 
@@ -1493,6 +1490,18 @@ bool QResourceFileEnginePrivate::unmap(uchar *ptr)
     Q_UNUSED(ptr);
     return true;
 }
+
+void QResourceFileEnginePrivate::uncompress() const
+{
+    if (resource.isCompressed() && uncompressed.isEmpty() && resource.size()) {
+#ifndef QT_NO_COMPRESS
+        uncompressed = qUncompress(resource.data(), resource.size());
+#else
+        Q_ASSERT(!"QResourceFileEngine::open: Qt built without support for compression");
+#endif
+    }
+}
+
 #endif // !defined(QT_BOOTSTRAPPED)
 
 QT_END_NAMESPACE

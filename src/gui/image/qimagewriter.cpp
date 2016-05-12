@@ -837,9 +837,9 @@ void supportedImageHandlerMimeTypes(QFactoryLoader *loader,
 
     const int pluginCount = metaDataList.size();
     for (int i = 0; i < pluginCount; ++i) {
-        const QJsonObject metaData = metaDataList.at(i).value(QStringLiteral("MetaData")).toObject();
-        const QJsonArray keys = metaData.value(QStringLiteral("Keys")).toArray();
-        const QJsonArray mimeTypes = metaData.value(QStringLiteral("MimeTypes")).toArray();
+        const QJsonObject metaData = metaDataList.at(i).value(QLatin1String("MetaData")).toObject();
+        const QJsonArray keys = metaData.value(QLatin1String("Keys")).toArray();
+        const QJsonArray mimeTypes = metaData.value(QLatin1String("MimeTypes")).toArray();
         QImageIOPlugin *plugin = qobject_cast<QImageIOPlugin *>(loader->instance(i));
         const int keyCount = keys.size();
         for (int k = 0; k < keyCount; ++k) {

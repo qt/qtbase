@@ -88,13 +88,13 @@ GLuint ResourceManager::createBuffer()
 }
 
 // Returns an unused shader/program name
-GLuint ResourceManager::createShader(const gl::Data &data, GLenum type)
+GLuint ResourceManager::createShader(const gl::Limitations &rendererLimitations, GLenum type)
 {
     GLuint handle = mProgramShaderHandleAllocator.allocate();
 
     if (type == GL_VERTEX_SHADER || type == GL_FRAGMENT_SHADER)
     {
-        mShaderMap[handle] = new Shader(this, mFactory->createShader(type), type, handle);
+        mShaderMap[handle] = new Shader(this, mFactory, rendererLimitations, type, handle);
     }
     else UNREACHABLE();
 
@@ -106,7 +106,7 @@ GLuint ResourceManager::createProgram()
 {
     GLuint handle = mProgramShaderHandleAllocator.allocate();
 
-    mProgramMap[handle] = new Program(mFactory->createProgram(), this, handle);
+    mProgramMap[handle] = new Program(mFactory, this, handle);
 
     return handle;
 }
@@ -441,7 +441,7 @@ void ResourceManager::checkSamplerAllocation(GLuint sampler)
 {
     if (sampler != 0 && !getSampler(sampler))
     {
-        Sampler *samplerObject = new Sampler(sampler);
+        Sampler *samplerObject = new Sampler(mFactory, sampler);
         mSamplerMap[sampler] = samplerObject;
         samplerObject->addRef();
         // Samplers cannot be created via Bind

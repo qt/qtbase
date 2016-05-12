@@ -48,12 +48,6 @@ ShaderExecutable11::~ShaderExecutable11()
     SafeRelease(mStreamOutExecutable);
 }
 
-ShaderExecutable11 *ShaderExecutable11::makeShaderExecutable11(ShaderExecutableD3D *executable)
-{
-    ASSERT(HAS_DYNAMIC_TYPE(ShaderExecutable11*, executable));
-    return static_cast<ShaderExecutable11*>(executable);
-}
-
 ID3D11VertexShader *ShaderExecutable11::getVertexShader() const
 {
     return mVertexExecutable;
@@ -83,7 +77,7 @@ UniformStorage11::UniformStorage11(Renderer11 *renderer, size_t initialSize)
     if (initialSize > 0)
     {
         D3D11_BUFFER_DESC constantBufferDescription = {0};
-        constantBufferDescription.ByteWidth = initialSize;
+        constantBufferDescription.ByteWidth           = static_cast<unsigned int>(initialSize);
         constantBufferDescription.Usage = D3D11_USAGE_DYNAMIC;
         constantBufferDescription.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         constantBufferDescription.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -99,12 +93,6 @@ UniformStorage11::UniformStorage11(Renderer11 *renderer, size_t initialSize)
 UniformStorage11::~UniformStorage11()
 {
     SafeRelease(mConstantBuffer);
-}
-
-const UniformStorage11 *UniformStorage11::makeUniformStorage11(const UniformStorageD3D *uniformStorage)
-{
-    ASSERT(HAS_DYNAMIC_TYPE(const UniformStorage11*, uniformStorage));
-    return static_cast<const UniformStorage11*>(uniformStorage);
 }
 
 }

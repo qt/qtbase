@@ -57,6 +57,7 @@ class Q_GUI_EXPORT QInputMethod : public QObject
     Q_PROPERTY(QRectF cursorRectangle READ cursorRectangle NOTIFY cursorRectangleChanged)
     Q_PROPERTY(QRectF anchorRectangle READ anchorRectangle NOTIFY anchorRectangleChanged)
     Q_PROPERTY(QRectF keyboardRectangle READ keyboardRectangle NOTIFY keyboardRectangleChanged)
+    Q_PROPERTY(QRectF inputItemClipRectangle READ inputItemClipRectangle NOTIFY inputItemClipRectangleChanged)
     Q_PROPERTY(bool visible READ isVisible NOTIFY visibleChanged)
     Q_PROPERTY(bool animating READ isAnimating NOTIFY animatingChanged)
     Q_PROPERTY(QLocale locale READ locale NOTIFY localeChanged)
@@ -75,6 +76,8 @@ public:
 
     // keyboard geometry in window coords
     QRectF keyboardRectangle() const;
+
+    QRectF inputItemClipRectangle() const;
 
     enum Action {
         Click,
@@ -106,6 +109,7 @@ Q_SIGNALS:
     void cursorRectangleChanged();
     void anchorRectangleChanged();
     void keyboardRectangleChanged();
+    void inputItemClipRectangleChanged();
     void visibleChanged();
     void animatingChanged();
     void localeChanged();

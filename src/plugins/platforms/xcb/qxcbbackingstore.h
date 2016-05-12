@@ -41,6 +41,7 @@
 #define QXCBBACKINGSTORE_H
 
 #include <qpa/qplatformbackingstore.h>
+#include <QtCore/QStack>
 
 #include <xcb/xcb.h>
 
@@ -75,7 +76,7 @@ public:
 
 private:
     QXcbShmImage *m_image;
-    QRegion m_paintRegion;
+    QStack<QRegion> m_paintRegions;
     QImage m_rgbImage;
 };
 

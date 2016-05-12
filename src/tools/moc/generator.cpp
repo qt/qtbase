@@ -1466,9 +1466,7 @@ void Generator::generateSignal(FunctionDef *def,int index)
     const char *constQualifier = "";
 
     if (def->isConst) {
-        thisPtr = "const_cast< ";
-        thisPtr += cdef->qualified;
-        thisPtr += " *>(this)";
+        thisPtr = "const_cast< " + cdef->qualified + " *>(this)";
         constQualifier = "const";
     }
 

@@ -42,6 +42,7 @@
 #include "qdbus_symbols_p.h"
 
 #include <QtCore/qstringlist.h>
+#include <QtCore/qvector.h>
 
 #include "qdbusargument.h"
 #include "qdbusunixfiledescriptor.h"
@@ -330,10 +331,10 @@ namespace QDBusUtil
 
     /*!
         \internal
-        \fn bool QDBusUtil::isValidPartOfObjectPath(const QString &part)
+        \fn bool QDBusUtil::isValidPartOfObjectPath(const QStringRef &part)
         See QDBusUtil::isValidObjectPath
     */
-    bool isValidPartOfObjectPath(const QString &part)
+    bool isValidPartOfObjectPath(const QStringRef &part)
     {
         if (part.isEmpty())
             return false;       // can't be valid if it's empty
@@ -345,6 +346,13 @@ namespace QDBusUtil
 
         return true;
     }
+
+    /*!
+        \internal
+        \fn bool QDBusUtil::isValidPartOfObjectPath(const QString &part)
+
+        \overload
+    */
 
     /*!
         \fn bool QDBusUtil::isValidInterfaceName(const QString &ifaceName)
@@ -364,36 +372,35 @@ namespace QDBusUtil
         if (ifaceName.isEmpty() || ifaceName.length() > DBUS_MAXIMUM_NAME_LENGTH)
             return false;
 
-        QStringList parts = ifaceName.split(QLatin1Char('.'));
+        const auto parts = ifaceName.splitRef(QLatin1Char('.'));
         if (parts.count() < 2)
             return false;           // at least two parts
 
-        for (int i = 0; i < parts.count(); ++i)
-            if (!isValidMemberName(parts.at(i)))
+        for (const QStringRef &part : parts)
+            if (!isValidMemberName(part))
                 return false;
 
         return true;
     }
 
     /*!
-        \fn bool QDBusUtil::isValidUniqueConnectionName(const QString &connName)
+        \fn bool QDBusUtil::isValidUniqueConnectionName(const QStringRef &connName)
         Returns \c true if \a connName is a valid unique connection name.
 
         Unique connection names start with a colon (":") and are followed by a list of dot-separated
         components composed of ASCII letters, digits, the hyphen or the underscore ("_") character.
     */
-    bool isValidUniqueConnectionName(const QString &connName)
+    bool isValidUniqueConnectionName(const QStringRef &connName)
     {
         if (connName.isEmpty() || connName.length() > DBUS_MAXIMUM_NAME_LENGTH ||
             !connName.startsWith(QLatin1Char(':')))
             return false;
 
-        QStringList parts = connName.mid(1).split(QLatin1Char('.'));
+        const auto parts = connName.mid(1).split(QLatin1Char('.'));
         if (parts.count() < 1)
             return false;
 
-        for (int i = 0; i < parts.count(); ++i) {
-            const QString &part = parts.at(i);
+        for (const QStringRef &part : parts) {
             if (part.isEmpty())
                  return false;
 
@@ -405,6 +412,12 @@ namespace QDBusUtil
 
         return true;
     }
+
+    /*!
+        \fn bool QDBusUtil::isValidUniqueConnectionName(const QString &connName)
+
+        \overload
+    */
 
     /*!
         \fn bool QDBusUtil::isValidBusName(const QString &busName)
@@ -429,12 +442,11 @@ namespace QDBusUtil
         if (busName.startsWith(QLatin1Char(':')))
             return isValidUniqueConnectionName(busName);
 
-        QStringList parts = busName.split(QLatin1Char('.'));
+        const auto parts = busName.splitRef(QLatin1Char('.'));
         if (parts.count() < 1)
             return false;
 
-        for (int i = 0; i < parts.count(); ++i) {
-            const QString &part = parts.at(i);
+        for (const QStringRef &part : parts) {
             if (part.isEmpty())
                 return false;
 
@@ -450,12 +462,12 @@ namespace QDBusUtil
     }
 
     /*!
-        \fn bool QDBusUtil::isValidMemberName(const QString &memberName)
+        \fn bool QDBusUtil::isValidMemberName(const QStringRef &memberName)
         Returns \c true if \a memberName is a valid member name. A valid member name does not exceed
         255 characters in length, is not empty, is composed only of ASCII letters, digits and
         underscores, but does not start with a digit.
     */
-    bool isValidMemberName(const QString &memberName)
+    bool isValidMemberName(const QStringRef &memberName)
     {
         if (memberName.isEmpty() || memberName.length() > DBUS_MAXIMUM_NAME_LENGTH)
             return false;
@@ -468,6 +480,12 @@ namespace QDBusUtil
                 return false;
         return true;
     }
+
+    /*!
+        \fn bool QDBusUtil::isValidMemberName(const QString &memberName)
+
+        \overload
+    */
 
     /*!
         \fn bool QDBusUtil::isValidErrorName(const QString &errorName)
@@ -501,12 +519,10 @@ namespace QDBusUtil
             path.endsWith(QLatin1Char('/')))
             return false;
 
-        QStringList parts = path.split(QLatin1Char('/'));
-        Q_ASSERT(parts.count() >= 1);
-        parts.removeFirst();    // it starts with /, so we get an empty first part
-
-        for (int i = 0; i < parts.count(); ++i)
-            if (!isValidPartOfObjectPath(parts.at(i)))
+        // it starts with /, so we skip the empty first part
+        const auto parts = path.midRef(1).split(QLatin1Char('/'));
+        for (const QStringRef &part : parts)
+            if (!isValidPartOfObjectPath(part))
                 return false;
 
         return true;

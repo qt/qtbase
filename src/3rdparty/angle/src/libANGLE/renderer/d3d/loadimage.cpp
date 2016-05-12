@@ -298,9 +298,9 @@ void LoadR5G6B5ToBGRA8(size_t width, size_t height, size_t depth,
             for (size_t x = 0; x < width; x++)
             {
                 uint16_t rgb = source[x];
-                dest[4 * x + 0] = ((rgb & 0x001F) << 3) | ((rgb & 0x001F) >> 2);
-                dest[4 * x + 1] = ((rgb & 0x07E0) >> 3) | ((rgb & 0x07E0) >> 9);
-                dest[4 * x + 2] = ((rgb & 0xF800) >> 8) | ((rgb & 0xF800) >> 13);
+                dest[4 * x + 0] = static_cast<uint8_t>(((rgb & 0x001F) << 3) | ((rgb & 0x001F) >> 2));
+                dest[4 * x + 1] = static_cast<uint8_t>(((rgb & 0x07E0) >> 3) | ((rgb & 0x07E0) >> 9));
+                dest[4 * x + 2] = static_cast<uint8_t>(((rgb & 0xF800) >> 8) | ((rgb & 0xF800) >> 13));
                 dest[4 * x + 3] = 0xFF;
             }
         }
@@ -320,9 +320,9 @@ void LoadR5G6B5ToRGBA8(size_t width, size_t height, size_t depth,
             for (size_t x = 0; x < width; x++)
             {
                 uint16_t rgb = source[x];
-                dest[4 * x + 0] = ((rgb & 0xF800) >> 8) | ((rgb & 0xF800) >> 13);
-                dest[4 * x + 1] = ((rgb & 0x07E0) >> 3) | ((rgb & 0x07E0) >> 9);
-                dest[4 * x + 2] = ((rgb & 0x001F) << 3) | ((rgb & 0x001F) >> 2);
+                dest[4 * x + 0] = static_cast<uint8_t>(((rgb & 0xF800) >> 8) | ((rgb & 0xF800) >> 13));
+                dest[4 * x + 1] = static_cast<uint8_t>(((rgb & 0x07E0) >> 3) | ((rgb & 0x07E0) >> 9));
+                dest[4 * x + 2] = static_cast<uint8_t>(((rgb & 0x001F) << 3) | ((rgb & 0x001F) >> 2));
                 dest[4 * x + 3] = 0xFF;
             }
         }
@@ -348,6 +348,24 @@ void LoadRGBA8ToBGRA8(size_t width, size_t height, size_t depth,
     }
 }
 
+void LoadRGBA4ToARGB4(size_t width, size_t height, size_t depth,
+                      const uint8_t *input, size_t inputRowPitch, size_t inputDepthPitch,
+                      uint8_t *output, size_t outputRowPitch, size_t outputDepthPitch)
+{
+    for (size_t z = 0; z < depth; z++)
+    {
+        for (size_t y = 0; y < height; y++)
+        {
+            const uint16_t *source = OffsetDataPointer<uint16_t>(input, y, z, inputRowPitch, inputDepthPitch);
+            uint16_t *dest = OffsetDataPointer<uint16_t>(output, y, z, outputRowPitch, outputDepthPitch);
+            for (size_t x = 0; x < width; x++)
+            {
+                dest[x] = ANGLE_ROTR16(source[x], 4);
+            }
+        }
+    }
+}
+
 void LoadRGBA4ToBGRA8(size_t width, size_t height, size_t depth,
                       const uint8_t *input, size_t inputRowPitch, size_t inputDepthPitch,
                       uint8_t *output, size_t outputRowPitch, size_t outputDepthPitch)
@@ -361,10 +379,10 @@ void LoadRGBA4ToBGRA8(size_t width, size_t height, size_t depth,
             for (size_t x = 0; x < width; x++)
             {
                 uint16_t rgba = source[x];
-                dest[4 * x + 0] = ((rgba & 0x00F0) << 0) | ((rgba & 0x00F0) >> 4);
-                dest[4 * x + 1] = ((rgba & 0x0F00) >> 4) | ((rgba & 0x0F00) >> 8);
-                dest[4 * x + 2] = ((rgba & 0xF000) >> 8) | ((rgba & 0xF000) >> 12);
-                dest[4 * x + 3] = ((rgba & 0x000F) << 4) | ((rgba & 0x000F) >> 0);
+                dest[4 * x + 0] = static_cast<uint8_t>(((rgba & 0x00F0) << 0) | ((rgba & 0x00F0) >> 4));
+                dest[4 * x + 1] = static_cast<uint8_t>(((rgba & 0x0F00) >> 4) | ((rgba & 0x0F00) >> 8));
+                dest[4 * x + 2] = static_cast<uint8_t>(((rgba & 0xF000) >> 8) | ((rgba & 0xF000) >> 12));
+                dest[4 * x + 3] = static_cast<uint8_t>(((rgba & 0x000F) << 4) | ((rgba & 0x000F) >> 0));
             }
         }
     }
@@ -383,10 +401,10 @@ void LoadRGBA4ToRGBA8(size_t width, size_t height, size_t depth,
             for (size_t x = 0; x < width; x++)
             {
                 uint16_t rgba = source[x];
-                dest[4 * x + 0] = ((rgba & 0xF000) >> 8) | ((rgba & 0xF000) >> 12);
-                dest[4 * x + 1] = ((rgba & 0x0F00) >> 4) | ((rgba & 0x0F00) >> 8);
-                dest[4 * x + 2] = ((rgba & 0x00F0) << 0) | ((rgba & 0x00F0) >> 4);
-                dest[4 * x + 3] = ((rgba & 0x000F) << 4) | ((rgba & 0x000F) >> 0);
+                dest[4 * x + 0] = static_cast<uint8_t>(((rgba & 0xF000) >> 8) | ((rgba & 0xF000) >> 12));
+                dest[4 * x + 1] = static_cast<uint8_t>(((rgba & 0x0F00) >> 4) | ((rgba & 0x0F00) >> 8));
+                dest[4 * x + 2] = static_cast<uint8_t>(((rgba & 0x00F0) << 0) | ((rgba & 0x00F0) >> 4));
+                dest[4 * x + 3] = static_cast<uint8_t>(((rgba & 0x000F) << 4) | ((rgba & 0x000F) >> 0));
             }
         }
     }
@@ -405,10 +423,28 @@ void LoadBGRA4ToBGRA8(size_t width, size_t height, size_t depth,
             for (size_t x = 0; x < width; x++)
             {
                 uint16_t bgra = source[x];
-                dest[4 * x + 0] = ((bgra & 0xF000) >> 8) | ((bgra & 0xF000) >> 12);
-                dest[4 * x + 1] = ((bgra & 0x0F00) >> 4) | ((bgra & 0x0F00) >> 8);
-                dest[4 * x + 2] = ((bgra & 0x00F0) << 0) | ((bgra & 0x00F0) >> 4);
-                dest[4 * x + 3] = ((bgra & 0x000F) << 4) | ((bgra & 0x000F) >> 0);
+                dest[4 * x + 0] = static_cast<uint8_t>(((bgra & 0xF000) >> 8) | ((bgra & 0xF000) >> 12));
+                dest[4 * x + 1] = static_cast<uint8_t>(((bgra & 0x0F00) >> 4) | ((bgra & 0x0F00) >> 8));
+                dest[4 * x + 2] = static_cast<uint8_t>(((bgra & 0x00F0) << 0) | ((bgra & 0x00F0) >> 4));
+                dest[4 * x + 3] = static_cast<uint8_t>(((bgra & 0x000F) << 4) | ((bgra & 0x000F) >> 0));
+            }
+        }
+    }
+}
+
+void LoadRGB5A1ToA1RGB5(size_t width, size_t height, size_t depth,
+                        const uint8_t *input, size_t inputRowPitch, size_t inputDepthPitch,
+                        uint8_t *output, size_t outputRowPitch, size_t outputDepthPitch)
+{
+    for (size_t z = 0; z < depth; z++)
+    {
+        for (size_t y = 0; y < height; y++)
+        {
+            const uint16_t *source = OffsetDataPointer<uint16_t>(input, y, z, inputRowPitch, inputDepthPitch);
+            uint16_t *dest = OffsetDataPointer<uint16_t>(output, y, z, outputRowPitch, outputDepthPitch);
+            for (size_t x = 0; x < width; x++)
+            {
+                dest[x] = ANGLE_ROTR16(source[x], 1);
             }
         }
     }
@@ -427,10 +463,10 @@ void LoadRGB5A1ToBGRA8(size_t width, size_t height, size_t depth,
             for (size_t x = 0; x < width; x++)
             {
                 uint16_t rgba = source[x];
-                dest[4 * x + 0] = ((rgba & 0x003E) << 2) | ((rgba & 0x003E) >> 3);
-                dest[4 * x + 1] = ((rgba & 0x07C0) >> 3) | ((rgba & 0x07C0) >> 8);
-                dest[4 * x + 2] = ((rgba & 0xF800) >> 8) | ((rgba & 0xF800) >> 13);
-                dest[4 * x + 3] = (rgba & 0x0001) ? 0xFF : 0;
+                dest[4 * x + 0] = static_cast<uint8_t>(((rgba & 0x003E) << 2) | ((rgba & 0x003E) >> 3));
+                dest[4 * x + 1] = static_cast<uint8_t>(((rgba & 0x07C0) >> 3) | ((rgba & 0x07C0) >> 8));
+                dest[4 * x + 2] = static_cast<uint8_t>(((rgba & 0xF800) >> 8) | ((rgba & 0xF800) >> 13));
+                dest[4 * x + 3] = static_cast<uint8_t>((rgba & 0x0001) ? 0xFF : 0);
             }
         }
     }
@@ -449,15 +485,14 @@ void LoadRGB5A1ToRGBA8(size_t width, size_t height, size_t depth,
             for (size_t x = 0; x < width; x++)
             {
                 uint16_t rgba = source[x];
-                dest[4 * x + 0] = ((rgba & 0xF800) >> 8) | ((rgba & 0xF800) >> 13);
-                dest[4 * x + 1] = ((rgba & 0x07C0) >> 3) | ((rgba & 0x07C0) >> 8);
-                dest[4 * x + 2] = ((rgba & 0x003E) << 2) | ((rgba & 0x003E) >> 3);
-                dest[4 * x + 3] = (rgba & 0x0001) ? 0xFF : 0;
+                dest[4 * x + 0] = static_cast<uint8_t>(((rgba & 0xF800) >> 8) | ((rgba & 0xF800) >> 13));
+                dest[4 * x + 1] = static_cast<uint8_t>(((rgba & 0x07C0) >> 3) | ((rgba & 0x07C0) >> 8));
+                dest[4 * x + 2] = static_cast<uint8_t>(((rgba & 0x003E) << 2) | ((rgba & 0x003E) >> 3));
+                dest[4 * x + 3] = static_cast<uint8_t>((rgba & 0x0001) ? 0xFF : 0);
             }
         }
     }
 }
-
 
 void LoadBGR5A1ToBGRA8(size_t width, size_t height, size_t depth,
                        const uint8_t *input, size_t inputRowPitch, size_t inputDepthPitch,
@@ -472,10 +507,10 @@ void LoadBGR5A1ToBGRA8(size_t width, size_t height, size_t depth,
             for (size_t x = 0; x < width; x++)
             {
                 uint16_t bgra = source[x];
-                dest[4 * x + 0] = ((bgra & 0xF800) >> 8) | ((bgra & 0xF800) >> 13);
-                dest[4 * x + 1] = ((bgra & 0x07C0) >> 3) | ((bgra & 0x07C0) >> 8);
-                dest[4 * x + 2] = ((bgra & 0x003E) << 2) | ((bgra & 0x003E) >> 3);
-                dest[4 * x + 3] = (bgra & 0x0001) ? 0xFF : 0;
+                dest[4 * x + 0] = static_cast<uint8_t>(((bgra & 0xF800) >> 8) | ((bgra & 0xF800) >> 13));
+                dest[4 * x + 1] = static_cast<uint8_t>(((bgra & 0x07C0) >> 3) | ((bgra & 0x07C0) >> 8));
+                dest[4 * x + 2] = static_cast<uint8_t>(((bgra & 0x003E) << 2) | ((bgra & 0x003E) >> 3));
+                dest[4 * x + 3] = static_cast<uint8_t>((bgra & 0x0001) ? 0xFF : 0);
             }
         }
     }
@@ -494,10 +529,10 @@ void LoadRGB10A2ToRGBA8(size_t width, size_t height, size_t depth,
             for (size_t x = 0; x < width; x++)
             {
                 uint32_t rgba = source[x];
-                dest[4 * x + 0] = (rgba & 0x000003FF) >>  2;
-                dest[4 * x + 1] = (rgba & 0x000FFC00) >> 12;
-                dest[4 * x + 2] = (rgba & 0x3FF00000) >> 22;
-                dest[4 * x + 3] = ((rgba & 0xC0000000) >> 30) * 0x55;
+                dest[4 * x + 0] = static_cast<uint8_t>((rgba & 0x000003FF) >>  2);
+                dest[4 * x + 1] = static_cast<uint8_t>((rgba & 0x000FFC00) >> 12);
+                dest[4 * x + 2] = static_cast<uint8_t>((rgba & 0x3FF00000) >> 22);
+                dest[4 * x + 3] = static_cast<uint8_t>(((rgba & 0xC0000000) >> 30) * 0x55);
             }
         }
     }

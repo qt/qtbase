@@ -179,7 +179,29 @@ void Base::removeItems(int pos, int numItems)
     length -= numItems;
 }
 
-int Object::indexOf(const QString &key, bool *exists)
+int Object::indexOf(const QString &key, bool *exists) const
+{
+    int min = 0;
+    int n = length;
+    while (n > 0) {
+        int half = n >> 1;
+        int middle = min + half;
+        if (*entryAt(middle) >= key) {
+            n = half;
+        } else {
+            min = middle + 1;
+            n -= half + 1;
+        }
+    }
+    if (min < (int)length && *entryAt(min) == key) {
+        *exists = true;
+        return min;
+    }
+    *exists = false;
+    return min;
+}
+
+int Object::indexOf(QLatin1String key, bool *exists) const
 {
     int min = 0;
     int n = length;
@@ -246,6 +268,14 @@ bool Entry::operator ==(const QString &key) const
         return (shallowLatin1Key() == key);
     else
         return (shallowKey() == key);
+}
+
+bool Entry::operator==(QLatin1String key) const
+{
+    if (value.latinKey)
+        return shallowLatin1Key() == key;
+    else
+        return shallowKey() == key;
 }
 
 bool Entry::operator ==(const Entry &other) const

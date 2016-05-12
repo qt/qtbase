@@ -453,9 +453,8 @@ bool Moc::parseFunction(FunctionDef *def, bool inMacro)
     }
 
     if (scopedFunctionName) {
-        QByteArray msg("Function declaration ");
-        msg += def->name;
-        msg += " contains extra qualification. Ignoring as signal or slot.";
+        const QByteArray msg = "Function declaration " + def->name
+                + " contains extra qualification. Ignoring as signal or slot.";
         warning(msg.constData());
         return false;
     }
@@ -526,9 +525,8 @@ bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
     def->isConst = test(CONST);
     if (scopedFunctionName
         && (def->isSignal || def->isSlot || def->isInvokable)) {
-        QByteArray msg("parsemaybe: Function declaration ");
-        msg += def->name;
-        msg += " contains extra qualification. Ignoring as signal or slot.";
+        const QByteArray msg = "parsemaybe: Function declaration " + def->name
+                + " contains extra qualification. Ignoring as signal or slot.";
         warning(msg.constData());
         return false;
     }
@@ -1132,25 +1130,19 @@ void Moc::createPropertyDef(PropertyDef &propDef)
         }
     }
     if (propDef.read.isNull() && propDef.member.isNull()) {
-        QByteArray msg;
-        msg += "Property declaration ";
-        msg += propDef.name;
-        msg += " has no READ accessor function or associated MEMBER variable. The property will be invalid.";
+        const QByteArray msg = "Property declaration " + propDef.name
+                + " has no READ accessor function or associated MEMBER variable. The property will be invalid.";
         warning(msg.constData());
     }
     if (propDef.constant && !propDef.write.isNull()) {
-        QByteArray msg;
-        msg += "Property declaration ";
-        msg += propDef.name;
-        msg += " is both WRITEable and CONSTANT. CONSTANT will be ignored.";
+        const QByteArray msg = "Property declaration " + propDef.name
+                + " is both WRITEable and CONSTANT. CONSTANT will be ignored.";
         propDef.constant = false;
         warning(msg.constData());
     }
     if (propDef.constant && !propDef.notify.isNull()) {
-        QByteArray msg;
-        msg += "Property declaration ";
-        msg += propDef.name;
-        msg += " is both NOTIFYable and CONSTANT. CONSTANT will be ignored.";
+        const QByteArray msg = "Property declaration " + propDef.name
+                + " is both NOTIFYable and CONSTANT. CONSTANT will be ignored.";
         propDef.constant = false;
         warning(msg.constData());
     }
@@ -1196,10 +1188,8 @@ void Moc::parsePluginData(ClassDef *def)
                 }
             }
             if (!fi.exists()) {
-                QByteArray msg;
-                msg += "Plugin Metadata file ";
-                msg += lexem();
-                msg += " does not exist. Declaration will be ignored";
+                const QByteArray msg = "Plugin Metadata file " + lexem()
+                        + " does not exist. Declaration will be ignored";
                 error(msg.constData());
                 return;
             }
@@ -1212,10 +1202,8 @@ void Moc::parsePluginData(ClassDef *def)
     if (!metaData.isEmpty()) {
         def->pluginData.metaData = QJsonDocument::fromJson(metaData);
         if (!def->pluginData.metaData.isObject()) {
-            QByteArray msg;
-            msg += "Plugin Metadata file ";
-            msg += lexem();
-            msg += " does not contain a valid JSON object. Declaration will be ignored";
+            const QByteArray msg = "Plugin Metadata file " + lexem()
+                    + " does not contain a valid JSON object. Declaration will be ignored";
             warning(msg.constData());
             def->pluginData.iid = QByteArray();
             return;
@@ -1512,12 +1500,12 @@ void Moc::checkSuperClasses(ClassDef *def)
     if (!knownQObjectClasses.contains(firstSuperclass)) {
         // enable once we /require/ include paths
 #if 0
-        QByteArray msg;
-        msg += "Class ";
-        msg += def->className;
-        msg += " contains the Q_OBJECT macro and inherits from ";
-        msg += def->superclassList.value(0);
-        msg += " but that is not a known QObject subclass. You may get compilation errors.";
+        const QByteArray msg
+                = "Class "
+                + def->className
+                + " contains the Q_OBJECT macro and inherits from "
+                + def->superclassList.value(0)
+                + " but that is not a known QObject subclass. You may get compilation errors.";
         warning(msg.constData());
 #endif
         return;
@@ -1525,14 +1513,14 @@ void Moc::checkSuperClasses(ClassDef *def)
     for (int i = 1; i < def->superclassList.count(); ++i) {
         const QByteArray superClass = def->superclassList.at(i).first;
         if (knownQObjectClasses.contains(superClass)) {
-            QByteArray msg;
-            msg += "Class ";
-            msg += def->classname;
-            msg += " inherits from two QObject subclasses ";
-            msg += firstSuperclass;
-            msg += " and ";
-            msg += superClass;
-            msg += ". This is not supported!";
+            const QByteArray msg
+                    = "Class "
+                    + def->classname
+                    + " inherits from two QObject subclasses "
+                    + firstSuperclass
+                    + " and "
+                    + superClass
+                    + ". This is not supported!";
             warning(msg.constData());
         }
 
@@ -1545,14 +1533,14 @@ void Moc::checkSuperClasses(ClassDef *def)
                 }
 
             if (!registeredInterface) {
-                QByteArray msg;
-                msg += "Class ";
-                msg += def->classname;
-                msg += " implements the interface ";
-                msg += superClass;
-                msg += " but does not list it in Q_INTERFACES. qobject_cast to ";
-                msg += superClass;
-                msg += " will not work!";
+                const QByteArray msg
+                        = "Class "
+                        + def->classname
+                        + " implements the interface "
+                        + superClass
+                        + " but does not list it in Q_INTERFACES. qobject_cast to "
+                        + superClass
+                        + " will not work!";
                 warning(msg.constData());
             }
         }

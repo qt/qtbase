@@ -54,6 +54,8 @@
 #include <qbackingstore.h>
 #include <qapplication.h>
 #include <qpixmapcache.h>
+#include <private/qapplication_p.h>
+#include <qpa/qplatformnativeinterface.h>
 
 #include <qdesktopwidget.h>
 #include <qtoolbutton.h>
@@ -163,7 +165,7 @@ static const wchar_t *themeNames[QWindowsXPStylePrivate::NThemes] =
     L"BUTTON",   L"COMBOBOX",   L"EDIT",    L"HEADER",    L"LISTVIEW",
     L"MENU",     L"PROGRESS",   L"REBAR",   L"SCROLLBAR", L"SPIN",
     L"TAB",      L"TASKDIALOG", L"TOOLBAR", L"TOOLTIP",   L"TRACKBAR",
-    L"TREEVIEW", L"WINDOW",     L"STATUS"
+    L"TREEVIEW", L"WINDOW",     L"STATUS",  L"TREEVIEW"
 };
 
 static inline QBackingStore *backingStoreForWidget(const QWidget *widget)
@@ -244,6 +246,7 @@ HRGN XPThemeData::mask(QWidget *widget)
 // QWindowsXPStylePrivate -------------------------------------------------------------------------
 // Static initializations
 QPixmap *QWindowsXPStylePrivate::tabbody = 0;
+HWND QWindowsXPStylePrivate::m_vistaTreeViewHelper = 0;
 HTHEME QWindowsXPStylePrivate::m_themes[NThemes];
 bool QWindowsXPStylePrivate::use_xp = false;
 QBasicAtomicInt QWindowsXPStylePrivate::ref = Q_BASIC_ATOMIC_INITIALIZER(-1); // -1 based refcounting
@@ -327,6 +330,58 @@ void QWindowsXPStylePrivate::cleanup(bool force)
     tabbody = 0;
 }
 
+/* In order to obtain the correct VistaTreeViewTheme (arrows for PE_IndicatorBranch),
+ * we need to set the windows "explorer" theme explicitly on a native
+ * window and open the "TREEVIEW" theme handle passing its window handle
+ * in order to get Vista-style item view themes (particulary drawBackground()
+ * for selected items needs this).
+ * We invoke a service of the native Windows interface to create
+ * a non-visible window handle, open the theme on it and insert it into
+ * the cache so that it is found by XPThemeData::handle() first.
+ */
+
+static inline HWND createTreeViewHelperWindow()
+{
+    if (QPlatformNativeInterface *ni = QGuiApplication::platformNativeInterface()) {
+        void *hwnd = 0;
+        void *wndProc = reinterpret_cast<void *>(DefWindowProc);
+        if (QMetaObject::invokeMethod(ni, "createMessageWindow", Qt::DirectConnection,
+                                  Q_RETURN_ARG(void *, hwnd),
+                                  Q_ARG(QString, QStringLiteral("QTreeViewThemeHelperWindowClass")),
+                                  Q_ARG(QString, QStringLiteral("QTreeViewThemeHelperWindow")),
+                                  Q_ARG(void *, wndProc)) && hwnd) {
+            return reinterpret_cast<HWND>(hwnd);
+        }
+    }
+    return 0;
+}
+
+bool QWindowsXPStylePrivate::initVistaTreeViewTheming()
+{
+    if (m_vistaTreeViewHelper)
+        return true;
+
+    m_vistaTreeViewHelper = createTreeViewHelperWindow();
+    if (!m_vistaTreeViewHelper) {
+        qWarning("Unable to create the treeview helper window.");
+        return false;
+    }
+    if (FAILED(QWindowsXPStylePrivate::pSetWindowTheme(m_vistaTreeViewHelper, L"explorer", NULL))) {
+        qErrnoWarning("SetWindowTheme() failed.");
+        cleanupVistaTreeViewTheming();
+        return false;
+    }
+    return true;
+}
+
+void QWindowsXPStylePrivate::cleanupVistaTreeViewTheming()
+{
+    if (m_vistaTreeViewHelper) {
+        DestroyWindow(m_vistaTreeViewHelper);
+        m_vistaTreeViewHelper = 0;
+    }
+}
+
 /* \internal
     Closes all open theme data handles to ensure that we don't leak
     resources, and that we don't refere to old handles when for
@@ -339,6 +394,7 @@ void QWindowsXPStylePrivate::cleanupHandleMap()
             pCloseThemeData(m_themes[i]);
             m_themes[i] = 0;
         }
+    QWindowsXPStylePrivate::cleanupVistaTreeViewTheming();
 }
 
 HTHEME QWindowsXPStylePrivate::createTheme(int theme, HWND hwnd)
@@ -349,6 +405,8 @@ HTHEME QWindowsXPStylePrivate::createTheme(int theme, HWND hwnd)
     }
     if (!m_themes[theme]) {
         const wchar_t *name = themeNames[theme];
+        if (theme == VistaTreeViewTheme && QWindowsXPStylePrivate::initVistaTreeViewTheming())
+            hwnd = QWindowsXPStylePrivate::m_vistaTreeViewHelper;
         m_themes[theme] = pOpenThemeData(hwnd, name);
         if (Q_UNLIKELY(!m_themes[theme]))
             qErrnoWarning("OpenThemeData() failed for theme %d (%s).",
@@ -1952,7 +2010,7 @@ case PE_Frame:
                 bef_v -= delta;
                 aft_h += delta;
                 aft_v += delta;
-                XPThemeData theme(0, p, QWindowsXPStylePrivate::TreeViewTheme);
+                XPThemeData theme(0, p, QWindowsXPStylePrivate::XpTreeViewTheme);
                 theme.rect = QRect(bef_h, bef_v, decoration_size, decoration_size);
                 theme.partId = TVP_GLYPH;
                 theme.stateId = flags & QStyle::State_Open ? GLPS_OPENED : GLPS_CLOSED;
@@ -3740,10 +3798,12 @@ QSize QWindowsXPStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt
         {
             XPThemeData buttontheme(widget, 0, QWindowsXPStylePrivate::ButtonTheme, BP_PUSHBUTTON, PBS_NORMAL);
             if (buttontheme.isValid()) {
-                const QMarginsF borderSize = buttontheme.margins() / QWindowsXPStylePrivate::devicePixelRatio(widget);
+                const qreal devicePixelRatio = QWindowsXPStylePrivate::devicePixelRatio(widget);
+                const QMarginsF borderSize = buttontheme.margins() / devicePixelRatio;
                 if (!borderSize.isNull()) {
-                    sz.rwidth() += qRound(borderSize.left() + borderSize.right() - 2);
-                    sz.rheight() += qRound(borderSize.bottom() + borderSize.top() - 2);
+                    const qreal margin = qreal(2) / devicePixelRatio;
+                    sz.rwidth() += qRound(borderSize.left() + borderSize.right() - margin);
+                    sz.rheight() += int(borderSize.bottom() + borderSize.top() - margin + devicePixelRatio - 1);
                 }
                 const int textMargins = 2*(proxy()->pixelMetric(PM_FocusFrameHMargin) + 1);
                 sz += QSize(qMax(pixelMetric(QStyle::PM_ScrollBarExtent, option, widget)

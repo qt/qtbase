@@ -56,7 +56,7 @@ class Q_CORE_EXPORT QThread : public QObject
 {
     Q_OBJECT
 public:
-    static Qt::HANDLE currentThreadId() Q_DECL_NOTHROW;
+    static Qt::HANDLE currentThreadId() Q_DECL_NOTHROW Q_DECL_PURE_FUNCTION;
     static QThread *currentThread();
     static int idealThreadCount() Q_DECL_NOTHROW;
     static void yieldCurrentThread();

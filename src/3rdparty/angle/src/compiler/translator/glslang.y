@@ -30,12 +30,14 @@ WHICH GENERATES THE GLSL ES PARSER (glslang_tab.cpp AND glslang_tab.h).
 #elif defined(_MSC_VER)
 #pragma warning(disable: 4065)
 #pragma warning(disable: 4189)
+#pragma warning(disable: 4244)
 #pragma warning(disable: 4505)
 #pragma warning(disable: 4701)
 #pragma warning(disable: 4702)
 #endif
 
 #include "angle_gl.h"
+#include "compiler/translator/Cache.h"
 #include "compiler/translator/SymbolTable.h"
 #include "compiler/translator/ParseContext.h"
 #include "GLSLANG/ShaderLang.h"
@@ -109,28 +111,28 @@ extern void yyerror(YYLTYPE* yylloc, TParseContext* context, void *scanner, cons
   } while (0)
 
 #define VERTEX_ONLY(S, L) {  \
-    if (context->shaderType != GL_VERTEX_SHADER) {  \
+    if (context->getShaderType() != GL_VERTEX_SHADER) {  \
         context->error(L, " supported in vertex shaders only ", S);  \
         context->recover();  \
     }  \
 }
 
 #define FRAG_ONLY(S, L) {  \
-    if (context->shaderType != GL_FRAGMENT_SHADER) {  \
+    if (context->getShaderType() != GL_FRAGMENT_SHADER) {  \
         context->error(L, " supported in fragment shaders only ", S);  \
         context->recover();  \
     }  \
 }
 
 #define ES2_ONLY(S, L) {  \
-    if (context->shaderVersion != 100) {  \
+    if (context->getShaderVersion() != 100) {  \
         context->error(L, " supported in GLSL ES 1.00 only ", S);  \
         context->recover();  \
     }  \
 }
 
 #define ES3_ONLY(TOKEN, LINE, REASON) {  \
-    if (context->shaderVersion != 300) {  \
+    if (context->getShaderVersion() != 300) {  \
         context->error(LINE, REASON " supported in GLSL ES 3.00 only ", TOKEN);  \
         context->recover();  \
     }  \
@@ -176,10 +178,10 @@ extern void yyerror(YYLTYPE* yylloc, TParseContext* context, void *scanner, cons
 
 %type <interm.intermNode> translation_unit function_definition
 %type <interm.intermNode> statement simple_statement
-%type <interm.intermAggregate>  statement_list compound_statement
+%type <interm.intermAggregate>  statement_list compound_statement compound_statement_no_new_scope
 %type <interm.intermNode> declaration_statement selection_statement expression_statement
 %type <interm.intermNode> declaration external_declaration
-%type <interm.intermNode> for_init_statement compound_statement_no_new_scope
+%type <interm.intermNode> for_init_statement
 %type <interm.nodePair> selection_rest_statement for_rest_statement
 %type <interm.intermSwitch> switch_statement
 %type <interm.intermCase> case_label
@@ -213,21 +215,7 @@ identifier
 variable_identifier
     : IDENTIFIER {
         // The symbol table search was done in the lexical phase
-        const TVariable *variable = context->getNamedVariable(@1, $1.string, $1.symbol);
-
-        if (variable->getType().getQualifier() == EvqConst)
-        {
-            ConstantUnion* constArray = variable->getConstPointer();
-            TType t(variable->getType());
-            $$ = context->intermediate.addConstantUnion(constArray, t, @1);
-        }
-        else
-        {
-            $$ = context->intermediate.addSymbol(variable->getUniqueId(),
-                                                 variable->getName(),
-                                                 variable->getType(),
-                                                 @1);
-        }
+        $$ = context->parseVariableIdentifier(@1, $1.string, $1.symbol);
 
         // don't delete $1.string, it's used by error recovery, and the pool
         // pop will reclaim the memory
@@ -239,22 +227,22 @@ primary_expression
         $$ = $1;
     }
     | INTCONSTANT {
-        ConstantUnion *unionArray = new ConstantUnion[1];
+        TConstantUnion *unionArray = new TConstantUnion[1];
         unionArray->setIConst($1.i);
         $$ = context->intermediate.addConstantUnion(unionArray, TType(EbtInt, EbpUndefined, EvqConst), @1);
     }
     | UINTCONSTANT {
-        ConstantUnion *unionArray = new ConstantUnion[1];
+        TConstantUnion *unionArray = new TConstantUnion[1];
         unionArray->setUConst($1.u);
         $$ = context->intermediate.addConstantUnion(unionArray, TType(EbtUInt, EbpUndefined, EvqConst), @1);
     }
     | FLOATCONSTANT {
-        ConstantUnion *unionArray = new ConstantUnion[1];
+        TConstantUnion *unionArray = new TConstantUnion[1];
         unionArray->setFConst($1.f);
         $$ = context->intermediate.addConstantUnion(unionArray, TType(EbtFloat, EbpUndefined, EvqConst), @1);
     }
     | BOOLCONSTANT {
-        ConstantUnion *unionArray = new ConstantUnion[1];
+        TConstantUnion *unionArray = new TConstantUnion[1];
         unionArray->setBConst($1.b);
         $$ = context->intermediate.addConstantUnion(unionArray, TType(EbtBool, EbpUndefined, EvqConst), @1);
     }
@@ -295,7 +283,7 @@ integer_expression
 function_call
     : function_call_or_method {
         bool fatalError = false;
-        $$ = context->addFunctionCallOrMethod($1.function, $1.intermNode, @1, &fatalError);
+        $$ = context->addFunctionCallOrMethod($1.function, $1.nodePair.node1, $1.nodePair.node2, @1, &fatalError);
         if (fatalError)
         {
             YYERROR;
@@ -306,11 +294,12 @@ function_call
 function_call_or_method
     : function_call_generic {
         $$ = $1;
+        $$.nodePair.node2 = nullptr;
     }
     | postfix_expression DOT function_call_generic {
-        context->error(@3, "methods are not supported", "");
-        context->recover();
+        ES3_ONLY("", @3, "methods");
         $$ = $3;
+        $$.nodePair.node2 = $1;
     }
     ;
 
@@ -326,26 +315,26 @@ function_call_generic
 function_call_header_no_parameters
     : function_call_header VOID_TYPE {
         $$.function = $1;
-        $$.intermNode = 0;
+        $$.nodePair.node1 = nullptr;
     }
     | function_call_header {
         $$.function = $1;
-        $$.intermNode = 0;
+        $$.nodePair.node1 = nullptr;
     }
     ;
 
 function_call_header_with_parameters
     : function_call_header assignment_expression {
-        TParameter param = { 0, new TType($2->getType()) };
-        $1->addParameter(param);
+        const TType *type = new TType($2->getType());
+        $1->addParameter(TConstParameter(type));
         $$.function = $1;
-        $$.intermNode = $2;
+        $$.nodePair.node1 = context->intermediate.makeAggregate($2, @2);
     }
     | function_call_header_with_parameters COMMA assignment_expression {
-        TParameter param = { 0, new TType($3->getType()) };
-        $1.function->addParameter(param);
+        const TType *type = new TType($3->getType());
+        $1.function->addParameter(TConstParameter(type));
         $$.function = $1.function;
-        $$.intermNode = context->intermediate.growAggregate($1.intermNode, $3, @2);
+        $$.nodePair.node1 = context->intermediate.growAggregate($1.intermNode, $3, @2);
     }
     ;
 
@@ -358,20 +347,23 @@ function_call_header
 // Grammar Note:  Constructors look like functions, but are recognized as types.
 
 function_identifier
-    : type_specifier_nonarray {
+    : type_specifier_no_prec {
+        if ($1.array) {
+            ES3_ONLY("[]", @1, "array constructor");
+        }
         $$ = context->addConstructorFunc($1);
     }
     | IDENTIFIER {
         if (context->reservedErrorCheck(@1, *$1.string))
             context->recover();
-        TType type(EbtVoid, EbpUndefined);
+        const TType *type = TCache::getType(EbtVoid, EbpUndefined);
         TFunction *function = new TFunction($1.string, type);
         $$ = function;
     }
     | FIELD_SELECTION {
         if (context->reservedErrorCheck(@1, *$1.string))
             context->recover();
-        TType type(EbtVoid, EbpUndefined);
+        const TType *type = TCache::getType(EbtVoid, EbpUndefined);
         TFunction *function = new TFunction($1.string, type);
         $$ = function;
     }
@@ -517,18 +509,7 @@ logical_or_expression
 conditional_expression
     : logical_or_expression { $$ = $1; }
     | logical_or_expression QUESTION expression COLON assignment_expression {
-       if (context->boolErrorCheck(@2, $1))
-            context->recover();
-
-        $$ = context->intermediate.addSelection($1, $3, $5, @2);
-        if ($3->getType() != $5->getType())
-            $$ = 0;
-
-        if ($$ == 0) {
-            context->binaryOpError(@2, ":", $3->getCompleteString(), $5->getCompleteString());
-            context->recover();
-            $$ = $5;
-        }
+        $$ = context->addTernarySelection($1, $3, $5, @2);
     }
     ;
 
@@ -578,12 +559,7 @@ expression
         $$ = $1;
     }
     | expression COMMA assignment_expression {
-        $$ = context->intermediate.addComma($1, $3, @2);
-        if ($$ == 0) {
-            context->binaryOpError(@2, ",", $1->getCompleteString(), $3->getCompleteString());
-            context->recover();
-            $$ = $3;
-        }
+        $$ = context->addComma($1, $3, @2);
     }
     ;
 
@@ -604,32 +580,8 @@ enter_struct
     ;
 
 declaration
-    : function_prototype SEMICOLON   {
-        TFunction &function = *($1.function);
-        
-        TIntermAggregate *prototype = new TIntermAggregate;
-        prototype->setType(function.getReturnType());
-        prototype->setName(function.getMangledName());
-        
-        for (size_t i = 0; i < function.getParamCount(); i++)
-        {
-            const TParameter &param = function.getParam(i);
-            if (param.name != 0)
-            {
-                TVariable variable(param.name, *param.type);
-                
-                prototype = context->intermediate.growAggregate(prototype, context->intermediate.addSymbol(variable.getUniqueId(), variable.getName(), variable.getType(), @1), @1);
-            }
-            else
-            {
-                prototype = context->intermediate.growAggregate(prototype, context->intermediate.addSymbol(0, "", *param.type, @1), @1);
-            }
-        }
-        
-        prototype->setOp(EOpPrototype);
-        $$ = prototype;
-
-        context->symbolTable.pop();
+    : function_prototype SEMICOLON {
+        $$ = context->addFunctionPrototypeDeclaration(*($1.function), @1);
     }
     | init_declarator_list SEMICOLON {
         TIntermAggregate *aggNode = $1.intermAggregate;
@@ -638,7 +590,7 @@ declaration
         $$ = aggNode;
     }
     | PRECISION precision_qualifier type_specifier_no_prec SEMICOLON {
-        if (($2 == EbpHigh) && (context->shaderType == GL_FRAGMENT_SHADER) && !context->fragmentPrecisionHigh) {
+        if (($2 == EbpHigh) && (context->getShaderType() == GL_FRAGMENT_SHADER) && !context->getFragmentPrecisionHigh()) {
             context->error(@1, "precision is not supported in fragment shader", "highp");
             context->recover();
         }
@@ -668,57 +620,7 @@ declaration
 
 function_prototype
     : function_declarator RIGHT_PAREN  {
-        //
-        // Multiple declarations of the same function are allowed.
-        //
-        // If this is a definition, the definition production code will check for redefinitions
-        // (we don't know at this point if it's a definition or not).
-        //
-        // Redeclarations are allowed.  But, return types and parameter qualifiers must match.
-        //
-        TFunction* prevDec = static_cast<TFunction*>(context->symbolTable.find($1->getMangledName(), context->shaderVersion));
-        if (prevDec) {
-            if (prevDec->getReturnType() != $1->getReturnType()) {
-                context->error(@2, "overloaded functions must have the same return type", $1->getReturnType().getBasicString());
-                context->recover();
-            }
-            for (size_t i = 0; i < prevDec->getParamCount(); ++i) {
-                if (prevDec->getParam(i).type->getQualifier() != $1->getParam(i).type->getQualifier()) {
-                    context->error(@2, "overloaded functions must have the same parameter qualifiers", $1->getParam(i).type->getQualifierString());
-                    context->recover();
-                }
-            }
-        }
-
-        //
-        // Check for previously declared variables using the same name.
-        //
-        TSymbol *prevSym = context->symbolTable.find($1->getName(), context->shaderVersion);
-        if (prevSym)
-        {
-            if (!prevSym->isFunction())
-            {
-                context->error(@2, "redefinition", $1->getName().c_str(), "function");
-                context->recover();
-            }
-        }
-        else
-        {
-            // Insert the unmangled name to detect potential future redefinition as a variable.
-            TFunction *function = new TFunction(NewPoolTString($1->getName().c_str()), $1->getReturnType());
-            context->symbolTable.getOuterLevel()->insertUnmangled(function);
-        }
-
-        //
-        // If this is a redeclaration, it could also be a definition,
-        // in which case, we want to use the variable names from this one, and not the one that's
-        // being redeclared.  So, pass back up this declaration, not the one in the symbol table.
-        //
-        $$.function = $1;
-
-        // We're at the inner scope level of the function's arguments and body statement.
-        // Add the function prototype to the surrounding scope instead.
-        context->symbolTable.getOuterLevel()->insert($$.function);
+        $$.function = context->parseFunctionDeclarator(@2, $1);
     }
     ;
 
@@ -737,7 +639,7 @@ function_header_with_parameters
         // Add the parameter
         $$ = $1;
         if ($2.param.type->getBasicType() != EbtVoid)
-            $1->addParameter($2.param);
+            $1->addParameter($2.param.turnToConst());
         else
             delete $2.param.type;
     }
@@ -756,24 +658,30 @@ function_header_with_parameters
         } else {
             // Add the parameter
             $$ = $1;
-            $1->addParameter($3.param);
+            $1->addParameter($3.param.turnToConst());
         }
     }
     ;
 
 function_header
     : fully_specified_type IDENTIFIER LEFT_PAREN {
-        if ($1.qualifier != EvqGlobal && $1.qualifier != EvqTemporary) {
+        if ($1.qualifier != EvqGlobal && $1.qualifier != EvqTemporary)
+        {
             context->error(@2, "no qualifiers allowed for function return", getQualifierString($1.qualifier));
             context->recover();
         }
+        if (!$1.layoutQualifier.isEmpty())
+        {
+            context->error(@2, "no qualifiers allowed for function return", "layout");
+            context->recover();
+        }
         // make sure a sampler is not involved as well...
-        if (context->structQualifierErrorCheck(@2, $1))
+        if (context->samplerErrorCheck(@2, $1, "samplers can't be function return values"))
             context->recover();
 
         // Add the function as a prototype after parsing it (we do not support recursion)
         TFunction *function;
-        TType type($1);
+        const TType *type = new TType($1);
         function = new TFunction($2.string, type);
         $$ = function;
         
@@ -804,7 +712,7 @@ parameter_declarator
         int size;
         if (context->arraySizeErrorCheck(@3, $4, size))
             context->recover();
-        $1.setArray(true, size);
+        $1.setArraySize(size);
 
         TType* type = new TType($1);
         TParameter param = { $2.string, type };
@@ -878,15 +786,21 @@ init_declarator_list
     }
     | init_declarator_list COMMA identifier {
         $$ = $1;
-        $$.intermAggregate = context->parseDeclarator($$.type, $1.intermAggregate, $3.symbol, @3, *$3.string);
-    }
-    | init_declarator_list COMMA identifier LEFT_BRACKET RIGHT_BRACKET {
-        $$ = $1;
-        context->parseArrayDeclarator($$.type, @3, *$3.string, @4, NULL, NULL);
+        $$.intermAggregate = context->parseDeclarator($$.type, $1.intermAggregate, @3, *$3.string);
     }
     | init_declarator_list COMMA identifier LEFT_BRACKET constant_expression RIGHT_BRACKET {
         $$ = $1;
-        $$.intermAggregate = context->parseArrayDeclarator($$.type, @3, *$3.string, @4, $1.intermNode, $5);
+        $$.intermAggregate = context->parseArrayDeclarator($$.type, $1.intermAggregate, @3, *$3.string, @4, $5);
+    }
+    | init_declarator_list COMMA identifier LEFT_BRACKET RIGHT_BRACKET EQUAL initializer {
+        ES3_ONLY("[]", @3, "implicitly sized array");
+        $$ = $1;
+        $$.intermAggregate = context->parseArrayInitDeclarator($$.type, $1.intermAggregate, @3, *$3.string, @4, nullptr, @6, $7);
+    }
+    | init_declarator_list COMMA identifier LEFT_BRACKET constant_expression RIGHT_BRACKET EQUAL initializer {
+        ES3_ONLY("=", @7, "first-class arrays (array initializer)");
+        $$ = $1;
+        $$.intermAggregate = context->parseArrayInitDeclarator($$.type, $1.intermAggregate, @3, *$3.string, @4, $5, @7, $8);
     }
     | init_declarator_list COMMA identifier EQUAL initializer {
         $$ = $1;
@@ -903,16 +817,19 @@ single_declaration
         $$.type = $1;
         $$.intermAggregate = context->parseSingleDeclaration($$.type, @2, *$2.string);
     }
-    | fully_specified_type identifier LEFT_BRACKET RIGHT_BRACKET {
-        context->error(@2, "unsized array declarations not supported", $2.string->c_str());
-        context->recover();
-
-        $$.type = $1;
-        $$.intermAggregate = context->parseSingleDeclaration($$.type, @2, *$2.string);
-    }
     | fully_specified_type identifier LEFT_BRACKET constant_expression RIGHT_BRACKET {
         $$.type = $1;
         $$.intermAggregate = context->parseSingleArrayDeclaration($$.type, @2, *$2.string, @3, $4);
+    }
+    | fully_specified_type identifier LEFT_BRACKET RIGHT_BRACKET EQUAL initializer {
+        ES3_ONLY("[]", @3, "implicitly sized array");
+        $$.type = $1;
+        $$.intermAggregate = context->parseSingleArrayInitDeclaration($$.type, @2, *$2.string, @3, nullptr, @5, $6);
+    }
+    | fully_specified_type identifier LEFT_BRACKET constant_expression RIGHT_BRACKET EQUAL initializer {
+        ES3_ONLY("=", @6, "first-class arrays (array initializer)");
+        $$.type = $1;
+        $$.intermAggregate = context->parseSingleArrayInitDeclaration($$.type, @2, *$2.string, @3, $4, @6, $7);
     }
     | fully_specified_type identifier EQUAL initializer {
         $$.type = $1;
@@ -929,13 +846,14 @@ fully_specified_type
         $$ = $1;
 
         if ($1.array) {
-            context->error(@1, "not supported", "first-class array");
-            context->recover();
-            $1.setArray(false);
+            ES3_ONLY("[]", @1, "first-class-array");
+            if (context->getShaderVersion() != 300) {
+                $1.clearArrayness();
+            }
         }
     }
     | type_qualifier type_specifier  {
-        $$ = context->addFullySpecifiedType($1.qualifier, $1.layoutQualifier, $2);
+        $$ = context->addFullySpecifiedType($1.qualifier, $1.invariant, $1.layoutQualifier, $2);
     }
     ;
 
@@ -966,7 +884,7 @@ type_qualifier
         ES2_ONLY("varying", @1);
         if (context->globalErrorCheck(@1, context->symbolTable.atGlobalLevel(), "varying"))
             context->recover();
-        if (context->shaderType == GL_VERTEX_SHADER)
+        if (context->getShaderType() == GL_VERTEX_SHADER)
             $$.setBasic(EbtVoid, EvqVaryingOut, @1);
         else
             $$.setBasic(EbtVoid, EvqVaryingIn, @1);
@@ -975,18 +893,19 @@ type_qualifier
         ES2_ONLY("varying", @1);
         if (context->globalErrorCheck(@1, context->symbolTable.atGlobalLevel(), "invariant varying"))
             context->recover();
-        if (context->shaderType == GL_VERTEX_SHADER)
-            $$.setBasic(EbtVoid, EvqInvariantVaryingOut, @1);
+        if (context->getShaderType() == GL_VERTEX_SHADER)
+            $$.setBasic(EbtVoid, EvqVaryingOut, @1);
         else
-            $$.setBasic(EbtVoid, EvqInvariantVaryingIn, @1);
+            $$.setBasic(EbtVoid, EvqVaryingIn, @1);
+        $$.invariant = true;
     }
     | storage_qualifier {
-        if ($1.qualifier != EvqConst && !context->symbolTable.atGlobalLevel()) {
+        if ($1.qualifier != EvqConst && !context->symbolTable.atGlobalLevel())
+        {
             context->error(@1, "Local variables can only use the const storage qualifier.", getQualifierString($1.qualifier));
             context->recover();
-        } else {
-            $$.setBasic(EbtVoid, $1.qualifier, @1);
         }
+        $$.setBasic(EbtVoid, $1.qualifier, @1);
     }
     | interpolation_qualifier storage_qualifier {
         $$ = context->joinInterpolationQualifiers(@1, $1.qualifier, @2, $2.qualifier);
@@ -1006,6 +925,16 @@ type_qualifier
         $$.setBasic(EbtVoid, $2.qualifier, @2);
         $$.layoutQualifier = $1;
     }
+    | INVARIANT storage_qualifier {
+        context->es3InvariantErrorCheck($2.qualifier, @1);
+        $$.setBasic(EbtVoid, $2.qualifier, @2);
+        $$.invariant = true;
+    }
+    | INVARIANT interpolation_qualifier storage_qualifier {
+        context->es3InvariantErrorCheck($3.qualifier, @1);
+        $$ = context->joinInterpolationQualifiers(@2, $2.qualifier, @3, $3.qualifier);
+        $$.invariant = true;
+    }
     ;
 
 storage_qualifier
@@ -1014,29 +943,29 @@ storage_qualifier
     }
     | IN_QUAL {
         ES3_ONLY("in", @1, "storage qualifier");
-        $$.qualifier = (context->shaderType == GL_FRAGMENT_SHADER) ? EvqFragmentIn : EvqVertexIn;
+        $$.qualifier = (context->getShaderType() == GL_FRAGMENT_SHADER) ? EvqFragmentIn : EvqVertexIn;
     }
     | OUT_QUAL {
         ES3_ONLY("out", @1, "storage qualifier");
-        $$.qualifier = (context->shaderType == GL_FRAGMENT_SHADER) ? EvqFragmentOut : EvqVertexOut;
+        $$.qualifier = (context->getShaderType() == GL_FRAGMENT_SHADER) ? EvqFragmentOut : EvqVertexOut;
     }
     | CENTROID IN_QUAL {
         ES3_ONLY("centroid in", @1, "storage qualifier");
-        if (context->shaderType == GL_VERTEX_SHADER)
+        if (context->getShaderType() == GL_VERTEX_SHADER)
         {
             context->error(@1, "invalid storage qualifier", "it is an error to use 'centroid in' in the vertex shader");
             context->recover();
         }
-        $$.qualifier = (context->shaderType == GL_FRAGMENT_SHADER) ? EvqCentroidIn : EvqVertexIn;
+        $$.qualifier = (context->getShaderType() == GL_FRAGMENT_SHADER) ? EvqCentroidIn : EvqVertexIn;
     }
     | CENTROID OUT_QUAL {
         ES3_ONLY("centroid out", @1, "storage qualifier");
-        if (context->shaderType == GL_FRAGMENT_SHADER)
+        if (context->getShaderType() == GL_FRAGMENT_SHADER)
         {
             context->error(@1, "invalid storage qualifier", "it is an error to use 'centroid out' in the fragment shader");
             context->recover();
         }
-        $$.qualifier = (context->shaderType == GL_FRAGMENT_SHADER) ? EvqFragmentOut : EvqCentroidOut;
+        $$.qualifier = (context->getShaderType() == GL_FRAGMENT_SHADER) ? EvqFragmentOut : EvqCentroidOut;
     }
     | UNIFORM {
         if (context->globalErrorCheck(@1, context->symbolTable.atGlobalLevel(), "uniform"))
@@ -1111,6 +1040,11 @@ type_specifier_no_prec
     : type_specifier_nonarray {
         $$ = $1;
     }
+    | type_specifier_nonarray LEFT_BRACKET RIGHT_BRACKET {
+        ES3_ONLY("[]", @2, "implicitly sized array");
+        $$ = $1;
+        $$.setArraySize(0);
+    }
     | type_specifier_nonarray LEFT_BRACKET constant_expression RIGHT_BRACKET {
         $$ = $1;
 
@@ -1120,7 +1054,7 @@ type_specifier_no_prec
             int size;
             if (context->arraySizeErrorCheck(@2, $3, size))
                 context->recover();
-            $$.setArray(true, size);
+            $$.setArraySize(size);
         }
     }
     ;
@@ -1509,9 +1443,9 @@ selection_rest_statement
     ;
 
 switch_statement
-    : SWITCH LEFT_PAREN expression RIGHT_PAREN { ++context->mSwitchNestingLevel; } compound_statement {
+    : SWITCH LEFT_PAREN expression RIGHT_PAREN { context->incrSwitchNestingLevel(); } compound_statement {
         $$ = context->addSwitch($3, $6, @1);
-        --context->mSwitchNestingLevel;
+        context->decrSwitchNestingLevel();
     }
     ;
 
@@ -1532,13 +1466,11 @@ condition
             context->recover();
     }
     | fully_specified_type identifier EQUAL initializer {
-        TIntermNode* intermNode;
-        if (context->structQualifierErrorCheck(@2, $1))
-            context->recover();
+        TIntermNode *intermNode;
         if (context->boolErrorCheck(@2, $1))
             context->recover();
 
-        if (!context->executeInitializer(@2, *$2.string, $1, $4, intermNode))
+        if (!context->executeInitializer(@2, *$2.string, $1, $4, &intermNode))
             $$ = $4;
         else {
             context->recover();
@@ -1548,22 +1480,22 @@ condition
     ;
 
 iteration_statement
-    : WHILE LEFT_PAREN { context->symbolTable.push(); ++context->mLoopNestingLevel; } condition RIGHT_PAREN statement_no_new_scope {
+    : WHILE LEFT_PAREN { context->symbolTable.push(); context->incrLoopNestingLevel(); } condition RIGHT_PAREN statement_no_new_scope {
         context->symbolTable.pop();
         $$ = context->intermediate.addLoop(ELoopWhile, 0, $4, 0, $6, @1);
-        --context->mLoopNestingLevel;
+        context->decrLoopNestingLevel();
     }
-    | DO { ++context->mLoopNestingLevel; } statement_with_scope WHILE LEFT_PAREN expression RIGHT_PAREN SEMICOLON {
+    | DO { context->incrLoopNestingLevel(); } statement_with_scope WHILE LEFT_PAREN expression RIGHT_PAREN SEMICOLON {
         if (context->boolErrorCheck(@8, $6))
             context->recover();
 
         $$ = context->intermediate.addLoop(ELoopDoWhile, 0, $6, 0, $3, @4);
-        --context->mLoopNestingLevel;
+        context->decrLoopNestingLevel();
     }
-    | FOR LEFT_PAREN { context->symbolTable.push(); ++context->mLoopNestingLevel; } for_init_statement for_rest_statement RIGHT_PAREN statement_no_new_scope {
+    | FOR LEFT_PAREN { context->symbolTable.push(); context->incrLoopNestingLevel(); } for_init_statement for_rest_statement RIGHT_PAREN statement_no_new_scope {
         context->symbolTable.pop();
         $$ = context->intermediate.addLoop(ELoopFor, $4, reinterpret_cast<TIntermTyped*>($5.node1), reinterpret_cast<TIntermTyped*>($5.node2), $7, @1);
-        --context->mLoopNestingLevel;
+        context->decrLoopNestingLevel();
     }
     ;
 
@@ -1620,11 +1552,11 @@ jump_statement
 translation_unit
     : external_declaration {
         $$ = $1;
-        context->treeRoot = $$;
+        context->setTreeRoot($$);
     }
     | translation_unit external_declaration {
         $$ = context->intermediate.growAggregate($1, $2, @$);
-        context->treeRoot = $$;
+        context->setTreeRoot($$);
     }
     ;
 
@@ -1639,114 +1571,15 @@ external_declaration
 
 function_definition
     : function_prototype {
-        TFunction* function = $1.function;
-        
-        const TSymbol *builtIn = context->symbolTable.findBuiltIn(function->getMangledName(), context->shaderVersion);
-        
-        if (builtIn)
-        {
-            context->error(@1, "built-in functions cannot be redefined", function->getName().c_str());
-            context->recover();
-        }
-        
-        TFunction* prevDec = static_cast<TFunction*>(context->symbolTable.find(function->getMangledName(), context->shaderVersion));
-        //
-        // Note:  'prevDec' could be 'function' if this is the first time we've seen function
-        // as it would have just been put in the symbol table.  Otherwise, we're looking up
-        // an earlier occurance.
-        //
-        if (prevDec->isDefined()) {
-            //
-            // Then this function already has a body.
-            //
-            context->error(@1, "function already has a body", function->getName().c_str());
-            context->recover();
-        }
-        prevDec->setDefined();
-
-        //
-        // Raise error message if main function takes any parameters or return anything other than void
-        //
-        if (function->getName() == "main") {
-            if (function->getParamCount() > 0) {
-                context->error(@1, "function cannot take any parameter(s)", function->getName().c_str());
-                context->recover();
-            }
-            if (function->getReturnType().getBasicType() != EbtVoid) {
-                context->error(@1, "", function->getReturnType().getBasicString(), "main function cannot return a value");
-                context->recover();
-            }
-        }
-
-        //
-        // Remember the return type for later checking for RETURN statements.
-        //
-        context->currentFunctionType = &(prevDec->getReturnType());
-        context->mFunctionReturnsValue = false;
-
-        //
-        // Insert parameters into the symbol table.
-        // If the parameter has no name, it's not an error, just don't insert it
-        // (could be used for unused args).
-        //
-        // Also, accumulate the list of parameters into the HIL, so lower level code
-        // knows where to find parameters.
-        //
-        TIntermAggregate* paramNodes = new TIntermAggregate;
-        for (size_t i = 0; i < function->getParamCount(); i++) {
-            const TParameter& param = function->getParam(i);
-            if (param.name != 0) {
-                TVariable *variable = new TVariable(param.name, *param.type);
-                //
-                // Insert the parameters with name in the symbol table.
-                //
-                if (! context->symbolTable.declare(variable)) {
-                    context->error(@1, "redefinition", variable->getName().c_str());
-                    context->recover();
-                    delete variable;
-                }
-
-                //
-                // Add the parameter to the HIL
-                //
-                paramNodes = context->intermediate.growAggregate(
-                                               paramNodes,
-                                               context->intermediate.addSymbol(variable->getUniqueId(),
-                                                                       variable->getName(),
-                                                                       variable->getType(), @1),
-                                               @1);
-            } else {
-                paramNodes = context->intermediate.growAggregate(paramNodes, context->intermediate.addSymbol(0, "", *param.type, @1), @1);
-            }
-        }
-        context->intermediate.setAggregateOperator(paramNodes, EOpParameters, @1);
-        $1.intermAggregate = paramNodes;
-        context->mLoopNestingLevel = 0;
+        context->parseFunctionPrototype(@1, $1.function, &$1.intermAggregate);
     }
     compound_statement_no_new_scope {
-        //?? Check that all paths return a value if return type != void ?
-        //   May be best done as post process phase on intermediate code
-        if (context->currentFunctionType->getBasicType() != EbtVoid && ! context->mFunctionReturnsValue) {
-            context->error(@1, "function does not return a value:", "", $1.function->getName().c_str());
-            context->recover();
-        }
-        
-        $$ = context->intermediate.growAggregate($1.intermAggregate, $3, @$);
-        context->intermediate.setAggregateOperator($$, EOpFunction, @1);
-        $$->getAsAggregate()->setName($1.function->getMangledName().c_str());
-        $$->getAsAggregate()->setType($1.function->getReturnType());
-
-        // store the pragma information for debug and optimize and other vendor specific
-        // information. This information can be queried from the parse tree
-        $$->getAsAggregate()->setOptimize(context->pragma().optimize);
-        $$->getAsAggregate()->setDebug(context->pragma().debug);
-
-        context->symbolTable.pop();
+        $$ = context->addFunctionDefinition(*($1.function), $1.intermAggregate, $3, @1);
     }
     ;
 
 %%
 
 int glslang_parse(TParseContext* context) {
-    return yyparse(context, context->scanner);
+    return yyparse(context, context->getScanner());
 }

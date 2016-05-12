@@ -1421,11 +1421,11 @@ bool QLineEdit::event(QEvent * e)
         d->control->processShortcutOverrideEvent(ke);
 #endif
     } else if (e->type() == QEvent::KeyRelease) {
-        d->control->setCursorBlinkPeriod(QApplication::cursorFlashTime());
+        d->control->updateCursorBlinking();
     } else if (e->type() == QEvent::Show) {
         //In order to get the cursor blinking if QComboBox::setEditable is called when the combobox has focus
         if (hasFocus()) {
-            d->control->setCursorBlinkPeriod(QApplication::cursorFlashTime());
+            d->control->setBlinkingCursorEnabled(true);
             QStyleOptionFrame opt;
             initStyleOption(&opt);
             if ((!hasSelectedText() && d->control->preeditAreaText().isEmpty())
@@ -1442,10 +1442,10 @@ bool QLineEdit::event(QEvent * e)
         if (e->type() == QEvent::EnterEditFocus) {
             end(false);
             d->setCursorVisible(true);
-            d->control->setCursorBlinkPeriod(QApplication::cursorFlashTime());
+            d->control->setCursorBlinkEnabled(true);
         } else if (e->type() == QEvent::LeaveEditFocus) {
             d->setCursorVisible(false);
-            d->control->setCursorBlinkPeriod(0);
+            d->control->setCursorBlinkEnabled(false);
             if (d->control->hasAcceptableInput() || d->control->fixup())
                 emit editingFinished();
         }
@@ -1692,7 +1692,7 @@ void QLineEdit::keyPressEvent(QKeyEvent *event)
     if (event->isAccepted()) {
         if (layoutDirection() != d->control->layoutDirection())
             setLayoutDirection(d->control->layoutDirection());
-        d->control->setCursorBlinkPeriod(0);
+        d->control->updateCursorBlinking();
     }
 }
 
@@ -1743,12 +1743,14 @@ void QLineEdit::inputMethodEvent(QInputMethodEvent *e)
 #endif
 }
 
+/*!\reimp
+*/
 QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property) const
 {
     return inputMethodQuery(property, QVariant());
 }
 
-/*!\reimp
+/*!\internal
 */
 QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property, QVariant argument) const
 {
@@ -1802,7 +1804,7 @@ void QLineEdit::focusInEvent(QFocusEvent *e)
 #ifdef QT_KEYPAD_NAVIGATION
     if (!QApplication::keypadNavigationEnabled() || (hasEditFocus() && ( e->reason() == Qt::PopupFocusReason))) {
 #endif
-    d->control->setCursorBlinkPeriod(QApplication::cursorFlashTime());
+    d->control->setBlinkingCursorEnabled(true);
     QStyleOptionFrame opt;
     initStyleOption(&opt);
     if((!hasSelectedText() && d->control->preeditAreaText().isEmpty())
@@ -1846,7 +1848,7 @@ void QLineEdit::focusOutEvent(QFocusEvent *e)
         deselect();
 
     d->setCursorVisible(false);
-    d->control->setCursorBlinkPeriod(0);
+    d->control->setBlinkingCursorEnabled(false);
 #ifdef QT_KEYPAD_NAVIGATION
     // editingFinished() is already emitted on LeaveEditFocus
     if (!QApplication::keypadNavigationEnabled())

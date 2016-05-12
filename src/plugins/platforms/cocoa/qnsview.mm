@@ -52,6 +52,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QTextFormat>
 #include <QtCore/QDebug>
+#include <QtCore/qsysinfo.h>
 #include <private/qguiapplication_p.h>
 #include "qcocoabackingstore.h"
 #ifndef QT_NO_OPENGL
@@ -73,6 +74,8 @@ static QTouchDevice *touchDevice = 0;
 
 // ### HACK Remove once 10.8 is unsupported
 static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
+
+static bool _q_dontOverrideCtrlLMB = false;
 
 @interface NSEvent (Qt_Compile_Leopard_DeviceDelta)
   - (CGFloat)deviceDeltaX;
@@ -134,6 +137,8 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     NSString **notificationNameVar = (NSString **)dlsym(RTLD_NEXT, "NSWindowDidChangeOcclusionStateNotification");
     if (notificationNameVar)
         _q_NSWindowDidChangeOcclusionStateNotification = *notificationNameVar;
+
+    _q_dontOverrideCtrlLMB = qt_mac_resolveOption(false, "QT_MAC_DONT_OVERRIDE_CTRL_LMB");
 }
 
 - (id) init
@@ -746,7 +751,7 @@ QT_WARNING_POP
 
 - (void)handleMouseEvent:(NSEvent *)theEvent
 {
-    [self handleTabletEvent: theEvent];
+    bool isTabletEvent = [self handleTabletEvent: theEvent];
 
     QPointF qtWindowPoint;
     QPointF qtScreenPoint;
@@ -775,7 +780,8 @@ QT_WARNING_POP
     nativeDrag->setLastMouseEvent(theEvent, self);
 
     Qt::KeyboardModifiers keyboardModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
-    QWindowSystemInterface::handleMouseEvent(targetView->m_window, timestamp, qtWindowPoint, qtScreenPoint, m_buttons, keyboardModifiers);
+    QWindowSystemInterface::handleMouseEvent(targetView->m_window, timestamp, qtWindowPoint, qtScreenPoint, m_buttons, keyboardModifiers,
+                                             isTabletEvent ? Qt::MouseEventSynthesizedByQt : Qt::MouseEventNotSynthesized);
 }
 
 - (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent
@@ -967,7 +973,7 @@ QT_WARNING_POP
     if ([self hasMarkedText]) {
         [[NSTextInputContext currentInputContext] handleEvent:theEvent];
     } else {
-        if ([QNSView convertKeyModifiers:[theEvent modifierFlags]] & Qt::MetaModifier) {
+        if (!_q_dontOverrideCtrlLMB && [QNSView convertKeyModifiers:[theEvent modifierFlags]] & Qt::MetaModifier) {
             m_buttons |= Qt::RightButton;
             m_sendUpAsRightButton = true;
         } else {
@@ -1152,11 +1158,11 @@ struct QCocoaTabletDeviceData
 typedef QHash<uint, QCocoaTabletDeviceData> QCocoaTabletDeviceDataHash;
 Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
 
-- (void)handleTabletEvent: (NSEvent *)theEvent
+- (bool)handleTabletEvent: (NSEvent *)theEvent
 {
     NSEventType eventType = [theEvent type];
     if (eventType != NSTabletPoint && [theEvent subtype] != NSTabletPointEventSubtype)
-        return; // Not a tablet event.
+        return false; // Not a tablet event.
 
     ulong timestamp = [theEvent timestamp] * 1000;
 
@@ -1169,7 +1175,7 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
         // Error: Unknown tablet device. Qt also gets into this state
         // when running on a VM. This appears to be harmless; don't
         // print a warning.
-        return;
+        return false;
     }
     const QCocoaTabletDeviceData &deviceData = tabletDeviceDataHash->value(deviceId);
 
@@ -1210,6 +1216,7 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
                                               deviceData.device, deviceData.pointerType, buttons, pressure, xTilt, yTilt,
                                               tangentialPressure, rotation, z, deviceData.uid,
                                               keyboardModifiers);
+    return true;
 }
 
 - (void)tabletPoint: (NSEvent *)theEvent
@@ -1349,8 +1356,29 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 }
 
 #ifndef QT_NO_GESTURES
+
+- (bool)handleGestureAsBeginEnd:(NSEvent *)event
+{
+    if (QSysInfo::QSysInfo::MacintoshVersion < QSysInfo::MV_10_11)
+        return false;
+
+    if ([event phase] == NSEventPhaseBegan) {
+        [self beginGestureWithEvent:event];
+        return true;
+    }
+
+    if ([event phase] == NSEventPhaseEnded) {
+        [self endGestureWithEvent:event];
+        return true;
+    }
+
+    return false;
+}
 - (void)magnifyWithEvent:(NSEvent *)event
 {
+    if ([self handleGestureAsBeginEnd:event])
+        return;
+
     qCDebug(lcQpaGestures) << "magnifyWithEvent" << [event magnification];
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
@@ -1377,7 +1405,9 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (void)rotateWithEvent:(NSEvent *)event
 {
-    qCDebug(lcQpaGestures) << "rotateWithEvent" << [event rotation];
+    if ([self handleGestureAsBeginEnd:event])
+        return;
+
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;

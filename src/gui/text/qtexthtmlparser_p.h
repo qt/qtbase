@@ -171,6 +171,7 @@ struct QTextHtmlParserNode {
     QTextBlockFormat blockFormat;
     uint cssFloat : 2;
     uint hasOwnListStyle : 1;
+    uint hasOwnLineHeightType : 1;
     uint hasCssListIndent : 1;
     uint isEmptyParagraph : 1;
     uint isTextFrame : 1;

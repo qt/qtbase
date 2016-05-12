@@ -110,6 +110,8 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_THREAD
 
+Q_STATIC_ASSERT(sizeof(pthread_t) == sizeof(Qt::HANDLE));
+
 enum { ThreadPriorityResetFlag = 0x80000000 };
 
 #if defined(Q_OS_LINUX) && defined(__GLIBC__) && (defined(Q_CC_GNU) || defined(Q_CC_INTEL)) && !defined(QT_LINUXBASE)
@@ -239,8 +241,6 @@ QThreadData *QThreadData::current(bool createIfNecessary)
 
 void QAdoptedThread::init()
 {
-    Q_D(QThread);
-    d->thread_id = pthread_self();
 }
 
 /*
@@ -328,10 +328,11 @@ void *QThreadPrivate::start(void *arg)
         // sets the name of the current thread.
         QString objectName = thr->objectName();
 
+        pthread_t thread_id = reinterpret_cast<pthread_t>(data->threadId);
         if (Q_LIKELY(objectName.isEmpty()))
-            setCurrentThreadName(thr->d_func()->thread_id, thr->metaObject()->className());
+            setCurrentThreadName(thread_id, thr->metaObject()->className());
         else
-            setCurrentThreadName(thr->d_func()->thread_id, objectName.toLocal8Bit());
+            setCurrentThreadName(thread_id, objectName.toLocal8Bit());
     }
 #endif
 
@@ -372,7 +373,6 @@ void QThreadPrivate::finish(void *arg)
         locker.relock();
     }
 
-    d->thread_id = 0;
     d->running = false;
     d->finished = true;
     d->interruptionRequested = false;
@@ -618,15 +618,16 @@ void QThread::start(Priority priority)
     }
 
     int code =
-        pthread_create(&d->thread_id, &attr, QThreadPrivate::start, this);
+        pthread_create(reinterpret_cast<pthread_t *>(&d->data->threadId), &attr,
+                       QThreadPrivate::start, this);
     if (code == EPERM) {
         // caller does not have permission to set the scheduling
         // parameters/policy
 #if defined(QT_HAS_THREAD_PRIORITY_SCHEDULING)
         pthread_attr_setinheritsched(&attr, PTHREAD_INHERIT_SCHED);
 #endif
-        code =
-            pthread_create(&d->thread_id, &attr, QThreadPrivate::start, this);
+        code = pthread_create(reinterpret_cast<pthread_t *>(&d->data->threadId), &attr,
+                              QThreadPrivate::start, this);
     }
 
     pthread_attr_destroy(&attr);
@@ -636,7 +637,7 @@ void QThread::start(Priority priority)
 
         d->running = false;
         d->finished = false;
-        d->thread_id = 0;
+        d->data->threadId = 0;
     }
 }
 
@@ -646,10 +647,10 @@ void QThread::terminate()
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
 
-    if (!d->thread_id)
+    if (!d->data->threadId)
         return;
 
-    int code = pthread_cancel(d->thread_id);
+    int code = pthread_cancel(reinterpret_cast<pthread_t>(d->data->threadId));
     if (code) {
         qWarning("QThread::start: Thread termination error: %s",
                  qPrintable(qt_error_string((code))));
@@ -662,7 +663,7 @@ bool QThread::wait(unsigned long time)
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
 
-    if (d->thread_id == pthread_self()) {
+    if (reinterpret_cast<pthread_t>(d->data->threadId) == pthread_self()) {
         qWarning("QThread::wait: Thread tried to wait on itself");
         return false;
     }
@@ -704,7 +705,7 @@ void QThreadPrivate::setPriority(QThread::Priority threadPriority)
     int sched_policy;
     sched_param param;
 
-    if (pthread_getschedparam(thread_id, &sched_policy, &param) != 0) {
+    if (pthread_getschedparam(reinterpret_cast<pthread_t>(data->threadId), &sched_policy, &param) != 0) {
         // failed to get the scheduling policy, don't bother setting
         // the priority
         qWarning("QThread::setPriority: Cannot get scheduler parameters");
@@ -720,15 +721,15 @@ void QThreadPrivate::setPriority(QThread::Priority threadPriority)
     }
 
     param.sched_priority = prio;
-    int status = pthread_setschedparam(thread_id, sched_policy, &param);
+    int status = pthread_setschedparam(reinterpret_cast<pthread_t>(data->threadId), sched_policy, &param);
 
 # ifdef SCHED_IDLE
     // were we trying to set to idle priority and failed?
     if (status == -1 && sched_policy == SCHED_IDLE && errno == EINVAL) {
         // reset to lowest priority possible
-        pthread_getschedparam(thread_id, &sched_policy, &param);
+        pthread_getschedparam(reinterpret_cast<pthread_t>(data->threadId), &sched_policy, &param);
         param.sched_priority = sched_get_priority_min(sched_policy);
-        pthread_setschedparam(thread_id, sched_policy, &param);
+        pthread_setschedparam(reinterpret_cast<pthread_t>(data->threadId), sched_policy, &param);
     }
 # else
     Q_UNUSED(status);

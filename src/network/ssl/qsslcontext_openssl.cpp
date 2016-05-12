@@ -224,7 +224,8 @@ init_context:
     const QDateTime now = QDateTime::currentDateTimeUtc();
 
     // Add all our CAs to this store.
-    foreach (const QSslCertificate &caCertificate, sslContext->sslConfiguration.caCertificates()) {
+    const auto caCertificates = sslContext->sslConfiguration.caCertificates();
+    for (const QSslCertificate &caCertificate : caCertificates) {
         // From https://www.openssl.org/docs/ssl/SSL_CTX_load_verify_locations.html:
         //
         // If several CA certificates matching the name, key identifier, and
@@ -243,9 +244,9 @@ init_context:
 
     if (QSslSocketPrivate::s_loadRootCertsOnDemand && allowRootCertOnDemandLoading) {
         // tell OpenSSL the directories where to look up the root certs on demand
-        QList<QByteArray> unixDirs = QSslSocketPrivate::unixRootCertDirectories();
-        for (int a = 0; a < unixDirs.count(); ++a)
-            q_SSL_CTX_load_verify_locations(sslContext->ctx, 0, unixDirs.at(a).constData());
+        const QList<QByteArray> unixDirs = QSslSocketPrivate::unixRootCertDirectories();
+        for (const QByteArray &unixDir : unixDirs)
+            q_SSL_CTX_load_verify_locations(sslContext->ctx, 0, unixDir.constData());
     }
 
     if (!sslContext->sslConfiguration.localCertificate().isNull()) {
@@ -298,7 +299,7 @@ init_context:
 
         // If we have any intermediate certificates then we need to add them to our chain
         bool first = true;
-        foreach (const QSslCertificate &cert, configuration.d->localCertificateChain) {
+        for (const QSslCertificate &cert : qAsConst(configuration.d->localCertificateChain)) {
             if (first) {
                 first = false;
                 continue;

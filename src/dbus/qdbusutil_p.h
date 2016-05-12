@@ -68,15 +68,18 @@ namespace QDBusUtil
 {
     Q_DBUS_EXPORT bool isValidInterfaceName(const QString &ifaceName);
 
-    Q_DBUS_EXPORT bool isValidUniqueConnectionName(const QString &busName);
+    Q_DBUS_EXPORT bool isValidUniqueConnectionName(const QStringRef &busName);
+    bool inline isValidUniqueConnectionName(const QString &busName) { return isValidUniqueConnectionName(QStringRef(&busName)); }
 
     Q_DBUS_EXPORT bool isValidBusName(const QString &busName);
 
-    Q_DBUS_EXPORT bool isValidMemberName(const QString &memberName);
+    Q_DBUS_EXPORT bool isValidMemberName(const QStringRef &memberName);
+    bool inline isValidMemberName(const QString &memberName) { return isValidMemberName(QStringRef(&memberName)); }
 
     Q_DBUS_EXPORT bool isValidErrorName(const QString &errorName);
 
-    Q_DBUS_EXPORT bool isValidPartOfObjectPath(const QString &path);
+    Q_DBUS_EXPORT bool isValidPartOfObjectPath(const QStringRef &path);
+    bool inline isValidPartOfObjectPath(const QString &path) { return isValidPartOfObjectPath(QStringRef(&path)); }
 
     Q_DBUS_EXPORT bool isValidObjectPath(const QString &path);
 
@@ -161,6 +164,8 @@ namespace QDBusUtil
     { return QStringLiteral(DBUS_SERVICE_DBUS); }
     inline QString dbusPath()
     { return QStringLiteral(DBUS_PATH_DBUS); }
+    inline QString dbusPathLocal()
+    { return QStringLiteral(DBUS_PATH_LOCAL); }
     inline QString dbusInterface()
     {
         // it's the same string, but just be sure

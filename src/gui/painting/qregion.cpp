@@ -1139,7 +1139,15 @@ void addSegmentsToPath(Segment *segment, QPainterPath &path)
     }
 }
 
-}
+} // unnamed namespace
+
+// the following is really a lie, because Segments cannot be relocated, as they
+// reference each other by address. For the same reason, they aren't even copyable,
+// but the code works with the compiler-generated (wrong) copy and move special
+// members, so use this as an optimization. The only container these are used in
+// (a QVarLengthArray in qt_regionToPath()) is resized once up-front, so doesn't
+// have a problem with this, but benefits from not having to run Segment ctors:
+Q_DECLARE_TYPEINFO(Segment, Q_PRIMITIVE_TYPE);
 
 Q_GUI_EXPORT QPainterPath qt_regionToPath(const QRegion &region)
 {

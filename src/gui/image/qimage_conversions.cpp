@@ -1747,24 +1747,30 @@ static void convert_Indexed8_to_X32(QImageData *dest, const QImageData *src, Qt:
     Q_ASSERT(src->width == dest->width);
     Q_ASSERT(src->height == dest->height);
 
-    QVector<QRgb> colorTable = fix_color_table(src->colortable, dest->format);
+    QVector<QRgb> colorTable = src->has_alpha_clut ? fix_color_table(src->colortable, dest->format) : src->colortable;
     if (colorTable.size() == 0) {
         colorTable.resize(256);
         for (int i=0; i<256; ++i)
             colorTable[i] = qRgb(i, i, i);
     }
+    if (colorTable.size() < 256) {
+        int tableSize = colorTable.size();
+        colorTable.resize(256);
+        for (int i=tableSize; i<256; ++i)
+            colorTable[i] = 0;
+    }
 
     int w = src->width;
     const uchar *src_data = src->data;
     uchar *dest_data = dest->data;
-    int tableSize = colorTable.size() - 1;
+    const QRgb *colorTablePtr = colorTable.constData();
     for (int y = 0; y < src->height; y++) {
-        uint *p = (uint *)dest_data;
+        uint *p = reinterpret_cast<uint *>(dest_data);
         const uchar *b = src_data;
         uint *end = p + w;
 
         while (p < end)
-            *p++ = colorTable.at(qMin<int>(tableSize, *b++));
+            *p++ = colorTablePtr[*b++];
 
         src_data += src->bytes_per_line;
         dest_data += dest->bytes_per_line;

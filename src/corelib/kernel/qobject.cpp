@@ -1130,7 +1130,7 @@ QObjectPrivate::Connection::~Connection()
     RTTI support and it works across dynamic library boundaries.
 
     qobject_cast() can also be used in conjunction with interfaces;
-    see the \l{tools/plugandpaint}{Plug & Paint} example for details.
+    see the \l{tools/plugandpaint/app}{Plug & Paint} example for details.
 
     \warning If T isn't declared with the Q_OBJECT macro, this
     function's return value is undefined.
@@ -2151,8 +2151,8 @@ void QObject::deleteLater()
 
     Returns a translated version of \a sourceText, optionally based on a
     \a disambiguation string and value of \a n for strings containing plurals;
-    otherwise returns \a sourceText itself if no appropriate translated string
-    is available.
+    otherwise returns QString::fromUtf8(\a sourceText) if no appropriate
+    translated string is available.
 
     Example:
     \snippet ../widgets/mainwindows/sdi/mainwindow.cpp implicit tr context
@@ -2178,7 +2178,7 @@ void QObject::deleteLater()
     translators while performing translations is not supported. Doing
     so will probably result in crashes or other undesirable behavior.
 
-    \sa trUtf8(), QCoreApplication::translate(), {Internationalization with Qt}
+    \sa QCoreApplication::translate(), {Internationalization with Qt}
 */
 
 /*!
@@ -3609,18 +3609,21 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
 {
     int signal_index = signalOffset + local_signal_index;
 
-    if (!sender->d_func()->isSignalConnected(signal_index)
-        && !qt_signal_spy_callback_set.signal_begin_callback
-        && !qt_signal_spy_callback_set.signal_end_callback) {
-        return; // nothing connected to these signals, and no spy
-    }
-
     if (sender->d_func()->blockSig)
         return;
 
-    if (sender->d_func()->declarativeData && QAbstractDeclarativeData::signalEmitted)
+    if (sender->d_func()->isDeclarativeSignalConnected(signal_index)
+            && QAbstractDeclarativeData::signalEmitted) {
         QAbstractDeclarativeData::signalEmitted(sender->d_func()->declarativeData, sender,
                                                 signal_index, argv);
+    }
+
+    if (!sender->d_func()->isSignalConnected(signal_index, /*checkDeclarative =*/ false)
+        && !qt_signal_spy_callback_set.signal_begin_callback
+        && !qt_signal_spy_callback_set.signal_end_callback) {
+        // The possible declarative connection is done, and nothing else is connected, so:
+        return;
+    }
 
     void *empty_argv[] = { 0 };
     if (qt_signal_spy_callback_set.signal_begin_callback != 0) {
@@ -4157,11 +4160,11 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 
     Example:
 
-    \snippet ../widgets/tools/plugandpaintplugins/basictools/basictoolsplugin.h 1
+    \snippet ../widgets/tools/plugandpaint/plugins/basictools/basictoolsplugin.h 1
     \dots
-    \snippet ../widgets/tools/plugandpaintplugins/basictools/basictoolsplugin.h 3
+    \snippet ../widgets/tools/plugandpaint/plugins/basictools/basictoolsplugin.h 3
 
-    See the \l{tools/plugandpaintplugins/basictools}{Plug & Paint
+    See the \l{tools/plugandpaint/plugins/basictools}{Plug & Paint
     Basic Tools} example for details.
 
     \sa Q_DECLARE_INTERFACE(), Q_PLUGIN_METADATA(), {How to Create Qt Plugins}

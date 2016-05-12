@@ -71,6 +71,9 @@ contains(QT_CONFIG, system-zlib) {
 contains(QT_CONFIG, system-png) {
     DEFINES += FT_CONFIG_OPTION_USE_PNG
     include($$PWD/../png_dependency.pri)
+} else:!contains(QT_CONFIG, no-png):!win32 {
+    DEFINES += FT_CONFIG_OPTION_USE_PNG
+    include($$PWD/../libpng.pri)
 }
 
 DEFINES += TT_CONFIG_OPTION_SUBPIXEL_HINTING

@@ -59,7 +59,7 @@ public:
     bool open() Q_DECL_OVERRIDE;
     void close() Q_DECL_OVERRIDE;
 
-    EGLNativeDisplayType device() const Q_DECL_OVERRIDE;
+    EGLNativeDisplayType nativeDisplay() const Q_DECL_OVERRIDE;
     gbm_device *gbmDevice() const;
 
     QPlatformCursor *globalCursor() const;

@@ -181,6 +181,94 @@ void QOpenGLTextureGlyphCache::setupVertexAttribs()
     m_buffer.release();
 }
 
+static void load_glyph_image_to_texture(QOpenGLContext *ctx,
+                                        QImage &img,
+                                        GLuint texture,
+                                        int tx, int ty)
+{
+    QOpenGLFunctions *funcs = ctx->functions();
+
+    const int imgWidth = img.width();
+    const int imgHeight = img.height();
+
+    if (img.format() == QImage::Format_Mono) {
+        img = img.convertToFormat(QImage::Format_Grayscale8);
+    } else if (img.depth() == 32) {
+        if (img.format() == QImage::Format_RGB32
+            // We need to make the alpha component equal to the average of the RGB values.
+            // This is needed when drawing sub-pixel antialiased text on translucent targets.
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+            || img.format() == QImage::Format_ARGB32_Premultiplied
+#else
+            || (img.format() == QImage::Format_ARGB32_Premultiplied
+                && ctx->isOpenGLES())
+#endif
+            ) {
+            for (int y = 0; y < imgHeight; ++y) {
+                QRgb *src = (QRgb *) img.scanLine(y);
+                for (int x = 0; x < imgWidth; ++x) {
+                    int r = qRed(src[x]);
+                    int g = qGreen(src[x]);
+                    int b = qBlue(src[x]);
+                    int avg;
+                    if (img.format() == QImage::Format_RGB32)
+                        avg = (r + g + b + 1) / 3; // "+1" for rounding.
+                    else // Format_ARGB_Premultiplied
+                        avg = qAlpha(src[x]);
+
+                    src[x] = qRgba(r, g, b, avg);
+                    // swizzle the bits to accommodate for the GL_RGBA upload.
+#if Q_BYTE_ORDER != Q_BIG_ENDIAN
+                    if (ctx->isOpenGLES())
+#endif
+                        src[x] = ARGB2RGBA(src[x]);
+                }
+            }
+        }
+    }
+
+    funcs->glBindTexture(GL_TEXTURE_2D, texture);
+    if (img.depth() == 32) {
+#ifdef QT_OPENGL_ES_2
+        GLenum fmt = GL_RGBA;
+#else
+        GLenum fmt = ctx->isOpenGLES() ? GL_RGBA : GL_BGRA;
+#endif // QT_OPENGL_ES_2
+
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+        fmt = GL_RGBA;
+#endif
+        funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, tx, ty, imgWidth, imgHeight, fmt, GL_UNSIGNED_BYTE, img.constBits());
+    } else {
+        // The scanlines in image are 32-bit aligned, even for mono or 8-bit formats. This
+        // is good because it matches the default of 4 bytes for GL_UNPACK_ALIGNMENT.
+#if !defined(QT_OPENGL_ES_2)
+        const GLenum format = isCoreProfile() ? GL_RED : GL_ALPHA;
+#else
+        const GLenum format = GL_ALPHA;
+#endif
+        funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, tx, ty, imgWidth, imgHeight, format, GL_UNSIGNED_BYTE, img.constBits());
+    }
+}
+
+static void load_glyph_image_region_to_texture(QOpenGLContext *ctx,
+                                               const QImage &srcImg,
+                                               int x, int y,
+                                               int w, int h,
+                                               GLuint texture,
+                                               int tx, int ty)
+{
+    Q_ASSERT(x + w <= srcImg.width() && y + h <= srcImg.height());
+
+    QImage img;
+    if (x != 0 || y != 0 || w != srcImg.width() || h != srcImg.height())
+        img = srcImg.copy(x, y, w, h);
+    else
+        img = srcImg;
+
+    load_glyph_image_to_texture(ctx, img, texture, tx, ty);
+}
+
 void QOpenGLTextureGlyphCache::resizeTextureData(int width, int height)
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
@@ -207,9 +295,8 @@ void QOpenGLTextureGlyphCache::resizeTextureData(int width, int height)
 
     if (ctx->d_func()->workaround_brokenFBOReadBack) {
         QImageTextureGlyphCache::resizeTextureData(width, height);
-        Q_ASSERT(image().depth() == 8);
-        funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, oldHeight, GL_ALPHA, GL_UNSIGNED_BYTE, image().constBits());
-        funcs->glDeleteTextures(1, &oldTexture);
+        load_glyph_image_region_to_texture(ctx, image(), 0, 0, qMin(oldWidth, width), qMin(oldHeight, height),
+                                           m_textureResource->m_texture, 0, 0);
         return;
     }
 
@@ -336,88 +423,14 @@ void QOpenGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed
         return;
     }
 
-    QOpenGLFunctions *funcs = ctx->functions();
     if (ctx->d_func()->workaround_brokenFBOReadBack) {
         QImageTextureGlyphCache::fillTexture(c, glyph, subPixelPosition);
-
-        funcs->glBindTexture(GL_TEXTURE_2D, m_textureResource->m_texture);
-        const QImage &texture = image();
-        const uchar *bits = texture.constBits();
-        bits += c.y * texture.bytesPerLine() + c.x;
-        for (int i=0; i<c.h; ++i) {
-            funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y + i, c.w, 1, GL_ALPHA, GL_UNSIGNED_BYTE, bits);
-            bits += texture.bytesPerLine();
-        }
+        load_glyph_image_region_to_texture(ctx, image(), c.x, c.y, c.w, c.h, m_textureResource->m_texture, c.x, c.y);
         return;
     }
 
     QImage mask = textureMapForGlyph(glyph, subPixelPosition);
-    const int maskWidth = mask.width();
-    const int maskHeight = mask.height();
-
-    if (mask.format() == QImage::Format_Mono) {
-        mask = mask.convertToFormat(QImage::Format_Indexed8);
-        for (int y = 0; y < maskHeight; ++y) {
-            uchar *src = (uchar *) mask.scanLine(y);
-            for (int x = 0; x < maskWidth; ++x)
-                src[x] = -src[x]; // convert 0 and 1 into 0 and 255
-        }
-    } else if (mask.depth() == 32) {
-        if (mask.format() == QImage::Format_RGB32
-            // We need to make the alpha component equal to the average of the RGB values.
-            // This is needed when drawing sub-pixel antialiased text on translucent targets.
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN
-            || mask.format() == QImage::Format_ARGB32_Premultiplied
-#else
-            || (mask.format() == QImage::Format_ARGB32_Premultiplied
-                && ctx->isOpenGLES())
-#endif
-            ) {
-            for (int y = 0; y < maskHeight; ++y) {
-                QRgb *src = (QRgb *) mask.scanLine(y);
-                for (int x = 0; x < maskWidth; ++x) {
-                    int r = qRed(src[x]);
-                    int g = qGreen(src[x]);
-                    int b = qBlue(src[x]);
-                    int avg;
-                    if (mask.format() == QImage::Format_RGB32)
-                        avg = (r + g + b + 1) / 3; // "+1" for rounding.
-                    else // Format_ARGB_Premultiplied
-                        avg = qAlpha(src[x]);
-
-                    src[x] = qRgba(r, g, b, avg);
-                    // swizzle the bits to accommodate for the GL_RGBA upload.
-#if Q_BYTE_ORDER != Q_BIG_ENDIAN
-                    if (ctx->isOpenGLES())
-#endif
-                        src[x] = ARGB2RGBA(src[x]);
-                }
-            }
-        }
-    }
-
-    funcs->glBindTexture(GL_TEXTURE_2D, m_textureResource->m_texture);
-    if (mask.depth() == 32) {
-#ifdef QT_OPENGL_ES_2
-        GLenum fmt = GL_RGBA;
-#else
-        GLenum fmt = ctx->isOpenGLES() ? GL_RGBA : GL_BGRA;
-#endif // QT_OPENGL_ES_2
-
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN
-        fmt = GL_RGBA;
-#endif
-        funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, fmt, GL_UNSIGNED_BYTE, mask.bits());
-    } else {
-        // The scanlines in mask are 32-bit aligned, even for mono or 8-bit formats. This
-        // is good because it matches the default of 4 bytes for GL_UNPACK_ALIGNMENT.
-#if !defined(QT_OPENGL_ES_2)
-        const GLenum format = isCoreProfile() ? GL_RED : GL_ALPHA;
-#else
-        const GLenum format = GL_ALPHA;
-#endif
-        funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, format, GL_UNSIGNED_BYTE, mask.bits());
-    }
+    load_glyph_image_to_texture(ctx, mask, m_textureResource->m_texture, c.x, c.y);
 }
 
 int QOpenGLTextureGlyphCache::glyphPadding() const

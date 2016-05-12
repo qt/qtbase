@@ -111,7 +111,7 @@ public:
     QPlatformScreen::PowerState powerState() const Q_DECL_OVERRIDE;
     void setPowerState(QPlatformScreen::PowerState state) Q_DECL_OVERRIDE;
 
-private:
+protected:
     QEglFSKmsIntegration *m_integration;
     QEglFSKmsDevice *m_device;
 

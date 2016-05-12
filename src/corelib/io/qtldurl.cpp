@@ -46,7 +46,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static bool containsTLDEntry(const QString &entry)
+static bool containsTLDEntry(const QStringRef &entry)
 {
     int index = qt_hash(entry) % tldCount;
 
@@ -69,6 +69,11 @@ static bool containsTLDEntry(const QString &entry)
     return false;
 }
 
+static inline bool containsTLDEntry(const QString &entry)
+{
+    return containsTLDEntry(QStringRef(&entry));
+}
+
 /*!
     \internal
 
@@ -86,7 +91,7 @@ Q_CORE_EXPORT QString qTopLevelDomain(const QString &domain)
     QString level, tld;
     for (int j = sections.count() - 1; j >= 0; --j) {
         level.prepend(QLatin1Char('.') + sections.at(j));
-        if (qIsEffectiveTLD(level.right(level.size() - 1)))
+        if (qIsEffectiveTLD(level.rightRef(level.size() - 1)))
             tld = level;
     }
     return tld;
@@ -98,7 +103,7 @@ Q_CORE_EXPORT QString qTopLevelDomain(const QString &domain)
     Return true if \a domain is a top-level-domain per Qt's copy of the Mozilla public suffix list.
 */
 
-Q_CORE_EXPORT bool qIsEffectiveTLD(const QString &domain)
+Q_CORE_EXPORT bool qIsEffectiveTLD(const QStringRef &domain)
 {
     // for domain 'foo.bar.com':
     // 1. return if TLD table contains 'foo.bar.com'
@@ -108,7 +113,7 @@ Q_CORE_EXPORT bool qIsEffectiveTLD(const QString &domain)
     const int dot = domain.indexOf(QLatin1Char('.'));
     if (dot >= 0) {
         int count = domain.size() - dot;
-        QString wildCardDomain = QLatin1Char('*') + domain.rightRef(count);
+        QString wildCardDomain = QLatin1Char('*') + domain.right(count);
         // 2. if table contains '*.bar.com',
         // test if table contains '!foo.bar.com'
         if (containsTLDEntry(wildCardDomain)) {

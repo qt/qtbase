@@ -8,6 +8,12 @@ xcodebuild {
 
 load(resolve_config)
 
+# Legacy exclusive build configurations for backwards compatibility
+CONFIG($${device.CONFIG}, $${device.CONFIG}|$${simulator.CONFIG}): \
+    CONFIG += device
+else: CONFIG($${simulator.CONFIG}, $${device.CONFIG}|$${simulator.CONFIG}): \
+    CONFIG += simulator
+
 CONFIG(simulator, simulator|device): \
     CONFIG -= device $${device.CONFIG}
 else: \

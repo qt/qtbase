@@ -57,7 +57,11 @@
 QT_BEGIN_NAMESPACE
 
 Q_CORE_EXPORT QString qTopLevelDomain(const QString &domain);
-Q_CORE_EXPORT bool qIsEffectiveTLD(const QString &domain);
+Q_CORE_EXPORT bool qIsEffectiveTLD(const QStringRef &domain);
+inline bool qIsEffectiveTLD(const QString &domain)
+{
+    return qIsEffectiveTLD(QStringRef(&domain));
+}
 
 QT_END_NAMESPACE
 

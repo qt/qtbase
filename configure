@@ -679,7 +679,7 @@ CFG_EGLFS_EGLDEVICE=no
 CFG_EGLFS_MALI=no
 CFG_EGLFS_VIV=no
 CFG_EGLFS_VIV_WL=no
-CFG_DIRECTFB=auto
+CFG_DIRECTFB=no
 CFG_GBM=auto
 CFG_LINUXFB=auto
 CFG_INTEGRITYFB=no
@@ -3238,7 +3238,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             setBootstrapVariable QMAKE_CXXFLAGS_RELEASE
             EXTRA_CFLAGS="$EXTRA_CFLAGS \$(QMAKE_CFLAGS_RELEASE)"
             EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(QMAKE_CXXFLAGS_RELEASE)"
-        elif [ "$CFG_DEBUG" = "yes" ]; then
+        else
             setBootstrapVariable QMAKE_CFLAGS_DEBUG
             setBootstrapVariable QMAKE_CXXFLAGS_DEBUG
             EXTRA_CFLAGS="$EXTRA_CFLAGS \$(QMAKE_CFLAGS_DEBUG)"
@@ -3719,10 +3719,12 @@ if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
     fi
 
     # Detect objcopy support
-    if ! compileTest unix/objcopy "objcopy"; then
-        echo "ERROR: -separate-debug-info was requested but this binutils does not support it."
-        echo "Re-run configure with -v for more information"
-        exit 1
+    if [ "$XPLATFORM_MAC" = "no" ]; then
+        if ! compileTest unix/objcopy "objcopy"; then
+            echo "ERROR: -separate-debug-info was requested but this binutils does not support it."
+            echo "Re-run configure with -v for more information"
+            exit 1
+        fi
     fi
 fi
 
@@ -6074,7 +6076,6 @@ fi
 QTCONFIG="$outpath/mkspecs/qconfig.pri"
 exec > "$QTCONFIG.tmp"
 
-QTCONFIG_CONFIG="$QTCONFIG_CONFIG no_mocdepend"
 if [ "$CFG_DEBUG" = "yes" ]; then
     QTCONFIG_CONFIG="$QTCONFIG_CONFIG debug"
     if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then

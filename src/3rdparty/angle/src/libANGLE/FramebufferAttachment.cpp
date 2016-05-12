@@ -20,15 +20,96 @@
 namespace gl
 {
 
+////// FramebufferAttachment::Target Implementation //////
+
+FramebufferAttachment::Target::Target()
+    : mBinding(GL_NONE),
+      mTextureIndex(ImageIndex::MakeInvalid())
+{
+}
+
+FramebufferAttachment::Target::Target(GLenum binding, const ImageIndex &imageIndex)
+    : mBinding(binding),
+      mTextureIndex(imageIndex)
+{
+}
+
+FramebufferAttachment::Target::Target(const Target &other)
+    : mBinding(other.mBinding),
+      mTextureIndex(other.mTextureIndex)
+{
+}
+
+FramebufferAttachment::Target &FramebufferAttachment::Target::operator=(const Target &other)
+{
+    this->mBinding = other.mBinding;
+    this->mTextureIndex = other.mTextureIndex;
+    return *this;
+}
+
 ////// FramebufferAttachment Implementation //////
 
-FramebufferAttachment::FramebufferAttachment(GLenum binding)
-    : mBinding(binding)
+FramebufferAttachment::FramebufferAttachment()
+    : mType(GL_NONE), mResource(nullptr)
 {
+}
+
+FramebufferAttachment::FramebufferAttachment(GLenum type,
+                                             GLenum binding,
+                                             const ImageIndex &textureIndex,
+                                             FramebufferAttachmentObject *resource)
+    : mResource(nullptr)
+{
+    attach(type, binding, textureIndex, resource);
+}
+
+FramebufferAttachment::FramebufferAttachment(const FramebufferAttachment &other)
+    : mResource(nullptr)
+{
+    attach(other.mType, other.mTarget.binding(), other.mTarget.textureIndex(), other.mResource);
+}
+
+FramebufferAttachment &FramebufferAttachment::operator=(const FramebufferAttachment &other)
+{
+    attach(other.mType, other.mTarget.binding(), other.mTarget.textureIndex(), other.mResource);
+    return *this;
 }
 
 FramebufferAttachment::~FramebufferAttachment()
 {
+    detach();
+}
+
+void FramebufferAttachment::detach()
+{
+    mType = GL_NONE;
+    if (mResource != nullptr)
+    {
+        mResource->onDetach();
+        mResource = nullptr;
+    }
+
+    // not technically necessary, could omit for performance
+    mTarget = Target();
+}
+
+void FramebufferAttachment::attach(GLenum type,
+                                   GLenum binding,
+                                   const ImageIndex &textureIndex,
+                                   FramebufferAttachmentObject *resource)
+{
+    mType = type;
+    mTarget = Target(binding, textureIndex);
+
+    if (resource)
+    {
+        resource->onAttach();
+    }
+    if (mResource != nullptr)
+    {
+        mResource->onDetach();
+    }
+    mResource = resource;
 }
 
 GLuint FramebufferAttachment::getRedSize() const
@@ -71,232 +152,57 @@ GLenum FramebufferAttachment::getColorEncoding() const
     return GetInternalFormatInfo(getInternalFormat()).colorEncoding;
 }
 
-///// TextureAttachment Implementation ////////
-
-TextureAttachment::TextureAttachment(GLenum binding, Texture *texture, const ImageIndex &index)
-    : FramebufferAttachment(binding),
-      mIndex(index)
+GLuint FramebufferAttachment::id() const
 {
-    mTexture.set(texture);
+    return mResource->getId();
 }
 
-TextureAttachment::~TextureAttachment()
+const ImageIndex &FramebufferAttachment::getTextureImageIndex() const
 {
-    mTexture.set(NULL);
+    ASSERT(type() == GL_TEXTURE);
+    return mTarget.textureIndex();
 }
 
-GLsizei TextureAttachment::getSamples() const
+GLenum FramebufferAttachment::cubeMapFace() const
 {
+    ASSERT(mType == GL_TEXTURE);
+
+    const auto &index = mTarget.textureIndex();
+    return IsCubeMapTextureTarget(index.type) ? index.type : GL_NONE;
+}
+
+GLint FramebufferAttachment::mipLevel() const
+{
+    ASSERT(type() == GL_TEXTURE);
+    return mTarget.textureIndex().mipIndex;
+}
+
+GLint FramebufferAttachment::layer() const
+{
+    ASSERT(mType == GL_TEXTURE);
+
+    const auto &index = mTarget.textureIndex();
+
+    if (index.type == GL_TEXTURE_2D_ARRAY || index.type == GL_TEXTURE_3D)
+    {
+        return index.layerIndex;
+    }
     return 0;
 }
 
-GLuint TextureAttachment::id() const
+Texture *FramebufferAttachment::getTexture() const
 {
-    return mTexture->id();
+    return rx::GetAs<Texture>(mResource);
 }
 
-GLsizei TextureAttachment::getWidth() const
+Renderbuffer *FramebufferAttachment::getRenderbuffer() const
 {
-    return mTexture->getWidth(mIndex.type, mIndex.mipIndex);
+    return rx::GetAs<Renderbuffer>(mResource);
 }
 
-GLsizei TextureAttachment::getHeight() const
+const egl::Surface *FramebufferAttachment::getSurface() const
 {
-    return mTexture->getHeight(mIndex.type, mIndex.mipIndex);
-}
-
-GLenum TextureAttachment::getInternalFormat() const
-{
-    return mTexture->getInternalFormat(mIndex.type, mIndex.mipIndex);
-}
-
-GLenum TextureAttachment::type() const
-{
-    return GL_TEXTURE;
-}
-
-GLint TextureAttachment::mipLevel() const
-{
-    return mIndex.mipIndex;
-}
-
-GLenum TextureAttachment::cubeMapFace() const
-{
-    return IsCubeMapTextureTarget(mIndex.type) ? mIndex.type : GL_NONE;
-}
-
-GLint TextureAttachment::layer() const
-{
-    return mIndex.layerIndex;
-}
-
-Texture *TextureAttachment::getTexture() const
-{
-    return mTexture.get();
-}
-
-const ImageIndex *TextureAttachment::getTextureImageIndex() const
-{
-    return &mIndex;
-}
-
-Renderbuffer *TextureAttachment::getRenderbuffer() const
-{
-    UNREACHABLE();
-    return NULL;
-}
-
-////// RenderbufferAttachment Implementation //////
-
-RenderbufferAttachment::RenderbufferAttachment(GLenum binding, Renderbuffer *renderbuffer)
-    : FramebufferAttachment(binding)
-{
-    ASSERT(renderbuffer);
-    mRenderbuffer.set(renderbuffer);
-}
-
-RenderbufferAttachment::~RenderbufferAttachment()
-{
-    mRenderbuffer.set(NULL);
-}
-
-GLsizei RenderbufferAttachment::getWidth() const
-{
-    return mRenderbuffer->getWidth();
-}
-
-GLsizei RenderbufferAttachment::getHeight() const
-{
-    return mRenderbuffer->getHeight();
-}
-
-GLenum RenderbufferAttachment::getInternalFormat() const
-{
-    return mRenderbuffer->getInternalFormat();
-}
-
-GLsizei RenderbufferAttachment::getSamples() const
-{
-    return mRenderbuffer->getSamples();
-}
-
-GLuint RenderbufferAttachment::id() const
-{
-    return mRenderbuffer->id();
-}
-
-GLenum RenderbufferAttachment::type() const
-{
-    return GL_RENDERBUFFER;
-}
-
-GLint RenderbufferAttachment::mipLevel() const
-{
-    return 0;
-}
-
-GLenum RenderbufferAttachment::cubeMapFace() const
-{
-    return GL_NONE;
-}
-
-GLint RenderbufferAttachment::layer() const
-{
-    return 0;
-}
-
-Texture *RenderbufferAttachment::getTexture() const
-{
-    UNREACHABLE();
-    return NULL;
-}
-
-const ImageIndex *RenderbufferAttachment::getTextureImageIndex() const
-{
-    UNREACHABLE();
-    return NULL;
-}
-
-Renderbuffer *RenderbufferAttachment::getRenderbuffer() const
-{
-    return mRenderbuffer.get();
-}
-
-
-DefaultAttachment::DefaultAttachment(GLenum binding, egl::Surface *surface)
-    : FramebufferAttachment(binding)
-{
-    mSurface.set(surface);
-}
-
-DefaultAttachment::~DefaultAttachment()
-{
-    mSurface.set(nullptr);
-}
-
-GLsizei DefaultAttachment::getWidth() const
-{
-    return mSurface->getWidth();
-}
-
-GLsizei DefaultAttachment::getHeight() const
-{
-    return mSurface->getHeight();
-}
-
-GLenum DefaultAttachment::getInternalFormat() const
-{
-    const egl::Config *config = mSurface->getConfig();
-    return (getBinding() == GL_BACK ? config->renderTargetFormat : config->depthStencilFormat);
-}
-
-GLsizei DefaultAttachment::getSamples() const
-{
-    const egl::Config *config = mSurface->getConfig();
-    return config->samples;
-}
-
-GLuint DefaultAttachment::id() const
-{
-    return 0;
-}
-
-GLenum DefaultAttachment::type() const
-{
-    return GL_FRAMEBUFFER_DEFAULT;
-}
-
-GLint DefaultAttachment::mipLevel() const
-{
-    return 0;
-}
-
-GLenum DefaultAttachment::cubeMapFace() const
-{
-    return GL_NONE;
-}
-
-GLint DefaultAttachment::layer() const
-{
-    return 0;
-}
-
-Texture *DefaultAttachment::getTexture() const
-{
-    UNREACHABLE();
-    return NULL;
-}
-
-const ImageIndex *DefaultAttachment::getTextureImageIndex() const
-{
-    UNREACHABLE();
-    return NULL;
-}
-
-Renderbuffer *DefaultAttachment::getRenderbuffer() const
-{
-    UNREACHABLE();
-    return NULL;
+    return rx::GetAs<egl::Surface>(mResource);
 }
 
 }

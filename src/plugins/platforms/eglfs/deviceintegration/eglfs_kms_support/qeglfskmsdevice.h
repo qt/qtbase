@@ -61,7 +61,7 @@ public:
 
     virtual void createScreens();
 
-    virtual EGLNativeDisplayType device() const = 0;
+    virtual EGLNativeDisplayType nativeDisplay() const = 0;
     int fd() const;
     QString devicePath() const;
 
@@ -71,9 +71,6 @@ protected:
                                           QEglFSKmsOutput output,
                                           QPoint position);
     void setFd(int fd);
-
-private:
-    Q_DISABLE_COPY(QEglFSKmsDevice)
 
     QEglFSKmsIntegration *m_integration;
     QString m_path;
@@ -91,6 +88,9 @@ private:
                                 unsigned int tv_sec,
                                 unsigned int tv_usec,
                                 void *user_data);
+
+private:
+    Q_DISABLE_COPY(QEglFSKmsDevice)
 };
 
 QT_END_NAMESPACE

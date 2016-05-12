@@ -62,6 +62,9 @@ public:
     QEglFSWindow *createWindow(QWindow *window) const Q_DECL_OVERRIDE;
 
     virtual bool separateScreens() const Q_DECL_OVERRIDE;
+
+    EGLDeviceEXT eglDevice() const { return m_egl_device; }
+
 protected:
     QEglFSKmsDevice *createDevice(const QString &devicePath) Q_DECL_OVERRIDE;
 

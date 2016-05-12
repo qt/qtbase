@@ -75,7 +75,8 @@ public:
         return fastTryLock();
     }
 
-    bool isRecursive(); //### Qt6: mark const
+    bool isRecursive() Q_DECL_NOTHROW; //### Qt6: remove me
+    bool isRecursive() const Q_DECL_NOTHROW;
 
 private:
     inline bool fastTryLock() Q_DECL_NOTHROW {
@@ -104,7 +105,8 @@ private:
     friend class QMutexData;
 };
 
-class Q_CORE_EXPORT QMutex : public QBasicMutex {
+class Q_CORE_EXPORT QMutex : public QBasicMutex
+{
 public:
     enum RecursionMode { NonRecursive, Recursive };
     explicit QMutex(RecursionMode mode = NonRecursive);
@@ -114,7 +116,8 @@ public:
     bool tryLock(int timeout = 0) QT_MUTEX_LOCK_NOEXCEPT;
     void unlock() Q_DECL_NOTHROW;
 
-    using QBasicMutex::isRecursive;
+    bool isRecursive() const Q_DECL_NOTHROW
+    { return QBasicMutex::isRecursive(); }
 
 private:
     Q_DISABLE_COPY(QMutex)
@@ -187,7 +190,7 @@ public:
     inline void lock() Q_DECL_NOTHROW {}
     inline bool tryLock(int timeout = 0) Q_DECL_NOTHROW { Q_UNUSED(timeout); return true; }
     inline void unlock() Q_DECL_NOTHROW {}
-    inline bool isRecursive() Q_DECL_NOTHROW { return true; }
+    inline bool isRecursive() const Q_DECL_NOTHROW { return true; }
 
 private:
     Q_DISABLE_COPY(QMutex)

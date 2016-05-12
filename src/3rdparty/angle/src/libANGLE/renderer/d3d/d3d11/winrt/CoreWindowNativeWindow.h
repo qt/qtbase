@@ -19,16 +19,25 @@ typedef ABI::Windows::Foundation::__FITypedEventHandler_2_Windows__CGraphics__CD
 
 namespace rx
 {
-
 class CoreWindowNativeWindow : public InspectableNativeWindow, public std::enable_shared_from_this<CoreWindowNativeWindow>
 {
   public:
     ~CoreWindowNativeWindow();
 
-    bool initialize(EGLNativeWindowType window, IPropertySet *propertySet);
+    bool initialize(EGLNativeWindowType window, IPropertySet *propertySet) override;
+    HRESULT createSwapChain(ID3D11Device *device,
+                            DXGIFactory *factory,
+                            DXGI_FORMAT format,
+                            unsigned int width,
+                            unsigned int height,
+                            bool containsAlpha,
+                            DXGISwapChain **swapChain) override;
+
+  protected:
+    HRESULT scaleSwapChain(const Size &windowSize, const RECT &clientRect) override;
+
     bool registerForSizeChangeEvents();
     void unregisterForSizeChangeEvents();
-    HRESULT createSwapChain(ID3D11Device *device, DXGIFactory *factory, DXGI_FORMAT format, unsigned int width, unsigned int height, DXGISwapChain **swapChain);
 
   private:
     ComPtr<ABI::Windows::UI::Core::ICoreWindow> mCoreWindow;
@@ -70,39 +79,40 @@ class CoreWindowSizeChangedHandler :
         return S_OK;
     }
 
-    IFACEMETHOD(Invoke)(ABI::Windows::Graphics::Display::IDisplayInformation *displayInformation, IInspectable *)
-    {
-#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
-        NativeWindow::RotationFlags flags = NativeWindow::RotateNone;
-        ABI::Windows::Graphics::Display::DisplayOrientations orientation;
-        if (SUCCEEDED(displayInformation->get_CurrentOrientation(&orientation)))
+        IFACEMETHOD(Invoke)(ABI::Windows::Graphics::Display::IDisplayInformation *displayInformation, IInspectable *)
         {
-            switch (orientation)
+    #if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+            NativeWindow::RotationFlags flags = NativeWindow::RotateNone;
+            ABI::Windows::Graphics::Display::DisplayOrientations orientation;
+            if (SUCCEEDED(displayInformation->get_CurrentOrientation(&orientation)))
             {
-              case ABI::Windows::Graphics::Display::DisplayOrientations_Landscape:
-                flags = NativeWindow::RotateLeft;
-                break;
-              case ABI::Windows::Graphics::Display::DisplayOrientations_LandscapeFlipped:
-                flags = NativeWindow::RotateRight;
-                break;
-              default:
-                break;
+                switch (orientation)
+                {
+                  case ABI::Windows::Graphics::Display::DisplayOrientations_Landscape:
+                    flags = NativeWindow::RotateLeft;
+                    break;
+                  case ABI::Windows::Graphics::Display::DisplayOrientations_LandscapeFlipped:
+                    flags = NativeWindow::RotateRight;
+                    break;
+                  default:
+                    break;
+                }
             }
+            std::shared_ptr<InspectableNativeWindow> host = mHost.lock();
+            if (host)
+            {
+                host->setRotationFlags(flags);
+            }
+    #endif
+            return S_OK;
         }
-        std::shared_ptr<InspectableNativeWindow> host = mHost.lock();
-        if (host)
-        {
-            host->setRotationFlags(flags);
-        }
-#endif
-        return S_OK;
-    }
+
 
   private:
     std::weak_ptr<InspectableNativeWindow> mHost;
 };
 
-HRESULT GetCoreWindowSizeInPixels(const ComPtr<ABI::Windows::UI::Core::ICoreWindow>& coreWindow, RECT *windowSize);
+HRESULT GetCoreWindowSizeInPixels(const ComPtr<ABI::Windows::UI::Core::ICoreWindow>& coreWindow, SIZE *windowSize);
 }
 
 #endif // LIBANGLE_RENDERER_D3D_D3D11_WINRT_COREWINDOWNATIVEWINDOW_H_

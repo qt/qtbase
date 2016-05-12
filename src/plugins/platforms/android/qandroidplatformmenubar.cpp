@@ -86,7 +86,7 @@ void QAndroidPlatformMenuBar::handleReparent(QWindow *newParentWindow)
 
 QPlatformMenu *QAndroidPlatformMenuBar::menuForTag(quintptr tag) const
 {
-    foreach (QPlatformMenu *menu, m_menus) {
+    for (QPlatformMenu *menu : m_menus) {
         if (menu->tag() == tag)
             return menu;
     }
