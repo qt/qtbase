@@ -109,6 +109,36 @@ QT_BEGIN_NAMESPACE
 using QtMiscUtils::toHexUpper;
 using QtMiscUtils::fromHex;
 
+static bool debuggerPresent()
+{
+#if defined(Q_OS_LINUX)
+    int fd = open("/proc/self/status", O_RDONLY);
+    if (fd == -1)
+        return false;
+    char buffer[2048];
+    ssize_t size = read(fd, buffer, sizeof(buffer));
+    if (size == -1) {
+        close(fd);
+        return false;
+    }
+    buffer[size] = 0;
+    const char tracerPidToken[] = "\nTracerPid:";
+    char *tracerPid = strstr(buffer, tracerPidToken);
+    if (!tracerPid) {
+        close(fd);
+        return false;
+    }
+    tracerPid += sizeof(tracerPidToken);
+    long int pid = strtol(tracerPid, &tracerPid, 10);
+    close(fd);
+    return pid != 0;
+#elif defined(Q_OS_WIN)
+    return IsDebuggerPresent();
+#else
+    // TODO
+    return false;
+#endif
+}
 
 static void stackTrace()
 {
@@ -116,6 +146,10 @@ static void stackTrace()
     const int disableStackDump = qEnvironmentVariableIntValue("QTEST_DISABLE_STACK_DUMP", &ok);
     if (ok && disableStackDump == 1)
         return;
+
+    if (debuggerPresent())
+        return;
+
 #ifdef Q_OS_LINUX
     fprintf(stderr, "\n========= Received signal, dumping stack ==============\n");
     char cmd[512];
@@ -1247,37 +1281,6 @@ char *toPrettyUnicode(const ushort *p, int length)
     }
     *dst++ = '\0';
     return buffer.take();
-}
-
-static bool debuggerPresent()
-{
-#if defined(Q_OS_LINUX)
-    int fd = open("/proc/self/status", O_RDONLY);
-    if (fd == -1)
-        return false;
-    char buffer[2048];
-    ssize_t size = read(fd, buffer, sizeof(buffer));
-    if (size == -1) {
-        close(fd);
-        return false;
-    }
-    buffer[size] = 0;
-    const char tracerPidToken[] = "\nTracerPid:";
-    char *tracerPid = strstr(buffer, tracerPidToken);
-    if (!tracerPid) {
-        close(fd);
-        return false;
-    }
-    tracerPid += sizeof(tracerPidToken);
-    long int pid = strtol(tracerPid, &tracerPid, 10);
-    close(fd);
-    return pid != 0;
-#elif defined(Q_OS_WIN)
-    return IsDebuggerPresent();
-#else
-    // TODO
-    return false;
-#endif
 }
 
 void TestMethods::invokeTests(QObject *testObject) const
