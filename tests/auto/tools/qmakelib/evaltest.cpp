@@ -742,6 +742,30 @@ void tst_qmakelib::addReplaceFunctions(const QString &qindir)
             << "##:1: first(var) requires one argument."
             << true;
 
+    QTest::newRow("$$take_first(): empty")
+            << "IN = \nVAR = $$take_first(IN)"
+            << "VAR =\nIN ="
+            << ""
+            << true;
+
+    QTest::newRow("$$take_first(): one")
+            << "IN = one\nVAR = $$take_first(IN)"
+            << "VAR = one\nIN ="
+            << ""
+            << true;
+
+    QTest::newRow("$$take_first(): multiple")
+            << "IN = one two three\nVAR = $$take_first(IN)"
+            << "VAR = one\nIN = two three"
+            << ""
+            << true;
+
+    QTest::newRow("$$take_first(): bad number of arguments")
+            << "VAR = $$take_first(1, 2)"
+            << "VAR ="
+            << "##:1: take_first(var) requires one argument."
+            << true;
+
     QTest::newRow("$$last(): empty")
             << "IN = \nVAR = $$last(IN)"
             << "VAR ="
@@ -764,6 +788,30 @@ void tst_qmakelib::addReplaceFunctions(const QString &qindir)
             << "VAR = $$last(1, 2)"
             << "VAR ="
             << "##:1: last(var) requires one argument."
+            << true;
+
+    QTest::newRow("$$take_last(): empty")
+            << "IN = \nVAR = $$take_last(IN)"
+            << "VAR =\nIN ="
+            << ""
+            << true;
+
+    QTest::newRow("$$take_last(): one")
+            << "IN = one\nVAR = $$take_last(IN)"
+            << "VAR = one\nIN ="
+            << ""
+            << true;
+
+    QTest::newRow("$$take_last(): multiple")
+            << "IN = one two three\nVAR = $$take_last(IN)"
+            << "VAR = three\nIN = one two"
+            << ""
+            << true;
+
+    QTest::newRow("$$take_last(): bad number of arguments")
+            << "VAR = $$take_last(1, 2)"
+            << "VAR ="
+            << "##:1: take_last(var) requires one argument."
             << true;
 
     QTest::newRow("$$size()")

@@ -2847,6 +2847,7 @@
     MY_VAR2 will contain '-Lone -Ltwo -Lthree -Lfour -Lfive', and MY_VAR3 will
     contain 'three two three'.
 
+    \target fn_first
     \section2 first(variablename)
 
     Returns the first value of \c variablename.
@@ -2855,7 +2856,7 @@
 
     \snippet code/doc_src_qmake-manual.pro 161
 
-    See also \l{last(variablename)}{last()}.
+    See also \l{take_first()}, \l{fn_last}{last()}.
 
     \section2 format_number(number[, options...])
 
@@ -2903,6 +2904,7 @@
     to empty strings. If you need to encode spaces in \c glue, \c before, or \c
     after, you must quote them.
 
+    \target fn_last
     \section2 last(variablename)
 
     Returns the last value of \c variablename.
@@ -2911,7 +2913,7 @@
 
     \snippet code/doc_src_qmake-manual.pro 162
 
-    See also \l{first(variablename)}{first()}.
+    See also \l{take_last()}, \l{fn_first}{first()}.
 
     \section2 list(arg1 [, arg2 ..., argn])
 
@@ -3062,6 +3064,26 @@
     functions.
 
     See also \l{shell_quote(arg)}{shell_quote()}.
+
+    \target take_first()
+    \section2 take_first(variablename)
+
+    Returns the first value of \c variablename and removes it from the
+    source variable.
+
+    This provides convenience for implementing queues, for example.
+
+    See also \l{take_last()}, \l{fn_first}{first()}.
+
+    \target take_last()
+    \section2 take_last(variablename)
+
+    Returns the last value of \c variablename and removes it from the
+    source variable.
+
+    This provides convenience for implementing stacks, for example.
+
+    See also \l{take_first()}, \l{fn_last}{last()}.
 
     \target unique
     \section2 unique(variablename)
