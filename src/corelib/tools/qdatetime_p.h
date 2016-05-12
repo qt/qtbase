@@ -132,9 +132,6 @@ public:
     void setDaylightStatus(DaylightStatus status);
     DaylightStatus daylightStatus() const;
 
-    // Returns msecs since epoch, assumes offset value is current
-    inline qint64 toMSecsSinceEpoch() const;
-
     void checkValidDateTime();
     void refreshDateTime();
 
