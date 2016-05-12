@@ -103,6 +103,9 @@
 
 #if defined(Q_OS_MACX)
 #include <IOKit/pwr_mgt/IOPMLib.h>
+#include <mach/task.h>
+#include <mach/mach_init.h>
+#include <CoreFoundation/CFPreferences.h>
 #endif
 
 #include <vector>
@@ -137,6 +140,40 @@ static bool debuggerPresent()
     return pid != 0;
 #elif defined(Q_OS_WIN)
     return IsDebuggerPresent();
+#elif defined(Q_OS_MACOS)
+    auto equals = [](CFStringRef str1, CFStringRef str2) -> bool {
+        return CFStringCompare(str1, str2, kCFCompareCaseInsensitive) == kCFCompareEqualTo;
+    };
+
+    // Check if there is an exception handler for the process:
+    mach_msg_type_number_t portCount = 0;
+    exception_mask_t masks[EXC_TYPES_COUNT];
+    mach_port_t ports[EXC_TYPES_COUNT];
+    exception_behavior_t behaviors[EXC_TYPES_COUNT];
+    thread_state_flavor_t flavors[EXC_TYPES_COUNT];
+    exception_mask_t mask = EXC_MASK_ALL & ~(EXC_MASK_RESOURCE | EXC_MASK_GUARD);
+    kern_return_t result = task_get_exception_ports(mach_task_self(), mask, masks, &portCount,
+                                                    ports, behaviors, flavors);
+    if (result == KERN_SUCCESS) {
+        for (mach_msg_type_number_t portIndex = 0; portIndex < portCount; ++portIndex) {
+            if (MACH_PORT_VALID(ports[portIndex])) {
+                return true;
+            }
+        }
+    }
+
+    // Ok, no debugger attached. So, let's see if CrashReporter will throw up a dialog. If so, we
+    // leave it to the OS to do the stack trace.
+    CFStringRef crashReporterType = static_cast<CFStringRef>(
+                CFPreferencesCopyAppValue(CFSTR("DialogType"), CFSTR("com.apple.CrashReporter")));
+    if (crashReporterType == nullptr)
+        return true;
+
+    const bool createsStackTrace =
+            !equals(crashReporterType, CFSTR("server")) &&
+            !equals(crashReporterType, CFSTR("none"));
+    CFRelease(crashReporterType);
+    return createsStackTrace;
 #else
     // TODO
     return false;
