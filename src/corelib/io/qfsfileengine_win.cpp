@@ -626,7 +626,9 @@ QFileInfoList QFSFileEngine::drives()
     QFileInfoList ret;
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
 #if defined(Q_OS_WIN32)
+    const UINT oldErrorMode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
     quint32 driveBits = (quint32) GetLogicalDrives() & 0x3ffffff;
+    ::SetErrorMode(oldErrorMode);
 #endif
     char driveName[] = "A:/";
 

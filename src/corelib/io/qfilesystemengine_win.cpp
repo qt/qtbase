@@ -879,7 +879,9 @@ static bool tryDriveUNCFallback(const QFileSystemEntry &fname, QFileSystemMetaDa
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     if (fname.isDriveRoot()) {
         // a valid drive ??
+        const UINT oldErrorMode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
         DWORD drivesBitmask = ::GetLogicalDrives();
+        ::SetErrorMode(oldErrorMode);
         int drivebit = 1 << (fname.filePath().at(0).toUpper().unicode() - QLatin1Char('A').unicode());
         if (drivesBitmask & drivebit) {
             fileAttrib = FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_SYSTEM;
