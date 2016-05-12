@@ -650,11 +650,6 @@
 /* General C++ features */
 #  define Q_COMPILER_RESTRICTED_VLA
 #  define Q_COMPILER_THREADSAFE_STATICS
-#  if !__has_feature(cxx_exceptions)
-#    ifndef QT_NO_EXCEPTIONS
-#      define QT_NO_EXCEPTIONS
-#    endif
-#  endif
 #  if !__has_feature(cxx_rtti)
 #    define QT_NO_RTTI
 #  endif
