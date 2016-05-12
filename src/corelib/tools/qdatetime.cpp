@@ -2480,6 +2480,52 @@ static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
     }
 }
 
+static Q_DECL_CONSTEXPR inline
+QDateTimePrivate::StatusFlags mergeSpec(QDateTimePrivate::StatusFlags status, Qt::TimeSpec spec)
+{
+    return QDateTimePrivate::StatusFlags((status & ~QDateTimePrivate::TimeSpecMask) |
+                                         (int(spec) << QDateTimePrivate::TimeSpecShift));
+}
+
+static Q_DECL_CONSTEXPR inline Qt::TimeSpec extractSpec(QDateTimePrivate::StatusFlags status)
+{
+    return Qt::TimeSpec((status & QDateTimePrivate::TimeSpecMask) >> QDateTimePrivate::TimeSpecShift);
+}
+
+// Set the Daylight Status if LocalTime set via msecs
+static Q_DECL_RELAXED_CONSTEXPR inline QDateTimePrivate::StatusFlags
+mergeDaylightStatus(QDateTimePrivate::StatusFlags sf, QDateTimePrivate::DaylightStatus status)
+{
+    sf &= ~QDateTimePrivate::DaylightMask;
+    if (status == QDateTimePrivate::DaylightTime) {
+        sf |= QDateTimePrivate::SetToDaylightTime;
+    } else if (status == QDateTimePrivate::StandardTime) {
+        sf |= QDateTimePrivate::SetToStandardTime;
+    }
+    return sf;
+}
+
+// Get the DST Status if LocalTime set via msecs
+static Q_DECL_RELAXED_CONSTEXPR inline
+QDateTimePrivate::DaylightStatus extractDaylightStatus(QDateTimePrivate::StatusFlags status)
+{
+    if (status & QDateTimePrivate::SetToDaylightTime)
+        return QDateTimePrivate::DaylightTime;
+    if (status & QDateTimePrivate::SetToStandardTime)
+        return QDateTimePrivate::StandardTime;
+    return QDateTimePrivate::UnknownDaylightTime;
+}
+
+static inline QDateTimePrivate::StatusFlags getStatus(const QDateTimePrivate *d)
+{
+    return d->m_status;
+}
+
+static inline Qt::TimeSpec getSpec(const QDateTimePrivate *d)
+{
+    return extractSpec(getStatus(d));
+}
+
 /*****************************************************************************
   QDateTimePrivate member functions
  *****************************************************************************/
@@ -2498,20 +2544,19 @@ QDateTimePrivate::QDateTimePrivate(const QDate &toDate, const QTime &toTime, Qt:
 #ifndef QT_BOOTSTRAPPED
 QDateTimePrivate::QDateTimePrivate(const QDate &toDate, const QTime &toTime,
                                    const QTimeZone &toTimeZone)
-    : m_status(0),
+    : m_status(mergeSpec(0, Qt::TimeZone)),
       m_offsetFromUtc(0),
       ref(0),
       m_timeZone(toTimeZone)
 {
-    setSpec(Qt::TimeZone);
     setDateTime(toDate, toTime);
 }
 #endif // QT_BOOTSTRAPPED
 
 void QDateTimePrivate::setTimeSpec(Qt::TimeSpec spec, int offsetSeconds)
 {
-    clearValidDateTime();
-    clearSetToDaylightStatus();
+    auto status = m_status;
+    status &= ~(ValidDateTime | DaylightMask | TimeSpecMask);
 
     switch (spec) {
     case Qt::OffsetFromUTC:
@@ -2528,7 +2573,8 @@ void QDateTimePrivate::setTimeSpec(Qt::TimeSpec spec, int offsetSeconds)
         break;
     }
 
-    setSpec(spec);
+    status = mergeSpec(status, spec);
+    m_status = status;
     m_offsetFromUtc = offsetSeconds;
 #ifndef QT_BOOTSTRAPPED
     m_timeZone = QTimeZone();
@@ -2570,49 +2616,33 @@ void QDateTimePrivate::setDateTime(const QDate &date, const QTime &time)
 QPair<QDate, QTime> QDateTimePrivate::getDateTime() const
 {
     QPair<QDate, QTime> result;
-    msecsToTime(m_msecs, &result.first, &result.second);
+    qint64 msecs = m_msecs;
+    auto status = m_status;
+    msecsToTime(msecs, &result.first, &result.second);
 
-    if (!isValidDate())
+    if (!status.testFlag(ValidDate))
         result.first = QDate();
 
-    if (!isValidTime())
+    if (!status.testFlag(ValidTime))
         result.second = QTime();
 
     return result;
 }
 
-// Set the Daylight Status if LocalTime set via msecs
-void QDateTimePrivate::setDaylightStatus(QDateTimePrivate::DaylightStatus status)
-{
-    clearSetToDaylightStatus();
-    if (status == DaylightTime) {
-        m_status = m_status | SetToDaylightTime;
-    } else if (status == StandardTime) {
-        m_status = m_status | SetToStandardTime;
-    }
-}
-
-// Get the DST Status if LocalTime set via msecs
-QDateTimePrivate::DaylightStatus QDateTimePrivate::daylightStatus() const
-{
-    if ((m_status & SetToDaylightTime) == SetToDaylightTime)
-        return DaylightTime;
-    if ((m_status & SetToStandardTime) == SetToStandardTime)
-        return StandardTime;
-    return UnknownDaylightTime;
-}
-
 // Check the UTC / offsetFromUTC validity
 void QDateTimePrivate::checkValidDateTime()
 {
-    switch (spec()) {
+    auto status = m_status;
+    auto spec = extractSpec(status);
+    switch (spec) {
     case Qt::OffsetFromUTC:
     case Qt::UTC:
         // for these, a valid date and a valid time imply a valid QDateTime
-        if (isValidDate() && isValidTime())
-            setValidDateTime();
+        if ((status & ValidDate) && (status & ValidTime))
+            status |= ValidDateTime;
         else
-            clearValidDateTime();
+            status &= ~ValidDateTime;
+        m_status = status;
         break;
     case Qt::TimeZone:
     case Qt::LocalTime:
@@ -2627,15 +2657,16 @@ void QDateTimePrivate::checkValidDateTime()
 void QDateTimePrivate::refreshDateTime()
 {
     auto status = m_status;
+    const auto spec = extractSpec(status);
     qint64 epochMSecs = 0;
     int offsetFromUtc = 0;
     QDate testDate;
     QTime testTime;
-    Q_ASSERT(spec() == Qt::TimeZone || spec() == Qt::LocalTime);
+    Q_ASSERT(spec == Qt::TimeZone || spec == Qt::LocalTime);
 
 #ifndef QT_BOOTSTRAPPED
     // If not valid time zone then is invalid
-    if (spec() == Qt::TimeZone) {
+    if (spec == Qt::TimeZone) {
         if (!m_timeZone.isValid())
             status &= ~ValidDateTime;
         else
@@ -2644,7 +2675,7 @@ void QDateTimePrivate::refreshDateTime()
 #endif // QT_BOOTSTRAPPED
 
     // If not valid date and time then is invalid
-    if (!(status & ValidDate) && !(status & ValidTime)) {
+    if (!(status & ValidDate) || !(status & ValidTime)) {
         status &= ~ValidDateTime;
         m_status = status;
         m_offsetFromUtc = 0;
@@ -2654,9 +2685,9 @@ void QDateTimePrivate::refreshDateTime()
     // We have a valid date and time and a Qt::LocalTime or Qt::TimeZone that needs calculating
     // LocalTime and TimeZone might fall into a "missing" DST transition hour
     // Calling toEpochMSecs will adjust the returned date/time if it does
-    if (spec() == Qt::LocalTime) {
-        DaylightStatus status = daylightStatus();
-        epochMSecs = localMSecsToEpochMSecs(m_msecs, &status, &testDate, &testTime);
+    if (spec == Qt::LocalTime) {
+        auto dstStatus = extractDaylightStatus(status);
+        epochMSecs = localMSecsToEpochMSecs(m_msecs, &dstStatus, &testDate, &testTime);
     }
     if (timeToMSecs(testDate, testTime) == m_msecs) {
         status |= ValidDateTime;
@@ -2944,7 +2975,9 @@ QDateTime &QDateTime::operator=(const QDateTime &other)
 
 bool QDateTime::isNull() const
 {
-    return !d->isValidDate() && !d->isValidTime();
+    auto status = getStatus(d);
+    return !status.testFlag(QDateTimePrivate::ValidDate) &&
+            !status.testFlag(QDateTimePrivate::ValidTime);
 }
 
 /*!
@@ -2961,7 +2994,8 @@ bool QDateTime::isNull() const
 
 bool QDateTime::isValid() const
 {
-    return (d->isValidDateTime());
+    auto status = getStatus(d);
+    return status & QDateTimePrivate::ValidDateTime;
 }
 
 /*!
@@ -2972,7 +3006,8 @@ bool QDateTime::isValid() const
 
 QDate QDateTime::date() const
 {
-    if (!d->isValidDate())
+    auto status = getStatus(d);
+    if (!status.testFlag(QDateTimePrivate::ValidDate))
         return QDate();
     QDate dt;
     msecsToTime(d->m_msecs, &dt, 0);
@@ -2987,7 +3022,8 @@ QDate QDateTime::date() const
 
 QTime QDateTime::time() const
 {
-    if (!d->isValidTime())
+    auto status = getStatus(d);
+    if (!status.testFlag(QDateTimePrivate::ValidTime))
         return QTime();
     QTime tm;
     msecsToTime(d->m_msecs, 0, &tm);
@@ -3002,7 +3038,7 @@ QTime QDateTime::time() const
 
 Qt::TimeSpec QDateTime::timeSpec() const
 {
-    return d->spec();
+    return getSpec(d);
 }
 
 #ifndef QT_BOOTSTRAPPED
@@ -3020,7 +3056,7 @@ Qt::TimeSpec QDateTime::timeSpec() const
 
 QTimeZone QDateTime::timeZone() const
 {
-    switch (d->spec()) {
+    switch (getSpec(d)) {
     case Qt::UTC:
         return QTimeZone::utc();
     case Qt::OffsetFromUTC:
@@ -3081,7 +3117,7 @@ int QDateTime::offsetFromUtc() const
 
 QString QDateTime::timeZoneAbbreviation() const
 {
-    switch (d->spec()) {
+    switch (getSpec(d)) {
     case Qt::UTC:
         return QTimeZonePrivate::utcQString();
     case Qt::OffsetFromUTC:
@@ -3094,7 +3130,7 @@ QString QDateTime::timeZoneAbbreviation() const
 #endif // QT_BOOTSTRAPPED
     case Qt::LocalTime:  {
         QString abbrev;
-        QDateTimePrivate::DaylightStatus status = d->daylightStatus();
+        auto status = extractDaylightStatus(getStatus(d));
         localMSecsToEpochMSecs(d->m_msecs, &status, 0, 0, &abbrev);
         return abbrev;
         }
@@ -3115,7 +3151,7 @@ QString QDateTime::timeZoneAbbreviation() const
 
 bool QDateTime::isDaylightTime() const
 {
-    switch (d->spec()) {
+    switch (getSpec(d)) {
     case Qt::UTC:
     case Qt::OffsetFromUTC:
         return false;
@@ -3126,7 +3162,7 @@ bool QDateTime::isDaylightTime() const
         return d->m_timeZone.d->isDaylightTime(toMSecsSinceEpoch());
 #endif // QT_BOOTSTRAPPED
     case Qt::LocalTime: {
-        QDateTimePrivate::DaylightStatus status = d->daylightStatus();
+        auto status = extractDaylightStatus(getStatus(d));
         if (status == QDateTimePrivate::UnknownDaylightTime)
             localMSecsToEpochMSecs(d->m_msecs, &status);
         return (status == QDateTimePrivate::DaylightTime);
@@ -3225,7 +3261,7 @@ void QDateTime::setOffsetFromUtc(int offsetSeconds)
 void QDateTime::setTimeZone(const QTimeZone &toZone)
 {
     QDateTimePrivate *d = this->d.data(); // detaches (and shadows d)
-    d->setSpec(Qt::TimeZone);
+    d->m_status = mergeSpec(d->m_status, Qt::TimeZone);
     d->m_offsetFromUtc = 0;
     d->m_timeZone = toZone;
     d->refreshDateTime();
@@ -3249,14 +3285,14 @@ void QDateTime::setTimeZone(const QTimeZone &toZone)
 */
 qint64 QDateTime::toMSecsSinceEpoch() const
 {
-    switch (d->spec()) {
-    case Qt::OffsetFromUTC:
+    switch (getSpec(d)) {
     case Qt::UTC:
-        return (d->m_msecs - (d->m_offsetFromUtc * 1000));
+    case Qt::OffsetFromUTC:
+        return d->m_msecs - (d->m_offsetFromUtc * 1000);
 
     case Qt::LocalTime: {
         // recalculate the local timezone
-        auto status = d->daylightStatus();
+        auto status = extractDaylightStatus(getStatus(d));
         return localMSecsToEpochMSecs(d->m_msecs, &status);
     }
 
@@ -3320,8 +3356,8 @@ uint QDateTime::toTime_t() const
 void QDateTime::setMSecsSinceEpoch(qint64 msecs)
 {
     QDateTimePrivate *d = this->d.data(); // detaches (and shadows d)
-    const auto spec = d->spec();
-    auto status = d->m_status;
+    const auto spec = getSpec(d);
+    auto status = getStatus(d);
 
     status &= ~QDateTimePrivate::ValidityMask;
     switch (spec) {
@@ -3359,9 +3395,8 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
         QDateTimePrivate::DaylightStatus dstStatus;
         epochMSecsToLocalTime(msecs, &dt, &tm, &dstStatus);
         d->setDateTime(dt, tm);
-        d->setDaylightStatus(dstStatus);
         msecs = d->m_msecs;
-        status = d->m_status;
+        status = mergeDaylightStatus(getStatus(d), dstStatus);
         break;
         }
     }
@@ -3474,7 +3509,7 @@ QString QDateTime::toString(Qt::DateFormat format) const
                                                    .arg(dt.year());
         if (timeSpec() != Qt::LocalTime) {
             buf += QStringLiteral(" GMT");
-            if (d->spec() == Qt::OffsetFromUTC)
+            if (getSpec(d) == Qt::OffsetFromUTC)
                 buf += toOffsetString(Qt::TextDate, d->m_offsetFromUtc);
         }
         return buf;
@@ -3489,7 +3524,7 @@ QString QDateTime::toString(Qt::DateFormat format) const
             return QString();   // failed to convert
         buf += QLatin1Char('T');
         buf += tm.toString(Qt::ISODate);
-        switch (d->spec()) {
+        switch (getSpec(d)) {
         case Qt::UTC:
             buf += QLatin1Char('Z');
             break;
@@ -3593,11 +3628,11 @@ static inline void massageAdjustedDateTime(const QDateTimePrivate *d, QDate *dat
       to its DST-ness); but for a time in spring's missing hour it'll adjust the
       time while picking a DST-ness.  (Handling of autumn is trickier, as either
       DST-ness is valid, without adjusting the time.  We might want to propagate
-      d->daylightStatus() in that case, but it's hard to do so without breaking
+      the daylight status in that case, but it's hard to do so without breaking
       (far more common) other cases; and it makes little difference, as the two
       answers do then differ only in DST-ness.)
     */
-    auto spec = d->spec();
+    auto spec = getSpec(d);
     if (spec == Qt::LocalTime) {
         QDateTimePrivate::DaylightStatus status = QDateTimePrivate::UnknownDaylightTime;
         localMSecsToEpochMSecs(timeToMSecs(*date, *time), &status, date, time);
@@ -3716,7 +3751,8 @@ QDateTime QDateTime::addMSecs(qint64 msecs) const
         return QDateTime();
 
     QDateTime dt(*this);
-    if (d->spec() == Qt::LocalTime || d->spec() == Qt::TimeZone)
+    auto spec = getSpec(d);
+    if (spec == Qt::LocalTime || spec == Qt::TimeZone)
         // Convert to real UTC first in case crosses DST transition
         dt.setMSecsSinceEpoch(toMSecsSinceEpoch() + msecs);
     else
@@ -3810,7 +3846,7 @@ qint64 QDateTime::msecsTo(const QDateTime &other) const
 
 QDateTime QDateTime::toTimeSpec(Qt::TimeSpec spec) const
 {
-    if (d->spec() == spec && (spec == Qt::UTC || spec == Qt::LocalTime))
+    if (getSpec(d) == spec && (spec == Qt::UTC || spec == Qt::LocalTime))
         return *this;
 
     if (!isValid()) {
@@ -3837,7 +3873,8 @@ QDateTime QDateTime::toTimeSpec(Qt::TimeSpec spec) const
 
 QDateTime QDateTime::toOffsetFromUtc(int offsetSeconds) const
 {
-    if (d->spec() == Qt::OffsetFromUTC && d->m_offsetFromUtc == offsetSeconds)
+    if (getSpec(d) == Qt::OffsetFromUTC
+            && d->m_offsetFromUtc == offsetSeconds)
         return *this;
 
     if (!isValid()) {
@@ -3860,7 +3897,7 @@ QDateTime QDateTime::toOffsetFromUtc(int offsetSeconds) const
 
 QDateTime QDateTime::toTimeZone(const QTimeZone &timeZone) const
 {
-    if (d->spec() == Qt::TimeZone && d->m_timeZone == timeZone)
+    if (getSpec(d) == Qt::TimeZone && d->m_timeZone == timeZone)
         return *this;
 
     if (!isValid()) {
@@ -3882,10 +3919,9 @@ QDateTime QDateTime::toTimeZone(const QTimeZone &timeZone) const
 
 bool QDateTime::operator==(const QDateTime &other) const
 {
-    if (d->spec() == Qt::LocalTime
-        && other.d->spec() == Qt::LocalTime
-        && d->m_status == other.d->m_status) {
-        return (d->m_msecs == other.d->m_msecs);
+    if (getSpec(d) == Qt::LocalTime
+        && getStatus(d) == getStatus(other.d)) {
+        return d->m_msecs == other.d->m_msecs;
     }
     // Convert to UTC and compare
     return (toMSecsSinceEpoch() == other.toMSecsSinceEpoch());
@@ -3910,10 +3946,9 @@ bool QDateTime::operator==(const QDateTime &other) const
 
 bool QDateTime::operator<(const QDateTime &other) const
 {
-    if (d->spec() == Qt::LocalTime
-        && other.d->spec() == Qt::LocalTime
-        && d->m_status == other.d->m_status) {
-        return (d->m_msecs < other.d->m_msecs);
+    if (getSpec(d) == Qt::LocalTime
+        && getStatus(d) == getStatus(other.d)) {
+        return d->m_msecs < other.d->m_msecs;
     }
     // Convert to UTC and compare
     return (toMSecsSinceEpoch() < other.toMSecsSinceEpoch());

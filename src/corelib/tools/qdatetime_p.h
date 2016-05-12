@@ -129,23 +129,8 @@ public:
     void setDateTime(const QDate &date, const QTime &time);
     QPair<QDate, QTime> getDateTime() const;
 
-    void setDaylightStatus(DaylightStatus status);
-    DaylightStatus daylightStatus() const;
-
     void checkValidDateTime();
     void refreshDateTime();
-
-    // Get/set date and time status
-    inline bool isValidDate() const { return m_status & ValidDate; }
-    inline bool isValidTime() const { return m_status & ValidTime; }
-    inline bool isValidDateTime() const { return m_status & ValidDateTime; }
-    inline void setValidDateTime() { m_status |= ValidDateTime; }
-    inline void clearValidDateTime() { m_status &= ~ValidDateTime; }
-    inline void clearSetToDaylightStatus() { m_status &= ~(SetToStandardTime | SetToDaylightTime); }
-
-    inline Qt::TimeSpec spec() const { return Qt::TimeSpec((m_status & TimeSpecMask) >> TimeSpecShift); }
-    inline void setSpec(Qt::TimeSpec spec)
-    { m_status  &= ~TimeSpecMask; m_status |= StatusFlag(uint(spec) << TimeSpecShift); }
 
 #ifndef QT_BOOTSTRAPPED
     static qint64 zoneMSecsToEpochMSecs(qint64 msecs, const QTimeZone &zone,
