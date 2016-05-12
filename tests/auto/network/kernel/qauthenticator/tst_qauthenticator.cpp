@@ -52,6 +52,8 @@ private Q_SLOTS:
 
     void ntlmAuth_data();
     void ntlmAuth();
+
+    void equalityOperators();
 };
 
 tst_QAuthenticator::tst_QAuthenticator()
@@ -150,6 +152,20 @@ void tst_QAuthenticator::ntlmAuth()
     QCOMPARE(auth.realm(), realm);
 
     QVERIFY(priv->calculateResponse("GET", "/").startsWith("NTLM "));
+}
+
+void tst_QAuthenticator::equalityOperators()
+{
+    QAuthenticator s1, s2;
+    QVERIFY(s2 == s1);
+    QVERIFY(s1 == s2);
+    QVERIFY(!(s1 != s2));
+    QVERIFY(!(s2 != s1));
+    s1.setUser("User");
+    QVERIFY(!(s2 == s1));
+    QVERIFY(!(s1 == s2));
+    QVERIFY(s1 != s2);
+    QVERIFY(s2 != s1);
 }
 
 QTEST_MAIN(tst_QAuthenticator);
