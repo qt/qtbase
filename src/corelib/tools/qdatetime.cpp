@@ -2626,54 +2626,48 @@ void QDateTimePrivate::checkValidDateTime()
 // Refresh the LocalTime validity and offset
 void QDateTimePrivate::refreshDateTime()
 {
-    switch (spec()) {
-    case Qt::OffsetFromUTC:
-    case Qt::UTC:
-        // Always set by setDateTime so just return
-        return;
-    case Qt::TimeZone:
-    case Qt::LocalTime:
-        break;
-    }
-
-    // If not valid date and time then is invalid
-    if (!isValidDate() || !isValidTime()) {
-        clearValidDateTime();
-        m_offsetFromUtc = 0;
-        return;
-    }
+    auto status = m_status;
+    qint64 epochMSecs = 0;
+    int offsetFromUtc = 0;
+    QDate testDate;
+    QTime testTime;
+    Q_ASSERT(spec() == Qt::TimeZone || spec() == Qt::LocalTime);
 
 #ifndef QT_BOOTSTRAPPED
     // If not valid time zone then is invalid
-    if (spec() == Qt::TimeZone && !m_timeZone.isValid()) {
-        clearValidDateTime();
+    if (spec() == Qt::TimeZone) {
+        if (!m_timeZone.isValid())
+            status &= ~ValidDateTime;
+        else
+            epochMSecs = zoneMSecsToEpochMSecs(m_msecs, m_timeZone, &testDate, &testTime);
+    }
+#endif // QT_BOOTSTRAPPED
+
+    // If not valid date and time then is invalid
+    if (!(status & ValidDate) && !(status & ValidTime)) {
+        status &= ~ValidDateTime;
+        m_status = status;
         m_offsetFromUtc = 0;
         return;
     }
-#endif // QT_BOOTSTRAPPED
 
     // We have a valid date and time and a Qt::LocalTime or Qt::TimeZone that needs calculating
     // LocalTime and TimeZone might fall into a "missing" DST transition hour
     // Calling toEpochMSecs will adjust the returned date/time if it does
-    QDate testDate;
-    QTime testTime;
-    qint64 epochMSecs = 0;
     if (spec() == Qt::LocalTime) {
         DaylightStatus status = daylightStatus();
         epochMSecs = localMSecsToEpochMSecs(m_msecs, &status, &testDate, &testTime);
-#ifndef QT_BOOTSTRAPPED
-    } else {
-        epochMSecs = zoneMSecsToEpochMSecs(m_msecs, m_timeZone, &testDate, &testTime);
-#endif // QT_BOOTSTRAPPED
     }
     if (timeToMSecs(testDate, testTime) == m_msecs) {
-        setValidDateTime();
-        // Cache the offset to use in toMSecsSinceEpoch()
-        m_offsetFromUtc = (m_msecs - epochMSecs) / 1000;
+        status |= ValidDateTime;
+        // Cache the offset to use in offsetFromUtc()
+        offsetFromUtc = (m_msecs - epochMSecs) / 1000;
     } else {
-        clearValidDateTime();
-        m_offsetFromUtc = 0;
+        status &= ~ValidDateTime;
     }
+
+    m_status = status;
+    m_offsetFromUtc = offsetFromUtc;
 }
 
 #ifndef QT_BOOTSTRAPPED
