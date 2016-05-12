@@ -2577,10 +2577,10 @@ QPair<QDate, QTime> QDateTimePrivate::getDateTime() const
     QPair<QDate, QTime> result;
     msecsToTime(m_msecs, &result.first, &result.second);
 
-    if (isNullDate())
+    if (!isValidDate())
         result.first = QDate();
 
-    if (isNullTime())
+    if (!isValidTime())
         result.second = QTime();
 
     return result;
@@ -2979,7 +2979,7 @@ QDateTime &QDateTime::operator=(const QDateTime &other)
 
 bool QDateTime::isNull() const
 {
-    return d->isNullDate() && d->isNullTime();
+    return !d->isValidDate() && !d->isValidTime();
 }
 
 /*!
@@ -3007,7 +3007,7 @@ bool QDateTime::isValid() const
 
 QDate QDateTime::date() const
 {
-    if (d->isNullDate())
+    if (!d->isValidDate())
         return QDate();
     QDate dt;
     msecsToTime(d->m_msecs, &dt, 0);
@@ -3022,7 +3022,7 @@ QDate QDateTime::date() const
 
 QTime QDateTime::time() const
 {
-    if (d->isNullTime())
+    if (!d->isValidTime())
         return QTime();
     QTime tm;
     msecsToTime(d->m_msecs, 0, &tm);
