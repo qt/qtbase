@@ -59,9 +59,10 @@ const QString MenuBarPath = QLatin1String("/MenuBar");
     A D-Bus connection which is used for both menu and tray icon services.
     Connects to the session bus and registers with the respective watcher services.
 */
-QDBusMenuConnection::QDBusMenuConnection(QObject *parent)
+QDBusMenuConnection::QDBusMenuConnection(QObject *parent, const QString &serviceName)
     : QObject(parent)
-    , m_connection(QDBusConnection::sessionBus())
+    , m_connection(serviceName.isNull() ? QDBusConnection::sessionBus()
+                                        : QDBusConnection::connectToBus(QDBusConnection::SessionBus, serviceName))
     , m_dbusWatcher(new QDBusServiceWatcher(StatusNotifierWatcherService, m_connection, QDBusServiceWatcher::WatchForRegistration, this))
     , m_statusNotifierHostRegistered(false)
 {

@@ -165,7 +165,7 @@ QTemporaryFile *QDBusTrayIcon::tempIcon(const QIcon &icon)
 QDBusMenuConnection * QDBusTrayIcon::dBusConnection()
 {
     if (!m_dbusConnection) {
-        m_dbusConnection = new QDBusMenuConnection(this);
+        m_dbusConnection = new QDBusMenuConnection(this, m_instanceId);
         m_notifier = new QXdgNotificationInterface(XdgNotificationService,
             XdgNotificationPath, m_dbusConnection->connection(), this);
         connect(m_notifier, SIGNAL(NotificationClosed(uint,uint)), this, SLOT(notificationClosed(uint,uint)));

@@ -61,7 +61,7 @@ class QDBusMenuConnection : public QObject
     Q_OBJECT
 
 public:
-    QDBusMenuConnection(QObject *parent = 0);
+    QDBusMenuConnection(QObject *parent = 0, const QString &serviceName = QString());
     QDBusConnection connection() const { return m_connection; }
     bool isStatusNotifierHostRegistered() const { return m_statusNotifierHostRegistered; }
 #ifndef QT_NO_SYSTEMTRAYICON
