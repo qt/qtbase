@@ -3587,12 +3587,7 @@ QString QDateTime::toString(const QString& format) const
 }
 #endif //QT_NO_DATESTRING
 
-static void massageAdjustedDateTime(Qt::TimeSpec spec,
-#ifndef QT_BOOTSTRAPPED
-                                    const QTimeZone &zone,
-#endif // QT_BOOTSTRAPPED
-                                    QDate *date,
-                                    QTime *time)
+static inline void massageAdjustedDateTime(const QDateTimePrivate *d, QDate *date, QTime *time)
 {
     /*
       If we have just adjusted to a day with a DST transition, our given time
@@ -3606,20 +3601,16 @@ static void massageAdjustedDateTime(Qt::TimeSpec spec,
       (far more common) other cases; and it makes little difference, as the two
       answers do then differ only in DST-ness.)
     */
+    auto spec = d->spec();
     if (spec == Qt::LocalTime) {
         QDateTimePrivate::DaylightStatus status = QDateTimePrivate::UnknownDaylightTime;
         localMSecsToEpochMSecs(timeToMSecs(*date, *time), &status, date, time);
 #ifndef QT_BOOTSTRAPPED
     } else if (spec == Qt::TimeZone) {
-        QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(*date, *time), zone, date, time);
+        QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(*date, *time), d->m_timeZone, date, time);
 #endif // QT_BOOTSTRAPPED
     }
 }
-#ifdef QT_BOOTSTRAPPED // Avoid duplicate #if-ery in uses.
-#define MASSAGEADJUSTEDDATETIME(s, z, d, t) massageAdjustedDateTime(s, d, t)
-#else
-#define MASSAGEADJUSTEDDATETIME(s, z, d, t) massageAdjustedDateTime(s, z, d, t)
-#endif // QT_BOOTSTRAPPED
 
 /*!
     Returns a QDateTime object containing a datetime \a ndays days
@@ -3642,7 +3633,7 @@ QDateTime QDateTime::addDays(qint64 ndays) const
     QDate &date = p.first;
     QTime &time = p.second;
     date = date.addDays(ndays);
-    MASSAGEADJUSTEDDATETIME(d->spec(), d->m_timeZone, &date, &time);
+    massageAdjustedDateTime(dt.d, &date, &time);
     dt.d->setDateTime(date, time);
     return dt;
 }
@@ -3668,7 +3659,7 @@ QDateTime QDateTime::addMonths(int nmonths) const
     QDate &date = p.first;
     QTime &time = p.second;
     date = date.addMonths(nmonths);
-    MASSAGEADJUSTEDDATETIME(d->spec(), d->m_timeZone, &date, &time);
+    massageAdjustedDateTime(dt.d, &date, &time);
     dt.d->setDateTime(date, time);
     return dt;
 }
@@ -3694,11 +3685,10 @@ QDateTime QDateTime::addYears(int nyears) const
     QDate &date = p.first;
     QTime &time = p.second;
     date = date.addYears(nyears);
-    MASSAGEADJUSTEDDATETIME(d->spec(), d->m_timeZone, &date, &time);
+    massageAdjustedDateTime(dt.d, &date, &time);
     dt.d->setDateTime(date, time);
     return dt;
 }
-#undef MASSAGEADJUSTEDDATETIME
 
 /*!
     Returns a QDateTime object containing a datetime \a s seconds
