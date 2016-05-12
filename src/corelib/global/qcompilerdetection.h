@@ -650,9 +650,6 @@
 /* General C++ features */
 #  define Q_COMPILER_RESTRICTED_VLA
 #  define Q_COMPILER_THREADSAFE_STATICS
-#  if !__has_feature(cxx_rtti)
-#    define QT_NO_RTTI
-#  endif
 #  if __has_feature(attribute_deprecated_with_message)
 #    define Q_DECL_DEPRECATED_X(text) __attribute__ ((__deprecated__(text)))
 #  endif
