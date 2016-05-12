@@ -3320,19 +3320,20 @@ uint QDateTime::toTime_t() const
 void QDateTime::setMSecsSinceEpoch(qint64 msecs)
 {
     QDateTimePrivate *d = this->d.data(); // detaches (and shadows d)
+    const auto spec = d->spec();
+    auto status = d->m_status;
 
-    d->m_status &= ~QDateTimePrivate::ValidityMask;
-    switch (d->spec()) {
+    status &= ~QDateTimePrivate::ValidityMask;
+    switch (spec) {
     case Qt::UTC:
-        d->m_msecs = msecs;
-        d->m_status = d->m_status
+        status = status
                     | QDateTimePrivate::ValidDate
                     | QDateTimePrivate::ValidTime
                     | QDateTimePrivate::ValidDateTime;
         break;
     case Qt::OffsetFromUTC:
-        d->m_msecs = msecs + (d->m_offsetFromUtc * 1000);
-        d->m_status = d->m_status
+        msecs = msecs + (d->m_offsetFromUtc * 1000);
+        status = status
                     | QDateTimePrivate::ValidDate
                     | QDateTimePrivate::ValidTime
                     | QDateTimePrivate::ValidDateTime;
@@ -3345,25 +3346,31 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
             d->m_offsetFromUtc = d->m_timeZone.d->offsetFromUtc(msecs);
         else
             d->m_offsetFromUtc = d->m_timeZone.d->standardTimeOffset(msecs);
-        d->m_msecs = msecs + (d->m_offsetFromUtc * 1000);
-        d->m_status = d->m_status
+        msecs = msecs + (d->m_offsetFromUtc * 1000);
+        status = status
                     | QDateTimePrivate::ValidDate
                     | QDateTimePrivate::ValidTime
                     | QDateTimePrivate::ValidDateTime;
-        d->refreshDateTime();
 #endif // QT_BOOTSTRAPPED
         break;
     case Qt::LocalTime: {
         QDate dt;
         QTime tm;
-        QDateTimePrivate::DaylightStatus status;
-        epochMSecsToLocalTime(msecs, &dt, &tm, &status);
+        QDateTimePrivate::DaylightStatus dstStatus;
+        epochMSecsToLocalTime(msecs, &dt, &tm, &dstStatus);
         d->setDateTime(dt, tm);
-        d->setDaylightStatus(status);
-        d->refreshDateTime();
+        d->setDaylightStatus(dstStatus);
+        msecs = d->m_msecs;
+        status = d->m_status;
         break;
         }
     }
+
+    d->m_status = status;
+    d->m_msecs = msecs;
+
+    if (spec == Qt::LocalTime || spec == Qt::TimeZone)
+        d->refreshDateTime();
 }
 
 /*!
