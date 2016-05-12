@@ -69,6 +69,7 @@ public:
     ~QXcbDrag();
 
     virtual QMimeData *platformDropData() Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *o, QEvent *e) Q_DECL_OVERRIDE;
 
     void startDrag() Q_DECL_OVERRIDE;
     void cancel() Q_DECL_OVERRIDE;
@@ -106,6 +107,7 @@ private:
     Qt::DropAction toDropAction(xcb_atom_t atom) const;
     xcb_atom_t toXdndAction(Qt::DropAction a) const;
 
+    QPointer<QWindow> initiatorWindow;
     QPointer<QWindow> currentWindow;
     QPoint currentPosition;
 

@@ -422,7 +422,7 @@ void QStroker::processCurrentSubpath()
     bool fwclosed = qt_stroke_side(&fwit, this, false, &fwStartTangent);
     bool bwclosed = qt_stroke_side(&bwit, this, !fwclosed, &bwStartTangent);
 
-    if (!bwclosed)
+    if (!bwclosed && !fwStartTangent.isNull())
         joinPoints(m_elements.at(0).x, m_elements.at(0).y, fwStartTangent, m_capStyle);
 }
 

@@ -6,3 +6,15 @@ osx
 osx
 [multicast:same bind, group ipv4 address]
 osx
+[writeDatagramToNonExistingPeer]
+windows
+[asyncReadDatagram]
+windows
+[multicastLeaveAfterClose]
+osx
+[readyRead]
+osx
+[readyReadForEmptyDatagram]
+osx
+[asyncReadDatagram]
+osx

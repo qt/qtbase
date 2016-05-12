@@ -85,7 +85,7 @@ static bool isMouseEvent(NSEvent *ev)
     self = [super init];
     if (self) {
         _window = window;
-        _platformWindow = platformWindow;
+        _platformWindow.assign(platformWindow);
 
         _window.delegate = [[QNSWindowDelegate alloc] initWithQCocoaWindow:_platformWindow];
 
@@ -94,7 +94,6 @@ static bool isMouseEvent(NSEvent *ev)
         // make sure that m_nsWindow stays valid until the
         // QCocoaWindow is deleted by Qt.
         [_window setReleasedWhenClosed:NO];
-        _watcher = &_platformWindow->sentinel;
     }
 
     return self;
@@ -103,19 +102,19 @@ static bool isMouseEvent(NSEvent *ev)
 - (void)handleWindowEvent:(NSEvent *)theEvent
 {
     QCocoaWindow *pw = self.platformWindow;
-    if (_watcher && pw && pw->m_forwardWindow) {
+    if (pw && pw->m_forwardWindow) {
         if (theEvent.type == NSLeftMouseUp || theEvent.type == NSLeftMouseDragged) {
             QNSView *forwardView = pw->m_qtView;
             if (theEvent.type == NSLeftMouseUp) {
                 [forwardView mouseUp:theEvent];
-                pw->m_forwardWindow = 0;
+                pw->m_forwardWindow.clear();
             } else {
                 [forwardView mouseDragged:theEvent];
             }
         }
 
         if (!pw->m_isNSWindowChild && theEvent.type == NSLeftMouseDown) {
-            pw->m_forwardWindow = 0;
+            pw->m_forwardWindow.clear();
         }
     }
 
@@ -142,7 +141,7 @@ static bool isMouseEvent(NSEvent *ev)
     if (!self.window.delegate)
         return; // Already detached, pending NSAppKitDefined event
 
-    if (_watcher && pw && pw->frameStrutEventsEnabled() && isMouseEvent(theEvent)) {
+    if (pw && pw->frameStrutEventsEnabled() && isMouseEvent(theEvent)) {
         NSPoint loc = [theEvent locationInWindow];
         NSRect windowFrame = [self.window convertRectFromScreen:[self.window frame]];
         NSRect contentFrame = [[self.window contentView] frame];
@@ -157,8 +156,7 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (void)detachFromPlatformWindow
 {
-    _platformWindow = 0;
-    _watcher.clear();
+    self.platformWindow.clear();
     [self.window.delegate release];
     self.window.delegate = nil;
 }
@@ -179,7 +177,7 @@ static bool isMouseEvent(NSEvent *ev)
 - (void)dealloc
 {
     _window = nil;
-    _platformWindow = 0;
+    self.platformWindow.clear();
     [super dealloc];
 }
 
@@ -331,6 +329,18 @@ static bool isMouseEvent(NSEvent *ev)
 
 @end
 
+void QCocoaWindowPointer::assign(QCocoaWindow *w)
+{
+    window = w;
+    watcher = &w->sentinel;
+}
+
+void QCocoaWindowPointer::clear()
+{
+    window = Q_NULLPTR;
+    watcher.clear();
+}
+
 const int QCocoaWindow::NoAlertRequest = -1;
 
 QCocoaWindow::QCocoaWindow(QWindow *tlw)
@@ -338,7 +348,6 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_contentView(nil)
     , m_qtView(nil)
     , m_nsWindow(0)
-    , m_forwardWindow(0)
     , m_contentViewIsEmbedded(false)
     , m_contentViewIsToBeEmbedded(false)
     , m_parentCocoaWindow(0)
@@ -1126,8 +1135,7 @@ bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
 
     if (grab && ![m_nsWindow isKeyWindow])
         [m_nsWindow makeKeyWindow];
-    else if (!grab && [m_nsWindow isKeyWindow])
-        [m_nsWindow resignKeyWindow];
+
     return true;
 }
 
@@ -1138,8 +1146,7 @@ bool QCocoaWindow::setMouseGrabEnabled(bool grab)
 
     if (grab && ![m_nsWindow isKeyWindow])
         [m_nsWindow makeKeyWindow];
-    else if (!grab && [m_nsWindow isKeyWindow])
-        [m_nsWindow resignKeyWindow];
+
     return true;
 }
 
@@ -1320,7 +1327,7 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         if (oldParentCocoaWindow) {
             if (!m_isNSWindowChild || oldParentCocoaWindow != m_parentCocoaWindow)
                 oldParentCocoaWindow->removeChildWindow(this);
-            m_forwardWindow = oldParentCocoaWindow;
+            m_forwardWindow.assign(oldParentCocoaWindow);
         }
 
         setNSWindow(m_nsWindow);

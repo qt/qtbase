@@ -41,6 +41,7 @@
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QFileSystemModel>
+#include <QFileIconProvider>
 #include <QTreeView>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
@@ -54,6 +55,8 @@ int main(int argc, char *argv[])
     parser.setApplicationDescription("Qt Dir View Example");
     parser.addHelpOption();
     parser.addVersionOption();
+    QCommandLineOption dontUseCustomDirectoryIconsOption("c", "Set QFileIconProvider::DontUseCustomDirectoryIcons");
+    parser.addOption(dontUseCustomDirectoryIconsOption);
     parser.addPositionalArgument("directory", "The directory to start in.");
     parser.process(app);
     const QString rootPath = parser.positionalArguments().isEmpty()
@@ -61,6 +64,8 @@ int main(int argc, char *argv[])
 
     QFileSystemModel model;
     model.setRootPath("");
+    if (parser.isSet(dontUseCustomDirectoryIconsOption))
+        model.iconProvider()->setOptions(QFileIconProvider::DontUseCustomDirectoryIcons);
     QTreeView tree;
     tree.setModel(&model);
     if (!rootPath.isEmpty()) {

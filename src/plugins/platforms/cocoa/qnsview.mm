@@ -284,6 +284,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (void)viewDidMoveToWindow
 {
+    m_backingStore = Q_NULLPTR;
     m_isMenuView = [self.window.className isEqualToString:@"NSCarbonMenuWindow"];
     if (self.window) {
         // This is the case of QWidgetAction's generated QWidget inserted in an NSMenu.
@@ -740,7 +741,7 @@ QT_WARNING_POP
         if (theEvent.type == NSLeftMouseDragged || theEvent.type == NSLeftMouseUp)
             targetView = m_platformWindow->m_forwardWindow->m_qtView;
         else
-            m_platformWindow->m_forwardWindow = 0;
+            m_platformWindow->m_forwardWindow.clear();
     }
 
     // Popups implicitly grap mouse events; forward to the active popup if there is one

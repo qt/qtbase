@@ -126,6 +126,8 @@ private slots:
     void doNotUnwatchOnFailedRmdir();
     void specialFiles();
 
+    void fileInfo();
+
 protected:
     bool createFiles(const QString &test_path, const QStringList &initial_files, int existingFileCount = 0, const QStringList &intial_dirs = QStringList());
 
@@ -1144,6 +1146,25 @@ void tst_QFileSystemModel::specialFiles()
     model.setFilter(QDir::AllEntries | QDir::Hidden);
 
     QTRY_VERIFY(!fileListUnderIndex(&model, rootIndex).contains(testFileName));
+}
+
+void tst_QFileSystemModel::fileInfo()
+{
+    QFileSystemModel model;
+    QModelIndex idx;
+
+    QVERIFY(model.fileInfo(idx).filePath().isEmpty());
+
+    const QString dirPath = flatDirTestPath;
+    QDir dir(dirPath);
+    const QString subdir = QStringLiteral("subdir");
+    QVERIFY(dir.mkdir(subdir));
+    const QString subdirPath = dir.absoluteFilePath(subdir);
+
+    idx = model.setRootPath(subdirPath);
+    QCOMPARE(model.fileInfo(idx), QFileInfo(subdirPath));
+    idx = model.setRootPath(dirPath);
+    QCOMPARE(model.fileInfo(idx), QFileInfo(dirPath));
 }
 
 QTEST_MAIN(tst_QFileSystemModel)

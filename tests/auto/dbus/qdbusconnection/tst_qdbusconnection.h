@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
-** Copyright (C) 2015 Intel Corporation.
+** Copyright (C) 2016 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -79,10 +79,17 @@ class tst_QDBusConnection: public QObject
     Q_OBJECT
 
     int signalsReceived;
+public:
+    static int hookCallCount;
+    tst_QDBusConnection();
+
 public slots:
     void oneSlot() { ++signalsReceived; }
     void exitLoop() { ++signalsReceived; QTestEventLoop::instance().exitLoop(); }
     void secondCallWithCallback();
+
+    void init();
+    void cleanup();
 
 private slots:
     void noConnection();

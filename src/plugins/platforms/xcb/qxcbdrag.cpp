@@ -50,6 +50,7 @@
 
 #include <qpa/qwindowsysteminterface.h>
 
+#include <private/qguiapplication_p.h>
 #include <private/qshapedpixmapdndwindow_p.h>
 #include <private/qsimpledrag_p.h>
 #include <private/qhighdpiscaling_p.h>
@@ -170,6 +171,17 @@ QMimeData *QXcbDrag::platformDropData()
     return dropData;
 }
 
+bool QXcbDrag::eventFilter(QObject *o, QEvent *e)
+{
+    /* We are setting a mouse grab on the QShapedPixmapWindow in order not to
+     * lose the grab when the virtual desktop changes, but
+     * QBasicDrag::eventFilter() expects the events to be coming from the
+     * window where the drag was started. */
+    if (initiatorWindow && o == shapedPixmapWindow())
+        o = initiatorWindow.data();
+    return QBasicDrag::eventFilter(o, e);
+}
+
 void QXcbDrag::startDrag()
 {
     // #fixme enableEventFilter();
@@ -194,6 +206,7 @@ void QXcbDrag::startDrag()
 
     setUseCompositing(current_virtual_desktop->compositingActive());
     setScreen(current_virtual_desktop->screens().constFirst()->screen());
+    initiatorWindow = QGuiApplicationPrivate::currentMouseWindow;
     QBasicDrag::startDrag();
     if (connection()->mouseGrabber() == Q_NULLPTR)
         shapedPixmapWindow()->setMouseGrabEnabled(true);
@@ -202,6 +215,7 @@ void QXcbDrag::startDrag()
 void QXcbDrag::endDrag()
 {
     QBasicDrag::endDrag();
+    initiatorWindow.clear();
 }
 
 static xcb_translate_coordinates_reply_t *

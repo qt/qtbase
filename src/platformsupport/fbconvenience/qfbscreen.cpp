@@ -233,6 +233,7 @@ QRegion QFbScreen::doRedraw()
 
     if (!mCompositePainter)
         mCompositePainter = new QPainter(mScreenImage);
+
     for (int rectIndex = 0; rectIndex < mRepaintRegion.rectCount(); rectIndex++) {
         QRegion rectRegion = rects[rectIndex];
 
@@ -250,7 +251,8 @@ QRegion QFbScreen::doRedraw()
             foreach (const QRect &rect, intersect.rects()) {
                 bool firstLayer = true;
                 if (layer == -1) {
-                    mCompositePainter->fillRect(rect, Qt::black);
+                    mCompositePainter->setCompositionMode(QPainter::CompositionMode_Source);
+                    mCompositePainter->fillRect(rect, mScreenImage->hasAlphaChannel() ? Qt::transparent : Qt::black);
                     firstLayer = false;
                     layer = mWindowStack.size() - 1;
                 }
@@ -283,6 +285,7 @@ QRegion QFbScreen::doRedraw()
 
     QRect cursorRect;
     if (mCursor && (mCursor->isDirty() || mRepaintRegion.intersects(mCursor->lastPainted()))) {
+        mCompositePainter->setCompositionMode(QPainter::CompositionMode_SourceOver);
         cursorRect = mCursor->drawCursor(*mCompositePainter);
         touchedRegion += cursorRect;
     }

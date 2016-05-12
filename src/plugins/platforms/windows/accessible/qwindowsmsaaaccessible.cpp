@@ -498,7 +498,8 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::accHitTest(long xLeft, long yT
     if (!accessible)
         return E_FAIL;
 
-    const QPoint pos = QHighDpi::fromNativeLocalPosition(QPoint(xLeft, yTop), accessible->window());
+    const QPoint pos = QHighDpi::fromNativeLocalPosition(QPoint(xLeft, yTop),
+                                                         QWindowsAccessibility::windowHelper(accessible));
     QAccessibleInterface *child = accessible->childAt(pos.x(), pos.y());
     if (child == 0) {
         // no child found, return this item if it contains the coordinates
@@ -541,7 +542,8 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::accLocation(long *pxLeft, long
     QAccessibleInterface *acc = childPointer(accessible, varID);
     if (!acc || !acc->isValid())
         return E_FAIL;
-    const QRect rect = QHighDpi::toNativePixels(acc->rect(), accessible->window());
+    const QRect rect = QHighDpi::toNativePixels(acc->rect(),
+                                                QWindowsAccessibility::windowHelper(accessible));
 
     *pxLeft = rect.x();
     *pyTop = rect.y();

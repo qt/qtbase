@@ -1012,7 +1012,7 @@ void tst_QMap::qmultimap_specific()
 void tst_QMap::const_shared_null()
 {
     QMap<int, QString> map2;
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     QMap<int, QString> map1;
     map1.setSharable(false);
     QVERIFY(map1.isDetached());
@@ -1109,7 +1109,7 @@ const T &const_(const T &t)
 
 void tst_QMap::setSharable()
 {
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     QMap<int, QString> map;
 
     map.insert(1, "um");

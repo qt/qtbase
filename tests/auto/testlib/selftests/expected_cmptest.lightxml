@@ -16,8 +16,8 @@
 <TestFunction name="compare_registered_enums">
 <Incident type="fail" file="tst_cmptest.cpp" line="160">
     <Description><![CDATA[Compared values are not the same
-   Actual   (Qt::ArrowCursor): ArrowCursor
-   Expected (Qt::BusyCursor) : BusyCursor]]></Description>
+   Actual   (Qt::Monday): Monday
+   Expected (Qt::Sunday): Sunday]]></Description>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>

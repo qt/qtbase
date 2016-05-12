@@ -102,25 +102,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static bool isPseudoFs(const QString &mountDir, const QByteArray &type)
-{
-    if (mountDir.startsWith(QLatin1String("/dev"))
-        || mountDir.startsWith(QLatin1String("/proc"))
-        || mountDir.startsWith(QLatin1String("/sys"))
-        || mountDir.startsWith(QLatin1String("/var/run"))
-        || mountDir.startsWith(QLatin1String("/var/lock"))) {
-        return true;
-    }
-    if (type == "tmpfs")
-        return true;
-#if defined(Q_OS_LINUX)
-    if (type == "rootfs" || type == "rpc_pipefs")
-        return true;
-#endif
-
-    return false;
-}
-
 class QStorageIterator
 {
 public:
@@ -157,6 +138,39 @@ private:
     QByteArray m_device;
 #endif
 };
+
+template <typename String>
+static bool isParentOf(const String &parent, const QString &dirName)
+{
+    return dirName.startsWith(parent) &&
+            (dirName.size() == parent.size() || dirName.at(parent.size()) == QLatin1Char('/') ||
+             parent.size() == 1);
+}
+
+static bool isPseudoFs(const QStorageIterator &it)
+{
+    QString mountDir = it.rootPath();
+    if (isParentOf(QLatin1String("/dev"), mountDir)
+        || isParentOf(QLatin1String("/proc"), mountDir)
+        || isParentOf(QLatin1String("/sys"), mountDir)
+        || isParentOf(QLatin1String("/var/run"), mountDir)
+        || isParentOf(QLatin1String("/var/lock"), mountDir)) {
+        return true;
+    }
+
+    QByteArray type = it.fileSystemType();
+    if (type == "tmpfs")
+        return false;
+#if defined(Q_OS_LINUX)
+    if (type == "rootfs" || type == "rpc_pipefs")
+        return true;
+#endif
+
+    if (!it.device().startsWith('/'))
+        return true;
+
+    return false;
+}
 
 #if defined(Q_OS_BSD4)
 
@@ -444,10 +458,8 @@ void QStorageInfoPrivate::initRootPath()
     while (it.next()) {
         const QString mountDir = it.rootPath();
         const QByteArray fsName = it.fileSystemType();
-        if (isPseudoFs(mountDir, fsName))
-            continue;
         // we try to find most suitable entry
-        if (oldRootPath.startsWith(mountDir) && maxLength < mountDir.length()) {
+        if (isParentOf(mountDir, oldRootPath) && maxLength < mountDir.length()) {
             maxLength = mountDir.length();
             rootPath = mountDir;
             device = it.device();
@@ -461,11 +473,14 @@ static inline QString retrieveLabel(const QByteArray &device)
 #ifdef Q_OS_LINUX
     static const char pathDiskByLabel[] = "/dev/disk/by-label";
 
+    QFileInfo devinfo(QFile::decodeName(device));
+    QString devicePath = devinfo.canonicalFilePath();
+
     QDirIterator it(QLatin1String(pathDiskByLabel), QDir::NoDotAndDotDot);
     while (it.hasNext()) {
         it.next();
         QFileInfo fileInfo(it.fileInfo());
-        if (fileInfo.isSymLink() && fileInfo.symLinkTarget().toLocal8Bit() == device)
+        if (fileInfo.isSymLink() && fileInfo.symLinkTarget() == devicePath)
             return fileInfo.fileName();
     }
 #elif defined Q_OS_HAIKU
@@ -536,11 +551,10 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
     QList<QStorageInfo> volumes;
 
     while (it.next()) {
-        const QString mountDir = it.rootPath();
-        const QByteArray fsName = it.fileSystemType();
-        if (isPseudoFs(mountDir, fsName))
+        if (isPseudoFs(it))
             continue;
 
+        const QString mountDir = it.rootPath();
         volumes.append(QStorageInfo(mountDir));
     }
 

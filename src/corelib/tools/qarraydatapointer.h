@@ -127,7 +127,7 @@ public:
         return (!d->isMutable() || d->ref.isShared());
     }
 
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     void setSharable(bool sharable)
     {
         if (needsDetach()) {

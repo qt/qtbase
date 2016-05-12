@@ -1071,17 +1071,18 @@ QDBusConnectionPrivate::~QDBusConnectionPrivate()
     }
 }
 
-void QDBusConnectionPrivate::disconnectObjectTree(QDBusConnectionPrivate::ObjectTreeNode &haystack)
+void QDBusConnectionPrivate::collectAllObjects(QDBusConnectionPrivate::ObjectTreeNode &haystack,
+                                               QSet<QObject *> &set)
 {
     QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it = haystack.children.begin();
 
     while (it != haystack.children.end()) {
-        disconnectObjectTree(*it);
+        collectAllObjects(*it, set);
         it++;
     }
 
     if (haystack.obj)
-        haystack.obj->disconnect(this);
+        set.insert(haystack.obj);
 }
 
 void QDBusConnectionPrivate::closeConnection()
@@ -1110,15 +1111,23 @@ void QDBusConnectionPrivate::closeConnection()
 
     // Disconnect all signals from signal hooks and from the object tree to
     // avoid QObject::destroyed being sent to dbus daemon thread which has
-    // already quit.
-    SignalHookHash::iterator sit = signalHooks.begin();
-    while (sit != signalHooks.end()) {
-        sit.value().obj->disconnect(this);
-        sit++;
+    // already quit. We need to make sure we disconnect exactly once per
+    // object, because if we tried a second time, we might be hitting a
+    // dangling pointer.
+    QSet<QObject *> allObjects;
+    collectAllObjects(rootNode, allObjects);
+    SignalHookHash::const_iterator sit = signalHooks.constBegin();
+    while (sit != signalHooks.constEnd()) {
+        allObjects.insert(sit.value().obj);
+        ++sit;
     }
 
-    disconnectObjectTree(rootNode);
-    rootNode.children.clear();  // free resources
+    // now disconnect ourselves
+    QSet<QObject *>::const_iterator oit = allObjects.constBegin();
+    while (oit != allObjects.constEnd()) {
+        (*oit)->disconnect(this);
+        ++oit;
+    }
 }
 
 void QDBusConnectionPrivate::handleDBusDisconnection()

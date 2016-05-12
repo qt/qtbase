@@ -3249,13 +3249,12 @@ void QTableViewPrivate::selectRow(int row, bool anchor)
                 command |= QItemSelectionModel::Current;
         }
 
-        QModelIndex tl = model->index(qMin(rowSectionAnchor, row), logicalColumn(0), root);
-        QModelIndex br = model->index(qMax(rowSectionAnchor, row), logicalColumn(model->columnCount(root) - 1), root);
-        if ((verticalHeader->sectionsMoved() && tl.row() != br.row())
-            || horizontalHeader->sectionsMoved()) {
-            q->setSelection(q->visualRect(tl)|q->visualRect(br), command);
+        QModelIndex upper = model->index(qMin(rowSectionAnchor, row), column, root);
+        QModelIndex lower = model->index(qMax(rowSectionAnchor, row), column, root);
+        if ((verticalHeader->sectionsMoved() && upper.row() != lower.row())) {
+            q->setSelection(q->visualRect(upper) | q->visualRect(lower), command | QItemSelectionModel::Rows);
         } else {
-            selectionModel->select(QItemSelection(tl, br), command);
+            selectionModel->select(QItemSelection(upper, lower), command | QItemSelectionModel::Rows);
         }
     }
 }
@@ -3289,14 +3288,12 @@ void QTableViewPrivate::selectColumn(int column, bool anchor)
                 command |= QItemSelectionModel::Current;
         }
 
-        QModelIndex tl = model->index(logicalRow(0), qMin(columnSectionAnchor, column), root);
-        QModelIndex br = model->index(logicalRow(model->rowCount(root) - 1),
-                                      qMax(columnSectionAnchor, column), root);
-        if ((horizontalHeader->sectionsMoved() && tl.column() != br.column())
-            || verticalHeader->sectionsMoved()) {
-            q->setSelection(q->visualRect(tl)|q->visualRect(br), command);
+        QModelIndex left = model->index(row, qMin(columnSectionAnchor, column), root);
+        QModelIndex right = model->index(row, qMax(columnSectionAnchor, column), root);
+        if ((horizontalHeader->sectionsMoved() && left.column() != right.column())) {
+            q->setSelection(q->visualRect(left) | q->visualRect(right), command | QItemSelectionModel::Columns);
         } else {
-            selectionModel->select(QItemSelection(tl, br), command);
+            selectionModel->select(QItemSelection(left, right), command | QItemSelectionModel::Columns);
         }
     }
 }

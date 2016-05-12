@@ -108,6 +108,8 @@ public:
     QAccessibleInterface *parent() const Q_DECL_OVERRIDE;
     QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
     QObject * object() const Q_DECL_OVERRIDE;
+    QWindow *window() const Q_DECL_OVERRIDE;
+
     QRect rect() const Q_DECL_OVERRIDE;
     QAccessible::Role role() const Q_DECL_OVERRIDE;
     void setText(QAccessible::Text t, const QString & text) Q_DECL_OVERRIDE;

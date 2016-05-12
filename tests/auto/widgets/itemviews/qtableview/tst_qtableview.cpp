@@ -203,6 +203,7 @@ private slots:
     void taskQTBUG_8777_scrollToSpans();
     void taskQTBUG_10169_sizeHintForRow();
     void taskQTBUG_30653_doItemsLayout();
+    void taskQTBUG_50171_selectRowAfterSwapColumns();
 
 #ifndef QT_NO_WHEELEVENT
     void mouseWheel_data();
@@ -4474,6 +4475,41 @@ void tst_QTableView::taskQTBUG_30653_doItemsLayout()
     int doItemsLayoutOffset = view.verticalHeader()->offset();
 
     QCOMPARE(scrollToBottomOffset, doItemsLayoutOffset);
+}
+
+void tst_QTableView::taskQTBUG_50171_selectRowAfterSwapColumns()
+{
+    {
+        QtTestTableView tableView;
+        QtTestTableModel model(2, 3);
+        tableView.setModel(&model);
+
+        tableView.horizontalHeader()->swapSections(1, 2);
+        tableView.horizontalHeader()->hideSection(0);
+        tableView.selectRow(1);
+
+        QItemSelectionModel* tableSelectionModel = tableView.selectionModel();
+        QCOMPARE(tableSelectionModel->isRowSelected(1, QModelIndex()), true);
+        QCOMPARE(tableSelectionModel->isSelected(tableView.model()->index(0, 0)), false);
+        QCOMPARE(tableSelectionModel->isSelected(tableView.model()->index(0, 1)), false);
+        QCOMPARE(tableSelectionModel->isSelected(tableView.model()->index(0, 2)), false);
+    }
+
+    {
+        QtTestTableView tableView;
+        QtTestTableModel model(3, 2);
+        tableView.setModel(&model);
+
+        tableView.verticalHeader()->swapSections(1, 2);
+        tableView.verticalHeader()->hideSection(0);
+        tableView.selectColumn(1);
+
+        QItemSelectionModel* sModel = tableView.selectionModel();
+        QCOMPARE(sModel->isColumnSelected(1, QModelIndex()), true);
+        QCOMPARE(sModel->isSelected(tableView.model()->index(0, 0)), false);
+        QCOMPARE(sModel->isSelected(tableView.model()->index(1, 0)), false);
+        QCOMPARE(sModel->isSelected(tableView.model()->index(2, 0)), false);
+    }
 }
 
 QTEST_MAIN(tst_QTableView)

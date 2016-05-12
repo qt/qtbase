@@ -11,8 +11,8 @@
   </testcase>
   <testcase result="fail" name="compare_registered_enums">
     <failure message="Compared values are not the same
-   Actual   (Qt::ArrowCursor): ArrowCursor
-   Expected (Qt::BusyCursor) : BusyCursor" result="fail"/>
+   Actual   (Qt::Monday): Monday
+   Expected (Qt::Sunday): Sunday" result="fail"/>
   </testcase>
   <testcase result="pass" name="compare_boolfuncs"/>
   <testcase result="pass" name="compare_pointerfuncs"/>

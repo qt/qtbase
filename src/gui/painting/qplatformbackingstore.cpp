@@ -226,7 +226,8 @@ void QPlatformTextureList::clear()
     Flushes the given \a region from the specified \a window onto the
     screen.
 
-    Note that the \a offset parameter is currently unused.
+    The \a offset parameter is relative to the origin of the backing
+    store image.
 */
 
 #ifndef QT_NO_OPENGL
