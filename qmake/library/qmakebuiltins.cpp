@@ -534,29 +534,28 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
             if (args.count() >= 2) {
                 const auto opts = split_value_list(args.at(1).toQStringRef());
                 for (const ProString &opt : opts) {
-                    opt.toQString(m_tmp3);
-                    if (m_tmp3.startsWith(QLatin1String("ibase="))) {
-                        ibase = m_tmp3.mid(6).toInt();
-                    } else if (m_tmp3.startsWith(QLatin1String("obase="))) {
-                        obase = m_tmp3.mid(6).toInt();
-                    } else if (m_tmp3.startsWith(QLatin1String("width="))) {
-                        width = m_tmp3.mid(6).toInt();
-                    } else if (m_tmp3 == QLatin1String("zeropad")) {
+                    if (opt.startsWith(QLatin1String("ibase="))) {
+                        ibase = opt.mid(6).toInt();
+                    } else if (opt.startsWith(QLatin1String("obase="))) {
+                        obase = opt.mid(6).toInt();
+                    } else if (opt.startsWith(QLatin1String("width="))) {
+                        width = opt.mid(6).toInt();
+                    } else if (opt == QLatin1String("zeropad")) {
                         zeropad = true;
-                    } else if (m_tmp3 == QLatin1String("padsign")) {
+                    } else if (opt == QLatin1String("padsign")) {
                         sign = PadSign;
-                    } else if (m_tmp3 == QLatin1String("alwayssign")) {
+                    } else if (opt == QLatin1String("alwayssign")) {
                         sign = AlwaysSign;
-                    } else if (m_tmp3 == QLatin1String("leftalign")) {
+                    } else if (opt == QLatin1String("leftalign")) {
                         leftalign = true;
                     } else {
-                        evalError(fL1S("format_number(): invalid format option %1.").arg(m_tmp3));
+                        evalError(fL1S("format_number(): invalid format option %1.")
+                                  .arg(opt.toQString(m_tmp3)));
                         goto formfail;
                     }
                 }
             }
-            args.at(0).toQString(m_tmp3);
-            if (m_tmp3.contains(QLatin1Char('.'))) {
+            if (args.at(0).contains(QLatin1Char('.'))) {
                 evalError(fL1S("format_number(): floats are currently not supported."));
                 break;
             }
@@ -564,7 +563,7 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
             qlonglong num = args.at(0).toLongLong(&ok, ibase);
             if (!ok) {
                 evalError(fL1S("format_number(): malformed number %2 for base %1.")
-                          .arg(ibase).arg(m_tmp3));
+                          .arg(ibase).arg(args.at(0).toQString(m_tmp3)));
                 break;
             }
             QString outstr;
@@ -707,12 +706,11 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
             bool lines = false;
             bool singleLine = true;
             if (args.count() > 1) {
-                args.at(1).toQString(m_tmp2);
-                if (!m_tmp2.compare(QLatin1String("false"), Qt::CaseInsensitive))
+                if (!args.at(1).compare(QLatin1String("false"), Qt::CaseInsensitive))
                     singleLine = false;
-                else if (!m_tmp2.compare(QLatin1String("blob"), Qt::CaseInsensitive))
+                else if (!args.at(1).compare(QLatin1String("blob"), Qt::CaseInsensitive))
                     blob = true;
-                else if (!m_tmp2.compare(QLatin1String("lines"), Qt::CaseInsensitive))
+                else if (!args.at(1).compare(QLatin1String("lines"), Qt::CaseInsensitive))
                     lines = true;
             }
 
@@ -785,12 +783,11 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
                 bool lines = false;
                 bool singleLine = true;
                 if (args.count() > 1) {
-                    args.at(1).toQString(m_tmp2);
-                    if (!m_tmp2.compare(QLatin1String("false"), Qt::CaseInsensitive))
+                    if (!args.at(1).compare(QLatin1String("false"), Qt::CaseInsensitive))
                         singleLine = false;
-                    else if (!m_tmp2.compare(QLatin1String("blob"), Qt::CaseInsensitive))
+                    else if (!args.at(1).compare(QLatin1String("blob"), Qt::CaseInsensitive))
                         blob = true;
-                    else if (!m_tmp2.compare(QLatin1String("lines"), Qt::CaseInsensitive))
+                    else if (!args.at(1).compare(QLatin1String("lines"), Qt::CaseInsensitive))
                         lines = true;
                 }
                 QByteArray bytes = getCommandOutput(args.at(0).toQString(m_tmp2));
@@ -1321,8 +1318,8 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                       .arg(function.toQString(m_tmp1)));
             return ReturnFalse;
         }
-        const QString &rhs(args.at(1).toQString(m_tmp1)),
-                      &lhs(values(map(args.at(0))).join(statics.field_sep));
+        const ProString &rhs = args.at(1);
+        const QString &lhs = values(map(args.at(0))).join(statics.field_sep);
         bool ok;
         int rhs_int = rhs.toInt(&ok);
         if (ok) { // do integer compare
@@ -1334,8 +1331,8 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             }
         }
         if (func_t == T_GREATERTHAN)
-            return returnBool(lhs > rhs);
-        return returnBool(lhs < rhs);
+            return returnBool(lhs > rhs.toQStringRef());
+        return returnBool(lhs < rhs.toQStringRef());
     }
     case T_EQUALS:
         if (args.count() != 2) {
