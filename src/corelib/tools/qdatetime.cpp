@@ -2482,6 +2482,11 @@ static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
     }
 }
 
+static inline bool specCanBeSmall(Qt::TimeSpec spec)
+{
+    return spec == Qt::LocalTime || spec == Qt::UTC;
+}
+
 static Q_DECL_CONSTEXPR inline
 QDateTimePrivate::StatusFlags mergeSpec(QDateTimePrivate::StatusFlags status, Qt::TimeSpec spec)
 {
@@ -2731,7 +2736,7 @@ static QPair<QDate, QTime> getDateTime(const QDateTimeData &d)
 
 inline QDateTime::Data::Data(Qt::TimeSpec spec)
 {
-    if (CanBeSmall && Q_LIKELY(spec == Qt::LocalTime || spec == Qt::UTC)) {
+    if (CanBeSmall && Q_LIKELY(specCanBeSmall(spec))) {
         d = reinterpret_cast<QDateTimePrivate *>(int(mergeSpec(QDateTimePrivate::ShortData, spec)));
     } else {
         // the structure is too small, we need to detach
@@ -2744,8 +2749,18 @@ inline QDateTime::Data::Data(Qt::TimeSpec spec)
 inline QDateTime::Data::Data(const Data &other)
     : d(other.d)
 {
-    if (!isShort())
-        d->ref.ref();
+    if (!isShort()) {
+        // check if we could shrink
+        ShortData sd;
+        sd.msecs = qintptr(d->m_msecs);
+        if (CanBeSmall && specCanBeSmall(extractSpec(d->m_status)) && sd.msecs == d->m_msecs) {
+            sd.status = d->m_status | QDateTimePrivate::ShortData;
+            data = sd;
+        } else {
+            // no, have to keep it big
+            d->ref.ref();
+        }
+    }
 }
 
 inline QDateTime::Data &QDateTime::Data::operator=(const Data &other)
@@ -2755,8 +2770,18 @@ inline QDateTime::Data &QDateTime::Data::operator=(const Data &other)
 
     auto x = d;
     d = other.d;
-    if (!other.isShort())
-        other.d->ref.ref();
+    if (!other.isShort()) {
+        // check if we could shrink
+        ShortData sd;
+        sd.msecs = qintptr(other.d->m_msecs);
+        if (CanBeSmall && specCanBeSmall(extractSpec(other.d->m_status)) && sd.msecs == other.d->m_msecs) {
+            sd.status = other.d->m_status | QDateTimePrivate::ShortData;
+            data = sd;
+        } else {
+            // no, have to keep it big
+            other.d->ref.ref();
+        }
+    }
 
     if (!(CanBeSmall && quintptr(x) & QDateTimePrivate::ShortData) && !x->ref.deref())
         delete x;
