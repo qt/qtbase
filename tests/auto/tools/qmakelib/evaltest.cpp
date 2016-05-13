@@ -954,6 +954,48 @@ void tst_qmakelib::addReplaceFunctions(const QString &qindir)
             << "##:1: format_number(): invalid format option foo=bar."
             << true;
 
+    QTest::newRow("$$num_add(): one")
+            << "VAR = $$num_add(10)"
+            << "VAR = 10"
+            << ""
+            << true;
+
+    QTest::newRow("$$num_add(): two")
+            << "VAR = $$num_add(1, 2)"
+            << "VAR = 3"
+            << ""
+            << true;
+
+    QTest::newRow("$$num_add(): three")
+            << "VAR = $$num_add(1, 3, 5)"
+            << "VAR = 9"
+            << ""
+            << true;
+
+    QTest::newRow("$$num_add(): negative")
+            << "VAR = $$num_add(7, -13)"
+            << "VAR = -6"
+            << ""
+            << true;
+
+    QTest::newRow("$$num_add(): bad number of arguments")
+            << "VAR = $$num_add()"
+            << "VAR = "
+            << "##:1: num_add(num, ...) requires at least one argument."
+            << true;
+
+    QTest::newRow("$$num_add(): bad number: float")
+            << "VAR = $$num_add(1.1)"
+            << "VAR ="
+            << "##:1: num_add(): floats are currently not supported."
+            << true;
+
+    QTest::newRow("$$num_add(): bad number: malformed")
+            << "VAR = $$num_add(fail)"
+            << "VAR ="
+            << "##:1: num_add(): malformed number fail."
+            << true;
+
     QTest::newRow("$$join(): empty")
             << "IN = \nVAR = $$join(IN, //)"
             << "VAR ="

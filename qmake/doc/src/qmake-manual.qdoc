@@ -2943,6 +2943,27 @@
     \c position defaults to 0, causing the first value in the list to be
     returned.
 
+    \section2 num_add(arg1 [, arg2 ..., argn])
+
+    Takes an arbitrary number of numeric arguments and adds them up,
+    returning the sum.
+
+    Subtraction is implicitly supported due to the possibility to simply
+    prepend a minus sign to a numeric value to negate it:
+
+    \code
+    sum = $$num_add($$first, -$$second)
+    \endcode
+
+    If the operand may be already negative, another step is necessary to
+    normalize the number:
+
+    \code
+    second_neg = -$$second
+    second_neg ~= s/^--//
+    sum = $$num_add($$first, $$second_neg)
+    \endcode
+
     \section2 prompt(question)
 
     Displays the specified \c question, and returns a value read from stdin.
