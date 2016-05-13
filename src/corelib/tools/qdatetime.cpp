@@ -2543,124 +2543,89 @@ static inline Qt::TimeSpec getSpec(const QDateTimeData &d)
     return extractSpec(getStatus(d));
 }
 
-/*****************************************************************************
-  QDateTime::Data member functions
- *****************************************************************************/
-
-inline QDateTime::Data::Data(Qt::TimeSpec spec)
+// Refresh the LocalTime validity and offset
+static void refreshDateTime(QDateTimeData &d)
 {
-    if (CanBeSmall && Q_LIKELY(spec == Qt::LocalTime || spec == Qt::UTC)) {
-        d = reinterpret_cast<QDateTimePrivate *>(int(mergeSpec(QDateTimePrivate::ShortData, spec)));
-    } else {
-        // the structure is too small, we need to detach
-        d = new QDateTimePrivate;
-        d->ref.ref();
-        d->m_status = mergeSpec(0, spec);
-    }
-}
-
-inline QDateTime::Data::Data(const Data &other)
-    : d(other.d)
-{
-    if (!isShort())
-        d->ref.ref();
-}
-
-inline QDateTime::Data &QDateTime::Data::operator=(const Data &other)
-{
-    if (d == other.d)
-        return *this;
-
-    auto x = d;
-    d = other.d;
-    if (!other.isShort())
-        other.d->ref.ref();
-
-    if (!(CanBeSmall && quintptr(x) & QDateTimePrivate::ShortData) && !x->ref.deref())
-        delete x;
-    return *this;
-}
-
-inline QDateTime::Data::~Data()
-{
-    if (!isShort() && !d->ref.deref())
-        delete d;
-}
-
-inline bool QDateTime::Data::isShort() const
-{
-    return CanBeSmall && quintptr(d) & QDateTimePrivate::ShortData;
-}
-
-inline void QDateTime::Data::detach()
-{
-    QDateTimePrivate *x;
-    bool wasShort = isShort();
-    if (wasShort) {
-        // force enlarging
-        x = new QDateTimePrivate;
-        x->m_status = QDateTimePrivate::StatusFlag(data.status & ~QDateTimePrivate::ShortData);
-        x->m_msecs = data.msecs;
-    } else {
-        if (d->ref.load() == 1)
-            return;
-
-        x = new QDateTimePrivate(*d);
-    }
-
-    x->ref.store(1);
-    if (!wasShort && !d->ref.deref())
-        delete d;
-    d = x;
-}
-
-inline const QDateTimePrivate *QDateTime::Data::operator->() const
-{
-    Q_ASSERT(!isShort());
-    return d;
-}
-
-inline QDateTimePrivate *QDateTime::Data::operator->()
-{
-    // should we attempt to detach here?
-    Q_ASSERT(!isShort());
-    Q_ASSERT(d->ref.load() == 1);
-    return d;
-}
-
-/*****************************************************************************
-  QDateTimePrivate member functions
- *****************************************************************************/
-
-static void setTimeSpec(QDateTimeData &d, Qt::TimeSpec spec, int offsetSeconds);
-static void setDateTime(QDateTimeData &d, const QDate &date, const QTime &time);
-static QPair<QDate, QTime> getDateTime(const QDateTimeData &d);
-static void checkValidDateTime(QDateTimeData &d);
-static void refreshDateTime(QDateTimeData &d);
-
-Q_NEVER_INLINE
-QDateTime::Data QDateTimePrivate::create(const QDate &toDate, const QTime &toTime, Qt::TimeSpec toSpec,
-                                         int offsetSeconds)
-{
-    QDateTime::Data result(toSpec);
-    setTimeSpec(result, toSpec, offsetSeconds);
-    setDateTime(result, toDate, toTime);
-    return result;
-}
+    auto status = getStatus(d);
+    const auto spec = extractSpec(status);
+    const qint64 msecs = getMSecs(d);
+    qint64 epochMSecs = 0;
+    int offsetFromUtc = 0;
+    QDate testDate;
+    QTime testTime;
+    Q_ASSERT(spec == Qt::TimeZone || spec == Qt::LocalTime);
 
 #ifndef QT_BOOTSTRAPPED
-inline QDateTime::Data QDateTimePrivate::create(const QDate &toDate, const QTime &toTime,
-                                                const QTimeZone &toTimeZone)
-{
-    QDateTime::Data result(Qt::TimeZone);
-    Q_ASSERT(!result.isShort());
-
-    result.d->m_status = mergeSpec(result.d->m_status, Qt::TimeZone);
-    result.d->m_timeZone = toTimeZone;
-    setDateTime(result, toDate, toTime);
-    return result;
-}
+    // If not valid time zone then is invalid
+    if (spec == Qt::TimeZone) {
+        if (!d->m_timeZone.isValid())
+            status &= ~QDateTimePrivate::ValidDateTime;
+        else
+            epochMSecs = QDateTimePrivate::zoneMSecsToEpochMSecs(msecs, d->m_timeZone, &testDate, &testTime);
+    }
 #endif // QT_BOOTSTRAPPED
+
+    // If not valid date and time then is invalid
+    if (!(status & QDateTimePrivate::ValidDate) || !(status & QDateTimePrivate::ValidTime)) {
+        status &= ~QDateTimePrivate::ValidDateTime;
+        if (status & QDateTimePrivate::ShortData) {
+            d.data.status = status;
+        } else {
+            d->m_status = status;
+            d->m_offsetFromUtc = 0;
+        }
+        return;
+    }
+
+    // We have a valid date and time and a Qt::LocalTime or Qt::TimeZone that needs calculating
+    // LocalTime and TimeZone might fall into a "missing" DST transition hour
+    // Calling toEpochMSecs will adjust the returned date/time if it does
+    if (spec == Qt::LocalTime) {
+        auto dstStatus = extractDaylightStatus(status);
+        epochMSecs = localMSecsToEpochMSecs(msecs, &dstStatus, &testDate, &testTime);
+    }
+    if (timeToMSecs(testDate, testTime) == msecs) {
+        status |= QDateTimePrivate::ValidDateTime;
+        // Cache the offset to use in offsetFromUtc()
+        offsetFromUtc = (msecs - epochMSecs) / 1000;
+    } else {
+        status &= ~QDateTimePrivate::ValidDateTime;
+    }
+
+    if (status & QDateTimePrivate::ShortData) {
+        d.data.status = status;
+    } else {
+        d->m_status = status;
+        d->m_offsetFromUtc = offsetFromUtc;
+    }
+}
+
+// Check the UTC / offsetFromUTC validity
+static void checkValidDateTime(QDateTimeData &d)
+{
+    auto status = getStatus(d);
+    auto spec = extractSpec(status);
+    switch (spec) {
+    case Qt::OffsetFromUTC:
+    case Qt::UTC:
+        // for these, a valid date and a valid time imply a valid QDateTime
+        if ((status & QDateTimePrivate::ValidDate) && (status & QDateTimePrivate::ValidTime))
+            status |= QDateTimePrivate::ValidDateTime;
+        else
+            status &= ~QDateTimePrivate::ValidDateTime;
+        if (status & QDateTimePrivate::ShortData)
+            d.data.status = status;
+        else
+            d->m_status = status;
+        break;
+    case Qt::TimeZone:
+    case Qt::LocalTime:
+        // for these, we need to check whether the timezone is valid and whether
+        // the time is valid in that timezone. Expensive, but no other option.
+        refreshDateTime(d);
+        break;
+    }
+}
 
 static void setTimeSpec(QDateTimeData &d, Qt::TimeSpec spec, int offsetSeconds)
 {
@@ -2760,91 +2725,118 @@ static QPair<QDate, QTime> getDateTime(const QDateTimeData &d)
     return result;
 }
 
-// Check the UTC / offsetFromUTC validity
-static void checkValidDateTime(QDateTimeData &d)
+/*****************************************************************************
+  QDateTime::Data member functions
+ *****************************************************************************/
+
+inline QDateTime::Data::Data(Qt::TimeSpec spec)
 {
-    auto status = getStatus(d);
-    auto spec = extractSpec(status);
-    switch (spec) {
-    case Qt::OffsetFromUTC:
-    case Qt::UTC:
-        // for these, a valid date and a valid time imply a valid QDateTime
-        if ((status & QDateTimePrivate::ValidDate) && (status & QDateTimePrivate::ValidTime))
-            status |= QDateTimePrivate::ValidDateTime;
-        else
-            status &= ~QDateTimePrivate::ValidDateTime;
-        if (status & QDateTimePrivate::ShortData)
-            d.data.status = status;
-        else
-            d->m_status = status;
-        break;
-    case Qt::TimeZone:
-    case Qt::LocalTime:
-        // for these, we need to check whether the timezone is valid and whether
-        // the time is valid in that timezone. Expensive, but no other option.
-        refreshDateTime(d);
-        break;
+    if (CanBeSmall && Q_LIKELY(spec == Qt::LocalTime || spec == Qt::UTC)) {
+        d = reinterpret_cast<QDateTimePrivate *>(int(mergeSpec(QDateTimePrivate::ShortData, spec)));
+    } else {
+        // the structure is too small, we need to detach
+        d = new QDateTimePrivate;
+        d->ref.ref();
+        d->m_status = mergeSpec(0, spec);
     }
 }
 
-// Refresh the LocalTime validity and offset
-static void refreshDateTime(QDateTimeData &d)
+inline QDateTime::Data::Data(const Data &other)
+    : d(other.d)
 {
-    auto status = getStatus(d);
-    const auto spec = extractSpec(status);
-    const qint64 msecs = getMSecs(d);
-    qint64 epochMSecs = 0;
-    int offsetFromUtc = 0;
-    QDate testDate;
-    QTime testTime;
-    Q_ASSERT(spec == Qt::TimeZone || spec == Qt::LocalTime);
+    if (!isShort())
+        d->ref.ref();
+}
 
-#ifndef QT_BOOTSTRAPPED
-    // If not valid time zone then is invalid
-    if (spec == Qt::TimeZone) {
-        if (!d->m_timeZone.isValid())
-            status &= ~QDateTimePrivate::ValidDateTime;
-        else
-            epochMSecs = QDateTimePrivate::zoneMSecsToEpochMSecs(msecs, d->m_timeZone, &testDate, &testTime);
-    }
-#endif // QT_BOOTSTRAPPED
+inline QDateTime::Data &QDateTime::Data::operator=(const Data &other)
+{
+    if (d == other.d)
+        return *this;
 
-    // If not valid date and time then is invalid
-    if (!(status & QDateTimePrivate::ValidDate) || !(status & QDateTimePrivate::ValidTime)) {
-        status &= ~QDateTimePrivate::ValidDateTime;
-        if (status & QDateTimePrivate::ShortData) {
-            d.data.status = status;
-        } else {
-            d->m_status = status;
-            d->m_offsetFromUtc = 0;
-        }
-        return;
-    }
+    auto x = d;
+    d = other.d;
+    if (!other.isShort())
+        other.d->ref.ref();
 
-    // We have a valid date and time and a Qt::LocalTime or Qt::TimeZone that needs calculating
-    // LocalTime and TimeZone might fall into a "missing" DST transition hour
-    // Calling toEpochMSecs will adjust the returned date/time if it does
-    if (spec == Qt::LocalTime) {
-        auto dstStatus = extractDaylightStatus(status);
-        epochMSecs = localMSecsToEpochMSecs(msecs, &dstStatus, &testDate, &testTime);
-    }
-    if (timeToMSecs(testDate, testTime) == msecs) {
-        status |= QDateTimePrivate::ValidDateTime;
-        // Cache the offset to use in offsetFromUtc()
-        offsetFromUtc = (msecs - epochMSecs) / 1000;
+    if (!(CanBeSmall && quintptr(x) & QDateTimePrivate::ShortData) && !x->ref.deref())
+        delete x;
+    return *this;
+}
+
+inline QDateTime::Data::~Data()
+{
+    if (!isShort() && !d->ref.deref())
+        delete d;
+}
+
+inline bool QDateTime::Data::isShort() const
+{
+    return CanBeSmall && quintptr(d) & QDateTimePrivate::ShortData;
+}
+
+inline void QDateTime::Data::detach()
+{
+    QDateTimePrivate *x;
+    bool wasShort = isShort();
+    if (wasShort) {
+        // force enlarging
+        x = new QDateTimePrivate;
+        x->m_status = QDateTimePrivate::StatusFlag(data.status & ~QDateTimePrivate::ShortData);
+        x->m_msecs = data.msecs;
     } else {
-        status &= ~QDateTimePrivate::ValidDateTime;
+        if (d->ref.load() == 1)
+            return;
+
+        x = new QDateTimePrivate(*d);
     }
 
-    if (status & QDateTimePrivate::ShortData) {
-        d.data.status = status;
-    } else {
-        d->m_status = status;
-        d->m_offsetFromUtc = offsetFromUtc;
-    }
+    x->ref.store(1);
+    if (!wasShort && !d->ref.deref())
+        delete d;
+    d = x;
+}
+
+inline const QDateTimePrivate *QDateTime::Data::operator->() const
+{
+    Q_ASSERT(!isShort());
+    return d;
+}
+
+inline QDateTimePrivate *QDateTime::Data::operator->()
+{
+    // should we attempt to detach here?
+    Q_ASSERT(!isShort());
+    Q_ASSERT(d->ref.load() == 1);
+    return d;
+}
+
+/*****************************************************************************
+  QDateTimePrivate member functions
+ *****************************************************************************/
+
+Q_NEVER_INLINE
+QDateTime::Data QDateTimePrivate::create(const QDate &toDate, const QTime &toTime, Qt::TimeSpec toSpec,
+                                         int offsetSeconds)
+{
+    QDateTime::Data result(toSpec);
+    setTimeSpec(result, toSpec, offsetSeconds);
+    setDateTime(result, toDate, toTime);
+    return result;
 }
 
 #ifndef QT_BOOTSTRAPPED
+inline QDateTime::Data QDateTimePrivate::create(const QDate &toDate, const QTime &toTime,
+                                                const QTimeZone &toTimeZone)
+{
+    QDateTime::Data result(Qt::TimeZone);
+    Q_ASSERT(!result.isShort());
+
+    result.d->m_status = mergeSpec(result.d->m_status, Qt::TimeZone);
+    result.d->m_timeZone = toTimeZone;
+    setDateTime(result, toDate, toTime);
+    return result;
+}
+
 // Convert a TimeZone time expressed in zone msecs encoding into a UTC epoch msecs
 inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QTimeZone &zone,
                                                       QDate *localDate, QTime *localTime)
