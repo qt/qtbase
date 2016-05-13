@@ -458,16 +458,21 @@ void QNativeSocketEngine::close()
     }
 
 #if _MSC_VER >= 1900
-    // To close the connection properly (not with a hard reset) all pending read operation have to
-    // be finished or cancelled. The API isn't available on Windows 8.1 though.
-    ComPtr<IStreamSocket3> socket3;
-    hr = d->tcpSocket()->QueryInterface(IID_PPV_ARGS(&socket3));
-    Q_ASSERT_SUCCEEDED(hr);
+    hr = QEventDispatcherWinRT::runOnXamlThread([d]() {
+        HRESULT hr;
+        // To close the connection properly (not with a hard reset) all pending read operation have to
+        // be finished or cancelled. The API isn't available on Windows 8.1 though.
+        ComPtr<IStreamSocket3> socket3;
+        hr = d->tcpSocket()->QueryInterface(IID_PPV_ARGS(&socket3));
+        Q_ASSERT_SUCCEEDED(hr);
 
-    ComPtr<IAsyncAction> action;
-    hr = socket3->CancelIOAsync(&action);
-    Q_ASSERT_SUCCEEDED(hr);
-    hr = QWinRTFunctions::await(action);
+        ComPtr<IAsyncAction> action;
+        hr = socket3->CancelIOAsync(&action);
+        Q_ASSERT_SUCCEEDED(hr);
+        hr = QWinRTFunctions::await(action);
+        Q_ASSERT_SUCCEEDED(hr);
+        return S_OK;
+    });
     Q_ASSERT_SUCCEEDED(hr);
 #endif // _MSC_VER >= 1900
 
@@ -1261,9 +1266,12 @@ void QNativeSocketEnginePrivate::handleConnectionEstablished(IAsyncAction *actio
 
 HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *asyncInfo, AsyncStatus status)
 {
-    Q_Q(QNativeSocketEngine);
-    if (wasDeleted || isDeletingChildren)
+    if (closingDown || wasDeleted || isDeletingChildren
+            || socketState == QAbstractSocket::UnconnectedState) {
         return S_OK;
+    }
+
+    Q_Q(QNativeSocketEngine);
 
     // A read in UnconnectedState will close the socket and return -1 and thus tell the caller,
     // that the connection was closed. The socket cannot be closed here, as the subsequent read
