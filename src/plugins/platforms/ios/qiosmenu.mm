@@ -570,7 +570,7 @@ void QIOSMenu::repositionMenu()
     switch (m_effectiveMenuType) {
     case EditMenu: {
         UIView *view = reinterpret_cast<UIView *>(m_parentWindow->winId());
-        [[UIMenuController sharedMenuController] setTargetRect:toCGRect(m_targetRect) inView:view];
+        [[UIMenuController sharedMenuController] setTargetRect:m_targetRect.toCGRect() inView:view];
         [[UIMenuController sharedMenuController] setMenuVisible:YES animated:YES];
         break; }
     default:

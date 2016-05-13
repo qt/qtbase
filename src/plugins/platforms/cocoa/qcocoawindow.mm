@@ -505,7 +505,7 @@ QRect QCocoaWindow::geometry() const
         NSRect screenRect = [[m_contentView window] convertRectToScreen:NSMakeRect(windowPoint.x, windowPoint.y, 1, 1)];
         NSPoint screenPoint = screenRect.origin;
         QPoint position = qt_mac_flipPoint(screenPoint).toPoint();
-        QSize size = qt_mac_toQRect([m_contentView bounds]).size();
+        QSize size = QRectF::fromCGRect([m_contentView bounds]).toRect().size();
         return QRect(position, size);
     }
 

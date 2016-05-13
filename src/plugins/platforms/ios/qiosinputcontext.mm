@@ -382,7 +382,7 @@ void QIOSInputContext::updateKeyboardState(NSNotification *notification)
         m_keyboardState.animationDuration = [[userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
         m_keyboardState.keyboardAnimating = m_keyboardState.animationDuration > 0 && !atEndOfKeyboardTransition;
 
-        qImDebug() << qPrintable(QString::fromNSString(notification.name)) << "from" << fromCGRect(frameBegin) << "to" << fromCGRect(frameEnd)
+        qImDebug() << qPrintable(QString::fromNSString(notification.name)) << "from" << QRectF::fromCGRect(frameBegin) << "to" << QRectF::fromCGRect(frameEnd)
                    << "(curve =" << m_keyboardState.animationCurve << "duration =" << m_keyboardState.animationDuration << "s)";
     } else {
         qImDebug("No notification to update keyboard state based on, just updating keyboard rect");
@@ -391,7 +391,7 @@ void QIOSInputContext::updateKeyboardState(NSNotification *notification)
     if (!focusView() || CGRectIsEmpty(currentKeyboardRect))
         m_keyboardState.keyboardRect = QRectF();
     else // QInputmethod::keyboardRectangle() is documented to be in window coordinates.
-        m_keyboardState.keyboardRect = fromCGRect([focusView() convertRect:currentKeyboardRect fromView:nil]);
+        m_keyboardState.keyboardRect = QRectF::fromCGRect([focusView() convertRect:currentKeyboardRect fromView:nil]);
 
     // Emit for all changed properties
     if (m_keyboardState.keyboardVisible != previousState.keyboardVisible)

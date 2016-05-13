@@ -322,9 +322,9 @@ static bool _q_dontOverrideCtrlLMB = false;
     if (m_platformWindow->m_isNSWindowChild) {
          return;
 #if 0
-        //geometry = qt_mac_toQRect([self frame]);
+        //geometry = QRectF::fromCGRect([self frame]).toRect();
         qDebug() << "nsview updateGeometry" << m_platformWindow->window();
-        QRect screenRect = qt_mac_toQRect([m_platformWindow->m_nsWindow convertRectToScreen:[self frame]]);
+        QRect screenRect = QRectF::fromCGRect([m_platformWindow->m_nsWindow convertRectToScreen:[self frame]]).toRect();
         qDebug() << "screenRect" << screenRect;
 
         screenRect.moveTop(qt_mac_flipYCoordinate(screenRect.y() + screenRect.height()));
@@ -339,10 +339,10 @@ static bool _q_dontOverrideCtrlLMB = false;
         geometry = QRect(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
     } else if (m_platformWindow->m_contentViewIsToBeEmbedded) {
         // embedded child window, use the frame rect ### merge with case below
-        geometry = qt_mac_toQRect([self bounds]);
+        geometry = QRectF::fromCGRect([self bounds]).toRect();
     } else {
         // child window, use the frame rect
-        geometry = qt_mac_toQRect([self frame]);
+        geometry = QRectF::fromCGRect([self frame]).toRect();
     }
 
     if (m_platformWindow->m_nsWindow && geometry == m_platformWindow->geometry())
@@ -555,7 +555,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (void) drawRect:(NSRect)dirtyRect
 {
-    qCDebug(lcQpaCocoaWindow) << "[QNSView drawRect:]" << m_window << qt_mac_toQRect(dirtyRect);
+    qCDebug(lcQpaCocoaWindow) << "[QNSView drawRect:]" << m_window << QRectF::fromCGRect(dirtyRect);
 
 #ifndef QT_NO_OPENGL
     if (m_glContext && m_shouldSetGLContextinDrawRect) {

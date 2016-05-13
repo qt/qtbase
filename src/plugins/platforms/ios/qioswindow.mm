@@ -211,7 +211,7 @@ void QIOSWindow::applyGeometry(const QRect &rect)
     // The baseclass takes care of persisting this for us.
     QPlatformWindow::setGeometry(rect);
 
-    m_view.frame = toCGRect(rect);
+    m_view.frame = rect.toCGRect();
 
     // iOS will automatically trigger -[layoutSubviews:] for resize,
     // but not for move, so we force it just in case.

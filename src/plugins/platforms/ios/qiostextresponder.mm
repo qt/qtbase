@@ -807,7 +807,7 @@
         [self sendEventToFocusObject:e];
     }
 
-    return toCGRect(startRect.united(endRect));
+    return startRect.united(endRect).toCGRect();
 }
 
 - (NSArray *)selectionRectsForRange:(UITextRange *)range
@@ -825,7 +825,7 @@
     // Assume for now that position is always the same as
     // cursor index until a better API is in place:
     QRectF cursorRect = qApp->inputMethod()->cursorRectangle();
-    return toCGRect(cursorRect);
+    return cursorRect.toCGRect();
 }
 
 - (void)replaceRange:(UITextRange *)range withText:(NSString *)text

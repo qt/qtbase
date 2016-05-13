@@ -60,7 +60,7 @@
 
 - (id)initWithQIOSWindow:(QIOSWindow *)window
 {
-    if (self = [self initWithFrame:toCGRect(window->geometry())])
+    if (self = [self initWithFrame:window->geometry().toCGRect()])
         m_qioswindow = window;
 
     m_accessibleElements = [[NSMutableArray alloc] init];
@@ -153,7 +153,7 @@
     // from what we end up with after applying window constraints.
     QRect requestedGeometry = m_qioswindow->geometry();
 
-    QRect actualGeometry = fromCGRect(self.frame).toRect();
+    QRect actualGeometry = QRectF::fromCGRect(self.frame).toRect();
 
     // Persist the actual/new geometry so that QWindow::geometry() can
     // be queried on the resize event.
@@ -188,7 +188,7 @@
     QRegion region;
 
     if (m_qioswindow->isExposed()) {
-        QSize bounds = fromCGRect(self.layer.bounds).toRect().size();
+        QSize bounds = QRectF::fromCGRect(self.layer.bounds).toRect().size();
 
         Q_ASSERT(m_qioswindow->geometry().size() == bounds);
         Q_ASSERT(self.hidden == !m_qioswindow->window()->isVisible());

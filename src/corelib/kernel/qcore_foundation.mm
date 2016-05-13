@@ -44,8 +44,13 @@
 #include <QtCore/qdatetime.h>
 #include <QtCore/quuid.h>
 #include <QtCore/qbytearray.h>
+#include <QtCore/qrect.h>
 
 #import <Foundation/Foundation.h>
+
+#if defined(QT_PLATFORM_UIKIT)
+#import <CoreGraphics/CoreGraphics.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -414,5 +419,44 @@ NSDate *QDateTime::toNSDate() const
     return [NSDate
             dateWithTimeIntervalSince1970:static_cast<NSTimeInterval>(toMSecsSinceEpoch()) / 1000];
 }
+
+// ----------------------------------------------------------------------------
+
+/*!
+    \since 5.8
+
+    Creates a CGRect from a QRect.
+
+    \sa fromCGRect()
+*/
+CGRect QRect::toCGRect() const Q_DECL_NOTHROW
+{
+    return CGRectMake(x(), y(), width(), height());
+}
+
+/*!
+    \since 5.8
+
+    Creates a CGRect from a QRectF.
+
+    \sa fromCGRect()
+*/
+CGRect QRectF::toCGRect() const Q_DECL_NOTHROW
+{
+    return CGRectMake(x(), y(), width(), height());
+}
+
+/*!
+    \since 5.8
+
+    Creates a QRectF from a CGRect.
+
+    \sa toCGRect()
+*/
+QRectF QRectF::fromCGRect(CGRect rect) Q_DECL_NOTHROW
+{
+    return QRectF(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+}
+
 
 QT_END_NAMESPACE

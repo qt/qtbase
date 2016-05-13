@@ -58,16 +58,6 @@ bool isQtApplication()
     return isQt;
 }
 
-CGRect toCGRect(const QRectF &rect)
-{
-    return CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
-}
-
-QRectF fromCGRect(const CGRect &rect)
-{
-    return QRectF(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
-}
-
 CGPoint toCGPoint(const QPointF &point)
 {
     return CGPointMake(point.x(), point.y());

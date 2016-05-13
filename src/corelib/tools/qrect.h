@@ -48,6 +48,10 @@
 #error qrect.h must be included before any header file that defines topLeft
 #endif
 
+#if defined(Q_OS_DARWIN)
+struct CGRect;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QRect
@@ -148,6 +152,10 @@ public:
 
     friend Q_DECL_CONSTEXPR inline bool operator==(const QRect &, const QRect &) Q_DECL_NOTHROW;
     friend Q_DECL_CONSTEXPR inline bool operator!=(const QRect &, const QRect &) Q_DECL_NOTHROW;
+
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
+    CGRect toCGRect() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+#endif
 
 private:
     int x1;
@@ -603,6 +611,11 @@ public:
 
     Q_DECL_CONSTEXPR inline QRect toRect() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
     QRect toAlignedRect() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
+    static QRectF fromCGRect(CGRect rect) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    CGRect toCGRect() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+#endif
 
 private:
     qreal xp;

@@ -61,8 +61,6 @@ class QPlatformScreen;
 
 bool isQtApplication();
 
-CGRect toCGRect(const QRectF &rect);
-QRectF fromCGRect(const CGRect &rect);
 CGPoint toCGPoint(const QPointF &point);
 QPointF fromCGPoint(const CGPoint &point);
 

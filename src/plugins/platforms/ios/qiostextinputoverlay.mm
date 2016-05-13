@@ -135,7 +135,7 @@ static void executeBlockWithoutAnimation(void (^block)(void))
         // first responder, which is normally QIOSTextResponder.
         QRectF cr = qApp->inputMethod()->cursorRectangle();
         QRectF ar = qApp->inputMethod()->anchorRectangle();
-        CGRect targetRect = toCGRect(cr.united(ar));
+        CGRect targetRect = cr.united(ar).toCGRect();
         UIView *focusView = reinterpret_cast<UIView *>(qApp->focusWindow()->winId());
         [[UIMenuController sharedMenuController] setTargetRect:targetRect inView:focusView];
         [[UIMenuController sharedMenuController] setMenuVisible:YES animated:YES];
@@ -826,8 +826,8 @@ static void executeBlockWithoutAnimation(void (^block)(void))
 
     // Adjust handles and input rect to match the new selection
     QRectF inputRect = QGuiApplication::inputMethod()->inputItemClipRectangle();
-    CGRect cursorRect = toCGRect(QGuiApplication::inputMethod()->cursorRectangle());
-    CGRect anchorRect = toCGRect(QGuiApplication::inputMethod()->anchorRectangle());
+    CGRect cursorRect = QGuiApplication::inputMethod()->cursorRectangle().toCGRect();
+    CGRect anchorRect = QGuiApplication::inputMethod()->anchorRectangle().toCGRect();
 
     if (!_multiLine) {
         // Resize the layer a bit bigger to ensure that the handles are
@@ -836,7 +836,7 @@ static void executeBlockWithoutAnimation(void (^block)(void))
         inputRect.adjust(-margin / 2, -margin, margin / 2, margin);
     }
 
-    executeBlockWithoutAnimation(^{ _clipRectLayer.frame = toCGRect(inputRect); });
+    executeBlockWithoutAnimation(^{ _clipRectLayer.frame = inputRect.toCGRect(); });
     _cursorLayer.cursorRectangle = [self.focusView.layer convertRect:cursorRect toLayer:_clipRectLayer];
     _anchorLayer.cursorRectangle = [self.focusView.layer convertRect:anchorRect toLayer:_clipRectLayer];
     _cursorLayer.visible = YES;

@@ -231,11 +231,11 @@ void QIOSScreen::updateProperties()
     QRect previousGeometry = m_geometry;
     QRect previousAvailableGeometry = m_availableGeometry;
 
-    m_geometry = fromCGRect(m_uiScreen.bounds).toRect();
+    m_geometry = QRectF::fromCGRect(m_uiScreen.bounds).toRect();
 #ifndef Q_OS_TVOS
-    m_availableGeometry = fromCGRect(m_uiScreen.applicationFrame).toRect();
+    m_availableGeometry = QRectF::fromCGRect(m_uiScreen.applicationFrame).toRect();
 #else
-    m_availableGeometry = fromCGRect(m_uiScreen.bounds).toRect();
+    m_availableGeometry = QRectF::fromCGRect(m_uiScreen.bounds).toRect();
 #endif
 
 #ifndef Q_OS_TVOS
@@ -279,7 +279,7 @@ void QIOSScreen::updateProperties()
             // before being output on the physical display. We have to take this into account when
             // computing the physical size. Note that unlike the native bounds, the physical size
             // follows the primary orientation of the screen.
-            physicalGeometry = mapBetween(nativeOrientation(), primaryOrientation, fromCGRect(m_uiScreen.nativeBounds).toRect());
+            physicalGeometry = mapBetween(nativeOrientation(), primaryOrientation, QRectF::fromCGRect(m_uiScreen.nativeBounds).toRect());
         } else {
             physicalGeometry = QRectF(0, 0, m_geometry.width() * devicePixelRatio(), m_geometry.height() * devicePixelRatio());
         }
