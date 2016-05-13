@@ -3042,9 +3042,12 @@
 
     See also \l{system_quote(arg)}{system_quote()}.
 
+    \target fn_size
     \section2 size(variablename)
 
     Returns the number of values of \c variablename.
+
+    See also \l{str_size()}.
 
     \section2 sort_depends(variablename, prefix)
 
@@ -3058,6 +3061,13 @@
     For example:
 
     \snippet code/doc_src_qmake-manual.pro 168
+
+    \target str_size()
+    \section2 str_size(arg)
+
+    Returns the number of characters in the argument.
+
+    See also \l{fn_size}{size()}.
 
     \section2 system(command[, mode])
 

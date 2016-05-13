@@ -826,6 +826,18 @@ void tst_qmakelib::addReplaceFunctions(const QString &qindir)
             << "##:1: size(var) requires one argument."
             << true;
 
+    QTest::newRow("$$str_size()")
+            << "VAR = $$str_size(one two three)"
+            << "VAR = 13"
+            << ""
+            << true;
+
+    QTest::newRow("$$str_size(): bad number of arguments")
+            << "VAR = $$str_size(1, 2)"
+            << "VAR ="
+            << "##:1: str_size(str) requires one argument."
+            << true;
+
     QTest::newRow("$$fromfile(): right var")
             << "VAR = $$fromfile(" + qindir + "/fromfile/infile.prx, DEFINES)"
             << "VAR = QT_DLL"
