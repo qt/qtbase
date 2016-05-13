@@ -181,7 +181,7 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     dictionary[ "QNX_IMF" ]         = "no";
     dictionary[ "PPS" ]             = "no";
     dictionary[ "LGMON" ]           = "no";
-    dictionary[ "SYSTEM_PROXIES" ]  = "no";
+    dictionary[ "SYSTEM_PROXIES" ]  = "yes";
     dictionary[ "WERROR" ]          = "auto";
     dictionary[ "QREAL" ]           = "double";
     dictionary[ "ATOMIC64" ]        = "auto";

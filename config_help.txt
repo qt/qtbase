@@ -366,8 +366,8 @@ Additional options:
                            1.0. GStreamer 1.0 is used by default when available.
                            Use 0.10 or 1.0 for <version> to override auto-detection.
 
- *  -no-system-proxies ... Do not use system network proxies by default.
-    -system-proxies ...... Use system network proxies by default.
+    -no-system-proxies ... Do not use system network proxies by default.
+ *  -system-proxies ...... Use system network proxies by default.
 
     -no-warnings-are-errors Make warnings be treated normally
     -warnings-are-errors   Make warnings be treated as errors
