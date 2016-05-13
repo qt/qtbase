@@ -2858,6 +2858,7 @@
 
     See also \l{take_first()}, \l{fn_last}{last()}.
 
+    \target format_number()
     \section2 format_number(number[, options...])
 
     Returns \c number in the format specified by \c options. You can specify the
@@ -3073,6 +3074,14 @@
     \section2 sort_depends(variablename, prefix)
 
     This is an internal function that you will typically not need.
+
+    \section2 sorted(variablename)
+
+    Returns the list of values in \c variablename with entries sorted
+    in ascending ASCII order.
+
+    Numerical sorting can be accomplished by zero-padding the values to
+    a fixed length with the help of the \l{format_number()} function.
 
     \section2 split(variablename, separator)
 

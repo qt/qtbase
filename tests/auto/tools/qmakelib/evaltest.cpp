@@ -1246,6 +1246,18 @@ void tst_qmakelib::addReplaceFunctions(const QString &qindir)
             << "##:1: unique(var) requires one argument."
             << true;
 
+    QTest::newRow("$$sorted()")
+            << "IN = one two three\nVAR = $$sorted(IN)"
+            << "VAR = one three two"
+            << ""
+            << true;
+
+    QTest::newRow("$$sorted(): bad number of arguments")
+            << "VAR = $$sorted(1, 2)"
+            << "VAR ="
+            << "##:1: sorted(var) requires one argument."
+            << true;
+
     QTest::newRow("$$reverse()")
             << "IN = one two three\nVAR = $$reverse(IN)"
             << "VAR = three two one"
