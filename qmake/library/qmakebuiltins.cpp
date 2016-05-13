@@ -1210,7 +1210,8 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         return ReturnFalse; // Another qmake breakage
     case T_EVAL: {
             VisitReturn ret = ReturnFalse;
-            ProFile *pro = m_parser->parsedProBlock(args.join(statics.field_sep),
+            QString contents = args.join(statics.field_sep);
+            ProFile *pro = m_parser->parsedProBlock(QStringRef(&contents),
                                                     m_current.pro->fileName(), m_current.line);
             if (m_cumulative || pro->isOk()) {
                 m_locationStack.push(m_current);
@@ -1226,7 +1227,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             evalError(fL1S("if(condition) requires one argument."));
             return ReturnFalse;
         }
-        return returnBool(evaluateConditional(args.at(0).toQString(),
+        return returnBool(evaluateConditional(args.at(0).toQStringRef(),
                                               m_current.pro->fileName(), m_current.line));
     }
     case T_CONFIG: {
