@@ -2934,14 +2934,31 @@
 
     See also \l{upper(arg1 [, arg2 ..., argn])}{upper()}.
 
-    \section2 member(variablename, position)
+    \section2 member(variablename [, start [, end]])
 
-    Returns the value at the given \c position in the list of items in
-    \c variablename.
-    If an item cannot be found at the position specified, an empty string is
-    returned. \c variablename is the only required field. If not specified,
-    \c position defaults to 0, causing the first value in the list to be
-    returned.
+    Returns the slice of the list value of \c variablename with the
+    zero-based element indices between \c start and \c end (inclusive).
+
+    If \c start is not given, it defaults to zero. This usage is
+    equivalent to \c $$first(variablename).
+
+    If \c end is not given, it defaults to \c start. This usage represents
+    simple array indexing, as exactly one element will be returned.
+
+    It is also possible to specify start and end in a single argument, with
+    the numbers separated by two periods.
+
+    Negative numbers represent indices starting from the end of the list,
+    with -1 being the last element.
+
+    If either index is out of range, an empty list is returned.
+
+    If \c end is smaller than \c start, the elements are returned
+    in reverse order.
+
+    \note The fact that the end index is inclusive and unordered implies
+    that an empty list will be returned only when an index is invalid
+    (which is implied by the input variable being empty).
 
     \section2 num_add(arg1 [, arg2 ..., argn])
 
