@@ -126,7 +126,6 @@ private:
     int leftMargin() { return backButton_->isVisible() ? backButtonSize() + iconSpacing : 0; }
 
     int titleOffset();
-    bool resolveSymbols();
     void drawTitleBar(QPainter *painter);
     void setMouseCursor(QPoint pos);
     void collapseTopFrameStrut();
@@ -137,7 +136,6 @@ private:
     bool eventFilter(QObject *obj, QEvent *event);
 
     static int instanceCount;
-    static bool is_vista;
     static VistaState cachedVistaState;
     static bool isCompositionEnabled();
     static bool isThemeActive();

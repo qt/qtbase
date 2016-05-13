@@ -200,7 +200,7 @@ QSystemTrayIconSys::QSystemTrayIconSys(HWND hwnd, QSystemTrayIcon *object)
         MYWM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
     }
 
-    // Allow the WM_TASKBARCREATED message through the UIPI filter on Windows Vista and higher
+    // Allow the WM_TASKBARCREATED message through the UIPI filter on Windows 7 and higher
     static PtrChangeWindowMessageFilterEx pChangeWindowMessageFilterEx =
         (PtrChangeWindowMessageFilterEx)QSystemLibrary::resolve(QLatin1String("user32"), "ChangeWindowMessageFilterEx");
 
@@ -208,13 +208,14 @@ QSystemTrayIconSys::QSystemTrayIconSys(HWND hwnd, QSystemTrayIcon *object)
         // Call the safer ChangeWindowMessageFilterEx API if available (Windows 7 onwards)
         pChangeWindowMessageFilterEx(m_hwnd, MYWM_TASKBARCREATED, Q_MSGFLT_ALLOW, 0);
     } else {
+        // Call the deprecated ChangeWindowMessageFilter API otherwise (Vista onwards)
+        // May 2016: Still resolved at runtime since the definition is not present in MinGW 4.9.
+        // TODO: Replace by direct invocation when upgrading MinGW.
         static PtrChangeWindowMessageFilter pChangeWindowMessageFilter =
             (PtrChangeWindowMessageFilter)QSystemLibrary::resolve(QLatin1String("user32"), "ChangeWindowMessageFilter");
 
-        if (pChangeWindowMessageFilter) {
-            // Call the deprecated ChangeWindowMessageFilter API otherwise
+        if (pChangeWindowMessageFilter)
             pChangeWindowMessageFilter(MYWM_TASKBARCREATED, Q_MSGFLT_ALLOW);
-        }
     }
 }
 
@@ -413,6 +414,7 @@ QRect QSystemTrayIconSys::findIconGeometry(UINT iconId)
         UINT uID;
     };
 
+    // Windows 7 onwards.
     static PtrShell_NotifyIconGetRect Shell_NotifyIconGetRect =
         (PtrShell_NotifyIconGetRect)QSystemLibrary::resolve(QLatin1String("shell32"),
                                                             "Shell_NotifyIconGetRect");
