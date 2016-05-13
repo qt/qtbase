@@ -49,7 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
-/*! \fn QByteArray QByteArray::fromCFData(CFDataRef data)
+/*!
     \since 5.3
 
     Constructs a new QByteArray containing a copy of the CFData \a data.
@@ -64,7 +64,7 @@ QByteArray QByteArray::fromCFData(CFDataRef data)
     return QByteArray(reinterpret_cast<const char *>(CFDataGetBytePtr(data)), CFDataGetLength(data));
 }
 
-/*! \fn QByteArray QByteArray::fromRawCFData(CFDataRef data)
+/*!
     \since 5.3
 
     Constructs a QByteArray that uses the bytes of the CFData \a data.
@@ -84,7 +84,7 @@ QByteArray QByteArray::fromRawCFData(CFDataRef data)
     return QByteArray::fromRawData(reinterpret_cast<const char *>(CFDataGetBytePtr(data)), CFDataGetLength(data));
 }
 
-/*! \fn CFDataRef QByteArray::toCFData() const
+/*!
     \since 5.3
 
     Creates a CFData from a QByteArray. The caller owns the CFData object
@@ -97,7 +97,7 @@ CFDataRef QByteArray::toCFData() const
     return CFDataCreate(kCFAllocatorDefault, reinterpret_cast<const UInt8 *>(data()), length());
 }
 
-/*! \fn CFDataRef QByteArray::toRawCFData() const
+/*!
     \since 5.3
 
     Constructs a CFData that uses the bytes of the QByteArray.
@@ -109,14 +109,13 @@ CFDataRef QByteArray::toCFData() const
 
     \sa toCFData(), fromRawCFData(), fromCFData(), fromRawData()
 */
-
 CFDataRef QByteArray::toRawCFData() const
 {
     return CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, reinterpret_cast<const UInt8 *>(data()),
                     length(), kCFAllocatorNull);
 }
 
-/*! \fn QByteArray QByteArray::fromNSData(const NSData *data)
+/*!
     \since 5.3
 
     Constructs a new QByteArray containing a copy of the NSData \a data.
@@ -130,7 +129,7 @@ QByteArray QByteArray::fromNSData(const NSData *data)
     return QByteArray(reinterpret_cast<const char *>([data bytes]), [data length]);
 }
 
-/*! \fn QByteArray QByteArray::fromRawNSData(const NSData *data)
+/*!
     \since 5.3
 
     Constructs a QByteArray that uses the bytes of the NSData \a data.
@@ -149,7 +148,7 @@ QByteArray QByteArray::fromRawNSData(const NSData *data)
     return QByteArray::fromRawData(reinterpret_cast<const char *>([data bytes]), [data length]);
 }
 
-/*! \fn NSData QByteArray::toNSData() const
+/*!
     \since 5.3
 
     Creates a NSData from a QByteArray. The NSData object is autoreleased.
@@ -161,7 +160,7 @@ NSData *QByteArray::toNSData() const
     return [NSData dataWithBytes:constData() length:size()];
 }
 
-/*! \fn NSData QByteArray::toRawNSData() const
+/*!
     \since 5.3
 
     Constructs a NSData that uses the bytes of the QByteArray.
@@ -181,7 +180,7 @@ NSData *QByteArray::toRawNSData() const
 
 // ----------------------------------------------------------------------------
 
-/*! \fn QString QString::fromCFString(CFStringRef string)
+/*!
     \since 5.2
 
     Constructs a new QString containing a copy of the \a string CFString.
@@ -205,7 +204,7 @@ QString QString::fromCFString(CFStringRef string)
     return ret;
 }
 
-/*! \fn CFStringRef QString::toCFString() const
+/*!
     \since 5.2
 
     Creates a CFString from a QString. The caller owns the CFString and is
@@ -218,7 +217,7 @@ CFStringRef QString::toCFString() const
     return CFStringCreateWithCharacters(0, reinterpret_cast<const UniChar *>(unicode()), length());
 }
 
-/*! \fn QString QString::fromNSString(const NSString *string)
+/*!
     \since 5.2
 
     Constructs a new QString containing a copy of the \a string NSString.
@@ -235,7 +234,7 @@ QString QString::fromNSString(const NSString *string)
    return qstring;
 }
 
-/*! \fn NSString QString::toNSString() const
+/*!
     \since 5.2
 
     Creates a NSString from a QString. The NSString is autoreleased.
@@ -249,7 +248,7 @@ NSString *QString::toNSString() const
 
 // ----------------------------------------------------------------------------
 
-/*! \fn QUuid QUuid::fromCFUUID(CFUUIDRef uuid)
+/*!
     \since 5.7
 
     Constructs a new QUuid containing a copy of the \a uuid CFUUID.
@@ -264,7 +263,7 @@ QUuid QUuid::fromCFUUID(CFUUIDRef uuid)
     return QUuid::fromRfc4122(QByteArray::fromRawData(reinterpret_cast<const char *>(&bytes), sizeof(bytes)));
 }
 
-/*! \fn CFUUIDRef QUuid::toCFUUID() const
+/*!
     \since 5.7
 
     Creates a CFUUID from a QUuid. The caller owns the CFUUID and is
@@ -278,7 +277,7 @@ CFUUIDRef QUuid::toCFUUID() const
     return CFUUIDCreateFromUUIDBytes(0, *reinterpret_cast<const CFUUIDBytes *>(bytes.constData()));
 }
 
-/*! \fn QUuid QUuid::fromNSUUID(const NSUUID *uuid)
+/*!
     \since 5.7
 
     Constructs a new QUuid containing a copy of the \a uuid NSUUID.
@@ -294,7 +293,7 @@ QUuid QUuid::fromNSUUID(const NSUUID *uuid)
     return QUuid::fromRfc4122(QByteArray::fromRawData(reinterpret_cast<const char *>(bytes), sizeof(bytes)));
 }
 
-/*! \fn NSUUID QUuid::toNSUUID() const
+/*!
     \since 5.7
 
     Creates a NSUUID from a QUuid. The NSUUID is autoreleased.
@@ -310,7 +309,7 @@ NSUUID *QUuid::toNSUUID() const
 // ----------------------------------------------------------------------------
 
 
-/*! \fn QUrl QUrl::fromCFURL(CFURLRef url)
+/*!
     \since 5.2
 
     Constructs a QUrl containing a copy of the CFURL \a url.
@@ -320,7 +319,7 @@ QUrl QUrl::fromCFURL(CFURLRef url)
     return QUrl(QString::fromCFString(CFURLGetString(url)));
 }
 
-/*! \fn CFURLRef QUrl::toCFURL() const
+/*!
     \since 5.2
 
     Creates a CFURL from a QUrl. The caller owns the CFURL and is
@@ -338,7 +337,6 @@ CFURLRef QUrl::toCFURL() const
 }
 
 /*!
-    \fn QUrl QUrl::fromNSURL(const NSURL *url)
     \since 5.2
 
     Constructs a QUrl containing a copy of the NSURL \a url.
@@ -349,7 +347,6 @@ QUrl QUrl::fromNSURL(const NSURL *url)
 }
 
 /*!
-    \fn NSURL* QUrl::toNSURL() const
     \since 5.2
 
     Creates a NSURL from a QUrl. The NSURL is autoreleased.
@@ -362,7 +359,7 @@ NSURL *QUrl::toNSURL() const
 // ----------------------------------------------------------------------------
 
 
-/*! \fn QDateTime QDateTime::fromCFDate(CFDateRef date)
+/*!
     \since 5.5
 
     Constructs a new QDateTime containing a copy of the CFDate \a date.
@@ -377,7 +374,7 @@ QDateTime QDateTime::fromCFDate(CFDateRef date)
                                                     + kCFAbsoluteTimeIntervalSince1970) * 1000));
 }
 
-/*! \fn CFDateRef QDateTime::toCFDate() const
+/*!
     \since 5.5
 
     Creates a CFDate from a QDateTime. The caller owns the CFDate object
@@ -391,7 +388,7 @@ CFDateRef QDateTime::toCFDate() const
                                                     / 1000) - kCFAbsoluteTimeIntervalSince1970);
 }
 
-/*! \fn QDateTime QDateTime::fromNSDate(const NSDate *date)
+/*!
     \since 5.5
 
     Constructs a new QDateTime containing a copy of the NSDate \a date.
@@ -405,7 +402,7 @@ QDateTime QDateTime::fromNSDate(const NSDate *date)
     return QDateTime::fromMSecsSinceEpoch(static_cast<qint64>([date timeIntervalSince1970] * 1000));
 }
 
-/*! \fn NSDate QDateTime::toNSDate() const
+/*!
     \since 5.5
 
     Creates an NSDate from a QDateTime. The NSDate object is autoreleased.
