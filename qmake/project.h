@@ -64,6 +64,8 @@ public:
     int intValue(const ProKey &v, int defaultValue = 0) const;
     const ProValueMap &variables() const { return m_valuemapStack.first(); }
     ProValueMap &variables() { return m_valuemapStack.first(); }
+    bool isActiveConfig(const QString &config, bool regex = false)
+        { return QMakeEvaluator::isActiveConfig(QStringRef(&config), regex); }
 
     void dump() const;
 
@@ -78,7 +80,6 @@ public:
     using QMakeEvaluator::propertyValue;
     using QMakeEvaluator::values;
     using QMakeEvaluator::first;
-    using QMakeEvaluator::isActiveConfig;
     using QMakeEvaluator::isHostBuild;
     using QMakeEvaluator::dirSep;
 
