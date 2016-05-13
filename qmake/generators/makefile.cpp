@@ -318,8 +318,8 @@ MakefileGenerator::findFilesInVPATH(ProStringList l, uchar flags, const QString 
                                                 QDir::NoDotAndDotDot | QDir::AllEntries);
                     if(files.isEmpty()) {
                         debug_msg(1, "%s:%d Failure to find %s in vpath (%s)",
-                                  __FILE__, __LINE__,
-                                  val.toLatin1().constData(), vpath.join("::").toLatin1().constData());
+                                  __FILE__, __LINE__, val.toLatin1().constData(),
+                                  vpath.join(QString("::")).toLatin1().constData());
                         if(flags & VPATH_RemoveMissingFiles)
                             remove_file = true;
                         else if(flags & VPATH_WarnMissingFiles)
@@ -780,7 +780,8 @@ MakefileGenerator::init()
         for (ProStringList::Iterator it = incDirs.begin(); it != incDirs.end(); ++it)
             deplist.append(QMakeLocalFileName((*it).toQString()));
         QMakeSourceFileInfo::setDependencyPaths(deplist);
-        debug_msg(1, "Dependency Directories: %s", incDirs.join(" :: ").toLatin1().constData());
+        debug_msg(1, "Dependency Directories: %s",
+                  incDirs.join(QString(" :: ")).toLatin1().constData());
         //cache info
         if(project->isActiveConfig("qmake_cache")) {
             QString cache_file;
@@ -2183,7 +2184,7 @@ MakefileGenerator::writeExtraVariables(QTextStream &t)
     }
     if (!outlist.isEmpty()) {
         t << "####### Custom Variables\n";
-        t << outlist.join("\n") << endl << endl;
+        t << outlist.join('\n') << endl << endl;
     }
 }
 
@@ -2727,7 +2728,7 @@ MakefileGenerator::writeMakeQmake(QTextStream &t, bool noDummyQmakeAll)
                     t << escapeDependencyPath(specdir() + Option::dir_sep + "qmake.conf") << " ";
             }
             const ProStringList &included = escapeDependencyPaths(project->values("QMAKE_INTERNAL_INCLUDED_FILES"));
-            t << included.join(" \\\n\t\t") << "\n\t"
+            t << included.join(QString(" \\\n\t\t")) << "\n\t"
               << qmake << endl;
             for(int include = 0; include < included.size(); ++include) {
                 const ProString &i = included.at(include);

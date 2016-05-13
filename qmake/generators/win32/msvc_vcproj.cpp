@@ -490,7 +490,8 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                 // Check if all requirements are fulfilled
                 if (!tmp_proj.isEmpty("QMAKE_FAILED_REQUIREMENTS")) {
                     fprintf(stderr, "Project file(%s) not added to Solution because all requirements not met:\n\t%s\n",
-                        fn.toLatin1().constData(), tmp_proj.values("QMAKE_FAILED_REQUIREMENTS").join(" ").toLatin1().constData());
+                            fn.toLatin1().constData(),
+                            tmp_proj.values("QMAKE_FAILED_REQUIREMENTS").join(' ').toLatin1().constData());
                     qmake_setpwd(oldpwd);
                     Option::output_dir = oldoutpwd;
                     continue;

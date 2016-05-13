@@ -241,13 +241,14 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 t << "\\\n\t\t" << (*objit);
         }
         if(incrs_out.count() == objs.count()) { //we just switched places, no real incrementals to be done!
-            t << escapeFilePaths(incrs_out).join(" \\\n\t\t") << endl;
+            t << escapeFilePaths(incrs_out).join(QString(" \\\n\t\t")) << endl;
         } else if(!incrs_out.count()) {
             t << endl;
         } else {
             src_incremental = true;
             t << endl;
-            t << "INCREMENTAL_OBJECTS = " << escapeFilePaths(incrs_out).join(" \\\n\t\t") << endl;
+            t << "INCREMENTAL_OBJECTS = "
+              << escapeFilePaths(incrs_out).join(QString(" \\\n\t\t")) << endl;
         }
     } else {
         // Used all over the place in both deps and commands.
