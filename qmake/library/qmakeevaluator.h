@@ -176,7 +176,7 @@ public:
 
     void setTemplate();
 
-    ProStringList split_value_list(const QString &vals, const ProFile *source = 0);
+    ProStringList split_value_list(const QStringRef &vals, const ProFile *source = 0);
     ProStringList expandVariableReferences(const ProString &value, int *pos = 0, bool joined = false);
     ProStringList expandVariableReferences(const ushort *&tokPtr, int sizeHint = 0, bool joined = false);
 
