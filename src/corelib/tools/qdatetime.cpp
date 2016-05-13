@@ -2763,6 +2763,20 @@ inline QDateTime::Data::Data(const Data &other)
     }
 }
 
+inline QDateTime::Data::Data(Data &&other)
+    : d(other.d)
+{
+    // reset the other to a short state, if we can
+    if (CanBeSmall) {
+        Data dummy(Qt::LocalTime);
+        Q_ASSERT(dummy.isShort());
+        other.d = dummy.d;
+    } else if (!isShort()) {
+        // can't be small, so do implicit sharing
+        d->ref.ref();
+    }
+}
+
 inline QDateTime::Data &QDateTime::Data::operator=(const Data &other)
 {
     if (d == other.d)
@@ -3095,9 +3109,18 @@ QDateTime::QDateTime(const QDate &date, const QTime &time, const QTimeZone &time
 /*!
     Constructs a copy of the \a other datetime.
 */
-
 QDateTime::QDateTime(const QDateTime &other) Q_DECL_NOTHROW
     : d(other.d)
+{
+}
+
+/*!
+    \since 5.8
+    Moves the content of the temporary \a other datetime to this object and
+    leaves \a other in an unspecified (but proper) state.
+*/
+QDateTime::QDateTime(QDateTime &&other) Q_DECL_NOTHROW
+    : d(std::move(other.d))
 {
 }
 

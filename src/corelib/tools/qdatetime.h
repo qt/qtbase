@@ -232,8 +232,8 @@ class Q_CORE_EXPORT QDateTime
 
         Data(Qt::TimeSpec);
         Data(const Data &other);
+        Data(Data &&other);
         Data &operator=(const Data &other);
-        // no move semantics (would be the same as copy)
         ~Data();
 
         bool isShort() const;
@@ -256,6 +256,7 @@ public:
     QDateTime(const QDate &date, const QTime &time, const QTimeZone &timeZone);
 #endif // QT_BOOTSTRAPPED
     QDateTime(const QDateTime &other) Q_DECL_NOTHROW;
+    QDateTime(QDateTime &&other) Q_DECL_NOTHROW;
     ~QDateTime();
 
 #ifdef Q_COMPILER_RVALUE_REFS
