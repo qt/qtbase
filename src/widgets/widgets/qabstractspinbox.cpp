@@ -1418,7 +1418,7 @@ QStyle::SubControl QAbstractSpinBoxPrivate::newHoverControl(const QPoint &pos)
 
 QString QAbstractSpinBoxPrivate::stripped(const QString &t, int *pos) const
 {
-    QString text = t;
+    QStringRef text(&t);
     if (specialValueText.size() == 0 || text != specialValueText) {
         int from = 0;
         int size = text.size();
@@ -1440,7 +1440,7 @@ QString QAbstractSpinBoxPrivate::stripped(const QString &t, int *pos) const
     text = text.trimmed();
     if (pos)
         (*pos) -= (s - text.size());
-    return text;
+    return text.toString();
 
 }
 
