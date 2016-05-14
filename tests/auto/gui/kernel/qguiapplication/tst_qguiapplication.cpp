@@ -106,11 +106,29 @@ void tst_QGuiApplication::displayName()
     int argc = 1;
     char *argv[] = { const_cast<char*>("tst_qguiapplication") };
     QGuiApplication app(argc, argv);
+    QSignalSpy spy(&app, &QGuiApplication::applicationDisplayNameChanged);
+
     QCOMPARE(::qAppName(), QString::fromLatin1("tst_qguiapplication"));
     QCOMPARE(QGuiApplication::applicationName(), QString::fromLatin1("tst_qguiapplication"));
     QCOMPARE(QGuiApplication::applicationDisplayName(), QString::fromLatin1("tst_qguiapplication"));
+
+    QGuiApplication::setApplicationName("The Core Application");
+    QCOMPARE(QGuiApplication::applicationName(), QString::fromLatin1("The Core Application"));
+    QCOMPARE(QGuiApplication::applicationDisplayName(), QString::fromLatin1("The Core Application"));
+    QCOMPARE(spy.count(), 1);
+
     QGuiApplication::setApplicationDisplayName("The GUI Application");
     QCOMPARE(QGuiApplication::applicationDisplayName(), QString::fromLatin1("The GUI Application"));
+    QCOMPARE(spy.count(), 2);
+
+    QGuiApplication::setApplicationName("The Core Application 2");
+    QCOMPARE(QGuiApplication::applicationName(), QString::fromLatin1("The Core Application 2"));
+    QCOMPARE(QGuiApplication::applicationDisplayName(), QString::fromLatin1("The GUI Application"));
+    QCOMPARE(spy.count(), 2);
+
+    QGuiApplication::setApplicationDisplayName("The GUI Application 2");
+    QCOMPARE(QGuiApplication::applicationDisplayName(), QString::fromLatin1("The GUI Application 2"));
+    QCOMPARE(spy.count(), 3);
 }
 
 void tst_QGuiApplication::desktopFileName()

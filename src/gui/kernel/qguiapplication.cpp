@@ -656,9 +656,20 @@ QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags
 */
 void QGuiApplication::setApplicationDisplayName(const QString &name)
 {
-    if (!QGuiApplicationPrivate::displayName)
-        QGuiApplicationPrivate::displayName = new QString;
-    *QGuiApplicationPrivate::displayName = name;
+    if (!QGuiApplicationPrivate::displayName) {
+        QGuiApplicationPrivate::displayName = new QString(name);
+        if (qGuiApp) {
+            disconnect(qGuiApp, &QGuiApplication::applicationNameChanged,
+                    qGuiApp, &QGuiApplication::applicationDisplayNameChanged);
+
+            if (QGuiApplicationPrivate::displayName != applicationName())
+                emit qGuiApp->applicationDisplayNameChanged();
+        }
+    } else if (name != *QGuiApplicationPrivate::displayName) {
+        *QGuiApplicationPrivate::displayName = name;
+        if (qGuiApp)
+            emit qGuiApp->applicationDisplayNameChanged();
+    }
 }
 
 QString QGuiApplication::applicationDisplayName()
@@ -1424,9 +1435,8 @@ void QGuiApplicationPrivate::init()
     init_plugins(pluginList);
     QWindowSystemInterface::flushWindowSystemEvents();
 
-#ifndef QT_NO_SESSIONMANAGER
     Q_Q(QGuiApplication);
-
+#ifndef QT_NO_SESSIONMANAGER
     // connect to the session manager
     session_manager = new QSessionManager(q, session_id, session_key);
 #endif
@@ -1455,6 +1465,10 @@ void QGuiApplicationPrivate::init()
 
     if (layout_direction == Qt::LayoutDirectionAuto || force_reverse)
         QGuiApplication::setLayoutDirection(qt_detectRTLLanguage() ? Qt::RightToLeft : Qt::LeftToRight);
+
+    if (!QGuiApplicationPrivate::displayName)
+        QObject::connect(q, &QGuiApplication::applicationNameChanged,
+                         q, &QGuiApplication::applicationDisplayNameChanged);
 }
 
 extern void qt_cleanupFontDatabase();
