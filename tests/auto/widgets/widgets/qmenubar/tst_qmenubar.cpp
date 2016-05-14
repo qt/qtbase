@@ -164,8 +164,6 @@ void tst_QMenuBar::getSetCheck()
 
 #include <qcursor.h>
 
-const int RESET = 0;
-
 /*!
     Test plan:
         insertItem (all flavors and combinations)
