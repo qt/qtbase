@@ -1937,9 +1937,8 @@ static void figureOutProperKey(Qt::Key &key, Qt::KeyboardModifiers &pressState)
         break;
     }
 #else
-    // Naively kill the warning.
-    key = key;
-    pressState = pressState;
+    Q_UNUSED(key);
+    Q_UNUSED(pressState);
 #endif
 }
 
