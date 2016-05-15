@@ -137,9 +137,11 @@ bool QLockFilePrivate::isApparentlyStale() const
             if (!procHandle)
                 return true;
             // We got a handle but check if process is still alive
-            DWORD dwR = ::WaitForSingleObject(procHandle, 0);
+            DWORD exitCode = 0;
+            if (!::GetExitCodeProcess(procHandle, &exitCode))
+                exitCode = 0;
             ::CloseHandle(procHandle);
-            if (dwR == WAIT_TIMEOUT)
+            if (exitCode != STILL_ACTIVE)
                 return true;
             const QString processName = processNameByPid(pid);
             if (!processName.isEmpty() && processName != appname)
