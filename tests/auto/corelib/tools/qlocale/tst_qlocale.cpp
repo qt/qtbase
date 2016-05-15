@@ -186,12 +186,50 @@ void tst_QLocale::ctor()
         QVERIFY(l.country() == default_country);
     }
 
+#define TEST_CTOR(req_lang, req_script, req_country, exp_lang, exp_script, exp_country) \
+    { \
+        QLocale l(QLocale::req_lang, QLocale::req_script, QLocale::req_country); \
+        QCOMPARE((int)l.language(), (int)exp_lang); \
+        QCOMPARE((int)l.script(), (int)exp_script); \
+        QCOMPARE((int)l.country(), (int)exp_country); \
+    }
+
+    // Exact matches
+    TEST_CTOR(Chinese, SimplifiedHanScript, China, QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
+    TEST_CTOR(Chinese, TraditionalHanScript, Taiwan, QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::Taiwan);
+    TEST_CTOR(Chinese, TraditionalHanScript, HongKong, QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::HongKong);
+
+    // Best match for AnyCountry
+    TEST_CTOR(Chinese, SimplifiedHanScript, AnyCountry, QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
+    TEST_CTOR(Chinese, TraditionalHanScript, AnyCountry, QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::Taiwan);
+
+    // Best match for AnyScript (and change country to supported one, if necessary)
+    TEST_CTOR(Chinese, AnyScript, China, QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
+    TEST_CTOR(Chinese, AnyScript, Taiwan, QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::Taiwan);
+    TEST_CTOR(Chinese, AnyScript, HongKong, QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::HongKong);
+    TEST_CTOR(Chinese, AnyScript, UnitedStates, QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
+
+    // Fully-specified not found; find best alternate country
+    TEST_CTOR(Chinese, SimplifiedHanScript, Taiwan, QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
+    TEST_CTOR(Chinese, SimplifiedHanScript, UnitedStates, QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
+    TEST_CTOR(Chinese, TraditionalHanScript, China, QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::Taiwan);
+    TEST_CTOR(Chinese, TraditionalHanScript, UnitedStates, QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::Taiwan);
+
+    // Fully-specified not found; find best alternate script
+    TEST_CTOR(Chinese, LatinScript, China, QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
+    TEST_CTOR(Chinese, LatinScript, Taiwan, QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::Taiwan);
+
+    // Fully-specified not found; find best alternate country and script
+    TEST_CTOR(Chinese, LatinScript, UnitedStates, QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
+
+#undef TEST_CTOR
 #define TEST_CTOR(req_lang, req_country, exp_lang, exp_country) \
     { \
         QLocale l(QLocale::req_lang, QLocale::req_country); \
         QCOMPARE((int)l.language(), (int)exp_lang); \
         QCOMPARE((int)l.country(), (int)exp_country); \
     }
+
     {
         QLocale l(QLocale::C, QLocale::AnyCountry);
         QCOMPARE(l.language(), QLocale::C);
@@ -295,7 +333,6 @@ void tst_QLocale::ctor()
     TEST_CTOR(Uzbek, AnyCountry, QLocale::Uzbek, QLocale::Uzbekistan)
 
 #undef TEST_CTOR
-
 #define TEST_CTOR(req_lc, exp_lang, exp_country) \
     { \
         QLocale l(req_lc); \
