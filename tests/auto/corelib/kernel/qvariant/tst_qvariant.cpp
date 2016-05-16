@@ -4629,6 +4629,16 @@ template<typename Enum> void testVariant(Enum value, bool *ok)
     QVERIFY(var2.convert(QMetaType::Int));
     QCOMPARE(var2.value<int>(), static_cast<int>(value));
 
+    if (static_cast<qint64>(value) <= INT_MAX) {
+        int intValue = static_cast<int>(value);
+        QVariant intVar = intValue;
+        QVERIFY(intVar.canConvert<Enum>());
+        QCOMPARE(intVar.value<Enum>(), value);
+    }
+    qint64 longValue = static_cast<qint64>(value);
+    QVERIFY(QVariant(longValue).canConvert<Enum>());
+    QCOMPARE(QVariant(longValue).value<Enum>(), value);
+
     *ok = true;
 }
 
