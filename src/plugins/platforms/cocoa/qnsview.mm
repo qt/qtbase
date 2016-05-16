@@ -653,7 +653,9 @@ QT_WARNING_POP
 
 - (BOOL)becomeFirstResponder
 {
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
+    if (!m_window || !m_platformWindow)
+        return NO;
+    if (m_window->flags() & Qt::WindowTransparentForInput)
         return NO;
     if (!m_platformWindow->windowIsPopupType() && !m_isMenuView)
         QWindowSystemInterface::handleWindowActivated([self topLevelWindow]);
@@ -662,11 +664,13 @@ QT_WARNING_POP
 
 - (BOOL)acceptsFirstResponder
 {
+    if (!m_window || !m_platformWindow)
+        return NO;
     if (m_isMenuView)
         return NO;
     if (m_platformWindow->shouldRefuseKeyWindowAndFirstResponder())
         return NO;
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
+    if (m_window->flags() & Qt::WindowTransparentForInput)
         return NO;
     if ((m_window->flags() & Qt::ToolTip) == Qt::ToolTip)
         return NO;
@@ -676,7 +680,9 @@ QT_WARNING_POP
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
 {
     Q_UNUSED(theEvent)
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
+    if (!m_window || !m_platformWindow)
+        return NO;
+    if (m_window->flags() & Qt::WindowTransparentForInput)
         return NO;
     return YES;
 }
