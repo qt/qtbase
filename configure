@@ -4743,9 +4743,13 @@ if [ "$CFG_LIBPNG" = "auto" ]; then
 fi
 
 # detect dl
-if ! compileTest unix/libdl "libdl"; then
-    QMakeVar add DEFINES QT_NO_DYNAMIC_LIBRARY
+if compileTest unix/dlopen "dlopen"; then
     QMAKE_CONFIG="$QMAKE_CONFIG no-libdl"
+else
+    if ! compileTest unix/libdl "libdl"; then
+        QMAKE_CONFIG="$QMAKE_CONFIG no-libdl"
+        QMakeVar add DEFINES QT_NO_DYNAMIC_LIBRARY
+    fi
 fi
 
 if [ "$CFG_EGLFS" = "yes" ]; then
