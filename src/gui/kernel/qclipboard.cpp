@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
     Drop}.
 
     There is a single QClipboard object in an application, accessible
-    as QApplication::clipboard().
+    as QGuiApplication::clipboard().
 
     Example:
     \snippet code/src_gui_kernel_qclipboard.cpp 0
@@ -131,7 +131,7 @@ QT_BEGIN_NAMESPACE
 
     \endlist
 
-    \sa QApplication
+    \sa QGuiApplication
 */
 
 /*!
@@ -141,7 +141,7 @@ QT_BEGIN_NAMESPACE
 
     Do not call this function.
 
-    Call QApplication::clipboard() instead to get a pointer to the
+    Call QGuiApplication::clipboard() instead to get a pointer to the
     application's global clipboard object.
 
     There is only one clipboard in the window system, and creating
@@ -159,7 +159,7 @@ QClipboard::QClipboard(QObject *parent)
 
     Destroys the clipboard.
 
-    You should never delete the clipboard. QApplication will do this
+    You should never delete the clipboard. QGuiApplication will do this
     when the application terminates.
 */
 QClipboard::~QClipboard()
