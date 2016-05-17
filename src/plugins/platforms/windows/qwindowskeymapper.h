@@ -40,7 +40,7 @@
 #ifndef QWINDOWSKEYMAPPER_H
 #define QWINDOWSKEYMAPPER_H
 
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 
 #include <QtCore/QLocale>
 

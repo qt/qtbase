@@ -43,7 +43,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include <QtCore/qglobal.h>
 
-#include "../qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 #include <QtCore/qsharedpointer.h>
 #include <QtGui/qaccessible.h>
 #ifndef Q_CC_MINGW

@@ -40,7 +40,7 @@
 #ifndef QWINDOWSBACKINGSTORE_H
 #define QWINDOWSBACKINGSTORE_H
 
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 
 #include <qpa/qplatformbackingstore.h>
 #include <QtCore/QScopedPointer>

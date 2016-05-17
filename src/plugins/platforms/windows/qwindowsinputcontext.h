@@ -40,7 +40,7 @@
 #ifndef QWINDOWSINPUTCONTEXT_H
 #define QWINDOWSINPUTCONTEXT_H
 
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 
 #include <QtCore/QLocale>
 #include <QtCore/QPointer>

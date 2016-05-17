@@ -42,7 +42,7 @@
 #include "qwindowsnativeimage.h"
 #include "qwindowscontext.h"
 #include "qwindowsfontdatabase.h"
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 #include "qwindowsfontenginedirectwrite.h"
 
 #include <QtGui/private/qtextengine_p.h> // glyph_metrics_t

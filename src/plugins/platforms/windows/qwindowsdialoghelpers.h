@@ -40,7 +40,7 @@
 #ifndef QWINDOWSDIALOGHELPER_H
 #define QWINDOWSDIALOGHELPER_H
 
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 #include <qpa/qplatformdialoghelper.h>
 #include <qpa/qplatformtheme.h>
 #include <QtCore/QStringList>

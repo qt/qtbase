@@ -40,7 +40,7 @@
 #ifndef QWINDOWSCURSOR_H
 #define QWINDOWSCURSOR_H
 
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 
 #include <qpa/qplatformcursor.h>
 #include <QtCore/QSharedPointer>

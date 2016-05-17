@@ -80,7 +80,7 @@
 #include <comdef.h>
 #endif
 
-#include "../qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 

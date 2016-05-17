@@ -40,7 +40,7 @@
 #ifndef QWINDOWSOLE_H
 #define QWINDOWSOLE_H
 
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 
 #include <QtCore/QMap>
 #include <QtCore/QPointer>

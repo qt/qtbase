@@ -114,12 +114,6 @@ QT_BEGIN_NAMESPACE
         including a considerable part of the Windows SDK.
     \endlist
 
-    The file \c qtwindows_additional.h contains defines and declarations that
-    are missing in MinGW. When encountering missing declarations, it should
-    be added there so that \c #ifdefs for MinGW can be avoided. Similarly,
-    \c qplatformfunctions_wince.h contains defines and declarations for
-    Windows Embedded.
-
     When using a function from the WinAPI, the minimum supported Windows version
     and Windows Embedded support should be checked. If the function is not supported
     on Windows XP or is not present in the MinGW-headers, it should be dynamically

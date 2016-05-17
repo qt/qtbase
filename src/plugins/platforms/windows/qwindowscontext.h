@@ -41,7 +41,7 @@
 #define QWINDOWSCONTEXT_H
 
 #include "qtwindowsglobal.h"
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 
 #include <QtCore/QScopedPointer>
 #include <QtCore/QSharedPointer>

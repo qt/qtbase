@@ -42,7 +42,7 @@
 
 #include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
 #include <QtCore/QSharedPointer>
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 

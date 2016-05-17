@@ -40,7 +40,7 @@
 #ifndef QWINDOWSINTERNALMIME_H
 #define QWINDOWSINTERNALMIME_H
 
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 
 #include <QtGui/private/qdnd_p.h> // QInternalMime
 #include <QtCore/QVariant>

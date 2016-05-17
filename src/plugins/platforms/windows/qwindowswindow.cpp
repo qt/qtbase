@@ -1260,6 +1260,11 @@ static inline HWND transientParentHwnd(HWND hwnd)
 // really exist on Windows, the relationship is set by passing a parent along with !WS_CHILD
 // to window creation or by setting the parent using  GWL_HWNDPARENT (as opposed to
 // SetParent, which would make it a real child).
+
+#ifndef GWL_HWNDPARENT
+#    define GWL_HWNDPARENT (-8)
+#endif
+
 void QWindowsWindow::updateTransientParent() const
 {
     if (window()->type() == Qt::Popup)

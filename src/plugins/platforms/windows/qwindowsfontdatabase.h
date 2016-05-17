@@ -42,7 +42,7 @@
 
 #include <qpa/qplatformfontdatabase.h>
 #include <QtCore/QSharedPointer>
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 
 #if !defined(QT_NO_DIRECTWRITE)
     struct IDWriteFactory;

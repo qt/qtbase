@@ -40,7 +40,7 @@
 #ifndef QWINDOWSGLCONTEXT_H
 #define QWINDOWSGLCONTEXT_H
 
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 #include "qwindowsopenglcontext.h"
 
 #include <QtGui/QOpenGLContext>

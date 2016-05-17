@@ -45,7 +45,7 @@
 #endif
 #include "qwindowsintegration.h"
 #include "qwindowsole.h"
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 #include "qwindowswindow.h"
 #include "qwindowsmousehandler.h"
 #include "qwindowscursor.h"

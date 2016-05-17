@@ -41,8 +41,20 @@
 #ifndef QTWINDOWSGLOBAL_H
 #define QTWINDOWSGLOBAL_H
 
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 #include <QtCore/qnamespace.h>
+
+#ifndef WM_DWMCOMPOSITIONCHANGED // MinGW.
+#    define WM_DWMCOMPOSITIONCHANGED 0x31E
+#endif
+
+#ifndef WM_TOUCH
+#  define WM_TOUCH 0x0240
+#endif
+
+#ifndef WM_GESTURE
+#  define WM_GESTURE 0x0119
+#endif
 
 QT_BEGIN_NAMESPACE
 

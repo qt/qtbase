@@ -40,7 +40,7 @@
 #ifndef QWINDOWSWINDOW_H
 #define QWINDOWSWINDOW_H
 
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 #include "qwindowscursor.h"
 
 #include <qpa/qplatformwindow.h>

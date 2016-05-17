@@ -40,7 +40,7 @@
 #ifndef QWINDOWSNATIVEIMAGE_H
 #define QWINDOWSNATIVEIMAGE_H
 
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 
 #include <QtGui/QImage>
 

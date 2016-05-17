@@ -43,7 +43,7 @@
 #include "qwindowsintegration.h"
 #include "qwindowscursor.h"
 
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 
 #include <QtCore/QSettings>
 #include <QtGui/QPixmap>

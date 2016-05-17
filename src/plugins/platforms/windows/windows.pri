@@ -50,7 +50,6 @@ HEADERS += \
     $$PWD/qwindowsfontdatabase.h \
     $$PWD/qwindowsmousehandler.h \
     $$PWD/qtwindowsglobal.h \
-    $$PWD/qtwindows_additional.h \
     $$PWD/qwindowsole.h \
     $$PWD/qwindowsmime.h \
     $$PWD/qwindowsinternalmimedata.h \

@@ -40,7 +40,7 @@
 #ifndef QWINDOWSMIME_H
 #define QWINDOWSMIME_H
 
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 
 #include <QtCore/QVector>
 #include <QtCore/QList>

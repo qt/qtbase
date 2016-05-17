@@ -39,7 +39,7 @@
 
 #define QT_NO_URL_CAST_FROM_STRING
 #include "qwindowsservices.h"
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 
 #include <QtCore/QUrl>
 #include <QtCore/QDebug>

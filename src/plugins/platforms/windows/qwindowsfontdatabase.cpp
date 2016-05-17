@@ -42,7 +42,7 @@
 #include "qwindowscontext.h"
 #include "qwindowsfontengine.h"
 #include "qwindowsfontenginedirectwrite.h"
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 
 #include <QtGui/QFont>
 #include <QtGui/QGuiApplication>

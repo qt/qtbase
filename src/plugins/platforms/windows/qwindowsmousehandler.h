@@ -41,7 +41,7 @@
 #define QWINDOWSMOUSEHANDLER_H
 
 #include "qtwindowsglobal.h"
-#include "qtwindows_additional.h"
+#include <QtCore/qt_windows.h>
 
 #include <QtCore/QPointer>
 #include <QtCore/QHash>
