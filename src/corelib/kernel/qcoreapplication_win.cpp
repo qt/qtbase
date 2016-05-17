@@ -49,7 +49,10 @@ QT_BEGIN_NAMESPACE
 
 int appCmdShow = 0;
 
-#if defined(Q_OS_WINRT)
+// GetModuleFileName only exists for MSVC2015 and upwards for WinRT, meaning
+// Windows 10 (Mobile). Hence take the first argument passed to the
+// QCoreApplication contructor for older versions as a fallback on older platforms.
+#if defined(Q_OS_WINRT) && _MSC_VER < 1900
 
 Q_CORE_EXPORT QString qAppFileName()
 {
@@ -61,31 +64,7 @@ QString QCoreApplicationPrivate::appName() const
     return QFileInfo(QCoreApplication::arguments().first()).baseName();
 }
 
-#else
-
-Q_CORE_EXPORT HINSTANCE qWinAppInst()                // get Windows app handle
-{
-    return GetModuleHandle(0);
-}
-
-Q_CORE_EXPORT HINSTANCE qWinAppPrevInst()                // get Windows prev app handle
-{
-    return 0;
-}
-
-Q_CORE_EXPORT int qWinAppCmdShow()                        // get main window show command
-{
-#if defined(Q_OS_WINCE)
-    return appCmdShow;
-#else
-    STARTUPINFO startupInfo;
-    GetStartupInfo(&startupInfo);
-
-    return (startupInfo.dwFlags & STARTF_USESHOWWINDOW)
-        ? startupInfo.wShowWindow
-        : SW_SHOWDEFAULT;
-#endif
-}
+#else // !(defined(Q_OS_WINRT) && _MSC_VER < 1900)
 
 Q_CORE_EXPORT QString qAppFileName()                // get application file name
 {
@@ -131,6 +110,34 @@ Q_CORE_EXPORT QString qAppFileName()                // get application file name
 QString QCoreApplicationPrivate::appName() const
 {
     return QFileInfo(qAppFileName()).baseName();
+}
+
+#endif // !(defined(Q_OS_WINRT) && _MSC_VER < 1900)
+
+#ifndef Q_OS_WINRT
+
+Q_CORE_EXPORT HINSTANCE qWinAppInst()                // get Windows app handle
+{
+    return GetModuleHandle(0);
+}
+
+Q_CORE_EXPORT HINSTANCE qWinAppPrevInst()                // get Windows prev app handle
+{
+    return 0;
+}
+
+Q_CORE_EXPORT int qWinAppCmdShow()                        // get main window show command
+{
+#if defined(Q_OS_WINCE)
+    return appCmdShow;
+#else
+    STARTUPINFO startupInfo;
+    GetStartupInfo(&startupInfo);
+
+    return (startupInfo.dwFlags & STARTF_USESHOWWINDOW)
+        ? startupInfo.wShowWindow
+        : SW_SHOWDEFAULT;
+#endif
 }
 
 /*****************************************************************************
