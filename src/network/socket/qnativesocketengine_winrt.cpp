@@ -458,17 +458,19 @@ void QNativeSocketEngine::close()
     }
 
 #if _MSC_VER >= 1900
-    // To close the connection properly (not with a hard reset) all pending read operation have to
-    // be finished or cancelled. The API isn't available on Windows 8.1 though.
-    ComPtr<IStreamSocket3> socket3;
-    hr = d->tcpSocket()->QueryInterface(IID_PPV_ARGS(&socket3));
-    Q_ASSERT_SUCCEEDED(hr);
+    if (d->socketType == QAbstractSocket::TcpSocket) {
+        // To close the connection properly (not with a hard reset) all pending read operation have to
+        // be finished or cancelled. The API isn't available on Windows 8.1 though.
+        ComPtr<IStreamSocket3> socket3;
+        hr = d->tcpSocket()->QueryInterface(IID_PPV_ARGS(&socket3));
+        Q_ASSERT_SUCCEEDED(hr);
 
-    ComPtr<IAsyncAction> action;
-    hr = socket3->CancelIOAsync(&action);
-    Q_ASSERT_SUCCEEDED(hr);
-    hr = QWinRTFunctions::await(action);
-    Q_ASSERT_SUCCEEDED(hr);
+        ComPtr<IAsyncAction> action;
+        hr = socket3->CancelIOAsync(&action);
+        Q_ASSERT_SUCCEEDED(hr);
+        hr = QWinRTFunctions::await(action);
+        Q_ASSERT_SUCCEEDED(hr);
+    }
 #endif // _MSC_VER >= 1900
 
     if (d->readOp) {
