@@ -1107,11 +1107,10 @@ void QCocoaWindow::propagateSizeHints()
 
     // sizeIncrement is observed to take values of (-1, -1) and (0, 0) for windows that should be
     // resizable and that have no specific size increment set. Cocoa expects (1.0, 1.0) in this case.
-    const QSize sizeIncrement = windowSizeIncrement();
-    if (!sizeIncrement.isEmpty())
-        [m_nsWindow setResizeIncrements : qt_mac_toNSSize(sizeIncrement)];
-    else
-        [m_nsWindow setResizeIncrements : NSMakeSize(1.0, 1.0)];
+    QSize sizeIncrement = windowSizeIncrement();
+    if (sizeIncrement.isEmpty())
+        sizeIncrement = QSize(1, 1);
+    [m_nsWindow setResizeIncrements:sizeIncrement.toCGSize()];
 
     QRect rect = geometry();
     QSize baseSize = windowBaseSize();

@@ -77,8 +77,6 @@ CGImageRef qt_mac_toCGImageMask(const QImage &qImage);
 QImage qt_mac_toQImage(CGImageRef image);
 QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size);
 
-NSSize qt_mac_toNSSize(const QSize &qtSize);
-
 QColor qt_mac_toQColor(const NSColor *color);
 QColor qt_mac_toQColor(CGColorRef color);
 

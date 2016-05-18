@@ -209,11 +209,6 @@ HIMutableShapeRef qt_mac_QRegionToHIMutableShape(const QRegion &region)
     return shape;
 }
 
-NSSize qt_mac_toNSSize(const QSize &qtSize)
-{
-    return NSMakeSize(qtSize.width(), qtSize.height());
-}
-
 QColor qt_mac_toQColor(const NSColor *color)
 {
     QColor qtColor;

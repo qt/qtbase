@@ -496,5 +496,42 @@ QPointF QPointF::fromCGPoint(CGPoint point) Q_DECL_NOTHROW
     return QPointF(point.x, point.y);
 }
 
+// ----------------------------------------------------------------------------
+
+/*!
+    \since 5.8
+
+    Creates a CGSize from a QSize.
+
+    \sa fromCGSize()
+*/
+CGSize QSize::toCGSize() const Q_DECL_NOTHROW
+{
+    return CGSizeMake(width(), height());
+}
+
+/*!
+    \since 5.8
+
+    Creates a CGSize from a QSizeF.
+
+    \sa fromCGSize()
+*/
+CGSize QSizeF::toCGSize() const Q_DECL_NOTHROW
+{
+    return CGSizeMake(width(), height());
+}
+
+/*!
+    \since 5.8
+
+    Creates a QRectF from a CGSize.
+
+    \sa toCGSize()
+*/
+QSizeF QSizeF::fromCGSize(CGSize size) Q_DECL_NOTHROW
+{
+    return QSizeF(size.width, size.height);
+}
 
 QT_END_NAMESPACE

@@ -42,6 +42,10 @@
 
 #include <QtCore/qnamespace.h>
 
+#if defined(Q_OS_DARWIN)
+struct CGSize;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 
@@ -85,6 +89,10 @@ public:
     friend inline Q_DECL_CONSTEXPR const QSize operator*(const QSize &, qreal) Q_DECL_NOTHROW;
     friend inline Q_DECL_CONSTEXPR const QSize operator*(qreal, const QSize &) Q_DECL_NOTHROW;
     friend inline const QSize operator/(const QSize &, qreal);
+
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
+    CGSize toCGSize() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+#endif
 
 private:
     int wd;
@@ -247,6 +255,11 @@ public:
     friend inline const QSizeF operator/(const QSizeF &, qreal);
 
     Q_DECL_CONSTEXPR inline QSize toSize() const Q_DECL_NOTHROW;
+
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
+    static QSizeF fromCGSize(CGSize size) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    CGSize toCGSize() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+#endif
 
 private:
     qreal wd;

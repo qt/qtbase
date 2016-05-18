@@ -128,7 +128,7 @@ Qt::DropAction QCocoaDrag::drag(QDrag *o)
     QPixmap pm = dragPixmap(m_drag, hotSpot);
     QSize pmDeviceIndependentSize = pm.size() / pm.devicePixelRatio();
     NSImage *nsimage = qt_mac_create_nsimage(pm);
-    [nsimage setSize : qt_mac_toNSSize(pmDeviceIndependentSize)];
+    [nsimage setSize:pmDeviceIndependentSize.toCGSize()];
 
     QMacPasteboard dragBoard((CFStringRef) NSDragPboard, QMacInternalPasteboardMime::MIME_DND);
     m_drag->mimeData()->setData(QLatin1String("application/x-qt-mime-type-name"), QByteArray("dummy"));
