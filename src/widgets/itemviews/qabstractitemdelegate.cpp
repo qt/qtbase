@@ -386,7 +386,7 @@ bool QAbstractItemDelegate::helpEvent(QHelpEvent *event,
         QHelpEvent *he = static_cast<QHelpEvent*>(event);
         QVariant tooltip = index.data(Qt::ToolTipRole);
         if (tooltip.canConvert<QString>()) {
-            QToolTip::showText(he->globalPos(), tooltip.toString(), view);
+            QToolTip::showText(he->globalPos(), tooltip.toString(), view, QRect(), view->toolTipDuration());
             return true;
         }
         break;}
