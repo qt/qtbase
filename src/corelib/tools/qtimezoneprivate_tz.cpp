@@ -372,37 +372,21 @@ static QDate calculatePosixDate(const QByteArray &dateRule, int year)
     }
 }
 
-static QTime parsePosixTime(const QByteArray &timeRule)
+// returns the time in seconds, INT_MIN if we failed to parse
+static int parsePosixTime(const char *begin, const char *end)
 {
-    // Format "HH:mm:ss", put check parts count just in case
-    QList<QByteArray> parts = timeRule.split(':');
-    int count = parts.count();
-    if (count == 3)
-        return QTime(parts.at(0).toInt(), parts.at(1).toInt(), parts.at(2).toInt());
-    else if (count == 2)
-        return QTime(parts.at(0).toInt(), parts.at(1).toInt(), 0);
-    else if (count == 1)
-        return QTime(parts.at(0).toInt(), 0, 0);
-    return QTime(2, 0, 0);
-}
-
-static int parsePosixOffset(const char *begin, const char *end)
-{
-    // Format "[+|-]hh[:mm[:ss]]"
+    // Format "hh[:mm[:ss]]"
     int hour, min = 0, sec = 0;
 
-    // note that the sign is inverted because POSIX counts in hours West of GMT
-    bool negate = true;
-    if (*begin == '+') {
-        ++begin;
-    } else if (*begin == '-') {
-        negate = false;
-        ++begin;
-    }
+    // Note that the calls to qstrtoll do *not* check the end pointer, which
+    // means they proceed until they find a non-digit. We check that we're
+    // still in range at the end, but we may have read from past end. It's the
+    // caller's responsibility to ensure that begin is part of a
+    // null-terminated string.
 
     bool ok = false;
     hour = qstrtoll(begin, &begin, 10, &ok);
-    if (!ok)
+    if (!ok || hour < 0)
         return INT_MIN;
     if (begin < end && *begin == ':') {
         // minutes
@@ -424,7 +408,35 @@ static int parsePosixOffset(const char *begin, const char *end)
     if (begin != end)
         return INT_MIN;
 
-    int value = (hour * 60 + min) * 60 + sec;
+    return (hour * 60 + min) * 60 + sec;
+}
+
+static QTime parsePosixTransitionTime(const QByteArray &timeRule)
+{
+    // Format "hh[:mm[:ss]]"
+    int value = parsePosixTime(timeRule.constBegin(), timeRule.constEnd());
+    if (value == INT_MIN) {
+        // if we failed to parse, return 02:00
+        return QTime(2, 0, 0);
+    }
+    return QTime::fromMSecsSinceStartOfDay(value * 1000);
+}
+
+static int parsePosixOffset(const char *begin, const char *end)
+{
+    // Format "[+|-]hh[:mm[:ss]]"
+    // note that the sign is inverted because POSIX counts in hours West of GMT
+    bool negate = true;
+    if (*begin == '+') {
+        ++begin;
+    } else if (*begin == '-') {
+        negate = false;
+        ++begin;
+    }
+
+    int value = parsePosixTime(begin, end);
+    if (value == INT_MIN)
+        return value;
     return negate ? -value : value;
 }
 
@@ -534,7 +546,7 @@ static QVector<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArra
     QByteArray dstDateRule = dstParts.at(0);
     QTime dstTime;
     if (dstParts.count() > 1)
-        dstTime = parsePosixTime(dstParts.at(1));
+        dstTime = parsePosixTransitionTime(dstParts.at(1));
     else
         dstTime = QTime(2, 0, 0);
 
@@ -543,7 +555,7 @@ static QVector<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArra
     QByteArray stdDateRule = stdParts.at(0);
     QTime stdTime;
     if (stdParts.count() > 1)
-        stdTime = parsePosixTime(stdParts.at(1));
+        stdTime = parsePosixTransitionTime(stdParts.at(1));
     else
         stdTime = QTime(2, 0, 0);
 
