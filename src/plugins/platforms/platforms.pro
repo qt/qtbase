@@ -35,6 +35,10 @@ contains(QT_CONFIG, directfb) {
 
 contains(QT_CONFIG, linuxfb): SUBDIRS += linuxfb
 
+freebsd {
+    SUBDIRS += bsdfb
+}
+
 haiku {
     SUBDIRS += haiku
 }
