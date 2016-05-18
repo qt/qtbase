@@ -38,6 +38,9 @@
 #include "qwidget_p.h"
 #include "qwindow.h"
 
+#include <private/qhighdpiscaling_p.h>
+#include <qpa/qplatformscreen.h>
+
 QT_BEGIN_NAMESPACE
 
 QDesktopScreenWidget::QDesktopScreenWidget(QScreen *screen, const QRect &geometry)
@@ -239,18 +242,18 @@ int QDesktopWidget::screenNumber(const QWidget *w) const
     if (screens.isEmpty()) // This should never happen
         return primaryScreen();
 
+    const QWindow *winHandle = w->windowHandle();
+    if (!winHandle) {
+        if (const QWidget *nativeParent = w->nativeParentWidget())
+            winHandle = nativeParent->windowHandle();
+    }
+
     // If there is more than one virtual desktop
     if (screens.count() != screens.constFirst()->virtualSiblings().count()) {
         // Find the root widget, get a QScreen from it and use the
         // virtual siblings for checking the window position.
-        const QWidget *root = w;
-        const QWidget *tmp = w;
-        while ((tmp = tmp->parentWidget()))
-            root = tmp;
-        const QWindow *winHandle = root->windowHandle();
         if (winHandle) {
-            const QScreen *winScreen = winHandle->screen();
-            if (winScreen)
+            if (const QScreen *winScreen = winHandle->screen())
                 screens = winScreen->virtualSiblings();
         }
     }
@@ -260,11 +263,12 @@ int QDesktopWidget::screenNumber(const QWidget *w) const
     QRect frame = w->frameGeometry();
     if (!w->isWindow())
         frame.moveTopLeft(w->mapToGlobal(QPoint(0, 0)));
+    const QRect nativeFrame = QHighDpi::toNativePixels(frame, winHandle);
 
     QScreen *widgetScreen = Q_NULLPTR;
     int largestArea = 0;
     foreach (QScreen *screen, screens) {
-        QRect intersected = screen->geometry().intersected(frame);
+        const QRect intersected = screen->handle()->geometry().intersected(nativeFrame);
         int area = intersected.width() * intersected.height();
         if (largestArea < area) {
             widgetScreen = screen;
