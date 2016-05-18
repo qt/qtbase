@@ -365,6 +365,7 @@ static const char *getFcFamilyForStyleHint(const QFont::StyleHint style)
 static void populateFromPattern(FcPattern *pattern)
 {
     QString familyName;
+    QString familyNameLang;
     FcChar8 *value = 0;
     int weight_value;
     int slant_value;
@@ -381,6 +382,9 @@ static void populateFromPattern(FcPattern *pattern)
         return;
 
     familyName = QString::fromUtf8((const char *)value);
+
+    if (FcPatternGetString(pattern, FC_FAMILYLANG, 0, &value) == FcResultMatch)
+        familyNameLang = QString::fromUtf8((const char *)value);
 
     slant_value = FC_SLANT_ROMAN;
     weight_value = FC_WEIGHT_REGULAR;
@@ -471,8 +475,31 @@ static void populateFromPattern(FcPattern *pattern)
     QPlatformFontDatabase::registerFont(familyName,styleName,QLatin1String((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,writingSystems,fontFile);
 //        qDebug() << familyName << (const char *)foundry_value << weight << style << &writingSystems << scalable << true << pixel_size;
 
-    for (int k = 1; FcPatternGetString(pattern, FC_FAMILY, k, &value) == FcResultMatch; ++k)
-        QPlatformFontDatabase::registerAliasToFontFamily(familyName, QString::fromUtf8((const char *)value));
+    for (int k = 1; FcPatternGetString(pattern, FC_FAMILY, k, &value) == FcResultMatch; ++k) {
+        const QString altFamilyName = QString::fromUtf8((const char *)value);
+        // Extra family names can be aliases or subfamilies.
+        // If it is a subfamily, register it as a separate font, so only members of the subfamily are
+        // matched when the subfamily is requested.
+        QString altStyleName;
+        if (FcPatternGetString(pattern, FC_STYLE, k, &value) == FcResultMatch)
+            altStyleName = QString::fromUtf8((const char *)value);
+        else
+            altStyleName = styleName;
+
+        QString altFamilyNameLang;
+        if (FcPatternGetString(pattern, FC_FAMILYLANG, k, &value) == FcResultMatch)
+            altFamilyNameLang = QString::fromUtf8((const char *)value);
+        else
+            altFamilyNameLang = familyNameLang;
+
+        if (familyNameLang == altFamilyNameLang && altStyleName != styleName) {
+            const QString altStyleName = QString::fromUtf8((const char *)value);
+            FontFile *altFontFile = new FontFile(*fontFile);
+            QPlatformFontDatabase::registerFont(altFamilyName, altStyleName, QLatin1String((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,writingSystems,altFontFile);
+        } else {
+            QPlatformFontDatabase::registerAliasToFontFamily(familyName, altFamilyName);
+        }
+    }
 
 }
 
@@ -488,7 +515,7 @@ void QFontconfigDatabase::populateFontDatabase()
             FC_FAMILY, FC_STYLE, FC_WEIGHT, FC_SLANT,
             FC_SPACING, FC_FILE, FC_INDEX,
             FC_LANG, FC_CHARSET, FC_FOUNDRY, FC_SCALABLE, FC_PIXEL_SIZE,
-            FC_WIDTH,
+            FC_WIDTH, FC_FAMILYLANG,
 #if FC_VERSION >= 20297
             FC_CAPABILITY,
 #endif
