@@ -2934,6 +2934,7 @@
 
     See also \l{upper(arg1 [, arg2 ..., argn])}{upper()}.
 
+    \target member()
     \section2 member(variablename [, start [, end]])
 
     Returns the slice of the list value of \c variablename with the
@@ -2960,6 +2961,9 @@
     that an empty list will be returned only when an index is invalid
     (which is implied by the input variable being empty).
 
+    See also \l{str_member()}.
+
+    \target num_add()
     \section2 num_add(arg1 [, arg2 ..., argn])
 
     Takes an arbitrary number of numeric arguments and adds them up,
@@ -3078,6 +3082,38 @@
     For example:
 
     \snippet code/doc_src_qmake-manual.pro 168
+
+    \target str_member()
+    \section2 str_member(arg [, start [, end]])
+
+    This function is identical to \l{member()}, except that it operates
+    on a string value instead of a list variable, and consequently the
+    indices refer to character positions.
+
+    This function can be used to implement many common string slicing
+    operations:
+
+    \code
+    # $$left(VAR, len)
+    left = $$str_member(VAR, 0, $$num_add($$len, -1))
+
+    # $$right(VAR, len)
+    right = $$str_member(VAR, -$$num, -1)
+
+    # $$mid(VAR, off, len)
+    mid = $$str_member(VAR, $$off, $$num_add($$off, $$len, -1))
+
+    # $$mid(VAR, off)
+    mid = $$str_member(VAR, $$off, -1)
+
+    # $$reverse(VAR)
+    reverse = $$str_member(VAR, -1, 0)
+    \endcode
+
+    \note In these implementations, a zero \c len argument needs to be
+    handled separately.
+
+    See also \l{member()}, \l{num_add()}.
 
     \target str_size()
     \section2 str_size(arg)

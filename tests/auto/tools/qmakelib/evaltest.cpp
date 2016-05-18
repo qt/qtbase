@@ -718,6 +718,49 @@ void tst_qmakelib::addReplaceFunctions(const QString &qindir)
             << "##:2: member() argument 2 (start) '4..foo' invalid."
             << true;
 
+    // The argument processing is shared with $$member(), so some tests are skipped.
+    QTest::newRow("$$str_member(): empty")
+            << "VAR = $$str_member()"
+            << "VAR ="
+            << ""
+            << true;
+
+    QTest::newRow("$$str_member(): too short")
+            << "VAR = $$str_member(string_value, 7, 12)"
+            << "VAR ="  // this is actually kinda stupid
+            << ""
+            << true;
+
+    QTest::newRow("$$str_member(): ok")
+            << "VAR = $$str_member(string_value, 7, 11)"
+            << "VAR = value"
+            << ""
+            << true;
+
+    QTest::newRow("$$str_member(): ok (default start)")
+            << "VAR = $$str_member(string_value)"
+            << "VAR = s"
+            << ""
+            << true;
+
+    QTest::newRow("$$str_member(): ok (default end)")
+            << "VAR = $$str_member(string_value, 7)"
+            << "VAR = v"
+            << ""
+            << true;
+
+    QTest::newRow("$$str_member(): negative")
+            << "VAR = $$str_member(string_value, -5, -3)"
+            << "VAR = val"
+            << ""
+            << true;
+
+    QTest::newRow("$$str_member(): inverse")
+            << "VAR = $$str_member(string_value, -2, 1)"
+            << "VAR = ulav_gnirt"
+            << ""
+            << true;
+
     QTest::newRow("$$first(): empty")
             << "IN = \nVAR = $$first(IN)"
             << "VAR ="
