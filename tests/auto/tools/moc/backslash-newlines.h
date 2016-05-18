@@ -57,3 +57,5 @@ public slots:
 #undef value
 
 #endif // BACKSLASH_NEWLINES_H
+
+// ends with \\\r should not make moc crash (QTBUG-53441) (no new lines on purpose!!) \
