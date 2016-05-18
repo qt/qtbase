@@ -148,7 +148,7 @@ static bool isMouseEvent(NSEvent *ev)
         if (NSMouseInRect(loc, windowFrame, NO) &&
             !NSMouseInRect(loc, contentFrame, NO))
         {
-            QNSView *contentView = (QNSView *)pw->contentView();
+            QNSView *contentView = pw->m_qtView;
             [contentView handleFrameStrutMouseEvent: theEvent];
         }
     }
@@ -1173,7 +1173,11 @@ NSView *QCocoaWindow::contentView() const
 void QCocoaWindow::setContentView(NSView *contentView)
 {
     // Remove and release the previous content view
-    [m_contentView removeFromSuperview];
+    if (m_nsWindow)
+        [m_nsWindow setContentView:nil];
+    else
+        [m_contentView removeFromSuperview];
+
     [m_contentView release];
 
     // Insert and retain the new content view
