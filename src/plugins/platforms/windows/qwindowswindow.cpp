@@ -1568,11 +1568,12 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
         return false;
     PAINTSTRUCT ps;
 
-    // Observed painting problems with Aero style disabled (QTBUG-7865).
-    if (testFlag(OpenGLSurface) && testFlag(OpenGLDoubleBuffered))
-        InvalidateRect(hwnd, 0, false);
-
     BeginPaint(hwnd, &ps);
+
+    // Observed painting problems with Aero style disabled (QTBUG-7865).
+    // 5.8: Consider making it dependent on !DwmIsCompositionEnabled().
+    if (testFlag(OpenGLSurface) && testFlag(OpenGLDoubleBuffered))
+        SelectClipRgn(ps.hdc, NULL);
 
     // If the a window is obscured by another window (such as a child window)
     // we still need to send isExposed=true, for compatibility.
