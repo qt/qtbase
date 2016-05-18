@@ -1735,13 +1735,18 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
         d->autoScroll = false;
         d->selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
         d->autoScroll = autoScroll;
-        QRect rect(visualRect(d->currentSelectionStartIndex).center(), pos);
         if (command.testFlag(QItemSelectionModel::Toggle)) {
             command &= ~QItemSelectionModel::Toggle;
             d->ctrlDragSelectionFlag = d->selectionModel->isSelected(index) ? QItemSelectionModel::Deselect : QItemSelectionModel::Select;
             command |= d->ctrlDragSelectionFlag;
         }
-        setSelection(rect, command);
+
+        if ((command & QItemSelectionModel::Current) == 0) {
+            setSelection(QRect(pos, QSize(1, 1)), command);
+        } else {
+            QRect rect(visualRect(d->currentSelectionStartIndex).center(), pos);
+            setSelection(rect, command);
+        }
 
         // signal handlers may change the model
         emit pressed(index);

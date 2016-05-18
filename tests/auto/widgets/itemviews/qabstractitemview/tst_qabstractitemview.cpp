@@ -152,6 +152,7 @@ private slots:
     void QTBUG48968_reentrant_updateEditorGeometries();
     void QTBUG50535_update_on_new_selection_model();
     void testSelectionModelInSyncWithView();
+    void testClickToSelect();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -2072,6 +2073,57 @@ void tst_QAbstractItemView::testSelectionModelInSyncWithView()
     QCOMPARE(view.selectedIndexes(), QModelIndexList() << model.index(0, 0));
     QCOMPARE(view.selectionModel()->currentIndex(), model.index(1, 0));
     QCOMPARE(view.selectionModel()->selection().indexes(),  QModelIndexList() << model.index(0, 0));
+}
+
+class SetSelectionTestView : public QListView
+{
+    Q_OBJECT
+public:
+    SetSelectionTestView() : QListView() {}
+
+signals:
+    void setSelectionCalled(const QRect &rect);
+
+protected:
+    void setSelection(const QRect &rect, QItemSelectionModel::SelectionFlags flags) Q_DECL_OVERRIDE
+    {
+        emit setSelectionCalled(rect);
+        QListView::setSelection(rect, flags);
+    }
+};
+
+void tst_QAbstractItemView::testClickToSelect()
+{
+    // This test verifies that the QRect that is passed from QAbstractItemView::mousePressEvent
+    // to the virtual method QAbstractItemView::setSelection(const QRect &, SelectionFlags)
+    // is the 1x1 rect which conains exactly the clicked pixel if no modifiers are pressed.
+
+    QStringList list;
+    list << "A" << "B" << "C";
+    QStringListModel model(list);
+
+    SetSelectionTestView view;
+    view.setModel(&model);
+    view.show();
+    QTest::qWaitForWindowExposed(&view);
+
+    QSignalSpy spy(&view, &SetSelectionTestView::setSelectionCalled);
+
+    const QModelIndex indexA(model.index(0, 0));
+    const QRect visualRectA = view.visualRect(indexA);
+    const QPoint centerA = visualRectA.center();
+
+    // Click the center of the visualRect of item "A"
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, centerA);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.back().front().value<QRect>(), QRect(centerA, QSize(1, 1)));
+
+    // Click a point slightly away from the center
+    const QPoint nearCenterA = centerA + QPoint(1, 1);
+    QVERIFY(visualRectA.contains(nearCenterA));
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, nearCenterA);
+    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.back().front().value<QRect>(), QRect(nearCenterA, QSize(1, 1)));
 }
 
 QTEST_MAIN(tst_QAbstractItemView)
