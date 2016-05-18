@@ -28,8 +28,9 @@ SOURCES += \
 	global/qmalloc.cpp \
         global/qnumeric.cpp \
         global/qlogging.cpp \
-        global/qhooks.cpp \
-        global/qversiontagging.cpp
+        global/qhooks.cpp
+
+VERSIONTAGGING_SOURCES = global/qversiontagging.cpp
 
 # qlibraryinfo.cpp includes qconfig.cpp
 INCLUDEPATH += $$QT_BUILD_TREE/src/corelib/global
@@ -62,4 +63,22 @@ journald {
 
 syslog {
     DEFINES += QT_USE_SYSLOG
+}
+
+gcc:ltcg {
+    versiontagging_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS) $(INCPATH)
+
+    # Disable LTO, as the symbols disappear somehow under GCC
+    versiontagging_compiler.commands += -fno-lto
+
+    versiontagging_compiler.commands += -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
+    versiontagging_compiler.dependency_type = TYPE_C
+    versiontagging_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
+    versiontagging_compiler.input = VERSIONTAGGING_SOURCES
+    versiontagging_compiler.variable_out = OBJECTS
+    versiontagging_compiler.name = compiling[versiontagging] ${QMAKE_FILE_IN}
+    silent: versiontagging_compiler.commands = @echo compiling[versiontagging] ${QMAKE_FILE_IN} && $$versiontagging_compiler.commands
+    QMAKE_EXTRA_COMPILERS += versiontagging_compiler
+} else {
+    SOURCES += $$VERSIONTAGGING_SOURCES
 }
