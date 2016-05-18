@@ -58,16 +58,6 @@ bool isQtApplication()
     return isQt;
 }
 
-CGPoint toCGPoint(const QPointF &point)
-{
-    return CGPointMake(point.x(), point.y());
-}
-
-QPointF fromCGPoint(const CGPoint &point)
-{
-    return QPointF(point.x, point.y);
-}
-
 #ifndef Q_OS_TVOS
 Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation)
 {

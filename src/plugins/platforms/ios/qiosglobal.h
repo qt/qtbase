@@ -61,9 +61,6 @@ class QPlatformScreen;
 
 bool isQtApplication();
 
-CGPoint toCGPoint(const QPointF &point);
-QPointF fromCGPoint(const CGPoint &point);
-
 #ifndef Q_OS_TVOS
 Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation);
 UIDeviceOrientation fromQtScreenOrientation(Qt::ScreenOrientation qtOrientation);

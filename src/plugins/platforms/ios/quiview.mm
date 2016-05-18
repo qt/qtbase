@@ -329,7 +329,7 @@
             // as we already have the QWindow positioned at the right place, we can
             // just map from the local view position to global coordinates.
             // tvOS: all touches start at the center of the screen and move from there.
-            QPoint localViewPosition = fromCGPoint([uiTouch locationInView:self]).toPoint();
+            QPoint localViewPosition = QPointF::fromCGPoint([uiTouch locationInView:self]).toPoint();
             QPoint globalScreenPosition = m_qioswindow->mapToGlobal(localViewPosition);
 
             touchPoint.area = QRectF(globalScreenPosition, QSize(0, 0));

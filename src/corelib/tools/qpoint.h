@@ -42,6 +42,10 @@
 
 #include <QtCore/qnamespace.h>
 
+#if defined(Q_OS_DARWIN)
+struct CGPoint;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 
@@ -88,6 +92,10 @@ public:
     friend Q_DECL_CONSTEXPR inline const QPoint operator+(const QPoint &);
     friend Q_DECL_CONSTEXPR inline const QPoint operator-(const QPoint &);
     friend Q_DECL_CONSTEXPR inline const QPoint operator/(const QPoint &, qreal);
+
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
+    CGPoint toCGPoint() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+#endif
 
 private:
     friend class QTransform;
@@ -246,6 +254,11 @@ public:
     friend Q_DECL_CONSTEXPR inline const QPointF operator/(const QPointF &, qreal);
 
     Q_DECL_CONSTEXPR QPoint toPoint() const;
+
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
+    static QPointF fromCGPoint(CGPoint point) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    CGPoint toCGPoint() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+#endif
 
 private:
     friend class QMatrix;

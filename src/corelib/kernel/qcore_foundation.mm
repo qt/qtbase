@@ -458,5 +458,43 @@ QRectF QRectF::fromCGRect(CGRect rect) Q_DECL_NOTHROW
     return QRectF(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
 }
 
+// ----------------------------------------------------------------------------
+
+/*!
+    \since 5.8
+
+    Creates a CGPoint from a QPoint.
+
+    \sa fromCGPoint()
+*/
+CGPoint QPoint::toCGPoint() const Q_DECL_NOTHROW
+{
+    return CGPointMake(x(), y());
+}
+
+/*!
+    \since 5.8
+
+    Creates a CGPoint from a QPointF.
+
+    \sa fromCGPoint()
+*/
+CGPoint QPointF::toCGPoint() const Q_DECL_NOTHROW
+{
+    return CGPointMake(x(), y());
+}
+
+/*!
+    \since 5.8
+
+    Creates a QRectF from a CGPoint.
+
+    \sa toCGPoint()
+*/
+QPointF QPointF::fromCGPoint(CGPoint point) Q_DECL_NOTHROW
+{
+    return QPointF(point.x, point.y);
+}
+
 
 QT_END_NAMESPACE

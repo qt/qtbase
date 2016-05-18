@@ -496,12 +496,12 @@ static void executeBlockWithoutAnimation(Block block)
         QGuiApplication::styleHints()->setCursorFlashTime(0);
         if (!_loupeLayer)
             [self createLoupe];
-        [self updateFocalPoint:fromCGPoint(_lastTouchPoint)];
+        [self updateFocalPoint:QPointF::fromCGPoint(_lastTouchPoint)];
         _loupeLayer.visible = YES;
         break;
     case UIGestureRecognizerStateChanged:
         // Tell the sub class to move the loupe to the correct position
-        [self updateFocalPoint:fromCGPoint(_lastTouchPoint)];
+        [self updateFocalPoint:QPointF::fromCGPoint(_lastTouchPoint)];
         break;
     case UIGestureRecognizerStateEnded:
         // Restore cursor blinking, and hide the loupe
@@ -526,12 +526,12 @@ static void executeBlockWithoutAnimation(Block block)
 
 - (QPointF)focalPoint
 {
-    return fromCGPoint([_loupeLayer.targetView convertPoint:_loupeLayer.focalPoint toView:_focusView]);
+    return QPointF::fromCGPoint([_loupeLayer.targetView convertPoint:_loupeLayer.focalPoint toView:_focusView]);
 }
 
 - (void)setFocalPoint:(QPointF)point
 {
-    _loupeLayer.focalPoint = [_loupeLayer.targetView convertPoint:toCGPoint(point) fromView:_focusView];
+    _loupeLayer.focalPoint = [_loupeLayer.targetView convertPoint:point.toCGPoint() fromView:_focusView];
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
@@ -548,7 +548,7 @@ static void executeBlockWithoutAnimation(Block block)
 
     // If the touch point is accepted by the sub class (e.g touch on cursor), we start a
     // press'n'hold timer that eventually will move the state to UIGestureRecognizerStateBegan.
-    if ([self acceptTouchesBegan:fromCGPoint(_firstTouchPoint)])
+    if ([self acceptTouchesBegan:QPointF::fromCGPoint(_firstTouchPoint)])
         _triggerStateBeganTimer.start();
     else
         self.state = UIGestureRecognizerStateFailed;
@@ -934,7 +934,7 @@ static void executeBlockWithoutAnimation(Block block)
     }
 
     QRectF inputRect = QGuiApplication::inputMethod()->inputItemClipRectangle();
-    QPointF touchPos = fromCGPoint([static_cast<UITouch *>([touches anyObject]) locationInView:_focusView]);
+    QPointF touchPos = QPointF::fromCGPoint([static_cast<UITouch *>([touches anyObject]) locationInView:_focusView]);
     if (!inputRect.contains(touchPos))
         self.state = UIGestureRecognizerStateFailed;
 
@@ -943,7 +943,7 @@ static void executeBlockWithoutAnimation(Block block)
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    QPointF touchPos = fromCGPoint([static_cast<UITouch *>([touches anyObject]) locationInView:_focusView]);
+    QPointF touchPos = QPointF::fromCGPoint([static_cast<UITouch *>([touches anyObject]) locationInView:_focusView]);
     const QTransform mapToLocal = QGuiApplication::inputMethod()->inputItemTransform().inverted();
     int cursorPosOnRelease = QInputMethod::queryFocusObject(Qt::ImCursorPosition, touchPos * mapToLocal).toInt();
 
