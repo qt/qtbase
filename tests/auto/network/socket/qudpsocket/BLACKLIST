@@ -1,8 +1,24 @@
 [multicast:same bind, group ipv6 address]
 *
-[multicast:valid bind, group ipv6 address]
+[multicast]
 osx
-[multicast:dual bind, group ipv6 address]
+[writeDatagramToNonExistingPeer]
+windows
 osx
-[multicast:same bind, group ipv4 address]
+[asyncReadDatagram]
+windows
 osx
+[multicastLeaveAfterClose]
+osx
+[readyRead]
+osx
+[readyReadForEmptyDatagram]
+osx
+[echo]
+linux
+osx
+[ipv6Loop]
+osx
+[loop]
+osx
+
