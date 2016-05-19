@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 typedef struct
 {
     quint8  bWidth;               // Width of the image
-    quint8  bHeight;              // Height of the image (times 2)
+    quint8  bHeight;              // Height of the image (actual height, not times 2)
     quint8  bColorCount;          // Number of colors in image (0 if >=8bpp) [ not ture ]
     quint8  bReserved;            // Reserved
     quint16 wPlanes;              // Color Planes
@@ -681,8 +681,8 @@ bool ICOReader::write(QIODevice *device, const QVector<QImage> &images)
             entries[i].bColorCount = 0;
             entries[i].bReserved = 0;
             entries[i].wBitCount = nbits;
-            entries[i].bHeight = image.height();
-            entries[i].bWidth = image.width();
+            entries[i].bHeight = image.height() < 256 ? image.height() : 0;  // 0 means 256
+            entries[i].bWidth = image.width() < 256 ? image.width() : 0;     // 0 means 256
             entries[i].dwBytesInRes = BMP_INFOHDR_SIZE + (bpl_bmp * image.height())
                 + (maskImage.bytesPerLine() * maskImage.height());
             entries[i].wPlanes = 1;
@@ -696,11 +696,11 @@ bool ICOReader::write(QIODevice *device, const QVector<QImage> &images)
             bmpHeaders[i].biClrImportant = 0;
             bmpHeaders[i].biClrUsed = entries[i].bColorCount;
             bmpHeaders[i].biCompression = 0;
-            bmpHeaders[i].biHeight = entries[i].bHeight * 2; // 2 is for the mask
+            bmpHeaders[i].biHeight = entries[i].bHeight ? entries[i].bHeight * 2 : 256 * 2; // 2 is for the mask
             bmpHeaders[i].biPlanes = entries[i].wPlanes;
             bmpHeaders[i].biSize = BMP_INFOHDR_SIZE;
             bmpHeaders[i].biSizeImage = entries[i].dwBytesInRes - BMP_INFOHDR_SIZE;
-            bmpHeaders[i].biWidth = entries[i].bWidth;
+            bmpHeaders[i].biWidth = entries[i].bWidth ? entries[i].bWidth : 256;
             bmpHeaders[i].biXPelsPerMeter = 0;
             bmpHeaders[i].biYPelsPerMeter = 0;
 

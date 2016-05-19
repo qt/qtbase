@@ -4,7 +4,7 @@ project                 = QtGui
 description             = Qt GUI Reference Documentation
 version                 = $QT_VERSION
 
-examplesinstallpath     = qtbase/gui
+examplesinstallpath     = gui
 
 qhp.projects            = QtGui
 

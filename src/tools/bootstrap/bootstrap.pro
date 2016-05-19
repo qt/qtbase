@@ -132,8 +132,12 @@ macx {
         ../../corelib/io/qstandardpaths_win.cpp
 }
 
-if(contains(QT_CONFIG, zlib)|cross_compile):include(../../3rdparty/zlib.pri)
-else:include(../../3rdparty/zlib_dependency.pri)
+contains(QT_CONFIG, zlib)|cross_compile {
+    include(../../3rdparty/zlib.pri)
+} else {
+    CONFIG += no_core_dep
+    include(../../3rdparty/zlib_dependency.pri)
+}
 
 win32:LIBS += -luser32 -lole32 -ladvapi32 -lshell32
 

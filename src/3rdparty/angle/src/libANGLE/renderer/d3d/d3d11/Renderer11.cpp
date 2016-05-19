@@ -2370,6 +2370,19 @@ unsigned int Renderer11::getReservedFragmentUniformBuffers() const
 
 bool Renderer11::getShareHandleSupport() const
 {
+    if (mDriverType == D3D_DRIVER_TYPE_WARP)
+    {
+#if !defined(ANGLE_ENABLE_WINDOWS_STORE)
+        // Warp mode does not support shared handles in Windows versions below Windows 8
+        OSVERSIONINFO result = { sizeof(OSVERSIONINFO), 0, 0, 0, 0, {'\0'}};
+        if (GetVersionEx(&result) &&
+                ((result.dwMajorVersion == 6 && result.dwMinorVersion < 2) || result.dwMajorVersion < 6))
+        {
+            // WARP on Windows 7 doesn't support shared handles
+            return false;
+        }
+#endif  // ANGLE_ENABLE_WINDOWS_STORE
+    }
     // We only currently support share handles with BGRA surfaces, because
     // chrome needs BGRA. Once chrome fixes this, we should always support them.
     // PIX doesn't seem to support using share handles, so disable them.

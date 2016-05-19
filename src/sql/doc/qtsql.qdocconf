@@ -4,7 +4,7 @@ project                 = QtSql
 description             = Qt SQL Reference Documentation
 version                 = $QT_VERSION
 
-examplesinstallpath     = qtbase/sql
+examplesinstallpath     = sql
 
 qhp.projects            = QtSql
 
