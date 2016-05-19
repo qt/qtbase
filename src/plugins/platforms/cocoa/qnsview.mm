@@ -2070,7 +2070,11 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 
 // keep our state, and QGuiApplication state (buttons member) in-sync,
 // or future mouse events will be processed incorrectly
-    m_buttons &= ~(m_sendUpAsRightButton ? Qt::RightButton : Qt::LeftButton);
+    NSUInteger pmb = [NSEvent pressedMouseButtons];
+    for (int buttonNumber = 0; buttonNumber < 32; buttonNumber++) { // see cocoaButton2QtButton() for the 32 value
+        if (!(pmb & (1 << buttonNumber)))
+            m_buttons &= ~cocoaButton2QtButton(buttonNumber);
+    }
 
     NSPoint windowPoint = [self convertPoint: point fromView: nil];
     QPoint qtWindowPoint(windowPoint.x, windowPoint.y);
