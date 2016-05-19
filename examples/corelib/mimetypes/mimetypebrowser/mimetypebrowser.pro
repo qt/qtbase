@@ -11,3 +11,6 @@ SOURCES += \
 HEADERS += \
     mimetypemodel.h \
     mainwindow.h
+
+target.path = $$[QT_INSTALL_EXAMPLES]/corelib/mimetypes/mimetypebrowser
+INSTALLS += target
