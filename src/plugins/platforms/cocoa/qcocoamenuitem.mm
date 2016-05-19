@@ -118,6 +118,8 @@ QCocoaMenuItem::~QCocoaMenuItem()
     if (m_merged) {
         [m_native setHidden:YES];
     } else {
+        if (m_menu && m_menu->attachedItem() == m_native)
+            m_menu->setAttachedItem(nil);
         [m_native release];
     }
 

@@ -179,7 +179,9 @@ void QCocoaMenuBar::syncMenu(QPlatformMenu *menu)
             }
     }
 
-    nativeItemForMenu(cocoaMenu).hidden = shouldHide;
+    NSMenuItem *nativeMenuItem = nativeItemForMenu(cocoaMenu);
+    nativeMenuItem.title = cocoaMenu->nsMenu().title;
+    nativeMenuItem.hidden = shouldHide;
 }
 
 NSMenuItem *QCocoaMenuBar::nativeItemForMenu(QCocoaMenu *menu) const

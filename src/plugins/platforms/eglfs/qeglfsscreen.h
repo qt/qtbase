@@ -42,7 +42,6 @@
 
 #include "qeglfsglobal.h"
 #include <QtCore/QPointer>
-#include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 

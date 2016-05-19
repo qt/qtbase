@@ -93,7 +93,7 @@ QRectF QWidgetWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const
 {
     Q_Q(const QWidgetWindow);
     const QWidget *widget = q->widget();
-    if (!widget->isWindow() || !widget->hasHeightForWidth())
+    if (!widget || !widget->isWindow() || !widget->hasHeightForWidth())
         return QRect();
     const QSize oldSize = rect.size().toSize();
     const QSize newSize = QLayout::closestAcceptableSize(widget, oldSize);
@@ -129,7 +129,7 @@ QWidgetWindow::QWidgetWindow(QWidget *widget)
         && !QApplication::testAttribute(Qt::AA_ForceRasterWidgets)) {
         setSurfaceType(QSurface::RasterGLSurface);
     }
-    connect(m_widget, &QObject::objectNameChanged, this, &QWidgetWindow::updateObjectName);
+    connect(widget, &QObject::objectNameChanged, this, &QWidgetWindow::updateObjectName);
     connect(this, SIGNAL(screenChanged(QScreen*)), this, SLOT(handleScreenChange()));
 }
 
@@ -148,16 +148,18 @@ QAccessibleInterface *QWidgetWindow::accessibleRoot() const
 
 QObject *QWidgetWindow::focusObject() const
 {
-    QWidget *widget = m_widget->focusWidget();
+    QWidget *windowWidget = m_widget;
+    if (!windowWidget)
+        return Q_NULLPTR;
+
+    QWidget *widget = windowWidget->focusWidget();
 
     if (!widget)
-        widget = m_widget;
+        widget = windowWidget;
 
-    if (widget) {
-        QObject *focusObj = QWidgetPrivate::get(widget)->focusObject();
-        if (focusObj)
-            return focusObj;
-    }
+    QObject *focusObj = QWidgetPrivate::get(widget)->focusObject();
+    if (focusObj)
+        return focusObj;
 
     return widget;
 }
@@ -180,6 +182,9 @@ static inline bool shouldBePropagatedToWidget(QEvent *event)
 
 bool QWidgetWindow::event(QEvent *event)
 {
+    if (!m_widget)
+        return QWindow::event(event);
+
     if (m_widget->testAttribute(Qt::WA_DontShowOnScreen)) {
         // \a event is uninteresting for QWidgetWindow, the event was probably
         // generated before WA_DontShowOnScreen was set
@@ -207,7 +212,7 @@ bool QWidgetWindow::event(QEvent *event)
 #ifndef QT_NO_ACCESSIBILITY
         QAccessible::State state;
         state.active = true;
-        QAccessibleStateChangeEvent ev(widget(), state);
+        QAccessibleStateChangeEvent ev(m_widget, state);
         QAccessible::updateAccessibility(&ev);
 #endif
         return false; }
@@ -381,7 +386,7 @@ void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
     } else {
         const QEnterEvent *ee = static_cast<QEnterEvent *>(event);
         QWidget *child = m_widget->childAt(ee->pos());
-        QWidget *receiver = child ? child : m_widget;
+        QWidget *receiver = child ? child : m_widget.data();
         QApplicationPrivate::dispatchEnterLeave(receiver, 0, ee->screenPos());
         qt_last_mouse_receiver = receiver;
     }

@@ -134,8 +134,7 @@ public:
 
     // reparenting
     void handleReparent();
-    QWidget *oldParent;
-    QWidget *oldWindow;
+    QVector<QPointer<QWidget> > oldParents;
 
     QList<QAction*> hiddenActions;
     //default action

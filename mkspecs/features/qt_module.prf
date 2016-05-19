@@ -38,7 +38,7 @@ host_build {
             QT += bootstrap-private
         }
     } else {
-        !build_pass:contains(QT_CONFIG, build_all): CONFIG += release
+        !build_pass:contains(QT_CONFIG, debug_and_release): CONFIG += release
     }
 }
 
@@ -89,8 +89,7 @@ INCLUDEPATH *= $$eval(QT.$${MODULE}.includes) $$eval(QT.$${MODULE}_private.inclu
 # If Qt was configured with -debug-and-release then build the module the same way
 # - unless this is a host library
 !host_build:if(win32|mac):!macx-xcode {
-    contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release
-    contains(QT_CONFIG, build_all):CONFIG += build_all
+    contains(QT_CONFIG, debug_and_release): CONFIG += debug_and_release build_all
 }
 
 QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF

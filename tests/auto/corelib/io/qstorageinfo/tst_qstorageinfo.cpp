@@ -27,14 +27,18 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-
 #include <QStorageInfo>
+
+#include <stdarg.h>
+
+#include "../../../../manual/qstorageinfo/printvolumes.cpp"
 
 class tst_QStorageInfo : public QObject
 {
     Q_OBJECT
 private slots:
     void defaultValues();
+    void dump();
     void operatorEqual();
 #ifndef Q_OS_WINRT
     void operatorNotEqual();
@@ -59,6 +63,33 @@ void tst_QStorageInfo::defaultValues()
     QCOMPARE(storage.bytesTotal(), -1);
     QCOMPARE(storage.bytesFree(), -1);
     QCOMPARE(storage.bytesAvailable(), -1);
+}
+
+static int qInfoPrinter(const char *format, ...)
+{
+    static char buf[1024];
+    static size_t bufuse = 0;
+
+    va_list ap;
+    va_start(ap, format); // use variable arg list
+    int n = qvsnprintf(buf + bufuse, sizeof(buf) - bufuse, format, ap);
+    va_end(ap);
+
+    bufuse += n;
+    if (bufuse >= sizeof(buf) - 1 || format[strlen(format) - 1] == '\n') {
+        // flush
+        QtMessageHandler qt_message_print = qInstallMessageHandler(0);
+        qInstallMessageHandler(qt_message_print);   // restore the handler
+        qt_message_print(QtInfoMsg, QMessageLogContext(), QString::fromLocal8Bit(buf));
+        bufuse = 0;
+    }
+
+    return 1;
+}
+
+void tst_QStorageInfo::dump()
+{
+    printVolumes(QStorageInfo::mountedVolumes(), qInfoPrinter);
 }
 
 void tst_QStorageInfo::operatorEqual()
@@ -157,6 +188,7 @@ void tst_QStorageInfo::tempFile()
 #endif
 
     qint64 free = storage1.bytesFree();
+    QVERIFY(free != -1);
 
     file.write(QByteArray(1024*1024, '1'));
     file.flush();
@@ -180,6 +212,7 @@ void tst_QStorageInfo::caching()
     qint64 free = storage1.bytesFree();
     QStorageInfo storage2(storage1);
     QCOMPARE(free, storage2.bytesFree());
+    QVERIFY(free != -1);
 
     file.write(QByteArray(1024*1024, '\0'));
     file.flush();

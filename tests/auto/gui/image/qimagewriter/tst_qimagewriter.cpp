@@ -179,6 +179,7 @@ void tst_QImageWriter::writeImage_data()
     QTest::newRow("PBM: ship63") << QString("ship63.pbm") << true << QByteArray("pbm");
     QTest::newRow("XBM: gnus") << QString("gnus.xbm") << false << QByteArray("xbm");
     QTest::newRow("JPEG: beavis") << QString("beavis.jpg") << true << QByteArray("jpeg");
+    QTest::newRow("ICO: App") << QString("App.ico") << true << QByteArray("ico");
 }
 
 void tst_QImageWriter::writeImage()
@@ -240,7 +241,7 @@ void tst_QImageWriter::writeImage2_data()
     QTest::addColumn<QImage>("image");
 
     const QStringList formats = QStringList() << "bmp" << "xpm" << "png"
-                                              << "ppm"; //<< "jpeg";
+                                              << "ppm" << "ico"; //<< "jpeg";
     QImage image0(70, 70, QImage::Format_ARGB32);
     image0.fill(QColor(Qt::red).rgb());
 

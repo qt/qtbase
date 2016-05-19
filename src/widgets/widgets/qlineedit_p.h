@@ -71,6 +71,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QLineEditPrivate;
+
 // QLineEditIconButton: This is a simple helper class that represents clickable icons that fade in with text
 
 class Q_AUTOTEST_EXPORT QLineEditIconButton : public QToolButton
@@ -78,8 +80,6 @@ class Q_AUTOTEST_EXPORT QLineEditIconButton : public QToolButton
     Q_OBJECT
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity)
 public:
-    enum { IconMargin = 4, IconButtonSize = 16 };
-
     explicit QLineEditIconButton(QWidget *parent =  0);
 
     qreal opacity() const { return m_opacity; }
@@ -99,6 +99,7 @@ private:
 #ifndef QT_NO_ANIMATION
     void startOpacityAnimation(qreal endValue);
 #endif
+    QLineEditPrivate *lineEditPrivate() const;
 
     qreal m_opacity;
 };
@@ -121,6 +122,13 @@ public:
         int flags;
     };
     typedef std::vector<SideWidgetEntry> SideWidgetEntryList;
+
+    struct SideWidgetParameters {
+        int iconSize;
+        int widgetWidth;
+        int widgetHeight;
+        int margin;
+    };
 
     QLineEditPrivate()
         : control(0), frame(1), contextMenuEnabled(1), cursorVisible(0),
@@ -212,7 +220,7 @@ public:
 
     QWidget *addAction(QAction *newAction, QAction *before, QLineEdit::ActionPosition, int flags = 0);
     void removeAction(QAction *action);
-    QSize iconSize() const;
+    SideWidgetParameters sideWidgetParameters() const;
     QIcon clearButtonIcon() const;
     void setClearButtonEnabled(bool enabled);
     void positionSideWidgets();
@@ -233,7 +241,6 @@ private:
     SideWidgetEntryList leadingSideWidgets;
     SideWidgetEntryList trailingSideWidgets;
     int lastTextSize;
-    mutable QSize m_iconSize;
 };
 Q_DECLARE_TYPEINFO(QLineEditPrivate::SideWidgetEntry, Q_PRIMITIVE_TYPE);
 

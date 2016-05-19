@@ -117,16 +117,17 @@ bool QXcbMime::mimeDataForAtom(QXcbConnection *connection, xcb_atom_t a, QMimeDa
     QString atomName = mimeAtomToString(connection, a);
     if (QInternalMimeData::hasFormatHelper(atomName, mimeData)) {
         *data = QInternalMimeData::renderDataHelper(atomName, mimeData);
-        if (atomName == QLatin1String("application/x-color"))
+        // mimeAtomToString() converts "text/x-moz-url" to "text/uri-list",
+        // so QXcbConnection::atomName() has to be used.
+        if (atomName == QLatin1String("text/uri-list")
+            && connection->atomName(a) == "text/x-moz-url") {
+            const QByteArray uri = data->split('\n').first();
+            QString mozUri = QString::fromLatin1(uri, uri.size());
+            mozUri += QLatin1Char('\n');
+            *data = QByteArray(reinterpret_cast<const char *>(mozUri.utf16()),
+                               mozUri.length() * 2);
+        } else if (atomName == QLatin1String("application/x-color"))
             *dataFormat = 16;
-        ret = true;
-    } else if (atomName == QLatin1String("text/x-moz-url") &&
-               QInternalMimeData::hasFormatHelper(QLatin1String("text/uri-list"), mimeData)) {
-        QByteArray uri = QInternalMimeData::renderDataHelper(
-                         QLatin1String("text/uri-list"), mimeData).split('\n').first();
-        QString mozUri = QString::fromLatin1(uri, uri.size());
-        mozUri += QLatin1Char('\n');
-        *data = QByteArray(reinterpret_cast<const char *>(mozUri.utf16()), mozUri.length() * 2);
         ret = true;
     } else if ((a == XCB_ATOM_PIXMAP || a == XCB_ATOM_BITMAP) && mimeData->hasImage()) {
         ret = true;
@@ -188,17 +189,37 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
             a == connection->atom(QXcbAtom::TEXT))
             return QString::fromLatin1(data);
     }
-
-    // special case for uri types
-    if (format == QLatin1String("text/uri-list")) {
-        if (atomName == QLatin1String("text/x-moz-url")) {
-            // we expect this as utf16 <url><space><title>
-            // the first part is a url that should only contain ascci char
-            // so it should be safe to check that the second char is 0
-            // to verify that it is utf16
-            if (data.size() > 1 && data.at(1) == 0)
-                return QString::fromRawData((const QChar *)data.constData(),
-                                data.size() / 2).split(QLatin1Char('\n')).first().toLatin1();
+    // If data contains UTF16 text, convert it to a string.
+    // Firefox uses UTF16 without BOM for text/x-moz-url, "text/html",
+    // Google Chrome uses UTF16 without BOM for "text/x-moz-url",
+    // UTF16 with BOM for "text/html".
+    if ((format == QLatin1String("text/html") || format == QLatin1String("text/uri-list"))
+        && data.size() > 1) {
+        const quint8 byte0 = data.at(0);
+        const quint8 byte1 = data.at(1);
+        if ((byte0 == 0xff && byte1 == 0xfe) || (byte0 == 0xfe && byte1 == 0xff)
+            || (byte0 != 0 && byte1 == 0) || (byte0 == 0 && byte1 != 0)) {
+            const QString str = QString::fromUtf16(
+                  reinterpret_cast<const ushort *>(data.constData()), data.size() / 2);
+            if (!str.isNull()) {
+                if (format == QLatin1String("text/uri-list")) {
+                    const QStringList urls = str.split(QLatin1Char('\n'));
+                    QList<QVariant> list;
+                    foreach (const QString &s, urls) {
+                        const QUrl url(s.trimmed());
+                        if (url.isValid())
+                            list.append(url);
+                    }
+                    // We expect "text/x-moz-url" as <url><space><title>.
+                    // The atomName variable is not used because mimeAtomToString()
+                    // converts "text/x-moz-url" to "text/uri-list".
+                    if (!list.isEmpty() && connection->atomName(a) == "text/x-moz-url")
+                        return list.first();
+                    return list;
+                } else {
+                    return str;
+                }
+            }
         }
     }
 

@@ -552,7 +552,7 @@ bool QGestureManager::filterEvent(QObject *receiver, QEvent *event)
     // filter method.
     QWidgetWindow *widgetWindow = qobject_cast<QWidgetWindow *>(receiver);
 
-    if (widgetWindow)
+    if (widgetWindow && widgetWindow->widget())
         return filterEvent(widgetWindow->widget(), event);
 
     QGesture *state = qobject_cast<QGesture *>(receiver);

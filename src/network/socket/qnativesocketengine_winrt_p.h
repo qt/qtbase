@@ -154,7 +154,7 @@ public:
     qintptr socketDescriptor;
 
     bool notifyOnRead, notifyOnWrite, notifyOnException;
-    bool closingDown;
+    QAtomicInt closingDown;
 
     enum ErrorString {
         NonBlockingInitFailedErrorString,

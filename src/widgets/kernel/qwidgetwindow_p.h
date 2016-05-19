@@ -125,7 +125,7 @@ private:
     };
     QWidget *getFocusWidget(FocusWidgets fw);
 
-    QWidget *m_widget;
+    QPointer<QWidget> m_widget;
     QPointer<QWidget> m_implicit_mouse_grabber;
 #ifndef QT_NO_DRAGANDDROP
     QPointer<QWidget> m_dragTarget;

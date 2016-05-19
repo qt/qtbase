@@ -39,7 +39,7 @@ struct SharedNullVerifier
     {
         Q_ASSERT(QArrayData::shared_null[0].ref.isStatic());
         Q_ASSERT(QArrayData::shared_null[0].ref.isShared());
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
         Q_ASSERT(QArrayData::shared_null[0].ref.isSharable());
 #endif
     }
@@ -96,7 +96,7 @@ void tst_QArrayData::referenceCounting()
         QCOMPARE(array.ref.atomic.load(), 1);
 
         QVERIFY(!array.ref.isStatic());
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
         QVERIFY(array.ref.isSharable());
 #endif
 
@@ -118,7 +118,7 @@ void tst_QArrayData::referenceCounting()
         // Now would be a good time to free/release allocated data
     }
 
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     {
         // Reference counting initialized to 0 (non-sharable)
         QArrayData array = { { Q_BASIC_ATOMIC_INITIALIZER(0) }, 0, 0, 0, 0 };
@@ -146,7 +146,7 @@ void tst_QArrayData::referenceCounting()
         QCOMPARE(array.ref.atomic.load(), -1);
 
         QVERIFY(array.ref.isStatic());
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
         QVERIFY(array.ref.isSharable());
 #endif
 
@@ -173,7 +173,7 @@ void tst_QArrayData::sharedNullEmpty()
     QCOMPARE(null->ref.atomic.load(), -1);
     QCOMPARE(empty->ref.atomic.load(), -1);
 
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     QVERIFY(null->ref.isSharable());
     QVERIFY(empty->ref.isSharable());
 #endif
@@ -304,7 +304,7 @@ void tst_QArrayData::simpleVector()
     QVERIFY(!v7.isShared());
     QVERIFY(!v8.isShared());
 
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     QVERIFY(v1.isSharable());
     QVERIFY(v2.isSharable());
     QVERIFY(v3.isSharable());
@@ -497,7 +497,7 @@ void tst_QArrayData::simpleVector()
     for (int i = 0; i < 120; ++i)
         QCOMPARE(v1[i], v8[i % 10]);
 
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     {
         v7.setSharable(true);
         QVERIFY(v7.isSharable());
@@ -667,7 +667,7 @@ void tst_QArrayData::allocate_data()
     QArrayData *shared_empty = QArrayData::allocate(0, Q_ALIGNOF(QArrayData), 0);
     QVERIFY(shared_empty);
 
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     QArrayData *unsharable_empty = QArrayData::allocate(0, Q_ALIGNOF(QArrayData), 0, QArrayData::Unsharable);
     QVERIFY(unsharable_empty);
 #endif
@@ -681,7 +681,7 @@ void tst_QArrayData::allocate_data()
     } options[] = {
         { "Default", QArrayData::Default, false, true, shared_empty },
         { "Reserved", QArrayData::CapacityReserved, true, true, shared_empty },
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
         { "Reserved | Unsharable",
             QArrayData::CapacityReserved | QArrayData::Unsharable, true, false,
             unsharable_empty },
@@ -731,7 +731,7 @@ void tst_QArrayData::allocate()
         else
             QCOMPARE(data->alloc, uint(capacity));
         QCOMPARE(data->capacityReserved, uint(isCapacityReserved));
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
         QFETCH(bool, isSharable);
         QCOMPARE(data->ref.isSharable(), isSharable);
 #endif
@@ -1311,7 +1311,7 @@ static inline bool arrayIsFilledWith(const QArrayDataPointer<int> &array,
 
 void tst_QArrayData::setSharable_data()
 {
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     QTest::addColumn<QArrayDataPointer<int> >("array");
     QTest::addColumn<size_t>("size");
     QTest::addColumn<size_t>("capacity");
@@ -1357,7 +1357,7 @@ void tst_QArrayData::setSharable_data()
 
 void tst_QArrayData::setSharable()
 {
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     QFETCH(QArrayDataPointer<int>, array);
     QFETCH(size_t, size);
     QFETCH(size_t, capacity);
@@ -1487,7 +1487,7 @@ void fromRawData_impl()
         QVERIFY((const T *)raw.constBegin() != array);
     }
 
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     {
         // Immutable, unsharable
         SimpleVector<T> raw = SimpleVector<T>::fromRawData(array,
@@ -1573,7 +1573,7 @@ void tst_QArrayData::literals()
         QVERIFY(v.isStatic());
 #endif
 
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
         QVERIFY(v.isSharable());
 #endif
         QCOMPARE((void*)(const char*)(v.constBegin() + v.size()), (void*)(const char*)v.constEnd());
@@ -1624,7 +1624,7 @@ void tst_QArrayData::variadicLiterals()
 
         QVERIFY(v.isStatic());
 
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
         QVERIFY(v.isSharable());
 #endif
         QCOMPARE((const int *)(v.constBegin() + v.size()), (const int *)v.constEnd());

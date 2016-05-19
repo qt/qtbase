@@ -272,7 +272,7 @@ public:
 
     inline void detach() { if (d->ref.isShared()) detach_helper(); }
     inline bool isDetached() const { return !d->ref.isShared(); }
-#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     inline void setSharable(bool sharable) { if (!sharable) detach(); if (d != &QHashData::shared_null) d->sharable = sharable; }
 #endif
     bool isSharedWith(const QHash &other) const { return d == other.d; }
@@ -1091,9 +1091,6 @@ Q_INLINE_TEMPLATE int QMultiHash<Key, T>::count(const Key &key, const T &value) 
     }
     return n;
 }
-
-Q_CORE_EXPORT int qGlobalQHashSeed();
-Q_CORE_EXPORT void qSetGlobalQHashSeed(int newSeed);
 
 Q_DECLARE_ASSOCIATIVE_ITERATOR(Hash)
 Q_DECLARE_MUTABLE_ASSOCIATIVE_ITERATOR(Hash)
