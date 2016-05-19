@@ -477,7 +477,7 @@ void PathStrokeRenderer::initializePoints()
     m_vectors.clear();
 
     QMatrix m;
-    qreal rot = 360 / count;
+    qreal rot = 360.0 / count;
     QPointF center(width() / 2, height() / 2);
     QMatrix vm;
     vm.shear(2, -1);
