@@ -717,6 +717,7 @@ void tst_QIcon::fromThemeCache()
         QIcon::setThemeSearchPaths(QStringList());
         QSKIP("gtk-update-icon-cache not run (binary not found)");
     }
+#ifndef QT_NO_PROCESS
     QProcess process;
     process.start(gtkUpdateIconCache,
                   QStringList() << QStringLiteral("-f") << QStringLiteral("-t") << (dir.path() + QLatin1String("/testcache")));
@@ -726,6 +727,7 @@ void tst_QIcon::fromThemeCache()
     QVERIFY(process.waitForFinished());
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);
+#endif // QT_NO_PROCESS
     QVERIFY(QFileInfo(cacheName).lastModified() >= QFileInfo(dir.path() + QLatin1String("/testcache/16x16/actions")).lastModified());
     QIcon::setThemeSearchPaths(QStringList() << dir.path()); // reload themes
     QVERIFY(!QIcon::fromTheme("button-open").isNull());
