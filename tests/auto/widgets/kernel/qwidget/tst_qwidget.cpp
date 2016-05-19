@@ -73,7 +73,7 @@
 
 #include <QtTest/QTest>
 
-#if defined(Q_OS_WIN) && !Q_OS_WINRT
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 #  include <QtCore/qt_windows.h>
 #  include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformnativeinterface.h>
