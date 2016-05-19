@@ -47,6 +47,49 @@
 
 #include <cmath>
 
+#if defined(Q_OS_OSX) && !QT_OSX_DEPLOYMENT_TARGET_BELOW(__MAC_10_11)
+#import <AppKit/AppKit.h>
+#endif
+
+#if defined(Q_OS_IOS) && !QT_IOS_DEPLOYMENT_TARGET_BELOW(__IPHONE_8_2)
+#import <UIKit/UIKit.h>
+#endif
+
+// These are available cross platform, exported as kCTFontWeightXXX from CoreText.framework,
+// but they are not documented and are not in public headers so are private API and exposed
+// only through the NSFontWeightXXX and UIFontWeightXXX aliases in AppKit and UIKit (rdar://26109857)
+#if QT_MAC_DEPLOYMENT_TARGET_BELOW(__MAC_10_11, __IPHONE_8_2)
+#define kCTFontWeightUltraLight -0.8
+#define kCTFontWeightThin -0.6
+#define kCTFontWeightLight -0.4
+#define kCTFontWeightRegular 0
+#define kCTFontWeightMedium 0.23
+#define kCTFontWeightSemibold 0.3
+#define kCTFontWeightBold 0.4
+#define kCTFontWeightHeavy 0.56
+#define kCTFontWeightBlack 0.62
+#elif defined(Q_OS_OSX)
+#define kCTFontWeightUltraLight NSFontWeightUltraLight
+#define kCTFontWeightThin NSFontWeightThin
+#define kCTFontWeightLight NSFontWeightLight
+#define kCTFontWeightRegular NSFontWeightRegular
+#define kCTFontWeightMedium NSFontWeightMedium
+#define kCTFontWeightSemibold NSFontWeightSemibold
+#define kCTFontWeightBold NSFontWeightBold
+#define kCTFontWeightHeavy NSFontWeightHeavy
+#define kCTFontWeightBlack NSFontWeightBlack
+#elif defined(Q_OS_IOS)
+#define kCTFontWeightUltraLight UIFontWeightUltraLight
+#define kCTFontWeightThin UIFontWeightThin
+#define kCTFontWeightLight UIFontWeightLight
+#define kCTFontWeightRegular UIFontWeightRegular
+#define kCTFontWeightMedium UIFontWeightMedium
+#define kCTFontWeightSemibold UIFontWeightSemibold
+#define kCTFontWeightBold UIFontWeightBold
+#define kCTFontWeightHeavy UIFontWeightHeavy
+#define kCTFontWeightBlack UIFontWeightBlack
+#endif
+
 QT_BEGIN_NAMESPACE
 
 static float SYNTHETIC_ITALIC_SKEW = std::tan(14.f * std::acos(0.f) / 90.f);
@@ -69,24 +112,24 @@ bool QCoreTextFontEngine::ct_getSfntTable(void *user_data, uint tag, uchar *buff
 
 QFont::Weight QCoreTextFontEngine::qtWeightFromCFWeight(float value)
 {
-    if (value >= 0.62)
+    if (value >= kCTFontWeightBlack)
         return QFont::Black;
-    if (value >= 0.5)
+    if (value >= kCTFontWeightHeavy)
         return QFont::ExtraBold;
-    if (value >= 0.4)
+    if (value >= kCTFontWeightBold)
         return QFont::Bold;
-    if (value >= 0.3)
+    if (value >= kCTFontWeightSemibold)
         return QFont::DemiBold;
-    if (value >= 0.2)
+    if (value >= kCTFontWeightMedium)
         return QFont::Medium;
-    if (value == 0.0)
+    if (value == kCTFontWeightRegular)
         return QFont::Normal;
-    if (value <= -0.4)
-        return QFont::Light;
-    if (value <= -0.6)
-        return QFont::ExtraLight;
-    if (value <= -0.8)
+    if (value <= kCTFontWeightUltraLight)
         return QFont::Thin;
+    if (value <= kCTFontWeightThin)
+        return QFont::ExtraLight;
+    if (value <= kCTFontWeightLight)
+        return QFont::Light;
     return QFont::Normal;
 }
 

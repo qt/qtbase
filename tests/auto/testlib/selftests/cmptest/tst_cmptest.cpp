@@ -158,8 +158,9 @@ void tst_Cmptest::compare_unregistered_enums()
 
 void tst_Cmptest::compare_registered_enums()
 {
-    QCOMPARE(Qt::ArrowCursor, Qt::ArrowCursor);
-    QCOMPARE(Qt::ArrowCursor, Qt::BusyCursor);
+    // use an enum that doesn't start at 0
+    QCOMPARE(Qt::Monday, Qt::Monday);
+    QCOMPARE(Qt::Monday, Qt::Sunday);
 }
 
 void tst_Cmptest::compare_class_enums()

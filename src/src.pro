@@ -129,7 +129,12 @@ src_plugins.depends = src_sql src_xml src_network
 src_android.subdir = $$PWD/android
 
 # this order is important
-contains(QT_CONFIG, zlib)|cross_compile: SUBDIRS += src_qtzlib
+contains(QT_CONFIG, zlib)|cross_compile {
+    SUBDIRS += src_qtzlib
+    contains(QT_CONFIG, zlib) {
+        src_3rdparty_freetype.depends += src_corelib
+    }
+}
 SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc
 !contains(QT_DISABLED_FEATURES, regularexpression):pcre {
     SUBDIRS += src_3rdparty_pcre
@@ -140,7 +145,8 @@ TOOLS = src_tools_moc src_tools_rcc src_tools_qlalr
 win32:SUBDIRS += src_winmain
 SUBDIRS += src_network src_sql src_xml src_testlib
 contains(QT_CONFIG, dbus) {
-    force_bootstrap: SUBDIRS += src_tools_bootstrap_dbus
+    force_bootstrap|contains(QT_CONFIG, private_tests): \
+        SUBDIRS += src_tools_bootstrap_dbus
     SUBDIRS += src_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
     TOOLS += src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
     contains(QT_CONFIG, accessibility-atspi-bridge): \

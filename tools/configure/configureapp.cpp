@@ -257,6 +257,7 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     dictionary[ "LIBPNG" ]          = "auto";
     dictionary[ "DOUBLECONVERSION" ] = "auto";
     dictionary[ "FREETYPE" ]        = "yes";
+    dictionary[ "FREETYPE_FROM" ]   = "default";
     dictionary[ "HARFBUZZ" ]        = "qt";
 
     dictionary[ "ACCESSIBILITY" ]   = "yes";
@@ -628,12 +629,16 @@ void Configure::parseCmdLine()
             dictionary[ "DOUBLECONVERSION" ] = "system";
 
         // Text Rendering --------------------------------------------
-        else if (configCmdLine.at(i) == "-no-freetype")
+        else if (configCmdLine.at(i) == "-no-freetype") {
             dictionary[ "FREETYPE" ] = "no";
-        else if (configCmdLine.at(i) == "-qt-freetype")
+            dictionary[ "FREETYPE_FROM" ] = "commandline";
+        } else if (configCmdLine.at(i) == "-qt-freetype") {
             dictionary[ "FREETYPE" ] = "yes";
-        else if (configCmdLine.at(i) == "-system-freetype")
+            dictionary[ "FREETYPE_FROM" ] = "commandline";
+        } else if (configCmdLine.at(i) == "-system-freetype") {
             dictionary[ "FREETYPE" ] = "system";
+            dictionary[ "FREETYPE_FROM" ] = "commandline";
+        }
 
         else if (configCmdLine.at(i) == "-no-harfbuzz")
             dictionary[ "HARFBUZZ" ] = "no";
@@ -2498,6 +2503,9 @@ void Configure::autoDetection()
     if (dictionary["FONT_CONFIG"] == "auto")
         dictionary["FONT_CONFIG"] = checkAvailability("FONT_CONFIG") ? "yes" : "no";
 
+    if ((dictionary["FONT_CONFIG"] == "yes") && (dictionary["FREETYPE_FROM"] == "default"))
+        dictionary["FREETYPE"] = "system";
+
     if (dictionary["DOUBLECONVERSION"] == "auto")
         dictionary["DOUBLECONVERSION"] = checkAvailability("DOUBLECONVERSION") ? "system" : "qt";
 
@@ -2631,6 +2639,22 @@ bool Configure::verifyConfiguration()
                 dictionary.value("XQMAKESPEC").startsWith("winrt")) {
             cout << "ERROR: Option -no-opengl is not valid for WinRT." << endl;
             dictionary[ "DONE" ] = "error";
+        }
+    }
+
+    if ((dictionary["FONT_CONFIG"] == "yes") && (dictionary["FREETYPE_FROM"] == "commandline")) {
+        if (dictionary["FREETYPE"] == "yes") {
+            cout << "WARNING: Bundled FreeType can't be used."
+                    "  FontConfig use requires system FreeType." << endl;
+            dictionary["FREETYPE"] = "system";
+            dictionary["FREETYPE_FROM"] = "override";
+            prompt = true;
+        } else if (dictionary["FREETYPE"] == "no") {
+            cout << "WARNING: FreeType can't be disabled."
+                    "  FontConfig use requires system FreeType." << endl;
+            dictionary["FREETYPE"] = "system";
+            dictionary["FREETYPE_FROM"] = "override";
+            prompt = true;
         }
     }
 

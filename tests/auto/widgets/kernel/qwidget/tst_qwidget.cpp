@@ -264,7 +264,6 @@ private slots:
 
     void widgetAt();
 #ifdef Q_OS_OSX
-    void sheetOpacity();
     void setMask();
 #endif
     void optimizedResizeMove();
@@ -430,7 +429,6 @@ private slots:
     void movedAndResizedAttributes();
     void childAt();
 #ifdef Q_OS_OSX
-    void childAt_unifiedToolBar();
     void taskQTBUG_11373();
 #endif
     void taskQTBUG_17333_ResizeInfiniteRecursion();
@@ -1872,6 +1870,10 @@ void tst_QWidget::activation()
 
 void tst_QWidget::windowState()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974");
+#endif
+
     if (m_platform == QStringLiteral("xcb"))
         QSKIP("X11: Many window managers do not support window state properly, which causes this test to fail.");
     if (m_platform == QStringLiteral("wayland"))
@@ -2083,6 +2085,10 @@ void tst_QWidget::showMaximized()
 
 void tst_QWidget::showFullScreen()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974");
+#endif
+
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
     QWidget plain;
@@ -2442,6 +2448,10 @@ void tst_QWidget::reparent()
 // Qt/Embedded does it differently.
 void tst_QWidget::icon()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974");
+#endif
+
     QPixmap p(20,20);
     p.fill(Qt::red);
     testWidget->setWindowIcon(p);
@@ -2493,6 +2503,10 @@ void tst_QWidget::hideWhenFocusWidgetIsChild()
 
 void tst_QWidget::normalGeometry()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974");
+#endif
+
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
     QWidget parent;
@@ -2843,8 +2857,6 @@ void tst_QWidget::raise()
     }
 }
 
-// Cocoa has no Z-Order for views, we hack it, but it results in paint events.
-#ifndef QT_OS_MAC
 void tst_QWidget::lower()
 {
     QScopedPointer<QWidget> parent(new QWidget);
@@ -2906,12 +2918,13 @@ void tst_QWidget::lower()
     list2 << child4 << child1 << child2 << child3;
     QCOMPARE(parent->children(), list2);
 }
-#endif
 
-// Cocoa has no Z-Order for views, we hack it, but it results in paint events.
-#ifndef QT_OS_MAC
 void tst_QWidget::stackUnder()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974: Cocoa has no Z-Order for views, we hack it, but it results in paint events.");
+#endif
+
     QScopedPointer<QWidget> parent(new QWidget);
     parent->setObjectName(QLatin1String("stackUnder"));
     parent->setWindowTitle(parent->objectName());
@@ -2992,7 +3005,6 @@ void tst_QWidget::stackUnder()
         child->reset();
     }
 }
-#endif
 
 void drawPolygon(QPaintDevice *dev, int w, int h)
 {
@@ -3081,6 +3093,10 @@ void tst_QWidget::testContentsPropagation()
 
 void tst_QWidget::saveRestoreGeometry()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974");
+#endif
+
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
     const QPoint position = m_availableTopLeft + QPoint(100, 100);
@@ -3306,6 +3322,10 @@ void tst_QWidget::restoreVersion1Geometry()
 
 void tst_QWidget::widgetAt()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974");
+#endif
+
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
     Q_CHECK_PAINTEVENTS
@@ -3519,17 +3539,6 @@ void tst_QWidget::testDeletionInEventHandlers()
 }
 
 #ifdef Q_OS_OSX
-void tst_QWidget::sheetOpacity()
-{
-    QWidget tmpWindow;
-    QWidget sheet(&tmpWindow, Qt::Sheet);
-    tmpWindow.show();
-    sheet.show();
-    QCOMPARE(int(sheet.windowOpacity() * 255), 242);  // 95%
-    sheet.setParent(0, Qt::Dialog);
-    QCOMPARE(int(sheet.windowOpacity() * 255), 255);
-}
-
 class MaskedPainter : public QWidget
 {
 public:
@@ -4171,6 +4180,10 @@ void tst_QWidget::showHideEventWhileMinimize()
 
 void tst_QWidget::update()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974");
+#endif
+
     QTest::qWait(10);  // Wait for the initStuff to do it's stuff.
     Q_CHECK_PAINTEVENTS
 
@@ -5160,10 +5173,13 @@ void tst_QWidget::showAndMoveChild()
     VERIFY_COLOR(parent, QRegion(parent.rect()) - child.geometry(), Qt::red);
 }
 
-// Cocoa only has rect granularity.
-#ifndef QT_OS_MAC
+
 void tst_QWidget::subtractOpaqueSiblings()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974: Cocoa only has rect granularity.");
+#endif
+
     QWidget w;
     w.setGeometry(50, 50, 300, 300);
 
@@ -5196,7 +5212,6 @@ void tst_QWidget::subtractOpaqueSiblings()
              QRegion(medium->geometry().translated(large->pos()))
              - tall->geometry());
 }
-#endif
 
 void tst_QWidget::deleteStyle()
 {
@@ -5238,6 +5253,10 @@ public slots:
 
 void tst_QWidget::multipleToplevelFocusCheck()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974");
+#endif
+
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
     TopLevelFocusCheck w1;
@@ -7911,6 +7930,10 @@ void tst_QWidget::sendUpdateRequestImmediately()
 
 void tst_QWidget::doubleRepaint()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974");
+#endif
+
 #if defined(Q_OS_OSX)
     if (!macHasAccessToWindowsServer())
         QSKIP("Not having window server access causes the wrong number of repaints to be issues");
@@ -9427,10 +9450,6 @@ void tst_QWidget::taskQTBUG_7532_tabOrderWithFocusProxy()
 
 void tst_QWidget::movedAndResizedAttributes()
 {
-#if defined (Q_OS_OSX)
-    QEXPECT_FAIL("", "FixMe, QTBUG-8941 and QTBUG-8977", Abort);
-    QVERIFY(false);
-#else
     // Use Qt::Tool as fully decorated windows have a minimum width of 160 on
     QWidget w(0, Qt::Tool);
     w.show();
@@ -9476,7 +9495,6 @@ void tst_QWidget::movedAndResizedAttributes()
     w.resize(100, 100);
     QVERIFY(w.testAttribute(Qt::WA_Moved));
     QVERIFY(w.testAttribute(Qt::WA_Resized));
-#endif
 }
 
 void tst_QWidget::childAt()
@@ -9535,46 +9553,11 @@ void tst_QWidget::childAt()
 }
 
 #ifdef Q_OS_OSX
-void tst_QWidget::childAt_unifiedToolBar()
-{
-    QLabel *label = new QLabel(QLatin1String("foo"));
-    QToolBar *toolBar = new QToolBar;
-    toolBar->addWidget(new QLabel("dummy"));
-    toolBar->addWidget(label);
-
-    QMainWindow mainWindow;
-    mainWindow.addToolBar(toolBar);
-    mainWindow.show();
-
-    // Calculate the top-left corner of the tool bar and the label (in mainWindow's coordinates).
-    QPoint labelTopLeft = label->mapTo(&mainWindow, QPoint());
-    QPoint toolBarTopLeft = toolBar->mapTo(&mainWindow, QPoint());
-
-    QCOMPARE(mainWindow.childAt(toolBarTopLeft), static_cast<QWidget *>(toolBar));
-    QCOMPARE(mainWindow.childAt(labelTopLeft), static_cast<QWidget *>(label));
-
-    // Enable unified tool bars.
-    mainWindow.setUnifiedTitleAndToolBarOnMac(true);
-    QTest::qWait(50);
-
-    // The tool bar is now in the "non-client" area of QMainWindow, i.e.
-    // outside the mainWindow's rect(), and since mapTo et al. doesn't work
-    // in that case (see commit 35667fd45ada49269a5987c235fdedfc43e92bb8),
-    // we use mapToGlobal/mapFromGlobal to re-calculate the corners.
-    QPoint oldToolBarTopLeft = toolBarTopLeft;
-    toolBarTopLeft = mainWindow.mapFromGlobal(toolBar->mapToGlobal(QPoint()));
-    QVERIFY2(toolBarTopLeft != oldToolBarTopLeft,
-             msgComparisonFailed(toolBarTopLeft, "!=", oldToolBarTopLeft));
-    QVERIFY2(toolBarTopLeft.y() < 0,
-             msgComparisonFailed(toolBarTopLeft.y(), "<", 0));
-    labelTopLeft = mainWindow.mapFromGlobal(label->mapToGlobal(QPoint()));
-
-    QCOMPARE(mainWindow.childAt(toolBarTopLeft), static_cast<QWidget *>(toolBar));
-    QCOMPARE(mainWindow.childAt(labelTopLeft), static_cast<QWidget *>(label));
-}
 
 void tst_QWidget::taskQTBUG_11373()
 {
+    QSKIP("QTBUG-52974");
+
     QScopedPointer<QMainWindow> myWindow(new QMainWindow);
     QWidget * center = new QWidget();
     myWindow -> setCentralWidget(center);
@@ -9590,6 +9573,7 @@ void tst_QWidget::taskQTBUG_11373()
     // The drawer should still not be visible, since we haven't shown it.
     QCOMPARE(drawer->isVisible(), false);
 }
+
 #endif
 
 void tst_QWidget::taskQTBUG_17333_ResizeInfiniteRecursion()
@@ -10437,6 +10421,9 @@ public:
 // when mousing over it.
 void tst_QWidget::taskQTBUG_27643_enterEvents()
 {
+#ifdef Q_OS_OSX
+    QSKIP("QTBUG-52974: this test can crash!");
+#endif
     // Move the mouse cursor to a safe location so it won't interfere
     QCursor::setPos(m_safeCursorPos);
 

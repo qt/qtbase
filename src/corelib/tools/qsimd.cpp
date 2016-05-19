@@ -697,7 +697,11 @@ void qDetectCpuFeatures()
     // contains all the features that the code required. Qt 4 ran for years
     // like that, so it shouldn't be a problem.
 
-    qt_cpu_features.store(minFeature | quint32(QSimdInitialized));
+    qt_cpu_features[0].store(minFeature | quint32(QSimdInitialized));
+#ifndef Q_ATOMIC_INT64_IS_SUPPORTED
+    qt_cpu_features[1].store(minFeature >> 32);
+#endif
+
     return;
 # endif
 #endif
