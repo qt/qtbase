@@ -403,7 +403,7 @@ static bool directoryMatchesSize(const QIconDirInfo &dir, int iconsize)
         return dir.size == iconsize;
 
     } else if (dir.type == QIconDirInfo::Scalable) {
-        return dir.size <= dir.maxSize &&
+        return iconsize <= dir.maxSize &&
                 iconsize >= dir.minSize;
 
     } else if (dir.type == QIconDirInfo::Threshold) {
