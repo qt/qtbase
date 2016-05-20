@@ -32,6 +32,7 @@
 ****************************************************************************/
 
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtCore/QDebug>
 
 #include "qxcbconnection.h"
@@ -257,6 +258,7 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
                 } else {
                     screen = createScreen(virtualDesktop, output, outputInfo.data());
                     qCDebug(lcQpaScreen) << "output" << screen->name() << "is connected and enabled";
+                    QHighDpiScaling::updateHighDpiScaling();
                 }
             }
         } else if (screen) {
