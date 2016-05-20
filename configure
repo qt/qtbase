@@ -4797,10 +4797,7 @@ if [ "$CFG_XINPUT2" != "no" ]; then
 fi
 
 if [ "$CFG_XCB" != "no" ]; then
-    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xcb >= 1.5" 2>/dev/null; then
-        QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags xcb 2>/dev/null`"
-        QMAKE_LIBS_XCB="`$PKG_CONFIG --libs xcb 2>/dev/null`"
-    fi
+    # find X11 prefix
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "x11" 2> /dev/null; then
         QMAKE_X11_PREFIX="`$PKG_CONFIG --variable=prefix x11`"
     else
@@ -4809,53 +4806,81 @@ if [ "$CFG_XCB" != "no" ]; then
     fi
     QMakeVar set QMAKE_X11_PREFIX "$QMAKE_X11_PREFIX"
 
-    if [ "$CFG_XKBCOMMON" != no ] && compileTest qpa/xcb "xcb" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
-        QT_CONFIG="$QT_CONFIG xcb-plugin"
+    # both -qt-xcb and -system-xcb depends on libxcb from the system
+    XCB_DEP="xcb >= 1.5"
+    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "$XCB_DEP" 2>/dev/null; then
+        QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags xcb 2>/dev/null`"
+        QMAKE_LIBS_XCB="`$PKG_CONFIG --libs xcb 2>/dev/null`"
+    fi
+    if ! compileTest qpa/xcb "xcb" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
+        if [ "$CFG_XCB" != "auto" ]; then
+            echo "Missing dependency lib$XCB_DEP."
+            [ -z "$PKG_CONFIG" ] && echo "Use of pkg-config is not enabled, maybe you want to pass -pkg-config?"
+            exit 1
+        fi
+        CFG_XCB=no
+    fi
 
+    # xcb plugin depends on libxkbcommon
+    if [ "$CFG_XCB" != "no" ] && [ "$CFG_XKBCOMMON" = no ]; then
+        if [ "$CFG_XCB" != "auto" ]; then
+            echo "XCB plugin requires libxkbcommon. See -qt-xkbcommon-x11 and -system-xkbcommon-x11."
+            exit 1
+        fi
+        CFG_XCB=no
+    fi
+
+    if [ "$CFG_XCB" != "no" ]; then
         if [ "$CFG_XCB" = "qt" ]; then
             QT_CONFIG="$QT_CONFIG xcb-qt"
-
-            if compileTest qpa/xcb-glx "xcb-glx" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
-                CFG_XCB_GLX=yes
-                QT_CONFIG="$QT_CONFIG xcb-glx"
-            fi
         else
-            CFG_XCB="system"
-            if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xcb >= 1.5" 2>/dev/null; then
-                XCB_PACKAGES="xcb xcb-shm xcb-sync xcb-xfixes xcb-randr xcb-image xcb-keysyms xcb-icccm xcb-shape"
-                QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags $XCB_PACKAGES 2>/dev/null`"
-                QMAKE_LIBS_XCB="`$PKG_CONFIG --libs $XCB_PACKAGES 2>/dev/null`"
-            fi
-
             # libxcb version 1.10 was the first version that enables xcb-xkb by default,
             # therefore the minimal xcb-xkb version we support is 1.10
             CFG_XKB=no
-            if $PKG_CONFIG --exists "xcb-xkb >= 1.10" 2>/dev/null; then
+            XKB_DEP="xcb-xkb >= 1.10"
+            if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "$XKB_DEP" 2>/dev/null; then
                 QMAKE_CFLAGS_XKB="`$PKG_CONFIG --cflags xcb xcb-xkb 2>/dev/null`"
                 QMAKE_LIBS_XKB="`$PKG_CONFIG --libs xcb xcb-xkb 2>/dev/null`"
-                if compileTest qpa/xcb-xkb "xcb-xkb" $QMAKE_CFLAGS_XKB $QMAKE_LIBS_XKB; then
-                    CFG_XKB=yes
-                fi
             fi
-            if [ "$CFG_XKB" = "no" ]; then
+            if compileTest qpa/xcb-xkb "xcb-xkb" $QMAKE_CFLAGS_XKB $QMAKE_LIBS_XKB; then
+                CFG_XKB=yes
+            else
                 QMakeVar add DEFINES QT_NO_XKB
             fi
 
+            XCB_PACKAGES="xcb xcb-shm xcb-sync xcb-xfixes xcb-randr xcb-image xcb-keysyms xcb-icccm xcb-shape"
+            if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "$XCB_PACKAGES" 2>/dev/null; then
+                QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags $XCB_PACKAGES 2>/dev/null`"
+                QMAKE_LIBS_XCB="`$PKG_CONFIG --libs $XCB_PACKAGES 2>/dev/null`"
+            fi
             if compileTest qpa/xcb-syslibs "xcb-syslibs" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
+                CFG_XCB="system"
                 if compileTest qpa/xcb-render "xcb-render" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
                     QT_CONFIG="$QT_CONFIG xcb-render"
                 fi
-
-                if compileTest qpa/xcb-glx "xcb-glx" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
-                    CFG_XCB_GLX=yes
-                    QT_CONFIG="$QT_CONFIG xcb-glx"
-                fi
             else
-                echo "The test for linking against libxcb and support libraries failed!"
-                echo " You might need to install dependency packages, or pass -qt-xcb."
-                echo " See src/plugins/platforms/xcb/README."
-                exit 1
+                if [ "$CFG_XCB" != "auto" ]; then
+                    echo "The test for linking against libxcb and support libraries failed"
+                    echo "(need $XCB_PACKAGES)."
+                    echo "You might need to install dependency packages, or pass -qt-xcb."
+                    echo "See src/plugins/platforms/xcb/README."
+                    [ -z "$PKG_CONFIG" ] && echo "Use of pkg-config is not enabled, maybe you want to pass -pkg-config?"
+                    exit 1
+                fi
+                CFG_XCB="no"
             fi
+        fi
+    fi
+
+    if [ "$CFG_XCB" != "no" ]; then
+        QT_CONFIG="$QT_CONFIG xcb-plugin"
+
+        # Other deps that are not bundled with -qt-xcb and therefore need to be
+        # checked for both -qt-xcb and -system-xcb
+
+        if compileTest qpa/xcb-glx "xcb-glx" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
+            CFG_XCB_GLX=yes
+            QT_CONFIG="$QT_CONFIG xcb-glx"
         fi
 
         if [ "$CFG_XCB_XLIB" != "no" ]; then
@@ -4872,15 +4897,6 @@ if [ "$CFG_XCB" != "no" ]; then
                 QT_CONFIG="$QT_CONFIG xcb-sm"
             fi
         fi
-    else
-        if [ "$CFG_XCB" != "auto" ]; then
-            echo "The test for linking against libxcb failed!"
-            [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -pkg-config?"
-            echo " You might need to install dependency packages for libxcb."
-            echo " See src/plugins/platforms/xcb/README."
-            exit 1
-        fi
-        CFG_XCB=no
     fi
 fi
 
