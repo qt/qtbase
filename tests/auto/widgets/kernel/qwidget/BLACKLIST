@@ -1,10 +1,8 @@
 # OSX QTBUG-25300 QTBUG-45502
 [normalGeometry]
 ubuntu-14.04
-osx
 [saveRestoreGeometry]
 ubuntu-14.04
-osx
 [restoreVersion1Geometry]
 ubuntu-14.04
 osx
@@ -21,19 +19,11 @@ ubuntu-14.04
 ubuntu-14.04
 [largerThanScreen_QTBUG30142]
 ubuntu-14.04
-[windowState]
-osx
 [showMaximized]
 osx
 [setGeometry]
 osx
-[stackUnder]
-osx
 [raise]
-osx
-[widgetAt]
-osx
-[sheetOpacity]
 osx
 [resizeEvent]
 osx
@@ -50,12 +40,6 @@ osx
 [optimizedResize_topLevel]
 osx
 [render_systemClip]
-osx
-[update]
-osx
-[doubleRepaint]
-osx
-[childAt_unifiedToolBar]
 osx
 [showMinimizedKeepsFocus]
 osx-10.10

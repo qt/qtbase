@@ -698,7 +698,6 @@ void QMenuBarPrivate::init()
     if (platformMenuBar)
         q->hide();
     q->setBackgroundRole(QPalette::Button);
-    oldWindow = oldParent = 0;
     handleReparent();
     q->setMouseTracking(q->style()->styleHint(QStyle::SH_MenuBar_MouseTracking, 0, q));
 
@@ -1320,30 +1319,41 @@ void QMenuBarPrivate::handleReparent()
 {
     Q_Q(QMenuBar);
     QWidget *newParent = q->parentWidget();
-    //Note: if parent is reparented, then window may change even if parent doesn't
 
-    // we need to install an event filter on parent, and remove the old one
+    //Note: if parent is reparented, then window may change even if parent doesn't.
+    // We need to install an avent filter on each parent up to the parent that is
+    // also a window (for shortcuts)
+    QWidget *newWindow = newParent ? newParent->window() : Q_NULLPTR;
 
-    if (oldParent != newParent) {
-        if (oldParent)
-            oldParent->removeEventFilter(q);
-        if (newParent)
-            newParent->installEventFilter(q);
+    QVector<QPointer<QWidget> > newParents;
+    // Remove event filters on ex-parents, keep them on still-parents
+    // The parents are always ordered in the vector
+    foreach (const QPointer<QWidget> &w, oldParents) {
+        if (w) {
+            if (newParent == w) {
+                newParents.append(w);
+                if (newParent != newWindow) //stop at the window
+                    newParent = newParent->parentWidget();
+            } else {
+                w->removeEventFilter(q);
+            }
+        }
     }
 
-    //we also need event filter on top-level (for shortcuts)
-    QWidget *newWindow = newParent ? newParent->window() : 0;
-
-    if (oldWindow != newWindow) {
-        if (oldParent && oldParent != oldWindow)
-            oldWindow->removeEventFilter(q);
-
-        if (newParent && newParent != newWindow)
-            newWindow->installEventFilter(q);
+    // At this point, newParent is the next one to be added to newParents
+    while (newParent && newParent != newWindow) {
+        //install event filters all the way up to (excluding) the window
+        newParents.append(newParent);
+        newParent->installEventFilter(q);
+        newParent = newParent->parentWidget();
     }
 
-    oldParent = newParent;
-    oldWindow = newWindow;
+    if (newParent && newWindow) {
+        // Install the event filter on the window
+        newParents.append(newParent);
+        newParent->installEventFilter(q);
+    }
+    oldParents = newParents;
 
     if (platformMenuBar) {
         if (newWindow) {
@@ -1450,10 +1460,9 @@ bool QMenuBar::event(QEvent *e)
 bool QMenuBar::eventFilter(QObject *object, QEvent *event)
 {
     Q_D(QMenuBar);
-    if (object == parent() && object) {
-        if (event->type() == QEvent::ParentChange) //GrandparentChange
+    if (object && (event->type() == QEvent::ParentChange)) //GrandparentChange
             d->handleReparent();
-    }
+
     if (object == d->leftWidget || object == d->rightWidget) {
         switch (event->type()) {
         case QEvent::ShowToParent:

@@ -91,6 +91,7 @@ for i in "$@"; do
 done
 
 # initialize global variables
+CONFIG_SEPARATORS=`printf ' \t'`
 QMAKE_SWITCHES=
 QMAKE_VARS=
 QMAKE_CONFIG=
@@ -352,6 +353,21 @@ getXQMakeConf()
         if [ "$XPLATFORM_MAC" = "yes" ]; then xspecvals=$(macSDKify "$xspecvals"); fi
     fi
     getSingleQMakeVariable "$1" "$xspecvals"
+}
+
+testXConfig()
+{
+    # Put a space on each end of the CONFIG value so that searching for the
+    # target with whitespace on either side will work even when it's the
+    # first/last/only item in the CONFIG value.
+    case \ `getXQMakeConf CONFIG`\  in
+    *[${CONFIG_SEPARATORS}]$1[${CONFIG_SEPARATORS}]*)
+        return 0
+        ;;
+    *)
+        return 1
+        ;;
+    esac
 }
 
 compilerSupportsFlag()
@@ -3248,7 +3264,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         setBootstrapVariable QMAKE_LFLAGS
         setBootstrapVariable QMAKE_LFLAGS_GCSECTIONS
 
-        if [ "$CFG_RELEASE_TOOLS" = "yes" ]; then
+        if [ "$CFG_DEBUG" = "no" ] || [ "$CFG_RELEASE_TOOLS" = "yes" ]; then
             setBootstrapVariable QMAKE_CFLAGS_RELEASE
             setBootstrapVariable QMAKE_CXXFLAGS_RELEASE
             EXTRA_CFLAGS="$EXTRA_CFLAGS \$(QMAKE_CFLAGS_RELEASE)"
@@ -3260,12 +3276,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(QMAKE_CXXFLAGS_DEBUG)"
         fi
 
-        if [ -n "$RPATH_FLAGS" ] && [ -n "`getQMakeConf 'QMAKE_(LFLAGS_)?RPATH'`" ]; then
-            setBootstrapVariable "QMAKE_(LFLAGS_)?RPATH" QMAKE_LFLAGS_RPATH
-            for rpath in $RPATH_FLAGS; do
-                EXTRA_LFLAGS="\$(QMAKE_LFLAGS_RPATH)\"$rpath\" $EXTRA_LFLAGS"
-            done
-        fi
         case `basename "$PLATFORM"` in
         win32-g++*)
             EXTRA_CFLAGS="$EXTRA_CFLAGS -DUNICODE"
@@ -3315,9 +3325,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
                         \"\$(SOURCE_PATH)/src/corelib/io/qsettings_mac.cpp\" \
                         \"\$(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp\" \
                         \"\$(SOURCE_PATH)/src/corelib/kernel/qcore_mac_objc.mm\""
-        fi
-        if [ '!' -z "$D_FLAGS" ]; then
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $D_FLAGS"
         fi
 
         echo >>"$mkfile"
@@ -3547,6 +3554,7 @@ compileTest()
     if [ "$CFG_SHARED" = "no" ]; then
         test_config="$QMAKE_CONFIG static"
     fi
+    echo $ECHO_N "checking for $name... $ECHO_C"
     "$unixtests/compile.test" "$XQMAKESPEC" "$test_config" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" "$CFG_QMAKE_PATH" "$QTCONFFILE" $I_FLAGS $D_FLAGS $L_FLAGS "$@"
 }
 
@@ -4679,6 +4687,7 @@ if [ "$CFG_OPENGL" = "es2" ]; then
 fi
 
 # auto-detect FontConfig support
+ORIG_CFG_FREETYPE="$CFG_FREETYPE"
 if [ "$CFG_FONTCONFIG" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists fontconfig --exists freetype2 2>/dev/null; then
         QMAKE_CFLAGS_FONTCONFIG=`$PKG_CONFIG --cflags fontconfig --cflags freetype2 2>/dev/null`
@@ -4865,6 +4874,11 @@ if [ "$CFG_XCB" != "no" ]; then
 
         if [ "$CFG_XCB" = "qt" ]; then
             QT_CONFIG="$QT_CONFIG xcb-qt"
+
+            if compileTest qpa/xcb-glx "xcb-glx" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
+                CFG_XCB_GLX=yes
+                QT_CONFIG="$QT_CONFIG xcb-glx"
+            fi
         else
             CFG_XCB="system"
             if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xcb >= 1.5" 2>/dev/null; then
@@ -5599,7 +5613,11 @@ fi
 [ "$CFG_STACK_PROTECTOR_STRONG" = "yes" ] && QT_CONFIG="$QT_CONFIG stack-protector-strong"
 [ "$CFG_REDUCE_RELOCATIONS" = "yes" ] && QT_CONFIG="$QT_CONFIG reduce_relocations"
 [ "$CFG_STRIP" = "no" ] && QMAKE_CONFIG="$QMAKE_CONFIG nostrip"
-[ "$CFG_PRECOMPILE" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG precompile_header"
+if testXConfig precompile_header; then
+    [ "$CFG_PRECOMPILE" = "no" ] && QMakeVar del CONFIG precompile_header
+else
+    [ "$CFG_PRECOMPILE" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG precompile_header"
+fi
 [ "$CFG_USE_GOLD_LINKER" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG use_gold_linker"
 [ "$CFG_ENABLE_NEW_DTAGS" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG enable_new_dtags"
 if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
@@ -6515,6 +6533,15 @@ if [ "$CFG_SHARED" = "no" ]; then
     echo "WARNING: Using static linking will disable the use of dynamically"
     echo "loaded plugins. Make sure to import all needed static plugins,"
     echo "or compile needed modules into the library."
+fi
+if [ "$CFG_FREETYPE" = "system" ]; then
+    if [ "$ORIG_CFG_FREETYPE" = "qt" ]; then
+        echo
+        echo "WARNING: Bundled FreeType can't be used. FontConfig use requires system FreeType."
+    elif [ "$ORIG_CFG_FREETYPE" = "no" ]; then
+        echo
+        echo "WARNING: FreeType can't be disabled. FontConfig use requires system FreeType."
+    fi
 fi
 if [ "$CFG_OPENSSL" = "linked" ] && [ "$OPENSSL_LIBS" = "" ]; then
     echo

@@ -24,6 +24,7 @@ qnetworkaccessmanager/qget \
 qnetworkconfigurationmanager \
 qnetworkconfiguration \
 qnetworkreply \
+qstorageinfo \
 qscreen \
 qssloptions \
 qsslsocket \

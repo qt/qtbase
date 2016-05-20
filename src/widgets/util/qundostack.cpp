@@ -627,6 +627,8 @@ void QUndoStack::push(QUndoCommand *cmd)
     Marks the stack as clean and emits cleanChanged() if the stack was
     not already clean.
 
+    This is typically called when a document is saved, for example.
+
     Whenever the stack returns to this state through the use of undo/redo
     commands, it emits the signal cleanChanged(). This signal is also
     emitted when the stack leaves the clean state.

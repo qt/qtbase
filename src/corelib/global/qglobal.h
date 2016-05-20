@@ -61,6 +61,9 @@
 #include <QtCore/qfeatures.h>
 #endif
 
+// The QT_SUPPORTS macro is deprecated. Don't use it in new code.
+// Instead, use #ifdef/ndef QT_NO_feature.
+// ### Qt6: remove macro
 #ifdef _MSC_VER
 #  define QT_SUPPORTS(FEATURE) (!defined QT_NO_##FEATURE)
 #else
@@ -920,6 +923,8 @@ QT_WARNING_DISABLE_MSVC(4530) /* C++ exception handler used, but unwind semantic
 #  endif
 #endif
 
+#ifndef QT_NO_FOREACH
+
 template <typename T>
 class QForeachContainer {
     QForeachContainer &operator=(const QForeachContainer &) Q_DECL_EQ_DELETE;
@@ -945,11 +950,15 @@ for (QForeachContainer<typename QtPrivate::remove_reference<decltype(container)>
      ++_container_.i, _container_.control ^= 1)                     \
     for (variable = *_container_.i; _container_.control; _container_.control = 0)
 
+#endif // QT_NO_FOREACH
+
 #define Q_FOREVER for(;;)
 #ifndef QT_NO_KEYWORDS
+# ifndef QT_NO_FOREACH
 #  ifndef foreach
 #    define foreach Q_FOREACH
 #  endif
+# endif // QT_NO_FOREACH
 #  ifndef forever
 #    define forever Q_FOREVER
 #  endif

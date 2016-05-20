@@ -320,6 +320,12 @@ QLineEditIconButton::QLineEditIconButton(QWidget *parent)
     setFocusPolicy(Qt::NoFocus);
 }
 
+QLineEditPrivate *QLineEditIconButton::lineEditPrivate() const
+{
+    QLineEdit *le = qobject_cast<QLineEdit *>(parentWidget());
+    return le ? static_cast<QLineEditPrivate *>(qt_widget_private(le)) : Q_NULLPTR;
+}
+
 void QLineEditIconButton::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
@@ -331,7 +337,9 @@ void QLineEditIconButton::paintEvent(QPaintEvent *)
     QIcon::Mode state = QIcon::Disabled;
     if (isEnabled())
         state = isDown() ? QIcon::Selected : QIcon::Normal;
-    const QSize iconSize(IconButtonSize, IconButtonSize);
+    const QLineEditPrivate *lep = lineEditPrivate();
+    const int iconWidth = lep ? lep->sideWidgetParameters().iconSize : 16;
+    const QSize iconSize(iconWidth, iconWidth);
     const QPixmap iconPixmap = icon().pixmap(window, iconSize, state, QIcon::Off);
     QRect pixmapRect = QRect(QPoint(0, 0), iconSize);
     pixmapRect.moveCenter(rect().center());
@@ -346,8 +354,8 @@ void QLineEditIconButton::actionEvent(QActionEvent *e)
         const QAction *action = e->action();
         if (isVisibleTo(parentWidget()) != action->isVisible()) {
             setVisible(action->isVisible());
-            if (QLineEdit *le = qobject_cast<QLineEdit *>(parentWidget()))
-                static_cast<QLineEditPrivate *>(qt_widget_private(le))->positionSideWidgets();
+            if (QLineEditPrivate *lep = lineEditPrivate())
+                lep->positionSideWidgets();
         }
     }
         break;
@@ -413,11 +421,15 @@ void QLineEditPrivate::_q_clearButtonClicked()
     }
 }
 
-QSize QLineEditPrivate::iconSize() const
+QLineEditPrivate::SideWidgetParameters QLineEditPrivate::sideWidgetParameters() const
 {
-    if (!m_iconSize.isValid()) // This might require style-specific handling (pixel metric).
-        m_iconSize = QSize(QLineEditIconButton::IconButtonSize + 6, QLineEditIconButton::IconButtonSize + 2);
-    return m_iconSize;
+    Q_Q(const QLineEdit);
+    SideWidgetParameters result;
+    result.iconSize = q->height() < 34 ? 16 : 32;
+    result.margin = result.iconSize / 4;
+    result.widgetWidth = result.iconSize + 6;
+    result.widgetHeight = result.iconSize + 2;
+    return result;
 }
 
 QIcon QLineEditPrivate::clearButtonIcon() const
@@ -443,15 +455,16 @@ void QLineEditPrivate::positionSideWidgets()
     Q_Q(QLineEdit);
     if (hasSideWidgets()) {
         const QRect contentRect = q->rect();
-        const QSize iconSize = QLineEditPrivate::iconSize();
-        const int delta = QLineEditIconButton::IconMargin + iconSize.width();
-        QRect widgetGeometry(QPoint(QLineEditIconButton::IconMargin, (contentRect.height() - iconSize.height()) / 2), iconSize);
+        const SideWidgetParameters p = sideWidgetParameters();
+        const int delta = p.margin + p.widgetWidth;
+        QRect widgetGeometry(QPoint(p.margin, (contentRect.height() - p.widgetHeight) / 2),
+                             QSize(p.widgetWidth, p.widgetHeight));
         for (const SideWidgetEntry &e : leftSideWidgetList()) {
             e.widget->setGeometry(widgetGeometry);
             if (e.action->isVisible())
                 widgetGeometry.moveLeft(widgetGeometry.left() + delta);
         }
-        widgetGeometry.moveLeft(contentRect.width() - iconSize.width() - QLineEditIconButton::IconMargin);
+        widgetGeometry.moveLeft(contentRect.width() - p.widgetWidth - p.margin);
         for (const SideWidgetEntry &e : rightSideWidgetList()) {
             e.widget->setGeometry(widgetGeometry);
             if (e.action->isVisible())
@@ -539,18 +552,26 @@ static bool isSideWidgetVisible(const QLineEditPrivate::SideWidgetEntry &e)
 
 int QLineEditPrivate::effectiveLeftTextMargin() const
 {
-    const auto &list = leftSideWidgetList();
-    return leftTextMargin + (QLineEditIconButton::IconMargin + iconSize().width())
-        * int(std::count_if(list.begin(), list.end(),
-                            isSideWidgetVisible));
+    int result = leftTextMargin;
+    if (!leftSideWidgetList().empty()) {
+        const SideWidgetParameters p = sideWidgetParameters();
+        result += (p.margin + p.widgetWidth)
+            * int(std::count_if(leftSideWidgetList().begin(), leftSideWidgetList().end(),
+                                isSideWidgetVisible));
+    }
+    return result;
 }
 
 int QLineEditPrivate::effectiveRightTextMargin() const
 {
-    const auto &list = rightSideWidgetList();
-    return rightTextMargin + (QLineEditIconButton::IconMargin + iconSize().width())
-        * int(std::count_if(list.begin(), list.end(),
-                            isSideWidgetVisible));
+    int result = rightTextMargin;
+    if (!rightSideWidgetList().empty()) {
+        const SideWidgetParameters p = sideWidgetParameters();
+        result += (p.margin + p.widgetWidth)
+            * int(std::count_if(rightSideWidgetList().begin(), rightSideWidgetList().end(),
+                                isSideWidgetVisible));
+    }
+    return result;
 }
 
 

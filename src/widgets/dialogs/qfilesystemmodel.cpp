@@ -372,6 +372,9 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
         )
         return const_cast<QFileSystemModelPrivate::QFileSystemNode*>(&root);
     QModelIndex index = QModelIndex(); // start with "My Computer"
+    QString elementPath;
+    QChar separator = QLatin1Char('/');
+    QString trailingSeparator;
 #if defined(Q_OS_WIN)
     if (absolutePath.startsWith(QLatin1String("//"))) { // UNC path
         QString host = QLatin1String("\\\\") + pathElements.constFirst();
@@ -379,6 +382,8 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
             absolutePath.append(QLatin1Char('/'));
         if (longPath.endsWith(QLatin1Char('/')) && !absolutePath.endsWith(QLatin1Char('/')))
             absolutePath.append(QLatin1Char('/'));
+        if (absolutePath.endsWith(QLatin1Char('/')))
+            trailingSeparator = QLatin1String("\\");
         int r = 0;
         QFileSystemModelPrivate::QFileSystemNode *rootNode = const_cast<QFileSystemModelPrivate::QFileSystemNode*>(&root);
         if (!root.children.contains(host.toLower())) {
@@ -395,11 +400,10 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
         r = translateVisibleLocation(rootNode, r);
         index = q->index(r, 0, QModelIndex());
         pathElements.pop_front();
-    } else
-#endif
-
-#if defined(Q_OS_WIN)
-    {
+        separator = QLatin1Char('\\');
+        elementPath = host;
+        elementPath.append(separator);
+    } else {
         if (!pathElements.at(0).contains(QLatin1Char(':'))) {
             QString rootPath = QDir(longPath).rootPath();
             pathElements.prepend(rootPath);
@@ -417,6 +421,11 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
 
     for (int i = 0; i < pathElements.count(); ++i) {
         QString element = pathElements.at(i);
+        if (i != 0)
+            elementPath.append(separator);
+        elementPath.append(element);
+        if (i == pathElements.count() - 1)
+            elementPath.append(trailingSeparator);
 #ifdef Q_OS_WIN
         // On Windows, "filename    " and "filename" are equivalent and
         // "filename  .  " and "filename" are equivalent
@@ -448,7 +457,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
         if (!alreadyExisted) {
             // Someone might call ::index("file://cookie/monster/doesn't/like/veggies"),
             // a path that doesn't exists, I.E. don't blindly create directories.
-            QFileInfo info(absolutePath);
+            QFileInfo info(elementPath);
             if (!info.exists())
                 return const_cast<QFileSystemModelPrivate::QFileSystemNode*>(&root);
             QFileSystemModelPrivate *p = const_cast<QFileSystemModelPrivate*>(this);

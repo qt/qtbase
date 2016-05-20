@@ -22,4 +22,7 @@ HEADERS += \
 OTHER_FILES += \
     lalr.g
 
+DEFINES += \
+    QT_NO_FOREACH
+
 load(qt_tool)

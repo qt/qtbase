@@ -40,9 +40,9 @@
 #ifndef QEGLFSCONTEXT_H
 #define QEGLFSCONTEXT_H
 
+#include "qeglfsglobal.h"
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 #include <QtCore/QVariant>
-#include "qeglfsglobal.h"
 
 QT_BEGIN_NAMESPACE
 

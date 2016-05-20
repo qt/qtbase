@@ -6272,7 +6272,7 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
             pen.setColor(uc);
 
         // Adapt wave to underlineOffset or pen width, whatever is larger, to make it work on all platforms
-        const QPixmap wave = generateWavyPixmap(qMin(qMax(underlineOffset, pen.widthF()), maxHeight / 2.), pen);
+        const QPixmap wave = generateWavyPixmap(qMin(qMax(underlineOffset, pen.widthF()), maxHeight / qreal(2.)), pen);
         const int descent = qFloor(maxHeight);
 
         painter->setBrushOrigin(painter->brushOrigin().x(), 0);
@@ -6283,7 +6283,7 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
         // the text above it, but limit it to stay within descent.
         qreal adjustedUnderlineOffset = std::ceil(underlineOffset) + 0.5;
         if (underlineOffset <= fe->descent().toReal())
-            adjustedUnderlineOffset = qMin(adjustedUnderlineOffset, fe->descent().toReal() - 0.5);
+            adjustedUnderlineOffset = qMin(adjustedUnderlineOffset, fe->descent().toReal() - qreal(0.5));
         const qreal underlinePos = pos.y() + adjustedUnderlineOffset;
         QColor uc = charFormat.underlineColor();
         if (uc.isValid())

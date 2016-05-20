@@ -199,6 +199,8 @@ bool QAuthenticator::operator==(const QAuthenticator &other) const
 {
     if (d == other.d)
         return true;
+    if (!d || !other.d)
+        return false;
     return d->user == other.d->user
         && d->password == other.d->password
         && d->realm == other.d->realm

@@ -56,6 +56,11 @@
 # error "Qt build is broken: qmutex_linux.cpp is being built but futex support is not wanted"
 #endif
 
+#ifndef FUTEX_PRIVATE_FLAG
+#  define FUTEX_PRIVATE_FLAG    128
+#endif
+
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -104,40 +109,6 @@ QT_BEGIN_NAMESPACE
 
 static QBasicAtomicInt futexFlagSupport = Q_BASIC_ATOMIC_INITIALIZER(-1);
 
-static int checkFutexPrivateSupport()
-{
-    int value = 0;
-#if defined(FUTEX_PRIVATE_FLAG)
-    // check if the kernel supports extra futex flags
-    // FUTEX_PRIVATE_FLAG appeared in v2.6.22
-    Q_STATIC_ASSERT(FUTEX_PRIVATE_FLAG != 0x80000000);
-
-    // try an operation that has no side-effects: wake up 42 threads
-    // futex will return -1 (errno==ENOSYS) if the flag isn't supported
-    // there should be no other error conditions
-    value = syscall(__NR_futex, &futexFlagSupport,
-                    FUTEX_WAKE | FUTEX_PRIVATE_FLAG,
-                    42, 0, 0, 0);
-    if (value != -1)
-        value = FUTEX_PRIVATE_FLAG;
-    else
-        value = 0;
-
-#else
-    value = 0;
-#endif
-    futexFlagSupport.store(value);
-    return value;
-}
-
-static inline int futexFlags()
-{
-    int value = futexFlagSupport.load();
-    if (Q_LIKELY(value != -1))
-        return value;
-    return checkFutexPrivateSupport();
-}
-
 static inline int _q_futex(void *addr, int op, int val, const struct timespec *timeout) Q_DECL_NOTHROW
 {
     volatile int *int_addr = reinterpret_cast<volatile int *>(addr);
@@ -149,7 +120,7 @@ static inline int _q_futex(void *addr, int op, int val, const struct timespec *t
 
     // we use __NR_futex because some libcs (like Android's bionic) don't
     // provide SYS_futex etc.
-    return syscall(__NR_futex, int_addr, op | futexFlags(), val, timeout, addr2, val2);
+    return syscall(__NR_futex, int_addr, op | FUTEX_PRIVATE_FLAG, val, timeout, addr2, val2);
 }
 
 static inline QMutexData *dummyFutexValue()

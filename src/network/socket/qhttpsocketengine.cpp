@@ -188,17 +188,26 @@ bool QHttpSocketEngine::connectToHostByName(const QString &hostname, quint16 por
 
 bool QHttpSocketEngine::bind(const QHostAddress &, quint16)
 {
+    qWarning("Operation is not supported");
+    setError(QAbstractSocket::UnsupportedSocketOperationError,
+             QLatin1String("Unsupported socket operation"));
     return false;
 }
 
 bool QHttpSocketEngine::listen()
 {
+    qWarning("Operation is not supported");
+    setError(QAbstractSocket::UnsupportedSocketOperationError,
+             QLatin1String("Unsupported socket operation"));
     return false;
 }
 
 int QHttpSocketEngine::accept()
 {
-    return 0;
+    qWarning("Operation is not supported");
+    setError(QAbstractSocket::UnsupportedSocketOperationError,
+             QLatin1String("Unsupported socket operation"));
+    return -1;
 }
 
 void QHttpSocketEngine::close()
@@ -251,16 +260,18 @@ qint64 QHttpSocketEngine::write(const char *data, qint64 len)
 bool QHttpSocketEngine::joinMulticastGroup(const QHostAddress &,
                                            const QNetworkInterface &)
 {
+    qWarning("Operation is not supported");
     setError(QAbstractSocket::UnsupportedSocketOperationError,
-             QLatin1String("Operation on socket is not supported"));
+             QLatin1String("Unsupported socket operation"));
     return false;
 }
 
 bool QHttpSocketEngine::leaveMulticastGroup(const QHostAddress &,
                                             const QNetworkInterface &)
 {
+    qWarning("Operation is not supported");
     setError(QAbstractSocket::UnsupportedSocketOperationError,
-             QLatin1String("Operation on socket is not supported"));
+             QLatin1String("Unsupported socket operation"));
     return false;
 }
 
@@ -271,30 +282,39 @@ QNetworkInterface QHttpSocketEngine::multicastInterface() const
 
 bool QHttpSocketEngine::setMulticastInterface(const QNetworkInterface &)
 {
+    qWarning("Operation is not supported");
     setError(QAbstractSocket::UnsupportedSocketOperationError,
-             QLatin1String("Operation on socket is not supported"));
+             QLatin1String("Unsupported socket operation"));
     return false;
 }
 #endif // QT_NO_NETWORKINTERFACE
 
 qint64 QHttpSocketEngine::readDatagram(char *, qint64, QIpPacketHeader *, PacketHeaderOptions)
 {
-    return 0;
+    qWarning("Operation is not supported");
+    setError(QAbstractSocket::UnsupportedSocketOperationError,
+             QLatin1String("Unsupported socket operation"));
+    return -1;
 }
 
 qint64 QHttpSocketEngine::writeDatagram(const char *, qint64, const QIpPacketHeader &)
 {
-    return 0;
+    qWarning("Operation is not supported");
+    setError(QAbstractSocket::UnsupportedSocketOperationError,
+             QLatin1String("Unsupported socket operation"));
+    return -1;
 }
 
 bool QHttpSocketEngine::hasPendingDatagrams() const
 {
+    qWarning("Operation is not supported");
     return false;
 }
 
 qint64 QHttpSocketEngine::pendingDatagramSize() const
 {
-    return 0;
+    qWarning("Operation is not supported");
+    return -1;
 }
 #endif // QT_NO_UDPSOCKET
 

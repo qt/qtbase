@@ -118,9 +118,6 @@ bool QFontDef::exactMatch(const QFontDef &other) const
     QFontDatabase::parseFontName(family, this_foundry, this_family);
     QFontDatabase::parseFontName(other.family, other_foundry, other_family);
 
-    this_family = QFontDatabase::resolveFontFamilyAlias(this_family);
-    other_family = QFontDatabase::resolveFontFamilyAlias(other_family);
-
     return (styleHint     == other.styleHint
             && styleStrategy == other.styleStrategy
             && weight        == other.weight

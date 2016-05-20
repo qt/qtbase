@@ -480,6 +480,9 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     //
     connect(&d->networkConfigurationManager, SIGNAL(onlineStateChanged(bool)),
             SLOT(_q_onlineStateChanged(bool)));
+    connect(&d->networkConfigurationManager, SIGNAL(configurationChanged(const QNetworkConfiguration &)),
+            SLOT(_q_configurationChanged(const QNetworkConfiguration &)));
+
 #endif
 }
 
@@ -1578,6 +1581,8 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
         QObject::disconnect(networkSessionStrongRef.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()));
         QObject::disconnect(networkSessionStrongRef.data(), SIGNAL(stateChanged(QNetworkSession::State)),
             q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)));
+        QObject::disconnect(networkSessionStrongRef.data(), SIGNAL(error(QNetworkSession::SessionError)),
+                            q, SLOT(_q_networkSessionFailed(QNetworkSession::SessionError)));
     }
 
     //switch to new session (null if config was invalid)
@@ -1585,7 +1590,6 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
     networkSessionWeakRef = networkSessionStrongRef.toWeakRef();
 
     if (!networkSessionStrongRef) {
-        online = false;
 
         if (networkAccessible == QNetworkAccessManager::NotAccessible || !online)
             emit q->networkAccessibleChanged(QNetworkAccessManager::NotAccessible);
@@ -1601,6 +1605,8 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
     QObject::connect(networkSessionStrongRef.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()), Qt::QueuedConnection);
     QObject::connect(networkSessionStrongRef.data(), SIGNAL(stateChanged(QNetworkSession::State)),
                      q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)), Qt::QueuedConnection);
+    QObject::connect(networkSessionStrongRef.data(), SIGNAL(error(QNetworkSession::SessionError)),
+                        q, SLOT(_q_networkSessionFailed(QNetworkSession::SessionError)));
 
     _q_networkSessionStateChanged(networkSessionStrongRef->state());
 }
@@ -1617,6 +1623,9 @@ void QNetworkAccessManagerPrivate::_q_networkSessionClosed()
         QObject::disconnect(networkSession.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()));
         QObject::disconnect(networkSession.data(), SIGNAL(stateChanged(QNetworkSession::State)),
             q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)));
+        QObject::disconnect(networkSessionStrongRef.data(), SIGNAL(error(QNetworkSession::SessionError)),
+                            q, SLOT(_q_networkSessionFailed(QNetworkSession::SessionError)));
+
         networkSessionStrongRef.clear();
         networkSessionWeakRef.clear();
     }
@@ -1625,46 +1634,57 @@ void QNetworkAccessManagerPrivate::_q_networkSessionClosed()
 void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession::State state)
 {
     Q_Q(QNetworkAccessManager);
-
+    bool reallyOnline = false;
     //Do not emit the networkSessionConnected signal here, except for roaming -> connected
     //transition, otherwise it is emitted twice in a row when opening a connection.
-    if (state == QNetworkSession::Connected && lastSessionState == QNetworkSession::Roaming)
+    if (state == QNetworkSession::Connected && lastSessionState != QNetworkSession::Roaming)
         emit q->networkSessionConnected();
     lastSessionState = state;
 
-    if (online) {
+    if (online && state == QNetworkSession::Disconnected) {
+        const auto cfgs = networkConfigurationManager.allConfigurations();
+        for (const QNetworkConfiguration &cfg : cfgs) {
+            if (cfg.state().testFlag(QNetworkConfiguration::Active)) {
+                reallyOnline = true;
+            }
+        }
+    } else if (state == QNetworkSession::Connected || state == QNetworkSession::Roaming) {
+        reallyOnline = true;
+    }
+
+    if (!reallyOnline) {
         if (state != QNetworkSession::Connected && state != QNetworkSession::Roaming) {
-            online = false;
             if (networkAccessible != QNetworkAccessManager::NotAccessible) {
                 networkAccessible = QNetworkAccessManager::NotAccessible;
                 emit q->networkAccessibleChanged(networkAccessible);
             }
         }
     } else {
-        if (state == QNetworkSession::Connected || state == QNetworkSession::Roaming) {
-            online = true;
-            if (defaultAccessControl)
-                if (networkAccessible != QNetworkAccessManager::Accessible) {
-                    networkAccessible = QNetworkAccessManager::Accessible;
-                    emit q->networkAccessibleChanged(networkAccessible);
-                }
-        }
+        if (defaultAccessControl)
+            if (networkAccessible != QNetworkAccessManager::Accessible) {
+                networkAccessible = QNetworkAccessManager::Accessible;
+                emit q->networkAccessibleChanged(networkAccessible);
+            }
+    }
+    online = reallyOnline;
+    if (online && (state != QNetworkSession::Connected && state != QNetworkSession::Roaming)) {
+        _q_networkSessionClosed();
+        createSession(q->configuration());
     }
 }
 
 void QNetworkAccessManagerPrivate::_q_onlineStateChanged(bool isOnline)
 {
    Q_Q(QNetworkAccessManager);
+
    // if the user set a config, we only care whether this one is active.
     // Otherwise, this QNAM is online if there is an online config.
     if (customNetworkConfiguration) {
         online = (networkConfiguration.state() & QNetworkConfiguration::Active);
     } else {
         if (online != isOnline) {
-            if (isOnline) {
-                networkSessionStrongRef.clear();
-                networkSessionWeakRef.clear();
-            }
+                _q_networkSessionClosed();
+                createSession(q->configuration());
             online = isOnline;
         }
     }
@@ -1675,15 +1695,54 @@ void QNetworkAccessManagerPrivate::_q_onlineStateChanged(bool isOnline)
                 emit q->networkAccessibleChanged(networkAccessible);
             }
         }
-    } else if (networkConfiguration.state().testFlag(QNetworkConfiguration::Undefined)) {
-        if (networkAccessible != QNetworkAccessManager::UnknownAccessibility) {
-            networkAccessible = QNetworkAccessManager::UnknownAccessibility;
-            emit q->networkAccessibleChanged(networkAccessible);
-        }
     } else {
         if (networkAccessible != QNetworkAccessManager::NotAccessible) {
             networkAccessible = QNetworkAccessManager::NotAccessible;
             emit q->networkAccessibleChanged(networkAccessible);
+        }
+    }
+}
+
+void QNetworkAccessManagerPrivate::_q_configurationChanged(const QNetworkConfiguration &configuration)
+{
+    const QString id = configuration.identifier();
+    if (configuration.state().testFlag(QNetworkConfiguration::Active)) {
+        if (!onlineConfigurations.contains(id)) {
+
+            QSharedPointer<QNetworkSession> session(getNetworkSession());
+            if (session) {
+                if (online && session->configuration().identifier()
+                        != networkConfigurationManager.defaultConfiguration().identifier()) {
+
+                    onlineConfigurations.insert(id);
+                    //this one disconnected but another one is online,
+                    // close and create new session
+                    _q_networkSessionClosed();
+                    createSession(networkConfigurationManager.defaultConfiguration());
+                }
+            }
+        }
+
+    } else if (onlineConfigurations.contains(id)) {
+        //this one is disconnecting
+        onlineConfigurations.remove(id);
+        if (!onlineConfigurations.isEmpty()) {
+            _q_networkSessionClosed();
+            createSession(configuration);
+        }
+    }
+}
+
+
+void QNetworkAccessManagerPrivate::_q_networkSessionFailed(QNetworkSession::SessionError)
+{
+    const auto cfgs = networkConfigurationManager.allConfigurations();
+    for (const QNetworkConfiguration &cfg : cfgs) {
+        if (cfg.state().testFlag(QNetworkConfiguration::Active)) {
+            online = true;
+            _q_networkSessionClosed();
+            createSession(networkConfigurationManager.defaultConfiguration());
+            return;
         }
     }
 }

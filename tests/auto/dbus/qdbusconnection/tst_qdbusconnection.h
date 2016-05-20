@@ -74,10 +74,17 @@ class tst_QDBusConnection: public QObject
     Q_OBJECT
 
     int signalsReceived;
+public:
+    static int hookCallCount;
+    tst_QDBusConnection();
+
 public slots:
     void oneSlot() { ++signalsReceived; }
     void exitLoop() { ++signalsReceived; QTestEventLoop::instance().exitLoop(); }
     void secondCallWithCallback();
+
+    void init();
+    void cleanup();
 
 private slots:
     void noConnection();

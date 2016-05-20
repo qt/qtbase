@@ -161,8 +161,6 @@ template <class X, class T> QSharedPointer<X> qSharedPointerObjectCast(const QWe
 
 template <class X, class T> QWeakPointer<X> qWeakPointerCast(const QWeakPointer<T> &src);
 
-template <class T> QDebug operator<<(QDebug debug, const QSharedPointer<T> &ptr);
-
 QT_END_NAMESPACE
 
 #endif // Q_QDOC

@@ -45,7 +45,7 @@ QT_BEGIN_NAMESPACE
 static QByteArray cleaned(const QByteArray &input)
 {
     QByteArray result;
-    result.reserve(input.size());
+    result.resize(input.size());
     const char *data = input.constData();
     const char *end = input.constData() + input.size();
     char *output = result.data();
@@ -73,13 +73,15 @@ static QByteArray cleaned(const QByteArray &input)
                 if (data != end && (*(data + 1) == '\n' || (*data) == '\r')) {
                     ++newlines;
                     data += 1;
-                    if (*data != '\r')
+                    if (data != end && *data != '\r')
                         data += 1;
                     continue;
                 }
             } else if (*data == '\r' && *(data + 1) == '\n') { // reduce \r\n to \n
                 ++data;
             }
+            if (data == end)
+                break;
 
             char ch = *data;
             if (ch == '\r') // os9: replace \r with \n
