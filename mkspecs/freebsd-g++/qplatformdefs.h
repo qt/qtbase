@@ -31,4 +31,4 @@
 **
 ****************************************************************************/
 
-#include "../../freebsd-clang/qplatformdefs.h"
+#include "../freebsd-clang/qplatformdefs.h"

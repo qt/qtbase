@@ -2872,7 +2872,7 @@ if [ -z "$PLATFORM" ]; then
      FreeBSD:*)
         PLATFORM=freebsd-clang
         PLATFORM_NOTES="
-            - Also available for FreeBSD: freebsd-icc
+            - Also available for FreeBSD: freebsd-g++
         "
         ;;
      OpenBSD:*)
