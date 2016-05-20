@@ -58,7 +58,7 @@ static NSButton *macCreateButton(const char *text, NSView *superview)
     [button setButtonType:NSMomentaryLightButton];
     [button setBezelStyle:NSRoundedBezelStyle];
     [button setTitle:(NSString*)(CFStringRef)QCFString(
-            QPlatformTheme::removeMnemonics(QCoreApplication::translate("QDialogButtonBox", text)))];
+            QPlatformTheme::removeMnemonics(QCoreApplication::translate("QPlatformTheme", text)))];
     [[button cell] setFont:[NSFont systemFontOfSize:
             [NSFont systemFontSizeForControlSize:NSRegularControlSize]]];
     [superview addSubview:button];

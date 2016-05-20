@@ -239,6 +239,17 @@
            to mouse events instead. This attribute is enabled
            by default. This value has been added in Qt 5.7.
 
+    \value AA_CompressHighFrequencyEvents Enables compression of certain frequent events.
+           On the X11 windowing system, the default value is true, which means that
+           QEvent::MouseMove, QEvent::TouchUpdate, and changes in window size and
+           position will be combined whenever they occur more frequently than the
+           application handles them, so that they don't accumulate and overwhelm the
+           application later. On other platforms, the default is false.
+           (In the future, the compression feature may be implemented across platforms.)
+           You can test the attribute to see whether compression is enabled.
+           If your application needs to handle all events with no compression,
+           you can unset this attribute. This value has been added in Qt 5.7.
+
     The following values are obsolete:
 
     \value AA_ImmediateWidgetCreation This attribute is no longer fully

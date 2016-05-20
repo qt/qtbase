@@ -107,6 +107,7 @@ QLocalSocketPrivate::QLocalSocketPrivate() : QIODevicePrivate(),
        error(QLocalSocket::UnknownSocketError),
        state(QLocalSocket::UnconnectedState)
 {
+    writeBufferChunkSize = QIODEVICE_BUFFERSIZE;
 }
 
 QLocalSocketPrivate::~QLocalSocketPrivate()
@@ -214,8 +215,7 @@ qint64 QLocalSocket::writeData(const char *data, qint64 len)
     Q_D(QLocalSocket);
     if (len == 0)
         return 0;
-    char *dest = d->writeBuffer.reserve(len);
-    memcpy(dest, data, len);
+    d->writeBuffer.append(data, len);
     if (!d->pipeWriter) {
         d->pipeWriter = new QWindowsPipeWriter(d->handle, this);
         connect(d->pipeWriter, &QWindowsPipeWriter::bytesWritten,
@@ -233,7 +233,6 @@ void QLocalSocket::abort()
     if (d->pipeWriter) {
         delete d->pipeWriter;
         d->pipeWriter = 0;
-        d->writeBuffer.clear();
     }
     close();
 }
@@ -291,6 +290,7 @@ void QLocalSocket::close()
     if (openMode() == NotOpen)
         return;
 
+    d->setWriteChannelCount(0);
     QIODevice::close();
     d->serverName = QString();
     d->fullServerName = QString();

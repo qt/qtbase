@@ -700,6 +700,8 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     QString slnConf = _slnSolutionConf;
     if (!project->isEmpty("VCPROJ_ARCH")) {
         slnConf.replace(QLatin1String("|Win32"), "|" + project->first("VCPROJ_ARCH"));
+    } else if (!project->isEmpty("CE_PLATFORMNAME")) {
+        slnConf.replace(QLatin1String("|Win32"), "|" + project->first("CE_PLATFORMNAME"));
     } else if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH")) {
         QString slnPlatform = QString("|") + project->values("CE_SDK").join(' ') + " (" + project->first("CE_ARCH") + ")";
         slnConf.replace(QLatin1String("|Win32"), slnPlatform);
@@ -717,6 +719,8 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
         QString xplatform = platform;
         if (!project->isEmpty("VCPROJ_ARCH")) {
             xplatform = project->first("VCPROJ_ARCH").toQString();
+        } else if (!project->isEmpty("CE_PLATFORMNAME")) {
+            xplatform = project->first("CE_PLATFORMNAME").toQString();
         } else if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH")) {
             xplatform = project->values("CE_SDK").join(' ') + " (" + project->first("CE_ARCH") + ")";
         }
@@ -976,6 +980,8 @@ void VcprojGenerator::initProject()
     vcProject.Keyword = project->first("VCPROJ_KEYWORD").toQString();
     if (!project->isEmpty("VCPROJ_ARCH")) {
         vcProject.PlatformName = project->first("VCPROJ_ARCH").toQString();
+    } else if (!project->isEmpty("CE_PLATFORMNAME")) {
+        vcProject.PlatformName = project->first("CE_PLATFORMNAME").toQString();
     } else if (project->isHostBuild() || project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
         vcProject.PlatformName = (is64Bit ? "x64" : "Win32");
     } else {
@@ -1060,6 +1066,8 @@ void VcprojGenerator::initConfiguration()
     conf.ConfigurationName = conf.Name;
     if (!project->isEmpty("VCPROJ_ARCH")) {
         conf.Name += "|" + project->first("VCPROJ_ARCH");
+    } else if (!project->isEmpty("CE_PLATFORMNAME")) {
+        conf.Name += "|" + project->first("CE_PLATFORMNAME");
     } else if (project->isHostBuild() || project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
         conf.Name += (is64Bit ? "|x64" : "|Win32");
     } else {

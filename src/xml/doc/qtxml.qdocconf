@@ -4,7 +4,7 @@ project                 = QtXml
 description             = Qt XML Reference Documentation
 version                 = $QT_VERSION
 
-examplesinstallpath     = qtbase/xml
+examplesinstallpath     = xml
 
 qhp.projects            = QtXml
 

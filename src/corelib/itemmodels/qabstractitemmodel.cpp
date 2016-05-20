@@ -3690,7 +3690,7 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     \fn QAbstractItemModel::modelAboutToBeReset()
     \since 4.2
 
-    This signal is emitted when reset() is called, before the model's internal
+    This signal is emitted when beginResetModel() is called, before the model's internal
     state (e.g. persistent model indexes) has been invalidated.
 
     \sa beginResetModel(), modelReset()
@@ -3700,7 +3700,7 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     \fn QAbstractItemModel::modelReset()
     \since 4.1
 
-    This signal is emitted when reset() or endResetModel() is called, after the
+    This signal is emitted when endResetModel() is called, after the
     model's internal state (e.g. persistent model indexes) has been invalidated.
 
     Note that if a model is reset it should be considered that all information

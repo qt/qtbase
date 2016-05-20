@@ -5,7 +5,7 @@
 ##teamcity[testFailed name='compare_unregistered_enums()' message='Failure! |[Loc: tst_cmptest.cpp(156)|]' details='Compared values are not the same']
 ##teamcity[testFinished name='compare_unregistered_enums()']
 ##teamcity[testStarted name='compare_registered_enums()']
-##teamcity[testFailed name='compare_registered_enums()' message='Failure! |[Loc: tst_cmptest.cpp(162)|]' details='Compared values are not the same|n Actual (Qt::ArrowCursor): ArrowCursor|n Expected (Qt::BusyCursor) : BusyCursor']
+##teamcity[testFailed name='compare_registered_enums()' message='Failure! |[Loc: tst_cmptest.cpp(162)|]' details='Compared values are not the same|n Actual (Qt::Monday): Monday|n Expected (Qt::Sunday): Sunday']
 ##teamcity[testFinished name='compare_registered_enums()']
 ##teamcity[testStarted name='compare_class_enums()']
 ##teamcity[testFailed name='compare_class_enums()' message='Failure! |[Loc: tst_cmptest.cpp(168)|]' details='Compared values are not the same|n Actual (MyClassEnum::MyClassEnumValue1): MyClassEnumValue1|n Expected (MyClassEnum::MyClassEnumValue2): MyClassEnumValue2']

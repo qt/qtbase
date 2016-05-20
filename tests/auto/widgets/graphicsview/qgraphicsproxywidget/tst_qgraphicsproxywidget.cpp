@@ -3672,16 +3672,19 @@ static QByteArray msgPointMismatch(const QPoint &actual, const QPoint &expected)
 void tst_QGraphicsProxyWidget::mapToGlobal() // QTBUG-41135
 {
     const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
-    const QSize size = availableGeometry.size() / 5;
+    const QSize size = availableGeometry.size() / 4;
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view.setTransform(QTransform::fromScale(2, 2));  // QTBUG-50136, use transform.
     view.setWindowTitle(QTest::currentTestFunction());
     view.resize(size);
     view.move(availableGeometry.bottomRight() - QPoint(size.width(), size.height()) - QPoint(100, 100));
-    QWidget *embeddedWidget = new QWidget;
-    embeddedWidget->setFixedSize(size / 2);
-    QWidget *childWidget = new QWidget(embeddedWidget);
+    QWidget *embeddedWidget = new QGroupBox(QLatin1String("Embedded"));
+    embeddedWidget->setStyleSheet(QLatin1String("background-color: \"yellow\"; "));
+    embeddedWidget->setFixedSize((size - QSize(10, 10)) / 2);
+    QWidget *childWidget = new QGroupBox(QLatin1String("Child"), embeddedWidget);
     childWidget->setStyleSheet(QLatin1String("background-color: \"red\"; "));
     childWidget->resize(embeddedWidget->size() / 2);
     childWidget->move(embeddedWidget->width() / 4, embeddedWidget->height() / 4); // center in embeddedWidget
@@ -3695,18 +3698,16 @@ void tst_QGraphicsProxyWidget::mapToGlobal() // QTBUG-41135
     // This should be equivalent to the view center give or take rounding
     // errors due to odd window margins
     const QPoint viewCenter = view.geometry().center();
-    QVERIFY2((viewCenter - embeddedCenterGlobal).manhattanLength() <= 2,
+    QVERIFY2((viewCenter - embeddedCenterGlobal).manhattanLength() <= 3,
              msgPointMismatch(embeddedCenterGlobal, viewCenter).constData());
 
-    // Same test with child centered on embeddedWidget. The correct
-    // mapping is not implemented yet, but at least make sure
+    // Same test with child centered on embeddedWidget. Also make sure
     // the roundtrip maptoGlobal()/mapFromGlobal() returns the same
     // point since that is important for mouse event handling (QTBUG-50030,
     // QTBUG-50136).
     const QPoint childCenter = childWidget->rect().center();
     const QPoint childCenterGlobal = childWidget->mapToGlobal(childCenter);
     QCOMPARE(childWidget->mapFromGlobal(childCenterGlobal), childCenter);
-    QEXPECT_FAIL("", "Not implemented for child widgets of embedded widgets", Continue);
     QVERIFY2((viewCenter - childCenterGlobal).manhattanLength() <= 4,
              msgPointMismatch(childCenterGlobal, viewCenter).constData());
 }

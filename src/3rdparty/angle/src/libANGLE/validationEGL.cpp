@@ -642,11 +642,14 @@ Error ValidateCreatePbufferFromClientBuffer(Display *display, EGLenum buftype, E
             return Error(EGL_BAD_ATTRIBUTE);
         }
 
+// On Windows Store, we know the originating texture came from D3D11, so bypass this check
+#if !defined(ANGLE_ENABLE_WINDOWS_STORE)
         const Caps &caps = display->getCaps();
         if (textureFormat != EGL_NO_TEXTURE && !caps.textureNPOT && (!gl::isPow2(width) || !gl::isPow2(height)))
         {
             return Error(EGL_BAD_MATCH);
         }
+#endif
     }
 
     return Error(EGL_SUCCESS);

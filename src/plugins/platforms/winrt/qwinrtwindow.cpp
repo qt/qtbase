@@ -110,9 +110,6 @@ QWinRTWindow::QWinRTWindow(QWindow *window)
     d->surface = EGL_NO_SURFACE;
     d->display = EGL_NO_DISPLAY;
     d->screen = static_cast<QWinRTScreen *>(screen());
-    setWindowFlags(window->flags());
-    setWindowState(window->windowState());
-    setWindowTitle(window->title());
     handleContentOrientationChange(window->contentOrientation());
 
     d->surfaceFormat.setAlphaBufferSize(0);
@@ -159,6 +156,10 @@ QWinRTWindow::QWinRTWindow(QWindow *window)
         return S_OK;
     });
     Q_ASSERT_SUCCEEDED(hr);
+
+    setWindowFlags(window->flags());
+    setWindowState(window->windowState());
+    setWindowTitle(window->title());
 
     setGeometry(window->geometry());
 }

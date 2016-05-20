@@ -64,10 +64,10 @@ win32 {
 INCLUDEPATH += $$PWD/include
 
 DEFINES += FT2_BUILD_LIBRARY
-contains(QT_CONFIG, system-zlib) {
-    DEFINES += FT_CONFIG_OPTION_SYSTEM_ZLIB
-    include($$PWD/../zlib_dependency.pri)
-}
+
+DEFINES += FT_CONFIG_OPTION_SYSTEM_ZLIB
+include(../zlib_dependency.pri)
+
 contains(QT_CONFIG, system-png) {
     DEFINES += FT_CONFIG_OPTION_USE_PNG
     include($$PWD/../png_dependency.pri)

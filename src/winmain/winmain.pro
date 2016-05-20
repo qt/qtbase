@@ -10,7 +10,7 @@ QT = core
 
 DEFINES += QT_NO_FOREACH
 
-contains(QT_CONFIG, build_all):CONFIG += build_all
+contains(QT_CONFIG, debug_and_release): CONFIG += build_all
 
 win32-msvc*:QMAKE_CFLAGS_DEBUG -= -Zi
 win32-msvc*:QMAKE_CXXFLAGS_DEBUG -= -Zi

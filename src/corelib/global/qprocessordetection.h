@@ -107,7 +107,7 @@
 #    define Q_PROCESSOR_ARM __TARGET_ARCH_ARM
 #  elif defined(_M_ARM) && _M_ARM > 1
 #    define Q_PROCESSOR_ARM _M_ARM
-#  elif defined(__ARM64_ARCH_8__)
+#  elif defined(__ARM64_ARCH_8__) || defined(__aarch64__)
 #    define Q_PROCESSOR_ARM 8
 #  elif defined(__ARM_ARCH_7__) \
       || defined(__ARM_ARCH_7A__) \

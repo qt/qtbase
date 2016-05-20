@@ -192,9 +192,8 @@ void QMakeEvaluator::initFunctionStatics()
         statics.functions.insert(ProKey(testInits[i].name), testInits[i].func);
 }
 
-static bool isTrue(const ProString &_str, QString &tmp)
+static bool isTrue(const ProString &str)
 {
-    const QString &str = _str.toQString(tmp);
     return !str.compare(statics.strtrue, Qt::CaseInsensitive) || str.toInt();
 }
 
@@ -478,9 +477,9 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
             } else {
                 var = args[0];
                 sep = args.at(1).toQString();
-                beg = args.at(2).toQString(m_tmp2).toInt();
+                beg = args.at(2).toInt();
                 if (args.count() == 4)
-                    end = args.at(3).toQString(m_tmp2).toInt();
+                    end = args.at(3).toInt();
             }
         } else {
             if (args.count() != 1) {
@@ -562,7 +561,7 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
                 break;
             }
             bool ok;
-            qlonglong num = m_tmp3.toLongLong(&ok, ibase);
+            qlonglong num = args.at(0).toLongLong(&ok, ibase);
             if (!ok) {
                 evalError(fL1S("format_number(): malformed number %2 for base %1.")
                           .arg(ibase).arg(m_tmp3));
@@ -639,7 +638,7 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
             const ProStringList &var = values(map(args.at(0)));
             int start = 0, end = 0;
             if (args.count() >= 2) {
-                const QString &start_str = args.at(1).toQString(m_tmp1);
+                const ProString &start_str = args.at(1);
                 start = start_str.toInt(&ok);
                 if (!ok) {
                     if (args.count() == 2) {
@@ -652,11 +651,11 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
                     }
                     if (!ok)
                         evalError(fL1S("member() argument 2 (start) '%2' invalid.")
-                                  .arg(start_str));
+                                  .arg(start_str.toQString(m_tmp1)));
                 } else {
                     end = start;
                     if (args.count() == 3)
-                        end = args.at(2).toQString(m_tmp1).toInt(&ok);
+                        end = args.at(2).toInt(&ok);
                     if (!ok)
                         evalError(fL1S("member() argument 3 (end) '%2' invalid.")
                                   .arg(args.at(2).toQString(m_tmp1)));
@@ -904,7 +903,7 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
         } else {
             bool recursive = false;
             if (args.count() == 2)
-                recursive = isTrue(args.at(1), m_tmp2);
+                recursive = isTrue(args.at(1));
             QStringList dirs;
             QString r = m_option->expandEnvVars(args.at(0).toQString(m_tmp1))
                         .replace(QLatin1Char('\\'), QLatin1Char('/'));
@@ -1292,7 +1291,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             return ReturnFalse;
         }
         int cnt = values(map(args.at(0))).count();
-        int val = args.at(1).toQString(m_tmp1).toInt();
+        int val = args.at(1).toInt();
         if (args.count() == 3) {
             const ProString &comp = args.at(2);
             if (comp == QLatin1String(">") || comp == QLatin1String("greaterThan")) {
@@ -1403,7 +1402,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             flags = LoadSilent;
         if (args.count() >= 2) {
             parseInto = args.at(1).toQString(m_tmp2);
-            if (args.count() >= 3 && isTrue(args.at(2), m_tmp3))
+            if (args.count() >= 3 && isTrue(args.at(2)))
                 flags = LoadSilent;
         }
         QString fn = resolvePath(m_option->expandEnvVars(args.at(0).toQString(m_tmp1)));
@@ -1441,7 +1440,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
     case T_LOAD: {
         bool ignore_error = false;
         if (args.count() == 2) {
-            ignore_error = isTrue(args.at(1), m_tmp2);
+            ignore_error = isTrue(args.at(1));
         } else if (args.count() != 1) {
             evalError(fL1S("load(feature) requires one or two arguments."));
             return ReturnFalse;

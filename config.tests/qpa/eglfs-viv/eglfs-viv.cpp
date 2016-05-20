@@ -43,6 +43,8 @@
 
 int main(int, char **)
 {
-    fbGetDisplay();
+    // Do not rely on fbGetDisplay() since the signature has changed over time.
+    // Stick to fbGetDisplayByIndex().
+    fbGetDisplayByIndex(0);
     return 0;
 }

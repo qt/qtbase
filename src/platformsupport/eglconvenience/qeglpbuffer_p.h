@@ -51,9 +51,9 @@
 // We mean it.
 //
 
-#include <EGL/egl.h>
 #include <qpa/qplatformoffscreensurface.h>
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
+#include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 

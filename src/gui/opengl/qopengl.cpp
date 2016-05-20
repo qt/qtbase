@@ -138,22 +138,6 @@ QDebug operator<<(QDebug d, const QOpenGLConfig::Gpu &g)
 enum Operator { NotEqual, LessThan, LessEqualThan, Equals, GreaterThan, GreaterEqualThan };
 static const char operators[][3] = {"!=", "<", "<=", "=", ">", ">="};
 
-static inline QString valueKey()         { return QStringLiteral("value"); }
-static inline QString opKey()            { return QStringLiteral("op"); }
-static inline QString versionKey()       { return QStringLiteral("version"); }
-static inline QString releaseKey()       { return QStringLiteral("release"); }
-static inline QString typeKey()          { return QStringLiteral("type"); }
-static inline QString osKey()            { return QStringLiteral("os"); }
-static inline QString vendorIdKey()      { return QStringLiteral("vendor_id"); }
-static inline QString glVendorKey()      { return QStringLiteral("gl_vendor"); }
-static inline QString deviceIdKey()      { return QStringLiteral("device_id"); }
-static inline QString driverVersionKey() { return QStringLiteral("driver_version"); }
-static inline QString driverDescriptionKey() { return QStringLiteral("driver_description"); }
-static inline QString featuresKey()      { return QStringLiteral("features"); }
-static inline QString idKey()            { return QStringLiteral("id"); }
-static inline QString descriptionKey()   { return QStringLiteral("description"); }
-static inline QString exceptionsKey()    { return QStringLiteral("exceptions"); }
-
 typedef QJsonArray::ConstIterator JsonArrayConstIt;
 
 static inline bool contains(const QJsonArray &haystack, unsigned needle)
@@ -216,8 +200,8 @@ VersionTerm VersionTerm::fromJson(const QJsonValue &v)
     if (!v.isObject())
         return result;
     const QJsonObject o = v.toObject();
-    result.number = QVersionNumber::fromString(o.value(valueKey()).toString());
-    const QString opS = o.value(opKey()).toString();
+    result.number = QVersionNumber::fromString(o.value(QLatin1String("value")).toString());
+    const QString opS = o.value(QLatin1String("op")).toString();
     for (size_t i = 0; i < sizeof(operators) / sizeof(operators[0]); ++i) {
         if (opS == QLatin1String(operators[i])) {
             result.op = static_cast<Operator>(i);
@@ -292,9 +276,9 @@ OsTypeTerm OsTypeTerm::fromJson(const QJsonValue &v)
     if (!v.isObject())
         return result;
     const QJsonObject o = v.toObject();
-    result.type = o.value(typeKey()).toString();
-    result.versionTerm = VersionTerm::fromJson(o.value(versionKey()));
-    result.release = o.value(releaseKey()).toArray();
+    result.type = o.value(QLatin1String("type")).toString();
+    result.versionTerm = VersionTerm::fromJson(o.value(QLatin1String("version")));
+    result.release = o.value(QLatin1String("release")).toArray();
     return result;
 }
 
@@ -318,8 +302,8 @@ QString OsTypeTerm::hostOs()
 static QString msgSyntaxWarning(const QJsonObject &object, const QString &what)
 {
     QString result;
-    QTextStream(&result) << "Id " << object.value(idKey()).toInt()
-        << " (\"" << object.value(descriptionKey()).toString()
+    QTextStream(&result) << "Id " << object.value(QLatin1String("id")).toInt()
+        << " (\"" << object.value(QLatin1String("description")).toString()
         << "\"): " << what;
     return result;
 }
@@ -333,11 +317,11 @@ static bool matches(const QJsonObject &object,
                     const QString &osRelease,
                     const QOpenGLConfig::Gpu &gpu)
 {
-    const OsTypeTerm os = OsTypeTerm::fromJson(object.value(osKey()));
+    const OsTypeTerm os = OsTypeTerm::fromJson(object.value(QLatin1String("os")));
     if (!os.isNull() && !os.matches(osName, kernelVersion, osRelease))
         return false;
 
-    const QJsonValue exceptionsV = object.value(exceptionsKey());
+    const QJsonValue exceptionsV = object.value(QLatin1String("exceptions"));
     if (exceptionsV.isArray()) {
         const QJsonArray exceptionsA = exceptionsV.toArray();
         for (JsonArrayConstIt it = exceptionsA.constBegin(), cend = exceptionsA.constEnd(); it != cend; ++it) {
@@ -346,20 +330,20 @@ static bool matches(const QJsonObject &object,
         }
     }
 
-    const QJsonValue vendorV = object.value(vendorIdKey());
+    const QJsonValue vendorV = object.value(QLatin1String("vendor_id"));
     if (vendorV.isString()) {
         if (gpu.vendorId != vendorV.toString().toUInt(Q_NULLPTR, /* base */ 0))
             return false;
     } else {
-        if (object.contains(glVendorKey())) {
-            const QByteArray glVendorV = object.value(glVendorKey()).toString().toUtf8();
+        if (object.contains(QLatin1String("gl_vendor"))) {
+            const QByteArray glVendorV = object.value(QLatin1String("gl_vendor")).toString().toUtf8();
             if (!gpu.glVendor.contains(glVendorV))
                 return false;
         }
     }
 
     if (gpu.deviceId) {
-        const QJsonValue deviceIdV = object.value(deviceIdKey());
+        const QJsonValue deviceIdV = object.value(QLatin1String("device_id"));
         switch (deviceIdV.type()) {
         case QJsonValue::Array:
             if (!contains(deviceIdV.toArray(), gpu.deviceId))
@@ -375,7 +359,7 @@ static bool matches(const QJsonObject &object,
         }
     }
     if (!gpu.driverVersion.isNull()) {
-        const QJsonValue driverVersionV = object.value(driverVersionKey());
+        const QJsonValue driverVersionV = object.value(QLatin1String("driver_version"));
         switch (driverVersionV.type()) {
         case QJsonValue::Object:
             if (!VersionTerm::fromJson(driverVersionV).matches(gpu.driverVersion))
@@ -392,7 +376,7 @@ static bool matches(const QJsonObject &object,
     }
 
     if (!gpu.driverDescription.isEmpty()) {
-        const QJsonValue driverDescriptionV = object.value(driverDescriptionKey());
+        const QJsonValue driverDescriptionV = object.value(QLatin1String("driver_description"));
         if (driverDescriptionV.isString()) {
             if (!gpu.driverDescription.contains(driverDescriptionV.toString().toUtf8()))
                 return false;
@@ -412,7 +396,7 @@ static bool readGpuFeatures(const QOpenGLConfig::Gpu &gpu,
 {
     result->clear();
     errorMessage->clear();
-    const QJsonValue entriesV = doc.object().value(QStringLiteral("entries"));
+    const QJsonValue entriesV = doc.object().value(QLatin1String("entries"));
     if (!entriesV.isArray()) {
         *errorMessage = QLatin1String("No entries read.");
         return false;
@@ -423,7 +407,7 @@ static bool readGpuFeatures(const QOpenGLConfig::Gpu &gpu,
         if (eit->isObject()) {
             const QJsonObject object = eit->toObject();
             if (matches(object, osName, kernelVersion, osRelease, gpu)) {
-                const QJsonValue featuresListV = object.value(featuresKey());
+                const QJsonValue featuresListV = object.value(QLatin1String("features"));
                 if (featuresListV.isArray()) {
                     const QJsonArray featuresListA = featuresListV.toArray();
                     for (JsonArrayConstIt fit = featuresListA.constBegin(), fcend = featuresListA.constEnd(); fit != fcend; ++fit)
