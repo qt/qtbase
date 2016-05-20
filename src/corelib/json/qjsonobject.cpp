@@ -545,8 +545,8 @@ bool QJsonObject::operator==(const QJsonObject &other) const
 
     for (uint i = 0; i < o->length; ++i) {
         QJsonPrivate::Entry *e = o->entryAt(i);
-        QJsonValue v(d, o, e->value);
-        if (other.value(e->key()) != v)
+        QJsonPrivate::Entry *oe = other.o->entryAt(i);
+        if (*e != *oe || QJsonValue(d, o, e->value) != QJsonValue(other.d, other.o, oe->value))
             return false;
     }
 
