@@ -325,7 +325,7 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
             priv->phase = QAuthenticatorPrivate::Start;
 
         QString connectHost = connection->d_func()->hostName;
-        qint16 connectPort = connection->d_func()->port;
+        quint16 connectPort = connection->d_func()->port;
 
 #ifndef QT_NO_NETWORKPROXY
         // HTTPS always use transparent proxy.
