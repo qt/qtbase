@@ -72,7 +72,7 @@
 
 #ifndef QT_NO_QOBJECT
 #if defined(Q_OS_UNIX)
-# if defined(Q_OS_OSX)
+# if defined(Q_OS_DARWIN)
 #  include "qeventdispatcher_cf_p.h"
 # else
 #  if !defined(QT_NO_GLIB)
@@ -483,7 +483,7 @@ void QCoreApplicationPrivate::createEventDispatcher()
 {
     Q_Q(QCoreApplication);
 #if defined(Q_OS_UNIX)
-#  if defined(Q_OS_OSX)
+#  if defined(Q_OS_DARWIN)
     bool ok = false;
     int value = qEnvironmentVariableIntValue("QT_EVENT_DISPATCHER_CORE_FOUNDATION", &ok);
     if (ok && value > 0)

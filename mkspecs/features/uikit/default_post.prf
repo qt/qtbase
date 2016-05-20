@@ -22,6 +22,7 @@ macx-xcode {
     device_family.name = TARGETED_DEVICE_FAMILY
     ios: device_family.value = $$QMAKE_IOS_TARGETED_DEVICE_FAMILY
     tvos: device_family.value = $$QMAKE_TVOS_TARGETED_DEVICE_FAMILY
+    watchos: device_family.value = $$QMAKE_WATCHOS_TARGETED_DEVICE_FAMILY
     QMAKE_MAC_XCODE_SETTINGS += device_family
 
     ios {
@@ -77,6 +78,11 @@ macx-xcode {
         arch_simulator.value = $$QMAKE_TVOS_SIMULATOR_ARCHS
         QMAKE_XCODE_ARCHS = $$QMAKE_TVOS_DEVICE_ARCHS $$QMAKE_TVOS_SIMULATOR_ARCHS
     }
+    watchos {
+        arch_device.value = $$QMAKE_WATCHOS_DEVICE_ARCHS
+        arch_simulator.value = $$QMAKE_WATCHOS_SIMULATOR_ARCHS
+        QMAKE_XCODE_ARCHS = $$QMAKE_WATCHOS_DEVICE_ARCHS $$QMAKE_WATCHOS_SIMULATOR_ARCHS
+    }
 
     QMAKE_MAC_XCODE_SETTINGS += arch_device arch_simulator
 
@@ -89,9 +95,11 @@ macx-xcode {
     contains(QT_ARCH, arm.*) {
         ios: VALID_ARCHS = $$QMAKE_IOS_DEVICE_ARCHS
         tvos: VALID_ARCHS = $$QMAKE_TVOS_DEVICE_ARCHS
+        watchos: VALID_ARCHS = $$QMAKE_WATCHOS_DEVICE_ARCHS
     } else {
         ios: VALID_ARCHS = $$QMAKE_IOS_SIMULATOR_ARCHS
         tvos: VALID_ARCHS = $$QMAKE_TVOS_SIMULATOR_ARCHS
+        watchos: VALID_ARCHS = $$QMAKE_WATCHOS_SIMULATOR_ARCHS
     }
 
     single_arch: VALID_ARCHS = $$first(VALID_ARCHS)

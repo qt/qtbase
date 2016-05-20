@@ -51,6 +51,8 @@
 
 #ifdef Q_OS_OSX
 #  include <AppKit/NSApplication.h>
+#elif defined(Q_OS_WATCHOS)
+#  include <WatchKit/WatchKit.h>
 #else
 #  include <UIKit/UIApplication.h>
 #endif
@@ -75,6 +77,8 @@ QT_USE_NAMESPACE
             name:nil
 #ifdef Q_OS_OSX
             object:[NSApplication sharedApplication]];
+#elif defined(Q_OS_WATCHOS)
+            object:[WKExtension sharedExtension]];
 #else
             object:[UIApplication sharedApplication]];
 #endif

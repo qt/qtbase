@@ -123,6 +123,11 @@ mac {
         # We need UIKit for UIDevice
         LIBS_PRIVATE += -framework UIKit
     }
+
+    watchos {
+        # We need WatchKit for WKExtension in qeventdispatcher_cf.mm
+        LIBS_PRIVATE += -framework WatchKit
+    }
 }
 
 nacl {

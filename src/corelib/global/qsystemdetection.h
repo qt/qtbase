@@ -102,17 +102,15 @@
 #      define Q_OS_DARWIN32
 #    endif
 #    if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#      define QT_PLATFORM_UIKIT
 #      if defined(TARGET_OS_WATCH) && TARGET_OS_WATCH
 #        define Q_OS_WATCHOS
+#      elif defined(TARGET_OS_TV) && TARGET_OS_TV
+#        define Q_OS_TVOS
 #      else
-#        define QT_PLATFORM_UIKIT
-#        if defined(TARGET_OS_TV) && TARGET_OS_TV
-#          define Q_OS_TVOS
-#        else
-#          // TARGET_OS_IOS is only available in newer SDKs,
-#          // so assume any other iOS-based platform is iOS for now
-#          define Q_OS_IOS
-#        endif
+#        // TARGET_OS_IOS is only available in newer SDKs,
+#        // so assume any other iOS-based platform is iOS for now
+#        define Q_OS_IOS
 #      endif
 #    else
 #      // TARGET_OS_OSX is only available in newer SDKs,

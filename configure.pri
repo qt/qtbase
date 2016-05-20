@@ -204,9 +204,9 @@ defineTest(qtConfTest_neon) {
 
 defineTest(qtConfTest_skipModules) {
     skip =
-    ios|tvos {
+    uikit {
         skip += qtdoc qtmacextras qtserialport qtwebkit qtwebkit-examples
-        tvos: skip += qtscript
+        !ios: skip += qtscript
     }
 
     for (m, config.input.skip) {

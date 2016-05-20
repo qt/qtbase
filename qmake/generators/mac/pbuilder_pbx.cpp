@@ -1537,6 +1537,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     t << "\t\t\t\t" << writeSettings("IPHONEOS_DEPLOYMENT_TARGET", project->first("QMAKE_IOS_DEPLOYMENT_TARGET")) << ";\n";
                 if (!project->isEmpty("QMAKE_TVOS_DEPLOYMENT_TARGET"))
                     t << "\t\t\t\t" << writeSettings("APPLETVOS_DEPLOYMENT_TARGET", project->first("QMAKE_TVOS_DEPLOYMENT_TARGET")) << ";\n";
+                if (!project->isEmpty("QMAKE_WATCHOS_DEPLOYMENT_TARGET"))
+                    t << "\t\t\t\t" << writeSettings("WATCHOS_DEPLOYMENT_TARGET", project->first("QMAKE_WATCHOS_DEPLOYMENT_TARGET")) << ";\n";
 
                 if (!project->isEmpty("QMAKE_XCODE_CODE_SIGN_IDENTITY"))
                     t << "\t\t\t\t" << writeSettings("CODE_SIGN_IDENTITY", project->first("QMAKE_XCODE_CODE_SIGN_IDENTITY")) << ";\n";

@@ -10,7 +10,7 @@ qtConfig(xcb) {
     SUBDIRS += xcb
 }
 
-uikit: SUBDIRS += ios
+uikit:!watchos: SUBDIRS += ios
 osx: SUBDIRS += cocoa
 
 win32:!winrt: SUBDIRS += windows

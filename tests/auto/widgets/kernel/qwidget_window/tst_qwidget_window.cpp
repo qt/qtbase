@@ -332,8 +332,9 @@ void tst_QWidget_window::tst_showWithoutActivating()
     else if (platformName != QStringLiteral("xcb")
             && platformName != QStringLiteral("windows")
             && platformName != QStringLiteral("ios")
-            && platformName != QStringLiteral("tvos"))
-        QSKIP("Qt::WA_ShowWithoutActivating is currently supported only on xcb, windows, and ios/tvos platforms.");
+            && platformName != QStringLiteral("tvos")
+            && platformName != QStringLiteral("watchos"))
+        QSKIP("Qt::WA_ShowWithoutActivating is currently supported only on xcb, windows, and ios/tvos/watchos platforms.");
 
     QWidget w1;
     w1.setAttribute(Qt::WA_ShowWithoutActivating);

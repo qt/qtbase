@@ -279,6 +279,12 @@ macSDKify()
         appletvsimulator*)
             version_min_flag="-mtvos-simulator-version-min=$(getSingleQMakeVariable QMAKE_TVOS_DEPLOYMENT_TARGET "$1")"
         ;;
+        watchos*)
+            version_min_flag="-mwatchos-version-min=$(getSingleQMakeVariable QMAKE_WATCHOS_DEPLOYMENT_TARGET "$1")"
+        ;;
+        watchsimulator*)
+            version_min_flag="-mwatchos-simulator-version-min=$(getSingleQMakeVariable QMAKE_WATCHOS_DEPLOYMENT_TARGET "$1")"
+        ;;
         *)
         ;;
     esac
@@ -459,9 +465,10 @@ CFG_RELEASE_TOOLS=no
 CFG_ANDROID_STYLE_ASSETS=yes
 
 XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++"
-XPLATFORM_MAC=no        # Whether target platform is OS X, iOS or tvOS
+XPLATFORM_MAC=no        # Whether target platform is macOS, iOS, tvOS, or watchOS
 XPLATFORM_IOS=no        # Whether target platform is iOS
 XPLATFORM_TVOS=no       # Whether target platform is tvOS
+XPLATFORM_WATCHOS=no    # Whether target platform is watchOS
 XPLATFORM_ANDROID=no
 XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
 PLATFORM=$QMAKESPEC
@@ -994,6 +1001,10 @@ case "$XPLATFORM" in
     *tvos*)
         XPLATFORM_MAC=yes
         XPLATFORM_TVOS=yes
+        ;;
+    *watchos*)
+        XPLATFORM_MAC=yes
+        XPLATFORM_WATCHOS=yes
         ;;
     *macx*)
         XPLATFORM_MAC=yes

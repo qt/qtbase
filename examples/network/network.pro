@@ -21,7 +21,7 @@ qtHaveModule(widgets) {
     load(qfeatures)
     !contains(QT_DISABLED_FEATURES, bearermanagement) {
         # no QProcess
-        !vxworks:!qnx:!winrt:!integrity: SUBDIRS += network-chat
+        !vxworks:!qnx:!winrt:!integrity:!uikit: SUBDIRS += network-chat
 
         SUBDIRS += \
                 bearermonitor \

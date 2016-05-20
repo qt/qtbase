@@ -13,11 +13,16 @@ SOURCES        = main.cpp \
                  paintarea.cpp \
                  plugindialog.cpp
 
-LIBS           = -L../plugins -lpnp_basictools
+LIBS           = -L../plugins
 
-if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
-   mac:LIBS = $$member(LIBS, 0) $$member(LIBS, 1)_debug
-   win32:LIBS = $$member(LIBS, 0) $$member(LIBS, 1)d
+macx-xcode:qtConfig(simulator_and_device) {
+    LIBS += -lpnp_basictools$($${QMAKE_XCODE_LIBRARY_PLATFORM_SUFFIX_SETTING})$($${QMAKE_XCODE_LIBRARY_SUFFIX_SETTING})
+} else {
+    LIBS += -lpnp_basictools
+    if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
+        mac:LIBS = $$member(LIBS, 0) $$member(LIBS, 1)_debug
+        win32:LIBS = $$member(LIBS, 0) $$member(LIBS, 1)d
+    }
 }
 #! [0]
 

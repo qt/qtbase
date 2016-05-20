@@ -8,7 +8,7 @@ qtConfig(freetype) {
 }
 
 uikit: \
-    # On iOS/tvOS CoreText and CoreGraphics are stand-alone frameworks
+    # On iOS/tvOS/watchOS CoreText and CoreGraphics are stand-alone frameworks
     LIBS_PRIVATE += -framework CoreText -framework CoreGraphics
 else: \
     # On Mac OS they are part of the ApplicationServices umbrella framework,

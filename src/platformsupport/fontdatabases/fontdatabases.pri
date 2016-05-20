@@ -1,16 +1,15 @@
-!win32|qtConfig(freetype):!darwin {
-    include($$PWD/basic/basic.pri)
-}
+darwin:!if(watchos:CONFIG(simulator, simulator|device)) {
+    include($$PWD/mac/coretext.pri)
+} else {
+    !win32|qtConfig(freetype) {
+        include($$PWD/basic/basic.pri)
+    }
 
-unix:!mac {
-    CONFIG += qpa/genericunixfontdatabase
-    include($$PWD/genericunix/genericunix.pri)
-    qtConfig(fontconfig) {
-        include($$PWD/fontconfig/fontconfig.pri)
+    unix {
+        CONFIG += qpa/genericunixfontdatabase
+        include($$PWD/genericunix/genericunix.pri)
+        contains(QT_CONFIG,fontconfig) {
+            include($$PWD/fontconfig/fontconfig.pri)
+        }
     }
 }
-
-mac {
-    include($$PWD/mac/coretext.pri)
-}
-

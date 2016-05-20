@@ -657,7 +657,7 @@
     qmake knows about many of these features, which can be accessed via specific
     variables that only take effect on the platforms where they are relevant.
 
-    \section1 \macos, iOS and tvOS
+    \section1 \macos, iOS, tvOS, and watchOS
 
     Features specific to these platforms include support for creating universal
     binaries, frameworks and bundles.
@@ -1439,7 +1439,7 @@
     \target QMAKE_BUNDLE_DATA
     \section1 QMAKE_BUNDLE_DATA
 
-    \note This variable is used on \macos, iOS and tvOS only.
+    \note This variable is used on \macos, iOS, tvOS, and watchOS only.
 
     Specifies the data that will be installed with a library
     bundle, and is often used to specify a collection of header files.
@@ -1461,7 +1461,7 @@
 
     \section1 QMAKE_BUNDLE_EXTENSION
 
-    \note This variable is used on \macos, iOS and tvOS only.
+    \note This variable is used on \macos, iOS, tvOS, and watchOS only.
 
     Specifies the extension to be used for library bundles.
     This allows frameworks to be created with custom extensions instead of the
@@ -1695,7 +1695,7 @@
 
     \section1 QMAKE_FRAMEWORK_BUNDLE_NAME
 
-    \note This variable is used on \macos, iOS and tvOS only.
+    \note This variable is used on \macos, iOS, tvOS, and watchOS only.
 
     In a framework project, this variable contains the name to be used for the
     framework that is built.
@@ -1709,9 +1709,9 @@
     \target QMAKE_FRAMEWORK_VERSION
     \section1 QMAKE_FRAMEWORK_VERSION
 
-    \note This variable is used on \macos, iOS and tvOS only.
+    \note This variable is used on \macos, iOS, tvOS, and watchOS only.
 
-    For projects where the build target is an \macos, iOS or tvOS framework, this
+    For projects where the build target is an \macos, iOS, tvOS, or watchOS framework, this
     variable is used to specify the version number that will be applied to the
     framework that is built.
 
@@ -1804,10 +1804,10 @@
     \target QMAKE_INFO_PLIST
     \section1 QMAKE_INFO_PLIST
 
-    \note This variable is used on \macos, iOS and tvOS platforms only.
+    \note This variable is used on \macos, iOS, tvOS, and watchOS platforms only.
 
     Specifies the name of the property list file, \c{.plist}, you
-    would like to include in your \macos, iOS and tvOS application bundle.
+    would like to include in your \macos, iOS, tvOS, and watchOS application bundle.
 
     In the \c{.plist} file, you can define some variables, e.g., @EXECUTABLE@,
     which qmake will replace with the actual executable name. Other variables
@@ -2164,8 +2164,8 @@
     If defined, the value of this variable is used as a path to be prepended to
     the built shared library's \c SONAME identifier. The \c SONAME is the
     identifier that the dynamic linker will later use to reference the library.
-    In general this reference may be a library name or full library path. On OS
-    X, iOS and tvOS, the path may be specified relatively using the following
+    In general this reference may be a library name or full library path. On \macos,
+    iOS, tvOS, and watchOS, the path may be specified relatively using the following
     placeholders:
 
     \table
@@ -4428,7 +4428,7 @@
         \li nmake
         \li Visual Studio projects (VS 2008 and later)
         \endlist
-    \li \macos, iOS and tvOS
+    \li \macos, iOS, tvOS, and watchOS
         \list
         \li Makefile
         \li Xcode

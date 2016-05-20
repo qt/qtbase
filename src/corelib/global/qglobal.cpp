@@ -1946,6 +1946,8 @@ QSysInfo::MacVersion QSysInfo::macVersion()
     return QSysInfo::MacVersion(Q_MV_IOS(version.major, version.minor));
 #elif defined(Q_OS_TVOS)
     return QSysInfo::MacVersion(Q_MV_TVOS(version.major, version.minor));
+#elif defined(Q_OS_WATCHOS)
+    return QSysInfo::MacVersion(Q_MV_WATCHOS(version.major, version.minor));
 #else
     return QSysInfo::MV_Unknown;
 #endif
@@ -2631,9 +2633,10 @@ QString QSysInfo::kernelVersion()
     to determine the distribution name and returns that. If determining the
     distribution name failed, it returns "unknown".
 
-    \b{Darwin, \macOS, iOS and tvOS note}: this function returns "macos" for macOS
-    systems, "ios" for iOS systems, "tvos" for tvOS systems and "darwin" in case
-    the system could not be determined.
+    \b{Darwin, \macos, iOS, tvOS, and watchOS note}: this function returns
+    "macos" for \macos systems, "ios" for iOS systems, "tvos" for tvOS systems,
+    "watchos" for watchOS systems, and "darwin" in case the system could not
+    be determined.
 
     \b{OS X note}: this function returns "osx" for versions of \macos prior to 10.12.
 
@@ -2667,6 +2670,8 @@ QString QSysInfo::productType()
     return QStringLiteral("ios");
 #elif defined(Q_OS_TVOS)
     return QStringLiteral("tvos");
+#elif defined(Q_OS_WATCHOS)
+    return QStringLiteral("watchos");
 #elif defined(Q_OS_MACOS)
     const QAppleOperatingSystemVersion version = qt_apple_os_version();
     if (version.major == 10 && version.minor < 12)
@@ -2754,6 +2759,8 @@ QString QSysInfo::prettyProductName()
     return QLatin1String("iOS ") + productVersion();
 #elif defined(Q_OS_TVOS)
     return QLatin1String("tvOS ") + productVersion();
+#elif defined(Q_OS_WATCHOS)
+    return QLatin1String("watchOS ") + productVersion();
 #elif defined(Q_OS_MACOS)
     const QAppleOperatingSystemVersion version = qt_apple_os_version();
     const char *name = osxVer_helper(version);
