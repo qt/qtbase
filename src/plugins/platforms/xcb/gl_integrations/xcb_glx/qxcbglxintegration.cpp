@@ -201,8 +201,10 @@ QPlatformOffscreenSurface *QXcbGlxIntegration::createPlatformOffscreenSurface(QO
             display = static_cast<Display *>(m_connection->xlib_display());
 #endif
         const char *glxvendor = glXGetClientString(display, GLX_VENDOR);
-        if (glxvendor && !strcmp(glxvendor, "ATI"))
-            glxPbufferUsable = false;
+        if (glxvendor) {
+            if (!strcmp(glxvendor, "ATI") || !strcmp(glxvendor, "Chromium"))
+                glxPbufferUsable = false;
+        }
     }
     if (glxPbufferUsable)
         return new QGLXPbuffer(surface);
