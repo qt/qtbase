@@ -78,7 +78,7 @@
 #  if !defined(ST_RDONLY)
 #    define ST_RDONLY MNT_RDONLY
 #  endif
-#  if !defined(_STATFS_F_FLAGS)
+#  if !defined(_STATFS_F_FLAGS) && !defined(Q_OS_NETBSD)
 #    define _STATFS_F_FLAGS 1
 #  endif
 #elif defined(Q_OS_ANDROID)
