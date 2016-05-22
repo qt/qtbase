@@ -40,9 +40,29 @@
     available on all platforms (MSVC 2008, for example), we #define them to the
     Qt equivalents.
 */
+
+#ifdef uint64_t
+#undef uint64_t
+#endif
+
 #define uint64_t QT_PREPEND_NAMESPACE(quint64)
+
+#ifdef uint32_t
+#undef uint32_t
+#endif
+
 #define uint32_t QT_PREPEND_NAMESPACE(quint32)
+
+#ifdef uint8_t
+#undef uint8_t
+#endif
+
 #define uint8_t QT_PREPEND_NAMESPACE(quint8)
+
+#ifdef int_least16_t
+#undef int_least16_t
+#endif
+
 #define int_least16_t QT_PREPEND_NAMESPACE(qint16)
 
 // Header from rfc6234 with 1 modification:
