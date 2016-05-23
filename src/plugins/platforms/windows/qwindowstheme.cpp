@@ -132,7 +132,16 @@ public:
     explicit ShGetFileInfoFunction(const wchar_t *fn, DWORD a, SHFILEINFO *i, UINT f, bool *r) :
         m_fileName(fn), m_attributes(a), m_flags(f), m_info(i), m_result(r) {}
 
-    void operator()() const { *m_result = SHGetFileInfo(m_fileName, m_attributes, m_info, sizeof(SHFILEINFO), m_flags); }
+    void operator()() const
+    {
+#ifndef Q_OS_WINCE
+        const UINT oldErrorMode = SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
+#endif
+        *m_result = SHGetFileInfo(m_fileName, m_attributes, m_info, sizeof(SHFILEINFO), m_flags);
+#ifndef Q_OS_WINCE
+        SetErrorMode(oldErrorMode);
+#endif
+    }
 
 private:
     const wchar_t *m_fileName;
