@@ -80,6 +80,19 @@
 
     \sa QXcbWindowFunctions QWindowsWindowFunctions
 
+    \section1 Getting Started
+
+    To include the definitions of the module's functions and classes, use the following directives:
+    \code
+    #include <QtPlatformHeaders/QWindowsWindowFunctions>
+    #include <QtPlatformHeaders/QXcbWindowFunctions>
+    \endcode
+
+    As the module is header-only, no further modifications to the .pro files are required to use it.
+
+    \note The module name (\c QtPlatformHeaders) must appear in the \c #include directive.
+    \note It is not necessary to enclose the code in \c #ifdef directives depending on platform.
+
     \section1 API Reference
     \list
     \li \l{Qt Platform Headers C++ Classes}{C++ Classes}
