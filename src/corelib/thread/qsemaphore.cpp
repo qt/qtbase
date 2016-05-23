@@ -424,11 +424,9 @@ bool QSemaphore::tryAcquire(int n, int timeout)
 
     QDeadlineTimer timer(timeout);
     QMutexLocker locker(&d->mutex);
-    qint64 remainingTime = timer.remainingTime();
-    while (n > d->avail && remainingTime != 0) {
-        if (!d->cond.wait(locker.mutex(), remainingTime))
+    while (n > d->avail && !timer.hasExpired()) {
+        if (!d->cond.wait(locker.mutex(), timer))
             return false;
-        remainingTime = timer.remainingTime();
     }
     if (n > d->avail)
         return false;

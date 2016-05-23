@@ -130,7 +130,7 @@ bool QMutexPrivate::wait(int timeout)
             errorCode = pthread_cond_wait(&cond, &mutex);
         } else {
             timespec ti;
-            qt_abstime_for_timeout(&ti, timeout);
+            qt_abstime_for_timeout(&ti, QDeadlineTimer(timeout));
             errorCode = pthread_cond_timedwait(&cond, &mutex, &ti);
         }
         if (errorCode) {

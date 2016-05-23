@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qwaitcondition.h"
+#include "qdeadlinetimer.h"
 #include "qnamespace.h"
 #include "qmutex.h"
 #include "qreadwritelock.h"
@@ -184,6 +185,11 @@ bool QWaitCondition::wait(QMutex *mutex, unsigned long time)
     return returnValue;
 }
 
+bool QWaitCondition::wait(QMutex *mutex, QDeadlineTimer deadline)
+{
+    return wait(mutex, deadline.remainingTime());
+}
+
 bool QWaitCondition::wait(QReadWriteLock *readWriteLock, unsigned long time)
 {
     if (!readWriteLock)
@@ -208,6 +214,11 @@ bool QWaitCondition::wait(QReadWriteLock *readWriteLock, unsigned long time)
     d->post(wce, returnValue);
 
     return returnValue;
+}
+
+bool QWaitCondition::wait(QReadWriteLock *readWriteLock, QDeadlineTimer deadline)
+{
+    return wait(readWriteLock, deadline.remainingTime());
 }
 
 void QWaitCondition::wakeOne()
