@@ -904,8 +904,10 @@ void QOpenGLWidgetPrivate::resizeViewportFramebuffer()
     if (!initialized)
         return;
 
-    if (!fbo || q->size() * q->devicePixelRatioF() != fbo->size())
+    if (!fbo || q->size() * q->devicePixelRatioF() != fbo->size()) {
         recreateFbo();
+        q->update();
+    }
 }
 
 /*!

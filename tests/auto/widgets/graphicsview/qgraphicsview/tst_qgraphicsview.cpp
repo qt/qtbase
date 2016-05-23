@@ -54,6 +54,9 @@
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QDesktopWidget>
+#ifndef QT_NO_OPENGL
+#include <QtWidgets/QOpenGLWidget>
+#endif
 #include <private/qgraphicsscene_p.h>
 #include <private/qgraphicsview_p.h>
 #include "../../../shared/platforminputcontext.h"
@@ -161,6 +164,9 @@ private slots:
     void sceneRect_growing();
     void setSceneRect();
     void viewport();
+#ifndef QT_NO_OPENGL
+    void openGLViewport();
+#endif
     void dragMode_scrollHand();
     void dragMode_rubberBand();
     void rubberBandSelectionMode();
@@ -674,6 +680,45 @@ void tst_QGraphicsView::viewport()
     view.show();
     QTest::qWait(25);
 }
+
+#ifndef QT_NO_OPENGL
+void tst_QGraphicsView::openGLViewport()
+{
+    QGraphicsScene scene;
+    scene.setBackgroundBrush(Qt::white);
+    scene.addText("GraphicsView");
+    scene.addEllipse(QRectF(400, 50, 50, 50));
+    scene.addEllipse(QRectF(-100, -400, 50, 50));
+    scene.addEllipse(QRectF(50, -100, 50, 50));
+    scene.addEllipse(QRectF(-100, 50, 50, 50));
+
+    QGraphicsView view(&scene);
+    view.setSceneRect(-400, -400, 800, 800);
+    view.resize(400, 400);
+
+    QOpenGLWidget *glw = new QOpenGLWidget;
+    QSignalSpy spy1(glw, SIGNAL(resized()));
+    QSignalSpy spy2(glw, SIGNAL(frameSwapped()));
+
+    view.setViewport(glw);
+
+    view.show();
+    QTest::qWaitForWindowExposed(&view);
+    QTRY_VERIFY(spy1.count() > 0);
+    QTRY_VERIFY(spy2.count() >= spy1.count());
+    spy1.clear();
+    spy2.clear();
+
+    // Now test for resize (QTBUG-52419). This is special when the viewport is
+    // a QOpenGLWidget since the underlying FBO must also be maintained.
+    view.resize(300, 300);
+    QTRY_VERIFY(spy1.count() > 0);
+    QTRY_VERIFY(spy2.count() >= spy1.count());
+    // There is no sane way to check if the framebuffer contents got updated
+    // (grabFramebuffer is no good for the viewport case as that does not go
+    // through paintGL). So skip the actual verification.
+}
+#endif
 
 void tst_QGraphicsView::dragMode_scrollHand()
 {
