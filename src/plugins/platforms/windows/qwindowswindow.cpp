@@ -1696,7 +1696,7 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
 
 void QWindowsWindow::setWindowTitle(const QString &title)
 {
-    setWindowTitle_sys(QWindowsWindow::formatWindowTitle(title, QStringLiteral(" - ")));
+    setWindowTitle_sys(QWindowsWindow::formatWindowTitle(title));
 }
 
 void QWindowsWindow::setWindowFlags(Qt::WindowFlags flags)
@@ -2532,6 +2532,11 @@ void QWindowsWindow::setHasBorderInFullScreen(bool border)
         setFlag(HasBorderInFullScreen);
     else
         clearFlag(HasBorderInFullScreen);
+}
+
+QString QWindowsWindow::formatWindowTitle(const QString &title)
+{
+    return QPlatformWindow::formatWindowTitle(title, QStringLiteral(" - "));
 }
 
 QT_END_NAMESPACE
