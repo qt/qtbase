@@ -59,14 +59,12 @@
 #   include <unistd.h>
 #   include <cstdio>
 #elif defined(Q_OS_BSD4) && !defined(Q_OS_IOS)
+# if !defined(Q_OS_NETBSD)
 #   include <sys/user.h>
-# if defined(__GLIBC__) && defined(__FreeBSD_kernel__)
+# endif
 #   include <sys/cdefs.h>
 #   include <sys/param.h>
 #   include <sys/sysctl.h>
-# else
-#   include <libutil.h>
-# endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -269,30 +267,33 @@ QString QLockFilePrivate::processNameByPid(qint64 pid)
     buf[len] = 0;
     return QFileInfo(QFile::decodeName(buf)).fileName();
 #elif defined(Q_OS_BSD4) && !defined(Q_OS_IOS)
-# if defined(__GLIBC__) && defined(__FreeBSD_kernel__)
-    int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, pid };
-    size_t len = 0;
-    if (sysctl(mib, 4, NULL, &len, NULL, 0) < 0)
-        return QString();
-    kinfo_proc *proc = static_cast<kinfo_proc *>(malloc(len));
+# if defined(Q_OS_NETBSD)
+    struct kinfo_proc2 kp;
+    int mib[6] = { CTL_KERN, KERN_PROC2, KERN_PROC_PID, (int)pid, sizeof(struct kinfo_proc2), 1 };
+# elif defined(Q_OS_OPENBSD)
+    struct kinfo_proc kp;
+    int mib[6] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, (int)pid, sizeof(struct kinfo_proc), 1 };
 # else
-    kinfo_proc *proc = kinfo_getproc(pid);
+    struct kinfo_proc kp;
+    int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, (int)pid };
 # endif
-    if (!proc)
+    size_t len = sizeof(kp);
+    u_int mib_len = sizeof(mib)/sizeof(u_int);
+
+    if (sysctl(mib, mib_len, &kp, &len, NULL, 0) < 0)
         return QString();
-# if defined(__GLIBC__) && defined(__FreeBSD_kernel__)
-    if (sysctl(mib, 4, proc, &len, NULL, 0) < 0) {
-        free(proc);
+
+# if defined(Q_OS_OPENBSD) || defined(Q_OS_NETBSD)
+    if (kp.p_pid != pid)
         return QString();
-    }
-    if (proc->ki_pid != pid) {
-        free(proc);
+    QString name = QFile::decodeName(kp.p_comm);
+# else
+    if (kp.ki_pid != pid)
         return QString();
-    }
+    QString name = QFile::decodeName(kp.ki_comm);
 # endif
-    QString name = QFile::decodeName(proc->ki_comm);
-    free(proc);
     return name;
+
 #else
     Q_UNUSED(pid);
     return QString();
