@@ -1846,7 +1846,11 @@ QFontEngine *QFontEngineMulti::loadEngine(int at)
 glyph_t QFontEngineMulti::glyphIndex(uint ucs4) const
 {
     glyph_t glyph = engine(0)->glyphIndex(ucs4);
-    if (glyph == 0 && ucs4 != QChar::LineSeparator) {
+    if (glyph == 0
+            && ucs4 != QChar::LineSeparator
+            && ucs4 != QChar::LineFeed
+            && ucs4 != QChar::CarriageReturn
+            && ucs4 != QChar::ParagraphSeparator) {
         if (!m_fallbackFamiliesQueried)
             const_cast<QFontEngineMulti *>(this)->ensureFallbackFamiliesQueried();
         for (int x = 1, n = qMin(m_engines.size(), 256); x < n; ++x) {
@@ -1884,7 +1888,11 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
     QStringIterator it(str, str + len);
     while (it.hasNext()) {
         const uint ucs4 = it.peekNext();
-        if (glyphs->glyphs[glyph_pos] == 0 && ucs4 != QChar::LineSeparator) {
+        if (glyphs->glyphs[glyph_pos] == 0
+                && ucs4 != QChar::LineSeparator
+                && ucs4 != QChar::LineFeed
+                && ucs4 != QChar::CarriageReturn
+                && ucs4 != QChar::ParagraphSeparator) {
             if (!m_fallbackFamiliesQueried)
                 const_cast<QFontEngineMulti *>(this)->ensureFallbackFamiliesQueried();
             for (int x = 1, n = qMin(m_engines.size(), 256); x < n; ++x) {
