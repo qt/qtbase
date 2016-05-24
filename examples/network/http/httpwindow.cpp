@@ -46,9 +46,9 @@
 #include "ui_authenticationdialog.h"
 
 #ifndef QT_NO_SSL
-static const char defaultUrl[] = "https://qt-project.org/";
+static const char defaultUrl[] = "https://www.qt.io/";
 #else
-static const char defaultUrl[] = "http://qt-project.org/";
+static const char defaultUrl[] = "http://www.qt.io/";
 #endif
 static const char defaultFileName[] = "index.html";
 
@@ -96,7 +96,7 @@ HttpWindow::HttpWindow(QWidget *parent)
     connect(urlLineEdit, &QLineEdit::textChanged,
             this, &HttpWindow::enableDownloadButton);
     formLayout->addRow(tr("&URL:"), urlLineEdit);
-    QString downloadDirectory = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+    QString downloadDirectory = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
     if (downloadDirectory.isEmpty() || !QFileInfo(downloadDirectory).isDir())
         downloadDirectory = QDir::currentPath();
     downloadDirectoryLineEdit->setText(QDir::toNativeSeparators(downloadDirectory));
