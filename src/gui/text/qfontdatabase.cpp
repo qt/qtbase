@@ -2221,10 +2221,18 @@ QString QFontDatabase::writingSystemSample(WritingSystem writingSystem)
         sample += QChar(0x05D3);
         break;
     case Arabic:
+        sample += QChar(0x0623);
         sample += QChar(0x0628);
+        sample += QChar(0x062C);
+        sample += QChar(0x062F);
+        sample += QChar(0x064A);
         sample += QChar(0x0629);
-        sample += QChar(0x062A);
-        sample += QChar(0x063A);
+        sample += QChar(0x0020);
+        sample += QChar(0x0639);
+        sample += QChar(0x0631);
+        sample += QChar(0x0628);
+        sample += QChar(0x064A);
+        sample += QChar(0x0629);
         break;
     case Syriac:
         sample += QChar(0x0715);
