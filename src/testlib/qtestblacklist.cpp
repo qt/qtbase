@@ -135,18 +135,25 @@ static QSet<QByteArray> keywords()
             return set;
 }
 
-static bool checkCondition(const QByteArray &condition)
+static QSet<QByteArray> activeConditions()
 {
-    static QSet<QByteArray> matchedConditions = keywords();
-    QList<QByteArray> conds = condition.split(' ');
+    QSet<QByteArray> result = keywords();
 
     QByteArray distributionName = QSysInfo::productType().toLower().toUtf8();
     QByteArray distributionRelease = QSysInfo::productVersion().toLower().toUtf8();
     if (!distributionName.isEmpty()) {
-        if (matchedConditions.find(distributionName) == matchedConditions.end())
-            matchedConditions.insert(distributionName);
-        matchedConditions.insert(distributionName + "-" + distributionRelease);
+        if (result.find(distributionName) == result.end())
+            result.insert(distributionName);
+        result.insert(distributionName + "-" + distributionRelease);
     }
+
+    return result;
+}
+
+static bool checkCondition(const QByteArray &condition)
+{
+    static const QSet<QByteArray> matchedConditions = activeConditions();
+    QList<QByteArray> conds = condition.split(' ');
 
     for (int i = 0; i < conds.size(); ++i) {
         QByteArray c = conds.at(i);
