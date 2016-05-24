@@ -516,14 +516,13 @@ QT_DEPRECATED_X("Use std::binary_search") Q_OUTOFLINE_TEMPLATE RandomAccessItera
 
 #endif // QT_DEPRECATED_SINCE(5, 2)
 
-// Clang had a bug where __builtin_ctz/clz is not marked as constexpr.
-#if defined Q_CC_CLANG && defined __apple_build_version__ &&  __clang_major__ < 7
-#  undef QT_HAS_CONSTEXPR_BUILTIN_CTZ_CLZ
-#else
-#  define QT_HAS_CONSTEXPR_BUILTIN_CTZ_CLZ
+// Clang had a bug where __builtin_ctz/clz/popcount were not marked as constexpr.
+#if !defined Q_CC_CLANG || (defined __apple_build_version__ &&  __clang_major__ >= 7) \
+                        || (Q_CC_CLANG >= 307)
+#  define QT_HAS_CONSTEXPR_BUILTINS
 #endif
 
-#if defined QT_HAS_CONSTEXPR_BUILTIN_CTZ_CLZ
+#if defined QT_HAS_CONSTEXPR_BUILTINS
 #if defined(Q_CC_GNU)
 #  define QT_HAS_BUILTIN_CTZS
 Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_ctzs(quint16 v) Q_DECL_NOTHROW
@@ -563,7 +562,25 @@ Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_clzll(quint64 v) Q_DECL_NOTHROW
 {
     return __builtin_clzll(v);
 }
-#elif defined(Q_CC_MSVC) && !defined(Q_OS_WINCE)
+#define QALGORITHMS_USE_BUILTIN_POPCOUNT
+Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_popcount(quint32 v) Q_DECL_NOTHROW
+{
+    return __builtin_popcount(v);
+}
+Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_popcount(quint8 v) Q_DECL_NOTHROW
+{
+    return __builtin_popcount(v);
+}
+Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_popcount(quint16 v) Q_DECL_NOTHROW
+{
+    return __builtin_popcount(v);
+}
+#define QALGORITHMS_USE_BUILTIN_POPCOUNTLL
+Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_popcountll(quint64 v) Q_DECL_NOTHROW
+{
+    return __builtin_popcountll(v);
+}
+#elif defined(Q_CC_MSVC) && !defined(Q_OS_WINCE) && !defined(Q_PROCESSOR_ARM)
 #define QT_HAS_BUILTIN_CTZ
 Q_DECL_CONSTEXPR Q_ALWAYS_INLINE unsigned long qt_builtin_ctz(quint32 val)
 {
@@ -601,7 +618,7 @@ Q_DECL_CONSTEXPR Q_ALWAYS_INLINE unsigned long qt_builtin_clzll(quint64 val)
     result ^= sizeof(quint64) * 8 - 1;
     return result;
 }
-#endif
+#endif // MSVC 64bit
 #  define QT_HAS_BUILTIN_CTZS
 Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_ctzs(quint16 v) Q_DECL_NOTHROW
 {
@@ -612,23 +629,35 @@ Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_clzs(quint16 v) Q_DECL_NOTHROW
 {
     return qt_builtin_clz(v) - 16U;
 }
-#endif
-#endif // QT_HAS_CONSTEXPR_BUILTIN_CTZ_CLZ
+#define QALGORITHMS_USE_BUILTIN_POPCOUNT
+Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_popcount(quint32 v) Q_DECL_NOTHROW
+{
+    return __popcnt(v);
+}
+Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_popcount(quint8 v) Q_DECL_NOTHROW
+{
+    return __popcnt16(v);
+}
+Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_popcount(quint16 v) Q_DECL_NOTHROW
+{
+    return __popcnt16(v);
+}
+#if Q_PROCESSOR_WORDSIZE == 8
+#define QALGORITHMS_USE_BUILTIN_POPCOUNTLL
+Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_popcountll(quint64 v) Q_DECL_NOTHROW
+{
+    return __popcnt64(v);
+}
+#endif // MSVC 64bit
+#endif // MSVC
+#endif // QT_HAS_CONSTEXPR_BUILTINS
 
 } //namespace QAlgorithmsPrivate
-
-
-// Use __builtin_popcount on gcc. Clang claims to be gcc
-// but has a bug where __builtin_popcount is not marked as
-// constexpr.
-#if defined(Q_CC_GNU) && !defined(Q_CC_CLANG)
-#define QALGORITHMS_USE_BUILTIN_POPCOUNT
-#endif
 
 Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qPopulationCount(quint32 v) Q_DECL_NOTHROW
 {
 #ifdef QALGORITHMS_USE_BUILTIN_POPCOUNT
-    return __builtin_popcount(v);
+    return QAlgorithmsPrivate::qt_builtin_popcount(v);
 #else
     // See http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
     return
@@ -641,7 +670,7 @@ Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qPopulationCount(quint32 v) Q
 Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qPopulationCount(quint8 v) Q_DECL_NOTHROW
 {
 #ifdef QALGORITHMS_USE_BUILTIN_POPCOUNT
-    return __builtin_popcount(v);
+    return QAlgorithmsPrivate::qt_builtin_popcount(v);
 #else
     return
         (((v      ) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f;
@@ -651,7 +680,7 @@ Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qPopulationCount(quint8 v) Q_
 Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qPopulationCount(quint16 v) Q_DECL_NOTHROW
 {
 #ifdef QALGORITHMS_USE_BUILTIN_POPCOUNT
-    return __builtin_popcount(v);
+    return QAlgorithmsPrivate::qt_builtin_popcount(v);
 #else
     return
         (((v      ) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f +
@@ -661,8 +690,8 @@ Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qPopulationCount(quint16 v) Q
 
 Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qPopulationCount(quint64 v) Q_DECL_NOTHROW
 {
-#ifdef QALGORITHMS_USE_BUILTIN_POPCOUNT
-    return __builtin_popcountll(v);
+#ifdef QALGORITHMS_USE_BUILTIN_POPCOUNTLL
+    return QAlgorithmsPrivate::qt_builtin_popcountll(v);
 #else
     return
         (((v      ) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f +
