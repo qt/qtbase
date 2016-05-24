@@ -180,6 +180,10 @@ public Q_SLOTS:
     void setResolveSymlinks(bool enable);
     void setIconProvider(QFileIconProvider *provider);
 
+private Q_SLOTS:
+    void driveAdded();
+    void driveRemoved();
+
 private:
     void run() Q_DECL_OVERRIDE;
     // called by run():

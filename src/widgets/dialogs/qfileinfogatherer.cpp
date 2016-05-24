@@ -65,6 +65,18 @@ Q_AUTOTEST_EXPORT bool qt_test_isFetchedRoot()
 }
 #endif
 
+static QString translateDriveName(const QFileInfo &drive)
+{
+    QString driveName = drive.absoluteFilePath();
+#ifdef Q_OS_WIN
+    if (driveName.startsWith(QLatin1Char('/'))) // UNC host
+        return drive.fileName();
+    if (driveName.endsWith(QLatin1Char('/')))
+        driveName.chop(1);
+#endif // Q_OS_WIN
+    return driveName;
+}
+
 /*!
     Creates thread
 */
@@ -82,6 +94,16 @@ QFileInfoGatherer::QFileInfoGatherer(QObject *parent)
     watcher = new QFileSystemWatcher(this);
     connect(watcher, SIGNAL(directoryChanged(QString)), this, SLOT(list(QString)));
     connect(watcher, SIGNAL(fileChanged(QString)), this, SLOT(updateFile(QString)));
+
+#  if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    const QVariant listener = watcher->property("_q_driveListener");
+    if (listener.canConvert<QObject *>()) {
+        if (QObject *driveListener = listener.value<QObject *>()) {
+            connect(driveListener, SIGNAL(driveAdded()), this, SLOT(driveAdded()));
+            connect(driveListener, SIGNAL(driveRemoved(QString)), this, SLOT(driveRemoved()));
+        }
+    }
+#  endif // Q_OS_WIN && !Q_OS_WINRT
 #endif
     start(LowPriority);
 }
@@ -104,6 +126,20 @@ void QFileInfoGatherer::setResolveSymlinks(bool enable)
 #ifdef Q_OS_WIN
     m_resolveSymlinks = enable;
 #endif
+}
+
+void QFileInfoGatherer::driveAdded()
+{
+    fetchExtendedInformation(QString(), QStringList());
+}
+
+void QFileInfoGatherer::driveRemoved()
+{
+    QStringList drives;
+    const QFileInfoList driveInfoList = QDir::drives();
+    for (const QFileInfo &fi : driveInfoList)
+        drives.append(translateDriveName(fi));
+    newListOfFiles(QString(), drives);
 }
 
 bool QFileInfoGatherer::resolveSymlinks() const
@@ -258,18 +294,6 @@ QExtendedInformation QFileInfoGatherer::getInfo(const QFileInfo &fileInfo) const
     }
 #endif
     return info;
-}
-
-static QString translateDriveName(const QFileInfo &drive)
-{
-    QString driveName = drive.absoluteFilePath();
-#if defined(Q_OS_WIN)
-    if (driveName.startsWith(QLatin1Char('/'))) // UNC host
-        return drive.fileName();
-    if (driveName.endsWith(QLatin1Char('/')))
-        driveName.chop(1);
-#endif
-    return driveName;
 }
 
 /*
