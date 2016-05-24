@@ -4,6 +4,7 @@ DEFINES += SQLITE_ENABLE_COLUMN_METADATA SQLITE_OMIT_LOAD_EXTENSION SQLITE_OMIT_
 qtConfig(posix_fallocate): DEFINES += HAVE_POSIX_FALLOCATE=1
 winrt: DEFINES += SQLITE_OS_WINRT
 qnx: DEFINES += _QNX_SOURCE
+!win32:!winrt:!winphone: DEFINES += HAVE_USLEEP=1
 integrity: QMAKE_CFLAGS += -include qplatformdefs.h
 INCLUDEPATH +=  $$PWD/sqlite
 SOURCES +=      $$PWD/sqlite/sqlite3.c
