@@ -144,7 +144,11 @@ static QSet<QByteArray> activeConditions()
     if (!distributionName.isEmpty()) {
         if (result.find(distributionName) == result.end())
             result.insert(distributionName);
-        result.insert(distributionName + "-" + distributionRelease);
+        if (!distributionRelease.isEmpty()) {
+            QByteArray versioned = distributionName + "-" + distributionRelease;
+            if (result.find(versioned) == result.end())
+                result.insert(versioned);
+        }
     }
 
     return result;
