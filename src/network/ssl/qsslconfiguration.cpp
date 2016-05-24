@@ -213,6 +213,7 @@ bool QSslConfiguration::operator==(const QSslConfiguration &other) const
         d->preSharedKeyIdentityHint == other.d->preSharedKeyIdentityHint &&
         d->ciphers == other.d->ciphers &&
         d->ellipticCurves == other.d->ellipticCurves &&
+        d->ephemeralServerKey == other.d->ephemeralServerKey &&
         d->caCertificates == other.d->caCertificates &&
         d->protocol == other.d->protocol &&
         d->peerVerifyMode == other.d->peerVerifyMode &&
@@ -254,6 +255,7 @@ bool QSslConfiguration::isNull() const
             d->caCertificates.count() == 0 &&
             d->ciphers.count() == 0 &&
             d->ellipticCurves.isEmpty() &&
+            d->ephemeralServerKey.isNull() &&
             d->localCertificateChain.isEmpty() &&
             d->privateKey.isNull() &&
             d->peerCertificate.isNull() &&

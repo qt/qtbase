@@ -11,6 +11,7 @@ SUBDIRS+=\
            qdbusconnection_no_app \
            qdbusconnection_no_bus \
            qdbusconnection_no_libdbus \
+           qdbusconnection_spyhook \
            qdbuscontext \
            qdbusinterface \
            qdbuslocalcalls \

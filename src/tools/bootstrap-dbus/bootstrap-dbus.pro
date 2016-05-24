@@ -5,6 +5,7 @@ TARGET = QtBootstrapDBus
 CONFIG += minimal_syncqt internal_module force_bootstrap
 
 DEFINES += \
+    QT_NO_FOREACH \
     QT_NO_CAST_FROM_ASCII
 
 MODULE_INCNAME = QtDBus

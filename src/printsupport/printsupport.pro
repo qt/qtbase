@@ -1,7 +1,7 @@
 TARGET     = QtPrintSupport
 QT = core-private gui-private widgets-private
 
-DEFINES   += QT_NO_USING_NAMESPACE
+DEFINES   += QT_NO_USING_NAMESPACE QT_NO_FOREACH
 
 QMAKE_DOCS = $$PWD/doc/qtprintsupport.qdocconf
 

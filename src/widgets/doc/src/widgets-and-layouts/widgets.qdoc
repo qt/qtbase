@@ -43,11 +43,11 @@
 
     \table
     \row
-    \li \image gtk-label.png
+    \li \image fusion-label.png
     \li \image windowsvista-pushbutton.png
     \li \image macintosh-progressbar.png
     \row
-    \li \image gtk-combobox.png
+    \li \image fusion-combobox.png
     \li \image windowsvista-radiobutton.png
     \li \image macintosh-lineedit.png
     \endtable
@@ -69,7 +69,7 @@
       \table
       \row
       \li \image windowsxp-treeview.png
-      \li \image gtk-calendarwidget.png
+      \li \image fusion-calendarwidget.png
       \li \image qundoview.png
       \endtable
 

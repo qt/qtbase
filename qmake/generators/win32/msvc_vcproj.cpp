@@ -1296,7 +1296,7 @@ void VcprojGenerator::initDeploymentTool()
 
                     if (foundGuid || dllName.contains(QLatin1String("Gui"))) {
                         QFileInfo info2;
-                        foreach (const ProString &dllPath, dllPaths) {
+                        for (const ProString &dllPath : dllPaths) {
                             QString absoluteDllFilePath = dllPath.toQString();
                             if (!absoluteDllFilePath.endsWith(QLatin1Char('/')))
                                 absoluteDllFilePath += QLatin1Char('/');

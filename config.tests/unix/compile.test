@@ -66,9 +66,6 @@ while [ "$#" -gt 0 ]; do
     shift
 done
 
-# debuggery
-[ "$VERBOSE" = "yes" ] && echo "$DESCRIPTION auto-detection... ($*)"
-
 test -d "$OUTDIR/$TEST" || mkdir -p "$OUTDIR/$TEST"
 
 cd "$OUTDIR/$TEST"
@@ -96,6 +93,7 @@ set -- \
      "$SRCDIR/$TEST/$EXE.pro" \
      -o "$OUTDIR/$TEST/Makefile"
 if [ "$VERBOSE" = "yes" ]; then
+    echo
     OUTDIR=$OUTDIR "$@" && $MAKE && SUCCESS=yes
 else
     OUTDIR=$OUTDIR "$@" >/dev/null 2>&1 && $MAKE >/dev/null 2>&1 && SUCCESS=yes
@@ -103,9 +101,9 @@ fi
 
 # done
 if [ "$SUCCESS" != "yes" ]; then
-    [ "$VERBOSE" = "yes" ] && echo "$DESCRIPTION disabled."
+    [ "$VERBOSE" = "yes" ] && echo "$DESCRIPTION disabled." || echo " no."
     exit 1
 else
-    [ "$VERBOSE" = "yes" ] && echo "$DESCRIPTION enabled."
+    [ "$VERBOSE" = "yes" ] && echo "$DESCRIPTION enabled." || echo " yes."
     exit 0
 fi

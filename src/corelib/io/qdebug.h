@@ -51,6 +51,7 @@
 #include <QtCore/qvector.h>
 #include <QtCore/qset.h>
 #include <QtCore/qcontiguouscache.h>
+#include <QtCore/qsharedpointer.h>
 
 // all these have already been included by various headers above, but don't rely on indirect includes:
 #include <vector>
@@ -328,6 +329,14 @@ inline QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache)
     debug << ')';
     debug.setAutoInsertSpaces(oldSetting);
     return debug.maybeSpace();
+}
+
+template <class T>
+inline QDebug operator<<(QDebug debug, const QSharedPointer<T> &ptr)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace() << "QSharedPointer(" << ptr.data() << ")";
+    return debug;
 }
 
 Q_CORE_EXPORT void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, int value);

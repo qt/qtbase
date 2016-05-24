@@ -794,6 +794,17 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
+    \fn QDebug operator<<(QDebug debug, const QSharedPointer<T> &ptr)
+    \relates QSharedPointer
+    \since 5.7
+
+    Writes the pointer tracked by \a ptr into the debug object \a debug for
+    debugging purposes.
+
+    \sa {Debugging Techniques}
+*/
+
+/*!
     \class QDebugStateSaver
     \inmodule QtCore
     \brief Convenience class for custom QDebug operators

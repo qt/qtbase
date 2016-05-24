@@ -62,7 +62,6 @@ QT_END_NAMESPACE
 #include <new>
 #include <QtCore/qatomic.h>
 #include <QtCore/qobject.h>    // for qobject_cast
-#include <QtCore/qdebug.h>
 #if QT_DEPRECATED_SINCE(5, 6)
 #include <QtCore/qhash.h>
 #endif
@@ -882,16 +881,6 @@ inline void qSwap(QSharedPointer<T> &p1, QSharedPointer<T> &p2)
 {
     p1.swap(p2);
 }
-
-#ifndef QT_NO_DEBUG_STREAM
-template <class T>
-Q_INLINE_TEMPLATE QDebug operator<<(QDebug debug, const QSharedPointer<T> &ptr)
-{
-    QDebugStateSaver saver(debug);
-    debug.nospace() << "QSharedPointer(" << ptr.data() << ")";
-    return debug;
-}
-#endif
 
 QT_END_NAMESPACE
 namespace std {

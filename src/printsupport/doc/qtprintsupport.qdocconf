@@ -4,7 +4,7 @@ project                 = QtPrintSupport
 description             = Qt Print Support Reference Documentation
 version                 = $QT_VERSION
 
-examplesinstallpath     = qtbase/printsupport
+examplesinstallpath     = printsupport
 
 qhp.projects            = QtPrintSupport
 

@@ -152,6 +152,7 @@ else:SOURCES += tools/qelapsedtimer_generic.cpp
 contains(QT_CONFIG, system-zlib) {
     include($$PWD/../../3rdparty/zlib_dependency.pri)
 } else {
+    CONFIG += no_core_dep
     include($$PWD/../../3rdparty/zlib.pri)
 }
 

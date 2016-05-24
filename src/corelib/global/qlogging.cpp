@@ -54,6 +54,7 @@
 #include "qthread.h"
 #include "private/qloggingregistry_p.h"
 #include "private/qcoreapplication_p.h"
+#include "private/qsimd_p.h"
 #endif
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
@@ -1193,6 +1194,89 @@ void QMessagePattern::setPattern(const QString &pattern)
     memcpy(literals, literalsVar.constData(), literalsVar.size() * sizeof(const char*));
 }
 
+#if defined(QLOGGING_HAVE_BACKTRACE) && !defined(QT_BOOTSTRAPPED)
+// make sure the function has "Message" in the name so the function is removed
+
+#if (defined(Q_CC_GNU) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS)) || QT_HAS_ATTRIBUTE(optimize)
+// force skipping the frame pointer, to save the backtrace() function some work
+__attribute__((optimize("omit-frame-pointer")))
+#endif
+static QStringList backtraceFramesForLogMessage(int frameCount)
+{
+    QStringList result;
+    if (frameCount == 0)
+        return result;
+
+    // The results of backtrace_symbols looks like this:
+    //    /lib/libc.so.6(__libc_start_main+0xf3) [0x4a937413]
+    // The offset and function name are optional.
+    // This regexp tries to extract the library name (without the path) and the function name.
+    // This code is protected by QMessagePattern::mutex so it is thread safe on all compilers
+    static QRegularExpression rx(QStringLiteral("^(?:[^(]*/)?([^(/]+)\\(([^+]*)(?:[\\+[a-f0-9x]*)?\\) \\[[a-f0-9x]*\\]$"),
+                                 QRegularExpression::OptimizeOnFirstUsageOption);
+
+    QVarLengthArray<void*, 32> buffer(7 + frameCount);
+    int n = backtrace(buffer.data(), buffer.size());
+    if (n > 0) {
+        int numberPrinted = 0;
+        for (int i = 0; i < n && numberPrinted < frameCount; ++i) {
+            QScopedPointer<char*, QScopedPointerPodDeleter> strings(backtrace_symbols(buffer.data() + i, 1));
+            QString trace = QString::fromLatin1(strings.data()[0]);
+            QRegularExpressionMatch m = rx.match(trace);
+            if (m.hasMatch()) {
+                QString library = m.captured(1);
+                QString function = m.captured(2);
+
+                // skip the trace from QtCore that are because of the qDebug itself
+                if (!numberPrinted && library.contains(QLatin1String("Qt5Core"))
+                        && (function.isEmpty() || function.contains(QLatin1String("Message"), Qt::CaseInsensitive)
+                            || function.contains(QLatin1String("QDebug")))) {
+                    continue;
+                }
+
+                if (function.startsWith(QLatin1String("_Z"))) {
+                    QScopedPointer<char, QScopedPointerPodDeleter> demangled(
+                                abi::__cxa_demangle(function.toUtf8(), 0, 0, 0));
+                    if (demangled)
+                        function = QString::fromUtf8(qCleanupFuncinfo(demangled.data()));
+                }
+
+                if (function.isEmpty()) {
+                    result.append(QLatin1Char('?') + library + QLatin1Char('?'));
+                } else {
+                    result.append(function);
+                }
+            } else {
+                if (numberPrinted == 0) {
+                    // innermost, unknown frames are usually the logging framework itself
+                    continue;
+                }
+                result.append(QStringLiteral("???"));
+            }
+            numberPrinted++;
+        }
+    }
+    return result;
+}
+
+static QString formatBacktraceForLogMessage(const QMessagePattern::BacktraceParams backtraceParams,
+                                            const char *function)
+{
+    QString backtraceSeparator = backtraceParams.backtraceSeparator;
+    int backtraceDepth = backtraceParams.backtraceDepth;
+
+    QStringList frames = backtraceFramesForLogMessage(backtraceDepth);
+    if (frames.isEmpty())
+        return QString();
+
+    // if the first frame is unknown, replace it with the context function
+    if (function && frames.at(0).startsWith(QLatin1Char('?')))
+        frames[0] = QString::fromUtf8(qCleanupFuncinfo(function));
+
+    return frames.join(backtraceSeparator);
+}
+#endif // QLOGGING_HAVE_BACKTRACE && !QT_BOOTSTRAPPED
+
 #if defined(QT_USE_SLOG2)
 #ifndef QT_LOG_CODE
 #define QT_LOG_CODE 9000
@@ -1336,62 +1420,8 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
 #ifdef QLOGGING_HAVE_BACKTRACE
         } else if (token == backtraceTokenC) {
             QMessagePattern::BacktraceParams backtraceParams = pattern->backtraceArgs.at(backtraceArgsIdx);
-            QString backtraceSeparator = backtraceParams.backtraceSeparator;
-            int backtraceDepth = backtraceParams.backtraceDepth;
             backtraceArgsIdx++;
-            QVarLengthArray<void*, 32> buffer(7 + backtraceDepth);
-            int n = backtrace(buffer.data(), buffer.size());
-            if (n > 0) {
-                int numberPrinted = 0;
-                for (int i = 0; i < n && numberPrinted < backtraceDepth; ++i) {
-                    QScopedPointer<char*, QScopedPointerPodDeleter> strings(backtrace_symbols(buffer.data() + i, 1));
-                    QString trace = QString::fromLatin1(strings.data()[0]);
-                    // The results of backtrace_symbols looks like this:
-                    //    /lib/libc.so.6(__libc_start_main+0xf3) [0x4a937413]
-                    // The offset and function name are optional.
-                    // This regexp tries to extract the librry name (without the path) and the function name.
-                    // This code is protected by QMessagePattern::mutex so it is thread safe on all compilers
-                    static QRegularExpression rx(QStringLiteral("^(?:[^(]*/)?([^(/]+)\\(([^+]*)(?:[\\+[a-f0-9x]*)?\\) \\[[a-f0-9x]*\\]$"),
-                                                 QRegularExpression::OptimizeOnFirstUsageOption);
-
-                    QRegularExpressionMatch m = rx.match(trace);
-                    if (m.hasMatch()) {
-                        // skip the trace from QtCore that are because of the qDebug itself
-                        QString library = m.captured(1);
-                        QString function = m.captured(2);
-                        if (!numberPrinted && library.contains(QLatin1String("Qt5Core"))
-                            && (function.isEmpty() || function.contains(QLatin1String("Message"), Qt::CaseInsensitive)
-                                || function.contains(QLatin1String("QDebug")))) {
-                            continue;
-                        }
-
-                        if (function.startsWith(QLatin1String("_Z"))) {
-                            QScopedPointer<char, QScopedPointerPodDeleter> demangled(
-                                abi::__cxa_demangle(function.toUtf8(), 0, 0, 0));
-                            if (demangled)
-                                function = QString::fromUtf8(qCleanupFuncinfo(demangled.data()));
-                        }
-
-                        if (numberPrinted > 0)
-                            message.append(backtraceSeparator);
-
-                        if (function.isEmpty()) {
-                            if (numberPrinted == 0 && context.function)
-                                message += QString::fromUtf8(qCleanupFuncinfo(context.function));
-                            else
-                                message += QLatin1Char('?') + library + QLatin1Char('?');
-                        } else {
-                            message += function;
-                        }
-
-                    } else {
-                        if (numberPrinted == 0)
-                            continue;
-                        message += backtraceSeparator + QLatin1String("???");
-                    }
-                    numberPrinted++;
-                }
-            }
+            message.append(formatBacktraceForLogMessage(backtraceParams, context.function));
 #endif
         } else if (token == timeTokenC) {
             QString timeFormat = pattern->timeArgs.at(timeArgsIdx);

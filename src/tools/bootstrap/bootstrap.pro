@@ -23,6 +23,7 @@ MODULE_DEFINES = \
 DEFINES += \
     $$MODULE_DEFINES \
     QT_CRYPTOGRAPHICHASH_ONLY_SHA1 \
+    QT_NO_FOREACH \
     QT_NO_CAST_FROM_ASCII
 
 DEFINES -= QT_EVAL
@@ -133,8 +134,12 @@ macx {
         ../../corelib/io/qstandardpaths_win.cpp
 }
 
-!contains(QT_CONFIG, system-zlib)|cross_compile:include(../../3rdparty/zlib.pri)
-else:include(../../3rdparty/zlib_dependency.pri)
+!contains(QT_CONFIG, system-zlib)|cross_compile {
+    include(../../3rdparty/zlib.pri)
+} else {
+    CONFIG += no_core_dep
+    include(../../3rdparty/zlib_dependency.pri)
+}
 
 win32:LIBS += -luser32 -lole32 -ladvapi32 -lshell32
 

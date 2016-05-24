@@ -207,7 +207,7 @@ init_context:
     QList<QSslCipher> ciphers = sslContext->sslConfiguration.ciphers();
     if (ciphers.isEmpty())
         ciphers = QSslSocketPrivate::defaultCiphers();
-    foreach (const QSslCipher &cipher, ciphers) {
+    for (const QSslCipher &cipher : qAsConst(ciphers)) {
         if (first)
             first = false;
         else
