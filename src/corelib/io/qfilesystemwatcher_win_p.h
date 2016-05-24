@@ -66,6 +66,7 @@
 QT_BEGIN_NAMESPACE
 
 class QWindowsFileSystemWatcherEngineThread;
+class QWindowsRemovableDriveListener;
 
 // Even though QWindowsFileSystemWatcherEngine is derived of QThread
 // via QFileSystemWatcher, it does not start a thread.
@@ -75,9 +76,7 @@ class QWindowsFileSystemWatcherEngine : public QFileSystemWatcherEngine
 {
     Q_OBJECT
 public:
-    inline QWindowsFileSystemWatcherEngine(QObject *parent)
-        : QFileSystemWatcherEngine(parent)
-    { }
+    explicit QWindowsFileSystemWatcherEngine(QObject *parent);
     ~QWindowsFileSystemWatcherEngine();
 
     QStringList addPaths(const QStringList &paths, QStringList *files, QStringList *directories);
@@ -121,9 +120,17 @@ public:
                     || lastModified != fileInfo.lastModified());
         }
     };
+
+signals:
+    void driveLockForRemoval(const QString &);
+    void driveLockForRemovalFailed(const QString &);
+    void driveRemoved(const QString &);
+
 private:
     QList<QWindowsFileSystemWatcherEngineThread *> threads;
-
+#ifndef Q_OS_WINRT
+    QWindowsRemovableDriveListener *m_driveListener;
+#endif
 };
 
 class QFileSystemWatcherPathKey : public QString

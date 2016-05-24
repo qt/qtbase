@@ -106,6 +106,8 @@ public:
 
     bool event(QEvent *e);
 
+    HWND internalHwnd();
+
 protected:
     QEventDispatcherWin32(QEventDispatcherWin32Private &dd, QObject *parent = 0);
     virtual void sendPostedEvents();

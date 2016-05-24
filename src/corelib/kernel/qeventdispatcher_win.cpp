@@ -1059,4 +1059,11 @@ void QEventDispatcherWin32::sendPostedEvents()
     QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
 }
 
+HWND QEventDispatcherWin32::internalHwnd()
+{
+    Q_D(QEventDispatcherWin32);
+    createInternalHwnd();
+    return d->internalHwnd;
+}
+
 QT_END_NAMESPACE

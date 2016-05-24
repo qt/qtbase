@@ -64,6 +64,9 @@
 #  include "qfilesystemwatcher_fsevents_p.h"
 #endif
 
+#include <algorithm>
+#include <iterator>
+
 QT_BEGIN_NAMESPACE
 
 QFileSystemWatcherEngine *QFileSystemWatcherPrivate::createNativeEngine(QObject *parent)
@@ -102,6 +105,17 @@ void QFileSystemWatcherPrivate::init()
                          SIGNAL(directoryChanged(QString,bool)),
                          q,
                          SLOT(_q_directoryChanged(QString,bool)));
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+        QObject::connect(static_cast<QWindowsFileSystemWatcherEngine *>(native),
+                         &QWindowsFileSystemWatcherEngine::driveLockForRemoval,
+                         q, [this] (const QString &p) { _q_winDriveLockForRemoval(p); });
+        QObject::connect(static_cast<QWindowsFileSystemWatcherEngine *>(native),
+                         &QWindowsFileSystemWatcherEngine::driveLockForRemovalFailed,
+                         q, [this] (const QString &p) { _q_winDriveLockForRemovalFailed(p); });
+        QObject::connect(static_cast<QWindowsFileSystemWatcherEngine *>(native),
+                         &QWindowsFileSystemWatcherEngine::driveRemoved,
+                         q, [this] (const QString &p) { _q_winDriveRemoved(p); });
+#endif  // !Q_OS_WINRT
     }
 }
 
@@ -146,7 +160,46 @@ void QFileSystemWatcherPrivate::_q_directoryChanged(const QString &path, bool re
     emit q->directoryChanged(path, QFileSystemWatcher::QPrivateSignal());
 }
 
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 
+void QFileSystemWatcherPrivate::_q_winDriveLockForRemoval(const QString &path)
+{
+    // Windows: Request to lock a (removable/USB) drive for removal, release
+    // its paths under watch, temporarily storing them should the lock fail.
+    Q_Q(QFileSystemWatcher);
+    QStringList pathsToBeRemoved;
+    auto pred = [&path] (const QString &f) { return !f.startsWith(path, Qt::CaseInsensitive); };
+    std::remove_copy_if(files.cbegin(), files.cend(),
+                        std::back_inserter(pathsToBeRemoved), pred);
+    std::remove_copy_if(directories.cbegin(), directories.cend(),
+                        std::back_inserter(pathsToBeRemoved), pred);
+    if (!pathsToBeRemoved.isEmpty()) {
+        q->removePaths(pathsToBeRemoved);
+        temporarilyRemovedPaths.insert(path.at(0), pathsToBeRemoved);
+    }
+}
+
+void QFileSystemWatcherPrivate::_q_winDriveLockForRemovalFailed(const QString &path)
+{
+    // Windows: Request to lock a (removable/USB) drive failed (blocked by other
+    // application), restore the watched paths.
+    Q_Q(QFileSystemWatcher);
+    if (!path.isEmpty()) {
+        const auto it = temporarilyRemovedPaths.find(path.at(0));
+        if (it != temporarilyRemovedPaths.end()) {
+            q->addPaths(it.value());
+            temporarilyRemovedPaths.erase(it);
+        }
+    }
+}
+
+void  QFileSystemWatcherPrivate::_q_winDriveRemoved(const QString &path)
+{
+    // Windows: Drive finally removed, clear out paths stored in lock request.
+    if (!path.isEmpty())
+        temporarilyRemovedPaths.remove(path.at(0));
+}
+#endif // Q_OS_WIN && !Q_OS_WINRT
 
 /*!
     \class QFileSystemWatcher

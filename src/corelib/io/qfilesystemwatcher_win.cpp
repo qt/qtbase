@@ -52,6 +52,16 @@
 
 #include <qt_windows.h>
 
+#ifndef Q_OS_WINRT
+#  include <qabstractnativeeventfilter.h>
+#  include <qcoreapplication.h>
+#  include <qdir.h>
+#  include <private/qeventdispatcher_win_p.h>
+#  include <dbt.h>
+#  include <algorithm>
+#  include <vector>
+#endif // !Q_OS_WINRT
+
 QT_BEGIN_NAMESPACE
 
 // #define WINQFSW_DEBUG
@@ -61,9 +71,273 @@ QT_BEGIN_NAMESPACE
 #  define DEBUG if (false) qDebug
 #endif
 
+#ifndef Q_OS_WINRT
+///////////
+// QWindowsRemovableDriveListener
+// Listen for the various WM_DEVICECHANGE message indicating drive addition/removal
+// requests and removals.
+///////////
+class QWindowsRemovableDriveListener : public QObject, public QAbstractNativeEventFilter
+{
+    Q_OBJECT
+public:
+    // Device UUids as declared in ioevent.h (GUID_IO_VOLUME_LOCK, ...)
+    enum VolumeUuid { UnknownUuid, UuidIoVolumeLock, UuidIoVolumeLockFailed,
+                      UuidIoVolumeUnlock, UuidIoMediaRemoval };
+
+    struct RemovableDriveEntry {
+        HDEVNOTIFY devNotify;
+        wchar_t drive;
+    };
+
+    explicit QWindowsRemovableDriveListener(QObject *parent = nullptr);
+    ~QWindowsRemovableDriveListener();
+
+    // Call from QFileSystemWatcher::addPaths() to set up notifications on drives
+    void addPath(const QString &path);
+
+    bool nativeEventFilter(const QByteArray &, void *messageIn, long *) override;
+
+signals:
+    void driveAdded();
+    void driveRemoved(const QString &);
+    void driveLockForRemoval(const QString &);
+    void driveLockForRemovalFailed(const QString &);
+
+private:
+    static VolumeUuid volumeUuid(const UUID &needle);
+    void handleDbtCustomEvent(const MSG *msg);
+    void handleDbtDriveArrivalRemoval(const MSG *msg);
+
+    std::vector<RemovableDriveEntry> m_removableDrives;
+    quintptr m_lastMessageHash;
+};
+
+static inline QEventDispatcherWin32 *winEventDispatcher()
+{
+    return static_cast<QEventDispatcherWin32 *>(QCoreApplication::instance()->eventDispatcher());
+}
+
+QWindowsRemovableDriveListener::QWindowsRemovableDriveListener(QObject *parent)
+    : QObject(parent)
+    , m_lastMessageHash(0)
+{
+    winEventDispatcher()->installNativeEventFilter(this);
+}
+
+static void stopDeviceNotification(QWindowsRemovableDriveListener::RemovableDriveEntry &e)
+{
+    UnregisterDeviceNotification(e.devNotify);
+    e.devNotify = 0;
+}
+
+template <class Iterator> // Search sequence of RemovableDriveEntry for HDEVNOTIFY.
+static inline Iterator findByHDevNotify(Iterator i1, Iterator i2, HDEVNOTIFY hdevnotify)
+{
+    return std::find_if(i1, i2,
+                        [hdevnotify] (const QWindowsRemovableDriveListener::RemovableDriveEntry &e) { return e.devNotify == hdevnotify; });
+}
+
+QWindowsRemovableDriveListener::~QWindowsRemovableDriveListener()
+{
+    std::for_each(m_removableDrives.begin(), m_removableDrives.end(), stopDeviceNotification);
+}
+
+static QString pathFromEntry(const QWindowsRemovableDriveListener::RemovableDriveEntry &re)
+{
+    QString path = QStringLiteral("A:/");
+    path[0] = QChar::fromLatin1(re.drive);
+    return path;
+}
+
+// Handle WM_DEVICECHANGE+DBT_CUSTOMEVENT, which is sent based on the registration
+// on the volume handle with QEventDispatcherWin32's message window in the class.
+// Capture the GUID_IO_VOLUME_LOCK indicating the drive is to be removed.
+QWindowsRemovableDriveListener::VolumeUuid QWindowsRemovableDriveListener::volumeUuid(const UUID &needle)
+{
+    static const struct VolumeUuidMapping // UUIDs from IoEvent.h (missing in MinGW)
+    {
+        VolumeUuid v;
+        UUID uuid;
+    } mapping[] = {
+        { UuidIoVolumeLock, // GUID_IO_VOLUME_LOCK
+          {0x50708874, 0xc9af, 0x11d1, {0x8f, 0xef, 0x0, 0xa0, 0xc9, 0xa0, 0x6d, 0x32}} },
+        { UuidIoVolumeLockFailed, // GUID_IO_VOLUME_LOCK_FAILED
+          {0xae2eed10, 0x0ba8, 0x11d2, {0x8f, 0xfb, 0x0, 0xa0, 0xc9, 0xa0, 0x6d, 0x32}} },
+        { UuidIoVolumeUnlock, // GUID_IO_VOLUME_UNLOCK
+          {0x9a8c3d68, 0xd0cb, 0x11d1, {0x8f, 0xef, 0x0, 0xa0, 0xc9, 0xa0, 0x6d, 0x32}} },
+        { UuidIoMediaRemoval, // GUID_IO_MEDIA_REMOVAL
+          {0xd07433c1, 0xa98e, 0x11d2, {0x91, 0x7a, 0x0, 0xa0, 0xc9, 0x06, 0x8f, 0xf3}} }
+    };
+
+    static const VolumeUuidMapping *end = mapping + sizeof(mapping) / sizeof(mapping[0]);
+    const VolumeUuidMapping *m =
+        std::find_if(mapping, end, [&needle] (const VolumeUuidMapping &m) { return IsEqualGUID(m.uuid, needle); });
+    return m != end ? m->v : UnknownUuid;
+}
+
+inline void QWindowsRemovableDriveListener::handleDbtCustomEvent(const MSG *msg)
+{
+    const DEV_BROADCAST_HDR *broadcastHeader = reinterpret_cast<const DEV_BROADCAST_HDR *>(msg->lParam);
+    if (broadcastHeader->dbch_devicetype != DBT_DEVTYP_HANDLE)
+        return;
+    const DEV_BROADCAST_HANDLE *broadcastHandle = reinterpret_cast<const DEV_BROADCAST_HANDLE *>(broadcastHeader);
+    const auto it = findByHDevNotify(m_removableDrives.cbegin(), m_removableDrives.cend(),
+                                     broadcastHandle->dbch_hdevnotify);
+    if (it == m_removableDrives.cend())
+        return;
+    switch (volumeUuid(broadcastHandle->dbch_eventguid)) {
+    case UuidIoVolumeLock: // Received for removable USB media
+        emit driveLockForRemoval(pathFromEntry(*it));
+        break;
+    case UuidIoVolumeLockFailed:
+        emit driveLockForRemovalFailed(pathFromEntry(*it));
+        break;
+    case UuidIoVolumeUnlock:
+        break;
+    case UuidIoMediaRemoval: // Received for optical drives
+        break;
+    default:
+        break;
+    }
+}
+
+// Handle WM_DEVICECHANGE+DBT_DEVICEARRIVAL/DBT_DEVICEREMOVECOMPLETE which are
+// sent to all top level windows and cannot be registered for (that is, their
+// triggering depends on top level windows being present)
+inline void QWindowsRemovableDriveListener::handleDbtDriveArrivalRemoval(const MSG *msg)
+{
+    const DEV_BROADCAST_HDR *broadcastHeader = reinterpret_cast<const DEV_BROADCAST_HDR *>(msg->lParam);
+    switch (broadcastHeader->dbch_devicetype) {
+    case DBT_DEVTYP_HANDLE: // WM_DEVICECHANGE/DBT_DEVTYP_HANDLE is sent for our registered drives.
+        if (msg->wParam == DBT_DEVICEREMOVECOMPLETE) {
+            const DEV_BROADCAST_HANDLE *broadcastHandle = reinterpret_cast<const DEV_BROADCAST_HANDLE *>(broadcastHeader);
+            const auto it = findByHDevNotify(m_removableDrives.begin(), m_removableDrives.end(),
+                                           broadcastHandle->dbch_hdevnotify);
+            // Emit for removable USB drives we were registered for.
+            if (it != m_removableDrives.end()) {
+                emit driveRemoved(pathFromEntry(*it));
+                stopDeviceNotification(*it);
+                m_removableDrives.erase(it);
+            }
+        }
+        break;
+    case DBT_DEVTYP_VOLUME: {
+        const DEV_BROADCAST_VOLUME *broadcastVolume = reinterpret_cast<const DEV_BROADCAST_VOLUME *>(broadcastHeader);
+        // WM_DEVICECHANGE/DBT_DEVTYP_VOLUME messages are sent to all toplevel windows. Compare a hash value to ensure
+        // it is handled only once.
+        const quintptr newHash = reinterpret_cast<quintptr>(broadcastVolume) + msg->wParam
+            + quintptr(broadcastVolume->dbcv_flags) + quintptr(broadcastVolume->dbcv_unitmask);
+        if (newHash == m_lastMessageHash)
+            return;
+        m_lastMessageHash = newHash;
+        // Check for DBTF_MEDIA (inserted/Removed Optical drives). Ignore for now.
+        if (broadcastVolume->dbcv_flags & DBTF_MEDIA)
+            return;
+        // Continue with plugged in USB media where dbcv_flags=0.
+        switch (msg->wParam) {
+        case DBT_DEVICEARRIVAL:
+            emit driveAdded();
+            break;
+        case DBT_DEVICEREMOVECOMPLETE: // handled by DBT_DEVTYP_HANDLE above
+            break;
+        }
+    }
+        break;
+    }
+}
+
+bool QWindowsRemovableDriveListener::nativeEventFilter(const QByteArray &, void *messageIn, long *)
+{
+    const MSG *msg = reinterpret_cast<const MSG *>(messageIn);
+    if (msg->message == WM_DEVICECHANGE) {
+        switch (msg->wParam) {
+        case DBT_CUSTOMEVENT:
+            handleDbtCustomEvent(msg);
+            break;
+        case DBT_DEVICEARRIVAL:
+        case DBT_DEVICEREMOVECOMPLETE:
+            handleDbtDriveArrivalRemoval(msg);
+            break;
+        }
+    }
+    return false;
+}
+
+// Set up listening for WM_DEVICECHANGE+DBT_CUSTOMEVENT for a removable drive path,
+void QWindowsRemovableDriveListener::addPath(const QString &p)
+{
+    const wchar_t drive = p.size() >= 2 && p.at(0).isLetter() && p.at(1) == QLatin1Char(':')
+        ? wchar_t(p.at(0).toUpper().unicode()) : L'\0';
+    if (!drive)
+        return;
+    // Already listening?
+    if (std::any_of(m_removableDrives.cbegin(), m_removableDrives.cend(),
+                    [drive](const RemovableDriveEntry &e) { return e.drive == drive; })) {
+        return;
+    }
+
+    wchar_t devicePath[8] = L"\\\\.\\A:\\";
+    devicePath[4] = drive;
+    RemovableDriveEntry re;
+    re.drive = drive;
+    if (GetDriveTypeW(devicePath + 4) != DRIVE_REMOVABLE)
+        return;
+    const HANDLE volumeHandle =
+        CreateFile(devicePath, FILE_READ_ATTRIBUTES,
+                   FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE, 0,
+                   OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, //  Volume requires BACKUP_SEMANTICS
+                   0);
+    if (volumeHandle == INVALID_HANDLE_VALUE) {
+        qErrnoWarning("CreateFile %s failed.",
+                      qPrintable(QString::fromWCharArray(devicePath)));
+        return;
+    }
+
+    DEV_BROADCAST_HANDLE notify;
+    ZeroMemory(&notify, sizeof(notify));
+    notify.dbch_size = sizeof(notify);
+    notify.dbch_devicetype = DBT_DEVTYP_HANDLE;
+    notify.dbch_handle = volumeHandle;
+    re.devNotify = RegisterDeviceNotification(winEventDispatcher()->internalHwnd(),
+                                              &notify, DEVICE_NOTIFY_WINDOW_HANDLE);
+    // Empirically found: The notifications also work when the handle is immediately
+    // closed. Do it here to avoid having to close/reopen in lock message handling.
+    CloseHandle(volumeHandle);
+    if (!re.devNotify) {
+        qErrnoWarning("RegisterDeviceNotification %s failed.",
+                      qPrintable(QString::fromWCharArray(devicePath)));
+        return;
+    }
+
+    m_removableDrives.push_back(re);
+}
+#endif // !Q_OS_WINRT
+
+///////////
+// QWindowsFileSystemWatcherEngine
+///////////
 QWindowsFileSystemWatcherEngine::Handle::Handle()
     : handle(INVALID_HANDLE_VALUE), flags(0u)
 {
+}
+
+QWindowsFileSystemWatcherEngine::QWindowsFileSystemWatcherEngine(QObject *parent)
+    : QFileSystemWatcherEngine(parent)
+#ifndef Q_OS_WINRT
+    , m_driveListener(new QWindowsRemovableDriveListener(this))
+#endif
+{
+#ifndef Q_OS_WINRT
+    parent->setProperty("_q_driveListener",
+                        QVariant::fromValue(static_cast<QObject *>(m_driveListener)));
+    QObject::connect(m_driveListener, &QWindowsRemovableDriveListener::driveLockForRemoval,
+                     this, &QWindowsFileSystemWatcherEngine::driveLockForRemoval);
+    QObject::connect(m_driveListener, &QWindowsRemovableDriveListener::driveLockForRemovalFailed,
+                     this, &QWindowsFileSystemWatcherEngine::driveLockForRemovalFailed);
+    QObject::connect(m_driveListener, &QWindowsRemovableDriveListener::driveRemoved,
+                     this, &QWindowsFileSystemWatcherEngine::driveRemoved);
+#endif // !Q_OS_WINRT
 }
 
 QWindowsFileSystemWatcherEngine::~QWindowsFileSystemWatcherEngine()
@@ -210,6 +484,13 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
             }
         }
     }
+
+#ifndef Q_OS_WINRT
+    for (const QString &path : paths) {
+        if (!p.contains(path))
+            m_driveListener->addPath(path);
+    }
+#endif // !Q_OS_WINRT
     return p;
 }
 
@@ -439,4 +720,9 @@ void QWindowsFileSystemWatcherEngineThread::wakeup()
 }
 
 QT_END_NAMESPACE
+
+#ifndef Q_OS_WINRT
+#  include "qfilesystemwatcher_win.moc"
+#endif
+
 #endif // QT_NO_FILESYSTEMWATCHER
