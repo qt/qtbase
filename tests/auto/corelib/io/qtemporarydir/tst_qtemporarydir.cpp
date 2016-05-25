@@ -57,6 +57,8 @@ private slots:
     void fileTemplate_data();
     void getSetCheck();
     void fileName();
+    void filePath_data();
+    void filePath();
     void autoRemove();
     void nonWritableCurrentDir();
     void openOnRootDrives();
@@ -202,6 +204,29 @@ void tst_QTemporaryDir::fileName()
     absoluteTempPath = absoluteTempPath.toLower();
 #endif
     QCOMPARE(absoluteFilePath, absoluteTempPath);
+}
+
+void tst_QTemporaryDir::filePath_data()
+{
+    QTest::addColumn<QString>("templatePath");
+    QTest::addColumn<QString>("fileName");
+
+    QTest::newRow("0") << QString() << "/tmpfile";
+    QTest::newRow("1") << QString() << "tmpfile";
+    QTest::newRow("2") << "XXXXX" << "tmpfile";
+    QTest::newRow("3") << "YYYYY" << "subdir/file";
+}
+
+void tst_QTemporaryDir::filePath()
+{
+    QFETCH(QString, templatePath);
+    QFETCH(QString, fileName);
+
+    QTemporaryDir dir(templatePath);
+    const QString filePath = dir.filePath(fileName);
+    const QString expectedFilePath = QDir::isAbsolutePath(fileName) ?
+                                     QString() : dir.path() + QLatin1Char('/') + fileName;
+    QCOMPARE(filePath, expectedFilePath);
 }
 
 void tst_QTemporaryDir::autoRemove()

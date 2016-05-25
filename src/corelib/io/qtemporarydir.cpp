@@ -305,6 +305,33 @@ QString QTemporaryDir::path() const
 }
 
 /*!
+    \since 5.8
+
+    Returns the path name of a file in the temporary directory.
+    Does \e not check if the file actually exists in the directory.
+    Redundant multiple separators or "." and ".." directories in
+    \a fileName are not removed (see QDir::cleanPath()). Absolute
+    paths are not allowed.
+*/
+QString QTemporaryDir::filePath(const QString &fileName) const
+{
+    if (QDir::isAbsolutePath(fileName)) {
+        qWarning("QTemporaryDir::filePath: Absolute paths are not allowed: %s", qUtf8Printable(fileName));
+        return QString();
+    }
+
+    if (!d_ptr->success)
+        return QString();
+
+    QString ret = d_ptr->pathOrError;
+    if (!fileName.isEmpty()) {
+        ret += QLatin1Char('/');
+        ret += fileName;
+    }
+    return ret;
+}
+
+/*!
    Returns \c true if the QTemporaryDir is in auto remove
    mode. Auto-remove mode will automatically delete the directory from
    disk upon destruction. This makes it very easy to create your

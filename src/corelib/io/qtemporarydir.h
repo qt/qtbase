@@ -65,6 +65,7 @@ public:
     bool remove();
 
     QString path() const;
+    QString filePath(const QString &fileName) const;
 
 private:
     QScopedPointer<QTemporaryDirPrivate> d_ptr;
