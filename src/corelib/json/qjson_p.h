@@ -396,7 +396,7 @@ public:
         const ushort *uc = (const ushort *)str.unicode();
         int i = 0;
 #ifdef __SSE2__
-        for ( ; i + 16 < len; i += 16) {
+        for ( ; i + 16 <= len; i += 16) {
             __m128i chunk1 = _mm_loadu_si128((__m128i*)&uc[i]); // load
             __m128i chunk2 = _mm_loadu_si128((__m128i*)&uc[i + 8]); // load
             // pack the two vector to 16 x 8bits elements
@@ -405,7 +405,7 @@ public:
         }
 #  ifdef Q_PROCESSOR_X86_64
         // we can do one more round, of 8 characters
-        if (i + 8 < len) {
+        if (i + 8 <= len) {
             __m128i chunk = _mm_loadu_si128((__m128i*)&uc[i]); // load
             // pack with itself, we'll discard the high part anyway
             chunk = _mm_packus_epi16(chunk, chunk);
