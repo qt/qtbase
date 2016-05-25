@@ -57,7 +57,7 @@
 #endif
 
 #ifndef FUTEX_PRIVATE_FLAG
-#  define FUTEX_PRIVATE_FLAG    128
+#  define FUTEX_PRIVATE_FLAG    0
 #endif
 
 
