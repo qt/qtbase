@@ -110,7 +110,7 @@ public:
     static void handleWheelEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods = Qt::NoModifier);
 
     struct TouchPoint {
-        TouchPoint() : id(0), pressure(0), state(Qt::TouchPointStationary), flags(0) { }
+        TouchPoint() : id(0), pressure(0), state(Qt::TouchPointStationary) { }
         int id;                 // for application use
         QPointF normalPosition; // touch device coordinates, (0 to 1, 0 to 1)
         QRectF area;            // the touched area, centered at position in screen coordinates
@@ -132,7 +132,7 @@ public:
 
     // rect is relative to parent
     static void handleGeometryChange(QWindow *w, const QRect &newRect, const QRect &oldRect = QRect());
-    static void handleCloseEvent(QWindow *w, bool *accepted = 0);
+    static void handleCloseEvent(QWindow *w, bool *accepted = Q_NULLPTR);
     static void handleEnterEvent(QWindow *w, const QPointF &local = QPointF(), const QPointF& global = QPointF());
     static void handleLeaveEvent(QWindow *w);
     static void handleEnterLeaveEvent(QWindow *enter, QWindow *leave, const QPointF &local = QPointF(), const QPointF& global = QPointF());
