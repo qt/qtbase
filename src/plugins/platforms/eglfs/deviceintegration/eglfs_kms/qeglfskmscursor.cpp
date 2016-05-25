@@ -125,7 +125,7 @@ void QEglFSKmsCursor::updateMouseStatus()
     m_state = visible ? CursorPendingVisible : CursorPendingHidden;
 
 #ifndef QT_NO_CURSOR
-    changeCursor(nullptr, m_screen->topLevelAt(pos()));
+    changeCursor(Q_NULLPTR, m_screen->topLevelAt(pos()));
 #endif
 }
 
