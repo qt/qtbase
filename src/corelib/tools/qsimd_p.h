@@ -285,7 +285,7 @@
 #endif
 #endif
 // AArch64/ARM64
-#if defined(Q_PROCESSOR_ARM_V8)
+#if defined(Q_PROCESSOR_ARM_V8) && defined(__ARM_FEATURE_CRC32)
 #define QT_FUNCTION_TARGET_STRING_CRC32      "+crc"
 #  include <arm_acle.h>
 #endif
