@@ -214,6 +214,7 @@ bool QSslConfiguration::operator==(const QSslConfiguration &other) const
         d->ciphers == other.d->ciphers &&
         d->ellipticCurves == other.d->ellipticCurves &&
         d->ephemeralServerKey == other.d->ephemeralServerKey &&
+        d->dhParams == other.d->dhParams &&
         d->caCertificates == other.d->caCertificates &&
         d->protocol == other.d->protocol &&
         d->peerVerifyMode == other.d->peerVerifyMode &&
@@ -256,6 +257,7 @@ bool QSslConfiguration::isNull() const
             d->ciphers.count() == 0 &&
             d->ellipticCurves.isEmpty() &&
             d->ephemeralServerKey.isNull() &&
+            d->dhParams == QSslDiffieHellmanParameters::defaultParameters() &&
             d->localCertificateChain.isEmpty() &&
             d->privateKey.isNull() &&
             d->peerCertificate.isNull() &&
@@ -837,6 +839,33 @@ QByteArray QSslConfiguration::preSharedKeyIdentityHint() const
 void QSslConfiguration::setPreSharedKeyIdentityHint(const QByteArray &hint)
 {
     d->preSharedKeyIdentityHint = hint;
+}
+
+/*!
+    \since 5.8
+
+    Retrieves the current set of Diffie-Hellman parameters.
+
+    If no Diffie-Hellman parameters have been set, the QSslConfiguration object
+    defaults to using the 1024-bit MODP group from RFC 2409.
+ */
+QSslDiffieHellmanParameters QSslConfiguration::diffieHellmanParameters() const
+{
+    return d->dhParams;
+}
+
+/*!
+    \since 5.8
+
+    Sets a custom set of Diffie-Hellman parameters to be used by this socket when functioning as
+    a server.
+
+    If no Diffie-Hellman parameters have been set, the QSslConfiguration object
+    defaults to using the 1024-bit MODP group from RFC 2409.
+ */
+void QSslConfiguration::setDiffieHellmanParameters(const QSslDiffieHellmanParameters &dhparams)
+{
+    d->dhParams = dhparams;
 }
 
 /*!

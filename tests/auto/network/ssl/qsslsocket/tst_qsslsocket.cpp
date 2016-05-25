@@ -219,6 +219,10 @@ private slots:
     void qtbug18498_peek();
     void qtbug18498_peek2();
     void dhServer();
+#ifndef QT_NO_OPENSSL
+    void dhServerCustomParamsNull();
+    void dhServerCustomParams();
+#endif
     void ecdhServer();
     void verifyClientCertificate_data();
     void verifyClientCertificate();
@@ -2819,10 +2823,8 @@ void tst_QSslSocket::qtbug18498_peek2()
 
 void tst_QSslSocket::dhServer()
 {
-    if (!QSslSocket::supportsSsl()) {
-        qWarning("SSL not supported, skipping test");
-        return;
-    }
+    if (!QSslSocket::supportsSsl())
+        QSKIP("No SSL support");
 
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
@@ -2846,6 +2848,87 @@ void tst_QSslSocket::dhServer()
     loop.exec();
     QCOMPARE(client->state(), QAbstractSocket::ConnectedState);
 }
+
+#ifndef QT_NO_OPENSSL
+void tst_QSslSocket::dhServerCustomParamsNull()
+{
+    if (!QSslSocket::supportsSsl())
+        QSKIP("No SSL support");
+
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    SslServer server;
+    server.ciphers = QLatin1String("DHE-RSA-AES256-SHA:DHE-DSS-AES256-SHA");
+
+    QSslConfiguration cfg = server.config;
+    cfg.setDiffieHellmanParameters(QSslDiffieHellmanParameters());
+    server.config = cfg;
+
+    QVERIFY(server.listen());
+
+    QEventLoop loop;
+    QTimer::singleShot(5000, &loop, SLOT(quit()));
+
+    QSslSocketPtr client(new QSslSocket);
+    socket = client.data();
+    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
+    connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
+    connect(socket, SIGNAL(encrypted()), &loop, SLOT(quit()));
+
+    client->connectToHostEncrypted(QHostAddress(QHostAddress::LocalHost).toString(), server.serverPort());
+
+    loop.exec();
+
+    QVERIFY(client->state() != QAbstractSocket::ConnectedState);
+}
+#endif // QT_NO_OPENSSL
+
+#ifndef QT_NO_OPENSSL
+void tst_QSslSocket::dhServerCustomParams()
+{
+    if (!QSslSocket::supportsSsl())
+        QSKIP("No SSL support");
+
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    SslServer server;
+    server.ciphers = QLatin1String("DHE-RSA-AES256-SHA:DHE-DSS-AES256-SHA");
+
+    QSslConfiguration cfg = server.config;
+
+    // Custom 2048-bit DH parameters generated with 'openssl dhparam -outform DER -out out.der -check -2 2048'
+    QSslDiffieHellmanParameters dh(QByteArray::fromBase64(QByteArrayLiteral(
+        "MIIBCAKCAQEAvVA7b8keTfjFutCtTJmP/pnQfw/prKa+GMed/pBWjrC4N1YwnI8h/A861d9WE/VWY7XMTjvjX3/0"
+        "aaU8wEe0EXNpFdlTH+ZMQctQTSJOyQH0RCTwJfDGPCPT9L+c9GKwEKWORH38Earip986HJc0w3UbnfIwXUdsWHiXi"
+        "Z6r3cpyBmTKlsXTFiDVAOUXSiO8d/zOb6zHZbDfyB/VbtZRmnA7TXVn9oMzC0g9+FXHdrV4K+XfdvNZdCegvoAZiy"
+        "R6ZQgNG9aZ36/AQekhg060hp55f9HDPgXqYeNeXBiferjUtU7S9b3s83XhOJAr01/0Tf5dENwCfg2gK36TM8cC4wI"
+        "BAg==")), QSsl::Der);
+    cfg.setDiffieHellmanParameters(dh);
+
+    server.config = cfg;
+
+    QVERIFY(server.listen());
+
+    QEventLoop loop;
+    QTimer::singleShot(5000, &loop, SLOT(quit()));
+
+    QSslSocketPtr client(new QSslSocket);
+    socket = client.data();
+    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
+    connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
+    connect(socket, SIGNAL(encrypted()), &loop, SLOT(quit()));
+
+    client->connectToHostEncrypted(QHostAddress(QHostAddress::LocalHost).toString(), server.serverPort());
+
+    loop.exec();
+
+    QVERIFY(client->state() == QAbstractSocket::ConnectedState);
+}
+#endif // QT_NO_OPENSSL
 
 void tst_QSslSocket::ecdhServer()
 {

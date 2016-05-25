@@ -916,6 +916,7 @@ void QSslSocket::setSslConfiguration(const QSslConfiguration &configuration)
     d->configuration.ciphers = configuration.ciphers();
     d->configuration.ellipticCurves = configuration.ellipticCurves();
     d->configuration.preSharedKeyIdentityHint = configuration.preSharedKeyIdentityHint();
+    d->configuration.dhParams = configuration.diffieHellmanParameters();
     d->configuration.caCertificates = configuration.caCertificates();
     d->configuration.peerVerifyDepth = configuration.peerVerifyDepth();
     d->configuration.peerVerifyMode = configuration.peerVerifyMode();

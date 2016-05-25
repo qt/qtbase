@@ -2,6 +2,7 @@ TEMPLATE=subdirs
 SUBDIRS=\
    qsslcertificate \
    qsslcipher \
+   qssldiffiehellmanparameters \
    qsslellipticcurve \
    qsslerror \
    qsslkey \

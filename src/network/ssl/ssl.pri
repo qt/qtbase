@@ -9,6 +9,8 @@ contains(QT_CONFIG, ssl) | contains(QT_CONFIG, openssl) | contains(QT_CONFIG, op
 	       ssl/qsslconfiguration_p.h \
                ssl/qsslcipher.h \
                ssl/qsslcipher_p.h \
+               ssl/qssldiffiehellmanparameters.h \
+               ssl/qssldiffiehellmanparameters_p.h \
                ssl/qsslellipticcurve.h \
                ssl/qsslerror.h \
                ssl/qsslkey.h \
@@ -24,6 +26,7 @@ contains(QT_CONFIG, ssl) | contains(QT_CONFIG, openssl) | contains(QT_CONFIG, op
                ssl/qsslcertificate.cpp \
                ssl/qsslconfiguration.cpp \
                ssl/qsslcipher.cpp \
+               ssl/qssldiffiehellmanparameters.cpp \
                ssl/qsslellipticcurve.cpp \
                ssl/qsslkey_p.cpp \
                ssl/qsslerror.cpp \
@@ -35,6 +38,7 @@ contains(QT_CONFIG, ssl) | contains(QT_CONFIG, openssl) | contains(QT_CONFIG, op
         HEADERS += ssl/qsslsocket_winrt_p.h
         SOURCES += ssl/qsslcertificate_qt.cpp \
                    ssl/qsslcertificate_winrt.cpp \
+                   ssl/qssldiffiehellmanparameters_dummy.cpp \
                    ssl/qsslkey_qt.cpp \
                    ssl/qsslkey_winrt.cpp \
                    ssl/qsslsocket_winrt.cpp \
@@ -44,6 +48,7 @@ contains(QT_CONFIG, ssl) | contains(QT_CONFIG, openssl) | contains(QT_CONFIG, op
     contains(QT_CONFIG, securetransport) {
         HEADERS += ssl/qsslsocket_mac_p.h
         SOURCES += ssl/qsslcertificate_qt.cpp \
+                   ssl/qssldiffiehellmanparameters_dummy.cpp \
                    ssl/qsslkey_qt.cpp \
                    ssl/qsslkey_mac.cpp \
                    ssl/qsslsocket_mac_shared.cpp \
@@ -58,6 +63,7 @@ contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
                ssl/qsslsocket_openssl_symbols_p.h
     SOURCES += ssl/qsslcertificate_openssl.cpp \
                ssl/qsslcontext_openssl.cpp \
+               ssl/qssldiffiehellmanparameters_openssl.cpp \
                ssl/qsslellipticcurve_openssl.cpp \
                ssl/qsslkey_openssl.cpp \
                ssl/qsslsocket_openssl.cpp \

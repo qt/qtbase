@@ -69,6 +69,7 @@ class QSslCertificate;
 class QSslCipher;
 class QSslKey;
 class QSslEllipticCurve;
+class QSslDiffieHellmanParameters;
 
 class QSslConfigurationPrivate;
 class Q_NETWORK_EXPORT QSslConfiguration
@@ -143,6 +144,9 @@ public:
 
     QByteArray preSharedKeyIdentityHint() const;
     void setPreSharedKeyIdentityHint(const QByteArray &hint);
+
+    QSslDiffieHellmanParameters diffieHellmanParameters() const;
+    void setDiffieHellmanParameters(const QSslDiffieHellmanParameters &dhparams);
 
     static QSslConfiguration defaultConfiguration();
     static void setDefaultConfiguration(const QSslConfiguration &configuration);
