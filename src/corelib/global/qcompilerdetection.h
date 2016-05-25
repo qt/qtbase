@@ -699,7 +699,9 @@
 #      define Q_COMPILER_TEMPLATE_ALIAS
 #    endif
 #    if __has_feature(cxx_thread_local)
-#      define Q_COMPILER_THREAD_LOCAL
+#      if !defined(__FreeBSD__) /* FreeBSD clang fails on __cxa_thread_atexit */
+#        define Q_COMPILER_THREAD_LOCAL
+#      endif
 #    endif
 #    if __has_feature(cxx_user_literals)
 #      define Q_COMPILER_UDL
