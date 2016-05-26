@@ -13,9 +13,11 @@ LIBS += $$QMAKE_LIBS_GTK3
 
 HEADERS += \
         qgtk3dialoghelpers.h \
+        qgtk3menu.h \
         qgtk3theme.h
 
 SOURCES += \
         main.cpp \
         qgtk3dialoghelpers.cpp \
+        qgtk3menu.cpp \
         qgtk3theme.cpp

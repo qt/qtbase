@@ -39,6 +39,7 @@
 
 #include "qgtk3theme.h"
 #include "qgtk3dialoghelpers.h"
+#include "qgtk3menu.h"
 #include <QVariant>
 
 #undef signals
@@ -140,6 +141,16 @@ QPlatformDialogHelper *QGtk3Theme::createPlatformDialogHelper(DialogType type) c
     default:
         return 0;
     }
+}
+
+QPlatformMenu* QGtk3Theme::createPlatformMenu() const
+{
+    return new QGtk3Menu;
+}
+
+QPlatformMenuItem* QGtk3Theme::createPlatformMenuItem() const
+{
+    return new QGtk3MenuItem;
 }
 
 QT_END_NAMESPACE
