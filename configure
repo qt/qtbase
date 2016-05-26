@@ -2859,10 +2859,17 @@ if [ -z "$PLATFORM" ]; then
         PLATFORM=ultrix-g++
         ;;
      FreeBSD:*)
-        PLATFORM=freebsd-clang
-        PLATFORM_NOTES="
-            - Also available for FreeBSD: freebsd-g++
-        "
+        if [ "$(uname -r | cut -d. -f1)" -ge 10 ]; then
+            PLATFORM=freebsd-clang
+            PLATFORM_NOTES="
+                - Also available for FreeBSD: freebsd-g++
+            "
+        else
+            PLATFORM=freebsd-g++
+            PLATFORM_NOTES="
+                - Also available for FreeBSD: freebsd-clang
+            "
+        fi
         ;;
      OpenBSD:*)
         PLATFORM=openbsd-g++
