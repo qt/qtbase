@@ -88,6 +88,13 @@ inline QString hStringToQString(const HString &hString)
     return (QString::fromWCharArray(raw, l));
 }
 
+inline HString qStringToHString(const QString &qString)
+{
+    HString h;
+    h.Set(reinterpret_cast<const wchar_t*>(qString.utf16()), qString.size());
+    return h;
+}
+
 namespace NativeFormatStrings {
     static ComPtr<IStandardDataFormatsStatics> dataStatics;
     static HSTRING text; // text/plain
@@ -198,7 +205,6 @@ QStringList QWinRTInternalMimeData::formats_sys() const
             continue;
         formats.append(hStringToQString(str));
     }
-    qDebug() << __FUNCTION__ << "Available formats:" << formats;
     return formats;
 }
 
@@ -510,6 +516,8 @@ Q_DECLARE_DRAGHANDLER(Drop, drop)
 
 Q_GLOBAL_STATIC(QWinRTDrag, gDrag);
 
+extern ComPtr<ABI::Windows::UI::Input::IPointerPoint> qt_winrt_lastPointerPoint; // qwinrtscreen.cpp
+
 QWinRTDrag::QWinRTDrag()
     : QPlatformDrag()
     , m_dragTarget(0)
@@ -537,11 +545,184 @@ QWinRTDrag *QWinRTDrag::instance()
     return gDrag;
 }
 
+inline HRESULT resetUiElementDrag(ComPtr<IUIElement3> &elem3, EventRegistrationToken startingToken)
+{
+    return QEventDispatcherWinRT::runOnXamlThread([elem3, startingToken]() {
+        HRESULT hr;
+        hr = elem3->put_CanDrag(false);
+        Q_ASSERT_SUCCEEDED(hr);
+        hr = elem3->remove_DragStarting(startingToken);
+        Q_ASSERT_SUCCEEDED(hr);
+        return S_OK;
+    });
+}
+
 Qt::DropAction QWinRTDrag::drag(QDrag *drag)
 {
     qCDebug(lcQpaMime) << __FUNCTION__ << drag;
-    // ### TODO: Add dragging from Window
-    return Qt::IgnoreAction;
+
+    if (!qt_winrt_lastPointerPoint) {
+        Q_ASSERT_X(qt_winrt_lastPointerPoint, Q_FUNC_INFO, "No pointerpoint known");
+        return Qt::IgnoreAction;
+    }
+
+    ComPtr<IUIElement3> elem3;
+    HRESULT hr = m_ui.As(&elem3);
+    Q_ASSERT_SUCCEEDED(hr);
+
+    ComPtr<IAsyncOperation<ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation>> op;
+    EventRegistrationToken startingToken;
+
+    hr = QEventDispatcherWinRT::runOnXamlThread([drag, &op, &hr, elem3, &startingToken, this]() {
+
+        hr = elem3->put_CanDrag(true);
+        Q_ASSERT_SUCCEEDED(hr);
+
+        auto startingCallback = Callback<ITypedEventHandler<UIElement*, DragStartingEventArgs*>> ([drag](IInspectable *, IDragStartingEventArgs *args) {
+            qCDebug(lcQpaMime) << "Drag starting" << args;
+
+            ComPtr<IDataPackage> dataPackage;
+            HRESULT hr;
+            hr = args->get_Data(dataPackage.GetAddressOf());
+            Q_ASSERT_SUCCEEDED(hr);
+            Qt::DropAction action = drag->defaultAction();
+            hr = dataPackage->put_RequestedOperation(translateFromQDragDropActions(action));
+            Q_ASSERT_SUCCEEDED(hr);
+
+            ComPtr<IDragStartingEventArgs2> args2;
+            hr = args->QueryInterface(IID_PPV_ARGS(&args2));
+            Q_ASSERT_SUCCEEDED(hr);
+
+            Qt::DropActions actions = drag->supportedActions();
+            DataPackageOperation allowedOperations = DataPackageOperation_None;
+            if (actions & Qt::CopyAction)
+                allowedOperations |= DataPackageOperation_Copy;
+            if (actions & Qt::MoveAction)
+                allowedOperations |= DataPackageOperation_Move;
+            if (actions & Qt::LinkAction)
+                allowedOperations |= DataPackageOperation_Link;
+            hr = args2->put_AllowedOperations(allowedOperations);
+            Q_ASSERT_SUCCEEDED(hr);
+
+            QMimeData *mimeData = drag->mimeData();
+            if (mimeData->hasText()) {
+                hr = dataPackage->SetText(qStringToHString(mimeData->text()).Get());
+                Q_ASSERT_SUCCEEDED(hr);
+            }
+            if (mimeData->hasHtml()) {
+                hr = dataPackage->SetHtmlFormat(qStringToHString(mimeData->html()).Get());
+                Q_ASSERT_SUCCEEDED(hr);
+            }
+            // ### TODO: Missing: weblink, image
+
+            const QStringList formats = mimeData->formats();
+            for (auto item : formats) {
+                QByteArray data = mimeData->data(item);
+
+                ComPtr<IBufferFactory> bufferFactory;
+                hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Storage_Streams_Buffer).Get(),
+                                            IID_PPV_ARGS(&bufferFactory));
+                Q_ASSERT_SUCCEEDED(hr);
+
+                ComPtr<IBuffer> buffer;
+                const UINT32 length = data.size();
+                hr = bufferFactory->Create(length, &buffer);
+                Q_ASSERT_SUCCEEDED(hr);
+                hr = buffer->put_Length(length);
+                Q_ASSERT_SUCCEEDED(hr);
+
+                ComPtr<Windows::Storage::Streams::IBufferByteAccess> byteArrayAccess;
+                hr = buffer.As(&byteArrayAccess);
+                Q_ASSERT_SUCCEEDED(hr);
+
+                byte *bytes;
+                hr = byteArrayAccess->Buffer(&bytes);
+                Q_ASSERT_SUCCEEDED(hr);
+                memcpy(bytes, data.constData(), length);
+
+                // We cannot push the buffer to the data package as the result on
+                // recipient side is different from native events. It still sends a
+                // buffer, but that potentially cannot be parsed. Hence we need to create
+                // a IRandomAccessStream which gets forwarded as is to the drop side.
+                ComPtr<IRandomAccessStream> ras;
+                hr = RoActivateInstance(HString::MakeReference(RuntimeClass_Windows_Storage_Streams_InMemoryRandomAccessStream).Get(), &ras);
+                Q_ASSERT_SUCCEEDED(hr);
+
+                hr = ras->put_Size(length);
+                ComPtr<IOutputStream> outputStream;
+                hr = ras->GetOutputStreamAt(0, &outputStream);
+                Q_ASSERT_SUCCEEDED(hr);
+
+                ComPtr<IAsyncOperationWithProgress<UINT32,UINT32>> writeOp;
+                hr = outputStream->WriteAsync(buffer.Get(), &writeOp);
+                Q_ASSERT_SUCCEEDED(hr);
+
+                UINT32 result;
+                hr = QWinRTFunctions::await(writeOp, &result);
+                Q_ASSERT_SUCCEEDED(hr);
+
+                unsigned char flushResult;
+                ComPtr<IAsyncOperation<bool>> flushOp;
+                hr = outputStream.Get()->FlushAsync(&flushOp);
+                Q_ASSERT_SUCCEEDED(hr);
+
+                hr = QWinRTFunctions::await(flushOp, &flushResult);
+                Q_ASSERT_SUCCEEDED(hr);
+
+                hr = dataPackage->SetData(qStringToHString(item).Get(), ras.Get());
+                Q_ASSERT_SUCCEEDED(hr);
+
+            }
+            return S_OK;
+        });
+
+        hr = elem3->add_DragStarting(startingCallback.Get(), &startingToken);
+        Q_ASSERT_SUCCEEDED(hr);
+
+        ComPtr<ABI::Windows::UI::Input::IPointerPointStatics> pointStatics;
+
+        hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_Input_PointerPoint).Get(),
+                                    IID_PPV_ARGS(&pointStatics));
+        Q_ASSERT_SUCCEEDED(hr);
+
+        hr = elem3->StartDragAsync(qt_winrt_lastPointerPoint.Get(), &op);
+        Q_ASSERT_SUCCEEDED(hr);
+
+        return hr;
+    });
+    if (!op || FAILED(hr)) {
+        qCDebug(lcQpaMime) << "Drag failed:" << hr;
+        hr = resetUiElementDrag(elem3, startingToken);
+        Q_ASSERT_SUCCEEDED(hr);
+        return Qt::IgnoreAction;
+    }
+
+    DataPackageOperation nativeOperationType;
+    // Do not yield, as that can cause deadlocks when dropping inside the same app
+    hr = QWinRTFunctions::await(op, &nativeOperationType, QWinRTFunctions::ProcessThreadEvents);
+    Q_ASSERT_SUCCEEDED(hr);
+
+    hr = resetUiElementDrag(elem3, startingToken);
+    Q_ASSERT_SUCCEEDED(hr);
+
+    Qt::DropAction resultAction;
+    switch (nativeOperationType) {
+    case DataPackageOperation_Link:
+        resultAction = Qt::LinkAction;
+        break;
+    case DataPackageOperation_Copy:
+        resultAction = Qt::CopyAction;
+        break;
+    case DataPackageOperation_Move:
+        resultAction = Qt::MoveAction;
+        break;
+    case DataPackageOperation_None:
+    default:
+        resultAction = Qt::IgnoreAction;
+        break;
+    }
+
+    return resultAction;
 }
 
 void QWinRTDrag::setDropTarget(QWindow *target)
@@ -586,7 +767,6 @@ void QWinRTDrag::handleNativeDragEvent(IInspectable *sender, ABI::Windows::UI::X
     hr = e->GetPosition(m_ui.Get(), &relativePoint);
     RETURN_VOID_IF_FAILED("Could not query drag position.");
     const QPoint p(relativePoint.X, relativePoint.Y);
-    qDebug() << "Point received:" << relativePoint.X << "/" << relativePoint.Y;
 
     ComPtr<IDragEventArgs2> e2;
     hr = e->QueryInterface(IID_PPV_ARGS(&e2));

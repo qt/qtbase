@@ -982,6 +982,9 @@ HRESULT QWinRTScreen::onPointerExited(ICoreWindow *, IPointerEventArgs *args)
     return S_OK;
 }
 
+// Required for qwinrtdrag.cpp
+ComPtr<IPointerPoint> qt_winrt_lastPointerPoint;
+
 HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
 {
     Q_D(QWinRTScreen);
@@ -989,6 +992,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
     if (FAILED(args->get_CurrentPoint(&pointerPoint)))
         return E_INVALIDARG;
 
+    qt_winrt_lastPointerPoint = pointerPoint;
     // Common traits - point, modifiers, properties
     Point point;
     pointerPoint->get_Position(&point);
