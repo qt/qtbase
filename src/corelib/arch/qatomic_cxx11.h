@@ -146,7 +146,7 @@ template <typename X> struct QAtomicOps
     template <typename T>
     static bool testAndSetRelaxed(std::atomic<T> &_q_value, T expectedValue, T newValue, T *currentValue = Q_NULLPTR) Q_DECL_NOTHROW
     {
-        bool tmp = _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_relaxed);
+        bool tmp = _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_relaxed, std::memory_order_relaxed);
         if (currentValue)
             *currentValue = expectedValue;
         return tmp;
@@ -155,7 +155,7 @@ template <typename X> struct QAtomicOps
     template <typename T>
     static bool testAndSetAcquire(std::atomic<T> &_q_value, T expectedValue, T newValue, T *currentValue = Q_NULLPTR) Q_DECL_NOTHROW
     {
-        bool tmp = _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_acquire);
+        bool tmp = _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_acquire, std::memory_order_acquire);
         if (currentValue)
             *currentValue = expectedValue;
         return tmp;
@@ -164,7 +164,7 @@ template <typename X> struct QAtomicOps
     template <typename T>
     static bool testAndSetRelease(std::atomic<T> &_q_value, T expectedValue, T newValue, T *currentValue = Q_NULLPTR) Q_DECL_NOTHROW
     {
-        bool tmp = _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_release);
+        bool tmp = _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_release, std::memory_order_relaxed);
         if (currentValue)
             *currentValue = expectedValue;
         return tmp;
@@ -173,7 +173,7 @@ template <typename X> struct QAtomicOps
     template <typename T>
     static bool testAndSetOrdered(std::atomic<T> &_q_value, T expectedValue, T newValue, T *currentValue = Q_NULLPTR) Q_DECL_NOTHROW
     {
-        bool tmp = _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_acq_rel);
+        bool tmp = _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_acq_rel, std::memory_order_acquire);
         if (currentValue)
             *currentValue = expectedValue;
         return tmp;
