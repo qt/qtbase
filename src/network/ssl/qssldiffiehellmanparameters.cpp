@@ -104,7 +104,7 @@ QSslDiffieHellmanParameters::QSslDiffieHellmanParameters()
 
 /*!
     Constructs a QSslDiffieHellmanParameters object using
-    the byte array \encoded in either PEM or DER form.
+    the byte array \a encoded in either PEM or DER form.
 
     After construction, the isValid() method should be used to
     check whether the Diffie-Hellman parameters were valid and
@@ -128,7 +128,7 @@ QSslDiffieHellmanParameters::QSslDiffieHellmanParameters(const QByteArray &encod
 
 /*!
     Constructs a QSslDiffieHellmanParameters object by
-    reading from \device in either PEM or DER form.
+    reading from \a device in either PEM or DER form.
 
     After construction, the isValid() method should be used
     to check whether the Diffie-Hellman parameters were valid
@@ -272,12 +272,6 @@ bool operator==(const QSslDiffieHellmanParameters &lhs, const QSslDiffieHellmanP
 {
     return lhs.d->derData == rhs.d->derData;
 }
-
-/*! \fn bool QSslDiffieHellmanParameters::operator!=(const QSslDiffieHellmanParameters &other) const
-
-  Returns \c true if this QSslDiffieHellmanParameters is not equal to \a other; otherwise
-  returns \c false.
-*/
 
 #ifndef QT_NO_DEBUG_STREAM
 /*!
