@@ -60,6 +60,7 @@
      NETBSD   - NetBSD
      OPENBSD  - OpenBSD
      BSDI     - BSD/OS
+     INTERIX  - Interix
      IRIX     - SGI Irix
      OSF      - HP Tru64 UNIX
      SCO      - SCO OpenServer 5
@@ -146,6 +147,9 @@
 #  define Q_OS_BSD4
 #elif defined(__bsdi__)
 #  define Q_OS_BSDI
+#  define Q_OS_BSD4
+#elif defined(__INTERIX)
+#  define Q_OS_INTERIX
 #  define Q_OS_BSD4
 #elif defined(__sgi)
 #  define Q_OS_IRIX
