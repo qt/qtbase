@@ -222,7 +222,6 @@ private slots:
     void ecdhServer();
     void verifyClientCertificate_data();
     void verifyClientCertificate();
-    void setEmptyDefaultConfiguration(); // this test should be last
 
 #ifndef QT_NO_OPENSSL
     void simplePskConnect_data();
@@ -230,6 +229,10 @@ private slots:
     void ephemeralServerKey_data();
     void ephemeralServerKey();
 #endif
+
+    void setEmptyDefaultConfiguration(); // this test should be last
+
+protected slots:
 
     static void exitLoop()
     {
@@ -241,7 +244,6 @@ private slots:
         }
     }
 
-protected slots:
     void ignoreErrorSlot()
     {
         socket->ignoreSslErrors();
