@@ -584,7 +584,7 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
     // we'll read uc[offset..offset+7] (16 bytes) and c[offset..offset+7] (8 bytes)
     if (uc + offset + 7 < e) {
         // same, but we're using an 8-byte load
-        __m128i chunk = _mm_cvtsi64_si128(qUnalignedLoad<long long>(c + offset));
+        __m128i chunk = _mm_cvtsi64_si128(qFromUnaligned<long long>(c + offset));
         __m128i secondHalf = _mm_unpacklo_epi8(chunk, nullmask);
 
         __m128i ucdata = _mm_loadu_si128((const __m128i*)(uc + offset));

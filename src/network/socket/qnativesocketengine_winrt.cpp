@@ -477,7 +477,10 @@ void QNativeSocketEngine::close()
             hr = socket3->CancelIOAsync(&action);
             Q_ASSERT_SUCCEEDED(hr);
             hr = QWinRTFunctions::await(action);
-            Q_ASSERT_SUCCEEDED(hr);
+            // If there is no pending IO (no read established before) the function will fail with
+            // "function was called at an unexpected time" which is fine.
+            if (hr != E_ILLEGAL_METHOD_CALL)
+                Q_ASSERT_SUCCEEDED(hr);
             return S_OK;
         });
         Q_ASSERT_SUCCEEDED(hr);
