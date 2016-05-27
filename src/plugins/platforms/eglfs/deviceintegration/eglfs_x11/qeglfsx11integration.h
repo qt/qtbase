@@ -40,7 +40,7 @@
 #ifndef QEGLFSX11INTEGRATION_H
 #define QEGLFSX11INTEGRATION_H
 
-#include "qeglfsdeviceintegration.h"
+#include "private/qeglfsdeviceintegration_p.h"
 
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformwindow.h>
@@ -64,7 +64,7 @@ namespace Atoms {
 
 class EventReader;
 
-class QEglFSX11Integration : public QEGLDeviceIntegration
+class QEglFSX11Integration : public QEglFSDeviceIntegration
 {
 public:
     QEglFSX11Integration() : m_connection(0), m_window(0), m_eventReader(0) {}

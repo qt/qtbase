@@ -37,20 +37,33 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSHOOKS_H
-#define QEGLFSHOOKS_H
+#ifndef QEGLFSGLOBAL_H
+#define QEGLFSGLOBAL_H
 
-#include "qeglfsglobal.h"
-#include "qeglfsdeviceintegration.h"
+#include <QtCore/qglobal.h>
+
+#include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSHooks : public QEGLDeviceIntegration
-{
-};
+#ifdef QT_BUILD_EGL_DEVICE_LIB
+#define Q_EGLFS_EXPORT Q_DECL_EXPORT
+#else
+#define Q_EGLFS_EXPORT Q_DECL_IMPORT
+#endif
 
-Q_EGLFS_EXPORT QEGLDeviceIntegration *qt_egl_device_integration();
+#undef Status
+#undef None
+#undef Bool
+#undef CursorShape
+#undef KeyPress
+#undef KeyRelease
+#undef FocusIn
+#undef FocusOut
+#undef FontChange
+#undef Expose
+#undef Unsorted
 
 QT_END_NAMESPACE
 
-#endif // QEGLFSHOOKS_H
+#endif

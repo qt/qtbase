@@ -1,6 +1,6 @@
 TARGET = qeglfs-viv-integration
 
-QT += core-private gui-private platformsupport-private eglfs_device_lib-private
+QT += core-private gui-private platformsupport-private eglfsdeviceintegration-private
 
 INCLUDEPATH += $$PWD/../..
 CONFIG += egl

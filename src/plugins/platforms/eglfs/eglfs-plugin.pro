@@ -1,6 +1,6 @@
 TARGET = qeglfs
 
-QT += platformsupport-private eglfs_device_lib-private
+QT += platformsupport-private eglfsdeviceintegration-private
 
 SOURCES += $$PWD/qeglfsmain.cpp
 

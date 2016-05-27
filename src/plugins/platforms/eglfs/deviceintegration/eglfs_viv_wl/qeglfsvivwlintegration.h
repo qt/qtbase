@@ -40,12 +40,12 @@
 #ifndef QEGLFSVIVINTEGRATION_H
 #define QEGLFSVIVINTEGRATION_H
 
-#include "qeglfsdeviceintegration.h"
+#include "private/qeglfsdeviceintegration_p.h"
 struct wl_display;
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSVivWaylandIntegration : public QEGLDeviceIntegration
+class QEglFSVivWaylandIntegration : public QEglFSDeviceIntegration
 {
 public:
     void platformInit() Q_DECL_OVERRIDE;

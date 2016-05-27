@@ -37,18 +37,18 @@
 **
 ****************************************************************************/
 
-#include "qeglfsdeviceintegration.h"
+#include "private/qeglfsdeviceintegration_p.h"
 #include "qeglfsbrcmintegration.h"
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSBrcmIntegrationPlugin : public QEGLDeviceIntegrationPlugin
+class QEglFSBrcmIntegrationPlugin : public QEglFSDeviceIntegrationPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID QEGLDeviceIntegrationFactoryInterface_iid FILE "eglfs_brcm.json")
+    Q_PLUGIN_METADATA(IID QEglFSDeviceIntegrationFactoryInterface_iid FILE "eglfs_brcm.json")
 
 public:
-    QEGLDeviceIntegration *create() Q_DECL_OVERRIDE { return new QEglFSBrcmIntegration; }
+    QEglFSDeviceIntegration *create() Q_DECL_OVERRIDE { return new QEglFSBrcmIntegration; }
 };
 
 QT_END_NAMESPACE

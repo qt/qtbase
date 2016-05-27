@@ -3,8 +3,9 @@
 # have to keep the QObject magic like qobject_cast working.
 # Hence this header-less, private-only module.
 
-TARGET = QtEglDeviceIntegration
-CONFIG += no_module_headers internal_module
+TARGET = QtEglFSDeviceIntegration
+CONFIG += internal_module
+MODULE = eglfsdeviceintegration
 
 QT += core-private gui-private platformsupport-private
 LIBS += $$QMAKE_LIBS_DYNLOAD
@@ -15,22 +16,14 @@ DEFINES += MESA_EGL_NO_X11_HEADERS
 DEFINES += QT_BUILD_EGL_DEVICE_LIB
 
 SOURCES +=  $$PWD/qeglfsintegration.cpp \
-            $$PWD/qeglfswindow.cpp \
-            $$PWD/qeglfsscreen.cpp \
-            $$PWD/qeglfscursor.cpp \
-            $$PWD/qeglfshooks.cpp \
             $$PWD/qeglfscontext.cpp \
             $$PWD/qeglfsoffscreenwindow.cpp \
-            $$PWD/qeglfsdeviceintegration.cpp
 
 HEADERS +=  $$PWD/qeglfsintegration.h \
-            $$PWD/qeglfswindow.h \
-            $$PWD/qeglfsscreen.h \
-            $$PWD/qeglfscursor.h \
-            $$PWD/qeglfshooks.h \
             $$PWD/qeglfscontext.h \
             $$PWD/qeglfsoffscreenwindow.h \
-            $$PWD/qeglfsdeviceintegration.h
+
+include($$PWD/api/api.pri)
 
 QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 

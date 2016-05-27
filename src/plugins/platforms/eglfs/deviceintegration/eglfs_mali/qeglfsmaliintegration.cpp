@@ -56,7 +56,7 @@ struct fbdev_window {
 void QEglFSMaliIntegration::platformInit()
 {
     // Keep the non-overridden base class functions based on fb0 working.
-    QEGLDeviceIntegration::platformInit();
+    QEglFSDeviceIntegration::platformInit();
 
     int fd = qt_safe_open("/dev/fb0", O_RDWR, 0);
     if (fd == -1)

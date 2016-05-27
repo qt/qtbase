@@ -43,9 +43,9 @@
 #include <qpa/qplatformcursor.h>
 #include <QtPlatformSupport/private/qopenglcompositor_p.h>
 
-#include "qeglfsscreen.h"
-#include "qeglfswindow.h"
-#include "qeglfshooks.h"
+#include "qeglfsscreen_p.h"
+#include "qeglfswindow_p.h"
+#include "qeglfshooks_p.h"
 
 QT_BEGIN_NAMESPACE
 

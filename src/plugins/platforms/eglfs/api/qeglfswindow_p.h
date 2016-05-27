@@ -40,9 +40,20 @@
 #ifndef QEGLFSWINDOW_H
 #define QEGLFSWINDOW_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include "qeglfsglobal.h"
 #include "qeglfsintegration.h"
-#include "qeglfsscreen.h"
+#include "qeglfsscreen_p.h"
 
 #include <qpa/qplatformwindow.h>
 #include <QtPlatformSupport/private/qopenglcompositor_p.h>

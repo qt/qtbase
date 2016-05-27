@@ -40,11 +40,11 @@
 #ifndef QEGLFSMALIINTEGRATION_H
 #define QEGLFSMALIINTEGRATION_H
 
-#include "qeglfsdeviceintegration.h"
+#include "private/qeglfsdeviceintegration_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSMaliIntegration : public QEGLDeviceIntegration
+class QEglFSMaliIntegration : public QEglFSDeviceIntegration
 {
 public:
     void platformInit() Q_DECL_OVERRIDE;

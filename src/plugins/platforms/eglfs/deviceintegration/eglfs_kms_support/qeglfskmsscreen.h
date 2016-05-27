@@ -43,7 +43,7 @@
 #define QEGLFSKMSSCREEN_H
 
 #include "qeglfskmsintegration.h"
-#include "qeglfsscreen.h"
+#include "private/qeglfsscreen_p.h"
 #include <QtCore/QList>
 #include <QtCore/QMutex>
 

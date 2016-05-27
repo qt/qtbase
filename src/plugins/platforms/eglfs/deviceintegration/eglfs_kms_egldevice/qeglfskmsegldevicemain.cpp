@@ -41,13 +41,13 @@
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSKmsEglDeviceIntegrationPlugin : public QEGLDeviceIntegrationPlugin
+class QEglFSKmsEglDeviceIntegrationPlugin : public QEglFSDeviceIntegrationPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID QEGLDeviceIntegrationFactoryInterface_iid FILE "eglfs_kms_egldevice.json")
+    Q_PLUGIN_METADATA(IID QEglFSDeviceIntegrationFactoryInterface_iid FILE "eglfs_kms_egldevice.json")
 
 public:
-    QEGLDeviceIntegration *create() Q_DECL_OVERRIDE { return new QEglFSKmsEglDeviceIntegration; }
+    QEglFSDeviceIntegration *create() Q_DECL_OVERRIDE { return new QEglFSKmsEglDeviceIntegration; }
 };
 
 QT_END_NAMESPACE

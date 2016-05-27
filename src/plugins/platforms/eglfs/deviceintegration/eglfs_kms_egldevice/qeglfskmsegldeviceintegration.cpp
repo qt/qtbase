@@ -40,7 +40,7 @@
 
 #include "qeglfskmsegldeviceintegration.h"
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
-#include "qeglfswindow.h"
+#include "private/qeglfswindow_p.h"
 #include "qeglfskmsegldevice.h"
 #include "qeglfskmsscreen.h"
 #include <QLoggingCategory>
@@ -189,7 +189,7 @@ void QEglJetsonTK1Window::resetSurface()
     if (!m_integration->m_funcs->stream_consumer_output(display, m_egl_stream, layer))
         qWarning("resetSurface: Unable to connect stream");
 
-    m_config = QEglFSIntegration::chooseConfig(display, m_integration->surfaceFormatFor(window()->requestedFormat()));
+    m_config = QEglFSDeviceIntegration::chooseConfig(display, m_integration->surfaceFormatFor(window()->requestedFormat()));
     m_format = q_glFormatFromConfig(display, m_config);
     qCDebug(qLcEglfsKmsDebug) << "Stream producer format is" << m_format;
 

@@ -43,7 +43,7 @@
 #include "qeglfskmsgbmdevice.h"
 #include "qeglfskmsgbmscreen.h"
 #include "qeglfskmsgbmcursor.h"
-#include "qeglfscursor.h"
+#include "private/qeglfscursor_p.h"
 
 #include <QtPlatformSupport/private/qdevicediscovery_p.h>
 #include <QtCore/QLoggingCategory>

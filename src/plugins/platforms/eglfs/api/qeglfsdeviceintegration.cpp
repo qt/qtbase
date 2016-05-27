@@ -37,10 +37,12 @@
 **
 ****************************************************************************/
 
-#include "qeglfsdeviceintegration.h"
+#include "qeglfsdeviceintegration_p.h"
 #include "qeglfsintegration.h"
-#include "qeglfscursor.h"
-#include "qeglfswindow.h"
+#include "qeglfscursor_p.h"
+#include "qeglfswindow_p.h"
+#include "qeglfshooks_p.h"
+
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QGuiApplication>
 #include <private/qguiapplication_p.h>
@@ -64,14 +66,28 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(qLcEglDevDebug, "qt.qpa.egldeviceintegration")
 
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-                          (QEGLDeviceIntegrationFactoryInterface_iid, QLatin1String("/egldeviceintegrations"), Qt::CaseInsensitive))
+                          (QEglFSDeviceIntegrationFactoryInterface_iid, QLatin1String("/egldeviceintegrations"), Qt::CaseInsensitive))
 
 #ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
-                          (QEGLDeviceIntegrationFactoryInterface_iid, QLatin1String(""), Qt::CaseInsensitive))
+                          (QEglFSDeviceIntegrationFactoryInterface_iid, QLatin1String(""), Qt::CaseInsensitive))
+
+static inline QEglFSDeviceIntegration *loadIntegration(QFactoryLoader *loader, const QString &key)
+{
+    const int index = loader->indexOf(key);
+    if (index != -1) {
+        QObject *plugin = loader->instance(index);
+        if (QEglFSDeviceIntegrationPlugin *factory = qobject_cast<QEglFSDeviceIntegrationPlugin *>(plugin)) {
+            if (QEglFSDeviceIntegration *result = factory->create())
+                return result;
+        }
+    }
+    return Q_NULLPTR;
+}
+
 #endif // QT_NO_LIBRARY
 
-QStringList QEGLDeviceIntegrationFactory::keys(const QString &pluginPath)
+QStringList QEglFSDeviceIntegrationFactory::keys(const QString &pluginPath)
 {
     QStringList list;
 #ifndef QT_NO_LIBRARY
@@ -95,19 +111,19 @@ QStringList QEGLDeviceIntegrationFactory::keys(const QString &pluginPath)
     return list;
 }
 
-QEGLDeviceIntegration *QEGLDeviceIntegrationFactory::create(const QString &key, const QString &pluginPath)
+QEglFSDeviceIntegration *QEglFSDeviceIntegrationFactory::create(const QString &key, const QString &pluginPath)
 {
-    QEGLDeviceIntegration *integration = Q_NULLPTR;
+    QEglFSDeviceIntegration *integration = Q_NULLPTR;
 #ifndef QT_NO_LIBRARY
     if (!pluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(pluginPath);
-        integration = qLoadPlugin<QEGLDeviceIntegration, QEGLDeviceIntegrationPlugin>(directLoader(), key);
+        integration = qLoadPlugin<QEglFSDeviceIntegration, QEglFSDeviceIntegrationPlugin>(directLoader(), key);
     }
 #else
     Q_UNUSED(pluginPath);
 #endif
     if (!integration)
-        integration = qLoadPlugin<QEGLDeviceIntegration, QEGLDeviceIntegrationPlugin>(loader(), key);
+        integration = qLoadPlugin<QEglFSDeviceIntegration, QEglFSDeviceIntegrationPlugin>(loader(), key);
     if (integration)
         qCDebug(qLcEglDevDebug) << "Using EGL device integration" << key;
     else
@@ -118,7 +134,7 @@ QEGLDeviceIntegration *QEGLDeviceIntegrationFactory::create(const QString &key, 
 
 static int framebuffer = -1;
 
-QByteArray QEGLDeviceIntegration::fbDeviceName() const
+QByteArray QEglFSDeviceIntegration::fbDeviceName() const
 {
 #ifdef Q_OS_LINUX
     QByteArray fbDev = qgetenv("QT_QPA_EGLFS_FB");
@@ -131,7 +147,7 @@ QByteArray QEGLDeviceIntegration::fbDeviceName() const
 #endif
 }
 
-int QEGLDeviceIntegration::framebufferIndex() const
+int QEglFSDeviceIntegration::framebufferIndex() const
 {
     int fbIndex = 0;
 #ifndef QT_NO_REGULAREXPRESSION
@@ -143,7 +159,7 @@ int QEGLDeviceIntegration::framebufferIndex() const
     return fbIndex;
 }
 
-void QEGLDeviceIntegration::platformInit()
+void QEglFSDeviceIntegration::platformInit()
 {
 #ifdef Q_OS_LINUX
     QByteArray fbDev = fbDeviceName();
@@ -161,7 +177,7 @@ void QEGLDeviceIntegration::platformInit()
 #endif
 }
 
-void QEGLDeviceIntegration::platformDestroy()
+void QEglFSDeviceIntegration::platformDestroy()
 {
 #ifdef Q_OS_LINUX
     if (framebuffer != -1)
@@ -169,27 +185,27 @@ void QEGLDeviceIntegration::platformDestroy()
 #endif
 }
 
-EGLNativeDisplayType QEGLDeviceIntegration::platformDisplay() const
+EGLNativeDisplayType QEglFSDeviceIntegration::platformDisplay() const
 {
     return EGL_DEFAULT_DISPLAY;
 }
 
-EGLDisplay QEGLDeviceIntegration::createDisplay(EGLNativeDisplayType nativeDisplay)
+EGLDisplay QEglFSDeviceIntegration::createDisplay(EGLNativeDisplayType nativeDisplay)
 {
     return eglGetDisplay(nativeDisplay);
 }
 
-bool QEGLDeviceIntegration::usesDefaultScreen()
+bool QEglFSDeviceIntegration::usesDefaultScreen()
 {
     return true;
 }
 
-void QEGLDeviceIntegration::screenInit()
+void QEglFSDeviceIntegration::screenInit()
 {
     // Nothing to do here. Called only when usesDefaultScreen is false.
 }
 
-void QEGLDeviceIntegration::screenDestroy()
+void QEglFSDeviceIntegration::screenDestroy()
 {
     QGuiApplication *app = qGuiApp;
     QEglFSIntegration *platformIntegration = static_cast<QEglFSIntegration *>(
@@ -198,17 +214,17 @@ void QEGLDeviceIntegration::screenDestroy()
         platformIntegration->removeScreen(app->screens().last()->handle());
 }
 
-QSizeF QEGLDeviceIntegration::physicalScreenSize() const
+QSizeF QEglFSDeviceIntegration::physicalScreenSize() const
 {
     return q_physicalScreenSizeFromFb(framebuffer, screenSize());
 }
 
-QSize QEGLDeviceIntegration::screenSize() const
+QSize QEglFSDeviceIntegration::screenSize() const
 {
     return q_screenSizeFromFb(framebuffer);
 }
 
-QDpi QEGLDeviceIntegration::logicalDpi() const
+QDpi QEglFSDeviceIntegration::logicalDpi() const
 {
     const QSizeF ps = physicalScreenSize();
     const QSize s = screenSize();
@@ -220,42 +236,42 @@ QDpi QEGLDeviceIntegration::logicalDpi() const
         return QDpi(100, 100);
 }
 
-qreal QEGLDeviceIntegration::pixelDensity() const
+qreal QEglFSDeviceIntegration::pixelDensity() const
 {
     return qRound(logicalDpi().first / qreal(100));
 }
 
-Qt::ScreenOrientation QEGLDeviceIntegration::nativeOrientation() const
+Qt::ScreenOrientation QEglFSDeviceIntegration::nativeOrientation() const
 {
     return Qt::PrimaryOrientation;
 }
 
-Qt::ScreenOrientation QEGLDeviceIntegration::orientation() const
+Qt::ScreenOrientation QEglFSDeviceIntegration::orientation() const
 {
     return Qt::PrimaryOrientation;
 }
 
-int QEGLDeviceIntegration::screenDepth() const
+int QEglFSDeviceIntegration::screenDepth() const
 {
     return q_screenDepthFromFb(framebuffer);
 }
 
-QImage::Format QEGLDeviceIntegration::screenFormat() const
+QImage::Format QEglFSDeviceIntegration::screenFormat() const
 {
     return screenDepth() == 16 ? QImage::Format_RGB16 : QImage::Format_RGB32;
 }
 
-qreal QEGLDeviceIntegration::refreshRate() const
+qreal QEglFSDeviceIntegration::refreshRate() const
 {
     return q_refreshRateFromFb(framebuffer);
 }
 
-EGLint QEGLDeviceIntegration::surfaceType() const
+EGLint QEglFSDeviceIntegration::surfaceType() const
 {
     return EGL_WINDOW_BIT;
 }
 
-QSurfaceFormat QEGLDeviceIntegration::surfaceFormatFor(const QSurfaceFormat &inputFormat) const
+QSurfaceFormat QEglFSDeviceIntegration::surfaceFormatFor(const QSurfaceFormat &inputFormat) const
 {
     QSurfaceFormat format = inputFormat;
 
@@ -269,17 +285,17 @@ QSurfaceFormat QEGLDeviceIntegration::surfaceFormatFor(const QSurfaceFormat &inp
     return format;
 }
 
-bool QEGLDeviceIntegration::filterConfig(EGLDisplay, EGLConfig) const
+bool QEglFSDeviceIntegration::filterConfig(EGLDisplay, EGLConfig) const
 {
     return true;
 }
 
-QEglFSWindow *QEGLDeviceIntegration::createWindow(QWindow *window) const
+QEglFSWindow *QEglFSDeviceIntegration::createWindow(QWindow *window) const
 {
     return new QEglFSWindow(window);
 }
 
-EGLNativeWindowType QEGLDeviceIntegration::createNativeWindow(QPlatformWindow *platformWindow,
+EGLNativeWindowType QEglFSDeviceIntegration::createNativeWindow(QPlatformWindow *platformWindow,
                                                     const QSize &size,
                                                     const QSurfaceFormat &format)
 {
@@ -289,29 +305,29 @@ EGLNativeWindowType QEGLDeviceIntegration::createNativeWindow(QPlatformWindow *p
     return 0;
 }
 
-EGLNativeWindowType QEGLDeviceIntegration::createNativeOffscreenWindow(const QSurfaceFormat &format)
+EGLNativeWindowType QEglFSDeviceIntegration::createNativeOffscreenWindow(const QSurfaceFormat &format)
 {
     Q_UNUSED(format);
     return 0;
 }
 
-void QEGLDeviceIntegration::destroyNativeWindow(EGLNativeWindowType window)
+void QEglFSDeviceIntegration::destroyNativeWindow(EGLNativeWindowType window)
 {
     Q_UNUSED(window);
 }
 
-bool QEGLDeviceIntegration::hasCapability(QPlatformIntegration::Capability cap) const
+bool QEglFSDeviceIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     Q_UNUSED(cap);
     return false;
 }
 
-QPlatformCursor *QEGLDeviceIntegration::createCursor(QPlatformScreen *screen) const
+QPlatformCursor *QEglFSDeviceIntegration::createCursor(QPlatformScreen *screen) const
 {
     return new QEglFSCursor(screen);
 }
 
-void QEGLDeviceIntegration::waitForVSync(QPlatformSurface *surface) const
+void QEglFSDeviceIntegration::waitForVSync(QPlatformSurface *surface) const
 {
     Q_UNUSED(surface);
 
@@ -325,24 +341,42 @@ void QEGLDeviceIntegration::waitForVSync(QPlatformSurface *surface) const
 #endif
 }
 
-void QEGLDeviceIntegration::presentBuffer(QPlatformSurface *surface)
+void QEglFSDeviceIntegration::presentBuffer(QPlatformSurface *surface)
 {
     Q_UNUSED(surface);
 }
 
-bool QEGLDeviceIntegration::supportsPBuffers() const
+bool QEglFSDeviceIntegration::supportsPBuffers() const
 {
     return true;
 }
 
-bool QEGLDeviceIntegration::supportsSurfacelessContexts() const
+bool QEglFSDeviceIntegration::supportsSurfacelessContexts() const
 {
     return true;
 }
 
-void *QEGLDeviceIntegration::wlDisplay() const
+void *QEglFSDeviceIntegration::wlDisplay() const
 {
     return Q_NULLPTR;
+}
+
+EGLConfig QEglFSDeviceIntegration::chooseConfig(EGLDisplay display, const QSurfaceFormat &format)
+{
+    class Chooser : public QEglConfigChooser {
+    public:
+        Chooser(EGLDisplay display)
+            : QEglConfigChooser(display) { }
+        bool filterConfig(EGLConfig config) const Q_DECL_OVERRIDE {
+            return qt_egl_device_integration()->filterConfig(display(), config)
+                    && QEglConfigChooser::filterConfig(config);
+        }
+    };
+
+    Chooser chooser(display);
+    chooser.setSurfaceType(qt_egl_device_integration()->surfaceType());
+    chooser.setSurfaceFormat(format);
+    return chooser.chooseConfig();
 }
 
 QT_END_NAMESPACE

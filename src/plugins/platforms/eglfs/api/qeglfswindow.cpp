@@ -46,9 +46,10 @@
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtPlatformSupport/private/qopenglcompositorbackingstore_p.h>
 
-#include "qeglfswindow.h"
-#include "qeglfscursor.h"
-#include "qeglfshooks.h"
+#include "qeglfswindow_p.h"
+#include "qeglfscursor_p.h"
+#include "qeglfshooks_p.h"
+#include "qeglfsdeviceintegration_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -186,7 +187,7 @@ void QEglFSWindow::resetSurface()
     EGLDisplay display = screen()->display();
     QSurfaceFormat platformFormat = qt_egl_device_integration()->surfaceFormatFor(window()->requestedFormat());
 
-    m_config = QEglFSIntegration::chooseConfig(display, platformFormat);
+    m_config = QEglFSDeviceIntegration::chooseConfig(display, platformFormat);
     m_format = q_glFormatFromConfig(display, m_config, platformFormat);
     m_window = qt_egl_device_integration()->createNativeWindow(this, screen()->geometry().size(), m_format);
     m_surface = eglCreateWindowSurface(display, m_config, m_window, NULL);

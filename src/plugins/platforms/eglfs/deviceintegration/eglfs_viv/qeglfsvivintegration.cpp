@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 
 void QEglFSVivIntegration::platformInit()
 {
-    QEGLDeviceIntegration::platformInit();
+    QEglFSDeviceIntegration::platformInit();
 
     int width, height;
 

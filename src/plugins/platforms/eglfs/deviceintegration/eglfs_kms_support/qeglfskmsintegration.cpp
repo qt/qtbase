@@ -42,8 +42,8 @@
 #include "qeglfskmsintegration.h"
 #include "qeglfskmsdevice.h"
 #include "qeglfskmsscreen.h"
-#include "qeglfswindow.h"
-#include "qeglfscursor.h"
+#include "private/qeglfswindow_p.h"
+#include "private/qeglfscursor_p.h"
 
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtCore/QJsonDocument>

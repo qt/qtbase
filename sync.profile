@@ -18,8 +18,10 @@
     "QtANGLE/EGL" => "!$basedir/src/3rdparty/angle/include/EGL",
     "QtZlib" => "!>$basedir/src/corelib;$basedir/src/3rdparty/zlib",
     "QtOpenGLExtensions" => "$basedir/src/openglextensions",
+    "QtEglFSDeviceIntegration" => "$basedir/src/plugins/platforms/eglfs",
 );
 %moduleheaders = ( # restrict the module headers to those found in relative path
+    "QtEglFSDeviceIntegration" => "api",
 );
 @allmoduleheadersprivate = (
 );

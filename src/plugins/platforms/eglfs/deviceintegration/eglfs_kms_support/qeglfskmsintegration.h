@@ -42,7 +42,7 @@
 #ifndef QEGLFSKMSINTEGRATION_H
 #define QEGLFSKMSINTEGRATION_H
 
-#include "qeglfsdeviceintegration.h"
+#include "private/qeglfsdeviceintegration_p.h"
 #include <QtCore/QMap>
 #include <QtCore/QVariant>
 #include <QtCore/QLoggingCategory>
@@ -53,7 +53,7 @@ class QEglFSKmsDevice;
 
 Q_EGLFS_EXPORT Q_DECLARE_LOGGING_CATEGORY(qLcEglfsKmsDebug)
 
-class Q_EGLFS_EXPORT QEglFSKmsIntegration : public QEGLDeviceIntegration
+class Q_EGLFS_EXPORT QEglFSKmsIntegration : public QEglFSDeviceIntegration
 {
 public:
     QEglFSKmsIntegration();

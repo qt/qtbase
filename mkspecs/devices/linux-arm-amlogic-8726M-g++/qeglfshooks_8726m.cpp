@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "qeglfshooks.h"
+#include "private/qeglfshooks_p.h"
 #include <EGL/fbdev_window.h>
 #include <stdio.h>
 #include <sys/ioctl.h>

@@ -92,8 +92,6 @@ public:
     void addScreen(QPlatformScreen *screen);
     void removeScreen(QPlatformScreen *screen);
 
-    static EGLConfig chooseConfig(EGLDisplay display, const QSurfaceFormat &format);
-
 private:
     EGLNativeDisplayType nativeDisplay() const;
     void createInputHandlers();

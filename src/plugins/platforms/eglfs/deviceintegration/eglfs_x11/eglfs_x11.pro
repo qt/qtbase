@@ -1,6 +1,6 @@
 TARGET = qeglfs-x11-integration
 
-QT += core-private gui-private platformsupport-private eglfs_device_lib-private
+QT += core-private gui-private platformsupport-private eglfsdeviceintegration-private
 
 # Avoid X11 header collision
 DEFINES += MESA_EGL_NO_X11_HEADERS

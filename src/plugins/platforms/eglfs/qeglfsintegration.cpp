@@ -52,11 +52,11 @@
 #include <private/qgenericunixthemes_p.h>
 
 #include "qeglfsintegration.h"
-#include "qeglfswindow.h"
-#include "qeglfshooks.h"
+#include "qeglfswindow_p.h"
+#include "qeglfshooks_p.h"
 #include "qeglfscontext.h"
 #include "qeglfsoffscreenwindow.h"
-#include "qeglfscursor.h"
+#include "qeglfscursor_p.h"
 
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
@@ -205,7 +205,7 @@ QPlatformOpenGLContext *QEglFSIntegration::createPlatformOpenGLContext(QOpenGLCo
     QEglFSContext *ctx;
     QSurfaceFormat adjustedFormat = qt_egl_device_integration()->surfaceFormatFor(context->format());
     if (nativeHandle.isNull()) {
-        EGLConfig config = QEglFSIntegration::chooseConfig(dpy, adjustedFormat);
+        EGLConfig config = QEglFSDeviceIntegration::chooseConfig(dpy, adjustedFormat);
         ctx = new QEglFSContext(adjustedFormat, share, dpy, &config, QVariant());
     } else {
         ctx = new QEglFSContext(adjustedFormat, share, dpy, 0, nativeHandle);
@@ -434,24 +434,6 @@ void QEglFSIntegration::createInputHandlers()
 EGLNativeDisplayType QEglFSIntegration::nativeDisplay() const
 {
     return qt_egl_device_integration()->platformDisplay();
-}
-
-EGLConfig QEglFSIntegration::chooseConfig(EGLDisplay display, const QSurfaceFormat &format)
-{
-    class Chooser : public QEglConfigChooser {
-    public:
-        Chooser(EGLDisplay display)
-            : QEglConfigChooser(display) { }
-        bool filterConfig(EGLConfig config) const Q_DECL_OVERRIDE {
-            return qt_egl_device_integration()->filterConfig(display(), config)
-                    && QEglConfigChooser::filterConfig(config);
-        }
-    };
-
-    Chooser chooser(display);
-    chooser.setSurfaceType(qt_egl_device_integration()->surfaceType());
-    chooser.setSurfaceFormat(format);
-    return chooser.chooseConfig();
 }
 
 QT_END_NAMESPACE

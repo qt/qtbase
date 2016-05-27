@@ -37,9 +37,9 @@
 **
 ****************************************************************************/
 
-#include "qeglfscursor.h"
+#include "qeglfscursor_p.h"
 #include "qeglfsintegration.h"
-#include "qeglfsscreen.h"
+#include "qeglfsscreen_p.h"
 
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QOpenGLContext>

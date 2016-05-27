@@ -43,9 +43,9 @@
 #include <QtPlatformSupport/private/qeglpbuffer_p.h>
 
 #include "qeglfscontext.h"
-#include "qeglfswindow.h"
-#include "qeglfshooks.h"
-#include "qeglfscursor.h"
+#include "qeglfswindow_p.h"
+#include "qeglfshooks_p.h"
+#include "qeglfscursor_p.h"
 
 QT_BEGIN_NAMESPACE
 

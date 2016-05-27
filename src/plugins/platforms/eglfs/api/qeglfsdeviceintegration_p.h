@@ -63,12 +63,12 @@ QT_BEGIN_NAMESPACE
 class QPlatformSurface;
 class QEglFSWindow;
 
-#define QEGLDeviceIntegrationFactoryInterface_iid "org.qt-project.qt.qpa.egl.QEGLDeviceIntegrationFactoryInterface.5.5"
+#define QEglFSDeviceIntegrationFactoryInterface_iid "org.qt-project.qt.qpa.egl.QEglFSDeviceIntegrationFactoryInterface.5.5"
 
-class Q_EGLFS_EXPORT QEGLDeviceIntegration
+class Q_EGLFS_EXPORT QEglFSDeviceIntegration
 {
 public:
-    virtual ~QEGLDeviceIntegration() { }
+    virtual ~QEglFSDeviceIntegration() { }
 
     virtual void platformInit();
     virtual void platformDestroy();
@@ -105,25 +105,27 @@ public:
     virtual bool supportsSurfacelessContexts() const;
 
     virtual void *wlDisplay() const;
+
+    static EGLConfig chooseConfig(EGLDisplay display, const QSurfaceFormat &format);
 };
 
-class Q_EGLFS_EXPORT QEGLDeviceIntegrationPlugin : public QObject
+class Q_EGLFS_EXPORT QEglFSDeviceIntegrationPlugin : public QObject
 {
     Q_OBJECT
 
 public:
-    virtual QEGLDeviceIntegration *create() = 0;
+    virtual QEglFSDeviceIntegration *create() = 0;
 
     // the pattern expected by qLoadPlugin calls for a QString argument.
     // we don't need it, so don't bother subclasses with it:
-    QEGLDeviceIntegration *create(const QString &) { return create(); }
+    QEglFSDeviceIntegration *create(const QString &) { return create(); }
 };
 
-class Q_EGLFS_EXPORT QEGLDeviceIntegrationFactory
+class Q_EGLFS_EXPORT QEglFSDeviceIntegrationFactory
 {
 public:
     static QStringList keys(const QString &pluginPath = QString());
-    static QEGLDeviceIntegration *create(const QString &name, const QString &platformPluginPath = QString());
+    static QEglFSDeviceIntegration *create(const QString &name, const QString &platformPluginPath = QString());
 };
 
 QT_END_NAMESPACE

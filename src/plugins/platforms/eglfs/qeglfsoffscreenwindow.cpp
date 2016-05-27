@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include "qeglfsoffscreenwindow.h"
-#include "qeglfshooks.h"
+#include "qeglfshooks_p.h"
 #include <QtGui/QOffscreenSurface>
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 

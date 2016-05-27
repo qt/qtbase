@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "qeglfshooks.h"
+#include "qeglfshooks_p.h"
 #include <QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
@@ -46,7 +46,7 @@ Q_DECLARE_LOGGING_CATEGORY(qLcEglDevDebug)
 
 #ifdef EGLFS_PLATFORM_HOOKS
 
-QEGLDeviceIntegration *qt_egl_device_integration()
+QEglFSDeviceIntegration *qt_egl_device_integration()
 {
     extern QEglFSHooks *platformHooks;
     return platformHooks;
@@ -59,16 +59,16 @@ class DeviceIntegration
 public:
     DeviceIntegration();
     ~DeviceIntegration() { delete m_integration; }
-    QEGLDeviceIntegration *integration() { return m_integration; }
+    QEglFSDeviceIntegration *integration() { return m_integration; }
 private:
-    QEGLDeviceIntegration *m_integration;
+    QEglFSDeviceIntegration *m_integration;
 };
 
 Q_GLOBAL_STATIC(DeviceIntegration, deviceIntegration)
 
 DeviceIntegration::DeviceIntegration() : m_integration(0)
 {
-    QStringList pluginKeys = QEGLDeviceIntegrationFactory::keys();
+    QStringList pluginKeys = QEglFSDeviceIntegrationFactory::keys();
     if (!pluginKeys.isEmpty()) {
         // Some built-in logic: Prioritize either X11 or KMS/DRM.
         if (qEnvironmentVariableIsSet("DISPLAY")) {
@@ -113,7 +113,7 @@ DeviceIntegration::DeviceIntegration() : m_integration(0)
             while (!m_integration && !pluginKeys.isEmpty()) {
                 QString key = pluginKeys.takeFirst();
                 qCDebug(qLcEglDevDebug) << "Trying to load device EGL integration" << key;
-                m_integration = QEGLDeviceIntegrationFactory::create(key);
+                m_integration = QEglFSDeviceIntegrationFactory::create(key);
             }
         }
     }
@@ -122,11 +122,11 @@ DeviceIntegration::DeviceIntegration() : m_integration(0)
         // Use a default, non-specialized device integration when no plugin is available.
         // For some systems this is sufficient.
         qCDebug(qLcEglDevDebug) << "Using base device integration";
-        m_integration = new QEGLDeviceIntegration;
+        m_integration = new QEglFSDeviceIntegration;
     }
 }
 
-QEGLDeviceIntegration *qt_egl_device_integration()
+QEglFSDeviceIntegration *qt_egl_device_integration()
 {
     return deviceIntegration()->integration();
 }

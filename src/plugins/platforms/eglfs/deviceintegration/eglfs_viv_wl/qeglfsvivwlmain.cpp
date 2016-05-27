@@ -37,18 +37,18 @@
 **
 ****************************************************************************/
 
-#include "qeglfsdeviceintegration.h"
+#include "private/qeglfsdeviceintegration_p.h"
 #include "qeglfsvivwlintegration.h"
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSVivWaylandIntegrationPlugin : public QEGLDeviceIntegrationPlugin
+class QEglFSVivWaylandIntegrationPlugin : public QEglFSDeviceIntegrationPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID QEGLDeviceIntegrationFactoryInterface_iid FILE "eglfs_viv_wl.json")
+    Q_PLUGIN_METADATA(IID QEglFSDeviceIntegrationFactoryInterface_iid FILE "eglfs_viv_wl.json")
 
 public:
-    QEGLDeviceIntegration *create() Q_DECL_OVERRIDE { return new QEglFSVivWaylandIntegration; }
+    QEglFSDeviceIntegration *create() Q_DECL_OVERRIDE { return new QEglFSVivWaylandIntegration; }
 };
 
 QT_END_NAMESPACE

@@ -4,7 +4,7 @@ PLUGIN_TYPE = egldeviceintegrations
 PLUGIN_CLASS_NAME = QEglFSKmsGbmIntegrationPlugin
 load(qt_plugin)
 
-QT += core-private gui-private platformsupport-private eglfs_device_lib-private eglfs_kms_support-private
+QT += core-private gui-private platformsupport-private eglfsdeviceintegration-private eglfs_kms_support-private
 
 INCLUDEPATH += $$PWD/../.. $$PWD/../eglfs_kms_support
 
