@@ -264,7 +264,7 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     dictionary[ "OPENGL_ES_2" ]     = "yes";
     dictionary[ "SSL" ]             = "auto";
     dictionary[ "OPENSSL" ]         = "auto";
-    dictionary[ "LIBPROXY" ]        = "auto";
+    dictionary[ "LIBPROXY" ]        = "no";
     dictionary[ "DBUS" ]            = "auto";
 
     dictionary[ "STYLE_WINDOWS" ]   = "yes";

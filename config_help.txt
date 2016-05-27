@@ -187,8 +187,8 @@ Third Party Libraries:
  +  -openssl ............. Enable run-time OpenSSL support.
     -openssl-linked ...... Enabled linked OpenSSL support.
 
-    -no-libproxy ......... Do not compile support for libproxy
- +  -libproxy ............ Use libproxy from the operating system.
+ *  -no-libproxy ......... Do not compile support for libproxy
+    -libproxy ............ Use libproxy from the operating system.
 
     -qt-pcre ............. Use the PCRE library bundled with Qt.
  +  -system-pcre ......... Use the PCRE library from the operating system.
