@@ -470,7 +470,7 @@ QJNIObjectPrivate::QJNIObjectPrivate(jobject obj)
     env->DeleteLocalRef(cls);
 }
 template <>
-void QJNIObjectPrivate::callMethodV<void>(const char *methodName, const char *sig, va_list args) const
+Q_CORE_EXPORT void QJNIObjectPrivate::callMethodV<void>(const char *methodName, const char *sig, va_list args) const
 {
     QJNIEnvironmentPrivate env;
     jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, sig);
@@ -480,7 +480,7 @@ void QJNIObjectPrivate::callMethodV<void>(const char *methodName, const char *si
 }
 
 template <>
-void QJNIObjectPrivate::callMethod<void>(const char *methodName, const char *sig, ...) const
+Q_CORE_EXPORT void QJNIObjectPrivate::callMethod<void>(const char *methodName, const char *sig, ...) const
 {
     va_list args;
     va_start(args, sig);
@@ -489,7 +489,7 @@ void QJNIObjectPrivate::callMethod<void>(const char *methodName, const char *sig
 }
 
 template <>
-jboolean QJNIObjectPrivate::callMethodV<jboolean>(const char *methodName, const char *sig, va_list args) const
+Q_CORE_EXPORT jboolean QJNIObjectPrivate::callMethodV<jboolean>(const char *methodName, const char *sig, va_list args) const
 {
     QJNIEnvironmentPrivate env;
     jboolean res = 0;
@@ -501,7 +501,7 @@ jboolean QJNIObjectPrivate::callMethodV<jboolean>(const char *methodName, const 
 }
 
 template <>
-jboolean QJNIObjectPrivate::callMethod<jboolean>(const char *methodName, const char *sig, ...) const
+Q_CORE_EXPORT jboolean QJNIObjectPrivate::callMethod<jboolean>(const char *methodName, const char *sig, ...) const
 {
     va_list args;
     va_start(args, sig);
@@ -511,7 +511,7 @@ jboolean QJNIObjectPrivate::callMethod<jboolean>(const char *methodName, const c
 }
 
 template <>
-jbyte QJNIObjectPrivate::callMethodV<jbyte>(const char *methodName, const char *sig, va_list args) const
+Q_CORE_EXPORT jbyte QJNIObjectPrivate::callMethodV<jbyte>(const char *methodName, const char *sig, va_list args) const
 {
     QJNIEnvironmentPrivate env;
     jbyte res = 0;
@@ -523,7 +523,7 @@ jbyte QJNIObjectPrivate::callMethodV<jbyte>(const char *methodName, const char *
 }
 
 template <>
-jbyte QJNIObjectPrivate::callMethod<jbyte>(const char *methodName, const char *sig, ...) const
+Q_CORE_EXPORT jbyte QJNIObjectPrivate::callMethod<jbyte>(const char *methodName, const char *sig, ...) const
 {
     va_list args;
     va_start(args, sig);
@@ -533,7 +533,7 @@ jbyte QJNIObjectPrivate::callMethod<jbyte>(const char *methodName, const char *s
 }
 
 template <>
-jchar QJNIObjectPrivate::callMethodV<jchar>(const char *methodName, const char *sig, va_list args) const
+Q_CORE_EXPORT jchar QJNIObjectPrivate::callMethodV<jchar>(const char *methodName, const char *sig, va_list args) const
 {
     QJNIEnvironmentPrivate env;
     jchar res = 0;
@@ -545,7 +545,7 @@ jchar QJNIObjectPrivate::callMethodV<jchar>(const char *methodName, const char *
 }
 
 template <>
-jchar QJNIObjectPrivate::callMethod<jchar>(const char *methodName, const char *sig, ...) const
+Q_CORE_EXPORT jchar QJNIObjectPrivate::callMethod<jchar>(const char *methodName, const char *sig, ...) const
 {
     va_list args;
     va_start(args, sig);
@@ -555,7 +555,7 @@ jchar QJNIObjectPrivate::callMethod<jchar>(const char *methodName, const char *s
 }
 
 template <>
-jshort QJNIObjectPrivate::callMethodV<jshort>(const char *methodName, const char *sig, va_list args) const
+Q_CORE_EXPORT jshort QJNIObjectPrivate::callMethodV<jshort>(const char *methodName, const char *sig, va_list args) const
 {
     QJNIEnvironmentPrivate env;
     jshort res = 0;
@@ -567,7 +567,7 @@ jshort QJNIObjectPrivate::callMethodV<jshort>(const char *methodName, const char
 }
 
 template <>
-jshort QJNIObjectPrivate::callMethod<jshort>(const char *methodName, const char *sig, ...) const
+Q_CORE_EXPORT jshort QJNIObjectPrivate::callMethod<jshort>(const char *methodName, const char *sig, ...) const
 {
     va_list args;
     va_start(args, sig);
@@ -577,7 +577,7 @@ jshort QJNIObjectPrivate::callMethod<jshort>(const char *methodName, const char 
 }
 
 template <>
-jint QJNIObjectPrivate::callMethodV<jint>(const char *methodName, const char *sig, va_list args) const
+Q_CORE_EXPORT jint QJNIObjectPrivate::callMethodV<jint>(const char *methodName, const char *sig, va_list args) const
 {
     QJNIEnvironmentPrivate env;
     jint res = 0;
@@ -589,7 +589,7 @@ jint QJNIObjectPrivate::callMethodV<jint>(const char *methodName, const char *si
 }
 
 template <>
-jint QJNIObjectPrivate::callMethod<jint>(const char *methodName, const char *sig, ...) const
+Q_CORE_EXPORT jint QJNIObjectPrivate::callMethod<jint>(const char *methodName, const char *sig, ...) const
 {
     va_list args;
     va_start(args, sig);
@@ -599,7 +599,7 @@ jint QJNIObjectPrivate::callMethod<jint>(const char *methodName, const char *sig
 }
 
 template <>
-jlong QJNIObjectPrivate::callMethodV<jlong>(const char *methodName, const char *sig, va_list args) const
+Q_CORE_EXPORT jlong QJNIObjectPrivate::callMethodV<jlong>(const char *methodName, const char *sig, va_list args) const
 {
     QJNIEnvironmentPrivate env;
     jlong res = 0;
@@ -611,7 +611,7 @@ jlong QJNIObjectPrivate::callMethodV<jlong>(const char *methodName, const char *
 }
 
 template <>
-jlong QJNIObjectPrivate::callMethod<jlong>(const char *methodName, const char *sig, ...) const
+Q_CORE_EXPORT jlong QJNIObjectPrivate::callMethod<jlong>(const char *methodName, const char *sig, ...) const
 {
     va_list args;
     va_start(args, sig);
@@ -621,7 +621,7 @@ jlong QJNIObjectPrivate::callMethod<jlong>(const char *methodName, const char *s
 }
 
 template <>
-jfloat QJNIObjectPrivate::callMethodV<jfloat>(const char *methodName, const char *sig, va_list args) const
+Q_CORE_EXPORT jfloat QJNIObjectPrivate::callMethodV<jfloat>(const char *methodName, const char *sig, va_list args) const
 {
     QJNIEnvironmentPrivate env;
     jfloat res = 0.f;
@@ -633,7 +633,7 @@ jfloat QJNIObjectPrivate::callMethodV<jfloat>(const char *methodName, const char
 }
 
 template <>
-jfloat QJNIObjectPrivate::callMethod<jfloat>(const char *methodName, const char *sig, ...) const
+Q_CORE_EXPORT jfloat QJNIObjectPrivate::callMethod<jfloat>(const char *methodName, const char *sig, ...) const
 {
     va_list args;
     va_start(args, sig);
@@ -643,7 +643,7 @@ jfloat QJNIObjectPrivate::callMethod<jfloat>(const char *methodName, const char 
 }
 
 template <>
-jdouble QJNIObjectPrivate::callMethodV<jdouble>(const char *methodName, const char *sig, va_list args) const
+Q_CORE_EXPORT jdouble QJNIObjectPrivate::callMethodV<jdouble>(const char *methodName, const char *sig, va_list args) const
 {
     QJNIEnvironmentPrivate env;
     jdouble res = 0.;
@@ -655,7 +655,7 @@ jdouble QJNIObjectPrivate::callMethodV<jdouble>(const char *methodName, const ch
 }
 
 template <>
-jdouble QJNIObjectPrivate::callMethod<jdouble>(const char *methodName, const char *sig, ...) const
+Q_CORE_EXPORT jdouble QJNIObjectPrivate::callMethod<jdouble>(const char *methodName, const char *sig, ...) const
 {
     va_list args;
     va_start(args, sig);
@@ -665,61 +665,61 @@ jdouble QJNIObjectPrivate::callMethod<jdouble>(const char *methodName, const cha
 }
 
 template <>
-void QJNIObjectPrivate::callMethod<void>(const char *methodName) const
+Q_CORE_EXPORT void QJNIObjectPrivate::callMethod<void>(const char *methodName) const
 {
     callMethod<void>(methodName, "()V");
 }
 
 template <>
-jboolean QJNIObjectPrivate::callMethod<jboolean>(const char *methodName) const
+Q_CORE_EXPORT jboolean QJNIObjectPrivate::callMethod<jboolean>(const char *methodName) const
 {
     return callMethod<jboolean>(methodName, "()Z");
 }
 
 template <>
-jbyte QJNIObjectPrivate::callMethod<jbyte>(const char *methodName) const
+Q_CORE_EXPORT jbyte QJNIObjectPrivate::callMethod<jbyte>(const char *methodName) const
 {
     return callMethod<jbyte>(methodName, "()B");
 }
 
 template <>
-jchar QJNIObjectPrivate::callMethod<jchar>(const char *methodName) const
+Q_CORE_EXPORT jchar QJNIObjectPrivate::callMethod<jchar>(const char *methodName) const
 {
     return callMethod<jchar>(methodName, "()C");
 }
 
 template <>
-jshort QJNIObjectPrivate::callMethod<jshort>(const char *methodName) const
+Q_CORE_EXPORT jshort QJNIObjectPrivate::callMethod<jshort>(const char *methodName) const
 {
     return callMethod<jshort>(methodName, "()S");
 }
 
 template <>
-jint QJNIObjectPrivate::callMethod<jint>(const char *methodName) const
+Q_CORE_EXPORT jint QJNIObjectPrivate::callMethod<jint>(const char *methodName) const
 {
     return callMethod<jint>(methodName, "()I");
 }
 
 template <>
-jlong QJNIObjectPrivate::callMethod<jlong>(const char *methodName) const
+Q_CORE_EXPORT jlong QJNIObjectPrivate::callMethod<jlong>(const char *methodName) const
 {
     return callMethod<jlong>(methodName, "()J");
 }
 
 template <>
-jfloat QJNIObjectPrivate::callMethod<jfloat>(const char *methodName) const
+Q_CORE_EXPORT jfloat QJNIObjectPrivate::callMethod<jfloat>(const char *methodName) const
 {
     return callMethod<jfloat>(methodName, "()F");
 }
 
 template <>
-jdouble QJNIObjectPrivate::callMethod<jdouble>(const char *methodName) const
+Q_CORE_EXPORT jdouble QJNIObjectPrivate::callMethod<jdouble>(const char *methodName) const
 {
     return callMethod<jdouble>(methodName, "()D");
 }
 
 template <>
-void QJNIObjectPrivate::callStaticMethodV<void>(const char *className,
+Q_CORE_EXPORT void QJNIObjectPrivate::callStaticMethodV<void>(const char *className,
                                                 const char *methodName,
                                                 const char *sig,
                                                 va_list args)
@@ -735,7 +735,7 @@ void QJNIObjectPrivate::callStaticMethodV<void>(const char *className,
 }
 
 template <>
-void QJNIObjectPrivate::callStaticMethod<void>(const char *className,
+Q_CORE_EXPORT void QJNIObjectPrivate::callStaticMethod<void>(const char *className,
                                                const char *methodName,
                                                const char *sig,
                                                ...)
@@ -747,7 +747,7 @@ void QJNIObjectPrivate::callStaticMethod<void>(const char *className,
 }
 
 template <>
-void QJNIObjectPrivate::callStaticMethodV<void>(jclass clazz,
+Q_CORE_EXPORT void QJNIObjectPrivate::callStaticMethodV<void>(jclass clazz,
                                                 const char *methodName,
                                                 const char *sig,
                                                 va_list args)
@@ -760,7 +760,7 @@ void QJNIObjectPrivate::callStaticMethodV<void>(jclass clazz,
 }
 
 template <>
-void QJNIObjectPrivate::callStaticMethod<void>(jclass clazz,
+Q_CORE_EXPORT void QJNIObjectPrivate::callStaticMethod<void>(jclass clazz,
                                                const char *methodName,
                                                const char *sig,
                                                ...)
@@ -772,7 +772,7 @@ void QJNIObjectPrivate::callStaticMethod<void>(jclass clazz,
 }
 
 template <>
-jboolean QJNIObjectPrivate::callStaticMethodV<jboolean>(const char *className,
+Q_CORE_EXPORT jboolean QJNIObjectPrivate::callStaticMethodV<jboolean>(const char *className,
                                                         const char *methodName,
                                                         const char *sig,
                                                         va_list args)
@@ -791,7 +791,7 @@ jboolean QJNIObjectPrivate::callStaticMethodV<jboolean>(const char *className,
 }
 
 template <>
-jboolean QJNIObjectPrivate::callStaticMethod<jboolean>(const char *className,
+Q_CORE_EXPORT jboolean QJNIObjectPrivate::callStaticMethod<jboolean>(const char *className,
                                                        const char *methodName,
                                                        const char *sig,
                                                        ...)
@@ -804,7 +804,7 @@ jboolean QJNIObjectPrivate::callStaticMethod<jboolean>(const char *className,
 }
 
 template <>
-jboolean QJNIObjectPrivate::callStaticMethodV<jboolean>(jclass clazz,
+Q_CORE_EXPORT jboolean QJNIObjectPrivate::callStaticMethodV<jboolean>(jclass clazz,
                                                         const char *methodName,
                                                         const char *sig,
                                                         va_list args)
@@ -820,7 +820,7 @@ jboolean QJNIObjectPrivate::callStaticMethodV<jboolean>(jclass clazz,
 }
 
 template <>
-jboolean QJNIObjectPrivate::callStaticMethod<jboolean>(jclass clazz,
+Q_CORE_EXPORT jboolean QJNIObjectPrivate::callStaticMethod<jboolean>(jclass clazz,
                                                        const char *methodName,
                                                        const char *sig,
                                                        ...)
@@ -833,7 +833,7 @@ jboolean QJNIObjectPrivate::callStaticMethod<jboolean>(jclass clazz,
 }
 
 template <>
-jbyte QJNIObjectPrivate::callStaticMethodV<jbyte>(const char *className,
+Q_CORE_EXPORT jbyte QJNIObjectPrivate::callStaticMethodV<jbyte>(const char *className,
                                                   const char *methodName,
                                                   const char *sig,
                                                   va_list args)
@@ -852,7 +852,7 @@ jbyte QJNIObjectPrivate::callStaticMethodV<jbyte>(const char *className,
 }
 
 template <>
-jbyte QJNIObjectPrivate::callStaticMethod<jbyte>(const char *className,
+Q_CORE_EXPORT jbyte QJNIObjectPrivate::callStaticMethod<jbyte>(const char *className,
                                                  const char *methodName,
                                                  const char *sig,
                                                  ...)
@@ -865,7 +865,7 @@ jbyte QJNIObjectPrivate::callStaticMethod<jbyte>(const char *className,
 }
 
 template <>
-jbyte QJNIObjectPrivate::callStaticMethodV<jbyte>(jclass clazz,
+Q_CORE_EXPORT jbyte QJNIObjectPrivate::callStaticMethodV<jbyte>(jclass clazz,
                                                   const char *methodName,
                                                   const char *sig,
                                                   va_list args)
@@ -881,7 +881,7 @@ jbyte QJNIObjectPrivate::callStaticMethodV<jbyte>(jclass clazz,
 }
 
 template <>
-jbyte QJNIObjectPrivate::callStaticMethod<jbyte>(jclass clazz,
+Q_CORE_EXPORT jbyte QJNIObjectPrivate::callStaticMethod<jbyte>(jclass clazz,
                                                  const char *methodName,
                                                  const char *sig,
                                                  ...)
@@ -894,7 +894,7 @@ jbyte QJNIObjectPrivate::callStaticMethod<jbyte>(jclass clazz,
 }
 
 template <>
-jchar QJNIObjectPrivate::callStaticMethodV<jchar>(const char *className,
+Q_CORE_EXPORT jchar QJNIObjectPrivate::callStaticMethodV<jchar>(const char *className,
                                                   const char *methodName,
                                                   const char *sig,
                                                   va_list args)
@@ -913,7 +913,7 @@ jchar QJNIObjectPrivate::callStaticMethodV<jchar>(const char *className,
 }
 
 template <>
-jchar QJNIObjectPrivate::callStaticMethod<jchar>(const char *className,
+Q_CORE_EXPORT jchar QJNIObjectPrivate::callStaticMethod<jchar>(const char *className,
                                                  const char *methodName,
                                                  const char *sig,
                                                  ...)
@@ -926,7 +926,7 @@ jchar QJNIObjectPrivate::callStaticMethod<jchar>(const char *className,
 }
 
 template <>
-jchar QJNIObjectPrivate::callStaticMethodV<jchar>(jclass clazz,
+Q_CORE_EXPORT jchar QJNIObjectPrivate::callStaticMethodV<jchar>(jclass clazz,
                                                   const char *methodName,
                                                   const char *sig,
                                                   va_list args)
@@ -942,7 +942,7 @@ jchar QJNIObjectPrivate::callStaticMethodV<jchar>(jclass clazz,
 }
 
 template <>
-jchar QJNIObjectPrivate::callStaticMethod<jchar>(jclass clazz,
+Q_CORE_EXPORT jchar QJNIObjectPrivate::callStaticMethod<jchar>(jclass clazz,
                                                  const char *methodName,
                                                  const char *sig,
                                                  ...)
@@ -955,7 +955,7 @@ jchar QJNIObjectPrivate::callStaticMethod<jchar>(jclass clazz,
 }
 
 template <>
-jshort QJNIObjectPrivate::callStaticMethodV<jshort>(const char *className,
+Q_CORE_EXPORT jshort QJNIObjectPrivate::callStaticMethodV<jshort>(const char *className,
                                                     const char *methodName,
                                                     const char *sig,
                                                     va_list args)
@@ -974,7 +974,7 @@ jshort QJNIObjectPrivate::callStaticMethodV<jshort>(const char *className,
 }
 
 template <>
-jshort QJNIObjectPrivate::callStaticMethod<jshort>(const char *className,
+Q_CORE_EXPORT jshort QJNIObjectPrivate::callStaticMethod<jshort>(const char *className,
                                                    const char *methodName,
                                                    const char *sig,
                                                    ...)
@@ -987,7 +987,7 @@ jshort QJNIObjectPrivate::callStaticMethod<jshort>(const char *className,
 }
 
 template <>
-jshort QJNIObjectPrivate::callStaticMethodV<jshort>(jclass clazz,
+Q_CORE_EXPORT jshort QJNIObjectPrivate::callStaticMethodV<jshort>(jclass clazz,
                                                     const char *methodName,
                                                     const char *sig,
                                                     va_list args)
@@ -1003,7 +1003,7 @@ jshort QJNIObjectPrivate::callStaticMethodV<jshort>(jclass clazz,
 }
 
 template <>
-jshort QJNIObjectPrivate::callStaticMethod<jshort>(jclass clazz,
+Q_CORE_EXPORT jshort QJNIObjectPrivate::callStaticMethod<jshort>(jclass clazz,
                                                    const char *methodName,
                                                    const char *sig,
                                                    ...)
@@ -1016,7 +1016,7 @@ jshort QJNIObjectPrivate::callStaticMethod<jshort>(jclass clazz,
 }
 
 template <>
-jint QJNIObjectPrivate::callStaticMethodV<jint>(const char *className,
+Q_CORE_EXPORT jint QJNIObjectPrivate::callStaticMethodV<jint>(const char *className,
                                                 const char *methodName,
                                                 const char *sig,
                                                 va_list args)
@@ -1035,7 +1035,7 @@ jint QJNIObjectPrivate::callStaticMethodV<jint>(const char *className,
 }
 
 template <>
-jint QJNIObjectPrivate::callStaticMethod<jint>(const char *className,
+Q_CORE_EXPORT jint QJNIObjectPrivate::callStaticMethod<jint>(const char *className,
                                                const char *methodName,
                                                const char *sig,
                                                ...)
@@ -1048,7 +1048,7 @@ jint QJNIObjectPrivate::callStaticMethod<jint>(const char *className,
 }
 
 template <>
-jint QJNIObjectPrivate::callStaticMethodV<jint>(jclass clazz,
+Q_CORE_EXPORT jint QJNIObjectPrivate::callStaticMethodV<jint>(jclass clazz,
                                                 const char *methodName,
                                                 const char *sig,
                                                 va_list args)
@@ -1064,7 +1064,7 @@ jint QJNIObjectPrivate::callStaticMethodV<jint>(jclass clazz,
 }
 
 template <>
-jint QJNIObjectPrivate::callStaticMethod<jint>(jclass clazz,
+Q_CORE_EXPORT jint QJNIObjectPrivate::callStaticMethod<jint>(jclass clazz,
                                                const char *methodName,
                                                const char *sig,
                                                ...)
@@ -1077,7 +1077,7 @@ jint QJNIObjectPrivate::callStaticMethod<jint>(jclass clazz,
 }
 
 template <>
-jlong QJNIObjectPrivate::callStaticMethodV<jlong>(const char *className,
+Q_CORE_EXPORT jlong QJNIObjectPrivate::callStaticMethodV<jlong>(const char *className,
                                                   const char *methodName,
                                                   const char *sig,
                                                   va_list args)
@@ -1096,7 +1096,7 @@ jlong QJNIObjectPrivate::callStaticMethodV<jlong>(const char *className,
 }
 
 template <>
-jlong QJNIObjectPrivate::callStaticMethod<jlong>(const char *className,
+Q_CORE_EXPORT jlong QJNIObjectPrivate::callStaticMethod<jlong>(const char *className,
                                                  const char *methodName,
                                                  const char *sig,
                                                  ...)
@@ -1109,7 +1109,7 @@ jlong QJNIObjectPrivate::callStaticMethod<jlong>(const char *className,
 }
 
 template <>
-jlong QJNIObjectPrivate::callStaticMethodV<jlong>(jclass clazz,
+Q_CORE_EXPORT jlong QJNIObjectPrivate::callStaticMethodV<jlong>(jclass clazz,
                                                   const char *methodName,
                                                   const char *sig,
                                                   va_list args)
@@ -1125,7 +1125,7 @@ jlong QJNIObjectPrivate::callStaticMethodV<jlong>(jclass clazz,
 }
 
 template <>
-jlong QJNIObjectPrivate::callStaticMethod<jlong>(jclass clazz,
+Q_CORE_EXPORT jlong QJNIObjectPrivate::callStaticMethod<jlong>(jclass clazz,
                                                  const char *methodName,
                                                  const char *sig,
                                                  ...)
@@ -1138,7 +1138,7 @@ jlong QJNIObjectPrivate::callStaticMethod<jlong>(jclass clazz,
 }
 
 template <>
-jfloat QJNIObjectPrivate::callStaticMethodV<jfloat>(const char *className,
+Q_CORE_EXPORT jfloat QJNIObjectPrivate::callStaticMethodV<jfloat>(const char *className,
                                                     const char *methodName,
                                                     const char *sig,
                                                     va_list args)
@@ -1157,7 +1157,7 @@ jfloat QJNIObjectPrivate::callStaticMethodV<jfloat>(const char *className,
 }
 
 template <>
-jfloat QJNIObjectPrivate::callStaticMethod<jfloat>(const char *className,
+Q_CORE_EXPORT jfloat QJNIObjectPrivate::callStaticMethod<jfloat>(const char *className,
                                                    const char *methodName,
                                                    const char *sig,
                                                    ...)
@@ -1170,7 +1170,7 @@ jfloat QJNIObjectPrivate::callStaticMethod<jfloat>(const char *className,
 }
 
 template <>
-jfloat QJNIObjectPrivate::callStaticMethodV<jfloat>(jclass clazz,
+Q_CORE_EXPORT jfloat QJNIObjectPrivate::callStaticMethodV<jfloat>(jclass clazz,
                                                     const char *methodName,
                                                     const char *sig,
                                                     va_list args)
@@ -1186,7 +1186,7 @@ jfloat QJNIObjectPrivate::callStaticMethodV<jfloat>(jclass clazz,
 }
 
 template <>
-jfloat QJNIObjectPrivate::callStaticMethod<jfloat>(jclass clazz,
+Q_CORE_EXPORT jfloat QJNIObjectPrivate::callStaticMethod<jfloat>(jclass clazz,
                                                    const char *methodName,
                                                    const char *sig,
                                                    ...)
@@ -1199,7 +1199,7 @@ jfloat QJNIObjectPrivate::callStaticMethod<jfloat>(jclass clazz,
 }
 
 template <>
-jdouble QJNIObjectPrivate::callStaticMethodV<jdouble>(const char *className,
+Q_CORE_EXPORT jdouble QJNIObjectPrivate::callStaticMethodV<jdouble>(const char *className,
                                                       const char *methodName,
                                                       const char *sig,
                                                       va_list args)
@@ -1218,7 +1218,7 @@ jdouble QJNIObjectPrivate::callStaticMethodV<jdouble>(const char *className,
 }
 
 template <>
-jdouble QJNIObjectPrivate::callStaticMethod<jdouble>(const char *className,
+Q_CORE_EXPORT jdouble QJNIObjectPrivate::callStaticMethod<jdouble>(const char *className,
                                                      const char *methodName,
                                                      const char *sig,
                                                      ...)
@@ -1231,7 +1231,7 @@ jdouble QJNIObjectPrivate::callStaticMethod<jdouble>(const char *className,
 }
 
 template <>
-jdouble QJNIObjectPrivate::callStaticMethodV<jdouble>(jclass clazz,
+Q_CORE_EXPORT jdouble QJNIObjectPrivate::callStaticMethodV<jdouble>(jclass clazz,
                                                       const char *methodName,
                                                       const char *sig,
                                                       va_list args)
@@ -1247,7 +1247,7 @@ jdouble QJNIObjectPrivate::callStaticMethodV<jdouble>(jclass clazz,
 }
 
 template <>
-jdouble QJNIObjectPrivate::callStaticMethod<jdouble>(jclass clazz,
+Q_CORE_EXPORT jdouble QJNIObjectPrivate::callStaticMethod<jdouble>(jclass clazz,
                                                      const char *methodName,
                                                      const char *sig,
                                                      ...)
@@ -1260,109 +1260,109 @@ jdouble QJNIObjectPrivate::callStaticMethod<jdouble>(jclass clazz,
 }
 
 template <>
-void QJNIObjectPrivate::callStaticMethod<void>(const char *className, const char *methodName)
+Q_CORE_EXPORT void QJNIObjectPrivate::callStaticMethod<void>(const char *className, const char *methodName)
 {
     callStaticMethod<void>(className, methodName, "()V");
 }
 
 template <>
-void QJNIObjectPrivate::callStaticMethod<void>(jclass clazz, const char *methodName)
+Q_CORE_EXPORT void QJNIObjectPrivate::callStaticMethod<void>(jclass clazz, const char *methodName)
 {
     callStaticMethod<void>(clazz, methodName, "()V");
 }
 
 template <>
-jboolean QJNIObjectPrivate::callStaticMethod<jboolean>(const char *className, const char *methodName)
+Q_CORE_EXPORT jboolean QJNIObjectPrivate::callStaticMethod<jboolean>(const char *className, const char *methodName)
 {
     return callStaticMethod<jboolean>(className, methodName, "()Z");
 }
 
 template <>
-jboolean QJNIObjectPrivate::callStaticMethod<jboolean>(jclass clazz, const char *methodName)
+Q_CORE_EXPORT jboolean QJNIObjectPrivate::callStaticMethod<jboolean>(jclass clazz, const char *methodName)
 {
     return callStaticMethod<jboolean>(clazz, methodName, "()Z");
 }
 
 template <>
-jbyte QJNIObjectPrivate::callStaticMethod<jbyte>(const char *className, const char *methodName)
+Q_CORE_EXPORT jbyte QJNIObjectPrivate::callStaticMethod<jbyte>(const char *className, const char *methodName)
 {
     return callStaticMethod<jbyte>(className, methodName, "()B");
 }
 
 template <>
-jbyte QJNIObjectPrivate::callStaticMethod<jbyte>(jclass clazz, const char *methodName)
+Q_CORE_EXPORT jbyte QJNIObjectPrivate::callStaticMethod<jbyte>(jclass clazz, const char *methodName)
 {
     return callStaticMethod<jbyte>(clazz, methodName, "()B");
 }
 
 template <>
-jchar QJNIObjectPrivate::callStaticMethod<jchar>(const char *className, const char *methodName)
+Q_CORE_EXPORT jchar QJNIObjectPrivate::callStaticMethod<jchar>(const char *className, const char *methodName)
 {
     return callStaticMethod<jchar>(className, methodName, "()C");
 }
 
 template <>
-jchar QJNIObjectPrivate::callStaticMethod<jchar>(jclass clazz, const char *methodName)
+Q_CORE_EXPORT jchar QJNIObjectPrivate::callStaticMethod<jchar>(jclass clazz, const char *methodName)
 {
     return callStaticMethod<jchar>(clazz, methodName, "()C");
 }
 
 template <>
-jshort QJNIObjectPrivate::callStaticMethod<jshort>(const char *className, const char *methodName)
+Q_CORE_EXPORT jshort QJNIObjectPrivate::callStaticMethod<jshort>(const char *className, const char *methodName)
 {
     return callStaticMethod<jshort>(className, methodName, "()S");
 }
 
 template <>
-jshort QJNIObjectPrivate::callStaticMethod<jshort>(jclass clazz, const char *methodName)
+Q_CORE_EXPORT jshort QJNIObjectPrivate::callStaticMethod<jshort>(jclass clazz, const char *methodName)
 {
     return callStaticMethod<jshort>(clazz, methodName, "()S");
 }
 
 template <>
-jint QJNIObjectPrivate::callStaticMethod<jint>(const char *className, const char *methodName)
+Q_CORE_EXPORT jint QJNIObjectPrivate::callStaticMethod<jint>(const char *className, const char *methodName)
 {
     return callStaticMethod<jint>(className, methodName, "()I");
 }
 
 template <>
-jint QJNIObjectPrivate::callStaticMethod<jint>(jclass clazz, const char *methodName)
+Q_CORE_EXPORT jint QJNIObjectPrivate::callStaticMethod<jint>(jclass clazz, const char *methodName)
 {
     return callStaticMethod<jint>(clazz, methodName, "()I");
 }
 
 template <>
-jlong QJNIObjectPrivate::callStaticMethod<jlong>(const char *className, const char *methodName)
+Q_CORE_EXPORT jlong QJNIObjectPrivate::callStaticMethod<jlong>(const char *className, const char *methodName)
 {
     return callStaticMethod<jlong>(className, methodName, "()J");
 }
 
 template <>
-jlong QJNIObjectPrivate::callStaticMethod<jlong>(jclass clazz, const char *methodName)
+Q_CORE_EXPORT jlong QJNIObjectPrivate::callStaticMethod<jlong>(jclass clazz, const char *methodName)
 {
     return callStaticMethod<jlong>(clazz, methodName, "()J");
 }
 
 template <>
-jfloat QJNIObjectPrivate::callStaticMethod<jfloat>(const char *className, const char *methodName)
+Q_CORE_EXPORT jfloat QJNIObjectPrivate::callStaticMethod<jfloat>(const char *className, const char *methodName)
 {
     return callStaticMethod<jfloat>(className, methodName, "()F");
 }
 
 template <>
-jfloat QJNIObjectPrivate::callStaticMethod<jfloat>(jclass clazz, const char *methodName)
+Q_CORE_EXPORT jfloat QJNIObjectPrivate::callStaticMethod<jfloat>(jclass clazz, const char *methodName)
 {
     return callStaticMethod<jfloat>(clazz, methodName, "()F");
 }
 
 template <>
-jdouble QJNIObjectPrivate::callStaticMethod<jdouble>(const char *className, const char *methodName)
+Q_CORE_EXPORT jdouble QJNIObjectPrivate::callStaticMethod<jdouble>(const char *className, const char *methodName)
 {
     return callStaticMethod<jdouble>(className, methodName, "()D");
 }
 
 template <>
-jdouble QJNIObjectPrivate::callStaticMethod<jdouble>(jclass clazz, const char *methodName)
+Q_CORE_EXPORT jdouble QJNIObjectPrivate::callStaticMethod<jdouble>(jclass clazz, const char *methodName)
 {
     return callStaticMethod<jdouble>(clazz, methodName, "()D");
 }
@@ -1397,49 +1397,49 @@ QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod(const char *methodName,
 }
 
 template <>
-QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod<jstring>(const char *methodName) const
+Q_CORE_EXPORT QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod<jstring>(const char *methodName) const
 {
     return callObjectMethod(methodName, "()Ljava/lang/String;");
 }
 
 template <>
-QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod<jbooleanArray>(const char *methodName) const
+Q_CORE_EXPORT QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod<jbooleanArray>(const char *methodName) const
 {
     return callObjectMethod(methodName, "()[Z");
 }
 
 template <>
-QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod<jbyteArray>(const char *methodName) const
+Q_CORE_EXPORT QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod<jbyteArray>(const char *methodName) const
 {
     return callObjectMethod(methodName, "()[B");
 }
 
 template <>
-QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod<jshortArray>(const char *methodName) const
+Q_CORE_EXPORT QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod<jshortArray>(const char *methodName) const
 {
     return callObjectMethod(methodName, "()[S");
 }
 
 template <>
-QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod<jintArray>(const char *methodName) const
+Q_CORE_EXPORT QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod<jintArray>(const char *methodName) const
 {
     return callObjectMethod(methodName, "()[I");
 }
 
 template <>
-QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod<jlongArray>(const char *methodName) const
+Q_CORE_EXPORT QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod<jlongArray>(const char *methodName) const
 {
     return callObjectMethod(methodName, "()[J");
 }
 
 template <>
-QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod<jfloatArray>(const char *methodName) const
+Q_CORE_EXPORT QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod<jfloatArray>(const char *methodName) const
 {
     return callObjectMethod(methodName, "()[F");
 }
 
 template <>
-QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod<jdoubleArray>(const char *methodName) const
+Q_CORE_EXPORT QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod<jdoubleArray>(const char *methodName) const
 {
     return callObjectMethod(methodName, "()[D");
 }
@@ -1510,7 +1510,7 @@ QJNIObjectPrivate QJNIObjectPrivate::callStaticObjectMethod(jclass clazz,
 }
 
 template <>
-jboolean QJNIObjectPrivate::getField<jboolean>(const char *fieldName) const
+Q_CORE_EXPORT jboolean QJNIObjectPrivate::getField<jboolean>(const char *fieldName) const
 {
     QJNIEnvironmentPrivate env;
     jboolean res = 0;
@@ -1522,7 +1522,7 @@ jboolean QJNIObjectPrivate::getField<jboolean>(const char *fieldName) const
 }
 
 template <>
-jbyte QJNIObjectPrivate::getField<jbyte>(const char *fieldName) const
+Q_CORE_EXPORT jbyte QJNIObjectPrivate::getField<jbyte>(const char *fieldName) const
 {
     QJNIEnvironmentPrivate env;
     jbyte res = 0;
@@ -1534,7 +1534,7 @@ jbyte QJNIObjectPrivate::getField<jbyte>(const char *fieldName) const
 }
 
 template <>
-jchar QJNIObjectPrivate::getField<jchar>(const char *fieldName) const
+Q_CORE_EXPORT jchar QJNIObjectPrivate::getField<jchar>(const char *fieldName) const
 {
     QJNIEnvironmentPrivate env;
     jchar res = 0;
@@ -1546,7 +1546,7 @@ jchar QJNIObjectPrivate::getField<jchar>(const char *fieldName) const
 }
 
 template <>
-jshort QJNIObjectPrivate::getField<jshort>(const char *fieldName) const
+Q_CORE_EXPORT jshort QJNIObjectPrivate::getField<jshort>(const char *fieldName) const
 {
     QJNIEnvironmentPrivate env;
     jshort res = 0;
@@ -1558,7 +1558,7 @@ jshort QJNIObjectPrivate::getField<jshort>(const char *fieldName) const
 }
 
 template <>
-jint QJNIObjectPrivate::getField<jint>(const char *fieldName) const
+Q_CORE_EXPORT jint QJNIObjectPrivate::getField<jint>(const char *fieldName) const
 {
     QJNIEnvironmentPrivate env;
     jint res = 0;
@@ -1570,7 +1570,7 @@ jint QJNIObjectPrivate::getField<jint>(const char *fieldName) const
 }
 
 template <>
-jlong QJNIObjectPrivate::getField<jlong>(const char *fieldName) const
+Q_CORE_EXPORT jlong QJNIObjectPrivate::getField<jlong>(const char *fieldName) const
 {
     QJNIEnvironmentPrivate env;
     jlong res = 0;
@@ -1582,7 +1582,7 @@ jlong QJNIObjectPrivate::getField<jlong>(const char *fieldName) const
 }
 
 template <>
-jfloat QJNIObjectPrivate::getField<jfloat>(const char *fieldName) const
+Q_CORE_EXPORT jfloat QJNIObjectPrivate::getField<jfloat>(const char *fieldName) const
 {
     QJNIEnvironmentPrivate env;
     jfloat res = 0.f;
@@ -1594,7 +1594,7 @@ jfloat QJNIObjectPrivate::getField<jfloat>(const char *fieldName) const
 }
 
 template <>
-jdouble QJNIObjectPrivate::getField<jdouble>(const char *fieldName) const
+Q_CORE_EXPORT jdouble QJNIObjectPrivate::getField<jdouble>(const char *fieldName) const
 {
     QJNIEnvironmentPrivate env;
     jdouble res = 0.;
@@ -1606,7 +1606,7 @@ jdouble QJNIObjectPrivate::getField<jdouble>(const char *fieldName) const
 }
 
 template <>
-jboolean QJNIObjectPrivate::getStaticField<jboolean>(jclass clazz, const char *fieldName)
+Q_CORE_EXPORT jboolean QJNIObjectPrivate::getStaticField<jboolean>(jclass clazz, const char *fieldName)
 {
     QJNIEnvironmentPrivate env;
     jboolean res = 0;
@@ -1618,7 +1618,7 @@ jboolean QJNIObjectPrivate::getStaticField<jboolean>(jclass clazz, const char *f
 }
 
 template <>
-jboolean QJNIObjectPrivate::getStaticField<jboolean>(const char *className, const char *fieldName)
+Q_CORE_EXPORT jboolean QJNIObjectPrivate::getStaticField<jboolean>(const char *className, const char *fieldName)
 {
     QJNIEnvironmentPrivate env;
     jclass clazz = loadClass(className, env);
@@ -1633,7 +1633,7 @@ jboolean QJNIObjectPrivate::getStaticField<jboolean>(const char *className, cons
 }
 
 template <>
-jbyte QJNIObjectPrivate::getStaticField<jbyte>(jclass clazz, const char *fieldName)
+Q_CORE_EXPORT jbyte QJNIObjectPrivate::getStaticField<jbyte>(jclass clazz, const char *fieldName)
 {
     QJNIEnvironmentPrivate env;
     jbyte res = 0;
@@ -1645,7 +1645,7 @@ jbyte QJNIObjectPrivate::getStaticField<jbyte>(jclass clazz, const char *fieldNa
 }
 
 template <>
-jbyte QJNIObjectPrivate::getStaticField<jbyte>(const char *className, const char *fieldName)
+Q_CORE_EXPORT jbyte QJNIObjectPrivate::getStaticField<jbyte>(const char *className, const char *fieldName)
 {
     QJNIEnvironmentPrivate env;
     jclass clazz = loadClass(className, env);
@@ -1660,7 +1660,7 @@ jbyte QJNIObjectPrivate::getStaticField<jbyte>(const char *className, const char
 }
 
 template <>
-jchar QJNIObjectPrivate::getStaticField<jchar>(jclass clazz, const char *fieldName)
+Q_CORE_EXPORT jchar QJNIObjectPrivate::getStaticField<jchar>(jclass clazz, const char *fieldName)
 {
     QJNIEnvironmentPrivate env;
     jchar res = 0;
@@ -1672,7 +1672,7 @@ jchar QJNIObjectPrivate::getStaticField<jchar>(jclass clazz, const char *fieldNa
 }
 
 template <>
-jchar QJNIObjectPrivate::getStaticField<jchar>(const char *className, const char *fieldName)
+Q_CORE_EXPORT jchar QJNIObjectPrivate::getStaticField<jchar>(const char *className, const char *fieldName)
 {
     QJNIEnvironmentPrivate env;
     jclass clazz = loadClass(className, env);
@@ -1687,7 +1687,7 @@ jchar QJNIObjectPrivate::getStaticField<jchar>(const char *className, const char
 }
 
 template <>
-jshort QJNIObjectPrivate::getStaticField<jshort>(jclass clazz, const char *fieldName)
+Q_CORE_EXPORT jshort QJNIObjectPrivate::getStaticField<jshort>(jclass clazz, const char *fieldName)
 {
     QJNIEnvironmentPrivate env;
     jshort res = 0;
@@ -1699,7 +1699,7 @@ jshort QJNIObjectPrivate::getStaticField<jshort>(jclass clazz, const char *field
 }
 
 template <>
-jshort QJNIObjectPrivate::getStaticField<jshort>(const char *className, const char *fieldName)
+Q_CORE_EXPORT jshort QJNIObjectPrivate::getStaticField<jshort>(const char *className, const char *fieldName)
 {
     QJNIEnvironmentPrivate env;
     jclass clazz = loadClass(className, env);
@@ -1714,7 +1714,7 @@ jshort QJNIObjectPrivate::getStaticField<jshort>(const char *className, const ch
 }
 
 template <>
-jint QJNIObjectPrivate::getStaticField<jint>(jclass clazz, const char *fieldName)
+Q_CORE_EXPORT jint QJNIObjectPrivate::getStaticField<jint>(jclass clazz, const char *fieldName)
 {
     QJNIEnvironmentPrivate env;
     jint res = 0;
@@ -1726,7 +1726,7 @@ jint QJNIObjectPrivate::getStaticField<jint>(jclass clazz, const char *fieldName
 }
 
 template <>
-jint QJNIObjectPrivate::getStaticField<jint>(const char *className, const char *fieldName)
+Q_CORE_EXPORT jint QJNIObjectPrivate::getStaticField<jint>(const char *className, const char *fieldName)
 {
     QJNIEnvironmentPrivate env;
     jclass clazz = loadClass(className, env);
@@ -1741,7 +1741,7 @@ jint QJNIObjectPrivate::getStaticField<jint>(const char *className, const char *
 }
 
 template <>
-jlong QJNIObjectPrivate::getStaticField<jlong>(jclass clazz, const char *fieldName)
+Q_CORE_EXPORT jlong QJNIObjectPrivate::getStaticField<jlong>(jclass clazz, const char *fieldName)
 {
     QJNIEnvironmentPrivate env;
     jlong res = 0;
@@ -1753,7 +1753,7 @@ jlong QJNIObjectPrivate::getStaticField<jlong>(jclass clazz, const char *fieldNa
 }
 
 template <>
-jlong QJNIObjectPrivate::getStaticField<jlong>(const char *className, const char *fieldName)
+Q_CORE_EXPORT jlong QJNIObjectPrivate::getStaticField<jlong>(const char *className, const char *fieldName)
 {
     QJNIEnvironmentPrivate env;
     jclass clazz = loadClass(className, env);
@@ -1768,7 +1768,7 @@ jlong QJNIObjectPrivate::getStaticField<jlong>(const char *className, const char
 }
 
 template <>
-jfloat QJNIObjectPrivate::getStaticField<jfloat>(jclass clazz, const char *fieldName)
+Q_CORE_EXPORT jfloat QJNIObjectPrivate::getStaticField<jfloat>(jclass clazz, const char *fieldName)
 {
     QJNIEnvironmentPrivate env;
     jfloat res = 0.f;
@@ -1780,7 +1780,7 @@ jfloat QJNIObjectPrivate::getStaticField<jfloat>(jclass clazz, const char *field
 }
 
 template <>
-jfloat QJNIObjectPrivate::getStaticField<jfloat>(const char *className, const char *fieldName)
+Q_CORE_EXPORT jfloat QJNIObjectPrivate::getStaticField<jfloat>(const char *className, const char *fieldName)
 {
     QJNIEnvironmentPrivate env;
     jclass clazz = loadClass(className, env);
@@ -1795,7 +1795,7 @@ jfloat QJNIObjectPrivate::getStaticField<jfloat>(const char *className, const ch
 }
 
 template <>
-jdouble QJNIObjectPrivate::getStaticField<jdouble>(jclass clazz, const char *fieldName)
+Q_CORE_EXPORT jdouble QJNIObjectPrivate::getStaticField<jdouble>(jclass clazz, const char *fieldName)
 {
     QJNIEnvironmentPrivate env;
     jdouble res = 0.;
@@ -1807,7 +1807,7 @@ jdouble QJNIObjectPrivate::getStaticField<jdouble>(jclass clazz, const char *fie
 }
 
 template <>
-jdouble QJNIObjectPrivate::getStaticField<jdouble>(const char *className, const char *fieldName)
+Q_CORE_EXPORT jdouble QJNIObjectPrivate::getStaticField<jdouble>(const char *className, const char *fieldName)
 {
     QJNIEnvironmentPrivate env;
     jclass clazz = loadClass(className, env);
@@ -1879,7 +1879,7 @@ QJNIObjectPrivate QJNIObjectPrivate::getStaticObjectField(jclass clazz,
 }
 
 template <>
-void QJNIObjectPrivate::setField<jboolean>(const char *fieldName, jboolean value)
+Q_CORE_EXPORT void QJNIObjectPrivate::setField<jboolean>(const char *fieldName, jboolean value)
 {
     QJNIEnvironmentPrivate env;
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, "Z");
@@ -1889,7 +1889,7 @@ void QJNIObjectPrivate::setField<jboolean>(const char *fieldName, jboolean value
 }
 
 template <>
-void QJNIObjectPrivate::setField<jbyte>(const char *fieldName, jbyte value)
+Q_CORE_EXPORT void QJNIObjectPrivate::setField<jbyte>(const char *fieldName, jbyte value)
 {
     QJNIEnvironmentPrivate env;
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, "B");
@@ -1899,7 +1899,7 @@ void QJNIObjectPrivate::setField<jbyte>(const char *fieldName, jbyte value)
 }
 
 template <>
-void QJNIObjectPrivate::setField<jchar>(const char *fieldName, jchar value)
+Q_CORE_EXPORT void QJNIObjectPrivate::setField<jchar>(const char *fieldName, jchar value)
 {
     QJNIEnvironmentPrivate env;
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, "C");
@@ -1909,7 +1909,7 @@ void QJNIObjectPrivate::setField<jchar>(const char *fieldName, jchar value)
 }
 
 template <>
-void QJNIObjectPrivate::setField<jshort>(const char *fieldName, jshort value)
+Q_CORE_EXPORT void QJNIObjectPrivate::setField<jshort>(const char *fieldName, jshort value)
 {
     QJNIEnvironmentPrivate env;
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, "S");
@@ -1919,7 +1919,7 @@ void QJNIObjectPrivate::setField<jshort>(const char *fieldName, jshort value)
 }
 
 template <>
-void QJNIObjectPrivate::setField<jint>(const char *fieldName, jint value)
+Q_CORE_EXPORT void QJNIObjectPrivate::setField<jint>(const char *fieldName, jint value)
 {
     QJNIEnvironmentPrivate env;
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, "I");
@@ -1929,7 +1929,7 @@ void QJNIObjectPrivate::setField<jint>(const char *fieldName, jint value)
 }
 
 template <>
-void QJNIObjectPrivate::setField<jlong>(const char *fieldName, jlong value)
+Q_CORE_EXPORT void QJNIObjectPrivate::setField<jlong>(const char *fieldName, jlong value)
 {
     QJNIEnvironmentPrivate env;
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, "J");
@@ -1939,7 +1939,7 @@ void QJNIObjectPrivate::setField<jlong>(const char *fieldName, jlong value)
 }
 
 template <>
-void QJNIObjectPrivate::setField<jfloat>(const char *fieldName, jfloat value)
+Q_CORE_EXPORT void QJNIObjectPrivate::setField<jfloat>(const char *fieldName, jfloat value)
 {
     QJNIEnvironmentPrivate env;
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, "F");
@@ -1949,7 +1949,7 @@ void QJNIObjectPrivate::setField<jfloat>(const char *fieldName, jfloat value)
 }
 
 template <>
-void QJNIObjectPrivate::setField<jdouble>(const char *fieldName, jdouble value)
+Q_CORE_EXPORT void QJNIObjectPrivate::setField<jdouble>(const char *fieldName, jdouble value)
 {
     QJNIEnvironmentPrivate env;
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, "D");
@@ -1959,7 +1959,7 @@ void QJNIObjectPrivate::setField<jdouble>(const char *fieldName, jdouble value)
 }
 
 template <>
-void QJNIObjectPrivate::setField<jbooleanArray>(const char *fieldName, jbooleanArray value)
+Q_CORE_EXPORT void QJNIObjectPrivate::setField<jbooleanArray>(const char *fieldName, jbooleanArray value)
 {
     QJNIEnvironmentPrivate env;
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, "[Z");
@@ -1969,7 +1969,7 @@ void QJNIObjectPrivate::setField<jbooleanArray>(const char *fieldName, jbooleanA
 }
 
 template <>
-void QJNIObjectPrivate::setField<jbyteArray>(const char *fieldName, jbyteArray value)
+Q_CORE_EXPORT void QJNIObjectPrivate::setField<jbyteArray>(const char *fieldName, jbyteArray value)
 {
     QJNIEnvironmentPrivate env;
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, "[B");
@@ -1979,7 +1979,7 @@ void QJNIObjectPrivate::setField<jbyteArray>(const char *fieldName, jbyteArray v
 }
 
 template <>
-void QJNIObjectPrivate::setField<jcharArray>(const char *fieldName, jcharArray value)
+Q_CORE_EXPORT void QJNIObjectPrivate::setField<jcharArray>(const char *fieldName, jcharArray value)
 {
     QJNIEnvironmentPrivate env;
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, "[C");
@@ -1989,7 +1989,7 @@ void QJNIObjectPrivate::setField<jcharArray>(const char *fieldName, jcharArray v
 }
 
 template <>
-void QJNIObjectPrivate::setField<jshortArray>(const char *fieldName, jshortArray value)
+Q_CORE_EXPORT void QJNIObjectPrivate::setField<jshortArray>(const char *fieldName, jshortArray value)
 {
     QJNIEnvironmentPrivate env;
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, "[S");
@@ -1999,7 +1999,7 @@ void QJNIObjectPrivate::setField<jshortArray>(const char *fieldName, jshortArray
 }
 
 template <>
-void QJNIObjectPrivate::setField<jintArray>(const char *fieldName, jintArray value)
+Q_CORE_EXPORT void QJNIObjectPrivate::setField<jintArray>(const char *fieldName, jintArray value)
 {
     QJNIEnvironmentPrivate env;
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, "[I");
@@ -2009,7 +2009,7 @@ void QJNIObjectPrivate::setField<jintArray>(const char *fieldName, jintArray val
 }
 
 template <>
-void QJNIObjectPrivate::setField<jlongArray>(const char *fieldName, jlongArray value)
+Q_CORE_EXPORT void QJNIObjectPrivate::setField<jlongArray>(const char *fieldName, jlongArray value)
 {
     QJNIEnvironmentPrivate env;
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, "[J");
@@ -2019,7 +2019,7 @@ void QJNIObjectPrivate::setField<jlongArray>(const char *fieldName, jlongArray v
 }
 
 template <>
-void QJNIObjectPrivate::setField<jfloatArray>(const char *fieldName, jfloatArray value)
+Q_CORE_EXPORT void QJNIObjectPrivate::setField<jfloatArray>(const char *fieldName, jfloatArray value)
 {
     QJNIEnvironmentPrivate env;
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, "[F");
@@ -2029,7 +2029,7 @@ void QJNIObjectPrivate::setField<jfloatArray>(const char *fieldName, jfloatArray
 }
 
 template <>
-void QJNIObjectPrivate::setField<jdoubleArray>(const char *fieldName, jdoubleArray value)
+Q_CORE_EXPORT void QJNIObjectPrivate::setField<jdoubleArray>(const char *fieldName, jdoubleArray value)
 {
     QJNIEnvironmentPrivate env;
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, "[D");
@@ -2039,7 +2039,7 @@ void QJNIObjectPrivate::setField<jdoubleArray>(const char *fieldName, jdoubleArr
 }
 
 template <>
-void QJNIObjectPrivate::setField<jstring>(const char *fieldName, jstring value)
+Q_CORE_EXPORT void QJNIObjectPrivate::setField<jstring>(const char *fieldName, jstring value)
 {
     QJNIEnvironmentPrivate env;
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, "Ljava/lang/String;");
@@ -2049,7 +2049,7 @@ void QJNIObjectPrivate::setField<jstring>(const char *fieldName, jstring value)
 }
 
 template <>
-void QJNIObjectPrivate::setField<jobject>(const char *fieldName,
+Q_CORE_EXPORT void QJNIObjectPrivate::setField<jobject>(const char *fieldName,
                                           const char *sig,
                                           jobject value)
 {
@@ -2061,7 +2061,7 @@ void QJNIObjectPrivate::setField<jobject>(const char *fieldName,
 }
 
 template <>
-void QJNIObjectPrivate::setField<jobjectArray>(const char *fieldName,
+Q_CORE_EXPORT void QJNIObjectPrivate::setField<jobjectArray>(const char *fieldName,
                                                const char *sig,
                                                jobjectArray value)
 {
@@ -2073,7 +2073,7 @@ void QJNIObjectPrivate::setField<jobjectArray>(const char *fieldName,
 }
 
 template <>
-void QJNIObjectPrivate::setStaticField<jboolean>(jclass clazz,
+Q_CORE_EXPORT void QJNIObjectPrivate::setStaticField<jboolean>(jclass clazz,
                                                  const char *fieldName,
                                                  jboolean value)
 {
@@ -2084,7 +2084,7 @@ void QJNIObjectPrivate::setStaticField<jboolean>(jclass clazz,
 }
 
 template <>
-void QJNIObjectPrivate::setStaticField<jboolean>(const char *className,
+Q_CORE_EXPORT void QJNIObjectPrivate::setStaticField<jboolean>(const char *className,
                                                  const char *fieldName,
                                                  jboolean value)
 {
@@ -2101,7 +2101,7 @@ void QJNIObjectPrivate::setStaticField<jboolean>(const char *className,
 }
 
 template <>
-void QJNIObjectPrivate::setStaticField<jbyte>(jclass clazz,
+Q_CORE_EXPORT void QJNIObjectPrivate::setStaticField<jbyte>(jclass clazz,
                                               const char *fieldName,
                                               jbyte value)
 {
@@ -2112,7 +2112,7 @@ void QJNIObjectPrivate::setStaticField<jbyte>(jclass clazz,
 }
 
 template <>
-void QJNIObjectPrivate::setStaticField<jbyte>(const char *className,
+Q_CORE_EXPORT void QJNIObjectPrivate::setStaticField<jbyte>(const char *className,
                                               const char *fieldName,
                                               jbyte value)
 {
@@ -2129,7 +2129,7 @@ void QJNIObjectPrivate::setStaticField<jbyte>(const char *className,
 }
 
 template <>
-void QJNIObjectPrivate::setStaticField<jchar>(jclass clazz,
+Q_CORE_EXPORT void QJNIObjectPrivate::setStaticField<jchar>(jclass clazz,
                                               const char *fieldName,
                                               jchar value)
 {
@@ -2140,7 +2140,7 @@ void QJNIObjectPrivate::setStaticField<jchar>(jclass clazz,
 }
 
 template <>
-void QJNIObjectPrivate::setStaticField<jchar>(const char *className,
+Q_CORE_EXPORT void QJNIObjectPrivate::setStaticField<jchar>(const char *className,
                                               const char *fieldName,
                                               jchar value)
 {
@@ -2157,7 +2157,7 @@ void QJNIObjectPrivate::setStaticField<jchar>(const char *className,
 }
 
 template <>
-void QJNIObjectPrivate::setStaticField<jshort>(jclass clazz,
+Q_CORE_EXPORT void QJNIObjectPrivate::setStaticField<jshort>(jclass clazz,
                                                const char *fieldName,
                                                jshort value)
 {
@@ -2168,7 +2168,7 @@ void QJNIObjectPrivate::setStaticField<jshort>(jclass clazz,
 }
 
 template <>
-void QJNIObjectPrivate::setStaticField<jshort>(const char *className,
+Q_CORE_EXPORT void QJNIObjectPrivate::setStaticField<jshort>(const char *className,
                                                const char *fieldName,
                                                jshort value)
 {
@@ -2185,7 +2185,7 @@ void QJNIObjectPrivate::setStaticField<jshort>(const char *className,
 }
 
 template <>
-void QJNIObjectPrivate::setStaticField<jint>(jclass clazz,
+Q_CORE_EXPORT void QJNIObjectPrivate::setStaticField<jint>(jclass clazz,
                                              const char *fieldName,
                                              jint value)
 {
@@ -2196,7 +2196,7 @@ void QJNIObjectPrivate::setStaticField<jint>(jclass clazz,
 }
 
 template <>
-void QJNIObjectPrivate::setStaticField<jint>(const char *className,
+Q_CORE_EXPORT void QJNIObjectPrivate::setStaticField<jint>(const char *className,
                                              const char *fieldName,
                                              jint value)
 {
@@ -2213,7 +2213,7 @@ void QJNIObjectPrivate::setStaticField<jint>(const char *className,
 }
 
 template <>
-void QJNIObjectPrivate::setStaticField<jlong>(jclass clazz,
+Q_CORE_EXPORT void QJNIObjectPrivate::setStaticField<jlong>(jclass clazz,
                                               const char *fieldName,
                                               jlong value)
 {
@@ -2224,7 +2224,7 @@ void QJNIObjectPrivate::setStaticField<jlong>(jclass clazz,
 }
 
 template <>
-void QJNIObjectPrivate::setStaticField<jlong>(const char *className,
+Q_CORE_EXPORT void QJNIObjectPrivate::setStaticField<jlong>(const char *className,
                                               const char *fieldName,
                                               jlong value)
 {
@@ -2241,7 +2241,7 @@ void QJNIObjectPrivate::setStaticField<jlong>(const char *className,
 }
 
 template <>
-void QJNIObjectPrivate::setStaticField<jfloat>(jclass clazz,
+Q_CORE_EXPORT void QJNIObjectPrivate::setStaticField<jfloat>(jclass clazz,
                                                const char *fieldName,
                                                jfloat value)
 {
@@ -2252,7 +2252,7 @@ void QJNIObjectPrivate::setStaticField<jfloat>(jclass clazz,
 }
 
 template <>
-void QJNIObjectPrivate::setStaticField<jfloat>(const char *className,
+Q_CORE_EXPORT void QJNIObjectPrivate::setStaticField<jfloat>(const char *className,
                                                const char *fieldName,
                                                jfloat value)
 {
@@ -2269,7 +2269,7 @@ void QJNIObjectPrivate::setStaticField<jfloat>(const char *className,
 }
 
 template <>
-void QJNIObjectPrivate::setStaticField<jdouble>(jclass clazz,
+Q_CORE_EXPORT void QJNIObjectPrivate::setStaticField<jdouble>(jclass clazz,
                                                 const char *fieldName,
                                                 jdouble value)
 {
@@ -2280,7 +2280,7 @@ void QJNIObjectPrivate::setStaticField<jdouble>(jclass clazz,
 }
 
 template <>
-void QJNIObjectPrivate::setStaticField<jdouble>(const char *className,
+Q_CORE_EXPORT void QJNIObjectPrivate::setStaticField<jdouble>(const char *className,
                                                 const char *fieldName,
                                                 jdouble value)
 {
@@ -2297,7 +2297,7 @@ void QJNIObjectPrivate::setStaticField<jdouble>(const char *className,
 }
 
 template <>
-void QJNIObjectPrivate::setStaticField<jobject>(jclass clazz,
+Q_CORE_EXPORT void QJNIObjectPrivate::setStaticField<jobject>(jclass clazz,
                                                 const char *fieldName,
                                                 const char *sig,
                                                 jobject value)
@@ -2309,7 +2309,7 @@ void QJNIObjectPrivate::setStaticField<jobject>(jclass clazz,
 }
 
 template <>
-void QJNIObjectPrivate::setStaticField<jobject>(const char *className,
+Q_CORE_EXPORT void QJNIObjectPrivate::setStaticField<jobject>(const char *className,
                                                 const char *fieldName,
                                                 const char *sig,
                                                 jobject value)
