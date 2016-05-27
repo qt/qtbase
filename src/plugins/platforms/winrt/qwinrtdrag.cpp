@@ -47,6 +47,7 @@
 #include <Windows.ApplicationModel.datatransfer.h>
 #include <windows.ui.xaml.h>
 #include <windows.foundation.collections.h>
+#include <windows.graphics.imaging.h>
 #include <windows.storage.streams.h>
 #include <functional>
 #include <robuffer.h>
@@ -55,6 +56,7 @@ using namespace ABI::Windows::ApplicationModel::DataTransfer;
 using namespace ABI::Windows::ApplicationModel::DataTransfer::DragDrop;
 using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::Foundation::Collections;
+using namespace ABI::Windows::Graphics::Imaging;
 using namespace ABI::Windows::Storage;
 using namespace ABI::Windows::Storage::Streams;
 using namespace ABI::Windows::UI::Xaml;
@@ -64,6 +66,34 @@ using namespace Microsoft::WRL::Wrappers;
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaMime, "qt.qpa.mime")
+
+ComPtr<IBuffer> createIBufferFromData(const char *data, qint32 size)
+{
+    static ComPtr<IBufferFactory> bufferFactory;
+    HRESULT hr;
+    if (!bufferFactory) {
+        hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Storage_Streams_Buffer).Get(),
+                                    IID_PPV_ARGS(&bufferFactory));
+        Q_ASSERT_SUCCEEDED(hr);
+    }
+
+    ComPtr<IBuffer> buffer;
+    const UINT32 length = size;
+    hr = bufferFactory->Create(length, &buffer);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = buffer->put_Length(length);
+    Q_ASSERT_SUCCEEDED(hr);
+
+    ComPtr<Windows::Storage::Streams::IBufferByteAccess> byteArrayAccess;
+    hr = buffer.As(&byteArrayAccess);
+    Q_ASSERT_SUCCEEDED(hr);
+
+    byte *bytes;
+    hr = byteArrayAccess->Buffer(&bytes);
+    Q_ASSERT_SUCCEEDED(hr);
+    memcpy(bytes, data, length);
+    return buffer;
+}
 
 class DragThreadTransferData : public QObject
 {
@@ -175,36 +205,42 @@ QStringList QWinRTInternalMimeData::formats_sys() const
     if (!formats.isEmpty())
         return formats;
 
-    boolean contains;
     HRESULT hr;
-    hr = dataView->Contains(NativeFormatStrings::text, &contains);
-    if (SUCCEEDED(hr) && contains)
-        formats.append(QLatin1String("text/plain"));
+    hr = QEventDispatcherWinRT::runOnXamlThread([this]() {
+        boolean contains;
+        HRESULT hr;
+        hr = dataView->Contains(NativeFormatStrings::text, &contains);
+        if (SUCCEEDED(hr) && contains)
+            formats.append(QLatin1String("text/plain"));
 
-    hr = dataView->Contains(NativeFormatStrings::html, &contains);
-    if (SUCCEEDED(hr) && contains)
-        formats.append(QLatin1String("text/html"));
+        hr = dataView->Contains(NativeFormatStrings::html, &contains);
+        if (SUCCEEDED(hr) && contains)
+            formats.append(QLatin1String("text/html"));
 
-    hr = dataView->Contains(NativeFormatStrings::storage, &contains);
-    if (SUCCEEDED(hr) && contains)
-        formats.append(QLatin1String("text/uri-list"));
+        hr = dataView->Contains(NativeFormatStrings::storage, &contains);
+        if (SUCCEEDED(hr) && contains)
+            formats.append(QLatin1String("text/uri-list"));
 
-    // We need to add any additional format as well, for legacy windows
-    // reasons, but also in case someone adds custom formats.
-    ComPtr<IVectorView<HSTRING>> availableFormats;
-    hr = dataView->get_AvailableFormats(&availableFormats);
-    RETURN_IF_FAILED("Could not query available formats.", return formats);
+        // We need to add any additional format as well, for legacy windows
+        // reasons, but also in case someone adds custom formats.
+        ComPtr<IVectorView<HSTRING>> availableFormats;
+        hr = dataView->get_AvailableFormats(&availableFormats);
+        RETURN_OK_IF_FAILED("Could not query available formats.");
 
-    quint32 size;
-    hr = availableFormats->get_Size(&size);
-    RETURN_IF_FAILED("Could not query format vector size.", return formats);
-    for (quint32 i = 0; i < size; ++i) {
-        HString str;
-        hr = availableFormats->GetAt(i, str.GetAddressOf());
-        if (FAILED(hr))
-            continue;
-        formats.append(hStringToQString(str));
-    }
+        quint32 size;
+        hr = availableFormats->get_Size(&size);
+        RETURN_OK_IF_FAILED("Could not query format vector size.");
+        for (quint32 i = 0; i < size; ++i) {
+            HString str;
+            hr = availableFormats->GetAt(i, str.GetAddressOf());
+            if (FAILED(hr))
+                continue;
+            formats.append(hStringToQString(str));
+        }
+        return S_OK;
+    });
+    Q_ASSERT_SUCCEEDED(hr);
+
     return formats;
 }
 
@@ -265,8 +301,6 @@ QVariant QWinRTInternalMimeData::retrieveData_sys(const QString &mimetype, QVari
             result.setValue(hStringToQString(res));
             return S_OK;
         });
-    } else if (mimetype.startsWith(QLatin1String("image/"))) {
-        Q_UNIMPLEMENTED();
     } else {
         // Asking for custom data
         hr = QEventDispatcherWinRT::runOnXamlThread([this, &result, mimetype]() {
@@ -615,30 +649,39 @@ Qt::DropAction QWinRTDrag::drag(QDrag *drag)
             }
             // ### TODO: Missing: weblink, image
 
+            if (!drag->pixmap().isNull()) {
+                const QImage image2 = drag->pixmap().toImage();
+                const QImage image = image2.convertToFormat(QImage::Format_ARGB32);
+                if (!image.isNull()) {
+                    // Create IBuffer containing image
+                    ComPtr<IBuffer> imageBuffer = createIBufferFromData(reinterpret_cast<const char*>(image.bits()), image.byteCount());
+
+                    ComPtr<ISoftwareBitmapFactory> bitmapFactory;
+                    hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Graphics_Imaging_SoftwareBitmap).Get(),
+                                                IID_PPV_ARGS(&bitmapFactory));
+                    Q_ASSERT_SUCCEEDED(hr);
+
+                    ComPtr<ISoftwareBitmap> bitmap;
+                    hr = bitmapFactory->Create(BitmapPixelFormat_Rgba8, image.width(), image.height(), &bitmap);
+                    Q_ASSERT_SUCCEEDED(hr);
+
+                    hr = bitmap->CopyFromBuffer(imageBuffer.Get());
+                    Q_ASSERT_SUCCEEDED(hr);
+
+                    ComPtr<IDragUI> dragUi;
+                    hr = args->get_DragUI(dragUi.GetAddressOf());
+                    Q_ASSERT_SUCCEEDED(hr);
+
+                    hr = dragUi->SetContentFromSoftwareBitmap(bitmap.Get());
+                    Q_ASSERT_SUCCEEDED(hr);
+                }
+            }
+
             const QStringList formats = mimeData->formats();
             for (auto item : formats) {
                 QByteArray data = mimeData->data(item);
 
-                ComPtr<IBufferFactory> bufferFactory;
-                hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Storage_Streams_Buffer).Get(),
-                                            IID_PPV_ARGS(&bufferFactory));
-                Q_ASSERT_SUCCEEDED(hr);
-
-                ComPtr<IBuffer> buffer;
-                const UINT32 length = data.size();
-                hr = bufferFactory->Create(length, &buffer);
-                Q_ASSERT_SUCCEEDED(hr);
-                hr = buffer->put_Length(length);
-                Q_ASSERT_SUCCEEDED(hr);
-
-                ComPtr<Windows::Storage::Streams::IBufferByteAccess> byteArrayAccess;
-                hr = buffer.As(&byteArrayAccess);
-                Q_ASSERT_SUCCEEDED(hr);
-
-                byte *bytes;
-                hr = byteArrayAccess->Buffer(&bytes);
-                Q_ASSERT_SUCCEEDED(hr);
-                memcpy(bytes, data.constData(), length);
+                ComPtr<IBuffer> buffer = createIBufferFromData(data.constData(), data.size());
 
                 // We cannot push the buffer to the data package as the result on
                 // recipient side is different from native events. It still sends a
@@ -648,7 +691,7 @@ Qt::DropAction QWinRTDrag::drag(QDrag *drag)
                 hr = RoActivateInstance(HString::MakeReference(RuntimeClass_Windows_Storage_Streams_InMemoryRandomAccessStream).Get(), &ras);
                 Q_ASSERT_SUCCEEDED(hr);
 
-                hr = ras->put_Size(length);
+                hr = ras->put_Size(data.size());
                 ComPtr<IOutputStream> outputStream;
                 hr = ras->GetOutputStreamAt(0, &outputStream);
                 Q_ASSERT_SUCCEEDED(hr);
@@ -663,7 +706,7 @@ Qt::DropAction QWinRTDrag::drag(QDrag *drag)
 
                 unsigned char flushResult;
                 ComPtr<IAsyncOperation<bool>> flushOp;
-                hr = outputStream.Get()->FlushAsync(&flushOp);
+                hr = outputStream->FlushAsync(&flushOp);
                 Q_ASSERT_SUCCEEDED(hr);
 
                 hr = QWinRTFunctions::await(flushOp, &flushResult);
@@ -671,18 +714,11 @@ Qt::DropAction QWinRTDrag::drag(QDrag *drag)
 
                 hr = dataPackage->SetData(qStringToHString(item).Get(), ras.Get());
                 Q_ASSERT_SUCCEEDED(hr);
-
             }
             return S_OK;
         });
 
         hr = elem3->add_DragStarting(startingCallback.Get(), &startingToken);
-        Q_ASSERT_SUCCEEDED(hr);
-
-        ComPtr<ABI::Windows::UI::Input::IPointerPointStatics> pointStatics;
-
-        hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_Input_PointerPoint).Get(),
-                                    IID_PPV_ARGS(&pointStatics));
         Q_ASSERT_SUCCEEDED(hr);
 
         hr = elem3->StartDragAsync(qt_winrt_lastPointerPoint.Get(), &op);
