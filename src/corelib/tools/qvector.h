@@ -736,7 +736,7 @@ typename QVector<T>::iterator QVector<T>::erase(iterator abegin, iterator aend)
     const int itemsUntouched = abegin - d->begin();
 
     // FIXME we could do a proper realloc, which copy constructs only needed data.
-    // FIXME we ara about to delete data maybe it is good time to shrink?
+    // FIXME we are about to delete data - maybe it is good time to shrink?
     // FIXME the shrink is also an issue in removeLast, that is just a copy + reduce of this.
     if (d->alloc) {
         detach();
@@ -756,7 +756,11 @@ typename QVector<T>::iterator QVector<T>::erase(iterator abegin, iterator aend)
             }
         } else {
             destruct(abegin, aend);
-            memmove(abegin, aend, (d->size - itemsToErase - itemsUntouched) * sizeof(T));
+            // QTBUG-53605: static_cast<void *> masks clang errors of the form
+            // error: destination for this 'memmove' call is a pointer to class containing a dynamic class
+            // FIXME maybe use std::is_polymorphic (as soon as allowed) to avoid the memmove
+            memmove(static_cast<void *>(abegin), static_cast<void *>(aend),
+                    (d->size - itemsToErase - itemsUntouched) * sizeof(T));
         }
         d->size -= itemsToErase;
     }
