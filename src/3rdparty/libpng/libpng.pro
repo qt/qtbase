@@ -3,7 +3,8 @@ TARGET = qtpng
 CONFIG += \
     static \
     hide_symbols \
-    exceptions_off rtti_off warn_off
+    exceptions_off rtti_off warn_off \
+    installed
 
 load(qt_helper_lib)
 
