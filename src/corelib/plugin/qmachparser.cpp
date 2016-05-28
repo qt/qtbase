@@ -59,6 +59,9 @@ static const cpu_type_t my_cputype = CPU_TYPE_X86;
 static const cpu_type_t my_cputype = CPU_TYPE_POWERPC64;
 #elif defined(Q_PROCESSOR_POWER_32)
 static const cpu_type_t my_cputype = CPU_TYPE_POWERPC;
+#elif defined(Q_PROCESSOR_ARM_64)
+#  define MACHO64
+static const cpu_type_t my_cputype = CPU_TYPE_ARM64;
 #elif defined(Q_PROCESSOR_ARM)
 static const cpu_type_t my_cputype = CPU_TYPE_ARM;
 #else
