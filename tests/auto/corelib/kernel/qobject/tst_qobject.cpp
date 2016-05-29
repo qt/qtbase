@@ -139,6 +139,7 @@ private slots:
     void connectFunctorOverloads();
     void connectFunctorQueued();
     void connectFunctorWithContext();
+    void connectFunctorWithContextUnique();
     void connectFunctorDeadlock();
     void connectStaticSlotWithObject();
     void disconnectDoesNotLeakFunctor();
@@ -5798,6 +5799,22 @@ void tst_QObject::connectFunctorWithContext()
 
     // Free
     context->deleteLater();
+}
+
+void tst_QObject::connectFunctorWithContextUnique()
+{
+    // Qt::UniqueConnections currently don't work for functors, but we need to
+    // be sure that they don't crash. If that is implemented, change this test.
+
+    SenderObject sender;
+    ReceiverObject receiver;
+    QObject::connect(&sender, &SenderObject::signal1, &receiver, &ReceiverObject::slot1);
+    receiver.count_slot1 = 0;
+
+    QObject::connect(&sender, &SenderObject::signal1, &receiver, SlotFunctor(), Qt::UniqueConnection);
+
+    sender.emitSignal1();
+    QCOMPARE(receiver.count_slot1, 1);
 }
 
 class MyFunctor
