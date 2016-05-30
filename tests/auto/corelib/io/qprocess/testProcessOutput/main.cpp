@@ -31,11 +31,7 @@
 
 int main()
 {
-#if defined(_WIN32_WCE)
-    for (int i=0; i<240; i++) {
-#else //fprintf Output is very slow on Windows CE
     for (int i=0; i<10240; i++) {
-#endif
         fprintf(stdout, "%d -this is a number\n", i);
         fflush(stderr);
     }

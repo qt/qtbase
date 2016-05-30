@@ -1871,7 +1871,6 @@ namespace QWindowsDialogs {
 // QWindowsDialogHelperBase creation functions
 bool useHelper(QPlatformTheme::DialogType type)
 {
-#if !defined(_WIN32_WCE) || _WIN32_WCE < 0x800
     if (QWindowsIntegration::instance()->options() & QWindowsIntegration::NoNativeDialogs)
         return false;
     switch (type) {
@@ -1890,14 +1889,10 @@ bool useHelper(QPlatformTheme::DialogType type)
         break;
     }
     return false;
-#else
-    return false;
-#endif // !defined(_WIN32_WCE) || _WIN32_WCE < 0x800
 }
 
 QPlatformDialogHelper *createHelper(QPlatformTheme::DialogType type)
 {
-#if !defined(_WIN32_WCE) || _WIN32_WCE < 0x800
     if (QWindowsIntegration::instance()->options() & QWindowsIntegration::NoNativeDialogs)
         return 0;
     switch (type) {
@@ -1921,9 +1916,6 @@ QPlatformDialogHelper *createHelper(QPlatformTheme::DialogType type)
         break;
     }
     return 0;
-#else
-    return 0;
-#endif // !defined(_WIN32_WCE) || _WIN32_WCE < 0x800
 }
 
 } // namespace QWindowsDialogs

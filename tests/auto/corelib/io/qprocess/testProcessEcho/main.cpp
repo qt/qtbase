@@ -31,9 +31,6 @@
 
 int main()
 {
-#if defined(_WIN32_WCE) && defined(_X86_)
-    return 0;
-#else
     int c;
     while ((c = fgetc(stdin)) != -1) {
         if (c == '\0')
@@ -42,5 +39,4 @@ int main()
         fflush(stdout);
     }
     return 0;
-#endif
 }

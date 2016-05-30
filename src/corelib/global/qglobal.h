@@ -469,7 +469,7 @@ typedef qptrdiff qintptr;
 #  define QT_ASCII_CAST_WARN
 #endif
 
-#if defined(__i386__) || defined(_WIN32) || defined(_WIN32_WCE)
+#if defined(__i386__) || defined(_WIN32)
 #  if defined(Q_CC_GNU)
 #    define QT_FASTCALL __attribute__((regparm(3)))
 #  elif defined(Q_CC_MSVC)

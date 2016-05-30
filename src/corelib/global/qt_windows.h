@@ -67,10 +67,6 @@
 #  define _WIN32_IE 0x0501
 #endif
 
-#ifdef _WIN32_WCE
-#include <ceconfig.h>
-#endif
-
 // already defined when compiled with WINVER >= 0x0500
 #ifndef SPI_SETMENUANIMATION
 #define SPI_SETMENUANIMATION 0x1003

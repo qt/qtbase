@@ -178,11 +178,6 @@ QT_END_INCLUDE_NAMESPACE
 #  define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
 #  define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
 #endif
-#ifdef _WIN32_WCE
-#  ifndef WM_NCACTIVATE
-#    define WM_NCACTIVATE 0x86
-#  endif
-#endif
 
 // The values below should never change. Note that none of the usual
 // WM_...FIRST & WM_...LAST values are in the list, as they normally have other

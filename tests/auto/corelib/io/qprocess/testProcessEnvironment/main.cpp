@@ -31,10 +31,6 @@
 
 int main(int argc, char **argv)
 {
-#if defined(_WIN32_WCE)
-    // no environment in Windows CE
-    return 0;
-#else
     if (argc == 1)
         return 1;
 
@@ -44,5 +40,4 @@ int main(int argc, char **argv)
         return 0;
     }
     return 1;
-#endif
 }
