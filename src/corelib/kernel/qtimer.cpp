@@ -533,6 +533,78 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
 */
 
 /*!
+    \fn void QTimer::singleShot(std::chrono::duration<Rep, Period> value, const QObject *receiver, const char *member)
+    \since 5.8
+    \overload
+    \reentrant
+
+    This static function calls a slot after a given time interval.
+
+    It is very convenient to use this function because you do not need
+    to bother with a \l{QObject::timerEvent()}{timerEvent} or
+    create a local QTimer object.
+
+    The \a receiver is the receiving object and the \a member is the slot. The
+    time interval is given in the duration object \a value.
+
+    \sa start()
+*/
+
+/*!
+    \fn void QTimer::singleShot(std::chrono::duration<Rep, Period> value, Qt::TimerType timerType, const QObject *receiver, const char *member)
+    \since 5.8
+    \overload
+    \reentrant
+
+    This static function calls a slot after a given time interval.
+
+    It is very convenient to use this function because you do not need
+    to bother with a \l{QObject::timerEvent()}{timerEvent} or
+    create a local QTimer object.
+
+    The \a receiver is the receiving object and the \a member is the slot. The
+    time interval is given in the duration object \a value. The \a timerType affects the
+    accuracy of the timer.
+
+    \sa start()
+*/
+
+/*!
+    \fn void QTimer::start(std::chrono::duration<Rep, Period> value)
+    \since 5.8
+    \overload
+
+    Starts or restarts the timer with a timeout of duration \a value.
+
+    If the timer is already running, it will be
+    \l{QTimer::stop()}{stopped} and restarted.
+
+    If \l singleShot is true, the timer will be activated only once.
+*/
+
+/*!
+    \fn std::chrono::milliseconds QTimer::intervalAsDuration() const
+    \since 5.8
+
+    Returns the interval of this timer as a \c std::chrono::milliseconds object.
+
+    \sa interval
+*/
+
+/*!
+    \fn std::chrono::milliseconds QTimer::remainingTimeAsDuration() const
+    \since 5.8
+
+    Returns the time remaining in this timer object as a \c
+    std::chrono::milliseconds object. If this timer is due or overdue, the
+    returned value is \c std::chrono::milliseconds::zero(). If the remaining
+    time could not be found or the timer is not active, this function returns a
+    negative duration.
+
+    \sa remainingTime()
+*/
+
+/*!
     \property QTimer::singleShot
     \brief whether the timer is a single-shot timer
 
