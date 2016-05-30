@@ -447,7 +447,6 @@ public:
     QXcbWindowEventListener *windowEventListenerFromId(xcb_window_t id);
     QXcbWindow *platformWindowFromId(xcb_window_t id);
 
-    xcb_generic_event_t *checkEvent(int type);
     template<typename T>
     inline xcb_generic_event_t *checkEvent(T &checker);
 

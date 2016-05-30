@@ -1771,24 +1771,6 @@ void QXcbConnection::handleClientMessageEvent(const xcb_client_message_event_t *
     window->handleClientMessageEvent(event);
 }
 
-xcb_generic_event_t *QXcbConnection::checkEvent(int type)
-{
-    QXcbEventArray *eventqueue = m_reader->lock();
-
-    for (int i = 0; i < eventqueue->size(); ++i) {
-        xcb_generic_event_t *event = eventqueue->at(i);
-        if (event && event->response_type == type) {
-            (*eventqueue)[i] = 0;
-            m_reader->unlock();
-            return event;
-        }
-    }
-
-    m_reader->unlock();
-
-    return 0;
-}
-
 static const char * xcb_atomnames = {
     // window-manager <-> client protocols
     "WM_PROTOCOLS\0"
