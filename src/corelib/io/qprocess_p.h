@@ -368,8 +368,7 @@ public:
     qint64 pipeWriterBytesToWrite() const;
 #endif
 
-    static bool startDetached(const QString &program, const QStringList &arguments, const QString &workingDirectory = QString(),
-                              qint64 *pid = 0);
+    bool startDetached(qint64 *pPid);
 
     int exitCode;
     QProcess::ExitStatus exitStatus;

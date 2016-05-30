@@ -859,7 +859,7 @@ static bool startDetachedUacPrompt(const QString &programIn, const QStringList &
     return true;
 }
 
-bool QProcessPrivate::startDetached(const QString &program, const QStringList &arguments, const QString &workingDir, qint64 *pid)
+bool QProcessPrivate::startDetached(qint64 *pid)
 {
     static const DWORD errorElevationRequired = 740;
 
@@ -876,7 +876,7 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
                                };
     success = CreateProcess(0, (wchar_t*)args.utf16(),
                             0, 0, FALSE, dwCreationFlags, 0,
-                            workingDir.isEmpty() ? 0 : (wchar_t*)workingDir.utf16(),
+                            workingDirectory.isEmpty() ? 0 : (wchar_t*)workingDirectory.utf16(),
                             &startupInfo, &pinfo);
 
     if (success) {
@@ -885,7 +885,7 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
         if (pid)
             *pid = pinfo.dwProcessId;
     } else if (GetLastError() == errorElevationRequired) {
-        success = startDetachedUacPrompt(program, arguments, workingDir, pid);
+        success = startDetachedUacPrompt(program, arguments, workingDirectory, pid);
     }
 
     return success;

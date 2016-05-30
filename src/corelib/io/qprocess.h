@@ -163,6 +163,7 @@ public:
     void start(const QString &command, OpenMode mode = ReadWrite);
 #endif
     void start(OpenMode mode = ReadWrite);
+    bool startDetached(qint64 *pid = nullptr);
     bool open(OpenMode mode = ReadWrite) Q_DECL_OVERRIDE;
 
     QString program() const;
