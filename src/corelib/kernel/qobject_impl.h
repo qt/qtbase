@@ -126,7 +126,7 @@ namespace QtPrivate {
         inline void destroyIfLastRef() Q_DECL_NOTHROW
         { if (!m_ref.deref()) m_impl(Destroy, this, Q_NULLPTR, Q_NULLPTR, Q_NULLPTR); }
 
-        inline bool compare(void **a) { bool ret; m_impl(Compare, this, Q_NULLPTR, a, &ret); return ret; }
+        inline bool compare(void **a) { bool ret = false; m_impl(Compare, this, Q_NULLPTR, a, &ret); return ret; }
         inline void call(QObject *r, void **a)  { m_impl(Call,    this, r, a, Q_NULLPTR); }
     protected:
         ~QSlotObjectBase() {}
@@ -172,10 +172,9 @@ namespace QtPrivate {
             case Call:
                 FuncType::template call<Args, R>(static_cast<QStaticSlotObject*>(this_)->function, r, a);
                 break;
-            case Compare:
-                *ret = false; // not implemented
-                break;
-            case NumOperations: ;
+            case Compare:   // not implemented
+            case NumOperations:
+                Q_UNUSED(ret);
             }
         }
     public:
@@ -197,10 +196,9 @@ namespace QtPrivate {
             case Call:
                 FuncType::template call<Args, R>(static_cast<QFunctorSlotObject*>(this_)->function, r, a);
                 break;
-            case Compare:
-                *ret = false; // not implemented
-                break;
-            case NumOperations: ;
+            case Compare: // not implemented
+            case NumOperations:
+                Q_UNUSED(ret);
             }
         }
     public:
