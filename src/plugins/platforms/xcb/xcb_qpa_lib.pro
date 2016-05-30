@@ -88,7 +88,7 @@ contains(QT_CONFIG, xcb-qt) {
     DEFINES += XCB_USE_RENDER
     XCB_DIR = ../../../3rdparty/xcb
     INCLUDEPATH += $$XCB_DIR/include $$XCB_DIR/sysinclude
-    LIBS += -lxcb -L$$OUT_PWD/xcb-static -lxcb-static
+    LIBS += -lxcb -L$$MODULE_BASE_OUTDIR/lib -lxcb-static$$qtPlatformTargetSuffix()
 } else {
     LIBS += -lxcb -lxcb-image -lxcb-icccm -lxcb-sync -lxcb-xfixes -lxcb-shm -lxcb-randr -lxcb-shape -lxcb-keysyms -lxcb-xinerama
     !contains(DEFINES, QT_NO_XKB):LIBS += -lxcb-xkb
