@@ -1,0 +1,13 @@
+{
+    "Id": "freetype",
+    "Name": "Freetype 2",
+    "QDocModule": "qtgui",
+    "QtUsage": "Optionally used in Qt GUI and platform plugins. Configure with -no-freetype, or -system-freetype to avoid.",
+
+    "Description": "FreeType is a freely available software library to render fonts.",
+    "Homepage": "http://www.freetype.org",
+    "License": "Freetype Project License or GNU General Public License v2.0 only",
+    "LicenseId": "FTL or GPL-2.0",
+    "LicenseFile": "docs/LICENSE.TXT",
+    "Copyright": "Copyright 2006-2015 by David Turner, Robert Wilhelm, and Werner Lemberg."
+}

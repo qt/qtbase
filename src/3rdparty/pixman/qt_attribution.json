@@ -1,0 +1,13 @@
+{
+    "Id": "pixman",
+    "Name": "Pixman",
+    "QDocModule": "qtgui",
+    "QtUsage": "Used in Qt GUI on ARM NEON.",
+
+    "Description": "pixman is a library that provides low-level pixel manipulation features such as image compositing and trapezoid rasterization.",
+    "Homepage": "http://www.pixman.org/",
+    "License": "MIT License",
+    "LicenseFile": "LICENSE",
+    "LicenseId": "MIT",
+    "Copyright": "Copyright © 2009 Nokia Corporation"
+}

@@ -1,0 +1,11 @@
+{
+    "Id": "md5",
+    "Name": "MD5",
+    "QDocModule": "qtcore",
+    "QtUsage": "Used in Qt Core (QCryptographicHash). Configure with -DQT_CRYPTOGRAPHICHASH_ONLY_SHA1 to avoid.",
+
+    "Description": "MD5 message-digest algorithm.",
+    "License": "Public Domain",
+    "Copyright": "Written by Colin Plumb in 1993, no copyright is claimed.
+Ian Jackson <ian@chiark.greenend.org.uk>."
+}

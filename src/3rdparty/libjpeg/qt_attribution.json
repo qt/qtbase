@@ -1,0 +1,13 @@
+{
+    "Id": "libjpeg",
+    "Name": "LibJPEG",
+    "QDocModule": "qtgui",
+    "QtUsage": "Used in the QJPEG image plugin. Configure with -no-jpeg to avoid.",
+
+    "Description": "The Independent JPEG Group's JPEG software",
+    "Homepage": "http://www.ijg.org/",
+    "License": "Independent JPEG Group License",
+    "LicenseId": "IJG",
+    "LicenseFile": "LICENSE",
+    "Copyright": "Copyright (C) 1991-2011, Thomas G. Lane, Guido Vollbeding."
+}

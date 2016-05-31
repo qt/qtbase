@@ -1,0 +1,12 @@
+{
+    "Id": "wintab",
+    "Name": "Wintab API",
+    "QDocModule": "qtgui",
+    "QtUsage": "Used in the Qt platform plugin for Windows. Configure with -DQT_NO_TABLETEVENT to avoid.",
+
+    "Description": "Wintab is a de facto API for pointing devices on Windows.",
+    "Homepage": "http://www.pointing.com/Wintab.html",
+    "License": "Public Domain",
+    "LicenseId": "NONE",
+    "Copyright": "Copyright 1991-1998 by LCS/Telegraphics."
+}
