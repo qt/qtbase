@@ -40,7 +40,9 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/nameser.h>
-#include <arpa/nameser_compat.h>
+#if !defined(Q_OS_OPENBSD)
+#  include <arpa/nameser_compat.h>
+#endif
 #include <resolv.h>
 
 #if defined(__GNU_LIBRARY__) && !defined(__UCLIBC__)
@@ -51,6 +53,9 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_LIBRARY
 
+#if defined(Q_OS_OPENBSD)
+typedef struct __res_state* res_state;
+#endif
 typedef int (*dn_expand_proto)(const unsigned char *, const unsigned char *, const unsigned char *, char *, int);
 static dn_expand_proto local_dn_expand = 0;
 typedef void (*res_nclose_proto)(res_state);
