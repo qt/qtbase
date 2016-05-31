@@ -49,7 +49,7 @@ HEADERS = \
 
 OTHER_FILES += winrt.json
 
-*-msvc2013 {
+*-msvc2013|contains(DEFINES, QT_NO_DRAGANDDROP) {
     SOURCES -= qwinrtdrag.cpp
     HEADERS -= qwinrtdrag.h
 }
