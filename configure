@@ -665,7 +665,6 @@ CFG_BUILD_PARTS=""
 CFG_NOBUILD_PARTS=""
 CFG_SKIP_MODULES=""
 CFG_COMPILE_EXAMPLES=yes
-CFG_AUDIO_BACKEND=auto
 CFG_QML_DEBUG=yes
 CFG_PKGCONFIG=auto
 CFG_STACK_PROTECTOR_STRONG=auto
@@ -2054,13 +2053,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     silent)
         CFG_SILENT="$VAL"
-        ;;
-    audio-backend)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_AUDIO_BACKEND="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
         ;;
     icu)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -5423,10 +5415,6 @@ if [ "$CFG_ALSA" = "auto" ]; then
     fi
 fi
 
-if [ "$CFG_AUDIO_BACKEND" = "auto" ]; then
-    CFG_AUDIO_BACKEND=yes
-fi
-
 # detect GStreamer support
 if [ "$CFG_GSTREAMER" = "auto" ] || [ "$CFG_GSTREAMER" = "yes" ]; then
     if compileTest unix/gstreamer "GStreamer 1.0" -config gst-1.0; then
@@ -5810,11 +5798,6 @@ fi
 
 CFG_CONCURRENT="yes"
 QT_CONFIG="$QT_CONFIG concurrent"
-
-# ### Vestige
-if [ "$CFG_AUDIO_BACKEND" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG audio-backend"
-fi
 
 # ### Vestige
 if [ "$CFG_WEBKIT" = "debug" ]; then

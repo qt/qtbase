@@ -155,7 +155,6 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     dictionary[ "AVX2" ]            = "auto";
     dictionary[ "AVX512" ]          = "auto";
     dictionary[ "SYNCQT" ]          = "auto";
-    dictionary[ "AUDIO_BACKEND" ]   = "auto";
     dictionary[ "WMF_BACKEND" ]     = "no";
     dictionary[ "WMSDK" ]           = "auto";
     dictionary[ "QML_DEBUG" ]       = "yes";
@@ -830,10 +829,6 @@ void Configure::parseCmdLine()
             dictionary[ "DBUS" ] = "linked";
         } else if (configCmdLine.at(i) == "-dbus-runtime") {
             dictionary[ "DBUS" ] = "runtime";
-        } else if (configCmdLine.at(i) == "-audio-backend") {
-            dictionary[ "AUDIO_BACKEND" ] = "yes";
-        } else if (configCmdLine.at(i) == "-no-audio-backend") {
-            dictionary[ "AUDIO_BACKEND" ] = "no";
         } else if (configCmdLine.at(i) == "-wmf-backend") {
             dictionary[ "WMF_BACKEND" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-wmf-backend") {
@@ -1876,8 +1871,6 @@ bool Configure::displayHelp()
         desc("DBUS", "no",       "-no-dbus",            "Do not compile in D-Bus support.");
         desc("DBUS", "linked",   "-dbus-linked",        "Compile in D-Bus support and link to libdbus-1.\n");
         desc("DBUS", "runtime",  "-dbus-runtime",       "Compile in D-Bus support and load libdbus-1\ndynamically.");
-        desc("AUDIO_BACKEND", "no","-no-audio-backend", "Do not compile in the platform audio backend into\nQt Multimedia.");
-        desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into Qt Multimedia.\n");
         desc("WMF_BACKEND", "no","-no-wmf-backend",     "Do not compile in the windows media foundation backend\ninto Qt Multimedia.");
         desc("WMF_BACKEND", "yes","-wmf-backend",       "Compile in the windows media foundation backend into Qt Multimedia.\n");
         desc("QML_DEBUG", "no",    "-no-qml-debug",     "Do not build the in-process QML debugging support.");
@@ -2145,8 +2138,6 @@ bool Configure::checkAvailability(const QString &part)
                     && !QStandardPaths::findExecutable(QStringLiteral("xgConsole.exe")).isEmpty();
     } else if (part == "WMSDK") {
         available = findFile("wmsdk.h");
-    } else if (part == "AUDIO_BACKEND") {
-        available = true;
     } else if (part == "WMF_BACKEND") {
         available = findFile("mfapi.h") && findFile("mf.lib");
     } else if (part == "DIRECTWRITE") {
@@ -2317,8 +2308,6 @@ void Configure::autoDetection()
         dictionary["DBUS"] = checkAvailability("DBUS") ? "linked" : "runtime";
     if (dictionary["QML_DEBUG"] == "auto")
         dictionary["QML_DEBUG"] = dictionary["QML"] == "yes" ? "yes" : "no";
-    if (dictionary["AUDIO_BACKEND"] == "auto")
-        dictionary["AUDIO_BACKEND"] = checkAvailability("AUDIO_BACKEND") ? "yes" : "no";
     if (dictionary["WMF_BACKEND"] == "auto")
         dictionary["WMF_BACKEND"] = checkAvailability("WMF_BACKEND") ? "yes" : "no";
     if (dictionary["WMSDK"] == "auto")
@@ -2771,10 +2760,6 @@ void Configure::generateOutputVars()
         qtConfig += "dbus";
     else if (dictionary[ "DBUS" ] == "linked")
         qtConfig += "dbus dbus-linked";
-
-    // ### Vestige
-    if (dictionary["AUDIO_BACKEND"] == "yes")
-        qtConfig += "audio-backend";
 
     if (dictionary["QML_DEBUG"] == "no")
         qtConfig += "no-qml-debug";
