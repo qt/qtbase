@@ -1087,6 +1087,16 @@ void tst_QDBusConnection::connectSignal()
     QTest::qWait(100);
     QCOMPARE(recv.argumentReceived, signal.arguments().at(0).toString());
     QCOMPARE(recv.signalsReceived, 1);
+
+    // confirm that we are, indeed, a unique connection
+    recv.argumentReceived.clear();
+    recv.signalsReceived = 0;
+    QVERIFY(!con.connect(con.baseService(), signal.path(), signal.interface(),
+                        signal.member(), "s", &recv, SLOT(oneSlot(QString))));
+    QVERIFY(con.send(signal));
+    QTest::qWait(100);
+    QCOMPARE(recv.argumentReceived, signal.arguments().at(0).toString());
+    QCOMPARE(recv.signalsReceived, 1);
 }
 
 void tst_QDBusConnection::slotsWithLessParameters()
@@ -1114,6 +1124,15 @@ void tst_QDBusConnection::slotsWithLessParameters()
                            signal.member(), &recv, SLOT(oneSlot())));
     QVERIFY(con.connect(con.baseService(), signal.path(), signal.interface(),
                         signal.member(), "s", &recv, SLOT(oneSlot())));
+    QVERIFY(con.send(signal));
+    QTest::qWait(100);
+    QCOMPARE(recv.argumentReceived, QString());
+    QCOMPARE(recv.signalsReceived, 1);
+
+    // confirm that we are, indeed, a unique connection
+    recv.signalsReceived = 0;
+    QVERIFY(!con.connect(con.baseService(), signal.path(), signal.interface(),
+                         signal.member(), "s", &recv, SLOT(oneSlot())));
     QVERIFY(con.send(signal));
     QTest::qWait(100);
     QCOMPARE(recv.argumentReceived, QString());
