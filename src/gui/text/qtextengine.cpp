@@ -1635,8 +1635,14 @@ void QTextEngine::itemize() const
             if (analysis->bidiLevel % 2)
                 --analysis->bidiLevel;
             analysis->flags = QScriptAnalysis::LineOrParagraphSeparator;
-            if (option.flags() & QTextOption::ShowLineAndParagraphSeparators)
+            if (option.flags() & QTextOption::ShowLineAndParagraphSeparators) {
+                const int offset = uc - string;
+                layoutData->string.detach();
+                string = reinterpret_cast<const ushort *>(layoutData->string.unicode());
+                uc = string + offset;
+                e = uc + length;
                 *const_cast<ushort*>(uc) = 0x21B5; // visual line separator
+            }
             break;
         case QChar::Tabulation:
             analysis->flags = QScriptAnalysis::Tab;

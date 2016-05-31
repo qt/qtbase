@@ -142,6 +142,7 @@ private slots:
     void xToCursorForLigatures();
     void cursorInNonStopChars();
     void nbsp();
+    void noModificationOfInputString();
 
 private:
     QFont testFont;
@@ -2174,6 +2175,38 @@ void tst_QTextLayout::layoutWithCustomTabStops()
     qreal longWidth = textLayout->maximumWidth();
 
     QVERIFY(longWidth > shortWidth);
+}
+
+void tst_QTextLayout::noModificationOfInputString()
+{
+    QString s = QString(QChar(QChar::LineSeparator));
+    {
+        QTextLayout layout;
+        layout.setText(s);
+
+        layout.beginLayout();
+        layout.createLine();
+        layout.endLayout();
+
+        QCOMPARE(s.size(), 1);
+        QCOMPARE(s.at(0), QChar(QChar::LineSeparator));
+    }
+
+    {
+        QTextLayout layout;
+        layout.setText(s);
+
+        QTextOption option;
+        option.setFlags(QTextOption::ShowLineAndParagraphSeparators);
+        layout.setTextOption(option);
+
+        layout.beginLayout();
+        layout.createLine();
+        layout.endLayout();
+
+        QCOMPARE(s.size(), 1);
+        QCOMPARE(s.at(0), QChar(QChar::LineSeparator));
+    }
 }
 
 QTEST_MAIN(tst_QTextLayout)
