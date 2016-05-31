@@ -5686,7 +5686,7 @@ if [ "$CFG_GIF" = "yes" ]; then
 fi
 if [ "$CFG_DOUBLECONVERSION" = "system" ]; then
     QT_CONFIG="$QT_CONFIG doubleconversion system-doubleconversion"
-else
+elif [ "$CFG_DOUBLECONVERSION" = "qt" ]; then
     QT_CONFIG="$QT_CONFIG doubleconversion"
 fi
 if [ "$CFG_FREETYPE" = "no" ]; then
