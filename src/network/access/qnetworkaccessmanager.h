@@ -94,6 +94,7 @@ public:
         NotAccessible = 0,
         Accessible = 1
     };
+    Q_ENUM(NetworkAccessibility)
 #endif
 
     explicit QNetworkAccessManager(QObject *parent = Q_NULLPTR);
