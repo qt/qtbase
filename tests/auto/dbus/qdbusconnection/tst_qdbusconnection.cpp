@@ -1057,6 +1057,38 @@ void tst_QDBusConnection::multipleInterfacesInQObject()
     QVERIFY_HOOKCALLED();
 }
 
+void tst_QDBusConnection::connectSignal()
+{
+    if (!QCoreApplication::instance())
+        QSKIP("Test requires a QCoreApplication");
+
+    QDBusConnection con = QDBusConnection::sessionBus();
+
+    QDBusMessage signal = QDBusMessage::createSignal("/", "org.qtproject.TestCase",
+                                                     "oneSignal");
+    signal << "one parameter";
+
+    SignalReceiver recv;
+    QVERIFY(con.connect(con.baseService(), signal.path(), signal.interface(),
+                        signal.member(), &recv, SLOT(oneSlot(QString))));
+    QVERIFY(con.send(signal));
+    QTest::qWait(100);
+    QCOMPARE(recv.argumentReceived, signal.arguments().at(0).toString());
+    QCOMPARE(recv.signalsReceived, 1);
+
+    // disconnect and try with a signature
+    recv.argumentReceived.clear();
+    recv.signalsReceived = 0;
+    QVERIFY(con.disconnect(con.baseService(), signal.path(), signal.interface(),
+                           signal.member(), &recv, SLOT(oneSlot(QString))));
+    QVERIFY(con.connect(con.baseService(), signal.path(), signal.interface(),
+                        signal.member(), "s", &recv, SLOT(oneSlot(QString))));
+    QVERIFY(con.send(signal));
+    QTest::qWait(100);
+    QCOMPARE(recv.argumentReceived, signal.arguments().at(0).toString());
+    QCOMPARE(recv.signalsReceived, 1);
+}
+
 void tst_QDBusConnection::slotsWithLessParameters()
 {
     if (!QCoreApplication::instance())
@@ -1068,25 +1100,27 @@ void tst_QDBusConnection::slotsWithLessParameters()
                                                      "oneSignal");
     signal << "one parameter";
 
-    signalsReceived = 0;
+    SignalReceiver recv;
     QVERIFY(con.connect(con.baseService(), signal.path(), signal.interface(),
-                        signal.member(), this, SLOT(oneSlot())));
+                        signal.member(), &recv, SLOT(oneSlot())));
     QVERIFY(con.send(signal));
     QTest::qWait(100);
-    QCOMPARE(signalsReceived, 1);
+    QCOMPARE(recv.argumentReceived, QString());
+    QCOMPARE(recv.signalsReceived, 1);
 
     // disconnect and try with a signature
-    signalsReceived = 0;
+    recv.signalsReceived = 0;
     QVERIFY(con.disconnect(con.baseService(), signal.path(), signal.interface(),
-                           signal.member(), this, SLOT(oneSlot())));
+                           signal.member(), &recv, SLOT(oneSlot())));
     QVERIFY(con.connect(con.baseService(), signal.path(), signal.interface(),
-                        signal.member(), "s", this, SLOT(oneSlot())));
+                        signal.member(), "s", &recv, SLOT(oneSlot())));
     QVERIFY(con.send(signal));
     QTest::qWait(100);
-    QCOMPARE(signalsReceived, 1);
+    QCOMPARE(recv.argumentReceived, QString());
+    QCOMPARE(recv.signalsReceived, 1);
 }
 
-void tst_QDBusConnection::secondCallWithCallback()
+void SignalReceiver::secondCallWithCallback()
 {
     QDBusConnection con = QDBusConnection::sessionBus();
     QDBusMessage msg = QDBusMessage::createMethodCall(con.baseService(), "/test", QString(),
@@ -1106,12 +1140,12 @@ void tst_QDBusConnection::nestedCallWithCallback()
 
     QDBusMessage msg = QDBusMessage::createMethodCall(connection.baseService(), "/test", QString(),
                                                       "ThisFunctionDoesntExist");
-    signalsReceived = 0;
 
-    connection.callWithCallback(msg, this, SLOT(exitLoop()), SLOT(secondCallWithCallback()), 10);
+    SignalReceiver recv;
+    connection.callWithCallback(msg, &recv, SLOT(exitLoop()), SLOT(secondCallWithCallback()), 10);
     QTestEventLoop::instance().enterLoop(15);
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QCOMPARE(signalsReceived, 1);
+    QCOMPARE(recv.signalsReceived, 1);
     QCOMPARE_HOOKCOUNT(2);
 }
 

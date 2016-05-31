@@ -69,20 +69,30 @@ public:
     MyObjectWithoutInterface(QObject *parent = 0) : QObject(parent), callCount(0) {}
 };
 
+class SignalReceiver : public QObject
+{
+    Q_OBJECT
+public:
+    QString argumentReceived;
+    int signalsReceived;
+    SignalReceiver() : signalsReceived(0) {}
+
+public slots:
+    void oneSlot(const QString &arg) { ++signalsReceived; argumentReceived = arg;}
+    void oneSlot() { ++signalsReceived; }
+    void exitLoop() { ++signalsReceived; QTestEventLoop::instance().exitLoop(); }
+    void secondCallWithCallback();
+};
+
 class tst_QDBusConnection: public QObject
 {
     Q_OBJECT
 
-    int signalsReceived;
 public:
     static int hookCallCount;
     tst_QDBusConnection();
 
 public slots:
-    void oneSlot() { ++signalsReceived; }
-    void exitLoop() { ++signalsReceived; QTestEventLoop::instance().exitLoop(); }
-    void secondCallWithCallback();
-
     void init();
     void cleanup();
 
@@ -115,6 +125,7 @@ private slots:
     void callSelfByAnotherName();
     void multipleInterfacesInQObject();
 
+    void connectSignal();
     void slotsWithLessParameters();
     void nestedCallWithCallback();
 
