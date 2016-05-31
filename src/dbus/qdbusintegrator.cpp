@@ -299,6 +299,9 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
     Q_ASSERT(connection);
     Q_ASSERT(data);
 
+    if (!QDBusConnectionManager::instance())
+        return;
+
     // keep the connection alive
     q_dbus_connection_ref(connection);
     QDBusConnectionPrivate *serverConnection = static_cast<QDBusConnectionPrivate *>(data);
