@@ -92,12 +92,9 @@ done
 
 # initialize global variables
 CONFIG_SEPARATORS=`printf ' \t'`
-QMAKE_SWITCHES=
-QMAKE_VARS=
 QMAKE_CONFIG=
 QTCONFIG_CONFIG=
 QT_CONFIG=
-SUPPORTED=
 QMAKE_VARS_FILE=.qmake.vars
 DEVICE_VARS_FILE=.device.vars
 HOST_VARS_FILE=.host.vars
@@ -929,7 +926,6 @@ while [ "$#" -gt 0 ]; do
     -extprefix| \
     -sysroot| \
     -external-hostbindir| \
-    -depths| \
     -make| \
     -nomake| \
     -skip| \
@@ -939,13 +935,10 @@ while [ "$#" -gt 0 ]; do
     -device-option| \
     -host-option| \
     -sdk| \
-    -arch| \
-    -host-arch| \
     -c++std | \
     -mysql_config| \
     -psql_config| \
     -qpa| \
-    -qconfig| \
     -qreal| \
     -sanitize| \
     -xkb-config-root| \
@@ -1313,7 +1306,6 @@ while [ "$#" -gt 0 ]; do
 	    QMakeVar add QMAKE_CFLAGS -pg
 	    QMakeVar add QMAKE_CXXFLAGS -pg
 	    QMakeVar add QMAKE_LFLAGS -pg
-            QMAKE_VARS="$QMAKE_VARS CONFIG+=nostrip"
         else
             UNKNOWN_OPT=yes
         fi
@@ -1994,17 +1986,9 @@ while [ "$#" -gt 0 ]; do
         ;;
     v|verbose)
         if [ "$VAL" = "yes" ]; then
-            if [ "$OPT_VERBOSE" = "$VAL" ]; then            # takes two verboses to turn on qmake debugs
-                QMAKE_SWITCHES="$QMAKE_SWITCHES -d"
-            else
-                OPT_VERBOSE=yes
-            fi
+            OPT_VERBOSE=yes
         elif [ "$VAL" = "no" ]; then
-            if [ "$OPT_VERBOSE" = "$VAL" ] && echo "$QMAKE_SWITCHES" | grep ' -d' >/dev/null 2>&1; then
-                QMAKE_SWITCHES=`echo $QMAKE_SWITCHES | sed 's, -d,,'`
-            else
-                OPT_VERBOSE=no
-            fi
+            OPT_VERBOSE=no
         else
             UNKNOWN_OPT=yes
         fi
@@ -6331,7 +6315,6 @@ fi
 if [ "$OPT_VERBOSE" = "yes" ]; then
     echo $ECHO_N "qmake vars .......... $ECHO_C"
     cat "$QMAKE_VARS_FILE" | tr '\n' ' '
-    echo "qmake switches ......... $QMAKE_SWITCHES"
     echo
 fi
 
