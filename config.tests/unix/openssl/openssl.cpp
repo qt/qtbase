@@ -37,6 +37,12 @@
 #  error "OpenSSL >= 0.9.7 is required"
 #endif
 
+#include <openssl/ssl.h>
+
+#if OPENSSL_VERSION_NUMBER-0 >= 0x10002000L && !defined(OPENSSL_NO_EC) && !defined(SSL_CTRL_SET_CURVES)
+#  error "OpenSSL was reported as >= 1.0.2 but is missing required features, possibly it's libressl which is unsupported"
+#endif
+
 int main()
 {
 }
