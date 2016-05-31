@@ -46,7 +46,7 @@
 
 #include <limits>
 
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
 Q_FORWARD_DECLARE_CF_TYPE(CFDate);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSDate);
 #endif
@@ -311,7 +311,7 @@ public:
 #endif
     static qint64 currentMSecsSinceEpoch() Q_DECL_NOTHROW;
 
-#if defined(Q_OS_MAC) || defined(Q_QDOC)
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     static QDateTime fromCFDate(CFDateRef date);
     CFDateRef toCFDate() const Q_DECL_CF_RETURNS_RETAINED;
     static QDateTime fromNSDate(const NSDate *date);

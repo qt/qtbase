@@ -56,7 +56,7 @@
 #error qbytearray.h must be included before any header file that defines truncate
 #endif
 
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
 Q_FORWARD_DECLARE_CF_TYPE(CFData);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSData);
 #endif
@@ -382,7 +382,7 @@ public:
     static QByteArray fromHex(const QByteArray &hexEncoded) Q_REQUIRED_RESULT;
     static QByteArray fromPercentEncoding(const QByteArray &pctEncoded, char percent = '%') Q_REQUIRED_RESULT;
 
-#if defined(Q_OS_MAC) || defined(Q_QDOC)
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     static QByteArray fromCFData(CFDataRef data);
     static QByteArray fromRawCFData(CFDataRef data);
     CFDataRef toCFData() const Q_DECL_CF_RETURNS_RETAINED;

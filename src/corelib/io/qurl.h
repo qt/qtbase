@@ -48,7 +48,7 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qglobal.h>
 
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
 Q_FORWARD_DECLARE_CF_TYPE(CFURL);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSURL);
 #endif
@@ -275,7 +275,7 @@ public:
     static QByteArray toPercentEncoding(const QString &,
                                         const QByteArray &exclude = QByteArray(),
                                         const QByteArray &include = QByteArray());
-#if defined(Q_OS_MAC) || defined(Q_QDOC)
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     static QUrl fromCFURL(CFURLRef url);
     CFURLRef toCFURL() const Q_DECL_CF_RETURNS_RETAINED;
     static QUrl fromNSURL(const NSURL *url);
