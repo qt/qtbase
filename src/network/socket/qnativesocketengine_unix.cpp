@@ -573,7 +573,9 @@ int QNativeSocketEnginePrivate::nativeAccept()
             setError(QAbstractSocket::SocketResourceError, NotSocketErrorString);
             break;
         case EPROTONOSUPPORT:
+#if !defined(Q_OS_OPENBSD)
         case EPROTO:
+#endif
         case EAFNOSUPPORT:
         case EINVAL:
             setError(QAbstractSocket::UnsupportedSocketOperationError, ProtocolUnsupportedErrorString);
@@ -904,7 +906,9 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
             if (cmsgptr->cmsg_level == IPPROTO_IP && cmsgptr->cmsg_type == IP_RECVIF
                     && cmsgptr->cmsg_len >= CMSG_LEN(sizeof(sockaddr_dl))) {
                 sockaddr_dl *sdl = reinterpret_cast<sockaddr_dl *>(CMSG_DATA(cmsgptr));
-
+#    if defined(Q_OS_OPENBSD)
+#      define LLINDEX(s) ((s)->sdl_index)
+#    endif
                 header->ifindex = LLINDEX(sdl);
             }
 #  endif
