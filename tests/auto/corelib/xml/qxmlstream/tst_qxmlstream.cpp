@@ -561,6 +561,7 @@ private slots:
     void checkCommentIndentation() const;
     void checkCommentIndentation_data() const;
     void crashInXmlStreamReader() const;
+    void write8bitCodec() const;
     void hasError() const;
 
 private:
@@ -1577,6 +1578,44 @@ void tst_QXmlStream::hasError() const
     }
 
 }
+
+void tst_QXmlStream::write8bitCodec() const
+{
+    QBuffer outBuffer;
+    QVERIFY(outBuffer.open(QIODevice::WriteOnly));
+    QXmlStreamWriter writer(&outBuffer);
+    writer.setAutoFormatting(false);
+
+    QTextCodec *codec = QTextCodec::codecForName("IBM500");
+    if (!codec) {
+        QSKIP("Encoding IBM500 not available.");
+    }
+    writer.setCodec(codec);
+
+    writer.writeStartDocument();
+    writer.writeStartElement("root");
+    writer.writeAttribute("attrib", "1");
+    writer.writeEndElement();
+    writer.writeEndDocument();
+    outBuffer.close();
+
+    // test 8 bit encoding
+    QByteArray values = outBuffer.data();
+    QVERIFY(values.size() > 1);
+    // check '<'
+    QCOMPARE(values[0] & 0x00FF, 0x4c);
+    // check '?'
+    QCOMPARE(values[1] & 0x00FF, 0x6F);
+
+    // convert the start of the XML
+    const QString expected = ("<?xml version=\"1.0\" encoding=\"IBM500\"?>");
+    QTextDecoder *decoder = codec->makeDecoder();
+    QVERIFY(decoder);
+    QString decodedText = decoder->toUnicode(values);
+    delete decoder;
+    QVERIFY(decodedText.startsWith(expected));
+}
+
 
 #include "tst_qxmlstream.moc"
 // vim: et:ts=4:sw=4:sts=4
