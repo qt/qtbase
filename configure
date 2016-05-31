@@ -4566,19 +4566,6 @@ if [ "$XPLATFORM_MINGW" = "yes" ]; then
             fi
             CFG_OPENGL=no
         fi
-        case "$PLATFORM" in
-        hpux*)
-            # HP-UX have buggy glx headers; check if we really need to define the GLXFBConfig struct.
-            if [ "$CFG_OPENGL" = "desktop" ]; then
-                compileTest x11/glxfbconfig "OpenGL"
-                if [ $? != "0" ]; then
-                    QMakeVar add DEFINES QT_DEFINE_GLXFBCONFIG_STRUCT
-                fi
-            fi
-            ;;
-        *)
-            ;;
-        esac
     elif [ "$CFG_OPENGL" = "es2" ]; then
         #OpenGL ES 2.0
         compileTest unix/opengles2 "OpenGL ES 2.0"
@@ -4599,17 +4586,6 @@ if [ "$XPLATFORM_MINGW" = "yes" ]; then
             echo " ${XQMAKESPEC}."
             exit 1
         fi
-        case "$PLATFORM" in
-        hpux*)
-            # HP-UX have buggy glx headers; check if we really need to define the GLXFBConfig struct.
-            compileTest x11/glxfbconfig "OpenGL"
-            if [ $? != "0" ]; then
-                QMakeVar add DEFINES QT_DEFINE_GLXFBCONFIG_STRUCT
-            fi
-            ;;
-        *)
-            ;;
-        esac
     fi
 fi # X11/MINGW OpenGL
 
