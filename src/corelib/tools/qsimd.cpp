@@ -636,7 +636,7 @@ int ffsll(quint64 i)
 #endif
 }
 #endif
-#elif defined(Q_OS_NETBSD) || defined(Q_OS_ANDROID) || defined(Q_OS_QNX) || defined(Q_OS_OSX) || defined(Q_OS_HAIKU)
+#elif defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_ANDROID) || defined(Q_OS_QNX) || defined(Q_OS_OSX) || defined(Q_OS_HAIKU)
 # define ffsll __builtin_ffsll
 #endif
 
