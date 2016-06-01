@@ -126,7 +126,7 @@ private slots:
     void systemEnvironment();
     void lockupsInStartDetached();
     void waitForReadyReadForNonexistantProcess();
-    void detachedWorkingDirectoryAndPid();
+    void detachedProcessParameters();
     void startFinishStartFinish();
     void invalidProgramString_data();
     void invalidProgramString();
@@ -2030,7 +2030,7 @@ void tst_QProcess::fileWriterProcess()
     } while (stopWatch.elapsed() < 3000);
 }
 
-void tst_QProcess::detachedWorkingDirectoryAndPid()
+void tst_QProcess::detachedProcessParameters()
 {
     qint64 pid;
 
@@ -2042,9 +2042,17 @@ void tst_QProcess::detachedWorkingDirectoryAndPid()
 
     QVERIFY(QFile::exists(workingDir));
 
-    QStringList args;
-    args << infoFile.fileName();
-    QVERIFY(QProcess::startDetached(QDir::currentPath() + QLatin1String("/testDetached/testDetached"), args, workingDir, &pid));
+    QVERIFY(qgetenv("tst_QProcess").isEmpty());
+    QByteArray envVarValue("foobarbaz");
+    QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
+    environment.insert(QStringLiteral("tst_QProcess"), QString::fromUtf8(envVarValue));
+
+    QProcess process;
+    process.setProgram(QDir::currentPath() + QLatin1String("/testDetached/testDetached"));
+    process.setArguments(QStringList(infoFile.fileName()));
+    process.setWorkingDirectory(workingDir);
+    process.setProcessEnvironment(environment);
+    QVERIFY(process.startDetached(&pid));
 
     QFileInfo fi(infoFile);
     fi.setCaching(false);
@@ -2055,10 +2063,9 @@ void tst_QProcess::detachedWorkingDirectoryAndPid()
     }
 
     QVERIFY(infoFile.open(QIODevice::ReadOnly | QIODevice::Text));
-    QString actualWorkingDir = QString::fromUtf8(infoFile.readLine());
-    actualWorkingDir.chop(1); // strip off newline
-    QByteArray processIdString = infoFile.readLine();
-    processIdString.chop(1);
+    QString actualWorkingDir = QString::fromUtf8(infoFile.readLine()).trimmed();
+    QByteArray processIdString = infoFile.readLine().trimmed();
+    QByteArray actualEnvVarValue = infoFile.readLine().trimmed();
     infoFile.close();
     infoFile.remove();
 
@@ -2068,6 +2075,7 @@ void tst_QProcess::detachedWorkingDirectoryAndPid()
 
     QCOMPARE(actualWorkingDir, workingDir);
     QCOMPARE(actualPid, pid);
+    QCOMPARE(actualEnvVarValue, envVarValue);
 }
 
 void tst_QProcess::switchReadChannels()

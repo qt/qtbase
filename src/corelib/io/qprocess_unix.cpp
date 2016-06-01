@@ -937,6 +937,14 @@ bool QProcessPrivate::startDetached(qint64 *pid)
                 argv[i + 1] = ::strdup(QFile::encodeName(arguments.at(i)).constData());
             argv[arguments.size() + 1] = 0;
 
+            // Duplicate the environment.
+            int envc = 0;
+            char **envp = nullptr;
+            if (environment.d.constData()) {
+                QProcessEnvironmentPrivate::MutexLocker locker(environment.d);
+                envp = _q_dupEnvironment(environment.d.constData()->hash, &envc);
+            }
+
             QByteArray tmp;
             if (!program.contains(QLatin1Char('/'))) {
                 const QString &exeFilePath = QStandardPaths::findExecutable(program);
@@ -946,7 +954,11 @@ bool QProcessPrivate::startDetached(qint64 *pid)
             if (tmp.isEmpty())
                 tmp = QFile::encodeName(program);
             argv[0] = tmp.data();
-            qt_safe_execv(argv[0], argv);
+
+            if (envp)
+                qt_safe_execve(argv[0], argv, envp);
+            else
+                qt_safe_execv(argv[0], argv);
 
             struct sigaction noaction;
             memset(&noaction, 0, sizeof(noaction));

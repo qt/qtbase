@@ -65,6 +65,8 @@ int main(int argc, char **argv)
     f.write(QByteArray::number(quint64(GetCurrentProcessId())));
 #endif
     f.putChar('\n');
+    f.write(qgetenv("tst_QProcess"));
+    f.putChar('\n');
 
     f.close();
 

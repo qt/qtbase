@@ -867,6 +867,13 @@ bool QProcessPrivate::startDetached(qint64 *pid)
     bool success = false;
     PROCESS_INFORMATION pinfo;
 
+    void *envPtr = nullptr;
+    QByteArray envlist;
+    if (environment.d.constData()) {
+        envlist = qt_create_environment(environment.d.constData()->hash);
+        envPtr = envlist.data();
+    }
+
     DWORD dwCreationFlags = (GetConsoleWindow() ? 0 : CREATE_NO_WINDOW);
     dwCreationFlags |= CREATE_UNICODE_ENVIRONMENT;
     STARTUPINFOW startupInfo = { sizeof( STARTUPINFO ), 0, 0, 0,
@@ -875,7 +882,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
                                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                                };
     success = CreateProcess(0, (wchar_t*)args.utf16(),
-                            0, 0, FALSE, dwCreationFlags, 0,
+                            0, 0, FALSE, dwCreationFlags, envPtr,
                             workingDirectory.isEmpty() ? 0 : (wchar_t*)workingDirectory.utf16(),
                             &startupInfo, &pinfo);
 
@@ -885,6 +892,8 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         if (pid)
             *pid = pinfo.dwProcessId;
     } else if (GetLastError() == errorElevationRequired) {
+        if (envPtr)
+            qWarning("QProcess: custom environment will be ignored for detached elevated process.");
         success = startDetachedUacPrompt(program, arguments, workingDirectory, pid);
     }
 
