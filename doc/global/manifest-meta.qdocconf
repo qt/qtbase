@@ -14,10 +14,9 @@
 # Note: You cannot use operators (+, =, -) in the names.
 #
 # Examples: add a 'isHighlighted' attribute for two 'Analog Clock' examples,
-# add a 'database' tag for QtSql all examples, a 'webkit' tag for QtWebKit
-# examples, and a 'qt5' tag for all examples
+# add a 'database' tag for QtSql examples, and a 'qt5' tag for all examples
 #
-# manifestmeta.filters                = highlighted sql webkit global
+# manifestmeta.filters                = highlighted sql global
 #
 # manifestmeta.highlighted.names      = "QtGui/Analog Clock Window Example" \
 #                                       "QtWidgets/Analog Clock Example"
@@ -26,13 +25,10 @@
 # manifestmeta.sql.names              = "QtSql/*"
 # manifestmeta.sql.tags               = database
 #
-# manifestmeta.webkit.names           = "QtWebKitExamples/*"
-# manifestmeta.webkit.tags            = webkit
-#
 # manifestmeta.global.names           = *
 # manifestmeta.global.tags            = qt5
 
-manifestmeta.filters                =   highlighted webkit1 webkit2 android thumbnail ios
+manifestmeta.filters                =   highlighted android thumbnail ios
 
 manifestmeta.highlighted.names      =   "QtQuick/Qt Quick Demo - Same Game" \
                                         "QtQuick/Qt Quick Demo - Photo Surface" \
@@ -58,26 +54,6 @@ manifestmeta.highlighted.names      =   "QtQuick/Qt Quick Demo - Same Game" \
                                         "QtLocation/Map Viewer (QML)"
 
 manifestmeta.highlighted.attributes =   isHighlighted:true
-
-# Add 'webkit1' tag for QtWebKit1 examples
-manifestmeta.webkit1.names          =  "QtWebKitExamples/Tab Browser" \
-                                       "QtWebKitExamples/DOM Traversal Example" \
-                                       "QtWebKitExamples/Fancy Browser Example" \
-                                       "QtWebKitExamples/Form Extractor Example" \
-                                       "QtWebKitExamples/WebKit Frame Capture Example" \
-                                       "QtWebKitExamples/The Webkit Bridge Tutorial*" \
-                                       "QtWebKitExamples/Previewer Example" \
-                                       "QtWebKitExamples/Wheel Scroller Example" \
-                                       "QtWebKitExamples/Simple Selector Example" \
-                                       "QtWebKitExamples/QObject XML Model Example"
-
-manifestmeta.webkit1.tags           =   webkit1
-
-# Add 'webkit2' tag for QtWebKit2 examples
-manifestmeta.webkit2.names          =  "QtWebKitExamples/Flickr View Example" \
-                                       "QtWebKitExamples/YouTube View Example"
-
-manifestmeta.webkit2.tags           =   webkit2
 
 manifestmeta.android.names          =  "QtQuick/Qt Quick Demo - Maroon*" \
                                        "QtQuick/Qt Quick Demo - Calqlatr" \
