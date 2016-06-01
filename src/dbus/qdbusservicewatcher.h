@@ -63,6 +63,7 @@ public:
         WatchForOwnerChange = 0x03
     };
     Q_DECLARE_FLAGS(WatchMode, WatchModeFlag)
+    Q_FLAG(WatchMode)
 
     explicit QDBusServiceWatcher(QObject *parent = Q_NULLPTR);
     QDBusServiceWatcher(const QString &service, const QDBusConnection &connection,
