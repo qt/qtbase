@@ -67,13 +67,14 @@ class QTemporaryFilePrivate : public QFilePrivate
 
 protected:
     QTemporaryFilePrivate();
+    explicit QTemporaryFilePrivate(const QString &templateNameIn);
     ~QTemporaryFilePrivate();
 
     QAbstractFileEngine *engine() const;
     void resetFileEngine() const;
 
-    bool autoRemove;
-    QString templateName;
+    bool autoRemove = true;
+    QString templateName = defaultTemplateName();
 
     static QString defaultTemplateName();
 

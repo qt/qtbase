@@ -404,7 +404,12 @@ bool QTemporaryFileEngine::close()
 
 //************* QTemporaryFilePrivate
 
-QTemporaryFilePrivate::QTemporaryFilePrivate() : autoRemove(true)
+QTemporaryFilePrivate::QTemporaryFilePrivate()
+{
+}
+
+QTemporaryFilePrivate::QTemporaryFilePrivate(const QString &templateNameIn)
+    : templateName(templateNameIn)
 {
 }
 
@@ -498,15 +503,11 @@ QString QTemporaryFilePrivate::defaultTemplateName()
 QTemporaryFile::QTemporaryFile()
     : QFile(*new QTemporaryFilePrivate)
 {
-    Q_D(QTemporaryFile);
-    d->templateName = QTemporaryFilePrivate::defaultTemplateName();
 }
 
 QTemporaryFile::QTemporaryFile(const QString &templateName)
-    : QFile(*new QTemporaryFilePrivate)
+    : QFile(*new QTemporaryFilePrivate(templateName))
 {
-    Q_D(QTemporaryFile);
-    d->templateName = templateName;
 }
 
 #else
@@ -519,10 +520,8 @@ QTemporaryFile::QTemporaryFile(const QString &templateName)
     \sa setFileTemplate(), QDir::tempPath()
 */
 QTemporaryFile::QTemporaryFile()
-    : QFile(*new QTemporaryFilePrivate, 0)
+    : QTemporaryFile(nullptr)
 {
-    Q_D(QTemporaryFile);
-    d->templateName = QTemporaryFilePrivate::defaultTemplateName();
 }
 
 /*!
@@ -540,10 +539,8 @@ QTemporaryFile::QTemporaryFile()
     \sa open(), fileTemplate()
 */
 QTemporaryFile::QTemporaryFile(const QString &templateName)
-    : QFile(*new QTemporaryFilePrivate, 0)
+    : QTemporaryFile(templateName, nullptr)
 {
-    Q_D(QTemporaryFile);
-    d->templateName = templateName;
 }
 
 /*!
@@ -557,8 +554,6 @@ QTemporaryFile::QTemporaryFile(const QString &templateName)
 QTemporaryFile::QTemporaryFile(QObject *parent)
     : QFile(*new QTemporaryFilePrivate, parent)
 {
-    Q_D(QTemporaryFile);
-    d->templateName = QTemporaryFilePrivate::defaultTemplateName();
 }
 
 /*!
@@ -577,10 +572,8 @@ QTemporaryFile::QTemporaryFile(QObject *parent)
     \sa open(), fileTemplate()
 */
 QTemporaryFile::QTemporaryFile(const QString &templateName, QObject *parent)
-    : QFile(*new QTemporaryFilePrivate, parent)
+    : QFile(*new QTemporaryFilePrivate(templateName), parent)
 {
-    Q_D(QTemporaryFile);
-    d->templateName = templateName;
 }
 #endif
 
