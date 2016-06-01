@@ -232,11 +232,8 @@ void QIOSScreen::updateProperties()
     QRect previousAvailableGeometry = m_availableGeometry;
 
     m_geometry = QRectF::fromCGRect(m_uiScreen.bounds).toRect();
-#ifndef Q_OS_TVOS
-    m_availableGeometry = QRectF::fromCGRect(m_uiScreen.applicationFrame).toRect();
-#else
-    m_availableGeometry = QRectF::fromCGRect(m_uiScreen.bounds).toRect();
-#endif
+    m_availableGeometry = QSysInfo::MacintoshVersion & QSysInfo::MV_IOS ?
+        QRectF::fromCGRect(m_uiScreen.applicationFrame).toRect() : m_geometry;
 
 #ifndef Q_OS_TVOS
     if (m_uiScreen == [UIScreen mainScreen]) {
