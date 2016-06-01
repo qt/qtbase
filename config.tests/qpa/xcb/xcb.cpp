@@ -43,5 +43,9 @@ int main(int, char **)
 {
     int primaryScreen = 0;
     xcb_connection_t *t = xcb_connect("", &primaryScreen);
+
+    // This won't compile unless libxcb >= 1.5 which defines XCB_ATOM_PRIMARY.
+    int xcbAtomPrimary = XCB_ATOM_PRIMARY;
+
     return 0;
 }
