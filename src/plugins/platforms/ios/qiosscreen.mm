@@ -40,7 +40,30 @@
 #include "qiosviewcontroller.h"
 #include "quiview.h"
 
+#include <QtGui/private/qwindow_p.h>
+
 #include <sys/sysctl.h>
+
+// -------------------------------------------------------------------------
+
+typedef void (^DisplayLinkBlock)(CADisplayLink *displayLink);
+
+@implementation UIScreen (DisplayLinkBlock)
+- (CADisplayLink*)displayLinkWithBlock:(DisplayLinkBlock)block
+{
+    return [self displayLinkWithTarget:[[block copy] autorelease]
+        selector:@selector(invokeDisplayLinkBlock:)];
+}
+@end
+
+@implementation NSObject (DisplayLinkBlock)
+- (void)invokeDisplayLinkBlock:(CADisplayLink *)sender
+{
+    DisplayLinkBlock block = static_cast<id>(self);
+    block(sender);
+}
+@end
+
 
 // -------------------------------------------------------------------------
 
@@ -208,10 +231,16 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
     }
 
     updateProperties();
+
+    m_displayLink = [m_uiScreen displayLinkWithBlock:^(CADisplayLink *) { deliverUpdateRequests(); }];
+    m_displayLink.paused = YES; // Enabled when clients call QWindow::requestUpdate()
+    [m_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
 }
 
 QIOSScreen::~QIOSScreen()
 {
+    [m_displayLink invalidate];
+
     [m_orientationListener release];
     [m_uiWindow release];
 }
@@ -289,6 +318,35 @@ void QIOSScreen::updateProperties()
 
     if (m_geometry != previousGeometry || m_availableGeometry != previousAvailableGeometry)
         QWindowSystemInterface::handleScreenGeometryChange(screen(), m_geometry, m_availableGeometry);
+}
+
+void QIOSScreen::setUpdatesPaused(bool paused)
+{
+    m_displayLink.paused = paused;
+}
+
+void QIOSScreen::deliverUpdateRequests() const
+{
+    bool pauseUpdates = true;
+
+    QList<QWindow*> windows = QGuiApplication::allWindows();
+    for (int i = 0; i < windows.size(); ++i) {
+        if (platformScreenForWindow(windows.at(i)) != this)
+            continue;
+
+        QWindowPrivate *wp = static_cast<QWindowPrivate *>(QObjectPrivate::get(windows.at(i)));
+        if (!wp->updateRequestPending)
+            continue;
+
+        wp->deliverUpdateRequest();
+
+        // Another update request was triggered, keep the display link running
+        if (wp->updateRequestPending)
+            pauseUpdates = false;
+    }
+
+    // Pause the display link if there are no pending update requests
+    m_displayLink.paused = pauseUpdates;
 }
 
 QRect QIOSScreen::geometry() const

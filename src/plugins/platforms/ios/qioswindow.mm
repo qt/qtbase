@@ -371,6 +371,11 @@ void QIOSWindow::clearAccessibleCache()
     [m_view clearAccessibleCache];
 }
 
+void QIOSWindow::requestUpdate()
+{
+    static_cast<QIOSScreen *>(screen())->setUpdatesPaused(false);
+}
+
 #include "moc_qioswindow.cpp"
 
 QT_END_NAMESPACE
