@@ -378,7 +378,6 @@ private slots:
     void setMaskInResizeEvent();
     void moveInResizeEvent();
 
-    void immediateRepaintAfterShow();
     void immediateRepaintAfterInvalidateBuffer();
 
     void effectiveWinId();
@@ -8143,25 +8142,6 @@ void tst_QWidget::moveInResizeEvent()
 
     QRect expectedGeometry(100,100, 100, 100);
     QTRY_COMPARE(testWidget.geometry(), expectedGeometry);
-}
-
-void tst_QWidget::immediateRepaintAfterShow()
-{
-    if (m_platform == QStringLiteral("xcb"))
-        QSKIP("QTBUG-26424");
-    if (m_platform != QStringLiteral("xcb") && m_platform != QStringLiteral("windows"))
-        QSKIP("We don't support immediate repaint right after show on other platforms.");
-
-    UpdateWidget widget;
-    centerOnScreen(&widget);
-    widget.show();
-    qApp->processEvents();
-    // On X11 in particular, we are now waiting for a MapNotify event before
-    // syncing the backing store. However, if someone request a repaint()
-    // we must repaint immediately regardless of the current state.
-    widget.numPaintEvents = 0;
-    widget.repaint();
-    QCOMPARE(widget.numPaintEvents, 1);
 }
 
 void tst_QWidget::immediateRepaintAfterInvalidateBuffer()
