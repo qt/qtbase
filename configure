@@ -2263,13 +2263,9 @@ if [ -z "$PLATFORM" ]; then
         "
         ;;
      SunOS:5*)
-        if [ "$XPLATFORM_MINGW" = "yes" ]; then
-            PLATFORM="solaris-g++"
-        else
-            #PLATFORM=solaris-g++
-            PLATFORM=solaris-cc
-            #PLATFORM=solaris-cc64
-        fi
+        #PLATFORM=solaris-g++
+        PLATFORM=solaris-cc
+        #PLATFORM=solaris-cc64
         PLATFORM_NOTES="
             - Also available for Solaris: solaris-g++ solaris-cc-64
         "
