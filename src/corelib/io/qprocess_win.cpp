@@ -358,7 +358,8 @@ void QProcessPrivate::closeChannel(Channel *channel)
     destroyPipe(channel->pipe);
 }
 
-static QString qt_create_commandline(const QString &program, const QStringList &arguments)
+static QString qt_create_commandline(const QString &program, const QStringList &arguments,
+                                     const QString &nativeArguments)
 {
     QString args;
     if (!program.isEmpty()) {
@@ -387,6 +388,13 @@ static QString qt_create_commandline(const QString &program, const QStringList &
         }
         args += QLatin1Char(' ') + tmp;
     }
+
+    if (!nativeArguments.isEmpty()) {
+        if (!args.isEmpty())
+             args += QLatin1Char(' ');
+        args += nativeArguments;
+    }
+
     return args;
 }
 
@@ -472,15 +480,10 @@ void QProcessPrivate::startProcess()
         !openChannel(stderrChannel))
         return;
 
-    QString args = qt_create_commandline(program, arguments);
+    const QString args = qt_create_commandline(program, arguments, nativeArguments);
     QByteArray envlist;
     if (environment.d.constData())
         envlist = qt_create_environment(environment.d.constData()->hash);
-    if (!nativeArguments.isEmpty()) {
-        if (!args.isEmpty())
-             args += QLatin1Char(' ');
-        args += nativeArguments;
-    }
 
 #if defined QPROCESS_DEBUG
     qDebug("Creating process");
@@ -826,6 +829,7 @@ bool QProcessPrivate::writeToStdin()
 // Use ShellExecuteEx() to trigger an UAC prompt when CreateProcess()fails
 // with ERROR_ELEVATION_REQUIRED.
 static bool startDetachedUacPrompt(const QString &programIn, const QStringList &arguments,
+                                   const QString &nativeArguments,
                                    const QString &workingDir, qint64 *pid)
 {
     typedef BOOL (WINAPI *ShellExecuteExType)(SHELLEXECUTEINFOW *);
@@ -836,7 +840,8 @@ static bool startDetachedUacPrompt(const QString &programIn, const QStringList &
     if (!shellExecuteEx)
         return false;
 
-    const QString args = qt_create_commandline(QString(), arguments); // needs arguments only
+    const QString args = qt_create_commandline(QString(),                   // needs arguments only
+                                               arguments, nativeArguments);
     SHELLEXECUTEINFOW shellExecuteExInfo;
     memset(&shellExecuteExInfo, 0, sizeof(SHELLEXECUTEINFOW));
     shellExecuteExInfo.cbSize = sizeof(SHELLEXECUTEINFOW);
@@ -863,7 +868,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
 {
     static const DWORD errorElevationRequired = 740;
 
-    QString args = qt_create_commandline(program, arguments);
+    QString args = qt_create_commandline(program, arguments, nativeArguments);
     bool success = false;
     PROCESS_INFORMATION pinfo;
 
@@ -894,7 +899,8 @@ bool QProcessPrivate::startDetached(qint64 *pid)
     } else if (GetLastError() == errorElevationRequired) {
         if (envPtr)
             qWarning("QProcess: custom environment will be ignored for detached elevated process.");
-        success = startDetachedUacPrompt(program, arguments, workingDirectory, pid);
+        success = startDetachedUacPrompt(program, arguments, nativeArguments,
+                                         workingDirectory, pid);
     }
 
     return success;
