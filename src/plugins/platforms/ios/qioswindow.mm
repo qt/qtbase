@@ -376,6 +376,12 @@ void QIOSWindow::requestUpdate()
     static_cast<QIOSScreen *>(screen())->setUpdatesPaused(false);
 }
 
+CAEAGLLayer *QIOSWindow::eaglLayer() const
+{
+    Q_ASSERT([m_view.layer isKindOfClass:[CAEAGLLayer class]]);
+    return static_cast<CAEAGLLayer *>(m_view.layer);
+}
+
 #include "moc_qioswindow.cpp"
 
 QT_END_NAMESPACE

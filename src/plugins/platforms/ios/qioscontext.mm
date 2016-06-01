@@ -42,6 +42,8 @@
 #import <OpenGLES/ES2/glext.h>
 #import <QuartzCore/CAEAGLLayer.h>
 
+Q_LOGGING_CATEGORY(lcQpaGLContext, "qt.qpa.glcontext");
+
 QIOSContext::QIOSContext(QOpenGLContext *context)
     : QPlatformOpenGLContext()
     , m_sharedContext(static_cast<QIOSContext *>(context->shareHandle()))
@@ -75,6 +77,8 @@ QIOSContext::QIOSContext(QOpenGLContext *context)
     // could take advantage of the unchanged buffer, but this means clients (and Qt)
     // will also assume that swapBufferes() is not needed, which is _not_ the case.
     m_format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+
+    qCDebug(lcQpaGLContext) << "created context with format" << m_format << "shared with" << m_sharedContext;
 }
 
 QIOSContext::~QIOSContext()
@@ -117,10 +121,12 @@ static QString fboStatusString(GLenum status)
     }
 }
 
+#define Q_ASSERT_IS_GL_SURFACE(surface) \
+    Q_ASSERT(surface && (surface->surface()->surfaceType() & (QSurface::OpenGLSurface | QSurface::RasterGLSurface)))
+
 bool QIOSContext::makeCurrent(QPlatformSurface *surface)
 {
-    Q_ASSERT(surface && (surface->surface()->surfaceType() == QSurface::OpenGLSurface
-                         || surface->surface()->surfaceType() == QSurface::RasterGLSurface));
+    Q_ASSERT_IS_GL_SURFACE(surface);
 
     [EAGLContext setCurrentContext:m_eaglContext];
 
@@ -128,54 +134,11 @@ bool QIOSContext::makeCurrent(QPlatformSurface *surface)
     if (surface->surface()->surfaceClass() == QSurface::Offscreen)
         return true;
 
+    Q_ASSERT(surface->surface()->surfaceClass() == QSurface::Window);
     FramebufferObject &framebufferObject = backingFramebufferObjectFor(surface);
 
-    // We bind the default FBO even if it's incomplete, so that clients who
-    // call glCheckFramebufferStatus as a result of this function returning
-    // false will get a matching error code.
-    glBindFramebuffer(GL_FRAMEBUFFER, framebufferObject.handle);
-
-    return framebufferObject.isComplete;
-}
-
-void QIOSContext::doneCurrent()
-{
-    [EAGLContext setCurrentContext:nil];
-}
-
-void QIOSContext::swapBuffers(QPlatformSurface *surface)
-{
-    Q_ASSERT(surface && (surface->surface()->surfaceType() == QSurface::OpenGLSurface
-                         || surface->surface()->surfaceType() == QSurface::RasterGLSurface));
-
-    if (surface->surface()->surfaceClass() == QSurface::Offscreen)
-        return; // Nothing to do
-
-    FramebufferObject &framebufferObject = backingFramebufferObjectFor(surface);
-
-    [EAGLContext setCurrentContext:m_eaglContext];
-    glBindRenderbuffer(GL_RENDERBUFFER, framebufferObject.colorRenderbuffer);
-    [m_eaglContext presentRenderbuffer:GL_RENDERBUFFER];
-}
-
-QIOSContext::FramebufferObject &QIOSContext::backingFramebufferObjectFor(QPlatformSurface *surface) const
-{
-    // We keep track of default-FBOs in the root context of a share-group. This assumes
-    // that the contexts form a tree, where leaf nodes are always destroyed before their
-    // parents. If that assumption (based on the current implementation) doesn't hold we
-    // should probably use QOpenGLMultiGroupSharedResource to track the shared default-FBOs.
-    if (m_sharedContext)
-        return m_sharedContext->backingFramebufferObjectFor(surface);
-
-    Q_ASSERT(surface && surface->surface()->surfaceClass() == QSurface::Window);
-    QIOSWindow *window = static_cast<QIOSWindow *>(surface);
-
-    FramebufferObject &framebufferObject = m_framebufferObjects[window];
-
-    // Set up an FBO for the window if it hasn't been created yet
     if (!framebufferObject.handle) {
-        [EAGLContext setCurrentContext:m_eaglContext];
-
+        // Set up an FBO for the window if it hasn't been created yet
         glGenFramebuffers(1, &framebufferObject.handle);
         glBindFramebuffer(GL_FRAMEBUFFER, framebufferObject.handle);
 
@@ -195,17 +158,17 @@ QIOSContext::FramebufferObject &QIOSContext::backingFramebufferObjectFor(QPlatfo
                     framebufferObject.depthRenderbuffer);
         }
 
-        connect(window, SIGNAL(destroyed(QObject*)), this, SLOT(windowDestroyed(QObject*)));
+        connect(static_cast<QIOSWindow *>(surface), SIGNAL(destroyed(QObject*)), this, SLOT(windowDestroyed(QObject*)));
+    } else {
+        glBindFramebuffer(GL_FRAMEBUFFER, framebufferObject.handle);
     }
 
-    // Ensure that the FBO's buffers match the size of the layer
-    UIView *view = reinterpret_cast<UIView *>(window->winId());
-    CAEAGLLayer *layer = static_cast<CAEAGLLayer *>(view.layer);
-    if (framebufferObject.renderbufferWidth != (layer.frame.size.width * layer.contentsScale) ||
-        framebufferObject.renderbufferHeight != (layer.frame.size.height * layer.contentsScale)) {
-
-        [EAGLContext setCurrentContext:m_eaglContext];
-        glBindFramebuffer(GL_FRAMEBUFFER, framebufferObject.handle);
+    if (needsRenderbufferResize(surface)) {
+        // Ensure that the FBO's buffers match the size of the layer
+        CAEAGLLayer *layer = static_cast<QIOSWindow *>(surface)->eaglLayer();
+        qCDebug(lcQpaGLContext, "Reallocating renderbuffer storage - current: %dx%d, layer: %gx%g",
+            framebufferObject.renderbufferWidth, framebufferObject.renderbufferHeight,
+            layer.frame.size.width * layer.contentsScale, layer.frame.size.height * layer.contentsScale);
 
         glBindRenderbuffer(GL_RENDERBUFFER, framebufferObject.colorRenderbuffer);
         [m_eaglContext renderbufferStorage:GL_RENDERBUFFER fromDrawable:layer];
@@ -228,12 +191,49 @@ QIOSContext::FramebufferObject &QIOSContext::backingFramebufferObjectFor(QPlatfo
         framebufferObject.isComplete = glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 
         if (!framebufferObject.isComplete) {
-            qWarning("QIOSContext failed to make complete framebuffer object (%s)",
+            qCWarning(lcQpaGLContext, "QIOSContext failed to make complete framebuffer object (%s)",
                 qPrintable(fboStatusString(glCheckFramebufferStatus(GL_FRAMEBUFFER))));
         }
     }
 
-    return framebufferObject;
+    return framebufferObject.isComplete;
+}
+
+void QIOSContext::doneCurrent()
+{
+    [EAGLContext setCurrentContext:nil];
+}
+
+void QIOSContext::swapBuffers(QPlatformSurface *surface)
+{
+    Q_ASSERT_IS_GL_SURFACE(surface);
+
+    if (surface->surface()->surfaceClass() == QSurface::Offscreen)
+        return; // Nothing to do
+
+    FramebufferObject &framebufferObject = backingFramebufferObjectFor(surface);
+    Q_ASSERT_X(framebufferObject.isComplete, "QIOSContext", "swapBuffers on incomplete FBO");
+
+    if (needsRenderbufferResize(surface)) {
+        qCWarning(lcQpaGLContext, "CAEAGLLayer was resized between makeCurrent and swapBuffers, skipping flush");
+        return;
+    }
+
+    [EAGLContext setCurrentContext:m_eaglContext];
+    glBindRenderbuffer(GL_RENDERBUFFER, framebufferObject.colorRenderbuffer);
+    [m_eaglContext presentRenderbuffer:GL_RENDERBUFFER];
+}
+
+QIOSContext::FramebufferObject &QIOSContext::backingFramebufferObjectFor(QPlatformSurface *surface) const
+{
+    // We keep track of default-FBOs in the root context of a share-group. This assumes
+    // that the contexts form a tree, where leaf nodes are always destroyed before their
+    // parents. If that assumption (based on the current implementation) doesn't hold we
+    // should probably use QOpenGLMultiGroupSharedResource to track the shared default-FBOs.
+    if (m_sharedContext)
+        return m_sharedContext->backingFramebufferObjectFor(surface);
+    else
+        return m_framebufferObjects[surface];
 }
 
 GLuint QIOSContext::defaultFramebufferObject(QPlatformSurface *surface) const
@@ -245,19 +245,41 @@ GLuint QIOSContext::defaultFramebufferObject(QPlatformSurface *surface) const
         return 0;
     }
 
-    return backingFramebufferObjectFor(surface).handle;
+    FramebufferObject &framebufferObject = backingFramebufferObjectFor(surface);
+    Q_ASSERT_X(framebufferObject.handle, "QIOSContext", "can't resolve default FBO before makeCurrent");
+
+    return framebufferObject.handle;
+}
+
+bool QIOSContext::needsRenderbufferResize(QPlatformSurface *surface) const
+{
+    Q_ASSERT(surface->surface()->surfaceClass() == QSurface::Window);
+
+    FramebufferObject &framebufferObject = backingFramebufferObjectFor(surface);
+    CAEAGLLayer *layer = static_cast<QIOSWindow *>(surface)->eaglLayer();
+
+    if (framebufferObject.renderbufferWidth != (layer.frame.size.width * layer.contentsScale))
+        return true;
+
+    if (framebufferObject.renderbufferHeight != (layer.frame.size.height * layer.contentsScale))
+        return true;
+
+    return false;
 }
 
 void QIOSContext::windowDestroyed(QObject *object)
 {
     QIOSWindow *window = static_cast<QIOSWindow *>(object);
-    if (m_framebufferObjects.contains(window)) {
-        EAGLContext *originalContext = [EAGLContext currentContext];
-        [EAGLContext setCurrentContext:m_eaglContext];
-        deleteBuffers(m_framebufferObjects[window]);
-        m_framebufferObjects.remove(window);
-        [EAGLContext setCurrentContext:originalContext];
-    }
+    if (!m_framebufferObjects.contains(window))
+        return;
+
+    qCDebug(lcQpaGLContext) << object << "destroyed, deleting corresponding FBO";
+
+    EAGLContext *originalContext = [EAGLContext currentContext];
+    [EAGLContext setCurrentContext:m_eaglContext];
+    deleteBuffers(m_framebufferObjects[window]);
+    m_framebufferObjects.remove(window);
+    [EAGLContext setCurrentContext:originalContext];
 }
 
 QFunctionPointer QIOSContext::getProcAddress(const QByteArray& functionName)

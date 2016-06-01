@@ -84,6 +84,8 @@ public:
 
     void requestUpdate() Q_DECL_OVERRIDE;
 
+    CAEAGLLayer *eaglLayer() const;
+
 private:
     void applicationStateChanged(Qt::ApplicationState state);
     void applyGeometry(const QRect &rect);
