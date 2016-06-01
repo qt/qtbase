@@ -6,7 +6,7 @@ qtHaveModule(network):!contains(QT_DISABLED_FEATURES, bearermanagement): SUBDIRS
 qtHaveModule(gui) {
     SUBDIRS *= platforms platforminputcontexts platformthemes
     !contains(QT_DISABLED_FEATURES, imageformatplugin): SUBDIRS *= imageformats
-    !contains(QT_DISABLED_FEATURES, library): SUBDIRS *= generic
+    !android:!contains(QT_DISABLED_FEATURES, library): SUBDIRS *= generic
 }
 qtHaveModule(widgets): SUBDIRS *= styles
 
