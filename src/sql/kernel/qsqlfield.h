@@ -40,9 +40,9 @@
 #ifndef QSQLFIELD_H
 #define QSQLFIELD_H
 
+#include <QtSql/qtsqlglobal.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qstring.h>
-#include <QtSql/qsql.h>
 
 QT_BEGIN_NAMESPACE
 

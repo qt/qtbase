@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtSql/private/qtsqlglobal_p.h>
 #include <QtCore/qpointer.h>
 #include "qsqlerror.h"
 #include "qsqlresult.h"

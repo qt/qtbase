@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtSql/private/qtsqlglobal_p.h>
 #include "QtSql/qsqlresult.h"
 #include "QtSql/private/qsqlresult_p.h"
 

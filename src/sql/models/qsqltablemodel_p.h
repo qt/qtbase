@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtSql/private/qtsqlglobal_p.h>
 #include "private/qsqlquerymodel_p.h"
 #include "QtSql/qsqlindex.h"
 #include "QtCore/qmap.h"

@@ -37,75 +37,60 @@
 **
 ****************************************************************************/
 
-#ifndef QSQLERROR_H
-#define QSQLERROR_H
+#ifndef QTSQLGLOBAL_H
+#define QTSQLGLOBAL_H
 
-#include <QtSql/qtsqlglobal.h>
-#include <QtCore/qstring.h>
+#include <QtCore/qglobal.h>
 
 QT_BEGIN_NAMESPACE
 
-class QSqlErrorPrivate;
+#ifndef QT_STATIC
+#  if defined(QT_BUILD_SQL_LIB)
+#    define Q_SQL_EXPORT Q_DECL_EXPORT
+#  else
+#    define Q_SQL_EXPORT Q_DECL_IMPORT
+#  endif
+#else
+#  define Q_SQL_EXPORT
+#endif
 
-class Q_SQL_EXPORT QSqlError
+namespace QSql
 {
-public:
-    enum ErrorType {
-        NoError,
-        ConnectionError,
-        StatementError,
-        TransactionError,
-        UnknownError
+    enum Location
+    {
+        BeforeFirstRow = -1,
+        AfterLastRow = -2
     };
-#if QT_DEPRECATED_SINCE(5, 3)
-    QT_DEPRECATED QSqlError(const QString &driverText, const QString &databaseText,
-                            ErrorType type, int number);
-#endif
-    QSqlError(const QString &driverText = QString(),
-              const QString &databaseText = QString(),
-              ErrorType type = NoError,
-              const QString &errorCode = QString());
-    QSqlError(const QSqlError& other);
-    QSqlError& operator=(const QSqlError& other);
-    bool operator==(const QSqlError& other) const;
-    bool operator!=(const QSqlError& other) const;
-    ~QSqlError();
 
-    QString driverText() const;
-    QString databaseText() const;
-    ErrorType type() const;
-#if QT_DEPRECATED_SINCE(5, 3)
-    QT_DEPRECATED int number() const;
-#endif
-    QString nativeErrorCode() const;
-    QString text() const;
-    bool isValid() const;
-
-#if QT_DEPRECATED_SINCE(5, 1)
-    QT_DEPRECATED void setDriverText(const QString &driverText);
-    QT_DEPRECATED void setDatabaseText(const QString &databaseText);
-    QT_DEPRECATED void setType(ErrorType type);
-    QT_DEPRECATED void setNumber(int number);
-#endif
-
-private:
-    // ### Qt6: Keep the pointer and remove the rest.
-    QString unused1;
-    QString unused2;
-    struct Unused {
-        ErrorType unused3;
-        int unused4;
+    enum ParamTypeFlag
+    {
+        In = 0x00000001,
+        Out = 0x00000002,
+        InOut = In | Out,
+        Binary = 0x00000004
     };
-    union {
-        QSqlErrorPrivate *d;
-        Unused unused5;
-    };
-};
+    Q_DECLARE_FLAGS(ParamType, ParamTypeFlag)
 
-#ifndef QT_NO_DEBUG_STREAM
-Q_SQL_EXPORT QDebug operator<<(QDebug, const QSqlError &);
-#endif
+    enum TableType
+    {
+        Tables = 0x01,
+        SystemTables = 0x02,
+        Views = 0x04,
+        AllTables = 0xff
+    };
+
+    enum NumericalPrecisionPolicy
+    {
+        LowPrecisionInt32    = 0x01,
+        LowPrecisionInt64    = 0x02,
+        LowPrecisionDouble   = 0x04,
+
+        HighPrecision        = 0
+    };
+}
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QSql::ParamType)
 
 QT_END_NAMESPACE
 
-#endif // QSQLERROR_H
+#endif // QSQL_H

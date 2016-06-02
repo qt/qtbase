@@ -40,9 +40,9 @@
 #ifndef QSQLRESULT_H
 #define QSQLRESULT_H
 
+#include <QtSql/qtsqlglobal.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>
-#include <QtSql/qsql.h>
 
 // for testing:
 class tst_QSqlQuery;

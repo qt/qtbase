@@ -37,60 +37,21 @@
 **
 ****************************************************************************/
 
-#ifndef QSQL_H
-#define QSQL_H
+#ifndef QTSQLGLOBAL_P_H
+#define QTSQLGLOBAL_P_H
 
-#include <QtCore/qglobal.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_NAMESPACE
+#include <QtSql/qtsqlglobal.h>
+#include <QtCore/private/qglobal_p.h>
 
-#ifndef QT_STATIC
-#  if defined(QT_BUILD_SQL_LIB)
-#    define Q_SQL_EXPORT Q_DECL_EXPORT
-#  else
-#    define Q_SQL_EXPORT Q_DECL_IMPORT
-#  endif
-#else
-#  define Q_SQL_EXPORT
-#endif
-
-namespace QSql
-{
-    enum Location
-    {
-        BeforeFirstRow = -1,
-        AfterLastRow = -2
-    };
-
-    enum ParamTypeFlag
-    {
-        In = 0x00000001,
-        Out = 0x00000002,
-        InOut = In | Out,
-        Binary = 0x00000004
-    };
-    Q_DECLARE_FLAGS(ParamType, ParamTypeFlag)
-
-    enum TableType
-    {
-        Tables = 0x01,
-        SystemTables = 0x02,
-        Views = 0x04,
-        AllTables = 0xff
-    };
-
-    enum NumericalPrecisionPolicy
-    {
-        LowPrecisionInt32    = 0x01,
-        LowPrecisionInt64    = 0x02,
-        LowPrecisionDouble   = 0x04,
-
-        HighPrecision        = 0
-    };
-}
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(QSql::ParamType)
-
-QT_END_NAMESPACE
-
-#endif // QSQL_H
+#endif // QTSQLGLOBAL_P_H

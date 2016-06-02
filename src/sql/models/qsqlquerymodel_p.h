@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtSql/private/qtsqlglobal_p.h>
 #include "private/qabstractitemmodel_p.h"
 #include "QtSql/qsqlerror.h"
 #include "QtSql/qsqlquery.h"

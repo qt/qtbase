@@ -40,6 +40,7 @@
 #ifndef QSQLTABLEMODEL_H
 #define QSQLTABLEMODEL_H
 
+#include <QtSql/qtsqlglobal.h>
 #include <QtSql/qsqldatabase.h>
 #include <QtSql/qsqlquerymodel.h>
 

@@ -40,10 +40,10 @@
 #ifndef QSQLDRIVER_H
 #define QSQLDRIVER_H
 
+#include <QtSql/qtsqlglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
-#include <QtSql/qsql.h>
 
 QT_BEGIN_NAMESPACE
 

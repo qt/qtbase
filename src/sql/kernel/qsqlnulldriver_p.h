@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtSql/private/qtsqlglobal_p.h>
 #include "QtCore/qvariant.h"
 #include "QtSql/qsqldriver.h"
 #include "QtSql/qsqlerror.h"

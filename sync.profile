@@ -49,6 +49,9 @@
     "QtGui" =>  {
         "QGenericPlugin" => "QtGui/QGenericPlugin",
         "QGenericPluginFactory" => "QtGui/QGenericPluginFactory"
+    },
+    "QtSql" => {
+        "qsql.h" => "QtSql/qtsqlglobal.h"
     }
 );
 

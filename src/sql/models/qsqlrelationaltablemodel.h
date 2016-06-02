@@ -40,6 +40,7 @@
 #ifndef QSQLRELATIONALTABLEMODEL_H
 #define QSQLRELATIONALTABLEMODEL_H
 
+#include <QtSql/qtsqlglobal.h>
 #include <QtSql/qsqltablemodel.h>
 
 QT_BEGIN_NAMESPACE

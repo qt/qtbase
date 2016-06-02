@@ -40,6 +40,8 @@
 #ifndef QSQLRELATIONALDELEGATE_H
 #define QSQLRELATIONALDELEGATE_H
 
+#include <QtSql/qtsqlglobal.h>
+
 #ifdef QT_WIDGETS_LIB
 
 #include <QtWidgets/qitemdelegate.h>

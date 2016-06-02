@@ -40,9 +40,9 @@
 #ifndef QSQLDRIVERPLUGIN_H
 #define QSQLDRIVERPLUGIN_H
 
+#include <QtSql/qtsqlglobal.h>
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
-#include <QtSql/qsql.h>
 
 QT_BEGIN_NAMESPACE
 

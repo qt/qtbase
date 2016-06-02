@@ -40,6 +40,7 @@
 #ifndef QSQLINDEX_H
 #define QSQLINDEX_H
 
+#include <QtSql/qtsqlglobal.h>
 #include <QtSql/qsqlrecord.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qvector.h>

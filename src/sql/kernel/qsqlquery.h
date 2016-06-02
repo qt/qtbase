@@ -40,7 +40,7 @@
 #ifndef QSQLQUERY_H
 #define QSQLQUERY_H
 
-#include <QtSql/qsql.h>
+#include <QtSql/qtsqlglobal.h>
 #include <QtSql/qsqldatabase.h>
 #include <QtCore/qstring.h>
 
