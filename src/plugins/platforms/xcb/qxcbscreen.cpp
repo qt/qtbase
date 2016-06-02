@@ -660,10 +660,6 @@ QImage::Format QXcbScreen::format() const
 
 int QXcbScreen::forcedDpi() const
 {
-    static const int overrideDpi = qEnvironmentVariableIntValue("QT_FONT_DPI");
-    if (overrideDpi)
-        return overrideDpi;
-
     const int forcedDpi = m_virtualDesktop->forcedDpi();
     if (forcedDpi > 0)
         return forcedDpi;

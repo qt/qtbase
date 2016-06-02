@@ -84,8 +84,11 @@ void QScreenPrivate::setPlatformScreen(QPlatformScreen *screen)
     platformScreen->d_func()->screen = q;
     orientation = platformScreen->orientation();
     geometry = platformScreen->deviceIndependentGeometry();
-    availableGeometry = QHighDpi::fromNative(platformScreen->availableGeometry(), QHighDpiScaling::factor(platformScreen), geometry.topLeft());
-    logicalDpi = platformScreen->logicalDpi();
+    availableGeometry = QHighDpi::fromNative(platformScreen->availableGeometry(),
+                        QHighDpiScaling::factor(platformScreen), geometry.topLeft());
+
+    logicalDpi = QPlatformScreen::overrideDpi(platformScreen->logicalDpi());
+
     refreshRate = platformScreen->refreshRate();
     // safeguard ourselves against buggy platform behavior...
     if (refreshRate < 1.0)

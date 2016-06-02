@@ -276,7 +276,7 @@ qreal QHighDpiScaling::rawScaleFactor(const QPlatformScreen *screen)
         qreal platformPhysicalDpi = screen->screen()->physicalDotsPerInch();
         factor = qreal(platformPhysicalDpi) / qreal(platformBaseDpi.first);
     } else {
-        QDpi platformLogicalDpi = screen->logicalDpi();
+        const QDpi platformLogicalDpi = QPlatformScreen::overrideDpi(screen->logicalDpi());
         factor = qreal(platformLogicalDpi.first) / qreal(platformBaseDpi.first);
     }
 
@@ -629,7 +629,7 @@ QDpi QHighDpiScaling::logicalDpi(const QScreen *screen)
         return QDpi(96, 96);
 
     if (!m_usePixelDensity)
-        return screen->handle()->logicalDpi();
+        return QPlatformScreen::overrideDpi(screen->handle()->logicalDpi());
 
     const qreal scaleFactor = rawScaleFactor(screen->handle());
     const qreal roundedScaleFactor = roundScaleFactor(scaleFactor);
