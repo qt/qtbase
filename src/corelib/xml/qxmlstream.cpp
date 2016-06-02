@@ -3790,7 +3790,8 @@ void QXmlStreamWriter::writeStartDocument(const QString &version)
 #ifdef QT_NO_TEXTCODEC
         d->write("iso-8859-1");
 #else
-        d->write(d->codec->name().constData(), d->codec->name().length());
+        const QByteArray name = d->codec->name();
+        d->write(name.constData(), name.length());
 #endif
     }
     d->write("\"?>");
@@ -3813,7 +3814,8 @@ void QXmlStreamWriter::writeStartDocument(const QString &version, bool standalon
 #ifdef QT_NO_TEXTCODEC
         d->write("iso-8859-1");
 #else
-        d->write(d->codec->name().constData(), d->codec->name().length());
+        const QByteArray name = d->codec->name();
+        d->write(name.constData(), name.length());
 #endif
     }
     if (standalone)
