@@ -1,28 +1,17 @@
-QT = core
 TEMPLATE = subdirs
+TESTPLUGINS =
+
 win32 {
-    exists($$[QT_INSTALL_LIBS/get]/QtCore4.dll) {
-        SUBDIRS = releaseplugin
-    }
-    exists($$[QT_INSTALL_LIBS/get]/QtCored4.dll) {
-        SUBDIRS += debugplugin
-    }
+    contains(QT_CONFIG, debug): TESTPLUGINS += debugplugin
+    contains(QT_CONFIG, release): TESTPLUGINS += releaseplugin
+} else:osx {
+    CONFIG(debug, debug|release): TESTPLUGINS += debugplugin
+    CONFIG(release, debug|release): TESTPLUGINS += releaseplugin
+} else {
+    TESTPLUGINS = debugplugin releaseplugin
 }
-mac {
-    CONFIG(debug, debug|release): {
-         SUBDIRS += debugplugin 
-         tst_qplugin_pro.depends += debugplugin
-    }
-    CONFIG(release, debug|release): {
-        SUBDIRS += releaseplugin 
-        tst_qplugin_pro.depends += releaseplugin
-    }
-}
-!win32:!mac:{
-    SUBDIRS = debugplugin releaseplugin
-    tst_qplugin_pro.depends += debugplugin releaseplugin
-} 
-SUBDIRS += tst_qplugin.pro
 
+SUBDIRS += main $$TESTPLUGINS
+main.file = tst_qplugin.pro
+main.depends = $$TESTPLUGINS
 
-CONFIG += parallel_test
