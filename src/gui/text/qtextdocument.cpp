@@ -2700,13 +2700,8 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
         // split for [\n{LineSeparator}]
         QString forcedLineBreakRegExp = QString::fromLatin1("[\\na]");
         forcedLineBreakRegExp[3] = QChar::LineSeparator;
-
-        const QStringList lines = txt.split(QRegExp(forcedLineBreakRegExp));
-        for (int i = 0; i < lines.count(); ++i) {
-            if (i > 0)
-                html += QLatin1String("<br />"); // space on purpose for compatibility with Netscape, Lynx & Co.
-            html += lines.at(i);
-        }
+        // space in BR on purpose for compatibility with old-fashioned browsers
+        html += txt.replace(QRegExp(forcedLineBreakRegExp), QLatin1String("<br />"));
     }
 
     if (attributesEmitted)
