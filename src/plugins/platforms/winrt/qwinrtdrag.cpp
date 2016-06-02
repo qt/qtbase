@@ -623,6 +623,7 @@ Qt::DropAction QWinRTDrag::drag(QDrag *drag)
             hr = dataPackage->put_RequestedOperation(translateFromQDragDropActions(action));
             Q_ASSERT_SUCCEEDED(hr);
 
+#ifndef QT_WINRT_LIMITED_DRAGANDDROP
             ComPtr<IDragStartingEventArgs2> args2;
             hr = args->QueryInterface(IID_PPV_ARGS(&args2));
             Q_ASSERT_SUCCEEDED(hr);
@@ -637,7 +638,7 @@ Qt::DropAction QWinRTDrag::drag(QDrag *drag)
                 allowedOperations |= DataPackageOperation_Link;
             hr = args2->put_AllowedOperations(allowedOperations);
             Q_ASSERT_SUCCEEDED(hr);
-
+#endif // QT_WINRT_LIMITED_DRAGANDDROP
             QMimeData *mimeData = drag->mimeData();
             if (mimeData->hasText()) {
                 hr = dataPackage->SetText(qStringToHString(mimeData->text()).Get());
@@ -811,6 +812,7 @@ void QWinRTDrag::handleNativeDragEvent(IInspectable *sender, ABI::Windows::UI::X
     DragDropModifiers modifiers;
     hr = e2->get_Modifiers(&modifiers);
 
+#ifndef QT_WINRT_LIMITED_DRAGANDDROP
     ComPtr<IDragEventArgs3> e3;
     hr = e->QueryInterface(IID_PPV_ARGS(&e3));
     Q_ASSERT_SUCCEEDED(hr);
@@ -821,6 +823,9 @@ void QWinRTDrag::handleNativeDragEvent(IInspectable *sender, ABI::Windows::UI::X
         qCDebug(lcQpaMime) << __FUNCTION__ << "Could not query drag operations";
 
     const Qt::DropActions actions = translateToQDragDropActions(dataOp);
+#else // !QT_WINRT_LIMITED_DRAGANDDROP
+    const Qt::DropActions actions = Qt::LinkAction | Qt::CopyAction | Qt::MoveAction;;
+#endif // !QT_WINRT_LIMITED_DRAGANDDROP
 
     ComPtr<IDataPackageView> dataView;
     hr = e2->get_DataView(&dataView);
