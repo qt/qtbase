@@ -2730,7 +2730,6 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     }
     if (req.pointSize < 0)
         req.pointSize = req.pixelSize*72.0/d->dpi;
-    req.weight = QFont::Normal;
     if (req.stretch == 0)
         req.stretch = 100;
 
