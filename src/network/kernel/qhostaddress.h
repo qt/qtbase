@@ -41,6 +41,7 @@
 #ifndef QHOSTADDRESS_H
 #define QHOSTADDRESS_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qscopedpointer.h>

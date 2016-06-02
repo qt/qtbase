@@ -40,6 +40,7 @@
 #ifndef QSSLCERTIFICATEEXTENSION_H
 #define QSSLCERTIFICATEEXTENSION_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h>

@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "qsslcertificateextension.h"
 
 QT_BEGIN_NAMESPACE

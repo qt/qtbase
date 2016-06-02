@@ -40,7 +40,7 @@
 #ifndef QSSLPRESHAREDKEYAUTHENTICATOR_H
 #define QSSLPRESHAREDKEYAUTHENTICATOR_H
 
-#include <QtCore/QtGlobal>
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/QString>
 #include <QtCore/QSharedDataPointer>
 #include <QtCore/QMetaType>

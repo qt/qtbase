@@ -41,8 +41,6 @@
 #ifndef QSSLDIFFIEHELLMANPARAMETERS_P_H
 #define QSSLDIFFIEHELLMANPARAMETERS_P_H
 
-#include "qsslkey.h"
-
 //
 //  W A R N I N G
 //  -------------
@@ -54,8 +52,10 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include <QSharedData>
 
+#include "qsslkey.h"
 #include "qssldiffiehellmanparameters.h"
 #include "qsslsocket_p.h" // includes wincrypt.h
 

@@ -40,7 +40,7 @@
 #ifndef QSSLELLIPTICCURVE_H
 #define QSSLELLIPTICCURVE_H
 
-#include <QtCore/QtGlobal>
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/QString>
 #include <QtCore/QMetaType>
 #if QT_DEPRECATED_SINCE(5, 6)

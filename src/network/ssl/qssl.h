@@ -41,7 +41,7 @@
 #ifndef QSSL_H
 #define QSSL_H
 
-#include <QtCore/qglobal.h>
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/QFlags>
 
 QT_BEGIN_NAMESPACE

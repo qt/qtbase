@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "qnetworkaccessbackend_p.h"
 #include "qnetworkaccesscache_p.h"
 #include "qnetworkrequest.h"

@@ -3,7 +3,9 @@
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
 INCLUDEPATH += $$PWD
 
-HEADERS += kernel/qauthenticator.h \
+HEADERS += kernel/qtnetworkglobal.h \
+           kernel/qtnetworkglobal_p.h \
+           kernel/qauthenticator.h \
 	   kernel/qauthenticator_p.h \
            kernel/qdnslookup.h \
            kernel/qdnslookup_p.h \

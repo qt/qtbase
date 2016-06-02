@@ -40,6 +40,7 @@
 #ifndef QNETWORKCOOKIEJAR_H
 #define QNETWORKCOOKIEJAR_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/QObject>
 #include <QtCore/QUrl>
 

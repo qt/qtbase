@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "private/qabstractnetworkcache_p.h"
 
 #include <qbuffer.h>

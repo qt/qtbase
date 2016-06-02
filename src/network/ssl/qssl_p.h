@@ -53,6 +53,7 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include <QtCore/QLoggingCategory>
 
 QT_BEGIN_NAMESPACE

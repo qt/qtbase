@@ -40,6 +40,7 @@
 #ifndef QTCPSOCKET_H
 #define QTCPSOCKET_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtNetwork/qabstractsocket.h>
 #include <QtCore/qvariant.h>
 

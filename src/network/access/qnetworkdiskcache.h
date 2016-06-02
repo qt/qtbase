@@ -40,6 +40,7 @@
 #ifndef QNETWORKDISKCACHE_H
 #define QNETWORKDISKCACHE_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtNetwork/qabstractnetworkcache.h>
 
 QT_BEGIN_NAMESPACE

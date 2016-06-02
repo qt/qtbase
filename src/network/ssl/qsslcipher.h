@@ -41,6 +41,7 @@
 #ifndef QSSLCIPHER_H
 #define QSSLCIPHER_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtNetwork/qssl.h>

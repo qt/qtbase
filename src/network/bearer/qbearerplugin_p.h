@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "qbearerengine_p.h"
 
 #include <QtCore/qplugin.h>

@@ -40,6 +40,7 @@
 #ifndef QSSLCIPHER_P_H
 #define QSSLCIPHER_P_H
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "qsslcipher.h"
 
 QT_BEGIN_NAMESPACE

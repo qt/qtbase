@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QSHAREDNETWORKSESSIONPRIVATE_H
-#define QSHAREDNETWORKSESSIONPRIVATE_H
+#ifndef QTNETWORKGLOBAL_P_H
+#define QTNETWORKGLOBAL_P_H
 
 //
 //  W A R N I N G
@@ -51,32 +51,7 @@
 // We mean it.
 //
 
-#include <QtNetwork/private/qtnetworkglobal_p.h>
-#include "qnetworksession.h"
-#include "qnetworkconfiguration.h"
-#include <QHash>
-#include <QSharedPointer>
-#include <QWeakPointer>
-#include <QMutex>
+#include <QtNetwork/qtnetworkglobal.h>
+#include <QtCore/private/qglobal_p.h>
 
-#ifndef QT_NO_BEARERMANAGEMENT
-
-QT_BEGIN_NAMESPACE
-
-uint qHash(const QNetworkConfiguration& config);
-
-class QSharedNetworkSessionManager
-{
-public:
-    static QSharedPointer<QNetworkSession> getSession(const QNetworkConfiguration &config);
-    static void setSession(const QNetworkConfiguration &config, QSharedPointer<QNetworkSession> session);
-private:
-    QHash<QNetworkConfiguration, QWeakPointer<QNetworkSession> > sessions;
-};
-
-QT_END_NAMESPACE
-
-#endif // QT_NO_BEARERMANAGEMENT
-
-#endif //QSHAREDNETWORKSESSIONPRIVATE_H
-
+#endif // QTNETWORKGLOBAL_P_H

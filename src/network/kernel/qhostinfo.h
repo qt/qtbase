@@ -40,6 +40,7 @@
 #ifndef QHOSTINFO_H
 #define QHOSTINFO_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtNetwork/qhostaddress.h>

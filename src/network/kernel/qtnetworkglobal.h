@@ -37,46 +37,24 @@
 **
 ****************************************************************************/
 
-#ifndef QSHAREDNETWORKSESSIONPRIVATE_H
-#define QSHAREDNETWORKSESSIONPRIVATE_H
+#ifndef QTNETWORKGLOBAL_H
+#define QTNETWORKGLOBAL_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtNetwork/private/qtnetworkglobal_p.h>
-#include "qnetworksession.h"
-#include "qnetworkconfiguration.h"
-#include <QHash>
-#include <QSharedPointer>
-#include <QWeakPointer>
-#include <QMutex>
-
-#ifndef QT_NO_BEARERMANAGEMENT
+#include <QtCore/qglobal.h>
 
 QT_BEGIN_NAMESPACE
 
-uint qHash(const QNetworkConfiguration& config);
-
-class QSharedNetworkSessionManager
-{
-public:
-    static QSharedPointer<QNetworkSession> getSession(const QNetworkConfiguration &config);
-    static void setSession(const QNetworkConfiguration &config, QSharedPointer<QNetworkSession> session);
-private:
-    QHash<QNetworkConfiguration, QWeakPointer<QNetworkSession> > sessions;
-};
+#ifndef QT_STATIC
+#  if defined(QT_BUILD_NETWORK_LIB)
+#    define Q_NETWORK_EXPORT Q_DECL_EXPORT
+#  else
+#    define Q_NETWORK_EXPORT Q_DECL_IMPORT
+#  endif
+#else
+#  define Q_NETWORK_EXPORT
+#endif
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_BEARERMANAGEMENT
-
-#endif //QSHAREDNETWORKSESSIONPRIVATE_H
+#endif
 

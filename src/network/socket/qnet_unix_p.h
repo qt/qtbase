@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "private/qcore_unix_p.h"
 
 #include <sys/types.h>

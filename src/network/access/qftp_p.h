@@ -48,9 +48,10 @@
 // We mean it.
 //
 
-#ifndef QFTP_H
-#define QFTP_H
+#ifndef QFTP_P_H
+#define QFTP_P_H
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include <QtCore/qstring.h>
 #include <private/qurlinfo_p.h>
 #include <QtCore/qobject.h>
@@ -172,4 +173,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QFTP_H
+#endif // QFTP_P_H

@@ -40,6 +40,7 @@
 #ifndef QLOCALSOCKET_H
 #define QLOCALSOCKET_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/qiodevice.h>
 #include <QtNetwork/qabstractsocket.h>
 

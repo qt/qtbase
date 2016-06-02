@@ -52,6 +52,7 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include <QObject>
 #include <QThreadStorage>
 #include <QNetworkProxy>

@@ -41,6 +41,7 @@
 #ifndef QSSLKEY_H
 #define QSSLKEY_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qsharedpointer.h>

@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "QtNetwork/qabstractsocket.h"
 #include "QtCore/qbytearray.h"
 #include "QtCore/qlist.h"

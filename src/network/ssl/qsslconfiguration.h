@@ -56,6 +56,7 @@
 #ifndef QSSLCONFIGURATION_H
 #define QSSLCONFIGURATION_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/qshareddata.h>
 #include <QtNetwork/qsslsocket.h>
 #include <QtNetwork/qssl.h>

@@ -40,6 +40,7 @@
 #ifndef QNETWORKREQUEST_H
 #define QNETWORKREQUEST_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/QSharedDataPointer>
 #include <QtCore/QString>
 #include <QtCore/QUrl>

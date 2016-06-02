@@ -40,6 +40,7 @@
 #ifndef QABSTRACTNETWORKCACHE_H
 #define QABSTRACTNETWORKCACHE_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qpair.h>

@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include <private/qabstractprotocolhandler_p.h>
 #include <QtNetwork/qnetworkreply.h>
 #include <private/qbytedata_p.h>

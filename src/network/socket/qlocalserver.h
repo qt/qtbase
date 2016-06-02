@@ -40,6 +40,7 @@
 #ifndef QLOCALSERVER_H
 #define QLOCALSERVER_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtNetwork/qabstractsocket.h>
 
 QT_BEGIN_NAMESPACE

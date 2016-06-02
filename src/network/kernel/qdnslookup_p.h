@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "QtCore/qmutex.h"
 #include "QtCore/qrunnable.h"
 #include "QtCore/qsharedpointer.h"

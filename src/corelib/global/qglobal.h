@@ -301,15 +301,9 @@ typedef double qreal;
 #  else
 #    define Q_WIDGETS_EXPORT Q_DECL_IMPORT
 #  endif
-#  if defined(QT_BUILD_NETWORK_LIB)
-#    define Q_NETWORK_EXPORT Q_DECL_EXPORT
-#  else
-#    define Q_NETWORK_EXPORT Q_DECL_IMPORT
-#  endif
 #else
 #  define Q_CORE_EXPORT
 #  define Q_WIDGETS_EXPORT
-#  define Q_NETWORK_EXPORT
 #endif
 
 /*

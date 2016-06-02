@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "QtNetwork/qtcpserver.h"
 #include "private/qobject_p.h"
 #include "private/qabstractsocketengine_p.h"

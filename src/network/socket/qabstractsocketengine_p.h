@@ -52,6 +52,7 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "QtNetwork/qhostaddress.h"
 #include "QtNetwork/qabstractsocket.h"
 #include "private/qobject_p.h"

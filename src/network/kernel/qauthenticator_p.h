@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include <qhash.h>
 #include <qbytearray.h>
 #include <qstring.h>

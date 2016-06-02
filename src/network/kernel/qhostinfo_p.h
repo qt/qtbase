@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "QtCore/qcoreapplication.h"
 #include "private/qcoreapplication_p.h"
 #include "QtNetwork/qhostinfo.h"

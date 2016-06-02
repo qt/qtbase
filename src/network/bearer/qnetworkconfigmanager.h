@@ -40,6 +40,7 @@
 #ifndef QNETWORKCONFIGMANAGER_H
 #define QNETWORKCONFIGMANAGER_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/qobject.h>
 #include <QtNetwork/qnetworkconfiguration.h>
 

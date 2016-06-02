@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "QtCore/qobject.h"
 #include "QtCore/qbasictimer.h"
 #include "QtCore/qbytearray.h"

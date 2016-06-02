@@ -40,7 +40,7 @@
 #ifndef QNETWORKCONFIGURATION_H
 #define QNETWORKCONFIGURATION_H
 
-# include <QtCore/qglobal.h>
+#include <QtNetwork/qtnetworkglobal.h>
 
 #include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h>

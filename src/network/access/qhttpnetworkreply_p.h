@@ -50,8 +50,12 @@
 //
 // We mean it.
 //
-#include <qplatformdefs.h>
+
+#include <QtNetwork/private/qtnetworkglobal_p.h>
+
 #ifndef QT_NO_HTTP
+
+#include <qplatformdefs.h>
 
 #ifndef QT_NO_COMPRESS
 struct z_stream_s;

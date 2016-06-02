@@ -41,8 +41,6 @@
 #ifndef QSSLKEY_OPENSSL_P_H
 #define QSSLKEY_OPENSSL_P_H
 
-#include "qsslkey.h"
-
 //
 //  W A R N I N G
 //  -------------
@@ -54,6 +52,8 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
+#include "qsslkey.h"
 #include "qsslsocket_p.h" // includes wincrypt.h
 
 #ifndef QT_NO_OPENSSL

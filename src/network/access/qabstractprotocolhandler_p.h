@@ -51,9 +51,9 @@
 // We mean it.
 //
 
-#ifndef QT_NO_HTTP
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 
-#include <QtCore/qglobal.h>
+#ifndef QT_NO_HTTP
 
 QT_BEGIN_NAMESPACE
 

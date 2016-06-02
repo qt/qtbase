@@ -40,6 +40,7 @@
 #ifndef QTCPSERVER_H
 #define QTCPSERVER_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/qobject.h>
 #include <QtNetwork/qabstractsocket.h>
 #include <QtNetwork/qhostaddress.h>

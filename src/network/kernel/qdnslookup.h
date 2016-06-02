@@ -40,6 +40,7 @@
 #ifndef QDNSLOOKUP_H
 #define QDNSLOOKUP_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qshareddata.h>

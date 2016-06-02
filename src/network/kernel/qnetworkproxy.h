@@ -40,6 +40,7 @@
 #ifndef QNETWORKPROXY_H
 #define QNETWORKPROXY_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtNetwork/qhostaddress.h>
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtCore/qshareddata.h>

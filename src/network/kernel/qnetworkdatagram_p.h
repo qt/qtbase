@@ -45,6 +45,7 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include <QtNetwork/qhostaddress.h>
 
 QT_BEGIN_NAMESPACE

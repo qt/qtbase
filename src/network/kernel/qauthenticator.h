@@ -40,6 +40,7 @@
 #ifndef QAUTHENTICATOR_H
 #define QAUTHENTICATOR_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qvariant.h>
 

@@ -40,6 +40,7 @@
 #ifndef QNETWORKSESSION_H
 #define QNETWORKSESSION_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
 #include <QtNetwork/qnetworkinterface.h>

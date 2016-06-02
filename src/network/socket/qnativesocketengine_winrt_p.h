@@ -50,6 +50,8 @@
 //
 // We mean it.
 //
+
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include <QtCore/QEventLoop>
 #include <QtCore/QBuffer>
 #include <QtCore/QMutex>

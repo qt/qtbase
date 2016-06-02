@@ -50,6 +50,9 @@
 //
 // We mean it.
 //
+
+#include <QtNetwork/private/qtnetworkglobal_p.h>
+
 #ifndef QT_NO_HTTP
 
 #include <qshareddata.h>

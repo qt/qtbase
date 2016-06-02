@@ -40,6 +40,7 @@
 #ifndef QHTTPMULTIPART_H
 #define QHTTPMULTIPART_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/QSharedDataPointer>
 #include <QtCore/QByteArray>
 #include <QtCore/QIODevice>

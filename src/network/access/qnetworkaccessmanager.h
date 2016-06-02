@@ -40,6 +40,7 @@
 #ifndef QNETWORKACCESSMANAGER_H
 #define QNETWORKACCESSMANAGER_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/QObject>
 #ifndef QT_NO_SSL
 #include <QtNetwork/QSslConfiguration>

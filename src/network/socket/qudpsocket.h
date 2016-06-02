@@ -40,6 +40,7 @@
 #ifndef QUDPSOCKET_H
 #define QUDPSOCKET_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtNetwork/qabstractsocket.h>
 #include <QtNetwork/qhostaddress.h>
 

@@ -41,6 +41,7 @@
 #ifndef QSSLCERTIFICATE_OPENSSL_P_H
 #define QSSLCERTIFICATE_OPENSSL_P_H
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "qsslcertificate.h"
 
 //

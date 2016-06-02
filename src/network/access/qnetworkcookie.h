@@ -40,6 +40,7 @@
 #ifndef QNETWORKCOOKIE_H
 #define QNETWORKCOOKIE_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/QSharedDataPointer>
 #include <QtCore/QList>
 #include <QtCore/QMetaType>

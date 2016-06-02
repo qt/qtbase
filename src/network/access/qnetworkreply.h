@@ -40,6 +40,7 @@
 #ifndef QNETWORKREPLY_H
 #define QNETWORKREPLY_H
 
+#include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/QIODevice>
 #include <QtCore/QString>
 #include <QtCore/QVariant>

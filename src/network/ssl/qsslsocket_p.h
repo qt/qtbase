@@ -54,6 +54,7 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include <private/qtcpsocket_p.h>
 #include "qsslkey.h"
 #include "qsslconfiguration_p.h"
