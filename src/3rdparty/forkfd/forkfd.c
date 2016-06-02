@@ -30,6 +30,9 @@
 #include "forkfd.h"
 
 #include <sys/types.h>
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+#  include <sys/param.h>
+#endif
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/wait.h>
@@ -65,7 +68,9 @@
 #  undef HAVE_WAITID
 #endif
 
-#if defined(__FreeBSD__) && defined(__FreeBSD_version) && __FreeBSD_version >= 1000032
+#if (defined(__FreeBSD__) && defined(__FreeBSD_version) && __FreeBSD_version >= 1000032) || \
+    (defined(__OpenBSD__) && OpenBSD >= 201505) || \
+    (defined(__NetBSD__) && __NetBSD_Version__ >= 600000000)
 #  define HAVE_PIPE2    1
 #endif
 #if defined(__FreeBSD__) || defined(__DragonFly__) || defined(__FreeBSD_kernel__) || \
