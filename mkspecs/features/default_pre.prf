@@ -48,10 +48,11 @@ isEmpty(QMAKE_DEFAULT_INCDIRS):!host_build {
                     QMAKE_DEFAULT_LIBDIRS += $$clean_path($$path)
             } else: contains(line, "$${LITERAL_HASH}include <.*") {  # #include <...> search starts here:
                 add_includes = true
-            } else: contains(line, "End of search list.*") {
+            } else: contains(line, "End of search.*") {
                 add_includes = false
-            } else {
-                $$add_includes: QMAKE_DEFAULT_INCDIRS += $$clean_path($$line)
+            } else: $$add_includes {
+                !contains(line, ".* \\(framework directory\\)"): \
+                    QMAKE_DEFAULT_INCDIRS += $$clean_path($$line)
             }
         }
         QMAKE_DEFAULT_LIBDIRS = $$unique(QMAKE_DEFAULT_LIBDIRS)
