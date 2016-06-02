@@ -84,6 +84,7 @@ public class QtNative
     private static final int m_moveThreshold = 0;
     private static ClipboardManager m_clipboardManager = null;
     private static Method m_checkSelfPermissionMethod = null;
+    private static Boolean m_tabletEventSupported = null;
 
     private static ClassLoader m_classLoader = null;
     public static ClassLoader classLoader()
@@ -343,6 +344,9 @@ public class QtNative
     {
         int pointerType = 0;
 
+        if (m_tabletEventSupported == null)
+            m_tabletEventSupported = isTabletEventSupported();
+
         if (Build.VERSION.SDK_INT >= 14) {
             switch (event.getToolType(0)) {
             case MotionEvent.TOOL_TYPE_STYLUS:
@@ -355,7 +359,7 @@ public class QtNative
             }
         }
 
-        if (pointerType != 0) {
+        if (m_tabletEventSupported && pointerType != 0) {
             tabletEvent(id, event.getDeviceId(), event.getEventTime(), event.getAction(), pointerType,
                 event.getButtonState(), event.getX(), event.getY(), event.getPressure());
         } else {
@@ -685,6 +689,7 @@ public class QtNative
     // pointer methods
 
     // tablet methods
+    public static native boolean isTabletEventSupported();
     public static native void tabletEvent(int winId, int deviceId, long time, int action, int pointerType, int buttonState, float x, float y, float pressure);
     // tablet methods
 

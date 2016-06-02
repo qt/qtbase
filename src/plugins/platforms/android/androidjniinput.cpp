@@ -246,9 +246,19 @@ namespace QtAndroidInput
         QWindowSystemInterface::handleTouchEvent(window, touchDevice, m_touchPoints);
     }
 
+    static bool isTabletEventSupported(JNIEnv */*env*/, jobject /*thiz*/)
+    {
+#ifdef QT_NO_TABLETEVENT
+        return false;
+#else
+        return true;
+#endif // QT_NO_TABLETEVENT
+    }
+
     static void tabletEvent(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint deviceId, jlong time, jint action,
         jint pointerType, jint buttonState, jfloat x, jfloat y, jfloat pressure)
     {
+#ifndef QT_NO_TABLETEVENT
         QPointF globalPosF(x, y);
         QPoint globalPos((int)x, (int)y);
         QWindow *tlw = topLevelWindowAt(globalPos);
@@ -290,6 +300,7 @@ namespace QtAndroidInput
         QWindowSystemInterface::handleTabletEvent(tlw, ulong(time),
             localPos, globalPosF, QTabletEvent::Stylus, pointerType,
             buttons, pressure, 0, 0, 0., 0., 0, deviceId, Qt::NoModifier);
+#endif // QT_NO_TABLETEVENT
     }
 
     static int mapAndroidKey(int key)
@@ -777,6 +788,7 @@ namespace QtAndroidInput
         {"mouseUp", "(III)V", (void *)mouseUp},
         {"mouseMove", "(III)V", (void *)mouseMove},
         {"longPress", "(III)V", (void *)longPress},
+        {"isTabletEventSupported", "()Z", (void *)isTabletEventSupported},
         {"tabletEvent", "(IIJIIIFFF)V", (void *)tabletEvent},
         {"keyDown", "(IIIZ)V", (void *)keyDown},
         {"keyUp", "(IIIZ)V", (void *)keyUp},
