@@ -2430,7 +2430,7 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
         html += QLatin1Char(';');
         attributesEmitted = true;
     } else {
-        html.chop(qstrlen(decorationTag.latin1()));
+        html.chop(decorationTag.size());
     }
 
     if (format.foreground() != defaultCharFormat.foreground()
@@ -2665,7 +2665,7 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
     if (attributesEmitted)
         html += QLatin1String("\">");
     else
-        html.chop(qstrlen(styleTag.latin1()));
+        html.chop(styleTag.size());
 
     if (isObject) {
         for (int i = 0; isImage && i < txt.length(); ++i) {
@@ -3227,7 +3227,7 @@ void QTextHtmlExporter::emitFrameStyle(const QTextFrameFormat &format, FrameType
                     QString::number(format.rightMargin()));
 
     if (html.length() == originalHtmlLength) // nothing emitted?
-        html.chop(qstrlen(styleAttribute.latin1()));
+        html.chop(styleAttribute.size());
     else
         html += QLatin1Char('\"');
 }
