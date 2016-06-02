@@ -1224,21 +1224,21 @@ void QNativeSocketEnginePrivate::handleConnectionEstablished(IAsyncAction *actio
     case 0x8007274c: // A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
         setError(QAbstractSocket::NetworkError, ConnectionTimeOutErrorString);
         socketState = QAbstractSocket::UnconnectedState;
-        break;
+        return;
     case 0x80072751: // A socket operation was attempted to an unreachable host.
         setError(QAbstractSocket::HostNotFoundError, HostUnreachableErrorString);
         socketState = QAbstractSocket::UnconnectedState;
-        break;
+        return;
     case 0x8007274d: // No connection could be made because the target machine actively refused it.
         setError(QAbstractSocket::ConnectionRefusedError, ConnectionRefusedErrorString);
         socketState = QAbstractSocket::UnconnectedState;
-        break;
+        return;
     default:
         if (FAILED(hr)) {
             setError(QAbstractSocket::UnknownSocketError, UnknownSocketErrorString);
             socketState = QAbstractSocket::UnconnectedState;
+            return;
         }
-        break;
     }
 
     // The callback might be triggered several times if we do not cancel/reset it here
