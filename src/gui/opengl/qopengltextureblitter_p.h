@@ -83,8 +83,8 @@ public:
     static QMatrix3x3 sourceTransform(const QRectF &subTexture, const QSize &textureSize, Origin origin);
 
 private:
-    Q_DISABLE_COPY(QOpenGLTextureBlitter);
-    Q_DECLARE_PRIVATE(QOpenGLTextureBlitter);
+    Q_DISABLE_COPY(QOpenGLTextureBlitter)
+    Q_DECLARE_PRIVATE(QOpenGLTextureBlitter)
     QScopedPointer<QOpenGLTextureBlitterPrivate> d_ptr;
 };
 

@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 class Q_GUI_EXPORT  QBlittablePlatformPixmap : public QPlatformPixmap
 {
-//     Q_DECLARE_PRIVATE(QBlittablePlatformPixmap);
+//     Q_DECLARE_PRIVATE(QBlittablePlatformPixmap)
 public:
     QBlittablePlatformPixmap();
     ~QBlittablePlatformPixmap();

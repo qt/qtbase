@@ -56,7 +56,7 @@ class QBlittable;
 
 class Q_GUI_EXPORT QBlitterPaintEngine : public QRasterPaintEngine
 {
-    Q_DECLARE_PRIVATE(QBlitterPaintEngine);
+    Q_DECLARE_PRIVATE(QBlitterPaintEngine)
 public:
     QBlitterPaintEngine(QBlittablePlatformPixmap *p);
 
