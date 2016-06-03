@@ -37,14 +37,13 @@
 **
 ****************************************************************************/
 
-#include "qwindowsintegration.h"
-#include "qwindowsfontengine.h"
-#include "qwindowsnativeimage.h"
-#include "qwindowscontext.h"
-#include "qwindowsfontdatabase.h"
+#include "qwindowsfontengine_p.h"
+#include "qwindowsnativeimage_p.h"
+#include "qwindowsfontdatabase_p.h"
 #include <QtCore/qt_windows.h>
-#include "qwindowsfontenginedirectwrite.h"
+#include "qwindowsfontenginedirectwrite_p.h"
 
+#include <QtGui/qpa/qplatformintegration.h>
 #include <QtGui/private/qtextengine_p.h> // glyph_metrics_t
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/QPaintDevice>
@@ -315,8 +314,10 @@ QWindowsFontEngine::~QWindowsFontEngine()
     qCDebug(lcQpaFonts) << __FUNCTION__ << _name;
 
     if (!uniqueFamilyName.isEmpty()) {
-        QPlatformFontDatabase *pfdb = QWindowsIntegration::instance()->fontDatabase();
-        static_cast<QWindowsFontDatabase *>(pfdb)->derefUniqueFont(uniqueFamilyName);
+        if (QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration()) {
+            QPlatformFontDatabase *pfdb = pi->fontDatabase();
+            static_cast<QWindowsFontDatabase *>(pfdb)->derefUniqueFont(uniqueFamilyName);
+        }
     }
 }
 
@@ -1194,14 +1195,16 @@ QFontEngine *QWindowsFontEngine::cloneWithSize(qreal pixelSize) const
 
     QFontEngine *fontEngine =
         QWindowsFontDatabase::createEngine(request,
-                                           QWindowsContext::instance()->defaultDPI(),
+                                           QWindowsFontDatabase::defaultVerticalDPI(),
                                            m_fontEngineData);
     if (fontEngine) {
         fontEngine->fontDef.family = actualFontName;
         if (!uniqueFamilyName.isEmpty()) {
             static_cast<QWindowsFontEngine *>(fontEngine)->setUniqueFamilyName(uniqueFamilyName);
-            QPlatformFontDatabase *pfdb = QWindowsIntegration::instance()->fontDatabase();
-            static_cast<QWindowsFontDatabase *>(pfdb)->refUniqueFont(uniqueFamilyName);
+            if (QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration()) {
+                QPlatformFontDatabase *pfdb = pi->fontDatabase();
+                static_cast<QWindowsFontDatabase *>(pfdb)->refUniqueFont(uniqueFamilyName);
+            }
         }
     }
     return fontEngine;
@@ -1325,4 +1328,3 @@ bool QWindowsFontEngine::supportsTransformation(const QTransform &transform) con
 }
 
 QT_END_NAMESPACE
-

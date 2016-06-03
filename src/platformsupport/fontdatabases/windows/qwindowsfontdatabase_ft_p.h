@@ -40,6 +40,17 @@
 #ifndef QWINDOWSFONTDATABASEFT_H
 #define QWINDOWSFONTDATABASEFT_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtFontDatabaseSupport/private/qbasicfontdatabase_p.h>
 #include <QtCore/QSharedPointer>
 #include <QtCore/qt_windows.h>

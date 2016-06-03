@@ -41,7 +41,6 @@
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"
 #include "qwindowscursor.h"
-#include "qwindowsfontdatabase.h"
 #include "qwindowsopenglcontext.h"
 #include "qwindowsopengltester.h"
 #include "qwindowsintegration.h"
@@ -51,6 +50,7 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
 #include <qpa/qplatformscreen.h>
+#include <QtFontDatabaseSupport/private/qwindowsfontdatabase_p.h>
 
 QT_BEGIN_NAMESPACE
 

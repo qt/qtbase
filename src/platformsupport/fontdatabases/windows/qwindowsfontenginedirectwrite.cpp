@@ -39,9 +39,8 @@
 
 #ifndef QT_NO_DIRECTWRITE
 
-#include "qwindowsfontenginedirectwrite.h"
-#include "qwindowsfontdatabase.h"
-#include "qwindowscontext.h"
+#include "qwindowsfontenginedirectwrite_p.h"
+#include "qwindowsfontdatabase_p.h"
 
 #include <QtCore/QSettings>
 #include <QtCore/QtEndian>

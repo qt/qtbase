@@ -37,8 +37,7 @@
 **
 ****************************************************************************/
 
-#include "qwindowsnativeimage.h"
-#include "qwindowscontext.h"
+#include "qwindowsnativeimage_p.h"
 
 #include <QtGui/private/qpaintengine_p.h>
 #include <QtGui/private/qpaintengine_raster_p.h>
@@ -143,7 +142,17 @@ QWindowsNativeImage::~QWindowsNativeImage()
 
 QImage::Format QWindowsNativeImage::systemFormat()
 {
-    static const int depth = QWindowsContext::instance()->screenDepth();
+    static int depth = -1;
+    if (depth == -1) {
+        if (HDC defaultDC = GetDC(0)) {
+            depth = GetDeviceCaps(defaultDC, BITSPIXEL);
+            ReleaseDC(0, defaultDC);
+        } else {
+            // FIXME Same remark as in QWindowsFontDatabase::defaultVerticalDPI()
+            // BONUS FIXME: Is 32 too generous/optimistic?
+            depth = 32;
+        }
+    }
     return depth == 16 ? QImage::Format_RGB16 : QImage::Format_RGB32;
 }
 

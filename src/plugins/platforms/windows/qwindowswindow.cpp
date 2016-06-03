@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qwindowswindow.h"
-#include "qwindowsnativeimage.h"
 #include "qwindowscontext.h"
 #include "qwindowsdrag.h"
 #include "qwindowsscreen.h"

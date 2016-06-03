@@ -40,8 +40,20 @@
 #ifndef QWINDOWSFONTDATABASE_H
 #define QWINDOWSFONTDATABASE_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <qpa/qplatformfontdatabase.h>
 #include <QtCore/QSharedPointer>
+#include <QtCore/QLoggingCategory>
 #include <QtCore/qt_windows.h>
 
 #if !defined(QT_NO_DIRECTWRITE)
@@ -50,6 +62,8 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaFonts)
 
 class QWindowsFontEngineData
 {
@@ -72,6 +86,12 @@ public:
 class QWindowsFontDatabase : public QPlatformFontDatabase
 {
 public:
+    enum FontOptions {
+        // Relevant bits from QWindowsIntegration::Options
+        DontUseDirectWriteFonts = 0x40,
+        DontUseColorFonts = 0x80
+    };
+
     QWindowsFontDatabase();
     ~QWindowsFontDatabase();
 
@@ -105,6 +125,11 @@ public:
     static QStringList extraTryFontsForFamily(const QString &family);
     static QString familyForStyleHint(QFont::StyleHint styleHint);
 
+    static int defaultVerticalDPI();
+
+    static void setFontOptions(unsigned options);
+    static unsigned fontOptions();
+
 private:
     void populateFamily(const QString &familyName, bool registerAlias);
     void removeApplicationFonts();
@@ -122,6 +147,8 @@ private:
     };
 
     QMap<QString, UniqueFontData> m_uniqueFontData;
+
+    static unsigned m_fontOptions;
 };
 
 #ifndef QT_NO_DEBUG_STREAM

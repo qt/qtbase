@@ -37,12 +37,10 @@
 **
 ****************************************************************************/
 
-#include "qwindowsfontdatabase.h"
-#include "qwindowsfontdatabase_ft.h" // for default font
-#include "qwindowscontext.h"
-#include "qwindowsintegration.h"
-#include "qwindowsfontengine.h"
-#include "qwindowsfontenginedirectwrite.h"
+#include "qwindowsfontdatabase_p.h"
+#include "qwindowsfontdatabase_ft_p.h" // for default font
+#include "qwindowsfontengine_p.h"
+#include "qwindowsfontenginedirectwrite_p.h"
 #include <QtCore/qt_windows.h>
 
 #include <QtGui/QFont>
@@ -68,6 +66,8 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcQpaFonts, "qt.qpa.fonts")
 
 #ifndef QT_NO_DIRECTWRITE
 // ### fixme: Consider direct linking of dwrite.dll once Windows Vista pre SP2 is dropped (QTBUG-49711)
@@ -114,16 +114,17 @@ static inline bool useDirectWrite(QFont::HintingPreference hintingPreference,
                                   const QString &familyName = QString(),
                                   bool isColorFont = false)
 {
-    const unsigned options = QWindowsIntegration::instance()->options();
-    if (Q_UNLIKELY(options & QWindowsIntegration::DontUseDirectWriteFonts))
+    const unsigned options = QWindowsFontDatabase::fontOptions();
+    if (Q_UNLIKELY(options & QWindowsFontDatabase::DontUseDirectWriteFonts))
         return false;
-    if (isColorFont)
-        return (options & QWindowsIntegration::DontUseColorFonts) == 0;
 
     // At some scales, GDI will misrender the MingLiU font, so we force use of
     // DirectWrite to work around the issue.
     if (Q_UNLIKELY(familyName.startsWith(QLatin1String("MingLiU"))))
         return true;
+
+    if (isColorFont)
+        return (options & QWindowsFontDatabase::DontUseColorFonts) == 0;
 
     return hintingPreference == QFont::PreferNoHinting
         || hintingPreference == QFont::PreferVerticalHinting
@@ -610,6 +611,19 @@ QWindowsFontEngineData::QWindowsFontEngineData()
     ReleaseDC(0, displayDC);
 }
 
+unsigned QWindowsFontDatabase::m_fontOptions = 0;
+
+void QWindowsFontDatabase::setFontOptions(unsigned options)
+{
+    m_fontOptions = options & (QWindowsFontDatabase::DontUseDirectWriteFonts |
+                               QWindowsFontDatabase::DontUseColorFonts);
+}
+
+unsigned QWindowsFontDatabase::fontOptions()
+{
+    return m_fontOptions;
+}
+
 QWindowsFontEngineData::~QWindowsFontEngineData()
 {
     if (hdc)
@@ -992,7 +1006,7 @@ static bool addFontToDatabase(const QString &familyName, const QString &styleNam
     const QFont::Stretch stretch = QFont::Unstretched;
 
 #ifndef QT_NO_DEBUG_OUTPUT
-    if (QWindowsContext::verbose > 2) {
+    if (lcQpaFonts().isDebugEnabled()) {
         QString message;
         QTextStream str(&message);
         str << __FUNCTION__ << ' ' << familyName << ' ' << charSet << " TTF=" << ttf;
@@ -1214,7 +1228,7 @@ QFontEngineMulti *QWindowsFontDatabase::fontEngineMulti(QFontEngine *fontEngine,
 QFontEngine * QWindowsFontDatabase::fontEngine(const QFontDef &fontDef, void *handle)
 {
     QFontEngine *fe = QWindowsFontDatabase::createEngine(fontDef,
-                                                         QWindowsContext::instance()->defaultDPI(),
+                                                         defaultVerticalDPI(),
                                                          sharedFontData());
     qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDEF" << fontDef << fe << handle;
     return fe;
@@ -1268,7 +1282,7 @@ QT_WARNING_POP
             request.stretch = QFont::Unstretched;
 
             fontEngine = QWindowsFontDatabase::createEngine(request,
-                                                            QWindowsContext::instance()->defaultDPI(),
+                                                            defaultVerticalDPI(),
                                                             sharedFontData());
 
             if (fontEngine) {
@@ -1924,11 +1938,6 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
     return fe;
 }
 
-static inline int verticalDPI()
-{
-    return GetDeviceCaps(QWindowsContext::instance()->displayContext(), LOGPIXELSY);
-}
-
 QFont QWindowsFontDatabase::systemDefaultFont()
 {
     LOGFONT lf;
@@ -1944,7 +1953,7 @@ QFont QWindowsFontDatabase::systemDefaultFont()
 QFont QWindowsFontDatabase::LOGFONT_to_QFont(const LOGFONT& logFont, int verticalDPI_In)
 {
     if (verticalDPI_In <= 0)
-        verticalDPI_In = verticalDPI();
+        verticalDPI_In = defaultVerticalDPI();
     QFont qFont(QString::fromWCharArray(logFont.lfFaceName));
     qFont.setItalic(logFont.lfItalic);
     if (logFont.lfWeight != FW_DONTCARE)
@@ -1955,6 +1964,21 @@ QFont QWindowsFontDatabase::LOGFONT_to_QFont(const LOGFONT& logFont, int vertica
     qFont.setOverline(false);
     qFont.setStrikeOut(logFont.lfStrikeOut);
     return qFont;
+}
+
+int QWindowsFontDatabase::defaultVerticalDPI()
+{
+    static int vDPI = -1;
+    if (vDPI == -1) {
+        if (HDC defaultDC = GetDC(0)) {
+            vDPI = GetDeviceCaps(defaultDC, LOGPIXELSY);
+            ReleaseDC(0, defaultDC);
+        } else {
+            // FIXME: Resolve now or return 96 and keep unresolved?
+            vDPI = 96;
+        }
+    }
+    return vDPI;
 }
 
 QT_END_NAMESPACE

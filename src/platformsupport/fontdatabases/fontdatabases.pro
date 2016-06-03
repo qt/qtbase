@@ -20,6 +20,10 @@ darwin:!if(watchos:CONFIG(simulator, simulator|device)) {
             include($$PWD/fontconfig/fontconfig.pri)
         }
     }
+
+    win32:!winrt {
+        include($$PWD/windows/windows.pri)
+    }
 }
 
 load(qt_module)

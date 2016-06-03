@@ -37,9 +37,8 @@
 **
 ****************************************************************************/
 
-#include "qwindowsfontdatabase_ft.h"
-#include "qwindowsfontdatabase.h"
-#include "qwindowscontext.h"
+#include "qwindowsfontdatabase_ft_p.h"
+#include "qwindowsfontdatabase_p.h"
 
 #include <ft2build.h>
 #include FT_TRUETYPE_TABLES_H
@@ -188,7 +187,7 @@ static bool addFontToDatabase(const QString &faceName,
     const QFont::Stretch stretch = QFont::Unstretched;
 
 #ifndef QT_NO_DEBUG_STREAM
-    if (QWindowsContext::verbose > 2) {
+    if (lcQpaFonts().isDebugEnabled()) {
         QString message;
         QTextStream str(&message);
         str << __FUNCTION__ << ' ' << faceName << "::" << fullName << ' ' << charSet << " TTF=" << ttf;

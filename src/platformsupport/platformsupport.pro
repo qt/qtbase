@@ -7,7 +7,7 @@ SUBDIRS = \
     fbconvenience \
     themes
 
-qtConfig(freetype)|if(darwin:!if(watchos:CONFIG(simulator, simulator|device))): \
+qtConfig(freetype)|if(darwin:!if(watchos:CONFIG(simulator, simulator|device)))|win32: \
     SUBDIRS += fontdatabases
 
 qtConfig(evdev)|qtConfig(tslib)|qtConfig(libinput) {
