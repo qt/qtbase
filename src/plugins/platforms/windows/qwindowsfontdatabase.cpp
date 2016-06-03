@@ -944,7 +944,7 @@ error:
     return i18n_name;
 }
 
-static bool addFontToDatabase(const QString &familyName, uchar charSet,
+static bool addFontToDatabase(const QString &familyName, const QString &styleName, uchar charSet,
                               const TEXTMETRIC *textmetric,
                               const FONTSIGNATURE *signature,
                               int type,
@@ -1012,16 +1012,16 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
             writingSystems.setSupported(ws);
     }
 
-    QPlatformFontDatabase::registerFont(familyName, QString(), foundryName, weight,
+    QPlatformFontDatabase::registerFont(familyName, styleName, foundryName, weight,
                                         style, stretch, antialias, scalable, size, fixed, writingSystems, 0);
     // add fonts windows can generate for us:
-    if (weight <= QFont::DemiBold)
+    if (weight <= QFont::DemiBold && styleName.isEmpty())
         QPlatformFontDatabase::registerFont(familyName, QString(), foundryName, QFont::Bold,
                                             style, stretch, antialias, scalable, size, fixed, writingSystems, 0);
-    if (style != QFont::StyleItalic)
+    if (style != QFont::StyleItalic && styleName.isEmpty())
         QPlatformFontDatabase::registerFont(familyName, QString(), foundryName, weight,
                                             QFont::StyleItalic, stretch, antialias, scalable, size, fixed, writingSystems, 0);
-    if (weight <= QFont::DemiBold && style != QFont::StyleItalic)
+    if (weight <= QFont::DemiBold && style != QFont::StyleItalic && styleName.isEmpty())
         QPlatformFontDatabase::registerFont(familyName, QString(), foundryName, QFont::Bold,
                                             QFont::StyleItalic, stretch, antialias, scalable, size, fixed, writingSystems, 0);
 
@@ -1036,6 +1036,7 @@ static int QT_WIN_CALLBACK storeFont(const LOGFONT *logFont, const TEXTMETRIC *t
 {
     const ENUMLOGFONTEX *f = reinterpret_cast<const ENUMLOGFONTEX *>(logFont);
     const QString familyName = QString::fromWCharArray(f->elfLogFont.lfFaceName);
+    const QString styleName = QString::fromWCharArray(f->elfStyle);
     const uchar charSet = f->elfLogFont.lfCharSet;
     const bool registerAlias = bool(lParam);
 
@@ -1045,7 +1046,7 @@ static int QT_WIN_CALLBACK storeFont(const LOGFONT *logFont, const TEXTMETRIC *t
     const FONTSIGNATURE *signature = Q_NULLPTR;
     if (type & TRUETYPE_FONTTYPE)
         signature = &reinterpret_cast<const NEWTEXTMETRICEX *>(textmetric)->ntmFontSig;
-    addFontToDatabase(familyName, charSet, textmetric, signature, type, registerAlias);
+    addFontToDatabase(familyName, styleName, charSet, textmetric, signature, type, registerAlias);
 
     // keep on enumerating
     return 1;
@@ -1456,6 +1457,7 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
         // Memory fonts won't show up in enumeration, so do add them the hard way.
         for (int j = 0; j < families.count(); ++j) {
             const QString familyName = families.at(j).name;
+            const QString styleName = families.at(j).style;
             familyNames << familyName;
             HDC hdc = GetDC(0);
             LOGFONT lf;
@@ -1468,7 +1470,7 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
             TEXTMETRIC textMetrics;
             GetTextMetrics(hdc, &textMetrics);
 
-            addFontToDatabase(familyName, lf.lfCharSet, &textMetrics, &signatures.at(j),
+            addFontToDatabase(familyName, styleName, lf.lfCharSet, &textMetrics, &signatures.at(j),
                               TRUETYPE_FONTTYPE, true);
 
             SelectObject(hdc, oldobj);
