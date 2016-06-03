@@ -40,11 +40,11 @@
 #ifndef QPRINTER_H
 #define QPRINTER_H
 
+#include <QtPrintSupport/qtprintsupportglobal.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtGui/qpagedpaintdevice.h>
 #include <QtGui/qpagelayout.h>
-#include <QtPrintSupport/qtprintsupportglobal.h>
 
 QT_BEGIN_NAMESPACE
 

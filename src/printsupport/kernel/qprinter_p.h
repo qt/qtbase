@@ -52,7 +52,7 @@
 //
 
 
-#include "QtCore/qglobal.h"
+#include <QtPrintSupport/private/qtprintsupportglobal_p.h>
 
 #ifndef QT_NO_PRINTER
 

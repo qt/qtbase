@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtPrintSupport/private/qtprintsupportglobal_p.h>
 #include "private/qprint_p.h"
 
 #include <QtCore/qsharedpointer.h>

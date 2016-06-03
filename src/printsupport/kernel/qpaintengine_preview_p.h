@@ -52,6 +52,7 @@
 //
 //
 
+#include <QtPrintSupport/private/qtprintsupportglobal_p.h>
 #include <QtGui/qpaintengine.h>
 #include <QtPrintSupport/qprintengine.h>
 

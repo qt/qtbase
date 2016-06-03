@@ -40,6 +40,7 @@
 #ifndef QPRINTERINFO_H
 #define QPRINTERINFO_H
 
+#include <QtPrintSupport/qtprintsupportglobal.h>
 #include <QtPrintSupport/qprinter.h>
 
 #include <QtCore/QList>

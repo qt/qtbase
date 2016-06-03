@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtPrintSupport module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,45 +37,21 @@
 **
 ****************************************************************************/
 
-#ifndef QPAGESETUPDIALOG_H
-#define QPAGESETUPDIALOG_H
+#ifndef QTPRINTSUPPORTGLOBAL_P_H
+#define QTPRINTSUPPORTGLOBAL_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
 #include <QtPrintSupport/qtprintsupportglobal.h>
-#include <QtWidgets/qdialog.h>
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 
-QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_PRINTDIALOG
-
-class QPrinter;
-class QPageSetupDialogPrivate;
-
-class Q_PRINTSUPPORT_EXPORT QPageSetupDialog : public QDialog
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QPageSetupDialog)
-
-public:
-    explicit QPageSetupDialog(QPrinter *printer, QWidget *parent = Q_NULLPTR);
-    explicit QPageSetupDialog(QWidget *parent = Q_NULLPTR);
-    ~QPageSetupDialog();
-
-#if defined(Q_OS_MAC) || defined(Q_OS_WIN)
-    void setVisible(bool visible) Q_DECL_OVERRIDE;
-#endif
-    int exec() Q_DECL_OVERRIDE;
-
-    using QDialog::open;
-    void open(QObject *receiver, const char *member);
-
-    void done(int result) Q_DECL_OVERRIDE;
-
-    QPrinter *printer();
-};
-
-#endif // QT_NO_PRINTDIALOG
-
-QT_END_NAMESPACE
-
-#endif // QPAGESETUPDIALOG_H
+#endif // QTPRINTSUPPORTGLOBAL_P_H

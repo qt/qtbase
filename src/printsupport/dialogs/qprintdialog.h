@@ -40,6 +40,7 @@
 #ifndef QPRINTDIALOG_H
 #define QPRINTDIALOG_H
 
+#include <QtPrintSupport/qtprintsupportglobal.h>
 #include <QtPrintSupport/qabstractprintdialog.h>
 
 QT_BEGIN_NAMESPACE

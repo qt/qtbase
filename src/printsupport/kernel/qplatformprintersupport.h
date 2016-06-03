@@ -48,6 +48,7 @@
 // source and binary incompatible with future versions of Qt.
 //
 
+#include <QtPrintSupport/qtprintsupportglobal.h>
 #include <QtPrintSupport/qprinter.h>
 
 #include <QtCore/qstringlist.h>

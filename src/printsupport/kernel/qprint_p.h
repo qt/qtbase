@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtPrintSupport/private/qtprintsupportglobal_p.h>
 #include <QtPrintSupport/qprinter.h>
 
 #include <QtCore/qstring.h>

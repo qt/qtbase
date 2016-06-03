@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtPrintSupport/qtprintsupportglobal.h>
 #include <private/qprint_p.h>
 
 #include <QtCore/qvector.h>

@@ -53,6 +53,7 @@
 //
 //
 
+#include <QtPrintSupport/private/qtprintsupportglobal_p.h>
 #include <ui_qcupsjobwidget.h>
 #include <private/qcups_p.h>
 

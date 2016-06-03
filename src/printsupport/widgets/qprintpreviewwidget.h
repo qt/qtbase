@@ -40,6 +40,7 @@
 #ifndef QPRINTPREVIEWWIDGET_H
 #define QPRINTPREVIEWWIDGET_H
 
+#include <QtPrintSupport/qtprintsupportglobal.h>
 #include <QtWidgets/qwidget.h>
 #include <QtPrintSupport/qprinter.h>
 

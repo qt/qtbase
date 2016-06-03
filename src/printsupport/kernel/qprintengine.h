@@ -40,6 +40,7 @@
 #ifndef QPRINTENGINE_H
 #define QPRINTENGINE_H
 
+#include <QtPrintSupport/qtprintsupportglobal.h>
 #include <QtCore/qvariant.h>
 #include <QtPrintSupport/qprinter.h>
 

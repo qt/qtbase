@@ -11,6 +11,7 @@ HEADERS += \
         $$PWD/qplatformprintdevice.h \
         $$PWD/qplatformprintplugin.h \
         $$PWD/qplatformprintersupport.h \
+        $$PWD/qtprintsupportglobal_p.h \
         $$PWD/qtprintsupportglobal.h
 
 SOURCES += \

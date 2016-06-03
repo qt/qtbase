@@ -40,7 +40,7 @@
 #ifndef QTPRINTSUPPORTGLOBAL_H
 #define QTPRINTSUPPORTGLOBAL_H
 
-#include <QtCore/qglobal.h>
+#include <QtWidgets/qtwidgetsglobal.h>
 
 QT_BEGIN_NAMESPACE
 
