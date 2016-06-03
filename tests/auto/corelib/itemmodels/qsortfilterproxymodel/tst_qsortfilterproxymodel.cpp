@@ -94,6 +94,7 @@ private slots:
     void changeSourceDataKeepsStableSorting_qtbug1548();
     void changeSourceDataForwardsRoles_qtbug35440();
     void resortingDoesNotBreakTreeModels();
+    void dynamicFilterWithoutSort();
     void sortFilterRole();
     void selectionFilteredOut();
     void match_data();
@@ -4485,6 +4486,29 @@ void tst_QSortFilterProxyModel::emitLayoutChangedOnlyIfSortingChanged()
     QCOMPARE(proxyLayoutChangedSpy.size(), expectedLayoutChanged);
 }
 
+void tst_QSortFilterProxyModel::dynamicFilterWithoutSort()
+{
+    QStringListModel model;
+    const QStringList initial = QString("bravo charlie delta echo").split(QLatin1Char(' '));
+    model.setStringList(initial);
+    QSortFilterProxyModel proxy;
+    proxy.setDynamicSortFilter(true);
+    proxy.setSourceModel(&model);
+
+    QSignalSpy layoutChangeSpy(&proxy, &QAbstractItemModel::layoutChanged);
+    QSignalSpy resetSpy(&proxy, &QAbstractItemModel::modelReset);
+
+    QVERIFY(layoutChangeSpy.isValid());
+    QVERIFY(resetSpy.isValid());
+
+    model.setStringList(QStringList() << "Monday" << "Tuesday" << "Wednesday" << "Thursday" << "Friday");
+
+    QVERIFY(layoutChangeSpy.isEmpty());
+
+    QCOMPARE(model.stringList(), QStringList() << "Monday" << "Tuesday" << "Wednesday" << "Thursday" << "Friday");
+
+    QCOMPARE(resetSpy.count(), 1);
+}
 
 QTEST_MAIN(tst_QSortFilterProxyModel)
 #include "tst_qsortfilterproxymodel.moc"
