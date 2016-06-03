@@ -321,11 +321,14 @@ bool QNativeSocketEngine::connectToHostByName(const QString &name, quint16 port)
     Q_ASSERT_SUCCEEDED(hr);
 
     d->socketState = QAbstractSocket::ConnectingState;
-    hr = QEventDispatcherWinRT::runOnXamlThread([d]() {
-        return d->connectOp->put_Completed(Callback<IAsyncActionCompletedHandler>(
+    QEventDispatcherWinRT::runOnXamlThread([d, &hr]() {
+        hr = d->connectOp->put_Completed(Callback<IAsyncActionCompletedHandler>(
                                          d, &QNativeSocketEnginePrivate::handleConnectOpFinished).Get());
+        RETURN_OK_IF_FAILED("connectToHostByName: Could not register \"connectOp\" callback");
+        return S_OK;
     });
-    Q_ASSERT_SUCCEEDED(hr);
+    if (FAILED(hr))
+        return false;
 
     return d->socketState == QAbstractSocket::ConnectedState;
 }
@@ -865,20 +868,22 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
     case QAbstractSocket::TcpSocket: {
         ComPtr<IStreamSocket> socket;
         hr = RoActivateInstance(HString::MakeReference(RuntimeClass_Windows_Networking_Sockets_StreamSocket).Get(), &socket);
-        Q_ASSERT_SUCCEEDED(hr);
+        RETURN_FALSE_IF_FAILED("createNewSocket: Could not create socket instance");
         socketDescriptor = qintptr(socket.Detach());
         break;
     }
     case QAbstractSocket::UdpSocket: {
         ComPtr<IDatagramSocket> socket;
         hr = RoActivateInstance(HString::MakeReference(RuntimeClass_Windows_Networking_Sockets_DatagramSocket).Get(), &socket);
-        Q_ASSERT_SUCCEEDED(hr);
+        RETURN_FALSE_IF_FAILED("createNewSocket: Could not create socket instance");
         socketDescriptor = qintptr(socket.Detach());
-        hr = QEventDispatcherWinRT::runOnXamlThread([this]() {
-            HRESULT hr = udpSocket()->add_MessageReceived(Callback<DatagramReceivedHandler>(this, &QNativeSocketEnginePrivate::handleNewDatagram).Get(), &connectionToken);
-            return hr;
+        QEventDispatcherWinRT::runOnXamlThread([&hr, this]() {
+            hr = udpSocket()->add_MessageReceived(Callback<DatagramReceivedHandler>(this, &QNativeSocketEnginePrivate::handleNewDatagram).Get(), &connectionToken);
+            RETURN_OK_IF_FAILED("createNewSocket: Could not add \"message received\" callback")
+            return S_OK;
         });
-        Q_ASSERT_SUCCEEDED(hr);
+        if (FAILED(hr))
+            return false;
         break;
     }
     default:
