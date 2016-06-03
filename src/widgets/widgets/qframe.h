@@ -40,6 +40,7 @@
 #ifndef QFRAME_H
 #define QFRAME_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 
 QT_BEGIN_NAMESPACE

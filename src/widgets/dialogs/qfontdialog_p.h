@@ -52,6 +52,7 @@
 //
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "private/qdialog_p.h"
 #include "qfontdatabase.h"
 #include "qfontdialog.h"

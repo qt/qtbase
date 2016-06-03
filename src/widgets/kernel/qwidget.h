@@ -40,6 +40,7 @@
 #ifndef QWIDGET_H
 #define QWIDGET_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtGui/qwindowdefs.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qmargins.h>

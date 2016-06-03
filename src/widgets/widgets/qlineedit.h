@@ -40,6 +40,7 @@
 #ifndef QLINEEDIT_H
 #define QLINEEDIT_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qframe.h>
 #include <QtGui/qtextcursor.h>
 #include <QtCore/qstring.h>

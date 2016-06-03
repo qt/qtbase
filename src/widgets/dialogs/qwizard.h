@@ -40,6 +40,7 @@
 #ifndef QWIZARD_H
 #define QWIZARD_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qdialog.h>
 
 QT_BEGIN_NAMESPACE

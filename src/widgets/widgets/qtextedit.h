@@ -40,6 +40,7 @@
 #ifndef QTEXTEDIT_H
 #define QTEXTEDIT_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractscrollarea.h>
 #include <QtGui/qtextdocument.h>
 #include <QtGui/qtextoption.h>

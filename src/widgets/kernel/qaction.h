@@ -40,6 +40,7 @@
 #ifndef QACTION_H
 #define QACTION_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtGui/qkeysequence.h>
 #include <QtCore/qstring.h>
 #include <QtWidgets/qwidget.h>

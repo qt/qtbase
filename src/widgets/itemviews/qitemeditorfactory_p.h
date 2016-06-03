@@ -52,7 +52,7 @@
 //
 
 
-
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <qlineedit.h>
 
 #ifndef QT_NO_ITEMVIEWS

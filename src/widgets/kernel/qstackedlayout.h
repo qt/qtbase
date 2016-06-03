@@ -40,6 +40,7 @@
 #ifndef QSTACKEDLAYOUT_H
 #define QSTACKEDLAYOUT_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qlayout.h>
 
 QT_BEGIN_NAMESPACE

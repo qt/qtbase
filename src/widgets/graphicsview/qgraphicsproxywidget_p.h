@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qgraphicsproxywidget.h"
 #include "private/qgraphicswidget_p.h"
 

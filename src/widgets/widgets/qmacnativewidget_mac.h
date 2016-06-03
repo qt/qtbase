@@ -40,6 +40,7 @@
 #ifndef QMACNATIVEWIDGET_H
 #define QMACNATIVEWIDGET_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/QWidget>
 
 Q_FORWARD_DECLARE_OBJC_CLASS(NSView);

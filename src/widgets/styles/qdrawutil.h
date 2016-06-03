@@ -40,6 +40,7 @@
 #ifndef QDRAWUTIL_H
 #define QDRAWUTIL_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qstring.h> // char*->QString conversion
 #include <QtCore/qmargins.h>

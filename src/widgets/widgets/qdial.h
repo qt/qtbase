@@ -41,6 +41,7 @@
 #ifndef QDIAL_H
 #define QDIAL_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractslider.h>
 
 QT_BEGIN_NAMESPACE

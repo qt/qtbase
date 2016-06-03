@@ -40,6 +40,7 @@
 #ifndef QBUTTONGROUP_H
 #define QBUTTONGROUP_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE

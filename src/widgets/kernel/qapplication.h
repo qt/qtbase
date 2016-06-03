@@ -40,6 +40,7 @@
 #ifndef QAPPLICATION_H
 #define QAPPLICATION_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtGui/qwindowdefs.h>
 #include <QtCore/qpoint.h>

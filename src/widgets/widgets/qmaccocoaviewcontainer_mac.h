@@ -40,6 +40,7 @@
 #ifndef QCOCOAVIEWCONTAINER_H
 #define QCOCOAVIEWCONTAINER_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/QWidget>
 
 Q_FORWARD_DECLARE_OBJC_CLASS(NSView);

@@ -40,7 +40,7 @@
 #ifndef QGRAPHICSITEM_H
 #define QGRAPHICSITEM_H
 
-#include <QtCore/qglobal.h>
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qrect.h>

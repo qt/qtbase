@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "private/qabstractitemview_p.h"
 #include <QtCore/qvariantanimation.h>
 #include <QtCore/qabstractitemmodel.h>

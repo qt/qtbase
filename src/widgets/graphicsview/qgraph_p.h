@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtCore/QHash>
 #include <QtCore/QQueue>
 #include <QtCore/QString>

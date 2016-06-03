@@ -40,6 +40,7 @@
 #ifndef QSIZEPOLICY_H
 #define QSIZEPOLICY_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE

@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "QtWidgets/qabstractspinbox.h"
 
 #ifndef QT_NO_SPINBOX

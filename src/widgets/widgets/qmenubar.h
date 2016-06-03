@@ -40,6 +40,7 @@
 #ifndef QMENUBAR_H
 #define QMENUBAR_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qmenu.h>
 
 QT_BEGIN_NAMESPACE

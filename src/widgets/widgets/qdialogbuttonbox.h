@@ -40,6 +40,7 @@
 #ifndef QDIALOGBUTTONBOX_H
 #define QDIALOGBUTTONBOX_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 
 QT_BEGIN_NAMESPACE

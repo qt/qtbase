@@ -40,6 +40,7 @@
 #ifndef QTABWIDGET_H
 #define QTABWIDGET_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 #include <QtGui/qicon.h>
 

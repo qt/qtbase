@@ -40,6 +40,7 @@
 #ifndef QCOMMONSTYLE_H
 #define QCOMMONSTYLE_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qstyle.h>
 
 QT_BEGIN_NAMESPACE

@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qobject.h"
 #include "qbasictimer.h"
 #include "private/qwidget_p.h"

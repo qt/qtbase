@@ -40,6 +40,7 @@
 #ifndef QFONTDIALOG_H
 #define QFONTDIALOG_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtGui/qwindowdefs.h>
 #include <QtWidgets/qdialog.h>
 #include <QtGui/qfont.h>

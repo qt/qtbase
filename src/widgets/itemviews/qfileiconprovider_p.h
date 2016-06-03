@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qfileiconprovider.h"
 
 #include <QtCore/qstring.h>

@@ -40,6 +40,7 @@
 #ifndef QSCROLLBAR_H
 #define QSCROLLBAR_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 #include <QtWidgets/qabstractslider.h>
 

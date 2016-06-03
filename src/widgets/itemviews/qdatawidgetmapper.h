@@ -40,6 +40,7 @@
 #ifndef QDATAWIDGETMAPPER_H
 #define QDATAWIDGETMAPPER_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include "QtCore/qobject.h"
 
 #ifndef QT_NO_DATAWIDGETMAPPER

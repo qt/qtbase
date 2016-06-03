@@ -40,6 +40,7 @@
 #ifndef QSCROLLAREA_H
 #define QSCROLLAREA_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractscrollarea.h>
 
 QT_BEGIN_NAMESPACE

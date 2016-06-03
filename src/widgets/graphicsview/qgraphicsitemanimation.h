@@ -40,6 +40,7 @@
 #ifndef QGRAPHICSITEMANIMATION_H
 #define QGRAPHICSITEMANIMATION_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qobject.h>
 
 #if !defined(QT_NO_GRAPHICSVIEW)

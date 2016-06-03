@@ -40,6 +40,7 @@
 #ifndef QGRAPHICSLAYOUTITEM_H
 #define QGRAPHICSLAYOUTITEM_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtWidgets/qsizepolicy.h>
 #include <QtGui/qevent.h>

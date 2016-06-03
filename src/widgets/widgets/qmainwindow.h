@@ -40,6 +40,7 @@
 #ifndef QDYNAMICMAINWINDOW_H
 #define QDYNAMICMAINWINDOW_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 #include <QtWidgets/qtabwidget.h>
 

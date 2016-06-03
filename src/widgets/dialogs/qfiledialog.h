@@ -40,6 +40,7 @@
 #ifndef QFILEDIALOG_H
 #define QFILEDIALOG_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qurl.h>

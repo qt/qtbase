@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtCore/QList>
 #include <QtCore/QLinkedList>
 #include <QtCore/QMap>

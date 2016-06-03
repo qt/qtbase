@@ -40,6 +40,7 @@
 #ifndef QTOOLBOX_H
 #define QTOOLBOX_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qframe.h>
 #include <QtGui/qicon.h>
 

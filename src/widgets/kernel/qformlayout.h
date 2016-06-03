@@ -40,6 +40,7 @@
 #ifndef QFORMLAYOUT_H
 #define QFORMLAYOUT_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/QLayout>
 
 QT_BEGIN_NAMESPACE

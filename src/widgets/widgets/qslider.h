@@ -40,6 +40,7 @@
 #ifndef QSLIDER_H
 #define QSLIDER_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractslider.h>
 
 QT_BEGIN_NAMESPACE

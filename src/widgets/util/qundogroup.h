@@ -40,6 +40,7 @@
 #ifndef QUNDOGROUP_H
 #define QUNDOGROUP_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
 

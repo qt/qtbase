@@ -40,6 +40,7 @@
 #ifndef QCOLORDIALOG_H
 #define QCOLORDIALOG_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qdialog.h>
 
 QT_BEGIN_NAMESPACE

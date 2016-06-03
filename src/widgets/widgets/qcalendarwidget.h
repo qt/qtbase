@@ -40,6 +40,7 @@
 #ifndef QCALENDARWIDGET_H
 #define QCALENDARWIDGET_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 #include <QtCore/qdatetime.h>
 

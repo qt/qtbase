@@ -40,6 +40,7 @@
 #ifndef QHEADERVIEW_H
 #define QHEADERVIEW_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractitemview.h>
 
 QT_BEGIN_NAMESPACE

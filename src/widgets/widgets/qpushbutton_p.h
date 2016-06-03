@@ -40,6 +40,7 @@
 #ifndef QPUSHBUTTON_P_H
 #define QPUSHBUTTON_P_H
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "private/qabstractbutton_p.h"
 
 //

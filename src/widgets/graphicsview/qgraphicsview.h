@@ -40,6 +40,7 @@
 #ifndef QGRAPHICSVIEW_H
 #define QGRAPHICSVIEW_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qmetatype.h>
 #include <QtGui/qpainter.h>
 #include <QtWidgets/qscrollarea.h>

@@ -40,6 +40,7 @@
 #ifndef QWIDGETITEMDATA_P_H
 #define QWIDGETITEMDATA_P_H
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtCore/qdatastream.h>
 
 //

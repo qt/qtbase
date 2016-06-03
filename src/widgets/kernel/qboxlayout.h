@@ -40,6 +40,7 @@
 #ifndef QBOXLAYOUT_H
 #define QBOXLAYOUT_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qlayout.h>
 #ifdef QT_INCLUDE_COMPAT
 #include <QtWidgets/qwidget.h>

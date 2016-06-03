@@ -40,6 +40,7 @@
 #ifndef QCOLUMNVIEW_H
 #define QCOLUMNVIEW_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractitemview.h>
 
 QT_BEGIN_NAMESPACE

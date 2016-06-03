@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qtimer.h"
 #include "qpoint.h"
 #include "qgesturerecognizer.h"

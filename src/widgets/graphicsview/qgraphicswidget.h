@@ -40,6 +40,7 @@
 #ifndef QGRAPHICSWIDGET_H
 #define QGRAPHICSWIDGET_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtGui/qfont.h>
 #include <QtWidgets/qgraphicslayoutitem.h>
 #include <QtWidgets/qgraphicsitem.h>

@@ -40,6 +40,7 @@
 #ifndef QMOUSEEVENTTRANSITION_H
 #define QMOUSEEVENTTRANSITION_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qeventtransition.h>
 
 QT_BEGIN_NAMESPACE

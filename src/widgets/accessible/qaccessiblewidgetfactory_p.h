@@ -37,6 +37,7 @@
 **
 ****************************************************************************/
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtGui/qaccessible.h>
 
 #ifndef QACCESSIBLEWIDGETFACTORY_H

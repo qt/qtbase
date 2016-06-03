@@ -40,6 +40,7 @@
 #ifndef QSYSTEMTRAYICON_H
 #define QSYSTEMTRAYICON_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qobject.h>
 
 #ifndef QT_NO_SYSTEMTRAYICON

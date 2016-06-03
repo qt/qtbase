@@ -40,6 +40,7 @@
 #ifndef QCOLORMAP_H
 #define QCOLORMAP_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qatomic.h>
 #include <QtGui/qrgb.h>
 #include <QtCore/qvector.h>

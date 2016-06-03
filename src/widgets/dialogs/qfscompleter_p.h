@@ -51,9 +51,12 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qcompleter.h"
 #include <QtWidgets/qfilesystemmodel.h>
+
 QT_BEGIN_NAMESPACE
+
 #ifndef QT_NO_FSCOMPLETER
 
 /*!
@@ -74,7 +77,10 @@ public:
     QAbstractProxyModel *proxyModel;
     QFileSystemModel *sourceModel;
 };
+
 #endif // QT_NO_FSCOMPLETER
+
 QT_END_NAMESPACE
+
 #endif // QFSCOMPLETOR_P_H
 

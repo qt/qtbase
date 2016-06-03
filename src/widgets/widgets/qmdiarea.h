@@ -40,6 +40,7 @@
 #ifndef QMDIAREA_H
 #define QMDIAREA_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractscrollarea.h>
 #include <QtWidgets/qtabwidget.h>
 

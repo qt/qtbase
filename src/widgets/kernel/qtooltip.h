@@ -40,6 +40,7 @@
 #ifndef QTOOLTIP_H
 #define QTOOLTIP_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 
 QT_BEGIN_NAMESPACE

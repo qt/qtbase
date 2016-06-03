@@ -40,6 +40,7 @@
 #ifndef QDIRMODEL_H
 #define QDIRMODEL_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qdir.h>
 #include <QtWidgets/qfileiconprovider.h>

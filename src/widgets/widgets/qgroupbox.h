@@ -40,6 +40,7 @@
 #ifndef QGROUPBOX_H
 #define QGROUPBOX_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qframe.h>
 
 QT_BEGIN_NAMESPACE

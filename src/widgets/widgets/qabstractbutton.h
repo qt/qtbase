@@ -40,6 +40,7 @@
 #ifndef QABSTRACTBUTTON_H
 #define QABSTRACTBUTTON_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtGui/qicon.h>
 #include <QtGui/qkeysequence.h>
 #include <QtWidgets/qwidget.h>

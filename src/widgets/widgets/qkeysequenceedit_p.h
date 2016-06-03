@@ -52,6 +52,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qkeysequenceedit.h"
 
 #include <private/qwidget_p.h>

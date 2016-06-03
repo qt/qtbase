@@ -40,6 +40,7 @@
 #ifndef QSPLASHSCREEN_H
 #define QSPLASHSCREEN_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtGui/qpixmap.h>
 #include <QtWidgets/qwidget.h>
 

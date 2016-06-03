@@ -40,6 +40,7 @@
 #ifndef QCOMMANDLINKBUTTON_H
 #define QCOMMANDLINKBUTTON_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qpushbutton.h>
 
 QT_BEGIN_NAMESPACE

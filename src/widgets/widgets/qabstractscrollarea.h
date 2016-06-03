@@ -40,6 +40,7 @@
 #ifndef QABSTRACTSCROLLAREA_H
 #define QABSTRACTSCROLLAREA_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qframe.h>
 
 QT_BEGIN_NAMESPACE

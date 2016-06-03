@@ -40,6 +40,7 @@
 #ifndef QDYNAMICTOOLBAR_H
 #define QDYNAMICTOOLBAR_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qaction.h>
 #include <QtWidgets/qwidget.h>
 

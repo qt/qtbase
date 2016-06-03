@@ -40,6 +40,7 @@
 #ifndef QPROGRESSDIALOG_H
 #define QPROGRESSDIALOG_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qdialog.h>
 
 QT_BEGIN_NAMESPACE

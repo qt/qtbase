@@ -40,6 +40,7 @@
 #ifndef QDATETIMEEDIT_H
 #define QDATETIMEEDIT_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qvariant.h>
 #include <QtWidgets/qabstractspinbox.h>

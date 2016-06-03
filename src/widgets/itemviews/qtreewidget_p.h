@@ -50,6 +50,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtCore/qabstractitemmodel.h>
 #include <private/qabstractitemmodel_p.h>
 #include <QtCore/qpair.h>

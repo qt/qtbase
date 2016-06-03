@@ -40,6 +40,7 @@
 #ifndef QGESTURE_H
 #define QGESTURE_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qdatetime.h>

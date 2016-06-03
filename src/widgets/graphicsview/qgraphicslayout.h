@@ -40,6 +40,7 @@
 #ifndef QGRAPHICSLAYOUT_H
 #define QGRAPHICSLAYOUT_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qgraphicslayoutitem.h>
 
 QT_BEGIN_NAMESPACE

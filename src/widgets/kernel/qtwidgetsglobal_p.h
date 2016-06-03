@@ -37,41 +37,21 @@
 **
 ****************************************************************************/
 
-#ifndef QABSTRACTITEMDELEGATE_P_H
-#define QABSTRACTITEMDELEGATE_P_H
+#ifndef QTWIDGETSGLOBAL_P_H
+#define QTWIDGETSGLOBAL_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists for the convenience
-// of other Qt classes.  This header file may change from version to
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtWidgets/private/qtwidgetsglobal_p.h>
-#include "qabstractitemdelegate.h"
-#include <private/qobject_p.h>
+#include <QtWidgets/qtwidgetsglobal.h>
+#include <QtGui/private/qtguiglobal_p.h>
 
-#ifndef QT_NO_ITEMVIEWS
-
-QT_BEGIN_NAMESPACE
-
-class QAbstractItemDelegatePrivate : public QObjectPrivate
-{
-    Q_DECLARE_PUBLIC(QAbstractItemDelegate)
-public:
-    explicit QAbstractItemDelegatePrivate();
-
-    bool editorEventFilter(QObject *object, QEvent *event);
-    bool tryFixup(QWidget *editor);
-    void _q_commitDataAndCloseEditor(QWidget *editor);
-};
-
-QT_END_NAMESPACE
-
-#endif // QT_NO_ITEMVIEWS
-
-#endif // QABSTRACTITEMDELEGATE_P_H
+#endif // QTWIDGETSGLOBAL_P_H

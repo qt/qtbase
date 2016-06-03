@@ -40,6 +40,7 @@
 #ifndef QITEMEDITORFACTORY_H
 #define QITEMEDITORFACTORY_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qhash.h>

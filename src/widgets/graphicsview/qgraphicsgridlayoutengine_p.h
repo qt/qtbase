@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtGui/private/qgridlayoutengine_p.h>
 
 #ifndef QT_NO_GRAPHICSVIEW

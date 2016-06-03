@@ -40,6 +40,7 @@
 #ifndef QCOMBOBOX_H
 #define QCOMBOBOX_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 #include <QtWidgets/qabstractitemdelegate.h>
 #include <QtCore/qabstractitemmodel.h>

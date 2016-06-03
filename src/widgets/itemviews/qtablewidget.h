@@ -40,6 +40,7 @@
 #ifndef QTABLEWIDGET_H
 #define QTABLEWIDGET_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qtableview.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>

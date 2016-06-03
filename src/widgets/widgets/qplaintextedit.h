@@ -40,6 +40,7 @@
 #ifndef QPLAINTEXTEDIT_H
 #define QPLAINTEXTEDIT_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qtextedit.h>
 
 #include <QtWidgets/qabstractscrollarea.h>

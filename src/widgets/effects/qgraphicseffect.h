@@ -40,6 +40,7 @@
 #ifndef QGRAPHICSEFFECT_H
 #define QGRAPHICSEFFECT_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qrect.h>

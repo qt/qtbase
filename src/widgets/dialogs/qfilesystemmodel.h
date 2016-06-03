@@ -40,6 +40,7 @@
 #ifndef QFILESYSTEMMODEL_H
 #define QFILESYSTEMMODEL_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qdir.h>

@@ -40,6 +40,7 @@
 #ifndef QCOMMONSTYLE_P_H
 #define QCOMMONSTYLE_P_H
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qcommonstyle.h"
 #include "qstyle_p.h"
 #include "qstyleanimation_p.h"

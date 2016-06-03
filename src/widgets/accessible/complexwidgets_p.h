@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtCore/qpointer.h>
 #include <QtWidgets/qaccessiblewidget.h>
 #include <QtWidgets/qabstractitemview.h>

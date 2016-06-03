@@ -40,6 +40,7 @@
 #ifndef QSTYLEPAINTER_H
 #define QSTYLEPAINTER_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtGui/qpainter.h>
 #include <QtWidgets/qstyle.h>
 #include <QtWidgets/qwidget.h>

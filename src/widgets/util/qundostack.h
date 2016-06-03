@@ -40,6 +40,7 @@
 #ifndef QUNDOSTACK_H
 #define QUNDOSTACK_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
 

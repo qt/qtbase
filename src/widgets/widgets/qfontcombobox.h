@@ -40,6 +40,7 @@
 #ifndef QFONTCOMBOBOX_H
 #define QFONTCOMBOBOX_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qcombobox.h>
 #include <QtGui/qfontdatabase.h>
 

@@ -50,6 +50,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <qheaderview.h>
 #include <qtablewidget.h>
 #include <qabstractitemmodel.h>

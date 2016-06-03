@@ -40,6 +40,7 @@
 #ifndef QSTYLEFACTORY_H
 #define QSTYLEFACTORY_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE

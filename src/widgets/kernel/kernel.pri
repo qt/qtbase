@@ -5,8 +5,10 @@ PRECOMPILED_HEADER = kernel/qt_widgets_pch.h
 
 KERNEL_P= kernel
 HEADERS += \
-	kernel/qaction.h \
-    kernel/qaction_p.h \
+        kernel/qtwidgetsglobal.h \
+        kernel/qtwidgetsglobal_p.h \
+        kernel/qaction.h \
+        kernel/qaction_p.h \
 	kernel/qactiongroup.h \
 	kernel/qapplication.h \
 	kernel/qapplication_p.h \

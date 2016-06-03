@@ -40,6 +40,7 @@
 #ifndef QACTIONGROUP_H
 #define QACTIONGROUP_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qaction.h>
 
 QT_BEGIN_NAMESPACE

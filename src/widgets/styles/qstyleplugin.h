@@ -40,6 +40,7 @@
 #ifndef QSTYLEPLUGIN_H
 #define QSTYLEPLUGIN_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
 

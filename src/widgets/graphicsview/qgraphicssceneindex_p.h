@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qgraphicsscene_p.h"
 #include "qgraphicsscene.h"
 #include <private/qobject_p.h>

@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qgraphicsview.h"
 
 #if !defined(QT_NO_GRAPHICSVIEW)

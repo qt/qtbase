@@ -40,6 +40,7 @@
 #ifndef QLISTWIDGET_H
 #define QLISTWIDGET_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qlistview.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>

@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <qlistwidget.h>
 #include <qstandarditemmodel.h>
 #include <qstyleditemdelegate.h>

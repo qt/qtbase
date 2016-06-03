@@ -40,6 +40,7 @@
 #ifndef QGRAPHICSPROXYWIDGET_H
 #define QGRAPHICSPROXYWIDGET_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qgraphicswidget.h>
 
 QT_BEGIN_NAMESPACE

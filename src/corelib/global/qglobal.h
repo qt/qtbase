@@ -296,14 +296,8 @@ typedef double qreal;
 #  else
 #    define Q_CORE_EXPORT Q_DECL_IMPORT
 #  endif
-#  if defined(QT_BUILD_WIDGETS_LIB)
-#    define Q_WIDGETS_EXPORT Q_DECL_EXPORT
-#  else
-#    define Q_WIDGETS_EXPORT Q_DECL_IMPORT
-#  endif
 #else
 #  define Q_CORE_EXPORT
-#  define Q_WIDGETS_EXPORT
 #endif
 
 /*

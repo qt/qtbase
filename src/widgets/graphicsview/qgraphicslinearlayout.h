@@ -40,6 +40,7 @@
 #ifndef QGRAPHICSLINEARLAYOUT_H
 #define QGRAPHICSLINEARLAYOUT_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qgraphicsitem.h>
 #include <QtWidgets/qgraphicslayout.h>
 

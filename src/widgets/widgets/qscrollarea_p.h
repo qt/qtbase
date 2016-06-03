@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 
 #ifndef QT_NO_SCROLLAREA
 

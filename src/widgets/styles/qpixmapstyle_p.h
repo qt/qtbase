@@ -42,6 +42,7 @@
 #ifndef QPIXMAPSTYLE_H
 #define QPIXMAPSTYLE_H
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtWidgets/QCommonStyle>
 #include <QtWidgets/QTileRules>
 

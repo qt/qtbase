@@ -40,6 +40,7 @@
 #ifndef QWHATSTHIS_H
 #define QWHATSTHIS_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qobject.h>
 #include <QtGui/qcursor.h>
 

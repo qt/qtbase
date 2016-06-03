@@ -40,6 +40,7 @@
 #ifndef QSPLITTER_H
 #define QSPLITTER_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qframe.h>
 #include <QtWidgets/qsizepolicy.h>
 

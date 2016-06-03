@@ -40,6 +40,7 @@
 #ifndef QSTACKEDWIDGET_H
 #define QSTACKEDWIDGET_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qframe.h>
 
 QT_BEGIN_NAMESPACE

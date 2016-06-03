@@ -40,6 +40,7 @@
 #ifndef QLAYOUT_H
 #define QLAYOUT_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qobject.h>
 #include <QtWidgets/qlayoutitem.h>
 #include <QtWidgets/qsizepolicy.h>

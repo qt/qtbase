@@ -40,6 +40,7 @@
 #ifndef QTOOLBUTTON_H
 #define QTOOLBUTTON_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractbutton.h>
 
 QT_BEGIN_NAMESPACE

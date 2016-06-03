@@ -40,6 +40,7 @@
 #ifndef QSHORTCUT_H
 #define QSHORTCUT_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 #include <QtGui/qkeysequence.h>
 

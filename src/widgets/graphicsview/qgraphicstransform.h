@@ -40,6 +40,7 @@
 #ifndef QGRAPHICSTRANSFORM_H
 #define QGRAPHICSTRANSFORM_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/QObject>
 #include <QtGui/QVector3D>
 #include <QtGui/QTransform>

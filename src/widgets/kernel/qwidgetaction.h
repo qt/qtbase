@@ -40,6 +40,7 @@
 #ifndef QWIDGETACTION_H
 #define QWIDGETACTION_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qaction.h>
 
 QT_BEGIN_NAMESPACE

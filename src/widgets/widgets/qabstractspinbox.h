@@ -40,6 +40,7 @@
 #ifndef QABSTRACTSPINBOX_H
 #define QABSTRACTSPINBOX_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 #include <QtGui/qvalidator.h>
 

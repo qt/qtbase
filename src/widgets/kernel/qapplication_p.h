@@ -52,6 +52,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "QtWidgets/qapplication.h"
 #include "QtGui/qevent.h"
 #include "QtGui/qfont.h"

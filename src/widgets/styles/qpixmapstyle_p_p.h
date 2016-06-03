@@ -40,6 +40,7 @@
 #ifndef QPIXMAPSTYLE_P_H
 #define QPIXMAPSTYLE_P_H
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qpixmapstyle_p.h"
 #include "qcommonstyle_p.h"
 

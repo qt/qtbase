@@ -40,6 +40,7 @@
 #ifndef QUNDOSTACK_P_H
 #define QUNDOSTACK_P_H
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <private/qobject_p.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qstring.h>

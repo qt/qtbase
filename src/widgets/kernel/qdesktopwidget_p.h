@@ -51,6 +51,7 @@
 #ifndef QDESKTOPWIDGET_P_H
 #define QDESKTOPWIDGET_P_H
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "QDesktopWidget"
 #include "private/qwidget_p.h"
 

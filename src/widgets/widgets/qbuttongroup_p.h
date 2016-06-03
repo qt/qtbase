@@ -45,6 +45,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtWidgets/qbuttongroup.h>
 
 #ifndef QT_NO_BUTTONGROUP

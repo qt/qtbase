@@ -40,6 +40,7 @@
 #ifndef QSTYLE_H
 #define QSTYLE_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qsize.h>

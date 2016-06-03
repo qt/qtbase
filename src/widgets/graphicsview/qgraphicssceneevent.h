@@ -40,6 +40,7 @@
 #ifndef QGRAPHICSSCENEEVENT_H
 #define QGRAPHICSSCENEEVENT_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qscopedpointer.h>

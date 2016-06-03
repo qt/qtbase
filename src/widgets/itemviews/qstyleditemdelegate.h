@@ -40,6 +40,7 @@
 #ifndef QSTYLEDITEMDELEGATE_H
 #define QSTYLEDITEMDELEGATE_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractitemdelegate.h>
 #include <QtCore/qstring.h>
 #include <QtGui/qpixmap.h>

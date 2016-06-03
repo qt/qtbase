@@ -40,6 +40,7 @@
 #ifndef QMDISUBWINDOW_H
 #define QMDISUBWINDOW_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 
 QT_BEGIN_NAMESPACE

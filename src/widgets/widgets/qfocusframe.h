@@ -40,6 +40,7 @@
 #ifndef QFOCUSFRAME_H
 #define QFOCUSFRAME_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 
 QT_BEGIN_NAMESPACE

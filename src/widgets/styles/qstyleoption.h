@@ -40,6 +40,7 @@
 #ifndef QSTYLEOPTION_H
 #define QSTYLEOPTION_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qvariant.h>
 #include <QtWidgets/qabstractspinbox.h>
 #include <QtGui/qicon.h>

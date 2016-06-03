@@ -40,6 +40,7 @@
 #ifndef QUNDOVIEW_H
 #define QUNDOVIEW_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qlistview.h>
 #include <QtCore/qstring.h>
 

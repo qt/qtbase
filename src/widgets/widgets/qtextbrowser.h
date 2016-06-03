@@ -40,6 +40,7 @@
 #ifndef QTEXTBROWSER_H
 #define QTEXTBROWSER_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qtextedit.h>
 #include <QtCore/qurl.h>
 

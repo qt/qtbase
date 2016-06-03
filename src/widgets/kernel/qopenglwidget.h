@@ -40,7 +40,7 @@
 #ifndef QOPENGLWIDGET_H
 #define QOPENGLWIDGET_H
 
-#include <QtCore/qglobal.h>
+#include <QtWidgets/qtwidgetsglobal.h>
 
 #ifndef QT_NO_OPENGL
 

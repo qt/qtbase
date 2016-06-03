@@ -40,6 +40,7 @@
 #ifndef QABSTRACTITEMDELEGATE_H
 #define QABSTRACTITEMDELEGATE_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qobject.h>
 #include <QtWidgets/qstyleoption.h>
 

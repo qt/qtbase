@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtCore/qnamespace.h>
 #include <QtGui/qpixmap.h>
 #include <QtWidgets/qgraphicseffect.h>

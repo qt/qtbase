@@ -40,6 +40,7 @@
 #ifndef QKEYEVENTTRANSITION_H
 #define QKEYEVENTTRANSITION_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qeventtransition.h>
 
 QT_BEGIN_NAMESPACE

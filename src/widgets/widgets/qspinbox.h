@@ -40,6 +40,7 @@
 #ifndef QSPINBOX_H
 #define QSPINBOX_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractspinbox.h>
 
 QT_BEGIN_NAMESPACE

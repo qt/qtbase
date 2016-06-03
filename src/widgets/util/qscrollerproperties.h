@@ -40,6 +40,7 @@
 #ifndef QSCROLLERPROPERTIES_H
 #define QSCROLLERPROPERTIES_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QMetaType>
 #include <QtCore/QVariant>

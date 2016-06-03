@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtWidgets/qlayout.h>
 #include <private/qlayoutengine_p.h>
 #include <QVector>

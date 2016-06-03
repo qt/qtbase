@@ -40,6 +40,7 @@
 #ifndef QFILEICONPROVIDER_H
 #define QFILEICONPROVIDER_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtGui/qicon.h>

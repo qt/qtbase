@@ -40,6 +40,7 @@
 #ifndef QTREEWIDGET_H
 #define QTREEWIDGET_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qtreeview.h>
 #include <QtWidgets/qtreewidgetitemiterator.h>
 #include <QtCore/qvariant.h>

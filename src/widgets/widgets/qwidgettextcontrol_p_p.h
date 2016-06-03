@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "QtGui/qtextdocumentfragment.h"
 #include "QtWidgets/qscrollbar.h"
 #include "QtGui/qtextcursor.h"

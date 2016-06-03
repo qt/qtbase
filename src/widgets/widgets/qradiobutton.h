@@ -40,6 +40,7 @@
 #ifndef QRADIOBUTTON_H
 #define QRADIOBUTTON_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractbutton.h>
 
 QT_BEGIN_NAMESPACE

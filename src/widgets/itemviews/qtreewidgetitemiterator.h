@@ -40,7 +40,7 @@
 #ifndef QTREEWIDGETITEMITERATOR_H
 #define QTREEWIDGETITEMITERATOR_H
 
-#include <QtCore/qglobal.h>
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_NAMESPACE

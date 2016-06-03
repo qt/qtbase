@@ -40,6 +40,7 @@
 #ifndef QINPUTDIALOG_H
 #define QINPUTDIALOG_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qdialog.h>
 #include <QtCore/qstring.h>
 #include <QtWidgets/qlineedit.h>

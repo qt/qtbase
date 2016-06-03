@@ -51,6 +51,8 @@
 // We mean it.
 //
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
+
 #include <qthread.h>
 #include <qmutex.h>
 #include <qwaitcondition.h>

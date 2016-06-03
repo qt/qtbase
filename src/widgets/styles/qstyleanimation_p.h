@@ -40,6 +40,7 @@
 #ifndef QSTYLEANIMATION_P_H
 #define QSTYLEANIMATION_P_H
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qabstractanimation.h"
 #include "qdatetime.h"
 #include "qimage.h"

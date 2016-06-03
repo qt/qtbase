@@ -40,6 +40,7 @@
 #ifndef QCOMPLETER_H
 #define QCOMPLETER_H
 
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qstring.h>
