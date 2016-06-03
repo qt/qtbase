@@ -742,50 +742,115 @@ static inline quint16 getUShort(const unsigned char *p)
     return val;
 }
 
-static QString getEnglishName(const uchar *table, quint32 bytes)
+namespace {
+
+struct FontNames {
+    QString name;   // e.g. "DejaVu Sans Condensed"
+    QString style;  // e.g. "Italic"
+    QString preferredName;  // e.g. "DejaVu Sans"
+    QString preferredStyle; // e.g. "Condensed Italic"
+};
+
+static QString readName(bool unicode, const uchar *string, int length)
 {
-    QString i18n_name;
-    enum {
-        NameRecordSize = 12,
-        FamilyId = 1,
-        MS_LangIdEnglish = 0x009
-    };
+    QString out;
+    if (unicode) {
+        // utf16
+
+        length /= 2;
+        out.resize(length);
+        QChar *uc = out.data();
+        for (int i = 0; i < length; ++i)
+            uc[i] = getUShort(string + 2*i);
+    } else {
+        // Apple Roman
+
+        out.resize(length);
+        QChar *uc = out.data();
+        for (int i = 0; i < length; ++i)
+            uc[i] = QLatin1Char(char(string[i]));
+    }
+    return out;
+}
+
+enum FieldTypeValue {
+    FamilyId = 1,
+    StyleId = 2,
+    PreferredFamilyId = 16,
+    PreferredStyleId = 17,
+};
+
+enum PlatformFieldValue {
+    PlatformId_Unicode = 0,
+    PlatformId_Apple = 1,
+    PlatformId_Microsoft = 3
+};
+
+static FontNames getCanonicalFontNames(const uchar *table, quint32 bytes)
+{
+    FontNames out;
+    const int NameRecordSize = 12;
+    const int MS_LangIdEnglish = 0x009;
 
     // get the name table
     quint16 count;
     quint16 string_offset;
     const unsigned char *names;
 
-    int microsoft_id = -1;
-    int apple_id = -1;
-    int unicode_id = -1;
+    if (bytes < 8)
+        return out;
 
     if (getUShort(table) != 0)
-        goto error;
+        return out;
 
     count = getUShort(table+2);
     string_offset = getUShort(table+4);
     names = table + 6;
 
     if (string_offset >= bytes || 6 + count*NameRecordSize > string_offset)
-        goto error;
+        return out;
+
+    enum PlatformIdType {
+        NotFound = 0,
+        Unicode = 1,
+        Apple = 2,
+        Microsoft = 3
+    };
+
+    PlatformIdType idStatus[4] = { NotFound, NotFound, NotFound, NotFound };
+    int ids[4] = { -1, -1, -1, -1 };
 
     for (int i = 0; i < count; ++i) {
-        // search for the correct name entry
+        // search for the correct name entries
 
         quint16 platform_id = getUShort(names + i*NameRecordSize);
         quint16 encoding_id = getUShort(names + 2 + i*NameRecordSize);
         quint16 language_id = getUShort(names + 4 + i*NameRecordSize);
         quint16 name_id = getUShort(names + 6 + i*NameRecordSize);
 
-        if (name_id != FamilyId)
-            continue;
+        PlatformIdType *idType = nullptr;
+        int *id = nullptr;
 
-        enum {
-            PlatformId_Unicode = 0,
-            PlatformId_Apple = 1,
-            PlatformId_Microsoft = 3
-        };
+        switch (name_id) {
+        case FamilyId:
+            idType = &idStatus[0];
+            id = &ids[0];
+            break;
+        case StyleId:
+            idType = &idStatus[1];
+            id = &ids[1];
+            break;
+        case PreferredFamilyId:
+            idType = &idStatus[2];
+            id = &ids[2];
+            break;
+        case PreferredStyleId:
+            idType = &idStatus[3];
+            id = &ids[3];
+            break;
+        default:
+            continue;
+        }
 
         quint16 length = getUShort(names + 8 + i*NameRecordSize);
         quint16 offset = getUShort(names + 10 + i*NameRecordSize);
@@ -795,63 +860,52 @@ static QString getEnglishName(const uchar *table, quint32 bytes)
         if ((platform_id == PlatformId_Microsoft
             && (encoding_id == 0 || encoding_id == 1))
             && (language_id & 0x3ff) == MS_LangIdEnglish
-            && microsoft_id == -1)
-            microsoft_id = i;
+            && *idType < Microsoft) {
+            *id = i;
+            *idType = Microsoft;
+        }
         // not sure if encoding id 4 for Unicode is utf16 or ucs4...
-        else if (platform_id == PlatformId_Unicode && encoding_id < 4 && unicode_id == -1)
-            unicode_id = i;
-        else if (platform_id == PlatformId_Apple && encoding_id == 0 && language_id == 0)
-            apple_id = i;
-    }
-    {
-        bool unicode = false;
-        int id = -1;
-        if (microsoft_id != -1) {
-            id = microsoft_id;
-            unicode = true;
-        } else if (apple_id != -1) {
-            id = apple_id;
-            unicode = false;
-        } else if (unicode_id != -1) {
-            id = unicode_id;
-            unicode = true;
+        else if (platform_id == PlatformId_Unicode && encoding_id < 4 && *idType < Unicode) {
+            *id = i;
+            *idType = Unicode;
         }
-        if (id != -1) {
-            quint16 length = getUShort(names + 8 + id*NameRecordSize);
-            quint16 offset = getUShort(names + 10 + id*NameRecordSize);
-            if (unicode) {
-                // utf16
-
-                length /= 2;
-                i18n_name.resize(length);
-                QChar *uc = const_cast<QChar *>(i18n_name.unicode());
-                const unsigned char *string = table + string_offset + offset;
-                for (int i = 0; i < length; ++i)
-                    uc[i] = getUShort(string + 2*i);
-            } else {
-                // Apple Roman
-
-                i18n_name.resize(length);
-                QChar *uc = const_cast<QChar *>(i18n_name.unicode());
-                const unsigned char *string = table + string_offset + offset;
-                for (int i = 0; i < length; ++i)
-                    uc[i] = QLatin1Char(char(string[i]));
-            }
+        else if (platform_id == PlatformId_Apple && encoding_id == 0 && language_id == 0 && *idType < Apple) {
+            *id = i;
+            *idType = Apple;
         }
     }
-error:
-    //qDebug("got i18n name of '%s' for font '%s'", i18n_name.latin1(), familyName.toLocal8Bit().data());
-    return i18n_name;
+
+    QString strings[4];
+    for (int i = 0; i < 4; ++i) {
+        if (idStatus[0] == NotFound)
+            continue;
+        int id = ids[i];
+        quint16 length = getUShort(names +  8 + id * NameRecordSize);
+        quint16 offset = getUShort(names + 10 + id * NameRecordSize);
+        const unsigned char *string = table + string_offset + offset;
+        strings[i] = readName(idStatus[i] != Apple, string, length);
+    }
+
+    out.name = strings[0];
+    out.style = strings[1];
+    out.preferredName = strings[2];
+    out.preferredStyle = strings[3];
+    return out;
 }
+
+} // namespace
 
 QString getEnglishName(const QString &familyName)
 {
     QString i18n_name;
+    QString faceName = familyName;
+    faceName.truncate(LF_FACESIZE - 1);
 
     HDC hdc = GetDC( 0 );
     LOGFONT lf;
     memset(&lf, 0, sizeof(LOGFONT));
-    memcpy(lf.lfFaceName, familyName.utf16(), qMin(familyName.length(), LF_FACESIZE - 1) * sizeof(wchar_t));
+    faceName.toWCharArray(lf.lfFaceName);
+    lf.lfFaceName[faceName.size()] = 0;
     lf.lfCharSet = DEFAULT_CHARSET;
     HFONT hfont = CreateFontIndirect(&lf);
 
@@ -879,7 +933,7 @@ QString getEnglishName(const QString &familyName)
     if ( bytes == GDI_ERROR )
         goto error;
 
-    i18n_name = getEnglishName(table, bytes);
+    i18n_name = getCanonicalFontNames(table, bytes).name;
 error:
     delete [] table;
     SelectObject( hdc, oldobj );
@@ -1337,7 +1391,7 @@ static void getFontTable(const uchar *fileBegin, const uchar *data, quint32 tag,
 }
 
 static void getFamiliesAndSignatures(const QByteArray &fontData,
-                                     QStringList *families,
+                                     QList<FontNames> *families,
                                      QVector<FONTSIGNATURE> *signatures)
 {
     const uchar *data = reinterpret_cast<const uchar *>(fontData.constData());
@@ -1353,11 +1407,11 @@ static void getFamiliesAndSignatures(const QByteArray &fontData,
         getFontTable(data, font, MAKE_TAG('n', 'a', 'm', 'e'), &table, &length);
         if (!table)
             continue;
-        QString name = getEnglishName(table, length);
-        if (name.isEmpty())
+        FontNames names = getCanonicalFontNames(table, length);
+        if (names.name.isEmpty())
             continue;
 
-        families->append(name);
+        families->append(qMove(names));
 
         if (signatures) {
             FONTSIGNATURE signature;
@@ -1384,12 +1438,13 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
     WinApplicationFont font;
     font.fileName = fileName;
     QVector<FONTSIGNATURE> signatures;
-    QStringList families;
+    QList<FontNames> families;
+    QStringList familyNames;
 
     if (!fontData.isEmpty()) {
         getFamiliesAndSignatures(fontData, &families, &signatures);
         if (families.isEmpty())
-            return families;
+            return familyNames;
 
         DWORD dummy = 0;
         font.handle =
@@ -1400,7 +1455,8 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
 
         // Memory fonts won't show up in enumeration, so do add them the hard way.
         for (int j = 0; j < families.count(); ++j) {
-            const QString familyName = families.at(j);
+            const QString familyName = families.at(j).name;
+            familyNames << familyName;
             HDC hdc = GetDC(0);
             LOGFONT lf;
             memset(&lf, 0, sizeof(LOGFONT));
@@ -1422,13 +1478,13 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
     } else {
         QFile f(fileName);
         if (!f.open(QIODevice::ReadOnly))
-            return families;
+            return QStringList();
         QByteArray data = f.readAll();
         f.close();
 
         getFamiliesAndSignatures(data, &families, 0);
         if (families.isEmpty())
-            return families;
+            return QStringList();
 
         if (AddFontResourceExW((wchar_t*)fileName.utf16(), FR_PRIVATE, 0) == 0)
             return QStringList();
@@ -1436,13 +1492,16 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
         font.handle = 0;
 
         // Fonts based on files are added via populate, as they will show up in font enumeration.
-        for (int j = 0; j < families.count(); ++j)
-            populateFamily(families.at(j), true);
+        for (int j = 0; j < families.count(); ++j) {
+            const QString familyName = families.at(j).name;
+            familyNames << familyName;
+            populateFamily(familyName, true);
+        }
     }
 
     m_applicationFonts << font;
 
-    return families;
+    return familyNames;
 }
 
 void QWindowsFontDatabase::removeApplicationFonts()
