@@ -45,11 +45,50 @@
 
 namespace QtDiag {
 
+static const char *qtWidgetClasses[] = {
+    "QAbstractItemView", "QAbstractScrollArea", "QAbstractSlider", "QAbstractSpinBox",
+    "QCalendarWidget", "QCheckBox", "QColorDialog", "QColumnView", "QComboBox",
+    "QCommandLinkButton", "QDateEdit", "QDateTimeEdit", "QDesktopWidget", "QDial",
+    "QDialog", "QDialogButtonBox", "QDockWidget", "QDoubleSpinBox", "QErrorMessage",
+    "QFileDialog", "QFontComboBox", "QFontDialog", "QFrame", "QGraphicsView",
+    "QGroupBox", "QHeaderView", "QInputDialog", "QLCDNumber", "QLabel", "QLineEdit",
+    "QListView", "QListWidget", "QMainWindow", "QMdiArea", "QMdiSubWindow", "QMenu",
+    "QMenuBar", "QMessageBox", "QOpenGLWidget", "QPlainTextEdit", "QProgressBar",
+    "QProgressDialog", "QPushButton", "QRadioButton", "QRubberBand", "QScrollArea",
+    "QScrollBar", "QSlider", "QSpinBox", "QSplashScreen", "QSplitter",
+    "QStackedWidget", "QStatusBar", "QTabBar", "QTabWidget", "QTableView",
+    "QTableWidget", "QTextBrowser", "QTextEdit", "QTimeEdit", "QToolBar",
+    "QToolBox", "QToolButton", "QTreeView", "QTreeWidget", "QWidget",
+    "QWizard", "QWizardPage"
+};
+
+static bool isQtWidget(const char *className)
+{
+    for (size_t i = 0, count = sizeof(qtWidgetClasses) / sizeof(qtWidgetClasses[0]); i < count; ++i) {
+        if (!qstrcmp(className, qtWidgetClasses[i]))
+            return true;
+    }
+    return false;
+}
+
+static void formatWidgetClass(QTextStream &str, const QWidget *w)
+{
+    const QMetaObject *mo = w->metaObject();
+    str << mo->className();
+    while (!isQtWidget(mo->className())) {
+        mo = mo->superClass();
+        str << ':' << mo->className();
+    }
+    const QString on = w->objectName();
+    if (!on.isEmpty())
+        str << "/\"" << on << '"';
+}
+
 static void dumpWidgetRecursion(QTextStream &str, const QWidget *w,
                                 FormatWindowOptions options, int depth = 0)
 {
     indentStream(str, 2 * depth);
-    formatObject(str, w);
+    formatWidgetClass(str, w);
     str << ' ' << (w->isVisible() ? "[visible] " : "[hidden] ");
     if (const WId nativeWinId = w->internalWinId())
         str << "[native: " << hex << showbase << nativeWinId << dec << noshowbase << "] ";
@@ -114,7 +153,10 @@ void dumpAllWidgets(FormatWindowOptions options, const QWidget *root)
     foreach (QWidget *tw, topLevels)
         dumpWidgetRecursion(str, tw, options);
 #if QT_VERSION >= 0x050400
-    qDebug().noquote() << d;
+    {
+        foreach (const QString &line, d.split(QLatin1Char('\n')))
+            qDebug().noquote() << line;
+    }
 #else
     qDebug("%s", qPrintable(d));
 #endif
