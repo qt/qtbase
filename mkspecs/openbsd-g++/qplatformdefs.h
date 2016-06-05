@@ -73,16 +73,7 @@
 #undef QT_OPEN_LARGEFILE
 #define QT_OPEN_LARGEFILE       0
 
-// QT_SOCKLEN_T
-// OpenBSD 2.2 - 2.4            int
-// OpenBSD 2.5 - 2.8            socklen_t
-
 #define QT_SNPRINTF             ::snprintf
 #define QT_VSNPRINTF            ::vsnprintf
-
-// Older OpenBSD versions may still use the a.out format instead of ELF.
-#ifndef __ELF__
-#define QT_AOUT_UNDERSCORE
-#endif
 
 #endif // QPLATFORMDEFS_H
