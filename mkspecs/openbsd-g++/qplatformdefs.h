@@ -80,21 +80,6 @@
 #define QT_SNPRINTF             ::snprintf
 #define QT_VSNPRINTF            ::vsnprintf
 
-// 1003.1c-1995 says on page 38 (2.9.3, paragraph 3) that if _POSIX_THREADS
-// is defined, then _POSIX_THREAD_SAFE_FUNCTIONS must also be defined.
-// However this looks like a well-known typo (reversed dependency).
-//
-// On the other hand _POSIX_THREAD_SAFE_FUNCTIONS should be defined only
-// if the Thread-Safe Functions option is implemented. OpenBSD does not
-// support all of the required _r() interfaces, especially getpwuid_r(),
-// which means it should not define _POSIX_THREAD_SAFE_FUNCTIONS.
-//
-// Since OpenBSD does define _POSIX_THREAD_SAFE_FUNCTIONS, we have to
-// undefine it behind its back.
-#ifdef _POSIX_THREAD_SAFE_FUNCTIONS
-#undef _POSIX_THREAD_SAFE_FUNCTIONS
-#endif
-
 // Older OpenBSD versions may still use the a.out format instead of ELF.
 #ifndef __ELF__
 #define QT_AOUT_UNDERSCORE
