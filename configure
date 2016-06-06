@@ -5863,7 +5863,6 @@ cat <<EOF
 EOF
 
 echo '/* Compile time features */'
-[ '!' -z "$LicenseKeyExt" ] && echo "#define QT_PRODUCT_LICENSEKEY \"$LicenseKeyExt\""
 
 if [ "$CFG_SHARED" = "no" ]; then
     cat <<EOF
