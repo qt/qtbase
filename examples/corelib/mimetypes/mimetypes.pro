@@ -1,3 +1,4 @@
 TEMPLATE = subdirs
 
-SUBDIRS = mimetypebrowser
+qtHaveModule(widgets): SUBDIRS += \
+    mimetypebrowser
