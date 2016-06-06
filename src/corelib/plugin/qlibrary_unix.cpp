@@ -50,10 +50,6 @@
 #  include <private/qcore_mac_p.h>
 #endif
 
-#if defined(QT_AOUT_UNDERSCORE)
-#include <string.h>
-#endif
-
 #if (defined(Q_OS_VXWORKS) && !defined(VXWORKS_RTP)) || defined (Q_OS_NACL)
 #define QT_NO_DYNAMIC_LIBRARY
 #endif
@@ -305,14 +301,7 @@ Q_CORE_EXPORT QFunctionPointer qt_mac_resolve_sys(void *handle, const char *symb
 
 QFunctionPointer QLibraryPrivate::resolve_sys(const char* symbol)
 {
-#if defined(QT_AOUT_UNDERSCORE)
-    // older a.out systems add an underscore in front of symbols
-    char* undrscr_symbol = new char[strlen(symbol)+2];
-    undrscr_symbol[0] = '_';
-    strcpy(undrscr_symbol+1, symbol);
-    QFunctionPointer address = QFunctionPointer(dlsym(pHnd, undrscr_symbol));
-    delete [] undrscr_symbol;
-#elif defined(QT_HPUX_LD)
+#if defined(QT_HPUX_LD)
     QFunctionPointer address = 0;
     if (shl_findsym((shl_t*)&pHnd, symbol, TYPE_UNDEFINED, &address) < 0)
         address = 0;
