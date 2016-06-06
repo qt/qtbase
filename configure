@@ -5796,11 +5796,6 @@ CFG_CONCURRENT="yes"
 QT_CONFIG="$QT_CONFIG concurrent"
 
 # ### Vestige
-if [ "$CFG_WEBKIT" = "debug" ]; then
-    QMAKE_CONFIG="$QMAKE_CONFIG webkit-debug"
-fi
-
-# ### Vestige
 if [ "$CFG_QML_DEBUG" = "no" ]; then
     QT_CONFIG="$QT_CONFIG no-qml-debug"
 fi
