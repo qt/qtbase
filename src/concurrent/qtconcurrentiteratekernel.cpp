@@ -71,7 +71,7 @@ static qint64 getticks()
 
 static qint64 getticks()
 {
-#if defined(_POSIX_TIMERS) && (_POSIX_TIMERS > 0)
+#if (defined(_POSIX_TIMERS) && (_POSIX_TIMERS > 0)) || defined(Q_OS_OPENBSD)
     clockid_t clockId;
 
 #ifndef _POSIX_THREAD_CPUTIME
