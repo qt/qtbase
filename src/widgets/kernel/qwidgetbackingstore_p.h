@@ -110,7 +110,7 @@ public:
 
     inline bool isDirty() const
     {
-        return !(dirtyWidgets.isEmpty() && dirty.isEmpty() && !fullUpdatePending);
+        return !(dirtyWidgets.isEmpty() && dirty.isEmpty() && !fullUpdatePending && dirtyRenderToTextureWidgets.isEmpty());
     }
 
     // ### Qt 4.6: Merge into a template function (after MSVC isn't supported anymore).
