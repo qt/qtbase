@@ -213,6 +213,7 @@ private slots:
 
     void cdNonreadable();
 
+    void cdBelowRoot_data();
     void cdBelowRoot();
 
 private:
@@ -2264,31 +2265,37 @@ void tst_QDir::cdNonreadable()
 #endif
 }
 
+void tst_QDir::cdBelowRoot_data()
+{
+    QTest::addColumn<QString>("rootPath");
+    QTest::addColumn<QString>("cdInto");
+    QTest::addColumn<QString>("targetPath");
+
+#if defined(Q_OS_ANDROID)
+    QTest::newRow("android") << "/" << "system" << "/system";
+#elif defined(Q_OS_UNIX)
+    QTest::newRow("unix") << "/" << "tmp" << "/tmp";
+#elif defined(Q_OS_WINRT)
+    QTest::newRow("winrt") << QDir::rootPath() << QDir::rootPath() << QDir::rootPath();
+#else // Windows+CE
+    const QString systemDrive = QString::fromLocal8Bit(qgetenv("SystemDrive")) + QLatin1Char('/');
+    const QString systemRoot = QString::fromLocal8Bit(qgetenv("SystemRoot"));
+    QTest::newRow("windows-drive")
+        << systemDrive << systemRoot.mid(3) << QDir::cleanPath(systemRoot);
+#endif // Windows
+}
+
 void tst_QDir::cdBelowRoot()
 {
-#if defined (Q_OS_ANDROID)
-#define ROOT QString("/")
-#define DIR QString("/system")
-#define CD_INTO "system"
-#elif defined (Q_OS_UNIX)
-#define ROOT QString("/")
-#define DIR QString("/tmp")
-#define CD_INTO "tmp"
-#elif defined (Q_OS_WINRT)
-#define ROOT QDir::rootPath()
-#define DIR QDir::rootPath()
-#define CD_INTO QDir::rootPath()
-#else
-#define ROOT QString::fromLocal8Bit(qgetenv("SystemDrive"))+"/"
-#define DIR QString::fromLocal8Bit(qgetenv("SystemRoot")).replace('\\', '/')
-#define CD_INTO QString::fromLocal8Bit(qgetenv("SystemRoot")).mid(3)
-#endif
+    QFETCH(QString, rootPath);
+    QFETCH(QString, cdInto);
+    QFETCH(QString, targetPath);
 
-    QDir root(ROOT);
-    QVERIFY(!root.cd(".."));
-    QCOMPARE(root.path(), ROOT);
-    QVERIFY(root.cd(CD_INTO));
-    QCOMPARE(root.path(), DIR);
+    QDir root(rootPath);
+    QVERIFY2(!root.cd(".."), qPrintable(root.absolutePath()));
+    QCOMPARE(root.path(), rootPath);
+    QVERIFY(root.cd(cdInto));
+    QCOMPARE(root.path(), targetPath);
 #ifdef Q_OS_UNIX
     if (::getuid() == 0)
         QSKIP("Running this test as root doesn't make sense");
@@ -2296,13 +2303,13 @@ void tst_QDir::cdBelowRoot()
 #ifdef Q_OS_WINRT
     QSKIP("WinRT has no concept of system root");
 #endif
-    QDir dir(DIR);
-    QVERIFY(!dir.cd("../.."));
-    QCOMPARE(dir.path(), DIR);
-    QVERIFY(!dir.cd("../abs/../.."));
-    QCOMPARE(dir.path(), DIR);
+    QDir dir(targetPath);
+    QVERIFY2(!dir.cd("../.."), qPrintable(dir.absolutePath()));
+    QCOMPARE(dir.path(), targetPath);
+    QVERIFY2(!dir.cd("../abs/../.."), qPrintable(dir.absolutePath()));
+    QCOMPARE(dir.path(), targetPath);
     QVERIFY(dir.cd(".."));
-    QCOMPARE(dir.path(), ROOT);
+    QCOMPARE(dir.path(), rootPath);
 }
 
 QTEST_MAIN(tst_QDir)
