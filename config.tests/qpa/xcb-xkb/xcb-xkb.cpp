@@ -51,6 +51,9 @@ int main(int, char **)
 
     xcb_connection_t *connection = xcb_connect("", &primaryScreen);
 
+    // This takes more arguments in xcb-xkb < 1.10.
+    xcb_xkb_get_kbd_by_name_unchecked(NULL, 0, 0, 0, 0);
+
     // This won't compile unless libxcb >= 1.5 which defines XCB_ATOM_PRIMARY.
     int xcbAtomPrimary = XCB_ATOM_PRIMARY;
 
