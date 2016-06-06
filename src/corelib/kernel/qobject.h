@@ -419,8 +419,7 @@ protected:
     QScopedPointer<QObjectData> d_ptr;
 
     static const QMetaObject staticQtMetaObject;
-    friend inline const QMetaObject *qt_getQtMetaObject() Q_DECL_NOEXCEPT
-    { return &staticQtMetaObject; }
+    friend inline const QMetaObject *qt_getQtMetaObject() Q_DECL_NOEXCEPT;
 
     friend struct QMetaObject;
     friend struct QMetaObjectPrivate;
@@ -450,6 +449,9 @@ private:
 inline QMetaObject::Connection QObject::connect(const QObject *asender, const char *asignal,
                                             const char *amember, Qt::ConnectionType atype) const
 { return connect(asender, asignal, this, amember, atype); }
+
+inline const QMetaObject *qt_getQtMetaObject() Q_DECL_NOEXCEPT
+{ return &QObject::staticQtMetaObject; }
 
 #ifndef QT_NO_USERDATA
 class Q_CORE_EXPORT QObjectUserData {

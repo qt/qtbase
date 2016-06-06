@@ -52,21 +52,38 @@
 QT_BEGIN_NAMESPACE
 
 /*
- The file format is simply a grouped listing of keywords
- Ungrouped entries at the beginning apply to the whole testcase
- Groups define testfunctions or specific test data to ignore.
- After the groups come a list of entries (one per line) that define
- for which platform/os combination to ignore the test result.
- All keys in a single line have to match to blacklist the test.
+  The BLACKLIST file format is a grouped listing of keywords.
 
- mac
- [testFunction]
- linux
- windows 64bit
- [testfunction2:testData]
- msvc
+  Blank lines and lines starting with # are simply ignored.  An initial #-line
+  referring to this documentation is kind to readers.  Comments can also be used
+  to indicate the reasons for ignoring particular cases.
 
- The known keys are listed below:
+  A key names a platform, O/S, distribution, tool-chain or architecture; a !
+  prefix reverses what it checks.  A version, joined to a key (at present, only
+  for distributions and for msvc) with a hyphen, limits the key to the specific
+  version.  A keyword line matches if every key on it applies to the present
+  run.  Successive lines are alternate conditions for ignoring a test.
+
+  Ungrouped lines at the beginning of a file apply to the whole testcase.
+  A group starts with a [square-bracketed] identification of a test function,
+  optionally with (after a colon, the name of) a specific data set, to ignore.
+  Subsequent lines give conditions for ignoring this test.
+
+        # See qtbase/src/testlib/qtestblacklist.cpp for format
+        osx
+
+        # QTBUG-12345
+        [testFunction]
+        linux
+        windows 64bit
+
+        # Needs basic C++11 support
+        [testfunction2:testData]
+        msvc-2010
+
+  Keys are lower-case.  Distribution name and version are supported if
+  QSysInfo's productType() and productVersion() return them.
+  The other known keys are listed below:
 */
 
 static QSet<QByteArray> keywords()
@@ -148,18 +165,29 @@ static QSet<QByteArray> keywords()
             return set;
 }
 
-static bool checkCondition(const QByteArray &condition)
+static QSet<QByteArray> activeConditions()
 {
-    static QSet<QByteArray> matchedConditions = keywords();
-    QList<QByteArray> conds = condition.split(' ');
+    QSet<QByteArray> result = keywords();
 
     QByteArray distributionName = QSysInfo::productType().toLower().toUtf8();
     QByteArray distributionRelease = QSysInfo::productVersion().toLower().toUtf8();
     if (!distributionName.isEmpty()) {
-        if (matchedConditions.find(distributionName) == matchedConditions.end())
-            matchedConditions.insert(distributionName);
-        matchedConditions.insert(distributionName + "-" + distributionRelease);
+        if (result.find(distributionName) == result.end())
+            result.insert(distributionName);
+        if (!distributionRelease.isEmpty()) {
+            QByteArray versioned = distributionName + "-" + distributionRelease;
+            if (result.find(versioned) == result.end())
+                result.insert(versioned);
+        }
     }
+
+    return result;
+}
+
+static bool checkCondition(const QByteArray &condition)
+{
+    static const QSet<QByteArray> matchedConditions = activeConditions();
+    QList<QByteArray> conds = condition.split(' ');
 
     for (int i = 0; i < conds.size(); ++i) {
         QByteArray c = conds.at(i);

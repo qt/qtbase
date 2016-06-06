@@ -6,7 +6,10 @@ for(p, QMAKE_LIBDIR_EGL) {
 
 INCLUDEPATH += $$QMAKE_INCDIR_EGL
 LIBS += $$QMAKE_LIBS_EGL
-
-LIBS += -ldrm
-
+CONFIG += link_pkgconfig
+!contains(QT_CONFIG, no-pkg-config) {
+    PKGCONFIG += libdrm
+} else {
+    LIBS += -ldrm
+}
 CONFIG -= qt

@@ -1616,6 +1616,13 @@
     \note Platform-specific variables that change the extension override
     the contents of this variable.
 
+    \target QMAKE_EXTENSION_STATICLIB
+    \section1 QMAKE_EXTENSION_STATICLIB
+
+    Contains the extension for shared static libraries. The value of
+    this variable is typically handled by qmake or
+    \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
     \section1 QMAKE_EXT_MOC
 
     Contains the extension used on included moc files.

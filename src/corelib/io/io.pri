@@ -149,7 +149,6 @@ win32 {
             SOURCES += io/qsettings_mac.cpp
             OBJECTIVE_SOURCES += io/qurl_mac.mm
         }
-        freebsd: LIBS_PRIVATE += -lutil         # qlockfile_unix.cpp requires this
         mac {
             SOURCES += io/qstorageinfo_mac.cpp
             OBJECTIVE_SOURCES += io/qstandardpaths_mac.mm

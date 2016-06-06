@@ -2906,7 +2906,7 @@ void Configure::generateOutputVars()
         qtConfig += "accessibility";
 
     if (!qmakeLibs.isEmpty())
-        qmakeVars += "LIBS           += " + formatPaths(qmakeLibs);
+        qmakeVars += "EXTRA_LIBS += " + formatPaths(qmakeLibs);
 
     if (!dictionary["QT_LFLAGS_SQLITE"].isEmpty())
         qmakeVars += "QT_LFLAGS_SQLITE += " + dictionary["QT_LFLAGS_SQLITE"];
@@ -3027,9 +3027,9 @@ void Configure::generateOutputVars()
         qtConfig += "rpath";
 
     if (!qmakeDefines.isEmpty())
-        qmakeVars += QString("DEFINES        += ") + qmakeDefines.join(' ');
+        qmakeVars += QString("EXTRA_DEFINES += ") + qmakeDefines.join(' ');
     if (!qmakeIncludes.isEmpty())
-        qmakeVars += QString("INCLUDEPATH    += ") + formatPaths(qmakeIncludes);
+        qmakeVars += QString("EXTRA_INCLUDEPATH += ") + formatPaths(qmakeIncludes);
     if (!opensslLibs.isEmpty())
         qmakeVars += opensslLibs;
     if (dictionary[ "OPENSSL" ] == "linked") {

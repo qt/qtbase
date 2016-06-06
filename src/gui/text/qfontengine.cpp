@@ -1833,8 +1833,7 @@ QFontEngine *QFontEngineMulti::loadEngine(int at)
     request.family = fallbackFamilyAt(at - 1);
 
     if (QFontEngine *engine = QFontDatabase::findFont(request, m_script)) {
-        if (request.weight > QFont::Normal)
-            engine->fontDef.weight = request.weight;
+        engine->fontDef.weight = request.weight;
         if (request.style > QFont::StyleNormal)
             engine->fontDef.style = request.style;
         return engine;

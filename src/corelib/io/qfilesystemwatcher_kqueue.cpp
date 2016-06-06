@@ -172,7 +172,6 @@ QStringList QKqueueFileSystemWatcherEngine::removePaths(const QStringList &paths
                                                         QStringList *files,
                                                         QStringList *directories)
 {
-    bool isEmpty;
     QStringList p = paths;
     if (pathToID.isEmpty())
         return p;
@@ -193,7 +192,6 @@ QStringList QKqueueFileSystemWatcherEngine::removePaths(const QStringList &paths
         else
             files->removeAll(path);
     }
-    isEmpty = pathToID.isEmpty();
 
     return p;
 }

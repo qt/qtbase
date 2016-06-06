@@ -2097,10 +2097,7 @@ void QProcess::start(const QString &program, const QStringList &arguments, OpenM
         return;
     }
     if (program.isEmpty()) {
-        Q_D(QProcess);
-        d->processError = QProcess::FailedToStart;
-        setErrorString(tr("No program defined"));
-        emit error(d->processError);
+        d->setErrorAndEmit(QProcess::FailedToStart, tr("No program defined"));
         return;
     }
 
@@ -2127,10 +2124,7 @@ void QProcess::start(OpenMode mode)
         return;
     }
     if (d->program.isEmpty()) {
-        Q_D(QProcess);
-        d->processError = QProcess::FailedToStart;
-        setErrorString(tr("No program defined"));
-        emit error(d->processError);
+        d->setErrorAndEmit(QProcess::FailedToStart, tr("No program defined"));
         return;
     }
 

@@ -29,6 +29,7 @@
 #include <QtTest/QtTest>
 #include <qcoreapplication.h>
 #include <qstring.h>
+#include <qtemporarydir.h>
 #include <qtemporaryfile.h>
 #include <qfile.h>
 #include <qdir.h>
@@ -81,13 +82,15 @@ private slots:
     void QTBUG_4796();
     void guaranteeUnique();
 private:
+    QTemporaryDir m_temporaryDir;
     QString m_previousCurrent;
 };
 
 void tst_QTemporaryFile::initTestCase()
 {
+    QVERIFY2(m_temporaryDir.isValid(), qPrintable(m_temporaryDir.errorString()));
     m_previousCurrent = QDir::currentPath();
-    QDir::setCurrent(QDir::tempPath());
+    QVERIFY(QDir::setCurrent(m_temporaryDir.path()));
 
     // For QTBUG_4796
     QVERIFY(QDir("test-XXXXXX").exists() || QDir().mkdir("test-XXXXXX"));
@@ -114,9 +117,6 @@ void tst_QTemporaryFile::initTestCase()
 
 void tst_QTemporaryFile::cleanupTestCase()
 {
-    // From QTBUG_4796
-    QVERIFY(QDir().rmdir("test-XXXXXX"));
-
     QDir::setCurrent(m_previousCurrent);
 }
 

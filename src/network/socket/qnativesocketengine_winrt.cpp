@@ -337,7 +337,7 @@ bool QNativeSocketEngine::connectToHostByName(const QString &name, quint16 port)
     d->socketState = QAbstractSocket::ConnectingState;
     hr = QEventDispatcherWinRT::runOnXamlThread([d]() {
         return d->connectOp->put_Completed(Callback<IAsyncActionCompletedHandler>(
-                                         d, &QNativeSocketEnginePrivate::handleConnectToHost).Get());
+                                         d, &QNativeSocketEnginePrivate::handleConnectOpFinished).Get());
     });
     Q_ASSERT_SUCCEEDED(hr);
 
@@ -477,7 +477,10 @@ void QNativeSocketEngine::close()
             hr = socket3->CancelIOAsync(&action);
             Q_ASSERT_SUCCEEDED(hr);
             hr = QWinRTFunctions::await(action);
-            Q_ASSERT_SUCCEEDED(hr);
+            // If there is no pending IO (no read established before) the function will fail with
+            // "function was called at an unexpected time" which is fine.
+            if (hr != E_ILLEGAL_METHOD_CALL)
+                Q_ASSERT_SUCCEEDED(hr);
             return S_OK;
         });
         Q_ASSERT_SUCCEEDED(hr);
@@ -759,7 +762,7 @@ bool QNativeSocketEngine::waitForWrite(int msecs, bool *timedOut)
     if (d->socketState == QAbstractSocket::ConnectingState) {
         HRESULT hr = QWinRTFunctions::await(d->connectOp, QWinRTFunctions::ProcessMainThreadEvents);
         if (SUCCEEDED(hr)) {
-            d->handleConnectionEstablished(d->connectOp.Get());
+            d->handleConnectOpFinished(d->connectOp.Get(), Completed);
             return true;
         }
     }
@@ -1214,38 +1217,32 @@ HRESULT QNativeSocketEnginePrivate::handleClientConnection(IStreamSocketListener
     return S_OK;
 }
 
-HRESULT QNativeSocketEnginePrivate::handleConnectToHost(IAsyncAction *action, AsyncStatus)
-{
-    handleConnectionEstablished(action);
-    return S_OK;
-}
-
-void QNativeSocketEnginePrivate::handleConnectionEstablished(IAsyncAction *action)
+HRESULT QNativeSocketEnginePrivate::handleConnectOpFinished(IAsyncAction *action, AsyncStatus)
 {
     Q_Q(QNativeSocketEngine);
     if (wasDeleted || !connectOp) // Protect against a late callback
-        return;
+        return S_OK;
 
     HRESULT hr = action->GetResults();
     switch (hr) {
     case 0x8007274c: // A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
         setError(QAbstractSocket::NetworkError, ConnectionTimeOutErrorString);
         socketState = QAbstractSocket::UnconnectedState;
-        break;
+        return S_OK;
     case 0x80072751: // A socket operation was attempted to an unreachable host.
         setError(QAbstractSocket::HostNotFoundError, HostUnreachableErrorString);
         socketState = QAbstractSocket::UnconnectedState;
-        break;
+        return S_OK;
     case 0x8007274d: // No connection could be made because the target machine actively refused it.
         setError(QAbstractSocket::ConnectionRefusedError, ConnectionRefusedErrorString);
         socketState = QAbstractSocket::UnconnectedState;
-        break;
+        return S_OK;
     default:
         if (FAILED(hr)) {
             setError(QAbstractSocket::UnknownSocketError, UnknownSocketErrorString);
             socketState = QAbstractSocket::UnconnectedState;
+            return S_OK;
         }
-        break;
     }
 
     // The callback might be triggered several times if we do not cancel/reset it here
@@ -1267,13 +1264,14 @@ void QNativeSocketEnginePrivate::handleConnectionEstablished(IAsyncAction *actio
     emit q->connectionReady();
 
     if (socketType != QAbstractSocket::TcpSocket)
-        return;
+        return S_OK;
 
     // Delay the reader so that the SSL socket can upgrade
     if (sslSocket)
         QObject::connect(qobject_cast<QSslSocket *>(sslSocket), &QSslSocket::encrypted, q, &QNativeSocketEngine::establishRead);
     else
         q->establishRead();
+    return S_OK;
 }
 
 HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *asyncInfo, AsyncStatus status)

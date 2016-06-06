@@ -719,7 +719,6 @@ CFG_LIBINPUT=auto
 CFG_OBSOLETE_WAYLAND=no
 CFG_EVDEV=auto
 CFG_TSLIB=auto
-CFG_NIS=auto
 CFG_CUPS=auto
 CFG_ICONV=auto
 CFG_DBUS=auto
@@ -2052,13 +2051,6 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    nis)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_NIS="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
     largefile)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_LARGEFILE="$VAL"
@@ -2655,9 +2647,6 @@ Additional options:
     -silent ............ Reduce the build output so that warnings and errors
                          can be seen more easily.
 
-    -no-nis ............ Do not compile NIS support.
- *  -nis ............... Compile NIS support.
-
     -no-cups ........... Do not compile CUPS support.
  *  -cups .............. Compile CUPS support.
                          Requires cups/cups.h and libcups.so.2.
@@ -2891,10 +2880,17 @@ if [ -z "$PLATFORM" ]; then
         PLATFORM=ultrix-g++
         ;;
      FreeBSD:*)
-        PLATFORM=freebsd-clang
-        PLATFORM_NOTES="
-            - Also available for FreeBSD: freebsd-icc
-        "
+        if [ "$(uname -r | cut -d. -f1)" -ge 10 ]; then
+            PLATFORM=freebsd-clang
+            PLATFORM_NOTES="
+                - Also available for FreeBSD: freebsd-g++
+            "
+        else
+            PLATFORM=freebsd-g++
+            PLATFORM_NOTES="
+                - Also available for FreeBSD: freebsd-clang
+            "
+        fi
         ;;
      OpenBSD:*)
         PLATFORM=openbsd-g++
@@ -3243,6 +3239,9 @@ fi
 if [ "$XPLATFORM_ANDROID" = "yes" ]; then
     if [ "$CFG_DBUS" = "auto" ]; then
         CFG_DBUS="no"
+    fi
+    if [ "$CFG_EGLFS" = "auto" ]; then
+        CFG_EGLFS="no"
     fi
     if [ -z "$CFG_DEFAULT_ANDROID_NDK_HOST" ]; then
         case $PLATFORM in
@@ -4829,9 +4828,13 @@ if [ "$CFG_LIBPNG" = "auto" ]; then
 fi
 
 # detect dl
-if ! compileTest unix/libdl "libdl"; then
-    QMakeVar add DEFINES QT_NO_DYNAMIC_LIBRARY
+if compileTest unix/dlopen "dlopen"; then
     QMAKE_CONFIG="$QMAKE_CONFIG no-libdl"
+else
+    if ! compileTest unix/libdl "libdl"; then
+        QMAKE_CONFIG="$QMAKE_CONFIG no-libdl"
+        QMakeVar add DEFINES QT_NO_DYNAMIC_LIBRARY
+    fi
 fi
 
 if [ "$CFG_EGLFS" = "yes" ]; then
@@ -5096,23 +5099,6 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
             ;;
         esac
 done
-
-# auto-detect NIS support
-if [ "$CFG_NIS" != "no" ]; then
-    if compileTest unix/nis "NIS"; then
-        CFG_NIS=yes
-    else
-        if [ "$CFG_NIS" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-            echo "NIS support cannot be enabled due to functionality tests!"
-            echo " Turn on verbose messaging (-v) to $0 to see the final report."
-            echo " If you believe this message is in error you may use the continue"
-            echo " switch (-continue) to $0 to continue."
-            exit 101
-        else
-            CFG_NIS=no
-        fi
-    fi
-fi
 
 # auto-detect CUPS support
 if [ "$CFG_CUPS" != "no" ]; then
@@ -6585,7 +6571,6 @@ elif [ "$CFG_ZLIB" = "system" ]; then
 fi
 
 [ "$CFG_MTDEV" = "yes" ] && QT_CONFIG="$QT_CONFIG mtdev"
-[ "$CFG_NIS" = "yes" ] && QT_CONFIG="$QT_CONFIG nis"
 [ "$CFG_CUPS" = "yes" ] && QT_CONFIG="$QT_CONFIG cups"
 [ "$CFG_ICONV" = "yes" ] && QT_CONFIG="$QT_CONFIG iconv"
 [ "$CFG_ICONV" = "sun" ] && QT_CONFIG="$QT_CONFIG sun-libiconv"
@@ -7013,7 +6998,6 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_INOTIFY" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_INOTIFY"
 [ "$CFG_EVENTFD" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EVENTFD"
 [ "$CFG_CLOEXEC" = "yes" ]   && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_THREADSAFE_CLOEXEC=1"
-[ "$CFG_NIS" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NIS"
 [ "$CFG_OPENSSL" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_OPENSSL"
 [ "$CFG_OPENSSL" = "linked" ]&& QCONFIG_FLAGS="$QCONFIG_FLAGS QT_LINKED_OPENSSL"
 [ "$CFG_OPENSSL" = "no" ] && [ "$CFG_SECURETRANSPORT" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SSL"
@@ -7480,7 +7464,6 @@ report_support "    libproxy.............." "$CFG_LIBPROXY"
 report_support "    OpenSSL .............." "$CFG_OPENSSL" yes "loading libraries at run-time" linked "linked to the libraries"
 [ "$XPLATFORM_MAC" = "yes" ] && \
     report_support "    SecureTransport ......" "$CFG_SECURETRANSPORT"
-report_support "  NIS ...................." "$CFG_NIS"
 report_support "  OpenGL / OpenVG:"
 report_support "    EGL .................." "$CFG_EGL"
 report_support "    OpenGL ..............." "$CFG_OPENGL" yes "Desktop OpenGL" es2 "OpenGL ES 2.0+"

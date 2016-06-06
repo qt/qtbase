@@ -717,7 +717,7 @@ bool QWidgetLineControl::finishChange(int validateFromState, bool update, bool e
             if (m_transactions.count())
                 return false;
             internalUndo(validateFromState);
-            m_history.resize(m_undoState);
+            m_history.erase(m_history.begin() + m_undoState, m_history.end());
             if (m_modifiedState > m_undoState)
                 m_modifiedState = -1;
             m_validInput = true;
@@ -796,14 +796,14 @@ void QWidgetLineControl::internalSetText(const QString &txt, int pos, bool edite
 */
 void QWidgetLineControl::addCommand(const Command &cmd)
 {
-    if (m_separator && m_undoState && m_history[m_undoState - 1].type != Separator) {
-        m_history.resize(m_undoState + 2);
-        m_history[m_undoState++] = Command(Separator, m_cursor, 0, m_selstart, m_selend);
-    } else {
-        m_history.resize(m_undoState + 1);
-    }
+    m_history.erase(m_history.begin() + m_undoState, m_history.end());
+
+    if (m_separator && m_undoState && m_history[m_undoState - 1].type != Separator)
+        m_history.push_back(Command(Separator, m_cursor, 0, m_selstart, m_selend));
+
     m_separator = false;
-    m_history[m_undoState++] = cmd;
+    m_history.push_back(cmd);
+    m_undoState = int(m_history.size());
 }
 
 /*!
@@ -1957,7 +1957,7 @@ bool QWidgetLineControl::isRedoAvailable() const
     // Same as with undo. Disabled for password modes.
     return !m_readOnly
             && m_echoMode == QLineEdit::Normal
-            && m_undoState < m_history.size();
+            && m_undoState < int(m_history.size());
 }
 
 QT_END_NAMESPACE

@@ -12,3 +12,6 @@ windows msvc-2010 32bit developer-build
 #QTBUG-31611
 [reparentToNotYetCreated]
 windows msvc-2010 32bit developer-build
+
+[stackWidgetOpaqueChildIsVisible]
+windows

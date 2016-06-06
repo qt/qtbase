@@ -67,6 +67,8 @@
 
 #include "qplatformdefs.h"
 
+#include <vector>
+
 #ifdef DrawText
 #  undef DrawText
 #endif
@@ -469,7 +471,6 @@ private:
     // undo/redo handling
     enum CommandType { Separator, Insert, Remove, Delete, RemoveSelection, DeleteSelection, SetSelection };
     struct Command {
-        inline Command() {}
         inline Command(CommandType t, int p, QChar c, int ss, int se) : type(t),uc(c),pos(p),selStart(ss),selEnd(se) {}
         uint type : 4;
         QChar uc;
@@ -477,7 +478,7 @@ private:
     };
     int m_modifiedState;
     int m_undoState;
-    QVector<Command> m_history;
+    std::vector<Command> m_history;
     void addCommand(const Command& cmd);
 
     inline void separate() { m_separator = true; }

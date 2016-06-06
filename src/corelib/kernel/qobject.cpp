@@ -4699,7 +4699,7 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
     QOrderedMutexLocker locker(signalSlotLock(sender),
                                signalSlotLock(receiver));
 
-    if (type & Qt::UniqueConnection) {
+    if (type & Qt::UniqueConnection && slot) {
         QObjectConnectionListVector *connectionLists = QObjectPrivate::get(s)->connectionLists;
         if (connectionLists && connectionLists->count() > signal_index) {
             const QObjectPrivate::Connection *c2 =

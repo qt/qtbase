@@ -30,6 +30,9 @@
 #include "forkfd.h"
 
 #include <sys/types.h>
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+#  include <sys/param.h>
+#endif
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/wait.h>
@@ -65,7 +68,9 @@
 #  undef HAVE_WAITID
 #endif
 
-#if defined(__FreeBSD__) && defined(__FreeBSD_version) && __FreeBSD_version >= 1000032
+#if (defined(__FreeBSD__) && defined(__FreeBSD_version) && __FreeBSD_version >= 1000032) || \
+    (defined(__OpenBSD__) && OpenBSD >= 201505) || \
+    (defined(__NetBSD__) && __NetBSD_Version__ >= 600000000)
 #  define HAVE_PIPE2    1
 #endif
 #if defined(__FreeBSD__) || defined(__DragonFly__) || defined(__FreeBSD_kernel__) || \
@@ -410,6 +415,26 @@ chain_handler:
         old_sigaction.sa_handler(signum);
 }
 
+static void ignore_sigpipe()
+{
+#ifdef O_NOSIGPIPE
+    static ffd_atomic_int done = FFD_ATOMIC_INIT(0);
+    if (ffd_atomic_load(&done, FFD_ATOMIC_RELAXED))
+        return;
+#endif
+
+    struct sigaction action;
+    memset(&action, 0, sizeof action);
+    sigemptyset(&action.sa_mask);
+    action.sa_handler = SIG_IGN;
+    action.sa_flags = 0;
+    sigaction(SIGPIPE, &action, NULL);
+
+#ifdef O_NOSIGPIPE
+    ffd_atomic_store(&done, 1, FFD_ATOMIC_RELAXED);
+#endif
+}
+
 static void forkfd_initialize()
 {
 #if defined(HAVE_BROKEN_WAITID)
@@ -445,6 +470,11 @@ static void forkfd_initialize()
      * signal could be delivered to another thread.
      */
     sigaction(SIGCHLD, &action, &old_sigaction);
+
+#ifndef O_NOSIGPIPE
+    /* disable SIGPIPE too */
+    ignore_sigpipe();
+#endif
 
 #ifndef __GNUC__
     atexit(cleanup);
@@ -486,13 +516,23 @@ static void cleanup()
 
 static int create_pipe(int filedes[], int flags)
 {
-    int ret;
+    int ret = -1;
 #ifdef HAVE_PIPE2
     /* use pipe2(2) whenever possible, since it can thread-safely create a
      * cloexec pair of pipes. Without it, we have a race condition setting
      * FD_CLOEXEC
      */
-    ret = pipe2(filedes, O_CLOEXEC);
+
+#  ifdef O_NOSIGPIPE
+    /* try first with O_NOSIGPIPE */
+    ret = pipe2(filedes, O_CLOEXEC | O_NOSIGPIPE);
+    if (ret == -1) {
+        /* O_NOSIGPIPE not supported, ignore SIGPIPE */
+        ignore_sigpipe();
+    }
+#  endif
+    if (ret == -1)
+        ret = pipe2(filedes, O_CLOEXEC);
     if (ret == -1)
         return ret;
 
