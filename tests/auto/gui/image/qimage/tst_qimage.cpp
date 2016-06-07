@@ -2447,6 +2447,35 @@ void tst_QImage::inplaceRgbSwapped()
     }
 
     QCOMPARE(imageSwapped.constScanLine(0), orginalPtr);
+
+    for (int rw = 0; rw <= 1; rw++) {
+        // Test attempted inplace conversion of images created on existing buffer
+        uchar *volatileData = 0;
+        QImage orig = imageSwapped;
+        QImage dataSwapped;
+        {
+            QVERIFY(!orig.isNull());
+            volatileData = new uchar[orig.byteCount()];
+            memcpy(volatileData, orig.constBits(), orig.byteCount());
+
+            QImage dataImage;
+            if (rw)
+                dataImage = QImage(volatileData, orig.width(), orig.height(), orig.format());
+            else
+                dataImage = QImage((const uchar *)volatileData, orig.width(), orig.height(), orig.format());
+
+            if (orig.colorCount())
+                dataImage.setColorTable(orig.colorTable());
+
+            dataSwapped = std::move(dataImage).rgbSwapped();
+            QVERIFY(!dataSwapped.isNull());
+            delete[] volatileData;
+        }
+
+        QVERIFY2(dataSwapped.constBits() != volatileData, rw ? "non-const" : "const");
+        QCOMPARE(dataSwapped, orig.rgbSwapped());
+    }
+
 #endif
 }
 
@@ -2529,6 +2558,35 @@ void tst_QImage::inplaceMirrored()
         }
     }
     QCOMPARE(imageMirrored.constScanLine(0), originalPtr);
+
+    for (int rw = 0; rw <= 1; rw++) {
+        // Test attempted inplace conversion of images created on existing buffer
+        uchar *volatileData = 0;
+        QImage orig = imageMirrored;
+        QImage dataSwapped;
+        {
+            QVERIFY(!orig.isNull());
+            volatileData = new uchar[orig.byteCount()];
+            memcpy(volatileData, orig.constBits(), orig.byteCount());
+
+            QImage dataImage;
+            if (rw)
+                dataImage = QImage(volatileData, orig.width(), orig.height(), orig.format());
+            else
+                dataImage = QImage((const uchar *)volatileData, orig.width(), orig.height(), orig.format());
+
+            if (orig.colorCount())
+                dataImage.setColorTable(orig.colorTable());
+
+            dataSwapped = std::move(dataImage).mirrored(swap_horizontal, swap_vertical);
+            QVERIFY(!dataSwapped.isNull());
+            delete[] volatileData;
+        }
+
+        QVERIFY2(dataSwapped.constBits() != volatileData, rw ? "non-const" : "const");
+        QCOMPARE(dataSwapped, orig.mirrored(swap_horizontal, swap_vertical));
+    }
+
 #endif
 }
 
@@ -2680,16 +2738,24 @@ void tst_QImage::inplaceRgbConversion()
         static const quint32 readOnlyData[] = { 0xff0102ffU, 0xff0506ffU, 0xff0910ffU, 0xff1314ffU };
         quint32 readWriteData[] = { 0xff0102ffU, 0xff0506ffU, 0xff0910ffU, 0xff1314ffU };
 
-        QImage roImage((const uchar *)readOnlyData, 2, 2, format);
-        QImage roInplaceConverted = std::move(roImage).convertToFormat(dest_format);
+        QImage roInplaceConverted;
+        QImage rwInplaceConverted;
 
-        QImage rwImage((uchar *)readWriteData, 2, 2, format);
-        QImage rwInplaceConverted = std::move(rwImage).convertToFormat(dest_format);
+        {
+            QImage roImage((const uchar *)readOnlyData, 2, 2, format);
+            roInplaceConverted = std::move(roImage).convertToFormat(dest_format);
+
+            QImage rwImage((uchar *)readWriteData, 2, 2, format);
+            rwInplaceConverted = std::move(rwImage).convertToFormat(dest_format);
+        }
 
         QImage roImage2((const uchar *)readOnlyData, 2, 2, format);
         QImage normalConverted = roImage2.convertToFormat(dest_format);
 
+        QVERIFY(roInplaceConverted.constBits() != (const uchar *)readOnlyData);
         QCOMPARE(normalConverted, roInplaceConverted);
+
+        QVERIFY(rwInplaceConverted.constBits() != (const uchar *)readWriteData);
         QCOMPARE(normalConverted, rwInplaceConverted);
     }
 #endif

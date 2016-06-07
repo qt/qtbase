@@ -763,8 +763,8 @@ static bool convert_A2RGB30_PM_to_ARGB_inplace(QImageData *data, Qt::ImageConver
 static bool convert_indexed8_to_ARGB_PM_inplace(QImageData *data, Qt::ImageConversionFlags)
 {
     Q_ASSERT(data->format == QImage::Format_Indexed8);
-    if (!data->own_data)
-        return false;
+    Q_ASSERT(data->own_data);
+
     const int depth = 32;
 
     const int dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;
@@ -817,8 +817,8 @@ static bool convert_indexed8_to_ARGB_PM_inplace(QImageData *data, Qt::ImageConve
 static bool convert_indexed8_to_ARGB_inplace(QImageData *data, Qt::ImageConversionFlags)
 {
     Q_ASSERT(data->format == QImage::Format_Indexed8);
-    if (!data->own_data)
-        return false;
+    Q_ASSERT(data->own_data);
+
     const int depth = 32;
 
     const int dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;
@@ -868,8 +868,7 @@ static bool convert_indexed8_to_ARGB_inplace(QImageData *data, Qt::ImageConversi
 static bool convert_indexed8_to_RGB_inplace(QImageData *data, Qt::ImageConversionFlags flags)
 {
     Q_ASSERT(data->format == QImage::Format_Indexed8);
-    if (!data->own_data)
-        return false;
+    Q_ASSERT(data->own_data);
 
     if (data->has_alpha_clut) {
         for (int i = 0; i < data->colortable.size(); ++i)
@@ -886,8 +885,8 @@ static bool convert_indexed8_to_RGB_inplace(QImageData *data, Qt::ImageConversio
 static bool convert_indexed8_to_RGB16_inplace(QImageData *data, Qt::ImageConversionFlags)
 {
     Q_ASSERT(data->format == QImage::Format_Indexed8);
-    if (!data->own_data)
-        return false;
+    Q_ASSERT(data->own_data);
+
     const int depth = 16;
 
     const int dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;
@@ -943,8 +942,8 @@ static bool convert_indexed8_to_RGB16_inplace(QImageData *data, Qt::ImageConvers
 static bool convert_RGB_to_RGB16_inplace(QImageData *data, Qt::ImageConversionFlags)
 {
     Q_ASSERT(data->format == QImage::Format_RGB32);
-    if (!data->own_data)
-        return false;
+    Q_ASSERT(data->own_data);
+
     const int depth = 16;
 
     const int dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;

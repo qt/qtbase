@@ -3115,6 +3115,8 @@ void QImage::mirrored_inplace(bool horizontal, bool vertical)
         return;
 
     detach();
+    if (!d->own_data)
+        *this = copy();
 
     do_mirror(d, d, horizontal, vertical);
 }
@@ -3261,6 +3263,8 @@ void QImage::rgbSwapped_inplace()
         return;
 
     detach();
+    if (!d->own_data)
+        *this = copy();
 
     switch (d->format) {
     case Format_Invalid:
@@ -4745,7 +4749,7 @@ bool QImageData::convertInPlace(QImage::Format newFormat, Qt::ImageConversionFla
         return true;
 
     // No in-place conversion if we have to detach
-    if (ref.load() > 1 || ro_data)
+    if (ref.load() > 1 || !own_data)
         return false;
 
     InPlace_Image_Converter converter = qimage_inplace_converter_map[format][newFormat];
