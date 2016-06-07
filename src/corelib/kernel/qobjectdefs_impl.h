@@ -50,6 +50,8 @@
 #pragma qt_sync_stop_processing
 #endif
 
+#include <type_traits>
+
 QT_BEGIN_NAMESPACE
 
 
@@ -194,6 +196,46 @@ namespace QtPrivate {
     };
 
     /*
+        Logic that checks if the underlying type of an enum is signed or not.
+        Needs an external, explicit check that E is indeed an enum. Works
+        around the fact that it's undefined behavior to instantiate
+        std::underlying_type on non-enums (cf. §20.13.7.6 [meta.trans.other]).
+    */
+    template<typename E, typename Enable = void>
+    struct IsEnumUnderlyingTypeSigned : std::false_type
+    {
+    };
+
+    template<typename E>
+    struct IsEnumUnderlyingTypeSigned<E, typename std::enable_if<std::is_enum<E>::value>::type>
+            : std::integral_constant<bool, std::is_signed<typename std::underlying_type<E>::type>::value>
+    {
+    };
+
+    /*
+       Logic that checks if the argument of the slot does not narrow the
+       argument of the signal when used in list initialization. Cf. §8.5.4.7
+       [dcl.init.list] for the definition of narrowing.
+       For incomplete From/To types, there's no narrowing.
+    */
+    template<typename From, typename To, typename Enable = void>
+    struct AreArgumentsNarrowedBase : std::false_type
+    {
+    };
+
+    template<typename From, typename To>
+    struct AreArgumentsNarrowedBase<From, To, typename std::enable_if<sizeof(From) && sizeof(To)>::type>
+        : std::integral_constant<bool,
+              (std::is_floating_point<From>::value && std::is_integral<To>::value) ||
+              (std::is_floating_point<From>::value && std::is_floating_point<To>::value && sizeof(From) > sizeof(To)) ||
+              ((std::is_integral<From>::value || std::is_enum<From>::value) && std::is_floating_point<To>::value) ||
+              (std::is_integral<From>::value && std::is_integral<To>::value && (sizeof(From) > sizeof(To) || std::is_signed<From>::value != std::is_signed<To>::value)) ||
+              (std::is_enum<From>::value && std::is_integral<To>::value && (sizeof(From) > sizeof(To) || IsEnumUnderlyingTypeSigned<From>::value != std::is_signed<To>::value))
+              >
+    {
+    };
+
+    /*
        Logic that check if the arguments of the slot matches the argument of the signal.
        To be used like this:
        Q_STATIC_ASSERT(CheckCompatibleArguments<FunctionPointer<Signal>::Arguments, FunctionPointer<Slot>::Arguments>::value)
@@ -203,6 +245,10 @@ namespace QtPrivate {
         static char test(...);
         static const typename RemoveRef<A1>::Type &dummy();
         enum { value = sizeof(test(dummy())) == sizeof(int) };
+#ifdef QT_NO_NARROWING_CONVERSIONS_IN_CONNECT
+        struct AreArgumentsNarrowed : AreArgumentsNarrowedBase<typename RemoveRef<A1>::Type, typename RemoveRef<A2>::Type> {};
+        Q_STATIC_ASSERT_X(!AreArgumentsNarrowed::value, "Signal and slot arguments are not compatible (narrowing)");
+#endif
     };
     template<typename A1, typename A2> struct AreArgumentsCompatible<A1, A2&> { enum { value = false }; };
     template<typename A> struct AreArgumentsCompatible<A&, A&> { enum { value = true }; };

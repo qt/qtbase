@@ -4471,6 +4471,19 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 */
 
 /*!
+    \macro QT_NO_NARROWING_CONVERSIONS_IN_CONNECT
+    \relates QObject
+    \since 5.8
+
+    Defining this macro will disable narrowing and floating-point-to-integral
+    conversions between the arguments carried by a signal and the arguments
+    accepted by a slot, when the signal and the slot are connected using the
+    PMF-based syntax.
+
+    \sa QObject::connect
+*/
+
+/*!
     \typedef QObjectList
     \relates QObject
 
