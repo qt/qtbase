@@ -409,11 +409,14 @@ void NmakeMakefileGenerator::init()
         project->values("QMAKE_DISTCLEAN").append(tgt + ".lib");
     }
     if (project->isActiveConfig("debug_info")) {
-        QString pdbfile = tgt + ".pdb";
+        // Add the compiler's PDB file.
+        QString pdbfile = var("OBJECTS_DIR") + project->first("TARGET") + ".vc.pdb";
         QString escapedPdbFile = escapeFilePath(pdbfile);
         project->values("QMAKE_CFLAGS").append("/Fd" + escapedPdbFile);
         project->values("QMAKE_CXXFLAGS").append("/Fd" + escapedPdbFile);
-        project->values("QMAKE_DISTCLEAN").append(pdbfile);
+        project->values("QMAKE_CLEAN").append(pdbfile);
+        // Add the linker's PDB file to the distclean target.
+        project->values("QMAKE_DISTCLEAN").append(tgt + ".pdb");
     }
     if (project->isActiveConfig("debug")) {
         project->values("QMAKE_CLEAN").append(tgt + ".ilk");
