@@ -1097,6 +1097,10 @@ static QSet<QString> fileListUnderIndex(const QFileSystemModel *model, const QMo
 
 void tst_QFileSystemModel::specialFiles()
 {
+#ifndef Q_OS_UNIX
+     QSKIP("Not implemented");
+#endif
+
     QFileSystemModel model;
 
     model.setFilter(QDir::AllEntries | QDir::System | QDir::Hidden);
@@ -1105,23 +1109,8 @@ void tst_QFileSystemModel::specialFiles()
     // as it will always return a valid index for existing files,
     // even if the file is not visible with the given filter.
 
-#if defined(Q_OS_UNIX)
     const QModelIndex rootIndex = model.setRootPath(QStringLiteral("/dev/"));
     const QString testFileName = QStringLiteral("null");
-#elif defined(Q_OS_WIN)
-    const QModelIndex rootIndex = model.setRootPath(flatDirTestPath);
-
-    const QString testFileName = QStringLiteral("linkSource.lnk");
-
-    QFile file(flatDirTestPath + QLatin1String("/linkTarget.txt"));
-    QVERIFY(file.open(QIODevice::WriteOnly));
-    file.close();
-    QVERIFY(file.link(flatDirTestPath + '/' + testFileName));
-#else
-    QSKIP("Not implemented");
-    QModelIndex rootIndex;
-    QString testFileName;
-#endif
 
     QTRY_VERIFY(fileListUnderIndex(&model, rootIndex).contains(testFileName));
 
