@@ -205,6 +205,9 @@ static inline HRESULT _await_impl(const Microsoft::WRL::ComPtr<T> &asyncOp, Awai
         hr = asyncInfo->get_ErrorCode(&ec);
         if (FAILED(hr))
             return hr;
+        hr = asyncInfo->Close();
+        if (FAILED(hr))
+            return hr;
         return ec;
     }
 
