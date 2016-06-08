@@ -441,7 +441,7 @@ QRect QWidgetLineControl::anchorRect() const
 {
     if (!hasSelectedText())
         return cursorRect();
-    return rectForPos(m_selstart < m_selend ? m_selstart : m_selend);
+    return rectForPos(m_cursor == m_selstart ? m_selend : m_selstart);
 }
 
 /*!
