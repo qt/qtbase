@@ -185,7 +185,7 @@ void tst_QStringApiSymmetry::compare_data(bool hasConceptOfNullAndEmpty)
             QString(QLatin1String(lhs)), \
             QString(QLatin1String(rhs)), \
         }; \
-        QTest::newRow("'" lhs "' <> '" rhs "'") \
+        QTest::newRow(qUtf8Printable(QLatin1String("'" lhs "' <> '" rhs "': "))) \
             << QStringRef(&pinned[0]) << QLatin1String(lhs) \
             << QStringRef(&pinned[1]) << QLatin1String(rhs) \
             << qstrcmp(lhs, rhs) << qstricmp(lhs, rhs); \
@@ -194,17 +194,18 @@ void tst_QStringApiSymmetry::compare_data(bool hasConceptOfNullAndEmpty)
     ROW("0", "");
     ROW("0", "1");
     ROW("0", "0");
+    ROW("\xE4", "\xE4"); // ä <> ä
+    ROW("\xE4", "\xC4"); // ä <> Ä
 #undef ROW
 }
 
-template <typename String> String make(const QStringRef &sf, QLatin1String l1);
-template <> QChar make(const QStringRef &sf, QLatin1String)
-{ return sf.isEmpty() ? QChar(QLatin1Char('\0')) : sf.at(0); }
-template <> QStringRef make(const QStringRef &sf, QLatin1String) { return sf; }
-template <> QString make(const QStringRef &sf, QLatin1String) { return sf.toString(); }
-template <> QLatin1String make(const QStringRef &, QLatin1String l1) { return l1; }
-template <> QByteArray make(const QStringRef &sf, QLatin1String) { return sf.toUtf8(); }
-template <> const char *make(const QStringRef &, QLatin1String l1) { return l1.data(); }
+template <class Str> Str  make(const QStringRef &sf, QLatin1String l1, const QByteArray &u8);
+template <> QChar         make(const QStringRef &sf, QLatin1String,    const QByteArray &)   { return sf.isEmpty() ? QChar() : sf.at(0); }
+template <> QStringRef    make(const QStringRef &sf, QLatin1String,    const QByteArray &)   { return sf; }
+template <> QString       make(const QStringRef &sf, QLatin1String,    const QByteArray &)   { return sf.toString(); }
+template <> QLatin1String make(const QStringRef &,   QLatin1String l1, const QByteArray &)   { return l1; }
+template <> QByteArray    make(const QStringRef &,   QLatin1String,    const QByteArray &u8) { return u8; }
+template <> const char *  make(const QStringRef &,   QLatin1String,    const QByteArray &u8) { return u8.data(); }
 
 template <typename> struct is_utf8_encoded              : std::false_type {};
 template <>         struct is_utf8_encoded<const char*> : std::true_type {};
@@ -227,8 +228,11 @@ void tst_QStringApiSymmetry::compare_impl() const
     QFETCH(QLatin1String, rhsLatin1);
     QFETCH(int, caseSensitiveCompareResult);
 
-    const LHS lhs = make<LHS>(lhsUnicode, lhsLatin1);
-    const RHS rhs = make<RHS>(rhsUnicode, rhsLatin1);
+    const auto lhsU8 = lhsUnicode.toUtf8();
+    const auto rhsU8 = rhsUnicode.toUtf8();
+
+    const auto lhs = make<LHS>(lhsUnicode, lhsLatin1, lhsU8);
+    const auto rhs = make<RHS>(rhsUnicode, rhsLatin1, rhsU8);
 
 #ifdef Q_COMPILER_NOEXCEPT
 # define QVERIFY_NOEXCEPT(expr) do { \

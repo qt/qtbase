@@ -1635,11 +1635,11 @@ inline bool operator>=(const QStringRef &lhs, QChar rhs) Q_DECL_NOTHROW { return
 
 // QChar <> QLatin1String
 inline bool operator==(QChar lhs, QLatin1String rhs) Q_DECL_NOTHROW
-{ return QString::compare_helper(&lhs, 1, rhs.latin1(), rhs.size()) == 0; }
+{ return QString::compare_helper(&lhs, 1, rhs) == 0; }
 inline bool operator< (QChar lhs, QLatin1String rhs) Q_DECL_NOTHROW
-{ return QString::compare_helper(&lhs, 1, rhs.latin1(), rhs.size()) <  0; }
+{ return QString::compare_helper(&lhs, 1, rhs) <  0; }
 inline bool operator> (QChar lhs, QLatin1String rhs) Q_DECL_NOTHROW
-{ return QString::compare_helper(&lhs, 1, rhs.latin1(), rhs.size()) >  0; }
+{ return QString::compare_helper(&lhs, 1, rhs) >  0; }
 
 inline bool operator!=(QChar lhs, QLatin1String rhs) Q_DECL_NOTHROW { return !(lhs == rhs); }
 inline bool operator<=(QChar lhs, QLatin1String rhs) Q_DECL_NOTHROW { return !(lhs >  rhs); }
