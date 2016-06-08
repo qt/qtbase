@@ -814,7 +814,7 @@ QString QFileInfo::completeBaseName() const
 }
 
 /*!
-    Returns the complete suffix of the file.
+    Returns the complete suffix (extension) of the file.
 
     The complete suffix consists of all characters in the file after
     (but not including) the first '.'.
@@ -833,7 +833,7 @@ QString QFileInfo::completeSuffix() const
 }
 
 /*!
-    Returns the suffix of the file.
+    Returns the suffix (extension) of the file.
 
     The suffix consists of all characters in the file after (but not
     including) the last '.'.
