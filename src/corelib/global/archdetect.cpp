@@ -121,7 +121,12 @@
 #  define ARCH_ABI1 ""
 #endif
 #if defined(__ARM_PCS_VFP) || defined(__mips_hard_float)
+// Use "-hardfloat" for platforms that usually have no FPUs
+// (and for the platforms which had "-hardfloat" before we established the rule)
 #  define ARCH_ABI2 "-hardfloat"
+#elif defined(_SOFT_FLOAT)
+// Use "-softfloat" for architectures that usually have FPUs
+#  define ARCH_ABI2 "-softfloat"
 #else
 #  define ARCH_ABI2 ""
 #endif
