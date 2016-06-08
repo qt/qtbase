@@ -3268,7 +3268,7 @@ int QString::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) co
 {
     const int sl = str.size();
     if (sl == 1)
-        return lastIndexOf(QLatin1Char(str.latin1()[0]), from, cs);
+        return lastIndexOf(str.at(0), from, cs);
 
     const int l = d->size;
     if (from < 0)
@@ -9798,7 +9798,7 @@ int QStringRef::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs)
 {
     const int sl = str.size();
     if (sl == 1)
-        return lastIndexOf(QLatin1Char(str.latin1()[0]), from, cs);
+        return lastIndexOf(str.at(0), from, cs);
 
     const int l = size();
     if (from < 0)
