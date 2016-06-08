@@ -206,6 +206,12 @@ void QCoreTextFontDatabase::populateFontDatabase()
         if (familyName.startsWith(QLatin1Char('.')) || familyName == QLatin1String("LastResort"))
             continue;
 
+#if defined(Q_OS_IOS) || defined(Q_OS_TVOS)
+        // Skip font families with no corresponding fonts
+        if (![UIFont fontNamesForFamilyName:(NSString*)familyNameRef].count)
+            continue;
+#endif
+
         QPlatformFontDatabase::registerFontFamily(familyName);
 
 #if defined(Q_OS_OSX)
