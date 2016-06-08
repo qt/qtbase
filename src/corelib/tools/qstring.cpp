@@ -5450,9 +5450,15 @@ int QString::compare(QLatin1String other, Qt::CaseSensitivity cs) const Q_DECL_N
 int QString::compare_helper(const QChar *data1, int length1, const char *data2, int length2,
                             Qt::CaseSensitivity cs)
 {
-    // ### optimize me
-    const QString s2 = QString::fromUtf8(data2, length2 == -1 ? (data2 ? int(strlen(data2)) : -1) : length2);
-    return compare_helper(data1, length1, s2.constData(), s2.size(), cs);
+    if (!data2)
+        return int(bool(data1));
+    if (Q_UNLIKELY(length2 < 0))
+        length2 = int(strlen(data2));
+    // ### make me nothrow in all cases
+    QVarLengthArray<ushort> s2(length2);
+    const auto beg = reinterpret_cast<QChar *>(s2.data());
+    const auto end = QUtf8::convertToUnicode(beg, data2, length2);
+    return compare_helper(data1, length1, beg, end - beg, cs);
 }
 
 /*!
