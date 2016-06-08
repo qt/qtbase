@@ -363,14 +363,14 @@ void tst_QDebug::qDebugQChar() const
     MessageHandlerSetter mhs(myMessageHandler);
     {
         QDebug d = qDebug();
-        d << QChar('f');
-        d.nospace().noquote() << QChar('o') << QChar('o');
+        d << QChar('f') << QChar(QLatin1Char('\xE4')); // f, ä
+        d.nospace().noquote() << QChar('o') << QChar('o')  << QChar(QLatin1Char('\xC4')); // o, o, Ä
     }
 #ifndef QT_NO_MESSAGELOGCONTEXT
     file = __FILE__; line = __LINE__ - 5; function = Q_FUNC_INFO;
 #endif
     QCOMPARE(s_msgType, QtDebugMsg);
-    QCOMPARE(s_msg, QString::fromLatin1("'f' oo"));
+    QCOMPARE(s_msg, QString::fromLatin1("'f' '\\u00e4' oo\\u00c4"));
     QCOMPARE(QString::fromLatin1(s_file), file);
     QCOMPARE(s_line, line);
     QCOMPARE(QString::fromLatin1(s_function), function);
