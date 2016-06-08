@@ -116,7 +116,7 @@ public:
 
     inline bool isDirty() const
     {
-        return !(dirtyWidgets.isEmpty() && dirty.isEmpty() && !fullUpdatePending);
+        return !(dirtyWidgets.isEmpty() && dirty.isEmpty());
     }
 
     // ### Qt 4.6: Merge into a template function (after MSVC isn't supported anymore).
@@ -135,7 +135,6 @@ private:
     QVector<QWidget *> *dirtyOnScreenWidgets;
     QList<QWidget *> staticWidgets;
     QBackingStore *store;
-    uint fullUpdatePending : 1;
     uint updateRequestSent : 1;
 
     QPoint tlwOffset;

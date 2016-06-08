@@ -285,7 +285,7 @@ bool QWidgetBackingStore::bltRect(const QRect &rect, int dx, int dy, QWidget *wi
 {
     const QPoint pos(tlwOffset + widget->mapTo(tlw, rect.topLeft()));
     const QRect tlwRect(QRect(pos, rect.size()));
-    if (fullUpdatePending || dirty.intersects(tlwRect))
+    if (dirty.intersects(tlwRect))
         return false; // We don't want to scroll junk.
     return store->scroll(tlwRect, dx, dy);
 }
@@ -354,7 +354,7 @@ QRegion QWidgetBackingStore::dirtyRegion(QWidget *widget) const
     const bool widgetDirty = widget && widget != tlw;
     const QRect tlwRect(topLevelRect());
     const QRect surfaceGeometry(tlwRect.topLeft(), store->size());
-    if (fullUpdatePending || (surfaceGeometry != tlwRect && surfaceGeometry.size() != tlwRect.size())) {
+    if (surfaceGeometry != tlwRect && surfaceGeometry.size() != tlwRect.size()) {
         if (widgetDirty) {
             const QRect dirtyTlwRect = QRect(QPoint(), tlwRect.size());
             const QPoint offset(widget->mapTo(tlw, QPoint()));
@@ -532,13 +532,6 @@ void QWidgetBackingStore::markDirty(const QRegion &rgn, QWidget *widget,
         return;
     }
 
-    //### FIXME fullUpdatePending seems to be always false????
-    if (fullUpdatePending) {
-        if (updateTime == UpdateNow)
-            sendUpdateRequest(tlw, updateTime);
-        return;
-    }
-
     const QPoint offset = widget->mapTo(tlw, QPoint());
 
     if (QWidgetPrivate::get(widget)->renderToTexture) {
@@ -628,12 +621,6 @@ void QWidgetBackingStore::markDirty(const QRect &rect, QWidget *widget,
         widget->d_func()->dirty += rect;
         if (!eventAlreadyPosted || updateTime == UpdateNow)
             sendUpdateRequest(widget, updateTime);
-        return;
-    }
-
-    if (fullUpdatePending) {
-        if (updateTime == UpdateNow)
-            sendUpdateRequest(tlw, updateTime);
         return;
     }
 
@@ -773,7 +760,6 @@ void QWidgetBackingStore::updateLists(QWidget *cur)
 QWidgetBackingStore::QWidgetBackingStore(QWidget *topLevel)
     : tlw(topLevel),
       dirtyOnScreenWidgets(0),
-      fullUpdatePending(0),
       updateRequestSent(0),
       textureListWatcher(0),
       perfFrames(0)
@@ -1142,7 +1128,6 @@ void QWidgetBackingStore::sync()
             for (int i = 0; i < dirtyWidgets.size(); ++i)
                 resetWidget(dirtyWidgets.at(i));
             dirtyWidgets.clear();
-            fullUpdatePending = false;
         }
         return;
     }
@@ -1159,7 +1144,7 @@ void QWidgetBackingStore::doSync()
     const bool inTopLevelResize = tlw->d_func()->maybeTopData()->inTopLevelResize;
     const QRect tlwRect(topLevelRect());
     const QRect surfaceGeometry(tlwRect.topLeft(), store->size());
-    if ((fullUpdatePending || inTopLevelResize || surfaceGeometry.size() != tlwRect.size()) && !updatesDisabled) {
+    if ((inTopLevelResize || surfaceGeometry.size() != tlwRect.size()) && !updatesDisabled) {
         if (hasStaticContents() && !store->size().isEmpty() ) {
             // Repaint existing dirty area and newly visible area.
             const QRect clipRect(0, 0, surfaceGeometry.width(), surfaceGeometry.height());
@@ -1245,7 +1230,6 @@ void QWidgetBackingStore::doSync()
     tlwExtra->widgetTextures.clear();
     findAllTextureWidgetsRecursively(tlw, tlw);
     qt_window_private(tlw->windowHandle())->compositing = false; // will get updated in qt_flush()
-    fullUpdatePending = false;
 #endif
 
     if (toClean.isEmpty()) {
