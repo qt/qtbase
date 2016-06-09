@@ -169,7 +169,7 @@ QPpsAttribute QPpsObjectPrivate::decodeNumber(pps_decoder_t *decoder)
     // In order to support more number types, we have to do something stupid because the PPS
     // library won't let us work any other way. Basically, we have to probe the encoded type in
     // order to try to get exactly what we want.
-    long long llValue;
+    int64_t llValue;
     double dValue;
     int iValue;
     QPpsAttribute::Flags flags;
@@ -187,7 +187,7 @@ QPpsAttribute QPpsObjectPrivate::decodeNumber(pps_decoder_t *decoder)
                 return QPpsAttribute();
             }
             flags = readFlags(decoder);
-            return QPpsAttributePrivate::createPpsAttribute(llValue, flags);
+            return QPpsAttributePrivate::createPpsAttribute(static_cast<long long>(llValue), flags);
         default:
             qWarning() << "QPpsObjectPrivate::decodeNumber: pps_decoder_get_int failed";
             return QPpsAttribute();
