@@ -31,4 +31,9 @@
 **
 ****************************************************************************/
 
-#include "../freebsd-clang/qplatformdefs.h"
+#ifndef QPLATFORMDEFS_H
+#define QPLATFORMDEFS_H
+
+#include "../common/bsd/qplatformdefs.h"
+
+#endif // QPLATFORMDEFS_H
