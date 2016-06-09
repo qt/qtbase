@@ -662,6 +662,20 @@ QByteArray qCompress(const uchar* data, int nbytes, int compressionLevel)
 */
 
 #ifndef QT_NO_COMPRESS
+namespace {
+struct QByteArrayDataDeleter
+{
+    static inline void cleanup(QTypedArrayData<char> *d)
+    { if (d) QTypedArrayData<char>::deallocate(d); }
+};
+}
+
+static QByteArray invalidCompressedData()
+{
+    qWarning("qUncompress: Input data is corrupted");
+    return QByteArray();
+}
+
 QByteArray qUncompress(const uchar* data, int nbytes)
 {
     if (!data) {
@@ -676,53 +690,29 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     ulong expectedSize = uint((data[0] << 24) | (data[1] << 16) |
                               (data[2] <<  8) | (data[3]      ));
     ulong len = qMax(expectedSize, 1ul);
-    QScopedPointer<QByteArray::Data, QScopedPointerPodDeleter> d;
+    const ulong maxPossibleSize = MaxAllocSize - sizeof(QByteArray::Data);
+    if (Q_UNLIKELY(len >= maxPossibleSize)) {
+        // QByteArray does not support that huge size anyway.
+        return invalidCompressedData();
+    }
 
+    QScopedPointer<QByteArray::Data, QByteArrayDataDeleter> d(QByteArray::Data::allocate(expectedSize + 1));
+    if (Q_UNLIKELY(d.data() == nullptr))
+        return invalidCompressedData();
+
+    d->size = expectedSize;
     forever {
         ulong alloc = len;
-        if (len  >= (1u << 31u) - sizeof(QByteArray::Data)) {
-            //QByteArray does not support that huge size anyway.
-            qWarning("qUncompress: Input data is corrupted");
-            return QByteArray();
-        }
-        QByteArray::Data *p = static_cast<QByteArray::Data *>(::realloc(d.data(), sizeof(QByteArray::Data) + alloc + 1));
-        if (!p) {
-            // we are not allowed to crash here when compiling with QT_NO_EXCEPTIONS
-            qWarning("qUncompress: could not allocate enough memory to uncompress data");
-            return QByteArray();
-        }
-        d.take(); // realloc was successful
-        d.reset(p);
-        d->offset = sizeof(QByteArrayData);
-        d->size = 0; // Shut up valgrind "uninitialized variable" warning
 
         int res = ::uncompress((uchar*)d->data(), &len,
                                data+4, nbytes-4);
 
         switch (res) {
         case Z_OK:
-            if (len != alloc) {
-                if (len  >= (1u << 31u) - sizeof(QByteArray::Data)) {
-                    //QByteArray does not support that huge size anyway.
-                    qWarning("qUncompress: Input data is corrupted");
-                    return QByteArray();
-                }
-                QByteArray::Data *p = static_cast<QByteArray::Data *>(::realloc(d.data(), sizeof(QByteArray::Data) + len + 1));
-                if (!p) {
-                    // we are not allowed to crash here when compiling with QT_NO_EXCEPTIONS
-                    qWarning("qUncompress: could not allocate enough memory to uncompress data");
-                    return QByteArray();
-                }
-                d.take(); // realloc was successful
-                d.reset(p);
-            }
-            d->ref.initializeOwned();
+            Q_ASSERT(len <= alloc);
+            Q_UNUSED(alloc);
             d->size = len;
-            d->alloc = uint(len) + 1u;
-            d->capacityReserved = false;
-            d->offset = sizeof(QByteArrayData);
             d->data()[len] = 0;
-
             {
                 QByteArrayDataPtr dataPtr = { d.take() };
                 return QByteArray(dataPtr);
@@ -734,6 +724,17 @@ QByteArray qUncompress(const uchar* data, int nbytes)
 
         case Z_BUF_ERROR:
             len *= 2;
+            if (Q_UNLIKELY(len >= maxPossibleSize)) {
+                // QByteArray does not support that huge size anyway.
+                return invalidCompressedData();
+            } else {
+                // grow the block
+                QByteArray::Data *p = QByteArray::Data::reallocateUnaligned(d.data(), len + 1);
+                if (Q_UNLIKELY(p == nullptr))
+                    return invalidCompressedData();
+                d.take();   // don't free
+                d.reset(p);
+            }
             continue;
 
         case Z_DATA_ERROR:
