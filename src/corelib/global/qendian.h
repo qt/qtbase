@@ -49,12 +49,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef __has_builtin
-#  define QT_HAS_BUILTIN(x)     __has_builtin(x)
-#else
-#  define QT_HAS_BUILTIN(x)     0
-#endif
-
 /*
  * ENDIAN FUNCTIONS
 */
