@@ -626,7 +626,7 @@ Q_DECL_RELAXED_CONSTEXPR inline uint qCountTrailingZeroBits(quint8 v) Q_DECL_NOT
 Q_DECL_RELAXED_CONSTEXPR inline uint qCountTrailingZeroBits(quint16 v) Q_DECL_NOTHROW
 {
 #if defined(Q_CC_GNU)
-#  if QT_HAS_BUILTIN(__builtin_ctzs) || defined(__BMI__)
+#  if QT_HAS_BUILTIN(__builtin_ctzs) || (defined(__LZCNT__) && defined(__BMI__))
     return v ? __builtin_ctzs(v) : 16U;
 #  else
     return v ? __builtin_ctz(v) : 16U;
@@ -689,7 +689,7 @@ Q_DECL_RELAXED_CONSTEXPR inline uint qCountLeadingZeroBits(quint8 v) Q_DECL_NOTH
 Q_DECL_RELAXED_CONSTEXPR inline uint qCountLeadingZeroBits(quint16 v) Q_DECL_NOTHROW
 {
 #if defined(Q_CC_GNU)
-#  if QT_HAS_BUILTIN(__builtin_clzs) || defined(__BMI__)
+#  if QT_HAS_BUILTIN(__builtin_clzs) || (defined(__LZCNT__) && defined(__BMI__))
     return v ? __builtin_clzs(v) : 16U;
 #  else
     return v ? __builtin_clz(v)-16U : 16U;
