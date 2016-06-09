@@ -2651,9 +2651,8 @@ void QAbstractSocket::setPeerName(const QString &name)
 }
 
 /*!
-    Closes the I/O device for the socket, disconnects the socket's connection with the
-    host, closes the socket, and resets the name, address, port number and underlying
-    socket descriptor.
+    Closes the I/O device for the socket and calls disconnectFromHost()
+    to close the socket's connection.
 
     See QIODevice::close() for a description of the actions that occur when an I/O
     device is closed.
@@ -2669,13 +2668,6 @@ void QAbstractSocket::close()
     QIODevice::close();
     if (d->state != UnconnectedState)
         disconnectFromHost();
-
-    d->localPort = 0;
-    d->peerPort = 0;
-    d->localAddress.clear();
-    d->peerAddress.clear();
-    d->peerName.clear();
-    d->cachedSocketDescriptor = -1;
 }
 
 /*!
@@ -2778,6 +2770,7 @@ void QAbstractSocket::disconnectFromHost()
     d->peerPort = 0;
     d->localAddress.clear();
     d->peerAddress.clear();
+    d->peerName.clear();
     d->setWriteChannelCount(0);
 
 #if defined(QABSTRACTSOCKET_DEBUG)
