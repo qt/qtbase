@@ -1240,6 +1240,11 @@ bool QSslSocketBackendPrivate::startHandshake()
 #endif
         if (!checkSslErrors())
             return false;
+        // A slot, attached to sslErrors signal can call
+        // abort/close/disconnetFromHost/etc; no need to
+        // continue handshake then.
+        if (q->state() != QAbstractSocket::ConnectedState)
+            return false;
     } else {
         sslErrors.clear();
     }

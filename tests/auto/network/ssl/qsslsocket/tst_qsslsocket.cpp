@@ -212,6 +212,7 @@ private slots:
     void ignoreSslErrorsList();
     void ignoreSslErrorsListWithSlot_data();
     void ignoreSslErrorsListWithSlot();
+    void abortOnSslErrors();
     void readFromClosedSocket();
     void writeBigChunk();
     void blacklistedCertificates();
@@ -249,6 +250,11 @@ protected slots:
     void ignoreErrorSlot()
     {
         socket->ignoreSslErrors();
+    }
+    void abortOnErrorSlot()
+    {
+        QSslSocket *sock = static_cast<QSslSocket *>(sender());
+        sock->abort();
     }
     void untrustedWorkaroundSlot(const QList<QSslError> &errors)
     {
@@ -2309,6 +2315,27 @@ void tst_QSslSocket::ignoreSslErrorsListWithSlot()
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy && (socket.waitForEncrypted(10000) != expectEncryptionSuccess))
         QSKIP("Skipping flaky test - See QTBUG-29941");
+}
+
+void tst_QSslSocket::abortOnSslErrors()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    SslServer server;
+    QVERIFY(server.listen());
+
+    QSslSocket clientSocket;
+    connect(&clientSocket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(abortOnErrorSlot()));
+    clientSocket.connectToHostEncrypted("127.0.0.1", server.serverPort());
+    clientSocket.ignoreSslErrors();
+
+    QEventLoop loop;
+    QTimer::singleShot(1000, &loop, SLOT(quit()));
+    loop.exec();
+
+    QCOMPARE(clientSocket.state(), QAbstractSocket::UnconnectedState);
 }
 
 // make sure a closed socket has no bytesAvailable()
