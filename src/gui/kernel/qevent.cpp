@@ -3842,6 +3842,9 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
     case QEvent::Expose:
         dbg << "QExposeEvent(" << static_cast<const QExposeEvent *>(e)->region() << ')';
         break;
+    case QEvent::Paint:
+        dbg << "QPaintEvent(" << static_cast<const QPaintEvent *>(e)->region() << ')';
+        break;
     case QEvent::MouseButtonPress:
     case QEvent::MouseMove:
     case QEvent::MouseButtonRelease:
