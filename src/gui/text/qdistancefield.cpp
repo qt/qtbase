@@ -799,8 +799,9 @@ QDistanceFieldData *QDistanceFieldData::create(const QPainterPath &path, bool do
 {
     int dfMargin = QT_DISTANCEFIELD_RADIUS(doubleResolution) / QT_DISTANCEFIELD_SCALE(doubleResolution);
     int glyphWidth = qCeil(path.boundingRect().width() / QT_DISTANCEFIELD_SCALE(doubleResolution)) + dfMargin * 2;
+    int glyphHeight = qCeil(path.boundingRect().height() / QT_DISTANCEFIELD_SCALE(doubleResolution)) + dfMargin * 2;
 
-    QDistanceFieldData *data = create(QSize(glyphWidth, QT_DISTANCEFIELD_TILESIZE(doubleResolution)));
+    QDistanceFieldData *data = create(QSize(glyphWidth, glyphHeight));
 
     makeDistanceField(data,
                       path,
