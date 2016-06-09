@@ -34,7 +34,8 @@ ANDROID_PERMISSIONS += \
 
 MODULE_WINRT_CAPABILITIES = \
     internetClient \
-    internetClientServer
+    internetClientServer \
+    privateNetworkClientServer
 
 MODULE_PLUGIN_TYPES = \
     bearer
