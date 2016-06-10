@@ -544,7 +544,9 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
             QPoint n(to.y() - from.y(), from.x() - to.x());
             if (n.x() == 0 && n.y() == 0)
                 continue;
-            int scale = qRound((offs << 16) / qSqrt(qreal(n.x() * n.x() + n.y() * n.y()))); // 8:16
+            int scale = qRound((offs << 16) / qSqrt(qreal(n.x()) * n.x() + qreal(n.y()) * n.y())); // 8:16
+            Q_ASSERT(scale != 0);
+
             n.rx() = n.x() * scale >> 8;
             n.ry() = n.y() * scale >> 8;
             normals.append(n);
