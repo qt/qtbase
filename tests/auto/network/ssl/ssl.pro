@@ -2,7 +2,6 @@ TEMPLATE=subdirs
 SUBDIRS=\
    qsslcertificate \
    qsslcipher \
-   qssldiffiehellmanparameters \
    qsslellipticcurve \
    qsslerror \
    qsslkey \
@@ -22,6 +21,7 @@ winrt: SUBDIRS -= \
 
 contains(QT_CONFIG, ssl) | contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
     contains(QT_CONFIG, private_tests) {
-        SUBDIRS += qasn1element
+        SUBDIRS += qasn1element \
+                   qssldiffiehellmanparameters
     }
 }

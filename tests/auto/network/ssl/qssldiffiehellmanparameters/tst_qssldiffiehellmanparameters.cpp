@@ -46,6 +46,7 @@ class tst_QSslDiffieHellmanParameters : public QObject
 {
     Q_OBJECT
 
+#ifndef QT_NO_SSL
 private Q_SLOTS:
     void constructionEmpty();
     void constructionDefault();
@@ -53,7 +54,10 @@ private Q_SLOTS:
     void constructionPEM();
     void unsafe512Bits();
     void unsafeNonPrime();
+#endif
 };
+
+#ifndef QT_NO_SSL
 
 void tst_QSslDiffieHellmanParameters::constructionEmpty()
 {
@@ -152,6 +156,8 @@ void tst_QSslDiffieHellmanParameters::unsafeNonPrime()
     QCOMPARE(dh.error(), QSslDiffieHellmanParameters::UnsafeParametersError);
 #endif
 }
+
+#endif // QT_NO_SSL
 
 QTEST_MAIN(tst_QSslDiffieHellmanParameters)
 #include "tst_qssldiffiehellmanparameters.moc"
