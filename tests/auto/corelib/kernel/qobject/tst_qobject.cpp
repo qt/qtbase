@@ -5712,6 +5712,27 @@ public slots:
     virtual void slot2() { ++virtual_base_count; }
 };
 
+struct NormalBase
+{
+    QByteArray lastCalled;
+    virtual ~NormalBase() {}
+    virtual void virtualBaseSlot() { lastCalled = "virtualBaseSlot"; }
+    void normalBaseSlot() { lastCalled = "normalBaseSlot"; }
+};
+
+class ObjectWithMultiInheritance : public VirtualSlotsObject, public NormalBase
+{
+    Q_OBJECT
+};
+
+// Normally, the class that inherit QObject always must go first, because of the way qobject_cast
+// work, and moc checks for that. But if we don't use Q_OBJECT, this should work
+class ObjectWithMultiInheritance2 : public NormalBase, public VirtualSlotsObject
+{
+    // no QObject as QObject always must go first
+    // Q_OBJECT
+};
+
 // VMI = Virtual or Multiple Inheritance
 // (in this case, both)
 void tst_QObject::connectSlotsVMIClass()
@@ -5793,6 +5814,93 @@ void tst_QObject::connectSlotsVMIClass()
         QCOMPARE(obj.derived_counter2, 0);
         QCOMPARE(obj.virtual_base_count, 1);
         QCOMPARE(obj.regular_call_count, 0);
+    }
+
+    // test connecting a slot that is virtual within the second base
+    {
+        ObjectWithMultiInheritance obj;
+        void (ObjectWithMultiInheritance::*slot)() = &ObjectWithMultiInheritance::virtualBaseSlot;
+        QVERIFY( QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot, Qt::UniqueConnection));
+        QVERIFY(!QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot, Qt::UniqueConnection));
+
+        emit obj.signal1();
+        QCOMPARE(obj.base_counter1, 0);
+        QCOMPARE(obj.derived_counter1, 0);
+        QCOMPARE(obj.lastCalled, QByteArray("virtualBaseSlot"));
+        obj.lastCalled.clear();
+
+        QVERIFY( QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot));
+        QVERIFY(!QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot));
+
+        emit obj.signal1();
+        QCOMPARE(obj.base_counter1, 0);
+        QCOMPARE(obj.derived_counter1, 0);
+        QCOMPARE(obj.lastCalled, QByteArray());
+    }
+
+    // test connecting a slot that is not virtual within the second base
+    {
+        ObjectWithMultiInheritance obj;
+        void (ObjectWithMultiInheritance::*slot)() = &ObjectWithMultiInheritance::normalBaseSlot;
+        QVERIFY( QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot, Qt::UniqueConnection));
+        QVERIFY(!QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot, Qt::UniqueConnection));
+
+        emit obj.signal1();
+        QCOMPARE(obj.base_counter1, 0);
+        QCOMPARE(obj.derived_counter1, 0);
+        QCOMPARE(obj.lastCalled, QByteArray("normalBaseSlot"));
+        obj.lastCalled.clear();
+
+        QVERIFY( QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot));
+        QVERIFY(!QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot));
+
+        emit obj.signal1();
+        QCOMPARE(obj.base_counter1, 0);
+        QCOMPARE(obj.derived_counter1, 0);
+        QCOMPARE(obj.lastCalled, QByteArray());
+    }
+
+    // test connecting a slot within the first non-QObject base
+    {
+        ObjectWithMultiInheritance2 obj;
+        void (ObjectWithMultiInheritance2::*slot)() = &ObjectWithMultiInheritance2::normalBaseSlot;
+        QVERIFY( QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot, Qt::UniqueConnection));
+        QVERIFY(!QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot, Qt::UniqueConnection));
+
+        emit obj.signal1();
+        QCOMPARE(obj.base_counter1, 0);
+        QCOMPARE(obj.derived_counter1, 0);
+        QCOMPARE(obj.lastCalled, QByteArray("normalBaseSlot"));
+        obj.lastCalled.clear();
+
+        QVERIFY( QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot));
+        QVERIFY(!QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot));
+
+        emit obj.signal1();
+        QCOMPARE(obj.base_counter1, 0);
+        QCOMPARE(obj.derived_counter1, 0);
+        QCOMPARE(obj.lastCalled, QByteArray());
+    }
+
+    // test connecting a slot within the second QObject base
+    {
+        ObjectWithMultiInheritance2 obj;
+        void (ObjectWithMultiInheritance2::*slot)() = &ObjectWithMultiInheritance2::slot1;
+        QVERIFY( QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot, Qt::UniqueConnection));
+        QVERIFY(!QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot, Qt::UniqueConnection));
+
+        emit obj.signal1();
+        QCOMPARE(obj.base_counter1, 0);
+        QCOMPARE(obj.derived_counter1, 1);
+        QCOMPARE(obj.lastCalled, QByteArray());
+
+        QVERIFY( QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot));
+        QVERIFY(!QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot));
+
+        emit obj.signal1();
+        QCOMPARE(obj.base_counter1, 0);
+        QCOMPARE(obj.derived_counter1, 1);
+        QCOMPARE(obj.lastCalled, QByteArray());
     }
 }
 
