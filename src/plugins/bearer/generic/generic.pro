@@ -12,6 +12,8 @@ SOURCES += qgenericengine.cpp \
 
 OTHER_FILES += generic.json
 
+win32:!winrt:LIBS += -lIphlpapi
+
 PLUGIN_TYPE = bearer
 PLUGIN_CLASS_NAME = QGenericEnginePlugin
 load(qt_plugin)
