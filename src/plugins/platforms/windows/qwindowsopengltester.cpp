@@ -246,15 +246,16 @@ QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::detectSupportedRenderers(c
     if (!glesOnly && testDesktopGL())
         result |= QWindowsOpenGLTester::DesktopGl;
 
-    QSet<QString> features;
     const char bugListFileVar[] = "QT_OPENGL_BUGLIST";
+    QString buglistFileName = QStringLiteral(":/qt-project.org/windows/openglblacklists/default.json");
+
     if (qEnvironmentVariableIsSet(bugListFileVar)) {
         const QString fileName = resolveBugListFile(QFile::decodeName(qgetenv(bugListFileVar)));
         if (!fileName.isEmpty())
-            features = QOpenGLConfig::gpuFeatures(qgpu, fileName);
-    } else {
-        features = QOpenGLConfig::gpuFeatures(qgpu, QStringLiteral(":/qt-project.org/windows/openglblacklists/default.json"));
+            buglistFileName = fileName;
     }
+
+    QSet<QString> features = QOpenGLConfig::gpuFeatures(qgpu, buglistFileName);
     qCDebug(lcQpaGl) << "GPU features:" << features;
 
     if (features.contains(QStringLiteral("disable_desktopgl"))) { // Qt-specific
