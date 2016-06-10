@@ -221,12 +221,12 @@ unsigned char * q_ASN1_STRING_data(ASN1_STRING *a);
 int q_ASN1_STRING_length(ASN1_STRING *a);
 int q_ASN1_STRING_to_UTF8(unsigned char **a, ASN1_STRING *b);
 long q_BIO_ctrl(BIO *a, int b, long c, void *d);
-int q_BIO_free(BIO *a);
-BIO *q_BIO_new(BIO_METHOD *a);
+Q_AUTOTEST_EXPORT int q_BIO_free(BIO *a);
+Q_AUTOTEST_EXPORT BIO *q_BIO_new(BIO_METHOD *a);
 BIO *q_BIO_new_mem_buf(void *a, int b);
 int q_BIO_read(BIO *a, void *b, int c);
-BIO_METHOD *q_BIO_s_mem();
-int q_BIO_write(BIO *a, const void *b, int c);
+Q_AUTOTEST_EXPORT BIO_METHOD *q_BIO_s_mem();
+Q_AUTOTEST_EXPORT int q_BIO_write(BIO *a, const void *b, int c);
 int q_BN_num_bits(const BIGNUM *a);
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
 int q_BN_is_word(BIGNUM *a, BN_ULONG w);
@@ -295,6 +295,7 @@ void *q_PEM_ASN1_read_bio(d2i_of_void *a, const char *b, BIO *c, void **d, pem_p
                           void *f);
 // ### ditto for write
 #else
+Q_AUTOTEST_EXPORT EVP_PKEY *q_PEM_read_bio_PrivateKey(BIO *a, EVP_PKEY **b, pem_password_cb *c, void *d);
 DSA *q_PEM_read_bio_DSAPrivateKey(BIO *a, DSA **b, pem_password_cb *c, void *d);
 RSA *q_PEM_read_bio_RSAPrivateKey(BIO *a, RSA **b, pem_password_cb *c, void *d);
 #ifndef OPENSSL_NO_EC
@@ -310,6 +311,7 @@ int q_PEM_write_bio_ECPrivateKey(BIO *a, EC_KEY *b, const EVP_CIPHER *c, unsigne
                                   int e, pem_password_cb *f, void *g);
 #endif
 #endif
+Q_AUTOTEST_EXPORT EVP_PKEY *q_PEM_read_bio_PUBKEY(BIO *a, EVP_PKEY **b, pem_password_cb *c, void *d);
 DSA *q_PEM_read_bio_DSA_PUBKEY(BIO *a, DSA **b, pem_password_cb *c, void *d);
 RSA *q_PEM_read_bio_RSA_PUBKEY(BIO *a, RSA **b, pem_password_cb *c, void *d);
 #ifndef OPENSSL_NO_EC

@@ -34,9 +34,14 @@
 #include <QtNetwork/qhostaddress.h>
 #include <QtNetwork/qnetworkproxy.h>
 
-#if !defined(QT_NO_SSL) && defined(QT_BUILD_INTERNAL)
-#include "private/qsslkey_p.h"
-#define TEST_CRYPTO
+#ifdef QT_BUILD_INTERNAL
+    #ifndef QT_NO_SSL
+        #include "private/qsslkey_p.h"
+        #define TEST_CRYPTO
+    #endif
+    #ifndef QT_NO_OPENSSL
+        #include "private/qsslsocket_openssl_symbols_p.h"
+    #endif
 #endif
 
 class tst_QSslKey : public QObject
@@ -58,7 +63,7 @@ class tst_QSslKey : public QObject
 
     QList<KeyInfo> keyInfoList;
 
-    void createPlainTestRows();
+    void createPlainTestRows(bool filter = false, QSsl::EncodingFormat format = QSsl::EncodingFormat::Pem);
 
 public slots:
     void initTestCase();
@@ -69,6 +74,10 @@ private slots:
     void emptyConstructor();
     void constructor_data();
     void constructor();
+#ifndef QT_NO_OPENSSL
+    void constructorHandle_data();
+    void constructorHandle();
+#endif
     void copyAndAssign_data();
     void copyAndAssign();
     void equalsOperator();
@@ -142,7 +151,7 @@ Q_DECLARE_METATYPE(QSsl::KeyAlgorithm)
 Q_DECLARE_METATYPE(QSsl::KeyType)
 Q_DECLARE_METATYPE(QSsl::EncodingFormat)
 
-void tst_QSslKey::createPlainTestRows()
+void tst_QSslKey::createPlainTestRows(bool filter, QSsl::EncodingFormat format)
 {
     QTest::addColumn<QString>("absFilePath");
     QTest::addColumn<QSsl::KeyAlgorithm>("algorithm");
@@ -150,6 +159,9 @@ void tst_QSslKey::createPlainTestRows()
     QTest::addColumn<int>("length");
     QTest::addColumn<QSsl::EncodingFormat>("format");
     foreach (KeyInfo keyInfo, keyInfoList) {
+        if (filter && keyInfo.format != format)
+            continue;
+
         QTest::newRow(keyInfo.fileInfo.fileName().toLatin1())
             << keyInfo.fileInfo.absoluteFilePath() << keyInfo.algorithm << keyInfo.type
             << keyInfo.length << keyInfo.format;
@@ -175,6 +187,45 @@ void tst_QSslKey::constructor()
     QSslKey key(encoded, algorithm, format, type);
     QVERIFY(!key.isNull());
 }
+
+#ifndef QT_NO_OPENSSL
+
+void tst_QSslKey::constructorHandle_data()
+{
+    createPlainTestRows(true);
+}
+
+void tst_QSslKey::constructorHandle()
+{
+#ifndef QT_BUILD_INTERNAL
+    QSKIP("This test requires -developer-build.");
+#else
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QFETCH(QString, absFilePath);
+    QFETCH(QSsl::KeyAlgorithm, algorithm);
+    QFETCH(QSsl::KeyType, type);
+    QFETCH(int, length);
+
+    QByteArray pem = readFile(absFilePath);
+    auto func = (type == QSsl::KeyType::PublicKey
+                 ? q_PEM_read_bio_PUBKEY
+                 : q_PEM_read_bio_PrivateKey);
+
+    BIO* bio = q_BIO_new(q_BIO_s_mem());
+    q_BIO_write(bio, pem.constData(), pem.length());
+    QSslKey key(func(bio, nullptr, nullptr, nullptr), type);
+    q_BIO_free(bio);
+
+    QVERIFY(!key.isNull());
+    QCOMPARE(key.algorithm(), algorithm);
+    QCOMPARE(key.type(), type);
+    QCOMPARE(key.length(), length);
+#endif
+}
+
+#endif
 
 void tst_QSslKey::copyAndAssign_data()
 {

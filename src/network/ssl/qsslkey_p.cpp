@@ -56,6 +56,9 @@
 
 #include "qsslkey.h"
 #include "qsslkey_p.h"
+#ifndef QT_NO_OPENSSL
+#include "qsslsocket_openssl_symbols_p.h"
+#endif
 #include "qsslsocket.h"
 #include "qsslsocket_p.h"
 
@@ -277,18 +280,23 @@ QSslKey::QSslKey(QIODevice *device, QSsl::KeyAlgorithm algorithm, QSsl::Encoding
     \a type specifies whether the key is public or private.
 
     QSslKey will take ownership for this key and you must not
-    free the key using the native library. The algorithm used
-    when creating a key from a handle will always be QSsl::Opaque.
+    free the key using the native library.
 */
 QSslKey::QSslKey(Qt::HANDLE handle, QSsl::KeyType type)
     : d(new QSslKeyPrivate)
 {
 #ifndef QT_NO_OPENSSL
-    d->opaque = reinterpret_cast<EVP_PKEY *>(handle);
+    EVP_PKEY *evpKey = reinterpret_cast<EVP_PKEY *>(handle);
+    if (!evpKey || !d->fromEVP_PKEY(evpKey)) {
+        d->opaque = evpKey;
+        d->algorithm = QSsl::Opaque;
+    } else {
+        q_EVP_PKEY_free(evpKey);
+    }
 #else
     d->opaque = handle;
-#endif
     d->algorithm = QSsl::Opaque;
+#endif
     d->type = type;
     d->isNull = !d->opaque;
 }
