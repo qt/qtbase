@@ -3432,8 +3432,7 @@ if [ "$XPLATFORM_IOS" = "yes" ]; then
     # If the user passes -sdk on the command line we build a SDK-specific Qt build.
     # Otherwise we build a joined simulator and device build, which is the default.
     if [ -z "$OPT_MAC_SDK" ]; then
-         QT_CONFIG="$QT_CONFIG build_all"
-         QTCONFIG_CONFIG="$QTCONFIG_CONFIG simulator_and_device"
+         QT_CONFIG="$QT_CONFIG build_all simulator_and_device"
     fi
 fi
 

@@ -26,7 +26,9 @@ win32:CONFIG(shared, static|shared) {
 tool_plugin {
     !build_pass:contains(QT_CONFIG, debug_and_release): CONFIG += release
 } else:if(win32|mac):!macx-xcode {
-    contains(QT_CONFIG, debug_and_release): CONFIG += debug_and_release build_all
+    contains(QT_CONFIG, simulator_and_device): CONFIG += iphonesimulator_and_iphoneos
+    contains(QT_CONFIG, debug_and_release): CONFIG += debug_and_release
+    contains(QT_CONFIG, build_all): CONFIG += build_all
 }
 
 CONFIG += relative_qt_rpath  # Qt's plugins should be relocatable

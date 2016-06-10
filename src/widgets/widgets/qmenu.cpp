@@ -2745,10 +2745,15 @@ QMenu::event(QEvent *e)
             return true;
         }
     } break;
-    case QEvent::ContextMenu:
-        if (d->delayState.timer.isActive()) {
-            d->delayState.stop();
-            internalDelayedPopup();
+    case QEvent::MouseButtonPress:
+    case QEvent::ContextMenu: {
+            bool canPopup = true;
+            if (e->type() == QEvent::MouseButtonPress)
+                canPopup = (static_cast<QMouseEvent*>(e)->button() == Qt::LeftButton);
+            if (canPopup && d->delayState.timer.isActive()) {
+                d->delayState.stop();
+                internalDelayedPopup();
+            }
         }
         break;
     case QEvent::Resize: {
