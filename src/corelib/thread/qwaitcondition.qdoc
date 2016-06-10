@@ -172,3 +172,18 @@
 
     \sa wakeOne(), wakeAll()
 */
+
+
+/*! \fn void QWaitCondition::notify_one()
+    \since 5.8
+
+    This function is provided for STL compatibility. It is equivalent
+    to wakeOne().
+*/
+
+/*! \fn void QWaitCondition::notify_all()
+    \since 5.8
+
+    This function is provided for STL compatibility. It is equivalent
+    to wakeAll().
+*/

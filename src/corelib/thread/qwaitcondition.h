@@ -65,6 +65,9 @@ public:
     void wakeOne();
     void wakeAll();
 
+    void notify_one() { wakeOne(); }
+    void notify_all() { wakeAll(); }
+
 private:
     Q_DISABLE_COPY(QWaitCondition)
 
