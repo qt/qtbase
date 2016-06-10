@@ -1,10 +1,13 @@
 [positioning:default]
 ubuntu-14.04
+ubuntu-16.04
 [modalWindowPosition]
 ubuntu-14.04
+ubuntu-16.04
 [modalWithChildWindow]
 ubuntu-14.04
 [setVisible]
 ubuntu-14.04
 [modalWindowEnterEventOnHide_QTBUG35109]
 ubuntu-14.04
+ubuntu-16.04
