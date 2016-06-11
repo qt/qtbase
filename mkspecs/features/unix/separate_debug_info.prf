@@ -27,7 +27,12 @@ have_target:!static:if(darwin|!isEmpty(QMAKE_OBJCOPY)) {
             CONFIG += any_bundle
         }
 
-        debug_info_target_dir = $${debug_info_target}.$$debug_info_suffix/Contents/Resources/DWARF
+        debug_info_target_rel = $$section(debug_info_target, /, -1, -1)
+
+        debug_info_target_dir_suffix = .$$debug_info_suffix/Contents/Resources/DWARF
+
+        debug_info_target_dir = $${debug_info_target}$${debug_info_target_dir_suffix}
+        debug_info_target_dir_rel = $${debug_info_target_rel}$${debug_info_target_dir_suffix}
         !isEmpty(QMAKE_RESOLVED_BUNDLE): \
             QMAKE_TARGET_DEBUG_INFO = $$debug_info_target_dir/$$TARGET
         else: \
@@ -52,8 +57,23 @@ have_target:!static:if(darwin|!isEmpty(QMAKE_OBJCOPY)) {
             debug_info_plist.output = $${debug_info_target}.$$debug_info_suffix/Contents/Info.plist
             QMAKE_SUBSTITUTES += debug_info_plist
         }
+
+        contains(INSTALLS, target):isEmpty(target.files):isEmpty(target.commands):isEmpty(target.extra) {
+            !build_pass|release {
+                debug_info_plist_target.CONFIG += no_check_exist
+                debug_info_plist_target.files = $${debug_info_target}.$$debug_info_suffix/Contents/Info.plist
+                debug_info_plist_target.path += $${target.path}/$${debug_info_target_rel}.$$debug_info_suffix/Contents
+                INSTALLS += debug_info_plist_target
+            }
+
+            debug_info_target.CONFIG += no_check_exist
+            debug_info_target.files = $$QMAKE_TARGET_DEBUG_INFO
+            debug_info_target.path += $${target.path}/$${debug_info_target_dir_rel}
+            INSTALLS += debug_info_target
+        }
     } else {
         QMAKE_TARGET_DEBUG_INFO = $${QMAKE_RESOLVED_TARGET}.$$debug_info_suffix
+        target.targets += $$QMAKE_TARGET_DEBUG_INFO
     }
 
     shell_target = $$shell_quote($$relative_path($$QMAKE_RESOLVED_TARGET, $$OUT_PWD))
@@ -72,6 +92,5 @@ have_target:!static:if(darwin|!isEmpty(QMAKE_OBJCOPY)) {
     }
     silent:QMAKE_POST_LINK = @echo creating $@.$$debug_info_suffix && $$QMAKE_POST_LINK
 
-    target.targets += $$QMAKE_TARGET_DEBUG_INFO
     QMAKE_DISTCLEAN += $$QMAKE_TARGET_DEBUG_INFO
 }
