@@ -1,0 +1,2493 @@
+{
+    "files": {
+        "publicHeader": "src/corelib/global/qconfig.h",
+        "publicPro": "mkspecs/qconfig.pri",
+        "privatePro": "mkspecs/qmodule.pri"
+    },
+
+    "commandline": {
+        "options": {
+            "prefix": "string",
+            "hostprefix": "string",
+            "extprefix": "string",
+
+            "archdatadir": "string",
+            "bindir": "string",
+            "datadir": "string",
+            "docdir": "string",
+            "examplesdir": "string",
+            "external-hostbindir": "string",
+            "headerdir": "string",
+            "hostbindir": "string",
+            "hostdatadir": "string",
+            "hostlibdir": "string",
+            "importdir": "string",
+            "libdir": "string",
+            "libexecdir": "string",
+            "plugindir": "string",
+            "qmldir": "string",
+            "settingsdir": "string",
+            "sysconfdir": "string",
+            "testsdir": "string",
+            "translationdir": "string",
+
+            "android-arch": "string",
+            "android-ndk": "string",
+            "android-ndk-host": "string",
+            "android-ndk-platform": "string",
+            "android-sdk": "string",
+            "android-style-assets": "boolean",
+            "android-toolchain-version": "string",
+
+            "accessibility": "boolean",
+            "alsa": "boolean",
+            "audio-backend": "boolean",
+            "avx": "boolean",
+            "avx2": "boolean",
+            "avx512": "boolean",
+            "c++std": "cxxstd",
+            "commercial": "void",
+            "compile_examples": "boolean",
+            "confirm-license": "void",
+            "continue": "void",
+            "cups": "boolean",
+            "dbus": { "type": "optionalString", "values": [ "no", "linked", "runtime" ] },
+            "dbus-linked": { "type": "void", "name": "dbus", "value": "linked" },
+            "dbus-runtime": { "type": "void", "name": "dbus", "value": "runtime" },
+            "debug": "void",
+            "debug-and-release": { "type": "boolean", "name": "debug_and_release" },
+            "developer-build": "void",
+            "device": "string",
+            "device-option": "string",
+            "directfb": "boolean",
+            "directwrite": "boolean",
+            "doubleconversion": { "type": "enum", "values": [ "no", "qt", "system" ] },
+            "egl": "boolean",
+            "eglfs": "boolean",
+            "evdev": "boolean",
+            "fontconfig": "boolean",
+            "force-asserts": { "type": "boolean", "name": "force_asserts" },
+            "force-debug-info": { "type": "boolean", "name": "force_debug_info" },
+            "force-pkg-config": { "type": "void", "name": "pkg-config" },
+            "framework": "boolean",
+            "freetype": { "type": "enum", "values": [ "no", "qt", "system" ] },
+            "gbm": "boolean",
+            "gcc-sysroot": "boolean",
+            "gcov": "boolean",
+            "gif": "boolean",
+            "glib": "boolean",
+            "gnumake": { "type": "boolean", "name": "GNUmake" },
+            "gstreamer": { "type": "optionalString", "values": [ "no", "yes", "0.10", "1.0" ] },
+            "gtk": { "type": "boolean", "name": "gtk3" },
+            "gui": "boolean",
+            "harfbuzz": { "type": "enum", "values": [ "no", "qt", "system" ] },
+            "headersclean": "boolean",
+            "host-option": "string",
+            "iconv": "boolean",
+            "icu": "boolean",
+            "imf": { "type": "boolean", "name": "qqnx_imf" },
+            "journald": "boolean",
+            "lgmon": "boolean",
+            "libinput": "boolean",
+            "libjpeg": { "type": "enum", "values": [ "no", "qt", "system" ] },
+            "libpng": { "type": "enum", "values": [ "no", "qt", "system" ] },
+            "libproxy": "boolean",
+            "libudev": "boolean",
+            "linuxfb": "boolean",
+            "ltcg": "boolean",
+            "kms": "boolean",
+            "make": { "type": "addString", "values": [ "examples", "libs", "tests", "tools" ] },
+            "mips_dsp": "boolean",
+            "mips_dspr2": "boolean",
+            "mirclient": "boolean",
+            "mtdev": "boolean",
+            "mysql_config": "string",
+            "nomake": { "type": "addString", "values": [ "examples", "tests", "tools" ] },
+            "opengl": { "type": "optionalString", "values": [ "no", "yes", "desktop", "es2" ] },
+            "opensource": { "type": "void", "name": "commercial", "value": "no" },
+            "openssl": "boolean",
+            "openssl-linked": { "type": "void", "name": "openssl", "value": "linked" },
+            "optimized-qmake": { "type": "boolean", "name": "release_tools" },
+            "optimized-tools":  { "type": "boolean", "name": "release_tools" },
+            "pch": { "type": "boolean", "name": "precompile_header" },
+            "pcre": { "type": "enum", "values": [ "qt", "system" ] },
+            "pkg-config": "boolean",
+            "platform": "string",
+            "pps": { "type": "boolean", "name": "qqnx_pps" },
+            "profile": "boolean",
+            "psql_config": "string",
+            "pulseaudio": "boolean",
+            "qml-debug": "boolean",
+            "qpa": { "type": "string", "name": "qpa_default_platform" },
+            "qpa-platform-guard": "boolean",
+            "qreal": "string",
+            "qtlibinfix": { "type": "string", "name": "qt_libinfix" },
+            "qtnamespace": { "type": "string", "name": "qt_namespace" },
+            "reduce-exports": { "type": "boolean", "name": "reduce_exports" },
+            "reduce-relocations": { "type": "boolean", "name": "reduce_relocations" },
+            "release": { "type": "enum", "name": "debug", "values": { "yes": "no", "no": "yes" } },
+            "rpath": "boolean",
+            "sanitize": "sanitize",
+            "sdk": "string",
+            "securetransport": "boolean",
+            "separate-debug-info": { "type": "boolean", "name": "separate_debug_info" },
+            "shared": "boolean",
+            "silent": "void",
+            "skip": "addString",
+            "slog2": "boolean",
+            "sm": { "type": "boolean", "name": "sessionmanager" },
+            "sql-db2": { "type": "boolean", "name": "db2" },
+            "sql-ibase": { "type": "boolean", "name": "ibase" },
+            "sql-mysql": { "type": "boolean", "name": "mysql" },
+            "sql-oci": { "type": "boolean", "name": "oci" },
+            "sql-odbc": { "type": "boolean", "name": "odbc" },
+            "sql-psql": { "type": "boolean", "name": "psql" },
+            "sql-sqlite": { "type": "boolean", "name": "sqlite" },
+            "sql-sqlite2": { "type": "boolean", "name": "sqlite2" },
+            "sql-tds": { "type": "boolean", "name": "tds" },
+            "plugin-sql-db2": { "type": "void", "name": "db2" },
+            "plugin-sql-ibase": { "type": "void", "name": "ibase" },
+            "plugin-sql-mysql": { "type": "void", "name": "mysql" },
+            "plugin-sql-oci": { "type": "void", "name": "oci" },
+            "plugin-sql-odbc": { "type": "void", "name": "odbc" },
+            "plugin-sql-psql": { "type": "void", "name": "psql" },
+            "plugin-sql-sqlite": { "type": "void", "name": "sqlite" },
+            "plugin-sql-sqlite2": { "type": "void", "name": "sqlite2" },
+            "plugin-sql-tds": { "type": "void", "name": "tds" },
+            "sqlite": { "type": "enum", "name": "system-sqlite", "values": { "qt": "no", "system": "yes" } },
+            "sse2": "boolean",
+            "sse3": "boolean",
+            "sse4.1": { "type": "boolean", "name": "sse4_1" },
+            "sse4.2": { "type": "boolean", "name": "sse4_2" },
+            "ssse3": "boolean",
+            "static": { "type": "enum", "name": "shared", "values": { "yes": "no", "no": "yes" } },
+            "strip": "boolean",
+            "syslog": "boolean",
+            "sysroot": "string",
+            "system-proxies": "boolean",
+            "testcocoon": "boolean",
+            "tslib": "boolean",
+            "use-gold-linker": { "type": "boolean", "name": "use_gold_linker" },
+            "v": { "type": "void", "name": "verbose" },
+            "verbose": "void",
+            "warnings-are-errors": { "type": "boolean", "name": "warnings_are_errors" },
+            "Werror": { "type": "boolean", "name": "warnings_are_errors" },
+            "widgets": "boolean",
+            "xcb": { "type": "enum", "values": [ "no", "yes", "qt", "system" ] },
+            "xcb-xlib": "boolean",
+            "xinput2": "boolean",
+            "xkb": "boolean",
+            "xkb-config-root": "string",
+            "xkbcommon": { "type": "enum", "values": [ "no", "qt", "system" ] },
+            "xkbcommon-evdev": "boolean",
+            "xkbcommon-x11": { "type": "enum", "name": "xkbcommon", "values": [ "no", "qt", "system" ] },
+            "xplatform": "string",
+            "xrender": "boolean",
+            "zlib": { "type": "enum", "name": "system-zlib", "values": { "system": "yes", "qt": "no" } }
+        },
+        "prefix": {
+            "D": "defines",
+            "F": "fpaths",
+            "fw": "frameworks",
+            "I": "includes",
+            "L": "lpaths",
+            "l": "libs",
+            "R": "rpaths",
+            "W": "wflags"
+        }
+
+    },
+
+    "tests": {
+        "GNUmake": {
+            "description": "GNU make",
+            "type": "gnumake"
+        },
+        "pkg-config": {
+            "description": "pkg-config",
+            "type": "detectPkgConfig"
+        },
+        "stl": {
+            "description": "STL compatibility",
+            "type": "compile",
+            "test": "unix/stl"
+        },
+        "c++11": {
+            "description": "C++11 support",
+            "type": "compile",
+            "test": "common/c++11"
+        },
+        "c++14": {
+            "description": "C++14 support",
+            "type": "compile",
+            "test": "common/c++14"
+        },
+        "c++1z": {
+            "description": "C++1z support",
+            "type": "compile",
+            "test": "common/c++1z"
+        },
+        "compiler": {
+            "description": "Compiler",
+            "type": "checkCompiler",
+            "log": "compilerDescription"
+        },
+        "precompile_header": {
+            "description": "precompiled header support",
+            "type": "shell",
+            "test": "unix/precomp.test",
+            "args": "$$QMAKE_CXX yes"
+        },
+        "use_gold_linker": {
+            "description": "gold linker",
+            "type": "compilerSupportsFlag",
+            "flag": "-fuse-ld=gold"
+        },
+        "enable_new_dtags": {
+            "description": "new dtags support",
+            "type": "linkerSupportsFlag",
+            "flag": "--enable-new-dtags"
+        },
+        "reduce_exports": {
+            "description": "symbol visibility support",
+            "type": "shell",
+            "test": "unix/fvisibility.test",
+            "args": "$$QMAKE_CXX yes"
+        },
+        "reduce_relocations": {
+            "description": "-Bsymbolic-functions support",
+            "type": "shell",
+            "test": "unix/bsymbolic_functions.test",
+            "args": "$$QMAKE_CXX yes"
+        },
+        "dlopen": {
+            "description": "dlopen() in libc",
+            "type": "compile",
+            "test": "unix/dlopen"
+        },
+        "libdl": {
+            "description": "dlopen() in libdl",
+            "type": "compile",
+            "test": "unix/libdl"
+        },
+        "separate_debug_info": {
+            "description": "separate debug information support",
+            "type": "compile",
+            "test": "unix/objcopy"
+        },
+        "atomic64": {
+            "description": "64 bit atomics",
+            "type": "compile",
+            "test": "common/atomic64"
+        },
+        "atomic64_libatomic": {
+            "description": "64 bit atomics in libatomic",
+            "type": "compile",
+            "test": "common/atomic64",
+            "libs": "-latomic"
+        },
+        "atomicfptr": {
+            "description": "working std::atomic for function pointers",
+            "type": "compile",
+            "test": "common/atomicfptr"
+        },
+        "sse2": {
+            "description": "SSE2 instructions",
+            "type": "compile",
+            "test": "common/sse2"
+        },
+        "sse3": {
+            "description": "SSE3 instructions",
+            "type": "compile",
+            "test": "common/sse3"
+        },
+        "ssse3": {
+            "description": "SSSE3 instructions",
+            "type": "compile",
+            "test": "common/ssse3"
+        },
+        "sse4_1": {
+            "description": "SSE4.1 instructions",
+            "type": "compile",
+            "test": "common/sse4_1"
+        },
+        "sse4_2": {
+            "description": "SSE4.2 instructions",
+            "type": "compile",
+            "test": "common/sse4_2"
+        },
+        "avx": {
+            "description": "AVX instructions",
+            "type": "compile",
+            "test": "common/avx"
+        },
+        "avx_apple_clang": {
+            "description": "bugfree AVX support in compiler",
+            "type": "avx_test_apple_clang"
+        },
+        "avx2": {
+            "description": "AVX2 instructions",
+            "type": "compile",
+            "test": "common/avx2"
+        },
+        "avx512f": {
+            "description": "AVX512 F instructions",
+            "type": "compile",
+            "test": "common/avx512",
+            "args": "AVX512=F"
+        },
+        "avx512er": {
+            "description": "AVX512 ER instructions",
+            "type": "compile",
+            "test": "common/avx512",
+            "args": "AVX512=ER"
+        },
+        "avx512cd": {
+            "description": "AVX512 CD instructions",
+            "type": "compile",
+            "test": "common/avx512",
+            "args": "AVX512=CD"
+        },
+        "avx512pf": {
+            "description": "AVX512 PF instructions",
+            "type": "compile",
+            "test": "common/avx512",
+            "args": "AVX512=PF"
+        },
+        "avx512dq": {
+            "description": "AVX512 DQ instructions",
+            "type": "compile",
+            "test": "common/avx512",
+            "args": "AVX512=DQ"
+        },
+        "avx512bw": {
+            "description": "AVX512 BW instructions",
+            "type": "compile",
+            "test": "common/avx512",
+            "args": "AVX512=BW"
+        },
+        "avx512vl": {
+            "description": "AVX512 VL instructions",
+            "type": "compile",
+            "test": "common/avx512",
+            "args": "AVX512=VL"
+        },
+        "avx512ifma": {
+            "description": "AVX512 IFMA instructions",
+            "type": "compile",
+            "test": "common/avx512",
+            "args": "AVX512=IFMA"
+        },
+        "avx512vbmi": {
+            "description": "AVX512 VBMI instructions",
+            "type": "compile",
+            "test": "common/avx512",
+            "args": "AVX512=VBMI"
+        },
+        "mips_dsp": {
+            "description": "MIPS DSP instructions",
+            "type": "compile",
+            "test": "unix/mips_dsp"
+        },
+        "mips_dspr2": {
+            "description": "MIPS DSPr2 instructions",
+            "type": "compile",
+            "test": "common/mips_dspr2"
+        },
+        "neon": {
+            "description": "NEON instructions",
+            "type": "neon"
+        },
+
+        "clock-gettime": {
+            "description": "clock_gettime()",
+            "type": "compile",
+            "test": "unix/clock-gettime"
+        },
+        "clock-monotonic": {
+            "description": "POSIX monotonic clock",
+            "type": "compile",
+            "test": "unix/clock-monotonic"
+        },
+        "alsa": {
+            "description": "ALSA",
+            "type": "compile",
+            "test": "unix/alsa"
+        },
+        "evdev": {
+            "description": "evdev",
+            "type": "compile",
+            "test": "unix/evdev"
+        },
+        "eventfd": {
+            "description": "eventfd",
+            "type": "compile",
+            "test": "unix/eventfd"
+        },
+        "gbm": {
+            "description": "GBM",
+            "type": "compile",
+            "test": "qpa/gbm"
+        },
+        "getaddrinfo": {
+            "description": "getaddrinfo()",
+            "type": "compile",
+            "test": "unix/getaddrinfo"
+        },
+        "getifaddrs": {
+            "description": "getifaddrs()",
+            "type": "compile",
+            "test": "unix/getifaddrs"
+        },
+        "inotify": {
+            "description": "inotify",
+            "type": "compile",
+            "test": "unix/inotify"
+        },
+        "ipv6ifname": {
+            "description": "IPv6 ifname",
+            "type": "compile",
+            "test": "unix/ipv6ifname"
+        },
+        "libproxy": {
+            "description": "libproxy",
+            "type": "compile",
+            "test": "common/libproxy"
+        },
+        "linuxfb": {
+            "description": "LinuxFB",
+            "type": "compile",
+            "test": "qpa/linuxfb"
+        },
+        "kms": {
+            "description": "KMS",
+            "type": "compile",
+            "test": "qpa/kms"
+        },
+        "mirclient": {
+            "description": "Mir client libraries",
+            "type": "compile",
+            "test": "qpa/mirclient"
+        },
+        "mremap": {
+            "description": "mremap()",
+            "type": "compile",
+            "test": "unix/mremap"
+        },
+        "mtdev": {
+            "description": "mtdev",
+            "type": "compile",
+            "test": "unix/mtdev"
+        },
+        "journald": {
+            "description": "journald",
+            "type": "compile",
+            "test": "unix/journald"
+        },
+        "posix_fallocate": {
+            "description": "POSIX fallocate()",
+            "type": "compile",
+            "test": "unix/posix_fallocate"
+        },
+        "syslog": {
+            "description": "syslog",
+            "type": "compile",
+            "test": "unix/syslog"
+        },
+        "stack_protector": {
+            "description": "stack protection",
+            "type": "compilerSupportsFlag",
+            "test": "-fstack-protector-strong"
+        },
+        "slog2": {
+            "description": "slog2",
+            "type": "compile",
+            "test": "unix/slog2"
+        },
+        "imf": {
+            "description": "IMF",
+            "type": "compile",
+            "test": "unix/qqnx_imf"
+        },
+        "pps": {
+            "description": "PPS",
+            "type": "compile",
+            "test": "unix/pps"
+        },
+        "lgmon": {
+            "description": "lgmon",
+            "type": "compile",
+            "test": "unix/lgmon"
+        },
+        "ipc_sysv": {
+            "description": "SysV IPC",
+            "type": "compile",
+            "test": "unix/ipc_sysv"
+        },
+        "ipc_posix": {
+            "description": "POSIX IPC",
+            "type": "compile",
+            "test": "unix/ipc_posix"
+        },
+        "tslib": {
+            "description": "tslib",
+            "type": "compile",
+            "test": "unix/tslib"
+        },
+        "ppoll": {
+            "description": "ppoll()",
+            "type": "compile",
+            "test": "unix/ppoll"
+        },
+        "pollts": {
+            "description": "pollts()",
+            "type": "compile",
+            "test": "unix/pollts"
+        },
+        "poll": {
+            "description": "poll()",
+            "type": "compile",
+            "test": "unix/poll"
+        },
+        "cloexec": {
+            "description": "O_CLOEXEC",
+            "type": "compile",
+            "test": "unix/cloexec"
+        },
+        "corewlan": {
+            "description": "CoreWLan",
+            "type": "compile",
+            "test": "mac/corewlan"
+        },
+        "openssl": {
+            "description": "OpenSSL",
+            "type": "compile",
+            "test": "unix/openssl"
+        },
+        "openssl-libs": {
+            "description": "OpenSSL Libraries",
+            "type": "openssl",
+            "libs": "-lssl -lcrypto"
+        },
+        "icu": {
+            "description": "ICU",
+            "type": "compile",
+            "test": "unix/icu"
+        },
+        "glib": {
+            "description": "GLib",
+            "type": "compile",
+            "test": "unix/glib",
+            "pkg-config-args": "glib-2.0 gthread-2.0"
+        },
+        "gtk": {
+            "description": "GTK+",
+            "type": "pkgConfig",
+            "pkg-config-args": "gtk+-3.0"
+        },
+        "pulseaudio": {
+            "description": "PulseAudio >= 0.9.10",
+            "type": "compile",
+            "test": "unix/pulseaudio",
+            "pkg-config-args": "libpulse >= 0.9.10 libpulse-mainloop-glib"
+        },
+        "cups": {
+            "description": "CUPS",
+            "type": "compile",
+            "test": "unix/cups"
+        },
+        "libjpeg": {
+            "description": "libjpeg",
+            "type": "compile",
+            "test": "unix/libjpeg"
+        },
+        "libpng": {
+            "description": "libpng",
+            "type": "compile",
+            "test": "unix/libpng"
+        },
+        "zlib": {
+            "description": "zlib",
+            "type": "compile",
+            "test": "unix/zlib"
+        },
+        "posix-iconv": {
+            "description": "POSIX iconv",
+            "type": "compile",
+            "test": "unix/iconv"
+        },
+        "sun-iconv": {
+            "description": "SUN libiconv",
+            "type": "compile",
+            "test": "unix/sun-libiconv"
+        },
+        "gnu-iconv": {
+            "description": "GNU libiconv",
+            "type": "compile",
+            "test": "unix/gnu-libiconv"
+        },
+        "freetype": {
+            "description": "FreeType",
+            "type": "compile",
+            "test": "unix/freetype"
+        },
+        "fontconfig": {
+            "description": "Fontconfig",
+            "type": "compile",
+            "test": "unix/fontconfig",
+            "pkg-config-args": "fontconfig freetype2",
+            "libs": "-lfontconfig -lfreetype"
+        },
+        "harfbuzz": {
+            "description": "HarfBuzz",
+            "type": "compile",
+            "test": "unix/harfbuzz"
+        },
+        "dbus": {
+            "description": "D-Bus >= 1.2",
+            "type": "compile",
+            "test": "unix/dbus",
+            "pkg-config-args": "dbus-1 >= 1.2"
+        },
+        "host-dbus": {
+            "description": "D-Bus >= 1.2 (host)",
+            "type": "pkgConfig",
+            "host": true,
+            "pkg-config-args": "dbus-1 >= 1.2"
+        },
+        "directfb": {
+            "description": "DirectFB",
+            "type": "compile",
+            "test": "qpa/directfb",
+            "pkg-config-args": "directfb"
+        },
+        "egl": {
+            "description": "EGL",
+            "type": "compile",
+            "test": "qpa/egl",
+            "pkg-config-args": "egl"
+        },
+        "egl-x11": {
+            "description": "EGL on X11",
+            "type": "compile",
+            "test": "qpa/egl-x11",
+            "pkg-config-args": "egl"
+        },
+        "eglfs-brcm": {
+            "description": "Broadcom EGL (Rasberry Pi)",
+            "type": "compile",
+            "test": "qpa/eglfs-brcm"
+        },
+        "eglfs-egldevice": {
+            "description": "EGLDevice",
+            "type": "compile",
+            "test": "qpa/eglfs-egldevice"
+        },
+        "eglfs-mali": {
+            "description": "Mali EGL",
+            "type": "compile",
+            "test": "qpa/eglfs-mali"
+        },
+        "eglfs-viv": {
+            "description": "i.Mx6 EGL",
+            "type": "compile",
+            "test": "qpa/eglfs-viv"
+        },
+        "wayland-server": {
+            "description": "Wayland Server",
+            "type": "compile",
+            "test": "qpa/wayland-server"
+        },
+        "libinput": {
+            "description": "libinput",
+            "type": "compile",
+            "test": "unix/libinput",
+            "pkg-config-args": "libinput"
+        },
+        "libudev": {
+            "description": "udev",
+            "type": "compile",
+            "test": "unix/libudev",
+            "pkg-config-args": "libudev"
+        },
+        "xkbcommon": {
+            "description": "xkbcommon",
+            "type": "compile",
+            "test": "unix/xkbcommon",
+            "pkg-config-args": "xkbcommon"
+        },
+        "xkbcommon-x11": {
+            "description": "xkbcommon-x11 >= 0.4.1",
+            "type": "pkgConfig",
+            "pkg-config-args": "xkbcommon xkbcommon-x11 >= 0.4.1"
+        },
+        "xinput2": {
+            "description": "Xinput2",
+            "type": "compile",
+            "test": "x11/xinput2",
+            "pkg-config-args": "xi"
+        },
+        "doubleconversion": {
+            "description": "DoubleConversion",
+            "type": "compile",
+            "test": "unix/doubleconversion"
+        },
+        "xlocalescanprint": {
+            "description": "xlocale.h (or equivalents)",
+            "type": "compile",
+            "test": "common/xlocalescanprint"
+        },
+        "pcre": {
+            "description": "PCRE",
+            "type": "compile",
+            "test": "unix/pcre"
+        },
+        "gstreamer-1_0": {
+            "description": "GStreamer 1.0",
+            "type": "compile",
+            "test": "unix/gstreamer",
+            "args": "-config gst-1.0"
+        },
+        "gstreamer-0_10": {
+            "description": "GStreamer 0.10",
+            "type": "compile",
+            "test": "unix/gstreamer",
+            "args": "-config gst-0.10"
+        },
+        "xcb": {
+            "description": "XCB >= 1.5 (core)",
+            "type": "compile",
+            "test": "qpa/xcb",
+            "pkg-config-args": "xcb >= 1.5"
+        },
+        "xcb-syslibs": {
+            "description": "XCB (secondary)",
+            "type": "compile",
+            "test": "qpa/xcb-syslibs",
+            "pkg-config-args": "xcb xcb-shm xcb-sync xcb-xfixes xcb-randr xcb-image xcb-keysyms xcb-icccm xcb-shape"
+        },
+        "xcb-xkb": {
+            "description": "XCB XKB >= 1.10",
+            "type": "compile",
+            "test": "qpa/xcb-xkb",
+            "pkg-config-args": "xcb-xkb >= 1.10"
+        },
+        "xcb-render": {
+            "description": "XCB XRender",
+            "type": "compile",
+            "test": "qpa/xcb-render",
+            "pkg-config-args": "xcb"
+        },
+        "xcb-glx": {
+            "description": "XCB GLX",
+            "type": "compile",
+            "test": "qpa/xcb-glx",
+            "pkg-config-args": "xcb"
+        },
+        "xcb-xlib": {
+            "description": "XCB Xlib",
+            "type": "compile",
+            "test": "qpa/xcb-xlib",
+            "pkg-config-args": "xcb"
+        },
+        "x11-sm": {
+            "description": "X11 session management",
+            "type": "pkgConfig",
+            "pkg-config-args": "sm ice"
+        },
+        "xlib": {
+            "description": "XLib",
+            "type": "compile",
+            "test": "x11/xlib"
+        },
+        "xrender": {
+            "description": "XRender",
+            "type": "compile",
+            "test": "x11/xrender"
+        },
+        "x11prefix": {
+            "description": "X11 prefix",
+            "type": "getPkgConfigVariable",
+            "pkg-config-args": "x11",
+            "pkg-config-variable": "prefix",
+            "value": "/usr",
+            "log": "value"
+        },
+        "xkbconfigroot": {
+            "description": "XKB config root",
+            "type": "xkbConfigRoot",
+            "pkg-config-args": "xkeyboard-config",
+            "pkg-config-variable": "xkb_base",
+            "log": "value"
+        },
+        "opengl-desktop": {
+            "description": "Desktop OpenGL",
+            "type": "compile",
+            "test": "unix/opengldesktop",
+            "pkg-config-args": "gl"
+        },
+        "opengl-mingw": {
+            "description": "Desktop OpenGL",
+            "type": "compile",
+            "test": "x11/opengl"
+        },
+        "opengles2": {
+            "description": "OpenGL ES 2.0",
+            "type": "compile",
+            "test": "unix/opengles2",
+            "pkg-config-args": "glesv2"
+        },
+        "opengles3": {
+            "description": "OpenGL ES 3.0",
+            "type": "compile",
+            "test": "unix/opengles3",
+            "pkg-config-args": "glesv2"
+        },
+        "opengles31": {
+            "description": "OpenGL ES 3.1",
+            "type": "compile",
+            "test": "unix/opengles31",
+            "pkg-config-args": "glesv2"
+        },
+        "db2": {
+            "description": "DB2 (IBM)",
+            "type": "compile",
+            "test": "unix/db2"
+        },
+        "ibase": {
+            "description": "InterBase",
+            "type": "compile",
+            "test": "unix/ibase"
+        },
+        "mysql": {
+            "description": "MySQL",
+            "type": "mysqlCompile",
+            "test": "unix/mysql",
+            "query": "--libs"
+        },
+        "mysql_r": {
+            "description": "MySQL (threadsafe)",
+            "type": "mysqlCompile",
+            "test": "unix/mysql_r",
+            "query": "--libs_r"
+        },
+        "oci": {
+            "description": "OCI (Oracle)",
+            "type": "compile",
+            "test": "unix/oci"
+        },
+        "odbc": {
+            "description": "ODBC",
+            "type": "compile",
+            "test": "unix/odbc",
+            "libs": "-lodbc"
+        },
+        "iodbc": {
+            "description": "iODBC",
+            "type": "compile",
+            "test": "unix/iodbc",
+            "libs": "-liodbc"
+        },
+        "psql": {
+            "description": "PostgreSQL",
+            "type": "psqlCompile",
+            "test": "unix/psql"
+        },
+        "sqlite2": {
+            "description": "SQLite (version 2)",
+            "type": "compile",
+            "test": "unix/sqlite2"
+        },
+        "sqlite": {
+            "description": "SQLite (version 3)",
+            "type": "compile",
+            "test": "unix/sqlite",
+            "pkg-config-args": "sqlite3",
+            "libs": "-lsqlite3 -lz"
+        },
+        "tds": {
+            "description": "TDS (Sybase)",
+            "type": "tdsCompile",
+            "test": "unix/tds"
+        },
+        "directwrite2": {
+            "description": "DirectWrite 2",
+            "type": "compile",
+            "test": "win/directwrite2"
+        },
+        "qpa_default_platform": {
+            "description": "default QPA platform",
+            "type": "qpaDefaultPlatform",
+            "log": "value"
+        }
+    },
+
+    "features": {
+        "verbose": {
+            "description": "Verbose configure output",
+            "autoDetect": false,
+            "output": [ "verbose" ],
+            "priority": -3
+        },
+
+        "shared": {
+            "description": "Building shared libraries",
+            "condition": "!config.ios && !config.integrity",
+            "output": [
+                "shared",
+                "publicQtConfig",
+                "publicConfig",
+                { "type": "publicQtConfig", "negative": true, "name": "static" },
+                { "type": "publicConfig", "negative": true, "name": "static" }
+            ],
+            "priority": -2
+        },
+        "cross_compile": {
+            "description": "Cross compiling",
+            "condition": "call.crossCompile",
+            "output": [ "publicConfig", "privateConfig" ]
+        },
+        "compiler-flags": {
+            "output": [ "compilerFlags" ],
+            "priority": -2
+        },
+        "gcc-sysroot": {
+            "output": [ "gccSysroot" ],
+            "condition": "input.sysroot != ''",
+            "priority": -2
+        },
+        "pkg-config": {
+            "description": "Using pkg-config",
+            "autoDetect": "!config.darwin",
+            "condition": "tests.pkg-config",
+            "output": [
+                { "type": "publicQtConfig", "negative": true },
+                "pkgConfig"
+            ],
+            "priority": -1
+        },
+        "use_gold_linker": {
+            "description": "Using gold linker",
+            "condition": "tests.use_gold_linker",
+            "output": [ "privateConfig", "useGoldLinker" ],
+            "priority": -1
+        },
+
+        "developer-build": {
+            "description": "Developer build",
+            "autoDetect": false,
+            "output": [
+                { "type": "define", "name": "QT_BUILD_INTERNAL" },
+                { "type": "publicQtConfig", "name": "private_tests" }
+            ]
+        },
+        "debug": {
+            "description": "Build for debugging",
+            "autoDetect": "features.developer-build || config.win32 || config.darwin"
+        },
+        "debug_and_release": {
+            "description": "Compile libs in debug and release mode",
+            "autoDetect": "input.debug == ''",
+            "condition": "config.darwin || config.win32",
+            "output": [ "publicQtConfig", "debugAndRelease" ]
+        },
+        "force_debug_info": {
+            "description": "Add debug info in release mode",
+            "autoDetect": false,
+            "output": [ "privateConfig" ]
+        },
+        "separate_debug_info": {
+            "description": "Split off debug information",
+            "autoDetect": false,
+            "condition": [
+                "features.shared",
+                "features.debug || features.debug_and_release || features.force_debug_info",
+                "config.darwin || tests.separate_debug_info"
+            ],
+            "output": [ "publicQtConfig" ]
+        },
+        "release_tools": {
+            "description": "Compile tools in release mode",
+            "output": [ "publicQtConfig" ]
+        },
+        "simulator_and_device": {
+            "description": "Build for both simulator and device",
+            "condition": "config.ios && input.sdk != ''",
+            "output": [ "publicQtConfig" ]
+        },
+        "build_all": {
+            "condition": "features.debug_and_release || features.simulator_and_device",
+            "output": [ "publicQtConfig" ]
+        },
+        "rpath": {
+            "description": "Build with RPATH",
+            "condition": [
+                "!config.ios && !config.win32",
+                "var.QMAKE_LFLAGS_RPATH != ''"
+            ],
+            "output": [ "publicQtConfig" ]
+        },
+        "rpath_dir": {
+            "description": "RPATH directory",
+            "enable": "input.rpaths != ''",
+            "autoDetect": false,
+            "condition": [
+                "!config.ios && !config.win32",
+                "var.QMAKE_LFLAGS_RPATH != ''"
+            ],
+            "output": [ { "type": "varAppend", "name": "EXTRA_RPATHS", "value": "input.rpaths" } ]
+        },
+        "rtti": {
+            "description": "Build with RTTI",
+            "comment": "mkspecs/features/win32/default_pre.prf sets no-rtti. Follow default behavior of configure.exe by overriding with rtti.",
+            "condition": "config.win32",
+            "output": [ "publicConfig" ]
+        },
+        "force_asserts": {
+            "description": "Force assertions",
+            "autoDetect": false,
+            "output": [ "publicQtConfig" ]
+        },
+        "warnings_are_errors": {
+            "description": "WError",
+            "autoDetect": "features.developer-build",
+            "output": [ "privateConfig" ]
+        },
+        "headersclean": {
+            "description": "Check for clean headers",
+            "autoDetect": "features.developer-build",
+            "output": [ "privateConfig" ]
+        },
+        "framework": {
+            "description": "Build Apple Frameworks",
+            "condition": "config.darwin && features.shared",
+            "output": [
+                "publicQtConfig",
+                "publicConfig",
+                { "type": "define", "name": "QT_MAC_FRAMEWORK_BUILD" },
+                { "type": "publicConfig", "negative": true, "name": "qt_no_framework"}
+            ]
+        },
+        "largefile": {
+            "description": "Large file support",
+            "emitIf": "!config.win32",
+            "condition": "!config.android && !config.integrity",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_LARGEFILE_SUPPORT", "value": 64 }
+            ]
+        },
+        "testcocoon": {
+            "description": "Testcocoon support",
+            "autoDetect": false,
+            "output": [ "publicConfig" ]
+        },
+        "gcov": {
+            "description": "gcov support",
+            "autoDetect": false,
+            "output": [ "publicConfig" ]
+        },
+        "silent": {
+            "description": "Silent build",
+            "autoDetect": false,
+            "output": [ "privateConfig" ]
+        },
+        "sanitize_address": {
+            "description": "Addresses",
+            "autoDetect": false,
+            "output": [ "publicConfig" ]
+        },
+        "sanitize_thread": {
+            "description": "Threads",
+            "autoDetect": false,
+            "output": [ "publicConfig" ]
+        },
+        "sanitize_memory": {
+            "description": "Memory",
+            "autoDetect": false,
+            "output": [ "publicConfig" ]
+        },
+        "sanitize_undefined": {
+            "description": "Undefined",
+            "autoDetect": false,
+            "output": [ "publicConfig" ]
+        },
+        "sanitizer": {
+            "description": "Sanitizers",
+            "condition": "features.sanitize_address || features.sanitize_thread || features.sanitize_memory || features.sanitize_undefined",
+            "output": [ "publicConfig" ]
+        },
+        "GNUmake": {
+            "description": "GNU make",
+            "autoDetect": false,
+            "condition": "tests.GNUmake",
+            "output": [ "privateConfig" ]
+        },
+        "profile": {
+            "description": "GNU profiling support",
+            "autoDetect": false,
+            "output": [
+                { "type": "varAppend", "name": "QMAKE_CFLAGS", "value": "'-pg'" },
+                { "type": "varAppend", "name": "QMAKE_CXXFLAGS", "value": "'-pg'" },
+                { "type": "varAppend", "name": "QMAKE_LFLAGS", "value": "'-pg'" }
+            ]
+        },
+        "strip": {
+            "description": "Strip binaries",
+            "condition": "!features.profile",
+            "output": [ { "type": "privateConfig", "negative": true, "name": "nostrip" } ]
+        },
+        "stl": {
+            "description": "STL compatibility",
+            "condition": "tests.stl",
+            "output": [ "publicQtConfig" ]
+        },
+        "c++11": {
+            "description": "C++11 support",
+            "condition": "tests.c++11",
+            "output": [ "publicQtConfig" ]
+        },
+        "c++14": {
+            "description": "C++14 support",
+            "condition": "features.c++11 && tests.c++14",
+            "output": [ "publicQtConfig" ]
+        },
+        "c++1z": {
+            "description": "C++1z support",
+            "condition": "features.c++14 && tests.c++1z",
+            "output": [ "publicQtConfig" ]
+        },
+        "compiler": {
+            "description": "Compiler version",
+            "condition": "tests.compiler",
+            "output": [ "compilerVersion" ]
+        },
+        "precompile_header": {
+            "description": "Using precompiled headers",
+            "condition": "!config.ios && tests.precompile_header",
+            "output": [
+                "privateConfig",
+                { "type": "varRemove", "negative": true, "name": "CONFIG", "value": "'precompile_header'" }
+            ]
+        },
+        "ltcg": {
+            "description": "Using LTCG",
+            "autoDetect": false,
+            "output": [ "privateConfig" ]
+        },
+        "enable_new_dtags": {
+            "description": "Using new DTAGS",
+            "condition": "tests.enable_new_dtags",
+            "output": [ "privateConfig" ]
+        },
+        "reduce_exports": {
+            "description": "Reduce amount of exported symbols",
+            "condition": "!config.win32 && tests.reduce_exports",
+            "output": [
+                "publicQtConfig",
+                { "type": "define", "name": "QT_VISIBILITY_AVAILABLE" }
+            ]
+        },
+        "reduce_relocations": {
+            "description": "Reduce amount of relocations",
+            "condition": "tests.reduce_relocations",
+            "output": [
+                "publicQtConfig",
+                { "type": "define", "name": "QT_REDUCE_RELOCATIONS" }
+            ]
+        },
+        "dlopen": {
+            "description": "dlopen()",
+            "condition": "tests.dlopen || tests.libdl",
+            "output": [ { "type": "define", "negative": true, "name": "QT_NO_DYNAMIC_LIBRARY" } ]
+        },
+        "libdl": {
+            "description": "dlopen() in libdl",
+            "condition": "!tests.dlopen && tests.libdl",
+            "output": [ { "type": "privateConfig", "negative": true } ]
+        },
+        "std-atomic64": {
+            "description": "64 bit atomic operations",
+            "condition": "tests.atomic64 || tests.atomic64_libatomic",
+            "output": [
+                { "type": "define", "negative": true, "name": "QT_NO_STD_ATOMIC64" },
+                { "type": "privateConfig", "name": "atomic64-libatomic",
+                  "condition": "!tests.atomic64 && tests.atomic64_libatomic" }
+            ]
+        },
+        "sse2": {
+            "description": "Use SSE2 instructions",
+            "condition": "(arch.i386 || arch.x86_64) && tests.sse2",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_SSE2", "value": 1 }
+            ]
+        },
+        "sse3": {
+            "description": "Support for SSE3 instructions",
+            "condition": "features.sse2 && tests.sse3",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_SSE3", "value": 1 }
+            ]
+        },
+        "ssse3": {
+            "description": "Support for SSSE3 instructions",
+            "condition": "features.sse3 && tests.ssse3",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_SSSE3", "value": 1 }
+            ]
+        },
+        "sse4_1": {
+            "description": "Support for SSE4.1 instructions",
+            "condition": "features.ssse3 && tests.sse4_1",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_SSE4_1", "value": 1 }
+            ]
+        },
+        "sse4_2": {
+            "description": "Support for SSE4.2 instructions",
+            "condition": "features.sse4_1 && tests.sse4_2",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_SSE4_2", "value": 1 }
+            ]
+        },
+        "avx": {
+            "description": "Support for AVX instructions",
+            "condition": "features.sse4_2 && tests.avx && tests.avx_apple_clang",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX", "value": 1 }
+            ]
+        },
+        "avx2": {
+            "description": "Support for AVX2 instructions",
+            "condition": "features.avx && tests.avx2",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX2", "value": 1 }
+            ]
+        },
+        "avx512f": {
+            "description": "Support for AVX 512F instructions",
+            "condition": "features.avx2 && tests.avx512f",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX512F", "value": 1 }
+            ]
+        },
+        "avx512er": {
+            "description": "Support for AVX 512ER instructions",
+            "condition": "features.avx512f && tests.avx512er",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX512ER", "value": 1 }
+            ]
+        },
+        "avx512cd": {
+            "description": "Support for AVX 512CD instructions",
+            "condition": "features.avx512f && tests.avx512cd",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX512CD", "value": 1 }
+            ]
+        },
+        "avx512pf": {
+            "description": "Support for AVX 512PF instructions",
+            "condition": "features.avx512f && tests.avx512pf",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX512PF", "value": 1 }
+            ]
+        },
+        "avx512dq": {
+            "description": "Support for AVX 512DQ instructions",
+            "condition": "features.avx512f && tests.avx512dq",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX512DQ", "value": 1 }
+            ]
+        },
+        "avx512bw": {
+            "description": "Support for AVX 512BW instructions",
+            "condition": "features.avx512f && tests.avx512bw",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX512BW", "value": 1 }
+            ]
+        },
+        "avx512vl": {
+            "description": "Support for AVX 512VL instructions",
+            "condition": "features.avx512f && tests.avx512vl",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX512VL", "value": 1 }
+            ]
+        },
+        "avx512ifma": {
+            "description": "Support for AVX 512IFMA instructions",
+            "condition": "features.avx512f && tests.avx512ifma",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX512IFMA", "value": 1 }
+            ]
+        },
+        "avx512vbmi": {
+            "description": "Support for AVX 512VBMI instructions",
+            "condition": "features.avx512f && tests.avx512vbmi",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX512VBMI", "value": 1 }
+            ]
+        },
+        "mips_dsp": {
+            "description": "Support for MIPS DSP instructions",
+            "condition": "arch.mips && tests.mips_dsp",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_MIPS_DSP", "value": 1 }
+            ]
+        },
+        "mips_dspr2": {
+            "description": "Support for MIPS DSPr2 instructions",
+            "condition": "arch.mips && tests.mips_dspr2",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_MIPS_DSPR2", "value": 1 }
+            ]
+        },
+        "neon": {
+            "description": "Support for NEON instructions",
+            "condition": "(arch.arm || arch.arm64) && tests.neon",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_NEON", "value": 1 }
+            ]
+        },
+        "clock-gettime": {
+            "description": "clock_gettime()",
+            "condition": "tests.clock-gettime",
+            "output": [ "publicQtConfig" ]
+        },
+        "clock-monotonic": {
+            "description": "POSIX monotonic clock",
+            "condition": "features.clock-gettime && tests.clock-monotonic",
+            "output": [ "feature" ]
+        },
+        "alsa": {
+            "description": "ALSA",
+            "condition": "tests.alsa",
+            "output": [ "feature" ]
+        },
+        "evdev": {
+            "description": "evdev",
+            "condition": "tests.evdev",
+            "output": [ "privateFeature" ]
+        },
+        "eventfd": {
+            "description": "eventfd",
+            "condition": "tests.eventfd",
+            "output": [ "feature" ]
+        },
+        "gbm": {
+            "description": "GBM",
+            "condition": "tests.gbm",
+            "output": [ "publicQtConfig" ]
+        },
+        "getaddrinfo": {
+            "description": "getaddrinfo()",
+            "condition": "tests.getaddrinfo",
+            "output": [ "feature" ]
+        },
+        "getifaddrs": {
+            "description": "getifaddrs()",
+            "condition": "tests.getifaddrs",
+            "output": [ "feature" ]
+        },
+        "inotify": {
+            "description": "inotify",
+            "condition": "tests.inotify",
+            "output": [ "feature" ]
+        },
+        "ipv6ifname": {
+            "description": "IPv6 ifname",
+            "condition": "tests.ipv6ifname",
+            "output": [ "feature" ]
+        },
+        "libproxy": {
+            "description": "libproxy",
+            "autoDetect": false,
+            "condition": "tests.libproxy",
+            "output": [ "feature" ]
+        },
+        "linuxfb": {
+            "description": "LinuxFB",
+            "condition": "tests.linuxfb",
+            "output": [ "publicQtConfig" ]
+        },
+        "directfb": {
+            "description": "DirectFB",
+            "autoDetect": false,
+            "condition": "tests.directfb",
+            "output": [
+                "publicQtConfig",
+                { "type": "library", "test": "directfb" }
+            ]
+        },
+        "integrityfb": {
+            "description": "INTEGRITY framebuffer",
+            "condition": "config.integrity",
+            "output": [ "publicQtConfig" ]
+        },
+        "kms": {
+            "description": "KMS",
+            "condition": "tests.kms",
+            "output": [ "publicQtConfig" ]
+        },
+        "mirclient": {
+            "description": "Mir client",
+            "condition": "tests.mirclient",
+            "output": [ "publicQtConfig" ]
+        },
+        "mremap": {
+            "description": "mremap()",
+            "condition": "tests.mremap",
+            "output": [ "feature" ]
+        },
+        "mtdev": {
+            "description": "mtdev",
+            "condition": "tests.mtdev",
+            "output": [ "privateFeature" ]
+        },
+        "journald": {
+            "description": "journald",
+            "autoDetect": false,
+            "condition": "tests.journald",
+            "output": [ "privateConfig" ]
+        },
+        "posix_fallocate": {
+            "description": "POSIX fallocate()",
+            "condition": "tests.posix_fallocate",
+            "output": [ "feature" ]
+        },
+        "syslog": {
+            "description": "syslog",
+            "autoDetect": false,
+            "condition": "tests.syslog",
+            "output": [ "privateConfig" ]
+        },
+        "stack_protector_strong": {
+            "description": "stack protection",
+            "condition": "config.qnx && tests.stack_protector",
+            "output": [ "publicQtConfig" ]
+        },
+        "slog2": {
+            "description": "slog2",
+            "condition": "tests.slog2",
+            "emitIf": "config.qnx",
+            "output": [ "privateConfig" ]
+        },
+        "qqnx_imf": {
+            "description": "IMF",
+            "emitIf": "config.qnx",
+            "condition": "tests.imf",
+            "output": [ "privateConfig" ]
+        },
+        "qqnx_pps": {
+            "description": "PPS",
+            "emitIf": "config.qnx",
+            "condition": "tests.pps",
+            "output": [ "privateConfig" ]
+        },
+        "lgmon": {
+            "description": "lgmon",
+            "emitIf": "config.qnx",
+            "condition": "tests.lgmon",
+            "output": [ "privateConfig" ]
+        },
+        "poll_ppoll": {
+            "description": "Native ppoll()",
+            "condition": "tests.ppoll",
+            "output": [ "publicQtConfig" ]
+        },
+        "poll_pollts": {
+            "description": "Native pollts()",
+            "condition": "!features.poll_ppoll && tests.pollts",
+            "output": [ "publicQtConfig" ]
+        },
+        "poll_poll": {
+            "description": "Native poll()",
+            "condition": "!features.poll_ppoll && !features.poll_pollts && tests.poll",
+            "output": [ "publicQtConfig" ]
+        },
+        "poll_select": {
+            "description": "Emulated poll()",
+            "condition": "!features.poll_ppoll && !features.poll_pollts && !features.poll_poll",
+            "output": [
+                "publicQtConfig",
+                { "type": "define", "name": "QT_NO_NATIVE_POLL" }
+            ]
+        },
+        "ipc_posix": {
+            "description": "Using POSIX IPC",
+            "condition": "!tests.ipc_sysv && tests.ipc_posix",
+            "output": [ { "type": "define", "name": "QT_POSIX_IPC" } ]
+        },
+        "systemsemaphore": {
+            "description": "Enable QSystemSemaphore",
+            "condition": "config.android || config.win32 || tests.ipc_sysv || tests.ipc_posix",
+            "output": [ { "type": "define", "negative": true, "name": "QT_NO_SYSTEMSEMAPHORE" } ]
+        },
+        "sharedmemory": {
+            "description": "Enable QSharedMemory",
+            "condition": "config.android || config.win32 || tests.ipc_sysv || tests.ipc_posix",
+            "output": [ { "type": "define", "negative": true, "name": "QT_NO_SHAREDMEMORY" } ]
+        },
+        "threadsafe-cloexec": {
+            "description": "Threadsafe pipe creation",
+            "condition": "tests.cloexec",
+            "output": [
+                "publicQtConfig",
+                { "type": "define", "name": "QT_THREADSAFE_CLOEXEC", "value": 1 }
+            ]
+        },
+        "tslib": {
+            "description": "tslib",
+            "condition": "tests.tslib",
+            "output": [ "privateFeature" ]
+        },
+        "corewlan": {
+            "description": "CoreWLan",
+            "condition": "tests.corewlan",
+            "emitIf": "config.darwin",
+            "output": [ "feature" ]
+        },
+        "securetransport": {
+            "description": "SecureTransport",
+            "condition": "config.darwin && (input.openssl == '' || input.openssl == 'no')",
+            "output": [
+                "publicQtConfig",
+                { "type": "define", "name": "QT_SECURETRANSPORT" }
+            ]
+        },
+        "openssl": {
+            "description": "OpenSSL",
+            "condition": "!features.securetransport && tests.openssl",
+            "output": [
+                { "type": "publicQtConfig", "condition": "!features.openssl-linked" },
+                { "type": "define", "negative": true, "name": "QT_NO_OPENSSL" }
+            ]
+        },
+        "openssl-linked": {
+            "description": "  Qt directly linked to OpenSSL",
+            "enable": "input.openssl == 'linked'",
+            "disable": "input.openssl != 'linked'",
+            "condition": "features.openssl && tests.openssl-libs",
+            "output": [
+                "publicQtConfig",
+                { "type": "varAssign", "name": "OPENSSL_LIBS", "value": "tests.openssl-libs.libs" },
+                { "type": "define", "name": "QT_LINKED_OPENSSL" }
+            ]
+        },
+        "ssl": {
+            "description": "SSL",
+            "condition": "features.securetransport || features.openssl",
+            "output": [ "feature" ]
+        },
+        "accessibility": {
+            "description": "Accessibility",
+            "output": [ "feature" ]
+        },
+        "accessibility-atspi-bridge": {
+            "description": "ATSPI Bridge",
+            "emitIf": "features.accessibility && features.xcb",
+            "condition": "features.dbus",
+            "output": [ "feature" ]
+        },
+        "glib": {
+            "description": "GLib",
+            "condition": "tests.glib",
+            "output": [
+                "feature",
+                { "type": "library", "test": "glib" }
+            ]
+        },
+        "gtk3": {
+            "description": "GTK+",
+            "autoDetect": "!config.darwin",
+            "condition": "features.glib && tests.gtk",
+            "output": [
+                "publicQtConfig",
+                { "type": "library", "test": "gtk" }
+            ]
+        },
+        "icu": {
+            "description": "ICU",
+            "autoDetect": "!config.win32",
+            "condition": "tests.icu",
+            "output": [ "publicQtConfig" ]
+        },
+        "pulseaudio": {
+            "description": "PulseAudio",
+            "condition": "tests.pulseaudio",
+            "output": [
+                "feature",
+                { "type": "library", "test": "pulseaudio" }
+            ]
+        },
+        "cups": {
+            "description": "CUPS",
+            "condition": "tests.cups",
+            "output": [ "feature" ]
+        },
+        "jpeg": {
+            "description": "JPEG",
+            "disable": "input.libjpeg == 'no'",
+            "output": [
+                "publicQtConfig",
+                { "type": "define", "negative": true, "name": "QT_NO_IMAGEFORMAT_JPEG" }
+            ]
+        },
+        "system-jpeg": {
+            "description": "  Using system libjpeg",
+            "disable": "input.libjpeg == 'qt'",
+            "enable": "input.libjpeg == 'system'",
+            "condition": "features.jpeg && tests.libjpeg",
+            "output": [ "publicQtConfig" ]
+        },
+        "gif": {
+            "description": "GIF",
+            "output": [
+                "publicQtConfig",
+                { "type": "define", "negative": true, "name": "QT_NO_IMAGEFORMAT_GIF" }
+            ]
+        },
+        "png": {
+            "description": "PNG",
+            "disable": "input.libpng == 'no'",
+            "output": [
+                "publicQtConfig",
+                { "type": "define", "negative": true, "name": "QT_NO_IMAGEFORMAT_PNG" }
+            ]
+        },
+        "system-png": {
+            "description": "  Using system libpng",
+            "disable": "input.libpng == 'qt'",
+            "enable": "input.libpng == 'system'",
+            "condition": "features.png && tests.libpng",
+            "output": [ "publicQtConfig" ]
+        },
+        "system-zlib": {
+            "description": "Using system zlib",
+            "condition": "config.darwin || tests.zlib",
+            "output": [ "publicQtConfig" ]
+        },
+        "iconv": {
+            "description": "iconv",
+            "condition": "!config.win32 && (tests.posix-iconv || features.sun-libiconv || features.gnu-libiconv)",
+            "output": [ "feature" ]
+        },
+        "sun-libiconv": {
+            "description": "SUN iconv",
+            "condition": "!config.win32 && !tests.posix-iconv && tests.sun-iconv",
+            "output": [ "publicQtConfig" ]
+        },
+        "gnu-libiconv": {
+            "description": "GNU iconv",
+            "condition": "!config.win32 && !tests.posix-iconv && !tests.sun-iconv && tests.gnu-iconv",
+            "output": [ "publicQtConfig" ]
+        },
+        "freetype": {
+            "description": "FreeType",
+            "output": [ "feature" ]
+        },
+        "system-freetype": {
+            "description": "  Using system FreeType",
+            "enable": "input.freetype == 'system'",
+            "disable": "input.freetype == 'qt'",
+            "autoDetect": "!config.win32",
+            "condition": "features.freetype && tests.freetype",
+            "output": [ "publicQtConfig" ]
+        },
+        "fontconfig": {
+            "description": "Fontconfig",
+            "condition": "features.system-freetype && tests.fontconfig",
+            "output": [
+                "feature",
+                { "type": "library", "test": "fontconfig" }
+            ]
+        },
+        "harfbuzz": {
+            "description": "HarfBuzz",
+            "output": [ "feature" ]
+        },
+        "system-harfbuzz": {
+            "description": "  Using system HarfBuzz",
+            "enable": "input.harfbuzz == 'system'",
+            "disable": "input.harfbuzz == 'qt'",
+            "autoDetect": "!config.darwin",
+            "condition": "features.harfbuzz && tests.harfbuzz",
+            "output": [ "publicQtConfig" ]
+        },
+        "concurrent": {
+            "description": "Qt Concurrent",
+            "output": [ "feature" ]
+        },
+        "dbus": {
+            "description": "Qt D-Bus",
+            "autoDetect": "!config.android",
+            "output": [ "feature" ]
+        },
+        "dbus-linked": {
+            "description": "Qt D-Bus directly linked to libdbus",
+            "enable": "input.dbus == 'linked'",
+            "disable": "input.dbus == 'runtime' || input.dbus == 'no'",
+            "autoDetect": "!config.android",
+            "condition": "tests.dbus",
+            "output": [
+                "publicQtConfig",
+                { "type": "library", "feature": "dbus", "test": "dbus" }
+            ]
+        },
+        "host-dbus": {
+            "description": "Qt D-Bus (Host)",
+            "autoDetect": "!config.android",
+            "condition": "tests.host-dbus",
+            "output": [ { "type": "varAppend", "name": "QT_HOST_CFLAGS_DBUS", "value": "tests.host-dbus.cflags" } ]
+        },
+        "skip_modules": {
+            "output": [ { "type": "varAssign", "name": "QT_SKIP_MODULES", "value": "input.skip_modules" } ]
+        },
+        "qt_build_parts": {
+            "description": "Qt build parts",
+            "output": [ { "type": "varAppend", "name": "QT_BUILD_PARTS", "value": "input.qt_build_parts" } ]
+        },
+        "qreal": {
+            "description": "Type for qreal",
+            "output": [ "qreal" ]
+        },
+        "gui": {
+            "description": "Qt Gui",
+            "output": [ { "type": "publicQtConfig", "negative": true } ]
+        },
+        "widgets": {
+            "description": "Qt Widgets",
+            "condition": "features.gui && !config.tvos",
+            "output": [
+                { "type": "define", "negative": true, "name": "QT_NO_WIDGETS" },
+                { "type": "publicQtConfig", "negative": true }
+            ]
+        },
+        "system-proxies": {
+            "description": "Use system proxies",
+            "output": [ "publicQtConfig" ]
+        },
+        "egl": {
+            "description": "EGL",
+            "condition": "features.opengl && tests.egl",
+            "output": [
+                "feature",
+                { "type": "library", "test": "egl" }
+            ]
+        },
+        "egl_x11": {
+            "description": "EGL on X11",
+            "condition": "features.egl && tests.egl-x11",
+            "output": [ "feature" ]
+        },
+        "eglfs": {
+            "description": "EGLFS",
+            "autoDetect": "!config.android",
+            "condition": "features.egl",
+            "output": [ "feature" ]
+        },
+        "eglfs-brcm": {
+            "description": "EGLFS Rasberry Pi",
+            "condition": "features.eglfs && tests.eglfs-brcm",
+            "output": [ "publicQtConfig" ]
+        },
+        "eglfs-egldevice": {
+            "description": "EGLFS EGLDevice",
+            "condition": "features.eglfs && tests.eglfs-egldevice",
+            "output": [ "publicQtConfig" ]
+        },
+        "eglfs-gbm": {
+            "description": "EGLFS GBM",
+            "condition": "features.eglfs && features.gbm && features.kms",
+            "output": [ "publicQtConfig" ]
+        },
+        "eglfs-mali": {
+            "description": "EGLFS Mali",
+            "condition": "features.eglfs && tests.eglfs-mali",
+            "output": [ "publicQtConfig" ]
+        },
+        "eglfs-viv": {
+            "description": "EGLFS i.Mx6",
+            "condition": "features.eglfs && tests.eglfs-viv",
+            "output": [ "publicQtConfig" ]
+        },
+        "eglfs-viv-wl": {
+            "description": "EGLFS i.Mx6 Wayland",
+            "condition": "features.eglfs-viv && tests.wayland-server",
+            "output": [ "publicQtConfig" ]
+        },
+        "libudev": {
+            "description": "udev",
+            "condition": "tests.libudev",
+            "output": [
+                "privateFeature",
+                { "type": "library", "test": "libudev" }
+            ]
+        },
+        "libinput": {
+            "description": "libinput",
+            "condition": "features.libudev && tests.libinput",
+            "output": [
+                "privateFeature",
+                { "type": "library", "test": "libinput" }
+            ]
+        },
+        "xkbcommon-evdev": {
+            "description": "xkbcommon-evdev",
+            "condition": "tests.xkbcommon",
+            "output": [
+                "publicQtConfig",
+                { "type": "library", "test": "xkbcommon" }
+            ]
+        },
+        "xkbcommon-system": {
+            "description": "Using system-provided xkbcommon",
+            "emitIf": "features.xcb",
+            "condition": "tests.xkbcommon-x11",
+            "disable": "input.xkbcommon == 'qt'",
+            "output": [
+                { "type": "publicQtConfig", "negative": true, "name": "xkbcommon-qt" },
+                { "type": "library", "name": "xkbcommon", "test": "xkbcommon-x11" }
+            ]
+        },
+        "xkb-config-root": {
+            "description": "XKB config root",
+            "emitIf": "features.xcb",
+            "condition": "features.xcb && !features.xkbcommon-system && tests.xkbconfigroot",
+            "output": [ { "type": "varAssign", "name": "QMAKE_XKB_CONFIG_ROOT", "value": "tests.xkbconfigroot.value"} ]
+        },
+        "xinput2": {
+            "description": "Xinput2",
+            "condition": "tests.xinput2",
+            "output": [
+                "publicQtConfig",
+                { "type": "library", "test": "xinput2" }
+            ]
+        },
+        "doubleconversion": {
+            "description": "DoubleConversion",
+            "output": [ "feature" ]
+        },
+        "system-doubleconversion": {
+            "description": "  Using system DoubleConversion",
+            "enable": "input.doubleconversion == 'system'",
+            "disable": "input.doubleconversion == 'qt'",
+            "condition": "features.doubleconversion && tests.doubleconversion",
+            "output": [ "publicQtConfig" ]
+        },
+        "system-pcre": {
+            "description": "Using system PCRE",
+            "disable": "input.pcre == 'qt'",
+            "enable": "input.pcre == 'system'",
+            "condition": "tests.pcre",
+            "output": [ { "type": "privateConfig", "negative": true, "name": "pcre" } ]
+        },
+        "gstreamer-1_0": {
+            "description": "GStreamer 1.0",
+            "disable": "input.gstreamer == '0.10' || input.gstreamer == 'no'",
+            "enable": "input.gstreamer == '1.0'",
+            "condition": "tests.gstreamer-1_0",
+            "output": [ { "type": "publicQtConfig", "name": "gstreamer-1.0" } ]
+        },
+        "gstreamer-0_10": {
+            "description": "GStreamer 0.10",
+            "disable": "input.gstreamer == 'no'",
+            "enable": "input.gstreamer == '0.10'",
+            "condition": "!features.gstreamer-1_0 && tests.gstreamer-0_10",
+            "output": [ { "type": "publicQtConfig", "name": "gstreamer-0.10" } ]
+        },
+        "xcb": {
+            "description": "XCB",
+            "autoDetect": "!config.darwin",
+            "condition": "tests.xcb",
+            "output": [
+                "publicQtConfig",
+                { "type": "publicQtConfig", "name": "xcb-qt", "condition": "!features.system-xcb" },
+                { "type": "publicQtConfig", "name": "xcb-plugin" },
+                { "type": "library", "test": "xcb", "condition": "!features.system-xcb" },
+                { "type": "library", "test": "xcb-syslibs", "condition": "features.system-xcb" }
+            ]
+        },
+        "system-xcb": {
+            "description": "Using system provided XCB libraries",
+            "enable": "input.xcb == 'system' || input.xcb == 'yes'",
+            "disable": "input.xcb == 'qt' || input.xcb == 'no'",
+            "autoDetect": "!config.darwin",
+            "condition": "tests.xcb && tests.xcb-syslibs"
+        },
+        "xcb-render": {
+            "description": "XCB render",
+            "emitIf": "features.system-xcb",
+            "condition": "tests.xcb-render",
+            "output": [
+                "publicQtConfig",
+                { "type": "library", "test": "xcb-render" }
+            ]
+        },
+        "xcb-glx": {
+            "description": "XCB GLX",
+            "emitIf": "features.xcb",
+            "condition": "tests.xcb-glx",
+            "output": [
+                "publicQtConfig",
+                { "type": "library", "test": "xcb-glx" }
+            ]
+        },
+        "xcb-xlib": {
+            "description": "XCB Xlib",
+            "emitIf": "features.xcb",
+            "condition": "tests.xcb-xlib",
+            "output": [ "publicQtConfig" ]
+        },
+        "xcb-sm": {
+            "description": "xcb-sm",
+            "emitIf": "features.xcb",
+            "condition": "features.sessionmanager && tests.x11-sm",
+            "output": [ "publicQtConfig" ]
+        },
+        "xkb": {
+            "description": "XCB XKB",
+            "condition": "features.system-xcb && tests.xcb-xkb",
+            "output": [
+                "privateFeature",
+                { "type": "library", "test": "xcb-xkb" }
+            ]
+        },
+        "xlib": {
+            "description": "XLib",
+            "condition": "tests.xlib",
+            "output": [ "publicQtConfig" ]
+        },
+        "xrender": {
+            "description": "Xrender",
+            "condition": "tests.xrender",
+            "output": [ "feature" ]
+        },
+        "x11-prefix": {
+            "description": "X11 prefix",
+            "emitIf": "features.xcb",
+            "output": [ { "type": "varAssign", "name": "QMAKE_X11_PREFIX", "value": "tests.x11prefix.value" } ]
+        },
+        "opengles2": {
+            "description": "OpenGL ES 2.0",
+            "disable": "input.opengl == 'desktop' || input.opengl == 'no'",
+            "condition": "!features.opengl-desktop && tests.opengles2",
+            "output": [
+                "publicQtConfig",
+                { "type": "define", "name": "QT_OPENGL_ES" },
+                { "type": "define", "name": "QT_OPENGL_ES_2" },
+                { "type": "library", "name": "OPENGL_ES2", "test": "opengles2" }
+            ]
+        },
+        "opengles3": {
+            "description": "OpenGL ES 3.0",
+            "condition": "features.opengles2 && tests.opengles3",
+            "output": [ { "type": "define", "name": "QT_OPENGL_ES_3" } ]
+        },
+        "opengles31": {
+            "description": "OpenGL ES 3.1",
+            "condition": "features.opengles3 && tests.opengles31",
+            "output": [ { "type": "define", "name": "QT_OPENGL_ES_3_1" } ]
+        },
+        "opengl-desktop": {
+            "description": "Desktop OpenGL",
+            "disable": "input.opengl == 'es2' || input.opengl == 'no'",
+            "condition": "(config.win32 && tests.opengl-mingw) || (!config.win32 && tests.opengl-desktop)",
+            "output": [ { "type": "library", "name": "OPENGL", "test": "opengl-desktop", "condition": "!config.win32" } ]
+        },
+        "opengl": {
+            "description": "OpenGL",
+            "condition": "features.opengl-desktop || features.opengles2",
+            "output": [ "feature" ]
+        },
+        "db2": {
+            "description": "DB2 (IBM)",
+            "condition": "tests.db2",
+            "output": [ "sqldriver" ]
+        },
+        "ibase": {
+            "description": "InterBase",
+            "condition": "tests.ibase",
+            "output": [ "sqldriver" ]
+        },
+        "mysql": {
+            "description": "MySql",
+            "condition": "tests.mysql",
+            "output": [
+                "sqldriver",
+                { "type": "library", "test": "mysql", "condition": "!features.use_libmysqlclient_r" },
+                { "type": "library", "test": "mysql_r", "condition": "features.use_libmysqlclient_r" }
+            ]
+        },
+        "use_libmysqlclient_r": {
+            "description": "MySql (threadsafe)",
+            "condition": "features.mysql && tests.mysql_r",
+            "output": [ "privateConfig" ]
+        },
+        "oci": {
+            "description": "OCI (Oracle)",
+            "condition": "tests.oci",
+            "output": [ "sqldriver" ]
+        },
+        "odbc": {
+            "description": "ODBC",
+            "condition": "(!config.darwin && tests.odbc) || tests.iodbc",
+            "output": [
+                "sqldriver",
+                { "type": "library", "test": "odbc", "condition": "!config.darwin && tests.odbc" },
+                { "type": "library", "test": "iodbc", "condition": "config.darwin || !tests.odbc" }
+            ]
+        },
+        "psql": {
+            "description": "PostgreSQL",
+            "condition": "tests.psql",
+            "output": [
+                "sqldriver",
+                { "type": "library", "test": "psql" }
+            ]
+        },
+        "sqlite2": {
+            "description": "SQLite2",
+            "condition": "tests.sqlite2",
+            "output": [ "sqldriver" ]
+        },
+        "sqlite": {
+            "description": "SQLite",
+            "output": [ "sqldriver" ]
+        },
+        "system-sqlite": {
+            "description": "  Using system provided SQLite",
+            "autoDetect": false,
+            "condition": "features.sqlite && tests.sqlite",
+            "output": [
+                "publicQtConfig",
+                { "type": "library", "test": "sqlite" }
+            ]
+        },
+        "tds": {
+            "description": "TDS (Sybase)",
+            "condition": "tests.tds",
+            "output": [
+                "sqldriver",
+                { "type": "library", "test": "tds" }
+            ]
+        },
+        "fusion-style": {
+            "description": "Fusion Style",
+            "output": [ "styles" ]
+        },
+        "mac-style": {
+            "description": "Mac Style",
+            "output": [ "styles" ]
+        },
+        "windows-style": {
+            "description": "Windows Style",
+            "output": [ "styles" ]
+        },
+        "windowsxp-style": {
+            "description": "Windows XP Style",
+            "condition": "config.win32",
+            "output": [ "styles" ]
+        },
+        "windowsvista-style": {
+            "description": "Windows Vista Style",
+            "condition": "config.win32",
+            "output": [ "styles" ]
+        },
+        "android-style": {
+            "description": "Android Style",
+            "condition": "config.android",
+            "output": [ "styles" ]
+        },
+        "android-style-assets": {
+            "description": "Android Style Assets",
+            "condition": "features.android-style",
+            "output": [ "privateConfig" ]
+        },
+        "audio-backend": {
+            "description": "Audio backend",
+            "output": [ "publicQtConfig" ]
+        },
+        "directwrite": {
+            "description": "DirectWrite",
+            "autoDetect": false,
+            "emitIf": "config.win32",
+            "output": [ "publicQtConfig" ]
+        },
+        "directwrite2": {
+            "description": "DirectWrite 2",
+            "emitIf": "config.win32",
+            "condition": "features.directwrite && tests.directwrite2",
+            "output": [ "publicQtConfig" ]
+        },
+        "sessionmanager": {
+            "description": "Session Management",
+            "output": [ "feature" ]
+        },
+        "qml-debug": {
+            "description": "QML debugging",
+            "output": [ { "type": "publicQtConfig", "negative": true } ]
+        },
+        "compile_examples": {
+            "description": "Compile examples",
+            "output": [ "privateConfig" ]
+        },
+        "qpa_default_platform": {
+            "description": "QPA default platform",
+            "condition": "features.gui",
+            "output": [
+                { "type": "define", "name": "QT_QPA_DEFAULT_PLATFORM_NAME", "value": "tests.qpa_default_platform.name" },
+                { "type": "varAssign", "public": true, "name": "QT_DEFAULT_QPA_PLUGIN", "value": "tests.qpa_default_platform.plugin",
+                  "condition": "!features.shared" }
+            ]
+        },
+        "extra_features": {
+            "comment": "### remove, once qfeatures.txt is ported to the new system",
+            "output": [ "extraFeatures" ]
+        }
+    },
+
+    "earlyReport": [
+        {
+            "type": "warning",
+            "condition": "input.debug_and_release == 'yes' && !config.darwin && !config.win32",
+            "message": "-debug-and-release is only supported on Darwin and Windows platforms.
+Qt can be built in release mode with separate debug information, so
+-debug-and-release is no longer necessary."
+        },
+        {
+            "type": "error",
+            "condition": "features.framework && features.debug && !features.debug_and_release",
+            "message": "debug-only framework builds are not supported. Configure with -no-framework if you want a pure debug build."
+        },
+        {
+            "type": "error",
+            "condition": "input.xcb != '' && input.xcb != 'no' && input.xkbcommon == 'no'",
+            "message": "XCB plugin requires libxkbcommon. See -qt-xkbcommon-x11 and -system-xkbcommon-x11."
+        }
+    ],
+
+    "report": [
+        {
+            "type": "note",
+            "condition": "!features.shared",
+            "message": "Using static linking will disable the use of dynamically
+loaded plugins. Make sure to import all needed static plugins,
+or compile needed modules into the library."
+        },
+        {
+            "type": "note",
+            "condition": "features.journald || features.syslog || (config.qnx && features.slog2)",
+            "message": "journald, syslog or slog2 integration is enabled.
+If your users intend to develop applications against this build,
+ensure that the IDEs they use either set QT_LOGGING_TO_CONSOLE to 1
+or are able to read the logged output from journald, syslog or slog2."
+        },
+        {
+            "type": "note",
+            "condition": "features.release_tools && (!features.debug || features.debug_and_release)",
+            "message": "-optimized-tools is not useful in -release mode."
+        },
+        {
+            "type": "warning",
+            "condition": "features.gui && config.linux && !features.xcb && !features.eglfs && !features.directfb && !features.linuxfb && !features.mirclient",
+            "message": "No QPA platform plugin enabled! This will
+produce a Qt that cannot run GUI applications.
+The dependencies needed for xcb to build are listed in
+src/plugins/platforms/xcb/README"
+        },
+        {
+            "type": "note",
+            "condition": "input.qreal == 'double' && arch.arm",
+            "message": "Qt is using double for qreal on this system. This is binary-incompatible against Qt 5.1.
+Configure with '-qreal float' to create a build that is binary-compatible with 5.1."
+        },
+        {
+            "type": "warning",
+            "condition": "features.xcb && !features.xkbcommon-system && !features.xkb-config-root",
+            "message": "Could not find XKB config root, use -xkb-config-root to set a path to
+XKB configuration data. This is required for keyboard input support."
+        },
+        {
+            "type": "note",
+            "condition": "features.openssl-linked && tests.openssl-libs.showNote",
+            "message": "When linking against OpenSSL, you can override the default
+library names through OPENSSL_LIBS.
+For example:
+    OPENSSL_LIBS='-L/opt/ssl/lib -lssl -lcrypto' ./configure -openssl-linked"
+        },
+        {
+            "type": "warning",
+            "condition": "input.qpa-platform-guard != ''",
+            "message": "The [-no]-qpa-platform-guard argument is deprecated and has no effect."
+        },
+        {
+            "type": "warning",
+            "condition": "!features.accessibility",
+            "message": "Accessibility disabled. This configuration of Qt is unsupported."
+        },
+        {
+            "type": "note",
+            "condition": "features.accessibility && features.xcb && !features.accessibility-atspi-bridge",
+            "message": "Disabling Linux Accessibility Bridge: D-Bus is missing."
+        },
+        {
+            "type": "warning",
+            "condition": "config.darwin && features.system-harfbuzz",
+            "message": "On OS X, AAT is supported only with -qt-harfbuzz."
+        },
+        {
+            "type": "error",
+            "condition": "features.gui && input.opengl != 'no' && !features.opengl-desktop && !features.opengles2",
+            "message": "The OpenGL functionality tests failed!
+You might need to modify the include and library search paths by editing QMAKE_INCDIR_OPENGL[_ES2],
+QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your platform."
+        },
+        {
+            "type": "error",
+            "condition": "input.doubleconversion == 'no' && !tests.xlocalescanprint",
+            "message": "Your C library does not provide sscanf_l or snprintf_l.
+You need to use libdouble-conversion for double/string conversion."
+        },
+        {
+            "type": "error",
+            "condition": "!tests.atomicfptr",
+            "message": "detected a std::atomic implementation that fails for function pointers.
+Please apply the patch corresponding to your Standard Library vendor, found in
+  qtbase/config.tests/common/atomicfptr"
+        },
+        {
+            "type": "error",
+            "condition": "!features.stl",
+            "message": "Qt requires a compliant STL library."
+        },
+        {
+            "type": "error",
+            "condition": "!features.c++11",
+            "message": "Qt requires a C++11 compiler."
+        }
+    ],
+
+    "summary": [
+        {
+            "type": "buildTypeAndConfig"
+        },
+        {
+            "section": "Build options",
+            "entries": [
+                {
+                    "message": "Mode",
+                    "type": "buildMode"
+                },
+                "shared",
+                {
+                    "message": "Using C++ standard",
+                    "type": "firstAvailableFeature",
+                    "args": "c++1z c++14 c++11"
+                },
+                "use_gold_linker",
+                "enable_new_dtags",
+                "precompile_header",
+                "ltcg",
+                {
+                    "section": "Target compiler supports",
+                    "entries": [
+                        {
+                            "message": "SSE",
+                            "type": "featureList",
+                            "args": "sse2 sse3 ssse3 sse4_1 sse4_2",
+                            "condition": "(arch.i386 || arch.x86_64)"
+                        },
+                        {
+                            "message": "AVX",
+                            "type": "featureList",
+                            "args": "avx avx2",
+                            "condition": "(arch.i386 || arch.x86_64)"
+                        },
+                        {
+                            "message": "AVX512",
+                            "type": "featureList",
+                            "args": "avx512f avx512er avx512cd avx512pf avx512dq avx512bw avx512vl avx512ifma avx512vbmi",
+                            "condition": "(arch.i386 || arch.x86_64)"
+                        },
+                        {
+                            "message": "NEON",
+                            "type": "feature",
+                            "args": "neon",
+                            "condition": "arch.arm || arch.arm64"
+                        },
+                        {
+                            "message": "DSP",
+                            "type": "feature",
+                            "args": "mips_dsp",
+                            "condition": "arch.mips"
+                        },
+                        {
+                            "message": "DSPr2",
+                            "type": "feature",
+                            "args": "mips_dspr2",
+                            "condition": "arch.mips"
+                        }
+                    ]
+                },
+                {
+                    "section": "Sanitizers",
+                    "condition": "features.sanitizer",
+                    "entries": [ "sanitize_address", "sanitize_thread", "sanitize_memory", "sanitize_undefined" ]
+                },
+                {
+                    "message": "Build parts",
+                    "type": "buildParts"
+                }
+            ]
+        }, {
+            "section": "Qt modules and options",
+            "entries": [
+                "concurrent",
+                "dbus",
+                "dbus-linked",
+                "gui",
+                "widgets"
+            ]
+        }, {
+            "section": "Support enabled for",
+            "entries": [
+                "accessibility",
+                "alsa",
+                "cups",
+                {
+                    "message": "DirectWrite",
+                    "type": "feature",
+                    "args": "directwrite",
+                    "condition": "config.win32"
+                },
+                "doubleconversion",
+                "system-doubleconversion",
+                "evdev",
+                "fontconfig",
+                "freetype",
+                "system-freetype",
+                "glib",
+                "gstreamer-0_10",
+                "gstreamer-1_0",
+                "gtk3",
+                "harfbuzz",
+                "system-harfbuzz",
+                "icu",
+                "iconv",
+                {
+                    "section": "Image formats",
+                    "entries": [
+                        "gif", "jpeg", "system-jpeg", "png", "system-png"
+                    ]
+                },
+                {
+                    "section": "Logging backends",
+                    "entries": [
+                        "journald", "syslog"
+                    ]
+                },
+                "libinput",
+                "mtdev",
+                {
+                    "section": "Networking",
+                    "entries": [
+                        {
+                            "message": "CoreWLan",
+                            "type": "feature",
+                            "args": "corewlan",
+                            "condition": "config.darwin"
+                        },
+                        "getaddrinfo", "getifaddrs", "ipv6ifname", "libproxy",
+                        {
+                            "message": "SecureTransport",
+                            "type": "feature",
+                            "args": "securetransport",
+                            "condition": "config.darwin"
+                        },
+                        "openssl",
+                        "openssl-linked",
+                        "system-proxies"
+                    ]
+                },
+                {
+                    "section": "OpenGL",
+                    "entries": [
+                        "egl",
+                        "opengl-desktop",
+                        "opengles2",
+                        "opengles3",
+                        "opengles31"
+                    ]
+                },
+                "pkg-config",
+                "system-pcre",
+                "pulseaudio",
+                "qml-debug",
+                {
+                    "section": "QNX specific",
+                    "condition": "config.qnx",
+                    "entries": [
+                        "slog2", "qqnx_imf", "qqnx_pps", "lgmon"
+                    ]
+                },
+                {
+                    "section": "QPA backends",
+                    "entries": [
+                        "directfb", "eglfs",
+                        {
+                            "section": "EGLFS details",
+                            "condition": "features.eglfs",
+                            "entries": [
+                                "eglfs-viv", "eglfs-viv-wl", "eglfs-egldevice", "eglfs-gbm", "eglfs-mali", "egl_x11"
+                            ]
+                        },
+                        "linuxfb", "mirclient",
+                        {
+                            "message": "INTEGRITY framebuffer",
+                            "condition": "config.integrity",
+                            "args": "integrityfb"
+                        }
+                    ]
+                },
+                "sessionmanager",
+                {
+                    "section": "SQL drivers",
+                    "entries": [
+                        "db2", "ibase", "mysql", "oci", "odbc", "psql", "sqlite2", "sqlite", "system-sqlite", "tds"
+                    ]
+                },
+                "tslib",
+                "libudev",
+                {
+                    "section": "X11",
+                    "condition": "features.xcb",
+                    "entries": [
+                        "system-xcb", "egl_x11", "xinput2", "xkb", "xlib", "xrender", "xcb-render", "xcb-glx", "xcb-xlib", "xkbcommon-system"
+                    ]
+                },
+                "xkbcommon-evdev",
+                "system-zlib"
+            ]
+        }
+    ]
+
+}
