@@ -180,7 +180,9 @@ public:
         /* tvOS */
         MV_TVOS     = 1 << 9,
         MV_TVOS_9_0 = Q_MV_TVOS(9, 0),
-        MV_TVOS_9_1 = Q_MV_TVOS(9, 1)
+        MV_TVOS_9_1 = Q_MV_TVOS(9, 1),
+        MV_TVOS_9_2 = Q_MV_TVOS(9, 2),
+        MV_TVOS_10_0 = Q_MV_TVOS(10, 0)
     };
 #if defined(Q_OS_MAC)
     static const MacVersion MacintoshVersion;

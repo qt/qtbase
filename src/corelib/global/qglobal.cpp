@@ -1232,6 +1232,12 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value MV_IOS_9_3  iOS 9.3
     \value MV_IOS_10_0 iOS 10.0
 
+    \value MV_TVOS          tvOS (any)
+    \value MV_TVOS_9_0      tvOS 9.0
+    \value MV_TVOS_9_1      tvOS 9.1
+    \value MV_TVOS_9_2      tvOS 9.2
+    \value MV_TVOS_10_0     tvOS 10.0
+
     \value MV_None     Not a Darwin operating system
 
     \sa WinVersion
@@ -1241,7 +1247,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \macro Q_OS_DARWIN
     \relates <QtGlobal>
 
-    Defined on Darwin-based operating systems such as OS X, iOS, watchOS, and tvOS.
+    Defined on Darwin-based operating systems such as macOS, iOS, watchOS, and tvOS.
 */
 
 /*!
@@ -1957,6 +1963,8 @@ static const char *osxVer_helper(QAppleOperatingSystemVersion version = qt_apple
             return "Yosemite";
         case 11:
             return "El Capitan";
+        case 12:
+            return "Sierra";
         }
     }
     // unknown, future version
@@ -2623,7 +2631,7 @@ QString QSysInfo::kernelVersion()
     to determine the distribution name and returns that. If determining the
     distribution name failed, it returns "unknown".
 
-    \b{Darwin, OS X, iOS and tvOS note}: this function returns "macos" for macOS
+    \b{Darwin, macOS, iOS and tvOS note}: this function returns "macos" for macOS
     systems, "ios" for iOS systems, "tvos" for tvOS systems and "darwin" in case
     the system could not be determined.
 
@@ -2750,7 +2758,10 @@ QString QSysInfo::prettyProductName()
     const QAppleOperatingSystemVersion version = qt_apple_os_version();
     const char *name = osxVer_helper(version);
     if (name) {
-        return QLatin1String("OS X ") + QLatin1String(name)
+        return (version.major == 10 && version.minor < 12
+                ? QLatin1String("OS X ")
+                : QLatin1String("macOS "))
+            + QLatin1String(name)
             + QLatin1String(" (") + QString::number(version.major)
             + QLatin1Char('.') + QString::number(version.minor)
             + QLatin1Char(')');

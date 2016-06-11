@@ -47,7 +47,7 @@
 /*
    The operating system, must be one of: (Q_OS_x)
 
-     DARWIN   - Any Darwin system (OS X, iOS, watchOS, tvOS)
+     DARWIN   - Any Darwin system (macOS, iOS, watchOS, tvOS)
      MACOS    - macOS
      IOS      - iOS
      WATCHOS  - watchOS
@@ -115,8 +115,8 @@
 #        endif
 #      endif
 #    else
-#      // there is no "real" OS X define (rdar://22640089),
-#      // assume any non iOS-based platform is OS X for now
+#      // TARGET_OS_OSX is only available in newer SDKs,
+#      // so assume any non iOS-based platform is macOS for now
 #      define Q_OS_MACOS
 #    endif
 #  else
