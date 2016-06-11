@@ -606,8 +606,11 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
         } else if (project->first("TEMPLATE") == "lib" && project->isActiveConfig("staticlib")) {
             copy_cmd += "-$(INSTALL_FILE) " + src_targ + ' ' + dst_targ;
         } else if (!isAux) {
-            if (bundle == SlicedBundle)
-                ret += mkdir_p_asstring("\"`dirname " + dst_targ + "`\"", false) + "\n\t";
+            if (bundle == SlicedBundle) {
+                if (!ret.isEmpty())
+                    ret += "\n\t";
+                ret += mkdir_p_asstring("\"`dirname " + dst_targ + "`\"", false);
+            }
             copy_cmd += "-$(INSTALL_PROGRAM) " + src_targ + ' ' + dst_targ;
         }
         if(project->first("TEMPLATE") == "lib" && !project->isActiveConfig("staticlib")
