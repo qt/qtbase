@@ -383,8 +383,12 @@ QStringList QFileSelectorPrivate::platformSelectors()
 #     endif
 #  endif
     QString productName = QSysInfo::productType();
+#     ifdef Q_OS_MACOS
+    if (productName != QStringLiteral("osx"))
+        ret << QStringLiteral("osx"); // compatibility
+#     endif
     if (productName != QLatin1String("unknown"))
-        ret << productName; // "opensuse", "fedora", "osx", "ios", "blackberry", "android"
+        ret << productName; // "opensuse", "fedora", "macos", "ios", "blackberry", "android"
 #endif
     return ret;
 }

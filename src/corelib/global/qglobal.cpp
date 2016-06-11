@@ -1134,6 +1134,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value MV_10_9     OS X 10.9
     \value MV_10_10    OS X 10.10
     \value MV_10_11    OS X 10.11
+    \value MV_10_12    macOS 10.12
     \value MV_Unknown  An unknown and currently unsupported platform
 
     \value MV_CHEETAH  Apple codename for MV_10_0
@@ -1148,6 +1149,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value MV_MAVERICKS    Apple codename for MV_10_9
     \value MV_YOSEMITE     Apple codename for MV_10_10
     \value MV_ELCAPITAN    Apple codename for MV_10_11
+    \value MV_SIERRA       Apple codename for MV_10_12
 
     \value MV_IOS      iOS (any)
     \value MV_IOS_4_3  iOS 4.3
@@ -1163,6 +1165,10 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value MV_IOS_8_3  iOS 8.3
     \value MV_IOS_8_4  iOS 8.4
     \value MV_IOS_9_0  iOS 9.0
+    \value MV_IOS_9_1  iOS 9.1
+    \value MV_IOS_9_2  iOS 9.2
+    \value MV_IOS_9_3  iOS 9.3
+    \value MV_IOS_10_0 iOS 10.0
 
     \value MV_None     Not a Darwin operating system
 
@@ -1173,23 +1179,28 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \macro Q_OS_DARWIN
     \relates <QtGlobal>
 
-    Defined on Darwin-based operating systems such as OS X and iOS,
-    including any open source version(s) of Darwin.
+    Defined on Darwin-based operating systems such as OS X and iOS.
 */
 
 /*!
     \macro Q_OS_MAC
     \relates <QtGlobal>
 
-    Defined on Darwin-based operating systems distributed by Apple, which
-    currently includes OS X and iOS, but not the open source versions of Darwin.
+    Deprecated synonym for \c Q_OS_DARWIN. Do not use.
  */
 
 /*!
     \macro Q_OS_OSX
     \relates <QtGlobal>
 
-    Defined on OS X.
+    Deprecated synonym for \c Q_OS_MACOS. Do not use.
+ */
+
+/*!
+    \macro Q_OS_MACOS
+    \relates <QtGlobal>
+
+    Defined on macOS.
  */
 
 /*!
@@ -2573,9 +2584,11 @@ QString QSysInfo::kernelVersion()
     running the BlackBerry userspace, but "qnx" for all other QNX-based
     systems.
 
-    \b{Darwin, OS X and iOS note}: this function returns "osx" for OS X
+    \b{Darwin, OS X and iOS note}: this function returns "macos" for macOS
     systems, "ios" for iOS systems and "darwin" in case the system could not be
     determined.
+
+    \b{OS X note}: this function returns "osx" for versions of macOS prior to 10.12.
 
     \b{FreeBSD note}: this function returns "debian" for Debian/kFreeBSD and
     "unknown" otherwise.
@@ -2610,8 +2623,11 @@ QString QSysInfo::productType()
 
 #elif defined(Q_OS_IOS)
     return QStringLiteral("ios");
-#elif defined(Q_OS_OSX)
-    return QStringLiteral("osx");
+#elif defined(Q_OS_MACOS)
+    const QAppleOperatingSystemVersion version = qt_apple_os_version();
+    if (version.major == 10 && version.minor < 12)
+        return QStringLiteral("osx");
+    return QStringLiteral("macos");
 #elif defined(Q_OS_DARWIN)
     return QStringLiteral("darwin");
 
@@ -2700,7 +2716,7 @@ QString QSysInfo::prettyProductName()
 {
 #if defined(Q_OS_IOS)
     return QLatin1String("iOS ") + productVersion();
-#elif defined(Q_OS_OSX)
+#elif defined(Q_OS_MACOS)
     // get the known codenames
     const char *basename = 0;
     switch (int(MacintoshVersion)) {
@@ -2734,12 +2750,15 @@ QString QSysInfo::prettyProductName()
     case MV_ELCAPITAN:
         basename = "OS X El Capitan (";
         break;
+    case MV_SIERRA:
+        basename = "macOS Sierra (";
+        break;
     }
     if (basename)
         return QLatin1String(basename) + productVersion() + QLatin1Char(')');
 
-    // a future version of OS X
-    return QLatin1String("OS X ") + productVersion();
+    // a future version of macOS
+    return QLatin1String("macOS ") + productVersion();
 #elif defined(Q_OS_WINPHONE)
     return QLatin1String("Windows Phone ") + QLatin1String(winVer_helper());
 #elif defined(Q_OS_WIN)
