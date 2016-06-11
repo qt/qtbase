@@ -2791,8 +2791,6 @@ void Configure::generateOutputVars()
     if (dictionary[ "NATIVE_GESTURES" ] == "yes")
         qtConfig += "native-gestures";
 
-    qtConfig += "qpa";
-
     if (dictionary["NIS"] == "yes")
         qtConfig += "nis";
 
@@ -3308,9 +3306,6 @@ void Configure::generateQConfigPri()
 
         if (dictionary["ANDROID_STYLE_ASSETS"] == "yes")
             configStream << " android-style-assets";
-
-        // ### For compatibility only, should be removed later.
-        configStream << " qpa";
 
         configStream << endl;
         configStream << "host_build {" << endl;

@@ -5546,11 +5546,6 @@ elif [ "$CFG_SHARED" = "no" ]; then
     QTCONFIG_CONFIG="$QTCONFIG_CONFIG static"
 fi
 
-#FIXME: qpa is implicit this should all be removed
-QMAKE_CONFIG="$QMAKE_CONFIG qpa"
-QT_CONFIG="$QT_CONFIG qpa"
-QTCONFIG_CONFIG="$QTCONFIG_CONFIG qpa"
-
 if [ "$CFG_LARGEFILE" = "yes" ] && [ "$XPLATFORM_MINGW" != "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG largefile"
 fi
@@ -5913,9 +5908,6 @@ echo ""
 if [ "$CFG_DEV" = "yes" ]; then
     echo "#define QT_BUILD_INTERNAL"
 fi
-
-# Add QPA to config.h
-QCONFIG_FLAGS="$QCONFIG_FLAGS"
 
 # Add turned on SQL drivers
 for DRIVER in $CFG_SQL_AVAILABLE; do
