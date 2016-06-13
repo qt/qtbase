@@ -2813,10 +2813,11 @@ void tst_QDataStream::status_QHash_QMap()
     MAP_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x01", 8), QDataStream::ReadPastEnd, QDataStream::ReadPastEnd, StringHash());
 }
 
-#define LIST_TEST(byteArray, expectedStatus, expectedList) \
+#define LIST_TEST(byteArray, initialStatus, expectedStatus, expectedList) \
     { \
         QByteArray ba = byteArray; \
         QDataStream stream(&ba, QIODevice::ReadOnly); \
+        stream.setStatus(initialStatus); \
         stream >> list; \
         QCOMPARE((int)stream.status(), (int)expectedStatus); \
         QCOMPARE(list.size(), expectedList.size()); \
@@ -2828,6 +2829,7 @@ void tst_QDataStream::status_QHash_QMap()
             expectedLinkedList << expectedList.at(i); \
         QByteArray ba = byteArray; \
         QDataStream stream(&ba, QIODevice::ReadOnly); \
+        stream.setStatus(initialStatus); \
         stream >> linkedList; \
         QCOMPARE((int)stream.status(), (int)expectedStatus); \
         QCOMPARE(linkedList.size(), expectedLinkedList.size()); \
@@ -2839,6 +2841,7 @@ void tst_QDataStream::status_QHash_QMap()
             expectedVector << expectedList.at(i); \
         QByteArray ba = byteArray; \
         QDataStream stream(&ba, QIODevice::ReadOnly); \
+        stream.setStatus(initialStatus); \
         stream >> vector; \
         QCOMPARE((int)stream.status(), (int)expectedStatus); \
         QCOMPARE(vector.size(), expectedVector.size()); \
@@ -2854,8 +2857,49 @@ void tst_QDataStream::status_QLinkedList_QList_QVector()
     List list;
     Vector vector;
 
-    LIST_TEST(QByteArray(), QDataStream::ReadPastEnd, List());
-    LIST_TEST(QByteArray("\x00\x00\x00\x00", 4), QDataStream::Ok, List());
+    // ok
+    {
+        List listWithEmptyString;
+        listWithEmptyString.append("");
+
+        List someList;
+        someList.append("J");
+        someList.append("MN");
+
+        LIST_TEST(QByteArray("\x00\x00\x00\x00", 4), QDataStream::Ok, QDataStream::Ok, List());
+        LIST_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x00", 8), QDataStream::Ok, QDataStream::Ok, listWithEmptyString);
+        LIST_TEST(QByteArray("\x00\x00\x00\x02\x00\x00\x00\x02\x00J"
+                             "\x00\x00\x00\x04\x00M\x00N", 18), QDataStream::Ok, QDataStream::Ok, someList);
+    }
+
+    // past end
+    {
+        LIST_TEST(QByteArray(), QDataStream::Ok, QDataStream::ReadPastEnd, List());
+        LIST_TEST(QByteArray("\x00", 1), QDataStream::Ok, QDataStream::ReadPastEnd, List());
+        LIST_TEST(QByteArray("\x00\x00", 2), QDataStream::Ok, QDataStream::ReadPastEnd, List());
+        LIST_TEST(QByteArray("\x00\x00\x00", 3), QDataStream::Ok, QDataStream::ReadPastEnd, List());
+        LIST_TEST(QByteArray("\x00\x00\x00\x01", 4), QDataStream::Ok, QDataStream::ReadPastEnd, List());
+        for (int i = 4; i < 12; ++i) {
+            LIST_TEST(QByteArray("\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00", i), QDataStream::Ok, QDataStream::ReadPastEnd, List());
+        }
+    }
+
+    // corrupt data
+    {
+        LIST_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x01", 8), QDataStream::Ok, QDataStream::ReadCorruptData, List());
+        LIST_TEST(QByteArray("\x00\x00\x00\x02\x00\x00\x00\x01\x00J"
+                             "\x00\x00\x00\x02\x00M\x00N", 18), QDataStream::Ok, QDataStream::ReadCorruptData, List());
+    }
+
+    // test the previously latched error status is not affected by reading
+    {
+        List listWithEmptyString;
+        listWithEmptyString.append("");
+
+        LIST_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x00", 8), QDataStream::ReadPastEnd, QDataStream::ReadPastEnd, listWithEmptyString);
+        LIST_TEST(QByteArray("\x00\x00\x00\x01", 4), QDataStream::ReadCorruptData, QDataStream::ReadCorruptData, List());
+        LIST_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x01", 8), QDataStream::ReadPastEnd, QDataStream::ReadPastEnd, List());
+    }
 }
 
 void tst_QDataStream::streamToAndFromQByteArray()
