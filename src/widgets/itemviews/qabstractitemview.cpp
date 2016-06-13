@@ -3671,6 +3671,9 @@ void QAbstractItemView::startDrag(Qt::DropActions supportedActions)
             defaultDropAction = Qt::CopyAction;
         if (drag->exec(supportedActions, defaultDropAction) == Qt::MoveAction)
             d->clearOrRemove();
+        // Reset the drop indicator
+        d->dropIndicatorRect = QRect();
+        d->dropIndicatorPosition = OnItem;
     }
 }
 #endif // QT_NO_DRAGANDDROP

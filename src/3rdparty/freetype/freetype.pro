@@ -68,12 +68,7 @@ DEFINES += FT2_BUILD_LIBRARY
 DEFINES += FT_CONFIG_OPTION_SYSTEM_ZLIB
 include(../zlib_dependency.pri)
 
-contains(QT_CONFIG, system-png) {
-    DEFINES += FT_CONFIG_OPTION_USE_PNG
-    include($$PWD/../png_dependency.pri)
-} else:!contains(QT_CONFIG, no-png):!win32 {
-    DEFINES += FT_CONFIG_OPTION_USE_PNG
-    include($$PWD/../libpng.pri)
-}
+DEFINES += FT_CONFIG_OPTION_USE_PNG
+include($$PWD/../png_dependency.pri)
 
 DEFINES += TT_CONFIG_OPTION_SUBPIXEL_HINTING

@@ -1688,11 +1688,9 @@ void QWindow::destroy()
     if (QGuiApplicationPrivate::currentMousePressWindow == this)
         QGuiApplicationPrivate::currentMousePressWindow = parent();
 
-    for (int i = 0; i < QGuiApplicationPrivate::tabletDevicePoints.size(); ++i) {
-        QGuiApplicationPrivate::TabletPointData &pointData = QGuiApplicationPrivate::tabletDevicePoints[i];
-        if (pointData.target == this)
-            pointData.target = parent();
-    }
+    for (int i = 0; i < QGuiApplicationPrivate::tabletDevicePoints.size(); ++i)
+        if (QGuiApplicationPrivate::tabletDevicePoints.at(i).target == this)
+            QGuiApplicationPrivate::tabletDevicePoints[i].target = parent();
 
     bool wasVisible = isVisible();
     d->visibilityOnDestroy = wasVisible && d->platformWindow;

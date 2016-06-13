@@ -62,6 +62,39 @@ static QUIView *focusView()
 
 // -------------------------------------------------------------------------
 
+@interface QIOSLocaleListener : NSObject
+@end
+
+@implementation QIOSLocaleListener
+
+- (id)init
+{
+    if (self = [super init]) {
+        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+        [notificationCenter addObserver:self
+            selector:@selector(localeDidChange:)
+            name:NSCurrentLocaleDidChangeNotification object:nil];
+    }
+
+    return self;
+}
+
+- (void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [super dealloc];
+}
+
+- (void)localeDidChange:(NSNotification *)notification
+{
+    Q_UNUSED(notification);
+    QIOSInputContext::instance()->emitLocaleChanged();
+}
+
+@end
+
+// -------------------------------------------------------------------------
+
 @interface QIOSKeyboardListener : UIGestureRecognizer <UIGestureRecognizerDelegate> {
   @private
     QIOSInputContext *m_context;
@@ -293,6 +326,7 @@ QIOSInputContext *QIOSInputContext::instance()
 
 QIOSInputContext::QIOSInputContext()
     : QPlatformInputContext()
+    , m_localeListener([QIOSLocaleListener new])
     , m_keyboardHideGesture([[QIOSKeyboardListener alloc] initWithQIOSInputContext:this])
     , m_textResponder(0)
 {
@@ -306,6 +340,7 @@ QIOSInputContext::QIOSInputContext()
 
 QIOSInputContext::~QIOSInputContext()
 {
+    [m_localeListener release];
     [m_keyboardHideGesture.view removeGestureRecognizer:m_keyboardHideGesture];
     [m_keyboardHideGesture release];
 
@@ -672,4 +707,9 @@ void QIOSInputContext::commit()
 
     [m_textResponder unmarkText];
     [m_textResponder notifyInputDelegate:Qt::ImSurroundingText];
+}
+
+QLocale QIOSInputContext::locale() const
+{
+    return QLocale(QString::fromNSString([[NSLocale currentLocale] objectForKey:NSLocaleIdentifier]));
 }

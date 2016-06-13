@@ -1418,7 +1418,7 @@ void QOpenGLContextGroupPrivate::removeContext(QOpenGLContext *ctx)
         m_shares.removeOne(ctx);
 
         if (ctx == m_context && !m_shares.isEmpty())
-            m_context = m_shares.first();
+            m_context = m_shares.constFirst();
 
         if (!m_refs.deref()) {
             cleanup();
@@ -1582,7 +1582,7 @@ QOpenGLMultiGroupSharedResource::~QOpenGLMultiGroupSharedResource()
 #endif
     for (int i = 0; i < m_groups.size(); ++i) {
         if (!m_groups.at(i)->shares().isEmpty()) {
-            QOpenGLContext *context = m_groups.at(i)->shares().first();
+            QOpenGLContext *context = m_groups.at(i)->shares().constFirst();
             QOpenGLSharedResource *resource = value(context);
             if (resource)
                 resource->free();

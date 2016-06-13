@@ -15,7 +15,9 @@ TEMPLATE = lib
 CONFIG += plugin
 
 if(win32|mac):!macx-xcode {
-    contains(QT_CONFIG, debug_and_release): CONFIG += debug_and_release build_all
+    contains(QT_CONFIG, simulator_and_device): CONFIG += iphonesimulator_and_iphoneos
+    contains(QT_CONFIG, debug_and_release): CONFIG += debug_and_release
+    contains(QT_CONFIG, build_all): CONFIG += build_all
 }
 
 CONFIG += relative_qt_rpath  # Qt's QML plugins should be relocatable

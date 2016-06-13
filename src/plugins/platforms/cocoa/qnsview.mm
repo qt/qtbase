@@ -632,7 +632,9 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (BOOL)becomeFirstResponder
 {
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
+    if (!m_window || !m_platformWindow)
+        return NO;
+    if (m_window->flags() & Qt::WindowTransparentForInput)
         return NO;
     if (!m_platformWindow->windowIsPopupType() && !m_isMenuView)
         QWindowSystemInterface::handleWindowActivated([self topLevelWindow]);
@@ -641,11 +643,13 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (BOOL)acceptsFirstResponder
 {
+    if (!m_window || !m_platformWindow)
+        return NO;
     if (m_isMenuView)
         return NO;
     if (m_platformWindow->shouldRefuseKeyWindowAndFirstResponder())
         return NO;
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
+    if (m_window->flags() & Qt::WindowTransparentForInput)
         return NO;
     if ((m_window->flags() & Qt::ToolTip) == Qt::ToolTip)
         return NO;
@@ -655,7 +659,9 @@ static bool _q_dontOverrideCtrlLMB = false;
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
 {
     Q_UNUSED(theEvent)
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
+    if (!m_window || !m_platformWindow)
+        return NO;
+    if (m_window->flags() & Qt::WindowTransparentForInput)
         return NO;
     return YES;
 }
@@ -2162,7 +2168,11 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 
 // keep our state, and QGuiApplication state (buttons member) in-sync,
 // or future mouse events will be processed incorrectly
-    m_buttons &= ~(m_sendUpAsRightButton ? Qt::RightButton : Qt::LeftButton);
+    NSUInteger pmb = [NSEvent pressedMouseButtons];
+    for (int buttonNumber = 0; buttonNumber < 32; buttonNumber++) { // see cocoaButton2QtButton() for the 32 value
+        if (!(pmb & (1 << buttonNumber)))
+            m_buttons &= ~cocoaButton2QtButton(buttonNumber);
+    }
 
     NSPoint windowPoint = [self convertPoint: point fromView: nil];
     QPoint qtWindowPoint(windowPoint.x, windowPoint.y);

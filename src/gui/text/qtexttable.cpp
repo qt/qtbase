@@ -824,7 +824,7 @@ void QTextTable::insertColumns(int pos, int num)
     QVector<QTextLength> columnWidths = tfmt.columnWidthConstraints();
     if (! columnWidths.isEmpty()) {
         for (int i = num; i > 0; --i)
-            columnWidths.insert(pos, columnWidths[qMax(0, pos-1)]);
+            columnWidths.insert(pos, columnWidths.at(qMax(0, pos - 1)));
     }
     tfmt.setColumnWidthConstraints (columnWidths);
     QTextObject::setFormat(tfmt);
@@ -1046,11 +1046,12 @@ void QTextTable::mergeCells(int row, int column, int numRows, int numCols)
 
     // find the position at which to insert the contents of the merged cells
     QFragmentFindHelper helper(origCellPosition, p->fragmentMap());
-    const auto it = std::lower_bound(d->cells.begin(), d->cells.end(), helper);
+    const auto begin = d->cells.cbegin();
+    const auto it = std::lower_bound(begin, d->cells.cend(), helper);
     Q_ASSERT(it != d->cells.end());
     Q_ASSERT(!(helper < *it));
     Q_ASSERT(*it == cellFragment);
-    const int insertCellIndex = it - d->cells.begin();
+    const int insertCellIndex = it - begin;
     int insertFragment = d->cells.value(insertCellIndex + 1, d->fragment_end);
     uint insertPos = p->fragmentMap().position(insertFragment);
 
@@ -1079,11 +1080,12 @@ void QTextTable::mergeCells(int row, int column, int numRows, int numCols)
 
             if (firstCellIndex == -1) {
                 QFragmentFindHelper helper(pos, p->fragmentMap());
-                const auto it = std::lower_bound(d->cells.begin(), d->cells.end(), helper);
+                const auto begin = d->cells.cbegin();
+                const auto it = std::lower_bound(begin, d->cells.cend(), helper);
                 Q_ASSERT(it != d->cells.end());
                 Q_ASSERT(!(helper < *it));
                 Q_ASSERT(*it == fragment);
-                firstCellIndex = cellIndex = it - d->cells.begin();
+                firstCellIndex = cellIndex = it - begin;
             }
 
             ++cellIndex;
@@ -1136,7 +1138,7 @@ void QTextTable::mergeCells(int row, int column, int numRows, int numCols)
         }
     }
 
-    d->fragment_start = d->cells.first();
+    d->fragment_start = d->cells.constFirst();
 
     fmt.setTableCellRowSpan(numRows);
     fmt.setTableCellColumnSpan(numCols);
@@ -1212,9 +1214,9 @@ void QTextTable::splitCell(int row, int column, int numRows, int numCols)
     for (int r = row + 1; r < row + rowSpan; ++r) {
         // find the cell before which to insert the new cell markers
         int gridIndex = r * d->nCols + column;
-        QVector<int>::iterator it = std::upper_bound(d->cellIndices.begin(), d->cellIndices.end(), gridIndex);
-        int cellIndex = it - d->cellIndices.begin();
-        int fragment = d->cells.value(cellIndex, d->fragment_end);
+        const auto begin = d->cellIndices.cbegin();
+        const auto it = std::upper_bound(begin, d->cellIndices.cend(), gridIndex);
+        int fragment = d->cells.value(it - begin, d->fragment_end);
         rowPositions[r - row] = p->fragmentMap().position(fragment);
     }
 

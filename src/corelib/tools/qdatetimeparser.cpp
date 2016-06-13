@@ -708,17 +708,18 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
     }
 
     const int sectionmaxsize = sectionMaxSize(sectionIndex);
-    QString sectiontext = text.mid(index, sectionmaxsize);
-    int sectiontextSize = sectiontext.size();
+    QStringRef sectionTextRef = text.midRef(index, sectionmaxsize);
+    int sectiontextSize = sectionTextRef.size();
 
     QDTPDEBUG << "sectionValue for" << sn.name()
-              << "with text" << text << "and st" << sectiontext
+              << "with text" << text << "and st" << sectionTextRef
               << text.midRef(index, sectionmaxsize)
               << index;
 
     int used = 0;
     switch (sn.type) {
     case AmPmSection: {
+        QString sectiontext = sectionTextRef.toString();
         const int ampm = findAmPm(sectiontext, sectionIndex, &used);
         switch (ampm) {
         case AM: // sectiontext == AM
@@ -750,6 +751,7 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
     case DayOfWeekSectionShort:
     case DayOfWeekSectionLong:
         if (sn.count >= 3) {
+            QString sectiontext = sectionTextRef.toString();
             if (sn.type == MonthSection) {
                 int min = 1;
                 const QDate minDate = getMinimum().date();
@@ -788,7 +790,7 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
             int last = -1;
             used = -1;
 
-            QString digitsStr(sectiontext);
+            QStringRef digitsStr = sectionTextRef;
             for (int i = 0; i < sectiontextSize; ++i) {
                 if (digitsStr.at(i).isSpace()) {
                     sectiontextSize = i;
@@ -809,7 +811,7 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
                     }
                 }
                 if (ok && tmp <= absMax) {
-                    QDTPDEBUG << sectiontext.leftRef(digits) << tmp << digits;
+                    QDTPDEBUG << sectionTextRef.left(digits) << tmp << digits;
                     last = tmp;
                     used = digits;
                     break;
@@ -817,13 +819,13 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
             }
 
             if (last == -1) {
-                QChar first(sectiontext.at(0));
+                QChar first(sectionTextRef.at(0));
                 if (separators.at(sectionIndex + 1).startsWith(first)) {
                     used = 0;
                     state = Intermediate;
                 } else {
                     state = Invalid;
-                    QDTPDEBUG << "invalid because" << sectiontext << "can't become a uint" << last << ok;
+                    QDTPDEBUG << "invalid because" << sectionTextRef << "can't become a uint" << last << ok;
                 }
             } else {
                 num += last;
@@ -1565,7 +1567,7 @@ QString QDateTimeParser::SectionNode::format() const
   number that is within min and max.
 */
 
-bool QDateTimeParser::potentialValue(const QString &str, int min, int max, int index,
+bool QDateTimeParser::potentialValue(const QStringRef &str, int min, int max, int index,
                                      const QDateTime &currentValue, int insert) const
 {
     if (str.isEmpty()) {
@@ -1592,8 +1594,7 @@ bool QDateTimeParser::potentialValue(const QString &str, int min, int max, int i
             if (potentialValue(str + QLatin1Char('0' + j), min, max, index, currentValue, insert)) {
                 return true;
             } else if (insert >= 0) {
-                QString tmp = str;
-                tmp.insert(insert, QLatin1Char('0' + j));
+                const QString tmp = str.left(insert) + QLatin1Char('0' + j) + str.mid(insert);
                 if (potentialValue(tmp, min, max, index, currentValue, insert))
                     return true;
             }
@@ -1603,7 +1604,7 @@ bool QDateTimeParser::potentialValue(const QString &str, int min, int max, int i
     return false;
 }
 
-bool QDateTimeParser::skipToNextSection(int index, const QDateTime &current, const QString &text) const
+bool QDateTimeParser::skipToNextSection(int index, const QDateTime &current, const QStringRef &text) const
 {
     Q_ASSERT(current >= getMinimum() && current <= getMaximum());
 

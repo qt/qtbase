@@ -205,6 +205,8 @@ bool QWindowsPipeWriter::write(const QByteArray &ba)
 void QWindowsPipeWriter::stop()
 {
     stopped = true;
+    bytesWrittenPending = false;
+    pendingBytesWrittenValue = 0;
     if (writeSequenceStarted) {
         if (!CancelIoEx(handle, &overlapped)) {
             const DWORD dwError = GetLastError();

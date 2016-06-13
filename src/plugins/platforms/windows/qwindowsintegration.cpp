@@ -322,7 +322,9 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
     if (customMarginsV.isValid())
         requested.customMargins = qvariant_cast<QMargins>(customMarginsV);
 
-    QWindowsWindowData obtained = QWindowsWindowData::create(window, requested, window->title());
+    QWindowsWindowData obtained =
+        QWindowsWindowData::create(window, requested,
+                                   QWindowsWindow::formatWindowTitle(window->title()));
     qCDebug(lcQpaWindows).nospace()
         << __FUNCTION__ << ' ' << window
         << "\n    Requested: " << requested.geometry << " frame incl.="

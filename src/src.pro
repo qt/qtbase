@@ -88,6 +88,9 @@ src_3rdparty_harfbuzzng.subdir = $$PWD/3rdparty/harfbuzz-ng
 src_3rdparty_harfbuzzng.target = sub-3rdparty-harfbuzzng
 src_3rdparty_harfbuzzng.depends = src_corelib   # for the Qt atomics
 
+src_3rdparty_libpng.subdir = $$PWD/3rdparty/libpng
+src_3rdparty_libpng.target = sub-3rdparty-libpng
+
 src_3rdparty_freetype.subdir = $$PWD/3rdparty/freetype
 src_3rdparty_freetype.target = sub-3rdparty-freetype
 
@@ -132,6 +135,7 @@ src_android.subdir = $$PWD/android
 !contains(QT_CONFIG, system-zlib)|cross_compile {
     SUBDIRS += src_qtzlib
     !contains(QT_CONFIG, system-zlib) {
+        src_3rdparty_libpng.depends += src_corelib
         src_3rdparty_freetype.depends += src_corelib
     }
 }
@@ -162,6 +166,11 @@ contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
     win32:contains(QT_CONFIG, angle)|contains(QT_CONFIG, dynamicgl) {
         SUBDIRS += src_angle
         src_gui.depends += src_angle
+    }
+    contains(QT_CONFIG, png) {
+        SUBDIRS += src_3rdparty_libpng
+        src_3rdparty_freetype.depends += src_3rdparty_libpng
+        src_plugins.depends += src_3rdparty_libpng
     }
     contains(QT_CONFIG, freetype):!contains(QT_CONFIG, system-freetype) {
         SUBDIRS += src_3rdparty_freetype

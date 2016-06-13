@@ -45,6 +45,7 @@
 #include "qiostextinputoverlay.h"
 
 typedef QPair<int, int> SelectionPair;
+typedef void (^Block)(void);
 
 static const CGFloat kKnobWidth = 10;
 
@@ -68,7 +69,7 @@ static bool hasSelection()
     return selection.first != selection.second;
 }
 
-static void executeBlockWithoutAnimation(void (^block)(void))
+static void executeBlockWithoutAnimation(Block block)
 {
     [CATransaction begin];
     [CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
@@ -306,6 +307,7 @@ static void executeBlockWithoutAnimation(void (^block)(void))
 @property (nonatomic, assign) CGRect cursorRectangle;
 @property (nonatomic, assign) CGFloat handleScale;
 @property (nonatomic, assign) BOOL visible;
+@property (nonatomic, copy) Block onAnimationDidStop;
 @end
 
 @implementation QIOSHandleLayer
@@ -359,13 +361,22 @@ static void executeBlockWithoutAnimation(void (^block)(void))
                 [NSNumber numberWithFloat:1], nil];
             return animation;
         } else {
-            CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:key];
+            CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:key];
+            [animation setDelegate:self];
             animation.fromValue = [self valueForKey:key];
             [animation setDuration:0.2];
             return animation;
         }
     }
     return [super actionForKey:key];
+}
+
+- (void)animationDidStop:(CAAnimation *)animation finished:(BOOL)flag
+{
+    Q_UNUSED(animation);
+    Q_UNUSED(flag);
+    if (self.onAnimationDidStop)
+        self.onAnimationDidStop();
 }
 
 - (void)setVisible:(BOOL)visible
@@ -679,7 +690,7 @@ static void executeBlockWithoutAnimation(void (^block)(void))
 
     if (enabled) {
         // Create a layer that clips the handles inside the input field
-        _clipRectLayer = [[CALayer new] autorelease];
+        _clipRectLayer = [CALayer new];
         _clipRectLayer.masksToBounds = YES;
         [self.focusView.layer addSublayer:_clipRectLayer];
 
@@ -705,7 +716,26 @@ static void executeBlockWithoutAnimation(void (^block)(void))
 
         [self updateSelection];
     } else {
-        [_clipRectLayer removeFromSuperlayer];
+        // Fade out the handles by setting visible to NO, and wait for the animations
+        // to finish before removing the clip rect layer, including the handles.
+        // Create a local variable to hold the clipRectLayer while the animation is
+        // ongoing to ensure that any subsequent calls to setEnabled does not interfere.
+        // Also, declare it as __block to stop it from being automatically retained, which
+        // would cause a cyclic dependency between clipRectLayer and the block.
+        __block CALayer *clipRectLayer = _clipRectLayer;
+        __block int handleCount = 2;
+        Block block = ^{
+            if (--handleCount == 0) {
+                [clipRectLayer removeFromSuperlayer];
+                [clipRectLayer release];
+            }
+        };
+
+        _cursorLayer.onAnimationDidStop = block;
+        _anchorLayer.onAnimationDidStop = block;
+        _cursorLayer.visible = NO;
+        _anchorLayer.visible = NO;
+
         _clipRectLayer = 0;
         _cursorLayer = 0;
         _anchorLayer = 0;

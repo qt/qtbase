@@ -296,7 +296,7 @@ qint64 QNetworkReplyHttpImpl::bytesAvailable() const
 
     // if we load from cache device
     if (d->cacheLoadDevice) {
-        return QNetworkReply::bytesAvailable() + d->cacheLoadDevice->bytesAvailable() + d->downloadMultiBuffer.byteAmount();
+        return QNetworkReply::bytesAvailable() + d->cacheLoadDevice->bytesAvailable();
     }
 
     // zerocopy buffer
@@ -305,7 +305,7 @@ qint64 QNetworkReplyHttpImpl::bytesAvailable() const
     }
 
     // normal buffer
-    return QNetworkReply::bytesAvailable() + d->downloadMultiBuffer.byteAmount();
+    return QNetworkReply::bytesAvailable();
 }
 
 bool QNetworkReplyHttpImpl::isSequential () const
@@ -329,12 +329,6 @@ qint64 QNetworkReplyHttpImpl::readData(char* data, qint64 maxlen)
     if (d->cacheLoadDevice) {
         // FIXME bytesdownloaded, position etc?
 
-        // There is something already in the buffer we buffered before because the user did not read()
-        // anything, so we read there first:
-        if (!d->downloadMultiBuffer.isEmpty()) {
-            return d->downloadMultiBuffer.read(data, maxlen);
-        }
-
         qint64 ret = d->cacheLoadDevice->read(data, maxlen);
         return ret;
     }
@@ -351,25 +345,14 @@ qint64 QNetworkReplyHttpImpl::readData(char* data, qint64 maxlen)
     }
 
     // normal buffer
-    if (d->downloadMultiBuffer.isEmpty()) {
-        if (d->state == d->Finished || d->state == d->Aborted)
-            return -1;
-        return 0;
-    }
+    if (d->state == d->Finished || d->state == d->Aborted)
+        return -1;
 
-    if (maxlen == 1) {
-        // optimization for getChar()
-        *data = d->downloadMultiBuffer.getChar();
-        if (readBufferSize())
-            emit readBufferFreed(1);
-        return 1;
-    }
-
-    maxlen = qMin<qint64>(maxlen, d->downloadMultiBuffer.byteAmount());
-    qint64 bytesRead = d->downloadMultiBuffer.read(data, maxlen);
+    qint64 wasBuffered = d->bytesBuffered;
+    d->bytesBuffered = 0;
     if (readBufferSize())
-        emit readBufferFreed(bytesRead);
-    return bytesRead;
+        emit readBufferFreed(wasBuffered);
+    return 0;
 }
 
 void QNetworkReplyHttpImpl::setReadBufferSize(qint64 size)
@@ -387,12 +370,12 @@ bool QNetworkReplyHttpImpl::canReadLine () const
         return true;
 
     if (d->cacheLoadDevice)
-        return d->cacheLoadDevice->canReadLine() || d->downloadMultiBuffer.canReadLine();
+        return d->cacheLoadDevice->canReadLine();
 
     if (d->downloadZerocopyBuffer)
         return memchr(d->downloadZerocopyBuffer + d->downloadBufferReadPosition, '\n', d->downloadBufferCurrentSize - d->downloadBufferReadPosition);
 
-    return d->downloadMultiBuffer.canReadLine();
+    return false;
 }
 
 #ifndef QT_NO_SSL
@@ -444,6 +427,7 @@ QNetworkReplyHttpImplPrivate::QNetworkReplyHttpImplPrivate()
     , resumeOffset(0)
     , preMigrationDownloaded(-1)
     , bytesDownloaded(0)
+    , bytesBuffered(0)
     , downloadBufferReadPosition(0)
     , downloadBufferCurrentSize(0)
     , downloadZerocopyBuffer(0)
@@ -1047,10 +1031,11 @@ void QNetworkReplyHttpImplPrivate::replyDownloadData(QByteArray d)
             cacheSaveDevice->write(item.constData(), item.size());
 
         if (!isHttpRedirectResponse())
-            downloadMultiBuffer.append(item);
+            buffer.append(item);
 
         bytesWritten += item.size();
     }
+    bytesBuffered += bytesWritten;
     pendingDownloadDataCopy.clear();
 
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
@@ -1823,9 +1808,8 @@ void QNetworkReplyHttpImplPrivate::_q_cacheLoadReadyRead()
     // If there are still bytes available in the cacheLoadDevice then the user did not read
     // in response to the readyRead() signal. This means we have to load from the cacheLoadDevice
     // and buffer that stuff. This is needed to be able to properly emit finished() later.
-    while (cacheLoadDevice->bytesAvailable() && !isHttpRedirectResponse()) {
-        downloadMultiBuffer.append(cacheLoadDevice->readAll());
-    }
+    while (cacheLoadDevice->bytesAvailable() && !isHttpRedirectResponse())
+        buffer.append(cacheLoadDevice->readAll());
 
     if (cacheLoadDevice->isSequential()) {
         // check if end and we can read the EOF -1

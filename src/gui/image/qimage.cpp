@@ -176,6 +176,9 @@ QImageData::~QImageData()
     data = 0;
 }
 
+#if defined(_M_ARM)
+#pragma optimize("", off)
+#endif
 
 bool QImageData::checkForAlphaPixels() const
 {
@@ -193,74 +196,81 @@ bool QImageData::checkForAlphaPixels() const
         break;
     case QImage::Format_ARGB32:
     case QImage::Format_ARGB32_Premultiplied: {
-        uchar *bits = data;
+        const uchar *bits = data;
         for (int y=0; y<height && !has_alpha_pixels; ++y) {
+            uint alphaAnd = 0xff000000;
             for (int x=0; x<width; ++x)
-                has_alpha_pixels |= (((uint *)bits)[x] & 0xff000000) != 0xff000000;
+                alphaAnd &= reinterpret_cast<const uint*>(bits)[x];
+            has_alpha_pixels = (alphaAnd != 0xff000000);
             bits += bytes_per_line;
         }
     } break;
 
     case QImage::Format_RGBA8888:
     case QImage::Format_RGBA8888_Premultiplied: {
-        uchar *bits = data;
+        const uchar *bits = data;
         for (int y=0; y<height && !has_alpha_pixels; ++y) {
+            uchar alphaAnd = 0xff;
             for (int x=0; x<width; ++x)
-                has_alpha_pixels |= bits[x*4+3] != 0xff;
+                alphaAnd &= bits[x * 4+ 3];
+            has_alpha_pixels = (alphaAnd != 0xff);
             bits += bytes_per_line;
         }
     } break;
 
     case QImage::Format_A2BGR30_Premultiplied:
     case QImage::Format_A2RGB30_Premultiplied: {
-        uchar *bits = data;
+        const uchar *bits = data;
         for (int y=0; y<height && !has_alpha_pixels; ++y) {
+            uint alphaAnd = 0xc0000000;
             for (int x=0; x<width; ++x)
-                has_alpha_pixels |= (((uint *)bits)[x] & 0xc0000000) != 0xc0000000;
+                alphaAnd &= reinterpret_cast<const uint*>(bits)[x];
+            has_alpha_pixels = (alphaAnd != 0xc0000000);
             bits += bytes_per_line;
         }
     } break;
 
     case QImage::Format_ARGB8555_Premultiplied:
     case QImage::Format_ARGB8565_Premultiplied: {
-        uchar *bits = data;
-        uchar *end_bits = data + bytes_per_line;
+        const uchar *bits = data;
+        const uchar *end_bits = data + bytes_per_line;
 
         for (int y=0; y<height && !has_alpha_pixels; ++y) {
+            uchar alphaAnd = 0xff;
             while (bits < end_bits) {
-                has_alpha_pixels |= bits[0] != 0;
+                alphaAnd &= bits[0];
                 bits += 3;
             }
+            has_alpha_pixels = (alphaAnd != 0xff);
             bits = end_bits;
             end_bits += bytes_per_line;
         }
     } break;
 
     case QImage::Format_ARGB6666_Premultiplied: {
-        uchar *bits = data;
-        uchar *end_bits = data + bytes_per_line;
+        const uchar *bits = data;
+        const uchar *end_bits = data + bytes_per_line;
 
         for (int y=0; y<height && !has_alpha_pixels; ++y) {
+            uchar alphaAnd = 0xfc;
             while (bits < end_bits) {
-                has_alpha_pixels |= (bits[0] & 0xfc) != 0;
+                alphaAnd &= bits[0];
                 bits += 3;
             }
+            has_alpha_pixels = (alphaAnd != 0xfc);
             bits = end_bits;
             end_bits += bytes_per_line;
         }
     } break;
 
     case QImage::Format_ARGB4444_Premultiplied: {
-        uchar *bits = data;
-        uchar *end_bits = data + bytes_per_line;
-
+        const uchar *bits = data;
         for (int y=0; y<height && !has_alpha_pixels; ++y) {
-            while (bits < end_bits) {
-                has_alpha_pixels |= (bits[0] & 0xf0) != 0;
-                bits += 2;
-            }
-            bits = end_bits;
-            end_bits += bytes_per_line;
+            ushort alphaAnd = 0xf000;
+            for (int x=0; x<width; ++x)
+                alphaAnd &= reinterpret_cast<const ushort*>(bits)[x];
+            has_alpha_pixels = (alphaAnd != 0xf000);
+            bits += bytes_per_line;
         }
     } break;
 
@@ -283,6 +293,9 @@ bool QImageData::checkForAlphaPixels() const
 
     return has_alpha_pixels;
 }
+#if defined(_M_ARM)
+#pragma optimize("", on)
+#endif
 
 /*!
     \class QImage

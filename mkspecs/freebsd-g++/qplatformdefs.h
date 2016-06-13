@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,14 +37,4 @@
 **
 ****************************************************************************/
 
-#include <sys/types.h>
-#include <rpc/rpc.h>
-#include <rpcsvc/ypclnt.h>
-#include <rpcsvc/yp_prot.h>
-
-int main(int, char **)
-{
-    char *d;
-    yp_get_default_domain(&d);
-    return 0;
-}
+#include "../freebsd-clang/qplatformdefs.h"

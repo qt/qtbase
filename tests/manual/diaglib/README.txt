@@ -32,6 +32,17 @@ class DebugProxyStyle (debugproxystyle.h)
   the parameters and return values of its function calls, useful
   for debugging QStyle.
 
+class LogWidget (logwidget.h)
+  A Log Widget inheriting QPlainTextEdit with convenience functions
+  to install as a message handler.
+
+class LogFunctionGuard
+   A guard class for use with LogWidget logging messages when a function
+   is entered/left (indenting the log messages).
+   Can be instantiated using:
+   LogFunctionGuard guard(__FUNCTION__) or
+   LogFunctionGuard guard(Q_FUNC_INFO)
+
 function glInfo() (glinfo.h):
   Returns a string describing the Open GL configuration (obtained
   by querying GL_VENDOR and GL_RENDERER). Available only

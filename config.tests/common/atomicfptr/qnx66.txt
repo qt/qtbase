@@ -1,0 +1,3 @@
+Patch is available from QNX. Please see
+
+http://www.qnx.com/download/feature.html?programid=27555

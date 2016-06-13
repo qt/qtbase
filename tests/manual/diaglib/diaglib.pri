@@ -23,17 +23,21 @@ greaterThan(QT_MAJOR_VERSION, 4) {
     QT += gui-private core-private
     contains(QT, widgets) {
         HEADERS += \
-            $$PWD/qwidgetdump.h
+            $$PWD/qwidgetdump.h \
+            $$PWD/logwidget.h
 
         SOURCES += \
-            $$PWD/qwidgetdump.cpp
+            $$PWD/qwidgetdump.cpp \
+            $$PWD/logwidget.cpp
     }
 } else {
     HEADERS += \
-        $$PWD/qwidgetdump.h
+        $$PWD/qwidgetdump.h \
+        $$PWD/logwidget.h
 
     SOURCES += \
-        $$PWD/qwidgetdump.cpp
+        $$PWD/qwidgetdump.cpp \
+        $$PWD/logwidget.cpp
 }
 
 contains(QT, opengl) {

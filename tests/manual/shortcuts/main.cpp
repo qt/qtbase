@@ -92,15 +92,19 @@ protected:
         QPushButton *b12 = new QPushButton(sq12.toString());
         b12->setShortcut(sq12);
 
-        // LATIN SMALL LETTER O WITH STROKE
-        QKeySequence sq13(QString(QChar(ushort(0xf8))));
+        QKeySequence sq13(Qt::ControlModifier + Qt::Key_BracketRight);
         QPushButton *b13 = new QPushButton(sq13.toString());
         b13->setShortcut(sq13);
 
-        // CYRILLIC SMALL LETTER ZHE
-        QKeySequence sq14(QString(QChar(ushort(0x436))));
+        // LATIN SMALL LETTER O WITH STROKE
+        QKeySequence sq14(QString(QChar(ushort(0xf8))));
         QPushButton *b14 = new QPushButton(sq14.toString());
         b14->setShortcut(sq14);
+
+        // CYRILLIC SMALL LETTER ZHE
+        QKeySequence sq15(QString(QChar(ushort(0x436))));
+        QPushButton *b15 = new QPushButton(sq15.toString());
+        b15->setShortcut(sq15);
 
         QLabel *testPurpose = new QLabel();
         testPurpose->setWordWrap(true);
@@ -120,10 +124,11 @@ protected:
         layout->addWidget(b10);
         layout->addWidget(b11);
         layout->addWidget(b12);
-        layout->addWidget(new QLabel("Norwegian layout"));
         layout->addWidget(b13);
-        layout->addWidget(new QLabel("Russian layout"));
+        layout->addWidget(new QLabel("Norwegian layout"));
         layout->addWidget(b14);
+        layout->addWidget(new QLabel("Russian layout"));
+        layout->addWidget(b15);
 
         setLayout(layout);
     }

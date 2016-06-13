@@ -74,14 +74,4 @@ SOURCES += \
 
 mac: LIBS_PRIVATE += -framework Security
 
-uikit {
-    HEADERS += \
-        access/qnetworkreplynsurlconnectionimpl_p.h
-
-    OBJECTIVE_SOURCES += \
-        access/qnetworkreplynsurlconnectionimpl.mm
-
-    LIBS_PRIVATE += -framework Foundation
-}
-
 include($$PWD/../../3rdparty/zlib_dependency.pri)

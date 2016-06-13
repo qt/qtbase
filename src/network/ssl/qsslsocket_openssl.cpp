@@ -1344,8 +1344,12 @@ void QSslSocketBackendPrivate::_q_caRootLoaded(QSslCertificate cert, QSslCertifi
     if (plainSocket)
         plainSocket->resume();
     paused = false;
-    if (checkSslErrors() && ssl)
+    if (checkSslErrors() && ssl) {
+        bool willClose = (autoStartHandshake && pendingClose);
         continueHandshake();
+        if (!willClose)
+            transmit();
+    }
 }
 
 class QWindowsCaRootFetcherThread : public QThread

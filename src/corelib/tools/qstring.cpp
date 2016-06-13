@@ -581,7 +581,7 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
     // we'll read uc[offset..offset+7] (16 bytes) and c[offset..offset+7] (8 bytes)
     if (uc + offset + 7 < e) {
         // same, but we're using an 8-byte load
-        __m128i chunk = _mm_cvtsi64_si128(qUnalignedLoad<long long>(c + offset));
+        __m128i chunk = _mm_cvtsi64_si128(qFromUnaligned<long long>(c + offset));
         __m128i secondHalf = _mm_unpacklo_epi8(chunk, nullmask);
 
         __m128i ucdata = _mm_loadu_si128((const __m128i*)(uc + offset));
@@ -1757,10 +1757,13 @@ void QString::resize(int size, QChar fillChar)
 
 void QString::reallocData(uint alloc, bool grow)
 {
+    size_t blockSize;
     if (grow) {
-        if (alloc > (uint(MaxAllocSize) - sizeof(Data)) / sizeof(QChar))
-            qBadAlloc();
-        alloc = qAllocMore(alloc * sizeof(QChar), sizeof(Data)) / sizeof(QChar);
+        auto r = qCalculateGrowingBlockSize(alloc, sizeof(QChar), sizeof(Data));
+        blockSize = r.size;
+        alloc = uint(r.elementCount);
+    } else {
+        blockSize = qCalculateBlockSize(alloc, sizeof(QChar), sizeof(Data));
     }
 
     if (d->ref.isShared() || IS_RAW_DATA(d)) {
@@ -1774,7 +1777,7 @@ void QString::reallocData(uint alloc, bool grow)
             Data::deallocate(d);
         d = x;
     } else {
-        Data *p = static_cast<Data *>(::realloc(d, sizeof(Data) + alloc * sizeof(QChar)));
+        Data *p = static_cast<Data *>(::realloc(d, blockSize));
         Q_CHECK_PTR(p);
         d = p;
         d->alloc = alloc;
@@ -2343,8 +2346,7 @@ QString &QString::remove(QChar ch, Qt::CaseSensitivity cs)
 */
 QString &QString::replace(int pos, int len, const QString &after)
 {
-    QString copy = after;
-    return replace(pos, len, copy.constData(), copy.length());
+    return replace(pos, len, after.constData(), after.length());
 }
 
 /*!

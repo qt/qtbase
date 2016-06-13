@@ -665,7 +665,7 @@ void QTextHtmlParser::parseTag()
     if (hasPrefix(QLatin1Char('/'))) {
         if (nodes.last().id == Html_style) {
 #ifndef QT_NO_CSSPARSER
-            QCss::Parser parser(nodes.last().text);
+            QCss::Parser parser(nodes.constLast().text);
             QCss::StyleSheet sheet;
             sheet.origin = QCss::StyleSheetOrigin_Author;
             parser.parse(&sheet, Qt::CaseInsensitive);

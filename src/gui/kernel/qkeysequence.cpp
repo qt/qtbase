@@ -1154,21 +1154,22 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
     }
 
     int p = accel.lastIndexOf(QLatin1Char('+'), str.length() - 2); // -2 so that Ctrl++ works
+    QStringRef accelRef(&accel);
     if(p > 0)
-        accel = accel.mid(p + 1);
+        accelRef = accelRef.mid(p + 1);
 
     int fnum = 0;
-    if (accel.length() == 1) {
+    if (accelRef.length() == 1) {
 #if defined(Q_OS_MACX)
-        int qtKey = qtkeyForMacSymbol(accel[0]);
+        int qtKey = qtkeyForMacSymbol(accelRef.at(0));
         if (qtKey != -1) {
             ret |= qtKey;
         } else
 #endif
         {
-            ret |= accel[0].toUpper().unicode();
+            ret |= accelRef.at(0).toUpper().unicode();
         }
-    } else if (accel[0] == QLatin1Char('f') && (fnum = accel.mid(1).toInt()) && (fnum >= 1) && (fnum <= 35)) {
+    } else if (accelRef.at(0) == QLatin1Char('f') && (fnum = accelRef.mid(1).toInt()) >= 1 && fnum <= 35) {
         ret |= Qt::Key_F1 + fnum - 1;
     } else {
         // For NativeText, check the traslation table first,
@@ -1182,7 +1183,7 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
                 QString keyName(tran == 0
                                 ? QCoreApplication::translate("QShortcut", keyname[i].name)
                                 : QString::fromLatin1(keyname[i].name));
-                if (accel == keyName.toLower()) {
+                if (accelRef == keyName.toLower()) {
                     ret |= keyname[i].key;
                     found = true;
                     break;

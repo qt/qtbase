@@ -214,9 +214,19 @@ public:
                 QString *dayName = 0, int *used = 0) const;
 #endif
     AmPmFinder findAmPm(QString &str, int index, int *used = 0) const;
-    bool potentialValue(const QString &str, int min, int max, int index,
+    bool potentialValue(const QStringRef &str, int min, int max, int index,
                         const QDateTime &currentValue, int insert) const;
-    bool skipToNextSection(int section, const QDateTime &current, const QString &sectionText) const;
+    bool potentialValue(const QString &str, int min, int max, int index,
+                        const QDateTime &currentValue, int insert) const
+    {
+        return potentialValue(QStringRef(&str), min, max, index, currentValue, insert);
+    }
+
+    bool skipToNextSection(int section, const QDateTime &current, const QStringRef &sectionText) const;
+    bool skipToNextSection(int section, const QDateTime &current, const QString &sectionText) const
+    {
+        return skipToNextSection(section, current, QStringRef(&sectionText));
+    }
 
     QString stateName(State s) const;
 

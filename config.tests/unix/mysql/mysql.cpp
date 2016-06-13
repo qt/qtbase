@@ -41,5 +41,6 @@
 
 int main(int, char **)
 {
+    mysql_get_client_version();
     return 0;
 }

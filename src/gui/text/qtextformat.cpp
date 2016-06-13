@@ -364,9 +364,10 @@ void QTextFormatPrivate::recalcFont() const
                 f.setPixelSize(props.at(i).value.toInt());
                 break;
             case QTextFormat::FontWeight: {
-                int weight = props.at(i).value.toInt();
-                if (weight == 0) weight = QFont::Normal;
-                f.setWeight(weight);
+                const QVariant weightValue = props.at(i).value;
+                int weight = weightValue.toInt();
+                if (weight >= 0 && weightValue.isValid())
+                    f.setWeight(weight);
                 break; }
             case QTextFormat::FontItalic:
                 f.setItalic(props.at(i).value.toBool());
@@ -3462,7 +3463,7 @@ void QTextFormatCollection::setDefaultFont(const QFont &f)
 {
     defaultFnt = f;
     for (int i = 0; i < formats.count(); ++i)
-        if (formats[i].d)
+        if (formats.at(i).d)
             formats[i].d->resolveFont(defaultFnt);
 }
 

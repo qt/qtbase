@@ -42,6 +42,9 @@
 #include "qwinrtbackingstore.h"
 #include "qwinrtinputcontext.h"
 #include "qwinrtcursor.h"
+#ifndef QT_NO_DRAGANDDROP
+#include "qwinrtdrag.h"
+#endif
 #include "qwinrtwindow.h"
 #include <private/qeventdispatcher_winrt_p.h>
 
@@ -556,6 +559,9 @@ QWinRTScreen::QWinRTScreen()
     ComPtr<Xaml::IUIElement> uiElement;
     hr = canvas.As(&uiElement);
     Q_ASSERT_SUCCEEDED(hr);
+#if _MSC_VER >= 1900 && !defined(QT_NO_DRAGANDDROP)
+    QWinRTDrag::instance()->setUiElement(uiElement);
+#endif
     hr = window->put_Content(uiElement.Get());
     Q_ASSERT_SUCCEEDED(hr);
     hr = canvas.As(&d->canvas);
@@ -764,6 +770,10 @@ void QWinRTScreen::addWindow(QWindow *window)
     QWindowSystemInterface::handleWindowActivated(window, Qt::OtherFocusReason);
     handleExpose();
     QWindowSystemInterface::flushWindowSystemEvents();
+
+#if _MSC_VER >= 1900 && !defined(QT_NO_DRAGANDDROP)
+    QWinRTDrag::instance()->setDropTarget(window);
+#endif
 }
 
 void QWinRTScreen::removeWindow(QWindow *window)
@@ -778,6 +788,10 @@ void QWinRTScreen::removeWindow(QWindow *window)
         QWindowSystemInterface::handleWindowActivated(window, Qt::OtherFocusReason);
     handleExpose();
     QWindowSystemInterface::flushWindowSystemEvents();
+#if _MSC_VER >= 1900 && !defined(QT_NO_DRAGANDDROP)
+    if (wasTopWindow)
+        QWinRTDrag::instance()->setDropTarget(topWindow());
+#endif
 }
 
 void QWinRTScreen::raise(QWindow *window)
@@ -973,6 +987,9 @@ HRESULT QWinRTScreen::onPointerExited(ICoreWindow *, IPointerEventArgs *args)
     return S_OK;
 }
 
+// Required for qwinrtdrag.cpp
+ComPtr<IPointerPoint> qt_winrt_lastPointerPoint;
+
 HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
 {
     Q_D(QWinRTScreen);
@@ -980,6 +997,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
     if (FAILED(args->get_CurrentPoint(&pointerPoint)))
         return E_INVALIDARG;
 
+    qt_winrt_lastPointerPoint = pointerPoint;
     // Common traits - point, modifiers, properties
     Point point;
     pointerPoint->get_Position(&point);

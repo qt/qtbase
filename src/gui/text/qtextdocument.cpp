@@ -2430,7 +2430,7 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
         html += QLatin1Char(';');
         attributesEmitted = true;
     } else {
-        html.chop(qstrlen(decorationTag.latin1()));
+        html.chop(decorationTag.size());
     }
 
     if (format.foreground() != defaultCharFormat.foreground()
@@ -2665,7 +2665,7 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
     if (attributesEmitted)
         html += QLatin1String("\">");
     else
-        html.chop(qstrlen(styleTag.latin1()));
+        html.chop(styleTag.size());
 
     if (isObject) {
         for (int i = 0; isImage && i < txt.length(); ++i) {
@@ -2700,13 +2700,8 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
         // split for [\n{LineSeparator}]
         QString forcedLineBreakRegExp = QString::fromLatin1("[\\na]");
         forcedLineBreakRegExp[3] = QChar::LineSeparator;
-
-        const QStringList lines = txt.split(QRegExp(forcedLineBreakRegExp));
-        for (int i = 0; i < lines.count(); ++i) {
-            if (i > 0)
-                html += QLatin1String("<br />"); // space on purpose for compatibility with Netscape, Lynx & Co.
-            html += lines.at(i);
-        }
+        // space in BR on purpose for compatibility with old-fashioned browsers
+        html += txt.replace(QRegExp(forcedLineBreakRegExp), QLatin1String("<br />"));
     }
 
     if (attributesEmitted)
@@ -3227,7 +3222,7 @@ void QTextHtmlExporter::emitFrameStyle(const QTextFrameFormat &format, FrameType
                     QString::number(format.rightMargin()));
 
     if (html.length() == originalHtmlLength) // nothing emitted?
-        html.chop(qstrlen(styleAttribute.latin1()));
+        html.chop(styleAttribute.size());
     else
         html += QLatin1Char('\"');
 }

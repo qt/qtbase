@@ -846,6 +846,12 @@ void QDialog::adjustPosition(QWidget* w)
     if (p.y() < desk.y())
         p.setY(desk.y());
 
+    // QTBUG-52735: Manually set the correct target screen since scaling in a
+    // subsequent call to QWindow::resize() may otherwise use the wrong factor
+    // if the screen changed notification is still in an event queue.
+    if (QWindow *window = windowHandle())
+        window->setScreen(QGuiApplication::screens().at(scrn));
+
     move(p);
 }
 

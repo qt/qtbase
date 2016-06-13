@@ -5951,12 +5951,10 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 #ifndef QT_NO_ACCESSIBILITY
             if (QStyleHelper::hasAncestor(opt->styleObject, QAccessible::ToolBar)) {
                 if (tb->subControls & SC_ToolButtonMenu) {
-                    QStyleOption arrowOpt(0);
+                    QStyleOption arrowOpt = *tb;
                     arrowOpt.rect = proxy()->subControlRect(cc, tb, SC_ToolButtonMenu, widget);
                     arrowOpt.rect.setY(arrowOpt.rect.y() + arrowOpt.rect.height() / 2);
                     arrowOpt.rect.setHeight(arrowOpt.rect.height() / 2);
-                    arrowOpt.state = tb->state;
-                    arrowOpt.palette = tb->palette;
                     proxy()->drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, p, widget);
                 } else if ((tb->features & QStyleOptionToolButton::HasMenu)
                             && (tb->toolButtonStyle != Qt::ToolButtonTextOnly && !tb->icon.isNull())) {

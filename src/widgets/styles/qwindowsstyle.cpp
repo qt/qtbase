@@ -2131,9 +2131,8 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
 
                 if (sunkenArrow)
                     flags |= State_Sunken;
-                QStyleOption arrowOpt(0);
+                QStyleOption arrowOpt = *cmb;
                 arrowOpt.rect = ar.adjusted(1, 1, -1, -1);
-                arrowOpt.palette = cmb->palette;
                 arrowOpt.state = flags;
                 proxy()->drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, p, widget);
             }

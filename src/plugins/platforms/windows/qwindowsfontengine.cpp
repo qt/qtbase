@@ -1236,8 +1236,7 @@ QFontEngine *QWindowsMultiFontEngine::loadEngine(int at)
                 QWindowsFontEngineDirectWrite *fedw = new QWindowsFontEngineDirectWrite(directWriteFontFace,
                                                                                         fontEngine->fontDef.pixelSize,
                                                                                         data);
-                if (fontEngine->fontDef.weight > QFont::Normal)
-                    fedw->fontDef.weight = fontEngine->fontDef.weight;
+                fedw->fontDef.weight = fontEngine->fontDef.weight;
                 if (fontEngine->fontDef.style > QFont::StyleNormal)
                     fedw->fontDef.style = fontEngine->fontDef.style;
                 fedw->fontDef.family = fam;
@@ -1254,8 +1253,7 @@ QFontEngine *QWindowsMultiFontEngine::loadEngine(int at)
     // reason
 
     QFontEngine *fe = new QWindowsFontEngine(fam, lf, data);
-    if (fontEngine->fontDef.weight > QFont::Normal)
-        fe->fontDef.weight = fontEngine->fontDef.weight;
+    fe->fontDef.weight = fontEngine->fontDef.weight;
     if (fontEngine->fontDef.style > QFont::StyleNormal)
         fe->fontDef.style = fontEngine->fontDef.style;
     fe->fontDef.family = fam;

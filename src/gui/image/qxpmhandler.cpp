@@ -1154,7 +1154,7 @@ static bool write_xpm_image(const QImage &sourceImage, QIODevice *device, const 
         int cc = 0;
         for(x=0; x<w; x++) {
             int color = (int)(*(yp + x));
-            QByteArray chars(xpm_color_name(cpp, colorMap[color]));
+            const QByteArray chars(xpm_color_name(cpp, colorMap[color]));
             line[cc++] = QLatin1Char(chars[0]);
             if (cpp > 1) {
                 line[cc++] = QLatin1Char(chars[1]);

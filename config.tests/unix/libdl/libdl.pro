@@ -1,3 +1,2 @@
-SOURCES = libdl.cpp
-CONFIG -= qt dylib
-!qnx: LIBS += -ldl
+include(../dlopen/dlopen.pro)
+LIBS += -ldl

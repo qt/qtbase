@@ -1073,7 +1073,7 @@ bool QOpenGLFramebufferObject::bind()
     if (d->format.samples() == 0) {
         // Create new textures to replace the ones stolen via takeTexture().
         for (int i = 0; i < d->colorAttachments.count(); ++i) {
-            if (!d->colorAttachments[i].guard)
+            if (!d->colorAttachments.at(i).guard)
                 d->initTexture(i);
         }
     }
@@ -1206,10 +1206,11 @@ GLuint QOpenGLFramebufferObject::takeTexture(int colorAttachmentIndex)
         QOpenGLContext *current = QOpenGLContext::currentContext();
         if (current && current->shareGroup() == d->fbo_guard->group() && isBound())
             release();
-        id = d->colorAttachments[colorAttachmentIndex].guard ? d->colorAttachments[colorAttachmentIndex].guard->id() : 0;
+        auto &guard = d->colorAttachments[colorAttachmentIndex].guard;
+        id = guard ? guard->id() : 0;
         // Do not call free() on texture_guard, just null it out.
         // This way the texture will not be deleted when the guard is destroyed.
-        d->colorAttachments[colorAttachmentIndex].guard = 0;
+        guard = 0;
     }
     return id;
 }

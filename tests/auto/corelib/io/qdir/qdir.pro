@@ -11,5 +11,3 @@ contains(CONFIG, builtin_testdata): DEFINES += BUILTIN_TESTDATA
 android {
     RESOURCES += android_testdata.qrc
 }
-
-win32: CONFIG += insignificant_test # Crashes on Windows in release builds

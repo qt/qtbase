@@ -116,7 +116,7 @@ static bool debuggerPresent()
     if (fd == -1)
         return false;
     char buffer[2048];
-    ssize_t size = read(fd, buffer, sizeof(buffer));
+    ssize_t size = read(fd, buffer, sizeof(buffer) - 1);
     if (size == -1) {
         close(fd);
         return false;

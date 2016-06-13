@@ -6,5 +6,3 @@ RESOURCES += qdiriterator.qrc
 
 TESTDATA += entrylist
 contains(CONFIG, builtin_testdata): DEFINES += BUILTIN_TESTDATA
-
-win32: CONFIG += insignificant_test # Crashes on Windows in release builds

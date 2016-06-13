@@ -2033,7 +2033,7 @@ uint qHash(const QFont &font, uint seed) Q_DECL_NOTHROW
  */
 bool QFont::fromString(const QString &descrip)
 {
-    QStringList l(descrip.split(QLatin1Char(',')));
+    const auto l = descrip.splitRef(QLatin1Char(','));
 
     int count = l.count();
     if (!count || (count > 2 && count < 9) || count > 11) {
@@ -2042,7 +2042,7 @@ bool QFont::fromString(const QString &descrip)
         return false;
     }
 
-    setFamily(l[0]);
+    setFamily(l[0].toString());
     if (count > 1 && l[1].toDouble() > 0.0)
         setPointSizeF(l[1].toDouble());
     if (count == 9) {

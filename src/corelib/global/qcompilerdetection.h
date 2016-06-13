@@ -748,7 +748,9 @@
 #      define Q_COMPILER_TEMPLATE_ALIAS
 #    endif
 #    if __has_feature(cxx_thread_local)
-#      define Q_COMPILER_THREAD_LOCAL
+#      if !defined(__FreeBSD__) /* FreeBSD clang fails on __cxa_thread_atexit */
+#        define Q_COMPILER_THREAD_LOCAL
+#      endif
 #    endif
 #    if __has_feature(cxx_user_literals)
 #      define Q_COMPILER_UDL
@@ -1108,7 +1110,8 @@
 # define Q_DECL_NOTHROW Q_DECL_NOEXCEPT
 #endif
 
-#if defined(Q_COMPILER_ALIGNOF) && !defined(Q_ALIGNOF)
+#if defined(Q_COMPILER_ALIGNOF)
+#  undef Q_ALIGNOF
 #  define Q_ALIGNOF(x)  alignof(x)
 #endif
 

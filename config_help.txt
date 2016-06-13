@@ -258,9 +258,6 @@ Additional options:
     -silent .............. Reduce the build output so that warnings and errors
                            can be seen more easily.
 
-    -no-nis .............. Do not compile NIS support.
- *  -nis ................. Compile NIS support.
-
     -no-cups ............. Do not compile CUPS support.
  *  -cups ................ Compile CUPS support.
                            Requires cups/cups.h and libcups.so.2.

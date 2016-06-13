@@ -697,25 +697,20 @@ static QStringList familyList(const QFontDef &req)
     if (req.family.isEmpty())
         return family_list;
 
-    QStringList list = req.family.split(QLatin1Char(','));
+    const auto list = req.family.splitRef(QLatin1Char(','));
     const int numFamilies = list.size();
     family_list.reserve(numFamilies);
     for (int i = 0; i < numFamilies; ++i) {
-        QString str = list.at(i).trimmed();
+        QStringRef str = list.at(i).trimmed();
         if ((str.startsWith(QLatin1Char('"')) && str.endsWith(QLatin1Char('"')))
             || (str.startsWith(QLatin1Char('\'')) && str.endsWith(QLatin1Char('\''))))
             str = str.mid(1, str.length() - 2);
-        family_list << str;
+        family_list << str.toString();
     }
 
     // append the substitute list for each family in family_list
-    QStringList subs_list;
-    QStringList::ConstIterator it = family_list.constBegin(), end = family_list.constEnd();
-    for (; it != end; ++it)
-        subs_list += QFont::substitutes(*it);
-//         qDebug() << "adding substs: " << subs_list;
-
-    family_list += subs_list;
+    for (int i = 0, size = family_list.size(); i < size; ++i)
+        family_list += QFont::substitutes(family_list.at(i));
 
     return family_list;
 }
@@ -2737,8 +2732,6 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     }
     if (req.pointSize < 0)
         req.pointSize = req.pixelSize*72.0/d->dpi;
-    if (req.weight == 0)
-        req.weight = QFont::Normal;
     if (req.stretch == 0)
         req.stretch = 100;
 

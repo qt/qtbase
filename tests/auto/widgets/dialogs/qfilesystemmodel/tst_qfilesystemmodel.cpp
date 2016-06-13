@@ -104,10 +104,6 @@ private slots:
 
     void caseSensitivity();
 
-#if defined(Q_OS_WIN)
-    void Win32LongFileName();
-#endif
-
     void drives_data();
     void drives();
     void dirsBeforeFiles();
@@ -891,20 +887,6 @@ void tst_QFileSystemModel::caseSensitivity()
         QVERIFY(model->index(tmp + '/' + files.at(i)).isValid());
     }
 }
-
-#if defined(Q_OS_WIN)
-void tst_QFileSystemModel::Win32LongFileName()
-{
-    QString tmp = flatDirTestPath;
-    QStringList files;
-    files << "aaaaaaaaaa" << "bbbbbbbbbb" << "cccccccccc";
-    QVERIFY(createFiles(tmp, files));
-    QModelIndex root = model->setRootPath(tmp);
-    QTRY_VERIFY(model->index(tmp + QLatin1String("/aaaaaa~1")).isValid());
-    QTRY_VERIFY(model->index(tmp + QLatin1String("/bbbbbb~1")).isValid());
-    QTRY_VERIFY(model->index(tmp + QLatin1String("/cccccc~1")).isValid());
-}
-#endif
 
 void tst_QFileSystemModel::drives_data()
 {

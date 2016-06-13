@@ -1674,7 +1674,7 @@ void QPdfEnginePrivate::writePage()
     uint resources = requestObject();
     uint annots = requestObject();
 
-    addXrefEntry(pages.last());
+    addXrefEntry(pages.constLast());
     xprintf("<<\n"
             "/Type /Page\n"
             "/Parent %d 0 R\n"
@@ -1767,7 +1767,7 @@ void QPdfEnginePrivate::writeTail()
             ">>\n"
             "startxref\n%d\n"
             "%%%%EOF\n",
-            xrefPositions.size()-1, info, catalog, xrefPositions.last());
+            xrefPositions.size()-1, info, catalog, xrefPositions.constLast());
 }
 
 int QPdfEnginePrivate::addXrefEntry(int object, bool printostr)

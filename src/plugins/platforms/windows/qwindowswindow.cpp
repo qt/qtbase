@@ -1579,11 +1579,12 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
         return false;
     PAINTSTRUCT ps;
 
-    // Observed painting problems with Aero style disabled (QTBUG-7865).
-    if (testFlag(OpenGLSurface) && testFlag(OpenGLDoubleBuffered))
-        InvalidateRect(hwnd, 0, false);
-
     BeginPaint(hwnd, &ps);
+
+    // Observed painting problems with Aero style disabled (QTBUG-7865).
+    // 5.8: Consider making it dependent on !DwmIsCompositionEnabled().
+    if (testFlag(OpenGLSurface) && testFlag(OpenGLDoubleBuffered))
+        SelectClipRgn(ps.hdc, NULL);
 
     // If the a window is obscured by another window (such as a child window)
     // we still need to send isExposed=true, for compatibility.
@@ -1598,7 +1599,7 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
 
 void QWindowsWindow::setWindowTitle(const QString &title)
 {
-    setWindowTitle_sys(QWindowsWindow::formatWindowTitle(title, QStringLiteral(" - ")));
+    setWindowTitle_sys(QWindowsWindow::formatWindowTitle(title));
 }
 
 void QWindowsWindow::setWindowFlags(Qt::WindowFlags flags)
@@ -2400,6 +2401,11 @@ void QWindowsWindow::setHasBorderInFullScreen(bool border)
         setFlag(HasBorderInFullScreen);
     else
         clearFlag(HasBorderInFullScreen);
+}
+
+QString QWindowsWindow::formatWindowTitle(const QString &title)
+{
+    return QPlatformWindow::formatWindowTitle(title, QStringLiteral(" - "));
 }
 
 QT_END_NAMESPACE

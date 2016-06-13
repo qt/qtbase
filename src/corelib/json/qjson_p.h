@@ -410,7 +410,7 @@ public:
             // pack with itself, we'll discard the high part anyway
             chunk = _mm_packus_epi16(chunk, chunk);
             // unaligned 64-bit store
-            qUnalignedStore(l + i, _mm_cvtsi128_si64(chunk));
+            qToUnaligned(_mm_cvtsi128_si64(chunk), l + i);
             i += 8;
         }
 #  endif
@@ -683,6 +683,8 @@ public:
     bool operator ==(const Entry &other) const;
     bool operator >=(const Entry &other) const;
 };
+
+inline bool operator!=(const Entry &lhs, const Entry &rhs) { return !(lhs == rhs); }
 
 inline bool Entry::operator >=(const QString &key) const
 {

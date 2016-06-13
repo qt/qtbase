@@ -48,7 +48,6 @@
 #include <QtCore/QList>
 #include <QtCore/QDebug>
 #include <qendian.h>
-#include <private/qsimd_p.h> // for qUnalignedLoad
 
 QT_BEGIN_NAMESPACE
 
@@ -164,7 +163,7 @@ bool QMimeMagicRule::matchNumber(const QByteArray &data) const
     const char *p = data.constData() + m_startPos;
     const char *e = data.constData() + qMin(data.size() - int(sizeof(T)), m_endPos + 1);
     for ( ; p <= e; ++p) {
-        if ((qUnalignedLoad<T>(p) & mask) == (value & mask))
+        if ((qFromUnaligned<T>(reinterpret_cast<const uchar *>(p)) & mask) == (value & mask))
             return true;
     }
 

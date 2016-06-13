@@ -1507,10 +1507,10 @@ QRect Declaration::rectValue() const
     const QCss::Value &v = d->values.at(0);
     if (v.type != Value::Function)
         return QRect();
-    QStringList func = v.variant.toStringList();
+    const QStringList func = v.variant.toStringList();
     if (func.count() != 2 || func.at(0).compare(QLatin1String("rect")) != 0)
         return QRect();
-    QStringList args = func[1].split(QLatin1Char(' '), QString::SkipEmptyParts);
+    const auto args = func[1].splitRef(QLatin1Char(' '), QString::SkipEmptyParts);
     if (args.count() != 4)
         return QRect();
     QRect rect(args[0].toInt(), args[1].toInt(), args[2].toInt(), args[3].toInt());
@@ -1653,6 +1653,7 @@ Qt::Alignment Declaration::alignmentValue() const
 void Declaration::borderImageValue(QString *image, int *cuts,
                                    TileMode *h, TileMode *v) const
 {
+    const DeclarationData *d = this->d.data(); // make it const and shadow d
     *image = uriValue();
     for (int i = 0; i < 4; i++)
         cuts[i] = -1;
@@ -1914,9 +1915,8 @@ bool StyleSelector::basicSelectorMatches(const BasicSelector &sel, NodePtr node)
                 return false;
 
             if (a.valueMatchCriterium == QCss::AttributeSelector::MatchContains) {
-
-                QStringList lst = attrValue.split(QLatin1Char(' '));
-                if (!lst.contains(a.value))
+                const auto lst = attrValue.splitRef(QLatin1Char(' '));
+                if (!lst.contains(QStringRef(&a.value)))
                     return false;
             } else if (
                 (a.valueMatchCriterium == QCss::AttributeSelector::MatchEqual
