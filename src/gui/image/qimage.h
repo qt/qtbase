@@ -315,7 +315,7 @@ public:
     static QImage::Format toImageFormat(QPixelFormat format) Q_DECL_NOTHROW;
 
 #if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED inline QString text(const char* key, const char* lang=0) const;
+    QT_DEPRECATED inline QString text(const char *key, const char *lang = Q_NULLPTR) const;
     QT_DEPRECATED inline QList<QImageTextKeyLang> textList() const;
     QT_DEPRECATED inline QStringList textLanguages() const;
     QT_DEPRECATED inline QString text(const QImageTextKeyLang&) const;

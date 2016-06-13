@@ -181,7 +181,7 @@ private:
     // signature() has been renamed to methodSignature() in Qt 5.
     // Warning, that function returns a QByteArray; check the life time if
     // you convert to char*.
-    char *signature(struct renamedInQt5_warning_checkTheLifeTime * = 0) Q_DECL_EQ_DELETE;
+    char *signature(struct renamedInQt5_warning_checkTheLifeTime * = Q_NULLPTR) Q_DECL_EQ_DELETE;
 #endif
     static QMetaMethod fromSignalImpl(const QMetaObject *, void **);
 

@@ -153,7 +153,7 @@ public:
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED inline QGraphicsItem *itemAt(const QPointF &position) const {
         QList<QGraphicsItem *> itemsAtPoint = items(position);
-        return itemsAtPoint.isEmpty() ? 0 : itemsAtPoint.first();
+        return itemsAtPoint.isEmpty() ? Q_NULLPTR : itemsAtPoint.first();
     }
 #endif
     QGraphicsItem *itemAt(const QPointF &pos, const QTransform &deviceTransform) const;
@@ -167,7 +167,7 @@ public:
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED inline QGraphicsItem *itemAt(qreal x, qreal y) const {
         QList<QGraphicsItem *> itemsAtPoint = items(QPointF(x, y));
-        return itemsAtPoint.isEmpty() ? 0 : itemsAtPoint.first();
+        return itemsAtPoint.isEmpty() ? Q_NULLPTR : itemsAtPoint.first();
     }
 #endif
     inline QGraphicsItem *itemAt(qreal x, qreal y, const QTransform &deviceTransform) const
