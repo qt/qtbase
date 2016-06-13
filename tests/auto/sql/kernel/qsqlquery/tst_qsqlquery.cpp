@@ -233,6 +233,9 @@ private slots:
     void QTBUG_36211_data() { generic_data("QPSQL"); }
     void QTBUG_36211();
 
+    void QTBUG_53969_data() { generic_data("QMYSQL"); }
+    void QTBUG_53969();
+
     void sqlite_constraint_data() { generic_data("QSQLITE"); }
     void sqlite_constraint();
 
@@ -3649,6 +3652,42 @@ void tst_QSqlQuery::QTBUG_36211()
                 QVERIFY(diff <= 1000 - keep);
             }
         }
+    }
+}
+
+void tst_QSqlQuery::QTBUG_53969()
+{
+    QFETCH( QString, dbName );
+    QVector<int> values = QVector<int>() << 10 << 20 << 127 << 128 << 1, tableValues;
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+    tableValues.reserve(values.size());
+    if (tst_Databases::getDatabaseType(db) == QSqlDriver::MySqlServer) {
+        const QString tableName(qTableName("bug53969", __FILE__, db));
+        tst_Databases::safeDropTable( db, tableName );
+
+        QSqlQuery q(db);
+        QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (id INT AUTO_INCREMENT PRIMARY KEY, "
+                                    "test_number TINYINT(3) UNSIGNED)")
+                            .arg(tableName)));
+
+        QVERIFY_SQL(q, prepare("INSERT INTO " + tableName + " (test_number) VALUES (:value)"));
+
+        QVector<int>::iterator begin = values.begin(), end = values.end(), it;
+        for (it = begin; it != end; ++it) {
+            q.bindValue(":value", *it);
+            QVERIFY_SQL(q, exec());
+        }
+
+        QVERIFY_SQL(q, prepare("SELECT test_number FROM " + tableName));
+        QVERIFY_SQL(q, exec());
+
+        while (q.next()) {
+            bool ok;
+            tableValues.push_back(q.value(0).toUInt(&ok));
+            QVERIFY(ok);
+        }
+        QCOMPARE(values, tableValues);
     }
 }
 

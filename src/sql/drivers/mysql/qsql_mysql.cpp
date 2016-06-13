@@ -387,6 +387,7 @@ bool QMYSQLResultPrivate::bindInValues()
         bind->buffer_length = f.bufLength = fieldInfo->length + 1;
         bind->is_null = &f.nullIndicator;
         bind->length = &f.bufLength;
+        bind->is_unsigned = fieldInfo->flags & UNSIGNED_FLAG ? 1 : 0;
         f.outField=field;
 
         ++i;
