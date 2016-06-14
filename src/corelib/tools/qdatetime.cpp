@@ -2698,7 +2698,7 @@ qint64 QDateTimePrivate::toMSecsSinceEpoch() const
 
     case Qt::TimeZone:
 #ifdef QT_BOOTSTRAPPED
-        break;
+        return 0;
 #else
         return zoneMSecsToEpochMSecs(m_msecs, m_timeZone);
 #endif
