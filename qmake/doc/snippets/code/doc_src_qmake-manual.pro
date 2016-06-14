@@ -411,7 +411,7 @@ This is a test.
 
 
 #! [71]
-system(ls /bin):HAS_BIN=FALSE
+system("ls /bin"): HAS_BIN = TRUE
 #! [71]
 
 
