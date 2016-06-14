@@ -363,8 +363,10 @@ Q_OUTOFLINE_TEMPLATE QDataStream &operator>>(QDataStream &in, QHash<Key, T> &has
 
     if (in.status() != QDataStream::Ok)
         hash.clear();
-    if (oldStatus != QDataStream::Ok)
+    if (oldStatus != QDataStream::Ok) {
+        in.resetStatus();
         in.setStatus(oldStatus);
+    }
     return in;
 }
 
@@ -407,8 +409,10 @@ Q_OUTOFLINE_TEMPLATE QDataStream &operator>>(QDataStream &in, QMap<aKey, aT> &ma
     }
     if (in.status() != QDataStream::Ok)
         map.clear();
-    if (oldStatus != QDataStream::Ok)
+    if (oldStatus != QDataStream::Ok) {
+        in.resetStatus();
         in.setStatus(oldStatus);
+    }
     return in;
 }
 

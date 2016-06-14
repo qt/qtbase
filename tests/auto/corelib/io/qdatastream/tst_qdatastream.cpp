@@ -2748,10 +2748,11 @@ void tst_QDataStream::status_QBitArray()
     QCOMPARE(str, expectedString);
 }
 
-#define MAP_TEST(byteArray, expectedStatus, expectedHash) \
+#define MAP_TEST(byteArray, initialStatus, expectedStatus, expectedHash) \
     { \
         QByteArray ba = byteArray; \
         QDataStream stream(&ba, QIODevice::ReadOnly); \
+        stream.setStatus(initialStatus); \
         stream >> hash; \
         QCOMPARE((int)stream.status(), (int)expectedStatus); \
         QCOMPARE(hash.size(), expectedHash.size()); \
@@ -2764,6 +2765,7 @@ void tst_QDataStream::status_QBitArray()
         for (; it != expectedHash.constEnd(); ++it) \
             expectedMap.insert(it.key(), it.value()); \
         QDataStream stream(&ba, QIODevice::ReadOnly); \
+        stream.setStatus(initialStatus); \
         stream >> map; \
         QCOMPARE((int)stream.status(), (int)expectedStatus); \
         QCOMPARE(map.size(), expectedMap.size()); \
@@ -2785,25 +2787,30 @@ void tst_QDataStream::status_QHash_QMap()
     hash2.insert("L", "MN");
 
     // ok
-    MAP_TEST(QByteArray("\x00\x00\x00\x00", 4), QDataStream::Ok, StringHash());
-    MAP_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00", 12), QDataStream::Ok, hash1);
+    MAP_TEST(QByteArray("\x00\x00\x00\x00", 4), QDataStream::Ok, QDataStream::Ok, StringHash());
+    MAP_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00", 12), QDataStream::Ok, QDataStream::Ok, hash1);
     MAP_TEST(QByteArray("\x00\x00\x00\x02\x00\x00\x00\x02\x00J\x00\x00\x00\x02\x00K"
-                        "\x00\x00\x00\x02\x00L\x00\x00\x00\x04\x00M\x00N", 30), QDataStream::Ok, hash2);
+                        "\x00\x00\x00\x02\x00L\x00\x00\x00\x04\x00M\x00N", 30), QDataStream::Ok, QDataStream::Ok, hash2);
 
     // past end
-    MAP_TEST(QByteArray(), QDataStream::ReadPastEnd, StringHash());
-    MAP_TEST(QByteArray("\x00", 1), QDataStream::ReadPastEnd, StringHash());
-    MAP_TEST(QByteArray("\x00\x00", 2), QDataStream::ReadPastEnd, StringHash());
-    MAP_TEST(QByteArray("\x00\x00\x00", 3), QDataStream::ReadPastEnd, StringHash());
-    MAP_TEST(QByteArray("\x00\x00\x00\x01", 4), QDataStream::ReadPastEnd, StringHash());
+    MAP_TEST(QByteArray(), QDataStream::Ok, QDataStream::ReadPastEnd, StringHash());
+    MAP_TEST(QByteArray("\x00", 1), QDataStream::Ok, QDataStream::ReadPastEnd, StringHash());
+    MAP_TEST(QByteArray("\x00\x00", 2), QDataStream::Ok, QDataStream::ReadPastEnd, StringHash());
+    MAP_TEST(QByteArray("\x00\x00\x00", 3), QDataStream::Ok, QDataStream::ReadPastEnd, StringHash());
+    MAP_TEST(QByteArray("\x00\x00\x00\x01", 4), QDataStream::Ok, QDataStream::ReadPastEnd, StringHash());
     for (int i = 4; i < 12; ++i) {
-        MAP_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00", i), QDataStream::ReadPastEnd, StringHash());
+        MAP_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00", i), QDataStream::Ok, QDataStream::ReadPastEnd, StringHash());
     }
 
     // corrupt data
-    MAP_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x01", 8), QDataStream::ReadCorruptData, StringHash());
+    MAP_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x01", 8), QDataStream::Ok, QDataStream::ReadCorruptData, StringHash());
     MAP_TEST(QByteArray("\x00\x00\x00\x02\x00\x00\x00\x01\x00J\x00\x00\x00\x01\x00K"
-                        "\x00\x00\x00\x01\x00L\x00\x00\x00\x02\x00M\x00N", 30), QDataStream::ReadCorruptData, StringHash());
+                        "\x00\x00\x00\x01\x00L\x00\x00\x00\x02\x00M\x00N", 30), QDataStream::Ok, QDataStream::ReadCorruptData, StringHash());
+
+    // test the previously latched error status is not affected by reading
+    MAP_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00", 12), QDataStream::ReadPastEnd, QDataStream::ReadPastEnd, hash1);
+    MAP_TEST(QByteArray("\x00\x00\x00\x01", 4), QDataStream::ReadCorruptData, QDataStream::ReadCorruptData, StringHash());
+    MAP_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x01", 8), QDataStream::ReadPastEnd, QDataStream::ReadPastEnd, StringHash());
 }
 
 #define LIST_TEST(byteArray, expectedStatus, expectedList) \
