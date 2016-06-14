@@ -254,6 +254,7 @@ manifestmeta.thumbnail.names    =      "QtCore/Contiguous Cache Example" \
                                        "QtHelp/*" \
                                        "QtMultimedia/AudioEngine Example" \
                                        "QtQml/Extending QML*" \
+                                       "QtQuick/C++ Extensions: Image Response Provider Example" \
                                        "QtQuick/Qt Quick Examples - Accessibility" \
                                        "QtSensors/Qt Sensors - SensorGesture QML Type example" \
                                        "QtWinExtras/Icon Extractor"
