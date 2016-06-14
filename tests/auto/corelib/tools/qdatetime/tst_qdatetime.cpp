@@ -3145,17 +3145,17 @@ void tst_QDateTime::timeZones() const
     // Test local to MSecs
     // - Test first occurrence 02:00:00 = 1 hour before tran
     hourBeforeStd = QDateTime(QDate(2013, 10, 27), QTime(2, 0, 0), cet);
+    QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
     QCOMPARE(hourBeforeStd.toMSecsSinceEpoch(), dstToStdMSecs - 3600000);
     // - Test first occurrence 02:59:59.999 = 1 msec before tran
     msecBeforeStd = QDateTime(QDate(2013, 10, 27), QTime(2, 59, 59, 999), cet);
+    QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
     QCOMPARE(msecBeforeStd.toMSecsSinceEpoch(), dstToStdMSecs - 1);
     // - Test second occurrence 02:00:00 = at tran
     atStd = QDateTime(QDate(2013, 10, 27), QTime(2, 0, 0), cet);
-    QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
     QCOMPARE(atStd.toMSecsSinceEpoch(), dstToStdMSecs);
     // - Test second occurrence 03:00:00 = 59 mins after tran
     afterStd = QDateTime(QDate(2013, 10, 27), QTime(2, 59, 59, 999), cet);
-    QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
     QCOMPARE(afterStd.toMSecsSinceEpoch(), dstToStdMSecs + 3600000 - 1);
     // - Test 03:00:00 = 1 hour after tran
     hourAfterStd = QDateTime(QDate(2013, 10, 27), QTime(3, 0, 0), cet);

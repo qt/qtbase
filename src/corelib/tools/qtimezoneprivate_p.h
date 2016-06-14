@@ -123,7 +123,7 @@ public:
     virtual bool isDaylightTime(qint64 atMSecsSinceEpoch) const;
 
     virtual Data data(qint64 forMSecsSinceEpoch) const;
-    virtual Data dataForLocalTime(qint64 forLocalMSecs) const;
+    Data dataForLocalTime(qint64 forLocalMSecs, int hint) const;
 
     virtual bool hasTransitions() const;
     virtual Data nextTransition(qint64 afterMSecsSinceEpoch) const;
@@ -474,8 +474,6 @@ public:
     bool hasTransitions() const Q_DECL_OVERRIDE;
     Data nextTransition(qint64 afterMSecsSinceEpoch) const Q_DECL_OVERRIDE;
     Data previousTransition(qint64 beforeMSecsSinceEpoch) const Q_DECL_OVERRIDE;
-
-    Data dataForLocalTime(qint64 forLocalMSecs) const Q_DECL_OVERRIDE;
 
     QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
 

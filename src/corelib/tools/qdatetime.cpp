@@ -2594,7 +2594,7 @@ static void refreshDateTime(QDateTimeData &d)
         if (!d->m_timeZone.isValid())
             status &= ~QDateTimePrivate::ValidDateTime;
         else
-            epochMSecs = QDateTimePrivate::zoneMSecsToEpochMSecs(msecs, d->m_timeZone, &testDate, &testTime);
+            epochMSecs = QDateTimePrivate::zoneMSecsToEpochMSecs(msecs, d->m_timeZone, extractDaylightStatus(status), &testDate, &testTime);
     }
 #endif // timezone
 
@@ -2915,11 +2915,13 @@ inline QDateTime::Data QDateTimePrivate::create(const QDate &toDate, const QTime
 }
 
 // Convert a TimeZone time expressed in zone msecs encoding into a UTC epoch msecs
+// DST transitions are disambiguated by hint.
 inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QTimeZone &zone,
+                                                      DaylightStatus hint,
                                                       QDate *localDate, QTime *localTime)
 {
     // Get the effective data from QTimeZone
-    QTimeZonePrivate::Data data = zone.d->dataForLocalTime(zoneMSecs);
+    QTimeZonePrivate::Data data = zone.d->dataForLocalTime(zoneMSecs, int(hint));
     // Docs state any LocalTime before 1970-01-01 will *not* have any DST applied
     // but all affected times afterwards will have DST applied.
     if (data.atMSecsSinceEpoch >= 0) {
@@ -3532,7 +3534,8 @@ qint64 QDateTime::toMSecsSinceEpoch() const
 #if !QT_CONFIG(timezone)
         return 0;
 #else
-        return QDateTimePrivate::zoneMSecsToEpochMSecs(d->m_msecs, d->m_timeZone);
+        return QDateTimePrivate::zoneMSecsToEpochMSecs(d->m_msecs, d->m_timeZone,
+                                                       extractDaylightStatus(getStatus(d)));
 #endif
     }
     Q_UNREACHABLE();
@@ -3631,10 +3634,16 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
         // Docs state any LocalTime before 1970-01-01 will *not* have any DST applied
         // but all affected times afterwards will have DST applied.
         d.detach();
-        if (msecs >= 0)
+        if (msecs >= 0) {
+            status = mergeDaylightStatus(status,
+                                         d->m_timeZone.d->isDaylightTime(msecs)
+                                         ? QDateTimePrivate::DaylightTime
+                                         : QDateTimePrivate::StandardTime);
             d->m_offsetFromUtc = d->m_timeZone.d->offsetFromUtc(msecs);
-        else
+        } else {
+            status = mergeDaylightStatus(status, QDateTimePrivate::StandardTime);
             d->m_offsetFromUtc = d->m_timeZone.d->standardTimeOffset(msecs);
+        }
         msecs = msecs + (d->m_offsetFromUtc * 1000);
         status = status
                     | QDateTimePrivate::ValidDate
@@ -3922,7 +3931,10 @@ static inline void massageAdjustedDateTime(const QDateTimeData &d, QDate *date, 
         localMSecsToEpochMSecs(timeToMSecs(*date, *time), &status, date, time);
 #if QT_CONFIG(timezone)
     } else if (spec == Qt::TimeZone) {
-        QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(*date, *time), d->m_timeZone, date, time);
+        QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(*date, *time),
+                                                d->m_timeZone,
+                                                QDateTimePrivate::UnknownDaylightTime,
+                                                date, time);
 #endif // timezone
     }
 }

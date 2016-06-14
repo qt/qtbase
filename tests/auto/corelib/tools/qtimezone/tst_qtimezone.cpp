@@ -45,6 +45,8 @@ private slots:
     void dataStreamTest();
     void isTimeZoneIdAvailable();
     void availableTimeZoneIds();
+    void transitionEachZone_data();
+    void transitionEachZone();
     void stressTest();
     void windowsId();
     void isValidId_data();
@@ -365,6 +367,56 @@ void tst_QTimeZone::isTimeZoneIdAvailable()
     QCOMPARE(QTimeZonePrivate::isValidId("123456789012345"), false);
     QCOMPARE(QTimeZonePrivate::isValidId("123456789012345/12345678901234"), false);
     QCOMPARE(QTimeZonePrivate::isValidId("12345678901234/123456789012345"), false);
+}
+
+void tst_QTimeZone::transitionEachZone_data()
+{
+    QTest::addColumn<QByteArray>("zone");
+    QTest::addColumn<qint64>("secs");
+    QTest::addColumn<int>("start");
+    QTest::addColumn<int>("stop");
+
+    struct {
+        qint64 baseSecs;
+        int start, stop;
+        int year;
+    } table[] = {
+        { 25666200, 3, 12, 1970 },  // 1970-10-25 01:30 UTC; North America
+        { 1288488600, -4, 8, 2010 } // 2010-10-31 01:30 UTC; Europe, Russia
+    };
+
+    QString name;
+    for (int k = sizeof(table) / sizeof(table[0]); k-- > 0; ) {
+        foreach (QByteArray zone, QTimeZone::availableTimeZoneIds()) {
+            name.sprintf("%s@%d", zone.constData(), table[k].year);
+            QTest::newRow(name.toUtf8().constData())
+                << zone
+                << table[k].baseSecs
+                << table[k].start
+                << table[k].stop;
+        }
+    }
+}
+
+void tst_QTimeZone::transitionEachZone()
+{
+    // Regression test: round-trip fromMsecs/toMSecs should be idempotent; but
+    // various zones failed during fall-back transitions.
+    QFETCH(QByteArray, zone);
+    QFETCH(qint64, secs);
+    QFETCH(int, start);
+    QFETCH(int, stop);
+    QTimeZone named(zone);
+
+    for (int i = start; i < stop; i++) {
+        qint64 here = secs + i * 3600;
+        QDateTime when = QDateTime::fromMSecsSinceEpoch(here * 1000, named);
+        qint64 stamp = when.toMSecsSinceEpoch();
+        if (here * 1000 != stamp) // (The +1 is due to using *1*:30 as baseSecs.)
+            qDebug() << "Failing for" << zone << "at half past" << (i + 1) << "UTC";
+        QCOMPARE(stamp % 1000, 0);
+        QCOMPARE(here - stamp / 1000, 0);
+    }
 }
 
 void tst_QTimeZone::availableTimeZoneIds()

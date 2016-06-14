@@ -49,10 +49,6 @@
 
 QT_BEGIN_NAMESPACE
 
-enum {
-    MSECS_TRAN_WINDOW = 21600000 // 6 hour window for possible recent transitions
-};
-
 /*
     Static utilities for looking up Windows ID tables
 */
@@ -248,67 +244,206 @@ QTimeZonePrivate::Data QTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 }
 
 // Private only method for use by QDateTime to convert local msecs to epoch msecs
-// TODO Could be platform optimised if needed
-QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs) const
+QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, int hint) const
 {
-    if (!hasDaylightTime() ||!hasTransitions()) {
-        // No DST means same offset for all local msecs
-        // Having DST but no transitions means we can't calculate, so use nearest
-        return data(forLocalMSecs - (standardTimeOffset(forLocalMSecs) * 1000));
-    }
+    if (!hasDaylightTime()) // No DST means same offset for all local msecs
+        return data(forLocalMSecs - standardTimeOffset(forLocalMSecs) * 1000);
 
-    // Get the transition for the local msecs which most of the time should be the right one
-    // Only around the transition times might it not be the right one
-    Data tran = previousTransition(forLocalMSecs);
-    Data nextTran;
+    /*
+      We need a UTC time at which to ask for the offset, in order to be able to
+      add that offset to forLocalMSecs, to get the UTC time we
+      need. Fortunately, no time-zone offset is more than 14 hours; and DST
+      transitions happen (much) more than thirty-two hours apart.  So sampling
+      offset sixteen hours each side gives us information we can be sure
+      brackets the correct time and at most one DST transition.
+    */
+    const qint64 sixteenHoursInMSecs(16 * 3600 * 1000);
+    /*
+      Offsets are Local - UTC, positive to the east of Greenwich, negative to
+      the west; DST offset always exceeds standard offset, when DST applies.
+      When we have offsets on either side of a transition, the lower one is
+      standard, the higher is DST.
 
-    // If the local msecs is less than the real local time of the transition
-    // then get the previous transition to use instead
-    if (forLocalMSecs < tran.atMSecsSinceEpoch + (tran.offsetFromUtc * 1000)) {
-        while (tran.atMSecsSinceEpoch != invalidMSecs()
-               && forLocalMSecs < tran.atMSecsSinceEpoch + (tran.offsetFromUtc * 1000)) {
-            nextTran = tran;
-            tran = previousTransition(tran.atMSecsSinceEpoch);
-        }
-    } else {
-        // The zone msecs is after the transition, so check it is before the next tran
-        // If not try use the next transition instead
-        nextTran = nextTransition(tran.atMSecsSinceEpoch);
+      Non-DST transitions (jurisdictions changing time-zone and time-zones
+      changing their standard offset, typically) are described below as if they
+      were DST transitions (since these are more usual and familiar); the code
+      mostly concerns itself with offsets from UTC, described in terms of the
+      common case for changes in that.  If there is no actual change in offset
+      (e.g. a DST transition cancelled by a standard offset change), this code
+      should handle it gracefully; without transitions, it'll see early == late
+      and take the easy path; with transitions, tran and nextTran get the
+      correct UTC time as atMSecsSinceEpoch so comparing to nextStart selects
+      the right one.  In all other cases, the transition changes offset and the
+      reasoning that applies to DST applies just the same.  Aside from hinting,
+      the only thing that looks at DST-ness at all, other than inferred from
+      offset changes, is the case without transition data handling an invalid
+      time in the gap that a transition passed over.
+
+      The handling of hint (see below) is apt to go wrong in non-DST
+      transitions.  There isn't really a great deal we can hope to do about that
+      without adding yet more unreliable complexity to the heuristics in use for
+      already obscure corner-cases.
+     */
+
+    /*
+      The hint (really a QDateTimePrivate::DaylightStatus) is > 0 if caller
+      thinks we're in DST, 0 if in standard.  A value of -2 means never-DST, so
+      should have been handled above; if it slips through, it's wrong but we
+      should probably treat it as standard anyway (never-DST means
+      always-standard, after all).  If the hint turns out to be wrong, fall back
+      on trying the other possibility: which makes it harmless to treat -1
+      (meaning unknown) as standard (i.e. try standard first, then try DST).  In
+      practice, away from a transition, the only difference hint makes is to
+      which candidate we try first: if the hint is wrong (or unknown and
+      standard fails), we'll try the other candidate and it'll work.
+
+      For the obscure (and invalid) case where forLocalMSecs falls in a
+      spring-forward's missing hour, a common case is that we started with a
+      date/time for which the hint was valid and adjusted it naively; for that
+      case, we should correct the adjustment by shunting across the transition
+      into where hint is wrong.  So half-way through the gap, arrived at from
+      the DST side, should be read as an hour earlier, in standard time; but, if
+      arrived at from the standard side, should be read as an hour later, in
+      DST.  (This shall be wrong in some cases; for example, when a country
+      changes its transition dates and changing a date/time by more than six
+      months lands it on a transition.  However, these cases are even more
+      obscure than those where the heuristic is good.)
+     */
+
+    if (hasTransitions()) {
+        /*
+          We have transitions.
+
+          Each transition gives the offsets to use until the next; so we need the
+          most recent transition before the time forLocalMSecs describes.  If it
+          describes a time *in* a transition, we'll need both that transition and
+          the one before it.  So find one transition that's probably after (and not
+          much before, otherwise) and another that's definitely before, then work
+          out which one to use.  When both or neither work on forLocalMSecs, use
+          hint to disambiguate.
+        */
+
+        // Get a transition definitely before the local MSecs; usually all we need.
+        // Only around the transition times might we need another.
+        Data tran = previousTransition(forLocalMSecs - sixteenHoursInMSecs);
+        Q_ASSERT(forLocalMSecs < 0 || // Pre-epoch TZ info may be unavailable
+                 forLocalMSecs >= tran.atMSecsSinceEpoch + tran.offsetFromUtc * 1000);
+        Data nextTran = nextTransition(tran.atMSecsSinceEpoch);
+        /*
+          Now walk those forward until they bracket forLocalMSecs with transitions.
+
+          One of the transitions should then be telling us the right offset to use.
+          In a transition, we need the transition before it (to describe the run-up
+          to the transition) and the transition itself; so we need to stop when
+          nextTran is that transition.
+        */
         while (nextTran.atMSecsSinceEpoch != invalidMSecs()
-               && forLocalMSecs >= nextTran.atMSecsSinceEpoch + (nextTran.offsetFromUtc * 1000)) {
+               && forLocalMSecs > nextTran.atMSecsSinceEpoch + nextTran.offsetFromUtc * 1000) {
+            Data newTran = nextTransition(nextTran.atMSecsSinceEpoch);
+            if (newTran.atMSecsSinceEpoch == invalidMSecs()
+                || newTran.atMSecsSinceEpoch + newTran.offsetFromUtc * 1000
+                > forLocalMSecs + sixteenHoursInMSecs) {
+                // Definitely not a relevant tansition: too far in the future.
+                break;
+            }
             tran = nextTran;
-            nextTran = nextTransition(tran.atMSecsSinceEpoch);
+            nextTran = newTran;
+        }
+
+        // Check we do *really* have transitions for this zone:
+        if (tran.atMSecsSinceEpoch != invalidMSecs()) {
+
+            /*
+              So now tran is definitely before and nextTran is either after or only
+              slightly before.  The one with the larger offset is in DST; the other in
+              standard time.  Our hint tells us which of those to use (defaulting to
+              standard if no hint): try it first; if that fails, try the other; if both
+              fail life's tricky.
+            */
+            Q_ASSERT(forLocalMSecs < 0
+                                     || forLocalMSecs > tran.atMSecsSinceEpoch + tran.offsetFromUtc * 1000);
+            const qint64 nextStart = nextTran.atMSecsSinceEpoch;
+            // Work out the UTC values it might make sense to return:
+            nextTran.atMSecsSinceEpoch = forLocalMSecs - nextTran.offsetFromUtc * 1000;
+            tran.atMSecsSinceEpoch = forLocalMSecs - tran.offsetFromUtc * 1000;
+
+            const bool nextIsDst = tran.offsetFromUtc < nextTran.offsetFromUtc;
+            // If that agrees with hint > 0, our first guess is to use nextTran; else tran.
+            const bool nextFirst = nextIsDst == (hint > 0) && nextStart != invalidMSecs();
+            for (int i = 0; i < 2; i++) {
+                /*
+                  On the first pass, the case we consider is what hint told us to expect
+                  (except when hint was -1 and didn't actually tell us what to expect),
+                  so it's likely right.  We only get a second pass if the first failed,
+                  by which time the second case, that we're trying, is likely right.  If
+                  an overwhelming majority of calls have hint == -1, the Q_LIKELY here
+                  shall be wrong half the time; otherwise, its errors shall be rarer
+                  than that.
+                */
+                if (nextFirst ? i == 0 : i) {
+                    Q_ASSERT(nextStart != invalidMSecs());
+                    if (Q_LIKELY(nextStart <= nextTran.atMSecsSinceEpoch))
+                        return nextTran;
+                } else {
+                    // If next is invalid, nextFirst is false, to route us here first:
+                    if (nextStart == invalidMSecs() || Q_LIKELY(nextStart > tran.atMSecsSinceEpoch))
+                        return tran;
+                }
+            }
+
+            /*
+              Neither is valid (e.g. in a spring-forward's gap) and
+              nextTran.atMSecsSinceEpoch < nextStart <= tran.atMSecsSinceEpoch, so
+              0 < tran.atMSecsSinceEpoch - nextTran.atMSecsSinceEpoch
+              = (nextTran.offsetFromUtc - tran.offsetFromUtc) * 1000
+            */
+            int dstStep = nextTran.offsetFromUtc - tran.offsetFromUtc;
+            Q_ASSERT(dstStep > 0); // How else could we get here ?
+            if (nextFirst) { // hint thought we needed nextTran, so use tran
+                tran.atMSecsSinceEpoch -= dstStep;
+                return tran;
+            }
+            nextTran.atMSecsSinceEpoch += dstStep;
+            return nextTran;
+        }
+        // System has transitions but not for this zone.
+        // Try falling back to offsetFromUtc
+    }
+
+    /* Bracket and refine to discover offset. */
+    qint64 utcEpochMSecs;
+
+    int early = offsetFromUtc(forLocalMSecs - sixteenHoursInMSecs);
+    int late = offsetFromUtc(forLocalMSecs + sixteenHoursInMSecs);
+    if (Q_LIKELY(early == late)) { // > 99% of the time
+        utcEpochMSecs = forLocalMSecs - early * 1000;
+    } else {
+        // Close to a DST transition: early > late is near a fall-back,
+        // early < late is near a spring-forward.
+        const int offsetInDst = qMax(early, late);
+        const int offsetInStd = qMin(early, late);
+        // Candidate values for utcEpochMSecs (if forLocalMSecs is valid):
+        const qint64 forDst = forLocalMSecs - offsetInDst * 1000;
+        const qint64 forStd = forLocalMSecs - offsetInStd * 1000;
+        // Best guess at the answer:
+        const qint64 hinted = hint > 0 ? forDst : forStd;
+        if (Q_LIKELY(offsetFromUtc(hinted) == (hint > 0 ? offsetInDst : offsetInStd))) {
+            utcEpochMSecs = hinted;
+        } else if (hint <= 0 && offsetFromUtc(forDst) == offsetInDst) {
+            utcEpochMSecs = forDst;
+        } else if (hint > 0 && offsetFromUtc(forStd) == offsetInStd) {
+            utcEpochMSecs = forStd;
+        } else {
+            // Invalid forLocalMSecs: in spring-forward gap.
+            const int dstStep = daylightTimeOffset(early < late ?
+                                                   forLocalMSecs + sixteenHoursInMSecs :
+                                                   forLocalMSecs - sixteenHoursInMSecs);
+            Q_ASSERT(dstStep); // There can't be a transition without it !
+            utcEpochMSecs = (hint > 0) ? forStd - dstStep : forDst + dstStep;
         }
     }
 
-    if (tran.daylightTimeOffset == 0) {
-        // If tran is in StandardTime, then need to check if falls close to either DST transition.
-        // If it does, then it may need adjusting for missing hour or for second occurrence
-        qint64 diffPrevTran = forLocalMSecs
-                              - (tran.atMSecsSinceEpoch + (tran.offsetFromUtc * 1000));
-        qint64 diffNextTran = nextTran.atMSecsSinceEpoch + (nextTran.offsetFromUtc * 1000)
-                              - forLocalMSecs;
-        if (diffPrevTran >= 0 && diffPrevTran < MSECS_TRAN_WINDOW) {
-            // If tran picked is for standard time check if changed from DST in last 6 hours,
-            // as the local msecs may be ambiguous and represent two valid utc msecs.
-            // If in last 6 hours then get prev tran and if diff falls within the DST offset
-            // then use the prev tran as we default to the FirstOccurrence
-            // TODO Check if faster to just always get prev tran, or if faster using 6 hour check.
-            Data dstTran = previousTransition(tran.atMSecsSinceEpoch);
-            if (dstTran.atMSecsSinceEpoch != invalidMSecs()
-                && dstTran.daylightTimeOffset > 0 && diffPrevTran < (dstTran.daylightTimeOffset * 1000))
-                tran = dstTran;
-        } else if (diffNextTran >= 0 && diffNextTran <= (nextTran.daylightTimeOffset * 1000)) {
-            // If time falls within last hour of standard time then is actually the missing hour
-            // So return the next tran instead and adjust the local time to be valid
-            tran = nextTran;
-            forLocalMSecs = forLocalMSecs + (nextTran.daylightTimeOffset * 1000);
-        }
-    }
-
-    // tran should now hold the right transition offset to use
-    tran.atMSecsSinceEpoch = forLocalMSecs - (tran.offsetFromUtc * 1000);
-    return tran;
+    return data(utcEpochMSecs);
 }
 
 bool QTimeZonePrivate::hasTransitions() const
