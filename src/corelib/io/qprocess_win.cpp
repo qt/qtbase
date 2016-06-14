@@ -867,13 +867,15 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
     bool success = false;
     PROCESS_INFORMATION pinfo;
 
+    DWORD dwCreationFlags = (GetConsoleWindow() ? 0 : CREATE_NO_WINDOW);
+    dwCreationFlags |= CREATE_UNICODE_ENVIRONMENT;
     STARTUPINFOW startupInfo = { sizeof( STARTUPINFO ), 0, 0, 0,
                                  (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
                                  (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
                                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                                };
     success = CreateProcess(0, (wchar_t*)args.utf16(),
-                            0, 0, FALSE, CREATE_UNICODE_ENVIRONMENT | CREATE_NEW_CONSOLE, 0,
+                            0, 0, FALSE, dwCreationFlags, 0,
                             workingDir.isEmpty() ? 0 : (wchar_t*)workingDir.utf16(),
                             &startupInfo, &pinfo);
 
