@@ -650,10 +650,11 @@ QTimeZonePrivate *QUtcTimeZonePrivate::clone()
 
 QTimeZonePrivate::Data QUtcTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 {
-    Data d = invalidData();
+    Data d;
     d.abbreviation = m_abbreviation;
     d.atMSecsSinceEpoch = forMSecsSinceEpoch;
-    d.offsetFromUtc = m_offsetFromUtc;
+    d.standardTimeOffset = d.offsetFromUtc = m_offsetFromUtc;
+    d.daylightTimeOffset = 0;
     return d;
 }
 
