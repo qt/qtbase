@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
 #include "QtCore/qfile.h"
 #include "QtCore/qdir.h"
 

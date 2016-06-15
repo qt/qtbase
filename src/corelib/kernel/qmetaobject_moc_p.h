@@ -52,6 +52,8 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
+
 QT_BEGIN_NAMESPACE
 
 // This function is shared with moc.cpp. This file should be included where needed.

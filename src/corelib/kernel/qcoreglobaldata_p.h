@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
 #include "QtCore/qmap.h"
 #include "QtCore/qstringlist.h"
 #include "QtCore/qreadwritelock.h"

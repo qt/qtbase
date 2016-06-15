@@ -52,7 +52,7 @@
 // We mean it.
 //
 
-#include <qglobal.h>
+#include <QtCore/private/qglobal_p.h>
 #include <qatomic.h>
 
 /*

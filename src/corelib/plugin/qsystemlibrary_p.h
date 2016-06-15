@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
+#include <QtCore/private/qglobal_p.h>
 #ifdef Q_OS_WIN
 #  include <QtCore/qstring.h>
 #  include <qt_windows.h>

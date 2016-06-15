@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
 #include <QtCore/qelapsedtimer.h>
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qlist.h>

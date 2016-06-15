@@ -52,7 +52,7 @@
 //
 
 #include <qendian.h>
-#include <qglobal.h>
+#include <private/qglobal_p.h>
 
 #ifndef QT_NO_LIBRARY
 #if defined(Q_OF_MACH_O)

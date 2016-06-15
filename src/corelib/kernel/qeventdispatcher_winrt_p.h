@@ -52,6 +52,7 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
 #include "QtCore/qabstracteventdispatcher.h"
 
 #include <qt_windows.h>

@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
 #include "QtCore/qurl.h"
 #include "QtCore/qbytearray.h"
 #include "QtCore/qstring.h"

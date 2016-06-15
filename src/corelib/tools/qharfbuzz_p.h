@@ -48,6 +48,8 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
+
 #ifndef QHARFBUZZ_P_H
 #define QHARFBUZZ_P_H
 

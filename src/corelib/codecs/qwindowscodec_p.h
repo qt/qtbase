@@ -50,6 +50,7 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
 #include "qtextcodec.h"
 
 QT_BEGIN_NAMESPACE

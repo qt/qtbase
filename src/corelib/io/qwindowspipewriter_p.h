@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
 #include <qelapsedtimer.h>
 #include <qobject.h>
 #include <qbytearray.h>

@@ -53,6 +53,8 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
+
 extern "C" {
     typedef struct UConverter UConverter;
 }

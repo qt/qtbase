@@ -61,7 +61,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
-#include "qglobal.h"
+#include "private/qglobal_p.h"
 
 #ifdef __OBJC__
 #include <Foundation/Foundation.h>

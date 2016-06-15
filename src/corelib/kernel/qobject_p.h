@@ -52,6 +52,7 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
 #include "QtCore/qobject.h"
 #include "QtCore/qpointer.h"
 #include "QtCore/qsharedpointer.h"

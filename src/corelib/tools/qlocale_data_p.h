@@ -51,6 +51,8 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
+
 QT_BEGIN_NAMESPACE
 
 /* This part of the file isn't generated, but written by hand since

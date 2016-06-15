@@ -51,6 +51,8 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
+
 enum {
     Q_EQ          = 0x01,
     Q_LT          = 0x02,

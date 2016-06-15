@@ -52,6 +52,7 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
 #include "qcollator.h"
 #include <QVector>
 #ifdef QT_USE_ICU

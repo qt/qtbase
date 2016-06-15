@@ -48,6 +48,8 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
+
 #ifndef QSCOPEDPOINTER_P_H
 #define QSCOPEDPOINTER_P_H
 

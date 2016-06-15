@@ -55,6 +55,7 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
 #include <QtCore/qtextcodec.h>
 #include <QtCore/qlist.h>
 

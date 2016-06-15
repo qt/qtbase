@@ -52,7 +52,7 @@
 #define QJNI_P_H
 
 #include <jni.h>
-#include <QtCore/qglobal.h>
+#include <QtCore/private/qglobal_p.h>
 #include <QtCore/qsharedpointer.h>
 
 QT_BEGIN_NAMESPACE

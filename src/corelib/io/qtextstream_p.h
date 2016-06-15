@@ -52,6 +52,7 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
 #include "qtextstream.h"
 #ifndef QT_NO_TEXTCODEC
 #include "qtextcodec.h"

@@ -51,6 +51,8 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
+
 // #define QTIMERINFO_DEBUG
 
 #include "qabstracteventdispatcher.h"

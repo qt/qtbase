@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
 #include "qmimetype.h"
 
 #ifndef QT_NO_MIMETYPE

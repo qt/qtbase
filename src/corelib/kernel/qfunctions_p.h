@@ -51,7 +51,7 @@
 #ifndef QFUNCTIONS_P_H
 #define QFUNCTIONS_P_H
 
-#include <QtCore/qglobal.h>
+#include <QtCore/private/qglobal_p.h>
 
 #if defined(Q_OS_VXWORKS)
 #  include "QtCore/qfunctions_vxworks.h"
