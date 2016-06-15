@@ -1,4 +1,4 @@
-CONFIG += simd installed
+CONFIG += simd
 include(../common/common.pri)
 DEF_FILE_TARGET=$${TARGET}
 TARGET=$$qtLibraryTarget($${LIBGLESV2_NAME})
