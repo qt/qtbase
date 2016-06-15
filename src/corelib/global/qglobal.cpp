@@ -2561,7 +2561,7 @@ QString QSysInfo::kernelType()
     \since 5.4
 
     Returns the release version of the operating system kernel. On Windows, it
-    returns the version of the NT or CE kernel. On Unix systems, including
+    returns the version of the NT kernel. On Unix systems, including
     Android and OS X, it returns the same as the \c{uname -r}
     command would return.
 
@@ -2667,9 +2667,8 @@ QString QSysInfo::productType()
 
     In all other Unix-type systems, this function always returns "unknown".
 
-    \note The version string returned from this function is only guaranteed to
-    be orderable on Android, OS X and iOS. On Windows, some Windows
-    versions are text ("XP" and "Vista", for example). On Linux, the version of
+    \note The version string returned from this function is not guaranteed to
+    be orderable. On Linux, the version of
     the distribution may jump unexpectedly, please refer to the distribution's
     documentation for versioning practices.
 
