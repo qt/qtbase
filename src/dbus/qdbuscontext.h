@@ -40,6 +40,7 @@
 #ifndef QDBUSCONTEXT_H
 #define QDBUSCONTEXT_H
 
+#include <QtDBus/qtdbusglobal.h>
 #include <QtCore/qstring.h>
 #include <QtDBus/qdbuserror.h>
 

@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtDBus/private/qtdbusglobal_p.h>
 #include <qdbusargument.h>
 #include "qdbusunixfiledescriptor.h"
 #include "qdbus_symbols_p.h"

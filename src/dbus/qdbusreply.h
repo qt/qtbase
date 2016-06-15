@@ -40,10 +40,9 @@
 #ifndef QDBUSREPLY_H
 #define QDBUSREPLY_H
 
-#include <QtCore/qglobal.h>
+#include <QtDBus/qtdbusglobal.h>
 #include <QtCore/qvariant.h>
 
-#include <QtDBus/qdbusmacros.h>
 #include <QtDBus/qdbusmessage.h>
 #include <QtDBus/qdbuserror.h>
 #include <QtDBus/qdbusextratypes.h>

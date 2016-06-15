@@ -40,6 +40,7 @@
 #ifndef QDBUSCONNECTIONINTERFACE_H
 #define QDBUSCONNECTIONINTERFACE_H
 
+#include <QtDBus/qtdbusglobal.h>
 #include <QtCore/qstringlist.h>
 
 #include <QtDBus/qdbusabstractinterface.h>

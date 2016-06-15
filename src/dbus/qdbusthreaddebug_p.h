@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
+#include <QtDBus/private/qtdbusglobal_p.h>
 
 #ifndef QT_NO_DBUS
 

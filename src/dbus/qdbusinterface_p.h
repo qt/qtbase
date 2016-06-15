@@ -52,6 +52,7 @@
 #ifndef QDBUSINTERFACE_P_H
 #define QDBUSINTERFACE_P_H
 
+#include <QtDBus/private/qtdbusglobal_p.h>
 #include "qdbusabstractinterface_p.h"
 #include "qdbusmetaobject_p.h"
 #include <qdbusinterface.h>

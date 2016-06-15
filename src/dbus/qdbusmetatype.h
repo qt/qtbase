@@ -40,6 +40,7 @@
 #ifndef QDBUSMETATYPE_H
 #define QDBUSMETATYPE_H
 
+#include <QtDBus/qtdbusglobal.h>
 #include "QtCore/qmetatype.h"
 #include <QtDBus/qdbusargument.h>
 

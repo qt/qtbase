@@ -52,11 +52,10 @@
 #ifndef QDBUSUTIL_P_H
 #define QDBUSUTIL_P_H
 
+#include <QtDBus/private/qtdbusglobal_p.h>
+#include <QtDBus/qdbuserror.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qvariant.h>
-
-#include <QtDBus/qdbusmacros.h>
-#include <QtDBus/qdbuserror.h>
 
 #include "qdbus_symbols_p.h"
 

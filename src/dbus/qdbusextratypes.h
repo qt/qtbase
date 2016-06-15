@@ -42,9 +42,9 @@
 
 // define some useful types for D-BUS
 
+#include <QtDBus/qtdbusglobal.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qstring.h>
-#include <QtDBus/qdbusmacros.h>
 #if QT_DEPRECATED_SINCE(5, 6)
 #include <QtCore/qhash.h>
 #endif

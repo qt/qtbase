@@ -40,8 +40,7 @@
 #ifndef QDBUSSERVICEWATCHER_H
 #define QDBUSSERVICEWATCHER_H
 
-#include <QtCore/qobject.h>
-#include <QtDBus/qdbusmacros.h>
+#include <QtDBus/qtdbusglobal.h>
 
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_QOBJECT)
 

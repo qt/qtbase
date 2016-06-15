@@ -40,8 +40,8 @@
 #ifndef QDBUSABSTRACTADAPTOR_H
 #define QDBUSABSTRACTADAPTOR_H
 
+#include <QtDBus/qtdbusglobal.h>
 #include <QtCore/qobject.h>
-#include <QtDBus/qdbusmacros.h>
 
 #ifndef QT_NO_DBUS
 

@@ -51,8 +51,8 @@
 // We mean it.
 //
 
+#include <QtDBus/private/qtdbusglobal_p.h>
 #include <QtCore/qmap.h>
-#include <qdbusmacros.h>
 #include "qdbusintrospection_p.h"
 
 #ifndef QT_NO_DBUS

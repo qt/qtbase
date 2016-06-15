@@ -40,9 +40,9 @@
 #ifndef QDBUSSERVER_H
 #define QDBUSSERVER_H
 
+#include <QtDBus/qtdbusglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
-#include <QtDBus/qdbusmacros.h>
 
 #ifndef QT_NO_DBUS
 

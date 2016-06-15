@@ -37,6 +37,9 @@
 **
 ****************************************************************************/
 
+#ifndef QDBUSMETAOBJECT_P_H
+#define QDBUSMETAOBJECT_P_H
+
 //
 //  W A R N I N G
 //  -------------
@@ -49,11 +52,8 @@
 //
 //
 
-#ifndef QDBUSMETAOBJECT_P_H
-#define QDBUSMETAOBJECT_P_H
-
+#include <QtDBus/private/qtdbusglobal_p.h>
 #include <QtCore/qmetaobject.h>
-#include <qdbusmacros.h>
 
 #ifndef QT_NO_DBUS
 

@@ -53,7 +53,7 @@
 #ifndef QDBUS_SYMBOLS_P_H
 #define QDBUS_SYMBOLS_P_H
 
-#include <QtCore/qglobal.h>
+#include <QtDBus/private/qtdbusglobal_p.h>
 
 #ifndef QT_NO_DBUS
 

@@ -52,6 +52,9 @@
     },
     "QtSql" => {
         "qsql.h" => "QtSql/qtsqlglobal.h"
+    },
+    "QtDBus" => {
+        "qdbusmacros.h" => "QtDbus/qtdbusglobal.h"
     }
 );
 

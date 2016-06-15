@@ -51,13 +51,13 @@
 // We mean it.
 //
 
+#include <QtDBus/private/qtdbusglobal_p.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qshareddata.h>
-#include "qdbusmacros.h"
 
 #ifndef QT_NO_DBUS
 

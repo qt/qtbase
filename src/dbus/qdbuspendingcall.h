@@ -40,12 +40,10 @@
 #ifndef QDBUSPENDINGCALL_H
 #define QDBUSPENDINGCALL_H
 
-#include <QtCore/qglobal.h>
+#include <QtDBus/qtdbusglobal.h>
+#include <QtDBus/qdbusmessage.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qshareddata.h>
-
-#include <QtDBus/qdbusmacros.h>
-#include <QtDBus/qdbusmessage.h>
 
 #ifndef QT_NO_DBUS
 

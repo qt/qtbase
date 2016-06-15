@@ -53,6 +53,7 @@
 #ifndef QDBUSPENDINGCALL_P_H
 #define QDBUSPENDINGCALL_P_H
 
+#include <QtDBus/private/qtdbusglobal_p.h>
 #include <qshareddata.h>
 #include <qpointer.h>
 #include <qvector.h>

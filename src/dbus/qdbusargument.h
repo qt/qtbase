@@ -40,6 +40,7 @@
 #ifndef QDBUSARGUMENT_H
 #define QDBUSARGUMENT_H
 
+#include <QtDBus/qtdbusglobal.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qglobal.h>
@@ -49,7 +50,6 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qvariant.h>
 #include <QtDBus/qdbusextratypes.h>
-#include <QtDBus/qdbusmacros.h>
 
 #ifndef QT_NO_DBUS
 

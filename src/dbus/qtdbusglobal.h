@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDBUSMACROS_H
-#define QDBUSMACROS_H
+#ifndef QTDBUSGLOBAL_H
+#define QTDBUSGLOBAL_H
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qmetatype.h>

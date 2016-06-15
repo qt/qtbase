@@ -52,6 +52,7 @@
 #ifndef QDBUSABSTRACTADAPTOR_P_H
 #define QDBUSABSTRACTADAPTOR_P_H
 
+#include <QtDBus/private/qtdbusglobal_p.h>
 #include <qdbusabstractadaptor.h>
 
 #include <QtCore/qobject.h>

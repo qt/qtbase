@@ -40,7 +40,7 @@
 #ifndef QDBUSVIRTUALOBJECT_H
 #define QDBUSVIRTUALOBJECT_H
 
-#include <QtDBus/qdbusmacros.h>
+#include <QtDBus/qtdbusglobal.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qobject.h>
 

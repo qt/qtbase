@@ -53,6 +53,7 @@
 #ifndef QDBUSCONNECTION_P_H
 #define QDBUSCONNECTION_P_H
 
+#include <QtDBus/private/qtdbusglobal_p.h>
 #include <qdbuserror.h>
 #include <qdbusconnection.h>
 

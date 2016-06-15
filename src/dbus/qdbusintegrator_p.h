@@ -53,6 +53,7 @@
 #ifndef QDBUSINTEGRATOR_P_H
 #define QDBUSINTEGRATOR_P_H
 
+#include <QtDBus/private/qtdbusglobal_p.h>
 #include "qdbus_symbols_p.h"
 
 #include "qcoreevent.h"

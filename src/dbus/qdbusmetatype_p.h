@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtDBus/private/qtdbusglobal_p.h>
 #include <qdbusmetatype.h>
 
 #include <qdbusmessage.h>
