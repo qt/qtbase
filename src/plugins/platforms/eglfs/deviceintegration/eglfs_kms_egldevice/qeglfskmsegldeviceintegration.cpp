@@ -37,7 +37,10 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(qLcEglfsKmsDebug, "qt.qpa.eglfs.kms")
+// Use a name different from qLcEglfsEglKmsDebug to avoid duplicate symbols in
+// static builds. Starting from Qt 5.7 this will be solved by the common kms
+// support library, but in the meantime just work it around.
+Q_LOGGING_CATEGORY(qLcEglfsEglDevDebug, "qt.qpa.eglfs.kms")
 
 QEglFSKmsEglDeviceIntegration::QEglFSKmsEglDeviceIntegration()
     : m_dri_fd(-1)
@@ -48,7 +51,7 @@ QEglFSKmsEglDeviceIntegration::QEglFSKmsEglDeviceIntegration()
     , m_drm_crtc(0)
     , m_funcs(Q_NULLPTR)
 {
-    qCDebug(qLcEglfsKmsDebug, "New DRM/KMS on EGLDevice integration created");
+    qCDebug(qLcEglfsEglDevDebug, "New DRM/KMS on EGLDevice integration created");
 }
 
 void QEglFSKmsEglDeviceIntegration::platformInit()
@@ -60,7 +63,7 @@ void QEglFSKmsEglDeviceIntegration::platformInit()
     if (!deviceName)
         qFatal("Failed to query device name from EGLDevice");
 
-    qCDebug(qLcEglfsKmsDebug, "Opening %s", deviceName);
+    qCDebug(qLcEglfsEglDevDebug, "Opening %s", deviceName);
 
     m_dri_fd = drmOpen(deviceName, Q_NULLPTR);
     if (m_dri_fd < 0)
@@ -69,7 +72,7 @@ void QEglFSKmsEglDeviceIntegration::platformInit()
     if (!setup_kms())
         qFatal("Could not set up KMS on device %s!", m_device.constData());
 
-    qCDebug(qLcEglfsKmsDebug, "DRM/KMS initialized");
+    qCDebug(qLcEglfsEglDevDebug, "DRM/KMS initialized");
 }
 
 void QEglFSKmsEglDeviceIntegration::platformDestroy()
@@ -90,7 +93,7 @@ EGLNativeDisplayType QEglFSKmsEglDeviceIntegration::platformDisplay() const
 
 EGLDisplay QEglFSKmsEglDeviceIntegration::createDisplay(EGLNativeDisplayType nativeDisplay)
 {
-    qCDebug(qLcEglfsKmsDebug, "Creating display");
+    qCDebug(qLcEglfsEglDevDebug, "Creating display");
 
     EGLDisplay display;
 
@@ -181,7 +184,7 @@ void QEglJetsonTK1Window::invalidateSurface()
 
 void QEglJetsonTK1Window::resetSurface()
 {
-    qCDebug(qLcEglfsKmsDebug, "Creating stream");
+    qCDebug(qLcEglfsEglDevDebug, "Creating stream");
 
     EGLDisplay display = screen()->display();
     EGLOutputLayerEXT layer = EGL_NO_OUTPUT_LAYER_EXT;
@@ -193,14 +196,14 @@ void QEglJetsonTK1Window::resetSurface()
         return;
     }
 
-    qCDebug(qLcEglfsKmsDebug, "Created stream %p on display %p", m_egl_stream, display);
+    qCDebug(qLcEglfsEglDevDebug, "Created stream %p on display %p", m_egl_stream, display);
 
     if (!m_integration->m_funcs->get_output_layers(display, Q_NULLPTR, Q_NULLPTR, 0, &count) || count == 0) {
         qWarning("No output layers found");
         return;
     }
 
-    qCDebug(qLcEglfsKmsDebug, "Output has %d layers", count);
+    qCDebug(qLcEglfsEglDevDebug, "Output has %d layers", count);
 
     QVector<EGLOutputLayerEXT> layers;
     layers.resize(count);
@@ -213,14 +216,14 @@ void QEglJetsonTK1Window::resetSurface()
     for (int i = 0; i < actualCount; ++i) {
         EGLAttrib id;
         if (m_integration->m_funcs->query_output_layer_attrib(display, layers[i], EGL_DRM_CRTC_EXT, &id)) {
-            qCDebug(qLcEglfsKmsDebug, "  [%d] layer %p - crtc %d", i, layers[i], (int) id);
+            qCDebug(qLcEglfsEglDevDebug, "  [%d] layer %p - crtc %d", i, layers[i], (int) id);
             if (id == EGLAttrib(m_integration->m_drm_crtc))
                 layer = layers[i];
         } else if (m_integration->m_funcs->query_output_layer_attrib(display, layers[i], EGL_DRM_PLANE_EXT, &id)) {
             // Not used yet, just for debugging.
-            qCDebug(qLcEglfsKmsDebug, "  [%d] layer %p - plane %d", i, layers[i], (int) id);
+            qCDebug(qLcEglfsEglDevDebug, "  [%d] layer %p - plane %d", i, layers[i], (int) id);
         } else {
-            qCDebug(qLcEglfsKmsDebug, "  [%d] layer %p - unknown", i, layers[i]);
+            qCDebug(qLcEglfsEglDevDebug, "  [%d] layer %p - unknown", i, layers[i]);
         }
     }
 
@@ -236,18 +239,18 @@ void QEglJetsonTK1Window::resetSurface()
         return;
     }
 
-    qCDebug(qLcEglfsKmsDebug, "Using layer %p", layer);
+    qCDebug(qLcEglfsEglDevDebug, "Using layer %p", layer);
 
     if (!m_integration->m_funcs->stream_consumer_output(display, m_egl_stream, layer))
         qWarning("resetSurface: Unable to connect stream");
 
     m_config = QEglFSIntegration::chooseConfig(display, m_integration->surfaceFormatFor(window()->requestedFormat()));
     m_format = q_glFormatFromConfig(display, m_config);
-    qCDebug(qLcEglfsKmsDebug) << "Stream producer format is" << m_format;
+    qCDebug(qLcEglfsEglDevDebug) << "Stream producer format is" << m_format;
 
     const int w = m_integration->screenSize().width();
     const int h = m_integration->screenSize().height();
-    qCDebug(qLcEglfsKmsDebug, "Creating stream producer surface of size %dx%d", w, h);
+    qCDebug(qLcEglfsEglDevDebug, "Creating stream producer surface of size %dx%d", w, h);
 
     const EGLint stream_producer_attribs[] = {
         EGL_WIDTH,  w,
@@ -259,7 +262,7 @@ void QEglJetsonTK1Window::resetSurface()
     if (m_surface == EGL_NO_SURFACE)
         return;
 
-    qCDebug(qLcEglfsKmsDebug, "Created stream producer surface %p", m_surface);
+    qCDebug(qLcEglfsEglDevDebug, "Created stream producer surface %p", m_surface);
 }
 
 QEglFSWindow *QEglFSKmsEglDeviceIntegration::createWindow(QWindow *window) const
@@ -305,12 +308,12 @@ void QEglFSKmsEglDeviceIntegration::waitForVSync(QPlatformSurface *) const
             // exposed on the connector apparently. So rely on an env var for now.
             static bool alwaysDoSet = qEnvironmentVariableIntValue("QT_QPA_EGLFS_ALWAYS_SET_MODE");
             if (!alwaysDoSet) {
-                qCDebug(qLcEglfsKmsDebug, "Mode already set");
+                qCDebug(qLcEglfsEglDevDebug, "Mode already set");
                 return;
             }
         }
 
-        qCDebug(qLcEglfsKmsDebug, "Setting mode");
+        qCDebug(qLcEglfsEglDevDebug, "Setting mode");
         int ret = drmModeSetCrtc(m_dri_fd, m_drm_crtc,
                                  -1, 0, 0,
                                  &m_drm_connector->connector_id, 1,
@@ -364,7 +367,7 @@ bool QEglFSKmsEglDeviceIntegration::setup_kms()
         return false;
     }
 
-    qCDebug(qLcEglfsKmsDebug, "Using connector with type %d", connector->connector_type);
+    qCDebug(qLcEglfsEglDevDebug, "Using connector with type %d", connector->connector_type);
 
     for (i = 0; i < resources->count_encoders; i++) {
         encoder = drmModeGetEncoder(m_dri_fd, resources->encoders[i]);
@@ -392,7 +395,7 @@ bool QEglFSKmsEglDeviceIntegration::setup_kms()
     m_drm_mode = connector->modes[0];
     m_drm_crtc = crtc;
 
-    qCDebug(qLcEglfsKmsDebug).noquote() << "Using crtc" << m_drm_crtc
+    qCDebug(qLcEglfsEglDevDebug).noquote() << "Using crtc" << m_drm_crtc
                                         << "with mode" << m_drm_mode.hdisplay << "x" << m_drm_mode.vdisplay
                                         << "@" << m_drm_mode.vrefresh;
 
@@ -413,7 +416,7 @@ bool QEglFSKmsEglDeviceIntegration::query_egl_device()
         return false;
     }
 
-    qCDebug(qLcEglfsKmsDebug, "Found %d EGL devices", num_devices);
+    qCDebug(qLcEglfsEglDevDebug, "Found %d EGL devices", num_devices);
 
     if (num_devices < 1 || m_egl_device == EGL_NO_DEVICE_EXT) {
         qWarning("eglQueryDevicesEXT could not find any EGL devices");
