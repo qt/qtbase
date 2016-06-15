@@ -192,6 +192,34 @@ public:
     QPair<qint64, unsigned> _q_data() const { return qMakePair(t1, t2); }
 };
 
+#if QT_HAS_INCLUDE(<chrono>) && (defined(Q_OS_DARWIN) || defined(Q_OS_LINUX) || (defined(Q_CC_MSVC) && Q_CC_MSVC >= 1900))
+// We know for these OS/compilers that the std::chrono::steady_clock uses the same
+// reference time as QDeadlineTimer
+
+template <> inline std::chrono::steady_clock::time_point
+QDeadlineTimer::deadline<std::chrono::steady_clock, std::chrono::steady_clock::duration>() const
+{
+    return std::chrono::steady_clock::time_point(std::chrono::nanoseconds(deadlineNSecs()));
+}
+
+template <> inline void
+QDeadlineTimer::setDeadline<std::chrono::steady_clock, std::chrono::steady_clock::duration>(std::chrono::steady_clock::time_point tp, Qt::TimerType type_)
+{
+    using namespace std::chrono;
+    if (tp == tp.max()) {
+        *this = Forever;
+        type = type_;
+    } else if (type_ != Qt::PreciseTimer) {
+        // if we aren't using PreciseTimer, then we need to convert
+        setPreciseRemainingTime(0, duration_cast<nanoseconds>(tp - steady_clock::now()).count(), type_);
+    } else {
+        setPreciseDeadline(0,
+                           duration_cast<nanoseconds>(tp.time_since_epoch()).count(),
+                           type_);
+    }
+}
+#endif
+
 Q_DECLARE_SHARED(QDeadlineTimer)
 
 QT_END_NAMESPACE
