@@ -50,6 +50,7 @@ class QTcpSocket;
 class QVncServer;
 class QVncDirtyMap;
 class QVncClientCursor;
+class QVncClient;
 
 class QVncScreen : public QFbScreen
 {
@@ -65,11 +66,15 @@ public:
     QRegion doRedraw() Q_DECL_OVERRIDE;
     QImage *image() const { return mScreenImage; }
 
-    void enableClientCursor();
-    void disableClientCursor();
+    void enableClientCursor(QVncClient *client);
+    void disableClientCursor(QVncClient *client);
     QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
 
     void clearDirty() { dirtyRegion = QRegion(); }
+
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+    bool swapBytes() const
+#endif
 
     QStringList mArgs;
 

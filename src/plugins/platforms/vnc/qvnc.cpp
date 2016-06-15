@@ -38,17 +38,21 @@
 ****************************************************************************/
 #include "qvnc_p.h"
 #include "qvncscreen.h"
+#include "qvncclient.h"
 #include "QtNetwork/qtcpserver.h"
 #include "QtNetwork/qtcpsocket.h"
-#include <qpa/qwindowsysteminterface.h>
-#include <QtGui/qguiapplication.h>
 #include <qthread.h>
+
+#include <QtGui/qguiapplication.h>
+#include <QtGui/QWindow>
 
 #ifdef Q_OS_WIN
 #include <Winsock2.h>
 #else
 #include <arpa/inet.h>
 #endif
+
+QT_BEGIN_NAMESPACE
 
 QVncDirtyMap::QVncDirtyMap(QVncScreen *screen)
     : screen(screen), bytesPerPixel(0), numDirty(0)
@@ -445,14 +449,13 @@ bool QRfbClientCutText::read(QTcpSocket *s)
 void QRfbRawEncoder::write()
 {
 //    QVncDirtyMap *map = server->dirtyMap();
-    QTcpSocket *socket = server->clientSocket();
+    QTcpSocket *socket = client->clientSocket();
 
-    const int bytesPerPixel = server->clientBytesPerPixel();
+    const int bytesPerPixel = client->clientBytesPerPixel();
 
     // create a region from the dirty rects and send the region's merged rects.
     // ### use the tile map again
-    QRegion rgn = server->screen()->dirtyRegion;
-    server->screen()->clearDirty();
+    QRegion rgn = client->dirtyRegion();
     QT_VNC_DEBUG() << "QRfbRawEncoder::write()" << rgn;
 //    if (map) {
 //        for (int y = 0; y < map->mapHeight; ++y) {
@@ -483,7 +486,7 @@ void QRfbRawEncoder::write()
     if (rects.size() <= 0)
         return;
 
-    const QImage screenImage = server->screenImage();
+    const QImage screenImage = client->server()->screenImage();
 
     for (const QRect &tileRect: rects) {
         const QRfbRect rect(tileRect.x(), tileRect.y(),
@@ -497,7 +500,7 @@ void QRfbRawEncoder::write()
         const uchar *screendata = screenImage.scanLine(rect.y)
                                   + rect.x * screenImage.depth() / 8;
 
-        if (server->doPixelConversion()) {
+        if (client->doPixelConversion()) {
             const int bufferSize = rect.w * rect.h * bytesPerPixel;
             if (bufferSize > buffer.size())
                 buffer.resize(bufferSize);
@@ -506,7 +509,7 @@ void QRfbRawEncoder::write()
             char *b = buffer.data();
             const int bstep = rect.w * bytesPerPixel;
             for (int i = 0; i < rect.h; ++i) {
-                server->convertPixels(b, (const char*)screendata, rect.w);
+                client->convertPixels(b, (const char*)screendata, rect.w);
                 screendata += linestep;
                 b += bstep;
             }
@@ -523,8 +526,7 @@ void QRfbRawEncoder::write()
     socket->flush();
 }
 
-QVncClientCursor::QVncClientCursor(QVncServer *s)
-    : server(s)
+QVncClientCursor::QVncClientCursor()
 {
     QWindow *w = QGuiApplication::focusWindow();
     QCursor c = w ? w->cursor() : QCursor(Qt::ArrowCursor);
@@ -535,9 +537,9 @@ QVncClientCursor::~QVncClientCursor()
 {
 }
 
-void QVncClientCursor::write() const
+void QVncClientCursor::write(QVncClient *client) const
 {
-    QTcpSocket *socket = server->clientSocket();
+    QTcpSocket *socket = client->clientSocket();
 
     // FramebufferUpdate header
     {
@@ -557,11 +559,11 @@ void QVncClientCursor::write() const
 
     // write pixels
     Q_ASSERT(cursor.hasAlphaChannel());
-    const QImage img = cursor.convertToFormat(server->screen()->format());
-    const int n = server->clientBytesPerPixel() * img.width();
+    const QImage img = cursor.convertToFormat(client->server()->screen()->format());
+    const int n = client->clientBytesPerPixel() * img.width();
     char *buffer = new char[n];
     for (int i = 0; i < img.height(); ++i) {
-        server->convertPixels(buffer, (const char*)img.scanLine(i), img.width());
+        client->convertPixels(buffer, (const char*)img.scanLine(i), img.width());
         socket->write(buffer, n);
     }
     delete[] buffer;
@@ -592,7 +594,20 @@ void QVncClientCursor::changeCursor(QCursor *widgetCursor, QWindow *window)
         cursor = *platformImage.image();
         hotspot = platformImage.hotspot();
     }
-    server->setDirtyCursor();
+    for (auto client : clients)
+        client->setDirtyCursor();
+}
+
+void QVncClientCursor::addClient(QVncClient *client)
+{
+    if (!clients.contains(client))
+        clients.append(client);
+}
+
+uint QVncClientCursor::removeClient(QVncClient *client)
+{
+    clients.removeOne(client);
+    return clients.count();
 }
 #endif
 
@@ -600,30 +615,18 @@ void QVncClientCursor::changeCursor(QCursor *widgetCursor, QWindow *window)
 QVncServer::QVncServer(QVncScreen *screen)
     : qvnc_screen(screen)
 {
-    QTimer::singleShot(0, this, SLOT(init()));
+    QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
 }
 
 QVncServer::QVncServer(QVncScreen *screen, int /*id*/)
     : qvnc_screen(screen)
 {
-    QTimer::singleShot(0, this, SLOT(init()));
+    QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
 }
 
 void QVncServer::init()
 {
     const int port = 5900;
-    handleMsg = false;
-    client = 0;
-    encodingsPending = 0;
-    cutTextPending = 0;
-    keymod = 0;
-    state = Disconnected;
-    dirtyCursor = false;
-
-    refreshRate = 25;
-    timer = new QTimer(this);
-    timer->setSingleShot(true);
-    connect(timer, SIGNAL(timeout()), this, SLOT(checkUpdate()));
 
     serverSocket = new QTcpServer(this);
     if (!serverSocket->listen(QHostAddress::Any, port))
@@ -632,657 +635,51 @@ void QVncServer::init()
         QT_VNC_DEBUG("QVncServer created on port %d", port);
     QT_VNC_DEBUG() << "running in thread" << thread() << QThread::currentThread();
 
-    serverSocket->waitForNewConnection(-1);
-    newConnection();
-
     connect(serverSocket, SIGNAL(newConnection()), this, SLOT(newConnection()));
 
-    encoder = 0;
 }
 
 QVncServer::~QVncServer()
 {
-    delete encoder;
-    encoder = 0;
-    delete client;
-    client = 0;
+    for (auto client : clients) {
+        delete client;
+    }
 }
 
 void QVncServer::setDirty()
 {
-    if (state == Connected && !timer->isActive() &&
-        ((dirtyMap()->numDirty > 0) || dirtyCursor)) {
-        timer->start();
+    for (auto client : clients) {
+        client->setDirty(qvnc_screen->dirtyRegion);
     }
+    qvnc_screen->clearDirty();
 }
+
 
 void QVncServer::newConnection()
 {
-    if (client)
-        delete client;
+    auto clientSocket = serverSocket->nextPendingConnection();
+    clients.append(new QVncClient(clientSocket, this));
 
-    client = serverSocket->nextPendingConnection();
-    connect(client,SIGNAL(readyRead()),this,SLOT(readClient()));
-    connect(client,SIGNAL(disconnected()),this,SLOT(discardClient()));
-    handleMsg = false;
-    encodingsPending = 0;
-    cutTextPending = 0;
-    supportHextile = false;
-    wantUpdate = false;
-
-    timer->start(1000 / refreshRate);
     dirtyMap()->reset();
-
-    // send protocol version
-    const char *proto = "RFB 003.003\n";
-    client->write(proto, 12);
-    state = Protocol;
 
     QT_VNC_DEBUG() << "new Connection" << thread();
 
     qvnc_screen->setPowerState(QPlatformScreen::PowerStateOn);
 }
 
-void QVncServer::readClient()
+void QVncServer::discardClient(QVncClient *client)
 {
-    QT_VNC_DEBUG() << "readClient" << state;
-    switch (state) {
-        case Protocol:
-            if (client->bytesAvailable() >= 12) {
-                char proto[13];
-                client->read(proto, 12);
-                proto[12] = '\0';
-                QT_VNC_DEBUG("Client protocol version %s", proto);
-                // No authentication
-                quint32 auth = htonl(1);
-                client->write((char *) &auth, sizeof(auth));
-                state = Init;
-            }
-            break;
-
-        case Init:
-            if (client->bytesAvailable() >= 1) {
-                quint8 shared;
-                client->read((char *) &shared, 1);
-
-                // Server Init msg
-                QRfbServerInit sim;
-                QRfbPixelFormat &format = sim.format;
-                switch (qvnc_screen->depth()) {
-                case 32:
-                    format.bitsPerPixel = 32;
-                    format.depth = 32;
-                    format.bigEndian = 0;
-                    format.trueColor = true;
-                    format.redBits = 8;
-                    format.greenBits = 8;
-                    format.blueBits = 8;
-                    format.redShift = 16;
-                    format.greenShift = 8;
-                    format.blueShift = 0;
-                    break;
-
-                case 24:
-                    format.bitsPerPixel = 24;
-                    format.depth = 24;
-                    format.bigEndian = 0;
-                    format.trueColor = true;
-                    format.redBits = 8;
-                    format.greenBits = 8;
-                    format.blueBits = 8;
-                    format.redShift = 16;
-                    format.greenShift = 8;
-                    format.blueShift = 0;
-                    break;
-
-                case 18:
-                    format.bitsPerPixel = 24;
-                    format.depth = 18;
-                    format.bigEndian = 0;
-                    format.trueColor = true;
-                    format.redBits = 6;
-                    format.greenBits = 6;
-                    format.blueBits = 6;
-                    format.redShift = 12;
-                    format.greenShift = 6;
-                    format.blueShift = 0;
-                    break;
-
-                case 16:
-                    format.bitsPerPixel = 16;
-                    format.depth = 16;
-                    format.bigEndian = 0;
-                    format.trueColor = true;
-                    format.redBits = 5;
-                    format.greenBits = 6;
-                    format.blueBits = 5;
-                    format.redShift = 11;
-                    format.greenShift = 5;
-                    format.blueShift = 0;
-                    break;
-
-                case 15:
-                    format.bitsPerPixel = 16;
-                    format.depth = 15;
-                    format.bigEndian = 0;
-                    format.trueColor = true;
-                    format.redBits = 5;
-                    format.greenBits = 5;
-                    format.blueBits = 5;
-                    format.redShift = 10;
-                    format.greenShift = 5;
-                    format.blueShift = 0;
-                    break;
-
-                case 12:
-                    format.bitsPerPixel = 16;
-                    format.depth = 12;
-                    format.bigEndian = 0;
-                    format.trueColor = true;
-                    format.redBits = 4;
-                    format.greenBits = 4;
-                    format.blueBits = 4;
-                    format.redShift = 8;
-                    format.greenShift = 4;
-                    format.blueShift = 0;
-                    break;
-
-                case 8:
-                case 4:
-                    format.bitsPerPixel = 8;
-                    format.depth = 8;
-                    format.bigEndian = 0;
-                    format.trueColor = false;
-                    format.redBits = 0;
-                    format.greenBits = 0;
-                    format.blueBits = 0;
-                    format.redShift = 0;
-                    format.greenShift = 0;
-                    format.blueShift = 0;
-                    break;
-
-                default:
-                    qDebug("QVNC cannot drive depth %d", qvnc_screen->depth());
-                    discardClient();
-                    return;
-                }
-                sim.width = qvnc_screen->geometry().width();
-                sim.height = qvnc_screen->geometry().height();
-                sim.setName("Qt for Embedded Linux VNC Server");
-                sim.write(client);
-                state = Connected;
-            }
-            break;
-
-        case Connected:
-            do {
-                if (!handleMsg) {
-                    client->read((char *)&msgType, 1);
-                    handleMsg = true;
-                }
-                if (handleMsg) {
-                    switch (msgType ) {
-                    case SetPixelFormat:
-                        setPixelFormat();
-                        break;
-                    case FixColourMapEntries:
-                        qDebug("Not supported: FixColourMapEntries");
-                        handleMsg = false;
-                        break;
-                    case SetEncodings:
-                        setEncodings();
-                        break;
-                    case FramebufferUpdateRequest:
-                        frameBufferUpdateRequest();
-                        break;
-                    case KeyEvent:
-                        keyEvent();
-                        break;
-                    case PointerEvent:
-                        pointerEvent();
-                        break;
-                    case ClientCutText:
-                        clientCutText();
-                        break;
-                    default:
-                        qDebug("Unknown message type: %d", (int)msgType);
-                        handleMsg = false;
-                    }
-                }
-            } while (!handleMsg && client->bytesAvailable());
-            break;
-    default:
-        break;
+    clients.removeOne(client);
+    client->deleteLater();
+    if (clients.isEmpty()) {
+        qvnc_screen->disableClientCursor(client);
+        qvnc_screen->setPowerState(QPlatformScreen::PowerStateOff);
     }
-}
-
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN
-bool QVNCScreen::swapBytes() const
-{
-    if (depth() != 16)
-        return false;
-
-    if (screen())
-        return screen()->frameBufferLittleEndian();
-    return frameBufferLittleEndian();
-}
-#endif
-
-void QVncServer::setPixelFormat()
-{
-    if (client->bytesAvailable() >= 19) {
-        char buf[3];
-        client->read(buf, 3); // just padding
-        pixelFormat.read(client);
-        QT_VNC_DEBUG("Want format: %d %d %d %d %d %d %d %d %d %d",
-            int(pixelFormat.bitsPerPixel),
-            int(pixelFormat.depth),
-            int(pixelFormat.bigEndian),
-            int(pixelFormat.trueColor),
-            int(pixelFormat.redBits),
-            int(pixelFormat.greenBits),
-            int(pixelFormat.blueBits),
-            int(pixelFormat.redShift),
-            int(pixelFormat.greenShift),
-            int(pixelFormat.blueShift));
-        if (!pixelFormat.trueColor) {
-            qDebug("Can only handle true color clients");
-            discardClient();
-        }
-        handleMsg = false;
-        sameEndian = (QSysInfo::ByteOrder == QSysInfo::BigEndian) == !!pixelFormat.bigEndian;
-        needConversion = pixelConversionNeeded();
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN
-        swapBytes = qvnc_screen->swapBytes();
-#endif
-    }
-}
-
-void QVncServer::setEncodings()
-{
-    QRfbSetEncodings enc;
-
-    if (!encodingsPending && enc.read(client)) {
-        encodingsPending = enc.count;
-        if (!encodingsPending)
-            handleMsg = false;
-    }
-
-    if (encoder) {
-        delete encoder;
-        encoder = 0;
-    }
-
-    enum Encodings {
-        Raw = 0,
-        CopyRect = 1,
-        RRE = 2,
-        CoRRE = 4,
-        Hextile = 5,
-        ZRLE = 16,
-        Cursor = -239,
-        DesktopSize = -223
-    };
-
-    if (encodingsPending && (unsigned)client->bytesAvailable() >=
-                                encodingsPending * sizeof(quint32)) {
-        for (int i = 0; i < encodingsPending; ++i) {
-            qint32 enc;
-            client->read((char *)&enc, sizeof(qint32));
-            enc = ntohl(enc);
-            QT_VNC_DEBUG("QVncServer::setEncodings: %d", enc);
-            switch (enc) {
-            case Raw:
-                if (!encoder) {
-                    encoder = new QRfbRawEncoder(this);
-                    QT_VNC_DEBUG("QVncServer::setEncodings: using raw");
-                }
-               break;
-            case CopyRect:
-                supportCopyRect = true;
-                break;
-            case RRE:
-                supportRRE = true;
-                break;
-            case CoRRE:
-                supportCoRRE = true;
-                break;
-            case Hextile:
-                supportHextile = true;
-                if (encoder)
-                    break;
-#if 0
-                switch (qvnc_screen->depth()) {
-                case 8:
-                    encoder = new QRfbHextileEncoder<quint8>(this);
-                    break;
-                case 16:
-                    encoder = new QRfbHextileEncoder<quint16>(this);
-                    break;
-                case 32:
-                    encoder = new QRfbHextileEncoder<quint32>(this);
-                    break;
-                default:
-                    break;
-                }
-                QT_VNC_DEBUG("QVncServer::setEncodings: using hextile");
-#endif
-                break;
-            case ZRLE:
-                supportZRLE = true;
-                break;
-            case Cursor:
-                supportCursor = true;
-                qDebug() << "client side cursor supported.";
-                qvnc_screen->enableClientCursor();
-                break;
-            case DesktopSize:
-                supportDesktopSize = true;
-                break;
-            default:
-                break;
-            }
-        }
-        handleMsg = false;
-        encodingsPending = 0;
-    }
-
-    if (!encoder) {
-        encoder = new QRfbRawEncoder(this);
-        QT_VNC_DEBUG("QVncServer::setEncodings: fallback using raw");
-    }
-}
-
-void QVncServer::frameBufferUpdateRequest()
-{
-    QT_VNC_DEBUG() << "FramebufferUpdateRequest";
-    QRfbFrameBufferUpdateRequest ev;
-
-    if (ev.read(client)) {
-        if (!ev.incremental) {
-            QRect r(ev.rect.x, ev.rect.y, ev.rect.w, ev.rect.h);
-            r.translate(qvnc_screen->geometry().topLeft());
-            qvnc_screen->setDirty(r);
-        }
-        wantUpdate = true;
-        checkUpdate();
-        handleMsg = false;
-    }
-}
-
-void QVncServer::pointerEvent()
-{
-    QRfbPointerEvent ev;
-    if (ev.read(client)) {
-        const QPoint pos = qvnc_screen->geometry().topLeft() + QPoint(ev.x, ev.y);
-        QWindowSystemInterface::handleMouseEvent(0, pos, pos, ev.buttons, QGuiApplication::keyboardModifiers());
-        handleMsg = false;
-    }
-}
-
-void QVncServer::keyEvent()
-{
-    QRfbKeyEvent ev;
-
-    if (ev.read(client)) {
-        if (ev.keycode == Qt::Key_Shift)
-            keymod = ev.down ? keymod | Qt::ShiftModifier :
-                               keymod & ~Qt::ShiftModifier;
-        else if (ev.keycode == Qt::Key_Control)
-            keymod = ev.down ? keymod | Qt::ControlModifier :
-                               keymod & ~Qt::ControlModifier;
-        else if (ev.keycode == Qt::Key_Alt)
-            keymod = ev.down ? keymod | Qt::AltModifier :
-                               keymod & ~Qt::AltModifier;
-        if (ev.unicode || ev.keycode)
-            QWindowSystemInterface::handleKeyEvent(0, ev.down ? QEvent::KeyPress : QEvent::KeyRelease, ev.keycode, keymod, QString(ev.unicode));
-        handleMsg = false;
-    }
-}
-
-void QVncServer::clientCutText()
-{
-    QRfbClientCutText ev;
-
-    if (cutTextPending == 0 && ev.read(client)) {
-        cutTextPending = ev.length;
-        if (!cutTextPending)
-            handleMsg = false;
-    }
-
-    if (cutTextPending && client->bytesAvailable() >= cutTextPending) {
-        char *text = new char [cutTextPending+1];
-        client->read(text, cutTextPending);
-        delete [] text;
-        cutTextPending = 0;
-        handleMsg = false;
-    }
-}
-
-
-bool QVncServer::pixelConversionNeeded() const
-{
-    if (!sameEndian)
-        return true;
-
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN
-    if (qvnc_screen->swapBytes())
-        return true;
-#endif
-
-    const int screendepth = qvnc_screen->depth();
-    if (screendepth != pixelFormat.bitsPerPixel)
-        return true;
-
-    switch (screendepth) {
-    case 32:
-    case 24:
-        return false;
-    case 16:
-        return (pixelFormat.redBits == 5
-                && pixelFormat.greenBits == 6
-                && pixelFormat.blueBits == 5);
-    }
-    return true;
-}
-
-// count: number of pixels
-void QVncServer::convertPixels(char *dst, const char *src, int count) const
-{
-    const int screendepth = qvnc_screen->depth();
-
-    // cutoffs
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN
-    if (!swapBytes)
-#endif
-    if (sameEndian) {
-        if (screendepth == pixelFormat.bitsPerPixel) { // memcpy cutoffs
-
-            switch (screendepth) {
-            case 32:
-                memcpy(dst, src, count * sizeof(quint32));
-                return;
-            case 16:
-                if (pixelFormat.redBits == 5
-                    && pixelFormat.greenBits == 6
-                    && pixelFormat.blueBits == 5)
-                {
-                    memcpy(dst, src, count * sizeof(quint16));
-                    return;
-                }
-            }
-        } else if (screendepth == 16 && pixelFormat.bitsPerPixel == 32) {
-#if defined(__i386__) // Currently fails on ARM if dst is not 4 byte aligned
-            const quint32 *src32 = reinterpret_cast<const quint32*>(src);
-            quint32 *dst32 = reinterpret_cast<quint32*>(dst);
-            int count32 = count * sizeof(quint16) / sizeof(quint32);
-            while (count32--) {
-                const quint32 s = *src32++;
-                quint32 result1;
-                quint32 result2;
-
-                // red
-                result1 = ((s & 0xf8000000) | ((s & 0xe0000000) >> 5)) >> 8;
-                result2 = ((s & 0x0000f800) | ((s & 0x0000e000) >> 5)) << 8;
-
-                // green
-                result1 |= ((s & 0x07e00000) | ((s & 0x06000000) >> 6)) >> 11;
-                result2 |= ((s & 0x000007e0) | ((s & 0x00000600) >> 6)) << 5;
-
-                // blue
-                result1 |= ((s & 0x001f0000) | ((s & 0x001c0000) >> 5)) >> 13;
-                result2 |= ((s & 0x0000001f) | ((s & 0x0000001c) >> 5)) << 3;
-
-                *dst32++ = result2;
-                *dst32++ = result1;
-            }
-            if (count & 0x1) {
-                const quint16 *src16 = reinterpret_cast<const quint16*>(src);
-                *dst32 = qt_conv16ToRgb(src16[count - 1]);
-            }
-            return;
-#endif
-        }
-    }
-
-    const int bytesPerPixel = (pixelFormat.bitsPerPixel + 7) / 8;
-
-    for (int i = 0; i < count; ++i) {
-        int r, g, b;
-
-        switch (screendepth) {
-        case 8: {
-            QRgb rgb = qvnc_screen->image()->colorTable()[int(*src)];
-            r = qRed(rgb);
-            g = qGreen(rgb);
-            b = qBlue(rgb);
-            src++;
-            break;
-        }
-        case 16: {
-            quint16 p = *reinterpret_cast<const quint16*>(src);
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN
-            if (swapBytes)
-                p = ((p & 0xff) << 8) | ((p & 0xff00) >> 8);
-#endif
-            r = (p >> 11) & 0x1f;
-            g = (p >> 5) & 0x3f;
-            b = p & 0x1f;
-            r <<= 3;
-            g <<= 2;
-            b <<= 3;
-            src += sizeof(quint16);
-            break;
-        }
-        case 32: {
-            quint32 p = *reinterpret_cast<const quint32*>(src);
-            r = (p >> 16) & 0xff;
-            g = (p >> 8) & 0xff;
-            b = p & 0xff;
-            src += sizeof(quint32);
-            break;
-        }
-        default: {
-            r = g = b = 0;
-            qDebug("QVNCServer: don't support %dbpp display", screendepth);
-            return;
-        }
-        }
-
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN
-        if (swapBytes)
-            qSwap(r, b);
-#endif
-
-        r >>= (8 - pixelFormat.redBits);
-        g >>= (8 - pixelFormat.greenBits);
-        b >>= (8 - pixelFormat.blueBits);
-
-        int pixel = (r << pixelFormat.redShift) |
-                    (g << pixelFormat.greenShift) |
-                    (b << pixelFormat.blueShift);
-
-        if (sameEndian || pixelFormat.bitsPerPixel == 8) {
-            memcpy(dst, &pixel, bytesPerPixel);
-            dst += bytesPerPixel;
-            continue;
-        }
-
-
-        if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-            switch (pixelFormat.bitsPerPixel) {
-            case 16:
-                pixel = (((pixel & 0x0000ff00) << 8)  |
-                         ((pixel & 0x000000ff) << 24));
-                break;
-            case 32:
-                pixel = (((pixel & 0xff000000) >> 24) |
-                         ((pixel & 0x00ff0000) >> 8)  |
-                         ((pixel & 0x0000ff00) << 8)  |
-                         ((pixel & 0x000000ff) << 24));
-                break;
-            default:
-                qDebug("Cannot handle %d bpp client", pixelFormat.bitsPerPixel);
-            }
-        } else { // QSysInfo::ByteOrder == QSysInfo::LittleEndian
-            switch (pixelFormat.bitsPerPixel) {
-            case 16:
-                pixel = (((pixel & 0xff000000) >> 8) |
-                         ((pixel & 0x00ff0000) << 8));
-                break;
-            case 32:
-                pixel = (((pixel & 0xff000000) >> 24) |
-                         ((pixel & 0x00ff0000) >> 8)  |
-                         ((pixel & 0x0000ff00) << 8)  |
-                         ((pixel & 0x000000ff) << 24));
-                break;
-            default:
-                qDebug("Cannot handle %d bpp client",
-                       pixelFormat.bitsPerPixel);
-                break;
-            }
-        }
-        memcpy(dst, &pixel, bytesPerPixel);
-        dst += bytesPerPixel;
-    }
-}
-
-void QVncServer::checkUpdate()
-{
-    if (!wantUpdate)
-        return;
-
-    if (dirtyCursor) {
-        qvnc_screen->clientCursor->write();
-        dirtyCursor = false;
-        wantUpdate = false;
-        return;
-    }
-
-    if (!qvnc_screen->dirtyRegion.isEmpty()) {
-        if (encoder)
-            encoder->write();
-        wantUpdate = false;
-    }
-    // ### re-enable map support
-//    if (dirtyMap()->numDirty > 0) {
-//        if (encoder)
-//            encoder->write();
-//        wantUpdate = false;
-//    }
-}
-
-void QVncServer::discardClient()
-{
-    timer->stop();
-    state = Disconnected;
-    delete encoder;
-    encoder = 0;
-    qvnc_screen->disableClientCursor();
-    qvnc_screen->setPowerState(QPlatformScreen::PowerStateOff);
 }
 
 inline QImage QVncServer::screenImage() const
 {
     return *qvnc_screen->image();
 }
+
+QT_END_NAMESPACE

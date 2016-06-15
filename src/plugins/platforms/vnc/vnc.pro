@@ -7,8 +7,18 @@ load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private network
 
-SOURCES = main.cpp qvncintegration.cpp qvncscreen.cpp qvnc.cpp
-HEADERS = qvncintegration.h qvncscreen.h qvnc_p.h
+SOURCES = \
+    main.cpp \
+    qvncintegration.cpp \
+    qvncscreen.cpp \
+    qvnc.cpp \
+    qvncclient.cpp
+
+HEADERS = \
+    qvncintegration.h \
+    qvncscreen.h \
+    qvnc_p.h \
+    qvncclient.h
 
 CONFIG += qpa/genericunixfontdatabase
 

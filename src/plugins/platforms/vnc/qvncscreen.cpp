@@ -70,8 +70,6 @@ bool QVncScreen::initialize()
     QFbScreen::initializeCompositor();
     QT_VNC_DEBUG() << "QVncScreen::init" << geometry();
 
-    disableClientCursor();
-
     switch (depth()) {
     case 32:
         dirty = new QVncDirtyMapOptimized<quint32>(this);
@@ -107,19 +105,23 @@ QRegion QVncScreen::doRedraw()
     return touched;
 }
 
-void QVncScreen::enableClientCursor()
+void QVncScreen::enableClientCursor(QVncClient *client)
 {
     delete mCursor;
-    mCursor = 0;
-    clientCursor = new QVncClientCursor(vncServer);
+    mCursor = nullptr;
+    if (!clientCursor)
+        clientCursor = new QVncClientCursor();
+    clientCursor->addClient(client);
 }
 
-void QVncScreen::disableClientCursor()
+void QVncScreen::disableClientCursor(QVncClient *client)
 {
-    if (vncServer && clientCursor) {
+    uint clientCount = clientCursor->removeClient(client);
+    if (clientCount == 0) {
         delete clientCursor;
-        clientCursor = 0;
+        clientCursor = nullptr;
     }
+
     mCursor = new QFbCursor(this);
 }
 
@@ -154,6 +156,18 @@ QPixmap QVncScreen::grabWindow(WId wid, int x, int y, int width, int height) con
 
     return QPixmap();
 }
+
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+bool QVNCScreen::swapBytes() const
+{
+    if (depth() != 16)
+        return false;
+
+    if (screen())
+        return screen()->frameBufferLittleEndian();
+    return frameBufferLittleEndian();
+}
+#endif
 
 QT_END_NAMESPACE
 

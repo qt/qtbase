@@ -53,12 +53,15 @@
 #include <QtCore/qvarlengtharray.h>
 #include <qpa/qplatformcursor.h>
 
+QT_BEGIN_NAMESPACE
+
 class QTcpSocket;
 class QTcpServer;
 
 class QVncScreen;
 class QVncServer;
 class QVncClientCursor;
+class QVncClient;
 
 // This fits with the VNC hextile messages
 #define MAP_TILE_SIZE 16
@@ -203,19 +206,19 @@ public:
 class QRfbEncoder
 {
 public:
-    QRfbEncoder(QVncServer *s) : server(s) {}
+    QRfbEncoder(QVncClient *s) : client(s) {}
     virtual ~QRfbEncoder() {}
 
     virtual void write() = 0;
 
 protected:
-    QVncServer *server;
+    QVncClient *client;
 };
 
 class QRfbRawEncoder : public QRfbEncoder
 {
 public:
-    QRfbRawEncoder(QVncServer *s) : QRfbEncoder(s) {}
+    QRfbRawEncoder(QVncClient *s) : QRfbEncoder(s) {}
 
     void write();
 
@@ -368,16 +371,19 @@ private:
 class QVncClientCursor : public QPlatformCursor
 {
 public:
-    QVncClientCursor(QVncServer *s);
+    QVncClientCursor();
     ~QVncClientCursor();
 
-    void write() const;
+    void write(QVncClient *client) const;
 
     void changeCursor(QCursor *widgetCursor, QWindow *window);
 
+    void addClient(QVncClient *client);
+    uint removeClient(QVncClient *client);
+
     QImage cursor;
     QPoint hotspot;
-    QVncServer *server;
+    QVector<QVncClient *> clients;
 };
 
 
@@ -389,80 +395,27 @@ public:
     QVncServer(QVncScreen *screen, int id);
     ~QVncServer();
 
-    void setDirty();
-    void setDirtyCursor() { dirtyCursor = true; setDirty(); }
-    inline bool isConnected() const { return state == Connected; }
-    inline void setRefreshRate(int rate) { refreshRate = rate; }
-
-    enum ClientMsg { SetPixelFormat = 0,
-                     FixColourMapEntries = 1,
-                     SetEncodings = 2,
-                     FramebufferUpdateRequest = 3,
-                     KeyEvent = 4,
-                     PointerEvent = 5,
-                     ClientCutText = 6 };
-
     enum ServerMsg { FramebufferUpdate = 0,
                      SetColourMapEntries = 1 };
 
-    void convertPixels(char *dst, const char *src, int count) const;
+    void setDirty();
 
-    inline int clientBytesPerPixel() const {
-        return pixelFormat.bitsPerPixel / 8;
-    }
 
     inline QVncScreen* screen() const { return qvnc_screen; }
     inline QVncDirtyMap* dirtyMap() const { return qvnc_screen->dirty; }
-    inline QTcpSocket* clientSocket() const { return client; }
     QImage screenImage() const;
-    inline bool doPixelConversion() const { return needConversion; }
-
-private:
-    void setPixelFormat();
-    void setEncodings();
-    void frameBufferUpdateRequest();
-    void pointerEvent();
-    void keyEvent();
-    void clientCutText();
-    bool pixelConversionNeeded() const;
+    void discardClient(QVncClient *client);
 
 private slots:
     void newConnection();
-    void readClient();
-    void checkUpdate();
-    void discardClient();
     void init();
 
 private:
-    enum ClientState { Disconnected, Protocol, Init, Connected };
-    QTimer *timer;
     QTcpServer *serverSocket;
-    QTcpSocket *client;
-    ClientState state;
-    quint8 msgType;
-    bool handleMsg;
-    QRfbPixelFormat pixelFormat;
-    Qt::KeyboardModifiers keymod;
-    int encodingsPending;
-    int cutTextPending;
-    uint supportCopyRect : 1;
-    uint supportRRE : 1;
-    uint supportCoRRE : 1;
-    uint supportHextile : 1;
-    uint supportZRLE : 1;
-    uint supportCursor : 1;
-    uint supportDesktopSize : 1;
-    bool wantUpdate;
-    bool sameEndian;
-    bool needConversion;
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN
-    bool swapBytes;
-#endif
-    bool dirtyCursor;
-    int refreshRate;
+    QVector<QVncClient*> clients;
     QVncScreen *qvnc_screen;
-    QRfbEncoder *encoder;
 };
 
+QT_END_NAMESPACE
 
 #endif
