@@ -33,9 +33,16 @@ isEmpty(QMAKE_PLATFORM) {
         error("Qmake spec sets an invalid TARGET_PLATFORM.")
 }
 
-if(contains(QMAKE_PLATFORM, macx)|contains(QMAKE_PLATFORM, osx)):!contains(QMAKE_PLATFORM, macos) {
-    warning("qmake spec specifies platform macx or osx, but not macos.")
-    QMAKE_PLATFORM = macos $$QMAKE_PLATFORM
+contains(QMAKE_PLATFORM, macx) {
+    !contains(QMAKE_PLATFORM, osx) {
+        warning("qmake spec specified platform macx, but not osx.");
+        QMAKE_PLATFORM = osx $$QMAKE_PLATFORM
+    }
+
+    !contains(QMAKE_PLATFORM, macos) {
+        warning("qmake spec specifies platform macx, but not macos.")
+        QMAKE_PLATFORM = macos $$QMAKE_PLATFORM
+    }
 }
 
 CONFIG += $$QMAKE_PLATFORM
