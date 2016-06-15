@@ -634,7 +634,7 @@ void QSslSocketBackendPrivate::transmit()
 
     if (connectionEncrypted && !writeBuffer.isEmpty()) {
         qint64 totalBytesWritten = 0;
-        while (writeBuffer.nextDataBlockSize() > 0) {
+        while (writeBuffer.nextDataBlockSize() > 0 && context) {
             const size_t nextDataBlockSize = writeBuffer.nextDataBlockSize();
             size_t writtenBytes = 0;
             const OSStatus err = SSLWrite(context, writeBuffer.readPointer(), nextDataBlockSize, &writtenBytes);
@@ -668,7 +668,7 @@ void QSslSocketBackendPrivate::transmit()
 
     if (connectionEncrypted) {
         QVarLengthArray<char, 4096> data;
-        while (true) {
+        while (context) {
             size_t readBytes = 0;
             data.resize(4096);
             const OSStatus err = SSLRead(context, data.data(), data.size(), &readBytes);
@@ -1305,7 +1305,10 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
     // report errors
     if (!errors.isEmpty() && !canIgnoreVerify) {
         sslErrors = errors;
-        if (!checkSslErrors())
+        // checkSslErrors unconditionally emits sslErrors:
+        // a user's slot can abort/close/disconnect on this
+        // signal, so we also test the socket's state:
+        if (!checkSslErrors() || q->state() != QAbstractSocket::ConnectedState)
             return false;
     } else {
         sslErrors.clear();
