@@ -319,7 +319,8 @@ struct QMovableArrayOps
                 , end(finish)
                 , displace(diff)
             {
-                ::memmove(begin + displace, begin, (end - begin) * sizeof(T));
+                ::memmove(static_cast<void *>(begin + displace), static_cast<void *>(begin),
+                          (end - begin) * sizeof(T));
             }
 
             void commit() { displace = 0; }
@@ -327,7 +328,8 @@ struct QMovableArrayOps
             ~ReversibleDisplace()
             {
                 if (displace)
-                    ::memmove(begin, begin + displace, (end - begin) * sizeof(T));
+                    ::memmove(static_cast<void *>(begin), static_cast<void *>(begin + displace),
+                              (end - begin) * sizeof(T));
             }
 
             T *const begin;
@@ -384,7 +386,7 @@ struct QMovableArrayOps
 
             ~Mover()
             {
-                ::memmove(destination, source, n * sizeof(T));
+                ::memmove(static_cast<void *>(destination), static_cast<const void *>(source), n * sizeof(T));
                 size -= (source - destination);
             }
 
