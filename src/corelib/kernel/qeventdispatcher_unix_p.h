@@ -84,6 +84,11 @@ public:
 
 };
 
+#ifdef check
+// defined in Apple's /usr/include/AssertMacros.h header
+#  undef check
+#endif
+
 class QEventDispatcherUNIXPrivate;
 
 #ifdef Q_OS_QNX
