@@ -62,17 +62,17 @@ public:
     {
     }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) Q_DECL_OVERRIDE
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override
     {
         painter->drawPixmap(QPointF(), p);
     }
 
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent * ) Q_DECL_OVERRIDE
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent *) override
     {
         emit clicked();
     }
 
-    virtual void setGeometry(const QRectF &rect) Q_DECL_OVERRIDE
+    virtual void setGeometry(const QRectF &rect) override
     {
         QGraphicsWidget::setGeometry(rect);
 
@@ -98,7 +98,7 @@ public:
     {
     }
 
-    virtual void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE
+    virtual void resizeEvent(QResizeEvent *) override
     {
         fitInView(sceneRect(), Qt::KeepAspectRatio);
     }

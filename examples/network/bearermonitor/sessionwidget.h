@@ -65,7 +65,7 @@ public:
     explicit SessionWidget(const QNetworkConfiguration &config, QWidget *parent = 0);
     ~SessionWidget();
 
-    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *) override;
 
 private:
     void updateSessionState(QNetworkSession::State state);

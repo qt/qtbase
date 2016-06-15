@@ -68,7 +68,7 @@ public:
     ~GLWidget();
 //! [0]
 
-    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const override;
     int xRotation() const { return xRot; }
     int yRotation() const { return yRot; }
     int zRotation() const { return zRot; }
@@ -80,12 +80,12 @@ public slots:
 
 //! [1]
 protected:
-    void initializeGL() Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
-    void resizeGL(int width, int height) Q_DECL_OVERRIDE;
-    void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void showEvent(QShowEvent *event) Q_DECL_OVERRIDE;
+    void initializeGL() override;
+    void paintEvent(QPaintEvent *event) override;
+    void resizeGL(int width, int height) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void showEvent(QShowEvent *event) override;
 
 private slots:
     void animate();

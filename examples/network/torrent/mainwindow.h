@@ -73,11 +73,11 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = 0);
 
-    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const override;
     const TorrentClient *clientForRow(int row) const;
 
 protected:
-    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
+    void closeEvent(QCloseEvent *event) override;
 
 private slots:
     void loadSettings();

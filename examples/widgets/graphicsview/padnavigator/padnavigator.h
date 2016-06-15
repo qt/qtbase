@@ -67,7 +67,7 @@ public:
     explicit PadNavigator(const QSize &size, QWidget *parent = 0);
 
 protected:
-    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *event) override;
 
 private:
     Ui::Form form;

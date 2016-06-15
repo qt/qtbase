@@ -68,8 +68,8 @@ public slots:
     void setSeparator(const QString &separator);
 
 protected:
-    QStringList splitPath(const QString &path) const Q_DECL_OVERRIDE;
-    QString pathFromIndex(const QModelIndex &index) const Q_DECL_OVERRIDE;
+    QStringList splitPath(const QString &path) const override;
+    QString pathFromIndex(const QModelIndex &index) const override;
 
 private:
     QString sep;

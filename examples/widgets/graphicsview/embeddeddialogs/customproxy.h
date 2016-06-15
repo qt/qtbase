@@ -61,15 +61,15 @@ class CustomProxy : public QGraphicsProxyWidget
 public:
     explicit CustomProxy(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
 
-    QRectF boundingRect() const Q_DECL_OVERRIDE;
+    QRectF boundingRect() const override;
     void paintWindowFrame(QPainter *painter, const QStyleOptionGraphicsItem *option,
-                          QWidget *widget) Q_DECL_OVERRIDE;
+                          QWidget *widget) override;
 
 protected:
-    void hoverEnterEvent(QGraphicsSceneHoverEvent *event) Q_DECL_OVERRIDE;
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) Q_DECL_OVERRIDE;
-    bool sceneEventFilter(QGraphicsItem *watched, QEvent *event) Q_DECL_OVERRIDE;
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value) Q_DECL_OVERRIDE;
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
+    bool sceneEventFilter(QGraphicsItem *watched, QEvent *event) override;
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
 
 private slots:
     void updateStep(qreal step);

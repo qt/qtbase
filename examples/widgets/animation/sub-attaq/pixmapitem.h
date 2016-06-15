@@ -63,8 +63,8 @@ public:
     PixmapItem(const QString &fileName, GraphicsScene::Mode mode, QGraphicsItem * parent = 0);
     PixmapItem(const QString &fileName, QGraphicsScene *scene);
     QSizeF size() const;
-    QRectF boundingRect() const Q_DECL_OVERRIDE;
-    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) Q_DECL_OVERRIDE;
+    QRectF boundingRect() const override;
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) override;
 private:
     QPixmap pix;
 };

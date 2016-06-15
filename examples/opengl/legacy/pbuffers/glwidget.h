@@ -67,11 +67,11 @@ public:
     ~GLWidget();
 
 protected:
-    void initializeGL() Q_DECL_OVERRIDE;
-    void paintGL() Q_DECL_OVERRIDE;
-    void resizeGL(int width, int height) Q_DECL_OVERRIDE;
-    void mousePressEvent(QMouseEvent *) Q_DECL_OVERRIDE { setAnimationPaused(true); }
-    void mouseReleaseEvent(QMouseEvent *) Q_DECL_OVERRIDE { setAnimationPaused(false); }
+    void initializeGL() override;
+    void paintGL() override;
+    void resizeGL(int width, int height) override;
+    void mousePressEvent(QMouseEvent *) override { setAnimationPaused(true); }
+    void mouseReleaseEvent(QMouseEvent *) override { setAnimationPaused(false); }
 
 private:
     void initializeGeometry();

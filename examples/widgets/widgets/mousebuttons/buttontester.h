@@ -61,11 +61,11 @@ class ButtonTester : public QTextEdit
     Q_OBJECT
 
 protected:
-    void    mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void    mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void    mouseDoubleClickEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void    mousePressEvent(QMouseEvent *event) override;
+    void    mouseReleaseEvent(QMouseEvent *event) override;
+    void    mouseDoubleClickEvent(QMouseEvent *event) override;
 #ifndef QT_NO_WHEELEVENT
-    void    wheelEvent(QWheelEvent * event) Q_DECL_OVERRIDE;
+    void    wheelEvent(QWheelEvent * event) override;
 #endif
     int     buttonByNumber(const Qt::MouseButton button);
     QString enumNameFromValue(const Qt::MouseButton button);

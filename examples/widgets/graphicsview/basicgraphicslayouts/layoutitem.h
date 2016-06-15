@@ -61,12 +61,12 @@ public:
     LayoutItem(QGraphicsItem *parent = 0);
     ~LayoutItem();
     // Inherited from QGraphicsLayoutItem
-    void setGeometry(const QRectF &geom) Q_DECL_OVERRIDE;
-    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const Q_DECL_OVERRIDE;
+    void setGeometry(const QRectF &geom) override;
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const override;
 
     // Inherited from QGraphicsItem
-    QRectF boundingRect() const Q_DECL_OVERRIDE;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) Q_DECL_OVERRIDE;
+    QRectF boundingRect() const override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
 
 private:
     QPixmap *m_pix;

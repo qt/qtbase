@@ -63,7 +63,7 @@ public:
 
     QRectF boundingRect() const;
 
-    void draw(QPainter *painter) Q_DECL_OVERRIDE;
+    void draw(QPainter *painter) override;
 
 private:
     void adjustForItem();

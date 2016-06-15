@@ -78,7 +78,7 @@ public slots:
     void fileNew();
 
 protected:
-    virtual void closeEvent(QCloseEvent *e) Q_DECL_OVERRIDE;
+    virtual void closeEvent(QCloseEvent *e) override;
 
 private slots:
     void fileOpen();

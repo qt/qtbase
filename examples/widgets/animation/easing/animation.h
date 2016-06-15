@@ -77,7 +77,7 @@ public:
         m_path = QPainterPath();
     }
 
-    void updateCurrentTime(int currentTime) Q_DECL_OVERRIDE
+    void updateCurrentTime(int currentTime) override
     {
         if (m_pathType == CirclePath) {
             if (m_path.isEmpty()) {

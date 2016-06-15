@@ -118,21 +118,21 @@ class CompositionRenderer : public ArthurFrame
 public:
     CompositionRenderer(QWidget *parent);
 
-    void paint(QPainter *) Q_DECL_OVERRIDE;
+    void paint(QPainter *) override;
 
     void setCirclePos(const QPointF &pos);
 
-    QSize sizeHint() const Q_DECL_OVERRIDE { return QSize(500, 400); }
+    QSize sizeHint() const override { return QSize(500, 400); }
 
     bool animationEnabled() const { return m_animation_enabled; }
     int circleColor() const { return m_circle_hue; }
     int circleAlpha() const { return m_circle_alpha; }
 
 protected:
-    void mousePressEvent(QMouseEvent *) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent *) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QMouseEvent *) Q_DECL_OVERRIDE;
-    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *) override;
+    void mouseMoveEvent(QMouseEvent *) override;
+    void mouseReleaseEvent(QMouseEvent *) override;
+    void timerEvent(QTimerEvent *) override;
 
 public slots:
     void setClearMode() { m_composition_mode = QPainter::CompositionMode_Clear; update(); }

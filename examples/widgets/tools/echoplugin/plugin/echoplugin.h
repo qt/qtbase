@@ -63,7 +63,7 @@ class EchoPlugin : public QObject, EchoInterface
     Q_INTERFACES(EchoInterface)
 
 public:
-    QString echo(const QString &message) Q_DECL_OVERRIDE;
+    QString echo(const QString &message) override;
 };
 //! [0]
 

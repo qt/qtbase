@@ -81,7 +81,7 @@ public:
     void launchTorpedo(int speed);
     void destroy();
 
-    virtual int type() const Q_DECL_OVERRIDE;
+    virtual int type() const override;
 
     QGraphicsRotation *rotation() const { return graphicsRotation; }
 

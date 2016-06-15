@@ -68,9 +68,9 @@ public:
         setAttribute(Qt::WA_AcceptTouchEvents);
     }
     void disableAutoBufferSwap() { setAutoBufferSwap(false); }
-    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE { parentWidget()->update(); }
+    void paintEvent(QPaintEvent *) override { parentWidget()->update(); }
 protected:
-    bool event(QEvent *event) Q_DECL_OVERRIDE
+    bool event(QEvent *event) override
     {
         switch (event->type()) {
         case QEvent::TouchBegin:
@@ -126,8 +126,8 @@ signals:
     void descriptionEnabledChanged(bool);
 
 protected:
-    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
-    void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) override;
+    void resizeEvent(QResizeEvent *) override;
 
 #if defined(QT_OPENGL_SUPPORT)
     GLWidget *glw;

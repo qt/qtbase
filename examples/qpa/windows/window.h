@@ -58,16 +58,16 @@ public:
     Window(QScreen *screen);
 
 protected:
-    void mousePressEvent(QMouseEvent *) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent *) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *) override;
+    void mouseMoveEvent(QMouseEvent *) override;
+    void mouseReleaseEvent(QMouseEvent *) override;
 
-    void keyPressEvent(QKeyEvent *) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent *) override;
 
-    void exposeEvent(QExposeEvent *) Q_DECL_OVERRIDE;
-    void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE;
+    void exposeEvent(QExposeEvent *) override;
+    void resizeEvent(QResizeEvent *) override;
 
-    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *) override;
 
 private:
     void render();

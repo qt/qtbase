@@ -73,7 +73,7 @@ public:
     void tile(const QMainWindow *previous);
 
 protected:
-    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
+    void closeEvent(QCloseEvent *event) override;
 
 private slots:
     void newFile();

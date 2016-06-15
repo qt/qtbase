@@ -61,13 +61,13 @@ class Mouse : public QGraphicsObject
 public:
     Mouse();
 
-    QRectF boundingRect() const Q_DECL_OVERRIDE;
-    QPainterPath shape() const Q_DECL_OVERRIDE;
+    QRectF boundingRect() const override;
+    QPainterPath shape() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-               QWidget *widget) Q_DECL_OVERRIDE;
+               QWidget *widget) override;
 
 protected:
-    void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *event) override;
 
 private:
     qreal angle;

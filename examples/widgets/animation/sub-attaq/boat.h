@@ -86,7 +86,7 @@ public:
 
     void updateBoatMovement();
 
-    virtual int type() const Q_DECL_OVERRIDE;
+    virtual int type() const override;
 
 signals:
     void boatDestroyed();

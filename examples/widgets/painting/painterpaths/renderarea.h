@@ -62,8 +62,8 @@ class RenderArea : public QWidget
 public:
     explicit RenderArea(const QPainterPath &path, QWidget *parent = 0);
 
-    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
-    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSizeHint() const override;
+    QSize sizeHint() const override;
 
 public slots:
     void setFillRule(Qt::FillRule rule);
@@ -73,7 +73,7 @@ public slots:
     void setRotationAngle(int degrees);
 
 protected:
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *event) override;
 //! [0]
 
 //! [1]

@@ -80,14 +80,14 @@ public:
     enum XFormType { VectorType, PixmapType, TextType };
 
     XFormView(QWidget *parent);
-    void paint(QPainter *) Q_DECL_OVERRIDE;
+    void paint(QPainter *) override;
     void drawVectorType(QPainter *painter);
     void drawPixmapType(QPainter *painter);
     void drawTextType(QPainter *painter);
-    QSize sizeHint() const Q_DECL_OVERRIDE { return QSize(500, 500); }
+    QSize sizeHint() const override { return QSize(500, 500); }
 
-    void mousePressEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
-    void resizeEvent(QResizeEvent *e) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *e) override;
+    void resizeEvent(QResizeEvent *e) override;
     HoverPoints *hoverPoints() { return pts; }
 
     bool animation() const { return timer.isActive(); }
@@ -124,9 +124,9 @@ signals:
     void shearChanged(int shear);
 
 protected:
-    void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *e) override;
 #ifndef QT_NO_WHEELEVENT
-    void wheelEvent(QWheelEvent *) Q_DECL_OVERRIDE;
+    void wheelEvent(QWheelEvent *) override;
 #endif
 
 private:

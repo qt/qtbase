@@ -65,14 +65,14 @@ public:
 
     explicit PathStrokeRenderer(QWidget *parent, bool smallScreen = false);
 
-    void paint(QPainter *) Q_DECL_OVERRIDE;
-    void mousePressEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
-    void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    void paint(QPainter *) override;
+    void mousePressEvent(QMouseEvent *e) override;
+    void mouseMoveEvent(QMouseEvent *e) override;
+    void mouseReleaseEvent(QMouseEvent *e) override;
+    void timerEvent(QTimerEvent *e) override;
+    bool event(QEvent *e) override;
 
-    QSize sizeHint() const Q_DECL_OVERRIDE { return QSize(500, 500); }
+    QSize sizeHint() const override { return QSize(500, 500); }
 
     bool animation() const { return m_timer.isActive(); }
 

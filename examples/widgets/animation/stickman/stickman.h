@@ -69,8 +69,8 @@ public:
     StickMan();
     ~StickMan();
 
-    virtual QRectF boundingRect() const Q_DECL_OVERRIDE;
-    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) Q_DECL_OVERRIDE;
+    virtual QRectF boundingRect() const override;
+    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
     int nodeCount() const;
     Node *node(int idx) const;
@@ -92,7 +92,7 @@ public slots:
     void childPositionChanged();
 
 protected:
-    void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *e) override;
 
 private:
 

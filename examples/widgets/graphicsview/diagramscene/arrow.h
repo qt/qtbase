@@ -73,9 +73,9 @@ public:
     Arrow(DiagramItem *startItem, DiagramItem *endItem,
       QGraphicsItem *parent = 0);
 
-    int type() const Q_DECL_OVERRIDE { return Type; }
-    QRectF boundingRect() const Q_DECL_OVERRIDE;
-    QPainterPath shape() const Q_DECL_OVERRIDE;
+    int type() const override { return Type; }
+    QRectF boundingRect() const override;
+    QPainterPath shape() const override;
     void setColor(const QColor &color) { myColor = color; }
     DiagramItem *startItem() const { return myStartItem; }
     DiagramItem *endItem() const { return myEndItem; }
@@ -83,7 +83,7 @@ public:
     void updatePosition();
 
 protected:
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) Q_DECL_OVERRIDE;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
 
 private:
     DiagramItem *myStartItem;

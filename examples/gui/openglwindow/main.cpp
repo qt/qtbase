@@ -63,8 +63,8 @@ class TriangleWindow : public OpenGLWindow
 public:
     TriangleWindow();
 
-    void initialize() Q_DECL_OVERRIDE;
-    void render() Q_DECL_OVERRIDE;
+    void initialize() override;
+    void render() override;
 
 private:
     GLuint m_posAttr;

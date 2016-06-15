@@ -75,7 +75,7 @@ signals:
     void renderedImage(const QImage &image, double scaleFactor);
 
 protected:
-    void run() Q_DECL_OVERRIDE;
+    void run() override;
 
 private:
     uint rgbFromWaveLength(double wave);

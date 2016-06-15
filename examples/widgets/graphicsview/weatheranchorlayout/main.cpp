@@ -69,7 +69,7 @@ public:
     {
     }
 
-    virtual void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE
+    virtual void resizeEvent(QResizeEvent *event) override
     {
         w->setGeometry(0, 0, event->size().width(), event->size().height());
     }
@@ -101,7 +101,7 @@ public:
         original->setZValue(z);
     }
 
-    void setGeometry (const QRectF &rect) Q_DECL_OVERRIDE
+    void setGeometry (const QRectF &rect) override
     {
         original->setTransform(QTransform::fromScale(rect.width() / r.width(),
                                                      rect.height() / r.height()), true);
@@ -110,7 +110,7 @@ public:
     }
 
 protected:
-    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const Q_DECL_OVERRIDE
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const override
     {
         Q_UNUSED(constraint);
         QSizeF sh;
@@ -148,7 +148,7 @@ public:
     {
     }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*) Q_DECL_OVERRIDE
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override
     {
         QPointF reflection = QPointF();
         reflection.setY(scaled.height() + 2);
@@ -180,14 +180,14 @@ public:
         painter->drawPixmap(reflection, tmp);
     }
 
-    void resizeEvent(QGraphicsSceneResizeEvent *event) Q_DECL_OVERRIDE
+    void resizeEvent(QGraphicsSceneResizeEvent *event) override
     {
         QSize newSize = event->newSize().toSize();
         newSize.setHeight(newSize.height() / 2);
         scaled = original.scaled(newSize);
     }
 
-    QRectF boundingRect() const Q_DECL_OVERRIDE
+    QRectF boundingRect() const override
     {
         QSize size(scaled.width(), scaled.height() * 2 + 2);
         return QRectF(QPointF(0, 0), size);

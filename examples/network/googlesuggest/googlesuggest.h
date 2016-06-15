@@ -70,7 +70,7 @@ class GSuggestCompletion : public QObject
 public:
     GSuggestCompletion(QLineEdit *parent = 0);
     ~GSuggestCompletion();
-    bool eventFilter(QObject *obj, QEvent *ev) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *obj, QEvent *ev) override;
     void showCompletion(const QStringList &choices);
 
 public slots:

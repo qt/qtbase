@@ -71,8 +71,8 @@ public:
     explicit LanguageChooser(const QString& defaultLang = QString(), QWidget *parent = 0);
 
 protected:
-    bool eventFilter(QObject *object, QEvent *event) Q_DECL_OVERRIDE;
-    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *object, QEvent *event) override;
+    void closeEvent(QCloseEvent *event) override;
 
 private slots:
     void checkBoxToggled();

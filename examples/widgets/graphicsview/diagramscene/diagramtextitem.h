@@ -71,16 +71,16 @@ public:
 
     DiagramTextItem(QGraphicsItem *parent = 0);
 
-    int type() const Q_DECL_OVERRIDE { return Type; }
+    int type() const override { return Type; }
 
 signals:
     void lostFocus(DiagramTextItem *item);
     void selectedChange(QGraphicsItem *item);
 
 protected:
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value) Q_DECL_OVERRIDE;
-    void focusOutEvent(QFocusEvent *event) Q_DECL_OVERRIDE;
-    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) Q_DECL_OVERRIDE;
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
+    void focusOutEvent(QFocusEvent *event) override;
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
 };
 //! [0]
 

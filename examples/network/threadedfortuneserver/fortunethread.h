@@ -62,7 +62,7 @@ class FortuneThread : public QThread
 public:
     FortuneThread(int socketDescriptor, const QString &fortune, QObject *parent);
 
-    void run() Q_DECL_OVERRIDE;
+    void run() override;
 
 signals:
     void error(QTcpSocket::SocketError socketError);

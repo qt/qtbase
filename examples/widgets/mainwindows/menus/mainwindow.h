@@ -70,7 +70,7 @@ public:
 
 protected:
 #ifndef QT_NO_CONTEXTMENU
-    void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
+    void contextMenuEvent(QContextMenuEvent *event) override;
 #endif // QT_NO_CONTEXTMENU
 //! [0]
 

@@ -69,9 +69,9 @@ public:
 
 protected:
 #ifndef QT_NO_CONTEXTMENU
-    void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
+    void contextMenuEvent(QContextMenuEvent *event) override;
 #endif // QT_NO_CONTEXTMENU
-    void resizeEvent(QResizeEvent *e) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *e) override;
 
 private slots:
     void changeClosable(bool on);
@@ -130,12 +130,12 @@ class BlueTitleBar : public QWidget
 public:
     explicit BlueTitleBar(QWidget *parent = Q_NULLPTR);
 
-    QSize sizeHint() const Q_DECL_OVERRIDE { return minimumSizeHint(); }
-    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const override { return minimumSizeHint(); }
+    QSize minimumSizeHint() const override;
 
 protected:
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 public slots:
     void updateMask();

@@ -79,9 +79,9 @@ public:
     OpenGLWindow();
 
 protected:
-    void paintGL() Q_DECL_OVERRIDE;
-    void resizeGL(int w, int h) Q_DECL_OVERRIDE;
-    void keyPressEvent(QKeyEvent *e) Q_DECL_OVERRIDE;
+    void paintGL() override;
+    void resizeGL(int w, int h) override;
+    void keyPressEvent(QKeyEvent *e) override;
 
 private:
     void setAnimating(bool enabled);

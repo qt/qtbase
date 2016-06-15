@@ -71,12 +71,12 @@ public slots:
     void zoomOut();
 
 protected:
-    void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
-    void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent *event) override;
+    void timerEvent(QTimerEvent *event) override;
 #ifndef QT_NO_WHEELEVENT
-    void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
+    void wheelEvent(QWheelEvent *event) override;
 #endif
-    void drawBackground(QPainter *painter, const QRectF &rect) Q_DECL_OVERRIDE;
+    void drawBackground(QPainter *painter, const QRectF &rect) override;
 
     void scaleView(qreal scaleFactor);
 

@@ -78,10 +78,10 @@ class Window : public QDialog
 public:
     Window();
 
-    void setVisible(bool visible) Q_DECL_OVERRIDE;
+    void setVisible(bool visible) override;
 
 protected:
-    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
+    void closeEvent(QCloseEvent *event) override;
 
 private slots:
     void setIcon(int index);

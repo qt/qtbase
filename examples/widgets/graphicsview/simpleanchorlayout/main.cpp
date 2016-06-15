@@ -62,7 +62,7 @@ public:
     {
     }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget * = 0) Q_DECL_OVERRIDE
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget * = 0) override
     {
         QFont font;
         font.setPixelSize(0.75 * qMin(boundingRect().width(), boundingRect().height()));

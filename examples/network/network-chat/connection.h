@@ -88,7 +88,7 @@ signals:
     void newMessage(const QString &from, const QString &message);
 
 protected:
-    void timerEvent(QTimerEvent *timerEvent) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *timerEvent) override;
 
 private slots:
     void processReadyRead();

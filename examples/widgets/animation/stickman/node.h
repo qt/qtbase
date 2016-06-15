@@ -60,18 +60,18 @@ public:
     explicit Node(const QPointF &pos, QGraphicsItem *parent = 0);
     ~Node();
 
-    QRectF boundingRect() const Q_DECL_OVERRIDE;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) Q_DECL_OVERRIDE;
+    QRectF boundingRect() const override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
 signals:
     void positionChanged();
 
 protected:
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value) Q_DECL_OVERRIDE;
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
 
-    void mousePressEvent(QGraphicsSceneMouseEvent *) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *) Q_DECL_OVERRIDE;
+    void mousePressEvent(QGraphicsSceneMouseEvent *) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *) override;
 
 private:
     bool m_dragging;

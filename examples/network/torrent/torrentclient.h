@@ -168,7 +168,7 @@ public slots:
     void setupIncomingConnection(PeerWireClient *client);
 
 protected slots:
-    void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *event) override;
 
 private slots:
     // File management

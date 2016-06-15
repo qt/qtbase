@@ -64,7 +64,7 @@ public:
     TabletApplication(int &argv, char **args)
     : QApplication(argv, args) {}
 
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) override;
     void setCanvas(TabletCanvas *canvas)
         { m_canvas = canvas; }
 

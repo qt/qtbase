@@ -80,9 +80,9 @@ signals:
     void animationFinished();
 
 protected:
-    void onEntry(QEvent *) Q_DECL_OVERRIDE;
-    void onExit(QEvent *) Q_DECL_OVERRIDE;
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    void onEntry(QEvent *) override;
+    void onExit(QEvent *) override;
+    bool event(QEvent *e) override;
 
 private:
     Q_DISABLE_COPY(QAnimationState)

@@ -71,7 +71,7 @@ public:
     ~SettingsTree();
 
     void setSettingsObject(const SettingsPtr &settings);
-    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const override;
 
 public slots:
     void setAutoRefresh(bool autoRefresh);
@@ -80,7 +80,7 @@ public slots:
     void refresh();
 
 protected:
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) override;
 
 private slots:
     void updateSetting(QTreeWidgetItem *item);

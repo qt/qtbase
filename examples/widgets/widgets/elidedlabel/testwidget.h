@@ -67,7 +67,7 @@ public:
     TestWidget(QWidget *parent = 0);
 
 protected:
-    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *event) override;
 
 private slots:
     void switchText();

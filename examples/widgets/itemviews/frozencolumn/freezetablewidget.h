@@ -63,9 +63,9 @@ public:
 
 
 protected:
-      virtual void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
-      virtual QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) Q_DECL_OVERRIDE;
-      void scrollTo (const QModelIndex & index, ScrollHint hint = EnsureVisible) Q_DECL_OVERRIDE;
+      virtual void resizeEvent(QResizeEvent *event) override;
+      virtual QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) override;
+      void scrollTo (const QModelIndex & index, ScrollHint hint = EnsureVisible) override;
 
 private:
       QTableView *frozenTableView;

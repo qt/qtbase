@@ -72,7 +72,7 @@ public:
     ~PlayState();
 
  protected:
-    void onEntry(QEvent *) Q_DECL_OVERRIDE;
+    void onEntry(QEvent *) override;
 
 private :
     GraphicsScene *scene;
@@ -94,7 +94,7 @@ class LevelState : public QState
 public:
     LevelState(GraphicsScene *scene, PlayState *game, QState *parent = 0);
 protected:
-    void onEntry(QEvent *) Q_DECL_OVERRIDE;
+    void onEntry(QEvent *) override;
 private :
     void initializeLevel();
     GraphicsScene *scene;
@@ -107,8 +107,8 @@ public:
     explicit PauseState(GraphicsScene *scene, QState *parent = 0);
 
 protected:
-    void onEntry(QEvent *) Q_DECL_OVERRIDE;
-    void onExit(QEvent *) Q_DECL_OVERRIDE;
+    void onEntry(QEvent *) override;
+    void onExit(QEvent *) override;
 private :
     GraphicsScene *scene;
 };
@@ -119,8 +119,8 @@ public:
     LostState(GraphicsScene *scene, PlayState *game, QState *parent = 0);
 
 protected:
-    void onEntry(QEvent *) Q_DECL_OVERRIDE;
-    void onExit(QEvent *) Q_DECL_OVERRIDE;
+    void onEntry(QEvent *) override;
+    void onExit(QEvent *) override;
 private :
     GraphicsScene *scene;
     PlayState *game;
@@ -132,8 +132,8 @@ public:
     WinState(GraphicsScene *scene, PlayState *game, QState *parent = 0);
 
 protected:
-    void onEntry(QEvent *) Q_DECL_OVERRIDE;
-    void onExit(QEvent *) Q_DECL_OVERRIDE;
+    void onEntry(QEvent *) override;
+    void onExit(QEvent *) override;
 private :
     GraphicsScene *scene;
     PlayState *game;
@@ -152,7 +152,7 @@ class UpdateScoreTransition : public QSignalTransition
 public:
     UpdateScoreTransition(GraphicsScene *scene, PlayState *game, QAbstractState *target);
 protected:
-    virtual bool eventTest(QEvent *event) Q_DECL_OVERRIDE;
+    virtual bool eventTest(QEvent *event) override;
 private:
     PlayState * game;
     GraphicsScene *scene;
@@ -164,7 +164,7 @@ class WinTransition : public QSignalTransition
 public:
     WinTransition(GraphicsScene *scene, PlayState *game, QAbstractState *target);
 protected:
-    virtual bool eventTest(QEvent *event) Q_DECL_OVERRIDE;
+    virtual bool eventTest(QEvent *event) override;
 private:
     PlayState * game;
     GraphicsScene *scene;
@@ -176,7 +176,7 @@ private:
 public:
     CustomSpaceTransition(QWidget *widget, PlayState *game, QEvent::Type type, int key);
 protected:
-    virtual bool eventTest(QEvent *event) Q_DECL_OVERRIDE;
+    virtual bool eventTest(QEvent *event) override;
 private:
     PlayState *game;
 };

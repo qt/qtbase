@@ -63,16 +63,16 @@ public:
     BorderLayout(int spacing = -1);
     ~BorderLayout();
 
-    void addItem(QLayoutItem *item) Q_DECL_OVERRIDE;
+    void addItem(QLayoutItem *item) override;
     void addWidget(QWidget *widget, Position position);
-    Qt::Orientations expandingDirections() const Q_DECL_OVERRIDE;
-    bool hasHeightForWidth() const Q_DECL_OVERRIDE;
-    int count() const Q_DECL_OVERRIDE;
-    QLayoutItem *itemAt(int index) const Q_DECL_OVERRIDE;
-    QSize minimumSize() const Q_DECL_OVERRIDE;
-    void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
-    QSize sizeHint() const Q_DECL_OVERRIDE;
-    QLayoutItem *takeAt(int index) Q_DECL_OVERRIDE;
+    Qt::Orientations expandingDirections() const override;
+    bool hasHeightForWidth() const override;
+    int count() const override;
+    QLayoutItem *itemAt(int index) const override;
+    QSize minimumSize() const override;
+    void setGeometry(const QRect &rect) override;
+    QSize sizeHint() const override;
+    QLayoutItem *takeAt(int index) override;
 
     void add(QLayoutItem *item, Position position);
 

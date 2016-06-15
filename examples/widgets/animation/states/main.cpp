@@ -58,12 +58,12 @@ public:
     {
     }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) Q_DECL_OVERRIDE
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override
     {
         painter->drawPixmap(QPointF(), p);
     }
 
-    QRectF boundingRect() const Q_DECL_OVERRIDE
+    QRectF boundingRect() const override
     {
         return QRectF( QPointF(0, 0), p.size());
     }
@@ -79,7 +79,7 @@ public:
     {
     }
 
-    virtual void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE
+    virtual void resizeEvent(QResizeEvent *) override
     {
         fitInView(sceneRect(), Qt::KeepAspectRatio);
     }

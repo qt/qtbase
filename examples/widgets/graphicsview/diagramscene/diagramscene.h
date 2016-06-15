@@ -95,9 +95,9 @@ signals:
     void itemSelected(QGraphicsItem *item);
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
+    void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent) override;
 
 private:
     bool isItemChange(int type);

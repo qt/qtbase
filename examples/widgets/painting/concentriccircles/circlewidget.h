@@ -64,14 +64,14 @@ public:
     void setFloatBased(bool floatBased);
     void setAntialiased(bool antialiased);
 
-    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
-    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSizeHint() const override;
+    QSize sizeHint() const override;
 
 public slots:
     void nextAnimationFrame();
 
 protected:
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *event) override;
 
 private:
     bool floatBased;

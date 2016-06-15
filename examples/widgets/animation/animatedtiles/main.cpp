@@ -75,19 +75,19 @@ public:
         setCacheMode(DeviceCoordinateCache);
     }
 
-    QRectF boundingRect() const Q_DECL_OVERRIDE
+    QRectF boundingRect() const override
     {
         return QRectF(-65, -65, 130, 130);
     }
 
-    QPainterPath shape() const Q_DECL_OVERRIDE
+    QPainterPath shape() const override
     {
         QPainterPath path;
         path.addEllipse(boundingRect());
         return path;
     }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) Q_DECL_OVERRIDE
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) override
     {
         bool down = option->state & QStyle::State_Sunken;
         QRectF r = boundingRect();
@@ -112,13 +112,13 @@ signals:
     void pressed();
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent *) Q_DECL_OVERRIDE
+    void mousePressEvent(QGraphicsSceneMouseEvent *) override
     {
         emit pressed();
         update();
     }
 
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *) Q_DECL_OVERRIDE
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *) override
     {
         update();
     }
@@ -133,7 +133,7 @@ public:
     View(QGraphicsScene *scene) : QGraphicsView(scene) { }
 
 protected:
-    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE
+    void resizeEvent(QResizeEvent *event) override
     {
         QGraphicsView::resizeEvent(event);
         fitInView(sceneRect(), Qt::KeepAspectRatio);

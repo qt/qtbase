@@ -63,8 +63,8 @@ class FileListModel : public QAbstractListModel
 public:
     FileListModel(QObject *parent = 0);
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
 signals:
     void numberPopulated(int number);
@@ -73,8 +73,8 @@ public slots:
     void setDirPath(const QString &path);
 
 protected:
-    bool canFetchMore(const QModelIndex &parent) const Q_DECL_OVERRIDE;
-    void fetchMore(const QModelIndex &parent) Q_DECL_OVERRIDE;
+    bool canFetchMore(const QModelIndex &parent) const override;
+    void fetchMore(const QModelIndex &parent) override;
 
 private:
     QStringList fileList;

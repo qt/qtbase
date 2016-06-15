@@ -71,7 +71,7 @@ public:
     DiagramType diagramType() const {
         return polygon() == boxPolygon ? Box : Triangle;
     }
-    int type() const Q_DECL_OVERRIDE { return Type; }
+    int type() const override { return Type; }
 
 private:
     QPolygonF boxPolygon;

@@ -74,7 +74,7 @@ public slots:
     void turnOn() { setOn(true); }
 
 protected:
-    virtual void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE
+    virtual void paintEvent(QPaintEvent *) override
     {
         if (!m_on)
             return;

@@ -66,7 +66,7 @@ signals:
     void newConnection(Connection *connection);
 
 protected:
-    void incomingConnection(qintptr socketDescriptor) Q_DECL_OVERRIDE;
+    void incomingConnection(qintptr socketDescriptor) override;
 };
 
 #endif

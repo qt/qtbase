@@ -84,8 +84,8 @@ private slots:
     void rotationDone();
 
 private:
-    void exposeEvent(QExposeEvent *) Q_DECL_OVERRIDE;
-    void mousePressEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void exposeEvent(QExposeEvent *) override;
+    void mousePressEvent(QMouseEvent *) override;
 
     void paint(QPainter *painter, const QRect &rect);
 

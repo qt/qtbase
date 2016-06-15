@@ -67,8 +67,8 @@ signals:
     void fileDropped(const QString &fileName);
 
 protected:
-    void dragMoveEvent(QDragMoveEvent *event) Q_DECL_OVERRIDE;
-    void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
+    void dragMoveEvent(QDragMoveEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
 #endif
 };
 
@@ -80,7 +80,7 @@ public:
     inline TorrentViewDelegate(MainWindow *mainWindow) : QItemDelegate(mainWindow) {}
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
-               const QModelIndex &index ) const Q_DECL_OVERRIDE
+               const QModelIndex &index ) const override
     {
         if (index.column() != 2) {
             QItemDelegate::paint(painter, option, index);

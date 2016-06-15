@@ -67,11 +67,11 @@ public:
     void adjust();
 
     enum { Type = UserType + 2 };
-    int type() const Q_DECL_OVERRIDE { return Type; }
+    int type() const override { return Type; }
 
 protected:
-    QRectF boundingRect() const Q_DECL_OVERRIDE;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) Q_DECL_OVERRIDE;
+    QRectF boundingRect() const override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
 private:
     Node *source, *dest;

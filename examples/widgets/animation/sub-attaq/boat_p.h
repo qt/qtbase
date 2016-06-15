@@ -81,7 +81,7 @@ public:
     {
     }
 protected:
-    virtual bool eventTest(QEvent *event) Q_DECL_OVERRIDE
+    virtual bool eventTest(QEvent *event) override
     {
         if (!QKeyEventTransition::eventTest(event))
             return false;
@@ -100,13 +100,13 @@ public:
     {
     }
 protected:
-    virtual bool eventTest(QEvent *event) Q_DECL_OVERRIDE
+    virtual bool eventTest(QEvent *event) override
     {
         if (!QKeyEventTransition::eventTest(event))
             return false;
         return (boat->currentSpeed() >= 0);
     }
-    void onTransition(QEvent *) Q_DECL_OVERRIDE
+    void onTransition(QEvent *) override
     {
         //We decrease the speed if needed
         if (key == Qt::Key_Left && boat->currentDirection() == Boat::Right)
@@ -131,7 +131,7 @@ public:
     {
     }
 protected:
-    virtual bool eventTest(QEvent *event) Q_DECL_OVERRIDE
+    virtual bool eventTest(QEvent *event) override
     {
         if (!QKeyEventTransition::eventTest(event))
             return false;
@@ -150,7 +150,7 @@ public:
     {
     }
 protected:
-    void onEntry(QEvent *) Q_DECL_OVERRIDE
+    void onEntry(QEvent *) override
     {
         boat->setCurrentDirection(Boat::Right);
         boat->updateBoatMovement();
@@ -167,7 +167,7 @@ public:
     {
     }
 protected:
-    void onEntry(QEvent *) Q_DECL_OVERRIDE
+    void onEntry(QEvent *) override
     {
         boat->setCurrentDirection(Boat::Left);
         boat->updateBoatMovement();
@@ -184,7 +184,7 @@ public:
     {
     }
 protected:
-    void onEntry(QEvent *) Q_DECL_OVERRIDE
+    void onEntry(QEvent *) override
     {
         boat->setCurrentSpeed(0);
         boat->setCurrentDirection(Boat::None);
@@ -202,7 +202,7 @@ public:
     {
     }
 protected:
-    void onEntry(QEvent *) Q_DECL_OVERRIDE
+    void onEntry(QEvent *) override
     {
         Bomb *b = new Bomb();
         b->setPos(boat->x()+boat->size().width(),boat->y());
@@ -223,7 +223,7 @@ public:
     {
     }
 protected:
-    void onEntry(QEvent *) Q_DECL_OVERRIDE
+    void onEntry(QEvent *) override
     {
         Bomb *b = new Bomb();
         b->setPos(boat->x() - b->size().width(), boat->y());

@@ -68,7 +68,7 @@ public:
     SimpleStylePlugin() {}
 
     QStringList keys() const;
-    QStyle *create(const QString &key) Q_DECL_OVERRIDE;
+    QStyle *create(const QString &key) override;
 };
 //! [0]
 

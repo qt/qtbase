@@ -56,10 +56,10 @@ public:
     GLWidget(QWidget *parent);
 
 protected:
-    void initializeGL() Q_DECL_OVERRIDE;
-    void resizeGL(int w, int h) Q_DECL_OVERRIDE;
-    void paintGL() Q_DECL_OVERRIDE;
-    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;
+    void initializeGL() override;
+    void resizeGL(int w, int h) override;
+    void paintGL() override;
+    void timerEvent(QTimerEvent *) override;
 
     void makeObject();
     void quad(GLenum primitive, GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2,

@@ -77,10 +77,10 @@ public:
     void setStatus(const QString &status);
     QString status() const;
 
-    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const override;
 
 protected:
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *event) override;
 //![0]
 
 //![1]

@@ -76,9 +76,9 @@ public:
 
     void setGradientStops(const QGradientStops &stops);
 
-    void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *e) override;
 
-    QSize sizeHint() const Q_DECL_OVERRIDE { return QSize(150, 40); }
+    QSize sizeHint() const override { return QSize(150, 40); }
     QPolygonF points() const;
 
     HoverPoints *hoverPoints() const { return m_hoverPoints; }
@@ -125,12 +125,12 @@ class GradientRenderer : public ArthurFrame
 
 public:
     GradientRenderer(QWidget *parent);
-    void paint(QPainter *p) Q_DECL_OVERRIDE;
+    void paint(QPainter *p) override;
 
-    QSize sizeHint() const Q_DECL_OVERRIDE { return QSize(400, 400); }
+    QSize sizeHint() const override { return QSize(400, 400); }
 
     HoverPoints *hoverPoints() const { return m_hoverPoints; }
-    void mousePressEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *e) override;
 
 public slots:
     void setGradientStops(const QGradientStops &stops);

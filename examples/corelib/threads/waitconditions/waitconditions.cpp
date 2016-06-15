@@ -74,7 +74,7 @@ public:
     {
     }
 
-    void run() Q_DECL_OVERRIDE
+    void run() override
     {
         qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
 
@@ -105,7 +105,7 @@ public:
     {
     }
 
-    void run() Q_DECL_OVERRIDE
+    void run() override
     {
         for (int i = 0; i < DataSize; ++i) {
             mutex.lock();

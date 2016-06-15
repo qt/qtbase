@@ -72,8 +72,8 @@ signals:
     void itemMoved(DiagramItem *movedItem, const QPointF &movedFromPosition);
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent *event) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) Q_DECL_OVERRIDE;
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
 
 private:
     QGraphicsItem *movingItem;

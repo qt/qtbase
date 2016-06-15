@@ -64,10 +64,10 @@ public:
     static QString puzzleMimeType() { return QStringLiteral("image/x-puzzle-piece"); }
 
 protected:
-    void dragEnterEvent(QDragEnterEvent *event) Q_DECL_OVERRIDE;
-    void dragMoveEvent(QDragMoveEvent *event) Q_DECL_OVERRIDE;
-    void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
-    void startDrag(Qt::DropActions supportedActions) Q_DECL_OVERRIDE;
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dragMoveEvent(QDragMoveEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+    void startDrag(Qt::DropActions supportedActions) override;
 
     int m_PieceSize;
 };

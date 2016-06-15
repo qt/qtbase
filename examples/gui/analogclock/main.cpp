@@ -59,8 +59,8 @@ public:
     AnalogClockWindow();
 
 protected:
-    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;
-    void render(QPainter *p) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *) override;
+    void render(QPainter *p) override;
 
 private:
     int m_timerId;

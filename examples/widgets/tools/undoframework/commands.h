@@ -64,10 +64,10 @@ public:
     MoveCommand(DiagramItem *diagramItem, const QPointF &oldPos,
                 QUndoCommand *parent = 0);
 
-    void undo() Q_DECL_OVERRIDE;
-    void redo() Q_DECL_OVERRIDE;
-    bool mergeWith(const QUndoCommand *command) Q_DECL_OVERRIDE;
-    int id() const Q_DECL_OVERRIDE { return Id; }
+    void undo() override;
+    void redo() override;
+    bool mergeWith(const QUndoCommand *command) override;
+    int id() const override { return Id; }
 
 private:
     DiagramItem *myDiagramItem;
@@ -82,8 +82,8 @@ class DeleteCommand : public QUndoCommand
 public:
     explicit DeleteCommand(QGraphicsScene *graphicsScene, QUndoCommand *parent = 0);
 
-    void undo() Q_DECL_OVERRIDE;
-    void redo() Q_DECL_OVERRIDE;
+    void undo() override;
+    void redo() override;
 
 private:
     DiagramItem *myDiagramItem;
@@ -99,8 +99,8 @@ public:
                QUndoCommand *parent = 0);
     ~AddCommand();
 
-    void undo() Q_DECL_OVERRIDE;
-    void redo() Q_DECL_OVERRIDE;
+    void undo() override;
+    void redo() override;
 
 private:
     DiagramItem *myDiagramItem;
