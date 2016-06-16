@@ -211,6 +211,11 @@ void QIOSContext::swapBuffers(QPlatformSurface *surface)
     if (surface->surface()->surfaceClass() == QSurface::Offscreen)
         return; // Nothing to do
 
+    if (!static_cast<QIOSWindow *>(surface)->isExposed()) {
+        qCWarning(lcQpaGLContext, "Detected swapBuffers on a non-exposed window, skipping flush");
+        return;
+    }
+
     FramebufferObject &framebufferObject = backingFramebufferObjectFor(surface);
     Q_ASSERT_X(framebufferObject.isComplete, "QIOSContext", "swapBuffers on incomplete FBO");
 
