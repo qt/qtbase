@@ -76,9 +76,7 @@ HEADERS  = configureapp.h environment.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qunicodetables_p.h \
            $$QT_SOURCE_TREE/src/corelib/kernel/qsystemerror_p.h \
            $$QT_SOURCE_TREE/src/corelib/xml/qxmlstream.h \
-           $$QT_SOURCE_TREE/src/corelib/xml/qxmlutils_p.h \
-           $$QT_SOURCE_TREE/tools/shared/windows/registry_p.h
-
+           $$QT_SOURCE_TREE/src/corelib/xml/qxmlutils_p.h
 
 SOURCES  = main.cpp configureapp.cpp environment.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qbytearray.cpp \
@@ -134,5 +132,4 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp \
            $$QT_SOURCE_TREE/src/corelib/xml/qxmlstream.cpp \
            $$QT_SOURCE_TREE/src/corelib/xml/qxmlutils.cpp \
            $$QT_SOURCE_TREE/src/corelib/plugin/quuid.cpp \
-           $$QT_SOURCE_TREE/src/corelib/tools/qcryptographichash.cpp \
-           $$QT_SOURCE_TREE/tools/shared/windows/registry.cpp
+           $$QT_SOURCE_TREE/src/corelib/tools/qcryptographichash.cpp

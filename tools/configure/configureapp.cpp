@@ -163,6 +163,14 @@ void Configure::parseCmdLine()
         mkspecs << mkspec;
     }
 
+    if (dictionary[ "QMAKESPEC" ] == "win32-msvc2012"
+        || dictionary[ "QMAKESPEC" ] == "win32-msvc2013"
+        || dictionary[ "QMAKESPEC" ] == "win32-msvc2015"
+        || dictionary[ "QMAKESPEC" ] == "win32-msvc2017") {
+        cout << "\nNotice: re-mapping requested qmake spec to unified 'win32-msvc'.\n\n";
+        dictionary[ "QMAKESPEC" ] = "win32-msvc";
+    }
+
     if (dictionary["QMAKESPEC"].toLower() == "features"
         || !mkspecs.contains(dictionary["QMAKESPEC"], Qt::CaseInsensitive)) {
         dictionary[ "DONE" ] = "error";
@@ -175,10 +183,7 @@ void Configure::parseCmdLine()
         cout << "See the README file for a list of supported operating systems and compilers." << endl;
     } else {
         if (dictionary[ "QMAKESPEC" ].endsWith("-icc") ||
-            dictionary[ "QMAKESPEC" ].endsWith("-msvc2012") ||
-            dictionary[ "QMAKESPEC" ].endsWith("-msvc2013") ||
-            dictionary[ "QMAKESPEC" ].endsWith("-msvc2015") ||
-            dictionary[ "QMAKESPEC" ].endsWith("-msvc2017")) {
+            dictionary[ "QMAKESPEC" ].contains("-msvc")) {
             if (dictionary[ "MAKE" ].isEmpty()) dictionary[ "MAKE" ] = "nmake";
             dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32";
         } else if (dictionary[ "QMAKESPEC" ].startsWith(QLatin1String("win32-g++"))) {

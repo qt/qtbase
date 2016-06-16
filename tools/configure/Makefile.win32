@@ -1,9 +1,8 @@
 CORESRC = $(QTSRC)src\corelib
-TOOLSRC = $(QTSRC)tools
-CONFSRC = $(TOOLSRC)\configure
+CONFSRC = $(QTSRC)tools\configure
 
 DEFINES       = -DUNICODE -D_CRT_SECURE_NO_DEPRECATE -DQT_BOOTSTRAPPED -DQT_BUILD_CONFIGURE -DQT_USE_QSTRINGBUILDER -DQT_VERSION_STR=\"$(QTVERSION)\" -DQT_VERSION_MAJOR=$(QT_VERSION_MAJOR) -DQT_VERSION_MINOR=$(QT_VERSION_MINOR) -DQT_VERSION_PATCH=$(QT_VERSION_PATCH)
-INCPATH       = -I"..\..\include" -I"..\..\include\QtCore" -I"..\..\include\QtCore\$(QTVERSION)" -I"..\..\include\QtCore\$(QTVERSION)\QtCore" -I"$(TOOLSRC)\shared" -I"$(QTSRC)mkspecs\win32-msvc2012"
+INCPATH       = -I"..\..\include" -I"..\..\include\QtCore" -I"..\..\include\QtCore\$(QTVERSION)" -I"..\..\include\QtCore\$(QTVERSION)\QtCore" -I"$(QTSRC)mkspecs\win32-msvc"
 CXXFLAGS_BARE = -nologo -Zc:wchar_t -W3 -GR -EHsc -w34100 -w34189 -wd4577 $(CFLAGS_CRT) $(EXTRA_CXXFLAGS) $(DEFINES) $(INCPATH)
 !IF ("$(CXX)" != "clang-cl")
 PCH           = configure_pch.pch
@@ -76,7 +75,6 @@ OBJECTS = \
     qxmlstream.obj \
     qxmlutils.obj \
     quuid.obj \
-    registry.obj \
     $(PCH_OBJECT)
 
 $(TARGET): $(OBJECTS)
@@ -98,7 +96,6 @@ $(OBJECTS): $(PCH)
 main.obj: $(CONFSRC)\main.cpp $(CONFSRC)\configureapp.h $(PCH)
 configureapp.obj: $(CONFSRC)\configureapp.cpp $(CONFSRC)\configureapp.h $(CONFSRC)\environment.h $(PCH)
 environment.obj: $(CONFSRC)\environment.cpp $(CONFSRC)\environment.h $(PCH)
-registry.obj: $(TOOLSRC)\shared\windows\registry.cpp $(PCH)
 qarraydata.obj: $(CORESRC)\tools\qarraydata.cpp $(PCH)
 qbytearray.obj: $(CORESRC)\tools\qbytearray.cpp $(PCH)
 qbytearraymatcher.obj: $(CORESRC)\tools\qbytearraymatcher.cpp $(PCH)
@@ -156,8 +153,6 @@ qxmlutils.obj: $(CORESRC)\xml\qxmlutils.cpp $(PCH)
 quuid.obj: $(CORESRC)\plugin\quuid.cpp $(PCH)
 
 {$(CONFSRC)}.cpp{}.obj::
-	$(CXX) -c $(CXXFLAGS) $<
-{$(TOOLSRC)\shared\windows}.cpp{}.obj::
 	$(CXX) -c $(CXXFLAGS) $<
 {$(CORESRC)\tools}.cpp{}.obj::
 	$(CXX) -c $(CXXFLAGS) $<

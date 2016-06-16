@@ -1,11 +1,10 @@
 CORESRC = $(QTSRC)src/corelib
-TOOLSRC = $(QTSRC)tools
-CONFSRC = $(TOOLSRC)/configure
+CONFSRC = $(QTSRC)tools/configure
 
 RAW_PCH       = configure_pch.h
 PCH           = $(RAW_PCH).gch/c++
 DEFINES       = -DUNICODE -D_CRT_SECURE_NO_DEPRECATE -DQT_BOOTSTRAPPED -DQT_BUILD_CONFIGURE -DQT_USE_QSTRINGBUILDER -DQT_VERSION_STR=\"$(QTVERSION)\" -DQT_VERSION_MAJOR=$(QT_VERSION_MAJOR) -DQT_VERSION_MINOR=$(QT_VERSION_MINOR) -DQT_VERSION_PATCH=$(QT_VERSION_PATCH)
-INCPATH       = -I"../../include" -I"../../include/QtCore" -I"../../include/QtCore/$(QTVERSION)" -I"../../include/QtCore/$(QTVERSION)/QtCore" -I"$(TOOLSRC)/shared" -I"$(QTSRC)mkspecs/win32-g++"
+INCPATH       = -I"../../include" -I"../../include/QtCore" -I"../../include/QtCore/$(QTVERSION)" -I"../../include/QtCore/$(QTVERSION)/QtCore" -I"$(QTSRC)mkspecs/win32-g++"
 CXXFLAGS_BARE = -std=c++11 -fno-rtti -fno-exceptions -mthreads -Wall -Wextra $(DEFINES) $(INCPATH)
 CXXFLAGS      = -include $(RAW_PCH) $(CXXFLAGS_BARE)
 LINK          = g++
@@ -70,8 +69,7 @@ OBJECTS = \
     qmalloc.o \
     qxmlstream.o \
     qxmlutils.o \
-    quuid.o \
-    registry.o
+    quuid.o
 
 $(TARGET): $(OBJECTS)
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(LIBS)
@@ -112,7 +110,7 @@ $(PCH): $(CONFSRC)/configure_pch.h
 	@$(CHK_DIR_EXISTS) $(RAW_PCH).gch $(CHK_DIR_EXISTS_GLUE) $(MKDIR) $(RAW_PCH).gch
 	$(CXX) -x c++-header -c $(CXXFLAGS_BARE) -o $@ $<
 
-VPATH = $(CONFSRC):$(TOOLSRC)/shared/windows:$(CORESRC)/global:$(CORESRC)/kernel:$(CORESRC)/tools:$(CORESRC)/codecs:$(CORESRC)/io:$(CORESRC)/xml:$(CORESRC)/plugin
+VPATH = $(CONFSRC):$(CORESRC)/global:$(CORESRC)/kernel:$(CORESRC)/tools:$(CORESRC)/codecs:$(CORESRC)/io:$(CORESRC)/xml:$(CORESRC)/plugin
 
 main.o: $(CONFSRC)/configureapp.h
 configureapp.o: $(CONFSRC)/configureapp.h $(CONFSRC)/environment.h

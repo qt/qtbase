@@ -51,25 +51,18 @@ using namespace std;
 #include <qt_windows.h>
 #endif
 
-#include <windows/registry_p.h> // from tools/shared
-
 QT_BEGIN_NAMESPACE
 
 struct CompilerInfo{
     Compiler compiler;
     const char *compilerStr;
-    const char *regKey;
     const char *executable;
 } compiler_info[] = {
     // The compilers here are sorted in a reversed-preferred order
-    {CC_MINGW,   "MinGW (Minimalist GNU for Windows)",                             0, "g++.exe"},
-    {CC_INTEL,   "Intel(R) C++ Compiler for 32-bit applications",                  0, "icl.exe"}, // xilink.exe, xilink5.exe, xilink6.exe, xilib.exe
-    {CC_MSVC2012, "Microsoft (R) Visual Studio 2012 C/C++ Compiler (11.0)",        "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\11.0", "cl.exe"}, // link.exe, lib.exe
-    {CC_MSVC2013, "Microsoft (R) Visual Studio 2013 C/C++ Compiler (12.0)",        "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\12.0", "cl.exe"}, // link.exe, lib.exe
-    // Microsoft skipped version 13
-    {CC_MSVC2015, "Microsoft (R) Visual Studio 2015 C/C++ Compiler (14.0)",        "Software\\Microsoft\\VisualStudio\\SxS\\VS7\\14.0", "cl.exe"}, // link.exe, lib.exe
-    {CC_MSVC2017, "Microsoft (R) Visual Studio 2017 C/C++ Compiler (15.0)",        "Software\\Microsoft\\VisualStudio\\SxS\\VS7\\15.0", "cl.exe"}, // link.exe, lib.exe
-    {CC_UNKNOWN, "Unknown", 0, 0},
+    {CC_MINGW,   "MinGW (Minimalist GNU for Windows)",             "g++.exe"},
+    {CC_INTEL,   "Intel(R) C++ Compiler for 32-bit applications",  "icl.exe"}, // xilink.exe, xilink5.exe, xilink6.exe, xilib.exe
+    {CC_MSVC,    "Microsoft (R) Visual Studio C/C++ Compiler",     "cl.exe"}, // link.exe, lib.exe
+    {CC_UNKNOWN, "Unknown", 0},
 };
 
 
@@ -94,17 +87,8 @@ QString Environment::detectQMakeSpec()
 {
     QString spec;
     switch (detectCompiler()) {
-    case CC_MSVC2017:
-        spec = "win32-msvc2017";
-        break;
-    case CC_MSVC2015:
-        spec = "win32-msvc2015";
-        break;
-    case CC_MSVC2013:
-        spec = "win32-msvc2013";
-        break;
-    case CC_MSVC2012:
-        spec = "win32-msvc2012";
+    case CC_MSVC:
+        spec = "win32-msvc";
         break;
     case CC_INTEL:
         spec = "win32-icc";
@@ -128,61 +112,15 @@ QString Environment::detectQMakeSpec()
 */
 Compiler Environment::detectCompiler()
 {
-#ifndef Q_OS_WIN32
-    return CC_UNKNOWN; // Always generate CC_UNKNOWN on other platforms
-#else
     if(detectedCompiler != CC_UNKNOWN)
         return detectedCompiler;
 
     int installed = 0;
-
-    // Check for compilers in registry first, to see which version is in PATH
-    QString paths = qgetenv("PATH");
-    QStringList pathlist = paths.toLower().split(";");
-    for(int i = 0; compiler_info[i].compiler; ++i) {
-        QString productPath = qt_readRegistryKey(HKEY_LOCAL_MACHINE, compiler_info[i].regKey,
-                                                 KEY_WOW64_32KEY).toLower();
-        if (productPath.length()) {
-            QStringList::iterator it;
-            for(it = pathlist.begin(); it != pathlist.end(); ++it) {
-                if((*it).contains(productPath)) {
-                    if (detectedCompiler != compiler_info[i].compiler) {
-                        ++installed;
-                        detectedCompiler = compiler_info[i].compiler;
-                    }
-                    /* else {
-
-                        We detected the same compiler again, which happens when
-                        configure is build with the 64-bit compiler. Skip the
-                        duplicate so that we don't think it's installed twice.
-
-                    }
-                    */
-                    break;
-                }
-            }
-        }
-    }
-
-    // Now just go looking for the executables, and accept any executable as the lowest version
-    if (!installed) {
-        for(int i = 0; compiler_info[i].compiler; ++i) {
-            QString executable = QString(compiler_info[i].executable).toLower();
-            if (executable.length() && !QStandardPaths::findExecutable(executable).isEmpty()) {
-                if (detectedCompiler != compiler_info[i].compiler) {
-                    ++installed;
-                    detectedCompiler = compiler_info[i].compiler;
-                }
-                /* else {
-
-                    We detected the same compiler again, which happens when
-                    configure is build with the 64-bit compiler. Skip the
-                    duplicate so that we don't think it's installed twice.
-
-                }
-                */
-                break;
-            }
+    for (int i = 0; compiler_info[i].compiler; ++i) {
+        if (!QStandardPaths::findExecutable(compiler_info[i].executable).isEmpty()) {
+            if (detectedCompiler == CC_UNKNOWN)
+                detectedCompiler = compiler_info[i].compiler;
+            ++installed;
         }
     }
 
@@ -191,7 +129,6 @@ Compiler Environment::detectCompiler()
         detectedCompiler = CC_UNKNOWN;
     }
     return detectedCompiler;
-#endif
 };
 
 /*!

@@ -35,13 +35,7 @@ enum Compiler {
     CC_UNKNOWN = 0,
     CC_MINGW   = 0x02,
     CC_INTEL   = 0x03,
-    CC_MSVC2005 = 0x80,
-    CC_MSVC2008 = 0x90,
-    CC_MSVC2010 = 0xA0,
-    CC_MSVC2012 = 0xB0,
-    CC_MSVC2013 = 0xC0,
-    CC_MSVC2015 = 0xD0,
-    CC_MSVC2017 = 0xE0
+    CC_MSVC    = 0x04
 };
 
 struct CompilerInfo;
