@@ -36,100 +36,21 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/qcoreapplication.h>
 
+#include <QtGui/private/qguiapplication_p.h>
+
 #import <UIKit/UIKit.h>
 
-@interface QIOSApplicationStateListener : NSObject
-@end
-
-@implementation QIOSApplicationStateListener
-
-- (id)init
+static Qt::ApplicationState qtApplicationState(UIApplicationState uiApplicationState)
 {
-    self = [super init];
-    if (self) {
-        // Listen for application state changes.
-        // Note: We use notifications rather than application delegate callbacks to
-        // also support hybrid applications were QIOSApplicationDelegate is not in use.
-        [[NSNotificationCenter defaultCenter]
-            addObserver:self
-            selector:@selector(applicationDidBecomeActive)
-            name:UIApplicationDidBecomeActiveNotification
-            object:nil];
-        [[NSNotificationCenter defaultCenter]
-            addObserver:self
-            selector:@selector(applicationWillResignActive)
-            name:UIApplicationWillResignActiveNotification
-            object:nil];
-        [[NSNotificationCenter defaultCenter]
-            addObserver:self
-            selector:@selector(applicationDidEnterBackground)
-            name:UIApplicationDidEnterBackgroundNotification
-            object:nil];
-
-        // Update the current state now, since we have missed all the updates
-        // posted from AppKit so far. But let QPA finish initialization first.
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self handleApplicationStateChanged:[UIApplication sharedApplication].applicationState];
-        });
-    }
-    return self;
-}
-
-- (void)dealloc
-{
-    [[NSNotificationCenter defaultCenter]
-        removeObserver:self
-        name:UIApplicationDidBecomeActiveNotification
-        object:nil];
-    [[NSNotificationCenter defaultCenter]
-        removeObserver:self
-        name:UIApplicationWillResignActiveNotification
-        object:nil];
-    [[NSNotificationCenter defaultCenter]
-        removeObserver:self
-        name:UIApplicationDidEnterBackgroundNotification
-        object:nil];
-    [super dealloc];
-}
-
-- (void)applicationDidBecomeActive
-{
-    [self handleApplicationStateChanged:UIApplicationStateActive];
-}
-
-- (void)applicationWillResignActive
-{
-    // Note that UIApplication is still UIApplicationStateActive at this
-    // point, but since there is no separate notification for the inactive
-    // state, we report UIApplicationStateInactive now:
-    [self handleApplicationStateChanged:UIApplicationStateInactive];
-}
-
-- (void)applicationDidEnterBackground
-{
-    [self handleApplicationStateChanged:UIApplicationStateBackground];
-}
-
-- (void)handleApplicationStateChanged:(UIApplicationState)uiApplicationState
-{
-    // We may receive application state changes after QCoreApplication has
-    // gone down, as the block we schedule on the main queue keeps the
-    // listener alive. In that case we just ignore the notification.
-    if (!qApp)
-        return;
-
-    Qt::ApplicationState state;
     switch (uiApplicationState) {
     case UIApplicationStateActive:
-        // The application is visible in front, and receiving events:
-        state = Qt::ApplicationActive;
-        break;
+        // The application is visible in front, and receiving events
+        return Qt::ApplicationActive;
     case UIApplicationStateInactive:
         // The app is running in the foreground but is not receiving events. This
         // typically happens while transitioning to/from active/background, like
-        // upon app launch or when receiving incoming calls:
-        state = Qt::ApplicationInactive;
-        break;
+        // upon app launch or when receiving incoming calls.
+        return Qt::ApplicationInactive;
     case UIApplicationStateBackground:
         // Normally the app would enter this state briefly before it gets
         // suspeded (you have five seconds, according to Apple).
@@ -138,25 +59,54 @@
         // API for doing that yet, we handle this state as "about to be suspended".
         // Note: A screen-shot for the SpringBoard will also be taken after this
         // call returns.
-        state = Qt::ApplicationSuspended;
-        break;
+        return Qt::ApplicationSuspended;
     }
+}
+
+static void handleApplicationStateChanged(UIApplicationState uiApplicationState)
+{
+    Qt::ApplicationState state = qtApplicationState(uiApplicationState);
     QWindowSystemInterface::handleApplicationStateChanged(state);
     QWindowSystemInterface::flushWindowSystemEvents();
 }
 
-@end
-
 QT_BEGIN_NAMESPACE
 
 QIOSApplicationState::QIOSApplicationState()
-    : m_listener([[QIOSApplicationStateListener alloc] init])
 {
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+
+    m_observers.push_back([notificationCenter addObserverForName:UIApplicationDidBecomeActiveNotification
+        object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *) {
+            handleApplicationStateChanged(UIApplicationStateActive);
+        }
+    ]);
+
+    m_observers.push_back([notificationCenter addObserverForName:UIApplicationWillResignActiveNotification
+        object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *) {
+            // Note: UIApplication is still UIApplicationStateActive at this point,
+            // but since there is no separate notification for the inactive state,
+            // we report UIApplicationStateInactive now.
+            handleApplicationStateChanged(UIApplicationStateInactive);
+        }
+    ]);
+
+    m_observers.push_back([notificationCenter addObserverForName:UIApplicationDidEnterBackgroundNotification
+        object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *) {
+            handleApplicationStateChanged(UIApplicationStateBackground);
+        }
+    ]);
+
+    // Initialize correct startup state, which may not be the Qt default (inactive)
+    UIApplicationState startupState = [UIApplication sharedApplication].applicationState;
+    QGuiApplicationPrivate::applicationState = qtApplicationState(startupState);
 }
 
 QIOSApplicationState::~QIOSApplicationState()
 {
-    [m_listener release];
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    foreach (const NSObject* observer, m_observers)
+        [notificationCenter removeObserver:observer];
 }
 
 QT_END_NAMESPACE
