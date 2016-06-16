@@ -299,7 +299,6 @@ QWindowSystemInterface::TouchPoint QTuioHandler::cursorToTouchPoint(const QTuioC
         tp.normalPosition = m_transform.map(tp.normalPosition);
 
     tp.state = tc.state();
-    tp.area = QRectF(0, 0, 1, 1);
 
     // we map the touch to the size of the window. we do this, because frankly,
     // trying to figure out which part of the screen to hit in order to press an
