@@ -2327,7 +2327,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
                 dep_cmd.prepend(QLatin1String("cd ")
                                 + Project->escapeFilePath(Option::fixPathToLocalOS(Option::output_dir, false))
                                 + QLatin1String(" && "));
-                if(FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), "r")) {
+                if (FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), QT_POPEN_READ)) {
                     QString indeps;
                     while(!feof(proc)) {
                         int read_in = (int)fread(buff, 1, 255, proc);

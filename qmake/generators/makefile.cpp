@@ -1952,7 +1952,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                     char buff[256];
                     QString dep_cmd = replaceExtraCompilerVariables(tmp_dep_cmd, inpf, tmp_out, LocalShell);
                     dep_cmd = dep_cd_cmd + fixEnvVariables(dep_cmd);
-                    if(FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), "r")) {
+                    if (FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), QT_POPEN_READ)) {
                         QString indeps;
                         while(!feof(proc)) {
                             int read_in = (int)fread(buff, 1, 255, proc);
@@ -2044,7 +2044,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 char buff[256];
                 QString dep_cmd = replaceExtraCompilerVariables(tmp_dep_cmd, inpf, out, LocalShell);
                 dep_cmd = dep_cd_cmd + fixEnvVariables(dep_cmd);
-                if(FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), "r")) {
+                if (FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), QT_POPEN_READ)) {
                     QString indeps;
                     while(!feof(proc)) {
                         int read_in = (int)fread(buff, 1, 255, proc);

@@ -72,9 +72,11 @@
 
 #ifdef Q_OS_WIN32
 #define QT_POPEN _popen
+#define QT_POPEN_READ "rb"
 #define QT_PCLOSE _pclose
 #else
 #define QT_POPEN popen
+#define QT_POPEN_READ "r"
 #define QT_PCLOSE pclose
 #endif
 
@@ -413,7 +415,7 @@ QByteArray QMakeEvaluator::getCommandOutput(const QString &args) const
 #else
     if (FILE *proc = QT_POPEN(QString(QLatin1String("cd ")
                                + IoUtils::shellQuote(QDir::toNativeSeparators(currentDirectory()))
-                               + QLatin1String(" && ") + args).toLocal8Bit().constData(), "r")) {
+                               + QLatin1String(" && ") + args).toLocal8Bit().constData(), QT_POPEN_READ)) {
         while (!feof(proc)) {
             char buff[10 * 1024];
             int read_in = int(fread(buff, 1, sizeof(buff), proc));
@@ -423,6 +425,9 @@ QByteArray QMakeEvaluator::getCommandOutput(const QString &args) const
         }
         QT_PCLOSE(proc);
     }
+# ifdef Q_OS_WIN
+    out.replace("\r\n", "\n");
+# endif
 #endif
     return out;
 }
