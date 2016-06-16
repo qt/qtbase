@@ -44,6 +44,7 @@
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QStyledItemDelegate>
 #include <QtWidgets/QStyleFactory>
+#include <QtWidgets/QVBoxLayout>
 
 #if defined(Q_OS_WIN) || defined(Q_OS_WINCE)
 #  include <windows.h>
@@ -111,7 +112,7 @@ private slots:
     void scrollBarAsNeeded();
     void moveItems();
     void wordWrap();
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && WINVER >= 0x0500
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     void setCurrentIndexAfterAppendRowCrash();
 #endif
     void emptyItemSize();
@@ -1456,8 +1457,10 @@ class SetCurrentIndexAfterAppendRowCrashDialog : public QDialog
 public:
     SetCurrentIndexAfterAppendRowCrashDialog()
     {
-#if WINVER >= 0x0500
-        listView = new QListView();
+        setWindowTitle(QTest::currentTestFunction());
+        listView = new QListView(this);
+        QVBoxLayout *layout = new QVBoxLayout(this);
+        layout->addWidget(listView);
         listView->setViewMode(QListView::IconMode);
 
         model = new QStandardItemModel(this);
@@ -1466,12 +1469,16 @@ public:
         timer = new QTimer(this);
         connect(timer, SIGNAL(timeout()), this, SLOT(buttonClicked()));
         timer->start(1000);
+    }
 
+protected:
+    void showEvent(QShowEvent *event) override
+    {
+        QDialog::showEvent(event);
         DWORD lParam = 0xFFFFFFFC/*OBJID_CLIENT*/;
         DWORD wParam = 0;
         if (const HWND hwnd =getHWNDForWidget(this))
             SendMessage(hwnd, WM_GETOBJECT, wParam, lParam);
-#endif
     }
 
 private slots:
@@ -1488,16 +1495,13 @@ private:
     QStandardItemModel *model;
     QTimer *timer;
 };
-#endif
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT) && WINVER >= 0x0500
-// This test only makes sense on windows 2000 and higher.
 void tst_QListView::setCurrentIndexAfterAppendRowCrash()
 {
     SetCurrentIndexAfterAppendRowCrashDialog w;
     w.exec();
 }
-#endif
+#endif // Q_OS_WIN && !Q_OS_WINCE && !Q_OS_WINRT
 
 void tst_QListView::emptyItemSize()
 {

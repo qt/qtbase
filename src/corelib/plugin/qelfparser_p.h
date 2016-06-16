@@ -89,9 +89,9 @@ public:
     T read(const char *s)
     {
         if (m_endian == ElfBigEndian)
-            return qFromBigEndian<T>(reinterpret_cast<const uchar *>(s));
+            return qFromBigEndian<T>(s);
         else
-            return qFromLittleEndian<T>(reinterpret_cast<const uchar *>(s));
+            return qFromLittleEndian<T>(s);
     }
 
     const char *parseSectionHeader(const char* s, ElfSectionHeader *sh);

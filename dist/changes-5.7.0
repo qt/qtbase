@@ -1,0 +1,395 @@
+Qt 5.7 introduces many new features and improvements along with bug fixes
+over the 5.6.x series. Also, there is a change in the licensing terms.
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+  http://doc.qt.io/qt-5.7
+
+The Qt version 5.7 series is binary compatible with the 5.6.x series.
+Applications compiled for 5.6 will continue to run with 5.7.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+  http://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+This release contains all fixes included in the Qt 5.6.1 release.
+
+****************************************************************************
+*                          Important License Changes                       *
+****************************************************************************
+
+ - Qt is no longer available under LGPLv2.1. The libraries in this package
+   are now available under the following licenses:
+   * Commercial License
+   * GNU General Public License v2.0 (LICENSE.GPL2) and later
+   * GNU Lesser General Public License v3.0 (LICENSE.LGPL3)
+
+   Note that a few Qt Libraries (currently Qt Charts and Qt Data
+   Visualization) are available only under the Commercial License and GPL
+   version 3.
+
+ - Qt Tools are now available under the following licenses:
+   * Commercial License
+   * GNU General Public License 3.0 (LICENSE.GPL3) with exceptions
+     described in the Qt Company GPL Exception 1.0 (LICENSE.GPL3-EXCEPT)
+
+****************************************************************************
+*                        Important Behavior Changes                        *
+****************************************************************************
+
+ - Starting with Qt 5.7, Qt requires a C++11 compiler with support for
+   C++11 atomics. This affects user code too: Qt headers no longer compile
+   with a C++98 compiler. The minimum compiler versions for this release
+   are:
+     * GCC 4.7
+     * Clang 3.4 (found in XCode 5.1)
+     * Microsoft Visual Studio 2013
+ - Support for the following platforms was removed in this version:
+     * Apple OS X 10.7 (Lion)
+     * Microsoft Windows XP
+     * Microsoft Windows Vista
+     * Microsoft Windows Embedded Compact 7
+     * Microsoft Windows Embedded Compact 2013
+ - Support for DirectFB is no longer enabled by default, due to lack of
+   development in upstream. To re-enable the platform plugin, pass the
+   -directfb option to configure. If there is no renewed interest in this
+   platform, the support will be removed in Qt 5.8.
+ - Qt no longer ships any fonts.
+
+ - QtGui:
+   * [QTBUG-51962] When line height is specified in pixels, this is now
+     interpreted as the minimum line height rather than an absolute line
+     height to avoid overlaps. To get the old behavior, use the
+     -qt-line-height-type property in CSS and set it to "fixed".
+   * [QTBUG-46054] QFont::exactMatch() now returns false when the provided
+     typeface is an alias.
+
+ - QtWidgets:
+   * [QTBUG-21217] QLineEdit will now accept certain shortcut override
+     events even if it is read-only.
+
+ - configure & build system:
+   * Except on OS X, -system-harfbuzz is now the default.
+   * A few obsolete options with no effect are not recognized any more.
+
+****************************************************************************
+*                          Deprecation Notice                              *
+****************************************************************************
+
+ - The following platforms or toolchains are deprecated and will be
+   removed as of Qt 5.8:
+   * Apple OS X 10.8 (Mountain Lion)
+
+   Deprecated platforms and toolchains continue to work until removed.
+
+****************************************************************************
+*                               Library                                    *
+****************************************************************************
+
+QtCore
+------
+
+ - [QTBUG-50548] Added qAsConst().
+ - Added qOverload() to select overloaded functions.
+ - Added qHash(std::pair), defined in <QHashFunctions>.
+ - Added qUtf16Printable().
+ - QLocale data updated to CLDR v29
+
+ - QDataStream:
+   * [QTBUG-44418] Added startTransaction(), commitTransaction(),
+     rollbackTransaction(), abortTransaction() functions to support read
+     transactions.
+
+ - QDebug:
+   * QDebug can now output std::vector, std::list, std::map, and
+     std::multimap.
+
+ - QFlags:
+   * [QTBUG-27100] Added setFlag method to set or unset a flag
+
+ - QHash/QSet:
+   * Added QHash::equal_range().
+   * Added erase(const_iterator).
+
+ - QIODevice:
+   * Added support for devices with multiple streams.
+   * [QTBUG-44418] Added startTransaction(), commitTransaction(),
+     rollbackTransaction(), isTransactionStarted() functions to support
+     read transactions.
+
+ - QJsonObject:
+   * Added value(), op[] const, find(), constFind(), contains() overloads
+     taking QLatin1String.
+
+ - QLocale:
+   * Added special value for double conversion precision to get shortest
+     accurate representation.
+   * Added additional flags in QLocale::NumberOption that allow generating
+     and parsing doubles in EcmaScript compliant format.
+   * [QTBUG-46595] Added an overload for toCurrencyString() that allows the
+     decimal precision to be specified.
+
+ - QMutex:
+   * Made the isRecursive() method be a const function so that it can be
+     called in const QMutex objects too.
+
+ - QObject:
+   * [QTBUG-52542] If the compiler supports variadic templates, functors
+     connected to signals will not be copied any more each time the signal is
+     emitted. This is the behavior that was exhibited with C++98 compilers.
+
+ - QReadWriteLock:
+   * Optimized QReadWriteLock to be faster and take less memory.
+
+ - QRect:
+   * Fixed integer overflow in center(). This fixes the result for some
+     corner-cases like a 1x1 rectangle at (INT_MIN, INT_MIN), for which the
+     previous implementation could return anything (due to invoking
+     undefined behavior), but commonly returned (0, 0).
+
+ - QRect/QRectF:
+   * Added transposed().
+
+ - QSharedPointer:
+   * Added support for debug printing via QDebug.
+
+ - QStorageInfo:
+   * [QTBUG-49498] Fixed a bug that caused QStorageInfo to report
+     information for the wrong filesystem if there is a mounted filesystem
+     at a path that is a prefix of the requested path (e.g., it would
+     report "/usr" filesystem for "/usrfoo").
+
+ - QString:
+   * Added resize(int, QChar) overload.
+
+ - QStringRef:
+   * Added subscript operator.
+   * Fixed relational operators against (const char*) to return the correct
+     result.
+   * Added reverse iterators, rbegin(), rend(), crbegin(), crend().
+
+ - QUuid:
+   * Added Objective-C NSUUID/CFUUIDRef converters.
+
+ - QVariant:
+   * [QTBUG-53384] Fixed QVariant::canConvert and conversion from integer
+     types to enumeration types.
+
+ - QVector:
+   * clear() now preserves capacity. To shed capacity, call squeeze() or
+     swap with a default-constructed QVector object, see the documentation
+     for an example.
+
+ - State Machine:
+   * Added constructor overload that takes a pointer-to-member for the
+     QSignalTransition.
+
+QtDBus
+------
+
+ - QDBusArgument:
+   * [QTBUG-53376] Deprecated relying on a streamable Base to stream a
+     Derived without providing operator<</>>() for Derived. No diagnostic
+     provided. Support will be removed in Qt 5.8.
+
+QtGui
+-----
+
+ - QWheelEvent::phase() now returns NoScrollPhase with non-phase-aware mice.
+   This is most mice and input devices except, for now, Apple's trackpads
+   and Magic Mouse.  It is no longer necessary to set the
+   QT_ENABLE_MOUSE_WHEEL_TRACKING environment variable to enable the fix for
+   QTBUG-50199.
+ - [QTBUG-35972] Added QWheelEvent::inverted() to enable detection of the
+   "natural scrolling" system setting. This feature currently only works on
+   OS X, though support for other operating systems is planned.
+
+ - Image:
+   * [QTBUG-50745] Fixed possible crash in QImage::pixel() for mono or
+     indexed images.
+
+ - QIcon:
+   * Split fromTheme() in two different overloads, one of which will only
+     lazily lookup the icons, in order to speed up startup of applications
+     that initialize many icons that are not necessarily visible.
+   * fromTheme gained the ability to use the GTK icon cache to speed up
+     lookups.
+
+ - QPixmapCache:
+   * Added QPixmapCache::Key::isValid().
+
+ - QRawFont:
+   * Fixed kerning on advances in QRawFont for OS X and Windows.
+
+ - Tablet support:
+   * [QTBUG-47007][QTBUG-51618] A synthetic mouse event will no longer be
+     sent after every QTabletEvent, only after those which are not accepted
+     (as documented).
+
+ - Text:
+   * [QTBUG-35156] Added support for color font rendering with Freetype.
+   * [QTBUG-52048] Added QTextOption::ShowDocumentTerminator flag.
+
+QtNetwork
+---------
+
+ - QAuthenticator:
+   * [QTBUG-53338] Fixed crash when comparing a initialized QAuthenticator
+     with an uninitialized QAuthenticator.
+
+QtWidgets
+---------
+
+ - Moved QGtkStyle to the qtstyleplugins repository.
+ - [QTBUG-37580] Added the Qt::AA_UseStyleSheetPropagationInWidgetStyles
+   attribute which enables font and palette propagation for Qt Style
+   Sheets.
+ - [QTBUG-48138] QPinchGesture on OS X now behaves like on other platforms:
+   totalScaleFactor is the magnitude of the pinch and scaleFactor is the
+   delta for the current event.
+
+ - Item Views:
+   * [QTBUG-50102] Item views scroll per pixel on OS X now.
+   * [QTBUG-50102] QAbstractItemView::verticalScrollMode and
+     QAbstractItemView::horizontalScrollMode are now resettable.
+
+ - QAbstractItemView:
+   * [QTBUG-7232] In ItemViews when scrollMode is set to scrollPerPixel, it
+     is now possible to change the single step. Qt will automatically adjust
+     the single step until setSingleStep is called.  When setSingleStep is
+     called it will however respect that and stop doing automatic changes
+     of the value. Calling setSingleStep(-1) will switch mode back to
+     automatic adjusting.
+
+ - QAbstractScrollArea, QTextEdit, QPlainTextEdit:
+   * [QTBUG-52559] Changed focus to Qt::StrongFocus. That respects
+     platforms' native guidelines.
+
+ - QHeaderView:
+   * [QTBUG-39010] Fixed some issues with restoring of section size after a
+     section is no longer the last visible section (in stretchLastSection
+     mode).
+   * [QTBUG-50171] Fixed a repainting issue when items had been reordered.
+
+ - QListWidget:
+   * [QTBUG-15741] Fixed a bug that caused the default drop action to be
+     ignored when using icon mode.
+
+ - QTableView:
+   * [QTBUG-50171] Fixed a selection bug when rows or columns were hidden.
+
+ - Styles:
+   * [QTBUG-50102] Added SH_ItemView_ScrollMode style hint.
+
+ - Dialogs:
+   * [QTBUG-51148] Fixed requesting a font from font dialog with a
+     non-existent family name and/or pixel size when using GTK2 platform
+     theme.
+
+QTest
+-----
+
+ - Added a new logging mode that allow test-results to be parsed on-the-fly
+   when using Jetbrains TeamCity as CI-server. This mode is enabled by
+   using the -teamcity option on the command-line.
+
+****************************************************************************
+*                      Platform-specific Changes                           *
+****************************************************************************
+
+ - The Gtk+ platform theme has been ported to Gtk+ 3.
+ - Dropped support for Windows CE.
+ - Added support for INTEGRITY RTOS.
+
+Android
+-------
+
+ - Support for Android API < 16 was removed.
+ - [QTBUG-37221] Qt can now be used to easily create Android Services.
+ - Allow the user to choose how much from the Android theme is extracted.
+
+iOS
+---
+
+ - [QTBUG-35271] QBackingStore now uses the raster paint engine instead of
+   the OpenGL paint engine, enabling improved antialiased drawing. In case
+   of performance regressions, the old code path can be enabled by setting
+   the window's surface type to QSurface::OpenGLSurface.
+
+OS X
+----
+
+ - Support for OS X < 10.8 was removed.
+ - [QTBUG-7000] QMacPrintEngine now really sets the printer resolution.
+ - [QTBUG-32898] OS X now accepts trusted certificates from the login and
+   system keychains.
+ - [QTBUG-48953] Pasting text from Qt applications to Apple Mail now works.
+ - [QTBUG-48953] "text/vcard" is now required as the mime type when
+   placing vCards on the clipboard.
+ - [QTBUG-50262] QStandardPaths now returns the correct display name for
+   the download folder.
+
+Windows
+-------
+
+ - [QTBUG-390][QTBUG-6917][QTBUG-9350][QTBUG-24619] Added method
+   QProcess::setCreateProcessArgumentsModifier() to enable users to
+   intercept and modify CreateProcess parameters.
+ - Added support for color fonts (color emojis) when DirectWrite 2 is
+   available.
+
+ - Text:
+   * [QTBUG-47141] Made it possible to disable antialiasing for text when
+     drawing into images.
+   * [QTBUG-18711] Fixed disabling hinting for application fonts, e.g. when
+     automatic scaling by device pixel ratio is in effect.
+
+XCB / X11
+---------
+
+ - [QTBUG-44964] It's now possible to unset AA_CompressHighFrequencyEvents
+   to disable the new X event compression feature that was added in 5.6.0.
+   This is a replacement for the WA_NoX11EventCompression flag in Qt 4.
+ - [QTBUG-49071] Fixed failure to deliver focusIn event on hide/show with XCB
+ - QMenuBar now uses the unified D-Bus AppMenu menubar when the desktop
+   environment supports it.
+
+****************************************************************************
+*                                Tools                                     *
+****************************************************************************
+
+moc
+---
+
+ - [QTBUG-53441] Fixed crash when processing files ending with \\\r.
+
+configure & build system
+------------------------
+
+ - [QTBUG-35754] Static builds now embed QML resources into the libraries
+   to make them self-contained.
+ - [QTBUG-35886][Unix] Made it explicit that -fontconfig implies
+   -system-freetype.
+ - [QTBUG-43784][Unix] Fixed GLX not being enabled with -qt-xcb.
+ - [QTBUG-45291][GCC] Enabled use of Qt with -Wzero-as-null-pointer-constant.
+ - [Android@Windows] Fixed configure tests outside QtBase.
+ - [Unix] Fixed config.log corruption with option -v.
+ - [Unix] Fixed the MySQL configure test on RHEL 6.6.
+ - [Android] Enabled building with newer SDKs than the minimal supported one.
+ - QNX and Android builds on Windows use -system-zlib now.
+ - Added support for "Canadian Cross Builds"; options -external-hostbindir
+   and -host-option.
+ - Added makespecs for DRIVE CX (Tegra X1), NVIDIA Jetson TK1, and i.MX7
+   boards.
+ - Qt now makes use of AVX512 instructions on Intel platforms.
+
+qmake
+-----
+
+ - Specifying directories in RESOURCES now actually works.
+ - Added -qtconf option to make it possible to use the same qmake binary
+   with several builds of Qt.

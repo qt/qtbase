@@ -533,7 +533,7 @@ void QPF2Generator::writeHeader()
     {
         const QByteArray head = fe->getSfntTable(MAKE_TAG('h', 'e', 'a', 'd'));
         if (head.size() >= 4) {
-            const quint32 revision = qFromBigEndian<quint32>(reinterpret_cast<const uchar *>(head.constData()));
+            const quint32 revision = qFromBigEndian<quint32>(head.constData());
             writeTaggedUInt32(QFontEngineQPF2::Tag_FontRevision, revision);
         }
     }

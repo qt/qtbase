@@ -163,7 +163,7 @@ bool QMimeMagicRule::matchNumber(const QByteArray &data) const
     const char *p = data.constData() + m_startPos;
     const char *e = data.constData() + qMin(data.size() - int(sizeof(T)), m_endPos + 1);
     for ( ; p <= e; ++p) {
-        if ((qFromUnaligned<T>(reinterpret_cast<const uchar *>(p)) & mask) == (value & mask))
+        if ((qFromUnaligned<T>(p) & mask) == (value & mask))
             return true;
     }
 

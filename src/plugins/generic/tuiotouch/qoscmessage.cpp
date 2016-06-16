@@ -95,7 +95,7 @@ QOscMessage::QOscMessage(const QByteArray &data)
             if (parsedBytes > (quint32)data.size() || data.size() - parsedBytes < sizeof(quint32))
                 return;
 
-            quint32 anInt = qFromBigEndian<quint32>((const uchar*)data.constData() + parsedBytes);
+            quint32 anInt = qFromBigEndian<quint32>(data.constData() + parsedBytes);
             parsedBytes += sizeof(quint32);
 
             // TODO: is int32 in OSC signed, or unsigned?
@@ -109,7 +109,7 @@ QOscMessage::QOscMessage(const QByteArray &data)
                 quint32 u;
                 float f;
             } value;
-            value.u = qFromBigEndian<quint32>((const uchar*)data.constData() + parsedBytes);
+            value.u = qFromBigEndian<quint32>(data.constData() + parsedBytes);
             parsedBytes += sizeof(quint32);
             arguments.append(value.f);
         } else {

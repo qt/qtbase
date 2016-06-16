@@ -58,25 +58,26 @@ QT_BEGIN_NAMESPACE
 /*
  * ENDIAN FUNCTIONS
 */
-inline void qbswap_helper(const uchar *src, uchar *dest, int size)
+inline void qbswap_helper(const void *src, void *dest, int size)
 {
-    for (int i = 0; i < size ; ++i) dest[i] = src[size - 1 - i];
+    for (int i = 0; i < size ; ++i)
+        static_cast<uchar *>(dest)[i] = static_cast<const uchar *>(src)[size - 1 - i];
 }
 
 /*
- * qbswap(const T src, const uchar *dest);
+ * qbswap(const T src, const void *dest);
  * Changes the byte order of \a src from big endian to little endian or vice versa
  * and stores the result in \a dest.
  * There is no alignment requirements for \a dest.
 */
-template <typename T> inline void qbswap(const T src, uchar *dest)
+template <typename T> inline void qbswap(const T src, void *dest)
 {
-    qbswap_helper(reinterpret_cast<const uchar *>(&src), dest, sizeof(T));
+    qbswap_helper(&src, dest, sizeof(T));
 }
 
 // Used to implement a type-safe and alignment-safe copy operation
 // If you want to avoid the memcpy, you must write specializations for these functions
-template <typename T> Q_ALWAYS_INLINE void qToUnaligned(const T src, uchar *dest)
+template <typename T> Q_ALWAYS_INLINE void qToUnaligned(const T src, void *dest)
 {
     // Using sizeof(T) inside memcpy function produces internal compiler error with
     // MSVC2008/ARM in tst_endian -> use extra indirection to resolve size of T.
@@ -89,7 +90,7 @@ template <typename T> Q_ALWAYS_INLINE void qToUnaligned(const T src, uchar *dest
             (dest, &src, size);
 }
 
-template <typename T> Q_ALWAYS_INLINE T qFromUnaligned(const uchar *src)
+template <typename T> Q_ALWAYS_INLINE T qFromUnaligned(const void *src)
 {
     T dest;
     const size_t size = sizeof(T);
@@ -122,11 +123,11 @@ template <> inline quint32 qbswap<quint32>(quint32 source)
     return __builtin_bswap32(source);
 }
 
-template <> inline void qbswap<quint64>(quint64 source, uchar *dest)
+template <> inline void qbswap<quint64>(quint64 source, void *dest)
 {
     qToUnaligned<quint64>(__builtin_bswap64(source), dest);
 }
-template <> inline void qbswap<quint32>(quint32 source, uchar *dest)
+template <> inline void qbswap<quint32>(quint32 source, void *dest)
 {
     qToUnaligned<quint32>(__builtin_bswap32(source), dest);
 }
@@ -158,7 +159,7 @@ template <> inline quint16 qbswap<quint16>(quint16 source)
 {
     return __builtin_bswap16(source);
 }
-template <> inline void qbswap<quint16>(quint16 source, uchar *dest)
+template <> inline void qbswap<quint16>(quint16 source, void *dest)
 {
     qToUnaligned<quint16>(__builtin_bswap16(source), dest);
 }
@@ -187,17 +188,17 @@ template <> inline qint16 qbswap<qint16>(qint16 source)
     return qbswap<quint16>(quint16(source));
 }
 
-template <> inline void qbswap<qint64>(qint64 source, uchar *dest)
+template <> inline void qbswap<qint64>(qint64 source, void *dest)
 {
     qbswap<quint64>(quint64(source), dest);
 }
 
-template <> inline void qbswap<qint32>(qint32 source, uchar *dest)
+template <> inline void qbswap<qint32>(qint32 source, void *dest)
 {
     qbswap<quint32>(quint32(source), dest);
 }
 
-template <> inline void qbswap<qint16>(qint16 source, uchar *dest)
+template <> inline void qbswap<qint16>(qint16 source, void *dest)
 {
     qbswap<quint16>(quint16(source), dest);
 }
@@ -212,9 +213,9 @@ template <typename T> inline T qToLittleEndian(T source)
 { return qbswap<T>(source); }
 template <typename T> inline T qFromLittleEndian(T source)
 { return qbswap<T>(source); }
-template <typename T> inline void qToBigEndian(T src, uchar *dest)
+template <typename T> inline void qToBigEndian(T src, void *dest)
 { qToUnaligned<T>(src, dest); }
-template <typename T> inline void qToLittleEndian(T src, uchar *dest)
+template <typename T> inline void qToLittleEndian(T src, void *dest)
 { qbswap<T>(src, dest); }
 #else // Q_LITTLE_ENDIAN
 
@@ -226,9 +227,9 @@ template <typename T> inline T qToLittleEndian(T source)
 { return source; }
 template <typename T> inline T qFromLittleEndian(T source)
 { return source; }
-template <typename T> inline void qToBigEndian(T src, uchar *dest)
+template <typename T> inline void qToBigEndian(T src, void *dest)
 { qbswap<T>(src, dest); }
-template <typename T> inline void qToLittleEndian(T src, uchar *dest)
+template <typename T> inline void qToLittleEndian(T src, void *dest)
 { qToUnaligned<T>(src, dest); }
 
 #endif // Q_BYTE_ORDER == Q_BIG_ENDIAN
@@ -243,34 +244,34 @@ template <> inline qint8 qbswap<qint8>(qint8 source)
     return source;
 }
 
-/* T qFromLittleEndian(const uchar *src)
+/* T qFromLittleEndian(const void *src)
  * This function will read a little-endian encoded value from \a src
  * and return the value in host-endian encoding.
  * There is no requirement that \a src must be aligned.
 */
-template <typename T> inline T qFromLittleEndian(const uchar *src)
+template <typename T> inline T qFromLittleEndian(const void *src)
 {
     return qFromLittleEndian(qFromUnaligned<T>(src));
 }
 
-template <> inline quint8 qFromLittleEndian<quint8>(const uchar *src)
-{ return static_cast<quint8>(src[0]); }
-template <> inline qint8 qFromLittleEndian<qint8>(const uchar *src)
-{ return static_cast<qint8>(src[0]); }
+template <> inline quint8 qFromLittleEndian<quint8>(const void *src)
+{ return static_cast<const quint8 *>(src)[0]; }
+template <> inline qint8 qFromLittleEndian<qint8>(const void *src)
+{ return static_cast<const qint8 *>(src)[0]; }
 
 /* This function will read a big-endian (also known as network order) encoded value from \a src
  * and return the value in host-endian encoding.
  * There is no requirement that \a src must be aligned.
 */
-template <class T> inline T qFromBigEndian(const uchar *src)
+template <class T> inline T qFromBigEndian(const void *src)
 {
     return qFromBigEndian(qFromUnaligned<T>(src));
 }
 
-template <> inline quint8 qFromBigEndian<quint8>(const uchar *src)
-{ return static_cast<quint8>(src[0]); }
-template <> inline qint8 qFromBigEndian<qint8>(const uchar *src)
-{ return static_cast<qint8>(src[0]); }
+template <> inline quint8 qFromBigEndian<quint8>(const void *src)
+{ return static_cast<const quint8 *>(src)[0]; }
+template <> inline qint8 qFromBigEndian<qint8>(const void *src)
+{ return static_cast<const qint8 *>(src)[0]; }
 
 QT_END_NAMESPACE
 

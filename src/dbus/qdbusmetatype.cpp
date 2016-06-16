@@ -177,7 +177,7 @@ Q_GLOBAL_STATIC(QReadWriteLock, customTypesLock)
 
     \snippet code/src_qdbus_qdbusmetatype.cpp 0
 
-    If \c{T} isn't a type derived from one of
+    If \c{T} isn't one of
     Qt's \l{container classes}, the \c{operator<<} and
     \c{operator>>} streaming operators between \c{T} and QDBusArgument
     must be already declared. See the \l {qdbustypesystem.html}{Qt D-Bus
@@ -186,6 +186,14 @@ Q_GLOBAL_STATIC(QReadWriteLock, customTypesLock)
 
     This function returns the Qt meta type id for the type (the same
     value that is returned from qRegisterMetaType()).
+
+    \note The feature that a \c{T} inheriting a streamable type (including
+    the containers QList, QHash or QMap) can be streamed without providing
+    custom \c{operator<<} and \c{operator>>} is deprecated as of Qt 5.7,
+    because it ignores everything in \c{T} except the base class. There is
+    no diagnostic. You should always provide these operators for all types
+    you wish to stream and not rely on Qt-provided stream operators for
+    base classes.
 
     \sa {qdbustypesystem.html}{Qt D-Bus Type System}, qRegisterMetaType(), QMetaType
 */
