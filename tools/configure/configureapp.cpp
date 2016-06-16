@@ -1985,11 +1985,6 @@ bool Configure::checkAngleAvailability(QString *errorMessage /* = 0 */) const
     // it is also  present in MinGW.
     const QString directXSdk = Environment::detectDirectXSdk();
     const Compiler compiler = Environment::compilerFromQMakeSpec(dictionary[QStringLiteral("QMAKESPEC")]);
-    if (compiler < CC_MSVC2012 && directXSdk.isEmpty()) {
-        if (errorMessage)
-            *errorMessage = QStringLiteral("There is no Direct X SDK installed or the environment variable \"DXSDK_DIR\" is not set.");
-        return false;
-    }
     const QString compilerHeader = QStringLiteral("d3dcompiler.h");
     if (!findFile(compilerHeader)) {
         if (errorMessage)
@@ -2443,10 +2438,6 @@ bool Configure::verifyConfiguration()
         cout << "WARNING: Qt does not support compiling the Oracle database driver with" << endl
              << "MinGW, due to lack of such support from Oracle. Consider disabling the" << endl
              << "Oracle driver, as the current build will most likely fail." << endl;
-        prompt = true;
-    }
-    if (dictionary["QMAKESPEC"].endsWith("win32-msvc2008") || dictionary["QMAKESPEC"].endsWith("win32-msvc2010")) {
-        cout << "ERROR: Qt cannot be compiled with Visual Studio 2008 or 2010." << endl;
         prompt = true;
     }
     if (0 != dictionary["ARM_FPU_TYPE"].size()) {
