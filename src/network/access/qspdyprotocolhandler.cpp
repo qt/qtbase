@@ -364,43 +364,43 @@ void QSpdyProtocolHandler::_q_readyRead()
 
 static qint16 twoBytesToInt(const char *bytes)
 {
-    return qFromBigEndian<qint16>(reinterpret_cast<const uchar *>(bytes));
+    return qFromBigEndian<qint16>(bytes);
 }
 
 static qint32 threeBytesToInt(const char *bytes)
 {
-    return qFromBigEndian<qint32>(reinterpret_cast<const uchar *>(bytes)) >> 8;
+    return qFromBigEndian<qint32>(bytes) >> 8;
 }
 
 static qint32 fourBytesToInt(const char *bytes)
 {
-    return qFromBigEndian<qint32>(reinterpret_cast<const uchar *>(bytes));
+    return qFromBigEndian<qint32>(bytes);
 }
 
 static void appendIntToThreeBytes(char *output, qint32 number)
 {
-    qToBigEndian<qint16>(number, reinterpret_cast<uchar *>(output + 1));
-    qToBigEndian<qint8>(number >> 16, reinterpret_cast<uchar *>(output));
+    qToBigEndian<qint16>(number, output + 1);
+    qToBigEndian<qint8>(number >> 16, output);
 }
 
 static void appendIntToFourBytes(char *output, qint32 number)
 {
-    qToBigEndian<qint32>(number, reinterpret_cast<uchar *>(output));
+    qToBigEndian<qint32>(number, output);
 }
 
 static QByteArray intToFourBytes(qint32 number) // ### try to use appendIntToFourBytes where possible
 {
-    uchar data[4];
+    char data[4];
     qToBigEndian<qint32>(number, data);
-    QByteArray ret(reinterpret_cast<char *>(data), 4);
+    QByteArray ret(data, 4);
     return ret;
 }
 
 static QByteArray intToThreeBytes(qint32 number)
 {
-    uchar data[4];
+    char data[4];
     qToBigEndian<qint32>(number << 8, data);
-    QByteArray ret(reinterpret_cast<char *>(data), 3);
+    QByteArray ret(data, 3);
     return ret;
 }
 

@@ -1145,7 +1145,7 @@ static QByteArray bindFont(const QVector<QTtfTable>& _tables)
 
     // calculate the fonts checksum and qToBigEndian into 'head's checksum_adjust
     quint32 checksum_adjust = 0xB1B0AFBA - checksum(font);
-    qToBigEndian(checksum_adjust, (uchar *)font.data() + head_offset + 8);
+    qToBigEndian(checksum_adjust, font.data() + head_offset + 8);
 
     return font;
 }

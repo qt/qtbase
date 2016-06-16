@@ -251,9 +251,9 @@ void QCoreTextFontEngine::init()
     QByteArray os2Table = getSfntTable(MAKE_TAG('O', 'S', '/', '2'));
     unsigned emSize = CTFontGetUnitsPerEm(ctfont);
     if (os2Table.size() >= 10) {
-        fsType = qFromBigEndian<quint16>(reinterpret_cast<const uchar *>(os2Table.constData() + 8));
+        fsType = qFromBigEndian<quint16>(os2Table.constData() + 8);
         // qAbs is a workaround for weird fonts like Lucida Grande
-        qint16 width = qAbs(qFromBigEndian<qint16>(reinterpret_cast<const uchar *>(os2Table.constData() + 2)));
+        qint16 width = qAbs(qFromBigEndian<qint16>(os2Table.constData() + 2));
         avgCharWidth = QFixed::fromReal(width * fontDef.pixelSize / emSize);
     } else
         avgCharWidth = QFontEngine::averageCharWidth();

@@ -92,10 +92,11 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutexPool, globalMutexPool, (QMutex::Recursive))
     QMutexPool is destructed.
 */
 QMutexPool::QMutexPool(QMutex::RecursionMode recursionMode, int size)
-    : count(size),
-      mutexes(new QAtomicPointer<QMutex>[size]()), // (): zero-initialize
-      recursionMode(recursionMode)
+    : mutexes(size), recursionMode(recursionMode)
 {
+    for (int index = 0; index < mutexes.count(); ++index) {
+        mutexes[index].store(0);
+    }
 }
 
 /*!
@@ -104,8 +105,8 @@ QMutexPool::QMutexPool(QMutex::RecursionMode recursionMode, int size)
 */
 QMutexPool::~QMutexPool()
 {
-    qDeleteAll(mutexes, mutexes + count);
-    delete[] mutexes;
+    for (int index = 0; index < mutexes.count(); ++index)
+        delete mutexes[index].load();
 }
 
 /*!
