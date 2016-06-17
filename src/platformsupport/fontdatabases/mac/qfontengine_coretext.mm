@@ -51,7 +51,7 @@
 #import <AppKit/AppKit.h>
 #endif
 
-#if defined(Q_OS_IOS) && !QT_IOS_DEPLOYMENT_TARGET_BELOW(__IPHONE_8_2)
+#if defined(QT_PLATFORM_UIKIT) && !QT_IOS_DEPLOYMENT_TARGET_BELOW(__IPHONE_8_2)
 #import <UIKit/UIKit.h>
 #endif
 
@@ -78,7 +78,7 @@
 #define kCTFontWeightBold NSFontWeightBold
 #define kCTFontWeightHeavy NSFontWeightHeavy
 #define kCTFontWeightBlack NSFontWeightBlack
-#elif defined(Q_OS_IOS)
+#elif defined(QT_PLATFORM_UIKIT)
 #define kCTFontWeightUltraLight UIFontWeightUltraLight
 #define kCTFontWeightThin UIFontWeightThin
 #define kCTFontWeightLight UIFontWeightLight
