@@ -337,8 +337,8 @@ bool QEglFSKmsEglDeviceIntegration::supportsSurfacelessContexts() const
 bool QEglFSKmsEglDeviceIntegration::setup_kms()
 {
     drmModeRes *resources;
-    drmModeConnector *connector;
-    drmModeEncoder *encoder;
+    drmModeConnector *connector = Q_NULLPTR;
+    drmModeEncoder *encoder = Q_NULLPTR;
     quint32 crtc = 0;
     int i;
 
