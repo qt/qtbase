@@ -122,7 +122,7 @@ struct QWindowsOpengl32DLL
     void (APIENTRY * glGetIntegerv)(GLenum pname, GLint* params);
     const GLubyte * (APIENTRY * glGetString)(GLenum name);
 
-    void *resolve(const char *name);
+    PROC resolve(const char *name);
 private:
     HMODULE m_lib;
     bool m_nonOpengl32;

@@ -149,12 +149,12 @@ QT_BEGIN_NAMESPACE
 
 QWindowsOpengl32DLL QOpenGLStaticContext::opengl32;
 
-void *QWindowsOpengl32DLL::resolve(const char *name)
+PROC QWindowsOpengl32DLL::resolve(const char *name)
 {
 #ifndef Q_OS_WINCE
-    void *proc = m_lib ? (void *) ::GetProcAddress(m_lib, name) : 0;
+    PROC proc = m_lib ? ::GetProcAddress(m_lib, name) : 0;
 #else
-    void *proc = m_lib ? (void *) ::GetProcAddress(m_lib, (const wchar_t *) QString::fromLatin1(name).utf16()) : 0;
+    PROC proc = m_lib ? ::GetProcAddress(m_lib, (const wchar_t *) QString::fromLatin1(name).utf16()) : 0;
 #endif
 
     return proc;
@@ -1339,21 +1339,21 @@ QFunctionPointer QWindowsGLContext::getProcAddress(const char *procName)
     // Even though we use QFunctionPointer, it does not mean the function can be called.
     // It will need to be cast to the proper function type with the correct calling
     // convention. QFunctionPointer is nothing more than a glorified void* here.
-    QFunctionPointer procAddress = reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress(procName));
+    PROC procAddress = QOpenGLStaticContext::opengl32.wglGetProcAddress(procName);
 
     // We support AllGLFunctionsQueryable, which means this function must be able to
     // return a function pointer even for functions that are in GL.h and exported
     // normally from opengl32.dll. wglGetProcAddress() is not guaranteed to work for such
     // functions, however in QT_OPENGL_DYNAMIC builds QOpenGLFunctions will just blindly
     // call into here for _any_ OpenGL function.
-    if (!procAddress || procAddress == reinterpret_cast<void *>(0x1) || procAddress == reinterpret_cast<void *>(0x2)
-        || procAddress == reinterpret_cast<void *>(0x3) || procAddress == reinterpret_cast<void *>(-1))
-        procAddress = reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.resolve(procName));
+    if (!procAddress || procAddress == reinterpret_cast<PROC>(0x1) || procAddress == reinterpret_cast<PROC>(0x2)
+        || procAddress == reinterpret_cast<PROC>(0x3) || procAddress == reinterpret_cast<PROC>(-1))
+        procAddress = QOpenGLStaticContext::opengl32.resolve(procName);
 
     if (QWindowsContext::verbose > 1)
         qCDebug(lcQpaGl) << __FUNCTION__ <<  procName << QOpenGLStaticContext::opengl32.wglGetCurrentContext() << "returns" << procAddress;
 
-    return procAddress;
+    return reinterpret_cast<QFunctionPointer>(procAddress);
 }
 
 QT_END_NAMESPACE
