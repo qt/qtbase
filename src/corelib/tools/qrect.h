@@ -48,7 +48,7 @@
 #error qrect.h must be included before any header file that defines topLeft
 #endif
 
-#if defined(Q_OS_DARWIN)
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
 struct CGRect;
 #endif
 

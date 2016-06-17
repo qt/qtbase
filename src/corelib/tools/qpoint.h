@@ -42,7 +42,7 @@
 
 #include <QtCore/qnamespace.h>
 
-#if defined(Q_OS_DARWIN)
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
 struct CGPoint;
 #endif
 
