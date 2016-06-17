@@ -65,12 +65,7 @@ public:
     T &operator()(int r, int c) { return m_storage[r * NumColumns + c]; }
 
     int rowCount() const { return m_storage.size() / NumColumns; }
-    void addRow(const T &value);
     void insertRow(int r, const T &value);
-    void removeRow(int r);
-
-    bool find(const T &value, int *rowPtr, int *colPtr) const ;
-    int count(const T &value) const { return m_storage.count(value);  }
 
     // Hmmpf.. Some things are faster that way.
     const Storage &storage() const { return m_storage; }
@@ -82,34 +77,11 @@ private:
 };
 
 template <class T, int NumColumns>
-void FixedColumnMatrix<T, NumColumns>::addRow(const T &value)
-{
-    for (int i = 0; i < NumColumns; ++i)
-        m_storage.append(value);
-}
-
-template <class T, int NumColumns>
 void FixedColumnMatrix<T, NumColumns>::insertRow(int r, const T &value)
 {
     typename Storage::iterator it = m_storage.begin();
     it += r * NumColumns;
     m_storage.insert(it, NumColumns, value);
-}
-
-template <class T, int NumColumns>
-void FixedColumnMatrix<T, NumColumns>::removeRow(int r)
-{
-    m_storage.remove(r * NumColumns, NumColumns);
-}
-
-template <class T, int NumColumns>
-bool FixedColumnMatrix<T, NumColumns>::find(const T &value, int *rowPtr, int *colPtr) const
-{
-    const int idx = m_storage.indexOf(value);
-    if (idx == -1)
-        return false;
-    storageIndexToPosition(idx, rowPtr, colPtr);
-    return true;
 }
 
 template <class T, int NumColumns>
