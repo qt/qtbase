@@ -514,7 +514,6 @@ QWindowSystemInterface::TouchPoint QTuioHandler::tokenToTouchPoint(const QTuioTo
         tp.normalPosition = m_transform.map(tp.normalPosition);
 
     tp.state = tc.state();
-    tp.area = QRectF(0, 0, 1, 1);
 
     // We map the token position to the size of the window.
     QPointF relPos = QPointF(win->size().width() * tp.normalPosition.x(), win->size().height() * tp.normalPosition.y());
