@@ -63,6 +63,9 @@ template <class Key, class T> class QMap;
 
 #if !defined(QT_NO_DATASTREAM) || defined(QT_BOOTSTRAPPED)
 class QDataStreamPrivate;
+namespace QtPrivate {
+class StreamStateSaver;
+}
 class Q_CORE_EXPORT QDataStream
 {
 public:
@@ -192,6 +195,7 @@ private:
     Status q_status;
 
     int readBlock(char *data, int len);
+    friend class QtPrivate::StreamStateSaver;
 };
 
 namespace QtPrivate {
@@ -201,7 +205,8 @@ class StreamStateSaver
 public:
     inline StreamStateSaver(QDataStream *s) : stream(s), oldStatus(s->status())
     {
-        stream->resetStatus();
+        if (!stream->dev || !stream->dev->isTransactionStarted())
+            stream->resetStatus();
     }
     inline ~StreamStateSaver()
     {

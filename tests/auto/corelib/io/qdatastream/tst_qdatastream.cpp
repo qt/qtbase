@@ -2750,27 +2750,43 @@ void tst_QDataStream::status_QBitArray()
 }
 
 #define MAP_TEST(byteArray, initialStatus, expectedStatus, expectedHash) \
-    { \
-        QByteArray ba = byteArray; \
-        QDataStream stream(&ba, QIODevice::ReadOnly); \
-        stream.setStatus(initialStatus); \
-        stream >> hash; \
-        QCOMPARE((int)stream.status(), (int)expectedStatus); \
-        QCOMPARE(hash.size(), expectedHash.size()); \
-        QCOMPARE(hash, expectedHash); \
-    } \
-    { \
-        QByteArray ba = byteArray; \
-        StringMap expectedMap; \
-        StringHash::const_iterator it = expectedHash.constBegin(); \
-        for (; it != expectedHash.constEnd(); ++it) \
-            expectedMap.insert(it.key(), it.value()); \
-        QDataStream stream(&ba, QIODevice::ReadOnly); \
-        stream.setStatus(initialStatus); \
-        stream >> map; \
-        QCOMPARE((int)stream.status(), (int)expectedStatus); \
-        QCOMPARE(map.size(), expectedMap.size()); \
-        QCOMPARE(map, expectedMap); \
+    for (bool inTransaction = false;; inTransaction = true) { \
+        { \
+            QByteArray ba = byteArray; \
+            QDataStream stream(&ba, QIODevice::ReadOnly); \
+            if (inTransaction) \
+                stream.startTransaction(); \
+            stream.setStatus(initialStatus); \
+            stream >> hash; \
+            QCOMPARE((int)stream.status(), (int)expectedStatus); \
+            if (!inTransaction || stream.commitTransaction()) { \
+                QCOMPARE(hash.size(), expectedHash.size()); \
+                QCOMPARE(hash, expectedHash); \
+            } else { \
+                QVERIFY(hash.isEmpty()); \
+            } \
+        } \
+        { \
+            QByteArray ba = byteArray; \
+            StringMap expectedMap; \
+            StringHash::const_iterator it = expectedHash.constBegin(); \
+            for (; it != expectedHash.constEnd(); ++it) \
+                expectedMap.insert(it.key(), it.value()); \
+            QDataStream stream(&ba, QIODevice::ReadOnly); \
+            if (inTransaction) \
+                stream.startTransaction(); \
+            stream.setStatus(initialStatus); \
+            stream >> map; \
+            QCOMPARE((int)stream.status(), (int)expectedStatus); \
+            if (!inTransaction || stream.commitTransaction()) { \
+                QCOMPARE(map.size(), expectedMap.size()); \
+                QCOMPARE(map, expectedMap); \
+            } else { \
+                QVERIFY(map.isEmpty()); \
+            } \
+        } \
+        if (inTransaction) \
+            break; \
     }
 
 void tst_QDataStream::status_QHash_QMap()
@@ -2815,38 +2831,60 @@ void tst_QDataStream::status_QHash_QMap()
 }
 
 #define LIST_TEST(byteArray, initialStatus, expectedStatus, expectedList) \
-    { \
-        QByteArray ba = byteArray; \
-        QDataStream stream(&ba, QIODevice::ReadOnly); \
-        stream.setStatus(initialStatus); \
-        stream >> list; \
-        QCOMPARE((int)stream.status(), (int)expectedStatus); \
-        QCOMPARE(list.size(), expectedList.size()); \
-        QCOMPARE(list, expectedList); \
-    } \
-    { \
-        LinkedList expectedLinkedList; \
-        for (int i = 0; i < expectedList.count(); ++i) \
-            expectedLinkedList << expectedList.at(i); \
-        QByteArray ba = byteArray; \
-        QDataStream stream(&ba, QIODevice::ReadOnly); \
-        stream.setStatus(initialStatus); \
-        stream >> linkedList; \
-        QCOMPARE((int)stream.status(), (int)expectedStatus); \
-        QCOMPARE(linkedList.size(), expectedLinkedList.size()); \
-        QCOMPARE(linkedList, expectedLinkedList); \
-    } \
-    { \
-        Vector expectedVector; \
-        for (int i = 0; i < expectedList.count(); ++i) \
-            expectedVector << expectedList.at(i); \
-        QByteArray ba = byteArray; \
-        QDataStream stream(&ba, QIODevice::ReadOnly); \
-        stream.setStatus(initialStatus); \
-        stream >> vector; \
-        QCOMPARE((int)stream.status(), (int)expectedStatus); \
-        QCOMPARE(vector.size(), expectedVector.size()); \
-        QCOMPARE(vector, expectedVector); \
+    for (bool inTransaction = false;; inTransaction = true) { \
+        { \
+            QByteArray ba = byteArray; \
+            QDataStream stream(&ba, QIODevice::ReadOnly); \
+            if (inTransaction) \
+                stream.startTransaction(); \
+            stream.setStatus(initialStatus); \
+            stream >> list; \
+            QCOMPARE((int)stream.status(), (int)expectedStatus); \
+            if (!inTransaction || stream.commitTransaction()) { \
+                QCOMPARE(list.size(), expectedList.size()); \
+                QCOMPARE(list, expectedList); \
+            } else { \
+                QVERIFY(list.isEmpty()); \
+            } \
+        } \
+        { \
+            LinkedList expectedLinkedList; \
+            for (int i = 0; i < expectedList.count(); ++i) \
+                expectedLinkedList << expectedList.at(i); \
+            QByteArray ba = byteArray; \
+            QDataStream stream(&ba, QIODevice::ReadOnly); \
+            if (inTransaction) \
+                stream.startTransaction(); \
+            stream.setStatus(initialStatus); \
+            stream >> linkedList; \
+            QCOMPARE((int)stream.status(), (int)expectedStatus); \
+            if (!inTransaction || stream.commitTransaction()) { \
+                QCOMPARE(linkedList.size(), expectedLinkedList.size()); \
+                QCOMPARE(linkedList, expectedLinkedList); \
+            } else { \
+                QVERIFY(linkedList.isEmpty()); \
+            } \
+        } \
+        { \
+            Vector expectedVector; \
+            for (int i = 0; i < expectedList.count(); ++i) \
+                expectedVector << expectedList.at(i); \
+            QByteArray ba = byteArray; \
+            QDataStream stream(&ba, QIODevice::ReadOnly); \
+            if (inTransaction) \
+                stream.startTransaction(); \
+            stream.setStatus(initialStatus); \
+            stream >> vector; \
+            QCOMPARE((int)stream.status(), (int)expectedStatus); \
+            if (!inTransaction || stream.commitTransaction()) { \
+                QCOMPARE(vector.size(), expectedVector.size()); \
+                QCOMPARE(vector, expectedVector); \
+            } else { \
+                QVERIFY(vector.isEmpty()); \
+            } \
+        } \
+        if (inTransaction) \
+            break; \
     }
 
 void tst_QDataStream::status_QLinkedList_QList_QVector()
