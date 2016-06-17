@@ -170,7 +170,7 @@ contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
     contains(QT_CONFIG, png) {
         SUBDIRS += src_3rdparty_libpng
         src_3rdparty_freetype.depends += src_3rdparty_libpng
-        src_plugins.depends += src_3rdparty_libpng
+        src_gui.depends += src_3rdparty_libpng
     }
     contains(QT_CONFIG, freetype) {
         SUBDIRS += src_3rdparty_freetype
