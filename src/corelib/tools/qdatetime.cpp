@@ -2737,7 +2737,7 @@ static QPair<QDate, QTime> getDateTime(const QDateTimeData &d)
 inline QDateTime::Data::Data(Qt::TimeSpec spec)
 {
     if (CanBeSmall && Q_LIKELY(specCanBeSmall(spec))) {
-        d = reinterpret_cast<QDateTimePrivate *>(int(mergeSpec(QDateTimePrivate::ShortData, spec)));
+        d = reinterpret_cast<QDateTimePrivate *>(quintptr(mergeSpec(QDateTimePrivate::ShortData, spec)));
     } else {
         // the structure is too small, we need to detach
         d = new QDateTimePrivate;
