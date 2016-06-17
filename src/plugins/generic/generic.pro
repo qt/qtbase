@@ -17,3 +17,7 @@ contains(QT_CONFIG, tslib) {
 contains(QT_CONFIG, libinput) {
     SUBDIRS += libinput
 }
+
+freebsd {
+    SUBDIRS += bsdkeyboard bsdmouse
+}
