@@ -320,7 +320,7 @@ static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, con
         pos = entry.indexOf(QLatin1Char(':'), server);
         if (pos != -1) {
             bool ok;
-            uint value = entry.mid(pos + 1).toUInt(&ok);
+            uint value = entry.midRef(pos + 1).toUInt(&ok);
             if (!ok || value > 65535)
                 continue;       // invalid port number
 

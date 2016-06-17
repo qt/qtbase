@@ -738,7 +738,7 @@ bool Parser::parseNumber(QJsonPrivate::Value *val, int baseOffset)
     }
 
     int pos = reserveSpace(sizeof(double));
-    qToLittleEndian(ui, reinterpret_cast<uchar *>(data + pos));
+    qToLittleEndian(ui, data + pos);
     if (current - baseOffset >= Value::MaxSize) {
         lastError = QJsonParseError::DocumentTooLarge;
         return false;

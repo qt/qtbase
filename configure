@@ -112,13 +112,6 @@ shellEscape()
     echo "$@" | sed 's/ /\ /g'
 }
 
-shellQuoteLines()
-{
-    # The call of the outer echo makes the shell word-split the output of
-    # the nested pipe, thus effectively converting newlines to spaces.
-    echo `echo "$1" | sed 's,^[^ ]* .*$,"&",'`
-}
-
 makeabs()
 {
     local FILE="$1"
@@ -6080,8 +6073,6 @@ host_build {
     QT_TARGET_ARCH = $CFG_ARCH
 } else {
     QT_ARCH = $CFG_ARCH
-    QMAKE_DEFAULT_LIBDIRS = `shellQuoteLines "$DEFAULT_LIBDIRS"`
-    QMAKE_DEFAULT_INCDIRS = `shellQuoteLines "$DEFAULT_INCDIRS"`
 }
 QT_CONFIG += $QT_CONFIG
 

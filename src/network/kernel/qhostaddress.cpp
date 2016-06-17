@@ -1103,7 +1103,7 @@ QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
             netmask = parser.prefixLength();
         } else {
             bool ok;
-            netmask = subnet.mid(slash + 1).toUInt(&ok);
+            netmask = subnet.midRef(slash + 1).toUInt(&ok);
             if (!ok)
                 return invalid;     // failed to parse the subnet
         }
