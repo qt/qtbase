@@ -1287,7 +1287,8 @@ static inline QImage qt_gl_read_framebuffer_rgba8(const QSize &size, bool includ
                              (qstrcmp(renderer, "Mali-T760") == 0
                              && ::strstr(ver, "3.1") != 0) ||
                              (qstrcmp(renderer, "Mali-T720") == 0
-                             && ::strstr(ver, "3.1") != 0);
+                             && ::strstr(ver, "3.1") != 0) ||
+                             qstrcmp(renderer, "PowerVR SGX 554") == 0;
 
     const bool supports_bgra = has_bgra_ext && !blackListed;
 
