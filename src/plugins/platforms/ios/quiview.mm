@@ -50,6 +50,7 @@
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qwindow_p.h>
+#include <qpa/qwindowsysteminterface_p.h>
 
 @implementation QUIView
 
@@ -440,6 +441,58 @@
     QIOSIntegration *iosIntegration = static_cast<QIOSIntegration *>(QGuiApplicationPrivate::platformIntegration());
     QWindowSystemInterface::handleTouchCancelEvent(m_qioswindow->window(), ulong(timestamp * 1000), iosIntegration->touchDevice());
     QWindowSystemInterface::flushWindowSystemEvents();
+}
+
+- (int)mapPressTypeToKey:(UIPress*)press
+{
+    switch (press.type) {
+    case UIPressTypeUpArrow: return Qt::Key_Up;
+    case UIPressTypeDownArrow: return Qt::Key_Down;
+    case UIPressTypeLeftArrow: return Qt::Key_Left;
+    case UIPressTypeRightArrow: return Qt::Key_Right;
+    case UIPressTypeSelect: return Qt::Key_Select;
+    case UIPressTypeMenu: return Qt::Key_Menu;
+    case UIPressTypePlayPause: return Qt::Key_MediaTogglePlayPause;
+    }
+    return Qt::Key_unknown;
+}
+
+- (bool)processPresses:(NSSet *)presses withType:(QEvent::Type)type {
+    // Presses on Menu button will generate a Menu key event. By default, not handling
+    // this event will cause the application to return to Headboard (tvOS launcher).
+    // When handling the event (for example, as a back button), both press and
+    // release events must be handled accordingly.
+
+    QScopedValueRollback<bool> syncRollback(QWindowSystemInterfacePrivate::synchronousWindowSystemEvents, true);
+
+    bool handled = false;
+    for (UIPress* press in presses) {
+        int key = [self mapPressTypeToKey:press];
+        if (key == Qt::Key_unknown)
+            continue;
+        if (QWindowSystemInterface::handleKeyEvent(m_qioswindow->window(), type, key, Qt::NoModifier))
+            handled = true;
+    }
+
+    return handled;
+}
+
+- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
+{
+    if (![self processPresses:presses withType:QEvent::KeyPress])
+        [super pressesBegan:presses withEvent:event];
+}
+
+- (void)pressesChanged:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
+{
+    if (![self processPresses:presses withType:QEvent::KeyPress])
+        [super pressesChanged:presses withEvent:event];
+}
+
+- (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
+{
+    if (![self processPresses:presses withType:QEvent::KeyRelease])
+        [super pressesEnded:presses withEvent:event];
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
