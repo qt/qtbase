@@ -973,10 +973,21 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
     xkb_layout_index_t lockedLayout = xkb_state_serialize_layout(xkb_state, XKB_STATE_LAYOUT_LOCKED);
     xkb_mod_mask_t latchedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LATCHED);
     xkb_mod_mask_t lockedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LOCKED);
+    xkb_mod_mask_t depressedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_DEPRESSED);
 
-    xkb_state_update_mask(kb_state, 0, latchedMods, lockedMods, 0, 0, lockedLayout);
-
+    xkb_state_update_mask(kb_state, depressedMods, latchedMods, lockedMods, 0, 0, lockedLayout);
     quint32 keycode = event->nativeScanCode();
+    // handle shortcuts for level three and above
+    xkb_layout_index_t layoutIndex = xkb_state_key_get_layout(kb_state, keycode);
+    xkb_level_index_t levelIndex = 0;
+    if (layoutIndex != XKB_LAYOUT_INVALID) {
+        levelIndex = xkb_state_key_get_level(kb_state, keycode, layoutIndex);
+        if (levelIndex == XKB_LEVEL_INVALID)
+            levelIndex = 0;
+    }
+    if (levelIndex <= 1)
+        xkb_state_update_mask(kb_state, 0, latchedMods, lockedMods, 0, 0, lockedLayout);
+
     xkb_keysym_t sym = xkb_state_key_get_one_sym(kb_state, keycode);
     if (sym == XKB_KEY_NoSymbol) {
         xkb_state_unref(kb_state);
