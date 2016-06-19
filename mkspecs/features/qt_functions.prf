@@ -250,7 +250,10 @@ defineReplace(pkgConfigExecutable) {
 }
 
 defineTest(packagesExist) {
-    contains(QT_CONFIG, no-pkg-config):return(false)
+    contains(QT_CONFIG, no-pkg-config) {
+        warning("pkg-config disabled, can't check package existence")
+        return(false)
+    }
 
     # this can't be done in global scope here because qt_functions is loaded
     # before the .pro is parsed, so if the .pro set PKG_CONFIG, we wouldn't know it
