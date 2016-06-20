@@ -588,9 +588,10 @@ QFont QGtk3FontDialogHelper::currentFont() const
 
 void QGtk3FontDialogHelper::onAccepted()
 {
-    emit currentFontChanged(currentFont());
+    const QFont font = currentFont();
+    emit currentFontChanged(font);
     emit accept();
-    emit fontSelected(currentFont());
+    emit fontSelected(font);
 }
 
 void QGtk3FontDialogHelper::applyOptions()
