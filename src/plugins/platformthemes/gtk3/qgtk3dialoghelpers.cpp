@@ -215,8 +215,10 @@ QColor QGtk3ColorDialogHelper::currentColor() const
 
 void QGtk3ColorDialogHelper::onAccepted()
 {
+    const QColor color = currentColor();
+    emit currentColorChanged(color);
     emit accept();
-    emit colorSelected(currentColor());
+    emit colorSelected(color);
 }
 
 void QGtk3ColorDialogHelper::onColorChanged(QGtk3ColorDialogHelper *dialog)
