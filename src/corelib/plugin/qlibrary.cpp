@@ -536,8 +536,13 @@ bool QLibraryPrivate::load()
         return false;
 
     bool ret = load_sys();
-    if (qt_debug_component())
-        qDebug() << "loaded library" << fileName;
+    if (qt_debug_component()) {
+        if (ret) {
+            qDebug() << "loaded library" << fileName;
+        } else {
+            qDebug() << qUtf8Printable(errorString);
+        }
+    }
     if (ret) {
         //when loading a library we add a reference to it so that the QLibraryPrivate won't get deleted
         //this allows to unload the library at a later time
