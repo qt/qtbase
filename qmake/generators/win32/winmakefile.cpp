@@ -290,11 +290,7 @@ void Win32MakefileGenerator::processRcFileVar()
         int rcLang = project->intValue("RC_LANG", 1033);            // default: English(USA)
         int rcCodePage = project->intValue("RC_CODEPAGE", 1200);    // default: Unicode
 
-        ts << "# if defined(UNDER_CE)\n";
-        ts << "#  include <winbase.h>\n";
-        ts << "# else\n";
-        ts << "#  include <windows.h>\n";
-        ts << "# endif\n";
+        ts << "#include <windows.h>\n";
         ts << endl;
         if (!rcIcons.isEmpty()) {
             for (int i = 0; i < rcIcons.size(); ++i)
