@@ -140,6 +140,7 @@ public:
         MV_10_9 = Q_MV_OSX(10, 9),
         MV_10_10 = Q_MV_OSX(10, 10),
         MV_10_11 = Q_MV_OSX(10, 11),
+        MV_10_12 = Q_MV_OSX(10, 12),
 
         /* codenames */
         MV_CHEETAH = MV_10_0,
@@ -154,6 +155,7 @@ public:
         MV_MAVERICKS = MV_10_9,
         MV_YOSEMITE = MV_10_10,
         MV_ELCAPITAN = MV_10_11,
+        MV_SIERRA = MV_10_12,
 
         /* iOS */
         MV_IOS     = 1 << 8,
@@ -170,6 +172,10 @@ public:
         MV_IOS_8_3 = Q_MV_IOS(8, 3),
         MV_IOS_8_4 = Q_MV_IOS(8, 4),
         MV_IOS_9_0 = Q_MV_IOS(9, 0),
+        MV_IOS_9_1 = Q_MV_IOS(9, 1),
+        MV_IOS_9_2 = Q_MV_IOS(9, 2),
+        MV_IOS_9_3 = Q_MV_IOS(9, 3),
+        MV_IOS_10_0 = Q_MV_IOS(10, 0),
 
         /* tvOS */
         MV_TVOS     = 1 << 9,

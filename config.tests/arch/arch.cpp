@@ -276,6 +276,12 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 #ifdef __ALTIVEC__
 " altivec"
 #endif
+#ifdef __SPE__
+" spe"
+#endif
+#ifdef __VSX__
+" vsx"
+#endif
                    "";
 
 int main()

@@ -41,10 +41,11 @@
 #define QIOSAPPLICATIONSTATE_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qvector.h>
+
+Q_FORWARD_DECLARE_OBJC_CLASS(NSObject);
 
 QT_BEGIN_NAMESPACE
-
-@class QIOSApplicationStateListener;
 
 class QIOSApplicationState
 {
@@ -52,7 +53,7 @@ public:
     QIOSApplicationState();
     ~QIOSApplicationState();
 private:
-    QIOSApplicationStateListener *m_listener;
+    QVector<NSObject*> m_observers;
 };
 
 QT_END_NAMESPACE

@@ -1196,6 +1196,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value MV_10_9     OS X 10.9
     \value MV_10_10    OS X 10.10
     \value MV_10_11    OS X 10.11
+    \value MV_10_12    macOS 10.12
     \value MV_Unknown  An unknown and currently unsupported platform
 
     \value MV_CHEETAH  Apple codename for MV_10_0
@@ -1210,6 +1211,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value MV_MAVERICKS    Apple codename for MV_10_9
     \value MV_YOSEMITE     Apple codename for MV_10_10
     \value MV_ELCAPITAN    Apple codename for MV_10_11
+    \value MV_SIERRA       Apple codename for MV_10_12
 
     \value MV_IOS      iOS (any)
     \value MV_IOS_4_3  iOS 4.3
@@ -1225,6 +1227,10 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value MV_IOS_8_3  iOS 8.3
     \value MV_IOS_8_4  iOS 8.4
     \value MV_IOS_9_0  iOS 9.0
+    \value MV_IOS_9_1  iOS 9.1
+    \value MV_IOS_9_2  iOS 9.2
+    \value MV_IOS_9_3  iOS 9.3
+    \value MV_IOS_10_0 iOS 10.0
 
     \value MV_None     Not a Darwin operating system
 
@@ -1239,10 +1245,24 @@ bool qSharedBuild() Q_DECL_NOTHROW
 */
 
 /*!
+    \macro Q_OS_MAC
+    \relates <QtGlobal>
+
+    Deprecated synonym for \c Q_OS_DARWIN. Do not use.
+ */
+
+/*!
     \macro Q_OS_OSX
     \relates <QtGlobal>
 
-    Defined on OS X.
+    Deprecated synonym for \c Q_OS_MACOS. Do not use.
+ */
+
+/*!
+    \macro Q_OS_MACOS
+    \relates <QtGlobal>
+
+    Defined on macOS.
  */
 
 /*!
@@ -2603,9 +2623,11 @@ QString QSysInfo::kernelVersion()
     to determine the distribution name and returns that. If determining the
     distribution name failed, it returns "unknown".
 
-    \b{Darwin, OS X, iOS and tvOS note}: this function returns "osx" for OS X
+    \b{Darwin, OS X, iOS and tvOS note}: this function returns "macos" for macOS
     systems, "ios" for iOS systems, "tvos" for tvOS systems and "darwin" in case
     the system could not be determined.
+
+    \b{OS X note}: this function returns "osx" for versions of macOS prior to 10.12.
 
     \b{FreeBSD note}: this function returns "debian" for Debian/kFreeBSD and
     "unknown" otherwise.
@@ -2637,8 +2659,11 @@ QString QSysInfo::productType()
     return QStringLiteral("ios");
 #elif defined(Q_OS_TVOS)
     return QStringLiteral("tvos");
-#elif defined(Q_OS_OSX)
-    return QStringLiteral("osx");
+#elif defined(Q_OS_MACOS)
+    const QAppleOperatingSystemVersion version = qt_apple_os_version();
+    if (version.major == 10 && version.minor < 12)
+        return QStringLiteral("osx");
+    return QStringLiteral("macos");
 #elif defined(Q_OS_DARWIN)
     return QStringLiteral("darwin");
 
@@ -2721,7 +2746,7 @@ QString QSysInfo::prettyProductName()
     return QLatin1String("iOS ") + productVersion();
 #elif defined(Q_OS_TVOS)
     return QLatin1String("tvOS ") + productVersion();
-#elif defined(Q_OS_OSX)
+#elif defined(Q_OS_MACOS)
     const QAppleOperatingSystemVersion version = qt_apple_os_version();
     const char *name = osxVer_helper(version);
     if (name) {
@@ -2730,7 +2755,7 @@ QString QSysInfo::prettyProductName()
             + QLatin1Char('.') + QString::number(version.minor)
             + QLatin1Char(')');
     } else {
-        return QLatin1String("OS X ")
+        return QLatin1String("macOS ")
             + QString::number(version.major) + QLatin1Char('.')
             + QString::number(version.minor);
     }

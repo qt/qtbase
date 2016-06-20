@@ -18,7 +18,7 @@ QT =  # In case qt is re-added.
 CONFIG -= warning_clean  # Don't presume 3rd party code to be clean
 load(qt_common)
 
-contains(QT_CONFIG, simulator_and_device): CONFIG += iphonesimulator_and_iphoneos
+contains(QT_CONFIG, simulator_and_device): CONFIG += simulator_and_device
 contains(QT_CONFIG, debug_and_release): CONFIG += debug_and_release
 contains(QT_CONFIG, build_all): CONFIG += build_all
 
