@@ -71,9 +71,13 @@ public:
     UIScreen *uiScreen() const;
     UIWindow *uiWindow() const;
 
+    void setUpdatesPaused(bool);
+
     void updateProperties();
 
 private:
+    void deliverUpdateRequests() const;
+
     UIScreen *m_uiScreen;
     UIWindow *m_uiWindow;
     QRect m_geometry;
@@ -82,6 +86,7 @@ private:
     uint m_physicalDpi;
     QSizeF m_physicalSize;
     QIOSOrientationListener *m_orientationListener;
+    CADisplayLink *m_displayLink;
 };
 
 QT_END_NAMESPACE

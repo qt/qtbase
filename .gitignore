@@ -53,6 +53,7 @@ wrapper.sh
 wrapper.bat
 core
 .qmake.cache
+.qmake.stash
 .qmake.vars
 .device.vars
 *.prl
@@ -118,6 +119,7 @@ mkspecs/default-host
 mkspecs/qconfig.pri
 mkspecs/qdevice.pri
 mkspecs/qfeatures.pri
+mkspecs/qhost.pri
 moc_*.cpp
 qmake/qmake.exe
 qmake/Makefile.bak
@@ -203,6 +205,7 @@ tools/qvfb/qwssignalhandler_p.h
 .rcc
 *.app
 config.status
+config.tests/common/c++default/c++default.ii
 config.tests/unix/cups/cups
 config.tests/unix/getaddrinfo/getaddrinfo
 config.tests/unix/getifaddrs/getifaddrs

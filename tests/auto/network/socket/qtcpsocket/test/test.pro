@@ -21,5 +21,3 @@ win32 {
 } else {
     DESTDIR = ../
 }
-
-win32: CONFIG += insignificant_test # Hangs in release builds

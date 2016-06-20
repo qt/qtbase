@@ -601,6 +601,7 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
     }
 #  else
     // 32-bit, we can't do MOVQ to load 8 bytes
+    Q_UNUSED(nullmask);
     enum { MaxTailLength = 15 };
 #  endif
 
