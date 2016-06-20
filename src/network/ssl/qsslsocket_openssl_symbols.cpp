@@ -1000,6 +1000,11 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_CTX_set_next_proto_select_cb)
     RESOLVEFUNC(SSL_get0_next_proto_negotiated)
 #endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+    RESOLVEFUNC(SSL_set_alpn_protos)
+    RESOLVEFUNC(SSL_CTX_set_alpn_select_cb)
+    RESOLVEFUNC(SSL_get0_alpn_selected)
+#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L ...
     RESOLVEFUNC(DH_new)
     RESOLVEFUNC(DH_free)
     RESOLVEFUNC(d2i_DHparams)
