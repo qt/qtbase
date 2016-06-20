@@ -211,8 +211,12 @@ void QIOSContext::swapBuffers(QPlatformSurface *surface)
     if (surface->surface()->surfaceClass() == QSurface::Offscreen)
         return; // Nothing to do
 
+    // When using threaded rendering, the render-thread may not have picked up
+    // yet on the fact that a window is no longer exposed, and will try to swap
+    // a non-exposed window. This may in some cases result in crashes, e.g. when
+    // iOS is suspending an application, so we have an extra guard here.
     if (!static_cast<QIOSWindow *>(surface)->isExposed()) {
-        qCWarning(lcQpaGLContext, "Detected swapBuffers on a non-exposed window, skipping flush");
+        qCDebug(lcQpaGLContext, "Detected swapBuffers on a non-exposed window, skipping flush");
         return;
     }
 
