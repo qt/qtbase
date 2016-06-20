@@ -21,7 +21,7 @@ lib_replace.CONFIG = path
 QMAKE_PRL_INSTALL_REPLACE += lib_replace
 
 # DirectX is included in the Windows 8 Kit, but everything else requires the DX SDK.
-winrt|if(msvc:!win32-msvc2005:!win32-msvc2008:!win32-msvc2010) {
+winrt|msvc {
     FXC = fxc.exe
 } else {
     DX_DIR = $$(DXSDK_DIR)
