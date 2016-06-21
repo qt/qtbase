@@ -643,6 +643,7 @@ CFG_XRANDR=runtime
 CFG_XRENDER=auto
 CFG_MITSHM=auto
 CFG_OPENGL=auto
+CFG_OPENGLES3=yes # still depends on CFG_OPENGL, so auto in practice
 CFG_OPENVG=auto
 CFG_OPENVG_LC_INCLUDES=no
 CFG_OPENVG_SHIVA=auto
@@ -1275,6 +1276,13 @@ while [ "$#" -gt 0 ]; do
             [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] ||
             [ "$VAL" = "es2" ]; then
             CFG_OPENGL="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    opengles3)
+        if [ "$VAL" = "no" ]; then
+            CFG_OPENGLES3="no"
         else
             UNKNOWN_OPT=yes
         fi
@@ -5333,7 +5341,7 @@ fi
 # compile-time differentiation and including the version specific (but backwards
 # compatible) ES headers (for example, GLES3/gl31.h). Other than that, there is
 # no difference in the configuration, even the library is the same.
-if [ "$CFG_OPENGL" = "es2" ]; then
+if [ "$CFG_OPENGL" = "es2" ] && [ "$CFG_OPENGLES3" = "yes" ]; then
     if compileTestWithPkgConfig glesv2 unix/opengles3 "OpenGL ES 3.0" ""; then
         # Add a define for ES3, in addition to ES and ES2.
         QCONFIG_FLAGS="$QCONFIG_FLAGS QT_OPENGL_ES_3"
