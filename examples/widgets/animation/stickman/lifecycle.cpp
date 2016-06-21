@@ -91,7 +91,7 @@ public:
         : QEventTransition(this, QEvent::Timer)
     {
         setTargetState(target);
-        qsrand((uint)QDateTime::currentDateTime().toTime_t());
+        qsrand((uint)QDateTime::currentSecsSinceEpoch());
         startTimer(1000);
     }
 

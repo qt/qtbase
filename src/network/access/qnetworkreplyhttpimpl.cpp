@@ -522,36 +522,36 @@ bool QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
          * now
          *      is the current (local) time
          */
-        int age_value = 0;
+        qint64 age_value = 0;
         it = cacheHeaders.findRawHeader("age");
         if (it != cacheHeaders.rawHeaders.constEnd())
-            age_value = it->second.toInt();
+            age_value = it->second.toLongLong();
 
         QDateTime dateHeader;
-        int date_value = 0;
+        qint64 date_value = 0;
         it = cacheHeaders.findRawHeader("date");
         if (it != cacheHeaders.rawHeaders.constEnd()) {
             dateHeader = QNetworkHeadersPrivate::fromHttpDate(it->second);
-            date_value = dateHeader.toTime_t();
+            date_value = dateHeader.toSecsSinceEpoch();
         }
 
-        int now = currentDateTime.toTime_t();
-        int request_time = now;
-        int response_time = now;
+        qint64 now = currentDateTime.toSecsSinceEpoch();
+        qint64 request_time = now;
+        qint64 response_time = now;
 
         // Algorithm from RFC 2616 section 13.2.3
-        int apparent_age = qMax(0, response_time - date_value);
-        int corrected_received_age = qMax(apparent_age, age_value);
-        int response_delay = response_time - request_time;
-        int corrected_initial_age = corrected_received_age + response_delay;
-        int resident_time = now - response_time;
-        int current_age   = corrected_initial_age + resident_time;
+        qint64 apparent_age = qMax<qint64>(0, response_time - date_value);
+        qint64 corrected_received_age = qMax(apparent_age, age_value);
+        qint64 response_delay = response_time - request_time;
+        qint64 corrected_initial_age = corrected_received_age + response_delay;
+        qint64 resident_time = now - response_time;
+        qint64 current_age   = corrected_initial_age + resident_time;
 
-        int freshness_lifetime = 0;
+        qint64 freshness_lifetime = 0;
 
         // RFC 2616 13.2.4 Expiration Calculations
         if (lastModified.isValid() && dateHeader.isValid()) {
-            int diff = lastModified.secsTo(dateHeader);
+            qint64 diff = lastModified.secsTo(dateHeader);
             freshness_lifetime = diff / 10;
             if (httpRequest.headerField("Warning").isEmpty()) {
                 QDateTime dt = currentDateTime.addSecs(current_age);

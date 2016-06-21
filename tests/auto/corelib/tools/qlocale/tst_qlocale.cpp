@@ -145,8 +145,8 @@ tst_QLocale::tst_QLocale()
     qRegisterMetaType<QLocale::FormatType>("QLocale::FormatType");
 
     // Test if in Central European Time zone
-    uint x1 = QDateTime(QDate(1990, 1, 1), QTime()).toTime_t();
-    uint x2 = QDateTime(QDate(1990, 6, 1), QTime()).toTime_t();
+    uint x1 = QDateTime(QDate(1990, 1, 1), QTime()).toSecsSinceEpoch();
+    uint x2 = QDateTime(QDate(1990, 6, 1), QTime()).toSecsSinceEpoch();
     europeanTimeZone = (x1 == 631148400 && x2 == 644191200);
 }
 

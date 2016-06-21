@@ -141,7 +141,7 @@ bool MetaInfo::parse(const QByteArray &data)
     }
 
     if (dict.contains("creation date"))
-        metaInfoCreationDate.setTime_t(dict.value("creation date").toInt());
+        metaInfoCreationDate.setSecsSinceEpoch(dict.value("creation date").toInt());
     if (dict.contains("comment"))
         metaInfoComment = QString::fromUtf8(dict.value("comment").toByteArray());
     if (dict.contains("created by"))

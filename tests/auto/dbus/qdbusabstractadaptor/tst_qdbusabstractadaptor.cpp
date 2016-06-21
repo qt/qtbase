@@ -1818,7 +1818,7 @@ void tst_QDBusAbstractAdaptor::typeMatching_data()
     LLDateTimeMap lldtmap;
     lldtmap[-1] = QDateTime();
     QDateTime now = QDateTime::currentDateTime();
-    lldtmap[now.toTime_t()] = now; // array of struct of int64 and struct of 3 ints and struct of 4 ints and int
+    lldtmap[now.toSecsSinceEpoch()] = now; // array of struct of int64 and struct of 3 ints and struct of 4 ints and int
     QTest::newRow("lldtmap") << "LLDateTimeMap" << "a{x((iii)(iiii)i)}" << QVariant::fromValue(lldtmap);
 
     MyStruct s;

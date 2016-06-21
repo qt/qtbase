@@ -290,7 +290,7 @@ void CompositionRenderer::updateCirclePos()
     if (m_current_object != NoObject)
         return;
     QDateTime dt = QDateTime::currentDateTime();
-    qreal t = (dt.toTime_t() * 1000 + dt.time().msec()) / 1000.0;
+    qreal t = dt.toMSecsSinceEpoch() / 1000.0;
 
     qreal x = width() / qreal(2) + (qCos(t*8/11) + qSin(-t)) * width() / qreal(4);
     qreal y = height() / qreal(2) + (qSin(t*6/7) + qCos(t * qreal(1.5))) * height() / qreal(4);

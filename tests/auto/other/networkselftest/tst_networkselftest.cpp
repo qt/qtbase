@@ -539,7 +539,7 @@ void tst_NetworkSelfTest::httpServer()
 {
     QByteArray uniqueExtension = QByteArray::number((qulonglong)this) +
                                  QByteArray::number((qulonglong)qrand()) +
-                                 QByteArray::number((qulonglong)QDateTime::currentDateTime().toTime_t());
+                                 QByteArray::number(QDateTime::currentSecsSinceEpoch());
 
     netChat(80, QList<Chat>()
             // HTTP/0.9 chat:

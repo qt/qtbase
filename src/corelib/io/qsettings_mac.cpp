@@ -181,7 +181,7 @@ static QCFType<CFPropertyListRef> macValue(const QVariant &value)
             QDateTime dt = value.toDateTime();
             if (dt.timeSpec() == Qt::LocalTime) {
                 QDateTime reference;
-                reference.setTime_t((uint)kCFAbsoluteTimeIntervalSince1970);
+                reference.setSecsSinceEpoch(qint64(kCFAbsoluteTimeIntervalSince1970));
                 result = CFDateCreate(kCFAllocatorDefault, CFAbsoluteTime(reference.secsTo(dt)));
             } else {
                 goto string_case;
@@ -293,7 +293,7 @@ static QVariant qtValue(CFPropertyListRef cfvalue)
         return map;
     } else if (typeId == CFDateGetTypeID()) {
         QDateTime dt;
-        dt.setTime_t((uint)kCFAbsoluteTimeIntervalSince1970);
+        dt.setSecsSinceEpoch(qint64(kCFAbsoluteTimeIntervalSince1970));
         return dt.addSecs((int)CFDateGetAbsoluteTime(static_cast<CFDateRef>(cfvalue)));
     }
     return QVariant();

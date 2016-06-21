@@ -970,7 +970,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
                     if (ok) {
                         if (secs <= 0) {
                             //earliest representable time (RFC6265 section 5.2.2)
-                            cookie.setExpirationDate(QDateTime::fromTime_t(0));
+                            cookie.setExpirationDate(QDateTime::fromSecsSinceEpoch(0));
                         } else {
                             cookie.setExpirationDate(now.addSecs(secs));
                         }

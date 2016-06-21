@@ -1271,14 +1271,10 @@ static QByteArray qEncodeNtlmv2Response(const QAuthenticatorPrivate *ctx,
     if(timeArray.size()) {
         ds.writeRawData(timeArray.constData(), timeArray.size());
     } else {
-        QDateTime currentTime(QDate::currentDate(),
-                              QTime::currentTime(), Qt::UTC);
-
-        // number of seconds between 1601 and epoc(1970)
+        // number of seconds between 1601 and the epoch (1970)
         // 369 years, 89 leap years
         // ((369 * 365) + 89) * 24 * 3600 = 11644473600
-
-        time = Q_UINT64_C(currentTime.toTime_t() + 11644473600);
+        time = QDateTime::currentSecsSinceEpoch() + 11644473600;
 
         // represented as 100 nano seconds
         time = Q_UINT64_C(time * 10000000);

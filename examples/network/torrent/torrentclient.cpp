@@ -703,7 +703,7 @@ void TorrentClient::connectToPeers()
         // Pick a random peer from the list of weighed peers.
         TorrentPeer *peer = weighedPeers.takeAt(qrand() % weighedPeers.size());
         weighedPeers.removeAll(peer);
-        peer->connectStart = QDateTime::currentDateTime().toTime_t();
+        peer->connectStart = QDateTime::currentSecsSinceEpoch();
         peer->lastVisited = peer->connectStart;
 
         // Connect to the peer.
@@ -717,7 +717,7 @@ QList<TorrentPeer *> TorrentClient::weighedFreePeers() const
     QList<TorrentPeer *> weighedPeers;
 
     // Generate a list of peers that we want to connect to.
-    uint now = QDateTime::currentDateTime().toTime_t();
+    qint64 now = QDateTime::currentSecsSinceEpoch();
     QList<TorrentPeer *> freePeers;
     QMap<QString, int> connectionsPerPeer;
     foreach (TorrentPeer *peer, d->peers) {

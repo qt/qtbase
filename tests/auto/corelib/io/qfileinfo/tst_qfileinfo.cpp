@@ -141,7 +141,7 @@ inline bool qIsLikelyToBeNfs(int /* handle */)
 
 static QString seedAndTemplate()
 {
-    qsrand(QDateTime::currentDateTimeUtc().toTime_t());
+    qsrand(QDateTime::currentSecsSinceEpoch());
     return QDir::tempPath() + "/tst_qfileinfo-XXXXXX";
 }
 

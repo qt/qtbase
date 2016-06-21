@@ -116,7 +116,7 @@ Q_CONSTRUCTOR_FUNCTION(initializeLang)
 
 static QString seedAndTemplate()
 {
-    qsrand(QDateTime::currentDateTimeUtc().toTime_t());
+    qsrand(QDateTime::currentSecsSinceEpoch());
     return QDir::tempPath() + "/tst_qmimedatabase-XXXXXX";
 }
 
