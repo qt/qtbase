@@ -344,7 +344,7 @@ QIOSMenu::QIOSMenu()
     : QPlatformMenu()
     , m_tag(0)
     , m_enabled(true)
-    , m_visible(true)
+    , m_visible(false)
     , m_text(QString())
     , m_menuType(DefaultMenu)
     , m_effectiveMenuType(DefaultMenu)
@@ -437,7 +437,7 @@ void QIOSMenu::handleItemSelected(QIOSMenuItem *menuItem)
 
 void QIOSMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item)
 {
-    if (m_currentMenu == this || !m_visible || !m_enabled || !parentWindow)
+    if (m_currentMenu == this || !parentWindow)
         return;
 
     emit aboutToShow();
@@ -464,6 +464,8 @@ void QIOSMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect, c
         toggleShowUsingUIPickerView(true);
         break;
     }
+
+    m_visible = true;
 }
 
 void QIOSMenu::dismiss()
@@ -485,6 +487,7 @@ void QIOSMenu::dismiss()
     }
 
     m_currentMenu = 0;
+    m_visible = false;
 }
 
 void QIOSMenu::toggleShowUsingUIMenuController(bool show)
