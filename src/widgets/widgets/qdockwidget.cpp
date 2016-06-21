@@ -1445,8 +1445,6 @@ bool QDockWidget::event(QEvent *event)
     switch (event->type()) {
 #ifndef QT_NO_ACTION
     case QEvent::Hide:
-        if (d->state && d->state->dragging)
-            d->endDrag(true);
         if (layout != 0)
             layout->keepSize(this);
         d->toggleViewAction->setChecked(false);
