@@ -76,6 +76,28 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+template <typename T, typename U, U (*RetainFunction)(U), void (*ReleaseFunction)(U)>
+class QAppleRefCounted
+{
+public:
+    QAppleRefCounted(const T &t = T()) : type(t) {}
+    QAppleRefCounted(const QAppleRefCounted &helper) : type(helper.type) { if (type) RetainFunction(type); }
+    ~QAppleRefCounted() { if (type) ReleaseFunction(type); }
+    operator T() { return type; }
+    QAppleRefCounted &operator=(const QAppleRefCounted &helper)
+    {
+        if (helper.type)
+            RetainFunction(helper.type);
+        T type2 = type;
+        type = helper.type;
+        if (type2)
+            ReleaseFunction(type2);
+        return *this;
+    }
+    T *operator&() { return &type; }
+protected:
+    T type;
+};
 
 /*
     Helper class that automates refernce counting for CFtypes.
@@ -90,32 +112,16 @@ QT_BEGIN_NAMESPACE
     HIThemeGet*Shape functions, which in reality are "Copy" functions.
 */
 template <typename T>
-class Q_CORE_EXPORT QCFType
+class QCFType : public QAppleRefCounted<T, CFTypeRef, CFRetain, CFRelease>
 {
 public:
-    inline QCFType(const T &t = 0) : type(t) {}
-    inline QCFType(const QCFType &helper) : type(helper.type) { if (type) CFRetain(type); }
-    inline ~QCFType() { if (type) CFRelease(type); }
-    inline operator T() { return type; }
-    inline QCFType operator =(const QCFType &helper)
-    {
-        if (helper.type)
-            CFRetain(helper.type);
-        CFTypeRef type2 = type;
-        type = helper.type;
-        if (type2)
-            CFRelease(type2);
-        return *this;
-    }
-    inline T *operator&() { return &type; }
-    template <typename X> X as() const { return reinterpret_cast<X>(type); }
+    using QAppleRefCounted<T, CFTypeRef, CFRetain, CFRelease>::QAppleRefCounted;
+    template <typename X> X as() const { return reinterpret_cast<X>(this->type); }
     static QCFType constructFromGet(const T &t)
     {
         CFRetain(t);
         return QCFType<T>(t);
     }
-protected:
-    T type;
 };
 
 class Q_CORE_EXPORT QCFString : public QCFType<CFStringRef>
