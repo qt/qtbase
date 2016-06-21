@@ -85,6 +85,7 @@ protected:
 public:
     QString rootPath;
     QByteArray device;
+    QByteArray subvolume;
     QByteArray fileSystemType;
     QString name;
 

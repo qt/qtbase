@@ -48,11 +48,15 @@ void printVolumes(const QList<QStorageInfo> &volumes, int (*printer)(const char 
         if (info.fileSystemType() != fsAndType)
             fsAndType += " (" + info.fileSystemType() + ')';
 
-        printf("%-19s R%c ", fsAndType.constData(), info.isReadOnly() ? 'O' : 'W');
+        printer("%-19s R%c ", fsAndType.constData(), info.isReadOnly() ? 'O' : 'W');
         if (fsAndType.size() > 19)
-            printf("\n%23s", "");
+            printer("\n%23s", "");
 
-        printf("%10llu %10llu %5u  ", info.bytesTotal() / 1024, info.bytesFree() / 1024, info.blockSize());
-        printf("%-16s %s\n", qPrintable(info.name()), qPrintable(info.rootPath()));
+        printer("%10llu %10llu %5u  ", info.bytesTotal() / 1024, info.bytesFree() / 1024, info.blockSize());
+        if (!info.subvolume().isEmpty())
+            printer("subvol=%-18s ", qPrintable(info.subvolume()));
+        else
+            printer("%-25s ", qPrintable(info.name()));
+        printer("%s\n", qPrintable(info.rootPath()));
     }
 }

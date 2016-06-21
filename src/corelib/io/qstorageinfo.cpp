@@ -260,11 +260,31 @@ QByteArray QStorageInfo::fileSystemType() const
     devpath like \c /dev/sda0 for local storages. On Windows, it returns the UNC
     path starting with \c \\\\?\\ for local storages (in other words, the volume GUID).
 
-    \sa rootPath()
+    \sa rootPath(), subvolume()
 */
 QByteArray QStorageInfo::device() const
 {
     return d->device;
+}
+
+/*!
+    \since 5.8
+    Returns the subvolume name for this volume.
+
+    Some filesystem types allow multiple subvolumes inside one device, which
+    may be mounted in different paths. If the subvolume could be detected, it
+    is returned here. The format of the subvolume name is specific to each
+    filesystem type.
+
+    If this volume was not mounted from a subvolume of a larger filesystem or
+    if the subvolume could not be detected, this function returns an empty byte
+    array.
+
+    \sa device()
+*/
+QByteArray QStorageInfo::subvolume() const
+{
+    return d->subvolume;
 }
 
 /*!

@@ -71,6 +71,7 @@ public:
 
     QString rootPath() const;
     QByteArray device() const;
+    QByteArray subvolume() const;
     QByteArray fileSystemType() const;
     QString name() const;
     QString displayName() const;
@@ -100,7 +101,7 @@ inline bool operator==(const QStorageInfo &first, const QStorageInfo &second)
 {
     if (first.d == second.d)
         return true;
-    return first.device() == second.device();
+    return first.device() == second.device() && first.rootPath() == second.rootPath();
 }
 
 inline bool operator!=(const QStorageInfo &first, const QStorageInfo &second)
