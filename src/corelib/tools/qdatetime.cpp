@@ -3475,7 +3475,7 @@ void QDateTime::setTimeZone(const QTimeZone &toZone)
     this object is not valid. However, for all valid dates, this function
     returns a unique value.
 
-    \sa toTime_t(), setMSecsSinceEpoch()
+    \sa toSecsSinceEpoch(), setMSecsSinceEpoch()
 */
 qint64 QDateTime::toMSecsSinceEpoch() const
 {
@@ -3504,25 +3504,44 @@ qint64 QDateTime::toMSecsSinceEpoch() const
 }
 
 /*!
+    \since 5.8
+
+    Returns the datetime as the number of seconds that have passed since
+    1970-01-01T00:00:00.000, Coordinated Universal Time (Qt::UTC).
+
+    On systems that do not support time zones, this function will
+    behave as if local time were Qt::UTC.
+
+    The behavior for this function is undefined if the datetime stored in
+    this object is not valid. However, for all valid dates, this function
+    returns a unique value.
+
+    \sa toMSecsSinceEpoch(), setSecsSinceEpoch()
+*/
+qint64 QDateTime::toSecsSinceEpoch() const
+{
+    return toMSecsSinceEpoch() / 1000;
+}
+
+#if QT_DEPRECATED_SINCE(5, 8)
+/*!
+    \deprecated
+
     Returns the datetime as the number of seconds that have passed
     since 1970-01-01T00:00:00, Coordinated Universal Time (Qt::UTC).
 
     On systems that do not support time zones, this function will
     behave as if local time were Qt::UTC.
 
-    \note This function returns a 32-bit unsigned integer, so it does not
-    support dates before 1970, but it does support dates after
-    2038-01-19T03:14:06, which may not be valid time_t values. Be careful
-    when passing those time_t values to system functions, which could
-    interpret them as negative dates.
+    \note This function returns a 32-bit unsigned integer and is deprecated.
 
     If the date is outside the range 1970-01-01T00:00:00 to
     2106-02-07T06:28:14, this function returns -1 cast to an unsigned integer
     (i.e., 0xFFFFFFFF).
 
-    To get an extended range, use toMSecsSinceEpoch().
+    To get an extended range, use toMSecsSinceEpoch() or toSecsSinceEpoch().
 
-    \sa toMSecsSinceEpoch(), setTime_t()
+    \sa toSecsSinceEpoch(), toMSecsSinceEpoch(), setTime_t()
 */
 
 uint QDateTime::toTime_t() const
@@ -3534,6 +3553,7 @@ uint QDateTime::toTime_t() const
         return uint(-1);
     return uint(retval);
 }
+#endif
 
 /*!
     \since 4.7
@@ -3547,7 +3567,7 @@ uint QDateTime::toTime_t() const
     (\c{std::numeric_limits<qint64>::min()}) to \a msecs will result in
     undefined behavior.
 
-    \sa toMSecsSinceEpoch(), setTime_t()
+    \sa toMSecsSinceEpoch(), setSecsSinceEpoch()
 */
 void QDateTime::setMSecsSinceEpoch(qint64 msecs)
 {
@@ -3615,12 +3635,31 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
 }
 
 /*!
+    \since 5.8
+
+    Sets the date and time given the number of seconds \a secs that have
+    passed since 1970-01-01T00:00:00.000, Coordinated Universal Time
+    (Qt::UTC). On systems that do not support time zones this function
+    will behave as if local time were Qt::UTC.
+
+    \sa toSecsSinceEpoch(), setMSecsSinceEpoch()
+*/
+void QDateTime::setSecsSinceEpoch(qint64 secs)
+{
+    setMSecsSinceEpoch(secs * 1000);
+}
+
+#if QT_DEPRECATED_SINCE(5, 8)
+/*!
     \fn void QDateTime::setTime_t(uint seconds)
+    \deprecated
 
     Sets the date and time given the number of \a seconds that have
     passed since 1970-01-01T00:00:00, Coordinated Universal Time
     (Qt::UTC). On systems that do not support time zones this function
     will behave as if local time were Qt::UTC.
+
+    \note This function is deprecated. For new code, use setSecsSinceEpoch().
 
     \sa toTime_t()
 */
@@ -3629,6 +3668,7 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
 {
     setMSecsSinceEpoch((qint64)secsSince1Jan1970UTC * 1000);
 }
+#endif
 
 #ifndef QT_NO_DATESTRING
 /*!
@@ -4284,6 +4324,17 @@ qint64 QDateTime::currentMSecsSinceEpoch() Q_DECL_NOTHROW
                    - julianDayFromDate(1970, 1, 1)) * Q_INT64_C(86400000);
 }
 
+qint64 QDateTime::currentSecsSinceEpoch() Q_DECL_NOTHROW
+{
+    SYSTEMTIME st;
+    memset(&st, 0, sizeof(SYSTEMTIME));
+    GetSystemTime(&st);
+
+    return st.wHour * SECS_PER_HOUR + st.wMinute * SECS_PER_MIN + st.wSecond +
+            qint64(julianDayFromDate(st.wYear, st.wMonth, st.wDay)
+                   - julianDayFromDate(1970, 1, 1)) * Q_INT64_C(86400);
+}
+
 #elif defined(Q_OS_UNIX)
 QDate QDate::currentDate()
 {
@@ -4314,17 +4365,28 @@ qint64 QDateTime::currentMSecsSinceEpoch() Q_DECL_NOTHROW
     return qint64(tv.tv_sec) * Q_INT64_C(1000) + tv.tv_usec / 1000;
 }
 
+qint64 QDateTime::currentSecsSinceEpoch() Q_DECL_NOTHROW
+{
+    struct timeval tv;
+    gettimeofday(&tv, 0);
+    return qint64(tv.tv_sec);
+}
 #else
 #error "What system is this?"
 #endif
 
+#if QT_DEPRECATED_SINCE(5, 8)
 /*!
   \since 4.2
+  \deprecated
 
   Returns a datetime whose date and time are the number of \a seconds
   that have passed since 1970-01-01T00:00:00, Coordinated Universal
   Time (Qt::UTC) and converted to Qt::LocalTime.  On systems that do not
   support time zones, the time will be set as if local time were Qt::UTC.
+
+  \note This function is deprecated. Please use fromSecsSinceEpoch() in new
+  code.
 
   \sa toTime_t(), setTime_t()
 */
@@ -4335,6 +4397,7 @@ QDateTime QDateTime::fromTime_t(uint seconds)
 
 /*!
   \since 5.2
+  \deprecated
 
   Returns a datetime whose date and time are the number of \a seconds
   that have passed since 1970-01-01T00:00:00, Coordinated Universal
@@ -4343,6 +4406,9 @@ QDateTime QDateTime::fromTime_t(uint seconds)
   If the \a spec is not Qt::OffsetFromUTC then the \a offsetSeconds will be
   ignored.  If the \a spec is Qt::OffsetFromUTC and the \a offsetSeconds is 0
   then the spec will be set to Qt::UTC, i.e. an offset of 0 seconds.
+
+  \note This function is deprecated. Please use fromSecsSinceEpoch() in new
+  code.
 
   \sa toTime_t(), setTime_t()
 */
@@ -4354,10 +4420,14 @@ QDateTime QDateTime::fromTime_t(uint seconds, Qt::TimeSpec spec, int offsetSecon
 #ifndef QT_BOOTSTRAPPED
 /*!
     \since 5.2
+    \deprecated
 
     Returns a datetime whose date and time are the number of \a seconds
     that have passed since 1970-01-01T00:00:00, Coordinated Universal
     Time (Qt::UTC) and with the given \a timeZone.
+
+    \note This function is deprecated. Please use fromSecsSinceEpoch() in new
+    code.
 
     \sa toTime_t(), setTime_t()
 */
@@ -4366,6 +4436,7 @@ QDateTime QDateTime::fromTime_t(uint seconds, const QTimeZone &timeZone)
     return fromMSecsSinceEpoch((qint64)seconds * 1000, timeZone);
 }
 #endif
+#endif // QT_DEPRECATED_SINCE(5, 8)
 
 /*!
   \since 4.7
@@ -4379,7 +4450,7 @@ QDateTime QDateTime::fromTime_t(uint seconds, const QTimeZone &timeZone)
   range of QDateTime, both negative and positive. The behavior of this
   function is undefined for those values.
 
-  \sa toTime_t(), setTime_t()
+  \sa toMSecsSinceEpoch(), setMSecsSinceEpoch()
 */
 QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs)
 {
@@ -4404,7 +4475,7 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs)
   If \a spec is Qt::TimeZone then the spec will be set to Qt::LocalTime,
   i.e. the current system time zone.
 
-  \sa fromTime_t()
+  \sa toMSecsSinceEpoch(), setMSecsSinceEpoch()
 */
 QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int offsetSeconds)
 {
@@ -4412,6 +4483,31 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int of
     QT_PREPEND_NAMESPACE(setTimeSpec(dt.d, spec, offsetSeconds));
     dt.setMSecsSinceEpoch(msecs);
     return dt;
+}
+
+/*!
+  \since 5.8
+
+  Returns a datetime whose date and time are the number of seconds \a secs
+  that have passed since 1970-01-01T00:00:00.000, Coordinated Universal
+  Time (Qt::UTC) and converted to the given \a spec.
+
+  Note that there are possible values for \a secs that lie outside the valid
+  range of QDateTime, both negative and positive. The behavior of this
+  function is undefined for those values.
+
+  If the \a spec is not Qt::OffsetFromUTC then the \a offsetSeconds will be
+  ignored.  If the \a spec is Qt::OffsetFromUTC and the \a offsetSeconds is 0
+  then the spec will be set to Qt::UTC, i.e. an offset of 0 seconds.
+
+  If \a spec is Qt::TimeZone then the spec will be set to Qt::LocalTime,
+  i.e. the current system time zone.
+
+  \sa toSecsSinceEpoch(), setSecsSinceEpoch()
+*/
+QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spec, int offsetSeconds)
+{
+    return fromMSecsSinceEpoch(secs * 1000, spec, offsetSeconds);
 }
 
 #ifndef QT_BOOTSTRAPPED
@@ -4422,7 +4518,7 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int of
     that have passed since 1970-01-01T00:00:00.000, Coordinated Universal
     Time (Qt::UTC) and with the given \a timeZone.
 
-    \sa fromTime_t()
+    \sa fromSecsSinceEpoch()
 */
 QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone)
 {
@@ -4430,6 +4526,20 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone
     dt.setTimeZone(timeZone);
     dt.setMSecsSinceEpoch(msecs);
     return dt;
+}
+
+/*!
+    \since 5.8
+
+    Returns a datetime whose date and time are the number of seconds \a secs
+    that have passed since 1970-01-01T00:00:00.000, Coordinated Universal
+    Time (Qt::UTC) and with the given \a timeZone.
+
+    \sa fromMSecsSinceEpoch()
+*/
+QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, const QTimeZone &timeZone)
+{
+    return fromMSecsSinceEpoch(secs * 1000, timeZone);
 }
 #endif
 

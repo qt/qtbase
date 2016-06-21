@@ -276,9 +276,9 @@ inline QDateTime QFileSystemMetaData::fileTime(QAbstractFileEngine::FileTime tim
 #endif
 
 #if defined(Q_OS_UNIX)
-inline QDateTime QFileSystemMetaData::creationTime() const          { return QDateTime::fromTime_t(creationTime_); }
-inline QDateTime QFileSystemMetaData::modificationTime() const      { return QDateTime::fromTime_t(modificationTime_); }
-inline QDateTime QFileSystemMetaData::accessTime() const            { return QDateTime::fromTime_t(accessTime_); }
+inline QDateTime QFileSystemMetaData::creationTime() const          { return QDateTime::fromSecsSinceEpoch(creationTime_); }
+inline QDateTime QFileSystemMetaData::modificationTime() const      { return QDateTime::fromSecsSinceEpoch(modificationTime_); }
+inline QDateTime QFileSystemMetaData::accessTime() const            { return QDateTime::fromSecsSinceEpoch(accessTime_); }
 
 inline uint QFileSystemMetaData::userId() const                     { return userId_; }
 inline uint QFileSystemMetaData::groupId() const                    { return groupId_; }

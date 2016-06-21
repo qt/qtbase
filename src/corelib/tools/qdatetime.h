@@ -280,8 +280,7 @@ public:
     bool isDaylightTime() const;
 
     qint64 toMSecsSinceEpoch() const;
-    // ### Qt 6: use quint64 instead of uint
-    uint toTime_t() const;
+    qint64 toSecsSinceEpoch() const;
 
     void setDate(const QDate &date);
     void setTime(const QTime &time);
@@ -291,8 +290,7 @@ public:
     void setTimeZone(const QTimeZone &toZone);
 #endif // QT_BOOTSTRAPPED
     void setMSecsSinceEpoch(qint64 msecs);
-    // ### Qt 6: use quint64 instead of uint
-    void setTime_t(uint secsSince1Jan1970UTC);
+    void setSecsSinceEpoch(qint64 secs);
 
 #ifndef QT_NO_DATESTRING
     QString toString(Qt::DateFormat f = Qt::TextDate) const;
@@ -334,21 +332,28 @@ public:
     static QDateTime fromString(const QString &s, Qt::DateFormat f = Qt::TextDate);
     static QDateTime fromString(const QString &s, const QString &format);
 #endif
-    // ### Qt 6: use quint64 instead of uint
+
+#if QT_DEPRECATED_SINCE(5, 8)
+    uint toTime_t() const;
+    void setTime_t(uint secsSince1Jan1970UTC);
     static QDateTime fromTime_t(uint secsSince1Jan1970UTC);
-    // ### Qt 6: Merge with above with default spec = Qt::LocalTime
     static QDateTime fromTime_t(uint secsSince1Jan1970UTC, Qt::TimeSpec spec,
                                 int offsetFromUtc = 0);
-#ifndef QT_BOOTSTRAPPED
     static QDateTime fromTime_t(uint secsSince1Jan1970UTC, const QTimeZone &timeZone);
 #endif
+
     static QDateTime fromMSecsSinceEpoch(qint64 msecs);
     // ### Qt 6: Merge with above with default spec = Qt::LocalTime
     static QDateTime fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int offsetFromUtc = 0);
+    static QDateTime fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spe = Qt::LocalTime, int offsetFromUtc = 0);
+
 #ifndef QT_BOOTSTRAPPED
     static QDateTime fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone);
+    static QDateTime fromSecsSinceEpoch(qint64 secs, const QTimeZone &timeZone);
 #endif
+
     static qint64 currentMSecsSinceEpoch() Q_DECL_NOTHROW;
+    static qint64 currentSecsSinceEpoch() Q_DECL_NOTHROW;
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     static QDateTime fromCFDate(CFDateRef date);

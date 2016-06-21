@@ -977,7 +977,7 @@ QUuid QUuid::createUuid()
 #else
         static bool seeded = false;
         if (!seeded)
-            qsrand(QDateTime::currentDateTimeUtc().toTime_t()
+            qsrand(QDateTime::currentDateTimeUtc().toSecsSinceEpoch()
                    + quintptr(&seeded));
 #endif
 
