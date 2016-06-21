@@ -26,16 +26,23 @@ isEmpty(QMAKE_PLATFORM) {
     equals(TARGET_PLATFORM, unix): \
         QMAKE_PLATFORM = unix
     else:equals(TARGET_PLATFORM, macx): \
-        QMAKE_PLATFORM = osx macx mac darwin unix
+        QMAKE_PLATFORM = macos osx macx mac darwin unix
     else:equals(TARGET_PLATFORM, win32): \
         QMAKE_PLATFORM = win32
     else: \
         error("Qmake spec sets an invalid TARGET_PLATFORM.")
 }
 
-contains(QMAKE_PLATFORM, macx):!contains(QMAKE_PLATFORM, osx) {
-    warning("qmake spec specifies platform macx, but not osx.")
-    QMAKE_PLATFORM = osx $$QMAKE_PLATFORM
+contains(QMAKE_PLATFORM, macx) {
+    !contains(QMAKE_PLATFORM, osx) {
+        warning("qmake spec specified platform macx, but not osx.");
+        QMAKE_PLATFORM = osx $$QMAKE_PLATFORM
+    }
+
+    !contains(QMAKE_PLATFORM, macos) {
+        warning("qmake spec specifies platform macx, but not macos.")
+        QMAKE_PLATFORM = macos $$QMAKE_PLATFORM
+    }
 }
 
 CONFIG += $$QMAKE_PLATFORM

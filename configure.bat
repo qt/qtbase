@@ -77,7 +77,7 @@ echo QT_VERSION_MINOR = %QTVERMIN% >> Makefile
 echo QT_VERSION_PATCH = %QTVERPAT% >> Makefile
 if not "%icl.exe%" == "" (
     echo CXX = icl>>Makefile
-    echo EXTRA_CXXFLAGS = /Zc:forScope>>Makefile
+    echo EXTRA_CXXFLAGS = /Qstd=c++11 /Zc:forScope>>Makefile
     rem This must have a trailing space.
     echo QTSRC = %QTSRC% >> Makefile
     set tmpl=win32

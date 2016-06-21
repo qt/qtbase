@@ -2131,7 +2131,6 @@ QString QCoreApplication::applicationFilePath()
             QCoreApplicationPrivate::setApplicationFilePath(fi.canonicalFilePath());
             return *QCoreApplicationPrivate::cachedApplicationFilePath;
         }
-        return QString();
     }
 #endif
 #if defined( Q_OS_UNIX )
@@ -2177,9 +2176,8 @@ QString QCoreApplication::applicationFilePath()
         }
     }
 
-    return QString();
 #endif
-    Q_UNREACHABLE();
+    return QString();
 }
 
 /*!

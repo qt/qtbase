@@ -552,7 +552,9 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
             QPoint n(to.y() - from.y(), from.x() - to.x());
             if (n.x() == 0 && n.y() == 0)
                 continue;
-            int scale = qRound((offs << 16) / qSqrt(qreal(n.x() * n.x() + n.y() * n.y()))); // 8:16
+            int scale = qRound((offs << 16) / qSqrt(qreal(n.x()) * n.x() + qreal(n.y()) * n.y())); // 8:16
+            Q_ASSERT(scale != 0);
+
             n.rx() = n.x() * scale >> 8;
             n.ry() = n.y() * scale >> 8;
             normals.append(n);
@@ -737,7 +739,6 @@ static bool imageHasNarrowOutlines(const QImage &im)
 }
 
 static int QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE = 54;
-static int QT_DISTANCEFIELD_DEFAULT_TILESIZE = 64;
 static int QT_DISTANCEFIELD_DEFAULT_SCALE = 16;
 static int QT_DISTANCEFIELD_DEFAULT_RADIUS = 80;
 static int QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT = 2000;
@@ -754,10 +755,6 @@ static void initialDistanceFieldFactor()
         qCDebug(lcDistanceField) << "set the QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE:" << QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE;
     }
 
-    if (qEnvironmentVariableIsSet("QT_DISTANCEFIELD_DEFAULT_TILESIZE")) {
-        QT_DISTANCEFIELD_DEFAULT_TILESIZE = qEnvironmentVariableIntValue("QT_DISTANCEFIELD_DEFAULT_TILESIZE");
-        qCDebug(lcDistanceField) << "set the QT_DISTANCEFIELD_DEFAULT_TILESIZE:" << QT_DISTANCEFIELD_DEFAULT_TILESIZE;
-    }
     if (qEnvironmentVariableIsSet("QT_DISTANCEFIELD_DEFAULT_SCALE")) {
         QT_DISTANCEFIELD_DEFAULT_SCALE = qEnvironmentVariableIntValue("QT_DISTANCEFIELD_DEFAULT_SCALE");
         qCDebug(lcDistanceField) << "set the QT_DISTANCEFIELD_DEFAULT_SCALE:" << QT_DISTANCEFIELD_DEFAULT_SCALE;
@@ -815,16 +812,6 @@ int QT_DISTANCEFIELD_BASEFONTSIZE(bool narrowOutlineFont)
         return QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE * 2;
     else
         return QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE;
-}
-
-int QT_DISTANCEFIELD_TILESIZE(bool narrowOutlineFont)
-{
-    initialDistanceFieldFactor();
-
-    if (Q_UNLIKELY(narrowOutlineFont))
-        return QT_DISTANCEFIELD_DEFAULT_TILESIZE * 2;
-    else
-        return QT_DISTANCEFIELD_DEFAULT_TILESIZE;
 }
 
 int QT_DISTANCEFIELD_SCALE(bool narrowOutlineFont)
@@ -890,8 +877,9 @@ QDistanceFieldData *QDistanceFieldData::create(const QPainterPath &path, bool do
 {
     int dfMargin = QT_DISTANCEFIELD_RADIUS(doubleResolution) / QT_DISTANCEFIELD_SCALE(doubleResolution);
     int glyphWidth = qCeil(path.boundingRect().width() / QT_DISTANCEFIELD_SCALE(doubleResolution)) + dfMargin * 2;
+    int glyphHeight = qCeil(path.boundingRect().height() / QT_DISTANCEFIELD_SCALE(doubleResolution)) + dfMargin * 2;
 
-    QDistanceFieldData *data = create(QSize(glyphWidth, QT_DISTANCEFIELD_TILESIZE(doubleResolution)));
+    QDistanceFieldData *data = create(QSize(glyphWidth, glyphHeight));
 
     makeDistanceField(data,
                       path,

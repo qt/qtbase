@@ -353,9 +353,9 @@ bool QShortcutMap::tryShortcut(QKeyEvent *e)
         // shouldn't say that we handled the event.
         return identicalMatches > 0;
     }
-    default:
-        Q_UNREACHABLE();
     }
+    Q_UNREACHABLE();
+    return false;
 }
 
 /*! \internal

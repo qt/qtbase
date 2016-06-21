@@ -16,5 +16,3 @@ win32 {
 }
 
 TARGET = tst_qudpsocket
-
-CONFIG+=insignificant_test # QTBUG-25367, QTBUG-25368

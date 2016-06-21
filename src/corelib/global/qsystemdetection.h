@@ -48,7 +48,7 @@
    The operating system, must be one of: (Q_OS_x)
 
      DARWIN   - Any Darwin system (OS X, iOS, watchOS, tvOS)
-     OSX      - OS X
+     MACOS    - macOS
      IOS      - iOS
      WATCHOS  - watchOS
      TVOS     - tvOS
@@ -117,7 +117,7 @@
 #    else
 #      // there is no "real" OS X define (rdar://22640089),
 #      // assume any non iOS-based platform is OS X for now
-#      define Q_OS_OSX
+#      define Q_OS_MACOS
 #    endif
 #  else
 #    error "Qt has not been ported to this Apple platform - see http://www.qt.io/developers"
@@ -229,15 +229,16 @@
 #ifdef Q_OS_DARWIN64
 #define Q_OS_MAC64
 #endif
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
 #define Q_OS_MACX
+#define Q_OS_OSX
 #endif
 
 #ifdef Q_OS_DARWIN
 #  include <Availability.h>
 #  include <AvailabilityMacros.h>
 #
-#  ifdef Q_OS_OSX
+#  ifdef Q_OS_MACOS
 #    if !defined(__MAC_OS_X_VERSION_MIN_REQUIRED) || __MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_10_6
 #       undef __MAC_OS_X_VERSION_MIN_REQUIRED
 #       define __MAC_OS_X_VERSION_MIN_REQUIRED __MAC_10_6
@@ -266,6 +267,9 @@
 #  if !defined(__MAC_10_11)
 #       define __MAC_10_11 101100
 #  endif
+#  if !defined(__MAC_10_12)
+#       define __MAC_10_12 101200
+#  endif
 #  if !defined(MAC_OS_X_VERSION_10_7)
 #       define MAC_OS_X_VERSION_10_7 1070
 #  endif
@@ -280,6 +284,9 @@
 #  endif
 #  if !defined(MAC_OS_X_VERSION_10_11)
 #       define MAC_OS_X_VERSION_10_11 101100
+#  endif
+#  if !defined(MAC_OS_X_VERSION_10_12)
+#       define MAC_OS_X_VERSION_10_12 101200
 #  endif
 #
 #  if !defined(__IPHONE_4_3)
@@ -320,6 +327,18 @@
 #  endif
 #  if !defined(__IPHONE_9_0)
 #       define __IPHONE_9_0 90000
+#  endif
+#  if !defined(__IPHONE_9_1)
+#       define __IPHONE_9_1 90100
+#  endif
+#  if !defined(__IPHONE_9_2)
+#       define __IPHONE_9_2 90200
+#  endif
+#  if !defined(__IPHONE_9_3)
+#       define __IPHONE_9_3 90300
+#  endif
+#  if !defined(__IPHONE_10_0)
+#       define __IPHONE_10_0 100000
 #  endif
 #endif
 

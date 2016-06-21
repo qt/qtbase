@@ -1,0 +1,13 @@
+[bindThenResolveHost:first-fail]
+windows
+[bind:[::]]
+windows
+[bind:[::]:randomport]
+windows
+[invalidProxy:socks5-on-http]
+windows
+[disconnectWhileLookingUp]
+windows
+[timeoutConnect:ip]
+windows
+]
