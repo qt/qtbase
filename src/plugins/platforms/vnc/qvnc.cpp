@@ -52,7 +52,11 @@
 #include <arpa/inet.h>
 #endif
 
+#include <QtCore/QDebug>
+
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcVnc, "qt.qpa.vnc");
 
 QVncDirtyMap::QVncDirtyMap(QVncScreen *screen)
     : screen(screen), bytesPerPixel(0), numDirty(0)
@@ -456,7 +460,7 @@ void QRfbRawEncoder::write()
     // create a region from the dirty rects and send the region's merged rects.
     // ### use the tile map again
     QRegion rgn = client->dirtyRegion();
-    QT_VNC_DEBUG() << "QRfbRawEncoder::write()" << rgn;
+    qCDebug(lcVnc) << "QRfbRawEncoder::write()" << rgn;
 //    if (map) {
 //        for (int y = 0; y < map->mapHeight; ++y) {
 //            for (int x = 0; x < map->mapWidth; ++x) {
@@ -622,10 +626,9 @@ void QVncServer::init()
 {
     serverSocket = new QTcpServer(this);
     if (!serverSocket->listen(QHostAddress::Any, m_port))
-        qDebug() << "QVncServer could not connect:" << serverSocket->errorString();
+        qWarning() << "QVncServer could not connect:" << serverSocket->errorString();
     else
-        QT_VNC_DEBUG("QVncServer created on port %d", m_port);
-    QT_VNC_DEBUG() << "running in thread" << thread() << QThread::currentThread();
+        qWarning("QVncServer created on port %d", m_port);
 
     connect(serverSocket, SIGNAL(newConnection()), this, SLOT(newConnection()));
 
@@ -654,7 +657,7 @@ void QVncServer::newConnection()
 
     dirtyMap()->reset();
 
-    QT_VNC_DEBUG() << "new Connection" << thread();
+    qCDebug(lcVnc) << "new Connection from: " << clientSocket->localAddress();
 
     qvnc_screen->setPowerState(QPlatformScreen::PowerStateOn);
 }

@@ -195,7 +195,7 @@ void QVncClient::convertPixels(char *dst, const char *src, int count) const
         }
         default: {
             r = g = b = 0;
-            qDebug("QVNCServer: don't support %dbpp display", screendepth);
+            qWarning("QVNCServer: don't support %dbpp display", screendepth);
             return;
         }
         }
@@ -233,7 +233,7 @@ void QVncClient::convertPixels(char *dst, const char *src, int count) const
                          ((pixel & 0x000000ff) << 24));
                 break;
             default:
-                qDebug("Cannot handle %d bpp client", m_pixelFormat.bitsPerPixel);
+                qWarning("Cannot handle %d bpp client", m_pixelFormat.bitsPerPixel);
             }
         } else { // QSysInfo::ByteOrder == QSysInfo::LittleEndian
             switch (m_pixelFormat.bitsPerPixel) {
@@ -248,7 +248,7 @@ void QVncClient::convertPixels(char *dst, const char *src, int count) const
                          ((pixel & 0x000000ff) << 24));
                 break;
             default:
-                qDebug("Cannot handle %d bpp client",
+                qWarning("Cannot handle %d bpp client",
                        m_pixelFormat.bitsPerPixel);
                 break;
             }
@@ -260,7 +260,7 @@ void QVncClient::convertPixels(char *dst, const char *src, int count) const
 
 void QVncClient::readClient()
 {
-    QT_VNC_DEBUG() << "readClient" << m_state;
+    qCDebug(lcVnc) << "readClient" << m_state;
     switch (m_state) {
         case Disconnected:
 
@@ -270,7 +270,7 @@ void QVncClient::readClient()
                 char proto[13];
                 m_clientSocket->read(proto, 12);
                 proto[12] = '\0';
-                QT_VNC_DEBUG("Client protocol version %s", proto);
+                qCDebug(lcVnc, "Client protocol version %s", proto);
                 if (!strcmp(proto, "RFB 003.008\n")) {
                     m_protocolVersion = V3_8;
                 } else if (!strcmp(proto, "RFB 003.007\n")) {
@@ -392,7 +392,7 @@ void QVncClient::readClient()
                     break;
 
                 default:
-                    qDebug("QVNC cannot drive depth %d", m_server->screen()->depth());
+                    qWarning("QVNC cannot drive depth %d", m_server->screen()->depth());
                     discardClient();
                     return;
                 }
@@ -416,7 +416,7 @@ void QVncClient::readClient()
                         setPixelFormat();
                         break;
                     case FixColourMapEntries:
-                        qDebug("Not supported: FixColourMapEntries");
+                        qWarning("Not supported: FixColourMapEntries");
                         m_handleMsg = false;
                         break;
                     case SetEncodings:
@@ -435,7 +435,7 @@ void QVncClient::readClient()
                         clientCutText();
                         break;
                     default:
-                        qDebug("Unknown message type: %d", (int)m_msgType);
+                        qWarning("Unknown message type: %d", (int)m_msgType);
                         m_handleMsg = false;
                     }
                 }
@@ -496,7 +496,7 @@ void QVncClient::setPixelFormat()
         char buf[3];
         m_clientSocket->read(buf, 3); // just padding
         m_pixelFormat.read(m_clientSocket);
-        QT_VNC_DEBUG("Want format: %d %d %d %d %d %d %d %d %d %d",
+        qCDebug(lcVnc, "Want format: %d %d %d %d %d %d %d %d %d %d",
             int(m_pixelFormat.bitsPerPixel),
             int(m_pixelFormat.depth),
             int(m_pixelFormat.bigEndian),
@@ -508,7 +508,7 @@ void QVncClient::setPixelFormat()
             int(m_pixelFormat.greenShift),
             int(m_pixelFormat.blueShift));
         if (!m_pixelFormat.trueColor) {
-            qDebug("Can only handle true color clients");
+            qWarning("Can only handle true color clients");
             discardClient();
         }
         m_handleMsg = false;
@@ -552,12 +552,12 @@ void QVncClient::setEncodings()
             qint32 enc;
             m_clientSocket->read((char *)&enc, sizeof(qint32));
             enc = ntohl(enc);
-            QT_VNC_DEBUG("QVncServer::setEncodings: %d", enc);
+            qCDebug(lcVnc, "QVncServer::setEncodings: %d", enc);
             switch (enc) {
             case Raw:
                 if (!m_encoder) {
                     m_encoder = new QRfbRawEncoder(this);
-                    QT_VNC_DEBUG("QVncServer::setEncodings: using raw");
+                    qCDebug(lcVnc, "QVncServer::setEncodings: using raw");
                 }
                break;
             case CopyRect:
@@ -579,7 +579,6 @@ void QVncClient::setEncodings()
                 break;
             case Cursor:
                 m_supportCursor = true;
-                qDebug() << "client side cursor supported.";
                 m_server->screen()->enableClientCursor(this);
                 break;
             case DesktopSize:
@@ -595,13 +594,13 @@ void QVncClient::setEncodings()
 
     if (!m_encoder) {
         m_encoder = new QRfbRawEncoder(this);
-        QT_VNC_DEBUG("QVncServer::setEncodings: fallback using raw");
+        qCDebug(lcVnc, "QVncServer::setEncodings: fallback using raw");
     }
 }
 
 void QVncClient::frameBufferUpdateRequest()
 {
-    QT_VNC_DEBUG() << "FramebufferUpdateRequest";
+    qCDebug(lcVnc) << "FramebufferUpdateRequest";
     QRfbFrameBufferUpdateRequest ev;
 
     if (ev.read(m_clientSocket)) {

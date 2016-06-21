@@ -40,20 +40,16 @@
 #ifndef QVNC_P_H
 #define QVNC_P_H
 
-#include <QtCore/qdebug.h>
-#if 0
-#define QT_VNC_DEBUG if (1) {} else qDebug
-#else
-#define QT_VNC_DEBUG qDebug
-#endif
-
 #include "qvncscreen.h"
 
+#include <QtCore/QLoggingCategory>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qvarlengtharray.h>
 #include <qpa/qplatformcursor.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcVnc)
 
 class QTcpSocket;
 class QTcpServer;

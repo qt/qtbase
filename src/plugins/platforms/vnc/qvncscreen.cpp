@@ -83,9 +83,7 @@ bool QVncScreen::initialize()
         }
     }
 
-
     QFbScreen::initializeCompositor();
-    QT_VNC_DEBUG() << "QVncScreen::init" << geometry();
 
     switch (depth()) {
     case 32:
@@ -112,7 +110,6 @@ bool QVncScreen::initialize()
 QRegion QVncScreen::doRedraw()
 {
     QRegion touched = QFbScreen::doRedraw();
-    QT_VNC_DEBUG() << "qvncscreen::doRedraw()" << touched.rectCount();
 
     if (touched.isEmpty())
         return touched;
