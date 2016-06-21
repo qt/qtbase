@@ -80,23 +80,20 @@ template <typename T, typename U, U (*RetainFunction)(U), void (*ReleaseFunction
 class QAppleRefCounted
 {
 public:
-    QAppleRefCounted(const T &t = T()) : type(t) {}
-    QAppleRefCounted(const QAppleRefCounted &helper) : type(helper.type) { if (type) RetainFunction(type); }
-    ~QAppleRefCounted() { if (type) ReleaseFunction(type); }
-    operator T() { return type; }
-    QAppleRefCounted &operator=(const QAppleRefCounted &helper)
-    {
-        if (helper.type)
-            RetainFunction(helper.type);
-        T type2 = type;
-        type = helper.type;
-        if (type2)
-            ReleaseFunction(type2);
-        return *this;
-    }
-    T *operator&() { return &type; }
+    QAppleRefCounted(const T &t = T()) : value(t) {}
+    QAppleRefCounted(QAppleRefCounted &&other) : value(other.value) { other.value = T(); }
+    QAppleRefCounted(const QAppleRefCounted &other) : value(other.value) { if (value) RetainFunction(value); }
+    ~QAppleRefCounted() { if (value) ReleaseFunction(value); }
+    operator T() { return value; }
+    void swap(QAppleRefCounted &other) Q_DECL_NOEXCEPT_EXPR(noexcept(qSwap(value, other.value)))
+    { qSwap(value, other.value); }
+    QAppleRefCounted &operator=(const QAppleRefCounted &other)
+    { QAppleRefCounted copy(other); swap(copy); return *this; }
+    QAppleRefCounted &operator=(QAppleRefCounted &&other)
+    { QAppleRefCounted moved(std::move(other)); swap(moved); return *this; }
+    T *operator&() { return &value; }
 protected:
-    T type;
+    T value;
 };
 
 /*
@@ -116,7 +113,7 @@ class QCFType : public QAppleRefCounted<T, CFTypeRef, CFRetain, CFRelease>
 {
 public:
     using QAppleRefCounted<T, CFTypeRef, CFRetain, CFRelease>::QAppleRefCounted;
-    template <typename X> X as() const { return reinterpret_cast<X>(this->type); }
+    template <typename X> X as() const { return reinterpret_cast<X>(this->value); }
     static QCFType constructFromGet(const T &t)
     {
         CFRetain(t);

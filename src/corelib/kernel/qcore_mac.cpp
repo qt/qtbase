@@ -45,16 +45,16 @@ QT_BEGIN_NAMESPACE
 
 QCFString::operator QString() const
 {
-    if (string.isEmpty() && type)
-        const_cast<QCFString*>(this)->string = QString::fromCFString(type);
+    if (string.isEmpty() && value)
+        const_cast<QCFString*>(this)->string = QString::fromCFString(value);
     return string;
 }
 
 QCFString::operator CFStringRef() const
 {
-    if (!type)
-        const_cast<QCFString*>(this)->type = string.toCFString();
-    return type;
+    if (!value)
+        const_cast<QCFString*>(this)->value = string.toCFString();
+    return value;
 }
 
 QT_END_NAMESPACE
