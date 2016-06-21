@@ -180,7 +180,7 @@ void FragmentToy::draw(const QSize &windowSize)
     m_program->enableAttributeArray("vertexCoord");
     m_vertex_buffer.release();
 
-    m_program->setUniformValue("currentTime", (uint) QDateTime::currentDateTime().toMSecsSinceEpoch());
+    m_program->setUniformValue("currentTime", (uint) QDateTime::currentMSecsSinceEpoch());
     m_program->setUniformValue("windowSize", windowSize);
 
     QOpenGLContext::currentContext()->functions()->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

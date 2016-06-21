@@ -106,7 +106,7 @@ QString QMacTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
 {
     // TODO Mac doesn't support OffsetName yet so use standard offset name
     if (nameType == QTimeZone::OffsetName) {
-        const Data nowData = data(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
+        const Data nowData = data(QDateTime::currentMSecsSinceEpoch());
         // TODO Cheat for now, assume if has dst the offset if 1 hour
         if (timeType == QTimeZone::DaylightTime && hasDaylightTime())
             return isoOffsetFormat(nowData.standardTimeOffset + 3600);
