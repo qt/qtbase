@@ -611,28 +611,20 @@ uint QVncClientCursor::removeClient(QVncClient *client)
 }
 #endif
 
-
-QVncServer::QVncServer(QVncScreen *screen)
+QVncServer::QVncServer(QVncScreen *screen, quint16 port)
     : qvnc_screen(screen)
-{
-    QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
-}
-
-QVncServer::QVncServer(QVncScreen *screen, int /*id*/)
-    : qvnc_screen(screen)
+    , m_port(port)
 {
     QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
 }
 
 void QVncServer::init()
 {
-    const int port = 5900;
-
     serverSocket = new QTcpServer(this);
-    if (!serverSocket->listen(QHostAddress::Any, port))
+    if (!serverSocket->listen(QHostAddress::Any, m_port))
         qDebug() << "QVncServer could not connect:" << serverSocket->errorString();
     else
-        QT_VNC_DEBUG("QVncServer created on port %d", port);
+        QT_VNC_DEBUG("QVncServer created on port %d", m_port);
     QT_VNC_DEBUG() << "running in thread" << thread() << QThread::currentThread();
 
     connect(serverSocket, SIGNAL(newConnection()), this, SLOT(newConnection()));

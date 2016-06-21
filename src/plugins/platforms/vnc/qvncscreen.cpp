@@ -43,6 +43,7 @@
 #include <QtPlatformSupport/private/qfbcursor_p.h>
 
 #include <QtGui/QPainter>
+#include <QtCore/QRegularExpression>
 
 
 QT_BEGIN_NAMESPACE
@@ -62,10 +63,26 @@ QVncScreen::~QVncScreen()
 
 bool QVncScreen::initialize()
 {
+    QRegularExpression sizeRx(QLatin1String("size=(\\d+)x(\\d+)"));
+    QRegularExpression mmSizeRx(QLatin1String("mmsize=(?<width>(\\d*\\.)?\\d+)x(?<height>(\\d*\\.)?\\d+)"));
+    QRegularExpression depthRx(QLatin1String("depth=(\\d+)"));
+
     mGeometry = QRect(0, 0, 1024, 768);
     mFormat = QImage::Format_ARGB32_Premultiplied;
     mDepth = 32;
     mPhysicalSize = QSizeF(mGeometry.width()/96.*25.4, mGeometry.height()/96.*25.4);
+
+    for (const QString &arg : mArgs) {
+        QRegularExpressionMatch match;
+        if (arg.contains(mmSizeRx, &match)) {
+            mPhysicalSize = QSizeF(match.captured("width").toDouble(), match.captured("height").toDouble());
+        } else if (arg.contains(sizeRx, &match)) {
+            mGeometry.setSize(QSize(match.captured(1).toInt(), match.captured(2).toInt()));
+        } else if (arg.contains(depthRx, &match)) {
+            mDepth = match.captured(1).toInt();
+        }
+    }
+
 
     QFbScreen::initializeCompositor();
     QT_VNC_DEBUG() << "QVncScreen::init" << geometry();

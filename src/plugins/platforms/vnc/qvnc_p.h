@@ -391,8 +391,7 @@ class QVncServer : public QObject
 {
     Q_OBJECT
 public:
-    QVncServer(QVncScreen *screen);
-    QVncServer(QVncScreen *screen, int id);
+    QVncServer(QVncScreen *screen, quint16 port = 5900);
     ~QVncServer();
 
     enum ServerMsg { FramebufferUpdate = 0,
@@ -414,6 +413,7 @@ private:
     QTcpServer *serverSocket;
     QVector<QVncClient*> clients;
     QVncScreen *qvnc_screen;
+    quint16 m_port;
 };
 
 QT_END_NAMESPACE

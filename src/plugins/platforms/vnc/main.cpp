@@ -54,7 +54,6 @@ public:
 QPlatformIntegration* QVncIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     QT_VNC_DEBUG() << "loading vnc plugin" << system;
-    Q_UNUSED(paramList);
     if (!system.compare(QLatin1String("vnc"), Qt::CaseInsensitive))
         return new QVncIntegration(paramList);
 

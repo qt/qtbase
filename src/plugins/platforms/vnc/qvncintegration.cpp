@@ -53,14 +53,24 @@
 #include <QtPlatformSupport/private/qlibinputhandler_p.h>
 #endif
 
+#include <QtCore/QRegularExpression>
+
 QT_BEGIN_NAMESPACE
 
 QVncIntegration::QVncIntegration(const QStringList &paramList)
     : m_fontDb(new QGenericUnixFontDatabase),
       m_services(new QGenericUnixServices)
 {
+    QRegularExpression portRx(QLatin1String("port=(\\d+)"));
+    quint16 port = 5900;
+    for (const QString &arg : paramList) {
+        QRegularExpressionMatch match;
+        if (arg.contains(portRx, &match))
+            port = match.captured(1).toInt();
+    }
+
     m_primaryScreen = new QVncScreen(paramList);
-    m_server = new QVncServer(m_primaryScreen);
+    m_server = new QVncServer(m_primaryScreen, port);
     m_primaryScreen->vncServer = m_server;
 }
 
