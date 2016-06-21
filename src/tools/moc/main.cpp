@@ -422,6 +422,9 @@ int runMoc(int argc, char **argv)
     // 1. preprocess
     moc.symbols = pp.preprocessed(moc.filename, &in);
 
+    // We obviously do not support MS extensions
+    pp.macros.remove("_MSC_EXTENSIONS");
+
     if (!pp.preprocessOnly) {
         // 2. parse
         moc.parse();
