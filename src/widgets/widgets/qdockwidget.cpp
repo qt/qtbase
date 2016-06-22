@@ -805,7 +805,8 @@ void QDockWidgetPrivate::endDrag(bool abort)
                 } else {
                     setResizerActive(false);
                 }
-                undockedGeometry = q->geometry();
+                if (q->isFloating()) // Might not be floating when dragging a QDockWidgetGroupWindow
+                    undockedGeometry = q->geometry();
                 q->activateWindow();
             } else {
                 // The tab was not plugged back in the QMainWindow but the QDockWidget cannot
