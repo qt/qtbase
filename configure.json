@@ -278,6 +278,11 @@
             "type": "skipModules",
             "log": "value"
         },
+        "build_parts": {
+            "description": "parts of Qt to build",
+            "type": "buildParts",
+            "log": "value"
+        },
         "dlopen": {
             "description": "dlopen() in libc",
             "type": "compile",
@@ -1782,9 +1787,9 @@
         "skip_modules": {
             "output": [ { "type": "varAssign", "name": "QT_SKIP_MODULES", "value": "tests.skip_modules.value" } ]
         },
-        "qt_build_parts": {
+        "build_parts": {
             "description": "Qt build parts",
-            "output": [ { "type": "varAppend", "name": "QT_BUILD_PARTS", "value": "input.qt_build_parts" } ]
+            "output": [ { "type": "varAppend", "name": "QT_BUILD_PARTS", "value": "tests.build_parts.value" } ]
         },
         "qreal": {
             "description": "Type for qreal",

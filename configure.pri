@@ -207,6 +207,28 @@ defineTest(qtConfTest_skipModules) {
     return(true)
 }
 
+defineTest(qtConfTest_buildParts) {
+    parts = $$config.input.make
+    isEmpty(parts) {
+        parts = libs examples
+
+        $$qtConfEvaluate("features.developer-build"): \
+            parts += tests
+        !$$qtConfEvaluate("features.cross_compile"): \
+            parts += tools
+    }
+
+    ios|tvos: parts -= examples
+    parts -= $$config.input.nomake
+
+    # always add libs, as it's required to build Qt
+    parts *= libs
+
+    $${1}.value = $$parts
+    export($${1}.value)
+    return(true)
+}
+
 defineTest(qtConfTest_openssl) {
     libs = $$getenv("OPENSSL_LIBS")
 
@@ -652,7 +674,7 @@ defineTest(qtConfOutputPostProcess_publicHeader) {
 # custom reporting
 
 defineTest(qtConfReport_buildParts) {
-    qtConfReportPadded($${1}, $$config.input.qt_build_parts)
+    qtConfReportPadded($${1}, $$qtConfEvaluate("tests.build_parts.value"))
 }
 
 defineTest(qtConfReport_buildTypeAndConfig) {
