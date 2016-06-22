@@ -134,7 +134,7 @@ void qt_scale_image_16bit(uchar *destPixels, int dbpl,
     if (yend < 0 || yend >= srch)
         --h;
     int xend = (basex + ix * (w - 1)) >> 16;
-    if (xend < 0 || xend >= (int)(sbpl/sizeof(quint32)))
+    if (xend < 0 || xend >= (int)(sbpl/sizeof(SRC)))
         --w;
 
     while (h--) {
