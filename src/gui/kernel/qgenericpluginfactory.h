@@ -40,6 +40,7 @@
 #ifndef QGENERICPLUGINFACTORY_H
 #define QGENERICPLUGINFACTORY_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE

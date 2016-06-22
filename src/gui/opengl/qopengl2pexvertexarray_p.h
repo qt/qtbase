@@ -51,6 +51,7 @@
 #ifndef QOPENGL2PEXVERTEXARRAY_P_H
 #define QOPENGL2PEXVERTEXARRAY_P_H
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QRectF>
 
 #include <private/qdatabuffer_p.h>

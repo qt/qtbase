@@ -40,6 +40,7 @@
 #ifndef QPICTUREFORMATPLUGIN_H
 #define QPICTUREFORMATPLUGIN_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
 

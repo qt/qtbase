@@ -40,6 +40,7 @@
 #ifndef QTEXTDOCUMENTFRAGMENT_H
 #define QTEXTDOCUMENTFRAGMENT_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qstring.h>
 
 QT_BEGIN_NAMESPACE

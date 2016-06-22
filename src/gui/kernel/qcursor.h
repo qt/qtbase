@@ -40,6 +40,7 @@
 #ifndef QCURSOR_H
 #define QCURSOR_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qpoint.h>
 #include <QtGui/qwindowdefs.h>
 

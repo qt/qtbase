@@ -40,6 +40,7 @@
 #ifndef QFONTINFO_H
 #define QFONTINFO_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qfont.h>
 #include <QtCore/qsharedpointer.h>
 

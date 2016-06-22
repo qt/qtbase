@@ -40,6 +40,7 @@
 #ifndef QPICTURE_H
 #define QPICTURE_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qiodevice.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qsharedpointer.h>

@@ -40,6 +40,7 @@
 #ifndef QWINDOW_H
 #define QWINDOW_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/QObject>
 #include <QtCore/QEvent>
 #include <QtCore/QMargins>

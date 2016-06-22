@@ -39,6 +39,7 @@
 #ifndef QTEXTDOCUMENTWRITER_H
 #define QTEXTDOCUMENTWRITER_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qstring.h>
 
 QT_BEGIN_NAMESPACE

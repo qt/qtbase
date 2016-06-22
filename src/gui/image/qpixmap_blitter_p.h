@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <qpa/qplatformpixmap.h>
 #include <private/qpaintengine_blitter_p.h>
 

@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QtGui/qpainterpath.h>
 #include <QtGui/private/qdatabuffer_p.h>
 #include <QtGui/private/qvectorpath_p.h>

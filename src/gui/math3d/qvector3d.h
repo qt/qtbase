@@ -40,6 +40,7 @@
 #ifndef QVECTOR3D_H
 #define QVECTOR3D_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qmetatype.h>
 

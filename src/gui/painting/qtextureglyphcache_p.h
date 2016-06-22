@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <qhash.h>
 #include <qimage.h>
 #include <qobject.h>

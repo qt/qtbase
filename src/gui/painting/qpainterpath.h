@@ -40,6 +40,7 @@
 #ifndef QPAINTERPATH_H
 #define QPAINTERPATH_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qmatrix.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qrect.h>

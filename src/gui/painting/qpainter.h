@@ -40,6 +40,7 @@
 #ifndef QPAINTER_H
 #define QPAINTER_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qpoint.h>

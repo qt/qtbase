@@ -40,7 +40,7 @@
 #ifndef QSYNTAXHIGHLIGHTER_H
 #define QSYNTAXHIGHLIGHTER_H
 
-#include <QtCore/qglobal.h>
+#include <QtGui/qtguiglobal.h>
 
 #ifndef QT_NO_SYNTAXHIGHLIGHTER
 

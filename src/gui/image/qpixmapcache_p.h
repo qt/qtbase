@@ -50,6 +50,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include "qpixmapcache.h"
 #include "qpaintengine.h"
 #include <private/qimage_p.h>

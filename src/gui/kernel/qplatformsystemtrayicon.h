@@ -41,6 +41,7 @@
 #ifndef QPLATFORMSYSTEMTRAYICON_H
 #define QPLATFORMSYSTEMTRAYICON_H
 
+#include <QtGui/qtguiglobal.h>
 #include "QtCore/qobject.h"
 
 #ifndef QT_NO_SYSTEMTRAYICON

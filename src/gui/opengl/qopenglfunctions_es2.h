@@ -40,7 +40,7 @@
 #ifndef QOPENGLVERSIONFUNCTIONS_ES2_H
 #define QOPENGLVERSIONFUNCTIONS_ES2_H
 
-#include <QtCore/qglobal.h>
+#include <QtGui/qtguiglobal.h>
 
 #if defined(QT_OPENGL_ES_2) || defined(Q_QDOC)
 

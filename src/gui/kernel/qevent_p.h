@@ -40,7 +40,7 @@
 #ifndef QEVENT_P_H
 #define QEVENT_P_H
 
-#include <QtCore/qglobal.h>
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QtCore/qurl.h>
 #include <QtGui/qevent.h>
 

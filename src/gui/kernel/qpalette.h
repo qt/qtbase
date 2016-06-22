@@ -40,6 +40,7 @@
 #ifndef QPALETTE_H
 #define QPALETTE_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qwindowdefs.h>
 #include <QtGui/qcolor.h>
 #include <QtGui/qbrush.h>

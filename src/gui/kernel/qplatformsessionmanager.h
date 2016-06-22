@@ -51,6 +51,7 @@
 // source and binary incompatible with future versions of Qt.
 //
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qmetatype.h>
 #include <QtCore/qnamespace.h>
 

@@ -40,7 +40,7 @@
 #ifndef QTEXTODFWRITER_H
 #define QTEXTODFWRITER_H
 
-#include <QtCore/qglobal.h>
+#include <QtGui/private/qtguiglobal_p.h>
 
 #ifndef QT_NO_TEXTODFWRITER
 

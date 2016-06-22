@@ -40,7 +40,7 @@
 #ifndef QRGB_H
 #define QRGB_H
 
-#include <QtCore/qglobal.h>
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qprocessordetection.h>
 
 QT_BEGIN_NAMESPACE

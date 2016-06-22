@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,74 +37,21 @@
 **
 ****************************************************************************/
 
-#ifndef QSTATICTEXT_H
-#define QSTATICTEXT_H
+#ifndef QTGUIGLOBAL_P_H
+#define QTGUIGLOBAL_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
 #include <QtGui/qtguiglobal.h>
-#include <QtCore/qsize.h>
-#include <QtCore/qstring.h>
-#include <QtCore/qmetatype.h>
+#include <QtCore/private/qglobal_p.h>
 
-#include <QtGui/qtransform.h>
-#include <QtGui/qfont.h>
-#include <QtGui/qtextoption.h>
-
-QT_BEGIN_NAMESPACE
-
-
-class QStaticTextPrivate;
-class Q_GUI_EXPORT QStaticText
-{
-public:
-    enum PerformanceHint {
-        ModerateCaching,
-        AggressiveCaching
-    };
-
-    QStaticText();
-    QStaticText(const QString &text);
-    QStaticText(const QStaticText &other);
-#ifdef Q_COMPILER_RVALUE_REFS
-    QStaticText &operator=(QStaticText &&other) Q_DECL_NOTHROW { swap(other); return *this; }
-#endif
-    QStaticText &operator=(const QStaticText &);
-    ~QStaticText();
-
-    void swap(QStaticText &other) Q_DECL_NOTHROW { qSwap(data, other.data); }
-
-    void setText(const QString &text);
-    QString text() const;
-
-    void setTextFormat(Qt::TextFormat textFormat);
-    Qt::TextFormat textFormat() const;
-
-    void setTextWidth(qreal textWidth);
-    qreal textWidth() const;
-
-    void setTextOption(const QTextOption &textOption);
-    QTextOption textOption() const;
-
-    QSizeF size() const;
-
-    void prepare(const QTransform &matrix = QTransform(), const QFont &font = QFont());
-
-    void setPerformanceHint(PerformanceHint performanceHint);
-    PerformanceHint performanceHint() const;
-
-    bool operator==(const QStaticText &) const;
-    bool operator!=(const QStaticText &) const;
-
-private:
-    void detach();
-
-    QExplicitlySharedDataPointer<QStaticTextPrivate> data;
-    friend class QStaticTextPrivate;
-};
-
-Q_DECLARE_SHARED(QStaticText)
-
-QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QStaticText)
-
-#endif // QSTATICTEXT_H
+#endif // QTGUIGLOBAL_P_H

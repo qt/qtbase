@@ -40,6 +40,7 @@
 #ifndef QTEXTCURSOR_H
 #define QTEXTCURSOR_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qshareddata.h>
 #include <QtGui/qtextformat.h>

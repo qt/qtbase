@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QtCore/qmargins.h>
 #include <QtCore/qmath.h>
 #include <QtCore/qrect.h>

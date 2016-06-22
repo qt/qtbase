@@ -40,6 +40,7 @@
 #ifndef QTEXTFORMAT_H
 #define QTEXTFORMAT_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qcolor.h>
 #include <QtGui/qfont.h>
 #include <QtCore/qshareddata.h>

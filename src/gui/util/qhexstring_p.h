@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qstring.h>
 #include <QtGui/qpolygon.h>

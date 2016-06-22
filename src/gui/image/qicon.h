@@ -40,7 +40,7 @@
 #ifndef QICON_H
 #define QICON_H
 
-#include <QtCore/qglobal.h>
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qsize.h>
 #include <QtCore/qlist.h>
 #include <QtGui/qpixmap.h>

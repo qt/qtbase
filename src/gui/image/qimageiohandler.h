@@ -40,6 +40,7 @@
 #ifndef QIMAGEIOHANDLER_H
 #define QIMAGEIOHANDLER_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qiodevice.h>
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>

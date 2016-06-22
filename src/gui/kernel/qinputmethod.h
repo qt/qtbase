@@ -40,6 +40,7 @@
 #ifndef QINPUTMETHOD_H
 #define QINPUTMETHOD_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE

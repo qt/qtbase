@@ -40,6 +40,7 @@
 #ifndef QEVENT_H
 #define QEVENT_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qwindowdefs.h>
 #include <QtGui/qregion.h>
 #include <QtCore/qnamespace.h>

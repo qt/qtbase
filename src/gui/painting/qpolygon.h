@@ -40,6 +40,7 @@
 #ifndef QPOLYGON_H
 #define QPOLYGON_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qrect.h>

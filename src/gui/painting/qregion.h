@@ -40,6 +40,7 @@
 #ifndef QREGION_H
 #define QREGION_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qatomic.h>
 #include <QtCore/qrect.h>
 #include <QtGui/qwindowdefs.h>

@@ -40,6 +40,7 @@
 #ifndef QACCESSIBLEBRIDGE_H
 #define QACCESSIBLEBRIDGE_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
 

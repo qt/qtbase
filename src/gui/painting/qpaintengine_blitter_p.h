@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include "private/qpaintengine_raster_p.h"
 
 #ifndef QT_NO_BLITTABLE

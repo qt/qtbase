@@ -40,6 +40,7 @@
 #ifndef QBLENDFUNCTIONS_P_H
 #define QBLENDFUNCTIONS_P_H
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <qmath.h>
 #include "qdrawhelper_p.h"
 

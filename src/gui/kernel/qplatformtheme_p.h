@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <QtCore/QtGlobal>
+#include <QtGui/private/qtguiglobal_p.h>
 #include "private/qkeysequence_p.h"
 
 QT_BEGIN_NAMESPACE

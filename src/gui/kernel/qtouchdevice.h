@@ -40,6 +40,7 @@
 #ifndef QTOUCHDEVICE_H
 #define QTOUCHDEVICE_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE

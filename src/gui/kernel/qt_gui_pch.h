@@ -47,7 +47,7 @@
 
 // from corelib/global/qt_pch.h
 #if defined __cplusplus
-#include <qglobal.h>
+#include <qtguiglobal.h>
 
 
 #ifdef Q_OS_WIN

@@ -39,6 +39,7 @@
 #ifndef QTEXTLAYOUT_H
 #define QTEXTLAYOUT_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qrect.h>

@@ -40,6 +40,7 @@
 #ifndef QMATRIX_H
 #define QMATRIX_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qpolygon.h>
 #include <QtGui/qregion.h>
 #include <QtGui/qwindowdefs.h>

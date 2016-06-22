@@ -40,6 +40,7 @@
 #ifndef QSTANDARDITEMMODEL_H
 #define QSTANDARDITEMMODEL_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qabstractitemmodel.h>
 #include <QtGui/qbrush.h>
 #include <QtGui/qfont.h>

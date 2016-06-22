@@ -52,6 +52,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QtCore/qchar.h>
 
 #include <harfbuzz/hb.h>

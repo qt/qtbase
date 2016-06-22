@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QtGui/qopengl.h>
 #include <QtGui/QMatrix3x3>
 

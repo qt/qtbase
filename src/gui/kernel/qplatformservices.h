@@ -49,7 +49,7 @@
 // source and binary incompatible with future versions of Qt.
 //
 
-#include <QtCore/QtGlobal>
+#include <QtGui/qtguiglobal.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -40,7 +40,7 @@
 #ifndef QTEXTTABLE_H
 #define QTEXTTABLE_H
 
-#include <QtCore/qglobal.h>
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qobject.h>
 #include <QtGui/qtextobject.h>
 

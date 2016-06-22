@@ -60,9 +60,10 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
+
 #ifndef QT_NO_OPENGL
 
-#include <QtCore/QtGlobal>
 #include <QtGui/qopenglcontext.h>
 
 QT_BEGIN_NAMESPACE

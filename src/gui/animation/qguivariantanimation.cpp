@@ -36,11 +36,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtCore/qvariantanimation.h>
-#include <private/qvariantanimation_p.h>
+#include <QtGui/qtguiglobal.h>
 
 #ifndef QT_NO_ANIMATION
 
+#include <QtCore/qvariantanimation.h>
+#include <private/qvariantanimation_p.h>
 #include <QtGui/qcolor.h>
 #include <QtGui/qvector2d.h>
 #include <QtGui/qvector3d.h>

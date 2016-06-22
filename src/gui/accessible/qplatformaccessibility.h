@@ -48,9 +48,11 @@
 // source and binary incompatible with future versions of Qt.
 //
 
-#include <QtCore/qobject.h>
+#include <QtGui/qtguiglobal.h>
+
 #ifndef QT_NO_ACCESSIBILITY
 
+#include <QtCore/qobject.h>
 #include <QtGui/qaccessible.h>
 
 QT_BEGIN_NAMESPACE

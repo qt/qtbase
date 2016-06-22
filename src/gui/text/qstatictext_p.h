@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include "qstatictext.h"
 
 #include <private/qtextureglyphcache_p.h>

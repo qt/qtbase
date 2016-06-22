@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <qopenglframebufferobject.h>
 #include <private/qopenglcontext_p.h>
 #include <private/qopenglextensions_p.h>

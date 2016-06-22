@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include "QtCore/qpoint.h"
 #include "QtCore/qline.h"
 #include "QtCore/qrect.h"

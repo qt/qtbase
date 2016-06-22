@@ -40,6 +40,7 @@
 #ifndef QBRUSH_H
 #define QBRUSH_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qvector.h>

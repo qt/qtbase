@@ -40,6 +40,7 @@
 #ifndef QQUATERNION_H
 #define QQUATERNION_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qgenericmatrix.h>
 #include <QtGui/qvector3d.h>
 #include <QtGui/qvector4d.h>

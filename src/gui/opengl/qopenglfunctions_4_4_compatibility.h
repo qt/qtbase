@@ -50,7 +50,7 @@
 #ifndef QOPENGLVERSIONFUNCTIONS_4_4_COMPATIBILITY_H
 #define QOPENGLVERSIONFUNCTIONS_4_4_COMPATIBILITY_H
 
-#include <QtCore/qglobal.h>
+#include <QtGui/qtguiglobal.h>
 
 #if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
 

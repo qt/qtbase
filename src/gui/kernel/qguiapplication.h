@@ -40,6 +40,7 @@
 #ifndef QGUIAPPLICATION_H
 #define QGUIAPPLICATION_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtGui/qwindowdefs.h>
 #include <QtGui/qinputmethod.h>

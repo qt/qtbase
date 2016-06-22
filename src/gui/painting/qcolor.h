@@ -40,6 +40,7 @@
 #ifndef QCOLOR_H
 #define QCOLOR_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qrgb.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qstringlist.h>

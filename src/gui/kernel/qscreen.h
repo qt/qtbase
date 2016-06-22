@@ -40,6 +40,7 @@
 #ifndef QSCREEN_H
 #define QSCREEN_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/QList>
 #include <QtCore/QObject>
 #include <QtCore/QRect>

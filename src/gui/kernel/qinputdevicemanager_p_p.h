@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QtCore/qmap.h>
 #include <private/qobject_p.h>
 #include "qinputdevicemanager_p.h"

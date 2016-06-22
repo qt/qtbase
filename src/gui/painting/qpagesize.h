@@ -40,6 +40,7 @@
 #ifndef QPAGESIZE_H
 #define QPAGESIZE_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qsharedpointer.h>
 
 QT_BEGIN_NAMESPACE

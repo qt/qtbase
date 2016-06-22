@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QtGui/qpaintengine.h>
 
 #include <private/qpaintengine_p.h>

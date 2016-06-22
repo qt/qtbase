@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QtGui/qrgba64.h>
 #include <QtGui/private/qdrawhelper_p.h>
 #include <private/qsimd_p.h>

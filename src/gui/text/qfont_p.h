@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include "QtGui/qfont.h"
 #include "QtCore/qmap.h"
 #include "QtCore/qhash.h"

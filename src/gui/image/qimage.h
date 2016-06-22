@@ -40,6 +40,7 @@
 #ifndef QIMAGE_H
 #define QIMAGE_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qcolor.h>
 #include <QtGui/qrgb.h>
 #include <QtGui/qpaintdevice.h>

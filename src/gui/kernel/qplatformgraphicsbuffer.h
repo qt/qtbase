@@ -50,6 +50,7 @@
 //
 
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/QSize>
 #include <QtCore/QRect>
 #include <QtGui/QPixelFormat>

@@ -40,6 +40,7 @@
 #ifndef QPAINTENGINE_H
 #define QPAINTENGINE_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qscopedpointer.h>

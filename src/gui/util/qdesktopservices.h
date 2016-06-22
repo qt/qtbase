@@ -40,6 +40,7 @@
 #ifndef QDESKTOPSERVICES_H
 #define QDESKTOPSERVICES_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstandardpaths.h>
 

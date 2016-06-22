@@ -50,6 +50,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include "qwindowsysteminterface.h"
 
 #include <QElapsedTimer>

@@ -51,6 +51,8 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
+
 QT_BEGIN_NAMESPACE
 
 class QScreen;

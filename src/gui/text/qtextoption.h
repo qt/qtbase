@@ -40,6 +40,7 @@
 #ifndef QTEXTOPTION_H
 #define QTEXTOPTION_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qchar.h>
 #include <QtCore/qmetatype.h>

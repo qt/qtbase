@@ -220,6 +220,7 @@
 #ifndef QOPENGLENGINE_SHADER_MANAGER_H
 #define QOPENGLENGINE_SHADER_MANAGER_H
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QOpenGLShader>
 #include <QOpenGLShaderProgram>
 #include <QPainter>

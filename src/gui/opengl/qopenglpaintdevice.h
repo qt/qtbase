@@ -40,7 +40,7 @@
 #ifndef QOPENGLPAINTDEVICE_H
 #define QOPENGLPAINTDEVICE_H
 
-#include <QtCore/qglobal.h>
+#include <QtGui/qtguiglobal.h>
 
 #ifndef QT_NO_OPENGL
 

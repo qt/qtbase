@@ -40,7 +40,7 @@
 #ifndef QOPENGLPIXELUPLOADOPTIONS_H
 #define QOPENGLPIXELUPLOADOPTIONS_H
 
-#include <QtCore/qglobal.h>
+#include <QtGui/qtguiglobal.h>
 
 #if !defined(QT_NO_OPENGL)
 

@@ -40,6 +40,7 @@
 #ifndef QBACKINGSTORE_H
 #define QBACKINGSTORE_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qrect.h>
 
 #include <QtGui/qwindow.h>

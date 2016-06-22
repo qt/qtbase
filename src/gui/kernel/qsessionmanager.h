@@ -40,6 +40,7 @@
 #ifndef QSESSIONMANAGER_H
 #define QSESSIONMANAGER_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qobject.h>
 #include <QtGui/qwindowdefs.h>
 #include <QtCore/qstring.h>

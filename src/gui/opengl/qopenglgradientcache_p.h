@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QMultiHash>
 #include <QObject>
 #include <private/qopenglcontext_p.h>

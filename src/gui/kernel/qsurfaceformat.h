@@ -39,7 +39,7 @@
 #ifndef QSURFACEFORMAT_H
 #define QSURFACEFORMAT_H
 
-#include <QtCore/qglobal.h>
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qpair.h>
 
 QT_BEGIN_NAMESPACE

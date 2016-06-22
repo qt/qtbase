@@ -49,6 +49,7 @@
 // source and binary incompatible with future versions of Qt.
 //
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qwindowdefs.h>
 #include <QtCore/QObject>
 #include <QtCore/QVariant>

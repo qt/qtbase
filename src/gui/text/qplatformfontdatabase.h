@@ -49,7 +49,7 @@
 // source and binary incompatible with future versions of Qt.
 //
 
-#include <QtCore/qconfig.h>
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtCore/QList>

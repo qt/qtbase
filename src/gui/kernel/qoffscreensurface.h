@@ -40,6 +40,7 @@
 #ifndef QOFFSCREENSURFACE_H
 #define QOFFSCREENSURFACE_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/QObject>
 #include <QtGui/qsurface.h>
 

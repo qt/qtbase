@@ -40,6 +40,7 @@
 #ifndef QDRAWINGPRIMITIVE_SSE2_P_H
 #define QDRAWINGPRIMITIVE_SSE2_P_H
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <private/qsimd_p.h>
 #include "qdrawhelper_p.h"
 

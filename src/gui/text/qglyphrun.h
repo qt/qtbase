@@ -40,6 +40,7 @@
 #ifndef QGLYPHRUN_H
 #define QGLYPHRUN_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qpoint.h>

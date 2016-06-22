@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <qpa/qplatformdrag.h>
 
 #include <QtCore/QObject>

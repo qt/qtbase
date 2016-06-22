@@ -40,6 +40,7 @@
 #ifndef QMATRIX4X4_H
 #define QMATRIX4X4_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qvector3d.h>
 #include <QtGui/qvector4d.h>
 #include <QtGui/qquaternion.h>

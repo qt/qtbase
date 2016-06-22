@@ -40,10 +40,11 @@
 #ifndef QMOVIE_H
 #define QMOVIE_H
 
-#include <QtCore/qobject.h>
+#include <QtGui/qtguiglobal.h>
 
 #ifndef QT_NO_MOVIE
 
+#include <QtCore/qobject.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qlist.h>
 #include <QtGui/qimagereader.h>

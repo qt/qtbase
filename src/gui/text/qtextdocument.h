@@ -40,6 +40,7 @@
 #ifndef QTEXTDOCUMENT_H
 #define QTEXTDOCUMENT_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qsize.h>
 #include <QtCore/qrect.h>

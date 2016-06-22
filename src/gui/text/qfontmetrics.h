@@ -40,6 +40,7 @@
 #ifndef QFONTMETRICS_H
 #define QFONTMETRICS_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qfont.h>
 #include <QtCore/qsharedpointer.h>
 #ifndef QT_INCLUDE_COMPAT

@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include "QtCore/qglobal.h"
+#include <QtGui/private/qtguiglobal_p.h>
 #include "QtCore/qstring.h"
 #include "QtCore/qvarlengtharray.h"
 #include "QtCore/qnamespace.h"

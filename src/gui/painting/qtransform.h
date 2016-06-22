@@ -39,6 +39,7 @@
 #ifndef QTRANSFORM_H
 #define QTRANSFORM_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qmatrix.h>
 #include <QtGui/qpainterpath.h>
 #include <QtGui/qpolygon.h>

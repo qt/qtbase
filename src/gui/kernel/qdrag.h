@@ -40,6 +40,7 @@
 #ifndef QDRAG_H
 #define QDRAG_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE

@@ -40,7 +40,7 @@
 #ifndef QWINDOWDEFS_WIN_H
 #define QWINDOWDEFS_WIN_H
 
-#include <QtCore/qglobal.h>
+#include <QtGui/qtguiglobal.h>
 
 QT_BEGIN_NAMESPACE
 

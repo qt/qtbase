@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QtGui/qscreen.h>
 #include <qpa/qplatformscreen.h>
 #include "qhighdpiscaling_p.h"

@@ -51,8 +51,8 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include "QtCore/qatomic.h"
-#include "QtCore/qglobal.h"
 #include "QtCore/qnamespace.h"
 #include "QtGui/qpixmap.h"
 

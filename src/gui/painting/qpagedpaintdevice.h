@@ -40,6 +40,7 @@
 #ifndef QPAGEDPAINTDEVICE_H
 #define QPAGEDPAINTDEVICE_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qpagelayout.h>
 

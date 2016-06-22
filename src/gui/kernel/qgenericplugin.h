@@ -40,6 +40,7 @@
 #ifndef QGENERICPLUGIN_H
 #define QGENERICPLUGIN_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
 

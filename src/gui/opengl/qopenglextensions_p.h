@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include "qopenglextrafunctions.h"
 
 QT_BEGIN_NAMESPACE

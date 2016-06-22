@@ -48,6 +48,7 @@
 // source and binary incompatible with future versions of Qt.
 //
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/QTime>
 #include <QtGui/qwindowdefs.h>
 #include <QtCore/QEvent>

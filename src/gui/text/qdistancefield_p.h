@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <qrawfont.h>
 #include <private/qfontengine_p.h>
 #include <QtCore/qshareddata.h>

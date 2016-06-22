@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include "qalgorithms.h"
 #include "qbitarray.h"
 #include "qlist.h"

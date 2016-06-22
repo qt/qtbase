@@ -41,6 +41,7 @@
 #ifndef QVALIDATOR_H
 #define QVALIDATOR_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qregexp.h>

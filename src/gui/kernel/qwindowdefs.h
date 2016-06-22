@@ -40,7 +40,7 @@
 #ifndef QWINDOWDEFS_H
 #define QWINDOWDEFS_H
 
-#include <QtCore/qglobal.h>
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qnamespace.h>
 

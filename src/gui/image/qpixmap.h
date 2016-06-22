@@ -40,6 +40,7 @@
 #ifndef QPIXMAP_H
 #define QPIXMAP_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qcolor.h>
 #include <QtCore/qnamespace.h>

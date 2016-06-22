@@ -51,6 +51,7 @@
 #ifndef QOPENGLTEXTURECACHE_P_H
 #define QOPENGLTEXTURECACHE_P_H
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QHash>
 #include <QObject>
 #include <QCache>

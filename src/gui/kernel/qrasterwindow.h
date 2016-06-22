@@ -40,6 +40,7 @@
 #ifndef QRASTERWINDOW_H
 #define QRASTERWINDOW_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/QPaintDeviceWindow>
 
 QT_BEGIN_NAMESPACE

@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include "qtextcursor.h"
 #include "qtextdocument.h"
 #include "qtextdocument_p.h"

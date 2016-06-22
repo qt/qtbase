@@ -40,6 +40,7 @@
 #ifndef QPAINTDEVICEWINDOW_H
 #define QPAINTDEVICEWINDOW_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/QWindow>
 #include <QtGui/QPaintDevice>
 

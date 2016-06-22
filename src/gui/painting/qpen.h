@@ -40,6 +40,7 @@
 #ifndef QPEN_H
 #define QPEN_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qcolor.h>
 #include <QtGui/qbrush.h>
 

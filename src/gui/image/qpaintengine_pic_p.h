@@ -52,7 +52,8 @@
 //
 //
 
-#include "QtGui/qpaintengine.h"
+#include <QtGui/private/qtguiglobal_p.h>
+#include <QtGui/qpaintengine.h>
 
 #ifndef QT_NO_PICTURE
 

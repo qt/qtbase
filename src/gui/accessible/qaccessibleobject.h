@@ -40,6 +40,7 @@
 #ifndef QACCESSIBLEOBJECT_H
 #define QACCESSIBLEOBJECT_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qaccessible.h>
 
 QT_BEGIN_NAMESPACE

@@ -52,6 +52,7 @@
 #ifndef QOPENGL_ENGINE_SHADER_SOURCE_H
 #define QOPENGL_ENGINE_SHADER_SOURCE_H
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include "qopenglengineshadermanager_p.h"
 
 QT_BEGIN_NAMESPACE

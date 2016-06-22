@@ -51,8 +51,8 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QOpenGLShaderProgram>
-#include <QtGlobal>
 
 QT_BEGIN_NAMESPACE
 

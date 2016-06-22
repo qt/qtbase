@@ -40,6 +40,7 @@
 #ifndef QFONTDATABASE_H
 #define QFONTDATABASE_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qwindowdefs.h>
 #include <QtCore/qstring.h>
 #include <QtGui/qfont.h>

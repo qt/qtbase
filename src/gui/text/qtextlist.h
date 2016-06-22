@@ -40,6 +40,7 @@
 #ifndef QTEXTLIST_H
 #define QTEXTLIST_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qtextobject.h>
 #include <QtCore/qobject.h>
 

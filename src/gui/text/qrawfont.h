@@ -40,6 +40,7 @@
 #ifndef QRAWFONT_H
 #define QRAWFONT_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qiodevice.h>
 #include <QtCore/qglobal.h>

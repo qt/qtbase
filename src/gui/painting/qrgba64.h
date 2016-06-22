@@ -40,7 +40,7 @@
 #ifndef QRGBA64_H
 #define QRGBA64_H
 
-#include <QtCore/qglobal.h>
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qprocessordetection.h>
 
 QT_BEGIN_NAMESPACE

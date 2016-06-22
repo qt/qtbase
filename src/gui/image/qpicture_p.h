@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include "QtCore/qatomic.h"
 #include "QtCore/qbuffer.h"
 #include "QtCore/qobjectdefs.h"

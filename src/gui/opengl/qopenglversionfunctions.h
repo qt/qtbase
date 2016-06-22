@@ -50,7 +50,7 @@
 #ifndef QOPENGLVERSIONFUNCTIONS_H
 #define QOPENGLVERSIONFUNCTIONS_H
 
-#include <QtCore/qglobal.h>
+#include <QtGui/qtguiglobal.h>
 
 #ifndef QT_NO_OPENGL
 

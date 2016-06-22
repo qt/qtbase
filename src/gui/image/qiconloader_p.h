@@ -40,7 +40,7 @@
 #ifndef QICONLOADER_P_H
 #define QICONLOADER_P_H
 
-#include <QtCore/qglobal.h>
+#include <QtGui/private/qtguiglobal_p.h>
 
 #ifndef QT_NO_ICON
 //

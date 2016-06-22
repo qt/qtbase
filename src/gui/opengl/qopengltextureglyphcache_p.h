@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <private/qtextureglyphcache_p.h>
 #include <private/qopenglcontext_p.h>
 #include <qopenglshaderprogram.h>

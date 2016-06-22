@@ -40,6 +40,7 @@
 #ifndef QIMAGEREADER_H
 #define QIMAGEREADER_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtGui/qimage.h>

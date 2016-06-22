@@ -53,6 +53,7 @@
 
 #ifndef QT_NO_OPENGL
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include "private/qobject_p.h"
 #include "qopengltexture.h"
 #include "qopengl.h"

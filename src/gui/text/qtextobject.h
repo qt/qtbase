@@ -40,6 +40,7 @@
 #ifndef QTEXTOBJECT_H
 #define QTEXTOBJECT_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qobject.h>
 #include <QtGui/qtextformat.h>
 #include <QtGui/qtextlayout.h>

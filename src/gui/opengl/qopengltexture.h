@@ -40,7 +40,7 @@
 #ifndef QOPENGLABSTRACTTEXTURE_H
 #define QOPENGLABSTRACTTEXTURE_H
 
-#include <QtCore/qglobal.h>
+#include <QtGui/qtguiglobal.h>
 
 #ifndef QT_NO_OPENGL
 

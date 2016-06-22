@@ -40,6 +40,7 @@
 #ifndef QGENERICMATRIX_H
 #define QGENERICMATRIX_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qmetatype.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qdatastream.h>

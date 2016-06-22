@@ -40,6 +40,7 @@
 #ifndef QPLATFORMGRAPHICSBUFFERHELPER_H
 #define QPLATFORMGRAPHICSBUFFERHELPER_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qpa/qplatformgraphicsbuffer.h>
 
 QT_BEGIN_NAMESPACE

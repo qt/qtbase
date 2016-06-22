@@ -40,7 +40,7 @@
 #ifndef QKEYSEQUENCE_H
 #define QKEYSEQUENCE_H
 
-#include <QtCore/qnamespace.h>
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qobjectdefs.h>
 

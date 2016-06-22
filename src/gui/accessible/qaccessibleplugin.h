@@ -40,6 +40,7 @@
 #ifndef QACCESSIBLEPLUGIN_H
 #define QACCESSIBLEPLUGIN_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qaccessible.h>
 #include <QtCore/qfactoryinterface.h>
 

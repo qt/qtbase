@@ -40,6 +40,7 @@
 #ifndef QABSTRACTTEXTDOCUMENTLAYOUT_H
 #define QABSTRACTTEXTDOCUMENTLAYOUT_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qobject.h>
 #include <QtGui/qtextlayout.h>
 #include <QtGui/qtextdocument.h>

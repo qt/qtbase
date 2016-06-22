@@ -40,6 +40,7 @@
 #ifndef QCLIPBOARD_H
 #define QCLIPBOARD_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE

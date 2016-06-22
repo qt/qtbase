@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
+#include <QtGui/qtguiglobal.h>
 
 #ifndef QT_NO_ACCESSIBILITY
 #ifndef QACCESSIBLE_H

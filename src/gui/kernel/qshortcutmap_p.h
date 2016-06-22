@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include "QtGui/qkeysequence.h"
 #include "QtCore/qvector.h"
 #include "QtCore/qscopedpointer.h"

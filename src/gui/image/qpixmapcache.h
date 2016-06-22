@@ -40,6 +40,7 @@
 #ifndef QPIXMAPCACHE_H
 #define QPIXMAPCACHE_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/qpixmap.h>
 
 QT_BEGIN_NAMESPACE

@@ -40,6 +40,7 @@
 #ifndef QICONENGINEPLUGIN_H
 #define QICONENGINEPLUGIN_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
 
