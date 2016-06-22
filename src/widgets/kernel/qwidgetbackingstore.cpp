@@ -61,6 +61,8 @@ QT_BEGIN_NAMESPACE
 
 extern QRegion qt_dirtyRegion(QWidget *);
 
+Q_GLOBAL_STATIC(QPlatformTextureList, qt_dummy_platformTextureList)
+
 /**
  * Flushes the contents of the \a backingStore into the screen area of \a widget.
  * \a tlwOffset is the position of the top level widget relative to the window surface.
@@ -103,6 +105,20 @@ void QWidgetBackingStore::qt_flush(QWidget *widget, const QRegion &region, QBack
         offset += widget->mapTo(tlw, QPoint());
 
 #ifndef QT_NO_OPENGL
+    const bool compositionWasActive = widget->d_func()->renderToTextureComposeActive;
+    if (!widgetTextures) {
+        widget->d_func()->renderToTextureComposeActive = false;
+        // Detect the case of falling back to the normal flush path when no
+        // render-to-texture widgets are visible anymore. We will force one
+        // last flush to go through the OpenGL-based composition to prevent
+        // artifacts. The next flush after this one will use the normal path.
+        if (compositionWasActive)
+            widgetTextures = qt_dummy_platformTextureList;
+    } else {
+        widget->d_func()->renderToTextureComposeActive = true;
+    }
+
+    // re-test since we may have been forced to this path via the dummy texture list above
     if (widgetTextures) {
         qt_window_private(tlw->windowHandle())->compositing = true;
         widget->window()->d_func()->sendComposeStatus(widget->window(), false);
@@ -977,8 +993,6 @@ static void findAllTextureWidgetsRecursively(QWidget *tlw, QWidget *widget)
         }
     }
 }
-
-Q_GLOBAL_STATIC(QPlatformTextureList, qt_dummy_platformTextureList)
 
 static QPlatformTextureList *widgetTexturesFor(QWidget *tlw, QWidget *widget)
 {

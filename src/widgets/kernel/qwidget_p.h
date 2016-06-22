@@ -744,6 +744,7 @@ public:
 #endif
 #ifndef QT_NO_OPENGL
     uint renderToTextureReallyDirty : 1;
+    uint renderToTextureComposeActive : 1;
 #endif
 
     // *************************** Platform specific ************************************
