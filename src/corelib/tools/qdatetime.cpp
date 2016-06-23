@@ -2487,6 +2487,16 @@ static inline bool specCanBeSmall(Qt::TimeSpec spec)
     return spec == Qt::LocalTime || spec == Qt::UTC;
 }
 
+static inline bool msecsCanBeSmall(qint64 msecs)
+{
+    if (!QDateTimeData::CanBeSmall)
+        return false;
+
+    ShortData sd;
+    sd.msecs = qintptr(msecs);
+    return sd.msecs == msecs;
+}
+
 static Q_DECL_CONSTEXPR inline
 QDateTimePrivate::StatusFlags mergeSpec(QDateTimePrivate::StatusFlags status, Qt::TimeSpec spec)
 {
@@ -2693,9 +2703,9 @@ static void setDateTime(QDateTimeData &d, const QDate &date, const QTime &time)
     qint64 msecs = (days * MSECS_PER_DAY) + ds;
     if (d.isShort()) {
         // let's see if we can keep this short
-        d.data.msecs = qintptr(msecs);
-        if (d.data.msecs == msecs) {
+        if (msecsCanBeSmall(msecs)) {
             // yes, we can
+            d.data.msecs = qintptr(msecs);
             d.data.status &= ~(QDateTimePrivate::ValidityMask | QDateTimePrivate::DaylightMask);
             d.data.status |= newStatus;
         } else {
@@ -2734,6 +2744,15 @@ static QPair<QDate, QTime> getDateTime(const QDateTimeData &d)
   QDateTime::Data member functions
  *****************************************************************************/
 
+inline QDateTime::Data::Data()
+{
+    // default-constructed data has a special exception:
+    // it can be small even if CanBeSmall == false
+    // (optimization so we don't allocate memory in the default constructor)
+    quintptr value = quintptr(mergeSpec(QDateTimePrivate::ShortData, Qt::LocalTime));
+    d = reinterpret_cast<QDateTimePrivate *>(value);
+}
+
 inline QDateTime::Data::Data(Qt::TimeSpec spec)
 {
     if (CanBeSmall && Q_LIKELY(specCanBeSmall(spec))) {
@@ -2751,9 +2770,9 @@ inline QDateTime::Data::Data(const Data &other)
 {
     if (!isShort()) {
         // check if we could shrink
-        ShortData sd;
-        sd.msecs = qintptr(d->m_msecs);
-        if (CanBeSmall && specCanBeSmall(extractSpec(d->m_status)) && sd.msecs == d->m_msecs) {
+        if (specCanBeSmall(extractSpec(d->m_status)) && msecsCanBeSmall(d->m_msecs)) {
+            ShortData sd;
+            sd.msecs = qintptr(d->m_msecs);
             sd.status = d->m_status | QDateTimePrivate::ShortData;
             data = sd;
         } else {
@@ -2766,15 +2785,10 @@ inline QDateTime::Data::Data(const Data &other)
 inline QDateTime::Data::Data(Data &&other)
     : d(other.d)
 {
-    // reset the other to a short state, if we can
-    if (CanBeSmall) {
-        Data dummy(Qt::LocalTime);
-        Q_ASSERT(dummy.isShort());
-        other.d = dummy.d;
-    } else if (!isShort()) {
-        // can't be small, so do implicit sharing
-        d->ref.ref();
-    }
+    // reset the other to a short state
+    Data dummy;
+    Q_ASSERT(dummy.isShort());
+    other.d = dummy.d;
 }
 
 inline QDateTime::Data &QDateTime::Data::operator=(const Data &other)
@@ -2786,9 +2800,9 @@ inline QDateTime::Data &QDateTime::Data::operator=(const Data &other)
     d = other.d;
     if (!other.isShort()) {
         // check if we could shrink
-        ShortData sd;
-        sd.msecs = qintptr(other.d->m_msecs);
-        if (CanBeSmall && specCanBeSmall(extractSpec(other.d->m_status)) && sd.msecs == other.d->m_msecs) {
+        if (specCanBeSmall(extractSpec(other.d->m_status)) && msecsCanBeSmall(other.d->m_msecs)) {
+            ShortData sd;
+            sd.msecs = qintptr(other.d->m_msecs);
             sd.status = other.d->m_status | QDateTimePrivate::ShortData;
             data = sd;
         } else {
@@ -2797,7 +2811,7 @@ inline QDateTime::Data &QDateTime::Data::operator=(const Data &other)
         }
     }
 
-    if (!(CanBeSmall && quintptr(x) & QDateTimePrivate::ShortData) && !x->ref.deref())
+    if (!(quintptr(x) & QDateTimePrivate::ShortData) && !x->ref.deref())
         delete x;
     return *this;
 }
@@ -2810,7 +2824,13 @@ inline QDateTime::Data::~Data()
 
 inline bool QDateTime::Data::isShort() const
 {
-    return CanBeSmall && quintptr(d) & QDateTimePrivate::ShortData;
+    bool b = quintptr(d) & QDateTimePrivate::ShortData;
+
+    // even if CanBeSmall = false, we have short data for a default-constructed
+    // QDateTime object. But it's unlikely.
+    if (CanBeSmall)
+        return Q_LIKELY(b);
+    return Q_UNLIKELY(b);
 }
 
 inline void QDateTime::Data::detach()
@@ -3030,7 +3050,6 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     \sa isValid()
 */
 QDateTime::QDateTime() Q_DECL_NOEXCEPT_EXPR(Data::CanBeSmall)
-    : d(Qt::LocalTime)
 {
 }
 
@@ -3618,12 +3637,10 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
         }
     }
 
-    ShortData sd;
-    sd.msecs = msecs;
-    if (d.isShort() && sd.msecs == msecs) {
+    if (msecsCanBeSmall(msecs) && d.isShort()) {
         // we can keep short
-        sd.status = status;
-        d.data = sd;
+        d.data.msecs = qintptr(msecs);
+        d.data.status = status;
     } else {
         d.detach();
         d->m_status = status;
@@ -4006,8 +4023,9 @@ QDateTime QDateTime::addMSecs(qint64 msecs) const
         if (d.isShort()) {
             // need to check if we need to enlarge first
             msecs += dt.d.data.msecs;
-            dt.d.data.msecs = qintptr(msecs);
-            if (dt.d.data.msecs != msecs) {
+            if (msecsCanBeSmall(msecs)) {
+                dt.d.data.msecs = qintptr(msecs);
+            } else {
                 dt.d.detach();
                 dt.d->m_msecs = msecs;
             }

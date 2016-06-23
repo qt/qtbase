@@ -230,6 +230,7 @@ class Q_CORE_EXPORT QDateTime
             CanBeSmall = sizeof(ShortData) * 8 > 50
         };
 
+        Data();
         Data(Qt::TimeSpec);
         Data(const Data &other);
         Data(Data &&other);
