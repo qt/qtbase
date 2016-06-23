@@ -111,23 +111,13 @@ CGImageRef qt_mac_toCGImage(const QImage &inImage)
     return inImage.convertToFormat(QImage::Format_ARGB32_Premultiplied).toCGImage();
 }
 
-static void qt_mac_deleteImage(void *image, const void *, size_t)
-{
-    delete static_cast<QImage *>(image);
-}
-
-// Creates a CGDataProvider with the data from the given image.
-// The data provider retains a copy of the image.
-CGDataProviderRef qt_mac_CGDataProvider(const QImage &image)
-{
-    return CGDataProviderCreateWithData(new QImage(image), image.bits(),
-                                        image.byteCount(), qt_mac_deleteImage);
-}
-
-
 CGImageRef qt_mac_toCGImageMask(const QImage &image)
 {
-    QCFType<CGDataProviderRef> dataProvider = qt_mac_CGDataProvider(image);
+    static const auto deleter = [](void *image, const void *, size_t) { delete static_cast<QImage *>(image); };
+    QCFType<CGDataProviderRef> dataProvider =
+            CGDataProviderCreateWithData(new QImage(image), image.bits(),
+                                                    image.byteCount(), deleter);
+
     return CGImageMaskCreate(image.width(), image.height(), 8, image.depth(),
                               image.bytesPerLine(), dataProvider, NULL, false);
 }
