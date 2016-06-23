@@ -101,6 +101,16 @@ void *qt_mac_QStringListToNSMutableArrayVoid(const QStringList &list)
     return result;
 }
 
+CGImageRef qt_mac_toCGImage(const QImage &inImage)
+{
+    CGImageRef cgImage = inImage.toCGImage();
+    if (cgImage)
+        return cgImage;
+
+    // Convert image data to a known-good format if the fast conversion fails.
+    return inImage.convertToFormat(QImage::Format_ARGB32_Premultiplied).toCGImage();
+}
+
 static void qt_mac_deleteImage(void *image, const void *, size_t)
 {
     delete static_cast<QImage *>(image);
@@ -114,48 +124,6 @@ CGDataProviderRef qt_mac_CGDataProvider(const QImage &image)
                                         image.byteCount(), qt_mac_deleteImage);
 }
 
-CGImageRef qt_mac_toCGImage(const QImage &inImage)
-{
-    if (inImage.isNull())
-        return 0;
-
-    QImage image = inImage;
-
-    uint cgflags = kCGImageAlphaNone;
-    switch (image.format()) {
-    case QImage::Format_ARGB32:
-        cgflags = kCGImageAlphaFirst | kCGBitmapByteOrder32Host;
-        break;
-    case QImage::Format_RGB32:
-        cgflags = kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Host;
-        break;
-    case QImage::Format_RGB888:
-        cgflags = kCGImageAlphaNone | kCGBitmapByteOrder32Big;
-        break;
-    case QImage::Format_RGBA8888_Premultiplied:
-        cgflags = kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big;
-        break;
-    case QImage::Format_RGBA8888:
-        cgflags = kCGImageAlphaLast | kCGBitmapByteOrder32Big;
-        break;
-    case QImage::Format_RGBX8888:
-        cgflags = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big;
-        break;
-    default:
-        // Everything not recognized explicitly is converted to ARGB32_Premultiplied.
-        image = inImage.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-        // no break;
-    case QImage::Format_ARGB32_Premultiplied:
-        cgflags = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host;
-        break;
-    }
-
-    QCFType<CGDataProviderRef> dataProvider = qt_mac_CGDataProvider(image);
-    return CGImageCreate(image.width(), image.height(), 8, 32,
-                         image.bytesPerLine(),
-                         qt_mac_genericColorSpace(),
-                         cgflags, dataProvider, 0, false, kCGRenderingIntentDefault);
-}
 
 CGImageRef qt_mac_toCGImageMask(const QImage &image)
 {
