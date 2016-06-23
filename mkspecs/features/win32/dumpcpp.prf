@@ -1,6 +1,6 @@
 qtPrepareTool(QMAKE_DUMPCPP, dumpcpp)
 
-dumpcpp_decl.depends = $$QMAKE_DUMPCPP_EXE
+dumpcpp_decl.depends += $$QMAKE_DUMPCPP_EXE
 dumpcpp_decl.commands = $$QMAKE_DUMPCPP ${QMAKE_FILE_IN} -o ${QMAKE_FILE_BASE}
 qaxcontainer_compat: dumpcpp_decl.commands += -compat
 dumpcpp_decl.output = ${QMAKE_FILE_BASE}.h
@@ -17,7 +17,7 @@ dumpcpp_impl.output = ${QMAKE_FILE_BASE}.cpp
 dumpcpp_impl.input = TYPELIBS
 dumpcpp_impl.variable_out = SOURCES
 dumpcpp_impl.name = CPP
-dumpcpp_impl.depends = ${QMAKE_FILE_BASE}.h
+dumpcpp_impl.depends += ${QMAKE_FILE_BASE}.h
 
 QMAKE_EXTRA_COMPILERS += dumpcpp_impl
 
@@ -31,6 +31,6 @@ if(isEmpty(BUILDS)|build_pass):have_target:!contains(TEMPLATE, vc.*) {
     }
 
     objtgt.target = $(OBJECTS)
-    objtgt.depends = $$TYPELIB_HEADERS
+    objtgt.depends += $$TYPELIB_HEADERS
     QMAKE_EXTRA_TARGETS += objtgt
 }
