@@ -302,15 +302,10 @@ void tst_QLibrary::isLibrary_data()
     QTest::newRow(".sl") << QString("mylib.sl") << sl_VALID;
     QTest::newRow(".so") << QString("mylib.so") << so_VALID;
     QTest::newRow(".so+version") << QString("mylib.so.0") << so_VALID;
-
-    // special tests:
-#ifndef Q_OS_MAC
     QTest::newRow("version+.so") << QString("libc-2.7.so") << so_VALID;
     QTest::newRow("version+.so+version") << QString("liboil-0.3.so.0.1.0") << so_VALID;
-#else
-    QTest::newRow("version+.so") << QString("libc-2.7.so") << false;
-    QTest::newRow("version+.so+version") << QString("liboil-0.3.so.0.1.0") << false;
-#endif
+
+    // special tests:
 #ifdef Q_OS_MAC
     QTest::newRow("good (libmylib.1.0.0.dylib)") << QString("libmylib.1.0.0.dylib") << true;
     QTest::newRow("good (libmylib.dylib)") << QString("libmylib.dylib") << true;
