@@ -273,6 +273,11 @@
             "test": "unix/bsymbolic_functions.test",
             "args": "$$QMAKE_CXX yes"
         },
+        "skip_modules": {
+            "description": "modules to skip",
+            "type": "skipModules",
+            "log": "value"
+        },
         "dlopen": {
             "description": "dlopen() in libc",
             "type": "compile",
@@ -1775,7 +1780,7 @@
             "output": [ { "type": "varAppend", "name": "QT_HOST_CFLAGS_DBUS", "value": "tests.host-dbus.cflags" } ]
         },
         "skip_modules": {
-            "output": [ { "type": "varAssign", "name": "QT_SKIP_MODULES", "value": "input.skip_modules" } ]
+            "output": [ { "type": "varAssign", "name": "QT_SKIP_MODULES", "value": "tests.skip_modules.value" } ]
         },
         "qt_build_parts": {
             "description": "Qt build parts",

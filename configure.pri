@@ -186,6 +186,27 @@ defineTest(qtConfTest_neon) {
     return(false)
 }
 
+defineTest(qtConfTest_skipModules) {
+    skip =
+    ios|tvos {
+        skip += qtdoc qtmacextras qtserialport qtwebkit qtwebkit-examples
+        tvos: skip += qtscript
+    }
+
+    for (m, config.input.skip) {
+        # normalize the command line input
+        m ~= s/^(qt)?/qt/
+        !exists($$_PRO_FILE_PWD_/../$$m) {
+            qtConfAddError("-skip command line argument called with non-existent module '$$m'.")
+            return(false)
+        }
+        skip += $$m
+    }
+    $${1}.value = $$unique(skip)
+    export($${1}.value)
+    return(true)
+}
+
 defineTest(qtConfTest_openssl) {
     libs = $$getenv("OPENSSL_LIBS")
 

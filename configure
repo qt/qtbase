@@ -483,7 +483,6 @@ QT_ALL_BUILD_PARTS=" libs tools examples tests "
 QT_DEFAULT_BUILD_PARTS="libs tools examples"
 CFG_BUILD_PARTS=""
 CFG_NOBUILD_PARTS=""
-CFG_SKIP_MODULES=""
 CFG_ANDROID_STYLE_ASSETS=yes
 
 XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++"
@@ -741,14 +740,6 @@ while [ "$#" -gt 0 ]; do
             fi
             CFG_BUILD_PARTS="$CFG_BUILD_PARTS $VAL"
         fi
-        ;;
-    skip)
-        VAL=qt${VAL#qt}
-        if ! [ -d $relpath/../$VAL ]; then
-            echo "Attempting to skip non-existent module $VAL." >&2
-            exit 1
-        fi
-        CFG_SKIP_MODULES="$CFG_SKIP_MODULES $VAL"
         ;;
     sdk)
         if [ "$BUILD_ON_MAC" = "yes" ]; then
@@ -1369,10 +1360,6 @@ fi
 
 if [ "$XPLATFORM_IOS" = "yes" ] || [ "$XPLATFORM_TVOS" = "yes" ]; then
     CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS examples"
-    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtdoc qtmacextras qtserialport qtwebkit qtwebkit-examples"
-    if [ "$XPLATFORM_TVOS" = "yes" ]; then
-        CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtscript"
-    fi
 fi
 
 
@@ -1969,7 +1956,6 @@ cat > "$outpath/config.tests/configure.cfg" <<EOF
 # Feature defaults set by configure command line
 config.input.qt_build_parts = $CFG_BUILD_PARTS
 config.input.extra_features = $CFG_FEATURES
-config.input.skip_modules = $CFG_SKIP_MODULES
 config.input.qt_edition = $Edition
 config.input.qt_licheck = $Licheck
 config.input.qt_release_date = $ReleaseDate
