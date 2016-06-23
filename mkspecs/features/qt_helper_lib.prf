@@ -27,6 +27,6 @@ DLLDESTDIR = $$MODULE_BASE_OUTDIR/bin
 
 # In static builds of Qt, convenience libraries must be installed,
 # as in this case they are not linked to the final library/plugin.
-installed|contains(QT_CONFIG, static): load(qt_installs)
+installed|if(!not_installed:contains(QT_CONFIG, static)): load(qt_installs)
 
 TARGET = $$qt5LibraryTarget($$TARGET)
