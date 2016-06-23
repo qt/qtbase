@@ -412,7 +412,7 @@ CreateDockWidgetDialog::CreateDockWidgetDialog(QWidget *parent)
 
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
-    connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::reject);
+    connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
     layout->addWidget(buttonBox, 2, 0, 1, 2);
 }
 
