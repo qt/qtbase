@@ -1,4 +1,4 @@
-CONFIG += simd installed no_batch
+CONFIG += simd no_batch
 include(../common/common.pri)
 DEF_FILE_TARGET=$${TARGET}
 TARGET=$$qtLibraryTarget($${LIBGLESV2_NAME})
