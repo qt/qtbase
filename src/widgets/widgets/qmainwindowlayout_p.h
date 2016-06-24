@@ -86,7 +86,7 @@ public:
         : QWidget(parent, f) {}
     QDockAreaLayoutInfo *layoutInfo() const;
     QDockWidget *topDockWidget() const;
-    void destroyIfEmpty();
+    void destroyOrHideIfEmpty();
     void adjustFlags();
 protected:
     bool event(QEvent *) Q_DECL_OVERRIDE;
