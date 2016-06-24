@@ -1662,12 +1662,18 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
     const bool accepted = [self handleKeyEvent:nsevent eventType:int(QEvent::KeyPress)];
 
-    // Track keyDown acceptance state for later acceptance of the keyUp.
-    if (accepted)
+    // When Qt is used to implement a plugin for a native application we
+    // want to propagate unhandled events to other native views. However,
+    // Qt does not always set the accepted state correctly (in particular
+    // for return key events), so do this for plugin applications only
+    // to prevent incorrect forwarding in the general case.
+    const bool shouldPropagate = QCoreApplication::testAttribute(Qt::AA_PluginApplication) && !accepted;
+
+    // Track keyDown acceptance/forward state for later acceptance of the keyUp.
+    if (!shouldPropagate)
         m_acceptedKeyDowns.insert([nsevent keyCode]);
 
-    // Propagate the keyDown to the next responder if Qt did not accept it.
-    if (!accepted)
+    if (shouldPropagate)
         [super keyDown:nsevent];
 }
 
