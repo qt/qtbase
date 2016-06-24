@@ -1012,7 +1012,7 @@
         },
         "simulator_and_device": {
             "description": "Build for both simulator and device",
-            "condition": "config.ios && input.sdk != ''",
+            "condition": "config.ios && input.sdk == ''",
             "output": [ "publicQtConfig" ]
         },
         "build_all": {
