@@ -176,7 +176,7 @@ defineTest(qtConfTest_checkCompiler) {
         contains(versionstr, "^Apple (clang|LLVM) version .*") {
             $${1}.compilerDescription = "Apple Clang"
             $${1}.compilerId = "apple_clang"
-            $${1}.compilerVersion = $$replace(versionstr, "^Apple (clang|LLVM) version ([0-9.]+).*$", "\\1")
+            $${1}.compilerVersion = $$replace(versionstr, "^Apple (clang|LLVM) version ([0-9.]+).*$", "\\2")
         } else: contains(versionstr, ".*clang version.*") {
             $${1}.compilerDescription = "Clang"
             $${1}.compilerId = "clang"
