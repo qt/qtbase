@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
     about the underlying files and directories related to items in the model.
     Directories can be created and removed using mkdir(), rmdir().
 
-    \note QFileSystemModel requires an instance of a GUI application.
+    \note QFileSystemModel requires an instance of \l QApplication.
 
     \section1 Example Usage
 
