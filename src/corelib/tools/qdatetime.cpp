@@ -4261,6 +4261,16 @@ bool QDateTime::operator<(const QDateTime &other) const
     \sa currentDateTime(), currentDateTimeUtc(), toTime_t(), toTimeSpec()
 */
 
+/*!
+    \fn qint64 QDateTime::currentSecsSinceEpoch()
+    \since 5.8
+
+    Returns the number of seconds since 1970-01-01T00:00:00 Universal
+    Coordinated Time.
+
+    \sa currentMSecsSinceEpoch()
+*/
+
 #if defined(Q_OS_WIN)
 static inline uint msecsFromDecomposed(int hour, int minute, int sec, int msec = 0)
 {

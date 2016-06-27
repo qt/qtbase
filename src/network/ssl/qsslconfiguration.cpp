@@ -830,9 +830,9 @@ QByteArray QSslConfiguration::preSharedKeyIdentityHint() const
 /*!
     \since 5.8
 
-    Sets the identity hint for a preshared key authentication. This will affect the next
-    initiated handshake; calling this function on an already-encrypted socket
-    will not affect the socket's identity hint.
+    Sets the identity hint for a preshared key authentication to \a hint. This will
+    affect the next initiated handshake; calling this function on an already-encrypted
+    socket will not affect the socket's identity hint.
 
     The identity hint is used in QSslSocket::SslServerMode only!
 */
@@ -858,7 +858,7 @@ QSslDiffieHellmanParameters QSslConfiguration::diffieHellmanParameters() const
     \since 5.8
 
     Sets a custom set of Diffie-Hellman parameters to be used by this socket when functioning as
-    a server.
+    a server to \a dhparams.
 
     If no Diffie-Hellman parameters have been set, the QSslConfiguration object
     defaults to using the 1024-bit MODP group from RFC 2409.

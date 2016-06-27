@@ -104,7 +104,7 @@ QSslDiffieHellmanParameters::QSslDiffieHellmanParameters()
 
 /*!
     Constructs a QSslDiffieHellmanParameters object using
-    the byte array \a encoded in either PEM or DER form.
+    the byte array \a encoded in either PEM or DER form as specified by \a encoding.
 
     After construction, the isValid() method should be used to
     check whether the Diffie-Hellman parameters were valid and
@@ -214,7 +214,6 @@ bool QSslDiffieHellmanParameters::isEmpty() const Q_DECL_NOTHROW
     If a QSslDiffieHellmanParameters object is not valid, you can use the error()
     method to determine what error prevented the object from being constructed.
 
-    \sa clear()
     \sa error()
 */
 bool QSslDiffieHellmanParameters::isValid() const Q_DECL_NOTHROW
@@ -227,11 +226,13 @@ bool QSslDiffieHellmanParameters::isValid() const Q_DECL_NOTHROW
 
     Describes a QSslDiffieHellmanParameters error.
 
-    \value ErrorInvalidInputData The given input data could not be used to
+    \value NoError               No error occurred.
+
+    \value InvalidInputDataError The given input data could not be used to
                                  construct a QSslDiffieHellmanParameters
                                  object.
 
-    \value ErrorUnsafeParameters The Diffie-Hellman parameters are unsafe
+    \value UnsafeParametersError The Diffie-Hellman parameters are unsafe
                                  and should not be used.
 */
 
@@ -277,7 +278,7 @@ bool operator==(const QSslDiffieHellmanParameters &lhs, const QSslDiffieHellmanP
 /*!
     \relates QSslDiffieHellmanParameters
 
-    Writes the set of Diffie-Hellman parameters in \a dhparm into the debug object \a debug for
+    Writes the set of Diffie-Hellman parameters in \a dhparam into the debug object \a debug for
     debugging purposes.
 
     The Diffie-Hellman parameters will be represented in Base64-encoded DER form.

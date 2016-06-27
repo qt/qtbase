@@ -433,7 +433,7 @@ QCommandLineOption::Flags QCommandLineOption::flags() const
 }
 
 /*!
-    Set the set of flags that affect this command-line option.
+    Set the set of flags that affect this command-line option to \a flags.
 
     \since 5.8
     \sa flags(), QCommandLineOption::Flags

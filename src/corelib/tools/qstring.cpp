@@ -8338,7 +8338,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     \a start in this object.
 
     \note This function performs no error checking.
-    The behavior is undefined when \a start < 0, \length < 0,
+    The behavior is undefined when \a start < 0, \a length < 0,
     or \a start + \a length > size().
 
     \sa left(), right()
@@ -8351,7 +8351,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     0 in this object.
 
     \note This function performs no error checking.
-    The behavior is undefined when \length < 0 or \a length > size().
+    The behavior is undefined when \a length < 0 or \a length > size().
 
     \sa mid(), right()
 */
@@ -8363,7 +8363,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     size() - \a length in this object.
 
     \note This function performs no error checking.
-    The behavior is undefined when \length < 0 or \a length > size().
+    The behavior is undefined when \a length < 0 or \a length > size().
 
     \sa mid(), left()
 */
