@@ -686,7 +686,7 @@ QString QDir::filePath(const QString &fileName) const
 {
     const QDirPrivate* d = d_ptr.constData();
     if (isAbsolutePath(fileName))
-        return QString(fileName);
+        return fileName;
 
     QString ret = d->dirEntry.filePath();
     if (!fileName.isEmpty()) {
