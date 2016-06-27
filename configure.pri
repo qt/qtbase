@@ -193,6 +193,9 @@ defineTest(qtConfTest_checkCompiler) {
         $${1}.compilerId = "icc"
         version = "$$system($$QMAKE_CXX -v)"
         $${1}.compilerVersion = $$replace(version, "icpc version ([0-9.]+).*", "\\1")
+    } else: msvc {
+        $${1}.compilerDescription = "MSVC"
+        $${1}.compilerId = "cl"
     } else {
         return(false)
     }
