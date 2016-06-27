@@ -124,6 +124,7 @@ public:
     static int autoMaximizeThreshold;
 #endif
     static bool autoSipEnabled;
+    static int customDpiOverride;
     static QString desktopStyleKey();
 
 

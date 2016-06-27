@@ -171,6 +171,9 @@ bool QApplicationPrivate::autoSipEnabled = false;
 bool QApplicationPrivate::autoSipEnabled = true;
 #endif
 
+int QApplicationPrivate::customDpiOverride = -1;
+
+
 QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, int flags)
     : QApplicationPrivateBase(argc, argv, flags)
 {
@@ -663,6 +666,8 @@ void QApplicationPrivate::initialize()
 #endif //QT_AUTO_MAXIMIZE_THRESHOLD
 #endif //Q_OS_WINCE
 
+    customDpiOverride = -1;
+
 #ifndef QT_NO_WHEELEVENT
     QApplicationPrivate::wheel_scroll_lines = 3;
 #endif
@@ -1077,6 +1082,19 @@ void QApplication::setAutoSipEnabled(const bool enabled)
 bool QApplication::autoSipEnabled() const
 {
     return QApplicationPrivate::autoSipEnabled;
+}
+
+
+//ADSK: allow for customized system DPI setttings
+
+void QApplication::setCustomDpiOverride(const int dpi)
+{
+    QApplicationPrivate::customDpiOverride = dpi;
+}
+
+int QApplication::customDpiOverride() const
+{
+   return QApplicationPrivate::customDpiOverride;
 }
 
 #ifndef QT_NO_STYLE_STYLESHEET

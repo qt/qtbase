@@ -83,6 +83,10 @@ class Q_WIDGETS_EXPORT QApplication : public QGuiApplication
 #endif
     Q_PROPERTY(bool autoSipEnabled READ autoSipEnabled WRITE setAutoSipEnabled)
 
+       //ADSK:
+    // allows overwriting the current system dpi to provide a custom dpi scale.
+    Q_PROPERTY(int customDpiOverride READ customDpiOverride WRITE setCustomDpiOverride)
+
 public:
 #ifdef Q_QDOC
     QApplication(int &argc, char **argv);
@@ -195,6 +199,8 @@ public Q_SLOTS:
 #endif
     void setAutoSipEnabled(const bool enabled);
     bool autoSipEnabled() const;
+    void setCustomDpiOverride(const int dpi);
+    int customDpiOverride() const;
     static void closeAllWindows();
     static void aboutQt();
 

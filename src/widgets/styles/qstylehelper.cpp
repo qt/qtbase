@@ -76,7 +76,8 @@ qreal dpiScaled(qreal value)
     // On mac the DPI is always 72 so we should not scale it
     return value;
 #else
-    static const qreal scale = qreal(qt_defaultDpiX()) / 96.0;
+    static const qreal scale = qreal( (qApp->customDpiOverride() != -1 ? qApp->customDpiOverride() : qt_defaultDpiX()) ) / 96.0;
+
     return value * scale;
 #endif
 }
