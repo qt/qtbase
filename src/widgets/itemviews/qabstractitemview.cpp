@@ -2604,12 +2604,11 @@ QModelIndexList QAbstractItemView::selectedIndexes() const
     QModelIndexList indexes;
     if (d->selectionModel) {
         indexes = d->selectionModel->selectedIndexes();
-        QList<QModelIndex>::iterator it = indexes.begin();
-        while (it != indexes.end())
-            if (isIndexHidden(*it))
-                it = indexes.erase(it);
-            else
-                ++it;
+        auto isHidden = [this](const QModelIndex &idx) {
+            return isIndexHidden(idx);
+        };
+        const auto end = indexes.end();
+        indexes.erase(std::remove_if(indexes.begin(), end, isHidden), end);
     }
     return indexes;
 }
