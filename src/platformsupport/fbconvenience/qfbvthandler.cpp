@@ -171,7 +171,7 @@ void QFbVtHandler::handleSignal()
     char sigNo;
     if (QT_READ(m_sigFd[1], &sigNo, sizeof(sigNo)) == sizeof(sigNo)) {
         switch (sigNo) {
-        case SIGINT: // fallthrough
+        case SIGINT:
         case SIGTERM:
             handleInt();
             break;

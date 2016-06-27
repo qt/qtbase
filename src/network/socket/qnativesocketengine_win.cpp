@@ -712,7 +712,7 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quin
 
                 if (errorDetected)
                     break;
-                // fall through
+                Q_FALLTHROUGH();
             }
             case WSAEINPROGRESS:
                 setError(QAbstractSocket::UnfinishedSocketOperationError, InvalidSocketErrorString);

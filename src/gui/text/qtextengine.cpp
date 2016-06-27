@@ -508,7 +508,7 @@ static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiCon
                 case QChar::DirAN:
                     if (eor >= 0)
                         appendItems(analysis, sor, eor, control, dir);
-                    // fall through
+                    Q_FALLTHROUGH();
                 case QChar::DirR:
                 case QChar::DirAL:
                     dir = QChar::DirR; eor = current; status.eor = QChar::DirR; break;
@@ -564,7 +564,7 @@ static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiCon
                             status.eor = QChar::DirON;
                             dir = QChar::DirAN;
                         }
-                        // fall through
+                        Q_FALLTHROUGH();
                     case QChar::DirEN:
                     case QChar::DirL:
                         eor = current;
@@ -744,7 +744,7 @@ static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiCon
                 status.last = QChar::DirL;
                 break;
             }
-            // fall through
+            Q_FALLTHROUGH();
         default:
             status.last = dirCurrent;
         }
@@ -1663,7 +1663,7 @@ void QTextEngine::itemize() const
                 analysis->bidiLevel = control.baseLevel();
                 break;
             }
-        // fall through
+            Q_FALLTHROUGH();
         default:
             analysis->flags = QScriptAnalysis::None;
             break;
@@ -2250,7 +2250,6 @@ void QTextEngine::justify(const QScriptLine &line)
             case Justification_Prohibited:
                 break;
             case Justification_Space:
-                // fall through
             case Justification_Arabic_Space:
                 if (kashida_pos >= 0) {
 //                     qDebug("kashida position at %d in word", kashida_pos);
@@ -2263,7 +2262,7 @@ void QTextEngine::justify(const QScriptLine &line)
                 }
                 kashida_pos = -1;
                 kashida_type = Justification_Arabic_Normal;
-                // fall through
+                Q_FALLTHROUGH();
             case Justification_Character:
                 set(&justificationPoints[nPoints++], justification, g.mid(i), fontEngine(si));
                 maxJustify = qMax(maxJustify, justification);
@@ -2966,9 +2965,8 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
                     switch (tabSpec.type) {
                     case QTextOption::CenterTab:
                         length /= 2;
-                        // fall through
+                        Q_FALLTHROUGH();
                     case QTextOption::DelimiterTab:
-                        // fall through
                     case QTextOption::RightTab:
                         tab = QFixed::fromReal(tabSpec.position) * dpiScale - length;
                         if (tab < x) // default to tab taking no space

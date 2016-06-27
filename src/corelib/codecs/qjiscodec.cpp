@@ -288,7 +288,7 @@ QString QJisCodec::convertToUnicode(const char* chars, int len, ConverterState *
                             result += QLatin1Char(ch);
                             break;
                         }
-                        /* fall through */
+                        Q_FALLTHROUGH();
                     case JISX0201_Latin:
                         u = conv->jisx0201ToUnicode(ch);
                         result += QValidChar(u);

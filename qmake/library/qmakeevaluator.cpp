@@ -318,7 +318,7 @@ ProStringList QMakeEvaluator::split_value_list(const QStringRef &vals, const Pro
                     --x;
                 }
             }
-            // fallthrough
+            Q_FALLTHROUGH();
         default:
             hadWord = true;
             break;
@@ -1643,7 +1643,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::expandVariableReferences(
                 tokPtr++;
                 continue;
             }
-            // fallthrough
+            Q_FALLTHROUGH();
         default:
             Q_ASSERT_X(false, "expandVariableReferences", "Unrecognized token");
             break;
@@ -2109,7 +2109,7 @@ QString QMakeEvaluator::formatValue(const ProString &val, bool forceQuote)
                 break;
             case 32:
                 quote = true;
-                // fallthrough
+                Q_FALLTHROUGH();
             default:
                 ret += c;
                 break;

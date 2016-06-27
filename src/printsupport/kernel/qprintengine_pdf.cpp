@@ -150,7 +150,7 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         else
             d->m_pageLayout.setMode(QPageLayout::StandardMode);
         break;
-    case PPK_CopyCount: // fallthrough
+    case PPK_CopyCount:
     case PPK_NumberOfCopies:
         d->copies = value.toInt();
         break;

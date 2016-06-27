@@ -149,12 +149,13 @@ QString QSystemError::toString() const
         return windowsErrorString(errorCode);
 #else
         //unix: fall through as native and standard library are the same
+        Q_FALLTHROUGH();
 #endif
     case StandardLibraryError:
         return standardLibraryErrorString(errorCode);
     default:
         qWarning("invalid error scope");
-        //fall through
+        Q_FALLTHROUGH();
     case NoError:
         return QLatin1String("No error");
     }

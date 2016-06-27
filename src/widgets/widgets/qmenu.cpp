@@ -2979,7 +2979,7 @@ void QMenu::keyPressEvent(QKeyEvent *e)
             key_consumed = true;
             break;
         }
-        //FALL THROUGH
+        Q_FALLTHROUGH();
     case Qt::Key_Left: {
         if (d->currentAction && !d->scroll) {
             QAction *nextAction = 0;
@@ -3026,6 +3026,7 @@ void QMenu::keyPressEvent(QKeyEvent *e)
         if (!style()->styleHint(QStyle::SH_Menu_SpaceActivatesItem, 0, this))
             break;
         // for motif, fall through
+        Q_FALLTHROUGH();
 #ifdef QT_KEYPAD_NAVIGATION
     case Qt::Key_Select:
 #endif

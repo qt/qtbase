@@ -933,7 +933,7 @@ void QAbstractSlider::changeEvent(QEvent *ev)
             d->repeatActionTimer.stop();
             setSliderDown(false);
         }
-        // fall through...
+        Q_FALLTHROUGH();
     default:
         QWidget::changeEvent(ev);
     }

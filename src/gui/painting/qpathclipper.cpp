@@ -1760,7 +1760,7 @@ static bool bool_op(bool a, bool b, QPathClipper::Operation op)
     switch (op) {
     case QPathClipper::BoolAnd:
         return a && b;
-    case QPathClipper::BoolOr: // fall-through
+    case QPathClipper::BoolOr:
     case QPathClipper::Simplify:
         return a || b;
     case QPathClipper::BoolSub:
@@ -1956,7 +1956,7 @@ QPointF intersectLine(const QPointF &a, const QPointF &b, qreal t)
 {
     QLineF line(a, b);
     switch (edge) {
-    case Left: // fall-through
+    case Left:
     case Right:
         return line.pointAt((t - a.x()) / (b.x() - a.x()));
     default:

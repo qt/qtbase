@@ -411,7 +411,7 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
             switch (errno) {
             case EILSEQ:
                 ++invalidCount;
-                // fall through
+                Q_FALLTHROUGH();
             case EINVAL:
                 {
                     inBytes += sizeof(QChar);

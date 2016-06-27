@@ -1737,7 +1737,7 @@ void QTreeWidgetItem::setData(int column, int role, const QVariant &value)
                 }
             }
         }
-        // Don't break, but fall through
+        Q_FALLTHROUGH();
     default:
         if (column < values.count()) {
             bool found = false;
@@ -1787,7 +1787,7 @@ QVariant QTreeWidgetItem::data(int column, int role) const
         // special case for check state in tristate
         if (children.count() && (itemFlags & Qt::ItemIsAutoTristate))
             return childrenCheckState(column);
-        // fallthrough intended
+        Q_FALLTHROUGH();
    default:
         if (column >= 0 && column < values.size()) {
             const QVector<QWidgetItemData> &column_values = values.at(column);

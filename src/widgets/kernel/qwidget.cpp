@@ -8835,7 +8835,7 @@ bool QWidget::event(QEvent *event)
 
     case QEvent::KeyRelease:
         keyReleaseEvent((QKeyEvent*)event);
-        // fall through
+        Q_FALLTHROUGH();
     case QEvent::ShortcutOverride:
         break;
 
@@ -8954,7 +8954,7 @@ bool QWidget::event(QEvent *event)
                             0, this);
                 break;
             }
-            // fall through
+            Q_FALLTHROUGH();
 #endif
         default:
             event->ignore();
@@ -9193,7 +9193,7 @@ bool QWidget::event(QEvent *event)
         }
         if (windowHandle() && !qstrncmp(propName, "_q_platform_", 12))
             windowHandle()->setProperty(propName, property(propName));
-        // fall through
+        Q_FALLTHROUGH();
     }
 #endif
     default:
@@ -11194,13 +11194,13 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             d->enforceNativeChildren();
         }
 #endif
-        // fall through
+        Q_FALLTHROUGH();
     case Qt::WA_OpaquePaintEvent:
         d->updateIsOpaque();
         break;
     case Qt::WA_NoSystemBackground:
         d->updateIsOpaque();
-        // fall through...
+        Q_FALLTHROUGH();
     case Qt::WA_UpdatesDisabled:
         d->updateSystemBackground();
         break;

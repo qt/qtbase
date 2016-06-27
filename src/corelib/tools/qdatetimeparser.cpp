@@ -602,7 +602,7 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
         return 2;
 #else
         mcount = 7;
-        // fall through
+        Q_FALLTHROUGH();
 #endif
     case MonthSection:
 #ifdef QT_NO_TEXTDATE
@@ -770,7 +770,8 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
                 state = Intermediate;
             }
             break;
-        } // else: fall through
+        }
+        Q_FALLTHROUGH();
     case DaySection:
     case YearSection:
     case YearSection2Digits:
@@ -1155,7 +1156,7 @@ end:
                             done = true;
                             break;
                         }
-                        // fallthrough
+                        Q_FALLTHROUGH();
                     default: {
                         int toMin;
                         int toMax;
@@ -1489,7 +1490,7 @@ QDateTimeParser::FieldInfo QDateTimeParser::fieldInfo(int index) const
     switch (sn.type) {
     case MSecSection:
         ret |= Fraction;
-        // fallthrough
+        Q_FALLTHROUGH();
     case SecondSection:
     case MinuteSection:
     case Hour24Section:
@@ -1509,7 +1510,7 @@ QDateTimeParser::FieldInfo QDateTimeParser::fieldInfo(int index) const
         switch (sn.count) {
         case 2:
             ret |= FixedWidth;
-            // fallthrough
+            Q_FALLTHROUGH();
         case 1:
             ret |= (Numeric|AllowPartial);
             break;

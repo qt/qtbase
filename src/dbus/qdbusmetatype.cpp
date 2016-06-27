@@ -373,7 +373,7 @@ int QDBusMetaType::signatureToType(const char *signature)
             return qMetaTypeId<QList<QDBusSignature> >();
 
         }
-        // fall through
+        Q_FALLTHROUGH();
     default:
         return QMetaType::UnknownType;
     }

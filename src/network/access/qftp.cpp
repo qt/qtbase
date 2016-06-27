@@ -1121,7 +1121,7 @@ bool QFtpPI::processReply()
         case Success:
             // success handling
             state = Idle;
-            // no break!
+            Q_FALLTHROUGH();
         case Idle:
             if (dtp.hasError()) {
                 emit error(QFtp::UnknownError, dtp.errorMessage());

@@ -676,7 +676,7 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
         case Qt::Key_Down:
             if (!(keyEvent->modifiers() & Qt::AltModifier))
                 break;
-            // fall through
+            Q_FALLTHROUGH();
         case Qt::Key_F4:
             combo->hidePopup();
             return true;
@@ -3140,7 +3140,7 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
             return;
         } else if (e->modifiers() & Qt::ControlModifier)
             break; // pass to line edit for auto completion
-        // fall through
+        Q_FALLTHROUGH();
     case Qt::Key_PageDown:
 #ifdef QT_KEYPAD_NAVIGATION
         if (QApplication::keypadNavigationEnabled())

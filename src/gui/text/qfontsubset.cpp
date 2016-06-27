@@ -740,7 +740,7 @@ static void convertPath(const QPainterPath &path, QVector<TTF_POINT> *points, QV
                     points->takeLast();
                 endPoints->append(points->size() - 1);
             }
-            // fall through
+            Q_FALLTHROUGH();
         case QPainterPath::LineToElement:
             p.flags = OnCurve;
             break;

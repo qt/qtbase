@@ -1141,7 +1141,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
 #endif // QT_DEBUG_METRICS
         break;
 
-    case PPK_CopyCount: // fallthrough
+    case PPK_CopyCount:
     case PPK_NumberOfCopies:
         if (!d->devMode)
             break;

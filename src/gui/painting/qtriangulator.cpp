@@ -874,7 +874,7 @@ void QTriangulator<T>::initialize(const QVectorPath &path, const QTransform &mat
             case QPainterPath::MoveToElement:
                 if (!m_indices.isEmpty())
                     m_indices.push_back(T(-1)); // Q_TRIANGULATE_END_OF_POLYGON
-                // Fall through.
+                Q_FALLTHROUGH();
             case QPainterPath::LineToElement:
                 m_indices.push_back(T(m_vertices.size()));
                 m_vertices.resize(m_vertices.size() + 1);
@@ -2100,7 +2100,7 @@ void QTriangulator<T>::SimpleToMonotone::monotoneDecomposition()
             } else {
                 qWarning("Inconsistent polygon. (#3)");
             }
-            // Fall through.
+            Q_FALLTHROUGH();
         case StartVertex:
             if (m_clockwiseOrder) {
                 leftEdgeNode = searchEdgeLeftOfEdge(j);
@@ -2129,7 +2129,7 @@ void QTriangulator<T>::SimpleToMonotone::monotoneDecomposition()
             } else {
                 qWarning("Inconsistent polygon. (#4)");
             }
-            // Fall through.
+            Q_FALLTHROUGH();
         case EndVertex:
             if (m_clockwiseOrder) {
                 if (m_edges.at(m_edges.at(i).helper).type == MergeVertex)

@@ -203,7 +203,7 @@ static qlonglong qConvertToNumber(const QVariant::Private *d, bool *ok)
     case QMetaType::QJsonValue:
         if (!v_cast<QJsonValue>(d)->isDouble())
             break;
-        // no break
+        Q_FALLTHROUGH();
 #endif
     case QVariant::Double:
     case QVariant::Int:
@@ -278,7 +278,7 @@ static qulonglong qConvertToUnsignedNumber(const QVariant::Private *d, bool *ok)
     case QMetaType::QJsonValue:
         if (!v_cast<QJsonValue>(d)->isDouble())
             break;
-        // no break
+        Q_FALLTHROUGH();
 #endif
     case QVariant::Double:
     case QVariant::Int:
@@ -3119,7 +3119,7 @@ bool QVariant::canConvert(int targetTypeId) const
         case QVariant::Int:
             if (currentType == QVariant::KeySequence)
                 return true;
-            // fall through
+            Q_FALLTHROUGH();
         case QVariant::UInt:
         case QVariant::LongLong:
         case QVariant::ULongLong:

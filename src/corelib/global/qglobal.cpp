@@ -2950,6 +2950,20 @@ QString QSysInfo::machineHostName()
 */
 
 /*!
+    \macro void Q_FALLTHROUGH()
+    \relates <QtGlobal>
+    \since 5.8
+
+    Can be used in switch statements at the end of case block to tell the compiler
+    and other developers that that the lack of a break statement is intentional.
+
+    This is useful since a missing break statement is often a bug, and some
+    compilers can be configured to emit warnings when one is not found.
+
+    \sa Q_UNREACHABLE()
+*/
+
+/*!
     \macro void Q_CHECK_PTR(void *pointer)
     \relates <QtGlobal>
 

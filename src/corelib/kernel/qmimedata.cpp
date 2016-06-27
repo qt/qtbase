@@ -167,7 +167,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
         case QVariant::List: {
             if (format != QLatin1String("text/uri-list"))
                 break;
-            // fall through
+            Q_FALLTHROUGH();
         }
         case QVariant::Url: {
             QByteArray ba = data.toByteArray();

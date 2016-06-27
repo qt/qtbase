@@ -808,7 +808,8 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             p->setPen(opt->palette.dark().color());
         else
             p->setPen(opt->palette.text().color());
-        } // Fall through!
+        }
+        Q_FALLTHROUGH();
     case PE_IndicatorViewItemCheck:
         if (!doRestore) {
             p->save();
@@ -2383,7 +2384,7 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     case CT_ToolButton:
         if (qstyleoption_cast<const QStyleOptionToolButton *>(opt))
             return sz += QSize(7, 6);
-        // Otherwise, fall through
+        Q_FALLTHROUGH();
 
     default:
         sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);

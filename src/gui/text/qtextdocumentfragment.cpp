@@ -827,7 +827,7 @@ bool QTextHtmlImporter::closeTag()
             case Html_div:
                 if (closedNode->children.isEmpty())
                     break;
-                // fall through
+                Q_FALLTHROUGH();
             default:
                 if (closedNode->isBlock())
                     blockTagClosed = true;

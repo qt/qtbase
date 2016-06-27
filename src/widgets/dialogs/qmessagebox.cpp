@@ -1379,7 +1379,7 @@ void QMessageBox::changeEvent(QEvent *ev)
         d->buttonBox->setCenterButtons(style()->styleHint(QStyle::SH_MessageBox_CenterButtons, 0, this));
         if (d->informativeLabel)
             d->informativeLabel->setTextInteractionFlags(flags);
-        // intentional fall through
+        Q_FALLTHROUGH();
     }
     case QEvent::FontChange:
     case QEvent::ApplicationFontChange:
@@ -1390,6 +1390,7 @@ void QMessageBox::changeEvent(QEvent *ev)
         d->label->setFont(f);
     }
 #endif
+        Q_FALLTHROUGH();
     default:
         break;
     }
