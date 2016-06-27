@@ -910,6 +910,11 @@
             "type": "tdsCompile",
             "test": "unix/tds"
         },
+        "directwrite": {
+            "description": "DirectWrite",
+            "type": "compile",
+            "test": "win/directwrite"
+        },
         "directwrite2": {
             "description": "DirectWrite 2",
             "type": "compile",
@@ -2128,8 +2133,8 @@
         },
         "directwrite": {
             "description": "DirectWrite",
-            "autoDetect": false,
             "emitIf": "config.win32",
+            "condition": "tests.directwrite",
             "output": [ "publicQtConfig" ]
         },
         "directwrite2": {

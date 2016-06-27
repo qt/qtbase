@@ -3289,12 +3289,6 @@ void Configure::generateQConfigPri()
         if (dictionary[ "LGMON" ] == "yes")
             configStream << " lgmon";
 
-        if (dictionary["DIRECTWRITE"] == "yes")
-            configStream << " directwrite";
-
-        if (dictionary["DIRECTWRITE2"] == "yes")
-            configStream << " directwrite2";
-
         if (dictionary["ANDROID_STYLE_ASSETS"] == "yes")
             configStream << " android-style-assets";
 
