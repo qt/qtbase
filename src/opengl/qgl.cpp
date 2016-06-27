@@ -463,6 +463,8 @@ QGLFormat QGLFormat::fromSurfaceFormat(const QSurfaceFormat &format)
     retFormat.setStereo(format.stereo());
     retFormat.setVersion(format.majorVersion(), format.minorVersion());
     retFormat.setProfile(static_cast<QGLFormat::OpenGLContextProfile>(format.profile()));
+       if (format.testOption(QSurfaceFormat::DebugContext))
+        retFormat.setOption(QGL::DebugContext);
     return retFormat;
 }
 
@@ -492,11 +494,7 @@ QSurfaceFormat QGLFormat::toSurfaceFormat(const QGLFormat &format)
     retFormat.setMajorVersion(format.majorVersion());
     retFormat.setMinorVersion(format.minorVersion());
     retFormat.setProfile(static_cast<QSurfaceFormat::OpenGLContextProfile>(format.profile()));
-    // QGLFormat has no way to set DeprecatedFunctions, that is, to tell that forward
-    // compatibility should not be requested. Some drivers fail to ignore the fwdcompat
-    // bit with compatibility profiles so make sure it is not set.
-    if (format.profile() == QGLFormat::CompatibilityProfile)
-        retFormat.setOption(QSurfaceFormat::DeprecatedFunctions);
+    retFormat.setOption(QSurfaceFormat::DebugContext, format.testOption(QGL::DebugContext));
     return retFormat;
 }
 
