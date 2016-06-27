@@ -1345,7 +1345,7 @@ void QMenuBarPrivate::handleReparent()
     QWidget *newWindow = newParent ? newParent->window() : 0;
 
     if (oldWindow != newWindow) {
-        if (oldParent && oldParent != oldWindow)
+        if (oldParent && oldWindow && oldParent != oldWindow)
             oldWindow->removeEventFilter(q);
 
         if (newParent && newParent != newWindow)
