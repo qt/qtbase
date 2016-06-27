@@ -208,7 +208,7 @@ mac {
         CMAKE_PRL_FILE_LOCATION_DEBUG = lib$${CMAKE_QT_STEM}_debug.prl
         CMAKE_PRL_FILE_LOCATION_RELEASE = lib$${CMAKE_QT_STEM}.prl
     } else {
-        CONFIG(qt_framework, qt_framework|qt_no_framework) {
+        qt_framework {
             CMAKE_LIB_FILE_LOCATION_DEBUG = Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.framework/Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}
             CMAKE_LIB_FILE_LOCATION_RELEASE = Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.framework/Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}
             CMAKE_BUILD_IS_FRAMEWORK = "true"

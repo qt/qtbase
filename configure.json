@@ -1090,8 +1090,7 @@
             "output": [
                 { "type": "define", "name": "QT_MAC_FRAMEWORK_BUILD" },
                 { "type": "publicQtConfig", "name": "qt_framework"},
-                { "type": "publicConfig", "name": "qt_framework"},
-                { "type": "publicConfig", "negative": true, "name": "qt_no_framework"}
+                { "type": "publicConfig", "name": "qt_framework"}
             ]
         },
         "largefile": {
