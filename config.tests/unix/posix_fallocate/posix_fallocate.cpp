@@ -32,6 +32,10 @@
 ****************************************************************************/
 
 #include <fcntl.h>
+// NetBSD 7 has posix_fallocate, but in unistd.h instead of fcntl.h
+#ifdef __NetBSD__
+# include <unistd.h>
+#endif
 
 int main(int, char **)
 {
