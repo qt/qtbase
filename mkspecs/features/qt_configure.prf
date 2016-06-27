@@ -380,38 +380,44 @@ defineTest(qtConfTest_compile) {
     test_cmd_base = "cd $$system_quote($$system_path($$test_out_dir)) &&"
 
     # Disable qmake features which are typically counterproductive for tests
-    qmake_configs = "\"CONFIG -= qt debug_and_release app_bundle lib_bundle\""
+    qmake_args = "\"CONFIG -= qt debug_and_release app_bundle lib_bundle\""
 
     # allow tests to behave differently depending on the type of library
     # being built (shared/static). e.g. see config.tests/unix/icu
     shared: \
-        qmake_configs += "\"CONFIG += shared\""
+        qmake_configs = "shared"
     else: \
-        qmake_configs += "\"CONFIG += static\""
+        qmake_configs = "static"
+
+    # add console to the CONFIG variable when running the tests, so that they
+    # can work with a regular main() entry point on Windows.
+    qmake_configs += "console"
+
+    qmake_args += "\"CONFIG += $$qmake_configs\""
 
     # On WinRT we need to change the entry point as we cannot create windows
     # applications
     winrt: \
-        qmake_configs += " \"QMAKE_LFLAGS += /ENTRY:main\""
+        qmake_args += " \"QMAKE_LFLAGS += /ENTRY:main\""
 
     !$$host {
         # add compiler flags, these are set for the target and should not be applied to host tests
         !isEmpty(EXTRA_DEFINES): \
-            qmake_configs += "\"DEFINES += $$EXTRA_DEFINES\""
+            qmake_args += "\"DEFINES += $$EXTRA_DEFINES\""
         !isEmpty(EXTRA_LIBS) \
-            qmake_configs += "\"LIBS += $$EXTRA_LIBS\""
+            qmake_args += "\"LIBS += $$EXTRA_LIBS\""
         !isEmpty(EXTRA_INCLUDEPATH): \
-            qmake_configs += "\"INCLUDEPATH += $$EXTRA_INCLUDEPATH\""
-        qmake_configs += $$EXTRA_QMAKE_ARGS
+            qmake_args += "\"INCLUDEPATH += $$EXTRA_INCLUDEPATH\""
+        qmake_args += $$EXTRA_QMAKE_ARGS
     }
 
     libs = $$eval($${1}.libs)
     !isEmpty(libs): \
-        qmake_configs += "\"LIBS += $$libs\""
+        qmake_args += "\"LIBS += $$libs\""
 
     includedir = $$eval($${1}.includedir)
     !isEmpty(includedir): \
-        qmake_configs += "\"INCLUDEPATH *= $$includedir\""
+        qmake_args += "\"INCLUDEPATH *= $$includedir\""
 
     # Clean up after previous run
     exists($$test_out_dir/Makefile): qtRunLoggedCommand("$$test_cmd_base $$QMAKE_MAKE distclean")
@@ -421,9 +427,9 @@ defineTest(qtConfTest_compile) {
     !isEmpty(QMAKE_QTCONF): qtconfarg = -qtconf $$QMAKE_QTCONF
 
     # add possible command line args
-    qmake_configs += $$qtConfPrepareArgs($$eval($${1}.args))
+    qmake_args += $$qtConfPrepareArgs($$eval($${1}.args))
 
-    qtRunLoggedCommand("$$test_cmd_base $$qtConfPkgConfigEnv()$$system_quote($$system_path($$QMAKE_QMAKE)) $$qtconfarg $$qmake_configs $$shell_quote($$test_dir)") {
+    qtRunLoggedCommand("$$test_cmd_base $$qtConfPkgConfigEnv()$$system_quote($$system_path($$QMAKE_QMAKE)) $$qtconfarg $$qmake_args $$shell_quote($$test_dir)") {
         qtRunLoggedCommand("$$test_cmd_base $$QMAKE_MAKE"): \
             return(true)
     }
