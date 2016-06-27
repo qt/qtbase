@@ -880,7 +880,7 @@ QT_WARNING_POP
     if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super mouseDragged:theEvent];
     if (!(m_buttons & (m_sendUpAsRightButton ? Qt::RightButton : Qt::LeftButton)))
-        qWarning("QNSView mouseDragged: Internal mouse button tracking invalid (missing Qt::LeftButton)");
+        qCDebug(lcQpaCocoaWindow, "QNSView mouseDragged: Internal mouse button tracking invalid (missing Qt::LeftButton)");
     [self handleMouseEvent:theEvent];
 }
 
@@ -1019,7 +1019,7 @@ QT_WARNING_POP
     if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super rightMouseDragged:theEvent];
     if (!(m_buttons & Qt::RightButton))
-        qWarning("QNSView rightMouseDragged: Internal mouse button tracking invalid (missing Qt::RightButton)");
+        qCDebug(lcQpaCocoaWindow, "QNSView rightMouseDragged: Internal mouse button tracking invalid (missing Qt::RightButton)");
     [self handleMouseEvent:theEvent];
 }
 
@@ -1045,7 +1045,7 @@ QT_WARNING_POP
     if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super otherMouseDragged:theEvent];
     if (!(m_buttons & ~(Qt::LeftButton | Qt::RightButton)))
-        qWarning("QNSView otherMouseDragged: Internal mouse button tracking invalid (missing Qt::MiddleButton or Qt::ExtraButton*)");
+        qCDebug(lcQpaCocoaWindow, "QNSView otherMouseDragged: Internal mouse button tracking invalid (missing Qt::MiddleButton or Qt::ExtraButton*)");
     [self handleMouseEvent:theEvent];
 }
 

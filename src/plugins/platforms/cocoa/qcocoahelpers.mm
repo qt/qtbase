@@ -48,6 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcQpaCocoaWindow, "qt.qpa.cocoa.window");
+
 //
 // Conversion Functions
 //
