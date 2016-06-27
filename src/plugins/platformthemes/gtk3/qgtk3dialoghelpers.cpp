@@ -420,6 +420,9 @@ void QGtk3FileDialogHelper::applyOptions()
     const bool confirmOverwrite = !opts->testOption(QFileDialogOptions::DontConfirmOverwrite);
     gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(gtkDialog), confirmOverwrite);
 
+    const bool readOnly = opts->testOption(QFileDialogOptions::ReadOnly);
+    gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(gtkDialog), !readOnly);
+
     const QStringList nameFilters = opts->nameFilters();
     if (!nameFilters.isEmpty())
         setNameFilters(nameFilters);
