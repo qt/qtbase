@@ -35,12 +35,6 @@ SOURCES += \
 
 RESOURCES += styles/qstyle.qrc
 
-contains( styles, all ) {
-    styles = fusion mac windows windowsxp windowsvista
-}
-
-!macx:styles -= mac
-
 contains( styles, mac ) {
     HEADERS += \
         styles/qmacstyle_mac_p.h \
@@ -55,10 +49,6 @@ contains( styles, windowsvista ) {
     HEADERS += styles/qwindowsvistastyle_p.h
     HEADERS += styles/qwindowsvistastyle_p_p.h
     SOURCES += styles/qwindowsvistastyle.cpp
-    !contains( styles, windowsxp ) {
-        message( windowsvista requires windowsxp )
-        styles += windowsxp
-    }
 } else {
     DEFINES += QT_NO_STYLE_WINDOWSVISTA
 }
@@ -67,10 +57,6 @@ contains( styles, windowsxp ) {
     HEADERS += styles/qwindowsxpstyle_p.h
     HEADERS += styles/qwindowsxpstyle_p_p.h
     SOURCES += styles/qwindowsxpstyle.cpp
-    !contains( styles, windows ) {
-        message( windowsxp requires windows )
-        styles  += windows
-    }
 } else {
     DEFINES += QT_NO_STYLE_WINDOWSXP
 }

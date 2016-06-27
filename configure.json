@@ -169,6 +169,12 @@
             "ssse3": "boolean",
             "static": { "type": "enum", "name": "shared", "values": { "yes": "no", "no": "yes" } },
             "strip": "boolean",
+            "style-windows": "boolean",
+            "style-windowsxp": "boolean",
+            "style-windowsvista": "boolean",
+            "style-fusion": "boolean",
+            "style-mac": "boolean",
+            "style-android": "boolean",
             "syslog": "boolean",
             "sysroot": "string",
             "system-proxies": "boolean",
@@ -1169,6 +1175,11 @@
             "type": "compile",
             "test": "win/directwrite2",
             "use": "directwrite"
+        },
+        "uxtheme": {
+            "description": "uxtheme.h",
+            "type": "files",
+            "files": [ "uxtheme.h" ]
         },
         "qpa_default_platform": {
             "description": "default QPA platform",
@@ -2287,36 +2298,37 @@
             "condition": "libs.tds",
             "output": [ "sqldriver" ]
         },
-        "fusion-style": {
+        "style-fusion": {
             "description": "Fusion Style",
             "output": [ "styles" ]
         },
-        "mac-style": {
+        "style-mac": {
             "description": "Mac Style",
+            "condition": "config.osx",
             "output": [ "styles" ]
         },
-        "windows-style": {
+        "style-windows": {
             "description": "Windows Style",
             "output": [ "styles" ]
         },
-        "windowsxp-style": {
+        "style-windowsxp": {
             "description": "Windows XP Style",
-            "condition": "config.win32",
+            "condition": "features.style-windows && config.win32 && !config.winrt && tests.uxtheme",
             "output": [ "styles" ]
         },
-        "windowsvista-style": {
+        "style-windowsvista": {
             "description": "Windows Vista Style",
-            "condition": "config.win32",
+            "condition": "features.style-windowsxp",
             "output": [ "styles" ]
         },
-        "android-style": {
+        "style-android": {
             "description": "Android Style",
-            "condition": "config.android",
+            "autoDetect": "config.android",
             "output": [ "styles" ]
         },
         "android-style-assets": {
             "description": "Android Style Assets",
-            "condition": "features.android-style",
+            "condition": "features.style-android",
             "output": [ "privateConfig" ]
         },
         "audio-backend": {
