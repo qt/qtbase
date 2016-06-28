@@ -44,8 +44,9 @@ QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
 
 QCocoaBackingStore::~QCocoaBackingStore()
 {
-    if (QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window()->handle()))
-        [cocoaWindow->m_qtView clearBackingStore:this];
+    if (QWindow *w = window())
+        if (QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(w->handle()))
+            [cocoaWindow->m_qtView clearBackingStore:this];
 }
 
 QPaintDevice *QCocoaBackingStore::paintDevice()

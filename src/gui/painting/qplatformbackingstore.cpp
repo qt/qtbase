@@ -93,7 +93,7 @@ public:
         delete blitter;
 #endif
     }
-    QWindow *window;
+    QPointer<QWindow> window;
 #ifndef QT_NO_OPENGL
     mutable GLuint textureId;
     mutable QSize textureSize;

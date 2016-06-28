@@ -153,7 +153,7 @@ struct QTLWExtra {
     QWidgetBackingStoreTracker backingStoreTracker;
     QBackingStore *backingStore;
     QPainter *sharedPainter;
-    QWindow *window;
+    QPointer<QWindow> window;
     QOpenGLContext *shareContext;
 
     // Implicit pointers (shared_null).
