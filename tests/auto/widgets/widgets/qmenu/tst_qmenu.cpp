@@ -595,10 +595,19 @@ void tst_QMenu::widgetActionFocus()
     QCOMPARE(m.activeAction(), (QAction *)wa);
 }
 
+static QMenu *getTornOffMenu()
+{
+    foreach (QWidget *w, QApplication::allWidgets()) {
+        if (w->isVisible() && w->inherits("QTornOffMenu"))
+            return static_cast<QMenu *>(w);
+    }
+    return Q_NULLPTR;
+}
+
 void tst_QMenu::tearOff()
 {
     QWidget widget;
-    QMenu *menu = new QMenu(&widget);
+    QScopedPointer<QMenu> menu(new QMenu(&widget));
     QVERIFY(!menu->isTearOffEnabled()); //default value
     menu->setTearOffEnabled(true);
     menu->addAction("aaa");
@@ -611,24 +620,43 @@ void tst_QMenu::tearOff()
     widget.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&widget));
     menu->popup(widget.geometry().topRight() + QPoint(50, 0));
-    QVERIFY(QTest::qWaitForWindowActive(menu));
+    QVERIFY(QTest::qWaitForWindowActive(menu.data()));
     QVERIFY(!menu->isTearOffMenuVisible());
 
-    QTest::mouseClick(menu, Qt::LeftButton, 0, QPoint(3, 3), 10);
+    QTest::mouseClick(menu.data(), Qt::LeftButton, 0, QPoint(3, 3), 10);
     QTRY_VERIFY(menu->isTearOffMenuVisible());
-    QPointer<QMenu> torn = 0;
-    foreach (QWidget *w, QApplication::allWidgets()) {
-        if (w->inherits("QTornOffMenu")) {
-            torn = static_cast<QMenu *>(w);
-            break;
-        }
-    }
+    QPointer<QMenu> torn = getTornOffMenu();
     QVERIFY(torn);
     QVERIFY(torn->isVisible());
 
     menu->hideTearOffMenu();
     QVERIFY(!menu->isTearOffMenuVisible());
     QVERIFY(!torn->isVisible());
+
+#ifndef QT_NO_CURSOR
+    // Test under-mouse positioning
+    menu->showTearOffMenu();
+    torn = getTornOffMenu();
+    QVERIFY(torn);
+    QVERIFY(torn->isVisible());
+    QVERIFY(menu->isTearOffMenuVisible());
+    // Some platforms include the window title bar in its geometry.
+    QTRY_COMPARE(torn->windowHandle()->position(), QCursor::pos());
+
+    menu->hideTearOffMenu();
+    QVERIFY(!menu->isTearOffMenuVisible());
+    QVERIFY(!torn->isVisible());
+
+    // Test custom positioning
+    const QPoint &pos = QCursor::pos() / 2 + QPoint(10, 10);
+    menu->showTearOffMenu(pos);
+    torn = getTornOffMenu();
+    QVERIFY(torn);
+    QVERIFY(torn->isVisible());
+    QVERIFY(menu->isTearOffMenuVisible());
+    // Some platforms include the window title bar in its geometry.
+    QTRY_COMPARE(torn->windowHandle()->position(), pos);
+#endif // QT_NO_CURSOR
 }
 
 void tst_QMenu::layoutDirection()

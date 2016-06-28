@@ -1939,7 +1939,7 @@ bool QMenu::isTearOffEnabled() const
   contents in a new window. When the menu is in this mode and the menu
   is visible returns \c true; otherwise false.
 
-  \sa hideTearOffMenu(), isTearOffEnabled()
+  \sa showTearOffMenu(), hideTearOffMenu(), isTearOffEnabled()
 */
 bool QMenu::isTearOffMenuVisible() const
 {
@@ -1949,15 +1949,54 @@ bool QMenu::isTearOffMenuVisible() const
 }
 
 /*!
-   This function will forcibly hide the torn off menu making it
-   disappear from the users desktop.
+   \since 5.7
 
-   \sa isTearOffMenuVisible(), isTearOffEnabled()
+   This function will forcibly show the torn off menu making it
+   appear on the user's desktop at the specified \e global position \a pos.
+
+   \sa hideTearOffMenu(), isTearOffMenuVisible(), isTearOffEnabled()
+*/
+void QMenu::showTearOffMenu(const QPoint &pos)
+{
+    Q_D(QMenu);
+    if (!d->tornPopup)
+        d->tornPopup = new QTornOffMenu(this);
+    const QSize &s = sizeHint();
+    d->tornPopup->setGeometry(pos.x(), pos.y(), s.width(), s.height());
+    d->tornPopup->show();
+}
+
+/*!
+   \overload
+   \since 5.7
+
+   This function will forcibly show the torn off menu making it
+   appear on the user's desktop under the mouse currsor.
+
+   \sa hideTearOffMenu(), isTearOffMenuVisible(), isTearOffEnabled()
+*/
+void QMenu::showTearOffMenu()
+{
+    showTearOffMenu(QCursor::pos());
+}
+
+/*!
+   This function will forcibly hide the torn off menu making it
+   disappear from the user's desktop.
+
+   \sa showTearOffMenu(), isTearOffMenuVisible(), isTearOffEnabled()
 */
 void QMenu::hideTearOffMenu()
 {
-    if (QWidget *w = d_func()->tornPopup)
-        w->close();
+    Q_D(QMenu);
+    if (d->tornPopup) {
+        d->tornPopup->close();
+        // QTornOffMenu sets WA_DeleteOnClose, so we
+        // should consider the torn-off menu deleted.
+        // This way showTearOffMenu() will not try to
+        // reuse the dying torn-off menu.
+        d->tornPopup = Q_NULLPTR;
+    }
 }
 
 
