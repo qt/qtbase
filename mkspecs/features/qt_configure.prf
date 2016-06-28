@@ -411,7 +411,7 @@ defineTest(qtConfTest_compile) {
     # add possible command line args
     qmake_configs += $$qtConfPrepareArgs($$eval($${1}.args))
 
-    qtRunLoggedCommand("$$test_cmd_base $$system_quote($$system_path($$QMAKE_QMAKE)) $$qtconfarg $$qmake_configs $$shell_quote($$test_dir)") {
+    qtRunLoggedCommand("$$test_cmd_base $$qtConfPkgConfigEnv()$$system_quote($$system_path($$QMAKE_QMAKE)) $$qtconfarg $$qmake_configs $$shell_quote($$test_dir)") {
         qtRunLoggedCommand("$$test_cmd_base $$QMAKE_MAKE"): \
             return(true)
     }
