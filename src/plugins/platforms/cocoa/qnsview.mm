@@ -72,6 +72,8 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 
 static bool _q_dontOverrideCtrlLMB = false;
 
+static NSMutableSet *_q_leftButtonLimbo = nil;
+
 @interface NSEvent (Qt_Compile_Leopard_DeviceDelta)
   - (CGFloat)deviceDeltaX;
   - (CGFloat)deviceDeltaY;
@@ -127,11 +129,16 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 @implementation QT_MANGLE_NAMESPACE(QNSView)
 
+@synthesize leftButtonRetained = m_leftButtonRetained;
+@synthesize inLimbo = m_isInLimbo;
+
 + (void)initialize
 {
     NSString **notificationNameVar = (NSString **)dlsym(RTLD_NEXT, "NSWindowDidChangeOcclusionStateNotification");
     if (notificationNameVar)
         _q_NSWindowDidChangeOcclusionStateNotification = *notificationNameVar;
+
+    _q_leftButtonLimbo = [[NSMutableSet alloc] init];
 
     _q_dontOverrideCtrlLMB = qt_mac_resolveOption(false, "QT_MAC_DONT_OVERRIDE_CTRL_LMB");
 }
@@ -170,6 +177,8 @@ static bool _q_dontOverrideCtrlLMB = false;
 
         m_isMenuView = false;
         self.focusRingType = NSFocusRingTypeNone;
+        m_leftButtonRetained = NO;
+        m_isInLimbo = NO;
     }
     return self;
 }
@@ -269,7 +278,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (void)viewDidMoveToSuperview
 {
-    if (!(m_platformWindow->m_contentViewIsToBeEmbedded))
+    if (!m_platformWindow || !m_platformWindow->m_contentViewIsToBeEmbedded)
         return;
 
     if ([self superview]) {
@@ -830,6 +839,9 @@ QT_WARNING_POP
         return [super mouseDown:theEvent];
     m_sendUpAsRightButton = false;
 
+    if (!m_leftButtonRetained)
+        m_leftButtonRetained = true;
+
     // Handle any active poup windows; clicking outisde them should close them
     // all. Don't do anything or clicks inside one of the menus, let Cocoa
     // handle that case. Note that in practice many windows of the Qt::Popup type
@@ -888,6 +900,10 @@ QT_WARNING_POP
 {
     if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super mouseUp:theEvent];
+
+    if (m_leftButtonRetained)
+        m_leftButtonRetained = false;
+
     if (m_sendUpAsRightButton) {
         m_buttons &= ~Qt::RightButton;
         m_sendUpAsRightButton = false;
@@ -2092,6 +2108,18 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     QPoint qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
 
     QWindowSystemInterface::handleMouseEvent(target, mapWindowCoordinates(m_window, target, qtWindowPoint), qtScreenPoint, m_buttons);
+}
+
+- (void)sendToLimbo
+{
+    m_isInLimbo = YES;
+    [_q_leftButtonLimbo addObject:self];
+    [self removeFromSuperviewWithoutNeedingDisplay];
+}
+
++ (void)clearLimbo
+{
+    [_q_leftButtonLimbo removeAllObjects];
 }
 
 @end

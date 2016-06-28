@@ -133,6 +133,10 @@ static bool isMouseEvent(NSEvent *ev)
     // (e.g., when closing the window by pressing the title bar close button).
     [self retain];
     [self.window superSendEvent:theEvent];
+
+    if (theEvent.type == NSLeftMouseUp)
+        [QNSView clearLimbo];
+
     bool windowStillAlive = self.window != nil; // We need to read before releasing
     [self release];
     if (!windowStillAlive)
@@ -457,6 +461,9 @@ QCocoaWindow::~QCocoaWindow()
         child->m_parentCocoaWindow = 0;
     }
 
+    if (m_qtView && m_qtView.leftButtonRetained) {
+        [m_qtView sendToLimbo]; // limbo retains
+    }
     [m_contentView release];
     [m_nsWindow release];
     [m_windowCursor release];

@@ -79,7 +79,12 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
     bool m_exposedOnMoveToWindow;
     NSEvent *m_currentlyInterpretedKeyEvent;
     bool m_isMenuView;
+    BOOL m_leftButtonRetained;
+    BOOL m_isInLimbo;
 }
+
+@property (nonatomic, readonly) BOOL leftButtonRetained;
+@property (nonatomic, readonly) BOOL inLimbo;
 
 - (id)init;
 - (id)initWithQWindow:(QWindow *)window platformWindow:(QCocoaWindow *) platformWindow;
@@ -110,6 +115,9 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 - (void)convertFromScreen:(NSPoint)mouseLocation toWindowPoint:(QPointF *)qtWindowPoint andScreenPoint:(QPointF *)qtScreenPoint;
 
 - (void)resetMouseButtons;
+
+- (void)sendToLimbo;
++ (void)clearLimbo;
 
 - (void)handleMouseEvent:(NSEvent *)theEvent;
 - (void)mouseDown:(NSEvent *)theEvent;
