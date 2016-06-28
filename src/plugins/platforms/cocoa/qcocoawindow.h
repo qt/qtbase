@@ -257,6 +257,10 @@ public:
 
     static QPoint bottomLeftClippedByNSWindowOffsetStatic(QWindow *window);
     QPoint bottomLeftClippedByNSWindowOffset() const;
+
+    void setHasBackingStore(bool hasBS);
+    bool hasBackingStore() const;
+
 protected:
     void recreateWindow(const QPlatformWindow *parentWindow);
     QCocoaNSWindow *createNSWindow();
@@ -346,6 +350,8 @@ public: // for QNSView
     // This object is tracked by QCocoaWindowPointer,
     // preventing the use of dangling pointers.
     QObject sentinel;
+
+    bool m_hasBackingStore;
 };
 
 QT_END_NAMESPACE

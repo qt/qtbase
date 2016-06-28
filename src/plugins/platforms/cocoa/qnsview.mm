@@ -526,9 +526,8 @@ QT_WARNING_POP
 - (void) flushBackingStore:(QCocoaBackingStore *)backingStore region:(const QRegion &)region offset:(QPoint)offset
 {
     m_backingStore = backingStore;
-    m_backingStoreOffset = offset * m_backingStore->getBackingStoreDevicePixelRatio();
-    foreach (QRect rect, region.rects())
-        [self setNeedsDisplayInRect:NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height())];
+    foreach (const QRect &rect, region.rects())
+        [self setNeedsDisplayInRect:NSMakeRect(rect.x() + offset.x(), rect.y() + offset.y(), rect.width(), rect.height())];
 }
 
 - (void)clearBackingStore:(QCocoaBackingStore *)backingStore
@@ -545,7 +544,14 @@ QT_WARNING_POP
 - (BOOL) isOpaque
 {
     if (!m_platformWindow)
-        return true;
+        return YES;
+    if (!m_platformWindow->hasBackingStore()) {
+        // Non backing store related QNSViews are never marked dirty
+        // since we only draw the ancestor related to that BS.
+        // Therefore, they should not hide their BS related ancestor
+        // or any other view behind it.
+        return NO;
+    }
     return m_platformWindow->isOpaque();
 }
 
@@ -628,15 +634,8 @@ QT_WARNING_POP
         CGContextClipToMask(cgContext, dirtyWindowRect, subMask);
     }
 
-    // Clip out and draw the correct sub image from the (shared) backingstore:
-    CGRect backingStoreRect = CGRectMake(
-        dirtyBackingRect.origin.x + m_backingStoreOffset.x(),
-        dirtyBackingRect.origin.y + m_backingStoreOffset.y(),
-        dirtyBackingRect.size.width,
-        dirtyBackingRect.size.height
-    );
     CGImageRef bsCGImage = qt_mac_toCGImage(m_backingStore->toImage());
-    CGImageRef cleanImg = CGImageCreateWithImageInRect(bsCGImage, backingStoreRect);
+    CGImageRef cleanImg = CGImageCreateWithImageInRect(bsCGImage, dirtyBackingRect);
 
     // Optimization: Copy frame buffer content instead of blending for
     // top-level windows where Qt fills the entire window content area.

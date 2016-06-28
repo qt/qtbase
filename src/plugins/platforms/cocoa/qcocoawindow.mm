@@ -1902,6 +1902,16 @@ QPoint QCocoaWindow::bottomLeftClippedByNSWindowOffset() const
     return QPoint(visibleRect.origin.x, -visibleRect.origin.y + (origin.y - visibleRect.size.height));
 }
 
+void QCocoaWindow::setHasBackingStore(bool hasBS)
+{
+    m_hasBackingStore = hasBS;
+}
+
+bool QCocoaWindow::hasBackingStore() const
+{
+    return m_hasBackingStore;
+}
+
 QMargins QCocoaWindow::frameMargins() const
 {
     NSRect frameW = [m_nsWindow frame];

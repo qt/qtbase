@@ -52,7 +52,6 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 
 @interface QT_MANGLE_NAMESPACE(QNSView) : NSView <NSTextInputClient> {
     QCocoaBackingStore* m_backingStore;
-    QPoint m_backingStoreOffset;
     CGImageRef m_maskImage;
     uchar *m_maskData;
     bool m_shouldInvalidateWindowShadow;

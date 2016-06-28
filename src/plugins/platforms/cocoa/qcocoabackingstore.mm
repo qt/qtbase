@@ -40,13 +40,17 @@ QT_BEGIN_NAMESPACE
 QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
 {
+    if (QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle()))
+        cocoaWindow->setHasBackingStore(true);
 }
 
 QCocoaBackingStore::~QCocoaBackingStore()
 {
     if (QWindow *w = window())
-        if (QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(w->handle()))
+        if (QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(w->handle())) {
+            cocoaWindow->setHasBackingStore(false);
             [cocoaWindow->m_qtView clearBackingStore:this];
+        }
 }
 
 QPaintDevice *QCocoaBackingStore::paintDevice()
@@ -71,8 +75,22 @@ QPaintDevice *QCocoaBackingStore::paintDevice()
 void QCocoaBackingStore::flush(QWindow *win, const QRegion &region, const QPoint &offset)
 {
     if (!m_qImage.isNull()) {
-        if (QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(win->handle()))
-            [cocoaWindow->m_qtView flushBackingStore:this region:region offset:offset];
+        QCocoaWindow *bsCocoaWindow = static_cast<QCocoaWindow *>(window()->handle());
+        if (bsCocoaWindow) {
+            // In case the window was not created when the constructor got called.
+            bsCocoaWindow->setHasBackingStore(true);
+        }
+        QNSView *bsQtView = bsCocoaWindow ? bsCocoaWindow->qtView() : Q_NULLPTR;
+        QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(win->handle());
+        QNSView *qtView = cocoaWindow ? cocoaWindow->qtView() : Q_NULLPTR;
+        if (bsQtView && qtView) {
+            QNSView *daQtView = bsQtView.window == qtView.window ? bsQtView : qtView;
+            if (daQtView != qtView) {
+                // Clear any disabled backing store related view.
+                cocoaWindow->setHasBackingStore(false);
+            }
+            [daQtView flushBackingStore:this region:region offset:offset];
+        }
     }
 }
 
