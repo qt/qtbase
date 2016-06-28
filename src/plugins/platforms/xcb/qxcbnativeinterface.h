@@ -68,7 +68,8 @@ public:
         ScreenSubpixelType,
         ScreenAntialiasingEnabled,
         NoFontHinting,
-        AtspiBus
+        AtspiBus,
+        CompositingEnabled
     };
 
     QXcbNativeInterface();

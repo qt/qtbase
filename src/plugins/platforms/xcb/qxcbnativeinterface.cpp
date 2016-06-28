@@ -79,7 +79,8 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("rootwindow"),
         QByteArrayLiteral("subpixeltype"), QByteArrayLiteral("antialiasingenabled"),
         QByteArrayLiteral("nofonthinting"),
-        QByteArrayLiteral("atspibus")
+        QByteArrayLiteral("atspibus"),
+        QByteArrayLiteral("compositingenabled")
     };
     const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
     const QByteArray *result = std::find(names, end, key);
@@ -251,6 +252,10 @@ void *QXcbNativeInterface::nativeResourceForScreen(const QByteArray &resourceStr
         break;
     case RootWindow:
         result = reinterpret_cast<void *>(xcbScreen->root());
+        break;
+    case CompositingEnabled:
+        if (QXcbVirtualDesktop *vd = xcbScreen->virtualDesktop())
+            result = vd->compositingActive() ? this : Q_NULLPTR;
         break;
     default:
         break;
