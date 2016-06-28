@@ -873,14 +873,8 @@ void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
 {
     if (isExposed()) {
         m_widget->setAttribute(Qt::WA_Mapped);
-        if (!event->region().isNull()) {
-            // Exposed native widgets need to be marked dirty to get them repainted correctly.
-            if (m_widget->internalWinId() && !m_widget->isWindow() && m_widget->isVisible() && m_widget->updatesEnabled()) {
-                if (QWidgetBackingStore *bs = m_widget->d_func()->maybeBackingStore())
-                    bs->markDirty(event->region(), m_widget);
-            }
+        if (!event->region().isNull())
             m_widget->d_func()->syncBackingStore(event->region());
-        }
     } else {
         m_widget->setAttribute(Qt::WA_Mapped, false);
     }
