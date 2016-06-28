@@ -3215,7 +3215,8 @@ void QGraphicsScene::update(const QRectF &rect)
                     view->d_func()->updateRectF(rect);
             }
         } else {
-            d->updatedRects << rect;
+            if (!d->updatedRects.contains(rect))
+                d->updatedRects << rect;
         }
     }
 
