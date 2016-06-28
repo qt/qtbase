@@ -1569,6 +1569,12 @@ void QWindowsWindow::releaseDC()
     }
 }
 
+static inline bool dwmIsCompositionEnabled()
+{
+    BOOL dWmCompositionEnabled = FALSE;
+    return SUCCEEDED(DwmIsCompositionEnabled(&dWmCompositionEnabled)) && dWmCompositionEnabled == TRUE;
+}
+
 bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
                                          WPARAM, LPARAM)
 {
@@ -1582,8 +1588,7 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
     BeginPaint(hwnd, &ps);
 
     // Observed painting problems with Aero style disabled (QTBUG-7865).
-    // 5.8: Consider making it dependent on !DwmIsCompositionEnabled().
-    if (testFlag(OpenGLSurface) && testFlag(OpenGLDoubleBuffered))
+    if (Q_UNLIKELY(testFlag(OpenGLSurface) && testFlag(OpenGLDoubleBuffered) && !dwmIsCompositionEnabled()))
         SelectClipRgn(ps.hdc, NULL);
 
     // If the a window is obscured by another window (such as a child window)
