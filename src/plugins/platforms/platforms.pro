@@ -2,7 +2,7 @@ TEMPLATE = subdirs
 
 android: SUBDIRS += android
 
-!android: SUBDIRS += minimal vnc
+!android: SUBDIRS += minimal
 
 !android:if(!win32|contains(QT_CONFIG, freetype)): SUBDIRS += offscreen
 
@@ -34,6 +34,8 @@ contains(QT_CONFIG, directfb) {
 }
 
 contains(QT_CONFIG, linuxfb): SUBDIRS += linuxfb
+
+unix:!android:!darwin: SUBDIRS += vnc
 
 freebsd {
     SUBDIRS += bsdfb
