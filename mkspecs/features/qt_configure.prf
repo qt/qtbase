@@ -286,8 +286,8 @@ defineReplace(qtConfFindInPath) {
 
 defineReplace(qtConfPkgConfigEnv) {
     env =
-    !isEmpty(PKG_CONFIG_SYSROOT_DIR): env += "$${SETENV_PFX}PKG_CONFIG_SYSROOT_DIR=$${PKG_CONFIG_SYSROOT_DIR}$${SETENV_SFX}"
-    !isEmpty(PKG_CONFIG_LIBDIR): env += "$${SETENV_PFX}PKG_CONFIG_LIBDIR=$${PKG_CONFIG_LIBDIR}$${SETENV_SFX}"
+    !isEmpty(PKG_CONFIG_SYSROOT_DIR): env = "$${SETENV_PFX}PKG_CONFIG_SYSROOT_DIR=$${PKG_CONFIG_SYSROOT_DIR}$${SETENV_SFX} "
+    !isEmpty(PKG_CONFIG_LIBDIR): env = "$$env$${SETENV_PFX}PKG_CONFIG_LIBDIR=$${PKG_CONFIG_LIBDIR}$${SETENV_SFX} "
     return($$env)
 }
 
@@ -300,7 +300,7 @@ defineReplace(qtConfPkgConfig) {
         isEmpty(pkg_config): \
             return(false)
     } else {
-        pkg_config = "$$qtConfPkgConfigEnv() $$PKG_CONFIG"
+        pkg_config = "$$qtConfPkgConfigEnv()$$PKG_CONFIG"
     }
 
     return($$pkg_config)
