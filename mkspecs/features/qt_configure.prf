@@ -285,16 +285,9 @@ defineReplace(qtConfFindInPath) {
 }
 
 defineReplace(qtConfPkgConfigEnv) {
-    equals(QMAKE_HOST.os, Windows) {
-        pfx = "set "
-        sfx = "&"
-    } else {
-        pfx =
-        sfx =
-    }
     env =
-    !isEmpty(PKG_CONFIG_SYSROOT_DIR): env += "$${pfx}PKG_CONFIG_SYSROOT_DIR=$${PKG_CONFIG_SYSROOT_DIR}$${sfx}"
-    !isEmpty(PKG_CONFIG_LIBDIR): env += "$${pfx}PKG_CONFIG_LIBDIR=$${PKG_CONFIG_LIBDIR}$${sfx}"
+    !isEmpty(PKG_CONFIG_SYSROOT_DIR): env += "$${SETENV_PFX}PKG_CONFIG_SYSROOT_DIR=$${PKG_CONFIG_SYSROOT_DIR}$${SETENV_SFX}"
+    !isEmpty(PKG_CONFIG_LIBDIR): env += "$${SETENV_PFX}PKG_CONFIG_LIBDIR=$${PKG_CONFIG_LIBDIR}$${SETENV_SFX}"
     return($$env)
 }
 
