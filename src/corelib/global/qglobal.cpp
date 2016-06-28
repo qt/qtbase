@@ -650,7 +650,8 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
     The remaining macros are convenience macros for larger operations:
     The QT_TR_NOOP(), QT_TRANSLATE_NOOP(), and QT_TRANSLATE_NOOP3()
     macros provide the possibility of marking strings for delayed
-    translation.
+    translation. QT_TR_N_NOOP(), QT_TRANSLATE_N_NOOP(), and
+    QT_TRANSLATE_N_NOOP3() are numerator dependent variants of these.
     The Q_ASSERT() and Q_ASSERT_X() enables warning messages of various
     level of refinement. The Q_FOREACH() and foreach() macros
     implement Qt's foreach loop.
@@ -3730,6 +3731,71 @@ bool qunsetenv(const char *varName)
     \snippet code/src_corelib_global_qglobal.cpp 36
 
     \sa QT_TR_NOOP(), QT_TRANSLATE_NOOP(), {Internationalization with Qt}
+*/
+
+/*!
+    \macro QT_TR_N_NOOP(sourceText)
+    \relates <QtGlobal>
+    \since 5.12
+
+    Marks the UTF-8 encoded string literal \a sourceText for numerator
+    dependent delayed translation in the current context (class).
+
+    The macro tells lupdate to collect the string, and expands to
+    \a sourceText itself.
+
+    The macro expands to \a sourceText.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp qttrnnoop
+
+    \sa QT_TR_NOOP, {Internationalization with Qt}
+*/
+
+/*!
+    \macro QT_TRANSLATE_N_NOOP(context, sourceText)
+    \relates <QtGlobal>
+    \since 5.12
+
+    Marks the UTF-8 encoded string literal \a sourceText for numerator
+    dependent delayed translation in the given \a context.
+    The \a context is typically a class name and also needs to be
+    specified as a string literal.
+
+    The macro tells lupdate to collect the string, and expands to
+    \a sourceText itself.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp qttranslatennoop
+
+    \sa QT_TRANSLATE_NOOP(), QT_TRANSLATE_N_NOOP3(),
+    {Internationalization with Qt}
+*/
+
+/*!
+    \macro QT_TRANSLATE_N_NOOP3(context, sourceText, comment)
+    \relates <QtGlobal>
+    \since 5.12
+
+    Marks the UTF-8 encoded string literal \a sourceText for numerator
+    dependent delayed translation in the given \a context with the given
+    \a disambiguation.
+    The \a context is typically a class and also needs to be specified
+    as a string literal. The string literal \a disambiguation should be
+    a short semantic tag to tell apart otherwise identical strings.
+
+    The macro tells lupdate to collect the string, and expands to an
+    anonymous struct of the two string literals passed as \a sourceText
+    and \a disambiguation.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp qttranslatennoop3
+
+    \sa QT_TR_NOOP(), QT_TRANSLATE_NOOP(), QT_TRANSLATE_NOOP3(),
+    {Internationalization with Qt}
 */
 
 /*!

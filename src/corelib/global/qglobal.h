@@ -1064,6 +1064,10 @@ template <typename Ptr> inline auto qGetPtrHelper(const Ptr &ptr) -> decltype(pt
 
 #ifndef QT_NO_TRANSLATION // ### Qt6: This should enclose the NOOPs above
 
+#define QT_TR_N_NOOP(x) x
+#define QT_TRANSLATE_N_NOOP(scope, x) x
+#define QT_TRANSLATE_N_NOOP3(scope, x, comment) {x, comment}
+
 // Defined in qcoreapplication.cpp
 // The better name qTrId() is reserved for an upcoming function which would
 // return a much more powerful QStringFormatter instead of a QString.
