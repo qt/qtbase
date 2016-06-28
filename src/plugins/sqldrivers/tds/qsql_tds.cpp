@@ -163,7 +163,7 @@ class QTDSResult : public QSqlCachedResult
 public:
     explicit QTDSResult(const QTDSDriver* db);
     ~QTDSResult();
-    QVariant handle() const;
+    QVariant handle() const Q_DECL_OVERRIDE;
 
 protected:
     void cleanup();
