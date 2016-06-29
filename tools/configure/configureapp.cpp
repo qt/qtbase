@@ -137,7 +137,6 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
         dictionary[ "QMAKESPEC_FROM" ] = "env";
     }
 
-    dictionary[ "EMBEDDED" ]        = "no";
     dictionary[ "BUILD_QMAKE" ]     = "yes";
     dictionary[ "QMAKE_INTERNAL" ]  = "no";
     dictionary[ "WIDGETS" ]         = "yes";
@@ -517,13 +516,6 @@ void Configure::parseCmdLine()
                 break;
             dictionary[ "QMAKESPEC" ] = configCmdLine.at(i);
         dictionary[ "QMAKESPEC_FROM" ] = "commandline";
-        } else if (configCmdLine.at(i) == "-arch") {
-            ++i;
-            if (i == argCount)
-                break;
-            dictionary["OBSOLETE_ARCH_ARG"] = "yes";
-        } else if (configCmdLine.at(i) == "-embedded") {
-            dictionary[ "EMBEDDED" ] = "yes";
         } else if (configCmdLine.at(i) == "-xplatform"
                 || configCmdLine.at(i) == "-device") {
             ++i;
@@ -3692,16 +3684,6 @@ void Configure::displayConfig()
             sout << "For example:" << endl;
             sout << "    configure -openssl-linked OPENSSL_LIBS=\"-lssleay32 -llibeay32\"" << endl;
         }
-    }
-    if (dictionary["OBSOLETE_ARCH_ARG"] == "yes") {
-        sout << endl
-             << "NOTE: The -arch option is obsolete." << endl
-             << endl
-             << "Qt now detects the target and host architectures based on compiler" << endl
-             << "output. Qt will be built using " << dictionary["QT_ARCH"] << " for the target architecture" << endl
-             << "and " << dictionary["QT_HOST_ARCH"] << " for the host architecture (note that these two" << endl
-             << "will be the same unless you are cross-compiling)." << endl
-             << endl;
     }
     if (dictionary["RELEASE_TOOLS"] == "yes" && dictionary["BUILD"] != "debug" ) {
         sout << endl
