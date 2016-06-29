@@ -14,10 +14,9 @@
 # Note: You cannot use operators (+, =, -) in the names.
 #
 # Examples: add a 'isHighlighted' attribute for two 'Analog Clock' examples,
-# add a 'database' tag for QtSql all examples, a 'webkit' tag for QtWebKit
-# examples, and a 'qt5' tag for all examples
+# add a 'database' tag for QtSql examples, and a 'qt5' tag for all examples
 #
-# manifestmeta.filters                = highlighted sql webkit global
+# manifestmeta.filters                = highlighted sql global
 #
 # manifestmeta.highlighted.names      = "QtGui/Analog Clock Window Example" \
 #                                       "QtWidgets/Analog Clock Example"
@@ -26,13 +25,10 @@
 # manifestmeta.sql.names              = "QtSql/*"
 # manifestmeta.sql.tags               = database
 #
-# manifestmeta.webkit.names           = "QtWebKitExamples/*"
-# manifestmeta.webkit.tags            = webkit
-#
 # manifestmeta.global.names           = *
 # manifestmeta.global.tags            = qt5
 
-manifestmeta.filters                =   highlighted webkit1 webkit2 android thumbnail ios
+manifestmeta.filters                =   highlighted android thumbnail ios
 
 manifestmeta.highlighted.names      =   "QtQuick/Qt Quick Demo - Same Game" \
                                         "QtQuick/Qt Quick Demo - Photo Surface" \

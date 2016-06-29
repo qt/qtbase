@@ -281,6 +281,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
 #endif
 #ifndef QT_NO_OPENGL
       , renderToTextureReallyDirty(1)
+      , renderToTextureComposeActive(0)
 #endif
 #if defined(Q_OS_WIN)
       , noPaintOnScreen(0)

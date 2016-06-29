@@ -86,6 +86,15 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
 
     \snippet qloggingcategory/main.cpp 1
 
+    \note Category names are free text. However, to allow easy configuration
+    of the categories using \l{Logging Rules} the names should follow some rules:
+    \list
+       \li Use letters and numbers only.
+       \li Further structure categories into common areas by using dots.
+       \li Avoid the category names \c{debug}, \c{info}, \c{warning}, and \c{critical}.
+       \li Category names starting with \c{qt} are reserved for Qt modules.
+    \endlist
+
     \section1 Checking Category Configuration
 
     QLoggingCategory provides \l isDebugEnabled(), \l isInfoEnabled(),

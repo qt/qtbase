@@ -1392,8 +1392,6 @@ void QDockWidget::changeEvent(QEvent *event)
                 if (QDockAreaLayoutInfo *info = winLayout->layoutState.dockAreaLayout.info(this))
                     info->updateTabBar();
             }
-            if (QDockWidgetGroupWindow *p = qobject_cast<QDockWidgetGroupWindow *>(parent()))
-                p->adjustFlags();
         }
 #endif // QT_NO_TABBAR
         break;
@@ -1483,9 +1481,6 @@ bool QDockWidget::event(QEvent *event)
         }
         if (!isFloating() && layout != 0 && onTop)
             layout->raise(this);
-        if (QDockWidgetGroupWindow *p = qobject_cast<QDockWidgetGroupWindow *>(parent()))
-            p->adjustFlags();
-
         break;
     }
     case QEvent::WindowActivate:
