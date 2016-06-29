@@ -122,37 +122,6 @@ void QVncClient::convertPixels(char *dst, const char *src, int count) const
                     return;
                 }
             }
-        } else if (screendepth == 16 && m_pixelFormat.bitsPerPixel == 32) {
-#if defined(__i386__) // Currently fails on ARM if dst is not 4 byte aligned
-            const quint32 *src32 = reinterpret_cast<const quint32*>(src);
-            quint32 *dst32 = reinterpret_cast<quint32*>(dst);
-            int count32 = count * sizeof(quint16) / sizeof(quint32);
-            while (count32--) {
-                const quint32 s = *src32++;
-                quint32 result1;
-                quint32 result2;
-
-                // red
-                result1 = ((s & 0xf8000000) | ((s & 0xe0000000) >> 5)) >> 8;
-                result2 = ((s & 0x0000f800) | ((s & 0x0000e000) >> 5)) << 8;
-
-                // green
-                result1 |= ((s & 0x07e00000) | ((s & 0x06000000) >> 6)) >> 11;
-                result2 |= ((s & 0x000007e0) | ((s & 0x00000600) >> 6)) << 5;
-
-                // blue
-                result1 |= ((s & 0x001f0000) | ((s & 0x001c0000) >> 5)) >> 13;
-                result2 |= ((s & 0x0000001f) | ((s & 0x0000001c) >> 5)) << 3;
-
-                *dst32++ = result2;
-                *dst32++ = result1;
-            }
-            if (count & 0x1) {
-                const quint16 *src16 = reinterpret_cast<const quint16*>(src);
-                *dst32 = qt_conv16ToRgb(src16[count - 1]);
-            }
-            return;
-#endif
         }
     }
 
