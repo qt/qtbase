@@ -59,8 +59,6 @@
 #define SQL_BIGUINT_TYPE quint64
 #endif
 
-#define UNICODE
-
 #include <sqlcli1.h>
 
 #include <string.h>
@@ -1187,8 +1185,8 @@ QDB2Driver::QDB2Driver(Qt::HANDLE env, Qt::HANDLE con, QObject* parent)
     : QSqlDriver(*new QDB2DriverPrivate, parent)
 {
     Q_D(QDB2Driver);
-    d->hEnv = reinterpret_cast<intptr_t>(env);
-    d->hDbc = reinterpret_cast<intptr_t>(con);
+    d->hEnv = reinterpret_cast<SQLHANDLE>(env);
+    d->hDbc = reinterpret_cast<SQLHANDLE>(con);
     if (env && con) {
         setOpen(true);
         setOpenError(false);
