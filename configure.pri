@@ -53,6 +53,37 @@ defineReplace(qtConfFunc_crossCompile) {
 
 # custom tests
 
+defineTest(qtConfTest_architecture) {
+    !qtConfTest_compile($${1}): \
+        error("Could not determine $$eval($${1}.description). See config.log for details.")
+
+    test = $$eval($${1}.test)
+    test_out_dir = $$shadowed($$QMAKE_CONFIG_TESTS_DIR/$$test)
+    exists($$test_out_dir/arch): \
+        content = $$cat($$test_out_dir/arch, blob)
+    else: exists($$test_out_dir/arch.exe): \
+        content = $$cat($$test_out_dir/arch.exe, blob)
+    else: exists($$test_out_dir/libarch.so): \
+        content = $$cat($$test_out_dir/libarch.so, blob)
+    else: \
+        error("$$eval($${1}.description) detection binary not found.")
+
+    arch_magic = ".*==Qt=magic=Qt== Architecture:([^\\0]*).*"
+    subarch_magic = ".*==Qt=magic=Qt== Sub-architecture:([^\\0]*).*"
+
+    !contains(content, $$arch_magic)|!contains(content, $$subarch_magic): \
+        error("$$eval($${1}.description) detection binary does not contain expected data.")
+
+    $${1}.arch = $$replace(content, $$arch_magic, "\\1")
+    $${1}.subarch = $$replace(content, $$subarch_magic, "\\1")
+    $${1}.subarch = $$split($${1}.subarch, " ")
+    export($${1}.arch)
+    export($${1}.subarch)
+    qtLog("Detected architecture: $$eval($${1}.arch) ($$eval($${1}.subarch))")
+
+    return(true)
+}
+
 defineTest(qtConfTest_avx_test_apple_clang) {
     !*g++*:!*-clang*: return(true)
 
@@ -151,7 +182,7 @@ defineTest(qtConfTest_detectPkgConfig) {
 }
 
 defineTest(qtConfTest_neon) {
-    contains(config.input.cpufeatures, "neon"): return(true)
+    contains(config.tests.architecture.subarch, "neon"): return(true)
     return(false)
 }
 
@@ -329,6 +360,43 @@ defineTest(qtConfOutput_shared) {
     export(CONFIG)
 }
 
+defineTest(qtConfOutput_architecture) {
+    arch = $$qtConfEvaluate("tests.architecture.arch")
+
+    $$qtConfEvaluate("features.cross_compile") {
+        host_arch = $$qtConfEvaluate("tests.host_architecture.arch")
+
+        privatePro = \
+            "host_build {" \
+            "    QT_CPU_FEATURES.$$host_arch = $$qtConfEvaluate('tests.host_architecture.subarch')" \
+            "} else {" \
+            "    QT_CPU_FEATURES.$$arch = $$qtConfEvaluate('tests.architecture.subarch')" \
+            "}"
+        publicPro = \
+            "host_build {" \
+            "    QT_ARCH = $$host_arch" \
+            "    QT_TARGET_ARCH = $$arch" \
+            "} else {" \
+            "    QT_ARCH = $$arch" \
+            "}"
+
+    } else {
+        privatePro = \
+            "QT_CPU_FEATURES.$$arch = $$qtConfEvaluate('tests.architecture.subarch')"
+        publicPro = \
+            "QT_ARCH = $$arch"
+    }
+
+    config.output.publicPro += $$publicPro
+    export(config.output.publicPro)
+    config.output.privatePro += $$privatePro
+    export(config.output.privatePro)
+
+    # setup QT_ARCH variable used by qtConfEvaluate
+    QT_ARCH = $$arch
+    export(QT_ARCH)
+}
+
 defineTest(qtConfOutput_verbose) {
     !$${2}: return()
 
@@ -454,16 +522,7 @@ defineTest(qtConfOutput_extraFeatures) {
 
 
 defineTest(qtConfOutputPostProcess_privatePro) {
-    output = \
-        "host_build {" \
-        "    QT_CPU_FEATURES.$$QT_HOST_ARCH = $$config.input.host_cpufeatures" \
-        "} else {" \
-        "    QT_CPU_FEATURES.$$QT_ARCH = $$config.input.cpufeatures" \
-        "}"
-
-    output += $$cat($$OUT_PWD/.qmake.vars, lines)
-
-    config.output.privatePro += $$output
+    config.output.privatePro += $$cat($$OUT_PWD/.qmake.vars, lines)
     export(config.output.privatePro)
 }
 
@@ -538,14 +597,7 @@ defineTest(qtConfOutputPostProcess_publicPro) {
         "QT_VERSION = $$qt_version" \
         "QT_MAJOR_VERSION = $$section(qt_version, '.', 0, 0)" \
         "QT_MINOR_VERSION = $$section(qt_version, '.', 1, 1)" \
-        "QT_PATCH_VERSION = $$section(qt_version, '.', 2, 2)" \
-        \
-        "host_build {" \
-        "    QT_ARCH = $$QT_HOST_ARCH" \
-        "    QT_TARGET_ARCH = $$QT_ARCH" \
-        "} else {" \
-        "    QT_ARCH = $$QT_ARCH" \
-        "}"
+        "QT_PATCH_VERSION = $$section(qt_version, '.', 2, 2)"
 
     #libinfix and namespace
     !isEmpty(config.input.qt_libinfix): output += "QT_LIBINFIX = $$config.input.qt_libinfix"
@@ -593,11 +645,11 @@ defineTest(qtConfReport_buildParts) {
 }
 
 defineTest(qtConfReport_buildTypeAndConfig) {
-    equals(QT_ARCH, $$QT_HOST_ARCH) {
-        qtConfAddReport("Build type: $$QT_ARCH")
+    !$$qtConfEvaluate("features.cross_compile") {
+        qtConfAddReport("Build type: $$qtConfEvaluate('tests.architecture.arch')")
     } else {
-        qtConfAddReport("Building on:  $$QT_HOST_ARCH")
-        qtConfAddReport("Building for: $$QT_ARCH")
+        qtConfAddReport("Building on:  $$qtConfEvaluate('tests.host_architecture.arch')")
+        qtConfAddReport("Building for: $$qtConfEvaluate('tests.architecture.arch')")
     }
     qtConfAddReport()
     qtConfAddReport("Configuration: $$config.output.privatePro.append.CONFIG $$config.output.publicPro.append.QT_CONFIG")

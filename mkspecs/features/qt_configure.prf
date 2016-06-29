@@ -360,12 +360,16 @@ defineTest(qtConfTest_getPkgConfigVariable) {
 
 defineTest(qtConfTest_compile) {
     test = $$eval($${1}.test)
+    host = $$eval($${1}.host)
+    isEmpty(host): host = false
 
     # get package config information
     qtConfTest_pkgConfig($${1})
 
     test_dir = $$QMAKE_CONFIG_TESTS_DIR/$$test
     test_out_dir = $$shadowed($$test_dir)
+    !isEmpty($${1}.pro): \
+        test_dir = $$test_dir/$$eval($${1}.pro)
     test_cmd_base = "cd $$system_quote($$system_path($$test_out_dir)) &&"
 
     # Disable qmake features which are typically counterproductive for tests
@@ -383,13 +387,16 @@ defineTest(qtConfTest_compile) {
     winrt: \
         qmake_configs += " \"QMAKE_LFLAGS += /ENTRY:main\""
 
-    # add compiler flags
-    !isEmpty(EXTRA_DEFINES): \
-        qmake_configs += "\"DEFINES += $$EXTRA_DEFINES\""
-    !isEmpty(EXTRA_LIBS) \
-        qmake_configs += "\"LIBS += $$EXTRA_LIBS\""
-    !isEmpty(EXTRA_INCLUDEPATH): \
-        qmake_configs += "\"INCLUDEPATH += $$EXTRA_INCLUDEPATH\""
+    !$$host {
+        # add compiler flags, these are set for the target and should not be applied to host tests
+        !isEmpty(EXTRA_DEFINES): \
+            qmake_configs += "\"DEFINES += $$EXTRA_DEFINES\""
+        !isEmpty(EXTRA_LIBS) \
+            qmake_configs += "\"LIBS += $$EXTRA_LIBS\""
+        !isEmpty(EXTRA_INCLUDEPATH): \
+            qmake_configs += "\"INCLUDEPATH += $$EXTRA_INCLUDEPATH\""
+        qmake_configs += $$EXTRA_QMAKE_ARGS
+    }
 
     libs = $$eval($${1}.libs)
     !isEmpty(libs): \
@@ -398,8 +405,6 @@ defineTest(qtConfTest_compile) {
     includedir = $$eval($${1}.includedir)
     !isEmpty(includedir): \
         qmake_configs += "\"INCLUDEPATH *= $$includedir\""
-
-    qmake_configs += $$EXTRA_QMAKE_ARGS
 
     # Clean up after previous run
     exists($$test_out_dir/Makefile): qtRunLoggedCommand("$$test_cmd_base $$QMAKE_MAKE distclean")

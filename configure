@@ -486,13 +486,6 @@ CFG_NOBUILD_PARTS=""
 CFG_SKIP_MODULES=""
 CFG_ANDROID_STYLE_ASSETS=yes
 
-# Target architecture
-CFG_ARCH=
-CFG_CPUFEATURES=
-# Host architecture, same as CFG_ARCH when not cross-compiling
-CFG_HOST_ARCH=
-CFG_HOST_CPUFEATURES=
-
 XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++"
 XPLATFORM_MAC=no        # Whether target platform is OS X, iOS or tvOS
 XPLATFORM_IOS=no        # Whether target platform is iOS
@@ -526,7 +519,6 @@ QT_INSTALL_SETTINGS=
 QT_INSTALL_EXAMPLES=
 QT_INSTALL_TESTS=
 CFG_SYSROOT=
-CFG_GCC_SYSROOT="yes"
 QT_HOST_PREFIX=
 QT_HOST_BINS=
 QT_HOST_LIBS=
@@ -721,9 +713,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     sysroot)
         CFG_SYSROOT="$VAL"
-        ;;
-    gcc-sysroot)
-        CFG_GCC_SYSROOT="$VAL"
         ;;
     external-hostbindir)
         CFG_HOST_QT_TOOLS_PATH="$VAL"
@@ -1396,13 +1385,6 @@ if [ "$XPLATFORM_ANDROID" != "yes" ]; then
     fi
 fi
 
-if [ -n "$CFG_SYSROOT" ] && [ "$CFG_GCC_SYSROOT" = "yes" ]; then
-    SYSROOT_FLAG="--sysroot=$CFG_SYSROOT"
-else
-    SYSROOT_FLAG=
-fi
-export SYSROOT_FLAG    # used by config.tests/unix/{compile.test,arch.test}
-
 #setup the build parts
 if [ -z "$CFG_BUILD_PARTS" ]; then
     CFG_BUILD_PARTS="$QT_DEFAULT_BUILD_PARTS"
@@ -1977,71 +1959,14 @@ if [ $? != "0" ]; then
 fi
 
 #-------------------------------------------------------------------------------
-# determine the target and host architectures
-#-------------------------------------------------------------------------------
-
-# Use config.tests/arch/arch.pro to have the compiler tell us what the target architecture is
-OUTFILE=$outpath/arch.result
-"$unixtests/arch.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "target" $CFG_QMAKE_PATH $QTCONFFILE $I_FLAGS $D_FLAGS $L_FLAGS
-if [ $? -eq 0 ]; then
-    eval `cat "$OUTFILE"`
-else
-    echo
-    echo "Could not determine the target architecture!"
-    echo "Turn on verbose messaging (-v) to see the final report."
-fi
-rm -f "$OUTFILE" 2>/dev/null
-[ -z "$CFG_ARCH" ] && CFG_ARCH="unknown"
-
-if [ "$QMAKESPEC" != "$XQMAKESPEC" ]; then
-    # Do the same test again, using the host compiler
-    SYSROOT_FLAG= "$unixtests/arch.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "host" $CFG_QMAKE_PATH $QTCONFFILE $I_FLAGS $D_FLAGS $L_FLAGS
-    if [ $? -eq 0 ]; then
-        eval `cat "$OUTFILE"`
-    else
-        echo
-        echo "Could not determine the host architecture!"
-        echo "Turn on verbose messaging (-v) to see the final report."
-    fi
-    rm -f "$OUTFILE" 2>/dev/null
-    [ -z "$CFG_HOST_ARCH" ] && CFG_HOST_ARCH="unknown"
-else
-    # not cross compiling, host == target
-    CFG_HOST_ARCH="$CFG_ARCH"
-    CFG_HOST_CPUFEATURES="$CFG_CPUFEATURES"
-fi
-unset OUTFILE
-
-if [ "$OPT_VERBOSE" = "yes" ]; then
-    echo "System architecture: '$CFG_ARCH'"
-    echo "Host architecture: '$CFG_HOST_ARCH'"
-fi
-
-#-------------------------------------------------------------------------------
 # run configure tests
 #-------------------------------------------------------------------------------
 
 # copy some variables that are still being computed in the shell script into an input file for configure
 # This should go away in the future
 
-QMAKE_TESTED_FEATURES="cpufeatures host_cpufeatures"
-echo "# Feature defaults set by configure command line" > $outpath/config.tests/configure.cfg
-for feature in $QMAKE_TESTED_FEATURES; do
-    if [ -n "$BASH_VERSION" ] && [ "${BASH_VERSION%%.*}" -gt 3 ]; then
-        upper=${feature^^*}
-    elif [ -n "$ZSH_VERSION" ]; then
-        upper=${(U)feature}
-    else
-        upper=`echo $feature | tr a-z A-Z`
-    fi
-    upper=`echo $upper | sed 's,-,_,g'`
-    eval "res=\$CFG_$upper"
-    if [ "$res" != "auto" ]; then
-        echo "config.input.$feature=$res" >> $relpath/config.tests/configure.cfg
-    fi
-done
-
-cat >> "$outpath/config.tests/configure.cfg" <<EOF
+cat > "$outpath/config.tests/configure.cfg" <<EOF
+# Feature defaults set by configure command line
 config.input.qt_build_parts = $CFG_BUILD_PARTS
 config.input.extra_features = $CFG_FEATURES
 config.input.skip_modules = $CFG_SKIP_MODULES
@@ -2071,7 +1996,7 @@ set +f
 IFS=$SAVED_IFS
 
 # redirect qmake's output to a dummy Makefile
-$CFG_QMAKE_PATH -o Makefile.cfg -qtconf "$QTCONFFILE" QT_ARCH=$CFG_ARCH QT_HOST_ARCH=$CFG_HOST_ARCH $relpath/configure.pri -- "$@" || exit 101
+$CFG_QMAKE_PATH -o Makefile.cfg -qtconf "$QTCONFFILE" $relpath/configure.pri -- "$@" || exit 101
 rm Makefile.cfg
 
 # Re-use old file if unchanged, to avoid needless rebuilds

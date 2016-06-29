@@ -200,6 +200,20 @@
     },
 
     "tests": {
+        "architecture": {
+            "description": "target architecture",
+            "type": "architecture",
+            "test": "arch",
+            "log": "arch"
+        },
+        "host_architecture": {
+            "description": "host architecture",
+            "type": "architecture",
+            "test": "arch",
+            "host": true,
+            "pro": "arch_host.pro",
+            "log": "arch"
+        },
         "GNUmake": {
             "description": "GNU make",
             "type": "gnumake"
@@ -933,7 +947,7 @@
             "description": "Verbose configure output",
             "autoDetect": false,
             "output": [ "verbose" ],
-            "priority": -3
+            "priority": -4
         },
 
         "shared": {
@@ -946,7 +960,7 @@
                 { "type": "publicQtConfig", "negative": true, "name": "static" },
                 { "type": "publicConfig", "negative": true, "name": "static" }
             ],
-            "priority": -2
+            "priority": -3
         },
         "cross_compile": {
             "description": "Cross compiling",
@@ -955,12 +969,23 @@
         },
         "compiler-flags": {
             "output": [ "compilerFlags" ],
-            "priority": -2
+            "priority": -3
         },
         "gcc-sysroot": {
             "output": [ "gccSysroot" ],
             "condition": "input.sysroot != ''",
+            "priority": -3
+        },
+        "use_gold_linker": {
+            "description": "Using gold linker",
+            "condition": "tests.use_gold_linker",
+            "output": [ "privateConfig", "useGoldLinker" ],
             "priority": -2
+        },
+        "architecture": {
+            "description": "Architecture",
+            "output": [ "architecture" ],
+            "priority": -1
         },
         "pkg-config": {
             "description": "Using pkg-config",
@@ -970,12 +995,6 @@
                 { "type": "publicQtConfig", "negative": true },
                 "pkgConfig"
             ],
-            "priority": -1
-        },
-        "use_gold_linker": {
-            "description": "Using gold linker",
-            "condition": "tests.use_gold_linker",
-            "output": [ "privateConfig", "useGoldLinker" ],
             "priority": -1
         },
 
