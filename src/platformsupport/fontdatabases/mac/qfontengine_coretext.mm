@@ -440,31 +440,25 @@ void QCoreTextFontEngine::draw(CGContextRef ctx, qreal x, qreal y, const QTextIt
 
     CGContextSetTextDrawingMode(ctx, kCGTextFill);
 
-
-    QVarLengthArray<CGSize> advances(glyphs.size());
+    QVarLengthArray<CGPoint> cgPositions(glyphs.size());
     QVarLengthArray<CGGlyph> cgGlyphs(glyphs.size());
-
-    for (int i = 0; i < glyphs.size() - 1; ++i) {
-        advances[i].width = (positions[i + 1].x - positions[i].x).toReal();
-        advances[i].height = (positions[i + 1].y - positions[i].y).toReal();
+    const qreal firstX = positions[0].x.toReal();
+    const qreal firstY = positions[0].y.toReal();
+    for (int i = 0; i < glyphs.size(); ++i) {
+        cgPositions[i].x = positions[i].x.toReal() - firstX;
+        cgPositions[i].y = positions[i].y.toReal() - firstY;
         cgGlyphs[i] = glyphs[i];
     }
-    advances[glyphs.size() - 1].width = 0;
-    advances[glyphs.size() - 1].height = 0;
-    cgGlyphs[glyphs.size() - 1] = glyphs[glyphs.size() - 1];
 
-    CGContextSetFont(ctx, cgFont);
     //NSLog(@"Font inDraw %@  ctfont %@", CGFontCopyFullName(cgFont), CTFontCopyFamilyName(ctfont));
 
     CGContextSetTextPosition(ctx, positions[0].x.toReal(), positions[0].y.toReal());
-
-    CGContextShowGlyphsWithAdvances(ctx, cgGlyphs.data(), advances.data(), glyphs.size());
+    CTFontDrawGlyphs(ctfont, cgGlyphs.data(), cgPositions.data(), glyphs.size(), ctx);
 
     if (synthesisFlags & QFontEngine::SynthesizedBold) {
         CGContextSetTextPosition(ctx, positions[0].x.toReal() + 0.5 * lineThickness().toReal(),
                                  positions[0].y.toReal());
-
-        CGContextShowGlyphsWithAdvances(ctx, cgGlyphs.data(), advances.data(), glyphs.size());
+        CTFontDrawGlyphs(ctfont, cgGlyphs.data(), cgPositions.data(), glyphs.size(), ctx);
     }
 
     CGContextSetTextMatrix(ctx, oldTextMatrix);
@@ -648,14 +642,13 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
         CGContextSetTextMatrix(ctx, cgMatrix);
         CGContextSetRGBFillColor(ctx, 1, 1, 1, 1);
         CGContextSetTextDrawingMode(ctx, kCGTextFill);
-        CGContextSetFont(ctx, cgFont);
         CGContextSetTextPosition(ctx, pos_x, pos_y);
 
-        CGContextShowGlyphsWithAdvances(ctx, &cgGlyph, &CGSizeZero, 1);
+        CTFontDrawGlyphs(ctfont, &cgGlyph, &CGPointZero, 1, ctx);
 
         if (synthesisFlags & QFontEngine::SynthesizedBold) {
             CGContextSetTextPosition(ctx, pos_x + 0.5 * lineThickness().toReal(), pos_y);
-            CGContextShowGlyphsWithAdvances(ctx, &cgGlyph, &CGSizeZero, 1);
+            CTFontDrawGlyphs(ctfont, &cgGlyph, &CGPointZero, 1, ctx);
         }
     } else {
         // CGContextSetTextMatrix does not work with color glyphs, so we use
