@@ -2009,7 +2009,7 @@ bool Configure::displayHelp()
         }
 
         desc("ANGLE", "yes",       "-angle",            "Use the ANGLE implementation of OpenGL ES 2.0.");
-        desc("ANGLE", "no",        "-no-angle",         "Do not use ANGLE.\nSee http://code.google.com/p/angleproject/\n");
+        desc("ANGLE", "no",        "-no-angle",         "Do not use ANGLE.\nSee https://chromium.googlesource.com/angle/angle/+/master/README.md\n");
         // Qt\Windows only options go below here --------------------------------------------------------------------------------
         desc("\nQt for Windows only:\n\n");
 
