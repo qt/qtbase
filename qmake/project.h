@@ -60,7 +60,7 @@ public:
     ProString expand(const QString &v, const QString &file, int line);
     QStringList expand(const ProKey &func, const QList<ProStringList> &args);
     bool test(const QString &v, const QString &file, int line)
-        { m_current.clear(); return evaluateConditional(v, file, line); }
+        { m_current.clear(); return evaluateConditional(v, file, line) == ReturnTrue; }
     bool test(const ProKey &func, const QList<ProStringList> &args);
 
     bool isSet(const ProKey &v) const { return m_valuemapStack.first().contains(v); }

@@ -2103,6 +2103,12 @@ void tst_qmakelib::addTestFunctions(const QString &qindir)
             << "Project ERROR: World, you FAIL!"
             << false;
 
+    QTest::newRow("if(error())")
+            << "if(error(\\'World, you FAIL!\\')): OK = 1\nOKE = 1"
+            << "OK = UNDEF\nOKE = UNDEF"
+            << "Project ERROR: World, you FAIL!"
+            << false;
+
     QTest::newRow("system()")
             << "system('"
 #ifdef Q_OS_WIN
