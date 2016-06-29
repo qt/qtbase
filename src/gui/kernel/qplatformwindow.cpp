@@ -572,6 +572,20 @@ void QPlatformWindow::invalidateSurface()
 {
 }
 
+static QSize fixInitialSize(QSize size, const QWindow *w,
+                            int defaultWidth, int defaultHeight)
+{
+    if (size.width() == 0) {
+        const int minWidth = w->minimumWidth();
+        size.setWidth(minWidth > 0 ? minWidth : defaultWidth);
+    }
+    if (size.height() == 0) {
+        const int minHeight = w->minimumHeight();
+        size.setHeight(minHeight > 0 ? minHeight : defaultHeight);
+    }
+    return size;
+}
+
 /*!
     Helper function to get initial geometry on windowing systems which do not
     do smart positioning and also do not provide a means of centering a
@@ -584,19 +598,18 @@ void QPlatformWindow::invalidateSurface()
 QRect QPlatformWindow::initialGeometry(const QWindow *w,
     const QRect &initialGeometry, int defaultWidth, int defaultHeight)
 {
+    if (!w->isTopLevel()) {
+        const qreal factor = QHighDpiScaling::factor(w);
+        const QSize size = fixInitialSize(QHighDpi::fromNative(initialGeometry.size(), factor),
+                                          w, defaultWidth, defaultHeight);
+        return QRect(initialGeometry.topLeft(), QHighDpi::toNative(size, factor));
+    }
     const QScreen *screen = effectiveScreen(w);
     if (!screen)
         return initialGeometry;
     QRect rect(QHighDpi::fromNativePixels(initialGeometry, w));
-    if (rect.width() == 0) {
-        const int minWidth = w->minimumWidth();
-        rect.setWidth(minWidth > 0 ? minWidth : defaultWidth);
-    }
-    if (rect.height() == 0) {
-        const int minHeight = w->minimumHeight();
-        rect.setHeight(minHeight > 0 ? minHeight : defaultHeight);
-    }
-    if (w->isTopLevel() && qt_window_private(const_cast<QWindow*>(w))->positionAutomatic
+    rect.setSize(fixInitialSize(rect.size(), w, defaultWidth, defaultHeight));
+    if (qt_window_private(const_cast<QWindow*>(w))->positionAutomatic
             && w->type() != Qt::Popup) {
         const QRect availableGeometry = screen->availableGeometry();
         // Center unless the geometry ( + unknown window frame) is too large for the screen).
