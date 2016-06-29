@@ -1023,9 +1023,7 @@ void QCocoaWindow::raise()
             }
             static bool raiseProcess = qt_mac_resolveOption(true, "QT_MAC_SET_RAISE_PROCESS");
             if (raiseProcess) {
-                ProcessSerialNumber psn;
-                GetCurrentProcess(&psn);
-                SetFrontProcessWithOptions(&psn, kSetFrontProcessFrontWindowOnly);
+                [NSApp activateIgnoringOtherApps:YES];
             }
         }
     }
