@@ -402,6 +402,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return true;
     case ItemViewActivateItemOnSingleClick:
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::ItemViewActivateItemOnSingleClick);
+    case UiEffects:
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::UiEffects);
     }
 
     return 0;

@@ -77,6 +77,7 @@ public:
         , m_keyboardInputInterval(-1)
         , m_cursorFlashTime(-1)
         , m_tabFocusBehavior(-1)
+        , m_uiEffects(-1)
         {}
 
     int m_mouseDoubleClickInterval;
@@ -86,6 +87,7 @@ public:
     int m_keyboardInputInterval;
     int m_cursorFlashTime;
     int m_tabFocusBehavior;
+    int m_uiEffects;
 };
 
 /*!
@@ -449,6 +451,36 @@ void QStyleHints::setTabFocusBehavior(Qt::TabFocusBehavior tabFocusBehavior)
 bool QStyleHints::singleClickActivation() const
 {
     return themeableHint(QPlatformTheme::ItemViewActivateItemOnSingleClick, QPlatformIntegration::ItemViewActivateItemOnSingleClick).toBool();
+}
+
+/*!
+    \property QStyleHints::useHoverEffects
+    \brief \c true if UI elements should use hover effects. This is the
+    standard behavior on desktop platforms with a mouse pointer, whereas
+    on touch platforms the overhead of hover event delivery can be avoided.
+
+    \since 5.8
+*/
+bool QStyleHints::useHoverEffects() const
+{
+    Q_D(const QStyleHints);
+    return (d->m_uiEffects >= 0 ?
+            d->m_uiEffects :
+            themeableHint(QPlatformTheme::UiEffects, QPlatformIntegration::UiEffects).toInt()) & QPlatformTheme::HoverEffect;
+}
+
+void QStyleHints::setUseHoverEffects(bool useHoverEffects)
+{
+    Q_D(QStyleHints);
+    if (d->m_uiEffects >= 0 && useHoverEffects == bool(d->m_uiEffects & QPlatformTheme::HoverEffect))
+        return;
+    if (d->m_uiEffects == -1)
+        d->m_uiEffects = 0;
+    if (useHoverEffects)
+        d->m_uiEffects |= QPlatformTheme::HoverEffect;
+    else
+        d->m_uiEffects &= ~QPlatformTheme::HoverEffect;
+    emit useHoverEffectsChanged(useHoverEffects);
 }
 
 QT_END_NAMESPACE

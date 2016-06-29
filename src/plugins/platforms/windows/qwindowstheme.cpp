@@ -347,7 +347,7 @@ static inline QStringList styleNames()
 
 static inline int uiEffects()
 {
-    int result = 0;
+    int result = QPlatformTheme::HoverEffect;
     if (booleanSystemParametersInfo(SPI_GETUIEFFECTS, false))
         result |= QPlatformTheme::GeneralUiEffect;
     if (booleanSystemParametersInfo(SPI_GETMENUANIMATION, false))

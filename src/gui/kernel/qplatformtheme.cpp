@@ -444,6 +444,8 @@ QVariant QPlatformTheme::themeHint(ThemeHint hint) const
         return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::MousePressAndHoldInterval);
     case QPlatformTheme::ItemViewActivateItemOnSingleClick:
         return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::ItemViewActivateItemOnSingleClick);
+    case QPlatformTheme::UiEffects:
+        return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::UiEffects);
     default:
         return QPlatformTheme::defaultThemeHint(hint);
     }

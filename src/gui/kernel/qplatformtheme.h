@@ -270,7 +270,8 @@ public:
         AnimateComboUiEffect = 0x8,
         AnimateTooltipUiEffect = 0x10,
         FadeTooltipUiEffect = 0x20,
-        AnimateToolBoxUiEffect = 0x40
+        AnimateToolBoxUiEffect = 0x40,
+        HoverEffect = 0x80
     };
 
     enum IconOption {

@@ -329,6 +329,8 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
     }
     case QPlatformTheme::PasswordMaskCharacter:
         return QVariant(QChar(kBulletUnicode));
+    case QPlatformTheme::UiEffects:
+        return QVariant(int(HoverEffect));
     default:
         break;
     }

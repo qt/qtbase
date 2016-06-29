@@ -666,6 +666,8 @@ QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(int(GnomeKeyboardScheme));
     case QPlatformTheme::PasswordMaskCharacter:
         return QVariant(QChar(0x2022));
+    case QPlatformTheme::UiEffects:
+        return QVariant(int(HoverEffect));
     default:
         break;
     }

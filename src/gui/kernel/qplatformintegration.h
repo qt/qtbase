@@ -156,7 +156,8 @@ public:
         MousePressAndHoldInterval,
         TabFocusBehavior,
         ReplayMousePressOutsidePopup,
-        ItemViewActivateItemOnSingleClick
+        ItemViewActivateItemOnSingleClick,
+        UiEffects
     };
 
     virtual QVariant styleHint(StyleHint hint) const;
