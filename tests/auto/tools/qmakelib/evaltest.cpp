@@ -641,6 +641,72 @@ void tst_qmakelib::addControlStructs()
             << "VAR = final"
             << ""
             << true;
+
+    QTest::newRow("error() from replace function (assignment)")
+            << "defineReplace(func) {\nerror(error)\n}\n"
+               "VAR = $$func()\n"
+               "OKE = 1"
+            << "VAR = UNDEF\nOKE = UNDEF"
+            << "Project ERROR: error"
+            << false;
+
+    QTest::newRow("error() from replace function (replacement)")
+            << "defineReplace(func) {\nerror(error)\n}\n"
+               "VAR = $$func()\n"
+               "OKE = 1"
+            << "VAR = UNDEF\nOKE = UNDEF"
+            << "Project ERROR: error"
+            << false;
+
+    QTest::newRow("error() from replace function (LHS)")
+            << "defineReplace(func) {\nerror(error)\nreturn(VAR)\n}\n"
+               "$$func() = 1\n"
+               "OKE = 1"
+            << "VAR = UNDEF\nOKE = UNDEF"
+            << "Project ERROR: error"
+            << false;
+
+    QTest::newRow("error() from replace function (loop variable)")
+            << "defineReplace(func) {\nerror(error)\nreturn(BLAH)\n}\n"
+               "for($$func()) {\nVAR = $$BLAH\nbreak()\n}\n"
+               "OKE = 1"
+            << "VAR = UNDEF\nOKE = UNDEF"
+            << "Project ERROR: error"
+            << false;
+
+    QTest::newRow("error() from replace function (built-in test arguments)")
+            << "defineReplace(func) {\nerror(error)\n}\n"
+               "message($$func()): VAR = 1\n"
+               "OKE = 1"
+            << "VAR = UNDEF\nOKE = UNDEF"
+            << "Project ERROR: error"
+            << false;
+
+    QTest::newRow("error() from replace function (built-in replace arguments)")
+            << "defineReplace(func) {\nerror(error)\n}\n"
+               "VAR = $$upper($$func())\n"
+               "OKE = 1"
+            << "VAR = UNDEF\nOKE = UNDEF"
+            << "Project ERROR: error"
+            << false;
+
+    QTest::newRow("error() from replace function (custom test arguments)")
+            << "defineReplace(func) {\nerror(error)\n}\n"
+               "defineTest(custom) {\n}\n"
+               "custom($$func()): VAR = 1\n"
+               "OKE = 1"
+            << "VAR = UNDEF\nOKE = UNDEF"
+            << "Project ERROR: error"
+            << false;
+
+    QTest::newRow("error() from replace function (custom replace arguments)")
+            << "defineReplace(func) {\nerror(error)\nreturn(1)\n}\n"
+               "defineReplace(custom) {\nreturn($$1)\n}\n"
+               "VAR = $$custom($$func(1))\n"
+               "OKE = 1"
+            << "VAR = UNDEF\nOKE = UNDEF"
+            << "Project ERROR: error"
+            << false;
 }
 
 void tst_qmakelib::addReplaceFunctions(const QString &qindir)

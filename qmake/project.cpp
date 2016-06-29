@@ -110,9 +110,8 @@ QStringList QMakeProject::expand(const ProKey &func, const QList<ProStringList> 
     QHash<ProKey, ProFunctionDef>::ConstIterator it =
             m_functionDefs.replaceFunctions.constFind(func);
     if (it != m_functionDefs.replaceFunctions.constEnd()) {
-        QMakeProject::VisitReturn vr;
-        ProStringList ret = evaluateFunction(*it, args, &vr);
-        if (vr == QMakeProject::ReturnError)
+        ProStringList ret;
+        if (evaluateFunction(*it, args, &ret) == QMakeProject::ReturnError)
             exit(3);
         return ret.toQStringList();
     }
@@ -130,7 +129,9 @@ ProString QMakeProject::expand(const QString &expr, const QString &where, int li
         m_current.pro = pro;
         m_current.line = 0;
         const ushort *tokPtr = pro->tokPtr();
-        ProStringList result = expandVariableReferences(tokPtr, 1, true);
+        ProStringList result;
+        if (expandVariableReferences(tokPtr, 1, &result, true) == ReturnError)
+            exit(3);
         if (!result.isEmpty())
             ret = result.at(0);
     }
