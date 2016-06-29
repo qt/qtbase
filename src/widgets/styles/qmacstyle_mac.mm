@@ -1907,7 +1907,7 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
         }
         case QCocoaPushButton: {
             NSButton *bc = (NSButton *)bv;
-            bc.buttonType = NSMomentaryPushButton;
+            bc.buttonType = NSMomentaryLightButton;
             bc.bezelStyle = NSRoundedBezelStyle;
             break;
         }
