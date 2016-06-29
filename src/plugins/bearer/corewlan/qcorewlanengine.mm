@@ -502,27 +502,27 @@ void QCoreWlanEngine::connectToId(const QString &id)
 
         if(!err) {
             for (CWNetwork *apNetwork in scanSet) {
-                CFDataRef ssidData = (CFDataRef)[apNetwork ssidData];
+                NSData *ssidData = [apNetwork ssidData];
                 bool result = false;
 
                 SecIdentityRef identity = 0;
                 // Check first whether we require IEEE 802.1X authentication for the wanted SSID
-                if (CWKeychainCopyEAPIdentity(ssidData, &identity) == errSecSuccess) {
-                    CFStringRef username = 0;
-                    CFStringRef password = 0;
-                    if (CWKeychainCopyEAPUsernameAndPassword(ssidData, &username, &password) == errSecSuccess) {
+                if (CWKeychainCopyWiFiEAPIdentity(kCWKeychainDomainSystem, ssidData, &identity) == errSecSuccess) {
+                    NSString *username = nil;
+                    NSString *password = nil;
+                    if (CWKeychainFindWiFiEAPUsernameAndPassword(kCWKeychainDomainSystem, ssidData, &username, &password) == errSecSuccess) {
                         result = [wifiInterface associateToEnterpriseNetwork:apNetwork
                                     identity:identity username:(NSString *)username password:(NSString *)password
                                     error:&err];
-                        CFRelease(username);
-                        CFRelease(password);
+                        [username release];
+                        [password release];
                     }
                     CFRelease(identity);
                 } else {
-                    CFStringRef password = 0;
-                    if (CWKeychainCopyPassword(ssidData, &password) == errSecSuccess) {
+                    NSString *password = nil;
+                    if (CWKeychainFindWiFiPassword(kCWKeychainDomainSystem, ssidData, &password) == errSecSuccess) {
                         result = [wifiInterface associateToNetwork:apNetwork password:(NSString *)password error:&err];
-                        CFRelease(password);
+                        [password release];
                     }
                 }
 
