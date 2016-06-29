@@ -95,6 +95,51 @@ private:
     std::function<HRESULT()> delegate;
 };
 
+class QWorkHandler : public IWorkItemHandler
+{
+public:
+    QWorkHandler(const std::function<HRESULT()> &delegate)
+        : m_delegate(delegate)
+    {
+    }
+
+    STDMETHODIMP Invoke(ABI::Windows::Foundation::IAsyncAction *operation)
+    {
+        HRESULT res = m_delegate();
+        Q_UNUSED(operation);
+        return res;
+    }
+
+    STDMETHODIMP QueryInterface(REFIID riid, void FAR* FAR* ppvObj)
+    {
+        if (riid == IID_IUnknown || riid == IID_IWorkItemHandler) {
+            *ppvObj = this;
+            AddRef();
+            return NOERROR;
+        }
+        *ppvObj = NULL;
+        return ResultFromScode(E_NOINTERFACE);
+    }
+
+    STDMETHODIMP_(ULONG) AddRef(void)
+    {
+        return ++m_refs;
+    }
+
+    STDMETHODIMP_(ULONG) Release(void)
+    {
+        if (--m_refs == 0) {
+            delete this;
+            return 0;
+        }
+        return m_refs;
+    }
+
+private:
+    std::function<HRESULT()> m_delegate;
+    ULONG m_refs{0};
+};
+
 class QEventDispatcherWinRTPrivate : public QAbstractEventDispatcherPrivate
 {
     Q_DECLARE_PUBLIC(QEventDispatcherWinRT)
@@ -175,48 +220,62 @@ QEventDispatcherWinRT::~QEventDispatcherWinRT()
 HRESULT QEventDispatcherWinRT::runOnXamlThread(const std::function<HRESULT ()> &delegate, bool waitForRun)
 {
     static __declspec(thread) ICoreDispatcher *dispatcher = nullptr;
+    HRESULT hr;
     if (!dispatcher) {
-        HRESULT hr;
         ComPtr<ICoreImmersiveApplication> application;
         hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_ApplicationModel_Core_CoreApplication).Get(),
                                     IID_PPV_ARGS(&application));
         ComPtr<ICoreApplicationView> view;
         hr = application->get_MainView(&view);
-        Q_ASSERT_SUCCEEDED(hr);
-        ComPtr<ICoreWindow> window;
-        hr = view->get_CoreWindow(&window);
-        Q_ASSERT_SUCCEEDED(hr);
-        if (!window) {
-            // In case the application is launched via activation
-            // there might not be a main view (eg ShareTarget).
-            // Hence iterate through the available views and try to find
-            // a dispatcher in there
-            ComPtr<IVectorView<CoreApplicationView*>> appViews;
-            hr = application->get_Views(&appViews);
+        if (SUCCEEDED(hr) && view) {
+            ComPtr<ICoreWindow> window;
+            hr = view->get_CoreWindow(&window);
             Q_ASSERT_SUCCEEDED(hr);
-            quint32 count;
-            hr = appViews->get_Size(&count);
-            Q_ASSERT_SUCCEEDED(hr);
-            for (quint32 i = 0; i < count; ++i) {
-                hr = appViews->GetAt(i, &view);
+            if (!window) {
+                // In case the application is launched via activation
+                // there might not be a main view (eg ShareTarget).
+                // Hence iterate through the available views and try to find
+                // a dispatcher in there
+                ComPtr<IVectorView<CoreApplicationView*>> appViews;
+                hr = application->get_Views(&appViews);
                 Q_ASSERT_SUCCEEDED(hr);
-                hr = view->get_CoreWindow(&window);
+                quint32 count;
+                hr = appViews->get_Size(&count);
                 Q_ASSERT_SUCCEEDED(hr);
-                if (window) {
-                    hr = window->get_Dispatcher(&dispatcher);
+                for (quint32 i = 0; i < count; ++i) {
+                    hr = appViews->GetAt(i, &view);
                     Q_ASSERT_SUCCEEDED(hr);
-                    if (dispatcher)
-                        break;
+                    hr = view->get_CoreWindow(&window);
+                    Q_ASSERT_SUCCEEDED(hr);
+                    if (window) {
+                        hr = window->get_Dispatcher(&dispatcher);
+                        Q_ASSERT_SUCCEEDED(hr);
+                        if (dispatcher)
+                            break;
+                    }
                 }
+            } else {
+                hr = window->get_Dispatcher(&dispatcher);
+                Q_ASSERT_SUCCEEDED(hr);
             }
-            Q_ASSERT(dispatcher);
-        } else {
-            hr = window->get_Dispatcher(&dispatcher);
-            Q_ASSERT_SUCCEEDED(hr);
         }
     }
 
-    HRESULT hr;
+    if (Q_UNLIKELY(!dispatcher)) {
+        // In case the application is launched in a way that has no UI and
+        // also does not allow to create one, e.g. as a background task.
+        // Features like network operations do still work, others might cause
+        // errors in that case.
+        ComPtr<IThreadPoolStatics> tpStatics;
+        hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_System_Threading_ThreadPool).Get(),
+                                    IID_PPV_ARGS(&tpStatics));
+        ComPtr<IAsyncAction> op;
+        hr = tpStatics.Get()->RunAsync(new QWorkHandler(delegate), &op);
+        if (FAILED(hr) || !waitForRun)
+            return hr;
+        return QWinRTFunctions::await(op);
+    }
+
     boolean onXamlThread;
     hr = dispatcher->get_HasThreadAccess(&onXamlThread);
     Q_ASSERT_SUCCEEDED(hr);
