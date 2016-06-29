@@ -173,6 +173,13 @@ defineTest(qtConfParseCommandLine) {
         c = $$qtConfGetNextCommandlineArg()
         isEmpty(c): break()
 
+        # handle options to turn on verbose logging
+        contains(c, "^-v")|contains(c, "^--?verbose") {
+            QMAKE_CONFIG_VERBOSE = true
+            export(QMAKE_CONFIG_VERBOSE)
+            next()
+        }
+
         # parse out opt and val
         contains(c, "^--?enable-(.*)") {
             opt = $$replace(c, "^--?enable-(.*)", "\\1")

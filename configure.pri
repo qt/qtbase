@@ -397,16 +397,6 @@ defineTest(qtConfOutput_architecture) {
     export(QT_ARCH)
 }
 
-defineTest(qtConfOutput_verbose) {
-    !$${2}: return()
-
-    qtConfOutputVar(assign, "privatePro", "QMAKE_CONFIG_VERBOSE", true)
-
-    # export this here, so we can get verbose logging
-    QMAKE_CONFIG_VERBOSE = true
-    export(QMAKE_CONFIG_VERBOSE)
-}
-
 defineTest(qtConfOutput_styles) {
     !$${2}: return()
 

@@ -169,8 +169,6 @@
             "testcocoon": "boolean",
             "tslib": "boolean",
             "use-gold-linker": { "type": "boolean", "name": "use_gold_linker" },
-            "v": { "type": "void", "name": "verbose" },
-            "verbose": "void",
             "warnings-are-errors": { "type": "boolean", "name": "warnings_are_errors" },
             "Werror": { "type": "boolean", "name": "warnings_are_errors" },
             "widgets": "boolean",
@@ -943,13 +941,6 @@
     },
 
     "features": {
-        "verbose": {
-            "description": "Verbose configure output",
-            "autoDetect": false,
-            "output": [ "verbose" ],
-            "priority": -4
-        },
-
         "shared": {
             "description": "Building shared libraries",
             "condition": "!config.ios && !config.integrity",
