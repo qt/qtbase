@@ -1355,7 +1355,6 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
 {
     QConfFile *confFile = confFiles[confFileNo].data();
     bool readOnly = confFile->addedKeys.isEmpty() && confFile->removedKeys.isEmpty();
-    bool ok;
 
     /*
         We can often optimize the read-only case, if the file on disk
@@ -1415,31 +1414,26 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
             because they don't exist) are treated as empty files.
         */
         if (file.isReadable() && fileInfo.size() != 0) {
+            bool ok = false;
 #ifdef Q_OS_MAC
             if (format == QSettings::NativeFormat) {
-                ok = readPlistFile(confFile->name, &confFile->originalKeys);
+                QByteArray data = file.readAll();
+                ok = readPlistFile(data, &confFile->originalKeys);
             } else
 #endif
-            {
-                if (format <= QSettings::IniFormat) {
-                    QByteArray data = file.readAll();
-                    ok = readIniFile(data, &confFile->unparsedIniSections);
-                } else {
-                    if (readFunc) {
-                        QSettings::SettingsMap tempNewKeys;
-                        ok = readFunc(file, tempNewKeys);
+            if (format <= QSettings::IniFormat) {
+                QByteArray data = file.readAll();
+                ok = readIniFile(data, &confFile->unparsedIniSections);
+            } else if (readFunc) {
+                QSettings::SettingsMap tempNewKeys;
+                ok = readFunc(file, tempNewKeys);
 
-                        if (ok) {
-                            QSettings::SettingsMap::const_iterator i = tempNewKeys.constBegin();
-                            while (i != tempNewKeys.constEnd()) {
-                                confFile->originalKeys.insert(QSettingsKey(i.key(),
-                                                                           caseSensitivity),
-                                                              i.value());
-                                ++i;
-                            }
-                        }
-                    } else {
-                        ok = false;
+                if (ok) {
+                    QSettings::SettingsMap::const_iterator i = tempNewKeys.constBegin();
+                    while (i != tempNewKeys.constEnd()) {
+                        confFile->originalKeys.insert(QSettingsKey(i.key(), caseSensitivity),
+                                                      i.value());
+                        ++i;
                     }
                 }
             }
@@ -1457,44 +1451,42 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
         so everything is under control.
     */
     if (!readOnly) {
+        bool ok = false;
         ensureAllSectionsParsed(confFile);
         ParsedSettingsMap mergedKeys = confFile->mergedKeyMap();
 
+#ifndef QT_BOOTSTRAPPED
+        QSaveFile sf(confFile->name);
+#else
+        QFile sf(confFile->name);
+#endif
+        if (!sf.open(QIODevice::WriteOnly)) {
+            setStatus(QSettings::AccessError);
+            return;
+        }
+
 #ifdef Q_OS_MAC
         if (format == QSettings::NativeFormat) {
-            ok = writePlistFile(confFile->name, mergedKeys);
+            ok = writePlistFile(sf, mergedKeys);
         } else
 #endif
-        {
-#ifndef QT_BOOTSTRAPPED
-            QSaveFile sf(confFile->name);
-#else
-            QFile sf(confFile->name);
-#endif
-            if (!sf.open(QIODevice::WriteOnly)) {
-                setStatus(QSettings::AccessError);
-                ok = false;
-            } else if (format <= QSettings::IniFormat) {
-                ok = writeIniFile(sf, mergedKeys);
-            } else {
-                if (writeFunc) {
-                    QSettings::SettingsMap tempOriginalKeys;
+        if (format <= QSettings::IniFormat) {
+            ok = writeIniFile(sf, mergedKeys);
+        } else if (writeFunc) {
+            QSettings::SettingsMap tempOriginalKeys;
 
-                    ParsedSettingsMap::const_iterator i = mergedKeys.constBegin();
-                    while (i != mergedKeys.constEnd()) {
-                        tempOriginalKeys.insert(i.key(), i.value());
-                        ++i;
-                    }
-                    ok = writeFunc(sf, tempOriginalKeys);
-                } else {
-                    ok = false;
-                }
+            ParsedSettingsMap::const_iterator i = mergedKeys.constBegin();
+            while (i != mergedKeys.constEnd()) {
+                tempOriginalKeys.insert(i.key(), i.value());
+                ++i;
             }
-#ifndef QT_BOOTSTRAPPED
-            if (ok)
-                ok = sf.commit();
-#endif
+            ok = writeFunc(sf, tempOriginalKeys);
         }
+
+#ifndef QT_BOOTSTRAPPED
+        if (ok)
+            ok = sf.commit();
+#endif
 
         if (ok) {
             confFile->unparsedIniSections.clear();

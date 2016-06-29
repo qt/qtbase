@@ -1746,11 +1746,13 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             EXTRA_OBJS="$EXTRA_OBJS \
                         qsettings_mac.o \
                         qcore_mac.o \
-                        qcore_mac_objc.o"
+                        qcore_mac_objc.o \
+                        qcore_foundation.o"
             EXTRA_SRCS="$EXTRA_SRCS \
                         \"\$(SOURCE_PATH)/src/corelib/io/qsettings_mac.cpp\" \
                         \"\$(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp\" \
-                        \"\$(SOURCE_PATH)/src/corelib/kernel/qcore_mac_objc.mm\""
+                        \"\$(SOURCE_PATH)/src/corelib/kernel/qcore_mac_objc.mm\" \
+                        \"\$(SOURCE_PATH)/src/corelib/kernel/qcore_foundation.mm\""
         fi
 
         echo >>"$mkfile"
