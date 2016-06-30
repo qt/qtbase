@@ -2401,6 +2401,13 @@ void QSslSocketPrivate::_q_disconnectedSlot()
 #endif
     disconnected();
     emit q->disconnected();
+
+    q->setLocalPort(0);
+    q->setLocalAddress(QHostAddress());
+    q->setPeerPort(0);
+    q->setPeerAddress(QHostAddress());
+    q->setPeerName(QString());
+    cachedSocketDescriptor = -1;
 }
 
 /*!
