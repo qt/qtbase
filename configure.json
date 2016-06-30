@@ -44,7 +44,7 @@
             "audio-backend": "boolean",
             "avx": "boolean",
             "avx2": "boolean",
-            "avx512": "boolean",
+            "avx512": { "type": "boolean", "name": "avx512f" },
             "c++std": "cxxstd",
             "commercial": "void",
             "compile-examples": { "type": "boolean", "name": "compile_examples" },
