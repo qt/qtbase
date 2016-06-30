@@ -68,6 +68,7 @@
     NSMenuItem *hideAllOthersItem;
     NSMenuItem *showAllItem;
 }
+- (instancetype)init;
 - (void)ensureAppMenuInMenu:(NSMenu *)menu;
 - (void)removeActionsFromAppMenu;
 - (NSMenu *)applicationMenu;
@@ -91,11 +92,5 @@
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaMenuLoader);
-
-QT_BEGIN_NAMESPACE
-
-void qt_mac_loadMenuNib(QCocoaMenuLoader *qtMenuLoader);
-
-QT_END_NAMESPACE
 
 #endif // QCOCOAMENULOADER_P_H

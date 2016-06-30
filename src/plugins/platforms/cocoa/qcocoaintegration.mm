@@ -332,7 +332,6 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
 
         // Load the application menu. This menu contains Preferences, Hide, Quit.
         QCocoaMenuLoader *qtMenuLoader = [[QCocoaMenuLoader alloc] init];
-        qt_mac_loadMenuNib(qtMenuLoader);
         [cocoaApplication setMenu:[qtMenuLoader menu]];
         [newDelegate setMenuLoader:qtMenuLoader];
     }

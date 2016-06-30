@@ -55,86 +55,117 @@
 QT_FORWARD_DECLARE_CLASS(QCFString)
 QT_FORWARD_DECLARE_CLASS(QString)
 
-
-QT_BEGIN_NAMESPACE
-
-/*
-    Loads and instantiates the main app menu from the menu nib file(s).
-
-    The main app menu contains the Quit, Hide  About, Preferences entries, and
-    The reason for having the nib file is that those can not be created
-    programmatically. To ease deployment the nib files are stored in Qt resources
-    and written to QDir::temp() before loading. (Earlier Qt versions used
-    to require having the nib file in the Qt GUI framework.)
-*/
-void qt_mac_loadMenuNib(QCocoaMenuLoader *qtMenuLoader)
-{
-    // Create qt_menu.nib dir in temp.
-    QDir temp = QDir::temp();
-    temp.mkdir("qt_menu.nib");
-    QString nibDir = temp.canonicalPath() + QLatin1String("/") + QLatin1String("qt_menu.nib/");
-    if (!QDir(nibDir).exists()) {
-        qWarning("qt_mac_loadMenuNib: could not create nib directory in temp");
-        return;
-    }
-
-    // Copy nib files from resources to temp.
-    QDir nibResource(":/qt-project.org/mac/qt_menu.nib/");
-    if (!nibResource.exists()) {
-        qWarning("qt_mac_loadMenuNib: could not load nib from resources");
-        return;
-    }
-    foreach (const QFileInfo &file, nibResource.entryInfoList()) {
-        QFileInfo destinationFile(nibDir + QLatin1String("/") + file.fileName());
-        if (destinationFile.exists() && destinationFile.size() != file.size())
-            QFile::remove(destinationFile.absoluteFilePath());
-
-        QFile::copy(file.absoluteFilePath(), destinationFile.absoluteFilePath());
-    }
-
-    // Load and instantiate nib file from temp
-    NSURL *nibUrl = [NSURL fileURLWithPath : QCFString::toNSString(nibDir)];
-    NSNib *nib = [[NSNib alloc] initWithContentsOfURL : nibUrl];
-    [nib autorelease];
-    if(!nib) {
-        qWarning("qt_mac_loadMenuNib: could not load nib from  temp");
-        return;
-    }
-    bool ok = [nib instantiateNibWithOwner : qtMenuLoader topLevelObjects : nil];
-    if (!ok) {
-        qWarning("qt_mac_loadMenuNib: could not instantiate nib");
-    }
-}
-
-QT_END_NAMESPACE
-
 @implementation QCocoaMenuLoader
 
-- (void)awakeFromNib
+- (instancetype)init
 {
-    servicesItem = [[appMenu itemWithTitle:@"Services"] retain];
-    hideAllOthersItem = [[appMenu itemWithTitle:@"Hide Others"] retain];
-    showAllItem = [[appMenu itemWithTitle:@"Show All"] retain];
+    if ((self = [super init])) {
+        NSString *appName = qt_mac_applicationName().toNSString();
 
-    // Get the names in the nib to match the app name set by Qt.
-    const NSString *appName = qt_mac_applicationName().toNSString();
-    [quitItem setTitle:[[quitItem title] stringByReplacingOccurrencesOfString:@"NewApplication"
-                                                                   withString:const_cast<NSString *>(appName)]];
-    [hideItem setTitle:[[hideItem title] stringByReplacingOccurrencesOfString:@"NewApplication"
-                                                                   withString:const_cast<NSString *>(appName)]];
-    [aboutItem setTitle:[[aboutItem title] stringByReplacingOccurrencesOfString:@"NewApplication"
-                                                                   withString:const_cast<NSString *>(appName)]];
-    // Disable the items that don't do anything. If someone associates a QAction with them
-    // They should get synced back in.
-    [preferencesItem setEnabled:NO];
-    [preferencesItem setHidden:YES];
+        // Menubar as menu. Title as set in the NIB file
+        theMenu = [[NSMenu alloc] initWithTitle:@"Main Menu"];
 
-    // should set this in the NIB
-    [preferencesItem setTarget: self];
-    [preferencesItem setAction: @selector(qtDispatcherToQPAMenuItem:)];
+        // Application menu. Since 10.6, the first menu
+        // is always identified as the application menu.
+        NSMenuItem *appItem = [[[NSMenuItem alloc] init] autorelease];
+        appItem.title = appName;
+        [theMenu addItem:appItem];
+        appMenu = [[NSMenu alloc] initWithTitle:appName];
+        appItem.submenu = appMenu;
 
-    [aboutItem setEnabled:NO];
-    [aboutItem setHidden:YES];
+        // About Application
+        aboutItem = [[NSMenuItem alloc] initWithTitle:[@"About " stringByAppendingString:appName]
+                                               action:@selector(orderFrontStandardAboutPanel:)
+                                        keyEquivalent:@""];
+        aboutItem.target = self;
+        // Disable until a QAction is associated
+        aboutItem.enabled = NO;
+        aboutItem.hidden = YES;
+        [appMenu addItem:aboutItem];
+
+        // About Qt (shameless self-promotion)
+        aboutQtItem = [[NSMenuItem alloc] init];
+        aboutQtItem.title = @"About Qt";
+        // Disable until a QAction is associated
+        aboutQtItem.enabled = NO;
+        aboutQtItem.hidden = YES;
+        [appMenu addItem:aboutQtItem];
+
+        [appMenu addItem:[NSMenuItem separatorItem]];
+
+        // Preferences
+        preferencesItem = [[NSMenuItem alloc] initWithTitle:@"Preferences…"
+                                                     action:@selector(qtDispatcherToQPAMenuItem:)
+                                              keyEquivalent:@","];
+        preferencesItem.target = self;
+        // Disable until a QAction is associated
+        preferencesItem.enabled = NO;
+        preferencesItem.hidden = YES;
+        [appMenu addItem:preferencesItem];
+
+        [appMenu addItem:[NSMenuItem separatorItem]];
+
+        // Services item and menu
+        servicesItem = [[NSMenuItem alloc] init];
+        servicesItem.title = @"Services";
+        NSApplication *app = [NSApplication sharedApplication];
+        app.servicesMenu = [[[NSMenu alloc] initWithTitle:@"Services"] autorelease];
+        servicesItem.submenu = app.servicesMenu;
+        [appMenu addItem:servicesItem];
+
+        [appMenu addItem:[NSMenuItem separatorItem]];
+
+        // Hide Application
+        hideItem = [[NSMenuItem alloc] initWithTitle:[@"Hide " stringByAppendingString:appName]
+                                              action:@selector(hide:)
+                                       keyEquivalent:@"h"];
+        hideItem.target = self;
+        [appMenu addItem:hideItem];
+
+        // Hide Others
+        hideAllOthersItem = [[NSMenuItem alloc] initWithTitle:@"Hide Others"
+                                                       action:@selector(hideOtherApplications:)
+                                                keyEquivalent:@"h"];
+        hideAllOthersItem.target = self;
+        hideAllOthersItem.keyEquivalentModifierMask = NSCommandKeyMask | NSAlternateKeyMask;
+        [appMenu addItem:hideAllOthersItem];
+
+        // Show All
+        showAllItem = [[NSMenuItem alloc] initWithTitle:@"Show All"
+                                                 action:@selector(unhideAllApplications:)
+                                          keyEquivalent:@""];
+        showAllItem.target = self;
+        [appMenu addItem:showAllItem];
+
+        [appMenu addItem:[NSMenuItem separatorItem]];
+
+        // Quit Application
+        quitItem = [[NSMenuItem alloc] initWithTitle:[@"Quit " stringByAppendingString:appName]
+                                              action:@selector(terminate:)
+                                       keyEquivalent:@"q"];
+        quitItem.target = self;
+        [appMenu addItem:quitItem];
+    }
+
+    return self;
+}
+
+- (void)dealloc
+{
+    [theMenu release];
+    [appMenu release];
+    [aboutItem release];
+    [aboutQtItem release];
+    [preferencesItem release];
+    [servicesItem release];
+    [hideItem release];
+    [hideAllOthersItem release];
+    [showAllItem release];
+    [quitItem release];
+
+    [lastAppSpecificItem release];
+
+    [super dealloc];
 }
 
 - (void)ensureAppMenuInMenu:(NSMenu *)menu
@@ -177,18 +208,6 @@ QT_END_NAMESPACE
 {
     for (NSMenuItem *item in [appMenu itemArray])
         [item setTag:0];
-}
-
-- (void)dealloc
-{
-    [servicesItem release];
-    [hideAllOthersItem release];
-    [showAllItem release];
-
-    [lastAppSpecificItem release];
-    [theMenu release];
-    [appMenu release];
-    [super dealloc];
 }
 
 - (NSMenu *)menu
