@@ -599,6 +599,23 @@ void tst_qmakelib::addControlStructs()
             << ""
             << true;
 
+    QTest::newRow("function arguments")
+            << "defineTest(func) {\n"
+                   "defined(1, var) {\nd1 = 1\nexport(d1)\n}\n"
+                   "defined(3, var) {\nd3 = 1\nexport(d3)\n}\n"
+                   "x1 = $$1\nexport(x1)\n"
+                   "2 += foo\nx2 = $$2\nexport(x2)\n"
+                   "x3 = $$3\nexport(x3)\n"
+                   "4 += foo\nx4 = $$4\nexport(x4)\n"
+                   "x5 = $$5\nexport(x5)\n"
+                   "6 += foo\nx6 = $$6\nexport(x6)\n"
+               "}\n"
+               "1 = first\n2 = second\n3 = third\n4 = fourth\nfunc(one, two)"
+            << "1 = first\n2 = second\n3 = third\n4 = fourth\n5 = UNDEF\n6 = UNDEF\n"
+               "d1 = 1\nd3 = UNDEF\nx1 = one\nx2 = two foo\nx3 =\nx4 = foo\nx5 =\nx6 = foo"
+            << ""
+            << true;
+
     QTest::newRow("ARGC and ARGS")
             << "defineTest(func) {\n"
                    "export(ARGC)\n"
