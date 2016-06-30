@@ -122,6 +122,7 @@ QString QCoreApplicationPrivate::appName() const
 
 #ifndef Q_OS_WINRT
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 Q_CORE_EXPORT HINSTANCE qWinAppInst()                // get Windows app handle
 {
     return GetModuleHandle(0);
@@ -145,6 +146,7 @@ Q_CORE_EXPORT int qWinAppCmdShow()                        // get main window sho
         : SW_SHOWDEFAULT;
 #endif
 }
+#endif
 
 /*****************************************************************************
   qWinMain() - Initializes Windows. Called from WinMain() in qtmain_win.cpp

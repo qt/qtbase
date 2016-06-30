@@ -868,6 +868,7 @@ QApplication::~QApplication()
 #endif
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 // #fixme: Remove.
 static HDC         displayDC        = 0;                // display device context
@@ -880,6 +881,7 @@ Q_WIDGETS_EXPORT HDC qt_win_display_dc()                        // get display D
     return displayDC;
 }
 #endif
+#endif
 
 void qt_cleanup()
 {
@@ -887,11 +889,13 @@ void qt_cleanup()
     QColormap::cleanup();
 
     QApplicationPrivate::active_window = 0; //### this should not be necessary
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     if (displayDC) {
         ReleaseDC(0, displayDC);
         displayDC = 0;
     }
+#endif
 #endif
 }
 

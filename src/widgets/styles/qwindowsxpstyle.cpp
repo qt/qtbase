@@ -451,8 +451,11 @@ HBITMAP QWindowsXPStylePrivate::buffer(int w, int h)
     w = qMax(bufferW, w);
     h = qMax(bufferH, h);
 
-    if (!bufferDC)
-        bufferDC = CreateCompatibleDC(qt_win_display_dc());
+    if (!bufferDC) {
+        HDC displayDC = GetDC(0);
+        bufferDC = CreateCompatibleDC(displayDC);
+        ReleaseDC(0, displayDC);
+    }
 
     // Define the header
     BITMAPINFO bmi;

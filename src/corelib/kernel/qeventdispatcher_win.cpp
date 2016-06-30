@@ -55,7 +55,6 @@
 
 QT_BEGIN_NAMESPACE
 
-HINSTANCE qWinAppInst();
 extern uint qGlobalPostedEventsCount();
 
 #ifndef TIME_KILL_SYNCHRONOUS
@@ -310,7 +309,7 @@ QWindowsMessageWindowClassContext::QWindowsMessageWindowClassContext()
     wc.lpfnWndProc = qt_internal_proc;
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
-    wc.hInstance = qWinAppInst();
+    wc.hInstance = GetModuleHandle(0);
     wc.hIcon = 0;
     wc.hCursor = 0;
     wc.hbrBackground = 0;
@@ -327,7 +326,7 @@ QWindowsMessageWindowClassContext::QWindowsMessageWindowClassContext()
 QWindowsMessageWindowClassContext::~QWindowsMessageWindowClassContext()
 {
     if (className) {
-        UnregisterClass(className, qWinAppInst());
+        UnregisterClass(className, GetModuleHandle(0));
         delete [] className;
     }
 }
@@ -345,7 +344,7 @@ static HWND qt_create_internal_window(const QEventDispatcherWin32 *eventDispatch
                             0, 0, 0, 0,        // geometry
                             HWND_MESSAGE,            // parent
                             0,                 // menu handle
-                            qWinAppInst(),     // application
+                            GetModuleHandle(0),     // application
                             0);                // windows creation data.
 
     if (!wnd) {
