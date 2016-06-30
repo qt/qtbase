@@ -72,19 +72,6 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
                           (QEglFSDeviceIntegrationFactoryInterface_iid, QLatin1String(""), Qt::CaseInsensitive))
 
-static inline QEglFSDeviceIntegration *loadIntegration(QFactoryLoader *loader, const QString &key)
-{
-    const int index = loader->indexOf(key);
-    if (index != -1) {
-        QObject *plugin = loader->instance(index);
-        if (QEglFSDeviceIntegrationPlugin *factory = qobject_cast<QEglFSDeviceIntegrationPlugin *>(plugin)) {
-            if (QEglFSDeviceIntegration *result = factory->create())
-                return result;
-        }
-    }
-    return Q_NULLPTR;
-}
-
 #endif // QT_NO_LIBRARY
 
 QStringList QEglFSDeviceIntegrationFactory::keys(const QString &pluginPath)
