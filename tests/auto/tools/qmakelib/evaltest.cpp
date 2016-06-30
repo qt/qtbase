@@ -707,6 +707,20 @@ void tst_qmakelib::addControlStructs()
             << "VAR = UNDEF\nOKE = UNDEF"
             << "Project ERROR: error"
             << false;
+
+    QTest::newRow("REQUIRES = error()")
+            << "REQUIRES = error(error)\n"
+               "OKE = 1"
+            << "OKE = UNDEF"
+            << "Project ERROR: error"
+            << false;
+
+    QTest::newRow("requires(error())")
+            << "requires(error(error))\n"
+               "OKE = 1"
+            << "OKE = UNDEF"
+            << "Project ERROR: error"
+            << false;
 }
 
 void tst_qmakelib::addReplaceFunctions(const QString &qindir)
