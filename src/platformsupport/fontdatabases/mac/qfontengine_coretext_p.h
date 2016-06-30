@@ -106,21 +106,6 @@ public:
 
     QFontEngine::Properties properties() const Q_DECL_OVERRIDE;
 
-    static bool supportsColorGlyphs()
-    {
-#if defined(Q_OS_IOS)
-        return true;
-#elif MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
-  #if MAC_OS_X_VERSION_MIN_REQUIRED < 1070
-        return &CTFontDrawGlyphs;
-  #else
-        return true;
-  #endif
-#else
-        return false;
-#endif
-    }
-
     static bool ct_getSfntTable(void *user_data, uint tag, uchar *buffer, uint *length);
     static QFont::Weight qtWeightFromCFWeight(float value);
 

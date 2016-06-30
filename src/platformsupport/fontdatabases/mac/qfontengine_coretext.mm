@@ -218,11 +218,9 @@ void QCoreTextFontEngine::init()
     synthesisFlags = 0;
     CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(ctfont);
 
-#if defined(Q_OS_IOS) || MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
-    if (supportsColorGlyphs() && (traits & kCTFontColorGlyphsTrait))
+    if (traits & kCTFontColorGlyphsTrait)
         glyphFormat = QFontEngine::Format_ARGB;
     else
-#endif
         glyphFormat = defaultGlyphFormat;
 
     if (traits & kCTFontItalicTrait)
@@ -648,9 +646,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
             CGContextSetTextPosition(ctx, pos_x + 0.5 * lineThickness().toReal(), pos_y);
             CGContextShowGlyphsWithAdvances(ctx, &cgGlyph, &CGSizeZero, 1);
         }
-    }
-#if defined(Q_OS_IOS) || MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
-    else if (supportsColorGlyphs()) {
+    } else {
         // CGContextSetTextMatrix does not work with color glyphs, so we use
         // the CTM instead. This means we must translate the CTM as well, to
         // set the glyph position, instead of using CGContextSetTextPosition.
@@ -661,7 +657,6 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
         // glyphs in the Apple Color Emoji font, so we use CTFontDrawGlyphs instead.
         CTFontDrawGlyphs(ctfont, &cgGlyph, &CGPointZero, 1, ctx);
     }
-#endif
 
     CGContextRelease(ctx);
     CGColorSpaceRelease(colorspace);
