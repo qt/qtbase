@@ -186,11 +186,11 @@ defineTest(qtConfParseCommandLine) {
         } else: contains(c, "^--?system-(.*)") {
             opt = $$replace(c, "^--?system-(.*)", "\\1")
             val = system
-        } else: contains(c, "^--?(.*)=(.*)") {
-            opt = $$replace(c, "^--?(.*)=(.*)", "\\1")
-            val = $$replace(c, "^--?(.*)=(.*)", "\\2")
-        } else: contains(c, "^--?(.*)") {
-            opt = $$replace(c, "^--?(.*)", "\\1")
+        } else: contains(c, "^--?([^-].*)=(.*)") {
+            opt = $$replace(c, "^--?([^-].*)=(.*)", "\\1")
+            val = $$replace(c, "^--?([^-].*)=(.*)", "\\2")
+        } else: contains(c, "^--?([^-].*)") {
+            opt = $$replace(c, "^--?([^-].*)", "\\1")
             val =
         } else {
             error("Invalid command line parameter $$c")
