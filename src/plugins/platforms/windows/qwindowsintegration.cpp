@@ -311,7 +311,12 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
     }
 
     if (window->type() == Qt::ForeignWindow) {
-        QWindowsForeignWindow *result = new QWindowsForeignWindow(window, reinterpret_cast<HWND>(window->winId()));
+        const HWND hwnd = reinterpret_cast<HWND>(window->winId());
+        if (!IsWindow(hwnd)) {
+           qWarning("Windows QPA: Invalid foreign window ID %p.");
+           return nullptr;
+        }
+        QWindowsForeignWindow *result = new QWindowsForeignWindow(window, hwnd);
         const QRect obtainedGeometry = result->geometry();
         QScreen *screen = Q_NULLPTR;
         if (const QPlatformScreen *pScreen = result->screenForGeometry(obtainedGeometry))
