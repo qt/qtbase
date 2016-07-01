@@ -21,11 +21,15 @@ qtvertag.name = QT_VERSION_TAG
 qtvertag.value = $$replace(qtver.value, \.,)
 qtdocs.name = QT_INSTALL_DOCS
 qtdocs.value = $$[QT_INSTALL_DOCS/src]
-QT_TOOL_ENV = qtver qtmver qtvertag qtdocs
+builddir.name = BUILDDIR
+builddir.value = $$OUT_PWD
+QT_TOOL_ENV = qtver qtmver qtvertag qtdocs builddir
 qtPrepareTool(QDOC, qdoc)
 QT_TOOL_ENV =
 
 !build_online_docs: qtPrepareTool(QHELPGENERATOR, qhelpgenerator)
+
+qtPrepareTool(QTATTRIBUTIONSSCANNER, qtattributionsscanner)
 
 # qtPrepareTool() must be called outside a build pass, as it protects
 # against concurrent wrapper creation by omitting it during build passes.
@@ -63,12 +67,21 @@ DOC_INDEXES =
         PREP_DOC_INDEXES += -indexdir $$shell_quote($$[QT_INSTALL_DOCS/get])
     DOC_INDEXES += -indexdir $$shell_quote($$[QT_INSTALL_DOCS/get])
 }
+
+qtattributionsscanner.target = qtattributionsscanner
+qtattributionsscanner.commands = $$QTATTRIBUTIONSSCANNER $$shell_quote($$MODULE_BASE_INDIR) \
+    --filter "QDocModule=$$QMAKE_DOCS_TARGET" -o $$shell_quote($$OUT_PWD/codeattributions.qdoc)
+qtattributionsscanner.CONFIG += phony
+QMAKE_EXTRA_TARGETS += qtattributionsscanner
+
 doc_command = $$QDOC $$QMAKE_DOCS
 prepare_docs {
     prepare_docs.commands += $$doc_command -prepare $$PREP_DOC_INDEXES -no-link-errors
     generate_docs.commands += $$doc_command -generate $$DOC_INDEXES
+    prepare_docs.depends += qtattributionsscanner
 } else {
     html_docs.commands += $$doc_command $$DOC_INDEXES
+    html_docs.depends += qtattributionsscanner
 }
 
 !build_online_docs {
