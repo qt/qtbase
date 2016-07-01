@@ -906,10 +906,7 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
             if (cmsgptr->cmsg_level == IPPROTO_IP && cmsgptr->cmsg_type == IP_RECVIF
                     && cmsgptr->cmsg_len >= CMSG_LEN(sizeof(sockaddr_dl))) {
                 sockaddr_dl *sdl = reinterpret_cast<sockaddr_dl *>(CMSG_DATA(cmsgptr));
-#    if defined(Q_OS_OPENBSD)
-#      define LLINDEX(s) ((s)->sdl_index)
-#    endif
-                header->ifindex = LLINDEX(sdl);
+                header->ifindex = sdl->sdl_index;
             }
 #  endif
 #endif
