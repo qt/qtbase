@@ -101,37 +101,57 @@ template<> inline char *toString(const QDateTime &dateTime)
 
 template<> inline char *toString(const QChar &c)
 {
+    const ushort uc = c.unicode();
+    if (uc < 128) {
+        char msg[32] = {'\0'};
+        qsnprintf(msg, sizeof(msg), "QChar: '%c' (0x%x)", char(uc), unsigned(uc));
+        return qstrdup(msg);
+    }
     return qstrdup(qPrintable(QString::fromLatin1("QChar: '%1' (0x%2)").arg(c).arg(QString::number(static_cast<int>(c.unicode()), 16))));
 }
 
 template<> inline char *toString(const QPoint &p)
 {
-    return qstrdup(QString::fromLatin1("QPoint(%1,%2)").arg(p.x()).arg(p.y()).toLatin1().constData());
+    char msg[128] = {'\0'};
+    qsnprintf(msg, sizeof(msg), "QPoint(%d,%d)", p.x(), p.y());
+    return qstrdup(msg);
 }
 
 template<> inline char *toString(const QSize &s)
 {
-    return qstrdup(QString::fromLatin1("QSize(%1x%2)").arg(s.width()).arg(s.height()).toLatin1().constData());
+    char msg[128] = {'\0'};
+    qsnprintf(msg, sizeof(msg), "QSize(%dx%d)", s.width(), s.height());
+    return qstrdup(msg);
 }
 
 template<> inline char *toString(const QRect &s)
 {
-    return qstrdup(QString::fromLatin1("QRect(%1,%2 %5x%6) (bottomright %3,%4)").arg(s.left()).arg(s.top()).arg(s.right()).arg(s.bottom()).arg(s.width()).arg(s.height()).toLatin1().constData());
+    char msg[256] = {'\0'};
+    qsnprintf(msg, sizeof(msg), "QRect(%d,%d %dx%d) (bottomright %d,%d)",
+              s.left(), s.top(), s.width(), s.height(), s.right(), s.bottom());
+    return qstrdup(msg);
 }
 
 template<> inline char *toString(const QPointF &p)
 {
-    return qstrdup(QString::fromLatin1("QPointF(%1,%2)").arg(p.x()).arg(p.y()).toLatin1().constData());
+    char msg[64] = {'\0'};
+    qsnprintf(msg, sizeof(msg), "QPointF(%g,%g)", p.x(), p.y());
+    return qstrdup(msg);
 }
 
 template<> inline char *toString(const QSizeF &s)
 {
-    return qstrdup(QString::fromLatin1("QSizeF(%1x%2)").arg(s.width()).arg(s.height()).toLatin1().constData());
+    char msg[64] = {'\0'};
+    qsnprintf(msg, sizeof(msg), "QSizeF(%gx%g)", s.width(), s.height());
+    return qstrdup(msg);
 }
 
 template<> inline char *toString(const QRectF &s)
 {
-    return qstrdup(QString::fromLatin1("QRectF(%1,%2 %5x%6) (bottomright %3,%4)").arg(s.left()).arg(s.top()).arg(s.right()).arg(s.bottom()).arg(s.width()).arg(s.height()).toLatin1().constData());
+    char msg[256] = {'\0'};
+    qsnprintf(msg, sizeof(msg), "QRectF(%g,%g %gx%g) (bottomright %g,%g)",
+              s.left(), s.top(), s.width(), s.height(), s.right(), s.bottom());
+    return qstrdup(msg);
 }
 
 template<> inline char *toString(const QUrl &uri)
