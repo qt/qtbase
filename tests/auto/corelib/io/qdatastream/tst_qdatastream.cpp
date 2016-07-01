@@ -1203,10 +1203,11 @@ static QTime qTimeData(int index)
     case 57: return QTime(23, 59, 59, 99);
     case 58: return QTime(23, 59, 59, 100);
     case 59: return QTime(23, 59, 59, 999);
+    case 60: return QTime();
     }
     return QTime(0, 0, 0);
 }
-#define MAX_QTIME_DATA 60
+#define MAX_QTIME_DATA 61
 
 void tst_QDataStream::stream_QTime_data()
 {
@@ -3081,6 +3082,30 @@ void tst_QDataStream::compatibility_Qt3()
         QVERIFY(in_palette.brush(QPalette::Button).style() == Qt::NoBrush);
         QVERIFY(in_palette.color(QPalette::Light) == Qt::green);
     }
+    // QTime() was serialized to (0, 0, 0, 0) in Qt3, not (0xFF, 0xFF, 0xFF, 0xFF)
+    // This is because in Qt3 a null time was valid, and there was no support for deserializing a value of -1.
+    {
+        QByteArray stream;
+        {
+            QDataStream out(&stream, QIODevice::WriteOnly);
+            out.setVersion(QDataStream::Qt_3_3);
+            out << QTime();
+        }
+        QTime in_time;
+        {
+            QDataStream in(stream);
+            in.setVersion(QDataStream::Qt_3_3);
+            in >> in_time;
+        }
+        QVERIFY(in_time.isNull());
+
+        quint32 rawValue;
+        QDataStream in(stream);
+        in.setVersion(QDataStream::Qt_3_3);
+        in >> rawValue;
+        QCOMPARE(rawValue, quint32(0));
+    }
+
 }
 
 void tst_QDataStream::compatibility_Qt2()
