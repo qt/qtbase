@@ -28,7 +28,7 @@
 /*!
     \page qmake-manual.html
     \title qmake Manual
-    \startpage {Qt Reference Documentation}
+    \startpage index.html
     \nextpage Overview
 
     \ingroup qttools
