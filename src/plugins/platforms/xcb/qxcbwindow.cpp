@@ -2102,6 +2102,15 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     // will make the comparison later.
     QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
 
+    // Send the synthetic expose event on resize only when the window is shrinked,
+    // because the "XCB_GRAVITY_NORTH_WEST" flag doesn't send it automatically.
+    if (!m_oldWindowSize.isEmpty()
+            && (actualGeometry.width() < m_oldWindowSize.width()
+                || actualGeometry.height() < m_oldWindowSize.height())) {
+        QWindowSystemInterface::handleExposeEvent(window(), QRegion(0, 0, actualGeometry.width(), actualGeometry.height()));
+    }
+    m_oldWindowSize = actualGeometry.size();
+
     if (m_usingSyncProtocol && m_syncState == SyncReceived)
         m_syncState = SyncAndConfigureReceived;
 

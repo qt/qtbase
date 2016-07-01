@@ -57,22 +57,22 @@ for(group, groups) {
     }
 
     $${group}_header.commands = $$QMAKE_QDBUSXML2CPP $$hdr_flags $$qdbusxml2cpp_option ${QMAKE_FILE_OUT}: ${QMAKE_FILE_IN}
-    $${group}_header.depends = $$QMAKE_QDBUSXML2CPP_EXE
+    $${group}_header.depends += $$QMAKE_QDBUSXML2CPP_EXE
     $${group}_header.output = ${QMAKE_FUNC_FILE_IN_qdbusOutputBasename}_$${dbus_type}.h
     $${group}_header.name = DBUSXML2CPP $${dbus_TYPE} HEADER ${QMAKE_FILE_IN}
     $${group}_header.variable_out = $${GROUP}_HEADERS
     $${group}_header.input = $$input_list
 
     $${group}_source.commands = $$QMAKE_QDBUSXML2CPP -i ${QMAKE_FILE_OUT_BASE}.h $$src_flags $$qdbusxml2cpp_option :${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
-    $${group}_source.depends = $$QMAKE_QDBUSXML2CPP_EXE
+    $${group}_source.depends += $$QMAKE_QDBUSXML2CPP_EXE
     $${group}_source.output = ${QMAKE_FUNC_FILE_IN_qdbusOutputBasename}_$${dbus_type}.cpp
     $${group}_source.name = DBUSXML2CPP $${dbus_TYPE} SOURCE ${QMAKE_FILE_IN}
     $${group}_source.variable_out = SOURCES
     $${group}_source.input = $$input_list
-    $${group}_source.depends = $$eval($${group}_header.output)   # this actually belongs to the object file
+    $${group}_source.depends += $$eval($${group}_header.output)   # this actually belongs to the object file
 
     $${group}_moc.commands = $$moc_header.commands
-    $${group}_moc.depends = $$QMAKE_MOC_EXE
+    $${group}_moc.depends += $$QMAKE_MOC_EXE
     $${group}_moc.output = $$moc_header.output
     $${group}_moc.input = $${GROUP}_HEADERS
     $${group}_moc.variable_out = GENERATED_SOURCES

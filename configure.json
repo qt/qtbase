@@ -104,6 +104,7 @@
             "mysql_config": "string",
             "nomake": { "type": "addString", "values": [ "examples", "tests", "tools" ] },
             "opengl": { "type": "optionalString", "values": [ "no", "yes", "desktop", "es2" ] },
+            "opengles3": "boolean",
             "opensource": { "type": "void", "name": "commercial", "value": "no" },
             "openssl": "boolean",
             "openssl-linked": { "type": "void", "name": "openssl", "value": "linked" },

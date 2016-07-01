@@ -30,7 +30,7 @@ isEmpty(QMAKE_DEFAULT_INCDIRS):!host_build {
     # Get default include and library paths from compiler
     #
     gcc {
-        equals(QMAKE_DIR_SEP, /) {
+        !equals(QMAKE_HOST.os, Windows) {
             cmd_prefix = "LC_ALL=C"
             cmd_suffix = "</dev/null >/dev/null"
         } else {

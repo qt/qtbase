@@ -3,7 +3,7 @@ qtPrepareTool(QMAKE_UIC, uic, _DEP)
 isEmpty(UI_DIR):UI_DIR = .
 isEmpty(QMAKE_MOD_UIC):QMAKE_MOD_UIC = ui_
 
-uic.depends = $$QMAKE_UIC_EXE
+uic.depends += $$QMAKE_UIC_EXE
 uic.commands = $$QMAKE_UIC ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
 uic.depend_command = $$QMAKE_UIC_DEP -d ${QMAKE_FILE_IN}
 uic.output = $$UI_DIR/$${QMAKE_MOD_UIC}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_H)}

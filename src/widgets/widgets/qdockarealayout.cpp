@@ -2168,6 +2168,9 @@ bool QDockAreaLayoutInfo::updateTabBar() const
     if (oldCurrentId > 0 && currentTabId() != oldCurrentId)
         that->setCurrentTabId(oldCurrentId);
 
+    if (QDockWidgetGroupWindow *dwgw = qobject_cast<QDockWidgetGroupWindow *>(tabBar->parent()))
+        dwgw->adjustFlags();
+
     //returns if the tabbar is visible or not
     return ( (gap ? 1 : 0) + tabBar->count()) > 1;
 }

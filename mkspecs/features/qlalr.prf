@@ -23,7 +23,7 @@ for (s, QLALRSOURCES) {
     $${base}.input = $$invar
     $${base}.output = $$QLALR_DIR/$${parser}.cpp
     $${base}.variable_out = GENERATED_SOURCES
-    $${base}.depends = $$QMAKE_QLALR_EXE
+    $${base}.depends += $$QMAKE_QLALR_EXE
     $${base}.commands = $$QMAKE_QLALR $$QMAKE_QLALRFLAGS ${QMAKE_FILE_IN}
     silent: $${base}.commands = @echo qlalr ${QMAKE_FILE_IN} && $${base}.commands
     $${base}.name = QLALR ${QMAKE_FILE_IN}
@@ -31,19 +31,19 @@ for (s, QLALRSOURCES) {
     $${base}_h.input = $$invar
     $${base}_h.output = $$QLALR_DIR/$${parser}_p.h
     $${base}_h.CONFIG = no_link
-    $${base}_h.depends = $$QLALR_DIR/$${parser}.cpp
+    $${base}_h.depends += $$QLALR_DIR/$${parser}.cpp
     $${base}_h.commands = $$escape_expand(\\n)   # force creation of rule
 
     $${base}_decl.input = $$invar
     $${base}_decl.output = $$QLALR_DIR/$${decl}
     $${base}_decl.CONFIG = no_link
-    $${base}_decl.depends = $$QLALR_DIR/$${parser}.cpp
+    $${base}_decl.depends += $$QLALR_DIR/$${parser}.cpp
     $${base}_decl.commands = $$escape_expand(\\n)   # force creation of rule
 
     $${base}_impl.input = $$invar
     $${base}_impl.output = $$QLALR_DIR/$${impl}
     $${base}_impl.variable_out = GENERATED_SOURCES
-    $${base}_impl.depends = $$QLALR_DIR/$${parser}.cpp
+    $${base}_impl.depends += $$QLALR_DIR/$${parser}.cpp
     $${base}_impl.commands = $$escape_expand(\\n)   # force creation of rule
 
     QMAKE_EXTRA_COMPILERS += $$base $${base}_h $${base}_decl $${base}_impl

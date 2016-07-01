@@ -256,6 +256,7 @@ protected:
     mutable QMargins m_frameMargins;
 
     QRegion m_exposeRegion;
+    QSize m_oldWindowSize;
 
     xcb_visualid_t m_visualId;
     int m_lastWindowStateEvent;

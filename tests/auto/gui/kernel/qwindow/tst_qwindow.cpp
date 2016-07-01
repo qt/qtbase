@@ -58,6 +58,7 @@ private slots:
     void setVisible();
     void eventOrderOnShow();
     void resizeEventAfterResize();
+    void exposeEventOnShrink_QTBUG54040();
     void mapGlobal();
     void positioning_data();
     void positioning();
@@ -368,6 +369,24 @@ void tst_QWindow::resizeEventAfterResize()
     window.resize(m_testWindowSize);
 
     QTRY_COMPARE(window.received(QEvent::Resize), 2);
+}
+
+void tst_QWindow::exposeEventOnShrink_QTBUG54040()
+{
+    Window window;
+    window.setGeometry(QRect(m_availableTopLeft + QPoint(80, 80), m_testWindowSize));
+    window.setTitle(QTest::currentTestFunction());
+    window.showNormal();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    const int initialExposeCount = window.received(QEvent::Expose);
+    window.resize(window.width(), window.height() - 5);
+    QTRY_COMPARE(window.received(QEvent::Expose), initialExposeCount + 1);
+    window.resize(window.width() - 5, window.height());
+    QTRY_COMPARE(window.received(QEvent::Expose), initialExposeCount + 2);
+    window.resize(window.width() - 5, window.height() - 5);
+    QTRY_COMPARE(window.received(QEvent::Expose), initialExposeCount + 3);
 }
 
 void tst_QWindow::positioning_data()
