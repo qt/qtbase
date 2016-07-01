@@ -161,6 +161,7 @@ private slots:
     void itemData();
     void task_QTBUG_31146_popupCompletion();
     void task_QTBUG_41288_completerChangesCurrentIndex();
+    void task_QTBUG_54191_slotOnEditTextChangedSetsComboBoxToReadOnly();
     void keyboardSelection();
     void setCustomModelAndView();
     void updateDelegateOnEditableChange();
@@ -3122,6 +3123,30 @@ void tst_QComboBox::task_QTBUG_41288_completerChangesCurrentIndex()
         QTest::keyClick(comboBox.lineEdit(), Qt::Key_Enter);
         QCOMPARE(comboBox.currentIndex(), 0);
     }
+}
+
+namespace {
+    struct SetReadOnly {
+        QComboBox *cb;
+        explicit SetReadOnly(QComboBox *cb) : cb(cb) {}
+        void operator()() const
+        { cb->setEditable(false); }
+    };
+}
+
+void tst_QComboBox::task_QTBUG_54191_slotOnEditTextChangedSetsComboBoxToReadOnly()
+{
+    QComboBox cb;
+    cb.addItems(QStringList() << "one" << "two");
+    cb.setEditable(true);
+    cb.setCurrentIndex(0);
+
+    connect(&cb, &QComboBox::editTextChanged,
+            SetReadOnly(&cb));
+
+    cb.setCurrentIndex(1);
+    // the real test is that it didn't crash...
+    QCOMPARE(cb.currentIndex(), 1);
 }
 
 void tst_QComboBox::keyboardSelection()

@@ -2100,9 +2100,9 @@ void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
     if (lineEdit) {
         const QString newText = itemText(normalized);
         if (lineEdit->text() != newText) {
-            lineEdit->setText(newText);
+            lineEdit->setText(newText); // may cause lineEdit -> nullptr (QTBUG-54191)
 #ifndef QT_NO_COMPLETER
-            if (lineEdit->completer())
+            if (lineEdit && lineEdit->completer())
                 lineEdit->completer()->setCompletionPrefix(newText);
 #endif
         }
