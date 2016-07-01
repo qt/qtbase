@@ -279,7 +279,7 @@ defineTest(qtConfTest_linkerSupportsFlag) {
     use_gold_linker: \
         LFLAGS = -fuse-ld=gold
 
-    return($$qtConfToolchainSupportsFlag($$LFLAGS -Wl,$$flag))
+    return($$qtConfToolchainSupportsFlag($$LFLAGS "-Wl,$$flag"))
 }
 
 defineReplace(qtConfFindInPath) {
