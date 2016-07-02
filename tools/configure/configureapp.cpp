@@ -928,13 +928,6 @@ void Configure::parseCmdLine()
             zlibLibs = QDir::fromNativeSeparators(configCmdLine.at(i));
         }
 
-        else if ((configCmdLine.at(i) == "-override-version") || (configCmdLine.at(i) == "-version-override")){
-            ++i;
-            if (i == argCount)
-                break;
-            dictionary[ "VERSION" ] = configCmdLine.at(i);
-        }
-
         else if (configCmdLine.at(i) == "-saveconfig") {
             ++i;
             if (i == argCount)
@@ -2665,14 +2658,6 @@ void Configure::generateOutputVars()
 
     if (dictionary["MSVC_MP"] == "yes")
         qmakeConfig += "msvc_mp";
-
-    if (dictionary[ "SHARED" ] == "yes") {
-        QString version = dictionary[ "VERSION" ];
-        if (!version.isEmpty()) {
-            qmakeVars += "QMAKE_QT_VERSION_OVERRIDE = " + version.left(version.indexOf('.'));
-            version.remove(QLatin1Char('.'));
-        }
-    }
 
     if (dictionary["ATOMIC64"] == "libatomic")
         qmakeConfig += "atomic64-libatomic";
