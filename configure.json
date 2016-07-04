@@ -162,6 +162,7 @@
             "sse3": "boolean",
             "sse4.1": { "type": "boolean", "name": "sse4_1" },
             "sse4.2": { "type": "boolean", "name": "sse4_2" },
+            "ssl": "boolean",
             "ssse3": "boolean",
             "static": { "type": "enum", "name": "shared", "values": { "yes": "no", "no": "yes" } },
             "strip": "boolean",
@@ -1600,6 +1601,7 @@
         },
         "securetransport": {
             "description": "SecureTransport",
+            "disable": "input.securetransport == 'no' || input.ssl == 'no'",
             "condition": "config.darwin && (input.openssl == '' || input.openssl == 'no')",
             "output": [
                 "publicQtConfig",
@@ -1609,6 +1611,7 @@
         "openssl": {
             "description": "OpenSSL",
             "enable": "input.openssl == 'yes' || input.openssl == 'linked' || input.openssl == 'runtime'",
+            "disable": "input.openssl == 'no' || input.ssl == 'no'",
             "condition": "!features.securetransport && tests.openssl",
             "output": [
                 { "type": "publicQtConfig", "condition": "!features.openssl-linked" },
