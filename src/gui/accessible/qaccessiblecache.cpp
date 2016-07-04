@@ -77,6 +77,11 @@ QAccessibleInterface *QAccessibleCache::interfaceForId(QAccessible::Id id) const
     return idToInterface.value(id);
 }
 
+QAccessible::Id QAccessibleCache::idForInterface(QAccessibleInterface *iface) const
+{
+    return interfaceToId.value(iface);
+}
+
 QAccessible::Id QAccessibleCache::insert(QObject *object, QAccessibleInterface *iface) const
 {
     Q_ASSERT(iface);
@@ -84,7 +89,7 @@ QAccessible::Id QAccessibleCache::insert(QObject *object, QAccessibleInterface *
 
     // object might be 0
     Q_ASSERT(!objectToId.contains(object));
-    Q_ASSERT_X(!idToInterface.values().contains(iface), "", "Accessible interface inserted into cache twice!");
+    Q_ASSERT_X(!interfaceToId.contains(iface), "", "Accessible interface inserted into cache twice!");
 
     QAccessible::Id id = acquireId();
     QObject *obj = iface->object();
@@ -94,6 +99,7 @@ QAccessible::Id QAccessibleCache::insert(QObject *object, QAccessibleInterface *
         connect(obj, &QObject::destroyed, this, &QAccessibleCache::objectDestroyed);
     }
     idToInterface.insert(id, iface);
+    interfaceToId.insert(iface, id);
     return id;
 }
 
@@ -109,6 +115,7 @@ void QAccessibleCache::objectDestroyed(QObject* obj)
 void QAccessibleCache::deleteInterface(QAccessible::Id id, QObject *obj)
 {
     QAccessibleInterface *iface = idToInterface.take(id);
+    interfaceToId.take(iface);
     if (!obj)
         obj = iface->object();
     if (obj)

@@ -64,6 +64,7 @@ class Q_GUI_EXPORT QAccessibleCache  :public QObject
 public:
     static QAccessibleCache *instance();
     QAccessibleInterface *interfaceForId(QAccessible::Id id) const;
+    QAccessible::Id idForInterface(QAccessibleInterface *iface) const;
     QAccessible::Id insert(QObject *object, QAccessibleInterface *iface) const;
     void deleteInterface(QAccessible::Id id, QObject *obj = 0);
 
@@ -79,6 +80,7 @@ private:
     QAccessible::Id acquireId() const;
 
     mutable QHash<QAccessible::Id, QAccessibleInterface *> idToInterface;
+    mutable QHash<QAccessibleInterface *, QAccessible::Id> interfaceToId;
     mutable QHash<QObject *, QAccessible::Id> objectToId;
 
 #ifdef Q_OS_MAC
