@@ -56,6 +56,11 @@ isEmpty(QMAKE_DEFAULT_INCDIRS):!host_build {
             }
         }
         QMAKE_DEFAULT_LIBDIRS = $$unique(QMAKE_DEFAULT_LIBDIRS)
+    } else: msvc {
+        LIB = $$getenv("LIB")
+        QMAKE_DEFAULT_LIBDIRS = $$split(LIB, $$QMAKE_DIRLIST_SEP)
+        INCLUDE = $$getenv("INCLUDE")
+        QMAKE_DEFAULT_INCDIRS = $$split(INCLUDE, $$QMAKE_DIRLIST_SEP)
     }
 
     unix {
