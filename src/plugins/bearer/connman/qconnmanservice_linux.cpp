@@ -243,13 +243,16 @@ QStringList QConnmanManagerInterface::getServices()
     return servicesList;
 }
 
-void QConnmanManagerInterface::requestScan(const QString &type)
+bool QConnmanManagerInterface::requestScan(const QString &type)
 {
+    bool scanned = false;
     Q_FOREACH (QConnmanTechnologyInterface *tech, technologiesMap) {
         if (tech->type() == type) {
             tech->scan();
+            scanned = true;
         }
     }
+    return scanned;
 }
 
 void QConnmanManagerInterface::technologyAdded(const QDBusObjectPath &path, const QVariantMap &)
@@ -259,7 +262,7 @@ void QConnmanManagerInterface::technologyAdded(const QDBusObjectPath &path, cons
         QConnmanTechnologyInterface *tech;
         tech = new QConnmanTechnologyInterface(path.path(),this);
         technologiesMap.insert(path.path(),tech);
-        connect(tech,SIGNAL(scanFinished()),this,SIGNAL(scanFinished()));
+        connect(tech,SIGNAL(scanFinished(bool)),this,SIGNAL(scanFinished(bool)));
     }
 }
 
@@ -495,7 +498,11 @@ void QConnmanTechnologyInterface::scan()
 
 void QConnmanTechnologyInterface::scanReply(QDBusPendingCallWatcher *call)
 {
-    Q_EMIT scanFinished();
+    QDBusPendingReply<QVariantMap> props_reply = *call;
+    if (props_reply.isError()) {
+        qDebug() << props_reply.error().message();
+    }
+    Q_EMIT scanFinished(props_reply.isError());
     call->deleteLater();
 }
 

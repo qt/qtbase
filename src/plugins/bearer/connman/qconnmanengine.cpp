@@ -85,7 +85,7 @@ void QConnmanEngine::initialize()
             this, SLOT(updateServices(ConnmanMapList,QList<QDBusObjectPath>)));
 
     connect(connmanManager,SIGNAL(servicesReady(QStringList)),this,SLOT(servicesReady(QStringList)));
-    connect(connmanManager,SIGNAL(scanFinished()),this,SLOT(finishedScan()));
+    connect(connmanManager,SIGNAL(scanFinished(bool)),this,SLOT(finishedScan(bool)));
 
     foreach (const QString &servPath, connmanManager->getServices()) {
         addServiceConfiguration(servPath);
@@ -197,11 +197,15 @@ void QConnmanEngine::requestUpdate()
 
 void QConnmanEngine::doRequestUpdate()
 {
-    connmanManager->requestScan("wifi");
+    bool scanned = connmanManager->requestScan("wifi");
+    if (!scanned)
+        Q_EMIT updateCompleted();
 }
 
-void QConnmanEngine::finishedScan()
+void QConnmanEngine::finishedScan(bool error)
 {
+    if (error)
+        Q_EMIT updateCompleted();
 }
 
 void QConnmanEngine::updateServices(const ConnmanMapList &changed, const QList<QDBusObjectPath> &removed)
