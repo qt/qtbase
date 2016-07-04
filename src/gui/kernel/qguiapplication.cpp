@@ -3567,7 +3567,8 @@ QPixmap QGuiApplicationPrivate::getPixmapCursor(Qt::CursorShape cshape)
 
 void QGuiApplicationPrivate::notifyThemeChanged()
 {
-    if (!(applicationResourceFlags & ApplicationPaletteExplicitlySet)) {
+    if (!(applicationResourceFlags & ApplicationPaletteExplicitlySet) &&
+        !QCoreApplication::testAttribute(Qt::AA_SetPalette)) {
         clearPalette();
         initPalette();
     }
