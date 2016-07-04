@@ -504,8 +504,8 @@ static HRESULT qt_drop(IInspectable *sender, ABI::Windows::UI::Xaml::IDragEventA
 class QtDragEventHandler##name : public IDragEventHandler \
 { \
 public: \
-    virtual HRESULT STDMETHODCALLTYPE Invoke(IInspectable *sender, \
-                            ABI::Windows::UI::Xaml::IDragEventArgs *e) \
+    STDMETHODIMP Invoke(IInspectable *sender, \
+                        ABI::Windows::UI::Xaml::IDragEventArgs *e) \
     { \
         return qt_##func(sender, e);\
     } \
