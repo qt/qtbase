@@ -211,6 +211,7 @@ protected:
 private:
     QVariantMap properties();
     QVariantMap propertiesMap;
+private Q_SLOTS:
     void scanReply(QDBusPendingCallWatcher *call);
 
 };
