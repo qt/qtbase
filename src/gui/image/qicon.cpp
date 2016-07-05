@@ -1227,8 +1227,8 @@ bool QIcon::hasThemeIcon(const QString &name)
 /*!
     \since 5.6
 
-    Indicate that this icon is a mask image, and hence can potentially
-    be modified based on where it's displayed.
+    Indicate that this icon is a mask image(boolean \a isMask), and hence can
+    potentially be modified based on where it's displayed.
     \sa isMask()
 */
 void QIcon::setIsMask(bool isMask)
