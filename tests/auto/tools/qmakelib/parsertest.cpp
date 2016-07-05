@@ -1872,6 +1872,13 @@ void tst_qmakelib::addParseAbuse()
     /*    24 */ /* else branch */ << I(0))
             << "in:1: OR operator without prior condition."
             << false;
+
+    // Token buffer overflow. Verify with Valgrind or asan.
+    QTest::newRow("QTCREATORBUG-16508")
+            << "a{b{c{d{"
+            << TS()
+            << "in:2: Missing closing brace(s)."
+            << false;
 }
 
 void tst_qmakelib::proParser_data()
