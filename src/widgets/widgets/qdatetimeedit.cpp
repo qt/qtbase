@@ -52,6 +52,8 @@
 #include <qset.h>
 #include <qstyle.h>
 
+#include <algorithm>
+
 #ifndef QT_NO_DATETIMEEDIT
 
 //#define QDATETIMEEDIT_QDTEDEBUG
@@ -861,14 +863,6 @@ QString QDateTimeEdit::displayFormat() const
     return isRightToLeft() ? d->unreversedFormat : d->displayFormat;
 }
 
-template<typename C> static inline C reverse(const C &l)
-{
-    C ret;
-    for (int i=l.size() - 1; i>=0; --i)
-        ret.append(l.at(i));
-    return ret;
-}
-
 void QDateTimeEdit::setDisplayFormat(const QString &format)
 {
     Q_D(QDateTimeEdit);
@@ -882,8 +876,8 @@ void QDateTimeEdit::setDisplayFormat(const QString &format)
                 d->displayFormat += d->sectionNode(i).format();
             }
             d->displayFormat += d->separators.at(0);
-            d->separators = reverse(d->separators);
-            d->sectionNodes = reverse(d->sectionNodes);
+            std::reverse(d->separators.begin(), d->separators.end());
+            std::reverse(d->sectionNodes.begin(), d->sectionNodes.end());
         }
 
         d->formatExplicitlySet = true;
