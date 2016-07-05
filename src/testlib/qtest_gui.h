@@ -58,6 +58,7 @@
 #include <QtGui/qcolor.h>
 #include <QtGui/qpixmap.h>
 #include <QtGui/qimage.h>
+#include <QtGui/qregion.h>
 
 #ifdef QT_WIDGETS_LIB
 #include <QtGui/qicon.h>
@@ -80,6 +81,39 @@ namespace QTest
 template<> inline char *toString(const QColor &color)
 {
     return qstrdup(color.name().toLocal8Bit().constData());
+}
+
+template<> inline char *toString(const QRegion &region)
+{
+    QByteArray result = "QRegion(";
+    if (region.isNull()) {
+        result += "null";
+    } else if (region.isEmpty()) {
+        result += "empty";
+    } else {
+        const QVector<QRect> &rects = region.rects();
+        const int rectCount = rects.size();
+        if (rectCount > 1) {
+            result += QByteArray::number(rectCount);
+            result += " rectangles, ";
+        }
+        for (int i = 0; i < rectCount; ++i) {
+            if (i)
+                result += ", ";
+            const QRect &r = rects.at(i);
+            result += QByteArray::number(r.width());
+            result += 'x';
+            result += QByteArray::number(r.height());
+            if (r.x() >= 0)
+                result += '+';
+            result += QByteArray::number(r.x());
+            if (r.y() >= 0)
+                result += '+';
+            result += QByteArray::number(r.y());
+        }
+    }
+    result += ')';
+    return qstrdup(result.constData());
 }
 
 inline bool qCompare(QIcon const &t1, QIcon const &t2, const char *actual, const char *expected,
