@@ -1418,16 +1418,16 @@ static bool setFloatAttribute(qreal *destination, const QString &value)
     return ok;
 }
 
-static void setWidthAttribute(QTextLength *width, QString value)
+static void setWidthAttribute(QTextLength *width, const QString &valueStr)
 {
     bool ok = false;
-    qreal realVal = value.toDouble(&ok);
+    qreal realVal = valueStr.toDouble(&ok);
     if (ok) {
         *width = QTextLength(QTextLength::FixedLength, realVal);
     } else {
-        value = value.trimmed();
+        QStringRef value = QStringRef(&valueStr).trimmed();
         if (!value.isEmpty() && value.endsWith(QLatin1Char('%'))) {
-            value.chop(1);
+            value.truncate(value.size() - 1);
             realVal = value.toDouble(&ok);
             if (ok)
                 *width = QTextLength(QTextLength::PercentageLength, realVal);

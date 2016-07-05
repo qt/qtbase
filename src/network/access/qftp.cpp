@@ -2034,7 +2034,7 @@ int QFtp::rename(const QString &oldname, const QString &newname)
 */
 int QFtp::rawCommand(const QString &command)
 {
-    QString cmd = command.trimmed() + QLatin1String("\r\n");
+    const QString cmd = QStringRef(&command).trimmed() + QLatin1String("\r\n");
     return d_func()->addCommand(new QFtpCommand(RawCommand, QStringList(cmd)));
 }
 
@@ -2253,8 +2253,8 @@ void QFtpPrivate::_q_startNextCommand()
     // Proxy support, replace the Login argument in place, then fall
     // through.
     if (c->command == QFtp::Login && !proxyHost.isEmpty()) {
-        QString loginString = c->rawCmds.constFirst().trimmed();
-        loginString += QLatin1Char('@') + host;
+        QString loginString;
+        loginString += QStringRef(&c->rawCmds.constFirst()).trimmed() + QLatin1Char('@') + host;
         if (port && port != 21)
             loginString += QLatin1Char(':') + QString::number(port);
         loginString += QLatin1String("\r\n");
