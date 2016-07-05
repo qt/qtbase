@@ -320,10 +320,59 @@ void QWinRTWindow::setWindowState(Qt::WindowState state)
     if (d->state == state)
         return;
 
+#if _MSC_VER >= 1900
+    if (state == Qt::WindowFullScreen) {
+        HRESULT hr;
+        boolean success;
+        hr = QEventDispatcherWinRT::runOnXamlThread([&hr, &success]() {
+            ComPtr<IApplicationViewStatics2> applicationViewStatics;
+            hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_ViewManagement_ApplicationView).Get(),
+                                        IID_PPV_ARGS(&applicationViewStatics));
+            RETURN_HR_IF_FAILED("Could not access application view statics.");
+            ComPtr<IApplicationView> view;
+            hr = applicationViewStatics->GetForCurrentView(&view);
+            RETURN_HR_IF_FAILED("Could not access application view.");
+            ComPtr<IApplicationView3> view3;
+            hr = view.As(&view3);
+            Q_ASSERT_SUCCEEDED(hr);
+            hr = view3->TryEnterFullScreenMode(&success);
+            return hr;
+        });
+        if (FAILED(hr) || !success) {
+            qCDebug(lcQpaWindows) << "Failed to enter full screen mode.";
+            return;
+        }
+        d->state = state;
+        return;
+    }
+
+    if (d->state == Qt::WindowFullScreen) {
+        HRESULT hr;
+        hr = QEventDispatcherWinRT::runOnXamlThread([&hr]() {
+            ComPtr<IApplicationViewStatics2> applicationViewStatics;
+            hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_ViewManagement_ApplicationView).Get(),
+                                        IID_PPV_ARGS(&applicationViewStatics));
+            RETURN_HR_IF_FAILED("Could not access application view statics.");
+            ComPtr<IApplicationView> view;
+            hr = applicationViewStatics->GetForCurrentView(&view);
+            RETURN_HR_IF_FAILED("Could not access application view.");
+            ComPtr<IApplicationView3> view3;
+            hr = view.As(&view3);
+            Q_ASSERT_SUCCEEDED(hr);
+            hr = view3->ExitFullScreenMode();
+            return hr;
+        });
+        if (FAILED(hr)) {
+            qCDebug(lcQpaWindows) << "Failed to exit full screen mode.";
+            return;
+        }
+    }
+#endif // _MSC_VER >= 1900
+
     if (state == Qt::WindowMinimized)
         setUIElementVisibility(d->uiElement.Get(), false);
 
-    if (d->state == Qt::WindowMinimized)
+    if (d->state == Qt::WindowMinimized || state == Qt::WindowNoState || state == Qt::WindowActive)
         setUIElementVisibility(d->uiElement.Get(), true);
 
     d->state = state;
