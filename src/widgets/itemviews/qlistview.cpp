@@ -2396,9 +2396,9 @@ QPoint QListModeViewBase::initStaticLayout(const QListViewLayoutInfo &info)
     } else if (info.wrap) {
         if (info.flow == QListView::LeftToRight) {
             x = batchSavedPosition;
-            y = segmentPositions.last();
+            y = segmentPositions.constLast();
         } else { // flow == QListView::TopToBottom
-            x = segmentPositions.last();
+            x = segmentPositions.constLast();
             y = batchSavedPosition;
         }
     } else { // not first and not wrap
@@ -2613,7 +2613,7 @@ int QListModeViewBase::perItemScrollingPageSteps(int length, int bounds, bool wr
     int steps = positions.count() - 1;
     int max = qMax(length, bounds);
     int min = qMin(length, bounds);
-    int pos = min - (max - positions.last());
+    int pos = min - (max - positions.constLast());
 
     while (pos >= 0 && steps > 0) {
         pos -= (positions.at(steps) - positions.at(steps - 1));

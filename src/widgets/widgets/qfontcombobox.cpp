@@ -162,7 +162,7 @@ static QFontDatabase::WritingSystem writingSystemForFont(const QFont &font, bool
         return QFontDatabase::TraditionalChinese;
     }
 
-    system = writingSystems.last();
+    system = writingSystems.constLast();
 
     if (!*hasLatin) {
         // we need to show something

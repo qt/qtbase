@@ -3163,7 +3163,7 @@ void QDockAreaLayout::splitDockWidget(QDockWidget *after,
                                                QDockWidget *dockWidget,
                                                Qt::Orientation orientation)
 {
-    QList<int> path = indexOf(after);
+    const QList<int> path = indexOf(after);
     if (path.isEmpty())
         return;
 

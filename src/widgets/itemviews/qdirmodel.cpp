@@ -885,7 +885,7 @@ QModelIndex QDirModel::index(const QString &path, int column) const
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     if (absolutePath.startsWith(QLatin1String("//"))) { // UNC path
-        QString host = pathElements.first();
+        QString host = pathElements.constFirst();
         int r = 0;
         for (; r < d->root.children.count(); ++r)
             if (d->root.children.at(r).info.fileName() == host)
