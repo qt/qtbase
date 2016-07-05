@@ -120,10 +120,12 @@
     \snippet dialogs/findfiles/window.cpp 4
 
     We use the directory's path to create a QDir; the QDir class
-    provides access to directory structures and their contents. We
-    create a list of the files (contained in the newly created QDir)
-    that match the specified file name. If the file name is empty
-    the list will contain all the files in the directory.
+    provides access to directory structures and their contents.
+
+    \snippet dialogs/findfiles/window.cpp 13
+
+    We recursively create a list of the files (contained in the newl
+    created QDir) that match the specified file name.
 
     Then we search through all the files in the list, using the private
     \c findFiles() function, eliminating the ones that don't contain
@@ -173,9 +175,7 @@
 
     \snippet dialogs/findfiles/window.cpp 7
 
-    After updating the QProgressDialog, we create a QFile using the
-    QDir::absoluteFilePath() function which returns the absolute path
-    name of a file in the directory. We open the file in read-only
+    After updating the QProgressDialog, we open the file in read-only
     mode, and read one line at a time using QTextStream.
 
     The QTextStream class provides a convenient interface for reading
@@ -194,9 +194,18 @@
 
     Both the \c findFiles() and \c showFiles() functions are called from
     the \c find() slot. In the \c showFiles() function we run through
-    the provided list of file names, adding each file name to the
+    the provided list of file names, adding each relative file name to the
     first column in the table widget and retrieving the file's size using
-    QFile and QFileInfo for the second column.
+    QFileInfo for the second column. For later use, we set
+    the absolute path as a data on the QTableWidget using the
+    the role absoluteFileNameRole defined to be Qt::UserRole + 1.
+
+    \snippet dialogs/findfiles/window.cpp 17
+
+    This allows for retrieving the name of an item using a
+    convenience function:
+
+    \snippet dialogs/findfiles/window.cpp 18
 
     We also update the total number of files found.
 
@@ -236,8 +245,19 @@
 
     \snippet dialogs/findfiles/window.cpp 12
 
+    \snippet dialogs/findfiles/window.cpp 14
+
     The \c openFileOfItem() slot is invoked when the user double
     clicks on a cell in the table. The QDesktopServices::openUrl()
     knows how to open a file given the file name.
+
+    \snippet dialogs/findfiles/window.cpp 15
+    \snippet dialogs/findfiles/window.cpp 16
+
+    We set the context menu policy to of the table view to Qt::CustomContextMenu
+    and connect a slot contextMenu() to its signal
+    customContextMenuRequested(). We retrieve the absolute file name
+    from the data of the QTableWidgetItem and populate the context menu
+    with actions offering to copy the file name and to open the file.
 */
 

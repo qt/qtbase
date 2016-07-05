@@ -63,7 +63,9 @@ public:
 private slots:
     void browse();
     void find();
+    void animateFindClick();
     void openFileOfItem(int row, int column);
+    void contextMenu(const QPoint &pos);
 
 private:
     QStringList findFiles(const QStringList &files, const QString &text);
@@ -74,11 +76,7 @@ private:
     QComboBox *fileComboBox;
     QComboBox *textComboBox;
     QComboBox *directoryComboBox;
-    QLabel *fileLabel;
-    QLabel *textLabel;
-    QLabel *directoryLabel;
     QLabel *filesFoundLabel;
-    QPushButton *browseButton;
     QPushButton *findButton;
     QTableWidget *filesTable;
 
