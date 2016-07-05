@@ -70,6 +70,12 @@
 #include "non-gadget-parent-class.h"
 #include "grand-parent-gadget-class.h"
 
+#ifdef Q_MOC_RUN
+// check that moc can parse these constructs, they are being used in Windows winsock2.h header
+#define STRING_HASH_HASH(x) ("foo" ## x ## "bar")
+const char *string_hash_hash = STRING_HASH_HASH("baz");
+#endif
+
 Q_DECLARE_METATYPE(const QMetaObject*);
 
 

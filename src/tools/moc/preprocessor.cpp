@@ -695,12 +695,9 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
                     next = arg.at(0);
                 }
 
-                if (!expansion.isEmpty() && expansion.constLast().token == s.token) {
-                    Symbol last = expansion.constLast();
+                Symbol last = expansion.constLast();
+                if (!expansion.isEmpty() && last.token == s.token && last.token != STRING_LITERAL) {
                     expansion.pop_back();
-
-                    if (last.token == STRING_LITERAL || s.token == STRING_LITERAL)
-                        that->error("Can't concatenate non identifier tokens");
 
                     QByteArray lexem = last.lexem() + next.lexem();
                     expansion += Symbol(lineNum, last.token, lexem);
