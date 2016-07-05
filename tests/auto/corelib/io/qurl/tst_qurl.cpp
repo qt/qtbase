@@ -120,7 +120,8 @@ private slots:
     void isValid();
     void schemeValidator_data();
     void schemeValidator();
-    void invalidSchemeValidator();
+    void setScheme_data();
+    void setScheme();
     void strictParser_data();
     void strictParser();
     void tolerantParser();
@@ -2077,85 +2078,112 @@ void tst_QUrl::isValid()
 
 void tst_QUrl::schemeValidator_data()
 {
-    QTest::addColumn<QByteArray>("encodedUrl");
+    QTest::addColumn<QString>("input");
     QTest::addColumn<bool>("result");
-    QTest::addColumn<QString>("toString");
+    QTest::addColumn<QString>("scheme");
 
-    QTest::newRow("empty") << QByteArray() << false << QString();
+    //    scheme        = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
 
-    // ftp
-    QTest::newRow("ftp:") << QByteArray("ftp:") << true << QString("ftp:");
-    QTest::newRow("ftp://ftp.qt-project.org")
-        << QByteArray("ftp://ftp.qt-project.org")
-        << true << QString("ftp://ftp.qt-project.org");
-    QTest::newRow("ftp://ftp.qt-project.org/")
-        << QByteArray("ftp://ftp.qt-project.org/")
-        << true << QString("ftp://ftp.qt-project.org/");
-    QTest::newRow("ftp:/index.html")
-        << QByteArray("ftp:/index.html")
-        << false << QString();
+    QTest::newRow("empty") << QString() << false << QString();
 
-    // mailto
-    QTest::newRow("mailto:") << QByteArray("mailto:") << true << QString("mailto:");
-    QTest::newRow("mailto://smtp.trolltech.com/ole@bull.name")
-        << QByteArray("mailto://smtp.trolltech.com/ole@bull.name") << false << QString();
-    QTest::newRow("mailto:") << QByteArray("mailto:") << true << QString("mailto:");
-    QTest::newRow("mailto:ole@bull.name")
-        << QByteArray("mailto:ole@bull.name") << true << QString("mailto:ole@bull.name");
+    // uncontroversial ones
+    QTest::newRow("ftp") << "ftp://ftp.example.com/" << true << "ftp";
+    QTest::newRow("http") << "http://www.example.com/" << true << "http";
+    QTest::newRow("mailto") << "mailto:smith@example.com" << true << "mailto";
+    QTest::newRow("file-1slash") << "file:/etc/passwd" << true << "file";
+    QTest::newRow("file-2slashes") << "file://server/etc/passwd" << true << "file";
+    QTest::newRow("file-3slashes") << "file:///etc/passwd" << true << "file";
 
-    // file
-    QTest::newRow("file:") << QByteArray("file:/etc/passwd") << true << QString("file:///etc/passwd");
+    QTest::newRow("mailto+subject") << "mailto:smith@example.com?subject=Hello%20World" << true << "mailto";
+    QTest::newRow("mailto+host") << "mailto://smtp.example.com/smith@example.com" << true << "mailto";
+
+    // valid, but unexpected
+    QTest::newRow("ftp-nohost") << "ftp:/etc/passwd" << true << "ftp";
+    QTest::newRow("http-nohost") << "http:/etc/passwd" << true << "http";
+    QTest::newRow("mailto-nomail") << "mailto://smtp.example.com" << true << "mailto";
+
+    // schemes with numbers
+    QTest::newRow("digits") << "proto2://" << true << "proto2";
+
+    // schemes with dots, dashes, and pluses
+    QTest::newRow("svn+ssh") << "svn+ssh://svn.example.com" << true << "svn+ssh";
+    QTest::newRow("withdash") << "svn-ssh://svn.example.com" << true << "svn-ssh";
+    QTest::newRow("withdots") << "org.qt-project://qt-project.org" << true << "org.qt-project";
+
+    // lowercasing
+    QTest::newRow("FTP") << "FTP://ftp.example.com/" << true << "ftp";
+    QTest::newRow("HTTP") << "HTTP://www.example.com/" << true << "http";
+    QTest::newRow("MAILTO") << "MAILTO:smith@example.com" << true << "mailto";
+    QTest::newRow("FILE") << "FILE:/etc/passwd" << true << "file";
+    QTest::newRow("SVN+SSH") << "SVN+SSH://svn.example.com" << true << "svn+ssh";
+    QTest::newRow("WITHDASH") << "SVN-SSH://svn.example.com" << true << "svn-ssh";
+    QTest::newRow("WITHDOTS") << "ORG.QT-PROJECT://qt-project.org" << true << "org.qt-project";
+
+    // invalid entries
+    QTest::newRow("start-digit") << "1http://example.com" << false << "1http";
+    QTest::newRow("start-plus") << "+ssh://user@example.com" << false << "+ssh";
+    QTest::newRow("start-dot") << ".org.example:///" << false << ".org.example";
+    QTest::newRow("with-space") << "a b://" << false << "a b";
+    QTest::newRow("with-non-ascii") << "\304\245\305\243\305\245\321\200://example.com" << false << "\304\245\305\243\305\245\321\200";
+    QTest::newRow("with-control1") << "http\1://example.com" << false << "http\1";
+    QTest::newRow("with-control127") << "http\177://example.com" << false << "http\177";
+    QTest::newRow("with-null") << QString::fromLatin1("http\0://example.com", 19) << false << QString::fromLatin1("http\0", 5);
+
+    QTest::newRow("percent-encoded") << "%68%74%%74%70://example.com" << false << "%68%74%%74%70";
+
+    static const char controls[] = "!\"$&'()*,;<=>[\\]^_`{|}~";
+    for (size_t i = 0; i < sizeof(controls) - 1; ++i)
+        QTest::newRow(("with-" + QByteArray(1, controls[i])).constData())
+                << QString("pre%1post://example.com/").arg(QLatin1Char(controls[i]))
+                << false << QString("pre%1post").arg(QLatin1Char(controls[i]));
 }
 
 void tst_QUrl::schemeValidator()
 {
-    QFETCH(QByteArray, encodedUrl);
+    QFETCH(QString, input);
     QFETCH(bool, result);
-    QFETCH(QString, toString);
 
-    QUrl url = QUrl::fromEncoded(encodedUrl);
-    QEXPECT_FAIL("ftp:/index.html", "high-level URL validation not reimplemented yet", Abort);
-    QEXPECT_FAIL("mailto://smtp.trolltech.com/ole@bull.name", "high-level URL validation not reimplemented yet", Abort);
+    QUrl url(input);
     QCOMPARE(url.isValid(), result);
-    if (!result)
+    if (result) {
+        QFETCH(QString, scheme);
+        QCOMPARE(url.scheme(), scheme);
+
+        // reconstruct with just the scheme:
+        url.setUrl(scheme + ':');
+        QVERIFY(url.isValid());
+        QCOMPARE(url.scheme(), scheme);
+    } else {
         QVERIFY(url.toString().isEmpty());
+    }
 }
 
-void tst_QUrl::invalidSchemeValidator()
+void tst_QUrl::setScheme_data()
 {
-    // test that if scheme does not start with an ALPHA, QUrl::isValid() returns false
-    {
-        QUrl url("1http://qt-project.org");
-        QVERIFY(url.scheme().isEmpty());
-        QVERIFY(url.path().startsWith("1http"));
-    }
-    {
-        QUrl url("http://qt-project.org");
-        url.setScheme("111http://qt-project.org");
-        QCOMPARE(url.isValid(), false);
-        QVERIFY(url.toString().isEmpty());
-    }
-    // non-ALPHA character at other positions in the scheme are ok
-    {
-        QUrl url("ht111tp://qt-project.org", QUrl::StrictMode);
-        QVERIFY(url.isValid());
-        QCOMPARE(url.scheme(), QString("ht111tp"));
-        QVERIFY(!url.toString().isEmpty());
-    }
-    {
-        QUrl url("http://qt-project.org");
-        url.setScheme("ht123tp://qt-project.org");
-        QVERIFY(!url.isValid());
-        QVERIFY(url.toString().isEmpty());
-        url.setScheme("http");
-        QVERIFY(url.isValid());
-        QVERIFY(!url.toString().isEmpty());
-    }
-    {
-        QUrl url = QUrl::fromEncoded("ht321tp://qt-project.org", QUrl::StrictMode);
-        QVERIFY(url.isValid());
-        QVERIFY(!url.toString().isEmpty());
-    }
+    schemeValidator_data();
+
+    // a couple more which wouldn't work in parsing a full URL
+    QTest::newRow("with-slash") << QString() << false << "http/";
+    QTest::newRow("with-question") << QString() << false << "http?";
+    QTest::newRow("with-hash") << QString() << false << "http#";
+}
+
+void tst_QUrl::setScheme()
+{
+    QFETCH(QString, scheme);
+    QFETCH(bool, result);
+    QString expectedScheme;
+    if (result)
+        expectedScheme = scheme;
+
+    QUrl url;
+    url.setScheme(scheme);
+    QCOMPARE(url.isValid(), result);
+    QCOMPARE(url.scheme(), expectedScheme);
+
+    url.setScheme(scheme.toUpper());
+    QCOMPARE(url.isValid(), result);
+    QCOMPARE(url.scheme(), expectedScheme);
 }
 
 void tst_QUrl::strictParser_data()

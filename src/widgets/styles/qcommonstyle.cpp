@@ -5237,6 +5237,13 @@ static QPixmap cachedPixmapFromXPM(const char * const *xpm)
     return result;
 }
 
+#ifndef QT_NO_IMAGEFORMAT_PNG
+static inline QString clearText16IconPath()
+{
+    return QStringLiteral(":/qt-project.org/styles/commonstyle/images/cleartext-16.png");
+}
+#endif // !QT_NO_IMAGEFORMAT_PNG
+
 static QIcon clearTextIcon(bool rtl)
 {
     const QString directionalThemeName = rtl
@@ -5249,7 +5256,7 @@ static QIcon clearTextIcon(bool rtl)
 
     QIcon icon;
 #ifndef QT_NO_IMAGEFORMAT_PNG
-    QPixmap clearText16(QStringLiteral(":/qt-project.org/styles/commonstyle/images/cleartext-16.png"));
+    QPixmap clearText16(clearText16IconPath());
     Q_ASSERT(!clearText16.size().isEmpty());
     icon.addPixmap(clearText16);
     QPixmap clearText32(QStringLiteral(":/qt-project.org/styles/commonstyle/images/cleartext-32.png"));
@@ -5564,6 +5571,8 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
         return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-volume-16.png"));
     case SP_MediaVolumeMuted:
         return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-volume-muted-16.png"));
+    case SP_LineEditClearButton:
+        return QPixmap(clearText16IconPath());
 #endif // QT_NO_IMAGEFORMAT_PNG
     default:
         break;

@@ -2721,7 +2721,7 @@ qint64 QDateTimePrivate::toMSecsSinceEpoch() const
 
     case Qt::TimeZone:
 #ifdef QT_BOOTSTRAPPED
-        break;
+        return 0;
 #else
         return zoneMSecsToEpochMSecs(m_msecs, m_timeZone);
 #endif
@@ -4782,7 +4782,12 @@ QDataStream &operator>>(QDataStream &in, QDate &date)
 
 QDataStream &operator<<(QDataStream &out, const QTime &time)
 {
-    return out << quint32(time.mds);
+    if (out.version() >= QDataStream::Qt_4_0) {
+        return out << quint32(time.mds);
+    } else {
+        // Qt3 had no support for reading -1, QTime() was valid and serialized as 0
+        return out << quint32(time.isNull() ? 0 : time.mds);
+    }
 }
 
 /*!
@@ -4797,7 +4802,12 @@ QDataStream &operator>>(QDataStream &in, QTime &time)
 {
     quint32 ds;
     in >> ds;
-    time.mds = int(ds);
+    if (in.version() >= QDataStream::Qt_4_0) {
+        time.mds = int(ds);
+    } else {
+        // Qt3 would write 0 for a null time
+        time.mds = (ds == 0) ? QTime::NullTime : int(ds);
+    }
     return in;
 }
 
