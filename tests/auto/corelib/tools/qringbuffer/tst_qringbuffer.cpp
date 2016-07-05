@@ -189,9 +189,9 @@ void tst_QRingBuffer::free()
     ringBuffer.append(QByteArray("01234", 5));
 
     ringBuffer.free(1);
-    QCOMPARE(ringBuffer.size(), Q_INT64_C(4095 + 2048 + 5));
+    QCOMPARE(ringBuffer.size(), Q_INT64_C(4095) + 2048 + 5);
     ringBuffer.free(4096);
-    QCOMPARE(ringBuffer.size(), Q_INT64_C(2047 + 5));
+    QCOMPARE(ringBuffer.size(), Q_INT64_C(2047) + 5);
     ringBuffer.free(48);
     ringBuffer.free(2000);
     QCOMPARE(ringBuffer.size(), Q_INT64_C(4));
@@ -251,9 +251,9 @@ void tst_QRingBuffer::chop()
     ringBuffer.reserve(4096);
 
     ringBuffer.chop(1);
-    QCOMPARE(ringBuffer.size(), Q_INT64_C(5 + 2048 + 4095));
+    QCOMPARE(ringBuffer.size(), Q_INT64_C(5) + 2048 + 4095);
     ringBuffer.chop(4096);
-    QCOMPARE(ringBuffer.size(), Q_INT64_C(5 + 2047));
+    QCOMPARE(ringBuffer.size(), Q_INT64_C(5) + 2047);
     ringBuffer.chop(48);
     ringBuffer.chop(2000);
     QCOMPARE(ringBuffer.size(), Q_INT64_C(4));
