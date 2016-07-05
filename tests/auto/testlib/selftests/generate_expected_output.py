@@ -109,6 +109,7 @@ if isWindows:
     exit()
 
 tests = sys.argv[1:]
+os.environ['LC_ALL'] = 'C'
 if len(tests) == 0:
    tests = subdirs()
 print("Generating " + str(len(tests)) + " test results for: " + qtver + " in: " + rootPath)
