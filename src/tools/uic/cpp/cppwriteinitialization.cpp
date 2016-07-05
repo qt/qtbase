@@ -2473,10 +2473,8 @@ void WriteInitialization::acceptWidgetScripts(const DomScripts &widgetScripts, D
     QString script;
     for (const DomScript *domScript : qAsConst(scripts)) {
         const QString snippet = domScript->text();
-        if (!snippet.isEmpty()) {
-            script += snippet.trimmed();
-            script += QLatin1Char('\n');
-        }
+        if (!snippet.isEmpty())
+            script += QStringRef(&snippet).trimmed() + QLatin1Char('\n');
     }
     if (script.isEmpty())
         return;

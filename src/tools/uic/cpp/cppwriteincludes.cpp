@@ -291,9 +291,8 @@ void WriteIncludes::writeHeaders(const OrderedSet &headers, bool global)
         const StringMap::const_iterator hit = m_oldHeaderToNewHeader.constFind(sit.key());
         const bool mapped =  hit != m_oldHeaderToNewHeader.constEnd();
         const  QString header =  mapped ? hit.value() : sit.key();
-        if (!header.trimmed().isEmpty()) {
+        if (!QStringRef(&header).trimmed().isEmpty())
             m_output << "#include " << openingQuote << header << closingQuote << QLatin1Char('\n');
-        }
     }
 }
 
