@@ -23,7 +23,10 @@ win32: DEFINES += HB_NO_WIN1256
 android: DEFINES += _POSIX_C_SOURCE=200112L
 
 INCLUDEPATH += $$PWD/include
+
+# Harfbuzz-NG inside Qt uses the Qt atomics (inline code only)
 INCLUDEPATH += $$QT.core.includes
+DEFINES += QT_NO_VERSION_TAGGING
 
 SOURCES += \
     $$PWD/src/hb-blob.cc \
