@@ -2482,6 +2482,14 @@ void tst_qmakelib::proEval_data()
                "Project MESSAGE: assign split joined: word: this is a test:done\n"
                "Project MESSAGE: assign split quoted: word   this   is a     test done"
             << true;
+
+    // Raw data leak with empty file name. Verify with Valgrind or asan.
+    QTest::newRow("QTBUG-54550")
+            << "FULL = /there/is\n"
+               "VAR = $$absolute_path(, $$FULL/nothing/here/really)"
+            << "VAR = /there/is/nothing/here/really"
+            << ""
+            << true;
 }
 
 static QString formatValue(const ProStringList &vals)
