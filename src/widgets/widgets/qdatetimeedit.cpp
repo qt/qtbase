@@ -248,9 +248,10 @@ void QDateTimeEdit::setDateTime(const QDateTime &datetime)
     Q_D(QDateTimeEdit);
     if (datetime.isValid()) {
         d->clearCache();
+        const QDate date = datetime.date();
         if (!(d->sections & DateSections_Mask))
-            setDateRange(datetime.date(), datetime.date());
-        d->setValue(QDateTime(datetime.date(), datetime.time(), d->spec), EmitIfChanged);
+            setDateRange(date, date);
+        d->setValue(QDateTime(date, datetime.time(), d->spec), EmitIfChanged);
     }
 }
 
@@ -1770,15 +1771,18 @@ void QDateTimeEditPrivate::setSelected(int sectionIndex, bool forward)
 
 int QDateTimeEditPrivate::sectionAt(int pos) const
 {
-    if (pos < separators.first().size()) {
+    if (pos < separators.first().size())
         return (pos == 0 ? FirstSectionIndex : NoSectionIndex);
-    } else if (displayText().size() - pos < separators.last().size() + 1) {
+
+    const QString text = displayText();
+    const int textSize = text.size();
+    if (textSize - pos < separators.last().size() + 1) {
         if (separators.last().size() == 0) {
             return sectionNodes.count() - 1;
         }
-        return (pos == displayText().size() ? LastSectionIndex : NoSectionIndex);
+        return (pos == textSize ? LastSectionIndex : NoSectionIndex);
     }
-    updateCache(value, displayText());
+    updateCache(value, text);
 
     for (int i=0; i<sectionNodes.size(); ++i) {
         const int tmp = sectionPos(i);
@@ -1799,12 +1803,14 @@ int QDateTimeEditPrivate::sectionAt(int pos) const
 int QDateTimeEditPrivate::closestSection(int pos, bool forward) const
 {
     Q_ASSERT(pos >= 0);
-    if (pos < separators.first().size()) {
+    if (pos < separators.first().size())
         return forward ? 0 : FirstSectionIndex;
-    } else if (displayText().size() - pos < separators.last().size() + 1) {
+
+    const QString text = displayText();
+    if (text.size() - pos < separators.last().size() + 1)
         return forward ? LastSectionIndex : sectionNodes.size() - 1;
-    }
-    updateCache(value, displayText());
+
+    updateCache(value, text);
     for (int i=0; i<sectionNodes.size(); ++i) {
         const int tmp = sectionPos(sectionNodes.at(i));
         if (pos < tmp + sectionSize(i)) {
