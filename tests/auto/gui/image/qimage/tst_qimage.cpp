@@ -106,6 +106,7 @@ private slots:
     void smoothScale();
     void smoothScale2_data();
     void smoothScale2();
+    void smoothScale3_data();
     void smoothScale3();
     void smoothScale4();
 
@@ -1715,9 +1716,12 @@ static inline int rand8()
     return int(256. * (qrand() / (RAND_MAX + 1.0)));
 }
 
-// compares img.scale against the bilinear filtering used by QPainter
-void tst_QImage::smoothScale3()
+void tst_QImage::smoothScale3_data()
 {
+    QTest::addColumn<QImage>("img");
+    QTest::addColumn<qreal>("scale_x");
+    QTest::addColumn<qreal>("scale_y");
+
     QImage img(128, 128, QImage::Format_RGB32);
     for (int y = 0; y < img.height(); ++y) {
         for (int x = 0; x < img.width(); ++x) {
@@ -1730,36 +1734,49 @@ void tst_QImage::smoothScale3()
         }
     }
 
-    qreal scales[2] = { .5, 2 };
+    QTest::newRow("(0.5, 0.5)") << img << qreal(0.5) << qreal(0.5);
+    QTest::newRow("(0.5, 1.0)") << img << qreal(0.5) << qreal(1.0);
+    QTest::newRow("(1.0, 0.5)") << img << qreal(1.0) << qreal(0.5);
+    QTest::newRow("(0.5, 2.0)") << img << qreal(0.5) << qreal(2.0);
+    QTest::newRow("(1.0, 2.0)") << img << qreal(1.0) << qreal(2.0);
+    QTest::newRow("(2.0, 0.5)") << img << qreal(2.0) << qreal(0.5);
+    QTest::newRow("(2.0, 1.0)") << img << qreal(2.0) << qreal(1.0);
+    QTest::newRow("(2.0, 2.0)") << img << qreal(2) << qreal(2);
+}
+// compares img.scale against the bilinear filtering used by QPainter
+void tst_QImage::smoothScale3()
+{
+    QFETCH(QImage, img);
+    QFETCH(qreal, scale_x);
+    QFETCH(qreal, scale_y);
 
-    for (int i = 0; i < 2; ++i) {
-        QImage a = img.scaled(img.size() * scales[i], Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-        QImage b(a.size(), a.format());
-        b.fill(0x0);
+    QImage a = img.scaled(img.width() * scale_x, img.height() * scale_y, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    QImage b(a.size(), a.format());
+    b.fill(0x0);
 
-        QPainter p(&b);
-        p.setRenderHint(QPainter::SmoothPixmapTransform);
-        p.scale(scales[i], scales[i]);
-        p.drawImage(0, 0, img);
-        p.end();
-        int err = 0;
+    QPainter p(&b);
+    p.setRenderHint(QPainter::SmoothPixmapTransform);
+    p.scale(scale_x, scale_y);
+    p.drawImage(0, 0, img);
+    p.end();
+    int err = 0;
 
-        for (int y = 0; y < a.height(); ++y) {
-            for (int x = 0; x < a.width(); ++x) {
-                QRgb ca = a.pixel(x, y);
-                QRgb cb = b.pixel(x, y);
+    for (int y = 0; y < a.height(); ++y) {
+        for (int x = 0; x < a.width(); ++x) {
+            QRgb ca = a.pixel(x, y);
+            QRgb cb = b.pixel(x, y);
 
-                // tolerate a little bit of rounding errors
-                bool r = true;
-                r &= qAbs(qRed(ca) - qRed(cb)) <= 18;
-                r &= qAbs(qGreen(ca) - qGreen(cb)) <= 18;
-                r &= qAbs(qBlue(ca) - qBlue(cb)) <= 18;
-                if (!r)
-                    err++;
-            }
+            // tolerate a little bit of rounding errors
+            int tolerance = 3;
+            bool r = true;
+            r &= qAbs(qRed(ca) - qRed(cb)) <= tolerance;
+            r &= qAbs(qGreen(ca) - qGreen(cb)) <= tolerance;
+            r &= qAbs(qBlue(ca) - qBlue(cb)) <= tolerance;
+            if (!r)
+                err++;
         }
-        QCOMPARE(err, 0);
     }
+    QCOMPARE(err, 0);
 }
 
 // Tests smooth upscale is smooth
