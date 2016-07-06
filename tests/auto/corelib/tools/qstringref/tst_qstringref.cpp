@@ -81,6 +81,7 @@ private slots:
     void integer_conversion();
     void trimmed();
     void truncate();
+    void chop();
     void left();
     void right();
     void mid();
@@ -1900,6 +1901,48 @@ void tst_QStringRef::truncate()
         QStringRef ref = cref;
         QVERIFY(!ref.isEmpty());
         ref.truncate(-1);
+        QVERIFY(ref.isEmpty());
+    }
+}
+
+void tst_QStringRef::chop()
+{
+    const QString originalString = QStringLiteral("OriginalString~");
+    const QStringRef cref(&originalString);
+    {
+        const int n = 1;
+        QStringRef ref = cref;
+        QString str = originalString;
+        ref.chop(n);
+        str.chop(n);
+        QCOMPARE(ref.toString(), QLatin1String("OriginalString"));
+        QCOMPARE(ref.toString(), str);
+    }
+    {
+        const int n = -1;
+        QStringRef ref = cref;
+        QString str = originalString;
+        ref.chop(n);
+        str.chop(n);
+        QCOMPARE(ref.toString(), originalString);
+        QCOMPARE(ref.toString(), str);
+    }
+    {
+        const int n = 0;
+        QStringRef ref = cref;
+        QString str = originalString;
+        ref.chop(n);
+        str.chop(n);
+        QCOMPARE(ref.toString(), originalString);
+        QCOMPARE(ref.toString(), str);
+    }
+    {
+        const int n = 1000;
+        QStringRef ref = cref;
+        QString str = originalString;
+        ref.chop(n);
+        str.chop(n);
+        QCOMPARE(ref.toString(), str);
         QVERIFY(ref.isEmpty());
     }
 }

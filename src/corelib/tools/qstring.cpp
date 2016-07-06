@@ -5009,7 +5009,7 @@ void QString::truncate(int pos)
     If you want to remove characters from the \e beginning of the
     string, use remove() instead.
 
-    \sa truncate(), resize(), remove()
+    \sa truncate(), resize(), remove(), QStringRef::chop()
 */
 void QString::chop(int n)
 {
@@ -9657,6 +9657,18 @@ QStringRef QString::midRef(int position, int n) const
     If \a position is negative, it is equivalent to passing zero.
 
     \sa QString::truncate()
+*/
+
+/*!
+    \fn void QStringRef::chop(int n)
+    \since 5.8
+
+    Removes \a n characters from the end of the string.
+
+    If \a n is greater than or equal to size(), the result is an
+    empty string; if \a n is negative, it is equivalent to passing zero.
+
+    \sa QString::chop(), truncate()
 */
 
 /*!
