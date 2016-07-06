@@ -94,9 +94,8 @@ static inline QString mailCommand()
             keyName = QString::fromWCharArray(command);
         RegCloseKey(handle);
     }
-    if (keyName.isEmpty())
-        keyName = QStringLiteral("mailto");
-    keyName += QStringLiteral("\\Shell\\Open\\Command");
+    const QLatin1String mailto = keyName.isEmpty() ? QLatin1String("mailto") : QLatin1String();
+    keyName += mailto + QLatin1String("\\Shell\\Open\\Command");
     if (debug)
         qDebug() << __FUNCTION__ << "keyName=" << keyName;
     command[0] = 0;
@@ -134,7 +133,7 @@ static inline bool launchMail(const QUrl &url)
     }
     // Pass the url as the parameter. Should use QProcess::startDetached(),
     // but that cannot handle a Windows command line [yet].
-    command.replace(QStringLiteral("%1"), url.toString(QUrl::FullyEncoded));
+    command.replace(QLatin1String("%1"), url.toString(QUrl::FullyEncoded));
     if (debug)
         qDebug() << __FUNCTION__ << "Launching" << command;
     //start the process

@@ -246,11 +246,11 @@ QString QWindowsTabletSupport::description() const
         .arg(implementationVersion >> 8).arg(implementationVersion & 0xFF)
         .arg(opts, 0, 16);
     if (opts & CXO_MESSAGES)
-        result += QStringLiteral(" CXO_MESSAGES");
+        result += QLatin1String(" CXO_MESSAGES");
     if (opts & CXO_CSRMESSAGES)
-        result += QStringLiteral(" CXO_CSRMESSAGES");
+        result += QLatin1String(" CXO_CSRMESSAGES");
     if (m_tiltSupport)
-        result += QStringLiteral(" tilt");
+        result += QLatin1String(" tilt");
     return result;
 }
 

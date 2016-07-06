@@ -3581,7 +3581,7 @@ QString QDateTime::toString(Qt::DateFormat format) const
                                                    .arg(tm.toString(Qt::TextDate))
                                                    .arg(dt.year());
         if (timeSpec() != Qt::LocalTime) {
-            buf += QStringLiteral(" GMT");
+            buf += QLatin1String(" GMT");
             if (d->m_spec == Qt::OffsetFromUTC)
                 buf += toOffsetString(Qt::TextDate, d->m_offsetFromUtc);
         }

@@ -1295,8 +1295,7 @@ static QString extractEncodingDecl(const QString &text, bool *needMoreText)
     *needMoreText = false;
 
     int l = text.length();
-    const QString declStart = QStringLiteral("<?xml");
-    const QStringRef snip = declStart.leftRef(l);
+    const QLatin1String snip("<?xml", std::min(l, 5));
     if (l > 0 && !text.startsWith(snip))
         return QString();
 

@@ -468,7 +468,7 @@ long QSslSocketPrivate::sslLibraryVersionNumber()
 
 QString QSslSocketPrivate::sslLibraryVersionString()
 {
-    return QStringLiteral("Secure Transport, ") + QSysInfo::prettyProductName();
+    return QLatin1String("Secure Transport, ") + QSysInfo::prettyProductName();
 }
 
 long QSslSocketPrivate::sslLibraryBuildVersionNumber()

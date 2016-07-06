@@ -102,7 +102,7 @@ QMimeData *QWinRTClipboard::mimeData(QClipboard::Mode mode)
     quint32 size;
     const wchar_t *textStr = result.GetRawBuffer(&size);
     QString text = QString::fromWCharArray(textStr, size);
-    text.replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
+    text.replace(QLatin1String("\r\n"), QLatin1String("\n"));
     m_mimeData.setText(text);
 
     return &m_mimeData;

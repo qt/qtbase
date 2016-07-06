@@ -346,7 +346,7 @@ QWindowsTheme::~QWindowsTheme()
 
 static inline QStringList iconThemeSearchPaths()
 {
-    const QFileInfo appDir(QCoreApplication::applicationDirPath() + QStringLiteral("/icons"));
+    const QFileInfo appDir(QCoreApplication::applicationDirPath() + QLatin1String("/icons"));
     return appDir.isDir() ? QStringList(appDir.absoluteFilePath()) : QStringList();
 }
 

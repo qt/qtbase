@@ -64,7 +64,7 @@ QTsLibMouseHandler::QTsLibMouseHandler(const QString &key,
 
     QByteArray device = qgetenv("TSLIB_TSDEVICE");
 
-    if (specification.startsWith(QStringLiteral("/dev/")))
+    if (specification.startsWith(QLatin1String("/dev/")))
         device = specification.toLocal8Bit();
 
     if (device.isEmpty())

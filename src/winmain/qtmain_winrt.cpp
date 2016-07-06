@@ -307,7 +307,7 @@ private:
         if (develMode) {
             // Write a PID file to help runner
             const QString pidFileName = QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation))
-                    .absoluteFilePath(QString::number(uint(GetCurrentProcessId())) + QStringLiteral(".pid"));
+                    .absoluteFilePath(QString::asprintf("%u.pid", uint(GetCurrentProcessId())));
             CREATEFILE2_EXTENDED_PARAMETERS params = {
                 sizeof(CREATEFILE2_EXTENDED_PARAMETERS),
                 FILE_ATTRIBUTE_NORMAL

@@ -79,7 +79,7 @@ QStringList QEGLDeviceIntegrationFactory::keys(const QString &pluginPath)
         QCoreApplication::addLibraryPath(pluginPath);
         list = directLoader()->keyMap().values();
         if (!list.isEmpty()) {
-            const QString postFix = QStringLiteral(" (from ")
+            const QString postFix = QLatin1String(" (from ")
                     + QDir::toNativeSeparators(pluginPath)
                     + QLatin1Char(')');
             const QStringList::iterator end = list.end();

@@ -66,7 +66,7 @@ Q_LOGGING_CATEGORY(qLcTray, "qt.qpa.tray")
 
 static const QString KDEItemFormat = QStringLiteral("org.kde.StatusNotifierItem-%1-%2");
 static const QString KDEWatcherService = QStringLiteral("org.kde.StatusNotifierWatcher");
-static const QString TempFileTemplate =  QDir::tempPath() + QStringLiteral("/qt-trayicon-XXXXXX.png");
+static const QString TempFileTemplate =  QDir::tempPath() + QLatin1String("/qt-trayicon-XXXXXX.png");
 static const QString XdgNotificationService = QStringLiteral("org.freedesktop.Notifications");
 static const QString XdgNotificationPath = QStringLiteral("/org/freedesktop/Notifications");
 static const QString DefaultAction = QStringLiteral("default");
@@ -156,7 +156,7 @@ QTemporaryFile *QDBusTrayIcon::tempIcon(const QIcon &icon)
         QDBusConnection session = QDBusConnection::sessionBus();
         uint pid = session.interface()->servicePid(KDEWatcherService).value();
         QString processName = QLockFilePrivate::processNameByPid(pid);
-        necessary = processName.endsWith(QStringLiteral("indicator-application-service"));
+        necessary = processName.endsWith(QLatin1String("indicator-application-service"));
         necessity_checked = true;
     }
     if (!necessary)

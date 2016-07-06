@@ -509,28 +509,29 @@ QString QWindowsContext::registerWindowClass(const QWindow *w)
         break;
     }
     // Create a unique name for the flag combination
-    QString cname = QStringLiteral("Qt5QWindow");
+    QString cname;
+    cname += QLatin1String("Qt5QWindow");
     switch (type) {
     case Qt::Tool:
-        cname += QStringLiteral("Tool");
+        cname += QLatin1String("Tool");
         break;
     case Qt::ToolTip:
-        cname += QStringLiteral("ToolTip");
+        cname += QLatin1String("ToolTip");
         break;
     case Qt::Popup:
-        cname += QStringLiteral("Popup");
+        cname += QLatin1String("Popup");
         break;
     default:
         break;
     }
     if (style & CS_DROPSHADOW)
-        cname += QStringLiteral("DropShadow");
+        cname += QLatin1String("DropShadow");
     if (style & CS_SAVEBITS)
-        cname += QStringLiteral("SaveBits");
+        cname += QLatin1String("SaveBits");
     if (style & CS_OWNDC)
-        cname += QStringLiteral("OwnDC");
+        cname += QLatin1String("OwnDC");
     if (icon)
-        cname += QStringLiteral("Icon");
+        cname += QLatin1String("Icon");
 
     return registerWindowClass(cname, qWindowsWndProc, style, GetSysColorBrush(COLOR_WINDOW), icon);
 }
@@ -828,8 +829,8 @@ static inline QString errorMessageFromComError(const _com_error &comError)
          return result;
      }
      if (const WORD wCode = comError.WCode())
-         return QStringLiteral("IDispatch error #") + QString::number(wCode);
-     return QStringLiteral("Unknown error 0x0") + QString::number(comError.Error(), 16);
+         return QString::asprintf("IDispatch error #%u", uint(wCode));
+     return QString::asprintf("Unknown error 0x0%x", uint(comError.Error()));
 }
 #endif // !Q_OS_WINCE
 

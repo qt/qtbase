@@ -278,7 +278,7 @@ QString TableGenerator::findComposeFile()
 
     // check if user’s home directory has a file named .XCompose
     if (cleanState()) {
-        QString path = qgetenv("HOME") + QStringLiteral("/.XCompose");
+        QString path = qgetenv("HOME") + QLatin1String("/.XCompose");
         if (QFile::exists(path))
             return path;
     }

@@ -819,7 +819,7 @@ static const ushort * const fragmentInUrl = userNameInUrl + 6;
 
 static inline void parseDecodedComponent(QString &data)
 {
-    data.replace(QLatin1Char('%'), QStringLiteral("%25"));
+    data.replace(QLatin1Char('%'), QLatin1String("%25"));
 }
 
 static inline QString
@@ -1477,7 +1477,7 @@ QString QUrlPrivate::toLocalFile(QUrl::FormattingOptions options) const
 
     // magic for shared drive on windows
     if (!host.isEmpty()) {
-        tmp = QStringLiteral("//") + host;
+        tmp = QLatin1String("//") + host;
 #ifdef Q_OS_WIN // QTBUG-42346, WebDAV is visible as local file on Windows only.
         if (scheme == webDavScheme())
             tmp += webDavSslTag();

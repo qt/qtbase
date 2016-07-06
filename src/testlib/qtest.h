@@ -144,7 +144,7 @@ template<> inline char *toString(const QRectF &s)
 template<> inline char *toString(const QUrl &uri)
 {
     if (!uri.isValid())
-        return qstrdup(qPrintable(QStringLiteral("Invalid URL: ") + uri.errorString()));
+        return qstrdup(qPrintable(QLatin1String("Invalid URL: ") + uri.errorString()));
     return qstrdup(uri.toEncoded().constData());
 }
 
