@@ -152,7 +152,7 @@ private:
     QString locateFile(const QString &fileName) const;
     bool findFile(const QString &fileName) const { return !locateFile(fileName).isEmpty(); }
     static QString findFileInPaths(const QString &fileName, const QStringList &paths);
-    void reloadCmdLine();
+    void reloadCmdLine(int idx);
     void saveCmdLine();
 
     void addSysroot(QString *command);

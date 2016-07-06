@@ -362,19 +362,19 @@ void Configure::parseCmdLine()
     int argCount = configCmdLine.size();
     int i = 0;
 
-    if (argCount < 1) // skip rest if no arguments
-        ;
-    else if (configCmdLine.at(i) == "-redo") {
-        dictionary[ "REDO" ] = "yes";
-        configCmdLine.clear();
-        reloadCmdLine();
+    // Look first for -redo
+    for (int k = 0 ; k < argCount; ++k) {
+        if (configCmdLine.at(k) == "-redo") {
+            dictionary["REDO"] = "yes";
+            configCmdLine.removeAt(k);
+            reloadCmdLine(k);
+            argCount = configCmdLine.size();
+            break;
+        }
     }
 
-    argCount = configCmdLine.size();
-
+    // Then look for XQMAKESPEC
     bool isDeviceMkspec = false;
-
-    // Look first for XQMAKESPEC
     for (int j = 0 ; j < argCount; ++j)
     {
         if ((configCmdLine.at(j) == "-xplatform") || (configCmdLine.at(j) == "-device")) {
@@ -4222,14 +4222,14 @@ void Configure::readLicense()
     }
 }
 
-void Configure::reloadCmdLine()
+void Configure::reloadCmdLine(int idx)
 {
     if (dictionary[ "REDO" ] == "yes") {
         QFile inFile(buildPath + "/configure.cache");
         if (inFile.open(QFile::ReadOnly)) {
             QTextStream inStream(&inFile);
             while (!inStream.atEnd())
-                configCmdLine += inStream.readLine().trimmed();
+                configCmdLine.insert(idx++, inStream.readLine().trimmed());
             inFile.close();
         }
     }
