@@ -183,6 +183,11 @@ defineTest(qtConfParseCommandLine) {
             export(QMAKE_CONFIG_VERBOSE)
             next()
         }
+        contains(c, "^-no-v")|contains(c, "^--?no-verbose") {
+            QMAKE_CONFIG_VERBOSE = false
+            export(QMAKE_CONFIG_VERBOSE)
+            next()
+        }
 
         # parse out opt and val
         contains(c, "^--?enable-(.*)") {
