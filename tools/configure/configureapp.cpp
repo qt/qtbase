@@ -4240,20 +4240,22 @@ void Configure::readLicense()
 void Configure::reloadCmdLine(int idx)
 {
     if (dictionary[ "REDO" ] == "yes") {
-        QFile inFile(buildPath + "/configure.cache");
-        if (inFile.open(QFile::ReadOnly)) {
-            QTextStream inStream(&inFile);
-            while (!inStream.atEnd())
-                configCmdLine.insert(idx++, inStream.readLine().trimmed());
-            inFile.close();
+        QFile inFile(buildPath + "/config.opt");
+        if (!inFile.open(QFile::ReadOnly)) {
+            inFile.setFileName(buildPath + "/configure.cache");
+            if (!inFile.open(QFile::ReadOnly))
+                return;
         }
+        QTextStream inStream(&inFile);
+        while (!inStream.atEnd())
+            configCmdLine.insert(idx++, inStream.readLine().trimmed());
     }
 }
 
 void Configure::saveCmdLine()
 {
     if (dictionary[ "REDO" ] != "yes") {
-        QFile outFile(buildPath + "/configure.cache");
+        QFile outFile(buildPath + "/config.opt");
         if (outFile.open(QFile::WriteOnly | QFile::Text)) {
             QTextStream outStream(&outFile);
             for (QStringList::Iterator it = configCmdLine.begin(); it != configCmdLine.end(); ++it) {
