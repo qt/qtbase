@@ -47,7 +47,7 @@
             "avx512": "boolean",
             "c++std": "cxxstd",
             "commercial": "void",
-            "compile_examples": "boolean",
+            "compile-examples": { "type": "boolean", "name": "compile_examples" },
             "confirm-license": "void",
             "continue": "void",
             "cups": "boolean",
