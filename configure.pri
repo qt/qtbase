@@ -1,5 +1,14 @@
 # custom command line handling
 
+defineTest(qtConfCommandline_qmakeArgs) {
+    contains(1, QMAKE_[A-Z_]+ *[-+]?=.*) {
+        config.input.qmakeArgs += $$1
+        export(config.input.qmakeArgs)
+        return(true)
+    }
+    return(false)
+}
+
 defineTest(qtConfCommandline_cxxstd) {
     arg = $${1}
     val = $${2}
@@ -560,11 +569,6 @@ defineTest(qtConfOutput_extraFeatures) {
 }
 
 
-defineTest(qtConfOutputPostProcess_privatePro) {
-    config.output.privatePro += $$cat($$OUT_PWD/.qmake.vars, lines)
-    export(config.output.privatePro)
-}
-
 defineTest(qtConfOutput_compilerFlags) {
     # this output also exports the variables locally, so that subsequent compiler tests can use them
 
@@ -610,7 +614,7 @@ defineTest(qtConfOutput_gccSysroot) {
 
     # This variable also needs to be exported immediately, so the compilation tests
     # can pick it up.
-    EXTRA_QMAKE_ARGS = \
+    EXTRA_QMAKE_ARGS += \
         "\"QMAKE_CFLAGS += --sysroot=$$config.input.sysroot\"" \
         "\"QMAKE_CXXFLAGS += --sysroot=$$config.input.sysroot\"" \
         "\"QMAKE_LFLAGS += --sysroot=$$config.input.sysroot\""
@@ -624,6 +628,19 @@ defineTest(qtConfOutput_gccSysroot) {
         "}"
     config.output.publicPro += $$output
     export(config.output.publicPro)
+}
+
+defineTest(qtConfOutput_qmakeArgs) {
+    !$${2}: return()
+
+    config.output.privatePro = "!host_build {"
+    for (a, config.input.qmakeArgs) {
+        config.output.privatePro += "    $$a"
+        EXTRA_QMAKE_ARGS += $$system_quote($$a)
+    }
+    config.output.privatePro += "}"
+    export(EXTRA_QMAKE_ARGS)
+    export(config.output.privatePro)
 }
 
 defineTest(qtConfOutputPostProcess_publicPro) {

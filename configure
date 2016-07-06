@@ -92,11 +92,9 @@ $i"
 done
 
 # initialize global variables
-QMAKE_VARS_FILE=.qmake.vars
 DEVICE_VARS_FILE=.device.vars
 HOST_VARS_FILE=.host.vars
 
-:> "$QMAKE_VARS_FILE"
 :> "$DEVICE_VARS_FILE"
 :> "$HOST_VARS_FILE"
 
@@ -122,29 +120,6 @@ makeabs()
         RES=$nres
     done
     echo "$RES" | sed 's,//,/,g; s,/$,,'
-}
-
-# Adds a new qmake variable to the cache
-# Usage: QMakeVar mode varname contents
-#   where mode is one of: set, add, del
-QMakeVar()
-{
-    case "$1" in
-	set)
-	    eq="="
-	    ;;
-	add)
-	    eq="+="
-	    ;;
-	del)
-	    eq="-="
-	    ;;
-	*)
-	    echo >&2 "BUG: wrong command to QMakeVar: $1"
-	    ;;
-    esac
-
-    echo "$2" "$eq" "$3" >> "$QMAKE_VARS_FILE"
 }
 
 # Helper function for getQMakeConf. It parses include statements in
@@ -445,32 +420,10 @@ fi
 # initalize variables
 #-------------------------------------------------------------------------------
 
-SYSTEM_VARIABLES="AR RANLIB STRIP OBJDUMP LD CC CXX CFLAGS CXXFLAGS LDFLAGS"
-for varname in $SYSTEM_VARIABLES; do
-    qmakevarname="${varname}"
-    qmakecmdargs=""
-    # use LDFLAGS for autoconf compat, but qmake uses QMAKE_LFLAGS
-    if [ "${varname}" = "LDFLAGS" ]; then
-        qmakevarname="LFLAGS"
-    elif [ "${varname}" = "LD" ]; then
-        qmakevarname="LINK"
-    elif [ "${varname}" = "AR" ]; then
-        # QMAKE_AR needs to be set to "/path/to/ar cqs" but the
-        # environment variable will be set to the command only so we
-        # need to append " cqs" for autoconf compatibility
-        qmakecmdargs=" cqs"
-    fi
-    cmd=`echo \
-'if [ -n "\$'${varname}'" ]; then
-    QMakeVar set QMAKE_'${qmakevarname}' "\$'${varname}${qmakecmdargs}'"
-fi'`
-    eval "$cmd"
-done
-
 # Use CC/CXX to run config.tests
 mkdir -p "$outpath/config.tests"
 rm -f "$outpath/config.tests/.qmake.cache"
-cp "$QMAKE_VARS_FILE" "$outpath/config.tests/.qmake.cache"
+: > "$outpath/config.tests/.qmake.cache"
 
 # QTDIR may be set and point to an old or system-wide Qt installation
 unset QTDIR
@@ -1956,14 +1909,6 @@ else
     echo
 fi
 
-if [ "$OPT_VERBOSE" = "yes" ]; then
-    echo $ECHO_N "qmake vars .......... $ECHO_C"
-    cat "$QMAKE_VARS_FILE" | tr '\n' ' '
-    echo
-fi
-
-rm -f "$QMAKE_VARS_FILE" 2>/dev/null
-
 #-------------------------------------------------------------------------------
 # build makefiles based on the configuration
 #-------------------------------------------------------------------------------
@@ -1985,15 +1930,6 @@ rm -f "$QMAKE_VARS_FILE" 2>/dev/null
 #-------------------------------------------------------------------------------
 if [ `basename $0` != "config.status" ]; then
     CONFIG_STATUS="$relpath/$relconf$OPT_CMDLINE"
-
-    # add the system variables
-    for varname in $SYSTEM_VARIABLES; do
-        cmd=`echo \
-'if [ -n "\$'${varname}'" ]; then
-    CONFIG_STATUS="'${varname}'='"'\\\$${varname}'"' \$CONFIG_STATUS"
-fi'`
-	eval "$cmd"
-    done
 
     echo "$CONFIG_STATUS" | grep '\-confirm\-license' >/dev/null 2>&1 || CONFIG_STATUS="$CONFIG_STATUS -confirm-license"
 

@@ -17,6 +17,7 @@
             "SYBASE_LIBS": "tds.libs",
             "ZLIB_LIBS": "zlib.libs"
         },
+        "custom": "qmakeArgs",
         "options": {
             "prefix": "string",
             "hostprefix": "string",
@@ -762,7 +763,7 @@
 
     "testTypeDependencies": {
         "linkerSupportsFlag": [ "use_gold_linker" ],
-        "compile": [ "shared", "use_gold_linker", "compiler-flags", "gcc-sysroot" ],
+        "compile": [ "shared", "use_gold_linker", "compiler-flags", "gcc-sysroot", "qmakeargs" ],
         "detectPkgConfig": [ "cross_compile" ],
         "library": [ "pkg-config" ],
         "getPkgConfigVariable": [ "pkg-config" ],
@@ -1228,6 +1229,10 @@
         "gcc-sysroot": {
             "output": [ "gccSysroot" ],
             "condition": "input.sysroot != ''"
+        },
+        "qmakeargs": {
+            "output": [ "qmakeArgs" ],
+            "condition": "input.qmakeArgs != ''"
         },
         "use_gold_linker": {
             "description": "Using gold linker",
