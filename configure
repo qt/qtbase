@@ -80,16 +80,45 @@ if [ x"$1" = x"-top-level" ]; then
     shift
 fi
 
-# later cache the command line in config.status
-OPT_CMDLINE=
+CFG_REDO=no
+OPT_CMDLINE=  # excluding -verbose (for config.opt)
+QMAKE_CMDLINE=  # including -verbose (for actual parsing)
+set -f  # suppress globbing in for loop
+SAVED_IFS=$IFS
+IFS='
+'
 for i in "$@"; do
+    case $i in
+        -redo|--redo)
+            if ! test -f config.opt; then
+                echo >&2 "No config.opt present - cannot redo configuration."
+                exit 1
+            fi
+            for a in `cat config.opt`; do
+                OPT_CMDLINE="$OPT_CMDLINE
+$a"
+                QMAKE_CMDLINE="$QMAKE_CMDLINE
+$a"
+            done
+            CFG_REDO=yes  # suppress repeated config.opt writeout
+            continue
+            ;;
+        -v|-verbose|--verbose|-no-v|-no-verbose|--no-verbose)
+            ;;
+        *)
+            OPT_CMDLINE="$OPT_CMDLINE
+$i"
+            ;;
+    esac
     QMAKE_CMDLINE="$QMAKE_CMDLINE
 $i"
-    if [ "x$i" != "x-v" ]; then
-        [ -z "${i##* *}" ] && i="'$i'"
-        OPT_CMDLINE="$OPT_CMDLINE $i"
-    fi
 done
+set --
+for i in $QMAKE_CMDLINE; do
+    set -- "$@" "$i"
+done
+set +f
+IFS=$SAVED_IFS
 
 # initialize global variables
 DEVICE_VARS_FILE=.device.vars
@@ -1928,14 +1957,16 @@ fi
 #-------------------------------------------------------------------------------
 # finally save the executed command to another script
 #-------------------------------------------------------------------------------
-if [ `basename $0` != "config.status" ]; then
-    CONFIG_STATUS="$relpath/$relconf$OPT_CMDLINE"
+if [ $CFG_REDO = no ]; then
+    echo "$OPT_CMDLINE" | grep '\-confirm\-license' >/dev/null 2>&1 || OPT_CMDLINE="$OPT_CMDLINE
+-confirm-license"
 
-    echo "$CONFIG_STATUS" | grep '\-confirm\-license' >/dev/null 2>&1 || CONFIG_STATUS="$CONFIG_STATUS -confirm-license"
+    # skip first line, as it's always empty due to unconditional field separation
+    echo "$OPT_CMDLINE" | tail -n +2 > "$outpath/config.opt"
 
     [ -f "$outpath/config.status" ] && rm -f "$outpath/config.status"
     echo "#!/bin/sh" > "$outpath/config.status"
-    echo "$CONFIG_STATUS \"\$@\"" >> "$outpath/config.status"
+    echo "$relpath/$relconf -redo \"\$@\"" >> "$outpath/config.status"
     chmod +x "$outpath/config.status"
 fi
 
