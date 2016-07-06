@@ -43,7 +43,6 @@ public:
     ~Configure();
 
     void parseCmdLine();
-    void validateArgs();
     bool displayHelp();
 
     QString defaultTo(const QString &option);
@@ -64,20 +63,12 @@ public:
     void generateQDevicePri();
     void prepareConfigTests();
     void showSummary();
-    QString firstLicensePath();
 
     bool showLicense(QString licenseFile);
     void readLicense();
 
     QString addDefine(QString def);
 
-    enum ProjectType {
-        App,
-        Lib,
-        Subdirs
-    };
-
-    ProjectType projectType( const QString& proFileName );
     bool isDone();
     bool isOk();
 
@@ -98,21 +89,16 @@ private:
     QStringList buildParts;
     QStringList nobuildParts;
     QStringList skipModules;
-    QStringList licensedModules;
-    QStringList allSqlDrivers;
     QStringList disabledModules;
     QStringList enabledModules;
     QStringList modules;
-//    QStringList sqlDrivers;
     QStringList configCmdLine;
     QStringList qmakeConfig;
     QStringList qtConfig;
 
     QStringList qmakeSql;
-    QStringList qmakeSqlPlugins;
 
     QStringList qmakeStyles;
-    QStringList qmakeStylePlugins;
 
     QStringList qmakeVars;
     QStringList qmakeDefines;

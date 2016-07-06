@@ -431,69 +431,6 @@ QString Environment::execute(const QString &command, int *returnCode)
     return output;
 }
 
-/*!
-    Copies the \a srcDir contents into \a destDir.
-
-    Returns true if copying was successful.
-*/
-bool Environment::cpdir(const QString &srcDir, const QString &destDir)
-{
-    QString cleanSrcName = QDir::cleanPath(srcDir);
-    QString cleanDstName = QDir::cleanPath(destDir);
-
-#ifdef CONFIGURE_DEBUG_CP_DIR
-    qDebug() << "Attempt to cpdir " << cleanSrcName << "->" << cleanDstName;
-#endif
-    if(!QFile::exists(cleanDstName) && !QDir().mkpath(cleanDstName)) {
-        qDebug() << "cpdir: Failure to create " << cleanDstName;
-        return false;
-    }
-
-    bool result = true;
-    QDir dir = QDir(cleanSrcName);
-    QFileInfoList allEntries = dir.entryInfoList(QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot);
-    for (int i = 0; result && (i < allEntries.count()); ++i) {
-        QFileInfo entry = allEntries.at(i);
-        bool intermediate = true;
-        if (entry.isDir()) {
-            intermediate = cpdir(QString("%1/%2").arg(cleanSrcName).arg(entry.fileName()),
-                                 QString("%1/%2").arg(cleanDstName).arg(entry.fileName()));
-        } else {
-            QString destFile = QString("%1/%2").arg(cleanDstName).arg(entry.fileName());
-#ifdef CONFIGURE_DEBUG_CP_DIR
-            qDebug() << "About to cp (file)" << entry.absoluteFilePath() << "->" << destFile;
-#endif
-            QFile::remove(destFile);
-            intermediate = QFile::copy(entry.absoluteFilePath(), destFile);
-            SetFileAttributes((wchar_t*)destFile.utf16(), FILE_ATTRIBUTE_NORMAL);
-        }
-        if (!intermediate) {
-            qDebug() << "cpdir: Failure for " << entry.fileName() << entry.isDir();
-            result = false;
-        }
-    }
-    return result;
-}
-
-bool Environment::rmdir(const QString &name)
-{
-    bool result = true;
-    QString cleanName = QDir::cleanPath(name);
-
-    QDir dir = QDir(cleanName);
-    QFileInfoList allEntries = dir.entryInfoList(QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot);
-    for (int i = 0; result && (i < allEntries.count()); ++i) {
-        QFileInfo entry = allEntries.at(i);
-        if (entry.isDir()) {
-            result &= rmdir(entry.absoluteFilePath());
-        } else {
-            result &= QFile::remove(entry.absoluteFilePath());
-        }
-    }
-    result &= dir.rmdir(cleanName);
-    return result;
-}
-
 static QStringList splitPathList(const QString &path)
 {
 #if defined(Q_OS_WIN)

@@ -92,11 +92,6 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
         outputWidth = 79;
     int i;
 
-    /*
-    ** Set up the initial state, the default
-    */
-    dictionary[ "CONFIGCMD" ] = argv[ 0 ];
-
     for (i = 1; i < argc; i++)
         configCmdLine += argv[ i ];
 
@@ -138,7 +133,6 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     }
 
     dictionary[ "BUILD_QMAKE" ]     = "yes";
-    dictionary[ "QMAKE_INTERNAL" ]  = "no";
     dictionary[ "WIDGETS" ]         = "yes";
     dictionary[ "GUI" ]             = "yes";
     dictionary[ "RTTI" ]            = "yes";
@@ -155,7 +149,6 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     dictionary[ "AVX512" ]          = "auto";
     dictionary[ "SYNCQT" ]          = "auto";
     dictionary[ "WMF_BACKEND" ]     = "no";
-    dictionary[ "WMSDK" ]           = "auto";
     dictionary[ "QML_DEBUG" ]       = "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "no";
     dictionary[ "DIRECTWRITE" ]     = "auto";
@@ -328,23 +321,6 @@ QString Configure::formatPaths(const QStringList &paths)
         ret += formatPath(path);
     }
     return ret;
-}
-
-// We could use QDir::homePath() + "/.qt-license", but
-// that will only look in the first of $HOME,$USERPROFILE
-// or $HOMEDRIVE$HOMEPATH. So, here we try'em all to be
-// more forgiving for the end user..
-QString Configure::firstLicensePath()
-{
-    QStringList allPaths;
-    allPaths << "./.qt-license"
-             << QString::fromLocal8Bit(getenv("HOME")) + "/.qt-license"
-             << QString::fromLocal8Bit(getenv("USERPROFILE")) + "/.qt-license"
-             << QString::fromLocal8Bit(getenv("HOMEDRIVE")) + QString::fromLocal8Bit(getenv("HOMEPATH")) + "/.qt-license";
-    for (int i = 0; i< allPaths.count(); ++i)
-        if (QFile::exists(allPaths.at(i)))
-            return allPaths.at(i);
-    return QString();
 }
 
 // #### somehow I get a compiler error about vc++ reaching the nesting limit without
@@ -855,9 +831,6 @@ void Configure::parseCmdLine()
         if (!continueElse[0]) {
         }
 
-        else if (configCmdLine.at(i) == "-internal")
-            dictionary[ "QMAKE_INTERNAL" ] = "yes";
-
         else if (configCmdLine.at(i) == "-no-syncqt")
             dictionary[ "SYNCQT" ] = "no";
 
@@ -1360,10 +1333,6 @@ void Configure::parseCmdLine()
         saveCmdLine();
 }
 
-void Configure::validateArgs()
-{
-}
-
 // Output helper functions --------------------------------[ Start ]-
 /*!
     Determines the length of a string token.
@@ -1493,9 +1462,6 @@ void Configure::applySpecSpecifics()
       //TODO
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
         dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
-        dictionary[ "KBD_DRIVERS" ]         = "tty";
-        dictionary[ "GFX_DRIVERS" ]         = "linuxfb";
-        dictionary[ "MOUSE_DRIVERS" ]       = "pc linuxtp";
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "DBUS"]                 = "no";
         dictionary[ "QT_INOTIFY" ]          = "no";
@@ -1507,7 +1473,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "FONT_CONFIG" ]         = "auto";
         dictionary[ "ANGLE" ]               = "no";
 
-        dictionary["DECORATIONS"]           = "default windows styled";
     } else if (platform() == QNX) {
         dictionary[ "REDUCE_EXPORTS" ]      = "yes";
         dictionary["STACK_PROTECTOR_STRONG"] = "auto";
@@ -2077,8 +2042,6 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "INCREDIBUILD_XGE") {
         available = !QStandardPaths::findExecutable(QStringLiteral("BuildConsole.exe")).isEmpty()
                     && !QStandardPaths::findExecutable(QStringLiteral("xgConsole.exe")).isEmpty();
-    } else if (part == "WMSDK") {
-        available = findFile("wmsdk.h");
     } else if (part == "WMF_BACKEND") {
         available = findFile("mfapi.h") && findFile("mf.lib");
     } else if (part == "DIRECTWRITE") {
@@ -2255,8 +2218,6 @@ void Configure::autoDetection()
         dictionary["QML_DEBUG"] = dictionary["QML"] == "yes" ? "yes" : "no";
     if (dictionary["WMF_BACKEND"] == "auto")
         dictionary["WMF_BACKEND"] = checkAvailability("WMF_BACKEND") ? "yes" : "no";
-    if (dictionary["WMSDK"] == "auto")
-        dictionary["WMSDK"] = checkAvailability("WMSDK") ? "yes" : "no";
 
     // Detection of IncrediBuild buildconsole
     if (dictionary["INCREDIBUILD_XGE"] == "auto")
@@ -2381,14 +2342,6 @@ bool Configure::verifyConfiguration()
              << "MinGW, due to lack of such support from Oracle. Consider disabling the" << endl
              << "Oracle driver, as the current build will most likely fail." << endl;
         prompt = true;
-    }
-    if (0 != dictionary["ARM_FPU_TYPE"].size()) {
-            QStringList l= QStringList()
-                    << "softvfp"
-                    << "softvfp+vfpv2"
-                    << "vfpv2";
-            if (!(l.contains(dictionary["ARM_FPU_TYPE"])))
-                    cout << QString("WARNING: Using unsupported fpu flag: %1").arg(dictionary["ARM_FPU_TYPE"]) << endl;
     }
     if (dictionary["DIRECTWRITE"] == "yes" && !checkAvailability("DIRECTWRITE")) {
         cout << "WARNING: To be able to compile the DirectWrite font engine you will" << endl
@@ -2821,8 +2774,6 @@ void Configure::generateOutputVars()
         qmakeVars += QString("sql-drivers    += ") + qmakeSql.join(' ');
     if (!qmakeStyles.isEmpty())
         qmakeVars += QString("styles         += ") + qmakeStyles.join(' ');
-    if (!qmakeStylePlugins.isEmpty())
-        qmakeVars += QString("style-plugins  += ") + qmakeStylePlugins.join(' ');
 
     if (!dictionary[ "QMAKESPEC" ].length()) {
         cout << "Configure could not detect your compiler. QMAKESPEC must either" << endl
@@ -2865,16 +2816,6 @@ void Configure::generateCachefile()
 
         if (dictionary["QT_XKBCOMMON"] == "no")
             moduleStream << "DEFINES += QT_NO_XKBCOMMON" << endl;
-
-        // embedded
-        if (!dictionary["KBD_DRIVERS"].isEmpty())
-            moduleStream << "kbd-drivers += "<< dictionary["KBD_DRIVERS"]<<endl;
-        if (!dictionary["GFX_DRIVERS"].isEmpty())
-            moduleStream << "gfx-drivers += "<< dictionary["GFX_DRIVERS"]<<endl;
-        if (!dictionary["MOUSE_DRIVERS"].isEmpty())
-            moduleStream << "mouse-drivers += "<< dictionary["MOUSE_DRIVERS"]<<endl;
-        if (!dictionary["DECORATIONS"].isEmpty())
-            moduleStream << "decorations += "<<dictionary["DECORATIONS"]<<endl;
 
         moduleStream << "CONFIG += " << qmakeConfig.join(' ');
         if (dictionary[ "SSE2" ] == "yes")
@@ -3247,9 +3188,6 @@ void Configure::generateQConfigPri()
                          << "}" << endl;
         }
 
-        if (!dictionary["QMAKE_RPATHDIR"].isEmpty())
-            configStream << "QMAKE_RPATHDIR += " << formatPath(dictionary["QMAKE_RPATHDIR"]) << endl;
-
         if (!dictionary["QT_LIBINFIX"].isEmpty())
             configStream << "QT_LIBINFIX = " << dictionary["QT_LIBINFIX"] << endl;
 
@@ -3263,11 +3201,6 @@ void Configure::generateQConfigPri()
             configStream << "QT_GCC_MAJOR_VERSION = " << dictionary["QT_GCC_MAJOR_VERSION"] << endl
                          << "QT_GCC_MINOR_VERSION = " << dictionary["QT_GCC_MINOR_VERSION"] << endl
                          << "QT_GCC_PATCH_VERSION = " << dictionary["QT_GCC_PATCH_VERSION"] << endl;
-        }
-
-        if (dictionary.value("XQMAKESPEC").startsWith("wince")) {
-            configStream << "#Qt for Windows CE c-runtime deployment" << endl
-                         << "QT_CE_C_RUNTIME = " << formatPath(dictionary["CE_CRT"]) << endl;
         }
 
         if (!configStream.flush())
@@ -3331,7 +3264,6 @@ void Configure::generateConfigfiles()
         tmpStream << "#define QT_PRODUCT_LICENSE \"" << dictionary[ "EDITION" ] << "\"" << endl;
         tmpStream << endl;
         if (dictionary["BUILDDEV"] == "yes") {
-            dictionary["QMAKE_INTERNAL"] = "yes";
             tmpStream << "/* Used for example to export symbols for the certain autotests*/" << endl;
             tmpStream << "#define QT_BUILD_INTERNAL" << endl;
             tmpStream << endl;
@@ -3618,9 +3550,6 @@ void Configure::displayConfig()
         for (QStringList::Iterator libs = qmakeLibs.begin(); libs != qmakeLibs.end(); ++libs)
             sout << (*libs) << " ";
         sout << endl;
-    }
-    if (dictionary[ "QMAKE_INTERNAL" ] == "yes") {
-        sout << "Using internal configuration." << endl;
     }
     if (dictionary[ "SHARED" ] == "no") {
         sout << "WARNING: Using static linking will disable the use of plugins." << endl;
@@ -4073,36 +4002,6 @@ void Configure::showSummary()
     cout << "To reconfigure, run " << qPrintable(make) << " confclean and configure." << endl << endl;
 }
 
-Configure::ProjectType Configure::projectType(const QString& proFileName)
-{
-    QFile proFile(proFileName);
-    if (proFile.open(QFile::ReadOnly)) {
-        QString buffer = proFile.readLine(1024);
-        while (!buffer.isEmpty()) {
-            QStringList segments = buffer.split(QRegExp("\\s"));
-            QStringList::Iterator it = segments.begin();
-
-            if (segments.size() >= 3) {
-                QString keyword = (*it++);
-                QString operation = (*it++);
-                QString value = (*it++);
-
-                if (keyword == "TEMPLATE") {
-                    if (value == "lib")
-                        return Lib;
-                    else if (value == "subdirs")
-                        return Subdirs;
-                }
-            }
-            // read next line
-            buffer = proFile.readLine(1024);
-        }
-        proFile.close();
-    }
-    // Default to app handling
-    return App;
-}
-
 bool Configure::showLicense(QString orgLicenseFile)
 {
     if (dictionary["LICENSE_CONFIRMED"] == "yes") {
@@ -4313,7 +4212,6 @@ QString Configure::qpaPlatformName() const
 
 int Configure::platform() const
 {
-    const QString qMakeSpec = dictionary.value("QMAKESPEC");
     const QString xQMakeSpec = dictionary.value("XQMAKESPEC");
 
     if ((xQMakeSpec.startsWith("winphone") || xQMakeSpec.startsWith("winrt")))

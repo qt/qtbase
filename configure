@@ -394,10 +394,8 @@ BUILD_ON_MAC=no
 if [ -d /System/Library/Frameworks/Carbon.framework ]; then
     BUILD_ON_MAC=yes
 fi
-HOST_DIRLIST_SEP=":"
 DEV_NULL=/dev/null
 if [ "$OSTYPE" = "msys" ]; then
-    HOST_DIRLIST_SEP=";"
     DEV_NULL=/tmp/empty-file
     echo "" > $DEV_NULL
     relpath=`(cd "$relpath"; pwd -W)`
@@ -1910,7 +1908,6 @@ config.input.extra_features = $CFG_FEATURES
 config.input.qt_edition = $Edition
 config.input.qt_licheck = $Licheck
 config.input.qt_release_date = $ReleaseDate
-config.input.sysroot = $CFG_SYSROOT
 EOF
 
 # create a clean qmodule/qconfig.pri for running the tests
@@ -1965,10 +1962,6 @@ if [ "$OPT_VERBOSE" = "yes" ]; then
     echo
 fi
 
-sepath=`echo "$relpath" | sed -e 's/\\./\\\\./g'`
-PROCS=1
-EXEC=""
-
 rm -f "$QMAKE_VARS_FILE" 2>/dev/null
 
 #-------------------------------------------------------------------------------
@@ -2008,11 +2001,6 @@ fi'`
     echo "#!/bin/sh" > "$outpath/config.status"
     echo "$CONFIG_STATUS \"\$@\"" >> "$outpath/config.status"
     chmod +x "$outpath/config.status"
-fi
-
-if [ -n "$RPATH_MESSAGE" ]; then
-    echo
-    echo "$RPATH_MESSAGE"
 fi
 
 if [ -n "$PREFIX_COMPLAINTS" ]; then

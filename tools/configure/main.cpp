@@ -42,7 +42,6 @@ int runConfigure( int argc, char** argv )
         return 3;
 
     app.parseCmdLine();
-    app.validateArgs();
     if (!app.isOk())
         return 3;
     if( app.displayHelp() )
