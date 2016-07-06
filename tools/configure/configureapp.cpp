@@ -370,18 +370,6 @@ void Configure::parseCmdLine()
         reloadCmdLine();
     }
 
-    else if (configCmdLine.at(i) == "-loadconfig") {
-        ++i;
-        if (i != argCount) {
-            dictionary[ "REDO" ] = "yes";
-            dictionary[ "CUSTOMCONFIG" ] = "_" + configCmdLine.at(i);
-            configCmdLine.clear();
-            reloadCmdLine();
-        } else {
-            dictionary[ "DONE" ] = "error";
-        }
-        i = 0;
-    }
     argCount = configCmdLine.size();
 
     bool isDeviceMkspec = false;
@@ -926,13 +914,6 @@ void Configure::parseCmdLine()
             mysqlPath = QDir::fromNativeSeparators(configCmdLine.at(i).section("=", 1));
         } else if (configCmdLine.at(i).startsWith("ZLIB_LIBS=")) {
             zlibLibs = QDir::fromNativeSeparators(configCmdLine.at(i));
-        }
-
-        else if (configCmdLine.at(i) == "-saveconfig") {
-            ++i;
-            if (i == argCount)
-                break;
-            dictionary[ "CUSTOMCONFIG" ] = "_" + configCmdLine.at(i);
         }
 
         else if (configCmdLine.at(i) == "-confirm-license") {
@@ -1855,8 +1836,6 @@ bool Configure::displayHelp()
         desc("MSVC_MP", "no", "-no-mp",                 "Do not use multiple processors for compiling with MSVC");
         desc("MSVC_MP", "yes", "-mp",                   "Use multiple processors for compiling with MSVC (-MP).\n");
 
-        desc(                   "-loadconfig <config>", "Run configure with the parameters from file configure_<config>.cache.");
-        desc(                   "-saveconfig <config>", "Run configure and save the parameters in file configure_<config>.cache.");
         desc(                   "-redo",                "Run configure with the same parameters as last time.\n");
         desc(                   "-v, -verbose",         "Run configure tests with verbose output.\n");
         return true;
@@ -4246,7 +4225,7 @@ void Configure::readLicense()
 void Configure::reloadCmdLine()
 {
     if (dictionary[ "REDO" ] == "yes") {
-        QFile inFile(buildPath + "/configure" + dictionary[ "CUSTOMCONFIG" ] + ".cache");
+        QFile inFile(buildPath + "/configure.cache");
         if (inFile.open(QFile::ReadOnly)) {
             QTextStream inStream(&inFile);
             while (!inStream.atEnd())
@@ -4259,7 +4238,7 @@ void Configure::reloadCmdLine()
 void Configure::saveCmdLine()
 {
     if (dictionary[ "REDO" ] != "yes") {
-        QFile outFile(buildPath + "/configure" + dictionary[ "CUSTOMCONFIG" ] + ".cache");
+        QFile outFile(buildPath + "/configure.cache");
         if (outFile.open(QFile::WriteOnly | QFile::Text)) {
             QTextStream outStream(&outFile);
             for (QStringList::Iterator it = configCmdLine.begin(); it != configCmdLine.end(); ++it) {
