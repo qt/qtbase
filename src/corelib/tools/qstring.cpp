@@ -4978,7 +4978,7 @@ void QString::truncate(int pos)
     Removes \a n characters from the end of the string.
 
     If \a n is greater than or equal to size(), the result is an
-    empty string.
+    empty string; if \a n is negative, it is equivalent to passing zero.
 
     Example:
     \snippet qstring/main.cpp 15
