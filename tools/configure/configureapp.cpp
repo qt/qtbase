@@ -132,7 +132,6 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
         dictionary[ "QMAKESPEC_FROM" ] = "env";
     }
 
-    dictionary[ "BUILD_QMAKE" ]     = "yes";
     dictionary[ "WIDGETS" ]         = "yes";
     dictionary[ "GUI" ]             = "yes";
     dictionary[ "RTTI" ]            = "yes";
@@ -833,11 +832,6 @@ void Configure::parseCmdLine()
 
         else if (configCmdLine.at(i) == "-no-syncqt")
             dictionary[ "SYNCQT" ] = "no";
-
-        else if (configCmdLine.at(i) == "-no-qmake")
-            dictionary[ "BUILD_QMAKE" ] = "no";
-        else if (configCmdLine.at(i) == "-qmake")
-            dictionary[ "BUILD_QMAKE" ] = "yes";
 
         else if (configCmdLine.at(i) == "-qtnamespace") {
             ++i;
@@ -1748,8 +1742,6 @@ bool Configure::displayHelp()
 
         desc("PLUGIN_MANIFESTS", "no", "-no-plugin-manifests", "Do not embed manifests in plugins.");
         desc("PLUGIN_MANIFESTS", "yes", "-plugin-manifests",   "Embed manifests in plugins.\n");
-        desc("BUILD_QMAKE", "no", "-no-qmake",          "Do not compile qmake.");
-        desc("BUILD_QMAKE", "yes", "-qmake",            "Compile qmake.\n");
 
         desc(                  "-qreal [double|float]", "typedef qreal to the specified type. The default is double.\n"
                                                         "Note that changing this flag affects binary compatibility.\n");
@@ -3827,7 +3819,7 @@ void Configure::generateQConfigCpp()
 
 void Configure::buildQmake()
 {
-    if (dictionary[ "BUILD_QMAKE" ] == "yes") {
+    {
         QStringList args;
 
         // Build qmake
