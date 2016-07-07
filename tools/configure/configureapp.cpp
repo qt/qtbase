@@ -2310,12 +2310,7 @@ void Configure::autoDetection()
     detectArch();
 
     if (dictionary["C++STD"] == "auto" && !dictionary["QMAKESPEC"].contains("msvc")) {
-        if (!tryCompileProject("common/c++11")) {
-            dictionary["DONE"] = "error";
-            cout << "ERROR: Qt requires a C++11 compiler and yours does not seem to be that." << endl
-                 << "Please upgrade." << endl;
-            return;
-        } else if (!tryCompileProject("common/c++14")) {
+        if (!tryCompileProject("common/c++14")) {
             dictionary["C++STD"] = "c++11";
         } else if (!tryCompileProject("common/c++1z")) {
             dictionary["C++STD"] = "c++14";

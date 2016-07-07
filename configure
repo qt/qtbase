@@ -4430,11 +4430,7 @@ fi
 
 # Detect C++11 & up support
 stdcxx_error=false
-if ! compileTest common/c++11 "C++11"; then
-    echo "ERROR: Qt requires a C++11 compiler and yours does not seem to be that."
-    echo "Please upgrade."
-    exit 1
-elif [ "$CFG_STDCXX" = "c++11" ]; then
+if [ "$CFG_STDCXX" = "c++11" ]; then
     : # CFG_STDCXX is correct
 elif ! compileTest common/c++14 "C++14"; then
     if [ "$CFG_STDCXX" != "auto" ]; then

@@ -557,6 +557,12 @@
  *  Q_COMPILER_RESTRICTED_VLA       variable-length arrays, prior to __cpp_runtime_arrays
  */
 
+#ifdef __cplusplus
+#  if __cplusplus < 201103L && !(defined(Q_CC_MSVC) && Q_CC_MSVC >= 1800)
+#    error Qt requires a C++11 compiler and yours does not seem to be that.
+#  endif
+#endif
+
 #ifdef Q_CC_INTEL
 #  define Q_COMPILER_RESTRICTED_VLA
 #  define Q_COMPILER_VARIADIC_MACROS // C++11 feature supported as an extension in other modes, too
