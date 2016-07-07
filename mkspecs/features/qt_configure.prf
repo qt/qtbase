@@ -482,7 +482,7 @@ defineTest(qtRunSingleTest) {
         write_file($$QMAKE_CONFIG_LOG, msg, append)
     }
 
-    msg = "executing config test $${1}")
+    msg = "executing config test $${1}"
     write_file($$QMAKE_CONFIG_LOG, msg, append)
 
     result = false
