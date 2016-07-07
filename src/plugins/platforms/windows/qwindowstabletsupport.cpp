@@ -47,7 +47,7 @@
 #include <QtGui/QGuiApplication>
 #include <QtGui/QWindow>
 #include <QtCore/QDebug>
-#include <QtCore/QScopedArrayPointer>
+#include <QtCore/QVarLengthArray>
 #include <QtCore/QtMath>
 
 #include <private/qguiapplication_p.h>
@@ -227,7 +227,7 @@ QString QWindowsTabletSupport::description() const
     const unsigned size = m_winTab32DLL.wTInfo(WTI_INTERFACE, IFC_WINTABID, 0);
     if (!size)
         return QString();
-    QScopedPointer<TCHAR> winTabId(new TCHAR[size + 1]);
+    QVarLengthArray<TCHAR> winTabId(size + 1);
     m_winTab32DLL.wTInfo(WTI_INTERFACE, IFC_WINTABID, winTabId.data());
     WORD implementationVersion = 0;
     m_winTab32DLL.wTInfo(WTI_INTERFACE, IFC_IMPLVERSION, &implementationVersion);
