@@ -240,7 +240,6 @@ Additional options:
 
     -R <string> .......... Add an explicit runtime library path to the Qt
                            libraries.
-    -l <string> .......... Add an explicit library.
 
     -no-rpath ............ Do not use the library install path as a runtime
                            library path. On Apple platforms, this implies using
@@ -387,7 +386,6 @@ QNX options:
 Apple platform options:
 
     -Fstring ............ Add an explicit framework path.
-    -fw string .......... Add an explicit framework.
 
  *  -framework .......... Build Qt as a series of frameworks and
                           link tools against those frameworks.

@@ -187,10 +187,8 @@
         "prefix": {
             "D": "defines",
             "F": "fpaths",
-            "fw": "frameworks",
             "I": "includes",
             "L": "lpaths",
-            "l": "libs",
             "R": "rpaths",
             "W": "wflags"
         }

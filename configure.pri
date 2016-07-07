@@ -585,12 +585,9 @@ defineTest(qtConfOutput_compilerFlags) {
     }
 
     libs = $$join(config.input.lpaths, " -L", "-L")
-    libs += $$join(config.input.libs, " -l", "-l")
 
-    darwin {
+    darwin: \
         libs += $$join(config.input.fpaths, " -F", "-F")
-        libs += $$join(config.input.frameworks, " -framework ", "-framework ")
-    }
 
     !isEmpty(libs) {
         EXTRA_LIBS += $$libs

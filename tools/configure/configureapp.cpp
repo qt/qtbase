@@ -904,11 +904,6 @@ void Configure::parseCmdLine()
                 break;
             }
             qmakeLibs += QString("-L" + configCmdLine.at(i));
-        } else if (configCmdLine.at(i) == "-l") {
-            ++i;
-            if (i == argCount)
-                break;
-            qmakeLibs += QString("-l" + configCmdLine.at(i));
         } else if (configCmdLine.at(i).startsWith("OPENSSL_LIBS=")) {
             opensslLibs = configCmdLine.at(i);
         } else if (configCmdLine.at(i).startsWith("OPENSSL_LIBS_DEBUG=")) {
@@ -1737,7 +1732,6 @@ bool Configure::displayHelp()
         desc(                   "-D <define>",          "Add an explicit define to the preprocessor.");
         desc(                   "-I <includepath>",     "Add an explicit include path.");
         desc(                   "-L <librarypath>",     "Add an explicit library path.");
-        desc(                   "-l <libraryname>",     "Add an explicit library name, residing in a librarypath.\n");
 
         desc("PCH",   "no",     "-no-pch",              "Do not use precompiled header support.");
         desc("PCH",   "yes",    "-pch",                 "Use precopmiled header support.\n");
