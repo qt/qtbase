@@ -903,7 +903,7 @@ void Configure::parseCmdLine()
                 dictionary[ "DONE" ] = "error";
                 break;
             }
-            qmakeLibs += QString("-L" + configCmdLine.at(i));
+            qmakeLibs += configCmdLine.at(i);
         } else if (configCmdLine.at(i).startsWith("OPENSSL_LIBS=")) {
             opensslLibs = configCmdLine.at(i);
         } else if (configCmdLine.at(i).startsWith("OPENSSL_LIBS_DEBUG=")) {
@@ -2681,7 +2681,7 @@ void Configure::generateOutputVars()
         qtConfig += "accessibility";
 
     if (!qmakeLibs.isEmpty())
-        qmakeVars += "EXTRA_LIBS += " + formatPaths(qmakeLibs);
+        qmakeVars += "EXTRA_LIBDIR += " + formatPaths(qmakeLibs);
 
     if (!dictionary["QMAKE_LIBS_SQLITE"].isEmpty())
         qmakeVars += "QMAKE_LIBS_SQLITE += " + dictionary["QMAKE_LIBS_SQLITE"];

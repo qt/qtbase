@@ -404,8 +404,10 @@ defineTest(qtConfTest_compile) {
         # add compiler flags, these are set for the target and should not be applied to host tests
         !isEmpty(EXTRA_DEFINES): \
             qmake_args += "\"DEFINES += $$EXTRA_DEFINES\""
-        !isEmpty(EXTRA_LIBS) \
-            qmake_args += "\"LIBS += $$EXTRA_LIBS\""
+        !isEmpty(EXTRA_LIBDIR) \
+            qmake_args += "\"QMAKE_LIBDIR += $$EXTRA_LIBDIR\""
+        !isEmpty(EXTRA_FRAMEWORKPATH) \
+            qmake_args += "\"QMAKE_FRAMEWORKPATH += $$EXTRA_FRAMEWORKPATH\""
         !isEmpty(EXTRA_INCLUDEPATH): \
             qmake_args += "\"INCLUDEPATH += $$EXTRA_INCLUDEPATH\""
         qmake_args += $$EXTRA_QMAKE_ARGS

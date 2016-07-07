@@ -584,16 +584,15 @@ defineTest(qtConfOutput_compilerFlags) {
         output += "EXTRA_INCLUDEPATH += $$config.input.includes"
     }
 
-    libs = $$join(config.input.lpaths, " -L", "-L")
-
-    darwin: \
-        libs += $$join(config.input.fpaths, " -F", "-F")
-
-    !isEmpty(libs) {
-        EXTRA_LIBS += $$libs
-        export(EXTRA_LIBS)
-
-        output += "EXTRA_LIBS += $$libs"
+    !isEmpty(config.input.lpaths) {
+        EXTRA_LIBDIR += $$config.input.lpaths
+        export(EXTRA_LIBDIR)
+        output += "EXTRA_LIBDIR += $$config.input.lpaths"
+    }
+    darwin:!isEmpty(config.input.fpaths) {
+        EXTRA_FRAMEWORKPATH += $$config.input.fpaths
+        export(EXTRA_FRAMEWORKPATH)
+        output += "EXTRA_FRAMEWORKPATH += $$config.input.fpaths"
     }
 
     config.output.privatePro += $$output
