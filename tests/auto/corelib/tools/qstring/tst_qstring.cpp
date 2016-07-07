@@ -482,6 +482,7 @@ private slots:
     void sprintf();
     void fill();
     void truncate();
+    void chop();
     void constructor();
     void constructorQByteArray_data();
     void constructorQByteArray();
@@ -1219,6 +1220,31 @@ void tst_QString::truncate()
     QVERIFY(e.isEmpty());
     QVERIFY(!e.isNull());
 
+}
+
+void tst_QString::chop()
+{
+    const QString original("abcd");
+
+    QString str = original;
+    str.chop(1);
+    QCOMPARE(str, QLatin1String("abc"));
+
+    str = original;
+    str.chop(0);
+    QCOMPARE(str, original);
+
+    str = original;
+    str.chop(-1);
+    QCOMPARE(str, original);
+
+    str = original;
+    str.chop(original.size());
+    QVERIFY(str.isEmpty());
+
+    str = original;
+    str.chop(1000);
+    QVERIFY(str.isEmpty());
 }
 
 void tst_QString::fill()
