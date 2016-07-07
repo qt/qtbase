@@ -799,7 +799,7 @@ class Q_GUI_EXPORT QPointerUniqueId
 public:
     explicit QPointerUniqueId(qint64 id = -1);
 
-    qint64 numeric();
+    qint64 numeric() const;
 
 private:
     // TODO for TUIO 2, or any other type of complex token ID, a d-pointer can replace

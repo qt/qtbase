@@ -5189,7 +5189,7 @@ QPointerUniqueId::QPointerUniqueId(qint64 id)
     This is the numeric unique ID if the device provides that type of ID;
     otherwise it is -1.
 */
-qint64 QPointerUniqueId::numeric()
+qint64 QPointerUniqueId::numeric() const
 {
     return m_numericId;
 }
