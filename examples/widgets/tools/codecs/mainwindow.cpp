@@ -45,8 +45,8 @@
 
 MainWindow::MainWindow()
 {
-    textEdit = new QTextEdit;
-    textEdit->setLineWrapMode(QTextEdit::NoWrap);
+    textEdit = new QPlainTextEdit;
+    textEdit->setLineWrapMode(QPlainTextEdit::NoWrap);
     setCentralWidget(textEdit);
 
     findCodecs();
@@ -54,54 +54,57 @@ MainWindow::MainWindow()
     previewForm = new PreviewForm(this);
     previewForm->setCodecList(codecs);
 
-    createActions();
     createMenus();
 
     setWindowTitle(tr("Codecs"));
-    resize(500, 400);
+
+    const QRect screenGeometry = QApplication::desktop()->screenGeometry(this);
+    resize(screenGeometry.width() / 2, screenGeometry.height() * 2 / 3);
 }
 
 void MainWindow::open()
 {
-    QString fileName = QFileDialog::getOpenFileName(this);
-    if (!fileName.isEmpty()) {
-        QFile file(fileName);
-        if (!file.open(QFile::ReadOnly)) {
-            QMessageBox::warning(this, tr("Codecs"),
-                                 tr("Cannot read file %1:\n%2")
-                                 .arg(fileName)
-                                 .arg(file.errorString()));
-            return;
-        }
-
-        QByteArray data = file.readAll();
-
-        previewForm->setEncodedData(data);
-        if (previewForm->exec())
-            textEdit->setPlainText(previewForm->decodedString());
+    const QString fileName = QFileDialog::getOpenFileName(this);
+    if (fileName.isEmpty())
+        return;
+    QFile file(fileName);
+    if (!file.open(QFile::ReadOnly)) {
+        QMessageBox::warning(this, tr("Codecs"),
+                             tr("Cannot read file %1:\n%2")
+                             .arg(QDir::toNativeSeparators(fileName),
+                                  file.errorString()));
+        return;
     }
+
+    const QByteArray data = file.readAll();
+
+    previewForm->setWindowTitle(tr("Choose Encoding for %1").arg(QFileInfo(fileName).fileName()));
+    previewForm->setEncodedData(data);
+    if (previewForm->exec())
+        textEdit->setPlainText(previewForm->decodedString());
 }
 
 void MainWindow::save()
 {
-    QString fileName = QFileDialog::getSaveFileName(this);
-    if (!fileName.isEmpty()) {
-        QFile file(fileName);
-        if (!file.open(QFile::WriteOnly | QFile::Text)) {
-            QMessageBox::warning(this, tr("Codecs"),
-                                 tr("Cannot write file %1:\n%2")
-                                 .arg(fileName)
-                                 .arg(file.errorString()));
-            return;
-        }
+    const QAction *action = qobject_cast<const QAction *>(sender());
+    const QByteArray codecName = action->data().toByteArray();
+    const QString title = tr("Save As (%1)").arg(QLatin1String(codecName));
 
-        QAction *action = qobject_cast<QAction *>(sender());
-        QByteArray codecName = action->data().toByteArray();
-
-        QTextStream out(&file);
-        out.setCodec(codecName.constData());
-        out << textEdit->toPlainText();
+    QString fileName = QFileDialog::getSaveFileName(this, title);
+    if (fileName.isEmpty())
+        return;
+    QFile file(fileName);
+    if (!file.open(QFile::WriteOnly | QFile::Text)) {
+        QMessageBox::warning(this, tr("Codecs"),
+                             tr("Cannot write file %1:\n%2")
+                             .arg(QDir::toNativeSeparators(fileName),
+                                  file.errorString()));
+        return;
     }
+
+    QTextStream out(&file);
+    out.setCodec(codecName.constData());
+    out << textEdit->toPlainText();
 }
 
 void MainWindow::about()
@@ -133,9 +136,9 @@ void MainWindow::findCodecs()
         QString sortKey = codec->name().toUpper();
         int rank;
 
-        if (sortKey.startsWith("UTF-8")) {
+        if (sortKey.startsWith(QLatin1String("UTF-8"))) {
             rank = 1;
-        } else if (sortKey.startsWith("UTF-16")) {
+        } else if (sortKey.startsWith(QLatin1String("UTF-16"))) {
             rank = 2;
         } else if (iso8859RegExp.exactMatch(sortKey)) {
             if (iso8859RegExp.cap(1).size() == 1)
@@ -145,58 +148,38 @@ void MainWindow::findCodecs()
         } else {
             rank = 5;
         }
-        sortKey.prepend(QChar('0' + rank));
+        sortKey.prepend(QLatin1Char('0' + rank));
 
         codecMap.insert(sortKey, codec);
     }
     codecs = codecMap.values();
 }
 
-void MainWindow::createActions()
+void MainWindow::createMenus()
 {
-    openAct = new QAction(tr("&Open..."), this);
+    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+    QAction *openAct =
+        fileMenu->addAction(tr("&Open..."), this, &MainWindow::open);
     openAct->setShortcuts(QKeySequence::Open);
-    connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
-    foreach (QTextCodec *codec, codecs) {
-        QString text = tr("%1...").arg(QString(codec->name()));
-
-        QAction *action = new QAction(text, this);
-        action->setData(codec->name());
-        connect(action, SIGNAL(triggered()), this, SLOT(save()));
+    QMenu *saveAsMenu = fileMenu->addMenu(tr("&Save As"));
+    connect(saveAsMenu, &QMenu::aboutToShow,
+            this, &MainWindow::aboutToShowSaveAsMenu);
+    foreach (const QTextCodec *codec, codecs) {
+        const QByteArray name = codec->name();
+        QAction *action = saveAsMenu->addAction(tr("%1...").arg(QLatin1String(name)));
+        action->setData(QVariant(name));
+        connect(action, &QAction::triggered, this, &MainWindow::save);
         saveAsActs.append(action);
     }
 
-    exitAct = new QAction(tr("E&xit"), this);
-    exitAct->setShortcuts(QKeySequence::Quit);
-    connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
-
-    aboutAct = new QAction(tr("&About"), this);
-    connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
-
-    aboutQtAct = new QAction(tr("About &Qt"), this);
-    connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
-}
-
-void MainWindow::createMenus()
-{
-    saveAsMenu = new QMenu(tr("&Save As"), this);
-    foreach (QAction *action, saveAsActs)
-        saveAsMenu->addAction(action);
-    connect(saveAsMenu, SIGNAL(aboutToShow()),
-            this, SLOT(aboutToShowSaveAsMenu()));
-
-    fileMenu = new QMenu(tr("&File"), this);
-    fileMenu->addAction(openAct);
-    fileMenu->addMenu(saveAsMenu);
     fileMenu->addSeparator();
-    fileMenu->addAction(exitAct);
+    QAction *exitAct = fileMenu->addAction(tr("E&xit"), this, &QWidget::close);
+    exitAct->setShortcuts(QKeySequence::Quit);
 
-    helpMenu = new QMenu(tr("&Help"), this);
-    helpMenu->addAction(aboutAct);
-    helpMenu->addAction(aboutQtAct);
-
-    menuBar()->addMenu(fileMenu);
     menuBar()->addSeparator();
-    menuBar()->addMenu(helpMenu);
+
+    QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
+    helpMenu->addAction(tr("&About"), this, &MainWindow::about);
+    helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
 }
