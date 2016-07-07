@@ -245,7 +245,7 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     dictionary[ "ICU" ]             = "no";
 
     dictionary[ "ANGLE" ]           = "auto";
-    dictionary[ "DYNAMICGL" ]       = "auto";
+    dictionary[ "DYNAMICGL" ]       = "no";
 
     dictionary[ "GIF" ]             = "yes";
     dictionary[ "JPEG" ]            = "yes";
@@ -1508,8 +1508,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "LIBJPEG" ]             = "qt";
         dictionary[ "LIBPNG" ]              = "qt";
         dictionary[ "FREETYPE" ]            = "yes";
-        dictionary[ "OPENGL" ]              = "yes";
-        dictionary[ "OPENGL_ES_2" ]         = "yes";
         dictionary[ "SSL" ]                 = "yes";
         dictionary[ "OPENSSL" ]             = "no";
         dictionary[ "DBUS" ]                = "no";
@@ -1517,8 +1515,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "PCRE" ]                = "qt";
         dictionary[ "ICU" ]                 = "qt";
         dictionary[ "LARGE_FILE" ]          = "no";
-        dictionary[ "ANGLE" ]               = "yes";
-        dictionary[ "DYNAMICGL" ]           = "no";
     } else if (dictionary.value("XQMAKESPEC").startsWith("linux")) { //TODO actually wrong.
       //TODO
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
@@ -2046,10 +2042,6 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "ICU")
         available = tryCompileProject("unix/icu");
 
-    else if (part == "ANGLE") {
-        available = checkAngleAvailability();
-    }
-
     else if (part == "HARFBUZZ")
         available = tryCompileProject("unix/harfbuzz");
 
@@ -2214,17 +2206,15 @@ void Configure::autoDetection()
 
     // ANGLE detection
     if (dictionary["ANGLE"] == "auto") {
-        if (dictionary["OPENGL_ES_2"] == "yes") {
-            dictionary["ANGLE"] = checkAngleAvailability() ? "yes" : "no";
+        if (dictionary["OPENGL_ES_2"] == "yes" || dictionary["DYNAMICGL"] == "yes") {
+            QString err;
+            dictionary["ANGLE"] = checkAngleAvailability(&err) ? "yes" : "no";
             dictionary["ANGLE_FROM"] = "detected";
+            dictionary["ANGLE_ERR"] = err;
         } else {
             dictionary["ANGLE"] = "no";
         }
     }
-
-    // Dynamic GL. This must be explicitly requested, no autodetection.
-    if (dictionary["DYNAMICGL"] == "auto")
-        dictionary["DYNAMICGL"] = "no";
 
     // Image format detection
     if (dictionary["LIBJPEG"] == "auto")
@@ -2439,43 +2429,34 @@ bool Configure::verifyConfiguration()
         prompt = true;
     }
 
-    // -angle given on command line, but Direct X cannot be found.
-    if (dictionary["ANGLE"] != "no") {
-        QString errorMessage;
-        if (!checkAngleAvailability(&errorMessage)) {
-            cout << "WARNING: ANGLE specified, but the DirectX SDK could not be detected:" << endl
-                 << "  " << qPrintable(errorMessage) << endl
-                 <<  "The build will most likely fail." << endl;
-            prompt = true;
-        }
-    } else if (dictionary["ANGLE"] == "no") {
+    if (dictionary["ANGLE"] == "no") {
         if (dictionary["ANGLE_FROM"] == "detected") {
-            QString errorMessage;
-            checkAngleAvailability(&errorMessage);
+            QString errorMessage = dictionary["ANGLE_ERR"];
             cout << "WARNING: The DirectX SDK could not be detected:" << endl
                  << "  " << qPrintable(errorMessage) << endl
                  << "Disabling the ANGLE backend." << endl;
             prompt = true;
         }
-        if ((dictionary["OPENGL_ES_2"] == "yes") && !dictionary.contains("XQMAKESPEC")) {
+        if (dictionary["OPENGL_ES_2"] == "yes"
+                && (platform() == WINDOWS || platform() == WINDOWS_RT)) {
             cout << endl << "WARNING: Using OpenGL ES 2.0 without ANGLE." << endl
                  << "Specify -opengl desktop to use Open GL." << endl
                  <<  "The build will most likely fail." << endl;
             prompt = true;
         }
-    }
-
-    if (dictionary["DYNAMICGL"] == "yes") {
-        if (dictionary["OPENGL_ES_2"] == "yes" || dictionary["ANGLE"] != "no") {
-            cout << "ERROR: Dynamic OpenGL cannot be used with -angle." << endl;
-            dictionary[ "DONE" ] = "error";
+    } else if (dictionary["ANGLE_FROM"] == "commandline") {
+        QString errorMessage;
+        if (!checkAngleAvailability(&errorMessage)) {
+            cout << "WARNING: ANGLE specified, but the DirectX SDK could not be detected:" << endl
+                 << "  " << qPrintable(errorMessage) << endl
+                 <<  "The build will most likely fail." << endl;
         }
     }
 
     if (dictionary["OPENGL"] == "no" || dictionary["OPENGL_ES_2"] == "no") {
         if (dictionary.value("XQMAKESPEC").startsWith("winphone") ||
                 dictionary.value("XQMAKESPEC").startsWith("winrt")) {
-            cout << "ERROR: Option -no-opengl is not valid for WinRT." << endl;
+            cout << "ERROR: Only '-opengl es2' is valid for WinRT." << endl;
             dictionary[ "DONE" ] = "error";
         }
     }

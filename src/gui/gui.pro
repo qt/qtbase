@@ -18,7 +18,7 @@ MODULE_PLUGIN_TYPES = \
     egldeviceintegrations
 
 # This is here only because the platform plugin is no module, obviously.
-win32:contains(QT_CONFIG, angle)|contains(QT_CONFIG, dynamicgl) {
+contains(QT_CONFIG, angle) {
     MODULE_AUX_INCLUDES = \
         \$\$QT_MODULE_INCLUDE_BASE/QtANGLE
 }
