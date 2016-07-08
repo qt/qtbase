@@ -249,8 +249,7 @@ QString QSettingsPrivate::actualKey(const QString &key) const
 {
     QString n = normalizedKey(key);
     Q_ASSERT_X(!n.isEmpty(), "QSettings", "empty key");
-    n.prepend(groupPrefix);
-    return n;
+    return groupPrefix + n;
 }
 
 /*
@@ -325,10 +324,9 @@ void QSettingsPrivate::processChild(QStringRef key, ChildSpec spec, QStringList 
 void QSettingsPrivate::beginGroupOrArray(const QSettingsGroup &group)
 {
     groupStack.push(group);
-    if (!group.name().isEmpty()) {
-        groupPrefix += group.name();
-        groupPrefix += QLatin1Char('/');
-    }
+    const QString name = group.name();
+    if (!name.isEmpty())
+        groupPrefix += name + QLatin1Char('/');
 }
 
 /*
@@ -404,9 +402,9 @@ QString QSettingsPrivate::variantToString(const QVariant &v)
 
         case QVariant::ByteArray: {
             QByteArray a = v.toByteArray();
-            result = QLatin1String("@ByteArray(");
-            result += QString::fromLatin1(a.constData(), a.size());
-            result += QLatin1Char(')');
+            result = QLatin1String("@ByteArray(")
+                   + QLatin1String(a.constData(), a.size())
+                   + QLatin1Char(')');
             break;
         }
 
@@ -426,33 +424,17 @@ QString QSettingsPrivate::variantToString(const QVariant &v)
 #ifndef QT_NO_GEOM_VARIANT
         case QVariant::Rect: {
             QRect r = qvariant_cast<QRect>(v);
-            result += QLatin1String("@Rect(");
-            result += QString::number(r.x());
-            result += QLatin1Char(' ');
-            result += QString::number(r.y());
-            result += QLatin1Char(' ');
-            result += QString::number(r.width());
-            result += QLatin1Char(' ');
-            result += QString::number(r.height());
-            result += QLatin1Char(')');
+            result = QString::asprintf("@Rect(%d %d %d %d)", r.x(), r.y(), r.width(), r.height());
             break;
         }
         case QVariant::Size: {
             QSize s = qvariant_cast<QSize>(v);
-            result += QLatin1String("@Size(");
-            result += QString::number(s.width());
-            result += QLatin1Char(' ');
-            result += QString::number(s.height());
-            result += QLatin1Char(')');
+            result = QString::asprintf("@Size(%d %d)", s.width(), s.height());
             break;
         }
         case QVariant::Point: {
             QPoint p = qvariant_cast<QPoint>(v);
-            result += QLatin1String("@Point(");
-            result += QString::number(p.x());
-            result += QLatin1Char(' ');
-            result += QString::number(p.y());
-            result += QLatin1Char(')');
+            result = QString::asprintf("@Point(%d %d)", p.x(), p.y());
             break;
         }
 #endif // !QT_NO_GEOM_VARIANT
@@ -475,9 +457,9 @@ QString QSettingsPrivate::variantToString(const QVariant &v)
                 s << v;
             }
 
-            result = QLatin1String(typeSpec);
-            result += QString::fromLatin1(a.constData(), a.size());
-            result += QLatin1Char(')');
+            result = QLatin1String(typeSpec)
+                   + QLatin1String(a.constData(), a.size())
+                   + QLatin1Char(')');
 #else
             Q_ASSERT(!"QSettings: Cannot save custom types without QDataStream support");
 #endif
@@ -648,8 +630,7 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result, 
                 && ((ch >= '0' && ch <= '9')
                     || (ch >= 'a' && ch <= 'f')
                     || (ch >= 'A' && ch <= 'F'))) {
-            result += "\\x";
-            result += QByteArray::number(ch, 16);
+            result += "\\x" + QByteArray::number(ch, 16);
             continue;
         }
 
@@ -688,8 +669,7 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result, 
             break;
         default:
             if (ch <= 0x1F || (ch >= 0x7F && !useCodec)) {
-                result += "\\x";
-                result += QByteArray::number(ch, 16);
+                result += "\\x" + QByteArray::number(ch, 16);
                 escapeNextIfDigit = true;
 #ifndef QT_NO_TEXTCODEC
             } else if (useCodec) {
@@ -1048,10 +1028,33 @@ static inline int pathHashKey(QSettings::Format format, QSettings::Scope scope)
     return int((uint(format) << 1) | uint(scope == QSettings::SystemScope));
 }
 
+#ifndef Q_OS_WIN
+static QString make_user_path()
+{
+    static Q_CONSTEXPR QChar sep = QLatin1Char('/');
+#ifndef QSETTINGS_USE_QSTANDARDPATHS
+    // Non XDG platforms (OS X, iOS, Android...) have used this code path erroneously
+    // for some time now. Moving away from that would require migrating existing settings.
+    QByteArray env = qgetenv("XDG_CONFIG_HOME");
+    if (env.isEmpty()) {
+        return QDir::homePath() + QLatin1String("/.config/");
+    } else if (env.startsWith('/')) {
+        return QFile::decodeName(env) + sep;
+    } else {
+        return QDir::homePath() + sep + QFile::decodeName(env) + sep;
+    }
+#else
+    // When using a proper XDG platform, use QStandardPaths rather than the above hand-written code;
+    // it makes the use of test mode from unit tests possible.
+    // Ideally all platforms should use this, but see above for the migration issue.
+    return QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + sep;
+#endif
+}
+#endif // !Q_OS_WIN
+
 static void initDefaultPaths(QMutexLocker *locker)
 {
     PathHash *pathHash = pathHashFunc();
-    QString systemPath;
 
     locker->unlock();
 
@@ -1060,8 +1063,7 @@ static void initDefaultPaths(QMutexLocker *locker)
        avoid a dead-lock, we can't hold the global mutex while
        calling it.
     */
-    systemPath = QLibraryInfo::location(QLibraryInfo::SettingsPath);
-    systemPath += QLatin1Char('/');
+    QString systemPath = QLibraryInfo::location(QLibraryInfo::SettingsPath) + QLatin1Char('/');
 
     locker->relock();
     if (pathHash->isEmpty()) {
@@ -1077,38 +1079,14 @@ static void initDefaultPaths(QMutexLocker *locker)
         pathHash->insert(pathHashKey(QSettings::IniFormat, QSettings::SystemScope),
                          windowsConfigPath(CSIDL_COMMON_APPDATA) + QDir::separator());
 #else
-
-#ifndef QSETTINGS_USE_QSTANDARDPATHS
-        // Non XDG platforms (OS X, iOS, Android...) have used this code path erroneously
-        // for some time now. Moving away from that would require migrating existing settings.
-        QString userPath;
-        QByteArray env = qgetenv("XDG_CONFIG_HOME");
-        if (env.isEmpty()) {
-            userPath = QDir::homePath();
-            userPath += QLatin1Char('/');
-            userPath += QLatin1String(".config");
-        } else if (env.startsWith('/')) {
-            userPath = QFile::decodeName(env);
-        } else {
-            userPath = QDir::homePath();
-            userPath += QLatin1Char('/');
-            userPath += QFile::decodeName(env);
-        }
-#else
-        // When using a proper XDG platform, use QStandardPaths rather than the above hand-written code;
-        // it makes the use of test mode from unit tests possible.
-        // Ideally all platforms should use this, but see above for the migration issue.
-        QString userPath = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-#endif
-        userPath += QLatin1Char('/');
-
+        const QString userPath = make_user_path();
         pathHash->insert(pathHashKey(QSettings::IniFormat, QSettings::UserScope), userPath);
         pathHash->insert(pathHashKey(QSettings::IniFormat, QSettings::SystemScope), systemPath);
 #ifndef Q_OS_MAC
         pathHash->insert(pathHashKey(QSettings::NativeFormat, QSettings::UserScope), userPath);
         pathHash->insert(pathHashKey(QSettings::NativeFormat, QSettings::SystemScope), systemPath);
 #endif
-#endif
+#endif // Q_OS_WIN
     }
 }
 
@@ -3496,8 +3474,7 @@ QSettings::Format QSettings::registerFormat(const QString &extension, ReadFunc r
         return QSettings::InvalidFormat;
 
     QConfFileCustomFormat info;
-    info.extension = QLatin1Char('.');
-    info.extension += extension;
+    info.extension = QLatin1Char('.') + extension;
     info.readFunc = readFunc;
     info.writeFunc = writeFunc;
     info.caseSensitivity = caseSensitivity;
