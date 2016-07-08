@@ -58,7 +58,8 @@
 #ifdef QT_BUILD_INTERNAL
 
 QT_BEGIN_NAMESPACE
-extern Q_AUTOTEST_EXPORT QString qt_normalizePathSegments(const QString &, bool);
+extern Q_AUTOTEST_EXPORT QString
+    qt_normalizePathSegments(const QString &path, bool allowUncPaths, bool *ok = nullptr);
 QT_END_NAMESPACE
 
 #endif
@@ -2246,6 +2247,10 @@ void tst_QDir::cdBelowRoot_data()
     const QString systemRoot = QString::fromLocal8Bit(qgetenv("SystemRoot"));
     QTest::newRow("windows-drive")
         << systemDrive << systemRoot.mid(3) << QDir::cleanPath(systemRoot);
+    const QString uncRoot = QStringLiteral("//") + QtNetworkSettings::winServerName();
+    const QString testDirectory = QStringLiteral("testshare");
+    QTest::newRow("windows-share")
+        << uncRoot << testDirectory << QDir::cleanPath(uncRoot + QLatin1Char('/') + testDirectory);
 #endif // Windows
 }
 

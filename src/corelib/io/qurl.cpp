@@ -417,7 +417,8 @@
 #include "qurlquery.h"
 
 QT_BEGIN_NAMESPACE
-extern QString qt_normalizePathSegments(const QString &name, bool allowUncPaths); // qdir.cpp
+extern QString qt_normalizePathSegments(const QString &name, bool allowUncPaths,
+                                        bool *ok = nullptr); // qdir.cpp
 
 inline static bool isHex(char c)
 {

@@ -893,6 +893,8 @@ QString QDir::fromNativeSeparators(const QString &pathName)
     return pathName;
 }
 
+static QString qt_cleanPath(const QString &path, bool *ok = nullptr);
+
 /*!
     Changes the QDir's directory to \a dirName.
 
@@ -913,32 +915,18 @@ bool QDir::cd(const QString &dirName)
         return true;
     QString newPath;
     if (isAbsolutePath(dirName)) {
-        newPath = cleanPath(dirName);
+        newPath = qt_cleanPath(dirName);
     } else {
-        if (isRoot())
-            newPath = d->dirEntry.filePath();
-        else
-            newPath = d->dirEntry.filePath() % QLatin1Char('/');
+        newPath = d->dirEntry.filePath();
+        if (!newPath.endsWith(QLatin1Char('/')))
+            newPath += QLatin1Char('/');
         newPath += dirName;
         if (dirName.indexOf(QLatin1Char('/')) >= 0
             || dirName == QLatin1String("..")
             || d->dirEntry.filePath() == QLatin1String(".")) {
-            newPath = cleanPath(newPath);
-#if defined (Q_OS_UNIX)
-            //After cleanPath() if path is "/.." or starts with "/../" it means trying to cd above root.
-            if (newPath.startsWith(QLatin1String("/../")) || newPath == QLatin1String("/.."))
-#elif defined (Q_OS_WINRT)
-            const QString rootPath = QDir::rootPath();
-            if (newPath.size() < rootPath.size() && rootPath.startsWith(newPath))
-#else
-            /*
-              cleanPath() already took care of replacing '\' with '/'.
-              We can't use startsWith here because the letter of the drive is unknown.
-              After cleanPath() if path is "[A-Z]:/.." or starts with "[A-Z]:/../" it means trying to cd above root.
-             */
-
-            if (newPath.midRef(1, 4) == QLatin1String(":/..") && (newPath.length() == 5 || newPath.at(5) == QLatin1Char('/')))
-#endif
+            bool ok;
+            newPath = qt_cleanPath(newPath, &ok);
+            if (!ok)
                 return false;
             /*
               If newPath starts with .., we convert it to absolute to
@@ -2085,9 +2073,13 @@ bool QDir::match(const QString &filter, const QString &fileName)
     This method is shared with QUrl, so it doesn't deal with QDir::separator(),
     nor does it remove the trailing slash, if any.
 */
-Q_AUTOTEST_EXPORT QString qt_normalizePathSegments(const QString &name, bool allowUncPaths)
+Q_AUTOTEST_EXPORT QString qt_normalizePathSegments(const QString &name, bool allowUncPaths,
+                                                   bool *ok = nullptr)
 {
     const int len = name.length();
+
+    if (ok)
+        *ok = false;
 
     if (len == 0)
         return name;
@@ -2153,6 +2145,10 @@ Q_AUTOTEST_EXPORT QString qt_normalizePathSegments(const QString &name, bool all
             --up;
     }
 
+    // Indicate failure when ".." are left over for an absolute path.
+    if (ok)
+        *ok = prefixLength == 0 || up == 0;
+
     // add remaining '..'
     while (up) {
         if (used != len && out[used].unicode() != '/') // is not empty and there isn't already a '/'
@@ -2190,27 +2186,16 @@ Q_AUTOTEST_EXPORT QString qt_normalizePathSegments(const QString &name, bool all
     return ret;
 }
 
-/*!
-    Returns \a path with directory separators normalized (converted to "/") and
-    redundant ones removed, and "."s and ".."s resolved (as far as possible).
-
-    Symbolic links are kept. This function does not return the
-    canonical path, but rather the simplest version of the input.
-    For example, "./local" becomes "local", "local/../bin" becomes
-    "bin" and "/local/usr/../bin" becomes "/local/bin".
-
-    \sa absolutePath(), canonicalPath()
-*/
-QString QDir::cleanPath(const QString &path)
+static QString qt_cleanPath(const QString &path, bool *ok)
 {
     if (path.isEmpty())
         return path;
     QString name = path;
-    QChar dir_separator = separator();
+    QChar dir_separator = QDir::separator();
     if (dir_separator != QLatin1Char('/'))
        name.replace(dir_separator, QLatin1Char('/'));
 
-    QString ret = qt_normalizePathSegments(name, OSSupportsUncPaths);
+    QString ret = qt_normalizePathSegments(name, OSSupportsUncPaths, ok);
 
     // Strip away last slash except for root directories
     if (ret.length() > 1 && ret.endsWith(QLatin1Char('/'))) {
@@ -2225,6 +2210,22 @@ QString QDir::cleanPath(const QString &path)
     }
 
     return ret;
+}
+
+/*!
+    Returns \a path with directory separators normalized (converted to "/") and
+    redundant ones removed, and "."s and ".."s resolved (as far as possible).
+
+    Symbolic links are kept. This function does not return the
+    canonical path, but rather the simplest version of the input.
+    For example, "./local" becomes "local", "local/../bin" becomes
+    "bin" and "/local/usr/../bin" becomes "/local/bin".
+
+    \sa absolutePath(), canonicalPath()
+*/
+QString QDir::cleanPath(const QString &path)
+{
+    return qt_cleanPath(path);
 }
 
 /*!
