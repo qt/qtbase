@@ -479,9 +479,8 @@ QString QSpinBox::textFromValue(int value) const
     QString str;
 
     if (d->displayIntegerBase != 10) {
-        str = QString::number(qAbs(value), d->displayIntegerBase);
-        if (value < 0)
-            str.prepend('-');
+        const QLatin1String prefix = value < 0 ? QLatin1String("-") : QLatin1String();
+        str = prefix + QString::number(qAbs(value), d->displayIntegerBase);
     } else {
         str = locale().toString(value);
         if (!d->showGroupSeparator && (qAbs(value) >= 1000 || value == INT_MIN)) {

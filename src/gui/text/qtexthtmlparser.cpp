@@ -1438,9 +1438,7 @@ static void setWidthAttribute(QTextLength *width, const QString &valueStr)
 #ifndef QT_NO_CSSPARSER
 void QTextHtmlParserNode::parseStyleAttribute(const QString &value, const QTextDocument *resourceProvider)
 {
-    QString css = value;
-    css.prepend(QLatin1String("* {"));
-    css.append(QLatin1Char('}'));
+    const QString css = QLatin1String("* {") + value + QLatin1Char('}');
     QCss::Parser parser(css);
     QCss::StyleSheet sheet;
     parser.parse(&sheet, Qt::CaseInsensitive);

@@ -2641,8 +2641,8 @@ void QWidgetTextControl::insertFromMimeData(const QMimeData *source)
 #ifndef QT_NO_TEXTHTMLPARSER
     if (source->hasFormat(QLatin1String("application/x-qrichtext")) && d->acceptRichText) {
         // x-qrichtext is always UTF-8 (taken from Qt3 since we don't use it anymore).
-        QString richtext = QString::fromUtf8(source->data(QLatin1String("application/x-qrichtext")));
-        richtext.prepend(QLatin1String("<meta name=\"qrichtext\" content=\"1\" />"));
+        const QString richtext = QLatin1String("<meta name=\"qrichtext\" content=\"1\" />")
+                + QString::fromUtf8(source->data(QLatin1String("application/x-qrichtext")));
         fragment = QTextDocumentFragment::fromHtml(richtext, d->doc);
         hasData = true;
     } else if (source->hasHtml() && d->acceptRichText) {
