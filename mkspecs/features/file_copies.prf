@@ -1,8 +1,7 @@
 isEmpty(COPIES): return()
 contains(TEMPLATE, .*subdirs): error("COPIES does not work with TEMPLATE=subdirs")
 
-build_pass:build_all: \
-  debug_and_release:debug {
+build_pass:build_all:!isEqual(BUILD_PASS, $$first(BUILDS)) {
     # Avoid that multiple build passes race with each other.
     # This will fail to copy anything if the user explicitly invokes
     # only the non-primary build. This is unfixable, as at qmake time

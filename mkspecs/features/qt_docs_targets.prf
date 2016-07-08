@@ -30,7 +30,7 @@ contains(TEMPLATE, subdirs) {
     for(inst, DOC_TARGETS): \
         prepareRecursiveTarget($$inst)
 } else {
-    debug_and_release:!build_pass {
+    !isEmpty(BUILDS):!build_pass {
         sub = $$first(BUILDS)
         for(inst, DOC_TARGETS) {
             $${inst}.CONFIG = recursive

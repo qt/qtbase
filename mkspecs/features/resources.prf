@@ -35,7 +35,7 @@ for(resource, RESOURCES) {
 
     resource_file = $$RCC_DIR/qmake_$${resource}.qrc
 
-    !debug_and_release|build_pass {
+    isEmpty(BUILDS)|build_pass {
         # Collection of files, generate qrc file
         prefix = $$eval($${resource}.prefix)
         isEmpty(prefix): \
