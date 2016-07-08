@@ -2344,7 +2344,9 @@ void QDateTimeEditPrivate::interpret(EmitPolicy ep)
     const QValidator::State state = q->validate(tmp, pos);
     if (state != QValidator::Acceptable
         && correctionMode == QAbstractSpinBox::CorrectToPreviousValue
-        && (state == QValidator::Invalid || !(fieldInfo(currentSectionIndex) & AllowPartial))) {
+        && (state == QValidator::Invalid
+            || currentSectionIndex < 0
+            || !(fieldInfo(currentSectionIndex) & AllowPartial))) {
         setValue(value, ep);
         updateTimeSpec();
     } else {
