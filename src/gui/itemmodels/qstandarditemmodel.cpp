@@ -1844,7 +1844,9 @@ QList<QStandardItem*> QStandardItem::takeColumn(int column)
         d->model->d_func()->columnsAboutToBeRemoved(this, column, column);
     QList<QStandardItem*> items;
 
-    for (int row = d->rowCount() - 1; row >= 0; --row) {
+    const int rowCount = d->rowCount();
+    items.reserve(rowCount);
+    for (int row = rowCount - 1; row >= 0; --row) {
         int index = d->childIndex(row, column);
         QStandardItem *ch = d->children.at(index);
         if (ch)
