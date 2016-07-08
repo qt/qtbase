@@ -482,6 +482,7 @@ private slots:
     void sprintf();
     void fill();
     void truncate();
+    void chop_data();
     void chop();
     void constructor();
     void constructorQByteArray_data();
@@ -1222,29 +1223,29 @@ void tst_QString::truncate()
 
 }
 
-void tst_QString::chop()
+void tst_QString::chop_data()
 {
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<int>("count" );
+    QTest::addColumn<QString>("result");
+
     const QString original("abcd");
 
-    QString str = original;
-    str.chop(1);
-    QCOMPARE(str, QLatin1String("abc"));
+    QTest::newRow("data0") << original << 1 << QString("abc");
+    QTest::newRow("data1") << original << 0 << original;
+    QTest::newRow("data2") << original << -1 << original;
+    QTest::newRow("data3") << original << original.size() << QString();
+    QTest::newRow("data4") << original << 1000  << QString();
+}
 
-    str = original;
-    str.chop(0);
-    QCOMPARE(str, original);
+void tst_QString::chop()
+{
+    QFETCH(QString, input);
+    QFETCH(int, count);
+    QFETCH(QString, result);
 
-    str = original;
-    str.chop(-1);
-    QCOMPARE(str, original);
-
-    str = original;
-    str.chop(original.size());
-    QVERIFY(str.isEmpty());
-
-    str = original;
-    str.chop(1000);
-    QVERIFY(str.isEmpty());
+    input.chop(count);
+    QCOMPARE(input, result);
 }
 
 void tst_QString::fill()
