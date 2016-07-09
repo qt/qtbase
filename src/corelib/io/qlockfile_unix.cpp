@@ -59,12 +59,12 @@
 #   include <unistd.h>
 #   include <cstdio>
 #elif defined(Q_OS_BSD4) && !defined(Q_OS_IOS)
-# if !defined(Q_OS_NETBSD)
-#   include <sys/user.h>
-# endif
 #   include <sys/cdefs.h>
 #   include <sys/param.h>
 #   include <sys/sysctl.h>
+# if !defined(Q_OS_NETBSD)
+#   include <sys/user.h>
+# endif
 #endif
 
 QT_BEGIN_NAMESPACE
