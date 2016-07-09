@@ -1,4 +1,5 @@
 TEMPLATE = subdirs
 SUBDIRS = \
         qfontmetrics \
-        qtext
+        qtext \
+        qtextdocument

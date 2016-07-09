@@ -94,7 +94,7 @@ bool Qt::mightBeRichText(const QString& text)
         ++start;
 
     // skip a leading <?xml ... ?> as for example with xhtml
-    if (text.mid(start, 5) == QLatin1String("<?xml")) {
+    if (text.midRef(start, 5).compare(QLatin1String("<?xml")) == 0) {
         while (start < text.length()) {
             if (text.at(start) == QLatin1Char('?')
                 && start + 2 < text.length()
@@ -109,12 +109,12 @@ bool Qt::mightBeRichText(const QString& text)
             ++start;
     }
 
-    if (text.mid(start, 5).toLower() == QLatin1String("<!doc"))
+    if (text.midRef(start, 5).compare(QLatin1String("<!doc"), Qt::CaseInsensitive) == 0)
         return true;
     int open = start;
     while (open < text.length() && text.at(open) != QLatin1Char('<')
             && text.at(open) != QLatin1Char('\n')) {
-        if (text.at(open) == QLatin1Char('&') &&  text.mid(open+1,3) == QLatin1String("lt;"))
+        if (text.at(open) == QLatin1Char('&') &&  text.midRef(open + 1, 3) == QLatin1String("lt;"))
             return true; // support desperate attempt of user to see <...>
         ++open;
     }
