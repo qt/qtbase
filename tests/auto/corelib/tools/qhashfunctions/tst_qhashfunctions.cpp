@@ -45,6 +45,8 @@ class tst_QHashFunctions : public QObject
     Q_OBJECT
 private Q_SLOTS:
     void qhash();
+    void qhash_of_empty_and_null_qstring();
+    void qhash_of_empty_and_null_qbytearray();
     void fp_qhash_of_zero_is_zero();
     void qthash_data();
     void qthash();
@@ -115,6 +117,20 @@ void tst_QHashFunctions::qhash()
 
         QVERIFY(qHash(pA) != qHash(pB));
     }
+}
+
+void tst_QHashFunctions::qhash_of_empty_and_null_qstring()
+{
+    QString null, empty("");
+    QCOMPARE(null, empty);
+    QCOMPARE(qHash(null), qHash(empty));
+}
+
+void tst_QHashFunctions::qhash_of_empty_and_null_qbytearray()
+{
+    QByteArray null, empty("");
+    QCOMPARE(null, empty);
+    QCOMPARE(qHash(null), qHash(empty));
 }
 
 void tst_QHashFunctions::fp_qhash_of_zero_is_zero()
