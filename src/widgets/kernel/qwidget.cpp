@@ -565,7 +565,7 @@ void QWidget::setAutoFillBackground(bool enabled)
 
     Composite widgets can also be created by subclassing a standard widget,
     such as QWidget or QFrame, and adding the necessary layout and child
-    widgets in the constructor of the subclass. Many of the \l{Qt Examples}
+    widgets in the constructor of the subclass. Many of the \l{Qt Widgets Examples}
     {examples provided with Qt} use this approach, and it is also covered in
     the Qt \l{Tutorials}.
 
