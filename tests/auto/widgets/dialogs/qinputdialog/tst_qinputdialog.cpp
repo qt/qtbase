@@ -40,6 +40,7 @@
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <qinputdialog.h>
+#include <QtWidgets/private/qdialog_p.h>
 
 class tst_QInputDialog : public QObject
 {
@@ -57,6 +58,7 @@ private slots:
     void getInt();
     void getDouble_data();
     void getDouble();
+    void taskQTBUG_54693_crashWhenParentIsDeletedWhileDialogIsOpen();
     void task255502getDouble();
     void getText_data();
     void getText();
@@ -314,6 +316,75 @@ void tst_QInputDialog::getDouble()
     QVERIFY(ok);
     QCOMPARE(result, value);
     delete parent;
+}
+
+namespace {
+class SelfDestructParent : public QWidget
+{
+    Q_OBJECT
+public:
+    explicit SelfDestructParent(int delay = 100)
+        : QWidget(Q_NULLPTR)
+    {
+        QTimer::singleShot(delay, this, SLOT(deleteLater()));
+    }
+};
+}
+
+void tst_QInputDialog::taskQTBUG_54693_crashWhenParentIsDeletedWhileDialogIsOpen()
+{
+    // getText
+    {
+        QAutoPointer<SelfDestructParent> dialog(new SelfDestructParent);
+        bool ok = true;
+        const QString result = QInputDialog::getText(dialog.get(), "Title", "Label", QLineEdit::Normal, "Text", &ok);
+        QVERIFY(!dialog);
+        QVERIFY(!ok);
+        QVERIFY(result.isNull());
+    }
+
+    // getMultiLineText
+    {
+        QAutoPointer<SelfDestructParent> dialog(new SelfDestructParent);
+        bool ok = true;
+        const QString result = QInputDialog::getMultiLineText(dialog.get(), "Title", "Label", "Text", &ok);
+        QVERIFY(!dialog);
+        QVERIFY(!ok);
+        QVERIFY(result.isNull());
+    }
+
+    // getItem
+    for (int editable = false; editable <= true; ++editable) {
+        QAutoPointer<SelfDestructParent> dialog(new SelfDestructParent);
+        bool ok = true;
+        const QString result = QInputDialog::getItem(dialog.get(), "Title", "Label",
+                                                     QStringList() << "1" << "2", 1, editable, &ok);
+        QVERIFY(!dialog);
+        QVERIFY(!ok);
+        QCOMPARE(result, QLatin1String("2"));
+    }
+
+    // getInt
+    {
+        const int initial = 7;
+        QAutoPointer<SelfDestructParent> dialog(new SelfDestructParent);
+        bool ok = true;
+        const int result = QInputDialog::getInt(dialog.get(), "Title", "Label", initial, -10, +10, 1, &ok);
+        QVERIFY(!dialog);
+        QVERIFY(!ok);
+        QCOMPARE(result, initial);
+    }
+
+    // getDouble
+    {
+        const double initial = 7;
+        QAutoPointer<SelfDestructParent> dialog(new SelfDestructParent);
+        bool ok = true;
+        const double result = QInputDialog::getDouble(dialog.get(), "Title", "Label", initial, -10, +10, 2, &ok);
+        QVERIFY(!dialog);
+        QVERIFY(!ok);
+        QCOMPARE(result, initial);
+    }
 }
 
 void tst_QInputDialog::task255502getDouble()

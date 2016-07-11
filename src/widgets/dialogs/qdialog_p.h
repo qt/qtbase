@@ -116,6 +116,24 @@ private:
     mutable bool m_platformHelperCreated;
 };
 
+template <typename T>
+class QAutoPointer {
+    QPointer<T> o;
+    struct internal { void func() {} };
+    typedef void (internal::*RestrictedBool)();
+public:
+    explicit QAutoPointer(T *t) Q_DECL_NOTHROW : o(t) {}
+    ~QAutoPointer() { delete o; }
+
+    T *operator->() const Q_DECL_NOTHROW { return get(); }
+    T *get() const Q_DECL_NOTHROW { return o; }
+    T &operator*() const { return *get(); }
+    operator RestrictedBool() const Q_DECL_NOTHROW { return o ? &internal::func : Q_NULLPTR; }
+    bool operator!() const Q_DECL_NOTHROW { return !o; }
+private:
+    Q_DISABLE_COPY(QAutoPointer);
+};
+
 QT_END_NAMESPACE
 
 #endif // QDIALOG_P_H
