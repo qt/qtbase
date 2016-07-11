@@ -49,6 +49,7 @@ private slots:
     void find(); // copied from tst_QMap
     void constFind(); // copied from tst_QMap
     void contains(); // copied from tst_QMap
+    void qhash();
     void take(); // copied from tst_QMap
     void operator_eq(); // copied from tst_QMap
     void rehash_isnt_quadratic();
@@ -693,6 +694,69 @@ void tst_QHash::contains()
 
     map1.remove(43);
     QVERIFY(!map1.contains(43));
+}
+
+namespace {
+class QGlobalQHashSeedResetter
+{
+    int oldSeed;
+public:
+    // not entirely correct (may lost changes made by another thread between the query
+    // of the old and the setting of the new seed), but qSetGlobalQHashSeed doesn't
+    // return the old value, so this is the best we can do:
+    explicit QGlobalQHashSeedResetter(int newSeed)
+        : oldSeed(qGlobalQHashSeed())
+    {
+        qSetGlobalQHashSeed(newSeed);
+    }
+    ~QGlobalQHashSeedResetter()
+    {
+        qSetGlobalQHashSeed(oldSeed);
+    }
+};
+
+template <typename Key, typename T>
+QHash<T, Key> inverted(const QHash<Key, T> &in)
+{
+    QHash<T, Key> result;
+    for (auto it = in.begin(), end = in.end(); it != end; ++it)
+        result[it.value()] = it.key();
+    return result;
+}
+
+template <typename AssociativeContainer>
+void make_test_data(AssociativeContainer &c)
+{
+    c["one"] = "1";
+    c["two"] = "2";
+}
+
+}
+
+void tst_QHash::qhash()
+{
+    const QGlobalQHashSeedResetter seed1(0);
+
+    QHash<QString, QString> hash1;
+    make_test_data(hash1);
+    const QHash<QString, QString> hsah1 = inverted(hash1);
+
+    const QGlobalQHashSeedResetter seed2(1);
+
+    QHash<QString, QString> hash2;
+    make_test_data(hash2);
+    const QHash<QString, QString> hsah2 = inverted(hash2);
+
+    QCOMPARE(hash1, hash2);
+    QCOMPARE(hsah1, hsah2);
+    QCOMPARE(qHash(hash1), qHash(hash2));
+    QCOMPARE(qHash(hsah1), qHash(hsah2));
+
+    // by construction this is almost impossible to cause false collisions:
+    QVERIFY(hash1 != hsah1);
+    QVERIFY(hash2 != hsah2);
+    QVERIFY(qHash(hash1) != qHash(hsah1));
+    QVERIFY(qHash(hash2) != qHash(hsah2));
 }
 
 //copied from tst_QMap

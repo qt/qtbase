@@ -2644,4 +2644,24 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     \sa QHash::constFind()
 */
 
+/*!
+    \fn uint qHash(const QHash<Key, T> &key, uint seed = 0)
+    \since 5.8
+    \relates QHash
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+
+    Type \c T must be supported by qHash().
+*/
+
+/*!
+    \fn uint qHash(const QMultiHash<Key, T> &key, uint seed = 0)
+    \since 5.8
+    \relates QMultiHash
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+
+    Type \c T must be supported by qHash().
+*/
+
 QT_END_NAMESPACE

@@ -1095,6 +1095,27 @@ Q_INLINE_TEMPLATE int QMultiHash<Key, T>::count(const Key &key, const T &value) 
 Q_DECLARE_ASSOCIATIVE_ITERATOR(Hash)
 Q_DECLARE_MUTABLE_ASSOCIATIVE_ITERATOR(Hash)
 
+template <class Key, class T>
+uint qHash(const QHash<Key, T> &key, uint seed = 0)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(std::declval<Key&>())) && noexcept(qHash(std::declval<T&>())))
+{
+    QtPrivate::QHashCombineCommutative hash;
+    for (auto it = key.begin(), end = key.end(); it != end; ++it) {
+        const Key &k = it.key();
+        const T   &v = it.value();
+        seed = hash(seed, std::pair<const Key&, const T&>(k, v));
+    }
+    return seed;
+}
+
+template <class Key, class T>
+inline uint qHash(const QMultiHash<Key, T> &key, uint seed = 0)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(std::declval<Key&>())) && noexcept(qHash(std::declval<T&>())))
+{
+    const QHash<Key, T> &key2 = key;
+    return qHash(key2, seed);
+}
+
 QT_END_NAMESPACE
 
 #if defined(Q_CC_MSVC)
