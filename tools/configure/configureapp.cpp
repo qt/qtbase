@@ -526,6 +526,12 @@ void Configure::parseCmdLine()
             if (i == argCount)
                 break;
             const QString option = configCmdLine.at(i);
+            if (option == "xp") {
+                cout << "ERROR: option \"-target xp\" is no longer valid" << endl;
+                dictionary["DONE"] = "error";
+                return;
+            }
+
             if (option != "xp") {
                 cout << "ERROR: invalid argument for -target option" << endl;
                 dictionary["DONE"] = "error";
@@ -1816,9 +1822,6 @@ bool Configure::displayHelp()
         desc(                   "-platform <spec>",     "The operating system and compiler you are building on.\n(default %QMAKESPEC%)\n");
         desc(                   "-xplatform <spec>",    "The operating system and compiler you are cross compiling to.\n");
         desc(                   "",                     "See the README file for a list of supported operating systems and compilers.\n", false, ' ');
-
-        desc("TARGET_OS", "*", "-target",               "Set target OS version. Currently the only valid value is 'xp' for targeting Windows XP.\n"
-                                                        "MSVC >= 2012 targets Windows Vista by default.\n");
 
         desc(                   "-sysroot <dir>",       "Sets <dir> as the target compiler's and qmake's sysroot and also sets pkg-config paths.");
         desc(                   "-no-gcc-sysroot",      "When using -sysroot, it disables the passing of --sysroot to the compiler.\n");
