@@ -40,6 +40,7 @@ class tst_QPair : public QObject
 {
     Q_OBJECT
 private Q_SLOTS:
+    void pairOfReferences();
     void testConstexpr();
 };
 
@@ -93,6 +94,35 @@ Q_STATIC_ASSERT(!QTypeInfo<QPairPP>::isStatic );
 Q_STATIC_ASSERT(!QTypeInfo<QPairPP>::isDummy  );
 Q_STATIC_ASSERT(!QTypeInfo<QPairPP>::isPointer);
 
+
+void tst_QPair::pairOfReferences()
+{
+    int i = 0;
+    QString s;
+
+    QPair<int&, QString&> p(i, s);
+
+    p.first = 1;
+    QCOMPARE(i, 1);
+
+    i = 2;
+    QCOMPARE(p.first, 2);
+
+    p.second = QLatin1String("Hello");
+    QCOMPARE(s, QLatin1String("Hello"));
+
+    s = QLatin1String("olleH");
+    QCOMPARE(p.second, QLatin1String("olleH"));
+
+    QPair<int&, QString&> q = p;
+    q.first = 3;
+    QCOMPARE(i, 3);
+    QCOMPARE(p.first, 3);
+
+    q.second = QLatin1String("World");
+    QCOMPARE(s, QLatin1String("World"));
+    QCOMPARE(p.second, QLatin1String("World"));
+}
 
 void tst_QPair::testConstexpr()
 {
