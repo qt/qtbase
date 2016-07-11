@@ -53,7 +53,7 @@
 
 #include <QtCore/private/qglobal_p.h>
 #include <QtCore/qbytearray.h>
-#include <QtCore/qlist.h>
+#include <QtCore/qvector.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -61,11 +61,129 @@ QT_BEGIN_NAMESPACE
 #define QRINGBUFFER_CHUNKSIZE 4096
 #endif
 
+class QRingChunk
+{
+public:
+    // initialization and cleanup
+    inline QRingChunk() Q_DECL_NOTHROW :
+        headOffset(0), tailOffset(0)
+    {
+    }
+    inline QRingChunk(const QRingChunk &other) Q_DECL_NOTHROW :
+        chunk(other.chunk), headOffset(other.headOffset), tailOffset(other.tailOffset)
+    {
+    }
+    explicit inline QRingChunk(int alloc) :
+        chunk(alloc, Qt::Uninitialized), headOffset(0), tailOffset(0)
+    {
+    }
+    explicit inline QRingChunk(const QByteArray &qba) Q_DECL_NOTHROW :
+        chunk(qba), headOffset(0), tailOffset(qba.size())
+    {
+    }
+
+    inline QRingChunk &operator=(const QRingChunk &other) Q_DECL_NOTHROW
+    {
+        chunk = other.chunk;
+        headOffset = other.headOffset;
+        tailOffset = other.tailOffset;
+        return *this;
+    }
+    inline QRingChunk(QRingChunk &&other) Q_DECL_NOTHROW :
+        chunk(other.chunk), headOffset(other.headOffset), tailOffset(other.tailOffset)
+    {
+        other.headOffset = other.tailOffset = 0;
+    }
+    inline QRingChunk &operator=(QRingChunk &&other) Q_DECL_NOTHROW
+    {
+        swap(other);
+        return *this;
+    }
+
+    inline void swap(QRingChunk &other) Q_DECL_NOTHROW
+    {
+        chunk.swap(other.chunk);
+        qSwap(headOffset, other.headOffset);
+        qSwap(tailOffset, other.tailOffset);
+    }
+
+    // allocating and sharing
+    void allocate(int alloc);
+    inline bool isShared() const
+    {
+        return !chunk.isDetached();
+    }
+    Q_CORE_EXPORT void detach();
+    QByteArray toByteArray();
+
+    // getters
+    inline int head() const
+    {
+        return headOffset;
+    }
+    inline int size() const
+    {
+        return tailOffset - headOffset;
+    }
+    inline int capacity() const
+    {
+        return chunk.size();
+    }
+    inline int available() const
+    {
+        return chunk.size() - tailOffset;
+    }
+    inline const char *data() const
+    {
+        return chunk.constData() + headOffset;
+    }
+    inline char *data()
+    {
+        if (isShared())
+            detach();
+        return chunk.data() + headOffset;
+    }
+
+    // array management
+    inline void advance(int offset)
+    {
+        Q_ASSERT(headOffset + offset >= 0);
+        Q_ASSERT(size() - offset > 0);
+
+        headOffset += offset;
+    }
+    inline void grow(int offset)
+    {
+        Q_ASSERT(size() + offset > 0);
+        Q_ASSERT(head() + size() + offset <= capacity());
+
+        tailOffset += offset;
+    }
+    inline void assign(const QByteArray &qba)
+    {
+        chunk = qba;
+        headOffset = 0;
+        tailOffset = qba.size();
+    }
+    inline void reset()
+    {
+        headOffset = tailOffset = 0;
+    }
+    inline void clear()
+    {
+        assign(QByteArray());
+    }
+
+private:
+    QByteArray chunk;
+    int headOffset, tailOffset;
+};
+
 class QRingBuffer
 {
 public:
     explicit inline QRingBuffer(int growth = QRINGBUFFER_CHUNKSIZE) :
-        head(0), tail(0), tailBuffer(0), basicBlockSize(growth), bufferSize(0) { }
+        bufferSize(0), basicBlockSize(growth) { }
 
     inline void setChunkSize(int size) {
         basicBlockSize = size;
@@ -76,11 +194,11 @@ public:
     }
 
     inline qint64 nextDataBlockSize() const {
-        return (tailBuffer == 0 ? tail : buffers.first().size()) - head;
+        return bufferSize == 0 ? Q_INT64_C(0) : buffers.first().size();
     }
 
     inline const char *readPointer() const {
-        return bufferSize == 0 ? nullptr : (buffers.first().constData() + head);
+        return bufferSize == 0 ? nullptr : buffers.first().data();
     }
 
     Q_CORE_EXPORT const char *readPointerAtPosition(qint64 pos, qint64 &length) const;
@@ -114,14 +232,8 @@ public:
 
     void ungetChar(char c)
     {
-        if (head > 0) {
-            --head;
-            buffers.first()[head] = c;
-            ++bufferSize;
-        } else {
-            char *ptr = reserveFront(1);
-            *ptr = c;
-        }
+        char *ptr = reserveFront(1);
+        *ptr = c;
     }
 
 
@@ -152,13 +264,12 @@ public:
     }
 
 private:
-    QList<QByteArray> buffers;
-    int head, tail;
-    int tailBuffer; // always buffers.size() - 1
-    int basicBlockSize;
+    QVector<QRingChunk> buffers;
     qint64 bufferSize;
+    int basicBlockSize;
 };
 
+Q_DECLARE_SHARED(QRingChunk)
 Q_DECLARE_TYPEINFO(QRingBuffer, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
