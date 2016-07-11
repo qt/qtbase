@@ -833,7 +833,7 @@ recodeFromUser(const QString &input, const ushort *actions, int from, int to)
 
 // appendXXXX functions: copy from the internal form to the external, user form.
 // the internal value is stored in its PrettyDecoded form, so that case is easy.
-static inline void appendToUser(QString &appendTo, const QString &value, QUrl::FormattingOptions options,
+static inline void appendToUser(QString &appendTo, const QStringRef &value, QUrl::FormattingOptions options,
                                 const ushort *actions)
 {
     if (options == QUrl::PrettyDecoded) {
@@ -841,9 +841,16 @@ static inline void appendToUser(QString &appendTo, const QString &value, QUrl::F
         return;
     }
 
-    if (!qt_urlRecode(appendTo, value.constData(), value.constEnd(), options, actions))
+    if (!qt_urlRecode(appendTo, value.data(), value.end(), options, actions))
         appendTo += value;
 }
+
+static inline void appendToUser(QString &appendTo, const QString &value, QUrl::FormattingOptions options,
+                                const ushort *actions)
+{
+    appendToUser(appendTo, QStringRef(&value), options, actions);
+}
+
 
 inline void QUrlPrivate::appendAuthority(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
 {
@@ -924,21 +931,22 @@ inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions o
     if (options & QUrl::NormalizePathSegments) {
         thePath = qt_normalizePathSegments(path, false);
     }
+
+    QStringRef thePathRef(&thePath);
     if (options & QUrl::RemoveFilename) {
         const int slash = path.lastIndexOf(QLatin1Char('/'));
         if (slash == -1)
             return;
-        thePath = path.left(slash+1);
+        thePathRef = path.leftRef(slash + 1);
     }
     // check if we need to remove trailing slashes
     if (options & QUrl::StripTrailingSlash) {
-        while (thePath.length() > 1 && thePath.endsWith(QLatin1Char('/')))
-            thePath.chop(1);
+        while (thePathRef.length() > 1 && thePathRef.endsWith(QLatin1Char('/')))
+            thePathRef.chop(1);
     }
 
-    appendToUser(appendTo, thePath, options,
+    appendToUser(appendTo, thePathRef, options,
                  appendingTo == FullUrl || options & QUrl::EncodeDelimiters ? pathInUrl : pathInIsolation);
-
 }
 
 inline void QUrlPrivate::appendFragment(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const

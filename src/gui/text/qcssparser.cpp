@@ -403,8 +403,8 @@ ValueExtractor::ValueExtractor(const QVector<Declaration> &decls, const QPalette
 
 LengthData ValueExtractor::lengthValue(const Value& v)
 {
-    QString s = v.variant.toString();
-    s.reserve(s.length());
+    const QString str = v.variant.toString();
+    QStringRef s(&str);
     LengthData data;
     data.unit = LengthData::None;
     if (s.endsWith(QLatin1String("px"), Qt::CaseInsensitive))
@@ -1442,11 +1442,13 @@ bool Declaration::realValue(qreal *real, const char *unit) const
     const Value &v = d->values.at(0);
     if (unit && v.type != Value::Length)
         return false;
-    QString s = v.variant.toString();
+    const QString str = v.variant.toString();
+    QStringRef s(&str);
     if (unit) {
-        if (!s.endsWith(QLatin1String(unit), Qt::CaseInsensitive))
+        const QLatin1String unitStr(unit);
+        if (!s.endsWith(unitStr, Qt::CaseInsensitive))
             return false;
-        s.chop(qstrlen(unit));
+        s.chop(unitStr.size());
     }
     bool ok = false;
     qreal val = s.toDouble(&ok);
@@ -1459,11 +1461,13 @@ static bool intValueHelper(const QCss::Value &v, int *i, const char *unit)
 {
     if (unit && v.type != Value::Length)
         return false;
-    QString s = v.variant.toString();
+    const QString str = v.variant.toString();
+    QStringRef s(&str);
     if (unit) {
-        if (!s.endsWith(QLatin1String(unit), Qt::CaseInsensitive))
+        const QLatin1String unitStr(unit);
+        if (!s.endsWith(unitStr, Qt::CaseInsensitive))
             return false;
-        s.chop(qstrlen(unit));
+        s.chop(unitStr.size());
     }
     bool ok = false;
     int val = s.toInt(&ok);

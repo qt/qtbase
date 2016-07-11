@@ -498,11 +498,13 @@ QZipReader::FileInfo QZipPrivate::fillFileInfo(int index) const
 
     // fix the file path, if broken (convert separators, eat leading and trailing ones)
     fileInfo.filePath = QDir::fromNativeSeparators(fileInfo.filePath);
-    while (!fileInfo.filePath.isEmpty() && (fileInfo.filePath.at(0) == QLatin1Char('.') || fileInfo.filePath.at(0) == QLatin1Char('/')))
-        fileInfo.filePath = fileInfo.filePath.mid(1);
-    while (!fileInfo.filePath.isEmpty() && fileInfo.filePath.at(fileInfo.filePath.size() - 1) == QLatin1Char('/'))
-        fileInfo.filePath.chop(1);
+    QStringRef filePathRef(&fileInfo.filePath);
+    while (filePathRef.startsWith(QLatin1Char('.')) || filePathRef.startsWith(QLatin1Char('/')))
+        filePathRef = filePathRef.mid(1);
+    while (filePathRef.endsWith(QLatin1Char('/')))
+        filePathRef.chop(1);
 
+    fileInfo.filePath = filePathRef.toString();
     return fileInfo;
 }
 
