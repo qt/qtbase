@@ -1985,7 +1985,10 @@ QString &QString::insert(int i, QLatin1String str)
         return *this;
 
     int len = str.size();
-    expand(qMax(d->size, i) + len - 1);
+    if (Q_UNLIKELY(i > d->size))
+        expand(i + len - 1);
+    else
+        resize(d->size + len);
 
     ::memmove(d->data() + i + len, d->data() + i, (d->size - i - len) * sizeof(QChar));
     qt_from_latin1(d->data() + i, s, uint(len));
@@ -2015,7 +2018,10 @@ QString& QString::insert(int i, const QChar *unicode, int size)
         return *this;
     }
 
-    expand(qMax(d->size, i) + size - 1);
+    if (Q_UNLIKELY(i > d->size))
+        expand(i + size - 1);
+    else
+        resize(d->size + size);
 
     ::memmove(d->data() + i + size, d->data() + i, (d->size - i - size) * sizeof(QChar));
     memcpy(d->data() + i, s, size * sizeof(QChar));
@@ -2035,7 +2041,10 @@ QString& QString::insert(int i, QChar ch)
         i += d->size;
     if (i < 0)
         return *this;
-    expand(qMax(i, d->size));
+    if (Q_UNLIKELY(i > d->size))
+        expand(i);
+    else
+        resize(d->size + 1);
     ::memmove(d->data() + i + 1, d->data() + i, (d->size - i - 1) * sizeof(QChar));
     d->data()[i] = ch.unicode();
     return *this;
