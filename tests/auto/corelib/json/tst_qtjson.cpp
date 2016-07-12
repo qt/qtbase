@@ -137,6 +137,8 @@ private Q_SLOTS:
     void garbageAtEnd();
 
     void removeNonLatinKey();
+    void documentFromVariant();
+
 private:
     QString testDataDir;
 };
@@ -2786,6 +2788,44 @@ void tst_QtJson::removeNonLatinKey()
     QCOMPARE(sourceObject.keys(), restoredObject.keys());
     QVERIFY(sourceObject.contains(nonLatinKeyName));
     QVERIFY(restoredObject.contains(nonLatinKeyName));
+}
+
+void tst_QtJson::documentFromVariant()
+{
+    // Test the valid forms of QJsonDocument::fromVariant.
+
+    QString string = QStringLiteral("value");
+
+    QStringList strList;
+    strList.append(string);
+
+    QJsonDocument da1 = QJsonDocument::fromVariant(QVariant(strList));
+    QVERIFY(da1.isArray());
+
+    QVariantList list;
+    list.append(string);
+
+    QJsonDocument da2 = QJsonDocument::fromVariant(list);
+    QVERIFY(da2.isArray());
+
+    // As JSON arrays they should be equal.
+    QCOMPARE(da1.array(), da2.array());
+
+
+    QMap <QString, QVariant> map;
+    map["key"] = string;
+
+    QJsonDocument do1 = QJsonDocument::fromVariant(QVariant(map));
+    QVERIFY(do1.isObject());
+
+    QHash <QString, QVariant> hash;
+    hash["key"] = string;
+
+    QJsonDocument do2 = QJsonDocument::fromVariant(QVariant(hash));
+    QVERIFY(do2.isObject());
+
+    // As JSON objects they should be equal.
+    QCOMPARE(do1.object(), do2.object());
 }
 
 QTEST_MAIN(tst_QtJson)
