@@ -71,6 +71,7 @@ private slots:
     void connectDisconnectNotify();
     void connectDisconnectNotifyPMF();
     void disconnectNotify_receiverDestroyed();
+    void disconnectNotify_metaObjConnection();
     void connectNotify_connectSlotsByName();
     void connectDisconnectNotify_shadowing();
     void emitInDefinedOrder();
@@ -926,8 +927,7 @@ void tst_QObject::connectDisconnectNotifyPMF()
 
     // Test disconnectNotify when disconnecting by QMetaObject::Connection
     QVERIFY(QObject::disconnect(conn));
-    // disconnectNotify() is not called, but it probably should be.
-    QVERIFY(s->disconnectedSignals.isEmpty());
+    QVERIFY(!s->disconnectedSignals.isEmpty());
 
     // Test connectNotify when connecting by function pointer
     s->clearNotifications();
@@ -968,6 +968,25 @@ void tst_QObject::disconnectNotify_receiverDestroyed()
     delete r;
     QCOMPARE(s->disconnectedSignals.count(), 1);
     QCOMPARE(s->disconnectedSignals.at(0), QMetaMethod::fromSignal(&QObject::destroyed));
+
+    delete s;
+}
+
+void tst_QObject::disconnectNotify_metaObjConnection()
+{
+    NotifyObject *s = new NotifyObject;
+    NotifyObject *r = new NotifyObject;
+
+    QMetaObject::Connection c = QObject::connect((SenderObject*)s, SIGNAL(signal1()),
+                                                 (ReceiverObject*)r, SLOT(slot1()));
+    QVERIFY(c);
+    QVERIFY(QObject::disconnect(c));
+
+    QCOMPARE(s->disconnectedSignals.count(), 1);
+    QCOMPARE(s->disconnectedSignals.at(0), QMetaMethod::fromSignal(&SenderObject::signal1));
+
+    delete r;
+    QCOMPARE(s->disconnectedSignals.count(), 1);
 
     delete s;
 }

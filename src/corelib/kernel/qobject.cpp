@@ -4760,10 +4760,11 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
         c->isSlotObject = false;
     }
 
+    c->sender->disconnectNotify(QMetaObjectPrivate::signal(c->sender->metaObject(),
+                                                           c->signal_index));
+
     const_cast<QMetaObject::Connection &>(connection).d_ptr = 0;
     c->deref(); // has been removed from the QMetaObject::Connection object
-
-    // disconnectNotify() not called (the signal index is unknown).
 
     return true;
 }
