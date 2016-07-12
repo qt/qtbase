@@ -38,6 +38,8 @@
 #include <QPoint>
 #include <QGuiApplication>
 #include <qpa/qwindowsysteminterface.h>
+#include <private/qguiapplication_p.h>
+#include <private/qinputdevicemanager_p_p.h>
 
 #include <private/qcore_unix_p.h>
 #include <qdebug.h>
@@ -105,6 +107,8 @@ QBsdMouseHandler::QBsdMouseHandler(const QString &key, const QString &specificat
 
     m_notifier.reset(new QSocketNotifier(m_devFd, QSocketNotifier::Read, this));
     connect(m_notifier.data(), &QSocketNotifier::activated, this, &QBsdMouseHandler::readMouseData);
+    QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
+        QInputDeviceManager::DeviceTypePointer, 1);
 }
 
 QBsdMouseHandler::~QBsdMouseHandler()

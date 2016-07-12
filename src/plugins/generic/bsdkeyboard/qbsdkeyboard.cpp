@@ -44,6 +44,8 @@
 #include <QtCore/qglobal.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <private/qcore_unix_p.h>
+#include <private/qguiapplication_p.h>
+#include <private/qinputdevicemanager_p_p.h>
 
 #include <qdebug.h>
 #include <cstdio>
@@ -145,6 +147,8 @@ QBsdKeyboardHandler::QBsdKeyboardHandler(const QString &key, const QString &spec
 
     m_notifier.reset(new QSocketNotifier(m_fd, QSocketNotifier::Read, this));
     connect(m_notifier.data(), &QSocketNotifier::activated, this, &QBsdKeyboardHandler::readKeyboardData);
+    QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
+        QInputDeviceManager::DeviceTypeKeyboard, 1);
 }
 
 QBsdKeyboardHandler::~QBsdKeyboardHandler()
