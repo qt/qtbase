@@ -60,6 +60,7 @@
 #    include <QtNetwork/qsslkey.h>
 #    include <QtNetwork/qsslcipher.h>
 #    include <QtNetwork/qsslconfiguration.h>
+#    include <QtNetwork/qsslerror.h>
 #endif
 
 

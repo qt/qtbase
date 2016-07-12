@@ -37,8 +37,6 @@
 **
 ****************************************************************************/
 
-#define NOMINMAX
-
 #include "qhttpnetworkconnection_p.h"
 #include "qhttp2protocolhandler_p.h"
 

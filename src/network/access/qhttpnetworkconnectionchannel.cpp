@@ -52,6 +52,7 @@
 #include <private/qspdyprotocolhandler_p.h>
 
 #ifndef QT_NO_SSL
+#    include <private/qsslsocket_p.h>
 #    include <QtNetwork/qsslkey.h>
 #    include <QtNetwork/qsslcipher.h>
 #    include <QtNetwork/qsslconfiguration.h>

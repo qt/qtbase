@@ -72,17 +72,6 @@
 
 #ifndef QT_NO_HTTP
 
-#ifndef QT_NO_SSL
-#ifndef QT_NO_OPENSSL
-#    include <private/qsslcontext_openssl_p.h>
-#endif
-#    include <private/qsslsocket_p.h>
-#    include <QtNetwork/qsslsocket.h>
-#    include <QtNetwork/qsslerror.h>
-#else
-#   include <QtNetwork/qtcpsocket.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 class QHttpNetworkRequest;
@@ -90,6 +79,10 @@ class QHttpNetworkReply;
 class QHttpThreadDelegate;
 class QByteArray;
 class QHostInfo;
+#ifndef QT_NO_SSL
+class QSslConfiguration;
+class QSslContext;
+#endif // !QT_NO_SSL
 
 class QHttpNetworkConnectionPrivate;
 class Q_AUTOTEST_EXPORT QHttpNetworkConnection : public QObject
