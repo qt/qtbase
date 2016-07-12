@@ -291,8 +291,8 @@ retry:
 // Testing get/set functions
 void tst_QCompleter::getSetCheck()
 {
-    QStandardItemModel model(3,3);
-    QCompleter completer(&model);
+    QStandardItemModel standardItemModel(3,3);
+    QCompleter completer(&standardItemModel);
 
     // QString QCompleter::completionPrefix()
     // void QCompleter::setCompletionPrefix(QString)
@@ -352,6 +352,21 @@ void tst_QCompleter::getSetCheck()
     QCOMPARE(completer.wrapAround(), true); // default value
     completer.setWrapAround(false);
     QCOMPARE(completer.wrapAround(), false);
+
+#ifndef QT_NO_FILESYSTEMMODEL
+    // QTBUG-54642, changing from QFileSystemModel to another model should restore role.
+    completer.setCompletionRole(Qt::EditRole);
+    QCOMPARE(completer.completionRole(), static_cast<int>(Qt::EditRole)); // default value
+    QFileSystemModel fileSystemModel;
+    completer.setModel(&fileSystemModel);
+    QCOMPARE(completer.completionRole(), static_cast<int>(QFileSystemModel::FileNameRole));
+    completer.setModel(&standardItemModel);
+    QCOMPARE(completer.completionRole(), static_cast<int>(Qt::EditRole));
+    completer.setCompletionRole(Qt::ToolTipRole);
+    QStandardItemModel standardItemModel2(2, 2); // Do not clobber a custom role when changing models
+    completer.setModel(&standardItemModel2);
+    QCOMPARE(completer.completionRole(), static_cast<int>(Qt::ToolTipRole));
+#endif // QT_NO_FILESYSTEMMODEL
 }
 
 void tst_QCompleter::csMatchingOnCsSortedModel_data()
