@@ -1789,17 +1789,12 @@ void QString::reallocData(uint alloc, bool grow)
     }
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void QString::expand(int i)
 {
-    int sz = d->size;
-    resize(qMax(i + 1, sz));
-    if (d->size - 1 > sz) {
-        ushort *n = d->data() + d->size - 1;
-        ushort *e = d->data() + sz;
-        while (n != e)
-           * --n = ' ';
-    }
+    resize(qMax(i + 1, d->size), QLatin1Char(' '));
 }
+#endif
 
 /*! \fn void QString::clear()
 
@@ -1986,7 +1981,7 @@ QString &QString::insert(int i, QLatin1String str)
 
     int len = str.size();
     if (Q_UNLIKELY(i > d->size))
-        expand(i + len - 1);
+        resize(i + len, QLatin1Char(' '));
     else
         resize(d->size + len);
 
@@ -2019,7 +2014,7 @@ QString& QString::insert(int i, const QChar *unicode, int size)
     }
 
     if (Q_UNLIKELY(i > d->size))
-        expand(i + size - 1);
+        resize(i + size, QLatin1Char(' '));
     else
         resize(d->size + size);
 
@@ -2042,7 +2037,7 @@ QString& QString::insert(int i, QChar ch)
     if (i < 0)
         return *this;
     if (Q_UNLIKELY(i > d->size))
-        expand(i);
+        resize(i + 1, QLatin1Char(' '));
     else
         resize(d->size + 1);
     ::memmove(d->data() + i + 1, d->data() + i, (d->size - i - 1) * sizeof(QChar));

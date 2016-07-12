@@ -803,7 +803,9 @@ private:
     Data *d;
 
     void reallocData(uint alloc, bool grow = false);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void expand(int i);
+#endif
     QString multiArg(int numArgs, const QString **args) const;
     static int compare_helper(const QChar *data1, int length1,
                               const QChar *data2, int length2,
@@ -990,7 +992,7 @@ public:
     inline operator QChar() const
     { return i < s.d->size ? s.d->data()[i] : 0; }
     inline QCharRef &operator=(QChar c)
-    { if (i >= s.d->size) s.expand(i); else s.detach();
+    { if (i >= s.d->size) s.resize(i + 1, QLatin1Char(' ')); else s.detach();
       s.d->data()[i] = c.unicode(); return *this; }
 
     // An operator= for each QChar cast constructors
