@@ -45,6 +45,7 @@ private slots:
     void sizeWhenReserved();
     void free();
     void reserveAndRead();
+    void reserveAndReadInPacketMode();
     void reserveFrontAndRead();
     void chop();
     void ungetChar();
@@ -241,6 +242,25 @@ void tst_QRingBuffer::reserveAndRead()
         QCOMPARE(ba.count(char(i)), i);
     }
     QCOMPARE(ringBuffer.size(), Q_INT64_C(0));
+}
+
+void tst_QRingBuffer::reserveAndReadInPacketMode()
+{
+    QRingBuffer ringBuffer(0);
+    // try to allocate 255 buffers
+    for (int i = 1; i < 256; ++i) {
+        char *ringPos = ringBuffer.reserve(i);
+        QVERIFY(ringPos);
+    }
+
+    // count and check the size of stored buffers
+    int buffersCount = 0;
+    while (!ringBuffer.isEmpty()) {
+        QByteArray ba = ringBuffer.read();
+        ++buffersCount;
+        QCOMPARE(ba.size(), buffersCount);
+    }
+    QCOMPARE(buffersCount, 255);
 }
 
 void tst_QRingBuffer::reserveFrontAndRead()
