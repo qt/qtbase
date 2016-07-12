@@ -40,6 +40,17 @@
 #ifndef HTTP2PROTOCOL_P_H
 #define HTTP2PROTOCOL_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of the Network Access API.  This header file may change from
+// version to version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtNetwork/qnetworkreply.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qglobal.h>
