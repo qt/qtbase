@@ -3263,22 +3263,7 @@ static int lastIndexOfHelper(const ushort *haystack, int from, const ushort *nee
 */
 int QString::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
 {
-    const int sl = str.d->size;
-    if (sl == 1)
-        return lastIndexOf(QChar(str.d->data()[0]), from, cs);
-
-    const int l = d->size;
-    if (from < 0)
-        from += l;
-    int delta = l-sl;
-    if (from == l && sl == 0)
-        return from;
-    if (uint(from) >= uint(l) || delta < 0)
-        return -1;
-    if (from > delta)
-        from = delta;
-
-    return lastIndexOfHelper(d->data(), from, str.d->data(), str.d->size, cs);
+    return QStringRef(this).lastIndexOf(QStringRef(&str), from, cs);
 }
 
 /*!
@@ -3302,25 +3287,7 @@ int QString::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs) c
 */
 int QString::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) const
 {
-    const int sl = str.size();
-    if (sl == 1)
-        return lastIndexOf(str.at(0), from, cs);
-
-    const int l = d->size;
-    if (from < 0)
-        from += l;
-    int delta = l-sl;
-    if (from == l && sl == 0)
-        return from;
-    if (uint(from) >= uint(l) || delta < 0)
-        return -1;
-    if (from > delta)
-        from = delta;
-
-    QVarLengthArray<ushort> s(sl);
-    qt_from_latin1(s.data(), str.latin1(), sl);
-
-    return lastIndexOfHelper(d->data(), from, s.data(), sl, cs);
+    return QStringRef(this).lastIndexOf(str, from, cs);
 }
 
 /*!
@@ -3351,23 +3318,7 @@ int QString::lastIndexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 */
 int QString::lastIndexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) const
 {
-    const int sl = str.size();
-    if (sl == 1)
-        return lastIndexOf(str.at(0), from, cs);
-
-    const int l = d->size;
-    if (from < 0)
-        from += l;
-    int delta = l - sl;
-    if (from == l && sl == 0)
-        return from;
-    if (uint(from) >= uint(l) || delta < 0)
-    return -1;
-    if (from > delta)
-        from = delta;
-
-    return lastIndexOfHelper(d->data(), from, reinterpret_cast<const ushort*>(str.unicode()),
-                             str.size(), cs);
+    return QStringRef(this).lastIndexOf(str, from, cs);
 }
 
 
@@ -9800,23 +9751,7 @@ int QStringRef::indexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs)
 */
 int QStringRef::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
 {
-    const int sl = str.size();
-    if (sl == 1)
-        return lastIndexOf(str.at(0), from, cs);
-
-    const int l = size();;
-    if (from < 0)
-        from += l;
-    int delta = l - sl;
-    if (from == l && sl == 0)
-        return from;
-    if (uint(from) >= uint(l) || delta < 0)
-        return -1;
-    if (from > delta)
-        from = delta;
-
-    return lastIndexOfHelper(reinterpret_cast<const ushort*>(unicode()), from,
-                             reinterpret_cast<const ushort*>(str.unicode()), str.size(), cs);
+    return lastIndexOf(QStringRef(&str), from, cs);
 }
 
 /*!
