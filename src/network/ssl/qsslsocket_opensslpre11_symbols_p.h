@@ -218,6 +218,7 @@ DSA *q_d2i_DSAPrivateKey(DSA **a, unsigned char **pp, long length);
 #define q_SSL_SESSION_get_ticket_lifetime_hint(s) ((s)->tlsext_tick_lifetime_hint)
 #define q_RSA_bits(rsa) q_BN_num_bits((rsa)->n)
 #define q_DSA_bits(dsa) q_BN_num_bits((dsa)->p)
+#define q_DH_bits(dsa) q_BN_num_bits((dh)->p)
 #define q_X509_STORE_set_verify_cb(s,c) X509_STORE_set_verify_cb_func((s),(c))
 
 char *q_CONF_get1_default_config_file();

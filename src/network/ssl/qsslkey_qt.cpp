@@ -165,6 +165,7 @@ static int extractPkcs8KeyLength(const QVector<QAsn1Element> &items, QSslKeyPriv
         switch (algorithm){
         case QSsl::Rsa: return "RSA";
         case QSsl::Dsa: return "DSA";
+        case QSsl::Dh: return "DH";
         case QSsl::Ec: return "EC";
         case QSsl::Opaque: return "Opaque";
         }
@@ -217,6 +218,21 @@ static int extractPkcs8KeyLength(const QVector<QAsn1Element> &items, QSslKeyPriv
         if (dsaInfo.size() != 3 || dsaInfo[0].type() != QAsn1Element::IntegerType)
             return -1;
         keyLength = numberOfBits(dsaInfo[0].value());
+    } else if (value == DH_ENCRYPTION_OID) {
+        if (Q_UNLIKELY(that->algorithm != QSsl::Dh)) {
+            // As above for RSA.
+            qWarning() << "QSslKey: Found DH when asked to use" << getName(that->algorithm)
+                        << "\nLoading will fail.";
+            return -1;
+        }
+        // DH's structure is documented here:
+        // https://www.cryptsoft.com/pkcs11doc/STANDARD/v201-95.pdf in section 11.9.
+        if (pkcs8Info[1].type() != QAsn1Element::SequenceType)
+            return -1;
+        const QVector<QAsn1Element> dhInfo = pkcs8Info[1].toVector();
+        if (dhInfo.size() < 2 || dhInfo.size() > 3 || dhInfo[0].type() != QAsn1Element::IntegerType)
+            return -1;
+        keyLength = numberOfBits(dhInfo[0].value());
     } else {
         // in case of unexpected formats:
         qWarning() << "QSslKey: Unsupported PKCS#8 key algorithm:" << value
@@ -268,6 +284,16 @@ void QSslKeyPrivate::decodeDer(const QByteArray &der, const QByteArray &passPhra
             if (params.isEmpty() || params[0].type() != QAsn1Element::IntegerType)
                 return;
             keyLength = numberOfBits(params[0].value());
+        } else if (algorithm == QSsl::Dh) {
+            if (infoItems[0].toObjectId() != DH_ENCRYPTION_OID)
+                return;
+            if (infoItems[1].type() != QAsn1Element::SequenceType)
+                return;
+            // key params
+            const QVector<QAsn1Element> params = infoItems[1].toVector();
+            if (params.isEmpty() || params[0].type() != QAsn1Element::IntegerType)
+                return;
+            keyLength = numberOfBits(params[0].value());
         } else if (algorithm == QSsl::Ec) {
             if (infoItems[0].toObjectId() != EC_ENCRYPTION_OID)
                 return;
@@ -305,6 +331,12 @@ void QSslKeyPrivate::decodeDer(const QByteArray &der, const QByteArray &passPhra
             if (versionHex != "00")
                 return;
             if (items.size() != 6 || items[1].type() != QAsn1Element::IntegerType)
+                return;
+            keyLength = numberOfBits(items[1].value());
+        } else if (algorithm == QSsl::Dh) {
+            if (versionHex != "00")
+                return;
+            if (items.size() < 5 || items.size() > 6 || items[1].type() != QAsn1Element::IntegerType)
                 return;
             keyLength = numberOfBits(items[1].value());
         } else if (algorithm == QSsl::Ec) {

@@ -116,6 +116,8 @@ QByteArray QSslKeyPrivate::pemHeader() const
         return QByteArrayLiteral("-----BEGIN DSA PRIVATE KEY-----");
     else if (algorithm == QSsl::Ec)
         return QByteArrayLiteral("-----BEGIN EC PRIVATE KEY-----");
+    else if (algorithm == QSsl::Dh)
+        return QByteArrayLiteral("-----BEGIN PRIVATE KEY-----");
 
     Q_UNREACHABLE();
     return QByteArray();
@@ -141,6 +143,8 @@ QByteArray QSslKeyPrivate::pemFooter() const
         return QByteArrayLiteral("-----END DSA PRIVATE KEY-----");
     else if (algorithm == QSsl::Ec)
         return QByteArrayLiteral("-----END EC PRIVATE KEY-----");
+    else if (algorithm == QSsl::Dh)
+        return QByteArrayLiteral("-----END PRIVATE KEY-----");
 
     Q_UNREACHABLE();
     return QByteArray();
@@ -535,7 +539,9 @@ QDebug operator<<(QDebug debug, const QSslKey &key)
     debug << "QSslKey("
           << (key.type() == QSsl::PublicKey ? "PublicKey" : "PrivateKey")
           << ", " << (key.algorithm() == QSsl::Opaque ? "OPAQUE" :
-                      (key.algorithm() == QSsl::Rsa ? "RSA" : ((key.algorithm() == QSsl::Dsa) ? "DSA" : "EC")))
+                     (key.algorithm() == QSsl::Rsa ? "RSA" :
+                     (key.algorithm() == QSsl::Dsa ? "DSA" :
+                     (key.algorithm() == QSsl::Dh ? "DH" : "EC"))))
           << ", " << key.length()
           << ')';
     return debug;

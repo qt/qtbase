@@ -62,7 +62,8 @@ namespace QSsl {
         Opaque,
         Rsa,
         Dsa,
-        Ec
+        Ec,
+        Dh,
     };
 
     enum AlternativeNameEntryType {

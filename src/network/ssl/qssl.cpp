@@ -71,7 +71,8 @@ Q_LOGGING_CATEGORY(lcSsl, "qt.network.ssl");
 
     \value Rsa The RSA algorithm.
     \value Dsa The DSA algorithm.
-    \value Ec  The Elliptic Curve algorithm
+    \value Ec  The Elliptic Curve algorithm.
+    \value Dh  The Diffie-Hellman algorithm.
     \value Opaque A key that should be treated as a 'black box' by QSslKey.
 
     The opaque key facility allows applications to add support for facilities

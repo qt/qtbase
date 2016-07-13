@@ -116,6 +116,7 @@ public:
         EVP_PKEY *opaque;
         RSA *rsa;
         DSA *dsa;
+        DH *dh;
 #ifndef OPENSSL_NO_EC
         EC_KEY *ec;
 #endif

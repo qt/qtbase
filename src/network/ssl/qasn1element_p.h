@@ -64,6 +64,7 @@ QT_BEGIN_NAMESPACE
 #define RSA_ENCRYPTION_OID QByteArrayLiteral(RSADSI_OID "1.1.1")
 #define DSA_ENCRYPTION_OID QByteArrayLiteral("1.2.840.10040.4.1")
 #define EC_ENCRYPTION_OID QByteArrayLiteral("1.2.840.10045.2.1")
+#define DH_ENCRYPTION_OID QByteArrayLiteral(RSADSI_OID "1.3.1")
 
 // These are mostly from the RFC for PKCS#5
 // PKCS#5: https://tools.ietf.org/html/rfc8018#appendix-B

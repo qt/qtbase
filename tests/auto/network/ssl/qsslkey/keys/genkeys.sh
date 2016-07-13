@@ -88,6 +88,27 @@ do
   openssl ec -in ec-pri-$size-$curve.pem -pubout -out ec-pub-$size-$curve.der -outform DER
 done
 
+#--- DH ----------------------------------------------------------------------------
+for size in 512 1024 2048
+do
+  echo -e "\ngenerating DH parameters to PEM file ..."
+  openssl dhparam -out dhpar-$size.pem $size
+
+  echo -e "\ngenerating DH private key to PEM file ..."
+  openssl genpkey -paramfile dhpar-$size.pem -out dh-pri-$size.pem
+
+  /bin/rm dhpar-$size.pem
+
+  echo -e "\ngenerating DH private key to DER file ..."
+  openssl pkey -in dh-pri-$size.pem -out dh-pri-$size.der -outform DER
+
+  echo -e "\ngenerating DH public key to PEM file ..."
+  openssl pkey -in dh-pri-$size.pem -pubout -out dh-pub-$size.pem
+
+  echo -e "\ngenerating DH public key to DER file ..."
+  openssl pkey -in dh-pri-$size.pem -pubout -out dh-pub-$size.der -outform DER
+done
+
 #--- PKCS#8 ------------------------------------------------------------------------
 # Note: We'll just grab some of the keys generated earlier and convert those
 # https://www.openssl.org/docs/manmaster/man1/pkcs8.html#PKCS-5-v1.5-and-PKCS-12-algorithms
