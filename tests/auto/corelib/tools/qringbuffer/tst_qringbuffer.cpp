@@ -58,6 +58,12 @@ void tst_QRingBuffer::constructing()
 {
     QRingBuffer ringBuffer;
 
+    const int chunkSize = ringBuffer.chunkSize();
+    ringBuffer.setChunkSize(0);
+    QCOMPARE(ringBuffer.chunkSize(), Q_INT64_C(0));
+    ringBuffer.setChunkSize(chunkSize);
+    QCOMPARE(ringBuffer.chunkSize(), chunkSize);
+
     QCOMPARE(ringBuffer.size(), Q_INT64_C(0));
     QVERIFY(ringBuffer.isEmpty());
     QCOMPARE(ringBuffer.nextDataBlockSize(), Q_INT64_C(0));

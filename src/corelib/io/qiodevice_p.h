@@ -92,6 +92,8 @@ public:
         friend class QIODevicePrivate;
     public:
         // wrap functions from QRingBuffer
+        inline void setChunkSize(int size) { Q_ASSERT(m_buf); m_buf->setChunkSize(size); }
+        inline int chunkSize() const { Q_ASSERT(m_buf); return m_buf->chunkSize(); }
         inline qint64 nextDataBlockSize() const { return (m_buf ? m_buf->nextDataBlockSize() : Q_INT64_C(0)); }
         inline const char *readPointer() const { return (m_buf ? m_buf->readPointer() : Q_NULLPTR); }
         inline const char *readPointerAtPosition(qint64 pos, qint64 &length) const { Q_ASSERT(m_buf); return m_buf->readPointerAtPosition(pos, length); }
