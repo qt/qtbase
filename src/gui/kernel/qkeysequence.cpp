@@ -219,9 +219,9 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     code point of the character; for example, 'A' gives the same key sequence
     as Qt::Key_A.
 
-    \b{Note:} On OS X, references to "Ctrl", Qt::CTRL, Qt::Control
+    \note On OS X, references to "Ctrl", Qt::CTRL, Qt::Key_Control
     and Qt::ControlModifier correspond to the \uicontrol Command keys on the
-    Macintosh keyboard, and references to "Meta", Qt::META, Qt::Meta and
+    Macintosh keyboard, and references to "Meta", Qt::META, Qt::Key_Meta and
     Qt::MetaModifier correspond to the \uicontrol Control keys. Developers on
     OS X can use the same shortcut descriptions across all platforms,
     and their applications will automatically work as expected on OS X.
