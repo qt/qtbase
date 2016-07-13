@@ -151,6 +151,14 @@ public:
         val = qToLittleEndian(qFromLittleEndian(val) + i);
         return *this;
     }
+    q_littleendian &operator |=(T i) {
+        val = qToLittleEndian(qFromLittleEndian(val) | i);
+        return *this;
+    }
+    q_littleendian &operator &=(T i) {
+        val = qToLittleEndian(qFromLittleEndian(val) & i);
+        return *this;
+    }
 };
 } // namespace QJsonPrivate
 
@@ -203,6 +211,14 @@ public:
     }
     qle_bitfield &operator -=(uint i) {
         *this = (uint(*this) - i);
+        return *this;
+    }
+    qle_bitfield &operator |=(uint i) {
+        *this = (uint(*this) | i);
+        return *this;
+    }
+    qle_bitfield &operator &=(uint i) {
+        *this = (uint(*this) & i);
         return *this;
     }
 };
