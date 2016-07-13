@@ -1175,6 +1175,10 @@ inline int QXmlStreamReaderPrivate::fastScanLiteralContent()
             }
             // fall through
         default:
+            if (c < 0x20) {
+                putChar(c);
+                return n;
+            }
             textBuffer += QChar(c);
             ++n;
         }
