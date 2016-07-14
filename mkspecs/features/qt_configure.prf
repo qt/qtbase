@@ -63,7 +63,7 @@ defineTest(qtConfCommandline_void) {
     opt = $${1}
     val = $${2}
     !isEmpty(val) {
-        qtConfAddError("Command line option $$opt expects no argument ('$$val' given).")
+        qtConfAddError("Command line option '$$opt' expects no argument ('$$val' given).")
         return()
     }
 
@@ -110,7 +110,7 @@ defineTest(qtConfValidateValue) {
             return(true)
     }
 
-    qtConfAddError("Invalid value $$val supplied to command line option '$$opt'.")
+    qtConfAddError("Invalid value '$$val' supplied to command line option '$$opt'.")
     return(false)
 }
 
@@ -120,7 +120,7 @@ defineTest(qtConfCommandline_string) {
     isEmpty(val): val = $$qtConfGetNextCommandlineArg()
 
     contains(val, "^-.*")|isEmpty(val) {
-        qtConfAddError("No value supplied to command line option $$opt")
+        qtConfAddError("No value supplied to command line option '$$opt'.")
         return()
     }
 
@@ -154,7 +154,7 @@ defineTest(qtConfCommandline_addString) {
     isEmpty(val): val = $$qtConfGetNextCommandlineArg()
 
     contains(val, "^-.*")|isEmpty(val) {
-        qtConfAddError("No value supplied to command line option $$opt")
+        qtConfAddError("No value supplied to command line option '$$opt'.")
         return()
     }
 
@@ -200,7 +200,7 @@ defineTest(qtConfParseCommandLine) {
             opt = $$replace(c, "^--?([^-].*)", "\\1")
             val =
         } else {
-            error("Invalid command line parameter $$c")
+            error("Invalid command line parameter '$$c'.")
         }
 
         type = $$eval(config.commandline.options.$${opt})
@@ -225,7 +225,7 @@ defineTest(qtConfParseCommandLine) {
         }
 
         isEmpty(type): \
-            error("Unknown command line option $$c")
+            error("Unknown command line option '$$c'.")
 
         call = "qtConfCommandline_$${type}"
         !defined($$call, test): \
