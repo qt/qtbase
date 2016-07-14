@@ -59,6 +59,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QHttpNetworkRequest;
+class QByteArray;
 class QString;
 
 namespace Http2
@@ -128,6 +130,7 @@ enum Http2PredefinedParameters
 };
 
 extern const Q_AUTOTEST_EXPORT char Http2clientPreface[clientPrefaceLength];
+void qt_add_ProtocolUpgradeRequest(QHttpNetworkRequest &request);
 
 enum class FrameStatus
 {
@@ -165,6 +168,8 @@ enum Http2Error
 void qt_error(quint32 errorCode, QNetworkReply::NetworkError &error, QString &errorString);
 QString qt_error_string(quint32 errorCode);
 QNetworkReply::NetworkError qt_error(quint32 errorCode);
+
+class FrameWriter qt_default_SETTINGS_frame();
 
 }
 

@@ -37,9 +37,12 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qbytearray.h>
 #include <QtCore/qstring.h>
 
+#include "private/qhttpnetworkrequest_p.h"
 #include "http2protocol_p.h"
+#include "http2frames_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -57,6 +60,37 @@ const char Http2clientPreface[clientPrefaceLength] =
      0x2e, 0x30, 0x0d, 0x0a, 0x0d, 0x0a,
      0x53, 0x4d, 0x0d, 0x0a, 0x0d, 0x0a};
 
+QByteArray qt_default_SETTINGS_to_Base64()
+{
+    FrameWriter frame(qt_default_SETTINGS_frame());
+    // SETTINGS frame's payload consists of pairs:
+    // 2-byte-identifier | 4-byte-value - multiple of 6.
+    // Also it's allowed to be empty.
+    Q_ASSERT(!(frame.payloadSize() % 6));
+    const char *src = reinterpret_cast<const char *>(&frame.rawFrameBuffer()[frameHeaderSize]);
+    const QByteArray wrapper(QByteArray::fromRawData(src, int(frame.payloadSize())));
+    // 3.2.1
+    // The content of the HTTP2-Settings header field is the payload
+    // of a SETTINGS frame (Section 6.5), encoded as a base64url string
+    // (that is, the URL- and filename-safe Base64 encoding described in
+    // Section 5 of [RFC4648], with any trailing '=' characters omitted).
+    return wrapper.toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
+}
+
+void qt_add_ProtocolUpgradeRequest(QHttpNetworkRequest &request)
+{
+    // RFC 2616, 14.10
+    QByteArray value(request.headerField("Connection"));
+    if (value.size())
+        value += ", ";
+
+    value += "Upgrade, HTTP2-Settings";
+    request.setHeaderField("Connection", value);
+    // This we just (re)write.
+    request.setHeaderField("Upgrade", "h2c");
+    // This we just (re)write.
+    request.setHeaderField("HTTP2-Settings", qt_default_SETTINGS_to_Base64());
+}
 
 void qt_error(quint32 errorCode, QNetworkReply::NetworkError &error,
               QString &errorMessage)
@@ -149,6 +183,19 @@ QNetworkReply::NetworkError qt_error(quint32 errorCode)
     QString message;
     qt_error(errorCode, error, message);
     return error;
+}
+
+FrameWriter qt_default_SETTINGS_frame()
+{
+    // 6.5 SETTINGS
+    FrameWriter frame(FrameType::SETTINGS, FrameFlag::EMPTY, connectionStreamID);
+    // MAX frame size (16 kb), disable PUSH
+    frame.append(Settings::MAX_FRAME_SIZE_ID);
+    frame.append(quint32(maxFrameSize));
+    frame.append(Settings::ENABLE_PUSH_ID);
+    frame.append(quint32(0));
+
+    return frame;
 }
 
 }

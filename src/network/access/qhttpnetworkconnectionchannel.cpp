@@ -50,6 +50,7 @@
 #include <private/qhttp2protocolhandler_p.h>
 #include <private/qhttpprotocolhandler_p.h>
 #include <private/qspdyprotocolhandler_p.h>
+#include <private/http2protocol_p.h>
 
 #ifndef QT_NO_SSL
 #    include <private/qsslsocket_p.h>
@@ -180,6 +181,9 @@ void QHttpNetworkConnectionChannel::init()
            sslSocket->setSslConfiguration(sslConfiguration);
     } else {
 #endif // QT_NO_SSL
+        // Even if connection->connectionType is ConnectionTypeHTTP2,
+        // we first start as HTTP/1.1, asking for a protocol upgrade
+        // in the first response.
         protocolHandler.reset(new QHttpProtocolHandler(this));
 #ifndef QT_NO_SSL
     }
@@ -835,6 +839,16 @@ void QHttpNetworkConnectionChannel::_q_connected()
 #endif
     } else {
         state = QHttpNetworkConnectionChannel::IdleState;
+        if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2) {
+            Q_ASSERT(spdyRequestsToSend.size());
+            auto it = spdyRequestsToSend.begin();
+            // Let's inject some magic fields, requesting a protocol upgrade:
+            Http2::qt_add_ProtocolUpgradeRequest(it->first);
+            connection->d_func()->requeueRequest(*it);
+            // Remove it, we never send it again as HTTP/2.
+            spdyRequestsToSend.erase(it);
+        }
+
         if (!reply)
             connection->d_func()->dequeueRequest(socket);
         if (reply)
@@ -972,9 +986,12 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
         }
     } while (!connection->d_func()->highPriorityQueue.isEmpty()
              || !connection->d_func()->lowPriorityQueue.isEmpty());
+
+    if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2
 #ifndef QT_NO_SSL
-    if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeSPDY ||
-        connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2) {
+        || connection->connectionType() == QHttpNetworkConnection::ConnectionTypeSPDY
+#endif
+        ) {
         QList<HttpMessagePair> spdyPairs = spdyRequestsToSend.values();
         for (int a = 0; a < spdyPairs.count(); ++a) {
             // emit error for all replies
@@ -983,7 +1000,6 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
             emit currentReply->finishedWithError(errorCode, errorString);
         }
     }
-#endif // QT_NO_SSL
 
     // send the next request
     QMetaObject::invokeMethod(that, "_q_startNextRequest", Qt::QueuedConnection);
@@ -1002,23 +1018,31 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
     }
 }
 
+void QHttpNetworkConnectionChannel::_q_protocolSwitch()
+{
+    Q_ASSERT(connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2);
+    Q_ASSERT(reply);
+    Q_ASSERT(reply->statusCode() == 101);
+    protocolHandler.reset(new QHttp2ProtocolHandler(this, HttpMessagePair(request, reply)));
+    protocolHandler->_q_receiveReply();
+}
+
 #ifndef QT_NO_NETWORKPROXY
 void QHttpNetworkConnectionChannel::_q_proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator* auth)
 {
+    if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2
 #ifndef QT_NO_SSL
-    if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeSPDY ||
-        connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2) {
+        || connection->connectionType() == QHttpNetworkConnection::ConnectionTypeSPDY
+#endif
+    ) {
         connection->d_func()->emitProxyAuthenticationRequired(this, proxy, auth);
     } else { // HTTP
-#endif // QT_NO_SSL
         // Need to dequeue the request before we can emit the error.
         if (!reply)
             connection->d_func()->dequeueRequest(socket);
         if (reply)
             connection->d_func()->emitProxyAuthenticationRequired(this, proxy, auth);
-#ifndef QT_NO_SSL
     }
-#endif // QT_NO_SSL
 }
 #endif
 

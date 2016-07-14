@@ -40,7 +40,7 @@
 #include "qhttpnetworkconnection_p.h"
 #include "qhttp2protocolhandler_p.h"
 
-#if !defined(QT_NO_HTTP) && !defined(QT_NO_SSL)
+#if !defined(QT_NO_HTTP)
 
 #include "http2/bitstreams_p.h"
 
@@ -54,6 +54,7 @@
 #include <QtCore/qurl.h>
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 QT_BEGIN_NAMESPACE
@@ -131,6 +132,28 @@ QHttp2ProtocolHandler::QHttp2ProtocolHandler(QHttpNetworkConnectionChannel *chan
       encoder(HPack::FieldLookupTable::DefaultSize, true)
 {
     continuedFrames.reserve(20);
+}
+
+QHttp2ProtocolHandler::QHttp2ProtocolHandler(QHttpNetworkConnectionChannel *channel,
+                                             const HttpMessagePair &message)
+    : QAbstractProtocolHandler(channel),
+      prefaceSent(false),
+      waitingForSettingsACK(false),
+      decoder(HPack::FieldLookupTable::DefaultSize),
+      encoder(HPack::FieldLookupTable::DefaultSize, true)
+{
+    // That's a protocol upgrade scenario - 3.2.
+    //
+    // We still have to send settings and the preface
+    // (though SETTINGS was a part of the first HTTP/1.1
+    // request "HTTP2-Settings" field).
+    //
+    // We pass 'false' for upload data, this was done by HTTP/1.1 protocol
+    // handler for us while sending the first request.
+    const quint32 initialStreamID = createNewStream(message, false);
+    Q_ASSERT(initialStreamID == 1);
+    Stream &stream = activeStreams[initialStreamID];
+    stream.state = Stream::halfClosedLocal;
 }
 
 void QHttp2ProtocolHandler::_q_uploadDataReadyRead()
@@ -247,7 +270,7 @@ bool QHttp2ProtocolHandler::sendRequest()
     auto it = requests.begin();
     m_channel->state = QHttpNetworkConnectionChannel::WritingState;
     for (quint32 i = 0; i < streamsToUse; ++i) {
-        const qint32 newStreamID = createNewStream(*it);
+        const qint32 newStreamID = createNewStream(*it, true /* upload data */);
         if (!newStreamID) {
             // TODO: actually we have to open a new connection.
             qCCritical(QT_HTTP2, "sendRequest: out of stream IDs");
@@ -278,7 +301,6 @@ bool QHttp2ProtocolHandler::sendRequest()
     return true;
 }
 
-
 bool QHttp2ProtocolHandler::sendClientPreface()
 {
      // 3.5 HTTP/2 Connection Preface
@@ -293,12 +315,8 @@ bool QHttp2ProtocolHandler::sendClientPreface()
         return false;
 
     // 6.5 SETTINGS
-    outboundFrame.start(FrameType::SETTINGS, FrameFlag::EMPTY, Http2::connectionStreamID);
-    // MAX frame size (16 kb), disable PUSH
-    outboundFrame.append(Settings::MAX_FRAME_SIZE_ID);
-    outboundFrame.append(quint32(Http2::maxFrameSize));
-    outboundFrame.append(Settings::ENABLE_PUSH_ID);
-    outboundFrame.append(quint32(0));
+    outboundFrame = Http2::qt_default_SETTINGS_frame();
+    Q_ASSERT(outboundFrame.payloadSize());
 
     if (!outboundFrame.write(*m_socket))
         return false;
@@ -1022,7 +1040,8 @@ void QHttp2ProtocolHandler::finishStreamWithError(Stream &stream, QNetworkReply:
     emit httpReply->finishedWithError(error, message);
 }
 
-quint32 QHttp2ProtocolHandler::createNewStream(const HttpMessagePair &message)
+quint32 QHttp2ProtocolHandler::createNewStream(const HttpMessagePair &message,
+                                               bool uploadData)
 {
     const qint32 newStreamID = allocateStreamID();
     if (!newStreamID)
@@ -1043,10 +1062,12 @@ quint32 QHttp2ProtocolHandler::createNewStream(const HttpMessagePair &message)
                            streamInitialSendWindowSize,
                            streamInitialRecvWindowSize);
 
-    if (auto src = newStream.data()) {
-        connect(src, SIGNAL(readyRead()), this,
-                SLOT(_q_uploadDataReadyRead()), Qt::QueuedConnection);
-        src->setProperty("HTTP2StreamID", newStreamID);
+    if (uploadData) {
+        if (auto src = newStream.data()) {
+            connect(src, SIGNAL(readyRead()), this,
+                    SLOT(_q_uploadDataReadyRead()), Qt::QueuedConnection);
+            src->setProperty("HTTP2StreamID", newStreamID);
+        }
     }
 
     activeStreams.insert(newStreamID, newStream);
@@ -1214,4 +1235,4 @@ void QHttp2ProtocolHandler::closeSession()
 
 QT_END_NAMESPACE
 
-#endif // !defined(QT_NO_HTTP) && !defined(QT_NO_SSL)
+#endif // !defined(QT_NO_HTTP)

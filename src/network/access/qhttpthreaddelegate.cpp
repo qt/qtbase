@@ -286,9 +286,12 @@ void QHttpThreadDelegate::startRequest()
 
     QHttpNetworkConnection::ConnectionType connectionType
             = QHttpNetworkConnection::ConnectionTypeHTTP;
+
+    if (httpRequest.isHTTP2Allowed())
+        connectionType = QHttpNetworkConnection::ConnectionTypeHTTP2;
+
 #ifndef QT_NO_SSL
     if (httpRequest.isHTTP2Allowed() && ssl) {
-        connectionType = QHttpNetworkConnection::ConnectionTypeHTTP2;
         QList<QByteArray> protocols;
         protocols << QSslConfiguration::ALPNProtocolHTTP2
                   << QSslConfiguration::NextProtocolHttp1_1;

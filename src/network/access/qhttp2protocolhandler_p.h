@@ -55,7 +55,7 @@
 #include <private/qabstractprotocolhandler_p.h>
 #include <private/qhttpnetworkrequest_p.h>
 
-#if !defined(QT_NO_HTTP) && !defined(QT_NO_SSL)
+#if !defined(QT_NO_HTTP)
 
 #include "http2/http2protocol_p.h"
 #include "http2/http2streams_p.h"
@@ -81,7 +81,15 @@ class QHttp2ProtocolHandler : public QObject, public QAbstractProtocolHandler
     Q_OBJECT
 
 public:
+    // "TLS + ALPN/NPN" case:
     QHttp2ProtocolHandler(QHttpNetworkConnectionChannel *channel);
+    // HTTP2 without TLS - the first request was sent as an HTTP/1.1 request
+    // with Upgrade:h2c header. That serves as an implicit HTTP/2 request
+    // on a stream with ID 1 (it will be created in this ctor in a
+    // 'half-closed-local' state); reply, if server supports HTTP/2,
+    // will be HTTP/2 frame(s):
+    QHttp2ProtocolHandler(QHttpNetworkConnectionChannel *channel,
+                          const HttpMessagePair &message);
 
     QHttp2ProtocolHandler(const QHttp2ProtocolHandler &rhs) = delete;
     QHttp2ProtocolHandler(QHttp2ProtocolHandler &&rhs) = delete;
@@ -133,7 +141,7 @@ private:
                                const QString &message);
 
     // Stream's lifecycle management:
-    quint32 createNewStream(const HttpMessagePair &message);
+    quint32 createNewStream(const HttpMessagePair &message, bool uploadData);
     void addToSuspended(Stream &stream);
     void markAsReset(quint32 streamID);
     quint32 popStreamToResume();
@@ -202,6 +210,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // !defined(QT_NO_HTTP) && !defined(QT_NO_SSL)
+#endif // !defined(QT_NO_HTTP)
 
 #endif
