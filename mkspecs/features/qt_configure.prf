@@ -891,23 +891,25 @@ defineTest(qtConfPrintReport) {
         logn($$n)
     logn(" ")
 
-    !isEmpty(QT_CONFIGURE_NOTES) {
-        for (n, QT_CONFIGURE_NOTES): \
-            logn($$n)
+    for (n, QT_CONFIGURE_NOTES) {
+        logn($$n)
         logn(" ")
     }
 
-    !isEmpty(QT_CONFIGURE_WARNINGS) {
-        for (w, QT_CONFIGURE_WARNINGS): \
-            logn($$w)
+    for (w, QT_CONFIGURE_WARNINGS) {
+        logn($$w)
         logn(" ")
     }
 
     !isEmpty(QT_CONFIGURE_ERRORS) {
-        for (e, QT_CONFIGURE_ERRORS): \
+        for (e, QT_CONFIGURE_ERRORS) {
             logn($$e)
-        mention_config_log:!$$QMAKE_CONFIG_VERBOSE: logn("Check config.log for details.")
-        logn(" ")
+            logn(" ")
+        }
+        mention_config_log:!$$QMAKE_CONFIG_VERBOSE {
+            logn("Check config.log for details.")
+            logn(" ")
+        }
 
         !equals(config.input.continue, yes): \
             error("Aborting.")
