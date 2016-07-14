@@ -238,6 +238,11 @@
             "type": "compile",
             "test": "common/c++1z"
         },
+        "cxx98default": {
+            "description": "compilers defaulting to C++98",
+            "type": "compile",
+            "test": "common/c++98default"
+        },
         "compiler": {
             "description": "Compiler",
             "type": "checkCompiler",
@@ -965,6 +970,11 @@
             "description": "Cross compiling",
             "condition": "call.crossCompile",
             "output": [ "publicConfig", "privateConfig" ]
+        },
+        "cxx98default": {
+            "description": "Compilers defaulting to C++98",
+            "condition": "tests.cxx98default",
+            "output": [ { "type": "publicConfig", "name": "c++11" } ]
         },
         "compiler-flags": {
             "output": [ "compilerFlags" ],
