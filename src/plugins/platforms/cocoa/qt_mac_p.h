@@ -90,22 +90,6 @@ public:
     }
 };
 
-class Q_WIDGETS_EXPORT QMacWindowChangeEvent
-{
-private:
-    static QList<QMacWindowChangeEvent*> *change_events;
-public:
-    QMacWindowChangeEvent() {
-    }
-    virtual ~QMacWindowChangeEvent() {
-    }
-    static inline void exec(bool ) {
-    }
-protected:
-    virtual void windowChanged() = 0;
-    virtual void flushWindowChanged() = 0;
-};
-
 class QMacCGContext
 {
     CGContextRef context;
