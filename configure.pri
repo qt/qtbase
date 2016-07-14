@@ -576,23 +576,23 @@ defineTest(qtConfOutput_compilerFlags) {
     !isEmpty(config.input.defines) {
         EXTRA_DEFINES += $$config.input.defines
         export(EXTRA_DEFINES)
-        output += "EXTRA_DEFINES += $$config.input.defines"
+        output += "EXTRA_DEFINES += $$val_escape(config.input.defines)"
     }
     !isEmpty(config.input.includes) {
         EXTRA_INCLUDEPATH += $$config.input.includes
         export(EXTRA_INCLUDEPATH)
-        output += "EXTRA_INCLUDEPATH += $$config.input.includes"
+        output += "EXTRA_INCLUDEPATH += $$val_escape(config.input.includes)"
     }
 
     !isEmpty(config.input.lpaths) {
         EXTRA_LIBDIR += $$config.input.lpaths
         export(EXTRA_LIBDIR)
-        output += "EXTRA_LIBDIR += $$config.input.lpaths"
+        output += "EXTRA_LIBDIR += $$val_escape(config.input.lpaths)"
     }
     darwin:!isEmpty(config.input.fpaths) {
         EXTRA_FRAMEWORKPATH += $$config.input.fpaths
         export(EXTRA_FRAMEWORKPATH)
-        output += "EXTRA_FRAMEWORKPATH += $$config.input.fpaths"
+        output += "EXTRA_FRAMEWORKPATH += $$val_escape(config.input.fpaths)"
     }
 
     config.output.privatePro += $$output
