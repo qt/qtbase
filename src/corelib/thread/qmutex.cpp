@@ -264,6 +264,61 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
         return lockInternal(timeout);
 }
 
+/*! \fn bool QMutex::try_lock()
+    \since 5.8
+
+    This function is provided for compatibility with the Standard Library
+    concept \c Lockable. It is equivalent to tryLock().
+*/
+
+/*! \fn bool QMutex::try_lock_for(std::chrono::duration<Rep, Period> duration)
+    \since 5.8
+
+    Attempts to lock the mutex. This function returns \c true if the lock
+    was obtained; otherwise it returns \c false. If another thread has
+    locked the mutex, this function will wait for at most \a duration
+    for the mutex to become available.
+
+    Note: Passing a negative duration as the \a duration is equivalent to
+    calling try_lock(). This behavior is different from tryLock.
+
+    If the lock was obtained, the mutex must be unlocked with unlock()
+    before another thread can successfully lock it.
+
+    Calling this function multiple times on the same mutex from the
+    same thread is allowed if this mutex is a
+    \l{QMutex::Recursive}{recursive mutex}. If this mutex is a
+    \l{QMutex::NonRecursive}{non-recursive mutex}, this function will
+    \e always return false when attempting to lock the mutex
+    recursively.
+
+    \sa lock(), unlock()
+*/
+
+/*! \fn bool QMutex::try_lock_until(std::chrono::time_point<Clock, Duration> timePoint)
+    \since 5.8
+
+    Attempts to lock the mutex. This function returns \c true if the lock
+    was obtained; otherwise it returns \c false. If another thread has
+    locked the mutex, this function will wait at most until \a timePoint
+    for the mutex to become available.
+
+    Note: Passing a \a timePoint which has already passed is equivalent
+    to calling try_lock. This behavior is different from tryLock.
+
+    If the lock was obtained, the mutex must be unlocked with unlock()
+    before another thread can successfully lock it.
+
+    Calling this function multiple times on the same mutex from the
+    same thread is allowed if this mutex is a
+    \l{QMutex::Recursive}{recursive mutex}. If this mutex is a
+    \l{QMutex::NonRecursive}{non-recursive mutex}, this function will
+    \e always return false when attempting to lock the mutex
+    recursively.
+
+    \sa lock(), unlock()
+*/
+
 /*! \fn void QMutex::unlock()
     Unlocks the mutex. Attempting to unlock a mutex in a different
     thread to the one that locked it results in an error. Unlocking a

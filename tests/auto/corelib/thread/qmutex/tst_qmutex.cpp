@@ -46,7 +46,12 @@ class tst_QMutex : public QObject
     Q_OBJECT
 private slots:
     void initTestCase();
-    void tryLock();
+    void tryLock_non_recursive();
+    void try_lock_for_non_recursive();
+    void try_lock_until_non_recursive();
+    void tryLock_recursive();
+    void try_lock_for_recursive();
+    void try_lock_until_recursive();
     void lock_unlock_locked_tryLock();
     void stressTest();
     void tryLockRace();
@@ -67,6 +72,10 @@ QSemaphore threadsTurn;
 
 enum { waitTime = 100 };
 uint systemTimersResolution = 1;
+
+#if QT_HAS_INCLUDE(<chrono>)
+static Q_CONSTEXPR std::chrono::milliseconds waitTimeAsDuration(waitTime);
+#endif
 
 /*
     Depending on the OS, tryWaits may return early than expected because of the
@@ -113,256 +122,768 @@ void tst_QMutex::initTestCase()
     initializeSystemTimersResolution();
 }
 
-void tst_QMutex::tryLock()
+void tst_QMutex::tryLock_non_recursive()
 {
-    // test non-recursive mutex
+    class Thread : public QThread
     {
-        class Thread : public QThread
+    public:
+        void run()
         {
-        public:
-            void run()
-            {
-                testsTurn.release();
+            testsTurn.release();
 
-                // TEST 1: thread can't acquire lock
-                threadsTurn.acquire();
-                QVERIFY(!normalMutex.tryLock());
-                testsTurn.release();
+            // TEST 1: thread can't acquire lock
+            threadsTurn.acquire();
+            QVERIFY(!normalMutex.tryLock());
+            testsTurn.release();
 
-                // TEST 2: thread can acquire lock
-                threadsTurn.acquire();
-                QVERIFY(normalMutex.tryLock());
-                QVERIFY(lockCount.testAndSetRelaxed(0, 1));
-                QVERIFY(!normalMutex.tryLock());
-                QVERIFY(lockCount.testAndSetRelaxed(1, 0));
-                normalMutex.unlock();
-                testsTurn.release();
+            // TEST 2: thread can acquire lock
+            threadsTurn.acquire();
+            QVERIFY(normalMutex.tryLock());
+            QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+            QVERIFY(!normalMutex.tryLock());
+            QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+            normalMutex.unlock();
+            testsTurn.release();
 
-                // TEST 3: thread can't acquire lock, timeout = waitTime
-                threadsTurn.acquire();
-                QElapsedTimer timer;
-                timer.start();
-                QVERIFY(!normalMutex.tryLock(waitTime));
-                QVERIFY(timer.elapsed() >= waitTime - systemTimersResolution);
-                testsTurn.release();
+            // TEST 3: thread can't acquire lock, timeout = waitTime
+            threadsTurn.acquire();
+            QElapsedTimer timer;
+            timer.start();
+            QVERIFY(!normalMutex.tryLock(waitTime));
+            QVERIFY(timer.elapsed() >= waitTime - systemTimersResolution);
+            testsTurn.release();
 
-                // TEST 4: thread can acquire lock, timeout = waitTime
-                threadsTurn.acquire();
-                timer.start();
-                QVERIFY(normalMutex.tryLock(waitTime));
-                QVERIFY(timer.elapsed() <= waitTime + systemTimersResolution);
-                QVERIFY(lockCount.testAndSetRelaxed(0, 1));
-                timer.start();
-                // it's non-recursive, so the following lock needs to fail
-                QVERIFY(!normalMutex.tryLock(waitTime));
-                QVERIFY(timer.elapsed() >= waitTime - systemTimersResolution);
-                QVERIFY(lockCount.testAndSetRelaxed(1, 0));
-                normalMutex.unlock();
-                testsTurn.release();
+            // TEST 4: thread can acquire lock, timeout = waitTime
+            threadsTurn.acquire();
+            timer.start();
+            QVERIFY(normalMutex.tryLock(waitTime));
+            QVERIFY(timer.elapsed() <= waitTime + systemTimersResolution);
+            QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+            timer.start();
+            // it's non-recursive, so the following lock needs to fail
+            QVERIFY(!normalMutex.tryLock(waitTime));
+            QVERIFY(timer.elapsed() >= waitTime - systemTimersResolution);
+            QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+            normalMutex.unlock();
+            testsTurn.release();
 
-                // TEST 5: thread can't acquire lock, timeout = 0
-                threadsTurn.acquire();
-                QVERIFY(!normalMutex.tryLock(0));
-                testsTurn.release();
+            // TEST 5: thread can't acquire lock, timeout = 0
+            threadsTurn.acquire();
+            QVERIFY(!normalMutex.tryLock(0));
+            testsTurn.release();
 
-                // TEST 6: thread can acquire lock, timeout = 0
-                threadsTurn.acquire();
-                timer.start();
-                QVERIFY(normalMutex.tryLock(0));
-                QVERIFY(timer.elapsed() < waitTime + systemTimersResolution);
-                QVERIFY(lockCount.testAndSetRelaxed(0, 1));
-                QVERIFY(!normalMutex.tryLock(0));
-                QVERIFY(lockCount.testAndSetRelaxed(1, 0));
-                normalMutex.unlock();
-                testsTurn.release();
+            // TEST 6: thread can acquire lock, timeout = 0
+            threadsTurn.acquire();
+            timer.start();
+            QVERIFY(normalMutex.tryLock(0));
+            QVERIFY(timer.elapsed() < waitTime + systemTimersResolution);
+            QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+            QVERIFY(!normalMutex.tryLock(0));
+            QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+            normalMutex.unlock();
+            testsTurn.release();
 
-                // TEST 7 overflow: thread can acquire lock, timeout = 3000 (QTBUG-24795)
-                threadsTurn.acquire();
-                timer.start();
-                QVERIFY(normalMutex.tryLock(3000));
-                QVERIFY(timer.elapsed() < 3000 + systemTimersResolution);
-                normalMutex.unlock();
-                testsTurn.release();
+            // TEST 7 overflow: thread can acquire lock, timeout = 3000 (QTBUG-24795)
+            threadsTurn.acquire();
+            timer.start();
+            QVERIFY(normalMutex.tryLock(3000));
+            QVERIFY(timer.elapsed() < 3000 + systemTimersResolution);
+            normalMutex.unlock();
+            testsTurn.release();
 
-                threadsTurn.acquire();
-            }
-        };
+            threadsTurn.acquire();
+        }
+    };
 
-        Thread thread;
-        thread.start();
+    Thread thread;
+    thread.start();
 
-        // TEST 1: thread can't acquire lock
-        testsTurn.acquire();
-        normalMutex.lock();
-        QVERIFY(lockCount.testAndSetRelaxed(0, 1));
-        threadsTurn.release();
+    // TEST 1: thread can't acquire lock
+    testsTurn.acquire();
+    normalMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+    threadsTurn.release();
 
-        // TEST 2: thread can acquire lock
-        testsTurn.acquire();
-        QVERIFY(lockCount.testAndSetRelaxed(1, 0));
-        normalMutex.unlock();
-        threadsTurn.release();
+    // TEST 2: thread can acquire lock
+    testsTurn.acquire();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+    normalMutex.unlock();
+    threadsTurn.release();
 
-        // TEST 3: thread can't acquire lock, timeout = waitTime
-        testsTurn.acquire();
-        normalMutex.lock();
-        QVERIFY(lockCount.testAndSetRelaxed(0, 1));
-        threadsTurn.release();
+    // TEST 3: thread can't acquire lock, timeout = waitTime
+    testsTurn.acquire();
+    normalMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+    threadsTurn.release();
 
-        // TEST 4: thread can acquire lock, timeout = waitTime
-        testsTurn.acquire();
-        QVERIFY(lockCount.testAndSetRelaxed(1, 0));
-        normalMutex.unlock();
-        threadsTurn.release();
+    // TEST 4: thread can acquire lock, timeout = waitTime
+    testsTurn.acquire();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+    normalMutex.unlock();
+    threadsTurn.release();
 
-        // TEST 5: thread can't acquire lock, timeout = 0
-        testsTurn.acquire();
-        normalMutex.lock();
-        QVERIFY(lockCount.testAndSetRelaxed(0, 1));
-        threadsTurn.release();
+    // TEST 5: thread can't acquire lock, timeout = 0
+    testsTurn.acquire();
+    normalMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+    threadsTurn.release();
 
-        // TEST 6: thread can acquire lock, timeout = 0
-        testsTurn.acquire();
-        QVERIFY(lockCount.testAndSetRelaxed(1, 0));
-        normalMutex.unlock();
-        threadsTurn.release();
+    // TEST 6: thread can acquire lock, timeout = 0
+    testsTurn.acquire();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+    normalMutex.unlock();
+    threadsTurn.release();
 
-        // TEST 7: thread can acquire lock, timeout = 3000   (QTBUG-24795)
-        testsTurn.acquire();
-        normalMutex.lock();
-        threadsTurn.release();
-        QThread::msleep(100);
-        normalMutex.unlock();
+    // TEST 7: thread can acquire lock, timeout = 3000   (QTBUG-24795)
+    testsTurn.acquire();
+    normalMutex.lock();
+    threadsTurn.release();
+    QThread::msleep(100);
+    normalMutex.unlock();
 
-        // wait for thread to finish
-        testsTurn.acquire();
-        threadsTurn.release();
-        thread.wait();
-    }
+    // wait for thread to finish
+    testsTurn.acquire();
+    threadsTurn.release();
+    thread.wait();
+}
 
-    // test recursive mutex
+void tst_QMutex::try_lock_for_non_recursive() {
+#if !QT_HAS_INCLUDE(<chrono>)
+    QSKIP("This test requires <chrono>");
+#else
+    class Thread : public QThread
     {
-        class Thread : public QThread
+    public:
+        void run()
         {
-        public:
-            void run()
-            {
-                testsTurn.release();
+            testsTurn.release();
 
-                threadsTurn.acquire();
-                QVERIFY(!recursiveMutex.tryLock());
-                testsTurn.release();
+            // TEST 1: thread can't acquire lock
+            threadsTurn.acquire();
+            QVERIFY(!normalMutex.try_lock());
+            testsTurn.release();
 
-                threadsTurn.acquire();
-                QVERIFY(recursiveMutex.tryLock());
-                QVERIFY(lockCount.testAndSetRelaxed(0, 1));
-                QVERIFY(recursiveMutex.tryLock());
-                QVERIFY(lockCount.testAndSetRelaxed(1, 2));
-                QVERIFY(lockCount.testAndSetRelaxed(2, 1));
-                recursiveMutex.unlock();
-                QVERIFY(lockCount.testAndSetRelaxed(1, 0));
-                recursiveMutex.unlock();
-                testsTurn.release();
+            // TEST 2: thread can acquire lock
+            threadsTurn.acquire();
+            QVERIFY(normalMutex.try_lock());
+            QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+            QVERIFY(!normalMutex.try_lock());
+            QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+            normalMutex.unlock();
+            testsTurn.release();
 
-                threadsTurn.acquire();
-                QElapsedTimer timer;
-                timer.start();
-                QVERIFY(!recursiveMutex.tryLock(waitTime));
-                QVERIFY(timer.elapsed() >= waitTime - systemTimersResolution);
-                QVERIFY(!recursiveMutex.tryLock(0));
-                testsTurn.release();
+            // TEST 3: thread can't acquire lock, timeout = waitTime
+            threadsTurn.acquire();
+            QElapsedTimer timer;
+            timer.start();
+            QVERIFY(!normalMutex.try_lock_for(waitTimeAsDuration));
+            QVERIFY(timer.elapsed() >= waitTime - systemTimersResolution);
+            testsTurn.release();
 
-                threadsTurn.acquire();
-                timer.start();
-                QVERIFY(recursiveMutex.tryLock(waitTime));
-                QVERIFY(timer.elapsed() <= waitTime + systemTimersResolution);
-                QVERIFY(lockCount.testAndSetRelaxed(0, 1));
-                QVERIFY(recursiveMutex.tryLock(waitTime));
-                QVERIFY(lockCount.testAndSetRelaxed(1, 2));
-                QVERIFY(lockCount.testAndSetRelaxed(2, 1));
-                recursiveMutex.unlock();
-                QVERIFY(lockCount.testAndSetRelaxed(1, 0));
-                recursiveMutex.unlock();
-                testsTurn.release();
+            // TEST 4: thread can acquire lock, timeout = waitTime
+            threadsTurn.acquire();
+            timer.start();
+            QVERIFY(normalMutex.try_lock_for(waitTimeAsDuration));
+            QVERIFY(timer.elapsed() <= waitTime + systemTimersResolution);
+            QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+            timer.start();
+            // it's non-recursive, so the following lock needs to fail
+            QVERIFY(!normalMutex.try_lock_for(waitTimeAsDuration));
+            QVERIFY(timer.elapsed() >= waitTime - systemTimersResolution);
+            QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+            normalMutex.unlock();
+            testsTurn.release();
 
-                threadsTurn.acquire();
-                QVERIFY(!recursiveMutex.tryLock(0));
-                QVERIFY(!recursiveMutex.tryLock(0));
-                testsTurn.release();
+            // TEST 5: thread can't acquire lock, timeout = 0
+            threadsTurn.acquire();
+            QVERIFY(!normalMutex.try_lock_for(std::chrono::milliseconds::zero()));
+            testsTurn.release();
 
-                threadsTurn.acquire();
-                timer.start();
-                QVERIFY(recursiveMutex.tryLock(0));
-                QVERIFY(timer.elapsed() < waitTime + systemTimersResolution);
-                QVERIFY(lockCount.testAndSetRelaxed(0, 1));
-                QVERIFY(recursiveMutex.tryLock(0));
-                QVERIFY(lockCount.testAndSetRelaxed(1, 2));
-                QVERIFY(lockCount.testAndSetRelaxed(2, 1));
-                recursiveMutex.unlock();
-                QVERIFY(lockCount.testAndSetRelaxed(1, 0));
-                recursiveMutex.unlock();
-                testsTurn.release();
+            // TEST 6: thread can acquire lock, timeout = 0
+            threadsTurn.acquire();
+            timer.start();
+            QVERIFY(normalMutex.try_lock_for(std::chrono::milliseconds::zero()));
+            QVERIFY(timer.elapsed() < waitTime + systemTimersResolution);
+            QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+            QVERIFY(!normalMutex.try_lock_for(std::chrono::milliseconds::zero()));
+            QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+            normalMutex.unlock();
+            testsTurn.release();
 
-                threadsTurn.acquire();
-            }
-        };
+            // TEST 7 overflow: thread can acquire lock, timeout = 3000 (QTBUG-24795)
+            threadsTurn.acquire();
+            timer.start();
+            QVERIFY(normalMutex.try_lock_for(std::chrono::milliseconds(3000)));
+            QVERIFY(timer.elapsed() < 3000 + systemTimersResolution);
+            normalMutex.unlock();
+            testsTurn.release();
 
-        Thread thread;
-        thread.start();
+            threadsTurn.acquire();
+        }
+    };
 
-        // thread can't acquire lock
-        testsTurn.acquire();
-        recursiveMutex.lock();
-        QVERIFY(lockCount.testAndSetRelaxed(0, 1));
-        recursiveMutex.lock();
-        QVERIFY(lockCount.testAndSetRelaxed(1, 2));
-        threadsTurn.release();
+    Thread thread;
+    thread.start();
 
-        // thread can acquire lock
-        testsTurn.acquire();
-        QVERIFY(lockCount.testAndSetRelaxed(2, 1));
-        recursiveMutex.unlock();
-        QVERIFY(lockCount.testAndSetRelaxed(1, 0));
-        recursiveMutex.unlock();
-        threadsTurn.release();
+    // TEST 1: thread can't acquire lock
+    testsTurn.acquire();
+    normalMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+    threadsTurn.release();
 
-        // thread can't acquire lock, timeout = waitTime
-        testsTurn.acquire();
-        recursiveMutex.lock();
-        QVERIFY(lockCount.testAndSetRelaxed(0, 1));
-        recursiveMutex.lock();
-        QVERIFY(lockCount.testAndSetRelaxed(1, 2));
-        threadsTurn.release();
+    // TEST 2: thread can acquire lock
+    testsTurn.acquire();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+    normalMutex.unlock();
+    threadsTurn.release();
 
-        // thread can acquire lock, timeout = waitTime
-        testsTurn.acquire();
-        QVERIFY(lockCount.testAndSetRelaxed(2, 1));
-        recursiveMutex.unlock();
-        QVERIFY(lockCount.testAndSetRelaxed(1, 0));
-        recursiveMutex.unlock();
-        threadsTurn.release();
+    // TEST 3: thread can't acquire lock, timeout = waitTime
+    testsTurn.acquire();
+    normalMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+    threadsTurn.release();
 
-        // thread can't acquire lock, timeout = 0
-        testsTurn.acquire();
-        recursiveMutex.lock();
-        QVERIFY(lockCount.testAndSetRelaxed(0, 1));
-        recursiveMutex.lock();
-        QVERIFY(lockCount.testAndSetRelaxed(1, 2));
-        threadsTurn.release();
+    // TEST 4: thread can acquire lock, timeout = waitTime
+    testsTurn.acquire();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+    normalMutex.unlock();
+    threadsTurn.release();
 
-        // thread can acquire lock, timeout = 0
-        testsTurn.acquire();
-        QVERIFY(lockCount.testAndSetRelaxed(2, 1));
-        recursiveMutex.unlock();
-        QVERIFY(lockCount.testAndSetRelaxed(1, 0));
-        recursiveMutex.unlock();
-        threadsTurn.release();
+    // TEST 5: thread can't acquire lock, timeout = 0
+    testsTurn.acquire();
+    normalMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+    threadsTurn.release();
 
-        // stop thread
-        testsTurn.acquire();
-        threadsTurn.release();
-        thread.wait();
-    }
+    // TEST 6: thread can acquire lock, timeout = 0
+    testsTurn.acquire();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+    normalMutex.unlock();
+    threadsTurn.release();
+
+    // TEST 7: thread can acquire lock, timeout = 3000   (QTBUG-24795)
+    testsTurn.acquire();
+    normalMutex.lock();
+    threadsTurn.release();
+    QThread::msleep(100);
+    normalMutex.unlock();
+
+    // wait for thread to finish
+    testsTurn.acquire();
+    threadsTurn.release();
+    thread.wait();
+#endif
+}
+
+void tst_QMutex::try_lock_until_non_recursive()
+{
+#if !QT_HAS_INCLUDE(<chrono>)
+    QSKIP("This test requires <chrono>");
+#else
+    class Thread : public QThread
+    {
+    public:
+        void run()
+        {
+            const std::chrono::milliseconds systemTimersResolutionAsDuration(systemTimersResolution);
+            testsTurn.release();
+
+            // TEST 1: thread can't acquire lock
+            threadsTurn.acquire();
+            QVERIFY(!normalMutex.try_lock());
+            testsTurn.release();
+
+            // TEST 2: thread can acquire lock
+            threadsTurn.acquire();
+            QVERIFY(normalMutex.try_lock());
+            QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+            QVERIFY(!normalMutex.try_lock());
+            QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+            normalMutex.unlock();
+            testsTurn.release();
+
+            // TEST 3: thread can't acquire lock, timeout = waitTime
+            threadsTurn.acquire();
+            auto endTimePoint = std::chrono::steady_clock::now() + waitTimeAsDuration;
+            QVERIFY(!normalMutex.try_lock_until(endTimePoint));
+            QVERIFY(std::chrono::steady_clock::now() >= endTimePoint - systemTimersResolutionAsDuration);
+            testsTurn.release();
+
+            // TEST 4: thread can acquire lock, timeout = waitTime
+            threadsTurn.acquire();
+            endTimePoint = std::chrono::steady_clock::now() + waitTimeAsDuration;
+            QVERIFY(normalMutex.try_lock_until(endTimePoint));
+            QVERIFY(std::chrono::steady_clock::now() <= endTimePoint + systemTimersResolutionAsDuration);
+            QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+            endTimePoint = std::chrono::steady_clock::now() + waitTimeAsDuration;
+            // it's non-recursive, so the following lock needs to fail
+            QVERIFY(!normalMutex.try_lock_until(endTimePoint));
+            QVERIFY(std::chrono::steady_clock::now() >= endTimePoint - systemTimersResolutionAsDuration);
+            QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+            normalMutex.unlock();
+            testsTurn.release();
+
+            // TEST 5: thread can't acquire lock, timeout = 0
+            threadsTurn.acquire();
+            QVERIFY(!normalMutex.try_lock_until(std::chrono::steady_clock::now()));
+            testsTurn.release();
+
+            // TEST 6: thread can acquire lock, timeout = 0
+            threadsTurn.acquire();
+            endTimePoint = std::chrono::steady_clock::now() + waitTimeAsDuration;
+            QVERIFY(normalMutex.try_lock_until(std::chrono::steady_clock::now()));
+            QVERIFY(std::chrono::steady_clock::now() < endTimePoint + systemTimersResolutionAsDuration);
+            QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+            QVERIFY(!normalMutex.try_lock_until(std::chrono::steady_clock::now()));
+            QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+            normalMutex.unlock();
+            testsTurn.release();
+
+            // TEST 7 overflow: thread can acquire lock, timeout = 3000 (QTBUG-24795)
+            threadsTurn.acquire();
+            endTimePoint = std::chrono::steady_clock::now() + std::chrono::milliseconds(3000);
+            QVERIFY(normalMutex.try_lock_until(endTimePoint));
+            QVERIFY(std::chrono::steady_clock::now() < endTimePoint + systemTimersResolutionAsDuration);
+            normalMutex.unlock();
+            testsTurn.release();
+
+            threadsTurn.acquire();
+        }
+    };
+
+    Thread thread;
+    thread.start();
+
+    // TEST 1: thread can't acquire lock
+    testsTurn.acquire();
+    normalMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+    threadsTurn.release();
+
+    // TEST 2: thread can acquire lock
+    testsTurn.acquire();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+    normalMutex.unlock();
+    threadsTurn.release();
+
+    // TEST 3: thread can't acquire lock, timeout = waitTime
+    testsTurn.acquire();
+    normalMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+    threadsTurn.release();
+
+    // TEST 4: thread can acquire lock, timeout = waitTime
+    testsTurn.acquire();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+    normalMutex.unlock();
+    threadsTurn.release();
+
+    // TEST 5: thread can't acquire lock, timeout = 0
+    testsTurn.acquire();
+    normalMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+    threadsTurn.release();
+
+    // TEST 6: thread can acquire lock, timeout = 0
+    testsTurn.acquire();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+    normalMutex.unlock();
+    threadsTurn.release();
+
+    // TEST 7: thread can acquire lock, timeout = 3000   (QTBUG-24795)
+    testsTurn.acquire();
+    normalMutex.lock();
+    threadsTurn.release();
+    QThread::msleep(100);
+    normalMutex.unlock();
+
+    // wait for thread to finish
+    testsTurn.acquire();
+    threadsTurn.release();
+    thread.wait();
+#endif
+}
+
+void tst_QMutex::tryLock_recursive()
+{
+    class Thread : public QThread
+    {
+    public:
+        void run()
+        {
+            testsTurn.release();
+
+            threadsTurn.acquire();
+            QVERIFY(!recursiveMutex.tryLock());
+            testsTurn.release();
+
+            threadsTurn.acquire();
+            QVERIFY(recursiveMutex.tryLock());
+            QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+            QVERIFY(recursiveMutex.tryLock());
+            QVERIFY(lockCount.testAndSetRelaxed(1, 2));
+            QVERIFY(lockCount.testAndSetRelaxed(2, 1));
+            recursiveMutex.unlock();
+            QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+            recursiveMutex.unlock();
+            testsTurn.release();
+
+            threadsTurn.acquire();
+            QElapsedTimer timer;
+            timer.start();
+            QVERIFY(!recursiveMutex.tryLock(waitTime));
+            QVERIFY(timer.elapsed() >= waitTime - systemTimersResolution);
+            QVERIFY(!recursiveMutex.tryLock(0));
+            testsTurn.release();
+
+            threadsTurn.acquire();
+            timer.start();
+            QVERIFY(recursiveMutex.tryLock(waitTime));
+            QVERIFY(timer.elapsed() <= waitTime + systemTimersResolution);
+            QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+            QVERIFY(recursiveMutex.tryLock(waitTime));
+            QVERIFY(lockCount.testAndSetRelaxed(1, 2));
+            QVERIFY(lockCount.testAndSetRelaxed(2, 1));
+            recursiveMutex.unlock();
+            QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+            recursiveMutex.unlock();
+            testsTurn.release();
+
+            threadsTurn.acquire();
+            QVERIFY(!recursiveMutex.tryLock(0));
+            QVERIFY(!recursiveMutex.tryLock(0));
+            testsTurn.release();
+
+            threadsTurn.acquire();
+            timer.start();
+            QVERIFY(recursiveMutex.tryLock(0));
+            QVERIFY(timer.elapsed() < waitTime + systemTimersResolution);
+            QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+            QVERIFY(recursiveMutex.tryLock(0));
+            QVERIFY(lockCount.testAndSetRelaxed(1, 2));
+            QVERIFY(lockCount.testAndSetRelaxed(2, 1));
+            recursiveMutex.unlock();
+            QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+            recursiveMutex.unlock();
+            testsTurn.release();
+
+            threadsTurn.acquire();
+        }
+    };
+
+    Thread thread;
+    thread.start();
+
+    // thread can't acquire lock
+    testsTurn.acquire();
+    recursiveMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+    recursiveMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 2));
+    threadsTurn.release();
+
+    // thread can acquire lock
+    testsTurn.acquire();
+    QVERIFY(lockCount.testAndSetRelaxed(2, 1));
+    recursiveMutex.unlock();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+    recursiveMutex.unlock();
+    threadsTurn.release();
+
+    // thread can't acquire lock, timeout = waitTime
+    testsTurn.acquire();
+    recursiveMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+    recursiveMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 2));
+    threadsTurn.release();
+
+    // thread can acquire lock, timeout = waitTime
+    testsTurn.acquire();
+    QVERIFY(lockCount.testAndSetRelaxed(2, 1));
+    recursiveMutex.unlock();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+    recursiveMutex.unlock();
+    threadsTurn.release();
+
+    // thread can't acquire lock, timeout = 0
+    testsTurn.acquire();
+    recursiveMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+    recursiveMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 2));
+    threadsTurn.release();
+
+    // thread can acquire lock, timeout = 0
+    testsTurn.acquire();
+    QVERIFY(lockCount.testAndSetRelaxed(2, 1));
+    recursiveMutex.unlock();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+    recursiveMutex.unlock();
+    threadsTurn.release();
+
+    // stop thread
+    testsTurn.acquire();
+    threadsTurn.release();
+    thread.wait();
+}
+
+void tst_QMutex::try_lock_for_recursive()
+{
+#if !QT_HAS_INCLUDE(<chrono>)
+    QSKIP("This test requires <chrono>");
+#else
+    class Thread : public QThread
+    {
+    public:
+        void run()
+        {
+            const std::chrono::milliseconds systemTimersResolutionAsDuration(systemTimersResolution);
+            testsTurn.release();
+
+            threadsTurn.acquire();
+            QVERIFY(!recursiveMutex.try_lock());
+            testsTurn.release();
+
+            threadsTurn.acquire();
+            QVERIFY(recursiveMutex.try_lock());
+            QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+            QVERIFY(recursiveMutex.try_lock());
+            QVERIFY(lockCount.testAndSetRelaxed(1, 2));
+            QVERIFY(lockCount.testAndSetRelaxed(2, 1));
+            recursiveMutex.unlock();
+            QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+            recursiveMutex.unlock();
+            testsTurn.release();
+
+            threadsTurn.acquire();
+            QElapsedTimer timer;
+            timer.start();
+            QVERIFY(!recursiveMutex.try_lock_for(waitTimeAsDuration));
+            QVERIFY(timer.elapsed() >= waitTime - systemTimersResolution);
+            QVERIFY(!recursiveMutex.try_lock_for(std::chrono::milliseconds::zero()));
+            testsTurn.release();
+
+            threadsTurn.acquire();
+            timer.start();
+            QVERIFY(recursiveMutex.try_lock_for(waitTimeAsDuration));
+            QVERIFY(timer.elapsed() <= waitTime + systemTimersResolution);
+            QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+            QVERIFY(recursiveMutex.try_lock_for(waitTimeAsDuration));
+            QVERIFY(lockCount.testAndSetRelaxed(1, 2));
+            QVERIFY(lockCount.testAndSetRelaxed(2, 1));
+            recursiveMutex.unlock();
+            QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+            recursiveMutex.unlock();
+            testsTurn.release();
+
+            threadsTurn.acquire();
+            QVERIFY(!recursiveMutex.try_lock_for(std::chrono::milliseconds::zero()));
+            QVERIFY(!recursiveMutex.try_lock_for(std::chrono::milliseconds::zero()));
+            testsTurn.release();
+
+            threadsTurn.acquire();
+            timer.start();
+            QVERIFY(recursiveMutex.try_lock_for(std::chrono::milliseconds::zero()));
+            QVERIFY(timer.elapsed() < waitTime + systemTimersResolution);
+            QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+            QVERIFY(recursiveMutex.try_lock_for(std::chrono::milliseconds::zero()));
+            QVERIFY(lockCount.testAndSetRelaxed(1, 2));
+            QVERIFY(lockCount.testAndSetRelaxed(2, 1));
+            recursiveMutex.unlock();
+            QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+            recursiveMutex.unlock();
+            testsTurn.release();
+
+            threadsTurn.acquire();
+        }
+    };
+
+    Thread thread;
+    thread.start();
+
+    // thread can't acquire lock
+    testsTurn.acquire();
+    recursiveMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+    recursiveMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 2));
+    threadsTurn.release();
+
+    // thread can acquire lock
+    testsTurn.acquire();
+    QVERIFY(lockCount.testAndSetRelaxed(2, 1));
+    recursiveMutex.unlock();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+    recursiveMutex.unlock();
+    threadsTurn.release();
+
+    // thread can't acquire lock, timeout = waitTime
+    testsTurn.acquire();
+    recursiveMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+    recursiveMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 2));
+    threadsTurn.release();
+
+    // thread can acquire lock, timeout = waitTime
+    testsTurn.acquire();
+    QVERIFY(lockCount.testAndSetRelaxed(2, 1));
+    recursiveMutex.unlock();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+    recursiveMutex.unlock();
+    threadsTurn.release();
+
+    // thread can't acquire lock, timeout = 0
+    testsTurn.acquire();
+    recursiveMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+    recursiveMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 2));
+    threadsTurn.release();
+
+    // thread can acquire lock, timeout = 0
+    testsTurn.acquire();
+    QVERIFY(lockCount.testAndSetRelaxed(2, 1));
+    recursiveMutex.unlock();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+    recursiveMutex.unlock();
+    threadsTurn.release();
+
+    // stop thread
+    testsTurn.acquire();
+    threadsTurn.release();
+    thread.wait();
+#endif
+}
+
+void tst_QMutex::try_lock_until_recursive()
+{
+#if !QT_HAS_INCLUDE(<chrono>)
+    QSKIP("This test requires <chrono>");
+#else
+    class Thread : public QThread
+    {
+    public:
+        void run()
+        {
+            const std::chrono::milliseconds systemTimersResolutionAsDuration(systemTimersResolution);
+            testsTurn.release();
+
+            threadsTurn.acquire();
+            QVERIFY(!recursiveMutex.try_lock());
+            testsTurn.release();
+
+            threadsTurn.acquire();
+            QVERIFY(recursiveMutex.try_lock());
+            QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+            QVERIFY(recursiveMutex.try_lock());
+            QVERIFY(lockCount.testAndSetRelaxed(1, 2));
+            QVERIFY(lockCount.testAndSetRelaxed(2, 1));
+            recursiveMutex.unlock();
+            QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+            recursiveMutex.unlock();
+            testsTurn.release();
+
+            threadsTurn.acquire();
+            auto endTimePoint = std::chrono::steady_clock::now() + waitTimeAsDuration;
+            QVERIFY(!recursiveMutex.try_lock_until(endTimePoint));
+            QVERIFY(std::chrono::steady_clock::now() >= endTimePoint - systemTimersResolutionAsDuration);
+            QVERIFY(!recursiveMutex.try_lock());
+            testsTurn.release();
+
+            threadsTurn.acquire();
+            endTimePoint = std::chrono::steady_clock::now() + waitTimeAsDuration;
+            QVERIFY(recursiveMutex.try_lock_until(endTimePoint));
+            QVERIFY(std::chrono::steady_clock::now() <= endTimePoint + systemTimersResolutionAsDuration);
+            QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+            endTimePoint = std::chrono::steady_clock::now() + waitTimeAsDuration;
+            QVERIFY(recursiveMutex.try_lock_until(endTimePoint));
+            QVERIFY(lockCount.testAndSetRelaxed(1, 2));
+            QVERIFY(lockCount.testAndSetRelaxed(2, 1));
+            recursiveMutex.unlock();
+            QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+            recursiveMutex.unlock();
+            testsTurn.release();
+
+            threadsTurn.acquire();
+            QVERIFY(!recursiveMutex.try_lock_until(std::chrono::steady_clock::now()));
+            QVERIFY(!recursiveMutex.try_lock_until(std::chrono::steady_clock::now()));
+            testsTurn.release();
+
+            threadsTurn.acquire();
+            endTimePoint = std::chrono::steady_clock::now() + waitTimeAsDuration;
+            QVERIFY(recursiveMutex.try_lock_until(std::chrono::steady_clock::now()));
+            QVERIFY(std::chrono::steady_clock::now() <= endTimePoint + systemTimersResolutionAsDuration);
+            QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+            QVERIFY(recursiveMutex.try_lock_until(std::chrono::steady_clock::now()));
+            QVERIFY(lockCount.testAndSetRelaxed(1, 2));
+            QVERIFY(lockCount.testAndSetRelaxed(2, 1));
+            recursiveMutex.unlock();
+            QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+            recursiveMutex.unlock();
+            testsTurn.release();
+
+            threadsTurn.acquire();
+        }
+    };
+
+    Thread thread;
+    thread.start();
+
+    // thread can't acquire lock
+    testsTurn.acquire();
+    recursiveMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+    recursiveMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 2));
+    threadsTurn.release();
+
+    // thread can acquire lock
+    testsTurn.acquire();
+    QVERIFY(lockCount.testAndSetRelaxed(2, 1));
+    recursiveMutex.unlock();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+    recursiveMutex.unlock();
+    threadsTurn.release();
+
+    // thread can't acquire lock, timeout = waitTime
+    testsTurn.acquire();
+    recursiveMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+    recursiveMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 2));
+    threadsTurn.release();
+
+    // thread can acquire lock, timeout = waitTime
+    testsTurn.acquire();
+    QVERIFY(lockCount.testAndSetRelaxed(2, 1));
+    recursiveMutex.unlock();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+    recursiveMutex.unlock();
+    threadsTurn.release();
+
+    // thread can't acquire lock, timeout = 0
+    testsTurn.acquire();
+    recursiveMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(0, 1));
+    recursiveMutex.lock();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 2));
+    threadsTurn.release();
+
+    // thread can acquire lock, timeout = 0
+    testsTurn.acquire();
+    QVERIFY(lockCount.testAndSetRelaxed(2, 1));
+    recursiveMutex.unlock();
+    QVERIFY(lockCount.testAndSetRelaxed(1, 0));
+    recursiveMutex.unlock();
+    threadsTurn.release();
+
+    // stop thread
+    testsTurn.acquire();
+    threadsTurn.release();
+    thread.wait();
+#endif
 }
 
 class mutex_Thread : public QThread
