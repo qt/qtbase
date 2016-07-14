@@ -200,7 +200,8 @@ defineTest(qtConfParseCommandLine) {
             opt = $$replace(c, "^--?([^-].*)", "\\1")
             val =
         } else {
-            error("Invalid command line parameter '$$c'.")
+            qtConfAddError("Invalid command line parameter '$$c'.")
+            return()
         }
 
         type = $$eval(config.commandline.options.$${opt})
@@ -224,8 +225,10 @@ defineTest(qtConfParseCommandLine) {
             next()
         }
 
-        isEmpty(type): \
-            error("Unknown command line option '$$c'.")
+        isEmpty(type) {
+            qtConfAddError("Unknown command line option '$$c'.")
+            return()
+        }
 
         call = "qtConfCommandline_$${type}"
         !defined($$call, test): \
