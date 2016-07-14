@@ -1177,17 +1177,17 @@
             "output": [ "publicQtConfig" ]
         },
         "c++11": {
-            "description": "C++11 support",
+            "description": "C++11",
             "condition": "tests.c++11",
             "output": [ "publicQtConfig" ]
         },
         "c++14": {
-            "description": "C++14 support",
+            "description": "C++14",
             "condition": "features.c++11 && tests.c++14",
             "output": [ "publicQtConfig" ]
         },
         "c++1z": {
-            "description": "C++1z support",
+            "description": "C++1z",
             "condition": "features.c++14 && tests.c++1z",
             "output": [ "publicQtConfig" ]
         },

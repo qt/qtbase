@@ -785,7 +785,7 @@ defineReplace(qtConfFindFirstAvailableFeature) {
         isEmpty(config.features.$${feature}._KEYS_): \
             error("Asking for a report on undefined feature $${2}.")
         $$eval(config.features.$${feature}.available): \
-            return($$feature)
+            return($$eval(config.features.$${feature}.description))
     }
 
     return("<none>")
