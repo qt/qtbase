@@ -51,7 +51,7 @@
             "confirm-license": "void",
             "continue": "void",
             "cups": "boolean",
-            "dbus": { "type": "optionalString", "values": [ "no", "linked", "runtime" ] },
+            "dbus": { "type": "optionalString", "values": [ "no", "yes", "linked", "runtime" ] },
             "dbus-linked": { "type": "void", "name": "dbus", "value": "linked" },
             "dbus-runtime": { "type": "void", "name": "dbus", "value": "runtime" },
             "debug": "void",
