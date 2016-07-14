@@ -235,7 +235,7 @@ android: CONFIG += qt_android_deps no_linker_version_script
 
         verscript = $$verscript_in
     }
-    write_file($$OUT_PWD/$$verscript, verscript_content)|error("Aborting.")
+    write_file($$OUT_PWD/$$verscript, verscript_content)|error()
     unset(current)
     unset(previous)
     unset(verscript)

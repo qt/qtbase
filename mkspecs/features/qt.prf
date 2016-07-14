@@ -238,7 +238,7 @@ contains(qt_module_deps, qml): \
             }
         }
         QML_IMPORT_CPP = $$OUT_PWD/$$lower($$basename(TARGET))_qml_plugin_import.cpp
-        write_file($$QML_IMPORT_CPP, IMPORT_FILE_CONT)|error("Aborting.")
+        write_file($$QML_IMPORT_CPP, IMPORT_FILE_CONT)|error()
         GENERATED_SOURCES += $$QML_IMPORT_CPP
         QMAKE_DISTCLEAN += $$QML_IMPORT_CPP
 
@@ -261,7 +261,7 @@ contains(qt_module_deps, qml): \
                 "[Paths]" \
                 "Imports = $$QMAKE_QML_BUNDLE_PATH" \
                 "Qml2Imports = $$QMAKE_QML_BUNDLE_PATH"
-            write_file("$$OUT_PWD/qt.conf", QT_CONF_CONTENTS)|error("Aborting.")
+            write_file("$$OUT_PWD/qt.conf", QT_CONF_CONTENTS)|error()
 
             # write qt.conf and copy each qml import dir into the bundle.
             # But strip away archives and other files that are not needed:
@@ -334,7 +334,7 @@ contains(QT_CONFIG, static) {
                     warning("Plugin class name could not be determined for $$IMPORT_PLUG plugin.")
             }
             IMPORT_CPP = $$OUT_PWD/$$lower($$basename(TARGET))_plugin_import.cpp
-            write_file($$IMPORT_CPP, IMPORT_FILE_CONT)|error("Aborting.")
+            write_file($$IMPORT_CPP, IMPORT_FILE_CONT)|error()
             GENERATED_SOURCES += $$IMPORT_CPP
             QMAKE_DISTCLEAN += $$IMPORT_CPP
         }

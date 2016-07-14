@@ -260,7 +260,7 @@ defineTest(qtConfTest_shell) {
     test_out_dir = $$shadowed($$test_dir)
     test_cmd_base = "cd $$system_quote($$system_path($$test_out_dir)) &&"
 
-    mkpath($$test_out_dir)|error("Aborting.")
+    mkpath($$test_out_dir)|error()
 
     qtRunLoggedCommand("$$test_cmd_base $$test_dir/$${test} $${args}"): \
         return(false)
@@ -272,7 +272,7 @@ defineReplace(qtConfToolchainSupportsFlag) {
     test_cmd_base = "cd $$system_quote($$system_path($$test_out_dir)) &&"
 
     conftest = "int main() { return 0; }"
-    write_file("$$test_out_dir/conftest.cpp", conftest)|error("Aborting.")
+    write_file("$$test_out_dir/conftest.cpp", conftest)|error()
 
     qtRunLoggedCommand("$$test_cmd_base $$QMAKE_CXX $${1} -o conftest-out conftest.cpp"): \
         return(true)
@@ -436,7 +436,7 @@ defineTest(qtConfTest_compile) {
     # Clean up after previous run
     exists($$test_out_dir/Makefile): qtRunLoggedCommand("$$test_cmd_base $$QMAKE_MAKE distclean")
 
-    mkpath($$test_out_dir)|error("Aborting.")
+    mkpath($$test_out_dir)|error()
 
     !isEmpty(QMAKE_QTCONF): qtconfarg = -qtconf $$QMAKE_QTCONF
 
@@ -912,7 +912,7 @@ defineTest(qtConfPrintReport) {
         }
 
         !equals(config.input.continue, yes): \
-            error("Aborting.")
+            error()
     }
 }
 
@@ -1156,7 +1156,7 @@ defineTest(qtConfProcessOutput) {
         defined(qtConfOutputPostProcess_$${type}, test): \
             qtConfOutputPostProcess_$${type}()
 
-        write_file($$file, config.output.$${type})|error("Aborting.")
+        write_file($$file, config.output.$${type})|error()
     }
 }
 

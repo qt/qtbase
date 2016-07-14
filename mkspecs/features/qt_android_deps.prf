@@ -79,7 +79,7 @@ DEPENDENCY_FILE = $$ANDROID_DEPENDS_DIR$$TARGET-android-dependencies.xml
 
     !isEmpty(FILE_CONTENT) {
         FILE_CONTENT = "<rules><dependencies><lib name=\"$$TARGET\"><depends>" $$FILE_CONTENT "</depends></lib></dependencies></rules>"
-        write_file($$DEPENDENCY_FILE, FILE_CONTENT) | error("Aborting.")
+        write_file($$DEPENDENCY_FILE, FILE_CONTENT)|error()
     }
 }
 

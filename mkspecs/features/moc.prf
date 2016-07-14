@@ -21,7 +21,7 @@ win32:count(MOC_INCLUDEPATH, 40, >) {
     WIN_INCLUDETEMP_CONT =
     for (inc, MOC_INCLUDEPATH): \
         WIN_INCLUDETEMP_CONT += -I$$inc
-    write_file($$absolute_path($$WIN_INCLUDETEMP, $$OUT_PWD), WIN_INCLUDETEMP_CONT)|error("Aborting.")
+    write_file($$absolute_path($$WIN_INCLUDETEMP, $$OUT_PWD), WIN_INCLUDETEMP_CONT)|error()
 }
 
 # QNX's compiler sets "gcc" config, but does not support the -dM option;

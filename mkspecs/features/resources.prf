@@ -65,7 +65,7 @@ for(resource, RESOURCES) {
             "</RCC>"
 
         !write_file($$OUT_PWD/$$resource_file, resource_file_content): \
-            error("Aborting.")
+            error()
     }
 
     RESOURCES -= $$resource

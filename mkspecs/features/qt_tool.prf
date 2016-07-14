@@ -60,7 +60,7 @@ DEFINES *= QT_USE_QSTRINGBUILDER
         "QT_TOOL.$${MODULE}.binary = $$val_escape(bin)" \
         "QT_TOOL.$${MODULE}.depends =$$join(MODULE_DEPENDS, " ", " ")" \
         $$module_envvars
-    write_file($$TOOL_PRI, TOOL_PRI_CONT)|error("Aborting.")
+    write_file($$TOOL_PRI, TOOL_PRI_CONT)|error()
 
     # Then, inject the new tool into the current cache state
     !contains(QMAKE_INTERNAL_INCLUDED_FILES, $$TOOL_PRI) { # before the actual include()!

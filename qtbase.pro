@@ -114,11 +114,11 @@ for (ft, features) {
             "    QT_DISABLED_FEATURES += $$lower($$replace(ft, _, -))"
     }
 }
-write_file($$OUT_PWD/src/corelib/global/qfeatures.h, FEATURES_H)|error("Aborting.")
+write_file($$OUT_PWD/src/corelib/global/qfeatures.h, FEATURES_H)|error()
 # Create forwarding header
 FWD_FEATURES_H = \
     '$${LITERAL_HASH}include "../../src/corelib/global/qfeatures.h"'
-write_file($$OUT_PWD/include/QtCore/qfeatures.h, FWD_FEATURES_H)|error("Aborting.")
+write_file($$OUT_PWD/include/QtCore/qfeatures.h, FWD_FEATURES_H)|error()
 
 no_features =
 lines = $$cat($$OUT_PWD/src/corelib/global/qconfig.h, lines)
@@ -146,15 +146,15 @@ FEATURES_PRI = \
     "$$escape_expand(\\n)$${LITERAL_HASH} Dependencies derived from <qtbase>/src/corelib/global/qfeatures.txt:" \
     $$FEATURES_PRI \
     "QT_DISABLED_FEATURES = \$\$unique(QT_DISABLED_FEATURES)"
-write_file($$OUT_PWD/mkspecs/qfeatures.pri, FEATURES_PRI)|error("Aborting.")
+write_file($$OUT_PWD/mkspecs/qfeatures.pri, FEATURES_PRI)|error()
 
 # Create forwarding headers for qconfig.h
 FWD_QCONFIG_H = \
     '$${LITERAL_HASH}include "../../src/corelib/global/qconfig.h"'
-write_file($$OUT_PWD/include/QtCore/qconfig.h, FWD_QCONFIG_H)|error("Aborting.")
+write_file($$OUT_PWD/include/QtCore/qconfig.h, FWD_QCONFIG_H)|error()
 FWD_QTCONFIG = \
     '$${LITERAL_HASH}include "qconfig.h"'
-write_file($$OUT_PWD/include/QtCore/QtConfig, FWD_QTCONFIG)|error("Aborting.")
+write_file($$OUT_PWD/include/QtCore/QtConfig, FWD_QTCONFIG)|error()
 
 # Files created by us
 QMAKE_DISTCLEAN += \
