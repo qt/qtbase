@@ -811,7 +811,9 @@ defineTest(qtConfReport_feature) {
         !isEmpty(4): result = "$${4}"
     }
 
-    qtConfReportPadded($${1}, $$result)
+    text = $$eval(config.features.$${2}.description)
+
+    qtConfReportPadded($${1}$$text, $$result)
 }
 
 defineTest(qtConfReport_note) {
@@ -854,8 +856,7 @@ defineTest(qtConfCreateReportRecurse) {
             qtConfCreateReportRecurse("$${entry}.entries", "$$indent  ")
         } else: !isEmpty($${entry}) {
             feature = $$eval($${entry})
-            text =  $$eval(config.features.$${feature}.description)
-            qtConfReport_feature($$indent$$text, $$feature)
+            qtConfReport_feature($$indent, $$feature)
         } else {
             text = $$eval($${entry}.message)
             isEmpty($${entry}.type): \

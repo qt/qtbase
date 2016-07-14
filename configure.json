@@ -1378,7 +1378,7 @@
             ]
         },
         "mips_dsp": {
-            "description": "Support for MIPS DSP instructions",
+            "description": "DSP",
             "condition": "arch.mips && tests.mips_dsp",
             "output": [
                 "privateConfig",
@@ -1386,7 +1386,7 @@
             ]
         },
         "mips_dspr2": {
-            "description": "Support for MIPS DSPr2 instructions",
+            "description": "DSPr2",
             "condition": "arch.mips && tests.mips_dspr2",
             "output": [
                 "privateConfig",
@@ -1394,7 +1394,7 @@
             ]
         },
         "neon": {
-            "description": "Support for NEON instructions",
+            "description": "NEON",
             "condition": "(arch.arm || arch.arm64) && tests.neon",
             "output": [
                 "privateConfig",
@@ -2365,19 +2365,16 @@ Please apply the patch corresponding to your Standard Library vendor, found in
                             "condition": "(arch.i386 || arch.x86_64)"
                         },
                         {
-                            "message": "NEON",
                             "type": "feature",
                             "args": "neon",
                             "condition": "arch.arm || arch.arm64"
                         },
                         {
-                            "message": "DSP",
                             "type": "feature",
                             "args": "mips_dsp",
                             "condition": "arch.mips"
                         },
                         {
-                            "message": "DSPr2",
                             "type": "feature",
                             "args": "mips_dspr2",
                             "condition": "arch.mips"
@@ -2410,7 +2407,6 @@ Please apply the patch corresponding to your Standard Library vendor, found in
                 "alsa",
                 "cups",
                 {
-                    "message": "DirectWrite",
                     "type": "feature",
                     "args": "directwrite",
                     "condition": "config.win32"
@@ -2447,14 +2443,12 @@ Please apply the patch corresponding to your Standard Library vendor, found in
                     "section": "Networking",
                     "entries": [
                         {
-                            "message": "CoreWLan",
                             "type": "feature",
                             "args": "corewlan",
                             "condition": "config.darwin"
                         },
                         "getaddrinfo", "getifaddrs", "ipv6ifname", "libproxy",
                         {
-                            "message": "SecureTransport",
                             "type": "feature",
                             "args": "securetransport",
                             "condition": "config.darwin"
