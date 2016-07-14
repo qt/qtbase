@@ -1777,9 +1777,8 @@
         "dbus-linked": {
             "description": "Qt D-Bus directly linked to libdbus",
             "enable": "input.dbus == 'linked'",
-            "disable": "input.dbus == 'runtime' || input.dbus == 'no'",
-            "autoDetect": "!config.android",
-            "condition": "tests.dbus",
+            "disable": "input.dbus == 'runtime'",
+            "condition": "features.dbus && tests.dbus",
             "output": [
                 "publicQtConfig",
                 { "type": "library", "feature": "dbus", "test": "dbus" }
