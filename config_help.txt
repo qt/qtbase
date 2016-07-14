@@ -175,7 +175,9 @@ Core options:
   -doubleconversion .... Select used double conversion library [system/qt/no]
                          No implies use of sscanf_l and snprintf_l (imprecise).
   -glib ................ Enable Glib support [auto]
-  -iconv ............... Enable iconv(3) support [auto]
+  -eventfd ............. Enable eventfd support
+  -inotify ............. Enable inotify support
+  -iconv ............... Enable iconv(3) support [posix/sun/gnu/no]
   -icu ................. Enable ICU support [auto]
   -pps ................. Enable PPS support [auto] (QNX only)
   -pcre ................ Select used libpcre3 [system/qt]
