@@ -1609,6 +1609,7 @@
         },
         "openssl": {
             "description": "OpenSSL",
+            "enable": "input.openssl == 'yes' || input.openssl == 'linked' || input.openssl == 'runtime'",
             "condition": "!features.securetransport && tests.openssl",
             "output": [
                 { "type": "publicQtConfig", "condition": "!features.openssl-linked" },
