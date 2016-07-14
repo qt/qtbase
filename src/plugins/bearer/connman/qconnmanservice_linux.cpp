@@ -246,6 +246,8 @@ QStringList QConnmanManagerInterface::getServices()
 bool QConnmanManagerInterface::requestScan(const QString &type)
 {
     bool scanned = false;
+    if (technologiesMap.isEmpty())
+        getTechnologies();
     Q_FOREACH (QConnmanTechnologyInterface *tech, technologiesMap) {
         if (tech->type() == type) {
             tech->scan();
