@@ -2346,10 +2346,16 @@ void tst_qmakelib::addTestFunctions(const QString &qindir)
             << "Project WARNING: World, be warned!"
             << true;
 
-    QTest::newRow("error()")
+    QTest::newRow("error(message)")
             << "error('World, you FAIL!'): OK = 1\nOKE = 1"
             << "OK = UNDEF\nOKE = UNDEF"
             << "Project ERROR: World, you FAIL!"
+            << false;
+
+    QTest::newRow("error(empty)")
+            << "error(): OK = 1\nOKE = 1"
+            << "OK = UNDEF\nOKE = UNDEF"
+            << ""
             << false;
 
     QTest::newRow("if(error())")
