@@ -24,6 +24,10 @@ defineTest(qtConfAddWarning) {
 defineTest(qtConfAddError) {
     QT_CONFIGURE_ERRORS += "ERROR: $$join(1, $$escape_expand(\\n))"
     export(QT_CONFIGURE_ERRORS)
+    equals(2, log) {
+        CONFIG += mention_config_log
+        export(CONFIG)
+    }
 }
 
 defineTest(qtConfCommandlineSetInput) {
@@ -665,7 +669,7 @@ defineReplace(qtConfCheckSingleCondition) {
 
     !$$result {
         $${3} {
-            qtConfAddError("Feature '$${1}' was enabled, but the pre-condition '$$2' failed.")
+            qtConfAddError("Feature '$${1}' was enabled, but the pre-condition '$$2' failed.", log)
             $$result = true
         }
     }
@@ -814,7 +818,7 @@ defineTest(qtConfReport_warning) {
 }
 
 defineTest(qtConfReport_error) {
-    qtConfAddError($${1})
+    qtConfAddError($${1}, log)
 }
 
 defineTest(qtConfCreateReportRecurse) {
@@ -895,7 +899,7 @@ defineTest(qtConfPrintReport) {
     !isEmpty(QT_CONFIGURE_ERRORS) {
         for (e, QT_CONFIGURE_ERRORS): \
             logn($$e)
-        !$$QMAKE_CONFIG_VERBOSE: logn("Check config.log for details.")
+        mention_config_log:!$$QMAKE_CONFIG_VERBOSE: logn("Check config.log for details.")
         logn(" ")
 
         !equals(config.input.continue, yes): \
