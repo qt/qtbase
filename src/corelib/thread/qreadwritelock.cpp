@@ -244,6 +244,9 @@ bool QReadWriteLock::tryLockForRead(int timeout)
         }
 
         if (d == dummyLockedForWrite) {
+            if (!timeout)
+                return false;
+
             // locked for write, assign a d_ptr and wait.
             auto val = QReadWriteLockPrivate::allocate();
             val->writerCount = 1;
@@ -345,6 +348,9 @@ bool QReadWriteLock::tryLockForWrite(int timeout)
         }
 
         if (isUncontendedLocked(d)) {
+            if (!timeout)
+                return false;
+
             // locked for either read or write, assign a d_ptr and wait.
             auto val = QReadWriteLockPrivate::allocate();
             if (d == dummyLockedForWrite)
