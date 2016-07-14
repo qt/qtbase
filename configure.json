@@ -1211,7 +1211,7 @@
         },
         "enable_new_dtags": {
             "description": "Using new DTAGS",
-            "condition": "tests.enable_new_dtags",
+            "condition": "config.linux && tests.enable_new_dtags",
             "output": [ "privateConfig" ]
         },
         "reduce_exports": {
@@ -2340,7 +2340,11 @@ Please apply the patch corresponding to your Standard Library vendor, found in
                     "args": "c++1z c++14 c++11"
                 },
                 "use_gold_linker",
-                "enable_new_dtags",
+                {
+                    "type": "feature",
+                    "args": "enable_new_dtags",
+                    "condition": "config.linux"
+                },
                 "precompile_header",
                 "ltcg",
                 {
