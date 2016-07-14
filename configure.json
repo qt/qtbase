@@ -1250,7 +1250,7 @@
             ]
         },
         "sse2": {
-            "description": "Use SSE2 instructions",
+            "description": "SSE2",
             "condition": "(arch.i386 || arch.x86_64) && tests.sse2",
             "output": [
                 "privateConfig",
@@ -1258,7 +1258,7 @@
             ]
         },
         "sse3": {
-            "description": "Support for SSE3 instructions",
+            "description": "SSE3",
             "condition": "features.sse2 && tests.sse3",
             "output": [
                 "privateConfig",
@@ -1266,7 +1266,7 @@
             ]
         },
         "ssse3": {
-            "description": "Support for SSSE3 instructions",
+            "description": "SSSE3",
             "condition": "features.sse3 && tests.ssse3",
             "output": [
                 "privateConfig",
@@ -1274,7 +1274,7 @@
             ]
         },
         "sse4_1": {
-            "description": "Support for SSE4.1 instructions",
+            "description": "SSE4.1",
             "condition": "features.ssse3 && tests.sse4_1",
             "output": [
                 "privateConfig",
@@ -1282,7 +1282,7 @@
             ]
         },
         "sse4_2": {
-            "description": "Support for SSE4.2 instructions",
+            "description": "SSE4.2",
             "condition": "features.sse4_1 && tests.sse4_2",
             "output": [
                 "privateConfig",
@@ -1290,7 +1290,7 @@
             ]
         },
         "avx": {
-            "description": "Support for AVX instructions",
+            "description": "AVX",
             "condition": "features.sse4_2 && tests.avx && tests.avx_apple_clang",
             "output": [
                 "privateConfig",
@@ -1298,7 +1298,7 @@
             ]
         },
         "avx2": {
-            "description": "Support for AVX2 instructions",
+            "description": "AVX2",
             "condition": "features.avx && tests.avx2",
             "output": [
                 "privateConfig",
@@ -1306,7 +1306,7 @@
             ]
         },
         "avx512f": {
-            "description": "Support for AVX 512F instructions",
+            "description": "F",
             "condition": "features.avx2 && tests.avx512f",
             "output": [
                 "privateConfig",
@@ -1314,7 +1314,7 @@
             ]
         },
         "avx512er": {
-            "description": "Support for AVX 512ER instructions",
+            "description": "ER",
             "condition": "features.avx512f && tests.avx512er",
             "output": [
                 "privateConfig",
@@ -1322,7 +1322,7 @@
             ]
         },
         "avx512cd": {
-            "description": "Support for AVX 512CD instructions",
+            "description": "CD",
             "condition": "features.avx512f && tests.avx512cd",
             "output": [
                 "privateConfig",
@@ -1330,7 +1330,7 @@
             ]
         },
         "avx512pf": {
-            "description": "Support for AVX 512PF instructions",
+            "description": "PF",
             "condition": "features.avx512f && tests.avx512pf",
             "output": [
                 "privateConfig",
@@ -1338,7 +1338,7 @@
             ]
         },
         "avx512dq": {
-            "description": "Support for AVX 512DQ instructions",
+            "description": "DQ",
             "condition": "features.avx512f && tests.avx512dq",
             "output": [
                 "privateConfig",
@@ -1346,7 +1346,7 @@
             ]
         },
         "avx512bw": {
-            "description": "Support for AVX 512BW instructions",
+            "description": "BW",
             "condition": "features.avx512f && tests.avx512bw",
             "output": [
                 "privateConfig",
@@ -1354,7 +1354,7 @@
             ]
         },
         "avx512vl": {
-            "description": "Support for AVX 512VL instructions",
+            "description": "VL",
             "condition": "features.avx512f && tests.avx512vl",
             "output": [
                 "privateConfig",
@@ -1362,7 +1362,7 @@
             ]
         },
         "avx512ifma": {
-            "description": "Support for AVX 512IFMA instructions",
+            "description": "IFMA",
             "condition": "features.avx512f && tests.avx512ifma",
             "output": [
                 "privateConfig",
@@ -1370,7 +1370,7 @@
             ]
         },
         "avx512vbmi": {
-            "description": "Support for AVX 512VBMI instructions",
+            "description": "VBMI",
             "condition": "features.avx512f && tests.avx512vbmi",
             "output": [
                 "privateConfig",

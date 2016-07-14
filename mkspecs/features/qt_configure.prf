@@ -769,7 +769,7 @@ defineReplace(qtConfCollectFeatures) {
     l =
     for (feature, $$list($${1})) {
         $$eval(config.features.$${feature}.available): \
-            l += $$feature
+            l += $$eval(config.features.$${feature}.description)
     }
 
     isEmpty(l): return("<none>")
