@@ -3138,7 +3138,7 @@
 
     See also \l{fn_size}{size()}.
 
-    \section2 system(command[, mode])
+    \section2 system(command[, mode[, stsvar]])
 
     You can use this variant of the \c system function to obtain stdout from the
     command and assign it to a variable.
@@ -3146,6 +3146,11 @@
     For example:
 
     \snippet code/doc_src_qmake-manual.pro 72
+
+    If you pass \c stsvar, the command's exit status will be stored in that
+    variable. If the command crashes, the status will be -1, otherwise a
+    non-negative exit code of the command's choosing. Usually, comparing
+    the status with zero (success) is sufficient.
 
     See also the test variant of \l{system(command)}{system()}.
 

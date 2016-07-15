@@ -32,16 +32,13 @@ defineTest(qtLog) {
 
 defineTest(qtRunLoggedCommand) {
     qtLog($$1)
-    write_file($${QMAKE_CONFIG_LOG}.part, "")
-    result = false
-    system("$$1 > \"$${QMAKE_CONFIG_LOG}.part\" 2>&1"): result = true
 
-    output = $$cat($${QMAKE_CONFIG_LOG}.part, blob)
-
+    output = $$system("$$1 2>&1", blob, result)
     write_file($${QMAKE_CONFIG_LOG}, output, append)
     $$QMAKE_CONFIG_VERBOSE: log($$output)
 
-    return($$result)
+    !equals(result, 0): return(false)
+    return(true)
 }
 
 isEmpty(QMAKE_CONFIG_TESTS_DIR): QMAKE_CONFIG_TESTS_DIR = $$_PRO_FILE_PWD_/config.tests

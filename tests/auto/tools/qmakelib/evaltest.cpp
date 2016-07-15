@@ -1326,9 +1326,9 @@ void tst_qmakelib::addReplaceFunctions(const QString &qindir)
             << true;
 
     QTest::newRow("$$system(): bad number of arguments")
-            << "VAR = $$system(1, 2, 3)"
+            << "VAR = $$system(1, 2, 3, 4)"
             << "VAR ="
-            << "##:1: system(execute) requires one or two arguments."
+            << "##:1: system(command, [mode], [stsvar]) requires one to three arguments."
             << true;
 
     QTest::newRow("$$unique()")
