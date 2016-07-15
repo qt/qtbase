@@ -435,7 +435,8 @@ defineTest(qtConfTest_compile) {
         qmake_args += "\"INCLUDEPATH *= $$includedir\""
 
     # Clean up after previous run
-    exists($$test_out_dir/Makefile): qtRunLoggedCommand("$$test_cmd_base $$QMAKE_MAKE distclean")
+    exists($$test_out_dir/Makefile): \
+        QMAKE_MAKE = "$$QMAKE_MAKE clean && $$QMAKE_MAKE"
 
     mkpath($$test_out_dir)|error()
 
