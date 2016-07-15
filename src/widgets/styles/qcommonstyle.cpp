@@ -5194,6 +5194,8 @@ static QPixmap cachedPixmapFromXPM(const char * const *xpm)
     return result;
 }
 
+static inline QPixmap titleBarMenuCachedPixmapFromXPM() { return cachedPixmapFromXPM(qt_menu_xpm); }
+
 #ifndef QT_NO_IMAGEFORMAT_PNG
 static inline QString clearText16IconPath()
 {
@@ -5538,7 +5540,7 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
 #ifndef QT_NO_IMAGEFORMAT_XPM
     switch (sp) {
     case SP_TitleBarMenuButton:
-        return cachedPixmapFromXPM(qt_menu_xpm);
+        return titleBarMenuCachedPixmapFromXPM();
     case SP_TitleBarShadeButton:
         return cachedPixmapFromXPM(qt_shade_xpm);
     case SP_TitleBarUnshadeButton:
@@ -6079,6 +6081,12 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
         break;
     case SP_MediaVolumeMuted:
         icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-volume-muted-16.png"), QSize(16, 16));
+        break;
+    case SP_TitleBarMenuButton:
+#  ifndef QT_NO_IMAGEFORMAT_XPM
+        icon.addPixmap(titleBarMenuCachedPixmapFromXPM());
+#  endif
+        icon.addFile(QLatin1String(":/qt-project.org/qmessagebox/images/qtlogo-64.png"));
         break;
 #endif // QT_NO_IMAGEFORMAT_PNG
     default:
