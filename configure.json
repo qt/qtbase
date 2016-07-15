@@ -2022,6 +2022,7 @@
         },
         "opengles2": {
             "description": "OpenGL ES 2.0",
+            "enable": "input.opengl == 'es2'",
             "disable": "input.opengl == 'desktop' || input.opengl == 'no'",
             "condition": "!features.opengl-desktop && tests.opengles2",
             "output": [
@@ -2043,6 +2044,7 @@
         },
         "opengl-desktop": {
             "description": "Desktop OpenGL",
+            "enable": "input.opengl == 'desktop'",
             "disable": "input.opengl == 'es2' || input.opengl == 'no'",
             "condition": "(config.win32 && tests.opengl-mingw) || (!config.win32 && tests.opengl-desktop)",
             "output": [ { "type": "library", "name": "OPENGL", "test": "opengl-desktop", "condition": "!config.win32" } ]
