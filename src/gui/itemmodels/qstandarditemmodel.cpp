@@ -1805,11 +1805,12 @@ QStandardItem *QStandardItem::takeChild(int row, int column)
 QList<QStandardItem*> QStandardItem::takeRow(int row)
 {
     Q_D(QStandardItem);
+    QList<QStandardItem*> items;
     if ((row < 0) || (row >= rowCount()))
-        return QList<QStandardItem*>();
+        return items;
     if (d->model)
         d->model->d_func()->rowsAboutToBeRemoved(this, row, row);
-    QList<QStandardItem*> items;
+
     int index = d->childIndex(row, 0);  // Will return -1 if there are no columns
     if (index != -1) {
         int col_count = d->columnCount();
@@ -1838,11 +1839,11 @@ QList<QStandardItem*> QStandardItem::takeRow(int row)
 QList<QStandardItem*> QStandardItem::takeColumn(int column)
 {
     Q_D(QStandardItem);
+    QList<QStandardItem*> items;
     if ((column < 0) || (column >= columnCount()))
-        return QList<QStandardItem*>();
+        return items;
     if (d->model)
         d->model->d_func()->columnsAboutToBeRemoved(this, column, column);
-    QList<QStandardItem*> items;
 
     const int rowCount = d->rowCount();
     items.reserve(rowCount);
