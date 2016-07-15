@@ -394,8 +394,12 @@ defineTest(qtConfTest_compile) {
         test_dir = $$test_dir/$$eval($${1}.pro)
     test_cmd_base = "cd $$system_quote($$system_path($$test_out_dir)) &&"
 
+    qmake_args = $$qtConfPkgConfigEnv()$$system_quote($$system_path($$QMAKE_QMAKE))
+    !isEmpty(QMAKE_QTCONF): \
+        qmake_args += -qtconf $$system_quote($$QMAKE_QTCONF)
+
     # Disable qmake features which are typically counterproductive for tests
-    qmake_args = "\"CONFIG -= qt debug_and_release app_bundle lib_bundle\""
+    qmake_args += "\"CONFIG -= qt debug_and_release app_bundle lib_bundle\""
 
     # allow tests to behave differently depending on the type of library
     # being built (shared/static). e.g. see config.tests/unix/icu
@@ -445,12 +449,10 @@ defineTest(qtConfTest_compile) {
 
     mkpath($$test_out_dir)|error()
 
-    !isEmpty(QMAKE_QTCONF): qtconfarg = -qtconf $$QMAKE_QTCONF
-
     # add possible command line args
     qmake_args += $$qtConfPrepareArgs($$eval($${1}.args))
 
-    qtRunLoggedCommand("$$test_cmd_base $$qtConfPkgConfigEnv()$$system_quote($$system_path($$QMAKE_QMAKE)) $$qtconfarg $$qmake_args $$shell_quote($$test_dir)") {
+    qtRunLoggedCommand("$$test_cmd_base $$qmake_args $$system_quote($$test_dir)") {
         qtRunLoggedCommand("$$test_cmd_base $$QMAKE_MAKE"): \
             return(true)
     }
