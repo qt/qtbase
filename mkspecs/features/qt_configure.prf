@@ -316,8 +316,6 @@ defineReplace(qtConfPkgConfig) {
 
     $$host {
         pkg_config = $$qtConfFindInPath("pkg-config")
-        isEmpty(pkg_config): \
-            return(false)
     } else {
         pkg_config = "$$qtConfPkgConfigEnv()$$PKG_CONFIG"
     }
@@ -345,6 +343,8 @@ defineReplace(qtConfPrepareArgs) {
 
 defineTest(qtConfTest_pkgConfig) {
     pkg_config = $$qtConfPkgConfig($$eval($${1}.host))
+    isEmpty(pkg_config): \
+        return(false)
     args = $$qtConfPrepareArgs($$eval($${1}.pkg-config-args))
 
     !qtConfPkgConfigPackageExists($$pkg_config, $$args): \
@@ -367,6 +367,8 @@ defineTest(qtConfTest_pkgConfig) {
 
 defineTest(qtConfTest_getPkgConfigVariable) {
     pkg_config = $$qtConfPkgConfig($$eval($${1}.host))
+    isEmpty(pkg_config): \
+        return(false)
     args = $$qtConfPrepareArgs($$eval($${1}.pkg-config-args))
 
     !qtConfPkgConfigPackageExists($$pkg_config, $$args): \
