@@ -27,6 +27,8 @@
 ****************************************************************************/
 
 #include <qbytearray.h>
+#include <qcommandlineparser.h>
+#include <qcoreapplication.h>
 #include <qdebug.h>
 #include <qfile.h>
 #include <qfileinfo.h>
@@ -59,30 +61,6 @@ static QString commandLine;
 static QStringList includes;
 static QStringList wantedInterfaces;
 
-static const char help[] =
-    "Usage: " PROGRAMNAME " [options...] [xml-or-xml-file] [interfaces...]\n"
-    "Produces the C++ code to implement the interfaces defined in the input file.\n"
-    "\n"
-    "Options:\n"
-    "  -a <filename>    Write the adaptor code to <filename>\n"
-    "  -c <classname>   Use <classname> as the class name for the generated classes\n"
-    "  -h               Show this information\n"
-    "  -i <filename>    Add #include to the output\n"
-    "  -l <classname>   When generating an adaptor, use <classname> as the parent class\n"
-    "  -m               Generate #include \"filename.moc\" statements in the .cpp files\n"
-    "  -N               Don't use namespaces\n"
-    "  -p <filename>    Write the proxy code to <filename>\n"
-    "  -v               Be verbose.\n"
-    "  -V               Show the program version and quit.\n"
-    "\n"
-    "If the file name given to the options -a and -p does not end in .cpp or .h, the\n"
-    "program will automatically append the suffixes and produce both files.\n"
-    "You can also use a colon (:) to separate the header name from the source file\n"
-    "name, as in '-a filename_p.h:filename.cpp'.\n"
-    "\n"
-    "If you pass a dash (-) as the argument to either -p or -a, the output is written\n"
-    "to the standard output\n";
-
 static const char includeList[] =
     "#include <QtCore/QByteArray>\n"
     "#include <QtCore/QList>\n"
@@ -100,105 +78,6 @@ static const char forwardDeclarations[] =
     "class QStringList;\n"
     "class QVariant;\n"
     "QT_END_NAMESPACE\n";
-
-static void showHelp()
-{
-    printf("%s", help);
-    exit(0);
-}
-
-static void showVersion()
-{
-    printf("%s version %s\n", PROGRAMNAME, PROGRAMVERSION);
-    printf("D-Bus binding tool for Qt\n");
-    exit(0);
-}
-
-static QString nextArg(QStringList &args, int i, char opt)
-{
-    QString arg = args.value(i);
-    if (arg.isEmpty()) {
-        printf("-%c needs at least one argument\n", opt);
-        exit(1);
-    }
-    return args.takeAt(i);
-}
-
-static void parseCmdLine(QStringList args)
-{
-    args.takeFirst();
-
-    commandLine = QLatin1String(PROGRAMNAME " ");
-    commandLine += args.join(QLatin1Char(' '));
-
-    int i = 0;
-    while (i < args.count()) {
-
-        if (!args.at(i).startsWith(QLatin1Char('-'))) {
-            ++i;
-            continue;
-        }
-        QString arg = args.takeAt(i);
-
-        char c = '\0';
-        if (arg.length() == 2)
-            c = arg.at(1).toLatin1();
-        else if (arg == QLatin1String("--help"))
-            c = 'h';
-
-        switch (c) {
-        case 'a':
-            adaptorFile = nextArg(args, i, 'a');
-            break;
-
-        case 'c':
-            globalClassName = nextArg(args, i, 'c');
-            break;
-
-        case 'v':
-            verbose = true;
-            break;
-
-        case 'i':
-            includes << nextArg(args, i, 'i');
-            break;
-
-        case 'l':
-            parentClassName = nextArg(args, i, 'l');
-            break;
-
-        case 'm':
-            includeMocs = true;
-            break;
-
-        case 'N':
-            skipNamespaces = true;
-            break;
-
-        case '?':
-        case 'h':
-            showHelp();
-            break;
-
-        case 'V':
-            showVersion();
-            break;
-
-        case 'p':
-            proxyFile = nextArg(args, i, 'p');
-            break;
-
-        default:
-            printf("unknown option: '%s'\n", qPrintable(arg));
-            exit(1);
-        }
-    }
-
-    if (!args.isEmpty())
-        inputFile = args.takeFirst();
-
-    wantedInterfaces << args;
-}
 
 static QDBusIntrospection::Interfaces readInput()
 {
@@ -1139,13 +1018,79 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
 
 int main(int argc, char **argv)
 {
-    QStringList arguments;
-    arguments.reserve(argc);
-    for (int i = 0; i < argc; ++i) {
-        arguments.append(QString::fromLocal8Bit(argv[i]));
-    }
+    QCoreApplication app(argc, argv);
+    QCoreApplication::setApplicationName(QStringLiteral(PROGRAMNAME));
+    QCoreApplication::setApplicationVersion(QStringLiteral(PROGRAMVERSION));
 
-    parseCmdLine(arguments);
+    QCommandLineParser parser;
+    parser.setApplicationDescription(QLatin1String(
+            "Produces the C++ code to implement the interfaces defined in the input file.\n\n"
+            "If the file name given to the options -a and -p does not end in .cpp or .h, the\n"
+            "program will automatically append the suffixes and produce both files.\n"
+            "You can also use a colon (:) to separate the header name from the source file\n"
+            "name, as in '-a filename_p.h:filename.cpp'.\n\n"
+            "If you pass a dash (-) as the argument to either -p or -a, the output is written\n"
+            "to the standard output."));
+
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addPositionalArgument(QStringLiteral("xml-or-xml-file"), QStringLiteral("XML file to use."));
+    parser.addPositionalArgument(QStringLiteral("interfaces"), QStringLiteral("List of interfaces to use."),
+                QStringLiteral("[interfaces ...]"));
+
+    QCommandLineOption adapterCodeOption(QStringList() << QStringLiteral("a") << QStringLiteral("adaptor"),
+                QStringLiteral("Write the adaptor code to <filename>"), QStringLiteral("filename"));
+    parser.addOption(adapterCodeOption);
+
+    QCommandLineOption classNameOption(QStringList() << QStringLiteral("c") << QStringLiteral("classname"),
+                QStringLiteral("Use <classname> as the class name for the generated classes"), QStringLiteral("classname"));
+    parser.addOption(classNameOption);
+
+    QCommandLineOption addIncludeOption(QStringList() << QStringLiteral("i") << QStringLiteral("include"),
+                QStringLiteral("Add #include to the output"), QStringLiteral("filename"));
+    parser.addOption(addIncludeOption);
+
+    QCommandLineOption adapterParentOption(QStringLiteral("l"),
+                QStringLiteral("When generating an adaptor, use <classname> as the parent class"), QStringLiteral("classname"));
+    parser.addOption(adapterParentOption);
+
+    QCommandLineOption mocIncludeOption(QStringList() << QStringLiteral("m") << QStringLiteral("moc"),
+                QStringLiteral("Generate #include \"filename.moc\" statements in the .cpp files"));
+    parser.addOption(mocIncludeOption);
+
+    QCommandLineOption noNamespaceOption(QStringList() << QStringLiteral("N") << QStringLiteral("no-namespaces"),
+                QStringLiteral("Don't use namespaces"));
+    parser.addOption(noNamespaceOption);
+
+    QCommandLineOption proxyCodeOption(QStringList() << QStringLiteral("p") << QStringLiteral("proxy"),
+                QStringLiteral("Write the proxy code to <filename>"), QStringLiteral("filename"));
+    parser.addOption(proxyCodeOption);
+
+    QCommandLineOption verboseOption(QStringList() << QStringLiteral("V") << QStringLiteral("verbose"),
+                QStringLiteral("Be verbose."));
+    parser.addOption(verboseOption);
+
+    parser.process(app);
+
+    adaptorFile = parser.value(adapterCodeOption);
+    globalClassName = parser.value(classNameOption);
+    includes = parser.values(addIncludeOption);
+    parentClassName = parser.value(adapterParentOption);
+    includeMocs = parser.isSet(mocIncludeOption);
+    skipNamespaces = parser.isSet(noNamespaceOption);
+    proxyFile = parser.value(proxyCodeOption);
+    verbose = parser.isSet(verboseOption);
+
+    wantedInterfaces = parser.positionalArguments();
+    if (!wantedInterfaces.isEmpty()) {
+        inputFile = wantedInterfaces.takeFirst();
+
+        QFileInfo inputInfo(inputFile);
+        if (!inputInfo.exists() || !inputInfo.isFile() || !inputInfo.isReadable()) {
+            qCritical("Error: Input %s is not a file or cannot be accessed\n", qPrintable(inputFile));
+            return 1;
+        }
+    }
 
     QDBusIntrospection::Interfaces interfaces = readInput();
     cleanInterfaces(interfaces);
