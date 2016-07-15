@@ -274,6 +274,7 @@ Gui, printing, widget options:
 
   Image formats:
     -gif ............... Enable reading support for GIF [auto]
+    -ico ............... Enable support for ICO [yes]
     -libpng ............ Select used libpng [system/qt/no]
     -libjpeg ........... Select used libjpeg [system/qt/no]
 

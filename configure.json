@@ -99,6 +99,7 @@
             "harfbuzz": { "type": "enum", "values": [ "no", "qt", "system" ] },
             "headersclean": "boolean",
             "host-option": "string",
+            "ico": "boolean",
             "iconv": { "type": "enum", "values": [ "no", "yes", "posix", "sun", "gnu" ] },
             "icu": "boolean",
             "imf": { "type": "boolean", "name": "qqnx_imf" },
@@ -2022,6 +2023,10 @@
             "condition": "features.png && libs.libpng",
             "output": [ "publicQtConfig" ]
         },
+        "ico": {
+            "description": "ICO",
+            "output": [ "feature" ]
+        },
         "system-zlib": {
             "description": "Using system zlib",
             "condition": "config.darwin || libs.zlib",
@@ -2766,7 +2771,7 @@ Please apply the patch corresponding to your Standard Library vendor, found in
                 {
                     "section": "Image formats",
                     "entries": [
-                        "gif", "jpeg", "system-jpeg", "png", "system-png"
+                        "gif", "ico", "jpeg", "system-jpeg", "png", "system-png"
                     ]
                 },
                 {
