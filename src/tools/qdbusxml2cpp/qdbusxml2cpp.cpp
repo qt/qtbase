@@ -32,6 +32,7 @@
 #include <qdebug.h>
 #include <qfile.h>
 #include <qfileinfo.h>
+#include <qloggingcategory.h>
 #include <qstring.h>
 #include <qstringlist.h>
 #include <qtextstream.h>
@@ -1091,6 +1092,9 @@ int main(int argc, char **argv)
             return 1;
         }
     }
+
+    if (verbose)
+        QLoggingCategory::setFilterRules(QStringLiteral("dbus.parser.debug=true"));
 
     QDBusIntrospection::Interfaces interfaces = readInput();
     cleanInterfaces(interfaces);

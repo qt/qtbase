@@ -48,14 +48,11 @@
 
 #ifndef QT_NO_DBUS
 
-//#define QDBUS_PARSER_DEBUG
-#ifdef QDBUS_PARSER_DEBUG
-# define qDBusParserError qDebug
-#else
-# define qDBusParserError if (true) {} else qDebug
-#endif
-
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(dbusParser, "dbus.parser", QtWarningMsg)
+
+#define qDBusParserError(...) qCDebug(dbusParser, ##__VA_ARGS__)
 
 static bool parseArg(const QXmlStreamAttributes &attributes, QDBusIntrospection::Argument &argData,
         QDBusIntrospection::Interface *ifaceData)
