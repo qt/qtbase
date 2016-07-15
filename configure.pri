@@ -59,11 +59,11 @@ defineTest(qtConfTest_architecture) {
 
     test = $$eval($${1}.test)
     test_out_dir = $$shadowed($$QMAKE_CONFIG_TESTS_DIR/$$test)
-    exists($$test_out_dir/arch): \
+    unix:exists($$test_out_dir/arch): \
         content = $$cat($$test_out_dir/arch, blob)
-    else: exists($$test_out_dir/arch.exe): \
+    else: win32:exists($$test_out_dir/arch.exe): \
         content = $$cat($$test_out_dir/arch.exe, blob)
-    else: exists($$test_out_dir/libarch.so): \
+    else: android:exists($$test_out_dir/libarch.so): \
         content = $$cat($$test_out_dir/libarch.so, blob)
     else: \
         error("$$eval($${1}.description) detection binary not found.")
