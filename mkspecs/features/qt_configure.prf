@@ -1086,9 +1086,12 @@ defineTest(qtConfOutput_library) {
         name = $$eval($${1}.feature)
     NAME = $$upper($$replace(name, [-.], _))
 
-    lookup = "config.tests.$$eval($${1}.test)"
-    isEmpty(lookup): \
+    test = $$eval($${1}.test)
+    isEmpty(test): \
         error("Output type 'library' used in feature '$$eval($${1}.feature)' without a 'test' entry.")
+    lookup = "config.tests.$$test"
+    isEmpty($${lookup}._KEYS_): \
+        error("Output type 'library' used in feature '$$eval($${1}.feature)' refers to undefined test '$$test'.")
 
     eval(libs = $$eval($${lookup}.libs))
     eval(cflags = $$eval($${lookup}.cflags))
