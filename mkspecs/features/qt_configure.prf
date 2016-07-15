@@ -983,6 +983,8 @@ defineTest(qtConfOutputVarHelper) {
         error("Output type 'var$$title($$1)' used in feature '$$eval($${2}.feature)' without a 'name' entry.")
 
     value = $$qtConfEvaluate($$eval($${2}.value))
+    !isEmpty($${2}.eval):$$qtConfEvaluate($$eval($${2}.eval)): \
+        eval(value = $$value)
     qtConfOutputVar($$1, $$output, $$name, $$value)
 }
 

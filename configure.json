@@ -1617,7 +1617,7 @@
             "condition": "features.openssl && tests.openssl-libs",
             "output": [
                 "publicQtConfig",
-                { "type": "varAssign", "name": "OPENSSL_LIBS", "value": "tests.openssl-libs.libs" },
+                { "type": "varAssign", "name": "OPENSSL_LIBS", "value": "tests.openssl-libs.libs", "eval": "true" },
                 { "type": "define", "name": "QT_LINKED_OPENSSL" }
             ]
         },
@@ -1790,7 +1790,7 @@
             "description": "Qt D-Bus (Host)",
             "autoDetect": "!config.android",
             "condition": "tests.host-dbus",
-            "output": [ { "type": "varAppend", "name": "QT_HOST_CFLAGS_DBUS", "value": "tests.host-dbus.cflags" } ]
+            "output": [ { "type": "varAppend", "name": "QT_HOST_CFLAGS_DBUS", "value": "tests.host-dbus.cflags", "eval": "true" } ]
         },
         "skip_modules": {
             "output": [ { "type": "varAssign", "name": "QT_SKIP_MODULES", "value": "tests.skip_modules.value" } ]
