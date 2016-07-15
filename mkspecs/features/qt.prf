@@ -156,7 +156,7 @@ for(ever) {
     !isEmpty(var_sfx): break()
     var_sfx = _PRIVATE
 }
-!isEmpty(using_privates):!no_private_qt_headers_warning:if(!debug_and_release|!build_pass) {
+!isEmpty(using_privates):!no_private_qt_headers_warning:!build_pass {
     message("This project is using private headers and will therefore be tied to this specific Qt module build version.")
     message("Running this project against other versions of the Qt modules may crash at any arbitrary point.")
     message("This is not a bug, but a result of using Qt internals. You have been warned!")

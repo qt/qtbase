@@ -82,7 +82,7 @@ struct QStringBuilderCommon
     T toLower() const { return resolved().toLower(); }
 
 protected:
-    const T resolved() const { return *static_cast<const Builder*>(this); }
+    T resolved() const { return *static_cast<const Builder*>(this); }
 };
 
 template<typename Builder, typename T>

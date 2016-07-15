@@ -733,7 +733,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value State_None Indicates that the widget does not have a state.
     \value State_Active Indicates that the widget is active.
-    \value State_AutoRaise Used to indicate if auto-raise appearance should be usd on a tool button.
+    \value State_AutoRaise Used to indicate if auto-raise appearance should be used on a tool button.
     \value State_Children Used to indicate if an item view branch has children.
     \value State_DownArrow Used to indicate if a down arrow should be visible on the widget.
     \value State_Editing Used to indicate if an editor is opened on the widget.

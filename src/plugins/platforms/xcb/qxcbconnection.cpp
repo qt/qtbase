@@ -265,8 +265,8 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
                 } else {
                     screen = createScreen(virtualDesktop, output, outputInfo.data());
                     qCDebug(lcQpaScreen) << "output" << screen->name() << "is connected and enabled";
-                    QHighDpiScaling::updateHighDpiScaling();
                 }
+                QHighDpiScaling::updateHighDpiScaling();
             }
         } else if (screen) {
             if (output.crtc == XCB_NONE && output.mode == XCB_NONE) {
