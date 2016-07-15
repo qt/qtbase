@@ -88,16 +88,17 @@ NSUInteger keySequenceModifierMask(const QKeySequence &accel)
 QCocoaMenuItem::QCocoaMenuItem() :
     m_native(NULL),
     m_itemView(nil),
-    m_textSynced(false),
     m_menu(NULL),
+    m_role(NoRole),
+    m_tag(0),
+    m_iconSize(16),
+    m_textSynced(false),
     m_isVisible(true),
     m_enabled(true),
+    m_parentEnabled(true),
     m_isSeparator(false),
-    m_role(NoRole),
     m_checked(false),
-    m_merged(false),
-    m_tag(0),
-    m_iconSize(16)
+    m_merged(false)
 {
 }
 
@@ -133,15 +134,23 @@ void QCocoaMenuItem::setMenu(QPlatformMenu *menu)
     if (menu == m_menu)
         return;
 
-    if (m_menu) {
-        if (m_menu->menuParent() == this)
-            m_menu->setMenuParent(0);
+    if (m_menu && m_menu->menuParent() == this) {
+        m_menu->setMenuParent(0);
+        // Free the menu from its parent's influence
+        m_menu->propagateEnabledState(true);
+        if (m_native && m_menu->attachedItem() == m_native)
+            m_menu->setAttachedItem(nil);
     }
 
     QMacAutoReleasePool pool;
     m_menu = static_cast<QCocoaMenu *>(menu);
     if (m_menu) {
+        if (m_native) {
+            // Skip automatic menu item validation
+            m_native.action = nil;
+        }
         m_menu->setMenuParent(this);
+        m_menu->propagateEnabledState(isEnabled());
     } else {
         // we previously had a menu, but no longer
         // clear out our item so the nexy sync() call builds a new one
@@ -184,7 +193,11 @@ void QCocoaMenuItem::setChecked(bool isChecked)
 
 void QCocoaMenuItem::setEnabled(bool enabled)
 {
-    m_enabled = enabled;
+    if (m_enabled != enabled) {
+        m_enabled = enabled;
+        if (m_menu)
+            m_menu->propagateEnabledState(isEnabled());
+    }
 }
 
 void QCocoaMenuItem::setNativeContents(WId item)
@@ -392,12 +405,13 @@ void QCocoaMenuItem::syncMerged()
     [m_native setHidden: !m_isVisible];
 }
 
-void QCocoaMenuItem::syncModalState(bool modal)
+void QCocoaMenuItem::setParentEnabled(bool enabled)
 {
-    if (modal)
-        [m_native setEnabled:NO];
-    else
-        [m_native setEnabled:YES];
+    if (m_parentEnabled != enabled) {
+        m_parentEnabled = enabled;
+        if (m_menu)
+            m_menu->propagateEnabledState(isEnabled());
+    }
 }
 
 QPlatformMenuItem::MenuRole QCocoaMenuItem::effectiveRole() const

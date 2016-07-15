@@ -97,10 +97,10 @@ public:
     NSMenuItem *sync();
 
     void syncMerged();
-    void syncModalState(bool modal);
+    void setParentEnabled(bool enabled);
 
     inline bool isMerged() const { return m_merged; }
-    inline bool isEnabled() const { return m_enabled; }
+    inline bool isEnabled() const { return m_enabled && m_parentEnabled; }
     inline bool isSeparator() const { return m_isSeparator; }
 
     QCocoaMenu *menu() const { return m_menu; }
@@ -113,20 +113,21 @@ private:
     NSMenuItem *m_native;
     NSView *m_itemView;
     QString m_text;
-    bool m_textSynced;
     QIcon m_icon;
     QPointer<QCocoaMenu> m_menu;
-    bool m_isVisible;
-    bool m_enabled;
-    bool m_isSeparator;
     QFont m_font;
     MenuRole m_role;
     MenuRole m_detectedRole;
     QKeySequence m_shortcut;
-    bool m_checked;
-    bool m_merged;
     quintptr m_tag;
     int m_iconSize;
+    bool m_textSynced:1;
+    bool m_isVisible:1;
+    bool m_enabled:1;
+    bool m_parentEnabled:1;
+    bool m_isSeparator:1;
+    bool m_checked:1;
+    bool m_merged:1;
 };
 
 QT_END_NAMESPACE
