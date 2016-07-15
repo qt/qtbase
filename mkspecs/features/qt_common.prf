@@ -19,7 +19,6 @@ contains(TEMPLATE, .*lib) {
     # module and plugins
     !host_build:contains(QT_CONFIG, reduce_exports): CONFIG += hide_symbols
     unix:contains(QT_CONFIG, reduce_relocations): CONFIG += bsymbolic_functions
-    contains(QT_CONFIG, largefile): CONFIG += largefile
     contains(QT_CONFIG, separate_debug_info): CONFIG += separate_debug_info
 
     !isEmpty(_QMAKE_SUPER_CACHE_): \
