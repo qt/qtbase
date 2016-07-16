@@ -31,15 +31,21 @@
 
 #include <qatomic.h>
 #include <qcoreapplication.h>
-#include <qdatetime.h>
+#include <qelapsedtimer.h>
 #include <qmutex.h>
 #include <qthread.h>
 #include <qwaitcondition.h>
+
+#ifdef Q_OS_WIN
+#include <private/qsystemlibrary_p.h>
+#include <cmath>
+#endif
 
 class tst_QMutex : public QObject
 {
     Q_OBJECT
 private slots:
+    void initTestCase();
     void tryLock();
     void lock_unlock_locked_tryLock();
     void stressTest();
@@ -48,6 +54,8 @@ private slots:
     void tryLockNegative_data();
     void tryLockNegative();
     void moreStress();
+private:
+    void initializeSystemTimersResolution();
 };
 
 static const int iterations = 100;
@@ -58,6 +66,52 @@ QSemaphore testsTurn;
 QSemaphore threadsTurn;
 
 enum { waitTime = 100 };
+uint systemTimersResolution = 1;
+
+/*
+    Depending on the OS, tryWaits may return early than expected because of the
+    resolution of the underlying timer is too coarse. E.g.: on Windows
+    WaitForSingleObjectEx does *not* use high resolution multimedia timers, and
+    it's actually very coarse, about 16msec by default.
+
+    Try to find out the timer resolution in here, so that the tryLock tests can
+    actually take into account early wakes.
+*/
+void tst_QMutex::initializeSystemTimersResolution()
+{
+#ifdef Q_OS_WIN
+    // according to MSDN, Windows can default up to this
+    systemTimersResolution = 16;
+
+    // private API. There's no way on Windows to otherwise know the
+    // actual resolution of the application's timers (you can only set it)
+    // cf. https://stackoverflow.com/questions/7685762/windows-7-timing-functions-how-to-use-getsystemtimeadjustment-correctly/11743614#11743614
+    typedef NTSTATUS (NTAPI *NtQueryTimerResolutionType)(OUT PULONG MinimumResolution,
+                                                         OUT PULONG MaximumResolution,
+                                                         OUT PULONG ActualResolution);
+
+    const NtQueryTimerResolutionType NtQueryTimerResolutionPtr =
+            reinterpret_cast<NtQueryTimerResolutionType>(QSystemLibrary::resolve(QStringLiteral("ntdll"), "NtQueryTimerResolution"));
+
+    if (!NtQueryTimerResolutionPtr)
+        return;
+
+    ULONG minimumResolution;
+    ULONG maximumResolution;
+    ULONG actualResolution;
+
+    if (!NtQueryTimerResolutionPtr(&minimumResolution, &maximumResolution, &actualResolution)) {
+        // the result is in 100ns units => adjust to msec
+        const double actualResolutionMsec = actualResolution / 10000.0;
+        systemTimersResolution = static_cast<int>(std::ceil(actualResolutionMsec));
+    }
+#endif // Q_OS_WIN
+}
+
+void tst_QMutex::initTestCase()
+{
+    initializeSystemTimersResolution();
+}
 
 void tst_QMutex::tryLock()
 {
@@ -86,22 +140,22 @@ void tst_QMutex::tryLock()
 
                 // TEST 3: thread can't acquire lock, timeout = waitTime
                 threadsTurn.acquire();
-                QTime timer;
+                QElapsedTimer timer;
                 timer.start();
                 QVERIFY(!normalMutex.tryLock(waitTime));
-                QVERIFY(timer.elapsed() >= waitTime);
+                QVERIFY(timer.elapsed() >= waitTime - systemTimersResolution);
                 testsTurn.release();
 
                 // TEST 4: thread can acquire lock, timeout = waitTime
                 threadsTurn.acquire();
                 timer.start();
                 QVERIFY(normalMutex.tryLock(waitTime));
-                QVERIFY(timer.elapsed() <= waitTime);
+                QVERIFY(timer.elapsed() <= waitTime + systemTimersResolution);
                 QVERIFY(lockCount.testAndSetRelaxed(0, 1));
                 timer.start();
                 // it's non-recursive, so the following lock needs to fail
                 QVERIFY(!normalMutex.tryLock(waitTime));
-                QVERIFY(timer.elapsed() >= waitTime);
+                QVERIFY(timer.elapsed() >= waitTime - systemTimersResolution);
                 QVERIFY(lockCount.testAndSetRelaxed(1, 0));
                 normalMutex.unlock();
                 testsTurn.release();
@@ -115,7 +169,7 @@ void tst_QMutex::tryLock()
                 threadsTurn.acquire();
                 timer.start();
                 QVERIFY(normalMutex.tryLock(0));
-                QVERIFY(timer.elapsed() < waitTime);
+                QVERIFY(timer.elapsed() < waitTime + systemTimersResolution);
                 QVERIFY(lockCount.testAndSetRelaxed(0, 1));
                 QVERIFY(!normalMutex.tryLock(0));
                 QVERIFY(lockCount.testAndSetRelaxed(1, 0));
@@ -126,7 +180,7 @@ void tst_QMutex::tryLock()
                 threadsTurn.acquire();
                 timer.start();
                 QVERIFY(normalMutex.tryLock(3000));
-                QVERIFY(timer.elapsed() < 3000);
+                QVERIFY(timer.elapsed() < 3000 + systemTimersResolution);
                 normalMutex.unlock();
                 testsTurn.release();
 
@@ -211,17 +265,17 @@ void tst_QMutex::tryLock()
                 testsTurn.release();
 
                 threadsTurn.acquire();
-                QTime timer;
+                QElapsedTimer timer;
                 timer.start();
                 QVERIFY(!recursiveMutex.tryLock(waitTime));
-                QVERIFY(timer.elapsed() >= waitTime);
+                QVERIFY(timer.elapsed() >= waitTime - systemTimersResolution);
                 QVERIFY(!recursiveMutex.tryLock(0));
                 testsTurn.release();
 
                 threadsTurn.acquire();
                 timer.start();
                 QVERIFY(recursiveMutex.tryLock(waitTime));
-                QVERIFY(timer.elapsed() <= waitTime);
+                QVERIFY(timer.elapsed() <= waitTime + systemTimersResolution);
                 QVERIFY(lockCount.testAndSetRelaxed(0, 1));
                 QVERIFY(recursiveMutex.tryLock(waitTime));
                 QVERIFY(lockCount.testAndSetRelaxed(1, 2));
@@ -239,7 +293,7 @@ void tst_QMutex::tryLock()
                 threadsTurn.acquire();
                 timer.start();
                 QVERIFY(recursiveMutex.tryLock(0));
-                QVERIFY(timer.elapsed() < waitTime);
+                QVERIFY(timer.elapsed() < waitTime + systemTimersResolution);
                 QVERIFY(lockCount.testAndSetRelaxed(0, 1));
                 QVERIFY(recursiveMutex.tryLock(0));
                 QVERIFY(lockCount.testAndSetRelaxed(1, 2));
@@ -439,7 +493,7 @@ enum { one_minute = 6 * 1000, //not really one minute, but else it is too long.
 
 class StressTestThread : public QThread
 {
-    QTime t;
+    QElapsedTimer t;
 public:
     static QBasicAtomicInt lockCount;
     static QBasicAtomicInt sentinel;
@@ -491,7 +545,7 @@ public:
 
     void run()
     {
-        QTime t;
+        QElapsedTimer t;
         t.start();
         do {
             if (mutex.tryLock())
@@ -619,7 +673,7 @@ void tst_QMutex::tryLockNegative()
 
 class MoreStressTestThread : public QThread
 {
-    QTime t;
+    QElapsedTimer t;
 public:
     static QAtomicInt lockCount;
     static QAtomicInt sentinel[threadCount];
