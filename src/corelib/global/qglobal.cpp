@@ -4479,7 +4479,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     On QNX the message is sent to slogger2
 
     If you are using the \b{default message handler} this function will
-    abort on Unix systems to create a core dump. On Windows, for debug builds,
+    abort to create a core dump. On Windows, for debug builds,
     this function will report a _CRT_ERROR enabling you to connect a debugger
     to the application.
 

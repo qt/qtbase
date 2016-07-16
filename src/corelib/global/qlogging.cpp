@@ -140,6 +140,8 @@ static QT_PREPEND_NAMESPACE(qint64) qt_gettid()
 #endif
 #endif // !QT_BOOTSTRAPPED
 
+#include <cstdlib>
+
 #include <stdio.h>
 
 QT_BEGIN_NAMESPACE
@@ -1676,11 +1678,7 @@ static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, const
     Q_UNUSED(message);
 #endif
 
-#if (defined(Q_OS_UNIX) || defined(Q_CC_MINGW))
-    abort(); // trap; generates core dump
-#else
-    exit(1); // goodbye cruel world
-#endif
+    std::abort();
 }
 
 
