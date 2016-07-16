@@ -403,7 +403,7 @@ QThread::QThread(QThreadPrivate &dd, QObject *parent)
 
     Note that deleting a QThread object will not stop the execution
     of the thread it manages. Deleting a running QThread (i.e.
-    isFinished() returns \c false) will probably result in a program
+    isFinished() returns \c false) will result in a program
     crash. Wait for the finished() signal before deleting the
     QThread.
 */
@@ -418,7 +418,7 @@ QThread::~QThread()
             locker.relock();
         }
         if (d->running && !d->finished && !d->data->isAdopted)
-            qWarning("QThread: Destroyed while thread is still running");
+            qFatal("QThread: Destroyed while thread is still running");
 
         d->data->thread = 0;
     }
