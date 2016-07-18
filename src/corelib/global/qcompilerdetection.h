@@ -1031,6 +1031,33 @@
 // critical definitions. (Reported as Intel Issue ID 6000117277)
 #  define __USE_CONSTEXPR 1
 #  define __USE_NOEXCEPT 1
+# elif defined(Q_CC_MSVC) && (defined(Q_CC_CLANG) || defined(Q_CC_INTEL))
+// Clang and the Intel compiler support more C++ features than the Microsoft compiler
+// so make sure we don't enable them if the MS headers aren't properly adapted.
+#  ifndef _HAS_CONSTEXPR
+#   undef Q_COMPILER_CONSTEXPR
+#  endif
+#  ifndef _HAS_DECLTYPE
+#   undef Q_COMPILER_DECLTYPE
+#  endif
+#  ifndef _HAS_INITIALIZER_LISTS
+#   undef Q_COMPILER_INITIALIZER_LISTS
+#  endif
+#  ifndef _HAS_NULLPTR_T
+#   undef Q_COMPILER_NULLPTR
+#  endif
+#  ifndef _HAS_RVALUE_REFERENCES
+#   undef Q_COMPILER_RVALUE_REFS
+#  endif
+#  ifndef _HAS_SCOPED_ENUM
+#   undef Q_COMPILER_CLASS_ENUM
+#  endif
+#  ifndef _HAS_TEMPLATE_ALIAS
+#   undef Q_COMPILER_TEMPLATE_ALIAS
+#  endif
+#  ifndef _HAS_VARIADIC_TEMPLATES
+#   undef Q_COMPILER_VARIADIC_TEMPLATES
+#  endif
 # elif defined(_LIBCPP_VERSION)
 // libc++ uses __has_feature(cxx_atomic), so disable the feature if the compiler
 // doesn't support it. That's required for the Intel compiler 14.x or earlier on OS X, for example.
