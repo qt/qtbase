@@ -322,7 +322,6 @@ public:
                                                     QObject *parent = 0);
     ~QNetworkManagerInterfaceDeviceWireless();
 
-    QDBusObjectPath path() const;
     QList <QDBusObjectPath> getAccessPoints();
 
     QString hwAddress() const;
@@ -335,20 +334,10 @@ public:
     void requestScan();
 Q_SIGNALS:
     void propertiesChanged(QMap<QString,QVariant>);
-    void accessPointAdded(const QString &);
-    void accessPointRemoved(const QString &);
-    void scanDone();
     void propertiesReady();
-    void accessPointsReady();
 
 private Q_SLOTS:
-    void scanIsDone();
     void propertiesSwap(QMap<QString,QVariant>);
-
-    void slotAccessPointAdded(QDBusObjectPath);
-    void slotAccessPointRemoved(QDBusObjectPath);
-
-    void accessPointsFinished(QDBusPendingCallWatcher *watcher);
 
 private:
     QVariantMap propertyMap;
