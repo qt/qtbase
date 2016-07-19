@@ -1500,6 +1500,12 @@ void QOpenGLDebugLogger::stopLogging()
     if (!d->isLogging)
         return;
 
+    QOpenGLContext *currentContext = QOpenGLContext::currentContext();
+    if (!currentContext || currentContext != d->context) {
+        qWarning("QOpenGLDebugLogger::stopLogging(): attempting to stop logging with the wrong OpenGL context current");
+        return;
+    }
+
     d->isLogging = false;
 
     d->glDebugMessageCallback(d->oldDebugCallbackFunction, d->oldDebugCallbackParameter);
