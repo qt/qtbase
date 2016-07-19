@@ -1471,9 +1471,7 @@ defineTest(qtConfProcessOutput) {
         } else {
             for (define, config.output.$${type}._KEYS_) {
                 value = $$eval(config.output.$${type}.$${define})
-                config.output.$$type += "$${LITERAL_HASH}ifndef $$define"
                 config.output.$$type += "$${LITERAL_HASH}define $$define $$value"
-                config.output.$$type += "$${LITERAL_HASH}endif"
             }
         }
         defined(qtConfOutputPostProcess_$${type}, test): \
