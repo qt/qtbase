@@ -11,9 +11,6 @@ build_pass:iphonesimulator: \
 
 load(sdk)
 
-lessThan(QMAKE_MAC_SDK_VERSION, "8.0"): \
-    error("Current $$QMAKE_MAC_SDK SDK version ($$QMAKE_MAC_SDK_VERSION) is too old. Please upgrade Xcode.")
-
 macx-xcode {
     sdk_path_iphoneos.name = "QMAKE_MAC_SDK_PATH[sdk=iphoneos*]"
     sdk_path_iphoneos.value = $$QMAKE_MAC_SDK_PATH
