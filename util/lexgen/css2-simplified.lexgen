@@ -5,7 +5,7 @@ classname = QCssScanner_Generated
 [Code Generator Options]
 MapToCode[a-z] = (ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256
 TokenPrefix = QCss::
-FileHeader = ../moc/licenseheader.txt
+FileHeader = ../../src/tools/moc/util/licenseheader.txt
 
 [Macros]
 escape          = \\[^\r\n\f0-9a-f]
@@ -36,6 +36,9 @@ CDO = "<!--"
 CDC = "-->"
 INCLUDES = "~="
 DASHMATCH = "|="
+BEGINSWITH = "^="
+ENDSWITH = "$="
+CONTAINS = "*="
 
 LBRACE = {w}"{"
 PLUS = {w}"+"

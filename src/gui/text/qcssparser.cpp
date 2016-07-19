@@ -1914,18 +1914,38 @@ bool StyleSelector::basicSelectorMatches(const BasicSelector &sel, NodePtr node)
             if (attrValue.isNull())
                 return false;
 
-            if (a.valueMatchCriterium == QCss::AttributeSelector::MatchContains) {
+            switch (a.valueMatchCriterium) {
+            case QCss::AttributeSelector::NoMatch:
+                break;
+            case QCss::AttributeSelector::MatchEqual:
+                if (attrValue != a.value)
+                    return false;
+                break;
+            case QCss::AttributeSelector::MatchIncludes: {
                 const auto lst = attrValue.splitRef(QLatin1Char(' '));
                 if (!lst.contains(QStringRef(&a.value)))
                     return false;
-            } else if (
-                (a.valueMatchCriterium == QCss::AttributeSelector::MatchEqual
-                 && attrValue != a.value)
-                ||
-                (a.valueMatchCriterium == QCss::AttributeSelector::MatchBeginsWith
-                 && !attrValue.startsWith(a.value))
-               )
-                return false;
+                break;
+            }
+            case QCss::AttributeSelector::MatchDashMatch: {
+                const QString dashPrefix = a.value + QLatin1Char('-');
+                if (attrValue != a.value && !attrValue.startsWith(dashPrefix))
+                    return false;
+                break;
+            }
+            case QCss::AttributeSelector::MatchBeginsWith:
+                if (!attrValue.startsWith(a.value))
+                    return false;
+                break;
+            case QCss::AttributeSelector::MatchEndsWith:
+                if (!attrValue.endsWith(a.value))
+                    return false;
+                break;
+            case QCss::AttributeSelector::MatchContains:
+                if (!attrValue.contains(a.value))
+                    return false;
+                break;
+            }
         }
     }
 
@@ -2439,7 +2459,7 @@ bool Parser::parseSimpleSelector(BasicSelector *basicSel)
             onceMore = true;
             AttributeSelector a;
             a.name = QLatin1String("class");
-            a.valueMatchCriterium = AttributeSelector::MatchContains;
+            a.valueMatchCriterium = AttributeSelector::MatchIncludes;
             if (!parseClass(&a.value)) return false;
             basicSel->attributeSelectors.append(a);
         } else if (testAttrib()) {
@@ -2485,9 +2505,15 @@ bool Parser::parseAttrib(AttributeSelector *attr)
     if (test(EQUAL)) {
         attr->valueMatchCriterium = AttributeSelector::MatchEqual;
     } else if (test(INCLUDES)) {
-        attr->valueMatchCriterium = AttributeSelector::MatchContains;
+        attr->valueMatchCriterium = AttributeSelector::MatchIncludes;
     } else if (test(DASHMATCH)) {
+        attr->valueMatchCriterium = AttributeSelector::MatchDashMatch;
+    } else if (test(BEGINSWITH)) {
         attr->valueMatchCriterium = AttributeSelector::MatchBeginsWith;
+    } else if (test(ENDSWITH)) {
+        attr->valueMatchCriterium = AttributeSelector::MatchEndsWith;
+    } else if (test(CONTAINS)) {
+        attr->valueMatchCriterium = AttributeSelector::MatchContains;
     } else {
         return next(RBRACKET);
     }

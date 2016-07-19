@@ -539,8 +539,11 @@ struct AttributeSelector
     enum ValueMatchType {
         NoMatch,
         MatchEqual,
-        MatchContains,
-        MatchBeginsWith
+        MatchIncludes,
+        MatchDashMatch,
+        MatchBeginsWith,
+        MatchEndsWith,
+        MatchContains
     };
     inline AttributeSelector() : valueMatchCriterium(NoMatch) {}
 
@@ -679,6 +682,9 @@ enum TokenType {
     CDC,
     INCLUDES,
     DASHMATCH,
+    BEGINSWITH,
+    ENDSWITH,
+    CONTAINS,
 
     LBRACE,
     PLUS,

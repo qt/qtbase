@@ -113,6 +113,9 @@ static const char *tokenName(QCss::TokenType t)
         case QCss::CDC: return "CDC";
         case QCss::INCLUDES: return "INCLUDES";
         case QCss::DASHMATCH: return "DASHMATCH";
+        case QCss::BEGINSWITH: return "BEGINSWITH";
+        case QCss::ENDSWITH: return "ENDSWITH";
+        case QCss::CONTAINS: return "CONTAINS";
         case QCss::LBRACE: return "LBRACE";
         case QCss::PLUS: return "PLUS";
         case QCss::GREATER: return "GREATER";
@@ -615,11 +618,11 @@ void tst_QCssParser::selector_data()
         QCss::AttributeSelector attrSel;
         attrSel.name = "foo";
         attrSel.value = "warning";
-        attrSel.valueMatchCriterium = QCss::AttributeSelector::MatchContains;
+        attrSel.valueMatchCriterium = QCss::AttributeSelector::MatchIncludes;
         basic.attributeSelectors << attrSel;
         sel.basicSelectors << basic;
 
-        QTest::newRow("attr-contains") << QString("e[foo~=\"warning\"]") << sel;
+        QTest::newRow("attr-includes") << QString("e[foo~=\"warning\"]") << sel;
     }
 
     {
@@ -630,11 +633,26 @@ void tst_QCssParser::selector_data()
         QCss::AttributeSelector attrSel;
         attrSel.name = "lang";
         attrSel.value = "en";
-        attrSel.valueMatchCriterium = QCss::AttributeSelector::MatchBeginsWith;
+        attrSel.valueMatchCriterium = QCss::AttributeSelector::MatchDashMatch;
         basic.attributeSelectors << attrSel;
         sel.basicSelectors << basic;
 
-        QTest::newRow("attr-contains") << QString("e[lang|=\"en\"]") << sel;
+        QTest::newRow("attr-dash") << QString("e[lang|=\"en\"]") << sel;
+    }
+
+    {
+        QCss::Selector sel;
+        QCss::BasicSelector basic;
+
+        basic.elementName = "e";
+        QCss::AttributeSelector attrSel;
+        attrSel.name = "foo";
+        attrSel.value = "warning";
+        attrSel.valueMatchCriterium = QCss::AttributeSelector::MatchContains;
+        basic.attributeSelectors << attrSel;
+        sel.basicSelectors << basic;
+
+        QTest::newRow("attr-contains") << QString("e[foo*=\"warning\"]") << sel;
     }
 
     {
@@ -645,7 +663,7 @@ void tst_QCssParser::selector_data()
 
         QCss::AttributeSelector attrSel;
         attrSel.name = "class";
-        attrSel.valueMatchCriterium = QCss::AttributeSelector::MatchContains;
+        attrSel.valueMatchCriterium = QCss::AttributeSelector::MatchIncludes;
         attrSel.value = "warning";
         basic.attributeSelectors.append(attrSel);
 
