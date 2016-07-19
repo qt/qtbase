@@ -227,11 +227,24 @@ static void fillStat64fromStat32(struct stat64 *statBuf64, const struct stat &st
 {
     statBuf64->st_mode = statBuf32.st_mode;
     statBuf64->st_size = statBuf32.st_size;
+#if _POSIX_VERSION >= 200809L
+    statBuf64->st_ctim = statBuf32.st_ctim;
+    statBuf64->st_mtim = statBuf32.st_mtim;
+    statBuf64->st_atim = statBuf32.st_atim;
+#else
     statBuf64->st_ctime = statBuf32.st_ctime;
     statBuf64->st_mtime = statBuf32.st_mtime;
     statBuf64->st_atime = statBuf32.st_atime;
+#endif
     statBuf64->st_uid = statBuf32.st_uid;
     statBuf64->st_gid = statBuf32.st_gid;
+}
+#endif
+
+#if _POSIX_VERSION >= 200809L
+static qint64 timespecToMSecs(const timespec &spec)
+{
+    return (qint64(spec.tv_sec) * 1000) + (spec.tv_nsec / 1000000);
 }
 #endif
 
@@ -278,9 +291,17 @@ void QFileSystemMetaData::fillFromStatBuf(const QT_STATBUF &statBuffer)
 #endif
 
     // Times
-    creationTime_ = statBuffer.st_ctime ? statBuffer.st_ctime : statBuffer.st_mtime;
-    modificationTime_ = statBuffer.st_mtime;
-    accessTime_ = statBuffer.st_atime;
+#if _POSIX_VERSION >= 200809L
+    modificationTime_ = timespecToMSecs(statBuffer.st_mtim);
+    creationTime_ = timespecToMSecs(statBuffer.st_ctim);
+    if (!creationTime_)
+        creationTime_ = modificationTime_;
+    accessTime_ = timespecToMSecs(statBuffer.st_atim);
+#else
+    creationTime_ = qint64(statBuffer.st_ctime ? statBuffer.st_ctime : statBuffer.st_mtime) * 1000;
+    modificationTime_ = qint64(statBuffer.st_mtime) * 1000;
+    accessTime_ = qint64(statBuffer.st_atime) * 1000;
+#endif
     userId_ = statBuffer.st_uid;
     groupId_ = statBuffer.st_gid;
 }

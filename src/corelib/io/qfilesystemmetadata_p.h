@@ -237,9 +237,10 @@ private:
     FILETIME lastAccessTime_;
     FILETIME lastWriteTime_;
 #else
-    time_t creationTime_;
-    time_t modificationTime_;
-    time_t accessTime_;
+    // msec precision
+    qint64 creationTime_;
+    qint64 modificationTime_;
+    qint64 accessTime_;
 
     uint userId_;
     uint groupId_;
@@ -276,9 +277,9 @@ inline QDateTime QFileSystemMetaData::fileTime(QAbstractFileEngine::FileTime tim
 #endif
 
 #if defined(Q_OS_UNIX)
-inline QDateTime QFileSystemMetaData::creationTime() const          { return QDateTime::fromSecsSinceEpoch(creationTime_); }
-inline QDateTime QFileSystemMetaData::modificationTime() const      { return QDateTime::fromSecsSinceEpoch(modificationTime_); }
-inline QDateTime QFileSystemMetaData::accessTime() const            { return QDateTime::fromSecsSinceEpoch(accessTime_); }
+inline QDateTime QFileSystemMetaData::creationTime() const          { return QDateTime::fromMSecsSinceEpoch(creationTime_); }
+inline QDateTime QFileSystemMetaData::modificationTime() const      { return QDateTime::fromMSecsSinceEpoch(modificationTime_); }
+inline QDateTime QFileSystemMetaData::accessTime() const            { return QDateTime::fromMSecsSinceEpoch(accessTime_); }
 
 inline uint QFileSystemMetaData::userId() const                     { return userId_; }
 inline uint QFileSystemMetaData::groupId() const                    { return groupId_; }
