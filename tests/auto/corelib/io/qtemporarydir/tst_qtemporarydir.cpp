@@ -39,6 +39,7 @@
 #include <qfile.h>
 #include <qdir.h>
 #include <qset.h>
+#include <qtextcodec.h>
 #ifdef Q_OS_WIN
 # include <windows.h>
 #endif
@@ -113,6 +114,38 @@ void tst_QTemporaryDir::getSetCheck()
     QCOMPARE(true, obj1.autoRemove());
 }
 
+static inline bool canHandleUnicodeFileNames()
+{
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    return true;
+#else
+    // Check for UTF-8 by converting the Euro symbol (see tst_utf8)
+    return QFile::encodeName(QString(QChar(0x20AC))) == QByteArrayLiteral("\342\202\254");
+#endif
+}
+
+static QString hanTestText()
+{
+    QString text;
+    text += QChar(0x65B0);
+    text += QChar(0x5E10);
+    text += QChar(0x6237);
+    return text;
+}
+
+static QString umlautTestText()
+{
+    QString text;
+    text += QChar(0xc4);
+    text += QChar(0xe4);
+    text += QChar(0xd6);
+    text += QChar(0xf6);
+    text += QChar(0xdc);
+    text += QChar(0xfc);
+    text += QChar(0xdf);
+    return text;
+}
+
 void tst_QTemporaryDir::fileTemplate_data()
 {
     QTest::addColumn<QString>("constructorTemplate");
@@ -129,6 +162,14 @@ void tst_QTemporaryDir::fileTemplate_data()
     QTest::newRow("constructor with XXXX suffix") << "qt_XXXXXX_XXXX" << "qt_";
     QTest::newRow("constructor with XXXX prefix") << "qt_XXXX" << "qt_";
     QTest::newRow("constructor with XXXXX prefix") << "qt_XXXXX" << "qt_";
+    if (canHandleUnicodeFileNames()) {
+        // Test Umlauts (contained in Latin1)
+        QString prefix = "qt_" + umlautTestText();
+        QTest::newRow("Umlauts") << (prefix + "XXXXXX") << prefix;
+        // Test Chinese
+        prefix = "qt_" + hanTestText();
+        QTest::newRow("Chinese characters") << (prefix + "XXXXXX") << prefix;
+    }
 }
 
 void tst_QTemporaryDir::fileTemplate()

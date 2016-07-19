@@ -44,8 +44,12 @@
 #include "qcoreapplication.h"
 #endif
 
+#if !defined(Q_OS_QNX) && !defined(Q_OS_WIN) &&!defined(Q_OS_ANDROID)
+#  define USE_SYSTEM_MKDTEMP
+#endif
+
 #include <stdlib.h> // mkdtemp
-#if defined(Q_OS_QNX) || defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
+#ifndef USE_SYSTEM_MKDTEMP
 #include <private/qfilesystemengine_p.h>
 #endif
 
@@ -91,8 +95,7 @@ static QString defaultTemplateName()
     return QDir::tempPath() + QLatin1Char('/') + baseName + QLatin1String("-XXXXXX");
 }
 
-#if defined(Q_OS_QNX ) || defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
-
+#ifndef USE_SYSTEM_MKDTEMP
 static int nextRand(int &v)
 {
     int r = v % 62;
@@ -102,30 +105,28 @@ static int nextRand(int &v)
     return r;
 }
 
-QPair<QString, bool> q_mkdtemp(char *templateName)
+QPair<QString, bool> q_mkdtemp(QString templateName)
 {
+    Q_ASSERT(templateName.endsWith(QLatin1String("XXXXXX")));
+
     static const char letters[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-    const size_t length = strlen(templateName);
+    const int length = templateName.size();
 
-    char *XXXXXX = templateName + length - 6;
-
-    Q_ASSERT((length >= 6u) && strncmp(XXXXXX, "XXXXXX", 6) == 0);
+    QChar *XXXXXX = templateName.data() + length - 6;
 
     for (int i = 0; i < 256; ++i) {
         int v = qrand();
 
         /* Fill in the random bits.  */
-        XXXXXX[0] = letters[nextRand(v)];
-        XXXXXX[1] = letters[nextRand(v)];
-        XXXXXX[2] = letters[nextRand(v)];
-        XXXXXX[3] = letters[nextRand(v)];
-        XXXXXX[4] = letters[nextRand(v)];
-        XXXXXX[5] = letters[v % 62];
+        XXXXXX[0] = QLatin1Char(letters[nextRand(v)]);
+        XXXXXX[1] = QLatin1Char(letters[nextRand(v)]);
+        XXXXXX[2] = QLatin1Char(letters[nextRand(v)]);
+        XXXXXX[3] = QLatin1Char(letters[nextRand(v)]);
+        XXXXXX[4] = QLatin1Char(letters[nextRand(v)]);
+        XXXXXX[5] = QLatin1Char(letters[v % 62]);
 
-        QString templateNameStr = QFile::decodeName(templateName);
-
-        QFileSystemEntry fileSystemEntry(templateNameStr);
+        QFileSystemEntry fileSystemEntry(templateName);
         if (QFileSystemEngine::createDirectory(fileSystemEntry, false)) {
             QSystemError error;
             QFileSystemEngine::setPermissions(fileSystemEntry,
@@ -134,10 +135,10 @@ QPair<QString, bool> q_mkdtemp(char *templateName)
                                               QFile::ExeOwner, error);
             if (error.error() != 0) {
                 if (!QFileSystemEngine::removeDirectory(fileSystemEntry, false))
-                    qWarning() << "Unable to remove unused directory" << templateNameStr;
+                    qWarning() << "Unable to remove unused directory" << templateName;
                 continue;
             }
-            return qMakePair(QFile::decodeName(templateName), true);
+            return qMakePair(templateName, true);
         }
 #  ifdef Q_OS_WIN
         const int exists = ERROR_ALREADY_EXISTS;
@@ -152,7 +153,7 @@ QPair<QString, bool> q_mkdtemp(char *templateName)
     return qMakePair(qt_error_string(), false);
 }
 
-#else // defined(Q_OS_QNX ) || defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
+#else // !USE_SYSTEM_MKDTEMP
 
 QPair<QString, bool> q_mkdtemp(char *templateName)
 {
@@ -160,14 +161,21 @@ QPair<QString, bool> q_mkdtemp(char *templateName)
     return qMakePair(ok ? QFile::decodeName(templateName) : qt_error_string(), ok);
 }
 
-#endif
+#endif // USE_SYSTEM_MKDTEMP
 
 void QTemporaryDirPrivate::create(const QString &templateName)
 {
+#ifndef USE_SYSTEM_MKDTEMP
+    QString buffer = templateName;
+    if (!buffer.endsWith(QLatin1String("XXXXXX")))
+        buffer += QLatin1String("XXXXXX");
+    const QPair<QString, bool> result = q_mkdtemp(buffer);
+#else // !USE_SYSTEM_MKDTEMP
     QByteArray buffer = QFile::encodeName(templateName);
     if (!buffer.endsWith("XXXXXX"))
         buffer += "XXXXXX";
     QPair<QString, bool> result = q_mkdtemp(buffer.data()); // modifies buffer
+#endif // USE_SYSTEM_MKDTEMP
     pathOrError = result.first;
     success = result.second;
 }
