@@ -583,13 +583,13 @@ template<> class QTypeInfo<A> : public QTypeInfoMerger<A, B, C, D> {};
         void overloadedFunction();
         void overloadedFunction(int, QString);
     };
-    ... qOverload<>(&Foo:overloadedFunction)
-    ... qOverload<int, QString>(&Foo:overloadedFunction)
+    ... qOverload<>(&Foo::overloadedFunction)
+    ... qOverload<int, QString>(&Foo::overloadedFunction)
 //! [52]
 
 //! [53]
-    ... QOverload<>::of(&Foo:overloadedFunction)
-    ... QOverload<int, QString>::of(&Foo:overloadedFunction)
+    ... QOverload<>::of(&Foo::overloadedFunction)
+    ... QOverload<int, QString>::of(&Foo::overloadedFunction)
 //! [53]
 
 //! [54]
@@ -597,8 +597,8 @@ template<> class QTypeInfo<A> : public QTypeInfoMerger<A, B, C, D> {};
         void overloadedFunction(int, QString);
         void overloadedFunction(int, QString) const;
     };
-    ... qConstOverload<>(&Foo:overloadedFunction)
-    ... qNonConstOverload<int, QString>(&Foo:overloadedFunction)
+    ... qConstOverload<>(&Foo::overloadedFunction)
+    ... qNonConstOverload<int, QString>(&Foo::overloadedFunction)
 //! [54]
 
 //! [qlikely]
