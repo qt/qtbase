@@ -1037,7 +1037,11 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
             QString rstr = QDir::cleanPath(
                     QDir(args.count() > 1 ? args.at(1).toQString(m_tmp2) : currentDirectory())
                     .absoluteFilePath(args.at(0).toQString(m_tmp1)));
-            ret << (rstr.isSharedWith(m_tmp1) ? args.at(0) : ProString(rstr).setSource(args.at(0)));
+            ret << (rstr.isSharedWith(m_tmp1)
+                        ? args.at(0)
+                        : args.count() > 1 && rstr.isSharedWith(m_tmp2)
+                            ? args.at(1)
+                            : ProString(rstr).setSource(args.at(0)));
         }
         break;
     case E_RELATIVE_PATH:
@@ -1211,7 +1215,8 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         return ReturnFalse;
     case T_REQUIRES:
 #ifdef PROEVALUATOR_FULL
-        checkRequirements(args);
+        if (checkRequirements(args) == ReturnError)
+            return ReturnError;
 #endif
         return ReturnFalse; // Another qmake breakage
     case T_EVAL: {
@@ -1232,8 +1237,8 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             evalError(fL1S("if(condition) requires one argument."));
             return ReturnFalse;
         }
-        return returnBool(evaluateConditional(args.at(0).toQString(),
-                                              m_current.pro->fileName(), m_current.line));
+        return evaluateConditional(args.at(0).toQString(),
+                                   m_current.pro->fileName(), m_current.line);
     }
     case T_CONFIG: {
         if (args.count() < 1 || args.count() > 2) {

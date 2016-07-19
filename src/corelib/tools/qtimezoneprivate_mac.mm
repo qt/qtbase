@@ -59,6 +59,7 @@ QT_BEGIN_NAMESPACE
 
 // Create the system default time zone
 QMacTimeZonePrivate::QMacTimeZonePrivate()
+    : m_nstz(0)
 {
     init(systemTimeZoneId());
 }

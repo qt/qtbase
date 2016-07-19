@@ -47,6 +47,7 @@
 #include "qwindowsmime.h"
 #include "qwindowsinputcontext.h"
 #include "qwindowstabletsupport.h"
+#include "qwindowstheme.h"
 #include <private/qguiapplication_p.h>
 #ifndef QT_NO_ACCESSIBILITY
 # include "accessible/qwindowsaccessibility.h"
@@ -1014,6 +1015,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 #endif
     case QtWindows::DisplayChangedEvent:
         return d->m_screenManager.handleDisplayChange(wParam, lParam);
+        if (QWindowsTheme *t = QWindowsTheme::instance())
+            t->displayChanged();
     case QtWindows::SettingChangedEvent:
         return d->m_screenManager.handleScreenChanges();
     default:

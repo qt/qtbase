@@ -412,9 +412,7 @@ QVariant QMacPasteboardMimeUnicodeText::convertToMime(const QString &mimetype, Q
     // I can only handle two types (system and unicode) so deal with them that way
     QVariant ret;
     if (flavor == QLatin1String("public.utf8-plain-text")) {
-        ret = QString(QCFString(CFStringCreateWithBytes(kCFAllocatorDefault,
-                                             reinterpret_cast<const UInt8 *>(firstData.constData()),
-                                             firstData.size(), CFStringGetSystemEncoding(), false)));
+        ret = QString::fromUtf8(firstData);
     } else if (flavor == QLatin1String("public.utf16-plain-text")) {
         ret = QString(reinterpret_cast<const QChar *>(firstData.constData()),
                       firstData.size() / sizeof(QChar));
