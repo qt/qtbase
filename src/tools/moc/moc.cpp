@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2016 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -184,6 +185,8 @@ Type Moc::parseType()
             case Q_SLOT_TOKEN:
                 type.name += lexem();
                 return type;
+            case NOTOKEN:
+                return type;
             default:
                 prev();
                 break;
@@ -218,6 +221,8 @@ Type Moc::parseType()
             type.name += lexem();
             isVoid |= (lookup(0) == VOID);
             break;
+        case NOTOKEN:
+            return type;
         default:
             prev();
             ;

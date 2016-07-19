@@ -1942,6 +1942,13 @@ void tst_Moc::warnings_data()
         << 1
         << QString("IGNORE_ALL_STDOUT")
         << QString(":-1: Error: Unexpected character in macro argument list.");
+
+    QTest::newRow("QTBUG-54815: Crash on invalid input")
+        << QByteArray("class M{(})F<{}d000000000000000#0")
+        << QStringList()
+        << 0
+        << QString()
+        << QString("standard input:1: Note: No relevant classes found. No output generated.");
 }
 
 void tst_Moc::warnings()
