@@ -31,6 +31,7 @@
 #include <QStringList>
 #include <QMap>
 #include <QVector>
+#include <QIODevice>
 
 struct ConfigFile
 {
