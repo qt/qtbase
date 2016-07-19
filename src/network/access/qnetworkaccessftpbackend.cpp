@@ -306,8 +306,6 @@ void QNetworkAccessFtpBackend::ftpDone()
         state = CheckingFeatures;
         if (operation() == QNetworkAccessManager::GetOperation) {
             // send help command to find out if server supports "SIZE" and "MDTM"
-            QString command = url().path();
-            command.prepend(QLatin1String("%1 "));
             helpId = ftp->rawCommand(QLatin1String("HELP")); // get supported commands
         } else {
             ftpDone();
@@ -316,14 +314,13 @@ void QNetworkAccessFtpBackend::ftpDone()
         state = Statting;
         if (operation() == QNetworkAccessManager::GetOperation) {
             // logged in successfully, send the stat requests (if supported)
-            QString command = url().path();
-            command.prepend(QLatin1String("%1 "));
+            const QString path = url().path();
             if (supportsSize) {
                 ftp->rawCommand(QLatin1String("TYPE I"));
-                sizeId = ftp->rawCommand(command.arg(QLatin1String("SIZE"))); // get size
+                sizeId = ftp->rawCommand(QLatin1String("SIZE ") + path); // get size
             }
             if (supportsMdtm)
-                mdtmId = ftp->rawCommand(command.arg(QLatin1String("MDTM"))); // get modified time
+                mdtmId = ftp->rawCommand(QLatin1String("MDTM ") + path); // get modified time
             if (!supportsSize && !supportsMdtm)
                 ftpDone();      // no commands sent, move to the next state
         } else {

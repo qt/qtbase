@@ -47,6 +47,7 @@
 #include "qwindowsmime.h"
 #include "qwindowsinputcontext.h"
 #include "qwindowstabletsupport.h"
+#include "qwindowstheme.h"
 #include <private/qguiapplication_p.h>
 #ifndef QT_NO_ACCESSIBILITY
 # include "accessible/qwindowsaccessibility.h"
@@ -339,7 +340,9 @@ void QWindowsContext::setProcessDpiAwareness(QtWindows::ProcessDpiAwareness dpiA
     qCDebug(lcQpaWindows) << __FUNCTION__ << dpiAwareness;
     if (QWindowsContext::shcoredll.isValid()) {
         const HRESULT hr = QWindowsContext::shcoredll.setProcessDpiAwareness(dpiAwareness);
-        if (FAILED(hr)) {
+        // E_ACCESSDENIED means set externally (MSVC manifest or external app loading Qt plugin).
+        // Silence warning in that case unless debug is enabled.
+        if (FAILED(hr) && (hr != E_ACCESSDENIED || lcQpaWindows().isDebugEnabled())) {
             qWarning().noquote().nospace() << "SetProcessDpiAwareness("
                 << dpiAwareness << ") failed: " << QWindowsContext::comErrorString(hr)
                 << ", using " << QWindowsContext::processDpiAwareness();
@@ -428,28 +431,29 @@ QString QWindowsContext::registerWindowClass(const QWindow *w)
         break;
     }
     // Create a unique name for the flag combination
-    QString cname = QStringLiteral("Qt5QWindow");
+    QString cname;
+    cname += QLatin1String("Qt5QWindow");
     switch (type) {
     case Qt::Tool:
-        cname += QStringLiteral("Tool");
+        cname += QLatin1String("Tool");
         break;
     case Qt::ToolTip:
-        cname += QStringLiteral("ToolTip");
+        cname += QLatin1String("ToolTip");
         break;
     case Qt::Popup:
-        cname += QStringLiteral("Popup");
+        cname += QLatin1String("Popup");
         break;
     default:
         break;
     }
     if (style & CS_DROPSHADOW)
-        cname += QStringLiteral("DropShadow");
+        cname += QLatin1String("DropShadow");
     if (style & CS_SAVEBITS)
-        cname += QStringLiteral("SaveBits");
+        cname += QLatin1String("SaveBits");
     if (style & CS_OWNDC)
-        cname += QStringLiteral("OwnDC");
+        cname += QLatin1String("OwnDC");
     if (icon)
-        cname += QStringLiteral("Icon");
+        cname += QLatin1String("Icon");
 
     return registerWindowClass(cname, qWindowsWndProc, style, GetSysColorBrush(COLOR_WINDOW), icon);
 }
@@ -714,8 +718,8 @@ static inline QString errorMessageFromComError(const _com_error &comError)
          return result;
      }
      if (const WORD wCode = comError.WCode())
-         return QStringLiteral("IDispatch error #") + QString::number(wCode);
-     return QStringLiteral("Unknown error 0x0") + QString::number(comError.Error(), 16);
+         return QString::asprintf("IDispatch error #%u", uint(wCode));
+     return QString::asprintf("Unknown error 0x0%x", uint(comError.Error()));
 }
 
 /*!
@@ -735,6 +739,9 @@ QByteArray QWindowsContext::comErrorString(HRESULT hr)
         break;
     case E_UNEXPECTED:
         result += QByteArrayLiteral("E_UNEXPECTED");
+        break;
+    case E_ACCESSDENIED:
+        result += QByteArrayLiteral("E_ACCESSDENIED");
         break;
     case CO_E_ALREADYINITIALIZED:
         result += QByteArrayLiteral("CO_E_ALREADYINITIALIZED");
@@ -891,6 +898,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 #endif
     case QtWindows::DisplayChangedEvent:
         return d->m_screenManager.handleDisplayChange(wParam, lParam);
+        if (QWindowsTheme *t = QWindowsTheme::instance())
+            t->displayChanged();
     case QtWindows::SettingChangedEvent:
         return d->m_screenManager.handleScreenChanges();
     default:

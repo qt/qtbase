@@ -2151,7 +2151,7 @@ bool QGraphicsItem::isBlockedByModalPanel(QGraphicsItem **blockingPanel) const
     if (!blockingPanel)
         blockingPanel = &dummy;
 
-    QGraphicsScenePrivate *scene_d = d_ptr->scene->d_func();
+    const QGraphicsScenePrivate *scene_d = d_ptr->scene->d_func();
     if (scene_d->modalPanels.isEmpty())
         return false;
 

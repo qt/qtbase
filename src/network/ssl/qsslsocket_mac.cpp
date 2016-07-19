@@ -321,7 +321,7 @@ long QSslSocketPrivate::sslLibraryVersionNumber()
 
 QString QSslSocketPrivate::sslLibraryVersionString()
 {
-    return QStringLiteral("Secure Transport, ") + QSysInfo::prettyProductName();
+    return QLatin1String("Secure Transport, ") + QSysInfo::prettyProductName();
 }
 
 long QSslSocketPrivate::sslLibraryBuildVersionNumber()
@@ -436,7 +436,7 @@ void QSslSocketBackendPrivate::startClientEncryption()
         // Error description/code were set, 'error' emitted
         // by initSslContext, but OpenSSL socket also sets error
         // emits a signal twice, so ...
-        setErrorAndEmit(QAbstractSocket::SslInternalError, "Unable to init SSL Context");
+        setErrorAndEmit(QAbstractSocket::SslInternalError, QStringLiteral("Unable to init SSL Context"));
         return;
     }
 
@@ -449,7 +449,7 @@ void QSslSocketBackendPrivate::startServerEncryption()
         // Error description/code were set, 'error' emitted
         // by initSslContext, but OpenSSL socket also sets error
         // emits a signal twice, so ...
-        setErrorAndEmit(QAbstractSocket::SslInternalError, "Unable to init SSL Context");
+        setErrorAndEmit(QAbstractSocket::SslInternalError, QStringLiteral("Unable to init SSL Context"));
         return;
     }
 
@@ -470,7 +470,7 @@ void QSslSocketBackendPrivate::transmit()
 
     if (connectionEncrypted && !writeBuffer.isEmpty()) {
         qint64 totalBytesWritten = 0;
-        while (writeBuffer.nextDataBlockSize() > 0) {
+        while (writeBuffer.nextDataBlockSize() > 0 && context) {
             const size_t nextDataBlockSize = writeBuffer.nextDataBlockSize();
             size_t writtenBytes = 0;
             const OSStatus err = SSLWrite(context, writeBuffer.readPointer(), nextDataBlockSize, &writtenBytes);
@@ -505,7 +505,7 @@ void QSslSocketBackendPrivate::transmit()
 
     if (connectionEncrypted) {
         QVarLengthArray<char, 4096> data;
-        while (true) {
+        while (context) {
             size_t readBytes = 0;
             data.resize(4096);
             const OSStatus err = SSLRead(context, data.data(), data.size(), &readBytes);
@@ -780,7 +780,7 @@ bool QSslSocketBackendPrivate::initSslContext()
 
     context.reset(qt_createSecureTransportContext(mode));
     if (!context) {
-        setErrorAndEmit(QAbstractSocket::SslInternalError, "SSLCreateContext failed");
+        setErrorAndEmit(QAbstractSocket::SslInternalError, QStringLiteral("SSLCreateContext failed"));
         return false;
     }
 
@@ -808,7 +808,7 @@ bool QSslSocketBackendPrivate::initSslContext()
 
     if (!setSessionProtocol()) {
         destroySslContext();
-        setErrorAndEmit(QAbstractSocket::SslInternalError, "Failed to set protocol version");
+        setErrorAndEmit(QAbstractSocket::SslInternalError, QStringLiteral("Failed to set protocol version"));
         return false;
     }
 
@@ -1121,7 +1121,10 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
     // report errors
     if (!errors.isEmpty() && !canIgnoreVerify) {
         sslErrors = errors;
-        if (!checkSslErrors())
+        // checkSslErrors unconditionally emits sslErrors:
+        // a user's slot can abort/close/disconnect on this
+        // signal, so we also test the socket's state:
+        if (!checkSslErrors() || q->state() != QAbstractSocket::ConnectedState)
             return false;
     } else {
         sslErrors.clear();
@@ -1219,8 +1222,7 @@ bool QSslSocketBackendPrivate::startHandshake()
     // check protocol version ourselves, as Secure Transport does not enforce
     // the requested min / max versions.
     if (!verifySessionProtocol()) {
-        setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
-                 "Protocol version mismatch");
+        setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError, QStringLiteral("Protocol version mismatch"));
         plainSocket->disconnectFromHost();
         return false;
     }

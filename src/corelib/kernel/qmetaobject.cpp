@@ -1353,7 +1353,7 @@ static inline QByteArray findMethodCandidates(const QMetaObject *metaObject, con
     for (int i = 0; i < metaObject->methodCount(); ++i) {
         const QMetaMethod method = metaObject->method(i);
         if (method.name() == memberByteArray)
-            candidateMessage.append("    " + method.methodSignature() + '\n');
+            candidateMessage += "    " + method.methodSignature() + '\n';
     }
     if (!candidateMessage.isEmpty()) {
         candidateMessage.prepend("\nCandidates are:\n");

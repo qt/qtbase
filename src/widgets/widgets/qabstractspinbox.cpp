@@ -757,8 +757,7 @@ bool QAbstractSpinBox::event(QEvent *event)
     case QEvent::HoverEnter:
     case QEvent::HoverLeave:
     case QEvent::HoverMove:
-        if (const QHoverEvent *he = static_cast<const QHoverEvent *>(event))
-            d->updateHoverControl(he->pos());
+        d->updateHoverControl(static_cast<const QHoverEvent *>(event)->pos());
         break;
     case QEvent::ShortcutOverride:
         if (d->edit->event(event))

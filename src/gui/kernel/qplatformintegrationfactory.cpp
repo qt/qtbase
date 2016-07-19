@@ -86,7 +86,7 @@ QStringList QPlatformIntegrationFactory::keys(const QString &platformPluginPath)
         QCoreApplication::addLibraryPath(platformPluginPath);
         list = directLoader()->keyMap().values();
         if (!list.isEmpty()) {
-            const QString postFix = QStringLiteral(" (from ")
+            const QString postFix = QLatin1String(" (from ")
                                     + QDir::toNativeSeparators(platformPluginPath)
                                     + QLatin1Char(')');
             const QStringList::iterator end = list.end();

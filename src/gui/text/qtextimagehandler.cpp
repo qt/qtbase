@@ -111,7 +111,7 @@ static QPixmap getPixmap(QTextDocument *doc, const QTextImageFormat &format, con
         doc->addResource(QTextDocument::ImageResource, url, pm);
     }
 
-    if (name.contains(QStringLiteral("@2x")))
+    if (name.contains(QLatin1String("@2x")))
         pm.setDevicePixelRatio(sourcePixelRatio);
 
     return pm;

@@ -2395,9 +2395,10 @@ void QWindowsWindow::aboutToMakeCurrent()
 
 void QWindowsWindow::setHasBorderInFullScreenStatic(QWindow *window, bool border)
 {
-    if (!window->handle())
-        return;
-    static_cast<QWindowsWindow *>(window->handle())->setHasBorderInFullScreen(border);
+    if (QPlatformWindow *handle = window->handle())
+        static_cast<QWindowsWindow *>(handle)->setHasBorderInFullScreen(border);
+    else
+        qWarning("%s invoked without window handle; call has no effect.", Q_FUNC_INFO);
 }
 
 void QWindowsWindow::setHasBorderInFullScreen(bool border)

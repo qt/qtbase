@@ -2356,10 +2356,10 @@ void QTreeView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFl
         return;
     }
     if (!topLeft.isValid() && !d->viewItems.isEmpty())
-        topLeft = d->viewItems.first().index;
+        topLeft = d->viewItems.constFirst().index;
     if (!bottomRight.isValid() && !d->viewItems.isEmpty()) {
         const int column = d->header->logicalIndex(d->header->count() - 1);
-        const QModelIndex index = d->viewItems.last().index;
+        const QModelIndex index = d->viewItems.constLast().index;
         bottomRight = index.sibling(index.row(), column);
     }
 
@@ -2667,9 +2667,9 @@ void QTreeView::selectAll()
     SelectionMode mode = d->selectionMode;
     d->executePostedLayout(); //make sure we lay out the items
     if (mode != SingleSelection && mode != NoSelection && !d->viewItems.isEmpty()) {
-        const QModelIndex &idx = d->viewItems.last().index;
+        const QModelIndex &idx = d->viewItems.constLast().index;
         QModelIndex lastItemIndex = idx.sibling(idx.row(), d->model->columnCount(idx.parent()) - 1);
-        d->select(d->viewItems.first().index, lastItemIndex,
+        d->select(d->viewItems.constFirst().index, lastItemIndex,
                   QItemSelectionModel::ClearAndSelect
                   |QItemSelectionModel::Rows);
     }

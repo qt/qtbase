@@ -2269,7 +2269,7 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(const QChar *s, int ucLength, QString 
     }
 
     // prepend ACE prefix
-    output->insert(outLen, QStringLiteral("xn--"));
+    output->insert(outLen, QLatin1String("xn--"));
     return;
 }
 

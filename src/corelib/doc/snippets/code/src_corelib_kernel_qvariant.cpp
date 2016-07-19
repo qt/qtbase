@@ -147,10 +147,7 @@ QVariant data = QVariant::fromValue(object);
 
 //! [9]
 
-QList<int> intList;
-intList.push_back(7);
-intList.push_back(11);
-intList.push_back(42);
+QList<int> intList = {7, 11, 42};
 
 QVariant variant = QVariant::fromValue(intList);
 if (variant.canConvert<QVariantList>()) {

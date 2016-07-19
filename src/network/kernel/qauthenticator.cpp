@@ -1277,7 +1277,7 @@ static QByteArray qEncodeNtlmv2Response(const QAuthenticatorPrivate *ctx,
         time = QDateTime::currentSecsSinceEpoch() + 11644473600;
 
         // represented as 100 nano seconds
-        time = Q_UINT64_C(time * 10000000);
+        time = time * Q_UINT64_C(10000000);
         ds << time;
     }
 

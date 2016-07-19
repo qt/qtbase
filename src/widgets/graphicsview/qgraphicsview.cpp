@@ -2375,7 +2375,7 @@ QGraphicsItem *QGraphicsView::itemAt(const QPoint &pos) const
     Q_D(const QGraphicsView);
     if (!d->scene)
         return 0;
-    QList<QGraphicsItem *> itemsAtPos = items(pos);
+    const QList<QGraphicsItem *> itemsAtPos = items(pos);
     return itemsAtPos.isEmpty() ? 0 : itemsAtPos.first();
 }
 
@@ -2860,7 +2860,7 @@ bool QGraphicsView::viewportEvent(QEvent *event)
         // the mouse grab.
         // Remove all popups when the scene loses focus.
         if (!d->scene->d_func()->popupWidgets.isEmpty())
-            d->scene->d_func()->removePopup(d->scene->d_func()->popupWidgets.first());
+            d->scene->d_func()->removePopup(d->scene->d_func()->popupWidgets.constFirst());
         QApplication::sendEvent(d->scene, event);
         break;
     case QEvent::Show:
@@ -2884,7 +2884,7 @@ bool QGraphicsView::viewportEvent(QEvent *event)
             || (QApplication::activeModalWidget() && QApplication::activeModalWidget() != window())
             || (QApplication::activeWindow() != window())) {
             if (!d->scene->d_func()->popupWidgets.isEmpty())
-                d->scene->d_func()->removePopup(d->scene->d_func()->popupWidgets.first());
+                d->scene->d_func()->removePopup(d->scene->d_func()->popupWidgets.constFirst());
         }
         d->useLastMouseEvent = false;
         // a hack to pass a viewport pointer to the scene inside the leave event

@@ -131,6 +131,11 @@ bool QXcbMime::mimeDataForAtom(QXcbConnection *connection, xcb_atom_t a, QMimeDa
         ret = true;
     } else if ((a == XCB_ATOM_PIXMAP || a == XCB_ATOM_BITMAP) && mimeData->hasImage()) {
         ret = true;
+    } else if (atomName == QLatin1String("text/plain")
+               && mimeData->hasFormat(QLatin1String("text/uri-list"))) {
+        // Return URLs also as plain text.
+        *data = QInternalMimeData::renderDataHelper(atomName, mimeData);
+        ret = true;
     }
     return ret;
 }
@@ -149,8 +154,10 @@ QVector<xcb_atom_t> QXcbMime::mimeAtomsForFormat(QXcbConnection *connection, con
     }
 
     // special cases for uris
-    if (format == QLatin1String("text/uri-list"))
+    if (format == QLatin1String("text/uri-list")) {
         atoms.append(connection->internAtom("text/x-moz-url"));
+        atoms.append(connection->internAtom("text/plain"));
+    }
 
     //special cases for images
     if (format == QLatin1String("image/ppm"))

@@ -1255,14 +1255,14 @@ void WriteInitialization::writeProperties(const QString &varName,
         QString setFunction;
 
         if (stdset) {
-            setFunction = QLatin1String("->set");
-            setFunction += propertyName.left(1).toUpper();
-            setFunction += propertyName.mid(1);
-            setFunction += QLatin1Char('(');
+            setFunction = QLatin1String("->set")
+                        + propertyName.left(1).toUpper()
+                        + propertyName.midRef(1)
+                        + QLatin1Char('(');
         } else {
-            setFunction = QLatin1String("->setProperty(\"");
-            setFunction += propertyName;
-            setFunction += QLatin1String("\", QVariant");
+            setFunction += QLatin1String("->setProperty(\"")
+                         + propertyName
+                         + QLatin1String("\", QVariant");
             if (p->kind() == DomProperty::Enum)
                 setFunction += QLatin1String("::fromValue");
             setFunction += QLatin1Char('(');
@@ -1286,9 +1286,9 @@ void WriteInitialization::writeProperties(const QString &varName,
                 if (stdset)
                     propertyValue = fixString(p->elementCstring(), m_dindent);
                 else {
-                    propertyValue = QLatin1String("QByteArray(");
-                    propertyValue += fixString(p->elementCstring(), m_dindent);
-                    propertyValue += QLatin1Char(')');
+                    propertyValue = QLatin1String("QByteArray(")
+                                  + fixString(p->elementCstring(), m_dindent)
+                                  + QLatin1Char(')');
                 }
             }
             break;
@@ -1304,11 +1304,8 @@ void WriteInitialization::writeProperties(const QString &varName,
             break;
         case DomProperty::Enum:
             propertyValue = p->elementEnum();
-            if (!propertyValue.contains(QLatin1String("::"))) {
-                QString scope  = className;
-                scope += QLatin1String("::");
-                propertyValue.prepend(scope);
-            }
+            if (!propertyValue.contains(QLatin1String("::")))
+                propertyValue = className + QLatin1String("::") + propertyValue;
             break;
         case DomProperty::Set:
             propertyValue = p->elementSet();
@@ -1898,31 +1895,29 @@ QString WriteInitialization::pixCall(const QString &t, const QString &text) cons
         if (m_option.extractImages) {
             const QString format = image->elementData()->attributeFormat();
             const QString extension = format.left(format.indexOf(QLatin1Char('.'))).toLower();
-            QString rc = QLatin1String("QPixmap(QString::fromUtf8(\":/");
-            rc += m_generatedClass;
-            rc += QLatin1String("/images/");
-            rc += text;
-            rc += QLatin1Char('.');
-            rc += extension;
-            rc += QLatin1String("\"))");
-            return rc;
+            return QLatin1String("QPixmap(QString::fromUtf8(\":/")
+                 + m_generatedClass
+                 + QLatin1String("/images/")
+                 + text
+                 + QLatin1Char('.')
+                 + extension
+                 + QLatin1String("\"))");
         }
-        QString rc = WriteIconInitialization::iconFromDataFunction();
-        rc += QLatin1Char('(');
-        rc += text;
-        rc += QLatin1String("_ID)");
-        return rc;
+        return WriteIconInitialization::iconFromDataFunction()
+             + QLatin1Char('(')
+             + text
+             + QLatin1String("_ID)");
     }
 
     QString pixFunc = m_uic->pixmapFunction();
     if (pixFunc.isEmpty())
         pixFunc = QLatin1String("QString::fromUtf8");
 
-    type += QLatin1Char('(');
-    type += pixFunc;
-    type += QLatin1Char('(');
-    type += fixString(text, m_dindent);
-    type += QLatin1String("))");
+    type += QLatin1Char('(')
+          + pixFunc
+          + QLatin1Char('(')
+          + fixString(text, m_dindent)
+          + QLatin1String("))");
     return type;
 }
 
@@ -2316,23 +2311,20 @@ QString WriteInitialization::trCall(const QString &str, const QString &commentHi
 
     if (m_option.translateFunction.isEmpty()) {
         if (m_option.idBased) {
-            result = QLatin1String("qtTrId(");
+            result += QLatin1String("qtTrId(");
         } else {
-            result = QLatin1String("QApplication::translate(\"");
-            result += m_generatedClass;
-            result += QLatin1Char('"');
-            result += QLatin1String(", ");
+            result += QLatin1String("QApplication::translate(\"")
+                    + m_generatedClass
+                    + QLatin1String("\", ");
         }
     } else {
-        result = m_option.translateFunction;
-        result += QLatin1Char('(');
+        result += m_option.translateFunction + QLatin1Char('(');
     }
 
     result += fixString(str, m_dindent);
 
     if (!m_option.idBased) {
-        result += QLatin1String(", ");
-        result += comment;
+        result += QLatin1String(", ") + comment;
     }
 
     result += QLatin1Char(')');
@@ -2473,10 +2465,8 @@ void WriteInitialization::acceptWidgetScripts(const DomScripts &widgetScripts, D
     QString script;
     for (const DomScript *domScript : qAsConst(scripts)) {
         const QString snippet = domScript->text();
-        if (!snippet.isEmpty()) {
-            script += snippet.trimmed();
-            script += QLatin1Char('\n');
-        }
+        if (!snippet.isEmpty())
+            script += QStringRef(&snippet).trimmed() + QLatin1Char('\n');
     }
     if (script.isEmpty())
         return;

@@ -1012,9 +1012,11 @@ static QPlatformTextureList *widgetTexturesFor(QWidget *tlw, QWidget *widget)
 // The Windows compositor handles fullscreen OpenGL window specially. Besides
 // having trouble with popups, it also has issues with flip-flopping between
 // OpenGL-based and normal flushing. Therefore, stick with GL for fullscreen
-// windows. (QTBUG-53515)
+// windows (QTBUG-53515). Similary, translucent windows should not switch to
+// layered native windows (QTBUG-54734).
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) && !defined(Q_OS_WINCE)
                 || tlw->windowState().testFlag(Qt::WindowFullScreen)
+                || tlw->testAttribute(Qt::WA_TranslucentBackground)
 #endif
                 )
         {
