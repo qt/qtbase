@@ -293,15 +293,17 @@ defineTest(qtConfTest_psqlCompile) {
     isEmpty(pg_config): \
         pg_config = $$qtConfFindInPath("pg_config")
     !win32:!isEmpty(pg_config) {
-        libdir = $$system("$$pg_config --libdir")
+        libdir = $$system("$$pg_config --libdir", lines)
         libdir -= $$QMAKE_DEFAULT_LIBDIRS
-        !isEmpty(libdir): libs = "-L$$libdir"
+        libs =
+        !isEmpty(libdir): libs += "-L$$libdir"
         libs += "-lpq"
-        $${1}.libs = $$libs
-        $${1}.includedir = $$system("$$pg_config --includedir")
-        $${1}.includedir -= $$QMAKE_DEFAULT_INCDIRS
-        !isEmpty($${1}.includedir): \
-            $${1}.cflags = "-I$$eval($${1}.includedir)"
+        $${1}.libs = "$$val_escape(libs)"
+        includedir = $$system("$$pg_config --includedir", lines)
+        includedir -= $$QMAKE_DEFAULT_INCDIRS
+        $${1}.includedir = "$$val_escape(includedir)"
+        !isEmpty(includedir): \
+            $${1}.cflags = "-I$$val_escape(includedir)"
     }
 
     # Respect PSQL_LIBS if set
@@ -328,15 +330,19 @@ defineTest(qtConfTest_mysqlCompile) {
 
         # query is either --libs or --libs_r
         query = $$eval($${1}.query)
-        $${1}.libs = $$filterLibraryPath($$system("$$mysql_config $$query"))
+        libs = $$system("$$mysql_config $$query", lines)
+        eval(libs = $$libs)
+        libs = $$filterLibraryPath($$libs)
         # -rdynamic should not be returned by mysql_config, but is on RHEL 6.6
-        $${1}.libs -= -rdynamic
-        includedir = $$system("$$mysql_config --include")
+        libs -= -rdynamic
+        $${1}.libs = "$$val_escape(libs)"
+        includedir = $$system("$$mysql_config --include", lines)
+        eval(includedir = $$includedir)
         includedir ~= s/^-I//g
         includedir -= $$QMAKE_DEFAULT_INCDIRS
-        $${1}.includedir = $$includedir
-        !isEmpty($${1}.includedir): \
-            $${1}.cflags = "-I$$eval($${1}.includedir)"
+        $${1}.includedir = "$$val_escape(includedir)"
+        !isEmpty(includedir): \
+            $${1}.cflags = "-I$$val_escape(includedir)"
         export($${1}.libs)
         export($${1}.includedir)
         export($${1}.cflags)
@@ -347,10 +353,12 @@ defineTest(qtConfTest_mysqlCompile) {
 }
 
 defineTest(qtConfTest_tdsCompile) {
+    libs =
     sybase = $$getenv(SYBASE)
     !isEmpty(sybase): \
-        $${1}.libs = "-L$${sybase}/lib"
-    $${1}.libs += $$getenv(SYBASE_LIBS)
+        libs += "-L$${sybase}/lib"
+    libs += $$getenv(SYBASE_LIBS)
+    $${1}.libs = "$$val_escape(libs)"
     export($${1}.libs)
 
     qtConfTest_compile($${1}): return(true)

@@ -350,11 +350,12 @@ defineTest(qtConfTest_pkgConfig) {
     !qtConfPkgConfigPackageExists($$pkg_config, $$args): \
         return(false)
 
-    $${1}.libs = $$system("$$pkg_config --libs $$args")
-    $${1}.cflags = $$system("$$pkg_config --cflags $$args")
-    includes = $$system("$$pkg_config --cflags-only-I $$args")
+    $${1}.libs = $$system("$$pkg_config --libs $$args", lines)
+    $${1}.cflags = $$system("$$pkg_config --cflags $$args", lines)
+    includes = $$system("$$pkg_config --cflags-only-I $$args", lines)
+    eval(includes = $$includes)
     includes ~= s/^-I//g
-    $${1}.includedir = $$includes
+    $${1}.includedir = "$$val_escape(includes)"
     version = $$system("$$pkg_config --modversion $$args")
     $${1}.version = $$first(version)
     export($${1}.libs)
@@ -1089,9 +1090,9 @@ defineTest(qtConfOutput_library) {
     isEmpty(lookup): \
         error("Output type 'library' used in feature '$$eval($${1}.feature)' without a 'test' entry.")
 
-    libs = $$eval($${lookup}.libs)
-    cflags = $$eval($${lookup}.cflags)
-    includes = $$eval($${lookup}.includedir)
+    eval(libs = $$eval($${lookup}.libs))
+    eval(cflags = $$eval($${lookup}.cflags))
+    eval(includes = $$eval($${lookup}.includedir))
     version = $$split($${lookup}.version, '.')
 
     !isEmpty(libs): qtConfOutputVar(assign, $$output, QMAKE_LIBS_$$NAME, $$libs)
