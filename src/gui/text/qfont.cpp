@@ -70,7 +70,9 @@
 
 QT_BEGIN_NAMESPACE
 
-
+#ifndef QFONTCACHE_DECREASE_TRIGGER_LIMIT
+#  define QFONTCACHE_DECREASE_TRIGGER_LIMIT 256
+#endif
 
 bool QFontDef::exactMatch(const QFontDef &other) const
 {
@@ -2797,7 +2799,7 @@ void QFontCache::insertEngineData(const QFontDef &def, QFontEngineData *engineDa
 
     engineData->ref.ref();
     // Decrease now rather than waiting
-    if (total_cost > min_cost * 2)
+    if (total_cost > min_cost * 2 && engineDataCache.size() >= QFONTCACHE_DECREASE_TRIGGER_LIMIT)
         decreaseCache();
 
     engineDataCache.insert(def, engineData);
@@ -2846,7 +2848,7 @@ void QFontCache::insertEngine(const Key &key, QFontEngine *engine, bool insertMu
 #endif
     engine->ref.ref();
     // Decrease now rather than waiting
-    if (total_cost > min_cost * 2)
+    if (total_cost > min_cost * 2 && engineCache.size() >= QFONTCACHE_DECREASE_TRIGGER_LIMIT)
         decreaseCache();
 
     Engine data(engine);
