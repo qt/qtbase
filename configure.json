@@ -1,6 +1,7 @@
 {
     "files": {
         "publicHeader": "src/corelib/global/qconfig.h",
+        "privateHeader": "src/corelib/global/qconfig_p.h",
         "publicPro": "mkspecs/qconfig.pri",
         "privatePro": "mkspecs/qmodule.pri"
     },

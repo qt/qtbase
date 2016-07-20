@@ -31,6 +31,7 @@ QMAKE_DISTCLEAN += \
     mkspecs/qhost.pri \
     mkspecs/qmodule.pri \
     src/corelib/global/qconfig.h \
+    src/corelib/global/qconfig_p.h \
     src/corelib/global/qconfig.cpp \
     bin/qt.conf
 

@@ -96,7 +96,7 @@ void QLibInputPointer::processMotion(libinput_event_pointer *e)
 
 void QLibInputPointer::processAxis(libinput_event_pointer *e)
 {
-#if QT_LIBINPUT_VERSION_MAJOR == 0 && QT_LIBINPUT_VERSION_MINOR <= 7
+#if QT_LIBRARY_VERSION(libinput) < QT_VERSION_CHECK(0, 8, 0)
     const double v = libinput_event_pointer_get_axis_value(e) * 120;
     const Qt::Orientation ori = libinput_event_pointer_get_axis(e) == LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL
         ? Qt::Vertical : Qt::Horizontal;
