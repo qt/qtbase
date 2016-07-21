@@ -924,6 +924,13 @@ Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF &local, const QP
     QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(w, timestamp, local * factor, global * factor, b, mods);
 }
 
+// Wrapper for compatibility with Qt < 5.6
+// ### Qt6: Remove
+Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF &local, const QPointF &global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier)
+{
+    qt_handleMouseEvent(w, local, global, b, mods, QWindowSystemInterfacePrivate::eventTime.elapsed());
+}
+
 Q_GUI_EXPORT void qt_handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1)
 {
     QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(w, t, k, mods, text, autorep, count);
