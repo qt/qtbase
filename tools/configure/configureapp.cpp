@@ -284,7 +284,6 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
 
     dictionary[ "INCREDIBUILD_XGE" ] = "auto";
     dictionary[ "LTCG" ]            = "no";
-    dictionary[ "NATIVE_GESTURES" ] = "yes";
     dictionary[ "MSVC_MP" ] = "no";
 
     if (dictionary["QMAKESPEC"].startsWith("win32-g++")) {
@@ -675,10 +674,6 @@ void Configure::parseCmdLine()
             dictionary[ "INCREDIBUILD_XGE" ] = "no";
         else if (configCmdLine.at(i) == "-incredibuild-xge")
             dictionary[ "INCREDIBUILD_XGE" ] = "yes";
-        else if (configCmdLine.at(i) == "-native-gestures")
-            dictionary[ "NATIVE_GESTURES" ] = "yes";
-        else if (configCmdLine.at(i) == "-no-native-gestures")
-            dictionary[ "NATIVE_GESTURES" ] = "no";
         // Others ---------------------------------------------------
         else if (configCmdLine.at(i) == "-widgets")
             dictionary[ "WIDGETS" ] = "yes";
@@ -1796,8 +1791,6 @@ bool Configure::displayHelp()
         desc("STYLE_WINDOWSXP", "auto", "",             "  windowsxp", ' ');
         desc("STYLE_WINDOWSVISTA", "auto", "",          "  windowsvista", ' ');
         desc("STYLE_FUSION", "yes", "",                 "  fusion", ' ');
-        desc("NATIVE_GESTURES", "no", "-no-native-gestures", "Do not use native gestures on Windows 7.");
-        desc("NATIVE_GESTURES", "yes", "-native-gestures", "Use native gestures on Windows 7.\n");
         desc("MSVC_MP", "no", "-no-mp",                 "Do not use multiple processors for compiling with MSVC");
         desc("MSVC_MP", "yes", "-mp",                   "Use multiple processors for compiling with MSVC (-MP).\n");
 
@@ -2643,9 +2636,6 @@ void Configure::generateOutputVars()
     if (dictionary["DIRECT2D"] == "yes")
         qtConfig += "direct2d";
 
-    if (dictionary[ "NATIVE_GESTURES" ] == "yes")
-        qtConfig += "native-gestures";
-
     if (dictionary["NIS"] == "yes")
         qtConfig += "nis";
 
@@ -3305,7 +3295,6 @@ void Configure::generateConfigfiles()
         if (dictionary["DBUS"] == "no")              qconfigList += "QT_NO_DBUS";
         if (dictionary["FREETYPE"] == "no")          qconfigList += "QT_NO_FREETYPE";
         if (dictionary["HARFBUZZ"] == "no")          qconfigList += "QT_NO_HARFBUZZ";
-        if (dictionary["NATIVE_GESTURES"] == "no")   qconfigList += "QT_NO_NATIVE_GESTURES";
 
         if (dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES";
         if (dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES_2";
