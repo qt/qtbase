@@ -1105,6 +1105,47 @@ QNetworkReply *QNetworkAccessManager::sendCustomRequest(const QNetworkRequest &r
 }
 
 /*!
+    \since 5.8
+
+    \overload
+
+    Sends the contents of the \a data byte array to the destination
+    specified by \a request.
+*/
+QNetworkReply *QNetworkAccessManager::sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, const QByteArray &data)
+{
+    QBuffer *buffer = new QBuffer;
+    buffer->setData(data);
+    buffer->open(QIODevice::ReadOnly);
+
+    QNetworkReply *reply = sendCustomRequest(request, verb, buffer);
+    buffer->setParent(reply);
+    return reply;
+}
+
+/*!
+    \since 5.8
+
+    \overload
+
+    Sends a custom request to the server identified by the URL of \a request.
+
+    Sends the contents of the \a multiPart message to the destination
+    specified by \a request.
+
+    This can be used for sending MIME multipart messages for custom verbs.
+
+    \sa QHttpMultiPart, QHttpPart, put()
+*/
+QNetworkReply *QNetworkAccessManager::sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QHttpMultiPart *multiPart)
+{
+    QNetworkRequest newRequest = d_func()->prepareMultipart(request, multiPart);
+    QIODevice *device = multiPart->d_func()->device;
+    QNetworkReply *reply = sendCustomRequest(newRequest, verb, device);
+    return reply;
+}
+
+/*!
     Returns a new QNetworkReply object to handle the operation \a op
     and request \a req. The device \a outgoingData is always 0 for Get and
     Head requests, but is the value passed to post() and put() in
