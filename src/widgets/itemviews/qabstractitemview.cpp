@@ -4275,6 +4275,11 @@ const QEditorInfo & QAbstractItemViewPrivate::editorForIndex(const QModelIndex &
     return it.value();
 }
 
+bool QAbstractItemViewPrivate::hasEditor(const QModelIndex &index) const
+{
+    return indexEditorHash.find(index) != indexEditorHash.constEnd();
+}
+
 QModelIndex QAbstractItemViewPrivate::indexForEditor(QWidget *editor) const
 {
     // do not try to search to avoid slow implicit cast from QModelIndex to QPersistentModelIndex
