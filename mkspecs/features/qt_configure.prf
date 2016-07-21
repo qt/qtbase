@@ -889,26 +889,26 @@ defineTest(qtConfCreateSummary) {
 defineTest(qtConfPrintReport) {
     for (n, QT_CONFIGURE_REPORT): \
         logn($$n)
-    logn(" ")
+    logn()
 
     for (n, QT_CONFIGURE_NOTES) {
         logn($$n)
-        logn(" ")
+        logn()
     }
 
     for (w, QT_CONFIGURE_WARNINGS) {
         logn($$w)
-        logn(" ")
+        logn()
     }
 
     !isEmpty(QT_CONFIGURE_ERRORS) {
         for (e, QT_CONFIGURE_ERRORS) {
             logn($$e)
-            logn(" ")
+            logn()
         }
         mention_config_log:!$$QMAKE_CONFIG_VERBOSE {
             logn("Check config.log for details.")
-            logn(" ")
+            logn()
         }
 
         !equals(config.input.continue, yes): \
@@ -1176,7 +1176,7 @@ defineTest(qtConfigure) {
     qtConfProcessEarlyChecks()
 
     CONFIG += qt_conf_tests_allowed
-    logn(" ")
+    logn()
     logn("Running configuration tests...")
 
     # process all features
@@ -1188,12 +1188,12 @@ defineTest(qtConfigure) {
     qtConfCreateSummary()
 
     logn("Done running configuration tests.")
-    logn(" ")
+    logn()
 }
 
 qtConfigure($$_PRO_FILE_PWD_/configure.json)
 
 logn("Configure summary:")
-logn(" ")
+logn()
 
 qtConfPrintReport()
