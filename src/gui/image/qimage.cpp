@@ -4233,6 +4233,8 @@ void QImage::setAlphaChannel(const QImage &alphaChannel)
 
     } else {
         const QImage sourceImage = alphaChannel.convertToFormat(QImage::Format_RGB32);
+        if (sourceImage.isNull())
+            return;
         const uchar *src_data = sourceImage.d->data;
         uchar *dest_data = d->data;
         for (int y=0; y<h; ++y) {
