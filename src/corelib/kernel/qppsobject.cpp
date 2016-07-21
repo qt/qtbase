@@ -492,8 +492,7 @@ void QPpsObjectPrivate::encodeObject(pps_encoder_t *encoder, const QVariantMap &
 ///////////////////////////////////////////////////////////////////////////////
 
 QPpsObject::QPpsObject(const QString &path, QObject *parent)
-    : QObject(parent),
-      d_ptr(new QPpsObjectPrivate(path))
+    : QObject(*new QPpsObjectPrivate(path), parent)
 {
 }
 

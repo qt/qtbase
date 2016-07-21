@@ -118,7 +118,6 @@ Q_SIGNALS:
     void readyRead();
 
 private:
-    QScopedPointer<QPpsObjectPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QPpsObject)
     Q_DISABLE_COPY(QPpsObject)
 };
