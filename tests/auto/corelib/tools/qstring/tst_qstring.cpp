@@ -352,7 +352,7 @@ private slots:
     void replace_qchar_qstring();
     void replace_uint_uint_data();
     void replace_uint_uint();
-    void replace_uint_uint_extra();
+    void replace_extra();
     void replace_string_data();
     void replace_string();
     void replace_regexp_data();
@@ -475,6 +475,8 @@ private slots:
     void sprintfS();
     void fill();
     void truncate();
+    void chop_data();
+    void chop();
     void constructor();
     void constructorQByteArray_data();
     void constructorQByteArray();
@@ -1209,6 +1211,31 @@ void tst_QString::truncate()
     QVERIFY(e.isEmpty());
     QVERIFY(!e.isNull());
 
+}
+
+void tst_QString::chop_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<int>("count" );
+    QTest::addColumn<QString>("result");
+
+    const QString original("abcd");
+
+    QTest::newRow("data0") << original << 1 << QString("abc");
+    QTest::newRow("data1") << original << 0 << original;
+    QTest::newRow("data2") << original << -1 << original;
+    QTest::newRow("data3") << original << original.size() << QString();
+    QTest::newRow("data4") << original << 1000  << QString();
+}
+
+void tst_QString::chop()
+{
+    QFETCH(QString, input);
+    QFETCH(int, count);
+    QFETCH(QString, result);
+
+    input.chop(count);
+    QCOMPARE(input, result);
 }
 
 void tst_QString::fill()
@@ -2776,7 +2803,7 @@ void tst_QString::replace_uint_uint()
     }
 }
 
-void tst_QString::replace_uint_uint_extra()
+void tst_QString::replace_extra()
 {
     /*
         This test is designed to be extremely slow if QString::replace() doesn't optimize the case
@@ -2813,6 +2840,44 @@ void tst_QString::replace_uint_uint_extra()
     QString str5("abcdefghij");
     str5.replace(8, 10, str5);
     QCOMPARE(str5, QString("abcdefghabcdefghij"));
+
+    // Replacements using only part of the string modified:
+    QString str6("abcdefghij");
+    str6.replace(1, 8, str6.constData() + 3, 3);
+    QCOMPARE(str6, QString("adefj"));
+
+    QString str7("abcdefghibcdefghij");
+    str7.replace(str7.constData() + 1, 6, str7.constData() + 2, 3);
+    QCOMPARE(str7, QString("acdehicdehij"));
+
+    const int many = 1024;
+    /*
+      QS::replace(const QChar *, int, const QChar *, int, Qt::CaseSensitivity)
+      does its replacements in batches of many (please keep in sync with any
+      changes to batch size), which lead to misbehaviour if ether QChar * array
+      was part of the data being modified.
+    */
+    QString str8("abcdefg"), ans8("acdeg");
+    {
+        // Make str8 and ans8 repeat themselves many + 1 times:
+        int i = many;
+        QString big(str8), small(ans8);
+        while (i && !(i & 1)) { // Exploit many being a power of 2:
+            big += big;
+            small += small;
+            i >>= 1;
+        }
+        while (i-- > 0) {
+            str8 += big;
+            ans8 += small;
+        }
+    }
+    str8.replace(str8.constData() + 1, 5, str8.constData() + 2, 3);
+    // Pre-test the bit where the diff happens, so it gets displayed:
+    QCOMPARE(str8.mid((many - 3) * 5), ans8.mid((many - 3) * 5));
+    // Also check the full values match, of course:
+    QCOMPARE(str8.size(), ans8.size());
+    QCOMPARE(str8, ans8);
 }
 
 void tst_QString::replace_string()

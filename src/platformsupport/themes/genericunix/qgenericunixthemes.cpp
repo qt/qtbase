@@ -170,7 +170,7 @@ QStringList QGenericUnixTheme::xdgIconThemePaths()
 {
     QStringList paths;
     // Add home directory first in search path
-    const QFileInfo homeIconDir(QDir::homePath() + QStringLiteral("/.icons"));
+    const QFileInfo homeIconDir(QDir::homePath() + QLatin1String("/.icons"));
     if (homeIconDir.isDir())
         paths.prepend(homeIconDir.absoluteFilePath());
 
@@ -247,8 +247,8 @@ public:
     static QString kdeGlobals(const QString &kdeDir, int kdeVersion)
     {
         if (kdeVersion > 4)
-            return kdeDir + QStringLiteral("/kdeglobals");
-        return kdeDir + QStringLiteral("/share/config/kdeglobals");
+            return kdeDir + QLatin1String("/kdeglobals");
+        return kdeDir + QLatin1String("/share/config/kdeglobals");
     }
 
     void refresh();
@@ -559,22 +559,22 @@ QPlatformTheme *QKdeTheme::createKdeTheme()
     if (!kdeDirsVar.isEmpty())
         kdeDirs += kdeDirsVar.split(QLatin1Char(':'), QString::SkipEmptyParts);
 
-    const QString kdeVersionHomePath = QDir::homePath() + QStringLiteral("/.kde") + QLatin1String(kdeVersionBA);
+    const QString kdeVersionHomePath = QDir::homePath() + QLatin1String("/.kde") + QLatin1String(kdeVersionBA);
     if (QFileInfo(kdeVersionHomePath).isDir())
         kdeDirs += kdeVersionHomePath;
 
-    const QString kdeHomePath = QDir::homePath() + QStringLiteral("/.kde");
+    const QString kdeHomePath = QDir::homePath() + QLatin1String("/.kde");
     if (QFileInfo(kdeHomePath).isDir())
         kdeDirs += kdeHomePath;
 
-    const QString kdeRcPath = QStringLiteral("/etc/kde") + QLatin1String(kdeVersionBA) + QStringLiteral("rc");
+    const QString kdeRcPath = QLatin1String("/etc/kde") + QLatin1String(kdeVersionBA) + QLatin1String("rc");
     if (QFileInfo(kdeRcPath).isReadable()) {
         QSettings kdeSettings(kdeRcPath, QSettings::IniFormat);
         kdeSettings.beginGroup(QStringLiteral("Directories-default"));
         kdeDirs += kdeSettings.value(QStringLiteral("prefixes")).toStringList();
     }
 
-    const QString kdeVersionPrefix = QStringLiteral("/etc/kde") + QLatin1String(kdeVersionBA);
+    const QString kdeVersionPrefix = QLatin1String("/etc/kde") + QLatin1String(kdeVersionBA);
     if (QFileInfo(kdeVersionPrefix).isDir())
         kdeDirs += kdeVersionPrefix;
 

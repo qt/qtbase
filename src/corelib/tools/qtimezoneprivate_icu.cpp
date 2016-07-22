@@ -332,7 +332,7 @@ QString QIcuTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
 {
     // Return standard offset format name as ICU C api doesn't support it yet
     if (nameType == QTimeZone::OffsetName) {
-        const Data nowData = data(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
+        const Data nowData = data(QDateTime::currentMSecsSinceEpoch());
         // We can't use transitions reliably to find out right dst offset
         // Instead use dst offset api to try get it if needed
         if (timeType == QTimeZone::DaylightTime)

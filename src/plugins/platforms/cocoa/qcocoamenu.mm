@@ -137,12 +137,14 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaMenuDelegate);
 - (void) menuWillOpen:(NSMenu*)m
 {
     Q_UNUSED(m);
+    m_menu->setIsOpen(true);
     emit m_menu->aboutToShow();
 }
 
 - (void) menuDidClose:(NSMenu*)m
 {
     Q_UNUSED(m);
+    m_menu->setIsOpen(false);
     // wrong, but it's the best we can do
     emit m_menu->aboutToHide();
 }
@@ -257,9 +259,10 @@ QT_BEGIN_NAMESPACE
 
 QCocoaMenu::QCocoaMenu() :
     m_attachedItem(0),
+    m_tag(0),
     m_enabled(true),
     m_visible(true),
-    m_tag(0)
+    m_isOpen(false)
 {
     QMacAutoReleasePool pool;
 
@@ -330,6 +333,8 @@ void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
     item->nsItem().target = m_nativeMenu.delegate;
     if (!item->menu())
         [item->nsItem() setAction:@selector(itemFired:)];
+    else if (isOpen() && item->nsItem()) // Someone's adding new items after aboutToShow() was emitted
+        item->menu()->setAttachedItem(item->nsItem());
 
     if (item->isMerged())
         return;
@@ -351,6 +356,16 @@ void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
         [m_nativeMenu addItem: item->nsItem()];
     }
     item->setMenuParent(this);
+}
+
+bool QCocoaMenu::isOpen() const
+{
+    return m_isOpen;
+}
+
+void QCocoaMenu::setIsOpen(bool isOpen)
+{
+    m_isOpen = isOpen;
 }
 
 void QCocoaMenu::removeMenuItem(QPlatformMenuItem *menuItem)

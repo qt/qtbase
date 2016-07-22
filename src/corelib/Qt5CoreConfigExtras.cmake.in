@@ -46,21 +46,6 @@ if (NOT TARGET Qt5::rcc)
     )
 endif()
 
-if (NOT TARGET Qt5::qdoc)
-    add_executable(Qt5::qdoc IMPORTED)
-
-!!IF isEmpty(CMAKE_BIN_DIR_IS_ABSOLUTE)
-    set(imported_location \"${_qt5Core_install_prefix}/$${CMAKE_BIN_DIR}qdoc$$CMAKE_BIN_SUFFIX\")
-!!ELSE
-    set(imported_location \"$${CMAKE_BIN_DIR}qdoc$$CMAKE_BIN_SUFFIX\")
-!!ENDIF
-    _qt5_Core_check_file_exists(${imported_location})
-
-    set_target_properties(Qt5::qdoc PROPERTIES
-        IMPORTED_LOCATION ${imported_location}
-    )
-endif()
-
 set(Qt5Core_QMAKE_EXECUTABLE Qt5::qmake)
 set(Qt5Core_MOC_EXECUTABLE Qt5::moc)
 set(Qt5Core_RCC_EXECUTABLE Qt5::rcc)

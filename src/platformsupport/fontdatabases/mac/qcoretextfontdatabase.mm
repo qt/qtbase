@@ -585,8 +585,7 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
                     fallbackList.append(familyNameFromPostScriptName(item));
             }
 
-            if (QCoreTextFontEngine::supportsColorGlyphs())
-                fallbackList.append(QLatin1String("Apple Color Emoji"));
+            fallbackList.append(QLatin1String("Apple Color Emoji"));
 
             // Since we are only returning a list of default fonts for the current language, we do not
             // cover all unicode completely. This was especially an issue for some of the common script

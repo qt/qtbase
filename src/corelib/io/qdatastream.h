@@ -195,6 +195,29 @@ private:
     int readBlock(char *data, int len);
 };
 
+namespace QtPrivate {
+
+class StreamStateSaver
+{
+public:
+    inline StreamStateSaver(QDataStream *s) : stream(s), oldStatus(s->status())
+    {
+        stream->resetStatus();
+    }
+    inline ~StreamStateSaver()
+    {
+        if (oldStatus != QDataStream::Ok) {
+            stream->resetStatus();
+            stream->setStatus(oldStatus);
+        }
+    }
+
+private:
+    QDataStream *stream;
+    QDataStream::Status oldStatus;
+};
+
+} // QtPrivate namespace
 
 /*****************************************************************************
   QDataStream inline functions
@@ -239,6 +262,8 @@ inline QDataStream &QDataStream::operator<<(quint64 i)
 template <typename T>
 QDataStream& operator>>(QDataStream& s, QList<T>& l)
 {
+    QtPrivate::StreamStateSaver stateSaver(&s);
+
     l.clear();
     quint32 c;
     s >> c;
@@ -247,10 +272,13 @@ QDataStream& operator>>(QDataStream& s, QList<T>& l)
     {
         T t;
         s >> t;
-        l.append(t);
-        if (s.atEnd())
+        if (s.status() != QDataStream::Ok) {
+            l.clear();
             break;
+        }
+        l.append(t);
     }
+
     return s;
 }
 
@@ -266,6 +294,8 @@ QDataStream& operator<<(QDataStream& s, const QList<T>& l)
 template <typename T>
 QDataStream& operator>>(QDataStream& s, QLinkedList<T>& l)
 {
+    QtPrivate::StreamStateSaver stateSaver(&s);
+
     l.clear();
     quint32 c;
     s >> c;
@@ -273,10 +303,13 @@ QDataStream& operator>>(QDataStream& s, QLinkedList<T>& l)
     {
         T t;
         s >> t;
-        l.append(t);
-        if (s.atEnd())
+        if (s.status() != QDataStream::Ok) {
+            l.clear();
             break;
+        }
+        l.append(t);
     }
+
     return s;
 }
 
@@ -293,6 +326,8 @@ QDataStream& operator<<(QDataStream& s, const QLinkedList<T>& l)
 template<typename T>
 QDataStream& operator>>(QDataStream& s, QVector<T>& v)
 {
+    QtPrivate::StreamStateSaver stateSaver(&s);
+
     v.clear();
     quint32 c;
     s >> c;
@@ -300,8 +335,13 @@ QDataStream& operator>>(QDataStream& s, QVector<T>& v)
     for(quint32 i = 0; i < c; ++i) {
         T t;
         s >> t;
+        if (s.status() != QDataStream::Ok) {
+            v.clear();
+            break;
+        }
         v[i] = t;
     }
+
     return s;
 }
 
@@ -317,16 +357,21 @@ QDataStream& operator<<(QDataStream& s, const QVector<T>& v)
 template <typename T>
 QDataStream &operator>>(QDataStream &in, QSet<T> &set)
 {
+    QtPrivate::StreamStateSaver stateSaver(&in);
+
     set.clear();
     quint32 c;
     in >> c;
     for (quint32 i = 0; i < c; ++i) {
         T t;
         in >> t;
-        set << t;
-        if (in.atEnd())
+        if (in.status() != QDataStream::Ok) {
+            set.clear();
             break;
+        }
+        set << t;
     }
+
     return in;
 }
 
@@ -345,10 +390,9 @@ QDataStream& operator<<(QDataStream &out, const QSet<T> &set)
 template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE QDataStream &operator>>(QDataStream &in, QHash<Key, T> &hash)
 {
-    QDataStream::Status oldStatus = in.status();
-    in.resetStatus();
-    hash.clear();
+    QtPrivate::StreamStateSaver stateSaver(&in);
 
+    hash.clear();
     quint32 n;
     in >> n;
 
@@ -364,10 +408,6 @@ Q_OUTOFLINE_TEMPLATE QDataStream &operator>>(QDataStream &in, QHash<Key, T> &has
 
     if (in.status() != QDataStream::Ok)
         hash.clear();
-    if (oldStatus != QDataStream::Ok) {
-        in.resetStatus();
-        in.setStatus(oldStatus);
-    }
     return in;
 }
 
@@ -391,10 +431,9 @@ template <class aKey, class aT>
 Q_OUTOFLINE_TEMPLATE QDataStream &operator>>(QDataStream &in, QMap<aKey, aT> &map)
 #endif
 {
-    QDataStream::Status oldStatus = in.status();
-    in.resetStatus();
-    map.clear();
+    QtPrivate::StreamStateSaver stateSaver(&in);
 
+    map.clear();
     quint32 n;
     in >> n;
 
@@ -410,10 +449,6 @@ Q_OUTOFLINE_TEMPLATE QDataStream &operator>>(QDataStream &in, QMap<aKey, aT> &ma
     }
     if (in.status() != QDataStream::Ok)
         map.clear();
-    if (oldStatus != QDataStream::Ok) {
-        in.resetStatus();
-        in.setStatus(oldStatus);
-    }
     return in;
 }
 

@@ -101,7 +101,7 @@ static inline bool detectWebBrowser(const QByteArray &desktop,
     if (desktop == QByteArray("KDE")) {
         // Konqueror launcher
         if (checkExecutable(QStringLiteral("kfmclient"), browser)) {
-            browser->append(QStringLiteral(" exec"));
+            browser->append(QLatin1String(" exec"));
             return true;
         }
     } else if (desktop == QByteArray("GNOME")) {
@@ -121,7 +121,7 @@ static inline bool launch(const QString &launcher, const QUrl &url)
     if (debug)
         qDebug("Launching %s", qPrintable(command));
 #if defined(QT_NO_PROCESS)
-    const bool ok = ::system(qPrintable(command + QStringLiteral(" &")));
+    const bool ok = ::system(qPrintable(command + QLatin1String(" &")));
 #else
     const bool ok = QProcess::startDetached(command);
 #endif

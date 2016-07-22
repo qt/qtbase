@@ -319,6 +319,7 @@ QWindowsTheme::QWindowsTheme()
     std::fill(m_fonts, m_fonts + NFonts, static_cast<QFont *>(0));
     std::fill(m_palettes, m_palettes + NPalettes, static_cast<QPalette *>(0));
     refresh();
+    refreshIconPixmapSizes();
 }
 
 QWindowsTheme::~QWindowsTheme()
@@ -330,7 +331,7 @@ QWindowsTheme::~QWindowsTheme()
 
 static inline QStringList iconThemeSearchPaths()
 {
-    const QFileInfo appDir(QCoreApplication::applicationDirPath() + QStringLiteral("/icons"));
+    const QFileInfo appDir(QCoreApplication::applicationDirPath() + QLatin1String("/icons"));
     return appDir.isDir() ? QStringList(appDir.absoluteFilePath()) : QStringList();
 }
 
@@ -382,16 +383,8 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
         return QVariant(int(WindowsKeyboardScheme));
     case UiEffects:
         return QVariant(uiEffects());
-    case IconPixmapSizes: {
-        QList<int> sizes;
-        sizes << 16 << 32;
-#ifdef USE_IIMAGELIST
-        sizes << 48; // sHIL_EXTRALARGE
-        if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA)
-            sizes << 256; // SHIL_JUMBO
-#endif // USE_IIMAGELIST
-        return QVariant::fromValue(sizes);
-    }
+    case IconPixmapSizes:
+        return m_fileIconSizes;
     case DialogSnapToDefaultButton:
         return QVariant(booleanSystemParametersInfo(SPI_GETSNAPTODEFBUTTON, false));
     case ContextMenuOnMouseRelease:
@@ -459,6 +452,15 @@ void QWindowsTheme::refreshFonts()
     m_fonts[FixedFont] = new QFont(fixedFont);
 }
 
+enum FileIconSize {
+    // Standard icons obtainable via shGetFileInfo(), SHGFI_SMALLICON, SHGFI_LARGEICON
+    SmallFileIcon, LargeFileIcon,
+    // Larger icons obtainable via SHGetImageList()
+    ExtraLargeFileIcon,
+    JumboFileIcon, // Vista onwards
+    FileIconSizeCount
+};
+
 bool QWindowsTheme::usePlatformNativeDialog(DialogType type) const
 {
     return QWindowsDialogs::useHelper(type);
@@ -473,6 +475,27 @@ void QWindowsTheme::windowsThemeChanged(QWindow * window)
 {
     refresh();
     QWindowSystemInterface::handleThemeChange(window);
+}
+
+static int fileIconSizes[FileIconSizeCount];
+
+void QWindowsTheme::refreshIconPixmapSizes()
+{
+    // Standard sizes: 16, 32, 48, 256
+    fileIconSizes[SmallFileIcon] = GetSystemMetrics(SM_CXSMICON); // corresponds to SHGFI_SMALLICON);
+    fileIconSizes[LargeFileIcon] = GetSystemMetrics(SM_CXICON); // corresponds to SHGFI_LARGEICON
+    fileIconSizes[ExtraLargeFileIcon] =
+        fileIconSizes[LargeFileIcon] + fileIconSizes[LargeFileIcon] / 2;
+    fileIconSizes[JumboFileIcon] = 8 * fileIconSizes[LargeFileIcon]; // empirical, has not been observed to work
+    QList<int> sizes;
+    sizes << fileIconSizes[SmallFileIcon] << fileIconSizes[LargeFileIcon];
+#ifdef USE_IIMAGELIST
+    sizes << fileIconSizes[ExtraLargeFileIcon]; // sHIL_EXTRALARGE
+    if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA)
+        sizes << fileIconSizes[JumboFileIcon]; // SHIL_JUMBO
+#endif // USE_IIMAGELIST
+    qCDebug(lcQpaWindows) << __FUNCTION__ << sizes;
+    m_fileIconSizes = QVariant::fromValue(sizes);
 }
 
 // Defined in qpixmap_win.cpp
@@ -702,10 +725,12 @@ QPixmap QWindowsTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &s
     QPixmap pixmap;
     const QString filePath = QDir::toNativeSeparators(fileInfo.filePath());
     const int width = int(size.width());
-    const int iconSize = width > 16 ? SHGFI_LARGEICON : SHGFI_SMALLICON;
+    const int iconSize = width > fileIconSizes[SmallFileIcon] ? SHGFI_LARGEICON : SHGFI_SMALLICON;
     const int requestedImageListSize =
 #ifdef USE_IIMAGELIST
-        width > 48 ? sHIL_JUMBO : (width > 32 ? sHIL_EXTRALARGE : 0);
+        width > fileIconSizes[ExtraLargeFileIcon]
+            ? sHIL_JUMBO
+            : (width > fileIconSizes[LargeFileIcon] ? sHIL_EXTRALARGE : 0);
 #else
         0;
 #endif // !USE_IIMAGELIST

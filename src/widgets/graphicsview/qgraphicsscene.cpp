@@ -940,7 +940,7 @@ void QGraphicsScenePrivate::grabMouse(QGraphicsItem *item, bool implicit)
 {
     // Append to list of mouse grabber items, and send a mouse grab event.
     if (mouseGrabberItems.contains(item)) {
-        if (mouseGrabberItems.last() == item) {
+        if (mouseGrabberItems.constLast() == item) {
             Q_ASSERT(!implicit);
             if (!lastMouseGrabberItemHasImplicitMouseGrab) {
                 qWarning("QGraphicsItem::grabMouse: already a mouse grabber");
@@ -950,14 +950,14 @@ void QGraphicsScenePrivate::grabMouse(QGraphicsItem *item, bool implicit)
             }
         } else {
             qWarning("QGraphicsItem::grabMouse: already blocked by mouse grabber: %p",
-                     mouseGrabberItems.last());
+                     mouseGrabberItems.constLast());
         }
         return;
     }
 
     // Send ungrab event to the last grabber.
     if (!mouseGrabberItems.isEmpty()) {
-        QGraphicsItem *last = mouseGrabberItems.last();
+        QGraphicsItem *last = mouseGrabberItems.constLast();
         if (lastMouseGrabberItemHasImplicitMouseGrab) {
             // Implicit mouse grab is immediately lost.
             last->ungrabMouse();
@@ -987,12 +987,12 @@ void QGraphicsScenePrivate::ungrabMouse(QGraphicsItem *item, bool itemIsDying)
         return;
     }
 
-    if (item != mouseGrabberItems.last()) {
+    if (item != mouseGrabberItems.constLast()) {
         // Recursively ungrab the next mouse grabber until we reach this item
         // to ensure state consistency.
         ungrabMouse(mouseGrabberItems.at(index + 1), itemIsDying);
     }
-    if (!popupWidgets.isEmpty() && item == popupWidgets.last()) {
+    if (!popupWidgets.isEmpty() && item == popupWidgets.constLast()) {
         // If the item is a popup, go via removePopup to ensure state
         // consistency and that it gets hidden correctly - beware that
         // removePopup() reenters this function to continue removing the grab.
@@ -1017,7 +1017,7 @@ void QGraphicsScenePrivate::ungrabMouse(QGraphicsItem *item, bool itemIsDying)
     // items get a GrabMouse event, but this is a rare case with a simple
     // implementation and it does ensure a consistent state.
     if (!itemIsDying && !mouseGrabberItems.isEmpty()) {
-        QGraphicsItem *last = mouseGrabberItems.last();
+        QGraphicsItem *last = mouseGrabberItems.constLast();
         QEvent event(QEvent::GrabMouse);
         sendEvent(last, &event);
     }
@@ -1039,11 +1039,11 @@ void QGraphicsScenePrivate::clearMouseGrabber()
 void QGraphicsScenePrivate::grabKeyboard(QGraphicsItem *item)
 {
     if (keyboardGrabberItems.contains(item)) {
-        if (keyboardGrabberItems.last() == item)
+        if (keyboardGrabberItems.constLast() == item)
             qWarning("QGraphicsItem::grabKeyboard: already a keyboard grabber");
         else
             qWarning("QGraphicsItem::grabKeyboard: already blocked by keyboard grabber: %p",
-                     keyboardGrabberItems.last());
+                     keyboardGrabberItems.constLast());
         return;
     }
 
@@ -1051,7 +1051,7 @@ void QGraphicsScenePrivate::grabKeyboard(QGraphicsItem *item)
     if (!keyboardGrabberItems.isEmpty()) {
         // Just send ungrab event to current grabber.
         QEvent ungrabEvent(QEvent::UngrabKeyboard);
-        sendEvent(keyboardGrabberItems.last(), &ungrabEvent);
+        sendEvent(keyboardGrabberItems.constLast(), &ungrabEvent);
     }
 
     keyboardGrabberItems << item;
@@ -1071,7 +1071,7 @@ void QGraphicsScenePrivate::ungrabKeyboard(QGraphicsItem *item, bool itemIsDying
         qWarning("QGraphicsItem::ungrabKeyboard: not a keyboard grabber");
         return;
     }
-    if (item != keyboardGrabberItems.last()) {
+    if (item != keyboardGrabberItems.constLast()) {
         // Recursively ungrab the topmost keyboard grabber until we reach this
         // item to ensure state consistency.
         ungrabKeyboard(keyboardGrabberItems.at(index + 1), itemIsDying);
@@ -1088,7 +1088,7 @@ void QGraphicsScenePrivate::ungrabKeyboard(QGraphicsItem *item, bool itemIsDying
 
     // Send notification about mouse regrab.
     if (!itemIsDying && !keyboardGrabberItems.isEmpty()) {
-        QGraphicsItem *last = keyboardGrabberItems.last();
+        QGraphicsItem *last = keyboardGrabberItems.constLast();
         QEvent event(QEvent::GrabKeyboard);
         sendEvent(last, &event);
     }
@@ -1100,7 +1100,7 @@ void QGraphicsScenePrivate::ungrabKeyboard(QGraphicsItem *item, bool itemIsDying
 void QGraphicsScenePrivate::clearKeyboardGrabber()
 {
     if (!keyboardGrabberItems.isEmpty())
-        ungrabKeyboard(keyboardGrabberItems.first());
+        ungrabKeyboard(keyboardGrabberItems.constFirst());
 }
 
 void QGraphicsScenePrivate::enableMouseTrackingOnViews()
@@ -1142,8 +1142,8 @@ void QGraphicsScenePrivate::storeMouseButtonsForMouseGrabber(QGraphicsSceneMouse
     for (int i = 0x1; i <= 0x10; i <<= 1) {
         if (event->buttons() & i) {
             mouseGrabberButtonDownPos.insert(Qt::MouseButton(i),
-                                             mouseGrabberItems.last()->d_ptr->genericMapFromScene(event->scenePos(),
-                                                                                                  event->widget()));
+                                             mouseGrabberItems.constLast()->d_ptr->genericMapFromScene(event->scenePos(),
+                                                                                                       event->widget()));
             mouseGrabberButtonDownScenePos.insert(Qt::MouseButton(i), event->scenePos());
             mouseGrabberButtonDownScreenPos.insert(Qt::MouseButton(i), event->screenPos());
         }
@@ -1308,7 +1308,7 @@ void QGraphicsScenePrivate::sendMouseEvent(QGraphicsSceneMouseEvent *mouseEvent)
         return;
     }
 
-    QGraphicsItem *item = mouseGrabberItems.last();
+    QGraphicsItem *item = mouseGrabberItems.constLast();
     if (item->isBlockedByModalPanel())
         return;
 
@@ -1335,7 +1335,7 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
 
     // Deliver to any existing mouse grabber.
     if (!mouseGrabberItems.isEmpty()) {
-        if (mouseGrabberItems.last()->isBlockedByModalPanel())
+        if (mouseGrabberItems.constLast()->isBlockedByModalPanel())
             return;
         // The event is ignored by default, but we disregard the event's
         // accepted state after delivery; the mouse is grabbed, after all.
@@ -1401,7 +1401,7 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
 
     // Any item will do.
     if (sceneModality && cachedItemsUnderMouse.isEmpty())
-        cachedItemsUnderMouse << modalPanels.first();
+        cachedItemsUnderMouse << modalPanels.constFirst();
 
     // Find a mouse grabber by sending mouse press events to all mouse grabber
     // candidates one at a time, until the event is accepted. It's accepted by
@@ -1450,7 +1450,7 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
             sendMouseEvent(mouseEvent);
         }
 
-        bool dontSendUngrabEvents = mouseGrabberItems.isEmpty() || mouseGrabberItems.last() != item;
+        bool dontSendUngrabEvents = mouseGrabberItems.isEmpty() || mouseGrabberItems.constLast() != item;
         if (disabled) {
             ungrabMouse(item, /* itemIsDying = */ dontSendUngrabEvents);
             break;
@@ -2167,8 +2167,8 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
 */
 QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position, const QTransform &deviceTransform) const
 {
-    QList<QGraphicsItem *> itemsAtPoint = items(position, Qt::IntersectsItemShape,
-                                                Qt::DescendingOrder, deviceTransform);
+    const QList<QGraphicsItem *> itemsAtPoint = items(position, Qt::IntersectsItemShape,
+                                                      Qt::DescendingOrder, deviceTransform);
     return itemsAtPoint.isEmpty() ? 0 : itemsAtPoint.first();
 }
 
@@ -3771,7 +3771,7 @@ void QGraphicsScene::focusOutEvent(QFocusEvent *focusEvent)
 
     // Remove all popups when the scene loses focus.
     if (!d->popupWidgets.isEmpty())
-        d->removePopup(d->popupWidgets.first());
+        d->removePopup(d->popupWidgets.constFirst());
 }
 
 /*!
@@ -3868,7 +3868,7 @@ bool QGraphicsScenePrivate::dispatchHoverEvent(QGraphicsSceneHoverEvent *hoverEv
 
     // Find the common ancestor item for the new topmost hoverItem and the
     // last item in the hoverItem list.
-    QGraphicsItem *commonAncestorItem = (item && !hoverItems.isEmpty()) ? item->commonAncestorItem(hoverItems.last()) : 0;
+    QGraphicsItem *commonAncestorItem = (item && !hoverItems.isEmpty()) ? item->commonAncestorItem(hoverItems.constLast()) : 0;
     while (commonAncestorItem && !itemAcceptsHoverEvents_helper(commonAncestorItem))
         commonAncestorItem = commonAncestorItem->parentItem();
     if (commonAncestorItem && commonAncestorItem->panel() != item->panel()) {
@@ -3909,7 +3909,7 @@ bool QGraphicsScenePrivate::dispatchHoverEvent(QGraphicsSceneHoverEvent *hoverEv
     // Generate a move event for the item itself
     if (item
         && !hoverItems.isEmpty()
-        && item == hoverItems.last()) {
+        && item == hoverItems.constLast()) {
         sendHoverEvent(QEvent::GraphicsSceneHoverMove, item, hoverEvent);
         return true;
     }
@@ -3959,7 +3959,7 @@ void QGraphicsScene::keyPressEvent(QKeyEvent *keyEvent)
     // ### Merge this function with keyReleaseEvent; they are identical
     // ### (except this comment).
     Q_D(QGraphicsScene);
-    QGraphicsItem *item = !d->keyboardGrabberItems.isEmpty() ? d->keyboardGrabberItems.last() : 0;
+    QGraphicsItem *item = !d->keyboardGrabberItems.isEmpty() ? d->keyboardGrabberItems.constLast() : 0;
     if (!item)
         item = focusItem();
     if (item) {
@@ -3991,7 +3991,7 @@ void QGraphicsScene::keyReleaseEvent(QKeyEvent *keyEvent)
     // ### Merge this function with keyPressEvent; they are identical (except
     // ### this comment).
     Q_D(QGraphicsScene);
-    QGraphicsItem *item = !d->keyboardGrabberItems.isEmpty() ? d->keyboardGrabberItems.last() : 0;
+    QGraphicsItem *item = !d->keyboardGrabberItems.isEmpty() ? d->keyboardGrabberItems.constLast() : 0;
     if (!item)
         item = focusItem();
     if (item) {
@@ -4100,9 +4100,9 @@ void QGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
     // Reset the mouse grabber when the last mouse button has been released.
     if (!mouseEvent->buttons()) {
         if (!d->mouseGrabberItems.isEmpty()) {
-            d->lastMouseGrabberItem = d->mouseGrabberItems.last();
+            d->lastMouseGrabberItem = d->mouseGrabberItems.constLast();
             if (d->lastMouseGrabberItemHasImplicitMouseGrab)
-                d->mouseGrabberItems.last()->ungrabMouse();
+                d->mouseGrabberItems.constLast()->ungrabMouse();
         } else {
             d->lastMouseGrabberItem = 0;
         }
@@ -5902,7 +5902,7 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
                 cachedItemsUnderMouse = itemsAtPosition(touchPoint.screenPos().toPoint(),
                                                         touchPoint.scenePos(),
                                                         static_cast<QWidget *>(sceneTouchEvent->target()));
-                item = cachedItemsUnderMouse.isEmpty() ? 0 : cachedItemsUnderMouse.first();
+                item = cachedItemsUnderMouse.isEmpty() ? 0 : cachedItemsUnderMouse.constFirst();
             }
 
             if (sceneTouchEvent->device()->type() == QTouchDevice::TouchScreen) {
@@ -6013,7 +6013,7 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
 {
     Q_Q(QGraphicsScene);
 
-    if (cachedItemsUnderMouse.isEmpty() || cachedItemsUnderMouse.first() != origin) {
+    if (cachedItemsUnderMouse.isEmpty() || cachedItemsUnderMouse.constFirst() != origin) {
         const QTouchEvent::TouchPoint &firstTouchPoint = touchEvent->touchPoints().first();
         cachedItemsUnderMouse = itemsAtPosition(firstTouchPoint.screenPos().toPoint(),
                                                 firstTouchPoint.scenePos(),
@@ -6129,7 +6129,7 @@ void QGraphicsScenePrivate::enterModal(QGraphicsItem *panel, QGraphicsItem::Pane
     }
 
     if (!mouseGrabberItems.isEmpty() && lastMouseGrabberItemHasImplicitMouseGrab) {
-        QGraphicsItem *item = mouseGrabberItems.last();
+        QGraphicsItem *item = mouseGrabberItems.constLast();
         if (item->isBlockedByModalPanel())
             ungrabMouse(item, /*itemIsDying =*/ false);
     }

@@ -386,7 +386,12 @@ void QQnxWindow::setBufferSize(const QSize &size)
     // Set the transparency. According to QNX technical support, setting the window
     // transparency property should always be done *after* creating the window
     // buffers in order to guarantee the property is paid attention to.
-    if (window()->requestedFormat().alphaBufferSize() == 0) {
+    if (size.isEmpty()) {
+        // We can't create 0x0 buffers and instead make them 1x1.  But to allow these windows to
+        // still be 'visible' (thus allowing their children to be visible), we need to allow
+        // them to be posted but still not show up.
+        val[0] = SCREEN_TRANSPARENCY_DISCARD;
+    } else if (window()->requestedFormat().alphaBufferSize() == 0) {
         // To avoid overhead in the composition manager, disable blending
         // when the underlying window buffer doesn't have an alpha channel.
         val[0] = SCREEN_TRANSPARENCY_NONE;

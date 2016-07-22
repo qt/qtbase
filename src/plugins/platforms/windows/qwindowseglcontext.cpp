@@ -367,7 +367,7 @@ QSurfaceFormat QWindowsEGLStaticContext::formatFromConfig(EGLDisplay display, EG
     \list
     \o Install the Direct X SDK
     \o Checkout and build ANGLE (SVN repository) as explained here:
-       \l{http://code.google.com/p/angleproject/wiki/DevSetup}{ANGLE-Project}.
+       \l{https://chromium.googlesource.com/angle/angle/+/master/README.md}
        When building for 64bit, de-activate the "WarnAsError" option
        in every project file (as otherwise integer conversion
        warnings will break the build).

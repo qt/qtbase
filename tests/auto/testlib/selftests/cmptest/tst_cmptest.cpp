@@ -142,6 +142,8 @@ private slots:
     void compareQPixmaps_data();
     void compareQImages();
     void compareQImages_data();
+    void compareQRegion_data();
+    void compareQRegion();
 #endif
     void verify();
     void verify2();
@@ -428,6 +430,29 @@ void tst_Cmptest::compareQImages()
     QFETCH(QImage, opB);
 
     QCOMPARE(opA, opB);
+}
+
+void tst_Cmptest::compareQRegion_data()
+{
+    QTest::addColumn<QRegion>("rA");
+    QTest::addColumn<QRegion>("rB");
+    const QRect rect1(QPoint(10, 10), QSize(200, 50));
+    const QRegion region1(rect1);
+    QRegion listRegion2;
+    const QVector<QRect> list2 = QVector<QRect>() << QRect(QPoint(100, 200), QSize(50, 200)) << rect1;
+    listRegion2.setRects(list2.constData(), list2.size());
+    QTest::newRow("equal-empty") << QRegion() << QRegion();
+    QTest::newRow("1-empty") << region1 << QRegion();
+    QTest::newRow("equal") << region1 << region1;
+    QTest::newRow("different lists") << region1 << listRegion2;
+}
+
+void tst_Cmptest::compareQRegion()
+{
+    QFETCH(QRegion, rA);
+    QFETCH(QRegion, rB);
+
+    QCOMPARE(rA, rB);
 }
 #endif // QT_GUI_LIB
 

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 Ivan Komissarov <ABBAPOH@gmail.com>
+** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -153,29 +154,41 @@ static bool isParentOf(const String &parent, const QString &dirName)
              parent.size() == 1);
 }
 
-static bool isPseudoFs(const QStorageIterator &it)
+static bool shouldIncludeFs(const QStorageIterator &it)
 {
+    /*
+     * This function implements a heuristic algorithm to determine whether a
+     * given mount should be reported to the user. Our objective is to list
+     * only entries that the end-user would find useful.
+     *
+     * We therefore ignore:
+     *  - mounted in /dev, /proc, /sys: special mounts
+     *    (this will catch /sys/fs/cgroup, /proc/sys/fs/binfmt_misc, /dev/pts,
+     *    some of which are tmpfs on Linux)
+     *  - mounted in /var/run or /var/lock: most likely pseudofs
+     *    (on earlier systemd versions, /var/run was a bind-mount of /run, so
+     *    everything would be unnecessarily duplicated)
+     *  - filesystem type is "rootfs": artifact of the root-pivot on some Linux
+     *    initrd
+     *  - if the filesystem total size is zero, it's a pseudo-fs (not checked here).
+     */
+
     QString mountDir = it.rootPath();
     if (isParentOf(QLatin1String("/dev"), mountDir)
         || isParentOf(QLatin1String("/proc"), mountDir)
         || isParentOf(QLatin1String("/sys"), mountDir)
         || isParentOf(QLatin1String("/var/run"), mountDir)
         || isParentOf(QLatin1String("/var/lock"), mountDir)) {
-        return true;
+        return false;
     }
 
-    QByteArray type = it.fileSystemType();
-    if (type == "tmpfs")
+#ifdef Q_OS_LINUX
+    if (it.fileSystemType() == "rootfs")
         return false;
-#if defined(Q_OS_LINUX)
-    if (type == "rootfs" || type == "rpc_pipefs")
-        return true;
 #endif
 
-    if (!it.device().startsWith('/'))
-        return true;
-
-    return false;
+    // size checking in mountedVolumes()
+    return true;
 }
 
 #if defined(Q_OS_BSD4)
@@ -557,11 +570,14 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
     QList<QStorageInfo> volumes;
 
     while (it.next()) {
-        if (isPseudoFs(it))
+        if (!shouldIncludeFs(it))
             continue;
 
         const QString mountDir = it.rootPath();
-        volumes.append(QStorageInfo(mountDir));
+        QStorageInfo info(mountDir);
+        if (info.bytesTotal() == 0)
+            continue;
+        volumes.append(info);
     }
 
     return volumes;

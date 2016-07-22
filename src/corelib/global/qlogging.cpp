@@ -1123,7 +1123,7 @@ void QMessagePattern::setPattern(const QString &pattern)
                 if (m.hasMatch()) {
                     int depth = m.capturedRef(1).toInt();
                     if (depth <= 0)
-                        error += QStringLiteral("QT_MESSAGE_PATTERN: %{backtrace} depth must be a number greater than 0\n");
+                        error += QLatin1String("QT_MESSAGE_PATTERN: %{backtrace} depth must be a number greater than 0\n");
                     else
                         backtraceDepth = depth;
                 }
@@ -1135,7 +1135,7 @@ void QMessagePattern::setPattern(const QString &pattern)
                 backtraceParams.backtraceSeparator = backtraceSeparator;
                 backtraceArgs.append(backtraceParams);
 #else
-                error += QStringLiteral("QT_MESSAGE_PATTERN: %{backtrace} is not supported by this Qt build\n");
+                error += QLatin1String("QT_MESSAGE_PATTERN: %{backtrace} is not supported by this Qt build\n");
 #endif
             }
 
@@ -1156,7 +1156,7 @@ void QMessagePattern::setPattern(const QString &pattern)
             else if (lexeme == QLatin1String(endifTokenC)) {
                 tokens[i] = endifTokenC;
                 if (!inIf && !nestedIfError)
-                    error += QStringLiteral("QT_MESSAGE_PATTERN: %{endif} without an %{if-*}\n");
+                    error += QLatin1String("QT_MESSAGE_PATTERN: %{endif} without an %{if-*}\n");
                 inIf = false;
             } else {
                 tokens[i] = emptyTokenC;
@@ -1172,9 +1172,9 @@ void QMessagePattern::setPattern(const QString &pattern)
         }
     }
     if (nestedIfError)
-        error += QStringLiteral("QT_MESSAGE_PATTERN: %{if-*} cannot be nested\n");
+        error += QLatin1String("QT_MESSAGE_PATTERN: %{if-*} cannot be nested\n");
     else if (inIf)
-        error += QStringLiteral("QT_MESSAGE_PATTERN: missing %{endif}\n");
+        error += QLatin1String("QT_MESSAGE_PATTERN: missing %{endif}\n");
     if (!error.isEmpty()) {
 #if defined(Q_OS_WINRT)
         OutputDebugString(reinterpret_cast<const wchar_t*>(error.utf16()));

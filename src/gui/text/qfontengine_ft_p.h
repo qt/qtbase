@@ -75,7 +75,7 @@ class QFontconfigDatabase;
 class QFreetypeFace
 {
 public:
-    void computeSize(const QFontDef &fontDef, int *xsize, int *ysize, bool *outline_drawing);
+    void computeSize(const QFontDef &fontDef, int *xsize, int *ysize, bool *outline_drawing, QFixed *scalableBitmapScaleFactor);
     QFontEngine::Properties properties() const;
     bool getSfntTable(uint tag, uchar *buffer, uint *length) const;
 
@@ -96,7 +96,6 @@ public:
     FT_Face face;
     int xsize; // 26.6
     int ysize; // 26.6
-    QFixed scalableBitmapScaleFactor;
     FT_Matrix matrix;
     FT_CharMap unicode_map;
     FT_CharMap symbol_map;
@@ -340,6 +339,7 @@ private:
 
     FT_Size_Metrics metrics;
     mutable bool kerning_pairs_loaded;
+    QFixed scalableBitmapScaleFactor;
 };
 
 inline uint qHash(const QFontEngineFT::GlyphAndSubPixelPosition &g)

@@ -71,12 +71,12 @@
 #elif defined(Q_OS_HAIKU)
 #   include <kernel/OS.h>
 #elif defined(Q_OS_BSD4) && !defined(QT_PLATFORM_UIKIT)
-# if !defined(Q_OS_NETBSD)
-#   include <sys/user.h>
-# endif
 #   include <sys/cdefs.h>
 #   include <sys/param.h>
 #   include <sys/sysctl.h>
+# if !defined(Q_OS_NETBSD)
+#   include <sys/user.h>
+# endif
 #endif
 
 QT_BEGIN_NAMESPACE

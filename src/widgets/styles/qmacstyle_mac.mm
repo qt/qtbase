@@ -2933,7 +2933,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             QImage img;
 
             QSize pixmapSize = opt->rect.size();
-            if (pixmapSize.isValid()) {
+            if (!pixmapSize.isEmpty()) {
                 QPixmap pix(pixmapSize);
                 pix.fill(QColor(fillR, fillG, fillB));
                 QPainter pix_paint(&pix);

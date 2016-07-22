@@ -212,7 +212,7 @@ void QDirModelPrivate::invalidate()
     Directories can be created and removed using mkdir(), rmdir(), and the
     model will be automatically updated to take the changes into account.
 
-    \note QDirModel requires an instance of a GUI application.
+    \note QDirModel requires an instance of \l QApplication.
 
     \sa nameFilters(), setFilter(), filter(), QListView, QTreeView, QFileSystemModel,
     {Dir View Example}, {Model Classes}
@@ -885,7 +885,7 @@ QModelIndex QDirModel::index(const QString &path, int column) const
 
 #if defined(Q_OS_WIN)
     if (absolutePath.startsWith(QLatin1String("//"))) { // UNC path
-        QString host = pathElements.first();
+        QString host = pathElements.constFirst();
         int r = 0;
         for (; r < d->root.children.count(); ++r)
             if (d->root.children.at(r).info.fileName() == host)

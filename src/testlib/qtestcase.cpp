@@ -958,7 +958,7 @@ bool TestMethods::invokeTest(int index, const char *data, WatchDog *watchDog) co
     QBenchmarkTestMethodData::current = &benchmarkData;
 
     const QByteArray &name = m_methods[index].name();
-    QBenchmarkGlobalData::current->context.slotName = QLatin1String(name) + QStringLiteral("()");
+    QBenchmarkGlobalData::current->context.slotName = QLatin1String(name) + QLatin1String("()");
 
     char member[512];
     QTestTable table;

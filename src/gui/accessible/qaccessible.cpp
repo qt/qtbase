@@ -758,7 +758,7 @@ void QAccessible::deleteAccessibleInterface(Id id)
 */
 QAccessible::Id QAccessible::uniqueId(QAccessibleInterface *iface)
 {
-    Id id = QAccessibleCache::instance()->idToInterface.key(iface);
+    Id id = QAccessibleCache::instance()->idForInterface(iface);
     if (!id)
         id = registerAccessibleInterface(iface);
     return id;
@@ -771,7 +771,7 @@ QAccessible::Id QAccessible::uniqueId(QAccessibleInterface *iface)
 */
 QAccessibleInterface *QAccessible::accessibleInterface(Id id)
 {
-    return QAccessibleCache::instance()->idToInterface.value(id);
+    return QAccessibleCache::instance()->interfaceForId(id);
 }
 
 

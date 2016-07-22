@@ -1213,6 +1213,12 @@ void tst_QTcpSocket::connectDisconnectConnectDisconnect()
         QCOMPARE(socket->state(), QTcpSocket::UnconnectedState);
         QCOMPARE(socket->socketType(), QTcpSocket::TcpSocket);
 
+        QCOMPARE(socket->socketDescriptor(), qintptr(-1));
+        QCOMPARE(int(socket->localPort()), 0);
+        QCOMPARE(socket->localAddress(), QHostAddress());
+        QCOMPARE(int(socket->peerPort()), 0);
+        QCOMPARE(socket->peerAddress(), QHostAddress());
+
         socket->connectToHost(QtNetworkSettings::serverName(), 143);
         QVERIFY(socket->waitForReadyRead(10000));
         QCOMPARE(QString::fromLatin1(socket->read(4)), QString("* OK"));

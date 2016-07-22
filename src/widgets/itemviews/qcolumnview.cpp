@@ -412,9 +412,9 @@ void QColumnViewPrivate::updateScrollbars()
     // find the total horizontal length of the laid out columns
     int horizontalLength = 0;
     if (!columns.isEmpty()) {
-        horizontalLength = (columns.last()->x() + columns.last()->width()) - columns.first()->x();
+        horizontalLength = (columns.constLast()->x() + columns.constLast()->width()) - columns.constFirst()->x();
         if (horizontalLength <= 0) // reverse mode
-            horizontalLength = (columns.first()->x() + columns.first()->width()) - columns.last()->x();
+            horizontalLength = (columns.constFirst()->x() + columns.constFirst()->width()) - columns.constLast()->x();
     }
 
     QSize viewportSize = viewport->size();
@@ -629,7 +629,7 @@ void QColumnViewPrivate::closeColumns(const QModelIndex &parent, bool build)
     while (!dirsToAppend.isEmpty()) {
         QAbstractItemView *newView = createColumn(dirsToAppend.takeLast(), true);
         if (!dirsToAppend.isEmpty())
-            newView->setCurrentIndex(dirsToAppend.last());
+            newView->setCurrentIndex(dirsToAppend.constLast());
     }
 
     if (build && !alreadyExists)
@@ -713,8 +713,8 @@ QAbstractItemView *QColumnViewPrivate::createColumn(const QModelIndex &index, bo
         columnSizes.resize(qMax(columnSizes.count(), columns.count() + 1));
         columnSizes[columns.count()] = initialWidth;
     }
-    if (!columns.isEmpty() && columns.last()->isHidden())
-        columns.last()->setVisible(true);
+    if (!columns.isEmpty() && columns.constLast()->isHidden())
+        columns.constLast()->setVisible(true);
 
     columns.append(view);
     doLayout();
@@ -835,7 +835,7 @@ void QColumnViewPrivate::setPreviewWidget(QWidget *widget)
 {
     Q_Q(QColumnView);
     if (previewColumn) {
-        if (!columns.isEmpty() && columns.last() == previewColumn)
+        if (!columns.isEmpty() && columns.constLast() == previewColumn)
             columns.removeLast();
         previewColumn->deleteLater();
     }
@@ -1003,11 +1003,11 @@ void QColumnViewPrivate::_q_changeCurrentColumn()
             parentColumn->setCurrentIndex(current.parent());
     }
 
-    if (columns.last()->isHidden()) {
-        columns.last()->setVisible(true);
+    if (columns.constLast()->isHidden()) {
+        columns.constLast()->setVisible(true);
     }
-    if (columns.last()->selectionModel())
-        columns.last()->selectionModel()->clear();
+    if (columns.constLast()->selectionModel())
+        columns.constLast()->selectionModel()->clear();
     updateScrollbars();
 }
 
