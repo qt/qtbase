@@ -168,23 +168,12 @@ QT_END_NAMESPACE
     return [[dockMenu retain] autorelease];
 }
 
-- (void)setMenuLoader:(QCocoaMenuLoader *)menuLoader
-{
-    Q_UNUSED(menuLoader);
-    qWarning("-[QCocoaApplicationDelegate setMenuLoader:] is deprecated and is currently a no-op.");
-}
-
-- (QCocoaMenuLoader *)menuLoader
-{
-    return [QT_MANGLE_NAMESPACE(QCocoaMenuLoader) sharedMenuLoader];
-}
-
 - (BOOL) canQuit
 {
     [[NSApp mainMenu] cancelTracking];
 
     bool handle_quit = true;
-    NSMenuItem *quitMenuItem = [[[QCocoaApplicationDelegate sharedDelegate] menuLoader] quitMenuItem];
+    NSMenuItem *quitMenuItem = [[QT_MANGLE_NAMESPACE(QCocoaMenuLoader) sharedMenuLoader] quitMenuItem];
     if (!QGuiApplicationPrivate::instance()->modalWindowList.isEmpty()
         && [quitMenuItem isEnabled]) {
         int visible = 0;

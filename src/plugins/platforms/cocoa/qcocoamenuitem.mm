@@ -53,12 +53,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static inline QCocoaMenuLoader *getMenuLoader()
-{
-    return [NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)];
-}
-
-
 static quint32 constructModifierMask(quint32 accel_key)
 {
     quint32 ret = 0;
@@ -221,7 +215,7 @@ NSMenuItem *QCocoaMenuItem::sync()
 
     if ((m_role != NoRole && !m_textSynced) || m_merged) {
         NSMenuItem *mergeItem = nil;
-        QCocoaMenuLoader *loader = getMenuLoader();
+        QCocoaMenuLoader *loader = [QCocoaMenuLoader sharedMenuLoader];
         switch (m_role) {
         case ApplicationSpecificRole:
             mergeItem = [loader appSpecificMenuItem:reinterpret_cast<NSInteger>(this)];
@@ -359,7 +353,7 @@ QT_END_NAMESPACE
 
 QString QCocoaMenuItem::mergeText()
 {
-    QCocoaMenuLoader *loader = getMenuLoader();
+    QCocoaMenuLoader *loader = [QCocoaMenuLoader sharedMenuLoader];
     if (m_native == [loader aboutMenuItem]) {
         return qt_mac_applicationmenu_string(6).arg(qt_mac_applicationName());
     } else if (m_native== [loader aboutQtMenuItem]) {
@@ -379,7 +373,7 @@ QString QCocoaMenuItem::mergeText()
 
 QKeySequence QCocoaMenuItem::mergeAccel()
 {
-    QCocoaMenuLoader *loader = getMenuLoader();
+    QCocoaMenuLoader *loader = [QCocoaMenuLoader sharedMenuLoader];
     if (m_native == [loader preferencesMenuItem])
         return QKeySequence(QKeySequence::Preferences);
     else if (m_native == [loader quitMenuItem])

@@ -95,7 +95,6 @@
 
 @interface NSApplication (QT_MANGLE_NAMESPACE(QApplicationIntegration))
 - (void)QT_MANGLE_NAMESPACE(qt_setDockMenu):(NSMenu *)newMenu;
-- (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader);
 - (int)QT_MANGLE_NAMESPACE(qt_validModesForFontPanel):(NSFontPanel *)fontPanel;
 
 - (void)QT_MANGLE_NAMESPACE(qt_sendPostedMessage):(NSEvent *)event;

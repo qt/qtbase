@@ -52,11 +52,6 @@ QT_BEGIN_NAMESPACE
 
 static QList<QCocoaMenuBar*> static_menubars;
 
-static inline QCocoaMenuLoader *getMenuLoader()
-{
-    return [NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)];
-}
-
 QCocoaMenuBar::QCocoaMenuBar() :
     m_window(0)
 {
@@ -330,7 +325,7 @@ void QCocoaMenuBar::updateMenuBarImmediately()
         menu->syncModalState(disableForModal);
     }
 
-    QCocoaMenuLoader *loader = getMenuLoader();
+    QCocoaMenuLoader *loader = [QCocoaMenuLoader sharedMenuLoader];
     [loader ensureAppMenuInMenu:mb->nsMenu()];
 
     NSMutableSet *mergedItems = [[NSMutableSet setWithCapacity:0] retain];
