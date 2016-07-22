@@ -445,10 +445,4 @@ QT_END_NAMESPACE
     [NSApp terminate:self];
 }
 
-- (void)qtDispatcherToQAction:(id)sender
-{
-    Q_UNUSED(sender);
-    [[self menuLoader] qtDispatcherToQPAMenuItem:sender];
-}
-
 @end
