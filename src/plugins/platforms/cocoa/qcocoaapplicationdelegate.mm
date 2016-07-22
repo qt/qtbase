@@ -122,7 +122,6 @@ QT_END_NAMESPACE
 {
     sharedCocoaApplicationDelegate = nil;
     [dockMenu release];
-    [qtMenuLoader release];
     if (reflectionDelegate) {
         [[NSApplication sharedApplication] setDelegate:reflectionDelegate];
         [reflectionDelegate release];
@@ -171,14 +170,13 @@ QT_END_NAMESPACE
 
 - (void)setMenuLoader:(QCocoaMenuLoader *)menuLoader
 {
-    [menuLoader retain];
-    [qtMenuLoader release];
-    qtMenuLoader = menuLoader;
+    Q_UNUSED(menuLoader);
+    qWarning("-[QCocoaApplicationDelegate setMenuLoader:] is deprecated and is currently a no-op.");
 }
 
 - (QCocoaMenuLoader *)menuLoader
 {
-    return [[qtMenuLoader retain] autorelease];
+    return [QT_MANGLE_NAMESPACE(QCocoaMenuLoader) sharedMenuLoader];
 }
 
 - (BOOL) canQuit
@@ -450,7 +448,7 @@ QT_END_NAMESPACE
 - (void)qtDispatcherToQAction:(id)sender
 {
     Q_UNUSED(sender);
-    [qtMenuLoader qtDispatcherToQPAMenuItem:sender];
+    [[self menuLoader] qtDispatcherToQPAMenuItem:sender];
 }
 
 @end

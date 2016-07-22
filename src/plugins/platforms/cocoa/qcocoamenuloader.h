@@ -68,6 +68,7 @@
     NSMenuItem *hideAllOthersItem;
     NSMenuItem *showAllItem;
 }
++ (instancetype)sharedMenuLoader;
 - (instancetype)init;
 - (void)ensureAppMenuInMenu:(NSMenu *)menu;
 - (void)removeActionsFromAppMenu;

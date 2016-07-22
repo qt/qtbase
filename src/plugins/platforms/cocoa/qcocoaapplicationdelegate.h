@@ -95,7 +95,6 @@
 @interface QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) : NSObject <NSApplicationDelegate> {
     bool startedQuit;
     NSMenu *dockMenu;
-    QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader;
     NSObject <NSApplicationDelegate> *reflectionDelegate;
     bool inLaunch;
 }

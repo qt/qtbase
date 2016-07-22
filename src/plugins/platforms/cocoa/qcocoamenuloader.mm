@@ -57,6 +57,16 @@ QT_FORWARD_DECLARE_CLASS(QString)
 
 @implementation QCocoaMenuLoader
 
++ (instancetype)sharedMenuLoader
+{
+    static QCocoaMenuLoader *shared = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+                      shared = [[self alloc] init];
+                  });
+    return shared;
+}
+
 - (instancetype)init
 {
     if ((self = [super init])) {
@@ -108,9 +118,9 @@ QT_FORWARD_DECLARE_CLASS(QString)
         // Services item and menu
         servicesItem = [[NSMenuItem alloc] init];
         servicesItem.title = @"Services";
-        NSApplication *app = [NSApplication sharedApplication];
-        app.servicesMenu = [[[NSMenu alloc] initWithTitle:@"Services"] autorelease];
-        servicesItem.submenu = app.servicesMenu;
+        NSMenu *servicesMenu = [[[NSMenu alloc] initWithTitle:@"Services"] autorelease];
+        servicesItem.submenu = servicesMenu;
+        [NSApplication sharedApplication].servicesMenu = servicesMenu;
         [appMenu addItem:servicesItem];
 
         [appMenu addItem:[NSMenuItem separatorItem]];

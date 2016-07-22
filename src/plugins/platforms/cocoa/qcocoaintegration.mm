@@ -331,9 +331,8 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
         [cocoaApplication setDelegate:newDelegate];
 
         // Load the application menu. This menu contains Preferences, Hide, Quit.
-        QCocoaMenuLoader *qtMenuLoader = [[QCocoaMenuLoader alloc] init];
+        QCocoaMenuLoader *qtMenuLoader = [QCocoaMenuLoader sharedMenuLoader];
         [cocoaApplication setMenu:[qtMenuLoader menu]];
-        [newDelegate setMenuLoader:qtMenuLoader];
     }
 
     // The presentation options such as whether or not the dock and/or menu bar is
