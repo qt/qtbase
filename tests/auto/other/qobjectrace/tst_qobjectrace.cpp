@@ -51,6 +51,7 @@ class tst_QObjectRace: public QObject
 private slots:
     void moveToThreadRace();
     void destroyRace();
+    void disconnectRace();
 };
 
 class RaceObject : public QObject
@@ -298,6 +299,180 @@ void tst_QObjectRace::destroyRace()
         delete threads[i];
 }
 
+static QAtomicInteger<unsigned> countedStructObjectsCount;
+struct CountedFunctor
+{
+    CountedFunctor() : destroyed(false) { countedStructObjectsCount.fetchAndAddRelaxed(1); }
+    CountedFunctor(const CountedFunctor &) : destroyed(false) { countedStructObjectsCount.fetchAndAddRelaxed(1); }
+    CountedFunctor &operator=(const CountedFunctor &) { return *this; }
+    ~CountedFunctor() { destroyed = true; countedStructObjectsCount.fetchAndAddRelaxed(-1);}
+    void operator()() const {QCOMPARE(destroyed, false);}
+
+private:
+    bool destroyed;
+};
+
+class DisconnectRaceSenderObject : public QObject
+{
+    Q_OBJECT
+signals:
+    void theSignal();
+};
+
+class DisconnectRaceThread : public QThread
+{
+    Q_OBJECT
+
+    DisconnectRaceSenderObject *sender;
+    bool emitSignal;
+public:
+    DisconnectRaceThread(DisconnectRaceSenderObject *s, bool emitIt)
+        : QThread(), sender(s), emitSignal(emitIt)
+    {
+    }
+
+    void run()
+    {
+        while (!isInterruptionRequested()) {
+            QMetaObject::Connection conn = connect(sender, &DisconnectRaceSenderObject::theSignal,
+                                                   sender, CountedFunctor(), Qt::BlockingQueuedConnection);
+            if (emitSignal)
+                emit sender->theSignal();
+            disconnect(conn);
+            yieldCurrentThread();
+        }
+    }
+};
+
+class DeleteReceiverRaceSenderThread : public QThread
+{
+    Q_OBJECT
+
+    DisconnectRaceSenderObject *sender;
+public:
+    DeleteReceiverRaceSenderThread(DisconnectRaceSenderObject *s)
+        : QThread(), sender(s)
+    {
+    }
+
+    void run()
+    {
+        while (!isInterruptionRequested()) {
+            emit sender->theSignal();
+            yieldCurrentThread();
+        }
+    }
+};
+
+class DeleteReceiverRaceReceiver : public QObject
+{
+    Q_OBJECT
+
+    DisconnectRaceSenderObject *sender;
+    QObject *receiver;
+    QTimer *timer;
+public:
+    DeleteReceiverRaceReceiver(DisconnectRaceSenderObject *s)
+        : QObject(), sender(s), receiver(0)
+    {
+        timer = new QTimer(this);
+        connect(timer, &QTimer::timeout, this, &DeleteReceiverRaceReceiver::onTimeout);
+        timer->start(1);
+    }
+
+    void onTimeout()
+    {
+        if (receiver)
+            delete receiver;
+        receiver = new QObject;
+        connect(sender, &DisconnectRaceSenderObject::theSignal, receiver, CountedFunctor(), Qt::BlockingQueuedConnection);
+    }
+};
+
+class DeleteReceiverRaceReceiverThread : public QThread
+{
+    Q_OBJECT
+
+    DisconnectRaceSenderObject *sender;
+public:
+    DeleteReceiverRaceReceiverThread(DisconnectRaceSenderObject *s)
+        : QThread(), sender(s)
+    {
+    }
+
+    void run()
+    {
+        QScopedPointer<DeleteReceiverRaceReceiver> receiver(new DeleteReceiverRaceReceiver(sender));
+        exec();
+    }
+};
+
+void tst_QObjectRace::disconnectRace()
+{
+    enum { ThreadCount = 20, TimeLimit = 3000 };
+
+    QCOMPARE(countedStructObjectsCount.load(), 0u);
+
+    {
+        QScopedPointer<DisconnectRaceSenderObject> sender(new DisconnectRaceSenderObject());
+        QScopedPointer<QThread> senderThread(new QThread());
+        senderThread->start();
+        sender->moveToThread(senderThread.data());
+
+        DisconnectRaceThread *threads[ThreadCount];
+        for (int i = 0; i < ThreadCount; ++i) {
+            threads[i] = new DisconnectRaceThread(sender.data(), !(i % 10));
+            threads[i]->start();
+        }
+
+        QTime timeLimiter;
+        timeLimiter.start();
+
+        while (timeLimiter.elapsed() < TimeLimit)
+            QTest::qWait(10);
+
+        for (int i = 0; i < ThreadCount; ++i) {
+            threads[i]->requestInterruption();
+            QVERIFY(threads[i]->wait(300));
+            delete threads[i];
+        }
+
+        senderThread->quit();
+        QVERIFY(senderThread->wait(300));
+    }
+
+    QCOMPARE(countedStructObjectsCount.load(), 0u);
+
+    {
+        QScopedPointer<DisconnectRaceSenderObject> sender(new DisconnectRaceSenderObject());
+        QScopedPointer<DeleteReceiverRaceSenderThread> senderThread(new DeleteReceiverRaceSenderThread(sender.data()));
+        senderThread->start();
+        sender->moveToThread(senderThread.data());
+
+        DeleteReceiverRaceReceiverThread *threads[ThreadCount];
+        for (int i = 0; i < ThreadCount; ++i) {
+            threads[i] = new DeleteReceiverRaceReceiverThread(sender.data());
+            threads[i]->start();
+        }
+
+        QTime timeLimiter;
+        timeLimiter.start();
+
+        while (timeLimiter.elapsed() < TimeLimit)
+            QTest::qWait(10);
+
+        senderThread->requestInterruption();
+        QVERIFY(senderThread->wait(300));
+
+        for (int i = 0; i < ThreadCount; ++i) {
+            threads[i]->quit();
+            QVERIFY(threads[i]->wait(300));
+            delete threads[i];
+        }
+    }
+
+    QCOMPARE(countedStructObjectsCount.load(), 0u);
+}
 
 QTEST_MAIN(tst_QObjectRace)
 #include "tst_qobjectrace.moc"
