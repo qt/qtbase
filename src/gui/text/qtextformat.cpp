@@ -164,24 +164,25 @@ QDataStream &operator>>(QDataStream &stream, QTextLength &length)
 }
 #endif // QT_NO_DATASTREAM
 
+namespace {
+struct Property
+{
+    inline Property(qint32 k, const QVariant &v) : key(k), value(v) {}
+    inline Property() {}
+
+    qint32 key;
+    QVariant value;
+
+    inline bool operator==(const Property &other) const
+    { return key == other.key && value == other.value; }
+};
+}
+Q_DECLARE_TYPEINFO(Property, Q_MOVABLE_TYPE);
+
 class QTextFormatPrivate : public QSharedData
 {
 public:
     QTextFormatPrivate() : hashDirty(true), fontDirty(true), hashValue(0) {}
-
-    struct Property
-    {
-        inline Property(qint32 k, const QVariant &v) : key(k), value(v) {}
-        inline Property() {}
-
-        qint32 key;
-        QVariant value;
-
-        inline bool operator==(const Property &other) const
-        { return key == other.key && value == other.value; }
-        inline bool operator!=(const Property &other) const
-        { return key != other.key || value != other.value; }
-    };
 
     inline uint hash() const
     {
@@ -263,7 +264,6 @@ private:
     friend QDataStream &operator<<(QDataStream &, const QTextFormat &);
     friend QDataStream &operator>>(QDataStream &, QTextFormat &);
 };
-Q_DECLARE_TYPEINFO(QTextFormatPrivate::Property, Q_MOVABLE_TYPE);
 
 static inline uint hash(const QColor &color)
 {
@@ -845,10 +845,10 @@ void QTextFormat::merge(const QTextFormat &other)
 
     QTextFormatPrivate *d = this->d;
 
-    const QVector<QTextFormatPrivate::Property> &otherProps = other.d->props;
+    const QVector<QT_PREPEND_NAMESPACE(Property)> &otherProps = other.d->props;
     d->props.reserve(d->props.size() + otherProps.size());
     for (int i = 0; i < otherProps.count(); ++i) {
-        const QTextFormatPrivate::Property &p = otherProps.at(i);
+        const QT_PREPEND_NAMESPACE(Property) &p = otherProps.at(i);
         d->insertProperty(p.key, p.value);
     }
 }
