@@ -23,6 +23,10 @@ demos/*/*[.]app
 config.tests/*/*/*
 !config.tests/*/*/*[.]*
 config.tests/*/*/*[.]app
+config.tests/arch/arch
+config.tests/configure.cfg
+config.tests/conftest-out
+config.tests/conftest.cpp
 
 callgrind.out.*
 pcviewer.cfg
@@ -114,6 +118,7 @@ bin/sfwlisten*
 configure.cache
 config.status
 config.summary
+config.log
 mkspecs/default
 mkspecs/default-host
 mkspecs/qconfig.pri
