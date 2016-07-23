@@ -66,14 +66,16 @@ void tst_QFileSystemMetaData::timeSinceEpoch()
     /* data.ftLastAccessTime = data.ftLastWriteTime = */
     data.ftCreationTime = epochToFileTime(afterEpochUtc);
     meta.fillFromFindData(data);
+    QCOMPARE(meta.birthTime().toUTC(),
+             QDateTime::fromMSecsSinceEpoch(afterEpochUtc * qint64(1000), Qt::UTC));
 #else
     QT_STATBUF data;
     memset(&data, 0, sizeof(data));
     data.st_ctime = afterEpochUtc;
     meta.fillFromStatBuf(data);
-#endif
-    QCOMPARE(meta.creationTime().toUTC(),
+    QCOMPARE(meta.metadataChangeTime().toUTC(),
              QDateTime::fromMSecsSinceEpoch(afterEpochUtc * qint64(1000), Qt::UTC));
+#endif
 }
 #else // i.e. no Q_AUTOTEST_EXPORT
 void tst_QFileSystemMetaData::timeSinceEpoch()

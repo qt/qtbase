@@ -328,7 +328,8 @@ QAbstractFileEngine *QAbstractFileEngine::create(const QString &fileName)
 
     These are used by the fileTime() function.
 
-    \value CreationTime When the file was created.
+    \value BirthTime When the file was born (created).
+    \value MetadataChangeTime When the file's metadata was last changed.
     \value ModificationTime When the file was most recently modified.
     \value AccessTime When the file was most recently accessed (e.g.
     read or written to).
@@ -756,12 +757,12 @@ bool QAbstractFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
 }
 
 /*!
-    If \a time is \c CreationTime, return when the file was created.
-    If \a time is \c ModificationTime, return when the file was most
-    recently modified. If \a time is \c AccessTime, return when the
-    file was most recently accessed (e.g. read or written).
-    If the time cannot be determined return QDateTime() (an invalid
-    date time).
+    If \a time is \c BirthTime, return when the file was born (created). If \a
+    time is \c MetadataChangeTime, return when the file's metadata was last
+    changed. If \a time is \c ModificationTime, return when the file was most
+    recently modified. If \a time is \c AccessTime, return when the file was
+    most recently accessed (e.g. read or written). If the time cannot be
+    determined return QDateTime() (an invalid date time).
 
     This virtual function must be reimplemented by all subclasses.
 

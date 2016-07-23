@@ -35,6 +35,7 @@
 #include <qtemporarydir.h>
 #include <qdir.h>
 #include <qfileinfo.h>
+#include <qstorageinfo.h>
 #ifdef Q_OS_UNIX
 #include <errno.h>
 #include <fcntl.h>
@@ -64,84 +65,38 @@
 #define Q_NO_SYMLINKS
 #endif
 
-
-#if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
-inline bool qt_isEvilFsTypeName(const char *name)
+inline bool qIsLikelyToBeFat(const QString &path)
 {
+    QByteArray name = QStorageInfo(path).fileSystemType().toLower();
+    return name.contains("fat") || name.contains("msdos");
+}
+
+inline bool qIsLikelyToBeNfs(const QString &path)
+{
+#ifdef Q_OS_WIN
+    Q_UNUSED(path);
+    return false;
+#else
+    QByteArray type = QStorageInfo(path).fileSystemType();
+    const char *name = type.constData();
+
     return (qstrncmp(name, "nfs", 3) == 0
             || qstrncmp(name, "autofs", 6) == 0
+            || qstrncmp(name, "autofsng", 8) == 0
             || qstrncmp(name, "cachefs", 7) == 0);
-}
-
-#if defined(Q_OS_BSD4) && !defined(Q_OS_NETBSD)
-# include <sys/param.h>
-# include <sys/mount.h>
-
-bool qIsLikelyToBeNfs(int handle)
-{
-    struct statfs buf;
-    if (fstatfs(handle, &buf) != 0)
-        return false;
-    return qt_isEvilFsTypeName(buf.f_fstypename);
-}
-
-#elif defined(Q_OS_LINUX) || defined(Q_OS_HURD)
-
-# include <sys/vfs.h>
-# ifdef QT_LINUXBASE
-   // LSB 3.2 has fstatfs in sys/statfs.h, sys/vfs.h is just an empty dummy header
-#  include <sys/statfs.h>
-# endif
-
-# ifndef NFS_SUPER_MAGIC
-#  define NFS_SUPER_MAGIC       0x00006969
-# endif
-# ifndef AUTOFS_SUPER_MAGIC
-#  define AUTOFS_SUPER_MAGIC    0x00000187
-# endif
-# ifndef AUTOFSNG_SUPER_MAGIC
-#  define AUTOFSNG_SUPER_MAGIC  0x7d92b1a0
-# endif
-
-bool qIsLikelyToBeNfs(int handle)
-{
-    struct statfs buf;
-    if (fstatfs(handle, &buf) != 0)
-        return false;
-    return buf.f_type == NFS_SUPER_MAGIC
-           || buf.f_type == AUTOFS_SUPER_MAGIC
-           || buf.f_type == AUTOFSNG_SUPER_MAGIC;
-}
-
-#elif defined(Q_OS_SOLARIS) || defined(Q_OS_IRIX) || defined(Q_OS_AIX) || defined(Q_OS_HPUX) \
-      || defined(Q_OS_OSF) || defined(Q_OS_QNX) || defined(Q_OS_SCO) \
-      || defined(Q_OS_UNIXWARE) || defined(Q_OS_RELIANT) || defined(Q_OS_NETBSD)
-
-# include <sys/statvfs.h>
-
-bool qIsLikelyToBeNfs(int handle)
-{
-    struct statvfs buf;
-    if (fstatvfs(handle, &buf) != 0)
-        return false;
-#if defined(Q_OS_NETBSD)
-    return qt_isEvilFsTypeName(buf.f_fstypename);
-#else
-    return qt_isEvilFsTypeName(buf.f_basetype);
 #endif
 }
-#else
-inline bool qIsLikelyToBeNfs(int /* handle */)
-{
-    return false;
-}
-#endif
-#endif
 
 static QString seedAndTemplate()
 {
-    qsrand(QDateTime::currentSecsSinceEpoch());
-    return QDir::tempPath() + "/tst_qfileinfo-XXXXXX";
+    QString base;
+#if defined(Q_OS_UNIX) && !defined(Q_OS_ANDROID)
+    // use XDG_RUNTIME_DIR as it's a fully-capable FS
+    base = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
+#endif
+    if (base.isEmpty())
+        base = QDir::tempPath();
+    return base + "/tst_qfileinfo-XXXXXX";
 }
 
 static QByteArray msgDoesNotExist(const QString &name)
@@ -1129,43 +1084,92 @@ void tst_QFileInfo::fileTimes_data()
 
 void tst_QFileInfo::fileTimes()
 {
-    int sleepTime = 2000;
+    auto datePairString = [](const QDateTime &actual, const QDateTime &before) {
+        return (actual.toString(Qt::ISODateWithMs) + " (should be >) " + before.toString(Qt::ISODateWithMs))
+                .toLatin1();
+    };
+
     QFETCH(QString, fileName);
+    int sleepTime = 100;
+
+    // on Linux and Windows, the filesystem timestamps may be slightly out of
+    // sync with the system clock (maybe they're using CLOCK_REALTIME_COARSE),
+    // so add a margin of error to our comparisons
+    int fsClockSkew = 10;
+#ifdef Q_OS_WIN
+    fsClockSkew = 500;
+#endif
+
+    // NFS clocks may be WAY out of sync
+    if (qIsLikelyToBeNfs(fileName))
+        QSKIP("This test doesn't work on NFS");
+
+    bool noAccessTime = false;
+    {
+        // try to guess if file times on this filesystem round to the second
+        QFileInfo cwd(".");
+        if (cwd.lastModified().toMSecsSinceEpoch() % 1000 == 0
+                && cwd.lastRead().toMSecsSinceEpoch() % 1000 == 0) {
+            fsClockSkew = sleepTime = 1000;
+
+            noAccessTime = qIsLikelyToBeFat(fileName);
+            if (noAccessTime) {
+                // FAT filesystems (but maybe not exFAT) store timestamps with 2-second
+                // granularity and access time with 1-day granularity
+                fsClockSkew = sleepTime = 2000;
+            }
+        }
+    }
+
     if (QFile::exists(fileName)) {
         QVERIFY(QFile::remove(fileName));
     }
-    QTest::qSleep(sleepTime);
+
+    QDateTime beforeBirth, beforeWrite, beforeMetadataChange, beforeRead;
+    QDateTime birthTime, writeTime, metadataChangeTime, readTime;
+
+    // --- Create file and write to it
+    beforeBirth = QDateTime::currentDateTime().addMSecs(-fsClockSkew);
     {
         QFile file(fileName);
         QVERIFY(file.open(QFile::WriteOnly | QFile::Text));
-#if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
-        if (qIsLikelyToBeNfs(file.handle()))
-            QSKIP("This Test doesn't work on NFS");
-#endif
+        QFileInfo fileInfo(fileName);
+        birthTime = fileInfo.birthTime();
+        QVERIFY2(!birthTime.isValid() || birthTime > beforeBirth,
+                 datePairString(birthTime, beforeBirth));
+
+        QTest::qSleep(sleepTime);
+        beforeWrite = QDateTime::currentDateTime().addMSecs(-fsClockSkew);
         QTextStream ts(&file);
         ts << fileName << endl;
     }
-    QTest::qSleep(sleepTime);
-    QDateTime beforeWrite = QDateTime::currentDateTime();
-    QTest::qSleep(sleepTime);
     {
         QFileInfo fileInfo(fileName);
-        QVERIFY(!fileInfo.birthTime().isValid() || fileInfo.birthTime() < beforeWrite);
-        QVERIFY(fileInfo.metadataChangeTime() < beforeWrite);
-        QVERIFY(fileInfo.created() < beforeWrite);
+        writeTime = fileInfo.lastModified();
+        QVERIFY2(writeTime > beforeWrite, datePairString(writeTime, beforeWrite));
+        QCOMPARE(fileInfo.birthTime(), birthTime); // mustn't have changed
+    }
+
+    // --- Change the file's metadata
+    QTest::qSleep(sleepTime);
+    beforeMetadataChange = QDateTime::currentDateTime().addMSecs(-fsClockSkew);
+    {
         QFile file(fileName);
-        QVERIFY(file.open(QFile::ReadWrite | QFile::Text));
-        QTextStream ts(&file);
-        ts << fileName << endl;
+        file.setPermissions(file.permissions());
     }
-    QTest::qSleep(sleepTime);
-    QDateTime beforeRead = QDateTime::currentDateTime();
-    QTest::qSleep(sleepTime);
     {
         QFileInfo fileInfo(fileName);
-        QVERIFY(!fileInfo.birthTime().isValid() || fileInfo.birthTime() < beforeWrite);
-        QVERIFY(fileInfo.metadataChangeTime() > beforeWrite);
-        QVERIFY(fileInfo.lastModified() > beforeWrite);
+        metadataChangeTime = fileInfo.metadataChangeTime();
+        QVERIFY2(metadataChangeTime > beforeMetadataChange,
+                 datePairString(metadataChangeTime, beforeMetadataChange));
+        QVERIFY(metadataChangeTime >= writeTime); // not all filesystems can store both times
+        QCOMPARE(fileInfo.birthTime(), birthTime); // mustn't have changed
+    }
+
+    // --- Read the file
+    QTest::qSleep(sleepTime);
+    beforeRead = QDateTime::currentDateTime().addMSecs(-fsClockSkew);
+    {
         QFile file(fileName);
         QVERIFY(file.open(QFile::ReadOnly | QFile::Text));
         QTextStream ts(&file);
@@ -1174,13 +1178,17 @@ void tst_QFileInfo::fileTimes()
     }
 
     QFileInfo fileInfo(fileName);
-    QVERIFY(!fileInfo.birthTime().isValid() || fileInfo.birthTime() < beforeWrite);
-    QVERIFY(fileInfo.metadataChangeTime() > beforeWrite);
+    readTime = fileInfo.lastRead();
+    QCOMPARE(fileInfo.lastModified(), writeTime); // mustn't have changed
+    QCOMPARE(fileInfo.birthTime(), birthTime); // mustn't have changed
+    QVERIFY(readTime.isValid());
 
+#if defined(Q_OS_WINRT) || defined(Q_OS_QNX) || defined(Q_OS_ANDROID)
+    noAccessTime = true;
+#elif defined(Q_OS_WIN)
     //In Vista the last-access timestamp is not updated when the file is accessed/touched (by default).
     //To enable this the HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\NtfsDisableLastAccessUpdate
     //is set to 0, in the test machine.
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     HKEY key;
     if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control\\FileSystem",
         0, KEY_READ, &key)) {
@@ -1189,22 +1197,16 @@ void tst_QFileInfo::fileTimes()
             LONG error = RegQueryValueEx(key, L"NtfsDisableLastAccessUpdate"
                 , NULL, NULL, (LPBYTE)&disabledAccessTimes, &size);
             if (ERROR_SUCCESS == error && disabledAccessTimes)
-                QEXPECT_FAIL("", "File access times are disabled in windows registry (this is the default setting)", Continue);
+                noAccessTime = true;
             RegCloseKey(key);
     }
 #endif
-#if defined(Q_OS_WINRT)
-    QEXPECT_FAIL("", "WinRT does not allow timestamp handling change in the filesystem due to sandboxing", Continue);
-#elif defined(Q_OS_QNX)
-    QEXPECT_FAIL("", "QNX uses the noatime filesystem option", Continue);
-#elif defined(Q_OS_ANDROID)
-    if (fileInfo.lastRead() <= beforeRead)
-        QEXPECT_FAIL("", "Android may use relatime or noatime on mounts", Continue);
-#endif
 
-    QVERIFY(fileInfo.lastRead() > beforeRead);
-    QVERIFY(fileInfo.lastModified() > beforeWrite);
-    QVERIFY(fileInfo.lastModified() < beforeRead);
+    if (noAccessTime)
+        return;
+
+    QVERIFY2(readTime > beforeRead, datePairString(readTime, beforeRead));
+    QVERIFY(writeTime < beforeRead);
 }
 
 void tst_QFileInfo::fileTimes_oldFile()

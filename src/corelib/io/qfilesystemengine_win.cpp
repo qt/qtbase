@@ -412,7 +412,8 @@ void QFileSystemEngine::clearWinStatData(QFileSystemMetaData &data)
 {
     data.size_ = 0;
     data.fileAttribute_ =  0;
-    data.creationTime_ = FILETIME();
+    data.birthTime_ = FILETIME();
+    data.changeTime_ = FILETIME();
     data.lastAccessTime_ = FILETIME();
     data.lastWriteTime_ = FILETIME();
 }
@@ -610,7 +611,7 @@ bool QFileSystemEngine::setFileTime(HANDLE fHandle, const QDateTime &newDate,
         pLastAccess = &fTime;
         break;
 
-    case QAbstractFileEngine::CreationTime:
+    case QAbstractFileEngine::BirthTime:
         pCreationTime = &fTime;
         break;
 
@@ -889,8 +890,10 @@ bool QFileSystemEngine::fillMetaData(HANDLE fHandle, QFileSystemMetaData &data,
     FILE_BASIC_INFO fileBasicInfo;
     if (GetFileInformationByHandleEx(fHandle, FileBasicInfo, &fileBasicInfo, sizeof(fileBasicInfo))) {
         data.fillFromFileAttribute(fileBasicInfo.FileAttributes);
-        data.creationTime_.dwHighDateTime = fileBasicInfo.CreationTime.HighPart;
-        data.creationTime_.dwLowDateTime = fileBasicInfo.CreationTime.LowPart;
+        data.birthTime_.dwHighDateTime = fileBasicInfo.CreationTime.HighPart;
+        data.birthTime_.dwLowDateTime = fileBasicInfo.CreationTime.LowPart;
+        data.changeTime_.dwHighDateTime = fileBasicInfo.ChangeTime.HighPart;
+        data.changeTime_.dwLowDateTime = fileBasicInfo.ChangeTime.LowPart;
         data.lastAccessTime_.dwHighDateTime = fileBasicInfo.LastAccessTime.HighPart;
         data.lastAccessTime_.dwLowDateTime = fileBasicInfo.LastAccessTime.LowPart;
         data.lastWriteTime_.dwHighDateTime = fileBasicInfo.LastWriteTime.HighPart;
@@ -1347,6 +1350,9 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
 
 static inline QDateTime fileTimeToQDateTime(const FILETIME *time)
 {
+    if (time->dwHighDateTime == 0 && time->dwLowDateTime == 0)
+        return QDateTime();
+
     SYSTEMTIME sTime;
     FileTimeToSystemTime(time, &sTime);
     return QDateTime(QDate(sTime.wYear, sTime.wMonth, sTime.wDay),
@@ -1354,9 +1360,13 @@ static inline QDateTime fileTimeToQDateTime(const FILETIME *time)
                      Qt::UTC);
 }
 
-QDateTime QFileSystemMetaData::creationTime() const
+QDateTime QFileSystemMetaData::birthTime() const
 {
-    return fileTimeToQDateTime(&creationTime_);
+    return fileTimeToQDateTime(&birthTime_);
+}
+QDateTime QFileSystemMetaData::metadataChangeTime() const
+{
+    return fileTimeToQDateTime(&changeTime_);
 }
 QDateTime QFileSystemMetaData::modificationTime() const
 {

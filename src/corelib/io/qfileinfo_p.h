@@ -66,9 +66,18 @@ QT_BEGIN_NAMESPACE
 class QFileInfoPrivate : public QSharedData
 {
 public:
-    enum { CachedFileFlags=0x01, CachedLinkTypeFlag=0x02, CachedBundleTypeFlag=0x04,
-           CachedMTime=0x10, CachedCTime=0x20, CachedATime=0x40,
-           CachedSize =0x08, CachedPerms=0x80 };
+    enum {
+        // note: cachedFlags is only 30-bits wide
+        CachedFileFlags         = 0x01,
+        CachedLinkTypeFlag      = 0x02,
+        CachedBundleTypeFlag    = 0x04,
+        CachedSize              = 0x08,
+        CachedATime             = 0x10,
+        CachedBTime             = 0x20,
+        CachedMCTime            = 0x40,
+        CachedMTime             = 0x80,
+        CachedPerms             = 0x100
+    };
 
     inline QFileInfoPrivate()
         : QSharedData(), fileEngine(0),

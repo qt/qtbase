@@ -113,9 +113,10 @@ public:
         OwnerGroup
     };
     enum FileTime {
-        CreationTime,
-        ModificationTime,
-        AccessTime
+        AccessTime,
+        BirthTime,
+        MetadataChangeTime,
+        ModificationTime
     };
 
     virtual ~QAbstractFileEngine();

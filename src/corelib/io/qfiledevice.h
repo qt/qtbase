@@ -75,9 +75,10 @@ public:
     };
 
     enum FileTime {
-        FileCreationTime,
-        FileModificationTime,
-        FileAccessTime
+        FileAccessTime,
+        FileBirthTime,
+        FileMetadataChangeTime,
+        FileModificationTime
     };
 
     enum Permission {

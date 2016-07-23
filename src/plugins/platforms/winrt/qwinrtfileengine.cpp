@@ -414,10 +414,11 @@ QDateTime QWinRTFileEngine::fileTime(FileTime type) const
     HRESULT hr;
     DateTime dateTime = { 0 };
     switch (type) {
-    case CreationTime:
+    case BirthTime:
         hr = d->file->get_DateCreated(&dateTime);
         RETURN_IF_FAILED("Failed to get file creation time", return QDateTime());
         break;
+    case MetadataChangeTime:
     case ModificationTime:
     case AccessTime: {
         ComPtr<IAsyncOperation<FileProperties::BasicProperties *>> op;

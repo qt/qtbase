@@ -864,7 +864,7 @@ bool QFSFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
         return false;
     }
 
-    if (!newDate.isValid()) {
+    if (!newDate.isValid() || time == QAbstractFileEngine::MetadataChangeTime) {
         setError(QFile::UnspecifiedError, qt_error_string(ERROR_INVALID_PARAMETER));
         return false;
     }

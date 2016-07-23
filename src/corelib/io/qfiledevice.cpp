@@ -744,29 +744,23 @@ bool QFileDevice::unmap(uchar *address)
 
     This enum is used by the fileTime() and setFileTime() functions.
 
-    \value FileCreationTime     When the file was created (not supported on UNIX).
-    \value FileModificationTime When the file was most recently modified.
-    \value FileAccessTime       When the file was most recently accessed (e.g.
-                                read or written to).
+    \value FileAccessTime           When the file was most recently accessed
+                                    (e.g. read or written to).
+    \value FileBirthTime            When the file was created (may not be not
+                                    supported on UNIX).
+    \value FileMetadataChangeTime   When the file's metadata was last changed.
+    \value FileModificationTime     When the file was most recently modified.
 
-    \sa setFileTime(), fileTime()
+    \sa setFileTime(), fileTime(), QFileInfo::fileTime()
 */
 
 static inline QAbstractFileEngine::FileTime FileDeviceTimeToAbstractFileEngineTime(QFileDevice::FileTime time)
 {
-    switch (time) {
-    case QFileDevice::FileAccessTime:
-        return QAbstractFileEngine::AccessTime;
-
-    case QFileDevice::FileCreationTime:
-        return QAbstractFileEngine::CreationTime;
-
-    case QFileDevice::FileModificationTime:
-        return QAbstractFileEngine::ModificationTime;
-    }
-
-    Q_UNREACHABLE();
-    return QAbstractFileEngine::AccessTime;
+    Q_STATIC_ASSERT(int(QFileDevice::FileAccessTime) == int(QAbstractFileEngine::AccessTime));
+    Q_STATIC_ASSERT(int(QFileDevice::FileBirthTime) == int(QAbstractFileEngine::BirthTime));
+    Q_STATIC_ASSERT(int(QFileDevice::FileMetadataChangeTime) == int(QAbstractFileEngine::MetadataChangeTime));
+    Q_STATIC_ASSERT(int(QFileDevice::FileModificationTime) == int(QAbstractFileEngine::ModificationTime));
+    return QAbstractFileEngine::FileTime(time);
 }
 
 /*!

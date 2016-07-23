@@ -194,8 +194,11 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     case QAbstractFileEngine::AccessTime:
         cf = CachedATime;
         break;
-    case QAbstractFileEngine::CreationTime:
-        cf = CachedCTime;
+    case QAbstractFileEngine::BirthTime:
+        cf = CachedBTime;
+        break;
+    case QAbstractFileEngine::MetadataChangeTime:
+        cf = CachedMCTime;
         break;
     case QAbstractFileEngine::ModificationTime:
         cf = CachedMTime;
@@ -1316,7 +1319,10 @@ qint64 QFileInfo::size() const
 */
 QDateTime QFileInfo::created() const
 {
-    return fileTime(QFile::FileCreationTime);
+    QDateTime d = fileTime(QFile::FileBirthTime);
+    if (d.isValid())
+        return d;
+    return fileTime(QFile::FileMetadataChangeTime);
 }
 #endif
 
@@ -1331,7 +1337,7 @@ QDateTime QFileInfo::created() const
 */
 QDateTime QFileInfo::birthTime() const
 {
-    return fileTime(QFile::FileCreationTime);
+    return fileTime(QFile::FileBirthTime);
 }
 
 /*!
@@ -1345,7 +1351,7 @@ QDateTime QFileInfo::birthTime() const
 */
 QDateTime QFileInfo::metadataChangeTime() const
 {
-    return fileTime(QFile::FileCreationTime);
+    return fileTime(QFile::FileMetadataChangeTime);
 }
 
 /*!
@@ -1373,16 +1379,17 @@ QDateTime QFileInfo::lastRead() const
 
 /*!
     \since 5.10
-    Returns the file time specified by \a time.
-    If the time cannot be determined return QDateTime() (an invalid
-    date time).
+
+    Returns the file time specified by \a time. If the time cannot be
+    determined, an invalid date time is returned.
 
     \sa QFile::FileTime, QDateTime::isValid()
 */
 QDateTime QFileInfo::fileTime(QFile::FileTime time) const
 {
     Q_STATIC_ASSERT(int(QFile::FileAccessTime) == int(QAbstractFileEngine::AccessTime));
-    Q_STATIC_ASSERT(int(QFile::FileCreationTime) == int(QAbstractFileEngine::CreationTime));
+    Q_STATIC_ASSERT(int(QFile::FileBirthTime) == int(QAbstractFileEngine::BirthTime));
+    Q_STATIC_ASSERT(int(QFile::FileMetadataChangeTime) == int(QAbstractFileEngine::MetadataChangeTime));
     Q_STATIC_ASSERT(int(QFile::FileModificationTime) == int(QAbstractFileEngine::ModificationTime));
 
     Q_D(const QFileInfo);
@@ -1397,8 +1404,11 @@ QDateTime QFileInfo::fileTime(QFile::FileTime time) const
     case QFile::FileAccessTime:
         flag = QFileSystemMetaData::AccessTime;
         break;
-    case QFile::FileCreationTime:
-        flag = QFileSystemMetaData::CreationTime;
+    case QFile::FileBirthTime:
+        flag = QFileSystemMetaData::BirthTime;
+        break;
+    case QFile::FileMetadataChangeTime:
+        flag = QFileSystemMetaData::MetadataChangeTime;
         break;
     case QFile::FileModificationTime:
         flag = QFileSystemMetaData::ModificationTime;

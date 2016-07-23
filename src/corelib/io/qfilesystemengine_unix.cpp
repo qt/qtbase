@@ -518,7 +518,8 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
             data.fillFromStatBuf(statBuffer);
         else {
             entryExists = false;
-            data.creationTime_ = 0;
+            data.birthTime_ = 0;
+            data.metadataChangeTime_ = 0;
             data.modificationTime_ = 0;
             data.accessTime_ = 0;
             data.size_ = 0;
@@ -844,7 +845,8 @@ bool QFileSystemEngine::setPermissions(int fd, QFile::Permissions permissions, Q
 //static
 bool QFileSystemEngine::setFileTime(int fd, const QDateTime &newDate, QAbstractFileEngine::FileTime time, QSystemError &error)
 {
-    if (!newDate.isValid() || time == QAbstractFileEngine::CreationTime) {
+    if (!newDate.isValid() || time == QAbstractFileEngine::BirthTime ||
+            time == QAbstractFileEngine::MetadataChangeTime) {
         error = QSystemError(EINVAL, QSystemError::StandardLibraryError);
         return false;
     }

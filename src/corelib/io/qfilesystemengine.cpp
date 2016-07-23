@@ -293,15 +293,14 @@ void QFileSystemMetaData::fillFromStatBuf(const QT_STATBUF &statBuffer)
 #endif
 
     // Times
+    birthTime_ = 0;
 #if _POSIX_VERSION >= 200809L
     modificationTime_ = timespecToMSecs(statBuffer.st_mtim);
-    creationTime_ = timespecToMSecs(statBuffer.st_ctim);
-    if (!creationTime_)
-        creationTime_ = modificationTime_;
+    metadataChangeTime_ = timespecToMSecs(statBuffer.st_ctim);
     accessTime_ = timespecToMSecs(statBuffer.st_atim);
 #else
-    creationTime_ = qint64(statBuffer.st_ctime ? statBuffer.st_ctime : statBuffer.st_mtime) * 1000;
     modificationTime_ = qint64(statBuffer.st_mtime) * 1000;
+    metadataChangeTime_ = qint64(statBuffer.st_ctime) * 1000;
     accessTime_ = qint64(statBuffer.st_atime) * 1000;
 #endif
     userId_ = statBuffer.st_uid;
