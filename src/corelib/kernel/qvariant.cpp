@@ -3560,6 +3560,8 @@ int QVariant::compare(const QVariant &v) const
         return v1.toTime() < v2.toTime() ? -1 : 1;
     case QVariant::DateTime:
         return v1.toDateTime() < v2.toDateTime() ? -1 : 1;
+    case QVariant::StringList:
+        return v1.toStringList() < v2.toStringList() ? -1 : 1;
     }
     int r = v1.toString().compare(v2.toString(), Qt::CaseInsensitive);
     if (r == 0) {
