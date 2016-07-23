@@ -115,8 +115,8 @@ QT_DEPRECATED inline bool setYMD(int y, int m, int d)
     static bool isValid(int y, int m, int d);
     static bool isLeapYear(int year);
 
-    static Q_DECL_CONSTEXPR inline QDate fromJulianDay(qint64 jd)
-    { return jd >= minJd() && jd <= maxJd() ? QDate(jd) : QDate() ; }
+    static Q_DECL_CONSTEXPR inline QDate fromJulianDay(qint64 jd_)
+    { return jd_ >= minJd() && jd_ <= maxJd() ? QDate(jd_) : QDate() ; }
     Q_DECL_CONSTEXPR inline qint64 toJulianDay() const { return jd; }
 
 private:
