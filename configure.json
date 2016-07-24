@@ -1056,20 +1056,13 @@
         },
         "rpath": {
             "description": "Build with RPATH",
-            "condition": [
-                "!config.ios && !config.win32",
-                "var.QMAKE_LFLAGS_RPATH != ''"
-            ],
+            "autoDetect": "var.QMAKE_LFLAGS_RPATH != '' && features.shared",
             "output": [ "publicQtConfig" ]
         },
         "rpath_dir": {
             "description": "RPATH directory",
             "enable": "input.rpaths != ''",
             "autoDetect": false,
-            "condition": [
-                "!config.ios && !config.win32",
-                "var.QMAKE_LFLAGS_RPATH != ''"
-            ],
             "output": [ { "type": "varAppend", "name": "EXTRA_RPATHS", "value": "input.rpaths" } ]
         },
         "rtti": {
@@ -2218,6 +2211,16 @@ Qt can be built in release mode with separate debug information, so
             "type": "error",
             "condition": "input.xcb != '' && input.xcb != 'no' && input.xkbcommon == 'no'",
             "message": "XCB plugin requires libxkbcommon. See -qt-xkbcommon-x11 and -system-xkbcommon-x11."
+        },
+        {
+            "type": "error",
+            "condition": "(features.rpath || features.rpath_dir) && !features.shared",
+            "message": "Static builds don't support RPATH"
+        },
+        {
+            "type": "error",
+            "condition": "(features.rpath || features.rpath_dir) && var.QMAKE_LFLAGS_RPATH == ''",
+            "message": "This platform does not support RPATH"
         }
     ],
 
