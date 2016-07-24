@@ -957,7 +957,7 @@
     "features": {
         "shared": {
             "description": "Building shared libraries",
-            "condition": "!config.ios && !config.integrity",
+            "condition": "!config.uikit && !config.integrity",
             "output": [
                 "shared",
                 "publicQtConfig",
@@ -1047,7 +1047,7 @@
         },
         "simulator_and_device": {
             "description": "Build for both simulator and device",
-            "condition": "config.ios && input.sdk == ''",
+            "condition": "config.uikit && input.sdk == ''",
             "output": [ "publicQtConfig" ]
         },
         "build_all": {
@@ -1198,7 +1198,7 @@
         },
         "precompile_header": {
             "description": "Using precompiled headers",
-            "condition": "!config.ios && tests.precompile_header",
+            "condition": "!config.uikit && tests.precompile_header",
             "output": [
                 "privateConfig",
                 { "type": "varRemove", "negative": true, "name": "CONFIG", "value": "'precompile_header'" }
