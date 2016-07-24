@@ -144,7 +144,7 @@ QCommandLineOption::QCommandLineOption(const QStringList &names)
     The description is set to \a description. It is customary to add a "."
     at the end of the description.
 
-    In addition, the \a valueName can be set if the option expects a value.
+    In addition, the \a valueName needs to be set if the option expects a value.
     The default value for the option is set to \a defaultValue.
 
     In Qt versions before 5.4, this constructor was \c explicit. In Qt 5.4
@@ -180,7 +180,7 @@ QCommandLineOption::QCommandLineOption(const QString &name, const QString &descr
     The description is set to \a description. It is customary to add a "."
     at the end of the description.
 
-    In addition, the \a valueName can be set if the option expects a value.
+    In addition, the \a valueName needs to be set if the option expects a value.
     The default value for the option is set to \a defaultValue.
 
     In Qt versions before 5.4, this constructor was \c explicit. In Qt 5.4
