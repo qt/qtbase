@@ -1322,6 +1322,7 @@ void QSortFilterProxyModelPrivate::_q_sourceReset()
 void QSortFilterProxyModelPrivate::_q_sourceLayoutAboutToBeChanged(const QList<QPersistentModelIndex> &sourceParents, QAbstractItemModel::LayoutChangeHint hint)
 {
     Q_Q(QSortFilterProxyModel);
+    Q_UNUSED(hint); // We can't forward Hint because we might filter additional rows or columns
     saved_persistent_indexes.clear();
 
     QList<QPersistentModelIndex> parents;
@@ -1340,7 +1341,7 @@ void QSortFilterProxyModelPrivate::_q_sourceLayoutAboutToBeChanged(const QList<Q
     if (!sourceParents.isEmpty() && parents.isEmpty())
         return;
 
-    emit q->layoutAboutToBeChanged(parents, hint);
+    emit q->layoutAboutToBeChanged(parents);
     if (persistent.indexes.isEmpty())
         return;
 
@@ -1350,6 +1351,7 @@ void QSortFilterProxyModelPrivate::_q_sourceLayoutAboutToBeChanged(const QList<Q
 void QSortFilterProxyModelPrivate::_q_sourceLayoutChanged(const QList<QPersistentModelIndex> &sourceParents, QAbstractItemModel::LayoutChangeHint hint)
 {
     Q_Q(QSortFilterProxyModel);
+    Q_UNUSED(hint); // We can't forward Hint because we might filter additional rows or columns
 
     // Optimize: We only actually have to clear the mapping related to the contents of
     // sourceParents, not everything.
@@ -1379,7 +1381,7 @@ void QSortFilterProxyModelPrivate::_q_sourceLayoutChanged(const QList<QPersisten
     if (!sourceParents.isEmpty() && parents.isEmpty())
         return;
 
-    emit q->layoutChanged(parents, hint);
+    emit q->layoutChanged(parents);
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceRowsAboutToBeInserted(
