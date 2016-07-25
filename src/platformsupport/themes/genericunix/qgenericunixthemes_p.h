@@ -107,6 +107,9 @@ public:
     static QPlatformTheme *createKdeTheme();
     QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
 
+    QIcon fileIcon(const QFileInfo &fileInfo,
+                   QPlatformTheme::IconOptions iconOptions = 0) const override;
+
     const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE;
 
     const QFont *font(Font type) const Q_DECL_OVERRIDE;
@@ -129,6 +132,8 @@ class QGnomeTheme : public QPlatformTheme
 public:
     QGnomeTheme();
     QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
+    QIcon fileIcon(const QFileInfo &fileInfo,
+                   QPlatformTheme::IconOptions = 0) const override;
     const QFont *font(Font type) const Q_DECL_OVERRIDE;
     QString standardButtonText(int button) const Q_DECL_OVERRIDE;
 

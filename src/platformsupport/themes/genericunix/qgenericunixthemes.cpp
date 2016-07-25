@@ -50,6 +50,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
 #include <QtCore/QHash>
+#include <QtCore/QMimeDatabase>
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QSettings>
 #include <QtCore/QVariant>
@@ -229,6 +230,28 @@ QVariant QGenericUnixTheme::themeHint(ThemeHint hint) const
         break;
     }
     return QPlatformTheme::themeHint(hint);
+}
+
+// Helper functions for implementing QPlatformTheme::fileIcon() for XDG icon themes.
+static QList<QSize> availableXdgFileIconSizes()
+{
+    return QIcon::fromTheme(QStringLiteral("inode-directory")).availableSizes();
+}
+
+static QIcon xdgFileIcon(const QFileInfo &fileInfo)
+{
+    QMimeDatabase mimeDatabase;
+    QMimeType mimeType = mimeDatabase.mimeTypeForFile(fileInfo);
+    if (!mimeType.isValid())
+        return QIcon();
+    const QString &iconName = mimeType.iconName();
+    if (!iconName.isEmpty()) {
+        const QIcon icon = QIcon::fromTheme(iconName);
+        if (!icon.isNull())
+            return icon;
+    }
+    const QString &genericIconName = mimeType.genericIconName();
+    return genericIconName.isEmpty() ? QIcon() : QIcon::fromTheme(genericIconName);
 }
 
 #ifndef QT_NO_SETTINGS
@@ -506,6 +529,8 @@ QVariant QKdeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(d->iconFallbackThemeName);
     case QPlatformTheme::IconThemeSearchPaths:
         return QVariant(d->kdeIconThemeSearchPaths(d->kdeDirs));
+    case QPlatformTheme::IconPixmapSizes:
+        return QVariant::fromValue(availableXdgFileIconSizes());
     case QPlatformTheme::StyleNames:
         return QVariant(d->styleNames);
     case QPlatformTheme::KeyboardScheme:
@@ -518,6 +543,11 @@ QVariant QKdeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         break;
     }
     return QPlatformTheme::themeHint(hint);
+}
+
+QIcon QKdeTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions) const
+{
+    return xdgFileIcon(fileInfo);
 }
 
 const QPalette *QKdeTheme::palette(Palette type) const
@@ -657,6 +687,8 @@ QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(QStringLiteral("gnome"));
     case QPlatformTheme::IconThemeSearchPaths:
         return QVariant(QGenericUnixTheme::xdgIconThemePaths());
+    case QPlatformTheme::IconPixmapSizes:
+        return QVariant::fromValue(availableXdgFileIconSizes());
     case QPlatformTheme::StyleNames: {
         QStringList styleNames;
         styleNames << QStringLiteral("fusion") << QStringLiteral("windows");
@@ -672,6 +704,11 @@ QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         break;
     }
     return QPlatformTheme::themeHint(hint);
+}
+
+QIcon QGnomeTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions) const
+{
+    return xdgFileIcon(fileInfo);
 }
 
 const QFont *QGnomeTheme::font(Font type) const
