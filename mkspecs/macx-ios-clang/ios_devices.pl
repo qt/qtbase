@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/usr/bin/perl
 
 #############################################################################
 ##
-## Copyright (C) 2015 The Qt Company Ltd.
+## Copyright (C) 2016 The Qt Company Ltd.
 ## Contact: http://www.qt.io/licensing/
 ##
 ## This file is the build configuration utility of the Qt Toolkit.
@@ -33,26 +33,18 @@
 ##
 #############################################################################
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-booted_simulator=$($DIR/ios_devices.pl "iPhone|iPad" "Booted" "NOT unavailable" | tail -n 1)
-echo "IPHONESIMULATOR_DEVICES = $booted_simulator"
+$output = `xcrun simctl list devices --json 2>&1`;
+$output =~ s/\n//g;
 
-xcodebuild test -scheme $1 -destination 'id=0' -destination-timeout 1 2>&1| sed -n 's/{ \(platform:.*\) }/\1/p' | while read destination; do
-    id=$(echo $destination | sed -n -E 's/.*id:([^ ,]+).*/\1/p')
-    [[ $id == *"placeholder"* ]] && continue
-
-    echo $destination | tr ',' '\n' | while read keyval; do
-        key=$(echo $keyval | cut -d ':' -f 1 | tr '[:lower:]' '[:upper:]')
-        val=$(echo $keyval | cut -d ':' -f 2)
-        echo "%_$id: DESTINATION_${key} = $val"
-
-        if [ $key = 'PLATFORM' ]; then
-            if [ "$val" = "iOS" ]; then
-                echo "IPHONEOS_DEVICES += $id"
-            elif [ "$val" = "iOS Simulator" -a "$id" != "$booted_simulator" ]; then
-                echo "IPHONESIMULATOR_DEVICES += $id"
-            fi
-        fi
-    done
-    echo
-done
+BLOCK:
+foreach $block ($output =~ /{.*?}/g) {
+    foreach $filter (@ARGV) {
+        if ($filter =~ /^NOT\s(.*)/) {
+            $block =~ /$1/ && next BLOCK;
+        } else {
+            $block =~ /$filter/ || next BLOCK;
+        }
+    }
+    $block =~ /udid[:|\s|\"]+(.*)\"/;
+    print "$1\n";
+}
