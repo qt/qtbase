@@ -69,6 +69,7 @@ private:
     uchar mime_type;
     mutable QPointer<QMimeData> mime;
     mutable bool mac_mime_source;
+    bool resolvingBeforeDestruction;
     static OSStatus promiseKeeper(PasteboardRef, PasteboardItemID, CFStringRef, void *);
     void clear_helper();
 public:

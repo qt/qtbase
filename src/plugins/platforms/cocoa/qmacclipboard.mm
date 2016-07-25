@@ -81,6 +81,7 @@ QMacPasteboard::QMacPasteboard(PasteboardRef p, uchar mt)
     mime_type = mt ? mt : uchar(QMacInternalPasteboardMime::MIME_ALL);
     paste = p;
     CFRetain(paste);
+    resolvingBeforeDestruction = false;
 }
 
 QMacPasteboard::QMacPasteboard(uchar mt)
@@ -94,6 +95,7 @@ QMacPasteboard::QMacPasteboard(uchar mt)
     } else {
         qDebug("PasteBoard: Error creating pasteboard: [%d]", (int)err);
     }
+    resolvingBeforeDestruction = false;
 }
 
 QMacPasteboard::QMacPasteboard(CFStringRef name, uchar mt)
@@ -107,23 +109,14 @@ QMacPasteboard::QMacPasteboard(CFStringRef name, uchar mt)
     } else {
         qDebug("PasteBoard: Error creating pasteboard: %s [%d]", QCFString::toQString(name).toLatin1().constData(), (int)err);
     }
+    resolvingBeforeDestruction = false;
 }
 
 QMacPasteboard::~QMacPasteboard()
 {
     // commit all promises for paste after exit close
-    for (int i = 0; i < promises.count(); ++i) {
-        const Promise &promise = promises.at(i);
-        // At this point app teardown has started and control is somewhere in the Q[Core]Application
-        // destructor. Skip "lazy" promises where the application has not provided data;
-        // the application will generally not be in a state to provide it.
-        if (promise.dataRequestType == LazyRequest)
-            continue;
-        QCFString flavor = QCFString(promise.convertor->flavorFor(promise.mime));
-        NSInteger pbItemId = promise.itemId;
-        promiseKeeper(paste, reinterpret_cast<PasteboardItemID>(pbItemId), flavor, this);
-    }
-
+    resolvingBeforeDestruction = true;
+    PasteboardResolvePromises(paste);
     if (paste)
         CFRelease(paste);
 }
@@ -175,7 +168,7 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
     // to request the data from the application.
     QVariant promiseData;
     if (promise.dataRequestType == LazyRequest) {
-        if (!promise.mimeData.isNull())
+        if (!qpaste->resolvingBeforeDestruction && !promise.mimeData.isNull())
             promiseData = promise.mimeData->variantData(promise.mime);
     } else {
         promiseData = promise.variantData;
