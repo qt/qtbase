@@ -73,9 +73,13 @@ FrameStatus validate_frame_header(FrameType type, FrameFlags flags, quint32 payl
             return FrameStatus::sizeError;
         break;
     case FrameType::PING:
-    case FrameType::GOAWAY:
-        // 6.7 PING, 6.8 GOAWAY
+        // 6.7 PING
         if (payloadSize != 8)
+            return FrameStatus::sizeError;
+        break;
+    case FrameType::GOAWAY:
+        // 6.8 GOAWAY
+        if (payloadSize < 8)
             return FrameStatus::sizeError;
         break;
     case FrameType::RST_STREAM:
