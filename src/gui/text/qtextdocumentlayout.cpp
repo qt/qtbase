@@ -2921,11 +2921,11 @@ void QTextDocumentLayout::documentChanged(int from, int oldLength, int length)
 {
     Q_D(QTextDocumentLayout);
 
-    QTextBlock startIt = document()->findBlock(from);
+    QTextBlock blockIt = document()->findBlock(from);
     QTextBlock endIt = document()->findBlock(qMax(0, from + length - 1));
     if (endIt.isValid())
         endIt = endIt.next();
-    for (QTextBlock blockIt = startIt; blockIt.isValid() && blockIt != endIt; blockIt = blockIt.next())
+     for (; blockIt.isValid() && blockIt != endIt; blockIt = blockIt.next())
          blockIt.clearLayout();
 
     if (d->docPrivate->pageSize.isNull())
@@ -2966,9 +2966,6 @@ void QTextDocumentLayout::documentChanged(int from, int oldLength, int length)
         d->layoutTimer.start(10, this);
 
     d->insideDocumentChange = false;
-
-    for (QTextBlock blockIt = startIt; blockIt.isValid() && blockIt != endIt; blockIt = blockIt.next())
-         emit updateBlock(blockIt);
 
     if (d->showLayoutProgress) {
         const QSizeF newSize = dynamicDocumentSize();
