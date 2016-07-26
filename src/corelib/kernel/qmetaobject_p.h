@@ -114,6 +114,11 @@ enum MetaDataFlags {
     TypeNameIndexMask = 0x7FFFFFFF
 };
 
+enum EnumFlags {
+    EnumIsFlag = 0x1,
+    EnumIsScoped = 0x2
+};
+
 extern int qMetaTypeTypeInternal(const char *);
 
 class QArgumentType

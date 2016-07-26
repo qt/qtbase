@@ -878,9 +878,14 @@ void Generator::generateEnums(int index)
     int i;
     for (i = 0; i < cdef->enumList.count(); ++i) {
         const EnumDef &e = cdef->enumList.at(i);
+        int flags = 0;
+        if (cdef->enumDeclarations.value(e.name))
+            flags |= EnumIsFlag;
+        if (e.isEnumClass)
+            flags |= EnumIsScoped;
         fprintf(out, "    %4d, 0x%.1x, %4d, %4d,\n",
                  stridx(e.name),
-                 cdef->enumDeclarations.value(e.name) ? 1 : 0,
+                 flags,
                  e.values.count(),
                  index);
         index += e.values.count() * 2;

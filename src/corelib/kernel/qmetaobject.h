@@ -210,6 +210,7 @@ public:
 
     const char *name() const;
     bool isFlag() const;
+    bool isScoped() const;
 
     int keyCount() const;
     const char *key(int index) const;

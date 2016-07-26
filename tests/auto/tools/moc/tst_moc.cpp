@@ -2094,18 +2094,19 @@ void tst_Moc::cxx11Enums_data()
     QTest::addColumn<const QMetaObject *>("meta");
     QTest::addColumn<QByteArray>("enumName");
     QTest::addColumn<char>("prefix");
+    QTest::addColumn<bool>("isScoped");
 
     const QMetaObject *meta1 = &CXX11Enums::staticMetaObject;
     const QMetaObject *meta2 = &CXX11Enums2::staticMetaObject;
 
-    QTest::newRow("EnumClass") << meta1 << QByteArray("EnumClass") << 'A';
-    QTest::newRow("EnumClass 2") << meta2 << QByteArray("EnumClass") << 'A';
-    QTest::newRow("TypedEnum") << meta1 << QByteArray("TypedEnum") << 'B';
-    QTest::newRow("TypedEnum 2") << meta2 << QByteArray("TypedEnum") << 'B';
-    QTest::newRow("TypedEnumClass") << meta1 << QByteArray("TypedEnumClass") << 'C';
-    QTest::newRow("TypedEnumClass 2") << meta2 << QByteArray("TypedEnumClass") << 'C';
-    QTest::newRow("NormalEnum") << meta1 << QByteArray("NormalEnum") << 'D';
-    QTest::newRow("NormalEnum 2") << meta2 << QByteArray("NormalEnum") << 'D';
+    QTest::newRow("EnumClass") << meta1 << QByteArray("EnumClass") << 'A' << true;
+    QTest::newRow("EnumClass 2") << meta2 << QByteArray("EnumClass") << 'A' << true;
+    QTest::newRow("TypedEnum") << meta1 << QByteArray("TypedEnum") << 'B' << false;
+    QTest::newRow("TypedEnum 2") << meta2 << QByteArray("TypedEnum") << 'B' << false;
+    QTest::newRow("TypedEnumClass") << meta1 << QByteArray("TypedEnumClass") << 'C' << true;
+    QTest::newRow("TypedEnumClass 2") << meta2 << QByteArray("TypedEnumClass") << 'C' << true;
+    QTest::newRow("NormalEnum") << meta1 << QByteArray("NormalEnum") << 'D' << false;
+    QTest::newRow("NormalEnum 2") << meta2 << QByteArray("NormalEnum") << 'D' << false;
 }
 
 void tst_Moc::cxx11Enums()
@@ -2115,6 +2116,7 @@ void tst_Moc::cxx11Enums()
 
     QFETCH(QByteArray, enumName);
     QFETCH(char, prefix);
+    QFETCH(bool, isScoped);
 
     int idx;
     idx = meta->indexOfEnumerator(enumName);
@@ -2128,6 +2130,7 @@ void tst_Moc::cxx11Enums()
         QCOMPARE(meta->enumerator(idx).keyToValue(v), i);
         QCOMPARE(meta->enumerator(idx).valueToKey(i), v.constData());
     }
+    QCOMPARE(meta->enumerator(idx).isScoped(), isScoped);
 }
 
 void tst_Moc::returnRefs()

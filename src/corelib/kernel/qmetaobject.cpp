@@ -2557,9 +2557,19 @@ int QMetaEnum::value(int index) const
 */
 bool QMetaEnum::isFlag() const
 {
-    return mobj && mobj->d.data[handle + 1];
+    return mobj && mobj->d.data[handle + 1] & EnumIsFlag;
 }
 
+/*!
+    \since 5.8
+
+    Returns \c true if this enumerator is declared as a C++11 enum class;
+    otherwise returns false.
+*/
+bool QMetaEnum::isScoped() const
+{
+    return mobj && mobj->d.data[handle + 1] & EnumIsScoped;
+}
 
 /*!
     Returns the scope this enumerator was declared in.
