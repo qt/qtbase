@@ -4262,7 +4262,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     \relates QObject
     \since 5.5
 
-    This macro registers a single \l{QFlags}{flags types} with the
+    This macro registers a single \l{QFlags}{flags type} with the
     meta-object system. It is typically used in a class definition to declare
     that values of a given enum can be used as flags and combined using the
     bitwise OR operator.
