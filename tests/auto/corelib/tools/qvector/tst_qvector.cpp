@@ -276,6 +276,7 @@ private slots:
     void testOperators() const;
 
     void reserve();
+    void reserveZero();
     void reallocAfterCopy_data();
     void reallocAfterCopy();
     void initializeListInt();
@@ -2369,11 +2370,32 @@ void tst_QVector::reserve()
     {
         QVector<Foo> a;
         a.resize(2);
+        QCOMPARE(fooCtor, 2);
         QVector<Foo> b(a);
         b.reserve(1);
         QCOMPARE(b.size(), a.size());
+        QCOMPARE(fooDtor, 0);
     }
     QCOMPARE(fooCtor, fooDtor);
+}
+
+// This is a regression test for QTBUG-51758
+void tst_QVector::reserveZero()
+{
+    QVector<int> vec;
+    vec.detach();
+    vec.reserve(0); // should not crash
+    QCOMPARE(vec.size(), 0);
+    QCOMPARE(vec.capacity(), 0);
+    vec.squeeze();
+    QCOMPARE(vec.size(), 0);
+    QCOMPARE(vec.capacity(), 0);
+    vec.reserve(-1);
+    QCOMPARE(vec.size(), 0);
+    QCOMPARE(vec.capacity(), 0);
+    vec.append(42);
+    QCOMPARE(vec.size(), 1);
+    QVERIFY(vec.capacity() >= 1);
 }
 
 // This is a regression test for QTBUG-11763, where memory would be reallocated

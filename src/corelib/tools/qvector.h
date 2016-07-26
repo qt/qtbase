@@ -391,7 +391,11 @@ void QVector<T>::reserve(int asize)
 {
     if (asize > int(d->alloc))
         reallocData(d->size, asize);
-    if (isDetached())
+    if (isDetached()
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
+            && d != Data::unsharableEmpty()
+#endif
+            )
         d->capacityReserved = 1;
     Q_ASSERT(capacity() >= asize);
 }
