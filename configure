@@ -548,7 +548,7 @@ if [ "$BUILD_ON_MAC" = "yes" ]; then
         exit 2
     fi
 
-    if ! /usr/bin/xcrun -find xcrun >/dev/null 2>&1; then
+    if ! /usr/bin/xcrun -find xcodebuild >/dev/null 2>&1; then
         echo >&2
         echo "   Xcode not set up properly. You may need to confirm the license" >&2
         echo "   agreement by running /usr/bin/xcodebuild without arguments." >&2
@@ -3033,7 +3033,10 @@ case "$XPLATFORM" in
     *unsupported*)
         ;;
     *android-g++*)
-        XPLATFORM_ANDROID=yes
+        XPLATFORM_ANDROID=g++
+        ;;
+    *android-clang*)
+        XPLATFORM_ANDROID=clang
         ;;
 esac
 
@@ -3237,7 +3240,7 @@ if ( [ "$CFG_XCB" = "system" ] || [ "$CFG_XCB" = "qt" ] ) && [ "$CFG_XKBCOMMON" 
     exit 101
 fi
 
-if [ "$XPLATFORM_ANDROID" = "yes" ]; then
+if [ "$XPLATFORM_ANDROID" != "no" ]; then
     if [ "$CFG_DBUS" = "auto" ]; then
         CFG_DBUS="no"
     fi
@@ -3447,7 +3450,7 @@ QMAKE_CONF_COMPILER=`getXQMakeConf QMAKE_CXX`
 
 TEST_COMPILER=$QMAKE_CONF_COMPILER
 
-if [ "$XPLATFORM_ANDROID" = "yes" ] ; then
+if [ "$XPLATFORM_ANDROID" != "no" ] ; then
     ANDROID_NDK_TOOLCHAIN_PREFIX=
     ANDROID_NDK_TOOLS_PREFIX=
     ANDROID_PLATFORM_ARCH=
@@ -3487,7 +3490,11 @@ if [ "$XPLATFORM_ANDROID" = "yes" ] ; then
             exit 1
             ;;
     esac
-    QMAKE_CONF_COMPILER=$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/$ANDROID_NDK_TOOLCHAIN_PREFIX-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/$CFG_DEFAULT_ANDROID_NDK_HOST/bin/$ANDROID_NDK_TOOLS_PREFIX-g++
+    if [ "$XPLATFORM_ANDROID" = "g++" ] ; then
+        QMAKE_CONF_COMPILER=$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/$ANDROID_NDK_TOOLCHAIN_PREFIX-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/$CFG_DEFAULT_ANDROID_NDK_HOST/bin/$ANDROID_NDK_TOOLS_PREFIX-g++
+    else
+        QMAKE_CONF_COMPILER=$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/$CFG_DEFAULT_ANDROID_NDK_HOST/bin/clang++
+    fi
     TEST_COMPILER="$QMAKE_CONF_COMPILER --sysroot=$CFG_DEFAULT_ANDROID_NDK_ROOT/platforms/$CFG_DEFAULT_ANDROID_PLATFORM/$ANDROID_PLATFORM_ARCH/"
     if [ "$CFG_ANDROID_STYLE_ASSETS" = "yes" ]; then
         QMAKE_CONFIG="$QMAKE_CONFIG android-style-assets"
@@ -4663,7 +4670,7 @@ elif [ "$CFG_ARCH" != "mips" ]; then
 fi
 
 [ "$XPLATFORM_MINGW" = "yes" ] && QMakeVar add styles "windowsxp windowsvista"
-[ "$XPLATFORM_ANDROID" = "yes" ] && QMakeVar add styles "android"
+[ "$XPLATFORM_ANDROID" != "no" ] && QMakeVar add styles "android"
 
 # check IPC support
 if ! compileTest unix/ipc_sysv "ipc_sysv" ; then

@@ -115,7 +115,7 @@ public:
     bool getOfflineMode();
     QStringList getTechnologies();
     QStringList getServices();
-    void requestScan(const QString &type);
+    bool requestScan(const QString &type);
 
     QHash<QString, QConnmanTechnologyInterface *> technologiesMap;
 
@@ -126,7 +126,7 @@ Q_SIGNALS:
     void servicesChanged(const ConnmanMapList&, const QList<QDBusObjectPath> &);
 
     void servicesReady(const QStringList &);
-    void scanFinished();
+    void scanFinished(bool error);
 
 protected:
     void connectNotify(const QMetaMethod &signal);
@@ -211,7 +211,7 @@ public:
 Q_SIGNALS:
     void propertyChanged(const QString &, const QDBusVariant &value);
     void propertyChangedContext(const QString &,const QString &,const QDBusVariant &);
-    void scanFinished();
+    void scanFinished(bool error);
 protected:
     void connectNotify(const QMetaMethod &signal);
     QVariant getProperty(const QString &);
