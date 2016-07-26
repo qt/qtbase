@@ -233,20 +233,20 @@ void QQnxScreenEventHandler::handleKeyboardEvent(screen_event_t event)
 {
     // get flags of key event
     int flags;
-    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_KEY_FLAGS, &flags),
+    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_FLAGS, &flags),
                         "Failed to query event flags");
 
     // get key code
     int sym;
-    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_KEY_SYM, &sym),
+    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_SYM, &sym),
                         "Failed to query event sym");
 
     int modifiers;
-    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_KEY_MODIFIERS, &modifiers),
+    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_MODIFIERS, &modifiers),
                         "Failed to query event modifieres");
 
     int scan;
-    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_KEY_SCAN, &scan),
+    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_SCAN, &scan),
                         "Failed to query event scan");
 
     int cap;
@@ -593,7 +593,7 @@ void QQnxScreenEventHandler::handlePropertyEvent(screen_event_t event)
         qFatal("QQnx: failed to query window property, errno=%d", errno);
 
     switch (property) {
-    case SCREEN_PROPERTY_KEYBOARD_FOCUS:
+    case SCREEN_PROPERTY_FOCUS:
         handleKeyboardFocusPropertyEvent(window);
         break;
     default:
@@ -606,7 +606,7 @@ void QQnxScreenEventHandler::handleKeyboardFocusPropertyEvent(screen_window_t wi
 {
     errno = 0;
     int focus = 0;
-    if (window && screen_get_window_property_iv(window, SCREEN_PROPERTY_KEYBOARD_FOCUS, &focus) != 0)
+    if (window && screen_get_window_property_iv(window, SCREEN_PROPERTY_FOCUS, &focus) != 0)
         qFatal("QQnx: failed to query keyboard focus property, errno=%d", errno);
 
     QWindow *focusWindow = QQnxIntegration::window(window);

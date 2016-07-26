@@ -43,6 +43,17 @@
 
 #include <screen/screen.h>
 
+// For pre-7.0 SDPs, map some screen property names to the old
+// names.
+#include <sys/neutrino.h>
+#if _NTO_VERSION < 700
+const int SCREEN_PROPERTY_FLAGS = SCREEN_PROPERTY_KEY_FLAGS;
+const int SCREEN_PROPERTY_FOCUS = SCREEN_PROPERTY_KEYBOARD_FOCUS;
+const int SCREEN_PROPERTY_MODIFIERS = SCREEN_PROPERTY_KEY_MODIFIERS;
+const int SCREEN_PROPERTY_SCAN = SCREEN_PROPERTY_KEY_SCAN;
+const int SCREEN_PROPERTY_SYM = SCREEN_PROPERTY_KEY_SYM;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QQnxWindow;
