@@ -2398,10 +2398,10 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                         const __m128i bl = _mm_setr_epi32(bottomData[offset0], bottomData[offset1], bottomData[offset2], bottomData[offset3]);
                         const __m128i br = _mm_setr_epi32(bottomData[offset0 + 1], bottomData[offset1 + 1], bottomData[offset2 + 1], bottomData[offset3 + 1]);
 
-                        __m128i v_distx = _mm_srli_epi16(v_fx, 12);
-                        __m128i v_disty = _mm_srli_epi16(v_fy, 12);
-                        v_distx = _mm_srli_epi16(_mm_add_epi32(v_fx, v_fxy_r), 4);
-                        v_disty = _mm_srli_epi16(_mm_add_epi32(v_fy, v_fxy_r), 4);
+                        __m128i v_distx = _mm_srli_epi16(v_fx, 8);
+                        __m128i v_disty = _mm_srli_epi16(v_fy, 8);
+                        v_distx = _mm_srli_epi16(_mm_add_epi32(v_distx, v_fxy_r), 4);
+                        v_disty = _mm_srli_epi16(_mm_add_epi32(v_disty, v_fxy_r), 4);
                         v_distx = _mm_shufflehi_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
                         v_distx = _mm_shufflelo_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
                         v_disty = _mm_shufflehi_epi16(v_disty, _MM_SHUFFLE(2,2,0,0));
