@@ -110,14 +110,16 @@ QFbVtHandler::QFbVtHandler(QObject *parent)
     m_signalNotifier = new QSocketNotifier(m_sigFd[1], QSocketNotifier::Read, this);
     connect(m_signalNotifier, &QSocketNotifier::activated, this, &QFbVtHandler::handleSignal);
 
-    struct sigaction sa;
-    sa.sa_flags = 0;
-    sa.sa_handler = signalHandler;
-    sigemptyset(&sa.sa_mask);
-    sigaction(SIGINT, &sa, 0); // Ctrl+C
-    sigaction(SIGTSTP, &sa, 0); // Ctrl+Z
-    sigaction(SIGCONT, &sa, 0);
-    sigaction(SIGTERM, &sa, 0); // default signal used by kill
+    if (!qEnvironmentVariableIntValue("QT_QPA_NO_SIGNAL_HANDLER")) {
+        struct sigaction sa;
+        sa.sa_flags = 0;
+        sa.sa_handler = signalHandler;
+        sigemptyset(&sa.sa_mask);
+        sigaction(SIGINT, &sa, 0); // Ctrl+C
+        sigaction(SIGTSTP, &sa, 0); // Ctrl+Z
+        sigaction(SIGCONT, &sa, 0);
+        sigaction(SIGTERM, &sa, 0); // default signal used by kill
+    }
 #endif
 }
 
