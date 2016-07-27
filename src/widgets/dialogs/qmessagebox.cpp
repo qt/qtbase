@@ -697,7 +697,7 @@ void QMessageBoxPrivate::_q_clicked(QPlatformDialogHelper::StandardButton button
 
     If the \l{QMessageBox::StandardButtons} {standard buttons} are not
     flexible enough for your message box, you can use the addButton()
-    overload that takes a text and a ButtonRoleto to add custom
+    overload that takes a text and a ButtonRole to add custom
     buttons. The ButtonRole is used by QMessageBox to determine the
     ordering of the buttons on screen (which varies according to the
     platform). You can test the value of clickedButton() after calling
