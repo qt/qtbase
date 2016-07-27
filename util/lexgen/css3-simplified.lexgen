@@ -44,6 +44,7 @@ LBRACE = {w}"{"
 PLUS = {w}"+"
 GREATER = {w}">"
 COMMA = {w}","
+TILDE= {w}"~"
 
 STRING = {string}
 INVALID = {invalid}

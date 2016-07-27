@@ -1867,12 +1867,15 @@ bool StyleSelector::selectorMatches(const Selector &selector, NodePtr node)
     do {
         match = basicSelectorMatches(sel, node);
         if (!match) {
-            if (sel.relationToNext == BasicSelector::MatchNextSelectorIfParent
-                || i == selector.basicSelectors.count() - 1) // first element must always match!
+            if (i == selector.basicSelectors.count() - 1) // first element must always match!
+                break;
+            if (sel.relationToNext != BasicSelector::MatchNextSelectorIfAncestor &&
+                sel.relationToNext != BasicSelector::MatchNextSelectorIfIndirectAdjecent)
                 break;
         }
 
-        if (match || sel.relationToNext != BasicSelector::MatchNextSelectorIfAncestor)
+        if (match || (sel.relationToNext != BasicSelector::MatchNextSelectorIfAncestor &&
+                      sel.relationToNext != BasicSelector::MatchNextSelectorIfIndirectAdjecent))
             --i;
 
         if (i < 0)
@@ -1885,16 +1888,18 @@ bool StyleSelector::selectorMatches(const Selector &selector, NodePtr node)
             NodePtr nextParent = parentNode(node);
             freeNode(node);
             node = nextParent;
-       } else if (sel.relationToNext == BasicSelector::MatchNextSelectorIfPreceeds) {
+        } else if (sel.relationToNext == BasicSelector::MatchNextSelectorIfDirectAdjecent
+                  || sel.relationToNext == BasicSelector::MatchNextSelectorIfIndirectAdjecent) {
             NodePtr previousSibling = previousSiblingNode(node);
             freeNode(node);
             node = previousSibling;
-       }
+        }
         if (isNullNode(node)) {
             match = false;
             break;
         }
-   } while (i >= 0 && (match || sel.relationToNext == BasicSelector::MatchNextSelectorIfAncestor));
+   } while (i >= 0 && (match || sel.relationToNext == BasicSelector::MatchNextSelectorIfAncestor
+                             || sel.relationToNext == BasicSelector::MatchNextSelectorIfIndirectAdjecent));
 
     freeNode(node);
 
@@ -2356,9 +2361,11 @@ bool Parser::parseCombinator(BasicSelector::Relation *relation)
         prev();
     }
     if (test(PLUS)) {
-        *relation = BasicSelector::MatchNextSelectorIfPreceeds;
+        *relation = BasicSelector::MatchNextSelectorIfDirectAdjecent;
     } else if (test(GREATER)) {
         *relation = BasicSelector::MatchNextSelectorIfParent;
+    } else if (test(TILDE)) {
+        *relation = BasicSelector::MatchNextSelectorIfIndirectAdjecent;
     }
     skipSpace();
     return true;

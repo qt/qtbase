@@ -561,7 +561,8 @@ struct BasicSelector
         NoRelation,
         MatchNextSelectorIfAncestor,
         MatchNextSelectorIfParent,
-        MatchNextSelectorIfPreceeds
+        MatchNextSelectorIfDirectAdjecent,
+        MatchNextSelectorIfIndirectAdjecent,
     };
 
     QString elementName;
@@ -690,6 +691,7 @@ enum TokenType {
     PLUS,
     GREATER,
     COMMA,
+    TILDE,
 
     STRING,
     INVALID,
@@ -789,7 +791,7 @@ public:
     inline bool testImport() { return testTokenAndEndsWith(ATKEYWORD_SYM, QLatin1String("import")); }
     inline bool testMedia() { return testTokenAndEndsWith(ATKEYWORD_SYM, QLatin1String("media")); }
     inline bool testPage() { return testTokenAndEndsWith(ATKEYWORD_SYM, QLatin1String("page")); }
-    inline bool testCombinator() { return test(PLUS) || test(GREATER) || test(S); }
+    inline bool testCombinator() { return test(PLUS) || test(GREATER) || test(TILDE) || test(S); }
     inline bool testProperty() { return test(IDENT); }
     bool testTerm();
     inline bool testExpr() { return testTerm(); }

@@ -177,42 +177,44 @@ int QCssScanner_Generated::lex()
             goto state_20;
         if (ch.unicode() == 123)
             goto state_27;
+        if (ch.unicode() == 126)
+            goto state_32;
         goto out;
     state_3:
         lastAcceptingPos = pos;
         token = QCss::INVALID;
         ch = next();
         if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_32;
-        if (ch.unicode() == 11)
-            goto state_32;
-        if (ch.unicode() >= 14 && ch.unicode() <= 33)
-            goto state_32;
-        if (ch.unicode() == 34)
             goto state_33;
-        if (ch.unicode() >= 35 && ch.unicode() <= 91)
-            goto state_32;
-        if (ch.unicode() == 92)
+        if (ch.unicode() == 11)
+            goto state_33;
+        if (ch.unicode() >= 14 && ch.unicode() <= 33)
+            goto state_33;
+        if (ch.unicode() == 34)
             goto state_34;
+        if (ch.unicode() >= 35 && ch.unicode() <= 91)
+            goto state_33;
+        if (ch.unicode() == 92)
+            goto state_35;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
-            goto state_32;
+            goto state_33;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_32;
+            goto state_33;
         if (ch.unicode() >= 123)
-            goto state_32;
+            goto state_33;
         goto out;
     state_4:
         ch = next();
         if (ch.unicode() == 45)
-            goto state_35;
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_35;
-        if (ch.unicode() == 92)
             goto state_36;
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+            goto state_36;
+        if (ch.unicode() == 92)
+            goto state_37;
         if (ch.unicode() == 95)
-            goto state_35;
+            goto state_36;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_35;
+            goto state_36;
         goto out;
     state_5:
         ch = next();
@@ -226,23 +228,23 @@ int QCssScanner_Generated::lex()
         token = QCss::INVALID;
         ch = next();
         if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_38;
-        if (ch.unicode() == 11)
-            goto state_38;
-        if (ch.unicode() >= 14 && ch.unicode() <= 38)
-            goto state_38;
-        if (ch.unicode() == 39)
             goto state_39;
-        if (ch.unicode() >= 40 && ch.unicode() <= 91)
-            goto state_38;
-        if (ch.unicode() == 92)
+        if (ch.unicode() == 11)
+            goto state_39;
+        if (ch.unicode() >= 14 && ch.unicode() <= 38)
+            goto state_39;
+        if (ch.unicode() == 39)
             goto state_40;
+        if (ch.unicode() >= 40 && ch.unicode() <= 91)
+            goto state_39;
+        if (ch.unicode() == 92)
+            goto state_41;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
-            goto state_38;
+            goto state_39;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_38;
+            goto state_39;
         if (ch.unicode() >= 123)
-            goto state_38;
+            goto state_39;
         goto out;
     state_9:
         lastAcceptingPos = pos;
@@ -266,7 +268,7 @@ int QCssScanner_Generated::lex()
         token = QCss::MINUS;
         ch = next();
         if (ch.unicode() == 45)
-            goto state_42;
+            goto state_43;
         if (ch.unicode() == 92)
             goto state_23;
         if (ch.unicode() == 95)
@@ -279,7 +281,7 @@ int QCssScanner_Generated::lex()
         token = QCss::DOT;
         ch = next();
         if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_43;
+            goto state_44;
         goto out;
     state_14:
         lastAcceptingPos = pos;
@@ -295,24 +297,24 @@ int QCssScanner_Generated::lex()
         token = QCss::NUMBER;
         ch = next();
         if (ch.unicode() == 37)
-            goto state_45;
-        if (ch.unicode() == 45)
             goto state_46;
-        if (ch.unicode() == 46)
+        if (ch.unicode() == 45)
             goto state_47;
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+        if (ch.unicode() == 46)
             goto state_48;
-        if (ch.unicode() == 92)
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
             goto state_49;
+        if (ch.unicode() == 92)
+            goto state_50;
         if (ch.unicode() == 95)
-            goto state_50;
+            goto state_51;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_50;
+            goto state_51;
         goto out;
     state_18:
         ch = next();
         if (ch.unicode() == 33)
-            goto state_51;
+            goto state_52;
         goto out;
     state_20:
         lastAcceptingPos = pos;
@@ -321,26 +323,26 @@ int QCssScanner_Generated::lex()
     state_21:
         ch = next();
         if (ch.unicode() == 45)
-            goto state_52;
-        if (ch.unicode() == 92)
             goto state_53;
+        if (ch.unicode() == 92)
+            goto state_54;
         if (ch.unicode() == 95)
-            goto state_54;
+            goto state_55;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_54;
+            goto state_55;
         goto out;
     state_23:
         ch = next();
         if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_55;
+            goto state_56;
         if (ch.unicode() == 11)
-            goto state_55;
+            goto state_56;
         if (ch.unicode() >= 14 && ch.unicode() <= 47)
-            goto state_55;
+            goto state_56;
         if (ch.unicode() >= 58 && ch.unicode() <= 96)
-            goto state_55;
+            goto state_56;
         if (ch.unicode() >= 103)
-            goto state_55;
+            goto state_56;
         goto out;
     state_25:
         ch = next();
@@ -354,17 +356,17 @@ int QCssScanner_Generated::lex()
         token = QCss::IDENT;
         ch = next();
         if (ch.unicode() == 40)
-            goto state_57;
+            goto state_58;
         if (ch.unicode() == 45)
-            goto state_58;
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_58;
-        if (ch.unicode() == 92)
             goto state_59;
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+            goto state_59;
+        if (ch.unicode() == 92)
+            goto state_60;
         if (ch.unicode() == 95)
-            goto state_58;
+            goto state_59;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_58;
+            goto state_59;
         goto out;
     state_27:
         lastAcceptingPos = pos;
@@ -380,6 +382,8 @@ int QCssScanner_Generated::lex()
         }
         goto out;
     state_30:
+        lastAcceptingPos = pos;
+        token = QCss::TILDE;
         ch = next();
         if (ch.unicode() == 61) {
             token = QCss::INCLUDES;
@@ -404,757 +408,763 @@ int QCssScanner_Generated::lex()
             goto state_20;
         if (ch.unicode() == 123)
             goto state_27;
+        if (ch.unicode() == 126)
+            goto state_32;
         goto out;
     state_32:
+        lastAcceptingPos = pos;
+        token = QCss::TILDE;
+        goto out;
+    state_33:
         lastAcceptingPos = pos;
         token = QCss::INVALID;
         ch = next();
         if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_32;
-        if (ch.unicode() == 11)
-            goto state_32;
-        if (ch.unicode() >= 14 && ch.unicode() <= 33)
-            goto state_32;
-        if (ch.unicode() == 34)
             goto state_33;
-        if (ch.unicode() >= 35 && ch.unicode() <= 91)
-            goto state_32;
-        if (ch.unicode() == 92)
+        if (ch.unicode() == 11)
+            goto state_33;
+        if (ch.unicode() >= 14 && ch.unicode() <= 33)
+            goto state_33;
+        if (ch.unicode() == 34)
             goto state_34;
+        if (ch.unicode() >= 35 && ch.unicode() <= 91)
+            goto state_33;
+        if (ch.unicode() == 92)
+            goto state_35;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
-            goto state_32;
+            goto state_33;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_32;
+            goto state_33;
         if (ch.unicode() >= 123)
-            goto state_32;
+            goto state_33;
         goto out;
-    state_33:
+    state_34:
         lastAcceptingPos = pos;
         token = QCss::STRING;
         goto out;
-    state_34:
+    state_35:
         ch = next();
         if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_62;
-        if (ch.unicode() == 10)
             goto state_63;
-        if (ch.unicode() == 11)
-            goto state_62;
-        if (ch.unicode() == 12)
+        if (ch.unicode() == 10)
             goto state_64;
-        if (ch.unicode() == 13)
+        if (ch.unicode() == 11)
+            goto state_63;
+        if (ch.unicode() == 12)
             goto state_65;
+        if (ch.unicode() == 13)
+            goto state_66;
         if (ch.unicode() >= 14 && ch.unicode() <= 47)
-            goto state_62;
+            goto state_63;
         if (ch.unicode() >= 58 && ch.unicode() <= 96)
-            goto state_62;
+            goto state_63;
         if (ch.unicode() >= 103)
-            goto state_62;
+            goto state_63;
         goto out;
-    state_35:
+    state_36:
         lastAcceptingPos = pos;
         token = QCss::HASH;
         ch = next();
         if (ch.unicode() == 45)
-            goto state_66;
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_66;
-        if (ch.unicode() == 92)
             goto state_67;
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+            goto state_67;
+        if (ch.unicode() == 92)
+            goto state_68;
         if (ch.unicode() == 95)
-            goto state_66;
+            goto state_67;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_66;
+            goto state_67;
         goto out;
-    state_36:
+    state_37:
         ch = next();
         if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_68;
+            goto state_69;
         if (ch.unicode() == 11)
-            goto state_68;
+            goto state_69;
         if (ch.unicode() >= 14 && ch.unicode() <= 47)
-            goto state_68;
+            goto state_69;
         if (ch.unicode() >= 58 && ch.unicode() <= 96)
-            goto state_68;
+            goto state_69;
         if (ch.unicode() >= 103)
-            goto state_68;
+            goto state_69;
         goto out;
-    state_38:
+    state_39:
         lastAcceptingPos = pos;
         token = QCss::INVALID;
         ch = next();
         if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_38;
-        if (ch.unicode() == 11)
-            goto state_38;
-        if (ch.unicode() >= 14 && ch.unicode() <= 38)
-            goto state_38;
-        if (ch.unicode() == 39)
             goto state_39;
-        if (ch.unicode() >= 40 && ch.unicode() <= 91)
-            goto state_38;
-        if (ch.unicode() == 92)
+        if (ch.unicode() == 11)
+            goto state_39;
+        if (ch.unicode() >= 14 && ch.unicode() <= 38)
+            goto state_39;
+        if (ch.unicode() == 39)
             goto state_40;
+        if (ch.unicode() >= 40 && ch.unicode() <= 91)
+            goto state_39;
+        if (ch.unicode() == 92)
+            goto state_41;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
-            goto state_38;
+            goto state_39;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_38;
+            goto state_39;
         if (ch.unicode() >= 123)
-            goto state_38;
+            goto state_39;
         goto out;
-    state_39:
+    state_40:
         lastAcceptingPos = pos;
         token = QCss::STRING;
         goto out;
-    state_40:
+    state_41:
         ch = next();
         if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_69;
-        if (ch.unicode() == 10)
             goto state_70;
-        if (ch.unicode() == 11)
-            goto state_69;
-        if (ch.unicode() == 12)
+        if (ch.unicode() == 10)
             goto state_71;
-        if (ch.unicode() == 13)
+        if (ch.unicode() == 11)
+            goto state_70;
+        if (ch.unicode() == 12)
             goto state_72;
+        if (ch.unicode() == 13)
+            goto state_73;
         if (ch.unicode() >= 14 && ch.unicode() <= 47)
-            goto state_69;
+            goto state_70;
         if (ch.unicode() >= 58 && ch.unicode() <= 96)
-            goto state_69;
+            goto state_70;
         if (ch.unicode() >= 103)
-            goto state_69;
+            goto state_70;
         goto out;
-    state_42:
+    state_43:
         ch = next();
         if (ch.unicode() == 62) {
             token = QCss::CDC;
             goto found;
         }
         goto out;
-    state_43:
+    state_44:
         lastAcceptingPos = pos;
         token = QCss::NUMBER;
         ch = next();
         if (ch.unicode() == 37)
-            goto state_45;
-        if (ch.unicode() == 45)
             goto state_46;
+        if (ch.unicode() == 45)
+            goto state_47;
         if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_74;
+            goto state_75;
         if (ch.unicode() == 92)
-            goto state_49;
+            goto state_50;
         if (ch.unicode() == 95)
-            goto state_50;
+            goto state_51;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_50;
+            goto state_51;
         goto out;
-    state_45:
+    state_46:
         lastAcceptingPos = pos;
         token = QCss::PERCENTAGE;
         goto out;
-    state_46:
-        ch = next();
-        if (ch.unicode() == 92)
-            goto state_49;
-        if (ch.unicode() == 95)
-            goto state_50;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_50;
-        goto out;
     state_47:
         ch = next();
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_43;
+        if (ch.unicode() == 92)
+            goto state_50;
+        if (ch.unicode() == 95)
+            goto state_51;
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
+            goto state_51;
         goto out;
     state_48:
+        ch = next();
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+            goto state_44;
+        goto out;
+    state_49:
         lastAcceptingPos = pos;
         token = QCss::NUMBER;
         ch = next();
         if (ch.unicode() == 37)
-            goto state_45;
-        if (ch.unicode() == 45)
             goto state_46;
-        if (ch.unicode() == 46)
+        if (ch.unicode() == 45)
             goto state_47;
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+        if (ch.unicode() == 46)
             goto state_48;
-        if (ch.unicode() == 92)
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
             goto state_49;
+        if (ch.unicode() == 92)
+            goto state_50;
         if (ch.unicode() == 95)
-            goto state_50;
+            goto state_51;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_50;
-        goto out;
-    state_49:
-        ch = next();
-        if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_75;
-        if (ch.unicode() == 11)
-            goto state_75;
-        if (ch.unicode() >= 14 && ch.unicode() <= 47)
-            goto state_75;
-        if (ch.unicode() >= 58 && ch.unicode() <= 96)
-            goto state_75;
-        if (ch.unicode() >= 103)
-            goto state_75;
+            goto state_51;
         goto out;
     state_50:
+        ch = next();
+        if (ch.unicode() >= 1 && ch.unicode() <= 9)
+            goto state_76;
+        if (ch.unicode() == 11)
+            goto state_76;
+        if (ch.unicode() >= 14 && ch.unicode() <= 47)
+            goto state_76;
+        if (ch.unicode() >= 58 && ch.unicode() <= 96)
+            goto state_76;
+        if (ch.unicode() >= 103)
+            goto state_76;
+        goto out;
+    state_51:
         lastAcceptingPos = pos;
         token = QCss::LENGTH;
         ch = next();
         if (ch.unicode() == 45)
-            goto state_76;
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_76;
-        if (ch.unicode() == 92)
             goto state_77;
-        if (ch.unicode() == 95)
-            goto state_76;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_76;
-        goto out;
-    state_51:
-        ch = next();
-        if (ch.unicode() == 45)
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+            goto state_77;
+        if (ch.unicode() == 92)
             goto state_78;
+        if (ch.unicode() == 95)
+            goto state_77;
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
+            goto state_77;
         goto out;
     state_52:
         ch = next();
-        if (ch.unicode() == 92)
-            goto state_53;
-        if (ch.unicode() == 95)
-            goto state_54;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_54;
+        if (ch.unicode() == 45)
+            goto state_79;
         goto out;
     state_53:
         ch = next();
-        if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_79;
-        if (ch.unicode() == 11)
-            goto state_79;
-        if (ch.unicode() >= 14 && ch.unicode() <= 47)
-            goto state_79;
-        if (ch.unicode() >= 58 && ch.unicode() <= 96)
-            goto state_79;
-        if (ch.unicode() >= 103)
-            goto state_79;
+        if (ch.unicode() == 92)
+            goto state_54;
+        if (ch.unicode() == 95)
+            goto state_55;
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
+            goto state_55;
         goto out;
     state_54:
-        lastAcceptingPos = pos;
-        token = QCss::ATKEYWORD_SYM;
         ch = next();
-        if (ch.unicode() == 45)
+        if (ch.unicode() >= 1 && ch.unicode() <= 9)
             goto state_80;
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+        if (ch.unicode() == 11)
             goto state_80;
-        if (ch.unicode() == 92)
-            goto state_81;
-        if (ch.unicode() == 95)
+        if (ch.unicode() >= 14 && ch.unicode() <= 47)
             goto state_80;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
+        if (ch.unicode() >= 58 && ch.unicode() <= 96)
+            goto state_80;
+        if (ch.unicode() >= 103)
             goto state_80;
         goto out;
     state_55:
         lastAcceptingPos = pos;
+        token = QCss::ATKEYWORD_SYM;
+        ch = next();
+        if (ch.unicode() == 45)
+            goto state_81;
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+            goto state_81;
+        if (ch.unicode() == 92)
+            goto state_82;
+        if (ch.unicode() == 95)
+            goto state_81;
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
+            goto state_81;
+        goto out;
+    state_56:
+        lastAcceptingPos = pos;
         token = QCss::IDENT;
         ch = next();
         if (ch.unicode() == 40)
-            goto state_57;
+            goto state_58;
         if (ch.unicode() == 45)
-            goto state_58;
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_58;
-        if (ch.unicode() == 92)
             goto state_59;
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+            goto state_59;
+        if (ch.unicode() == 92)
+            goto state_60;
         if (ch.unicode() == 95)
-            goto state_58;
+            goto state_59;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_58;
-        goto out;
-    state_57:
-        lastAcceptingPos = pos;
-        token = QCss::FUNCTION;
+            goto state_59;
         goto out;
     state_58:
         lastAcceptingPos = pos;
+        token = QCss::FUNCTION;
+        goto out;
+    state_59:
+        lastAcceptingPos = pos;
         token = QCss::IDENT;
         ch = next();
         if (ch.unicode() == 40)
-            goto state_57;
+            goto state_58;
         if (ch.unicode() == 45)
-            goto state_58;
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_58;
-        if (ch.unicode() == 92)
             goto state_59;
-        if (ch.unicode() == 95)
-            goto state_58;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_58;
-        goto out;
-    state_59:
-        ch = next();
-        if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_82;
-        if (ch.unicode() == 11)
-            goto state_82;
-        if (ch.unicode() >= 14 && ch.unicode() <= 47)
-            goto state_82;
-        if (ch.unicode() >= 58 && ch.unicode() <= 96)
-            goto state_82;
-        if (ch.unicode() >= 103)
-            goto state_82;
-        goto out;
-    state_62:
-        lastAcceptingPos = pos;
-        token = QCss::INVALID;
-        ch = next();
-        if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_32;
-        if (ch.unicode() == 11)
-            goto state_32;
-        if (ch.unicode() >= 14 && ch.unicode() <= 33)
-            goto state_32;
-        if (ch.unicode() == 34)
-            goto state_33;
-        if (ch.unicode() >= 35 && ch.unicode() <= 91)
-            goto state_32;
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+            goto state_59;
         if (ch.unicode() == 92)
-            goto state_34;
-        if (ch.unicode() >= 93 && ch.unicode() <= 96)
-            goto state_32;
+            goto state_60;
+        if (ch.unicode() == 95)
+            goto state_59;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_32;
-        if (ch.unicode() >= 123)
-            goto state_32;
+            goto state_59;
+        goto out;
+    state_60:
+        ch = next();
+        if (ch.unicode() >= 1 && ch.unicode() <= 9)
+            goto state_83;
+        if (ch.unicode() == 11)
+            goto state_83;
+        if (ch.unicode() >= 14 && ch.unicode() <= 47)
+            goto state_83;
+        if (ch.unicode() >= 58 && ch.unicode() <= 96)
+            goto state_83;
+        if (ch.unicode() >= 103)
+            goto state_83;
         goto out;
     state_63:
         lastAcceptingPos = pos;
         token = QCss::INVALID;
         ch = next();
         if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_32;
-        if (ch.unicode() == 11)
-            goto state_32;
-        if (ch.unicode() >= 14 && ch.unicode() <= 33)
-            goto state_32;
-        if (ch.unicode() == 34)
             goto state_33;
-        if (ch.unicode() >= 35 && ch.unicode() <= 91)
-            goto state_32;
-        if (ch.unicode() == 92)
+        if (ch.unicode() == 11)
+            goto state_33;
+        if (ch.unicode() >= 14 && ch.unicode() <= 33)
+            goto state_33;
+        if (ch.unicode() == 34)
             goto state_34;
+        if (ch.unicode() >= 35 && ch.unicode() <= 91)
+            goto state_33;
+        if (ch.unicode() == 92)
+            goto state_35;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
-            goto state_32;
+            goto state_33;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_32;
+            goto state_33;
         if (ch.unicode() >= 123)
-            goto state_32;
+            goto state_33;
         goto out;
     state_64:
         lastAcceptingPos = pos;
         token = QCss::INVALID;
         ch = next();
         if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_32;
-        if (ch.unicode() == 11)
-            goto state_32;
-        if (ch.unicode() >= 14 && ch.unicode() <= 33)
-            goto state_32;
-        if (ch.unicode() == 34)
             goto state_33;
-        if (ch.unicode() >= 35 && ch.unicode() <= 91)
-            goto state_32;
-        if (ch.unicode() == 92)
+        if (ch.unicode() == 11)
+            goto state_33;
+        if (ch.unicode() >= 14 && ch.unicode() <= 33)
+            goto state_33;
+        if (ch.unicode() == 34)
             goto state_34;
+        if (ch.unicode() >= 35 && ch.unicode() <= 91)
+            goto state_33;
+        if (ch.unicode() == 92)
+            goto state_35;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
-            goto state_32;
+            goto state_33;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_32;
+            goto state_33;
         if (ch.unicode() >= 123)
-            goto state_32;
+            goto state_33;
         goto out;
     state_65:
         lastAcceptingPos = pos;
         token = QCss::INVALID;
         ch = next();
         if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_32;
-        if (ch.unicode() == 10)
-            goto state_83;
-        if (ch.unicode() == 11)
-            goto state_32;
-        if (ch.unicode() >= 14 && ch.unicode() <= 33)
-            goto state_32;
-        if (ch.unicode() == 34)
             goto state_33;
-        if (ch.unicode() >= 35 && ch.unicode() <= 91)
-            goto state_32;
-        if (ch.unicode() == 92)
+        if (ch.unicode() == 11)
+            goto state_33;
+        if (ch.unicode() >= 14 && ch.unicode() <= 33)
+            goto state_33;
+        if (ch.unicode() == 34)
             goto state_34;
+        if (ch.unicode() >= 35 && ch.unicode() <= 91)
+            goto state_33;
+        if (ch.unicode() == 92)
+            goto state_35;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
-            goto state_32;
+            goto state_33;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_32;
+            goto state_33;
         if (ch.unicode() >= 123)
-            goto state_32;
+            goto state_33;
         goto out;
     state_66:
-        lastAcceptingPos = pos;
-        token = QCss::HASH;
-        ch = next();
-        if (ch.unicode() == 45)
-            goto state_66;
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_66;
-        if (ch.unicode() == 92)
-            goto state_67;
-        if (ch.unicode() == 95)
-            goto state_66;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_66;
-        goto out;
-    state_67:
-        ch = next();
-        if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_84;
-        if (ch.unicode() == 11)
-            goto state_84;
-        if (ch.unicode() >= 14 && ch.unicode() <= 47)
-            goto state_84;
-        if (ch.unicode() >= 58 && ch.unicode() <= 96)
-            goto state_84;
-        if (ch.unicode() >= 103)
-            goto state_84;
-        goto out;
-    state_68:
-        lastAcceptingPos = pos;
-        token = QCss::HASH;
-        ch = next();
-        if (ch.unicode() == 45)
-            goto state_66;
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_66;
-        if (ch.unicode() == 92)
-            goto state_67;
-        if (ch.unicode() == 95)
-            goto state_66;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_66;
-        goto out;
-    state_69:
         lastAcceptingPos = pos;
         token = QCss::INVALID;
         ch = next();
         if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_38;
+            goto state_33;
+        if (ch.unicode() == 10)
+            goto state_84;
         if (ch.unicode() == 11)
-            goto state_38;
-        if (ch.unicode() >= 14 && ch.unicode() <= 38)
-            goto state_38;
-        if (ch.unicode() == 39)
-            goto state_39;
-        if (ch.unicode() >= 40 && ch.unicode() <= 91)
-            goto state_38;
+            goto state_33;
+        if (ch.unicode() >= 14 && ch.unicode() <= 33)
+            goto state_33;
+        if (ch.unicode() == 34)
+            goto state_34;
+        if (ch.unicode() >= 35 && ch.unicode() <= 91)
+            goto state_33;
         if (ch.unicode() == 92)
-            goto state_40;
+            goto state_35;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
-            goto state_38;
+            goto state_33;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_38;
+            goto state_33;
         if (ch.unicode() >= 123)
-            goto state_38;
+            goto state_33;
+        goto out;
+    state_67:
+        lastAcceptingPos = pos;
+        token = QCss::HASH;
+        ch = next();
+        if (ch.unicode() == 45)
+            goto state_67;
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+            goto state_67;
+        if (ch.unicode() == 92)
+            goto state_68;
+        if (ch.unicode() == 95)
+            goto state_67;
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
+            goto state_67;
+        goto out;
+    state_68:
+        ch = next();
+        if (ch.unicode() >= 1 && ch.unicode() <= 9)
+            goto state_85;
+        if (ch.unicode() == 11)
+            goto state_85;
+        if (ch.unicode() >= 14 && ch.unicode() <= 47)
+            goto state_85;
+        if (ch.unicode() >= 58 && ch.unicode() <= 96)
+            goto state_85;
+        if (ch.unicode() >= 103)
+            goto state_85;
+        goto out;
+    state_69:
+        lastAcceptingPos = pos;
+        token = QCss::HASH;
+        ch = next();
+        if (ch.unicode() == 45)
+            goto state_67;
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+            goto state_67;
+        if (ch.unicode() == 92)
+            goto state_68;
+        if (ch.unicode() == 95)
+            goto state_67;
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
+            goto state_67;
         goto out;
     state_70:
         lastAcceptingPos = pos;
         token = QCss::INVALID;
         ch = next();
         if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_38;
-        if (ch.unicode() == 11)
-            goto state_38;
-        if (ch.unicode() >= 14 && ch.unicode() <= 38)
-            goto state_38;
-        if (ch.unicode() == 39)
             goto state_39;
-        if (ch.unicode() >= 40 && ch.unicode() <= 91)
-            goto state_38;
-        if (ch.unicode() == 92)
+        if (ch.unicode() == 11)
+            goto state_39;
+        if (ch.unicode() >= 14 && ch.unicode() <= 38)
+            goto state_39;
+        if (ch.unicode() == 39)
             goto state_40;
+        if (ch.unicode() >= 40 && ch.unicode() <= 91)
+            goto state_39;
+        if (ch.unicode() == 92)
+            goto state_41;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
-            goto state_38;
+            goto state_39;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_38;
+            goto state_39;
         if (ch.unicode() >= 123)
-            goto state_38;
+            goto state_39;
         goto out;
     state_71:
         lastAcceptingPos = pos;
         token = QCss::INVALID;
         ch = next();
         if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_38;
-        if (ch.unicode() == 11)
-            goto state_38;
-        if (ch.unicode() >= 14 && ch.unicode() <= 38)
-            goto state_38;
-        if (ch.unicode() == 39)
             goto state_39;
-        if (ch.unicode() >= 40 && ch.unicode() <= 91)
-            goto state_38;
-        if (ch.unicode() == 92)
+        if (ch.unicode() == 11)
+            goto state_39;
+        if (ch.unicode() >= 14 && ch.unicode() <= 38)
+            goto state_39;
+        if (ch.unicode() == 39)
             goto state_40;
+        if (ch.unicode() >= 40 && ch.unicode() <= 91)
+            goto state_39;
+        if (ch.unicode() == 92)
+            goto state_41;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
-            goto state_38;
+            goto state_39;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_38;
+            goto state_39;
         if (ch.unicode() >= 123)
-            goto state_38;
+            goto state_39;
         goto out;
     state_72:
         lastAcceptingPos = pos;
         token = QCss::INVALID;
         ch = next();
         if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_38;
-        if (ch.unicode() == 10)
-            goto state_85;
-        if (ch.unicode() == 11)
-            goto state_38;
-        if (ch.unicode() >= 14 && ch.unicode() <= 38)
-            goto state_38;
-        if (ch.unicode() == 39)
             goto state_39;
-        if (ch.unicode() >= 40 && ch.unicode() <= 91)
-            goto state_38;
-        if (ch.unicode() == 92)
+        if (ch.unicode() == 11)
+            goto state_39;
+        if (ch.unicode() >= 14 && ch.unicode() <= 38)
+            goto state_39;
+        if (ch.unicode() == 39)
             goto state_40;
+        if (ch.unicode() >= 40 && ch.unicode() <= 91)
+            goto state_39;
+        if (ch.unicode() == 92)
+            goto state_41;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
-            goto state_38;
+            goto state_39;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_38;
+            goto state_39;
         if (ch.unicode() >= 123)
-            goto state_38;
+            goto state_39;
         goto out;
-    state_74:
+    state_73:
+        lastAcceptingPos = pos;
+        token = QCss::INVALID;
+        ch = next();
+        if (ch.unicode() >= 1 && ch.unicode() <= 9)
+            goto state_39;
+        if (ch.unicode() == 10)
+            goto state_86;
+        if (ch.unicode() == 11)
+            goto state_39;
+        if (ch.unicode() >= 14 && ch.unicode() <= 38)
+            goto state_39;
+        if (ch.unicode() == 39)
+            goto state_40;
+        if (ch.unicode() >= 40 && ch.unicode() <= 91)
+            goto state_39;
+        if (ch.unicode() == 92)
+            goto state_41;
+        if (ch.unicode() >= 93 && ch.unicode() <= 96)
+            goto state_39;
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
+            goto state_39;
+        if (ch.unicode() >= 123)
+            goto state_39;
+        goto out;
+    state_75:
         lastAcceptingPos = pos;
         token = QCss::NUMBER;
         ch = next();
         if (ch.unicode() == 37)
-            goto state_45;
-        if (ch.unicode() == 45)
             goto state_46;
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_74;
-        if (ch.unicode() == 92)
-            goto state_49;
-        if (ch.unicode() == 95)
-            goto state_50;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_50;
-        goto out;
-    state_75:
-        lastAcceptingPos = pos;
-        token = QCss::LENGTH;
-        ch = next();
         if (ch.unicode() == 45)
-            goto state_76;
+            goto state_47;
         if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_76;
+            goto state_75;
         if (ch.unicode() == 92)
-            goto state_77;
+            goto state_50;
         if (ch.unicode() == 95)
-            goto state_76;
+            goto state_51;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_76;
+            goto state_51;
         goto out;
     state_76:
         lastAcceptingPos = pos;
         token = QCss::LENGTH;
         ch = next();
         if (ch.unicode() == 45)
-            goto state_76;
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_76;
-        if (ch.unicode() == 92)
             goto state_77;
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+            goto state_77;
+        if (ch.unicode() == 92)
+            goto state_78;
         if (ch.unicode() == 95)
-            goto state_76;
+            goto state_77;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_76;
+            goto state_77;
         goto out;
     state_77:
+        lastAcceptingPos = pos;
+        token = QCss::LENGTH;
         ch = next();
-        if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_86;
-        if (ch.unicode() == 11)
-            goto state_86;
-        if (ch.unicode() >= 14 && ch.unicode() <= 47)
-            goto state_86;
-        if (ch.unicode() >= 58 && ch.unicode() <= 96)
-            goto state_86;
-        if (ch.unicode() >= 103)
-            goto state_86;
+        if (ch.unicode() == 45)
+            goto state_77;
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+            goto state_77;
+        if (ch.unicode() == 92)
+            goto state_78;
+        if (ch.unicode() == 95)
+            goto state_77;
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
+            goto state_77;
         goto out;
     state_78:
+        ch = next();
+        if (ch.unicode() >= 1 && ch.unicode() <= 9)
+            goto state_87;
+        if (ch.unicode() == 11)
+            goto state_87;
+        if (ch.unicode() >= 14 && ch.unicode() <= 47)
+            goto state_87;
+        if (ch.unicode() >= 58 && ch.unicode() <= 96)
+            goto state_87;
+        if (ch.unicode() >= 103)
+            goto state_87;
+        goto out;
+    state_79:
         ch = next();
         if (ch.unicode() == 45) {
             token = QCss::CDO;
             goto found;
         }
         goto out;
-    state_79:
-        lastAcceptingPos = pos;
-        token = QCss::ATKEYWORD_SYM;
-        ch = next();
-        if (ch.unicode() == 45)
-            goto state_80;
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_80;
-        if (ch.unicode() == 92)
-            goto state_81;
-        if (ch.unicode() == 95)
-            goto state_80;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_80;
-        goto out;
     state_80:
         lastAcceptingPos = pos;
         token = QCss::ATKEYWORD_SYM;
         ch = next();
         if (ch.unicode() == 45)
-            goto state_80;
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_80;
-        if (ch.unicode() == 92)
             goto state_81;
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+            goto state_81;
+        if (ch.unicode() == 92)
+            goto state_82;
         if (ch.unicode() == 95)
-            goto state_80;
+            goto state_81;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_80;
+            goto state_81;
         goto out;
     state_81:
-        ch = next();
-        if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_88;
-        if (ch.unicode() == 11)
-            goto state_88;
-        if (ch.unicode() >= 14 && ch.unicode() <= 47)
-            goto state_88;
-        if (ch.unicode() >= 58 && ch.unicode() <= 96)
-            goto state_88;
-        if (ch.unicode() >= 103)
-            goto state_88;
-        goto out;
-    state_82:
-        lastAcceptingPos = pos;
-        token = QCss::IDENT;
-        ch = next();
-        if (ch.unicode() == 40)
-            goto state_57;
-        if (ch.unicode() == 45)
-            goto state_58;
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_58;
-        if (ch.unicode() == 92)
-            goto state_59;
-        if (ch.unicode() == 95)
-            goto state_58;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_58;
-        goto out;
-    state_83:
-        lastAcceptingPos = pos;
-        token = QCss::INVALID;
-        ch = next();
-        if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_32;
-        if (ch.unicode() == 11)
-            goto state_32;
-        if (ch.unicode() >= 14 && ch.unicode() <= 33)
-            goto state_32;
-        if (ch.unicode() == 34)
-            goto state_33;
-        if (ch.unicode() >= 35 && ch.unicode() <= 91)
-            goto state_32;
-        if (ch.unicode() == 92)
-            goto state_34;
-        if (ch.unicode() >= 93 && ch.unicode() <= 96)
-            goto state_32;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_32;
-        if (ch.unicode() >= 123)
-            goto state_32;
-        goto out;
-    state_84:
-        lastAcceptingPos = pos;
-        token = QCss::HASH;
-        ch = next();
-        if (ch.unicode() == 45)
-            goto state_66;
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_66;
-        if (ch.unicode() == 92)
-            goto state_67;
-        if (ch.unicode() == 95)
-            goto state_66;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_66;
-        goto out;
-    state_85:
-        lastAcceptingPos = pos;
-        token = QCss::INVALID;
-        ch = next();
-        if (ch.unicode() >= 1 && ch.unicode() <= 9)
-            goto state_38;
-        if (ch.unicode() == 11)
-            goto state_38;
-        if (ch.unicode() >= 14 && ch.unicode() <= 38)
-            goto state_38;
-        if (ch.unicode() == 39)
-            goto state_39;
-        if (ch.unicode() >= 40 && ch.unicode() <= 91)
-            goto state_38;
-        if (ch.unicode() == 92)
-            goto state_40;
-        if (ch.unicode() >= 93 && ch.unicode() <= 96)
-            goto state_38;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_38;
-        if (ch.unicode() >= 123)
-            goto state_38;
-        goto out;
-    state_86:
-        lastAcceptingPos = pos;
-        token = QCss::LENGTH;
-        ch = next();
-        if (ch.unicode() == 45)
-            goto state_76;
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_76;
-        if (ch.unicode() == 92)
-            goto state_77;
-        if (ch.unicode() == 95)
-            goto state_76;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_76;
-        goto out;
-    state_88:
         lastAcceptingPos = pos;
         token = QCss::ATKEYWORD_SYM;
         ch = next();
         if (ch.unicode() == 45)
-            goto state_80;
-        if (ch.unicode() >= 48 && ch.unicode() <= 57)
-            goto state_80;
-        if (ch.unicode() == 92)
             goto state_81;
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+            goto state_81;
+        if (ch.unicode() == 92)
+            goto state_82;
         if (ch.unicode() == 95)
-            goto state_80;
+            goto state_81;
         if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
-            goto state_80;
+            goto state_81;
+        goto out;
+    state_82:
+        ch = next();
+        if (ch.unicode() >= 1 && ch.unicode() <= 9)
+            goto state_89;
+        if (ch.unicode() == 11)
+            goto state_89;
+        if (ch.unicode() >= 14 && ch.unicode() <= 47)
+            goto state_89;
+        if (ch.unicode() >= 58 && ch.unicode() <= 96)
+            goto state_89;
+        if (ch.unicode() >= 103)
+            goto state_89;
+        goto out;
+    state_83:
+        lastAcceptingPos = pos;
+        token = QCss::IDENT;
+        ch = next();
+        if (ch.unicode() == 40)
+            goto state_58;
+        if (ch.unicode() == 45)
+            goto state_59;
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+            goto state_59;
+        if (ch.unicode() == 92)
+            goto state_60;
+        if (ch.unicode() == 95)
+            goto state_59;
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
+            goto state_59;
+        goto out;
+    state_84:
+        lastAcceptingPos = pos;
+        token = QCss::INVALID;
+        ch = next();
+        if (ch.unicode() >= 1 && ch.unicode() <= 9)
+            goto state_33;
+        if (ch.unicode() == 11)
+            goto state_33;
+        if (ch.unicode() >= 14 && ch.unicode() <= 33)
+            goto state_33;
+        if (ch.unicode() == 34)
+            goto state_34;
+        if (ch.unicode() >= 35 && ch.unicode() <= 91)
+            goto state_33;
+        if (ch.unicode() == 92)
+            goto state_35;
+        if (ch.unicode() >= 93 && ch.unicode() <= 96)
+            goto state_33;
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
+            goto state_33;
+        if (ch.unicode() >= 123)
+            goto state_33;
+        goto out;
+    state_85:
+        lastAcceptingPos = pos;
+        token = QCss::HASH;
+        ch = next();
+        if (ch.unicode() == 45)
+            goto state_67;
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+            goto state_67;
+        if (ch.unicode() == 92)
+            goto state_68;
+        if (ch.unicode() == 95)
+            goto state_67;
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
+            goto state_67;
+        goto out;
+    state_86:
+        lastAcceptingPos = pos;
+        token = QCss::INVALID;
+        ch = next();
+        if (ch.unicode() >= 1 && ch.unicode() <= 9)
+            goto state_39;
+        if (ch.unicode() == 11)
+            goto state_39;
+        if (ch.unicode() >= 14 && ch.unicode() <= 38)
+            goto state_39;
+        if (ch.unicode() == 39)
+            goto state_40;
+        if (ch.unicode() >= 40 && ch.unicode() <= 91)
+            goto state_39;
+        if (ch.unicode() == 92)
+            goto state_41;
+        if (ch.unicode() >= 93 && ch.unicode() <= 96)
+            goto state_39;
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
+            goto state_39;
+        if (ch.unicode() >= 123)
+            goto state_39;
+        goto out;
+    state_87:
+        lastAcceptingPos = pos;
+        token = QCss::LENGTH;
+        ch = next();
+        if (ch.unicode() == 45)
+            goto state_77;
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+            goto state_77;
+        if (ch.unicode() == 92)
+            goto state_78;
+        if (ch.unicode() == 95)
+            goto state_77;
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
+            goto state_77;
+        goto out;
+    state_89:
+        lastAcceptingPos = pos;
+        token = QCss::ATKEYWORD_SYM;
+        ch = next();
+        if (ch.unicode() == 45)
+            goto state_81;
+        if (ch.unicode() >= 48 && ch.unicode() <= 57)
+            goto state_81;
+        if (ch.unicode() == 92)
+            goto state_82;
+        if (ch.unicode() == 95)
+            goto state_81;
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
+            goto state_81;
         goto out;
     found:
     lastAcceptingPos = pos;
