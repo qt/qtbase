@@ -1169,6 +1169,10 @@ void tst_QGL::currentFboSync()
     QGLWidget glw;
     glw.makeCurrent();
 
+    // For some reason we offer inter-operatibility between QGL and QOpenGL
+    // paint engines. (?!) Let's check if the two engines can be used to perform
+    // drawing in turns on different targets within the same context.
+
     {
         QGLFramebufferObject fbo1(256, 256, QGLFramebufferObject::CombinedDepthStencil);
 

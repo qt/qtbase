@@ -91,6 +91,7 @@ static void printHelp()
 #ifndef QT_NO_OPENGL
            "    -opengl         Paints the files to a QGLWidget (Qt4 style) on screen\n"
            "    -glbuffer       Paints the files to a QOpenGLFrameBufferObject (Qt5 style) \n"
+           "    -coreglbuffer   Paints the files to a Core Profile context QOpenGLFrameBufferObject\n"
 #endif
 #ifdef USE_CUSTOM_DEVICE
            "    -customdevice   Paints the files to the custom paint device\n"
@@ -213,6 +214,7 @@ int main(int argc, char **argv)
 #endif
 
     DeviceType type = WidgetType;
+    QSurfaceFormat contextFormat;
     bool checkers_background = true;
 
     QImage::Format imageFormat = QImage::Format_ARGB32_Premultiplied;
@@ -281,6 +283,11 @@ int main(int argc, char **argv)
                 type = OpenGLType;
             else if (option == "glbuffer")
                 type = OpenGLBufferType;
+            else if (option == "coreglbuffer") {
+                type = OpenGLBufferType;
+                contextFormat.setVersion(3, 2);
+                contextFormat.setProfile(QSurfaceFormat::CoreProfile);
+            }
 #endif
 #ifdef USE_CUSTOM_DEVICE
             else if (option == "customdevice")
@@ -423,11 +430,13 @@ int main(int argc, char **argv)
             {
                 QWindow win;
                 win.setSurfaceType(QSurface::OpenGLSurface);
+                win.setFormat(contextFormat);
                 win.create();
                 QOpenGLFramebufferObjectFormat fmt;
                 fmt.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
                 fmt.setSamples(4);
                 QOpenGLContext ctx;
+                ctx.setFormat(contextFormat);
                 ctx.create();
                 ctx.makeCurrent(&win);
                 QOpenGLFramebufferObject fbo(width, height, fmt);

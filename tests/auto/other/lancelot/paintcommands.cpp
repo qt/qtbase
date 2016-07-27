@@ -2378,6 +2378,8 @@ void PaintCommands::command_surface_begin(QRegExp re)
 #ifndef QT_NO_OPENGL
         m_default_glcontext = QOpenGLContext::currentContext();
         m_surface_glcontext = new QOpenGLContext();
+        // Pick up the format from the current context; this is especially
+        // important in order to pick the right version/profile to test.
         m_surface_glcontext->setFormat(m_default_glcontext->format());
         m_surface_glcontext->create();
         m_surface_glcontext->makeCurrent(m_default_glcontext->surface());

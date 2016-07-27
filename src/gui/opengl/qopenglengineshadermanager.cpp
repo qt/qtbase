@@ -126,11 +126,65 @@ QOpenGLEngineSharedShaders::QOpenGLEngineSharedShaders(QOpenGLContext* context)
     around without having to change the order of the glsl strings. It is hoped this will
     make future hard-to-find runtime bugs more obvious and generally give more solid code.
 */
-    static bool snippetsPopulated = false;
-    if (!snippetsPopulated) {
 
-        const char** code = qShaderSnippets; // shortcut
+    // Check if the user has requested an OpenGL 3.2 Core Profile or higher
+    // and if so use GLSL 1.50 core shaders instead of legacy ones.
+    const QSurfaceFormat &fmt = context->format();
+    const bool isCoreProfile = fmt.profile() == QSurfaceFormat::CoreProfile && fmt.version() >= qMakePair(3,2);
 
+    const char** code = qShaderSnippets; // shortcut
+
+    if (isCoreProfile) {
+        code[MainVertexShader] = qopenglslMainVertexShader_core;
+        code[MainWithTexCoordsVertexShader] = qopenglslMainWithTexCoordsVertexShader_core;
+        code[MainWithTexCoordsAndOpacityVertexShader] = qopenglslMainWithTexCoordsAndOpacityVertexShader_core;
+
+        code[UntransformedPositionVertexShader] = qopenglslUntransformedPositionVertexShader_core;
+        code[PositionOnlyVertexShader] = qopenglslPositionOnlyVertexShader_core;
+        code[ComplexGeometryPositionOnlyVertexShader] = qopenglslComplexGeometryPositionOnlyVertexShader_core;
+        code[PositionWithPatternBrushVertexShader] = qopenglslPositionWithPatternBrushVertexShader_core;
+        code[PositionWithLinearGradientBrushVertexShader] = qopenglslPositionWithLinearGradientBrushVertexShader_core;
+        code[PositionWithConicalGradientBrushVertexShader] = qopenglslPositionWithConicalGradientBrushVertexShader_core;
+        code[PositionWithRadialGradientBrushVertexShader] = qopenglslPositionWithRadialGradientBrushVertexShader_core;
+        code[PositionWithTextureBrushVertexShader] = qopenglslPositionWithTextureBrushVertexShader_core;
+        code[AffinePositionWithPatternBrushVertexShader] = qopenglslAffinePositionWithPatternBrushVertexShader_core;
+        code[AffinePositionWithLinearGradientBrushVertexShader] = qopenglslAffinePositionWithLinearGradientBrushVertexShader_core;
+        code[AffinePositionWithConicalGradientBrushVertexShader] = qopenglslAffinePositionWithConicalGradientBrushVertexShader_core;
+        code[AffinePositionWithRadialGradientBrushVertexShader] = qopenglslAffinePositionWithRadialGradientBrushVertexShader_core;
+        code[AffinePositionWithTextureBrushVertexShader] = qopenglslAffinePositionWithTextureBrushVertexShader_core;
+
+        code[MainFragmentShader_CMO] = qopenglslMainFragmentShader_CMO_core;
+        code[MainFragmentShader_CM] = qopenglslMainFragmentShader_CM_core;
+        code[MainFragmentShader_MO] = qopenglslMainFragmentShader_MO_core;
+        code[MainFragmentShader_M] = qopenglslMainFragmentShader_M_core;
+        code[MainFragmentShader_CO] = qopenglslMainFragmentShader_CO_core;
+        code[MainFragmentShader_C] = qopenglslMainFragmentShader_C_core;
+        code[MainFragmentShader_O] = qopenglslMainFragmentShader_O_core;
+        code[MainFragmentShader] = qopenglslMainFragmentShader_core;
+        code[MainFragmentShader_ImageArrays] = qopenglslMainFragmentShader_ImageArrays_core;
+
+        code[ImageSrcFragmentShader] = qopenglslImageSrcFragmentShader_core;
+        code[ImageSrcWithPatternFragmentShader] = qopenglslImageSrcWithPatternFragmentShader_core;
+        code[NonPremultipliedImageSrcFragmentShader] = qopenglslNonPremultipliedImageSrcFragmentShader_core;
+        code[GrayscaleImageSrcFragmentShader] = qopenglslGrayscaleImageSrcFragmentShader_core;
+        code[AlphaImageSrcFragmentShader] = qopenglslAlphaImageSrcFragmentShader_core;
+        code[CustomImageSrcFragmentShader] = qopenglslCustomSrcFragmentShader_core; // Calls "customShader", which must be appended
+        code[SolidBrushSrcFragmentShader] = qopenglslSolidBrushSrcFragmentShader_core;
+
+        code[TextureBrushSrcFragmentShader] = qopenglslTextureBrushSrcFragmentShader_desktop_core;
+        code[TextureBrushSrcWithPatternFragmentShader] = qopenglslTextureBrushSrcWithPatternFragmentShader_core;
+        code[PatternBrushSrcFragmentShader] = qopenglslPatternBrushSrcFragmentShader_core;
+        code[LinearGradientBrushSrcFragmentShader] = qopenglslLinearGradientBrushSrcFragmentShader_core;
+        code[RadialGradientBrushSrcFragmentShader] = qopenglslRadialGradientBrushSrcFragmentShader_core;
+        code[ConicalGradientBrushSrcFragmentShader] = qopenglslConicalGradientBrushSrcFragmentShader_core;
+        code[ShockingPinkSrcFragmentShader] = qopenglslShockingPinkSrcFragmentShader_core;
+
+        code[NoMaskFragmentShader] = "";
+        code[MaskFragmentShader] = qopenglslMaskFragmentShader_core;
+        code[RgbMaskFragmentShaderPass1] = qopenglslRgbMaskFragmentShaderPass1_core;
+        code[RgbMaskFragmentShaderPass2] = qopenglslRgbMaskFragmentShaderPass2_core;
+        code[RgbMaskWithGammaFragmentShader] = ""; //###
+    } else {
         code[MainVertexShader] = qopenglslMainVertexShader;
         code[MainWithTexCoordsVertexShader] = qopenglslMainWithTexCoordsVertexShader;
         code[MainWithTexCoordsAndOpacityVertexShader] = qopenglslMainWithTexCoordsAndOpacityVertexShader;
@@ -182,31 +236,33 @@ QOpenGLEngineSharedShaders::QOpenGLEngineSharedShaders(QOpenGLContext* context)
         code[RgbMaskFragmentShaderPass1] = qopenglslRgbMaskFragmentShaderPass1;
         code[RgbMaskFragmentShaderPass2] = qopenglslRgbMaskFragmentShaderPass2;
         code[RgbMaskWithGammaFragmentShader] = ""; //###
+    }
 
-        code[NoCompositionModeFragmentShader] = "";
-        code[MultiplyCompositionModeFragmentShader] = ""; //###
-        code[ScreenCompositionModeFragmentShader] = ""; //###
-        code[OverlayCompositionModeFragmentShader] = ""; //###
-        code[DarkenCompositionModeFragmentShader] = ""; //###
-        code[LightenCompositionModeFragmentShader] = ""; //###
-        code[ColorDodgeCompositionModeFragmentShader] = ""; //###
-        code[ColorBurnCompositionModeFragmentShader] = ""; //###
-        code[HardLightCompositionModeFragmentShader] = ""; //###
-        code[SoftLightCompositionModeFragmentShader] = ""; //###
-        code[DifferenceCompositionModeFragmentShader] = ""; //###
-        code[ExclusionCompositionModeFragmentShader] = ""; //###
+    // These shaders are not implemented yet and therefore are the same
+    // for all profiles. Implementations should make a version for both
+    // profiles and put the appropriate lines in the if-statement above.
+    code[NoCompositionModeFragmentShader] = "";
+    code[MultiplyCompositionModeFragmentShader] = ""; //###
+    code[ScreenCompositionModeFragmentShader] = ""; //###
+    code[OverlayCompositionModeFragmentShader] = ""; //###
+    code[DarkenCompositionModeFragmentShader] = ""; //###
+    code[LightenCompositionModeFragmentShader] = ""; //###
+    code[ColorDodgeCompositionModeFragmentShader] = ""; //###
+    code[ColorBurnCompositionModeFragmentShader] = ""; //###
+    code[HardLightCompositionModeFragmentShader] = ""; //###
+    code[SoftLightCompositionModeFragmentShader] = ""; //###
+    code[DifferenceCompositionModeFragmentShader] = ""; //###
+    code[ExclusionCompositionModeFragmentShader] = ""; //###
 
 #if defined(QT_DEBUG)
-        // Check that all the elements have been filled:
-        for (int i = 0; i < TotalSnippetCount; ++i) {
-            if (Q_UNLIKELY(!qShaderSnippets[i])) {
-                qFatal("Shader snippet for %s (#%d) is missing!",
-                       snippetNameStr(SnippetName(i)).constData(), i);
-            }
+    // Check that all the elements have been filled:
+    for (int i = 0; i < TotalSnippetCount; ++i) {
+        if (Q_UNLIKELY(!qShaderSnippets[i])) {
+            qFatal("Shader snippet for %s (#%d) is missing!",
+                   snippetNameStr(SnippetName(i)).constData(), i);
         }
-#endif
-        snippetsPopulated = true;
     }
+#endif
 
     QByteArray vertexSource;
     QByteArray fragSource;

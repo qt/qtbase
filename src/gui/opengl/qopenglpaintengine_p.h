@@ -65,6 +65,9 @@
 
 #include <private/qopenglextensions_p.h>
 
+#include <QOpenGLVertexArrayObject>
+#include <QOpenGLBuffer>
+
 enum EngineMode {
     ImageDrawingMode,
     TextDrawingMode,
@@ -193,7 +196,11 @@ public:
             snapToPixelGrid(false),
             nativePaintingActive(false),
             inverseScale(1),
-            lastTextureUnitUsed(QT_UNKNOWN_TEXTURE_UNIT)
+            lastTextureUnitUsed(QT_UNKNOWN_TEXTURE_UNIT),
+            vertexBuffer(QOpenGLBuffer::VertexBuffer),
+            texCoordBuffer(QOpenGLBuffer::VertexBuffer),
+            opacityBuffer(QOpenGLBuffer::VertexBuffer),
+            indexBuffer(QOpenGLBuffer::IndexBuffer)
     { }
 
     ~QOpenGL2PaintEngineExPrivate();
@@ -222,7 +229,8 @@ public:
     void drawCachedGlyphs(QFontEngine::GlyphFormat glyphFormat, QStaticTextItem *staticTextItem);
 
     // Calls glVertexAttributePointer if the pointer has changed
-    inline void setVertexAttributePointer(unsigned int arrayIndex, const GLfloat *pointer);
+    inline void uploadData(unsigned int arrayIndex, const GLfloat *data, GLuint count);
+    inline bool uploadIndexData(const void *data, GLenum indexValueType, GLuint count);
 
     // draws whatever is in the vertex array:
     void drawVertexArrays(const float *data, int *stops, int stopCount, GLenum primitive);
@@ -313,6 +321,12 @@ public:
     GLenum lastTextureUnitUsed;
     GLuint lastTextureUsed;
 
+    QOpenGLVertexArrayObject vao;
+    QOpenGLBuffer vertexBuffer;
+    QOpenGLBuffer texCoordBuffer;
+    QOpenGLBuffer opacityBuffer;
+    QOpenGLBuffer indexBuffer;
+
     bool needsSync;
     bool multisamplingAlwaysEnabled;
 
@@ -326,17 +340,55 @@ public:
 };
 
 
-void QOpenGL2PaintEngineExPrivate::setVertexAttributePointer(unsigned int arrayIndex, const GLfloat *pointer)
+void QOpenGL2PaintEngineExPrivate::uploadData(unsigned int arrayIndex, const GLfloat *data, GLuint count)
 {
     Q_ASSERT(arrayIndex < 3);
-    if (pointer == vertexAttribPointers[arrayIndex])
-        return;
 
-    vertexAttribPointers[arrayIndex] = pointer;
-    if (arrayIndex == QT_OPACITY_ATTR)
-        funcs.glVertexAttribPointer(arrayIndex, 1, GL_FLOAT, GL_FALSE, 0, pointer);
-    else
-        funcs.glVertexAttribPointer(arrayIndex, 2, GL_FLOAT, GL_FALSE, 0, pointer);
+    // If a vertex array object is created we have a profile that supports them
+    // and we will upload the data via a QOpenGLBuffer. Otherwise we will use
+    // the legacy way of uploading the data via glVertexAttribPointer.
+    if (vao.isCreated()) {
+        if (arrayIndex == QT_VERTEX_COORDS_ATTR) {
+            vertexBuffer.bind();
+            vertexBuffer.allocate(data, count * sizeof(float));
+        }
+        if (arrayIndex == QT_TEXTURE_COORDS_ATTR) {
+            texCoordBuffer.bind();
+            texCoordBuffer.allocate(data, count * sizeof(float));
+        }
+        if (arrayIndex == QT_OPACITY_ATTR) {
+            opacityBuffer.bind();
+            opacityBuffer.allocate(data, count * sizeof(float));
+        }
+        if (arrayIndex == QT_OPACITY_ATTR)
+            funcs.glVertexAttribPointer(arrayIndex, 1, GL_FLOAT, GL_FALSE, 0, 0);
+        else
+            funcs.glVertexAttribPointer(arrayIndex, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    } else {
+        // If we already uploaded the data we don't have to do it again
+        if (data == vertexAttribPointers[arrayIndex])
+            return;
+
+        // Store the data in cache and upload it to the graphics card.
+        vertexAttribPointers[arrayIndex] = data;
+        if (arrayIndex == QT_OPACITY_ATTR)
+            funcs.glVertexAttribPointer(arrayIndex, 1, GL_FLOAT, GL_FALSE, 0, data);
+        else
+            funcs.glVertexAttribPointer(arrayIndex, 2, GL_FLOAT, GL_FALSE, 0, data);
+    }
+}
+
+bool QOpenGL2PaintEngineExPrivate::uploadIndexData(const void *data, GLenum indexValueType, GLuint count)
+{
+    // Follow the uploadData() logic: VBOs are used only when VAO support is available.
+    // Otherwise the legacy client-side pointer path is used.
+    if (vao.isCreated()) {
+        Q_ASSERT(indexValueType == GL_UNSIGNED_SHORT || indexValueType == GL_UNSIGNED_INT);
+        indexBuffer.bind();
+        indexBuffer.allocate(data, count * (indexValueType == GL_UNSIGNED_SHORT ? sizeof(quint16) : sizeof(quint32)));
+        return true;
+    }
+    return false;
 }
 
 QT_END_NAMESPACE
