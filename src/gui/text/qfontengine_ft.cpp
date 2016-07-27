@@ -63,7 +63,7 @@
 #include FT_CONFIG_OPTIONS_H
 #endif
 
-#if defined(FT_LCD_FILTER_H) && defined(FT_CONFIG_OPTION_SUBPIXEL_RENDERING)
+#if defined(FT_LCD_FILTER_H)
 #define QT_USE_FREETYPE_LCDFILTER
 #endif
 
