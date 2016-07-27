@@ -2507,7 +2507,7 @@ Please apply the patch corresponding to your Standard Library vendor, found in
                             "section": "EGLFS details",
                             "condition": "features.eglfs",
                             "entries": [
-                                "eglfs-viv", "eglfs-viv-wl", "eglfs-egldevice", "eglfs-gbm", "eglfs-mali", "egl_x11"
+                                "eglfs-viv", "eglfs-viv-wl", "eglfs-egldevice", "eglfs-gbm", "eglfs-mali", "eglfs-brcm", "egl_x11"
                             ]
                         },
                         "linuxfb", "mirclient",
