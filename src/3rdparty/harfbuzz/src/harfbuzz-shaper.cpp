@@ -94,7 +94,7 @@ static inline void positionCluster(HB_ShaperItem *item, int gfrom,  int glast)
                 offsetBase = ((size * 10) - markTotalHeight) / 2; // Use offset that just fits
         }
 
-    bool rightToLeft = item->item.bidiLevel % 2;
+    const bool rightToLeft = (item->item.bidiLevel % 2) != 0;
 
     int i;
     unsigned char lastCmb = 0;
@@ -281,7 +281,7 @@ void HB_HeuristicSetGlyphAttributes(HB_ShaperItem *item)
 
     // first char in a run is never (treated as) a mark
     int cStart = 0;
-    const bool symbolFont = item->face->isSymbolFont;
+    const bool symbolFont = item->face->isSymbolFont != 0;
     attributes[0].mark = false;
     attributes[0].clusterStart = true;
     attributes[0].dontPrint = (!symbolFont && uc[0] == 0x00ad) || HB_IsControlChar(uc[0]);
