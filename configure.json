@@ -709,7 +709,8 @@
         "eglfs-brcm": {
             "description": "Broadcom EGL (Rasberry Pi)",
             "type": "compile",
-            "test": "qpa/eglfs-brcm"
+            "test": "qpa/eglfs-brcm",
+            "pkg-config-args": "egl"
         },
         "eglfs-egldevice": {
             "description": "EGLDevice",
