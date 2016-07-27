@@ -37,61 +37,60 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSTHEME_H
-#define QWINDOWSTHEME_H
+#ifndef QABSTRACTFILEICONENGINE_P_H
+#define QABSTRACTFILEICONENGINE_P_H
 
-#include "qwindowsthreadpoolrunner.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtCore/qfileinfo.h>
+#include <private/qicon_p.h>
 #include <qpa/qplatformtheme.h>
-
-#include <QtCore/QSharedPointer>
-#include <QtCore/QVariant>
 
 QT_BEGIN_NAMESPACE
 
-class QWindow;
-
-class QWindowsTheme : public QPlatformTheme
+class QAbstractFileIconEngine : public QPixmapIconEngine
 {
 public:
-    QWindowsTheme();
-    ~QWindowsTheme();
+    explicit QAbstractFileIconEngine(const QFileInfo &info, QPlatformTheme::IconOptions opts)
+        : QPixmapIconEngine(), m_fileInfo(info), m_options(opts) {}
 
-    static QWindowsTheme *instance() { return m_instance; }
+    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State) override;
+    QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state) override;
 
-    bool usePlatformNativeDialog(DialogType type) const Q_DECL_OVERRIDE;
-    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const Q_DECL_OVERRIDE;
-    QVariant themeHint(ThemeHint) const Q_DECL_OVERRIDE;
-    const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE
-        { return m_palettes[type]; }
-    const QFont *font(Font type = SystemFont) const Q_DECL_OVERRIDE
-        { return m_fonts[type]; }
+    QFileInfo fileInfo() const { return m_fileInfo; }
+    QPlatformTheme::IconOptions options() const { return m_options; }
 
-    QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const Q_DECL_OVERRIDE;
+    // Helper to convert a sequence of ints to a list of QSize
+    template <class It> static QList<QSize> toSizeList(It i1, It i2);
 
-    QIcon fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions iconOptions = 0) const override;
-
-    void windowsThemeChanged(QWindow *window);
-    void displayChanged() { refreshIconPixmapSizes(); }
-
-    QList<QSize> availableFileIconSizes() const { return m_fileIconSizes; }
-
-    static const char *name;
+protected:
+    virtual QPixmap filePixmap(const QSize &size, QIcon::Mode mode, QIcon::State) = 0;
+    virtual QString cacheKey() const;
 
 private:
-    void refresh() { refreshPalettes(); refreshFonts(); }
-    void clearPalettes();
-    void refreshPalettes();
-    void clearFonts();
-    void refreshFonts();
-    void refreshIconPixmapSizes();
-
-    static QWindowsTheme *m_instance;
-    QPalette *m_palettes[NPalettes];
-    QFont *m_fonts[NFonts];
-    const QSharedPointer<QWindowsThreadPoolRunner> m_threadPoolRunner;
-    QList<QSize> m_fileIconSizes;
+    const QFileInfo m_fileInfo;
+    const QPlatformTheme::IconOptions m_options;
 };
+
+template <class It>
+inline QList<QSize> QAbstractFileIconEngine::toSizeList(It i1, It i2)
+{
+    QList<QSize> result;
+    result.reserve(int(i2 - i1));
+    for ( ; i1 != i2; ++i1)
+        result.append(QSize(*i1, *i1));
+    return result;
+}
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSTHEME_H
+#endif // QABSTRACTFILEICONENGINE_P_H

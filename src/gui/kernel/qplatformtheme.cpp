@@ -424,16 +424,6 @@ QIcon QPlatformTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOp
     return QIcon();
 }
 
-QPixmap QPlatformTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size,
-                                       QPlatformTheme::IconOptions iconOptions) const
-{
-    Q_UNUSED(fileInfo);
-    Q_UNUSED(size);
-    Q_UNUSED(iconOptions);
-    // TODO Should return QCommonStyle pixmaps?
-    return QPixmap();
-}
-
 QVariant QPlatformTheme::themeHint(ThemeHint hint) const
 {
     // For theme hints which mirror platform integration style hints, query

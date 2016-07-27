@@ -5913,14 +5913,14 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
             if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
                 QPlatformTheme::StandardPixmap sp = static_cast<QPlatformTheme::StandardPixmap>(standardIcon);
                 QIcon retIcon;
-                QList<int> sizes = theme->themeHint(QPlatformTheme::IconPixmapSizes).value<QList<int> >();
-                Q_FOREACH (int size, sizes) {
+                const QList<QSize> sizes = theme->themeHint(QPlatformTheme::IconPixmapSizes).value<QList<QSize> >();
+                for (const QSize &size : sizes) {
                     QPixmap mainIcon;
-                    const QString cacheKey = QLatin1String("qt_mac_constructQIconFromIconRef") + QString::number(standardIcon) + QString::number(size);
+                    const QString cacheKey = QLatin1String("qt_mac_constructQIconFromIconRef") + QString::number(standardIcon) + QString::number(size.width());
                     if (standardIcon >= QStyle::SP_CustomBase) {
-                        mainIcon = theme->standardPixmap(sp, QSizeF(size, size));
+                        mainIcon = theme->standardPixmap(sp, QSizeF(size));
                     } else if (QPixmapCache::find(cacheKey, mainIcon) == false) {
-                        mainIcon = theme->standardPixmap(sp, QSizeF(size, size));
+                        mainIcon = theme->standardPixmap(sp, QSizeF(size));
                         QPixmapCache::insert(cacheKey, mainIcon);
                     }
 

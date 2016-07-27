@@ -68,6 +68,7 @@
 #include <QtGui/QPainter>
 #include <QtGui/QPixmapCache>
 #include <qpa/qwindowsysteminterface.h>
+#include <QtPlatformSupport/private/qabstractfileiconengine_p.h>
 #include <private/qhighdpiscaling_p.h>
 #include <private/qsystemlibrary_p.h>
 
@@ -314,6 +315,7 @@ const char *QWindowsTheme::name = "windows";
 QWindowsTheme *QWindowsTheme::m_instance = 0;
 
 QWindowsTheme::QWindowsTheme()
+    : m_threadPoolRunner(new QWindowsThreadPoolRunner)
 {
     m_instance = this;
     std::fill(m_fonts, m_fonts + NFonts, static_cast<QFont *>(0));
@@ -384,7 +386,7 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
     case UiEffects:
         return QVariant(uiEffects());
     case IconPixmapSizes:
-        return m_fileIconSizes;
+        return QVariant::fromValue(m_fileIconSizes);
     case DialogSnapToDefaultButton:
         return QVariant(booleanSystemParametersInfo(SPI_GETSNAPTODEFBUTTON, false));
     case ContextMenuOnMouseRelease:
@@ -492,15 +494,14 @@ void QWindowsTheme::refreshIconPixmapSizes()
     fileIconSizes[ExtraLargeFileIcon] =
         fileIconSizes[LargeFileIcon] + fileIconSizes[LargeFileIcon] / 2;
     fileIconSizes[JumboFileIcon] = 8 * fileIconSizes[LargeFileIcon]; // empirical, has not been observed to work
-    QList<int> sizes;
-    sizes << fileIconSizes[SmallFileIcon] << fileIconSizes[LargeFileIcon];
+
 #ifdef USE_IIMAGELIST
-    sizes << fileIconSizes[ExtraLargeFileIcon]; // sHIL_EXTRALARGE
-    if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA)
-        sizes << fileIconSizes[JumboFileIcon]; // SHIL_JUMBO
+    int *availEnd = fileIconSizes + JumboFileIcon + 1;
+#else
+    int *availEnd = fileIconSizes + LargeFileIcon + 1;
 #endif // USE_IIMAGELIST
-    qCDebug(lcQpaWindows) << __FUNCTION__ << sizes;
-    m_fileIconSizes = QVariant::fromValue(sizes);
+    m_fileIconSizes = QAbstractFileIconEngine::toSizeList(fileIconSizes, availEnd);
+    qCDebug(lcQpaWindows) << __FUNCTION__ << m_fileIconSizes;
 }
 
 // Defined in qpixmap_win.cpp
@@ -714,8 +715,46 @@ static QPixmap pixmapFromShellImageList(int iImageList, const SHFILEINFO &info)
     return result;
 }
 
-QPixmap QWindowsTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size,
-                                      QPlatformTheme::IconOptions iconOptions) const
+class QWindowsFileIconEngine : public QAbstractFileIconEngine
+{
+public:
+    explicit QWindowsFileIconEngine(const QFileInfo &info,
+                                    QPlatformTheme::IconOptions opts,
+                                    const QSharedPointer<QWindowsThreadPoolRunner> &runner) :
+        QAbstractFileIconEngine(info, opts), m_threadPoolRunner(runner) {}
+
+    QList<QSize> availableSizes(QIcon::Mode = QIcon::Normal, QIcon::State = QIcon::Off) const override
+    { return QWindowsTheme::instance()->availableFileIconSizes(); }
+
+protected:
+    QString cacheKey() const override;
+    QPixmap filePixmap(const QSize &size, QIcon::Mode mode, QIcon::State) override;
+
+private:
+    const QSharedPointer<QWindowsThreadPoolRunner> m_threadPoolRunner;
+};
+
+QString QWindowsFileIconEngine::cacheKey() const
+{
+    // Cache directories unless custom or drives, which have custom icons depending on type
+    if ((options() & QPlatformTheme::DontUseCustomDirectoryIcons) && fileInfo().isDir() && !fileInfo().isRoot())
+        return QStringLiteral("qt_/directory/");
+    if (!fileInfo().isFile())
+        return QString();
+    // Return "" for .exe, .lnk and .ico extensions.
+    // It is faster to just look at the file extensions;
+    // avoiding slow QFileInfo::isExecutable() (QTBUG-13182)
+    const QString &suffix = fileInfo().suffix();
+    if (!suffix.compare(QLatin1String("exe"), Qt::CaseInsensitive)
+        || !suffix.compare(QLatin1String("lnk"), Qt::CaseInsensitive)
+        || !suffix.compare(QLatin1String("ico"), Qt::CaseInsensitive)) {
+        return QString();
+    }
+    return QLatin1String("qt_.")
+        + (suffix.isEmpty() ? fileInfo().fileName() : suffix.toUpper()); // handle "Makefile"                                    ;)
+}
+
+QPixmap QWindowsFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon::State)
 {
     /* We don't use the variable, but by storing it statically, we
      * ensure CoInitialize is only called once. */
@@ -725,10 +764,10 @@ QPixmap QWindowsTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &s
     static QCache<QString, FakePointer<int> > dirIconEntryCache(1000);
     static QMutex mx;
     static int defaultFolderIIcon = -1;
-    const bool useDefaultFolderIcon = iconOptions & QPlatformTheme::DontUseCustomDirectoryIcons;
+    const bool useDefaultFolderIcon = options() & QPlatformTheme::DontUseCustomDirectoryIcons;
 
     QPixmap pixmap;
-    const QString filePath = QDir::toNativeSeparators(fileInfo.filePath());
+    const QString filePath = QDir::toNativeSeparators(fileInfo().filePath());
     const int width = int(size.width());
     const int iconSize = width > fileIconSizes[SmallFileIcon] ? SHGFI_LARGEICON : SHGFI_SMALLICON;
     const int requestedImageListSize =
@@ -739,7 +778,7 @@ QPixmap QWindowsTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &s
 #else
         0;
 #endif // !USE_IIMAGELIST
-    bool cacheableDirIcon = fileInfo.isDir() && !fileInfo.isRoot();
+    bool cacheableDirIcon = fileInfo().isDir() && !fileInfo().isRoot();
     if (cacheableDirIcon) {
         QMutexLocker locker(&mx);
         int iIcon = (useDefaultFolderIcon && defaultFolderIIcon >= 0) ? defaultFolderIIcon
@@ -758,9 +797,9 @@ QPixmap QWindowsTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &s
         SHGFI_ICON|iconSize|SHGFI_SYSICONINDEX|SHGFI_ADDOVERLAYS|SHGFI_OVERLAYINDEX;
 
     const bool val = cacheableDirIcon && useDefaultFolderIcon
-        ? shGetFileInfoBackground(m_threadPoolRunner, L"dummy", FILE_ATTRIBUTE_DIRECTORY,
+        ? shGetFileInfoBackground(*m_threadPoolRunner.data(), L"dummy", FILE_ATTRIBUTE_DIRECTORY,
                                   &info, flags | SHGFI_USEFILEATTRIBUTES)
-        : shGetFileInfoBackground(m_threadPoolRunner, reinterpret_cast<const wchar_t *>(filePath.utf16()), 0,
+        : shGetFileInfoBackground(*m_threadPoolRunner.data(), reinterpret_cast<const wchar_t *>(filePath.utf16()), 0,
                                   &info, flags);
 
     // Even if GetFileInfo returns a valid result, hIcon can be empty in some cases
@@ -800,9 +839,12 @@ QPixmap QWindowsTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &s
         DestroyIcon(info.hIcon);
     }
 
-    if (!pixmap.isNull())
-        return pixmap;
-    return QPlatformTheme::fileIconPixmap(fileInfo, size);
+    return pixmap;
+}
+
+QIcon QWindowsTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions iconOptions) const
+{
+    return QIcon(new QWindowsFileIconEngine(fileInfo, iconOptions, m_threadPoolRunner));
 }
 
 QT_END_NAMESPACE
