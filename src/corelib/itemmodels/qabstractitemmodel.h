@@ -63,7 +63,9 @@ public:
     inline void *internalPointer() const Q_DECL_NOTHROW { return reinterpret_cast<void*>(i); }
     inline QModelIndex parent() const;
     inline QModelIndex sibling(int row, int column) const;
-    inline QModelIndex child(int row, int column) const;
+#if QT_DEPRECATED_SINCE(5, 8)
+    QT_DEPRECATED_X("Use QAbstractItemModel::index") inline QModelIndex child(int row, int column) const;
+#endif
     inline QVariant data(int role = Qt::DisplayRole) const;
     inline Qt::ItemFlags flags() const;
     Q_DECL_CONSTEXPR inline const QAbstractItemModel *model() const Q_DECL_NOTHROW { return m; }
@@ -128,7 +130,9 @@ public:
     quintptr internalId() const;
     QModelIndex parent() const;
     QModelIndex sibling(int row, int column) const;
-    QModelIndex child(int row, int column) const;
+#if QT_DEPRECATED_SINCE(5, 8)
+    QT_DEPRECATED_X("Use QAbstractItemModel::index") QModelIndex child(int row, int column) const;
+#endif
     QVariant data(int role = Qt::DisplayRole) const;
     Qt::ItemFlags flags() const;
     const QAbstractItemModel *model() const;
@@ -419,8 +423,10 @@ inline QModelIndex QModelIndex::parent() const
 inline QModelIndex QModelIndex::sibling(int arow, int acolumn) const
 { return m ? (r == arow && c == acolumn) ? *this : m->sibling(arow, acolumn, *this) : QModelIndex(); }
 
+#if QT_DEPRECATED_SINCE(5, 8)
 inline QModelIndex QModelIndex::child(int arow, int acolumn) const
 { return m ? m->index(arow, acolumn, *this) : QModelIndex(); }
+#endif
 
 inline QVariant QModelIndex::data(int arole) const
 { return m ? m->data(*this, arole) : QVariant(); }
