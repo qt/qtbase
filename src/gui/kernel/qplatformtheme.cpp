@@ -44,6 +44,7 @@
 #include <QtCore/QVariant>
 #include <QtCore/QStringList>
 #include <QtCore/qfileinfo.h>
+#include <qicon.h>
 #include <qpalette.h>
 #include <qtextformat.h>
 #include <private/qiconloader_p.h>
@@ -403,6 +404,24 @@ QPixmap QPlatformTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) co
     Q_UNUSED(size);
     // TODO Should return QCommonStyle pixmaps?
     return QPixmap();
+}
+
+/*!
+    \brief Return an icon for \a fileInfo, observing \a iconOptions.
+
+    This function is queried by QFileIconProvider and similar classes to obtain
+    an icon for a file. If it does not return a non-null icon, fileIconPixmap()
+    is queried for a specific size.
+
+    \since 5.8
+*/
+
+QIcon QPlatformTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions iconOptions) const
+{
+    Q_UNUSED(fileInfo);
+    Q_UNUSED(iconOptions);
+    // TODO Should return QCommonStyle pixmaps?
+    return QIcon();
 }
 
 QPixmap QPlatformTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size,

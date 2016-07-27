@@ -62,6 +62,14 @@ QT_BEGIN_NAMESPACE
 
 static bool isCacheable(const QFileInfo &fi);
 
+static QPlatformTheme::IconOptions toThemeIconOptions(QFileIconProvider::Options options)
+{
+    QPlatformTheme::IconOptions result;
+    if (options & QFileIconProvider::DontUseCustomDirectoryIcons)
+        result |= QPlatformTheme::DontUseCustomDirectoryIcons;
+    return result;
+}
+
 class QFileIconEngine : public QPixmapIconEngine
 {
 public:
@@ -91,11 +99,7 @@ public:
                 return pixmap;
         }
 
-        QPlatformTheme::IconOptions iconOptions;
-        if (m_fipOpts & QFileIconProvider::DontUseCustomDirectoryIcons)
-            iconOptions |= QPlatformTheme::DontUseCustomDirectoryIcons;
-
-        pixmap = theme->fileIconPixmap(m_fileInfo, size, iconOptions);
+        pixmap = theme->fileIconPixmap(m_fileInfo, size, toThemeIconOptions(m_fipOpts));
         if (!pixmap.isNull()) {
             if (cacheable)
                 QPixmapCache::insert(keyBase + QString::number(size.width()), pixmap);
@@ -345,11 +349,12 @@ QIcon QFileIconProviderPrivate::getIcon(const QFileInfo &fi) const
     if (!theme)
         return QIcon();
 
-    QList<int> sizes = theme->themeHint(QPlatformTheme::IconPixmapSizes).value<QList<int> >();
-    if (sizes.isEmpty())
-        return QIcon();
+    QIcon themeFileIcon = theme->fileIcon(fi, toThemeIconOptions(options));
+    if (!themeFileIcon.isNull())
+        return themeFileIcon;
 
-    return QIcon(new QFileIconEngine(fi, options));
+    QList<int> sizes = theme->themeHint(QPlatformTheme::IconPixmapSizes).value<QList<int> >();
+    return sizes.isEmpty() ? QIcon() : QIcon(new QFileIconEngine(fi, options));
 }
 
 /*!

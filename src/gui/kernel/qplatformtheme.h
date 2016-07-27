@@ -55,6 +55,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QIcon;
 class QIconEngine;
 class QMenu;
 class QMenuBar;
@@ -301,6 +302,8 @@ public:
     virtual QVariant themeHint(ThemeHint hint) const;
 
     virtual QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const;
+    virtual QIcon fileIcon(const QFileInfo &fileInfo,
+                           QPlatformTheme::IconOptions iconOptions = 0) const;
     virtual QPixmap fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size,
                                    QPlatformTheme::IconOptions iconOptions = 0) const;
 
